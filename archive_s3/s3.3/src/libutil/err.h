@@ -61,15 +61,14 @@ extern "C" {
 #include <stdarg.h>
 #include <errno.h>
 
-
-void _E__pr_header( const char *file, long line, const char *msg );
-void _E__pr_info_header( char *file, long line, char *tag );
-void _E__pr_warn( char *fmt, ... );
-void _E__pr_info( char *fmt, ... );
-void _E__die_error( char *fmt, ... );
-void _E__abort_error( char *fmt, ... );
-void _E__sys_error( char *fmt, ... );
-void _E__fatal_sys_error( char *fmt, ... );
+void _E__pr_header( char const *file, long line, char const *msg );
+void _E__pr_info_header( char const *file, long line, char const *tag );
+void _E__pr_warn( char const *fmt, ... );
+void _E__pr_info( char const *fmt, ... );
+void _E__die_error( char const *fmt, ... );
+void _E__abort_error( char const *fmt, ... );
+void _E__sys_error( char const *fmt, ... );
+void _E__fatal_sys_error( char const *fmt, ... );
 
 /* These three all abort */
 
