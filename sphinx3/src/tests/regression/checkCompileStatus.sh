@@ -83,7 +83,7 @@ pushd sphinx2 >> $outfile 2>&1
 # Compile and run test, and verify if both were successful
 if ! ${GMAKE} all test >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx2 compilation failed" ${S2LIST} < $outfile
- elif ! (grep BESTPATH $outfile | grep -q 'GO FORWARD TEN METERS');
+ elif ! (grep BESTPATH $outfile | grep 'GO FORWARD TEN METERS' > /dev/null);
  then ${MAILX} -s "Sphinx2 test failed" ${S2LIST} < $outfile;
  else ${MAILX} -s "sphinx2 compilation or test succeeded" ${S2LIST} < $outfile
 fi
@@ -102,11 +102,11 @@ pushd sphinx3 >> $outfile 2>&1
 # Compile and run test, and verify that all tests ran successfully
 if ! ${GMAKE} all test-full >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx3 compilation failed" ${S3LIST} < $outfile;
- elif ! (grep FWDVIT $outfile | grep -q 'P I T T S B U R G H');
+ elif ! (grep FWDVIT $outfile | grep 'P I T T S B U R G H' > /dev/null);
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
- elif ! (grep BSTPTH $outfile | grep -q 'P I T T S B U R G H');
+ elif ! (grep BSTPTH $outfile | grep 'P I T T S B U R G H' > /dev/null);
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
- elif grep -q FAILED $outfile;
+ elif grep FAILED $outfile > /dev/null;
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
  else ${MAILX} -s "sphinx3 test succeeded" ${S3LIST} < $outfile;
 fi
