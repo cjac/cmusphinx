@@ -1,21 +1,21 @@
-Utt_Start#1, Leader: 0.07619,  Begin: 0.22857
-Utt_End#1, End: 1.61451,  Trailer: 1.81451
-Utt_Start#2, Leader: 2.70476,  Begin: 2.85714
-Utt_End#2, End: 6.24308,  Trailer: 6.44308
-Utt_Start#3, Leader: 6.45714,  Begin: 6.60952
-Utt_End#3, End: 7.01451,  Trailer: 7.21451
-Utt_Start#4, Leader: 8.16190,  Begin: 8.31429
-Utt_End#4, End: 10.70975,  Trailer: 10.90975
-Utt_Start#5, Leader: 11.48571,  Begin: 11.63809
-Utt_End#5, End: 11.73832,  Trailer: 11.93832
-Utt_Start#6, Leader: 12.46667,  Begin: 12.61905
-Utt_End#6, End: 12.97642,  Trailer: 13.17642
-Utt_Start#7, Leader: 13.82857,  Begin: 13.98095
-Utt_End#7, End: 14.07166,  Trailer: 14.27166
-Utt_Start#8, Leader: 15.35238,  Begin: 15.50476
-Utt_Cancel#8 End: 15.54785
-Utt_Start#8, Leader: 16.28572,  Begin: 16.43810
-Utt_End#8, End: 19.07166,  Trailer: 19.27166
-Utt_Start#9, Leader: 20.12381,  Begin: 20.27619
-Utt_Cancel#9 End: 20.31927
-Utt_Start#9, Leader: 20.18095,  Begin: 20.33333
+Utt_Start#1, Leader: 0.076,  Begin: 0.229
+Utt_End#1, End: 1.615,  Trailer: 1.815
+Utt_Start#2, Leader: 2.705,  Begin: 2.857
+Utt_End#2, End: 6.243,  Trailer: 6.443
+Utt_Start#3, Leader: 6.457,  Begin: 6.610
+Utt_End#3, End: 7.015,  Trailer: 7.215
+Utt_Start#4, Leader: 8.162,  Begin: 8.314
+Utt_End#4, End: 10.710,  Trailer: 10.910
+Utt_Start#5, Leader: 11.486,  Begin: 11.638
+Utt_End#5, End: 11.738,  Trailer: 11.938
+Utt_Start#6, Leader: 12.467,  Begin: 12.619
+Utt_End#6, End: 12.976,  Trailer: 13.176
+Utt_Start#7, Leader: 13.829,  Begin: 13.981
+Utt_End#7, End: 14.072,  Trailer: 14.272
+Utt_Start#8, Leader: 15.352,  Begin: 15.505
+Utt_Cancel#8 End: 15.548
+Utt_Start#8, Leader: 16.286,  Begin: 16.438
+Utt_End#8, End: 19.072,  Trailer: 19.272
+Utt_Start#9, Leader: 20.124,  Begin: 20.276
+Utt_Cancel#9 End: 20.319
+Utt_Start#9, Leader: 20.181,  Begin: 20.333

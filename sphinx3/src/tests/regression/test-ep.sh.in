@@ -20,8 +20,9 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ep 
 -var @abs_top_srcdir@/model/ep/variances \
 -mixw @abs_top_srcdir@/model/ep/mixture_weights \
 -raw 1 \
-2>&1 |grep "Utt_" |perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' > $tmpout
-if (perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' \
-@abs_top_srcdir@/model/ep/ep.result | diff $tmpout - > /dev/null 2>&1); \
+> $tmpout 2>&1
+
+if (grep "Utt_" $tmpout | perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $1/ge' \
+| diff @abs_top_srcdir@/model/ep/ep.result - > /dev/null 2>&1); \
 then echo "EP test PASSED"; else \
 echo "EP test FAILED"; fi 
