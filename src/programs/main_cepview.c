@@ -38,6 +38,8 @@
  * circa 1994	P J Moreno at Carnegie Mellon
  * 		Created.
  */
+/* later modified by Arthur Chan at 20041115. :-)
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,16 +50,15 @@
 #define IO_ERR  (-1)
 
 #define NUM_COEFF  "13"
-#define DISPLAY_SIZE "1"
 
 static arg_t arg[] = {
   { "-i",
     ARG_INT32,
     "13",
-    "Number of coefficients in "},
+    "Number of coefficients in the feature vector."},
   { "-d",
     ARG_INT32,
-    "10",
+    "13",
     "Width of display"},
   { "-input",
     ARG_STRING,
@@ -81,7 +82,6 @@ int main(int argc, char *argv[])
   
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",arg);
-
   vsize = cmd_ln_int32("-i");
   dsize = cmd_ln_int32("-d");
   
@@ -100,9 +100,18 @@ int main(int argc, char *argv[])
 
   for (i = 0; i < len; ++i)
     {
+      printf("%6d ",i);
       for ( j =0 ; j < column; ++j)
 	printf("%7.3f ", z[offset + j]);
       printf("\n");
+      
+      if(j!=vsize){
+	printf("%6s ","");
+	for( j = column ; j < vsize ; j++){
+	  printf("%7.3f ", z[offset + j]);
+	}
+	printf("\n");
+      }
       offset += vsize;
     }
 

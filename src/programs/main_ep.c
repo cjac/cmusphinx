@@ -122,7 +122,7 @@ static arg_t arg[] = {
   { "-ei",
     ARG_STRING,
     NULL,
-    "Input extension to be applied to all input files" },
+    "input extension to be applied to all input files" },
   { "-do",
     ARG_STRING,
     NULL,
