@@ -3,7 +3,7 @@
 -mdef	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.500.mdef
 -dict	/lab/speech/sphinx4/data/tidigits_model/dictionary
 -fdict	/lab/speech/sphinx4/data/tidigits_model/fillerdict
--lm	/lab/speech/sphinx4/data/tidigits_model/unigram.lm
+-lm	/lab/speech/sphinx4/data/tidigits_model/unigram.lm.DMP
 -mean	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/means.LittleEndian
 -var	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian
 -mixw	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian
@@ -20,6 +20,6 @@
 -fillprob	0.02
 -lw	9.5
 -maxwpf	10
--wip	0.2
+-wip	0.00000000000001
 -lextreedump 0
 -samprate 16000
