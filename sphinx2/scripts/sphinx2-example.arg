@@ -1,4 +1,4 @@
- -ctlfn /net/alf20/usr1/rkm/timit/train/train.ctl
+ -ctlfn /usr/local/share/sphinx2/model/lm/turtle/test.ctl
  -normmean TRUE
  -topsenfrm 4
  -topsenthresh -80000 
@@ -19,15 +19,16 @@
  -fwdflatbeam 1e-8
  -fwdflatnwbeam 3e-4
  -rescorelw 9.5
- -lmfn       /net/alf20/usr/rkm/SHARED/lm/nov94/t94-top20k-1-3.arpabo.Z
- -kbdumpdir  /net/alf20/usr/rkm/SHARED/lm/nov94
- -dictfn     /net/alf20/usr1/rkm/timit/train/train-h1c1-94.dic
- -oovdictfn  /net/alf20/usr1/rkm/timit/train/train-h1c1-94-oov.dic
+ -lmfn       /usr/local/share/sphinx2/model/lm/turtle/demo.lm
+ -kbdumpdir  /usr/local/share/sphinx2/model/lm/turtle
+ -dictfn     /usr/local/share/sphinx2/model/lm/turtle/demo.dic
+ -noisedict  /usr/local/share/sphinx2/model/hmm/6k/noisedict
+ -oovdictfn  /usr/local/share/sphinx2/model/hmm/6k/demo.handdict
  -oovugprob  -4.5
- -phnfn      /net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.phone
- -mapfn      /net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.map
+ -phnfn      /usr/local/share/sphinx2/model/hmm/6k/phone
+ -mapfn      /usr/local/share/sphinx2/model/hmm/6k/map
  -8bsen TRUE
- -sendumpfn  /net/alf20/usr/rkm/SHARED/sendump/nov93/1pd/10000-g.sen
- -hmmdir     /net/alf20/usr/rkm/SHARED/hmm/nov93/1pd/10000-g
- -hmmdirlist /net/alf20/usr/rkm/SHARED/hmm/nov93/1pd/10000-g
- -cbdir      /net/alf20/usr/rkm/SHARED/hmm/nov93/1pd/10000-g
+ -sendumpfn  /usr/local/share/sphinx2/model/hmm/6k/sendump
+ -hmmdir     /usr/local/share/sphinx2/model/hmm/6k
+ -hmmdirlist /usr/local/share/sphinx2/model/hmm/6k
+ -cbdir      /usr/local/share/sphinx2/model/hmm/6k
