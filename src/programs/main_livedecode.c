@@ -85,20 +85,22 @@ process_thread(LPVOID aParam)
 	printf("Error writing audio to dump file.\n");
       }
 
-      if (ld_process_raw(&decoder, samples, num_samples) < 0) {
+	  ld_process_raw(&decoder, samples, num_samples);
+     /* if (ld_process_raw(&decoder, samples, num_samples) < 0) {
 	printf("Data processing error.\n");
 	return -1;
-      }
+      }*/
     }
   }
 
   ad_stop_rec(in_ad);
   ad_close(in_ad);
 
-  if (ld_end_utt(&decoder)) {
+  ld_end_utt(&decoder);
+  /*if (ld_end_utt(&decoder)) {
     printf("Cannot end decoding.\n");
     return -1;
-  }
+  }*/
 
   return 0;
 }
@@ -167,6 +169,10 @@ main(int argc, char **argv)
   /*
    *  Print the decoding output
    */
+
+  
+  /* ARCHAN 20041101: I have to change the function prototype to make it works.  */
+
   if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
     printf("Cannot retrieve hypothesis.\n");
   }

@@ -357,7 +357,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     segments.  If <I>null</I>, the array is not returned.
     @return 0 for success.  -1 for failure.
 */
-int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
+int ld_retrieve_hyps(live_decoder_t *_decoder, /*char **_uttid, */ char **_hyp_str,
 		     hyp_t ***_hyp_segs);
 
 /** Abort the current decoding process immediately.  As opposed to

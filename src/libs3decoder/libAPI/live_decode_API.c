@@ -308,7 +308,7 @@ ld_process_ceps(live_decoder_t *_decoder,
 }
 
 int
-ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
+ld_retrieve_hyps(live_decoder_t *_decoder, /*char **_uttid,*/ char **_hyp_str, 
 		 hyp_t ***_hyp_segs)
 {
   int rv = LD_SUCCESS;
@@ -320,9 +320,10 @@ ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
     rv = ld_record_hyps(_decoder, FALSE);
   }
   
-  if (_uttid != NULL) {
+/*  if (_uttid != NULL) {
     *_uttid = _decoder->uttid;
-  }
+  }*/
+
   if (_hyp_str != NULL) {
     *_hyp_str = _decoder->hyp_str;
   }
