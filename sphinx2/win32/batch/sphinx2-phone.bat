@@ -1,6 +1,6 @@
 echo off
 
-set S2BATCH=..\msdev\SphinxExamples\sphinx2_allphone\Debug\sphinx2_allphone
+set S2BATCH=..\..\bin\Debug\sphinx2_allphone
 set HMM=..\..\model\hmm\6k
 set TASK=..\..\model\lm\turtle
 set DICT=..\..\model\lm\turtle\turtle.dic

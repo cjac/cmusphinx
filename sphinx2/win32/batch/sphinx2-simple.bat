@@ -1,6 +1,6 @@
 echo off
 
-set S2CONTINUOUS=..\msdev\SphinxExamples\sphinx2_continuous\Debug\sphinx2_continuous.exe
+set S2CONTINUOUS=..\..\bin\Debug\sphinx2_continuous.exe
 set HMM=..\..\model\hmm\6k
 set TASK=..\..\model\lm\turtle
 set DICT=..\..\model\lm\turtle\turtle.dic

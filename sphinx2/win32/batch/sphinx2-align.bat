@@ -3,7 +3,7 @@ rem example batch file to call sphinx2_batch to do forced alignment
 echo off
 
 rem the binary to run
-set S2BATCH=..\msdev\SphinxExamples\sphinx2_batch\Debug\sphinx2_batch.exe
+set S2BATCH=..\..\bin\Debug\sphinx2_batch.exe
 
 rem the HMM directory 
 set HMM=..\..\model\hmm\6k
