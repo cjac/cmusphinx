@@ -83,7 +83,7 @@ set sendumpfile = $datadir/sendump/nov93/1pd/10000-g.sen
 
 # NOTE: Output is NOT being redirected to a log file.
 $PGM \
-	-agcmax TRUE		\
+	-agcmax FALSE		\
 	-allphone TRUE		\
 # fwdtree pass beamwidths --------------------------- \
 	-top $top	 	\

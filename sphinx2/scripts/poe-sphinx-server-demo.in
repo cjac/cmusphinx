@@ -454,7 +454,7 @@ sub sphinx_start {
 			-ctlcount => $ctlcount,
 			-cepdir => $cepdir,
 			-datadir => $cepdir,
-			-agcmax => "TRUE",
+			-agcmax => "FALSE",
 			# language weights, other LM parameters ------------- 
 			-langwt => $lw,
 			-fwdflatlw => $fwdflatlw,
