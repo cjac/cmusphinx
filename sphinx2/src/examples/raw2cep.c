@@ -47,7 +47,9 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#if !defined(WIN32) || defined(__CUGWIN__)
 #include <unistd.h>
+#endif
 
 #include "s2types.h"
 #include "CM_macros.h"

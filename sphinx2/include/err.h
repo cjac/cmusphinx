@@ -62,7 +62,9 @@ void _E__fatal_sys_error( char const *fmt, ... );
 /* These three all abort */
 
 /* core dump after error message */
+/*
 #define E_ABORT  _E__pr_header(__FILE__, __LINE__, "ERROR"),_E__abort_error
+*/
 
 /* exit with non-zero status after error message */
 #define E_FATAL  _E__pr_header(__FILE__, __LINE__, "FATAL_ERROR"),_E__die_error

@@ -49,6 +49,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #if ((! WIN32) && (! _SGI_SOURCE))
 #include <sys/errno.h>
 #else

@@ -47,9 +47,12 @@
  **********************************************************************
  * HISTORY
  * $Log$
- * Revision 1.6  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.7  2004/02/17  22:37:01  egouvea
+ * Fixed some #includes that prevented code from compiling in windows
  * 
+ * Revision 1.6  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.5  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -85,6 +88,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 void
