@@ -58,3 +58,10 @@ $(BINDIR)/dumpfrontend: dump_frontend.o $(LIVEDECOBJS)
 $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
 
+ti46:
+	rm -f gmake-ti46.results
+	../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46.results
+
+ti46-quick:
+	rm -f gmake-ti46-quick.results
+	../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46-quick.results
