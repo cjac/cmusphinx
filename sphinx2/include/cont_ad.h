@@ -94,6 +94,10 @@ typedef struct {
     int32 read_ts;	/* Timestamp (total no. of raw A/D samples read, silence+speech)
 			   at the end of the most recent cont_ad_read call */
     int32 siglvl;	/* Max signal level for most recently read data (0-16; #bits) */
+
+    int32 sps;		/* Samples/sec; moved from ad->sps to break dependence on
+			   ad by N. Roy.*/
+
     int32 spf;		/* Samples/frame; audio level is analyzed within frames */
     int32 adbufsize;	/* Buffer size (#samples) */
     int32 prev_sample;	/* For pre-emphasis filter */
@@ -106,6 +110,7 @@ typedef struct {
     int32 *pow_hist;	/* Histogram of frame power, moving window, decayed */
     char *frm_pow;	/* Frame power */
 
+    int32 auto_thresh;  /* Do automatic threshold adjustment or not */
     int32 delta_sil;	/* Max silence power/frame ABOVE noise level */
     int32 delta_speech;	/* Min speech power/frame ABOVE noise level */
     int32 min_noise;	/* noise lower than this we ignore */
@@ -157,6 +162,16 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
  */
 int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad_init */
 
+/*
+ * If the application has not passed an audio device into the silence filter
+ * at initialisation,  this routine can be used to calibrate the filter. The
+ * buf (of length max samples) should contain audio data for calibration. This
+ * data is assumed to be completely consumed. More than one call may be
+ * necessary to fully calibrate. 
+ * Return value: 0 if successful, <0 on failure, >0 if calibration not
+ * complete.
+ */
+int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max); 
 
 /*
  * Read A/D data pre-filtered to remove silence segments.
@@ -244,6 +259,14 @@ int32 cont_ad_attach (cont_ad_t *c, ad_rec_t *a, int32 (*func)(ad_rec_t *, int16
 
 
 void cont_ad_set_logfp (FILE *fp);	/* File containing detailed logs (if non-NULL) */
+
+/*
+ * Set the silence and speech thresholds. For this to have any effect, the
+ * auto_thresh field of the continuous listening module should be set to
+ * FALSE.
+ */
+
+int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech);
 
 
 #endif

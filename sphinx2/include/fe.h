@@ -69,11 +69,11 @@ typedef struct{
 
 fe_t *fe_init(param_t *P);
 
-int32 fe_start(fe_t *FE);
+int32 fe_start_utt(fe_t *FE);
 
-int32 fe_stop(fe_t *FE, float32 **cep);
+int32 fe_end_utt(fe_t *FE, float32 *cep);
 
 int32 fe_close(fe_t *FE);
 
-int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep );
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep );
 

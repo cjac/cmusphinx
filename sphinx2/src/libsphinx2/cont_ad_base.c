@@ -156,6 +156,8 @@
 #define CONT_AD_THRESH_UPDATE	100	/* Update thresholds approx every so many frames */
 	/* PWP: update was 200 frames, or 3.2 seconds.  Now about every 1.6 sec. */
 
+#define CONT_AD_SPS             16000
+
 #define CONT_AD_DEFAULT_NOISE	30	/* Default background noise power level */
 #define CONT_AD_DELTA_SIL	5	/* Initial default for cont_ad_t.delta_sil */
 #define CONT_AD_DELTA_SPEECH	20	/* Initial default for cont_ad_t.delta_speech */
@@ -279,7 +281,7 @@ static void compute_frame_pow (cont_ad_t *r, int32 frm)
 
     if (logfp) {
         fprintf (logfp, "%8.2f %2d\n",
-		 (double)(frmno * r->spf)/(double)(r->ad->sps), i);
+		 (double)(frmno * r->spf)/(double)(r->sps), i);
 	fflush (logfp);
 	frmno++;
     }
@@ -316,6 +318,9 @@ static void decay_hist (cont_ad_t *r)
 static int32 find_thresh (cont_ad_t *r)
 {
     int32 i, j, max, th;
+
+    if (!r->auto_thresh)
+      return 0;
 
     /*
      * Find smallest non-zero histogram entry, but starting at some minimum power.
@@ -358,6 +363,8 @@ static int32 find_thresh (cont_ad_t *r)
     /* update thresholds */
     r->thresh_sil = r->noise_level + r->delta_sil;
     r->thresh_speech = r->noise_level + r->delta_speech;
+
+//    fprintf(stderr, "thresh_sil %d thresh_speech %d\n", r->thresh_sil, r->thresh_speech);
 
 #if (CONT_AD_DEBUG)
     cont_ad_powhist_dump (r);
@@ -418,6 +425,9 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
     if (r->win_validfrm < r->winsize)	/* Not reached full analysis window size */
 	return;
     assert (r->win_validfrm == r->winsize);
+
+//    fprintf(stderr, "State is %s n_other is %d\n", r->state == CONT_AD_STATE_SIL ?
+//	    "silence" : "speech", r->n_other);
     
     if (r->state == CONT_AD_STATE_SIL) {	/* Currently in SILENCE state */
 	if (r->n_frm >= r->winsize + r->leader) {
@@ -520,6 +530,9 @@ static int32 max_siglvl (cont_ad_t *r, int32 startfrm, int32 nfrm)
     return siglvl;
 }
 
+void get_audio_data(cont_ad_t *r, int16 *buf, int32 max) {
+}
+
 
 /*
  * Main function called by the application to filter out silence regions.  Maintains a
@@ -531,6 +544,7 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
     int32 head, tail, tailfrm, len, flen, eof;
     int32 i, f, l;
     spseg_t *seg;
+    int num_to_copy = 0, num_left = max;
     
     if (max < r->spf)
 	E_FATAL("cont_ad_read requires buffer of at least %d samples\n", r->spf);
@@ -546,35 +560,55 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
     
     eof = 0;	/* Clear end-of-file indication */
     if (tail < r->adbufsize) {
+      if (r->adfunc != NULL) {
 	if ((l = (*(r->adfunc))(r->ad, r->adbuf+tail, r->adbufsize - tail)) < 0) {
+	  eof = 1;
+	  l = 0;
+	}
+      } else {
+	num_to_copy = r->adbufsize - tail;
+	num_left -= num_to_copy;
+	if (num_to_copy > max) {
+	  num_to_copy = max;
+	  num_left = 0;
+	}
+	memcpy(r->adbuf+tail, buf, num_to_copy*sizeof(int16));
+	memcpy(buf, buf+num_to_copy, num_left*sizeof(int16));
+	l = num_to_copy;
+      }
+#if CONT_AD_RAWDUMP
+      if ((l > 0) && rawfp)
+	fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
+#endif
+      tail += l;
+      len += l;
+      r->n_sample += l;
+    }
+    if ((tail >= r->adbufsize) && (! eof)) {
+      tail -= r->adbufsize;
+      if (tail < head) {
+	if (r->adfunc != NULL) {
+	  if ((l = (*(r->adfunc))(r->ad, r->adbuf+tail, head - tail)) < 0) {
 	    eof = 1;
 	    l = 0;
+	  }
+	} else {
+	  num_to_copy = head-tail;
+	  if (num_to_copy > num_left)
+	    num_to_copy = num_left;
+	  memcpy(r->adbuf+tail, buf, num_to_copy*sizeof(int16));
+	  l = num_to_copy;
 	}
 #if CONT_AD_RAWDUMP
 	if ((l > 0) && rawfp)
-	    fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
+	  fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
 #endif
 	tail += l;
 	len += l;
 	r->n_sample += l;
-    }
-    if ((tail >= r->adbufsize) && (! eof)) {
-	tail -= r->adbufsize;
-	if (tail < head) {
-	    if ((l = (*(r->adfunc))(r->ad, r->adbuf+tail, head - tail)) < 0) {
-		eof = 1;
-		l = 0;
-	    }
-#if CONT_AD_RAWDUMP
-	    if ((l > 0) && rawfp)
-		fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
-#endif
-	    tail += l;
-	    len += l;
-	    r->n_sample += l;
-	}
-    }
-    
+      }
+    }  
+
     /* Compute frame power for unprocessed+new data and find speech/silence boundaries */
     tailfrm = (r->headfrm + r->n_frm);	/* Next free frame slot to be filled */
     if (tailfrm >= CONT_AD_ADFRMSIZE)
@@ -723,6 +757,7 @@ int32 cont_ad_calib (cont_ad_t *r)
     for (f = 0; f < (CONT_AD_POWHISTSIZE<<1); f++) {
 	len = r->spf;
 	while (len > 0) {
+	  /*Trouble */
 	    if ((k = (*(r->adfunc))(r->ad, r->adbuf+s, len)) < 0)
 		return -1;
 	    len -= k;
@@ -733,6 +768,42 @@ int32 cont_ad_calib (cont_ad_t *r)
 	compute_frame_pow (r, tailfrm);
     }
 
+    return (find_thresh (r));
+}
+
+int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max)
+{
+    int32 i, s, len, tailfrm;
+    static int32 finished = 1;
+    static int32 f = 0;
+
+    if (finished) {
+      finished = 0;
+      f = 0;
+
+      /* clear histogram */
+      for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
+	r->pow_hist[i] = 0;
+      
+    }
+
+    tailfrm = r->headfrm + r->n_frm;
+    if (tailfrm >= CONT_AD_ADFRMSIZE)
+      tailfrm -= CONT_AD_ADFRMSIZE;
+    s = (tailfrm * r->spf);
+    
+    len = r->spf;
+    for (; f < (CONT_AD_POWHISTSIZE<<1); f++) {
+      if (max < len)
+	return 1;
+      memcpy (r->adbuf+s, buf, len*sizeof(int16));
+      max -= len;
+      memcpy (buf, buf+len, max*sizeof(int16));
+      
+      compute_frame_pow (r, tailfrm);
+    }
+    
+    finished = 1;
     return (find_thresh (r));
 }
 
@@ -892,6 +963,44 @@ int32 cont_ad_attach (cont_ad_t *c, ad_rec_t *a, int32 (*func)(ad_rec_t *, int16
     return 0;
 }
 
+int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech) {
+  int i, f;
+
+  r->thresh_speech = speech;
+  r->thresh_sil = silence;
+  
+  /* Since threshold has been updated, recompute r->n_other */
+  r->n_other = 0;
+  r->n_in_a_row = 0;
+  if (r->state == CONT_AD_STATE_SIL) {
+    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+      if (r->frm_pow[f] >= r->thresh_speech) {
+	r->n_other++;
+	r->n_in_a_row++;
+      } else {
+	r->n_in_a_row = 0;
+      }
+      f++;
+      if (f >= CONT_AD_ADFRMSIZE)
+	f = 0;
+    }
+  } else {
+    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+      if (r->frm_pow[f] <= r->thresh_sil) {
+	r->n_other++;
+	r->n_in_a_row++;
+      } else {
+	r->n_in_a_row = 0;
+      }
+      f++;
+      if (f >= CONT_AD_ADFRMSIZE)
+	f = 0;
+    }
+  }
+
+  return 0;
+}
+
 
 /*
  * One-time initialization.
@@ -899,8 +1008,6 @@ int32 cont_ad_attach (cont_ad_t *c, ad_rec_t *a, int32 (*func)(ad_rec_t *, int16
 cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
 {
     cont_ad_t *r;
-    
-    assert (a != NULL);
     
     if ((r = (cont_ad_t *) malloc (sizeof(cont_ad_t))) == NULL) {
 	E_ERROR("malloc(%d) failed\n", sizeof(cont_ad_t));
@@ -910,8 +1017,13 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->ad = a;
     r->adfunc = func;
 
+    if (a != NULL) 
+      r->sps = a->sps;
+    else
+      r->sps = CONT_AD_SPS;
+
     /* Set samples/frame such that when sps=16000, spf=256 */
-    r->spf = (a->sps * 256) / 16000;
+    r->spf = (r->sps * 256) / 16000;
     r->adbufsize = CONT_AD_ADFRMSIZE * r->spf;
 
     if ((r->adbuf = (int16 *) malloc (r->adbufsize * sizeof(int16))) == NULL) {
@@ -920,13 +1032,13 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
 	return NULL;
     }
     if ((r->pow_hist = (int32 *) calloc (CONT_AD_POWHISTSIZE, sizeof(int32))) == NULL) {
-	E_ERROR("calloc(%d,%d) failed\n", (CONT_AD_POWHISTSIZE, sizeof(int32)));
+	E_ERROR("calloc(%d,%d) failed\n", CONT_AD_POWHISTSIZE, sizeof(int32));
 	free (r->adbuf);
 	free (r);
 	return NULL;
     }
     if ((r->frm_pow = (char *) calloc (CONT_AD_ADFRMSIZE, sizeof(char))) == NULL) {
-	E_ERROR("calloc(%d,%d) failed\n", (CONT_AD_ADFRMSIZE, sizeof(char)));
+	E_ERROR("calloc(%d,%d) failed\n", CONT_AD_ADFRMSIZE, sizeof(char));
 	free (r->pow_hist);
 	free (r->adbuf);
 	free (r);
@@ -938,6 +1050,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->tot_frm = 0;
     r->noise_level = CONT_AD_DEFAULT_NOISE;
 
+    r->auto_thresh = 1;
     r->delta_sil = CONT_AD_DELTA_SIL;
     r->delta_speech = CONT_AD_DELTA_SPEECH;
     r->min_noise = CONT_AD_MIN_NOISE;
