@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.5  2004/12/06  11:31:47  arthchan2003
- * Fix brief comments for programs.
+ * Revision 1.6  2004/12/14  00:50:33  arthchan2003
+ * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
  * 
+ * Revision 1.5  2004/12/06 11:31:47  arthchan2003
+ * Fix brief comments for programs.
+ *
  * Revision 1.4  2004/12/06 11:15:11  arthchan2003
  * Enable doxygen in the program directory.
  *
@@ -208,6 +211,8 @@
 #include "search.h"
 #include "feat.h"
 #include "bio.h"
+#include <wid.h>
+#include "search.h"
 
 #include "cmn.h"
 #include "agc.h"
@@ -407,7 +412,7 @@ static arg_t defn[] = {
       "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
-      "mfc",
+      ".mfc",
       "File extension appended to utterances listed in -ctl file" },
     { "-mllrctl",
       ARG_STRING,
@@ -611,7 +616,8 @@ static void models_init ( void )
 			   *(float32 *)cmd_ln_access("-inspen"));
     }
 
-    dict2lmwid = wid_dict_lm_map(dict, lm, cmd_ln_access("-lw"));
+    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32*) cmd_ln_access("-lw"));
+
 
 }
 
@@ -879,6 +885,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 		    n_sen_active++;
 		}
 	    }
+
 	    /* Add in CI senones and codebooks if interpolating with CI */
 	    if (interp) {
 		for (s = 0; s < mdef->n_ci_sen; s++) {
@@ -920,7 +927,11 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 	    for (s = 0; s < sen->n_sen; s++) {
 		if (sen_active[s])
 		    senscr[0][s] -= best;
+
+		E_INFO("The senone scores %d\n",senscr[0][s]);
 	    }
+
+
 	    senscale[i] = best;
 	    ptmr_stop (&tmr_gausen);
 
@@ -971,9 +982,11 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
 		/* Normalize senone scores */
 		best = (int32)0x80000000;
-		for (s = 0; s < sen->n_sen; s++)
+		for (s = 0; s < sen->n_sen; s++){
 		    if (best < senscr[k][s])
 			best = senscr[k][s];
+
+		}
 		for (s = 0; s < sen->n_sen; s++)
 		    senscr[k][s] -= best;
 		senscale[i] = best;
@@ -1032,7 +1045,6 @@ static void decode_utt (int32 nfr, char *uttid)
     pctr_reset(ctr_nsen);
 
     hyp = fwdvit (nfr, uttid);
-    E_INFO("After fwdvit\n");
     ptmr_stop (&tmr_fwdvit);
     bp = *((int32 *) cmd_ln_access("-bestpath"));
     scl = 0;
@@ -1300,7 +1312,7 @@ static int32 process_ctlfile ( void )
 	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
 	
 	/* Read and process mfc/feature speech input file */
-	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, sf, ef, feat, S3_MAX_FRAMES);
+	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext,sf, ef, feat, S3_MAX_FRAMES);
 	assert(feat);
 
 	if (nfr <= 0)
@@ -1343,7 +1355,7 @@ static int32 process_ctlfile ( void )
 }
 
 
-main (int32 argc, char *argv[])
+int main (int32 argc, char *argv[])
 {
     int32 err_status;
 
@@ -1447,7 +1459,9 @@ main (int32 argc, char *argv[])
 #endif
 #endif
 
+
     cmd_ln_appl_exit();
 
     exit(err_status);
+    return 0 ;
 }

@@ -173,7 +173,7 @@ static arg_t defn[] = {
       "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
-      "mfc",
+      ".mfc",
       "File extension appended to utterances listed in -ctl file" },
     { "-topn",
       ARG_INT32,
@@ -536,7 +536,7 @@ static void process_ctlfile ( void )
 {
   FILE *ctlfp;
   char *ctlfile, *cepdir, *cepext;
-  char line[1024], cepfile[1024], ctlspec[1024];
+  char line[1024], ctlspec[1024];
   int32 ctloffset, ctlcount, sf, ef, nfr;
   char uttid[1024];
   int32 k,i;
@@ -598,10 +598,11 @@ static void process_ctlfile ( void )
       if (! feat) 
 	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
 
-      nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, sf, ef, feat, S3_MAX_FRAMES);
+      nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
-      if (nfr <= 0)
-	  E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
+      if (nfr <= 0){
+	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", uttid, ctlspec,cepdir, cepext);
+      }
       else {
 	  E_INFO ("%s: %d input frames\n", uttid, nfr);
 	  allphone_utt (nfr, uttid);

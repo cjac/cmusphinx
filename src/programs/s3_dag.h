@@ -47,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2004/12/06  11:31:48  arthchan2003
- * Fix brief comments for programs.
+ * Revision 1.5  2004/12/14  00:50:33  arthchan2003
+ * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
  * 
+ * Revision 1.4  2004/12/06 11:31:48  arthchan2003
+ * Fix brief comments for programs.
+ *
  * Revision 1.3  2004/12/05 12:01:32  arthchan2003
  * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  *
@@ -96,10 +99,12 @@ typedef struct dagnode_s {
     int32 seqid;			/** Running sequence no. for identification */
     s3frmid_t sf;			/** Start frame for this occurrence of wid */
     s3frmid_t fef, lef;			/** First and last end frames */
-  uint8 reachable;                      /** Whether final node reachable from here */
     struct dagnode_s *alloc_next;	/** Next in linear list of allocated nodes */
     struct daglink_s *succlist;		/** List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/** List of preceding nodes (adjacent in time) */
+
+  uint8 reachable;                      /** astar specific: Whether final node reachable from here */
+
 } dagnode_t;
 
 /** A DAG node can have several successor or predecessor nodes, each represented by a link */
@@ -111,18 +116,24 @@ typedef struct daglink_s {
     struct daglink_s *history;	/** Previous link along best path (for traceback) */
     struct daglink_s *bypass;	/** If this links A->B, bypassing A->fillnode->B, then
 				   bypass is ptr to fillnode->B */
+
     int32 ascr;			/** Acoustic score for segment of source node ending just
 
 				   before the end point of this link.  (Actually this gets
 
 				   corrupted because of filler node deletion.) */
-    int32 hscr;			/** Heuristic score from end of link to dag exit node */
     int32 lscr;			/** LM score to the SUCCESSOR node */
     int32 pscr;			/** Best path score to root beginning with this link */
+
+
     s3frmid_t ef;		/** End time for this link.  Should be 1 before the start
 				   time of destination node (or source node for reverse
 				   links), but gets corrupted because of filler deletion */
     uint8 pscr_valid;		/** Flag to avoid evaluating the same path multiple times */
+
+  int32 is_filler_bypass;       /** Astar specific:Whether this is a filler bypass link */
+  int32 hscr;			/** Astar specific:Heuristic score from end of link to dag exit node */
+
 } daglink_t;
 
 /** Summary of DAG structure information */
@@ -132,7 +143,7 @@ typedef struct {
     daglink_t final;            /** Exit link from final DAG node */
     daglink_t entry;		/** Entering (<s>,0) */
     daglink_t exit;		/** Exiting (</s>,finalframe) */
-    s3wid_t orig_exitwid;	/* If original exit node is not a filler word */
+    s3wid_t orig_exitwid;	/** If original exit node is not a filler word */
 
     int32 nfrm;
     int32 nlink;

@@ -125,7 +125,7 @@ static int32 filler_word (s3wid_t w)
 }
 
 
-/*
+/**
  * Link two DAG nodes with the given arguments
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
  */
@@ -137,14 +137,14 @@ static int32 dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr)
     l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
     l->node = d;
     l->ascr = ascr;
-    l->bypass = 0;
+    l->is_filler_bypass = 0;
     l->next = pd->succlist;
     pd->succlist = l;
 
     l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
     l->node = pd;
     l->ascr = ascr;
-    l->bypass = 0;
+    l->is_filler_bypass = 0;
     l->next = d->predlist;
     d->predlist = l;
 
@@ -154,7 +154,7 @@ static int32 dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr)
 }
 
 
-/*
+/**
  * Add a filler-bypass link between the two nodes or update an existing bypass link if
  * the new score is better.
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
@@ -164,14 +164,14 @@ static int32 dag_link_bypass (dagnode_t *pd, dagnode_t *d, int32 ascr)
     daglink_t *l;
     
     /* Find the existing bypass link, if any, between pd and d */
-    for (l = pd->succlist; l && ((! l->bypass) || (l->node != d)); l = l->next);
+    for (l = pd->succlist; l && ((! l->is_filler_bypass) || (l->node != d)); l = l->next);
 
     if (! l) {
 	/* No existing bypass link; create one from pd to d */
 	l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
 	l->node = d;
 	l->ascr = ascr;
-	l->bypass = 1;
+	l->is_filler_bypass = 1;
 	l->next = pd->succlist;
 	pd->succlist = l;
 	
@@ -214,7 +214,7 @@ static void daglinks_dump (dagnode_t *d)
 #endif
 
 
-/*
+/**
  * Mark every node that has a path to the argument dagnode as "reachable".
  */
 static void dag_mark_reachable (dagnode_t *d)
@@ -267,7 +267,7 @@ static void dag_remove_unreachable ( void )
 }
 
 
-/*
+/**
  * Add auxiliary links bypassing filler nodes in DAG.  In principle, a new such
  * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
  * for complete transitive closure.  But removing fillers in the order in which they
@@ -307,7 +307,7 @@ static int32 dag_bypass_filler_nodes ( void )
 }
 
 
-/*
+/**
  * For each link compute the heuristic score (hscr) from the END of the link to the
  * end of the utterance; i.e. the best score from the end of the link to the dag
  * exit node.
@@ -365,7 +365,7 @@ static void dag_remove_bypass_links ( void )
 	pl = NULL;
 	for (l = d->succlist; l; l = nl) {
 	    nl = l->next;
-	    if (l->bypass) {
+	    if (l->is_filler_bypass) {
 		if (! pl)
 		    d->succlist = nl;
 		else
@@ -378,7 +378,7 @@ static void dag_remove_bypass_links ( void )
 }
 
 
-/*
+/**
  * Load a DAG from a file: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
  * whenever nodes are adjacent in time.
@@ -737,37 +737,37 @@ load_error:
 
 /* ---------------------------- NBEST CODE ---------------------------- */
 
-/*
+/**
  * A node along each partial path.  Partial paths form a tree structure rooted at the
  * start node.
  */
 typedef struct ppath_s {
-    struct ppath_s *hist;	/* Immediately previous ppath node; NULL if none */
-    struct ppath_s *lmhist;	/* Previous LM (non-filler) ppath node; NULL if none */
-    dagnode_t *dagnode;		/* Dagnode (word,startfrm) represented by ppath node */
-    int32 lscr;		/* LM score for this node given past history */
-    int32 pscr;		/* Path score (from initial node) ending at this node startfrm */
-    int32 tscr;		/* pscr + heuristic score (this node startfrm -> end of utt) */
-    uint32 histhash;	/* Hash value of complete history, for spotting duplicates */
-    int32 pruned;	/* If superseded by another with same history and better score */
-    struct ppath_s *hashnext;	/* Next node with same hashmod value */
-    struct ppath_s *next;	/* Links all allocated nodes for reclamation at the end;
+    struct ppath_s *hist;	/** Immediately previous ppath node; NULL if none */
+    struct ppath_s *lmhist;	/** Previous LM (non-filler) ppath node; NULL if none */
+    dagnode_t *dagnode;		/** Dagnode (word,startfrm) represented by ppath node */
+    int32 lscr;		/** LM score for this node given past history */
+    int32 pscr;		/** Path score (from initial node) ending at this node startfrm */
+    int32 tscr;		/** pscr + heuristic score (this node startfrm -> end of utt) */
+    uint32 histhash;	/** Hash value of complete history, for spotting duplicates */
+    int32 pruned;	/** If superseded by another with same history and better score */
+    struct ppath_s *hashnext;	/** Next node with same hashmod value */
+    struct ppath_s *next;	/** Links all allocated nodes for reclamation at the end;
 				   NULL if last in list */
 } ppath_t;
-static ppath_t *ppath_list;	/* Complete list of allocated ppath nodes */
-static int32 n_ppath;		/* #Partial paths allocated (to control memory usage) */
-static int32 maxppath;		/* Max partial paths allowed before aborting */
+static ppath_t *ppath_list;	/** Complete list of allocated ppath nodes */
+static int32 n_ppath;		/** #Partial paths allocated (to control memory usage) */
+static int32 maxppath;		/** Max partial paths allowed before aborting */
 
-/* Heap (sorted) partial path nodes */
+/** Heap (sorted) partial path nodes */
 typedef struct heap_s {
-    ppath_t *ppath;	/* Partial path node */
-    int32 nl, nr;	/* #left/right descendants from this node (for balancing tree) */
-    struct heap_s *left;	/* Root of left descendant heap */
-    struct heap_s *right;	/* Root of right descendant heap */
+    ppath_t *ppath;	/** Partial path node */
+    int32 nl, nr;	/** #left/right descendants from this node (for balancing tree) */
+    struct heap_s *left;	/** Root of left descendant heap */
+    struct heap_s *right;	/** Root of right descendant heap */
 } aheap_t;
 static aheap_t *heap_root;
 
-/*
+/**
  * For tracking ppath nodes with identical histories.  For rapid location of duplicates
  * keep a separate list of nodes for each (ppath_t.histhash % HISTHASH_MOD) value.
  * Two paths have identical histories (are duplicates) iff:
@@ -798,7 +798,7 @@ static void heap_dump (aheap_t *top, int32 level)
 #endif
 
 
-/*
+/**
  * Insert the given new ppath node in sorted (sub)heap rooted at the given heap node
  * Heap is sorted by tscr (i.e., total path score + heuristic score to end of utt).
  * Return the root of the new, updated (sub)heap.
@@ -836,7 +836,7 @@ static aheap_t *aheap_insert (aheap_t *root, ppath_t *new)
 }
 
 
-/*
+/**
  * Pop the top element off the heap and return root of adjust heap.
  * Root must be non-NULL when this function to be called.
  */
@@ -872,7 +872,7 @@ static aheap_t *aheap_pop (aheap_t *root)
 }
 
 
-/*
+/**
  * Check if pplist already contains a better (better pscr) path identical to the
  * extension of lmhist by node.  Return 1 if true, 0 if false.  Also, if false, but
  * an inferior path did exist, mark it as pruned.
@@ -912,7 +912,7 @@ static int32 ppath_dup (ppath_t *hlist, ppath_t *lmhist, dagnode_t *node,
 }
 
 
-/*
+/**
  * Create a new ppath node for dagnode reached from top via link l.  Assign the
  * proper scores for the new, extended path and insert it in the sorted heap of
  * ppath nodes.  But first check if it's a duplicate of an existing ppath but has an
@@ -1148,7 +1148,7 @@ void nbest_search (char *filename, char *uttid)
 	/* Expand to successors of top (i.e. via each link leaving top) */
 	d = top->dagnode;
 	for (l = d->succlist; l; l = l->next) {
-	    assert (l->node->reachable && (! l->bypass));
+	    assert (l->node->reachable && (! l->is_filler_bypass));
 
 	    /* Obtain LM score for link */
 	    bw2 = dict_basewid (dict, l->node->wid);
