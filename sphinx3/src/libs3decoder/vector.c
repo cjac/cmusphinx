@@ -348,7 +348,7 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
       experimenter the seed they were using in their experiments. This
       make the result be repeatable*/
 
-      E_INFO("You are using %d as the seed \n");
+      E_INFO("You are using %d as the seed \n",seed);
       s3_rand_seed(seed);
     }
 
