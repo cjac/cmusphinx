@@ -64,7 +64,7 @@
 #include "lextree.h"
 #include "vithist.h"
 #include "ascr.h"
-#include "beam.h"
+#include "fast_algo_struct.h"
 #include "mllr.h"
 
 #ifdef __cplusplus
@@ -87,75 +87,81 @@ extern "C" {
  */
 
 typedef struct {
-    kbcore_t *kbcore;		/* Core model structures */    
-    int32 n_lextree;		/* See above comment about n_lextree */
-    lextree_t **ugtree;
+  kbcore_t *kbcore;		/* Core model structures */    
+
+  /*Feature related variables*/
+  float32 ***feat;		/* Feature frames */
+
+  /*Search related variables, e.g lexical tree and Viterbi history*/
+  int32 n_lextree;		/* See above comment about n_lextree */
+  lextree_t **ugtree;
+  lextree_t **fillertree;
+  int32 n_lextrans;		/* #Transitions to lextree (root) made so far */
   lextree_t **ugtreeMulti;  /* This data structure allocate all trees for all LMs specified by the users */
-    lextree_t **fillertree;
-    int32 n_lextrans;		/* #Transitions to lextree (root) made so far */
+  vithist_t *vithist;		/* Viterbi history, built during search */
+
+  char *uttid;                  /* Utterance ID */
+  int32 nfr;			/* #Frames in feat in current utterance */
+  int32 tot_fr;                 /* The total number of frames that the
+                                   recognizer has been
+                                   recognized. Mainly for bookeeping.  */
     
-    vithist_t *vithist;		/* Viterbi history, built during search */
-    
-    float32 ***feat;		/* Feature frames */
-    int32 nfr;			/* #Frames in feat in current utterance */
-    
-    int32 *ssid_active;		/* For determining the active senones in any frame */
-    int32 *comssid_active;
-  int32 *sen_active;
+
+  /* Thing that are used by multiple parts of the recognizer.  Pretty
+     hard to wrap them into one data structure. Just leave it there
+     for now. */
+
+  int32 *ssid_active;		/* For determining the active senones in any frame */
+  int32 *comssid_active;        /* Composite senone active */
+  int32 *sen_active;            /* Structure that record whether the current state is active. */
   int32 *rec_sen_active;        /* Most recent senone active state */
-  int32 rec_bstcid;
-  int32 rec_bst_senscr;
 
   int32 **cache_ci_senscr;     /* Cache of ci senscr in the next pl_windows frames, include this frame.*/
   int32 *cache_best_list;        /* Cache of best the ci sensr the next pl_windows, include this frame*/
-  int32 *phn_heur_list;          /* Cache of best the ci phoneme scores in the next pl_windows, include this frame*/
-  int32 skip_count;
-    int32 bestscore;		/* Best HMM state score in current frame */
-    int32 bestwordscore;	/* Best wordexit HMM state score in current frame */
-    
-    ascr_t *ascr;		/* Senone and composite senone scores for one frame */
-    beam_t *beam;		/* Beamwidth parameters */
-    int32 ds_ratio;              /* Ratio of down-sampling the frame computation */
-    int32 cond_ds;            /* Whether we want to use conditional DS, 
-				    cond_ds=0, don't use,
-				    cond_ds=1, store previous 1 frame
-				  */
-  int32 gs4gs;                /* Whether the GS map is used for Gaussian Selection or not 
-				 mainly for internal debugging of Conditional Down-Sampling */
-  int32 svq4svq;              /* Whether SVQ scores would be used as the Gaussian Scores */
 
-  int32 ci_pbeam;             /* The beam which prune out unnesseary parent CI phones in 
-				 CI-based GMM selection*/
+  int32 bestscore;	/* Best HMM state score in current frame */
+  int32 bestwordscore;	/* Best wordexit HMM state score in current frame */
+    
+  ascr_t *ascr;		  /* Senone and composite senone scores for one frame */
+  beam_t *beam;		  /* Structure that wraps up parameters related to beam pruning */
+  histprune_t *histprune; /* Structure that wraps up parameters related to histogram pruning */
+  fast_gmm_t *fastgmm;         /* Structure that wraps up fast GMM computation */
 
-  int32 pl_window;            /* The window size of phoneme look-ahead */
-  int32 pl_window_start;      /* The start index of the window near the end of a block */
-  int32 pl_window_effective;  /* Effective window size in livemode */
-  int32 pl_beam;              /* Beam for phoneme look-ahead */
-  int32 wend_beam;            /* Beam for word-end prunining */
-    char *uttid;
+  int32 *hmm_hist;		/* Histogram: #frames in which a given no. of HMMs are active */
+  int32 hmm_hist_bins;	/* #Bins in above histogram */
+  int32 hmm_hist_binsize;	/* Binsize in above histogram (#HMMs/bin) */
     
-    int32 utt_hmm_eval;
-    int32 utt_sen_eval;
-    int32 utt_gau_eval;
-    int32 *hmm_hist;		/* Histogram: #frames in which a given no. of HMMs are active */
-    int32 hmm_hist_bins;	/* #Bins in above histogram */
-    int32 hmm_hist_binsize;	/* Binsize in above histogram (#HMMs/bin) */
-    
-    ptmr_t tm_sen;
-    ptmr_t tm_srch;
-    ptmr_t tm_ovrhd;
-    int32 tot_fr;
-    float64 tot_sen_eval;	/* Senones evaluated over the entire session */
-    float64 tot_gau_eval;	/* Gaussian densities evaluated over the entire session */
-    float64 tot_hmm_eval;	/* HMMs evaluated over the entire session */
-    float64 tot_wd_exit;	/* Words hypothesized over the entire session */
+  /* All structure that measure the time and stuffs we computed */
+  ptmr_t tm_sen;
+  ptmr_t tm_srch;
+  ptmr_t tm_ovrhd;
+  
+  int32 utt_hmm_eval;
+  int32 utt_sen_eval;
+  int32 utt_gau_eval;
+  
+  float64 tot_sen_eval;	/* Senones evaluated over the entire session */
+  float64 tot_gau_eval;	/* Gaussian densities evaluated over the entire session */
+  float64 tot_hmm_eval;	/* HMMs evaluated over the entire session */
+  float64 tot_wd_exit;	/* Words hypothesized over the entire session */
+  
   FILE *matchfp;
-    FILE *matchsegfp;
+  FILE *matchsegfp;
+
+
+
+  /* Things I want to move to somewhere else. */
+  int32 *phn_heur_list;          /* Cache of best the ci phoneme scores in the next pl_windows, include this frame*/
+  int32 pl_win;            /* The window size of phoneme look-ahead */
+  int32 pl_win_strt;      /* The start index of the window near the end of a block */
+  int32 pl_win_efv;  /* Effective window size in livemode */
+  int32 pl_beam;              /* Beam for phoneme look-ahead */
 
   /*variables for mllrmatrix */
   char* prevmllrfn;
   float32** regA;
   float32* regB;
+
 } kb_t;
 
 

@@ -367,6 +367,13 @@ int32 mdef_is_ciphone (mdef_t *m, s3pid_t p)
     return ((p < m->n_ciphone) ? 1 : 0);
 }
 
+int32 mdef_is_cisenone (mdef_t *m, s3senid_t s)
+{
+    assert (m);
+    assert ((s >= 0) && (s < m->n_sen));
+    return ((s == m->cd2cisen[s]) ? 1 : 0);
+}
+
 
 /* Parse tmat and state->senone mappings for phone p and fill in structure */
 static void parse_tmat_senmap (mdef_t *m, char *line, int32 off, s3pid_t p)

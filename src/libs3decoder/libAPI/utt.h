@@ -69,11 +69,6 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
                                                 frames decoded so far */
                        kb_t *kb,             /* kb structure with all model
                                                 and decoder info */
-                       int32 maxwpf,         /* Max words per frame */
-                       int32 maxhistpf,      /* Max histories per frame */
-                       int32 maxhmmpf,       /* Max active HMMs per frame */
-                       int32 ptranskip,      /* intervals at which wbeam
-                                                is used for phone transitions */
                        FILE *hmmdumpfp);     /* dump file */
 
 #ifdef __cplusplus

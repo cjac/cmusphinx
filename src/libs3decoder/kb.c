@@ -310,55 +310,57 @@ void kb_init (kb_t *kb)
     
     kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
 				kbcore->dict2pid->n_comstate);
-    kb->beam = beam_init (cmd_ln_float64("-subvqbeam"),
+
+    kb->beam = beam_init (
 			  cmd_ln_float64("-beam"),
 			  cmd_ln_float64("-pbeam"),
-			  cmd_ln_float64("-wbeam"));
-    E_INFO("Beam= %d, PBeam= %d, WBeam= %d, SVQBeam= %d\n",
-	   kb->beam->hmm, kb->beam->ptrans, kb->beam->word, kb->beam->subvq);
-    
-    /*Sections of optimization related parameters*/
-    kb->ds_ratio=cmd_ln_int32("-ds");
-    E_INFO("Down Sampling Ratio = %d\n",kb->ds_ratio);
-    
-    kb->rec_bstcid=-1;
-    kb->skip_count=0;
-    
-    kb->cond_ds=cmd_ln_int32("-cond_ds");
-    E_INFO("Conditional Down Sampling Parameter = %d\n",kb->cond_ds);
-    
-    if(kb->cond_ds>0&&kb->kbcore->gs==NULL) E_FATAL("Conditional Down Sampling require the use of Gaussian Selection map\n");
+			  cmd_ln_float64("-wbeam"),
+			  cmd_ln_float64("-wend_beam"),
+			  cmd_ln_int32("-ptranskip")
+			  );
 
-    kb->gs4gs=cmd_ln_int32("-gs4gs");
-    E_INFO("GS map would be used for Gaussian Selection? = %d\n",kb->gs4gs);
+    E_INFO("Parameters used in Beam Pruning of Viterbi Search: Beam= %d, PBeam= %d, WBeam= %d (Skip=%d), WEndBeam=%d\n", kb->beam->hmm, kb->beam->ptrans, kb->beam->word, kb->beam->ptranskip, kb->beam->wordend);
 
-    kb->svq4svq=cmd_ln_int32("-svq4svq");
-    E_INFO("SVQ would be used as Gaussian Score? = %d\n",kb->svq4svq);
+    kb->histprune = histprune_init(cmd_ln_int32("-maxhmmpf"),
+				   cmd_ln_int32("-maxhistpf"),
+				   cmd_ln_int32("-maxwpf"));
 
-    kb->ci_pbeam=-1*logs3(cmd_ln_float64("-ci_pbeam"));
-    E_INFO("CI phone beam to prune the number of parent CI phones in CI-base GMM Selection = %d\n",kb->ci_pbeam);
-    if(kb->ci_pbeam>10000000){
-      E_INFO("Virtually no CI phone beam is applied now. (ci_pbeam>1000000)\n");
-    }
+    E_INFO("Parameters used in histogram pruning: Max. HMM per frame=%d, Max. History per frame=%d, Max. Word per frame=%d\n", kb->histprune->maxhmmpf,kb->histprune->maxhistpf,kb->histprune->maxwpf);
+
+    /*Sections of fast GMM computation parameters*/
+
+    kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
+			        cmd_ln_int32("-cond_ds"),
+				cmd_ln_int32("-dist_ds"),
+				cmd_ln_int32("-gs4gs"),
+				cmd_ln_int32("-svq4svq"),
+				cmd_ln_float64("-subvqbeam"),
+				cmd_ln_float64("-ci_pbeam"));
+
+    E_INFO("Parameters used in Fast GMM computation:\n");
+    E_INFO("   Frame-level: Down Sampling Ratio %d, Conditional Down Sampling? %d, Distance-based Down Sampling? %d\n",kb->fastgmm->downs->ds_ratio,kb->fastgmm->downs->cond_ds,kb->fastgmm->downs->dist_ds);
+    E_INFO("     GMM-level: CI phone beam %d\n",kb->fastgmm->gmms->ci_pbeam);
+    E_INFO("Gaussian-level: GS map would be used for Gaussian Selection? =%d, SVQ would be used as Gaussian Score? =%d SubVQ Beam %d\n",kb->fastgmm->gs4gs,kb->fastgmm->svq4svq,kb->fastgmm->gaus->subvqbeam);
     
-    kb->wend_beam=-1*logs3(cmd_ln_float64("-wend_beam"));
-    E_INFO("Word-end pruning beam: %d\n",kb->wend_beam);
+    /* Not really nice to check it here. Later when we move gs and svq
+       out of core. Things will be better. */
 
-    kb->pl_window=cmd_ln_int32("-pl_window");
-    E_INFO("Phoneme look-ahead window size = %d\n",kb->pl_window);
+    if(kb->fastgmm->downs->cond_ds>0&&kb->kbcore->gs==NULL) 
+      E_FATAL("Conditional Down Sampling require the use of Gaussian Selection map\n");
 
-	kb->pl_window_start=0;
+    kb->pl_win=cmd_ln_int32("-pl_window");
+    E_INFO("Phoneme look-ahead window size = %d\n",kb->pl_win);
+
+    kb->pl_win_strt=0;
 
     kb->pl_beam=logs3(cmd_ln_float64("-pl_beam"));
     E_INFO("Phoneme look-ahead beam = %d\n",kb->pl_beam);
 
-    for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) 
-      ;
+    for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
 
-    kb->cache_ci_senscr=(int32**)ckd_calloc_2d(kb->pl_window,cisencnt,sizeof(int32));
-    kb->cache_best_list=(int32*)ckd_calloc(kb->pl_window,sizeof(int32));
+    kb->cache_ci_senscr=(int32**)ckd_calloc_2d(kb->pl_win,cisencnt,sizeof(int32));
+    kb->cache_best_list=(int32*)ckd_calloc(kb->pl_win,sizeof(int32));
     kb->phn_heur_list=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
-  
 
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
 	E_FATAL("feat_array_alloc() failed\n");
@@ -486,9 +488,6 @@ void kb_setlm(char* lmname,kb_t* kb)
 	   kb->n_lextree, lextree_n_node(kb->ugtree[j]));
   }
 
-  /*  for (n = 0; n < dict_size(kbcore_dict(kbc)); n++){
-    E_INFO("Index %d, map %d word %s\n",n,kbc->lm->dict2lmwid[n],dict_wordstr(kbcore_dict(kbc),n));
-    }*/
 }
 
 void kb_setmllr(char* mllrname,kb_t* kb)

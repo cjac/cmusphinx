@@ -410,7 +410,7 @@ void utt_word_trans (kb_t *kb, int32 cf)
   /* Transition to unigram lextrees */
   for (p = 0; p < n_ci; p++) {
     if (bv[p] >= 0)
-      if (kb->wend_beam==0 || bs[p]>-kb->wend_beam + maxpscore)
+      if (kb->beam->wordend==0 || bs[p]> kb->beam->wordend + maxpscore)
 	{
 	  /* RAH, typecast p to (s3cipid_t) to make compiler happy */
 	  lextree_enter (kb->ugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); 
@@ -446,7 +446,7 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 
 
   if(heutype==1){ /* Taking Max */  
-    for(i=kb->pl_window_start;i<kb->pl_window_effective;i++) {
+    for(i=kb->pl_win_strt;i<kb->pl_win_efv;i++) {
       curPhn=0;
       curFrmPhnVar=MAX_NEG_INT32;
       for(j=0;j==md->cd2cisen[j];j++) {
@@ -462,7 +462,7 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
       }
     }
   }else if(heutype==2){ 
-    for(i=kb->pl_window_start;i<kb->pl_window_effective;i++) {
+    for(i=kb->pl_win_strt;i<kb->pl_win_efv;i++) {
       curPhn=0;
       curFrmPhnVar=MAX_NEG_INT32;
       for(j=0;j==md->cd2cisen[j];j++) {
@@ -479,7 +479,7 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
       }
     }
   }else if(heutype==3){ 
-    for(i=kb->pl_window_start;i<kb->pl_window_effective;i++) {
+    for(i=kb->pl_win_strt;i<kb->pl_win_efv;i++) {
       curPhn=0;
       curFrmPhnVar=MAX_NEG_INT32;
       for(j=0;j==md->cd2cisen[j];j++) {
@@ -511,6 +511,11 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 
 
 /* Invoked by ctl_process and ctl_process_dyn_lm in libs3decoder/corpus.c */
+/* Arthur: I hope that this function is less than 500 lines. This will allow
+   next programmer still able to read it. 
+   Complexity of phoneme lookahead still lies on this function. (Around 50 lines.)
+   Let it be for a while.  I also don't want to make this part too crufty.
+ */
 void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 {
   kb_t *kb;
@@ -542,39 +547,41 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   svq = kbcore_svq (kbcore);
   gs = kbcore_gs(kbcore);
   kb->uttid = uttid;
-  
-  hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-  maxwpf = cmd_ln_int32 ("-maxwpf");
-  maxhistpf = cmd_ln_int32 ("-maxhistpf");
-  maxhmmpf = cmd_ln_int32 ("-maxhmmpf");
-  ptranskip = cmd_ln_int32 ("-ptranskip");
-  pheurtype = cmd_ln_int32 ("-pheurtype");
 
+  maxwpf = kb->histprune->maxwpf;
+  maxhistpf = kb->histprune->maxwpf;
+  maxhmmpf = kb->histprune->maxhmmpf;
+  ptranskip = kb->beam->ptranskip;
+
+  hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
+  pheurtype = cmd_ln_int32 ("-pheurtype");
+  
   /* Read mfc file and build feature vectors for entire utterance */
   kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
-
+  
   factor = log_to_logs3_factor();    
   for (i = 0; i < kb->hmm_hist_bins; i++)
     kb->hmm_hist[i] = 0;
-
+  
   utt_begin (kb);
-
+  
   n_hmm_eval = 0;
   kb->utt_sen_eval = 0;
   kb->utt_gau_eval = 0;
-
+  
   /* initialization of ci-phoneme look-ahead scores */
   ptmr_start (&(kb->tm_sen));
 
-  /* effective window is the same as pl_window because we're not in live
+  /* effective window is the same as pl_win because we're not in live
    * mode */
-  kb->pl_window_effective = kb->pl_window > kb->nfr ? kb->nfr : kb->pl_window;
-  kb->pl_window_start=0;
-  for(f = 0; f < kb->pl_window_effective; f++){
+  kb->pl_win_efv = kb->pl_win > kb->nfr ? kb->nfr : kb->pl_win;
+  kb->pl_win_strt=0;
+  
+  for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
     kb->cache_best_list[f]=MAX_NEG_INT32;
-    approx_cont_mgau_ci_eval(mgau,kb->feat[f][0],kb->cache_ci_senscr[f],kb);
+    approx_cont_mgau_ci_eval(mgau,kb->kbcore->mdef,kb->feat[f][0],kb->cache_ci_senscr[f]);
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
 	kb->cache_best_list[f]=kb->cache_ci_senscr[f][i];
@@ -587,7 +594,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   for (f = 0; f < kb->nfr; f++) {
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(kb->tm_sen));
-
+  
     /* Find active senones and composite senones, from active lextree nodes */
 
     /*The active senones will also be changed in approx_cont_mgau_frame_eval */
@@ -610,8 +617,19 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     }
 
     /* Always use the first buffer in the cache*/
-    approx_cont_mgau_frame_eval(mgau,gs,svq,kb->beam->subvq,kb->feat[f][0],kb->sen_active,kb->ascr->sen,kb->cache_ci_senscr[kb->pl_window_start],kb,f);
-
+    /* Remember, this function will always back off to the simplest
+       GMM computation by default.  So don't worry about
+       fast-computation/adaptation issues :-)*/
+  
+    approx_cont_mgau_frame_eval(kb->kbcore,
+				kb->fastgmm,
+				kb->feat[f][0],
+				f,
+				kb->sen_active,
+				kb->rec_sen_active,
+				kb->ascr->sen,
+				kb->cache_ci_senscr[kb->pl_win_strt],
+				&(kb->tm_ovrhd));
     kb->utt_sen_eval += mgau_frm_sen_eval(mgau);
     kb->utt_gau_eval += mgau_frm_gau_eval(mgau);
     
@@ -623,13 +641,14 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     ptmr_start (&(kb->tm_srch));
 
     /* Compute phoneme heuristics */
-    /* Determine which set of phonemes should be active in next stage using the lookahead information*/
-    /* Notice that this loop can be further optimized by implementing it incrementally*/
+    /* Determine which set of phonemes should be active in next stage
+       using the lookahead information*/
+    /* Notice that this loop can be further optimized by implementing
+       it incrementally*/
     /* ARCHAN and JSHERWAN Eventually, this is implemented as a function */
-
-    if(pheurtype!=0){
-      computePhnHeur(mdef,kb,pheurtype);
-    }
+  
+    if(pheurtype!=0) computePhnHeur(mdef,kb,pheurtype);
+  
     /* Evaluate active HMMs in each lextree; note best HMM state score */
     besthmmscr = MAX_NEG_INT32;
     bestwordscr = MAX_NEG_INT32;
@@ -645,6 +664,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 	besthmmscr = lextree->best;
       if (bestwordscr < lextree->wbest)
 	bestwordscr = lextree->wbest;
+
 #if 0
       E_INFO("lextree->best %d\n",lextree->best);
       E_INFO("best score %d at time %d, tree %d: af compute repl.\n",besthmmscr,f,i);
@@ -657,7 +677,9 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 	      f, besthmmscr);
     }
     kb->hmm_hist[frm_nhmm / kb->hmm_hist_binsize]++;
-    
+
+  
+    /* This part should be written as functions */
     /* Set pruning threshold depending on whether number of active HMMs within limit */
     if (frm_nhmm > (maxhmmpf + (maxhmmpf >> 1))) {
       int32 *bin, nbin, bw;
@@ -696,39 +718,14 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     pth = kb->bestscore + pb;		/* Cross-HMM transition threshold */
     wth = kb->bestwordscore + wb;		/* Word exit threshold */
     
+  
     /*
      * For each lextree, determine if the active HMMs remain active for next
      * frame, propagate scores across HMM boundaries, and note word exits.
      */
-      /* By ARCHAN 20040510, this is a tricky problem caused by the Intel compiler. 
-	 The old code was something like this.
 
-	 for(i...){
-	    if ((ptranskip < 1) || ((f % ptranskip) != 0)) bla 
-	    else flu 
-	 }
-
-	 In gcc, when the first condition is checked, the second
-	 condition will not be checked at all.  This is a usual C
-	 programmer trick. However, ICC, will invoke the code no
-	 matter how if I put the two conditions into the same for
-	 loop.  That's why I need to change the code structure to 
-	 the following.  
-	 if(ptranskip==0){
-	    for(i...){
-	       bla
-	    }
-	 }else{
-	    for(i...){
-	       if ((f % ptranskip) != 0) bla 
-	    else flu 
-	 }
-
-	 I will guess this problem might be caused by the use of
-	 sceduling. In such case, both conditional will be called into 
-	 the program and will be checked. No matter what, I will consider
-	 that as a bug of ICC. 
-      */
+    /* By ARCHAN 20040510, This segment is longer than it should be to 
+       cope with ICC*/
 
     if(ptranskip==0){
       for (i = 0; i < (kb->n_lextree <<1); i++) {
@@ -745,7 +742,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
       }
     }
 
-	
+	  
     /*Slide the window and compute the next frame of ci phone scores,
       Shift the scores in the cache by one frame and compute the new frames of CI senone score 
       if necessary and always put it at the end*/
@@ -753,36 +750,40 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     /*
      * Shift the window for look-ahead of one frame, update scores in the buffer. 
      */ 
-
-    if(f<kb->nfr-kb->pl_window_effective){
-      for(i=0;i<kb->pl_window_effective-1;i++){
+	  
+    if(f<kb->nfr-kb->pl_win_efv){
+      for(i=0;i<kb->pl_win_efv-1;i++){
 	kb->cache_best_list[i]=kb->cache_best_list[i+1];
 	for(j=0;j==mdef->cd2cisen[j];j++){
 	  kb->cache_ci_senscr[i][j]=kb->cache_ci_senscr[i+1][j];
 	}
       }
       
-      approx_cont_mgau_ci_eval(mgau,kb->feat[f+kb->pl_window_effective][0],kb->cache_ci_senscr[kb->pl_window_effective-1],kb);
+      approx_cont_mgau_ci_eval(mgau,
+			       kb->kbcore->mdef,
+			       kb->feat[f+kb->pl_win_efv][0],
+			       kb->cache_ci_senscr[kb->pl_win_efv-1]);
       
-      kb->cache_best_list[kb->pl_window_effective-1]=MAX_NEG_INT32;
+      kb->cache_best_list[kb->pl_win_efv-1]=MAX_NEG_INT32;
       for(i=0;i==mdef->cd2cisen[i];i++){
-	if(kb->cache_ci_senscr[kb->pl_window_effective-1][i]>kb->cache_best_list[kb->pl_window_effective-1])
-	  kb->cache_best_list[kb->pl_window_effective-1]=kb->cache_ci_senscr[kb->pl_window_effective-1][i];
+	if(kb->cache_ci_senscr[kb->pl_win_efv-1][i]>kb->cache_best_list[kb->pl_win_efv-1])
+	  kb->cache_best_list[kb->pl_win_efv-1]=kb->cache_ci_senscr[kb->pl_win_efv-1][i];
       }
     } else {
       /* We are near the end of the block, so shrink the window from the left*/
-      kb->pl_window_start++;
+      kb->pl_win_strt++;
     }
 	
+	  
     /* Limit vithist entries created this frame to specified max */
     vithist_prune (kb->vithist, dict, f, maxwpf, maxhistpf, wb);
-    
+    	  
     /* Cross-word transitions */
     utt_word_trans (kb, f);
-    
+    	  
     /* Wind up this frame */
     vithist_frame_windup (kb->vithist, f, NULL, kbcore);
-    
+    	  
     kb_lextree_active_swap (kb);
     
     ptmr_stop (&(kb->tm_srch));
@@ -824,11 +825,6 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 						frames decoded so far */
 		       kb_t *kb,	     /* kb structure with all model
 						and decoder info */
-		       int32 maxwpf,	     /* Max words per frame */
-		       int32 maxhistpf,	     /* Max histories per frame */
-		       int32 maxhmmpf,	     /* Max active HMMs per frame */
-		       int32 ptranskip,	     /* intervals at which wbeam
-						is used for phone transitions */
 		       FILE *hmmdumpfp)      /* dump file */
 {
   kbcore_t *kbcore;
@@ -846,6 +842,12 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   int32 frm_nhmm, hb, pb, wb;
   int32 f;
 
+  int32 maxwpf;        /* Max words per frame */
+  int32 maxhistpf;    /* Max histories per frame */
+  int32 maxhmmpf;     /* Max active HMMs per frame */
+  int32 ptranskip;    /* intervals at which wbeam
+			 is used for phone transitions */
+
   int32 pheurtype;
   pheurtype = cmd_ln_int32 ("-pheurtype");
 
@@ -857,6 +859,11 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   svq = kbcore_svq (kbcore);
   gs = kbcore_gs(kbcore);
   
+  maxwpf = kb->histprune->maxwpf;
+  maxhistpf = kb->histprune->maxwpf;
+  maxhmmpf = kb->histprune->maxhmmpf;
+  ptranskip = kb->beam->ptranskip;
+
   frmno = *curfrm;
   
   for (i = 0; i < kb->hmm_hist_bins; i++)
@@ -865,14 +872,17 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   
   ptmr_start (&(kb->tm_sen));
 
-  /* the effective window is the min of (kb->pl_window, block_nfeatvec) */
-  kb->pl_window_effective = kb->pl_window > block_nfeatvec ? block_nfeatvec : kb->pl_window;
-  kb->pl_window_start=0;
-
-  for(f = 0; f < kb->pl_window_effective; f++){
+  /* the effective window is the min of (kb->pl_win, block_nfeatvec) */
+  kb->pl_win_efv = kb->pl_win > block_nfeatvec ? block_nfeatvec : kb->pl_win;
+  kb->pl_win_strt=0;
+  
+  for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
     kb->cache_best_list[f]=MAX_NEG_INT32;
-    approx_cont_mgau_ci_eval(mgau,block_feat[f][0],kb->cache_ci_senscr[f],kb);
+    approx_cont_mgau_ci_eval(mgau,
+			     kb->kbcore->mdef,
+			     block_feat[f][0],
+			     kb->cache_ci_senscr[f]);
 
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
@@ -882,7 +892,7 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 
   ptmr_stop (&(kb->tm_sen));
 
-
+  
 
   for (t = 0; t < block_nfeatvec; t++,frmno++) {
 
@@ -890,7 +900,7 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
     ptmr_start (&(kb->tm_sen));
 
     /* Find active senones and composite senones, from active lextree nodes */
-
+  
     /*The active senones will also be changed in approx_cont_mgau_frame_eval */
     if (kb->sen_active) {
       memset (kb->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
@@ -909,12 +919,20 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
       /* Add in senones needed for active composite senone-sequences */
       dict2pid_comsseq2sen_active (d2p, mdef, kb->comssid_active, kb->sen_active);
     }
-
-    /*subvq_frame_eval (svq, mgau, kb->beam->subvq, block_feat[t], 
-      kb->sen_active, kb->ascr->sen);*/
      
     /* Always use the first buffer in the cache*/
-    approx_cont_mgau_frame_eval(mgau,gs,svq,kb->beam->subvq,block_feat[t][0],kb->sen_active,kb->ascr->sen,kb->cache_ci_senscr[kb->pl_window_start],kb,t);
+    /* Why I didn't make a pointer of sen and sen_active to fast_gmm_t? 
+       Because pointer is confusing. */
+    approx_cont_mgau_frame_eval(kb->kbcore,
+				kb->fastgmm,
+				block_feat[t][0],
+				t,
+				kb->sen_active,
+				kb->rec_sen_active,
+				kb->ascr->sen,
+				kb->cache_ci_senscr[kb->pl_win_strt],
+				&(kb->tm_ovrhd));
+
     kb->utt_sen_eval += mgau_frm_sen_eval(mgau);
     kb->utt_gau_eval += mgau_frm_gau_eval(mgau);
     
@@ -928,25 +946,10 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
     /* Compute phoneme heuristics */
     /* Determine which set of phonemes should be active in next stage using the lookahead information*/
     /* Notice that this loop can be further optimized by implementing it incrementally*/
+
     /* ARCHAN and JSHERWAN Eventually, this is implemented as a function */
-
-    if(pheurtype!=0){
-      computePhnHeur(mdef,kb,pheurtype);
-    }
-
-    /* Commented in live mode temporarily */
-    /* Determine which set of phonemes should be active in next stage using the lookahead information*/
-
-    /*for(i=0;i<mdef_n_ciphone(mdef);i++) {
-	    kb->active_phonemes_list[i]=0;
-	  }
-	  for(i=0;i<kb->pl_window_effective;i++) {
-	    for(j=0;j==mdef->cd2cisen[j];j++) {
-	      if(kb->cache_ci_senscr[i][j]> kb->cache_best_list[i] - kb->pl_beam)
-	          kb->active_phonemes_list[mdef->sen2cimap[j]]=1;
-	    }
-	  }*/
-
+    if(pheurtype!=0) computePhnHeur(mdef,kb,pheurtype);
+  
     /* Evaluate active HMMs in each lextree; note best HMM state score */
     besthmmscr = MAX_NEG_INT32;
     bestwordscr = MAX_NEG_INT32;
@@ -972,7 +975,7 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
       E_ERROR("***ERROR*** Fr %d, best HMM score > 0 (%d); int32 wraparound?\n",
 	      frmno, besthmmscr);
     }
-    
+      
     kb->hmm_hist[frm_nhmm / kb->hmm_hist_binsize]++;
     
     /* Set pruning threshold depending on whether number of active HMMs 
@@ -1020,7 +1023,7 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
     /* Hack! Use narrow phone transition beam (wth) every few frames */
     /* ARCHAN 20040509 : please read the comment in utt_decode to see
        why this loop is implemented like this */
-
+  
     if(ptranskip==0){
       for (i = 0; i < (kb->n_lextree <<1); i++) {
 	lextree = (i < kb->n_lextree) ? kb->ugtree[i] : kb->fillertree[i - kb->n_lextree];
@@ -1039,28 +1042,31 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 				th, wth, wth,kb->phn_heur_list,kb->pl_beam,pheurtype);
       }
     }
-    
-	/* if the current block's current frame (t) is less than the total frames in this block minus the effective window */
-	if(t<block_nfeatvec-kb->pl_window_effective){
-		for(i=0;i<kb->pl_window_effective-1;i++){
-			kb->cache_best_list[i]=kb->cache_best_list[i+1];
-			for(j=0;j==mdef->cd2cisen[j];j++){
-				kb->cache_ci_senscr[i][j]=kb->cache_ci_senscr[i+1][j];
-			}
-		}
-		/* get the CI sen scores for the t+pl_window'th frame (a slice) */
-		approx_cont_mgau_ci_eval(mgau,block_feat[t+kb->pl_window_effective][0],kb->cache_ci_senscr[kb->pl_window_effective-1],kb);
-		
-		kb->cache_best_list[kb->pl_window_effective-1]=MAX_NEG_INT32;
-		for(i=0;i==mdef->cd2cisen[i];i++){
-			if(kb->cache_ci_senscr[kb->pl_window_effective-1][i]>kb->cache_best_list[kb->pl_window_effective-1])
-				kb->cache_best_list[kb->pl_window_effective-1]=kb->cache_ci_senscr[kb->pl_window_effective-1][i];
-		}
-    } else {
-		/* We are near the end of the block, so shrink the window from the left*/
-		kb->pl_window_start++;
+      
+    /* if the current block's current frame (t) is less than the total frames in this block minus the efv window */
+    if(t<block_nfeatvec-kb->pl_win_efv){
+      for(i=0;i<kb->pl_win_efv-1;i++){
+	kb->cache_best_list[i]=kb->cache_best_list[i+1];
+	for(j=0;j==mdef->cd2cisen[j];j++){
+	  kb->cache_ci_senscr[i][j]=kb->cache_ci_senscr[i+1][j];
 	}
-
+      }
+      /* get the CI sen scores for the t+pl_win'th frame (a slice) */
+      approx_cont_mgau_ci_eval(mgau,
+			       kb->kbcore->mdef,
+			       block_feat[t+kb->pl_win_efv][0],
+			       kb->cache_ci_senscr[kb->pl_win_efv-1]);
+      
+      kb->cache_best_list[kb->pl_win_efv-1]=MAX_NEG_INT32;
+      for(i=0;i==mdef->cd2cisen[i];i++){
+	if(kb->cache_ci_senscr[kb->pl_win_efv-1][i]>kb->cache_best_list[kb->pl_win_efv-1])
+	  kb->cache_best_list[kb->pl_win_efv-1]=kb->cache_ci_senscr[kb->pl_win_efv-1][i];
+      }
+    } else {
+      /* We are near the end of the block, so shrink the window from the left*/
+      kb->pl_win_strt++;
+    }
+  
     /* Limit vithist entries created this frame to specified max */
     vithist_prune (kb->vithist, dict, frmno, maxwpf, maxhistpf, wb);
     

@@ -162,10 +162,6 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   /* capture decoder parameters */
   kb_init(&_decoder->kb);
   _decoder->hmm_log = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-  _decoder->max_wpf = cmd_ln_int32("-maxwpf");;
-  _decoder->max_histpf = cmd_ln_int32("-maxhistpf");
-  _decoder->max_hmmpf = cmd_ln_int32("-maxhmmpf");
-  _decoder->phones_skip = cmd_ln_int32 ("-ptranskip");
 
   /* initialize decoder variables */
   _decoder->kbcore = _decoder->kb.kbcore;
@@ -313,10 +309,6 @@ ld_process_ceps(live_decoder_t *_decoder,
 		     num_features, 
 		     &_decoder->frame_num, 
 		     &_decoder->kb, 
-		     _decoder->max_wpf, 
-		     _decoder->max_histpf, 
-		     _decoder->max_hmmpf, 
-		     _decoder->phones_skip, 
 		     _decoder->hmm_log);
   }
 }
@@ -545,10 +537,6 @@ ld_process_raw_impl(live_decoder_t *_decoder,
 		     num_features, 
 		     &_decoder->frame_num, 
 		     &_decoder->kb, 
-		     _decoder->max_wpf, 
-		     _decoder->max_histpf, 
-		     _decoder->max_hmmpf, 
-		     _decoder->phones_skip, 
 		     _decoder->hmm_log);
   }
 	

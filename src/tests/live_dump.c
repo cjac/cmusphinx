@@ -67,10 +67,6 @@ static fe_t  *fe;
 static kb_t  *kb;
 static kbcore_t *kbcore;
 static FILE  *hmmdumpfp;
-static int32 maxwpf;
-static int32 maxhistpf;
-static int32 maxhmmpf;
-static int32 ptranskip;
 
 static partialhyp_t *parthyp = NULL;
 static float32 *dummyframe;
@@ -91,10 +87,6 @@ void live_initialize_decoder(char *live_args)
     kbcore = kb->kbcore;
 
     hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-    maxwpf    = cmd_ln_int32 ("-maxwpf");
-    maxhistpf = cmd_ln_int32 ("-maxhistpf");
-    maxhmmpf  = cmd_ln_int32 ("-maxhmmpf");
-    ptranskip = cmd_ln_int32 ("-ptranskip");
 
     maxhyplen = cmd_ln_int32 ("-maxhyplen");
     if (!parthyp) 
@@ -263,7 +255,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     metricsStart("ScorePrune");
 
     utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
-		      maxwpf, maxhistpf, maxhmmpf, ptranskip, hmmdumpfp);
+		      hmmdumpfp);
     
     metricsStop("ScorePrune");
 

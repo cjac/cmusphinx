@@ -713,11 +713,8 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 {
     mgau_t *mgau;
     int32 veclen, score;
-    /*tmpscore;*/
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2, f;
-
-
     int32 i, j, c;
     
     veclen = mgau_veclen(g);
@@ -728,9 +725,6 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 
 
     if (! active) {	/* No short list; use all */
-
-     
-#if 1
 	for (c = 0; c < mgau->n_comp-1; c += 2) {	/* Interleave 2 components for speed */
 	    m1 = mgau->mean[c];
 	    m2 = mgau->mean[c+1];
@@ -744,8 +738,6 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 		dval1 -= diff1 * diff1 * v1[i];
 		diff2 = x[i] - m2[i];
 		dval2 -= diff2 * diff2 * v2[i];
-		/*		E_INFO("x %10f m1 %10f m2 %10f v1 %10f, v2 %10f\n",x[i],m1[i],m2[i],v1[i],v2[i]);
-				E_INFO("diff1 %10f,dval1 %10f, diff2 %10f, dval2 %10f\n",diff1,dval1,diff2,dval2);*/
 	    }
 	    
 	    if (dval1 < g->distfloor)	/* Floor */
@@ -773,9 +765,6 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    
 	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
 	}
-
-#endif
-
     } else {
 	for (j = 0; active[j] >= 0; j++) {
 	    c = active[j];
