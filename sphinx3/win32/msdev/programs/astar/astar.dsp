@@ -91,7 +91,7 @@ SOURCE=..\..\..\..\src\programs\main_astar.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\libs3decoder\s3_astar.c
+SOURCE=..\..\..\..\src\programs\s3_astar.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

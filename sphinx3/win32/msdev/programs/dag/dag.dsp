@@ -91,7 +91,7 @@ SOURCE=..\..\..\..\src\programs\main_dag.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\src\libs3decoder\s3_dag.c
+SOURCE=..\..\..\..\src\programs\s3_dag.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
