@@ -139,6 +139,7 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
     }
 }
 
+#if 0
 void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen, 
 							   int32 endutt, cmn_t *cmn)
 {
@@ -212,7 +213,7 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   }
 /*  E_INFO("Hihi\n");*/
 }
-
+#endif
 /* 
  * RAH, free previously allocated memory
  */
