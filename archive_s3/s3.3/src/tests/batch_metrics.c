@@ -386,7 +386,7 @@ void analyzeResults(const char* referenceResult, const char* hypotheses)
         }
     }
 
-    if (strcmp(referenceResult, hypotheses) == 0) {
+    if (strcmp(myReferenceResult, myHypothesis) == 0) {
         numMatchingSentences++;
     }
 }
