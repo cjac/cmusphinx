@@ -94,6 +94,19 @@ perf-full:
 	make -C $(top_srcdir)/src/tests/performance/Communicator base fast
 	make -C $(top_srcdir)/src/tests/performance/wsj5k quick slow
 
+perf-quick:	
+	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
+	make -C $(top_srcdir)/src/tests/performance/tidigits quick
+	make -C $(top_srcdir)/src/tests/performance/Communicator fast
+	make -C $(top_srcdir)/src/tests/performance/wsj5k quick
+
+perf-slow:	
+	make -C $(top_srcdir)/src/tests/performance/ti46 slow
+	make -C $(top_srcdir)/src/tests/performance/tidigits slow
+	make -C $(top_srcdir)/src/tests/performance/rm1 lp
+	make -C $(top_srcdir)/src/tests/performance/Communicator base
+	make -C $(top_srcdir)/src/tests/performance/wsj5k slow
+
 
 
 
