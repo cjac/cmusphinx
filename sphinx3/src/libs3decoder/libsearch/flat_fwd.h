@@ -83,9 +83,9 @@
  */
 
 typedef struct {
-    s3pid_t   *pid;	/* Pid list for all context ciphones; compressed, unique */
-    s3cipid_t *cimap;	/* Index into pid[] above for each ci phone */
-    int32    n_pid;	/* #Unique pid in above, compressed pid list */
+    s3pid_t   *pid;	/**< Pid list for all context ciphones; compressed, unique */
+    s3cipid_t *cimap;	/**< Index into pid[] above for each ci phone */
+    int32    n_pid;	/**< #Unique pid in above, compressed pid list */
 } xwdpid_t;
 
 /**
@@ -105,26 +105,48 @@ typedef struct {
  * (This is probably worse than no explanation.)
  */
 typedef struct whmm_s {
-    struct whmm_s *next;	/* Next active whmm_t for this word */
-    int32     *score;		/* Per state path score */
-    s3latid_t *history;		/* Per state predecessor lattice entry index */
-    s3pid_t   *pid;		/* Triphone id: 1 per state if 1st phone in word,
+    struct whmm_s *next;	/**< Next active whmm_t for this word */
+    int32     *score;		/**< Per state path score */
+    s3latid_t *history;		/**< Per state predecessor lattice entry index */
+    s3pid_t   *pid;		/**< Triphone id: 1 per state if 1st phone in word,
 				   otherwise single pid for entire phone */
-    int32      bestscore;	/* Best among this whmm.score[] in current frame */
-    int16       pos;		/* Word pronunciation position index */
-    s3cipid_t  rc;		/* Right context position (only for last phone in word);
+    int32      bestscore;	/**< Best among this whmm.score[] in current frame */
+    int16       pos;		/**< Word pronunciation position index */
+    s3cipid_t  rc;		/**< Right context position (only for last phone in word);
 				   index into rcpid[][].pid or lrcpid[][].pid */
-    int32      active;		/* Whether active in current frame */
+    int32      active;		/**< Whether active in current frame */
 } whmm_t;
 
 
-
-int32 fwd_frame (int32 *senscr);
-void fwd_sen_active (int8 *senlist, int32 n_sen);
-void fwd_start_utt (char *id);
-srch_hyp_t *fwd_end_utt ( void );
-void fwd_timing_dump (float64 tot);
+/**
+ * Initialization of flat forward search 
+ */
 void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm);
+
+/**
+ * Start of flat foward search 
+ */ 
+void fwd_start_utt (char *id);
+
+/** 
+ * Make the search to go forward for one frame. 
+ * @return best score of this frame. 
+ */
+int32 fwd_frame (int32 *senscr); 
+
+/**
+ * Find the active senone list. 
+ */
+void fwd_sen_active (int8 *senlist, int32 n_sen);
+
+/**
+ * End of flat foward search 
+ * @return searching hypothesis. 
+ */ 
+
+srch_hyp_t *fwd_end_utt ( void );
+
+void fwd_timing_dump (float64 tot);
 srch_hyp_t *s3flat_fwd_dag_search (char *utt);
 #endif
 
