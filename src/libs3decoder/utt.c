@@ -312,6 +312,7 @@ void utt_end (kb_t *kb)
 
 #if (!defined(WIN32) && !defined(sparc))    
     system ("ps aguxwww | grep /live | grep -v grep");
+    system ("ps aguxwww | grep /dec | grep -v grep");
 #endif
     
     for (i = 0; i < kb->n_lextree; i++) {
