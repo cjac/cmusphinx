@@ -77,4 +77,8 @@ typedef double		float64;
 #define FALSE 0
 #endif
 
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
 #endif
