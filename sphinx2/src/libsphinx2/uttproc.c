@@ -44,15 +44,19 @@
  * ====================================================================
  *
  */
+
 /*
  * uttproc.c -- Process utterance.
  * 
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:08:58  lenzo
- * Initial revision
+ * Revision 1.2  2000/02/08  20:44:32  lenzo
+ * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:58  lenzo
+ * Initial import of sphinx2
+ *
  * 09-Jan-00    Kevin Lenzo <lenzo@cs.cmu.edu> at Carnegie Mellon
  *              Altered to accomodate new fe lib.
  * 
@@ -1577,7 +1581,7 @@ int32 uttproc_set_mfclogdir (char *dir)
 }
 
 
-search_hyp_t *uttproc_allphone_cepfile (char *utt)
+search_hyp_t *uttproc_allphone_file (char *utt)
 {
     int32 nfr;
     extern search_hyp_t *allphone_utt();

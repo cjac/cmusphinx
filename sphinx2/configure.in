@@ -80,6 +80,7 @@ scripts/allphone-test.csh
 scripts/batch.csh
 scripts/sphinx2-simple
 scripts/sphinx2-test
+scripts/sphinx2-phone
 ])
 
 chmod +x scripts/sphinx2-demo

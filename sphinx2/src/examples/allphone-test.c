@@ -48,6 +48,10 @@
  * allphone-test.c -- Test of a simple driver for allphone decoding.o
  * 
  * HISTORY
+ *
+ * 08-Feb-2000  Kevin Lenzo <lenzo@cs.cmu.edu> at Carnegie Mellon University
+ *              Changed wording and routine name.
+ * 
  * 
  * 11-Sep-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -84,7 +88,7 @@ main (int argc, char *argv[])
 
 	printf ("%s:\n", utt);
 
-	h = uttproc_allphone_cepfile (utt);
+	h = uttproc_allphone_file (utt);
 	
 	for (; h; h = h->next)
 	    printf ("%4d %4d %s\n", h->sf, h->ef, h->word);
@@ -93,3 +97,6 @@ main (int argc, char *argv[])
     
     fbs_end();
 }
+
+
+

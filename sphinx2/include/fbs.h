@@ -11,9 +11,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:09:07  lenzo
- * Initial revision
+ * Revision 1.2  2000/02/08  20:44:32  lenzo
+ * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
  * 
+ * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 05-Jan-99	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added cdcn.h and uttproc_get_cdcn_ptr().
@@ -266,7 +270,7 @@ int32 uttproc_restart_utt ( void );
  * segments; it may be NULL.  It is a READ-ONLY list.  It will be clobbered by the next
  * call to this function.
  */
-search_hyp_t *uttproc_allphone_cepfile (char *file);	/* Without filename extension */
+search_hyp_t *uttproc_allphone_file (char *file);	/* Without filename extension */
 
 
 /*

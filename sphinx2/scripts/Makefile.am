@@ -5,7 +5,8 @@ bin_SCRIPTS = \
 	poe-sphinx-server-demo \
 	sphinx2-demo \
 	sphinx2-simple \
-	sphinx2-test
+	sphinx2-test \
+        sphinx2-phone
 
 EXTRA_DIST =  \
 	allphone-test.csh.in \
@@ -15,4 +16,5 @@ EXTRA_DIST =  \
 	sphinx2-demo.in \
 	sphinx2-simple.in \
 	sphinx2-test.in \
+	sphinx2-phone.in \
 	sphinx2-example.arg
