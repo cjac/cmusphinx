@@ -320,7 +320,8 @@ int32 ctl_read_entry (FILE *fp, char *uttfile, int32 *sf, int32 *ef, char *uttid
     if (k < 4) {
 	/* Create utt-id from mfc-filename (and sf/ef if specified) */
 	path2basename (uttfile, base);
-	strip_fileext (base, uttid);
+	/* strip_fileext (base, uttid); */
+	strcpy(uttid, base);
 	
 	if (k == 3) {
 	    k = strlen(uttid);
@@ -535,8 +536,13 @@ ptmr_t ctl_process_utt (char *uttfile, int32 count,
     
     ptmr_init (&tm);
     path2basename (uttfile, base);
+    /* strip_fileext() copies base to uttid. So, copying uttid to base
+     *  is redundant if strip_fileext() is not called.
+     */
+    /*
     strip_fileext (base, uttid);
     strcpy (base, uttid);
+    */
     
     ts = -1;
     for (c = 0; c < count; c++) {
