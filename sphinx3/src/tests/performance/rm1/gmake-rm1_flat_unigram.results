@@ -1,2 +1,41 @@
 BatchDecoder: decoding files in ./rm1.batch
 ----------
+
+Decoding: /lab/speech/sphinx4/data/rm1/rm1/ind/eval/aem0_2/sb01.wav.raw
+
+REF:  show locations and c-ratings for all deployed subs that were in their home ports april five
+HYP:  show locations c-rating for go deployed the the weren't are all port april five
+   Accuracy: %31.2   Errors: 11  (Rec: 9  Ins: 0  Del: 2)
+   Words: 16   Matches: 5
+   Sentences: 1   Matches: 1   SentenceAcc: %100.0
+   This Timing Audio: 5.2s  Proc: 3.5s  Speed: 0.67 X real time
+   Total Timing Audio: 5.2s  Proc: 3.5s  Speed: 0.67 X real time
+   Memory usage data unavailable
+# --------------
+
+Decoding: /lab/speech/sphinx4/data/rm1/rm1/ind/eval/aem0_2/sb02.wav.raw
+
+REF:  list the cruisers in persian sea that have casualty reports earlier than jarrett's oldest one
+HYP:  list decrease hers in persian the didn't his old to reports earlier been jarrett's oldest one
+   Accuracy: %35.5   Errors: 21  (Rec: 18  Ins: 1  Del: 2)
+   Words: 31   Matches: 11
+   Sentences: 2   Matches: 2   SentenceAcc: %100.0
+   This Timing Audio: 5.6s  Proc: 3.5s  Speed: 0.62 X real time
+   Total Timing Audio: 10.8s  Proc: 7.0s  Speed: 0.65 X real time
+   Memory usage data unavailable
+# --------------
+
+Decoding: /lab/speech/sphinx4/data/rm1/rm1/ind/eval/aem0_2/sb03.wav.raw
+
+REF:  display posits for the hooked track with chart switches set to their default values
+HYP:  display posits than hooked track with charts switches set to there default hour a as
+   Accuracy: %44.4   Errors: 28  (Rec: 22  Ins: 3  Del: 3)
+   Words: 45   Matches: 20
+   Sentences: 3   Matches: 3   SentenceAcc: %100.0
+   This Timing Audio: 4.5s  Proc: 2.7s  Speed: 0.60 X real time
+   Total Timing Audio: 15.3s  Proc: 9.7s  Speed: 0.63 X real time
+   Memory usage data unavailable
+# --------------
+
+Decoding: /lab/speech/sphinx4/data/rm1/rm1/ind/eval/aem0_2/sb04.wav.raw
+
