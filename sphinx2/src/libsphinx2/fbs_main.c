@@ -46,9 +46,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.13  2004/07/16  16:15:44  egouvea
- * Ooops, fixed bug: when commenting out code, commented one '}' too many
+ * Revision 1.14  2004/07/23  14:23:26  egouvea
+ * Added missing #include line that defined dup2()
  * 
+ * Revision 1.13  2004/07/16 16:15:44  egouvea
+ * Ooops, fixed bug: when commenting out code, commented one '}' too many
+ *
  * Revision 1.12  2004/07/16 15:54:36  egouvea
  * Commented out part of code moved from fbs_main.c to uttproc.c, and added comment
  *
@@ -257,6 +260,7 @@
 
 #ifdef WIN32
 #include <fcntl.h>
+#include <io.h>
 #else
 #include <sys/file.h>
 #include <sys/errno.h>
