@@ -1,7 +1,0 @@
-.deps
-.libs
-Makefile
-Makefile.in
-fe_interface.lo
-fe_sigproc.lo
-libsphinx2fe.la
