@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,10 @@
  */
 #ifndef _NEW_FE_H_
 #define _NEW_FE_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "s3types.h"
 
@@ -84,7 +88,7 @@ typedef struct{
     float32 **mel_cosine;
     float32 *left_apex;
     int32 *width;
-    int32 doublewide;
+    int32 doublewide;    
 }melfb_t;
 
 
@@ -115,18 +119,13 @@ typedef struct{
 #define ON 1
 #define OFF 0
 
+
 /* Default values */
 #define DEFAULT_SAMPLING_RATE 16000.0
 #define DEFAULT_FRAME_RATE 100
 #define DEFAULT_FRAME_SHIFT 160
-/* The default below is set so that we have an integral number of
- * samples in a frame.
- */
-#define DEFAULT_WINDOW_LENGTH 0.025625
-/* Since the default sampling rate is 16000, let's make the default
- * fft size consistent with it.
- */
-#define DEFAULT_FFT_SIZE 512
+#define DEFAULT_WINDOW_LENGTH 0.0256 /*0.025625*/
+#define DEFAULT_FFT_SIZE 256 /*512*/
 #define DEFAULT_FB_TYPE MEL_SCALE
 #define DEFAULT_NUM_CEPSTRA 13
 #define DEFAULT_NUM_FILTERS 40
@@ -153,18 +152,24 @@ typedef struct{
 #define DEFAULT_BLOCKSIZE 200000
 #define DITHER  OFF
 
-/* Interface */
-fe_t *fe_init(param_t const *P);
+/* Functions */
+
+fe_t *fe_init(param_t *P);
+
 int32 fe_start_utt(fe_t *FE);
 
 int32 fe_end_utt(fe_t *FE, float32 *cepvector);
 
 int32 fe_close(fe_t *FE);
 
-int32 fe_process(fe_t *FE, int16 const *spch, int32 nsamps, float32 ***cep_block);
+int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 
 int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps,float32 ***cep_block);
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -60,6 +60,9 @@
 #ifndef _S3_VECTOR_H_
 #define _S3_VECTOR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <libutil/libutil.h>
 
@@ -285,6 +288,10 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
 					   Caller must allocate this array.  Note that only
 					   score[offset..offset+count-1] are updated. */
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* VECTOR_H */ 
 
 
@@ -292,9 +299,18 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2004/05/27  22:47:43  arthchan2003
- * Sphinx 3.4 code commit
+ * Revision 1.5  2004/07/21  06:12:47  arthchan2003
+ * add precompiler directive __cplusplus to all header files
  * 
+ * Revision 1.2  2004/07/21 05:11:46  archan
+ * all sphinx 3.4 files with proper extern C headers
+ *
+ * Revision 1.1  2004/07/15 08:21:19  archan
+ * All header files for sphinx3.4
+ *
+ * Revision 1.4  2004/05/27 22:47:43  arthchan2003
+ * Sphinx 3.4 code commit
+ *
  * Revision 1.3  2004/03/11 21:47:57  archan
  * Check-in code for dynamic LM and fixes in Gaussian Selection. Temporarily cover J's change. Waiting for more stable code
  *

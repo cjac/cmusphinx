@@ -62,6 +62,10 @@
 #ifndef _S3_HMM_H_
 #define _S3_HMM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "s3types.h"
@@ -152,5 +156,9 @@ int32 hmm_dump_vit_eval (hmm_t *hmm, int32 n_emit_state,
 /* For debugging */
 void hmm_dump (hmm_t *h, int32 n_emit_state, s3senid_t *senid, int32 *senscr, FILE *fp);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

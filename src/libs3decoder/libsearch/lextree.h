@@ -60,6 +60,10 @@
 #ifndef _S3_LEXTREE_H_
 #define _S3_LEXTREE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "kbcore.h"
@@ -257,5 +261,9 @@ void lextree_hmm_histbin (lextree_t *lextree,	/* In: Its active HMM bestscores a
 /* For debugging */
 void lextree_dump (lextree_t *lextree, dict_t *dict, FILE *fp);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

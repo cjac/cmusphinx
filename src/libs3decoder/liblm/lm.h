@@ -62,6 +62,10 @@
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define LM_DICTWID_BADMAP	-16000		/* An illegal mapping */
 #define LM_CLASSID_BASE		0x01000000	/* Interpreted as LMclass ID */
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
@@ -394,5 +398,9 @@ void lm_free (lm_t *lm);
 #define LM_UGPROB(lm,ugptr)	((ugptr)->prob.l)
 #define LM_RAWSCORE(lm,score)	((score - (lm)->wip) / ((lm)->lw))
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -62,6 +62,10 @@
 #ifndef _S3_DICT_H_
 #define _S3_DICT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "s3types.h"
@@ -188,5 +192,10 @@ int32 dict_word2basestr (char *word);
 
 /* RAH, free memory allocated for the dictionary */
 void dict_free (dict_t *d);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

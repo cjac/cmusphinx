@@ -59,6 +59,9 @@
 #ifndef _S3_KB_H_
 #define _S3_KB_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <libutil/libutil.h>
 #include "kbcore.h"
@@ -161,5 +164,9 @@ void kb_lextree_active_swap (kb_t *kb);
 void kb_free (kb_t *kb);	/* RAH 4.16.01 */
 void kb_freehyps(kb_t *kb);  /* YITAO 20040614 */
 void kb_setlm(char* lmname,kb_t *kb);    /* ARCHAN 20040228 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

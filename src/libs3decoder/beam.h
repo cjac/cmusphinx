@@ -54,6 +54,10 @@
 #define _S3_BEAM_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/libutil.h>
 
 
@@ -75,6 +79,10 @@ typedef struct {
  * NULL otherwise.
  */
 beam_t *beam_init (float64 svq, float64 hmm, float64 ptr, float64 wd);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

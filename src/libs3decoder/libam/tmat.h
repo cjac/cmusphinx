@@ -63,6 +63,10 @@
 #define _S3_TMAT_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/libutil.h>
 #include "s3types.h"
 
@@ -105,5 +109,9 @@ int32 tmat_chk_1skip (tmat_t *tmat);
  */
 void tmat_free (tmat_t *t);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -56,6 +56,10 @@
 #ifndef _S3_CMN_H_
 #define _S3_CMN_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -86,5 +90,9 @@ void cmn_prior(float32 **incep,  /* In/Out: mfc[f] = mfc vector in frame f*/
 
 /* RAH, free previously allocated memory */
 void cmn_free ();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

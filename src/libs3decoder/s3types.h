@@ -61,8 +61,12 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <libutil/libutil.h>
+
+#include <libutil.h>
 
 
 /*
@@ -144,5 +148,9 @@ typedef int16   	s3mgauid_t;	/* Mixture-gaussian codebook id */
 /* #define S3_MAX_FRAMES		30000   */ /* Frame = 10msec */  /* RAH, I believe this is unreasonably large and not feasible */ /* Frame = 10msec */
 #define S3_MAX_FRAMES		15000    /* RAH, I believe this is still too large, but better than before */
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

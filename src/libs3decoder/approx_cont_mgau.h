@@ -54,6 +54,10 @@
 #define _S3_APPROXCONGAU_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/libutil.h>
 #include "cont_mgau.h"
 #include "vector.h"
@@ -90,5 +94,9 @@ int32 approx_cont_mgau_frame_eval (mgau_model_t *g,
 				   int32 frame);	
 
 void approx_cont_mgau_ci_eval (mgau_model_t *g, float32 *feat,int32 *ci_senscr, kb_t *kb);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -53,6 +53,9 @@
 #ifndef _S3_ASCR_H_
 #define _S3_ASCR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <libutil/libutil.h>
 
@@ -73,5 +76,10 @@ typedef struct {
  */
 ascr_t *ascr_init (int32 n_sen,		/* In: #Ordinary senones */
 		   int32 n_comsen);	/* In: #Composite senones */
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

@@ -56,6 +56,10 @@
 #ifndef _S3_LOGS3_H_
 #define _S3_LOGS3_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -95,6 +99,10 @@ int32 log10_to_logs3 (float64 log10p);
 
 /* RAH, free the add_tbl if still allocated */
 void logs_free();
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

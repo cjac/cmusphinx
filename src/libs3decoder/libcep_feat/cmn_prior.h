@@ -53,6 +53,10 @@
 #ifndef _S3_CMN_PRIOR_H_
 #define _S3_CMN_PRIOR_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -70,5 +74,9 @@ void cmn_prior(float32 **incep, /* In/Out: mfc[f] = mfc vector in frame f*/
 	      int32 nfr,        /* Number of incoming frames */
               int32 ceplen,     /* Length of the cepstral vector */
 	      int32 endutt);    /* Flag indicating end of utterance */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

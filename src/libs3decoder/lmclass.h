@@ -45,6 +45,10 @@
 #ifndef _S3_LMCLASS_H_
 #define _S3_LMCLASS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/libutil.h>
 #include "s3types.h"
 
@@ -156,5 +160,8 @@ void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
 void lmclass_dump (lmclass_t cl, FILE *fp);
 void lmclass_set_dump (lmclass_set_t set, FILE *fp);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
