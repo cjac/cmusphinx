@@ -51,11 +51,7 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/SphinxOCX/mssccprj.scc \
         win32/msdev/SphinxOCX/resource.h \
         win32/msdev/SphinxOCX/vssver.scc \
-        win32/msdev/SphinxOCX/Debug \
-        win32/msdev/SphinxOCX/Release \
         win32/msdev/libsphinx2/libsphinx2.dsp \
         win32/msdev/libsphinx2/libsphinx2.dsw \
         win32/msdev/libsphinx2ad/libsphinx2ad.dsp \
-        win32/msdev/libsphinx2fe/Debug \
-        win32/msdev/libsphinx2fe/Release \
         win32/msdev/libsphinx2fe/libsphinx2fe.dsp
