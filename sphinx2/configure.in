@@ -56,6 +56,7 @@ if test "x$ad_files" = "x"; then
 			;;
 		*-*-sunos4*|*-*-solaris*)
 			ad_files="ad_sunos.lo audio_utils_sunos.lo"
+			ad_libs="-lm -lnsl -lsocket -ldl"
 			ad_backend="AD_BACKEND_SUNOS"
 			;;
 		*-*-*win32*)
