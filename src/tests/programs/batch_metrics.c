@@ -162,9 +162,7 @@ int main (int argc, char *argv[])
     /* If machine endian and input endian are different, we need to swap */
     
     swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
-    /*
-    swap = (!cmd_ln_int32("-input_endian"));
-    */
+
     if (swap) {
       E_INFO("Input data WILL be byte swapped\n");
     } else {
