@@ -41,9 +41,21 @@
  * viterbi search dynamic data.
  *------------------------------------------------------------*
  * $Log$
- * Revision 1.7  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.8  2004/07/16  00:57:12  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.2  2004/03/02 15:33:39  rkm
+ * FSG bug fixes
+ *
+ * Revision 1.2  2004/03/02 04:10:14  rkm
+ * FSG bugfix: need to get senscores every utt
+ *
+ * Revision 1.1.1.1  2003/12/03 20:05:04  rkm
+ * Initial CVS repository
+ *
+ * Revision 1.7  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.6  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -157,5 +169,8 @@ typedef struct ROOT_CHAN_S
     int32    mpx;		/* TRUE iff this node uses left cross-word modelling */
     FRAME_ID active;
 } ROOT_CHAN_T;
+
+void chan_dump (CHAN_T *chan, int32 frame, FILE *fp);	/* Debug dump */
+
 
 #endif /* _NEWMSD_H_ */

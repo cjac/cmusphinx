@@ -46,9 +46,25 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.10  2004/03/27  19:21:56  egouvea
- * Patch submitted by Carl Quillen, #615094
+ * Revision 1.11  2004/07/16  00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.4  2004/06/22 15:35:46  rkm
+ * Added partial result reporting options in batch mode
+ *
+ * Revision 1.3  2004/06/16 17:47:43  rkm
+ * Moved pscr-based stuff to uttproc.c
+ *
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.10  2004/03/27 19:21:56  egouvea
+ * Fixed hanging on exit: dup2(logfp) instead of copying into stdout/err
+ * Patch submitted by Carl Quillen, #615094
+ *
+ * Revision 1.7  2004/02/27 21:01:25  rkm
+ * Many bug fixes in multiple FSGs
+ *
  * Revision 1.9  2001/12/11 00:24:48  lenzo
  * Acknowledgement in License.
  *
@@ -413,6 +429,14 @@ static float TotalSpeechTime;
 /* Report actual pronunciation in output; default = report base pronunciation */
 static int32 report_altpron = FALSE;
 
+/* If > 0, report partial result string every so many frames, starting frame 1 */
+static int32 report_partial_result = 0;
+/*
+ * If > 0, report partial results including segmentation every so many frames,
+ * starting at frame 1.
+ */
+static int32 report_partial_result_seg = 0;
+
 /* If (! compute_all_senones) compute only those needed by active channels */
 static int32 compute_all_senones = FALSE;
 
@@ -426,6 +450,7 @@ static char const *adc_ext = "raw";	/* Default format: raw */
 static int32 adc_endian = 1;	/* Default endian: little */
 static int32 adc_hdr = 0;	/* Default adc file header size */
 static int32 blocking_ad_read_p = FALSE;
+static int32 doublebw = 0;   /* Whether we're using double bandwidth for mel filters, default no */
 
 /* For LISTEN project: LM and startword names for different utts */
 char const *utt_lmname_dir = ".";
@@ -448,9 +473,12 @@ static int32 ilm_bgcache_wt = 9;	/* ie 0.09 */
 
 static float *cep, *dcep, *dcep_80ms, *pcep, *ddcep;
 
-int32 print_back_trace = FALSE;
+static int32 maxwpf = 100000000;	/* Max Words Per Frame; default: huge */
+
+int32 print_back_trace = TRUE;
+static int32 print_short_back_trace = FALSE;
 static char *arg_file = NULL;
-int32 verbosity_level = 0;
+int32 verbosity_level = 9;		/* rkm: Was 0 */
 
 #ifndef WIN32
 extern double MakeSeconds(struct timeval *, struct timeval *);
@@ -547,6 +575,12 @@ config_t param[] = {
 
 	{ "ReportAltPron", "Report actual pronunciation in match file", "-reportpron",
 		BOOL, (caddr_t) &report_altpron }, 
+
+	{ "ReportPartialResult", "Report partial results every so many frames", "-partial",
+		INT,	(caddr_t) &report_partial_result }, 
+
+	{ "ReportPartialResultSeg", "Report detailed partial results every so many frames", "-partialseg",
+		INT,	(caddr_t) &report_partial_result_seg }, 
 
 	{ "MatchFileName", "Recognition output file name", "-matchfn",
 		STRING, (caddr_t) &match_file_name }, 
@@ -770,6 +804,9 @@ config_t param[] = {
 	{ "ADCHdrSize", "ADC file header size", "-adchdr",
 		INT, (caddr_t) &adc_hdr }, 
 
+	{ "UseDoubleBW", "Double bandwidth mel filter", "-doublebw",
+		BOOL, (caddr_t) &doublebw }, 
+
 	{ "RawLogDir", "Log directory for raw output files)", "-rawlogdir",
 		STRING, (caddr_t) &rawlogdir }, 
 
@@ -800,8 +837,14 @@ config_t param[] = {
 	{ "PrintBackTrace", "Print Back Trace", "-backtrace",
 		BOOL, (caddr_t) &print_back_trace }, 
 
+	{ "PrintBackTrace", "Print Back Trace", "-shortbacktrace",
+		BOOL, (caddr_t) &print_short_back_trace }, 
+
 	{ "CDCNinitFile", "CDCN Initialization File", "-cdcn",
 		STRING, (caddr_t) &cdcn_file }, 
+
+	{ "MaxWordsPerFrame", "Limit words exiting per frame to this number", "-maxwpf",
+	  	INT, (caddr_t) &maxwpf },
 
 	{ "VerbosityLevel", "Verbosity Level", "-verbose",
 	        INT, (caddr_t) &verbosity_level },
@@ -1026,7 +1069,7 @@ int32 uttproc_set_logfile (char const *file)
     E_INFO("uttproc_set_logfile(%s)\n", file);
     
     if ((fp = fopen(file, "w")) == NULL) {
-	E_ERROR ("fopen(%s,w) failed\n", file);
+	E_ERROR ("fopen(%s,w) failed; logfile unchanged\n", file);
 	return -1;
     } else {
 	if (logfp)
@@ -1064,7 +1107,7 @@ fbs_init (int32 argc, char **argv)
     logfile[0] = '\0';
     if (logfn_arg) {
 	if ((logfp = fopen(logfn_arg, "w")) == NULL) {
-	    E_ERROR ("fopen(%s,w) failed\n", logfn_arg);
+	    E_ERROR ("fopen(%s,w) failed; logging to stdout/stderr\n", logfn_arg);
 	} else {
 	    strcpy (logfile, logfn_arg);
 	    dup2(fileno(logfp), 1);
@@ -1072,6 +1115,7 @@ fbs_init (int32 argc, char **argv)
 	}
     }
 
+    /* These hardwired verbosity level constants should be changed! */
     if (verbosity_level >= 2)
 	log_arglist (stdout, argc, argv);
     
@@ -1207,12 +1251,16 @@ fbs_init (int32 argc, char **argv)
     init_norm_agc_cmp ();
 
     /* If multiple LMs present, choose the unnamed one by default */
-    if (get_n_lm() == 1) {
+    if (kb_get_fsg_file_name() == NULL) {
+      if (get_n_lm() == 1) {
 	if (uttproc_set_lm (get_current_lmname()) < 0)
 	    E_FATAL ("SetLM() failed\n");
     } else {
 	if (uttproc_set_lm ("") < 0)
-	    E_WARN ("SetLM(\"\") failed; application must set one before recognition\n");
+	  E_WARN ("SetLM(\"\") failed; application must set one before recognition\n");
+      }
+    } else {
+      E_INFO("/* Need to select from among multiple FSGs */\n");
     }
     
     /* Set the current start word to <s> (if it exists) */
@@ -1295,7 +1343,8 @@ run_ctl_file (char const *ctl_file_name)
     char line[4096], mfcfile[4096], idspec[4096];
     int32 line_no = 0;
     int32 sf, ef;
-
+    search_hyp_t *hyp;
+    
     if (strcmp (ctl_file_name, "-") != 0)
 	ctl_fs = CM_fopen (ctl_file_name, "r");
     else
@@ -1303,7 +1352,7 @@ run_ctl_file (char const *ctl_file_name)
     
     for (;;) {
 	if (ctl_fs == stdin)
-	    E_INFO ("\nFile(no ext): ");
+	    E_INFO ("\nInput file(no ext): ");
 	if (fgets (line, sizeof(line), ctl_fs) == NULL)
 	    break;
 	
@@ -1360,11 +1409,22 @@ run_ctl_file (char const *ctl_file_name)
 
 	E_INFO ("\nUtterance: %s\n", idspec);
 
-	if (! allphone_mode)
-	    run_sc_utterance (mfcfile, sf, ef, idspec);
-	else
-	    uttproc_allphone_file (mfcfile);
-
+	if (! allphone_mode) {
+	  hyp = run_sc_utterance (mfcfile, sf, ef, idspec);
+	  if (hyp && print_short_back_trace) {
+	    /* print backtrace summary */
+	    fprintf (stdout, "SEG:");
+	    for (; hyp; hyp = hyp->next)
+	      fprintf (stdout, "[%d %d %s]", hyp->sf, hyp->ef, hyp->word);
+	    fprintf (stdout, " (%s %d A=%d L=%d)\n\n",
+		     uttproc_get_uttid(), search_get_score(),
+		     search_get_score() - search_get_lscr(),
+		     search_get_lscr());
+	    fflush (stdout);
+	  }
+	} else
+	  uttproc_allphone_file (mfcfile);
+	
 #if 0
 	/* This stuff no longer works -- rkm@cs.cmu.edu (02/03/1999) */
 	/*
@@ -1794,14 +1854,16 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     if (ret < 0)
 	return NULL;
 
+    /* Get hyp words segmentation (linked list of search_hyp_t) */
     if (uttproc_result_seg (&frmcount, &hypseg, 1) < 0) {
 	E_ERROR("uttproc_result_seg(%s) failed\n", uttproc_get_uttid());
 	return NULL;
     }
     search_result (&frmcount, &finalhyp);
     
-    /* Should the Nbest generation be in uttproc.c (uttproc_result)?? */
-    if (nbest > 0) {
+    if (! uttproc_fsg_search_mode()) {
+      /* Should the Nbest generation be in uttproc.c (uttproc_result)?? */
+      if (nbest > 0) {
 	FILE *nbestfp;
 	char nbestfile[4096];
 	search_hyp_t *h, **alt;
@@ -1834,8 +1896,9 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     
     if (pscr2lat)
 	search_uttpscr2phlat_print ();
-
-    return hypseg;
+    }
+    
+    return hypseg;	/* Linked list of hypothesis words */
 }
 
 /*
@@ -2087,6 +2150,11 @@ int32 query_sampling_rate ( void )
     return sampling_rate;
 }
 
+int32 query_doublebw ( void )
+{
+    return doublebw;
+}
+
 char const *query_ctlfile_name ( void )
 {
     return ctl_file_name;
@@ -2095,4 +2163,39 @@ char const *query_ctlfile_name ( void )
 int32 query_phone_conf ( void )
 {
     return phone_conf;
+}
+
+int32 query_pscr2lat ( void )
+{
+    return pscr2lat;
+}
+
+int32 query_maxwpf ( void )
+{
+    return maxwpf;
+}
+
+int32 query_back_trace ( void )
+{
+  return print_back_trace;
+}
+
+int32 query_ctl_offset ( void )
+{
+  return ctl_offset;
+}
+
+int32 query_ctl_count ( void )
+{
+  return ctl_count;
+}
+
+int32 query_report_partial_result ( void )
+{
+  return report_partial_result;
+}
+
+int32 query_report_partial_result_seg ( void )
+{
+  return report_partial_result_seg;
 }

@@ -136,7 +136,7 @@ cdcn_init(char const *filename, CDCN_type *cdcn_variables)
 	    temp *= varbuff[count2];
             ++count2;
         }
-	if ((temp = sqrt(temp)) == 0)
+	if ((temp = (float)sqrt(temp)) == 0)
         {
             printf("Error in format of cdcn statistics file\n");
             printf("Unable to run CDCN. Will not process cepstra\n");

@@ -74,6 +74,7 @@ int32 kb_get_dist_prob_bytes(void);
 int32 kb_get_start_word_id(void);
 int32 kb_get_finish_word_id(void);
 int32 kb_get_silence_word_id(void);
+int32 kb_get_silence_ciphone_id(void);
 int32 **kb_get_word_transitions(void);
 dictT *kb_get_word_dict(void);
 LM     kb_get_lang_model(void);
@@ -94,6 +95,29 @@ char  *kb_get_personaldic(void);
 double kb_get_oov_ugprob(void);
 int32  kb_get_max_new_oov(void);
 
+/* Language-weight */
+float32 kb_get_lw(void);
+
+/* Silence word penalty (prob) */
+float32 kb_get_silpen(void);
+
+/* Filler word penalty (prob) */
+float32 kb_get_fillpen(void);
+
+/* Phone insertion penalty (prob) */
+float32 kb_get_pip(void);
+
+/* Word insertion penalty (prob) */
+float32 kb_get_wip(void);
+
 void kb (int argc, char *argv[], float ip, float lw, float pip);
 
-#endif /* _KB_EXPORTS_H_ */
+/* FSG grammar file name */
+char *kb_get_fsg_file_name ( void );
+
+int32 query_fsg_use_altpron ( void );
+
+int32 query_fsg_use_filler ( void );
+
+
+#endif

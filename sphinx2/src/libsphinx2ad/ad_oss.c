@@ -80,6 +80,7 @@ ad_rec_t *ad_open_sps (int32 sps) {
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;
+    char *dev;
     
     if (sps != DEFAULT_SAMPLES_PER_SEC) {
       if(abs(sps - DEFAULT_SAMPLES_PER_SEC) <= SPS_EPSILON) {
@@ -94,11 +95,14 @@ ad_rec_t *ad_open_sps (int32 sps) {
     sampleRate = sps;
     
     /* Used to have O_NDELAY. */
-    if((dspFD = open ("/dev/dsp", O_RDONLY))<0){
+    dev = "/dev/dsp";
+    if((dspFD = open (dev, O_RDONLY))<0){
 	if (errno == EBUSY)
-	    fprintf(stderr, "Audio device busy\n");
+	    fprintf(stderr, "%s(%d): Audio device(%s) busy\n",
+		    __FILE__, __LINE__, dev);
 	else
-	    fprintf(stderr, "Failed to open audio device: %s\n", strerror(errno));
+	    fprintf(stderr, "%s(%d): Failed to open audio device(%s): %s\n",
+		    __FILE__, __LINE__, dev, strerror(errno));
 	return NULL;
     }
     

@@ -40,8 +40,16 @@
  * 		Changed latnode_t.fef and latnode_t.lef to int32.
  */
 
-#ifndef _SEARCH_H_
-#define _SEARCH_H_	1
+
+#ifndef _S2_SEARCH_H_
+#define _S2_SEARCH_H_	1
+
+
+#include <basic_types.h>
+#include <fbs.h>
+#include <dict.h>
+#include <msd.h>
+
 
 /*
  * Back pointer table (forward pass lattice; actually a tree)
@@ -57,6 +65,7 @@ typedef struct bptbl_s {
     int32    r_diph;		/* rightmost diphone of this word */
     int32    ascr;
     int32    lscr;
+    int32    valid;		/* For absolute pruning */
 } BPTBL_T;
 
 #define NO_BP		-1
@@ -111,9 +120,14 @@ void search_set_new_word_beam_width (float beam);
 void search_set_lastphone_alone_beam_width (float beam);
 void search_set_new_phone_beam_width (float beam);
 void search_set_last_phone_beam_width (float beam);
+
+/* Get logs2 beam, phone-exit beam, word-exit beam */
+void search_get_logbeams (int32 *b, int32 *pb, int32 *wb);
+
 void search_set_channels_per_frame_target (int32 cpf);
 void searchSetScVqTopN (int32 topN);
 int32 searchFrame (void);
+void searchSetFrame (int32 frame);
 int32 searchCurrentFrame (void);
 void search_set_newword_penalty (double nw_pen);
 void search_set_silence_word_penalty (float pen, float pip);
@@ -123,14 +137,26 @@ void search_set_ip (float ip);
 void search_set_hyp_alternates (int32 arg);
 void search_set_skip_alt_frm (int32 flag);
 void search_set_hyp_total_score (int32 score);
+void search_set_hyp_total_lscr (int32 lscr);
 void search_set_context (int32 w1, int32 w2);
 void search_set_startword (char const *str);
 
 int32 search_result(int32 *fr, char **res);	/* Decoded result as a single string */
 int32 search_partial_result (int32 *fr, char **res);
+
+/* Total score for the utterance */
 int32 search_get_score(void);
-int32 *search_get_dist_scores(void);
+/* Total LM score for the utterance (is this reliable in N-gram mode?) */
+int32 search_get_lscr(void);
+
+int32 *search_get_dist_scores(void);	/* senone scores, updated/frame */
+
+/*
+ * Get the HYP_SZ array of filtered hyp words (no <s>, </s>, fillers, or
+ * null transitions) in this array.
+ */
 search_hyp_t *search_get_hyp (void);
+
 char *search_get_wordlist (int *len, char sep_char);
 int32 search_get_bptable_size (void);
 int32 *search_get_lattice_density ( void );
@@ -175,7 +201,9 @@ void word_transition (void);
 
 void search_set_current_lm (void); /* Need to call lm_set_current() first */
 
+/* Return sum of top senone scores for the given frame range (inclusive) */
 int32 seg_topsen_score (int32 sf, int32 ef);
+
 void compute_seg_scores (double lwf);
 void compute_sen_active (void);
 void evaluateChannels (void);
@@ -219,5 +247,12 @@ void search_filtered_endpts (void);
 void searchlat_init ( void );
 int32 bptbl2latdensity (int32 bptbl_sz, int32 *density);
 int32 lattice_rescore ( double lwf );
+
+/* Make the given channel inactive and set state scores to WORST_SCORE */
+void search_chan_deactivate(CHAN_T *);
+
+/* Note the top senone score for the given frame */
+void search_set_topsen_score (int32 frm, int32 score);
+
 
 #endif

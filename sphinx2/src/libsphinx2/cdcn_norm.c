@@ -115,7 +115,7 @@ actual_cdcn_norm(float variance[][NUM_COEFF+1], /* Speech cepstral variances of 
         difference = z[j] - tilt[j] - means[0][j] - corrbook[0][j];
         distance += difference*difference / variance[0][j];
     }
-    fk = exp ((double) - distance / 2) * prob[0];
+    fk = (float)(exp ((double) - distance / 2) * prob[0]);
     den = fk;
 
     /* Reestimate vector x across all codewords */
@@ -129,7 +129,7 @@ actual_cdcn_norm(float variance[][NUM_COEFF+1], /* Speech cepstral variances of 
             difference = z[j] - tilt[j] - corrbook[k][j] - means[k][j];
             distance += difference*difference / variance[k][j];
         }
-        fk = exp ((double) - distance / 2) * prob[k];
+        fk = (float) (exp ((double) - distance / 2) * prob[k]);
         for (j = 0; j <= NUM_COEFF; j++)
             x[j] += (z[j] - tilt[j] - corrbook[k][j]) * fk;
         den += fk;

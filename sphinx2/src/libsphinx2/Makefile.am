@@ -23,18 +23,25 @@ libsphinx2_la_SOURCES = \
 	awriteshort.c \
 	bisearch.c \
 	blk_cdcn_norm.c \
+	blkarray_list.c \
 	cache_lm.c \
 	cdcn_init.c \
 	cdcn_norm.c \
 	cdcn_update.c \
 	cep_rw.c \
+	ckd_alloc.c \
 	dict.c \
 	eht_quit.c \
 	err.c \
-	fbs_main.c \
 	f2read.c \
 	f2write.c \
+	fbs_main.c \
+	fsg_psubtree.c \
+	fsg_lextree.c \
+	fsg_history.c \
+	fsg_search.c \
 	get_a_word.c \
+	glist.c \
 	hash.c \
 	hmm_tied_r.c \
 	kb_main.c \
@@ -66,7 +73,8 @@ libsphinx2_la_SOURCES = \
 	time_align.c \
 	unlimit.c \
 	util.c \
-	uttproc.c
+	uttproc.c \
+	word_fsg.c
 
 
 # libsphinx2_la_LIBADD = -lc -lm $(top_srcdir)/src/libsphinx2fe/libsphinx2fe.la

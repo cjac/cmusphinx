@@ -13,7 +13,7 @@ bin_PROGRAMS = sphinx2-continuous \
 
 EXTRA_DIST = README \
 	README.bin \
-	cdcn_test
+	cdcn_test \
 	clicore.h \
 	srvcore.h
 

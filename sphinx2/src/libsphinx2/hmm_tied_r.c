@@ -1340,6 +1340,26 @@ void read_map (char const *map_file, int32 compress)
     }
 }
 
+
+/* Call this only after entire kb loaded */
+void hmm_tied_r_dumpssidlist ()
+{
+  SMD *models;
+  FILE *dumpfp;
+  int32 i, j;
+  
+  models = kb_get_models();
+  if ((dumpfp = fopen("ssid_list.txt", "w")) != NULL) {
+    for (i = 0; i < numSSeq; i++) {
+      fprintf (dumpfp, "%6d\t", i);
+      for (j = 0; j < 5; j++)
+	fprintf (dumpfp, " %5d", models[i].dist[j*3]);
+      fprintf (dumpfp, "\n");
+    }
+  }
+  fclose (dumpfp);
+}
+
 static void dist_read (
 	char const *file,
 	int32 expected,

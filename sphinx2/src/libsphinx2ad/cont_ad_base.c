@@ -38,6 +38,14 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.7  2004/07/16  00:57:12  egouvea
+ * Added Ravi's implementation of FSG support.
+ * 
+ * Revision 1.2  2004/06/23 20:31:18  rkm
+ * Added adapt_rate parameter; restructured frame processing to include threshold update
+ *
+ * 
  * 23-Oct-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Small change in the way the noiselevel is updated in find_thresh().
  * 
@@ -124,6 +132,8 @@
 #include "s2types.h"
 #include "ad.h"
 #include "cont_ad.h"
+#include "err.h"
+
 
 #ifndef _ABS
 #define _ABS(x) ((x) >= 0 ? (x) : -(x))
@@ -142,6 +152,8 @@
 
 #define CONT_AD_THRESH_UPDATE	100	/* Update thresholds approx every so many frames */
 	/* PWP: update was 200 frames, or 3.2 seconds.  Now about every 1.6 sec. */
+
+#define CONT_AD_ADAPT_RATE	0.5	/* Interpolation of new and old noiselevel */
 
 #define CONT_AD_SPS             16000
 
@@ -188,12 +200,11 @@ void cont_ad_powhist_dump (FILE *fp, cont_ad_t *r)
 {
     int32 i;
 
-    fprintf (fp, "\n");
     for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
 	if (r->pow_hist[i] > 0)
 	    fprintf (fp, "\t%3d %6d\n", i, r->pow_hist[i]);
-    fprintf (fp, "\tnoiselevel= %d, thresh(sil,speech)= %d %d\n",
-	    r->noise_level, r->thresh_sil, r->thresh_speech);
+    fprintf (fp, "\tnew noiselevel= %d  thresh(sil,speech)= %d %d\n",
+	     r->noise_level, r->thresh_sil, r->thresh_speech);
     fflush (fp);
 }
 
@@ -309,6 +320,7 @@ static int32 find_thresh (cont_ad_t *r)
     /* PWP: Hmmmmm.... SReed's code looks over the lower 20 dB */
     /* PWP: 1/14/98  Made to work like Stephen Reed's code */
 
+    /* This method of detecting the noise level is VERY unsatisfactory */
     max = 0;
     for (j = i, th = i;
 	 (j < CONT_AD_POWHISTSIZE) && (j < i+20); j++) { /* PWP: was i+6, which was 9 dB */
@@ -318,6 +330,11 @@ static int32 find_thresh (cont_ad_t *r)
 	}
     }
 
+    if (logfp) {
+	fprintf (logfp, "\tfrm= %d  noiselevel= %d  histthresh= %d\n",
+		 frmno, r->noise_level, th);
+    }
+    
     /* "Don't change the threshold too fast" */
 #if 0
     if ( _ABS(r->noise_level - th) >= 10 ) {
@@ -333,25 +350,16 @@ static int32 find_thresh (cont_ad_t *r)
      * RKM: The above is odd; if (diff >= 10) += diff/2; else += diff??
      * This is discontinuous.  Change to always += diff/2.
      */
-    r->noise_level += ((th - r->noise_level) / 2);
+    r->noise_level = (int32) (th * r->adapt_rate + r->noise_level * (1.0 - r->adapt_rate));
 #endif
 
     /* update thresholds */
     r->thresh_sil = r->noise_level + r->delta_sil;
     r->thresh_speech = r->noise_level + r->delta_speech;
 
-//    fprintf(stderr, "thresh_sil %d thresh_speech %d\n", r->thresh_sil, r->thresh_speech);
-
-#ifdef CONT_AD_DEBUG
-    cont_ad_powhist_dump (r);
-#endif
+    if (logfp)
+	cont_ad_powhist_dump (logfp, r);
     
-    if (logfp) {
-	fprintf (logfp, "frm= %6d, noiselevel= %d, thresh(sil,speech)= %d %d\n",
-		 frmno, r->noise_level, r->thresh_sil, r->thresh_speech);
-	fflush (logfp);
-    }
-
     /*
      * PWP: in SReed's original, he cleared the histogram here.
      * I can't fathom why.
@@ -598,18 +606,18 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 
 	if (++tailfrm >= CONT_AD_ADFRMSIZE)
 	    tailfrm = 0;
-    }
 
-    /* Update thresholds if time to do so */
-    if (r->thresh_update <= 0) {
-	find_thresh (r);
-	decay_hist (r);
-	r->thresh_update = CONT_AD_THRESH_UPDATE;
-
-	/* Since threshold has been updated, recompute r->n_other */
-	r->n_other = 0;
-	r->n_in_a_row = 0;
-	if (r->state == CONT_AD_STATE_SIL) {
+	/* RKM: 2004-06-23: Moved this block from outside the enclosing loop */
+	/* Update thresholds if time to do so */
+	if (r->thresh_update <= 0) {
+	  find_thresh (r);
+	  decay_hist (r);
+	  r->thresh_update = CONT_AD_THRESH_UPDATE;
+	  
+	  /* Since threshold has been updated, recompute r->n_other */
+	  r->n_other = 0;
+	  r->n_in_a_row = 0;
+	  if (r->state == CONT_AD_STATE_SIL) {
 	    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
 		if (r->frm_pow[f] >= r->thresh_speech) {
 		    r->n_other++;
@@ -633,6 +641,7 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 		if (f >= CONT_AD_ADFRMSIZE)
 		    f = 0;
 	    }
+	  }
 	}
     }
 
@@ -742,6 +751,8 @@ int32 cont_ad_calib (cont_ad_t *r)
 	compute_frame_pow (r, tailfrm);
     }
 
+    r->thresh_update = CONT_AD_THRESH_UPDATE;
+    
     return (find_thresh (r));
 }
 
@@ -805,34 +816,38 @@ int32 cont_ad_set_thresh (cont_ad_t *r, int32 sil, int32 speech)
 int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
 			  int32 min_noise, int32 max_noise,
 			  int32 winsize, int32 speech_onset, int32 sil_onset,
-			  int32 leader, int32 trailer)
+			  int32 leader, int32 trailer,
+			  float32 adapt_rate)
 {
     if ((delta_sil < 0) || (delta_speech < 0) || (min_noise < 0) || (max_noise < 0)) {
-	fprintf(stderr, "cont_ad_set_params: threshold arguments: "
-		"%d, %d, %d, %d must all be >=0\n",
+	E_ERROR("threshold arguments: " "%d, %d, %d, %d must all be >=0\n",
 		delta_sil, delta_speech, min_noise, max_noise);
 	return -1;
     }
 
     if ((speech_onset > winsize) || (speech_onset <= 0) || (winsize <= 0)) {
-	fprintf(stderr, "cont_ad_set_params: speech_onset, %d, must be <= winsize, %d, "
-		"and both >0\n", speech_onset, winsize);
+	E_ERROR("speech_onset, %d, must be <= winsize, %d, and both >0\n",
+		speech_onset, winsize);
 	return -1;
     }
     
     if ((sil_onset > winsize) || (sil_onset <= 0) || (winsize <= 0)) {
-	fprintf(stderr, "cont_ad_set_params: sil_onset, %d, must be <= winsize, %d, "
-		"and both >0\n", sil_onset, winsize);
+	E_ERROR("sil_onset, %d, must be <= winsize, %d, and both >0\n",
+		sil_onset, winsize);
 	return -1;
     }
     
     if (((leader + trailer) > winsize) || (leader <= 0) || (trailer <= 0)) {
-	fprintf(stderr, "cont_ad_set_params: leader, %d, plus trailer, %d, "
-		"must be <= winsize, %d, and both >0\n",
+	E_ERROR("leader, %d, plus trailer, %d, must be <= winsize, %d, and both >0\n",
 		leader, trailer, winsize);
 	return -1;
     }
 
+    if ((adapt_rate < 0.0) || (adapt_rate > 1.0)) {
+      E_ERROR("adapt_rate, %e; must be in range 0..1\n", adapt_rate);
+      return -1;
+    }
+    
     r->delta_sil = delta_sil;
     r->delta_speech = delta_speech;
     r->min_noise = min_noise;
@@ -843,6 +858,8 @@ int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
     r->sil_onset = sil_onset;
     r->leader = leader;
     r->trailer = trailer;
+    
+    r->adapt_rate = adapt_rate;
     
     if (r->win_validfrm >= r->winsize)
 	r->win_validfrm = r->winsize - 1;
@@ -860,10 +877,11 @@ int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
 int32 cont_ad_get_params (cont_ad_t *r, int32 *delta_sil, int32 *delta_speech,
 			  int32 *min_noise, int32 *max_noise,
 			  int32 *winsize, int32 *speech_onset, int32 *sil_onset,
-			  int32 *leader, int32 *trailer)
+			  int32 *leader, int32 *trailer,
+			  float32 *adapt_rate)
 {
     if (!delta_sil || !delta_speech || !min_noise || !max_noise || !winsize
-	|| !speech_onset || !sil_onset || !leader || !trailer) {
+	|| !speech_onset || !sil_onset || !leader || !trailer || !adapt_rate) {
 	fprintf(stderr, "cont_ad_get_params: some param slots are NULL\n");
 	return (-1);
     }
@@ -878,6 +896,8 @@ int32 cont_ad_get_params (cont_ad_t *r, int32 *delta_sil, int32 *delta_speech,
     *sil_onset = r->sil_onset;
     *leader = r->leader;
     *trailer = r->trailer;
+    
+    *adapt_rate = r->adapt_rate;
     
     return 0;
 }
@@ -1033,7 +1053,8 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->thresh_sil = r->noise_level + r->delta_sil;
     r->thresh_speech = r->noise_level + r->delta_speech;
     r->thresh_update = CONT_AD_THRESH_UPDATE;
-
+    r->adapt_rate = CONT_AD_ADAPT_RATE;
+    
     r->state = CONT_AD_STATE_SIL;
 
     r->spseg_head = NULL;

@@ -329,7 +329,10 @@ dict_read(dictT *dict,
 	    entry->fwid = word_id;
 	    word_id++;
 	}
-
+	
+	/* Mark the start of filler words */
+	dict->filler_start = word_id;
+	
 	/* Add [multiple] start symbols to dictionary (LISTEN project) */
 	if ((startsym_file = kb_get_startsym_file()) != NULL) {
 	    FILE *ssfp;
@@ -1314,4 +1317,40 @@ int32 dict_write_oovdict (dictT *dict, char const *file)
     fclose (fp);
 
     return (first_dummy - initial_dummy);
+}
+
+
+void dict_dump (dictT *dict, FILE *out)
+{
+  int32 w;
+  dict_entry_t *de;
+  int32 i;
+  
+  fprintf (out, "<dict>");
+  for (w = 0; w < dict->dict_entry_count; w++) {
+    de = dict->dict_list[w];
+    fprintf (out, " <word index=\"%d\">\n", w);
+    fprintf (out, "  <string>%s</string>\n", de->word);
+    fprintf (out, "  <len>%d</len>\n", de->len);
+    fprintf (out, "  <ci>");
+    for (i = 0; i < de->len; i++)
+      fprintf (out, " %d", de->ci_phone_ids[i]);
+    fprintf (out, " </ci>\n");
+    fprintf (out, "  <pid>");
+    for (i = 0; i < de->len; i++)
+      fprintf (out, " %d", de->phone_ids[i]);
+    fprintf (out, " </pid>\n");
+    fprintf (out, "  <wid>%d</wid>\n", de->wid);
+    fprintf (out, "  <fwid>%d</fwid>\n", de->fwid);
+    fprintf (out, "  <alt>%d</alt>\n", de->alt);
+    fprintf (out, " </word>\n\n");
+    fflush (out);
+  }
+  fprintf (out, "</dict>");
+}
+
+
+int32 dict_is_filler_word (dictT *dict, int32 wid)
+{
+  return (wid >= dict->filler_start);
 }

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,84 +31,83 @@
  *
  */
 /*
- * prim_type.h -- Primitive types; more machine-independent.
- *
+ * fsg_lextree.h -- The collection of all the lextrees for the entire FSM.
+ * 
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1999 Carnegie Mellon University.
+ * Copyright (c) 2004 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/07/16  00:57:10  egouvea
+ * Revision 1.1  2004/07/16  00:57:12  egouvea
  * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.3  2004/06/23 20:32:16  rkm
+ * *** empty log message ***
+ *
  * Revision 1.2  2004/05/27 14:22:57  rkm
  * FSG cross-word triphones completed (but for single-phone words)
  *
- * Revision 1.1.1.1  2004/03/01 14:30:20  rkm
+ * Revision 1.1.1.1  2004/03/01 14:30:31  rkm
  *
  *
- * Revision 1.3  2004/02/09 21:19:35  rkm
- * Added bool
+ * Revision 1.1  2004/02/23 15:53:45  rkm
+ * Renamed from fst to fsg
  *
- * Revision 1.2  2004/01/23 19:20:03  rkm
- * *** empty log message ***
+ * Revision 1.2  2004/02/19 21:16:54  rkm
+ * Added fsg_search.{c,h}
  *
+ * Revision 1.1  2004/02/18 15:02:34  rkm
+ * Added fsg_lextree.{c,h}
  *
- * 02-Aug-1999  Kevin A. Lenzo (lenzo@cs.cmu.edu) at Carnegie Mellon
- *              Copied from s3 and cut out everything but the typedefs.
  * 
- * 12-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
- * 		Added arraysize_t, point_t, fpoint_t.
- * 
- * 01-Feb-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
- * 		Added anytype_t.
- * 
- * 08-31-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
- * 		Created.
+ * 18-Feb-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 		Started.
  */
 
 
-#ifndef _S2TYPES_
-#define _S2TYPES_
+#ifndef __S2_FSG_LEXTREE_H__
+#define __S2_FSG_LEXTREE_H__
 
-typedef int		int32;
-typedef short		int16;
-typedef char		int8;
-typedef unsigned int	uint32;
-typedef unsigned short	uint16;
-typedef unsigned char	uint8;
-typedef float		float32;
-typedef double		float64;
-typedef unsigned char	boolean;
 
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
+#include <word_fsg.h>
+#include <fsg_psubtree.h>
 
-#ifndef NULL
-#define NULL (void *)0
-#endif
 
-typedef union anytype_s {
-  boolean boolean;
-  int8 int8;
-  uint8 uint8;
-  int16 int16;
-  uint16 uint16;
-  int32 int32;
-  uint32 uint32;
-  float32 float32;
-  float64 float64;
-  void *ptr;
-} anytype_t;
+typedef struct fsg_lextree_s {
+  word_fsg_t *fsg;	/* The fsg for which this lextree is built */
+  fsg_pnode_t **root;	/* root[s] = lextree representing all transitions
+			   out of state s.  Note that the "tree" for each
+			   state is actually a collection of trees, linked
+			   via fsg_pnode_t.sibling (root[s]->sibling) */
+  fsg_pnode_t **alloc_head;	/* alloc_head[s] = head of linear list of all
+				   pnodes allocated for state s */
+  int32 n_pnode;	/* #HMM nodes in search structure */
+} fsg_lextree_t;
+
+/* Access macros */
+#define fsg_lextree_root(lt,s)	((lt)->root[s])
+#define fsg_lextree_n_pnode(lt)	((lt)->n_pnode)
+
+
+/*
+ * Create, initialize, and return a new phonetic lextree for the given FSM.
+ */
+fsg_lextree_t *fsg_lextree_init (word_fsg_t *);
+
+
+void fsg_lextree_free (fsg_lextree_t *);
+
+
+void fsg_lextree_dump (fsg_lextree_t *, FILE *);
+
+
+void fsg_lextree_utt_start (fsg_lextree_t *);
+void fsg_lextree_utt_end (fsg_lextree_t *);
 
 
 #endif

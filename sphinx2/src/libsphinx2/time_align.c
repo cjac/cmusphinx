@@ -53,9 +53,15 @@
  *
  * Revision History
  * $Log$
- * Revision 1.13  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.14  2004/07/16  00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.13  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.12  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *

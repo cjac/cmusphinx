@@ -39,9 +39,69 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.16  2004/07/16  00:57:12  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.5  2004/07/07 13:56:33  rkm
+ * Added reporting of (acoustic score - best senone score)/frame
+ *
+ * Revision 1.4  2004/06/22 15:35:46  rkm
+ * Added partial result reporting options in batch mode
+ *
+ * Revision 1.3  2004/06/16 17:48:03  rkm
+ * Imported pscr-based stuff from fbs_main.c
+ *
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.2  2004/03/02 15:33:39  rkm
+ * FSG bug fixes
+ *
+ * Revision 1.14  2004/03/02 04:10:14  rkm
+ * FSG bugfix: need to get senscores every utt
+ *
+ * Revision 1.13  2004/03/01 20:30:56  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.12  2004/03/01 20:21:33  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.11  2004/02/27 21:01:25  rkm
+ * Many bug fixes in multiple FSGs
+ *
+ * Revision 1.10  2004/02/27 19:33:01  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.9  2004/02/27 16:15:13  rkm
+ * Added FSG switching
+ *
+ * Revision 1.8  2004/02/27 15:05:21  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.7  2004/02/26 01:14:48  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.6  2004/02/25 15:08:19  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.5  2004/02/24 18:13:05  rkm
+ * Added NULL transition handling
+ *
+ * Revision 1.4  2004/02/23 15:53:45  rkm
+ * Renamed from fst to fsg
+ *
+ * Revision 1.3  2004/02/23 15:09:50  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.2  2004/02/19 21:16:54  rkm
+ * Added fsg_search.{c,h}
+ *
+ * Revision 1.1.1.1  2003/12/03 20:05:04  rkm
+ * Initial CVS repository
+ *
+ * Revision 1.15  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.14  2001/12/07 20:32:59  lenzo
  * No unistd.h on Windows.
  *
@@ -207,6 +267,8 @@
 #include "fe.h"
 #include "fbs.h"
 #include "search.h"
+#include <fsg_search.h>
+
 
 #define MAX_UTT_LEN	6000	/* #frames */
 #define MAX_CEP_LEN	(MAX_UTT_LEN*CEP_SIZE)
@@ -232,6 +294,7 @@ static int32 livemode;		/* Iff TRUE, search while input being supplied.  In this
 				   utterance based */
 static int32 utt_ofl;		/* TRUE iff buffer limits overflowed in current utt */
 static int32 nosearch = 0;
+static int32 fsg_search_mode = FALSE;	/* Using FSM search structure */
 
 /* MFC vectors for entire utt */
 static float **mfcbuf;
@@ -291,6 +354,7 @@ static struct rusage start, stop;
 static struct timeval e_start, e_stop;
 #endif
 
+
 /* FIXME: These are all internal to this module, but still should go
    into internal header files... */
 
@@ -325,6 +389,9 @@ void agc_max(float *cep,
 
 /* searchlat.c */
 void searchlat_set_rescore_lm (char const *lmname);
+
+static fsg_search_t *fsg_search;
+
 
 #ifdef WIN32
 
@@ -384,9 +451,9 @@ static void timing_start ( void )
 /*
  * End of each utterance
  */
-static void timing_stop ( void )
+static void timing_stop (int32 nfr)
 {
-    if (searchFrame() == 0)
+    if (nfr <= 0)
 	return;
     
     E_INFO(" %5.2f SoS", searchFrame()*0.01);
@@ -397,10 +464,10 @@ static void timing_stop ( void )
     e_stop = (float)clock()/CLOCKS_PER_SEC;
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
     
-    E_INFO(", %6.2f sec elapsed", (e_stop - e_start));
-    E_INFO(", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
-    E_INFO(", %6.2f sec CPU", win32_cputime(&ust, &uet));
-    E_INFO(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
+    E_INFOCONT(", %6.2f sec elapsed", (e_stop - e_start));
+    E_INFOCONT(", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
+    E_INFOCONT(", %6.2f sec CPU", win32_cputime(&ust, &uet));
+    E_INFOCONT(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
     
     TotalCPUTime += win32_cputime(&ust, &uet);
     TotalElapsedTime += (e_stop - e_start);
@@ -411,12 +478,12 @@ static void timing_stop ( void )
 #endif
     gettimeofday (&e_stop, 0);
     
-    E_INFO(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
-    E_INFO(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
+    E_INFOCONT(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
+    E_INFOCONT(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
     
 #ifndef _HPUX_SOURCE
-    E_INFO(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
-    E_INFO(", %5.2f xRT",
+    E_INFOCONT(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
+    E_INFOCONT(", %5.2f xRT",
 	    MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
 #endif
     
@@ -424,7 +491,7 @@ static void timing_stop ( void )
     TotalElapsedTime += MakeSeconds (&e_start, &e_stop);
 #endif
     
-    E_INFO("\n");
+    E_INFOCONT("\n\n");
 }
 
 /*
@@ -681,27 +748,88 @@ static int32 mfc2feat_batch (float **mfc, int32 nfr)
     return 0;
 }
 
+
+static void uttproc_fsg_search_fwd ( void )
+{
+  int32 *senscore, best;
+  
+#if 0
+  int32 i;
+  
+  fprintf (stdout, "[%4d] CEP/DCEP/DCEP_80/DDCEP/POW\n", fsg_search->frame);
+  for (i = 0; i < CEP_SIZE; i++) {
+    fprintf (stdout, "\t%12.4e", cep_buf[search_cep_i + i]);
+    fprintf (stdout, " %12.4e", dcep_buf[search_cep_i + i]);
+    fprintf (stdout, " %12.4e", dcep_80ms_buf[search_cep_i + i]);
+    fprintf (stdout, " %12.4e", ddcep_buf[search_cep_i + i]);
+    if (i < POW_SIZE)
+      fprintf (stdout, " %12.4e", pcep_buf[search_pow_i + i]);
+    fprintf (stdout, "\n");
+  }
+#endif
+
+  senscore = search_get_dist_scores();	/* senone scores array */
+  best = SCVQScores_all(senscore,
+			cep_buf + search_cep_i,
+			dcep_buf + search_cep_i,
+			dcep_80ms_buf + search_cep_i,
+			pcep_buf + search_pow_i,
+			ddcep_buf + search_cep_i);
+  
+  /* Note the best senone score for this frame */
+  search_set_topsen_score (fsg_search_frame(fsg_search), best);
+  
+  fsg_search_frame_fwd (fsg_search);
+}
+
+
 /* Convert all given mfc vectors to feature vectors, and search one frame */
 static int32 uttproc_frame ( void )
 {
-    /* Search one frame */
-    if (query_fwdtree_flag())
-	search_fwd (cep_buf + search_cep_i,
-		    dcep_buf + search_cep_i,
-		    dcep_80ms_buf + search_cep_i,
-		    pcep_buf + search_pow_i,
-		    ddcep_buf + search_cep_i);
-    else
-	search_fwdflat_frame (cep_buf + search_cep_i,
-			      dcep_buf + search_cep_i,
-			      dcep_80ms_buf + search_cep_i,
-			      pcep_buf + search_pow_i,
-			      ddcep_buf + search_cep_i);
-    search_cep_i += CEP_SIZE;
-    search_pow_i += POW_SIZE;
-    n_searchfr++;
-    
-    return 0;
+  int32 pr, frm;
+  char *str;
+  search_hyp_t *hyp;
+  
+  /* Search one frame */
+  if (fsg_search_mode)
+    uttproc_fsg_search_fwd();
+  else if (query_fwdtree_flag())
+    search_fwd (cep_buf + search_cep_i,
+		dcep_buf + search_cep_i,
+		dcep_80ms_buf + search_cep_i,
+		pcep_buf + search_pow_i,
+		ddcep_buf + search_cep_i);
+  else
+    search_fwdflat_frame (cep_buf + search_cep_i,
+			  dcep_buf + search_cep_i,
+			  dcep_80ms_buf + search_cep_i,
+			  pcep_buf + search_pow_i,
+			  ddcep_buf + search_cep_i);
+  search_cep_i += CEP_SIZE;
+  search_pow_i += POW_SIZE;
+  
+  n_searchfr++;
+  
+  pr = query_report_partial_result();
+  if ((pr > 0) && ((n_searchfr % pr) == 1)) {
+    /* Report partial result string */
+    uttproc_partial_result (&frm, &str);
+    printf ("PART[%d]: %s\n", frm, str);
+    fflush (stdout);
+  }
+  
+  pr = query_report_partial_result_seg();
+  if ((pr > 0) && ((n_searchfr % pr) == 1)) {
+    /* Report partial result segmentation */
+    uttproc_partial_result_seg (&frm, &hyp);
+    printf ("PARTSEG[%d]:", frm);
+    for (; hyp; hyp = hyp->next)
+      printf (" %s %d %d", hyp->word, hyp->sf, hyp->ef);
+    printf ("\n");
+    fflush (stdout);
+  }
+  
+  return 0;
 }
 
 static void fwdflat_search (int32 n_frames)
@@ -756,6 +884,9 @@ static void write_results (char const *hyp, int32 aborted)
 static void uttproc_windup (int32 *fr, char **hyp)
 {
     /* Wind up first pass and run next pass, if necessary */
+  if (fsg_search_mode)
+    fsg_search_utt_end(fsg_search);
+  else {
     if (query_fwdtree_flag()) {
 	search_finish_fwd ();
 	
@@ -768,13 +899,24 @@ static void uttproc_windup (int32 *fr, char **hyp)
     if ((searchFrame() > 0) && query_bestpath_flag())
 	bestpath_search ();
     
-    timing_stop ();
+    if (query_phone_conf()) {
+      search_hyp_t *allp, *search_uttpscr2allphone();
+      
+      allp = search_uttpscr2allphone();
+      search_hyp_free (allp);
+    }
     
-    search_result (fr, hyp);
-
-    write_results (*hyp, 0);
+    if (query_pscr2lat())
+      search_uttpscr2phlat_print ();
+  }
+  
+  search_result (fr, hyp);
+  
+  write_results (*hyp, 0);
     
-    uttstate = UTTSTATE_IDLE;
+  timing_stop (*fr);
+  
+  uttstate = UTTSTATE_IDLE;
 }
 
 /*
@@ -809,6 +951,12 @@ int32 uttproc_init ( void )
     fe_param->FRAME_RATE    = 100;
     fe_param->PRE_EMPHASIS_ALPHA = 0.97;
     
+    if ((fe_param->doublebw = query_doublebw()) == TRUE) {
+        E_INFO("Will use double bandwidth in mel filter\n");
+    } else {
+        E_INFO("Will not use double bandwidth in mel filter\n");
+    }
+
     fe = fe_init(fe_param);
 
     if (!fe) 
@@ -842,7 +990,33 @@ int32 uttproc_init ( void )
     uttno = 0;
 
     free(fe_param);
-
+    
+    /* Initialize the FSG search module */
+    {
+      char *fsgfile;
+      char *fsgname;
+      
+      fsg_search = fsg_search_init (NULL);
+      
+      fsgfile = kb_get_fsg_file_name();
+      
+      fsg_search_mode = (fsgfile != NULL);
+      
+      if (fsg_search_mode) {
+	fsgname = uttproc_load_fsgfile(fsgfile);
+	if (! fsgname)
+	  E_FATAL("Error loading FSG file '%s'\n", fsgfile);
+	
+	/* Make this FSG the currently active one */
+	if (uttproc_set_fsg (fsgname) < 0)
+	  E_FATAL("Error setting current FSG to '%s'\n", fsgname);
+	
+	E_INFO("FSG Mode; lextree, flat, bestpath searches disabled\n");
+      }
+      
+      E_INFO("-fsgctlfn handling to be added here...\n");
+    }
+    
     return 0;
 }
 
@@ -942,10 +1116,12 @@ int32 uttproc_begin_utt (char const *id)
     SCVQNewUtt ();
     
     if (! nosearch) {
-	if (query_fwdtree_flag())
-	    search_start_fwd ();
-	else
-	    search_fwdflat_start ();
+      if (fsg_search_mode)
+	fsg_search_utt_start (fsg_search);
+      else if (query_fwdtree_flag())
+	search_start_fwd ();
+      else
+	search_fwdflat_start ();
     }
     
     uttstate = UTTSTATE_BEGUN;
@@ -1087,8 +1263,8 @@ int32 uttproc_end_utt ( void )
     if (k > 0) {
 	E_INFO("Samples histogram (%s) (4/8/16/30/32K):", uttproc_get_uttid());
 	for (i = 0; i < 5; i++)
-	    E_INFO(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
-	E_INFO("; max: %d\n", max_samp);
+	    E_INFOCONT(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
+	E_INFOCONT("; max: %d\n", max_samp);
     }
     
     if (uttstate != UTTSTATE_BEGUN) {
@@ -1166,16 +1342,19 @@ int32 uttproc_abort_utt ( void )
     uttstate = UTTSTATE_IDLE;
 
     if (! nosearch) {
+      if (fsg_search_mode)
+	fsg_search_utt_end(fsg_search);
+      else {
 	if (query_fwdtree_flag())
 	    search_finish_fwd ();
 	else
 	    search_fwdflat_finish ();
 	
-	timing_stop ();
-	
 	search_result (&fr, &hyp);
 	
 	write_results (hyp, 1);
+      }
+      timing_stop (fr);
     }
     
     return 0;
@@ -1191,10 +1370,14 @@ int32 uttproc_stop_utt ( void )
     uttstate = UTTSTATE_STOPPED;
     
     if (! nosearch) {
+      if (fsg_search_mode)
+	fsg_search_utt_end(fsg_search);
+      else {
 	if (query_fwdtree_flag())
 	    search_finish_fwd ();
 	else
-	    search_fwdflat_finish ();
+	  search_fwdflat_finish ();
+      }
     }
     
     return 0;
@@ -1210,14 +1393,16 @@ int32 uttproc_restart_utt ( void )
     uttstate = UTTSTATE_BEGUN;
     
     if (! nosearch) {
-	if (query_fwdtree_flag())
-	    search_start_fwd ();
-	else
-	    search_fwdflat_start ();
-	
-	search_cep_i = 0;
-	search_pow_i = 0;
-	n_searchfr = 0;
+      if (fsg_search_mode)
+	fsg_search_utt_start (fsg_search);
+      else if (query_fwdtree_flag())
+	search_start_fwd ();
+      else
+	search_fwdflat_start ();
+      
+      search_cep_i = 0;
+      search_pow_i = 0;
+      n_searchfr = 0;
     }
     
     return 0;
@@ -1232,7 +1417,11 @@ int32 uttproc_partial_result (int32 *fr, char **hyp)
 	return -1;
     }
 
-    search_partial_result (fr, hyp);
+    if (fsg_search_mode) {
+      fsg_search_history_backtrace(fsg_search, FALSE);
+      search_result (fr, hyp);
+    } else
+      search_partial_result (fr, hyp);
     
     return 0;
 }
@@ -1321,7 +1510,12 @@ int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
 	return -1;
     }
 
-    search_partial_result (fr, &str);	/* Internally makes partial result */
+    if (fsg_search_mode) {
+      fsg_search_history_backtrace(fsg_search, FALSE);
+      search_result (fr, &str);
+    } else
+      search_partial_result (fr, &str);	/* Internally makes partial result */
+    
     build_utt_seghyp();
     *hyp = utt_seghyp;
     
@@ -1408,17 +1602,88 @@ int32 uttproc_set_lm (char const *lmname)
 {
     warn_notidle ("uttproc_set_lm");
     
-    if (lmname == NULL)
-	E_FATAL("uttproc_set_lm called with NULL argument\n");
+    if (lmname == NULL) {
+	E_ERROR("uttproc_set_lm called with NULL argument\n");
+	return -1;
+    }
     
     if (lm_set_current (lmname) < 0)
 	return -1;
+    
+    fsg_search_mode = FALSE;
+    
     search_set_current_lm ();
 
     E_INFO("LM= \"%s\"\n", lmname);
     
     return 0;
 }
+
+
+char *uttproc_load_fsgfile (char *fsgfile)
+{
+  word_fsg_t *fsg;
+  
+  fsg = word_fsg_readfile(fsgfile, 
+			  query_fsg_use_altpron(),
+			  query_fsg_use_filler(),
+			  kb_get_silpen(),
+			  kb_get_fillpen(),
+			  kb_get_lw());
+  if (! fsg)
+    return NULL;
+  
+  if (! fsg_search_add_fsg (fsg_search, fsg)) {
+    E_ERROR("Failed to add FSG '%s' to system\n", word_fsg_name(fsg));
+    word_fsg_free (fsg);
+    return NULL;
+  }
+  
+  return fsg->name;
+}
+
+
+int32 uttproc_del_fsg (char *fsgname)
+{
+    warn_notidle ("uttproc_del_fsg");
+    
+    if (fsgname == NULL) {
+	E_ERROR("uttproc_del_fsg called with NULL argument\n");
+	return -1;
+    }
+    
+    if (! fsg_search_del_fsg_byname(fsg_search, fsgname))
+	return -1;
+    
+    return 0;
+}
+
+
+int32 uttproc_set_fsg (char *fsgname)
+{
+    warn_notidle ("uttproc_set_fsg");
+    
+    if (fsgname == NULL) {
+	E_ERROR("uttproc_set_fsg called with NULL argument\n");
+	return -1;
+    }
+    
+    if (! fsg_search_set_current_fsg (fsg_search, fsgname))
+	return -1;
+    
+    fsg_search_mode = TRUE;
+    
+    E_INFO("FSG= \"%s\"\n", fsgname);
+    
+    return 0;
+}
+
+
+boolean uttproc_fsg_search_mode ( void )
+{
+  return fsg_search_mode;
+}
+
 
 int32 uttproc_set_rescore_lm (char const *lmname)
 {

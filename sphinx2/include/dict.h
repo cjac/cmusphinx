@@ -68,6 +68,7 @@ typedef struct _dict {
     dict_entry_t	**dict_list;
     int32		ci_index_len;	 	/* number of indecies */
     int32		*ci_index;		/* Index to each group */
+    int32		filler_start;		/* Start of filler words */
 } dictT;
 
 int32 dict_read (dictT *dict,
@@ -77,6 +78,8 @@ int32 dict_read (dictT *dict,
 		 int32 use_context);
 
 void dict_free (dictT *dict);
+
+#define DICT_SILENCE_WORDSTR	"SIL"
 
 dict_entry_t *dict_get_entry (dictT *dict, int i);
 int32 dict_count(dictT *dict);
@@ -103,9 +106,19 @@ int32 dict_get_first_initial_oov(void);
 int32 dict_get_last_initial_oov(void);
 int32 dict_is_new_word (int32 wid);
 
+/* Return TRUE if the given wid is a filler word, FALSE otherwise */
+int32 dict_is_filler_word (dictT *dict, int32 wid);
+
+
 #define WordIdToStr(d,x)	((x == NO_WORD) ? "" : d->dict_list[x]->word)
 
 #define WordIdToBaseStr(d,x)	((x == NO_WORD) ? "" :	\
 				   d->dict_list[d->dict_list[x]->wid]->word)
+
+#define dict_pronlen(dict,wid)	((dict)->dict_list[wid]->len)
+#define dict_ciphone(d,w,p)	((d)->dict_list[w]->ci_phone_ids[p])
+#define dict_phone(d,w,p)	((d)->dict_list[w]->phone_ids[p])
+#define dict_mpx(d,w)		((d)->dict_list[w]->mpx)
+
 
 #endif

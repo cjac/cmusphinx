@@ -428,6 +428,9 @@ static int32 build_lattice (int32 bptbl_sz)
     last_frame = searchFrame ();
     latnode_list = NULL;
     for (i = 0, bp_ptr = bptbl; i < bptbl_sz; i++, bp_ptr++) {
+	if (! bp_ptr->valid)
+	    continue;
+	
 	sf = (bp_ptr->bp < 0) ? 0 : bptbl[bp_ptr->bp].frame+1;
 	ef = bp_ptr->frame;
 	wid = bp_ptr->wid;
@@ -918,7 +921,7 @@ int32 lattice_rescore ( double lwf )
 	E_INFO("BESTPATH: %s (%s %d)\n",
 		res, uttproc_get_uttid (), best->path_scr+final_node_ascr);
     
-	E_INFO("%8d nodes, %d links searched\n", n_node, n_link);
+	E_INFO("%8d nodes, %d links searched\n\n", n_node, n_link);
     }
 
     if (rescore_lmname) {

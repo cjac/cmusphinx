@@ -1,15 +1,18 @@
 EXTRA_DIST = \
 	README \
-	ad.h.in
+	ad_conf.h.in
 
 pkginclude_HEADERS = \
 	CM_macros.h \
 	ad.h \
 	cdcn.h \
+	ckd_alloc.h \
 	cont_ad.h \
 	dict.h \
 	err.h \
 	fbs.h \
+	fe.h \
+	glist.h \
 	hash.h \
 	list.h \
 	lm_3g.h \
@@ -17,7 +20,6 @@ pkginclude_HEADERS = \
 	log.h \
 	log_add.h \
 	mulaw.h \
-	fe.h \
 	posixsock.h \
 	posixwin32.h \
 	s2params.h \

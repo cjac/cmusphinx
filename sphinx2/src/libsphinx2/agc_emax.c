@@ -68,7 +68,7 @@ static float obs_max_sum = 0.0;
 
 int32 agcemax_set (double m)
 {
-    max = m;
+    max = (float) m;
     E_INFO("AGCEMax: %.2f\n", max);
     return 0;
 }

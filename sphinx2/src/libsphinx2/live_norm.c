@@ -161,8 +161,8 @@ void mean_norm_update(void)
     
     E_INFO("mean_norm_update: from < ");
     for (i = 0; i < veclen; i++)
-	E_INFO("%5.2f ", cur_mean[i]);
-    E_INFO(">\n");
+	E_INFOCONT("%5.2f ", cur_mean[i]);
+    E_INFOCONT(">\n");
 
     sf = (1.0/nframe);
     for (i = 0; i < veclen; i++)
@@ -178,6 +178,6 @@ void mean_norm_update(void)
 
     E_INFO("mean_norm_update: to   < ");
     for (i = 0; i < veclen; i++)
-	E_INFO("%5.2f ", cur_mean[i]);
-    E_INFO(">\n");
+	E_INFOCONT("%5.2f ", cur_mean[i]);
+    E_INFOCONT(">\n");
 }

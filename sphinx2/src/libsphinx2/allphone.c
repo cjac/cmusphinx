@@ -233,7 +233,6 @@ static void allphone_backtrace (int32 bp)
 {
     int32 bf, f, nf, bscr, escr;
     search_hyp_t *h;
-    extern int32 print_back_trace;
     
     if (bp < 0)
 	return;
@@ -247,8 +246,7 @@ static void allphone_backtrace (int32 bp)
 	bf = allphone_bp[allphone_bp[bp].bp].f+1;
 	bscr = allphone_bp[allphone_bp[bp].bp].scr;
     }
-    escr = allphone_bp[bp].scr;
-    for (escr = 0, f = bf; f <= allphone_bp[bp].f; f++)
+    for (escr = allphone_bp[bp].scr, f = bf; f <= allphone_bp[bp].f; f++)
 	escr += renorm_scr[f];
 
     nf = allphone_bp[bp].f - bf + 1;
@@ -265,15 +263,15 @@ static void allphone_backtrace (int32 bp)
 	allp_seghyp = h;
     allp_seghyp_tail = h;
     
-    if (print_back_trace) {
-	printf ("ph:%s> %4d %4d %8d %10d %s\n", uttproc_get_uttid(),
-		h->sf, h->ef, (escr-bscr)/nf, escr-bscr, h->word);
+    if (query_back_trace()) {
+	printf ("\t%5d %5d %4d %10d %11d  %s\n",
+		h->sf, h->ef, nf, (escr-bscr)/nf, escr-bscr, h->word);
     }
 }
 
 static void allphone_result ( void )
 {
-    int32 i, b, f, sile, bestbp;
+    int32 i, b, f, sile, bestbp, scr;
     extern void utt_seghyp_free (search_hyp_t *);
     
     if (n_bp <= 0) {
@@ -300,7 +298,29 @@ static void allphone_result ( void )
     } else
 	bestbp = i;
     
+    if (query_back_trace()) {
+      printf ("\t%5s %5s %4s %10s %11s %s  (%s)\n",
+	      "SFrm", "EFrm", "NFrm", "AScr/Frm", "AScr", "Phone",
+	      uttproc_get_uttid());
+      printf ("\t-----------------------------------------------------------------\n");
+    }
     allphone_backtrace (bestbp);
+    if (query_back_trace() && (bestbp >= 0)) {
+      assert (allphone_bp[bestbp].f >= 0);
+      
+      scr = allphone_bp[bestbp].scr;
+      for (f = 0; f <= allphone_bp[bestbp].f; f++)
+	scr += renorm_scr[f];
+      
+      printf ("\t-----------------------------------------------------------------\n");
+      f = allphone_bp[bestbp].f;
+      if (f >= 0) {
+	printf ("\t%5d %5d      %10d %11d  %s(TOTAL)\n",
+		0, f,
+		scr / (f + 1), scr,
+		uttproc_get_uttid());
+      }
+    }
 }
 
 search_hyp_t *allphone_utt (int32 nfr,

@@ -43,9 +43,39 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2001/12/07  17:30:00  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.7  2004/07/16  00:57:10  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.4  2004/06/22 15:35:46  rkm
+ * Added partial result reporting options in batch mode
+ *
+ * Revision 1.3  2004/06/16 17:45:48  rkm
+ * Added query_pscr2lat() to API
+ *
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.1.1.1  2004/03/01 14:30:19  rkm
+ *
+ *
+ * Revision 1.5  2004/02/27 21:01:25  rkm
+ * Many bug fixes in multiple FSGs
+ *
+ * Revision 1.4  2004/02/27 16:15:13  rkm
+ * Added FSG switching
+ *
+ * Revision 1.3  2004/02/27 15:05:21  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.2  2004/02/23 15:09:50  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.1.1.1  2003/12/03 20:05:04  rkm
+ * Initial CVS repository
+ *
+ * Revision 1.6  2001/12/07 17:30:00  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.5  2001/12/07 05:14:19  lenzo
  * License 1.2.
  *
@@ -335,10 +365,46 @@ int32 uttproc_set_auto_uttid_prefix (char const *prefix);
 
 /*
  * Set the currently active LM to the given named LM.  Multiple LMs can be loaded initially
- * (during fbs_init) or at run time using lm_read (see below).
+ * (during fbs_init) or at run time using lm_read (see below).  This functions
+ * sets the decoder in n-gram decoding mode.
  * Return value: 0 if successful, else -1.
  */
 int32 uttproc_set_lm (char const *lmname);
+
+
+/*
+ * Load the given FSG file into the system.  Another FSG with the same string
+ * name (on the FSG_BEGIN line) must not already exist.
+ * The loaded FSG is NOT automatically the currently active FSG.
+ * Return value: a read-only ptr to the string name of the loaded FSG; NULL
+ * if any error.  This pointer is invalid after the FSG is deleted
+ * (via uttproc_del_fsg()).
+ */
+char *uttproc_load_fsgfile (char *fsgfile);
+
+
+/*
+ * Set the currently active FSG to the given named FSG.  Cannot be performed in
+ * the middle of an utterance.  This function sets the decoder in FSG-decoding
+ * mode.
+ * Return value: 0 if successful, else -1.
+ */
+int32 uttproc_set_fsg (char *fsgname);
+
+
+/*
+ * Delete the given named FSG from the system.  If it was the currently active
+ * FSG, the search mode (N-gram or FSG-mode) becomes undefined.  Cannot be
+ * performed in the middle of an utterance.
+ * Return value: 0 if successful, else -1.
+ */
+int32 uttproc_del_fsg (char *fsgname);
+
+
+/*
+ * Whether the current utterance was (is) decoded in FSG search mode.
+ */
+boolean uttproc_fsg_search_mode ( void );
 
 
 /*
@@ -437,8 +503,21 @@ int32 query_fwdtree_flag ( void );
 int32 query_fwdflat_flag ( void );
 int32 query_bestpath_flag ( void );
 int32 query_sampling_rate ( void );
+int32 query_doublebw ( void );
 int32 query_phone_conf ( void );
+int32 query_pscr2lat ( void );
 int32 query_compute_all_senones (void);
+int32 query_maxwpf ( void );
+int32 query_back_trace ( void );
+int32 query_ctl_offset ( void );
+int32 query_ctl_count ( void );
+
+/*
+ * If > 0, report partial result every so many frames, starting at frame 1.
+ * (Useful in batch mode.)
+ */
+int32 query_report_partial_result ( void );
+int32 query_report_partial_result_seg ( void );
 
 int32 uttproc_init(void);
 int32 uttproc_end(void);

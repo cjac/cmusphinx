@@ -38,6 +38,29 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.11  2004/07/16  00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ * 
+ * Revision 1.7  2004/07/07 13:56:33  rkm
+ * Added reporting of (acoustic score - best senone score)/frame
+ *
+ * Revision 1.6  2004/06/18 17:11:53  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.5  2004/06/16 18:45:54  rkm
+ * *** empty log message ***
+ *
+ * Revision 1.4  2004/06/16 18:32:28  rkm
+ * Minor logformat change
+ *
+ * Revision 1.3  2004/06/16 13:47:58  rkm
+ * *** empty log message ***
+ *
+ * 
+ * 06-Aug-99	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Added -maxwpf parameter handling to limit number of words exiting per frame.
+ * 
  * 30-Oct-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Generalized the implementation of pscr based allphone.
  * 		Added phone_conf option at the end of FWDTREE search to produce pscr-based
@@ -194,6 +217,9 @@
 #include "fbs.h"
 #include "search.h"
 #include "hmm_tied_r.h"
+
+/* Turn this on to dump channels for debugging */
+#define __CHAN_DUMP__		0
 
 #ifdef USE_ILM
 #define lm_bg_score		ilm_bg_score
@@ -784,6 +810,112 @@ root_chan_v_mpx_eval (ROOT_CHAN_T *chan)
     chan->bestscore = bestScore;		\
 }						\
 
+
+static void root_chan_dump (ROOT_CHAN_T *chan, int32 frame, FILE *fp)
+{
+  SMD *smd0, *smd1, *smd2, *smd3, *smd4;
+  
+  if (chan->mpx) {
+    smd0 = &(Models[chan->sseqid[0]]);
+    smd1 = &(Models[chan->sseqid[1]]);
+    smd2 = &(Models[chan->sseqid[2]]);
+    smd3 = &(Models[chan->sseqid[3]]);
+    smd4 = &(Models[chan->sseqid[4]]);
+    fprintf (fp, "[%4d] MPX (%5d %5d %5d %5d %5d)\n",
+	     frame,
+	     smd0->dist[0],
+	     smd1->dist[3],
+	     smd2->dist[6],
+	     smd3->dist[9],
+	     smd4->dist[12]);
+    fprintf (fp, "\tSENSCR %11d %11d %11d %11d %11d\n",
+	     distScores[smd0->dist[0]],
+	     distScores[smd1->dist[3]],
+	     distScores[smd2->dist[6]],
+	     distScores[smd3->dist[9]],
+	     distScores[smd4->dist[12]]);
+    fprintf (fp, "\tSCORES %11d %11d %11d %11d %11d %11d\n",
+	     chan->score[0],
+	     chan->score[1],
+	     chan->score[2],
+	     chan->score[3],
+	     chan->score[4],
+	     chan->score[5]);
+    fprintf (fp, "\tPATHS  %11d %11d %11d %11d %11d %11d\n",
+	     chan->path[0],
+	     chan->path[1],
+	     chan->path[2],
+	     chan->path[3],
+	     chan->path[4],
+	     chan->path[5]);
+  } else {
+    smd0 = &(Models[chan->sseqid[0]]);
+    fprintf (fp, "[%4d] ROOT SSID %5d (%5d %5d %5d %5d %5d)\n",
+	     frame, chan->sseqid[0],
+	     smd0->dist[0],
+	     smd0->dist[3],
+	     smd0->dist[6],
+	     smd0->dist[9],
+	     smd0->dist[12]);
+    fprintf (fp, "\tSENSCR %11d %11d %11d %11d %11d\n",
+	     distScores[smd0->dist[0]],
+	     distScores[smd0->dist[3]],
+	     distScores[smd0->dist[6]],
+	     distScores[smd0->dist[9]],
+	     distScores[smd0->dist[12]]);
+    fprintf (fp, "\tSCORES %11d %11d %11d %11d %11d %11d\n",
+	     chan->score[0],
+	     chan->score[1],
+	     chan->score[2],
+	     chan->score[3],
+	     chan->score[4],
+	     chan->score[5]);
+    fprintf (fp, "\tPATHS  %11d %11d %11d %11d %11d %11d\n",
+	     chan->path[0],
+	     chan->path[1],
+	     chan->path[2],
+	     chan->path[3],
+	     chan->path[4],
+	     chan->path[5]);
+  }
+}
+
+
+void chan_dump (CHAN_T *chan, int32 frame, FILE *fp)
+{
+  SMD *smd;
+  
+  smd = &(Models[chan->sseqid]);
+  fprintf (fp, "[%4d] SSID %5d (%5d %5d %5d %5d %5d)\n",
+	   frame, chan->sseqid,
+	   smd->dist[0],
+	   smd->dist[3],
+	   smd->dist[6],
+	   smd->dist[9],
+	   smd->dist[12]);
+  fprintf (fp, "\tSENSCR %11d %11d %11d %11d %11d\n",
+	   distScores[smd->dist[0]],
+	   distScores[smd->dist[3]],
+	   distScores[smd->dist[6]],
+	   distScores[smd->dist[9]],
+	   distScores[smd->dist[12]]);
+  fprintf (fp, "\tSCORES %11d %11d %11d %11d %11d %11d\n",
+	   chan->score[0],
+	   chan->score[1],
+	   chan->score[2],
+	   chan->score[3],
+	   chan->score[4],
+	   chan->score[5]);
+  fprintf (fp, "\tPATHS  %11d %11d %11d %11d %11d %11d\n",
+	   chan->path[0],
+	   chan->path[1],
+	   chan->path[2],
+	   chan->path[3],
+	   chan->path[4],
+	   chan->path[5]);
+}
+
+
 void
 root_chan_v_eval (ROOT_CHAN_T *chan)
 {
@@ -792,6 +924,7 @@ root_chan_v_eval (ROOT_CHAN_T *chan)
     smd0 = &(Models[chan->sseqid[0]]);
     CHAN_V_EVAL(chan,smd0);
 }
+
 
 void
 chan_v_eval (CHAN_T *chan)
@@ -812,12 +945,17 @@ int32 eval_root_chan (void)
     k = 0;
     for (i = n_root_chan, rhmm = root_chan; i > 0; --i, rhmm++) {
 	if (rhmm->active == cf) {
+#if __CHAN_DUMP__
+	    root_chan_dump(rhmm, cf, stdout);
+#endif
 	    if (rhmm->mpx) {
 		root_chan_v_mpx_eval (rhmm);
 	    } else {
 		root_chan_v_eval (rhmm);
 	    }
-	    
+#if __CHAN_DUMP__
+	    root_chan_dump(rhmm, cf, stdout);
+#endif
 	    if (bestscore < rhmm->bestscore)
 		bestscore = rhmm->bestscore;
 
@@ -852,8 +990,13 @@ int32 eval_nonroot_chan (void)
     for (hmm = *(acl++); i > 0; --i, hmm = *(acl++)) {
 	
 	assert(hmm->active==cf);
-	
+#if __CHAN_DUMP__
+	chan_dump (hmm, cf, stdout);
+#endif
 	chan_v_eval (hmm);
+#if __CHAN_DUMP__
+	chan_dump (hmm, cf, stdout);
+#endif
 	if (bestscore < hmm->bestscore)
 	    bestscore = hmm->bestscore;
     }
@@ -890,8 +1033,13 @@ int32 eval_word_chan (void)
 
 	for (hmm = word_chan[w]; hmm; hmm = hmm->next) {
 	    assert(hmm->active == cf);
-
+#if __CHAN_DUMP__
+	    chan_dump (hmm, cf, stdout);
+#endif
 	    chan_v_eval (hmm);
+#if __CHAN_DUMP__
+	    chan_dump (hmm, cf, stdout);
+#endif
 
 	    if (bestscore < hmm->bestscore)
 		bestscore = hmm->bestscore;
@@ -910,11 +1058,17 @@ int32 eval_word_chan (void)
 	if (rhmm->active < cf)
 	    continue;
 	
+#if __CHAN_DUMP__
+	root_chan_dump (rhmm, cf, stdout);
+#endif
 	if (rhmm->mpx) {
 	    root_chan_v_mpx_eval (rhmm);
 	} else {
 	    root_chan_v_eval (rhmm);
 	}
+#if __CHAN_DUMP__
+	root_chan_dump (rhmm, cf, stdout);
+#endif
 	
 	if ((bestscore < rhmm->bestscore) && (w != FinishWordId))
 	    bestscore = rhmm->bestscore;
@@ -1000,6 +1154,8 @@ save_bwd_ptr (WORD_ID w, int32 score, int32 path, int32 rc)
 	bpe->bp = path;
 	bpe->score = score;
 	bpe->s_idx = BSSHead;
+	bpe->valid = 1;
+	
 	if ((de->len != 1) && (de->mpx)) {
 	    bpe->r_diph = de->phone_ids[de->len - 1];
 	    rcsize = RightContextFwdSize[bpe->r_diph];
@@ -1016,6 +1172,60 @@ save_bwd_ptr (WORD_ID w, int32 score, int32 path, int32 rc)
 	BSSHead += rcsize;
     }
 }
+
+
+/*
+ * Limit the number of word exits in each frame to maxwpf.  And also limit the number of filler
+ * words to 1.
+ */
+static void bptable_maxwpf (int32 maxwpf)
+{
+    int32 cf, bp, n;
+    int32 bestscr, worstscr;
+    BPTBL_T *bpe, *bestbpe, *worstbpe;
+    
+    cf = CurrentFrame;
+    
+    /* Allow only one filler word exit (the best) per frame */
+    bestscr = (int32)0x80000000;
+    bestbpe = NULL;
+    n = 0;
+    for (bp = BPTableIdx[cf]; bp < BPIdx; bp++) {
+	bpe = &(BPTable[bp]);
+	if (ISA_FILLER_WORD(bpe->wid)) {
+	    if (bpe->score > bestscr) {
+		bestscr = bpe->score;
+		bestbpe = bpe;
+	    }
+	    bpe->valid = 0;	/* Flag to indicate invalidation */
+	    n++;		/* No. of filler words */
+	}
+    }
+    /* Restore bestbpe to valid state */
+    if (bestbpe != NULL) {
+	bestbpe->valid = 1;
+	--n;
+    }
+    
+    /* Allow up to maxwpf best entries to survive; mark the remaining with valid = 0 */
+    n = (BPIdx - BPTableIdx[cf]) - n;	/* No. of entries after limiting fillers */
+    for (; n > maxwpf; --n) {
+	/* Find worst BPTable entry */
+	worstscr = (int32)0x7fffffff;
+	worstbpe = NULL;
+	for (bp = BPTableIdx[cf]; (bp < BPIdx); bp++) {
+	    bpe = &(BPTable[bp]);
+	    if (bpe->valid && (bpe->score < worstscr)) {
+		worstscr = bpe->score;
+		worstbpe = bpe;
+	    }
+	}
+	if (worstbpe == NULL)
+	    E_FATAL("PANIC: No worst BPtable entry remaining\n");
+	worstbpe->valid = 0;
+    }
+}
+
 
 /*
  * Prune currently active root channels for next frame.  Also, perform exit
@@ -1288,6 +1498,9 @@ last_phone_transition (void)
 	bplast = BPTableIdx[cand_sf[i].bp_ef+1]-1;
 	
 	for (bpe = &(BPTable[bp]); bp <= bplast; bp++, bpe++) {
+	    if (! bpe->valid)
+		continue;
+	    
 	    /* For each bp entry in the i-th end frame... */
 	    rcpermtab = (bpe->r_diph >= 0) ?
 		RightContextFwdPerm[bpe->r_diph] : zeroPermTab;
@@ -1600,6 +1813,9 @@ word_transition (void)
     }
     for (bp = BPTableIdx[cf]; bp < BPIdx; bp++) {
 	bpe = &(BPTable[bp]);
+	if (! bpe->valid)
+	    continue;
+	
 	rcpermtab = (bpe->r_diph >= 0) ? RightContextFwdPerm[bpe->r_diph] : zeroPermTab;
 	rcss = BScoreStack + bpe->s_idx;
 	
@@ -1764,13 +1980,12 @@ search_initialize (void)
      */
     if ((topsen_window = query_topsen_window ()) < 1)
 	quit(-1, "%s(%d): topsen window = %d\n", __FILE__, __LINE__, topsen_window);
-    E_INFO ("%s(%d): topsen-window = %d", __FILE__, __LINE__, topsen_window);
+    E_INFO ("%s(%d): topsen-window = %d, ", __FILE__, __LINE__, topsen_window);
     topsen_thresh = query_topsen_thresh ();
     if (topsen_window > 1)
-	E_INFO (", threshold = %d", topsen_thresh);
+	E_INFOCONT ("threshold = %d\n", topsen_thresh);
     else
-	E_INFO (", no phone-prediction");
-    E_INFO ("\n");
+	E_INFOCONT ("no phone-prediction\n");
     
     topsen_init ();
 
@@ -2160,7 +2375,7 @@ pruneChannels (void)
 void
 search_one_ply_fwd (void)
 {
-    int32 /* bs, */ i, cf, nf, w; /*, *awl; */
+    int32 /* bs, */ i, n, cf, nf, w; /*, *awl; */
     ROOT_CHAN_T *rhmm;
     
     if (CurrentFrame >= MAX_FRAMES-1)
@@ -2189,7 +2404,12 @@ search_one_ply_fwd (void)
     dump_traceword_chan ();
 #endif
     
+    /* Apply beam pruning, perform cross-HMM transitions and word-exits */
     pruneChannels ();
+    
+    /* Apply absolute pruning to word-exits, if specified */
+    if ((n = query_maxwpf()) < NumWords)
+	bptable_maxwpf (n);
     
     /* Do inter-word transitions */
     if (BPTableIdx[CurrentFrame] < BPIdx)
@@ -2638,9 +2858,15 @@ int32 search_get_score (void)
     return HypTotalScore;
 }
 
+int32 search_get_lscr ( void )
+{
+    return TotalLangScore;
+}
+
 void search_set_beam_width (double beam)
 {
     LogBeamWidth =  8 * LOG (beam);
+    E_INFO ("%8d = beam width\n", LogBeamWidth);
 }
 
 /* SEARCH_SET_NEW_WORD_BEAM
@@ -2697,6 +2923,11 @@ int32 searchFrame (void)
     return LastFrame;
 }
 
+void searchSetFrame (int32 frame)
+{
+    LastFrame = frame;
+}
+
 int32 searchCurrentFrame (void)
 {
     return CurrentFrame;
@@ -2717,6 +2948,11 @@ search_set_silence_word_penalty (float pen,
     SilenceWordPenalty = LOG (pen) + LOG (pip);
     E_INFO ("%8d = LOG (Silence Word Penalty) + LOG (Phone Penalty)\n",
 	    SilenceWordPenalty);
+}
+
+int32 search_get_logs2pip( void )
+{
+  return logPhoneInsertionPenalty;
 }
 
 void
@@ -3092,9 +3328,9 @@ init_search_tree (dictT *dict)
     for (w = 0; w < NumMainDictWords; w++) {
 	de = dict->dict_list[w];
 	
+	/* Paranoia Central; this check can probably be removed (RKM) */
 	if (de->mpx != mpx)
-	    quit(-1, "%s(%d): HMM tree words not all mpx or all non-mpx\n",
-		 __FILE__, __LINE__);
+	    E_FATAL("HMM tree words not all mpx or all non-mpx\n");
 	
 	if (de->len == 1)
 	    n_1ph_words++;
@@ -3174,6 +3410,18 @@ init_nonroot_chan (CHAN_T *hmm, int32 ph, int32 ci)
     hmm->sseqid = ph;
     hmm->ciphone = ci;
 }
+
+
+void search_chan_deactivate (CHAN_T *hmm)
+{
+    int32 s;
+
+    for (s = 0; s < NODE_CNT; s++)
+	hmm->score[s] = WORST_SCORE;
+    hmm->bestscore = WORST_SCORE;
+    hmm->active = -1;
+}
+
 
 /*
  * Allocate and initialize search channel-tree structure.  If (use_lm) do so wrt the
@@ -3512,6 +3760,11 @@ double *search_get_phone_perplexity ( void )
 void search_set_hyp_total_score (int32 score)
 {
     HypTotalScore = score;
+}
+
+void search_set_hyp_total_lscr (int32 lscr)
+{
+    TotalLangScore = lscr;
 }
 
 int32 search_get_sil_penalty (void)
@@ -4596,18 +4849,24 @@ static void print_pscr_path (FILE *fp, search_hyp_t *hyp, char const *caption)
 	return;
     }
     
-    fprintf (fp, "%s(%s):\n", caption, uttproc_get_uttid());
-
+    fprintf (fp, "\t%5s %5s %4s %10s %11s %s  (%s(%s))\n",
+	     "SFrm", "EFrm", "NFrm", "AScr/Frm", "AScr", "Phone",
+	     uttproc_get_uttid(), caption);
+    fprintf (fp, "\t-----------------------------------------------------------------\n");
     pathscore = nf = 0;
     for (h = hyp; h; h = h->next) {
-	fprintf (fp, "%5d %5d %10d %s\n", h->sf, h->ef, h->ascr, phone_from_id(h->wid));
+	fprintf (fp, "\t%5d %5d %4d %10d %11d  %s\n",
+		 h->sf, h->ef, h->ef - h->sf + 1,
+		 ((h->ef - h->sf) >= 0) ? h->ascr / (h->ef - h->sf + 1) : 0,
+		 h->ascr, phone_from_id(h->wid));
 	pathscore += h->ascr;
 	nf = h->ef;
     }
     nf++;
-    
-    fprintf (fp, "Pathscore(%s (%s)): %d /frame: %d\n",
-	     caption, uttproc_get_uttid(), pathscore, (pathscore+(nf>>1))/nf);
+    fprintf (fp, "\t-----------------------------------------------------------------\n");
+    fprintf (fp, "\t%5d %5d      %10d %11d  %s(TOTAL(%s))\n",
+	     0, nf-1, (pathscore+(nf>>1))/nf, pathscore,
+	     uttproc_get_uttid(), caption);
     fprintf (fp, "\n");
     fflush (fp);
 }
@@ -4737,4 +4996,19 @@ int32 search_bptbl_pred (int32 b)
 {
     for (b = BPTable[b].bp; ISA_FILLER_WORD(BPTable[b].wid); b = BPTable[b].bp);
     return (WordDict->dict_list[BPTable[b].wid]->fwid);
+}
+
+
+void search_get_logbeams (int32 *beam, int32 *pbeam, int32 *wbeam)
+{
+  *beam = LogBeamWidth;
+  *pbeam = NewPhoneLogBeamWidth;
+  *wbeam = NewWordLogBeamWidth;
+}
+
+
+void search_set_topsen_score (int32 frm, int32 score)
+{
+  assert (frm < MAX_FRAMES);
+  topsen_score[frm] = score;
 }

@@ -82,9 +82,21 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.11  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.12  2004/07/16  00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.1.1.1  2004/03/01 14:30:29  rkm
+ *
+ *
+ * Revision 1.2  2004/02/27 16:15:13  rkm
+ * Added FSG switching
+ *
+ * Revision 1.1.1.1  2003/12/03 20:05:04  rkm
+ * Initial CVS repository
+ *
+ * Revision 1.11  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.10  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -555,7 +567,8 @@ static void ReadUnigrams (FILE *fp, lm_t *model)
 	model->unigrams[wcnt].prob1.f = p1;
 	model->unigrams[wcnt].bo_wt1.f = bo_wt;
 
-	model->unigrams[wcnt].mapid = wcnt++;
+	model->unigrams[wcnt].mapid = wcnt;
+	wcnt++;
     }
 
     if (model->ucount != wcnt) {

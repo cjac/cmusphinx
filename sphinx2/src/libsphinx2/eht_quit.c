@@ -47,9 +47,15 @@
  **********************************************************************
  * HISTORY
  * $Log$
- * Revision 1.7  2004/02/17  22:37:01  egouvea
- * Fixed some #includes that prevented code from compiling in windows
+ * Revision 1.8  2004/07/16  00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
  * 
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.7  2004/02/17 22:37:01  egouvea
+ * Fixed some #includes that prevented code from compiling in windows
+ *
  * Revision 1.6  2001/12/11 00:24:48  lenzo
  * Acknowledgement in License.
  *

@@ -34,7 +34,7 @@
  *
  */
 #include <stdio.h>
-
+#include <string.h>
 #include "s2types.h"
 #include "c.h"
 

@@ -132,11 +132,22 @@
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
-static char *lm_file_name = 0;
-static char *lm_ctl_filename = 0;	/* Multiple LM filenames and assoc. LM names */
-static char *lmft_file_name = 0;
-static char *lm_tag_file_name = 0;
-static char *lm_word_tags_file_name = 0;
+static char *fsg_file_name = NULL;
+/*
+ * If (fsg_use_altpron) consider alternative pronunciations in addition to the
+ * words explicitly mentioned in an FSG
+ */
+static int32 fsg_use_altpron = TRUE;
+/*
+ * If (fsg_use_filler) transparently insert silence and other filler words at
+ * each state of the FSG.
+ */
+static int32 fsg_use_filler = TRUE;
+static char *lm_file_name = NULL;
+static char *lm_ctl_filename = NULL;	/* Multiple LM filenames and assoc. LM names */
+static char *lmft_file_name = NULL;
+static char *lm_tag_file_name = NULL;
+static char *lm_word_tags_file_name = NULL;
 static char const *lm_start_sym = "<s>";
 static char const *lm_end_sym = "</s>";
 static char *phone_file_name = 0;
@@ -170,10 +181,10 @@ static int32 useCiTrans = TRUE;		/* only ci transitions in hmms */
 static int32 useCiPhonesOnly = FALSE;	/* only ci phones */
 static int32 useWDPhonesOnly = FALSE;	/* only with in word phones */
 
-static float silence_word_penalty;
-static float insertion_penalty;
-static float filler_word_penalty;
-static float language_weight;
+static float silence_word_penalty = 0.005;
+static float insertion_penalty = 0.65;
+static float filler_word_penalty = 1e-8;
+static float language_weight = 9.5;
 static int32 max_new_oov = 0;		/* #new OOVs that can be added at run time */
 static float oov_ugprob = -4.5;		/* (Actually log10(ugprob)) of OOVs */
 
@@ -188,6 +199,12 @@ config_t kb_param[] = {
 	/*
 	 * LongName, Documentation, Switch, TYPE, Address
 	 */
+	{ "FSGFile", "FSG language model file name", "-fsgfn",
+		STRING, (caddr_t) &fsg_file_name },
+	{ "FSGUseAltPron", "Use alternative pronunciations for FSG", "-fsgusealtpron",
+		BOOL, (caddr_t) &fsg_use_altpron }, 
+	{ "FSGUseFiller", "Insert filler words at each state", "-fsgusefiller",
+		BOOL, (caddr_t) &fsg_use_filler }, 
 	{ "LmFile", "Language model file name", "-lmfn",
 		STRING, (caddr_t) &lm_file_name },
 	{ "LmControlFile", "Language model control file name", "-lmctlfn",
@@ -198,9 +215,9 @@ config_t kb_param[] = {
 		STRING, (caddr_t) &lm_tag_file_name },
 	{ "LmWordTagFile", "Language model word tag file name", "-lmwtagfn",
 		STRING, (caddr_t) &lm_word_tags_file_name },
-	{ "LmStartSym", "Langauge model start symbol", "-lmstartsym",
+	{ "LmStartSym", "Language model start symbol", "-lmstartsym",
 		STRING, (caddr_t) &lm_start_sym }, 
-	{ "LmEndSym", "Langauge model end symbol", "-lmendsym",
+	{ "LmEndSym", "Language model end symbol", "-lmendsym",
 		STRING, (caddr_t) &lm_end_sym }, 
 	{ "UseDarpaStandardLM", "Use DARPA standard LM", "-useDarpaLM",
 		BOOL, (caddr_t) &UseDarpaStandardLM }, 
@@ -287,6 +304,49 @@ dictT *word_dict;
 
 static float phone_insertion_penalty;
 
+
+int32 kb_get_silence_word_id ( void )
+{
+  return kb_get_word_id("SIL");
+}
+
+
+int32 kb_get_silence_ciphone_id ( void )
+{
+  return phone_to_id("SIL", TRUE);
+}
+
+
+float32 kb_get_silpen ( void )
+{
+  return silence_word_penalty;
+}
+
+
+float32 kb_get_fillpen ( void )
+{
+  return filler_word_penalty;
+}
+
+
+float32 kb_get_pip ( void )
+{
+  return phone_insertion_penalty;
+}
+
+
+float32 kb_get_wip ( void )
+{
+  return insertion_penalty;
+}
+
+
+float32 kb_get_lw ( void )
+{
+  return language_weight;
+}
+
+
 void kbAddGrammar(char const *fileName, char const *grammarName)
 {
     lmSetStartSym (lm_start_sym);
@@ -307,7 +367,7 @@ static void kb_init_lmclass_dictwid (lmclass_t cl)
 
 void kb (int argc, char *argv[],
 	 float ip,	/* word insertion penalty */
-	 float lw,	/* langauge weight */
+	 float lw,	/* language weight */
 	 float pip)	/* phone insertion penalty */
 {
     char *pname = argv[0];
@@ -821,4 +881,22 @@ int32 kb_get_max_new_oov (void)
 int32 dict_maxsize (void)
 {
     return (word_dict->dict.size_hint);
+}
+
+
+char *kb_get_fsg_file_name ( void )
+{
+    return fsg_file_name;
+}
+
+
+int32 query_fsg_use_altpron ( void )
+{
+  return fsg_use_altpron;
+}
+
+
+int32 query_fsg_use_filler ( void )
+{
+  return fsg_use_filler;
 }

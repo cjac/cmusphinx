@@ -1,10 +1,15 @@
 noinst_HEADERS = \
 	basic_types.h \
+	blkarray_list.h \
 	byteorder.h \
 	c.h \
 	cache_lm.h \
 	cepio.h \
 	cviterbi4.h \
+	fsg_psubtree.h \
+	fsg_lextree.h \
+	fsg_history.h \
+	fsg_search.h \
 	hmm_tied_r.h \
 	kb.h \
 	linklist.h \
@@ -21,4 +26,5 @@ noinst_HEADERS = \
 	smmap4f.h \
 	str2words.h \
 	strfuncs.h \
-	time_align.h
+	time_align.h \
+	word_fsg.h
