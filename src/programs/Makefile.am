@@ -24,11 +24,14 @@ livepretend2_SOURCES = \
 decode_SOURCES = decode.c \
 	parse_args_file.c
 
-align_SOURCES = main_align.c
+align_SOURCES = main_align.c \
+	s3_align.c
 
-astar_SOURCES = main_astar.c
-
-dag_SOURCES = main_dag.c
+astar_SOURCES = main_astar.c \
+	s3_astar.c
+	
+dag_SOURCES = main_dag.c \
+	s3_dag.c 
 
 allphone_SOURCES = main_allphone.c \
 	s3_allphone.c 

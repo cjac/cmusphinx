@@ -21,7 +21,6 @@ libs3decoder_la_SOURCES = \
 	fe_sigproc.c \
         feat.c \
         fillpen.c \
-	flat_fwd.c \
 	gs.c \
         hmm.c \
 	interp.c \
@@ -38,9 +37,6 @@ libs3decoder_la_SOURCES = \
 	ms_gauden.c \
 	ms_mllr.c \
 	ms_senone.c \
-	s3_align.c \
-	s3_astar.c \
-	s3_dag.c \
         subvq.c \
         tmat.c \
         utt.c \
@@ -66,7 +62,6 @@ noinst_HEADERS = \
 	fe_internal.h \
         feat.h \
         fillpen.h \
-	flat_fwd.h \
 	gs.h \
         hmm.h \
 	interp.h \
@@ -85,8 +80,6 @@ noinst_HEADERS = \
 	ms_mllr.h \
 	ms_senone.h \
         s3types.h \
-	s3_align.h \
-	s3_dag.h \
 	search.h \
         subvq.h \
         tmat.h \

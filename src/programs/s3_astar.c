@@ -1204,3 +1204,27 @@ void nbest_init ( void )
 }
 
 
+int32 dag_destroy ( void )
+{
+    dagnode_t *d, *nd;
+    daglink_t *l, *nl;
+    
+    for (d = dag.list; d; d = nd) {
+	nd = d->alloc_next;
+	
+	for (l = d->succlist; l; l = nl) {
+	    nl = l->next;
+	    listelem_free ((char *)l, sizeof(daglink_t));
+	}
+	for (l = d->predlist; l; l = nl) {
+	    nl = l->next;
+	    listelem_free ((char *)l, sizeof(daglink_t));
+	}
+
+	listelem_free ((char *)d, sizeof(dagnode_t));
+    }
+
+    dag.list = NULL;
+
+    return 0;
+}
