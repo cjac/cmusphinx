@@ -150,6 +150,7 @@ src/tests/performance/wsj20k/Makefile
 src/tests/performance/wsj5k/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
+src/tests/regression/test_livepretend.sh
 src/tests/unit_tests/Makefile
 scripts/Makefile
 scripts/sphinx3-test
