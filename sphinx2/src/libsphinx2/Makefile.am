@@ -4,7 +4,6 @@ SUBDIRS = include
 
 lib_LTLIBRARIES = libsphinx2.la
 
-
 libsphinx2_la_SOURCES = \
 	CM_funcs.c \
 	add-table.c \
@@ -30,12 +29,13 @@ libsphinx2_la_SOURCES = \
 	dict.c \
 	eht_quit.c \
 	err.c \
+	fbs_main.c \
 	f2read.c \
 	f2write.c \
 	get_a_word.c \
 	hash.c \
 	hmm_tied_r.c \
-	kb.c \
+	kb_main.c \
 	lab.c \
 	linklist.c \
 	list.c \
@@ -44,9 +44,6 @@ libsphinx2_la_SOURCES = \
 	lm_3g.c \
 	lmclass.c \
 	longio.c \
-	main.c \
-	new_fe.c \
-	new_fe_sp.c \
 	nxtarg.c \
 	norm.c \
 	pconf.c \
@@ -68,26 +65,10 @@ libsphinx2_la_SOURCES = \
 	util.c \
 	uttproc.c
 
-EXTRA_libsphinx2_la_SOURCES = \
-	ad_base.c \
-	ad_i386_linux.c \
-	ad_i386_freebsd.c \
-	cont_ad_base.c \
-	mulaw_base.c \
-	ad_alpha.c \
-	ad_sgi.c \
-	ad_sun4m.c \
-	audio_utils_sun4m.c \
-	play_win32.c \
-	rec_win32.c
-
-libsphinx2_la_DEPENDENCIES = @archfiles@
-
-libsphinx2_la_LIBADD = @archfiles@
-
-LDADD = @archlibs@	
-
 libsphinx2_la_LDFLAGS = -version-info 1:0:1
+
+# libtool is crap, what can I say..
+# libsphinx2_la_LIBADD = -lc -lm $(top_srcdir)/src/libsphinx2fe/libsphinx2fe.la
 
 INCLUDES = -I$(top_srcdir)/src/libsphinx2/include -I$(top_srcdir)/include
 

@@ -51,9 +51,12 @@
  *------------------------------------------------------------*
  * HISTORY
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2000/12/12  23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:50  lenzo
  * Initial import of sphinx2
  *
@@ -102,7 +105,7 @@
 #include "dict.h"
 #include "lmclass.h"
 #include "lm_3g.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "hmm_tied_r.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}

@@ -1,12 +1,13 @@
 noinst_HEADERS = \
-	audio_utils_sun4m.h \
 	basic_types.h \
 	byteorder.h \
 	c.h \
 	cache_lm.h \
+	cepio.h \
 	cviterbi4.h \
 	hmm_tied_r.h \
-	kb_exports.h \
+	kb.h \
+	linklist.h \
 	lm.h \
 	magic.h \
 	msd.h \
@@ -18,4 +19,5 @@ noinst_HEADERS = \
 	search_const.h \
 	smmap4f.h \
 	str2words.h \
+	strfuncs.h \
 	time_align.h

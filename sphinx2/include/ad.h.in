@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2000/12/05  01:45:11  lenzo
+# Revision 1.1  2000/12/12  23:01:41  lenzo
+# Rationalizing libs and names some more.  Split a/d and fe libs out.
+# 
+ * Revision 1.5  2000/12/05 01:45:11  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
- * 
+ *
  * Revision 1.4  2000/06/29 14:15:01  lenzo
  * *** empty log message ***
  *
@@ -41,20 +44,27 @@
 #ifndef _AD_H_
 #define _AD_H_
 
-#ifdef WIN32
+#define @ad_backend@
+
+#ifdef AD_BACKEND_WIN32
 
 #include <windows.h>
 #include <mmsystem.h>
 
-#elif defined(__alpha) && !defined(linux) && 0
+#elif defined(AD_BACKEND_OSF) /* Not implemented, it seems */
 
 #include <AF/AFlib.h>
 
-#elif defined(_HPUX_SOURCE)
+#elif defined(AD_BACKEND_HPUX) /* Not implemented, it seems */
 
 #include <audio/Alib.h>
 
-#elif defined(__sgi)
+#elif defined(AD_BACKEND_ALSA)
+
+#include <sys/asoundlib.h>
+
+#elif defined(AD_BACKEND_IRIX)
+
 #include <dmedia/audio.h>
 
 #endif
@@ -71,7 +81,7 @@
 #define AD_ERR_WAVE	-3
 
 
-#ifdef WIN32
+#ifdef AD_BACKEND_WIN32
 typedef struct {
     HGLOBAL h_whdr;
     LPWAVEHDR p_whdr;
@@ -87,7 +97,7 @@ typedef struct {
  * NOTE: ad_rec_t and ad_play_t are READ-ONLY structures for the user.
  */
 
-#ifdef WIN32
+#ifdef AD_BACKEND_WIN32
 
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
@@ -103,7 +113,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif defined(__alpha) && !defined(linux) && 0
+#elif defined(AD_BACKEND_OSF)
 
 typedef struct {
     AFAudioConn *aud;
@@ -115,7 +125,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif defined(sun4)
+#elif defined(AD_BACKEND_SUNOS)
 
 typedef struct {
     int32 audio_fd;
@@ -124,7 +134,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (linux)
+#elif defined(AD_BACKEND_OSS) || defined(AD_BACKEND_OSS_BSD)
 
 /* Added by jd5q+@andrew.cmu.edu, 10/3/1997: */
 typedef struct {
@@ -134,7 +144,16 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (_HPUX_SOURCE)
+#elif defined(AD_BACKEND_ALSA)
+
+typedef struct {
+    snd_pcm_t *dspH;
+    int32 recording;
+    int32 sps;
+    int32 bps;
+} ad_rec_t;
+
+#elif defined(AD_BACKEND_HPUX)
 
 typedef struct {
     Audio *audio;	/* The main audio handle */
@@ -145,13 +164,14 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (__sgi)
+#elif defined(AD_BACKEND_IRIX)
 typedef struct {
     ALport audio;	/* The main audio handle */
     int32 recording;	/* TRUE iff currently recording */
     int32 sps;		/* Samples/sec */
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
+
 #else
 
 typedef struct {

@@ -74,7 +74,7 @@
 #include "dict.h"
 #include "lmclass.h"
 #include "lm_3g.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "err.h"
 
 static int32 log0;

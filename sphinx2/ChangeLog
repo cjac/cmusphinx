@@ -42,8 +42,7 @@ sphinx2-test, sphinx2-simple.  EAGAIN patch, ad_freebsd.c.
 -------------------------------------------------------------------------------
 
 Mon Dec  4 17:57:05 EST 2000
-
-(lenzo)
+	 (lenzo)
 
 handling of 8k vs 16k models, small cleanup, and a big 
 set of changes from dhd (below)
@@ -543,4 +542,43 @@ set of changes from dhd (below)
 	"tmp_log_t", "ignored_prob", "str" as needed.  
 		
 
+-------------------------------------------------------------------------------
+
+2000-12-12 David Huggins-Daines  <dhd@cepstral.com>
+        * Split ad_* and cont_ad_* functions into libsphinx2ad and
+          give them more rational names.  Remove all dependencies on
+          libsphinx2 from them.
+
+        * Split fe_* functions into libsphinx2fe and give them more
+          rational names.  Change new_fe to fe and make new_fe_sp.h an
+          internal header file as it should be.  Remove all
+          dependencies on libsphinx2 from them.
+
+        * Link example programs against the above libraries.
+
+        * Rename main.c to fbs_main.c and kb.c to kb_main.c (in
+          preparation for splitting these off into another library),
+          rename kb_exports.h to kb.h.
+
+        * Use AC_CANONICAL_HOST to configure the audio library
+        * Generate ad.h from configure to remove ugly and broken #ifdefs
+        * Add a --with-alsa option to use ALSA instead of OSS on Linux
+        * Make the ALSA audio in/out compile (though it probably doesn't work)
+
+        * Fix a few broken things in the Makefile.am (oops).  It now
+          passes 'make distcheck' with flying colours.
+
+-------------------------------------------------------------------------------
+
+2000-12-12 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Removed the broken attila- and poe- demos
+	* added noisedict argument to point to the noiseword
+	  dictionary in the HMM dir; this significantly
+	  improves performance.   Added the arg for sphinx2-demo,
+	  sphinx2-phone, sphinx2-simple, sphinx2-test, sphinx2-align,
+	  and sphinx2-example.arg.
+	* Changed the paths in sphinx2-example.arg to be consistent
+	  with the default install location
+
+	
 	

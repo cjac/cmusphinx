@@ -198,7 +198,7 @@
 #include "lmclass.h"
 #include "lm_3g.h"
 #include "phone.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "log.h"
 #include "c.h"
 #include "assert.h"

@@ -85,7 +85,7 @@
 #include "hmm_tied_r.h"
 #include "lmclass.h"
 #include "lm_3g.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "fbs.h"
 #include "search.h"
 

@@ -51,9 +51,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.4  2000/12/12  23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
  * 
+ * Revision 1.3  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.2  2000/02/08 20:44:32  lenzo
  * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
  *
@@ -174,9 +177,9 @@
 #include "dict.h"
 #include "lmclass.h"
 #include "lm_3g.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "cdcn.h"
-#include "new_fe.h"
+#include "fe.h"
 #include "fbs.h"
 #include "search.h"
 

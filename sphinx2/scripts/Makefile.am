@@ -1,8 +1,6 @@
 bin_SCRIPTS = \
 	allphone-test.csh \
-	attila-sphinx2.pl \
 	batch.csh \
-	poe-sphinx-server-demo \
 	sphinx2-demo \
 	sphinx2-simple \
 	sphinx2-test \
@@ -12,9 +10,7 @@ bin_SCRIPTS = \
 
 EXTRA_DIST =  \
 	allphone-test.csh.in \
-	attila-sphinx2.pl.in \
 	batch.csh.in \
-	poe-sphinx-server-demo.in \
 	sphinx2-demo.in \
 	sphinx2-simple.in \
 	sphinx2-test.in \
@@ -22,3 +18,5 @@ EXTRA_DIST =  \
 	sphinx2-example.arg \
         stress2sphinx.in \
 	sphinx2-align.in
+
+

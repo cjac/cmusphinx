@@ -75,7 +75,7 @@
 #include "search_const.h"
 #include "msd.h"
 #include "dict.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "err.h"
 #include "log.h"
 

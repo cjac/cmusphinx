@@ -45,7 +45,10 @@ lm3g2dmp_SOURCES = lm3g2dmp.c
 
 EXTRA_DIST = clicore.h  srvcore.h
 
-LDADD = $(top_builddir)/src/libsphinx2/.libs/libsphinx2.so -lm @archlibs@ 
+LDADD = $(top_builddir)/src/libsphinx2/libsphinx2.la \
+	$(top_builddir)/src/libsphinx2fe/libsphinx2fe.la \
+	$(top_builddir)/src/libsphinx2ad/libsphinx2ad.la \
+	-lm @ad_libs@ 
 
 INCLUDES = -I$(top_srcdir)/include  -I$(top_srcdir)/src/libsphinx2/include \
 		-I$(top_srcdir)/src/examples

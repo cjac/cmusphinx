@@ -65,9 +65,12 @@
  *
  * Revision History
  * $Log$
- * Revision 1.3  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.4  2000/12/12  23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
  * 
+ * Revision 1.3  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.2  2000/03/29 14:30:28  awb
  * *** empty log message ***
  *
@@ -185,7 +188,7 @@
 #include "lmclass.h"
 #include "lm_3g.h"
 #include "lm.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "phone.h"
 #include "log.h"
 #include "hmm_tied_r.h"

@@ -23,55 +23,61 @@ lmdata=`echo $lmdata`
 docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
 docdata=`echo $docdata`
 
-myarch=`uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
+AC_CANONICAL_HOST
 
-archfiles=""
-archlibs=""
+ad_files=""
+ad_libs=""
 
-# If it is linux, assume OSS works on it.
-if test "x`uname -s | tr A-Z a-z`" = "xlinux"; then
-	# echo "boo!"
-	archfiles="ad_i386_linux.lo cont_ad_base.lo mulaw_base.lo"
-else
-	if test "x$myarch" = "xalpha"; then
-		archfiles="ad_alpha.lo cont_ad_base.lo mulaw_base.lo"
-	else
-		if test "x$myarch" = "xsgi"; then
-			archfiles="ad_sgi.lo"
-		else
-			if test "x$myarch" = "xsun4m"; then
-				archfiles="ad_sun4m.lo audio_utils_sun4m.lo"
-			else
-				if test "x$myarch" = "xwin32"; then
-					archfiles="play_win32.lo rec_win32.lo"
-				else 
-					if test "x$myarch" = "xi386_freebsd"; then
-						archfiles="ad_i386_freebsd.lo cont_ad_base.lo mulaw_base.lo"
-					else
-						myarch=`uname`	
-						if test "x$myarch" = "xIRIX" || test "x$myarch" = "xIRIX64" ; then
-							archfiles="ad_sgi.lo cont_ad_base.lo mulaw_base.lo"
-                                                        archlibs="-laudio" 
-						else
-						   	archfiles=""
-						fi
-					fi
-				fi
-			fi
-		fi
-	fi
+AC_ARG_WITH(alsa, [use ALSA library for sound I/O],
+	    AC_CHECK_HEADER(sys/asoundlib.h,
+		[ad_libs="-lasound"; ad_files="ad_alsa.lo";
+		 ad_backend="AD_BACKEND_ALSA"],
+		AC_ERROR(ALSA header file <sys/asoundlib.h> not found!)))
+
+if test "x$ad_files" = "x"; then
+	case $host in
+		*-*-linux*)
+			ad_files="ad_oss.lo"
+			ad_backend="AD_BACKEND_OSS"
+			;;
+		# FIXME: isn't this the same OSS as on Linux?
+		*-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
+			ad_files="ad_oss_bsd.lo mulaw_base.lo"
+			ad_backend="AD_BACKEND_OSS_BSD"
+			;;
+		*-*-osf*)
+			ad_files="ad_osf.lo mulaw_base.lo"
+			ad_backend="AD_BACKEND_OSF"
+			;;
+		*-*-irix*)
+			ad_files="ad_irix.lo mulaw_base.lo"
+			ad_libs="-laudio"
+			ad_backend="AD_BACKEND_IRIX"
+			;;
+		*-*-sunos4*|*-*-solaris*)
+			ad_files="ad_sunos.lo audio_utils_sunos.lo"
+			ad_backend="AD_BACKEND_SUNOS"
+			;;
+		*-*-*win32*)
+			ad_files="play_win32.lo rec_win32.lo"
+			ad_backend="AD_BACKEND_WIN32"
+			;;
+		*)
+			ad_files="ad_base.lo"
+			ad_backend="AD_BACKEND_NONE"
+			AC_MSG_RESULT([No audio interface for host type $host.])
+			;;
+	esac
 fi
-
-archfiles=`echo $archfiles`
-archlibs=`echo $archlibs`
 
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
 AC_SUBST(hmmdata)
 AC_SUBST(lmdata)
 AC_SUBST(docdata)
-AC_SUBST(archfiles)
-AC_SUBST(archlibs)
+AC_SUBST(ad_files)
+AC_SUBST(ad_libs)
+AC_SUBST(ad_backend)
 AC_SUBST(LIBOBJS)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
@@ -81,9 +87,12 @@ AM_PROG_LIBTOOL
 AC_OUTPUT([
 Makefile
 include/Makefile
+include/ad.h
 src/Makefile
 src/libsphinx2/Makefile
 src/libsphinx2/include/Makefile
+src/libsphinx2fe/Makefile
+src/libsphinx2ad/Makefile
 src/examples/Makefile
 model/Makefile
 model/hmm/Makefile
@@ -92,8 +101,6 @@ model/lm/Makefile
 model/lm/turtle/Makefile
 doc/Makefile
 scripts/Makefile
-scripts/attila-sphinx2.pl
-scripts/poe-sphinx-server-demo
 scripts/allphone-test.csh
 scripts/batch.csh
 scripts/sphinx2-demo
@@ -104,8 +111,6 @@ scripts/stress2sphinx
 scripts/sphinx2-align
 ])
 
-chmod +x scripts/attila-sphinx2.pl
-chmod +x scripts/poe-sphinx-server-demo
 chmod +x scripts/allphone-test.csh
 chmod +x scripts/batch.csh
 chmod +x scripts/sphinx2-demo

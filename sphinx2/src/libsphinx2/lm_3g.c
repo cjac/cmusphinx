@@ -94,9 +94,12 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2000/12/12  23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:51  lenzo
  * Initial import of sphinx2
  *
@@ -199,7 +202,7 @@
 #include "search_const.h"
 #include "msd.h"
 #include "dict.h"
-#include "kb_exports.h"
+#include "kb.h"
 #include "fbs.h"
 
 #ifdef NO_DICT

@@ -142,7 +142,7 @@
 #include "lm_3g.h"
 #include "msd.h"
 #include "hmm_tied_r.h"
-#include "kb_exports.h"
+#include "kb.h"
 
 #ifdef DEBUG
 #define DFPRINTF(x)		fprintf x

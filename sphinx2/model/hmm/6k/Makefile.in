@@ -72,8 +72,9 @@ PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
 VERSION = @VERSION@
-archfiles = @archfiles@
-archlibs = @archlibs@
+ad_backend = @ad_backend@
+ad_files = @ad_files@
+ad_libs = @ad_libs@
 docdata = @docdata@
 hmmdata = @hmmdata@
 lmdata = @lmdata@
@@ -140,7 +141,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

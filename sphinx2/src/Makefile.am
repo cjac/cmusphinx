@@ -1,3 +1,5 @@
 SUBDIRS = libsphinx2 \
-		  examples
+	libsphinx2fe \
+	libsphinx2ad \
+	examples
 
