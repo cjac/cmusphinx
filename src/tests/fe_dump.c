@@ -112,8 +112,10 @@ int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_bl
             exit(0);
         }
 
-        fe_dump_short_frame(fe_dumpfile, tmp_spch, spbuf_len);
-        
+        if (fe_dump) {
+            fe_dump_short_frame(fe_dumpfile, tmp_spch, spbuf_len);
+        }
+
         /* pre-emphasis if needed,convert from int16 to double */
         metricsStart("preemphasis");
 
@@ -126,8 +128,10 @@ int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_bl
 
         metricsStop("preemphasis");
 
-        fe_dump_double_frame(fe_dumpfile, spbuf, spbuf_len, "PREEMPHASIS");
-        
+        if (fe_dump) {
+            fe_dump_double_frame(fe_dumpfile, spbuf, spbuf_len, "PREEMPHASIS");
+        }
+
         /* frame based processing - let's make some cepstra... */    
         fr_data = (double *)calloc(FE->FRAME_SIZE, sizeof(double));
         fr_fea = (double *)calloc(FE->NUM_CEPSTRA, sizeof(double));
@@ -146,9 +150,11 @@ int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_bl
             fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
 
             metricsStop("HammingWindow");
-  
-            fe_dump_double_frame
-                (fe_dumpfile, fr_data, FE->FRAME_SIZE, "HAMMING_WINDOW");
+
+            if (fe_dump) {
+                fe_dump_double_frame
+                    (fe_dumpfile, fr_data, FE->FRAME_SIZE, "HAMMING_WINDOW");
+            }
 
             fe_frame_to_fea_dump(FE, fr_data, fr_fea);
 
@@ -157,10 +163,13 @@ int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_bl
         }
 
         /* done making cepstra */
-        
-        fe_dump2d_float_frame(fe_dumpfile, cep, frame_count, FE->NUM_CEPSTRA,
-                              "CEPSTRUM_PRODUCER", "CEPSTRUM");
-        
+
+        if (fe_dump) {
+            fe_dump2d_float_frame(fe_dumpfile, cep, frame_count, 
+                                  FE->NUM_CEPSTRA,
+                                  "CEPSTRUM_PRODUCER", "CEPSTRUM");
+        }
+
         /* assign samples which don't fill an entire frame to FE */
         /* overflow buffer for use on next pass */
         if (spbuf_len < nsamps)	{
@@ -227,13 +236,21 @@ void fe_dump_short_frame(FILE *stream, short *shortframe,
 void fe_dump_double_frame(FILE *stream, double *preemphasizedAudio,
 			  int bufferSize, char *processorName)
 {
-    int i;
+    int j;
+    union data64 x;
+
     fprintf(stream, "%s %d", processorName, bufferSize);
 
-    for (i = 0; i < bufferSize; i++) {
-
-        /* printf precision might change later */
-	fprintf(stream, " %15.5f", preemphasizedAudio[i]);
+    for (j = 0; j < bufferSize; j++) {
+        x.f = preemphasizedAudio[j];
+        
+        if (fe_dump_type == HEXADECIMAL) {
+            fprintf(stream, " 0x%08x%08x", x.i.half1, x.i.half2);
+        } else if (fe_dump_type == DECIMAL) { 
+            fprintf(stream, " %15.5f", x.f);
+        } else if (fe_dump_type == SCIENTIFIC) {
+            fprintf(stream, " %.8E", x.f);
+        }
     }
     fprintf(stream, "\n");
 }
@@ -254,6 +271,7 @@ void fe_dump2d_float_frame(FILE *stream, float32 **data, int array2DSize,
 			   char *individualName)
 {
     int i, j;
+    union data32 x;
 
     fprintf(stream, "%s %d\n", processorName, array2DSize);
 
@@ -263,8 +281,15 @@ void fe_dump2d_float_frame(FILE *stream, float32 **data, int array2DSize,
 
 	for (j = 0; j < eachArraySize; j++) {
 
-            /* printf precision might change later */
-	    fprintf(stream, " %20.10f", data[i][j]);
+            x.f = data[i][j];
+
+            if (fe_dump_type == HEXADECIMAL) {
+                fprintf(stream, " 0x%08x", x.i.half1, x.i.half2);
+            } else if (fe_dump_type == DECIMAL) {
+                fprintf(stream, " %9.5f", x.f);
+            } else if (fe_dump_type == SCIENTIFIC) {
+                fprintf(stream, " %.8E", x.f);
+            }
 	}
 
 	fprintf(stream, "\n");

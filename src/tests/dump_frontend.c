@@ -52,11 +52,16 @@
  * usage is basically the same:
  *
  * dumpfrontend <control file> <audio files directory> <ARGS file>
- * <dump file>
+ * <dump> <format> <dump file>
  *
+ * ARGUMENTS:
+ * =========
  * control file - the usual .ctl file where list the audio files
  * audio files directory - where all the audio files are
  * ARGS file - file containing Sphinx 3 command line arguments
+ * dump - 1 to dump, 0 to not dump
+ * format - "dec", "hex" or "sci" (decimal, hexadecimal, or scientific)
+ *      scientific is the default
  * dump file - the file to dump the results
  *
  ********************************************************************/
@@ -80,15 +85,33 @@ int main (int argc, char *argv[])
     FILE *fp, *sfp;
     
     
-    if (argc != 5) {
-        E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile> <frontend_dumpfile>\n",argv[0]);
+    if (argc < 5) {
+        E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile> <dump> <frontend_dumpfile>\n", argv[0]);
     }
-    ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3]; dumpfile = argv[4];
-    
-    /* open dump file */
-    if ((fe_dumpfile = fopen(dumpfile, "w")) == NULL) {
-        E_FATAL("Unable to open %s\n", dumpfile);
-        exit(1);
+    ctlfile = argv[1];
+    indir = argv[2];
+    argsfile = argv[3];
+    fe_dump = atoi(argv[4]);
+
+    /* if we are dumping the results */
+    if (fe_dump) {
+
+        /* default fe_dump_type is SCIENTIFIC */
+        if (strcmp(argv[5], "dec") == 0) {
+            fe_dump_type = DECIMAL;
+        } else if (strcmp(argv[5], "hex") == 0) {
+            fe_dump_type = HEXADECIMAL;
+        } else {
+            fe_dump_type = SCIENTIFIC;
+        }
+
+        dumpfile = argv[6];
+      
+        /* open dump file */
+        if ((fe_dumpfile = fopen(dumpfile, "w")) == NULL) {
+            E_FATAL("Unable to open %s\n", dumpfile);
+            exit(1);
+        }
     }
     
     samps = (short *) calloc(MAXSAMPLES,sizeof(short));

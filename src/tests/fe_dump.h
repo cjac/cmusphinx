@@ -36,11 +36,39 @@
 #ifndef _FE_DUMP_H_
 #define _FE_DUMP_H_
 
+#define DECIMAL 1
+#define HEXADECIMAL 2
+#define SCIENTIFIC 3
+
 #include <libutil/libutil.h>
 #include "metrics.h"
 #include "s3types.h"
+#include "libs3decoder/new_fe.h"
 
 FILE *fe_dumpfile;
+int fe_dump;
+int fe_dump_type;
+
+struct integer64 {
+    long half1;
+    long half2;
+};
+
+union data64 {
+    double f;
+    struct integer64 i;
+};
+
+struct integer32 {
+    int half1;
+    int half2;
+};
+
+union data32 {
+    float f;
+    struct integer32 i;
+};
+
 
 /* Functions */
 
