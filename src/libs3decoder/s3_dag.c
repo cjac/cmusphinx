@@ -101,9 +101,11 @@ static s3wid_t finishwid;	/* End silence */
 
 
 /* Global variables : Hack! */
-static dict_t *dict;		/* The dictionary */
-static fillpen_t *fpen;         /* The fillpenalty data structure */
-static lm_t *lm;                /* Global variables */
+dict_t *dict;		/* The dictionary */
+fillpen_t *fpen;         /* The fillpenalty data structure */
+lm_t *lm;                /* Global variables */
+s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+
 
 static srch_hyp_t *hyp = NULL;	/* The final recognition result */
 
@@ -221,7 +223,6 @@ static int32 dag_update_link (dagnode_t *pd, dagnode_t *d, int32 ascr,
 			      int32 ef, daglink_t *byp)
 {
     daglink_t *l, *r;
-    
     l = find_succlink (pd, d);
 
     if (! l)
@@ -267,22 +268,25 @@ static int32 dag_remove_filler_nodes ( void )
 {
     dagnode_t *d, *pnode, *snode;
     daglink_t *plink, *slink;
-    int32 ascr;
+    int32 ascr=0;
+    
+    assert(dag.list);
 
     for (d = dag.list; d; d = d->alloc_next) {
+
 	if (! filler_word (d->wid))
 	    continue;
 	
+
 	/* Replace each link TO d with links to d's successors */
 	for (plink = d->predlist; plink; plink = plink->next) {
 	    pnode = plink->node;
-	    ascr = plink->ascr;
+
 	    ascr += fillpen(fpen,dict_basewid (dict,d->wid));
 	    
 	    /* Link this predecessor of d to successors of d */
 	    for (slink = d->succlist; slink; slink = slink->next) {
 		snode = slink->node;
-
 		/* Link only to non-filler successors; fillers have been eliminated */
 		if (! filler_word (snode->wid)) {
 		    /* Update because a link may already exist */
@@ -293,7 +297,6 @@ static int32 dag_remove_filler_nodes ( void )
 	    }
 	}
     }
-
     return 0;
 }
 
@@ -331,6 +334,7 @@ int32 s3dag_dag_load (char *file)
     
     dag.list = NULL;
     dag.nlink = 0;
+    dag.nbypass =0;
     
     tail = NULL;
     darray = NULL;
@@ -378,6 +382,7 @@ int32 s3dag_dag_load (char *file)
 	}
     }
     
+
     /* Min. endframes value that a node must persist for it to be not ignored */
     min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
     
@@ -388,6 +393,7 @@ int32 s3dag_dag_load (char *file)
 	goto load_error;
     }
     dag.nfrm = nfrm;
+
     
     /* Read Nodes parameter */
     lineno = 0;
@@ -430,6 +436,7 @@ int32 s3dag_dag_load (char *file)
 	d->sf = sf;
 	d->fef = fef;
 	d->lef = lef;
+	d->reachable = 0;
 	d->succlist = NULL;
 	d->predlist = NULL;
 	d->alloc_next = NULL;
@@ -513,7 +520,7 @@ int32 s3dag_dag_load (char *file)
 
 	if (line[0] == '#')
 	    continue;
-	if ((sscanf (line, "%s", wd) == 1) && (strcmp (wd, "Edges") == 0))
+	if ((sscanf (line, "%s%d", wd,&k) == 1) && (strcmp (wd, "Edges") == 0))
 	    break;
     }
     k = 0;
@@ -566,6 +573,7 @@ int32 s3dag_dag_load (char *file)
     }
 #endif
 
+
     fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
     if (fudge > 0) {
 	/* Add "illegal" links that are near misses */
@@ -616,6 +624,7 @@ int32 s3dag_dag_load (char *file)
 	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, maxedge);
 	return -1;
     }
+
     
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
     dag_link (NULL, dag.entry.node, 0, -1, NULL);
@@ -705,13 +714,15 @@ static int32 dag_bestpath (
 	    score = pl->pscr + l->ascr;
 	    if (score > l->pscr) {	/* rkm: Added 20-Nov-1996 */
 		if (pd)
-		    lscr = lm_tg_score (lm,dict_basewid(dict,pd->wid),
-					dict_basewid(dict,d->wid),
-					dict_basewid(dict,src->wid),
+		    lscr = lm_tg_score (lm,
+					dict2lmwid[dict_basewid(dict,pd->wid)],
+					dict2lmwid[dict_basewid(dict,d->wid)],
+					dict2lmwid[dict_basewid(dict,src->wid)],
 					src->wid);
 		else
-		    lscr = lm_bg_score (lm,dict_basewid(dict,d->wid), 
-					dict_basewid(dict,src->wid),
+		    lscr = lm_bg_score (lm,
+					dict2lmwid[dict_basewid(dict,d->wid)], 
+					dict2lmwid[dict_basewid(dict,src->wid)],
 					src->wid);
 		score += lscr;
 
@@ -833,8 +844,10 @@ static int32 dag_chk_linkscr (dag_t *dag)
     
     for (d = dag->list; d; d = d->alloc_next) {
 	for (l = d->succlist; l; l = l->next) {
-	    if (l->ascr >= 0)
+	  /*E_INFO("l->ascr %d\n",l->ascr); */
+	  if (l->ascr >= 0){
 		return -1;
+	  }
 	}
     }
 
@@ -878,10 +891,13 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     bestl = NULL;
 
     /* Check that all edge scores are -ve; error if not so. */
-    if (dag_chk_linkscr (&dag) < 0)
+    if (dag_chk_linkscr (&dag) < 0){
+      E_ERROR("Some edges are not negative\n");
 	return NULL;
+    }
 
     for (l = final->predlist; l; l = l->next) {
+
 	d = l->node;
 	if (! filler_word (d->wid)) {	/* Ignore filler node */
 	    /* Best path to root beginning with l */
@@ -914,6 +930,11 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     
     /* Backtrack through DAG for best path */
     hyp = dag_backtrace (l);
-    
+    assert(hyp);
+    if(hyp==NULL){
+      E_INFO("At this point hyp is NULL\n");
+    }else{
+      E_INFO("At this point hyp it is not NULL\n");
+    }
     return (hyp);
 }

@@ -5,6 +5,7 @@ bin_PROGRAMS = livedecode\
 	gausubvq \
 	align \
 	astar \
+	dag \
 	allphone 
 
 livedecode_SOURCES = \
@@ -26,6 +27,8 @@ decode_SOURCES = decode.c \
 align_SOURCES = main_align.c
 
 astar_SOURCES = main_astar.c
+
+dag_SOURCES = main_dag.c
 
 allphone_SOURCES = main_allphone.c \
 	s3_allphone.c 
