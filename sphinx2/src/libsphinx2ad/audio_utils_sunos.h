@@ -49,11 +49,10 @@
 
 #ifdef SUN4
 #include <sun/audioio.h>
-#include <sun/filio.h>
 #else
 #include <sys/audioio.h>
-#include <sys/filio.h>
 #endif
+#include <sys/filio.h>
 
 int	audioOpen(int rate);
 void	audioPause(void);
