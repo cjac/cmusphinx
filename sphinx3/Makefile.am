@@ -78,7 +78,7 @@ test-valgrind:
 	@echo "LIVEPRETEND TEST"
 	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
-	$(LIBTOOL) --mode=execute valgrind --skin=memcheck ./bin/bin/livepretend \
+	$(LIBTOOL) --mode=execute valgrind --skin=memcheck src/programs/livepretend \
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
@@ -326,8 +326,6 @@ test-wave2feat:
 
 test-cepview:
 	@echo "CEPVIEW TEST"
-	$(LIBTOOL) --mode=execute ./bin/bin/cepview \
-	 -d 13 \
-	 -i 13 \
+	$(LIBTOOL) --mode=execute src/programs/cepview \
 	 -input ./model/ep/chan3.mfc \
 	 -logfn $@.out
