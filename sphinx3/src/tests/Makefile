@@ -70,3 +70,6 @@ multi-batch:
 	rm -f gmake-multi-batch.results
 	$(BINDIR)/batchmetrics ./multiDigits.ctl /lab/speech/sphinx3j/data/connected_digits/sample_speechfiles ARGS > gmake-multi-batch.results
 
+tidigits:
+	rm -f gmake-tidigits.results
+	$(BINDIR)/batchmetrics ./tidigits.ctl /lab/speech/sphinx3j/data/tidigits/test/raw ARGS > gmake-tidigits.results
