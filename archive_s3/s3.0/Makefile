@@ -25,6 +25,8 @@
 # When in doubt, make the necessary -clean targets first before the -install ones.
 # (The -clean targets basically remove backup copies, *.o, *.a files.)
 
+MAKE = gmake
+
 # Machine-specific flags for "make"
 #
 alpha_MKFLAGS      =
@@ -39,22 +41,22 @@ MKFLAGS = ${${MACHINE}_MKFLAGS}
 # and is not maintained here.
 
 lib-install:
-	(cd src/libio/$(MACHINE);   make $(MKFLAGS) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); make $(MKFLAGS) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); make $(MKFLAGS) -f ../Makefile install)
-	(cd src/libmain/$(MACHINE); make $(MKFLAGS) -f ../Makefile install)
+	(cd src/libio/$(MACHINE);   $(MAKE) $(MKFLAGS) -f ../Makefile install)
+	(cd src/libfeat/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile install)
+	(cd src/libmisc/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile install)
+	(cd src/libmain/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile install)
 
 lib-clean:
-	(cd src/libio/$(MACHINE);   make $(MKFLAGS) -f ../Makefile clean)
-	(cd src/libfeat/$(MACHINE); make $(MKFLAGS) -f ../Makefile clean)
-	(cd src/libmisc/$(MACHINE); make $(MKFLAGS) -f ../Makefile clean)
-	(cd src/libmain/$(MACHINE); make $(MKFLAGS) -f ../Makefile clean)
+	(cd src/libio/$(MACHINE);   $(MAKE) $(MKFLAGS) -f ../Makefile clean)
+	(cd src/libfeat/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile clean)
+	(cd src/libmisc/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile clean)
+	(cd src/libmain/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile clean)
 
 lib-src-clean:
-	(cd src/libio;   make clean)
-	(cd src/libfeat; make clean)
-	(cd src/libmisc; make clean)
-	(cd src/libmain; make clean)
+	(cd src/libio;   $(MAKE) clean)
+	(cd src/libfeat; $(MAKE) clean)
+	(cd src/libmisc; $(MAKE) clean)
+	(cd src/libmain; $(MAKE) clean)
 
 
 # Applications:
@@ -63,25 +65,25 @@ lib-src-clean:
 # Time alignment (aka forced alignment)
 #
 timealign-install: lib-install
-	(cd pgm/timealign/$(MACHINE); make $(MKFLAGS) -f ../Makefile install)
+	(cd pgm/timealign/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile install)
 
 timealign-clean:
-	(cd pgm/timealign/$(MACHINE); make $(MKFLAGS) -f ../Makefile clean)
+	(cd pgm/timealign/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile clean)
 
 timealign-src-clean:
-	(cd pgm/timealign; make clean)
+	(cd pgm/timealign; $(MAKE) clean)
 
 
 # Hyp extraction from multiple hypotheses files.
 #
 hypext-install: lib-install
-	(cd pgm/hypext/$(MACHINE); make $(MKFLAGS) -f ../Makefile install)
+	(cd pgm/hypext/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile install)
 
 hypext-clean:
-	(cd pgm/hypext/$(MACHINE); make $(MKFLAGS) -f ../Makefile clean)
+	(cd pgm/hypext/$(MACHINE); $(MAKE) $(MKFLAGS) -f ../Makefile clean)
 
 hypext-src-clean:
-	(cd pgm/hypext; make clean)
+	(cd pgm/hypext; $(MAKE) clean)
 
 
 # All:
