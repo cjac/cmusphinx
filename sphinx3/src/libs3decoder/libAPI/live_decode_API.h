@@ -208,10 +208,25 @@ typedef struct
   int32 internal_cmdln;
 
   /**
+   * Boolean indicates whether we will internally swap the samples. 
+   */
+  int32 swap;
+
+  /**
+   * Boolean indicates whether a partial hypothesis will be dumped. 
+   */
+  int32 phypdump;
+
+  /**
    * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
    * we allocate once per live decoder.
    */ 
   float32 ***features;
+
+  /**
+   * Extenstion for the raw director 
+   */
+  char* rawext;
 
 } live_decoder_t;
 

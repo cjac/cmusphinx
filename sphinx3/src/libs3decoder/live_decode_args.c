@@ -279,10 +279,17 @@ arg_t arg_def[] = {
       ARG_INT32,
       "1000000000",	/* A big number to approximate the default: "until EOF" */
       "No. of utterances to be processed (after skipping -ctloffset entries)" },
+
+#if 0 /*ARCHAN: As mentioned by Evandro, the fact that there is both -cepdir and rawdir is very confusing. Removed*/
     { "-cepdir",
       ARG_STRING,
       NULL,
       "Input cepstrum files directory (prefixed to filespecs in control file)" },
+#endif
+    { "-rawext",
+      ARG_STRING,
+      ".raw",
+      "Input raw files extension"},
     { "-bptbldir",
       ARG_STRING,
       NULL,
@@ -389,7 +396,7 @@ arg_t arg_def[] = {
       "whether mel filter triangle will have double the bandwidth, 0 is false"},
     { "-machine_endian",
       ARG_INT32,
-#if defined(WORDS_BIGENDIAN)
+#if defined(WORDS_BIGENDIAN) 
       "1",
 #else
       "0",
@@ -415,7 +422,10 @@ arg_t arg_def[] = {
       ARG_STRING,
       "mel_scale",
       "FB Type of mel_scale or log_linear" },
-    
+    { "-phypdump",
+      ARG_INT32,
+      "1",
+      "dump parital hypothesis on the screen"},
     { NULL, ARG_INT32, NULL, NULL }
 };
 

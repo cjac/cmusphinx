@@ -215,18 +215,27 @@ void feat_print (feat_t *fcb,		/** In: Descriptor from feat_init() */
 		 int32 nfr,		/** In: #Frames of feature data above */
 		 FILE *fp);		/** In: Output file pointer */
 
-  /**
+  
+/**
  * Read a specified MFC file (or given segment within it), perform CMN/AGC as 
  * indicated by * fcb, and compute feature vectors.  Feature vectors are 
  * computed for the entire segment specified, by including additional 
  * surrounding or padding frames to accommodate the feature windows.
  * Return value: #Frames of feature vectors computed if successful; -1 if 
  * any error.
+ * 
+ * A note of how the file path is constructed: If in the control file
+ * .mfc file is specified. No extension will be applied Otherwise, the
+ * cepext will be applied as the extension.  If cepext is NULL, then,
+ * ".mfc" will be used the extension.  
  */
+
 int32 feat_s2mfc2feat (feat_t *fcb,	/** In: Descriptor from feat_init() */
 		       char *file,	/** In: File to be read */
 		       char *dir,	/** In: Directory prefix for file, 
 					   if needed; can be NULL */
+		       char *cepext,	/** In: Extension of the cepstrum file, 
+					    if NULL, ".mfc" will be assumed.*/
 		       int32 sf, int32 ef,   /* Start/End frames within 
 					   file to be read. Use 0,-1 to process 
 					   entire file */
