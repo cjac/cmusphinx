@@ -1,0 +1,15 @@
+-mdef /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/ICSI.PhaseIII.models/rong_model/model_architecture/CALO.train.5000.mdef 
+-mean /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/ICSI.PhaseIII.models/rong_model/model_parameters/CALO.train.cd_continuous_32gau/means 
+-var /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/ICSI.PhaseIII.models/rong_model/model_parameters/CALO.train.cd_continuous_32gau/variances 
+-mixw /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/ICSI.PhaseIII.models/rong_model/model_parameters/CALO.train.cd_continuous_32gau/mixture_weights 
+-tmat /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/ICSI.PhaseIII.models/rong_model/model_parameters/CALO.train.cd_continuous_32gau/transition_matrices 
+-dict /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/Corpus/dict/calo_trainer.dict.1 
+-fdict /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/Corpus/dict/calo_trainer.filler2.dict 
+-lm /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/Corpus/lm/ICSI71.lm1_091604.arpa.DMP 
+-feat 1s_c_d_dd 
+-beam 1e-80 
+-nwbeam 1e-40 
+-agc none 
+-varnorm no 
+-lw 10.5 
+-inspen 0.02 
