@@ -203,6 +203,8 @@ static int32	lmname_to_id ();
 static int32	lm3g_load ();
 static int32	lm3g_dump ();
 static void	lm_set_param ();
+static void     lm3g2dmp_lm_add ();
+static int32    lm3g2dmp_lm_delete ();
 
 /* Structure for maintaining multiple, named LMs */
 static struct lmset_s {
@@ -361,8 +363,8 @@ static unigram_t *NewUnigramTable (n_ug)
  * returns a pointer to a new language model record.  The size is passed in
  * as a parameter.
  */
-lm_t *
-NewModel (n_ug, n_bg, n_tg, n_dict)
+static lm_t *
+lm3g2dmp_NewModel (n_ug, n_bg, n_tg, n_dict)
     int32 n_ug;
     int32 n_bg;
     int32 n_tg;
@@ -758,7 +760,7 @@ static FILE *lm_file_open (filename, usepipe)
 /*
  * Reads in a trigram language model from the given file.
  */
-int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
+static int32 lm3g2dmp_lm_read (char *filename, char *lmname, double lw, double uw, double wip)
 {
     lm_t *model;
     FILE *fp = NULL;
@@ -777,7 +779,7 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
     
     /* Make sure no LM with same lmname already exists; if so, delete it */
     if (lmname_to_id (lmname) >= 0)
-	lm_delete (lmname);
+	lm3g2dmp_lm_delete (lmname);
     
     /* Check if a compressed file */
     k = strlen(filename);
@@ -831,7 +833,7 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
 	QUIT((stderr, "%s(%d): #dict-words(%d) > 65534\n", __FILE__, __LINE__, dict_size));
 
     /* Allocate space for LM, including initial OOVs and placeholders; initialize it */
-    model = lmp = NewModel (n_unigram, n_bigram, n_trigram, dict_size);
+    model = lmp = lm3g2dmp_NewModel (n_unigram, n_bigram, n_trigram, dict_size);
     word_str = (char **) CM_calloc (n_unigram, sizeof (char *));
     
     /* Create name for binary dump form of Darpa LM file */
@@ -980,7 +982,7 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
 	model->bigrams[j].prob2 = 0;
     }
     
-    lm_add (lmname, model, lw, uw, wip);
+    lm3g2dmp_lm_add (lmname, model, lw, uw, wip);
     
     hash_free (&(model->HT));
     for (i = 0; i < model->ucount; i++)
@@ -993,14 +995,14 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
 }
 
 
-void lm_init_oov ( void )
+static void lm3g2dmp_lm_init_oov ( void )
 {
 #if (! NO_DICT)
     int32 i, j, baseid;
     int32 first_oov = 0, last_oov = -1;
     lm_t *model;
     
-    model = lm_name2lm ("");
+    model = lm3g2dmp_lm_name2lm ("");
     
     /* Add initial list of OOV words to LM unigrams */
     first_oov = dict_get_first_initial_oov ();
@@ -1013,7 +1015,7 @@ void lm_init_oov ( void )
     for (i = first_oov; i <= last_oov; i++) {
 	/* Add only base pronunciations */
 	if ((baseid = dictid_to_baseid (WordDict, i)) == i) {
-	    if ((j = lm_add_word (model, i)) >= 0)
+	    if ((j = lm3g2dmp_lm_add_word (model, i)) >= 0)
 		model->dictwid_map[i] = j;
 	}
     }
@@ -1028,13 +1030,13 @@ void lm_init_oov ( void )
  * otherwise -1.
  * (Currently some problems with adding alternative pronunciations...)
  */
-int32 lm_add_word (lm_t *model, int32 dictwid)
+static int32 lm3g2dmp_lm_add_word (lm_t *model, int32 dictwid)
 {
 #if (! NO_DICT)
     int32 u;
 
     if (model->ucount >= model->max_ucount) {
-	printf ("%s(%d): lm_add_word(%s) failed; LM full\n",
+	printf ("%s(%d): lm3g2dmp_lm_add_word(%s) failed; LM full\n",
 		__FILE__, __LINE__, dictid_to_str (WordDict, dictwid));
 	return -1;
     }
@@ -1042,7 +1044,7 @@ int32 lm_add_word (lm_t *model, int32 dictwid)
     /* Make sure new word not already in LM */
     for (u = 0; u < model->ucount; u++)
 	if (model->unigrams[u].wid == dictwid) {
-	    printf ("%s(%d): lm_add_word(%s): already in LM, ignored\n",
+	    printf ("%s(%d): lm3g2dmp_lm_add_word(%s): already in LM, ignored\n",
 		    __FILE__, __LINE__, dictid_to_str (WordDict, dictwid));
 	    return u;
 	}
@@ -1070,10 +1072,10 @@ int32 lm_add_word (lm_t *model, int32 dictwid)
 /*
  * Add named model to list of models.  If another with same name exists, delete it first.
  */
-void lm_add (char const *lmname, lm_t *model, double lw, double uw, double wip)
+static void lm3g2dmp_lm_add (char const *lmname, lm_t *model, double lw, double uw, double wip)
 {
     if (lmname_to_id (lmname) >= 0)
-	lm_delete (lmname);
+	lm3g2dmp_lm_delete (lmname);
     
     model->tginfo = (tginfo_t **) CM_calloc (model->max_ucount, sizeof(tginfo_t *));
     
@@ -1094,7 +1096,7 @@ void lm_add (char const *lmname, lm_t *model, double lw, double uw, double wip)
 /*
  * Delete named LM from list of LMs and reclaim all space.
  */
-int32 lm_delete (char const *name)
+static int32 lm3g2dmp_lm_delete (char const *name)
 {
     int32 i, u;
     lm_t *model;
@@ -1140,7 +1142,7 @@ int32 lm_delete (char const *name)
  * Set the active LM to the one identified by "name".  Return 0 if successful,
  * -1 otherwise.
  */
-int32 lm_set_current (char const *name)
+static int32 lm3g2dmp_lm_set_current (char const *name)
 {
     int32 i;
     
@@ -1172,7 +1174,7 @@ static int32 lmname_to_id (char const *name)
     return ((i < n_lm) ? i : -1);
 }
 
-lm_t *lm_name2lm (char const *name)
+static lm_t *lm3g2dmp_lm_name2lm (char const *name)
 {
     int32 i;
     
@@ -1180,7 +1182,7 @@ lm_t *lm_name2lm (char const *name)
     return ((i >= 0) ? lmset[i].lm : NULL);
 }
 
-char *get_current_lmname ()
+static char *lm3g2dmp_get_current_lmname ()
 {
     int32 i;
     
@@ -1188,12 +1190,12 @@ char *get_current_lmname ()
     return ((i < n_lm) ? lmset[i].name : NULL);
 }
 
-lm_t *lm_get_current ()
+static lm_t *lm3g2dmp_lm_get_current ()
 {
     return (lmp);
 }
 
-int32 get_n_lm ()
+static int32 lm3g2dmp_get_n_lm ()
 {
     return (n_lm);
 }
@@ -1201,7 +1203,7 @@ int32 get_n_lm ()
 /*
  * dict base wid; check if present in LM.  return TRUE if present, FALSE otherwise.
  */
-int32 dictwd_in_lm (wid)
+static int32 lm3g2dmp_dictwd_in_lm (wid)
     int32 wid;
 {
     return (lmp->dictwid_map[wid] >= 0);
@@ -1588,7 +1590,7 @@ static int32 lm3g_dump (file, model, lmfile, mtime)
     return 0;
 }
 
-void lmSetStartSym (char const *sym)
+static void lm3g2dmp_lmSetStartSym (char const *sym)
 /*----------------------------*
  * Description - reconfigure the start symbol
  */
@@ -1596,7 +1598,7 @@ void lmSetStartSym (char const *sym)
     start_sym = (char *) salloc(sym);
 }
 
-void lmSetEndSym (char const *sym)
+static void lm3g2dmp_lmSetEndSym (char const *sym)
 /*----------------------------*
  * Description - reconfigure the end symbol
  */
@@ -1685,14 +1687,14 @@ int main (argc, argv)
     uw = 0.7;
     wip = 0.2;
     
-    return lm_read(lmfile, "", lw, uw, wip);
+    return lm3g2dmp_lm_read(lmfile, "", lw, uw, wip);
 }
 
 
 #define BINARY_SEARCH_THRESH	16
 
 
-int32 lm3g_ug_score (int32 wid)
+static int32 lm3g2dmp_lm3g_ug_score (int32 wid)
 {
     int32 lwid;
     
@@ -1727,7 +1729,7 @@ static int32 find_bg (bigram_t *bg, int32 n, int32 w)
 
 
 /* w1, w2 are dictionary (base-)word ids */
-int32 lm3g_bg_score (int32 w1, int32 w2)
+static int32 lm3g2dmp_lm3g_bg_score (int32 w1, int32 w2)
 {
     int32 lw1, lw2, i, n, b, score;
     lm_t *lm;
@@ -1817,7 +1819,7 @@ static int32 find_tg (trigram_t *tg, int32 n, int32 w)
 
 
 /* w1, w2, w3 are dictionary wids */
-int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
+static int32 lm3g2dmp_lm3g_tg_score (int32 w1, int32 w2, int32 w3)
 {
     int32 lw1, lw2, lw3, i, n, score;
     lm_t *lm;
@@ -1827,7 +1829,7 @@ int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
     lm = lmp;
     
     if ((lm->tcount <= 0) || (w1 < 0))
-	return (lm3g_bg_score (w2, w3));
+	return (lm3g2dmp_lm3g_bg_score (w2, w3));
     
     /* lm->n_tg_score++; */
     
@@ -1863,14 +1865,14 @@ int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
 	score = lm->prob3[tg[i].prob3].l;
     else {
 	/* lm->n_tg_bo++; */
-	score = tginfo->bowt + lm3g_bg_score(w2, w3);
+	score = tginfo->bowt + lm3g2dmp_lm3g_bg_score(w2, w3);
     }
 
     return (score);
 }
 
 
-void lm3g_cache_reset ( void )
+static void lm3g2dmp_lm3g_cache_reset ( void )
 {
     int32 i;
     lm_t *lm;
@@ -1900,20 +1902,55 @@ void lm3g_cache_reset ( void )
 }
 
 
-void lm3g_cache_stats_dump (FILE *file)
+static void lm3g2dmp_lm3g_cache_stats_dump (FILE *file)
 {
 }
 
 
-void lm_next_frame ( void )
+static void lm3g2dmp_lm_next_frame ( void )
 {
 }
 
 
-int32 lm3g_raw_score (int32 score)
+static int32 lm3g2dmp_lm3g_raw_score (int32 score)
 {
     score -= lmp->log_wip;
     score *= lmp->invlw;
     
     return score;
 }
+
+#define GET_RID_OF_WARNINGS
+
+#if defined(GET_RID_OF_WARNINGS)
+void do_nothing()
+{
+  /* This is intended to do nothing. The only reason for this to be here
+   * is so that the compiler doesn't complain about these functions being
+   * defined but not used.
+   */
+  lm_t   *dummy_lm = NULL;
+  FILE   *dummy_file = NULL;
+
+  if (0)
+    {
+      lm3g2dmp_lm_init_oov();
+      lm3g2dmp_lm_add_word (dummy_lm, 0);
+      lm3g2dmp_lm_set_current ("");
+      lm3g2dmp_lm_name2lm ("");
+      lm3g2dmp_get_current_lmname ();
+      lm3g2dmp_lm_get_current ();
+      lm3g2dmp_get_n_lm ();
+      lm3g2dmp_dictwd_in_lm ();
+      lm3g2dmp_lmSetStartSym ("");
+      lm3g2dmp_lmSetEndSym ("");
+      lm3g2dmp_lm3g_ug_score (0);
+      lm3g2dmp_lm3g_tg_score (0,0,0);
+      lm3g2dmp_lm3g_cache_reset ();
+      lm3g2dmp_lm3g_cache_stats_dump (dummy_file);
+      lm3g2dmp_lm_next_frame ();
+      lm3g2dmp_lm3g_raw_score (0);
+    }
+}
+
+#endif
