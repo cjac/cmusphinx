@@ -63,9 +63,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
-/* #include <s3.h>*/
-#include "s3types.h"
+#include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"
 #include "dict.h"

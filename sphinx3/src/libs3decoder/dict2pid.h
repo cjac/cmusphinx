@@ -56,7 +56,6 @@
 #ifndef _S3_DICT2PID_H_
 #define _S3_DICT2PID_H_
 
-#include <libutil/libutil.h>
 #include "dict.h"
 
 #ifdef __cplusplus

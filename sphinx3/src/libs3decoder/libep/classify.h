@@ -40,7 +40,7 @@
  * Created
  */
 
-#include "libutil/libutil.h"
+
 #include "cont_mgau.h"
 
 #ifdef __cplusplus

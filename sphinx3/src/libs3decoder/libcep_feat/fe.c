@@ -34,7 +34,6 @@
  *
  */
 
-#include <libutil/libutil.h>
 #include "fe.h"
 
 #include <stdio.h>

@@ -44,7 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "bio.h"
 
 #define IO_ERR  (-1)

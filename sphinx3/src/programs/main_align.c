@@ -85,12 +85,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <s3types.h>
 
-#include <libutil/libutil.h>
 #include "kb.h"
 
 
-#include "s3types.h"
 #include "logs3.h"
 #include "tmat.h"
 #include "mdef.h"
@@ -1147,7 +1146,7 @@ main (int32 argc, char *argv[])
 	logs3_init ((float64) logbase);
     }
 
-    E_INFO("Log value of 3.785471 is %d\n", log_to_logs3(3.785471));
+    /*E_INFO("Log value of 3.785471 is %d\n", log_to_logs3(3.785471)); */
     /* Initialize feaure stream type */
     fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
 		      (char *) cmd_ln_access ("-cmn"),

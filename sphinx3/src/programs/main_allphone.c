@@ -68,10 +68,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
-#include "feat.h"
+#include <s3types.h>
 
-#include "s3types.h"
+#include "feat.h"
 #include "logs3.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"

@@ -67,8 +67,8 @@
  ********************************************************************/
 
 #include <stdio.h>
-#include <libutil/libutil.h>
-#include <libs3decoder/fe.h>
+#include <s3types.h>
+#include <fe.h>
 #include "live_dump.h"
 #include "fe_dump.h"
 #include "metrics.h"

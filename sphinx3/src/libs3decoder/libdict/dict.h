@@ -62,8 +62,7 @@
 #ifndef _S3_DICT_H_
 #define _S3_DICT_H_
 
-#include <libutil/libutil.h>
-#include "s3types.h"
+#include <s3types.h>
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
 
 #ifdef __cplusplus

@@ -60,7 +60,8 @@
 #ifndef _S3_VECTOR_H_
 #define _S3_VECTOR_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -309,7 +310,10 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.9  2004/11/16  05:13:18  arthchan2003
+ * Revision 1.10  2004/12/05  12:01:31  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * 
+ * Revision 1.9  2004/11/16 05:13:18  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
  * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
@@ -320,7 +324,7 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
  * 2, default argument file's mechanism is not yet supported, we need to fix it.
  * 3, the bug discovered by SonicFoundry is still not fixed.
- * 
+ *
  * Revision 1.8  2004/11/13 21:25:19  arthchan2003
  * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  *

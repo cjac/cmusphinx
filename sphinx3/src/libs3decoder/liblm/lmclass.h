@@ -45,7 +45,6 @@
 #ifndef _S3_LMCLASS_H_
 #define _S3_LMCLASS_H_
 
-#include <libutil/libutil.h>
 #include "s3types.h"
 
 #ifdef __cplusplus

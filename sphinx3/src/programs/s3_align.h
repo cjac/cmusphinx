@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/09/13  08:13:28  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.3  2004/12/05  12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  * 
+ * Revision 1.2  2004/09/13 08:13:28  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.1  2004/08/30 22:29:19  arthchan2003
  * Refactor the s3.0 tools, currently it is still quite messy, we need to make it modularize later on.
  *
@@ -74,9 +77,7 @@
 #ifndef _LIBFBS_ALIGN_H_
 #define _LIBFBS_ALIGN_H_
 
-#include <libutil/libutil.h>
-#include "s3types.h"
-
+#include <s3types.h>
 
 /* State level segmentation/alignment; one entry per frame */
 typedef struct align_stseg_s {

@@ -58,8 +58,6 @@
 
 #include "interp.h"
 #include "logs3.h"
-
-#include <libutil/libutil.h>
 #include "bio.h"
 
 #include <string.h>

@@ -27,8 +27,7 @@
 #define _LIBFBS_GAUDEN_H_
 
 
-#include <libutil/prim_type.h>
-#include "s3types.h"
+#include <s3types.h>
 #include "vector.h"
 
 #ifdef __cplusplus

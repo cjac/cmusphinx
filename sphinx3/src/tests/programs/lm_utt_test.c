@@ -45,7 +45,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #include <lm.h>
 #include <logs3.h>

@@ -45,9 +45,9 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <libutil/libutil.h>
 #include <lm.h>
 #include <logs3.h>
+#include <s3types.h>
 
 #include "cmd_ln_args.h"
 #include "metrics.h"

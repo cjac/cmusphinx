@@ -52,10 +52,9 @@
 #ifndef _LIB_GS_H_
 #define _LIB_GS_H_
 
-#include <libutil/prim_type.h>
-#include <libutil/libutil.h>
-#include "s3types.h"
+#include <s3types.h>
 #include "logs3.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {

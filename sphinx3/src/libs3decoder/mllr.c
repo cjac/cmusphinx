@@ -61,7 +61,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
 #include "mllr.h"
 
 void mllr_dump(float32 **A, float32 *B,int32 veclen)

@@ -49,7 +49,7 @@
  * 		Started.
  */
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #ifndef _S3_ASCR_H_
 #define _S3_ASCR_H_

@@ -94,15 +94,15 @@
  */
 
 
-#include <libutil/libutil.h>
-#include "libs3decoder/feat.h"
+#include <s3types.h>
+#include <feat.h>
+#include <bio.h>
+#include <cmn.h>
+#include <cmn_prior.h>
+#include <agc.h>
+
 #include "feat_dump.h"
 #include "fe_dump.h"
-#include "libs3decoder/bio.h"
-#include "libs3decoder/cmn.h"
-#include "libs3decoder/cmn_prior.h"
-#include "libs3decoder/agc.h"
-#include "s3types.h"
 
 #if (! WIN32)
 #include <sys/file.h>

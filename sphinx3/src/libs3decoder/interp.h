@@ -54,10 +54,7 @@
 #define _LIBFBS_INTERP_H_
 
 
-#include <libutil/libutil.h>
-/*#include <s3.h>*/
-
-#include "s3types.h"
+#include <s3types.h>
 #include "bio.h"
 
 

@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2004/11/13  21:25:19  arthchan2003
- * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ * Revision 1.4  2004/12/05  12:01:31  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  * 
+ * Revision 1.3  2004/11/13 21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ *
  * Revision 1.2  2004/08/09 01:02:33  arthchan2003
  * check in the windows setup for align
  *
@@ -52,8 +55,6 @@
 #include "logs3.h"
 
 #include "bio.h"
-#include <libutil/libutil.h>
-
 #include <string.h>
 #include <assert.h>
 

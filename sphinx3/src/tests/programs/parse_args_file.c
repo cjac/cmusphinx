@@ -47,7 +47,7 @@
  */
 
 #include <stdio.h>
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #include "cmd_ln_args.h"
 

@@ -59,7 +59,7 @@
 #ifndef _S3_KB_H_
 #define _S3_KB_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "kbcore.h"
 #include "lextree.h"
 #include "vithist.h"

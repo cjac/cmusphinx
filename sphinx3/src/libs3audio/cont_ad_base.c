@@ -121,9 +121,10 @@
 #include <assert.h>
 #include <math.h>
 
-#include "s3types.h"
+#include <s3types.h>
 #include "ad.h"
 #include "cont_ad.h"
+#include <err.h>
 
 
 #ifndef _ABS

@@ -55,7 +55,6 @@
 #ifndef _LIBFBS_MISC_H_
 #define _LIBFBS_MISC_H_
 
-#include <libutil/libutil.h>
 #include "s3types.h"
 #include "search.h"
 
