@@ -36,9 +36,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "libs3decoder/new_fe.h"
-#include "libs3decoder/new_fe_sp.h"
-#include "new_fe_sp_dump.h"
+#include "libs3decoder/fe.h"
+#include "libs3decoder/fe_internal.h"
+#include "fe_internal_dump.h"
 #include "fe_dump.h"
 
 
@@ -104,7 +104,7 @@ void fe_mel_spectrum(fe_t *FE, float64 *spec, float64 *mfspec)
 {
     int32 whichfilt, start, i;
     float32 dfreq;
-    FILE *infile;
+
 float64 input[] = {208244297.8809708000,
 150194053.2556398000,
 63353932.0553724100,

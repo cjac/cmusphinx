@@ -44,9 +44,9 @@
 #include <assert.h>
 #include "s3types.h"
 
-#include "libs3decoder/new_fe.h"
-#include "libs3decoder/new_fe_sp.h"
-#include "new_fe_sp_dump.h"
+#include "libs3decoder/fe.h"
+#include "libs3decoder/fe_internal.h"
+#include "fe_internal_dump.h"
 #include "fe_dump.h"
 #include "metrics.h"
 

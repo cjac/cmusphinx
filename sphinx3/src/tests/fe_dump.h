@@ -43,7 +43,7 @@
 #include <libutil/libutil.h>
 #include "metrics.h"
 #include "s3types.h"
-#include "libs3decoder/new_fe.h"
+#include "libs3decoder/fe.h"
 
 FILE *fe_dumpfile;
 int fe_dump;
