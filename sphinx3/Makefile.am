@@ -55,5 +55,26 @@ test:
                -ci_pbeam 1e-3 \
                -ds 2 
 
+	$(LIBTOOL) --mode=execute echo "ALIGN TEST"
+	$(LIBTOOL) --mode=execute src/programs/align \
+	    -logbase 1.0003 \
+	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+            -meanfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+            -varfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+            -mixwfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+            -tmatfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+	    -feat 1s_c_d_dd \
+    	    -topn 1000 \
+	    -beam 1e-80 \
+  	    -senmgaufn .cont. \
+            -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
+            -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
+	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
+	    -cepdir $(top_srcdir)/model/lm/an4/ \
+    	    -insentfn $(top_srcdir)/model/lm/an4/align.correct \
+	    -outsentfn ./align.answer \
+	    -wdsegdir ./ \
+	    -phsegdir ./
+
 
 
