@@ -383,6 +383,22 @@ arg_t arg_def[] = {
       ARG_FLOAT32,
       "0.0256",
       "window length"},
+    { "-doublebw",
+      ARG_INT32,
+      "0",
+      "whether mel filter triangle will have double the bandwidth, 0 is false"},
+    { "-machine_endian",
+      ARG_INT32,
+#if defined(WORDS_BIGENDIAN)
+      "1",
+#else
+      "0",
+#endif
+      "the machine's endian, 0 is little, 1 is big endian"},
+    { "-input_endian",
+      ARG_INT32,
+      "0",
+      "the input data byte order, 0 is little, 1 is big endian"},
     { "-lmdumpdir",
       ARG_STRING,
       NULL,
