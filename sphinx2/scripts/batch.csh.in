@@ -1,0 +1,149 @@
+#!@CSH@ -f
+# 
+# Simple dictation demo script for alf12/alf13.
+# 
+# 04-19-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+#		Created.
+
+
+# 
+# Input arguments:
+#     Demo: atis, vmail, or wsj (required)
+#     Sex: f, m, or g (required)
+#     Decoder executable (optional, see below for default)
+# 
+# Also, set the environment variable MACHINE to "alpha", "hp700_ux", ...
+#
+
+
+if ($#argv < 3) then
+    echo "Usage: $0 demo[atis/vmail/wsj] modelsize[10k/3k] sex[f/m] [pgm]"
+    exit
+endif
+
+set echo
+limit coredumpsize 0
+unalias rm
+
+set sex = $3
+if ($#argv > 3) then
+    set FBS = $4
+else
+    set FBS = /afs/cs/project/plus-2/s2/fbs8-6-96/bin/$MACHINE/demo-tty
+endif
+
+set datadir = /net/alf20/usr/rkm/SHARED
+if ($1 == atis) then
+    set lmfile      = $datadir/lm/atis93/atis93.bigram3
+    set dictfile    = $datadir/dict/atis93/atis93.dic
+    set kbdumpdir   = $datadir/lm/atis93
+else
+    if ($1 == "vmail") then
+        set lmfile      = /net/alf20/usr/rkm/nist.ug
+        set dictfile    = $datadir/dict/dictation/mboxlm.dic
+        set kbdumpdir   = $datadir/lm/dictation
+    else
+        if ($1 == "wsj") then
+	    set lmfile      = $datadir/lm/nov93/tgboc20o.nvp
+	    set dictfile    = $datadir/dict/nov93/h1c1-93.csdic
+	    set kbdumpdir   = $datadir/lm/nov93
+	else
+	    echo "Usage: $0 demo[atis/vmail/wsj] modelsize[10k/3k] sex[f/m] [pgm]"
+	    exit
+	endif
+    endif
+endif
+if ($2 == 10k) then
+    set phonefile   = $datadir/dict/nov93/h1c1-93.phone
+    set mapfile     = $datadir/dict/nov93/h1c1-93.map
+    set modeldir    = $datadir/hmm/nov93/1pd/10000-$sex
+    set sendumpfile = $datadir/sendump/nov93/1pd/10000-$sex.sen
+else
+    if ($2 == 3k) then
+	set phonefile   = $datadir/dict/nov93/h1c1-93-3k.phone
+	set mapfile     = $datadir/dict/nov93/h1c1-93-3k.map
+	set modeldir    = $datadir/hmm/nov93/1pd/3000-$sex
+	set sendumpfile = $datadir/sendump/nov93/1pd/3000-$sex.sen
+    else
+	echo "Usage: $0 demo[atis/vmail/wsj] modelsize[10k/3k] sex[f/m] [pgm]"
+	exit
+    endif
+endif
+
+set matchfile = si_dt_20-$sex.match
+set logfile = si_dt_20-$sex.log
+
+#
+# beam-widths: there are two beam-widths.  one wrt BestScore, as before,
+# and another wrt LastPhoneBestScore (bestscore among only the last phones
+# of any word), since LM scores are computed only during transitions to the
+# last phone of any word.
+#   bw       = overall, widest beam width,
+#   npbw     = for pruning transitions from one phone to next,
+#   lpbw     = for pruning transitions to last phone,
+#   lponlybw = wrt LastPhoneBestScore, for determining which last phones survive,
+#   nwbw     = wrt LastPhoneBestScore, for determining which words make it
+#              to the lattice.
+#
+
+set       bw=1e-6
+set     npbw=1e-6
+set     lpbw=1e-5
+set lponlybw=3e-4
+set     nwbw=3e-4
+
+set lw=6.5
+set uw=0.5
+set ip=0.65
+set fp=1e-10
+set sp=0.005
+set top=4
+
+set fwdflatbeam   = 1e-8
+set fwdflatnwbeam = 3e-4
+set fwdflatlw     = 8.5
+set bestpathlw    = 9.5
+
+rm -f $matchfile
+rm -f $logfile
+
+$FBS \
+	-ctlfn /net/alf20/usr/rkm/SHARED/ctl/si_dt_20-$sex.ctl \
+	-ctlcount 50		\
+	-agcmax TRUE		\
+	-fwdflat TRUE		\
+	-bestpath TRUE		\
+# language weights, other LM parameters ------------- \
+	-langwt $lw 		\
+	-fwdflatlw $fwdflatlw	\
+	-rescorelw $bestpathlw	\
+	-ugwt $uw		\
+	-fillpen $fp		\
+	-silpen $sp		\
+	-inspen $ip 		\
+# fwdtree pass beamwidths --------------------------- \
+	-top $top	 	\
+	-topsenfrm 3		\
+	-topsenthresh -70000	\
+	-beam $bw		\
+	-npbeam $npbw		\
+	-lpbeam $lpbw		\
+	-lponlybeam $lponlybw	\
+	-nwbeam $nwbw		\
+# fwdflat pass beamwidths --------------------------- \
+	-fwdflatbeam $fwdflatbeam	\
+	-fwdflatnwbeam $fwdflatnwbeam	\
+# kb stuff (LM/dictionary/hmm files) ---------------- \
+	-kbdumpdir $kbdumpdir	\
+	-lmfn $lmfile		\
+	-dictfn $dictfile	\
+	-phnfn $phonefile	\
+	-mapfn $mapfile		\
+	-hmmdir $modeldir	\
+	-hmmdirlist $modeldir	\
+	-8bsen TRUE		\
+	-sendumpfn $sendumpfile	\
+	-cbdir $modeldir	\
+# misc. ----------------------------------------------\
+	-backtrace FALSE	\
+	-matchfn $matchfile >& $logfile
