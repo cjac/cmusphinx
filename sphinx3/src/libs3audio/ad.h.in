@@ -46,10 +46,13 @@
  * HISTORY
  * 
  * $Log$
-# Revision 1.2  2004/02/29  23:48:31  egouvea
-# Updated configure.in to the recent automake/autoconf, fixed win32
-# references in audio files.
+# Revision 1.3  2004/04/02  21:26:36  egouvea
+# Added flag to enable support for OSS audio
 # 
+ * Revision 1.2  2004/02/29 23:48:31  egouvea
+ * Updated configure.in to the recent automake/autoconf, fixed win32
+ * references in audio files.
+ *
  * Revision 1.3  2002/11/10 19:27:38  egouvea
  * Fixed references to sun's implementation of audio interface,
  * referring to the correct .h file, and replacing sun4 with sunos.
@@ -87,8 +90,10 @@
 #ifndef _AD_H_
 #define _AD_H_
 
+#if !defined(WIN32)
 #if !defined(@ad_backend@)
 #define @ad_backend@
+#endif
 #endif
 
 #if defined(WIN32)
