@@ -98,6 +98,7 @@
 #include "feat.h"
 #include "bio.h"
 #include "cmn.h"
+#include "cmn_prior.h"
 #include "agc.h"
 #include "s3types.h"
 
@@ -809,7 +810,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 {
     char path[16384];
     int32 win, nfr;
-    int32 i, j, k;
+    int32 i, k;
     float32 **mfc;
     
     if (fcb->cepsize <= 0) {

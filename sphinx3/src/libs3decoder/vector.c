@@ -131,7 +131,7 @@ int vector_normalize(vector_t v, uint32 dim)
 
     if (s != 0) {
         for (i = 0; i < dim; i++)
-            v[i] /= s;
+            v[i] /= (float) s;
     }
     else {
         ret_val = S3_WARNING;

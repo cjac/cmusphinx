@@ -87,7 +87,7 @@
 #include <assert.h>
 
 #include <libutil/libutil.h>
-#include "kb.h";
+#include "kb.h"
 
 
 #include "s3types.h"

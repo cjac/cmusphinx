@@ -566,7 +566,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
   
-  factor = log_to_logs3_factor();    
+  factor = (float32) log_to_logs3_factor();    
   for (i = 0; i < kb->hmm_hist_bins; i++)
     kb->hmm_hist[i] = 0;
   
