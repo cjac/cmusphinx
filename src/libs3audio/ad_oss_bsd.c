@@ -64,7 +64,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <machine/soundcard.h>
+#include <sys/soundcard.h>
 #include <errno.h>
 
 #include "s3types.h"
