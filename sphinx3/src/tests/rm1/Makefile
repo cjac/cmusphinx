@@ -56,22 +56,22 @@ $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
 
 
-rm1_full_unigram:
-	rm -f gmake-rm1_full_unigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_full_unigram
-	echo "-lm DMP" >> ARGS.rm1_full_unigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_full_unigram > gmake-rm1_full_unigram.results
+rm1_unigram:
+	rm -f gmake-rm1_unigram.results
+	/bin/cp ARGS.rm1_base ARGS.rm1_unigram
+	echo "-lm DMP" >> ARGS.rm1_unigram
+	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_unigram > gmake-rm1_unigram.results
 
 
-rm1_full_bigram:
-	rm -f gmake-rm1_full_bigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_full_bigram
-	echo "-lm RM.2880.bigram.arpa.DMP" >> ARGS.rm1_full_bigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_full_bigram > gmake-rm1_full_bigram.results
+rm1_bigram:
+	rm -f gmake-rm1_bigram.results
+	/bin/cp ARGS.rm1_base ARGS.rm1_bigram
+	echo "-lm RM.2880.bigram.arpa.DMP" >> ARGS.rm1_bigram
+	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_bigram > gmake-rm1_bigram.results
 
 
-rm1_full_trigram:
-	rm -f gmake-rm1_full_trigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_full_trigram
-	echo "-lm RM.2880.trigram.arpa.DMP" >> ARGS.rm1_full_trigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_full_trigram > gmake-rm1_full_trigram.results
+rm1_trigram:
+	rm -f gmake-rm1_trigram.results
+	/bin/cp ARGS.rm1_base ARGS.rm1_trigram
+	echo "-lm RM.2880.trigram.arpa.DMP" >> ARGS.rm1_trigram
+	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_trigram > gmake-rm1_trigram.results
