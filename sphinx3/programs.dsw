@@ -3,6 +3,27 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "allphone"=.\win32\msdev\programs\allphone\allphone.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs3decoder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "align"=.\win32\msdev\programs\align\align.dsp - Package Owner=<4>
 
 Package=<5>
