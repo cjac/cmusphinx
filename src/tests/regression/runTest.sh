@@ -3,7 +3,11 @@
 # This script is usually run by compileFarmRunTest.sh
 
 # Define paths, just in case
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:$PATH
+
+# This one is for ppc-osx1 of the Sourceforge compile farm. 
+export PATH=/usr/pkg/bin/:$PATH
+
 export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 
 # goto sphinx3 :-)
@@ -12,8 +16,9 @@ pushd sphinx3
 mkdir `hostname`
 # Run test from the machine-specific directory
 cd `hostname`
-# Do the dance: configure, make etc
+# This will allows more memory can be used in some platforms. 
 unlimit 262144
+# Do the dance: configure, make etc
 ../configure
 make all test-full
 # Copy the log files to a safe location that won't de destroyed by a clean
