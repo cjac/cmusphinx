@@ -22,8 +22,7 @@ rm1_flat_unigram:
 	/bin/echo "-lw 7" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-140" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-80" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	../batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
+	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
 
 
 rm1_unigram:
@@ -33,8 +32,7 @@ rm1_unigram:
 	/bin/echo "-lw 10" >> ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-120" >> ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-60" >> ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_unigram$(MODEAFFIX)
-	../batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
+	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
 
 
 rm1_bigram:
@@ -44,8 +42,7 @@ rm1_bigram:
 	/bin/echo "-lw 13" >> ARGS.rm1_bigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-120" >> ARGS.rm1_bigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_bigram$(MODEAFFIX)
-	../batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
+	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
 
 rm1_trigram:
 	rm -f gmake-rm1_trigram$(MODEAFFIX).results
@@ -54,6 +51,5 @@ rm1_trigram:
 	/bin/echo "-lw 14" >> ARGS.rm1_trigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-140" >> ARGS.rm1_trigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_trigram$(MODEAFFIX)
-	../batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
+	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
 
