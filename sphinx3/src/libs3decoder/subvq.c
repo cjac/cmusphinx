@@ -184,14 +184,13 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     char *strp;
     subvq_t *vq;
     
-
-
-    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,vq->VQ_EVAL);
-    
     vq = (subvq_t *) ckd_calloc (1, sizeof(subvq_t));
 
     vq->VQ_EVAL = cmd_ln_int32 ("-vqeval");	/*Arthur : It nows work for arbitrary size of sub-vector*/    
+
     fp = myfopen(file, "r");
+
+    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,vq->VQ_EVAL);
     
     /* Read until "Sub-vectors" */
     for (;;) {

@@ -135,37 +135,29 @@
 int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 				 int32 beginutt, int32 endutt, float32 ***ofeat)
 {
-  static float32 **cepbuf=NULL;
-  static float32 **tmpcepbuf=NULL;
-
+  float32 **cepbuf=NULL;
+  float32 **tmpcepbuf=NULL;
   int32 win, cepsize; 
   int32 i, j, nfeatvec, residualvecs;
-  /* int32 l,m;*/
   int32 tmppos;
 
-  /* If this assert fails, you're risking overwriting elements
-   * in the buffer. -EBG */
-  assert(nfr < LIVEBUFBLOCKSIZE);
-  win = feat_window_size(fcb);
+  cepbuf=fcb->cepbuf;
+  tmpcepbuf=fcb->tmpcepbuf;
 
-  if (fcb->cepsize <= 0) 
-    E_FATAL("Bad cepsize: %d\n", fcb->cepsize);
+  assert(nfr < LIVEBUFBLOCKSIZE);
+  assert(fcb->cepsize > 0);
+  assert(cepbuf);
+  assert(tmpcepbuf);
+
+  win = feat_window_size(fcb);
   cepsize = feat_cepsize(fcb);
 
   if (cepbuf == NULL){
-    cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,cepsize, sizeof(float32));
-    if (! cepbuf) E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
     beginutt = 1; /* If no buffer was present we are beginning an utt */
     E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
   }
 
-  if(tmpcepbuf ==NULL){
-    tmpcepbuf=(float32 **) ckd_calloc_2d(2*win+1,cepsize, sizeof(float32));
-    if(!tmpcepbuf) E_FATAL("Unable to allocate tmpcepbuf ckd_calloc_2d(%ld,%d,%d)\n",2*win+1,cepsize,sizeof(float32));
-  }
-
   /* CMN stuff */
-
   metricsStart("cmn");
 
   if (fcb->cmn) {
@@ -200,11 +192,14 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     residualvecs -= win;
   }
 
+  E_INFO("curpos %d bufpos %d %d\n",fcb->curpos,fcb->bufpos,residualvecs);
   for (i=0;i<nfr;i++){
     assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
     memcpy(cepbuf[fcb->bufpos++],uttcep[i],cepsize*sizeof(float32));
     fcb->bufpos %= LIVEBUFBLOCKSIZE;
   }
+
+  E_INFO("%d %d %d\n",fcb->curpos,fcb->bufpos,residualvecs);
 
   if (endutt){
     /* Replicate last frame into the last win frames */
@@ -232,10 +227,12 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   nfr += residualvecs;
   
   for (i=0; i < nfr; i++,nfeatvec++){
+    E_INFO("Frame %d\n",i);
     if(fcb->curpos <win || fcb->curpos > LIVEBUFBLOCKSIZE -win-1){
       /* HACK! Just copy the frames and read them to compute_feat */
       for(j=-win;j<=win;j++){
 	tmppos= (j+ fcb->curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
+	E_INFO("%d %d %d\n",fcb->curpos,tmppos,cepsize);
 	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
       }
       fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
