@@ -1,19 +1,109 @@
-Fil Alleva
-Robert Brennan
-Hsiao-wen Hon
-Ravishankar Mosur
-Eric Thayer
-Rita Singh
-Bhiksha Raj
-Ricky Houghton
-Mike Seltzer
-Kevin Lenzo
-Alan W Black
-Evandro Gouvea
-Arthur Chan
-Jahanzeb Sherwan
-Yitao Sun
+-Written by Arthur Chan
 
-More! please help us get all the names.
+Developers of Sphinx Here we list all Sphinx's developes who have
+contributed to Sphinx.  Since, in the early stage of Sphinx's
+development we didn't use RCS and CVS.  This version only include the
+contributions which can be derived from the source code.  The
+description may not be accurate enough.  Please kindly correct us if
+there is any descripencies of this file.
+
+-Arthur Chan.  20040825
+
+Kai Fu Lee - The one who propose Sphinx. 
+
+Hsiao-wen Hon - According to Dr. Kai-Fu Lee's "Sphinx: a speaker
+independent speech recognition system", Hsiao-wen is the implementer
+of Sphinx I. 
+
+Fil Alleva - 
+Robert Brennan -
+
+Mei-Yu Huang - The proposer of the concept of senones. 
+
+Xiaodong Huang - Manager of Sphinx 2.  A lot of improvement were
+introduced from Sphinx 1 to Sphinx 2.
+
+Ravishankar Mosur - Implementer of Sphinx 2(fbs-6,7,8) and Sphinx 3
+(both flat lexicon decoder and tree lexicon decoder.  Many fast
+algorithms in S2 and S3 were designed and implemented by him
+
+Eric Thayer - Architect of SphinxTrain, he unified a lot of toolkits
+of CMU's researchers and create the backbone of the current
+SphinxTrain.
+
+Rita Singh - Proposer and Implementer of automatic question
+generation.  She also implemented the first version of live mode
+decoder and write a comprehensive on-line tutorial for SphinxTrain,
+sphinx2 and sphinx3.  Many researchers were benefited by her version
+of modified code. 
+
+Bhiksha Raj - Implementer of silence deletion in the alignement in
+s3align and a version of SAT in SphinxTrain.  Main designer of Sphinx
+4.
+
+Ricky Houghton - He is the author of the backbone of the perl scripts
+for SCHMM training.  He also fixed a lot of memory leaking problems in
+Sphinx 3.
+
+Mike Seltzer - He is the author of the current version of wave2feat. 
+
+Sam-Joo Doh - He is the author of a speaker adaptation package. The
+current version of adaptation routine only used small portion of its
+package.
+
+Kevin Lenzo - Packaged Sphinx 2 and developed several versions of
+Sphinx2 to make it has open-source quality.  He also started to put
+the code into Sourceforge. 
+
+Alan W Black - Packaged SphinxTrain's script and code. He makes it work
+for speech synthesis.  
+
+Evandro Gouvea - Package Sphinx3.0 and Sphinx 3.x, maintainer of
+Sphinx X including the code, websites, machine queues and networks.
+
+Developers from Sun, including Willie Walker, Paul Lamere and Philip
+Kok.  They first ported s3.3 to s3j, a java version of s3.3.  Later,
+they proposed to design and implement Sphinx 4.  For Sphinx 4's
+contributors, please consult Sphinx 4's documentation. 
+
+Jahanzeb Sherwan - Implementer of phoneme lookahead algorithm in
+Sphinx 3.x
+
+Yitao Sun - Designer and Implementer of Sphinx 3.x live mode APIs. 
+
+Arthur Chan - The author of this document. :-) Before I left CMU,
+let's make this description empty. :-)
+
+Special Thanks
+
+Carl Quillen - He submitted a patch for allowing three s3.0 tools to
+s3.x.  This allows developers of Sphinx to incorporate other tools
+very quickly to s3.x.  He also submitted a patch of mean
+transformation.  It was unfortunate that 
+
+Thanks
+
+Rich Stern - Experts in biaurnal speech processing and he
+manages CMU's robust group.
+
+Alex Rudnicky - The coordinator of Hephaestus.  Gave a lot of valuable
+suggestions to Sphinx and various open source speech projects of CMU. 
+
+Jack Mostow - The principal investigator of project LISTEN.  A lot of
+features of Sphinx are motivated by project LISTEN. From example,
+FSM's version of Sphinx 2.
+
+Jim Baker - Interaction with him benefits a lot of young researchers
+and develoeprs in CMU's speech group. 
+
+Raj Reddy - For his vision in speech recognition and his good sense of
+choosing the name "Sphinx". 
+
+We would also like to thank to all users who have kindly feedbacked to
+us and make Sphinx's better. 
+
+To make this list complete, we may need to put all the names of CMU's
+graduates and faculties here. 
+
 
 
