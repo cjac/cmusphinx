@@ -574,11 +574,16 @@ set of changes from dhd (below)
 
 2000-12-12 Kevin A. Lenzo <lenzo@cs.cmu.edu>
 	* Removed the broken attila- and poe- demos
+
 	* added noisedict argument to point to the noiseword
 	  dictionary in the HMM dir; this significantly
 	  improves performance.   Added the arg for sphinx2-demo,
 	  sphinx2-phone, sphinx2-simple, sphinx2-test, sphinx2-align,
 	  and sphinx2-example.arg.
+
 	* Changed the paths in sphinx2-example.arg to be consistent
 	  with the default install location
 
+	* Added the magic string '*align_all*' at the top of
+	  demo.cor so that the sphinx2-align example can run
+	  correctly
