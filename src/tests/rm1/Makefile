@@ -45,6 +45,17 @@ LIBNAME= tests
 
 LOCAL_INCLUDES = -I$(TOP)/src -I$(TOP)/src/libs3decoder -I$(TOP)/src/libs3audio
 
+ifeq ($(MODE),quick)
+  MODEAFFIX = _quick
+  CTLFILE = rm1_quick.ctl
+  REFFILE = rm1_quick.ref
+else
+  MODE = 
+  CTLFILE = rm1.ctl
+  REFFILE = rm1.ref
+endif
+
+
 ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics
 
 include $(TOP)/config/common_make_rules
@@ -56,50 +67,45 @@ $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
 
 
+rm1_flat_unigram:
+	rm -f gmake-rm1_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.rm1 ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-lw 8" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-120" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-40" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
+
+
 rm1_unigram:
-	rm -f gmake-rm1_unigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_unigram
-	echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1_unigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_unigram > gmake-rm1_unigram.results
+	rm -f gmake-rm1_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.rm1 ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-lm RM.2845.unigram.arpa.DMP" >> ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-lw 13" >> ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-120" >> ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-60" >> ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
 
 
 rm1_bigram:
-	rm -f gmake-rm1_bigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_bigram
-	echo "-lm RM.2845.bigram.arpa.DMP" >> ARGS.rm1_bigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_bigram > gmake-rm1_bigram.results
-
+	rm -f gmake-rm1_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.rm1 ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-lm RM.2845.bigram.arpa.DMP" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-lw 17" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-140" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_bigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
 
 rm1_trigram:
-	rm -f gmake-rm1_trigram.results
-	/bin/cp ARGS.rm1_base ARGS.rm1_trigram
-	echo "-lm RM.2845.trigram.arpa.DMP" >> ARGS.rm1_trigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1_trigram > gmake-rm1_trigram.results
+	rm -f gmake-rm1_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.rm1 ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-lm RM.2845.trigram.arpa.DMP" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-lw 27" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-160" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-120" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_trigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
 
-
-rm1onrm1_flatunigram:
-	rm -f gmake-rm1onrm1_flatunigram.results
-	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_flatunigram
-	echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1onrm1_flatunigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_flatunigram > gmake-rm1onrm1_flatunigram.results
-
-
-rm1onrm1_unigram:
-	rm -f gmake-rm1onrm1_unigram.results
-	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_unigram
-	echo "-lm RM.2845.unigram.arpa.DMP" >> ARGS.rm1onrm1_unigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_unigram > gmake-rm1onrm1_unigram.results
-
-
-rm1onrm1_bigram:
-	rm -f gmake-rm1onrm1_bigram.results
-	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_bigram
-	echo "-lm RM.2845.bigram.arpa.DMP" >> ARGS.rm1onrm1_bigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_bigram > gmake-rm1onrm1_bigram.results
-
-
-rm1onrm1_trigram:
-	rm -f gmake-rm1onrm1_trigram.results
-	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_trigram
-	echo "-lm RM.2845.trigram.arpa.DMP" >> ARGS.rm1onrm1_trigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_trigram > gmake-rm1onrm1_trigram.results
