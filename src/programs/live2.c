@@ -302,7 +302,7 @@ ld_utt_proc_raw_impl(live_decoder_t *decoder,
 		     decoder->hmm_log);
   }
 	
-  if (num_frames > 0) {
+  if (frames) {
     ckd_free_2d((void **)frames);
   }
 	
