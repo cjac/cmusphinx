@@ -129,169 +129,138 @@
  * will still work.  (ebg)
  */
 int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
-			      int32 beginutt, int32 endutt, float32 ***ofeat)
+				 int32 beginutt, int32 endutt, float32 ***ofeat)
 {
-    static float32 **feat=NULL;
-    static float32 **cepbuf=NULL;
-    static int32   bufpos;
-    /* RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32   curpos;
-    /* RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32  jp1, jp2, jp3, jf1, jf2, jf3;
-    /* RAH 4.15.01 upgraded unsigned char variables to int32 */
-    int32  win, cepsize; 
-    int32  i, j, nfeatvec, residualvecs;
+  static float32 **cepbuf=NULL;
+  static float32 **tmpcepbuf=NULL;
+  static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+  static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
 
-    float32 *w, *_w, *f;
-    float32 *w1, *w_1, *_w1, *_w_1;
-    float32 d1, d2;
+  int32 win, cepsize; 
+  int32 i, j, nfeatvec, residualvecs;
+  /* int32 l,m;*/
+  int32 tmppos;
 
-    /* If this assert fails, you're risking overwriting elements
-     * in the buffer. -EBG */
-    assert(nfr < LIVEBUFBLOCKSIZE);
-    win = feat_window_size(fcb);
+  /* If this assert fails, you're risking overwriting elements
+   * in the buffer. -EBG */
+  assert(nfr < LIVEBUFBLOCKSIZE);
+  win = feat_window_size(fcb);
 
+  if (fcb->cepsize <= 0) 
+    E_FATAL("Bad cepsize: %d\n", fcb->cepsize);
+  cepsize = feat_cepsize(fcb);
 
-    /* CMN stuff */
+  if (cepbuf == NULL){
+    cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,cepsize, sizeof(float32));
+    if (! cepbuf) E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
+    beginutt = 1; /* If no buffer was present we are beginning an utt */
+    E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
+  }
 
-    metricsStart("cmn");
+  if(tmpcepbuf ==NULL){
+    tmpcepbuf=(float32 **) ckd_calloc_2d(2*win+1,cepsize, sizeof(float32));
+    if(!tmpcepbuf) E_FATAL("Unable to allocate tmpcepbuf ckd_calloc_2d(%ld,%d,%d)\n",2*win+1,cepsize,sizeof(float32));
+  }
 
-    if (fcb->cmn) {
-        /* Only cmn_prior in block computation mode */
-	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+  /* CMN stuff */
+
+  metricsStart("cmn");
+
+  if (fcb->cmn) {
+    /* Only cmn_prior in block computation mode */
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+  }
+
+  metricsStop("cmn");
+
+  if (fe_dump) {
+    fe_dump2d_float_frame(fe_dumpfile, uttcep, nfr, fcb->cepsize,
+			  "CMN", "CMN_CEPSTRUM");
+  }
+
+  /* Feature Extraction */
+
+  metricsStart("FeatureExtractor");
+
+  residualvecs = 0;
+
+  if (beginutt) {
+    /* Replicate first frame into the first win frames */
+    for (i=0;i<win;i++) {
+      if(nfr>=win+1)
+	memcpy(cepbuf[i],uttcep[0+i+1],cepsize*sizeof(float32));
+      else
+	memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
     }
+    bufpos = win;
+    bufpos %= LIVEBUFBLOCKSIZE;
+    curpos = bufpos;
+    residualvecs -= win;
+  }
 
-    metricsStop("cmn");
+  for (i=0;i<nfr;i++){
+    assert(bufpos < LIVEBUFBLOCKSIZE);
+    memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
+    bufpos %= LIVEBUFBLOCKSIZE;
+  }
 
-    if (fe_dump) {
-        fe_dump2d_float_frame(fe_dumpfile, uttcep, nfr, fcb->cepsize,
-                              "CMN", "CMN_CEPSTRUM");
-    }
-
-    /* Feature Extraction */
-
-    metricsStart("FeatureExtractor");
-
-    if (fcb->cepsize <= 0) 
-	E_FATAL("Bad cepsize: %d\n", fcb->cepsize);
-    cepsize = feat_cepsize(fcb);
-    if (feat == NULL)
-	feat = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
-					 feat_stream_len(fcb,0),
-					 sizeof(float32));
-    if (cepbuf == NULL){
-	cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
-                                           cepsize,
-                                           sizeof(float32));
-	beginutt = 1; /* If no buffer was present we are beginning an utt */
-        if (! feat)
-            E_FATAL("Unable to allocate feat ckd_calloc_2d(%ld,%d,%d)\n",
-                    LIVEBUFBLOCKSIZE,feat_stream_len(fcb,0),sizeof(float32));
-        if (! cepbuf)
-            E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",
-                    LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
-        E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
-    }
-    
-    
-    residualvecs = 0;
-
-    if (beginutt) {
-	/* Replicate first frame into the first win frames */
-	for (i=0;i<win;i++) 
-	   memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
-	/* beginutt = 0; */  /* Removed by Rita Singh around 02-Jan-2001 */
-                             /* See History at the top of this file */
-	bufpos = win;
+  if (endutt){
+    /* Replicate last frame into the last win frames */
+    if (nfr > 0) {
+      for (i=0;i<win;i++) {
+	assert(bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
 	bufpos %= LIVEBUFBLOCKSIZE;
-        curpos = bufpos;
-        jp1 = curpos - 1;
-	jp1 %= LIVEBUFBLOCKSIZE;
-        jp2 = curpos - 2;
-	jp2 %= LIVEBUFBLOCKSIZE;
-        jp3 = curpos - 3;
-	jp3 %= LIVEBUFBLOCKSIZE;
-        jf1 = curpos + 1;
-	jf1 %= LIVEBUFBLOCKSIZE;
-        jf2 = curpos + 2;
-	jf2 %= LIVEBUFBLOCKSIZE;
-        jf3 = curpos + 3;
-	jf3 %= LIVEBUFBLOCKSIZE;
-	residualvecs -= win;
+      }
     }
-
-    for (i=0;i<nfr;i++){
-      assert(bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
+    else {
+      int16 tpos = bufpos-1;
+      tpos %= LIVEBUFBLOCKSIZE;
+      for (i=0;i<win;i++) {
+	assert(bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
 	bufpos %= LIVEBUFBLOCKSIZE;
+      }
     }
+    residualvecs += win;
+  }
 
-    if (endutt){
-	/* Replicate last frame into the last win frames */
-	if (nfr > 0) {
-	  for (i=0;i<win;i++) {
-	    assert(bufpos < LIVEBUFBLOCKSIZE);
-	   memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	   bufpos %= LIVEBUFBLOCKSIZE;
-	  }
-        }
-	else {
-	    int16 tpos = bufpos-1;
-	    tpos %= LIVEBUFBLOCKSIZE;
-	    for (i=0;i<win;i++) {
-	      assert(bufpos < LIVEBUFBLOCKSIZE);
-	        memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-		bufpos %= LIVEBUFBLOCKSIZE;
-	    }
-	}
-        residualvecs += win;
+  /* Create feature vectors */
+  nfeatvec = 0;
+  nfr += residualvecs;
+  
+  for (i=0; i < nfr; i++,nfeatvec++){
+    if(curpos <win || curpos > LIVEBUFBLOCKSIZE -win-1){
+      /* HACK! Just copy the frames and read them to compute_feat */
+      for(j=-win;j<=win;j++){
+	tmppos= (j+ curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
+	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
+      }
+      fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
+    }else{
+      fcb->compute_feat(fcb, cepbuf+curpos, ofeat[i]);
     }
+    curpos++;
+    curpos %= LIVEBUFBLOCKSIZE;
+  }
 
-    /* Create feature vectors */
-    nfeatvec = 0;
-    nfr += residualvecs;
+  metricsStop("FeatureExtractor");
 
-    for (i = 0; i < nfr; i++,nfeatvec++){
-        memcpy (feat[i], cepbuf[curpos], (cepsize) * sizeof(float32));
-    
-        /*
-         * DCEP: mfc[2] - mfc[-2];
-         */
-        f = feat[i] + cepsize;
-        w  = cepbuf[jf2];
-        _w = cepbuf[jp2];
+  return(nfeatvec);
 
-        for (j = 0; j < cepsize; j++)
-	    f[j] = w[j] - _w[j];
-    
-        /* D2CEP: (mfc[3] - mfc[-1]) - (mfc[1] - mfc[-3]) */
-        f += cepsize;
-    
-        w1   = cepbuf[jf3];
-        _w1  = cepbuf[jp1];
-        w_1  = cepbuf[jf1];
-        _w_1 = cepbuf[jp3];
+}
 
-        for (j = 0; j < cepsize; j++) {
-	    d1 =  w1[j] -  _w1[j];
-	    d2 = w_1[j] - _w_1[j];
+/*
+ * RAH, remove memory allocated by feat_init
+ * What is going on? feat_vector_alloc doesn't appear to be called
+ */
+void feat_dump_free (feat_t *f)
+{
+  if (f) {
+    //    if (f->stream_len)
+    //      ckd_free ((void *) f->stream_len);
 
-	    f[j] = d1 - d2;
-        }
-	jf1++; jf2++; jf3++;
-	jp1++; jp2++; jp3++;
-	curpos++;
-	jf1 %= LIVEBUFBLOCKSIZE;
-	jf2 %= LIVEBUFBLOCKSIZE;
-	jf3 %= LIVEBUFBLOCKSIZE;
-	jp1 %= LIVEBUFBLOCKSIZE;
-	jp2 %= LIVEBUFBLOCKSIZE;
-	jp3 %= LIVEBUFBLOCKSIZE;
-	curpos %= LIVEBUFBLOCKSIZE;
-    }
-    *ofeat = feat;
+    //    ckd_free ((void *) f);
+  }
 
-    metricsStop("FeatureExtractor");
-
-    return(nfeatvec);
 }
