@@ -82,7 +82,7 @@ if test "x$ad_files" = "x"; then
                         ad_libs="-lm -lnsl -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
-			audio_test_file="pittsburgh.bigendian"
+			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *86*-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
@@ -96,7 +96,7 @@ if test "x$ad_files" = "x"; then
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
-			audio_test_file="pittsburgh.bigendian"
+			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *-*-*cygwin*)
                         ad_files="play_win32.lo rec_win32.lo"
@@ -108,7 +108,7 @@ if test "x$ad_files" = "x"; then
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_NONE"
-			audio_test_file="pittsburgh.bigendian"
+			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *)
                         ad_files="ad_base.lo"
