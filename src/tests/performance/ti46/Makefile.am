@@ -55,6 +55,7 @@ PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
+DECANYBIN = $(PROGRAMDIR)/decode_anytopo
 ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
 ALLTARGET=ti46-lp ti46-quick-lp ti46-decode ti46-quick-decode
@@ -66,8 +67,8 @@ ALLTARGET=ti46-lp ti46-quick-lp ti46-decode ti46-quick-decode
 #	$(BMBIN) $(subst -bm,,$@).batch $(TI46RAWPATH) ARGS.$@ > $@.results 2>&1
 
 #all : $(ALLTARGET)
-quick : ti46-quick-lp ti46-quick-decode
-slow : ti46-lp ti46-decode
+quick : ti46-quick-lp ti46-quick-decode ti46-quick-decany
+slow : ti46-lp ti46-decode ti46-decany
 
 clean : 
 	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.ti46-*
@@ -91,6 +92,17 @@ ti46-decode ti46-quick-decode:
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
 	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
+
+ti46-decany ti46-quick-decany: 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	/bin/cp ARGS.decany ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir $(TI46CEPPATH)" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results 2>&1
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
 	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
 
 
