@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2001 Carnegie Mellon University.	All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,180 +33,150 @@
  * ====================================================================
  *
  */
-/********************************************************************
- * Example program to show usage of the live mode routines
- * The decoder is initialized with live_initialize_decoder()
- * Blocks of samples are decoded by live_utt_decode_block()
- * To compile an excutable compile using
- * $(CC) -I. -Isrc -Llibutil/linux -Lsrc/linux main_live_example.c -lutil -ldecoder -lm
- * from the current directory 
- * Note the include directories (-I*) and the library directories (-L*)
+ /*************************************************
+ * CMU ARPA Speech Project
  *
- ********************************************************************/
-#include <libutil/libutil.h>
+ * Copyright (c) 2000 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ *************************************************
+ *
+ *  Aug 6, 2004
+ *  Created by Yitao Sun (yitao@cs.cmu.edu).  This is a test program written
+ *  for the Win32 platform.  The program initializes Sphinx3 live-decode API,
+ *  then in a press-to-start and press-to-stop fashion, records and decodes a 
+ *  session of user speech.  The threading and synchronization code are Win32-
+ *  specific.  Ravi Mosur (rkm@cs.cmu.edu) suggested using select() (and no
+ *  threads) on the /dev/tty* device to remove Win32 dependency.
+ */
+
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <live_decode_API.h>
+#include <live_decode_args.h>
+#include <ad.h>
 #include <stdio.h>
-#include "live.h"
-#include "cmd_ln_args.h"
-#include "ad.h"
 
-#define MAXSAMPLES 	10000
-#define LISTENTIME	5.0
-#define MAX_RECORD      48000
+#define BUFSIZE 4096
 
-static int32 last_fr;		/* Last frame for which partial result was reported */
-static ad_rec_t *ad;
+HANDLE startEvent;
+HANDLE finishEvent;
+live_decoder_t decoder;
 
-/* Determine if the user has indicated end of utterance (keyboard hit at end of utt) */
+FILE *dump = 0;
 
-static void ui_ready ( void ){
-#if defined(WIN32)
-    printf ("\nSystem will listen for ~ %.1f sec of speech\n", LISTENTIME);
-    printf ("Hit <cr> before speaking: ");
-#else
-    printf ("\nHit <cr> BEFORE and AFTER speaking: ");
-#endif
-    fflush (stdout);
-}
-
-
-/* Main utterance processing loop: decode each utt */
-static void utterance_loop()
+DWORD WINAPI
+process_thread(LPVOID aParam)
 {
-    char line[1024];
-    int16 adbuf[4096];
-    int32 k;
-    int32 ns;		/* #Samples read from audio in this utterance */
-    int32 hwm;		/* High Water Mark: to know when to report partial result */
-    int32 recording;
+  ad_rec_t *in_ad = 0;
+  int16 samples[BUFSIZE];
+  int32 num_samples;
 
-    int  j,nhypwds;
-    partialhyp_t *parthyp;
-    
-    /*    for (;;) */
-    {		/* Commented the loop */
-	ui_ready ();
+  WaitForSingleObject(startEvent, INFINITE);
 
-	fgets (line, sizeof(line), stdin);
-	if ((line[0] == 'q') || (line[0] == 'Q'))
-	    return;
-	
-	ad_start_rec(ad);	/* Start A/D recording for this utterance */
-	recording = 1;
+  in_ad = ad_open_sps(cmd_ln_int32 ("-samprate"));
+  ad_start_rec(in_ad);
 
-	ns = 0;
-	hwm = 4000;	/* Next partial result reported after 4000 samples */
-	last_fr = -1;	/* Frame count at last partial result reported */
-
-	
-	/* Send audio data to decoder until end of utterance */
-	for (;;) {
-	    /*
-	     * Read audio data (NON-BLOCKING).  Use your favourite substitute here.
-	     * NOTE: In our implementation, ad_read returns -1 upon end of utterance.
-	     */
-	    if ((k = ad_read (ad, adbuf, 4096)) < 0)
-		break;
-
-	    // For now, record until MAX_RECORD and then shut off
-	    if (ns + k > MAX_RECORD) {
-	      ad_close (ad);
-	      nhypwds = live_utt_decode_block(adbuf,k,1,&parthyp);
-	      E_INFO("\n\nFINAL HYP:");
-	      if (nhypwds > 0)
-		for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-	      printf("\n");
-	      break;
-	    }  else
-	      nhypwds = live_utt_decode_block(adbuf,k,0,&parthyp);
-
-	    /* Send whatever data was read above to decoder */
-	    ns += k;
-
-	    /* Time to report partial result? (every 4000 samples or 1/4 sec) */
-	    if (ns > hwm) {
-		hwm = ns+4000;
-		E_INFO("PARTIAL HYP:");
-		if (nhypwds > 0)
-		  for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-		printf("\n");
-	    }
-	}
-    }
-}
-
-
-int main (int argc, char *argv[])
-{
-  /*  short samps[MAXSAMPLES];
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
-    char   filename[512], cepfile[512],*ctlfile, *indir;
-    partialhyp_t *parthyp;
-    FILE *fp, *sfp;
-  */
-    char   *argsfile;
-
-    if (argc != 2) {
-      argsfile = NULL;
-      parse_args_file(argsfile);
-      E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
-    }
-    argsfile = argv[1];
-    live_initialize_decoder(argsfile);
-    live_utt_set_uttid("null");
-
-    /*ARCHAN*/
-    {
-      int samprate = 8000;
-
-      samprate = cmd_ln_int32 ("-samprate");
-      if ((ad = ad_open_sps(samprate)) == NULL)
-	E_FATAL("ad_open_sps failed\n");
-
-      utterance_loop();
-    }
-
-    exit(0);
-}
-
-/*ARCHAN: Comment the old code back in 2001 */
-#if 0
-    if (0) {
-      if (argc != 4)
-	E_FATAL("\nUSAGE: %s <ctlfile> <infeatdir> <argsfile>\n",argv[0]);
-      ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
-      
-      blksize = 2000;
-      
-      if ((fp = fopen(ctlfile,"r")) == NULL)
-	E_FATAL("Unable to read %s\n",ctlfile);
-      
-      while (fscanf(fp,"%s",filename) != EOF){
-	sprintf(cepfile,"%s/%s.raw",indir,filename);
-	if ((sfp = fopen(cepfile,"r")) == NULL)
-	  E_FATAL("Unable to read %s\n",cepfile);
-	nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
-        E_INFO("%d samples in file. Will be decoded in blocks of %d\n",nsamp,blksize);
-        fclose(sfp);
-	
-        for (i=0;i<nsamp;i+=blksize){
-	  buflen = i+blksize < nsamp ? blksize : nsamp-i;
-	  endutt = i+blksize <= nsamp-1 ? 0 : 1;
-	  nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
-	  
-	  /*	  E_INFO("PARTIAL HYP:");
-	  if (nhypwds > 0)
-	    for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-	  printf("\n");
-	  */
-        }
+  while (WaitForSingleObject(finishEvent, 0) == WAIT_TIMEOUT) {
+    num_samples = ad_read(in_ad, samples, BUFSIZE);
+    if (num_samples > 0) {
+      /** dump the recorded audio to disk */
+      if (fwrite(samples, sizeof(int16), num_samples, dump) < num_samples) {
+	printf("Error writing audio to dump file.\n");
       }
-    } else {    
-      int samprate = 8000;
 
-      samprate = cmd_ln_int32 ("-samprate");
-      if ((ad = ad_open_sps(samprate)) == NULL)
-	E_FATAL("ad_open_sps failed\n");
-
-      utterance_loop();
+      if (ld_process_raw(&decoder, samples, num_samples) < 0) {
+	printf("Data processing error.\n");
+	return -1;
+      }
     }
-#endif
+  }
+
+  ad_stop_rec(in_ad);
+  ad_close(in_ad);
+
+  if (ld_end_utt(&decoder)) {
+    printf("Cannot end decoding.\n");
+    return -1;
+  }
+
+  return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+  HANDLE thread;
+  char buffer[1024];
+  char *hypstr;
+
+  /*
+   * Initializing
+   */
+  if (argc != 2) {
+    printf("Usage:  livedecode config_file \n");
+    return -1;
+  }
+
+  if (cmd_ln_parse_file(arg_def, argv[1])) {
+    printf("Bad arguments file (%s).\n", argv[1]);
+    return -1;
+  }
+
+  if (ld_init(&decoder)) {
+    printf("Initialization failed.\n");
+    return -1;
+  }
+
+  if (ld_begin_utt(&decoder, 0)) {
+    printf("Cannot start decoding\n");
+    return -1;
+  }
+
+  /** initializing a file to dump the recorded audio */
+  if ((dump = fopen("out.raw", "wb")) == 0) {
+    printf("Cannot open dump file out.raw\n");
+    return -1;
+  }
+
+  startEvent = CreateEvent(NULL, TRUE, FALSE, "StartEvent");
+  finishEvent = CreateEvent(NULL, TRUE, FALSE, "FinishEvent");
+  thread = CreateThread(NULL, 0, process_thread, NULL, 0, NULL);
+
+  /*
+   * Wait for some user input, then signal the processing thread to start
+   * recording/decoding
+   */
+  printf("press ENTER to start recording\n");
+  fgets(buffer, 1024, stdin);
+  SetEvent(startEvent);
+
+  /*
+   *  Wait for some user input again, then signal the processing thread to end
+   *  recording/decoding
+   */
+  printf("press ENTER to finish recording\n");
+  fgets(buffer, 1024, stdin);
+  SetEvent(finishEvent);
+
+  /*
+   *  Wait for the working thread to join
+   */
+  WaitForSingleObject(thread, INFINITE);
+
+  /*
+   *  Print the decoding output
+   */
+  if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
+    printf("Cannot retrieve hypothesis.\n");
+  }
+  else {
+    printf("Hypothesis:\n%s\n", hypstr);
+  }
+
+  ld_finish(&decoder);
+  
+  fclose(dump);
+
+  return 0;
+}

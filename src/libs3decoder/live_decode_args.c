@@ -46,7 +46,27 @@
  * Created.
  */
 
-#include "args.h"
+/*
+----------------------------
+revision 1.3
+date: 2004/07/27 21:53:05;  author: yitao;  state: Exp;  lines: +1 -1
+
+weird.  i only changed kb.c to fix a small bug.  why so many changes?
+----------------------------
+revision 1.2
+date: 2004/07/21 04:17:01;  author: yitao;  state: Exp;  lines: +8 -0
+
+fixed conflicts when Arthur merged Ziad's fe_process_frame() code
+----------------------------
+revision 1.1
+date: 2004/07/12 20:56:00;  author: yitao;  state: Exp;
+
+moved these files from src/programs to src/libs3decoder so they could be included in t
+he library.
+=============================================================================
+*/
+
+#include "live_decode_args.h"
 
 arg_t arg_def[] = {
     { "-logbase",
