@@ -237,6 +237,10 @@ int32 main(int32 argc, char **argv)
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit();
 
+  if(cmd_ln_int32("-logspec"))
+    E_FATAL("-logspec is currently not supported\n");
+  
+
   P = fe_parse_options(argc,argv);
   if (fe_convert_files(P) != FE_SUCCESS){
     E_FATAL("error converting files...exiting\n");
