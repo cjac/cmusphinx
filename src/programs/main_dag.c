@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.2  2004/09/09  20:29:08  arthchan2003
- * Added test for astar and dag.  Put a hack in s3_dag.c that allows 0 as acoustice score.
+ * Revision 1.3  2004/09/13  08:13:28  arthchan2003
+ * update copyright notice from 200x to 2004
  * 
+ * Revision 1.2  2004/09/09 20:29:08  arthchan2003
+ * Added test for astar and dag.  Put a hack in s3_dag.c that allows 0 as acoustice score.
+ *
  * Revision 1.1  2004/08/20 08:25:19  arthchan2003
  * Sorry, I forget to add the main of dag.c
  *
