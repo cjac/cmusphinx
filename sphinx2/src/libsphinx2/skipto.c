@@ -74,29 +74,33 @@
  *	and partly due to popular usage of this function.
  */
 
+#include "strfuncs.h"
+
 static unsigned char tab[256] = {
 	0};
 
-char *skipto (string,charset)
-unsigned char *string, *charset;
+char *
+skipto (unsigned char *string, unsigned char const *charset)
 {
-	register unsigned char *setp,*strp;
+	register unsigned char const *setp;
+	register unsigned char *strp;
 
 	tab[0] = 1;		/* Stop on a null, too. */
 	for (setp=charset;  *setp;  setp++) tab[*setp]=1;
 	for (strp=string;  tab[*strp]==0;  strp++)  ;
 	for (setp=charset;  *setp;  setp++) tab[*setp]=0;
-	return ((char *)strp);
+	return strp;
 }
 
-char *skipover (string,charset)
-unsigned char *string, *charset;
+char *
+skipover (unsigned char *string, unsigned char const *charset)
 {
-	register unsigned char *setp,*strp;
+    register unsigned char const *setp;
+    register unsigned char *strp;
 
 	tab[0] = 0;		/* Do not skip over nulls. */
 	for (setp=charset;  *setp;  setp++) tab[*setp]=1;
 	for (strp=string;  tab[*strp];  strp++)  ;
 	for (setp=charset;  *setp;  setp++) tab[*setp]=0;
-	return ((char *)strp);
+	return strp;
 }

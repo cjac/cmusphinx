@@ -76,18 +76,21 @@
  *  Originally	from klg (Ken Greer); IUS/SUS UNIX.
  */
 
-char _argbreak;
-char *skipto();
+#include <stdlib.h>
+#include "strfuncs.h"
 
-char *nxtarg (q,brk)
-char **q,*brk;
+static char _argbreak;
+
+char *
+nxtarg (char **q, char const *brk)
 {
-	register char *front,*back;
+	register char *front;
+	register char *back;
 	front = *q;			/* start of string */
 	/* leading blanks and tabs */
 	while (*front && (*front == ' ' || *front == '\t')) front++;
 	/* find break character at end */
-	if (brk == 0)  brk = " ";
+	if (brk == NULL)  brk = " ";
 	back = skipto (front,brk);
 	_argbreak = *back;
 	*q = (*back ? back+1 : back);	/* next arg start loc */

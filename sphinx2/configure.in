@@ -5,6 +5,8 @@ AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(sphinx2,0.2)
 AM_CONFIG_HEADER(config.h)
 
+CFLAGS=${CFLAGS:--g -O2 -Wall}
+
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -26,7 +28,8 @@ myarch=`uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 archfiles=""
 archlibs=""
 
-if test "x$myarch" = "xi386_linux"; then
+# If it is linux, assume OSS works on it.
+if test "x`uname -s | tr A-Z a-z`" = "xlinux"; then
 	# echo "boo!"
 	archfiles="ad_i386_linux.lo cont_ad_base.lo mulaw_base.lo"
 else

@@ -59,9 +59,6 @@
 #define _LM_H_
 
 
-#include <lm_3g.h>
-#include <cache_lm.h>
-
 /* LM scores, given sequences of dictionary base wid */
 int32	lm_tg_score (int32 w1, int32 w2, int32 w3);
 int32	lm_bg_score (int32 w1, int32 w2);

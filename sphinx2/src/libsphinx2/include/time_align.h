@@ -49,33 +49,25 @@
  */
 
 
-#include <basic_types.h>
-#include <search_const.h>
-
 void time_align_set_beam_width(double bw);
 
-int
-    time_align_init();
+int time_align_init(void);
 
-void
-    time_align_set_input(float *c,
-			 float *d,
-			 float *d_80,
-			 float *p,
-			 float *dd,
-			 int n_f);
+void time_align_set_input(float *c,
+			  float *d,
+			  float *d_80,
+			  float *p,
+			  float *dd,
+			  int n_f);
 
-int
-    time_align_word_sequence(char * utt,
-			     char *left_word,
+int time_align_word_sequence(char const * utt,
+			     char const *left_word,
 			     char *word_seq,
-			     char *right_word
-			     );
-int
-    time_align_seg_output(
-			  unsigned short **seg,
+			     char const *right_word);
+
+int time_align_seg_output(unsigned short **seg,
 			  int *seg_cnt);
-char *time_align_best_word_string();
+char *time_align_best_word_string(void);
 
 #define NONE	-1
 #define NO_ID	-1
@@ -104,8 +96,8 @@ char *time_align_best_word_string();
 
 typedef struct compound_word_struct {
     int   word_id;		/* dictionary word id of the compound word */
-    char *word_str;		/* dictionary word string of the compound word */
-    char *match_str;		/* string to match against the input word sequence */
+    char const *word_str;	/* dictionary word string of the compound word */
+    char const *match_str;	/* string to match against the input word sequence */
     int   word_cnt;		/* number of words in the match_str component */
 } COMPOUND_WORD_T;
 
@@ -129,7 +121,7 @@ typedef struct {
 } BACK_POINTER_T;
 
 typedef struct {
-    char *name;			/* a string representation of the word/phone associated w/ the
+    char const *name;		/* a string representation of the word/phone associated w/ the
 				   time segment */
     int id;			/* integer representation of the word/phone/state segment */
     int start;			/* the frame when the word/phone was entered */

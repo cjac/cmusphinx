@@ -70,57 +70,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <errno.h>
 
-#include <s2types.h>
-
-#if (WIN32)
+#ifdef WIN32
 #include <posixwin32.h>
 #else
-#include <sys/fcntl.h>
+#include <fcntl.h>
+#include <unistd.h>
 #endif
 
-extern char *salloc();
-
-extern off_t lseek();
-
-extern char *getenv();
-
-/* declaration for functions in libcs.a */
-extern FILE *fopenp();
-extern char *getname();
-extern char *nxtarg();
-
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/errno.h>
 #include <sys/param.h>
-#else
-#include <fcntl.h>
 #endif
 #include <stdlib.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "s2types.h"
+#include "strfuncs.h"
+#include "cepio.h"
+
 #ifndef ESUCCESS
 #define ESUCCESS 0
 #endif
-extern int32 errno;
 
 #define SWABL(x) (((x << 24) & 0xFF000000) | ((x <<  8) & 0x00FF0000) | \
 	          ((x >>  8) & 0x0000FF00) | ((x >> 24) & 0x000000FF))
 
 
-int32 cep_read_bin (float32 **buf, int32 *len, char *file)
+int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
 {
   int32 fd, floatCount, floatBytes, readBytes;
   int32 byteReverse = FALSE;
   struct stat st_buf;
 
-#if (! WIN32)
-  fd = open(file, O_RDONLY, 0644);
-#else
+#ifdef WIN32
   fd = open(file, O_RDONLY|O_BINARY, 0644);
+#else
+  fd = open(file, O_RDONLY, 0644);
 #endif
 
   if (fd < 0) {
@@ -177,14 +169,14 @@ int32 cep_read_bin (float32 **buf, int32 *len, char *file)
   return ESUCCESS;
 }  
 
-int32 cep_write_bin(char *file, float32 *buf, int32 len)
+int32 cep_write_bin(char const *file, float32 *buf, int32 len)
 {
-  int32 fd, bytes;
+  int32 fd;
 
-#if (! WIN32)
-  fd = open(file, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+#ifdef WIN32
+ fd = open(file, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0644);
 #else
-  fd = open(file, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0644);
+  fd = open(file, O_WRONLY|O_CREAT|O_TRUNC, 0644);
 #endif
 
   if (fd < 0) {

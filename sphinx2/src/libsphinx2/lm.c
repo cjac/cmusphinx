@@ -62,12 +62,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <CM_macros.h>
-#include <log.h>
-#include <lm_3g.h>
-#include <cache_lm.h>
-#include <err.h>
-#include <kb_exports.h>
+
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "list.h"
+#include "hash.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "lm.h"
+#include "cache_lm.h"
+#include "search_const.h"
+#include "msd.h"
+#include "dict.h"
+#include "kb_exports.h"
+#include "err.h"
+#include "log.h"
 
 
 static cache_lm_t *clm = NULL;

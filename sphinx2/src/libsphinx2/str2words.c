@@ -61,8 +61,9 @@
 
 #include <ctype.h>
 
-#include <str2words.h>
-#include <err.h>
+#include "s2types.h"
+#include "str2words.h"
+#include "err.h"
 
 
 int32 str2words (char *line, char **ptr, int32 max_ptr)

@@ -61,15 +61,14 @@
 #include <assert.h>
 #include <math.h>
 
-#include <CM_macros.h>
-#include <str2words.h>
-#include <err.h>
-#include <log.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "str2words.h"
+#include "strfuncs.h"
+#include "err.h"
+#include "log.h"
 
-#include <lmclass.h>
-
-
-extern char *salloc();
+#include "lmclass.h"
 
 
 #define LMCLASS_UNDEFINED_PROB		32001	/* Some large +ve non-logprob value */
@@ -168,7 +167,6 @@ lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
     lmclass_t lmclass;
     lmclass_word_t lmclass_word;
     float SUMp, p;
-    int32 LOGp;
     int32 n_implicit_prob, n_word;
     
     assert (lmclass_set != NULL);
@@ -210,6 +208,8 @@ lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
 	n_implicit_prob = 0;
 	n_word = 0;
 	for (;;) {
+	    int32 LOGp = 0; /* No, GCC, it won't be used uninitialized */
+
 	    while (((_eof = fgets (line, sizeof(line), fp)) != NULL) &&
 		   ((line[0] == '#') || ((nwd = str2words(line, word, 4096)) == 0))) {
 		lineno++;
@@ -253,6 +253,8 @@ lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
 	}
 
 	if (n_implicit_prob > 0) {
+	    int32 LOGp;
+
 	    if (SUMp >= 1.0)
 		E_FATAL("Sum(prob)(LMClass %s) = %e\n", lmclass->name, SUMp);
 	    

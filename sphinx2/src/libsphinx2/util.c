@@ -51,7 +51,7 @@
  *	swapLong(int32 *p)	- do a int32 byte swap at p.
  */
 
-#include <s2types.h>
+#include "s2types.h"
 
 void swapLong(intp)
 /*------------------------------------------------------------*

@@ -46,9 +46,6 @@
  */
 
 
-#include <math.h>
-#include <scvq.h>
-
 #define NUM_ALPHABET	256
 /* centered 5 frame difference of c[0]...c[12] with centered 9 frame
  * of c[1]...c[12].  Don't ask me why it was designed this way! */

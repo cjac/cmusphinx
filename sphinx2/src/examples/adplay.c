@@ -69,8 +69,8 @@
 #include <fcntl.h>
 #endif
 
-#include <ad.h>
-#include <err.h>
+#include "ad.h"
+#include "err.h"
 
 
 /* Linked list of buffers of data to be played back */

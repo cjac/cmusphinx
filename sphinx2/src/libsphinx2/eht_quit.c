@@ -59,9 +59,13 @@
  **********************************************************************
  * HISTORY
  * $Log$
- * Revision 1.1  2000/01/28  22:08:49  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:49  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * Revision 1.3  90/12/11  17:58:02  mja
  * 	Add copyright/disclaimer for distribution.
  * 
@@ -73,17 +77,15 @@
  */
 
 #include <stdio.h>
-#include <varargs.h>
+#include <stdarg.h>
 
-quit (status, fmt, va_alist)
-int status;
-char *fmt;
-va_dcl
+void
+quit (int status, char const *fmt, ...)
 {
 	va_list args;
 
 	fflush(stdout);
-	va_start(args);
+	va_start(args, fmt);
 	(void) vfprintf(stderr, fmt, args);
 	va_end(args);
 	exit(status);

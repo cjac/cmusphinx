@@ -59,14 +59,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <CM_macros.h>
-#include <log.h>
-#include <cache_lm.h>
-#include <kb_exports.h>
-#include <err.h>
+#include <math.h>
 
-extern char *listelem_alloc();
-extern void listelem_free();
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "search_const.h"
+#include "msd.h"
+#include "log.h"
+#include "cache_lm.h"
+#include "linklist.h"
+#include "list.h"
+#include "hash.h"
+#include "dict.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "kb_exports.h"
+#include "err.h"
 
 static int32 log0;
 static int32 *log_count_tbl = NULL;

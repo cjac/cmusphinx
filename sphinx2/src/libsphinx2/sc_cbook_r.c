@@ -59,9 +59,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <log.h>
 #include <assert.h>
-#include <sc_vq_internal.h>
+#include <math.h>
+
+#include "s2types.h"
+#include "log.h"
+#include "scvq.h"
+#include "cepio.h"
+#include "sc_vq_internal.h"
 
 static int32 fLenMap[NUM_FEATURES] = {
     CEP_VECLEN, DCEP_VECLEN, POW_VECLEN, CEP_VECLEN

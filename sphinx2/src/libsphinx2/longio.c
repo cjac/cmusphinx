@@ -60,8 +60,7 @@
 #include <stdio.h>
 
 
-long read_long (stream)
-  FILE           *stream;
+long read_long (FILE *stream)
 {
   int             c;
   long            word;
@@ -85,9 +84,7 @@ long read_long (stream)
 }
 
 
-int write_long (stream, word)
-  FILE           *stream;
-  long            word;
+int write_long (FILE *stream, long word)
 {
   if (putc (word >> 24, stream) == EOF)
     return -1;
@@ -101,10 +98,7 @@ int write_long (stream, word)
 }
 
 
-int read_long_array (stream, base, length)
-  FILE           *stream;
-  long           *base;
-  int             length;
+int read_long_array (FILE *stream, long *base, int length)
 {
 #ifdef sun
   return fread ((char *) base, length * 4, 1, stream) != 1 ? -1 : 0;
@@ -141,10 +135,7 @@ int read_long_array (stream, base, length)
 }
 
 
-int write_long_array (stream, base, length)
-  FILE           *stream;
-  long           *base;
-  int             length;
+int write_long_array (FILE *stream, long *base, int length)
 {
 #ifdef sun
   return fwrite((char *) base, length * 4, 1, stream) != 1 ? -1 : 0;

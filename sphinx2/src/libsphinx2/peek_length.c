@@ -52,17 +52,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/fcntl.h>
-#else
-#include <fcntl.h>
+#include <unistd.h>
 #endif
-#include <byteorder.h>
+#include "byteorder.h"
 
-
-peek_length (file)
-  char           *file;
+int
+peek_length (char const *file)
 {
   int             fd, len;
 /*  char		  buff[4]; */

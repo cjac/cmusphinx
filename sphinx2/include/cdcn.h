@@ -59,20 +59,13 @@ typedef struct suitcase
   int    run_cdcn;
 } CDCN_type;
 
-#if 0
-
-int 	cdcn_init (char *, CDCN_type *);
+int 	cdcn_init (char const *, CDCN_type *);
 float   cdcn_update (float *, int, CDCN_type *);
 void    cdcn_norm (float *, CDCN_type *);
-void    block_cdcn_norm (float *, int, CDCN_type *);
+void    block_cdcn_norm (float z[][NUM_COEFF+1],
+			 int num_frames,
+			 CDCN_type *cdcn_variabls);
 
-#else
+CDCN_type *uttproc_get_cdcn_ptr ( void );
 
-int 	cdcn_init();
-float   cdcn_update();
-void    cdcn_norm();
-void    block_cdcn_norm();
-
-#endif
-
-#endif
+#endif /* _CDCN_H_ */

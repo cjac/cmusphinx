@@ -81,6 +81,7 @@
 #include <sys/asoundlib.h>
 #include <errno.h>
 
+#include "s2types.h"
 #include "err.h"
 #include "ad.h"
 

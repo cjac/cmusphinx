@@ -71,7 +71,7 @@
 #include <string.h>
 #include <err.h>
 
-#include <s2types.h>
+#include "s2types.h"
 
 
 static float max = 10.0;	/* Estimated C0 max used for AGC in current utterance */
@@ -98,7 +98,7 @@ double agcemax_get ( void )
 /* AGC_EMAX_PROC - do the agc
  *------------------------------------------------------------*
  */
-int agc_emax_proc (float *ocep, float *icep, int veclen)
+int agc_emax_proc (float *ocep, float const *icep, int veclen)
 {
     if (icep[0] > obs_max) {
 	obs_max = icep[0];

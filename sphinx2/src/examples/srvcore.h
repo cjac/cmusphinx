@@ -59,7 +59,7 @@
 
 #include <s2types.h>
 
-#if (WIN32)
+#ifdef WIN32
 #include "win32sock.h"
 #else
 #include "posixsock.h"

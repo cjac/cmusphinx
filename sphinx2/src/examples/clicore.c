@@ -57,9 +57,13 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
  * $Log$
- * Revision 1.1  2000/01/28  22:08:41  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
+ * Initial import of sphinx2
+ *
+ *
  */
 
 
@@ -73,9 +77,10 @@
 #include <string.h>
 #include <assert.h>
 
-#if (! WIN32)
+#ifndef WIN32
 #include <sys/types.h>
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include "clicore.h"

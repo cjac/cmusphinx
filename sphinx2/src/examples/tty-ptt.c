@@ -72,16 +72,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#if (! WIN32)
+#ifdef WIN32
+#include <time.h>
+#else
 #include <sys/types.h>
 #include <sys/time.h>
-#else
-#include <time.h>
 #endif
 
-#include <err.h>
-#include <ad.h>
-#include <fbs.h>
+#include "s2types.h"
+#include "err.h"
+#include "ad.h"
+#include "fbs.h"
 
 
 #define LISTENTIME		5.0
@@ -111,7 +112,9 @@ static void update_result ( void )
 /* Determine if the user has indicated end of utterance (keyboard hit at end of utt) */
 static int32 speaking (int32 ns)
 {
-#if (! WIN32)
+#ifdef WIN32
+    return (ns > (LISTENTIME*DEFAULT_SAMPLES_PER_SEC)) ? 0 : 1;
+#else
     /* ------------------- Unix ------------------ */
     /* Check for a keyboard hit, BUT NON-BLOCKING */
     fd_set readfds;
@@ -140,15 +143,13 @@ static int32 speaking (int32 ns)
     }
     
     return (status);
-#else
-    return (ns > (LISTENTIME*DEFAULT_SAMPLES_PER_SEC)) ? 0 : 1;
 #endif
 }
 
 
 static void ui_ready ( void )
 {
-#if (WIN32)
+#ifdef WIN32
     printf ("\nSystem will listen for ~ %.1f sec of speech\n", LISTENTIME);
     printf ("Hit <cr> before speaking: ");
 #else
@@ -244,6 +245,7 @@ static void utterance_loop()
 }
 
 
+int
 main (int32 argc, char *argv[])
 {
     fbs_init (argc, argv);
@@ -257,4 +259,5 @@ main (int32 argc, char *argv[])
     
     ad_close (ad);
     fbs_end ();
+    return 0;
 }

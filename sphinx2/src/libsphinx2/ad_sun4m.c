@@ -68,8 +68,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+
 #include "audio_utils.h"
-#include <ad.h>
+#include "s2types.h"
+#include "ad.h"
 
 
 #define QUIT(x)		{fprintf x; exit(-1);}

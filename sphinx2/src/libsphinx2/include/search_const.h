@@ -76,5 +76,5 @@
 #define HMM_LAST_STATE	3
 #endif
 
-#endif _SEARCH_CONST_H_
+#endif /* _SEARCH_CONST_H_ */
 

@@ -59,14 +59,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include <s2types.h>
+#include "s2types.h"
+#include "fbs.h"
+#include "fe.h"
+#include "cdcn.h"
 
-#include <fbs.h>
-#include <fe.h>
-#include <cdcn.h>
-
-#include <CM_macros.h>
-#include <err.h>
+#include "CM_macros.h"
+#include "err.h"
 
 
 extern int32 uttproc_parse_ctlfile_entry (char *line,

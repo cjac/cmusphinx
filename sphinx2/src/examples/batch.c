@@ -54,13 +54,15 @@
  */
 
 #include <stdio.h>
-#include <fbs.h>
+#include "s2types.h"
+#include "fbs.h"
 
-
+int
 main (int32 argc, char *argv[])
 {
     fbs_init (argc, argv);
     /* That is it; fbs_init takes care of batch-mode processing */
 
     fbs_end ();
+    return 0;
 }

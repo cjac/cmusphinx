@@ -50,9 +50,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2000/01/28  23:42:14  awb
- * *** empty log message ***
+ * Revision 1.3  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.2  2000/01/28 23:42:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
  * Initial import of sphinx2
  *
@@ -92,23 +95,30 @@
 #include <assert.h>
 #include <signal.h>
 
-#include <s2types.h>
 #include <sys/time.h>
 
-#if (WIN32)
+#ifdef WIN32
 #include <posixwin32.h>
+#else
+#include <unistd.h>
 #endif
 
-#include <CM_macros.h>
-#include <err.h>
-#include <fbs.h>
-#if !defined(__FreeBSD__)
-#include <search.h>
-#endif
-#include <ad.h>
-#include <cont_ad.h>
-
-#include <srvcore.h>
+#include "s2types.h"
+#include "basic_types.h"
+#include "CM_macros.h"
+#include "err.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "srvcore.h"
+#include "search_const.h"
+#include "msd.h"
+#include "list.h"
+#include "hash.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "dict.h"
+#include "kb_exports.h"
+#include "fbs.h"
 
 
 #define DEFAULT_LISTEN_PORT	7027
@@ -125,17 +135,16 @@ static int32 startwid;
 /* Sleep for specified #msec */
 static void sleep_msec (int32 ms)
 {
-#if (! WIN32)
+#ifdef WIN32
+    Sleep(ms);
+#else
     /* ------------------- Unix ------------------ */
     struct timeval tmo;
-    int32 status;
     
     tmo.tv_sec = 0;
     tmo.tv_usec = ms*1000;
     
     select(0, NULL, NULL, NULL, &tmo);
-#else
-    Sleep(ms);
 #endif
 }
 
@@ -386,7 +395,7 @@ static void sigint_handler (int arg)
  */
 static void s2srv_loop ( void )
 {
-#if (! WIN32)
+#ifndef WIN32
     signal (SIGPIPE, SIG_IGN);	/* How about WIN32? */
 #endif
     signal (SIGINT, sigint_handler);
@@ -439,7 +448,7 @@ int32 s2srv_init (char *portarg)
     return 0;
 }
 
-
+int
 main (int32 argc, char *argv[])
 {
     int32 i;
@@ -481,4 +490,5 @@ main (int32 argc, char *argv[])
 
     /* Close recognition engine */
     fbs_end ();
+    return 0;
 }

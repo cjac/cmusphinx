@@ -55,16 +55,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <s2types.h>
-
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/fcntl.h>
-#else
-#include <fcntl.h>
+#include <unistd.h>
 #endif
-#include <byteorder.h>
 
+#include "s2types.h"
+#include "byteorder.h"
 
 
 int32 areadchar (char *file, char **data_ref, int32 *length_ref)

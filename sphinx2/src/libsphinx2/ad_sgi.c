@@ -60,9 +60,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <ad.h>
-#include <err.h>
 #include <dmedia/audio.h>
+
+#include "s2types.h"
+#include "ad.h"
+#include "err.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 

@@ -134,4 +134,4 @@ void cache_lm_dump (cache_lm_t *lm, char *file);
 void cache_lm_load (cache_lm_t *lm, char *file);
 
 
-#endif _CACHE_LM_H_
+#endif /* _CACHE_LM_H_ */

@@ -88,7 +88,7 @@
 #include <err.h>
 
 
-#include <s2types.h>
+#include "s2types.h"
 
 static int   veclen;		/* the feature vector length */
 static float *cur_mean = NULL;	/* the mean subtracted from input frames */
@@ -121,8 +121,7 @@ int32 cepmean_get (float *vec)
     return 0;
 }
 
-void mean_norm_init(vlen)
-int32	vlen;
+void mean_norm_init(int32 vlen)
 {
     veclen   = vlen;
     cur_mean = (float *) calloc(veclen, sizeof(float));
@@ -132,7 +131,8 @@ int32	vlen;
     E_INFO("mean[0]= %.2f, mean[1..%d]= 0.0\n", cur_mean[0], veclen-1);
 }
 
-void mean_norm_shiftwin ( void )
+static void
+mean_norm_shiftwin ( void )
 {
     int32 i;
     double sf;
@@ -150,8 +150,7 @@ void mean_norm_shiftwin ( void )
     }
 }
 
-void mean_norm_acc_sub(vec)
-float	*vec;
+void mean_norm_acc_sub(float *vec)
 {
     int32 i;
 
@@ -166,7 +165,7 @@ float	*vec;
 	mean_norm_shiftwin();
 }
 
-void mean_norm_update()
+void mean_norm_update(void)
 {
     int32 i;
     double sf;

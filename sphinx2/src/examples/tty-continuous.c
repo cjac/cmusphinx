@@ -71,18 +71,21 @@
 
 
 #include <stdio.h>
+#include <signal.h>
+#include <setjmp.h>
 #include <string.h>
 
-#include <err.h>
-#include <ad.h>
-#include <cont_ad.h>
-#include <fbs.h>
+#include "s2types.h"
+#include "err.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "fbs.h"
 
-#if (! WIN32)
+#ifdef WIN32
+#include <time.h>
+#else
 #include <sys/types.h>
 #include <sys/time.h>
-#else
-#include <time.h>
 #endif
 
 #define SAMPLE_RATE   16000
@@ -93,17 +96,16 @@ static ad_rec_t *ad;
 /* Sleep for specified msec */
 static void sleep_msec (int32 ms)
 {
-#if (! WIN32)
+#ifdef WIN32
+    Sleep(ms);
+#else
     /* ------------------- Unix ------------------ */
     struct timeval tmo;
-    int32 status;
     
     tmo.tv_sec = 0;
     tmo.tv_usec = ms*1000;
     
     select(0, NULL, NULL, NULL, &tmo);
-#else
-    Sleep(ms);
 #endif
 }
 
@@ -215,9 +217,18 @@ static void utterance_loop()
     cont_ad_close (cont);
 }
 
-
-main (int32 argc, char *argv[])
+static jmp_buf jbuf;
+static void sighandler(int signo)
 {
+    longjmp(jbuf, 1);
+}
+
+
+int main (int argc, char *argv[])
+{
+    /* Make sure we exit cleanly (needed for profiling among other things) */
+    signal(SIGINT, &sighandler);
+
     fbs_init (argc, argv);
     
     if ((ad = ad_open_sps (SAMPLE_RATE)) == NULL)
@@ -225,8 +236,12 @@ main (int32 argc, char *argv[])
 
     E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
 
-    utterance_loop ();
-    
+    if (setjmp(jbuf) == 0) {
+	utterance_loop ();
+    }
+
     fbs_end ();
     ad_close (ad);
+
+    return 0;
 }

@@ -55,9 +55,11 @@
  */
 
 
-bisearch(table, num_entries, unit, cmp_routine, item)
-char *table, *item;
-int num_entries, unit, (*cmp_routine)();
+/* You know, there's a bsearch() in the standard library. */
+int 
+bisearch(char *table, int num_entries, int unit,
+	 int (*cmp_routine)(char const *, char const *),
+	 char *item)
 {
   register int low = 0, high = num_entries, mid, c;
 

@@ -64,9 +64,13 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created, based on Brian Milnes's earlier version.
  * $Log$
- * Revision 1.1  2000/01/28  22:08:41  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
+ * Initial import of sphinx2
+ *
+ *
  */
 
 
@@ -81,20 +85,21 @@
 #include <assert.h>
 #include <time.h>
 
-#if (! WIN32)
+#ifndef WIN32
 #include <sys/types.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #endif
 
 #include "srvcore.h"
 
 
 #define QUIT(x)		{fflush(stdout); fprintf x; exit(-1);}
-#if (! NOERRLOG)
-#define ERRLOG(x)	{fprintf x;}
-#else
+#ifdef NOERRLOG
 #define ERRLOG(x)	{}
+#else
+#define ERRLOG(x)	{fprintf x;}
 #endif
 
 
@@ -108,7 +113,7 @@ static FILE *fp = NULL;				/* Recvd pkts logfile */
 #define RECVLOGFILE	"RCV.LOG"
 
 
-#if (WIN32)
+#ifdef WIN32
 
 /*
  * Isn't there a built in perror for socket errors?
@@ -225,7 +230,7 @@ int32 server_send_block (SOCKET sd, char *buf, int32 len)
 }
 
 
-#if (WIN32)
+#ifdef WIN32
 /*
  * Initialize Windows sockets DLL.  Return 0 if successful, -1 otherwise.
  */
@@ -266,7 +271,7 @@ int32 server_initialize (int32 port)
     struct sockaddr_in address;
     int32 length;
     
-#if (WIN32)
+#ifdef WIN32
     if (win32_init () != 0) {
 	fflush (stdout);
 	fprintf (stderr, "%s(%d): win32_init failed\n", __FILE__, __LINE__);
@@ -277,7 +282,7 @@ int32 server_initialize (int32 port)
     /* Open a TCP socket */
     if ((listen_sd = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
 	print_errno ("create_socket");
-#if (WIN32)
+#ifdef WIN32
 	win32_end ();
 #endif
 	return -1;
@@ -303,7 +308,7 @@ int32 server_initialize (int32 port)
 	    print_errno ("Couldn't bind to any port");
 	    closesocket (listen_sd);
 	    listen_sd = INVALID_SOCKET;
-#if (WIN32)
+#ifdef WIN32
 	    win32_end ();
 #endif
 	    return -1;
@@ -316,7 +321,7 @@ int32 server_initialize (int32 port)
 	    print_errno ("Couldn't get socket name");
 	    closesocket (listen_sd);
 	    listen_sd = INVALID_SOCKET;
-#if (WIN32)
+#ifdef WIN32
 	    win32_end ();
 #endif
 	    return -1;
@@ -330,7 +335,7 @@ int32 server_initialize (int32 port)
 	print_errno ("listen_socket");
 	closesocket(listen_sd);
 	listen_sd = INVALID_SOCKET;
-#if (WIN32)
+#ifdef WIN32
 	win32_end ();
 #endif
 	return -1;
@@ -402,7 +407,7 @@ void server_end ( void )
     closesocket (listen_sd);
     listen_sd = INVALID_SOCKET;
 
-#if (WIN32)
+#ifdef WIN32
     win32_end ();
 #endif
 

@@ -16,9 +16,13 @@
      An include file to hide posix socket differences.
 
  * $Log$
- * Revision 1.1  2000/01/28  22:09:07  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:11  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 02-May-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added errno handling.
@@ -34,8 +38,6 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
-
-#include <s2types.h>
 
 /*
  * Windows NT uses a different socket interface and return values from BSD.

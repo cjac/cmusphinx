@@ -69,16 +69,14 @@
 #include <err.h>
 
 void
-_E__pr_header(const char *f, long ln, const char *msg)
+_E__pr_header(char const *f, long ln, char const *msg)
 {
     (void) fflush(stdout);
     (void) fprintf(stderr, "%s: \"%s\", line %ld: ", msg, f, ln);
 }
 
 void
-_E__pr_info_header(f, ln, msg)
-char *f, *msg;
-long ln;
+_E__pr_info_header(char const *f, long ln, char const *msg)
 {
     (void) fflush(stdout);
 
@@ -87,7 +85,7 @@ long ln;
 }
 
 void
-_E__pr_warn( char *fmt, ... ) 
+_E__pr_warn( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -99,7 +97,7 @@ _E__pr_warn( char *fmt, ... )
 }
 
 void
-_E__pr_info( char *fmt, ... ) 
+_E__pr_info( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -110,7 +108,7 @@ _E__pr_info( char *fmt, ... )
     (void) fflush(stderr);
 }
 
-void _E__die_error( char *fmt, ... ) 
+void _E__die_error( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -126,7 +124,7 @@ void _E__die_error( char *fmt, ... )
     exit (-1);
 }
 
-void _E__fatal_sys_error( char *fmt, ... ) 
+void _E__fatal_sys_error( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -144,7 +142,7 @@ void _E__fatal_sys_error( char *fmt, ... )
     exit(errno);
 }
 
-void _E__sys_error( char *fmt, ... ) 
+void _E__sys_error( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -160,7 +158,7 @@ void _E__sys_error( char *fmt, ... )
     (void) fflush(stderr);
 }
 
-void _E__abort_error( char *fmt, ... ) 
+void _E__abort_error( char const *fmt, ... ) 
 {
     va_list pvar;
 
@@ -176,8 +174,8 @@ void _E__abort_error( char *fmt, ... )
 #ifdef TEST
 main()
 {
-    char *two = "two";
-    char *three = "three";
+    char const *two = "two";
+    char const *three = "three";
     FILE *fp;
 
     E_WARN("this is a simple test\n");

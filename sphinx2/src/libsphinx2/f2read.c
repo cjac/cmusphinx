@@ -55,16 +55,15 @@
 #if (! WIN32)
 #include <sys/file.h>
 #include <sys/fcntl.h>
+#include <unistd.h>
 #else
 #include <fcntl.h>
 #endif
-#include <byteorder.h>
+#include "byteorder.h"
 
 
-f2read (file, data1_ref, data2_ref, length_ref)
-  char           *file;
-  float         **data1_ref, **data2_ref;
-  int            *length_ref;
+int
+f2read (char *file, float **data1_ref, float **data2_ref, int *length_ref)
 {
   int             fd;
   int             length;

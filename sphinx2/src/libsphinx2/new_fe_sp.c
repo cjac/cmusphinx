@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
+
+#include "s2types.h"
 #include "new_fe.h"
 #include "new_fe_sp.h"
 
@@ -132,7 +134,7 @@ float32 fe_melinv(float32 x)
 }
 
 
-void fe_pre_emphasis(int16 *in, float64 *out, int32 len, float32
+void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32
 		     factor, int16 prior)
 {
     int32 i;
@@ -144,7 +146,7 @@ void fe_pre_emphasis(int16 *in, float64 *out, int32 len, float32
  
 }
 
-void fe_short_to_double(int16 *in, float64 *out, int32 len)
+void fe_short_to_double(int16 const *in, float64 *out, int32 len)
 {
     int32 i;
     
@@ -182,9 +184,8 @@ void fe_hamming_window(float64 *in, float64 *window, int32 in_len)
 void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 {
     float64 *spec, *mfspec;
-    int32 i;
     
-    if (FE->FB_TYPE = MEL_SCALE){
+    if (FE->FB_TYPE == MEL_SCALE){
 	spec = (float64 *)calloc(FE->FFT_SIZE, sizeof(float64));
 	mfspec = (float64 *)calloc(FE->MEL_FB->num_filters, sizeof(float64));
 
@@ -209,11 +210,10 @@ void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 
 
 
-void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsize)
+void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize)
 {
     int32  j,wrap;
     complex  *FFT, *IN;
-    float64 dummy;
     
     /*fftsize defined at top of file*/
     FFT = (complex *) calloc(fftsize,sizeof(complex));
@@ -261,7 +261,7 @@ void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsi
     return;
 }
 
-void fe_mel_spec(fe_t *FE, float64 *spec, float64 *mfspec)
+void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec)
 {
     int32 whichfilt, start, i;
     float32 dfreq;
@@ -284,7 +284,6 @@ void fe_mel_spec(fe_t *FE, float64 *spec, float64 *mfspec)
 void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 {
     int32 i,j;
-    static first_run=1;
     int32 period;
     float32 beta;
     
@@ -316,7 +315,7 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     return;
 }
 
-int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
+int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
 {
   static int32
     s, k,			/* as above				*/
@@ -337,11 +336,11 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
 
   
   /* check N, compute lgN						*/
-  for (k = N, lgN = 0; k > 1; k /= 2, lgN++)
+  for (k = n, lgN = 0; k > 1; k /= 2, lgN++)
   {
-    if (k%2 != 0 || N < 0)
+    if (k%2 != 0 || n < 0)
     {
-      fprintf(stderr, "fft: N must be a power of 2 (is %d)\n", N);
+      fprintf(stderr, "fft: N must be a power of 2 (is %d)\n", n);
       return(-1);
     }
   }
@@ -350,7 +349,7 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
   if (invert == 1)
     div = 1.0;
   else if (invert == -1)
-    div = N;
+    div = n;
   else
   {
     fprintf(stderr, "fft: invert must be either +1 or -1 (is %d)\n", invert);
@@ -358,7 +357,7 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
   }
 
   /* get the to, from buffers right, and init				*/
-  buffer = (complex *)calloc(N, sizeof(complex));
+  buffer = (complex *)calloc(n, sizeof(complex));
   if (lgN%2 == 0)
   {
     from = out;
@@ -371,7 +370,7 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
   }
 
   
-  for (s = 0; s<N; s++)
+  for (s = 0; s<n; s++)
   {
       from[s].r = in[s].r/div;
       from[s].i = in[s].i/div;
@@ -379,23 +378,23 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
   }
 
   /* w = exp(-2*PI*i/N), w[k] = w^k					*/
-  w = (complex *) calloc(N/2, sizeof(complex));
-  for (k = 0; k < N/2; k++)
+  w = (complex *) calloc(n/2, sizeof(complex));
+  for (k = 0; k < n/2; k++)
   {
-    x = -6.28318530717958647*invert*k/N;
+    x = -6.28318530717958647*invert*k/n;
     w[k].r = cos(x);
     w[k].i = sin(x);
   }
-  wEnd = &w[N/2];
+  wEnd = &w[n/2];
   
   /* go for it!								*/
-  for (k = N/2; k > 0; k /= 2)
+  for (k = n/2; k > 0; k /= 2)
   {
     for (s = 0; s < k; s++)
     {
       /* initialize pointers						*/
       f1 = &from[s]; f2 = &from[s+k];
-      t1 = &to[s]; t2 = &to[s+N/2];
+      t1 = &to[s]; t2 = &to[s+n/2];
       ww = &w[0];
       /* compute <s,k>							*/
       while (ww < wEnd)
@@ -460,7 +459,7 @@ void fe_free_2d(void **arr)
     
 }
 
-void fe_parse_general_params(param_t *P, fe_t *FE)
+void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
 
     if (P->SAMPLING_RATE != 0) 
@@ -500,7 +499,7 @@ void fe_parse_general_params(param_t *P, fe_t *FE)
  
 }
 
-void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
+void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 {
     if (P->SAMPLING_RATE != 0) 
 	MEL->sampling_rate = P->SAMPLING_RATE;

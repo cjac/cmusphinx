@@ -51,9 +51,13 @@
  *------------------------------------------------------------*
  * HISTORY
  * $Log$
- * Revision 1.1  2000/01/28  22:08:50  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:50  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * Revision 8.4  94/05/10  10:46:37  rkm
  * Added original .map file timestamp info to map dump file.
  * 
@@ -71,28 +75,35 @@
  */
 
 #include <stdio.h>
-#include <phone.h>
-#include <CM_macros.h>
 #include <string.h>
-
-#include <hmm_tied_r.h>
-
-#include <magic.h>
-#include <log.h>
-#include <cviterbi4.h>
+#include <stdlib.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#if (! WIN32)
-#include <sys/file.h>
-#else
+#ifdef WIN32
 #include <fcntl.h>
+#else
+#include <sys/file.h>
 #endif
 
-#include <byteorder.h>
-#include <search_const.h>
-#include <smmap4f.h>
-#include <msd.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "list.h"
+#include "hash.h"
+#include "phone.h"
+#include "search_const.h"
+#include "msd.h"
+#include "magic.h"
+#include "log.h"
+#include "cviterbi4.h"
+#include "smmap4f.h"
+#include "dict.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "kb_exports.h"
+#include "hmm_tied_r.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -142,19 +153,39 @@ typedef struct {
 extern OPDF_8BIT_T out_prob_8b[];
 OPDF_8BIT_T out_prob_8b[4];	/* for the 4 features */
 
-static void add_senone (int32 s1, int32 s2);
-static void compute_diphone_senones();
 static void dist_read (
-	char *file,
+	char const *file,
 	int32 expected,
 	int32 useCiDistsOnly,
-	int32 *o1, char *Code_Ext1,
-	int32 *o2, char *Code_Ext2,
-	int32 *o3, char *Code_Ext3,
-	int32 *o4, char *Code_Ext4);
+	int32 *o1, char const *Code_Ext1,
+	int32 *o2, char const *Code_Ext2,
+	int32 *o3, char const *Code_Ext3,
+	int32 *o4, char const *Code_Ext4);
+static void hmm_tied_bin_parse (FILE *fp, SMD *smd,
+				double transSmooth,
+				int32 numAlphaExpected,
+				int norm,
+				double arcWeight, 
+				int doByteSwap,
+				char const *hmmName);
+static void add_senone (int32 s1, int32 s2);
+static void compute_diphone_senones(void);
 static void remove_all_members (int32 s);
 static void zero_senone (int32 s);
+static void normalize_dists (int numAlphabet, double SmoothMin);
+static void normalize_out (register int32 *out,
+			   double weight, int32 numAlphabet);
+static void normalize_trans (SMD *smd, SMD_R *smd_r, double weight);
+static void transpose (int32 *pa, int32 const *a, int32 rows, int32 cols);
+static void insert_floor (register int32 *out, int32 min,
+			  int32 numAlphabet);
 
+static int hmmArcNormalize (SMD *smd, SMD_R *smd_r,
+			    double transSmooth, double arcWeight);
+
+/* FIXME: ARGH!  These are exactly the opposite of the similarly named
+   macros in "byteorder.h".  And then we also have a set of functions
+   which also swap bytes.  */
 #if (__BIG_ENDIAN__)
 #define SWAP_W(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
 #define SWAP_L(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
@@ -164,10 +195,15 @@ static void zero_senone (int32 s);
 #define SWAP_L(x)
 #endif
 
-static int fread_int32(fp, min, max, name)
-    FILE *fp;
-    int min, max;
-    char *name;
+/* FIXME: Yes, this one swaps unconditionally, and it's a
+   function... !@#$%@!#$ (from util.c) */
+extern void swapLong(int32 *intp);
+
+/* FIXME: needs a header file */
+extern int areadint (char *file, int **data_ref, int *length_ref);
+
+
+static int fread_int32(FILE *fp, int min, int max, char const *name)
 {
     int k;
     
@@ -179,12 +215,10 @@ static int fread_int32(fp, min, max, name)
     return (k);
 }
 
-static fwrite_int32 (fp, val)
-    FILE *fp;
-    int val;
+static size_t fwrite_int32 (FILE *fp, int val)
 {
     SWAP_L(val);
-    fwrite (&val, sizeof(int), 1, fp);
+    return fwrite (&val, sizeof(int), 1, fp);
 }
 
 /*
@@ -193,15 +227,16 @@ static fwrite_int32 (fp, val)
  * The precompiled file contains senone probs smoothed, normalized and compressed
  * according to the definition of type OPDF_8BIT_T.
  */
-static void load_senone_dists_8bits (p, r, c, file, dir)
-    OPDF_8BIT_T p[];	/* Output probs, clustered */
-    int32 r, c;		/* #rows, #cols */
-    char *file;		/* dumped probs */
-    char *dir;		/* original hmm directory */
+static void
+load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
+			int32 r, int32 c,	/* #rows, #cols */
+			char const *file,	/* dumped probs */
+			char const *dir)	/* original hmm directory */
 {
     FILE *fp;
     char line[1000];
-    int32 i, j, n;
+    size_t n;
+    int32 i;
     
     fprintf (stdout, "%s(%d): Loading HMMs from dump file %s\n",
 	     __FILE__, __LINE__, file);
@@ -257,11 +292,14 @@ static void load_senone_dists_8bits (p, r, c, file, dir)
 	    if (fread (p[n].prob[i], sizeof(int32), 256, fp) != 256)
 		QUIT((stdout, "%s(%d): fread failed\n", __FILE__, __LINE__));
 #if (__BIG_ENDIAN__)
-	    for (j = 0; j < 256; j++) {
-		SWAP_L(p[n].prob[i][j]);
+	    {
+		int j;
+		for (j = 0; j < 256; j++) {
+		    SWAP_L(p[n].prob[i][j]);
+		}
 	    }
 #endif
-	    if (fread (p[n].id[i], sizeof (unsigned char), c, fp) != c)
+	    if (fread (p[n].id[i], sizeof (unsigned char), c, fp) != (size_t) c)
 		QUIT((stdout, "%s(%d): fread failed\n", __FILE__, __LINE__));
 	}
     }
@@ -269,15 +307,16 @@ static void load_senone_dists_8bits (p, r, c, file, dir)
     fclose (fp);
 }
 
-static void dump_probs(p0, p1, p2, p3, r, c, file, dir)
-    int32 *p0, *p1, *p2, *p3;	/* pdfs, may be transposed */
-    int32 r, c;			/* rows, cols */
-    char *file;			/* output file */
-    char *dir;			/* **ORIGINAL** HMM directory */
+static void
+dump_probs(int32 *p0, int32 *p1,
+	   int32 *p2, int32 *p3,	/* pdfs, may be transposed */
+	   int32 r, int32 c,		/* rows, cols */
+	   char const *file,		/* output file */
+	   char const *dir)		/* **ORIGINAL** HMM directory */
 {
     FILE *fp;
     int32 i, k;
-    char *title = "V6 Senone Probs, Smoothed, Normalized";
+    static char const *title = "V6 Senone Probs, Smoothed, Normalized";
     
     fprintf (stdout, "%s(%d): Dumping HMMs to dump file %s\n",
 	     __FILE__, __LINE__, file);
@@ -318,8 +357,9 @@ static void dump_probs(p0, p1, p2, p3, r, c, file, dir)
 }
 
 void read_dists (
-	char *distDir,
-	char *Code_Ext0, char *Code_Ext1, char *Code_Ext2, char *Code_Ext3,
+	char const *distDir,
+	char const *Code_Ext0, char const *Code_Ext1,
+	char const *Code_Ext2, char const *Code_Ext3,
 	int32 numAlphabet,
 	double SmoothMin,
 	int32 useCiDistsOnly)
@@ -331,11 +371,11 @@ void read_dists (
  *			for i=0 to numCiWdPhones
  */
 {
-    int32               i, k, osofar;
+    int32               i, osofar;
     int32		numExpected;
     char                file[256];
     int32               numCiWdPhones = phoneCiCount () + phoneWdCount();
-    char		*dumpfile, *kb_get_senprob_dump_file();
+    char		*dumpfile;
     
     if (useCiDistsOnly)
 	printf ("ONLY using CI Senones\n");
@@ -399,17 +439,19 @@ void read_dists (
 		   numAlphabet, totalDists, dumpfile, distDir);
 }
 
+#if 0
 /*
  * dist_min_max: find min and max prob values in the given 32-bit prob
  * distr table.
  */
-static void dist_min_max (dist, sz, min, max)
-    int32 *dist;	/* prob distr table */
-    int32 sz;		/* size of distr table */
-    int32 *min, *max;	/* ptrs to return values */
+static void
+dist_min_max(int32 *dist, /* prob distr table */
+	     int32 sz,	  /* size of distr table */
+	     int32 *min, int32 *max)	/* ptrs to return values */
 {
-    int32 i, maxi;
-    
+    int32 i, maxi = 0;
+
+    /* FIXME: signedness?! */
     *min = (int32) 0x7fffffff;
     *max = (int32) 0x80000000;
     for (i = 0; i < sz; i++) {
@@ -433,8 +475,8 @@ static void dist_min_max (dist, sz, min, max)
  * where shift = #bit-shifts is determined from max(abs(min(int32-values))).
  * Return shift.
  */
-compress_sen_dists_16bits (num_alphabet)
-    int32 num_alphabet;
+static int32
+compress_sen_dists_16bits (int32 num_alphabet)
 {
     int32 i, sz, min, max, minmin, absmin, shift;
 
@@ -498,10 +540,12 @@ compress_sen_dists_16bits (num_alphabet)
 
     return (shift);
 }
+#endif /* 0 */
 
 void readDistsOnly (
-	char *distDir,
-	char *Code_Ext0, char *Code_Ext1, char *Code_Ext2, char *Code_Ext3,
+	char const *distDir,
+	char const *Code_Ext0, char const *Code_Ext1,
+	char const *Code_Ext2, char const *Code_Ext3,
 	int32 numAlphabet,
 	int32 useCiDistsOnly)
 /*------------------------------------------------------------*
@@ -509,7 +553,7 @@ void readDistsOnly (
  *	Only read the dists, don't normalize or transpose
  */
 {
-    int32                 i, k, osofar;
+    int32                 i, osofar;
     int32		numExpected;
     char                file[256];
     int32                numCiWdPhones = phoneCiCount () + phoneWdCount();
@@ -538,12 +582,11 @@ void readDistsOnly (
     }
 }
 
-normalize_dists (numAlphabet, SmoothMin)
+static void
+normalize_dists (int numAlphabet, double SmoothMin)
 /*------------------------------------------------------------*
  * DESCRIPTION
  */
-int32 numAlphabet;
-double SmoothMin;
 {
     int32                 i, k, smooth_min, osofar;
     int32                numCiWdPhones = phoneCiCount () + phoneWdCount ();
@@ -578,9 +621,8 @@ double SmoothMin;
     }
 }
 
-transpose (pa, a, rows, cols)
-int32 *pa;	/* OUT: The permutaed array */
-int32 *a;	/* IN:  The original array */
+static void
+transpose (int32 *pa, int32 const *a, int32 rows, int32 cols)
 {
     int32	i, j, idx, pidx;
     /*
@@ -594,12 +636,12 @@ int32 *a;	/* IN:  The original array */
     }
 }
 
-remap (smdV)
+void
+remap (SMD *smdV)	/* smd pointer vector */
 /*------------------------------------------------------------*
  * DESCRIPTION
  *	Remap the distributions in the smd's.
  */
-SMD *smdV;		/* smd pointer vector */
 {
     int32 		i, j;
 
@@ -612,31 +654,31 @@ SMD *smdV;		/* smd pointer vector */
 }
 
 typedef struct {
-    int32                name;
-    int32                idx;
-}                   ARC;
+    int32 name;
+    int32 idx;
+} ARC;
 
-cmp_arc (a, b)
-ARC                *a, *b;
+static int
+cmp_arc (void const *a, void const *b)
 {
-    return (a->name - b->name);
+    return (((ARC *)a)->name - ((ARC *)b)->name);
 }
 
-hmm_tied_read_bin (dir_list, file, smd, transSmooth, numAlphaExpected, norm, arcWeight)
+void
+hmm_tied_read_bin (char const *dir_list,   /* directory search list */
+		   char const *file,	   /* tied dist hmm file name */
+		   SMD *smd,		   /* smd struct to fill */
+		   double transSmooth, 	   /* Trans smoothing floor */
+		   int32 numAlphaExpected, /* Expected size of alphabet */
+		   int norm,		   /* normalize the arcs ? */
+		   double arcWeight)	   /* transition weight */
 /*------------------------------------------------------------*
  * Read a single hmm file.
  */
-char               *dir_list;		   /* directory search list */
-char               *file;		   /* tied dist hmm file name */
-SMD                *smd;		   /* smd struct to fill */
-double              transSmooth;	   /* Trans smoothing floor */
-int32 		    numAlphaExpected;	   /* Expected size of alphabet */
-int32		    norm;		   /* normalize the arcs ? */
-double		    arcWeight;		   /* transition weight */
 {
     FILE               *fp;
-    int32                magic, tmp;
-    int32                doByteSwap = FALSE;
+    int32              magic, tmp;
+    int                doByteSwap = FALSE;
 
     fp = CM_fopenp (dir_list, file, "rb");
 
@@ -664,18 +706,17 @@ double		    arcWeight;		   /* transition weight */
     fclose (fp);
 }
 
-hmm_tied_read_big_bin (dir_list, file, smds, transSmooth, numAlphaExpected,
-		       norm, arcWeight)
+void
+hmm_tied_read_big_bin (char const *dir_list,/* directory search list */
+		       char const *file,   /* tied dist hmm file name */
+		       SMD   *smds,	   /* smd structs to fill */
+		       double transSmooth, /* Trans smoothing floor */
+		       int32  numAlphaExpected,	/* Expected size of alphabet */
+		       int    norm,	   /* normalize the arcs ? */
+		       double arcWeight)   /* transition weight */
 /*------------------------------------------------------------*
  * Read a big hmm file.
  */
-char               *dir_list;		   /* directory search list */
-char               *file;		   /* tied dist hmm file name */
-SMD                *smds;		   /* smd structs to fill */
-double              transSmooth;	   /* Trans smoothing floor */
-int32 		    numAlphaExpected;	   /* Expected size of alphabet */
-int32		    norm;		   /* normalize the arcs ? */
-double		    arcWeight;		   /* transition weight */
 {
     FILE               *fp;
     int32                magic, pid;
@@ -759,8 +800,15 @@ double		    arcWeight;		   /* transition weight */
     fclose (fp);
 }
 
-hmm_tied_bin_parse (fp, smd, transSmooth, numAlphaExpected, norm, arcWeight,
-		    doByteSwap, hmmName)
+static void
+hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
+		    SMD      *smd,		   /* smd struct to fill */
+		    double    transSmooth,	   /* Trans smoothing floor */
+		    int32     numAlphaExpected,	   /* Expected size of alphabet */
+		    int	      norm,		   /* normalize the arcs ? */
+		    double    arcWeight,	   /* transition weight */
+		    int	      doByteSwap,	   /* Byte swap the data? */
+		    char const *hmmName)	   /* the name of this hmm */
 /*------------------------------------------------------------*
  * FORMAT
  *	NAME		value	size	meaning
@@ -779,16 +827,8 @@ hmm_tied_bin_parse (fp, smd, transSmooth, numAlphaExpected, norm, arcWeight,
  *	    prob
  *	    dist_num	
  */
-FILE		   *fp;			   /* file pointer, to next hmm */
-SMD                *smd;		   /* smd struct to fill */
-double              transSmooth;	   /* Trans smoothing floor */
-int32 		    numAlphaExpected;	   /* Expected size of alphabet */
-int32		    norm;		   /* normalize the arcs ? */
-double		    arcWeight;		   /* transition weight */
-int32		    doByteSwap;		   /* Byte swap the data? */
-char		   *hmmName;		   /* the name of this hmm */
 {
-    int32                i, tmp;
+    int32                i;
     int32                numOMatrix, numInitial, numFinal, numArcs;
     int32                numAlphabet;
     ARC                 arcs[MAX_ARCS];
@@ -947,11 +987,8 @@ char		   *hmmName;		   /* the name of this hmm */
 	}
 }
 
-hmmArcNormalize (smd, smd_r, transSmooth, arcWeight)
-SMD *smd;
-SMD_R *smd_r;
-double transSmooth;
-double arcWeight;
+static int
+hmmArcNormalize (SMD *smd, SMD_R *smd_r, double transSmooth, double arcWeight)
 {
     int32 logTransSmooth = LOG (transSmooth);
     int32 i;
@@ -971,13 +1008,11 @@ double arcWeight;
     return (0);
 }
 
-normalize_out (out, weight, numAlphabet)
-register           *out;
-double              weight;
-int32		    numAlphabet;
+static void
+normalize_out (register int32 *out, double weight, int32 numAlphabet)
 {
-    int32                 sum = MIN_LOG;
-    register            i;
+    int32 sum = MIN_LOG;
+    register int32 i;
 
     for (i = 0; i < numAlphabet; i++)
 	sum = ADD (sum, out[i]);
@@ -996,25 +1031,20 @@ int32		    numAlphabet;
 }
 
 
-
-insert_floor (out, min, numAlphabet)
-register int32       *out;
-int32                 min;
-int32		    numAlphabet;
+static void
+insert_floor (register int32 *out, int32 min, int32 numAlphabet)
 {
-    register            i;
+    register int32 i;
 
     for (i = 0; i < numAlphabet; i++)
 	if (out[i] < min)
 	    out[i] = min;
 }
 
-normalize_trans (smd, smd_r, weight)
-SMD                *smd;
-SMD_R              *smd_r;
-double              weight;
+static void
+normalize_trans (SMD *smd, SMD_R *smd_r, double weight)
 {
-    int32 		fs, ts, save_arc;
+    int32 		fs, ts;
     int32                arc = 0;
 
     for (fs = 0; fs < smd_r->stateCnt; fs++) {
@@ -1040,33 +1070,33 @@ double              weight;
     }
 }
 
-cmp_sseq (a, b)
+static int
+cmp_sseq (void const *a, void const *b)
 /*--------------------*
  * Compare Senone Sequences
  */
-int32 *a, *b;
 {
     int32	i;
 
     for (i = 0; i < NUMDISTRTYPES; i++) {
-        if (distMap[*a][i] != distMap[*b][i]) {
-	    return (distMap[*a][i] - distMap[*b][i]);
+        if (distMap[*(int32 *)a][i] != distMap[*(int32 *)b][i]) {
+	    return (distMap[*(int32 *)a][i] - distMap[*(int32 *)b][i]);
 	}
     }
     return (0);
 }
 
-cmp_dmap (a, b)
+static int
+cmp_dmap (void const *a, void const *b)
 /*--------------------*
  * Compare Senone Sequences
  */
-int32 **a, **b;
 {
     int32	i;
 
     for (i = 0; i < NUMDISTRTYPES; i++) {
-        if ((*a)[i] != (*b)[i]) {
-	    return ((*a)[i] - (*b)[i]);
+        if ((*(int const **)a)[i] != (*(int const **)b)[i]) {
+	    return ((*(int const **)a)[i] - (*(int const **)b)[i]);
 	}
     }
     return (0);
@@ -1079,7 +1109,9 @@ int32 **a, **b;
  * on 1st char of line, and state-name is a 1-digit char.
  * Return EOF if end of file, 1 otherwise.
  */
-static int32 read_map_line(FILE *fp, char *line, int32 linesize, int32 *name, int32 *id)
+static int32
+read_map_line(FILE *fp, char *line,
+	      int32 linesize, int32 *name, int32 *id)
 {
     char *lp;
 
@@ -1105,8 +1137,20 @@ static int32 read_map_line(FILE *fp, char *line, int32 linesize, int32 *name, in
     return (1);
 }
 
+static int
+eq_dist (int32 *a, int32 *b)
+{
+    int32	i;
 
-void read_map (char *map_file, int32 compress)
+    for (i = 0; i < NUMDISTRTYPES; i++) {
+        if (a[i] != b[i]) {
+	    return 0;
+	}
+    }
+    return 1;
+}
+
+void read_map (char const *map_file, int32 compress)
 /*------------------------------------------------------------*
  * DESCRIPTION
  *
@@ -1128,12 +1172,11 @@ void read_map (char *map_file, int32 compress)
     FILE               *fp;
     int32                i, j;
     char		triphone[256];
-    int32	        distName, distId, triphoneId, ciPhoneId, silPhoneId;
+    int32	        distName, distId, triphoneId, ciPhoneId;
     int32		numCiPhones = phoneCiCount ();
     int32		numWdPhones = phoneWdCount ();
     int32                numCiWdPhones = phoneCiCount () + phoneWdCount();
     int32		numPhones = phone_count ();
-    char	       *p;
     
     fp = CM_fopen (map_file, "r");
     
@@ -1145,7 +1188,7 @@ void read_map (char *map_file, int32 compress)
     {
  	triphoneId = phone_to_id (triphone, TRUE);
 	if (triphoneId < 0)
-	    QUIT(("%s(%d): cannot find triphone %s\n", __FILE__, __LINE__, triphone));
+	    QUIT((stderr, "%s(%d): cannot find triphone %s\n", __FILE__, __LINE__, triphone));
 
  	ciPhoneId = phone_id_to_base_id (triphoneId);
 
@@ -1166,7 +1209,6 @@ void read_map (char *map_file, int32 compress)
     for (i = 0; i < numPhones; i++) {
 	int32 phoneType = phone_type(i);
 	int32 offset = -1;
-	int32 baseid = phone_id_to_base_id (i);
 
 	if (phoneType == PT_CDPHONE)	/* these phones are mapped */
 	    continue;
@@ -1332,32 +1374,20 @@ void read_map (char *map_file, int32 compress)
     }
 }
 
-eq_dist (a, b)
-int32 *a, *b;
-{
-    int32	i;
-
-    for (i = 0; i < NUMDISTRTYPES; i++) {
-        if (a[i] != b[i]) {
-	    return 0;
-	}
-    }
-    return 1;
-}
-
 static void dist_read (
-	char *file,
+	char const *file,
 	int32 expected,
 	int32 useCiDistsOnly,
-	int32 *o1, char *Code_Ext1,
-	int32 *o2, char *Code_Ext2,
-	int32 *o3, char *Code_Ext3,
-	int32 *o4, char *Code_Ext4)
+	int32 *o1, char const *Code_Ext1,
+	int32 *o2, char const *Code_Ext2,
+	int32 *o3, char const *Code_Ext3,
+	int32 *o4, char const *Code_Ext4)
 {
     int32                *iptr, numints;
     char		filename[128];
 
     sprintf (filename, "%s.%s", file, Code_Ext1);
+    /* FIXME: areadint() and friends need to be prototyped somewhere */
     areadint (filename, &iptr, &numints);
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
@@ -1434,7 +1464,35 @@ static void dist_read (
     free (iptr);
 }
 
-hmm_num_sseq ()
+#define MAX_MEMBERS 256
+
+int32 sets[NUMDISTRTYPES][MAX_MEMBERS];
+int32 set_size[NUMDISTRTYPES];
+
+static void
+add_member (int32 m, int32 s)
+{
+    sets[s][set_size[s]] = m;
+    set_size[s]++;
+}
+
+static int32 isa_member (int32 m, int32 s)
+{
+    int32 i;
+    for (i = 0; i < set_size[s]; i++) {
+	if (sets[s][i] == m)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+static void remove_all_members (int32 s)
+{
+    set_size[s] = 0;
+}
+
+int32
+hmm_num_sseq (void)
 /*------------------------------------------------------------*
  * Return number of unique senone sequences.
  * If the number is 0 we call this a fatal error.
@@ -1447,19 +1505,18 @@ hmm_num_sseq ()
     return numSSeq;
 }
 
-hmm_pid2sid (pid)
+int32
+hmm_pid2sid (int32 pid)
 /*------------------------------------------------------------*
  * Convert a phone id to a senone sequence id\
  */
-int32 pid;	/* Phone id */
 {
     return ssIdMap[pid];
 }
 
-static void compute_diphone_senones()
+static void compute_diphone_senones(void)
 {
     int32 pid, cpid;
-    int32 p_type;
     int32 j, k, s;
     char pstr[64];
     int32 phone_cnt = phone_count();
@@ -1467,7 +1524,7 @@ static void compute_diphone_senones()
 
     for (pid = 0; pid < phone_cnt; pid++) {
 	int32 p_type = phone_type(pid);
-	char *di_pstr = phone_from_id(pid);
+	char const *di_pstr = phone_from_id(pid);
 
 	if (p_type == PT_DIPHONE) {
 	   /*  printf ("DiPhone %s\n", di_pstr); */
@@ -1525,33 +1582,6 @@ static void compute_diphone_senones()
     } 
 }
 
-#define MAX_MEMBERS 256
-
-int32 sets[NUMDISTRTYPES][MAX_MEMBERS];
-int32 set_size[NUMDISTRTYPES];
-
-add_member (int32 m, int32 s)
-{
-    sets[s][set_size[s]] = m;
-    set_size[s]++;
-}
-
-static int32 isa_member (int32 m, int32 s)
-{
-    int32 i;
-    for (i = 0; i < set_size[s]; i++) {
-	if (sets[s][i] == m)
-	    return TRUE;
-    }
-    return FALSE;
-}
-
-static void remove_all_members (int32 s)
-{
-    set_size[s] = 0;
-}
-
-
 static void add_senone (int32 s1, int32 s2)
 {
     int32 i, j, e1;
@@ -1581,7 +1611,8 @@ static void zero_senone (int32 s)
 }
 
 
-int32 senid2pid (int32 senid)
+int32
+senid2pid (int32 senid)
 {
     int32 p, k, nph;
     
@@ -1596,7 +1627,8 @@ int32 senid2pid (int32 senid)
 }
 
 
-int32 *hmm_get_psen ( void )
+int32 *
+hmm_get_psen ( void )
 {
     return numDists;
 }

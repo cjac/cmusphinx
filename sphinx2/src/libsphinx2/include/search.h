@@ -55,9 +55,6 @@
 #ifndef _SEARCH_H_
 #define _SEARCH_H_	1
 
-#include <s2types.h>
-#include <basic_types.h>
-
 /*
  * Back pointer table (forward pass lattice; actually a tree)
  */
@@ -78,14 +75,6 @@ typedef struct bptbl_s {
 
 /* #hyp entries */
 #define HYP_SZ		1024
-
-/* Interface */
-int32 search_result(int32 *fr, char **res);	/* Decoded result as a single string */
-
-/* Interface (OUT OF DATE as of 05-25-94!!) */
-int32	search_get_score();
-void	search_set_channels_per_frame_target (int32 cpf);
-void	search_set_acc_threshold (int32 arg);
 
 /* -------------- Lattice (DAG) search related -------------- */
 
@@ -127,7 +116,119 @@ typedef struct latnode_s {
     struct latnode_s *next;	/* Next node (for housekeeping purposes only) */
 } latnode_t;
 
-extern void sort_lattice ();
-extern latnode_t *search_get_lattice ();
+/* Interface */
+void search_initialize (void);
+void search_set_beam_width (double beam);
+void search_set_new_word_beam_width (float beam);
+void search_set_lastphone_alone_beam_width (float beam);
+void search_set_new_phone_beam_width (float beam);
+void search_set_last_phone_beam_width (float beam);
+void search_set_channels_per_frame_target (int32 cpf);
+void searchSetScVqTopN (int32 topN);
+int32 searchFrame (void);
+int32 searchCurrentFrame (void);
+void search_set_newword_penalty (double nw_pen);
+void search_set_silence_word_penalty (float pen, float pip);
+void search_set_filler_word_penalty (float pen, float pip);
+void search_set_lw (double p1lw, double p2lw, double p3lw);
+void search_set_ip (float ip);
+void search_set_hyp_alternates (int32 arg);
+void search_set_skip_alt_frm (int32 flag);
+void search_set_hyp_total_score (int32 score);
+void search_set_context (int32 w1, int32 w2);
+void search_set_startword (char const *str);
+
+int32 search_result(int32 *fr, char **res);	/* Decoded result as a single string */
+int32 search_partial_result (int32 *fr, char **res);
+int32 search_get_score(void);
+int32 *search_get_dist_scores(void);
+search_hyp_t *search_get_hyp (void);
+char *search_get_wordlist (int *len, char sep_char);
+int32 search_get_bptable_size (void);
+int32 *search_get_lattice_density ( void );
+double *search_get_phone_perplexity ( void );
+int32 search_get_sil_penalty (void);
+int32 search_get_filler_penalty ( void );
+BPTBL_T *search_get_bptable ( void );
+void search_postprocess_bptable (double lwf, char const *pass);
+int32 *search_get_bscorestack ( void );
+double search_get_lw ( void );
+uint16 **search_get_uttpscr ( void );
+int32 search_uttpscr2phlat_print ( void );
+search_hyp_t *search_uttpscr2allphone ( void );
+void search_remove_context (search_hyp_t *hyp);
+void search_hyp_to_str ( void );
+void search_hyp_free (search_hyp_t *h);
+
+void sort_lattice(void);
+void search_dump_lattice (char const *file);
+void search_dump_lattice_ascii (char const *file);
+void dump_traceword_chan (void);
+
+void init_search_tree (dictT *dict);
+void create_search_tree (dictT *dict, int32 use_lm);
+void delete_search_tree (void);
+void delete_search_subtree (CHAN_T *hmm);
+
+void root_chan_v_eval (ROOT_CHAN_T *chan);
+void chan_v_eval (CHAN_T *chan);
+int32 eval_root_chan (void);
+int32 eval_nonroot_chan (void);
+int32 eval_word_chan (void);
+void save_bwd_ptr (WORD_ID w, int32 score, int32 path, int32 rc);
+void prune_root_chan (void);
+void prune_nonroot_chan (void);
+void last_phone_transition (void);
+void prune_word_chan (void);
+void alloc_all_rc (int32 w);
+void free_all_rc (int32 w);
+void word_transition (void);
+
+void search_set_current_lm (void); /* Need to call lm_set_current() first */
+
+int32 seg_topsen_score (int32 sf, int32 ef);
+void compute_seg_scores (double lwf);
+void compute_sen_active (void);
+void evaluateChannels (void);
+void pruneChannels (void);
+
+void search_fwd (float *cep, float *dcep,
+		 float *dcep_80ms, float *pcep, float *ddcep);
+void search_start_fwd (void);
+void search_finish_fwd (void);
+void search_one_ply_fwd (void);
+
+void bestpath_search ( void );
+
+void search_fwdflat_init ( void );
+void search_fwdflat_finish ( void );
+void build_fwdflat_chan ( void );
+void destroy_fwdflat_chan ( void );
+void search_set_fwdflat_bw (double bw, double nwbw);
+void search_fwdflat_start ( void );
+void search_fwdflat_frame (float *cep, float *dcep,
+			   float *dcep_80ms, float *pcep, float *ddcep);
+void compute_fwdflat_senone_active ( void );
+void fwdflat_eval_chan ( void );
+void fwdflat_prune_chan ( void );
+void fwdflat_word_transition ( void );
+
+void destroy_frm_wordlist ( void );
+void get_expand_wordlist (int32 frm, int32 win);
+
+int32 search_bptbl_wordlist (int32 wid, int32 frm);
+int32 search_bptbl_pred (int32 b);
+
+/* Warning: the following block of functions are not actually implemented. */
+void search_finish_document (void);
+void searchBestN (void);
+void search_hyp_write (void);
+void parse_ref_str (void);
+void search_filtered_endpts (void);
+
+/* Functions from searchlat.c */
+void searchlat_init ( void );
+int32 bptbl2latdensity (int32 bptbl_sz, int32 *density);
+int32 lattice_rescore ( double lwf );
 
 #endif

@@ -77,13 +77,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <log.h>
-#include "sc_vq_internal.h"
 
-#if (WIN32)
+#ifdef WIN32
 #include <windows.h>
 #include <time.h>
 #endif
+
+#include "s2types.h"
+#include "log.h"
+#include "scvq.h"
+#include "sc_vq_internal.h"
 
 #if FAST8B
 #include "log_add.h"
@@ -107,7 +110,7 @@ static int32 *scrPass = NULL;
 static double dcep80msWeight = 1.0;
 
 static int32 use20ms_diff_pow = FALSE;
-static int32 useMeanNormalization = FALSE;
+/* static int32 useMeanNormalization = FALSE; */
 
 static int32 num_frames = 0;
 
@@ -116,7 +119,7 @@ static vqFeature_t ldfrm[MAX_TOPN];
 static vqFeature_t lxfrm[MAX_TOPN];
 static vqFeature_t vtmp;
 
-#if (WIN32)
+#ifdef WIN32
 static HANDLE pid;
 static FILETIME t_create, t_exit, kst, ket, ust, uet;
 static double vq_time;
@@ -128,7 +131,7 @@ extern double win32_cputime();
 static void cepDist0(vqFeature_t *topn, float *z)
 {
     register int32	i, j, cw;
-    vqFeature_t		*worst, *best = topn, *cur, *src;
+    vqFeature_t		*worst, *best = topn, *cur; /*, *src; */
     double		diff, d;
     float		*obs;
     float		*mean;
@@ -333,13 +336,13 @@ static void cepDist3(vqFeature_t *topn, float *z)
 static void dcepDist0(vqFeature_t *topn, float *dzs, float *dzl)
 {
     register int32	i, j, cw;
-    vqFeature_t		*worst, *best = topn, *cur, *src;
+    vqFeature_t		*worst, *best = topn, *cur; /* , *src; */
     double		diff, d;
     float		*obs1, *obs2;
     float		*mean;
     float		*var;
     int32			*det  =  dets[(int32)DCEP_FEAT], *detP;
-    int32			*detE = det + NUM_ALPHABET, tmp;
+    int32			*detE = det + NUM_ALPHABET; /*, tmp; */
 
     assert(dzs != NULL);
     assert(dzl != NULL);
@@ -413,14 +416,14 @@ static void dcepDist0(vqFeature_t *topn, float *dzs, float *dzl)
 static void ddcepDist0(vqFeature_t *topn, float *z)
 {
     register int32 i, j, cw;
-    vqFeature_t		*worst, *best = topn, *cur, *src;
+    vqFeature_t		*worst, *best = topn, *cur; /*, *src; */
     double	diff, d;
     float	*obs;
     float	*mean;
     float	*var;
     int32		*det  =  dets[(int32)DDCEP_FEAT];
     int32		*detE = det + NUM_ALPHABET;
-    int32		*detP, tmp;
+    int32		*detP; /*, tmp; */
 
     assert(z    != NULL);
     assert(topn != NULL);
@@ -559,17 +562,17 @@ void SCVQInit(int32 top, int32 numModels, int32 numDist, double vFloor,
     
     setVarFloor(vFloor);	/* see sc_cbook_r.c */
 
-#if (WIN32)
+#ifdef WIN32
     pid = GetCurrentProcess();
 #endif
 }
 
 
-void SCVQNewUtt()
+void SCVQNewUtt(void)
 {
     num_frames = 0;
 
-#if (WIN32)
+#ifdef WIN32
     vq_time = scr_time = 0.0;
 #endif
 }
@@ -577,7 +580,7 @@ void SCVQNewUtt()
 
 void SCVQEndUtt ( void )
 {
-#if (WIN32)
+#ifdef WIN32
     fprintf (stdout, "VQ-TIME= %.1fsec, SCR-TIME= %.1fsec (CPU)\n", vq_time, scr_time);
 #endif
 }
@@ -590,12 +593,12 @@ int SCVQComputeFeatures(float **cep,
 			float **ddcep,
 			float *in)
 {
-    register int32 i, j;
+    register int32 i; /*, j; */
     register float *df, *db, *dout;
     static float	ldBufArr[CEP_VECLEN];
     static float	ddBufArr[CEP_VECLEN];
     static float	pBufArr[POW_VECLEN];
-    int32		tmp[NUM_FEATURES];
+    /* int32		tmp[NUM_FEATURES]; */
 
     memcpy((char *)(inBufArr + inIdx*CEP_VECLEN), (char *)in,
 	  sizeof(float)*CEP_VECLEN);
@@ -716,7 +719,7 @@ int32 SCVQScores (int32 *scores,
     int	      i, j, best;
     int32     tmp[NUM_FEATURES];
 
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
 #endif
 
@@ -744,14 +747,14 @@ int32 SCVQScores (int32 *scores,
 		      __FILE__, __LINE__, f[j][i].val.score));
 	}
     
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
     vq_time += win32_cputime (&ust, &uet);
 #endif
 
     best = SCVQComputeScores(scores, f);
     
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
     scr_time += win32_cputime (&uet, &ust);
 #endif
@@ -771,7 +774,7 @@ int32 SCVQScores_all (int32 *scores,
     int	      i, j, best;
     int32     tmp[NUM_FEATURES];
 
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
 #endif
 
@@ -799,14 +802,14 @@ int32 SCVQScores_all (int32 *scores,
 		      __FILE__, __LINE__, f[j][i].val.score));
 	}
     
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
     vq_time += win32_cputime (&ust, &uet);
 #endif
 
     best = SCVQComputeScores_all (scores, f);
     
-#if (WIN32)
+#ifdef WIN32
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
     scr_time += win32_cputime (&uet, &ust);
 #endif
@@ -818,7 +821,6 @@ int32 SCVQScores_all (int32 *scores,
 static int32 SCVQComputeScores(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     int32 	ret;
-    int i;
 
     if (prob_size == 8) {
 	switch (topN) {
@@ -841,7 +843,6 @@ static int32 SCVQComputeScores(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 static int32 SCVQComputeScores_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     int32 	ret;
-    int i;
 
     if (prob_size == 8) {
 	switch (topN) {
@@ -1039,7 +1040,7 @@ static int32 get_scores4(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 
 static int32 get_scores4_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
-    int32 i, k;
+    int32 i; /*, k; */
     
     for (i = 0; i < CdWdPDFMod; i++)
 	senone_active[i] = i;
@@ -1231,9 +1232,9 @@ static int32 get_scores4_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     unsigned char *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
     int32 *scr;
     int32 w0, w1, w2, w3;			/* weights */
-    register int32   ts = Table_Size;
-    register int16 *at = Addition_Table;
-    int32 ff, tt, ii;
+    /* register int32   ts = Table_Size;
+       register int16 *at = Addition_Table;
+       int32 ff, tt, ii; */
 
     /* ptrs to senone prob ids */
     pid_cw0 = OPDF_8B[0]->id[frm[0][0].codeword];
@@ -1334,14 +1335,14 @@ static int32 get_scores4_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
  */
 static int32 get_scores4_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
-    register int32 j, k, bestscore;
+    register int32 j, k; /*, bestscore; */
     int32 tmp1, tmp2;
     unsigned char *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
     int32 *scr;
     int32 w0, w1, w2, w3;			/* weights */
-    register int32   ts = Table_Size;
-    register int16 *at = Addition_Table;
-    int32 ff, tt, ii;
+    /* register int32   ts = Table_Size;
+       register int16 *at = Addition_Table;
+       int32 ff, tt, ii; */
 
     n_senone_active = CdWdPDFMod;
     
@@ -1439,14 +1440,14 @@ static int32 get_scores4_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 
 static int32 get_scores2_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
-    register int32 j, k, bestscore;
+    register int32 j, k; /* , bestscore; */
     int32 tmp1, tmp2;
     unsigned char *pid_cw0, *pid_cw1;
     int32 *scr;
     int32 w0, w1;			/* weights */
-    register int32   ts = Table_Size;
-    register int16 *at = Addition_Table;
-    int32 ff, tt, ii;
+    /* register int32   ts = Table_Size;
+       register int16 *at = Addition_Table;
+       int32 ff, tt, ii; */
 
     n_senone_active = CdWdPDFMod;
     
@@ -1678,6 +1679,7 @@ int32 SCVQInitFeat(feat_t feat, char *meanPath, char *varPath, int32 *opdf)
  * SCVQSetSenoneCompression:  Must be called before SCVQInitFeat (if senone-probs
  * are compressed).
  */
+void
 SCVQSetSenoneCompression (int32 size)
 {
     if ((size != 8) && (size != 32))

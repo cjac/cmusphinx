@@ -53,9 +53,13 @@
  * viterbi search dynamic data.
  *------------------------------------------------------------*
  * $Log$
- * Revision 1.1  2000/01/28  22:08:59  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:59  lenzo
+ * Initial import of sphinx2
+ *
+ *
  *  8-Sep-92  Fil Alleva (faa) at Carnegie-Mellon University
  *	dec'l of CHAN.model[] changed from int16 to int32.
  *
@@ -72,9 +76,6 @@
 
 #ifndef _NEWMSD_H_
 #define _NEWMSD_H_
-
-#include <basic_types.h>
-#include <search_const.h>
 
 #define TRANS_CNT	((HMM_LAST_STATE*3)-1)	/* No. of trans. in Sphinx HMM */
 #define NODE_CNT	(HMM_LAST_STATE+1)	/* No. of nodes in Sphinx HMM */
@@ -142,4 +143,4 @@ typedef struct ROOT_CHAN_S
     FRAME_ID active;
 } ROOT_CHAN_T;
 
-#endif  _NEWMSD_H_
+#endif /* _NEWMSD_H_ */

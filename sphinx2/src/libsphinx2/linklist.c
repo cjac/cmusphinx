@@ -53,9 +53,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:08:50  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:50  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 15-May-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon.
  * 		Added "static" declaration to list[] and n_list.
@@ -68,7 +72,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#include <s2types.h>
+#include "s2types.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -82,7 +86,7 @@
  * must be integral muliple of (void *).
  */
 typedef struct list_s {
-    char **freelist;	/* ptr to first element in freelist */
+    void **freelist;	/* ptr to first element in freelist */
     int32 elem_size;	/* #(char *) in element */
     int32 n_malloc;	/* #elements to malloc if run out of free elments */
 } list_t;
@@ -90,10 +94,10 @@ static list_t list[MAX_LIST];
 static int32 n_list = 0;
 
 
-char *listelem_alloc (int32 elem_size)
+void *listelem_alloc (int32 elem_size)
 {
     int32 i, j;
-    char **cpp, *cp;
+    void **cpp, *cp;
     
     for (i = 0; i < n_list; i++) {
 	if (list[i].elem_size == elem_size)
@@ -117,25 +121,25 @@ char *listelem_alloc (int32 elem_size)
     }
     
     if (list[i].freelist == NULL) {
-	cpp = list[i].freelist = (char **) malloc (list[i].n_malloc * elem_size);
-	cp = (char *) cpp;
+	cpp = list[i].freelist = (void **) malloc (list[i].n_malloc * elem_size);
+	cp = (void *) cpp;
 	for (j = list[i].n_malloc-1; j > 0; --j) {
 	    cp += elem_size;
 	    *cpp = cp;
-	    cpp = (char **)cp;
+	    cpp = (void **)cp;
 	}
 	*cpp = NULL;
     }
     
-    cp = (char *)(list[i].freelist);
-    list[i].freelist = (char **)(*(list[i].freelist));
+    cp = list[i].freelist;
+    list[i].freelist = *(list[i].freelist);
     return (cp);
 }
 
-void listelem_free (char *elem, int32 elem_size)
+void listelem_free (void *elem, int32 elem_size)
 {
     int32 i;
-    char **cpp;
+    void **cpp;
     
     for (i = 0; i < n_list; i++) {
 	if (list[i].elem_size == elem_size)
@@ -145,7 +149,7 @@ void listelem_free (char *elem, int32 elem_size)
 	QUIT((stdout, "%s(%d): **ERROR** elem_size (%d) not in known list\n",
 	      __FILE__, __LINE__, elem_size));
     
-    cpp = (char **) elem;
-    *cpp = (char *) list[i].freelist;
+    cpp = elem;
+    *cpp = list[i].freelist;
     list[i].freelist = cpp;
 }

@@ -45,21 +45,51 @@
  *
  */
 
-#include <c.h>
+#include <stdio.h>
+
+#include "s2types.h"
+#include "c.h"
 
 static float agc_thresh = 0.2;
 
-real_agc_noise (cep, fcnt, cf_cnt)
-float *cep;		/* The cepstrum data */
-register int32 fcnt;	/* Number of cepstrum frame availiable */
-register int32 cf_cnt;	/* Number of coeff's per frame */
+static int32
+find_peak (int32 const *buf, int32 cnt)
 {
-    static char        *rname = "agc_noise";
+   int32	i, max, maxi, maxcnt;
+   int32 hyst;	/* histeriesus band */
+
+   maxcnt = 0;
+   for (i = 0; i < cnt; i++)
+	if (maxcnt < buf[i])
+	    maxcnt = buf[i];
+
+   /*
+    * Peak must exceed 20% of the max count.
+    */
+   hyst = 0.20 * maxcnt;
+   max = 0;
+   maxi = 0;
+   for (i = 0; i < cnt; i++) {
+  	if (buf[i] > max) {
+	   max = buf[i];
+	   maxi = i;
+	}
+	if (buf[i] < (max - hyst))
+	    break;
+   }
+   return (maxi);
+}
+
+void
+real_agc_noise(float *cep,		/* The cepstrum data */
+	       register int32 fcnt,	/* Number of cepstrum frame availiable */
+	       register int32 cf_cnt)	/* Number of coeff's per frame */
+{
     register float     *p;		   /* Data pointer */
     register float 	min_energy;        /* Minimum log-energy */
     register float 	noise_level;       /* Average noise_level */
-    register  	        i;                 /* frame index */
-    register            noise_frames;      /* Number of noise frames */
+    register int32      i;                 /* frame index */
+    register int32      noise_frames;      /* Number of noise frames */
 
     /* Determine minimum log-energy in utterance */
     min_energy = *cep;
@@ -87,24 +117,23 @@ register int32 cf_cnt;	/* Number of coeff's per frame */
       *p -= noise_level;
 }
 
-agc_set_threshold (threshold)
-float threshold;
+void
+agc_set_threshold (float threshold)
 {
     agc_thresh = threshold;
 }
 
-float histo_noise_level (cep, fcnt, cf_cnt)
-float *cep;		/* The cepstrum data */
-register int32 fcnt;	/* Number of cepstrum frame availiable */
-register int32 cf_cnt;	/* Number of coeff's per frame */
+float
+histo_noise_level(float const *cep,	/* The cepstrum data */
+		  register int32 fcnt,	/* Number of cepstrum frame availiable */
+		  register int32 cf_cnt)/* Number of coeff's per frame */
 {
-    register float     *p;		   /* Data pointer */
+    register float const *p;		   /* Data pointer */
     register float 	min_energy;        /* Minimum log-energy */
     register float 	max_energy;        /* Maximum log-energy */
     float		dr;		   /* Dynamic range */
     float	 	noise_level;       /* Average noise_level */
-    register  	        i;                 /* frame index */
-    register            noise_frames;      /* Number of noise frames */
+    register int32      i;                 /* frame index */
     int32		histo[101];
     int32		idx;
 
@@ -145,6 +174,7 @@ register int32 cf_cnt;	/* Number of coeff's per frame */
     return (noise_level);
 }
 
+int32
 delete_background (float *cep, int32 fcnt, int32 cf_cnt, double thresh)
 {
     int32	i, j;
@@ -192,46 +222,14 @@ delete_background (float *cep, int32 fcnt, int32 cf_cnt, double thresh)
     return (j);
 }
 
-find_peak (buf, cnt)
-int32 *buf;
-int32 cnt;
+void
+agc_max(float *cep,		/* The cepstrum data */
+	register int32 fcnt,	/* Number of cepstrum frame availiable */
+	register int32 cf_cnt)	/* Number of coeff's per frame */
 {
-   int32	i, max, maxi, maxcnt;
-   int32 hyst;	/* histeriesus band */
-
-   maxcnt = 0;
-   for (i = 0; i < cnt; i++)
-	if (maxcnt < buf[i])
-	    maxcnt = buf[i];
-
-   /*
-    * Peak must exceed 20% of the max count.
-    */
-   hyst = 0.20 * maxcnt;
-   max = 0;
-   maxi = 0;
-   for (i = 0; i < cnt; i++) {
-  	if (buf[i] > max) {
-	   max = buf[i];
-	   maxi = i;
-	}
-	if (buf[i] < (max - hyst))
-	    break;
-   }
-   return (maxi);
-}
-
-agc_max (cep, fcnt, cf_cnt)
-float *cep;		/* The cepstrum data */
-register int32 fcnt;	/* Number of cepstrum frame availiable */
-register int32 cf_cnt;	/* Number of coeff's per frame */
-{
-    static char        *rname = "agc_max";
     register float     *p;		   /* Data pointer */
     register float 	max_energy;        /* Minimum log-energy */
-    register float 	noise_level;       /* Average noise_level */
-    register  	        i;                 /* frame index */
-    register            noise_frames;      /* Number of noise frames */
+    register int32      i;                 /* frame index */
 
     /* Determine max log-energy in utterance */
     max_energy = *cep;
@@ -259,8 +257,7 @@ static float noise_level = -100.0;       /* Average noise_level */
 static int32 noise_frm_cnt = 0;
 static int32 noise_frames_discarded = 0;
 
-int32 histo_add_c0 (c0)
-float c0;		/* c0 */
+int32 histo_add_c0 (float c0)
 {
     int32		idx;
 
@@ -288,7 +285,7 @@ float c0;		/* c0 */
 }
 
 
-void compute_noise_level ()
+void compute_noise_level (void)
 {
     int32		idx;
     int32		i;

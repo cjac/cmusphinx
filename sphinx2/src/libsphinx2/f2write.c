@@ -55,16 +55,15 @@
 #if (! WIN32)
 #include <sys/file.h>
 #include <sys/fcntl.h>
+#include <unistd.h>
 #else
 #include <fcntl.h>
 #endif
-#include <byteorder.h>
+#include "byteorder.h"
 
 
-f2write (file, data1, data2, length)
-  char           *file;
-  float          *data1, *data2;
-  int             length;
+int
+f2write (char *file, float *data1, float *data2, int length)
 {
   int             fd;
   int             size;

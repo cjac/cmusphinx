@@ -135,8 +135,11 @@
 #include <assert.h>
 #include <math.h>
 
-#include <cont_ad.h>
-#include <err.h>
+#include "s2types.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "err.h"
+#include "linklist.h"
 
 #ifndef _ABS
 #define _ABS(x) ((x) >= 0 ? (x) : -(x))
@@ -192,11 +195,7 @@
 					   NOTE: Ensure (0 < TRAILER+LEADER <= WINSIZE) */
 				/* SReed had 100 ms == 6.25 fr; rkm had 10 */
 
-extern char *listelem_alloc (int32 n);	/* In libcommon */
-extern void listelem_free ();		/* In libcommon */
-
-
-#if CONT_AD_RAWDUMP
+#ifdef CONT_AD_RAWDUMP
 static FILE *rawfp;
 #endif
 
@@ -335,7 +334,8 @@ static int32 find_thresh (cont_ad_t *r)
     /* PWP: 1/14/98  Made to work like Stephen Reed's code */
 
     max = 0;
-    for (j = i; (j < CONT_AD_POWHISTSIZE) && (j < i+20); j++) {	/* PWP: was i+6, which was 9 dB */
+    for (j = i, th = i;
+	 (j < CONT_AD_POWHISTSIZE) && (j < i+20); j++) { /* PWP: was i+6, which was 9 dB */
 	if (max < r->pow_hist[j]) {
 	    max = r->pow_hist[j];
 	    th = j;
@@ -366,7 +366,7 @@ static int32 find_thresh (cont_ad_t *r)
 
 //    fprintf(stderr, "thresh_sil %d thresh_speech %d\n", r->thresh_sil, r->thresh_speech);
 
-#if (CONT_AD_DEBUG)
+#ifdef CONT_AD_DEBUG
     cont_ad_powhist_dump (r);
 #endif
     
@@ -406,7 +406,7 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	} else {
 	    r->n_in_a_row = 0;
 	}
-#if CONT_AD_DEBUG
+#ifdef CONT_AD_DEBUG
 	printf (" . %2d.%2d", r->frm_pow[frm], r->n_other);
 #endif
     } else {
@@ -416,7 +416,7 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	} else {
 	    r->n_in_a_row = 0;
 	}
-#if CONT_AD_DEBUG
+#ifdef CONT_AD_DEBUG
 	printf (" # %2d.%2d", r->frm_pow[frm], r->n_other);
 #endif
     }
@@ -576,7 +576,7 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 	memcpy(buf, buf+num_to_copy, num_left*sizeof(int16));
 	l = num_to_copy;
       }
-#if CONT_AD_RAWDUMP
+#ifdef CONT_AD_RAWDUMP
       if ((l > 0) && rawfp)
 	fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
 #endif
@@ -599,7 +599,7 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 	  memcpy(r->adbuf+tail, buf, num_to_copy*sizeof(int16));
 	  l = num_to_copy;
 	}
-#if CONT_AD_RAWDUMP
+#ifdef CONT_AD_RAWDUMP
 	if ((l > 0) && rawfp)
 	  fwrite (r->adbuf+tail, sizeof(int16), l, rawfp);
 #endif
@@ -744,11 +744,10 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 int32 cont_ad_calib (cont_ad_t *r)
 {
     int32 i, f, s, k, len, tailfrm;
-    
+
     /* clear histogram */
     for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
 	r->pow_hist[i] = 0;
-
     tailfrm = r->headfrm + r->n_frm;
     if (tailfrm >= CONT_AD_ADFRMSIZE)
 	tailfrm -= CONT_AD_ADFRMSIZE;
@@ -1073,7 +1072,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
 
     cont_ad_reset (r);
     
-#if (CONT_AD_RAWDUMP)
+#ifdef CONT_AD_RAWDUMP
     rawfp = fopen ("ad.raw", "wb");
 #endif
 

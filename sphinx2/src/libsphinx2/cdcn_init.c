@@ -56,9 +56,8 @@
 #include <stdlib.h>
 #include "cdcn.h"
 
-int cdcn_init(filename,cdcn_variables)
-    char    *filename;
-    CDCN_type *cdcn_variables;
+int
+cdcn_init(char const *filename, CDCN_type *cdcn_variables)
 {
     int      i,j,count,count2,ndim,ncodes;
 
@@ -67,7 +66,7 @@ int cdcn_init(filename,cdcn_variables)
     float    *probbuff;
     float    temp;
 
-    FILE     *fopen(),*codefile;
+    FILE     *codefile;
 
     /*
      * Initialize run_cdcn flag to 1. If an error occurs this is reset to 0

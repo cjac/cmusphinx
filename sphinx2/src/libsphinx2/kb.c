@@ -116,23 +116,30 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <c.h>
 #include <math.h>
 #include <string.h>
 
-#include <CM_macros.h>
-#include <err.h>
-
-#include <pconf.h>
-#include <log.h>
-#include <dict.h>
-#include <hmm_tied_r.h>
-#include <msd.h>
-#include <smmap4f.h>
-#include <list.h>
-#include <lm.h>
-#include <lmclass.h>
-
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "search_const.h"
+#include "list.h"
+#include "hash.h"
+#include "err.h"
+#include "c.h"
+#include "pconf.h"
+#include "log.h"
+#include "dict.h"
+#include "msd.h"
+#include "smmap4f.h"
+#include "lm.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "hmm_tied_r.h"
+#include "scvq.h"
+#include "kb_exports.h"
+#include "phone.h"
+#include "fbs.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -141,8 +148,8 @@ static char *lm_ctl_filename = 0;	/* Multiple LM filenames and assoc. LM names *
 static char *lmft_file_name = 0;
 static char *lm_tag_file_name = 0;
 static char *lm_word_tags_file_name = 0;
-static char *lm_start_sym = "<s>";
-static char *lm_end_sym = "</s>";
+static char const *lm_start_sym = "<s>";
+static char const *lm_end_sym = "</s>";
 static char *phone_file_name = 0;
 static char *mapFileName = 0;
 static char *dict_file_name = 0;
@@ -152,17 +159,15 @@ static char *phrase_dict_file_name = 0;
 static char *noise_dict_file_name = 0;
 static char *hmm_dir = 0;
 static char *hmm_dir_list = 0;
-static char *hmm_ext = "chmm";
+static char const *hmm_ext = "chmm";
 static double  hmm_smooth_min = 0.0000001;
-static char *code1_ext = "ccode";
-static char *code2_ext = "d2code";
-static char *code3_ext = "p3code";
-static char *code4_ext = "xcode";
-static int32  NoGrammar	= FALSE;	/* If there is no grammar this is TRUE */
+static char const *code1_ext = "ccode";
+static char const *code2_ext = "d2code";
+static char const *code3_ext = "p3code";
+static char const *code4_ext = "xcode";
 static int32  num_cb = 4;		/* Number of code books */
 static char  *sendumpfile = 0;		/* Senone probs dump file */
 static int32  Use8BitSenProb = FALSE;	/* TRUE=>use sen-probs compressed to 8bits */
-static int32  sen_shift = 0;		/* #bits shifted out if sen-probs compressed */
 static int32  UseDarpaStandardLM = TRUE;	/* FALSE => Use Roni Rosenfeld LM */
 static int32  UseBigramOnly = FALSE;	/* Only use bigram even is trigram is avaiable */
 static int32  UseWordPair = FALSE;	/* Use word pair probs only */
@@ -183,7 +188,7 @@ static float language_weight;
 static int32 max_new_oov = 0;		/* #new OOVs that can be added at run time */
 static float oov_ugprob = -4.5;		/* (Actually log10(ugprob)) of OOVs */
 
-extern char *phone_from_id();
+extern void unlimit(void);
 
 /* LM dump directory */
 static char *kb_dump_dir = NULL;
@@ -195,96 +200,96 @@ config_t kb_param[] = {
 	/*
 	 * LongName, Documentation, Switch, TYPE, Address
 	 */
-	"LmFile", "Language model file name", "-lmfn",
-		STRING, (caddr_t) &lm_file_name,
-	"LmControlFile", "Language model control file name", "-lmctlfn",
-		STRING, (caddr_t) &lm_ctl_filename,
-	"LmFTFile", "Language model (forward trigram) file name", "-lmftfn",
-		STRING, (caddr_t) &lmft_file_name,
-	"LmTagFile", "Language model tag file name", "-lmtagfn",
-		STRING, (caddr_t) &lm_tag_file_name,
-	"LmWordTagFile", "Language model word tag file name", "-lmwtagfn",
-		STRING, (caddr_t) &lm_word_tags_file_name,
-	"LmStartSym", "Langauge model start symbol", "-lmstartsym",
-		STRING, (caddr_t) &lm_start_sym,
-	"LmEndSym", "Langauge model end symbol", "-lmendsym",
-		STRING, (caddr_t) &lm_end_sym,
-	"UseDarpaStandardLM", "Use DARPA standard LM", "-useDarpaLM",
-		BOOL, (caddr_t) &UseDarpaStandardLM,
-	"UseBigramOnly", "Only use a bigram model", "-useBigramOnly",
-		BOOL, (caddr_t) &UseBigramOnly,
-	"UseWordPair", "Use word pair probabilities", "-usewordpair",
-		BOOL, (caddr_t) &UseWordPair,
-	"MapFile", "Distribution map", "-mapfn",
-		STRING, (caddr_t) &mapFileName,
-	"DictFile", "Dictionary file name", "-dictfn",
-		STRING, (caddr_t) &dict_file_name,
-	"OOVDictFile", "OOV Dictionary file name", "-oovdictfn",
-		STRING, (caddr_t) &oov_dict_file_name,
-	"PersonalDictFile", "Personal Dictionary file name", "-perdictfn",
-		STRING, (caddr_t) &personal_dict_file_name,
-	"PhraseDictFile", "Phrase dictionary file name", "-pdictfn",
-		STRING, (caddr_t) &phrase_dict_file_name,
-	"NoiseDictFile", "Noise Dictionary file name", "-ndictfn",
-		STRING, (caddr_t) &noise_dict_file_name,
-	"StartSymbolsFile", "Start symbols file name", "-startsymfn",
-		STRING, (caddr_t) &startsym_file,
-	"UseLeftContext", "Use the left context models", "-useleftcontext",
-		BOOL, (caddr_t) &use_left_context,
-	"PhoneFile", "Phone file name", "-phnfn",
-		STRING, (caddr_t) &phone_file_name,
-	"UseBigHmmFiles", "Use big hmm file format", "-usebighmm",
-		BOOL, (caddr_t) &useBigHmmFiles,
-	"UseCITransOnly", "Only use trans probs from CI phones", "-usecitrans",
-		BOOL, (caddr_t) &useCiTrans,
-	"UseCIPhonesOnly", "Only use CI phones", "-useciphones",
-		BOOL, (caddr_t) &useCiPhonesOnly,
-	"WordPhonesOnly", "Only use with in word phones", "-usewdphones",
-		BOOL, (caddr_t) &useWDPhonesOnly,
-	"HmmDirList", "Hmm Directory List", "-hmmdirlist",
-		STRING, (caddr_t) &hmm_dir_list,
-	"HmmDir", "Hmm Directory", "-hmmdir",
-		STRING, (caddr_t) &hmm_dir,
-	"HmmExt", "Hmm Extention", "-hmmext",
-		STRING, (caddr_t) &hmm_ext,
-	"Code1Ext", "Code1 Extention", "-code1ext",
-		STRING, (caddr_t) &code1_ext,
-	"Code2Ext", "Code2 Extention", "-code2ext",
-		STRING, (caddr_t) &code2_ext,
-	"Code3Ext", "Code3 Extention", "-code3ext",
-		STRING, (caddr_t) &code3_ext,
-	"Code4Ext", "Code4 Extention", "-code4ext",
-		STRING, (caddr_t) &code4_ext,
-	"NumCb", "Number of Codebooks", "-numcb",
-		INT, (caddr_t) &num_cb,
-	"HmmSmoothMin", "Hmm minimum output probability", "-hmmsm",
-	        DOUBLE, (caddr_t) &hmm_smooth_min,
-	"TransWeight", "Arc transition weight", "-transwt",
-	        DOUBLE,	(caddr_t) &transWeight,
-	"TransSmooth", "Minimum arc transition probability", "-transsm,",
-	        DOUBLE,	(caddr_t) &transSmooth,
-	"Unigram Weight", "Unigram weight, 0.0 - 1.0", "-ugwt",
-		FLOAT, (caddr_t) &unigramWeight,
-	"Use8BitSenProb", "#bits to use for senone probs = 8", "-8bsen",
-		BOOL, (caddr_t) &Use8BitSenProb,
-	"InsertionPenalty", "Penalty for word transitions", "-inspen",
-		FLOAT, (caddr_t) &insertion_penalty,
-	"SilenceWordPenalty", "Penalty for silence word transitions", "-silpen",
-		FLOAT, (caddr_t) &silence_word_penalty,
-	"FillerWordPenalty", "Penalty for filler word transitions", "-fillpen",
-		FLOAT, (caddr_t) &filler_word_penalty,
-	"LanguageWeight", "Weighting on Language Probabilities", "-langwt",
-		FLOAT, (caddr_t) &language_weight,
-	"MaxNewOOV", "MAX New OOVs that can be added at run time", "-maxnewoov",
-		INT, (caddr_t) &max_new_oov,
-	"OOVUgProb", "OOV Unigram Log Prob", "-oovugprob",
-		FLOAT, (caddr_t) &oov_ugprob,
-	"KBDumpDirectory", "KB dump directory", "-kbdumpdir",
-		STRING, (caddr_t) &kb_dump_dir,
-	"SenoneProbDumpFile", "Senone Probs Dump File", "-sendumpfn",
-		STRING, (caddr_t) &sendumpfile,
+	{ "LmFile", "Language model file name", "-lmfn",
+		STRING, (caddr_t) &lm_file_name },
+	{ "LmControlFile", "Language model control file name", "-lmctlfn",
+		STRING, (caddr_t) &lm_ctl_filename },
+	{ "LmFTFile", "Language model (forward trigram) file name", "-lmftfn",
+		STRING, (caddr_t) &lmft_file_name },
+	{ "LmTagFile", "Language model tag file name", "-lmtagfn",
+		STRING, (caddr_t) &lm_tag_file_name },
+	{ "LmWordTagFile", "Language model word tag file name", "-lmwtagfn",
+		STRING, (caddr_t) &lm_word_tags_file_name },
+	{ "LmStartSym", "Langauge model start symbol", "-lmstartsym",
+		STRING, (caddr_t) &lm_start_sym }, 
+	{ "LmEndSym", "Langauge model end symbol", "-lmendsym",
+		STRING, (caddr_t) &lm_end_sym }, 
+	{ "UseDarpaStandardLM", "Use DARPA standard LM", "-useDarpaLM",
+		BOOL, (caddr_t) &UseDarpaStandardLM }, 
+	{ "UseBigramOnly", "Only use a bigram model", "-useBigramOnly",
+		BOOL, (caddr_t) &UseBigramOnly }, 
+	{ "UseWordPair", "Use word pair probabilities", "-usewordpair",
+		BOOL, (caddr_t) &UseWordPair }, 
+	{ "MapFile", "Distribution map", "-mapfn",
+		STRING, (caddr_t) &mapFileName }, 
+	{ "DictFile", "Dictionary file name", "-dictfn",
+		STRING, (caddr_t) &dict_file_name }, 
+	{ "OOVDictFile", "OOV Dictionary file name", "-oovdictfn",
+		STRING, (caddr_t) &oov_dict_file_name }, 
+	{ "PersonalDictFile", "Personal Dictionary file name", "-perdictfn",
+		STRING, (caddr_t) &personal_dict_file_name }, 
+	{ "PhraseDictFile", "Phrase dictionary file name", "-pdictfn",
+		STRING, (caddr_t) &phrase_dict_file_name }, 
+	{ "NoiseDictFile", "Noise Dictionary file name", "-ndictfn",
+		STRING, (caddr_t) &noise_dict_file_name }, 
+	{ "StartSymbolsFile", "Start symbols file name", "-startsymfn",
+		STRING, (caddr_t) &startsym_file }, 
+	{ "UseLeftContext", "Use the left context models", "-useleftcontext",
+		BOOL, (caddr_t) &use_left_context }, 
+	{ "PhoneFile", "Phone file name", "-phnfn",
+		STRING, (caddr_t) &phone_file_name }, 
+	{ "UseBigHmmFiles", "Use big hmm file format", "-usebighmm",
+		BOOL, (caddr_t) &useBigHmmFiles }, 
+	{ "UseCITransOnly", "Only use trans probs from CI phones", "-usecitrans",
+		BOOL, (caddr_t) &useCiTrans }, 
+	{ "UseCIPhonesOnly", "Only use CI phones", "-useciphones",
+		BOOL, (caddr_t) &useCiPhonesOnly }, 
+	{ "WordPhonesOnly", "Only use with in word phones", "-usewdphones",
+		BOOL, (caddr_t) &useWDPhonesOnly }, 
+	{ "HmmDirList", "Hmm Directory List", "-hmmdirlist",
+		STRING, (caddr_t) &hmm_dir_list }, 
+	{ "HmmDir", "Hmm Directory", "-hmmdir",
+		STRING, (caddr_t) &hmm_dir }, 
+	{ "HmmExt", "Hmm Extention", "-hmmext",
+		STRING, (caddr_t) &hmm_ext }, 
+	{ "Code1Ext", "Code1 Extention", "-code1ext",
+		STRING, (caddr_t) &code1_ext }, 
+	{ "Code2Ext", "Code2 Extention", "-code2ext",
+		STRING, (caddr_t) &code2_ext }, 
+	{ "Code3Ext", "Code3 Extention", "-code3ext",
+		STRING, (caddr_t) &code3_ext }, 
+	{ "Code4Ext", "Code4 Extention", "-code4ext",
+		STRING, (caddr_t) &code4_ext }, 
+	{ "NumCb", "Number of Codebooks", "-numcb",
+		INT, (caddr_t) &num_cb }, 
+	{ "HmmSmoothMin", "Hmm minimum output probability", "-hmmsm",
+	        DOUBLE, (caddr_t) &hmm_smooth_min }, 
+	{ "TransWeight", "Arc transition weight", "-transwt",
+	        DOUBLE,	(caddr_t) &transWeight }, 
+	{ "TransSmooth", "Minimum arc transition probability", "-transsm,",
+	        DOUBLE,	(caddr_t) &transSmooth }, 
+	{ "Unigram Weight", "Unigram weight, 0.0 - 1.0", "-ugwt",
+		FLOAT, (caddr_t) &unigramWeight }, 
+	{ "Use8BitSenProb", "#bits to use for senone probs = 8", "-8bsen",
+		BOOL, (caddr_t) &Use8BitSenProb }, 
+	{ "InsertionPenalty", "Penalty for word transitions", "-inspen",
+		FLOAT, (caddr_t) &insertion_penalty }, 
+	{ "SilenceWordPenalty", "Penalty for silence word transitions", "-silpen",
+		FLOAT, (caddr_t) &silence_word_penalty }, 
+	{ "FillerWordPenalty", "Penalty for filler word transitions", "-fillpen",
+		FLOAT, (caddr_t) &filler_word_penalty }, 
+	{ "LanguageWeight", "Weighting on Language Probabilities", "-langwt",
+		FLOAT, (caddr_t) &language_weight }, 
+	{ "MaxNewOOV", "MAX New OOVs that can be added at run time", "-maxnewoov",
+		INT, (caddr_t) &max_new_oov }, 
+	{ "OOVUgProb", "OOV Unigram Log Prob", "-oovugprob",
+		FLOAT, (caddr_t) &oov_ugprob }, 
+	{ "KBDumpDirectory", "KB dump directory", "-kbdumpdir",
+		STRING, (caddr_t) &kb_dump_dir }, 
+	{ "SenoneProbDumpFile", "Senone Probs Dump File", "-sendumpfn",
+		STRING, (caddr_t) &sendumpfile }, 
 	
-	0,0,0,NOTYPE,0
+	{ 0,0,0,NOTYPE,0 }
 };
 
 int32  num_alphabet = NUMOFCODEENTRIES;
@@ -293,11 +298,8 @@ int32  numSmds;			/* Number of SMDs allocated */
 dictT *word_dict;
 
 static float phone_insertion_penalty;
-char *kb_get_lm_end_sym();
-char *kb_get_lm_start_sym();
 
-
-kbAddGrammar(char *fileName, char *grammarName)
+void kbAddGrammar(char const *fileName, char const *grammarName)
 {
     lmSetStartSym (lm_start_sym);
     lmSetEndSym (lm_end_sym);
@@ -317,18 +319,18 @@ static void kb_init_lmclass_dictwid (lmclass_t cl)
 }
 
 
-kb (argc, argv, ip, lw, pip)
-    int32 argc;
-    char **argv;
-    float ip;	/* word insertion penalty */
-    float lw;	/* langauge weight */
-    float pip;	/* phone insertion penalty */
+void kb (int argc, char *argv[],
+	 float ip,	/* word insertion penalty */
+	 float lw,	/* langauge weight */
+	 float pip)	/* phone insertion penalty */
 {
     char *pname = argv[0];
     char hmm_file_name[256];
     int32 num_phones, num_ci_phones;
     int32 i, use_darpa_lm;
-    
+
+    /* FIXME: This is evil.  But if we do it, let's prototype it
+       somewhere, OK? */
     unlimit ();		/* Remove memory size limits */
     
     language_weight = lw;
@@ -339,7 +341,7 @@ kb (argc, argv, ip, lw, pip)
 
     if ((phone_file_name == 0) ||
 	(dict_file_name == 0))
-	pusage (pname, kb_param);
+	pusage (pname, (Config_t *)kb_param);
 
     fprintf (stdout, "%s(%d): Reading phone file [%s]\n",
 	     __FILE__, __LINE__, phone_file_name);
@@ -482,7 +484,7 @@ kb (argc, argv, ip, lw, pip)
 	    NoLangModel = FALSE;
 	}
 
-#if (USE_ILM)
+#ifdef USE_ILM
 	/* Init ILM module (non-std-Darpa LM, eg ug/bg cache LM) */
 	ilm_init ();
 #endif
@@ -600,13 +602,13 @@ computePhraseLMProbs ()
 }
 #endif
 
-kb_get_total_dists ()
+extern int32 totalDists;
+int32 kb_get_total_dists (void)
 {
-    extern int32 totalDists;
     return totalDists;  
 }
  
-kb_get_aw_tprob ()
+int32 kb_get_aw_tprob (void)
 /*------------------------------------------------------------*
  * Return the All_Word Transition Probability
  */
@@ -616,7 +618,7 @@ kb_get_aw_tprob ()
 			LOG(insertion_penalty)));
 }
 
-kb_get_num_models ()
+int32 kb_get_num_models (void)
 /*------------------------------------------------------------*
  * Return the number of unique hmm models.
  */
@@ -624,7 +626,7 @@ kb_get_num_models ()
     return hmm_num_sseq();
 }
 
-kb_get_num_dist ()
+int32 kb_get_num_dist (void)
 /*------------------------------------------------------------*
  * Return the number of distributions.
  */
@@ -632,7 +634,7 @@ kb_get_num_dist ()
     return 5;
 }
 
-kb_get_num_model_instances ()
+int32 kb_get_num_model_instances (void)
 /*------------------------------------------------------------*
  * Return the number of hmm model instances.
  */
@@ -645,7 +647,7 @@ kb_get_num_model_instances ()
     return tot;
 }
 
-kb_get_num_words ()
+int32 kb_get_num_words (void)
 /*------------------------------------------------------------*
  * Return the number of words.
  */
@@ -653,7 +655,7 @@ kb_get_num_words ()
     return word_dict->dict_entry_count;
 }
 
-SMD *kb_get_models ()
+SMD *kb_get_models (void)
 /*------------------------------------------------------------*
  * Return the a pointer to the hmm models
  */
@@ -661,13 +663,11 @@ SMD *kb_get_models ()
     return smds;
 }
 
-char **kb_get_phone_list ()
+char **kb_get_phone_list (void)
 /*------------------------------------------------------------*
  * Return the phone list.
  */
 {
-    extern list_t *phoneList();
-
     return ((char **) phoneList()->list);
 }
 
@@ -682,7 +682,7 @@ typedef struct {
 } OPDF_8BIT_T;
 extern OPDF_8BIT_T out_prob_8b[];
 
-int32 *kb_get_codebook_0_dist ()
+int32 *kb_get_codebook_0_dist (void)
 /*------------------------------------------------------------*
  * Return the permutted codebook 0 distributions.
  */
@@ -693,7 +693,7 @@ int32 *kb_get_codebook_0_dist ()
     return (Out_Prob1);
 }
 
-int32 *kb_get_codebook_1_dist ()
+int32 *kb_get_codebook_1_dist (void)
 /*------------------------------------------------------------*
  * Return the permutted codebook 1 distributions.
  */
@@ -704,7 +704,7 @@ int32 *kb_get_codebook_1_dist ()
     return (Out_Prob2);
 }
 
-int32 *kb_get_codebook_2_dist ()
+int32 *kb_get_codebook_2_dist (void)
 /*------------------------------------------------------------*
  * Return the permutted codebook 2 distributions.
  */
@@ -715,7 +715,7 @@ int32 *kb_get_codebook_2_dist ()
     return (Out_Prob3);
 }
 
-int32 *kb_get_codebook_3_dist ()
+int32 *kb_get_codebook_3_dist (void)
 /*------------------------------------------------------------*
  * Return the permutted codebook 3 distributions.
  */
@@ -726,7 +726,7 @@ int32 *kb_get_codebook_3_dist ()
     return (Out_Prob4);
 }
 
-int32 kb_get_dist_prob_bytes ()
+int32 kb_get_dist_prob_bytes (void)
 /*------------------------------------------------------------*
  * Return kbh.dist_prob_bytes
  */
@@ -734,10 +734,10 @@ int32 kb_get_dist_prob_bytes ()
      return 4;
 }
 
-kb_get_word_id (char *word)
+int32 kb_get_word_id (char const *word)
 {
 #if 0
-    static char *rname = "kb_get_word_id";
+    static char const *rname = "kb_get_word_id";
     register int32 i, id = -1;
 
     for (i = 0; i < word_dict->dict_entry_count; i++) {
@@ -761,47 +761,47 @@ char *kb_get_word_str (int32 wid)
     return (word_dict->dict_list[wid]->word);
 }
 
-dictT *kb_get_word_dict ()
+dictT *kb_get_word_dict (void)
 {
     return word_dict;
 }
 
-int32 kb_get_num_codebooks ()
+int32 kb_get_num_codebooks (void)
 {
     return  4;
 }
 
-kb_get_darpa_lm_flag ()
+int kb_get_darpa_lm_flag (void)
 {
     return UseDarpaStandardLM;
 }
 
-kb_get_no_lm_flag ()
+int kb_get_no_lm_flag (void)
 {
     return NoLangModel;
 }
 
-char *kb_get_lm_start_sym()
+char const *kb_get_lm_start_sym(void)
 {
    return lm_start_sym;
 }
 
-char *kb_get_lm_end_sym()
+char const *kb_get_lm_end_sym(void)
 {
    return lm_end_sym;
 }
 
-char *kb_get_dump_dir()
+char *kb_get_dump_dir(void)
 {
     return kb_dump_dir;
 }
 
-char *kb_get_senprob_dump_file()
+char *kb_get_senprob_dump_file(void)
 {
     return sendumpfile;
 }
 
-int32 kb_get_senprob_size()
+int32 kb_get_senprob_size(void)
 {
     if (Use8BitSenProb)
 	return 8;
@@ -809,32 +809,32 @@ int32 kb_get_senprob_size()
 }
 
 /* For LISTEN project */
-char *kb_get_startsym_file ()
+char *kb_get_startsym_file (void)
 {
     return startsym_file;
 }
 
-char *kb_get_oovdic()
+char *kb_get_oovdic(void)
 {
     return oov_dict_file_name;
 }
 
-char *kb_get_personaldic()
+char *kb_get_personaldic(void)
 {
     return personal_dict_file_name;
 }
 
-double kb_get_oov_ugprob ( void )
+double kb_get_oov_ugprob (void)
 {
     return (oov_ugprob);
 }
 
-int32 kb_get_max_new_oov ( void )
+int32 kb_get_max_new_oov (void)
 {
     return (max_new_oov);
 }
 
-int32 dict_maxsize ( void )
+int32 dict_maxsize (void)
 {
     return (word_dict->dict.size_hint);
 }

@@ -45,6 +45,7 @@
  *
  */
 #include <math.h>
+#include <stdlib.h>
 
 /************************************************************************
  *									*
@@ -65,10 +66,7 @@
  *									*
  ************************************************************************/
 
-void resfft (x, n, m)
-float	*x;
-int	n, m;
-
+void resfft (float *x, int n, int m)
 {
     int	n2, n4, i, j, k, nk;
     float  b0, yt, *y;
@@ -127,12 +125,7 @@ int	n, m;
  *									*
  ************************************************************************/
 
-#include <math.h>
-
-void rsfft (x, n, m)
-float	*x;
-int	n, m;
-
+void rsfft (float *x, int n, int m)
 {
     int	n1, n2, n4, n8, i0, i1, i2, i3, i4, i5, i6, i7, i8, is, id, i, j, k;
     float  xt, t1, t2, t3, t4, t5, t6;

@@ -44,23 +44,24 @@
  * ====================================================================
  *
  */
-/************************************************************************
- *   Dummy routine to convert from suitcase to sane varibles
- ***************************************************************************/
 
 #include <math.h>
 #include "cdcn.h"
 
 
+/************************************************************************
+ *   Dummy routine to convert from suitcase to sane varibles
+ ***************************************************************************/
 
-void block_cdcn_norm (z, num_frames, cdcn_variables)
-float     z[][NUM_COEFF+1],  /* The input cepstrum */
-          num_frames;        /* Number of frames in utterance */
-CDCN_type *cdcn_variables;
+void block_cdcn_norm (float z[][NUM_COEFF+1],  /* The input cepstrum */
+		      int num_frames,          /* Number of frames in utterance */
+		      CDCN_type *cdcn_variables)
 {
+    /* Multidimensional arrays in C suck, so we have to
+       forward-declare-hack this. */
+    static void block_actual_cdcn_norm();
     float *variance, *prob, *tilt, *noise, *codebook, *corrbook;
     int    num_codes;
-    void   block_actual_cdcn_norm();
 
     /*
      * If error, dont bother
@@ -88,10 +89,9 @@ CDCN_type *cdcn_variables;
     num_codes	= cdcn_variables->num_codes;
 
     block_actual_cdcn_norm(variance, prob, tilt, noise, codebook, 
-                                   corrbook, num_codes, z, num_frames);
+			   corrbook, num_codes, z, num_frames);
     return;
 }
-
 
 /*************************************************************************
  *
@@ -102,19 +102,16 @@ CDCN_type *cdcn_variables;
  *
  *************************************************************************/
 
-void block_actual_cdcn_norm(variance, prob, tilt, noise, means, corrbook, 
-                                     num_codes, z, num_frames)
-float   variance[][NUM_COEFF+1],  /* Speech cepstral variances of modes */
-        *prob,             /* Ratio of a-prori mode probs. to mod variance */
-        *tilt,             /* Spectral tilt cepstrum */
-	*noise,            /* Noise estimate */
-        means[][NUM_COEFF+1],         /* The cepstrum codebook */
-        corrbook[][NUM_COEFF+1],         /* The correction factor's codebook */
-        z[][NUM_COEFF+1];                /* The input cepstrum */
-int     num_codes,      /* Number of codewords in codebook */
-        num_frames;        /* Number of frames in utterance */
-
-
+static void
+block_actual_cdcn_norm(float variance[][NUM_COEFF+1], /* Speech cepstral variances of modes */
+		       float *prob,  /* Ratio of a-prori mode probs. to mod variance */
+		       float *tilt,  /* Spectral tilt cepstrum */
+		       float *noise, /* Noise estimate */
+		       float means[][NUM_COEFF+1], /* The cepstrum codebook */
+		       float corrbook[][NUM_COEFF+1], /* The correction factor's codebook */
+		       int num_codes, /* Number of codewords in codebook */
+		       float z[][NUM_COEFF+1], /* The input cepstrum */
+		       int num_frames) /* Number of frames in utterance */
 {
     float       distance,  /* distance value */
                 den,       /* Denominator for reestimation */
@@ -175,5 +172,3 @@ int     num_codes,      /* Number of codewords in codebook */
          */
     }
 }
-
-

@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2000/02/08  20:44:32  lenzo
- * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
+ * Revision 1.3  2000/12/05  01:45:11  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.2  2000/02/08 20:44:32  lenzo
+ * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
+ *
  * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
  * Initial import of sphinx2
  *
@@ -90,8 +93,6 @@
 #ifndef _FBS_H_
 #define _FBS_H_
 
-#include <s2types.h>
-
 /*
  * The decoder is set up to process one finite-duration utterance at a time.  The
  * maximum duration of an utterance is about 60sec, though other resource limits,
@@ -101,9 +102,11 @@
 
 /*
  * Recognition result (hypothesis) with word segmentation information.
+ *
+ * FIXME: should this be in search.h?
  */
 typedef struct search_hyp_s {
-    char *word;		/* READ-ONLY */
+    char const *word;	/* READ-ONLY */
     int32 wid;		/* For internal use of decoder */
     int32 sf, ef;	/* Start, end frames within utterance for this word */
     int32 ascr, lscr;	/* Acoustic, LM scores (not always used!) */
@@ -143,7 +146,7 @@ int32 fbs_end ( void );
  * instead.
  * Return value: 0 if successful, else -1.
  */
-int32 uttproc_begin_utt (char *uttid);
+int32 uttproc_begin_utt (char const *uttid);
 
 
 /*
@@ -270,21 +273,21 @@ int32 uttproc_restart_utt ( void );
  * segments; it may be NULL.  It is a READ-ONLY list.  It will be clobbered by the next
  * call to this function.
  */
-search_hyp_t *uttproc_allphone_file (char *file);	/* Without filename extension */
+search_hyp_t *uttproc_allphone_file (char const *file);	/* Without filename extension */
 
 
 /*
  * Obtain the uttid for the most recent utterance (in progress or just finished)
  * Return value: pointer to READ-ONLY string that is the utterance id.
  */
-char *uttproc_get_uttid ( void );
+char const *uttproc_get_uttid ( void );
 
 
 /*
  * For automatically generated uttid's (see uttproc_begin_utt), also use the prefix
  * given below.  (So the uttid is formatted "%s%08d", prefix, sequence_no.)
  */
-int32 uttproc_set_auto_uttid_prefix (char *prefix);
+int32 uttproc_set_auto_uttid_prefix (char const *prefix);
 
 
 /*
@@ -292,7 +295,7 @@ int32 uttproc_set_auto_uttid_prefix (char *prefix);
  * (during fbs_init) or at run time using lm_read (see below).
  * Return value: 0 if successful, else -1.
  */
-int32 uttproc_set_lm (char *lmname);
+int32 uttproc_set_lm (char const *lmname);
 
 
 /*
@@ -300,7 +303,7 @@ int32 uttproc_set_lm (char *lmname);
  * a new unigram).
  * Return value: 0 if successful, else -1.
  */
-int32 uttproc_lmupdate (char *lmname);
+int32 uttproc_lmupdate (char const *lmname);
 
 
 /*
@@ -311,8 +314,8 @@ int32 uttproc_lmupdate (char *lmname);
  * wd2 can be NULL to clear any history information.
  * Return value: 0 if successful, else -1.
  */
-int32 uttproc_set_context (char *wd1,	/* In: First word of history (possibly NULL) */
-			   char *wd2);	/* In: Last (most recent) history (maybe NULL) */
+int32 uttproc_set_context (char const *wd1, /* In: First word of history (possibly NULL) */
+			   char const *wd2);/* In: Last (most recent) history (maybe NULL) */
 
 
 /*
@@ -321,11 +324,11 @@ int32 uttproc_set_context (char *wd1,	/* In: First word of history (possibly NUL
  * the utterance id associated with the current utterance (see uttproc_begin_utt).
  * Return value: 0 if successful, else -1.
  */
-int32 uttproc_set_rawlogdir (char *dir);
-int32 uttproc_set_mfclogdir (char *dir);
+int32 uttproc_set_rawlogdir (char const *dir);
+int32 uttproc_set_mfclogdir (char const *dir);
 
 /* Logfile can be changed in between utterances.  Return value: 0 if ok, else -1 */
-int32 uttproc_set_logfile (char *file);
+int32 uttproc_set_logfile (char const *file);
 
 
 /*
@@ -341,9 +344,9 @@ double uttproc_agcemax_get ( void );
 
 
 /*
- * For LISTEN project use only.
+ * For LISTEN project use only.  (okay, but other stuff uses it anyway)
  */
-int32 uttproc_set_startword (char *startword);
+int32 uttproc_set_startword (char const *startword);
 
 
 /*
@@ -352,11 +355,11 @@ int32 uttproc_set_startword (char *startword);
  * undefined at this point; use uttproc_set_lm(lmname) immediately afterwards.
  * Return value: 0 if successful, else -1.
  */
-int32 lm_read (char *lmfile,	/* In: LM file name */
-	       char *lmname,	/* In: LM name associated with this model */
-	       double lw,	/* In: Language weight; typically 6.5-9.5 */
-	       double uw,	/* In: Unigram weight; typically 0.5 */
-	       double wip);	/* In: Word insertion penalty; typically 0.65 */
+int32 lm_read (char const *lmfile,	/* In: LM file name */
+	       char const *lmname,	/* In: LM name associated with this model */
+	       double lw,		/* In: Language weight; typically 6.5-9.5 */
+	       double uw,		/* In: Unigram weight; typically 0.5 */
+	       double wip);		/* In: Word insertion penalty; typically 0.65 */
 
 
 /*
@@ -364,14 +367,64 @@ int32 lm_read (char *lmfile,	/* In: LM file name */
  * point.  Use uttproc_set_lm(...) immediately afterwards.
  * Return value: 0 if successful, else -1.
  */
-int32 lm_delete (char *lmname);
+int32 lm_delete (char const *lmname);
 
+/* Read utterance data from a file (instead of from an audio device) -
+   passed to uttproc for batch-mode processing. */
+int32 adc_file_read(int16 *buf, int32 max);
 
-/* Misc. undocumented functions */
-char *salloc (char *);
+/* Of course you have to know how to open that file (which was
+   cheerfully omitted from this header file in the past) */
+int uttfile_open(char const *utt);
+
+/* Misc. undocumented functions.  FIXME: These don't belong here! */
+char const *get_current_startword(void);
+char const *get_ref_sent(void);
+
+char const *query_ctlfile_name ( void );
+char const *query_match_file_name (void);
+char const *query_matchseg_file_name (void);
+char const *query_dumplat_dir (void);
+char const *query_cdcn_file (void);
+int32 query_lattice_size ( void );
+int32 query_topsen_window ( void );
+int32 query_topsen_thresh ( void );
+int32 query_report_altpron ( void );
+int32 query_fwdtree_flag ( void );
+int32 query_fwdflat_flag ( void );
+int32 query_bestpath_flag ( void );
+int32 query_sampling_rate ( void );
+int32 query_phone_conf ( void );
+int32 query_compute_all_senones (void);
+
+int32 uttproc_init(void);
+int32 uttproc_end(void);
 int32 uttproc_feat2rawfr (int32 fr);
 int32 uttproc_raw2featfr (int32 fr);
-char *query_ctlfile_name ( void );
+void uttproc_align(char *sent); /* Really should be const */
+int32 uttproc_nosearch(int32 flag);
+int32 uttproc_get_featbuf (float **cep, float **dcep,
+			   float **dcep_80ms, float **pcep, float **ddcep);
+void uttprocSetcomp2rawfr(int32 num, int32 const *ptr);
+int32 uttprocGetcomp2rawfr(int16 **ptr);
+void time_align_utterance (char const *utt,
+			   FILE *out_sent_fp,
+			   char const *left_word,
+			   int32 begin_frame,
+			   char *pe_words, /* FIXME: should be const */
+			   int32 end_frame,
+			   char const *right_word);
+
+void utt_seghyp_free(search_hyp_t *h);
+
+void run_ctl_file (char const *ctl_file_name);
+void run_time_align_ctl_file (char const *utt_ctl_file_name,
+			      char const *pe_ctl_file_name,
+			      char const *out_sent_file_name);
+
+void agc_set_threshold (float threshold);
+int32 cep_read_bin (float32 **buf, int32 *len, char const *file);
+int32 cep_write_bin(char const *file, float32 *buf, int32 len);
 
 /*
  * Obtain N-best list for current utterance:
@@ -394,10 +447,5 @@ void search_save_lattice ( void );
 
 /* Function used internally to decode each utt in ctlfile */
 search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec);
-
-/* CDCN related */
-#include <cdcn.h>
-CDCN_type *uttproc_get_cdcn_ptr ( void );
-
 
 #endif

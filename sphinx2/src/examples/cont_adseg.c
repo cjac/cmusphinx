@@ -60,14 +60,17 @@
 #include <assert.h>
 #include <math.h>
 
-#include <cont_ad.h>
-#include <err.h>
+#include "s2types.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "err.h"
 
 /*
  * Segment raw A/D input data into utterances whenever silence region of given
  * duration is encountered.
  * Utterances are written to files named 0001.raw, 0002.raw, 0003.raw, etc.
  */
+int
 main (int32 argc, char **argv)
 {
     ad_rec_t *ad;
@@ -151,4 +154,6 @@ main (int32 argc, char **argv)
     ad_stop_rec (ad);
     cont_ad_close (cont);
     ad_close (ad);
+    return 0;
 }
+

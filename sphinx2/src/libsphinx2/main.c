@@ -58,9 +58,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.3  2000/03/29  14:30:28  awb
- * *** empty log message ***
+ * Revision 1.4  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.3  2000/03/29 14:30:28  awb
+ * *** empty log message ***
+ *
  * Revision 1.2  2000/02/08 21:06:46  lenzo
  * More to get the sphinx2-phone example working. Also
  * removed a couple of vestigial files from the demo lm.
@@ -199,37 +202,48 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/errno.h>
 #include <sys/param.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <unistd.h>
-#else
-#include <fcntl.h>
 #endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#if (_SUN4)
+#ifdef _SUN4
 #include <unistd.h>
 #endif
 
 #include <stdlib.h>
-#include <c.h>
-#include <CM_macros.h>
-#include <pconf.h>
 
-#include <scvq.h>
-#include <kb_exports.h>
-#include <lm.h>
-#include <search.h>
-#include <search_const.h>
-#include <time_align.h>
-#include <fbs.h>
-#include <err.h>
+#include "c.h"
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "strfuncs.h"
+#include "list.h"
+#include "hash.h"
+#include "search_const.h"
+#include "msd.h"
+#include "pconf.h"
+#include "scvq.h"
+#include "dict.h"
+#include "err.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "lm.h"
+#include "kb_exports.h"
+#include "time_align.h"
+#include "fbs.h"
+#include "search.h"
+#include "cepio.h"
 
 #include "s2params.h"
 
@@ -246,20 +260,20 @@ static char *correct_file_name = 0;
 static char *data_directory = 0;
 static char *cepdir = 0;
 static char *seg_data_directory = 0;
-static char *sent_directory = ".";
+static char const *sent_directory = ".";
 static char *utterance = 0;
 static int32 phone_conf = 0;
 static int32 pscr2lat = 0;
 
 static int32 nbest = 0;			/* #N-best hypotheses to generate/utterance */
-static char *nbest_dir = ".";
-static char *nbest_ext = "hyp";
+static char const *nbest_dir = ".";
+static char const *nbest_ext = "hyp";
 
-static char *cbdir = "./";		/* Code book dir */
-static char *ccbfn = "cep.256";		/* Cepstrum Codebook file name */
-static char *dcbfn = "d2cep.256";	/* Diff Cepstrum Codebook file name */
-static char *pcbfn = "p3cep.256";	/* Power Codebook file name */
-static char *xcbfn = "xcep.256";	/* Xcode Codebook file name */
+static char const *cbdir = "./";	/* Code book dir */
+static char const *ccbfn = "cep.256";	/* Cepstrum Codebook file name */
+static char const *dcbfn = "d2cep.256";	/* Diff Cepstrum Codebook file name */
+static char const *pcbfn = "p3cep.256";	/* Power Codebook file name */
+static char const *xcbfn = "xcep.256";	/* Xcode Codebook file name */
 
 static float Cep_Floor  = 0.0001;
 static float Dcep_Floor = 0.0001;
@@ -273,13 +287,13 @@ static int32 ctl_count = 0x7fffffff;	/* #lines to be processed */
 static char *force_str = 0;
 static char ref_sentence[2048];
 
-static char *exts[4];
-static char *cext = "CCODE";
-static char *dext = "DCODE";
-static char *pext = "PCODE";
-static char *xext = NULL;
-static char *cep_ext = "mfc";
-static char *sent_ext = "sent";
+static char const *exts[4];
+static char const *cext = "CCODE";
+static char const *dext = "DCODE";
+static char const *pext = "PCODE";
+static char const *xext = NULL;
+static char const *cep_ext = "mfc";
+static char const *sent_ext = "sent";
 static float beam_width = 1e-6;
 static float new_phone_beam_width = 1e-6;
 static float last_phone_beam_width = 1e-5;
@@ -344,14 +358,14 @@ static char *seg_file_ext = NULL;
 static char *score_file_ext = NULL;
 
 /* For saving phone labels in alignment */
-char *phonelabdirname = NULL;
-char *phonelabextname = "lab";
-char *phonelabtype = "xlabel";
+char const *phonelabdirname = NULL;
+char const *phonelabextname = "lab";
+char const *phonelabtype = "xlabel";
 
 /* For saving word labels in alignment */
-char *wordlabdirname = NULL;
-char *wordlabextname = "wrd";
-char *wordlabtype = "xlabel";
+char const *wordlabdirname = NULL;
+char const *wordlabextname = "wrd";
+char const *wordlabtype = "xlabel";
 
 /* "Best" alternative word sent output file */
 static char *out_sent_filename = NULL;
@@ -384,16 +398,16 @@ static char *mfclogdir = NULL;
 
 static int32 sampling_rate = 16000;
 static int32 adc_input = FALSE;	/* TRUE <=> input utterances are raw A/D data */
-static char *adc_ext = "raw";	/* Default format: raw */
+static char const *adc_ext = "raw";	/* Default format: raw */
 static int32 adc_endian = 1;	/* Default endian: little */
 static int32 adc_hdr = 0;	/* Default adc file header size */
 static int32 blocking_ad_read_p = FALSE;
 
 /* For LISTEN project: LM and startword names for different utts */
-char *utt_lmname_dir = ".";
-char *lmname_ext = "lmname";
-static char *startWord_directory = ".";
-static char *startWord_ext = "start";
+char const *utt_lmname_dir = ".";
+char const *lmname_ext = "lmname";
+static char const *startWord_directory = ".";
+static char const *startWord_ext = "start";
 static char startWord[1024] = "";
 
 static char *dumplat_dir = NULL;
@@ -402,7 +416,7 @@ static char *cdcn_file = NULL;
 
 static char utt_name[1024] = "";
 
-#if (USE_ILM)
+#ifdef USE_ILM
 /* Default weighting for ILM ug and bg cache probs (%) */
 static int32 ilm_ugcache_wt = 4;	/* ie 0.04 */
 static int32 ilm_bgcache_wt = 9;	/* ie 0.09 */
@@ -413,14 +427,19 @@ static float *cep, *dcep, *dcep_80ms, *pcep, *ddcep;
 int32 print_back_trace = TRUE;
 static char *arg_file = NULL;
 
-#if (! WIN32)
-double MakeSeconds();
+#ifndef WIN32
+extern double MakeSeconds(struct timeval *, struct timeval *);
 #endif
 
 extern int32 uttproc_set_cmn (scvq_norm_t n);
 extern int32 uttproc_set_agc (scvq_agc_t a);
 extern int32 uttproc_set_silcmp (scvq_compress_t c);
 
+/* FIXME: These misc functions need a header file. */
+extern void unlimit(void);
+int awriteshort (char const *file, short *data, int length);
+
+extern void allphone_init(double, double, double); /* dubya, dubya, dubya? */
 
 /* Parameters for the search
  *---------------------------*/
@@ -429,337 +448,337 @@ config_t param[] = {
 	/*
 	 * LongName, Documentation, Switch, TYPE, Address
 	 */
-	"Force", "Force", "-force",
-		STRING, (caddr_t) &force_str,
+	{ "Force", "Force", "-force",
+		STRING, (caddr_t) &force_str }, 
 
-	"ArgFile", "Cmd line argument file", "-argfile",
-		STRING, (caddr_t) &arg_file,
+	{ "ArgFile", "Cmd line argument file", "-argfile",
+		STRING, (caddr_t) &arg_file }, 
 
-	"AllPhoneMode", "All Phone Mode", "-allphone",
-		BOOL, (caddr_t) &allphone_mode,
+	{ "AllPhoneMode", "All Phone Mode", "-allphone",
+		BOOL, (caddr_t) &allphone_mode }, 
 
-	"ForceRec", "ForceRec", "-forceRec",
-		BOOL, (caddr_t) &forceRec,
+	{ "ForceRec", "ForceRec", "-forceRec",
+		BOOL, (caddr_t) &forceRec }, 
 
-	"AgcBeta", "Use beta based AGC", "-agcbeta",
-		BOOL, (caddr_t) &agcBeta,
+	{ "AgcBeta", "Use beta based AGC", "-agcbeta",
+		BOOL, (caddr_t) &agcBeta }, 
 
-	"AgcMax", "Use max based AGC", "-agcmax",
-		BOOL, (caddr_t) &agcMax,
+	{ "AgcMax", "Use max based AGC", "-agcmax",
+		BOOL, (caddr_t) &agcMax }, 
 
-	"AgcEMax", "Use another max based AGC", "-agcemax",
-		BOOL, (caddr_t) &agcEMax,
+	{ "AgcEMax", "Use another max based AGC", "-agcemax",
+		BOOL, (caddr_t) &agcEMax }, 
 
-	"AgcNoise", "Use Noise based AGC", "-agcnoise",
-		BOOL, (caddr_t) &agcNoise,
+	{ "AgcNoise", "Use Noise based AGC", "-agcnoise",
+		BOOL, (caddr_t) &agcNoise }, 
 
-	"AgcThreshold", "Threshold for Noise based AGC", "-agcthresh",
-		FLOAT, (caddr_t) &agcThresh,
+	{ "AgcThreshold", "Threshold for Noise based AGC", "-agcthresh",
+		FLOAT, (caddr_t) &agcThresh }, 
 
-	"NormalizeMean", "Normalize the feature means to 0.0", "-normmean",
-		BOOL, (caddr_t) &normalizeMean,
+	{ "NormalizeMean", "Normalize the feature means to 0.0", "-normmean",
+		BOOL, (caddr_t) &normalizeMean }, 
 
-	"NormalizeMeanPrior", "Normalize feature means with prior mean", "-nmprior",
-		BOOL, (caddr_t) &normalizeMeanPrior,
+	{ "NormalizeMeanPrior", "Normalize feature means with prior mean", "-nmprior",
+		BOOL, (caddr_t) &normalizeMeanPrior }, 
 
-	"CompressBackground", "Compress excess background frames", "-compress",
-		BOOL, (caddr_t) &compress,
+	{ "CompressBackground", "Compress excess background frames", "-compress",
+		BOOL, (caddr_t) &compress }, 
 
-	"CompressPrior", "Compress excess background frames based on prior utt", "-compressprior",
-		BOOL, (caddr_t) &compress_prior,
+	{ "CompressPrior", "Compress excess background frames based on prior utt", "-compressprior",
+		BOOL, (caddr_t) &compress_prior }, 
 
-	"Dcep80msWeight", "Weight for dcep80ms", "-dcep80msweight",
-		DOUBLE, (caddr_t) &dcep80msWeight,
+	{ "Dcep80msWeight", "Weight for dcep80ms", "-dcep80msweight",
+		DOUBLE, (caddr_t) &dcep80msWeight }, 
 
-	"LiveData", "Get input from A/D hardware", "-live",
-		BOOL, (caddr_t) &live,
+	{ "LiveData", "Get input from A/D hardware", "-live",
+		BOOL, (caddr_t) &live }, 
 
-	"A/D blocks on read", "A/D blocks on read", "-blockingad",
-		BOOL, (caddr_t) &blocking_ad_read_p,
+	{ "A/D blocks on read", "A/D blocks on read", "-blockingad",
+		BOOL, (caddr_t) &blocking_ad_read_p }, 
 
-	"CtlFileName", "Control file name", "-ctlfn",
-		STRING, (caddr_t) &ctl_file_name,
+	{ "CtlFileName", "Control file name", "-ctlfn",
+		STRING, (caddr_t) &ctl_file_name }, 
 
-	"CtlLineOffset", "Number of Lines to skip in ctl file", "-ctloffset",
-		INT,	(caddr_t) &ctl_offset,
+	{ "CtlLineOffset", "Number of Lines to skip in ctl file", "-ctloffset",
+		INT,	(caddr_t) &ctl_offset }, 
 
-	"CtlCount", "Number of lines to process in ctl file", "-ctlcount",
-		INT,	(caddr_t) &ctl_count,
+	{ "CtlCount", "Number of lines to process in ctl file", "-ctlcount",
+		INT,	(caddr_t) &ctl_count }, 
 
-	"CtlLineIncr", "Do every nth line in the ctl file", "-ctlincr",
-		INT,	(caddr_t) &ctl_incr,
+	{ "CtlLineIncr", "Do every nth line in the ctl file", "-ctlincr",
+		INT,	(caddr_t) &ctl_incr }, 
 
-	"ComputeAllSenones", "Compute all senone scores every frame", "-compallsen",
-		BOOL,  (caddr_t) &compute_all_senones,
+	{ "ComputeAllSenones", "Compute all senone scores every frame", "-compallsen",
+		BOOL,  (caddr_t) &compute_all_senones }, 
 
-	"TopSenonesFrames", "#frames top senones for predicting phones", "-topsenfrm",
-		INT,  (caddr_t) &topsen_window,
+	{ "TopSenonesFrames", "#frames top senones for predicting phones", "-topsenfrm",
+		INT,  (caddr_t) &topsen_window }, 
 
-	"TopSenonesThresh", "Top senones threshold for predicting phones", "-topsenthresh",
-		INT,  (caddr_t) &topsen_thresh,
+	{ "TopSenonesThresh", "Top senones threshold for predicting phones", "-topsenthresh",
+		INT,  (caddr_t) &topsen_thresh }, 
 
-	"wsj1Sent", "Sent_Dir using wsj1 format", "-wsj1Sent",
-		BOOL, (caddr_t) &wsj1Sent,
+	{ "wsj1Sent", "Sent_Dir using wsj1 format", "-wsj1Sent",
+		BOOL, (caddr_t) &wsj1Sent }, 
 
-	"ReportAltPron", "Report actual pronunciation in match file", "-reportpron",
-		BOOL, (caddr_t) &report_altpron,
+	{ "ReportAltPron", "Report actual pronunciation in match file", "-reportpron",
+		BOOL, (caddr_t) &report_altpron }, 
 
-	"MatchFileName", "Recognition output file name", "-matchfn",
-		STRING, (caddr_t) &match_file_name,
+	{ "MatchFileName", "Recognition output file name", "-matchfn",
+		STRING, (caddr_t) &match_file_name }, 
 
-	"MatchSegFileName", "Recognition output with segmentation", "-matchsegfn",
-		STRING, (caddr_t) &matchseg_file_name,
+	{ "MatchSegFileName", "Recognition output with segmentation", "-matchsegfn",
+		STRING, (caddr_t) &matchseg_file_name }, 
 
-	"PhoneConfidence", "Phone confidence", "-phoneconf",
-		INT, (caddr_t) &phone_conf,
+	{ "PhoneConfidence", "Phone confidence", "-phoneconf",
+		INT, (caddr_t) &phone_conf }, 
 
-	"PhoneLat", "Phone lattice based on best senone scores", "-pscr2lat",
-		BOOL, (caddr_t) &pscr2lat,
+	{ "PhoneLat", "Phone lattice based on best senone scores", "-pscr2lat",
+		BOOL, (caddr_t) &pscr2lat }, 
 
-	"LogFileName", "Recognition ouput file name", "-logfn",
-		STRING, (caddr_t) &logfn_arg,
+	{ "LogFileName", "Recognition ouput file name", "-logfn",
+		STRING, (caddr_t) &logfn_arg }, 
 
-	"CorrectFileName", "Reference ouput file name", "-correctfn",
-		STRING, (caddr_t) &correct_file_name,
+	{ "CorrectFileName", "Reference ouput file name", "-correctfn",
+		STRING, (caddr_t) &correct_file_name }, 
 
-	"Utterance", "Utterance name", "-utt",
-		STRING, (caddr_t) &utterance,
+	{ "Utterance", "Utterance name", "-utt",
+		STRING, (caddr_t) &utterance }, 
 
-	"DataDirectory", "Data directory", "-datadir",
-		STRING, (caddr_t) &data_directory,
+	{ "DataDirectory", "Data directory", "-datadir",
+		STRING, (caddr_t) &data_directory }, 
 
-	"DataDirectory", "Data directory", "-cepdir",
-		STRING, (caddr_t) &cepdir,
+	{ "DataDirectory", "Data directory", "-cepdir",
+		STRING, (caddr_t) &cepdir }, 
 
-	"DataDirectory", "Data directory", "-vqdir",
-		STRING, (caddr_t) &data_directory,
+	{ "DataDirectory", "Data directory", "-vqdir",
+		STRING, (caddr_t) &data_directory }, 
 
-	"SegDataDirectory", "Data directory", "-segdir",
-		STRING, (caddr_t) &seg_data_directory,
+	{ "SegDataDirectory", "Data directory", "-segdir",
+		STRING, (caddr_t) &seg_data_directory }, 
 
-	"SentDir", "Sentence directory", "-sentdir",
-		STRING, (caddr_t) &sent_directory,
+	{ "SentDir", "Sentence directory", "-sentdir",
+		STRING, (caddr_t) &sent_directory }, 
 
-	"SentExt", "Sentence File Extension", "-sentext",
-  	        STRING, (caddr_t) &sent_ext,
+	{ "SentExt", "Sentence File Extension", "-sentext",
+  	        STRING, (caddr_t) &sent_ext }, 
 
-	"PhoneLabDir", "Phone Label Directory", "-phonelabdir",
-  	        STRING, (caddr_t) &phonelabdirname,
+	{ "PhoneLabDir", "Phone Label Directory", "-phonelabdir",
+  	        STRING, (caddr_t) &phonelabdirname }, 
 
-	"PhoneLabExt", "Phone Label Extension (default lab)", "-phonelabext",
-  	        STRING, (caddr_t) &phonelabextname,
+	{ "PhoneLabExt", "Phone Label Extension (default lab)", "-phonelabext",
+  	        STRING, (caddr_t) &phonelabextname }, 
 
-	"PhoneLabType", "Phone Label Type (default xlabel)", "-phonelabtype",
-  	        STRING, (caddr_t) &phonelabtype,
+	{ "PhoneLabType", "Phone Label Type (default xlabel)", "-phonelabtype",
+  	        STRING, (caddr_t) &phonelabtype }, 
 
-	"WordLabDir", "Word Label Directory", "-wordlabdir",
-  	        STRING, (caddr_t) &wordlabdirname,
+	{ "WordLabDir", "Word Label Directory", "-wordlabdir",
+  	        STRING, (caddr_t) &wordlabdirname }, 
 
-	"WordLabExt", "Word Label Extension (default wrd)", "-wordlabext",
-  	        STRING, (caddr_t) &wordlabextname,
+	{ "WordLabExt", "Word Label Extension (default wrd)", "-wordlabext",
+  	        STRING, (caddr_t) &wordlabextname }, 
 
-	"WordLabType", "Word Label Type (default xlabel)", "-wordlabtype",
-  	        STRING, (caddr_t) &wordlabtype,
+	{ "WordLabType", "Word Label Type (default xlabel)", "-wordlabtype",
+  	        STRING, (caddr_t) &wordlabtype }, 
 	
-	"LMNamesDir", "Directory for LM-name file for each utt", "-lmnamedir",
-		STRING, (caddr_t) &utt_lmname_dir,
+	{ "LMNamesDir", "Directory for LM-name file for each utt", "-lmnamedir",
+		STRING, (caddr_t) &utt_lmname_dir }, 
 	
-	"LMNamesExt", "Filename extension for LM-name files", "-lmnameext",
-		STRING, (caddr_t) &lmname_ext,
+	{ "LMNamesExt", "Filename extension for LM-name files", "-lmnameext",
+		STRING, (caddr_t) &lmname_ext }, 
 	
-	"StartWordDir", "Startword directory", "-startworddir",
-		STRING, (caddr_t) &startWord_directory,
+	{ "StartWordDir", "Startword directory", "-startworddir",
+		STRING, (caddr_t) &startWord_directory }, 
 
-	"StartWordExt", "StartWord File Extension", "-startwordext",
-  	        STRING, (caddr_t) &startWord_ext,
+	{ "StartWordExt", "StartWord File Extension", "-startwordext",
+  	        STRING, (caddr_t) &startWord_ext }, 
 
-	"NbestDir", "N-best Hypotheses Directory", "-nbestdir",
-		STRING, (caddr_t) &nbest_dir,
+	{ "NbestDir", "N-best Hypotheses Directory", "-nbestdir",
+		STRING, (caddr_t) &nbest_dir }, 
 
-	"NbestCount", "No. N-best Hypotheses", "-nbest",
-		INT, (caddr_t) &nbest,
+	{ "NbestCount", "No. N-best Hypotheses", "-nbest",
+		INT, (caddr_t) &nbest }, 
 
-	"NbestExt", "N-best Hypothesis File Extension", "-nbestext",
-  	        STRING, (caddr_t) &nbest_ext,
+	{ "NbestExt", "N-best Hypothesis File Extension", "-nbestext",
+  	        STRING, (caddr_t) &nbest_ext }, 
 
-	"CepExt", "Cepstrum File Extension", "-cepext",
-  	        STRING, (caddr_t) &cep_ext,
+	{ "CepExt", "Cepstrum File Extension", "-cepext",
+  	        STRING, (caddr_t) &cep_ext }, 
 
-	"CCodeExt", "CCode File Extension", "-cext",
-  	        STRING, (caddr_t) &cext,
+	{ "CCodeExt", "CCode File Extension", "-cext",
+  	        STRING, (caddr_t) &cext }, 
 
-	"DCodeExt", "DCode File Extension", "-dext",
-  	        STRING, (caddr_t) &dext,
+	{ "DCodeExt", "DCode File Extension", "-dext",
+  	        STRING, (caddr_t) &dext }, 
 
-	"PCodeExt", "PCode File Extension", "-pext",
-  	        STRING, (caddr_t) &pext,
+	{ "PCodeExt", "PCode File Extension", "-pext",
+  	        STRING, (caddr_t) &pext }, 
 
-	"XCodeExt", "XCode File Extension (4 codebook only)", "-xext",
-	        STRING, (caddr_t) &xext,
+	{ "XCodeExt", "XCode File Extension (4 codebook only)", "-xext",
+	        STRING, (caddr_t) &xext }, 
 
-	"BeamWidth", "Beam Width", "-beam",
-		FLOAT, (caddr_t) &beam_width,
+	{ "BeamWidth", "Beam Width", "-beam",
+		FLOAT, (caddr_t) &beam_width }, 
 
-	"NewWordBeamWidth", "New Word Beam Width", "-nwbeam",
-	        FLOAT, (caddr_t) &new_word_beam_width,
+	{ "NewWordBeamWidth", "New Word Beam Width", "-nwbeam",
+	        FLOAT, (caddr_t) &new_word_beam_width }, 
 
-	"FwdFlatBeamWidth", "FwdFlat Beam Width", "-fwdflatbeam",
-		FLOAT, (caddr_t) &fwdflat_beam_width,
+	{ "FwdFlatBeamWidth", "FwdFlat Beam Width", "-fwdflatbeam",
+		FLOAT, (caddr_t) &fwdflat_beam_width }, 
 
-	"FwdFlatNewWordBeamWidth", "FwdFlat New Word Beam Width", "-fwdflatnwbeam",
-	        FLOAT, (caddr_t) &fwdflat_new_word_beam_width,
+	{ "FwdFlatNewWordBeamWidth", "FwdFlat New Word Beam Width", "-fwdflatnwbeam",
+	        FLOAT, (caddr_t) &fwdflat_new_word_beam_width }, 
 
-	"LastPhoneAloneBeamWidth", "Beam Width for Last Phones Only", "-lponlybw",
-	        FLOAT, (caddr_t) &lastphone_alone_beam_width,
+	{ "LastPhoneAloneBeamWidth", "Beam Width for Last Phones Only", "-lponlybw",
+	        FLOAT, (caddr_t) &lastphone_alone_beam_width }, 
 
-	"LastPhoneAloneBeamWidth", "Beam Width for Last Phones Only", "-lponlybeam",
-	        FLOAT, (caddr_t) &lastphone_alone_beam_width,
+	{ "LastPhoneAloneBeamWidth", "Beam Width for Last Phones Only", "-lponlybeam",
+	        FLOAT, (caddr_t) &lastphone_alone_beam_width }, 
 
-	"NewPhoneBeamWidth", "New Phone Beam Width", "-npbeam",
-	        FLOAT, (caddr_t) &new_phone_beam_width,
+	{ "NewPhoneBeamWidth", "New Phone Beam Width", "-npbeam",
+	        FLOAT, (caddr_t) &new_phone_beam_width }, 
 
-	"LastPhoneBeamWidth", "Last Phone Beam Width", "-lpbeam",
-	        FLOAT, (caddr_t) &last_phone_beam_width,
+	{ "LastPhoneBeamWidth", "Last Phone Beam Width", "-lpbeam",
+	        FLOAT, (caddr_t) &last_phone_beam_width }, 
 
-	"PhoneInsertionPenalty", "Penalty for each phone used", "-phnpen",
-		FLOAT, (caddr_t) &phone_insertion_penalty,
+	{ "PhoneInsertionPenalty", "Penalty for each phone used", "-phnpen",
+		FLOAT, (caddr_t) &phone_insertion_penalty }, 
 
-	"InsertionPenalty", "Penalty for word transitions", "-inspen",
-		FLOAT, (caddr_t) &insertion_penalty,
+	{ "InsertionPenalty", "Penalty for word transitions", "-inspen",
+		FLOAT, (caddr_t) &insertion_penalty }, 
 
-	"NewWordPenalty", "Penalty for new word transitions", "-nwpen",
-		FLOAT, (caddr_t) &nw_pen,
+	{ "NewWordPenalty", "Penalty for new word transitions", "-nwpen",
+		FLOAT, (caddr_t) &nw_pen }, 
 
-	"SilenceWordPenalty", "Penalty for silence word transitions", "-silpen",
-		FLOAT, (caddr_t) &silence_word_penalty,
+	{ "SilenceWordPenalty", "Penalty for silence word transitions", "-silpen",
+		FLOAT, (caddr_t) &silence_word_penalty }, 
 
-	"FillerWordPenalty", "Penalty for filler word transitions", "-fillpen",
-		FLOAT, (caddr_t) &filler_word_penalty,
+	{ "FillerWordPenalty", "Penalty for filler word transitions", "-fillpen",
+		FLOAT, (caddr_t) &filler_word_penalty }, 
 
-	"LanguageWeight", "Weighting on Language Probabilities", "-langwt",
-		FLOAT, (caddr_t) &fwdtree_lw,
+	{ "LanguageWeight", "Weighting on Language Probabilities", "-langwt",
+		FLOAT, (caddr_t) &fwdtree_lw }, 
 
-	"RescoreLanguageWeight", "LM prob weight for rescoring pass", "-rescorelw",
-		FLOAT, (caddr_t) &bestpath_lw,
+	{ "RescoreLanguageWeight", "LM prob weight for rescoring pass", "-rescorelw",
+		FLOAT, (caddr_t) &bestpath_lw }, 
 
-	"FwdFlatLanguageWeight", "FwdFlat Weighting on Language Probabilities", "-fwdflatlw",
-		FLOAT, (caddr_t) &fwdflat_lw,
+	{ "FwdFlatLanguageWeight", "FwdFlat Weighting on Language Probabilities", "-fwdflatlw",
+		FLOAT, (caddr_t) &fwdflat_lw }, 
 
-	"FwdTree", "Fwd tree search (1st pass)", "-fwdtree",
-		BOOL, (caddr_t) &fwdtree_flag,
+	{ "FwdTree", "Fwd tree search (1st pass)", "-fwdtree",
+		BOOL, (caddr_t) &fwdtree_flag }, 
 
-	"FwdFlat", "Flat fwd search over fwdtree lattice", "-fwdflat",
-		BOOL, (caddr_t) &fwdflat_flag,
+	{ "FwdFlat", "Flat fwd search over fwdtree lattice", "-fwdflat",
+		BOOL, (caddr_t) &fwdflat_flag }, 
 
-	"ForwardOnly", "Run only the forward pass", "-forwardonly",
-		BOOL, (caddr_t) &forward_only,
+	{ "ForwardOnly", "Run only the forward pass", "-forwardonly",
+		BOOL, (caddr_t) &forward_only }, 
 
-	"Bestpath", "Shortest path search over lattice", "-bestpath",
-		BOOL, (caddr_t) &bestpath_flag,
+	{ "Bestpath", "Shortest path search over lattice", "-bestpath",
+		BOOL, (caddr_t) &bestpath_flag }, 
 	
-	"TrigramInFwdPass", "Use trigram (if available) in forward pass", "-fwd3g",
-		BOOL, (caddr_t) &use_3g_in_fwd_pass,
+	{ "TrigramInFwdPass", "Use trigram (if available) in forward pass", "-fwd3g",
+		BOOL, (caddr_t) &use_3g_in_fwd_pass }, 
 
-	"CodeBookDirectory", "Code book directory", "-cbdir",
-	    	STRING, (caddr_t) &cbdir,
+	{ "CodeBookDirectory", "Code book directory", "-cbdir",
+	    	STRING, (caddr_t) &cbdir }, 
 
-	"CCodeBookFileName", "CCode Book File Name", "-ccbfn",
-		STRING, (caddr_t) &ccbfn,
+	{ "CCodeBookFileName", "CCode Book File Name", "-ccbfn",
+		STRING, (caddr_t) &ccbfn }, 
 
-	"DCodeBookFileName", "DCode Book File Name", "-dcbfn",
-	       	STRING, (caddr_t) &dcbfn,
+	{ "DCodeBookFileName", "DCode Book File Name", "-dcbfn",
+	       	STRING, (caddr_t) &dcbfn }, 
 
-	"PCodeBookFileName", "PCode Book File Name", "-pcbfn",
-		STRING, (caddr_t) &pcbfn,
+	{ "PCodeBookFileName", "PCode Book File Name", "-pcbfn",
+		STRING, (caddr_t) &pcbfn }, 
 
-	"XCodeBookFileName", "XCode Book File Name", "-xcbfn",
-		STRING, (caddr_t) &xcbfn,
+	{ "XCodeBookFileName", "XCode Book File Name", "-xcbfn",
+		STRING, (caddr_t) &xcbfn }, 
 
-	"Use20msDiffPow", "Use 20 ms diff power instead of c0", "-use20msdp",
-		BOOL, (caddr_t) &use20msDiffPow,
+	{ "Use20msDiffPow", "Use 20 ms diff power instead of c0", "-use20msdp",
+		BOOL, (caddr_t) &use20msDiffPow }, 
 
-	"CepFloor", "Floor of Cepstrum Variance", "-cepfloor",
-		FLOAT, (caddr_t) &Cep_Floor,
+	{ "CepFloor", "Floor of Cepstrum Variance", "-cepfloor",
+		FLOAT, (caddr_t) &Cep_Floor }, 
 
-	"DCepFloor", "Floor of Delta Cepstrum Variance", "-dcepfloor",
-		FLOAT, (caddr_t) &Dcep_Floor,
+	{ "DCepFloor", "Floor of Delta Cepstrum Variance", "-dcepfloor",
+		FLOAT, (caddr_t) &Dcep_Floor }, 
 
-	"XCepFloor", "Floor of XCepstrum Variance", "-xcepfloor",
-		FLOAT, (caddr_t) &Pow_Floor,
+	{ "XCepFloor", "Floor of XCepstrum Variance", "-xcepfloor",
+		FLOAT, (caddr_t) &Pow_Floor }, 
 
-	"TopNCodeWords", "Number of code words to use", "-top",
-		INT, (caddr_t) &scVqTopN,
+	{ "TopNCodeWords", "Number of code words to use", "-top",
+		INT, (caddr_t) &scVqTopN }, 
 
-	"SkipAltFrames", "Skip alternate frames in exiting phones", "-skipalt",
-		INT, (caddr_t) &skip_alt_frm,
+	{ "SkipAltFrames", "Skip alternate frames in exiting phones", "-skipalt",
+		INT, (caddr_t) &skip_alt_frm }, 
 
-	"WriteScoreInMatchFile", "write score in the match file", "-matchscore",
-		BOOL, (caddr_t) &writeScoreInMatchFile,
+	{ "WriteScoreInMatchFile", "write score in the match file", "-matchscore",
+		BOOL, (caddr_t) &writeScoreInMatchFile }, 
 
-	"LatticeSizes", "BP and FP Tables Sizes", "-latsize",
-		INT, (caddr_t) &lattice_size,
+	{ "LatticeSizes", "BP and FP Tables Sizes", "-latsize",
+		INT, (caddr_t) &lattice_size }, 
 
-	"LMCacheNumLines", "No. lines in LM cache", "-lmcachelines",
-		INT, (caddr_t) &lm_cache_lines,
-#if (USE_ILM)
-	"ILMUGCacheWeight", "Weight(%) for ILM UG cache prob", "-ilmugwt",
-		INT, (caddr_t) &ilm_ugcache_wt,
+	{ "LMCacheNumLines", "No. lines in LM cache", "-lmcachelines",
+		INT, (caddr_t) &lm_cache_lines }, 
+#ifdef USE_ILM
+	{ "ILMUGCacheWeight", "Weight(%) for ILM UG cache prob", "-ilmugwt",
+		INT, (caddr_t) &ilm_ugcache_wt }, 
 
-	"ILMBGCacheWeight", "Weight(%) for ILM BG cache prob", "-ilmbgwt",
-		INT, (caddr_t) &ilm_bgcache_wt,
+	{ "ILMBGCacheWeight", "Weight(%) for ILM BG cache prob", "-ilmbgwt",
+		INT, (caddr_t) &ilm_bgcache_wt }, 
 #endif
-	"DumpLattice", "Dump Lattice", "-dumplatdir",
-		STRING, (caddr_t) &dumplat_dir,
+	{ "DumpLattice", "Dump Lattice", "-dumplatdir",
+		STRING, (caddr_t) &dumplat_dir }, 
 
-	"SamplingRate", "Sampling rate", "-samp",
-		INT, (caddr_t) &sampling_rate,
+	{ "SamplingRate", "Sampling rate", "-samp",
+		INT, (caddr_t) &sampling_rate }, 
 
-	"UseADCInput", "Use raw ADC input", "-adcin",
-		BOOL, (caddr_t) &adc_input,
+	{ "UseADCInput", "Use raw ADC input", "-adcin",
+		BOOL, (caddr_t) &adc_input }, 
 
-	"ADCFileExt", "ADC file extension", "-adcext",
-		STRING, (caddr_t) &adc_ext,
+	{ "ADCFileExt", "ADC file extension", "-adcext",
+		STRING, (caddr_t) &adc_ext }, 
 
-	"ADCByteOrder", "ADC file byte order (0:BIG/1:LITTLE)", "-adcendian",
-		INT, (caddr_t) &adc_endian,
+	{ "ADCByteOrder", "ADC file byte order (0:BIG/1:LITTLE)", "-adcendian",
+		INT, (caddr_t) &adc_endian }, 
 
-	"ADCHdrSize", "ADC file header size", "-adchdr",
-		INT, (caddr_t) &adc_hdr,
+	{ "ADCHdrSize", "ADC file header size", "-adchdr",
+		INT, (caddr_t) &adc_hdr }, 
 
-	"RawLogDir", "Log directory for raw output files)", "-rawlogdir",
-		STRING, (caddr_t) &rawlogdir,
+	{ "RawLogDir", "Log directory for raw output files)", "-rawlogdir",
+		STRING, (caddr_t) &rawlogdir }, 
 
-	"MFCLogDir", "Log directory for MFC output files)", "-mfclogdir",
-		STRING, (caddr_t) &mfclogdir,
+	{ "MFCLogDir", "Log directory for MFC output files)", "-mfclogdir",
+		STRING, (caddr_t) &mfclogdir }, 
 
-	"TimeAlignCtlFile", "Time align control file", "-tactlfn",
-		STRING, (caddr_t) &time_align_ctl_file_name,
+	{ "TimeAlignCtlFile", "Time align control file", "-tactlfn",
+		STRING, (caddr_t) &time_align_ctl_file_name }, 
 
-	"TimeAlignWord", "Time Align Phone", "-taword",
-		BOOL, (caddr_t) &time_align_word,
+	{ "TimeAlignWord", "Time Align Phone", "-taword",
+		BOOL, (caddr_t) &time_align_word }, 
 
-	"TimeAlignPhone", "Time Align Phone", "-taphone",
-		BOOL, (caddr_t) &time_align_phone,
+	{ "TimeAlignPhone", "Time Align Phone", "-taphone",
+		BOOL, (caddr_t) &time_align_phone }, 
 
-	"TimeAlignState", "Time Align State", "-tastate",
-		BOOL, (caddr_t) &time_align_state,
+	{ "TimeAlignState", "Time Align State", "-tastate",
+		BOOL, (caddr_t) &time_align_state }, 
 
-	"SegFileExt", "Seg file extension", "-segext",
-		STRING, (caddr_t) &seg_file_ext,
+	{ "SegFileExt", "Seg file extension", "-segext",
+		STRING, (caddr_t) &seg_file_ext }, 
 
-	"ScoreFileExt", "Seg file extension", "-scoreext",
-		STRING, (caddr_t) &score_file_ext,
+	{ "ScoreFileExt", "Seg file extension", "-scoreext",
+		STRING, (caddr_t) &score_file_ext }, 
 
-	"OutSentFile", "output sentence file name", "-osentfn",
-		STRING, (caddr_t) &out_sent_filename,
+	{ "OutSentFile", "output sentence file name", "-osentfn",
+		STRING, (caddr_t) &out_sent_filename }, 
 
-	"PrintBackTrace", "Print Back Trace", "-backtrace",
-		BOOL, (caddr_t) &print_back_trace,
+	{ "PrintBackTrace", "Print Back Trace", "-backtrace",
+		BOOL, (caddr_t) &print_back_trace }, 
 
-	"CDCNinitFile", "CDCN Initialization File", "-cdcn",
-		STRING, (caddr_t) &cdcn_file,
+	{ "CDCNinitFile", "CDCN Initialization File", "-cdcn",
+		STRING, (caddr_t) &cdcn_file }, 
 
-	0,0,0,NOTYPE,0
+	{ 0,0,0,NOTYPE,0 }
 };
 
 search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec);
@@ -980,7 +999,7 @@ static void log_arglist (FILE *fp, int32 argc, char *argv[])
 
 
 /* Should be in uttproc.c, but ... */
-int32 uttproc_set_logfile (char *file)
+int32 uttproc_set_logfile (char const *file)
 {
     FILE *fp;
     
@@ -1006,12 +1025,9 @@ int32 uttproc_set_logfile (char *file)
     return 0;
 }
 
-
+int
 fbs_init (int32 argc, char **argv)
 {
-    char *pname = argv[0];
-    int32 i, num_phones;
-    
     unlimit ();		/* Remove memory size limits */
 
     /* Parse command line arguments */
@@ -1038,7 +1054,8 @@ fbs_init (int32 argc, char **argv)
     
     log_arglist (stdout, argc, argv);
     
-#if (! WIN32)
+#ifndef WIN32
+    /* Oh, dear.  Is this strictly necessary? */
     system ("hostname");
     system ("date");
     printf ("\n\n");
@@ -1076,7 +1093,8 @@ fbs_init (int32 argc, char **argv)
      * at a later date.
      */
     if ((ccbfn == NULL) || (dcbfn == NULL) || (pcbfn == NULL) || (xcbfn == NULL))
-	QUIT ((stderr, "%s(%d): One or more codebooks not specified\n"));
+	QUIT ((stderr, "%s(%d): One or more codebooks not specified\n",
+	       __FILE__, __LINE__));
 
     /* initialize semi-continuous acoustic and model scoring subsystem */
     SCVQInit(scVqTopN, kb_get_total_dists(), 1,
@@ -1216,8 +1234,8 @@ fbs_init (int32 argc, char **argv)
     return 0;
 }
 
-
-fbs_end ()
+int32
+fbs_end (void)
 {
     uttproc_end ();
     return 0;
@@ -1251,14 +1269,13 @@ int32 uttproc_parse_ctlfile_entry (char *line,
     return 0;
 }
 
-
-run_ctl_file (char *ctl_file_name)
+void
+run_ctl_file (char const *ctl_file_name)
 /*-------------------------------------------------------------------------*
  * Sequence through a control file containing a list of utterance
  * NB. This is a one shot routine.
  */
 {
-    static char *rname = "run_ctl_file";
     FILE *ctl_fs;
     char line[4096], mfcfile[4096], idspec[4096];
     int32 line_no = 0;
@@ -1365,12 +1382,11 @@ run_ctl_file (char *ctl_file_name)
 	fclose (ctl_fs);
 }
 
-
-int32 uttfile_open (char *utt)
+int32 uttfile_open (char const *utt)
 {
     char inputfile[MAXPATHLEN];
     int32 n, l;
-    char *file_ext;
+    char const *file_ext;
 
     /* Figure out file extension to be added, if any */
     file_ext = adc_input ? adc_ext : cep_ext;
@@ -1380,14 +1396,14 @@ int32 uttfile_open (char *utt)
 	file_ext = "";	/* Extension already exists */
     
     /* Build input filename */
-#if (! WIN32)
-    if (data_directory && (utt[0] != '/') && ((utt[0] != '.') || (utt[1] != '/')))
+#ifdef WIN32
+    if (data_directory && (utt[0] != '/') && (utt[0] != '\\') &&
+	((utt[0] != '.') || ((utt[1] != '/') && (utt[1] != '\\'))))
 	sprintf (inputfile, "%s/%s.%s", data_directory, utt, file_ext);
     else
 	sprintf (inputfile, "%s.%s", utt, file_ext);
 #else
-    if (data_directory && (utt[0] != '/') && (utt[0] != '\\') &&
-	((utt[0] != '.') || ((utt[1] != '/') && (utt[1] != '\\'))))
+    if (data_directory && (utt[0] != '/') && ((utt[0] != '.') || (utt[1] != '/')))
 	sprintf (inputfile, "%s/%s.%s", data_directory, utt, file_ext);
     else
 	sprintf (inputfile, "%s.%s", utt, file_ext);
@@ -1480,14 +1496,16 @@ int32 utt_file2feat (char *utt, int32 nosearch)
 char *build_uttid (char *utt)
 {
     char *utt_id;
-    int32 i;
     
     /* Find uttid */
-#if (! WIN32)
-    utt_id = strrchr (utt, '/');
+#ifdef WIN32
+    {
+      int32 i;
+      for (i = strlen(utt)-1; (i >= 0) && (utt[i] != '\\') && (utt[i] != '/'); --i);
+      utt_id = utt+i;
+    }
 #else
-    for (i = strlen(utt)-1; (i >= 0) && (utt[i] != '\\') && (utt[i] != '/'); --i);
-    utt_id = utt+i;
+    utt_id = strrchr (utt, '/');
 #endif
     if (utt_id)
     	utt_id++;
@@ -1499,9 +1517,10 @@ char *build_uttid (char *utt)
 }
 
 
-run_time_align_ctl_file (char *utt_ctl_file_name,
-			 char *pe_ctl_file_name,
-			 char *out_sent_file_name)
+void
+run_time_align_ctl_file (char const *utt_ctl_file_name,
+			 char const *pe_ctl_file_name,
+			 char const *out_sent_file_name)
 /*-------------------------------------------------------------------------*
  * Sequence through a control file containing a list of utterance
  * NB. This is a one shot routine.
@@ -1513,14 +1532,11 @@ run_time_align_ctl_file (char *utt_ctl_file_name,
     char Utt[1024];
     char time_align_spec[1024];
     int32 line_no = 0;
-    char startword_filename[1000];
-    FILE *sw_fp;
     char left_word[256];
     char right_word[256];
     char pe_words[1024];
     int32 begin_frame;
     int32 end_frame;
-    int32 align_all;
     int32 n_featfr;
     
     time_align_init();
@@ -1538,6 +1554,9 @@ run_time_align_ctl_file (char *utt_ctl_file_name,
 	out_sent_fs = NULL;
 
     while (fscanf (utt_ctl_fs, "%s\n", Utt) != EOF) {
+	/* NOTE: I hope the value of this isn't supposed to persist
+           between spec file commands. */
+	int32 align_all = 0;
 	fgets(time_align_spec, 1023, pe_ctl_fs);
 
 	if (ctl_offset) {
@@ -1605,13 +1624,12 @@ run_time_align_ctl_file (char *utt_ctl_file_name,
  * Read specified segment [sf..ef] of Sphinx-II format mfc file and write to
  * specified output file.
  */
-int32 s2mfc_read (char *file, int32 sf, int32 ef, char *outfile)
+void s2mfc_read (char *file, int32 sf, int32 ef, char *outfile)
 {
     FILE *fp, *outfp;
     int32 n_float32;
     struct stat statbuf;
     int32 i, n, byterev, cepsize;
-    char tmp;
     float tmpbuf[CEP_SIZE];
     
     E_INFO("Extracting frames %d..%d from %s to %s\n", sf, ef, file, outfile);
@@ -1688,6 +1706,8 @@ static int32 mfcseg_extract (char *mfcfile, int32 sf, int32 ef, char *utt)
     sprintf (outputfile, "%s.%s", utt, cep_ext);
     
     s2mfc_read (inputfile, sf, ef, outputfile);
+
+    return 0;
 }
 
 
@@ -1733,14 +1753,14 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     }
 
     /* Select startword for utt (LISTEN project) */
-#if (! WIN32)
-    if (startWord_directory && (utt[0] != '/'))
+#ifdef WIN32
+    if (startWord_directory && (utt[0] != '\\') && (utt[0] != '/'))
 	sprintf (startword_filename, "%s/%s.%s",
 		 startWord_directory, utt, startWord_ext);
     else
 	sprintf (startword_filename, "%s.%s", utt, startWord_ext);
 #else
-    if (startWord_directory && (utt[0] != '\\') && (utt[0] != '/'))
+    if (startWord_directory && (utt[0] != '/'))
 	sprintf (startword_filename, "%s/%s.%s",
 		 startWord_directory, utt, startWord_ext);
     else
@@ -1819,16 +1839,18 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 /*
  * Run time align on a semi-continuous utterance.
  */
-time_align_utterance (char *utt,
+void
+time_align_utterance (char const *utt,
 		      FILE *out_sent_fp,
-		      char *left_word,
+		      char const *left_word,
 		      int32 begin_frame,
+		       /* FIXME: Gets modified in time_align.c - watch out! */
 		      char *pe_words,
 		      int32 end_frame,
-		      char *right_word)
+		      char const *right_word)
 {
-    int32 i, j, k, n_frames;
-#if (! WIN32)
+    int32 n_frames;
+#ifndef WIN32
     struct rusage start, stop;
     struct timeval e_start, e_stop;
 #endif
@@ -1845,12 +1867,12 @@ time_align_utterance (char *utt,
 
     time_align_set_input (cep, dcep, dcep_80ms, pcep, ddcep, n_frames);
 
-#if (! WIN32)
-#if (! _HPUX_SOURCE)
+#ifndef WIN32
+#ifndef _HPUX_SOURCE
     getrusage (RUSAGE_SELF, &start);
-#endif
+#endif /* _HPUX_SOURCE */
     gettimeofday (&e_start, 0);
-#endif
+#endif /* WIN32 */
 
     if (time_align_word_sequence(utt,left_word, pe_words, right_word) == 0) {
 	if (seg_file_ext) {
@@ -1906,7 +1928,7 @@ time_align_utterance (char *utt,
 	}
 
 	if (out_sent_fp) {
-	    char *best_word_str = time_align_best_word_string();
+	    char const *best_word_str = time_align_best_word_string();
 		
 	    if (best_word_str) {
 		fprintf(out_sent_fp, "%s (%s)\n", best_word_str, utt_name);
@@ -1920,10 +1942,10 @@ time_align_utterance (char *utt,
 	printf ("%s(%d): No alignment for %s\n", __FILE__, __LINE__, utt_name);
     }
     
-#if (! WIN32)
-#if (! _HPUX_SOURCE)
+#ifndef WIN32
+#ifndef _HPUX_SOURCE
     getrusage (RUSAGE_SELF, &stop);
-#endif
+#endif /* _HPUX_SOURCE */
     gettimeofday (&e_stop, 0);
 
     printf (" %5.2f SoS", n_frames*0.01);
@@ -1931,38 +1953,38 @@ time_align_utterance (char *utt,
     if (n_frames > 0)
 	printf (", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(n_frames*0.01));
     
-#if (! _HPUX_SOURCE)
+#ifndef _HPUX_SOURCE
     printf (", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
     if (n_frames > 0)
 	printf (", %5.2f xRT",
 		MakeSeconds (&start.ru_utime, &stop.ru_utime)/(n_frames*0.01));
-#endif
+#endif /* _HPUX_SOURCE */
     printf ("\n");
     
     TotalCPUTime += MakeSeconds (&start.ru_utime, &stop.ru_utime);
     TotalElapsedTime += MakeSeconds (&e_start, &e_stop);
     TotalSpeechTime += n_frames * 0.01;
-#endif
+#endif /* WIN32 */
 }
 
 
-char *get_ref_sent ()
+char const *get_ref_sent (void)
 {
     return (ref_sentence);
 }
 
-char *get_current_startword ()
+char const *get_current_startword (void)
 {
     return startWord;
 }
 
-int32 query_compute_all_senones ()
+int32 query_compute_all_senones (void)
 {
     return compute_all_senones;
 }
 
 #if 0
-char *query_utt_id ()
+char *query_utt_id (void)
 {
     return (utt_name);
 }
@@ -1983,17 +2005,17 @@ int32 query_lattice_size ( void )
     return (lattice_size);
 }
 
-char *query_match_file_name ( void )
+char const *query_match_file_name ( void )
 {
     return (match_file_name);
 }
 
-char *query_matchseg_file_name ( void )
+char const *query_matchseg_file_name ( void )
 {
     return (matchseg_file_name);
 }
 
-#if (USE_ILM)
+#ifdef USE_ILM
 int32 query_ilm_ugcache_wt ( void )
 {
     return ilm_ugcache_wt;
@@ -2035,7 +2057,7 @@ int32 query_blocking_ad_read (void)
     return (blocking_ad_read_p);
 }
 
-char *query_dumplat_dir ( void )
+char const *query_dumplat_dir ( void )
 {
     return dumplat_dir;
 }
@@ -2054,7 +2076,7 @@ int32 set_adc_input (int32 value)
     return old_value;
 }
 
-char *query_cdcn_file ( void )
+char const *query_cdcn_file ( void )
 {
     return cdcn_file;
 }
@@ -2064,7 +2086,7 @@ int32 query_sampling_rate ( void )
     return sampling_rate;
 }
 
-char *query_ctlfile_name ( void )
+char const *query_ctlfile_name ( void )
 {
     return ctl_file_name;
 }

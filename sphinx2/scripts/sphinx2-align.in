@@ -1,3 +1,4 @@
+#!/bin/sh
 # example script to call sphinx2-batch to do forced alignment
 
 # the binary to run

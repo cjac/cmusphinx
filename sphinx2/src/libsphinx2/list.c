@@ -56,7 +56,9 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <sys/types.h>
-#include <list.h>
+
+#include "s2types.h"
+#include "list.h"
 
 #define ERR_ARG		1
 #define ERR_MALLOC	2
@@ -69,7 +71,7 @@ static int32 exception();
  * DESCRIPTION
  *	Currently all we do is a calloc
  */
-list_t *new_list ()
+list_t *new_list (void)
 {
     return (list_t *) calloc (1, sizeof(list_t));
 }
@@ -79,13 +81,10 @@ list_t *new_list ()
  *------------------------------------------------------------*
  * DESCRIPTION
  */
-int32
-list_add (list, sym, idx)
-register list_t *list;
-caddr_t sym;
-int32 idx;
+int
+list_add (list_t *list, caddr_t sym, int32 idx)
 {
-    static char        *rname = "list_add";
+    static char const  *rname = "list_add";
 
     if (list == 0)
 	return (exception (rname, "list", ERR_ARG));
@@ -118,11 +117,9 @@ int32 idx;
  * DESCRIPTION
  */
 caddr_t
-list_lookup (list, idx)
-register list_t *list;
-register int32 idx;
+list_lookup (list_t const *list, int32 idx)
 {
-    static char *rname = "list_lookup";
+    static char const *rname = "list_lookup";
 
     if ((list == 0) || (idx >= list->size) || (idx < 0))
 	return ((caddr_t) exception (rname, "idx", ERR_ARG));
@@ -130,24 +127,20 @@ register int32 idx;
     return (list->list[idx]);
 }
 
-void list_insert (list, sym)
+void list_insert (list_t *list, caddr_t sym)
 /*-------------------*
  * Add sym to list at the in_use position and increment in_use.
  */
-list_t *list;
-caddr_t sym;
 {
     list_add (list, sym, list->in_use);
     list->in_use++;
 }
 
 
-void list_unique_insert (list, sym)
+void list_unique_insert (list_t *list, caddr_t sym)
 /*-------------------*
  * Add sym to list at the in_use position and increment in_use.
  */
-list_t *list;
-caddr_t sym;
 {
     int32 i;
 
@@ -167,10 +160,10 @@ caddr_t sym;
  * NB.
  *	This routine doesn't free the objects.
  */
-list_free (list)
-list_t *list;
+int
+list_free (list_t *list)
 {
-    static char *rname = "listFree";
+    static char const *rname = "listFree";
 
     if (list == 0)
 	return (exception (rname, "", ERR_ARG));
@@ -179,11 +172,11 @@ list_t *list;
     list->list = 0;
     list->size = 0;
     list->in_use = 0;
+    return 0;
 }
 
-list_index (list, sym)
-list_t *list;
-caddr_t sym;
+int32
+list_index (list_t const *list, caddr_t sym)
 {
     int32 i;
 
@@ -191,12 +184,11 @@ caddr_t sym;
       if (sym == list->list[i])
 	return (i);
 
-    fprintf (stderr, "listIndex: failed on %d\n", sym);
+    fprintf (stderr, "listIndex: failed on %ld\n", (unsigned long) sym);
     exit (-1);
 }
 
-int32 listLength (list)
-list_t *list;
+int32 listLength (list_t const *list)
 {
     return list->in_use;
 }
@@ -205,12 +197,9 @@ list_t *list;
  *------------------------------------------------------------*
  */
 static int32
-exception (rname, s, exception)
-char *rname;
-char *s;
-int32 exception;
+exception (char *rname, char *s, int32 exc)
 {
-    switch (exception) {
+    switch (exc) {
 	case ERR_ARG:
 	    fprintf (stderr, "%s: Bad Argument [%s]\n", rname, s);
 	    exit (-1);
@@ -221,21 +210,18 @@ int32 exception;
 	    break;
 	default:
 	    fprintf (stderr, "%s: [%s] Unknown Exception[%d]\n", rname, s,
-		     exception);
+		     exc);
     }
+    return -1;
 }
 
-void listWrite (fs, list)
-FILE *fs;
-list_t *list;
+void listWrite (FILE *fs, list_t const *list)
 {
     fwrite (&list->in_use, sizeof (int32), 1, fs);
     fwrite (list->list, sizeof (caddr_t), list->in_use, fs);
 }
 
-void listRead (fs, list)
-FILE *fs;
-list_t *list;
+void listRead (FILE *fs, list_t *list)
 {
     if (list == 0) {
 	fprintf (stderr, "listRead: bad argument\n");

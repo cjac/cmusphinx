@@ -44,22 +44,21 @@
  * ====================================================================
  *
  */
-/************************************************************************
- *   Dummy routine to convert from suitcase to sane varibles
- ***************************************************************************/
 
 #include <math.h>
 #include "cdcn.h"
 
+/************************************************************************
+ *   Dummy routine to convert from suitcase to sane varibles
+ ***************************************************************************/
 
-
-void cdcn_norm (z, cdcn_variables)
-float     z[NUM_COEFF+1];                /* The input cepstrum */
-CDCN_type *cdcn_variables;
+void cdcn_norm (float z[NUM_COEFF+1], /* The input cepstrum */
+		CDCN_type *cdcn_variables)
 {
+    /* Multidimensional arrays, yuck. */
+    static void actual_cdcn_norm();
     float *variance, *prob, *tilt, *noise, *codebook, *corrbook;
     int num_codes;
-    void  actual_cdcn_norm();
 
     /*
      * If error, dont bother
@@ -90,7 +89,6 @@ CDCN_type *cdcn_variables;
     return;
 }
 
-
 /*************************************************************************
  *
  * cdcn_norm finds the cepstrum vector for a single noisy vector that minimizes
@@ -99,18 +97,15 @@ CDCN_type *cdcn_variables;
  *
  *************************************************************************/
 
-void actual_cdcn_norm(variance, prob, tilt, noise, means, corrbook, 
-                                     num_codes, z)
-float   variance[][NUM_COEFF+1],  /* Speech cepstral variances of modes */
-        *prob,             /* Ratio of a-prori mode probs. to mod variance */
-        *tilt,             /* Spectral tilt cepstrum */
-	*noise,            /* Noise estimate */
-        means[][NUM_COEFF+1],         /* The cepstrum codebook */
-        corrbook[][NUM_COEFF+1],         /* The correction factor's codebook */
-        z[NUM_COEFF+1];                /* The input cepstrum */
-int        num_codes;      /* Number of codewords in codebook */
-
-
+static void
+actual_cdcn_norm(float variance[][NUM_COEFF+1], /* Speech cepstral variances of modes */
+		 float *prob,  /* Ratio of a-prori mode probs. to mod variance */
+		 float *tilt,  /* Spectral tilt cepstrum */
+		 float *noise, /* Noise estimate */
+		 float means[][NUM_COEFF+1], /* The cepstrum codebook */
+		 float corrbook[][NUM_COEFF+1], /* The correction factor's codebook */
+		 int num_codes, /* Number of codewords in codebook */
+		 float z[NUM_COEFF+1]) /* The input cepstrum */
 {
     float       distance,  /* distance value */
                 den,       /* Denominator for reestimation */
@@ -166,5 +161,3 @@ int        num_codes;      /* Number of codewords in codebook */
      * z[] itself carries the cleaned speech now
      */
 }
-
-

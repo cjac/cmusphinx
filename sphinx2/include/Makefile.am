@@ -1,27 +1,26 @@
 EXTRA_DIST = \
+	README
+
+pkginclude_HEADERS = \
 	CM_macros.h \
-	README \
 	ad.h \
-	byteorder.h \
-	c.h \
 	cdcn.h \
 	cont_ad.h \
+	dict.h \
 	err.h \
 	fbs.h \
-	fe.h \
 	hash.h \
 	list.h \
-	list.txt \
+	lm_3g.h \
+	lmclass.h \
 	log.h \
 	log_add.h \
 	mulaw.h \
-	pconf.h \
+	new_fe.h \
+	new_fe_sp.h \
 	posixsock.h \
 	posixwin32.h \
-	profile.h \
 	s2params.h \
 	s2types.h \
-	scvq.h \
 	sphinxp.h \
-	str2words.h \
 	win32sock.h

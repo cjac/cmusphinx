@@ -73,8 +73,9 @@ char *line, *word, more_separator;
   return line;
 }
 
-find_sentid (file_head, sentid)
-char *file_head, *sentid;
+#if 0 /* Doesn't appear to be used anywhere */
+static void
+find_sentid (char *file_head, char *sentid)
 {
   register int i, j;
   int len, suffix;
@@ -96,3 +97,4 @@ char *file_head, *sentid;
     file_head[len] = '-';	file_head[len+1] = 'b';
   }
 }
+#endif

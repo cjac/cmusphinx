@@ -58,14 +58,14 @@
 #define _S2PARAMS_H_
 
 /* For saving phone labels in alignment */
-char *phonelabdirname;
-char *phonelabextname;
-char *phonelabtype;
+char const *phonelabdirname;
+char const *phonelabextname;
+char const *phonelabtype;
 
 /* For saving word labels in alignment */
-char *wordlabdirname;
-char *wordlabextname;
-char *wordlabtype;
+char const  *wordlabdirname;
+char const *wordlabextname;
+char const *wordlabtype;
 
 #endif
 

@@ -49,9 +49,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
-/*
-#include <s2types.h>
-*/
+
+#include "s2types.h"
 #include "new_fe.h"
 #include "new_fe_sp.h"
 
@@ -73,12 +72,12 @@
    parameters in P, and completes FE structure accordingly,
    i.e. builds appropriate filters, buffers, etc. If a param in P is
    0 then the FE parameter is set to its default value as defined
-   in fe.h 
+   in new_fe.h 
    Note: if default PRE_EMPHASIS_ALPHA is changed from 0, this will be
    problematic for init of this parameter...
 **********************************************************************/
 
-fe_t *fe_init(param_t *P)
+fe_t *fe_init(param_t const *P)
 {
     fe_t  *FE = (fe_t *) calloc(1,sizeof(fe_t));
     
@@ -139,27 +138,26 @@ int32 fe_start_utt(fe_t *FE)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep)
+int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep)
 {
     int32 frame_start, frame_count=0, whichframe=0;
-    int32 samps_proc, samps_save;
     int32 i, spbuf_len, offset=0;  
     float64 *spbuf, *fr_data, *fr_fea;
-    int16 prev;
-    int16 *tmp_spch = spch;
+    int16 const *allspch = spch;
+    int16 * tmp_spch = NULL;
     
     /* are there enough samples to make at least 1 frame? */
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
       
       /* if there are previous samples, pre-pend them to input speech samps */
       if ((FE->NUM_OVERFLOW_SAMPS > 0)) {
-	
 	tmp_spch = (int16 *) malloc (sizeof(int16) * (FE->NUM_OVERFLOW_SAMPS + nsamps));	/* RAH */
 	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
 	memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
 	/*	memcpy(FE->OVERFLOW_SAMPS + FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16)));
 		spch = FE->OVERFLOW_SAMPS;*/
 	nsamps += FE->NUM_OVERFLOW_SAMPS;
+	allspch = tmp_spch;
       }
       /* compute how many complete frames  can be processed and which samples correspond to those samps */
       frame_count=0;
@@ -176,9 +174,9 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep)
       
       /* pre-emphasis if needed,convert from int16 to float64 */
       if (FE->PRE_EMPHASIS_ALPHA != 0.0){
-	fe_pre_emphasis(tmp_spch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
+	fe_pre_emphasis(allspch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
       } else{
-	fe_short_to_double(tmp_spch, spbuf, spbuf_len);
+	fe_short_to_double(allspch, spbuf, spbuf_len);
       }
       
       /* frame based processing - let's make some cepstra... */    
@@ -203,15 +201,14 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep)
       /* assign samples which don't fill an entire frame to FE overflow buffer for use on next pass */
       if (spbuf_len < nsamps)	{
 	offset = ((frame_count)*FE->FRAME_SHIFT);
-	memcpy(FE->OVERFLOW_SAMPS,tmp_spch+offset,(nsamps-offset)*sizeof(int16));
+	memcpy(FE->OVERFLOW_SAMPS,allspch+offset,(nsamps-offset)*sizeof(int16));
 	FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
-	FE->PRIOR = tmp_spch[offset-1];
+	FE->PRIOR = allspch[offset-1];
 	assert(FE->NUM_OVERFLOW_SAMPS<FE->FRAME_SIZE);
       }
       
-      if (spch != tmp_spch) 
-	free (tmp_spch);
-      
+      if (tmp_spch)
+	free(tmp_spch);
       free(spbuf);
       free(fr_data);
       free(fr_fea);
@@ -220,7 +217,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep)
     /* if not enough total samps for a single frame, append new samps to
        previously stored overlap samples */
     else { 
-      memcpy(FE->OVERFLOW_SAMPS+FE->NUM_OVERFLOW_SAMPS,tmp_spch, nsamps*(sizeof(int16)));
+      memcpy(FE->OVERFLOW_SAMPS+FE->NUM_OVERFLOW_SAMPS,allspch, nsamps*(sizeof(int16)));
       FE->NUM_OVERFLOW_SAMPS += nsamps;
       assert(FE->NUM_OVERFLOW_SAMPS < FE->FRAME_SIZE);
       frame_count=0;
@@ -241,12 +238,13 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep)
 int32 fe_end_utt(fe_t *FE, float32 *cepvector)
 {
   int32 pad_len=0, frame_count=0;
-  int32 spbuf_len,i;
   float64 *spbuf, *fr_fea = NULL;
   
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
   if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
+    int32 i;
+
     pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
     memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS),0,pad_len*sizeof(int16));
     FE->NUM_OVERFLOW_SAMPS += pad_len;

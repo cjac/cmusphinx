@@ -56,16 +56,17 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#if (WIN32)
+#ifdef WIN32
 #include <posixwin32.h>
 #endif
 
 #include <sys/types.h>
 
-#include <s2types.h>
+#include "s2types.h"
+#include "CM_macros.h"
 
 FILE *
-_CM_fopen (char *file, char *mode, char *srcfile, int32 srcline)
+_CM_fopen (char const *file, char const *mode, char const *srcfile, int32 srcline)
 {
     FILE *fs = fopen (file, mode);
 
@@ -80,7 +81,8 @@ _CM_fopen (char *file, char *mode, char *srcfile, int32 srcline)
 }
 
 FILE *
-_CM_fopenp (char *dirl, char *file, char *mode, char *srcfile, int32 srcline)
+_CM_fopenp (char const *dirl, char const *file, char const *mode,
+	    char const *srcfile, int32 srcline)
 {
     char buffer[2048];
     FILE *fs;
@@ -98,14 +100,14 @@ _CM_fopenp (char *dirl, char *file, char *mode, char *srcfile, int32 srcline)
     return (fs);
 }
 
-char *_CM_calloc (int32 cnt, int32 size, char *file, int32 line)
+void *_CM_calloc (int32 cnt, int32 size, char const *file, int32 line)
 {
-    char *ret;
+    void *ret;
 
     if (cnt == 0)
 	return 0;
 
-    ret = (char *) calloc ((size_t)cnt, (size_t)size);
+    ret = calloc ((size_t)cnt, (size_t)size);
     if (ret == 0) {
 	fprintf (stdout, "%s(%d): calloc(%d,%d) failed\n", file, line, cnt, size);
 	exit (-1);
@@ -114,20 +116,21 @@ char *_CM_calloc (int32 cnt, int32 size, char *file, int32 line)
 }
 
 
-char *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size, char *srcfile, int32 srcline)
+void *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size,
+		    char const *srcfile, int32 srcline)
 /*------------------------------------------------------------*
  * DESCRIPTION - allocate row pointers and data in one chunk
  */
 {
-    char 	*ret;
+    void 	*ret;
     caddr_t 	*rowPtr;
     int32	r;
 
     if ((rcnt == 0) || (ccnt == 0))
 	return 0;
 
-    ret = (char *) calloc ((size_t)(rcnt * ccnt * size) +
-			   rcnt * sizeof(caddr_t), 1);
+    ret = calloc ((size_t)(rcnt * ccnt * size) +
+		  rcnt * sizeof(caddr_t), 1);
     rowPtr = (caddr_t *) ret;
 
     if (ret == 0) {
@@ -142,12 +145,13 @@ char *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size, char *srcfile, int32 src
     return (ret);
 }
 
-char *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size, char *srcfile, int32 srcline)
+void *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size,
+		    char const *srcfile, int32 srcline)
 /*------------------------------------------------------------*
  * DESCRIPTION - allocate row pointers and data in one chunk
  */
 {
-    char 	*ret;
+    void 	*ret;
     caddr_t 	*rowPtr;
     caddr_t 	*lvlPtr;
     int32	r, l;
@@ -179,18 +183,19 @@ char *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size, char *srcfil
 }
 
 
-char *_CM_recalloc (char *ptr, int32 cnt, int32 size, char *srcfile, int32 srcline)
+void *_CM_recalloc (void *ptr, int32 cnt, int32 size,
+		    char const *srcfile, int32 srcline)
 {
-    char *ret;
+    void *ret;
 
     if (ptr == 0)
-	ret = (char *) calloc ((size_t)cnt, (size_t)size);
+	ret = calloc ((size_t)cnt, (size_t)size);
     else
-	ret = (char *) realloc (ptr, (size_t)size * (size_t)cnt);
+	ret = realloc (ptr, (size_t)size * (size_t)cnt);
 
     if (ret == 0) {
-	fprintf (stdout, "%s(%d): recalloc(0x%X,%d,%d) failed\n", srcfile, srcline, 
-		 ptr, cnt, size);
+	fprintf (stdout, "%s(%d): recalloc(0x%lX,%d,%d) failed\n", srcfile, srcline, 
+		 (unsigned long) ptr, cnt, size);
 	exit (-1);
     }
     return (ret);

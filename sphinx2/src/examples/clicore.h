@@ -50,9 +50,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:08:41  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 21-May-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
@@ -62,7 +66,7 @@
 #ifndef _CLICORE_H_
 #define _CLICORE_H_
 
-#include <s2types.h>
+#include "s2types.h"
 
 
 #if (WIN32)

@@ -59,11 +59,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include <s2types.h>
+#include "s2types.h"
 
-#include <CM_macros.h>
-#include <err.h>
-#include <ad.h>
+#include "CM_macros.h"
+#include "err.h"
+#include "ad.h"
 
 #if (! WIN32)
 #include <sys/types.h>
@@ -126,7 +126,7 @@ static char *get_next_line ( void )
 
 static int32 send_line (char *str)
 {
-    int32 len, k;
+    int32 len;
     
     len = strlen(str);
     if (cli_send_block (sd, str, len) != len)
@@ -136,7 +136,7 @@ static int32 send_line (char *str)
 }
 
 
-main (int32 argc, char *argv[])
+int main (int32 argc, char *argv[])
 {
     char *host, *ln;
     int32 port;

@@ -50,18 +50,23 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:08:52  lenzo
- * Initial revision
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:52  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 22-Jul-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created from Sunil's version.
  */
 
 
-#include <ad.h>
-#include <err.h>
-#include <mulaw.h>
+#include "s2types.h"
+#include "ad.h"
+#include "err.h"
+#include "mulaw.h"
 
 
 void ad_mu2li (int16 *out, unsigned char *in, int32 n_samp)

@@ -19,9 +19,8 @@
 #define _LIST_H_
 
 #include <sys/types.h>
-#include <s2types.h>
 
-#if (WIN32)
+#ifdef WIN32
 #include <posixwin32.h>
 #endif
 
@@ -32,7 +31,15 @@ typedef struct {
     caddr_t	*list;			/* The list */
 } list_t;
 
-extern list_t *new_list();
+list_t *new_list(void);
+int list_add (list_t *list, caddr_t sym, int32 idx);
+caddr_t list_lookup (list_t const *list, int32 idx);
+void list_insert (list_t *list, caddr_t sym);
+void list_unique_insert (list_t *list, caddr_t sym);
+int list_free (list_t *list);
+int32 list_index (list_t const *list, caddr_t sym);
+int32 listLength (list_t const *list);
+void listWrite (FILE *fs, list_t const *list);
+void listRead (FILE *fs, list_t *list);
 
-
-#endif  _LIST_H_
+#endif /* _LIST_H_ */

@@ -1,9 +1,13 @@
+
 Makefile
 Makefile.in
-sphinx2-demo
-attila-sphinx2.pl
-poe-sphinx-server-demo
 allphone-test.csh
+attila-sphinx2.pl
 batch.csh
+poe-sphinx-server-demo
+sphinx2-align
+sphinx2-demo
+sphinx2-phone
 sphinx2-simple
-
+sphinx2-test
+stress2sphinx

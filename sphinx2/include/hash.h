@@ -19,12 +19,10 @@
 #define _HASH_H_
 
 #include <sys/types.h>
-#include <s2types.h>
-#include <list.h>
 
 typedef struct {
 	caddr_t	val;			/* Associated Object */
-	caddr_t	obj;			/* Hash Object */
+	char const *obj;		/* Hash Object */
 } hent_t;
 
 
@@ -35,6 +33,9 @@ typedef struct {
     hent_t	*tab;			/* The table */
 } hash_t;
 
-extern list_t *hash_to_list();
+list_t *hash_to_list(hash_t *ht);
+int32 hash_add(hash_t *ht, char const *sym, caddr_t val);
+int32 hash_lookup(hash_t *ht, char const *sym, caddr_t *val);
+int hash_free(hash_t *ht);
 
-#endif  _HASH_H_
+#endif /* _HASH_H_ */

@@ -50,11 +50,6 @@
  */
 
 
-#if 0
-#include <phrec.h>
-#endif
-#include <log.h>
-
 #define HMM_EXT		"bhmm4"
 #define CONVERGE	1
 #define MIN_PROB	0.000001

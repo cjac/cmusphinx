@@ -54,24 +54,15 @@
  *	seg faults on call to strcasecmp(). (OSF/1 BL8)
  */
 
-static ulstrcmp();
-
-mystrcasecmp (a,b)
-      char *a, *b;
-{
-    if (a && b)
-	return ulstrcmp(a,b);
-    else
-    	return 1;
-}
+#include "strfuncs.h"
 
 /*
  * case INSENSITIVE.
  * Compare strings:  s1>s2: >0  s1==s2: 0  s1<s2: <0
  */
 
-static ulstrcmp(str1, str2)
-register char *str1, *str2;
+static int
+ulstrcmp(char const *str1, char const *str2)
 {
     register char c1,c2;
 
@@ -90,4 +81,13 @@ register char *str1, *str2;
 	    return(0);
     }
     return(c1 - c2);
+}
+
+int
+mystrcasecmp (char const *a, char const *b)
+{
+    if (a && b)
+	return ulstrcmp(a,b);
+    else
+    	return 1;
 }

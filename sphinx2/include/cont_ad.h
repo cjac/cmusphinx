@@ -65,7 +65,6 @@
 
 
 #include <stdio.h>
-#include <ad.h>
 
 /*
  * Data structure for maintaining speech (non-silence) segments not yet consumed by the

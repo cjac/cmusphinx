@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2000/06/29  14:15:01  lenzo
- * *** empty log message ***
+ * Revision 1.5  2000/12/05  01:45:11  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.4  2000/06/29 14:15:01  lenzo
+ * *** empty log message ***
+ *
  * 
  * 19-Jan-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added AD_ return codes.  Added ad_open_sps_bufsize(), and
@@ -38,22 +41,20 @@
 #ifndef _AD_H_
 #define _AD_H_
 
-#include <s2types.h>
-
-#if (WIN32)
+#ifdef WIN32
 
 #include <windows.h>
 #include <mmsystem.h>
 
-#elif (__alpha && 0)
+#elif defined(__alpha) && !defined(linux) && 0
 
 #include <AF/AFlib.h>
 
-#elif (_HPUX_SOURCE)
+#elif defined(_HPUX_SOURCE)
 
 #include <audio/Alib.h>
 
-#elif (__sgi)
+#elif defined(__sgi)
 #include <dmedia/audio.h>
 
 #endif
@@ -70,7 +71,7 @@
 #define AD_ERR_WAVE	-3
 
 
-#if (WIN32)
+#ifdef WIN32
 typedef struct {
     HGLOBAL h_whdr;
     LPWAVEHDR p_whdr;
@@ -86,7 +87,7 @@ typedef struct {
  * NOTE: ad_rec_t and ad_play_t are READ-ONLY structures for the user.
  */
 
-#if (WIN32)
+#ifdef WIN32
 
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
@@ -102,7 +103,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (__alpha && 0)
+#elif defined(__alpha) && !defined(linux) && 0
 
 typedef struct {
     AFAudioConn *aud;
@@ -114,7 +115,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (sun4)
+#elif defined(sun4)
 
 typedef struct {
     int32 audio_fd;
@@ -175,7 +176,7 @@ ad_rec_t *ad_open_sps (int32 samples_per_sec);
 ad_rec_t *ad_open ( void );
 
 
-#if (WIN32)
+#ifdef WIN32
 /*
  * Like ad_open_sps but specifies buffering required within driver.  This function is
  * useful if the default (5000 msec worth) is too small and results in loss of data.
@@ -206,7 +207,7 @@ int32 ad_read (ad_rec_t *, int16 *buf, int32 max);
 
 /* ------ PLAYBACK; SIMILAR TO RECORDING ------- */
 
-#if (WIN32)
+#ifdef WIN32
 
 typedef struct {
     HWAVEOUT h_waveout;	/* "HANDLE" to the audio output device */

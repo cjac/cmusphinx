@@ -18,9 +18,8 @@
 #ifndef _LOG_H_
 #define _LOG_H_
 
-#include <s2types.h>
+#include <math.h>
 
-extern double log(), exp();
 extern int16 Addition_Table[];
 extern int32 Table_Size;
 
@@ -39,16 +38,27 @@ extern int32 Table_Size;
 
 #define EXP(x)	(exp ((double) (x) * LOG_BASE))
 
-#define ADD(x,y)	((x) > (y) ? ((y) <= MIN_LOG || (x) - (y) >= Table_Size ? (x) : Addition_Table[(x) - (y)] + (x)) : ((x) <= MIN_LOG || (y) - (x) >= Table_Size ? (y) : Addition_Table[(y) - (x)] + (y)))
+#define ADD(x,y)	((x) > (y) ?					\
+			 (((y) <= MIN_LOG || (x) - (y) >= Table_Size) ?	\
+			  (x) : Addition_Table[(x) - (y)] + (x))	\
+			 :						\
+			 (((x) <= MIN_LOG || (y) - (x) >= Table_Size) ?	\
+			  (y) : Addition_Table[(y) - (x)] + (y)))
 
-#define FAST_ADD(res,x,y,t,s)			\
-{						\
-	register int32 _tmp = (x) - (y);		\
-	res = (_tmp > 0) ?			\
-	    (_tmp >= s ? 			\
-		(x) : t[_tmp] + (x)) :    	\
-	    ((-_tmp) >= s ?	   		\
-		(y) : t[(-_tmp)] + (y));	\
+#define FAST_ADD(res, x, y, table, table_size)		\
+{							\
+	int32 _d = (x) - (y);				\
+	if (_d > 0) { /* x >= y */			\
+		if (_d >= (table_size))			\
+			res = (x);			\
+		else					\
+			res = (table)[_d] + (x);	\
+	} else { /* x < y */				\
+		if (-_d >= (table_size))		\
+			res = (y);			\
+		else					\
+			res = (table)[-_d] + (y);	\
+	}						\
 }
 
 /*
@@ -57,4 +67,4 @@ extern int32 Table_Size;
  */ 
 #define LOG10TOLOG(x)	((int32)((x * (2.30258509 / LOG_BASE)) - 0.5))
 
-#endif _LOG_H_
+#endif /* _LOG_H_ */

@@ -70,12 +70,16 @@
 #define CM_recalloc(ptr,cnt,size)     _CM_recalloc((ptr),(cnt),(size),__FILE__,__LINE__)
 
 
-extern FILE *_CM_fopen();
-extern FILE *_CM_fopenp();
+extern FILE *_CM_fopen(char const *file, char const *mode,
+		       char const *srcfile, int32 srcline);
+extern FILE *_CM_fopenp(char const *dirl, char const *file,
+			char const *mode, char const *srcfile,
+			int32 srcline);
+extern void *_CM_calloc(int32 cnt, int32 size, char const *file, int32 line);
+extern void *_CM_2dcalloc(int32 rcnt, int32 ccnt, int32 size, char const *srcfile, int32 srcline);
+extern void *_CM_3dcalloc(int32 lcnt, int32 rcnt, int32 ccnt, int32 size,
+			  char const *srcfile, int32 srcline);
+extern void *_CM_recalloc(void *ptr, int32 cnt, int32 size,
+			  char const *srcfile, int32 srcline);
 
-extern char *_CM_calloc();
-extern char *_CM_2dcalloc();
-extern char *_CM_3dcalloc();
-extern char *_CM_recalloc();
-
-#endif  _CM_MACROS_H_
+#endif /* _CM_MACROS_H_ */

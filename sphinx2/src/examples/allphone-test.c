@@ -63,7 +63,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include <fbs.h>
+#include "s2types.h"
+#include "fbs.h"
 
 
 /*
@@ -73,6 +74,7 @@
  * prefer to write the results to a file instead.)
  */
 
+int
 main (int argc, char *argv[])
 {
     char utt[4096];
@@ -96,6 +98,7 @@ main (int argc, char *argv[])
     }
     
     fbs_end();
+    return 0;
 }
 
 

@@ -73,8 +73,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/soundcard.h>
+#include <sys/ioctl.h>
 #include <errno.h>
+#include <unistd.h>
 
+#include "s2types.h"
 #include "err.h"
 #include "ad.h"
 
@@ -211,7 +214,7 @@ ad_rec_t *ad_open_sps (int32 sps) {
     inputGain = inputGain << 8 | inputGain;
     if(ioctl(mixerFD, SOUND_MIXER_WRITE_MIC, &inputGain)<0){
       fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
-              strerror(errno));
+              inputGain, strerror(errno));
       exit(1);
     }
 
@@ -297,7 +300,7 @@ int32 ad_stop_rec (ad_rec_t *handle)
 int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
 {
     int32 length;
-    
+
     length = max * handle->bps;		/* #samples -> #bytes */
     
     if ((length = read (handle->dspFD, buf, length)) > 0) {
@@ -319,6 +322,6 @@ int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
     
     if ((length == 0) && (! handle->recording))
 	return AD_EOF;
-    
+
     return length;
 }

@@ -51,9 +51,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2000/02/08  20:44:32  lenzo
- * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
+ * Revision 1.3  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.2  2000/02/08 20:44:32  lenzo
+ * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:58  lenzo
  * Initial import of sphinx2
  *
@@ -140,31 +143,42 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if (SUN4)
+#ifdef SUN4
 #include <unistd.h>
 #endif
 #include <time.h>
 
-#if (! WIN32)
-#include <sys/time.h>
-#include <sys/resource.h>
-#else
+#ifdef WIN32
 #include <io.h>
 #include <windows.h>
 #include <time.h>
 #include <sys/stat.h>
+#else
+#include <sys/time.h>
+#include <sys/resource.h>
 #endif
 
 #include <assert.h>
 
-#include <CM_macros.h>
-#include <err.h>
-#include <scvq.h>
-#include <fbs.h>
-#include <search.h>
-#include <fe.h>
-#include <kb_exports.h>
-#include <cdcn.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "err.h"
+#include "scvq.h"
+#include "search_const.h"
+#include "msd.h"
+#include "strfuncs.h"
+#include "linklist.h"
+#include "list.h"
+#include "hash.h"
+#include "dict.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "kb_exports.h"
+#include "cdcn.h"
+#include "new_fe.h"
+#include "fbs.h"
+#include "search.h"
 
 #define MAX_UTT_LEN	6000	/* #frames */
 #define MAX_CEP_LEN	(MAX_UTT_LEN*CEP_SIZE)
@@ -237,29 +251,55 @@ static search_hyp_t *utt_seghyp = NULL;
 
 static CDCN_type cdcn;
 
-extern int32 delete_background (float *cep, int32 fcnt, int32 cf_cnt, double thresh);
-extern float histo_noise_level (float *cep, int32 fcnt, int32 cf_cnt);
-extern search_hyp_t *search_get_hyp ();
-extern char *query_match_file_name ();
-extern char *query_matchseg_file_name ();
-extern char *query_dumplat_dir ();
-extern char *query_cdcn_file ();
-
 static float TotalCPUTime, TotalElapsedTime, TotalSpeechTime;
 
-#if (! WIN32)
-static struct rusage start, stop;
-static struct timeval e_start, e_stop;
-#else
+#ifdef WIN32
 static float e_start, e_stop;
 static HANDLE pid;
 static FILETIME t_create, t_exit, kst, ket, ust, uet;
 static double lowscale, highscale;
 extern double win32_cputime();
+#else
+static struct rusage start, stop;
+static struct timeval e_start, e_stop;
 #endif
 
+/* FIXME: These are all internal to this module, but still should go
+   into internal header files... */
 
-#if (WIN32)
+/* live_norm.c */
+extern void mean_norm_init(int32 vlen);
+extern void mean_norm_update(void);
+extern void mean_norm_acc_sub(float *vec);
+extern int32 cepmean_set (float *vec);
+extern int32 cepmean_get (float *vec);
+
+/* agc_emax.c */
+void agc_emax_update ( void );
+extern int32 agcemax_set (double m);
+extern double agcemax_get ( void );
+extern int agc_emax_proc (float *ocep, float const *icep, int veclen);
+
+/* norm.c */
+void norm_mean (float *vec, int32 nvec, int32 veclen);
+
+/* r_agc_noise.c */
+extern int32 delete_background (float *cep, int32 fcnt,
+				int32 cf_cnt, double thresh);
+extern float histo_noise_level (float *cep, int32 fcnt, int32 cf_cnt);
+extern int32 histo_add_c0 (float c0);
+void compute_noise_level (void);
+void real_agc_noise(float *cep,
+		    register int32 fcnt,
+		    register int32 cf_cnt);
+void agc_max(float *cep,
+	     register int32 fcnt,
+	     register int32 cf_cnt);
+
+/* searchlat.c */
+void searchlat_set_rescore_lm (char const *lmname);
+
+#ifdef WIN32
 
 double win32_cputime (FILETIME *st, FILETIME *et)
 {
@@ -273,11 +313,10 @@ double win32_cputime (FILETIME *st, FILETIME *et)
 
 #else
 
-double MakeSeconds (s, e)
+double MakeSeconds (struct timeval const *s, struct timeval const *e)
 /*------------------------------------------------------------------------*
  * Compute an elapsed time from two timeval structs
  */
-struct timeval *s, *e;
 {
     return ((e->tv_sec - s->tv_sec) + ((e->tv_usec - s->tv_usec) / 1000000.0));
 }
@@ -290,7 +329,7 @@ struct timeval *s, *e;
  */
 static void timing_init ( void )
 {
-#if (WIN32)
+#ifdef WIN32
     lowscale = 1e-7;
     highscale = 65536.0 * 65536.0 * lowscale;
 
@@ -306,15 +345,15 @@ static void timing_init ( void )
  */
 static void timing_start ( void )
 {
-#if (! WIN32)
-#if (! _HPUX_SOURCE)
+#ifndef WIN32
+#ifndef _HPUX_SOURCE
     getrusage (RUSAGE_SELF, &start);
 #endif
     gettimeofday (&e_start, 0);
-#else
+#else /* WIN32 */
     e_start = (float)clock()/CLOCKS_PER_SEC;
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
-#endif
+#endif /* WIN32 */
 }
 
 
@@ -329,7 +368,7 @@ static void timing_stop ( void )
     printf (" %5.2f SoS", searchFrame()*0.01);
     TotalSpeechTime += searchFrame()*0.01;
     
-#if (WIN32)
+#ifdef WIN32
     /* ---------------- WIN32 ---------------- */
     e_stop = (float)clock()/CLOCKS_PER_SEC;
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
@@ -343,7 +382,7 @@ static void timing_stop ( void )
     TotalElapsedTime += (e_stop - e_start);
 #else
     /* ---------------- Unix ---------------- */
-#if (! _HPUX_SOURCE)
+#ifndef _HPUX_SOURCE
     getrusage (RUSAGE_SELF, &stop);
 #endif
     gettimeofday (&e_stop, 0);
@@ -351,7 +390,7 @@ static void timing_stop ( void )
     printf (", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
     printf (", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
     
-#if (! _HPUX_SOURCE)
+#ifndef _HPUX_SOURCE
     printf (", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
     printf (", %5.2f xRT",
 	    MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
@@ -373,14 +412,14 @@ static void timing_end ( void )
     fprintf (stdout, "\n");
 
     fprintf (stdout, "TOTAL Elapsed time %.2f seconds\n",TotalElapsedTime);
-#if (! _HPUX_SOURCE)
+#ifndef _HPUX_SOURCE
     fprintf (stdout, "TOTAL CPU time %.2f seconds\n", TotalCPUTime);
 #endif
     fprintf (stdout, "TOTAL Speech %.2f seconds\n", TotalSpeechTime);
 
     if (TotalSpeechTime > 0.0) {
 	fprintf (stdout, "AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
-#if (! _HPUX_SOURCE)
+#ifndef _HPUX_SOURCE
 	fprintf (stdout, ", %.2f xRT(CPU)\n", TotalCPUTime/TotalSpeechTime);
 #endif
 	fprintf (stdout, "\n");
@@ -454,7 +493,7 @@ static int32 compute_features(float *cep_o,
 }
 
 
-static void warn_notidle (char *func)
+static void warn_notidle (char const *func)
 {
     if (uttstate != UTTSTATE_IDLE)
 	E_WARN("%s called when not in IDLE state\n", func);
@@ -667,11 +706,10 @@ static void fwdflat_search (int32 n_frames)
 }
 
 
-static void write_results (char *hyp, int32 aborted)
+static void write_results (char const *hyp, int32 aborted)
 {
     search_hyp_t *seghyp;	/* Hyp with word segmentation information */
     int32 i;
-    char *dumplatdir;
     
     /* Check if need to autonumber utterances */
     if (matchfp) {
@@ -694,13 +732,15 @@ static void write_results (char *hyp, int32 aborted)
     }
     
 #if 0
-    if ((dumplatdir = query_dumplat_dir()) != NULL) {
-	char fplatfile[1024];
+    {
+	char const *dumplatdir;
+	if ((dumplatdir = query_dumplat_dir()) != NULL) {
+	    char fplatfile[1024];
 	
-	sprintf (fplatfile, "%s/%s.fplat", dumplatdir, uttid);
-	search_dump_lattice_ascii (fplatfile);
+	    sprintf (fplatfile, "%s/%s.fplat", dumplatdir, uttid);
+	    search_dump_lattice_ascii (fplatfile);
     }
-#endif
+#endif /* 0 */
 }
 
 
@@ -737,7 +777,7 @@ fe_t    *fe;
 
 int32 uttproc_init ( void )
 {
-    char *fn;
+    char const *fn;
     int32 sps;
 
     param_t *fe_param;
@@ -752,7 +792,7 @@ int32 uttproc_init ( void )
 
 
     if ((sps != 16000) && (sps != 8000))
-	E_FATAL("Sampling rate must be 8000 or 16000\n");
+	E_FATAL("Sampling rate must be 8000 or 16000, is %d\n", sps);
     
 
     frame_spacing = sps/100;
@@ -824,7 +864,7 @@ int32 uttproc_end ( void )
 }
 
 
-int32 uttproc_begin_utt (char *id)
+int32 uttproc_begin_utt (char const *id)
 {
     char filename[1024];
     int32 i;
@@ -1031,7 +1071,7 @@ int32 uttproc_end_utt ( void )
 {
     int32 i, k;
     float cep[13], c0;
-    float **leftover_cep;
+    float *leftover_cep;
 
     /* kal */
     leftover_cep       = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
@@ -1086,7 +1126,7 @@ int32 uttproc_end_utt ( void )
     if (rawfp) {
 	fclose (rawfp);
 	rawfp = NULL;
-#if (WIN32)
+#ifdef WIN32
 	if (_chmod(rawfilename, _S_IREAD ) < 0)
 	    E_ERROR("chmod(%s,READONLY) failed\n", rawfilename);
 #endif
@@ -1224,10 +1264,8 @@ int32 uttproc_result (int32 *fr, char **hyp, int32 block)
 }
 
 
-int32 uttproc_align (char *sent)
+void uttproc_align (char *sent)
 {
-    FILE *fp;
-    
     time_align_utterance ("alignment", NULL, "<s>", -1, sent, -1, "</s>");
 }
 
@@ -1314,7 +1352,7 @@ int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyp, int32 block)
 }
 
 
-int32 uttproc_lmupdate (char *lmname)
+int32 uttproc_lmupdate (char const *lmname)
 {
     lm_t *lm, *cur_lm;
     
@@ -1331,7 +1369,7 @@ int32 uttproc_lmupdate (char *lmname)
 }
 
 
-int32 uttproc_set_context (char *wd1, char *wd2)
+int32 uttproc_set_context (char const *wd1, char const *wd2)
 {
     int32 w1, w2;
     
@@ -1374,7 +1412,7 @@ int32 uttproc_set_context (char *wd1, char *wd2)
 }
 
 
-int32 uttproc_set_lm (char *lmname)
+int32 uttproc_set_lm (char const *lmname)
 {
     warn_notidle ("uttproc_set_lm");
     
@@ -1391,14 +1429,14 @@ int32 uttproc_set_lm (char *lmname)
 }
 
 
-int32 uttproc_set_rescore_lm (char *lmname)
+int32 uttproc_set_rescore_lm (char const *lmname)
 {
     searchlat_set_rescore_lm (lmname);
     return 0;
 }
 
 
-int32 uttproc_set_startword (char *str)
+int32 uttproc_set_startword (char const *str)
 {
     warn_notidle ("uttproc_set_startword");
     
@@ -1438,7 +1476,7 @@ int32 uttproc_set_silcmp (scvq_compress_t c)
 
 
 #if 0
-int32 uttproc_set_uttid (char *id)
+int32 uttproc_set_uttid (char const *id)
 {
     warn_notidle ("uttproc_set_uttid");
     
@@ -1450,13 +1488,13 @@ int32 uttproc_set_uttid (char *id)
 #endif
 
 
-char *uttproc_get_uttid ( void )
+char const *uttproc_get_uttid ( void )
 {
     return uttid;
 }
 
 
-int32 uttproc_set_auto_uttid_prefix (char *prefix)
+int32 uttproc_set_auto_uttid_prefix (char const *prefix)
 {
     if (uttid_prefix)
 	free (uttid_prefix);
@@ -1474,7 +1512,7 @@ int32	uttprocGetcomp2rawfr(int16 **ptr)
 }
 
 
-void	uttprocSetcomp2rawfr(int32 num, int32 *ptr)
+void	uttprocSetcomp2rawfr(int32 num, int32 const *ptr)
 {
     int32		i;
     
@@ -1547,7 +1585,7 @@ int32 uttproc_nosearch (int32 flag)
 }
 
 
-int32 uttproc_set_rawlogdir (char *dir)
+int32 uttproc_set_rawlogdir (char const *dir)
 {
     warn_notidle ("uttproc_set_rawlogdir");
 
@@ -1564,7 +1602,7 @@ int32 uttproc_set_rawlogdir (char *dir)
 }
 
 
-int32 uttproc_set_mfclogdir (char *dir)
+int32 uttproc_set_mfclogdir (char const *dir)
 {
     warn_notidle ("uttproc_set_mfclogdir");
 
@@ -1581,7 +1619,7 @@ int32 uttproc_set_mfclogdir (char *dir)
 }
 
 
-search_hyp_t *uttproc_allphone_file (char *utt)
+search_hyp_t *uttproc_allphone_file (char const *utt)
 {
     int32 nfr;
     extern search_hyp_t *allphone_utt();

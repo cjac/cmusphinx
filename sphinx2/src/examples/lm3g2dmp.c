@@ -48,9 +48,12 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.1  2000/04/25  22:15:00  lenzo
- * *** empty log message ***
+ * Revision 1.2  2000/12/05  01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
  * 
+ * Revision 1.1  2000/04/25 22:15:00  lenzo
+ * *** empty log message ***
+ *
  * Revision 8.9  94/10/11  12:36:28  rkm
  * Changed lm_tg_score to call lm_bg_score if no trigrams present or
  * the first word is invalid.
@@ -127,6 +130,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -134,12 +138,14 @@
 
 #define QUIT(x)		{fflush(stdout); fprintf x; exit(-1);}
 
-#include <s2types.h>
-#include <hash.h>
-#include <lm_3g.h>
-#include <log.h>
-#include <CM_macros.h>
-#include <err.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "list.h"
+#include "hash.h"
+#include "lmclass.h"
+#include "lm_3g.h"
+#include "log.h"
+#include "err.h"
 
 #ifndef NO_DICT
 #define NO_DICT 1
@@ -152,8 +158,7 @@ static char *dumpdir;
 
 #else
 
-#include <c.h>
-#include <dict.h>
+#include "dict.h"
 
 extern dictT *kb_get_word_dict();
 static dictT *WordDict;
@@ -832,11 +837,11 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
     
     /* Create name for binary dump form of Darpa LM file */
     {
-#if (! WIN32)
-	for (i = strlen(filename)-1; (i >= 0) && (filename[i] != '/'); --i);
-#else
+#ifdef WIN32
 	for (i = strlen(filename)-1;
 	     (i >= 0) && (filename[i] != '\\') && (filename[i] != '/'); --i);
+#else
+	for (i = strlen(filename)-1; (i >= 0) && (filename[i] != '/'); --i);
 #endif
 	i++;
 	kbdumpdir = kb_get_dump_dir();
@@ -1064,7 +1069,7 @@ int32 lm_add_word (lm_t *model, int32 dictwid)
 /*
  * Add named model to list of models.  If another with same name exists, delete it first.
  */
-void lm_add (char *lmname, lm_t *model, double lw, double uw, double wip)
+void lm_add (char const *lmname, lm_t *model, double lw, double uw, double wip)
 {
     if (lmname_to_id (lmname) >= 0)
 	lm_delete (lmname);
@@ -1134,8 +1139,7 @@ int32 lm_delete (char *name)
  * Set the active LM to the one identified by "name".  Return 0 if successful,
  * -1 otherwise.
  */
-int32 lm_set_current (name)
-    char *name;
+int32 lm_set_current (char const *name)
 {
     int32 i;
     
@@ -1152,7 +1156,7 @@ int32 lm_set_current (name)
 	    lmp->dictwid_map[lmp->unigrams[i].mapid] = i;
     }
     
-#if (USE_ILM)
+#ifdef USE_ILM
     ilm_set_lm (lmp);
 #endif
     
@@ -1167,7 +1171,7 @@ static int32 lmname_to_id (char *name)
     return ((i < n_lm) ? i : -1);
 }
 
-lm_t *lm_name2lm (char *name)
+lm_t *lm_name2lm (char const *name)
 {
     int32 i;
     
@@ -1585,7 +1589,7 @@ static int32 lm3g_dump (file, model, lmfile, mtime)
     return 0;
 }
 
-void lmSetStartSym (char *sym)
+void lmSetStartSym (char const *sym)
 /*----------------------------*
  * Description - reconfigure the start symbol
  */
@@ -1593,7 +1597,7 @@ void lmSetStartSym (char *sym)
     start_sym = (char *) salloc(sym);
 }
 
-void lmSetEndSym (char *sym)
+void lmSetEndSym (char const *sym)
 /*----------------------------*
  * Description - reconfigure the end symbol
  */
@@ -1905,7 +1909,7 @@ void lm3g_cache_reset ( void )
 }
 
 
-void lm3g_cache_stats_dump ( void )
+void lm3g_cache_stats_dump (FILE *file)
 {
 }
 

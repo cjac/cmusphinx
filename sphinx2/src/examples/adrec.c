@@ -58,13 +58,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <ad.h>
-#include <err.h>
+#include "s2types.h"
+#include "ad.h"
+#include "err.h"
 
 
 /*
  * Record A/D data for approximately specified number of seconds into specified file.
  */
+int
 main (int32 argc, char *argv[])
 {
     char line[1024];
@@ -109,4 +111,5 @@ main (int32 argc, char *argv[])
     ad_close (ad);
 
     fclose (fp);
+    return 0;
 }

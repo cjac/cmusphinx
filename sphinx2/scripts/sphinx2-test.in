@@ -1,3 +1,4 @@
+#!/bin/sh
 S2BATCH=sphinx2-continuous
 HMM=@prefix@/share/sphinx2/model/hmm/6k
 TASK=@prefix@/share/sphinx2/model/lm/turtle

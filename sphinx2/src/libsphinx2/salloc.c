@@ -55,9 +55,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <malloc.h>
-#include <s2types.h>
 
-char *salloc (char *str)
+#include "s2types.h"
+#include "strfuncs.h"
+
+char *salloc (char const *str)
 {
     int32 len = strlen(str)+1;
     char *buf;

@@ -58,16 +58,20 @@
 #include <string.h>
 #include <assert.h>
 
-#include <CM_macros.h>
-#include <err.h>
-#include <log.h>
-#include <scvq.h>
-#include <msd.h>
-#include <fbs.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "basic_types.h"
+#include "search_const.h"
+#include "err.h"
+#include "log.h"
+#include "scvq.h"
+#include "msd.h"
+#include "fbs.h"
 
 #include "time_align.h"
 #include "s2params.h"
 
+/* FIXME: prototype this in an internal header file somewhere. */
 int save_labs(SEGMENT_T *segs,
 	      int num_entries,
 	      const char *dirname,

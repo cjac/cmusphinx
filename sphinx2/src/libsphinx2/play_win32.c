@@ -64,8 +64,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ad.h>
-#include <err.h>
+
+#include "s2types.h"
+#include "ad.h"
+#include "err.h"
 
 
 #define WO_BUFSIZE	3200	/* Samples/buf */

@@ -62,8 +62,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <ad.h>
-#include <err.h>
+#include "s2types.h"
+#include "ad.h"
+#include "err.h"
 
 
 /*
@@ -103,6 +104,7 @@ static void adpow (ad_rec_t *ad)
  * Wait for the user to type a <CR> then capture input audio for approx. 2 sec
  * and compute a measure of its power.
  */
+int
 main (int32 argc, char *argv[])
 {
     char line[1024];
@@ -131,4 +133,5 @@ main (int32 argc, char *argv[])
     }
 
     ad_close (ad);
+    return 0;
 }

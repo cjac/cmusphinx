@@ -52,19 +52,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/fcntl.h>
-#else
-#include <fcntl.h>
+#include <unistd.h>
 #endif
-#include <byteorder.h>
+#include "byteorder.h"
 
 
-awriteshort (file, data, length)
-  char           *file;
-  short          *data;
-  int             length;
+int
+awriteshort (char const *file, short *data, int length)
 {
   int             fd;
   int             size;
@@ -85,6 +84,7 @@ awriteshort (file, data, length)
   }
   SWAPL(&length);
 
+  /* FIXME: gack.  shouldn't modify data! */
   for(offset = 0; offset < length; offset++)
     SWAPW(data + offset);
   size = length * sizeof (short);

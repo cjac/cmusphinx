@@ -76,10 +76,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
+#include <ctype.h>
 #include <sys/types.h>
 
-#include <hash.h>
-#include <list.h>
+#include "s2types.h"
+#include "list.h"
+#include "hash.h"
 
 #define ERR_ARG		1
 #define ERR_MALLOC	2
@@ -89,8 +91,11 @@ int32 rehash_count = 0;
 int32 hash_rebuild = 0;
 int32 hash_rebuild_ent = 0;
 
-static int32 exception();
-static int32 hash_in();
+static int exception (char const *rname, char const *s, int exc);
+static int32 hash_in(hash_t *ht, char const *sym, caddr_t val);
+static int32 next_prime(int32 p);
+
+extern int mystrcasecmp(char const *, char const *);
 
 
 /* HASH_ADD
@@ -102,15 +107,12 @@ static int32 hash_in();
  * in a fatal error.
  */
 int32
-hash_add (ht, sym, val)
-register hash_t *ht;
-char *sym;
-caddr_t val;
+hash_add (hash_t *ht, char const *sym, caddr_t val)
 {
-    static char *rname = "hash_add";
+    static char const *rname = "hash_add";
 
     if ((ht == 0) || (sym == 0))
-	return (exception (rname, "sym", ERR_ARG));
+	return exception (rname, "sym", ERR_ARG);
 
 #ifdef DEBUG
     printf ("%s: %x %s %d\n", rname, ht, sym, val);
@@ -134,7 +136,7 @@ caddr_t val;
 	ht->tab = (hent_t *) calloc ((size_t)ht->size, sizeof (hent_t));
 	
 	if (ht->tab == 0)
-	    return (exception (rname, sym, ERR_MALLOC));
+	    return exception (rname, sym, ERR_MALLOC);
 	/*
 	 * Create new hash table from the old one.
 	 */
@@ -165,18 +167,20 @@ caddr_t val;
  * NB.
  *	This routine doesn't free the objects.
  */
-hash_free (ht)
-hash_t *ht;
+int
+hash_free (hash_t *ht)
 {
-    static char *rname = "hash_free";
+    static char const *rname = "hash_free";
 
     if (ht == 0)
-	return (exception (rname, "", ERR_ARG));
+	exception (rname, "", ERR_ARG);
 
     free (ht->tab);
     ht->tab = 0;
     ht->size = 0;
     ht->inuse = 0;
+
+    return 0;
 }
 
 /* HASH_LOOKUP
@@ -190,13 +194,11 @@ hash_t *ht;
  * NOTE: CASE-INSENSITIVE!!
  */
 int32
-hash_lookup (ht, sym, val)
-register hash_t *ht;
-register char *sym;
-register caddr_t *val;
+hash_lookup (hash_t *ht, char const *sym, caddr_t *val)
 {
-    static char *rname = "hash_lookup";
-    register char   *cp, c;
+    static char const *rname = "hash_lookup";
+    register char const *cp;
+    register char c;
     register uint32    key;
     register int32    i;
 
@@ -257,12 +259,9 @@ rehash:
  * wise return 0.
  */
 static int32
-hash_in (ht, sym, val)
-hash_t *ht;
-char *sym;
-caddr_t val;
+hash_in (hash_t *ht, char const *sym, caddr_t val)
 {
-    static char *rname = "hash_in";
+    static char const *rname = "hash_in";
     caddr_t key;
 
     if ((ht == 0) || (sym == 0))
@@ -285,13 +284,10 @@ caddr_t val;
 /* EXCEPTION
  *------------------------------------------------------------*
  */
-static int32
-exception (rname, s, exception)
-char *rname;
-char *s;
-int32 exception;
+static int
+exception (char const *rname, char const *s, int exc)
 {
-    switch (exception) {
+    switch (exc) {
 	case ERR_ARG:
 	    fprintf (stderr, "%s: Bad Argument [%s]\n", rname, s);
 	    exit (-1);
@@ -302,12 +298,13 @@ int32 exception;
 	    break;
 	default:
 	    fprintf (stderr, "%s: [%s] Unknown Exception[%d]\n", rname, s,
-		     exception);
+		     exc);
     }
+    return -1;
 }
 
-int32 next_prime (p)
-register int32 p;
+static int32
+next_prime (int32 p)
 {
         register int32 k;
 
@@ -322,11 +319,10 @@ again:
 	return p;
 }
 
-list_t *hash_to_list (ht)
+list_t *hash_to_list (hash_t *ht)
 /*------------------------------------------------------------*
  * convert the hash table 'ht' to a list_t and return it.
  */
-hash_t *ht;	/* The hash table */
 {
     int32 i;
     list_t* list;

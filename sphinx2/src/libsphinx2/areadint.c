@@ -52,19 +52,18 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if (! WIN32)
+#ifdef WIN32
+#include <fcntl.h>
+#else
 #include <sys/file.h>
 #include <sys/fcntl.h>
-#else
-#include <fcntl.h>
+#include <unistd.h>
 #endif
-#include <byteorder.h>
+#include "byteorder.h"
 
 
-areadint (file, data_ref, length_ref)
-  char           *file;
-  int           **data_ref;
-  int            *length_ref;
+int
+areadint (char *file, int **data_ref, int *length_ref)
 {
   int             fd;
   int             length;

@@ -60,8 +60,10 @@
 #include <assert.h>
 #include <math.h>
 
-#include <cont_ad.h>
-#include <err.h>
+#include "s2types.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "err.h"
 
 
 static FILE *infp;	/* File being segmented */
@@ -99,6 +101,7 @@ static void usagemsg (char *pgm)
  * a given minimum duration is encountered.  Filter out long silences.
  * Utterances are written to files named 00000000.raw, 00000001.raw, 00000002.raw, etc.
  */
+int
 main (int32 argc, char **argv)
 {
     cont_ad_t *cont;
@@ -219,4 +222,5 @@ main (int32 argc, char **argv)
     fflush (stdout);
 
     cont_ad_close (cont);
+    return 0;
 }
