@@ -73,9 +73,11 @@ void _E__fatal_sys_error( char const *fmt, ... );
 /* These three all abort */
 
 /* core dump after error message */
+/* this macro is never used in the code, and conflicts with MS Visual C
 #ifndef E_ABORT
 #define E_ABORT  _E__pr_header(__FILE__, __LINE__, "ERROR"),_E__abort_error
 #endif
+*/
 
 /* exit with non-zero status after error message */
 #define E_FATAL  _E__pr_header(__FILE__, __LINE__, "FATAL_ERROR"),_E__die_error
