@@ -78,7 +78,7 @@ static void adpow (ad_rec_t *ad)
     
     en = 0.0;
     prev = 0;
-    
+
     for (len = 0; len < 32000; ) {	/* len = #samples gathered */
 	if ((k = ad_read (ad, buf, 1000)) < 0)
 	    E_FATAL("ad_read returned %d\n", k);
@@ -96,7 +96,9 @@ static void adpow (ad_rec_t *ad)
     
     if (p < 1.0)
 	p = 1.0;
-    E_INFO("log(Power) = %.2f dB\n", 10.0 * log10(p));
+    printf("log(Power) = %.2f dB\n", 10.0 * log10(p)); 
+    fflush(stdout);
+    /*     E_INFO("log(Power) = %.2f dB\n", 10.0 * log10(p)); */
 }
 
 
@@ -135,3 +137,8 @@ main (int32 argc, char *argv[])
     ad_close (ad);
     return 0;
 }
+
+
+
+
+
