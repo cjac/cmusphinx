@@ -100,7 +100,6 @@ void live_initialize_decoder(char *live_args)
     if (!parthyp) 
         parthyp  = (partialhyp_t *) ckd_calloc(maxhyplen, sizeof(partialhyp_t));
 
-    needswap = cmd_ln_int32("-swapbyteorder");
     fe_param = (param_t *) ckd_calloc(1, sizeof(param_t));
     samprate = cmd_ln_int32 ("-samprate");
     if (samprate != 8000 && samprate != 16000)
@@ -112,6 +111,10 @@ void live_initialize_decoder(char *live_args)
     fe_param->NUM_FILTERS = cmd_ln_int32("-nfilt");
     fe_param->FRAME_RATE = 100; /* HARD CODED TO 100 FRAMES PER SECOND */
     fe_param->PRE_EMPHASIS_ALPHA = (float32) 0.97;
+    fe_param->doublebw = cmd_ln_int32("-doublebw");
+    fe_param->machine_endian = cmd_ln_int32("-machine_endian");
+    fe_param->input_endian = cmd_ln_int32("-input_endian");
+
     fe = fe_init(fe_param);
     if (!fe)
 	E_FATAL("Front end initialization fe_init() failed\n");
@@ -211,12 +214,15 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 {
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
-    float32 **live_feat;
+    float32 ***live_feat = NULL;
     int32   live_nfr, live_nfeatvec;
     int32   nwds;
     float32 **mfcbuf;
 
     metricsStart("Decode");
+
+    if(live_feat==NULL)
+      live_feat = feat_array_alloc (kbcore_fcb(kbcore), LIVEBUFBLOCKSIZE);
 
     if (live_begin_new_utt){
         kb->uttid = "bogus ID";
@@ -245,7 +251,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     /* Compute feature vectors */
     live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
                                                live_nfr, live_begin_new_utt,
-                                               live_endutt, &live_feat);
+                                               live_endutt, live_feat);
     metricsStop("FrontEnd");
 
     /* decode the block */

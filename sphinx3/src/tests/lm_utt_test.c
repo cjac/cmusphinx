@@ -312,11 +312,20 @@ int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
     
     score = 0;
     if (nwd == 3) {
-	score = lm_tg_score(lm, wid[0], wid[1], wid[2]);
+      /* The last argument is a hack: the information there - the dict
+       * ID - is never used if LM classes are not used, and classes
+       * are not used in this code. Therefore, the last argument here
+       * is a nop.
+       */
+      score = lm_tg_score(lm, wid[0], wid[1], wid[2], 0);
     } else if (nwd == 2) {
-        score = lm_bg_score(lm, wid[0], wid[1]);
+      /* Ditto.
+       */
+      score = lm_bg_score(lm, wid[0], wid[1], 0);
     } else if (nwd == 1) {
-        score = lm_ug_score(lm, wid[0]);
+      /* Ditto.
+       */
+      score = lm_ug_score(lm, wid[0], 0);
     } else {
         printf("%d grams not supported\n", nwd);
     }

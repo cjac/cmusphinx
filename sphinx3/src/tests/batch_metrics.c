@@ -47,6 +47,7 @@
 #include <libutil/libutil.h>
 #include <libutil/profile.h>
 #include <libs3decoder/new_fe.h>
+#include <libs3decoder/bio.h>
 #include "live_dump.h"
 #include "metrics.h"
 
@@ -97,6 +98,7 @@ int main (int argc, char *argv[])
     int  i, buflen, endutt, blksize, nhypwds, nsamp;
     int numberFiles;
     int space, lastChar;
+    int swap;
     
     double sampleRate;
     double totalAudioTime;
@@ -112,12 +114,11 @@ int main (int argc, char *argv[])
     partialhyp_t *parthyp;
     FILE *fp, *sfp, *rfp;
 
-setbuf(stdout, NULL);
-setbuf(stderr, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
 
     space = ' ';
     numberFiles = 0;
-    sampleRate = 8000;
     endutt = 0;
 
     totalAudioTime = 0.0;
@@ -157,6 +158,15 @@ setbuf(stderr, NULL);
 
     live_initialize_decoder(argsfile);
 
+
+    /* If machine endian and input endian are different, we need to swap */
+    swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+    if (swap) {
+      E_INFO("Input data WILL be byte swapped\n");
+    } else {
+      E_INFO("Input data will NOT be byte swapped\n");
+    }
+
     while (fgets(line, STRLEN, fp) != NULL) {
 
         /* Parse the speech file and the reference result. */
@@ -189,9 +199,9 @@ setbuf(stderr, NULL);
         fflush(stdout); 
         fclose(sfp);
 
-	if (needswap) {
+	if (swap) {
 	  for (i = 0; i < nsamp; i++) {
-	    SWAPW(samps + i);
+	    SWAP_INT16(samps +i);
 	  }
 	}
 
@@ -230,6 +240,7 @@ setbuf(stderr, NULL);
 
         /* collect the processing times data */
         processingTime = metricsDuration(fileTimer);
+	sampleRate = cmd_ln_int32 ("-samprate");
         audioTime = ((double) nsamp) / sampleRate;
         totalProcessingTime += processingTime;
         totalAudioTime += audioTime;
