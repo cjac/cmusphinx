@@ -49,7 +49,9 @@
  *    maintained internally, and clobbered by subsequent calls.
  */
 
-#include "libutil/libutil.h"
+#ifndef __LIVE2_H
+#define __LIVE2_H
+
 #include "kb.h"
 #include "utt.h"
 #include "new_fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
@@ -202,33 +204,17 @@ int ld_utt_proc_raw(live_decoder_t *decoder,
 		    int32 num_samples);
 
 /*
- * Retrieve any partial or final decoding results in a plain READ-ONLY string.
- * The result associated with the current frame number.  Feeding new data to
- * the decoder will modify the frame number, therefore rendering the current
- * results invalid.
+ * Retrieve any partial or final decoding results in a plain READ-ONLY string
+ * as well as an array of READ-ONLY word segments.  Each call to this function
+ * may clobber the return value of previous calls.
  *
  * Arguments:
  *   char **hypstr - OUTPUT - a pointer to a READ-ONLY string.
  *
  * Return value:
- *   Length of the return string.  -1 for failure.
+ *   0 for success.  -1 for failure.
  */
-int ld_utt_hypstr(live_decoder_t *decoder, char **hypstr);
-
-/*
- * Retrieve any partial or final decoding results in an array of word segments.
- * The result associated with the current frame number.  Feeding new data to
- * the decoder will modify the frame number, therefore rendering the current
- * results invalid.
- *
- * Arguments:
- *   hyp_t ***hypsegs - OUTPUT - a pointer to an array of pointers to READ-ONLY
- *     word segments.
- *
- * Return value:
- *   Number of word segments returned.  -1 for failure.
- */
-int ld_utt_hypseg(live_decoder_t *decoder, hyp_t ***hypsegs);
+int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -241,5 +227,5 @@ int ld_utt_hypseg(live_decoder_t *decoder, hyp_t ***hypsegs);
  */
 int ld_utt_abort(live_decoder_t *decoder);
 
-
+#endif
 
