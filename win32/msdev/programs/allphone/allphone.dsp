@@ -1,10 +1,10 @@
-# Microsoft Developer Studio Project File - Name="align" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="allphone" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
-CFG=align - Win32 Debug
+CFG=allphone - Win32 Release
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,7 +13,7 @@ CFG=align - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "allphone.mak" CFG="allphone - Win32 Debug"
+!MESSAGE NMAKE /f "allphone.mak" CFG="allphone - Win32 Release"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -88,6 +88,10 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\..\..\src\programs\main_allphone.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\s3_allphone.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
