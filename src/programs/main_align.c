@@ -52,8 +52,6 @@
 #include <assert.h>
 
 #include <libutil/libutil.h>
-#include <bio.h>
-#include <feat.h>
 
 #include "s3types.h"
 #include "logs3.h"
@@ -62,6 +60,8 @@
 #include "dict.h"
 #include "agc.h"
 #include "cmn.h"
+#include "bio.h"
+#include "feat.h"
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"

@@ -161,6 +161,10 @@ SOURCE=..\..\..\src\libs3decoder\fillpen.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\flat_fwd.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\gs.c
 # End Source File
 # Begin Source File
@@ -170,6 +174,10 @@ SOURCE=..\..\..\src\libs3decoder\gs.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\hmm.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\interp.c
 # End Source File
 # Begin Source File
 
@@ -209,7 +217,31 @@ SOURCE=..\..\..\src\libs3decoder\mdef.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\misc.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\mllr.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\ms_gauden.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\ms_mllr.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\ms_senone.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\s3_align.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\s3_dag.c
 # End Source File
 # Begin Source File
 
@@ -301,11 +333,19 @@ SOURCE=..\..\..\src\libs3decoder\fillpen.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\flat_fwd.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\hmm.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\hyp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\interp.h
 # End Source File
 # Begin Source File
 
@@ -337,11 +377,39 @@ SOURCE=..\..\..\src\libs3decoder\mdef.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\misc.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\mllr.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\ms_gauden.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\ms_mllr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\ms_senone.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\s3_align.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\s3_dag.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\s3types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\search.h
 # End Source File
 # Begin Source File
 
