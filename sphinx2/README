@@ -1,4 +1,4 @@
-2001-12-07 CMU Sphinx2-0.4.  
+2004-07-29 CMU Sphinx2-0.5.  
 http://www.speech.cs.cmu.edu/sphinx/ 
 
 This is Sphinx 2, one of Carnegie Mellon University's open source
@@ -11,16 +11,35 @@ change, and that several tools need to be made available to make this
 all complete.  With your help and contributions, this can progress in
 response to the needs and patches provided.
 
-Once the system is built, try running sphinx2-test to see if the
-system works for a pre-recorded file.  Then you may want to try
-sphinx2-simple, and the perl script sphinx2-demo.  You may have to
+To compile:
+
+-in a unix-like environment (such as linux, solaris etc):
+
+% configure
+% make clean all
+% make test
+% make install
+
+Once the system is built and installed, try running sphinx2-test to
+see if the system works for a pre-recorded file.  Then you may want to
+try sphinx2-simple, and the perl script sphinx2-demo.  You may have to
 change the bang path to perl at the top.
+
+-in MS Windows (TM), under MS Visual C++ 6.0 (or better):
+
+-load sphinx2.dsw (located at the top level directory)
+-compile minimally the project 'sphinx2-continuous'
+-in a command prompt (Follow the menus "Start" -> "Run" -> "cmd"), cd
+to the location where you installed sphinx2 (e.g., c:\sphinx2-0.5)
+-run ./win32/batch/sphinx-test.bat
+
+sphinx2-test (or sphinx2-test.bat, in Windows) should run
+sphinx2-continuous (or sphinx2-continuous.exe) over an example
+utterance of "go forward ten meters" once it's built.
 
 Please see the web site at
 
-   http://www.speech.cs.cmu.edu/sphinx/ 
+   http://cmusphinx.org
 
 for up-to-date information.
 
-sphinx2-test should run sphinx2-batch over an example utterance of "go
-forward ten meters" once it's built.
