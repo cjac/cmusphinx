@@ -68,18 +68,38 @@
 
 #include "profile.h"
 #include "err.h"
-
+#include "ckd_alloc.h"
 
 #if (__ALPHA_OSF1__)
 extern uint32 rpcc( void );	/* On an alpha, use the RPCC instruction */
 #endif
 
+#define MAX_CTR 30
+
+int32 pctr_new (pctr_t *ctr, char *name)
+{
+    if (! ctr)
+        ctr = (pctr_t *) ckd_calloc (MAX_CTR, sizeof(pctr_t));
+    if (ctr->n_ctr >= MAX_CTR) {
+        E_WARN("#counters (%d) exceeded\n", MAX_CTR);
+        return -1;
+    }
+    ctr[ctr->n_ctr].name = (char *) ckd_salloc (name);
+    ctr[ctr->n_ctr].count = 0;
+    
+    return (ctr->n_ctr++);
+}
 
 void pctr_reset (pctr_t *ctr)
 {
     ctr->count = 0;
 }
 
+
+void pctr_increment (pctr_t *ctr, int32 inc)
+{
+    ctr->count += inc;
+}
 
 void pctr_reset_all (pctr_t *ctr)
 {

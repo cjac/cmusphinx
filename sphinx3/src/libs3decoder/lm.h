@@ -62,11 +62,6 @@
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 
-#include <libutil/libutil.h>
-#include "s3types.h"
-#include "lmclass.h"
-#include "dict.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,6 +70,12 @@ extern "C" {
 #define LM_CLASSID_BASE		0x01000000	/* Interpreted as LMclass ID */
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
 #define MIN_PROB_F -99.0
+
+#include <libutil/libutil.h>
+#include "s3types.h"
+#include "lmclass.h"
+#include "dict.h"
+
 
 /* Log quantities represented in either floating or integer format */
 typedef union {
@@ -378,6 +379,8 @@ int32 lm_tg_score (lm_t *lmp, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid
 void lm_set_param (lm_t *lm, float64 lw, float64 wip);
 
 
+int32 lm_rawscore (lm_t *lm, int32 score, float64 lwf);
+
 /* Return LM word ID for the given string, or BAD_S3LMWID if not available */
 s3lmwid_t lm_wid (lm_t *lm, char *wd);
 
@@ -396,7 +399,7 @@ void lm_free (lm_t *lm);
 #define LM_BGPROB(lm,bgptr)	((lm)->bgprob[(bgptr)->probid].l)
 #define LM_UGPROB(lm,ugptr)	((ugptr)->prob.l)
 #define LM_RAWSCORE(lm,score)	((score - (lm)->wip) / ((lm)->lw))
-
+#define LM_DICTWID(lm,lmwid)     ((lm)->ug[(lmwid)].dictwid)
 
 #ifdef __cplusplus
 }

@@ -21,8 +21,10 @@ libs3decoder_la_SOURCES = \
 	fe_sigproc.c \
         feat.c \
         fillpen.c \
+	flat_fwd.c \
 	gs.c \
         hmm.c \
+	interp.c \
         kb.c \
         kbcore.c \
         lextree.c \
@@ -31,7 +33,13 @@ libs3decoder_la_SOURCES = \
 	lmclass.c \
         logs3.c \
         mdef.c \
+	misc.c \
 	mllr.c \
+	ms_gauden.c \
+	ms_mllr.c \
+	ms_senone.c \
+	s3_align.c \
+	s3_dag.c \
         subvq.c \
         tmat.c \
         utt.c \
@@ -57,8 +65,10 @@ noinst_HEADERS = \
 	fe_internal.h \
         feat.h \
         fillpen.h \
+	flat_fwd.h \
 	gs.h \
         hmm.h \
+	interp.h \
         hyp.h \
         kb.h \
         kbcore.h \
@@ -68,8 +78,15 @@ noinst_HEADERS = \
 	lmclass.h \
         logs3.h \
         mdef.h \
+	misc.h \
 	mllr.h \
+	ms_gauden.h \
+	ms_mllr.h \
+	ms_senone.h \
         s3types.h \
+	s3_align.h \
+	s3_dag.h \
+	search.h \
         subvq.h \
         tmat.h \
         utt.h \

@@ -64,12 +64,14 @@
 #ifndef _S3_MDEF_H_
 #define _S3_MDEF_H_
 
-#include <libutil/libutil.h>
-#include "s3types.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+#include <libutil/libutil.h>
+#include "s3types.h"
+
 
 typedef enum {
     WORD_POSN_BEGIN = 0,	/* Beginning phone of word */
@@ -100,6 +102,8 @@ typedef struct {
     s3tmatid_t tmat;		/* Transition matrix id */
     s3cipid_t ci, lc, rc;	/* Base, left, right context ciphones */
     word_posn_t wpos;		/* Word position */
+    s3senid_t *state;           /* State->senone mappings */
+    
 } phone_t;
 
 /*
