@@ -45,6 +45,8 @@
  *
  * HISTORY
  * 
+ * 24-Jul-2004  ARCHAN (archan@cs.cmu.edu)
+ *              Include new changes that allow use of Maximum Likelihood Linear Regression (MLLR) for speaker adaptation. 
  * 26-May-2004  ARCHAN (archan@cs.cmu.edu)
  *              Incorporate code for numerous fixes. 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
@@ -72,6 +74,7 @@
 /*
  * Sphinx-3 model mean and var files have the same format.  Use this routine for reading
  * either one.
+ * Warning! You can only read the variance after reading the mean.  
  */
 static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 {
@@ -168,25 +171,28 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	g->n_mgau = n_mgau;
 	g->max_comp = n_density;
 	g->veclen = blk;
-	g->mgau = (mgau_t *) ckd_calloc (n_mgau, sizeof(mgau_t));
-	
-	buf = (float32 *) ckd_calloc (n, sizeof(float));
-	pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
 
+	if(!(g->mgau)) {
+	  g->mgau = (mgau_t *) ckd_calloc (n_mgau, sizeof(mgau_t));
 
-	for (i = 0; i < n_mgau; i++) {
+	  buf = (float32 *) ckd_calloc (n, sizeof(float));
+	  pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
+	  
+	  for (i = 0; i < n_mgau; i++) {
 	    g->mgau[i].n_comp = n_density;
 	    g->mgau[i].mean = pbuf;
 	    
 	    for (k = 0; k < n_density; k++) {
-		g->mgau[i].mean[k] = buf;
+	      g->mgau[i].mean[k] = buf;
 		buf += blk;
-
+		
 	    }
 	    pbuf += n_density;
+	  }
 	}
-	
 	buf = g->mgau[0].mean[0];	/* Restore buf to original value */
+
+
     } else {
 	assert (type == MGAU_VAR);
 	
@@ -196,34 +202,35 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	    E_FATAL("#Components(%d) doesn't match that of means(%d)\n", n_density, g->max_comp);
 	if (g->veclen != blk)
 	    E_FATAL("#Vector length(%d) doesn't match that of means(%d)\n", blk, g->veclen);
-	
-	buf = (float32 *) ckd_calloc (n, sizeof(float32));
-	pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
 
-
-	for (i = 0; i < n_mgau; i++) {
+	if(!(g->mgau[0].var)){
+	  buf = (float32 *) ckd_calloc (n, sizeof(float32));
+	  pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
+	  
+	  for (i = 0; i < n_mgau; i++) {
 	    if (g->mgau[i].n_comp != n_density)
-		E_FATAL("Mixture %d: #Components(%d) doesn't match that of means(%d)\n",
-			i, n_density, g->mgau[i].n_comp);
+	      E_FATAL("Mixture %d: #Components(%d) doesn't match that of means(%d)\n",
+		      i, n_density, g->mgau[i].n_comp);
 	    
 	    g->mgau[i].var = pbuf;
 	    
 	    for (k = 0; k < n_density; k++) {
-		g->mgau[i].var[k] = buf;
-		buf += blk;
-
-		
+	      g->mgau[i].var[k] = buf;
+	      buf += blk;
+	      
 	    }
 	    pbuf += n_density;
-	}
-	
-	buf = (float32 *) ckd_calloc (n_mgau * n_density, sizeof(float32));
+	  }
 
-	for (i = 0; i < n_mgau; i++) {
+
+	  buf = (float32 *) ckd_calloc (n_mgau * n_density, sizeof(float32));
+	  
+	  for (i = 0; i < n_mgau; i++) {
 	    g->mgau[i].lrd = buf;
 	    buf += n_density;
+	  }
 	}
-	
+
 	buf = g->mgau[0].var[0];	/* Restore buf to original value */
     }
     
@@ -246,6 +253,64 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     return 0;
 }
 
+int32 mgau_mean_reload(mgau_model_t *g, char* mean_file_name)
+{
+  assert (g->mgau!=NULL);
+  mgau_file_read (g, mean_file_name, MGAU_MEAN);
+  /* ARCHAN 20040724 should do s3-like verification, need to change interface though. Put it later.  */
+  return 0; 
+}
+
+int32 mgau_dump(mgau_model_t *g, int32 type)
+{
+  int32 d, c, i;
+  char* tmpstr;
+  assert (g!=NULL);
+  assert (g->mgau!=NULL);
+  assert (g->mgau[0].mean!=NULL);
+  assert (g->mgau[0].var!=NULL);
+
+  tmpstr=ckd_calloc((mgau_veclen(g) * 20),sizeof(char));
+
+  E_INFO("\n");
+  mgau_t m;
+
+  if(type==MGAU_MEAN){
+    for(d=0;d<mgau_n_mgau(g);d++){
+      m=g->mgau[d];
+      sprintf(tmpstr,"Mean of %d\n",d);
+      E_INFO("%s",tmpstr);
+      
+      for(c=0;c<mgau_n_comp(g,d);c++){
+	sprintf(tmpstr,"Component %d",c);
+	for(i=0;i<mgau_veclen(g);i++){
+	  sprintf(tmpstr,"%s %f",tmpstr,m.mean[c][i]);
+	}
+      sprintf(tmpstr, "%s\n",tmpstr);
+      E_INFO("%s",tmpstr);
+      }
+    }
+  }
+  if(type == MGAU_VAR){
+    for(d=0;d<mgau_n_mgau(g);d++){
+      m=g->mgau[d];
+      sprintf(tmpstr,"Variance of %d",d);
+      E_INFO("%s",tmpstr);
+      
+      for(c=0;c<mgau_n_comp(g,d);c++){
+	sprintf(tmpstr,"Component %d\n",c);
+	for(i=0;i<mgau_veclen(g);i++){
+	  sprintf(tmpstr,"%s %f",tmpstr,m.var[c][i]);
+	}
+      sprintf(tmpstr, "%s\n",tmpstr);
+      }
+      E_INFO("%s",tmpstr);
+  }
+  }
+
+  ckd_free(tmpstr);
+  return 0 ;
+}
 
 static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 {
@@ -703,16 +768,3 @@ void mgau_free (mgau_model_t *g)
     ckd_free ((void *) g);
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

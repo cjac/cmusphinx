@@ -31,6 +31,7 @@ libs3decoder_la_SOURCES = \
 	lmclass.c \
         logs3.c \
         mdef.c \
+	mllr.c \
         subvq.c \
         tmat.c \
         utt.c \
@@ -67,6 +68,7 @@ noinst_HEADERS = \
 	lmclass.h \
         logs3.h \
         mdef.h \
+	mllr.h \
         s3types.h \
         subvq.h \
         tmat.h \

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyrightgot (c) 1999-2001 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -407,6 +407,11 @@ void kb_init (kb_t *kb)
 #endif
 	    E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", str);
     }
+    
+    /* Setting for MLLR matrix */
+    kb->prevmllrfn=(char*)ckd_calloc(1024,sizeof(char));
+    kb->prevmllrfn[0]='\0';
+    
 }
 
 void kb_setlm(char* lmname,kb_t* kb)
@@ -439,7 +444,7 @@ void kb_setlm(char* lmname,kb_t* kb)
       }
     }
     if(kbc->lm==NULL){
-      E_ERROR("LM name %s cannot be found! Fall back to use base LM model\n",lmname);
+      E_ERROR("LM name %s cannot be found in the preloaded lm ctl file (spefied by -lmctlfile)! Fall back to use base LM model\n",lmname);
       kbc->lm=lms[0].lm;
       /* Also, don't forget to reset 'i', since if the code reaches
        * this point, i has a value of 'n_lm + 1'
@@ -484,7 +489,54 @@ void kb_setlm(char* lmname,kb_t* kb)
   /*  for (n = 0; n < dict_size(kbcore_dict(kbc)); n++){
     E_INFO("Index %d, map %d word %s\n",n,kbc->lm->dict2lmwid[n],dict_wordstr(kbcore_dict(kbc),n));
     }*/
+}
 
+void kb_setmllr(char* mllrname,kb_t* kb)
+{
+  int32 veclen;
+  E_INFO("Using MLLR matrix %s\n", mllrname);
+  
+  if(strcmp(kb->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
+    /* Reread the gaussian mean from the file again */
+    E_INFO("Reloading mean\n");
+    mgau_mean_reload(kbcore_mgau(kb->kbcore),cmd_ln_str("-mean"));
+
+    /* Read in the mllr matrix */
+
+#if MLLR_DEBUG
+    /*This generates huge amount of information */
+    /*    mgau_dump(kbcore_mgau(kb->kbcore),1);*/
+#endif
+
+    mllr_read_regmat(mllrname,
+		     &(kb->regA),
+		     &(kb->regB),
+		     mgau_veclen(kbcore_mgau(kb->kbcore)));
+
+
+
+
+    /* Transform all the mean vectors */
+
+    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->regA,kb->regB,kbcore_mdef(kb->kbcore));
+
+#if MLLR_DEBUG
+    /*#if 1*/
+    mllr_dump(kb->regA,kb->regB,mgau_veclen(kbcore_mgau(kb->kbcore)));
+    /*This generates huge amount of information */
+    /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
+#endif 
+
+
+    /* allocate memory for the prevmllrfn if it is too short*/
+    if(strlen(mllrname)*sizeof(char) > 1024){
+      kb->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
+    }
+
+    strcpy(kb->prevmllrfn,mllrname);
+  }else{
+    /* No need to change anything for now */
+  }
 }
 
 
@@ -572,5 +624,7 @@ void kb_free (kb_t *kb)
   if (kb->matchsegfp) fclose(kb->matchsegfp);
   if (kb->matchfp) fclose(kb->matchfp);
 
+  if(kb->prevmllrfn) ckd_free((char*) kb->prevmllrfn);
+  if(kb->regA && kb->regB) mllr_free_regmat(kb->regA, kb->regB);
   kb_freehyps(kb);
 }
