@@ -112,6 +112,9 @@
 
 #define FEAT_VERSION	"1.0"
 
+#define N_FEAT			1
+
+#define FEAT_DCEP_WIN		2
 
 int32 feat_readfile (feat_t *fcb, char *file, int32 sf, int32 ef, float32 ***feat, int32 maxfr)
 {
@@ -584,6 +587,52 @@ static void feat_s3_cep_dcep (feat_t *fcb, float32 **mfc, float32 **feat)
 	f[i] = w[i] - _w[i];
 }
 
+void feat_1s_c_d_dd_cep2feat (feat_t *fcb, float32 **mfc, float32 **feat)
+{
+    float32 *f;
+    float32 *w, *_w;
+    float32 *w1, *w_1, *_w1, *_w_1;
+    float32 d1, d2;
+    int32 i, j;
+    
+    assert (fcb);
+    assert (feat_cepsize (fcb) == 13);
+    assert (feat_cepsize_used (fcb) == 13);
+    assert (feat_n_stream (fcb) == 1);
+    assert (feat_stream_len (fcb, 0) == 39);
+    assert (feat_window_size (fcb) == 3);
+
+    /* CEP */
+    memcpy (feat[0], mfc[0], feat_cepsize(fcb) * sizeof(float32));
+    
+    /*
+     * DCEP: mfc[w] - mfc[-w], where w = FEAT_DCEP_WIN;
+     */
+    f = feat[0] + feat_cepsize(fcb);
+    w  = mfc[ FEAT_DCEP_WIN];
+    _w = mfc[-FEAT_DCEP_WIN];
+
+    for (i = 0; i < feat_cepsize(fcb); i++)
+	f[i] = w[i] - _w[i];
+    
+    /* 
+     * D2CEP: (mfc[w+1] - mfc[-w+1]) - (mfc[w-1] - mfc[-w-1]), 
+     * where w = FEAT_DCEP_WIN 
+     */
+    f += feat_cepsize(fcb);
+
+    w1   = mfc[ FEAT_DCEP_WIN+1];
+    _w1  = mfc[-FEAT_DCEP_WIN+1];
+    w_1  = mfc[ FEAT_DCEP_WIN-1];
+    _w_1 = mfc[-FEAT_DCEP_WIN-1];
+
+    for (i = 0; i < feat_cepsize(fcb); i++) {
+	d1 =  w1[i] -  _w1[i];
+	d2 = w_1[i] - _w_1[i];
+
+	f[i] = d1 - d2;
+    }
+}
 
 feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
 {
@@ -618,6 +667,14 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
 	fcb->stream_len[0] = 39;
 	fcb->window_size = 3;
 	fcb->compute_feat = feat_s3_1x39_cep2feat;
+    } else if (strcmp (type, "1s_c_d_dd") == 0) {
+        fcb->cepsize = 13;
+        fcb->cepsize_used = 13;
+	fcb->n_stream = 1;
+	fcb->stream_len = (int32 *) ckd_calloc (1, sizeof(int32));
+	fcb->stream_len[0] = 39;
+	fcb->window_size = 3; /* FEAT_DCEP_WIN + 1 */
+	fcb->compute_feat = feat_1s_c_d_dd_cep2feat;
     } else if (strncmp (type, "cep_dcep", 8) == 0) {
 	/* 1-stream cep/dcep (Hack!! hardwired constants below) */
 	fcb->cepsize = 13;
@@ -832,11 +889,17 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
  * and end-of-utterance flags to be set to indicate the beginning of
  * a new utterance or the end of an utterance in order to function
  * properly
+ *
  * The cyclic buffer of size 256 was controlled by using an unsigned
- * char. Replaced it so that the pointers into the buffer cycle, according
- * to the variable LIVEBUFBLOCKSIZE. This was, if one day we decide
- * to change this variable from 256 to something else, the cyclic buffer
+ * char. Replaced it so that the pointers into the buffer have a cycle
+ * of LIVEBUFBLOCKSIZE. This was done so that if one day we decide to
+ * change this variable from 256 to something else, the cyclic buffer
  * will still work.  (ebg)
+ *
+ * Feature type is hardwired in this routine!!! Currently it's
+ * hardwired to follow the more intuitive order of cepstra followed by
+ * delta cepstra followed by delta delta cepstra, as opposed to the
+ * traditional Sphinx-3 order of c1-12,d1-12,c0,d0,dd,dd1-12.
  */
 int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 			      int32 beginutt, int32 endutt, float32 ***ofeat)
@@ -941,38 +1004,28 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     nfr += residualvecs;
 
     for (i = 0; i < nfr; i++,nfeatvec++){
-        /* CEP; skip C0 */
-        memcpy (feat[i], cepbuf[curpos]+1, (cepsize-1) * sizeof(float32));
+        /* CEP */
+        memcpy (feat[i], cepbuf[curpos], (cepsize) * sizeof(float32));
     
         /*
          * DCEP: mfc[2] - mfc[-2];
          */
-        f = feat[i] + cepsize - 1;
-        w  = cepbuf[jf2] + 1;	/* +1 to skip C0 */
-        _w = cepbuf[jp2] + 1;
+        f = feat[i] + cepsize;
+        w  = cepbuf[jf2];	/* +1 to skip C0 */
+        _w = cepbuf[jp2];
 
-        for (j = 0; j < cepsize-1; j++)
+        for (j = 0; j < cepsize; j++)
 	    f[j] = w[j] - _w[j];
     
-        /* POW: C0, DC0, D2C0 */
-        f += cepsize-1;
-
-        f[0] = cepbuf[curpos][0];
-        f[1] = cepbuf[jf2][0] - cepbuf[jp2][0];
-
-        d1 = cepbuf[jf3][0] - cepbuf[jp1][0];
-        d2 = cepbuf[jf1][0] - cepbuf[jp3][0];
-        f[2] = d1 - d2;
-
         /* D2CEP: (mfc[3] - mfc[-1]) - (mfc[1] - mfc[-3]) */
-        f += 3;
+        f += cepsize;
     
-        w1   = cepbuf[jf3] + 1;	/* Final +1 to skip C0 */
-        _w1  = cepbuf[jp1] + 1;
-        w_1  = cepbuf[jf1] + 1;
-        _w_1 = cepbuf[jp3] + 1;
+        w1   = cepbuf[jf3];	/* Final +1 to skip C0 */
+        _w1  = cepbuf[jp1];
+        w_1  = cepbuf[jf1];
+        _w_1 = cepbuf[jp3];
 
-        for (j = 0; j < cepsize-1; j++) {
+        for (j = 0; j < cepsize; j++) {
 	    d1 =  w1[j] -  _w1[j];
 	    d2 = w_1[j] - _w_1[j];
 

@@ -80,7 +80,7 @@ void kb_init (kb_t *kb)
     memset(kb, 0, sizeof(*kb));
 
     kb->kbcore = kbcore_init (cmd_ln_float32 ("-logbase"),
-			      "s3_1x39",    /* Hack!! Hardwired constant 
+			      "1s_c_d_dd",    /* Hack!! Hardwired constant 
 						for -feat argument */
 			      cmd_ln_str("-cmn"),
 			      cmd_ln_str("-varnorm"),

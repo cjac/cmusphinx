@@ -369,7 +369,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   FILE *hmmdumpfp;
   
   E_INFO("Processing: %s\n", uttid);
-  
+
   kb = (kb_t *) data;
   kbcore = kb->kbcore;
   mdef = kbcore_mdef (kbcore);

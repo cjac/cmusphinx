@@ -58,7 +58,7 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   int32   i, j;
   
   if (varnorm)
-    E_FATAL("Variance normalization not implemented in live mode decode]n");
+    E_FATAL("Variance normalization not implemented in live mode decode\n");
   
   if (initialize){
     cur_mean = (float32 *) ckd_calloc(ceplen, sizeof(float32));
