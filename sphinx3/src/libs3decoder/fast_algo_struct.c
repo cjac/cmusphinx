@@ -87,7 +87,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 isGS4GS,
 			   int32 isSVQ4SVQ,
 			   float32 subvqbeam,
-			   float32 cipbeam)
+			   float32 cipbeam,
+			   int32 n_emit_states)
 {
   fast_gmm_t *fg;
 
@@ -105,6 +106,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
   fg->gmms->ci_pbeam=logs3(cipbeam);
   if(fg->gmms->ci_pbeam < -10000000)
     E_INFO("Virtually no CI phone beam is applied now. (ci_pbeam <-1000000)\n");
+  fg->gmms->ci_pbest=(int32*)ckd_calloc(n_emit_states,sizeof(int32));
+
   fg->gaus->rec_bstcid=-1;
 
   fg->gaus->subvqbeam=logs3(subvqbeam);
@@ -113,7 +116,7 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
   fg->downs->cond_ds=mode_cond_ds;
   fg->downs->dist_ds=mode_dist_ds;
   fg->downs->skip_count=0;
-
+  
   if(fg->downs->cond_ds && fg->downs->dist_ds)
     E_FATAL("-cond_ds and -dist_ds cannot be specified together\n");
 

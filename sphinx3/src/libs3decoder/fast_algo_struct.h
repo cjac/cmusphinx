@@ -102,6 +102,9 @@ typedef struct{
 typedef struct{
   int32 ci_pbeam;             /* The beam which prune out unnesseary parent CI phones in 
 				 CI-based GMM selection*/
+  int32 *ci_pbest;            /* Array to store the best scores for
+                                 positions of CI phone*/
+
 } gmm_select_t;
 
 typedef struct{
@@ -118,6 +121,7 @@ typedef struct{
   int32 svq4svq;              /* Whether SVQ scores would be used as the Gaussian Scores */
   int32 rec_bst_senscr;       /* recent best scores. */
   float32 *last_feat;         /* Last feature frame */
+
 } fast_gmm_t;
 
 /*
@@ -154,7 +158,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 isGS4GS,
 			   int32 isSVQ4SVQ,
 			   float32 subvqbeam,
-			   float32 cibeam);
+			   float32 cibeam,
+			   int32 n_emit_states);
 
 
 #ifdef __cplusplus
