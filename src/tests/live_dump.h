@@ -34,6 +34,9 @@
  *
  */
 
+#ifndef _LIVE_DUMP_H_
+#define _LIVE_DUMP_H_
+
 /* 01.18.01 - RAH, allow for C++ compiles */
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +44,13 @@ extern "C" {
 
 #include <libutil/libutil.h>
 #include "libs3decoder/feat.h"
+
+#define SWAPW(x)        *(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
+#define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
+                        (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
+#define SWAPF(x)        SWAPL((int *) x)
+
+int32 needswap;
 
 typedef struct {
     int32 ascr;
@@ -77,4 +87,6 @@ void live_print_profiles(FILE *file);
   
 #ifdef __cplusplus
 }
+#endif
+
 #endif
