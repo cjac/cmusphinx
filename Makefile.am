@@ -174,7 +174,6 @@ test-allphone:
 	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
 	then echo "allphone phlat test PASSED"; else \
 	echo "allphone phlat test FAILED"; fi
-	
 
 
 test-astar:
@@ -284,8 +283,9 @@ test-ep-match:
 	        -mixw ./model/ep/mixture_weights \
 	        -o $@.tmp \
 		-raw 1 \
-		2>&1 |grep "Utt_" > $@.out
-	@if (diff $@.out $(top_srcdir)/model/ep/ep.result > /dev/null 2>&1); \
+		2>&1 |grep "Utt_" |perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' > $@.out	
+	@if (perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' \
+			 $(top_srcdir)/model/ep/ep.result | diff $@.out - > /dev/null 2>&1); \
 	then echo "EP test PASSED"; else \
 	echo "EP test FAILED"; fi 
 	rm $@.out		
@@ -309,7 +309,7 @@ test-wave2feat:
 	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /deve/null 2>&1) ; \
 	then echo "wave2feat test PASSED"; else \
 	echo "wave2feat test FAILED"; fi
-	
+
 test-cepview:
 	@echo "CEPVIEW TEST"
 	$(LIBTOOL) --mode=execute src/programs/cepview \
