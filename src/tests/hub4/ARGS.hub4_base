@@ -20,3 +20,6 @@
 -logbase 	1.0001
 -varnorm 	no
 -samprate       16000
+-upperf 6855.49756
+-lowerf 133.33334
+-nfilt  40
