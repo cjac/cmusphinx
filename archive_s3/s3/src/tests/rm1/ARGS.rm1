@@ -1,10 +1,10 @@
--mdeffn   /lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
--meanfn   /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means
--varfn    /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances
--mixwfn   /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights
--tmatfn   /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices
--dictfn   /lab/speech/sphinx4/data/wsj/dict/RM.dictionary
--fdictfn	/lab/speech/sphinx4/data/wsj/dict/fillerdict
+-mdeffn   /lab/speech/sphinx4/data/rm1_model/etc/RM1_clean_13dCep_16k_40mel_130Hz_6800Hz.1800.mdef
+-meanfn   /lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/means
+-varfn    /lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/variances
+-mixwfn   /lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/mixture_weights
+-tmatfn   /lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/transition_matrices
+-dictfn   /lab/speech/sphinx4/data/rm1_model/dict/RM.dictionary
+-fdictfn	/lab/speech/sphinx4/data/rm1_model/dict/fillerdict
 -agc	none
 -cmn	current
 -topn   8
@@ -13,7 +13,7 @@
 -cepext mfc
 -ctlfn 	rm1.ctl
 -logbase 	1.0001
--bestpath     	0
+-bestpath     	1
 -senmgaufn 	.cont.
 -langwt  	9.5
 -topn 		8
