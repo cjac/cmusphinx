@@ -45,6 +45,9 @@
  *
  * HISTORY
  * 
+ * 26-Aug-2004  ARCHAN (archan@cs.cmu.edu)
+ *              Include changes that allow full floating point-based computation. Checking of computation type 
+ *              is also added to all function of the code. 
  * 24-Jul-2004  ARCHAN (archan@cs.cmu.edu)
  *              Include new changes that allow use of Maximum Likelihood Linear Regression (MLLR) for speaker adaptation. 
  * 26-May-2004  ARCHAN (archan@cs.cmu.edu)
@@ -68,8 +71,6 @@
 
 #define MGAU_PARAM_VERSION	"1.0"	/* Sphinx-3 file format version for mean/var */
 #define MGAU_MIXW_VERSION	"1.0"	/* Sphinx-3 file format version for mixw */
-#define MGAU_MEAN		1
-#define MGAU_VAR		2
 
 /*
  * Sphinx-3 model mean and var files have the same format.  Use this routine for reading
@@ -90,9 +91,8 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     float32 *buf, **pbuf;
     char **argname, **argval;
     uint32 chksum;
-    /*    float64 f;*/
-    
-    E_INFO("Reading mixture gaussian file '%s'\n", file_name);
+
+    if(g->verbose) E_INFO("Reading mixture gaussian file '%s'\n", file_name);
     
     fp = myfopen (file_name, "rb");
     
@@ -238,8 +238,6 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     if (bio_fread (buf, sizeof(float32), n, fp, byteswap, &chksum) != n)
 	E_FATAL("fread(%s) (densitydata) failed\n", file_name);
 
-    /*    f = log_to_logs3_factor();    */
-
     if (chksum_present)
 	bio_verify_chksum (fp, byteswap, chksum);
 
@@ -248,7 +246,8 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     
     fclose(fp);
     
-    E_INFO("%d mixture Gaussians, %d components, %d streams, veclen %d\n", n_mgau, n_density, n_feat, blk);
+    if(g->verbose)
+      E_INFO("%d mixture Gaussians, %d components, %d streams, veclen %d\n", n_mgau, n_density, n_feat, blk);
     
     return 0;
 }
@@ -270,7 +269,7 @@ int32 mgau_dump(mgau_model_t *g, int32 type)
   assert (g->mgau!=NULL);
   assert (g->mgau[0].mean!=NULL);
   assert (g->mgau[0].var!=NULL);
-
+  assert (type == MGAU_VAR || type == MGAU_MEAN);
   tmpstr=ckd_calloc((mgau_veclen(g) * 20),sizeof(char));
 
   E_INFO("\n");
@@ -320,6 +319,7 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
     int32 byteswap, chksum_present;
     uint32 chksum;
     int32 *buf;
+    float32 *buf_f;
     float32 *pdf;
     int32 i, j, n;
     int32 n_mgau;
@@ -327,7 +327,7 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
     int32 n_comp;
     int32 n_err;
     
-    E_INFO("Reading mixture weights file '%s'\n", file_name);
+    if(g->verbose) E_INFO("Reading mixture weights file '%s'\n", file_name);
     
     fp = myfopen (file_name, "rb");
     
@@ -372,44 +372,81 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 	E_FATAL("%s: #float32s(%d) doesn't match header dimensions: %d x %d\n",
 		file_name, i, n_mgau, n_comp);
     }
-    if (n_mgau != g->n_mgau)
-	E_FATAL("%s: #Mixture Gaussians(%d) doesn't match mean/var parameters(%d)\n",
-		n_mgau, g->n_mgau);
-    
-    buf = (int32 *) ckd_calloc (n_mgau * n_comp, sizeof(int32));
-    for (i = 0; i < n_mgau; i++) {
-	if (n_comp != mgau_n_comp(g,i))
-	    E_FATAL("Mixture %d: #Weights(%d) doesn't match #Gaussian components(%d)\n",
-		    i, n_comp, mgau_n_comp(g,i));
-	
-	g->mgau[i].mixw = buf;
-	buf += g->mgau[i].n_comp;
+
+    if (n_mgau != g->n_mgau){
+      E_FATAL("%s: #Mixture Gaussians(%d) doesn't match mean/var parameters(%d)\n",
+	      n_mgau, g->n_mgau);
     }
     
-    /* Temporary structure to read in floats before conversion to (int32) logs3 */
+    if(g->comp_type==MIX_INT_FLOAT_COMP){
+      /*Memory allocation of the integer version of mixture weight*/
+      buf = (int32 *) ckd_calloc (n_mgau * n_comp, sizeof(int32));
+
+      for (i = 0; i < n_mgau; i++) {
+	if (n_comp != mgau_n_comp(g,i))
+	  E_FATAL("Mixture %d: #Weights(%d) doesn't match #Gaussian components(%d)\n",
+		  i, n_comp, mgau_n_comp(g,i));
+	g->mgau[i].mixw = buf;
+	buf += g->mgau[i].n_comp;
+      }
+
+    }else if(g->comp_type==FULL_FLOAT_COMP){
+      /*Memory allocation of the floating point version of mixture weight */
+      buf_f = (float32 *) ckd_calloc(n_mgau * n_comp, sizeof(float32));
+      for (i = 0; i < n_mgau; i++) {
+	if (n_comp != mgau_n_comp(g,i))
+	  E_FATAL("Mixture %d: #Weights(%d) doesn't match #Gaussian components(%d)\n",
+		  i, n_comp, mgau_n_comp(g,i));
+	g->mgau[i].mixw_f = buf_f;
+	buf_f += g->mgau[i].n_comp;
+      }
+    }else{
+      E_FATAL("Unsupported GMM computation type %d \n",g->comp_type);
+    }
+
+
+    /* Temporary structure to read in floats */
+    /* In the case of hybrid computation, logs3 will be used to convert 
+       the weight to integer */
     pdf = (float32 *) ckd_calloc (n_comp, sizeof(float32));
     
-    /* Read mixw data, normalize, floor, convert to logs3 */
+    /* Read mixw data, normalize, floor. */
     n_err = 0;
     for (i = 0; i < n_mgau; i++) {
-	if (bio_fread((void *)pdf, sizeof(float32), n_comp, fp, byteswap, &chksum) != n_comp)
-	    E_FATAL("bio_fread(%s) (arraydata) failed\n", file_name);
-	
-	/* Normalize and floor */
+      if (bio_fread((void *)pdf, sizeof(float32), n_comp, fp, byteswap, &chksum) != n_comp)
+	E_FATAL("bio_fread(%s) (arraydata) failed\n", file_name);
+      
+      /* Normalize and floor */
 	if (vector_is_zero (pdf, n_comp)) {
-	    n_err++;
-	    for (j = 0; j < n_comp; j++)
-		mgau_mixw(g,i,j) = S3_LOGPROB_ZERO;
+	  n_err++;
+	  for (j = 0; j < n_comp; j++){
+
+	    if(g->comp_type==MIX_INT_FLOAT_COMP)
+	      mgau_mixw(g,i,j) = S3_LOGPROB_ZERO;
+	    else if (g->comp_type==FULL_FLOAT_COMP)
+	      mgau_mixw_f(g,i,j) = S3_LOGPROB_ZERO_F;
+	    else
+	      E_FATAL("Unsupported computation type %d \n",g->comp_type);
+
+	  }
 	} else {
-	    vector_nz_floor (pdf, n_comp, mixwfloor);
-	    vector_sum_norm (pdf, n_comp);
-	    for (j = 0; j < n_comp; j++)
-		mgau_mixw(g,i,j) = (pdf[j] != 0.0) ? logs3(pdf[j]) : S3_LOGPROB_ZERO;
+	  vector_nz_floor (pdf, n_comp, mixwfloor);
+	  vector_sum_norm (pdf, n_comp);
+	  
+	  for (j = 0; j < n_comp; j++){
+
+	    if(g->comp_type==MIX_INT_FLOAT_COMP)
+	      mgau_mixw(g,i,j) = (pdf[j] != 0.0) ? logs3(pdf[j]) : S3_LOGPROB_ZERO;
+	    else if(g->comp_type==FULL_FLOAT_COMP)
+	      mgau_mixw_f(g,i,j) = (pdf[j] != 0.0) ? log(pdf[j]) : S3_LOGPROB_ZERO_F;
+	    else
+	      E_FATAL("Unsupported computation type %d \n",g->comp_type);
+
+	  }
 	}
     }
     if (n_err > 0)
 	E_ERROR("Weight normalization failed for %d senones\n", n_err);
-
     ckd_free (pdf);
 
     if (chksum_present)
@@ -420,7 +457,8 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 
     fclose(fp);
 
-    E_INFO("Read %d x %d mixture weights\n", n_mgau, n_comp);
+    if(g->verbose) E_INFO("Read %d x %d mixture weights\n", n_mgau, n_comp);
+
     
     return 0;
 }
@@ -436,7 +474,7 @@ static void mgau_uninit_compact (mgau_model_t *g)
 {
     int32 m, c, c2, n, nm;
     
-    E_INFO("Removing uninitialized Gaussian densities\n");
+    if(g->verbose) E_INFO("Removing uninitialized Gaussian densities\n");
     
     n = 0;
     nm = 0;
@@ -448,7 +486,13 @@ static void mgau_uninit_compact (mgau_model_t *g)
 			    mgau_veclen(g) * sizeof(float32));
 		    memcpy (mgau_var(g,m,c2), mgau_var(g,m,c),
 			    mgau_veclen(g) * sizeof(float32));
-		    mgau_mixw(g,m,c2) = mgau_mixw(g,m,c);
+		    
+		    if(g->comp_type==MIX_INT_FLOAT_COMP)
+		      mgau_mixw(g,m,c2) = mgau_mixw(g,m,c);
+		    else if(g->comp_type==FULL_FLOAT_COMP)
+		      mgau_mixw_f(g,m,c2) = mgau_mixw_f(g,m,c);
+		    else
+		      E_FATAL("Unsupported computation type %d \n",g->comp_type);
 		}
 		c2++;
 	    } else {
@@ -466,7 +510,7 @@ static void mgau_uninit_compact (mgau_model_t *g)
 	fprintf (stderr, "\n");
     
     if ((nm > 0) || (n > 0))
-	E_INFO ("%d densities removed (%d mixtures removed entirely)\n", n, nm);
+	E_WARN ("%d densities removed (%d mixtures removed entirely)\n", n, nm);
 }
 
 
@@ -474,7 +518,8 @@ static void mgau_var_floor (mgau_model_t *g, float64 floor)
 {
   int32 m, c, i, n;
   
-  E_INFO("Applying variance floor\n");
+  if(g->verbose) 
+    E_INFO("Applying variance floor\n");
   n = 0;
   for (m = 0; m < mgau_n_mgau(g); m++) {
     for (c = 0; c < mgau_n_comp(g,m); c++) {
@@ -486,7 +531,8 @@ static void mgau_var_floor (mgau_model_t *g, float64 floor)
       }
     }
   }
-  E_INFO("%d variance values floored\n", n);
+  if(g->verbose)
+    E_INFO("%d variance values floored\n", n);
 }
 
 
@@ -495,7 +541,8 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor)
   int32 m, c, i, n, l;
   float32 *var;
   
-  E_INFO("Applying variance floor to non-zero variance vectors\n");
+  if(g->verbose)
+    E_INFO("Applying variance floor to non-zero variance vectors\n");
   
   l = mgau_veclen(g);
   
@@ -514,7 +561,8 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor)
       }
     }
   }
-  
+
+  if(g->verbose)
   E_INFO("%d variance values floored\n", n);
   
   return n;
@@ -529,10 +577,9 @@ static int32 mgau_precomp (mgau_model_t *g)
 {
     int32 m, c, i;
     float64 lrd;
-    float64 f;
 
-    f = log_to_logs3_factor();            
-    E_INFO("Precomputing Mahalanobis distance invariants\n");
+    if(g->verbose)
+      E_INFO("Precomputing Mahalanobis distance invariants\n");
 
     for (m = 0; m < mgau_n_mgau(g); m++) {
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
@@ -552,14 +599,34 @@ static int32 mgau_precomp (mgau_model_t *g)
     return 0;
 }
 
+/* Hack! Temporary measuer to make classifier works. */
+int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
+{
+    int32 m, c, i;
+
+    if(g->verbose)
+      E_INFO("Revert log values back to normal\n");
+
+    for (m = 0; m < mgau_n_mgau(g); m++) {
+	for (c = 0; c < mgau_n_comp(g,m); c++) {
+	  mgau_lrd(g,m,c)=exp(mgau_lrd(g,m,c));
+	  mgau_mixw_f(g,m,c)=exp(mgau_mixw_f(g,m,c));
+	}
+    }
+    
+    return 0;
+
+}
 
 /* At the moment, S3 models have the same #means in each codebook and 1 var/mean */
-mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
+mgau_model_t *mgau_init (char *meanfile, 
+			 char *varfile, float64 varfloor,
 			 char *mixwfile, float64 mixwfloor,
-			 int32 precomp,char* senmgau)
+			 int32 precomp,
+			 char* senmgau,
+			 int32 comp_type)
 {
     mgau_model_t *g;
-    /*    int32 c_id,f_id; */
 
     assert (meanfile != NULL);
     assert (varfile != NULL);
@@ -576,7 +643,14 @@ mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
     }else{
       E_FATAL("Feature should be either .semi. or .cont.");
     }
-    
+
+    if(comp_type==FULL_INT_COMP)
+      E_INFO("Currently full integer GMM computation is not supported yet.\n");
+    assert(comp_type==FULL_FLOAT_COMP||comp_type==MIX_INT_FLOAT_COMP);
+    g->comp_type=comp_type;
+    /* Hardwire verbose to 1 */
+    g->verbose=1;
+
     /* Read means and (diagonal) variances for all mixture gaussians */
     mgau_file_read (g, meanfile, MGAU_MEAN);
     mgau_file_read (g, varfile, MGAU_VAR);
@@ -590,8 +664,10 @@ mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
     if (precomp)
 	mgau_precomp (g);		/* Precompute Mahalanobis distance invariants */
     
-    g->distfloor = logs3_to_log (S3_LOGPROB_ZERO);	/* Floor for Mahalanobis distance values */
-
+    if(g->comp_type==MIX_INT_FLOAT_COMP)
+      g->distfloor = logs3_to_log (S3_LOGPROB_ZERO);	/* Floor for Mahalanobis distance values */
+    else if(g->comp_type==FULL_FLOAT_COMP)
+      g->distfloor = S3_LOGPROB_ZERO_F;
     
     return g;
 }
@@ -646,6 +722,7 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
     
     veclen = mgau_veclen(g);
     mgau = &(g->mgau[m]);
+    assert(g->comp_type==MIX_INT_FLOAT_COMP);
     f = log_to_logs3_factor();
     score = S3_LOGPROB_ZERO;
 
@@ -718,7 +795,6 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
 	}
     }
-
     
     if(score == S3_LOGPROB_ZERO){
       /*      E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n");*/
@@ -740,6 +816,7 @@ void mgau_free (mgau_model_t *g)
     //	  ckd_free ((void *) g->mgau[i].mean[j]);
     //      }
     //    }
+
     if (g->mgau[0].mean) 
       ckd_free ((void *) g->mgau[0].mean);
 
@@ -762,9 +839,12 @@ void mgau_free (mgau_model_t *g)
     
     if (g->mgau[0].mixw) 
       ckd_free ((void *) g->mgau[0].mixw);
+
+    if (g->mgau[0].mixw_f)
+      ckd_free ((void *) g->mgau[0].mixw_f);
     
     if (g->mgau)
-      ckd_free ((void *) g->mgau);
+	  ckd_free ((void *) g->mgau);
     ckd_free ((void *) g);
   }
 }

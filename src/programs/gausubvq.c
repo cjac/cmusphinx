@@ -232,9 +232,13 @@ int32 main (int32 argc, char *argv[])
     logs3_init (cmd_ln_float64("-log3table"));
     
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
-    mgau = mgau_init (cmd_ln_str("-mean"), cmd_ln_str("-var"), 0.0 /* no varfloor */,
+    mgau = mgau_init (cmd_ln_str("-mean"), 
+		      cmd_ln_str("-var"), 0.0 /* no varfloor */,
 		      cmd_ln_str("-mixw"), cmd_ln_float64 ("-mixwfloor"),
-		      FALSE,".cont.");
+		      FALSE,  /* No precomputation*/
+		      ".cont.",
+		      MIX_INT_FLOAT_COMP);
+
     mgau_var_nzvec_floor (mgau, cmd_ln_float64 ("-varfloor"));
     
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */

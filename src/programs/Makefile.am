@@ -6,7 +6,8 @@ bin_PROGRAMS = livedecode\
 	align \
 	astar \
 	dag \
-	allphone 
+	allphone \
+	ep 
 
 livedecode_SOURCES = \
 	main_livedecode.c \
@@ -34,6 +35,8 @@ allphone_SOURCES = main_allphone.c \
 	s3_allphone.c 
 
 gausubvq_SOURCES = gausubvq.c
+
+ep_SOURCES = main_ep.c
 
 noinst_HEADERS = \
 	cmd_ln_args.h \
