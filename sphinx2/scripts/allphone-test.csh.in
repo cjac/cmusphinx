@@ -1,0 +1,111 @@
+#!@CSH@ -f
+# 
+# allphone-test.csh -- Script for testing the allphone-test program.
+# 
+# 11-Sep-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+#		Created.
+
+# 
+# Input arguments:
+#   pgm: The executable
+# 	(e.g., /net/alf20/usr/rkm/fbs8-6-97/examples/allphone/alpha/allphone-test)
+#   beamwidth: "wide" or "narrow", for accuracy and speed, respectively.
+# 
+# Output:
+#   The phone decoding, printed to stdout.
+#
+
+
+if ($#argv != 2) then
+    echo "Usage: $0 pgm beamwidth"
+    exit
+endif
+
+set echo
+limit coredumpsize 0
+unalias rm
+
+set sex = g
+
+#set PGM = /tmp/$1:t.$$
+#cp $1 $PGM
+set PGM = $1
+
+#
+# Beamwidths: There are two sets, wide beam for accuracy, narrow beam for speed.
+# 
+if ($2 == "wide") then
+    set       bw=1e-6
+    set     npbw=1e-6
+    set     lpbw=1e-5
+    set lponlybw=3e-4
+    set     nwbw=3e-4
+    set      top=4
+    set topsenfrm=4
+    set topsenthresh=-80000
+    set fwdflat=TRUE
+else
+    set       bw=2e-6
+    set     npbw=2e-6
+    set     lpbw=2e-5
+    set lponlybw=5e-4
+    set     nwbw=5e-4
+    set      top=1
+    set topsenfrm=3
+    set topsenthresh=-70000
+    set fwdflat=FALSE
+endif
+
+set lw=6.5
+set uw=0.5
+set ip=0.65
+set fp=1e-10
+set sp=0.005
+
+set fwdflatbeam   = 1e-8
+set fwdflatnwbeam = 3e-4
+set fwdflatlw     = 8.5
+set bestpathlw    = 9.5
+
+#set logfile = $3.log
+#set matchfile = $3.match
+#set segfile = $3.pseg
+#rm -f $matchfile
+#rm -f $segfile
+#rm -f $logfile
+
+set datadir   = @prefix@share/sphinx2
+set dictfile  = $datadir/dict/nov94/h1c1-94.dic
+set phonefile = $datadir/dict/nov94/h1c1-94.phone
+set mapfile   = $datadir/dict/nov94/h1c1-94.map
+set modeldir  = $datadir/hmm/nov93/1pd/10000-g
+set sendumpfile = $datadir/sendump/nov93/1pd/10000-g.sen
+
+# NOTE: Output is NOT being redirected to a log file.
+$PGM \
+	-agcmax TRUE		\
+	-allphone TRUE		\
+# fwdtree pass beamwidths --------------------------- \
+	-top $top	 	\
+	-topsenfrm $topsenfrm	\
+	-topsenthresh $topsenthresh	\
+	-beam $bw		\
+	-npbeam $npbw		\
+	-lpbeam $lpbw		\
+	-lponlybeam $lponlybw	\
+	-nwbeam $nwbw		\
+# kb stuff (LM/dictionary/hmm files) ---------------- \
+	-dictfn $dictfile	\
+	-phnfn $phonefile	\
+	-mapfn $mapfile		\
+	-hmmdir $modeldir	\
+	-hmmdirlist $modeldir	\
+	-8bsen TRUE		\
+	-sendumpfn $sendumpfile	\
+	-cbdir $modeldir	\
+# misc. ----------------------------------------------\
+#	-matchfn $matchfile	\
+#	-matchsegfn $segfile	\
+	-backtrace FALSE
+
+# rm $PGM

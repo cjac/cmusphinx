@@ -1,0 +1,267 @@
+#!@PERL@
+#
+# sphinx2-demo -- wrapper for sphinx demo
+#
+# 22-Nov-1999 Sean Levy <snl@stalphonsos.com> at St. Alphonsos, LLC
+#             Added getopt fu and a bit more control over output
+#
+#             New command-line arguments:
+#
+#                  -v     verbose [was the default before]
+#                  -q     quiet [produce no output except for utterances]
+#                  -p     make the shell script that -o produces grep for
+#                         ^BESTPATH: only in the output
+#                  -o f   produce a shell script in f
+#                  -r d   use d as the root directory
+#
+# 02-Aug-1999 Kevin A. Lenzo <lenzo@cs.cmu.edu> at Carnegie Mellon University
+#             Created.
+#
+
+use strict;
+use Getopt::Std;
+
+$| = 1;  # turn off STDOUT buffering 
+my @P = split("/", $0);
+my $P = pop(@P);
+my $USAGE = "usage: $P [-vqp] [-r root-dir] [-o cmd-output-file] [task-dir]";
+die "$USAGE\n" unless getopts('vqpr:o:');
+my $Quiet = $main::opt_q;
+my $Verbose = $main::opt_v;
+my $ParseOutCmd = $main::opt_p;
+my $s2root = $main::opt_r || join("/", @P);
+my $CmdOut = $main::opt_o;
+
+my ($pgm, $beamwidth, $output, $ctloffset, $ctlcount) = @ARGV;
+my ($arch, $s2root);
+
+BEGIN {
+  $arch = `uname -m`.'_'.`uname -s`;
+  $arch =~ s/\s+//g;
+  $arch =~ s/i.86/i386/i;
+  $arch =~ tr/A-Z/a-z/;
+  
+  $s2root = "@prefix@/share/sphinx2" unless defined($s2root);
+  die "please set \$s2root: $!\n" unless -d $s2root;
+  
+  push @INC, "$s2root/bin", "$s2root/src/build/$arch/bin";
+}
+print "s2root: $s2root\n" if $Verbose;
+
+my $task;
+if (@ARGV) {
+  $task = shift @ARGV;
+} else {
+  $task = "$s2root/model/lm/turtle";
+  if ($Verbose) {
+    print "\n";
+    print "Using the default task $task.  Tell a robot where to move. \n";
+    print "\n";
+    print "   Example: go forward ten meters\n";
+    print "            rotate right forty five degrees\n";
+    print "            go backward five meters\n";
+    print "\n";
+  }
+}
+
+
+die "don't know how to do '$task' and cant find $task directory: $!\n" 
+  unless -d $task;
+
+$pgm = "@prefix@/bin/sphinx2-continuous";
+
+if (! -x $pgm) {
+  foreach (@INC) {
+    if (-x "$_/$pgm") {
+      $pgm = "$_/$pgm";
+      last;
+    }
+  }
+}
+
+die "this requires $pgm to execute!\n" unless -x $pgm;
+
+$beamwidth = "narrow";
+$output = $task;
+
+my $sex = "g";
+my $target_command; # = 'cat >> log';
+my $matchfile; #  = "$output.match";
+
+my $kbdumpdir = $s2root;
+
+my ($lmfile, $dictfile, $phonefile, $mapfile, $ctlfile) = ('NOTFOUND') x 6;
+
+my $file;
+opendir DIR, $task or die "can't opendir $task: $!\n";
+while ($file = readdir DIR) {
+  $file = "$task/$file";
+  next if -d $file;
+
+  $file =~ /\.lm$/    and $lmfile    = $file;
+  $file =~ /\.dic$/   and $dictfile  = $file;
+  $file =~ /\.phone$/ and $phonefile = $file;
+  $file =~ /\.map$/   and $mapfile   = $file;
+  $file =~ /\.ctl$/   and $ctlfile   = $file;
+}
+
+closedir DIR;
+
+my $cepdir    = "$task/ctl";
+
+my $modeldir  = "$s2root/model/hmm/10000-g";
+my $sendumpfile  = "$s2root/model/hmm/10000-g.sen";
+
+die "$modeldir: $!\n"    unless -d $modeldir;
+die "$sendumpfile: $!\n" unless -e $sendumpfile;
+die "$phonefile: $!\n"   unless -e $phonefile;
+die "$mapfile: $!\n"     unless -e $mapfile;
+die "$lmfile: $!\n"      unless -e $lmfile;
+die "$dictfile: $!\n"    unless -e $dictfile;
+
+if ($Verbose) {
+  print "\n";
+  print "task: $task\n";
+  print "lm:   $lmfile\n";
+  print "dict: $dictfile\n";
+  print "\n";
+}
+
+$ctloffset = 0 unless defined $ctloffset;
+$ctlcount = 100000000 if (not defined $ctlcount or $ctlcount <= 0);
+
+#
+# Beamwidths: There are two sets, wide beam for accuracy, narrow beam for speed.
+# 
+
+my       $bw=2e-6;
+my     $npbw=2e-6;
+my     $lpbw=2e-5;
+my $lponlybw=5e-4;
+my     $nwbw=5e-4;
+my      $top=1;
+my $topsenfrm=3;
+my $topsenthresh=-70000;
+my $fwdflat="FALSE";
+
+if (lc($beamwidth) eq "wide") {
+  $bw=1e-6;
+  $npbw=1e-6;
+  $lpbw=1e-5;
+  $lponlybw=3e-4;
+  $nwbw=3e-4;
+  $top=4;
+  $topsenfrm=4;
+  $topsenthresh=-80000;
+  $fwdflat="TRUE";
+}
+
+my  $lw=6.5;
+my  $uw=0.5;
+my  $ip=0.65;
+my  $fp=1e-10;
+my  $sp=0.005;
+
+my  $fwdflatbeam   = 1e-8;
+my  $fwdflatnwbeam = 3e-4;
+my  $fwdflatlw     = 8.5;
+my  $bestpathlw    = 9.5;
+
+unlink($matchfile) if $matchfile;
+
+my $what = join " ", ($pgm,
+       -live => "TRUE",
+       -ctloffset => $ctloffset,
+       -ctlcount => $ctlcount,
+       -cepdir => $cepdir,
+       -datadir => $cepdir,
+       -agcmax => "TRUE",
+# language weights, other LM parameters ------------- 
+       -langwt => $lw,
+       -fwdflatlw => $fwdflatlw,
+       -rescorelw => $bestpathlw,
+       -ugwt => $uw,
+       -fillpen => $fp,
+       -silpen => $sp,
+       -inspen => $ip,
+# fwdtree pass beamwidths --------------------------- 
+       -top => $top,
+       -topsenfrm => $topsenfrm,
+       -topsenthresh =>  $topsenthresh,
+       -beam => $bw,
+       -npbeam => $npbw,
+       -lpbeam => $lpbw,
+       -lponlybeam => $lponlybw,
+       -nwbeam => $nwbw,
+# fwdflat pass beamwidths ---------------------------
+       -fwdflat => $fwdflat,
+       -fwdflatbeam => $fwdflatbeam,
+       -fwdflatnwbeam => $fwdflatnwbeam,
+# bestpath search ----------------------------------- 
+       -bestpath => "TRUE",
+#	-nbest => 200,		
+# kb stuff (LM/dictionary/hmm files) ---------------- 
+       -kbdumpdir => $kbdumpdir,
+       -lmfn => $lmfile,
+       -dictfn => $dictfile,
+       -phnfn => $phonefile,
+       -mapfn => $mapfile,
+       -hmmdir => $modeldir,
+       -hmmdirlist => $modeldir,
+       '-8bsen' => "TRUE",
+       -sendumpfn => $sendumpfile,
+       -cbdir => $modeldir,
+# misc. ----------------------------------------------
+# 	-backtrace => FALSE,
+#       -matchfn => $matchfile,
+       );
+
+print "$what\n" if $Verbose;
+if ($CmdOut) {
+  open(CMDOUT, ">$CmdOut") || die "$P: could not create $CmdOut: $!\n";
+  print CMDOUT "#!/bin/sh\n";
+  print CMDOUT "#\n";
+  print CMDOUT "# ", scalar localtime, " - generated by $P\n";
+  print CMDOUT "#\n";
+  if (!$ParseOutCmd) {
+    print CMDOUT "$what\n";
+  } else {
+    print CMDOUT "$what 2>&1 | grep ^BESTPATH:\n";
+  }
+  close(CMDOUT);
+  system("chmod +x $CmdOut");
+  print "wrote command to $CmdOut\n" if $Verbose;
+}
+
+open SPHINX, "$what 2>\&1 |" or die "something failed: $!\n";
+print "[initializing]\n" unless $Quiet;
+
+my ($result, $score);
+my (%is, %are);
+
+if ($target_command) {
+  open TARGET, "|$target_command" or die "can't open $target_command: $!\n";
+}
+print "[entering loop]\n" unless $Quiet;
+while (<SPHINX>) {
+  print $_ if $Verbose; # make this if 1 to debug the output
+
+  /READY..../ and do { print "[silence] " unless $Quiet; next };
+  /Listening.../ and do { print "[audio] " unless $Quiet; next };
+
+  /BESTPATH: (.*?)\s*\((.*?)\)/ and do { 
+    ($result, $score) = ($1, $2);
+    $result = uc $result;
+    print "$result\n";
+    print TARGET "$result\n" if $target_command;
+
+    $result =~ /^(exit|quit|shut\s*down)$/i and do {
+      print "[exit]\n" unless $Quiet;
+      exit ;
+    };
+  }
+}
+
+close TARGET if $target_command;
+
+$@ and print "error: $@\n" unless $Quiet;
