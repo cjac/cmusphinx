@@ -17,9 +17,9 @@ CLEANFILES = gmake-wsj20k_bigram$(MODEAFFIX).results \
 
 wsj20k_bigram:
 	rm -f gmake-wsj20k_bigram$(MODEAFFIX).results
-	../batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_bigram > gmake-wsj20k_bigram$(MODEAFFIX).results
+	../../programs/batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_bigram > gmake-wsj20k_bigram$(MODEAFFIX).results
 
 wsj20k_trigram:
 	rm -f gmake-wsj20k_trigram$(MODEAFFIX).results
-	../batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_trigram > gmake-wsj20k_trigram$(MODEAFFIX).results
+	../../programs/batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_trigram > gmake-wsj20k_trigram$(MODEAFFIX).results
 
