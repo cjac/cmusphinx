@@ -49,9 +49,58 @@
 *   Modified by Yitao Sun.  Added argument parsing.
 */
 
+/* OLD LOGS before renaming to live_decode_API.h
+----------------------------
+revision 1.8
+date: 2004/09/03 18:17:11;  author: yitao;  state: Exp;  lines: +15 -11
+
+changed ld_process_frames to ld_process_ceps
+----------------------------
+revision 1.7
+date: 2004/08/25 20:44:31;  author: yitao;  state: Exp;  lines: +65 -41
+
+
+1.  added code to record uttid in live-decode
+2.  added more code to flesh out remote-decode.  not compiling yet.
+----------------------------
+revision 1.6
+date: 2004/08/24 18:05:50;  author: yitao;  state: Exp;  lines: +2 -2
+
+fixed compilation bug in function ld_utt_free_hyps().
+----------------------------
+revision 1.5
+date: 2004/08/23 20:41:36;  author: yitao;  state: Exp;  lines: +7 -14
+
+basic implementation for remote-decode API.  not compiling yet.
+----------------------------
+revision 1.4
+date: 2004/08/10 22:13:48;  author: yitao;  state: Exp;  lines: +18 -10
+
+added some minor comments in the code.  no significant change.
+----------------------------
+revision 1.3
+date: 2004/08/09 21:40:36;  author: yitao;  state: Exp;  lines: +122 -93
+
+1.  fixed some bugs in Live-Decode API.  changed kb.c, kb.h, utt.c, live_decode.c, liv
+e_decode.h.
+2.  changed some filenames in src/programs/.  now there are 2 sets of livedecode and l
+ivepretend: one that uses the old API (livedecode and livepretend), and one that uses 
+the new API (livedecode2 and livepretend2).
+3.  modified Makefile.am to reflect the filename changes above.
+----------------------------
+revision 1.2
+date: 2004/08/08 23:34:50;  author: arthchan2003;  state: Exp;  lines: +1 -1
+temporary fixes of live_decode.c and live_decode.h
+----------------------------
+revision 1.1
+date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
+*** empty log message ***
+=============================================================================
+*/
+
 #include <libutil/libutil.h>
-#include "live_decode.h"
-#include "args.h"
+#include "live_decode_API.h"
+#include "live_decode_args.h"
 #include "utt.h"
 
 /** Utility function declarations */

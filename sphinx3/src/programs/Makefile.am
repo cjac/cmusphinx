@@ -1,6 +1,4 @@
-bin_PROGRAMS = livedecode\
-	livepretend \
-	livepretend2 \
+bin_PROGRAMS = livepretend \
 	decode \
 	gausubvq \
 	align \
@@ -8,18 +6,8 @@ bin_PROGRAMS = livedecode\
 	dag \
 	allphone 
 
-livedecode_SOURCES = \
-	main_livedecode.c \
-	parse_args_file.c \
-	live.c
-
 livepretend_SOURCES = \
-	main_livepretend.c \
-	parse_args_file.c \
-	live.c
-
-livepretend2_SOURCES = \
-	main_livepretend2.c
+	main_livepretend.c	
 
 decode_SOURCES = decode.c \
 	parse_args_file.c

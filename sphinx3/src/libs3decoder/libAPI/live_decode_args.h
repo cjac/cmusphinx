@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.	All rights
+ * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,87 +33,44 @@
  * ====================================================================
  *
  */
- /*************************************************
+/***********************************************
  * CMU ARPA Speech Project
  *
  * Copyright (c) 2000 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
- *************************************************
+ * **********************************************
+ * 
+ * HISTORY
+ * 
+ * 15-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University.
+ * Created.
  *
- *  Aug 6, 2004
- *  Created by Yitao Sun (yitao@cs.cmu.edu).
+ * 11-Jul-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon Univeristy.
+ * Modified the function in parse_args_file.c to return (argc, argv) instead.
  */
 
-#include <stdio.h>
-#include <live_decode.h>
-#include <args.h>
+/*
+revision 1.1
+date: 2004/07/12 20:56:00;  author: yitao;  state: Exp;
 
-#define BUFFER_LENGTH 4096
-main(int argc, char **argv)
-{
-  live_decoder_t decoder;
-  short samples[BUFFER_LENGTH];
-  int len;
-  char *hypstr;
-  FILE *rawfd;
+moved these files from src/programs to src/libs3decoder so they could be included in t
+he library.
+=============================================================================
+*/
 
-  /*
-   * Initializing
-   */
-  if (argc != 3) {
-    printf("Usage:  livepretend config_file raw_file\n");
-    return -1;
-  }
+#ifndef __ARGS_H
+#define __ARGS_H
 
-  if (cmd_ln_parse_file(arg_def, argv[1])) {
-    printf("Bad arguments file (%s).\n", argv[1]);
-    return -1;
-  }
+#include <libutil/libutil.h>
 
-  if ((rawfd = fopen(argv[2], "rb")) == 0) {
-    printf("Bad raw file (%s).\n", argv[2]);
-    return -1;
-  }
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  if (ld_init(&decoder)) {
-    printf("Initialization failed.\n");
-    return -1;
-  }
+extern arg_t arg_def[];
 
-  if (ld_begin_utt(&decoder, 0)) {
-    printf("Cannot start decoding.\n");
-    return -1;
-  }
-
-  while ((len = fread(samples, sizeof(short), BUFFER_LENGTH, rawfd)) > 0) {
-    if (ld_process_raw(&decoder, samples, len)) {
-      printf("Data processing error.\n");
-      break;
-    }
-    
-    if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
-      printf("Cannot retrieve hypothesis.\n");
-    }
-    else {
-      printf("Hypothesis:\n%s\n", hypstr);
-    }
-  }
-
-  fclose(rawfd);
-
-  if (ld_end_utt(&decoder)) {
-    printf("Cannot end decoding.\n");
-    return -1;
-  }
-
-  if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
-    printf("Cannot retrieve hypothesis.\n");
-  }
-  else {
-    printf("Hypothesis:\n%s\n", hypstr);
-  }
-
-  ld_finish(&decoder);
-
-  return 0;
+#ifdef __cplusplus
 }
+#endif
+
+#endif

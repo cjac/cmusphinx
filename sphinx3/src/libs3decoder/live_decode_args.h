@@ -49,6 +49,15 @@
  * Modified the function in parse_args_file.c to return (argc, argv) instead.
  */
 
+/*
+revision 1.1
+date: 2004/07/12 20:56:00;  author: yitao;  state: Exp;
+
+moved these files from src/programs to src/libs3decoder so they could be included in t
+he library.
+=============================================================================
+*/
+
 #ifndef __ARGS_H
 #define __ARGS_H
 

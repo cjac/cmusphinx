@@ -52,6 +52,64 @@
  *    by subsequent calls.
  */
 
+/*
+revision 1.9
+date: 2004/09/03 21:45:26;  author: yitao;  state: Exp;  lines: +2 -2
+
+cleaning up remote_decode API by moving list operations into a list API
+----------------------------
+revision 1.8
+date: 2004/09/03 16:50:56;  author: yitao;  state: Exp;  lines: +108 -37
+
+
+modified comments to suit the use of doc++-
+----------------------------
+revision 1.7
+date: 2004/08/27 05:22:43;  author: yitao;  state: Exp;  lines: +75 -105
+
+
+removed remote-decode API from the linux compile.  added doc++ comments for live_decod
+e.h-
+----------------------------
+revision 1.6
+date: 2004/08/25 20:44:31;  author: yitao;  state: Exp;  lines: +13 -15
+
+
+1.  added code to record uttid in live-decode
+2.  added more code to flesh out remote-decode.  not compiling yet.
+----------------------------
+revision 1.5
+date: 2004/08/23 20:41:38;  author: yitao;  state: Exp;  lines: +1 -11
+
+basic implementation for remote-decode API.  not compiling yet.
+----------------------------
+revision 1.4
+date: 2004/08/19 19:12:50;  author: yitao;  state: Exp;  lines: +1 -1
+
+incompleted files remote-decode API.
+----------------------------
+revision 1.3
+date: 2004/08/09 21:40:36;  author: yitao;  state: Exp;  lines: +11 -20
+
+1.  fixed some bugs in Live-Decode API.  changed kb.c, kb.h, utt.c, live_decode.c, liv
+e_decode.h.
+2.  changed some filenames in src/programs/.  now there are 2 sets of livedecode and l
+ivepretend: one that uses the old API (livedecode and livepretend), and one that uses 
+the new API (livedecode2 and livepretend2).
+3.  modified Makefile.am to reflect the filename changes above.
+----------------------------
+revision 1.2
+date: 2004/08/08 23:34:50;  author: arthchan2003;  state: Exp;  lines: +1 -1
+temporary fixes of live_decode.c and live_decode.h
+----------------------------
+revision 1.1
+date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
+*** empty log message ***
+=============================================================================
+
+*/
+
+
 #ifndef __LIVE_DECODE_H
 #define __LIVE_DECODE_H
 
