@@ -97,6 +97,7 @@
 #include <libutil/libutil.h>
 #include "libs3decoder/feat.h"
 #include "feat_dump.h"
+#include "fe_dump.h"
 #include "libs3decoder/bio.h"
 #include "libs3decoder/cmn.h"
 #include "libs3decoder/agc.h"
@@ -132,12 +133,15 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 {
     static float32 **feat=NULL;
     static float32 **cepbuf=NULL;
-    /*    static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
-    /*    static unsigned char   bufpos, curpos;   */
-    /*    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	   */
-    static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32  jp1, jp2, jp3, jf1, jf2, jf3; /* RAH 4.15.01 upgraded unsigned char variables to int32 */
+    /* static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
+    /* static unsigned char   bufpos, curpos;   */
+    /* static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	   */
+    static int32   bufpos;
+    /* RAH 4.15.01 upgraded unsigned char variables to int32*/
+    static int32   curpos;
+    /* RAH 4.15.01 upgraded unsigned char variables to int32*/
+    static int32  jp1, jp2, jp3, jf1, jf2, jf3;
+    /* RAH 4.15.01 upgraded unsigned char variables to int32 */
     int32  win, cepsize; 
     int32  i, j, nfeatvec, residualvecs;
 
@@ -150,6 +154,9 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     assert(nfr < LIVEBUFBLOCKSIZE);
     win = feat_window_size(fcb);
 
+
+    /* CMN stuff */
+
     metricsStart("cmn");
 
     if (fcb->cmn) /* Only cmn_prior in block computation mode */
@@ -157,6 +164,12 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
     metricsStop("cmn");
 
+    if (fe_dump) {
+        fe_dump2d_float_frame(fe_dumpfile, uttcep, nfr, fcb->cepsize,
+                              "CMN", "CMN_CEPSTRUM");
+    }
+
+    /* Feature Extraction */
 
     metricsStart("FeatureExtractor");
 
@@ -169,20 +182,22 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 					 sizeof(float32));
     if (cepbuf == NULL){
 	cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
-					 cepsize,
-					 sizeof(float32));
+                                           cepsize,
+                                           sizeof(float32));
 	beginutt = 1; /* If no buffer was present we are beginning an utt */
-    if (! feat)
-      E_FATAL("Unable to allocate feat ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,feat_stream_len(fcb,0),sizeof(float32));
-    if (! cepbuf)
-      E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
-	E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
+        if (! feat)
+            E_FATAL("Unable to allocate feat ckd_calloc_2d(%ld,%d,%d)\n",
+                    LIVEBUFBLOCKSIZE,feat_stream_len(fcb,0),sizeof(float32));
+        if (! cepbuf)
+            E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",
+                    LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
+        E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
     }
-
-
-
+    
+    
     residualvecs = 0;
-    if (beginutt){
+
+    if (beginutt) {
 	/* Replicate first frame into the first win frames */
 	for (i=0;i<win;i++) 
 	   memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));

@@ -33,7 +33,8 @@
  * ====================================================================
  *
  */
- /*************************************************
+
+/*************************************************
  * CMU ARPA Speech Project
  *
  * Copyright (c) 2000 Carnegie Mellon University.
@@ -117,12 +118,12 @@ void live_initialize_decoder(char *live_args)
 /* RAH Apr.13.2001: Memory was being held, Added Call fe_close to release memory held by fe and then release locally allocated memory */
 int32 live_free_memory ()
 {
-  parse_args_free();		/* Free memory allocated during the argument parseing stage */
-  fe_close (fe);		/*  */
-  kb_free (kb);		/*  */
-  ckd_free ((void *) dummyframe); /*  */
-  ckd_free ((void *) parthyp);  /*  */
-  return (0);
+    parse_args_free(); /* Free memory allocated during the argument parseing stage */
+    fe_close (fe);		/*  */
+    kb_free (kb);		/*  */
+    ckd_free ((void *) dummyframe); /*  */
+    ckd_free ((void *) parthyp);  /*  */
+    return (0);
 }
 
 
@@ -282,18 +283,25 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
     /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
     mfcbuf = NULL;
 
+    metricsStart("FrontEnd");
+
     live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
-    if (live_endutt) 		/* RAH, It seems that we shouldn't throw out this data */
+    if (live_endutt) /* RAH, It seems that we shouldn't throw out this data */
         fe_end_utt(fe,dummyframe); /* Flush out the fe */
 
     /* Compute feature vectors */
     live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
                                                live_nfr, live_begin_new_utt,
                                                live_endutt, &live_feat);
+
+    metricsStop("FrontEnd");
+
     // E_INFO ("live_nfeatvec: %ld\n",live_nfeatvec);
-    fe_dump2d_float_frame(fe_dumpfile, live_feat, live_nfeatvec,
-			  feat_stream_len(kbcore_fcb(kbcore), 0),
-			  "FEATURE_FRAME", "FEATURE");
+    if (fe_dump) {
+        fe_dump2d_float_frame(fe_dumpfile, live_feat, live_nfeatvec,
+                              feat_stream_len(kbcore_fcb(kbcore), 0),
+                              "FEATURE_FRAME", "FEATURE");
+    }
 
     /* Clean up */
     if (live_endutt) {
