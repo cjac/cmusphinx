@@ -90,7 +90,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     float32 *buf, **pbuf;
     char **argname, **argval;
     uint32 chksum;
-    float64 f;
+    /*    float64 f;*/
     
     E_INFO("Reading mixture gaussian file '%s'\n", file_name);
     
@@ -238,7 +238,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     if (bio_fread (buf, sizeof(float32), n, fp, byteswap, &chksum) != n)
 	E_FATAL("fread(%s) (densitydata) failed\n", file_name);
 
-    f = log_to_logs3_factor();    
+    /*    f = log_to_logs3_factor();    */
 
     if (chksum_present)
 	bio_verify_chksum (fp, byteswap, chksum);
