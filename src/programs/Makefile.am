@@ -7,7 +7,8 @@ bin_PROGRAMS = livepretend \
 	dag \
 	allphone \
 	ep
-#	decode_anytopo 
+
+noinst_PROGRAMS = decode_anytopo
 
 livepretend_SOURCES = \
 	main_livepretend.c \
@@ -20,15 +21,15 @@ livepretendDEVEL_SOURCES = \
 decode_SOURCES = decode.c \
 	parse_args_file.c
 
-#decode_anytopo_SOURCES = main_decode_anytopo.c  \
-#	s3_dag.c
+decode_anytopo_SOURCES = main_decode_anytopo.c  \
+	s3_dag.c
 
 align_SOURCES = main_align.c \
 	s3_align.c
 
 astar_SOURCES = main_astar.c \
 	s3_astar.c
-	
+
 dag_SOURCES = main_dag.c \
 	s3_dag.c 
 
