@@ -1,0 +1,12 @@
+#!/bin/sh
+S3CONTINUOUS=@prefix@/bin/livedecode
+ARGS=@prefix@/share/sphinx3/model/lm/an4/args.an4
+
+echo " "
+echo "sphinx3-simple:"
+echo "  Demo CMU Sphinx-3 decoder called with command line arguments."
+echo " "
+
+echo "<executing $S3CONTINUOUS, please wait>"
+$S3CONTINUOUS ${ARGS}
+
