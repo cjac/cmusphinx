@@ -71,6 +71,22 @@ S3DISTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu dhuggins@cs.cmu.edu yitao@cs.cm
 
 
 mkdir $root
+
+#I always assume the path has to be in src/tests/regression/
+#It is ugly but it works. 
+
+if ! scp ./runTest.sh ${cfsh_address}:.  >> $outfile 2>&1 ;
+ then 
+    ${MAILX} -s "${headstring} failed, Cause: scp failed." ${S3DISTLIST} < $outfile 
+    exit
+ fi
+
+if ! scp ./compileFarmRunTest.sh ${cfsh_address}:.  >> $outfile 2>&1 ;
+ then 
+    ${MAILX} -s "${headstring} failed, Cause: scp failed." ${S3DISTLIST} < $outfile 
+    exit
+ fi
+
 pushd $root 
 
 ## cvs 
@@ -97,6 +113,7 @@ if ! scp ${distfn} ${cfsh_address}:.  >> $outfile 2>&1 ;
  fi
 
 
+
 if ! ssh ${cfsh_address} tar zxvf ${distfn}  >> $outfile 2>&1
  then 
     ${MAILX} -s "${headstring} failed, Cause: fail to remotely control tarring." ${S3DISTLIST} < $outfile 
@@ -115,7 +132,7 @@ if ! ssh ${cfsh_address} mkdir ${logdir} >> $outfile 2>&1
     exit
  fi
 
-if ! ssh ${cfsh_address} ./compileFarmRunTest.sh  >> $outfile 4>&1
+if ! ssh ${cfsh_address} ./compileFarmRunTest.sh  >> $outfile 2>&1
  then
     ${MAILX} -s "${headstring} failed, Cause: fail to start compileFarmRunTest.sh" ${S3DISTLIST} < $outfile 
     exit
