@@ -46,9 +46,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.9  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.10  2004/03/27  19:21:56  egouvea
+ * Patch submitted by Carl Quillen, #615094
  * 
+ * Revision 1.9  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.8  2001/12/07 19:19:49  lenzo
  * unistd.h header inclusion.
  *
@@ -1030,8 +1033,8 @@ int32 uttproc_set_logfile (char const *file)
 	    fclose (logfp);
 
 	logfp = fp;
-	*stdout = *logfp;
-	*stderr = *logfp;
+	dup2(fileno(logfp), 1);
+	dup2(fileno(logfp), 2);
 	
 	E_INFO("Previous logfile: '%s'\n", logfile);
 	strcpy (logfile, file);
@@ -1064,8 +1067,8 @@ fbs_init (int32 argc, char **argv)
 	    E_ERROR ("fopen(%s,w) failed\n", logfn_arg);
 	} else {
 	    strcpy (logfile, logfn_arg);
-	    *stdout = *logfp;
-	    *stderr = *logfp;
+	    dup2(fileno(logfp), 1);
+	    dup2(fileno(logfp), 2);
 	}
     }
 
@@ -1631,7 +1634,7 @@ void s2mfc_read (char *file, int32 sf, int32 ef, char *outfile)
     FILE *fp, *outfp;
     int32 n_float32;
     struct stat statbuf;
-    int32 i, n, byterev, cepsize;
+    int32 i = 0, n, byterev, cepsize;
     float tmpbuf[CEP_SIZE];
     
     E_INFO("Extracting frames %d..%d from %s to %s\n", sf, ef, file, outfile);
