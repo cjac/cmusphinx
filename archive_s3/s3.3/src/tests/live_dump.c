@@ -107,6 +107,9 @@ void live_initialize_decoder(char *live_args)
 	E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",samprate);
 
     fe_param->SAMPLING_RATE = (float32) samprate;
+    fe_param->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
+    fe_param->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
+    fe_param->NUM_FILTERS = cmd_ln_int32("-nfilt");
     fe_param->FRAME_RATE = 100; /* HARD CODED TO 100 FRAMES PER SECOND */
     fe_param->PRE_EMPHASIS_ALPHA = (float32) 0.97;
     fe = fe_init(fe_param);
