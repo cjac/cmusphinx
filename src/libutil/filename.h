@@ -55,21 +55,25 @@
 
 #include "prim_type.h"
 
+/**\file filename.h
+ *\brief File names related operation
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * Strip off leading path components from the given path and copy the base into base.
- * Caller must have allocated base.
- */
+  /**
+   * Strip off leading path components from the given path and copy the base into base.
+   * Caller must have allocated base.
+   */
 void path2basename (char *path, char *base);
 
 
-/*
- * Strip off the smallest trailing file-extension suffix and copy the rest into the
- * given root argument.  Caller must have allocated root.
- */
+  /**
+   * Strip off the smallest trailing file-extension suffix and copy
+   * the rest into the given root argument.  Caller must have
+   * allocated root.
+   */
 void strip_fileext (char *file, char *root);
 
 #ifdef __cplusplus

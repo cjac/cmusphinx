@@ -60,13 +60,15 @@
  */
 
 
-/*
- * Hash tables are intended for associating an integer "value" with a char string "key",
- * (e.g., an ID with a word string).  Subsequently, one can retrieve the integer value
- * by providing the string key.  (The reverse functionality--obtaining the string given
- * the value--is not provided with the hash table module.)
+/** \file hash.h
+ * \brief Hash table implementation
+ *
+ * This hash tables are intended for associating an integer "value" with a
+ * char string "key", (e.g., an ID with a word string).  Subsequently,
+ * one can retrieve the integer value by providing the string key.
+ * (The reverse functionality--obtaining the string given the
+ * value--is not provided with the hash table module.)  
  */
-
 
 #ifndef _LIBUTIL_HASH_H_
 #define _LIBUTIL_HASH_H_
@@ -78,45 +80,45 @@
 extern "C" {
 #endif
 
-/*
- * The hash table structures.
- * Each hash table is identified by a hash_table_t structure.  hash_table_t.table is
- * pre-allocated for a user-controlled max size, and is initially empty.  As new
- * entries are created (using hash_enter()), the empty entries get filled.  If multiple
- * keys hash to the same entry, new entries are allocated and linked together in a
- * linear list.
- */
+  /**
+   * The hash table structures.
+   * Each hash table is identified by a hash_table_t structure.  hash_table_t.table is
+   * pre-allocated for a user-controlled max size, and is initially empty.  As new
+   * entries are created (using hash_enter()), the empty entries get filled.  If multiple
+   * keys hash to the same entry, new entries are allocated and linked together in a
+   * linear list.
+   */
 
 typedef struct hash_entry_s {
-    const char *key;		/* Key string, NULL if this is an empty slot.
+    const char *key;		/** Key string, NULL if this is an empty slot.
 				   NOTE that the key must not be changed once the entry
 				   has been made. */
-    int32 len;			/* Key-length; the key string does not have to be a C-style NULL
+    int32 len;			/** Key-length; the key string does not have to be a C-style NULL
 				   terminated string; it can have arbitrary binary bytes */
-    int32 val;			/* Value associated with above key */
-    struct hash_entry_s *next;	/* For collision resolution */
+    int32 val;			/** Value associated with above key */
+    struct hash_entry_s *next;	/** For collision resolution */
 } hash_entry_t;
 
 typedef struct {
-    hash_entry_t *table;	/* Primary hash table, excluding entries that collide */
-    int32 size;			/* Primary hash table size, (is a prime#); NOTE: This is the
+    hash_entry_t *table;	/**Primary hash table, excluding entries that collide */
+    int32 size;			/** Primary hash table size, (is a prime#); NOTE: This is the
 				   number of primary entries ALLOCATED, NOT the number of valid
 				   entries in the table */
-    uint8 nocase;		/* Whether case insensitive for key comparisons */
+    uint8 nocase;		/** Whether case insensitive for key comparisons */
 } hash_table_t;
 
 
-/* Access macros */
+  /** Access macros */
 #define hash_entry_val(e)	((e)->val)
 #define hash_entry_key(e)	((e)->key)
 #define hash_entry_len(e)	((e)->len)
 #define hash_table_size(h)	((h)->size)
 
 
-/*
- * Allocate a new hash table for a given expected size.
- * Return value: READ-ONLY handle to allocated hash table.
- */
+  /**
+   * Allocate a new hash table for a given expected size.
+   * Return value: READ-ONLY handle to allocated hash table.
+   */
 hash_table_t *
 hash_new (int32 size,		/* In: Expected #entries in the table */
 	  int32 casearg);	/* In: Whether case insensitive for key comparisons.
@@ -125,30 +127,30 @@ hash_new (int32 size,		/* In: Expected #entries in the table */
 #define HASH_CASE_NO		1
 
 
-/*
+  /**
  * Free the specified hash table; the caller is responsible for freeing the key strings
  * pointed to by the table entries.
  */
 void hash_free (hash_table_t *h);
 
 
-/*
- * Try to add a new entry with given key and associated value to hash table h.  If key doesn't
- * already exist in hash table, the addition is successful, and the return value is val.  But
- * if key already exists, return its existing associated value.  (The hash table is unchanged;
- * it is upto the caller to resolve the conflict.)
- */
+  /**
+   * Try to add a new entry with given key and associated value to hash table h.  If key doesn't
+   * already exist in hash table, the addition is successful, and the return value is val.  But
+   * if key already exists, return its existing associated value.  (The hash table is unchanged;
+   * it is upto the caller to resolve the conflict.)
+   */
 int32
 hash_enter (hash_table_t *h,	/* In: Handle of hash table in which to create entry */
 	    const char *key,	/* In: C-style NULL-terminated key string for the new entry */
 	    int32 val);		/* In: Value to be associated with above key */
 
-/*
- * Like hash_enter, but with an explicitly specified key length, instead of a NULL-terminated,
- * C-style key string.  So the key string is a binary key (or bkey).  Hash tables containing
- * such keys should be created with the HASH_CASE_YES option.  Otherwise, the results are
- * unpredictable.
- */
+  /**
+   * Like hash_enter, but with an explicitly specified key length, instead of a NULL-terminated,
+   * C-style key string.  So the key string is a binary key (or bkey).  Hash tables containing
+   * such keys should be created with the HASH_CASE_YES option.  Otherwise, the results are
+   * unpredictable.
+   */
 int32
 hash_enter_bkey (hash_table_t *h,	/* In: Handle of hash table in which to create entry */
 		 const char *key,	/* In: Key buffer */
@@ -164,21 +166,21 @@ hash_lookup (hash_table_t *h,	/* In: Handle of hash table being searched */
 	     const char *key,	/* In: C-style NULL-terminated string whose value is sought */
 	     int32 *val);	/* Out: *val = value associated with key */
 
-/*
- * Like hash_lookup, but with an explicitly specified key length, instead of a NULL-terminated,
- * C-style key string.  So the key string is a binary key (or bkey).  Hash tables containing
- * such keys should be created with the HASH_CASE_YES option.  Otherwise, the results are
- * unpredictable.
- */
+  /**
+   * Like hash_lookup, but with an explicitly specified key length, instead of a NULL-terminated,
+   * C-style key string.  So the key string is a binary key (or bkey).  Hash tables containing
+   * such keys should be created with the HASH_CASE_YES option.  Otherwise, the results are
+   * unpredictable.
+   */
 int32
 hash_lookup_bkey (hash_table_t *h,	/* In: Handle of hash table being searched */
 		  const char *key,	/* In: Key buffer */
 		  int32 len,		/* In: Length of above key buffer */
 		  int32 *val);		/* Out: *val = value associated with key */
 
-/*
- * Build a glist of valid hash_entry_t pointers from the given hash table.  Return the list.
- */
+  /**
+   * Build a glist of valid hash_entry_t pointers from the given hash table.  Return the list.
+   */
 glist_t hash_tolist (hash_table_t *h,	/* In: Hash table from which list is to be generated */
 		     int32 *count);	/* Out: #entries in the list */
 

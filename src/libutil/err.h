@@ -54,6 +54,12 @@
 #include <stdarg.h>
 #include <errno.h>
 
+/**\file err.h
+ *\brief Implementation of error checking routine with flush. 
+ *
+ *Logging, warning and error message output funtionality is provided in this file.
+ */
+
 /* 01.18.01 RAH, allow for C++ compiles */
 #ifdef __cplusplus
 extern "C" {
@@ -77,25 +83,47 @@ void _E__fatal_sys_error( char const *fmt, ... );
 #endif
 */
 
-/* exit with non-zero status after error message */
+  /**
+   * exit with non-zero status after error message 
+   */
 #define E_FATAL  _E__pr_header(__FILE__, __LINE__, "FATAL_ERROR"),_E__die_error
 
-/* Print error text; Call perror(""); exit(errno); */
+  /**
+   * Print error text; Call perror(""); exit(errno); 
+   */
 #define E_FATAL_SYSTEM	_E__pr_header(__FILE__, __LINE__, "SYSTEM_ERROR"),_E__fatal_sys_error
 
-/* Print error text; Call perror(""); */
+  /** Print error text; Call perror(""); 
+   *
+   */
 #define E_WARN_SYSTEM	_E__pr_header(__FILE__, __LINE__, "SYSTEM_ERROR"),_E__sys_error
 
-/* Print error text; Call perror(""); */
+  /** Print error text; Call perror(""); 
+   *
+   */
 #define E_ERROR_SYSTEM	_E__pr_header(__FILE__, __LINE__, "SYSTEM_ERROR"),_E__sys_error
 
 
-/* Print logging information, warnings, or error messages; all to stderr */
+  /**
+   *Print logging information to standard error stream
+   */
 #define E_INFO	  _E__pr_info_header(__FILE__, __LINE__, "INFO"),_E__pr_info
+
+  /**
+   *Print logging information without header, to standard error stream
+   */
 
 #define E_INFOCONT	  _E__pr_info
 
+  /**
+   *Print warning information to standard error stream
+   */
+
 #define E_WARN	  _E__pr_header(__FILE__, __LINE__, "WARNING"),_E__pr_warn
+
+  /**
+   *Print error message to standard error stream
+   */
 
 #define E_ERROR	  _E__pr_header(__FILE__, __LINE__, "ERROR"),_E__pr_warn
 

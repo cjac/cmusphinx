@@ -59,6 +59,15 @@
 #ifndef _LIBUTIL_PRIM_TYPE_H_
 #define _LIBUTIL_PRIM_TYPE_H_
 
+/** \file prim_type.h
+ * \brief Type signatures used in Sphinx. 
+ * 
+ * \warning As many people point out, the following definition will
+ * easily confuse developers.  As it is possible that int32 can
+ * actually be 64 bits. The length of a particular data type actually
+ * depends on the host machine architecture, type of compiler and how
+ * the compiler were compiled. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif

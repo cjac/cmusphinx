@@ -55,21 +55,24 @@
 
 #include "prim_type.h"
 
+/** \file str2words.h
+ * \brief Convert a line to an array of words. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * Convert a line to an array of "words", based on whitespace separators.  A word
- * is a string with no whitespace chars in it.
- * Note that the string line is modified as a result: NULL chars are placed after
- * every word in the line.
- * Return value: No. of words found; -1 if no. of words in line exceeds n_wptr.
- */
-int32 str2words (char *line,	/* In: line to be parsed */
-		 char **wptr,	/* In/Out: Array of pointers to words found in line.
+  /** 
+   * Convert a line to an array of "words", based on whitespace separators.  A word
+   * is a string with no whitespace chars in it.
+   * Note that the string line is modified as a result: NULL chars are placed after
+   * every word in the line.
+   * Return value: No. of words found; -1 if no. of words in line exceeds n_wptr.
+   */
+int32 str2words (char *line,	/** In: line to be parsed */
+		 char **wptr,	/** In/Out: Array of pointers to words found in line.
 				   The array must be allocated by the caller */
-		 int32 n_wptr);	/* In: Size of wptr array */
+		 int32 n_wptr);	/** In: Size of wptr array */
 #ifdef __cplusplus
 }
 #endif

@@ -60,21 +60,22 @@
 extern "C" {
 #endif
 
-/*
- * Yet another attempt at a clean "next-word-in-string" function.  See arguments below.
- * Return value: length of word if one was found, otherwise -1.
- */
+  /** \file nextword.h
+   * \brief Yet another attempt at a clean "next-word-in-string" function.  See arguments below.
+   *
+   */
+
 int32
-nextword (char *line,		/* In: String being searched for next word */
-	  char *delim,		/* In: A word, if found, must be delimited at either
-				   end by a character from this string (or at the end
-				   by the NULL char) */
-	  char **word,		/* Out: *word = ptr within line to beginning of first
-				   word, if found.  Delimiter at the end of word replaced
-				   with the NULL char. */
-	  char *delimfound);	/* Out: *delimfound = original delimiter found at the end
-				   of the word.  (This way, the caller can restore the
-				   delimiter, preserving the original string.) */
+nextword (char *line,		/** Input: String being searched for next word */
+	  char *delim,		/** Input: A word, if found, must be delimited at either
+				    end by a character from this string (or at the end
+				    by the NULL char) */
+	  char **word,		/** Output: *word = ptr within line to beginning of first
+				    word, if found.  Delimiter at the end of word replaced
+				    with the NULL char. */
+	  char *delimfound);	/** Output: *delimfound = original delimiter found at the end
+				    of the word.  (This way, the caller can restore the
+				    delimiter, preserving the original string.) */
 
 #ifdef __cplusplus
 }

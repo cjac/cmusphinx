@@ -286,6 +286,69 @@ glist_t glist_reverse (glist_t g)
 }
 
 
+gnode_t *glist_insert_ptr (gnode_t *gn, void *ptr)
+{
+    gnode_t *newgn;
+    
+    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn->data.ptr = ptr;
+    newgn->next = gn->next;
+    gn->next = newgn;
+    
+    return newgn;
+}
+
+
+gnode_t *glist_insert_int32 (gnode_t *gn, int32 val)
+{
+    gnode_t *newgn;
+    
+    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn->data.int32 = val;
+    newgn->next = gn->next;
+    gn->next = newgn;
+    
+    return newgn;
+}
+
+
+gnode_t *glist_insert_uint32 (gnode_t *gn, uint32 val)
+{
+    gnode_t *newgn;
+    
+    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn->data.uint32 = val;
+    newgn->next = gn->next;
+    gn->next = newgn;
+    
+    return newgn;
+}
+
+
+gnode_t *glist_insert_float32 (gnode_t *gn, float32 val)
+{
+    gnode_t *newgn;
+    
+    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn->data.float32 = val;
+    newgn->next = gn->next;
+    gn->next = newgn;
+    
+    return newgn;
+}
+
+
+gnode_t *glist_insert_float64 (gnode_t *gn, float64 val)
+{
+    gnode_t *newgn;
+    
+    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn->data.float64 = val;
+    newgn->next = gn->next;
+    gn->next = newgn;
+    
+    return newgn;
+}
 
 
 
