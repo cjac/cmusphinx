@@ -56,6 +56,9 @@
 #ifndef _LIBUTIL_PROFILE_H_
 #define _LIBUTIL_PROFILE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 
@@ -132,5 +135,8 @@ int32 host_pclk (int32 dummy);
  */
 int32 host_endian ( void );
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

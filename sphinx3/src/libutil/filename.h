@@ -54,6 +54,10 @@
 #define _LIBUTIL_FILENAME_H_
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "prim_type.h"
 
 
@@ -69,6 +73,10 @@ void path2basename (char *path, char *base);
  * given root argument.  Caller must have allocated root.
  */
 void strip_fileext (char *file, char *root);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

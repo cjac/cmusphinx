@@ -71,6 +71,9 @@
 #ifndef _LIBUTIL_HASH_H_
 #define _LIBUTIL_HASH_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 #include "glist.h"
@@ -180,5 +183,8 @@ hash_lookup_bkey (hash_table_t *h,	/* In: Handle of hash table being searched */
 glist_t hash_tolist (hash_table_t *h,	/* In: Hash table from which list is to be generated */
 		     int32 *count);	/* Out: #entries in the list */
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -56,6 +56,9 @@
 #ifndef _LIBUTIL_CASE_H_
 #define _LIBUTIL_CASE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 
@@ -79,5 +82,9 @@ void lcase(char *str);
  */
 int32 strcmp_nocase (const char *str1, const char *str2);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

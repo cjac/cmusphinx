@@ -53,6 +53,9 @@
 #ifndef _LIBUTIL_STR2WORDS_H_
 #define _LIBUTIL_STR2WORDS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 
@@ -68,5 +71,8 @@ int32 str2words (char *line,	/* In: line to be parsed */
 		 char **wptr,	/* In/Out: Array of pointers to words found in line.
 				   The array must be allocated by the caller */
 		 int32 n_wptr);	/* In: Size of wptr array */
+#ifdef __cplusplus
+}
+#endif
 
 #endif

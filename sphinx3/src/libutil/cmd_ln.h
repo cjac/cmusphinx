@@ -51,21 +51,19 @@
  * 07-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created, based on Eric's implementation.  Basically, combined several
  *		functions into one, eliminated validation, and simplified the interface.
- * 11-Jul-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University
- *              Added cmd_ln_parse_file().
  */
 
 
 #ifndef _LIBUTIL_CMD_LN_H_
 #define _LIBUTIL_CMD_LN_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 
 #define ARG_REQUIRED	1
-
-/* Longest string form allowed for either the argument name or value */
-#define ARG_MAX_LENGTH  1024
 
 /* Arguments of these types are OPTIONAL */
 #define ARG_INT32	2
@@ -89,10 +87,6 @@ typedef struct {
 } arg_t;
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*
  * Parse the given list of arguments (name-value pairs) according to the given definitions.
  * Argument values can be retrieved in future using cmd_ln_access().  argv[0] is assumed to be
@@ -104,11 +98,6 @@ int32 cmd_ln_parse (arg_t *defn,	/* In: Array of argument name definitions */
 		    int32 argc,		/* In: #Actual arguments */
 		    char *argv[]);	/* In: Actual arguments */
 
-
-/*
- * Parse arguments from file.  Behaves exactly like cmd_ln_parse().
- */
-int32 cmd_ln_parse_file(arg_t *defn, char *filename);
 
 /*
  * Return a pointer to the previously parsed value for the given argument name.

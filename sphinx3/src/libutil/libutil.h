@@ -56,6 +56,10 @@
 #ifndef _LIBUTIL_LIBUTIL_H_
 #define _LIBUTIL_LIBUTIL_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,6 +102,10 @@
 #define M_PI		3.1415926535897932385	/* For the pain-in-the-neck Win32 */
 #endif
 #define PI		M_PI
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

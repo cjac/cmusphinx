@@ -59,6 +59,9 @@
 #ifndef _LIBUTIL_IO_H_
 #define _LIBUTIL_IO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <stdio.h>
 #include <sys/stat.h>
@@ -118,5 +121,8 @@ int32 stat_retry (char *file, struct stat *statbuf);
  */
 int32 stat_mtime (char *file);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
