@@ -1,13 +1,13 @@
 -beam	1e-60
 -wbeam	1e-35
--mdef	/lab/speech/sphinx3j/data/connected_digits/wdclean.500.mdef
--dict	/lab/speech/sphinx3j/data/connected_digits/train.dict
--fdict	/lab/speech/sphinx3j/data/connected_digits/fillerdict
--lm	/lab/speech/sphinx3j/data/connected_digits/unigram.lm.DMP
--mean	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/means
--var	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/variances
--mixw	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/mixture_weights 
--tmat	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/transition_matrices
+-mdef	/lab/speech/sphinx4/data/connected_digits/wdclean.500.mdef
+-dict	/lab/speech/sphinx4/data/connected_digits/train.dict
+-fdict	/lab/speech/sphinx4/data/connected_digits/fillerdict
+-lm	/lab/speech/sphinx4/data/connected_digits/unigram.lm.DMP
+-mean	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/means
+-var	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/variances
+-mixw	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/mixture_weights 
+-tmat	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/transition_matrices
 
 -upperf	3600
 -lowerf	130
