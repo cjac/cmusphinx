@@ -2,7 +2,8 @@ bin_PROGRAMS = livedecode\
 	livepretend \
 	decode \
 	gausubvq \
-	align 
+	align \
+	allphone 
 
 livedecode_SOURCES =  main_live_example.c \
 	parse_args_file.c \
@@ -17,11 +18,14 @@ decode_SOURCES = decode.c \
 
 align_SOURCES = main_align.c
 
+allphone_SOURCES = main_allphone.c \
+	s3_allphone.c 
+
 gausubvq_SOURCES = gausubvq.c
 
 noinst_HEADERS = \
 	cmd_ln_args.h \
-	live.h 
+	live.h \
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
