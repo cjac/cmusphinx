@@ -63,11 +63,13 @@
  */
 void unlimit ( void )
 {
+#if 0
 #if ((! WIN32) && (! _HPUX_SOURCE))
   struct rlimit rl;
 
   getrlimit(RLIMIT_DATA,&rl);
   rl.rlim_cur = rl.rlim_max;
   setrlimit(RLIMIT_DATA,&rl);
+#endif
 #endif
 }
