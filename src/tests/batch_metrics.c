@@ -44,6 +44,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <libutil/libutil.h>
 #include <libutil/profile.h>
 #include <libs3decoder/fe.h>
@@ -188,7 +189,11 @@ int main (int argc, char *argv[])
         numberFiles++;
         nhypwds = 0;
 
-	sprintf(cepfile,"%s/%s",indir,filename);
+	if(strcmp(indir,"/") !=0){
+	  sprintf(cepfile,"%s/%s",indir,filename);
+	}else{
+	  sprintf(cepfile,"%s",filename);
+	}
 
         fprintf(rfp, "\nDecoding: %s\n\n", cepfile);
 
