@@ -45,6 +45,9 @@
  * 
  * HISTORY
  * 
+ * 14-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University
+ *              Modified struct kb_t to save the last hypothesis.
+ *
  * 07-Jul-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added kb_t.ci_active.
  * 
@@ -145,12 +148,18 @@ typedef struct {
     float64 tot_wd_exit;	/* Words hypothesized over the entire session */
   FILE *matchfp;
     FILE *matchsegfp;
+
+  hyp_t		**hyp_segs;	/* hypothesis segments */
+  int32		hyp_seglen;	/* number of hypthesis segments */
+  char		*hyp_str;	/* hypothesis string */
+  int32		hyp_strlen;	/* hypothesis string length */
 } kb_t;
 
 
 void kb_init (kb_t *kb);
 void kb_lextree_active_swap (kb_t *kb);
 void kb_free (kb_t *kb);	/* RAH 4.16.01 */
+void kb_freehyps(kb_t *kb);  /* YITAO 20040614 */
 void kb_setlm(char* lmname,kb_t *kb);    /* ARCHAN 20040228 */
 
 #endif

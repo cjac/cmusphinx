@@ -42,6 +42,9 @@
  * 
  * HISTORY
  *
+ * 15-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University
+ *              Modified utt_end() to save hypothesis in the kb structure.
+ *
  * 30-Dec-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Added utt_decode_block() to allow block-based decoding 
  *		and decoding of piped input.
@@ -51,8 +54,8 @@
  *		of main() during compilation
  * 
  * 29-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Modified to allow runtime choice between 3-state and 5-state HMM
- * 		topologies (instead of compile-time selection).
+ * 		Modified to allow runtime choice between 3-state and 5-state
+ *              HMM topologies (instead of compile-time selection).
  * 
  * 13-Aug-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added -maxwpf.
@@ -102,11 +105,13 @@ void matchseg_write (FILE *fp, kb_t *kb, glist_t hyp, char *hdr)
     
     dict = kbcore_dict(kb->kbcore);
     
-    fprintf (fp, "%s%s S 0 T %d A %d L %d", (hdr ? hdr : ""), kb->uttid, ascr+lscr, ascr, lscr);
+    fprintf (fp, "%s%s S 0 T %d A %d L %d", (hdr ? hdr : ""), kb->uttid,
+	     ascr+lscr, ascr, lscr);
     
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
 	h = (hyp_t *) gnode_ptr (gn);
-	fprintf (fp, " %d %d %d %s", h->sf, h->ascr, h->lscr, dict_wordstr (dict, h->id));
+	fprintf (fp, " %d %d %d %s", h->sf, h->ascr, h->lscr,
+		 dict_wordstr(dict, h->id));
     }
     fprintf (fp, " %d\n", kb->nfr);
     fflush (fp);
@@ -133,8 +138,8 @@ void match_write (FILE *fp, kb_t *kb, glist_t hyp, char *hdr)
 }
 
 /*
- * Begin search at bigrams of <s>, backing off to unigrams; and fillers.  Update
- * kb->lextree_next_active with the list of active lextrees.
+ * Begin search at bigrams of <s>, backing off to unigrams; and fillers. 
+ * Update kb->lextree_next_active with the list of active lextrees.
  */
 void utt_begin (kb_t *kb)
 {
@@ -150,7 +155,8 @@ void utt_begin (kb_t *kb)
     /* Enter into unigram lextree[0] */
     n = lextree_n_next_active(kb->ugtree[0]);
     assert (n == 0);
-    lextree_enter (kb->ugtree[0], mdef_silphone(kbc->mdef), -1, 0, pred, kb->beam->hmm);
+    lextree_enter (kb->ugtree[0], mdef_silphone(kbc->mdef), -1, 0, pred,
+		   kb->beam->hmm);
     
     /* Enter into filler lextree */
     n = lextree_n_next_active(kb->fillertree[0]);
@@ -171,9 +177,11 @@ void utt_end (kb_t *kb)
     FILE *fp, *latfp;
     dict_t *dict;
     int32 i;
+    char *hyp_strptr;
     
     fp = stderr;
     dict = kbcore_dict (kb->kbcore);
+    kb_freehyps(kb);
     
     if ((id = vithist_utt_end (kb->vithist, kb->kbcore)) >= 0) {
       if (cmd_ln_str("-bptbldir")) {
@@ -208,17 +216,33 @@ void utt_end (kb_t *kb)
 	
 	ascr += h->ascr;
 	lscr += h->lscr;
+	kb->hyp_seglen++;
+	if (!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
+	  kb->hyp_strlen +=
+	    strlen(dict_wordstr(dict, dict_basewid(dict, h->id))) + 1;
+	}
       }
       fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,kb->nfr,ascr,lscr);
-      
+
+      kb->hyp_segs = ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
+      kb->hyp_str = ckd_calloc(kb->hyp_strlen, sizeof(char));
+      hyp_strptr = kb->hyp_str;
+
       /* Match */
       fprintf (fp, "\nFWDVIT: ");
+      i = 0;
       for (gn = hyp; gn; gn = gnode_next(gn)) {
 	h = (hyp_t *) gnode_ptr (gn);
-	if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)))
-	  fprintf(fp,"%s ",dict_wordstr(dict, dict_basewid(dict,h->id)));
+	kb->hyp_segs[i++] = h;
+	if(!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
+	  strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict,h->id)));
+	  hyp_strptr += strlen(hyp_strptr);
+	  strcat(hyp_strptr, " ");
+	  hyp_strptr++;
+	}
       }
-      fprintf (fp, " (%s)\n\n", kb->uttid);
+      kb->hyp_str[kb->hyp_strlen - 1] = '\0';
+      fprintf (fp, "%s (%s)\n\n", kb->hyp_str, kb->uttid);
       
       /* Matchseg */
       if (kb->matchsegfp)
@@ -246,7 +270,8 @@ void utt_end (kb_t *kb)
 	  getcwd (str, sizeof(str));
 	  fprintf (latfp, "# getcwd: %s\n", str);
 	  
-	  /* Print logbase first!!  Other programs look for it early in the DAG */
+	  /* Print logbase first!!  Other programs look for it early in the
+	   * DAG */
 	  logbase = cmd_ln_float32 ("-logbase");
 	  fprintf (latfp, "# -logbase %e\n", logbase);
 	  
@@ -264,16 +289,15 @@ void utt_end (kb_t *kb)
 	  fprintf (latfp, "Frames %d\n", kb->nfr);
 	  fprintf (latfp, "#\n");
 	  
-	  vithist_dag_write (kb->vithist, hyp, dict, cmd_ln_int32("-outlatoldfmt"), latfp);
+	  vithist_dag_write (kb->vithist, hyp, dict,
+			     cmd_ln_int32("-outlatoldfmt"), latfp);
 	  fclose_comp (latfp, ispipe);
 	}
       }
       
-      /* Free hyplist */
-      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
-	ckd_free ((void *) h);
-      }
+      /* free the list containing hyps (we've saved the actual hyps
+       * themselves).
+       */
       glist_free (hyp);
     } else
       E_ERROR("%s: No recognition\n\n", kb->uttid);
@@ -399,13 +423,15 @@ void utt_word_trans (kb_t *kb, int32 cf)
     if (bv[p] >= 0)
       if (kb->wend_beam==0 || bs[p]>-kb->wend_beam + maxpscore)
 	{
-	  lextree_enter (kb->ugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); /* RAH, typecast p to (s3cipid_t) to make compiler happy */
+	  /* RAH, typecast p to (s3cipid_t) to make compiler happy */
+	  lextree_enter (kb->ugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); 
 	}
 
   }
   
   /* Transition to filler lextrees */
-  lextree_enter (kb->fillertree[k], BAD_S3CIPID, cf, vh->bestscore[cf], vh->bestvh[cf], th);
+  lextree_enter (kb->fillertree[k], BAD_S3CIPID, cf, vh->bestscore[cf],
+		 vh->bestvh[cf], th);
 }
 
 
@@ -417,7 +443,8 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 
   nState=mdef_n_emit_state(md);
 
-  for(j=0;j==md->cd2cisen[j];j++){ /* Initializing all the phoneme heuristics for each phone to be 0*/
+  /* Initializing all the phoneme heuristics for each phone to be 0*/
+  for(j=0;j==md->cd2cisen[j];j++){ 
     curPhn=md->sen2cimap[j]; /*Just to save a warning*/
     kb->phn_heur_list[curPhn]=0;
   }
@@ -438,7 +465,8 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 	  curFrmPhnVar=kb->cache_ci_senscr[i][j];
 
 	curPhn=md->sen2cimap[j];
-	if (curPhn!= md->sen2cimap[j+1]) { /* Update at the phone_end boundary */
+	/* Update at the phone_end boundary */
+	if (curPhn!= md->sen2cimap[j+1]) { 
 	  kb->phn_heur_list[curPhn]=NO_UFLOW_ADD(kb->phn_heur_list[curPhn],curFrmPhnVar);
 	  curFrmPhnVar=MAX_NEG_INT32;
 	}
@@ -452,9 +480,11 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 	curFrmPhnVar=NO_UFLOW_ADD(kb->cache_ci_senscr[i][j],curFrmPhnVar);
 	curPhn=md->sen2cimap[j];
 
-	if (curPhn != md->sen2cimap[j+1]) { /* Update at the phone_end boundary */
+	/* Update at the phone_end boundary */
+	if (curPhn != md->sen2cimap[j+1]) { 
 	  curFrmPhnVar/=nState; /* ARCHAN: I hate to do division ! */
-	  kb->phn_heur_list[curPhn]=NO_UFLOW_ADD(kb->phn_heur_list[curPhn],curFrmPhnVar);
+	  kb->phn_heur_list[curPhn]=NO_UFLOW_ADD(kb->phn_heur_list[curPhn],
+						 curFrmPhnVar);
 	  curFrmPhnVar=MAX_NEG_INT32;
 	}
       }
@@ -472,7 +502,8 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 	if (curFrmPhnVar<kb->cache_ci_senscr[i][j]) 
 	  curFrmPhnVar=kb->cache_ci_senscr[i][j];
 	
-	if (md->sen2cimap[j] != md->sen2cimap[j+1]) { /* Update at the phone_end boundary */
+	/* Update at the phone_end boundary */
+	if (md->sen2cimap[j] != md->sen2cimap[j+1]) { 
 	  kb->phn_heur_list[curPhn]=NO_UFLOW_ADD(kb->phn_heur_list[curPhn],curFrmPhnVar);
 	  curFrmPhnVar=MAX_NEG_INT32;
 	}
@@ -531,8 +562,8 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   pheurtype = cmd_ln_int32 ("-pheurtype");
 
   /* Read mfc file and build feature vectors for entire utterance */
-  kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"), sf, ef,
-			    kb->feat, S3_MAX_FRAMES);
+  kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),
+			    sf, ef, kb->feat, S3_MAX_FRAMES);
 
   factor = log_to_logs3_factor();    
   for (i = 0; i < kb->hmm_hist_bins; i++)
@@ -547,7 +578,8 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   /* initialization of ci-phoneme look-ahead scores */
   ptmr_start (&(kb->tm_sen));
 
-  /* effective window is the same as pl_window because we're not in live mode */
+  /* effective window is the same as pl_window because we're not in live
+   * mode */
   kb->pl_window_effective = kb->pl_window > kb->nfr ? kb->nfr : kb->pl_window;
   kb->pl_window_start=0;
   for(f = 0; f < kb->pl_window_effective; f++){
