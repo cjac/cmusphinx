@@ -271,7 +271,7 @@ test-ep :
 	        -ncep 13 \
 	        -nfft 512 \
 	        -nfilt 36 \
- 	        -upperf 5400 \
+	        -upperf 5400 \
 	        -lowerf 130 \
 	        -blocksize 262500 \
 	        -mean ./model/ep/means \
@@ -282,7 +282,7 @@ test-ep :
 		2>&1 |grep "Utt_" > $@.out
 #	@diff $@.out $(top_srcdir)/model/ep/ep.result
 #	@rm $@.out		
-	
+
 test-ep-match:
 	@echo "EP TEST"
 	$(LIBTOOL) --mode=execute src/programs/ep \
@@ -294,7 +294,7 @@ test-ep-match:
 	        -ncep 13 \
 	        -nfft 512 \
 	        -nfilt 36 \
- 	        -upperf 5400 \
+	        -upperf 5400 \
 	        -lowerf 130 \
 	        -blocksize 262500 \
 	        -mean ./model/ep/means \
@@ -329,7 +329,6 @@ test-cepview:
 	$(LIBTOOL) --mode=execute src/programs/cepview \
 	-i 13 \
 	-d 13\
-	 -input ./model/ep/chan3.mfc \
-	 > $@.out
+	-f ./model/ep/chan3.mfc \
+	> $@.out
 	diff $@.out $(top_srcdir)/model/ep/chan3.cepview
-	
