@@ -67,10 +67,14 @@ libsphinx2_la_SOURCES = \
 
 libsphinx2_la_LDFLAGS = -version-info 1:0:1
 
-# libtool is crap, what can I say..
 # libsphinx2_la_LIBADD = -lc -lm $(top_srcdir)/src/libsphinx2fe/libsphinx2fe.la
 
-INCLUDES = -I$(top_srcdir)/src/libsphinx2/include -I$(top_srcdir)/include
+# hjf@cs.brown.edu - Added for Solaris build
+# LDADD = -L/usr/demo/SOUND/lib/ -laudio
+
+INCLUDES = -I$(top_srcdir)/src/libsphinx2/include -I$(top_srcdir)/include 
+# add for solaris
+#           -I/usr/demo/SOUND/include
 
 CPPFLAGS = -DFAST8B=1
 

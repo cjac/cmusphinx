@@ -94,9 +94,12 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.3  2000/12/12  23:01:42  lenzo
- * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ * Revision 1.4  2001/02/13  18:50:35  lenzo
+ * Adding some more comments for a Solaris port.
  * 
+ * Revision 1.3  2000/12/12 23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ *
  * Revision 1.2  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
@@ -1326,6 +1329,7 @@ int32 dictwd_in_lm (wid)
     return (lmp->dictwid_map[wid] >= 0);
 }
 
+/* __BIG_ENDIAN__ should be set to 1 somewhere for sun/solaris */
 #if (__BIG_ENDIAN__)
 
 #define SWAPW(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )

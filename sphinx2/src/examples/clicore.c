@@ -50,6 +50,9 @@
  * 
  * HISTORY
  * 
+ * 23-Jan-01    H J Fox (hjf@cs.brown.edu) at Brown University
+ *              Added a couple of include files for Solaris 8
+ * 
  * 26-Oct-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Fixed bug in cli_open that caused client to fail to connect forever
  * 		if the first attempt at connection failed.
@@ -57,9 +60,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2001/02/13  18:50:35  lenzo
+ * Adding some more comments for a Solaris port.
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
  * Initial import of sphinx2
  *
@@ -81,6 +87,11 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <unistd.h>
+
+/* H J Fox - added include of sys/ioctl.h and sys/filio.h for solaris 
+ include <sys/filio/h> 
+*/
+
 #endif
 
 #include "clicore.h"

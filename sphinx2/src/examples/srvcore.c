@@ -64,9 +64,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created, based on Brian Milnes's earlier version.
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2001/02/13  18:50:35  lenzo
+ * Adding some more comments for a Solaris port.
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
  * Initial import of sphinx2
  *
@@ -90,6 +93,10 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+/* H J Fox - added include of sys/ioctl.h and sys/filio.h for solaris 
+ include <sys/ioctl.h>
+ include <sys/filio.h>
+*/
 #endif
 
 #include "srvcore.h"
