@@ -83,6 +83,7 @@ ad_rec_t *ad_open_sps (int32 sps) {
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;
+    int32 numberChannels=1;
     
     if (sps != DEFAULT_SAMPLES_PER_SEC) {
       if(abs(sps - DEFAULT_SAMPLES_PER_SEC) <= SPS_EPSILON) {
@@ -142,6 +143,12 @@ ad_rec_t *ad_open_sps (int32 sps) {
 	    close(dspFD);
 	    return NULL;
         }
+    }
+
+    if (ioctl (dspFD, SNDCTL_DSP_CHANNELS, &numberChannels) < 0) {
+        fprintf(stderr,"Audio ioctl(CHANNELS %d) failed %s\n", numberChannels, strerror(errno));
+        close(dspFD);
+        return 0;
     }
     
     if (ioctl (dspFD, SNDCTL_DSP_NONBLOCK, &nonBlocking) < 0) {
