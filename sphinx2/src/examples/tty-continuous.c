@@ -134,7 +134,7 @@ static void utterance_loop()
 
     for (;;) {
 	/* Indicate listening for next utterance */
-	printf ("\nREADY....\n"); fflush (stdout);
+        printf ("READY....\n"); fflush (stdout); fflush (stderr);
 	
 	/* Await data for next utterance */
 	while ((k = cont_ad_read (cont, adbuf, 4096)) == 0)
