@@ -170,7 +170,7 @@ typedef struct
    * Boolean indicator whether we've internally allocated space for the
    * command line arguments.
    */
-  bool internal_cmd_ln;
+  int32 internal_cmd_ln;
 
 } live_decoder_t;
 

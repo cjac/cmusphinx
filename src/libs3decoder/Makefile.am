@@ -26,7 +26,7 @@ libs3decoder_la_SOURCES = \
         kb.c \
         kbcore.c \
         lextree.c \
-	live2.c \
+	live_decode.c \
         lm.c \
 	lmclass.c \
         logs3.c \
@@ -63,7 +63,7 @@ noinst_HEADERS = \
         kb.h \
         kbcore.h \
         lextree.h \
-	live2.h \
+	live_decode.h \
         lm.h \
 	lmclass.h \
         logs3.h \

@@ -50,7 +50,7 @@
 */
 
 #include "libutil/libutil.h"
-#include "live2.h"
+#include "live_decode.h"
 #include "args.h"
 
 #define LD_STATE_IDLE			0
