@@ -59,6 +59,7 @@
 #define __REMOTE_DECODE_H
 
 #include "live_decode.h"
+#include <libutil/list.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,11 +68,9 @@ extern "C" {
 typedef struct _remote_decoder_t
 {
   live_decoder_t ld;
-  void *control_queue;
-  void *result_queue;
+  list_t *control_queue;
+  list_t *result_queue;
   int32 state;
-  void *mutex;
-  void *cond;
   int32 internal_cmd_ln;
 } remote_decoder_t;
 
@@ -81,13 +80,13 @@ typedef struct _remote_decoder_t
 /**
  * Informs the remote-decoder to initialize and begin a new session.
  */
-int rd_init(remote_decoder_t *decoder);
+remote_decoder_t* rd_init();
 
 /**
  * Parses the arguments, then informs the remote-decoder to initialize and
  * begin a new session.
  */
-int rd_init_with_args(remote_decoder_t *decoder, int argc, char **argv);
+remote_decoder_t* rd_init_with_args(int argc, char **argv);
 
 /**
  * Informs the remote-decoder to finish the session.
@@ -112,21 +111,18 @@ int rd_abort_utt(remote_decoder_t *decoder);
 /**
  * Informs the remote-decoder there is new raw data for utterance decoding.
  */
-int rd_process_raw(remote_decoder_t *decoder, int16 *samples,
-		    int32 num_samples);
+int rd_process_raw(remote_decoder_t *decoder, int16 *samples, int32 len);
 
 /**
  * Informs the remote-decoder there is new framed data for utterance decoding.
  */
-int rd_process_frames(remote_decoder_t *decoder, float32 **frames,
-		      int32 num_frames);
+int rd_process_ceps(remote_decoder_t *decoder, float32 **ceps, int32 len);
 
 /**
  * Informs the remote-decoder there is new feature vectors for utterance
  * decoding.
  */
-int rd_process_features(remote_decoder_t *decoder, float32 ***features,
-			int32 num_features);
+int rd_process_feats(remote_decoder_t *decoder, float32 ***feats, int32 len);
 
 /**
  * Informs the remote-decoder to record the hypothesis (at the current stage
@@ -148,7 +144,7 @@ int rd_free_hyps(char *uttid, char *hyp_str, hyp_t **hyp_segs);
 /**
  * Main function for decoding.  Should be run on a separate thread.
  */
-int rd_run(remote_decoder_t *decoder);
+void rd_run(remote_decoder_t *decoder);
   
 /**
  * Informs the remote-decoder to completely stop when it is finished executing
