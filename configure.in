@@ -153,6 +153,7 @@ src/tests/performance/Communicator/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
 src/tests/regression/test_livepretend.sh
+src/tests/regression/test_align.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_case/Makefile
 scripts/Makefile
@@ -168,3 +169,4 @@ doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
 chmod +x src/tests/regression/test_livepretend.sh
+chmod +x src/tests/regression/test_align.sh
