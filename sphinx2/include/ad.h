@@ -11,9 +11,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:09:07  lenzo
- * Initial revision
+ * Revision 1.2  2000/01/28  23:42:14  awb
+ * *** empty log message ***
  * 
+ * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 19-Jan-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added AD_ return codes.  Added ad_open_sps_bufsize(), and
@@ -123,6 +127,17 @@ typedef struct {
 #elif (linux)
 
 /* Added by jd5q+@andrew.cmu.edu, 10/3/1997: */
+typedef struct {
+    int32 dspFD;	/* Audio device descriptor */
+    int32 recording;
+    int32 sps;		/* Samples/sec */
+    int32 bps;		/* Bytes/sample */
+} ad_rec_t;
+
+
+#elif (__FreeBSD__)
+
+/* Added by awb@cs.cmu.edu, 28/01/2000: */
 typedef struct {
     int32 dspFD;	/* Audio device descriptor */
     int32 recording;

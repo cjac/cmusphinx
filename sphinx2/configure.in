@@ -34,8 +34,12 @@ else
 			else
 				if test "x$myarch" = "xwin32"; then
 					archfiles="play_win32.lo rec_win32.lo"
-				else
-					archfiles=""
+                                 else 
+  	                                if test "x$myarch" = "xi386_freebsd"; then
+ 		                            archfiles="ad_i386_freebsd.lo cont_ad_base.lo mulaw_base.lo"
+ 				        else
+					    archfiles=""
+                                        fi
 				fi
 			fi
 		fi

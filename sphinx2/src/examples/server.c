@@ -50,9 +50,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/01/28  22:08:41  lenzo
- * Initial revision
+ * Revision 1.2  2000/01/28  23:42:14  awb
+ * *** empty log message ***
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:41  lenzo
+ * Initial import of sphinx2
+ *
+ *
  *
  * 18-Aug-1999  Kevin Lenzo (lenzo@cs.cmu.edu).  Added sys/timeval.h and
  *              changed unsigned int16 etc to uint16 etc as in s2types.h.
@@ -98,7 +102,9 @@
 #include <CM_macros.h>
 #include <err.h>
 #include <fbs.h>
+#if !defined(__FreeBSD__)
 #include <search.h>
+#endif
 #include <ad.h>
 #include <cont_ad.h>
 

@@ -70,6 +70,7 @@ libsphinx2_la_SOURCES = \
 EXTRA_libsphinx2_la_SOURCES = \
 	ad_base.c \
 	ad_i386_linux.c \
+	ad_i386_freebsd.c \
 	cont_ad_base.c \
 	mulaw_base.c \
 	ad_alpha.c \
