@@ -80,7 +80,8 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
     int32 i, f;
     float32 *cmn_mean;
     float32 *cmn_var;
-    
+
+    assert(mfc!=NULL);
     cmn_mean=cmn->cmn_mean;
     cmn_var=cmn->cmn_var;
 
@@ -149,6 +150,7 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   cur_mean = cmn-> cur_mean;
   sum = cmn-> sum;
 
+  assert(incep!=NULL);
   if (varnorm)
     E_FATAL("Variance normalization not implemented in live mode decode\n");
   

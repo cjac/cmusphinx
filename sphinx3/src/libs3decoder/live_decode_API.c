@@ -522,16 +522,27 @@ ld_process_raw_impl(live_decoder_t *_decoder,
     fe_start_utt(_decoder->fe);
   }
 	
+  E_INFO("%d\n", num_frames);
   return_value = fe_process_utt(_decoder->fe, samples, num_samples, &frames, &num_frames);
 
+  E_INFO("%d\n", num_frames);
   if (end_utt) {
     return_value = fe_end_utt(_decoder->fe, dummy_frame, &num_frames);
+    if(num_frames!=0){
+      /* ARCHAN: If num_frames !=0, assign this last ending frame to
+	 frames again.  The computation will then be correct.  Should
+	 clean up the finite state logic in fe_interface layer. 
+      */
+      frames=ckd_calloc_2d(1,_decoder->fe->NUM_CEPSTRA,sizeof(float32));
+      memcpy(frames[0],dummy_frame,_decoder->fe->NUM_CEPSTRA*sizeof(float32));
+    }
   }
 	
   if (FE_ZERO_ENERGY_ERROR == return_value) {
     E_WARN("Zero energy frame(s). Consider using dither\n");
   }
 
+  E_INFO("%d\n", num_frames);
   if (num_frames > 0) {
     num_features = feat_s2mfc2feat_block(kbcore_fcb(_decoder->kbcore),
 					 frames,
