@@ -177,7 +177,6 @@ void utt_end (kb_t *kb)
     FILE *fp, *latfp;
     dict_t *dict;
     int32 i;
-    char *hyp_strptr;
     
     fp = stderr;
     dict = kbcore_dict (kb->kbcore);
@@ -273,21 +272,33 @@ void utt_end (kb_t *kb)
 	}
       }
       
-      /* free the list containing hyps */
-      glist_myfree(hyp, sizeof(hyp_t));
+      /** free the list containing hyps */
+      for (gn = hyp; gn; gn = gnode_next(gn)) {
+	ckd_free(gnode_ptr(gn));
+      }
+      glist_free(hyp);
     } else
       E_ERROR("%s: No recognition\n\n", kb->uttid);
-    
-    E_INFO("%4d frm;  %4d sen, %5d gau/fr, Sen %4.2f CPU %4.2f Clk [Ovrhd %4.2f CPU %4.2f Clk];  %5d hmm, %3d wd/fr, %4.2f CPU %4.2f Clk (%s)\n",
-	   kb->nfr,
-	   (kb->utt_sen_eval + (kb->nfr >> 1)) / kb->nfr,
-	   (kb->utt_gau_eval + (kb->nfr >> 1)) / kb->nfr,
-	   kb->tm_sen.t_cpu * 100.0 / kb->nfr, kb->tm_sen.t_elapsed * 100.0 / kb->nfr,
-	   kb->tm_ovrhd.t_cpu * 100.0 / kb->nfr, kb->tm_ovrhd.t_elapsed * 100.0 / kb->nfr,
-	   (kb->utt_hmm_eval + (kb->nfr >> 1)) / kb->nfr,
-	   (vithist_n_entry(kb->vithist) + (kb->nfr >> 1)) / kb->nfr,
-	   kb->tm_srch.t_cpu * 100.0 / kb->nfr, kb->tm_srch.t_elapsed * 100.0 / kb->nfr,
-	   kb->uttid);
+
+    /** do not print anything if nfr is 0 */
+    if (kb->nfr > 0) {
+      E_INFO("%4d frm;  %4d sen, %5d gau/fr, Sen %4.2f CPU %4.2f "
+	     "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
+	     "%5d hmm, %3d wd/fr, %4.2f CPU %4.2f Clk (%s)\n",
+	     kb->nfr,
+	     (kb->utt_sen_eval + (kb->nfr >> 1)) / kb->nfr,
+	     (kb->utt_gau_eval + (kb->nfr >> 1)) / kb->nfr,
+	     kb->tm_sen.t_cpu * 100.0 / kb->nfr,
+	     kb->tm_sen.t_elapsed * 100.0 / kb->nfr,
+	     kb->tm_ovrhd.t_cpu * 100.0 / kb->nfr,
+	     kb->tm_ovrhd.t_elapsed * 100.0 / kb->nfr,
+	     (kb->utt_hmm_eval + (kb->nfr >> 1)) / kb->nfr,
+	     (vithist_n_entry(kb->vithist) + (kb->nfr >> 1)) / kb->nfr,
+	     kb->tm_srch.t_cpu * 100.0 / kb->nfr,
+	     kb->tm_srch.t_elapsed * 100.0 / kb->nfr,
+	     kb->uttid);
+    }
+
     {
       int32 j, k;
       

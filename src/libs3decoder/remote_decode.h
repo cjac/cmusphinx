@@ -40,130 +40,45 @@
  * ALL RIGHTS RESERVED.
  *************************************************
  *
- *  May 14, 2004
- *    Created by Yitao Sun (yitao@cs.cmu.edu) based on the live.h created by
- *    Rita Singh.  The Live Decode API is the new top level API for Sphinx3.
- *    The goal of the Live Decode API is to provide a well documented and
- *    comprehensive API to control all aspects of the Sphinx3 speech decoder
- *    engine.
- *
- *    The return values, for example, hypothesis segments and string, unlike
- *    the rest of Sphinx3, are read-only, maintained internally, and clobbered
- *    by subsequent calls.
+ *  Aug 19, 2004
+ *    Created by Yitao Sun (yitao@cs.cmu.edu).  This is the asynchronous
+ *    version of the live-decode API.  It is meant for multi-threaded or server
+ *    applications where the decoding process must communicate with the data-
+ *    collection process indirectly.  It is NOT meant to decode multiple
+ *    sessions simultaneously.
  */
 
 #ifndef __LIVE_DECODE_H
 #define __LIVE_DECODE_H
 
-#include "kb.h"
-#include "fe.h"
+#include "live_decode.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+  
+typedef struct _control_block
+{
+  int32 cmd;
+  void* data;
+  struct _control_block *next_block;
+} control_block;
 
-#define MAX_UTTID_LEN				64
-#define MAX_CEP_LEN				64
-#define MAX_HYPSEG_LEN				64
-#define MAX_HYPSTR_LEN				4095
+typedef struct _return_block
+{
+  char *hyp_str;
+  int32 hyp_strlen;
+  hyp_t *hyp_segs;
+  int32 hyp_seglen;
+  struct _return_block *next_block;
+} return_block;
 
 typedef struct
 {
-  /*
-   * Knowledge base.
-   */
-  kb_t kb;
-
-  /*
-   * Pointer to the knowledge base core.
-   */
-  kbcore_t *kbcore;
-
-  /*
-   * Pointer to the front-end.
-   */
-  fe_t *fe;
-
-  /*
-   * File pointer to the HMM logfile.
-   */
-  FILE *hmm_log;
-
-  /*
-   * Parameter: maximum words per frame.
-   */
-  int32 max_wpf;
-
-  /*
-   * Parameter: maximum histories per frame.
-   */
-  int32 max_histpf;
-
-  /*
-   * Parameter: maximum HMMs per frame.
-   */
-  int32 max_hmmpf;
-
-  /*
-   * Parameter: intervals at which wbeam is used for phone transitions.
-   */
-  int32 phones_skip;
-
-  /*
-   * Current frame number.
-   */
-  int32 frame_num;
-
-  /*
-   * Current state of the live decoder.
-   */
-  int32 ld_state;
-
-  /*
-   * UTTID (obviously NOT) filled in by knowledge-base.
-   */
-  char uttid[MAX_UTTID_LEN];
-
-  /*
-   * The frame number at which the hypothesis is recorded.
-   */
-  int32 hyp_frame_num;
-
-  /*
-   * Hypothesis string.  Result (or partial result) of the recognition is
-   * stored as a complete string.
-   */
-  char *hyp_str;
-
-  /*
-   * Length of the hypothesis string above.
-   */
-  int32 hyp_strlen;
-
-  /*
-   * Hypothesis word segments.  Result (or partial result) of the recognition
-   * is stored as word segments.
-   */
-  hyp_t **hyp_segs;
-
-  /*
-   * Number of word/hypothesis segments.
-   */
-  int32 hyp_seglen;
-
-  /*
-   * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
-   * we allocate once per live decoder.
-   */ 
-  float32 ***features;
-
-  /*
-   * Boolean indicator whether we've internally allocated space for the
-   * command line arguments.
-   */
-  int32 internal_cmd_ln;
-
-} live_decoder_t;
+  live_decoder_t ld;
+  control_block *control_queue;
+  return_block *return_queue;
+} remote_decoder_t;
 
 /*
  * Initializes the live-decoder.  Assumes the user has externally allocated
@@ -171,25 +86,25 @@ typedef struct
  * user is responsible for calling cmd_ln_free() when he/she is done with
  * the live decoder.
  *
- * A better alternative is to wrap the parsed arguments in a structure and pass  * it to ld_init().  It makes the use of cmd_ln interface much more explicit.
- * It would also allow finer control over decoder parameters, in case if any
+ * A better alternative is to wrap the parsed arguments in a structure and pass  * it to rd_init().  It makes the use of cmd_ln interface much more explicit.
+ * It wourd also allow finer control over decoder parameters, in case if any
  * user want to have separate sets of decoder parameters.
  *
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_init(live_decoder_t *decoder);
+int rd_init(live_decoder_t *decoder);
 
 /*
- * Initializes the live-decoder.  The users who call ld_init_with_args might
+ * Initializes the live-decoder.  The users who call rd_init_with_args might
  * not want to deal with the cmd_ln interface at all.  This initialization
  * function allocates and parses arguments internally, and frees them later
- * when ld_finish() is called.
+ * when rd_finish() is called.
  *
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_init_with_args(live_decoder_t *decoder, int argc, char **argv);
+int rd_init_with_args(live_decoder_t *decoder, int argc, char **argv);
 
 /*
  * Wraps up the live-decoder and frees up allocated memory in the process.
@@ -197,11 +112,11 @@ int ld_init_with_args(live_decoder_t *decoder, int argc, char **argv);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_finish(live_decoder_t *decoder);
+int rd_finish(live_decoder_t *decoder);
 
 /*
  * Starts decoding an utterance.  This function has to be called before any
- * calls to ld_utt_proc_*() and ld_utt_hyps() functions.  
+ * calls to rd_utt_proc_*() and rd_utt_hyps() functions.  
  *
  * Arguments:
  *   char *uttid - The utterance id, or utterance label, for the next
@@ -211,7 +126,7 @@ int ld_finish(live_decoder_t *decoder);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_begin(live_decoder_t *decoder, char *uttid);
+int rd_utt_begin(live_decoder_t *decoder, char *uttid);
 
 /*
  * Finishes decoding the current utterance.  This function can be used to abort
@@ -220,11 +135,11 @@ int ld_utt_begin(live_decoder_t *decoder, char *uttid);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_end(live_decoder_t *decoder);
+int rd_utt_end(live_decoder_t *decoder);
 
 /*
  * Process raw 16-bit samples for the current utterance decoding.  This is the
- * most basic of ld_utt_proc_*() functions.  Audio data is passed directly to
+ * most basic of rd_utt_proc_*() functions.  Audio data is passed directly to
  * the decoder for processing.
  *
  * Arguments:
@@ -234,7 +149,7 @@ int ld_utt_end(live_decoder_t *decoder);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_raw(live_decoder_t *decoder, 
+int rd_utt_proc_raw(live_decoder_t *decoder, 
 		    int16 *samples,
 		    int32 num_samples);
 
@@ -244,7 +159,7 @@ int ld_utt_proc_raw(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_frame(live_decoder_t *decoder, 
+int rd_utt_proc_frame(live_decoder_t *decoder, 
 		      float32 **frames,
 		      int32 num_frames);
 
@@ -261,7 +176,7 @@ int ld_utt_proc_frame(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_feat(live_decoder_t *decoder, 
+int rd_utt_proc_feat(live_decoder_t *decoder, 
 		     float32 ***features,
 		     int32 num_features);
 
@@ -277,7 +192,7 @@ int ld_utt_proc_feat(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
+int rd_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
 
 
 /*****************************************************************************/
@@ -291,7 +206,7 @@ int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_abort(live_decoder_t *decoder);
+int rd_utt_abort(live_decoder_t *decoder);
 
 #ifdef __cplusplus
 }
