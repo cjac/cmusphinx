@@ -587,3 +587,6 @@ set of changes from dhd (below)
 	* Added the magic string '*align_all*' at the top of
 	  demo.cor so that the sphinx2-align example can run
 	  correctly
+
+	* Use -agcemax TRUE for livemode, -agcmax TRUE for batch.
+	
