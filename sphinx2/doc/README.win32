@@ -1,0 +1,20 @@
+
+Steps to build sphinx2* libs for MSDEV
+
+1. Copy include/ad.h.in to include/ad.h 
+
+2. Open include/ad.h and edit it. 
+   Replace '@ad_backend@' with 'AD_BACKEND_WIN32' (without quotes).
+
+3. Under directory win32/msdev, there are three workspaces: libsphinx2,
+   libsphinx2ad, libsphinx2fe. Using MSDEV, open them and compile them 
+   one by one.  libsphinx2.lib libspinx2ad.lib libsphinx2 
+   libsphinx2-debug.lib libspinx2ad-debug.lib and libsphinx2fe-debug.lib 
+   should appear in directory lib.
+
+NOTE: these workspaces are configured to generate multi-threaded version of
+the library. If you want single-threaded version, in MSDEV environment, you
+need to go to Project -> Settings -> C/C++ -> Code Generation -> Use
+run-time library and select Single threaded DLL.
+
+
