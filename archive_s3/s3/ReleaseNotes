@@ -1,0 +1,34 @@
+2001-05-29   Kevin Lenzo (lenzo@cs.cmu.edu) at Carnegie Mellon University
+        - Import new changes into CVS. Note that prior changes, including
+          getting everything under Configure, are not listed here.
+        - Licenses are in place (thanks, Rita).
+
+2001-01-01   Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
+	- Introduced live-mode interface
+	  
+2000-02-29	M. K. Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+	- Changed compile-time selection of 3 or 5-state HMM (with two executables)
+	  into a single binary that does a run-time selection.
+	- Makefile changes to go with the above
+
+2000-02-12	M. K. Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+	- Consolidated all code under a single directory.
+	- Removed SubVQ-PhoneProb (svqpp) hack for prediction of active phones.
+
+1999-12-17	M. K. Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+	- Added src/libcontmgau/gausubvq.c for sub-vector clustering of acoustic
+	  models, and related changes to libcontmgau.
+
+1999-12-13	M. K. Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+	- Added ability to process a single utterance over and over, waiting for
+	  file timestamp (modification time) to change between iterations.
+	- Added new output format for lattice files, for smaller size.
+	- Added SubVQ-PhoneProb module for prediction of active phones.
+	- Added special handling of 3-state, no-skip topology HMMs.
+	- Fixed bug in hmm-evaluation of non-emitting exit state scores.
+
+1999-11-23	M. K. Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+	- Initial release.
+	- Lextree decoder using continuous density HMMs.
+	- Batch mode only.
+	- Cepstra input only.

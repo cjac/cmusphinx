@@ -50,8 +50,8 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2001/05/29  14:47:57  lenzo
- * Enter numberous additional files, update License to that of Open Source Sphinx
+ * Revision 1.2  2001/05/29  14:53:19  lenzo
+ * *** empty log message ***
  * 
  * Revision 1.1  2000/12/12 22:55:55  lenzo
  * Separate out a/d lib.

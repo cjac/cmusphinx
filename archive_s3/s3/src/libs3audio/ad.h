@@ -11,8 +11,8 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2001/05/29  14:47:57  lenzo
- * Enter numberous additional files, update License to that of Open Source Sphinx
+ * Revision 1.2  2001/05/29  14:53:19  lenzo
+ * *** empty log message ***
  * 
  * Revision 1.1.1.1  2001/01/17 05:17:14  ricky
  * Initial Import of the s3.3 decoder, has working decodeaudiofile, s3.3_live
