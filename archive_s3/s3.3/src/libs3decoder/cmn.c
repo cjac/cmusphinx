@@ -72,8 +72,12 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen)
     float32 *mfcp;
     float32 t;
     int32 i, f;
-    
-    assert ((n_frame > 0) && (veclen > 0));
+
+    /* assert ((n_frame > 0) && (veclen > 0)); */
+    /* Added by PPK to prevent this assert from aborting Sphinx 3 */
+    if ((n_frame <= 0) || (veclen <= 0)) {
+        return;
+    }
     
     if (cmn_mean == NULL)
 	cmn_mean = (float32 *) ckd_calloc (veclen, sizeof (float32));
