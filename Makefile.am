@@ -15,7 +15,21 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/livedecode/livedecode.dsp \
 	win32/msdev/programs/livepretend/livepretend.dsp
 
-
+# Add an item for each and every test target to the CLEANFILES variable
+CLEANFILES = test.out \
+	test-align.out \
+	test-allphone.out \
+	test-astar.out \
+	test-dag.out \
+	test-decode.out \
+	test-full.out \
+	test-gausubvq.out \
+	test-livepretend.out \
+	test-simple.out \
+	pittsburgh.littleendian.allp \
+	pittsburgh.littleendian.phseg \
+	pittsburgh.littleendian.wdseg \
+	pittsburgh.nbest.gz
 
 test-simple : test-livepretend
 
@@ -24,56 +38,54 @@ test: test-simple
 test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq
 
 test-livepretend:
-	$(LIBTOOL) --mode=execute echo "LIVEPRETEND TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+	@echo "LIVEPRETEND TEST"
+	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
 		$(top_srcdir)/model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
-		$(top_srcdir)/model/lm/an4/args.an4.test > an4.log 2>&1 
-	$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" an4.log 
-	$(LIBTOOL) --mode=execute grep "FWDXCT" an4.log 
-	$(LIBTOOL) --mode=execute rm an4.log 
+		$(top_srcdir)/model/lm/an4/args.an4.test > $@.out 2>&1 
+	@$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" $@.out 
+	@$(LIBTOOL) --mode=execute grep "FWDXCT" $@.out 
 
 test-decode:
-	$(LIBTOOL) --mode=execute echo "DECODE TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+	@echo "DECODE TEST"
+	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/decode \
 	       -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-               -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-               -dict $(top_srcdir)/model/lm/an4/an4.dict \
-               -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-               -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-               -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-               -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
-               -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
+	       -fdict $(top_srcdir)/model/lm/an4/filler.dict \
+	       -dict $(top_srcdir)/model/lm/an4/an4.dict \
+	       -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+	       -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
 	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
-               -agc none \
-               -varnorm no \
-               -cmn current \
-               -subvqbeam 1e-02 \
-               -epl 4 \
-               -fillprob 0.02 \
+	       -agc none \
+	       -varnorm no \
+	       -cmn current \
+	       -subvqbeam 1e-02 \
+	       -epl 4 \
+	       -fillprob 0.02 \
 	       -feat 1s_c_d_dd \
-               -lw 9.5 \
-               -maxwpf 1 \
-               -beam 1e-40 \
-               -pbeam 1e-30 \
-               -wbeam 1e-20 \
-               -maxhmmpf 1500 \
-               -wend_beam 1e-1 \
-               -ci_pbeam 1e-3 \
-               -ds 2  > an4.log 2>&1
+	       -lw 9.5 \
+	       -maxwpf 1 \
+	       -beam 1e-40 \
+	       -pbeam 1e-30 \
+	       -wbeam 1e-20 \
+	       -maxhmmpf 1500 \
+	       -wend_beam 1e-1 \
+	       -ci_pbeam 1e-3 \
+	       -ds 2  > $@.out 2>&1
 
-	$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" an4.log 
-	$(LIBTOOL) --mode=execute grep "FWDXCT" an4.log 
-	$(LIBTOOL) --mode=execute rm an4.log 
+	@$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" $@.out 
+	@$(LIBTOOL) --mode=execute grep "FWDXCT" $@.out 
 
 test-align:
-	$(LIBTOOL) --mode=execute echo "ALIGN TEST"
-	$(LIBTOOL) --mode=execute echo "THIS IS JUST A FUNCTION TEST"
+	echo "ALIGN TEST"
+	echo "THIS IS JUST A FUNCTION TEST"
 	$(LIBTOOL) --mode=execute src/programs/align \
 	    -logbase 1.0003 \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
@@ -90,15 +102,15 @@ test-align:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -insentfn $(top_srcdir)/model/lm/an4/align.correct \
-	    -outsentfn ./align.answer \
+	    -outsentfn $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
-	$(LIBTOOL) --mode=execute rm pittsburgh*.*seg align.answer
+#	$(LIBTOOL) --mode=execute rm pittsburgh*.*seg $@.out
 
 
 test-allphone:
-	$(LIBTOOL) --mode=execute echo "ALLPHONE TEST"
-	$(LIBTOOL) --mode=execute echo "THIS IS JUST A FUNCTION TEST"
+	@echo "ALLPHONE TEST"
+	@echo "THIS IS JUST A FUNCTION TEST"
 	$(LIBTOOL) --mode=execute src/programs/allphone \
 	    -logbase 1.0003 \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
@@ -113,30 +125,26 @@ test-allphone:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
-	$(LIBTOOL) --mode=execute rm ./*.allp
 
 
 test-astar:
-	$(LIBTOOL) --mode=execute echo "ASTAR TEST"
+	@echo "ASTAR TEST"
 	$(LIBTOOL) --mode=execute src/programs/astar \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
             -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
             -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
             -lmfn $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-  	    -inspen 0.2 \
- 	    -beam 1e-64 \
-  	    -nbest 5 \
+	    -inspen 0.2 \
+	    -beam 1e-64 \
+	    -nbest 5 \
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
-  	    -inlatdir $(top_srcdir)/model/lm/an4/ \
-  	    -logbase 1.0003 \
-  	    -nbestdir . 
-	$(LIBTOOL) --mode=execute gzip -fd pittsburgh.nbest.gz 
-	$(LIBTOOL) --mode=execute cat pittsburgh.nbest 
-	$(LIBTOOL) --mode=execute rm pittsburgh.nbest
-
+	    -inlatdir $(top_srcdir)/model/lm/an4/ \
+	    -logbase 1.0003 \
+	    -nbestdir . 
+	@$(LIBTOOL) --mode=execute gzip -cfd pittsburgh.nbest.gz 
 
 test-dag:
-	$(LIBTOOL) --mode=execute echo "DAG TEST"
+	@echo "DAG TEST"
 	$(LIBTOOL) --mode=execute src/programs/dag \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
             -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
@@ -145,17 +153,16 @@ test-dag:
 	    -langwt 13.0 \
 	    -inspen 0.2 \
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
-  	    -inlatdir $(top_srcdir)/model/lm/an4/ \
-  	    -logbase 1.0003 \
-	    -backtrace 1 > an4.log 
+	    -inlatdir $(top_srcdir)/model/lm/an4/ \
+	    -logbase 1.0003 \
+	    -backtrace 1 > $@.out 
 
-	$(LIBTOOL) --mode=execute grep "BSTPTH: P I T T S B U R G H " an4.log 
-	$(LIBTOOL) --mode=execute grep "BSTXCT" an4.log 
-	$(LIBTOOL) --mode=execute rm an4.log 
+	@$(LIBTOOL) --mode=execute grep "BSTPTH: P I T T S B U R G H " $@.out 
+	@$(LIBTOOL) --mode=execute grep "BSTXCT" $@.out 
 
 test-gausubvq:
-	$(LIBTOOL) --mode=execute echo "GAUSUBVQ TEST"
-#	$(LIBTOOL) --mode=execute echo "This will compare the answer with a pre-generated svq file"
+	@echo "GAUSUBVQ TEST"
+#	@echo "This will compare the answer with a pre-generated svq file"
 	$(LIBTOOL) --mode=execute src/programs/gausubvq \
         -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
         -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
@@ -163,8 +170,7 @@ test-gausubvq:
         -svspec 0-38 \
         -iter 20 \
         -svqrows 16 \
-        -subvq subvq.out 
-	$(LIBTOOL) --mode=execute rm subvq.out
+        -subvq $@.out 
 #	$(LIBTOOL) --mode=execute grep -v "#" subvq.out > tmp.out
 #	$(LIBTOOL) --mode=execute diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
 #	$(LIBTOOL) --mode=execute rm tmp.out subvq.out
