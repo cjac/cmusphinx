@@ -1,11 +1,8 @@
 bin_SCRIPTS = \
-	allphone-test.csh \
-	batch.csh \
 	sphinx2-demo \
 	sphinx2-simple \
 	sphinx2-test \
         sphinx2-phone \
-        stress2sphinx \
 	sphinx2-align
 
 EXTRA_DIST =  \
@@ -18,5 +15,3 @@ EXTRA_DIST =  \
 	sphinx2-example.arg \
         stress2sphinx.in \
 	sphinx2-align.in
-
-

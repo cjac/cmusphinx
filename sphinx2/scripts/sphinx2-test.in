@@ -5,6 +5,7 @@ TASK=@prefix@/share/sphinx2/model/lm/turtle
 CTLFILE=@prefix@/share/sphinx2/model/lm/turtle/turtle.ctl
 
 echo " "
+echo "sphinx2-test"
 echo "Run CMU Sphinx2 in Batch mode to decode an example utterance."
 echo " "
 

@@ -10,8 +10,8 @@ use strict;
 
 $| = 1;  # turn off STDOUT buffering 
 
-print "# $0 started at ", scalar(localtime), "\n";
 print "\n";
+print "sphinx2-demo:\n";
 print "  Simple real-time demo of CMU Sphinx2 using a toy grammar.\n";
 print "\n";
 
