@@ -58,13 +58,25 @@
 #include <string.h>
 #include <assert.h>
 
-#include "audio_utils.h"
+#include "audio_utils_sunos.h"
 #include "s3types.h"
 #include "ad.h"
 
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
+ad_rec_t *ad_open_sps (int32 sps)
+{
+    ad_rec_t *r;
+    
+    if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
+	return NULL;
+    
+    r->audio_fd = audioOpen ((int)sps);
+    r->recording = 0;
+    
+    return r;
+}
 
 ad_rec_t *ad_open ( void )
 {

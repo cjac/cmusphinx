@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2001/12/11  04:40:55  lenzo
- * License cleanup.
+ * Revision 1.3  2002/11/10  19:27:38  egouvea
+ * Fixed references to sun's implementation of audio interface,
+ * referring to the correct .h file, and replacing sun4 with sunos.
  * 
+ * Revision 1.2  2001/12/11 04:40:55  lenzo
+ * License cleanup.
+ *
  * Revision 1.1.1.1  2001/12/03 16:01:45  egouvea
  * Initial import of sphinx3
  *
@@ -155,7 +159,7 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-#elif (sun4)
+#elif (sunos)
 
 typedef struct {
     int32 audio_fd;
