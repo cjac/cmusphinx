@@ -1,0 +1,21 @@
+-beam	1e-60
+-wbeam	1e-35
+-mdef	/lab/speech/sphinx3j/data/connected_digits/wdclean.500.mdef
+-dict	/lab/speech/sphinx3j/data/connected_digits/train.dict
+-fdict	/lab/speech/sphinx3j/data/connected_digits/fillerdict
+-lm	/lab/speech/sphinx3j/data/connected_digits/unigram.lm.DMP
+-mean	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/means
+-var	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/variances
+-mixw	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/mixture_weights 
+-tmat	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/transition_matrices
+
+-agc	none
+-varnorm	no
+-cmn	current
+-subvqbeam 1e-02
+-epl	4
+-fillprob	0.02
+-lw	9.5
+-maxwpf	10
+-wip	0.2
+-lextreedump 0

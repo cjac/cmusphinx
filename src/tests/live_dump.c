@@ -228,17 +228,17 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     metricsStart("FrontEnd");
 
-    live_nfr = fe_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
+    live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
 
     if (live_endutt) {
         /* RAH, It seems that we shouldn't throw out this data */
-        fe_end_utt(fe,dummyframe); /* Flush out the fe */
+        fe_dump_end_utt(fe,dummyframe); /* Flush out the fe */
     }
 
     /* Compute feature vectors */
-    live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
-                                          live_nfr, live_begin_new_utt,
-                                          live_endutt, &live_feat);
+    live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
+                                               live_nfr, live_begin_new_utt,
+                                               live_endutt, &live_feat);
     metricsStop("FrontEnd");
 
     /* decode the block */
