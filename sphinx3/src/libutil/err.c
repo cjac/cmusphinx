@@ -71,7 +71,7 @@
 void
 _E__pr_header(const char *f, long ln, const char *msg)
 {
-    (void) fflush(stdout);
+    (void) fflush(stderr);
     (void) fprintf(stderr, "%s: \"%s\", line %ld: ", msg, f, ln);
 }
 
@@ -80,7 +80,7 @@ _E__pr_info_header(f, ln, msg)
 char *f, *msg;
 long ln;
 {
-    (void) fflush(stdout);
+    (void) fflush(stderr);
 
     /* make different format so as not to be parsed by emacs compile */
     (void) fprintf(stderr, "%s: %s(%ld): ", msg, f, ln);
