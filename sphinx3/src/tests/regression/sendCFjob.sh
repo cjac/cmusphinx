@@ -25,14 +25,15 @@ package_name="sphinx3"
 #Package extension
 package_ext="tar.gz"
 
-# The repository address
-address=${username}@cvs.sf.net
+#Distribution full name
+distfn="${sphinx_ver}.${package_ext}"
+
+# cf shell server address
+cfshserver=cf-shell.sf.net
+cfsh_address=${username}@${cfshserver}
 
 # Mail header common strings
 headstring="${package_name} Compile farm Compilation "
-
-# cf server
-cfserver=cf-shell.sf.net
 
 # The local compilation space
 root=./sphinxDailyCF.$$
@@ -40,20 +41,15 @@ root=./sphinxDailyCF.$$
 # The local log
 outfile=test.out
 
+# The log analysis log
+analysislog = analysis.out
+
 # Define a path, just in case
 export PATH="/usr/local/bin:/bin:/usr/bin"
 
 # remote logdir
 logdir="logCompile"
 
-#User path
-#ugly hacks to get the Sourceforge compile farm directory structure
-#e.g. for username arthchan2003 , the path will be
-# /home/users/a/ar/arthchan2003/ . 
-
-firstlevel=`echo $username |sed "s/./& /g" |cut -d" " -f1`
-secondlevel=`echo $username |sed "s/../& /g" |cut -d" " -f1`
-userpath=/home/users/${firstlevel}/${secondlevel}/${username}
 
 # Try to find an executable that can send mail
 # Default to sendmail
@@ -89,67 +85,86 @@ sh ./autogen.sh >> $outfile 2>&1
 
 if ! make distcheck >> $outfile 2>&1 ;
  then 
-${MAILX} -s "${headstring} failed, Cause: make distcheck failed." ${S3DISTLIST} < $outfile 
+    ${MAILX} -s "${headstring} failed, Cause: make distcheck failed." ${S3DISTLIST} < $outfile 
     exit
  fi
 
-if ! scp ${sphinx_ver}.${package_ext} ${username}@${cfserver}:${userpath} >> $outfile 2>&1 ;
+#clean up the previous setup
+ssh ${cfsh_address} rm -r ${package_name} ${logdir} ${distfn} >> $outfile 2>&1
+
+if ! scp ${distfn} ${cfsh_address}:.  >> $outfile 2>&1 ;
  then 
     ${MAILX} -s "${headstring} failed, Cause: scp failed." ${S3DISTLIST} < $outfile 
     exit
  fi
 
-if ! ssh ${username}@${cfserver} tar zxvf ${sphinx_ver}.${package_ext}  >> $outfile 2>&1
+
+if ! ssh ${cfsh_address} tar zxvf ${distfn}  >> $outfile 2>&1
  then 
     ${MAILX} -s "${headstring} failed, Cause: fail to remotely control tarring." ${S3DISTLIST} < $outfile 
     exit
  fi
 
-if ! ssh ${username}@${cfserver} mv ${sphinx_ver} ${package_name}/ >> $outfile 2>&1
+if ! ssh ${cfsh_address} mv ${sphinx_ver} ${package_name}/ >> $outfile 2>&1
  then
     ${MAILX} -s "${headstring} failed, Cause: fail to remotely control moving" ${S3DISTLIST} < $outfile 
     exit
  fi
 
-if ! ssh ${username}@${cfserver} ./compileFarmRunTest.sh  >> $outfile 2>&1
+if ! ssh ${cfsh_address} mkdir ${logdir} >> $outfile 2>&1
+ then
+    ${MAILX} -s "${headstring} failed, Cause: fail to remotely mkdir" ${S3DISTLIST} < $outfile 
+    exit
+ fi
+
+if ! ssh ${cfsh_address} ./compileFarmRunTest.sh  >> $outfile 4>&1
  then
     ${MAILX} -s "${headstring} failed, Cause: fail to start compileFarmRunTest.sh" ${S3DISTLIST} < $outfile 
     exit
  fi
 
+if ! ssh ${cfsh_address} tar zcvf log.tgz ${logdir} 2>&1 
+then
+    ${MAILX} -s "${headstring} failed, Cause: Remote taring of ${logdir} failed" ${S3DISTLIST} < $outfile 
+    exit
+fi
 
-tmp=`date --iso-8601=minutes`
+popd
 
-if ! scp -r ${username}@${cfserver}:${userpath}/${logdir} ./log${tmp}  >> $outfile 2>&1
+if ! scp ${cfsh_address}:./log.tgz .  >> $outfile 2>&1
  then
     ${MAILX} -s "${headstring} failed, Cause: Cannot copy ${logdir}" ${S3DISTLIST} < $outfile 
     exit
  fi
 
-if ! ssh ${username}@${cfserver} rm -r ${sphinx_ver}.${package_ext} ${package_name}/ logCompile >> $outfile 2>&1
+if ! ssh ${cfsh_address} rm -r ${distfn} ${package_name}/ >> $outfile 2>&1
  then
     ${MAILX} -s "${headstring} failed, Cause: Cannot clean up" ${S3DISTLIST} < $outfile 
     exit
  fi
 
+tmp=`date --iso-8601`
+tar zxvf ./log.tgz 
+cp -r ${logdir} ./log${tmp}
+
 pushd ./log${tmp}
-
-if grep FAIL ./*/*.log >> $outfile 2>&1 
- then
-    $(MAILX} -s "${headstring} failed, Please take a look at ./log${tmp}"
-    exit
- else
-    ${MAILX} -s "${headstring} succeeded." < $outfile
- fi
-
+echo "Sphinx 3 CF compilation report" > analysislog
+for i in `find . -name  "*.log" -maxdepth 1`
+do 
+    echo "Platform $i" >> analysislog
+    grep PASS $i >> analysislog
+    grep FAIL $i >> analysislog
+    echo "`grep PASS $i |wc -l` PASSES"  >> analysislog 
+    echo "`grep FAIL $i |wc -l` FAILS" >> analysislog
+done
+${MAILX} -s "${headstring} Compilation completed. analysis " ${S3DISTLIST} < analysislog
+${MAILX} -s "${headstring} Compilation completed " ${S3DISTLIST} < $outfile
 popd
 
 popd
 
-popd
-
-chmod -R 777 $root
-/bin/rm -rf $root
+chmod -R 777 $root/${package_name} 
+/bin/rm -rf $root/${package_name}
 
 
 

@@ -13,6 +13,7 @@ mkdir `hostname`
 # Run test from the machine-specific directory
 cd `hostname`
 # Do the dance: configure, make etc
+unlimit 262144
 ../configure
 make all test-full
 # Copy the log files to a safe location that won't de destroyed by a clean
