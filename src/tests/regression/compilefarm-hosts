@@ -1,0 +1,18 @@
+# 127.0.0.1 just dummies the address so that bash can complete
+
+127.0.0.1	alpha-linux1
+127.0.0.1	amd64-linux1
+127.0.0.1	login
+127.0.0.1	ppc-osx1
+127.0.0.1	ppc-osx2
+127.0.0.1	shell
+^127.0.0.1	sparc-linux1
+127.0.0.1	sparc-solaris1
+127.0.0.1	sparc-solaris2
+^127.0.0.1	strongarm-linux1
+127.0.0.1	x86-freebsd1
+127.0.0.1	x86-linux1
+127.0.0.1	x86-linux2
+127.0.0.1	x86-netbsd1
+127.0.0.1	x86-openbsd1
+127.0.0.1	x86-solaris1

@@ -1,0 +1,9 @@
+/** \mainpage Sphinx 3 Internals Documentation
+ *
+ * This manual documents the functions, files and the internal variables
+ * of Sphinx 3's recognizers (both fast and slow). Currently, we intend it
+ * to be used only by Sphinx developers.  We do not recommend users to use the
+ * internal function at this point because they are still quite
+ * unstable.
+ *
+ */
