@@ -11,10 +11,10 @@
 Name "Meeting Recorder"
 
 ; The file to write
-OutFile "sphinx3.4_win32.exe"
+OutFile "sphinx3.5_win32.exe"
 
 ; The default installation directory
-InstallDir "$PROGRAMFILES\Carnegie Mellon University\Sphinx3.4\"
+InstallDir "$PROGRAMFILES\Carnegie Mellon University\Sphinx3.5\"
 
 Var DATADIR
 
@@ -45,6 +45,10 @@ Section "Sphinx Install"
   File "..\bin\Debug\gausubvq.exe"
   File "..\bin\Debug\livedecode.exe"
   File "..\bin\Debug\livepretend.exe"
+  File "..\bin\Debug\align.exe"
+  File "..\bin\Debug\allphone.exe"
+  File "..\bin\Debug\dag.exe"
+  File "..\bin\Debug\astar.exe"
 
 
 SectionEnd
