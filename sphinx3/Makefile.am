@@ -38,10 +38,14 @@ ctags:
 test-simple : test-livepretend
 
 test: test-simple
+
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-cepview 
+
+test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
+
+
 tet-ep : test-ep-match
 test-gausubvq : test-gausubvq-match
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match
-test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
 
 test-livepretend:
 	./src/tests/regression/test_livepretend.sh
