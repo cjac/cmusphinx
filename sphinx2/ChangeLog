@@ -697,3 +697,6 @@ set of changes from dhd (below)
 	* Add __BIG_ENDIAN__ definition in configure.in
 	* Changed all unigram_t.wid to unigram_t.mapid (lm_3g)
 	* Define NULL for systems that don't (sun4m).
+	* Added headers, etc for sun4.  Everything now compiles
+	  under SunOS except the client/server code which can
+	  be commented out of the Makefile.
