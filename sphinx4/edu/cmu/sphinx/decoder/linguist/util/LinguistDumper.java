@@ -63,7 +63,6 @@ public class LinguistDumper implements LinguistProcessor  {
      * @param props the set of SphinxProperties
      * @param linguist the linguist
      *
-     * @return <code>true</code>  if the file was successfully dumped
      */
     public void process(SphinxProperties props, Linguist linguist) {
         String fileName = props.getString(PROP_FILENAME, getDefaultName());
@@ -181,7 +180,7 @@ public class LinguistDumper implements LinguistProcessor  {
 	    int level = stateLevel.getLevel();
 	    SearchState state = stateLevel.getState();
 
-            // equalCheck(state);
+            equalCheck(state);
 
 
 	    if (!visitedStates.contains(state)) {

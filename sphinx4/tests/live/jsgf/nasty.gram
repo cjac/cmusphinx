@@ -1,4 +1,0 @@
-grammar jsgf.nastygram;
-
-public <nasty> = ((cat* | dog* | mouse*)+)+;
-
