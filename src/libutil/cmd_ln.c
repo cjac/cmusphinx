@@ -360,14 +360,6 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
   char **argv;
   int argc;
   int argv_size;
-
-#if !defined(ARG_MAX_LENGTH)
-#define ARG_MAX_LENGTH 256
-#endif
-
-  assert (0); /* ARG_MAX_LENGTH has to be defined in libutil!!!!! */
-              /* The #define above is just a hack. */
-
   char str[ARG_MAX_LENGTH];
   int len = 0;
   int ch;

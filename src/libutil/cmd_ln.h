@@ -71,6 +71,8 @@ extern "C" {
 #define ARG_FLOAT64	6
 #define ARG_STRING	8
 
+#define ARG_MAX_LENGTH 256
+
 /* Arguments of these types are REQUIRED */
 #define REQARG_INT32	(ARG_INT32 | ARG_REQUIRED)
 #define REQARG_FLOAT32	(ARG_FLOAT32 | ARG_REQUIRED)
@@ -98,6 +100,11 @@ int32 cmd_ln_parse (arg_t *defn,	/* In: Array of argument name definitions */
 		    int32 argc,		/* In: #Actual arguments */
 		    char *argv[]);	/* In: Actual arguments */
 
+/*
+ * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
+ * into an argv[] for cmd_ln_parse().
+ */
+int32 cmd_ln_parse_file(arg_t *defn, char *filename);
 
 /*
  * Return a pointer to the previously parsed value for the given argument name.
