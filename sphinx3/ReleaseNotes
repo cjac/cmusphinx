@@ -2,9 +2,9 @@
 
 	sphinx 3.5 release
 	^^^^^^^^^^^^^^^^^^
-	The corresponding SphinxTrain timestamp is ????????
+	The corresponding SphinxTrain's tag is SPHINX3_5_CMU_INTERNAL_RELEASE
 	One can check out the matching SphinxTrain of the sphinx3.5 release by command,
-	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_5_CMU_INTERNAL_RELEASE SphinxTrain
 	New features of this release, 
 	-Live-mode APIs are stable and are now officially released. 
 	 -windows version of live-mode decoder based on the new APIS is released. 
@@ -21,8 +21,8 @@
 	Corresponding changes in SphinxTrain
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	Please noted that SphinxTrain is distributed as a separate package and you can get it 
-	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
-	through time stamp ???????? 
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_5_CMU_INTERNAL_RELEASE SphinxTrain
+	through time stamp SPHINX3_5_CMU_INTERNAL_RELEAS?E
 
 	correspond to sphinx 3.5 release
 	Changes since the last record.
