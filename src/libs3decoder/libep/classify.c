@@ -259,7 +259,7 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
   int i,j,k;
   
   float a, b, pmix;	
-  float m, v, lrd, f;
+  float m, v, f;
   /* a is the product(k) [1/(2 * pi * varijk )^(1/2)]*/
   /* b is the sum (k) [ -0.5 * pow ( (x[k] - meansijk), 2 )  */
   /* p is the likelihood given class and gaussian mixture */

@@ -95,8 +95,8 @@ void pctr_increment (pctr_t ctr, int32 inc)
 
 void pctr_print(FILE *fp, pctr_t ctr)
 {
-  if(!ctr.name)
-    return 0;
+/*  if(!ctr.name)
+    return 0;*/
   fprintf (fp, "CTR:");
   fprintf (fp, "  %d %s", ctr.count, ctr.name);
 }
