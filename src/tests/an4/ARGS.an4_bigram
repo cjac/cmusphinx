@@ -18,6 +18,6 @@
 -maxwpf	10
 -wip	0.2
 -lextreedump 0
--lw   26
--beam     1e-120
+-lw   21
+-beam     1e-160
 -wbeam   1e-100
