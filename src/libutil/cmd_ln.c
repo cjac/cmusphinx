@@ -61,7 +61,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "cmd_ln.h"
 #include "err.h"
 #include "ckd_alloc.h"
@@ -199,6 +201,7 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
   char *str;
   int32 i;
   char *logfile;
+  struct stat statbuf;
   
   str = NULL;
 
@@ -211,7 +214,13 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
     str = argv[1];
   else if (argc == 1) {
     E_INFO("Looking for default argument file: %s\n",default_argfn);
+    if(stat(default_argfn,&statbuf)==0){
+      str=default_argfn;
+    }else{
+      E_INFO("Can't find default argument file %s.\n",default_argfn);
+    }
   }
+
 
   if (str) {
     /* Build command line argument list from file */
@@ -225,20 +234,6 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
       exit(1);
     }
   }else{
-    /*
-     * This is repeated in cmd_ln_parse()
-     */
-    /*
-    E_INFO("Parsing command line:\n");
-    for (i = 0; i < argc; i++) {
-      if (argv[i][0] == '-')
-	printf ("\\\n\t");
-      printf ("%s ", argv[i]);
-    }
-    printf ("\n\n");
-    fflush (stdout);
-    */
-
     cmd_ln_parse (defn, argc, argv);
   }
 
@@ -301,7 +296,12 @@ static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
     fprintf (fp, "\t[DEFLT]");
     for (l = 6; l < deflen; l += 8)	/* strlen("[DEFLT]") */
 	fprintf (fp, "\t");
-    fprintf (fp, "\t[VALUE]\n");
+
+    if(doc){
+      fprintf (fp, "\t[DESCR]\n");
+    }else{
+      fprintf (fp, "\t[VALUE]\n");
+    }
     
     /* Print current configuration, sorted by name */
     pos = arg_sort (defn, n);
@@ -420,11 +420,11 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     
     /* Fill in default values, if any, for unspecified arguments */
     for (i = 0; i < n; i++) {
-	if (! argval[i].ptr) {
-	    if (arg_str2val (argval+i, defn[i].type, defn[i].deflt) < 0)
-		E_FATAL("Bad default argument value for %s: %s\n",
-			defn[i].name, defn[i].deflt);
-	}
+      if (! argval[i].ptr) {
+	if (arg_str2val (argval+i, defn[i].type, defn[i].deflt) < 0)
+	  E_FATAL("Bad default argument value for %s: %s\n",
+		  defn[i].name, defn[i].deflt);
+      }
     }
     
     /* Check for required arguments; exit if any missing */
@@ -439,7 +439,12 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
 	cmd_ln_print_help (stderr, defn);
 	exit(-1);
     }
-    
+
+    if (argc == 1){
+	cmd_ln_print_help (stderr, defn);
+	exit(-1);
+    }
+
     /* Print configuration */
     fprintf (stderr, "Default configuration (superseded by the above):\n");
     arg_dump (stderr, defn, 0);
