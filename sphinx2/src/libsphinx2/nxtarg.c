@@ -64,6 +64,10 @@
 #include <stdlib.h>
 #include "strfuncs.h"
 
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
 static char _argbreak;
 
 char *
