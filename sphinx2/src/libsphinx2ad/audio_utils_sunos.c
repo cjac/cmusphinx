@@ -180,7 +180,7 @@ void	audioStartRecord(void)
     info.record.gain = AUDIO_DEF_GAIN;
     info.record.port = AUDIO_MICROPHONE;
 #else
-    info.record.gain = 85;
+    info.record.gain = 80;
     info.record.port = AUDIO_LINE_IN;
 #endif
     info.record.samples = 0;

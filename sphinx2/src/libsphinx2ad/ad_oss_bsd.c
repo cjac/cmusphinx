@@ -82,7 +82,7 @@
 
 
 #define AUDIO_FORMAT AFMT_S16_LE	/* 16-bit signed, little endian */
-#define INPUT_GAIN   (85)
+#define INPUT_GAIN   (80)
 
 #define SPS_EPSILON   200
 
