@@ -98,8 +98,8 @@ void live_initialize_decoder(char *live_args)
 
     fe_param = (param_t *) ckd_calloc(1, sizeof(param_t));
     samprate = cmd_ln_int32 ("-samprate");
-    if (samprate != 8000 && samprate != 16000)
-	E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",samprate);
+    if (samprate != 8000 && samprate != 16000 && samprate !=11025)
+	E_FATAL("Sampling rate %d not supported. Must be 8000 or 11025 or 16000\n",samprate);
 
     fe_param->SAMPLING_RATE = (float32) samprate;
     fe_param->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
