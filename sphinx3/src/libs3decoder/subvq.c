@@ -521,7 +521,7 @@ int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *ac
 {
     mgau_t *mgau;
     int32 *map;
-    int32 i,j, v, sv_id;
+    int32 i, v, sv_id;
     int32 c;
     int32 *vqdist;
     int32 score;

@@ -237,7 +237,7 @@ ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
   gnode_t *node;
   hyp_t *hyp;
   dict_t *dict;
-  char *hyp_strptr;
+  char *hyp_strptr = NULL;
   kb_t *kb = &decoder->kb;
 
   if (decoder->ld_state == LD_STATE_ENDED) {
