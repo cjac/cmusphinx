@@ -89,6 +89,10 @@ SOURCE=..\..\..\src\libsphinx2ad\cont_ad_base.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2ad\mulaw_base.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2ad\play_win32.c
 # End Source File
 # Begin Source File

@@ -424,7 +424,7 @@ chk_compound_word (char *str)
 }
 #endif
 
-static void dict_free (dictT *dict)
+void dict_free (dictT *dict)
 {
   int32 i;
   int32 entry_count;

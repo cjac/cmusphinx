@@ -43,6 +43,7 @@
 #include <stdlib.h>
 
 #ifdef WIN32
+#include <io.h>
 #include <fcntl.h>
 #else
 #include <sys/file.h>

@@ -73,6 +73,7 @@
 
 #include "s2types.h"
 #include "log.h"
+#include "logmsg.h"
 #include "scvq.h"
 #include "sc_vq_internal.h"
 #include "err.h"
