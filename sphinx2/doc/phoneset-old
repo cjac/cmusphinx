@@ -1,7 +1,15 @@
+#
+# 24-Feb-00
+# Sphinx2 default phone set for American English 
+# 
+
++BACKGROUND+
 +BREATH+
 +COUGH+
 +LAUGH+
++NOISE+
 +SMACK+
++TONE+
 +UH+
 +UHUM+
 +UM+
@@ -42,6 +50,7 @@ S
 SH
 T
 TH
+TS
 UH
 UW
 V
