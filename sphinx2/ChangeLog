@@ -643,4 +643,9 @@ set of changes from dhd (below)
 
 2001-03-30 Kevin A. Lenzo <lenzo@cs.cmu.edu> 
 	* added <string.h> to fe_interface.c and uttproc.c
-	* re-included the win32 tree in dist (thanks to wei xu)
+	* re-included the win32 tree in dist (thanks to Wei Xu)
+
+2001-06-02 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* fixed a lookup bug in time_align.c (thanks to Yan Ke)
+	* Noted that most changes are actually now in the CVS 
+	  commits rathter than in this file...

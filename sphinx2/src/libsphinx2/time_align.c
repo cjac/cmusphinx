@@ -65,9 +65,12 @@
  *
  * Revision History
  * $Log$
- * Revision 1.6  2001/02/13  19:51:38  lenzo
- * *** empty log message ***
+ * Revision 1.7  2001/07/02  16:47:12  lenzo
+ * Fixed triphone lookup fallback case.
  * 
+ * Revision 1.6  2001/02/13 19:51:38  lenzo
+ * *** empty log message ***
+ *
  * Revision 1.5  2001/01/25 19:36:29  lenzo
  * Fixing some memory leaks
  *
@@ -579,6 +582,9 @@ begin_triphone(int32 phone_id,
 	return out_phone_id;
     }
 
+    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
+              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
+
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
 }
 
@@ -614,16 +620,15 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
-	       phone_name, lc_phone_name, rc_phone_name,
-	       phone_str);
+	printf("%s(%s,%s)s approxed as %s\n",
+	       phone_name, lc_phone_name, rc_phone_name, phone_str);
 	return out_phone_id;
     }
 
     sprintf(phone_str, "%s(%s,SIL)e", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -632,7 +637,7 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -641,11 +646,14 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
+
+    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
+              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
 }
@@ -677,7 +685,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -686,7 +694,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)e", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -695,7 +703,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -704,11 +712,14 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approx'ed as %s\n",
+	printf("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
+
+    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
+              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
 }
@@ -731,21 +742,24 @@ triphone(int32 phone_id,
     phone_name    = phone_from_id(phone_id);
     lc_phone_name = phone_from_id(lc_phone_id);
     rc_phone_name = phone_from_id(rc_phone_id);
-    
+
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
 	return out_phone_id;
     }
 
-    sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
+    sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s) approx'ed as %s\n",
+	printf("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
+
+    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
+              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE);	/* should never get here */
 }
