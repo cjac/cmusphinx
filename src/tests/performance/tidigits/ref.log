@@ -1,0 +1,6 @@
+tidigits-decany.match.align:WORD ACCURACY=  99.465% (28430/28583)  ERRORS=  0.913% (  261/28583)
+tidigits-decode.match.align:WORD ACCURACY=  99.664% (28487/28583)  ERRORS=  0.525% (  150/28583)
+tidigits-lp.match.align:WORD ACCURACY=  99.570% (28460/28583)  ERRORS=  0.651% (  186/28583)
+tidigits-quick-decany.match.align:WORD ACCURACY=  99.479% ( 5732/ 5762)  ERRORS=  0.746% (   43/ 5762)
+tidigits-quick-decode.match.align:WORD ACCURACY=  99.792% ( 5750/ 5762)  ERRORS=  0.417% (   24/ 5762)
+tidigits-quick-lp.match.align:WORD ACCURACY=  99.636% ( 5741/ 5762)  ERRORS=  0.555% (   32/ 5762)

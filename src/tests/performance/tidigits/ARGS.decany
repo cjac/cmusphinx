@@ -1,5 +1,5 @@
--beam	1e-60
--wbeam	1e-35
+-beam	1e-80
+-nwbeam	1e-40
 -mdef	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.500.mdef
 -dict	/lab/speech/sphinx4/data/tidigits_model/dictionary
 -fdict	/lab/speech/sphinx4/data/tidigits_model/fillerdict
@@ -12,6 +12,6 @@
 -varnorm	no
 -cmn	current
 -lw	9.5
--wip	0.00000000000001
--lextreedump 0
+-inspen	0.00000000000001
+-feat 1s_c_d_dd
 
