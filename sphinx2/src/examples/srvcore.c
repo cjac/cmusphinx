@@ -14,8 +14,6 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -52,9 +50,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created, based on Brian Milnes's earlier version.
  * $Log$
- * Revision 1.7  2001/12/07  12:21:45  lenzo
- * Move some headers.
+ * Revision 1.8  2001/12/07  17:30:01  lenzo
+ * Clean up and remove extra lines.
  * 
+ * Revision 1.7  2001/12/07 12:21:45  lenzo
+ * Move some headers.
+ *
  * Revision 1.6  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *

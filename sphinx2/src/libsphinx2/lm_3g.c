@@ -14,8 +14,6 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -81,11 +79,14 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.9  2001/12/07  13:11:30  lenzo
+ * Revision 1.10  2001/12/07  17:30:02  lenzo
+ * Clean up and remove extra lines.
+ * 
+ * Revision 1.9  2001/12/07 13:11:30  lenzo
  * Consolidate byte order code into byteorder.h.  Note that there are still
  * two "senses" of byte swapping that are confusing, and all this should
  * be cleaned up and verified.
- * 
+ *
  * Revision 1.8  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *

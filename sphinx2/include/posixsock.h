@@ -14,8 +14,6 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -50,9 +48,12 @@
      An include file to hide posix socket differences.
 
  * $Log$
- * Revision 1.3  2001/12/07  05:14:20  lenzo
- * License 1.2.
+ * Revision 1.4  2001/12/07  17:30:00  lenzo
+ * Clean up and remove extra lines.
  * 
+ * Revision 1.3  2001/12/07 05:14:20  lenzo
+ * License 1.2.
+ *
  * Revision 1.2  2000/12/05 01:45:11  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *

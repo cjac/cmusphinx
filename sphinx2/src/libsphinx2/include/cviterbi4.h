@@ -14,8 +14,6 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 

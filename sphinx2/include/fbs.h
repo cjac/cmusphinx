@@ -14,8 +14,6 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -45,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2001/12/07  05:14:19  lenzo
- * License 1.2.
+ * Revision 1.6  2001/12/07  17:30:00  lenzo
+ * Clean up and remove extra lines.
  * 
+ * Revision 1.5  2001/12/07 05:14:19  lenzo
+ * License 1.2.
+ *
  * Revision 1.4  2001/11/20 21:22:31  lenzo
  * Win32 re-compatibility fixes.
  *
