@@ -269,7 +269,7 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev</null 2>&1) ; \
+	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev/null 2>&1) ; \
 	then echo "wave2feat test PASSED"; else \
 	echo "wave2feat test FAILED"; fi
 
