@@ -6,6 +6,15 @@ bin/ : binaries of example programs and scripts.  sources
           for these are in src/examples/ and they link
           against lib/libsphinx2.a
 
+  sphinx2-test: a simple shell script that calls sphinx2-batch
+          to decode an example utterance in the demo, called
+          goforward.16k, which contains the utterance 
+          "GO FORWARD TEN METERS".  If you've built Sphinx2
+          successfully, and this decodes, you'll know the
+          basic engine is working, and the acoustic models and
+          language models are working.  From there you'll
+          have to worry about audio.
+
   sphinx2-demo: a perl script that invokes tty-continuous
           as a pipe.  Prints out the result whenever it
           gets one. may take one argument: the name
@@ -21,18 +30,19 @@ bin/ : binaries of example programs and scripts.  sources
           The lmtool web page is available from 
               http://www.speech.cs.cmu.edu/sphinx/
 
-  turtle-demo: a simple command-line call that runs 
+  sphinx2-simple: a simple command-line call that runs 
           sphinx2-continuous with all the necessary
           command-line options.  this is a good thing
           to look at and use when you first start out.
+          This gives a lot of diagnostic info that 
+          sphinx2-demo suppresses.
           
-
   sphinx2-continuous: this is a compiled example that takes
           a large number of command line arguments to 
           run directly -- thus the sphinx2-demo script
           above.  it takes audio from /dev/dsp and prints
           out its status while decoding. listens all the
-          time.
+          time.  
 
   sphinx2-ptt: like sphinx2-continuous, but you press
           a key to start and stop listening.  hack 

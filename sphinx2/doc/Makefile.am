@@ -1,1 +1,2 @@
-EXTRA_DIST = README.bin  README.lib  
+EXTRA_DIST = README.bin  README.lib  phoneset
+
