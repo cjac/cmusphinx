@@ -57,7 +57,7 @@
 #include <libs3decoder/kb.h>
 #include <libs3decoder/utt.h>
 #include <programs/cmd_ln_args.h>
-#include <libs3decoder/new_fe.h>  /* 01.15.01 - RAH, use new_fe.h instead */
+#include <libs3decoder/fe.h>  /* 01.15.01 - RAH, use new_fe.h instead */
 #include "live_dump.h"
 #include "fe_dump.h"
 #include "feat_dump.h"
@@ -109,8 +109,11 @@ void live_initialize_decoder(char *live_args)
     fe_param->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
     fe_param->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
     fe_param->NUM_FILTERS = cmd_ln_int32("-nfilt");
-    fe_param->FRAME_RATE = 100; /* HARD CODED TO 100 FRAMES PER SECOND */
-    fe_param->PRE_EMPHASIS_ALPHA = (float32) 0.97;
+    fe_param->FRAME_RATE = cmd_ln_int32("-frate");
+
+    fe_param->PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
+    fe_param->FFT_SIZE = cmd_ln_int32("-nfft");
+    fe_param->WINDOW_LENGTH = cmd_ln_float32("-wlen");
     fe_param->doublebw = cmd_ln_int32("-doublebw");
     fe_param->machine_endian = cmd_ln_int32("-machine_endian");
     fe_param->input_endian = cmd_ln_int32("-input_endian");
@@ -214,7 +217,8 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 {
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
-    float32 ***live_feat = NULL;
+    static float32 ***live_feat = NULL;
+
     int32   live_nfr, live_nfeatvec;
     int32   nwds;
     float32 **mfcbuf;

@@ -38,8 +38,8 @@ TOP=../..
 DIRNAME=src/tests
 BUILD_DIRS = 
 ALL_DIRS= $(BUILD_DIRS)
-H = cmd_ln_args.h fe_dump.h feat_dump.h new_fe_sp_dump.h live_dump.h metrics.h
-LIVEDECSRCS = parse_args_file.c fe_dump.c feat_dump.c new_fe_sp_dump.c live_dump.c metrics.c
+H = cmd_ln_args.h fe_dump.h feat_dump.h fe_sigproc_dump.h live_dump.h metrics.h
+LIVEDECSRCS = parse_args_file.c fe_dump.c feat_dump.c fe_sigproc_dump.c live_dump.c metrics.c
 MAINSRCS = dump_frontend.c batch_metrics.c lm_test.c lm_utt_test.c
 # OTHERSRCS = main.c
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) $(BASESRCS:.c=.o) 
