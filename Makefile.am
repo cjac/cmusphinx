@@ -45,8 +45,8 @@ test-livepretend:
 		$(top_srcdir)/model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		$(top_srcdir)/model/lm/an4/args.an4.test > $@.out 2>&1 
-	@$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" $@.out 
-	@$(LIBTOOL) --mode=execute grep "FWDXCT" $@.out 
+	@grep "P I T T S B U R G H (" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-decode:
 	@echo "DECODE TEST"
@@ -80,8 +80,8 @@ test-decode:
 	       -ci_pbeam 1e-3 \
 	       -ds 2  > $@.out 2>&1
 
-	@$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" $@.out 
-	@$(LIBTOOL) --mode=execute grep "FWDXCT" $@.out 
+	@grep "P I T T S B U R G H (" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-align:
 	echo "ALIGN TEST"
@@ -105,7 +105,6 @@ test-align:
 	    -outsentfn $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
-#	$(LIBTOOL) --mode=execute rm pittsburgh*.*seg $@.out
 
 
 test-allphone:
@@ -141,7 +140,7 @@ test-astar:
 	    -inlatdir $(top_srcdir)/model/lm/an4/ \
 	    -logbase 1.0003 \
 	    -nbestdir . 
-	@$(LIBTOOL) --mode=execute gzip -cfd pittsburgh.nbest.gz 
+	@gzip -cfd pittsburgh.nbest.gz 
 
 test-dag:
 	@echo "DAG TEST"
@@ -157,8 +156,8 @@ test-dag:
 	    -logbase 1.0003 \
 	    -backtrace 1 > $@.out 
 
-	@$(LIBTOOL) --mode=execute grep "BSTPTH: P I T T S B U R G H " $@.out 
-	@$(LIBTOOL) --mode=execute grep "BSTXCT" $@.out 
+	@grep "BSTPTH: P I T T S B U R G H " $@.out 
+	@grep "BSTXCT" $@.out 
 
 test-gausubvq:
 	@echo "GAUSUBVQ TEST"
@@ -171,9 +170,9 @@ test-gausubvq:
         -iter 20 \
         -svqrows 16 \
         -subvq $@.out 
-#	$(LIBTOOL) --mode=execute grep -v "#" subvq.out > tmp.out
-#	$(LIBTOOL) --mode=execute diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-#	$(LIBTOOL) --mode=execute rm tmp.out subvq.out
+#	grep -v "#" subvq.out > tmp.out
+#	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+#	rm tmp.out subvq.out
 
 
 
