@@ -324,7 +324,7 @@ main (int32 argc, char **argv)
 	float *mfcp;
 
 	memset(&param, 0, sizeof(param));
-	param.SAMPLING_RATE = sps;
+	param.SAMPLING_RATE = (float)sps;
 
 	if ((fe = fe_init (&param)) == NULL)
 	    E_FATAL("fe_init(%d) failed\n", sps);

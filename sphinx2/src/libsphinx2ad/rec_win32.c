@@ -188,7 +188,7 @@ static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
     
     /* There should be a check here for a device of the desired type; later... */
     
-    st = waveInOpen ((LPHWAVEIN) &h, WAVE_MAPPER, (LPWAVEFORMAT) &wfmt,
+    st = waveInOpen ((LPHWAVEIN) &h, WAVE_MAPPER, (LPWAVEFORMATEX) &wfmt,
 		     (DWORD) 0L, 0L, (DWORD) CALLBACK_NULL);
     if (st != 0) {
 	wavein_error ("waveInOpen", st);

@@ -564,10 +564,10 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p2*10000;
-	p2 = p*0.0001;
-	p = bo_wt*10000;
-	bo_wt = p*0.0001;
+	p = (int)(p2*10000);   /* typecast to make the compiler happy, this and following lines - EBG */
+	p2 = (float)(p*0.0001);
+	p = (int)(bo_wt*10000);
+	bo_wt = (float)(p*0.0001);
 
 	if (bgcount >= model->bcount)
 	    QUIT((stderr, "%s(%d): Too many bigrams\n", __FILE__, __LINE__));
@@ -651,8 +651,8 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p3*10000;
-	p3 = p*0.0001;
+	p = (int)(p3*10000); /* typecast to get rid of warnings - EBG */
+	p3 = (float)(p*0.0001);
 
 	if (tgcount >= model->tcount)
 	    QUIT((stderr, "%s(%d): Too many trigrams\n", __FILE__, __LINE__));
@@ -1311,14 +1311,14 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     }
     
     k = fread_int32 (fp, strlen(darpa_hdr)+1, strlen(darpa_hdr)+1, "header size");
-    if (fread (str, sizeof (char), k, fp) != k)
+    if ((int)fread (str, sizeof (char), k, fp) != k)
 	QUIT((stderr, "%s(%d): Cannot read header\n", __FILE__, __LINE__));
     if (strncmp (str, darpa_hdr, k) != 0)
 	QUIT((stderr, "%s(%d): Wrong header %s\n", __FILE__, __LINE__, darpa_hdr));
     printf("%s(%d): %s\n", __FILE__, __LINE__, str);
     
     k = fread_int32 (fp, 1, 1023, "LM filename size");
-    if (fread (str, sizeof (char), k, fp) != k)
+    if ((int)fread (str, sizeof (char), k, fp) != k)
 	QUIT((stderr, "%s(%d): Cannot read LM filename in header\n", __FILE__, __LINE__));
     if (strncmp (str, lmfile, k) != 0)
 	fprintf (stdout, "%s(%d): **WARNING** LM filename in header = %s\n", __FILE__, __LINE__, str);
@@ -1338,7 +1338,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
 	    k = fread_int32 (fp, 0, 1023, "string length");
 	    if (k == 0)
 		break;
-	    if (fread (str, sizeof(char), k, fp) != k)
+	    if ((int)fread (str, sizeof(char), k, fp) != k)
 		QUIT((stderr, "%s(%d): fread(word) failed\n", __FILE__, __LINE__));
 	}
 	/* read model->ucount */
@@ -1357,7 +1357,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
 	    model->ucount, model->bcount, model->tcount);
 
     /* read unigrams */
-    if (fread (model->unigrams, sizeof(unigram_t), model->ucount+1, fp) != model->ucount+1)
+    if ((int)fread (model->unigrams, sizeof(unigram_t), model->ucount+1, fp) != model->ucount+1)
 	QUIT((stderr, "%s(%d): fread(unigrams) failed\n", __FILE__, __LINE__));
     for (i = 0, ugptr = model->unigrams; i <= model->ucount; i++, ugptr++) {
 	SWAPL(ugptr->wid);
@@ -1377,7 +1377,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
 	   __FILE__, __LINE__, model->ucount);
 
     /* read bigrams */
-    if (fread (model->bigrams, sizeof(bigram_t), model->bcount+1, fp) != model->bcount+1)
+    if ((int)fread (model->bigrams, sizeof(bigram_t), model->bcount+1, fp) != model->bcount+1)
 	QUIT((stderr, "%s(%d): fread(bigrams) failed\n", __FILE__, __LINE__));
     for (i = 0, bgptr = model->bigrams; i <= model->bcount; i++, bgptr++) {
 	SWAPW(bgptr->wid);
@@ -1390,7 +1390,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     
     /* read trigrams */
     if (model->tcount > 0) {
-	if (fread(model->trigrams, sizeof(trigram_t), model->tcount, fp) != model->tcount)
+	if ((int)fread(model->trigrams, sizeof(trigram_t), model->tcount, fp) != model->tcount)
 	    QUIT((stderr, "%s(%d): fread(trigrams) failed\n", __FILE__, __LINE__));
 	for (i = 0, tgptr = model->trigrams; i < model->tcount; i++, tgptr++) {
 	    SWAPW(tgptr->wid);
@@ -1402,7 +1402,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     /* read n_prob2 and prob2 array */
     model->n_prob2 = k = fread_int32 (fp, 1, 65535, "LM.n_prob2");
     model->prob2 = (log_t *) CM_calloc (k, sizeof (log_t));
-    if (fread (model->prob2, sizeof (log_t), k, fp) != k)
+    if ((int)fread (model->prob2, sizeof (log_t), k, fp) != k)
 	QUIT((stderr, "%s(%d): fread(prob2) failed\n", __FILE__, __LINE__));
     for (i = 0; i < k; i++)
 	SWAPL(model->prob2[i].l);
@@ -1413,7 +1413,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
 	k = fread_int32 (fp, 1, 65535, "LM.n_bo_wt2");
 	model->n_bo_wt2 = k;
 	model->bo_wt2 = (log_t *) CM_calloc (k, sizeof (log_t));
-	if (fread (model->bo_wt2, sizeof (log_t), k, fp) != k)
+	if ((int)fread (model->bo_wt2, sizeof (log_t), k, fp) != k)
 	    QUIT((stderr, "%s(%d): fread(bo_wt2) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
 	    SWAPL(model->bo_wt2[i].l);
@@ -1425,7 +1425,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
 	k = fread_int32 (fp, 1, 65535, "LM.n_prob3");
 	model->n_prob3 = k;
 	model->prob3 = (log_t *) CM_calloc (k, sizeof (log_t));
-	if (fread (model->prob3, sizeof (log_t), k, fp) != k)
+	if ((int)fread (model->prob3, sizeof (log_t), k, fp) != k)
 	    QUIT((stderr, "%s(%d): fread(prob3) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
 	    SWAPL(model->prob3[i].l);
@@ -1436,7 +1436,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     if (model->tcount > 0) {
 	k = (model->bcount+1)/BG_SEG_SZ + 1;
 	k = fread_int32 (fp, k, k, "tseg_base size");
-	if (fread (model->tseg_base, sizeof(int32), k, fp) != k)
+	if ((int)fread (model->tseg_base, sizeof(int32), k, fp) != k)
 	    QUIT((stderr, "%s(%d): fread(tseg_base) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
 	    SWAPL(model->tseg_base[i]);
@@ -1446,7 +1446,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     /* read ascii word strings */
     k = fread_int32 (fp, 1, 0x7fffffff, "words string-length");
     tmp_word_str = (char *) CM_calloc (k, sizeof (char));
-    if (fread (tmp_word_str, sizeof(char), k, fp) != k)
+    if ((int)fread (tmp_word_str, sizeof(char), k, fp) != k)
 	QUIT((stderr, "%s(%d): fread(word-string) failed\n", __FILE__, __LINE__));
 
     /* First make sure string just read contains ucount words (PARANOIA!!) */
@@ -1636,36 +1636,36 @@ static void lm_set_param (lm_t *model, double lw, double uw, double wip, int32 w
 
     for (i = 0; i < model->ucount; i++) {
 	model->unigrams[i].bo_wt1.l =
-	    (LOG10TOLOG(UG_BO_WT_F(model,i))) * model->lw;
+	    (int)((LOG10TOLOG(UG_BO_WT_F(model,i))) * model->lw);
 
 	/* Interpolate LM unigram prob with uniform prob (except start_sym) */
 	if (strcmp (word_str[i], start_sym) == 0) {
 	    model->unigrams[i].prob1.l =
-		(LOG10TOLOG(UG_PROB_F(model,i)))*model->lw + model->log_wip;
+		(int)((LOG10TOLOG(UG_PROB_F(model,i)))*model->lw + model->log_wip);
 	} else {
 	    tmp1 = (LOG10TOLOG(UG_PROB_F(model,i))) + logUW;
 	    tmp2 = logUniform + logOneMinusUW;
 	    FAST_ADD (tmp1,tmp1,tmp2,at,ts);
 	    model->unigrams[i].prob1.l =
-		(tmp1 * model->lw) + model->log_wip;
+		(int)((tmp1 * model->lw) + model->log_wip);
 	}
     }
 
     for (i = 0; i < model->n_prob2; i++) {
 	model->prob2[i].l =
-	    (LOG10TOLOG(model->prob2[i].f))*model->lw + model->log_wip;
+	    (int)((LOG10TOLOG(model->prob2[i].f))*model->lw + model->log_wip);
     }
     if (model->tcount > 0) {
 	for (i = 0; i < model->n_bo_wt2; i++) {
 	    model->bo_wt2[i].l =
-		(LOG10TOLOG(model->bo_wt2[i].f))*model->lw;
+		(int)((LOG10TOLOG(model->bo_wt2[i].f))*model->lw);
 	}
     }
     
     if (model->tcount > 0) {
 	for (i = 0; i < model->n_prob3; i++) {
 	    model->prob3[i].l =
-		(LOG10TOLOG(model->prob3[i].f))*model->lw + model->log_wip;
+		(int)((LOG10TOLOG(model->prob3[i].f))*model->lw + model->log_wip);
 	}
     }
 }
@@ -1915,7 +1915,8 @@ static void lm3g2dmp_lm_next_frame ( void )
 static int32 lm3g2dmp_lm3g_raw_score (int32 score)
 {
     score -= lmp->log_wip;
-    score *= lmp->invlw;
+    score = (int)((float)score * lmp->invlw);  /*typecast and explicit format to make 
+											    * compiler happy - EBG */
     
     return score;
 }

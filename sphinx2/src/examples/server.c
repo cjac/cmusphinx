@@ -50,9 +50,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2001/11/27  21:51:57  lenzo
- * Fix it so client ACK works cross-platform.
+ * Revision 1.6  2001/12/04  19:58:16  egouvea
+ * Changes mostly in typecast to prevent warnings from compiler.
  * 
+ * Revision 1.5  2001/11/27 21:51:57  lenzo
+ * Fix it so client ACK works cross-platform.
+ *
  * Revision 1.3  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
@@ -98,12 +101,11 @@
 #include <assert.h>
 #include <signal.h>
 
-#include <sys/time.h>
-
 #ifdef WIN32
 #include <posixwin32.h>
 #else
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 
 #include "s2types.h"
