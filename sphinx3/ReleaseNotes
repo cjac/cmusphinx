@@ -7,6 +7,8 @@
 	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
 	New features of this release, 
 	-Live-mode APIs are stable and are now officially released. 
+	 -windows version of live-mode decoder based on the new APIS is released. 
+	 -live-mode decoder simulator (livepretend) based on the new APIS is still under development. We expect it to be stable in Sphinx 3.6. 
 	-Mean transformation by matrix is now supported. 
 	-4 tools of s3.0 are now incorporated in Sphinx 3.x. 
 	 1, align - an aligner,
