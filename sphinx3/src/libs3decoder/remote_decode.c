@@ -52,12 +52,8 @@
 
 enum {
   RD_STATE_UNINIT = 0,
-  RD_STATE_INIT,
   RD_STATE_IDLE,
-  RD_STATE_UTT_BEGIN,
-  RD_STATE_UTT_PROC,
-  RD_STATE_UTT_END,
-  RD_STATE_FINISH
+  RD_STATE_UTT
 };
 
 enum {
@@ -65,10 +61,10 @@ enum {
   RD_CTRL_FINISH,
   RD_CTRL_UTT_BEGIN,
   RD_CTRL_UTT_END,
-  RD_CTRL_UTT_CANCEL,
   RD_CTRL_PROC_RAW,
   RD_CTRL_PROC_FRAME,
-  RD_CTRL_PROC_FEAT
+  RD_CTRL_PROC_FEAT,
+  RD_CTRL_JOIN,
 };
 
 typedef struct _control_block
@@ -96,45 +92,241 @@ int
 rd_unlock_internal(remote_decoder_t *decoder);
 
 int
-rd_queue_control(remote_decoder_t *decoder, int32 param, void *data);
+rd_queue_control(remote_decoder_t *decoder, int32 cmd, int32 param,
+		 void *data);
 
 int
-rd_dequeue_control(remote_decoder_t *decoder, int32 *param, void **data);
+rd_dequeue_control(remote_decoder_t *decoder, int32 cmd, int32 *param,
+		   void **data);
 
 int
 rd_queue_result(remote_decoder_t *decoder, char *uttid, char *hyp_str,
-		int32 hyp_len, hyp_t *hyp_segs, int32 hyp_seglen);
+		hyp_t *hyp_segs);
 
 int
 rd_dequeue_result(remote_decoder_t *decoder, char **uttid, char **hyp_str,
-		int32 *hyp_len, hyp_t **hyp_segs, int32 *hyp_seglen);
+		  hyp_t **hyp_segs);
 
 int
 rd_init(remote_decoder_t *decoder)
 {
-  control_block *cb = 0;
-
-  if ((cb = (control_block *)ckd_calloc(1, sizeof(control_block))) == 0) {
-    return -1;
-  }
-
-  *cb = { RD_CTRL_INIT, 0, 0, 0 };
-  if (rd_queue_control_block(decoder, cb) != 0) {
-    ckd_free(cb);
-    return -1;
-  }
-
-  return 0;
+  memset(decoder, 0, sizeof(remote_decoder));
+  decoder->internal_cmd_ln = 0;
+  return rd_queue_control_block(decoder, RD_CTRL_INIT, 0, 0);
 }
 
-int rd_init_with_args(remote_decoder_t *decoder, int argc, char **argv)
+int
+rd_init_with_args(remote_decoder_t *decoder, int argc, char **argv)
 {
-  int rv = 0;
-
+  int rv;
   cmd_ln_parse(arg_def, argc, argv);
   rv = rd_init(decoder);
-  decoder->internal_cmd_ln = 0;
+  decoder->internal_cmd_ln = 1;
   return rv;
 }
 
+int
+rd_finish(remote_decoder_t *decoder)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_FINISH, 0, 0);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_begin(remote_decoder_t *decoder, char *uttid)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_UTT_BEGIN, 0, uttid);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_end(remote_decoder_t *decoder)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_UTT_END, 0, 0);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_abort(remote_decoder_t *decoder)
+{
+  int rv = 0;
+  rd_lock_internal(decoder);
+  if (rd->state == RD_STATE_UTT) {
+    while (rd_dequeue_control_block(decoder, 0, 0, 0) == 0);
+    rv = rd_queue_control_block(decoder, RD_CTRL_UTT_END, 0, 0);
+  }
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_proc_raw(remote_decoder_t *decoder, int16 *samples, int32 num_samples)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_PROC_RAW, num_samples, samples);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_proc_frame(remote_decoder_t *decoder,
+		  float32 **frames,
+		  int32 num_frames)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_PROC_FRAME, num_frames, frames);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_proc_feat(remote_decoder_t *decoder,
+		 float32 ***features,
+		 int32 num_features)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_PROC_FEAT, num_features,
+			      features);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_utt_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str, 
+	    hyp_t ***hyp_segs)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_dequeue_result_block(decoder, uttid, hyp_str, hyp_segs);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_join(remote_decoder_t *decoder)
+{
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_JOIN, 0, 0);
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_interrupt(remote_decoder_t *decoder)
+{
+  int rv = 0;
+  rd_lock_internal(decoder);
+  if (rd->state == RD_STATE_UTT) {
+    while (rd_dequeue_control_block(decoder, 0, 0, 0) == 0);
+    rv = rd_queue_control_block(decoder, RD_CTRL_JOIN, 0, 0);
+  }
+  rd_unlock_internal(decoder);
+  return rv;
+}
+
+int
+rd_run(remote_decoder_t *d)
+{
+  int rv;
+  int32 cmd;
+  int32 param;
+  void *data;
+
+  while (1) {
+    rd_lock_internal(d);
+    rv = rd_dequeue_control_block(d, &cmd, &param, &data);
+    rd_unlock_internal(d);
+
+    /** dequeue timed out */
+    if (rv != 0) {
+      continue;
+    }
+
+    /** thread is asked to join */
+    if (cmd == RD_CTRL_JOIN) {
+      if (d->state == RD_STATE_UTT) {
+	ld_end_utt(&d->ld);
+	ld_finish(&d->ld);
+      }
+      if (d->state == RD_STATE_IDLE) {
+	ld_finish(&d->ld);
+      }
+      break;
+    }
+
+    switch (cmd) {
+    case RD_CTRL_INIT: {
+      if (d->state == RD_STATE_UNINIT && ld_init(&d->ld) == 0) {
+	d->state = RD_STATE_IDLE;
+      }
+    }
+    break;
+      
+    case RD_CTRL_FINISH: {
+      ld_finish(&d->ld);
+      d->state = RD_STATE_UNINIT;
+    }
+    break;
+      
+    case RD_CTRL_UTT_BEGIN: {
+      if (d->state == RD_STATE_IDLE && 
+	  ld_utt_begin(&d->ld, (char *)data) == 0) {
+	d->state = RD_STATE_UTT;
+      }
+    }
+    break;
+      
+    case RD_CTRL_UTT_END: {
+      if (d->state == RD_STATE_UTT && ld_utt_end(&d->ld) == 0) {
+	d->state = RD_STATE_IDLE;
+      }
+    }
+    break;
+      
+    case RD_CTRL_PROC_RAW: {
+      if (d->state == RD_STATE_UTT) {
+	d_utt_proc_raw(&d->ld, (int16 *)data, param);
+      }
+    }
+    break;
+      
+    case RD_CTRL_PROC_FRAME: {
+      if (d->state == RD_STATE_UTT) {
+	ld_utt_proc_frame(&d->ld, (float32 **)data, param);
+      }
+    }
+    break;
+      
+    case RD_CTRL_PROC_FEAT: {
+      if (d->state == RD_STATE_UTT) {
+	ld_utt_proc_feat(&d->ld, (float32 ***)data, param);
+      }
+    }
+    break;
+    }
+
+    if (data) {
+      ckd_free(data);
+    }
+  }
+
+  rd_lock_internal(d);
+  while (rd_dequeue_control_block(d, 0, 0, 0) == 0);
+  rd_unlock_internal(d);
+
+  return rv;
+}
 

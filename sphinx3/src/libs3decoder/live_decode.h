@@ -136,20 +136,10 @@ typedef struct
   char *hyp_str;
 
   /*
-   * Length of the hypothesis string above.
-   */
-  int32 hyp_strlen;
-
-  /*
    * Hypothesis word segments.  Result (or partial result) of the recognition
-   * is stored as word segments.
+   * is stored as word segments.  Null-terminated array.
    */
   hyp_t **hyp_segs;
-
-  /*
-   * Number of word/hypothesis segments.
-   */
-  int32 hyp_seglen;
 
   /*
    * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
