@@ -159,6 +159,7 @@ src/tests/unit_tests/test_case/Makefile
 scripts/Makefile
 scripts/sphinx3-simple
 model/Makefile
+model/ep/Makefile
 model/hmm/Makefile
 model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/Makefile
 model/lm/Makefile

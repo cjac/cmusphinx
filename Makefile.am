@@ -37,13 +37,13 @@ EXTRA_DIST = autogen.sh \
 CLEANFILES = chan3.mfc \
 	test.out \
 	test-*.out \
+	tmp.out \
 	pittsburgh.littleendian.allp \
 	pittsburgh.littleendian.phseg \
 	pittsburgh.littleendian.phlat \
 	pittsburgh.littleendian.wdseg \
 	pittsburgh.nbest.gz \
 	pittsburgh.nbest
-
 
 etags:
 	etags `find . -name "*.[ch]"`
@@ -60,6 +60,11 @@ doxygen:
 test-simple : test-livepretend
 
 test: test-simple
+
+# Override the Automake target so that make test-full gets run during
+# distcheck
+check: test-full
+	@:
 
 test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-cepview 
 
@@ -87,7 +92,7 @@ test-decode:
 	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl $(top_builddir)/model/lm/an4/an4.ctl \
+	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
 	       -agc none \
 	       -varnorm no \
@@ -123,7 +128,7 @@ test-decode_anytopo:
 	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl $(top_builddir)/model/lm/an4/an4.ctl \
+	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
 	       -agc none \
 	       -varnorm no \
@@ -153,14 +158,14 @@ test-allphone:
 	    -topn 1000 \
 	    -beam 1e-80 \
 	    -senmgau .cont. \
-	    -ctl $(top_builddir)/model/lm/an4/an4.ctl \
+	    -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./ \
 	    -phlatdir ./
-	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
 	then echo "ALLPHONE allp test PASSED"; else \
 	echo "ALLPHONE allp test FAILED"; fi
-	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
 	then echo "ALLPHONE phlat test PASSED"; else \
 	echo "allphone phlat test FAILED"; fi
 
@@ -246,7 +251,6 @@ test-ep-match:
 			 $(top_srcdir)/model/ep/ep.result | diff $@.out - > /dev/null 2>&1); \
 	then echo "EP test PASSED"; else \
 	echo "EP test FAILED"; fi 
-#	rm $@.out		
 
 
 test-wave2feat:

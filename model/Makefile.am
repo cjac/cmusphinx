@@ -1,1 +1,1 @@
-SUBDIRS = hmm lm
+SUBDIRS = hmm lm ep
