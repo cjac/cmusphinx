@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx-3 automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx3,0.1)
+AM_INIT_AUTOMAKE(sphinx3,0.2)
 AM_CONFIG_HEADER(config.h)
 
 
@@ -51,15 +51,15 @@ AC_ARG_WITH(alsa,
 
 if test "x$ad_files" = "x"; then
         case $host in
-                *-*-linux*)
+                *-*-linux*|*-*-freebsd*)
                         ad_files="ad_oss.lo"
                         ad_backend="AD_BACKEND_OSS"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
-                # FIXME: isn't this the same OSS as on Linux?
                 *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
+                        ad_libs="-lossaudio"
                         ad_backend="AD_BACKEND_OSS_BSD"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
 			audio_test_file="pittsburgh.littleendian"
