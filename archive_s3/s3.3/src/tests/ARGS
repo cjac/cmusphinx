@@ -1,17 +1,17 @@
 -beam	1e-60
 -wbeam	1e-35
--mdef	/lab/speech/sphinx4/data/connected_digits/wdclean.500.mdef
--dict	/lab/speech/sphinx4/data/connected_digits/train.dict
--fdict	/lab/speech/sphinx4/data/connected_digits/fillerdict
--lm	/lab/speech/sphinx4/data/connected_digits/unigram.lm.DMP
--mean	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/means
--var	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/variances
--mixw	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/mixture_weights 
--tmat	/lab/speech/sphinx4/data/connected_digits/wdclean.cd_continuous_8gau/transition_matrices
+-mdef	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.500.mdef
+-dict	/lab/speech/sphinx4/data/tidigits_model/dictionary
+-fdict	/lab/speech/sphinx4/data/tidigits_model/fillerdict
+-lm	/lab/speech/sphinx4/data/tidigits_model/unigram.lm
+-mean	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/means.LittleEndian
+-var	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian
+-mixw	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian
+-tmat	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/transition_matrices.LittleEndian
 
--upperf	3600
+-upperf	6800
 -lowerf	130
--nfilt	32
+-nfilt	40
 -agc	none
 -varnorm	no
 -cmn	current
@@ -22,3 +22,4 @@
 -maxwpf	10
 -wip	0.2
 -lextreedump 0
+-samprate 16000

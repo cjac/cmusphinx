@@ -252,38 +252,27 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     nfr += residualvecs;
 
     for (i = 0; i < nfr; i++,nfeatvec++){
-        /* CEP; skip C0 */
-        memcpy (feat[i], cepbuf[curpos]+1, (cepsize-1) * sizeof(float32));
+        memcpy (feat[i], cepbuf[curpos], (cepsize) * sizeof(float32));
     
         /*
          * DCEP: mfc[2] - mfc[-2];
          */
-        f = feat[i] + cepsize - 1;
-        w  = cepbuf[jf2] + 1;	/* +1 to skip C0 */
-        _w = cepbuf[jp2] + 1;
+        f = feat[i] + cepsize;
+        w  = cepbuf[jf2];
+        _w = cepbuf[jp2];
 
-        for (j = 0; j < cepsize-1; j++)
+        for (j = 0; j < cepsize; j++)
 	    f[j] = w[j] - _w[j];
     
-        /* POW: C0, DC0, D2C0 */
-        f += cepsize-1;
-
-        f[0] = cepbuf[curpos][0];
-        f[1] = cepbuf[jf2][0] - cepbuf[jp2][0];
-
-        d1 = cepbuf[jf3][0] - cepbuf[jp1][0];
-        d2 = cepbuf[jf1][0] - cepbuf[jp3][0];
-        f[2] = d1 - d2;
-
         /* D2CEP: (mfc[3] - mfc[-1]) - (mfc[1] - mfc[-3]) */
-        f += 3;
+        f += cepsize;
     
-        w1   = cepbuf[jf3] + 1;	/* Final +1 to skip C0 */
-        _w1  = cepbuf[jp1] + 1;
-        w_1  = cepbuf[jf1] + 1;
-        _w_1 = cepbuf[jp3] + 1;
+        w1   = cepbuf[jf3];
+        _w1  = cepbuf[jp1];
+        w_1  = cepbuf[jf1];
+        _w_1 = cepbuf[jp3];
 
-        for (j = 0; j < cepsize-1; j++) {
+        for (j = 0; j < cepsize; j++) {
 	    d1 =  w1[j] -  _w1[j];
 	    d2 = w_1[j] - _w_1[j];
 
