@@ -334,8 +334,8 @@ void kb_init (kb_t *kb)
 				cmd_ln_int32("-dist_ds"),
 				cmd_ln_int32("-gs4gs"),
 				cmd_ln_int32("-svq4svq"),
-				(float32)cmd_ln_float64("-subvqbeam"),
-				(float32)cmd_ln_float64("-ci_pbeam"),
+				cmd_ln_float64("-subvqbeam"),
+				cmd_ln_float64("-ci_pbeam"),
 				cmd_ln_int32("-maxcdsenpf"),
 				kb->kbcore->mdef->n_ci_sen
 				);
