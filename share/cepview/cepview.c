@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1994-2001 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,11 @@
  *
  * ====================================================================
  *
+ * 
+ * HISTORY
+ * 
+ * circa 1994	P J Moreno at Carnegie Mellon
+ * 		Created.
  */
 
 #include <stdio.h>
