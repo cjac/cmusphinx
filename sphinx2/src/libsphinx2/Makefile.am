@@ -81,6 +81,5 @@ INCLUDES = -I$(top_srcdir)/src/libsphinx2/include \
 # add for solaris
 #           -I/usr/demo/SOUND/include
 
-CPPFLAGS = -DFAST8B=1
+AM_CPPFLAGS = -DFAST8B=1
 
-LIBOBJS = @LIBOBJS@

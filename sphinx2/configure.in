@@ -28,12 +28,22 @@ AC_CANONICAL_HOST
 ad_files=""
 ad_libs=""
 
-AC_ARG_WITH(alsa, [use ALSA library for sound I/O],
-	    AC_CHECK_HEADER(sys/asoundlib.h,
-		[ad_libs="-lasound"; ad_files="ad_alsa.lo";
-		 ad_backend="AD_BACKEND_ALSA"],
-		AC_ERROR(ALSA header file <sys/asoundlib.h> not found!)),
-            )
+dnl AC_ARG_WITH(alsa, [use ALSA library for sound I/O],
+dnl 	    AC_CHECK_HEADER(sys/asoundlib.h,
+dnl 		[ad_libs="-lasound"; ad_files="ad_alsa.lo";
+dnl 		 ad_backend="AD_BACKEND_ALSA"],
+dnl 		AC_ERROR(ALSA header file <sys/asoundlib.h> not found!)),
+dnl             )
+
+AC_ARG_WITH(alsa,
+           AC_HELP_STRING([--with-alsa], [Use ALSA library for sound I/O]),
+           [ad_files="ad_alsa.lo",
+            ad_backend="AD_BACKEND_ALSA",
+	    ad_libs="-lasound",
+       	    CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
+            AC_CHECK_HEADER(sys/asoundlib.h, 
+                    AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
+)
 
 if test "x$ad_files" = "x"; then
 	case $host in
@@ -71,8 +81,9 @@ if test "x$ad_files" = "x"; then
 			ad_backend="AD_BACKEND_SUNOS"
 			CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_SUNOS"
 			;;
-		*-*-*win32*)
+		*-*-*cygwin*)
 			ad_files="play_win32.lo rec_win32.lo"
+                        ad_libs="-lwinmm"
 			ad_backend="AD_BACKEND_WIN32"
 			CFLAGS="$CFLAGS -DAD_BACKEND_WIN32"
 			;;
@@ -93,7 +104,6 @@ AC_SUBST(docdata)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
 AC_SUBST(ad_backend)
-AC_SUBST(LIBOBJS)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
 

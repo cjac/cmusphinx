@@ -14,6 +14,8 @@ bin_PROGRAMS = sphinx2-continuous \
 EXTRA_DIST = README \
 	README.bin \
 	cdcn_test
+	clicore.h \
+	srvcore.h
 
 sphinx2_continuous_SOURCES =  tty-continuous.c
 
@@ -42,8 +44,6 @@ lm3g2dmp_SOURCES = lm3g2dmp.c
 raw2cep_SOURCES = raw2cep.c
 
 #cdcn_test_SOURCES = cdcn_test.c
-
-EXTRA_DIST = clicore.h  srvcore.h
 
 LDADD = $(top_builddir)/src/libsphinx2/libsphinx2.la \
 	$(top_builddir)/src/libsphinx2fe/libsphinx2fe.la \

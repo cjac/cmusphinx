@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/02/17  22:34:15  egouvea
- * First steps to get rid of the @ad_backend@, used by autoconf.
+ * Revision 1.8  2004/03/01  00:00:48  egouvea
+ * Fixed refs to win32, and clean up files used by autoconf/automake
  * 
+ * Revision 1.7  2004/02/17 22:34:15  egouvea
+ * First steps to get rid of the @ad_backend@, used by autoconf.
+ *
  * Revision 1.1  2000/12/12 23:01:41  lenzo
  * Rationalizing libs and names some more.  Split a/d and fe libs out.
  *
@@ -47,10 +50,15 @@
 #ifndef _AD_H_
 #define _AD_H_
 
-#ifdef AD_BACKEND_WIN32
+#if defined(WIN32)
 
+#if defined (__CYGWIN__)
+#include <w32api/windows.h>
+#include <w32api/mmsystem.h>
+#else
 #include <windows.h>
 #include <mmsystem.h>
+#endif
 
 #elif defined(AD_BACKEND_OSF) /* Not implemented, it seems */
 
@@ -82,7 +90,7 @@
 #define AD_ERR_WAVE	-3
 
 
-#ifdef AD_BACKEND_WIN32
+#if defined(WIN32)
 typedef struct {
     HGLOBAL h_whdr;
     LPWAVEHDR p_whdr;
@@ -98,7 +106,7 @@ typedef struct {
  * NOTE: ad_rec_t and ad_play_t are READ-ONLY structures for the user.
  */
 
-#ifdef AD_BACKEND_WIN32
+#if defined(WIN32)
 
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
@@ -197,7 +205,7 @@ ad_rec_t *ad_open_sps (int32 samples_per_sec);
 ad_rec_t *ad_open ( void );
 
 
-#ifdef WIN32
+#if defined(WIN32)
 /*
  * Like ad_open_sps but specifies buffering required within driver.  This function is
  * useful if the default (5000 msec worth) is too small and results in loss of data.
@@ -228,7 +236,7 @@ int32 ad_read (ad_rec_t *, int16 *buf, int32 max);
 
 /* ------ PLAYBACK; SIMILAR TO RECORDING ------- */
 
-#ifdef WIN32
+#if defined(WIN32)
 
 typedef struct {
     HWAVEOUT h_waveout;	/* "HANDLE" to the audio output device */

@@ -24,6 +24,4 @@ libsphinx2ad_la_DEPENDENCIES = @ad_files@
 
 libsphinx2ad_la_LIBADD = @ad_files@ @ad_libs@
 
-libsphinx2ad_la_LDFLAGS = -version-info 0:4:0
-
 INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include

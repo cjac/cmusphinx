@@ -40,9 +40,12 @@
  *------------------------------------------------------------*
  * HISTORY
  * $Log$
- * Revision 1.4  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.5  2004/03/01  00:00:48  egouvea
+ * Fixed refs to win32, and clean up files used by autoconf/automake
  * 
+ * Revision 1.4  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.3  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -124,4 +127,4 @@ int ppconf(int argc, char *argv[],
 	   char * (*GetDefault)(char const *, char const *), char last);
 void pusage(char *prog, Config_t *cp);
 
-#endif _PCONF_
+#endif /* _PCONF_ */
