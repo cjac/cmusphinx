@@ -52,7 +52,7 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy  Release\libs3decoder.lib  ..\..\..\lib\ 
+PostBuild_Cmds=copy   Release\libs3decoder.lib   ..\..\..\lib\ 
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "libs3decoder - Win32 Debug"
@@ -79,7 +79,7 @@ LIB32=link.exe -lib
 # ADD LIB32 /nologo
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy  Debug\libs3decoder.lib  ..\..\..\lib\ 
+PostBuild_Cmds=copy   Debug\libs3decoder.lib   ..\..\..\lib\ 
 # End Special Build Tool
 
 !ENDIF 
@@ -185,7 +185,7 @@ SOURCE=..\..\..\src\libs3decoder\lextree.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\live2.c
+SOURCE=..\..\..\src\libs3decoder\live_decode.c
 # End Source File
 # Begin Source File
 
