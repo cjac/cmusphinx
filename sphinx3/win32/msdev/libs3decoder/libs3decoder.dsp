@@ -209,6 +209,10 @@ SOURCE=..\..\..\src\libs3decoder\mdef.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\mllr.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\subvq.c
 # End Source File
 # Begin Source File
@@ -330,6 +334,10 @@ SOURCE=..\..\..\src\libs3decoder\logs3.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\mdef.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\mllr.h
 # End Source File
 # Begin Source File
 
