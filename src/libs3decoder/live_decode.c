@@ -347,8 +347,8 @@ ld_utt_free_hyps(live_decoder_t *decoder)
   
   /** free and reset the hypothesis word segments */
   if (decoder->hyp_segs) {
-    for (h = decoder->hyp_segs; h; h++) {
-      ckd_free(decoder->h);
+    for (h = *decoder->hyp_segs; h; h++) {
+      ckd_free(h);
     }
     ckd_free(decoder->hyp_segs);
     decoder->hyp_segs = 0;
