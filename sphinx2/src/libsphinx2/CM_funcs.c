@@ -122,7 +122,7 @@ void *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size,
  * DESCRIPTION - allocate row pointers and data in one chunk
  */
 {
-    void 	*ret;
+    char 	*ret;
     caddr_t 	*rowPtr;
     int32	r;
 
@@ -140,7 +140,7 @@ void *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size,
     }
 
     for (r = 0; r < rcnt; r++)
-	rowPtr[r] = ret + (rcnt * sizeof(caddr_t)) + (r * ccnt * size);
+	rowPtr[r] = (caddr_t)(ret + (rcnt * sizeof(caddr_t)) + (r * ccnt * size));
 
     return (ret);
 }
@@ -151,7 +151,7 @@ void *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size,
  * DESCRIPTION - allocate row pointers and data in one chunk
  */
 {
-    void 	*ret;
+    char 	*ret;
     caddr_t 	*rowPtr;
     caddr_t 	*lvlPtr;
     int32	r, l;
@@ -172,10 +172,10 @@ void *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size,
 	lvlPtr[l] = ret + (lcnt * sizeof(caddr_t)) + (rcnt * sizeof(caddr_t) * l);
 	rowPtr = (caddr_t *) lvlPtr[l];
 	for (r = 0; r < rcnt; r++) {
-	    rowPtr[r] = ret + (lcnt * sizeof(caddr_t)) +
+	    rowPtr[r] = (caddr_t)(ret + (lcnt * sizeof(caddr_t)) +
 		        (lcnt * rcnt * sizeof(caddr_t)) +
 			(l * rcnt * ccnt * size) +
-			(r * ccnt * size);
+			(r * ccnt * size));
 	}
     }
 

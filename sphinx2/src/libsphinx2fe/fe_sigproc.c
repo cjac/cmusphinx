@@ -432,7 +432,7 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
 
 void *fe_create_2d(int32 d1, int32 d2, int32 elem_size)
 {
-    void *store;
+    char *store;
     void **out;
     int32 i, j;
     store = calloc(d1 * d2, elem_size);

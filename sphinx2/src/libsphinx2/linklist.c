@@ -53,9 +53,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2001/03/29  21:09:41  lenzo
+ * Getting the compile under windows back to normal
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:50  lenzo
  * Initial import of sphinx2
  *
@@ -124,7 +127,7 @@ void *listelem_alloc (int32 elem_size)
 	cpp = list[i].freelist = (void **) malloc (list[i].n_malloc * elem_size);
 	cp = (void *) cpp;
 	for (j = list[i].n_malloc-1; j > 0; --j) {
-	    cp += elem_size;
+	    (char*)cp += elem_size;
 	    *cpp = cp;
 	    cpp = (void **)cp;
 	}
