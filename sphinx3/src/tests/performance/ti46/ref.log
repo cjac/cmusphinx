@@ -1,0 +1,6 @@
+ti46-decany.match.align:WORD ACCURACY=  99.790% ( 2377/ 2382)  ERRORS=  0.378% (    9/ 2382)
+ti46-decode.match.align:WORD ACCURACY=  99.790% ( 2377/ 2382)  ERRORS=  0.462% (   11/ 2382)
+ti46-lp.match.align:WORD ACCURACY=  99.538% ( 2371/ 2382)  ERRORS=  1.050% (   25/ 2382)
+ti46-quick-decany.match.align:WORD ACCURACY=  100.000% (   62/   62)  ERRORS=  0.000% (    0/   62)
+ti46-quick-decode.match.align:WORD ACCURACY=  100.000% (   62/   62)  ERRORS=  0.000% (    0/   62)
+ti46-quick-lp.match.align:WORD ACCURACY=  98.387% (   61/   62)  ERRORS=  1.613% (    1/   62)
