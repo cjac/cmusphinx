@@ -1,0 +1,23 @@
+Tue Jan 25 14:14:58 PST 2000
+(Mandrake)
+
+converted everything to autoconf/automake/libtool/etc.
+
+-------------------------------------------------------------------------------
+
+Thu Jan 27 18:02:00 PST 2000
+(Mandrake)
+
+now I'm done corrupting the tree.  In theory, we now have a fully automated
+build system.  unfortunately we lost a few directories in the process, but
+that's okay.  The only major thing remaining on my TODO list at this point is
+to add a no-arch-dependant-code stub.  Still have to talk to kevin about this.
+
+-------------------------------------------------------------------------------
+
+Fri Jan 28 11:23:01 EST 2000
+(lenzo)
+
+Fixed up a few script paths in the .in files; now it appears
+to install the demos OK.  
+

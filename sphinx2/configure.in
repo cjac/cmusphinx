@@ -1,0 +1,85 @@
+dnl Welcome to the Sphinx automated build system.
+dnl try not to hurt yourself ;)
+
+AC_INIT(configure.in)
+AM_INIT_AUTOMAKE(sphinx2,0.1)
+AM_CONFIG_HEADER(config.h)
+
+AC_ISC_POSIX
+AC_PROG_CC
+AM_PROG_CC_STDC
+AC_HEADER_STDC
+
+AC_TYPE_SIGNAL
+
+hmmdata=`ls -1 $srcdir/model/hmm/4k | egrep -v '(Makefile|CVS)'`
+lmdata=`ls -1 $srcdir/model/lm/turtle/ | egrep -v '(Makefile|CVS)'`
+hmmdata=`echo $hmmdata`
+lmdata=`echo $lmdata`
+
+myarch=`uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
+
+if test "x$myarch" = "xi386_linux"; then
+	echo "boo!"
+	archfiles="ad_i386_linux.lo cont_ad_base.lo mulaw_base.lo"
+else
+	if test "x$myarch" = "xalpha"; then
+		archfiles="ad_alpha.lo cont_ad_base.lo mulaw_base.lo"
+	else
+		if test "x$myarch" = "xsgi"; then
+			archfiles="ad_sgi.lo"
+		else
+			if test "x$myarch" = "xsun4m"; then
+				archfiles="ad_sun4m.lo audio_utils_sun4m.lo"
+			else
+				if test "x$myarch" = "xwin32"; then
+					archfiles="play_win32.lo rec_win32.lo"
+				else
+					archfiles=""
+				fi
+			fi
+		fi
+	fi
+fi
+
+archfiles=`echo $archfiles`
+
+AC_PATH_PROG(PERL,perl)
+AC_PATH_PROG(CSH,csh)
+AC_SUBST(hmmdata)
+AC_SUBST(lmdata)
+AC_SUBST(archfiles)
+AC_SUBST(LIBOBJS)
+AC_SUBST(PERL)
+AC_SUBST(CSH)
+
+AM_PROG_LIBTOOL
+
+AC_OUTPUT([
+Makefile
+include/Makefile
+src/Makefile
+src/libsphinx2/Makefile
+src/libsphinx2/include/Makefile
+src/examples/Makefile
+model/Makefile
+model/hmm/Makefile
+model/hmm/4k/Makefile
+model/lm/Makefile
+model/lm/turtle/Makefile
+doc/Makefile
+scripts/Makefile
+scripts/sphinx2-demo
+scripts/attila-sphinx2.pl
+scripts/poe-sphinx-server-demo
+scripts/allphone-test.csh
+scripts/batch.csh
+scripts/sphinx2-simple
+])
+
+chmod +x scripts/sphinx2-demo
+chmod +x scripts/attila-sphinx2.pl
+chmod +x scripts/poe-sphinx-server-demo
+chmod +x scripts/allphone-test.csh
+chmod +x scripts/batch.csh
+chmod +x scripts/sphinx2-simple

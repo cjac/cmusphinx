@@ -1,0 +1,10 @@
+
+Sphinx 2
+
+  examples/
+
+	example programs linked against libsphinx2.
+
+	Note that these all take a large number of command-line
+	switches, so it's best to use a script to launch them.
+

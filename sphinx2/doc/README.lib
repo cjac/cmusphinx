@@ -1,0 +1,7 @@
+
+Sphinx 2
+
+lib/ 
+  libsphinx2.a   The static library for sphinx 2.  See 
+                 include/fbs.h for the interface.
+
