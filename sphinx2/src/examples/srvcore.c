@@ -52,9 +52,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created, based on Brian Milnes's earlier version.
  * $Log$
- * Revision 1.6  2001/12/07  05:09:30  lenzo
- * License.xsxc
+ * Revision 1.7  2001/12/07  12:21:45  lenzo
+ * Move some headers.
  * 
+ * Revision 1.6  2001/12/07 05:09:30  lenzo
+ * License.xsxc
+ *
  * Revision 1.5  2001/12/07 04:27:35  lenzo
  * License cleanup.  Remove conditions on the names.  Rationale: These
  * conditions don't belong in the license itself, but in other fora that
@@ -95,17 +98,17 @@
 
 #ifndef WIN32
 
-#include <sys/types.h>
-#include <sys/time.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-
 #if defined(sun) && defined(__svr4__)
 /* H J Fox - added include of sys/ioctl.h and sys/filio.h for solaris */
 #include <sys/ioctl.h>
 #include <sys/filio.h>
 #include <netinet/in.h>
 #endif
+
+#include <sys/types.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #endif
 
