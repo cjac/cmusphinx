@@ -23,7 +23,7 @@ libs3audio_la_DEPENDENCIES = @ad_files@
 
 libs3audio_la_LIBADD = @ad_files@ @ad_libs@
 
-libs3audio_la_LDFLAGS = -version-info 0:1:0
+libs3audio_la_LDFLAGS = -version-info 0:4:0
 
 INCLUDES = -I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/libutil \

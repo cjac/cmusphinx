@@ -2,7 +2,7 @@ ARCH   = `uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 
 lib_LTLIBRARIES = libutil.la
 
-libutil_la_LDFLAGS = -version-info 0:1:0
+libutil_la_LDFLAGS = -version-info 0:4:0
 
 libutil_la_SOURCES = \
         bitvec.c \
