@@ -49,6 +49,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #include "s2types.h"
 #include "fe.h"

@@ -51,8 +51,8 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2001/02/13  19:51:38  lenzo
- * *** empty log message ***
+ * Revision 1.8  2001/03/31  00:56:12  lenzo
+ * Added <string.h>
  * 
  * Revision 1.6  2001/01/25 19:36:28  lenzo
  * Fixing some memory leaks
@@ -171,6 +171,7 @@
 #endif
 
 #include <assert.h>
+#include <string.h>
 
 #include "s2types.h"
 #include "CM_macros.h"
