@@ -717,3 +717,8 @@ set of changes from dhd (below)
 2004-12-09 Ravi Mosur (rkm@cs.cmu.edu)
 	* Support for continuous density acoustic models added.
 
+2005-01-21 Evandro Gouvea (egouvea@cs.cmu.edu)
+	* Rolled back dup2 fix for log files for windows.
+
+2005-01-26 Ravi Mosur (rkm@cs.cmu.edu)
+	* Added -maxhmmpf absolute pruning parameter for FSG mode.

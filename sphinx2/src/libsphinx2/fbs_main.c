@@ -46,13 +46,16 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.19  2005/01/21  18:48:36  egouvea
+ * Revision 1.20  2005/01/26  17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
+ * 
+ * Revision 1.19  2005/01/21 18:48:36  egouvea
  * Rolled back the dup2 fix for Windows only. In some applications, dup2
  * was causing the behavior that the log file got opened, but nothing got
  * written to it. Since the dup2 fix was introduced because of problems
  * in linux and didn't seem to affect Windows, we rolled back to an
  * implementation that works.
- * 
+ *
  * Revision 1.18  2004/12/10 16:48:56  rkm
  * Added continuous density acoustic model handling
  *
@@ -519,7 +522,8 @@ static int32 ilm_bgcache_wt = 9;	/* ie 0.09 */
 
 static float *cep, *dcep, *dcep_80ms, *pcep, *ddcep;
 
-static int32 maxwpf = 100000000;	/* Max Words Per Frame; default: huge */
+static int32 maxwpf = 100000000;	/* Max words recognized per frame */
+static int32 maxhmmpf = 1000000000;	/* Max active HMMs per frame */
 
 int32 print_back_trace = TRUE;
 static int32 print_short_back_trace = FALSE;
@@ -891,6 +895,9 @@ config_t param[] = {
 
 	{ "MaxWordsPerFrame", "Limit words exiting per frame to this number", "-maxwpf",
 	  	INT, (caddr_t) &maxwpf },
+
+	{ "MaxHMMPerFrame", "Limit HMMs evaluated per frame to this number (approx)", "-maxhmmpf",
+	  	INT, (caddr_t) &maxhmmpf },
 
 	{ "VerbosityLevel", "Verbosity Level", "-verbose",
 	        INT, (caddr_t) &verbosity_level },
@@ -2247,6 +2254,11 @@ int32 query_pscr2lat ( void )
 int32 query_maxwpf ( void )
 {
     return maxwpf;
+}
+
+int32 query_maxhmmpf ( void )
+{
+    return maxhmmpf;
 }
 
 int32 query_back_trace ( void )

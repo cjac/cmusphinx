@@ -44,9 +44,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.3  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.4  2005/01/26  17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
  * 
+ * Revision 1.3  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 01-Dec-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added fsg_search_sen_active().
@@ -204,13 +207,22 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg)
   search->state = FSG_SEARCH_IDLE;
   
   /* Get search pruning parameters */
-  search_get_logbeams (&(search->beam), &(search->pbeam), &(search->wbeam));
+  search_get_logbeams (&(search->beam_orig),
+		       &(search->pbeam_orig),
+		       &(search->wbeam_orig));
+  search->beam_factor = 1.0f;
+  search->beam = search->beam_orig;
+  search->pbeam = search->pbeam_orig;
+  search->wbeam = search->wbeam_orig;
+
+  /* LM related weights/penalties */
   lw = kb_get_lw();
   pip = (int32)(LOG(kb_get_pip()) * lw);
   wip = (int32)(LOG(kb_get_wip()) * lw);
   
   E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
-	 search->beam, search->pbeam, search->wbeam, wip, pip);
+	 search->beam_orig, search->pbeam_orig, search->wbeam_orig,
+	 wip, pip);
   
   return search;
 }
@@ -423,6 +435,25 @@ void fsg_search_hmm_eval (fsg_search_t *search)
 #endif
   search->n_hmm_eval += n;
   
+  /* Adjust beams if #active HMMs larger than absolute threshold */
+  if (n > query_maxhmmpf()) {
+    /*
+     * Too many HMMs active; reduce the beam factor applied to the default
+     * beams, but not if the factor is already at a floor (0.1).
+     */
+    if (search->beam_factor > 0.1) {	/* Hack!!  Hardwired constant 0.1 */
+      search->beam_factor *= 0.9f;	/* Hack!!  Hardwired constant 0.9 */
+      search->beam  = (int32) (search->beam_orig  * search->beam_factor);
+      search->pbeam = (int32) (search->pbeam_orig * search->beam_factor);
+      search->wbeam = (int32) (search->wbeam_orig * search->beam_factor);
+    }
+  } else {
+    search->beam_factor = 1.0f;
+    search->beam  = search->beam_orig;
+    search->pbeam = search->pbeam_orig;
+    search->wbeam = search->wbeam_orig;
+  }
+  
   if (n > fsg_lextree_n_pnode(search->lextree))
     E_FATAL("PANIC! Frame %d: #HMM evaluated(%d) > #PNodes(%d)\n",
 	    search->frame, n, fsg_lextree_n_pnode(search->lextree));
@@ -436,20 +467,32 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
 {
   fsg_pnode_t *child;
   CHAN_T *hmm;
+  int32 newscore, thresh, nf;
   
   assert (pnode);
   assert (! fsg_pnode_leaf(pnode));
+  
+  nf = search->frame + 1;
+  thresh = search->bestscore + search->beam;
+
   hmm = fsg_pnode_hmmptr(pnode);
   
   for (child = fsg_pnode_succ(pnode);
        child;
        child = fsg_pnode_sibling(child)) {
-    if (fsg_psubtree_pnode_enter (child,
-				  hmm->score[HMM_LAST_STATE],
-				  search->frame + 1,
-				  hmm->path[HMM_LAST_STATE])) {
-      search->pnode_active_next = glist_add_ptr(search->pnode_active_next,
-						(void *) child);
+    newscore = hmm->score[HMM_LAST_STATE] + child->logs2prob;
+    
+    if ((newscore >= thresh) && (newscore > child->hmm.score[0])) {
+      /* Incoming score > pruning threshold and > target's existing score */
+      if (child->hmm.active < nf) {
+	/* Child node not yet activated; do so */
+	search->pnode_active_next = glist_add_ptr(search->pnode_active_next,
+						  (void *) child);
+	child->hmm.active = nf;
+      }
+      
+      child->hmm.score[0] = newscore;
+      child->hmm.path[0] = hmm->path[HMM_LAST_STATE];
     }
   }
 }
@@ -622,11 +665,14 @@ static void fsg_search_word_trans (fsg_search_t *search)
   int32 bpidx, n_entries;
   fsg_hist_entry_t *hist_entry;
   word_fsglink_t *l;
-  int32 score, d;
+  int32 score, newscore, thresh, nf, d;
   fsg_pnode_t *root;
   int32 lc, rc;
   
   n_entries = fsg_history_n_entries (search->history);
+  
+  thresh = search->bestscore + search->beam;
+  nf = search->frame + 1;
   
   for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
     hist_entry = fsg_history_entry_get (search->history, bpidx);
@@ -654,22 +700,30 @@ static void fsg_search_word_trans (fsg_search_t *search)
 	 * target root node, and
 	 * first CIphone of target root node is in right context list supported
 	 * by history entry;
-	 * So the transition can go ahead.
+	 * So the transition can go ahead (if new score is good enough).
 	 */
-
-	if (fsg_psubtree_pnode_enter(root, score, search->frame+1, bpidx)) {
-	  /* Newly activated node; add to active list */
-	  search->pnode_active_next = glist_add_ptr (search->pnode_active_next,
-						     (void *)root);
+	newscore = score + root->logs2prob;
+	
+	if ((newscore >= thresh) && (newscore > root->hmm.score[0])) {
+	  if (root->hmm.active < nf) {
+	    /* Newly activated node; add to active list */
+	    search->pnode_active_next = glist_add_ptr (search->pnode_active_next,
+						       (void *)root);
+	    root->hmm.active = nf;
+	    
 #if __FSG_DBG__
-	  E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x] (activated)\n",
-		 search->frame, bpidx, (int32)root);
+	    E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x] (activated)\n",
+		   search->frame, bpidx, (int32)root);
 #endif
-	} else {
+	  } else {
 #if __FSG_DBG__
-	  E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x]\n",
-		 search->frame, bpidx, (int32)root);
+	    E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x]\n",
+		   search->frame, bpidx, (int32)root);
 #endif
+	  }
+	  
+	  root->hmm.score[0] = newscore;
+	  root->hmm.path[0] = bpidx;
 	}
       }
     }
@@ -760,6 +814,12 @@ void fsg_search_utt_start (fsg_search_t *search)
 {
   int32 silcipid;
   fsg_pnode_ctxt_t ctxt;
+  
+  /* Reset dynamic adjustment factor for beams */
+  search->beam_factor = 1.0f;
+  search->beam  = search->beam_orig;
+  search->pbeam = search->pbeam_orig;
+  search->wbeam = search->wbeam_orig;
   
   silcipid = kb_get_silence_ciphone_id();
   

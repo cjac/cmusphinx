@@ -18,10 +18,10 @@ Original by Ravishankar Mosur (Ravi) (<a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu
 Maintained by Ravi and Kevin A. Lenzo (<a href="mailto:lenzo@cs.cmu.edu">lenzo@cs.cmu.edu</a>)<p>
 School of Computer Science<br>
 Carnegie Mellon University<br>
-<strong>Copyright (c) 1997-2004 Carnegie Mellon University.</strong>
+<strong>Copyright (c) 1997-2005 Carnegie Mellon University.</strong>
 <HR>
 This document is not complete, but should be helpful during construction.<br>
-Last updated 2004-12-08.
+Last updated 2005-01-26.
 <HR>
 </center>
 
@@ -1893,6 +1893,19 @@ Infinity
 
 <TR>
 <TD VALIGN=TOP>
+<strong><code>-maxhmmpf</code></strong><br>
+</TD>
+<TD VALIGN=TOP>
+Absolute pruning threshold.  Maximum number of HMMs to keep active in each frame
+(approx.).  Implemented only in FSG mode.
+</TD>
+<TD VALIGN=TOP>
+Infinity
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
 <strong><code>-fwdflatbeam</code></strong><br>
 <strong><code>-fwdflatnwbeam</code></strong>
 </TD>
@@ -2455,6 +2468,10 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 <TD VALIGN=TOP>Output match file with word segmentation.</TD>
 </TR>
 <TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">maxhmmpf</A>:</TD>
+<TD VALIGN=TOP>Max HMMs to keep active per frame (absolute pruning, approx.).</TD>
+</TR>
+<TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">maxwpf</A>:</TD>
 <TD VALIGN=TOP>Max words to be recognized per frame (absolute pruning).</TD>
 </TR>
@@ -2628,8 +2645,17 @@ and
 <A HREF="#sec_cmdline_beam"><strong><code>-nwbeam</code></strong></A>
 uniformly by a factor &gt;1.
 
+<LI> Setting absolute pruning thresholds using
+ <A HREF="#sec_cmdline_beam"><strong><code>-maxwpf</code></strong></A>
+(Ngram mode), or
+ <A HREF="#sec_cmdline_beam"><strong><code>-maxhmmpf</code></strong></A>
+(FSG mode).  Statistics
+on the number of active HMMs and words hypothesized are written to the log file
+(the <strong><code>-logfn</code></strong> argument), which can be examined to
+estimate reasonable values for these parameters.
+
 <LI> Reducing <A HREF="#sec_cmdline_beam"><strong><code>-top</code></strong></A>
-from 4 to 1.
+from 4 to 2 or 1.
 
 <LI> Using phone activation with
 <A HREF="#sec_cmdline_beam"><strong><code>-topsenfrm</code></strong></A> &gt;1,
@@ -2843,7 +2869,7 @@ indicated by a <strong><code>#</code></strong> character in the first column.
 <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
 <!-- Created: Jan 01, 1997 -->
 <!-- hhmts start -->
-Last modified: Tue Dec 14 11:03:59 EST 2004
+Last modified: Wed Jan 26 12:23:08 EST 2005
 <!-- hhmts end -->
 
 </BODY>

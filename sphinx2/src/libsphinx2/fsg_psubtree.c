@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/07/16  00:57:11  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.2  2005/01/26  17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
  * 
+ * Revision 1.1  2004/07/16 00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.3  2004/06/25 14:49:08  rkm
  * Optimized size of history table and speed of word transitions by maintaining only best scoring word exits at each state
  *
@@ -464,6 +467,7 @@ void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp)
 }
 
 
+#if 0
 boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
 				  int32 score, int32 frame, int32 bpidx) {
   boolean activate;
@@ -486,6 +490,7 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
   
   return activate;
 }
+#endif
 
 
 void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode)
