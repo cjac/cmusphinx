@@ -1,4 +1,4 @@
- -ctlfn /usr/local/share/sphinx2/model/lm/turtle/test.ctl
+ -ctlfn /usr/local/share/sphinx2/model/lm/turtle/turtle.ctl
  -normmean TRUE
  -topsenfrm 4
  -topsenthresh -80000 
@@ -19,11 +19,11 @@
  -fwdflatbeam 1e-8
  -fwdflatnwbeam 3e-4
  -rescorelw 9.5
- -lmfn       /usr/local/share/sphinx2/model/lm/turtle/demo.lm
+ -lmfn       /usr/local/share/sphinx2/model/lm/turtle/turtle.lm
  -kbdumpdir  /usr/local/share/sphinx2/model/lm/turtle
- -dictfn     /usr/local/share/sphinx2/model/lm/turtle/demo.dic
+ -dictfn     /usr/local/share/sphinx2/model/lm/turtle/turtle.dic
  -noisedict  /usr/local/share/sphinx2/model/hmm/6k/noisedict
- -oovdictfn  /usr/local/share/sphinx2/model/hmm/6k/demo.handdict
+ -oovdictfn  /usr/local/share/sphinx2/model/lm/turtle.handdict
  -oovugprob  -4.5
  -phnfn      /usr/local/share/sphinx2/model/hmm/6k/phone
  -mapfn      /usr/local/share/sphinx2/model/hmm/6k/map
@@ -32,3 +32,4 @@
  -hmmdir     /usr/local/share/sphinx2/model/hmm/6k
  -hmmdirlist /usr/local/share/sphinx2/model/hmm/6k
  -cbdir      /usr/local/share/sphinx2/model/hmm/6k
+

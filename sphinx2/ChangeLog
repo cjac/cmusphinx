@@ -589,4 +589,9 @@ set of changes from dhd (below)
 	  correctly
 
 	* Use -agcemax TRUE for livemode, -agcmax TRUE for batch.
+
+-------------------------------------------------------------------------------
+
+2000-12-13 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Renamed turtle demo files from 'demo.*' to 'turtle.*'
 	
