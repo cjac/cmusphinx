@@ -88,6 +88,9 @@ int32 dict_read (dictT *dict,
 		 char *p_filename,	/* Phrase dict file */
 		 char *n_filename,	/* Noise dict file */
 		 int32 use_context);
+
+void dict_free (dictT *dict);
+
 dict_entry_t *dict_get_entry (dictT *dict, int i);
 int32 dict_count(dictT *dict);
 dictT *dict_new(void);

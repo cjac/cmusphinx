@@ -434,6 +434,27 @@ chk_compound_word (char *str)
 }
 #endif
 
+static void dict_free (dictT *dict)
+{
+  int32 i;
+  int32 entry_count;
+  dict_entry_t * entry;
+
+  entry_count = dict->dict_entry_count;
+
+  for (i = 0; i < entry_count; i++) {
+    entry = dict_get_entry(dict, i);
+    free(entry->word);
+    free(entry->phone_ids);
+    free(entry->ci_phone_ids);
+    free(entry);
+  }
+
+  free(dict->ci_index);
+  hash_free(&dict->dict);
+  free(dict);
+}
+
 static void
 dict_load (dictT *dict, char *filename, int32 *word_id,
 	   int32 use_context, int32 isa_phrase_dict)
