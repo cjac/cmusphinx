@@ -10,7 +10,7 @@ a Unix/linux like environment, specify so when running 'configure'.
 
 Some useful options to try:
 
-./configure CC=cc  # Will use the regular c compiler to build Sphinx-3
+./configure CC=cc  # Will use the regular c compiler to build Sphinx-2
 
 ./configure CFLAGS="-O9"  # Will optimize the compiler to this level.
 
@@ -21,7 +21,7 @@ Type 'configure --help' for a full list of options.
 Path-related problems
 ---------------------
 
-Warnings such as "libgcc_so.1 not found" or "false cru libs3audio.la"
+Warnings such as "libgcc_so.1 not found" or "false cru libsphinx2.la"
 indicate problems related to path not being properly set.
 
 "libgcc_so.1 not found" happens during execution, when the system
@@ -31,7 +31,7 @@ LD_LIBRARY_PATH to the correct path. Most often, you can fix it by:
 export LD_LIBRARY_PATH=/usr/local/lib  (bash, sh)
 setenv LD_LIBRARY_PATH /usr/local/lib  (tcsh, csh)
 
-A line such as "false cru libs3decoder.la" just before the compilation
+A line such as "false cru libsphinx2.la" just before the compilation
 stops happens because the system could not find a program, such as 'ar'.
 You can fix this by setting your system path so as to include the path
 to the executable, or you can run configure specifying the path, as in:
@@ -86,22 +86,22 @@ Intel C Compiler
 ----------------
 
 Although usage of Intel C Compiler doesn't improve the performance of
-Sphinx 3.4, we incorporated these description because in some cases
+Sphinx 2, we incorporated this description because in some cases
 developer may want to link applications which ICC was used as the
-compiler and one may want to compile S3.4 using ICC as well.
+compiler and one may want to compile S2 using ICC as well.
 
-To use Intel C Compiler (ICC), 
-In Windows,
+To use Intel C Compiler (ICC):
 
-Using Microsoft Visual C++ 6.0, 
+In Windows, using Microsoft Visual C++ 6.0, 
+
 1) Download and install ICC from Intel Web site.
 2) In the menu bar, choose tool-> Intel C++ Compiler Selection Tool. 
 For Pentium 4 or other IA-32 architecture machine, just click the check 
 box of "Intel C++ Compiler". (For Itanium processor, please consult
 Intel's web site before proceed.)
 
-In Linux, 
-This is a hack that allows you to use ICC to compile Sphinx 3.4 in Linux.
+In Linux,
+ 
 1) Download and install ICC from Intel Web site. You are required to have
 root access of the computer. 
 2) Run configure with the CC option:
