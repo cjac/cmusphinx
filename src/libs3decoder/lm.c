@@ -1340,6 +1340,17 @@ void lm_free (lm_t *lm)
 }
 
 
+int32 lm_rawscore (lm_t *lm, int32 score, float64 lwf)
+{
+
+    if (lwf != 1.0)
+        score /= lwf;
+    score -= lm->wip;
+    score /= lm->lw;
+    
+    return score;
+}
+
 #if (_LM_TEST_)
 static int32 sentence_lmscore (lm_t *lm, char *line)
 {
@@ -1409,3 +1420,4 @@ main (int32 argc, char *argv[])
     exit (0);
 }
 #endif
+

@@ -56,11 +56,12 @@
 #ifndef _LIBUTIL_PROFILE_H_
 #define _LIBUTIL_PROFILE_H_
 
-#include "prim_type.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "prim_type.h"
+
 
 /*
  * Generic event counter for profiling.  User is responsible for allocating an array
@@ -70,12 +71,14 @@ typedef struct {
     const char *name;		/* Counter print name; NULL terminates array of counters.
 				   Used by pctr_print_all */
     int32 count;		/* Counter value */
+    int32 n_ctr;
 } pctr_t;
 
-
+int32 pctr_new (pctr_t *ctr,char *name);
 void pctr_reset (pctr_t *ctr);
 void pctr_reset_all (pctr_t *ctr);
 void pctr_print_all (FILE *fp, pctr_t *ctr);
+void pctr_increment (pctr_t *ctr,int32 inc);
 
 
 /*
@@ -92,6 +95,7 @@ typedef struct {
     float64 start_cpu;		/* ---- FOR INTERNAL USE ONLY ---- */
     float64 start_elapsed;	/* ---- FOR INTERNAL USE ONLY ---- */
 } ptmr_t;
+
 
 
 /* Start timing using tmr */

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,8 +34,8 @@
  *
  */
 /*
- * libutil.h -- Collection of all other .h files in this directory; for brevity
- *
+ * misc.h -- Misc. routines (especially I/O) needed by many S3 applications.
+ * 
  * **********************************************
  * CMU ARPA Speech Project
  *
@@ -45,70 +45,37 @@
  * 
  * HISTORY
  * 
- * 08-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
- * 		Added SLEEP_SEC macro.
- * 
- * 08-31-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 26-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carngie Mellon Unversity 
+ *              Adapted  fro
+ * 12-Nov-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
  */
 
 
-#ifndef _LIBUTIL_LIBUTIL_H_
-#define _LIBUTIL_LIBUTIL_H_
+#ifndef _LIBFBS_MISC_H_
+#define _LIBFBS_MISC_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#ifndef WIN32			/* RAH */
-#include <unistd.h>
-#endif /* RAH */
-#include <math.h>
-
-#include "prim_type.h"
-
-#include "bitvec.h"
-#include "case.h"
-#include "ckd_alloc.h"
-#include "cmd_ln.h"
-#include "err.h"
-#include "filename.h"
-#include "glist.h"
-#include "hash.h"
-#include "heap.h"
-#include "io.h"
-#include "linklist.h"
-#include "profile.h"
-#include "str2words.h"
-#include "unlimit.h"
-#include "nextword.h"
+#include <libutil/libutil.h>
+#include "s3types.h"
+#include "search.h"
 
 
+/* Return value: control file; E_FATAL if cannot open */
+FILE *ctlfile_open (char *file);
 
-#if (defined(WIN32) && !defined(__CYGWIN__))
-#define SLEEP_SEC(sec)	(0)			/* Why doesn't Sleep((sec)*1000) work? */
-#else
-#define SLEEP_SEC(sec)	sleep(sec)		/* sec must be integer */
-#endif
+/*
+ * Read next control file entry.
+ * Return value: 0 if successful, -1 otherwise.
+ */
+int32 ctlfile_next (FILE *fp, char *ctlspec, int32 *sf_out, int32 *ef_out, char *uttid);
 
-#ifndef TRUE
-#define TRUE	1
-#define FALSE	0
-#endif
+void  ctlfile_close (FILE *fp);
 
-#ifndef M_PI
-#define M_PI		3.1415926535897932385	/* For the pain-in-the-neck Win32 */
-#endif
-#define PI		M_PI
+int32 argfile_load (char *file, char *pgm, char ***argvout);
 
-#ifdef __cplusplus
-}
-#endif
+void  nbestlist_free (srch_hyp_t **hyplist, int32 nhyp);
+
+int32 nbestfile_load (char *dir, char *uttid, srch_hyp_t ***hyplist_out);
 
 
 #endif

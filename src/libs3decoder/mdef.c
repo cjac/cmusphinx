@@ -234,7 +234,7 @@ int32 mdef_phone_str (mdef_t *m, s3pid_t pid, char *buf)
     if (pid < m->n_ciphone)
 	sprintf (buf, "%s", mdef_ciphone_str (m, (s3cipid_t) pid));
     else {
-	sprintf (buf, "(%s,%s,%s,%c)",
+	sprintf (buf, "%s %s %s %c",
 		 mdef_ciphone_str(m, m->phone[pid].ci),
 		 mdef_ciphone_str(m, m->phone[pid].lc),
 		 mdef_ciphone_str(m, m->phone[pid].rc),

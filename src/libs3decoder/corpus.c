@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1996-2004 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
@@ -345,6 +345,7 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
   int32 sf, ef;
   ptmr_t tm;
   
+  mllrfp = NULL;
   E_INFO("Batch mode recognition without dynamic LM\n");
 
   if (ctlfile) {
@@ -427,6 +428,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
   ptmr_t tm;
   
   ctllmfp=NULL;
+  ctlmllrfp=NULL;
   E_INFO("Batch mode recognition with dynamic LM\n");
   if (ctlfile) {
     if ((fp = fopen(ctlfile, "r")) == NULL)
