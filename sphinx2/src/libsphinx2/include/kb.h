@@ -64,6 +64,10 @@
 #ifndef _KB_EXPORTS_H_
 #define _KB_EXPORTS_H_
 
+#include "lm_3g.h"
+#include "msd.h"
+#include "dict.h"
+
 int32 kb_get_total_dists(void);
 int32 kb_get_aw_tprob(void);
 int32 kb_get_num_models(void);

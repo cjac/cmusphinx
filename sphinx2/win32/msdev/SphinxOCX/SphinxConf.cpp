@@ -13,10 +13,10 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 extern "C" {
-	#include "../../sphinx2/include/fbs.h"
-	#include "../../sphinx2/src/fbs/include/lm.h"
-	#include "../../sphinx2/src/fbs/include/lm_3g.h"
-	#include "../../sphinx2/src/fbs/include/kb_exports.h"
+	#include "fbs.h"
+	#include "lm.h"
+	#include "lm_3g.h"
+	#include "kb.h"
 }
 
 long CSphinxConf::HypConf (search_hyp_t *hyp)

@@ -146,6 +146,7 @@ search_hyp_t *search_get_hyp (void);
 char *search_get_wordlist (int *len, char sep_char);
 int32 search_get_bptable_size (void);
 int32 *search_get_lattice_density ( void );
+latnode_t *search_get_lattice( void );
 double *search_get_phone_perplexity ( void );
 int32 search_get_sil_penalty (void);
 int32 search_get_filler_penalty ( void );

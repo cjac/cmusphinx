@@ -53,9 +53,12 @@
  * viterbi search dynamic data.
  *------------------------------------------------------------*
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2001/11/20  21:22:37  lenzo
+ * Win32 re-compatibility fixes.
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:59  lenzo
  * Initial import of sphinx2
  *
@@ -76,6 +79,10 @@
 
 #ifndef _NEWMSD_H_
 #define _NEWMSD_H_
+
+#include "s2types.h"
+#include "search_const.h"
+#include "basic_types.h"
 
 #define TRANS_CNT	((HMM_LAST_STATE*3)-1)	/* No. of trans. in Sphinx HMM */
 #define NODE_CNT	(HMM_LAST_STATE+1)	/* No. of nodes in Sphinx HMM */

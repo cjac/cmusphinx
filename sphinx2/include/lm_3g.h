@@ -81,6 +81,11 @@
 #ifndef _LM_3G_H_
 #define _LM_3G_H_
 
+#include "s2types.h"
+#include "lm.h"
+#include "lmclass.h"
+#include "hash.h"
+
 /* log quantities represented in either floating or integer format */
 typedef union {
     float f;

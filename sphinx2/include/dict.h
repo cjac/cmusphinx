@@ -54,6 +54,7 @@
 #define _DICT_H_
 
 #include <sys/types.h>
+#include "hash.h"
 
 #define NO_WORD		-1
 

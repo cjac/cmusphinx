@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2000/12/05  01:45:11  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.4  2001/11/20  21:22:31  lenzo
+ * Win32 re-compatibility fixes.
  * 
+ * Revision 1.3  2000/12/05 01:45:11  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.2  2000/02/08 20:44:32  lenzo
  * Changed uttproc_allphone_cepfile() to uttproc_allphone_file.
  *
@@ -92,6 +95,8 @@
 
 #ifndef _FBS_H_
 #define _FBS_H_
+
+#include "s2types.h"
 
 /*
  * The decoder is set up to process one finite-duration utterance at a time.  The

@@ -33,12 +33,12 @@
 
 extern "C" {
   /* #include "latnode.h"		// for latnode_t */
-#include "../../sphinx2/src/fbs/include/kb_exports.h"
-#include "../../sphinx2/src/fbs/include/lm_3g.h"
-#include "../../sphinx2/src/fbs/include/lmclass.h"
-#include "../../sphinx2/src/fbs/include/dict.h"
-#include "../../sphinx2/src/fbs/include/search.h"
-#include "../../sphinx2/include/fbs.h"
+#include "kb.h"
+#include "lm_3g.h"
+#include "lmclass.h"
+#include "dict.h"
+#include "search.h"
+#include "fbs.h"
   unsigned __int16 **search_get_uttpscr();
   int searchFrame();
 #include <io.h>

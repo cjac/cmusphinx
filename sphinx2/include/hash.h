@@ -19,6 +19,8 @@
 #define _HASH_H_
 
 #include <sys/types.h>
+#include "posixwin32.h"
+#include "list.h"
 
 typedef struct {
 	caddr_t	val;			/* Associated Object */
