@@ -25,7 +25,7 @@ CFG=libs3decoder - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libs3decoder - Win32 Release"
@@ -47,9 +47,13 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy  Release\libs3decoder.lib  ..\..\..\lib\ 
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "libs3decoder - Win32 Debug"
 
@@ -70,9 +74,13 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy  Debug\libs3decoder.lib  ..\..\..\lib\ 
+# End Special Build Tool
 
 !ENDIF 
 
@@ -94,6 +102,10 @@ SOURCE=..\..\..\src\libs3decoder\approx_cont_mgau.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\approx_cont_mgau.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\args.c
 # End Source File
 # Begin Source File
 
@@ -165,6 +177,10 @@ SOURCE=..\..\..\src\libs3decoder\lextree.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\live2.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\lm.c
 # End Source File
 # Begin Source File
@@ -222,6 +238,10 @@ SOURCE=..\..\..\src\libs3decoder\wid.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\agc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\args.h
 # End Source File
 # Begin Source File
 
@@ -286,6 +306,10 @@ SOURCE=..\..\..\src\libs3decoder\kbcore.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\lextree.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\live2.h
 # End Source File
 # Begin Source File
 
