@@ -52,9 +52,13 @@
  *
  * 
  * $Log$
- * Revision 1.3  2004/09/13  08:13:28  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.4  2004/10/07  22:46:26  dhdfu
+ * Fix compiler warnings that are also real bugs (but why does this
+ * function take an int32 when -lw is a float parameter?)
  * 
+ * Revision 1.3  2004/09/13 08:13:28  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.2  2004/09/09 20:29:08  arthchan2003
  * Added test for astar and dag.  Put a hack in s3_dag.c that allows 0 as acoustice score.
  *
@@ -353,7 +357,7 @@ static void models_init ( void )
 		    *(float32 *)cmd_ln_access("-inspen"));
     }
 
-    dict2lmwid = wid_dict_lm_map(dict, lm, cmd_ln_access("-langwt"));
+    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-langwt"));
 }
 
 
