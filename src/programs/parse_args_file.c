@@ -61,7 +61,7 @@ static arg_t arg[] = {
     { "-feat",
       ARG_STRING,
       "1s_c_d_dd",
-      "Feature type: Must be 1s_c_d_dd, s3_1x39 / s2_4x / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
+      "Feature type: Must be 1s_c_d_dd / s3_1x39 / s2_4x / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
 #endif
     { "-gs",
       ARG_STRING,
