@@ -29,8 +29,11 @@ Mon Jan 31 13:48:06 PST 2000
 test for EAGAIN in length testing, fixes potential linux processing bug under
 OSS.
 
-
 -------------------------------------------------------------------------------
 
 Fri Mar 10 11:51:32 EST 2000
+(lenzo)
 
+lots of stuff: new model/hmm/6k models with a new phoneset, more
+accurate.  added more examples; see sphinx-align, sphinx2-phone,
+sphinx2-test, sphinx2-simple.  EAGAIN patch, ad_freebsd.c. 
