@@ -15,7 +15,6 @@ EXTRA_DIST = \
 	log.h \
 	log_add.h \
 	mulaw.h \
-	new_fe.h \
 	pconf.h \
 	posixsock.h \
 	posixwin32.h \
