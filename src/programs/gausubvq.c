@@ -203,6 +203,10 @@ static arg_t arg[] = {
       ARG_STRING,
       NULL,
       "Output subvq file (stdout if not specified)" },
+    { "-log3table",
+      ARG_INT32,
+      "1",
+      "Determines whether to use the log3 table or to compute the values at run time."},
     
     { NULL, ARG_INT32, NULL, NULL }
 };
