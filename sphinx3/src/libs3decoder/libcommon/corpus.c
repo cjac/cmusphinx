@@ -547,7 +547,7 @@ ptmr_t ctl_process_utt (char *uttfile, int32 count,
 		break;
 	    
 	    if (i == 0)
-		E_INFO("Waiting for %s\n", uttfile);
+		E_INFO("Waiting for %s, count %d, c %d\n", uttfile,count,c);
 	    SLEEP_SEC (1);
 	}
 	ts = newts;

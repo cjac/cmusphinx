@@ -403,6 +403,10 @@ int32 main (int32 argc, char *argv[])
     } else if (cmd_ln_str ("-utt")) {
       /* Defunct at this moment, LM and MLLR is not correctly loaded in in this mode. */
 	tm = ctl_process_utt (cmd_ln_str("-utt"), cmd_ln_int32("-ctlcount"), utt_decode, &kb);
+    } else {
+      /* Is error checking good enough?" */
+      E_FATAL("Both -utt and -ctl are not specified.\n");
+      
     }
     
     if (kb.matchsegfp)
