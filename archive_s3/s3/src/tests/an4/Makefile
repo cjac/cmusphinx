@@ -18,7 +18,7 @@ BINDIR = $(TOP)/bin/$(MACHINE)
 
 an4_words:
 	rm -f gmake-an4_words.results
-	/bin/cp ARGS.an4_base ARGS.an4_words_unigram
+	/bin/cp ARGS.an4_unigram ARGS.an4_words_unigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.ug.lm.DMP" >> ARGS.an4_words_unigram
 	echo "-ctlfn    an4_words.ctl" >> ARGS.an4_words_unigram
 	echo "-matchfn    an4_words.match" >> ARGS.an4_words_unigram
@@ -27,7 +27,7 @@ an4_words:
 
 an4_spelling:
 	rm -f gmake-an4_spelling.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_unigram
+	/bin/cp ARGS.an4_unigram ARGS.an4_spelling_unigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.ug.lm.DMP" >> ARGS.an4_spelling_unigram
 	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_unigram
 	echo "-matchfn    an4_spelling.match" >> ARGS.an4_spelling_unigram
@@ -36,7 +36,7 @@ an4_spelling:
 
 an4_full:
 	rm -f gmake-an4_full.results
-	/bin/cp ARGS.an4_base ARGS.an4_full_unigram
+	/bin/cp ARGS.an4_unigram ARGS.an4_full_unigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4.ug.lm.DMP" >> ARGS.an4_full_unigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_full_unigram
 	echo "-matchfn    an4_full.match" >> ARGS.an4_full_unigram
@@ -45,7 +45,7 @@ an4_full:
 
 an4_plus:
 	rm -f gmake-an4_plus.results
-	/bin/cp ARGS.an4_base ARGS.an4_plus_unigram
+	/bin/cp ARGS.an4_unigram ARGS.an4_plus_unigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_plus.ug.lm.DMP" >> ARGS.an4_plus_unigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_plus_unigram
 	echo "-matchfn    an4_plus.match" >> ARGS.an4_plus_unigram
@@ -54,7 +54,7 @@ an4_plus:
 
 an4_words_trigram:
 	rm -f gmake-an4_words_trigrams.results
-	/bin/cp ARGS.an4_base ARGS.an4_words_trigram
+	/bin/cp ARGS.an4_trigram ARGS.an4_words_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.trigram.DMP" >> ARGS.an4_words_trigram
 	echo "-ctlfn    an4_words.ctl" >> ARGS.an4_words_trigram
 	echo "-matchfn    an4_words_trigram.match" >> ARGS.an4_words_trigram
@@ -63,7 +63,7 @@ an4_words_trigram:
 
 an4_spelling_trigram:
 	rm -f gmake-an4_spelling_trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_trigram
+	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.trigram.DMP" >> ARGS.an4_spelling_trigram
 	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_trigram
 	echo "-matchfn    an4_spelling_trigram.match" >> ARGS.an4_spelling_trigram
@@ -72,7 +72,7 @@ an4_spelling_trigram:
 
 an4_spelling_journey_trigram:
 	rm -f gmake-an4_spelling_journey_trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_journey_trigram
+	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_journey_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling_journey.trigram.DMP" >> ARGS.an4_spelling_journey_trigram
 	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_journey_trigram
 	echo "-matchfn    an4_spelling_trigram.match" >> ARGS.an4_spelling_journey_trigram
@@ -81,7 +81,7 @@ an4_spelling_journey_trigram:
 
 an4_full_trigram:
 	rm -f gmake-an4_full_trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_full_trigram
+	/bin/cp ARGS.an4_trigram ARGS.an4_full_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.trigram.DMP" >> ARGS.an4_full_trigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_full_trigram
 	echo "-matchfn    an4_full_trigram.match" >> ARGS.an4_full_trigram
@@ -90,7 +90,7 @@ an4_full_trigram:
 
 an4_plus_trigram:
 	rm -f gmake-an4_plus_trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_plus_trigram
+	/bin/cp ARGS.an4_trigram ARGS.an4_plus_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_plus.trigram.DMP" >> ARGS.an4_plus_trigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_plus_trigram
 	echo "-matchfn    an4_full_trigram.match" >> ARGS.an4_plus_trigram
