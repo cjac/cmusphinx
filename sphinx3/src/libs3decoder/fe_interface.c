@@ -402,6 +402,7 @@ int32 fe_close(fe_t *FE)
   }
     
   free(FE->OVERFLOW_SAMPS);
+  free(FE->HAMMING_WINDOW);
   free(FE);
   return(0);
 }
