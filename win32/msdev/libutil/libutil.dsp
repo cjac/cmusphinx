@@ -121,6 +121,10 @@ SOURCE=..\..\..\src\libutil\heap.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libutil\info.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libutil\io.c
 # End Source File
 # Begin Source File
@@ -182,6 +186,10 @@ SOURCE=..\..\..\src\libutil\hash.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libutil\heap.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libutil\info.h
 # End Source File
 # Begin Source File
 

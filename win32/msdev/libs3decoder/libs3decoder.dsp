@@ -137,6 +137,10 @@ SOURCE=..\..\..\src\libs3decoder\fast_algo_struct.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\fe.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\fe_interface.c
 # End Source File
 # Begin Source File
