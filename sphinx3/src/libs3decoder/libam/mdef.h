@@ -189,6 +189,10 @@ const char *mdef_ciphone_str (mdef_t *m,	/* In: Model structure being queried */
 int32 mdef_is_ciphone (mdef_t *m,		/* In: Model structure being queried */
 		       s3pid_t p);		/* In: triphone id being queried */
 
+/*Return 1 if a given senone is a ci senone */  
+int32 mdef_is_cisenone(mdef_t *m,               /* In: Model structure being queried */
+		       s3senid_t s);            /* In: senone id being queried */
+
 /* Return value: phone id for the given constituents if found, else BAD_S3PID */
 s3pid_t mdef_phone_id (mdef_t *m,		/* In: Model structure being queried */
 		       s3cipid_t b,		/* In: base ciphone id */

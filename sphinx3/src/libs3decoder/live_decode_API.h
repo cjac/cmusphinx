@@ -151,21 +151,6 @@ typedef struct
   FILE *hmm_log;
 
   /*
-   * Parameter: maximum words per frame.
-   */
-  int32 max_wpf;
-
-  /*
-   * Parameter: maximum histories per frame.
-   */
-  int32 max_histpf;
-
-  /*
-   * Parameter: maximum HMMs per frame.
-   */
-  int32 max_hmmpf;
-
-  /*
    * Parameter: intervals at which wbeam is used for phone transitions.
    */
   int32 phones_skip;

@@ -211,7 +211,12 @@ static arg_t arg[] = {
     { "-cond_ds",
       ARG_INT32,
       "0",
-      "Conditional Down-sampling, override normal down sampling." },
+      "Conditional Down-sampling, override normal down sampling. require specify a gaussian selection map" },
+
+    { "-dist_ds",
+      ARG_INT32,
+      "0",
+      "Distance-based Down-sampling, override normal down sampling." },
     { "-gs4gs",
       ARG_INT32,
       "1",

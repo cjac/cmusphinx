@@ -34,7 +34,7 @@
  *
  */
 /*
- * beam.h -- Various forms of pruning beam
+ * fast_algo_struct.c -- Various forms of pruning beam
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -45,42 +45,80 @@
  * 
  * HISTORY
  * 
- * 19-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 09-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
  */
 
 
-#ifndef _S3_BEAM_H_
-#define _S3_BEAM_H_
-
-#include <libutil/libutil.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/*
- * Structure containing various beamwidth parameters.  All logs3 values; -infinite is widest,
- * 0 is narrowest.
- */
-typedef struct {
-    int32 subvq;	/* For selecting active mixture components based on subvq scores */
-    int32 hmm;		/* For selecting active HMMs, relative to best */
-    int32 ptrans;	/* For determining which HMMs transition to their successors */
-    int32 word;		/* For selecting words exited, relative to best HMM score */
-} beam_t;
+#include "fast_algo_struct.h"
+#include "logs3.h"
+#include "s3types.h"
 
 
-/*
- * Create and initialize a beam_t structure, with the given parameters, converting them
- * from prob space to logs3 space.  Return value: ptr to created structure if successful,
- * NULL otherwise.
- */
-beam_t *beam_init (float64 svq, float64 hmm, float64 ptr, float64 wd);
+beam_t *beam_init (float64 hmm, float64 ptr, float64 wd, float64 wdend, int32 ptranskip)
+{
+    beam_t *beam;
+    
+    beam = (beam_t *) ckd_calloc (1, sizeof(beam_t));
+    
+    beam->hmm = logs3 (hmm);
+    beam->ptrans = logs3 (ptr);
+    beam->word = logs3 (wd);
+    beam->wordend =logs3 (wdend);
 
-#ifdef __cplusplus
+    beam->ptranskip=ptranskip;
+
+    return beam;
 }
-#endif
+
+histprune_t *histprune_init (int32 maxhmm,int32 maxhist, int32 maxword)
+{
+  histprune_t *hp;
+  hp = (histprune_t *) ckd_calloc (1, sizeof(histprune_t));
+  hp->maxwpf=maxword;
+  hp->maxhmmpf=maxhmm;
+  hp->maxhistpf=maxhist;
+  return hp;
+}
+
+fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio, 
+			   int32 mode_cond_ds,
+			   int32 mode_dist_ds,
+			   int32 isGS4GS,
+			   int32 isSVQ4SVQ,
+			   float32 subvqbeam,
+			   float32 cipbeam)
+{
+  fast_gmm_t *fg;
+
+  fg = (fast_gmm_t *) ckd_calloc (1, sizeof(fast_gmm_t));
+
+  fg->rec_bst_senscr=0;
+  fg->last_feat=NULL;
+
+  fg->gs4gs=isGS4GS;
+  fg->svq4svq=isSVQ4SVQ;
+  fg->downs = (downsampling_t *) ckd_calloc(1,sizeof(downsampling_t));
+  fg->gmms = (gmm_select_t*) ckd_calloc(1,sizeof(gmm_select_t));
+  fg->gaus = (gau_select_t*) ckd_calloc(1,sizeof(gau_select_t));
+
+  fg->gmms->ci_pbeam=logs3(cipbeam);
+  if(fg->gmms->ci_pbeam < -10000000)
+    E_INFO("Virtually no CI phone beam is applied now. (ci_pbeam <-1000000)\n");
+  fg->gaus->rec_bstcid=-1;
+
+  fg->gaus->subvqbeam=logs3(subvqbeam);
+
+  fg->downs->ds_ratio=down_sampling_ratio;
+  fg->downs->cond_ds=mode_cond_ds;
+  fg->downs->dist_ds=mode_dist_ds;
+  fg->downs->skip_count=0;
+
+  if(fg->downs->cond_ds && fg->downs->dist_ds)
+    E_FATAL("-cond_ds and -dist_ds cannot be specified together\n");
 
 
-#endif
+
+  return fg;
+}
+

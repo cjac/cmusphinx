@@ -8,7 +8,6 @@ libs3decoder_la_SOURCES = \
         agc.c \
 	approx_cont_mgau.c \
 	ascr.c \
-        beam.c \
         bio.c \
         cmn.c \
         cmn_prior.c \
@@ -16,6 +15,7 @@ libs3decoder_la_SOURCES = \
         corpus.c \
         dict.c \
         dict2pid.c \
+	fast_algo_struct.c \
 	fe_interface.c \
 	fe_sigproc.c \
         feat.c \
@@ -49,7 +49,6 @@ noinst_HEADERS = \
         agc.h \
 	approx_cont_mgau.h \
         ascr.h \
-        beam.h \
         bio.h \
         cmn.h \
         cmn_prior.h \
@@ -57,6 +56,7 @@ noinst_HEADERS = \
         corpus.h \
         dict.h \
         dict2pid.h \
+	fast_algo_struct.h \
 	fe.h \
 	fe_internal.h \
         feat.h \

@@ -64,10 +64,6 @@
 extern "C" {
 #endif
 
-/*Determine whether a frame's computation should be skipped or not based on the down sampling ratio and other parameters*/
-
-int32 approx_isskip(int32 frame,int32 ds_ratio,int32 cond_ds,int32 isSameBestIdx,int32 *skip_count);
-
 /* Master function to compute the approximate score of mixture of Gaussians 
    This is the current schemes included:
    1, VQ-based Gaussian Selection 
@@ -76,23 +72,31 @@ int32 approx_isskip(int32 frame,int32 ds_ratio,int32 cond_ds,int32 isSameBestIdx
    4, Down Sampling 
       a, dumb approach,
       b, conditional down sampling (currently can only be used with VQ-based Gaussian Selection
+      c, distance-based down sampling 
 */
 
 /*
  * Evaluate the approximation gaussian score for one frame. 
  */
-int32 approx_cont_mgau_frame_eval (mgau_model_t *g,
-				   gs_t *gs,
-				   subvq_t *svq,
-				   int32 svq_beam,
-				   float32 *feat,	
-				   int32 *sen_active,	
-				   int32 *senscr,
-				   int32 *cache_ci_senscr,
-				   kb_t *kb,
-				   int32 frame);	
+int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /* Input, kbcore, for mdef, svq and gs*/
+				   fast_gmm_t *fastgmm,	 /* Input/Output: wrapper for
+							    parameters for Fast GMM , for
+							    all beams and parameters, during
+							    the computation, the */
+				   float32 *feat,	/*Input: the current feature vector */
+				   int32 frame,         /*Input: the current frame number */
+				   int32 *sen_active,	/*Input: the current active senones */
+				   int32 *rec_sen_active, /*Input: the most recent active senones */
+				   int32 *senscr,         /*Output: the output senone scores */
+				   int32 *cache_ci_senscr, /*Input: the CI senone scores for CI GMMS */
+				   ptmr_t *tm_ovrhd        /*Output: the timer used for computing overhead */
+				   );
 
-void approx_cont_mgau_ci_eval (mgau_model_t *g, float32 *feat,int32 *ci_senscr, kb_t *kb);
+
+void approx_cont_mgau_ci_eval (mgau_model_t *g, 
+			       mdef_t *mdef, 
+			       float32 *feat,
+			       int32 *ci_senscr);
 
 #ifdef __cplusplus
 }

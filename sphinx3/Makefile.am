@@ -48,6 +48,17 @@ test-livepretend:
 	@grep "P I T T S B U R G H (" $@.out 
 	@grep "FWDXCT" $@.out 
 
+test-valgrind:
+	@echo "LIVEPRETEND TEST"
+	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+
+	$(LIBTOOL) --mode=execute valgrind --skin=memcheck ./bin/bin/livepretend \
+		model/lm/an4/an4.ctl \
+		$(top_srcdir)/model/lm/an4 \
+		model/lm/an4/args.an4.test > $@.out 2>&1 
+	@grep "P I T T S B U R G H (" $@.out 
+	@grep "FWDXCT" $@.out 
+
 test-decode:
 	@echo "DECODE TEST"
 	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"

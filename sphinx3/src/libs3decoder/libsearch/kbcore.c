@@ -201,19 +201,20 @@ kbcore_t *kbcore_init (float64 logbase,
 	if (kb->mgau == NULL)
 	    E_FATAL("gauden_init(%s, %s, %e) failed\n", meanfile, varfile, varfloor);
 
+	if(subvqfile && gsfile){
+	  E_FATAL("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
+	}
 	if (subvqfile) {
 	    if ((kb->svq = subvq_init (subvqfile, varfloor, -1, kb->mgau)) == NULL)
 		E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile, varfloor);
 	}
 	
-	if(gsfile) 
-	  {
+	if(gsfile) {
 	    if((kb->gs=gs_read(gsfile))==NULL)
 	      E_FATAL("gs_read(%s) failed\n",gsfile);
 
 	    E_INFO("After reading the number of senones: %d\n",kb->gs->n_mgau);
-
-	  }
+	}  
     }
     
     if (tmatfile) {

@@ -77,7 +77,6 @@
 
 
 #include "subvq.h"
-/* #include "cmd_ln_args.h"	*/ /* RAH, added so we can allow for -vqeval parameter */
 #include "s3types.h"
 
 /* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
@@ -194,7 +193,7 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     char *strp;
     subvq_t *vq;
     
-    VQ_EVAL = cmd_ln_int32 ("-vqeval");	/* RAH, Currently only works when n_sv = 3, values computed but ignored in other cases */
+    VQ_EVAL = cmd_ln_int32 ("-vqeval");	/*Arthur : It nows work for arbitrary size of sub-vector*/
 
     E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,VQ_EVAL);
     
@@ -542,32 +541,21 @@ int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *ac
 	  v+=vqdist[*(map++)];
 	}
 	score = logs3_add (score, v + mgau->mixw[i]);
-	/*v=vqdist[*(map++)];
-	  v+=vqdist[*(map++)];
-	  v+=vqdist[*(map++)];*/
       }
     }else{
-
       last_active=0;
       for (i = 0; active[i] >=0; i++) {
 	c=active[i];
       }
       for (i = 0; active[i] >=0; i++) {
-
-	/*	E_INFO("Value of c %d\n",c);
-		E_INFO("Value of last_active %d\n",last_active);*/
 	c=active[i];
 	map+=(c-last_active)*vq->n_sv;
 	v=0;
 	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
 	  v+=vqdist[*(map++)];
 	}
-	/*v=vqdist[*(map++)];
-	v+=vqdist[*(map++)];
-	v+=vqdist[*(map++)];*/
 
 	last_active=c+1;
-
 	score = logs3_add (score, v + mgau->mixw[i]);
       }
     }
