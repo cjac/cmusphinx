@@ -650,7 +650,14 @@ set of changes from dhd (below)
 	* Noted that most changes are actually now in the CVS 
 	  commits rathter than in this file...
 
--------------------------------------------------------------------------------
-
 2001-09-18 Kevin A. Lenzo <lenzo@cs.cmu.edu>
         * Added notes to sphinx2-demo	
+
+2001-10-23 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Made all error, warnings and info messages use the E_* macros
+	  in err.[ch].  This will make logmsg.[ch] irrelevant.
+	* Added error verbage to report more in several places,
+	  particularly in time_align.c.  Forced alignments were failing
+	  for people without apparent error; this is now reported with
+	  diagnosis.
+
