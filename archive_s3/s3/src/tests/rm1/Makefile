@@ -33,7 +33,7 @@ rm1_unigram:
 	echo "-langwt 13" >> ARGS.rm1_unigram$(MODEAFFIX)
 	echo "-beam 1e-120" >> ARGS.rm1_unigram$(MODEAFFIX)
 	echo "-nwbeam 1e-60" >> ARGS.rm1_unigram$(MODEAFFIX)
-	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1.unigram$(MODEAFFIX)
+	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_unigram$(MODEAFFIX)
 	echo "-matchfn rm1_unigram$(MODEAFFIX).match" >> ARGS.rm1_unigram$(MODEAFFIX)
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
 	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_unigram$(MODEAFFIX).match > rm1_unigram$(MODEAFFIX).align
@@ -45,7 +45,7 @@ rm1_flatunigram:
 	echo "-langwt 8" >> ARGS.rm1_flatunigram$(MODEAFFIX)
 	echo "-beam 1e-120" >> ARGS.rm1_flatunigram$(MODEAFFIX)
 	echo "-nwbeam 1e-60" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1.flatunigram$(MODEAFFIX)
+	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_flatunigram$(MODEAFFIX)
 	echo "-matchfn rm1_flatunigram$(MODEAFFIX).match" >> ARGS.rm1_flatunigram$(MODEAFFIX)
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_flatunigram$(MODEAFFIX) > gmake-rm1_flatunigram$(MODEAFFIX).results
 	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_flatunigram$(MODEAFFIX).match > rm1_flatunigram$(MODEAFFIX).align
@@ -57,7 +57,7 @@ rm1_bigram:
 	echo "-langwt 17" >> ARGS.rm1_bigram$(MODEAFFIX)
 	echo "-beam 1e-140" >> ARGS.rm1_bigram$(MODEAFFIX)
 	echo "-nwbeam 1e-100" >> ARGS.rm1_bigram$(MODEAFFIX)
-	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1.bigram$(MODEAFFIX)
+	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_bigram$(MODEAFFIX)
 	echo "-matchfn rm1_bigram$(MODEAFFIX).match" >> ARGS.rm1_bigram$(MODEAFFIX)
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
 	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_bigram$(MODEAFFIX).match > rm1_bigram$(MODEAFFIX).align
@@ -69,7 +69,7 @@ rm1_trigram:
 	echo "-langwt 27" >> ARGS.rm1_trigram$(MODEAFFIX)
 	echo "-beam 1e-160" >> ARGS.rm1_trigram$(MODEAFFIX)
 	echo "-nwbeam 1e-120" >> ARGS.rm1_trigram$(MODEAFFIX)
-	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1.trigram$(MODEAFFIX)
+	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_trigram$(MODEAFFIX)
 	echo "-matchfn rm1_trigram$(MODEAFFIX).match" >> ARGS.rm1_trigram$(MODEAFFIX)
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
 	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_trigram$(MODEAFFIX).match > rm1_trigram$(MODEAFFIX).align
