@@ -1,0 +1,78 @@
+
+ To run you will need:
+
+  -> binaries for the CMU-Cambridge Language Model Toolkit,
+     I'm using v2.03
+  -> cmudictionary
+  -> punctrem.sed
+  -> SimpleLM.pl
+
+  Install, punctrem.sed expects to live with the CMU-Cambridge binaries.
+
+
+
+ To run: (After editing SimpleLM.pl for correct path points)
+
+   SimpleLM.pl foo.txt foo_lm
+
+
+# INPUT: a text file
+
+  # The input text can be just about any text document. It attempts to
+  # deal with punctuation and other pieces. It doesn't require special
+  # formating.
+
+# OUTPUT: a .dict a .arpabo and a .arpabo.DMP file
+  
+  # These files are what are needed for SPHINX
+
+
+
+
+ Please let me know if this is useful or you have additions.
+
+ ricky.houghton@cs.cmu.edu
+  
+---------------------------------------------------------------
+
+
+SimpleLM.pl - notes from header
+
+
+# Ricky Houghton, Carnegie Mellon University (Feburary 2nd, 2000)
+# This is a based on a version that Alex Hauptmann wrote.
+
+# This script should work for most simple cases, however there are
+# many problems/concerns that need to be addressed for larger sets of
+# data.
+#
+
+# 0.) This is an early version, it could use a bit of cleaning
+# up. Hopefully many will find it useful as is.
+
+# 1.) This script can not deal with words not in cmu_dict. A future
+# version will create pronunciations for OOV words on the fly. 
+# 
+
+# 2.) This script does not merge a smaller corpus with a general
+# corpus. This merging step is actually quite important. Even with a
+# tight corpus, there is a real benefit to merging with a general
+# language model. I will release MergeLM once I find a good general
+# text set for merging and we have a pronunciation generator.
+
+# 3.) This script does not deal with text normalization. For hand
+# crafted corpora this should not be a problem. However, if you want
+# to build an LM for recognizing something like NPR, and would like to
+# use text from the WEB as a source of language data, it should be
+# normalized. This process would convert the number "100,000", to "one
+# hundred thousand", "www.cmu.edu" would become "w w w dot c m u dot e
+# d u", or maybe "w w w dot c m u dot ed u". That is, it would attempt
+# to convert numbers and symbols to text strings that the recognizer
+# might return. (Note, awb has a text normalizer that can be used,
+# however I didn't have time to incorporate it into the script
+# tonight. Other things popped up.
+
+# 4.) I've made no real effort to allow for parameter passing.  I ran
+# out of time and I'm committed for the next week training new
+# acoustic models.
+
