@@ -17,7 +17,7 @@ response to the needs and patches provided.
 If you install the distribution in the default location, you can
 access the documentation here:
 
-   http://localhost/usr/local/share/sphinx3/doc/
+   file://localhost/usr/local/share/sphinx3/doc/
 
 There are couple of nice documents you could find in the ./doc
 directory.  That includes 
