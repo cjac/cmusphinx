@@ -37,6 +37,11 @@
  *
  */
 
+
+#ifndef __S2_MAGIC_H__
+#define __S2_MAGIC_H__		1
+
+
 #define COUNT_F -1
 #define PROB_F -2
 #define OLD_FORMAT_F -3
@@ -55,3 +60,6 @@
 #define PROBS 1
 #define COUNTS 2
 #define EITHER 3
+
+
+#endif

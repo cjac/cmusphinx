@@ -1,6 +1,10 @@
 <HTML>
 <HEAD>
 <TITLE> Sphinx-II User Guide </TITLE>
+  <style type="text/css">
+     pre { font-size: medium; background: #f0f8ff; padding: 2mm; border-style: ridge ; color: teal}
+     code {font-size: medium; color: teal}
+  </style>
 </HEAD>
 <BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0">
 <!--  BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0" -->
@@ -10,14 +14,14 @@
 <center>
 <p>
 <a href="http://www.speech.cs.cmu.edu/sphinx/">CMU Sphinx Group</a><p>
-Original by Mosur Ravishankar (Ravi) (<a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu.edu</a>)<br>
+Original by Ravishankar Mosur (Ravi) (<a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu.edu</a>)<br>
 Maintained by Ravi and Kevin A. Lenzo (<a href="mailto:lenzo@cs.cmu.edu">lenzo@cs.cmu.edu</a>)<p>
 School of Computer Science<br>
 Carnegie Mellon University<br>
 <strong>Copyright (c) 1997-2004 Carnegie Mellon University.</strong>
 <HR>
 This document is not complete, but should be helpful during construction.<br>
-Last updated 2004-07-13.
+Last updated 2004-07-23.
 <HR>
 </center>
 
@@ -29,7 +33,7 @@ Last updated 2004-07-13.
 
 Sphinx2 is a decoding engine for the Sphinx-II speech recognition system developed at
 Carnegie Mellon University.  It can be used to build small, medium or large
-vocabulary applications.  It's main features are:
+vocabulary applications.  Its main features are:
 <UL>
 <LI> Continuous speech decoding (as opposed to isolated word recognition)
 <LI> Speaker-independent (doesn't require the user to train the system)
@@ -42,8 +46,8 @@ vocabulary applications.  It's main features are:
 <P>
 Sphinx2 consists of a set of libraries that include core speech recognition functions as
 well as auxiliary ones such as low-level audio capture.  The libraries are written in
-C and have been compiled on several Unix platforms (DEC Alpha, Sun Sparc, HPs) and
-Pentium/PentiumPro PCs running WindowsNT or Windows95.  A number of demo applications
+C and have been compiled on several Unix platforms (Linux, DEC Alpha, Sun Sparc, HPs) and
+Pentium/PentiumPro PCs running WindowsXP, WindowsNT or Windows95.  A number of demo applications
 based on this recognition engine are also provided.
 
 <P>
@@ -133,6 +137,26 @@ be added to the lexicon in between <em>utterances</em>.  (An <em>utterance</em> 
 the unit of decoding; see Section <A HREF="#sec_engine">The Recognition Engine</A>
 below.)  There is no mechanism for removing a word from the lexicon.
 
+<P>
+
+In addition to ordinary words, a set of <em>noise</em> or <em>filler</em> words can
+be specified by the application, by placing them in a corresponding dictionary
+(indicated by the <strong><code>-ndictfn</code></strong> argument).  Sphinx2 also
+automatically added the silence word <strong><code>SIL</code></strong>, with the
+silence phone as its pronunciation, to the set
+of filler words.  A filler dictionary is not required, but the silence word is
+always added.
+The significance of filler words is that they can occur anywhere
+in the utterance, transparent to the language model (see below).
+
+<P>
+
+Finally, Sphinx2 also adds the distinguished begin-sentence and end-sentence symbols,
+<strong><code>&lt;s&gt;</code></strong> and <strong><code>&lt;/s&gt;</code></strong>,
+to the vocabulary.  These words must be present in any N-gram language model
+(see below).
+
+
 
 <br><br>
 
@@ -145,7 +169,7 @@ in a single directory and have file extensions <strong><code>.vec</code></strong
 <strong><code>.var</code></strong>,
 <strong><code>.chmm</code></strong>, <strong><code>.ccode</code></strong>,
 <strong><code>.d2code</code></strong>, <strong><code>.p3code</code></strong>,
-and <strong><code>.xcode</code></strong>.  (<em>Note</em>: the Sphinx trainer generates
+and <strong><code>.xcode</code></strong>.  (<em>Note:</em> the Sphinx trainer generates
 Sphinx3 format acoustic model files, which have to be converted to Sphinx2 format.)
 
 <P>
@@ -208,6 +232,16 @@ model, create a new LM file including the new word and reload it.)
 
 <P>
 
+As mentioned earlier, an N-gram language model must include the begin-sentence
+and end-sentence symbols, <strong><code>&lt;s&gt;</code></strong> and
+<strong><code>&lt;/s&gt;</code></strong>.
+Filler words are transparent to any language model,
+N-gram or finite state.  That is, the decoder can transparently try to insert
+them anywhere in the utterance, but they don't exist as far as the language model
+is concerned.
+
+<P>
+
 Large N-gram LMs load very slowly.  The delay can be avoided by
 providing LM <em>dump</em>
 files along with the original LMs.  The Sphinx2 decoder automatically creates LM dump
@@ -217,10 +251,10 @@ Dump Files</A>).
 <P>
 
 Note that the current
-implementation of finite-state grammars, or FSGs, is not very efficient.
+implementation of finite-state grammars, or FSGs, is not the most efficient.
 In particular, transitions are represented using a full <em>N</em>x<em>N</em>
 matrix, where <em>N</em> is the number of states.  Hence,
-FSGs containing several thousands of states will run very slowly.
+FSGs containing several thousands of states may run inefficiently.
 
 <P>
 
@@ -241,7 +275,7 @@ Operationally, an utterance is the chunk of speech data processed
 between calls to the Sphinx2 API functions
 <strong><code>uttproc_begin_utt</code></strong> and the next
 <strong><code>uttproc_end_utt</code></strong>.
-An utterance can be upto a minute long.  In practice, most applications would
+An utterance can be up to a minute long.  In practice, most applications would
 typically treat a sentence or a phrase as an utterance, which would be much
 shorter than the maximum of 60 sec.
 
@@ -250,7 +284,7 @@ shorter than the maximum of 60 sec.
 
 <H3>Basic Recognition</H3>
 
-In Sphinx2, each utterance is decoded using upto three <em>passes</em>, two of
+In Sphinx2, each utterance is decoded using up to three <em>passes</em>, two of
 which are optional:
 <UL>
 <LI> A <em>lexical-tree Viterbi</em> search.  It produces a recognition result
@@ -286,7 +320,7 @@ thesis</A>.
 The recognizer can be run to <em>time-align</em> given transcripts to input
 speech, producing time segmentations for the input transcripts, as well as identifying
 silence regions.  Time-alignment is only available in batch mode.  It is covered in
-more detail below.  (<em>Note</em>:  Forced alignment can also be accomplished using
+more detail below.  (<em>Note:</em>  Forced alignment can also be accomplished using
 the recently added finite-state grammar capability, which can also be used in live
 mode.  However, it cannot provide phoneme and state-level segmentation.)
 
@@ -298,7 +332,7 @@ available to user-written applications as well.  However, the input can only be 
 pre-recorded files.
 <P></P>
 
-<b>Note</b>: The recognition engine is configured in one of <em>normal</em>,
+<em>Note:</em> The recognition engine is configured in one of <em>normal</em>,
 <em>forced-alignment</em>, or <em>allphone</em> modes during initialization.  It
 cannot be dynamically switched between these modes at run time.
 
@@ -346,7 +380,7 @@ Complete details can be found in
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_open</code></strong>:
+<LI><strong><code>ad_open:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Opens an audio device for recording.  Returns a <em>handle</em>
@@ -356,7 +390,7 @@ to the opened device.  (Currently 8KHz or 16KHz mono, 16-bit PCM only.)
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_start_rec</code></strong>:
+<LI><strong><code>ad_start_rec:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Starts recording on the audio device associated with the specified handle.
@@ -365,10 +399,10 @@ Starts recording on the audio device associated with the specified handle.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_read</code></strong>:
+<LI><strong><code>ad_read:</code></strong>
 </TD>
 <TD VALIGN=TOP>
-Reads upto a specified number of samples into a given buffer.  It returns the number
+Reads up to a specified number of samples into a given buffer.  It returns the number
 of samples actually read, which may be less than the number requested.  In particular
 it may return 0 samples if no data is available.  Most operating systems have a limited
 amount of internal buffering (at most a few seconds) for audio devices.  Hence, this
@@ -378,7 +412,7 @@ function must be called frequently enough to avoid buffer overflow.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_stop_rec</code></strong>:
+<LI><strong><code>ad_stop_rec:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Stops recording.  (However, the system may still have internally buffered data
@@ -388,7 +422,7 @@ remaining to be read.)
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_close</code></strong>:
+<LI><strong><code>ad_close:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Closes the audio device associated with the specified audio handle.
@@ -412,7 +446,7 @@ PC/Windows platforms</em>):
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_open_play</code></strong>:
+<LI><strong><code>ad_open_play:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Opens an audio device for playback.  Returns a <em>handle</em>
@@ -422,7 +456,7 @@ to the opened device.  (Currently 8KHz or 16KHz mono, 16-bit PCM only.)
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_start_play</code></strong>:
+<LI><strong><code>ad_start_play:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Starts playback on the device associated with the given handle.
@@ -431,7 +465,7 @@ Starts playback on the device associated with the given handle.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_write</code></strong>:
+<LI><strong><code>ad_write:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Sends a buffer of samples for playback.  The function may
@@ -443,7 +477,7 @@ sufficiently rapidly to avoid breaks in playback.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_stop_play</code></strong>:
+<LI><strong><code>ad_stop_play:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 End of playback.  Playback is continued until all buffered data has been consumed.
@@ -452,7 +486,7 @@ End of playback.  Playback is continued until all buffered data has been consume
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>ad_close_play</code></strong>:
+<LI><strong><code>ad_close_play:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Closes the audio device associated with the specified handle.
@@ -505,7 +539,7 @@ and is summarized below:
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_init</code></strong>:
+<LI><strong><code>cont_ad_init:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Associates a new continuous listening module instance with a specified raw A/D
@@ -517,7 +551,7 @@ may be the handle returned by <strong><code>ad_open</code></strong> and function
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_calib</code></strong>:
+<LI><strong><code>cont_ad_calib:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Calibrates the background silence level by reading the raw audio for a few seconds.
@@ -528,7 +562,7 @@ and after any environmental change.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_read</code></strong>:
+<LI><strong><code>cont_ad_read:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Reads and returns the next available block of non-silence data in a given buffer.
@@ -541,7 +575,7 @@ are provided below.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_reset</code></strong>:
+<LI><strong><code>cont_ad_reset:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Flushes any data buffered inside the module.  Useful for discarding accumulated,
@@ -551,7 +585,7 @@ but unprocessed speech.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_get_params</code></strong>:
+<LI><strong><code>cont_ad_get_params:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Returns the current values of a number of parameters that determine the functioning
@@ -561,7 +595,7 @@ of the silence/speech detection module.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_set_params</code></strong>:
+<LI><strong><code>cont_ad_set_params:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Sets a number of parameters that determine the functioning of the silence/speech
@@ -571,7 +605,7 @@ detection module.  Useful for fine-tuning its performance.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_set_thresh</code></strong>:
+<LI><strong><code>cont_ad_set_thresh:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Useful for adjusting the silence and speech thresholds.  (It's preferable to use
@@ -581,7 +615,7 @@ Useful for adjusting the silence and speech thresholds.  (It's preferable to use
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_detach</code></strong>:
+<LI><strong><code>cont_ad_detach:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Detaches the specified continuous listening module from its currently associated
@@ -591,7 +625,7 @@ audio device.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_attach</code></strong>:
+<LI><strong><code>cont_ad_attach:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Attaches the specified continuous listening module to the specified audio device.
@@ -603,7 +637,7 @@ being reset to default values.)
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>cont_ad_close</code></strong>:
+<LI><strong><code>cont_ad_close:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Closes the continuous listening module.
@@ -669,19 +703,18 @@ segments a given pre-recorded file containing audio data into utterances.
 
 There are several aspects to speech decoding: initialization, basic speech
 decoding, management of multiple grammars (LMs), logging and book-keeping, etc.
-This section briefly describes the related Sphinx2 API functions.  They are
-defined in <strong><code>include/fbs.h</code></strong>.
+This section briefly describes the related Sphinx2 API functions.  Note that not
+all the available functions are documented here.  Please refer to the functions
+and data types defined in <strong><code>include/fbs.h</code></strong> for further
+details.
 
 <P>
 
-
-
 The two functions pertaining to initialization and final cleanup are:
 <TABLE>
-
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>fbs_init</code></strong>:
+<LI><strong><code>fbs_init:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Initializes the decoder.  The input arguments (in the form of the common
@@ -696,7 +729,7 @@ option below) it happens as part of this initialization.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>fbs_end</code></strong>:
+<LI><strong><code>fbs_end:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Cleans up the internals of the decoder, such as printing summaries and closing log
@@ -716,7 +749,7 @@ one utterance at a time:
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_begin_utt</code></strong>:
+<LI><strong><code>uttproc_begin_utt:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Begins decoding the next utterance.  The application can assign an <em>id</em>
@@ -726,7 +759,7 @@ string to it.  If not, one is automatically created and assigned.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_rawdata</code></strong>:
+<LI><strong><code>uttproc_rawdata:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Processes (decodes) the next chunk of raw A/D data in the current utterance.  This
@@ -738,7 +771,7 @@ PCM-encoded samples can be processed.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_cepdata</code></strong>:
+<LI><strong><code>uttproc_cepdata:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 This is an alternative to <strong><code>uttproc_rawdata</code></strong> if the
@@ -748,7 +781,7 @@ application wishes to decode <em>cepstrum</em> data instead of raw A/D data.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_end_utt</code></strong>:
+<LI><strong><code>uttproc_end_utt:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Indicates that all the speech data for the current utterance has been provided to
@@ -758,7 +791,7 @@ the decoder.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_result</code></strong>:
+<LI><strong><code>uttproc_result:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Finishes processing internally queued up data and returns the final recognition
@@ -769,20 +802,21 @@ after processing only some of the internally queued up data.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_result_seg</code></strong>:
+<LI><strong><code>uttproc_result_seg:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Like <strong><code>uttproc_result</code></strong>, but returns additional information
 for each word in the result, such as time segmentation (measured in 10msec frames),
-acoustic and language model scores, etc.  One
-can use either this function or <strong><code>uttproc_result</code></strong> to
+acoustic and language model scores, etc.  (See structure <strong><code>search_hyp_t</code></strong>
+in file <strong><code>include/fbs.h</code></strong>.)
+One can use either this function or <strong><code>uttproc_result</code></strong> to
 finish decoding, but not both.
 </TD>
 </TR>
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_partial_result</code></strong>:
+<LI><strong><code>uttproc_partial_result:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 This function can be used to obtain the
@@ -793,7 +827,7 @@ useful, for example, in providing feedback to the user.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_partial_result_seg</code></strong>:
+<LI><strong><code>uttproc_partial_result_seg:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Like <strong><code>uttproc_partial_result</code></strong>, but returns word
@@ -804,7 +838,7 @@ string.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_abort_utt</code></strong>:
+<LI><strong><code>uttproc_abort_utt:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 This is an alternative to <strong><code>uttproc_end_utt</code></strong> that
@@ -814,7 +848,7 @@ terminates the current utterance.  No further recognition results can be obtaine
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>search_get_alt</code></strong>:
+<LI><strong><code>search_get_alt:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Returns N-best hypotheses for the utterance.  Currently, this does not work with
@@ -861,7 +895,7 @@ modelling related aspects of the decoder:
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>lm_read</code></strong>:
+<LI><strong><code>lm_read:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Reads in a new N-gram language model from a given file,
@@ -874,7 +908,7 @@ argument.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>lm_delete</code></strong>:
+<LI><strong><code>lm_delete:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Deletes the N-gram LM with the given string name from the decoder
@@ -884,7 +918,7 @@ repertory.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_set_lm</code></strong>:
+<LI><strong><code>uttproc_set_lm:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Tells the decoder to switch the active grammar to the N-gram LM with
@@ -897,7 +931,7 @@ This function can only be invoked between utterances, not in the midst of one.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_set_context</code></strong>:
+<LI><strong><code>uttproc_set_context:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Sets a two-word history for the next utterance to be decoded, giving its first
@@ -908,21 +942,32 @@ N-gram LMs.)
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_load_fsgfile</code></strong>:
+<LI><strong><code>uttproc_load_fsgfile:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Loads the given finite-state grammar (FSG) file into the system and returns the
 string name associated with the FSG.  (Unlike the N-gram LM, the string name
 is contained in the FSG file.)  The application needs this function only
 if it needs to create and load FSGs dynamically at run time, rather than
-at initialization via the <strong><code>-fsgfn</code></strong> command line
-argument.
+at initialization via the <strong><code>-fsgfn</code></strong> or
+<strong><code>-fsgctlfn</code></strong> command line arguments.
 </TD>
 </TR>
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_set_fsg</code></strong>:
+<LI><strong><code>uttproc_load_fsg:</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Similar to <strong><code>uttproc_load_fsgfile</code></strong>, but the input
+FSG is provided in the form of an <strong><code>s2_fsg_t</code></strong> data
+structure (see <strong><code>include/fbs.h</code></strong>), instead of a file.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_set_fsg:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Tells the decoder to switch the active grammar to the FSG with
@@ -935,7 +980,7 @@ This function can only be invoked between utterances, not in the midst of one.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_del_fsg</code></strong>:
+<LI><strong><code>uttproc_del_fsg:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Deletes the FSG with the given string name from the decoder repertory.
@@ -954,7 +999,7 @@ can be logged to specified directories:
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_set_rawlogdir</code></strong>:
+<LI><strong><code>uttproc_set_rawlogdir:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Specifies the directory to which utterance audio data should be logged.  An
@@ -965,7 +1010,7 @@ ID assigned to utterance by <strong><code>uttproc_begin_utt</code></strong>.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_set_mfclogdir</code></strong>:
+<LI><strong><code>uttproc_set_mfclogdir:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Specifies the directory to which utterance cepstrum data should be logged.
@@ -975,7 +1020,7 @@ Like A/D files above, an utterance is logged to file &lt;id&gt;.mfc.
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_get_uttid</code></strong>:
+<LI><strong><code>uttproc_get_uttid:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Retrieves the utterance ID string for the current or most recent utterance.
@@ -1004,8 +1049,8 @@ below.
 In batch mode, Sphinx2 runs in allphone mode if the <b><code>-allphone</code></b>
 flag is <b><code>TRUE</code></b>.  In this mode, no
 language model should be provided; i.e., the <strong><code>-lmfn</code></strong>,
-<strong><code>-lmctlfn</code></strong> and <strong><code>-fsgfn</code></strong>
-arguments should be omitted.
+<strong><code>-lmctlfn</code></strong>, <strong><code>-fsgfn</code></strong> and
+<strong><code>-fsgctlfn</code></strong> arguments should be omitted.
 
 <P>
 
@@ -1015,7 +1060,7 @@ recognition from pre-recorded files:
 
 <TR>
 <TD nowrap VALIGN=TOP>
-<LI><strong><code>uttproc_allphone_file</code></strong>:
+<LI><strong><code>uttproc_allphone_file:</code></strong>
 </TD>
 <TD VALIGN=TOP>
 Performs allphone recognition on the given file and returns the resulting phone
@@ -1035,8 +1080,8 @@ be set accordingly.  (See <A HREF="#sec_cmdline">arguments reference</A> below.)
 Sphinx2 (in batch mode) can be used for aligning transcripts to speech, in order to
 obtain time-segmentations at the word, phone, or state levels.  In this mode, no
 language model should be provided; i.e., the <strong><code>-lmfn</code></strong>,
-<strong><code>-lmctlfn</code></strong>, and <strong><code>-fsgfn</code></strong> 
-arguments should be omitted.
+<strong><code>-lmctlfn</code></strong>, <strong><code>-fsgfn</code></strong> and
+<strong><code>-fsgctlfn</code></strong> arguments should be omitted.
 
 <P>
 
@@ -1069,15 +1114,15 @@ are written to stdout (the log file).
 
 Two simple speech decoding applications, implemented with a tty-based interface as
 well as with a Windows interface, are included in directory
-<strong><code>examples</code></strong>:
+<strong><code>examples:</code></strong>
 <UL>
-<LI><strong><code>sphinx2-ptt</code></strong>:
+<LI><strong><code>sphinx2-ptt:</code></strong>
 demonstrates an application in which the user explicitly indicates the start and
 end of each utterance using the &lt<code>RETURN</code>&gt keyboard key.
 (On WindowsNT/Windows95 systems, the ending &lt<code>RETURN</code>&gt is not
 used.  Instead, the utterance is terminated after a fixed duration.)
 <p>
-<LI><strong><code>sphinx2-continuous</code></strong>:
+<LI><strong><code>sphinx2-continuous:</code></strong>
 demonstrates the interaction of continuous listening and decoding.  An endless
 audio input stream is automatically segmented into utterances using the continuous
 listening module, and the utterances are decoded.  The timestamps returned by the
@@ -1096,16 +1141,26 @@ thus marking the utterance boundaries.
 To compile Sphinx2 libraries on Unix platforms:
 <UL>
 <LI> Unpack the distribution
-<LI> Run <code>sh autogen.sh</code> if necessary
-<LI> Run <code>./configure</code>
-<LI> <code>make</code>
-<LI> <code>make test</code>
-<LI> <code>make install</code>
+<LI> Run <strong><code>sh autogen.sh</code></strong> if necessary (not necessary if you are using the Sphinx2 release package)
+<LI> Run <strong><code>./configure</code></strong>
+<LI> Alternatively, run <strong><code>./configure --prefix=[<em>path_to_install_dir</em>]</code></strong> if you do not want to install Sphinx2 in the default location
+<LI> <strong><code>make</code></strong>
+<LI> <strong><code>make test</code></strong>
+<LI> <strong><code>make install</code></strong>
 </UL>
 
 <P>
 
+To compile Sphinx2 libraries on Windows platforms:
+<UL>
+<LI> Unpack the distribution
+<LI> Load the workspace <strong><code>sphinx2/sphinx2.dsw</code></strong> onto Microsoft Visual C++ 6.0 or better.
+<LI> Compile the project <code><strong>sphinx2-continuous</code></strong>, minimally
+<LI> On a command prompt, <code><strong>cd sphinx2/win32/batch</code></strong>
+<LI> Run <code><strong>sphinx2-test.bat</code></strong>
+</UL>
 
+<p>In a successful installation, the test produces the recognition result <code><strong>GO FORWARD TEN METERS</code></strong></p>
 <br><br><br><br><br><br>
 
 <H2><A NAME="sec_cmdline"><U>Arguments Reference</U></A></H2>
@@ -1176,11 +1231,50 @@ None.
 <strong><code>-fsgfn</code></strong>
 </TD>
 <TD VALIGN=TOP>
-Optional finite state grammar file.  (Currently, there isn't a way to input multiple
-FSG files similar to <strong><code>-lmctlfn</code></strong> above.)
+Optional finite state grammar file.
 </TD>
 <TD VALIGN=TOP>
 None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-fsgctlfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional control file with a list of FSG grammar filenames.  One line per entry.  Blank
+and comment lines (beginning with a <strong><code>#</code></strong> char) are allowed.
+This is how multiple FSGs can be loaded during initialization.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-fsgusealtpron</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Whether the decoder should expand a transition in an FSG to include all the alternative
+pronunciations of the associated word.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-fsgusefiller</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Whether the decoder should insert a filler word (self-loop) transition automatically
+at every state.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong>
 </TD>
 </TR>
 
@@ -1773,7 +1867,7 @@ Causes word pronunciation to be included in output files.
 </TD>
 <TD VALIGN=TOP>
 If specified, logs raw A/D input samples for each utterance to the indicated directory.
-(One file per utterance, named &ltuttid&gt.raw.)
+(One file per utterance, named &lt;uttid&gt;.raw.)
 </TD>
 <TD VALIGN=TOP>
 None
@@ -1786,7 +1880,7 @@ None
 </TD>
 <TD VALIGN=TOP>
 If specified, logs cepstrum data for each utterance to the indicated directory.
-(One file per utterance, named &ltuttid&gt.mfc.)
+(One file per utterance, named &lt;uttid&gt;.mfc.)
 </TD>
 <TD VALIGN=TOP>
 None
@@ -1799,6 +1893,7 @@ None
 </TD>
 <TD VALIGN=TOP>
 If specified, dumps word lattice for each utterance to a file in this directory.
+The filename is created from the utterance ID.
 </TD>
 <TD VALIGN=TOP>
 None
@@ -1859,6 +1954,32 @@ Current dir.
 
 <TR>
 <TD VALIGN=TOP>
+<strong><code>-phoneconf</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Writes a form of phoneme scores for the utterance to the logfile.
+Mainly for diagnostics purposes.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-pscr2lat</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Write a phoneme lattice for the utterance to the logfile,
+i.e., the top-scoring phonemes per frame.  Mainly for diagnostics purposes.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
 <strong><code>-taword</code></strong><br>
 <strong><code>-taphone</code></strong><br>
 <strong><code>-tastate</code></strong>
@@ -1881,7 +2002,8 @@ in forced alignment mode.
 Finally, one of the arguments can be:
 <strong><code>-argfile</code></strong> <em>filename</em>.
 This causes additional arguments to be read in from the given
-file.  Lines beginning with the '#' character in this file are ignored.
+file.  Lines beginning with the <strong><code>'#'</code></strong>
+character in this file are ignored.
 Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 
 
@@ -1979,8 +2101,20 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 <TD VALIGN=TOP>Noise word penalty (probability).</TD>
 </TR>
 <TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">fsgctlfn</A>:</TD>
+<TD VALIGN=TOP>Control file listing several FSG files to be loaded at initialization.</TD>
+</TR>
+<TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">fsgfn</A>:</TD>
-<TD VALIGN=TOP>Finite state grammar  file to be loaded at initialization time.</TD>
+<TD VALIGN=TOP>Finite state grammar file to be loaded at initialization time.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">fsgusealtpron</A>:</TD>
+<TD VALIGN=TOP>Consider alternative pronunciations for every FSG transition.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">fsgusefiller</A>:</TD>
+<TD VALIGN=TOP>Add a filler self-loop transition at every FSG state.</TD>
 </TR>
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">fwdflat</A>:</TD>
@@ -2084,7 +2218,7 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 </TR>
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">normmean</A>:</TD>
-<TD VALIGN=TOP>Cepstram mean normalization.</TD>
+<TD VALIGN=TOP>Cepstral mean normalization.</TD>
 </TR>
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">npbeam</A>:</TD>
@@ -2113,6 +2247,14 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">phnfn</A>:</TD>
 <TD VALIGN=TOP>Phone file (senone mapping information).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">phoneconf</A>:</TD>
+<TD VALIGN=TOP>Whether to generate phone segmentation and scores.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">pscr2lat</A>:</TD>
+<TD VALIGN=TOP>Whether to output a phone lattice.</TD>
 </TR>
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">rawlogdir</A>:</TD>
@@ -2180,6 +2322,13 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 
 <H2><A NAME="sec_faq"><U>Frequently Asked Questions</U></A></H2>
 
+A fair amount of the available functionality in Sphinx2 hasn't been documented above.
+In addition to the topics covered below, the reader is encouraged to look at
+<strong><code>include/fbs.h</code></strong> carefully, in order to find out more.
+
+
+<br><br>
+
 <H3><A NAME="sec_speed">Speeding up Decoding</A></H3>
 
 There are several ways to speed up decoding:
@@ -2201,7 +2350,7 @@ from 4 to 1.
 and adjusting the corresponding pruning beamwidth
 <A HREF="#sec_cmdline_beam"><strong><code>-topsenthresh</code></strong></A>.
 The former can be set to 3, and the latter between -50000 and -70000.
-(Threshold values closer to 0 provide tigher pruning.)
+(Threshold values closer to 0 provide tigther pruning.)
 
 <LI> Controlling
 <A HREF="#sec_cmdline_searchconfig"><strong><code>-compallsen</code></strong></A>.
@@ -2341,11 +2490,25 @@ The keywords <strong><code>NUM_STATES</code></strong>,
 A transition specifies the source state, the destination state, the prior
 probability of the transition being taken, and it optionally emits a word.
 If no word emission is specified, it is an <em>epsilon</em> or <em>null</em>
-transition.
+transition.  If a transition emits a word that is not in the pronunciation
+lexicon, the transition is simply ignored.
 
-Comment lines can also be embedded anywhere in the file; namely,
-any line that begins with the <strong><code>#</code></strong> character is
+<P>
+
+Comment lines can also be embedded anywhere in the file.
+Any line that begins with the <strong><code>#</code></strong> character is
 treated as a comment line.  Blank lines are also allowed anywhere in the file.
+
+
+<br><br>
+
+<hr>
+<br>
+<address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
+<!-- Created: Jan 01, 1997 -->
+<!-- hhmts start -->
+Last modified: Fri Jul 23 19:00:26 EDT 2004
+<!-- hhmts end -->
 
 </BODY>
 </HTML>

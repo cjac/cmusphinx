@@ -47,6 +47,10 @@
  */
 
 
+#ifndef __S2_POSIXWIN32_H__
+#define __S2_POSIXWIN32_H__	1
+
+
  #if (defined(WIN32) && !defined(__CYGWIN__))
  typedef char * caddr_t;
  typedef unsigned long u_long;
@@ -62,3 +66,5 @@
  #define MAXPATHLEN FILENAME_MAX
  #endif
 
+
+#endif

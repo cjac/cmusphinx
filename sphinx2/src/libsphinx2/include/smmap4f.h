@@ -37,6 +37,11 @@
  * global constants and map of locations in sm for hmm sap rb - Nov 87 
  */
 
+
+#ifndef __S2_SMMAP4F_H__
+#define __S2_SMMAP4F_H__	1
+
+
 #ifndef TRUE
 #define TRUE 1
 #endif
@@ -124,3 +129,6 @@
 #define BPRETSIZE	(FINALBEAM * sizeof(BEAM_POINTERP))
 
 #define SMSIZE	(BPRETBASE + BPRETSIZE - USERSMBASE)
+
+
+#endif

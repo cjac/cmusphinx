@@ -114,6 +114,7 @@ void kb (int argc, char *argv[], float ip, float lw, float pip);
 
 /* FSG grammar file name */
 char *kb_get_fsg_file_name ( void );
+char *kb_get_fsg_ctlfile_name ( void );
 
 int32 query_fsg_use_altpron ( void );
 

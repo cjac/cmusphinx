@@ -248,7 +248,7 @@ static void allphone_backtrace (int32 bp)
     }
     for (escr = allphone_bp[bp].scr, f = bf; f <= allphone_bp[bp].f; f++)
 	escr += renorm_scr[f];
-
+    
     nf = allphone_bp[bp].f - bf + 1;
 
     h = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
@@ -264,8 +264,8 @@ static void allphone_backtrace (int32 bp)
     allp_seghyp_tail = h;
     
     if (query_back_trace()) {
-	printf ("\t%5d %5d %4d %10d %11d  %s\n",
-		h->sf, h->ef, nf, (escr-bscr)/nf, escr-bscr, h->word);
+	printf ("\t%5d %5d %10d %11d %s\n",
+		h->sf, h->ef, (escr-bscr)/nf, escr-bscr, h->word);
     }
 }
 
@@ -299,10 +299,10 @@ static void allphone_result ( void )
 	bestbp = i;
     
     if (query_back_trace()) {
-      printf ("\t%5s %5s %4s %10s %11s %s  (%s)\n",
-	      "SFrm", "EFrm", "NFrm", "AScr/Frm", "AScr", "Phone",
+      printf ("\t%5s %5s %10s %11s %s (Allphone) (%s)\n",
+	      "SFrm", "EFrm", "AScr/Frm", "AScr", "Phone",
 	      uttproc_get_uttid());
-      printf ("\t-----------------------------------------------------------------\n");
+      printf ("\t------------------------------------------------------------\n");
     }
     allphone_backtrace (bestbp);
     if (query_back_trace() && (bestbp >= 0)) {
@@ -312,10 +312,10 @@ static void allphone_result ( void )
       for (f = 0; f <= allphone_bp[bestbp].f; f++)
 	scr += renorm_scr[f];
       
-      printf ("\t-----------------------------------------------------------------\n");
+      printf ("\t------------------------------------------------------------\n");
       f = allphone_bp[bestbp].f;
       if (f >= 0) {
-	printf ("\t%5d %5d      %10d %11d  %s(TOTAL)\n",
+	printf ("\t%5d %5d %10d %11d %s(TOTAL)\n",
 		0, f,
 		scr / (f + 1), scr,
 		uttproc_get_uttid());

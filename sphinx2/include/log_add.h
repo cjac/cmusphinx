@@ -47,6 +47,10 @@
  */
 
 
+#ifndef __S2_LOGADD_H__
+#define __S2_LOGADD_H__		1
+
+
 /* Table for adding probs in log domain.  (See add_table.h for log base
  * and definition of LOG.):
  * (NOTE: Works only within the limited dynamic range of SCVQ, which keeps
@@ -65601,3 +65605,6 @@ static unsigned char logadd_tbl[] = {
  * 8-bit quantized values):
  */
 #define LOG_ADD(p1,p2)	(logadd_tbl[(p1<<8)+(p2)])
+
+
+#endif

@@ -42,7 +42,15 @@
  * interfering with their own.
  */
 
+
+#ifndef __S2_LOGMSG_H__
+#define __S2_LOGMSG_H__		1
+
+
 void log_debug(char const *fmt, ...);
 void log_info(char const *fmt, ...);
 void log_warn(char const *fmt, ...);
 void log_error(char const *fmt, ...);
+
+
+#endif

@@ -132,6 +132,7 @@
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
+static char *fsg_ctlfile_name = NULL;
 static char *fsg_file_name = NULL;
 /*
  * If (fsg_use_altpron) consider alternative pronunciations in addition to the
@@ -143,6 +144,7 @@ static int32 fsg_use_altpron = TRUE;
  * each state of the FSG.
  */
 static int32 fsg_use_filler = TRUE;
+
 static char *lm_file_name = NULL;
 static char *lm_ctl_filename = NULL;	/* Multiple LM filenames and assoc. LM names */
 static char *lmft_file_name = NULL;
@@ -201,6 +203,8 @@ config_t kb_param[] = {
 	 */
 	{ "FSGFile", "FSG language model file name", "-fsgfn",
 		STRING, (caddr_t) &fsg_file_name },
+	{ "FSGCtlFile", "FSG language model control file name", "-fsgctlfn",
+		STRING, (caddr_t) &fsg_ctlfile_name },
 	{ "FSGUseAltPron", "Use alternative pronunciations for FSG", "-fsgusealtpron",
 		BOOL, (caddr_t) &fsg_use_altpron }, 
 	{ "FSGUseFiller", "Insert filler words at each state", "-fsgusefiller",
@@ -887,6 +891,12 @@ int32 dict_maxsize (void)
 char *kb_get_fsg_file_name ( void )
 {
     return fsg_file_name;
+}
+
+
+char *kb_get_fsg_ctlfile_name ( void )
+{
+    return fsg_ctlfile_name;
 }
 
 

@@ -37,6 +37,14 @@
  * time_align.h
  */
 
+
+#ifndef _S2_TIME_ALIGN_H_
+#define _S2_TIME_ALIGN_H_	1
+
+
+#include <search_const.h>
+
+
 void time_align_set_beam_width(double bw);
 
 int time_align_init(void);
@@ -127,3 +135,6 @@ typedef struct {
 typedef enum {WORD_SEGMENTATION, PHONE_SEGMENTATION, STATE_SEGMENTATION} seg_kind_t;
 
 SEGMENT_T *time_align_get_segmentation(seg_kind_t kind, int *seg_cnt);
+
+
+#endif

@@ -119,7 +119,10 @@ void ***__ckd_calloc_3d__(int32 d1, int32 d2, int32 d3,	/* In: #elems in the dim
 			  const char *caller_file, int32 caller_line);	/* In */
 
 
-/* Free a ptr previous allocated by ckd_calloc, ckd_malloc, or ckd_realloc */
+/*
+ * Free a ptr previous allocated by ckd_calloc, ckd_malloc, or ckd_realloc.
+ * Only frees ptr if it's not NULL.
+ */
 void ckd_free(void *ptr);
 
 

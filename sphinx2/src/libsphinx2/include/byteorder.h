@@ -54,6 +54,11 @@
    currently only works for suns and Vax MIPS machines
  */
 
+
+#ifndef __S2_BYTEORDER_H__
+#define __S2_BYTEORDER_H__	1
+
+
 #if defined(mips) || defined(__alpha) || defined(WIN32) || (! __BIG_ENDIAN__)
 #define SWAPBYTES
 
@@ -86,3 +91,4 @@
 
 #endif
 
+#endif

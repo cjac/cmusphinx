@@ -735,22 +735,25 @@ static void lattice_seg_back_trace (latlink_t *link)
 	    hyp[seg].wid = -1;
 
 	    if (print_back_trace)
-		printf ("%16s (%4d %4d) %7d %10d %10d %8d %6d %6.2f\n",
-			dict->dict_list[link->from->wid]->word,
+		printf ("\t%4d %4d %10d %11d %11d %8d %6d %6.2f %s\n",
 			link->from->sf, link->ef,
 			(-(link->link_scr))/(link->ef - link->from->sf + 1),
 			-(link->link_scr), -(link->path_scr),
 			seg_topsen_score(link->from->sf, link->ef)/(link->ef-link->from->sf+1),
-			latden, perp);
+			latden, perp,
+			dict->dict_list[link->from->wid]->word);
 	}
     } else {
 	seg = 0;
 	hyp[0].wid = -1;
 
-	if (print_back_trace)
-	    printf ("%16s (%4s %4s) %7s %10s %10s %8s %6s %6s\n\n",
-		    "WORD", "SFrm", "EFrm", "SAS/Frm", "SegAScr", "PathScr", "BSDiff",
-		    "LatDen", "PhPerp");
+	if (print_back_trace) {
+	    printf ("\t%4s %4s %10s %11s %11s %8s %6s %6s %s (Bestpath) (%s)\n",
+		    "SFrm", "EFrm", "AScr/Frm", "AScr", "PathScr", "BSDiff",
+		    "LatDen", "PhPerp", "Word",
+		    uttproc_get_uttid());
+	    printf ("\t------------------------------------------------------------------------\n");
+	}
     }
 }
 

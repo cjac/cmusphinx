@@ -248,6 +248,7 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   hyp->word = (hyp->wid >= 0) ? kb_get_word_str(hyp->wid) : "";
   hyp->ef = entry->frame;
   hyp->lscr = word_fsglink_logs2prob(fl);
+  hyp->fsg_state = word_fsglink_to_state(fl);
   hyp->conf = 0.0;		/* Not known */
   hyp->latden = 0;		/* Not known */
   hyp->phone_perp = 0.0;	/* Not known */

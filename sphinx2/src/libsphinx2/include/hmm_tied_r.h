@@ -33,6 +33,12 @@
  * ====================================================================
  *
  */
+
+
+#ifndef __S2_HMM_TIED_R_H__
+#define __S2_HMM_TIED_R_H__	1
+
+
 int32 hmm_num_sseq(void);
 int32 hmm_pid2sid (int32 pid);
 
@@ -71,3 +77,6 @@ void remap (SMD *smdV);
 
 int32 senid2pid (int32 senid);
 int32 *hmm_get_psen (void);
+
+
+#endif
