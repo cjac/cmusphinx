@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.6  2004/12/14  00:50:33  arthchan2003
- * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
+ * Revision 1.7  2004/12/23  21:05:22  arthchan2003
+ * Enable compilation of decode_anytopo, change option names from -match to -hyp, it makes the code more consistent.
  * 
+ * Revision 1.6  2004/12/14 00:50:33  arthchan2003
+ * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
+ *
  * Revision 1.5  2004/12/06 11:31:47  arthchan2003
  * Fix brief comments for programs.
  *
@@ -466,11 +469,11 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
-    { "-match",
+    { "-hyp",
       ARG_STRING,
       NULL,
       "Recognition result output file (pre-1995 NIST format) (optional ,EXACT suffix)" },
-    { "-matchseg",
+    { "-hypseg",
       ARG_STRING,
       NULL,
       "Exact recognition result file with word segmentations and scores" },
@@ -1194,7 +1197,7 @@ static int32 process_ctlfile ( void )
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", ctlfile);
     
-    if ((matchfile = (char *) cmd_ln_access("-match")) == NULL) {
+    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
 	matchfp = NULL;
     } else {
 	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
@@ -1209,8 +1212,8 @@ static int32 process_ctlfile ( void )
 	    E_ERROR("fopen(%s,w) failed\n", matchfile);
     }
     
-    if ((matchsegfile = (char *) cmd_ln_access("-matchseg")) == NULL) {
-	E_WARN("No -matchseg argument\n");
+    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
+	E_WARN("No -hypseg argument\n");
 	matchsegfp = NULL;
     } else {
 	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
@@ -1318,15 +1321,10 @@ static int32 process_ctlfile ( void )
 	if (nfr <= 0)
 	    E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
 	else {
-	  /* Form full cepfile name */
-	  if (ctlspec[0] != '/')
-	    sprintf (cepfile, "%s/%s.%s", cepdir, ctlspec, cepext);
-	  else
-	    sprintf (cepfile, "%s.%s", ctlspec, cepext);
 
-	    E_INFO ("%s: %d mfc frames\n", uttid, nfr);
-	    assert(feat);
-	    decode_utt (nfr, uttid);
+	  E_INFO ("%s: %d mfc frames\n", uttid, nfr);
+	  assert(feat);
+	  decode_utt (nfr, uttid);
 	}
 #if 0
 	linklist_stats ();
