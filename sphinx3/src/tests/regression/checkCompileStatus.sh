@@ -85,7 +85,7 @@ if ! ${GMAKE} all test >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx2 compilation failed" ${S2LIST} < $outfile
  elif ! (grep BESTPATH $outfile | grep 'GO FORWARD TEN METERS' > /dev/null);
  then ${MAILX} -s "Sphinx2 test failed" ${S2LIST} < $outfile;
- else ${MAILX} -s "sphinx2 compilation or test succeeded" ${S2LIST} < $outfile
+ else ${MAILX} -s "sphinx2 compilation and test succeeded" ${S2LIST} < $outfile
 fi
 
 popd >> $outfile 2>&1
@@ -108,7 +108,7 @@ if ! ${GMAKE} all test-full >> $outfile 2>&1 ;
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
  elif grep FAILED $outfile > /dev/null;
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
- else ${MAILX} -s "sphinx3 test succeeded" ${S3LIST} < $outfile;
+ else ${MAILX} -s "sphinx3 compilation and test succeeded" ${S3LIST} < $outfile;
 fi
 
 popd >> $outfile 2>&1
