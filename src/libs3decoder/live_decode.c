@@ -71,11 +71,10 @@ ld_utt_proc_raw_impl(live_decoder_t *decoder,
 int
 ld_init_with_args(live_decoder_t *decoder, int argc, char **argv)
 {
-  int rv = 0;
-
+  int rv;
   cmd_ln_parse(arg_def, argc, argv);
   rv = ld_init(decoder);
-  decoder->internal_cmd_ln = 0;
+  decoder->internal_cmd_ln = 1;
   return rv;
 }
 
@@ -85,7 +84,6 @@ ld_init(live_decoder_t *decoder)
   param_t fe_param;
 	
   unlimit();
-  decoder->internal_cmd_ln = 1;
 	
   /** decoder parameter capturing */
   memset(decoder, 0, sizeof(live_decoder_t));
@@ -100,8 +98,6 @@ ld_init(live_decoder_t *decoder)
   decoder->kb.uttid = decoder->uttid;
   decoder->hyp_frame_num = -1;
   decoder->hyp_segs = 0;
-  decoder->hyp_seglen = 0;
-  decoder->hyp_strlen = 0;
   decoder->hyp_str = 0;
   decoder->features =
     feat_array_alloc(kbcore_fcb(decoder->kbcore), LIVEBUFBLOCKSIZE);
@@ -304,7 +300,7 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
   }
 
   /** allocate array to hold the segments and/or decoded string */
-  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen, sizeof(hyp_t *));
+  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
   hyp_str = (char *)ckd_calloc(hyp_strlen + 1, sizeof(char));
   if (hyp_segs == 0 || hyp_str == 0) {
     return -1;
@@ -327,11 +323,10 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
   glist_free(hyp_list);
   
   hyp_str[hyp_strlen] = '\0';
+  hyp_segs[hyp_seglen] = 0;
   decoder->hyp_frame_num = decoder->frame_num;
   decoder->hyp_segs = hyp_segs;
-  decoder->hyp_seglen = hyp_seglen;
   decoder->hyp_str = hyp_str;
-  decoder->hyp_strlen = hyp_strlen;
 
   return 0;
 }
@@ -339,7 +334,7 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
 int
 ld_utt_free_hyps(live_decoder_t *decoder)
 {
-  int i;
+  hyp_t *h;
 
   /** set the reference frame number to something invalid */
   decoder->hyp_frame_num = -1;
@@ -348,17 +343,15 @@ ld_utt_free_hyps(live_decoder_t *decoder)
   if (decoder->hyp_str) {
     ckd_free(decoder->hyp_str);
     decoder->hyp_str = 0;
-    decoder->hyp_strlen = 0;
   }
   
   /** free and reset the hypothesis word segments */
   if (decoder->hyp_segs) {
-    for (i = decoder->hyp_seglen - 1; i >= 0; i--) {
-      ckd_free(decoder->hyp_segs[i]);
+    for (h = decoder->hyp_segs; h; h++) {
+      ckd_free(decoder->h);
     }
     ckd_free(decoder->hyp_segs);
     decoder->hyp_segs = 0;
-    decoder->hyp_seglen = 0;
   }
 
   return 0;

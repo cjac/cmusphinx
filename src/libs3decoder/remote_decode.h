@@ -49,6 +49,10 @@
  *
  *    Because there is no standard C library for threading and locking, the
  *    current implementation only support WIN32 and POSIX Thread library.
+ *
+ *  Aug 23, 2004
+ *    Modified by Yitao Sun (yitao@cs.cmu.edu).  Added rd_join() and
+ *    rd_interrupt().
  */
 
 #ifndef __LIVE_DECODE_H
@@ -71,54 +75,76 @@ typedef struct
 } remote_decoder_t;
 
 /**
+ * Informs the remote-decoder to initialize and begin a new session.
  */
 int rd_init(remote_decoder_t *decoder);
 
 /**
+ * Parses the arguments, then informs the remote-decoder to initialize and
+ * begin a new session.
  */
 int rd_init_with_args(remote_decoder_t *decoder, int argc, char **argv);
 
 /**
+ * Informs the remote-decoder to finish the session.
  */
 int rd_finish(remote_decoder_t *decoder);
 
 /**
+ * Informs the remote-decoder to begin utterance decoding.
  */
 int rd_utt_begin(remote_decoder_t *decoder, char *uttid);
 
 /**
+ * Informs the remote-decoder to end utterance decoding.
  */
 int rd_utt_end(remote_decoder_t *decoder);
 
 /**
+ * Informs the remote-decoder to abort utterance decoding.
  */
 int rd_utt_abort(remote_decoder_t *decoder);
 
 /**
+ * Informs the remote-decoder there is new raw data for utterance decoding.
  */
-int rd_utt_proc_raw(remote_decoder_t *decoder, 
-		    int16 *samples,
+int rd_utt_proc_raw(remote_decoder_t *decoder, int16 *samples,
 		    int32 num_samples);
 
 /**
+ * Informs the remote-decoder there is new framed data for utterance decoding.
  */
-int rd_utt_proc_frame(remote_decoder_t *decoder, 
-		      float32 **frames,
+int rd_utt_proc_frame(remote_decoder_t *decoder, float32 **frames,
 		      int32 num_frames);
 
 /**
+ * Informs the remote-decoder there is new feature vectors for utterance
+ * decoding.
  */
-int rd_utt_proc_feat(remote_decoder_t *decoder, 
-		     float32 ***features,
+int rd_utt_proc_feat(remote_decoder_t *decoder, float32 ***features,
 		     int32 num_features);
 
 /**
+ * Retrieves the oldest results from the result queue.
  */
-int rd_utt_hyps(remote_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
+int rd_utt_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str,
+		hyp_t ***hyp_segs);
 
 /**
+ * Main function for decoding.  Should be run on a separate thread.
  */
 int rd_run(remote_decoder_t *decoder);
+  
+/**
+ * Informs the remote-decoder to completely stop when it is finished executing
+ * all of the previous commands.
+ */
+int rd_join(remote_decoder_t *decoder);
+
+/**
+ * Informs the remote-decoder to completely stop as soon as possible.
+ */
+int rd_interrupt(remote_decoder_t *decoder);
 
 /*****************************************************************************/
 /*****************************************************************************/
