@@ -108,6 +108,11 @@ arg_t arg_def[] = {
       ARG_FLOAT64,
       "1e-80", /*default is huge , so nearly every cd phone will be computed */
       "CI phone beam for CI-based GMM Selection. Good number should be [0(widest) .. 1(narrowest)]"},
+    { "-tighten_factor", /* Use in "Down-sampling", this will tightened the beam
+			  */
+      ARG_FLOAT64,
+      "0.5",
+      "From 0 to 1, it tightens the beam width when the frame is dropped"},
     { "-maxcdsenpf",
       ARG_INT32,
       "100000",
