@@ -53,6 +53,9 @@ test-full : test-decode test-align test-allphone test-livepretend test-astar tes
 test-hell : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-livepretendDEVEL test-wave2feat test-cepview
 
 test-livepretend:
+	. src/tests/regression/test_livepretend.sh
+
+test-livepretendOLD:
 	@echo "LIVEPRETEND TEST"
 	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
