@@ -122,6 +122,12 @@ extern "C" {
 
 #define MAX_CEP_LEN				64
 
+#define LD_SUCCESS				0
+#define LD_ERROR_OUT_OF_MEMORY			-0x01
+#define LD_ERROR_NULL_POINTER			-0x02
+#define LD_ERROR_INVALID_STATE			-0x04
+#define LD_ERROR_INTERNAL			-0x08
+
 typedef struct
 {
   /*
@@ -209,6 +215,7 @@ typedef struct
   float32 ***features;
 
 } live_decoder_t;
+
 
 /** Initializes the live-decoder.  Internal modules, including the cepstra-
     generating front-end, the language model, and the accoustic models are
@@ -363,7 +370,6 @@ void ld_process_ceps(live_decoder_t *_decoder,
 */
 int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
 		     hyp_t ***_hyp_segs);
-
 
 /** Abort the current decoding process immediately.  As opposed to
     <I>{@link ld_end_utt ld_end_utt()}</I>.  Retrieving the hypothesis after an

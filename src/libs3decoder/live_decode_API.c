@@ -135,7 +135,8 @@ static int
 ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
 {
   param_t fe_param;
-	
+  int rv = LD_SUCCESS;
+
   assert(_decoder != NULL);
 
   unlimit();
@@ -153,6 +154,8 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   fe_param.UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
   fe_param.PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
   if ((_decoder->fe = fe_init(&fe_param)) == NULL) {
+    E_WARN("Failed to initialize front-end.\n");
+    rv = LD_ERROR_OUT_OF_MEMORY;
     goto ld_init_impl_cleanup;
   }
 
@@ -175,10 +178,12 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   _decoder->features =
     feat_array_alloc(kbcore_fcb(_decoder->kbcore), LIVEBUFBLOCKSIZE);
   if (_decoder->features == NULL) {
+    E_WARN("Failed to allocate internal feature buffer.\n");
+    rv = LD_ERROR_OUT_OF_MEMORY;
     goto ld_init_impl_cleanup;
   }
 
-  return 0;
+  return LD_SUCCESS;
 
  ld_init_impl_cleanup:
   if (_decoder->fe != NULL) {
@@ -195,7 +200,7 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   }
   _decoder->ld_state = LD_STATE_FINISHED;
 
-  return -1;
+  return rv;
 }
 
 int
@@ -204,7 +209,8 @@ ld_init_with_args(live_decoder_t *_decoder, int _argc, char **_argv)
   assert(_decoder != NULL);
 
   if (cmd_ln_parse(arg_def, _argc, _argv) != 0) {
-    return -1;
+    E_WARN("Failed to parse arguments.\n");
+    return LD_ERROR_INTERNAL;
   }
 
   return ld_init_impl(_decoder, TRUE);
@@ -246,7 +252,11 @@ int
 ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 {
   assert(_decoder != NULL);
-  assert(_decoder->ld_state == LD_STATE_IDLE);
+
+  if (_decoder->ld_state != LD_STATE_IDLE) {
+    E_WARN("Failed to begin a new utterance because decoder is not idle.\n");
+    return LD_ERROR_INVALID_STATE;
+  }
 
   ld_free_hyps(_decoder);
 
@@ -315,7 +325,7 @@ int
 ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
 		 hyp_t ***_hyp_segs)
 {
-  int rv = 0;
+  int rv = LD_SUCCESS;
 
   assert(_decoder != NULL);
 
@@ -361,7 +371,8 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
     t = time(NULL);
     times = localtime(&t);
     if ((local_uttid = ckd_malloc(17)) == NULL) {
-      return -1;
+      E_WARN("Failed to allocate space for utterance id.\n");
+      return LD_ERROR_OUT_OF_MEMORY;
     }
     snprintf(local_uttid, 20, "*%4d%2d%2dZ%2d%2d%2d",
 	     times->tm_year, times->tm_mon, times->tm_mday,
@@ -370,13 +381,14 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
   /* user-defined uttid */
   else {
     if ((local_uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
-      return -1;
+      E_WARN("Failed to allocate space for utterance id.\n");
+      return LD_ERROR_OUT_OF_MEMORY;
     }
     strcpy(local_uttid, _uttid);
   }
   _decoder->uttid = local_uttid;
 
-  return 0;
+  return LD_SUCCESS;
 }
 
 int
@@ -395,6 +407,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   int finish_wid = 0;
   kb_t *kb = 0;
   dict_t *dict;
+  int rv;
 
   assert(_decoder != NULL);
 
@@ -406,13 +419,14 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
     vithist_utt_end(kb->vithist, _decoder->kbcore) :
     vithist_partialutt_end(kb->vithist, _decoder->kbcore);
   if (id < 0) {
-    return -1;
+    E_WARN("Failed to retrieve viterbi history.\n");
+    return LD_ERROR_INTERNAL;
   }
 
   /** record the segment length and the overall string length */
   hyp_list = vithist_backtrace(kb->vithist, id);
   finish_wid = dict_finishwid(dict);
-  for (node = hyp_list; node; node = gnode_next(node)) {
+  for (node = hyp_list; node != NULL; node = gnode_next(node)) {
     hyp = (hyp_t *)gnode_ptr(node);
     hyp_seglen++;
     if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
@@ -422,39 +436,56 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   }
   /** if hyp_str is non-trivial, we've counted one too many byte */
   if (hyp_strlen > 0) {
-    hyp_strlen--;
-  }
-
-  /** allocate array to hold the segments and/or decoded string */
-  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
-  hyp_str = (char *)ckd_calloc(hyp_strlen + 1, sizeof(char));
-  if (hyp_segs == 0 || hyp_str == 0) {
-    return -1;
-  }
+    /** allocate array to hold the segments and/or decoded string */
+    hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
+    hyp_str = (char *)ckd_calloc(hyp_strlen, sizeof(char));
+    if (hyp_segs == NULL || hyp_str == NULL) {
+      E_WARN("Failed to allocate storage for hypothesis.\n");
+      rv = LD_ERROR_OUT_OF_MEMORY;
+      goto ld_record_hyps_cleanup;
+    }
 		
-  /** iterate thru to fill in the array of segments and/or decoded string */
-  i = 0;
-  hyp_strptr = hyp_str;
-  for (node = hyp_list; node; node = gnode_next(node), i++) {
-    hyp = (hyp_t *)gnode_ptr(node);
-    hyp_segs[i] = hyp;
+    /** iterate thru to fill in the array of segments and/or decoded string */
+    i = 0;
+    hyp_strptr = hyp_str;
+    for (node = hyp_list; node != NULL; node = gnode_next(node), i++) {
+      hyp = (hyp_t *)gnode_ptr(node);
+      hyp_segs[i] = hyp;
+      
+      if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
+	strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
+	hyp_strptr += strlen(hyp_strptr);
+	*hyp_strptr = ' ';
+	hyp_strptr += 1;
+      }
+    }
+    glist_free(hyp_list);
+  
+    hyp_str[hyp_strlen - 1] = '\0';
+    hyp_segs[hyp_seglen] = 0;
+    _decoder->hyp_frame_num = _decoder->frame_num;
+    _decoder->hyp_segs = hyp_segs;
+    _decoder->hyp_str = hyp_str;
+  }
 
-    if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
-      strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
-      hyp_strptr += strlen(hyp_strptr);
-      *hyp_strptr = ' ';
-      hyp_strptr += 1;
+  return LD_SUCCESS;
+
+ ld_record_hyps_cleanup:
+  if (hyp_segs != NULL) {
+    ckd_free(hyp_segs);
+  }
+  if (hyp_str != NULL) {
+    ckd_free(hyp_segs);
+  }
+  if (hyp_list != NULL) {
+    for (node = hyp_list; node != NULL; node = gnode_next(node)) {
+      if ((hyp = (hyp_t *)gnode_ptr(node)) != NULL) {
+	ckd_free(hyp);
+      }
     }
   }
-  glist_free(hyp_list);
-  
-  hyp_str[hyp_strlen] = '\0';
-  hyp_segs[hyp_seglen] = 0;
-  _decoder->hyp_frame_num = _decoder->frame_num;
-  _decoder->hyp_segs = hyp_segs;
-  _decoder->hyp_str = hyp_str;
 
-  return 0;
+  return rv;
 }
 
 void

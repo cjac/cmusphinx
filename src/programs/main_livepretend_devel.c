@@ -48,62 +48,65 @@
 #include <live_decode_API.h>
 #include <live_decode_args.h>
 
-#define BUFFER_LENGTH 4096
-main(int argc, char **argv)
+#define SAMPLE_BUFFER_LENGTH	4096
+#define FILENAME_LENGTH		512
+
+int
+main(int _argc, char **_argv)
 {
   live_decoder_t decoder;
-  short samples[BUFFER_LENGTH];
+  short samples[SAMPLE_BUFFER_LENGTH];
   int len;
   char *hypstr;
+  char *ctrlfn;
+  char *cfgfn;
+  char *rawdirfn;
+  char rawfn[FILENAME_LENGTH];
+  char fullrawfn[FILENAME_LENGTH];
+  FILE *ctrlfd;
   FILE *rawfd;
 
-  /*
-   * Initializing
-   */
-  if (argc != 3) {
-    printf("Usage:  livepretend config_file raw_file\n");
+  if (_argc != 4) {
+    printf("\nUSAGE: %s <ctrlfile> <rawdir> <cfgfile>\n", _argv[0]);
     return -1;
   }
 
-  if (cmd_ln_parse_file(arg_def, argv[1])) {
-    printf("Bad arguments file (%s).\n", argv[1]);
-    return -1;
+  ctrlfn = _argv[1];
+  rawdirfn = _argv[2];
+  cfgfn = _argv[3];
+
+  if ((ctrlfd = fopen(ctrlfn, "r")) == NULL) {
+    E_FATAL("Cannot open control file %s.\n", ctrlfn);
   }
 
-  if ((rawfd = fopen(argv[2], "rb")) == 0) {
-    printf("Bad raw file (%s).\n", argv[2]);
-    return -1;
+  if (cmd_ln_parse_file(arg_def, cfgfn)) {
+    E_FATAL("Bad configuration file %s.\n", cfgfn);
   }
 
-  if (ld_init(&decoder)) {
-    printf("Initialization failed.\n");
-    return -1;
+  if (ld_init(&decoder) != LD_SUCCESS) {
+    E_FATAL("Failed to initialize live-decoder.\n");
   }
 
-  if (ld_begin_utt(&decoder, 0)) {
-    printf("Cannot start decoding.\n");
-    return -1;
-  }
-
-  while ((len = fread(samples, sizeof(short), BUFFER_LENGTH, rawfd)) > 0) {
-    ld_process_raw(&decoder, samples, len);
-    if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
-      printf("Cannot retrieve hypothesis.\n");
+  while (fscanf(ctrlfd, "%##FILENAME_LENGTH##s", rawfn) != EOF) {
+    snprintf(fullrawfn, FILENAME_LENGTH, "%s/%s", rawdirfn, rawfn);
+    if ((rawfd = fopen(fullrawfn, "r")) == NULL) {
+      E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
-    else {
-      printf("Hypothesis:\n%s\n", hypstr);
+
+    if (ld_begin_utt(&decoder, 0) != LD_SUCCESS) {
+      E_FATAL("Cannot begin utterance decoding.\n");
     }
-  }
+    len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
+    while (len > 0) {
+      ld_process_raw(&decoder, samples, len);
+      if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
+	E_INFO("PARTIAL_HYP: %s\n", hypstr);
+      }
+      len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
+    }
+    fclose(rawfd);
+    ld_end_utt(&decoder);
 
-  fclose(rawfd);
-
-  ld_end_utt(&decoder);
-
-  if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
-    printf("Cannot retrieve hypothesis.\n");
-  }
-  else {
-    printf("Hypothesis:\n%s\n", hypstr);
   }
 
   ld_finish(&decoder);
