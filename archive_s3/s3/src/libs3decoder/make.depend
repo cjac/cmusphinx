@@ -1,0 +1,250 @@
+# agc.c
+agc.o: agc.c agc.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# ascr.c
+ascr.o: ascr.c ascr.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# beam.c
+beam.o: beam.c beam.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h logs3.h
+
+# bio.c
+bio.o: bio.c bio.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# cmn.c
+cmn.o: cmn.c cmn.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# cont_mgau.c
+cont_mgau.o: cont_mgau.c s3types.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h bio.h \
+  vector.h logs3.h cont_mgau.h
+
+# corpus.c
+corpus.o: corpus.c corpus.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# dict.c
+dict.o: dict.c dict.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h \
+  mdef.h
+
+# dict2pid.c
+dict2pid.o: dict2pid.c dict2pid.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h dict.h \
+  s3types.h mdef.h logs3.h
+
+# feat.c
+feat.o: feat.c ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h feat.h bio.h cmn.h agc.h s3types.h
+
+# fillpen.c
+fillpen.o: fillpen.c fillpen.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h dict.h \
+  s3types.h mdef.h logs3.h
+
+# hmm.c
+hmm.o: hmm.c hmm.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h
+
+# kbcore.c
+kbcore.o: kbcore.c kbcore.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h feat.h \
+  cont_mgau.h subvq.h vector.h mdef.h s3types.h dict.h dict2pid.h \
+  fillpen.h lm.h wid.h tmat.h logs3.h
+
+# lextree.c
+lextree.o: lextree.c lextree.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h kbcore.h \
+  feat.h cont_mgau.h subvq.h vector.h mdef.h s3types.h dict.h dict2pid.h \
+  fillpen.h lm.h wid.h tmat.h hmm.h vithist.h hyp.h ascr.h
+
+# lm.c
+lm.o: lm.c lm.h ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h s3types.h bio.h logs3.h
+
+# logs3.c
+logs3.o: logs3.c logs3.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h
+
+# mdef.c
+mdef.o: mdef.c mdef.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h
+
+# subvq.c
+subvq.o: subvq.c subvq.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h cont_mgau.h \
+  vector.h s3types.h
+
+# tmat.c
+tmat.o: tmat.c tmat.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h \
+  bio.h vector.h logs3.h
+
+# vector.c
+vector.o: vector.c vector.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h logs3.h \
+  s3types.h
+
+# vithist.c
+vithist.o: vithist.c vithist.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h s3types.h \
+  kbcore.h feat.h cont_mgau.h subvq.h vector.h mdef.h dict.h dict2pid.h \
+  fillpen.h lm.h wid.h tmat.h hyp.h
+
+# wid.c
+wid.o: wid.c wid.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h dict.h \
+  s3types.h mdef.h lm.h
+
+# utt.c
+utt.o: utt.c kb.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h kbcore.h \
+  feat.h cont_mgau.h subvq.h vector.h mdef.h s3types.h dict.h dict2pid.h \
+  fillpen.h lm.h wid.h tmat.h lextree.h hmm.h vithist.h hyp.h ascr.h \
+  beam.h corpus.h utt.h
+
+# kb.c
+kb.o: kb.c kb.h ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h kbcore.h feat.h cont_mgau.h subvq.h \
+  vector.h mdef.h s3types.h dict.h dict2pid.h fillpen.h lm.h wid.h tmat.h \
+  lextree.h hmm.h vithist.h hyp.h ascr.h beam.h
+
+# cmn_prior.c
+cmn_prior.o: cmn_prior.c cmn_prior.h ../../src/libutil/bitvec.h \
+  ../../src/libutil/ckd_alloc.h ../../src/libutil/case.h \
+  ../../src/libutil/cmd_ln.h ../../src/libutil/err.h \
+  ../../src/libutil/filename.h ../../src/libutil/glist.h \
+  ../../src/libutil/hash.h ../../src/libutil/heap.h \
+  ../../src/libutil/io.h ../../src/libutil/profile.h \
+  ../../src/libutil/str2words.h ../../src/libutil/unlimit.h
+
+# new_fe.c
+new_fe.o: new_fe.c new_fe.h new_fe_sp.h
+
+# new_fe_sp.c
+new_fe_sp.o: new_fe_sp.c new_fe.h new_fe_sp.h
+

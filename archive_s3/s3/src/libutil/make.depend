@@ -1,0 +1,43 @@
+# bitvec.c
+bitvec.o: bitvec.c bitvec.h prim_type.h ckd_alloc.h
+
+# case.c
+case.o: case.c case.h prim_type.h
+
+# ckd_alloc.c
+ckd_alloc.o: ckd_alloc.c ckd_alloc.h prim_type.h err.h
+
+# cmd_ln.c
+cmd_ln.o: cmd_ln.c cmd_ln.h prim_type.h err.h ckd_alloc.h hash.h glist.h \
+  case.h
+
+# err.c
+err.o: err.c err.h
+
+# filename.c
+filename.o: filename.c filename.h prim_type.h
+
+# glist.c
+glist.o: glist.c glist.h prim_type.h ckd_alloc.h
+
+# glist.c
+glist.o: glist.c glist.h prim_type.h ckd_alloc.h
+
+# hash.c
+hash.o: hash.c hash.h prim_type.h glist.h err.h ckd_alloc.h case.h
+
+# heap.c
+heap.o: heap.c heap.h prim_type.h ckd_alloc.h
+
+# io.c
+io.o: io.c io.h prim_type.h err.h
+
+# profile.c
+profile.o: profile.c profile.h prim_type.h err.h
+
+# str2words.c
+str2words.o: str2words.c str2words.h prim_type.h
+
+# unlimit.c
+unlimit.o: unlimit.c unlimit.h
+

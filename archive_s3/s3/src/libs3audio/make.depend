@@ -1,0 +1,40 @@
+# mulaw_base.c
+mulaw_base.o: mulaw_base.c ../../src/libs3decoder/s3types.h \
+  ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h ad.h mulaw.h
+
+# ad_base.c
+ad_base.o: ad_base.c ../../src/libs3decoder/s3types.h \
+  ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h ad.h
+
+# cont_ad_base.c
+cont_ad_base.o: cont_ad_base.c ../../src/libs3decoder/s3types.h \
+  ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h ad.h cont_ad.h
+
+# ad_oss.c
+ad_oss.o: ad_oss.c ../../src/libs3decoder/s3types.h \
+  ../../src/libutil/bitvec.h ../../src/libutil/ckd_alloc.h \
+  ../../src/libutil/case.h ../../src/libutil/cmd_ln.h \
+  ../../src/libutil/err.h ../../src/libutil/filename.h \
+  ../../src/libutil/glist.h ../../src/libutil/hash.h \
+  ../../src/libutil/heap.h ../../src/libutil/io.h \
+  ../../src/libutil/profile.h ../../src/libutil/str2words.h \
+  ../../src/libutil/unlimit.h ad.h
+
