@@ -1,10 +1,10 @@
-This is Sphinx 3.4 (s3.4), one of Carnegie Mellon University's open
+This is Sphinx 3.5 (s3.5), one of Carnegie Mellon University's open
 source large vocabulary, speaker-independent continuous speech
 recognition engine. Please see the LICENSE file for terms of use.
 
 Over the course of development, Sphinx-3 branched into different
 versions. The version available here, often times referred to as
-"sphinx3.4", "s3.4", or "fast decoder", is a faster version of the
+"sphinx3.5", "s3.5", or "fast decoder", is a faster version of the
 original code. Higher speed has been achieved at the cost of less
 accuracy compared to the slow decoder.
 
@@ -22,11 +22,15 @@ access the documentation here:
 There are couple of nice documents you could find in the ./doc
 directory.  That includes 
 
-ravi_codework.html : Code review document prepared by Ravi Mosur.
+s3_codework.html : Code review document prepared by Ravi Mosur.
+s3_description.html : Code review document prepared by Ravi Mosur.
+s3_overview.html : Code review document prepared by Ravi Mosur.
 cmdhelp.txt : (Obsolete) Sphinx 3.3 command line arguments. 
 s3.2.ppt : The powerpoint presentation prepared by Ravi Mosur. 
 FAQ.html : Frequently asked question page prepared by Rita Singh
-rita_training.html : FAQ for training prepared by Rita Singh. 
+sphinxman_manual.html : Manual for training prepared by Rita Singh. 
+sphinxman_FAQ.html : FAQ for training prepared by Rita Singh. 
+sphinxman_misc.html : Miscellaneous information for training prepared by Rita Singh. 
 models.html : Description of the default broad cast news model
 
 For up-to-date information, please see the web site at
@@ -34,7 +38,7 @@ For up-to-date information, please see the web site at
    http://cmusphinx.org
 
 
-A brief note of version: s3.4 decoder is an extension of s3.3 with
+A brief note of version: s3.5 decoder is an extension of s3.3 with
 several bug fixes and speed-up algorithm implmentation.  s3.3 is a
 live-mode capable version of the s3.2 decoder.  The decoder routine is
 stored in a library called libs3decoder.a. The decoder function takes
@@ -84,7 +88,7 @@ customize it by running ./configure with an argument, as in
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-To compile the sphinx 3.4 in Visual C++ 6.0, 
+To compile the sphinx 3.5 in Visual C++ 6.0, 
 1, unzip the file.
 2, click programs.dsw 
 3, build the projects in the following order, libaudio, libdecoder, libutil.
