@@ -152,7 +152,8 @@ static int32 waveout_enqueue_buf (HWAVEOUT h, LPWAVEHDR whdr)
 
 static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
-    PCMWAVEFORMAT wfmt;
+/*    PCMWAVEFORMAT wfmt; */
+	WAVEFORMATEX wfmt;
     int32 st;
     HWAVEOUT h;
     
@@ -161,16 +162,17 @@ static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
 	return NULL;
     }
     
-    wfmt.wf.wFormatTag      =  WAVE_FORMAT_PCM;
-    wfmt.wf.nChannels       =  1;
-    wfmt.wf.nSamplesPerSec  =  samples_per_sec;
-    wfmt.wf.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
-    wfmt.wf.nBlockAlign     =  bytes_per_sample;
-    wfmt.wBitsPerSample     =  8 * bytes_per_sample;
-    
+    wfmt.wFormatTag      =  WAVE_FORMAT_PCM;
+    wfmt.nChannels       =  1;
+    wfmt.nSamplesPerSec  =  samples_per_sec;
+    wfmt.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
+    wfmt.nBlockAlign     =  bytes_per_sample;
+    wfmt.wBitsPerSample  =  8 * bytes_per_sample;
+    wfmt.cbSize          =  0;
+
     /* There should be a check here for a device of the desired type; later... */
     
-    st = waveOutOpen ((LPHWAVEOUT) &h, WAVE_MAPPER, (LPWAVEFORMAT) &wfmt,
+    st = waveOutOpen ((LPHWAVEOUT) &h, WAVE_MAPPER, (LPWAVEFORMATEX) &wfmt,
 		      (DWORD) 0L, 0L, (DWORD) CALLBACK_NULL);
     if (st != 0) {
 	waveout_error("waveOutOpen", st);

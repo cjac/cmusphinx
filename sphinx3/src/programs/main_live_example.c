@@ -184,8 +184,10 @@ int main (int argc, char *argv[])
       }
     } else {    
       // RAH
-      const int SAMPLE_RATE = 8000;
-      if ((ad = ad_open_sps(SAMPLE_RATE)) == NULL)
+      int samprate = 8000;
+
+      samprate = cmd_ln_int32 ("-samprate");
+      if ((ad = ad_open_sps(samprate)) == NULL)
 	E_FATAL("ad_open_sps failed\n");
 
       utterance_loop();
