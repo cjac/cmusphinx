@@ -104,7 +104,7 @@ typedef struct{
     int32 START_FLAG;
     int16 PRIOR;
     float64 *HAMMING_WINDOW;
-    
+    int32 FRAME_COUNTER;
 } fe_t;
 
 
@@ -146,6 +146,7 @@ typedef struct{
 
 
 #define DEFAULT_BLOCKSIZE 200000
+#define DITHER  OFF
 
 /* Functions */
 
@@ -158,6 +159,8 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector);
 int32 fe_close(fe_t *FE);
 
 int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
+
+int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
 int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
 
