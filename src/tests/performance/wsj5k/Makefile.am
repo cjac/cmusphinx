@@ -53,13 +53,16 @@ PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
+DECANYBIN = $(PROGRAMDIR)/decode_anytopo
 ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
 #all : lp decode
 lp : wsj5k_bigram-lp wsj5k_trigram-lp wsj5k_bigram_nvp-lp wsj5k_trigram_nvp-lp
 decode : wsj5k_bigram-decode wsj5k_trigram-decode wsj5k_bigram_nvp-decode wsj5k_trigram_nvp-decode
+decany : wsj5k_bigram-decany wsj5k_trigram-decany wsj5k_bigram_nvp-decany wsj5k_trigram_nvp-decany
+
 clean :
-	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
+	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode,decany}
 
 #Arthur: legacy targets, I think this one doesn't work now. 
 #wsj5k_bigram-bm wsj_trigram-bm :
@@ -112,6 +115,30 @@ wsj5k_bigram_nvp-decode wsj5k_trigram_nvp-decode:
 	tr 'A-Z' 'a-z' < $@.match > $@.tmp
 	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
 
+
+wsj5k_bigram-decany wsj5k_trigram-decany :
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}' $(WSJ5KBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > ./$@.ctl
+	cat ARGS.decany ARGS.$(subst -decany,,$@) > ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir /" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) |sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	tr 'A-Z' 'a-z' < $@.match > $@.tmp
+	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+
+wsj5k_bigram_nvp-decany wsj5k_trigram_nvp-decany:
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}' $(WSJ5KNVPBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
+	cat ARGS.decany ARGS.$(subst _nvp-decany,,$@) > ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir /" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) |sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/"> $@.sent
+	tr 'A-Z' 'a-z' < $@.match > $@.tmp
+	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
 
 
 
