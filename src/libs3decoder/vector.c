@@ -317,11 +317,11 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
     
     ptmr_init (&tm);
     ptmr_start (&tm);
-    E_INFO("You are using %d as the seed \n");
     
     /* Pick a random initial set of centroids */
 
     if(seed < 0){
+      E_INFO("You are using the internal mechanism of vector_vqgen to decide the seed.  \n");
 #ifndef WIN32			
     srandom (seed);
     seed ^= random();
@@ -329,14 +329,13 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
     srand ((unsigned) time(NULL)); 
 #endif
     }else{
+      E_INFO("You are using %d as the seed \n");
       srand(seed);
     }
 
     /*ARCHAN: DON'T delete this line! This will always give the
       experimenter the seed they were using in their experiments. This
       make the result be repeatable*/
-
-    E_INFO("You are using %d as the seed \n");
 
     for (i = 0; i < vqrows; i++) {
 	/* Find r = a random, previously unselected row from the input */
