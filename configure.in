@@ -168,3 +168,4 @@ doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
 chmod +x scripts/sphinx3-test
+chmod +x src/tests/regression/test_livepretend.sh
