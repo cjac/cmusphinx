@@ -53,7 +53,10 @@ BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
 DECANYBIN = $(PROGRAMDIR)/decode_anytopo
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 CTLFILE = ./nist.ctl.no_comment.no_id
 TRANSFILE = ./nist.trans.no_comment.no_id
 COMPATH = /net/wilma/usr1/archan/Communicator
@@ -62,36 +65,35 @@ COMPATH = /net/wilma/usr1/archan/Communicator
 base : com-base-lp com-base-decode com-base-decany
 fast : com-fast-lp com-fast-decode
 
-clean :
-	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
+CLEANFILES = *.tmp *.ctl *.sent  *.lex *.results *.match *.match.* *.hyp* ARGS.*-{lp,decode}
 
 com-base-lp com-fast-lp:
-	-rm -f $@.results $@.match $@.match.align $@.tmp
+	-rm -f $@.results $@.match $@.match.* $@.hyp
 	/bin/cp ARGS.$(subst -lp,,$@) ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) $(CTLFILE) $(COMPATH)/nist_data/ ARGS.$@ > $@.results 2>&1 
-	sed "s/_/ /g" $@.match > $@.tmp
-	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
+	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
 com-base-decode com-fast-decode:
-	-rm -f $@.results $@.match $@.match.align $@.tmp
+	-rm -f $@.results $@.match $@.match.* $@.hyp
 	/bin/cp ARGS.$(subst -decode,,$@) ARGS.$@
 	echo "-ctl $(CTLFILE)" >> ARGS.$@
 	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1 
-	sed "s/_/ /g" $@.match > $@.tmp
-	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
+	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
 com-base-decany:
-	-rm -f $@.results $@.match $@.match.align $@.tmp
+	-rm -f $@.results $@.match $@.match.* $@.hyp
 	/bin/cp ARGS.com-base.decany ARGS.$@
 	echo "-ctl $(CTLFILE)" >> ARGS.$@
 	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
-	sed "s/_/ /g" $@.match > $@.tmp
-	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
+	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
 
 #	rm -f com.base.decode_anytopo.results

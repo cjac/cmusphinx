@@ -53,7 +53,10 @@ BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
 DECANYBIN = $(PROGRAMDIR)/decode_anytopo
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 
 
 #legacy targets
@@ -61,8 +64,7 @@ ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align
 #	rm -f $@.results 
 #	../../programs/batchmetrics $(WSJBATCH) / ./ARGS.$@ > $@.results
 
-clean :
-	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
+CLEANFILES = *.tmp *.ctl *.sent  *.lex *.results *.match *.match.* ARGS.*-{lp,decode}
 
 #all: wsj20k_bigram-lp wsj20k_trigram-lp wsj20k_bigram-decode wsj20k_trigram-decode
 lp: wsj20k_bigram-lp wsj20k_trigram-lp 
@@ -70,36 +72,31 @@ decode: wsj20k_bigram-decode wsj20k_trigram-decode
 decany: wsj20k_bigram-decany wsj20k_trigram-decany
 
 wsj20k_bigram-lp wsj20k_trigram-lp:
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(WSJBATCH) |sed "s/\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(WSJBATCH) | sed "s/\.raw//" > ./$@.ctl
 	cat ARGS ARGS.live ARGS.$(subst -lp,,$@) > ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) |sed "s/\.raw//" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) | sed "s/\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 wsj20k_bigram-decode wsj20k_trigram-decode: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(WSJBATCH) | sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
 	cat ARGS ARGS.$(subst -decode,,$@) > ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
-	echo "-cepdir / " >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) | sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 wsj20k_bigram-decany wsj20k_trigram-decany: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(WSJBATCH) | sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
 	cat ARGS.decany ARGS.$(subst -decany,,$@).decany > ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
-	echo "-cepdir / " >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) | sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match

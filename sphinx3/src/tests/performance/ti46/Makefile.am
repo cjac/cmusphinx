@@ -56,7 +56,10 @@ BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
 DECANYBIN = $(PROGRAMDIR)/decode_anytopo
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 
 ALLTARGET=ti46-lp ti46-quick-lp ti46-decode ti46-quick-decode
 
@@ -70,47 +73,37 @@ ALLTARGET=ti46-lp ti46-quick-lp ti46-decode ti46-quick-decode
 quick : ti46-quick-lp ti46-quick-decode ti46-quick-decany
 slow : ti46-lp ti46-decode ti46-decany
 
-clean : 
-	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.ti46-*
+CLEANFILES = *.ctl *.sent  *.lex *.results *.match *.match.* ARGS.ti46-*
 
 #Targets which we are actively using. 
 ti46-lp ti46-quick-lp : 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}' $(subst -lp,,$@).batch |sed "s/\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}' $(subst -lp,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	cat ARGS ARGS.live > ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
+	echo "-rawext .wav.raw" >> ARGS.$@
 	$(LPBIN) ./$@.ctl $(TI46RAWPATH) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 ti46-decode ti46-quick-decode: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(subst -decode,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	/bin/cp ARGS ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-cepdir $(TI46CEPPATH)" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 ti46-decany ti46-quick-decany: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(subst -decany,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	/bin/cp ARGS.decany ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-cepdir $(TI46CEPPATH)" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
-
-
-
-
-
-
-
-
-
-
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decany,,$@).batch | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
