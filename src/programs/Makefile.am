@@ -6,7 +6,7 @@ bin_PROGRAMS = livepretend \
 	astar \
 	dag \
 	allphone \
-	ep 
+	ep
 
 livepretend_SOURCES = main_livepretend.c live.c parse_args_file.c 
 livepretendDEVEL_SOURCES = main_livepretend_devel.c 
@@ -18,7 +18,7 @@ dag_SOURCES = main_dag.c s3_dag.c
 allphone_SOURCES = main_allphone.c s3_allphone.c 
 gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
-wave2feat_SOURCES = main_wave2feat.c 
+wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
 
 noinst_PROGRAMS = \
