@@ -62,13 +62,20 @@
 #include "endptr.h"
 #include "fe.h"
 
+/* Define a null device that depends on the platform */
+#if defined(WIN32)
+#define NULL_DEVICE "NUL"
+#else
+#define NULL_DEVICE "/dev/null"
+#endif
+
 /** \file main_ep.c
     \brief Driver for end-pointing
  */
 
 const char helpstr[] =
   "Description: \n\
-Create cepstra from audio file.\n		\
+Print speech detection timing information from audio file.\n		\
 									\
 The main parameters that affect the final output, with typical values, are:\n \
 									\
@@ -82,10 +89,9 @@ format, raw or nist or mswav\n						\
 
 const char examplestr[] =
   "Example: \n\
-This example creates a cepstral file named \"output.mfc\" from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n \
+This example displays the timing information reporting beginning/end of speech from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n \
 \n									\
 ep -i  input.raw \n						\
-        -o   output.mfc \n						\
         -raw 1 \n							\
         -input_endian little \n						\
         -samprate  16000 \n						\
@@ -113,28 +119,28 @@ static arg_t arg[] = {
     "Single audio input file" },
   { "-o",
     ARG_STRING,
-    NULL,
-    "Single cepstral output file" },
+    NULL_DEVICE,
+    "Single cepstral output file. Not used by ep." },
   { "-c",
     ARG_STRING,
     NULL,
-    "Control file for batch processing" },
+    "Control file for batch processing. Not used by ep." },
   { "-di",
     ARG_STRING,
     NULL,
-    "Input directory, input file names are relative to this, if defined" },
+    "Input directory, input file names are relative to this, if defined. Not used by ep." },
   { "-ei",
     ARG_STRING,
     NULL,
-    "Input extension to be applied to all input files" },
+    "Input extension to be applied to all input files. Not used by ep." },
   { "-do",
     ARG_STRING,
     NULL,
-    "Output directory, output files are relative to this" },
+    "Output directory, output files are relative to this. Not used by ep." },
   { "-eo",
     ARG_STRING,
     NULL,
-    "Output extension to be applied to all output files" },
+    "Output extension to be applied to all output files. Not used by ep." },
   { "-nist",
     ARG_INT32,
     "0",
@@ -313,7 +319,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
   nsamps = splen;
   //spdata = spbuffer;
   
-  E_INFO("%d %d %d\n",nsamps,FEW->FE->NUM_OVERFLOW_SAMPS, FEW->FE->FRAME_SIZE);
+  E_INFO("%d samples, %d overflow, %d frame size\n", nsamps, FEW->FE->NUM_OVERFLOW_SAMPS, FEW->FE->FRAME_SIZE);
 
   /* are there enough samples to make at least 1 frame? */
   if (nsamps + FEW->FE->NUM_OVERFLOW_SAMPS >= FEW->FE->FRAME_SIZE)
@@ -447,19 +453,31 @@ int32 main(int32 argc, char **argv)
 
 
   print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
   if(cmd_ln_int32("-logspec"))
     E_FATAL("-logspec is currently not supported\n");
+
+  if (strcmp(cmd_ln_str("-o"), NULL_DEVICE) != 0) {
+    E_FATAL("Output file not used by ep: code outputs only timing info.\n");
+  }
+
+  if (cmd_ln_str("-c") ||
+      cmd_ln_str("-di") ||
+      cmd_ln_str("-do") ||
+      cmd_ln_str("-ei") ||
+      cmd_ln_str("-eo")) {
+    E_FATAL("Only one file processed at a time, control file not allowed\n");
+  }
 
   unlimit();
   ptmr_init(&tm_class);
 
   FEW = few_initialize();
   CLASSW = classw_initialize(cmd_ln_str("-mean"),
-			     cmd_ln_str("-var") ,cmd_ln_float32("-varfloor"),
-			     cmd_ln_str("-mixw"),cmd_ln_float32("-mixwfloor"),
-			     TRUE,".cont.");
+			     cmd_ln_str("-var"), cmd_ln_float32("-varfloor"),
+			     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"),
+			     TRUE, ".cont.");
   ENDPTR = endpointer_initialize(FEW->FE); 
   spbuffer = fe_convert_files_to_spdata(FEW->P, FEW->FE, &splen, &nframes);
   
@@ -481,19 +499,3 @@ int32 main(int32 argc, char **argv)
 
   return(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
