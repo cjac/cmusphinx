@@ -40,7 +40,7 @@ BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 H = cmd_ln_args.h fe_dump.h feat_dump.h new_fe_sp_dump.h live_dump.h metrics.h
 LIVEDECSRCS = parse_args_file.c fe_dump.c feat_dump.c new_fe_sp_dump.c live_dump.c metrics.c
-MAINSRCS = dump_frontend.c batch_metrics.c
+MAINSRCS = dump_frontend.c batch_metrics.c lm_test.c
 # OTHERSRCS = main.c
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) $(BASESRCS:.c=.o) 
 FILES = Makefile $(SRCS) $(H)
@@ -48,28 +48,42 @@ LIBNAME= tests
 
 LOCAL_INCLUDES = -I$(TOP)/src -I$(TOP)/src/libs3decoder -I$(TOP)/src/libs3audio
 
-ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics
+ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics $(BINDIR)/lm_test
 
 include $(TOP)/config/common_make_rules
+
 
 $(BINDIR)/dumpfrontend: dump_frontend.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ dump_frontend.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)  -Wl,-R$(LIBDIR)
 
+
 $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)  -Wl,-R$(LIBDIR)
+
+
+$(BINDIR)/lm_test: lm_test.o $(LIVEDECOBJS)
+	$(CC) $(CFLAGS) -o $@ lm_test.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)  -Wl,-R$(LIBDIR)
+
 
 ti46:
 	rm -f gmake-ti46.results
 	$(BINDIR)/batchmetrics ./ti46.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k ARGS > gmake-ti46.results
 
-ti46_quick:
+
+ti46-quick:
 	rm -f gmake-ti46-quick.results
 	$(BINDIR)/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k ARGS > gmake-ti46-quick.results
+
 
 tidigits:
 	rm -f gmake-tidigits.results
 	$(BINDIR)/batchmetrics ./tidigits.ctl /lab/speech/sphinx4/data/tidigits/test/raw16k ARGS > gmake-tidigits.results
 
-tidigits_quick:
+
+tidigits-quick:
 	rm -f gmake-tidigits-quick.results
 	$(BINDIR)/batchmetrics ./tidigits-quick.ctl /lab/speech/sphinx4/data/tidigits/test/raw16k ARGS > gmake-tidigits-quick.results
+
+
+lm-test:
+	$(BINDIR)/lm_test ./lm.ARGS /lab/speech/sphinx4/data/hub4_model/language_model.arpaformat.DMP /lab/speech/sphinx4/data/hub4_model/random_ngrams.txt
