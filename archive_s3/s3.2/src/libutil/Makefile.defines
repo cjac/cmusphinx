@@ -1,0 +1,76 @@
+#
+# Copyright (c) 1999 Carnegie Mellon University.  ALL RIGHTS RESERVED.
+#
+# Makefile
+# 
+# HISTORY
+# 
+# 28-Apr-99	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Added AR definitions.
+# 
+# 23-Dec-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Created.
+#
+
+
+
+#
+# Machine dependent defines
+#
+
+#
+# DEC Alpha OSF/1 specific
+#
+alpha_CFLAGS  = -O2 -tune generic -std1 -warnprotos -D__ALPHA_OSF1__=1
+alpha_MFLAGS  =
+# DEC OSF/1 ar(1) has ranlib functionality built-in
+alpha_CC = cc
+alpha_AR = ar
+alpha_RANLIB = /bin/echo
+alpha_PURIFY = 
+
+#
+# HP PA-RISC specific
+#
+hppa_CFLAGS  = -O -Aa -D_HPUX_SOURCE=1 -D__BIG_ENDIAN__=1
+hppa_MFLAGS  = -I..
+# HP's ar(1) has ranlib functionality built-in
+hppa_CC = cc
+hppa_AR = ar
+hppa_RANLIB = /bin/echo
+hppa_PURIFY = purify
+
+#
+# Sun specific
+#
+sun_CFLAGS  = -O -Wall -D__SUN__=1 -D__BIG_ENDIAN__=1
+sun_MFLAGS  = -I..
+sun_CC = gcc
+sun_AR = ar
+sun_RANLIB = ranlib
+sun_PURIFY = purify
+
+#
+# linux specific
+#
+linux_CFLAGS  = -O2 -Wall -D__LINUX__=1
+linux_MFLAGS  = -I..
+linux_CC = cc
+linux_AR = ar
+linux_RANLIB = ranlib
+linux_PURIFY =
+
+#
+# cygwin specific
+#
+cygwin_CFLAGS  = -O2 -Wall
+cygwin_MFLAGS  = -I..
+cygwin_CC = gcc
+cygwin_AR = ar
+cygwin_RANLIB = ranlib
+cygwin_PURIFY =
+
+CC = ${${MACHINE}_CC}
+AR = ${${MACHINE}_AR}
+RANLIB = ${${MACHINE}_RANLIB}
+MFLAGS = ${${MACHINE}_MFLAGS}
