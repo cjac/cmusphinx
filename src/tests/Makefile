@@ -73,3 +73,8 @@ multi-batch:
 tidigits:
 	rm -f gmake-tidigits.results
 	$(BINDIR)/batchmetrics ./tidigits.ctl /lab/speech/sphinx3j/data/tidigits/test/raw ARGS > gmake-tidigits.results
+
+tidigits-quick:
+	rm -f gmake-tidigits-quick.results
+	$(BINDIR)/batchmetrics ./tidigits-quick.ctl /lab/speech/sphinx3j/data/tidigits/test/raw ARGS > gmake-tidigits-quick.results
+
