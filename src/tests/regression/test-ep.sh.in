@@ -18,7 +18,6 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ep 
 -mean @abs_top_srcdir@/model/ep/means \
 -var @abs_top_srcdir@/model/ep/variances \
 -mixw @abs_top_srcdir@/model/ep/mixture_weights \
--o tmp.out \
 -raw 1 \
 2>&1 |grep "Utt_" |perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' > $tmpout
 if (perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' \
