@@ -45,7 +45,7 @@
  */
 
 
-/* \file main_livepretend.c
+/** \file main_livepretend.c
  * \brief Driver for live-mode simulation.
  */
 #include <stdio.h>

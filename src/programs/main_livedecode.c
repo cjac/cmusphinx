@@ -44,7 +44,7 @@
  *
  */
 
-/* \file main_livedecode.c
+/** \file main_livedecode.c
  * \brief live-mode decoder demo. 
  *
  *  Created by Yitao Sun (yitao@cs.cmu.edu).  This is a test program written
