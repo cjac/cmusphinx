@@ -1,7 +1,7 @@
 echo off
 
 set S3ROOT=..\..
-cd %S3ROOT%
+pushd %S3ROOT%
 set S3BATCH=.\bin\Debug\dag.exe
 set TASK=.\model\lm\an4
 set CTLFILE=.\win32\batch\an4.ctl
@@ -20,3 +20,4 @@ echo P I T T S B U R G H (null)
 
 
 
+popd
