@@ -61,10 +61,6 @@
 
 #ifndef _S3_VITHIST_H_
 #define _S3_VITHIST_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 #include <libutil/libutil.h>
 #include "s3types.h"
@@ -73,6 +69,9 @@ extern "C" {
 #include "dict.h"
 #include "wid.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * LM state.  Depending on type of LM (word-ngram, class-ngram, FSG, etc.), the contents

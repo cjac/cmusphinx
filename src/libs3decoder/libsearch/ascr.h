@@ -49,6 +49,7 @@
  * 		Started.
  */
 
+#include <libutil/libutil.h>
 
 #ifndef _S3_ASCR_H_
 #define _S3_ASCR_H_
@@ -56,9 +57,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <libutil/libutil.h>
-
 
 /*
  * Structure to hold senone scores (ordinary and composite), in one frame.

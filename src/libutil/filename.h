@@ -53,13 +53,11 @@
 #ifndef _LIBUTIL_FILENAME_H_
 #define _LIBUTIL_FILENAME_H_
 
+#include "prim_type.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
-
 
 /*
  * Strip off leading path components from the given path and copy the base into base.

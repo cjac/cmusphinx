@@ -56,13 +56,11 @@
 #ifndef _S3_FEAT_H_
 #define _S3_FEAT_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 #define LIVEBUFBLOCKSIZE        256    /* Blocks of 256 vectors allocated 
 					  for livemode decoder */

@@ -59,14 +59,13 @@
 #ifndef _LIBUTIL_IO_H_
 #define _LIBUTIL_IO_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdio.h>
 #include <sys/stat.h>
 #include "prim_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Like fopen, but use popen and zcat if it is determined that "file" is compressed

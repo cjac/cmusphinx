@@ -36,11 +36,11 @@
 #ifndef _FE_H_
 #define _FE_H_
 
+#include "s3types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "s3types.h"
 
 typedef struct{
     float32 SAMPLING_RATE;

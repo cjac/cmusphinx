@@ -56,12 +56,11 @@
 #ifndef _LIBUTIL_CASE_H_
 #define _LIBUTIL_CASE_H_
 
+#include "prim_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
-
 
 /* Return upper case form for c */
 #define UPPER_CASE(c)	((((c) >= 'a') && ((c) <= 'z')) ? (c-32) : c)

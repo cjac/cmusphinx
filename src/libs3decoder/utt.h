@@ -36,13 +36,13 @@
 #ifndef _UTT_H_
 #define _UTT_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "kb.h"
 #include "approx_cont_mgau.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MAXHYPLEN       1000
 

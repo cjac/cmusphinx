@@ -60,12 +60,11 @@
 #ifndef _S3_VECTOR_H_
 #define _S3_VECTOR_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <libutil/libutil.h>
-
 
 typedef float32 *vector_t;
 
@@ -299,9 +298,12 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2004/07/21  06:12:47  arthchan2003
- * add precompiler directive __cplusplus to all header files
+ * Revision 1.6  2004/07/27  21:53:05  yitao
+ * weird.  i only changed kb.c to fix a small bug.  why so many changes?
  * 
+ * Revision 1.5  2004/07/21 06:12:47  arthchan2003
+ * add precompiler directive __cplusplus to all header files
+ *
  * Revision 1.2  2004/07/21 05:11:46  archan
  * all sphinx 3.4 files with proper extern C headers
  *

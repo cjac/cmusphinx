@@ -52,14 +52,14 @@
 #ifndef _LIB_GS_H_
 #define _LIB_GS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/prim_type.h>
 #include <libutil/libutil.h>
 #include "s3types.h"
 #include "logs3.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct gs_s {
   int32 n_mgau;

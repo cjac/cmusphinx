@@ -67,14 +67,12 @@
 #ifndef _LIBUTIL_GLIST_H_
 #define _LIBUTIL_GLIST_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <stdlib.h>
 #include "prim_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* A node in a generic list */
 typedef struct gnode_s {

@@ -60,17 +60,15 @@
 #ifndef _S3_LEXTREE_H_
 #define _S3_LEXTREE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "kbcore.h"
 #include "hmm.h"
 #include "vithist.h"
 #include "ascr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * A lextree can be built for a specific history (e.g., for all bigram successors of a given

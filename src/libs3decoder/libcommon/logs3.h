@@ -56,13 +56,11 @@
 #ifndef _S3_LOGS3_H_
 #define _S3_LOGS3_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 /*
  * In evaluating HMM models, probability values are often kept in log domain,

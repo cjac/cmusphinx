@@ -56,11 +56,6 @@
 #ifndef _LIBUTIL_LIBUTIL_H_
 #define _LIBUTIL_LIBUTIL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -86,6 +81,9 @@ extern "C" {
 #include "str2words.h"
 #include "unlimit.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if (defined(WIN32) && !defined(__CYGWIN__))
 #define SLEEP_SEC(sec)	(0)			/* Why doesn't Sleep((sec)*1000) work? */

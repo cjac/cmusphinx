@@ -59,14 +59,12 @@
 #ifndef _LIBUTIL_BITVEC_H_
 #define _LIBUTIL_BITVEC_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include "prim_type.h"
 #include "ckd_alloc.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef uint32 *bitvec_t;
 

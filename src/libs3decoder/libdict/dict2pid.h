@@ -56,14 +56,12 @@
 #ifndef _S3_DICT2PID_H_
 #define _S3_DICT2PID_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "dict.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * This is one of the more complicated parts of a cross-word triphone model decoder.  The first

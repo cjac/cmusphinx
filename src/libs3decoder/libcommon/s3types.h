@@ -61,13 +61,11 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 /*
  * Size definitions for more semantially meaningful units.

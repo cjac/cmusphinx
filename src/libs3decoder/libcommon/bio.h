@@ -53,13 +53,11 @@
 #ifndef _S3_BIO_H_
 #define _S3_BIO_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 #define BYTE_ORDER_MAGIC	(0x11223344)
 

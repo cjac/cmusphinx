@@ -56,12 +56,11 @@
 #ifndef _LIBUTIL_PROFILE_H_
 #define _LIBUTIL_PROFILE_H_
 
+#include "prim_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
-
 
 /*
  * Generic event counter for profiling.  User is responsible for allocating an array

@@ -62,14 +62,12 @@
 #ifndef _S3_TMAT_H_
 #define _S3_TMAT_H_
 
+#include <libutil/libutil.h>
+#include "s3types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <libutil/libutil.h>
-#include "s3types.h"
-
 
 /*
  * Transition matrix data structure.  All phone HMMs are assumed to have the same

@@ -64,14 +64,12 @@
 #ifndef _S3_MDEF_H_
 #define _S3_MDEF_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "s3types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef enum {
     WORD_POSN_BEGIN = 0,	/* Beginning phone of word */

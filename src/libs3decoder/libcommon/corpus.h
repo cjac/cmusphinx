@@ -68,13 +68,11 @@
 #ifndef _S3_CORPUS_H_
 #define _S3_CORPUS_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 /*
  * Structure for a corpus: essentially a set of strings each associated with a

@@ -52,14 +52,14 @@
 #ifndef _S3_WID_H_
 #define _S3_WID_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "dict.h"
 #include "lm.h"
 #include "lmclass.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Create mappings between dictionary and LM word-IDs.  In short:
