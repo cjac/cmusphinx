@@ -161,21 +161,21 @@ static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 	switch (t) {
 	case ARG_INT32:
 	case REQARG_INT32:
-	    if (sscanf (str, "%d", &(v->val.i_32)) != 1)
+	  if (sscanf (str, "%d", &(v->val.i_32)) != 1)
 		return -1;
-	    v->ptr = (void *) &(v->val.i_32);
+	  v->ptr = (void *) &(v->val.i_32);
 	    break;
 	case ARG_FLOAT32:
 	case REQARG_FLOAT32:
-	    if (sscanf (str, "%f", &(v->val.fl_32)) != 1)
-		return -1;
-	    v->ptr = (void *) &(v->val.fl_32);
+	  if (sscanf (str, "%f", &(v->val.fl_32)) != 1)
+	    return -1;
+	  v->ptr = (void *) &(v->val.fl_32);
 	    break;
 	case ARG_FLOAT64:
 	case REQARG_FLOAT64:
-	    if (sscanf (str, "%lf", &(v->val.fl_64)) != 1)
-		return -1;
-	    v->ptr = (void *) &(v->val.fl_64);
+	  if (sscanf (str, "%lf", &(v->val.fl_64)) != 1)
+	    return -1;
+	  v->ptr = (void *) &(v->val.fl_64);
 	    break;
 	case ARG_STRING:
 	case REQARG_STRING:
@@ -353,6 +353,80 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     return 0;
 }
 
+int32 cmd_ln_parse_file(arg_t *defn, char *filename)
+{
+  FILE *file;
+  char **tmp_argv;
+  char **argv;
+  int argc;
+  int argv_size;
+
+  char str[ARG_MAX_LENGTH];
+  int len = 0;
+  int ch;
+
+  int rv = 0;
+
+  if ((file = fopen(filename, "r")) == NULL) {
+    return -1;
+  }
+
+  /*
+   * initialize default argv, argc, and argv_size.  note that argv[0] is set to
+   * a null-string.  basically we don't care about argv[0].  typically, that is
+   * set as invoked program name.
+   */
+  argv_size = 10;
+  argc = 1;
+  argv = ckd_calloc(argv_size, sizeof(char *));
+  argv[0] = ckd_calloc(1, sizeof(char *));
+  argv[0][0] = '\0';
+
+  do {
+    ch = fgetc(file);
+    if (ch == EOF || strchr(" \t\r\n", ch)) {
+      /* reallocate argv so it is big enough to contain all the arguments */
+      if (argc >= argv_size) {
+	if (!(tmp_argv = ckd_calloc(argv_size * 2, sizeof(char *)))) {
+	  rv = 1;
+	  break;
+	}
+	memcpy(tmp_argv, argv, argv_size * sizeof(char *));
+	ckd_free(argv);
+	argv = tmp_argv;
+	argv_size *= 2;
+      }
+      /* add the string to the list of arguments */
+      argv[argc] = ckd_calloc(len + 1, sizeof(char));
+      strncpy(argv[argc], str, len);
+      argv[argc][len] = '\0';
+      len = 0;
+      argc++;
+
+      for (; ch != EOF && strchr(" \t\r\n", ch); ch = fgetc(file));
+      if (ch != EOF) {
+	str[len++] = ch;
+      }
+    }
+    else if (len < ARG_MAX_LENGTH) {
+      /* add the char to the argument string */
+      str[len++] = ch;
+    }
+    else {
+      /* hmmm, we've had an argument that exceeded ARG_MAX_LENGTH */
+      rv = 1;
+      break;
+    }
+  } while (ch != EOF);
+  
+  if (rv == 0) {
+    rv = cmd_ln_parse(defn, argc, argv);
+  }
+
+  ckd_free(argv);
+
+  return rv;
+}
 
 void cmd_ln_print_help (FILE *fp, arg_t *defn)
 {

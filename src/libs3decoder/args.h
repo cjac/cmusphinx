@@ -54,6 +54,14 @@
 
 #include "libutil/libutil.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern arg_t arg_def[];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
