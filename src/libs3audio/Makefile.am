@@ -18,7 +18,7 @@ EXTRA_libs3audio_la_SOURCES = ad_base.c \
 	rec_win32.c \
 	mulaw_base.c
 
-noinst_HEADERS = audio_utils_sunos.h mulaw.h ad.h
+noinst_HEADERS = audio_utils_sunos.h mulaw.h ad.h cont_ad.h
 
 libs3audio_la_DEPENDENCIES = @ad_files@
 
