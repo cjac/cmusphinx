@@ -37,15 +37,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
-
-typedef struct NamedDuration {
-    const char *name;		/* the name of the timer */
-    double duration;		/* the duration for this timer */
-    double start;		/* used to calc duration */
-    int count;
-} NamedDuration;
+#include "metrics.h"
 
 #define MAX_DURATION_SLOTS 32
+
 static NamedDuration namedDuration[MAX_DURATION_SLOTS];
 
 
@@ -126,6 +121,41 @@ void metricsStop(const char *name)
     */
     namedDuration->duration += (float)(time_current - namedDuration->start);
     namedDuration->count++;
+}
+
+
+/**
+ * Resets the given timer.
+ *
+ * @param name the name of the timer to reset
+ */
+void metricsReset(const char *name)
+{
+    int i;
+
+    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].name; i++) 
+    {
+    	if (strcmp(namedDuration[i].name, name) == 0)
+	{
+            namedDuration[i].duration = 0.0;
+            namedDuration[i].count = 0;
+            break;
+	}
+    }
+}
+
+
+/**
+ * Returns the duration of the given timer.
+ */
+double metricsDuration(const char *name)
+{
+    NamedDuration *duration = findDuration(name);
+    if (duration != NULL) {
+        return duration->duration;
+    } else {
+        return 0.0;
+    }
 }
 
 

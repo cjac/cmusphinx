@@ -37,8 +37,17 @@
 #ifndef _METRICS_H__
 #define _METRICS_H__
 
+typedef struct NamedDuration {
+    const char *name;		/* the name of the timer */
+    double duration;		/* the duration for this timer */
+    double start;		/* used to calc duration */
+    int count;
+} NamedDuration;
+
 void metricsStart(const char *name);
 void metricsStop(const char *name);
+double metricsDuration(const char *name);
+void metricsReset(const char *name);
 void metricsPrint(void);
 
 #endif

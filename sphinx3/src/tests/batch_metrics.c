@@ -47,29 +47,47 @@
 #include <libutil/libutil.h>
 #include <libs3decoder/new_fe.h>
 #include "live_dump.h"
+#include "metrics.h"
+
 
 #define MAXSAMPLES 	1000000
+
+
+void showAccuracy(FILE *rfp, int numberFiles, int numberMatches);
+void showTiming(FILE *ftp, const char* name, 
+                double audioTime, double processingTime);
+void showMemory(FILE *rfp);
+
 
 int main (int argc, char *argv[])
 {
     short *samps;
 
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
+    int  i, j, buflen, endutt, blksize, nhypwds, nsamp, sampleRate;
     int numberMatches, numberFiles;
+    
+    double totalAudioTime;
+    double totalProcessingTime;
+    double audioTime;
+    double processingTime;
 
-    float accuracy;
-
-    char   *argsfile, *ctlfile, *indir, *resultsFile;
+    char   *argsfile, *ctlfile, *indir;
     char   filename[512], cepfile[512];
     char   hypothesis[512], referenceResult[512];
     char   *word;
+    char   *fileTimer = "file";
 
     partialhyp_t *parthyp;
     FILE *fp, *sfp, *rfp;
 
     numberMatches = 0;
     numberFiles = 0;
-    accuracy = 100;
+    sampleRate = 8000;
+
+    totalAudioTime = 0.0;
+    totalProcessingTime = 0.0;
+    audioTime = 0.0;
+    processingTime = 0.0;
 
     if (argc != 4) {
         E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",
@@ -109,7 +127,10 @@ int main (int argc, char *argv[])
         fflush(stdout); 
         fclose(sfp);
 
-        for (i=0;i<nsamp;i+=blksize){
+        metricsStart(fileTimer);
+
+        for (i = 0; i < nsamp; i += blksize) {
+
 	    buflen = i+blksize < nsamp ? blksize : nsamp-i;
 	    endutt = i+blksize <= nsamp-1 ? 0 : 1;
 	    nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
@@ -144,13 +165,54 @@ int main (int argc, char *argv[])
             }
         }
 
-        accuracy = ((float) numberMatches)/((float) numberFiles) * 100.0;
+        metricsStop(fileTimer);
 
-        fprintf(rfp, "   Accuracy : %%%f   Errors: %d\n",
-                accuracy, (numberFiles - numberMatches));
-        fprintf(rfp, "   Sentences: %d      Words : %d   Matches: %d\n",
-                numberFiles, numberFiles, numberMatches);
+        /* collect the processing times data */
+        processingTime = metricsDuration(fileTimer);
+        audioTime = nsamp / sampleRate;
+        totalProcessingTime += processingTime;
+        totalAudioTime += audioTime;
+
+        showAccuracy(rfp, numberFiles, numberMatches);
+        showTiming(rfp, "This", audioTime, processingTime);
+        showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
+        showMemory(rfp);
         fprintf(rfp, "--------------\n");
+
+        metricsReset(fileTimer);
     }
+
+    fprintf(rfp, "------------- Summary statistics -----------\n");
+    showAccuracy(rfp, numberFiles, numberMatches);
+    showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
+    showMemory(rfp);
+
     return 0;
+}
+
+
+void showAccuracy(FILE *rfp, int numberFiles, int numberMatches)
+{
+    float accuracy = ((float) numberMatches)/((float) numberFiles) * 100.0;
+
+    fprintf(rfp, "   Accuracy : %%%.1f   Errors: %d\n",
+            accuracy, (numberFiles - numberMatches));
+
+    fprintf(rfp, "   Sentences: %d      Words : %d   Matches: %d\n",
+            numberFiles, numberFiles, numberMatches);
+}
+
+
+void showTiming(FILE *rfp, const char* name, 
+                double audioTime, double processingTime)
+{
+    fprintf(rfp,
+            "   %s Timing Audio: %.1fs  Proc: %.1fs  Speed: %.2f X real time\n",
+            name, audioTime, processingTime, (processingTime/audioTime));
+}
+
+
+void showMemory(FILE *rfp)
+{
+    fprintf(rfp, "   Memory usage data unavailable\n");
 }
