@@ -1767,7 +1767,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=sphinx3
- VERSION=0.1
+ VERSION=0.2
 
 
 cat >>confdefs.h <<_ACEOF
@@ -4854,15 +4854,15 @@ fi;
 
 if test "x$ad_files" = "x"; then
         case $host in
-                *-*-linux*)
+                *-*-linux*|*-*-freebsd*)
                         ad_files="ad_oss.lo"
                         ad_backend="AD_BACKEND_OSS"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
-                # FIXME: isn't this the same OSS as on Linux?
                 *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
+                        ad_libs="-lossaudio"
                         ad_backend="AD_BACKEND_OSS_BSD"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
 			audio_test_file="pittsburgh.littleendian"
@@ -4891,7 +4891,7 @@ if test "x$ad_files" = "x"; then
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *-*-solaris*)

@@ -76,12 +76,11 @@ Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
 To compile the sphinx 3.4 in Visual C++ 6.0, 
 1, unzip the file.
-2, go to sphinx3-0.1/win32/msdev/programs/
-3, click programs.dsw 
-4, build the projects in the following order, libaudio, libdecoder, libutil.
-5, build the live-mode decoder project, livedecode.
-6, build the live-mode simulator project, livepretend.
-7, build the batch-mode recognizer project, decode.  
+2, click programs.dsw 
+3, build the projects in the following order, libaudio, libdecoder, libutil.
+4, build the live-mode decoder project, livedecode.
+5, build the live-mode simulator project, livepretend.
+6, build the batch-mode recognizer project, decode.  
 
 Steps 4-7 can be done easily by in the "File View" of VC6.0 by
 left-clicking the project and choose "Build".  To run the executable,
@@ -100,3 +99,6 @@ Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)
 Eric Thayer
 Arthur Chan (archan@cs.cmu.edu)
+
+
+
