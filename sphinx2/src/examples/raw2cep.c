@@ -60,12 +60,12 @@
 #include <assert.h>
 #include <math.h>
 
-#include <CM_macros.h>
-#include <err.h>
-
-#include <ad.h>
-#include <cont_ad.h>
-#include <fe.h>
+#include "s2types.h"
+#include "CM_macros.h"
+#include "err.h"
+#include "ad.h"
+#include "cont_ad.h"
+#include "fe.h"
 
 
 /*
@@ -187,12 +187,14 @@ static void usage (char *pgm)
 }
 
 
+int
 main (int32 argc, char **argv)
 {
     FILE *adout, *mfcout;
     int32 i, k, ns, nc, n_utt, tot_ns, write_raw, write_mfc, removesil, sps;
     int16 adbuf[ADBUFSIZE];
-    float **mfcbuf, *mfcp;
+    float **mfcbuf = NULL;
+    fe_t *fe = NULL;
     char line[1024];
     char filename[4096], uttid[256], *rawfile;
     
@@ -318,15 +320,20 @@ main (int32 argc, char **argv)
     }
     
     if (write_mfc) {
-	mfcp = (float *) CM_calloc (4096 * 13, sizeof(float));
+	param_t param;
+	float *mfcp;
+
+	mfcp = (float *) CM_calloc (4096 * DEFAULT_NUM_CEPSTRA, sizeof(float));
 	mfcbuf = (float **) CM_calloc (4096, sizeof(float *));
 
 	for (i = 0; i < 4096; i++) {
 	    mfcbuf[i] = mfcp;
-	    mfcp += 13;
+	    mfcp += DEFAULT_NUM_CEPSTRA;
 	}
-	
-	if (fe_init (sps, -1, -1) < 0)
+
+	memset(&param, 0, sizeof(param));
+	param.SAMPLING_RATE = sps;
+	if ((fe = fe_init (&param)) == NULL)
 	    E_FATAL("fe_init(%d) failed\n", sps);
     }
     
@@ -350,7 +357,11 @@ main (int32 argc, char **argv)
 		fclose (adout);
 
 	    if (mfcout) {
-		fe_stop ();
+		int slop;
+
+		slop = fe_end_utt(fe, mfcbuf[0]);
+		if (slop)
+		    fwrite (mfcbuf[0], sizeof(float), 13, mfcout);
 
 		fflush (mfcout);
 		fseek (mfcout, 0, SEEK_SET);
@@ -396,7 +407,7 @@ main (int32 argc, char **argv)
 		    nc = 0;
 		    fwrite (&nc, sizeof(int32), 1, mfcout);	/* header placeholder */
 
-		    fe_start ();
+		    fe_start_utt (fe);
 		}
 	    }
 	    
@@ -408,7 +419,8 @@ main (int32 argc, char **argv)
 	    tot_ns += k;
 	    
 	    if (mfcout) {
-		k = fe_raw2cep (adbuf, k, mfcbuf);
+		
+		k = fe_process_utt (fe, adbuf, k, mfcbuf);
 		nc += k;
 		
 		for (i = 0; i < k; i++)
@@ -422,4 +434,5 @@ main (int32 argc, char **argv)
 	   (double) cur_ns_read / (double) sps, (double) tot_ns / (double) sps);
 
     cleanup_and_exit();
+    return 0;
 }

@@ -568,6 +568,8 @@ set of changes from dhd (below)
         * Fix a few broken things in the Makefile.am (oops).  It now
           passes 'make distcheck' with flying colours.
 
+	* Reinstated raw2cep
+
 -------------------------------------------------------------------------------
 
 2000-12-12 Kevin A. Lenzo <lenzo@cs.cmu.edu>
@@ -580,5 +582,3 @@ set of changes from dhd (below)
 	* Changed the paths in sphinx2-example.arg to be consistent
 	  with the default install location
 
-	
-	

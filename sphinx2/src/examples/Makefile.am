@@ -9,8 +9,8 @@ bin_PROGRAMS = \
 	adpow \
 	cont_adseg \
 	cont_fileseg \
-        lm3g2dmp 
-#	raw2cep
+        lm3g2dmp  \
+	raw2cep
 # 	cdcn_test
 
 sphinx2_continuous_SOURCES =  tty-continuous.c
@@ -39,7 +39,7 @@ cont_fileseg_SOURCES = cont_fileseg.c
 
 lm3g2dmp_SOURCES = lm3g2dmp.c
 
-#raw2cep_SOURCES = raw2cep.c
+raw2cep_SOURCES = raw2cep.c
 
 #cdcn_test_SOURCES = cdcn_test.c
 
