@@ -1,0 +1,4 @@
+rm1_bigram_quick-lp.match.align:WORD ACCURACY=  95.981% ( 2866/ 2986)  ERRORS=  4.789% (  143/ 2986)
+rm1_flat_unigram_quick-lp.match.align:WORD ACCURACY=  79.471% ( 2373/ 2986)  ERRORS= 22.672% (  677/ 2986)
+rm1_trigram_quick-lp.match.align:WORD ACCURACY=  97.254% ( 2904/ 2986)  ERRORS=  3.315% (   99/ 2986)
+rm1_unigram_quick-lp.match.align:WORD ACCURACY=  83.758% ( 2501/ 2986)  ERRORS= 18.654% (  557/ 2986)
