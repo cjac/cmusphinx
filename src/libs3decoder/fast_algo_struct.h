@@ -34,7 +34,7 @@
  *
  */
 /*
- * beam.h -- Various forms of pruning beam
+ * fast_algo_struct.h -- Various forms of pruning beam
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -68,11 +68,11 @@ extern "C" {
  * 0 is narrowest.
  */
 typedef struct {
-    int32 hmm;		/** For selecting active HMMs, relative to best */
-    int32 ptrans;	/** For determining which HMMs transition to their successors */
-    int32 word;		/** For selecting words exited, relative to best HMM score */
-    int32 ptranskip;     /** Intervals at which wbeam is used for phone transitions */
-    int32 wordend;      /** For selecting the number of word ends  */
+    int32 hmm;		/**< For selecting active HMMs, relative to best */
+    int32 ptrans;	/**< For determining which HMMs transition to their successors */
+    int32 word;		/**< For selecting words exited, relative to best HMM score */
+    int32 ptranskip;     /**< Intervals at which wbeam is used for phone transitions */
+    int32 wordend;      /**< For selecting the number of word ends  */
      
 } beam_t;
 
@@ -82,54 +82,58 @@ typedef struct {
  */
 
 typedef struct {
-  int32 maxwpf;         /**Max words per frame*/
-  int32 maxhistpf;      /** Max histories per frame*/
-  int32 maxhmmpf;        /**Max active HMMs per frame*/
+  int32 maxwpf;         /**< Max words per frame*/
+  int32 maxhistpf;      /**< Max histories per frame*/
+  int32 maxhmmpf;        /**< Max active HMMs per frame*/
 } histprune_t;
 
 typedef struct{
-  int32 ds_ratio;              /** Ratio of down-sampling the frame computation */
-  int32 cond_ds;            /** Whether we want to use conditional DS, 
+  int32 ds_ratio;              /**< Ratio of down-sampling the frame computation */
+  int32 cond_ds;            /**< Whether we want to use conditional DS, 
 				 cond_ds=0, don't use,
 				 cond_ds=1, store previous 1 frame
 			    */
 
-  int32 dist_ds;              /** Whether we want to use distance-based DS,
+  int32 dist_ds;              /**< Whether we want to use distance-based DS,
 				    dist_ds=0, don't use,
 				    dist_ds=1, store previous 1 frame
 			      */
   
-  int32 skip_count;         /** Counting how many frames are skipped */
+  int32 skip_count;         /**< Counting how many frames are skipped */
 
 } downsampling_t;
 
 typedef struct{
-  int32 ci_pbeam;             /** The beam which prune out unnesseary parent CI phones in 
+  int32 ci_pbeam;             /**< The beam which prune out unnesseary parent CI phones in 
 				 CI-based GMM selection*/
-  int32 dyn_ci_pbeam;         /** The dynamic CI-beam computed by using both CI-pbeam and 
+  int32 dyn_ci_pbeam;         /**< The dynamic CI-beam computed by using both CI-pbeam and 
 				 the counts*/
-  int32 *ci_occu;            /** Recorded number of CD senones for a
+  float32 tighten_factor;   /**< In the range of [0,1] (closed bounds)
+				A factor used to decide how many CD
+				senones will be computed. for those
+				"ignored" frames. */
+  int32 *ci_occu;            /**< Recorded number of CD senones for a
 				 particular base CI senone. */
-  int32 *idx;                /** temporary indices used in absolute
+  int32 *idx;                /**< temporary indices used in absolute
 				discounting of CI-based GMM selection */
-  int32 max_cd;              /** Maximum CD senones computed. 
+  int32 max_cd;              /**< Maximum CD senones computed. 
 			      */
 } gmm_select_t;
 
 typedef struct{
-  int32 subvqbeam;	/** For selecting active mixture components based on subvq scores */
-  int32 rec_bstcid;    /** Best codeword ID for Gaussian Selection Map. */
+  int32 subvqbeam;	/**< For selecting active mixture components based on subvq scores */
+  int32 rec_bstcid;    /**< Best codeword ID for Gaussian Selection Map. */
 } gau_select_t;
 
 typedef struct{
-  downsampling_t* downs;       /** All structure for down-sampling */
-  gmm_select_t* gmms;          /** All structure for GMM-level of selection */
-  gau_select_t* gaus;          /** All structure for Gaussian-level of selection */
-  int32 gs4gs;                /** Whether the GS map is used for Gaussian Selection or not 
+  downsampling_t* downs;       /**< All structure for down-sampling */
+  gmm_select_t* gmms;          /**< All structure for GMM-level of selection */
+  gau_select_t* gaus;          /**< All structure for Gaussian-level of selection */
+  int32 gs4gs;                /**< Whether the GS map is used for Gaussian Selection or not 
 				 mainly for internal debugging of Conditional Down-Sampling */
-  int32 svq4svq;              /** Whether SVQ scores would be used as the Gaussian Scores */
-  int32 rec_bst_senscr;       /** recent best scores. */
-  float32 *last_feat;         /** Last feature frame */
+  int32 svq4svq;              /**< Whether SVQ scores would be used as the Gaussian Scores */
+  int32 rec_bst_senscr;       /**< recent best scores. */
+  float32 *last_feat;         /**< Last feature frame */
 
 } fast_gmm_t;
 
@@ -144,19 +148,21 @@ typedef struct{
 
 
 beam_t *beam_init (
-		   float64 hmm, 
-		   float64 ptr, 
-		   float64 wd, 
-		   float64 wdend, 
-		   int32 ptranskip);
+		   float64 hmm,  /**< Input: hmm beam*/
+		   float64 ptr,  /**< Input: phone transition beam */
+		   float64 wd,  /**< Input: word beam */
+		   float64 wdend,  /**< Input: word end beam. */
+		   int32 ptranskip /**< Input: whether to apply phoneme transition beam rather than word beam.*/
+		   );
 
   /**
  * Create and initialize a histprune_t structure, with the given parameters. 
  */
 
-histprune_t *histprune_init (int32 maxhmm,
-			     int32 maxhist, 
-			     int32 maxword);
+  histprune_t *histprune_init (int32 maxhmm, /**< Input: maximum number of HMM computed at every frame */
+			       int32 maxhist, /**< Input: maximum number of history computed at every frame */
+			       int32 maxword /**< Input: maximum number of words computed at every frame */
+			       );
 
   /**
  * Create and initialize a fast_gmm_t structure, withe the given parameters
@@ -167,9 +173,10 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 isGS4GS,
 			   int32 isSVQ4SVQ,
 			   float32 subvqbeam,
-			   float32 cibeam,  /* Input: CI phone beam */
-			   int32 max_cd,    /* Input: Max CD senone to be computed */
-			   int32 n_ci_sen); /* Input: no. of ci senone, use to initialize  the ci_occ array*/
+			   float32 cibeam,  /**< Input: CI phone beam */
+			   float32 tighten_factor, /**< Input : A tightening factor used in down sampling */
+			   int32 max_cd,    /**< Input: Max CD senone to be computed */
+			   int32 n_ci_sen); /**< Input: no. of ci senone, use to initialize  the ci_occ array*/
 
 
 #ifdef __cplusplus
