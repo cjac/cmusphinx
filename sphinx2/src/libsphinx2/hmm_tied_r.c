@@ -51,9 +51,12 @@
  *------------------------------------------------------------*
  * HISTORY
  * $Log$
- * Revision 1.3  2000/12/12  23:01:42  lenzo
- * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ * Revision 1.4  2001/01/25  19:36:29  lenzo
+ * Fixing some memory leaks
  * 
+ * Revision 1.3  2000/12/12 23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ *
  * Revision 1.2  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
@@ -189,6 +192,7 @@ static int hmmArcNormalize (SMD *smd, SMD_R *smd_r,
 /* FIXME: ARGH!  These are exactly the opposite of the similarly named
    macros in "byteorder.h".  And then we also have a set of functions
    which also swap bytes.  */
+/* put a define __BIG_ENDIAN__ 1 here for suns */
 #if (__BIG_ENDIAN__)
 #define SWAP_W(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
 #define SWAP_L(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \

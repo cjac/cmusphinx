@@ -51,9 +51,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2000/12/21  18:04:51  lenzo
- * Fixed a nasty (but small) FRAME_RATE error.  This will need cleanup later.
+ * Revision 1.6  2001/01/25  19:36:28  lenzo
+ * Fixing some memory leaks
  * 
+ * Revision 1.5  2000/12/21 18:04:51  lenzo
+ * Fixed a nasty (but small) FRAME_RATE error.  This will need cleanup later.
+ *
  * Revision 1.4  2000/12/12 23:01:42  lenzo
  * Rationalizing libs and names some more.  Split a/d and fe libs out.
  *
@@ -787,7 +790,7 @@ int32 uttproc_init ( void )
     int32 sps;
 
     param_t *fe_param;
-    fe_param = calloc(1, sizeof(param_t));
+    fe_param = CM_calloc(1, sizeof(param_t));
 
     if (uttstate != UTTSTATE_UNDEF) {
 	E_ERROR("uttproc_init called when not in UNDEF state\n");
@@ -839,7 +842,9 @@ int32 uttproc_init ( void )
     uttstate = UTTSTATE_IDLE;
     utt_ofl = 0;
     uttno = 0;
-    
+
+    free(fe_param);
+
     return 0;
 }
 
@@ -1149,6 +1154,8 @@ int32 uttproc_end_utt ( void )
 	fclose (mfcfp);
 	mfcfp = NULL;
     }
+
+    free(leftover_cep);
 
     return 0;
 }

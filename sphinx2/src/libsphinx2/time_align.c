@@ -65,9 +65,12 @@
  *
  * Revision History
  * $Log$
- * Revision 1.4  2000/12/12  23:01:42  lenzo
- * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ * Revision 1.5  2001/01/25  19:36:29  lenzo
+ * Fixing some memory leaks
  * 
+ * Revision 1.4  2000/12/12 23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ *
  * Revision 1.3  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
@@ -3016,6 +3019,7 @@ time_align_word_sequence(char const * Utt,
     free(active_models[1]);
 
     free(word_id_map);
+    free(boundary);
 
     fflush(stdout);
     fflush(stderr);
