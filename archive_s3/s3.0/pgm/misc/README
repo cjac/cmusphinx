@@ -1,0 +1,2 @@
+grep -v '==' ~/train/tseg.dp | sed 's/ <<.*>>//' | ./pronerr -dict /local_tmp/rkm/94/train/allphn/si284.dict -fdict /usr1/rkm/s3-test/filler.dic -mdef /usr1/rkm/s3-test/h1c1-94.mdef -ref /local_tmp/rkm/94/train/allphn/si284.lsn > ttt
+

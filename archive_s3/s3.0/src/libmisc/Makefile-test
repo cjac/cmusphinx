@@ -1,0 +1,4 @@
+VPATH = .:..
+
+corpus-test : corpus.c
+	cc -D_CORPUS_TEST_=1 -I/net/alf20/usr/rkm/src -L/net/alf20/usr/rkm/src/libutil/alpha/ -g -o corpus-test ../corpus.c -lutil

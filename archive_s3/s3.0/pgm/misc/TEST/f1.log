@@ -1,0 +1,570 @@
+Configuration in effect:
+[NAME]		[DEFLT]	[VALUE]
+-dagfudge	2	2
+-dict			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/51k+208ap+top-ac.dict
+-fdict			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/filler-dt96+3fp.dict
+-hom			
+-hyp			
+-latdir			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci
+-mdef			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/bn92-96+62_all_tr-51k+3fp-fxwd.mdef
+-min_endfr	3	3
+-ref			/net/alf20/usr/rkm/eval96/dt96-pe/ref-sorted-f1-good-nofp.trn
+-sil		<sil>	<sil>
+INFO: ../mdef.c(470): Reading model definition: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/bn92-96+62_all_tr-51k+3fp-fxwd.mdef
+INFO: ../mdef.c(581): 58 CI-phones, 112009 CD-phones, 5 emitting states/phone, 6290 sen, 290 CI-sen
+INFO: ../dict.c(176): Reading main dictionary: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/51k+208ap+top-ac.dict
+INFO: ../dict.c(179): 57015 words read
+INFO: ../dict.c(184): Reading filler dictionary: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/filler-dt96+3fp.dict
+INFO: ../dict.c(187): 9 words read
+INFO: ../profile.c(171): 503658860 ticks in 1.892 sec; machine clock rate = 266 MHz
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_003_F1_17510_17540.lat
+INFO: ../dpalign.c(491): i960711p_003_F1_17510_17540: 32 frames, 1081 nodes (604 reachable), 40167 links
+right (i960711p_003_F1_17510_17540) << 1 ref; 0 0.0% oov; 1 hyp; 1 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==       1 ref;     0   0.0% oov;       1 hyp;       1 100.0% corr;      0   0.0% err;   0.1s CPU; i960711p_003_F1_17510_17540
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_069_F1_120122_120176.lat
+INFO: ../dpalign.c(491): k960712_069_F1_120122_120176: 56 frames, 713 nodes (478 reachable), 23433 links
+my pleasure (k960712_069_F1_120122_120176) << 2 ref; 0 0.0% oov; 2 hyp; 2 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==       3 ref;     0   0.0% oov;       3 hyp;       3 100.0% corr;      0   0.0% err;   0.3s CPU; k960712_069_F1_120122_120176
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_057_F1_102922_102980.lat
+INFO: ../dpalign.c(491): k960712_057_F1_102922_102980: 60 frames, 530 nodes (348 reachable), 15773 links
+hello dave (k960712_057_F1_102922_102980) << 2 ref; 0 0.0% oov; 2 hyp; 2 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==       5 ref;     0   0.0% oov;       5 hyp;       5 100.0% corr;      0   0.0% err;   0.3s CPU; k960712_057_F1_102922_102980
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_079_F1_141687_141749.lat
+INFO: ../dpalign.c(491): i960711p_079_F1_141687_141749: 64 frames, 459 nodes (244 reachable), 4302 links
+what can be (i960711p_079_F1_141687_141749) << 3 ref; 0 0.0% oov; 3 hyp; 3 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==       8 ref;     0   0.0% oov;       8 hyp;       8 100.0% corr;      0   0.0% err;   0.4s CPU; i960711p_079_F1_141687_141749
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_043_F1_82547_82616.lat
+INFO: ../dpalign.c(491): i960711p_043_F1_82547_82616: 71 frames, 551 nodes (321 reachable), 15421 links
+welcome sir (i960711p_043_F1_82547_82616) << 2 ref; 0 0.0% oov; 2 hyp; 2 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      10 ref;     0   0.0% oov;      10 hyp;      10 100.0% corr;      0   0.0% err;   0.5s CPU; i960711p_043_F1_82547_82616
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_104_F1_177388_177470.lat
+INFO: ../dpalign.c(491): i960711p_104_F1_177388_177470: 84 frames, 620 nodes (346 reachable), 7882 links
+what's your reaction (i960711p_104_F1_177388_177470) << 3 ref; 0 0.0% oov; 3 hyp; 3 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      13 ref;     0   0.0% oov;      13 hyp;      13 100.0% corr;      0   0.0% err;   0.5s CPU; i960711p_104_F1_177388_177470
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_012_F1_335578_335668.lat
+INFO: ../dpalign.c(491): o960710p_012_F1_335578_335668: 92 frames, 971 nodes (535 reachable), 33524 links
+this is [[ ANNE => ARE ]] margaret (o960710p_012_F1_335578_335668) << 4 ref; 0 0.0% oov; 4 hyp; 3 75.0% corr; 1 25.0% err; 0.2s CPU >>
+==      17 ref;     0   0.0% oov;      17 hyp;      16  94.1% corr;      1   5.9% err;   0.7s CPU; o960710p_012_F1_335578_335668
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_089_F1_146344_146437.lat
+INFO: ../dpalign.c(491): i960711p_089_F1_146344_146437: 95 frames, 1160 nodes (669 reachable), 38728 links
+what [[ ARE => E. ]] you reading today (i960711p_089_F1_146344_146437) << 5 ref; 0 0.0% oov; 5 hyp; 4 80.0% corr; 1 20.0% err; 0.2s CPU >>
+==      22 ref;     0   0.0% oov;      22 hyp;      20  90.9% corr;      2   9.1% err;   0.9s CPU; i960711p_089_F1_146344_146437
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_195_F1_199933_200037.lat
+INFO: ../dpalign.c(491): l960710_195_F1_199933_200037: 106 frames, 822 nodes (378 reachable), 14375 links
+what did he say (l960710_195_F1_199933_200037) << 4 ref; 0 0.0% oov; 4 hyp; 4 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      26 ref;     0   0.0% oov;      26 hyp;      24  92.3% corr;      2   7.7% err;   1.0s CPU; l960710_195_F1_199933_200037
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_065_F1_138738_138842.lat
+INFO: ../dpalign.c(491): n960715p_065_F1_138738_138842: 106 frames, 987 nodes (578 reachable), 27491 links
+always a pleasure thank you (n960715p_065_F1_138738_138842) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==      31 ref;     0   0.0% oov;      31 hyp;      29  93.5% corr;      2   6.5% err;   1.1s CPU; n960715p_065_F1_138738_138842
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_091_F1_148173_148280.lat
+INFO: ../dpalign.c(491): i960711p_091_F1_148173_148280: 109 frames, 858 nodes (465 reachable), 14488 links
+all right what's [[ YOUR => ]] comment (i960711p_091_F1_148173_148280) << 5 ref; 0 0.0% oov; 4 hyp; 4 80.0% corr; 1 20.0% err; 0.1s CPU >>
+==      36 ref;     0   0.0% oov;      35 hyp;      33  91.7% corr;      3   8.3% err;   1.2s CPU; i960711p_091_F1_148173_148280
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_055_F1_89998_90105.lat
+INFO: ../dpalign.c(491): i960711p_055_F1_89998_90105: 109 frames, 382 nodes (233 reachable), 5222 links
+thanks for your call (i960711p_055_F1_89998_90105) << 4 ref; 0 0.0% oov; 4 hyp; 4 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==      40 ref;     0   0.0% oov;      39 hyp;      37  92.5% corr;      3   7.5% err;   1.3s CPU; i960711p_055_F1_89998_90105
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_023_F1_53170_53280.lat
+INFO: ../dpalign.c(491): i960711p_023_F1_53170_53280: 112 frames, 730 nodes (351 reachable), 11119 links
+what paper [[ ARE => ]] you reading (i960711p_023_F1_53170_53280) << 5 ref; 0 0.0% oov; 4 hyp; 4 80.0% corr; 1 20.0% err; 0.1s CPU >>
+==      45 ref;     0   0.0% oov;      43 hyp;      41  91.1% corr;      4   8.9% err;   1.4s CPU; i960711p_023_F1_53170_53280
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_035_F1_80051_80161.lat
+INFO: ../dpalign.c(491): i960711p_035_F1_80051_80161: 112 frames, 806 nodes (471 reachable), 21759 links
+right this [[ IS => ]] the (i960711p_035_F1_80051_80161) << 4 ref; 0 0.0% oov; 3 hyp; 3 75.0% corr; 1 25.0% err; 0.1s CPU >>
+==      49 ref;     0   0.0% oov;      46 hyp;      44  89.8% corr;      5  10.2% err;   1.5s CPU; i960711p_035_F1_80051_80161
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_079_F1_139684_139799.lat
+INFO: ../dpalign.c(491): k960712_079_F1_139684_139799: 117 frames, 964 nodes (576 reachable), 32225 links
+you won't have a [[ LOT => LET ]] of cash though (k960712_079_F1_139684_139799) << 8 ref; 0 0.0% oov; 8 hyp; 7 87.5% corr; 1 12.5% err; 0.2s CPU >>
+==      57 ref;     0   0.0% oov;      54 hyp;      51  89.5% corr;      6  10.5% err;   1.7s CPU; k960712_079_F1_139684_139799
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_081_F1_142767_142887.lat
+INFO: ../dpalign.c(491): i960711p_081_F1_142767_142887: 122 frames, 465 nodes (121 reachable), 4321 links
+what's a common interest (i960711p_081_F1_142767_142887) << 4 ref; 0 0.0% oov; 4 hyp; 4 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==      61 ref;     0   0.0% oov;      58 hyp;      55  90.2% corr;      6   9.8% err;   1.7s CPU; i960711p_081_F1_142767_142887
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_099_F1_163031_163169.lat
+INFO: ../dpalign.c(491): i960711p_099_F1_163031_163169: 140 frames, 747 nodes (389 reachable), 11607 links
+so [[ WE => LOS ON ]] can [[ MOVE => A. ]] on [[ TO => IS ]] (i960711p_099_F1_163031_163169) << 6 ref; 0 0.0% oov; 7 hyp; 3 50.0% corr; 4 66.7% err; 0.1s CPU >>
+==      67 ref;     0   0.0% oov;      65 hyp;      58  86.6% corr;     10  14.9% err;   1.8s CPU; i960711p_099_F1_163031_163169
+INFO: ../dpalign.c(774): Adding JONNY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_196_F1_200234_200372.lat
+INFO: ../dpalign.c(491): l960710_196_F1_200234_200372: 140 frames, 1248 nodes (529 reachable), 19089 links
+[[ JONNY(oov) => CHATTY ]] is [[ DEAD => ]] (l960710_196_F1_200234_200372) << 3 ref; 1 33.3% oov; 2 hyp; 1 33.3% corr; 2 66.7% err; 0.1s CPU >>
+==      70 ref;     1   1.4% oov;      67 hyp;      59  84.3% corr;     12  17.1% err;   2.0s CPU; l960710_196_F1_200234_200372
+INFO: ../dpalign.c(774): Adding ERGONOMIC to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_036_F1_80155_80314.lat
+INFO: ../dpalign.c(491): i960711p_036_F1_80155_80314: 161 frames, 3018 nodes (2278 reachable), 318192 links
+[[ ERGONOMIC(oov) RIDER => LATE ]] the [[ ERGONOMIC(oov) => ]] (i960711p_036_F1_80155_80314) << 4 ref; 2 50.0% oov; 2 hyp; 1 25.0% corr; 3 75.0% err; 1.8s CPU >>
+==      74 ref;     3   4.1% oov;      69 hyp;      60  81.1% corr;     15  20.3% err;   3.8s CPU; i960711p_036_F1_80155_80314
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_037_F1_80308_80467.lat
+INFO: ../dpalign.c(491): i960711p_037_F1_80308_80467: 161 frames, 2503 nodes (1666 reachable), 132390 links
+[[ RIDER => RAIDERS WHITE ]] to the [[ LABOR H. H. => I ]] s. bill [[ => I. ]] (i960711p_037_F1_80308_80467) << 8 ref; 0 0.0% oov; 8 hyp; 4 50.0% corr; 6 75.0% err; 1.0s CPU >>
+==      82 ref;     3   3.7% oov;      77 hyp;      64  78.0% corr;     21  25.6% err;   4.8s CPU; i960711p_037_F1_80308_80467
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_051_F1_86353_86523.lat
+INFO: ../dpalign.c(491): i960711p_051_F1_86353_86523: 172 frames, 877 nodes (410 reachable), 17000 links
+[[ => WENT ]] did they give it front page coverage (i960711p_051_F1_86353_86523) << 7 ref; 0 0.0% oov; 8 hyp; 7 100.0% corr; 1 14.3% err; 0.1s CPU >>
+==      89 ref;     3   3.4% oov;      85 hyp;      71  79.8% corr;     22  24.7% err;   4.9s CPU; i960711p_051_F1_86353_86523
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_068_F1_119927_120102.lat
+INFO: ../dpalign.c(491): k960712_068_F1_119927_120102: 177 frames, 1223 nodes (486 reachable), 21395 links
+tom thank you very much (k960712_068_F1_119927_120102) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==      94 ref;     3   3.2% oov;      90 hyp;      76  80.9% corr;     22  23.4% err;   5.1s CPU; k960712_068_F1_119927_120102
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_025_F1_53584_53766.lat
+INFO: ../dpalign.c(491): i960711p_025_F1_53584_53766: 184 frames, 1402 nodes (723 reachable), 31250 links
+all right and what [[ DID => ]] you learn from the editorial (i960711p_025_F1_53584_53766) << 10 ref; 0 0.0% oov; 9 hyp; 9 90.0% corr; 1 10.0% err; 0.3s CPU >>
+==     104 ref;     3   2.9% oov;      99 hyp;      85  81.7% corr;     23  22.1% err;   5.4s CPU; i960711p_025_F1_53584_53766
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_005_F1_18252_18435.lat
+INFO: ../dpalign.c(491): i960711p_005_F1_18252_18435: 185 frames, 1583 nodes (1018 reachable), 71116 links
+why is bipartisanship in vogue (i960711p_005_F1_18252_18435) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.5s CPU >>
+==     109 ref;     3   2.8% oov;     104 hyp;      90  82.6% corr;     23  21.1% err;   5.9s CPU; i960711p_005_F1_18252_18435
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_162_F1_166703_166890.lat
+INFO: ../dpalign.c(491): l960710_162_F1_166703_166890: 189 frames, 783 nodes (393 reachable), 12804 links
+and they were on stage and [[ THEY => A ]] were [[ REHEARSING => HEARST ]] (l960710_162_F1_166703_166890) << 9 ref; 0 0.0% oov; 9 hyp; 7 77.8% corr; 2 22.2% err; 0.1s CPU >>
+==     118 ref;     3   2.5% oov;     113 hyp;      97  82.2% corr;     25  21.2% err;   6.0s CPU; l960710_162_F1_166703_166890
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_083_F1_144681_144882.lat
+INFO: ../dpalign.c(491): i960711p_083_F1_144681_144882: 203 frames, 1693 nodes (912 reachable), 53889 links
+in other words did they clarify this whole question (i960711p_083_F1_144681_144882) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.5s CPU >>
+==     127 ref;     3   2.4% oov;     122 hyp;     106  83.5% corr;     25  19.7% err;   6.5s CPU; i960711p_083_F1_144681_144882
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_092_F1_87184_87397.lat
+INFO: ../dpalign.c(491): l960710_092_F1_87184_87397: 215 frames, 1345 nodes (747 reachable), 38831 links
+but in swimming they [[ => ARE ]] caught nineteen (l960710_092_F1_87184_87397) << 6 ref; 0 0.0% oov; 7 hyp; 6 100.0% corr; 1 16.7% err; 0.3s CPU >>
+==     133 ref;     3   2.3% oov;     129 hyp;     112  84.2% corr;     26  19.5% err;   6.8s CPU; l960710_092_F1_87184_87397
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_060_F1_135160_135387.lat
+INFO: ../dpalign.c(491): n960715p_060_F1_135160_135387: 229 frames, 3348 nodes (2315 reachable), 354754 links
+well you know the canadians are very [[ FURIOUS => US ]] with you (n960715p_060_F1_135160_135387) << 10 ref; 0 0.0% oov; 10 hyp; 9 90.0% corr; 1 10.0% err; 3.2s CPU >>
+==     143 ref;     3   2.1% oov;     139 hyp;     121  84.6% corr;     27  18.9% err;  10.0s CPU; n960715p_060_F1_135160_135387
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_061_F1_135504_135732.lat
+INFO: ../dpalign.c(491): n960715p_061_F1_135504_135732: 230 frames, 1845 nodes (1064 reachable), 63256 links
+you know the canadians are very furious with you (n960715p_061_F1_135504_135732) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.6s CPU >>
+==     152 ref;     3   2.0% oov;     148 hyp;     130  85.5% corr;     27  17.8% err;  10.6s CPU; n960715p_061_F1_135504_135732
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_085_F1_145456_145685.lat
+INFO: ../dpalign.c(491): i960711p_085_F1_145456_145685: 231 frames, 1355 nodes (619 reachable), 22016 links
+big stone gap virginia good morning (i960711p_085_F1_145456_145685) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     158 ref;     3   1.9% oov;     154 hyp;     136  86.1% corr;     27  17.1% err;  10.8s CPU; i960711p_085_F1_145456_145685
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_057_F1_58508_58743.lat
+INFO: ../dpalign.c(491): l960710_057_F1_58508_58743: 237 frames, 1912 nodes (1051 reachable), 70767 links
+this bizarre stuff [[ GOING => ]] on (l960710_057_F1_58508_58743) << 5 ref; 0 0.0% oov; 4 hyp; 4 80.0% corr; 1 20.0% err; 0.6s CPU >>
+==     163 ref;     3   1.8% oov;     158 hyp;     140  85.9% corr;     28  17.2% err;  11.4s CPU; l960710_057_F1_58508_58743
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_104_F1_93802_94039.lat
+INFO: ../dpalign.c(491): l960710_104_F1_93802_94039: 239 frames, 2654 nodes (1541 reachable), 135351 links
+they [[ => AM ]] they have been cheating more than the others [[ => OU ]] (l960710_104_F1_93802_94039) << 9 ref; 0 0.0% oov; 11 hyp; 9 100.0% corr; 2 22.2% err; 1.3s CPU >>
+==     172 ref;     3   1.7% oov;     169 hyp;     149  86.6% corr;     30  17.4% err;  12.6s CPU; l960710_104_F1_93802_94039
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_061_F1_103487_103725.lat
+INFO: ../dpalign.c(491): i960711p_061_F1_103487_103725: 240 frames, 722 nodes (188 reachable), 5036 links
+and its proponents hope it [[ WILL => WE'LL ]] do what specifically (i960711p_061_F1_103487_103725) << 9 ref; 0 0.0% oov; 9 hyp; 8 88.9% corr; 1 11.1% err; 0.1s CPU >>
+==     181 ref;     3   1.7% oov;     178 hyp;     157  86.7% corr;     31  17.1% err;  12.7s CPU; i960711p_061_F1_103487_103725
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_021_F1_52049_52294.lat
+INFO: ../dpalign.c(491): i960711p_021_F1_52049_52294: 247 frames, 1002 nodes (400 reachable), 7585 links
+tupelo mississippi good morning [[ WHAT => ]] are you reading (i960711p_021_F1_52049_52294) << 8 ref; 0 0.0% oov; 7 hyp; 7 87.5% corr; 1 12.5% err; 0.1s CPU >>
+==     189 ref;     3   1.6% oov;     185 hyp;     164  86.8% corr;     32  16.9% err;  12.8s CPU; i960711p_021_F1_52049_52294
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_098_F1_163031_163278.lat
+INFO: ../dpalign.c(491): i960711p_098_F1_163031_163278: 249 frames, 4180 nodes (2716 reachable), 316556 links
+no i [[ WASN'T HE => WHERE'S LONG ]] knows more than about it than i do (i960711p_098_F1_163031_163278) << 12 ref; 0 0.0% oov; 12 hyp; 10 83.3% corr; 2 16.7% err; 3.5s CPU >>
+==     201 ref;     3   1.5% oov;     197 hyp;     174  86.6% corr;     34  16.9% err;  16.3s CPU; i960711p_098_F1_163031_163278
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_062_F1_61636_61897.lat
+INFO: ../dpalign.c(491): l960710_062_F1_61636_61897: 263 frames, 1712 nodes (956 reachable), 61296 links
+what about china the peoples republic of china (l960710_062_F1_61636_61897) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.6s CPU >>
+==     209 ref;     3   1.4% oov;     205 hyp;     182  87.1% corr;     34  16.3% err;  16.9s CPU; l960710_062_F1_61636_61897
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_059_F1_103290_103554.lat
+INFO: ../dpalign.c(491): k960712_059_F1_103290_103554: 266 frames, 1125 nodes (533 reachable), 10862 links
+it [[ WAS => IT'S ]] a great week to be out or be short that's for sure (k960712_059_F1_103290_103554) << 14 ref; 0 0.0% oov; 14 hyp; 13 92.9% corr; 1 7.1% err; 0.2s CPU >>
+==     223 ref;     3   1.3% oov;     219 hyp;     195  87.4% corr;     35  15.7% err;  17.1s CPU; k960712_059_F1_103290_103554
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_036_F1_41029_41297.lat
+INFO: ../dpalign.c(491): l960710_036_F1_41029_41297: 270 frames, 1362 nodes (619 reachable), 18828 links
+well i say they're cheating and i say they're lying to you (l960710_036_F1_41029_41297) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     235 ref;     3   1.3% oov;     231 hyp;     207  88.1% corr;     35  14.9% err;  17.3s CPU; l960710_036_F1_41029_41297
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_078_F1_141422_141693.lat
+INFO: ../dpalign.c(491): i960711p_078_F1_141422_141693: 273 frames, 1178 nodes (566 reachable), 29795 links
+it said that race cannot be the determining factor (i960711p_078_F1_141422_141693) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.3s CPU >>
+==     244 ref;     3   1.2% oov;     240 hyp;     216  88.5% corr;     35  14.3% err;  17.6s CPU; i960711p_078_F1_141422_141693
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_115_F1_100576_100851.lat
+INFO: ../dpalign.c(491): l960710_115_F1_100576_100851: 277 frames, 3154 nodes (1917 reachable), 148355 links
+i [[ MEAN => THE ]] some people would say you [[ KNOW => A ]] you really ought to be down (l960710_115_F1_100576_100851) << 14 ref; 0 0.0% oov; 14 hyp; 12 85.7% corr; 2 14.3% err; 1.8s CPU >>
+==     258 ref;     3   1.2% oov;     254 hyp;     228  88.4% corr;     37  14.3% err;  19.3s CPU; l960710_115_F1_100576_100851
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_013_F1_37852_38129.lat
+INFO: ../dpalign.c(491): i960711p_013_F1_37852_38129: 279 frames, 1544 nodes (744 reachable), 31353 links
+and how what's your reaction to [[ THAT THAT'S => S. A ]] a good thing or bad thing for you (i960711p_013_F1_37852_38129) << 16 ref; 0 0.0% oov; 16 hyp; 14 87.5% corr; 2 12.5% err; 0.4s CPU >>
+==     274 ref;     3   1.1% oov;     270 hyp;     242  88.3% corr;     39  14.2% err;  19.8s CPU; i960711p_013_F1_37852_38129
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_041_F1_82029_82307.lat
+INFO: ../dpalign.c(491): i960711p_041_F1_82029_82307: 280 frames, 1369 nodes (549 reachable), 17418 links
+next is saint petersburg florida you're on the air good morning (i960711p_041_F1_82029_82307) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     285 ref;     3   1.1% oov;     281 hyp;     253  88.8% corr;     39  13.7% err;  20.0s CPU; i960711p_041_F1_82029_82307
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_180_F1_186912_187191.lat
+INFO: ../dpalign.c(491): l960710_180_F1_186912_187191: 281 frames, 2382 nodes (1310 reachable), 55168 links
+interview with the new york times that night [[ SO => A ]] he nearly was wished away (l960710_180_F1_186912_187191) << 14 ref; 0 0.0% oov; 14 hyp; 13 92.9% corr; 1 7.1% err; 0.6s CPU >>
+==     299 ref;     3   1.0% oov;     295 hyp;     266  89.0% corr;     40  13.4% err;  20.6s CPU; l960710_180_F1_186912_187191
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_113_F1_100145_100429.lat
+INFO: ../dpalign.c(491): l960710_113_F1_100145_100429: 286 frames, 3199 nodes (2005 reachable), 268994 links
+jenny how can you be how can you be so sunny and [[ OPTIMISTIC => OFF ]] (l960710_113_F1_100145_100429) << 13 ref; 0 0.0% oov; 13 hyp; 12 92.3% corr; 1 7.7% err; 3.1s CPU >>
+==     312 ref;     3   1.0% oov;     308 hyp;     278  89.1% corr;     41  13.1% err;  23.7s CPU; l960710_113_F1_100145_100429
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_087_F1_145799_146087.lat
+INFO: ../dpalign.c(491): i960711p_087_F1_145799_146087: 290 frames, 2927 nodes (1701 reachable), 153227 links
+fine [[ THAT'S => ARE ]] a real colorful name for your community (i960711p_087_F1_145799_146087) << 9 ref; 0 0.0% oov; 9 hyp; 8 88.9% corr; 1 11.1% err; 1.5s CPU >>
+==     321 ref;     3   0.9% oov;     317 hyp;     286  89.1% corr;     42  13.1% err;  25.2s CPU; i960711p_087_F1_145799_146087
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_066_F1_117135_117445.lat
+INFO: ../dpalign.c(491): k960712_066_F1_117135_117445: 312 frames, 1295 nodes (615 reachable), 13878 links
+market falling is a buying opportunity for some (k960712_066_F1_117135_117445) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     329 ref;     3   0.9% oov;     325 hyp;     294  89.4% corr;     42  12.8% err;  25.3s CPU; k960712_066_F1_117135_117445
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_058_F1_102975_103296.lat
+INFO: ../dpalign.c(491): k960712_058_F1_102975_103296: 323 frames, 1505 nodes (519 reachable), 18944 links
+it was a good week for a stock broker to be on vacation (k960712_058_F1_102975_103296) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     342 ref;     3   0.9% oov;     338 hyp;     307  89.8% corr;     42  12.3% err;  25.6s CPU; k960712_058_F1_102975_103296
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_060_F1_103561_103906.lat
+INFO: ../dpalign.c(491): k960712_060_F1_103561_103906: 347 frames, 2029 nodes (957 reachable), 32208 links
+are things more volatile these days or just is it just me (k960712_060_F1_103561_103906) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.4s CPU >>
+==     354 ref;     3   0.8% oov;     350 hyp;     319  90.1% corr;     42  11.9% err;  25.9s CPU; k960712_060_F1_103561_103906
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_062_F1_106278_106628.lat
+INFO: ../dpalign.c(491): k960712_062_F1_106278_106628: 352 frames, 1655 nodes (873 reachable), 22658 links
+and when people are worried you [[ USE => TO ]] the word scared they call up and say sell (k960712_062_F1_106278_106628) << 16 ref; 0 0.0% oov; 16 hyp; 15 93.8% corr; 1 6.2% err; 0.3s CPU >>
+==     370 ref;     3   0.8% oov;     366 hyp;     334  90.3% corr;     43  11.6% err;  26.2s CPU; k960712_062_F1_106278_106628
+INFO: ../dpalign.c(774): Adding SOLON to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_063_F1_105400_105760.lat
+INFO: ../dpalign.c(491): i960711p_063_F1_105400_105760: 362 frames, 1655 nodes (689 reachable), 20695 links
+for john yang next [[ SOLON(oov) => SALONS ]] sullen rather it is ohio good morning (i960711p_063_F1_105400_105760) << 12 ref; 1 8.3% oov; 12 hyp; 11 91.7% corr; 1 8.3% err; 0.2s CPU >>
+==     382 ref;     4   1.0% oov;     378 hyp;     345  90.3% corr;     44  11.5% err;  26.5s CPU; i960711p_063_F1_105400_105760
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_043_F1_48760_49120.lat
+INFO: ../dpalign.c(491): l960710_043_F1_48760_49120: 362 frames, 2166 nodes (839 reachable), 28532 links
+can you use any other characteristics and say this isn't right (l960710_043_F1_48760_49120) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.3s CPU >>
+==     393 ref;     4   1.0% oov;     389 hyp;     356  90.6% corr;     44  11.2% err;  26.8s CPU; l960710_043_F1_48760_49120
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_157_F1_162667_163030.lat
+INFO: ../dpalign.c(491): l960710_157_F1_162667_163030: 365 frames, 2247 nodes (871 reachable), 45492 links
+and he was just flying he was so happy (l960710_157_F1_162667_163030) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.5s CPU >>
+==     402 ref;     4   1.0% oov;     398 hyp;     365  90.8% corr;     44  10.9% err;  27.3s CPU; l960710_157_F1_162667_163030
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_108_F1_180978_181346.lat
+INFO: ../dpalign.c(491): i960711p_108_F1_180978_181346: 370 frames, 2046 nodes (825 reachable), 30769 links
+thanks for the call can [[ YOU => ]] tell us anything more about the person involved in this (i960711p_108_F1_180978_181346) << 16 ref; 0 0.0% oov; 15 hyp; 15 93.8% corr; 1 6.2% err; 0.4s CPU >>
+==     418 ref;     4   1.0% oov;     413 hyp;     380  90.9% corr;     45  10.8% err;  27.7s CPU; i960711p_108_F1_180978_181346
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_067_F1_65208_65582.lat
+INFO: ../dpalign.c(491): l960710_067_F1_65208_65582: 376 frames, 1813 nodes (800 reachable), 25275 links
+how long after you take these drugs can they be detected (l960710_067_F1_65208_65582) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.3s CPU >>
+==     429 ref;     4   0.9% oov;     424 hyp;     391  91.1% corr;     45  10.5% err;  28.0s CPU; l960710_067_F1_65208_65582
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_045_F1_49626_50018.lat
+INFO: ../dpalign.c(491): l960710_045_F1_49626_50018: 394 frames, 2751 nodes (1482 reachable), 83422 links
+what about a woman who has a deep voice women aren't [[ SUPPOSED => OILS ]] to have deep [[ VOICES => POLICE ]] (l960710_045_F1_49626_50018) << 16 ref; 0 0.0% oov; 16 hyp; 14 87.5% corr; 2 12.5% err; 1.1s CPU >>
+==     445 ref;     4   0.9% oov;     440 hyp;     405  91.0% corr;     47  10.6% err;  29.1s CPU; l960710_045_F1_49626_50018
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_102_F1_92350_92747.lat
+INFO: ../dpalign.c(491): l960710_102_F1_92350_92747: 399 frames, 833 nodes (313 reachable), 8216 links
+and [[ YOU => A ]] don't worry that the chinese [[ ARE IN A SPECIAL CATEGORY => ]] (l960710_102_F1_92350_92747) << 12 ref; 0 0.0% oov; 7 hyp; 6 50.0% corr; 6 50.0% err; 0.1s CPU >>
+==     457 ref;     4   0.9% oov;     447 hyp;     411  89.9% corr;     53  11.6% err;  29.2s CPU; l960710_102_F1_92350_92747
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_028_F1_34784_35211.lat
+INFO: ../dpalign.c(491): l960710_028_F1_34784_35211: 429 frames, 1564 nodes (404 reachable), 17949 links
+performance enhancing drugs are being used to enhance their performance (l960710_028_F1_34784_35211) << 10 ref; 0 0.0% oov; 10 hyp; 10 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     467 ref;     4   0.9% oov;     457 hyp;     421  90.1% corr;     53  11.3% err;  29.3s CPU; l960710_028_F1_34784_35211
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_055_F1_57157_57590.lat
+INFO: ../dpalign.c(491): l960710_055_F1_57157_57590: 435 frames, 2680 nodes (1002 reachable), 40260 links
+like the chinese swimmers trying to [[ TO => ]] switch people (l960710_055_F1_57157_57590) << 9 ref; 0 0.0% oov; 8 hyp; 8 88.9% corr; 1 11.1% err; 0.4s CPU >>
+==     476 ref;     4   0.8% oov;     465 hyp;     429  90.1% corr;     54  11.3% err;  29.8s CPU; l960710_055_F1_57157_57590
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_067_F1_111595_112060.lat
+INFO: ../dpalign.c(491): i960711p_067_F1_111595_112060: 467 frames, 2847 nodes (1290 reachable), 87734 links
+[[ ALL => IT ]] right thanks for your call [[ THIS => IS ]] morning economic impact [[ ON => ]] the election too far out (i960711p_067_F1_111595_112060) << 16 ref; 0 0.0% oov; 15 hyp; 13 81.3% corr; 3 18.8% err; 1.1s CPU >>
+==     492 ref;     4   0.8% oov;     480 hyp;     442  89.8% corr;     57  11.6% err;  30.9s CPU; i960711p_067_F1_111595_112060
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_106_F1_178365_178833.lat
+INFO: ../dpalign.c(491): i960711p_106_F1_178365_178833: 470 frames, 1999 nodes (998 reachable), 36242 links
+and what's what's your view of this as a [[ => AN ]] voter watching from outside washington (i960711p_106_F1_178365_178833) << 14 ref; 0 0.0% oov; 15 hyp; 14 100.0% corr; 1 7.1% err; 0.5s CPU >>
+==     506 ref;     4   0.8% oov;     495 hyp;     456  90.1% corr;     58  11.5% err;  31.3s CPU; i960711p_106_F1_178365_178833
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_087_F1_81631_82104.lat
+INFO: ../dpalign.c(491): l960710_087_F1_81631_82104: 475 frames, 1671 nodes (583 reachable), 10313 links
+that is more than all the rest of the world combined in the history of swimming (l960710_087_F1_81631_82104) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     522 ref;     4   0.8% oov;     511 hyp;     472  90.4% corr;     58  11.1% err;  31.5s CPU; l960710_087_F1_81631_82104
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_183_F1_189578_190058.lat
+INFO: ../dpalign.c(491): l960710_183_F1_189578_190058: 482 frames, 2288 nodes (1085 reachable), 38956 links
+and the music was terrific i could tell you know that the music was really tremendous (l960710_183_F1_189578_190058) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.5s CPU >>
+==     538 ref;     4   0.7% oov;     527 hyp;     488  90.7% corr;     58  10.8% err;  32.1s CPU; l960710_183_F1_189578_190058
+INFO: ../dpalign.c(774): Adding WASHINGTONESE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_034_F1_79575_80057.lat
+INFO: ../dpalign.c(491): i960711p_034_F1_79575_80057: 484 frames, 1762 nodes (603 reachable), 20841 links
+so translating [[ WASHINGTONESE(oov) => WASHINGTON IS ]] if people hear today on the house ergo rider (i960711p_034_F1_79575_80057) << 12 ref; 1 8.3% oov; 13 hyp; 11 91.7% corr; 2 16.7% err; 0.2s CPU >>
+==     550 ref;     5   0.9% oov;     540 hyp;     499  90.7% corr;     60  10.9% err;  32.3s CPU; i960711p_034_F1_79575_80057
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_197_F1_200488_200980.lat
+INFO: ../dpalign.c(491): l960710_197_F1_200488_200980: 494 frames, 3380 nodes (1575 reachable), 70632 links
+and at eight thirty in the morning we were on a plane heading east (l960710_197_F1_200488_200980) << 14 ref; 0 0.0% oov; 14 hyp; 14 100.0% corr; 0 0.0% err; 0.9s CPU >>
+==     564 ref;     5   0.9% oov;     554 hyp;     513  91.0% corr;     60  10.6% err;  33.2s CPU; l960710_197_F1_200488_200980
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_009_F1_29357_29862.lat
+INFO: ../dpalign.c(491): i960711p_009_F1_29357_29862: 507 frames, 2886 nodes (1140 reachable), 72937 links
+now what does this really mean about what the legislators are reading from the public wants (i960711p_009_F1_29357_29862) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.9s CPU >>
+==     580 ref;     5   0.9% oov;     570 hyp;     529  91.2% corr;     60  10.3% err;  34.1s CPU; i960711p_009_F1_29357_29862
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_084_F1_144922_145447.lat
+INFO: ../dpalign.c(491): i960711p_084_F1_144922_145447: 527 frames, 3253 nodes (1298 reachable), 80775 links
+they were they're getting closer by saying what they don't like by [[ => OF ]] making sort of negative negative definitions (i960711p_084_F1_144922_145447) << 18 ref; 0 0.0% oov; 19 hyp; 18 100.0% corr; 1 5.6% err; 1.0s CPU >>
+==     598 ref;     5   0.8% oov;     589 hyp;     547  91.5% corr;     61  10.2% err;  35.0s CPU; i960711p_084_F1_144922_145447
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_028_F1_64871_65402.lat
+INFO: ../dpalign.c(491): i960711p_028_F1_64871_65402: 533 frames, 5502 nodes (3068 reachable), 237580 links
+trent trent lott in his [[ => WORK ]] first big piece of legislation in the senate how [[ DID => OR ]] he do (i960711p_028_F1_64871_65402) << 17 ref; 0 0.0% oov; 18 hyp; 16 94.1% corr; 2 11.8% err; 3.0s CPU >>
+==     615 ref;     5   0.8% oov;     607 hyp;     563  91.5% corr;     63  10.2% err;  38.1s CPU; i960711p_028_F1_64871_65402
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_039_F1_80536_81071.lat
+INFO: ../dpalign.c(491): i960711p_039_F1_80536_81071: 537 frames, 4193 nodes (2162 reachable), 166128 links
+it's it's legislation or something that that sort of hitches a ride on this spending bill through congress (i960711p_039_F1_80536_81071) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 2.0s CPU >>
+==     633 ref;     5   0.8% oov;     625 hyp;     581  91.8% corr;     63  10.0% err;  40.1s CPU; i960711p_039_F1_80536_81071
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_177_F1_183747_184298.lat
+INFO: ../dpalign.c(491): l960710_177_F1_183747_184298: 553 frames, 3966 nodes (2106 reachable), 119014 links
+how much of this is [[ NERVES => IRV ]] and well it's part of it says but i [[ => OF ]] just don't feel right (l960710_177_F1_183747_184298) << 19 ref; 0 0.0% oov; 20 hyp; 18 94.7% corr; 2 10.5% err; 1.7s CPU >>
+==     652 ref;     5   0.8% oov;     645 hyp;     599  91.9% corr;     65  10.0% err;  41.8s CPU; l960710_177_F1_183747_184298
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_027_F1_64303_64860.lat
+INFO: ../dpalign.c(491): i960711p_027_F1_64303_64860: 559 frames, 3136 nodes (1598 reachable), 134834 links
+okay sir we'll [[ HAVE => IT ]] to let you [[ GO => O. ]] for time thanks for calling that [[ => AISLE ]] local story about a national leader (i960711p_027_F1_64303_64860) << 20 ref; 0 0.0% oov; 21 hyp; 18 90.0% corr; 3 15.0% err; 2.0s CPU >>
+==     672 ref;     5   0.7% oov;     666 hyp;     617  91.8% corr;     68  10.1% err;  43.8s CPU; i960711p_027_F1_64303_64860
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_116_F1_100851_101415.lat
+INFO: ../dpalign.c(491): l960710_116_F1_100851_101415: 566 frames, 2909 nodes (1353 reachable), 50823 links
+yeah it stinks that they're cheating but really there's nothing that i can do about it except speak out against it (l960710_116_F1_100851_101415) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.7s CPU >>
+==     693 ref;     5   0.7% oov;     687 hyp;     638  92.1% corr;     68   9.8% err;  44.5s CPU; l960710_116_F1_100851_101415
+INFO: ../dpalign.c(774): Adding ELIJAY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_069_F1_116252_116819.lat
+INFO: ../dpalign.c(491): i960711p_069_F1_116252_116819: 569 frames, 1760 nodes (496 reachable), 21769 links
+next is [[ ELIJAY(oov) => ELLEN'S J.'S ]] georgia good morning you're on the air go ahead caller (i960711p_069_F1_116252_116819) << 13 ref; 1 7.7% oov; 14 hyp; 12 92.3% corr; 2 15.4% err; 0.2s CPU >>
+==     706 ref;     6   0.8% oov;     701 hyp;     650  92.1% corr;     70   9.9% err;  44.8s CPU; i960711p_069_F1_116252_116819
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_065_F1_110097_110672.lat
+INFO: ../dpalign.c(491): i960711p_065_F1_110097_110672: 577 frames, 2277 nodes (592 reachable), 34146 links
+so translate this economic story into [[ WHAT => ]] you [[ => WAYS ]] think will how [[ IT => A ]] will effect politics and political decisions (i960711p_065_F1_110097_110672) << 18 ref; 0 0.0% oov; 18 hyp; 16 88.9% corr; 3 16.7% err; 0.3s CPU >>
+==     724 ref;     6   0.8% oov;     719 hyp;     666  92.0% corr;     73  10.1% err;  45.1s CPU; i960711p_065_F1_110097_110672
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_052_F1_54830_55415.lat
+INFO: ../dpalign.c(491): l960710_052_F1_54830_55415: 587 frames, 2249 nodes (907 reachable), 27483 links
+with steroids you just never get tired you just you keep getting better and better you have more building blocks to work on (l960710_052_F1_54830_55415) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.4s CPU >>
+==     747 ref;     6   0.8% oov;     742 hyp;     689  92.2% corr;     73   9.8% err;  45.5s CPU; l960710_052_F1_54830_55415
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_007_F1_27414_28007.lat
+INFO: ../dpalign.c(491): i960711p_007_F1_27414_28007: 595 frames, 3670 nodes (1950 reachable), 84280 links
+[[ HERE'S => ITS ]] another paragraph picking up on that same theme from this article to which you contributed written by dan morgan in this morning's post (i960711p_007_F1_27414_28007) << 24 ref; 0 0.0% oov; 24 hyp; 23 95.8% corr; 1 4.2% err; 1.3s CPU >>
+==     771 ref;     6   0.8% oov;     766 hyp;     712  92.3% corr;     74   9.6% err;  46.9s CPU; i960711p_007_F1_27414_28007
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_150_F1_156243_156875.lat
+INFO: ../dpalign.c(491): l960710_150_F1_156243_156875: 634 frames, 4188 nodes (2241 reachable), 102344 links
+workshop that he worked on in [[ THE => ]] summer he did drafts he thought he was done we told him he wasn't done and that that [[ WENT => AN ]] on for a long time (l960710_150_F1_156243_156875) << 31 ref; 0 0.0% oov; 30 hyp; 29 93.5% corr; 2 6.5% err; 1.8s CPU >>
+==     802 ref;     6   0.7% oov;     796 hyp;     741  92.4% corr;     76   9.5% err;  48.7s CPU; l960710_150_F1_156243_156875
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_093_F1_152968_153619.lat
+INFO: ../dpalign.c(491): i960711p_093_F1_152968_153619: 653 frames, 2721 nodes (1044 reachable), 36512 links
+let me ask [[ YOU => IT ]] a question as someone who knows a lot about the issue as you watched the hearings do [[ YOU => ]] think the members of congress asked the right questions (i960711p_093_F1_152968_153619) << 31 ref; 0 0.0% oov; 30 hyp; 29 93.5% corr; 2 6.5% err; 0.6s CPU >>
+==     833 ref;     6   0.7% oov;     826 hyp;     770  92.4% corr;     78   9.4% err;  49.3s CPU; i960711p_093_F1_152968_153619
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_078_F1_138920_139582.lat
+INFO: ../dpalign.c(491): k960712_078_F1_138920_139582: 664 frames, 2692 nodes (946 reachable), 30157 links
+the investment of [[ OUR => ON ]] legacy is basically up front prior to the games and it will be very tangible and physical (k960712_078_F1_138920_139582) << 21 ref; 0 0.0% oov; 21 hyp; 20 95.2% corr; 1 4.8% err; 0.4s CPU >>
+==     854 ref;     6   0.7% oov;     847 hyp;     790  92.5% corr;     79   9.3% err;  49.7s CPU; k960712_078_F1_138920_139582
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_032_F1_77024_77722.lat
+INFO: ../dpalign.c(491): i960711p_032_F1_77024_77722: 700 frames, 5106 nodes (2471 reachable), 99222 links
+so this this measure would have compelled businesses to look at whether or not they should introduce [[ ERGONOMIC(oov) => ERGONOMICS ]] furniture into the workplace (i960711p_032_F1_77024_77722) << 22 ref; 1 4.5% oov; 22 hyp; 21 95.5% corr; 1 4.5% err; 1.4s CPU >>
+==     876 ref;     7   0.8% oov;     869 hyp;     811  92.6% corr;     80   9.1% err;  51.1s CPU; i960711p_032_F1_77024_77722
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_018_F1_347894_348616.lat
+INFO: ../dpalign.c(491): o960710p_018_F1_347894_348616: 724 frames, 4456 nodes (2174 reachable), 123551 links
+it makes me real uncomfortable it's real self conscious so with the music you can kind of float [[ => OF ]] through and [[ IT'S => ]] your own little soundtrack and it's kind [[ OF => ]] fun (o960710p_018_F1_347894_348616) << 30 ref; 0 0.0% oov; 29 hyp; 28 93.3% corr; 3 10.0% err; 2.0s CPU >>
+==     906 ref;     7   0.8% oov;     898 hyp;     839  92.6% corr;     83   9.2% err;  53.1s CPU; o960710p_018_F1_347894_348616
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_068_F1_65606_66356.lat
+INFO: ../dpalign.c(491): l960710_068_F1_65606_66356: 752 frames, 5495 nodes (2691 reachable), 153549 links
+very much drug dependent one of the ones that we test for is present for a [[ YEAR ANOTHER => REHEAR OF ]] one for a few hours (l960710_068_F1_65606_66356) << 23 ref; 0 0.0% oov; 23 hyp; 21 91.3% corr; 2 8.7% err; 2.3s CPU >>
+==     929 ref;     7   0.8% oov;     921 hyp;     860  92.6% corr;     85   9.1% err;  55.4s CPU; l960710_068_F1_65606_66356
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_066_F1_64417_65200.lat
+INFO: ../dpalign.c(491): l960710_066_F1_64417_65200: 785 frames, 4569 nodes (1679 reachable), 57393 links
+training and their effects last after you stop and those are the ones that you have to go after during the training period (l960710_066_F1_64417_65200) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.8s CPU >>
+==     952 ref;     7   0.7% oov;     944 hyp;     883  92.8% corr;     85   8.9% err;  56.3s CPU; l960710_066_F1_64417_65200
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_056_F1_57609_58463.lat
+INFO: ../dpalign.c(491): l960710_056_F1_57609_58463: 856 frames, 6949 nodes (3801 reachable), 285500 links
+going into the drug testing [[ ROOM => RANG ]] i mean wearing like the same exact outfit [[ AND => A ]] just you [[ KNOW => OWN ]] sneaking so [[ THAT => OF ]] they switch people so that they would be test negative and (l960710_056_F1_57609_58463) << 32 ref; 0 0.0% oov; 32 hyp; 28 87.5% corr; 4 12.5% err; 5.7s CPU >>
+==     984 ref;     7   0.7% oov;     976 hyp;     911  92.6% corr;     89   9.0% err;  61.9s CPU; l960710_056_F1_57609_58463
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_097_F1_162169_163030.lat
+INFO: ../dpalign.c(491): i960711p_097_F1_162169_163030: 863 frames, 4592 nodes (1743 reachable), 55871 links
+thanks for your call sir always interesting at the table when you get calls by people who know a lot in depth about some of the issues here [[ NOW => E. ]] you probably weren't watching these particular hearings (i960711p_097_F1_162169_163030) << 36 ref; 0 0.0% oov; 36 hyp; 35 97.2% corr; 1 2.8% err; 1.0s CPU >>
+==    1020 ref;     7   0.7% oov;    1012 hyp;     946  92.7% corr;     90   8.8% err;  62.9s CPU; i960711p_097_F1_162169_163030
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_020_F1_51182_52055.lat
+INFO: ../dpalign.c(491): i960711p_020_F1_51182_52055: 875 frames, 4810 nodes (2032 reachable), 92942 links
+lots of editorial rather op ed pieces and editorial cartoons about dick lamm who's also interested in the reform party nomination and we'll look at those later on in our program (i960711p_020_F1_51182_52055) << 31 ref; 0 0.0% oov; 31 hyp; 31 100.0% corr; 0 0.0% err; 1.6s CPU >>
+==    1051 ref;     7   0.7% oov;    1043 hyp;     977  93.0% corr;     90   8.6% err;  64.5s CPU; i960711p_020_F1_51182_52055
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_040_F1_81119_82035.lat
+INFO: ../dpalign.c(491): i960711p_040_F1_81119_82035: 918 frames, 5873 nodes (3031 reachable), 208930 links
+if you are a regular viewer remind you about our thirty day policy which means we ask you [[ TO => A ]] wait a month between calls let as many new people as possible get a chance to participate we can hear from lots of voices (i960711p_040_F1_81119_82035) << 43 ref; 0 0.0% oov; 43 hyp; 42 97.7% corr; 1 2.3% err; 5.1s CPU >>
+==    1094 ref;     7   0.6% oov;    1086 hyp;    1019  93.1% corr;     91   8.3% err;  69.6s CPU; i960711p_040_F1_81119_82035
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_070_F1_66901_67826.lat
+INFO: ../dpalign.c(491): l960710_070_F1_66901_67826: 927 frames, 3659 nodes (1451 reachable), 49398 links
+i am told that [[ => OF ]] athletes can rub this this cream on and within hours within hours it's gone (l960710_070_F1_66901_67826) << 18 ref; 0 0.0% oov; 19 hyp; 18 100.0% corr; 1 5.6% err; 0.7s CPU >>
+==    1112 ref;     7   0.6% oov;    1105 hyp;    1037  93.3% corr;     92   8.3% err;  70.3s CPU; l960710_070_F1_66901_67826
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_050_F1_53598_54568.lat
+INFO: ../dpalign.c(491): l960710_050_F1_53598_54568: 972 frames, 5038 nodes (1801 reachable), 66453 links
+number one thing it does is you never get tired with regard to training in my training program we have to take some days of recovery (l960710_050_F1_53598_54568) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 1.0s CPU >>
+==    1138 ref;     7   0.6% oov;    1131 hyp;    1063  93.4% corr;     92   8.1% err;  71.4s CPU; l960710_050_F1_53598_54568
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_057_F1_90119_91129.lat
+INFO: ../dpalign.c(491): i960711p_057_F1_90119_91129: 1012 frames, 5283 nodes (2093 reachable), 160187 links
+new [[ YORK => A ]] times also gave front page coverage above the fold to the helms burton implementation if a little bit of of background for people who haven't been following it what specifically is helms burton (i960711p_057_F1_90119_91129) << 35 ref; 0 0.0% oov; 35 hyp; 34 97.1% corr; 1 2.9% err; 1.8s CPU >>
+==    1173 ref;     7   0.6% oov;    1166 hyp;    1097  93.5% corr;     93   7.9% err;  73.1s CPU; i960711p_057_F1_90119_91129
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_080_F1_141761_142773.lat
+INFO: ../dpalign.c(491): i960711p_080_F1_141761_142773: 1014 frames, 5951 nodes (2275 reachable), 147304 links
+[[ => IN ]] sort of other contiguous lines common interests but they said that if [[ RACE => RAISES ]] is the determining factor for drawing lines then it's unconstitutional (i960711p_080_F1_141761_142773) << 23 ref; 0 0.0% oov; 24 hyp; 22 95.7% corr; 2 8.7% err; 1.6s CPU >>
+==    1196 ref;     7   0.6% oov;    1190 hyp;    1119  93.6% corr;     95   7.9% err;  74.8s CPU; i960711p_080_F1_141761_142773
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_194_F1_198835_199856.lat
+INFO: ../dpalign.c(491): l960710_194_F1_198835_199856: 1023 frames, 6561 nodes (3235 reachable), 312059 links
+sometime between four or five in the morning i got a phone call woke me up it was my son in law from california (l960710_194_F1_198835_199856) << 24 ref; 0 0.0% oov; 24 hyp; 24 100.0% corr; 0 0.0% err; 5.0s CPU >>
+==    1220 ref;     7   0.6% oov;    1214 hyp;    1143  93.7% corr;     95   7.8% err;  79.8s CPU; l960710_194_F1_198835_199856
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_075_F1_135299_136325.lat
+INFO: ../dpalign.c(491): i960711p_075_F1_135299_136325: 1028 frames, 5523 nodes (2235 reachable), 81393 links
+real briefly in u. s. a. today people can read this around the country another redistricting story this on texas and how they're redrawing their districts in in the wake [[ => IT ]] of the decision any comment on that (i960711p_075_F1_135299_136325) << 37 ref; 0 0.0% oov; 38 hyp; 37 100.0% corr; 1 2.7% err; 1.5s CPU >>
+==    1257 ref;     7   0.6% oov;    1252 hyp;    1180  93.9% corr;     96   7.6% err;  81.3s CPU; i960711p_075_F1_135299_136325
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_198_F1_201068_202118.lat
+INFO: ../dpalign.c(491): l960710_198_F1_201068_202118: 1052 frames, 9400 nodes (5233 reachable), 516978 links
+in the back of my mind i kept disbelieving i was going to [[ GET => ]] to new york and find [[ JONNY(oov) => F. ]] maybe [[ HE'S => C. ]] in the hospital maybe he's sick but [[ JONNY(oov) => IS ]] can't be dead (l960710_198_F1_201068_202118) << 33 ref; 2 6.1% oov; 32 hyp; 29 87.9% corr; 4 12.1% err; 10.2s CPU >>
+==    1290 ref;     9   0.7% oov;    1284 hyp;    1209  93.7% corr;    100   7.8% err;  91.5s CPU; l960710_198_F1_201068_202118
+INFO: ../dpalign.c(774): Adding DEMORODE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_090_F1_84977_86035.lat
+INFO: ../dpalign.c(491): l960710_090_F1_84977_86035: 1060 frames, 5051 nodes (2113 reachable), 93984 links
+you are quoted prince [[ DEMORODE(oov) => JANEIRO ]] in december of nineteen ninety four as saying and [[ I => A ]] quote there are no more cases in china than anywhere else do [[ YOU => OF ]] believe that (l960710_090_F1_84977_86035) << 30 ref; 1 3.3% oov; 30 hyp; 27 90.0% corr; 3 10.0% err; 1.4s CPU >>
+==    1320 ref;    10   0.8% oov;    1314 hyp;    1236  93.6% corr;    103   7.8% err;  92.9s CPU; l960710_090_F1_84977_86035
+INFO: ../dpalign.c(774): Adding WHERE'RE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_064_F1_110996_112279.lat
+INFO: ../dpalign.c(491): k960712_064_F1_110996_112279: 1285 frames, 5433 nodes (2553 reachable), 99743 links
+for a long time everybody kept saying but [[ THERE'S => TO ]] no alternative to stocks [[ WHERE'RE(oov) => WORRY ]] you [[ GOING => A ]] to put your money to make any kind of decent return but interest rates seem to be rising least the long bond has that has become a more viable alternative for some people (k960712_064_F1_110996_112279) << 49 ref; 1 2.0% oov; 49 hyp; 46 93.9% corr; 3 6.1% err; 2.3s CPU >>
+==    1369 ref;    11   0.8% oov;    1363 hyp;    1282  93.6% corr;    106   7.7% err;  95.2s CPU; k960712_064_F1_110996_112279
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_102_F1_173467_174887.lat
+INFO: ../dpalign.c(491): i960711p_102_F1_173467_174887: 1422 frames, 5532 nodes (2124 reachable), 55654 links
+john yang of the washington [[ POST => LOS ]] is originally from chillicothe [[ => AND ]] ohio and has a b. a. in government from wesleyan university before joining the washington [[ POST => WAS ]] he worked for the boston globe time magazine and the wall street journal next call for him is from marietta georgia good morning (i960711p_102_F1_173467_174887) << 49 ref; 0 0.0% oov; 50 hyp; 47 95.9% corr; 3 6.1% err; 1.2s CPU >>
+==    1418 ref;    11   0.8% oov;    1413 hyp;    1329  93.7% corr;    109   7.7% err;  96.4s CPU; i960711p_102_F1_173467_174887
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_080_F1_139886_141313.lat
+INFO: ../dpalign.c(491): k960712_080_F1_139886_141313: 1429 frames, 6962 nodes (3114 reachable), 163060 links
+well our goal is to break even and we've never said that [[ => WINDED ]] that we were going to show a a profit basically [[ => YES ]] our goal is to break even put on the best games ever and leave a major legacy in the form of the physical facilities (k960712_080_F1_139886_141313) << 46 ref; 0 0.0% oov; 48 hyp; 46 100.0% corr; 2 4.3% err; 3.7s CPU >>
+==    1464 ref;    11   0.8% oov;    1461 hyp;    1375  93.9% corr;    111   7.6% err; 100.1s CPU; k960712_080_F1_139886_141313
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_017_F1_46713_48152.lat
+INFO: ../dpalign.c(491): i960711p_017_F1_46713_48152: 1441 frames, 7288 nodes (3487 reachable), 161823 links
+well [[ LET'S => ITS ]] add to the mix from the front page of your paper this morning larry king live ross perot interview last night perot says he will run if reform party calls that [[ VIEWER => AIR ]] was talking about the electoral college breakdown will this candidacy if it happens (i960711p_017_F1_46713_48152) << 47 ref; 0 0.0% oov; 47 hyp; 45 95.7% corr; 2 4.3% err; 3.9s CPU >>
+==    1511 ref;    11   0.7% oov;    1508 hyp;    1420  94.0% corr;    113   7.5% err; 104.0s CPU; i960711p_017_F1_46713_48152
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_077_F1_139976_141416.lat
+INFO: ../dpalign.c(491): i960711p_077_F1_139976_141416: 1442 frames, 6856 nodes (2550 reachable), 109940 links
+here is a map of two of the districts in question in texas the thirtieth and you talked about that ink stain effect in georgia before and here is the twenty ninth district here what did the supreme court say about what makes a district (i960711p_077_F1_139976_141416) << 45 ref; 0 0.0% oov; 45 hyp; 45 100.0% corr; 0 0.0% err; 2.2s CPU >>
+==    1556 ref;    11   0.7% oov;    1553 hyp;    1465  94.2% corr;    113   7.3% err; 106.2s CPU; i960711p_077_F1_139976_141416
+INFO: ../dpalign.c(774): Adding CARMIDY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_188_F1_192892_194379.lat
+INFO: ../dpalign.c(491): l960710_188_F1_192892_194379: 1489 frames, 6711 nodes (2960 reachable), 133968 links
+the writer was the last to see jonathan larson until brian [[ CARMIDY(oov) => COMEDIES ]] came home at three forty five in the morning and found larson lying on the floor a [[ BOILED => OILS ]] out kettle was burning on the stove and [[ CARMIDY(oov) => ANY ]] quickly phoned nine one one (l960710_188_F1_192892_194379) << 44 ref; 2 4.5% oov; 44 hyp; 41 93.2% corr; 3 6.8% err; 3.1s CPU >>
+==    1600 ref;    13   0.8% oov;    1597 hyp;    1506  94.1% corr;    116   7.2% err; 109.3s CPU; l960710_188_F1_192892_194379
+INFO: ../dpalign.c(774): Adding ROADMAP to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_100_F1_163270_164762.lat
+INFO: ../dpalign.c(491): i960711p_100_F1_163270_164762: 1494 frames, 6650 nodes (2879 reachable), 103199 links
+let me go back to the issue just before then which [[ WE => TWO ]] were talking about races for congress before the program started we were talking about the fact that you're beginning to organize yourself for the fall [[ => T. ]] what's a quick [[ ROADMAP(oov) => ROBED ]] for people on on where the interesting congressional races are and where to get a sense of what might be happening (i960711p_100_F1_163270_164762) << 62 ref; 1 1.6% oov; 63 hyp; 60 96.8% corr; 3 4.8% err; 2.9s CPU >>
+==    1662 ref;    14   0.8% oov;    1660 hyp;    1566  94.2% corr;    119   7.2% err; 112.2s CPU; i960711p_100_F1_163270_164762
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_010_F1_333872_335374.lat
+INFO: ../dpalign.c(491): o960710p_010_F1_333872_335374: 1504 frames, 7103 nodes (3086 reachable), 157153 links
+but at the same time it's a retail environment you don't want to [[ GET T => AND A ]] real zany real silly because people are just [[ GOING TO => ]] kind [[ OF => ]] go what's going on and maybe leave which is not the intent so this [[ => IS ]] kind [[ OF => ]] a subdued humorous thing (o960710p_010_F1_333872_335374) << 47 ref; 0 0.0% oov; 44 hyp; 41 87.2% corr; 7 14.9% err; 3.8s CPU >>
+==    1709 ref;    14   0.8% oov;    1704 hyp;    1607  94.0% corr;    126   7.4% err; 115.9s CPU; o960710p_010_F1_333872_335374
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_002_F1_16061_17573.lat
+INFO: ../dpalign.c(491): i960711p_002_F1_16061_17573: 1514 frames, 6651 nodes (2720 reachable), 108313 links
+if you pick up the [[ WASHINGTON => LASTING ]] post today you are listed as a contributor to an story about spending bills in congress one of the [[ THINGS => IS ]] i wanted to ask is about the tenor of what's going on compared to months past this year and you told me this is a [[ PARAGRAPH => TYRA ]] you contributed to the story so let's read it (i960711p_002_F1_16061_17573) << 61 ref; 0 0.0% oov; 61 hyp; 58 95.1% corr; 3 4.9% err; 3.3s CPU >>
+==    1770 ref;    14   0.8% oov;    1765 hyp;    1665  94.1% corr;    129   7.3% err; 119.3s CPU; i960711p_002_F1_16061_17573
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_082_F1_146310_147884.lat
+INFO: ../dpalign.c(491): k960712_082_F1_146310_147884: 1576 frames, 9491 nodes (4732 reachable), 306069 links
+the olympics was a positive early on and than became a negative when it became clear that they had such serious financing trouble which we will not have most of the bills were already paid and we still don't have don't have a lot of bonded indebtedness (k960712_082_F1_146310_147884) << 47 ref; 0 0.0% oov; 47 hyp; 47 100.0% corr; 0 0.0% err; 7.9s CPU >>
+==    1817 ref;    14   0.8% oov;    1812 hyp;    1712  94.2% corr;    129   7.1% err; 127.1s CPU; k960712_082_F1_146310_147884
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_062_F1_103757_105398.lat
+INFO: ../dpalign.c(491): i960711p_062_F1_103757_105398: 1643 frames, 11042 nodes (5438 reachable), 306762 links
+that this will intensify that this will limit by punishing people who do business with cuba it will [[ => EATEN ]] discourage other countries third [[ => IN ]] third countries from doing business with cuba further tightening the the economic stranglehold on cuba (i960711p_062_F1_103757_105398) << 37 ref; 0 0.0% oov; 39 hyp; 37 100.0% corr; 2 5.4% err; 6.3s CPU >>
+==    1854 ref;    14   0.8% oov;    1851 hyp;    1749  94.3% corr;    131   7.1% err; 133.4s CPU; i960711p_062_F1_103757_105398
+INFO: ../dpalign.c(774): Adding TOMASINI to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_182_F1_187874_189572.lat
+INFO: ../dpalign.c(491): l960710_182_F1_187874_189572: 1700 frames, 13481 nodes (6559 reachable), 532205 links
+he had his first ever interview with the new york times which is a big step up for a theater person this gentleman told him he was confident he had a hit on his hands [[ => OR ]] his [[ NAME => A ]] in [[ ANTHONY TOMASINI(oov) => THOMAS' UNIT ]] i will bless him [[ FOREVER => OR ]] (l960710_182_F1_187874_189572) << 45 ref; 1 2.2% oov; 46 hyp; 41 91.1% corr; 5 11.1% err; 12.7s CPU >>
+==    1899 ref;    15   0.8% oov;    1897 hyp;    1790  94.3% corr;    136   7.2% err; 146.1s CPU; l960710_182_F1_187874_189572
+INFO: ../dpalign.c(774): Adding SANGER'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_059_F1_98485_100258.lat
+INFO: ../dpalign.c(491): i960711p_059_F1_98485_100258: 1775 frames, 7257 nodes (3016 reachable), 125938 links
+why did he signed it let me just read this one paragraph it says here that president clinton against the advice of many of his closest advisers signed it this year it has raised a storm of protest throughout europe and latin america and canada has told its companies to ignore american threats and warned it may retaliate with counter sanctions that's david [[ SANGER'S(oov) => AMHERST ]] piece (i960711p_059_F1_98485_100258) << 65 ref; 1 1.5% oov; 65 hyp; 64 98.5% corr; 1 1.5% err; 4.1s CPU >>
+==    1964 ref;    16   0.8% oov;    1962 hyp;    1854  94.4% corr;    137   7.0% err; 150.2s CPU; i960711p_059_F1_98485_100258
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_082_F1_142927_144739.lat
+INFO: ../dpalign.c(491): i960711p_082_F1_142927_144739: 1814 frames, 10183 nodes (4080 reachable), 237107 links
+sort of like sort of [[ SORT => ]] of sort [[ OF => I ]] common common boundaries common economic interests common economic forces anything else that sort of would make this a logical logical border [[ => WORDS ]] (i960711p_082_F1_142927_144739) << 30 ref; 0 0.0% oov; 30 hyp; 28 93.3% corr; 3 10.0% err; 4.0s CPU >>
+==    1994 ref;    16   0.8% oov;    1992 hyp;    1882  94.4% corr;    140   7.0% err; 154.2s CPU; i960711p_082_F1_142927_144739
+INFO: ../dpalign.c(774): Adding INTERSTING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_072_F1_121514_123341.lat
+INFO: ../dpalign.c(491): i960711p_072_F1_121514_123341: 1829 frames, 13647 nodes (7170 reachable), 507175 links
+senate races i mean the the [[ EVERYONE => WITH ]] knew this was going [[ TO => A ]] head for a runoff [[ I => ]] think it is going to [[ BE => I ]] another sort of there are a lot of ways to look at this race one is that it is another battle over abortion one of the candidates favors abortion rights the other is antiabortion but it's going to be an [[ INTERSTING(oov) => INVASION ]] race this [[ IS => A ]] going to [[ BE => IN ]] one of the most high profile races in the in the nation this fall (i960711p_072_F1_121514_123341) << 84 ref; 1 1.2% oov; 83 hyp; 77 91.7% corr; 7 8.3% err; 21.0s CPU >>
+==    2078 ref;    17   0.8% oov;    2075 hyp;    1959  94.3% corr;    147   7.1% err; 175.2s CPU; i960711p_072_F1_121514_123341
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_174_F1_180760_182597.lat
+INFO: ../dpalign.c(491): l960710_174_F1_180760_182597: 1839 frames, 12349 nodes (6129 reachable), 386809 links
+there was jonathan [[ => A ]] slumped over in a chair kind of [[ WITH => IT'S ]] his head in his hands just completely out of it white as a ghost sweating and and pissed off and it's [[ LIKE => EIGHT ]] you know i just don't know what it is i i've been feeling [[ LIKE SHIT => SHE A ]] but they can't find anything and i just don't feel right (l960710_174_F1_180760_182597) << 59 ref; 0 0.0% oov; 60 hyp; 55 93.2% corr; 5 8.5% err; 11.9s CPU >>
+==    2137 ref;    17   0.8% oov;    2135 hyp;    2014  94.2% corr;    152   7.1% err; 187.1s CPU; l960710_174_F1_180760_182597
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_033_F1_77723_79581.lat
+INFO: ../dpalign.c(491): i960711p_033_F1_77723_79581: 1860 frames, 15367 nodes (8436 reachable), 645889 links
+well the labor department osha within the past i think two years said that they were going [[ TO => ITS ]] start looking and seeing whether they should issue regulations and this would tell [[ THEM => A ]] they can't do that they can't they can't look at it i [[ MEAN => O. ]] osha is one of the the the sort of real sort of the enemies of of small business in the eyes of the republicans (i960711p_033_F1_77723_79581) << 69 ref; 0 0.0% oov; 69 hyp; 66 95.7% corr; 3 4.3% err; 23.4s CPU >>
+==    2206 ref;    17   0.8% oov;    2204 hyp;    2080  94.3% corr;    155   7.0% err; 210.5s CPU; i960711p_033_F1_77723_79581
+INFO: ../dpalign.c(774): Adding SAPLI to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_030_F1_68081_70111.lat
+INFO: ../dpalign.c(491): i960711p_030_F1_68081_70111: 2032 frames, 9659 nodes (4462 reachable), 208130 links
+[[ => THAT ]] there there's a a story [[ WRITTEN => ]] by kurt [[ SAPLI(oov) => SIMPLY ]] this morning about a a bill that the house or a section of the bill a house is [[ GOING => ]] to be consider considering today which deals with osha tack that on to minimum wage also some of the the tax relief are we seeing for some reason right now [[ => WE'RE ]] a greater number of bills concerning the workplace (i960711p_030_F1_68081_70111) << 66 ref; 1 1.5% oov; 66 hyp; 63 95.5% corr; 5 7.6% err; 6.2s CPU >>
+==    2272 ref;    18   0.8% oov;    2270 hyp;    2143  94.3% corr;    160   7.0% err; 216.7s CPU; i960711p_030_F1_68081_70111
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_110_F1_184805_186866.lat
+INFO: ../dpalign.c(491): i960711p_110_F1_184805_186866: 2063 frames, 8464 nodes (3364 reachable), 125683 links
+gentleman's name is simon fireman and the company aqua leisure industries which makes swim mask and pool toys the plea agreement it says the the charges detail how fireman and nichols wired funds from a [[ HONG => A ]] kong bank to a secret trust passed passed cash to employees and made loans to others who in turn made donations to the republican national committee (i960711p_110_F1_184805_186866) << 62 ref; 0 0.0% oov; 62 hyp; 61 98.4% corr; 1 1.6% err; 3.5s CPU >>
+==    2334 ref;    18   0.8% oov;    2332 hyp;    2204  94.4% corr;    161   6.9% err; 220.2s CPU; i960711p_110_F1_184805_186866
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_089_F1_160668_162837.lat
+INFO: ../dpalign.c(491): k960712_089_F1_160668_162837: 2171 frames, 9560 nodes (3800 reachable), 142373 links
+for those of us that have worked in it so intently there's gonna be a natural let down we you know i think it would be fallacious for me to sit here and say that's not the case but i think for the business interests and for the community interests are starting to set in motion and have set in motion [[ => IS ]] mechanisms to take advantage of this event and not lose momentum after the games (k960712_089_F1_160668_162837) << 75 ref; 0 0.0% oov; 76 hyp; 75 100.0% corr; 1 1.3% err; 4.7s CPU >>
+==    2409 ref;    18   0.7% oov;    2408 hyp;    2279  94.6% corr;    162   6.7% err; 224.9s CPU; k960712_089_F1_160668_162837
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_087_F1_155938_158129.lat
+INFO: ../dpalign.c(491): k960712_087_F1_155938_158129: 2193 frames, 10124 nodes (4349 reachable), 134474 links
+on one hand there's a lot to do to maximize [[ THE => A ]] exposure of the games and prior [[ TO => OR ]] the games on the other hand after that guy's been in the car dealership and he's test driven the product and he goes home that's the kind of [[ GUY => I ]] you've got to follow up on that's where your challenge is how do you convert that level of interest that visit into the sale and so that'll be our task for many years to come after the games (k960712_087_F1_155938_158129) << 85 ref; 0 0.0% oov; 85 hyp; 82 96.5% corr; 3 3.5% err; 5.0s CPU >>
+==    2494 ref;    18   0.7% oov;    2493 hyp;    2361  94.7% corr;    165   6.6% err; 229.9s CPU; k960712_087_F1_155938_158129
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_061_F1_103910_106258.lat
+INFO: ../dpalign.c(491): k960712_061_F1_103910_106258: 2350 frames, 8533 nodes (4027 reachable), 133708 links
+i think we have to [[ REMIND => IRAN ]] ourselves that this [[ HAS => ARE ]] been going on for some time the dow peaked on may twenty second the nasdaq market peaked in early june all the signs [[ HAVE => ARE ]] been there that this market was topping out the [[ INSIDER => SIDERS ]] selling the heavy i. p. o. activity the the frenzied buying of a [[ LOT => ON ]] of very speculative stuff and last week just this week just got a lot scarier but [[ => THE ]] this isn't as if it's new this decline has been in progress (k960712_061_F1_103910_106258) << 86 ref; 0 0.0% oov; 87 hyp; 81 94.2% corr; 6 7.0% err; 5.2s CPU >>
+==    2580 ref;    18   0.7% oov;    2580 hyp;    2442  94.7% corr;    171   6.6% err; 235.1s CPU; k960712_061_F1_103910_106258
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_067_F1_117439_119889.lat
+INFO: ../dpalign.c(491): k960712_067_F1_117439_119889: 2452 frames, 8144 nodes (3559 reachable), 113655 links
+that's true there are a lot of managers out there professional money managers who are saying that they're they're shopping [[ AROUND => ROTH'S ]] for some values but i really [[ DETECT => IN ]] that a lot of people think this thing can go lower and so you have the threat here of a vacuum people say well i i like this at this price but you know i think it's going to [[ => OLD ]] lower because the sentiments really turning therefore they wait and and they get their wish the price comes down and [[ => I'D ]] you know it it [[ IT CAN => IN E. ]] get pretty violent in in an environment [[ LIKE => WENDT ]] that (k960712_067_F1_117439_119889) << 102 ref; 0 0.0% oov; 104 hyp; 97 95.1% corr; 7 6.9% err; 5.0s CPU >>
+==    2682 ref;    18   0.7% oov;    2684 hyp;    2539  94.7% corr;    178   6.6% err; 240.1s CPU; k960712_067_F1_117439_119889
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_029_F1_65447_68006.lat
+INFO: ../dpalign.c(491): i960711p_029_F1_65447_68006: 2561 frames, 19967 nodes (10292 reachable), 722832 links
+well he i think that the big piece was the was the minimum wage i think that at i [[ THINK => ]] at this point all he wanted to do what i [[ THINK => ]] that the republican leaders wanted to [[ DO => OH ]] was get it over with i mean this issue was was it was essentially [[ HURTING => HORNING ]] them that it [[ WAS GIVING => STAY OR ]] the democrats ammunition an issue that was that at least the public opinion polls show is supported by a majority of of the people in the polls i think he wanted to get [[ IT => THEY ]] out of there and he he did he got it out fairly quickly (i960711p_029_F1_65447_68006) << 105 ref; 0 0.0% oov; 103 hyp; 98 93.3% corr; 7 6.7% err; 35.1s CPU >>
+==    2787 ref;    18   0.6% oov;    2787 hyp;    2637  94.6% corr;    185   6.6% err; 275.2s CPU; i960711p_029_F1_65447_68006
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_010_F1_29911_32674.lat
+INFO: ../dpalign.c(491): i960711p_010_F1_29911_32674: 2765 frames, 15913 nodes (7885 reachable), 391242 links
+i think that [[ WHAT => WAS ]] they're what they're hearing is that yes they want lower taxes yes they want smaller government but they also want to get things done they don't want this constant bickering the fighting back and forth the the government shutdown really did hurt them that's [[ WHERE => WHAT ]] you saw the polls really start to fall off the table for the republicans and i [[ THINK => IF ]] that there and also it allowed the president to president [[ CLINTON => WON ]] to define himself by opposing the republicans and i [[ THINK => IT ]] that they they're taking a lesson from that (i960711p_010_F1_29911_32674) << 95 ref; 0 0.0% oov; 95 hyp; 90 94.7% corr; 5 5.3% err; 18.2s CPU >>
+==    2882 ref;    18   0.6% oov;    2882 hyp;    2727  94.6% corr;    190   6.6% err; 293.5s CPU; i960711p_010_F1_29911_32674
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_019_F1_48305_51140.lat
+INFO: ../dpalign.c(491): i960711p_019_F1_48305_51140: 2837 frames, 18734 nodes (9487 reachable), 620747 links
+i think [[ IT => ALL ]] will i mean you saw last time it it it it held i mean president clinton won election with only forty three percent of the vote because of the the three party nature of the race i am sort of amused by by perot saying that he'll run if there's if the party calls it's sort of his party the party wouldn't exist and probably wouldn't [[ EXIST => AS ]] if it weren't for him and his money it's it's it sort of just seems a little [[ => WANTS ]] to me a [[ LITTLE => WHAT ]] funny that he says that if the if the party wants him he'll run (i960711p_019_F1_48305_51140) << 105 ref; 0 0.0% oov; 106 hyp; 102 97.1% corr; 4 3.8% err; 30.5s CPU >>
+==    2987 ref;    18   0.6% oov;    2988 hyp;    2829  94.7% corr;    194   6.5% err; 323.9s CPU; i960711p_019_F1_48305_51140
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_060_F1_100282_103423.lat
+INFO: ../dpalign.c(491): i960711p_060_F1_100282_103423: 3143 frames, 17026 nodes (7908 reachable), 397180 links
+there were the there were a lot of speeches on the house floor about this about the the only reason this was being signed the only reason this was [[ => THE ]] this was being passed by such a large margin and the [[ PRESIDENT => EASE ]] was going to sign it was the electoral votes in in florida the the caller mentioned how this is a big issue in florida because of the cuban exiles the cuban exile population he [[ COMPARED => AIR ]] it to [[ DOING => NEW ]] business with china well china is not just off the coast of the united states and it is not as emotional as as cuba is for cuban americans in florida (i960711p_060_F1_100282_103423) << 109 ref; 0 0.0% oov; 110 hyp; 106 97.2% corr; 4 3.7% err; 19.2s CPU >>
+==    3096 ref;    18   0.6% oov;    3098 hyp;    2935  94.8% corr;    198   6.4% err; 343.1s CPU; i960711p_060_F1_100282_103423
+INFO: ../dpalign.c(774): Adding HAMHANDED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_109_F1_181351_184763.lat
+INFO: ../dpalign.c(491): i960711p_109_F1_181351_184763: 3414 frames, 23874 nodes (11508 reachable), 637350 links
+person [[ INVOLVED => WELL ]] i can't [[ REMEMBER HIS => ARE IS ]] company it's in massachusetts it's a what he's alleged to have done is had reimbursed employees who gave who gave money essentially lifting the the the the ceiling for him the f. e. [[ => SO ]] the federal election law [[ => IS ]] ceiling it really it's in one way it's surprising because it is one of the [[ MOST => ]] sort of [[ HAMHANDED(oov) => HAND ]] violations of of federal election law however it should [[ ALSO => ALLS ]] be pointed out he had the title of vice chairman of the campaign but he was one of many many big money people [[ WHO => ]] had that title (i960711p_109_F1_181351_184763) << 99 ref; 1 1.0% oov; 99 hyp; 92 92.9% corr; 9 9.1% err; 29.8s CPU >>
+==    3195 ref;    19   0.6% oov;    3197 hyp;    3027  94.7% corr;    207   6.5% err; 372.9s CPU; i960711p_109_F1_181351_184763
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_076_F1_136320_139978.lat
+INFO: ../dpalign.c(491): i960711p_076_F1_136320_139978: 3660 frames, 20667 nodes (9675 reachable), 546114 links
+there's [[ GOING => A ]] to be a hearing today i think in federal court in texas [[ => IT ]] as to whether this should be redone for this year's election or wait until the next time around if they redo this for this year because even though it's only three districts two in the [[ HOUSTON => IS ]] area one in dallas by redrawing those lines you're moving population from other districts into those districts and it it sort of has this this you know domino effect throughout the state conceivably you could have to have new primaries in every district in that state sometime in september before the november election it would just be very disruptive very costly and i i i it's going to be interesting to see what happens down there (i960711p_076_F1_136320_139978) << 126 ref; 0 0.0% oov; 127 hyp; 124 98.4% corr; 3 2.4% err; 30.5s CPU >>
+==    3321 ref;    19   0.6% oov;    3324 hyp;    3151  94.9% corr;    210   6.3% err; 403.4s CPU; i960711p_076_F1_136320_139978
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_168_F1_171905_175765.lat
+INFO: ../dpalign.c(491): l960710_168_F1_171905_175765: 3862 frames, 26307 nodes (12413 reachable), 946143 links
+you [[ KNOW => ]] i got to cabrini at about seven o'clock and jonathan [[ HAD => IT ]] just been taken out [[ OF => A ]] the ambulance [[ AND => A ]] wanted to chest x. rays they performed an e. k. g. and they put him on a a [[ GURNEY => A ]] in the emergency ward and he was laying flat on his back and he was breathing [[ REALLY HARD => HE ARE ]] and [[ => ARIA ]] he was crying and and [[ JUST => ]] completely freaked out and [[ VERY => HER ]] scared and he [[ SAY => SAW ]] i i have no idea says i [[ => OR ]] can't believe this is happening i think it might be food poisoning but the pain was [[ CLEARLY => GONE ]] in his chest and he had great difficulty breathing i [[ => OR ]] mean [[ GREAT => REID ]] difficulty breathing (l960710_168_F1_171905_175765) << 112 ref; 0 0.0% oov; 113 hyp; 100 89.3% corr; 15 13.4% err; 53.3s CPU >>
+==    3433 ref;    19   0.6% oov;    3437 hyp;    3251  94.7% corr;    225   6.6% err; 456.7s CPU; l960710_168_F1_171905_175765
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_068_F1_112075_116196.lat
+INFO: ../dpalign.c(491): i960711p_068_F1_112075_116196: 4123 frames, 29999 nodes (15892 reachable), 1233270 links
+it's a little far out but i do think it's i mean the the economy's going gangbusters right now and i think that there's which would certainly help the president in his reelection effort i think the interesting thing is that with last week you [[ HAD => ]] two things happen the fed decided not to raise interest rates for the for the time being and you had an extremely strong employment report and that sort of turned the market [[ I => ]] think [[ YOU'RE => IT'S ]] seeing a change in the market psychology they're now thinking that perhaps the fed made a mistake that perhaps the economy is going to take off [[ AND => ]] also the exactly the point the woman the the caller made about having to offer higher wages because of the low [[ => WON'T ]] unemployment harder harder to fill jobs people are beginning to worry that that's [[ GOING => ]] to [[ CAUSE => HOWE'S ]] inflation to take off (i960711p_068_F1_112075_116196) << 149 ref; 0 0.0% oov; 146 hyp; 143 96.0% corr; 7 4.7% err; 91.1s CPU >>
+==    3582 ref;    19   0.5% oov;    3583 hyp;    3394  94.8% corr;    232   6.5% err; 547.8s CPU; i960711p_068_F1_112075_116196
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_063_F1_106634_110942.lat
+INFO: ../dpalign.c(491): k960712_063_F1_106634_110942: 4310 frames, 14495 nodes (5994 reachable), 192655 links
+right and i think what's what's really bothering people here is just it's the confusion it isn't as if a single event drove people out of this market like a soviet coup or something that they can say well when that's over we know to buy now [[ THERE'RE THERE'RE => THEY'RE THIRD ]] just too many questions is there inflation or is there not inflation what's the fed [[ GOING => ]] to [[ => ENDED ]] do it's not really clear is there a corporate profit squeeze or is there not certainly we're seeing it in some industries we'll find out as as earnings reports roll out here [[ IN => ]] the next few weeks how serious it is but i [[ THINK => ]] people are just very confused after five and a half years this [[ HAS => ]] been a great party a long party and if you're confused you're not sure what's [[ GONNA => IT ]] happen and especially if you're [[ => WORRIED ]] about the trend in those two key determinants of stock prices which is interest rates and [[ CORPORATE => OR ]] profits you decide maybe the easiest decision is to sell (k960712_063_F1_106634_110942) << 171 ref; 0 0.0% oov; 169 hyp; 163 95.3% corr; 10 5.8% err; 11.8s CPU >>
+==    3753 ref;    19   0.5% oov;    3752 hyp;    3557  94.8% corr;    242   6.4% err; 559.6s CPU; k960712_063_F1_106634_110942
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_065_F1_112273_117131.lat
+INFO: ../dpalign.c(491): k960712_065_F1_112273_117131: 4860 frames, 18074 nodes (7120 reachable), 232078 links
+that's true although i think ma and pa individual investors really don't buy long bonds if you look at the trend in c. d.'s this year what's interesting is the banks have been raising c. d. yields [[ => ON ]] since january february people are not rolling into the banks not into c. d.'s anyway what's really happened is that people [[ HAVE => IT ]] continued to pile money up in short term accounts in bank [[ => IS ]] passbook accounts in money market mutual funds so [[ THERE'S => OOZE ]] a lot of liquidity building and maybe there's going [[ TO => AN ]] be more building now in the wake what's happening [[ IN => ]] the stock market the issue is all that cash is out there does it necessarily have to come [[ INTO => IT OF ]] the equity market depends on how afraid people are [[ => SORT ]] the japanese have shown us if you scare people enough they'll stay in the bank for a half percentage point you know that's been a six year bear market there we're not talking about that yet here but you can scare people enough and and greed turns to fear in a hurry (k960712_065_F1_112273_117131) << 179 ref; 0 0.0% oov; 182 hyp; 174 97.2% corr; 9 5.0% err; 14.4s CPU >>
+==    3932 ref;    19   0.5% oov;    3934 hyp;    3731  94.9% corr;    251   6.4% err; 574.1s CPU; k960712_065_F1_112273_117131
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_016_F1_41427_46704.lat
+INFO: ../dpalign.c(491): i960711p_016_F1_41427_46704: 5279 frames, 38720 nodes (19336 reachable), 1526012 links
+it's i [[ THINK => ]] it's true that the president's in good shape in the polls right now although it's a it's a it's an eternity between now and election day the polls always are asked if the election were held today who would you [[ VOTE => OWED ]] for and [[ OF => ]] course the [[ ELECTION'S => AUCTIONS ]] not [[ GOING => A ]] to be held today it will be held [[ IN => ]] november the one thing i would point out on the the what they call the generic congressional question who would you [[ VOTE => OWED ]] for a republican or a democrat for congress is that that sort of is a measure of sort of the macro political trends in the nation but [[ RACES => RECEDES ]] for the house [[ THERE => OR ]] are four hundred [[ AND => ]] thirty five individual local races and as speaker o'neill was fond of pointing out all politics is local the the the the greater national or political trends which are seem to be favoring the democrats right now [[ WILL => ]] play differently in different regions [[ IT => A ]] depends on the individual candidate and that sort of thing so i think [[ => HAVE ]] i think it's it's difficult to take a lot from that in terms of how the house is going to [[ GO => A ]] this fall (i960711p_016_F1_41427_46704) << 199 ref; 0 0.0% oov; 195 hyp; 186 93.5% corr; 14 7.0% err; 141.6s CPU >>
+==    4131 ref;    19   0.5% oov;    4129 hyp;    3917  94.8% corr;    265   6.4% err; 715.7s CPU; i960711p_016_F1_41427_46704
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_031_F1_70144_77008.lat
+INFO: ../dpalign.c(491): i960711p_031_F1_70144_77008: 6866 frames, 43859 nodes (20585 reachable), 1372672 links
+well [[ I => ]] think you're seeing a lot of bills on regulation i think that there there is [[ => AS ]] a an effort by the the the the new republican majority or in the house especially to help small business these people are not sort of the the wall street republicans they're the main street republicans they're not so much big business as they are small business they're trying to help [[ => OTHERS ]] small businesses and the the sort of tax breaks or the tax provisions you saw in the the minimum wage bill and also the effort to protect small business in the [[ MINIMUM => I ]] wage bill or exempt [[ => AS ]] small businesses from from federal [[ WAGE => AGE ]] and hour wage and hour regulation i think are [[ ARE EXAMPLES => SAMS ]] of that the provision that's in the the labor h. h. s. [[ APPROPRIATIONS => OPERATIONS ]] bill would bar osha from examining looking at studying regulations for ergonomics for what's the for you know chairs [[ DESKS => IS ]] workstations repetitive stress injuries [[ => THE ]] this is seen as just another by the republicans as [[ JUST => ]] another sort of way the government's sort [[ OF => ]] reaching in and telling businesses how they should they should run and how they should handle things and it's something that i think is sort [[ OF => I ]] antithetical to them sort of their philosophy (i960711p_031_F1_70144_77008) << 210 ref; 0 0.0% oov; 210 hyp; 200 95.2% corr; 14 6.7% err; 132.2s CPU >>
+==    4341 ref;    19   0.4% oov;    4339 hyp;    4117  94.8% corr;    279   6.4% err; 847.9s CPU; i960711p_031_F1_70144_77008
+INFO: ../dpalign.c(774): Adding ADMINISTATION to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_058_F1_91155_98453.lat
+INFO: ../dpalign.c(491): i960711p_058_F1_91155_98453: 7300 frames, 39424 nodes (17600 reachable), 951648 links
+helms burton is a bill that says that it's aimed at at sort of [[ TIGHTENING => AND ]] the screws on on on cuba it says it's [[ ESSENTIALLY => CITIZENS ]] a secondary boycott that we will not do business with we will not allow into the country people who do business and companies who do business with cuba and especially it allows lawsuits or claims against legal claims against people who are using property or facilities or plants that were nationalized in other [[ WORDS => WORMS ]] if united states [[ SUGAR => SHIMMER ]] had a [[ => OUT ]] a facility down there that was nationalized by the cubans and then then sold to a canadian company it would open up claims by by a the sugar u. s. [[ SUGAR => AIR ]] company against the canadian the current canadian owners the united states is [[ HAS => MISS ]] usually not traditionally [[ AND => A ]] historically not supported secondary boycotts which i think is and actually fought against or or [[ => OVER ]] opposed secondary boycotts in the in the middle east this was a bill that the president the clinton [[ ADMINISTATION(oov) => MINISTRY'S ]] was dead set against and then the the shootdown of the the private planes over cuba it sort of turned turned public opinion inflamed public opinion and it shot through congress and the [[ PRESIDENT => RESIDENTS ]] signed it (i960711p_058_F1_91155_98453) << 203 ref; 1 0.5% oov; 205 hyp; 194 95.6% corr; 11 5.4% err; 86.5s CPU >>
+==    4544 ref;    20   0.4% oov;    4544 hyp;    4311  94.9% corr;    290   6.4% err; 934.4s CPU; i960711p_058_F1_91155_98453
+INFO: ../dpalign.c(774): Adding SEAT'S to dictionary
+INFO: ../dpalign.c(774): Adding GARON to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_101_F1_164790_173381.lat
+INFO: ../dpalign.c(491): i960711p_101_F1_164790_173381: 8593 frames, 51183 nodes (25842 reachable), 1553585 links
+i think there are [[ A => ]] lot of places to [[ LOOK => WHAT ]] i think certainly the the key things are going to be the the republicans defending their freshmen and the democrats defending open seats seats that are being given up by retiring democratic members there are state of washington certainly a lot of freshmen came in in ninety in [[ NINETY => NINETIES ]] four it [[ WILL => OF ]] be interesting to see how well they do this time around you know speaker [[ SAM => NAME ]] rayburn used to say to every incoming freshman class he told [[ THEM => MY ]] to look around he [[ SAID => ]] because some of the some of the people some of the [[ FACES => ]] you see are not [[ GOING => ]] to be around in two years he said people congressmen often get get elected by mistake but very few get reelected by mistake so the first [[ FIRST => A ]] defense of a [[ SEAT'S(oov) => SEEN ]] very important in terms of the democrats the open seats so many of them in the south it's [[ GOING => ]] to be very hard for them to defend and the south a region where the republicans really made gains in ninety four where you can argue that their majority really came from picking up seats in the south it's going to [[ BE => ]] tough for them i think one interesting state i think will be texas a lot will depend on how what happens with the redistricting but you have every sort of every type of seat down there you've got freshmen some of them who are in trouble like steve stockman you've got open seats that are vulnerable pete [[ GARON(oov) => GEARAN A ]] john bryant giving up their seats and you've got incumbents democrat incumbents who are going to [[ BE => ]] who are [[ GOING => OF ]] to be challenged very very hard people like martin frost of the dallas area (i960711p_101_F1_164790_173381) << 295 ref; 2 0.7% oov; 289 hyp; 279 94.6% corr; 17 5.8% err; 227.7s CPU >>
+==    4839 ref;    22   0.5% oov;    4833 hyp;    4590  94.9% corr;    307   6.3% err; 1162.1s CPU; i960711p_101_F1_164790_173381
+INFO: ../dpalign.c(774): Adding NONCONTROVERSIAL to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_006_F1_18482_27388.lat
+INFO: ../dpalign.c(491): i960711p_006_F1_18482_27388: 8908 frames, 57078 nodes (28477 reachable), 1935640 links
+well on this particular bill it's a relatively [[ NONCONTROVERSIAL(oov) => CONTROVERSIAL ]] bill but i [[ THINK => IN ]] that in general in the spending bills this year you're [[ GOING => ]] to see a lot less controversy than you [[ DID => ]] last year when the when the republicans came in fresh from their victory in in nineteen ninety four sort of set on this this revolutionary tone they were out to change the shape and nature and the reach of of the federal government but that also caused big fights with the white house it caused the protracted budget fight in which you didn't get this year's budget [[ => IS ]] spending bills set [[ UNTIL => IT ]] the middle of the of the spending year the two government shutdowns for which they took the brunt of the blame [[ ACCORDING => OR ]] to [[ THE => VOTE ]] public opinion polls this year with an election coming up they want to [[ SHOW => A ]] that they can get the business of the country done that they can get it done in a timely way get it done without fighting get it done without without shutting the government down again so for instance or the bill that's going to [[ BE => ]] on the floor today the labor h. h. s. bill [[ IT => ]] covers it's a big bill covers [[ THE => ]] labor [[ DEPARTMENT => ]] health and [[ HUMAN => ITS ]] services education you're not going to see the big fights that [[ YOU => IS ]] saw last year over low income heating assistance programs over there there will be some abortion fights but nothing but that's sort of normal for this bill nothing reaching the the the fights you saw last year they really want to [[ SHOW => A ]] that they can get the business done and in a timely way it's also why they're talking about doing a a standby continuing resolution in case the president vetoes any of [[ THESE => A ]] spending bills they could get out of town at the end in the fall not get bogged down with this fight get out of town to campaign for reelection without worrying about the government shutting down (i960711p_006_F1_18482_27388) << 332 ref; 1 0.3% oov; 327 hyp; 316 95.2% corr; 17 5.1% err; 293.7s CPU >>
+==    5171 ref;    23   0.4% oov;    5160 hyp;    4906  94.9% corr;    324   6.3% err; 1455.8s CPU; i960711p_006_F1_18482_27388
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_074_F1_126194_135283.lat
+INFO: ../dpalign.c(491): i960711p_074_F1_126194_135283: 9091 frames, 60541 nodes (31168 reachable), 2412915 links
+i think that the two races are very interesting you've got in the fourth district which is in dekalb county east of atlanta cynthia mckinney who is the first black woman elected from georgia her district before had been sort of this sort [[ => WHAT ]] of [[ LIKE => ]] a a like a spreading [[ INK => IT'S ]] stain it was [[ => OF ]] went from atlanta and [[ WENT => A ]] all the way down the state to the atlantic ocean then you [[ HAVE => ]] these two sort [[ OF => ]] arms tentacles reaching out to grab augusta and savannah to bring in black precincts the other was sanford bishop in the sort of in the southwestern corner of georgia a very rural very agricultural [[ => IT ]] agriculture area [[ => OF ]] it's actually jimmy carter's from that area it's going to [[ BE => A ]] an [[ INTERESTING => ]] test because cynthia mckinney is very liberal unabashedly [[ LIBERAL => WINKLE ]] was very outspoken in [[ => THUS ]] speaking up saying that she was representing the black community and the black voters in her district sanford bishop a little more moderate who i think largely because of his district because [[ OF => A ]] the voters in his area worked very hard at protecting the peanut program which is very important in [[ THAT => ON ]] area and i think that that the the the the primary vote may say less than meets the eye in in in cynthia mckinney's district all they were shooting for was about fifteen percent of [[ THE => ]] white vote if they could grab [[ ALL => OLD ]] the black vote which i think they largely did and win fifteen percent they felt they were in good shape she won a big victory sixty seven percent and nothing should be taken away from that but i [[ THINK => IS ]] that the real test for her is [[ GOING => THE ]] to be the general (i960711p_074_F1_126194_135283) << 284 ref; 0 0.0% oov; 284 hyp; 270 95.1% corr; 19 6.7% err; 371.5s CPU >>
+==    5455 ref;    23   0.4% oov;    5444 hyp;    5176  94.9% corr;    343   6.3% err; 1827.3s CPU; i960711p_074_F1_126194_135283
+SUMMARY: 5455 ref; 23 0.422% oov; 5444 hyp; 5176 94.885% corr; 343 6.288% err; 1827.3s CPU

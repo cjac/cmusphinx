@@ -1,0 +1,441 @@
+/tmp/dpalign.7950 -dict /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/51k+208ap+top-ac.dict -fdict /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/filler-dt96+3fp.dict -latdir /net/alf20/local_tmp/lat/dt96-pe/nphc-ci -mdef /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/bn92-96+62_all_tr-51k+3fp-fxwd.mdef -ref /net/alf20/usr/rkm/eval96/dt96-pe/ref-sorted-f0-nofp.trn
+Configuration in effect:
+[NAME]		[DEFLT]	[VALUE]
+-dagfudge	2	2
+-dict			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/51k+208ap+top-ac.dict
+-fdict			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/filler-dt96+3fp.dict
+-hom			
+-hyp			
+-latdir			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci
+-mdef			/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/bn92-96+62_all_tr-51k+3fp-fxwd.mdef
+-min_endfr	3	3
+-ref			/net/alf20/usr/rkm/eval96/dt96-pe/ref-sorted-f0-nofp.trn
+-sil		<sil>	<sil>
+INFO: ../mdef.c(428): Reading model definition: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/bn92-96+62_all_tr-51k+3fp-fxwd.mdef
+INFO: ../mdef.c(533): 58 CI-phones, 112009 CD-phones, 5 emitting states/phone, 6290 sen, 290 CI-sen
+INFO: ../dict.c(172): Reading main dictionary: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/51k+208ap+top-ac.dict
+INFO: ../dict.c(175): 57015 words read
+INFO: ../dict.c(180): Reading filler dictionary: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/filler-dt96+3fp.dict
+INFO: ../dict.c(183): 9 words read
+INFO: ../profile.c(171): 503829315 ticks in 1.916 sec; machine clock rate = 266 MHz
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_015_F0_41254_41337.lat
+INFO: ../dp.c(242): i960711p_015_F0_41254_41337: 85 frames, 291 nodes (56 reachable), 1135 links
+thanks very much (i960711p_015_F0_41254_41337) << 3 ref; 0 0.0% oov; 3 hyp; 3 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==       3 ref;     0   0.0% oov;       3 hyp;       3 100.0% corr;      0   0.0% err;   0.0s CPU; i960711p_015_F0_41254_41337
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_056_F0_119080_119177.lat
+INFO: ../dp.c(242): n960715p_056_F0_119080_119177: 99 frames, 802 nodes (445 reachable), 15494 links
+if you would sir [[ => IT ]] (n960715p_056_F0_119080_119177) << 4 ref; 0 0.0% oov; 5 hyp; 4 100.0% corr; 1 25.0% err; 0.1s CPU >>
+==       7 ref;     0   0.0% oov;       8 hyp;       7 100.0% corr;      1  14.3% err;   0.1s CPU; n960715p_056_F0_119080_119177
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_011_F0_335371_335489.lat
+INFO: ../dp.c(242): o960710p_011_F0_335371_335489: 120 frames, 1251 nodes (667 reachable), 28820 links
+and what [[ DOES => IT'S ]] that sound like (o960710p_011_F0_335371_335489) << 6 ref; 0 0.0% oov; 6 hyp; 5 83.3% corr; 1 16.7% err; 0.2s CPU >>
+==      13 ref;     0   0.0% oov;      14 hyp;      12  92.3% corr;      2  15.4% err;   0.3s CPU; o960710p_011_F0_335371_335489
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_107_F0_95232_95382.lat
+INFO: ../dp.c(242): l960710_107_F0_95232_95382: 152 frames, 1139 nodes (622 reachable), 24437 links
+will be set up there under doctor (l960710_107_F0_95232_95382) << 7 ref; 0 0.0% oov; 7 hyp; 7 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==      20 ref;     0   0.0% oov;      21 hyp;      19  95.0% corr;      2  10.0% err;   0.4s CPU; l960710_107_F0_95232_95382
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_050_F0_85795_85951.lat
+INFO: ../dp.c(242): k960712_050_F0_85795_85951: 158 frames, 1372 nodes (587 reachable), 30428 links
+foreigners need greater assurance (k960712_050_F0_85795_85951) << 4 ref; 0 0.0% oov; 4 hyp; 4 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==      24 ref;     0   0.0% oov;      25 hyp;      23  95.8% corr;      2   8.3% err;   0.6s CPU; k960712_050_F0_85795_85951
+INFO: ../line2wid.c(64): Adding CARMIDY to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_190_F0_196901_197095.lat
+INFO: ../dp.c(242): l960710_190_F0_196901_197095: 196 frames, 1026 nodes (368 reachable), 11185 links
+shaking [[ CARMIDY(oov) => TARDY ]] asked the police (l960710_190_F0_196901_197095) << 5 ref; 1 20.0% oov; 5 hyp; 4 80.0% corr; 1 20.0% err; 0.1s CPU >>
+==      29 ref;     1   3.4% oov;      30 hyp;      27  93.1% corr;      3  10.3% err;   0.7s CPU; l960710_190_F0_196901_197095
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_143_F0_146406_146610.lat
+INFO: ../dp.c(242): l960710_143_F0_146406_146610: 206 frames, 894 nodes (369 reachable), 10371 links
+his pal since age seven (l960710_143_F0_146406_146610) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      34 ref;     1   2.9% oov;      35 hyp;      32  94.1% corr;      3   8.8% err;   0.8s CPU; l960710_143_F0_146406_146610
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_043_F0_80063_80321.lat
+INFO: ../dp.c(242): k960712_043_F0_80063_80321: 260 frames, 1079 nodes (450 reachable), 15448 links
+but what about those awaiting a risk free environment (k960712_043_F0_80063_80321) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      43 ref;     1   2.3% oov;      44 hyp;      41  95.3% corr;      3   7.0% err;   0.9s CPU; k960712_043_F0_80063_80321
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_024_F0_55835_56098.lat
+INFO: ../dp.c(242): k960712_024_F0_55835_56098: 265 frames, 626 nodes (283 reachable), 4232 links
+and that's the top of our news for friday july twelfth (k960712_024_F0_55835_56098) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      54 ref;     1   1.9% oov;      55 hyp;      52  96.3% corr;      3   5.6% err;   0.9s CPU; k960712_024_F0_55835_56098
+INFO: ../line2wid.c(64): Adding BERKHARDT to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_167_F0_171567_171853.lat
+INFO: ../dp.c(242): l960710_167_F0_171567_171853: 288 frames, 1117 nodes (558 reachable), 14984 links
+by another close friend jonathan [[ BERKHARDT(oov) => BERNHARDT ]] (l960710_167_F0_171567_171853) << 6 ref; 1 16.7% oov; 6 hyp; 5 83.3% corr; 1 16.7% err; 0.1s CPU >>
+==      60 ref;     2   3.3% oov;      61 hyp;      57  95.0% corr;      4   6.7% err;   1.1s CPU; l960710_167_F0_171567_171853
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_035_F0_40690_41005.lat
+INFO: ../dp.c(242): l960710_035_F0_40690_41005: 317 frames, 1087 nodes (345 reachable), 11511 links
+so when the chinese say that it's hard work you say what (l960710_035_F0_40690_41005) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      72 ref;     2   2.8% oov;      73 hyp;      69  95.8% corr;      4   5.6% err;   1.2s CPU; l960710_035_F0_40690_41005
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_011_F0_32731_33047.lat
+INFO: ../dp.c(242): i960711p_011_F0_32731_33047: 318 frames, 2428 nodes (1410 reachable), 89920 links
+first call this morning marion ohio good morning and welcome [[ WHAT => OR ]] are you reading (i960711p_011_F0_32731_33047) << 14 ref; 0 0.0% oov; 14 hyp; 13 92.9% corr; 1 7.1% err; 0.8s CPU >>
+==      86 ref;     2   2.3% oov;      87 hyp;      82  95.3% corr;      5   5.8% err;   1.9s CPU; i960711p_011_F0_32731_33047
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_020_F0_25991_26322.lat
+INFO: ../dp.c(242): n960715p_020_F0_25991_26322: 333 frames, 835 nodes (294 reachable), 5587 links
+says the russian president is not ill just exhausted (n960715p_020_F0_25991_26322) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      95 ref;     2   2.1% oov;      96 hyp;      91  95.8% corr;      5   5.3% err;   2.0s CPU; n960715p_020_F0_25991_26322
+INFO: ../line2wid.c(64): Adding PETRUNO to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_070_F0_120172_120518.lat
+INFO: ../dp.c(242): k960712_070_F0_120172_120518: 348 frames, 1675 nodes (848 reachable), 45976 links
+tom [[ PETRUNO(oov) => UNO ]] markets columnist for the los angeles times (k960712_070_F0_120172_120518) << 9 ref; 1 11.1% oov; 9 hyp; 8 88.9% corr; 1 11.1% err; 0.3s CPU >>
+==     104 ref;     3   2.9% oov;     105 hyp;      99  95.2% corr;      6   5.8% err;   2.4s CPU; k960712_070_F0_120172_120518
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_084_F0_77685_78067.lat
+INFO: ../dp.c(242): l960710_084_F0_77685_78067: 384 frames, 1733 nodes (842 reachable), 26879 links
+seven swimmers [[ SEVEN => SOUNDED ]] tested positive (l960710_084_F0_77685_78067) << 5 ref; 0 0.0% oov; 5 hyp; 4 80.0% corr; 1 20.0% err; 0.2s CPU >>
+==     109 ref;     3   2.8% oov;     110 hyp;     103  94.5% corr;      7   6.4% err;   2.6s CPU; l960710_084_F0_77685_78067
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_075_F0_134663_135068.lat
+INFO: ../dp.c(242): k960712_075_F0_134663_135068: 407 frames, 1703 nodes (647 reachable), 21916 links
+knock into shape the structure that will hold this summer's olympic flame (k960712_075_F0_134663_135068) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     121 ref;     3   2.5% oov;     122 hyp;     115  95.0% corr;      7   5.8% err;   2.8s CPU; k960712_075_F0_134663_135068
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_199_F0_202202_202608.lat
+INFO: ../dp.c(242): l960710_199_F0_202202_202608: 408 frames, 1069 nodes (228 reachable), 4107 links
+but jonathan larson had died at the age of thirty five (l960710_199_F0_202202_202608) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     132 ref;     3   2.3% oov;     133 hyp;     126  95.5% corr;      7   5.3% err;   2.9s CPU; l960710_199_F0_202202_202608
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_031_F0_47697_48147.lat
+INFO: ../dp.c(242): n960715p_031_F0_47697_48147: 452 frames, 2194 nodes (931 reachable), 36847 links
+bomb to go off in the province in two years has ushered in a mood of pessimism (n960715p_031_F0_47697_48147) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.4s CPU >>
+==     149 ref;     3   2.0% oov;     150 hyp;     143  96.0% corr;      7   4.7% err;   3.3s CPU; n960715p_031_F0_47697_48147
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_078_F0_180532_181001.lat
+INFO: ../dp.c(242): n960715p_078_F0_180532_181001: 471 frames, 3215 nodes (1815 reachable), 87351 links
+the cuban olympic team has arrived in atlanta missing a few of it's members (n960715p_078_F0_180532_181001) << 14 ref; 0 0.0% oov; 14 hyp; 14 100.0% corr; 0 0.0% err; 0.9s CPU >>
+==     163 ref;     3   1.8% oov;     164 hyp;     157  96.3% corr;      7   4.3% err;   4.1s CPU; n960715p_078_F0_180532_181001
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_090_F0_162846_163324.lat
+INFO: ../dp.c(242): k960712_090_F0_162846_163324: 480 frames, 1406 nodes (575 reachable), 16406 links
+[[ BUT => ]] will the various committees designed to leverage the games be enough to keep atlanta's flame (k960712_090_F0_162846_163324) << 16 ref; 0 0.0% oov; 15 hyp; 15 93.8% corr; 1 6.2% err; 0.2s CPU >>
+==     179 ref;     3   1.7% oov;     179 hyp;     172  96.1% corr;      8   4.5% err;   4.3s CPU; k960712_090_F0_162846_163324
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_027_F0_34251_34754.lat
+INFO: ../dp.c(242): l960710_027_F0_34251_34754: 505 frames, 4066 nodes (2282 reachable), 123298 links
+and richard quick who is today the coach of the u. s. women's swim team was suspicious (l960710_027_F0_34251_34754) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 1.3s CPU >>
+==     196 ref;     3   1.5% oov;     196 hyp;     189  96.4% corr;      8   4.1% err;   5.6s CPU; l960710_027_F0_34251_34754
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_048_F0_104961_105464.lat
+INFO: ../dp.c(242): n960715p_048_F0_104961_105464: 505 frames, 1405 nodes (509 reachable), 9791 links
+do you think these men will ever be brought before the bar of justice in reality (n960715p_048_F0_104961_105464) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     212 ref;     3   1.4% oov;     212 hyp;     205  96.7% corr;      8   3.8% err;   5.8s CPU; n960715p_048_F0_104961_105464
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_055_F0_100975_101494.lat
+INFO: ../dp.c(242): k960712_055_F0_100975_101494: 521 frames, 1387 nodes (459 reachable), 12045 links
+alex taylor covers the auto industry for fortune magazine and is a frequent contributor to marketplace (k960712_055_F0_100975_101494) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     228 ref;     3   1.3% oov;     228 hyp;     221  96.9% corr;      8   3.5% err;   5.9s CPU; k960712_055_F0_100975_101494
+INFO: ../line2wid.c(64): Adding MARADOVITCH to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_041_F0_78755_79292.lat
+INFO: ../dp.c(242): k960712_041_F0_78755_79292: 539 frames, 1343 nodes (411 reachable), 10435 links
+insurance coverage for american firms in bosnia bosnian prime minister [[ HASSAN MARADOVITCH(oov) => HOSLER RENOVATE OF ]] (k960712_041_F0_78755_79292) << 12 ref; 1 8.3% oov; 13 hyp; 10 83.3% corr; 3 25.0% err; 0.1s CPU >>
+==     240 ref;     4   1.7% oov;     241 hyp;     231  96.3% corr;     11   4.6% err;   6.0s CPU; k960712_041_F0_78755_79292
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_099_F0_176162_176715.lat
+INFO: ../dp.c(242): k960712_099_F0_176162_176715: 555 frames, 1652 nodes (566 reachable), 17163 links
+and [[ THAT'S => IS ]] marketplace for friday july twelfth today the dow jones industrial average lost ten points (k960712_099_F0_176162_176715) << 16 ref; 0 0.0% oov; 16 hyp; 15 93.8% corr; 1 6.2% err; 0.2s CPU >>
+==     256 ref;     4   1.6% oov;     257 hyp;     246  96.1% corr;     12   4.7% err;   6.2s CPU; k960712_099_F0_176162_176715
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_044_F0_91497_92071.lat
+INFO: ../dp.c(242): n960715p_044_F0_91497_92071: 576 frames, 2478 nodes (1083 reachable), 68174 links
+when you were told that your meeting with president yeltsin was being pushed back were you suspicious (n960715p_044_F0_91497_92071) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.8s CPU >>
+==     273 ref;     4   1.5% oov;     274 hyp;     263  96.3% corr;     12   4.4% err;   7.0s CPU; n960715p_044_F0_91497_92071
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_004_F0_17598_18257.lat
+INFO: ../dp.c(242): i960711p_004_F0_17598_18257: 661 frames, 2194 nodes (724 reachable), 26115 links
+bipartisanship was in vogue in the house yesterday with passage of the bill funding house and senate operations in nineteen ninety seven (i960711p_004_F0_17598_18257) << 22 ref; 0 0.0% oov; 22 hyp; 22 100.0% corr; 0 0.0% err; 0.4s CPU >>
+==     295 ref;     4   1.4% oov;     296 hyp;     285  96.6% corr;     12   4.1% err;   7.4s CPU; i960711p_004_F0_17598_18257
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_095_F0_170636_171295.lat
+INFO: ../dp.c(242): k960712_095_F0_170636_171295: 661 frames, 2194 nodes (742 reachable), 18857 links
+while atlanta was touched by civil war more [[ THAT => THEN ]] a century and a quarter ago this is clearly a far fetched comparison (k960712_095_F0_170636_171295) << 22 ref; 0 0.0% oov; 22 hyp; 21 95.5% corr; 1 4.5% err; 0.3s CPU >>
+==     317 ref;     4   1.3% oov;     318 hyp;     306  96.5% corr;     13   4.1% err;   7.6s CPU; k960712_095_F0_170636_171295
+INFO: ../line2wid.c(64): Adding BARABARA to dictionary
+INFO: ../line2wid.c(64): Adding RENAUT to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_029_F0_543890_544556.lat
+INFO: ../dp.c(242): o960710p_029_F0_543890_544556: 668 frames, 3974 nodes (1878 reachable), 86995 links
+the comments of [[ BARABARA(oov) RENAUT(oov) => UPPER ROANOKE ]] gonzales a dallas based writer whose comments are [[ HEARD => ]] through [[ MEMBER => AMBER ]] station k. e. r. a. (o960710p_029_F0_543890_544556) << 21 ref; 2 9.5% oov; 20 hyp; 17 81.0% corr; 4 19.0% err; 1.0s CPU >>
+==     338 ref;     6   1.8% oov;     338 hyp;     323  95.6% corr;     17   5.0% err;   8.7s CPU; o960710p_029_F0_543890_544556
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_071_F0_120512_121179.lat
+INFO: ../dp.c(242): k960712_071_F0_120512_121179: 669 frames, 1707 nodes (400 reachable), 14343 links
+coming up on the program atlanta's plans for economic development after the olympics but first let's do more numbers (k960712_071_F0_120512_121179) << 19 ref; 0 0.0% oov; 19 hyp; 19 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     357 ref;     6   1.7% oov;     357 hyp;     342  95.8% corr;     17   4.8% err;   8.8s CPU; k960712_071_F0_120512_121179
+INFO: ../line2wid.c(64): Adding LARSON'S to dictionary
+INFO: ../line2wid.c(64): Adding LECOQUE to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_151_F0_156961_157654.lat
+INFO: ../dp.c(242): l960710_151_F0_156961_157654: 695 frames, 1918 nodes (712 reachable), 16145 links
+[[ LARSON'S(oov) => LICENSE ]] friends were there for the [[ LONG => LONGED ]] haul too victoria [[ LECOQUE(oov) => TEACUP ]] was a college girlfriend who became a best friend (l960710_151_F0_156961_157654) << 20 ref; 2 10.0% oov; 20 hyp; 17 85.0% corr; 3 15.0% err; 0.2s CPU >>
+==     377 ref;     8   2.1% oov;     377 hyp;     359  95.2% corr;     20   5.3% err;   9.1s CPU; l960710_151_F0_156961_157654
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_042_F0_85279_86012.lat
+INFO: ../dp.c(242): n960715p_042_F0_85279_86012: 735 frames, 2789 nodes (1235 reachable), 35065 links
+if for health reasons president yeltsin does not finish out his four year term where would that put washington's policy (n960715p_042_F0_85279_86012) << 20 ref; 0 0.0% oov; 20 hyp; 20 100.0% corr; 0 0.0% err; 0.5s CPU >>
+==     397 ref;     8   2.0% oov;     397 hyp;     379  95.5% corr;     20   5.0% err;   9.5s CPU; n960715p_042_F0_85279_86012
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_039_F0_75290_76047.lat
+INFO: ../dp.c(242): k960712_039_F0_75290_76047: 759 frames, 1960 nodes (602 reachable), 14572 links
+that's motorola yet americans expect to have an edge over their competitors because of their role in brokering peace and because they have troops on the ground (k960712_039_F0_75290_76047) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     424 ref;     8   1.9% oov;     424 hyp;     406  95.8% corr;     20   4.7% err;   9.7s CPU; k960712_039_F0_75290_76047
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_011_F0_21301_22104.lat
+INFO: ../dp.c(242): n960715p_011_F0_21301_22104: 805 frames, 3458 nodes (1110 reachable), 44102 links
+his [[ SUDDEN => A ]] rescheduling of a meeting with the u. s. vice president al gore is now adding to questions over mr. yeltsin's health (n960715p_011_F0_21301_22104) << 23 ref; 0 0.0% oov; 23 hyp; 22 95.7% corr; 1 4.3% err; 0.6s CPU >>
+==     447 ref;     8   1.8% oov;     447 hyp;     428  95.7% corr;     21   4.7% err;  10.3s CPU; n960715p_011_F0_21301_22104
+INFO: ../line2wid.c(64): Adding DEMORODE to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_060_F0_59947_60788.lat
+INFO: ../dp.c(242): l960710_060_F0_59947_60788: 843 frames, 5191 nodes (2699 reachable), 109339 links
+prince alexander [[ DEMORODE(oov) => EMERALD ]] of belgium is the chairman of the international olympic committee's medical commission which is charged with rooting out drug cheating (l960710_060_F0_59947_60788) << 23 ref; 1 4.3% oov; 23 hyp; 22 95.7% corr; 1 4.3% err; 1.5s CPU >>
+==     470 ref;     9   1.9% oov;     470 hyp;     450  95.7% corr;     22   4.7% err;  11.8s CPU; l960710_060_F0_59947_60788
+INFO: ../line2wid.c(64): Adding FUNDERBERK to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_017_F0_37725_38579.lat
+INFO: ../dp.c(242): k960712_017_F0_37725_38579: 856 frames, 2603 nodes (1127 reachable), 35846 links
+the economic impact of same sex marriages was a big part of the debate on the house floor congressman david [[ FUNDERBERK(oov) => THUNDERBIRD ]] is a republican from north carolina (k960712_017_F0_37725_38579) << 27 ref; 1 3.7% oov; 27 hyp; 26 96.3% corr; 1 3.7% err; 0.6s CPU >>
+==     497 ref;    10   2.0% oov;     497 hyp;     476  95.8% corr;     23   4.6% err;  12.4s CPU; k960712_017_F0_37725_38579
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_056_F0_102062_102917.lat
+INFO: ../dp.c(242): k960712_056_F0_102062_102917: 857 frames, 3528 nodes (1881 reachable), 63551 links
+now let's check on the week on wall street david johnson is in alaska having fun apparently tom [[ PETRUNO(oov) => TREADMILL ]] markets columnist for the los angeles times joins us hello tom (k960712_056_F0_102062_102917) << 30 ref; 1 3.3% oov; 30 hyp; 29 96.7% corr; 1 3.3% err; 1.1s CPU >>
+==     527 ref;    11   2.1% oov;     527 hyp;     505  95.8% corr;     24   4.6% err;  13.5s CPU; k960712_056_F0_102062_102917
+INFO: ../line2wid.c(64): Adding ISUDEAN to dictionary
+INFO: ../line2wid.c(64): Adding KAPTONOVITCH to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_045_F0_81002_81877.lat
+INFO: ../dp.c(242): k960712_045_F0_81002_81877: 877 frames, 2955 nodes (1205 reachable), 48879 links
+[[ ISUDEAN(oov) KAPTONOVITCH(oov) => STANDING CONTAMINATED ]] is the prime minister of the newborn federation of bosnia and herzegovina an experiment in post war coexistence between former aggressors (k960712_045_F0_81002_81877) << 23 ref; 2 8.7% oov; 23 hyp; 21 91.3% corr; 2 8.7% err; 0.7s CPU >>
+==     550 ref;    13   2.4% oov;     550 hyp;     526  95.6% corr;     26   4.7% err;  14.1s CPU; k960712_045_F0_81002_81877
+INFO: ../line2wid.c(64): Adding CRISPLY to dictionary
+INFO: ../line2wid.c(64): Adding BISLOGITCH to dictionary
+INFO: ../line2wid.c(64): Adding TUSLA to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_033_F0_68674_69598.lat
+INFO: ../dp.c(242): k960712_033_F0_68674_69598: 926 frames, 4105 nodes (2049 reachable), 82238 links
+but while [[ MARADOVITCH(oov) CRISPLY(oov) => AUTOMATE SCREWS THE ]] runs down a list of energy telecom and transport projects for would be u. s. investors [[ SALIM BISLOGITCH(oov) => SILLINESS WANTED ]] the mayor of [[ TUSLA(oov) => TUZLA ]] is less sanguine (k960712_033_F0_68674_69598) << 29 ref; 4 13.8% oov; 30 hyp; 24 82.8% corr; 6 20.7% err; 1.3s CPU >>
+==     579 ref;    17   2.9% oov;     580 hyp;     550  95.0% corr;     32   5.5% err;  15.5s CPU; k960712_033_F0_68674_69598
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_052_F0_112430_113367.lat
+INFO: ../dp.c(242): n960715p_052_F0_112430_113367: 939 frames, 3961 nodes (1839 reachable), 51919 links
+can you be optimistic when in fact the f. b. i. was never permitted to question the four suspects who were beheaded for the first bombing against american personnel (n960715p_052_F0_112430_113367) << 29 ref; 0 0.0% oov; 29 hyp; 29 100.0% corr; 0 0.0% err; 0.8s CPU >>
+==     608 ref;    17   2.8% oov;     609 hyp;     579  95.2% corr;     32   5.3% err;  16.3s CPU; n960715p_052_F0_112430_113367
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_063_F0_137538_138502.lat
+INFO: ../dp.c(242): n960715p_063_F0_137538_138502: 966 frames, 4815 nodes (2247 reachable), 95877 links
+mr. vice president by the clock i know it's imminently later in moscow than it is here on the east coast of the [[ UNITED => IT'S ]] states we thank you very much for joining us on world view (n960715p_063_F0_137538_138502) << 36 ref; 0 0.0% oov; 36 hyp; 35 97.2% corr; 1 2.8% err; 1.8s CPU >>
+==     644 ref;    17   2.6% oov;     645 hyp;     614  95.3% corr;     33   5.1% err;  18.1s CPU; n960715p_063_F0_137538_138502
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_200_F0_202602_203665.lat
+INFO: ../dp.c(242): l960710_200_F0_202602_203665: 1065 frames, 4115 nodes (1274 reachable), 56393 links
+and when we come back cynthia mcfadden has some surprising details about his death and the conclusions his family has reached about the emergency room care he received (l960710_200_F0_202602_203665) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.8s CPU >>
+==     672 ref;    17   2.5% oov;     673 hyp;     642  95.5% corr;     33   4.9% err;  18.9s CPU; l960710_200_F0_202602_203665
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_038_F0_57705_58878.lat
+INFO: ../dp.c(242): n960715p_038_F0_57705_58878: 1175 frames, 3734 nodes (1441 reachable), 40199 links
+al gore was not able to talk to boris yeltsin today but he did talk to c. n. n. coming up on world view what the u. s. vice president makes of the russian president's absence (n960715p_038_F0_57705_58878) << 36 ref; 0 0.0% oov; 36 hyp; 36 100.0% corr; 0 0.0% err; 0.8s CPU >>
+==     708 ref;    17   2.4% oov;     709 hyp;     678  95.8% corr;     33   4.7% err;  19.6s CPU; n960715p_038_F0_57705_58878
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_169_F0_175827_177036.lat
+INFO: ../dp.c(242): l960710_169_F0_175827_177036: 1211 frames, 3589 nodes (1255 reachable), 33124 links
+doctors at cabrini decided [[ LARSON'S(oov) => LARCENY ]] e. k. g. and chest x. rays were normal still suspecting food poisoning they pumped [[ HIS => IS ]] stomach and sent him home his roommate brian [[ CARMIDY(oov) => COMEDIES ]] (l960710_169_F0_175827_177036) << 30 ref; 2 6.7% oov; 30 hyp; 27 90.0% corr; 3 10.0% err; 0.5s CPU >>
+==     738 ref;    19   2.6% oov;     739 hyp;     705  95.5% corr;     36   4.9% err;  20.2s CPU; l960710_169_F0_175827_177036
+INFO: ../line2wid.c(64): Adding EILENE to dictionary
+INFO: ../line2wid.c(64): Adding O'CONNER to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_009_F0_18850_20129.lat
+INFO: ../dp.c(242): n960715p_009_F0_18850_20129: 1281 frames, 4963 nodes (1835 reachable), 68099 links
+we will have more of our interview with vice president al gore in a few moments now as c. n. n.'s [[ EILENE(oov) O'CONNER(oov) => ANA O'CONNOR ]] tells us words about exhaustion aside mr. yeltsin's no show has raised more questions about his health (n960715p_009_F0_18850_20129) << 40 ref; 2 5.0% oov; 40 hyp; 38 95.0% corr; 2 5.0% err; 1.2s CPU >>
+==     778 ref;    21   2.7% oov;     779 hyp;     743  95.5% corr;     38   4.9% err;  21.4s CPU; n960715p_009_F0_18850_20129
+INFO: ../line2wid.c(64): Adding CHAMBER'S to dictionary
+INFO: ../line2wid.c(64): Adding SHMOOZING to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_086_F0_154594_155911.lat
+INFO: ../dp.c(242): k960712_086_F0_154594_155911: 1319 frames, 4544 nodes (1742 reachable), 45133 links
+bill hubbard is the atlanta [[ CHAMBER'S(oov) => CHAMBERS ]] v. p. for economic development he's part of a carefully choreographed effort to leverage the olympics into new investment after the games it involves initially [[ SHMOOZING(oov) => SCHMOOZING ]] like crazy with new business prospects (k960712_086_F0_154594_155911) << 38 ref; 2 5.3% oov; 38 hyp; 36 94.7% corr; 2 5.3% err; 0.9s CPU >>
+==     816 ref;    23   2.8% oov;     817 hyp;     779  95.5% corr;     40   4.9% err;  22.2s CPU; k960712_086_F0_154594_155911
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_008_F0_28002_29342.lat
+INFO: ../dp.c(242): i960711p_008_F0_28002_29342: 1342 frames, 4337 nodes (1156 reachable), 33091 links
+in contrast to last year appropriations committees in both houses have been openly seeking white house support for emerging legislation by keeping controversial [[ RIDERS => LIGHTERS ]] to a minimum and boosting spending boosting spending for some priority administration programs (i960711p_008_F0_28002_29342) << 37 ref; 0 0.0% oov; 37 hyp; 36 97.3% corr; 1 2.7% err; 0.5s CPU >>
+==     853 ref;    23   2.7% oov;     854 hyp;     815  95.5% corr;     41   4.8% err;  22.7s CPU; i960711p_008_F0_28002_29342
+INFO: ../line2wid.c(64): Adding BUCKLY to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_011_F0_29667_31040.lat
+INFO: ../dp.c(242): k960712_011_F0_29667_31040: 1375 frames, 4017 nodes (1369 reachable), 38783 links
+even more upscale hotels farther inland yet have seen extra business thomas [[ BUCKLY(oov) => MAGLI ]] is a supervisor at the omni europa hotel in durham north carolina he says they try to do a little something extra for their hurricane refugees (k960712_011_F0_29667_31040) << 39 ref; 1 2.6% oov; 39 hyp; 38 97.4% corr; 1 2.6% err; 0.7s CPU >>
+==     892 ref;    24   2.7% oov;     893 hyp;     853  95.6% corr;     42   4.7% err;  23.4s CPU; k960712_011_F0_29667_31040
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_007_F0_25799_27197.lat
+INFO: ../dp.c(242): k960712_007_F0_25799_27197: 1400 frames, 4493 nodes (1740 reachable), 51380 links
+although the red cross opened one hundred and eight shelters it's estimated only six thousand people used them last night that left some two hundred and forty four thousand coastal evacuees tourists and residents alike to find more comfortable lodging (k960712_007_F0_25799_27197) << 40 ref; 0 0.0% oov; 40 hyp; 40 100.0% corr; 0 0.0% err; 0.9s CPU >>
+==     932 ref;    24   2.6% oov;     933 hyp;     893  95.8% corr;     42   4.5% err;  24.4s CPU; k960712_007_F0_25799_27197
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_021_F0_45540_46942.lat
+INFO: ../dp.c(242): k960712_021_F0_45540_46942: 1404 frames, 4180 nodes (1724 reachable), 42634 links
+besides smith says the issue here is also one of fairness the u. s. senate must still consider the defense of marriage act but president clinton has already indicated that he'll sign the bill into law from washington i'm cynthia engle for marketplace (k960712_021_F0_45540_46942) << 43 ref; 0 0.0% oov; 43 hyp; 43 100.0% corr; 0 0.0% err; 0.9s CPU >>
+==     975 ref;    24   2.5% oov;     976 hyp;     936  96.0% corr;     42   4.3% err;  25.3s CPU; k960712_021_F0_45540_46942
+INFO: ../line2wid.c(64): Adding SHINNI to dictionary
+INFO: ../line2wid.c(64): Adding ECONOLODGE to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_009_F0_27458_28905.lat
+INFO: ../dp.c(242): k960712_009_F0_27458_28905: 1449 frames, 4762 nodes (1854 reachable), 56005 links
+that's [[ SHINNI(oov) SHAH => E SHOCKS ]] a desk clerk at an [[ ECONOLODGE(oov) => ECON LODGED ]] motel in raleigh many of his guests last night had driven up to three hours to find a room at the inn [[ OUT => I ]] of his eighty four rooms a good chunk of them were filled with people who didn't expect to be there (k960712_009_F0_27458_28905) << 52 ref; 2 3.8% oov; 53 hyp; 48 92.3% corr; 5 9.6% err; 1.3s CPU >>
+==    1027 ref;    26   2.5% oov;    1029 hyp;     984  95.8% corr;     47   4.6% err;  26.6s CPU; k960712_009_F0_27458_28905
+INFO: ../line2wid.c(64): Adding MARKETPLACE'S to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_022_F0_46975_48579.lat
+INFO: ../dp.c(242): k960712_022_F0_46975_48579: 1606 frames, 5332 nodes (2031 reachable), 63080 links
+the heir to the british throne prince charles and his wife diana have just agreed on the terms of their divorce [[ THE => A ]] financial settlement is modest by american standards indeed it confirms britain's status as the ideal place for the super rich to untie the knot [[ MARKETPLACE'S(oov) => MARKETPLACES ]] european editor stephen beard reports (k960712_022_F0_46975_48579) << 52 ref; 1 1.9% oov; 52 hyp; 50 96.2% corr; 2 3.8% err; 1.3s CPU >>
+==    1079 ref;    27   2.5% oov;    1081 hyp;    1034  95.8% corr;     49   4.5% err;  27.8s CPU; k960712_022_F0_46975_48579
+INFO: ../line2wid.c(64): Adding CAZLOW to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_028_F0_60291_61915.lat
+INFO: ../dp.c(242): k960712_028_F0_60291_61915: 1626 frames, 5218 nodes (2220 reachable), 86981 links
+a group of british executives said the country's problems were more obvious than it's opportunities but u. s. commerce secretary mickey kantor journeying with representatives of eighteen american companies said he'd seen opportunities but then admitted they were [[ => A ]] long term [[ AMY CAZLOW(oov) => DINI TUSSLE ]] reports (k960712_028_F0_60291_61915) << 43 ref; 1 2.3% oov; 44 hyp; 41 95.3% corr; 3 7.0% err; 1.9s CPU >>
+==    1122 ref;    28   2.5% oov;    1125 hyp;    1075  95.8% corr;     52   4.6% err;  29.7s CPU; k960712_028_F0_60291_61915
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_018_F0_38587_40228.lat
+INFO: ../dp.c(242): k960712_018_F0_38587_40228: 1643 frames, 9746 nodes (4509 reachable), 213013 links
+homosexuals have been saying they only want tolerance now it's clear they have been less than honest they already have tolerance but they are aiming for government and corporate mandated acceptance businessmen would have to subsidize homosexuality or face legal [[ SANCTIONS => ELECTIONS ]] (k960712_018_F0_38587_40228) << 41 ref; 0 0.0% oov; 41 hyp; 40 97.6% corr; 1 2.4% err; 3.5s CPU >>
+==    1163 ref;    28   2.4% oov;    1166 hyp;    1115  95.9% corr;     53   4.6% err;  33.3s CPU; k960712_018_F0_38587_40228
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_007_F0_13573_15225.lat
+INFO: ../dp.c(242): n960715p_007_F0_13573_15225: 1654 frames, 7853 nodes (3699 reachable), 151080 links
+is russian president boris yeltsin sick or just tired monday mr. yeltsin [[ ABRUPTLY => ROUGHLY ]] postponed a planned meeting with united states vice president al gore the president's aides say he started a vacation to rest after his recent hectic campaign schedule and gore echoed that (n960715p_007_F0_13573_15225) << 44 ref; 0 0.0% oov; 44 hyp; 43 97.7% corr; 1 2.3% err; 2.9s CPU >>
+==    1207 ref;    28   2.3% oov;    1210 hyp;    1158  95.9% corr;     54   4.5% err;  36.2s CPU; n960715p_007_F0_13573_15225
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_070_F0_149678_151340.lat
+INFO: ../dp.c(242): n960715p_070_F0_149678_151340: 1664 frames, 4878 nodes (1975 reachable), 53996 links
+a dole [[ ADVISOR => BUDGET ]] says he can even make the case that pat buchanan's continued criticism of dole on the abortion issue is not a bad thing if he wants to be our sister soldier said the advisor than we say go pat go candy crowley c. n. n. at dole campaign headquarters washington (n960715p_070_F0_149678_151340) << 53 ref; 0 0.0% oov; 53 hyp; 52 98.1% corr; 1 1.9% err; 1.2s CPU >>
+==    1260 ref;    28   2.2% oov;    1263 hyp;    1210  96.0% corr;     55   4.4% err;  37.4s CPU; n960715p_070_F0_149678_151340
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_040_F0_78179_79852.lat
+INFO: ../dp.c(242): n960715p_040_F0_78179_79852: 1675 frames, 7941 nodes (3134 reachable), 130765 links
+as we reported u. s. vice president al gore is in russia i spoke to him earlier about several topics among them i asked him if he thought u. s. policy is wedded too much to personality in the form of boris yeltsin rather the than the historical government to government process (n960715p_040_F0_78179_79852) << 52 ref; 0 0.0% oov; 52 hyp; 52 100.0% corr; 0 0.0% err; 3.0s CPU >>
+==    1312 ref;    28   2.1% oov;    1315 hyp;    1262  96.2% corr;     55   4.2% err;  40.5s CPU; n960715p_040_F0_78179_79852
+INFO: ../line2wid.c(64): Adding AFFIMATIVE to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_027_F0_523607_525326.lat
+INFO: ../dp.c(242): o960710p_027_F0_523607_525326: 1721 frames, 6386 nodes (1987 reachable), 73961 links
+last week the supreme court delivered a set back [[ AFFIMATIVE(oov) => TOO AFFIRMATIVE ]] action in higher education it upheld a federal appeals court ruling that found [[ RACE => WAITS ]] based college admissions in three southern states to be unconstitutional commentator barbara [[ RENAUT(oov) => RONALD ]] gonzales hopes the decision won't kill affirmative action (o960710p_027_F0_523607_525326) << 45 ref; 2 4.4% oov; 46 hyp; 42 93.3% corr; 4 8.9% err; 1.4s CPU >>
+==    1357 ref;    30   2.2% oov;    1361 hyp;    1304  96.1% corr;     59   4.3% err;  41.8s CPU; o960710p_027_F0_523607_525326
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_013_F0_31504_33226.lat
+INFO: ../dp.c(242): k960712_013_F0_31504_33226: 1724 frames, 4487 nodes (1461 reachable), 31276 links
+betsy keefer works at the best western hotel in cary north carolina she had to turn people away last night which she says almost never happens on a weekday those lucky enough to find safe harbor in the suburban hotel may be contributing to another unexpected financial boom for the town (k960712_013_F0_31504_33226) << 51 ref; 0 0.0% oov; 51 hyp; 51 100.0% corr; 0 0.0% err; 0.7s CPU >>
+==    1408 ref;    30   2.1% oov;    1412 hyp;    1355  96.2% corr;     59   4.2% err;  42.5s CPU; k960712_013_F0_31504_33226
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_165_F0_168788_170519.lat
+INFO: ../dp.c(242): l960710_165_F0_168788_170519: 1733 frames, 7617 nodes (3238 reachable), 135472 links
+jonathan larson laid down here on the floor of the back of the theater with severe chest pains he told those around him he thought [[ HE => OH ]] was having a [[ HEAT => HEARTY ]] attack and eerily as he waited for the ambulance to arrive he [[ HAD => OR ]] listened to a rehearsal of his own song about dying young in america (l960710_165_F0_168788_170519) << 56 ref; 0 0.0% oov; 56 hyp; 53 94.6% corr; 3 5.4% err; 3.3s CPU >>
+==    1464 ref;    30   2.0% oov;    1468 hyp;    1408  96.2% corr;     62   4.2% err;  45.8s CPU; l960710_165_F0_168788_170519
+INFO: ../line2wid.c(64): Adding LANNING to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_098_F0_174405_176147.lat
+INFO: ../dp.c(242): k960712_098_F0_174405_176147: 1744 frames, 4878 nodes (1870 reachable), 59327 links
+[[ OFFICIAL => WOULD ]] today was sentenced to more than three years in jail and ordered to repay more than two hundred thousand dollars for hiring his girlfriend as a consultant on electronic warfare the arrangement allowed the onetime legal secretary who had no military or technical experience to travel to europe asia and hawaii with her boyfriend william [[ LANNING(oov) => WINING ]] (k960712_098_F0_174405_176147) << 57 ref; 1 1.8% oov; 57 hyp; 55 96.5% corr; 2 3.5% err; 1.5s CPU >>
+==    1521 ref;    31   2.0% oov;    1525 hyp;    1463  96.2% corr;     64   4.2% err;  47.3s CPU; k960712_098_F0_174405_176147
+INFO: ../line2wid.c(64): Adding TUMEE to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_015_F0_33545_35443.lat
+INFO: ../dp.c(242): k960712_015_F0_33545_35443: 1900 frames, 5904 nodes (2287 reachable), 49189 links
+but driving three hours inland may not have provided the safety tourists expected at least one family decided to keep on driving keefer says after they found out about the tornado warnings now being posted far inland as a result of hurricane bertha for marketplace radio i'm dianne [[ TUMEE(oov) => TOOMEY ]] in chapel hill north carolina (k960712_015_F0_33545_35443) << 54 ref; 1 1.9% oov; 54 hyp; 53 98.1% corr; 1 1.9% err; 1.2s CPU >>
+==    1575 ref;    32   2.0% oov;    1579 hyp;    1516  96.3% corr;     65   4.1% err;  48.5s CPU; k960712_015_F0_33545_35443
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_031_F0_65808_67725.lat
+INFO: ../dp.c(242): k960712_031_F0_65808_67725: 1919 frames, 6909 nodes (2868 reachable), 97954 links
+the american c. e. o.'s [[ HAILED => HELP ]] from brown and root enron boeing and fifteen other top u. s. firms they want a big chunk of the five billion dollar reconstruction budget bosnia's slated to receive from outside donors over the [[ NEXT => MIX ]] several years among some locals here the visit has raised some high expectations bosnian prime minister hassan [[ MARADOVITCH(oov) => ROBERT ]] (k960712_031_F0_65808_67725) << 59 ref; 1 1.7% oov; 59 hyp; 56 94.9% corr; 3 5.1% err; 2.5s CPU >>
+==    1634 ref;    33   2.0% oov;    1638 hyp;    1572  96.2% corr;     68   4.2% err;  51.0s CPU; k960712_031_F0_65808_67725
+INFO: ../line2wid.c(64): Adding RADAVAN to dictionary
+INFO: ../line2wid.c(64): Adding KARADICH to dictionary
+INFO: ../line2wid.c(64): Adding ROTCKO to dictionary
+INFO: ../line2wid.c(64): Adding MALOTITCH to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_046_F0_97475_99468.lat
+INFO: ../dp.c(242): n960715p_046_F0_97475_99468: 1995 frames, 8805 nodes (3511 reachable), 173996 links
+mr. vice president quickly changing subjects before our time runs out there are international arrest warrants for serbian leader [[ RADAVAN(oov) KARADICH(oov) => RADOVAN KARADZIC YOU ]] and general [[ ROTCKO(oov) MALOTITCH(oov) => RATKO BLOCKAGE ]] the bush administration went after and got [[ PANAMA'S => LOST ]] former leader manuel noriega why isn't your administration doing the same in this case (n960715p_046_F0_97475_99468) << 47 ref; 4 8.5% oov; 48 hyp; 42 89.4% corr; 6 12.8% err; 2.9s CPU >>
+==    1681 ref;    37   2.2% oov;    1686 hyp;    1614  96.0% corr;     74   4.4% err;  54.0s CPU; n960715p_046_F0_97475_99468
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_086_F0_79606_81611.lat
+INFO: ../dp.c(242): l960710_086_F0_79606_81611: 2007 frames, 5988 nodes (2362 reachable), 69525 links
+prime time has obtained a confidential march nineteen ninety five report from the world swimming federation which reveals that the chinese had been concealing the fact that nine more of their swimmers had tested positive since nineteen ninety [[ MAKING => MANY ]] the real total of chinese swimmers testing positive for drugs nineteen (l960710_086_F0_79606_81611) << 50 ref; 0 0.0% oov; 50 hyp; 49 98.0% corr; 1 2.0% err; 1.5s CPU >>
+==    1731 ref;    37   2.1% oov;    1736 hyp;    1663  96.1% corr;     75   4.3% err;  55.4s CPU; l960710_086_F0_79606_81611
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_066_F0_139004_141009.lat
+INFO: ../dp.c(242): n960715p_066_F0_139004_141009: 2007 frames, 6161 nodes (2349 reachable), 81400 links
+very interesting presidents clinton's presumptive republican challenger bob dole is intensifying his search for a [[ => ALL ]] vice presidential running mate republican leaders say dole's choice will be key to the success of the republican ticket but they also say dole has work to do in other areas c. n. n.'s candy crowley has the story (n960715p_066_F0_139004_141009) << 54 ref; 0 0.0% oov; 55 hyp; 54 100.0% corr; 1 1.9% err; 2.0s CPU >>
+==    1785 ref;    37   2.1% oov;    1791 hyp;    1717  96.2% corr;     76   4.3% err;  57.5s CPU; n960715p_066_F0_139004_141009
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_054_F0_116395_118485.lat
+INFO: ../dp.c(242): n960715p_054_F0_116395_118485: 2092 frames, 7115 nodes (2680 reachable), 96937 links
+finally your most favorite subject the presidential campaign this year back here in the united states the opposition senator bob dole is criticizing routinely the foreign policy [[ PRACTICE => WATCHERS ]] by you and president clinton the upshot of his criticism is that the [[ CLINTON => ONE ]] administration is substandard (n960715p_054_F0_116395_118485) << 45 ref; 0 0.0% oov; 45 hyp; 43 95.6% corr; 2 4.4% err; 1.8s CPU >>
+==    1830 ref;    37   2.0% oov;    1836 hyp;    1760  96.2% corr;     78   4.3% err;  59.3s CPU; n960715p_054_F0_116395_118485
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_037_F0_41327_43418.lat
+INFO: ../dp.c(242): l960710_037_F0_41327_43418: 2093 frames, 8822 nodes (3569 reachable), 120478 links
+next week here in atlanta the nineteen ninety six olympic games get under way and the international olympic committee vows to make every effort to see to it that these games are clean but the committee's attitude toward the record of chinese cheating is not encouraging [[ INDEED => A. ]] many american competitors believe the olympic committee has chosen to ignore the evidence (l960710_037_F0_41327_43418) << 60 ref; 0 0.0% oov; 60 hyp; 59 98.3% corr; 1 1.7% err; 2.9s CPU >>
+==    1890 ref;    37   2.0% oov;    1896 hyp;    1819  96.2% corr;     79   4.2% err;  62.2s CPU; l960710_037_F0_41327_43418
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_029_F0_61958_64066.lat
+INFO: ../dp.c(242): k960712_029_F0_61958_64066: 2110 frames, 6939 nodes (2364 reachable), 77017 links
+to survey the landscape is to see a dump site from the war's wreckage half of the industries have been destroyed and even more have been looted bare unemployment is a staggering eighty percent kantor assumed ron brown's place after his death he's also assumed the late commerce secretary's mission in the balkans he says u. s. firms are well equipped to capitalize on bosnia's urgent needs (k960712_029_F0_61958_64066) << 67 ref; 0 0.0% oov; 67 hyp; 67 100.0% corr; 0 0.0% err; 2.1s CPU >>
+==    1957 ref;    37   1.9% oov;    1963 hyp;    1886  96.4% corr;     79   4.0% err;  64.3s CPU; k960712_029_F0_61958_64066
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_016_F0_35500_37693.lat
+INFO: ../dp.c(242): k960712_016_F0_35500_37693: 2195 frames, 5464 nodes (1834 reachable), 57190 links
+the house today voted to outlaw gay marriage in federal law under the bill states would still have the authority to legalize or reject the legality of same sex marriages one key issue here is whether same sex couples should be eligible for the financial perks that come with being legally married such as employee health policies inheritance rights and social security benefits cynthia engle reports from washington (k960712_016_F0_35500_37693) << 68 ref; 0 0.0% oov; 68 hyp; 68 100.0% corr; 0 0.0% err; 1.5s CPU >>
+==    2025 ref;    37   1.8% oov;    2031 hyp;    1954  96.5% corr;     79   3.9% err;  65.8s CPU; k960712_016_F0_35500_37693
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_053_F0_88179_90402.lat
+INFO: ../dp.c(242): k960712_053_F0_88179_90402: 2225 frames, 6142 nodes (2086 reachable), 42953 links
+it should be the auto company today announced it made over a billion dollars in the quarter that's just ended seven times its profit for the same period a year ago detroit's other two auto makers announce their profits next week and are expected to deliver good news as well but auto expert alex taylor says all that money hides one very troubling fact none of the u. s. auto companies is making money on cars these days (k960712_053_F0_88179_90402) << 78 ref; 0 0.0% oov; 78 hyp; 78 100.0% corr; 0 0.0% err; 1.3s CPU >>
+==    2103 ref;    37   1.8% oov;    2109 hyp;    2032  96.6% corr;     79   3.8% err;  67.1s CPU; k960712_053_F0_88179_90402
+INFO: ../line2wid.c(64): Adding PAIGN to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_077_F0_178180_180430.lat
+INFO: ../dp.c(242): n960715p_077_F0_178180_180430: 2252 frames, 8005 nodes (2843 reachable), 84488 links
+as the clock ticks down to the start of the summer olympics the olympic torch is making it's way through the whole state of georgia olympics chairman billy [[ PAIGN(oov) => PAINED ]] the business man who was largely responsible for bringing the games to atlanta carried the torch on monday at the university of georgia in athens the torch arrives in atlanta friday the day of the opening ceremonies (n960715p_077_F0_178180_180430) << 66 ref; 1 1.5% oov; 66 hyp; 65 98.5% corr; 1 1.5% err; 2.3s CPU >>
+==    2169 ref;    38   1.8% oov;    2175 hyp;    2097  96.7% corr;     80   3.7% err;  69.4s CPU; n960715p_077_F0_178180_180430
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_006_F0_23342_25763.lat
+INFO: ../dp.c(242): k960712_006_F0_23342_25763: 2423 frames, 6728 nodes (2904 reachable), 84729 links
+this afternoon power was out at least from myrtle beach south carolina to [[ CAPE => KATE ]] fear at wilmington north carolina long time residents are recalling hurricane hazel [[ IN => THE ]] nineteen fifty four which was a more powerful storm than bertha but followed a similar track beach communities are mostly abandoned and the dollars lost are [[ UNLIKELY => AN LIKED ]] to be made up later in the tourist season many of those very dollars are now being spent inland as dianne [[ TUMEE(oov) => TOOMEY ]] reports from chapel hill (k960712_006_F0_23342_25763) << 80 ref; 1 1.2% oov; 81 hyp; 76 95.0% corr; 5 6.2% err; 3.0s CPU >>
+==    2249 ref;    39   1.7% oov;    2256 hyp;    2173  96.6% corr;     85   3.8% err;  72.5s CPU; k960712_006_F0_23342_25763
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_002_F0_319216_321695.lat
+INFO: ../dp.c(242): o960710p_002_F0_319216_321695: 2481 frames, 9904 nodes (3709 reachable), 116850 links
+it's hard to go to a [[ => OUR ]] restaurant or a store without hearing something resembling music music you didn't ask to hear it's there for a reason retailers believe the near music enhances their merchandise and puts consumers in a good mood the objective of course is to get [[ YOU => ]] to buy something wendy kaufman reports most of it is programmed by two seattle companies muzak and a. e. i. [[ => KNEW ]] music network (o960710p_002_F0_319216_321695) << 71 ref; 0 0.0% oov; 72 hyp; 70 98.6% corr; 3 4.2% err; 3.2s CPU >>
+==    2320 ref;    39   1.7% oov;    2328 hyp;    2243  96.7% corr;     88   3.8% err;  75.6s CPU; o960710p_002_F0_319216_321695
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_050_F0_106434_108914.lat
+INFO: ../dp.c(242): n960715p_050_F0_106434_108914: 2482 frames, 9149 nodes (3712 reachable), 117210 links
+moving to the middle east nineteen united states service personnel murdered by a terrorist bomb that exploded a few weeks ago the director of the f. b. i. louis freeh still over there trying desperately to get cooperation from the saudi officials are saudi officials stone walling the united states when it comes to complete and total cooperation in this investigation (n960715p_050_F0_106434_108914) << 61 ref; 0 0.0% oov; 61 hyp; 61 100.0% corr; 0 0.0% err; 3.2s CPU >>
+==    2381 ref;    39   1.6% oov;    2389 hyp;    2304  96.8% corr;     88   3.7% err;  78.9s CPU; n960715p_050_F0_106434_108914
+INFO: ../line2wid.c(64): Adding PARALYMPIC to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_088_F0_158150_160641.lat
+INFO: ../dp.c(242): k960712_088_F0_158150_160641: 2493 frames, 7430 nodes (3013 reachable), 76178 links
+and civic leaders are trying to retain this sort of free advertising that attracts such prospects by keeping its new sports facilities busy into the next century the olympic committee's doctor day says the city is already pitching to the n. f. l. to get the super bowl back in the year two thousand the city will host the n. c. double a. final four in two thousand two but none of this will happen for a while and certainly not in august after the olympics and the [[ PARALYMPIC(oov) => IRELAND ]] games that follow pack up (k960712_088_F0_158150_160641) << 94 ref; 1 1.1% oov; 94 hyp; 93 98.9% corr; 1 1.1% err; 2.9s CPU >>
+==    2475 ref;    40   1.6% oov;    2483 hyp;    2397  96.8% corr;     89   3.6% err;  81.8s CPU; k960712_088_F0_158150_160641
+INFO: ../line2wid.c(64): Adding GOYZUETA to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_093_F0_166464_169035.lat
+INFO: ../dp.c(242): k960712_093_F0_166464_169035: 2573 frames, 9016 nodes (3577 reachable), 119144 links
+during a speech in may to the local chamber of commerce [[ GOYZUETA(oov) => HAS WINTER ]] seemed to be pointing out something well documented by formal economics that a windfall badly managed can be worse than no windfall at all [[ GOYZUETA(oov) => ZWICK ]] insisted that the real legacy of the games should be to improve the quality of life for citizens of the region coke's chief executive than pulled out the big rhetorical cannon evoking the image of another city that hosted an olympics in the not so distant past (k960712_093_F0_166464_169035) << 84 ref; 2 2.4% oov; 85 hyp; 82 97.6% corr; 3 3.6% err; 4.5s CPU >>
+==    2559 ref;    42   1.6% oov;    2568 hyp;    2479  96.9% corr;     92   3.6% err;  86.3s CPU; k960712_093_F0_166464_169035
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_037_F0_71575_74155.lat
+INFO: ../dp.c(242): k960712_037_F0_71575_74155: 2582 frames, 8126 nodes (3003 reachable), 72017 links
+impatient with what seems like a revolving door of foreign business people germans french danes and others who come and go so fast they have no time to examine bosnia's commercial opportunities the kantor mission for example was in bosnia just twelve hours today a few weeks ago seventy two german business people were here to rekindle old ties asked if they feel the heat from other investors germany's deputy ambassador to bosnia alexander novak responds (k960712_037_F0_71575_74155) << 76 ref; 0 0.0% oov; 76 hyp; 76 100.0% corr; 0 0.0% err; 2.2s CPU >>
+==    2635 ref;    42   1.6% oov;    2644 hyp;    2555  97.0% corr;     92   3.5% err;  88.5s CPU; k960712_037_F0_71575_74155
+INFO: ../line2wid.c(64): Adding SAMARACH to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_117_F0_101524_104184.lat
+INFO: ../dp.c(242): l960710_117_F0_101524_104184: 2662 frames, 9216 nodes (3680 reachable), 115412 links
+we asked the chinese women's swim team coach olympic committee president [[ SAMARACH(oov) => SUMMARIZED ]] and the chinese government for interviews they all declined but the chinese government is on record as denying any official involvement in sports cheating and says it is vigorously trying to root it out as for the nineteen chinese swimmers who tested positive all were suspended eighteen of them for two years one for a month some have now retired but a few are back and still swimming competitively (l960710_117_F0_101524_104184) << 81 ref; 1 1.2% oov; 81 hyp; 80 98.8% corr; 1 1.2% err; 3.7s CPU >>
+==    2716 ref;    43   1.6% oov;    2725 hyp;    2635  97.0% corr;     93   3.4% err;  92.2s CPU; l960710_117_F0_101524_104184
+INFO: ../line2wid.c(64): Adding EDS to dictionary
+INFO: ../line2wid.c(64): Adding SACHS'S to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_073_F0_123351_126116.lat
+INFO: ../dp.c(242): i960711p_073_F0_123351_126116: 2767 frames, 10365 nodes (3612 reachable), 117353 links
+as a result of redistricting some some races we're seeing some early primary results here is the national page new york times this morning [[ AND => ]] there are also a number of op [[ EDS(oov) => THE ]] being written about this kevin [[ SACHS'S(oov) => RACKS ]] piece here's the lead on it two black members of congress from georgia won impressive victories in democratic primaries in newly drawn white majority districts on tuesday a testament to the power of incumbency organization and maybe just maybe the diminishing influence of race on southern politics (i960711p_073_F0_123351_126116) << 86 ref; 2 2.3% oov; 85 hyp; 83 96.5% corr; 3 3.5% err; 3.7s CPU >>
+==    2802 ref;    45   1.6% oov;    2810 hyp;    2718  97.0% corr;     96   3.4% err;  95.9s CPU; i960711p_073_F0_123351_126116
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_037_F0_54770_57642.lat
+INFO: ../dp.c(242): n960715p_037_F0_54770_57642: 2874 frames, 14643 nodes (5546 reachable), 314076 links
+in the united states politics and economics apparently are providing american president bill clinton with a dilemma congressional sources are telling c. n. n. some in the clinton administration want the president to leave intact part of a new law that would punish international investment in cuba they say politically it would help his standing with cuban americans [[ BUT => LOT ]] others on the president's team say if the helms burton law does take effect some u. s. trading partners will be angry and americans could lose jobs (n960715p_037_F0_54770_57642) << 86 ref; 0 0.0% oov; 86 hyp; 85 98.8% corr; 1 1.2% err; 8.7s CPU >>
+==    2888 ref;    45   1.6% oov;    2896 hyp;    2803  97.1% corr;     97   3.4% err; 104.6s CPU; n960715p_037_F0_54770_57642
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_058_F0_127200_130265.lat
+INFO: ../dp.c(242): n960715p_058_F0_127200_130265: 3067 frames, 11231 nodes (3580 reachable), 146175 links
+and finally related to u. s. policy politics that is and this [[ IS => A ]] my last question in regards to cuba there is obvious the obviously the deadline that president clinton is under as regards helms burton law part of the speculation about the white house problem with this situation is that you and the president do not want to alarm or inflame the cuban american community in dade county is that really a factor in your deliberations (n960715p_058_F0_127200_130265) << 77 ref; 0 0.0% oov; 77 hyp; 76 98.7% corr; 1 1.3% err; 3.8s CPU >>
+==    2965 ref;    45   1.5% oov;    2973 hyp;    2879  97.1% corr;     98   3.3% err; 108.4s CPU; n960715p_058_F0_127200_130265
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_083_F0_147889_151106.lat
+INFO: ../dp.c(242): k960712_083_F0_147889_151106: 3219 frames, 10270 nodes (3443 reachable), 97954 links
+but also as we mentioned without any real profit the los angeles olympics by comparison ended with a two hundred and thirty two million dollar surplus that profit which is still being used mainly to fund youth sports programs in southern california and around the world was possible because l. a. didn't have to promise to build a lot of new facilities to attract the games following montreal's financial debacle and the u. s. boycott of the moscow games l. a. was the only city to bid for the nineteen eighty four olympics things of course have gotten a lot more competitive and expensive in the intervening years (k960712_083_F0_147889_151106) << 108 ref; 0 0.0% oov; 108 hyp; 108 100.0% corr; 0 0.0% err; 3.3s CPU >>
+==    3073 ref;    45   1.5% oov;    3081 hyp;    2987  97.2% corr;     98   3.2% err; 111.7s CPU; k960712_083_F0_147889_151106
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_001_F0_12731_16026.lat
+INFO: ../dp.c(242): i960711p_001_F0_12731_16026: 3297 frames, 16091 nodes (7539 reachable), 342152 links
+what's in [[ YOUR => EAR ]] hometown newspaper this morning we [[ ALWAYS => WITH ]] like to hear during this first part of our program find an interesting editorial that stirred your imagination or got you [[ ANGRY => ANCHORAGE ]] or find a news story about national issues that you'd like to tell our audience about here's how [[ => E. ]] you do it [[ IF => ]] you're watching us in the eastern or central time zones two zero two six two four eleven eleven if you're watching us out west it's two zero two six two four eleven fifteen if [[ YOU'D => M. ]] like to send in your article and comment by fax here's the fax line two zero two three nine three three three four six if you've been saving an article from a magazine that's welcome as well as long as it's something new that we can [[ PUT => ]] on the table here to talk about (i960711p_001_F0_12731_16026) << 142 ref; 0 0.0% oov; 141 hyp; 136 95.8% corr; 7 4.9% err; 19.4s CPU >>
+==    3215 ref;    45   1.4% oov;    3222 hyp;    3123  97.1% corr;    105   3.3% err; 131.0s CPU; i960711p_001_F0_12731_16026
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_021_F0_24854_28245.lat
+INFO: ../dp.c(242): l960710_021_F0_24854_28245: 3393 frames, 12492 nodes (5301 reachable), 183065 links
+they say cheaters never win but as the summer olympic games get underway in atlanta next week there is a suspicion that the cheaters may by using body building drugs to gain an unfair advantage the world was shocked when canadian gold medal sprinter ben johnson tested positive for drugs twice and was banned from competition for life but the more shocking story may be the one on the record of the chinese women's swim team now two u. s. swimmers have tested positive for drugs since nineteen eighty but as you're about to see that's [[ NOTHING => THE ]] compared to the chinese (l960710_021_F0_24854_28245) << 101 ref; 0 0.0% oov; 101 hyp; 100 99.0% corr; 1 1.0% err; 7.6s CPU >>
+==    3316 ref;    45   1.4% oov;    3323 hyp;    3223  97.2% corr;    106   3.2% err; 138.7s CPU; l960710_021_F0_24854_28245
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_077_F0_135480_138911.lat
+INFO: ../dp.c(242): k960712_077_F0_135480_138911: 3433 frames, 10173 nodes (3358 reachable), 86459 links
+olympic arena that will eventually be converted into the new home of the braves it's part of the region's inheritance of a half billion dollars worth of new sports facilities beneath the sidewalk the phone company bell south has rigged the most extensive fiber optic network of any city in the world to the west there is an olympic village that will soon be turned into new dorms for georgia tech and georgia state and the center piece of atlanta's olympic make over the new twenty one [[ ACRE => AKERS ]] centennial park has been cut out of what used to be a generally seedy neighborhood doctor sherman day is legacy director for the atlanta committee for the olympic games (k960712_077_F0_135480_138911) << 117 ref; 0 0.0% oov; 117 hyp; 116 99.1% corr; 1 0.9% err; 3.4s CPU >>
+==    3433 ref;    45   1.3% oov;    3440 hyp;    3339  97.3% corr;    107   3.1% err; 142.1s CPU; k960712_077_F0_135480_138911
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_025_F0_37682_41185.lat
+INFO: ../dp.c(242): n960715p_025_F0_37682_41185: 3505 frames, 12986 nodes (4490 reachable), 167406 links
+british authorities claim they have broken up a terrorist ring that was just hours away from launching a major bomb campaign police say they arrested seven men with links to the irish republican army during predawn raids in south london they also claim to have confiscated enough bomb making components to produce thirty six devices scotland yard says it believes the suspects were planning a series of attacks against london area utility installations thousands of catholics attended funeral services for a man killed during last weeks northern ireland riots (n960715p_025_F0_37682_41185) << 89 ref; 0 0.0% oov; 89 hyp; 89 100.0% corr; 0 0.0% err; 5.1s CPU >>
+==    3522 ref;    45   1.3% oov;    3529 hyp;    3428  97.3% corr;    107   3.0% err; 147.2s CPU; n960715p_025_F0_37682_41185
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_019_F0_40237_43884.lat
+INFO: ../dp.c(242): k960712_019_F0_40237_43884: 3649 frames, 9621 nodes (3650 reachable), 112334 links
+but members of congress and people in the business community readily admit there [[ HAS => A ]] been no credible research into how much it would really cost to legally sanction gay or lesbian couples there may be no numbers on a large scale but the [[ UNIVERSITY => TO ]] of maryland worked out its own numbers as it considered today whether to extend employee benefits [[ TO => ]] domestic partners their cost estimate eighteen hundred dollars just for health benefits alone for each new domestic partner the board rejected the proposal however david smith with the human rights campaign the nation's largest gay and lesbian political organization maintains that the cost to legally recognize same sex couples would be minimal (k960712_019_F0_40237_43884) << 113 ref; 0 0.0% oov; 112 hyp; 110 97.3% corr; 3 2.7% err; 5.1s CPU >>
+==    3635 ref;    45   1.2% oov;    3641 hyp;    3538  97.3% corr;    110   3.0% err; 152.3s CPU; k960712_019_F0_40237_43884
+INFO: ../line2wid.c(64): Adding EURIPIDES to dictionary
+INFO: ../line2wid.c(64): Adding RETRACES to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_126_F0_126220_129878.lat
+INFO: ../dp.c(242): l960710_126_F0_126220_129878: 3660 frames, 14769 nodes (5721 reachable), 219473 links
+when good [[ MEN => ON ]] die their goodness does not perish those are the words of a greek playwright [[ EURIPIDES(oov) => REPRODUCE ]] and they resonate through our next story because it's about a playwright who struggled a lifetime to bring his vision to the stage and then just as jonathan [[ LARSON'S(oov) => LARSEN ]] first major musical rent was about to open he died never knowing his work would receive [[ RAVE => YOU ]] reviews four tony awards and the pulitzer prize but there is another twist to this tragic plot tonight cynthia mcfadden [[ RETRACES(oov) => RETRACED ]] his [[ => HAS ]] last few days of life and explores some very disturbing questions about his death (l960710_126_F0_126220_129878) << 100 ref; 3 3.0% oov; 101 hyp; 95 95.0% corr; 6 6.0% err; 8.4s CPU >>
+==    3735 ref;    48   1.3% oov;    3742 hyp;    3633  97.3% corr;    116   3.1% err; 160.6s CPU; l960710_126_F0_126220_129878
+INFO: ../line2wid.c(64): Adding MLADICH to dictionary
+INFO: ../line2wid.c(64): Adding SHEVARDNIDZA to dictionary
+INFO: ../line2wid.c(64): Adding NENET to dictionary
+INFO: ../line2wid.c(64): Adding SHEVEK to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/p960712_001_F0_64058_68014.lat
+INFO: ../dp.c(242): p960712_001_F0_64058_68014: 3958 frames, 12164 nodes (4324 reachable), 173227 links
+the international war crimes tribunal in the hague today has issued new arrest warrants for bosnian serb leaders [[ RADAVAN(oov) KARADICH(oov) => REGIMENT HARDEN ]] and ratko [[ MLADICH(oov) => MLADIC ]] the tribunal confirmed there's enough evidence to put the two men on trial for genocide charges for their role in bosnia's three year long civil war the pair are charged [[ WITH => WAS ]] supervising the slaughter of thousands of muslim men in the eastern enclave of [[ SHEVARDNIDZA(oov) => SREBRENICA ]] exactly one year ago it was in commemoration of that anniversary that thousands of bosnian muslims gathered in nearby tuzla today to mark what many are calling europe's worst war atrocity since nineteen forty five the world's correspondent for the former yugoslavia [[ NENET(oov) SHEVEK(oov) => CONNECTION ACT ]] reports (p960712_001_F0_64058_68014) << 113 ref; 6 5.3% oov; 113 hyp; 106 93.8% corr; 7 6.2% err; 7.6s CPU >>
+==    3848 ref;    54   1.4% oov;    3855 hyp;    3739  97.2% corr;    123   3.2% err; 168.2s CPU; p960712_001_F0_64058_68014
+INFO: ../line2wid.c(64): Adding RADICHEQUE to dictionary
+INFO: ../line2wid.c(64): Adding RESPECTABLY to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_081_F0_141318_146285.lat
+INFO: ../dp.c(242): k960712_081_F0_141318_146285: 4969 frames, 14423 nodes (5221 reachable), 156338 links
+[[ BY => LET ]] the closing ceremony the olympics will [[ HAVE => ]] dumped about five point one billion dollars into the region's economy since nineteen ninety one this represents everything olympic committee dollars visitor dollars and the domino effects of both georgia state economist donald [[ RADICHEQUE(oov) => RATAJCZAK ]] says the precise economic legacy of the games is hard to determine [[ THERE'S => A ]] no telling for instance if new international routes added this summer to the cities airport will endure after the closing ceremonies despite the predictable slow down following the games the city is projected to grow [[ RESPECTABLY(oov) => RESPECTS ]] at [[ => LEAP ]] a two point eight percent annual rate through the end of the decade and [[ RADICHEQUE(oov) => RATAJCZAK ]] is persuaded of one thing atlanta is no montreal a city where today's grade schoolers will still be paying off money borrowed to finance the nineteen seventy six olympic games when they're grown up montreal he says had a rude post games awakening (k960712_081_F0_141318_146285) << 150 ref; 3 2.0% oov; 150 hyp; 144 96.0% corr; 7 4.7% err; 9.2s CPU >>
+==    3998 ref;    57   1.4% oov;    4005 hyp;    3883  97.1% corr;    130   3.3% err; 177.4s CPU; k960712_081_F0_141318_146285
+INFO: ../line2wid.c(64): Adding GRANDQUIST to dictionary
+INFO: ../line2wid.c(64): Adding RENEY to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_019_F0_348629_354220.lat
+INFO: ../dp.c(242): o960710p_019_F0_348629_354220: 5593 frames, 21284 nodes (7207 reachable), 250976 links
+for audio inspiration [[ GRANDQUIST(oov) => REHNQUIST ]] listens to lots of music of all kinds she goes to movies reads trendy magazines and pays attention to advertisements and commercials she visits the retail stores looks at the clothes and watches the customers then she chooses from among a half a million songs in the company's music library academic researchers have shown that music is effective in a retail or service environment fast music tends to move people along you'll often hear it in fast food restaurants while slower music has been shown to increase the amount of money that patrons spend on alcoholic beverages in one study in a wine store charles [[ RENEY(oov) => RAINY ]] of texas tech university found that when top forty music was played people spent about six and a half dollars on a bottle of wine but when classical music was played they spent eleven and a half dollars per bottle (o960710p_019_F0_348629_354220) << 150 ref; 2 1.3% oov; 150 hyp; 148 98.7% corr; 2 1.3% err; 13.3s CPU >>
+==    4148 ref;    59   1.4% oov;    4155 hyp;    4031  97.2% corr;    132   3.2% err; 190.7s CPU; o960710p_019_F0_348629_354220
+INFO: ../line2wid.c(64): Adding TALONS to dictionary
+INFO: ../dpalign.c(90): Reading DAG file: /net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_054_F0_90457_100934.lat
+INFO: ../dp.c(242): k960712_054_F0_90457_100934: 10479 frames, 32074 nodes (12637 reachable), 401006 links
+it's not as if times are tough new vehicle sales are running at better than fifteen million a year lots of popular new models have [[ ARRIVED => OR ]] on the [[ => KNOW ]] market gasoline prices despite a recent run up are still dirt cheap by any measure but detroit is making no money on cars because of a fundamental imbalance in supply and demand u. s. auto companies have been losing customers for their cars for fifteen years but detroit has been slow to cut production so automakers have been forced to slash prices offer rebates and sell millions of cars at give away prices for instance the popularity of two door models has gone the way of drive in movies and bowling dates but detroit still builds lots of them chrysler can't sell its eagle [[ TALONS(oov) => ALLEN'S ]] at ford sales of the once proud thunderbird are falling fast and g. m. is watching the [[ QUICK => DUET ]] riviera clog dealers' lots what's killed passenger car sales of course has been the surging popularity of light trucks of the four top selling vehicles in june three were full size pick up trucks and the fourth was a sport utility vehicle car profits are likely to deteriorate even further over the next few years auto sales probably won't improve before the end of the decade the shift to trucks shows no signs of abating and the japanese are on the verge of staging a major comeback for now auto makers are hiding their car problems with truck profits but that won't last forever every manufacturer is trying to build more trucks which means that some day there will be too many of them too in new [[ YORK => ARE ]] this is alex taylor for marketplace (k960712_054_F0_90457_100934) << 285 ref; 1 0.4% oov; 286 hyp; 281 98.6% corr; 5 1.8% err; 39.6s CPU >>
+==    4433 ref;    60   1.4% oov;    4441 hyp;    4312  97.3% corr;    137   3.1% err; 230.3s CPU; k960712_054_F0_90457_100934
+SUMMARY: 4433 ref; 60 1.353% oov; 4441 hyp; 4312 97.270% corr; 137 3.090% err; 230.3s CPU

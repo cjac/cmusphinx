@@ -1,0 +1,14 @@
+#
+# Copyright (c) 1995 Carnegie Mellon University.  ALL RIGHTS RESERVED.
+#
+
+# S3DIR = /net/alf20/usr/rkm/S3-
+
+include $(S3DIR)/src/libutil/Makefile.defines
+
+S3LIBDIR = $(S3DIR)/lib/$(MACHINE)/
+S3BINDIR = $(S3DIR)/bin/$(MACHINE)/
+
+S3DIRLIST = -I. -I$(S3DIR)/src -L$(S3LIBDIR) -L$(S3DIR)/src/libutil/$(MACHINE)
+
+CFLAGS = ${$(MACHINE)_CFLAGS} $(S3DIRLIST) $(CMDFLAGS)

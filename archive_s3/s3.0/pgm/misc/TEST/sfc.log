@@ -1,0 +1,744 @@
+$Id$
+$Id$
+$Id$
+$Id$
+Project: eval96.oracle
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_003_F1_17510_17540.lat' ...
+[6628198 bytes PvMalloc'ed]
+[7628878 bytes PvMalloc'ed]
+  Adding dagfudge edges to lattice.
+[8630482 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+0 err/1 words (0.00%)
+RIGHT/RIGHT
+  search pass: 0 sec
+  elapsed time: 6 sec (5/5 LM requests, 5 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_069_F1_120122_120176.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/2 words (0.00%)
+MY/MY PLEASURE/PLEASURE
+  search pass: 0 sec
+  elapsed time: 4 sec (2/2 LM requests, 2 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_057_F1_102922_102980.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/2 words (0.00%)
+HELLO/HELLO DAVE/DAVE
+  search pass: 0 sec
+  elapsed time: 3 sec (2/2 LM requests, 2 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_079_F1_141687_141749.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/3 words (0.00%)
+WHAT/WHAT CAN/CAN BE/BE
+  search pass: 0 sec
+  elapsed time: 1 sec (3/3 LM requests, 3 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_043_F1_82547_82616.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/2 words (0.00%)
+WELCOME/WELCOME SIR/SIR
+  search pass: 0 sec
+  elapsed time: 3 sec (3/3 LM requests, 3 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_104_F1_177388_177470.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/3 words (0.00%)
+WHAT'S/WHAT'S YOUR/YOUR REACTION/REACTION
+  search pass: 0 sec
+  elapsed time: 1 sec (3/3 LM requests, 3 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_012_F1_335578_335668.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/4 words (0.00%)
+THIS/THIS IS/IS ANNE/ANNE MARGARET/MARGARET
+  search pass: 1 sec
+  elapsed time: 5 sec (4/4 LM requests, 4 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_089_F1_146344_146437.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/5 words (20.00%)
+A/WHAT* ARE/ARE YOU/YOU READING/READING TODAY/TODAY
+  search pass: 0 sec
+  elapsed time: 7 sec (6/6 LM requests, 6 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_195_F1_199933_200037.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/4 words (0.00%)
+WHAT/WHAT DID/DID HE/HE SAY/SAY
+  search pass: 0 sec
+  elapsed time: 3 sec (6/6 LM requests, 6 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_065_F1_138738_138842.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/5 words (0.00%)
+ALWAYS/ALWAYS A/A PLEASURE/PLEASURE THANK/THANK YOU/YOU
+  search pass: 0 sec
+  elapsed time: 4 sec (5/5 LM requests, 5 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_091_F1_148173_148280.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/5 words (20.00%)
+ALL/ALL RIGHT/RIGHT WHAT'S/WHAT'S ***/YOUR COMMENT/COMMENT
+  search pass: 0 sec
+  elapsed time: 3 sec (4/4 LM requests, 4 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_055_F1_89998_90105.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/4 words (25.00%)
+THANKS/THANKS FOR/FOR YOUR/YOUR CALL/CALL BACK/***
+  search pass: 0 sec
+  elapsed time: 1 sec (5/5 LM requests, 5 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_023_F1_53170_53280.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/5 words (20.00%)
+WHAT/WHAT CAN/PAPER* ARE/ARE YOU/YOU READING/READING
+  search pass: 1 sec
+  elapsed time: 3 sec (5/5 LM requests, 5 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_035_F1_80051_80161.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/4 words (25.00%)
+RIGHT/RIGHT THIS/THIS IS/IS A/THE*
+  search pass: 0 sec
+  elapsed time: 3 sec (9/9 LM requests, 9 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_079_F1_139684_139799.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/8 words (12.50%)
+YOU/YOU WON'T/WON'T HAVE/HAVE A/A LEAD/LOT* OF/OF CASH/CASH THOUGH/THOUGH
+  search pass: 0 sec
+  elapsed time: 5 sec (8/8 LM requests, 8 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_081_F1_142767_142887.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/4 words (0.00%)
+WHAT'S/WHAT'S A/A COMMON/COMMON INTEREST/INTEREST
+  search pass: 0 sec
+  elapsed time: 2 sec (4/4 LM requests, 4 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_099_F1_163031_163169.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+3 err/6 words (50.00%)
+SO/SO ON/WE* CAN/CAN A/MOVE* ON/ON IS/TO*
+  search pass: 1 sec
+  elapsed time: 2 sec (7/7 LM requests, 7 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_196_F1_200234_200372.lat' ...
+  Adding dagfudge edges to lattice.
+[9633760 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+2 err/3 words (66.67%)
+CHARLA/JONNY* IS/IS A/DEAD*
+  search pass: 1 sec
+  elapsed time: 5 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_036_F1_80155_80314.lat' ...
+[10637059 bytes PvMalloc'ed]
+[11640579 bytes PvMalloc'ed]
+[12648195 bytes PvMalloc'ed]
+  Adding dagfudge edges to lattice.
+[13651047 bytes PvMalloc'ed]
+[14654567 bytes PvMalloc'ed]
+[15658087 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+3 err/4 words (75.00%)
+AUDITORIUM/ERGONOMIC* A/RIDER* THE/THE A/ERGONOMIC*
+  search pass: 2 sec
+  elapsed time: 22 sec (8/8 LM requests, 8 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_037_F1_80308_80467.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+5 err/8 words (62.50%)
+RIDER/RIDER LAY/TO* THE/THE IN/LABOR* A/H.* 'TIL/H.* S./S. BRIAN/BILL*
+  search pass: 2 sec
+  elapsed time: 15 sec (14/14 LM requests, 14 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_051_F1_86353_86523.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/7 words (14.29%)
+CLINTON/DID* THEY/THEY GIVE/GIVE IT/IT FRONT/FRONT PAGE/PAGE COVERAGE/COVERAGE
+  search pass: 1 sec
+  elapsed time: 3 sec (8/8 LM requests, 8 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_068_F1_119927_120102.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/5 words (0.00%)
+TOM/TOM THANK/THANK YOU/YOU VERY/VERY MUCH/MUCH
+  search pass: 1 sec
+  elapsed time: 3 sec (10/10 LM requests, 10 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_025_F1_53584_53766.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/10 words (10.00%)
+ALL/ALL RIGHT/RIGHT AND/AND WHAT/WHAT ***/DID YOU/YOU LEARN/LEARN FROM/FROM THE/THE EDITORIAL/EDITORIAL
+  search pass: 1 sec
+  elapsed time: 7 sec (11/11 LM requests, 11 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_005_F1_18252_18435.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/5 words (20.00%)
+A/*** WHY/WHY IS/IS BIPARTISANSHIP/BIPARTISANSHIP IN/IN VOGUE/VOGUE
+  search pass: 1 sec
+  elapsed time: 10 sec (8/8 LM requests, 8 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_162_F1_166703_166890.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/9 words (22.22%)
+AND/AND THEY/THEY WERE/WERE ON/ON STAGE/STAGE AND/AND A/THEY* WERE/WERE HEARSE/REHEARSING*
+  search pass: 1 sec
+  elapsed time: 3 sec (9/9 LM requests, 9 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_083_F1_144681_144882.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/9 words (0.00%)
+IN/IN OTHER/OTHER WORDS/WORDS DID/DID THEY/THEY CLARIFY/CLARIFY THIS/THIS WHOLE/WHOLE QUESTION/QUESTION
+  search pass: 2 sec
+  elapsed time: 9 sec (12/12 LM requests, 12 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_092_F1_87184_87397.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/6 words (0.00%)
+BUT/BUT IN/IN SWIMMING/SWIMMING THEY/THEY CAUGHT/CAUGHT NINETEEN/NINETEEN
+  search pass: 1 sec
+  elapsed time: 6 sec (10/10 LM requests, 10 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_060_F1_135160_135387.lat' ...
+  Adding dagfudge edges to lattice.
+[16658569 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+1 err/10 words (10.00%)
+WELL/WELL YOU/YOU KNOW/KNOW THE/THE CANADIANS/CANADIANS ARE/ARE VERY/VERY AARON'S/FURIOUS* WITH/WITH YOU/YOU
+  search pass: 3 sec
+  elapsed time: 28 sec (10/10 LM requests, 10 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/n960715p_061_F1_135504_135732.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/9 words (0.00%)
+YOU/YOU KNOW/KNOW THE/THE CANADIANS/CANADIANS ARE/ARE VERY/VERY FURIOUS/FURIOUS WITH/WITH YOU/YOU
+  search pass: 1 sec
+  elapsed time: 10 sec (14/14 LM requests, 14 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_085_F1_145456_145685.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/6 words (0.00%)
+BIG/BIG STONE/STONE GAP/GAP VIRGINIA/VIRGINIA GOOD/GOOD MORNING/MORNING
+  search pass: 1 sec
+  elapsed time: 4 sec (7/7 LM requests, 7 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_057_F1_58508_58743.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/5 words (20.00%)
+THIS/THIS BIZARRE/BIZARRE STUFF/STUFF A/GOING* ON/ON
+  search pass: 1 sec
+  elapsed time: 10 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_104_F1_93802_94039.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/9 words (0.00%)
+THEY/THEY THEY/THEY HAVE/HAVE BEEN/BEEN CHEATING/CHEATING MORE/MORE THAN/THAN THE/THE OTHERS/OTHERS
+  search pass: 2 sec
+  elapsed time: 16 sec (14/14 LM requests, 14 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_061_F1_103487_103725.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/9 words (11.11%)
+AND/AND ITS/ITS PROPONENTS/PROPONENTS HOPE/HOPE IT/IT WE'LL/WILL* DO/DO WHAT/WHAT SPECIFICALLY/SPECIFICALLY
+  search pass: 0 sec
+  elapsed time: 2 sec (9/9 LM requests, 9 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_021_F1_52049_52294.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/8 words (12.50%)
+TUPELO/TUPELO MISSISSIPPI/MISSISSIPPI GOOD/GOOD MORNING/MORNING ***/WHAT ARE/ARE YOU/YOU READING/READING
+  search pass: 0 sec
+  elapsed time: 3 sec (9/9 LM requests, 9 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_098_F1_163031_163278.lat' ...
+  Adding dagfudge edges to lattice.
+[17658857 bytes PvMalloc'ed]
+[18662377 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+2 err/12 words (16.67%)
+NO/NO I/I A/WASN'T* A/HE* KNOWS/KNOWS MORE/MORE THAN/THAN ABOUT/ABOUT IT/IT THAN/THAN I/I DO/DO
+  search pass: 3 sec
+  elapsed time: 33 sec (19/19 LM requests, 19 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_062_F1_61636_61897.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/8 words (0.00%)
+WHAT/WHAT ABOUT/ABOUT CHINA/CHINA THE/THE PEOPLES/PEOPLES REPUBLIC/REPUBLIC OF/OF CHINA/CHINA
+  search pass: 1 sec
+  elapsed time: 8 sec (18/18 LM requests, 18 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_059_F1_103290_103554.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/14 words (7.14%)
+IT/IT 'CAUSE/WAS* A/A GREAT/GREAT WEEK/WEEK TO/TO BE/BE OUT/OUT OR/OR BE/BE SHORT/SHORT THAT'S/THAT'S FOR/FOR SURE/SURE
+  search pass: 1 sec
+  elapsed time: 4 sec (14/14 LM requests, 14 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_036_F1_41029_41297.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/12 words (0.00%)
+WELL/WELL I/I SAY/SAY THEY'RE/THEY'RE CHEATING/CHEATING AND/AND I/I SAY/SAY THEY'RE/THEY'RE LYING/LYING TO/TO YOU/YOU
+  search pass: 1 sec
+  elapsed time: 5 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_078_F1_141422_141693.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/9 words (0.00%)
+IT/IT SAID/SAID THAT/THAT RACE/RACE CANNOT/CANNOT BE/BE THE/THE DETERMINING/DETERMINING FACTOR/FACTOR
+  search pass: 1 sec
+  elapsed time: 6 sec (9/9 LM requests, 9 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_115_F1_100576_100851.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/14 words (7.14%)
+I/I MEAN/MEAN SOME/SOME PEOPLE/PEOPLE WOULD/WOULD SAY/SAY YOU/YOU A/KNOW* YOU/YOU REALLY/REALLY OUGHT/OUGHT TO/TO BE/BE DOWN/DOWN
+  search pass: 4 sec
+  elapsed time: 19 sec (15/15 LM requests, 15 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_013_F1_37852_38129.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/16 words (12.50%)
+AND/AND HOW/HOW WHAT'S/WHAT'S YOUR/YOUR REACTION/REACTION TO/TO AS/THAT* A/THAT'S* A/A GOOD/GOOD THING/THING OR/OR BAD/BAD THING/THING FOR/FOR YOU/YOU
+  search pass: 1 sec
+  elapsed time: 7 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_041_F1_82029_82307.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/11 words (0.00%)
+NEXT/NEXT IS/IS SAINT/SAINT PETERSBURG/PETERSBURG FLORIDA/FLORIDA YOU'RE/YOU'RE ON/ON THE/THE AIR/AIR GOOD/GOOD MORNING/MORNING
+  search pass: 1 sec
+  elapsed time: 5 sec (11/11 LM requests, 11 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_180_F1_186912_187191.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/14 words (7.14%)
+INTERVIEW/INTERVIEW WITH/WITH THE/THE NEW/NEW YORK/YORK TIMES/TIMES THAT/THAT NIGHT/NIGHT A/SO* HE/HE NEARLY/NEARLY WAS/WAS WISHED/WISHED AWAY/AWAY
+  search pass: 2 sec
+  elapsed time: 11 sec (16/16 LM requests, 16 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_113_F1_100145_100429.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/13 words (7.69%)
+JENNY/JENNY HOW/HOW CAN/CAN YOU/YOU BE/BE HOW/HOW CAN/CAN YOU/YOU BE/BE SO/SO SUNNY/SUNNY AND/AND OFFICE/OPTIMISTIC*
+  search pass: 3 sec
+  elapsed time: 32 sec (15/15 LM requests, 15 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_087_F1_145799_146087.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/9 words (11.11%)
+FINE/FINE A/THAT'S* A/A REAL/REAL COLORFUL/COLORFUL NAME/NAME FOR/FOR YOUR/YOUR COMMUNITY/COMMUNITY
+  search pass: 2 sec
+  elapsed time: 20 sec (16/16 LM requests, 16 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_066_F1_117135_117445.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/8 words (0.00%)
+MARKET/MARKET FALLING/FALLING IS/IS A/A BUYING/BUYING OPPORTUNITY/OPPORTUNITY FOR/FOR SOME/SOME
+  search pass: 1 sec
+  elapsed time: 3 sec (11/11 LM requests, 11 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_058_F1_102975_103296.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/13 words (0.00%)
+IT/IT WAS/WAS A/A GOOD/GOOD WEEK/WEEK FOR/FOR A/A STOCK/STOCK BROKER/BROKER TO/TO BE/BE ON/ON VACATION/VACATION
+  search pass: 1 sec
+  elapsed time: 6 sec (15/15 LM requests, 15 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_060_F1_103561_103906.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/12 words (0.00%)
+ARE/ARE THINGS/THINGS MORE/MORE VOLATILE/VOLATILE THESE/THESE DAYS/DAYS OR/OR JUST/JUST IS/IS IT/IT JUST/JUST ME/ME
+  search pass: 2 sec
+  elapsed time: 8 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_062_F1_106278_106628.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/16 words (6.25%)
+AND/AND WHEN/WHEN PEOPLE/PEOPLE ARE/ARE WORRIED/WORRIED YOU/YOU A/USE* THE/THE WORD/WORD SCARED/SCARED THEY/THEY CALL/CALL UP/UP AND/AND SAY/SAY SELL/SELL
+  search pass: 2 sec
+  elapsed time: 6 sec (16/16 LM requests, 16 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_063_F1_105400_105760.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/12 words (8.33%)
+FOR/FOR JOHN/JOHN YANG/YANG NEXT/NEXT SALON/SOLON* SULLEN/SULLEN RATHER/RATHER IT/IT IS/IS OHIO/OHIO GOOD/GOOD MORNING/MORNING
+  search pass: 1 sec
+  elapsed time: 6 sec (15/15 LM requests, 15 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_043_F1_48760_49120.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/11 words (0.00%)
+CAN/CAN YOU/YOU USE/USE ANY/ANY OTHER/OTHER CHARACTERISTICS/CHARACTERISTICS AND/AND SAY/SAY THIS/THIS ISN'T/ISN'T RIGHT/RIGHT
+  search pass: 2 sec
+  elapsed time: 8 sec (15/15 LM requests, 15 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_157_F1_162667_163030.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+[19664151 bytes PvMalloc'ed]
+0 err/9 words (0.00%)
+AND/AND HE/HE WAS/WAS JUST/JUST FLYING/FLYING HE/HE WAS/WAS SO/SO HAPPY/HAPPY
+  search pass: 2 sec
+  elapsed time: 10 sec (27/27 LM requests, 27 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_108_F1_180978_181346.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/16 words (6.25%)
+THANKS/THANKS FOR/FOR THE/THE CALL/CALL UH/CAN* YOU/YOU TELL/TELL US/US ANYTHING/ANYTHING MORE/MORE ABOUT/ABOUT THE/THE PERSON/PERSON INVOLVED/INVOLVED IN/IN THIS/THIS
+  search pass: 2 sec
+  elapsed time: 9 sec (21/21 LM requests, 21 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_067_F1_65208_65582.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/11 words (0.00%)
+HOW/HOW LONG/LONG AFTER/AFTER YOU/YOU TAKE/TAKE THESE/THESE DRUGS/DRUGS CAN/CAN THEY/THEY BE/BE DETECTED/DETECTED
+  search pass: 2 sec
+  elapsed time: 7 sec (12/12 LM requests, 12 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_045_F1_49626_50018.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/16 words (12.50%)
+WHAT/WHAT ABOUT/ABOUT A/A WOMAN/WOMAN WHO/WHO HAS/HAS A/A DEEP/DEEP VOICE/VOICE WOMEN/WOMEN AREN'T/AREN'T ALL/SUPPOSED* TO/TO HAVE/HAVE DEEP/DEEP FLIGHT/VOICES*
+  search pass: 3 sec
+  elapsed time: 14 sec (21/21 LM requests, 21 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_102_F1_92350_92747.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+5 err/12 words (41.67%)
+AND/AND A/YOU* DON'T/DON'T WORRY/WORRY THAT/THAT THE/THE IN/CHINESE* CHAI/ARE* IN/IN A/A U./SPECIAL* YOU/CATEGORY*
+  search pass: 1 sec
+  elapsed time: 3 sec (20/20 LM requests, 20 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_028_F1_34784_35211.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/10 words (0.00%)
+PERFORMANCE/PERFORMANCE ENHANCING/ENHANCING DRUGS/DRUGS ARE/ARE BEING/BEING USED/USED TO/TO ENHANCE/ENHANCE THEIR/THEIR PERFORMANCE/PERFORMANCE
+  search pass: 1 sec
+  elapsed time: 5 sec (10/10 LM requests, 10 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_055_F1_57157_57590.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/9 words (11.11%)
+LIKE/LIKE THE/THE CHINESE/CHINESE SWIMMERS/SWIMMERS TRYING/TRYING TO/TO A/TO* SWITCH/SWITCH PEOPLE/PEOPLE
+  search pass: 2 sec
+  elapsed time: 10 sec (23/23 LM requests, 23 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_067_F1_111595_112060.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+3 err/16 words (18.75%)
+A/ALL* RIGHT/RIGHT THANKS/THANKS FOR/FOR YOUR/YOUR CALL/CALL A/THIS* MORNING/MORNING ECONOMIC/ECONOMIC IMPACT/IMPACT ***/ON THE/THE ELECTION/ELECTION TOO/TOO FAR/FAR OUT/OUT
+  search pass: 4 sec
+  elapsed time: 17 sec (23/23 LM requests, 23 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_106_F1_178365_178833.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/14 words (0.00%)
+AND/AND WHAT'S/WHAT'S WHAT'S/WHAT'S YOUR/YOUR VIEW/VIEW OF/OF THIS/THIS AS/AS A/A VOTER/VOTER WATCHING/WATCHING FROM/FROM OUTSIDE/OUTSIDE WASHINGTON/WASHINGTON
+  search pass: 2 sec
+  elapsed time: 8 sec (20/20 LM requests, 20 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_087_F1_81631_82104.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/16 words (0.00%)
+THAT/THAT IS/IS MORE/MORE THAN/THAN ALL/ALL THE/THE REST/REST OF/OF THE/THE WORLD/WORLD COMBINED/COMBINED IN/IN THE/THE HISTORY/HISTORY OF/OF SWIMMING/SWIMMING
+  search pass: 2 sec
+  elapsed time: 6 sec (24/24 LM requests, 24 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_183_F1_189578_190058.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/16 words (0.00%)
+AND/AND THE/THE MUSIC/MUSIC WAS/WAS TERRIFIC/TERRIFIC I/I COULD/COULD TELL/TELL YOU/YOU KNOW/KNOW THAT/THAT THE/THE MUSIC/MUSIC WAS/WAS REALLY/REALLY TREMENDOUS/TREMENDOUS
+  search pass: 2 sec
+  elapsed time: 9 sec (18/18 LM requests, 18 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_034_F1_79575_80057.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/12 words (16.67%)
+SO/SO TRANSLATING/TRANSLATING WASHINGTON/WASHINGTONESE* E'S/IF* PEOPLE/PEOPLE HEAR/HEAR TODAY/TODAY ON/ON THE/THE HOUSE/HOUSE ERGO/ERGO RIDER/RIDER
+  search pass: 1 sec
+  elapsed time: 7 sec (13/13 LM requests, 13 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_197_F1_200488_200980.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/14 words (0.00%)
+AND/AND AT/AT EIGHT/EIGHT THIRTY/THIRTY IN/IN THE/THE MORNING/MORNING WE/WE WERE/WERE ON/ON A/A PLANE/PLANE HEADING/HEADING EAST/EAST
+  search pass: 3 sec
+  elapsed time: 18 sec (31/31 LM requests, 31 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_009_F1_29357_29862.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/16 words (0.00%)
+NOW/NOW WHAT/WHAT DOES/DOES THIS/THIS REALLY/REALLY MEAN/MEAN ABOUT/ABOUT WHAT/WHAT THE/THE LEGISLATORS/LEGISLATORS ARE/ARE READING/READING FROM/FROM THE/THE PUBLIC/PUBLIC WANTS/WANTS
+  search pass: 4 sec
+  elapsed time: 14 sec (17/17 LM requests, 17 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_084_F1_144922_145447.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/18 words (5.56%)
+THEY/THEY WERE/WERE THEY'RE/THEY'RE GETTING/GETTING CLOSER/CLOSER BY/BY SAYING/SAYING WHAT/WHAT THEY/THEY DON'T/DON'T LIKE/LIKE BY/BY MAKING/MAKING SORT/SORT OF/OF NEGATIVE/NEGATIVE THAT/*** NEGATIVE/NEGATIVE DEFINITIONS/DEFINITIONS
+  search pass: 4 sec
+  elapsed time: 16 sec (20/20 LM requests, 20 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_028_F1_64871_65402.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+3 err/17 words (17.65%)
+TRENT/TRENT ACCENT/TRENT* LOTT/LOTT IN/IN HIS/HIS ACCORD/*** FIRST/FIRST BIG/BIG PIECE/PIECE OF/OF LEGISLATION/LEGISLATION IN/IN THE/THE SENATE/SENATE HOW/HOW A/DID* HE/HE DO/DO
+  search pass: 7 sec
+  elapsed time: 39 sec (29/29 LM requests, 29 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_039_F1_80536_81071.lat' ...
+[20881383 bytes PvMalloc'ed]
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/18 words (0.00%)
+IT'S/IT'S IT'S/IT'S LEGISLATION/LEGISLATION OR/OR SOMETHING/SOMETHING THAT/THAT THAT/THAT SORT/SORT OF/OF HITCHES/HITCHES A/A RIDE/RIDE ON/ON THIS/THIS SPENDING/SPENDING BILL/BILL THROUGH/THROUGH CONGRESS/CONGRESS
+  search pass: 6 sec
+  elapsed time: 27 sec (18/18 LM requests, 18 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_177_F1_183747_184298.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/19 words (5.26%)
+HOW/HOW MUCH/MUCH OF/OF THIS/THIS IS/IS A/NERVES* AND/AND WELL/WELL IT'S/IT'S PART/PART OF/OF IT/IT SAYS/SAYS BUT/BUT I/I JUST/JUST DON'T/DON'T FEEL/FEEL RIGHT/RIGHT
+  search pass: 6 sec
+  elapsed time: 23 sec (34/34 LM requests, 34 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_027_F1_64303_64860.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/20 words (10.00%)
+OKAY/OKAY SIR/SIR WE'LL/WE'LL AT/HAVE* TO/TO LET/LET TO/YOU* GO/GO FOR/FOR TIME/TIME THANKS/THANKS FOR/FOR CALLING/CALLING THAT/THAT LOCAL/LOCAL STORY/STORY ABOUT/ABOUT A/A NATIONAL/NATIONAL LEADER/LEADER
+  search pass: 5 sec
+  elapsed time: 21 sec (31/31 LM requests, 31 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_116_F1_100851_101415.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/21 words (0.00%)
+YEAH/YEAH IT/IT STINKS/STINKS THAT/THAT THEY'RE/THEY'RE CHEATING/CHEATING BUT/BUT REALLY/REALLY THERE'S/THERE'S NOTHING/NOTHING THAT/THAT I/I CAN/CAN DO/DO ABOUT/ABOUT IT/IT EXCEPT/EXCEPT SPEAK/SPEAK OUT/OUT AGAINST/AGAINST IT/IT
+  search pass: 5 sec
+  elapsed time: 14 sec (22/22 LM requests, 22 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_069_F1_116252_116819.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/13 words (15.38%)
+NEXT/NEXT IS/IS ALAN/ELIJAY* J/*** GEORGIA/GEORGIA GOOD/GOOD MORNING/MORNING YOU'RE/YOU'RE ON/ON THE/THE AIR/AIR GO/GO AHEAD/AHEAD CALLER/CALLER
+  search pass: 1 sec
+  elapsed time: 7 sec (20/20 LM requests, 20 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_065_F1_110097_110672.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+4 err/18 words (22.22%)
+SO/SO TRANSLATE/TRANSLATE THIS/THIS ECONOMIC/ECONOMIC STORY/STORY INTO/INTO WAYS/WHAT* YOU/YOU A/THINK* WILL/WILL AT/HOW* IT/IT A/WILL* EFFECT/EFFECT POLITICS/POLITICS AND/AND POLITICAL/POLITICAL DECISIONS/DECISIONS
+  search pass: 3 sec
+  elapsed time: 10 sec (26/26 LM requests, 26 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_052_F1_54830_55415.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/23 words (0.00%)
+WITH/WITH STEROIDS/STEROIDS YOU/YOU JUST/JUST NEVER/NEVER GET/GET TIRED/TIRED YOU/YOU JUST/JUST YOU/YOU KEEP/KEEP GETTING/GETTING BETTER/BETTER AND/AND BETTER/BETTER YOU/YOU HAVE/HAVE MORE/MORE BUILDING/BUILDING BLOCKS/BLOCKS TO/TO WORK/WORK ON/ON
+  search pass: 3 sec
+  elapsed time: 9 sec (25/25 LM requests, 25 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_007_F1_27414_28007.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/24 words (4.17%)
+AND/HERE'S* ANOTHER/ANOTHER PARAGRAPH/PARAGRAPH PICKING/PICKING UP/UP ON/ON THAT/THAT SAME/SAME THEME/THEME FROM/FROM THIS/THIS ARTICLE/ARTICLE TO/TO WHICH/WHICH YOU/YOU CONTRIBUTED/CONTRIBUTED WRITTEN/WRITTEN BY/BY DAN/DAN MORGAN/MORGAN IN/IN THIS/THIS MORNING'S/MORNING'S POST/POST
+  search pass: 5 sec
+  elapsed time: 21 sec (25/25 LM requests, 25 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_150_F1_156243_156875.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/31 words (6.45%)
+WORKSHOP/WORKSHOP THAT/THAT HE/HE WORKED/WORKED ON/ON IN/IN OF/THE* SUMMER/SUMMER HE/HE DID/DID DRAFTS/DRAFTS HE/HE THOUGHT/THOUGHT HE/HE WAS/WAS DONE/DONE WE/WE TOLD/TOLD HIM/HIM HE/HE WASN'T/WASN'T DONE/DONE AND/AND THAT/THAT THAT/THAT WENT/WENT AND/ON* FOR/FOR A/A LONG/LONG TIME/TIME
+  search pass: 9 sec
+  elapsed time: 25 sec (36/36 LM requests, 36 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_093_F1_152968_153619.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/31 words (6.45%)
+LET/LET ME/ME ASK/ASK A/YOU* A/A QUESTION/QUESTION AS/AS SOMEONE/SOMEONE WHO/WHO KNOWS/KNOWS A/A LOT/LOT ABOUT/ABOUT THE/THE ISSUE/ISSUE AS/AS YOU/YOU WATCHED/WATCHED THE/THE HEARINGS/HEARINGS DO/DO ARE/YOU* THINK/THINK THE/THE MEMBERS/MEMBERS OF/OF CONGRESS/CONGRESS ASKED/ASKED THE/THE RIGHT/RIGHT QUESTIONS/QUESTIONS
+  search pass: 5 sec
+  elapsed time: 14 sec (31/31 LM requests, 31 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_078_F1_138920_139582.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/21 words (4.76%)
+THE/THE INVESTMENT/INVESTMENT OF/OF ARE/OUR* LEGACY/LEGACY IS/IS BASICALLY/BASICALLY UP/UP FRONT/FRONT PRIOR/PRIOR TO/TO THE/THE GAMES/GAMES AND/AND IT/IT WILL/WILL BE/BE VERY/VERY TANGIBLE/TANGIBLE AND/AND PHYSICAL/PHYSICAL
+  search pass: 4 sec
+  elapsed time: 11 sec (23/23 LM requests, 23 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_032_F1_77024_77722.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/22 words (4.55%)
+SO/SO THIS/THIS THIS/THIS MEASURE/MEASURE WOULD/WOULD HAVE/HAVE COMPELLED/COMPELLED BUSINESSES/BUSINESSES TO/TO LOOK/LOOK AT/AT WHETHER/WHETHER OR/OR NOT/NOT THEY/THEY SHOULD/SHOULD INTRODUCE/INTRODUCE ERGONOMICS/ERGONOMIC* FURNITURE/FURNITURE INTO/INTO THE/THE WORKPLACE/WORKPLACE
+  search pass: 7 sec
+  elapsed time: 25 sec (26/26 LM requests, 26 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/o960710p_018_F1_347894_348616.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/30 words (6.67%)
+IT/IT MAKES/MAKES ME/ME REAL/REAL UNCOMFORTABLE/UNCOMFORTABLE IT'S/IT'S REAL/REAL SELF/SELF CONSCIOUS/CONSCIOUS SO/SO WITH/WITH THE/THE MUSIC/MUSIC YOU/YOU CAN/CAN KIND/KIND OF/OF FLOAT/FLOAT THROUGH/THROUGH AND/AND A/IT'S* YOUR/YOUR OWN/OWN LITTLE/LITTLE SOUNDTRACK/SOUNDTRACK AND/AND IT'S/IT'S KIND/KIND ***/OF FUN/FUN
+  search pass: 9 sec
+  elapsed time: 29 sec (36/36 LM requests, 36 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_068_F1_65606_66356.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/23 words (8.70%)
+VERY/VERY MUCH/MUCH DRUG/DRUG DEPENDENT/DEPENDENT ONE/ONE OF/OF THE/THE ONES/ONES THAT/THAT WE/WE TEST/TEST FOR/FOR IS/IS PRESENT/PRESENT FOR/FOR A/A REHEAR/YEAR* A/ANOTHER* ONE/ONE FOR/FOR A/A FEW/FEW HOURS/HOURS
+  search pass: 10 sec
+  elapsed time: 31 sec (34/34 LM requests, 34 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_066_F1_64417_65200.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/23 words (0.00%)
+TRAINING/TRAINING AND/AND THEIR/THEIR EFFECTS/EFFECTS LAST/LAST AFTER/AFTER YOU/YOU STOP/STOP AND/AND THOSE/THOSE ARE/ARE THE/THE ONES/ONES THAT/THAT YOU/YOU HAVE/HAVE TO/TO GO/GO AFTER/AFTER DURING/DURING THE/THE TRAINING/TRAINING PERIOD/PERIOD
+  search pass: 7 sec
+  elapsed time: 21 sec (30/30 LM requests, 30 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_056_F1_57609_58463.lat' ...
+  Adding dagfudge edges to lattice.
+[21884750 bytes PvMalloc'ed]
+[22888270 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+[23889733 bytes PvMalloc'ed]
+4 err/32 words (12.50%)
+GOING/GOING INTO/INTO THE/THE DRUG/DRUG TESTING/TESTING AROUND/ROOM* I/I MEAN/MEAN WEARING/WEARING LIKE/LIKE THE/THE SAME/SAME EXACT/EXACT OUTFIT/OUTFIT A/AND* JUST/JUST YOU/YOU AL/KNOW* SNEAKING/SNEAKING SO/SO THAT/THAT ARE/THEY* SWITCH/SWITCH PEOPLE/PEOPLE SO/SO THAT/THAT THEY/THEY WOULD/WOULD BE/BE TEST/TEST NEGATIVE/NEGATIVE AND/AND
+  search pass: 17 sec
+  elapsed time: 56 sec (36/36 LM requests, 36 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_097_F1_162169_163030.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/36 words (2.78%)
+THANKS/THANKS FOR/FOR YOUR/YOUR CALL/CALL SIR/SIR ALWAYS/ALWAYS INTERESTING/INTERESTING AT/AT THE/THE TABLE/TABLE WHEN/WHEN YOU/YOU GET/GET CALLS/CALLS BY/BY PEOPLE/PEOPLE WHO/WHO KNOW/KNOW A/A LOT/LOT IN/IN DEPTH/DEPTH ABOUT/ABOUT SOME/SOME OF/OF THE/THE ISSUES/ISSUES HERE/HERE ABBEY/NOW* YOU/YOU PROBABLY/PROBABLY WEREN'T/WEREN'T WATCHING/WATCHING THESE/THESE PARTICULAR/PARTICULAR HEARINGS/HEARINGS
+  search pass: 10 sec
+  elapsed time: 22 sec (40/40 LM requests, 40 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_020_F1_51182_52055.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/31 words (0.00%)
+LOTS/LOTS OF/OF EDITORIAL/EDITORIAL RATHER/RATHER OP/OP ED/ED PIECES/PIECES AND/AND EDITORIAL/EDITORIAL CARTOONS/CARTOONS ABOUT/ABOUT DICK/DICK LAMM/LAMM WHO'S/WHO'S ALSO/ALSO INTERESTED/INTERESTED IN/IN THE/THE REFORM/REFORM PARTY/PARTY NOMINATION/NOMINATION AND/AND WE'LL/WE'LL LOOK/LOOK AT/AT THOSE/THOSE LATER/LATER ON/ON IN/IN OUR/OUR PROGRAM/PROGRAM
+  search pass: 10 sec
+  elapsed time: 27 sec (33/33 LM requests, 33 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_040_F1_81119_82035.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/43 words (2.33%)
+IF/IF YOU/YOU ARE/ARE A/A REGULAR/REGULAR VIEWER/VIEWER REMIND/REMIND YOU/YOU ABOUT/ABOUT OUR/OUR THIRTY/THIRTY DAY/DAY POLICY/POLICY WHICH/WHICH MEANS/MEANS WE/WE ASK/ASK YOU/YOU A/TO* WAIT/WAIT A/A MONTH/MONTH BETWEEN/BETWEEN CALLS/CALLS LET/LET AS/AS MANY/MANY NEW/NEW PEOPLE/PEOPLE AS/AS POSSIBLE/POSSIBLE GET/GET A/A CHANCE/CHANCE TO/TO PARTICIPATE/PARTICIPATE WE/WE CAN/CAN HEAR/HEAR FROM/FROM LOTS/LOTS OF/OF VOICES/VOICES
+  search pass: 19 sec
+  elapsed time: 47 sec (44/44 LM requests, 44 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_070_F1_66901_67826.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/18 words (11.11%)
+I/I AM/AM TOLD/TOLD TO/*** THAT/THAT ATHLETES/ATHLETES CAN/CAN RUB/RUB THIS/THIS THIS/THIS A/*** CREAM/CREAM ON/ON AND/AND WITHIN/WITHIN HOURS/HOURS WITHIN/WITHIN HOURS/HOURS IT'S/IT'S GONE/GONE
+  search pass: 5 sec
+  elapsed time: 16 sec (39/39 LM requests, 39 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_050_F1_53598_54568.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/26 words (0.00%)
+NUMBER/NUMBER ONE/ONE THING/THING IT/IT DOES/DOES IS/IS YOU/YOU NEVER/NEVER GET/GET TIRED/TIRED WITH/WITH REGARD/REGARD TO/TO TRAINING/TRAINING IN/IN MY/MY TRAINING/TRAINING PROGRAM/PROGRAM WE/WE HAVE/HAVE TO/TO TAKE/TAKE SOME/SOME DAYS/DAYS OF/OF RECOVERY/RECOVERY
+  search pass: 8 sec
+  elapsed time: 23 sec (38/38 LM requests, 38 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_057_F1_90119_91129.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/35 words (2.86%)
+NEW/NEW A/YORK* TIMES/TIMES ALSO/ALSO GAVE/GAVE FRONT/FRONT PAGE/PAGE COVERAGE/COVERAGE ABOVE/ABOVE THE/THE FOLD/FOLD TO/TO THE/THE HELMS/HELMS BURTON/BURTON IMPLEMENTATION/IMPLEMENTATION IF/IF A/A LITTLE/LITTLE BIT/BIT OF/OF OF/OF BACKGROUND/BACKGROUND FOR/FOR PEOPLE/PEOPLE WHO/WHO HAVEN'T/HAVEN'T BEEN/BEEN FOLLOWING/FOLLOWING IT/IT WHAT/WHAT SPECIFICALLY/SPECIFICALLY IS/IS HELMS/HELMS BURTON/BURTON
+  search pass: 13 sec
+  elapsed time: 38 sec (38/38 LM requests, 38 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_080_F1_141761_142773.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/23 words (8.70%)
+SORT/SORT OF/OF OTHER/OTHER CONTIGUOUS/CONTIGUOUS LINES/LINES COMMON/COMMON INTERESTS/INTERESTS UH/*** BUT/BUT THEY/THEY SAID/SAID THAT/THAT IF/IF BREEDS/RACE* IS/IS THE/THE DETERMINING/DETERMINING FACTOR/FACTOR FOR/FOR DRAWING/DRAWING LINES/LINES THEN/THEN IT'S/IT'S UNCONSTITUTIONAL/UNCONSTITUTIONAL
+  search pass: 10 sec
+  elapsed time: 34 sec (52/52 LM requests, 52 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_194_F1_198835_199856.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/24 words (0.00%)
+SOMETIME/SOMETIME BETWEEN/BETWEEN FOUR/FOUR OR/OR FIVE/FIVE IN/IN THE/THE MORNING/MORNING I/I GOT/GOT A/A PHONE/PHONE CALL/CALL WOKE/WOKE ME/ME UP/UP IT/IT WAS/WAS MY/MY SON/SON IN/IN LAW/LAW FROM/FROM CALIFORNIA/CALIFORNIA
+  search pass: 13 sec
+  elapsed time: 49 sec (78/78 LM requests, 78 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_075_F1_135299_136325.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+1 err/37 words (2.70%)
+REAL/REAL BRIEFLY/BRIEFLY IN/IN U./U. S./S. A./A. TODAY/TODAY PEOPLE/PEOPLE CAN/CAN READ/READ THIS/THIS AROUND/AROUND THE/THE COUNTRY/COUNTRY ANOTHER/ANOTHER REDISTRICTING/REDISTRICTING STORY/STORY THIS/THIS ON/ON TEXAS/TEXAS AND/AND HOW/HOW THEY'RE/THEY'RE REDRAWING/REDRAWING THEIR/THEIR DISTRICTS/DISTRICTS IN/IN IN/IN THE/THE WAKE/WAKE MACOMB/OF* THE/THE DECISION/DECISION ANY/ANY COMMENT/COMMENT ON/ON THAT/THAT
+  search pass: 12 sec
+  elapsed time: 29 sec (40/40 LM requests, 40 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_198_F1_201068_202118.lat' ...
+[24892156 bytes PvMalloc'ed]
+[25893192 bytes PvMalloc'ed]
+[26896712 bytes PvMalloc'ed]
+[27900232 bytes PvMalloc'ed]
+  Adding dagfudge edges to lattice.
+[28901044 bytes PvMalloc'ed]
+[29904564 bytes PvMalloc'ed]
+[30908084 bytes PvMalloc'ed]
+[31911604 bytes PvMalloc'ed]
+Begining oracle WER pass ...
+[32913683 bytes PvMalloc'ed]
+4 err/33 words (12.12%)
+IN/IN THE/THE BACK/BACK OF/OF MY/MY MIND/MIND I/I KEPT/KEPT DISBELIEVING/DISBELIEVING I/I WAS/WAS GOING/GOING TO/TO A/GET* TO/TO NEW/NEW YORK/YORK AND/AND FIND/FIND A/JONNY* MAYBE/MAYBE AGREES/HE'S* IN/IN THE/THE HOSPITAL/HOSPITAL MAYBE/MAYBE HE'S/HE'S SICK/SICK BUT/BUT A/JONNY* CAN'T/CAN'T BE/BE DEAD/DEAD
+  search pass: 25 sec
+  elapsed time: 89 sec (60/60 LM requests, 60 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_090_F1_84977_86035.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+3 err/30 words (10.00%)
+YOU/YOU ARE/ARE QUOTED/QUOTED PRINCE/PRINCE DENIRO/DEMORODE* IN/IN DECEMBER/DECEMBER OF/OF NINETEEN/NINETEEN NINETY/NINETY FOUR/FOUR AS/AS SAYING/SAYING AND/AND A/I* QUOTE/QUOTE THERE/THERE ARE/ARE NO/NO MORE/MORE CASES/CASES IN/IN CHINA/CHINA THAN/THAN ANYWHERE/ANYWHERE ELSE/ELSE DO/DO U./YOU* BELIEVE/BELIEVE THAT/THAT
+  search pass: 10 sec
+  elapsed time: 27 sec (40/40 LM requests, 40 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_064_F1_110996_112279.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+[33915127 bytes PvMalloc'ed]
+3 err/49 words (6.12%)
+FOR/FOR A/A LONG/LONG TIME/TIME EVERYBODY/EVERYBODY KEPT/KEPT SAYING/SAYING BUT/BUT AS/THERE'S* NO/NO ALTERNATIVE/ALTERNATIVE TO/TO STOCKS/STOCKS WE/WHERE'RE* YOU/YOU A/GOING* TO/TO PUT/PUT YOUR/YOUR MONEY/MONEY TO/TO MAKE/MAKE ANY/ANY KIND/KIND OF/OF DECENT/DECENT RETURN/RETURN BUT/BUT INTEREST/INTEREST RATES/RATES SEEM/SEEM TO/TO BE/BE RISING/RISING LEAST/LEAST THE/THE LONG/LONG BOND/BOND HAS/HAS THAT/THAT HAS/HAS BECOME/BECOME A/A MORE/MORE VIABLE/VIABLE ALTERNATIVE/ALTERNATIVE FOR/FOR SOME/SOME PEOPLE/PEOPLE
+  search pass: 18 sec
+  elapsed time: 37 sec (51/51 LM requests, 51 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_102_F1_173467_174887.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/49 words (4.08%)
+JOHN/JOHN YANG/YANG OF/OF THE/THE WASHINGTON/WASHINGTON LOS/POST* IS/IS ORIGINALLY/ORIGINALLY FROM/FROM CHILLICOTHE/CHILLICOTHE OHIO/OHIO AND/AND HAS/HAS A/A B./B. A./A. IN/IN GOVERNMENT/GOVERNMENT FROM/FROM WESLEYAN/WESLEYAN UNIVERSITY/UNIVERSITY BEFORE/BEFORE JOINING/JOINING THE/THE WASHING/WASHINGTON* POST/POST HE/HE WORKED/WORKED FOR/FOR THE/THE BOSTON/BOSTON GLOBE/GLOBE TIME/TIME MAGAZINE/MAGAZINE AND/AND THE/THE WALL/WALL STREET/STREET JOURNAL/JOURNAL NEXT/NEXT CALL/CALL FOR/FOR HIM/HIM IS/IS FROM/FROM MARIETTA/MARIETTA GEORGIA/GEORGIA GOOD/GOOD MORNING/MORNING
+  search pass: 16 sec
+  elapsed time: 31 sec (58/58 LM requests, 58 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/k960712_080_F1_139886_141313.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/46 words (4.35%)
+WELL/WELL OUR/OUR GOAL/GOAL IS/IS TO/TO BREAK/BREAK EVEN/EVEN AND/AND WE'VE/WE'VE NEVER/NEVER SAID/SAID WOULDN'T/*** THAT/THAT THAT/THAT WE/WE WERE/WERE GOING/GOING TO/TO SHOW/SHOW A/A A/A PROFIT/PROFIT BASICALLY/BASICALLY YEN/*** OUR/OUR GOAL/GOAL IS/IS TO/TO BREAK/BREAK EVEN/EVEN PUT/PUT ON/ON THE/THE BEST/BEST GAMES/GAMES EVER/EVER AND/AND LEAVE/LEAVE A/A MAJOR/MAJOR LEGACY/LEGACY IN/IN THE/THE FORM/FORM OF/OF THE/THE PHYSICAL/PHYSICAL FACILITIES/FACILITIES
+  search pass: 22 sec
+  elapsed time: 53 sec (66/66 LM requests, 66 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_017_F1_46713_48152.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+2 err/47 words (4.26%)
+WELL/WELL IT'S/LET'S* ADD/ADD TO/TO THE/THE MIX/MIX FROM/FROM THE/THE FRONT/FRONT PAGE/PAGE OF/OF YOUR/YOUR PAPER/PAPER THIS/THIS MORNING/MORNING LARRY/LARRY KING/KING LIVE/LIVE ROSS/ROSS PEROT/PEROT INTERVIEW/INTERVIEW LAST/LAST NIGHT/NIGHT PEROT/PEROT SAYS/SAYS HE/HE WILL/WILL RUN/RUN IF/IF REFORM/REFORM PARTY/PARTY CALLS/CALLS THAT/THAT GEAR/VIEWER* WAS/WAS TALKING/TALKING ABOUT/ABOUT THE/THE ELECTORAL/ELECTORAL COLLEGE/COLLEGE BREAKDOWN/BREAKDOWN WILL/WILL THIS/THIS CANDIDACY/CANDIDACY IF/IF IT/IT HAPPENS/HAPPENS
+  search pass: 23 sec
+  elapsed time: 51 sec (61/61 LM requests, 61 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/i960711p_077_F1_139976_141416.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+0 err/45 words (0.00%)
+HERE/HERE IS/IS A/A MAP/MAP OF/OF TWO/TWO OF/OF THE/THE DISTRICTS/DISTRICTS IN/IN QUESTION/QUESTION IN/IN TEXAS/TEXAS THE/THE THIRTIETH/THIRTIETH AND/AND YOU/YOU TALKED/TALKED ABOUT/ABOUT THAT/THAT INK/INK STAIN/STAIN EFFECT/EFFECT IN/IN GEORGIA/GEORGIA BEFORE/BEFORE AND/AND HERE/HERE IS/IS THE/THE TWENTY/TWENTY NINTH/NINTH DISTRICT/DISTRICT HERE/HERE WHAT/WHAT DID/DID THE/THE SUPREME/SUPREME COURT/COURT SAY/SAY ABOUT/ABOUT WHAT/WHAT MAKES/MAKES A/A DISTRICT/DISTRICT
+  search pass: 19 sec
+  elapsed time: 41 sec (51/51 LM requests, 51 calls)
+Reading Sphinx lattice file '/net/alf20/local_tmp/lat/dt96-pe/nphc-ci/l960710_188_F1_192892_194379.lat' ...
+  Adding dagfudge edges to lattice.
+Begining oracle WER pass ...
+3 err/44 words (6.82%)
+THE/THE WRITER/WRITER WAS/WAS THE/THE LAST/LAST TO/TO SEE/SEE JONATHAN/JONATHAN LARSON/LARSON UNTIL/UNTIL BRIAN/BRIAN CARLEY/CARMIDY* CAME/CAME HOME/HOME AT/AT THREE/THREE FORTY/FORTY FIVE/FIVE IN/IN THE/THE MORNING/MORNING AND/AND FOUND/FOUND LARSON/LARSON LYING/LYING ON/ON THE/THE FLOOR/FLOOR A/A AND/BOILED* OUT/OUT KETTLE/KETTLE WAS/WAS BURNING/BURNING ON/ON THE/THE STOVE/STOVE AND/AND A/CARMIDY* QUICKLY/QUICKLY PHONED/PHONED NINE/NINE ONE/ONE ONE/ONE
+  search pass: 20 sec
+  elapsed time: 43 sec (55/55 LM requests, 55 calls)
+Time elapsed: 1594 sec
+0(1, 1172797) state list nodes (FSL) allocated.
+0(78, 2150) LM lookup cache struct (LL) allocated.
+0(437068, 7236905) node transitions (NT) allocated.
+0(71605, 1689922) lattice words (LW) allocated.
+0(0, 0) state, internal, hash link (SIH) allocated.
+0(0, 0) state, internal, LW link and back link (SLB) allocated.
+0(0, 0) states, with back links, for A* search (SIB) allocated.
+0(66339, 1172892) state, internal, for oracle WER (SIO) allocated.
+0(0, 0) special word structs (WS) allocated.
+1547.361u 17.616s 26:35.17 98.1% -5+235k 12+0io 24pf+0w

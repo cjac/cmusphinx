@@ -1,0 +1,1460 @@
+Sender: LS Batch System <eht@jack>
+Subject: batch job 262: <../linux/dpalign -dict /net/alf20/usr/rkm/SHARED/dict/nov94> Done
+
+Job <../linux/dpalign -dict /net/alf20/usr/rkm/SHARED/dict/nov94> was submitted from host <alf20> by user <rkm>.
+Job was executed on host(s) <jack>, in queue <normal>, as user <rkm>.
+</net/alf20/usr/rkm> was used as the home directory.
+</net/alf20/usr/rkm/s3/src/misc/TEST> was used as the working directory.
+Started at Mon Feb 17 14:17:50 1997
+Results reported at Mon Feb 17 14:21:10 1997
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+../linux/dpalign -dict /net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.dic -fdict filler.dic -hom /net/alf20/usr/rkm/SHARED/ctl/HOM.94 -latdir /net/alf20/local_tmp/lat/et94 -mdef /net/alf20/usr1/rkm/s3-test/h1c1-94.mdef -ref /net/alf20/usr/rkm/SHARED/ctl/h1_et_94-g-hom.correct
+------------------------------------------------------------
+
+Successfully completed.  CPU time used is: 30.9 sec.
+
+
+The output (if any) follows:
+
+Configuration in effect:
+[NAME]		[DEFLT]	[VALUE]
+-dagfudge	2	2
+-dict			/net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.dic
+-fdict			filler.dic
+-hom			/net/alf20/usr/rkm/SHARED/ctl/HOM.94
+-hyp			
+-latdir			/net/alf20/local_tmp/lat/et94
+-mdef			/net/alf20/usr1/rkm/s3-test/h1c1-94.mdef
+-min_endfr	3	3
+-ref			/net/alf20/usr/rkm/SHARED/ctl/h1_et_94-g-hom.correct
+-sil		<sil>	<sil>
+INFO: ../mdef.c(470): Reading model definition: /net/alf20/usr1/rkm/s3-test/h1c1-94.mdef
+INFO: ../mdef.c(581): 55 CI-phones, 75774 CD-phones, 5 emitting states/phone, 6275 sen, 275 CI-sen
+INFO: ../dict.c(176): Reading main dictionary: /net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.dic
+INFO: ../dict.c(179): 21737 words read
+INFO: ../dict.c(184): Reading filler dictionary: filler.dic
+INFO: ../dict.c(187): 6 words read
+INFO: ../dpalign.c(930): Reading homophones file /net/alf20/usr/rkm/SHARED/ctl/HOM.94
+INFO: ../dpalign.c(941): Adding %PERCENT to dictionary
+INFO: ../dpalign.c(941): Adding .POINT to dictionary
+INFO: ../dpalign.c(941): Adding "QUOTE to dictionary
+INFO: ../dpalign.c(962): 3 homophone pairs read
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0201.lat
+INFO: ../dpalign.c(491): 4t0c0201: 916 frames, 1527 nodes (296 reachable), 5055 links
+as competition in the mutual fund business grows increasingly intense more players in the industry appear willing to sacrifice integrity in the name of performance (4t0c0201) << 25 ref; 0 0.0% oov; 25 hyp; 25 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==      25 ref;     0   0.0% oov;      25 hyp;      25 100.0% corr;      0   0.0% err;   0.1s CPU; 4t0c0201
+INFO: ../dpalign.c(774): Adding DISHEARTENING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0202.lat
+INFO: ../dpalign.c(491): 4t0c0202: 695 frames, 1281 nodes (415 reachable), 7141 links
+for a two trillion dollar business [[ BUILT => PILL ]] on public confidence this trend is [[ DISHEARTENING(oov) => DESCRIBING ]] at best and downright dangerous at worst (4t0c0202) << 21 ref; 1 4.8% oov; 21 hyp; 19 90.5% corr; 2 9.5% err; 0.1s CPU >>
+==      46 ref;     1   2.2% oov;      46 hyp;      44  95.7% corr;      2   4.3% err;   0.1s CPU; 4t0c0202
+INFO: ../dpalign.c(774): Adding UNSAVORY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0203.lat
+INFO: ../dpalign.c(491): 4t0c0203: 1475 frames, 2462 nodes (754 reachable), 13214 links
+so far this year the industry's slide has been apparent in allegations of insider trading by fund managers [[ UNSAVORY(oov) => UNSAFE IF ]] fund sales practices at banks and the use of high risk derivative securities in normally conservative money market funds (4t0c0203) << 38 ref; 1 2.6% oov; 39 hyp; 37 97.4% corr; 2 5.3% err; 0.2s CPU >>
+==      84 ref;     2   2.4% oov;      85 hyp;      81  96.4% corr;      4   4.8% err;   0.3s CPU; 4t0c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0204.lat
+INFO: ../dpalign.c(491): 4t0c0204: 1299 frames, 2319 nodes (728 reachable), 10648 links
+and in the latest blow to public confidence in the funds someone at industry titan fidelity investments decided last friday to send newspapers thursday's prices for most fidelity funds because the friday data wasn't ready (4t0c0204) << 35 ref; 0 0.0% oov; 35 hyp; 35 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     119 ref;     2   1.7% oov;     120 hyp;     116  97.5% corr;      4   3.4% err;   0.5s CPU; 4t0c0204
+INFO: ../dpalign.c(774): Adding FESS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0205.lat
+INFO: ../dpalign.c(491): 4t0c0205: 1232 frames, 2704 nodes (1015 reachable), 21603 links
+in the ensuing public humiliation suffered by fidelity this week as it was forced to [[ FESS(oov) => US ]] up to its intentional mistake the company has sought to make clear that nobody bought or sold a fund [[ DIRECT => ACT ]] from fidelity at the wrong price (4t0c0205) << 42 ref; 1 2.4% oov; 42 hyp; 40 95.2% corr; 2 4.8% err; 0.3s CPU >>
+==     161 ref;     3   1.9% oov;     162 hyp;     156  96.9% corr;      6   3.7% err;   0.8s CPU; 4t0c0205
+INFO: ../dpalign.c(774): Adding UNKNOWINGLY to dictionary
+INFO: ../dpalign.c(774): Adding EFFECTED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0206.lat
+INFO: ../dpalign.c(491): 4t0c0206: 1764 frames, 3805 nodes (1547 reachable), 29525 links
+though newspapers last saturday [[ UNKNOWINGLY(oov) => UNWILLING ]] listed thursday prices for about one hundred and fifty of fidelity's two hundred and eight funds the company says transactions [[ EFFECTED(oov) => TIGHTENED ]] friday [[ WERE => AND ]] made at the correct prices which fidelity received after it met newspaper deadlines with the wrong data early friday evening (4t0c0206) << 48 ref; 2 4.2% oov; 48 hyp; 45 93.8% corr; 3 6.3% err; 0.5s CPU >>
+==     209 ref;     5   2.4% oov;     210 hyp;     201  96.2% corr;      9   4.3% err;   1.2s CPU; 4t0c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0207.lat
+INFO: ../dpalign.c(491): 4t0c0207: 843 frames, 1621 nodes (662 reachable), 15937 links
+but that doesn't change the fact that most fidelity's shareholders [[ WERE LIED => AN LIGHT ]] to in varying degrees if they looked at their fund prices in newspapers last weekend (4t0c0207) << 27 ref; 0 0.0% oov; 27 hyp; 25 92.6% corr; 2 7.4% err; 0.2s CPU >>
+==     236 ref;     5   2.1% oov;     237 hyp;     226  95.8% corr;     11   4.7% err;   1.4s CPU; 4t0c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0208.lat
+INFO: ../dpalign.c(491): 4t0c0208: 757 frames, 1408 nodes (362 reachable), 7015 links
+the unidentified fidelity employee who made the decision to go with [[ INCORRECT => INGRAM ]] prices should simply have listed them as not available (4t0c0208) << 21 ref; 0 0.0% oov; 21 hyp; 20 95.2% corr; 1 4.8% err; 0.1s CPU >>
+==     257 ref;     5   1.9% oov;     258 hyp;     246  95.7% corr;     12   4.7% err;   1.5s CPU; 4t0c0208
+INFO: ../dpalign.c(774): Adding JAMIESON to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c0209.lat
+INFO: ../dpalign.c(491): 4t0c0209: 691 frames, 875 nodes (207 reachable), 2556 links
+that would be standard fidelity procedure said jane [[ JAMIESON(oov) => GENIUS ANNE ]] senior vice president at the boston based company (4t0c0209) << 17 ref; 1 5.9% oov; 18 hyp; 16 94.1% corr; 2 11.8% err; 0.1s CPU >>
+==     274 ref;     6   2.2% oov;     276 hyp;     262  95.6% corr;     14   5.1% err;   1.5s CPU; 4t0c0209
+INFO: ../dpalign.c(774): Adding ENTRUSTED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020a.lat
+INFO: ../dpalign.c(491): 4t0c020a: 2115 frames, 3805 nodes (1224 reachable), 19602 links
+fidelity's mistake and most of the [[ SELF ADMINISTERED => SEVEN STRIP ]] black eyes suffered by the fund industry this year have one thing in common they could have been prevented if the employees involved were playing by the rules [[ EITHER => INTO ]] the fund companies' internal rules or the prudent man rule that is supposed to govern the investment of money [[ ENTRUSTED(oov) => CONGESTED ]] by the public to allegedly professional money managers (4t0c020a) << 65 ref; 1 1.5% oov; 65 hyp; 61 93.8% corr; 4 6.2% err; 0.4s CPU >>
+==     339 ref;     7   2.1% oov;     341 hyp;     323  95.3% corr;     18   5.3% err;   2.0s CPU; 4t0c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020b.lat
+INFO: ../dpalign.c(491): 4t0c020b: 566 frames, 1066 nodes (316 reachable), 5849 links
+the problem is that it can become very tempting to bend or break the rules in the name of staying competitive (4t0c020b) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     360 ref;     7   1.9% oov;     362 hyp;     344  95.6% corr;     18   5.0% err;   2.0s CPU; 4t0c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020c.lat
+INFO: ../dpalign.c(491): 4t0c020c: 253 frames, 495 nodes (119 reachable), 2513 links
+take fidelity's case as an example (4t0c020c) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     366 ref;     7   1.9% oov;     368 hyp;     350  95.6% corr;     18   4.9% err;   2.0s CPU; 4t0c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020d.lat
+INFO: ../dpalign.c(491): 4t0c020d: 1065 frames, 1732 nodes (525 reachable), 6806 links
+someone there had to make a fast decision when a [[ SOFTWARE => SUFFERED ]] problem resulted in botched fund prices last friday [[ SHORTLY => CHARLIE ]] before the company was due to report the day's data to newspapers (4t0c020d) << 32 ref; 0 0.0% oov; 32 hyp; 30 93.8% corr; 2 6.3% err; 0.1s CPU >>
+==     398 ref;     7   1.8% oov;     400 hyp;     380  95.5% corr;     20   5.0% err;   2.1s CPU; 4t0c020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020e.lat
+INFO: ../dpalign.c(491): 4t0c020e: 995 frames, 1664 nodes (514 reachable), 6571 links
+if fidelity had provided no prices for most of its funds the company would [[ HAVE => N. ]] appeared to be having a problem that wasn't shared by other fund companies which of course was true (4t0c020e) << 33 ref; 0 0.0% oov; 33 hyp; 32 97.0% corr; 1 3.0% err; 0.1s CPU >>
+==     431 ref;     7   1.6% oov;     433 hyp;     412  95.6% corr;     21   4.9% err;   2.2s CPU; 4t0c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t0c020f.lat
+INFO: ../dpalign.c(491): 4t0c020f: 1072 frames, 1984 nodes (544 reachable), 9129 links
+moreover investors who compare fund prices and performance by using weekend newspapers would have had little data on fidelity funds perhaps costing fidelity some new [[ INVESTMENT => INVESTMENTS ]] (4t0c020f) << 26 ref; 0 0.0% oov; 26 hyp; 25 96.2% corr; 1 3.8% err; 0.1s CPU >>
+==     457 ref;     7   1.5% oov;     459 hyp;     437  95.6% corr;     22   4.8% err;   2.3s CPU; 4t0c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0201.lat
+INFO: ../dpalign.c(491): 4t1c0201: 788 frames, 993 nodes (135 reachable), 1031 links
+yields on taxable money market mutual funds rose slightly in the latest week while tax exempt yields dropped (4t1c0201) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     475 ref;     7   1.5% oov;     477 hyp;     455  95.8% corr;     22   4.6% err;   2.4s CPU; 4t1c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0202.lat
+INFO: ../dpalign.c(491): 4t1c0202: 1639 frames, 1639 nodes (300 reachable), 3224 links
+i. b. c. [[ DONOGHUE'S => DONAHUE ]] average seven day compound yield on taxable funds rose to three point six six percent from three point six four percent in the week ended tuesday according to money fund report an ashland massachusetts newsletter (4t1c0202) << 39 ref; 0 0.0% oov; 39 hyp; 38 97.4% corr; 1 2.6% err; 0.1s CPU >>
+==     514 ref;     7   1.4% oov;     516 hyp;     493  95.9% corr;     23   4.5% err;   2.4s CPU; 4t1c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0203.lat
+INFO: ../dpalign.c(491): 4t1c0203: 363 frames, 385 nodes (61 reachable), 440 links
+compound yields assume reinvestment of dividends (4t1c0203) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     520 ref;     7   1.3% oov;     522 hyp;     499  96.0% corr;     23   4.4% err;   2.4s CPU; 4t1c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0204.lat
+INFO: ../dpalign.c(491): 4t1c0204: 1000 frames, 1169 nodes (235 reachable), 2680 links
+the average seven day compound yield on tax free money funds fell to two point zero three percent from two point two one percent the newsletter said (4t1c0204) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     547 ref;     7   1.3% oov;     549 hyp;     526  96.2% corr;     23   4.2% err;   2.5s CPU; 4t1c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0205.lat
+INFO: ../dpalign.c(491): 4t1c0205: 1286 frames, 1418 nodes (239 reachable), 2657 links
+the latest yield is equivalent to a taxable three point one seven percent for investor in the thirty six percent tax bracket and to three point three six percent for someone paying thirty nine point six percent in taxes (4t1c0205) << 39 ref; 0 0.0% oov; 39 hyp; 39 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     586 ref;     7   1.2% oov;     588 hyp;     565  96.4% corr;     23   3.9% err;   2.5s CPU; 4t1c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0206.lat
+INFO: ../dpalign.c(491): 4t1c0206: 1417 frames, 2247 nodes (493 reachable), 7099 links
+tax exempt yields typically drop at this time of year because of a reduced supply of securities as many municipalities reach the june thirty end of their fiscal year said walter frank chief economist of the money fund report (4t1c0206) << 39 ref; 0 0.0% oov; 39 hyp; 39 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     625 ref;     7   1.1% oov;     627 hyp;     604  96.6% corr;     23   3.7% err;   2.6s CPU; 4t1c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0207.lat
+INFO: ../dpalign.c(491): 4t1c0207: 727 frames, 954 nodes (192 reachable), 2301 links
+taxable yields meanwhile have been rising steadily for several months in response to increases in short term interest rates (4t1c0207) << 19 ref; 0 0.0% oov; 19 hyp; 19 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     644 ref;     7   1.1% oov;     646 hyp;     623  96.7% corr;     23   3.6% err;   2.7s CPU; 4t1c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0208.lat
+INFO: ../dpalign.c(491): 4t1c0208: 2249 frames, 2080 nodes (528 reachable), 5307 links
+money fund report said the average seven day simple yield on taxable funds rose to three point five nine percent from three point five seven percent in the latest week while the average thirty day simple yield increased to three point five three percent from three point four six percent and the average thirty day compound yield went to three point five nine percent from three point five two percent (4t1c0208) << 70 ref; 0 0.0% oov; 70 hyp; 70 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     714 ref;     7   1.0% oov;     716 hyp;     693  97.1% corr;     23   3.2% err;   2.8s CPU; 4t1c0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c0209.lat
+INFO: ../dpalign.c(491): 4t1c0209: 1909 frames, 2520 nodes (630 reachable), 9449 links
+although assets of the taxable funds tracked by money fund report remained stable at about four hundred seventy two point six seven billion dollars twelve funds that just began reporting to the newsletter added three point seven five billion dollars to assets offsetting withdrawals from the six hundred sixty funds that were already included (4t1c0209) << 54 ref; 0 0.0% oov; 54 hyp; 54 100.0% corr; 0 0.0% err; 0.2s CPU >>
+==     768 ref;     7   0.9% oov;     770 hyp;     747  97.3% corr;     23   3.0% err;   3.0s CPU; 4t1c0209
+INFO: ../dpalign.c(774): Adding NEWSLETTER'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020a.lat
+INFO: ../dpalign.c(491): 4t1c020a: 1326 frames, 1801 nodes (494 reachable), 6745 links
+individual investors withdrew [[ JUST => JAZZ TO ]] over two billion dollars [[ FROM => IN ]] the four hundred fifty two funds and institutional investors pulled about one point seven billion dollars from two hundred eight funds according to the [[ NEWSLETTER'S(oov) => NEWSLETTERS ]] data (4t1c020a) << 35 ref; 1 2.9% oov; 36 hyp; 32 91.4% corr; 4 11.4% err; 0.1s CPU >>
+==     803 ref;     8   1.0% oov;     806 hyp;     779  97.0% corr;     27   3.4% err;   3.2s CPU; 4t1c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020b.lat
+INFO: ../dpalign.c(491): 4t1c020b: 1086 frames, 1266 nodes (250 reachable), 2860 links
+assets of tax free funds declined by nine hundred forty five point six million dollars to one hundred thirteen point nine one billion dollars money funds report said (4t1c020b) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     831 ref;     8   1.0% oov;     834 hyp;     807  97.1% corr;     27   3.2% err;   3.2s CPU; 4t1c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020c.lat
+INFO: ../dpalign.c(491): 4t1c020c: 1323 frames, 1825 nodes (391 reachable), 5248 links
+however four new funds added about three hundred seventy one million dollars to assets indicating that investors in three hundred fifty one other tax free funds actually withdrew about one point three billion dollars (4t1c020c) << 34 ref; 0 0.0% oov; 34 hyp; 34 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     865 ref;     8   0.9% oov;     868 hyp;     841  97.2% corr;     27   3.1% err;   3.3s CPU; 4t1c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020d.lat
+INFO: ../dpalign.c(491): 4t1c020d: 1195 frames, 1434 nodes (227 reachable), 2625 links
+average maturity of the taxable funds' investments which include treasury bills other government securities and commercial paper short term corporate i. o. u.s remained at forty five days (4t1c020d) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==     893 ref;     8   0.9% oov;     896 hyp;     869  97.3% corr;     27   3.0% err;   3.4s CPU; 4t1c020d
+INFO: ../dpalign.c(774): Adding LENGTHENED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020e.lat
+INFO: ../dpalign.c(491): 4t1c020e: 889 frames, 1571 nodes (356 reachable), 6178 links
+average maturity of the tax exempt portfolios primarily short term municipal securities [[ LENGTHENED(oov) => LENGTHS AND ]] by two days to forty four days (4t1c020e) << 20 ref; 1 5.0% oov; 21 hyp; 19 95.0% corr; 2 10.0% err; 0.1s CPU >>
+==     913 ref;     9   1.0% oov;     917 hyp;     888  97.3% corr;     29   3.2% err;   3.4s CPU; 4t1c020e
+INFO: ../dpalign.c(774): Adding PEEVE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020f.lat
+INFO: ../dpalign.c(491): 4t1c020f: 634 frames, 1480 nodes (450 reachable), 9395 links
+today's pet [[ PEEVE(oov) => PEAKED ]] why do [[ CERTAIN => SIGN ]] people insist on vacationing in the south of france (4t1c020f) << 15 ref; 1 6.7% oov; 15 hyp; 13 86.7% corr; 2 13.3% err; 0.1s CPU >>
+==     928 ref;    10   1.1% oov;     932 hyp;     901  97.1% corr;     31   3.3% err;   3.5s CPU; 4t1c020f
+INFO: ../dpalign.c(774): Adding EFFETE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020g.lat
+INFO: ../dpalign.c(491): 4t1c020g: 747 frames, 1977 nodes (771 reachable), 17599 links
+david brooks couldn't resist that [[ EFFETE(oov) => SEAT ]] phrase in his june fifteenth editorial piece i get no kicks on this game (4t1c020g) << 20 ref; 1 5.0% oov; 20 hyp; 19 95.0% corr; 1 5.0% err; 0.2s CPU >>
+==     948 ref;    11   1.2% oov;     952 hyp;     920  97.0% corr;     32   3.4% err;   3.7s CPU; 4t1c020g
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020h.lat
+INFO: ../dpalign.c(491): 4t1c020h: 317 frames, 758 nodes (223 reachable), 3971 links
+what's wrong with simply southern france (4t1c020h) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     954 ref;    11   1.2% oov;     958 hyp;     926  97.1% corr;     32   3.4% err;   3.7s CPU; 4t1c020h
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020i.lat
+INFO: ../dpalign.c(491): 4t1c020i: 308 frames, 656 nodes (163 reachable), 1901 links
+could one vacation in the south of new jersey (4t1c020i) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     963 ref;    11   1.1% oov;     967 hyp;     935  97.1% corr;     32   3.3% err;   3.8s CPU; 4t1c020i
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020j.lat
+INFO: ../dpalign.c(491): 4t1c020j: 200 frames, 523 nodes (94 reachable), 1128 links
+i think not (4t1c020j) << 3 ref; 0 0.0% oov; 3 hyp; 3 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==     966 ref;    11   1.1% oov;     970 hyp;     938  97.1% corr;     32   3.3% err;   3.8s CPU; 4t1c020j
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020k.lat
+INFO: ../dpalign.c(491): 4t1c020k: 222 frames, 470 nodes (40 reachable), 575 links
+so too with france (4t1c020k) << 4 ref; 0 0.0% oov; 4 hyp; 4 100.0% corr; 0 0.0% err; -0.0s CPU >>
+==     970 ref;    11   1.1% oov;     974 hyp;     942  97.1% corr;     32   3.3% err;   3.8s CPU; 4t1c020k
+INFO: ../dpalign.c(774): Adding ONESELF to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t1c020l.lat
+INFO: ../dpalign.c(491): 4t1c020l: 1046 frames, 1953 nodes (484 reachable), 6221 links
+the practice is almost as annoying as giving [[ ONESELF(oov) => WANTS UP ]] three public names such as the architect frank wright or first lady hillary clinton but that's a [[ PEEVE(oov) => PETE ]] for another day (4t1c020l) << 30 ref; 2 6.7% oov; 31 hyp; 28 93.3% corr; 3 10.0% err; 0.1s CPU >>
+==    1000 ref;    13   1.3% oov;    1005 hyp;     970  97.0% corr;     35   3.5% err;   3.9s CPU; 4t1c020l
+INFO: ../dpalign.c(774): Adding COTT to dictionary
+INFO: ../dpalign.c(774): Adding MESMERIZED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0201.lat
+INFO: ../dpalign.c(491): 4t2c0201: 1125 frames, 1627 nodes (470 reachable), 7664 links
+[[ COTT(oov) => I ]] corporation the canadian bottler of private label soft drinks that has [[ MESMERIZED(oov) => MANSION ARISE ]] the stock market with its marketing gains in recent years now has the short sellers on its tail (4t2c0201) << 31 ref; 2 6.5% oov; 32 hyp; 29 93.5% corr; 3 9.7% err; 0.1s CPU >>
+==    1031 ref;    15   1.5% oov;    1037 hyp;     999  96.9% corr;     38   3.7% err;   4.0s CPU; 4t2c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0202.lat
+INFO: ../dpalign.c(491): 4t2c0202: 1089 frames, 1005 nodes (214 reachable), 2479 links
+its shares fell four point eight seven five dollars canadian on wednesday to twenty point one two five dollars on the toronto stock exchange a decline of twenty percent (4t2c0202) << 29 ref; 0 0.0% oov; 29 hyp; 29 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1060 ref;    15   1.4% oov;    1066 hyp;    1028  97.0% corr;     38   3.6% err;   4.0s CPU; 4t2c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0203.lat
+INFO: ../dpalign.c(491): 4t2c0203: 411 frames, 562 nodes (77 reachable), 573 links
+early last week the stock was trading above thirty dollars (4t2c0203) << 10 ref; 0 0.0% oov; 10 hyp; 10 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1070 ref;    15   1.4% oov;    1076 hyp;    1038  97.0% corr;     38   3.6% err;   4.0s CPU; 4t2c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0204.lat
+INFO: ../dpalign.c(491): 4t2c0204: 1030 frames, 1335 nodes (371 reachable), 5463 links
+the company's stock also plummeted wednesday in the [[ UNITED => NIGHTS ]] states falling three point five dollars united states to fourteen point five dollars in nasdaq trading (4t2c0204) << 25 ref; 0 0.0% oov; 25 hyp; 24 96.0% corr; 1 4.0% err; 0.1s CPU >>
+==    1095 ref;    15   1.4% oov;    1101 hyp;    1062  97.0% corr;     39   3.6% err;   4.1s CPU; 4t2c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0205.lat
+INFO: ../dpalign.c(491): 4t2c0205: 1375 frames, 1629 nodes (302 reachable), 3845 links
+many [[ ANALYSTS => ANALYSES ]] are saying that [[ COTT(oov) => KIND ]] while still expanding rapidly will fall short of its projected growth rate because of increasingly aggressive price cutting by its two largest american rivals coca cola and pepsi cola (4t2c0205) << 35 ref; 1 2.9% oov; 35 hyp; 33 94.3% corr; 2 5.7% err; 0.1s CPU >>
+==    1130 ref;    16   1.4% oov;    1136 hyp;    1095  96.9% corr;     41   3.6% err;   4.2s CPU; 4t2c0205
+INFO: ../dpalign.c(774): Adding UNORTHODOX to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0206.lat
+INFO: ../dpalign.c(491): 4t2c0206: 994 frames, 1276 nodes (338 reachable), 4239 links
+[[ COTT(oov) => I ]] has also been dogged by allegations that it has inflated its declared profits by using [[ UNORTHODOX(oov) => UNO ORTHODOX ]] accounting practices and that it is running out of cash (4t2c0206) << 27 ref; 2 7.4% oov; 28 hyp; 25 92.6% corr; 3 11.1% err; 0.1s CPU >>
+==    1157 ref;    18   1.6% oov;    1164 hyp;    1120  96.8% corr;     44   3.8% err;   4.2s CPU; 4t2c0206
+INFO: ../dpalign.c(774): Adding MISINFORMATION to dictionary
+INFO: ../dpalign.c(774): Adding SHARES' to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0207.lat
+INFO: ../dpalign.c(491): 4t2c0207: 1256 frames, 1384 nodes (311 reachable), 3347 links
+the company rejects the charges as deliberate [[ MISINFORMATION(oov) => MESS INFORMATION ]] put out by short sellers [[ SPECULATORS WHO => SPECULATIVE SUU ]] sell borrowed shares hoping the market price will fall before they have to repay the [[ SHARES'(oov) => SHARES ]] original owners (4t2c0207) << 33 ref; 2 6.1% oov; 34 hyp; 29 87.9% corr; 5 15.2% err; 0.1s CPU >>
+==    1190 ref;    20   1.7% oov;    1198 hyp;    1149  96.6% corr;     49   4.1% err;   4.3s CPU; 4t2c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0208.lat
+INFO: ../dpalign.c(491): 4t2c0208: 368 frames, 581 nodes (136 reachable), 1995 links
+[[ COTT(oov) => COTTON ]] has even taken some of its detractors to court (4t2c0208) << 10 ref; 1 10.0% oov; 10 hyp; 9 90.0% corr; 1 10.0% err; 0.0s CPU >>
+==    1200 ref;    21   1.8% oov;    1208 hyp;    1158  96.5% corr;     50   4.2% err;   4.3s CPU; 4t2c0208
+INFO: ../dpalign.c(774): Adding COTT'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c0209.lat
+INFO: ../dpalign.c(491): 4t2c0209: 1533 frames, 1780 nodes (365 reachable), 4338 links
+a memorandum from a toronto research firm equity research associates incorporated questioning the health of [[ COTT'S(oov) => TOP ]] cash flow prompted a suit by [[ COTT(oov) => HIGH ]] earlier this year seeking fourteen million dollars canadian in damages (4t2c0209) << 33 ref; 2 6.1% oov; 33 hyp; 31 93.9% corr; 2 6.1% err; 0.1s CPU >>
+==    1233 ref;    23   1.9% oov;    1241 hyp;    1189  96.4% corr;     52   4.2% err;   4.4s CPU; 4t2c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020a.lat
+INFO: ../dpalign.c(491): 4t2c020a: 1000 frames, 1296 nodes (275 reachable), 3307 links
+in addition questions have been raised by [[ COTT'S(oov) => CARDS ]] failure so far to issue its annual report for the fiscal year that ended january twenty ninth nineteen ninety four (4t2c020a) << 28 ref; 1 3.6% oov; 28 hyp; 27 96.4% corr; 1 3.6% err; 0.1s CPU >>
+==    1261 ref;    24   1.9% oov;    1269 hyp;    1216  96.4% corr;     53   4.2% err;   4.5s CPU; 4t2c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020b.lat
+INFO: ../dpalign.c(491): 4t2c020b: 1131 frames, 1423 nodes (393 reachable), 5599 links
+the report must include full financial statements and the assurance of its outside auditors coopers and lybrand that the statements conform to generally accepted accounting principles (4t2c020b) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1287 ref;    24   1.9% oov;    1295 hyp;    1242  96.5% corr;     53   4.1% err;   4.5s CPU; 4t2c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020c.lat
+INFO: ../dpalign.c(491): 4t2c020c: 789 frames, 1055 nodes (270 reachable), 4324 links
+[[ COTT(oov) => KANG ]] invited some canadian and american analysts to its toronto headquarters wednesday to talk about the company's prospects (4t2c020c) << 18 ref; 1 5.6% oov; 18 hyp; 17 94.4% corr; 1 5.6% err; 0.0s CPU >>
+==    1305 ref;    25   1.9% oov;    1313 hyp;    1259  96.5% corr;     54   4.1% err;   4.6s CPU; 4t2c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020d.lat
+INFO: ../dpalign.c(491): 4t2c020d: 710 frames, 922 nodes (238 reachable), 2169 links
+a university of chicago professor roman weil was brought in to help field questions on the accounting matters (4t2c020d) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1323 ref;    25   1.9% oov;    1331 hyp;    1277  96.5% corr;     54   4.1% err;   4.6s CPU; 4t2c020d
+INFO: ../dpalign.c(774): Adding PENCER to dictionary
+INFO: ../dpalign.c(774): Adding COLLAPSES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020e.lat
+INFO: ../dpalign.c(491): 4t2c020e: 1727 frames, 2214 nodes (616 reachable), 8046 links
+the host at the meeting which was closed to the press was the company's chairman and chief executive officer gerald [[ PENCER(oov) => ANSWER ]] forty nine an entrepreneur whose last big venture financial trustco capital limited was one of the larger canadian business failure [[ COLLAPSES(oov) => COLLAPSING ]] of the last decade (4t2c020e) << 46 ref; 2 4.3% oov; 46 hyp; 44 95.7% corr; 2 4.3% err; 0.2s CPU >>
+==    1369 ref;    27   2.0% oov;    1377 hyp;    1321  96.5% corr;     56   4.1% err;   4.8s CPU; 4t2c020e
+INFO: ../dpalign.c(774): Adding KAVAFIAN to dictionary
+INFO: ../dpalign.c(774): Adding LEVESQUE to dictionary
+INFO: ../dpalign.c(774): Adding BEAUBIEN to dictionary
+INFO: ../dpalign.c(774): Adding GEOFFRION to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t2c020f.lat
+INFO: ../dpalign.c(491): 4t2c020f: 1576 frames, 2054 nodes (555 reachable), 7071 links
+according to jacques [[ KAVAFIAN(oov) => ABBAS YEN ]] an analyst [[ => DIPLOMATS ]] at [[ LEVESQUE(oov) BEAUBIEN(oov) GEOFFRION(oov) => OLE BEGAN JAFFRAY IN ]] incorporated a montreal brokerage house represented at the meeting [[ PENCER(oov) => HENSON ]] and other senior executives acknowledged that the company's growth rate would drop dramatically this year (4t2c020f) << 35 ref; 5 14.3% oov; 38 hyp; 30 85.7% corr; 8 22.9% err; 0.1s CPU >>
+==    1404 ref;    32   2.3% oov;    1415 hyp;    1351  96.2% corr;     64   4.6% err;   4.9s CPU; 4t2c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0201.lat
+INFO: ../dpalign.c(491): 4t3c0201: 798 frames, 984 nodes (175 reachable), 1514 links
+new mutual funds are being formed every day but does it make sense to put money in a fund without a track record (4t3c0201) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1427 ref;    32   2.2% oov;    1438 hyp;    1374  96.3% corr;     64   4.5% err;   4.9s CPU; 4t3c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0202.lat
+INFO: ../dpalign.c(491): 4t3c0202: 647 frames, 758 nodes (109 reachable), 1027 links
+last month alone some one hundred twelve new mutual funds were registered with the s. e. c. (4t3c0202) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1444 ref;    32   2.2% oov;    1455 hyp;    1391  96.3% corr;     64   4.4% err;   4.9s CPU; 4t3c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0203.lat
+INFO: ../dpalign.c(491): 4t3c0203: 1303 frames, 1491 nodes (219 reachable), 2948 links
+they included such funds as dean witter global utilities fund an international utilities fund and matthews international a new fund managed by paul matthews a former executive with g. t. global (4t3c0203) << 31 ref; 0 0.0% oov; 31 hyp; 31 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1475 ref;    32   2.2% oov;    1486 hyp;    1422  96.4% corr;     64   4.3% err;   5.0s CPU; 4t3c0203
+INFO: ../dpalign.c(774): Adding TREITLER to dictionary
+INFO: ../dpalign.c(774): Adding DECODER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0204.lat
+INFO: ../dpalign.c(491): 4t3c0204: 1443 frames, 2114 nodes (532 reachable), 8850 links
+more than twenty four hundred new funds have made their appearance since the start of nineteen ninety three according to betsy [[ TREITLER(oov) => TODDLER ]] executive editor of fund [[ DECODER(oov) => BECAUSE HER ]] in new york city a newsletter tracking new mutual funds (4t3c0204) << 37 ref; 2 5.4% oov; 38 hyp; 35 94.6% corr; 3 8.1% err; 0.2s CPU >>
+==    1512 ref;    34   2.2% oov;    1524 hyp;    1457  96.4% corr;     67   4.4% err;   5.1s CPU; 4t3c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0205.lat
+INFO: ../dpalign.c(491): 4t3c0205: 335 frames, 499 nodes (81 reachable), 642 links
+some of the new arrivals have performed well (4t3c0205) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1520 ref;    34   2.2% oov;    1532 hyp;    1465  96.4% corr;     67   4.4% err;   5.2s CPU; 4t3c0205
+INFO: ../dpalign.c(774): Adding STEPHENSON to dictionary
+INFO: ../dpalign.c(774): Adding CONTRARIAN to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0206.lat
+INFO: ../dpalign.c(491): 4t3c0206: 1636 frames, 2011 nodes (299 reachable), 3074 links
+for example the robertson [[ STEPHENSON(oov) CONTRARIAN(oov) => STEVENSON CONTRARY END ]] fund has delivered a sixteen point six percent gain since its launch at the end of june nineteen ninety three versus six point eight percent for the average stock fund (4t3c0206) << 36 ref; 2 5.6% oov; 37 hyp; 34 94.4% corr; 3 8.3% err; 0.1s CPU >>
+==    1556 ref;    36   2.3% oov;    1569 hyp;    1499  96.3% corr;     70   4.5% err;   5.3s CPU; 4t3c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0207.lat
+INFO: ../dpalign.c(491): 4t3c0207: 1516 frames, 1715 nodes (214 reachable), 2008 links
+and many investors have poured their money into new funds the capital world growth and income fund has accumulated over two point three billion dollars in assets since its launch in may nineteen ninety three (4t3c0207) << 35 ref; 0 0.0% oov; 35 hyp; 35 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1591 ref;    36   2.3% oov;    1604 hyp;    1534  96.4% corr;     70   4.4% err;   5.3s CPU; 4t3c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0208.lat
+INFO: ../dpalign.c(491): 4t3c0208: 618 frames, 803 nodes (142 reachable), 1277 links
+even so most seasoned mutual fund investors are reluctant to invest in a new fund (4t3c0208) << 15 ref; 0 0.0% oov; 15 hyp; 15 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1606 ref;    36   2.2% oov;    1619 hyp;    1549  96.5% corr;     70   4.4% err;   5.3s CPU; 4t3c0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c0209.lat
+INFO: ../dpalign.c(491): 4t3c0209: 779 frames, 945 nodes (190 reachable), 1757 links
+they would rather wait for the manager to put together a track record that can be compared to those of other funds (4t3c0209) << 22 ref; 0 0.0% oov; 22 hyp; 22 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1628 ref;    36   2.2% oov;    1641 hyp;    1571  96.5% corr;     70   4.3% err;   5.4s CPU; 4t3c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020a.lat
+INFO: ../dpalign.c(491): 4t3c020a: 1691 frames, 1895 nodes (211 reachable), 1566 links
+sheldon jacobs editor of the handbook for no load fund investors nine one four six nine three seven four two zero forty nine dollars has studied the performance of new funds introduced during the past two decades (4t3c020a) << 37 ref; 0 0.0% oov; 37 hyp; 37 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1665 ref;    36   2.2% oov;    1678 hyp;    1608  96.6% corr;     70   4.2% err;   5.4s CPU; 4t3c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020b.lat
+INFO: ../dpalign.c(491): 4t3c020b: 1107 frames, 1910 nodes (352 reachable), 4915 links
+his conclusion with hundreds or even thousands of funds that have known track records there is little reason to take the blind risk of buying an unknown entity (4t3c020b) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    1693 ref;    36   2.1% oov;    1706 hyp;    1636  96.6% corr;     70   4.1% err;   5.5s CPU; 4t3c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020c.lat
+INFO: ../dpalign.c(491): 4t3c020c: 751 frames, 935 nodes (198 reachable), 1689 links
+jacobs compared the performance of funds during their first year with the average of comparable funds during the same periods (4t3c020c) << 20 ref; 0 0.0% oov; 20 hyp; 20 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1713 ref;    36   2.1% oov;    1726 hyp;    1656  96.7% corr;     70   4.1% err;   5.6s CPU; 4t3c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020d.lat
+INFO: ../dpalign.c(491): 4t3c020d: 1368 frames, 1486 nodes (198 reachable), 1534 links
+he found that fifty one percent of the five hundred and sixty seven aggressive growth and growth funds that have appeared since nineteen seventy two trailed their peers during their first year of operation (4t3c020d) << 34 ref; 0 0.0% oov; 34 hyp; 34 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1747 ref;    36   2.1% oov;    1760 hyp;    1690  96.7% corr;     70   4.0% err;   5.6s CPU; 4t3c020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020e.lat
+INFO: ../dpalign.c(491): 4t3c020e: 289 frames, 653 nodes (144 reachable), 1629 links
+not terrible but not good (4t3c020e) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1752 ref;    36   2.1% oov;    1765 hyp;    1695  96.7% corr;     70   4.0% err;   5.6s CPU; 4t3c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020f.lat
+INFO: ../dpalign.c(491): 4t3c020f: 1272 frames, 1525 nodes (224 reachable), 1962 links
+among the three hundred ninety nine new growth and income funds the record was somewhat worse some fifty eight percent of them were below their group's average during [[ THEIR => OF ]] first year (4t3c020f) << 31 ref; 0 0.0% oov; 31 hyp; 30 96.8% corr; 1 3.2% err; 0.1s CPU >>
+==    1783 ref;    36   2.0% oov;    1796 hyp;    1725  96.7% corr;     71   4.0% err;   5.7s CPU; 4t3c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t3c020g.lat
+INFO: ../dpalign.c(491): 4t3c020g: 543 frames, 852 nodes (161 reachable), 2437 links
+jacobs found similar results when he studied precious metals and international funds (4t3c020g) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1795 ref;    36   2.0% oov;    1808 hyp;    1737  96.8% corr;     71   4.0% err;   5.7s CPU; 4t3c020g
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0201.lat
+INFO: ../dpalign.c(491): 4t4c0201: 389 frames, 526 nodes (111 reachable), 1086 links
+the warning flags are flying at america's mutual funds (4t4c0201) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1804 ref;    36   2.0% oov;    1817 hyp;    1746  96.8% corr;     71   3.9% err;   5.7s CPU; 4t4c0201
+INFO: ../dpalign.c(774): Adding CAUTIONING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0202.lat
+INFO: ../dpalign.c(491): 4t4c0202: 671 frames, 1292 nodes (390 reachable), 8417 links
+fund executives watching the turbulence in [[ THE => OF ]] financial markets are [[ CAUTIONING(oov) => CUTTING ]] their shareholders don't panic (4t4c0202) << 15 ref; 1 6.7% oov; 15 hyp; 13 86.7% corr; 2 13.3% err; 0.1s CPU >>
+==    1819 ref;    37   2.0% oov;    1832 hyp;    1759  96.7% corr;     73   4.0% err;   5.8s CPU; 4t4c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0203.lat
+INFO: ../dpalign.c(491): 4t4c0203: 133 frames, 274 nodes (31 reachable), 419 links
+don't flee (4t4c0203) << 2 ref; 0 0.0% oov; 2 hyp; 2 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1821 ref;    37   2.0% oov;    1834 hyp;    1761  96.7% corr;     73   4.0% err;   5.8s CPU; 4t4c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0204.lat
+INFO: ../dpalign.c(491): 4t4c0204: 385 frames, 547 nodes (192 reachable), 2529 links
+and don't expect to get the same gains in the future [[ YOU GOT => EGO OUT ]] in the past (4t4c0204) << 16 ref; 0 0.0% oov; 16 hyp; 14 87.5% corr; 2 12.5% err; 0.0s CPU >>
+==    1837 ref;    37   2.0% oov;    1850 hyp;    1775  96.6% corr;     75   4.1% err;   5.8s CPU; 4t4c0204
+INFO: ../dpalign.c(774): Adding DOWNBEAT to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0205.lat
+INFO: ../dpalign.c(491): 4t4c0205: 1407 frames, 1604 nodes (445 reachable), 5245 links
+the fund executives have reason to be concerned about how shareholders will react to mounting losses in stock and bond funds losses that developed in february and march after rising interest rates transformed the mood of the financial markets from upbeat to [[ DOWNBEAT(oov) => TAMPA E. ]] (4t4c0205) << 43 ref; 1 2.3% oov; 44 hyp; 42 97.7% corr; 2 4.7% err; 0.1s CPU >>
+==    1880 ref;    38   2.0% oov;    1894 hyp;    1817  96.6% corr;     77   4.1% err;   6.0s CPU; 4t4c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0206.lat
+INFO: ../dpalign.c(491): 4t4c0206: 789 frames, 1272 nodes (450 reachable), 5720 links
+for the last three years many mutual fund shareholders became used [[ TO => OF ]] watching their money grow steadily in a benign market climate (4t4c0206) << 22 ref; 0 0.0% oov; 22 hyp; 21 95.5% corr; 1 4.5% err; 0.1s CPU >>
+==    1902 ref;    38   2.0% oov;    1916 hyp;    1838  96.6% corr;     78   4.1% err;   6.0s CPU; 4t4c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0207.lat
+INFO: ../dpalign.c(491): 4t4c0207: 779 frames, 1006 nodes (236 reachable), 3426 links
+now in an adverse climate many investors are getting their first taste of what it's like to watch the value of their funds shrink day after day (4t4c0207) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1929 ref;    38   2.0% oov;    1943 hyp;    1865  96.7% corr;     78   4.0% err;   6.1s CPU; 4t4c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0208.lat
+INFO: ../dpalign.c(491): 4t4c0208: 790 frames, 1071 nodes (316 reachable), 3123 links
+understandably fund executives fear that investors who are faced with continuing losses will become discourage and give up on mutual funds (4t4c0208) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    1950 ref;    38   1.9% oov;    1964 hyp;    1886  96.7% corr;     78   4.0% err;   6.1s CPU; 4t4c0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c0209.lat
+INFO: ../dpalign.c(491): 4t4c0209: 542 frames, 696 nodes (249 reachable), 3521 links
+but they think the problem can be avoided if the downturn is [[ REASONABLY MODEST OR => RESUMING MILE MR. ]] short lived (4t4c0209) << 17 ref; 0 0.0% oov; 17 hyp; 14 82.4% corr; 3 17.6% err; 0.0s CPU >>
+==    1967 ref;    38   1.9% oov;    1981 hyp;    1900  96.6% corr;     81   4.1% err;   6.2s CPU; 4t4c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020a.lat
+INFO: ../dpalign.c(491): 4t4c020a: 1313 frames, 1674 nodes (526 reachable), 7035 links
+what the industry may [[ NOT => KNOT ]] be able to do [[ ANYTHING => AUNT ]] about is a [[ LENGTHY => LINK SEEN ]] bear market that would chase investors back to the banks where safety of principal and improving yields would be more attractive than a daily gyrations of the financial markets (4t4c020a) << 43 ref; 0 0.0% oov; 44 hyp; 40 93.0% corr; 4 9.3% err; 0.1s CPU >>
+==    2010 ref;    38   1.9% oov;    2025 hyp;    1940  96.5% corr;     85   4.2% err;   6.3s CPU; 4t4c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020b.lat
+INFO: ../dpalign.c(491): 4t4c020b: 344 frames, 313 nodes (94 reachable), 733 links
+signs of losses at mutual funds are widespread (4t4c020b) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2018 ref;    38   1.9% oov;    2033 hyp;    1948  96.5% corr;     85   4.2% err;   6.3s CPU; 4t4c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020c.lat
+INFO: ../dpalign.c(491): 4t4c020c: 1567 frames, 1474 nodes (386 reachable), 3485 links
+when the first half of the year ends thursday lipper analytical services incorporated which tracks mutual funded performance is expected to report that the average drop for most broad based stock funds is about two percent while bonds dropped an average of three point three percent (4t4c020c) << 46 ref; 0 0.0% oov; 46 hyp; 46 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2064 ref;    38   1.8% oov;    2079 hyp;    1994  96.6% corr;     85   4.1% err;   6.4s CPU; 4t4c020c
+INFO: ../dpalign.c(774): Adding OVERSIZE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020d.lat
+INFO: ../dpalign.c(491): 4t4c020d: 1124 frames, 1584 nodes (444 reachable), 5527 links
+edward c. johnson the third the chairman of fidelity investments the nation's biggest fund company wrote to shareholders early this year about the [[ OVERSIZE(oov) => PRECISE ]] gains his funds enjoyed in the past (4t4c020d) << 31 ref; 1 3.2% oov; 31 hyp; 30 96.8% corr; 1 3.2% err; 0.1s CPU >>
+==    2095 ref;    39   1.9% oov;    2110 hyp;    2024  96.6% corr;     86   4.1% err;   6.5s CPU; 4t4c020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020e.lat
+INFO: ../dpalign.c(491): 4t4c020e: 537 frames, 927 nodes (225 reachable), 2642 links
+given the market's cycles johnson said it's unlikely that this performance will continue (4t4c020e) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2108 ref;    39   1.9% oov;    2123 hyp;    2037  96.6% corr;     86   4.1% err;   6.5s CPU; 4t4c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020f.lat
+INFO: ../dpalign.c(491): 4t4c020f: 509 frames, 757 nodes (223 reachable), 2983 links
+[[ THROUGH => DEERE ]] the rest of this decade investment returns will probably be more modest (4t4c020f) << 13 ref; 0 0.0% oov; 13 hyp; 12 92.3% corr; 1 7.7% err; 0.0s CPU >>
+==    2121 ref;    39   1.8% oov;    2136 hyp;    2049  96.6% corr;     87   4.1% err;   6.5s CPU; 4t4c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t4c020g.lat
+INFO: ../dpalign.c(491): 4t4c020g: 319 frames, 515 nodes (105 reachable), 1320 links
+it may be time to adjust your expectations (4t4c020g) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2129 ref;    39   1.8% oov;    2144 hyp;    2057  96.6% corr;     87   4.1% err;   6.6s CPU; 4t4c020g
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0201.lat
+INFO: ../dpalign.c(491): 4t5c0201: 1113 frames, 1466 nodes (387 reachable), 5766 links
+the global market for environmental goods and services already comparable to the pharmaceuticals or aerospace industries will surge in the next two decades a report monday forecast (4t5c0201) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2156 ref;    39   1.8% oov;    2171 hyp;    2084  96.7% corr;     87   4.0% err;   6.7s CPU; 4t5c0201
+INFO: ../dpalign.c(774): Adding ECOTEC to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0202.lat
+INFO: ../dpalign.c(491): 4t5c0202: 921 frames, 1472 nodes (196 reachable), 3460 links
+this growth offers major business opportunities but international competition is heating up independent research company [[ ECOTEC(oov) => EGO TEXAS ]] said (4t5c0202) << 17 ref; 1 5.9% oov; 18 hyp; 16 94.1% corr; 2 11.8% err; 0.0s CPU >>
+==    2173 ref;    40   1.8% oov;    2189 hyp;    2100  96.6% corr;     89   4.1% err;   6.7s CPU; 4t5c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0203.lat
+INFO: ../dpalign.c(491): 4t5c0203: 1423 frames, 2250 nodes (563 reachable), 7609 links
+the report was prepared for businessmen at a seminar being held as part of a global forum conference a follow up to the nineteen ninety two u. n. conference on environment and development the [[ EARTH => R. ]] summit in rio de janeiro [[ => P. ]] (4t5c0203) << 40 ref; 0 0.0% oov; 41 hyp; 39 97.5% corr; 2 5.0% err; 0.1s CPU >>
+==    2213 ref;    40   1.8% oov;    2230 hyp;    2139  96.7% corr;     91   4.1% err;   6.8s CPU; 4t5c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0204.lat
+INFO: ../dpalign.c(491): 4t5c0204: 1510 frames, 2819 nodes (977 reachable), 18065 links
+based on a survey of firms already active in the environmental market together with statistics from bodies like the world bank [[ ECOTEC(oov) => ECLECTIC ]] said the world environmental market in nineteen ninety two the last year [[ AVAILABLE => WALL ]] was worth about two hundred and ten billion dollars (4t5c0204) << 44 ref; 1 2.3% oov; 44 hyp; 42 95.5% corr; 2 4.5% err; 0.3s CPU >>
+==    2257 ref;    41   1.8% oov;    2274 hyp;    2181  96.6% corr;     93   4.1% err;   7.1s CPU; 4t5c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0205.lat
+INFO: ../dpalign.c(491): 4t5c0205: 704 frames, 1121 nodes (224 reachable), 3652 links
+this makes it comparable to the pharmaceuticals and aerospace industries the report said (4t5c0205) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2270 ref;    41   1.8% oov;    2287 hyp;    2194  96.7% corr;     93   4.1% err;   7.2s CPU; 4t5c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0206.lat
+INFO: ../dpalign.c(491): 4t5c0206: 1043 frames, 918 nodes (186 reachable), 1388 links
+we forecast that it will grow to three hundred and twenty billion dollars by the year two thousand and five hundred [[ AND => ]] seventy billion dollars by two thousand and ten (4t5c0206) << 30 ref; 0 0.0% oov; 29 hyp; 29 96.7% corr; 1 3.3% err; 0.0s CPU >>
+==    2300 ref;    41   1.8% oov;    2316 hyp;    2223  96.7% corr;     94   4.1% err;   7.2s CPU; 4t5c0206
+INFO: ../dpalign.c(774): Adding HAINES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0207.lat
+INFO: ../dpalign.c(491): 4t5c0207: 757 frames, 1296 nodes (330 reachable), 5545 links
+our market estimates are generally considered to be conservative said [[ ECOTEC(oov) => LIKUD TECH ]] director richard [[ HAINES(oov) => JAMES ]] presenting the report (4t5c0207) << 17 ref; 2 11.8% oov; 18 hyp; 15 88.2% corr; 3 17.6% err; 0.1s CPU >>
+==    2317 ref;    43   1.9% oov;    2334 hyp;    2238  96.6% corr;     97   4.2% err;   7.3s CPU; 4t5c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0208.lat
+INFO: ../dpalign.c(491): 4t5c0208: 1128 frames, 1514 nodes (314 reachable), 3394 links
+growth in the economies of developing countries will boost their share of the market although developed nations will still account for more than eighty percent of it by two thousand and ten the report said (4t5c0208) << 35 ref; 0 0.0% oov; 35 hyp; 35 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2352 ref;    43   1.8% oov;    2369 hyp;    2273  96.6% corr;     97   4.1% err;   7.4s CPU; 4t5c0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c0209.lat
+INFO: ../dpalign.c(491): 4t5c0209: 774 frames, 1406 nodes (250 reachable), 4924 links
+[[ HAINES(oov) => JANE ]] said competition was fierce with french german u. s. and canadian companies the main players (4t5c0209) << 16 ref; 1 6.3% oov; 16 hyp; 15 93.8% corr; 1 6.3% err; 0.0s CPU >>
+==    2368 ref;    44   1.9% oov;    2385 hyp;    2288  96.6% corr;     98   4.1% err;   7.4s CPU; 4t5c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020a.lat
+INFO: ../dpalign.c(491): 4t5c020a: 1367 frames, 1633 nodes (333 reachable), 3908 links
+[[ ORACLE => WHIRLPOOL ]] corporation thursday reported a surge in profits and sales for its fourth quarter an announcement that surprised wall street and sent the software maker's stock higher in after hours trading (4t5c020a) << 31 ref; 0 0.0% oov; 31 hyp; 30 96.8% corr; 1 3.2% err; 0.1s CPU >>
+==    2399 ref;    44   1.8% oov;    2416 hyp;    2318  96.6% corr;     99   4.1% err;   7.5s CPU; 4t5c020a
+INFO: ../dpalign.c(774): Adding ORACLE'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020b.lat
+INFO: ../dpalign.c(491): 4t5c020b: 1714 frames, 1597 nodes (259 reachable), 2738 links
+[[ ORACLE'S(oov) => MARCOS' ]] earnings for the quarter which ended may thirty first jumped sixty six percent to one hundred and fourteen point five million dollars or thirty nine cents a share from the sixty nine point one million dollars or twenty three cents a share last year (4t5c020b) << 45 ref; 1 2.2% oov; 45 hyp; 44 97.8% corr; 1 2.2% err; 0.1s CPU >>
+==    2444 ref;    45   1.8% oov;    2461 hyp;    2362  96.6% corr;    100   4.1% err;   7.6s CPU; 4t5c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020c.lat
+INFO: ../dpalign.c(491): 4t5c020c: 1641 frames, 1879 nodes (275 reachable), 2014 links
+overall sales increased forty one percent to six hundred and sixty eight point one million dollars from four hundred and [[ SEVENTY => SENATE ]] two point six million dollars including a fifty eight percent gain in u. s. revenue and a twenty two percent gain in european sales (4t5c020c) << 45 ref; 0 0.0% oov; 45 hyp; 44 97.8% corr; 1 2.2% err; 0.1s CPU >>
+==    2489 ref;    45   1.8% oov;    2506 hyp;    2406  96.7% corr;    101   4.1% err;   7.6s CPU; 4t5c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020d.lat
+INFO: ../dpalign.c(491): 4t5c020d: 778 frames, 1019 nodes (104 reachable), 933 links
+[[ ORACLE'S(oov) => ORACLE ]] shares rose thirty seven point five cents to thirty five dollars in after hours trading (4t5c020d) << 16 ref; 1 6.3% oov; 16 hyp; 15 93.8% corr; 1 6.3% err; 0.0s CPU >>
+==    2505 ref;    46   1.8% oov;    2522 hyp;    2421  96.6% corr;    102   4.1% err;   7.7s CPU; 4t5c020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020e.lat
+INFO: ../dpalign.c(491): 4t5c020e: 447 frames, 838 nodes (87 reachable), 982 links
+the results came just as the stock market closed (4t5c020e) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2514 ref;    46   1.8% oov;    2531 hyp;    2430  96.7% corr;    102   4.1% err;   7.7s CPU; 4t5c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t5c020f.lat
+INFO: ../dpalign.c(491): 4t5c020f: 1045 frames, 1626 nodes (249 reachable), 2998 links
+oracle according to zacks investment survey had been expected to earn thirty two cents to forty two cents a share with a mean forecast of thirty five cents (4t5c020f) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2542 ref;    46   1.8% oov;    2559 hyp;    2458  96.7% corr;    102   4.0% err;   7.7s CPU; 4t5c020f
+INFO: ../dpalign.c(774): Adding MOUSETRAP to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0201.lat
+INFO: ../dpalign.c(491): 4t6c0201: 489 frames, 645 nodes (143 reachable), 1019 links
+build a better [[ MOUSETRAP(oov) => MOUSE TRAPPED ]] the saying goes and the world will beat a path to your door (4t6c0201) << 17 ref; 1 5.9% oov; 18 hyp; 16 94.1% corr; 2 11.8% err; 0.0s CPU >>
+==    2559 ref;    47   1.8% oov;    2577 hyp;    2474  96.7% corr;    104   4.1% err;   7.8s CPU; 4t6c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0202.lat
+INFO: ../dpalign.c(491): 4t6c0202: 285 frames, 585 nodes (138 reachable), 1322 links
+better yet build a better mouse (4t6c0202) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2565 ref;    47   1.8% oov;    2583 hyp;    2480  96.7% corr;    104   4.1% err;   7.8s CPU; 4t6c0202
+INFO: ../dpalign.c(774): Adding CURSOR to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0203.lat
+INFO: ../dpalign.c(491): 4t6c0203: 901 frames, 1309 nodes (258 reachable), 3522 links
+for about a decade now the computer mouse [[ HAS => AS ]] provided p. c. users a way to move quickly all over the screen freeing them from the limitations of keyboard [[ CURSOR(oov) => KARCHER ]] controls (4t6c0203) << 31 ref; 1 3.2% oov; 31 hyp; 29 93.5% corr; 2 6.5% err; 0.1s CPU >>
+==    2596 ref;    48   1.8% oov;    2614 hyp;    2509  96.6% corr;    106   4.1% err;   7.8s CPU; 4t6c0203
+INFO: ../dpalign.c(774): Adding POPULARIZED to dictionary
+INFO: ../dpalign.c(774): Adding UBIQUITY to dictionary
+INFO: ../dpalign.c(774): Adding HOLDOUTS to dictionary
+INFO: ../dpalign.c(774): Adding INTERFACES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0204.lat
+INFO: ../dpalign.c(491): 4t6c0204: 1249 frames, 2211 nodes (677 reachable), 7686 links
+first [[ POPULARIZED(oov) => POPULAR IS ]] by the apple macintosh and then adopted as the control device of choice for microsoft windows the mouse these days is approaching [[ UBIQUITY(oov) => PICKET E. ]] except among [[ HOLDOUTS(oov) => HOLDER ADS ]] who prefer the old keyboard [[ INTERFACES(oov) => INTERFACE ]] (4t6c0204) << 34 ref; 4 11.8% oov; 37 hyp; 30 88.2% corr; 7 20.6% err; 0.2s CPU >>
+==    2630 ref;    52   2.0% oov;    2651 hyp;    2539  96.5% corr;    113   4.3% err;   8.0s CPU; 4t6c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0205.lat
+INFO: ../dpalign.c(491): 4t6c0205: 1081 frames, 1498 nodes (336 reachable), 4164 links
+but the folks in silicon valley and elsewhere who design personal computers are always looking for ways to improve things or at least change them and as a result the search for a better mouse is well under way (4t6c0205) << 39 ref; 0 0.0% oov; 39 hyp; 39 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    2669 ref;    52   1.9% oov;    2690 hyp;    2578  96.6% corr;    113   4.2% err;   8.1s CPU; 4t6c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0206.lat
+INFO: ../dpalign.c(491): 4t6c0206: 598 frames, 800 nodes (159 reachable), 2227 links
+much of this innovation is being driven by the massive growth in popularity of portable laptop computers (4t6c0206) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2686 ref;    52   1.9% oov;    2707 hyp;    2595  96.6% corr;    113   4.2% err;   8.1s CPU; 4t6c0206
+INFO: ../dpalign.c(774): Adding LAPTOPS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0207.lat
+INFO: ../dpalign.c(491): 4t6c0207: 931 frames, 1712 nodes (466 reachable), 5758 links
+it didn't take too long to figure out that there usually is little room to move [[ => HOUR ]] mouse around in many of the areas in which [[ LAPTOPS(oov) ARE => LAPTOP RUDY ]] used such as airline seats (4t6c0207) << 32 ref; 1 3.1% oov; 33 hyp; 30 93.8% corr; 3 9.4% err; 0.1s CPU >>
+==    2718 ref;    53   1.9% oov;    2740 hyp;    2625  96.6% corr;    116   4.3% err;   8.2s CPU; 4t6c0207
+INFO: ../dpalign.c(774): Adding CLEVERLY to dictionary
+INFO: ../dpalign.c(774): Adding REINVENTED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0208.lat
+INFO: ../dpalign.c(491): 4t6c0208: 369 frames, 634 nodes (209 reachable), 2714 links
+so laptop computer designers [[ CLEVERLY(oov) REINVENTED(oov) => GLOVER LI WE INVENT ]] the mouse (4t6c0208) << 8 ref; 2 25.0% oov; 10 hyp; 6 75.0% corr; 4 50.0% err; 0.0s CPU >>
+==    2726 ref;    55   2.0% oov;    2750 hyp;    2631  96.5% corr;    120   4.4% err;   8.2s CPU; 4t6c0208
+INFO: ../dpalign.c(774): Adding CLUNKY to dictionary
+INFO: ../dpalign.c(774): Adding TRACKBALLS to dictionary
+INFO: ../dpalign.c(774): Adding CLIPPED to dictionary
+INFO: ../dpalign.c(774): Adding TRACKBALL to dictionary
+INFO: ../dpalign.c(774): Adding POWERBOOKS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c0209.lat
+INFO: ../dpalign.c(491): 4t6c0209: 1140 frames, 1918 nodes (632 reachable), 9477 links
+early [[ CLUNKY(oov) => TWENTY ]] efforts such as tiny mice [[ => SURGE ]] or [[ TRACKBALLS(oov) CLIPPED(oov) => BOTH CLIPS ]] to the sides a laptop keyboard have given way to more elegant solutions such as the central [[ TRACKBALL(oov) => TRAVEL ]] located in front of the keyboard of apple [[ POWERBOOKS(oov) => ART VOTES ]] (4t6c0209) << 37 ref; 5 13.5% oov; 39 hyp; 32 86.5% corr; 7 18.9% err; 0.1s CPU >>
+==    2763 ref;    60   2.2% oov;    2789 hyp;    2663  96.4% corr;    127   4.6% err;   8.4s CPU; 4t6c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020a.lat
+INFO: ../dpalign.c(491): 4t6c020a: 661 frames, 1430 nodes (392 reachable), 6518 links
+the apple [[ TRACKBALL(oov) => JACKPOT ]] seems so natural that it requires virtually no adjustment [[ IN => ]] switching to it from a standard mouse (4t6c020a) << 20 ref; 1 5.0% oov; 19 hyp; 18 90.0% corr; 2 10.0% err; 0.1s CPU >>
+==    2783 ref;    61   2.2% oov;    2808 hyp;    2681  96.3% corr;    129   4.6% err;   8.4s CPU; 4t6c020a
+INFO: ../dpalign.c(774): Adding THINKPAD to dictionary
+INFO: ../dpalign.c(774): Adding ERASER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020b.lat
+INFO: ../dpalign.c(491): 4t6c020b: 1004 frames, 1799 nodes (519 reachable), 8027 links
+i. b. m. went a step further in its [[ THINKPAD(oov) => THINK I'D ]] models replacing the [[ TRACKBALL(oov) => CHOPPED ALL ]] with a red plastic button known almost universally as the pencil [[ ERASER(oov) => IT RESEARCHED ]] in the middle of the keyboard (4t6c020b) << 32 ref; 3 9.4% oov; 35 hyp; 29 90.6% corr; 6 18.8% err; 0.1s CPU >>
+==    2815 ref;    64   2.3% oov;    2843 hyp;    2710  96.3% corr;    135   4.8% err;   8.5s CPU; 4t6c020b
+INFO: ../dpalign.c(774): Adding CARESSING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020c.lat
+INFO: ../dpalign.c(491): 4t6c020c: 530 frames, 1722 nodes (750 reachable), 27337 links
+by [[ CARESSING(oov) => PRESSING ]] this raised button with your thumbs you can move around the screen and type at the same time (4t6c020c) << 20 ref; 1 5.0% oov; 20 hyp; 19 95.0% corr; 1 5.0% err; 0.2s CPU >>
+==    2835 ref;    65   2.3% oov;    2863 hyp;    2729  96.3% corr;    136   4.8% err;   8.8s CPU; 4t6c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020d.lat
+INFO: ../dpalign.c(491): 4t6c020d: 756 frames, 1500 nodes (525 reachable), 8177 links
+it's a superb design that has helped make the [[ THINKPAD(oov) => IMPACT ]] so successful although the pencil [[ ERASER(oov) => ERASED IT ]] device requires some sharp motor skills to master (4t6c020d) << 24 ref; 2 8.3% oov; 25 hyp; 22 91.7% corr; 3 12.5% err; 0.1s CPU >>
+==    2859 ref;    67   2.3% oov;    2888 hyp;    2751  96.2% corr;    139   4.9% err;   8.9s CPU; 4t6c020d
+INFO: ../dpalign.c(774): Adding ERASERS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020e.lat
+INFO: ../dpalign.c(491): 4t6c020e: 1308 frames, 2332 nodes (768 reachable), 10884 links
+back to apple which [[ HAS => AS ]] now come up with the best laptop solution yet its new [[ POWERBOOKS(oov) => POWER PLANTS ]] the five hundred series do away completely with mice [[ TRACKBALLS(oov) => TRACT CALLS ]] pencil [[ ERASERS(oov) => RAISERS ]] or any other mechanical devices by which to control the [[ CURSOR(oov) => PERSON ]] (4t6c020e) << 40 ref; 4 10.0% oov; 42 hyp; 35 87.5% corr; 7 17.5% err; 0.2s CPU >>
+==    2899 ref;    71   2.4% oov;    2930 hyp;    2786  96.1% corr;    146   5.0% err;   9.1s CPU; 4t6c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t6c020f.lat
+INFO: ../dpalign.c(491): 4t6c020f: 758 frames, 1255 nodes (250 reachable), 4086 links
+instead there is a small square of recessed plastic in front of the keyboard on the new [[ POWERBOOKS(oov) => PARK BOXES ]] right where the [[ TRACKBALL(oov) USED => TROUBLE EAST ]] to be (4t6c020f) << 25 ref; 2 8.0% oov; 26 hyp; 22 88.0% corr; 4 16.0% err; 0.1s CPU >>
+==    2924 ref;    73   2.5% oov;    2956 hyp;    2808  96.0% corr;    150   5.1% err;   9.1s CPU; 4t6c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0201.lat
+INFO: ../dpalign.c(491): 4t7c0201: 1124 frames, 1333 nodes (283 reachable), 3707 links
+the beleaguered u. s. dollar tumbled to another record low against the surging japanese yen early monday before edging upward and restoring calm to worldwide currency markets (4t7c0201) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    2951 ref;    73   2.5% oov;    2983 hyp;    2835  96.1% corr;    150   5.1% err;   9.1s CPU; 4t7c0201
+INFO: ../dpalign.c(774): Adding AGITATED to dictionary
+INFO: ../dpalign.c(774): Adding WATCHER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0202.lat
+INFO: ../dpalign.c(491): 4t7c0202: 1465 frames, 1649 nodes (416 reachable), 4253 links
+even as stability returned to [[ AGITATED(oov) => EDUCATING ]] markets later monday and the stock market rallied currency traders warned that the dollar's rough ride was not over and the key federal reserve [[ WATCHER(oov) => LARGER ]] predicted a u. s. interest rate hike next week (4t7c0202) << 40 ref; 2 5.0% oov; 40 hyp; 38 95.0% corr; 2 5.0% err; 0.1s CPU >>
+==    2991 ref;    75   2.5% oov;    3023 hyp;    2873  96.1% corr;    152   5.1% err;   9.2s CPU; 4t7c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0203.lat
+INFO: ../dpalign.c(491): 4t7c0203: 1363 frames, 1633 nodes (404 reachable), 6454 links
+the dollar's dramatic tumble threatens nascent economic recoveries in japan and western europe economists said raising expectations of new concerted actions to stabilize the world's volatile system of currencies (4t7c0203) << 29 ref; 0 0.0% oov; 29 hyp; 29 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3020 ref;    75   2.5% oov;    3052 hyp;    2902  96.1% corr;    152   5.0% err;   9.3s CPU; 4t7c0203
+INFO: ../dpalign.c(774): Adding TRAVAILS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0204.lat
+INFO: ../dpalign.c(491): 4t7c0204: 1062 frames, 1284 nodes (164 reachable), 2368 links
+indeed the white house acknowledged monday that the dollar's [[ TRAVAILS(oov) => OF AISLES ]] will be on the table when the world's seven leading industrial powers meet next week in naples italy (4t7c0204) << 28 ref; 1 3.6% oov; 29 hyp; 27 96.4% corr; 2 7.1% err; 0.1s CPU >>
+==    3048 ref;    76   2.5% oov;    3081 hyp;    2929  96.1% corr;    154   5.1% err;   9.4s CPU; 4t7c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0205.lat
+INFO: ../dpalign.c(491): 4t7c0205: 1451 frames, 1975 nodes (355 reachable), 4337 links
+it [[ IS => A ]] our view that further appreciation of the mark and [[ THE => EIGHT ]] yen would be counter productive for global recovery said a senior u. s. treasury department official who declined to be named noting that america's major trading partners share the view (4t7c0205) << 42 ref; 0 0.0% oov; 42 hyp; 40 95.2% corr; 2 4.8% err; 0.1s CPU >>
+==    3090 ref;    76   2.5% oov;    3123 hyp;    2969  96.1% corr;    156   5.0% err;   9.5s CPU; 4t7c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0206.lat
+INFO: ../dpalign.c(491): 4t7c0206: 958 frames, 779 nodes (101 reachable), 914 links
+the dow jones industrial average jumped forty eight point five six points monday as investors responded to growing calm in the currency markets (4t7c0206) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3113 ref;    76   2.4% oov;    3146 hyp;    2992  96.1% corr;    156   5.0% err;   9.5s CPU; 4t7c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0207.lat
+INFO: ../dpalign.c(491): 4t7c0207: 1302 frames, 1095 nodes (143 reachable), 1334 links
+the dollar closed at a hundred point forty five japanese yen in new york trading unchanged from friday and at one point five eight three five german marks down from one point five eight four zero (4t7c0207) << 36 ref; 0 0.0% oov; 36 hyp; 36 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3149 ref;    76   2.4% oov;    3182 hyp;    3028  96.2% corr;    156   5.0% err;   9.5s CPU; 4t7c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0208.lat
+INFO: ../dpalign.c(491): 4t7c0208: 1668 frames, 1827 nodes (393 reachable), 4113 links
+an alliance of seventeen nations loaded up on dollars late last week in [[ => FAYE ]] a failed bid to shore up the dollar which has been battered by the perception of a [[ WEAK => WEEK ]] u. s. leadership a rising trade deficit and prospects for faster growth overseas (4t7c0208) << 44 ref; 0 0.0% oov; 45 hyp; 43 97.7% corr; 2 4.5% err; 0.1s CPU >>
+==    3193 ref;    76   2.4% oov;    3227 hyp;    3071  96.2% corr;    158   4.9% err;   9.6s CPU; 4t7c0208
+INFO: ../dpalign.c(774): Adding CORP. to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c0209.lat
+INFO: ../dpalign.c(491): 4t7c0209: 1942 frames, 2153 nodes (460 reachable), 5866 links
+but anticipation that there could be a currency stabilizing accord at the g. seven meeting of industrial nations in naples while [[ SPECULATIVE => SPECTATORS EIGHT ]] is a reason for the dollar stopped tumbling today said irwin l. keller chief economist at chemical banking [[ CORP.(oov) => CORPORATE ]] in new york (4t7c0209) << 44 ref; 1 2.3% oov; 45 hyp; 42 95.5% corr; 3 6.8% err; 0.1s CPU >>
+==    3237 ref;    77   2.4% oov;    3272 hyp;    3113  96.2% corr;    161   5.0% err;   9.8s CPU; 4t7c0209
+INFO: ../dpalign.c(774): Adding "UNQUOTE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020a.lat
+INFO: ../dpalign.c(491): 4t7c020a: 1078 frames, 1074 nodes (193 reachable), 1592 links
+currency traders cannot rule out that quote there just might be some big move [[ "UNQUOTE(oov) => 'N COAT ]] to steady the dollar yen and western european currencies he said (4t7c020a) << 26 ref; 1 3.8% oov; 27 hyp; 25 96.2% corr; 2 7.7% err; 0.0s CPU >>
+==    3263 ref;    78   2.4% oov;    3299 hyp;    3138  96.2% corr;    163   5.0% err;   9.8s CPU; 4t7c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020b.lat
+INFO: ../dpalign.c(491): 4t7c020b: 1229 frames, 1184 nodes (310 reachable), 2595 links
+another way to bolster the dollar is to raise interest rates making u. s. investments more attractive even though some economists warn that such action could jeopardize an already slowing national recovery (4t7c020b) << 32 ref; 0 0.0% oov; 32 hyp; 32 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3295 ref;    78   2.4% oov;    3331 hyp;    3170  96.2% corr;    163   4.9% err;   9.8s CPU; 4t7c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020c.lat
+INFO: ../dpalign.c(491): 4t7c020c: 1393 frames, 1419 nodes (205 reachable), 1976 links
+meanwhile former [[ => WILL ]] federal reserve governor wayne angell a noted inflation hawk predicted the fed would hike its discount rate the rate charged to member banks by half a percentage point (4t7c020c) << 30 ref; 0 0.0% oov; 31 hyp; 30 100.0% corr; 1 3.3% err; 0.1s CPU >>
+==    3325 ref;    78   2.3% oov;    3362 hyp;    3200  96.2% corr;    164   4.9% err;   9.9s CPU; 4t7c020c
+INFO: ../dpalign.c(774): Adding CO. to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020d.lat
+INFO: ../dpalign.c(491): 4t7c020d: 1094 frames, 1112 nodes (190 reachable), 1592 links
+now chief economist at bear stearns and [[ CO.(oov) => HELP ]] in new york [[ ANGELL => ANGELS ]] cited investors' fears of rising inflation as one of the reasons the dollar has slumped (4t7c020d) << 27 ref; 1 3.7% oov; 27 hyp; 25 92.6% corr; 2 7.4% err; 0.0s CPU >>
+==    3352 ref;    79   2.4% oov;    3389 hyp;    3225  96.2% corr;    166   5.0% err;   9.9s CPU; 4t7c020d
+INFO: ../dpalign.c(774): Adding BLOOMBERG to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020e.lat
+INFO: ../dpalign.c(491): 4t7c020e: 1033 frames, 1633 nodes (298 reachable), 3816 links
+quote i see it the rate hike coming to [[ A => OH ]] result of a weak domestic dollar [[ "UNQUOTE(oov) => BANK HOPE ]] angell told [[ BLOOMBERG(oov) => BLUM WORK ]] business news (4t7c020e) << 22 ref; 2 9.1% oov; 24 hyp; 19 86.4% corr; 5 22.7% err; 0.1s CPU >>
+==    3374 ref;    81   2.4% oov;    3413 hyp;    3244  96.1% corr;    171   5.1% err;  10.0s CPU; 4t7c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t7c020f.lat
+INFO: ../dpalign.c(491): 4t7c020f: 968 frames, 1217 nodes (255 reachable), 4394 links
+the international scope of the currency problem was most obvious monday in japan where the rising yen looms as a major threat to a fledgling recovery (4t7c020f) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3400 ref;    81   2.4% oov;    3439 hyp;    3270  96.2% corr;    171   5.0% err;  10.1s CPU; 4t7c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0201.lat
+INFO: ../dpalign.c(491): 4t8c0201: 533 frames, 917 nodes (206 reachable), 2912 links
+the cowboy dances around the bar and throws pick up lines at the camera (4t8c0201) << 14 ref; 0 0.0% oov; 14 hyp; 14 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3414 ref;    81   2.4% oov;    3453 hyp;    3284  96.2% corr;    171   5.0% err;  10.1s CPU; 4t8c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0202.lat
+INFO: ../dpalign.c(491): 4t8c0202: 508 frames, 922 nodes (283 reachable), 4005 links
+darling you got real pretty hair he says with an exaggerated western accent (4t8c0202) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3427 ref;    81   2.4% oov;    3466 hyp;    3297  96.2% corr;    171   5.0% err;  10.1s CPU; 4t8c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0203.lat
+INFO: ../dpalign.c(491): 4t8c0203: 153 frames, 226 nodes (13 reachable), 111 links
+what's the matter (4t8c0203) << 3 ref; 0 0.0% oov; 3 hyp; 3 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3430 ref;    81   2.4% oov;    3469 hyp;    3300  96.2% corr;    171   5.0% err;  10.1s CPU; 4t8c0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0204.lat
+INFO: ../dpalign.c(491): 4t8c0204: 177 frames, 441 nodes (108 reachable), 1825 links
+cat got [[ YOUR => SHOULD ]] tongue (4t8c0204) << 4 ref; 0 0.0% oov; 4 hyp; 3 75.0% corr; 1 25.0% err; 0.0s CPU >>
+==    3434 ref;    81   2.4% oov;    3473 hyp;    3303  96.2% corr;    172   5.0% err;  10.2s CPU; 4t8c0204
+INFO: ../dpalign.c(774): Adding YAHOOS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0205.lat
+INFO: ../dpalign.c(491): 4t8c0205: 1055 frames, 1630 nodes (448 reachable), 5700 links
+the point of this television commercial is to ask wouldn't [[ YOU => SHOE ]] rather be home saturday night watching home box office instead of out at some bar [[ TRYING => TRAIN ]] to fend off the [[ YAHOOS(oov) => AUDITORS ]] (4t8c0205) << 32 ref; 1 3.1% oov; 32 hyp; 29 90.6% corr; 3 9.4% err; 0.1s CPU >>
+==    3466 ref;    82   2.4% oov;    3505 hyp;    3332  96.1% corr;    175   5.0% err;  10.2s CPU; 4t8c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0206.lat
+INFO: ../dpalign.c(491): 4t8c0206: 1504 frames, 1918 nodes (353 reachable), 4245 links
+it is also one of a new breed of t. v. ads that was created with the help of a personal computer and off the shelf software a technological advance that advertising agencies say could trim thousands of dollars from [[ THE => IT ]] cost of making commercials (4t8c0206) << 45 ref; 0 0.0% oov; 45 hyp; 44 97.8% corr; 1 2.2% err; 0.1s CPU >>
+==    3511 ref;    82   2.3% oov;    3550 hyp;    3376  96.2% corr;    176   5.0% err;  10.4s CPU; 4t8c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0207.lat
+INFO: ../dpalign.c(491): 4t8c0207: 1311 frames, 1724 nodes (362 reachable), 3730 links
+the new method helps advertising agencies reduce their reliance on expensive middlemen the production houses where t. v. ads [[ ARE => RE ]] usually constructed and lowers the costs they pass on to clients (4t8c0207) << 31 ref; 0 0.0% oov; 31 hyp; 30 96.8% corr; 1 3.2% err; 0.1s CPU >>
+==    3542 ref;    82   2.3% oov;    3581 hyp;    3406  96.2% corr;    177   5.0% err;  10.4s CPU; 4t8c0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0208.lat
+INFO: ../dpalign.c(491): 4t8c0208: 1036 frames, 1561 nodes (267 reachable), 2914 links
+a production house might charge up to a thousand dollars an hour but an agency might charge its client only about a hundred [[ AND => ]] seventy five dollars an hour to do the work itself (4t8c0208) << 34 ref; 0 0.0% oov; 33 hyp; 33 97.1% corr; 1 2.9% err; 0.1s CPU >>
+==    3576 ref;    82   2.3% oov;    3614 hyp;    3439  96.2% corr;    178   5.0% err;  10.5s CPU; 4t8c0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c0209.lat
+INFO: ../dpalign.c(491): 4t8c0209: 847 frames, 1203 nodes (276 reachable), 2557 links
+although the final versions of commercials [[ ARE => URGED ]] still being produced at production houses rough preliminary versions can now be done on a computer (4t8c0209) << 23 ref; 0 0.0% oov; 23 hyp; 22 95.7% corr; 1 4.3% err; 0.0s CPU >>
+==    3599 ref;    82   2.3% oov;    3637 hyp;    3461  96.2% corr;    179   5.0% err;  10.5s CPU; 4t8c0209
+INFO: ../dpalign.c(774): Adding STORYBOARD to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020a.lat
+INFO: ../dpalign.c(491): 4t8c020a: 527 frames, 726 nodes (191 reachable), 2260 links
+before an [[ => E. ]] agency would draw out the ad shot by shot on a [[ STORYBOARD(oov) => STORY OR ]] (4t8c020a) << 14 ref; 1 7.1% oov; 16 hyp; 13 92.9% corr; 3 21.4% err; 0.0s CPU >>
+==    3613 ref;    83   2.3% oov;    3653 hyp;    3474  96.2% corr;    182   5.0% err;  10.6s CPU; 4t8c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020b.lat
+INFO: ../dpalign.c(491): 4t8c020b: 397 frames, 659 nodes (113 reachable), 2004 links
+video would be shot and the production house would make the ad (4t8c020b) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3625 ref;    83   2.3% oov;    3665 hyp;    3486  96.2% corr;    182   5.0% err;  10.6s CPU; 4t8c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020c.lat
+INFO: ../dpalign.c(491): 4t8c020c: 277 frames, 567 nodes (133 reachable), 1273 links
+the ad would then be shown to the client (4t8c020c) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3634 ref;    83   2.3% oov;    3674 hyp;    3495  96.2% corr;    182   5.0% err;  10.6s CPU; 4t8c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020d.lat
+INFO: ../dpalign.c(491): 4t8c020d: 588 frames, 618 nodes (171 reachable), 1479 links
+if the client demanded changes the expensive process would continue until the client was satisfied (4t8c020d) << 15 ref; 0 0.0% oov; 15 hyp; 15 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3649 ref;    83   2.3% oov;    3689 hyp;    3510  96.2% corr;    182   5.0% err;  10.6s CPU; 4t8c020d
+INFO: ../dpalign.c(774): Adding DISPENSE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020e.lat
+INFO: ../dpalign.c(491): 4t8c020e: 1180 frames, 1557 nodes (288 reachable), 4404 links
+just as computers have enabled some car designers to do away with clay models and aerospace engineers to [[ DISPENSE(oov) => DISTANCE ]] with mechanical drawings computers have greatly streamlined the art of advertising (4t8c020e) << 30 ref; 1 3.3% oov; 30 hyp; 29 96.7% corr; 1 3.3% err; 0.1s CPU >>
+==    3679 ref;    84   2.3% oov;    3719 hyp;    3539  96.2% corr;    183   5.0% err;  10.7s CPU; 4t8c020e
+INFO: ../dpalign.c(774): Adding STORYBOARDS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020f.lat
+INFO: ../dpalign.c(491): 4t8c020f: 547 frames, 692 nodes (139 reachable), 1580 links
+[[ STORYBOARDS(oov) => STORY BOARD'S ]] can now be produced on a computer and they can contain sound and motion (4t8c020f) << 15 ref; 1 6.7% oov; 16 hyp; 14 93.3% corr; 2 13.3% err; 0.0s CPU >>
+==    3694 ref;    85   2.3% oov;    3735 hyp;    3553  96.2% corr;    185   5.0% err;  10.7s CPU; 4t8c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t8c020g.lat
+INFO: ../dpalign.c(491): 4t8c020g: 871 frames, 1372 nodes (308 reachable), 4189 links
+video can be put into the computer and manipulated into the rough commercial which is then transferred to a video tape and shown to the client (4t8c020g) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3720 ref;    85   2.3% oov;    3761 hyp;    3579  96.2% corr;    185   5.0% err;  10.8s CPU; 4t8c020g
+INFO: ../dpalign.c(774): Adding INC. to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0201.lat
+INFO: ../dpalign.c(491): 4t9c0201: 1177 frames, 1512 nodes (236 reachable), 2376 links
+jenny craig [[ INC.(oov) => INK ]] suspended the company's fifteen cent quarterly dividend and said it would use its cash to boost business for the chain of weight loss centers (4t9c0201) << 27 ref; 1 3.7% oov; 27 hyp; 26 96.3% corr; 1 3.7% err; 0.1s CPU >>
+==    3747 ref;    86   2.3% oov;    3788 hyp;    3605  96.2% corr;    186   5.0% err;  10.9s CPU; 4t9c0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0202.lat
+INFO: ../dpalign.c(491): 4t9c0202: 1291 frames, 1608 nodes (268 reachable), 2549 links
+jenny craig has paid at the fifteen cent rate since july nineteen ninety two when the payout was boosted from the initial twelve point five cent rate set at the end of nineteen ninety one (4t9c0202) << 35 ref; 0 0.0% oov; 35 hyp; 35 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3782 ref;    86   2.3% oov;    3823 hyp;    3640  96.2% corr;    186   4.9% err;  10.9s CPU; 4t9c0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0203.lat
+INFO: ../dpalign.c(491): 4t9c0203: 1023 frames, 1098 nodes (154 reachable), 1938 links
+the company said the dividend suspension will be reviewed quarterly as jenny craig continues to battle a shrinking market overall from various causes (4t9c0203) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3805 ref;    86   2.3% oov;    3846 hyp;    3663  96.3% corr;    186   4.9% err;  11.0s CPU; 4t9c0203
+INFO: ../dpalign.c(774): Adding LABONTE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0204.lat
+INFO: ../dpalign.c(491): 4t9c0204: 1364 frames, 1626 nodes (327 reachable), 3523 links
+shareholders are served best by directing cash resources to the company's marketing efforts and further improvement of its business said c. joseph [[ LABONTE(oov) => LEVELED A ]] president and chief executive officer (4t9c0204) << 28 ref; 1 3.6% oov; 29 hyp; 27 96.4% corr; 2 7.1% err; 0.1s CPU >>
+==    3833 ref;    87   2.3% oov;    3875 hyp;    3690  96.3% corr;    188   4.9% err;  11.0s CPU; 4t9c0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0205.lat
+INFO: ../dpalign.c(491): 4t9c0205: 1503 frames, 1568 nodes (288 reachable), 2401 links
+for the fiscal third quarter ended march thirty first jenny craig reported a net loss of eight point seven million dollars or thirty three cents a share on revenues of ninety six million (4t9c0205) << 33 ref; 0 0.0% oov; 33 hyp; 33 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3866 ref;    87   2.3% oov;    3908 hyp;    3723  96.3% corr;    188   4.9% err;  11.1s CPU; 4t9c0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0206.lat
+INFO: ../dpalign.c(491): 4t9c0206: 744 frames, 745 nodes (69 reachable), 597 links
+the loss included a twelve point nine million pretax charge reflecting plans to close facilities (4t9c0206) << 15 ref; 0 0.0% oov; 15 hyp; 15 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3881 ref;    87   2.2% oov;    3923 hyp;    3738  96.3% corr;    188   4.8% err;  11.1s CPU; 4t9c0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0207.lat
+INFO: ../dpalign.c(491): 4t9c0207: 577 frames, 719 nodes (75 reachable), 491 links
+company managers have said they expect to be profitable in the current quarter (4t9c0207) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3894 ref;    87   2.2% oov;    3936 hyp;    3751  96.3% corr;    188   4.8% err;  11.2s CPU; 4t9c0207
+INFO: ../dpalign.c(774): Adding LAMENT to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0208.lat
+INFO: ../dpalign.c(491): 4t9c0208: 1230 frames, 1721 nodes (343 reachable), 4068 links
+i would like to take the opportunity to respond [[ TO => ]] your article of may twenty fifth local [[ LAMENT(oov) => AND ]] state does poorly in pushing growth by explaining what the texas department of commerce does (4t9c0208) << 33 ref; 1 3.0% oov; 32 hyp; 31 93.9% corr; 2 6.1% err; 0.1s CPU >>
+==    3927 ref;    88   2.2% oov;    3968 hyp;    3782  96.3% corr;    190   4.8% err;  11.2s CPU; 4t9c0208
+INFO: ../dpalign.c(774): Adding COMMERCE'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c0209.lat
+INFO: ../dpalign.c(491): 4t9c0209: 928 frames, 1473 nodes (344 reachable), 5611 links
+[[ COMMERCE'S(oov) => CONGRESS' ]] mission is not to steer prospects coordinate job creation programs or polish texas' image as you reported (4t9c0209) << 18 ref; 1 5.6% oov; 18 hyp; 17 94.4% corr; 1 5.6% err; 0.1s CPU >>
+==    3945 ref;    89   2.3% oov;    3986 hyp;    3799  96.3% corr;    191   4.8% err;  11.3s CPU; 4t9c0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020a.lat
+INFO: ../dpalign.c(491): 4t9c020a: 934 frames, 1368 nodes (277 reachable), 2819 links
+our mission and mandate is to support existing businesses and to create a positive business climate that will attract new companies (4t9c020a) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    3966 ref;    89   2.2% oov;    4007 hyp;    3820  96.3% corr;    191   4.8% err;  11.4s CPU; 4t9c020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020b.lat
+INFO: ../dpalign.c(491): 4t9c020b: 874 frames, 1198 nodes (226 reachable), 2198 links
+a business does not decide to locate in texas because of what the department of commerce or any other state department of commerce does (4t9c020b) << 24 ref; 0 0.0% oov; 24 hyp; 24 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    3990 ref;    89   2.2% oov;    4031 hyp;    3844  96.3% corr;    191   4.8% err;  11.4s CPU; 4t9c020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020c.lat
+INFO: ../dpalign.c(491): 4t9c020c: 865 frames, 1437 nodes (407 reachable), 5614 links
+a business chooses texas because of the business climate in our state and the programs and services available to support that business (4t9c020c) << 22 ref; 0 0.0% oov; 22 hyp; 22 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4012 ref;    89   2.2% oov;    4053 hyp;    3866  96.4% corr;    191   4.8% err;  11.5s CPU; 4t9c020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020d.lat
+INFO: ../dpalign.c(491): 4t9c020d: 681 frames, 948 nodes (171 reachable), 2464 links
+as the state's lead economic development agency we are responsible for that support (4t9c020d) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4025 ref;    89   2.2% oov;    4066 hyp;    3879  96.4% corr;    191   4.7% err;  11.5s CPU; 4t9c020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020e.lat
+INFO: ../dpalign.c(491): 4t9c020e: 777 frames, 1221 nodes (296 reachable), 3972 links
+to the extent to which we can support the businesses that are here they will be able to prosper and create more jobs (4t9c020e) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4048 ref;    89   2.2% oov;    4089 hyp;    3902  96.4% corr;    191   4.7% err;  11.5s CPU; 4t9c020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020f.lat
+INFO: ../dpalign.c(491): 4t9c020f: 677 frames, 1033 nodes (274 reachable), 2753 links
+that prosperity results in a profitable business climate encouraging other businesses to move here (4t9c020f) << 14 ref; 0 0.0% oov; 14 hyp; 14 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4062 ref;    89   2.2% oov;    4103 hyp;    3916  96.4% corr;    191   4.7% err;  11.6s CPU; 4t9c020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020g.lat
+INFO: ../dpalign.c(491): 4t9c020g: 536 frames, 720 nodes (157 reachable), 1492 links
+we do not pick and choose where to steer out of state business prospects (4t9c020g) << 14 ref; 0 0.0% oov; 14 hyp; 14 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4076 ref;    89   2.2% oov;    4117 hyp;    3930  96.4% corr;    191   4.7% err;  11.6s CPU; 4t9c020g
+INFO: ../dpalign.c(774): Adding BUSINESS'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4t9c020h.lat
+INFO: ../dpalign.c(491): 4t9c020h: 645 frames, 1159 nodes (254 reachable), 3443 links
+we work with a prospect to discover what location will best suit the [[ BUSINESS'S(oov) => BUSINESSES ]] needs (4t9c020h) << 15 ref; 1 6.7% oov; 15 hyp; 14 93.3% corr; 1 6.7% err; 0.0s CPU >>
+==    4091 ref;    90   2.2% oov;    4132 hyp;    3944  96.4% corr;    192   4.7% err;  11.7s CPU; 4t9c020h
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0201.lat
+INFO: ../dpalign.c(491): 4tac0201: 792 frames, 915 nodes (84 reachable), 1111 links
+investors will have to wait four weeks to bid for u. s. treasury [[ COUPON => COUPONS ]] securities again (4tac0201) << 16 ref; 0 0.0% oov; 16 hyp; 15 93.8% corr; 1 6.3% err; 0.0s CPU >>
+==    4107 ref;    90   2.2% oov;    4148 hyp;    3959  96.4% corr;    193   4.7% err;  11.7s CPU; 4tac0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0202.lat
+INFO: ../dpalign.c(491): 4tac0202: 1079 frames, 1580 nodes (259 reachable), 3552 links
+the next opportunities are july twenty sixth when two year notes are auctioned and the following day when five year notes are sold (4tac0202) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4130 ref;    90   2.2% oov;    4171 hyp;    3982  96.4% corr;    193   4.7% err;  11.7s CPU; 4tac0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0203.lat
+INFO: ../dpalign.c(491): 4tac0203: 616 frames, 867 nodes (130 reachable), 1405 links
+until then there will be the usual weekly auction of three and six month bills (4tac0203) << 15 ref; 0 0.0% oov; 15 hyp; 15 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4145 ref;    90   2.2% oov;    4186 hyp;    3997  96.4% corr;    193   4.7% err;  11.8s CPU; 4tac0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0204.lat
+INFO: ../dpalign.c(491): 4tac0204: 1230 frames, 2107 nodes (499 reachable), 5791 links
+there will be plenty of cash available at the weekly auctions since the treasury will be paying out more each week on maturing bills than it will be raising on the new sales (4tac0204) << 33 ref; 0 0.0% oov; 33 hyp; 33 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4178 ref;    90   2.2% oov;    4219 hyp;    4030  96.5% corr;    193   4.6% err;  11.9s CPU; 4tac0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0205.lat
+INFO: ../dpalign.c(491): 4tac0205: 1217 frames, 1519 nodes (255 reachable), 3821 links
+at friday's close three months bills were yielding four point two seven percent on a when issued basis and six months bills four point seven four percent (4tac0205) << 27 ref; 0 0.0% oov; 27 hyp; 27 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4205 ref;    90   2.1% oov;    4246 hyp;    4057  96.5% corr;    193   4.6% err;  11.9s CPU; 4tac0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0206.lat
+INFO: ../dpalign.c(491): 4tac0206: 582 frames, 1061 nodes (129 reachable), 1471 links
+surveys indicate flagging energies in the american t. v. rooms (4tac0206) << 10 ref; 0 0.0% oov; 10 hyp; 10 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4215 ref;    90   2.1% oov;    4256 hyp;    4067  96.5% corr;    193   4.6% err;  12.0s CPU; 4tac0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0207.lat
+INFO: ../dpalign.c(491): 4tac0207: 1536 frames, 2230 nodes (439 reachable), 5265 links
+eighty percent of the u. s. homes with televisions now have at least one v. c. r. more than double the ratio of seven years ago but the portion that uses the machines to tape programs for [[ => WITH ]] watching later has declined (4tac0207) << 41 ref; 0 0.0% oov; 42 hyp; 41 100.0% corr; 1 2.4% err; 0.1s CPU >>
+==    4256 ref;    90   2.1% oov;    4298 hyp;    4108  96.5% corr;    194   4.6% err;  12.1s CPU; 4tac0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0208.lat
+INFO: ../dpalign.c(491): 4tac0208: 1379 frames, 1513 nodes (185 reachable), 2447 links
+a nineteen ninety two roper organization poll showed fifty eight percent of respondents recording programs when they were unable to watch t. v. down from sixty nine percent in nineteen eighty six (4tac0208) << 32 ref; 0 0.0% oov; 32 hyp; 32 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4288 ref;    90   2.1% oov;    4330 hyp;    4140  96.5% corr;    194   4.5% err;  12.1s CPU; 4tac0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac0209.lat
+INFO: ../dpalign.c(491): 4tac0209: 693 frames, 1277 nodes (324 reachable), 5044 links
+only forty percent taped shows on one channel while watching something else down from fifty six percent (4tac0209) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4305 ref;    90   2.1% oov;    4347 hyp;    4157  96.6% corr;    194   4.5% err;  12.2s CPU; 4tac0209
+INFO: ../dpalign.c(774): Adding IMAGINATIONS to dictionary
+INFO: ../dpalign.c(774): Adding "END-QUOTE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020a.lat
+INFO: ../dpalign.c(491): 4tac020a: 1091 frames, 1499 nodes (243 reachable), 2658 links
+quote why hasn't the notion of being able to set your own t. v. program schedule captured the [[ IMAGINATIONS(oov) => IMAGINATION ]] of the viewing public [[ "END-QUOTE(oov) => AND QUOTE ]] the roper poll ask (4tac020a) << 28 ref; 2 7.1% oov; 29 hyp; 26 92.9% corr; 3 10.7% err; 0.1s CPU >>
+==    4333 ref;    92   2.1% oov;    4376 hyp;    4183  96.5% corr;    197   4.5% err;  12.2s CPU; 4tac020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020b.lat
+INFO: ../dpalign.c(491): 4tac020b: 988 frames, 1565 nodes (237 reachable), 2851 links
+quote perhaps the key reason is the success of cable t. v. which brings viewers more viewing choices all day long [[ "END-QUOTE(oov) => AN QUOTE ]] (4tac020b) << 22 ref; 1 4.5% oov; 23 hyp; 21 95.5% corr; 2 9.1% err; 0.1s CPU >>
+==    4355 ref;    93   2.1% oov;    4399 hyp;    4204  96.5% corr;    199   4.6% err;  12.3s CPU; 4tac020b
+INFO: ../dpalign.c(774): Adding GADGETRY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020c.lat
+INFO: ../dpalign.c(491): 4tac020c: 1527 frames, 2627 nodes (591 reachable), 12911 links
+the survey also suggested that many people remain intimidated by v. c. r. [[ GADGETRY(oov) => GADGETS REACH ]] with only thirty nine percent of the v. c. r. owners saying they felt quote quite competent [[ "END-QUOTE(oov) => N. GROWTH ]] to use the device (4tac020c) << 36 ref; 2 5.6% oov; 38 hyp; 34 94.4% corr; 4 11.1% err; 0.2s CPU >>
+==    4391 ref;    95   2.2% oov;    4437 hyp;    4238  96.5% corr;    203   4.6% err;  12.5s CPU; 4tac020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020d.lat
+INFO: ../dpalign.c(491): 4tac020d: 588 frames, 1070 nodes (121 reachable), 1436 links
+the government thursday unveiled a plan to increase sticker shock (4tac020d) << 10 ref; 0 0.0% oov; 10 hyp; 10 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4401 ref;    95   2.2% oov;    4447 hyp;    4248  96.5% corr;    203   4.6% err;  12.5s CPU; 4tac020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020e.lat
+INFO: ../dpalign.c(491): 4tac020e: 1383 frames, 2842 nodes (594 reachable), 13065 links
+under the proposal window stickers on new cars and trucks would give price fuel economy scores and a rating on how likely the vehicle is to turn over in an accident (4tac020e) << 31 ref; 0 0.0% oov; 31 hyp; 31 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4432 ref;    95   2.1% oov;    4478 hyp;    4279  96.5% corr;    203   4.6% err;  12.7s CPU; 4tac020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tac020f.lat
+INFO: ../dpalign.c(491): 4tac020f: 1598 frames, 2083 nodes (365 reachable), 4023 links
+consumer advocates have urged the department of transportation and the national highway traffic safety administration to come up with vehicle design standards to help reduce such accidents which kill about nine thousand people a year (4tac020f) << 35 ref; 0 0.0% oov; 35 hyp; 35 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4467 ref;    95   2.1% oov;    4513 hyp;    4314  96.6% corr;    203   4.5% err;  12.7s CPU; 4tac020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0201.lat
+INFO: ../dpalign.c(491): 4tbc0201: 1381 frames, 1390 nodes (289 reachable), 3039 links
+after a two decade legal battle a judge friday awarded hughes aircraft a [[ HUNDRED => HUNTER ]] and fourteen million for the aerospace company's patent claim that the government stole the technology that enabled the communications satellite revolution (4tbc0201) << 35 ref; 0 0.0% oov; 35 hyp; 34 97.1% corr; 1 2.9% err; 0.1s CPU >>
+==    4502 ref;    95   2.1% oov;    4548 hyp;    4348  96.6% corr;    204   4.5% err;  12.8s CPU; 4tbc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0202.lat
+INFO: ../dpalign.c(491): 4tbc0202: 1241 frames, 1434 nodes (280 reachable), 3922 links
+although the award ranks as the largest ever levied against the federal government for patent infringement it falls far below the smallest [[ SUM => ON ]] that [[ HUGHES => USED ]] had anticipated winning in the high stakes case (4tbc0202) << 33 ref; 0 0.0% oov; 33 hyp; 31 93.9% corr; 2 6.1% err; 0.1s CPU >>
+==    4535 ref;    95   2.1% oov;    4581 hyp;    4379  96.6% corr;    206   4.5% err;  12.9s CPU; 4tbc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0203.lat
+INFO: ../dpalign.c(491): 4tbc0203: 295 frames, 431 nodes (32 reachable), 273 links
+both sides are expected to appeal (4tbc0203) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4541 ref;    95   2.1% oov;    4587 hyp;    4385  96.6% corr;    206   4.5% err;  12.9s CPU; 4tbc0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0204.lat
+INFO: ../dpalign.c(491): 4tbc0204: 1005 frames, 1042 nodes (258 reachable), 2905 links
+when the trial began in nineteen eighty eight [[ HUGHES => USED ]] had sought an award of one point two billion and at one time company attorneys speculated about a [[ => UP ]] potential award of six billion (4tbc0204) << 32 ref; 0 0.0% oov; 33 hyp; 31 96.9% corr; 2 6.3% err; 0.0s CPU >>
+==    4573 ref;    95   2.1% oov;    4620 hyp;    4416  96.6% corr;    208   4.5% err;  12.9s CPU; 4tbc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0205.lat
+INFO: ../dpalign.c(491): 4tbc0205: 671 frames, 657 nodes (123 reachable), 919 links
+but the company's high hopes [[ WERE => A ]] dashed friday by a twenty six page opinion from u. s. court of claims judge james t. turner (4tbc0205) << 24 ref; 0 0.0% oov; 24 hyp; 23 95.8% corr; 1 4.2% err; 0.0s CPU >>
+==    4597 ref;    95   2.1% oov;    4644 hyp;    4439  96.6% corr;    209   4.5% err;  12.9s CPU; 4tbc0205
+INFO: ../dpalign.c(774): Adding MELTZER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0206.lat
+INFO: ../dpalign.c(491): 4tbc0206: 728 frames, 1166 nodes (319 reachable), 3922 links
+i am shocked that it is this low said mark [[ MELTZER(oov) => MILLS LEARNED ]] a former [[ HUGHES => USED ]] attorney who worked on the patent case (4tbc0206) << 21 ref; 1 4.8% oov; 22 hyp; 19 90.5% corr; 3 14.3% err; 0.0s CPU >>
+==    4618 ref;    96   2.1% oov;    4666 hyp;    4458  96.5% corr;    212   4.6% err;  13.0s CPU; 4tbc0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0207.lat
+INFO: ../dpalign.c(491): 4tbc0207: 282 frames, 345 nodes (73 reachable), 573 links
+this is a lot lower than anybody expected (4tbc0207) << 8 ref; 0 0.0% oov; 8 hyp; 8 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4626 ref;    96   2.1% oov;    4674 hyp;    4466  96.5% corr;    212   4.6% err;  13.0s CPU; 4tbc0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0208.lat
+INFO: ../dpalign.c(491): 4tbc0208: 215 frames, 231 nodes (12 reachable), 222 links
+[[ TAXPAYERS => TAXPAYER ]] should be delighted (4tbc0208) << 4 ref; 0 0.0% oov; 4 hyp; 3 75.0% corr; 1 25.0% err; 0.0s CPU >>
+==    4630 ref;    96   2.1% oov;    4678 hyp;    4469  96.5% corr;    213   4.6% err;  13.0s CPU; 4tbc0208
+INFO: ../dpalign.c(774): Adding SAVIKAS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc0209.lat
+INFO: ../dpalign.c(491): 4tbc0209: 683 frames, 1104 nodes (378 reachable), 4619 links
+but victor [[ SAVIKAS(oov) => SEVENTEEN S. ]] an attorney representing [[ HUGHES => USE ]] said the award [[ => A. ]] is a [[ => ALL ]] lot of money though we asked for more (4tbc0209) << 20 ref; 1 5.0% oov; 23 hyp; 18 90.0% corr; 5 25.0% err; 0.1s CPU >>
+==    4650 ref;    97   2.1% oov;    4701 hyp;    4487  96.5% corr;    218   4.7% err;  13.1s CPU; 4tbc0209
+INFO: ../dpalign.c(774): Adding VITO to dictionary
+INFO: ../dpalign.c(774): Adding DIPIETRO to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020a.lat
+INFO: ../dpalign.c(491): 4tbc020a: 1273 frames, 1399 nodes (364 reachable), 3963 links
+justice department lawyer [[ VITO(oov) DIPIETRO(oov) => VETOED TOPEKA AUTO ]] representing the government said that turner's decision on the actual value of [[ THE => BUT ]] patent was exactly what we had proposed [[ AND => ]] exactly what was supported by the evidence (4tbc020a) << 33 ref; 2 6.1% oov; 33 hyp; 29 87.9% corr; 5 15.2% err; 0.1s CPU >>
+==    4683 ref;    99   2.1% oov;    4734 hyp;    4516  96.4% corr;    223   4.8% err;  13.1s CPU; 4tbc020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020b.lat
+INFO: ../dpalign.c(491): 4tbc020b: 896 frames, 1048 nodes (309 reachable), 3882 links
+the hughes patent involved a device invented by donald t. williams a brilliant young harvard educated engineer [[ AT HUGHES => I USED ]] in the nineteen sixties who later committed suicide (4tbc020b) << 27 ref; 0 0.0% oov; 27 hyp; 25 92.6% corr; 2 7.4% err; 0.1s CPU >>
+==    4710 ref;    99   2.1% oov;    4761 hyp;    4541  96.4% corr;    225   4.8% err;  13.2s CPU; 4tbc020b
+INFO: ../dpalign.c(774): Adding THRUSTER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020c.lat
+INFO: ../dpalign.c(491): 4tbc020c: 581 frames, 840 nodes (307 reachable), 4022 links
+williams devised a simple lightweight system to control the altitude of a satellite with a single rocket [[ THRUSTER(oov) => RESTAURANT ]] (4tbc020c) << 18 ref; 1 5.6% oov; 18 hyp; 17 94.4% corr; 1 5.6% err; 0.0s CPU >>
+==    4728 ref;   100   2.1% oov;    4779 hyp;    4558  96.4% corr;    226   4.8% err;  13.3s CPU; 4tbc020c
+INFO: ../dpalign.c(774): Adding SYNCOM to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020d.lat
+INFO: ../dpalign.c(491): 4tbc020d: 679 frames, 935 nodes (159 reachable), 2209 links
+in nineteen sixty three [[ HUGHES => USER ]] launched its [[ SYNCOM(oov) => CENTER CALMED ]] the first [[ => IT ]] communications satellite (4tbc020d) << 12 ref; 1 8.3% oov; 14 hyp; 10 83.3% corr; 4 33.3% err; 0.0s CPU >>
+==    4740 ref;   101   2.1% oov;    4793 hyp;    4568  96.4% corr;    230   4.9% err;  13.3s CPU; 4tbc020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020e.lat
+INFO: ../dpalign.c(491): 4tbc020e: 426 frames, 574 nodes (134 reachable), 1402 links
+it paved the way for [[ HUGHES => USED ]] to dominate the world market which it does even today (4tbc020e) << 16 ref; 0 0.0% oov; 16 hyp; 15 93.8% corr; 1 6.3% err; 0.0s CPU >>
+==    4756 ref;   101   2.1% oov;    4809 hyp;    4583  96.4% corr;    231   4.9% err;  13.3s CPU; 4tbc020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tbc020f.lat
+INFO: ../dpalign.c(491): 4tbc020f: 915 frames, 1045 nodes (294 reachable), 2379 links
+the effort was all the more impressive given that the pentagon's own attempt to build such a spacecraft resulted in a design so heavy that no rocket at the time could launch it (4tbc020f) << 33 ref; 0 0.0% oov; 33 hyp; 33 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4789 ref;   101   2.1% oov;    4842 hyp;    4616  96.4% corr;    231   4.8% err;  13.4s CPU; 4tbc020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0201.lat
+INFO: ../dpalign.c(491): 4tcc0201: 1574 frames, 2146 nodes (413 reachable), 5139 links
+barry diller chairman of q. v. c. network incorporated and laurence a. tisch chairman of c. b. s. are negotiating a deal in which c. b. s. would merge with q. v. c. in a complex arrangement involving cash and stock according to several people familiar with the discussions (4tcc0201) << 49 ref; 0 0.0% oov; 49 hyp; 49 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    4838 ref;   101   2.1% oov;    4891 hyp;    4665  96.4% corr;    231   4.8% err;  13.5s CPU; 4tcc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0202.lat
+INFO: ../dpalign.c(491): 4tcc0202: 723 frames, 863 nodes (136 reachable), 1056 links
+the two companies have a combined value of five point four billion based on wednesday's closing stock prices (4tcc0202) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4856 ref;   101   2.1% oov;    4909 hyp;    4683  96.4% corr;    231   4.8% err;  13.5s CPU; 4tcc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0203.lat
+INFO: ../dpalign.c(491): 4tcc0203: 893 frames, 1519 nodes (299 reachable), 4279 links
+the merger being discussed would put [[ DILLER => DELAY ]] in charge of c. b. s. as its chief executive returning him to the business in which he initially built his reputation (4tcc0203) << 29 ref; 0 0.0% oov; 29 hyp; 28 96.6% corr; 1 3.4% err; 0.1s CPU >>
+==    4885 ref;   101   2.1% oov;    4938 hyp;    4711  96.4% corr;    232   4.7% err;  13.6s CPU; 4tcc0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0204.lat
+INFO: ../dpalign.c(491): 4tcc0204: 427 frames, 764 nodes (135 reachable), 1570 links
+tisch would remain as chairman and head of the executive committee (4tcc0204) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4896 ref;   101   2.1% oov;    4949 hyp;    4722  96.4% corr;    232   4.7% err;  13.6s CPU; 4tcc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0205.lat
+INFO: ../dpalign.c(491): 4tcc0205: 346 frames, 604 nodes (141 reachable), 1847 links
+neither tisch nor diller could be reached for comment (4tcc0205) << 9 ref; 0 0.0% oov; 9 hyp; 9 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    4905 ref;   101   2.1% oov;    4958 hyp;    4731  96.5% corr;    232   4.7% err;  13.6s CPU; 4tcc0205
+INFO: ../dpalign.c(774): Adding BLENDING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0206.lat
+INFO: ../dpalign.c(491): 4tcc0206: 769 frames, 1293 nodes (265 reachable), 3680 links
+a merger would reflect the continuing [[ BLENDING(oov) => LENDING ]] of two industries broadcasting and cable that were once bitter rivals (4tcc0206) << 18 ref; 1 5.6% oov; 18 hyp; 17 94.4% corr; 1 5.6% err; 0.1s CPU >>
+==    4923 ref;   102   2.1% oov;    4976 hyp;    4748  96.4% corr;    233   4.7% err;  13.7s CPU; 4tcc0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0207.lat
+INFO: ../dpalign.c(491): 4tcc0207: 1379 frames, 1649 nodes (247 reachable), 2705 links
+c. b. s. which earned three hundred [[ AND => ]] twenty six million on revenue of three point five billion last year owns and operates seven television stations and twenty one radio stations as well as the television network (4tcc0207) << 37 ref; 0 0.0% oov; 36 hyp; 36 97.3% corr; 1 2.7% err; 0.1s CPU >>
+==    4960 ref;   102   2.1% oov;    5012 hyp;    4784  96.5% corr;    234   4.7% err;  13.7s CPU; 4tcc0207
+INFO: ../dpalign.c(774): Adding HOUSEWARES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0208.lat
+INFO: ../dpalign.c(491): 4tcc0208: 1749 frames, 2405 nodes (596 reachable), 8638 links
+q. v. c. which [[ EARNED => ENDS ]] fifty nine million on revenue of one point two billion in the most recent fiscal year operates two home shopping channels that sell consumer products like jewelry electronics and [[ HOUSEWARES(oov) => ELSEWHERE SOME ]] on programs that are transmitted by satellite and carried by cable television systems (4tcc0208) << 48 ref; 1 2.1% oov; 49 hyp; 46 95.8% corr; 3 6.3% err; 0.1s CPU >>
+==    5008 ref;   103   2.1% oov;    5061 hyp;    4830  96.4% corr;    237   4.7% err;  13.9s CPU; 4tcc0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc0209.lat
+INFO: ../dpalign.c(491): 4tcc0209: 1170 frames, 1842 nodes (383 reachable), 4249 links
+for the fifty two year old diller who fought and lost an aggressive and ambitious battle to gain control of paramount communications earlier this year acquiring management control of c. b. s. would be a major coup (4tcc0209) << 37 ref; 0 0.0% oov; 37 hyp; 37 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5045 ref;   103   2.0% oov;    5098 hyp;    4867  96.5% corr;    237   4.7% err;  14.0s CPU; 4tcc0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020a.lat
+INFO: ../dpalign.c(491): 4tcc020a: 581 frames, 993 nodes (161 reachable), 1867 links
+he built the fox television network at a time when a fourth network was considered unrealistic (4tcc020a) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    5061 ref;   103   2.0% oov;    5114 hyp;    4883  96.5% corr;    237   4.7% err;  14.0s CPU; 4tcc020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020b.lat
+INFO: ../dpalign.c(491): 4tcc020b: 777 frames, 1230 nodes (336 reachable), 3737 links
+while he has attempted to expand q. v. c. it was always clear that he intended to run a larger and more mainstream business (4tcc020b) << 24 ref; 0 0.0% oov; 24 hyp; 24 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5085 ref;   103   2.0% oov;    5138 hyp;    4907  96.5% corr;    237   4.7% err;  14.1s CPU; 4tcc020b
+INFO: ../dpalign.c(774): Adding FULFILLS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020c.lat
+INFO: ../dpalign.c(491): 4tcc020c: 1098 frames, 2575 nodes (701 reachable), 13557 links
+c. b. s. now the leading network in ratings certainly [[ FULFILLS(oov) => L.S ]] that requirement though it now pits his skills against those of the fox network the [[ => N. ]] new power he created (4tcc020c) << 30 ref; 1 3.3% oov; 31 hyp; 29 96.7% corr; 2 6.7% err; 0.2s CPU >>
+==    5115 ref;   104   2.0% oov;    5169 hyp;    4936  96.5% corr;    239   4.7% err;  14.2s CPU; 4tcc020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020d.lat
+INFO: ../dpalign.c(491): 4tcc020d: 915 frames, 1419 nodes (308 reachable), 2668 links
+for his part tisch who is seventy one has repeatedly denied that he will sell c. b. s. saying that broadcasting is in his blood (4tcc020d) << 25 ref; 0 0.0% oov; 25 hyp; 25 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5140 ref;   104   2.0% oov;    5194 hyp;    4961  96.5% corr;    239   4.6% err;  14.3s CPU; 4tcc020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020e.lat
+INFO: ../dpalign.c(491): 4tcc020e: 1149 frames, 1975 nodes (524 reachable), 7522 links
+the arrangement now being discussed would leave him with a major stake in the combined company but allow him to walk off with a hefty profit including roughly five hundred [[ AND => ]] twenty eight million in cash (4tcc020e) << 36 ref; 0 0.0% oov; 35 hyp; 35 97.2% corr; 1 2.8% err; 0.2s CPU >>
+==    5176 ref;   104   2.0% oov;    5229 hyp;    4996  96.5% corr;    240   4.6% err;  14.5s CPU; 4tcc020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tcc020f.lat
+INFO: ../dpalign.c(491): 4tcc020f: 1006 frames, 1359 nodes (285 reachable), 3240 links
+he owns about twenty percent of c. b. s.'s stock or three million of its fifteen point four million shares the current value of his shares is about eight hundred million (4tcc020f) << 31 ref; 0 0.0% oov; 31 hyp; 31 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5207 ref;   104   2.0% oov;    5260 hyp;    5027  96.5% corr;    240   4.6% err;  14.5s CPU; 4tcc020f
+INFO: ../dpalign.c(774): Adding HOSPITALS' to dictionary
+INFO: ../dpalign.c(774): Adding UWE to dictionary
+INFO: ../dpalign.c(774): Adding REINHART to dictionary
+INFO: ../dpalign.c(774): Adding PAYERS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0201.lat
+INFO: ../dpalign.c(491): 4tdc0201: 1522 frames, 3612 nodes (1166 reachable), 23802 links
+in his [[ HOSPITALS'(oov) => HOSPITALS ]] overcapacity is financed by insurers letters june fifteenth professor [[ UWE(oov) REINHART(oov) => UNION EIN AREN'T ]] questioned why health insurers businesses and individual [[ PAYERS(oov) => ERRORS ]] do not reimburse health care providers at medicare rates rather than suffer the effect of government cost shifting (4tdc0201) << 40 ref; 4 10.0% oov; 41 hyp; 36 90.0% corr; 5 12.5% err; 0.3s CPU >>
+==    5247 ref;   108   2.1% oov;    5301 hyp;    5063  96.5% corr;    245   4.7% err;  14.9s CPU; 4tdc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0202.lat
+INFO: ../dpalign.c(491): 4tdc0202: 257 frames, 639 nodes (161 reachable), 2143 links
+he and your readers deserve an answer (4tdc0202) << 7 ref; 0 0.0% oov; 7 hyp; 7 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    5254 ref;   108   2.1% oov;    5308 hyp;    5070  96.5% corr;    245   4.7% err;  14.9s CPU; 4tdc0202
+INFO: ../dpalign.c(774): Adding NONGOVERNMENT to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0203.lat
+INFO: ../dpalign.c(491): 4tdc0203: 925 frames, 1596 nodes (427 reachable), 6803 links
+first [[ NONGOVERNMENT(oov) PAYERS(oov) => DATA OWNED YEARS ]] of health care bills do not have the policy powers to enforce a policy of paying suppliers as low as forty percent of costs and seventeen percent of charges (4tdc0203) << 32 ref; 2 6.3% oov; 33 hyp; 30 93.8% corr; 3 9.4% err; 0.1s CPU >>
+==    5286 ref;   110   2.1% oov;    5341 hyp;    5100  96.5% corr;    248   4.7% err;  15.0s CPU; 4tdc0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0204.lat
+INFO: ../dpalign.c(491): 4tdc0204: 781 frames, 1841 nodes (610 reachable), 15259 links
+second none of us would want the third [[ WORLD => ROLES ]] level of hospital care that would result if all of us paid hospitals at medicare reimbursement rates (4tdc0204) << 26 ref; 0 0.0% oov; 26 hyp; 25 96.2% corr; 1 3.8% err; 0.1s CPU >>
+==    5312 ref;   110   2.1% oov;    5367 hyp;    5125  96.5% corr;    249   4.7% err;  15.1s CPU; 4tdc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0205.lat
+INFO: ../dpalign.c(491): 4tdc0205: 619 frames, 2018 nodes (892 reachable), 21596 links
+i [[ HAVE => MAY ]] an office full of examples where medicare payments to hospitals are [[ ONLY => ]] seventeen percent to eighteen percent of charges (4tdc0205) << 21 ref; 0 0.0% oov; 20 hyp; 19 90.5% corr; 2 9.5% err; 0.2s CPU >>
+==    5333 ref;   110   2.1% oov;    5387 hyp;    5144  96.5% corr;    251   4.7% err;  15.4s CPU; 4tdc0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0206.lat
+INFO: ../dpalign.c(491): 4tdc0206: 682 frames, 1625 nodes (697 reachable), 17387 links
+while some hospitals carry excess fat health care as we know it would cease to exist in [[ THE => E. ]] u. s. if all [[ PAYERS(oov) => YEARS ]] used medicare rates (4tdc0206) << 26 ref; 1 3.8% oov; 26 hyp; 24 92.3% corr; 2 7.7% err; 0.2s CPU >>
+==    5359 ref;   111   2.1% oov;    5413 hyp;    5168  96.4% corr;    253   4.7% err;  15.6s CPU; 4tdc0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0207.lat
+INFO: ../dpalign.c(491): 4tdc0207: 1031 frames, 2603 nodes (1031 reachable), 21064 links
+here is a simple hospital finance one oh one question if forty five percent of your customers pay you forty percent of your costs how much do [[ YOU => EIGHT ]] have to charge the remaining fifty [[ FIVE => OF ]] percent in order to break even (4tdc0207) << 41 ref; 0 0.0% oov; 41 hyp; 39 95.1% corr; 2 4.9% err; 0.4s CPU >>
+==    5400 ref;   111   2.1% oov;    5454 hyp;    5207  96.4% corr;    255   4.7% err;  16.0s CPU; 4tdc0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0208.lat
+INFO: ../dpalign.c(491): 4tdc0208: 1012 frames, 2238 nodes (754 reachable), 14100 links
+the [[ UNIVERSALLY => RECEIPT ]] held truth among u. s. hospital finance professionals is that medicare medicaid payment rates have inflated u. s. hospital prices by fifty percent to [[ SEVENTY => HANGED ]] five percent in the private sector (4tdc0208) << 33 ref; 0 0.0% oov; 33 hyp; 31 93.9% corr; 2 6.1% err; 0.2s CPU >>
+==    5433 ref;   111   2.0% oov;    5487 hyp;    5238  96.4% corr;    257   4.7% err;  16.2s CPU; 4tdc0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc0209.lat
+INFO: ../dpalign.c(491): 4tdc0209: 702 frames, 1877 nodes (749 reachable), 19359 links
+in the world of classroom theories there may have been a cost shift but not in the real worlds of [[ HOSPITAL => HOUSEHOLD ]] finance and health insurance (4tdc0209) << 25 ref; 0 0.0% oov; 25 hyp; 24 96.0% corr; 1 4.0% err; 0.3s CPU >>
+==    5458 ref;   111   2.0% oov;    5512 hyp;    5262  96.4% corr;    258   4.7% err;  16.4s CPU; 4tdc0209
+INFO: ../dpalign.c(774): Adding UNSOUND to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020a.lat
+INFO: ../dpalign.c(491): 4tdc020a: 1410 frames, 2964 nodes (978 reachable), 16587 links
+the massive hidden tax on u. s. health care commonly referred to as government cost shifting is nothing more than last ditch liberal efforts to foster [[ UNSOUND(oov) => ANZA ON ]] entitlement programs by government mandates rather than leveling with a tax [[ WEARY => WOULDN'T ]] public on the real costs of such programs (4tdc020a) << 47 ref; 1 2.1% oov; 48 hyp; 45 95.7% corr; 3 6.4% err; 0.3s CPU >>
+==    5505 ref;   112   2.0% oov;    5560 hyp;    5307  96.4% corr;    261   4.7% err;  16.7s CPU; 4tdc020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020b.lat
+INFO: ../dpalign.c(491): 4tdc020b: 369 frames, 988 nodes (295 reachable), 3889 links
+let us have faith that the truth will [[ EVENTUALLY => MENTION ]] prevail over deception (4tdc020b) << 12 ref; 0 0.0% oov; 12 hyp; 11 91.7% corr; 1 8.3% err; 0.1s CPU >>
+==    5517 ref;   112   2.0% oov;    5572 hyp;    5318  96.4% corr;    262   4.7% err;  16.8s CPU; 4tdc020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020c.lat
+INFO: ../dpalign.c(491): 4tdc020c: 219 frames, 540 nodes (109 reachable), 1336 links
+peoria illinois (4tdc020c) << 2 ref; 0 0.0% oov; 2 hyp; 2 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    5519 ref;   112   2.0% oov;    5574 hyp;    5320  96.4% corr;    262   4.7% err;  16.8s CPU; 4tdc020c
+INFO: ../dpalign.c(774): Adding ABBREVIATED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020d.lat
+INFO: ../dpalign.c(491): 4tdc020d: 987 frames, 2794 nodes (1190 reachable), 33334 links
+i'm concerned that [[ YOUR => END ]] june ninth editorial politics at duke contains a very [[ ABBREVIATED(oov) => BREED ]] account [[ OF => ]] of a well [[ => WEILL ]] publicized tenure decision at duke that could mislead your readers about what [[ ACTUALLY => ACTION ]] occurred (4tdc020d) << 33 ref; 1 3.0% oov; 33 hyp; 29 87.9% corr; 5 15.2% err; 0.4s CPU >>
+==    5552 ref;   113   2.0% oov;    5607 hyp;    5349  96.3% corr;    267   4.8% err;  17.2s CPU; 4tdc020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020e.lat
+INFO: ../dpalign.c(491): 4tdc020e: 987 frames, 2611 nodes (744 reachable), 19513 links
+beyond this however my trustee colleagues and i are far more distressed by the implication that this tenure decision was made for any reason other than that of enhancing the quality of the [[ DUKE => ]] faculty (4tdc020e) << 35 ref; 0 0.0% oov; 34 hyp; 34 97.1% corr; 1 2.9% err; 0.2s CPU >>
+==    5587 ref;   113   2.0% oov;    5641 hyp;    5383  96.3% corr;    268   4.8% err;  17.4s CPU; 4tdc020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020f.lat
+INFO: ../dpalign.c(491): 4tdc020f: 1584 frames, 4344 nodes (1781 reachable), 34637 links
+at [[ => THE ]] an institution like duke a candidate for tenure must [[ NOT => ]] only be recognized for the quality of [[ => EAT ]] his or her teaching indeed two candidates [[ => RING ]] receiving tenure [[ THIS YEAR => E. SHATT ]] won the [[ UNIVERSITY'S => RECEIVES ]] major teaching awards [[ BUT => AUTO ]] also for demonstrated scholarship and contribution to knowledge in [[ THE => ]] candidate's discipline (4tdc020f) << 48 ref; 0 0.0% oov; 49 hyp; 42 87.5% corr; 9 18.8% err; 0.6s CPU >>
+==    5635 ref;   113   2.0% oov;    5690 hyp;    5425  96.3% corr;    277   4.9% err;  18.0s CPU; 4tdc020f
+INFO: ../dpalign.c(774): Adding CONVEYING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020g.lat
+INFO: ../dpalign.c(491): 4tdc020g: 1389 frames, 3857 nodes (1558 reachable), 31867 links
+neither talent by itself a facility for teaching without an accompanying talent [[ FOR ORIGINAL => ROH AND ]] scholarship or scholarship without a gift for [[ CONVEYING(oov) => GAIN ]] that knowledge effectively students is enough to qualify candidate for tenure at duke or [[ => THE ]] other [[ UNIVERSITIES => SHE'S ]] that [[ ARE ACKNOWLEDGED => KNOWLEDGE ]] to be among the best (4tdc020g) << 46 ref; 1 2.2% oov; 46 hyp; 40 87.0% corr; 7 15.2% err; 0.5s CPU >>
+==    5681 ref;   114   2.0% oov;    5736 hyp;    5465  96.2% corr;    284   5.0% err;  18.6s CPU; 4tdc020g
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tdc020h.lat
+INFO: ../dpalign.c(491): 4tdc020h: 1517 frames, 3536 nodes (1298 reachable), 20854 links
+as a former [[ PRESIDENT => PRESSING ]] of williams college nineteen seventy [[ THREE => AUNT ]] to eighty five i know also that there are many fine [[ LIBERAL => ALL ]] arts colleges and research institutes that provide [[ EXCELLENT => XOMA ]] opportunities for the faculty member [[ => SIX ]] interested in focusing on teaching or specifically [[ CONCENTRATING => CONSTRAINED ]] on research (4tdc020h) << 45 ref; 0 0.0% oov; 46 hyp; 40 88.9% corr; 6 13.3% err; 0.4s CPU >>
+==    5726 ref;   114   2.0% oov;    5782 hyp;    5505  96.1% corr;    290   5.1% err;  19.0s CPU; 4tdc020h
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0201.lat
+INFO: ../dpalign.c(491): 4tec0201: 590 frames, 833 nodes (111 reachable), 1430 links
+frustrated with cellular phones and [[ LAPTOPS(oov) => LAPTOP ]] that run out of power (4tec0201) << 11 ref; 1 9.1% oov; 11 hyp; 10 90.9% corr; 1 9.1% err; 0.0s CPU >>
+==    5737 ref;   115   2.0% oov;    5793 hyp;    5515  96.1% corr;    291   5.1% err;  19.0s CPU; 4tec0201
+INFO: ../dpalign.c(774): Adding SAMSONITE to dictionary
+INFO: ../dpalign.c(774): Adding BESICORP to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0202.lat
+INFO: ../dpalign.c(491): 4tec0202: 1593 frames, 2450 nodes (438 reachable), 4975 links
+[[ SAMSONITE(oov) => SIMPSON A ]] corporation and [[ BESICORP(oov) => BASIC CORK ]] group incorporated have teamed up to produce a briefcase equipped with a solar panel that can collect solar energy for such electronic goods (4tec0202) << 27 ref; 2 7.4% oov; 29 hyp; 25 92.6% corr; 4 14.8% err; 0.1s CPU >>
+==    5764 ref;   117   2.0% oov;    5822 hyp;    5540  96.1% corr;    295   5.1% err;  19.1s CPU; 4tec0202
+INFO: ../dpalign.c(774): Adding WIZE to dictionary
+INFO: ../dpalign.c(774): Adding BESICORP. to dictionary
+INFO: ../dpalign.c(774): Adding BRIEFCASES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0203.lat
+INFO: ../dpalign.c(491): 4tec0203: 2173 frames, 2897 nodes (616 reachable), 8610 links
+the luggage manufacturer and the alternative energy company announced friday that they have launched a joint venture in which sun [[ WIZE(oov) => LIVED ]] energy systems incorporated a [[ => AND ]] subsidiary of [[ BESICORP.(oov) => RAISING WORK ]] will manufacture the battery panels and [[ SAMSONITE(oov) => FANCY HIGH ]] will install them in their [[ BRIEFCASES(oov) => BRIEFCASE IS ]] (4tec0203) << 41 ref; 4 9.8% oov; 45 hyp; 37 90.2% corr; 8 19.5% err; 0.1s CPU >>
+==    5805 ref;   121   2.1% oov;    5867 hyp;    5577  96.1% corr;    303   5.2% err;  19.2s CPU; 4tec0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0204.lat
+INFO: ../dpalign.c(491): 4tec0204: 942 frames, 1270 nodes (251 reachable), 3094 links
+the panel unit will be about the size of a standard sheet of paper and as thick as two stacked credit cards (4tec0204) << 22 ref; 0 0.0% oov; 22 hyp; 22 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5827 ref;   121   2.1% oov;    5889 hyp;    5599  96.1% corr;    303   5.2% err;  19.3s CPU; 4tec0204
+INFO: ../dpalign.c(774): Adding FEATHERWEIGHT to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0205.lat
+INFO: ../dpalign.c(491): 4tec0205: 968 frames, 1492 nodes (258 reachable), 3089 links
+the panel which is [[ FEATHERWEIGHT(oov) => OTHER WAITE ]] can pool energy from direct sunlight or from indirect artificial lighting (4tec0205) << 16 ref; 1 6.3% oov; 17 hyp; 15 93.8% corr; 2 12.5% err; 0.1s CPU >>
+==    5843 ref;   122   2.1% oov;    5906 hyp;    5614  96.1% corr;    305   5.2% err;  19.3s CPU; 4tec0205
+INFO: ../dpalign.c(774): Adding SANKEY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0206.lat
+INFO: ../dpalign.c(491): 4tec0206: 2161 frames, 3189 nodes (695 reachable), 11486 links
+a universal plug similar to the attachment that can access battery power through a car [[ => AS ]] cigarette lighter will transfer the collected energy from the panel to cellular phones [[ LAPTOPS(oov) => LAPTOP ]] and other electronic gear according to kevin [[ SANKEY(oov) => FOR END E. ]] director of diversified products at [[ SAMSONITE(oov) => BANS I. ]] (4tec0206) << 43 ref; 3 7.0% oov; 47 hyp; 40 93.0% corr; 7 16.3% err; 0.2s CPU >>
+==    5886 ref;   125   2.1% oov;    5953 hyp;    5654  96.1% corr;    312   5.3% err;  19.6s CPU; 4tec0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0207.lat
+INFO: ../dpalign.c(491): 4tec0207: 747 frames, 984 nodes (215 reachable), 2511 links
+the solar briefcase should be on the market by spring nineteen ninety five [[ SANKEY(oov) => END ]] said (4tec0207) << 15 ref; 1 6.7% oov; 15 hyp; 14 93.3% corr; 1 6.7% err; 0.0s CPU >>
+==    5901 ref;   126   2.1% oov;    5968 hyp;    5668  96.1% corr;    313   5.3% err;  19.6s CPU; 4tec0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0208.lat
+INFO: ../dpalign.c(491): 4tec0208: 1652 frames, 1632 nodes (230 reachable), 1782 links
+despite political turmoil in tokyo the japanese yen continued to strengthen wednesday with the dollar falling decisively below the one hundred yen mark for the first time to close at ninety eight point seven in new york (4tec0208) << 37 ref; 0 0.0% oov; 37 hyp; 37 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    5938 ref;   126   2.1% oov;    6005 hyp;    5705  96.1% corr;    313   5.3% err;  19.7s CPU; 4tec0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec0209.lat
+INFO: ../dpalign.c(491): 4tec0209: 1250 frames, 1450 nodes (271 reachable), 2574 links
+[[ => BY ]] some senior u. s. officials and private analysts are arguing that the dramatic movements in the currency markets amount to a yen crisis rather than a dollar crisis (4tec0209) << 28 ref; 0 0.0% oov; 29 hyp; 28 100.0% corr; 1 3.6% err; 0.1s CPU >>
+==    5966 ref;   126   2.1% oov;    6034 hyp;    5733  96.1% corr;    314   5.3% err;  19.7s CPU; 4tec0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020a.lat
+INFO: ../dpalign.c(491): 4tec020a: 1155 frames, 1381 nodes (208 reachable), 2143 links
+they contend that the yen is being pushed upward by japan's continuing large trade surplus to a level that is causing serious discomfort for japanese industry (4tec020a) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    5992 ref;   126   2.1% oov;    6060 hyp;    5759  96.1% corr;    314   5.2% err;  19.8s CPU; 4tec020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020b.lat
+INFO: ../dpalign.c(491): 4tec020b: 1653 frames, 2068 nodes (239 reachable), 3297 links
+this analysis stressing japan's structural problems rather than those of the united states is one reason why the federal reserve and the treasury have resisted calls to raise u. s. interest rates to shore up the dollar (4tec020b) << 37 ref; 0 0.0% oov; 37 hyp; 37 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6029 ref;   126   2.1% oov;    6097 hyp;    5796  96.1% corr;    314   5.2% err;  19.8s CPU; 4tec020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020c.lat
+INFO: ../dpalign.c(491): 4tec020c: 637 frames, 932 nodes (124 reachable), 1125 links
+officials believe that the problem currency isn't the dollar but the yen (4tec020c) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6041 ref;   126   2.1% oov;    6109 hyp;    5808  96.1% corr;    314   5.2% err;  19.9s CPU; 4tec020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020d.lat
+INFO: ../dpalign.c(491): 4tec020d: 1636 frames, 2200 nodes (477 reachable), 5413 links
+japan is piling up huge amounts of foreign exchange that [[ ARE => A ]] not being recycled to the rest of the world either by increases in japanese imports or by a big outflow of money in the form of investments abroad [[ => BY ]] (4tec020d) << 39 ref; 0 0.0% oov; 40 hyp; 38 97.4% corr; 2 5.1% err; 0.1s CPU >>
+==    6080 ref;   126   2.1% oov;    6149 hyp;    5846  96.2% corr;    316   5.2% err;  20.0s CPU; 4tec020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020e.lat
+INFO: ../dpalign.c(491): 4tec020e: 1790 frames, 1930 nodes (299 reachable), 2636 links
+currency markets offered some evidence to support this view wednesday as the dollar rebounded against the german mark rising to one point five eight five five marks to the dollar from one point five seven nine five the day before (4tec020e) << 40 ref; 0 0.0% oov; 40 hyp; 40 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6120 ref;   126   2.1% oov;    6189 hyp;    5886  96.2% corr;    316   5.2% err;  20.1s CPU; 4tec020e
+INFO: ../dpalign.c(774): Adding ENDAKA to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020f.lat
+INFO: ../dpalign.c(491): 4tec020f: 1069 frames, 1332 nodes (155 reachable), 1923 links
+for japanese exporters the yen's recent surge has created what the japanese call [[ ENDAKA(oov) => END BEKAA ]] or strong yen crisis (4tec020f) << 18 ref; 1 5.6% oov; 19 hyp; 17 94.4% corr; 2 11.1% err; 0.1s CPU >>
+==    6138 ref;   127   2.1% oov;    6208 hyp;    5903  96.2% corr;    318   5.2% err;  20.1s CPU; 4tec020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tec020g.lat
+INFO: ../dpalign.c(491): 4tec020g: 837 frames, 1006 nodes (162 reachable), 2257 links
+profit margins have fallen as japanese companies try to absorb the cost penalty of the higher yen (4tec020g) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6155 ref;   127   2.1% oov;    6225 hyp;    5920  96.2% corr;    318   5.2% err;  20.1s CPU; 4tec020g
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0201.lat
+INFO: ../dpalign.c(491): 4tgc0201: 731 frames, 1077 nodes (293 reachable), 2993 links
+[[ CHIAT => SHIITE ]] day was awarded a high profile creative assignment on monday and the agency announced executive changes (4tgc0201) << 17 ref; 0 0.0% oov; 17 hyp; 16 94.1% corr; 1 5.9% err; 0.0s CPU >>
+==    6172 ref;   127   2.1% oov;    6242 hyp;    5936  96.2% corr;    319   5.2% err;  20.2s CPU; 4tgc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0202.lat
+INFO: ../dpalign.c(491): 4tgc0202: 1388 frames, 2281 nodes (663 reachable), 10379 links
+benetton group s. p. a. the italian apparel marketer and retailer said monday that it had selected [[ CHIAT => SHIITE ]] day's new york office as the first agency to create a product [[ CAMPAIGN => CAMPAIGNS ]] for the united states (4tgc0202) << 35 ref; 0 0.0% oov; 35 hyp; 33 94.3% corr; 2 5.7% err; 0.2s CPU >>
+==    6207 ref;   127   2.0% oov;    6277 hyp;    5969  96.2% corr;    321   5.2% err;  20.4s CPU; 4tgc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0203.lat
+INFO: ../dpalign.c(491): 4tgc0203: 313 frames, 480 nodes (66 reachable), 555 links
+billings have not been determined (4tgc0203) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6212 ref;   127   2.0% oov;    6282 hyp;    5974  96.2% corr;    321   5.2% err;  20.4s CPU; 4tgc0203
+INFO: ../dpalign.c(774): Adding RACQUETS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0204.lat
+INFO: ../dpalign.c(491): 4tgc0204: 999 frames, 1635 nodes (574 reachable), 9796 links
+[[ CHIAT => SHIITE ]] day which [[ => R. ]] already handles advertising for prince tennis [[ RACQUETS(oov) => RECORDS ]] a subsidiary [[ => UPDATE ]] of [[ BENETTON => TEND ]] was awarded the assignment without a review (4tgc0204) << 21 ref; 1 4.8% oov; 23 hyp; 18 85.7% corr; 5 23.8% err; 0.1s CPU >>
+==    6233 ref;   128   2.1% oov;    6305 hyp;    5992  96.1% corr;    326   5.2% err;  20.5s CPU; 4tgc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0205.lat
+INFO: ../dpalign.c(491): 4tgc0205: 625 frames, 804 nodes (88 reachable), 1007 links
+media buying services international of new york continues to handle media placement (4tgc0205) << 12 ref; 0 0.0% oov; 12 hyp; 12 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6245 ref;   128   2.0% oov;    6317 hyp;    6004  96.1% corr;    326   5.2% err;  20.5s CPU; 4tgc0205
+INFO: ../dpalign.c(774): Adding FRESSOLA to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0206.lat
+INFO: ../dpalign.c(491): 4tgc0206: 868 frames, 1588 nodes (487 reachable), 6298 links
+peter [[ FRESSOLA(oov) => FUSS SOLAR ]] a spokesman for the benetton service [[ CORP.(oov) => COLT ]] in new york confirmed a report of the assignment this week in advertising age (4tgc0206) << 23 ref; 2 8.7% oov; 24 hyp; 21 91.3% corr; 3 13.0% err; 0.1s CPU >>
+==    6268 ref;   130   2.1% oov;    6341 hyp;    6025  96.1% corr;    329   5.2% err;  20.6s CPU; 4tgc0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0207.lat
+INFO: ../dpalign.c(491): 4tgc0207: 908 frames, 1395 nodes (325 reachable), 4652 links
+he said the campaign was expected to begin in september and run on a limited basis for the fall adding that it might broaden next year (4tgc0207) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6294 ref;   130   2.1% oov;    6367 hyp;    6051  96.1% corr;    329   5.2% err;  20.7s CPU; 4tgc0207
+INFO: ../dpalign.c(774): Adding OLIVIERO to dictionary
+INFO: ../dpalign.c(774): Adding TOSCANI to dictionary
+INFO: ../dpalign.c(774): Adding BENETTON'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0208.lat
+INFO: ../dpalign.c(491): 4tgc0208: 1540 frames, 2412 nodes (727 reachable), 12303 links
+[[ CHIAT => QIAN ]] day's assignment to develop magazine and newspaper advertisements that highlight apparel is intended to supplement the provocative social issues advertising produced by [[ OLIVIERO(oov) TOSCANI(oov) BENETTON'S(oov) => BOLIVIA OTTO SCARRED ME EVENT THAMES ]] creative director (4tgc0208) << 28 ref; 3 10.7% oov; 31 hyp; 24 85.7% corr; 7 25.0% err; 0.2s CPU >>
+==    6322 ref;   133   2.1% oov;    6398 hyp;    6075  96.1% corr;    336   5.3% err;  20.9s CPU; 4tgc0208
+INFO: ../dpalign.c(774): Adding TOSCANI'S to dictionary
+INFO: ../dpalign.c(774): Adding SHOCKVERTISEMENTS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc0209.lat
+INFO: ../dpalign.c(491): 4tgc0209: 1023 frames, 2213 nodes (678 reachable), 10943 links
+there has been contentious debate over [[ TOSCANI'S(oov) SHOCKVERTISEMENTS(oov) => TRUSTCO NEEDS SHOPPER TYSON'S ]] as he calls them which have addressed issues like aids racism and violence (4tgc0209) << 21 ref; 2 9.5% oov; 23 hyp; 19 90.5% corr; 4 19.0% err; 0.1s CPU >>
+==    6343 ref;   135   2.1% oov;    6421 hyp;    6094  96.1% corr;    340   5.4% err;  21.0s CPU; 4tgc0209
+INFO: ../dpalign.c(774): Adding MATATHIA to dictionary
+INFO: ../dpalign.c(774): Adding ADWEEK to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020a.lat
+INFO: ../dpalign.c(491): 4tgc020a: 1186 frames, 1973 nodes (446 reachable), 7429 links
+separately ira [[ MATATHIA(oov) => LIFTOFF SIERRA ]] managing director of the new york office confirmed an report this week in [[ ADWEEK(oov) => ED WEAK ]] that he would relinquish his position as head of the toronto office (4tgc020a) << 29 ref; 2 6.9% oov; 31 hyp; 27 93.1% corr; 4 13.8% err; 0.1s CPU >>
+==    6372 ref;   137   2.2% oov;    6452 hyp;    6121  96.1% corr;    344   5.4% err;  21.1s CPU; 4tgc020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020b.lat
+INFO: ../dpalign.c(491): 4tgc020b: 759 frames, 1181 nodes (288 reachable), 3327 links
+steve hancock director of account planning at [[ CHIAT => SHIITE ]] day in new york was named managing director there (4tgc020b) << 17 ref; 0 0.0% oov; 17 hyp; 16 94.1% corr; 1 5.9% err; 0.1s CPU >>
+==    6389 ref;   137   2.1% oov;    6469 hyp;    6137  96.1% corr;    345   5.4% err;  21.2s CPU; 4tgc020b
+INFO: ../dpalign.c(774): Adding BAX to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020c.lat
+INFO: ../dpalign.c(491): 4tgc020c: 1288 frames, 1785 nodes (521 reachable), 6245 links
+also simon [[ BAX(oov) => FAX ]] the agency's chief financial officer based in venice california is leaving to join [[ TWENTIETH => TWENTY ]] century fox in los angeles as senior vice president and chief financial officer (4tgc020c) << 30 ref; 1 3.3% oov; 30 hyp; 28 93.3% corr; 2 6.7% err; 0.1s CPU >>
+==    6419 ref;   138   2.1% oov;    6499 hyp;    6165  96.0% corr;    347   5.4% err;  21.3s CPU; 4tgc020c
+INFO: ../dpalign.c(774): Adding ADELAIDE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020d.lat
+INFO: ../dpalign.c(491): 4tgc020d: 709 frames, 1483 nodes (433 reachable), 7982 links
+his responsibilities will be [[ ASSUMED => ASSAULT ]] by [[ ADELAIDE(oov) => ANNA LAID ]] horton a chiat day managing director in new york (4tgc020d) << 16 ref; 1 6.3% oov; 17 hyp; 14 87.5% corr; 3 18.8% err; 0.1s CPU >>
+==    6435 ref;   139   2.2% oov;    6516 hyp;    6179  96.0% corr;    350   5.4% err;  21.3s CPU; 4tgc020d
+INFO: ../dpalign.c(774): Adding ROM'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020e.lat
+INFO: ../dpalign.c(491): 4tgc020e: 1282 frames, 1956 nodes (560 reachable), 7875 links
+time warner interactive and the interpublic group of companies said monday that they had formed a joint venture to create and produce interactive products like c. d. [[ ROM'S(oov) => WARRANTS ]] and interactive television programming (4tgc020e) << 32 ref; 1 3.1% oov; 32 hyp; 31 96.9% corr; 1 3.1% err; 0.1s CPU >>
+==    6467 ref;   140   2.2% oov;    6548 hyp;    6210  96.0% corr;    351   5.4% err;  21.5s CPU; 4tgc020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tgc020f.lat
+INFO: ../dpalign.c(491): 4tgc020f: 927 frames, 1497 nodes (455 reachable), 5971 links
+the terms of the agreement believed to be the first to link an information and entertainment conglomerate and an agency company were not disclosed (4tgc020f) << 24 ref; 0 0.0% oov; 24 hyp; 24 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6491 ref;   140   2.2% oov;    6572 hyp;    6234  96.0% corr;    351   5.4% err;  21.6s CPU; 4tgc020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0201.lat
+INFO: ../dpalign.c(491): 4thc0201: 957 frames, 1478 nodes (233 reachable), 2541 links
+employers effectively have been robbing pension funds to help pay for climbing health care costs a leading senate pension expert suggested (4thc0201) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6512 ref;   140   2.1% oov;    6593 hyp;    6255  96.1% corr;    351   5.4% err;  21.6s CPU; 4thc0201
+INFO: ../dpalign.c(774): Adding JEFFORDS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0202.lat
+INFO: ../dpalign.c(491): 4thc0202: 2590 frames, 2984 nodes (542 reachable), 6788 links
+testifying before the senate finance committee senator james [[ JEFFORDS(oov) => SASSER AIDS ]] republican vermont presented figures showing that private companies boosted their health spending to a hundred and [[ FORTY => FORTIES ]] three point five billion dollars in nineteen eighty five and to two hundred and five point four billion in nineteen ninety one from seventy point four billion in nineteen seventy five after adjusting for inflation (4thc0202) << 61 ref; 1 1.6% oov; 62 hyp; 59 96.7% corr; 3 4.9% err; 0.2s CPU >>
+==    6573 ref;   141   2.1% oov;    6655 hyp;    6314  96.1% corr;    354   5.4% err;  21.8s CPU; 4thc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0203.lat
+INFO: ../dpalign.c(491): 4thc0203: 1790 frames, 1650 nodes (247 reachable), 1840 links
+by contrast their spending on pension and profit sharing benefits declined to seventy point nine billion dollars in nineteen eighty five and to fifty three point six billion dollars in nineteen ninety one from seventy one point one billion in nineteen seventy five (4thc0203) << 43 ref; 0 0.0% oov; 43 hyp; 43 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6616 ref;   141   2.1% oov;    6698 hyp;    6357  96.1% corr;    354   5.4% err;  21.9s CPU; 4thc0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0204.lat
+INFO: ../dpalign.c(491): 4thc0204: 1688 frames, 2071 nodes (240 reachable), 2349 links
+private employer spending on health care rose more than seven fold between nineteen seventy five and nineteen ninety one before inflation while spending for pensions and profit sharing less than doubled the figures given by senator [[ JEFFORDS(oov) => JEFF ITS ]] showed (4thc0204) << 38 ref; 1 2.6% oov; 39 hyp; 37 97.4% corr; 2 5.3% err; 0.1s CPU >>
+==    6654 ref;   142   2.1% oov;    6737 hyp;    6394  96.1% corr;    356   5.4% err;  21.9s CPU; 4thc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0205.lat
+INFO: ../dpalign.c(491): 4thc0205: 603 frames, 857 nodes (185 reachable), 2751 links
+the statistics were compiled by the employee benefit research institute a study group (4thc0205) << 13 ref; 0 0.0% oov; 13 hyp; 13 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6667 ref;   142   2.1% oov;    6750 hyp;    6407  96.1% corr;    356   5.3% err;  22.0s CPU; 4thc0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0206.lat
+INFO: ../dpalign.c(491): 4thc0206: 1210 frames, 1751 nodes (401 reachable), 3725 links
+employers are spending so much money on providing health care benefits that there isn't enough money in the coffers to provide for their employees' retirement income senator [[ JEFFORDS(oov) => JEFFERIES ]] said (4thc0206) << 29 ref; 1 3.4% oov; 29 hyp; 28 96.6% corr; 1 3.4% err; 0.1s CPU >>
+==    6696 ref;   143   2.1% oov;    6779 hyp;    6435  96.1% corr;    357   5.3% err;  22.0s CPU; 4thc0206
+INFO: ../dpalign.c(774): Adding OUTSTRIPPED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0207.lat
+INFO: ../dpalign.c(491): 4thc0207: 1514 frames, 1800 nodes (305 reachable), 2996 links
+while employers' spending on pensions [[ OUTSTRIPPED(oov) => OUSTER ]] health care expenditures by fifty six to forty four percent in nineteen sixty five he noted the ratio had become twenty one to seventy nine percent in nineteen ninety one (4thc0207) << 36 ref; 1 2.8% oov; 36 hyp; 35 97.2% corr; 1 2.8% err; 0.1s CPU >>
+==    6732 ref;   144   2.1% oov;    6815 hyp;    6470  96.1% corr;    358   5.3% err;  22.1s CPU; 4thc0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0208.lat
+INFO: ../dpalign.c(491): 4thc0208: 718 frames, 926 nodes (139 reachable), 1404 links
+more recent figures supplied separately by the e. b. r. i. showed that the trend has continued (4thc0208) << 17 ref; 0 0.0% oov; 17 hyp; 17 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6749 ref;   144   2.1% oov;    6832 hyp;    6487  96.1% corr;    358   5.3% err;  22.1s CPU; 4thc0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc0209.lat
+INFO: ../dpalign.c(491): 4thc0209: 1038 frames, 1270 nodes (150 reachable), 1462 links
+pension and profit sharing spending rose only three percent in nineteen ninety two from nineteen ninety one as outlays for health care increased ten percent (4thc0209) << 25 ref; 0 0.0% oov; 25 hyp; 25 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6774 ref;   144   2.1% oov;    6857 hyp;    6512  96.1% corr;    358   5.3% err;  22.2s CPU; 4thc0209
+INFO: ../dpalign.c(774): Adding SHACKS to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020a.lat
+INFO: ../dpalign.c(491): 4thc020a: 2199 frames, 3145 nodes (643 reachable), 7829 links
+senator [[ JEFFORDS(oov) => JEFF ERNST ]] a longtime sponsor of legislation that would force employers to narrow what are often large funding gaps in their pension plans said we want to make sure that in solving the health care problem we don't rob the pension bank or else [[ WE'RE => WROTE ]] going to wind up with a lot of old healthy people living in one room [[ SHACKS(oov) => SHATT SOME ]] (4thc020a) << 61 ref; 2 3.3% oov; 63 hyp; 58 95.1% corr; 5 8.2% err; 0.2s CPU >>
+==    6835 ref;   146   2.1% oov;    6920 hyp;    6570  96.1% corr;    363   5.3% err;  22.4s CPU; 4thc020a
+INFO: ../dpalign.c(774): Adding SPEEDIER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020b.lat
+INFO: ../dpalign.c(491): 4thc020b: 2232 frames, 2504 nodes (310 reachable), 4522 links
+finance committee chairman daniel patrick moynihan democrat new york and the panel's ranking republican senator robert packwood republican oregon said they believe a clinton administration proposal to require [[ SPEEDIER(oov) => SPEEDY EAR ]] fund contributions by many employees with pension plan shortfalls can be approved by congress this year (4thc020b) << 45 ref; 1 2.2% oov; 46 hyp; 44 97.8% corr; 2 4.4% err; 0.1s CPU >>
+==    6880 ref;   147   2.1% oov;    6966 hyp;    6614  96.1% corr;    365   5.3% err;  22.4s CPU; 4thc020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020c.lat
+INFO: ../dpalign.c(491): 4thc020c: 970 frames, 1252 nodes (130 reachable), 1240 links
+mr. moynihan noted half jokingly that the panel would have to complete health care welfare trade and tax bills first though (4thc020c) << 21 ref; 0 0.0% oov; 21 hyp; 21 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    6901 ref;   147   2.1% oov;    6987 hyp;    6635  96.1% corr;    365   5.3% err;  22.5s CPU; 4thc020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020d.lat
+INFO: ../dpalign.c(491): 4thc020d: 860 frames, 1352 nodes (221 reachable), 5574 links
+several employer groups testified against the administration plan saying it isn't needed or has serious flaws or both (4thc020d) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    6919 ref;   147   2.1% oov;    7005 hyp;    6653  96.2% corr;    365   5.3% err;  22.5s CPU; 4thc020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020e.lat
+INFO: ../dpalign.c(491): 4thc020e: 1897 frames, 2277 nodes (363 reachable), 5258 links
+the pension issues coalition which has many members with underfunded plans argued that concerns about growing fund shortfalls expressed by the government's pension benefit guaranty [[ CORP.(oov) => CORK ]] are based on flawed interest rate and mortality assumptions among other drawbacks (4thc020e) << 38 ref; 1 2.6% oov; 38 hyp; 37 97.4% corr; 1 2.6% err; 0.1s CPU >>
+==    6957 ref;   148   2.1% oov;    7043 hyp;    6690  96.2% corr;    366   5.3% err;  22.6s CPU; 4thc020e
+INFO: ../dpalign.c(774): Adding UNDERFUNDING to dictionary
+INFO: ../dpalign.c(774): Adding BARNETTE to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020f.lat
+INFO: ../dpalign.c(491): 4thc020f: 1419 frames, 2023 nodes (255 reachable), 3290 links
+with interest rates starting to rise again [[ UNDERFUNDING(oov) => UNDER FUNDING ]] will decline said curtis h. [[ BARNETTE(oov) => BARNETT ]] chairman of bethlehem steel corporation who testified for the employer coalition (4thc020f) << 25 ref; 2 8.0% oov; 26 hyp; 23 92.0% corr; 3 12.0% err; 0.1s CPU >>
+==    6982 ref;   150   2.1% oov;    7069 hyp;    6713  96.1% corr;    369   5.3% err;  22.7s CPU; 4thc020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4thc020g.lat
+INFO: ../dpalign.c(491): 4thc020g: 882 frames, 1342 nodes (195 reachable), 3432 links
+others said faster funding rules could put many firms in financial jeopardy a view that administration officials denied (4thc020g) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7000 ref;   150   2.1% oov;    7087 hyp;    6731  96.2% corr;    369   5.3% err;  22.8s CPU; 4thc020g
+INFO: ../dpalign.c(774): Adding FLYWHEEL to dictionary
+INFO: ../dpalign.c(774): Adding ENERGY'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0201.lat
+INFO: ../dpalign.c(491): 4tic0201: 2033 frames, 2367 nodes (544 reachable), 6635 links
+[[ => DEATH ]] as automakers conventional and otherwise position themselves for california's nineteen ninety eight deadline for zero emission cars american [[ FLYWHEEL(oov) => PLYWOOD WILL ]] systems incorporated will announce a deal tuesday to acquire advanced technology from the u. s. department of [[ ENERGY'S(oov) => ENERGY TO ]] oak ridge national laboratory (4tic0201) << 41 ref; 2 4.9% oov; 44 hyp; 39 95.1% corr; 5 12.2% err; 0.1s CPU >>
+==    7041 ref;   152   2.2% oov;    7131 hyp;    6770  96.2% corr;    374   5.3% err;  22.9s CPU; 4tic0201
+INFO: ../dpalign.c(774): Adding CENTRIFUGES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0202.lat
+INFO: ../dpalign.c(491): 4tic0202: 1311 frames, 1587 nodes (325 reachable), 4451 links
+the technology was used in a high speed carbon fiber [[ FLYWHEEL(oov) => WYATT WHEELS ]] developed by the tennessee lab in making [[ CENTRIFUGES(oov) => CENTERS FUGITIVES ]] to isolate radioactive materials for nuclear weapons (4tic0202) << 26 ref; 2 7.7% oov; 28 hyp; 24 92.3% corr; 4 15.4% err; 0.1s CPU >>
+==    7067 ref;   154   2.2% oov;    7159 hyp;    6794  96.1% corr;    378   5.3% err;  23.0s CPU; 4tic0202
+INFO: ../dpalign.c(774): Adding FLYWHEELS to dictionary
+INFO: ../dpalign.c(774): Adding FURIA to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0203.lat
+INFO: ../dpalign.c(491): 4tic0203: 1558 frames, 1969 nodes (428 reachable), 7142 links
+it could significantly increase the capacity of the country's batteries which store energy in spinning [[ FLYWHEELS(oov) => WIVES MEALS ]] according to edward w. [[ FURIA(oov) => FORAY IN BY ]] chairman of the small seattle based company (4tic0203) << 28 ref; 2 7.1% oov; 31 hyp; 26 92.9% corr; 5 17.9% err; 0.1s CPU >>
+==    7095 ref;   156   2.2% oov;    7190 hyp;    6820  96.1% corr;    383   5.4% err;  23.1s CPU; 4tic0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0204.lat
+INFO: ../dpalign.c(491): 4tic0204: 1110 frames, 1796 nodes (269 reachable), 5577 links
+in theory vehicles with [[ FLYWHEEL(oov) => PLYWOOD OWE ]] batteries could have several advantages over the current generation of electric battery cars including a much longer driving range (4tic0204) << 24 ref; 1 4.2% oov; 25 hyp; 23 95.8% corr; 2 8.3% err; 0.1s CPU >>
+==    7119 ref;   157   2.2% oov;    7215 hyp;    6843  96.1% corr;    385   5.4% err;  23.2s CPU; 4tic0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0205.lat
+INFO: ../dpalign.c(491): 4tic0205: 461 frames, 667 nodes (208 reachable), 2746 links
+and the faster a [[ FLYWHEEL(oov) => WHAT WIELD ]] goes the more energy it can store (4tic0205) << 12 ref; 1 8.3% oov; 13 hyp; 11 91.7% corr; 2 16.7% err; 0.0s CPU >>
+==    7131 ref;   158   2.2% oov;    7228 hyp;    6854  96.1% corr;    387   5.4% err;  23.2s CPU; 4tic0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0206.lat
+INFO: ../dpalign.c(491): 4tic0206: 1486 frames, 1915 nodes (296 reachable), 3488 links
+[[ FURIA(oov) => KOREANS ]] says the new faster speed technology will help the company reach its goal of having an affordable [[ ELECTRIC => ACTED ]] car by nineteen ninety eight when major car companies must introduce zero emission cars in california showrooms (4tic0206) << 36 ref; 1 2.8% oov; 36 hyp; 34 94.4% corr; 2 5.6% err; 0.1s CPU >>
+==    7167 ref;   159   2.2% oov;    7264 hyp;    6888  96.1% corr;    389   5.4% err;  23.3s CPU; 4tic0206
+INFO: ../dpalign.c(774): Adding CORVETTE to dictionary
+INFO: ../dpalign.c(774): Adding STINGRAY to dictionary
+INFO: ../dpalign.c(774): Adding COBRAS to dictionary
+INFO: ../dpalign.c(774): Adding COYNER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0207.lat
+INFO: ../dpalign.c(491): 4tic0207: 1708 frames, 2106 nodes (452 reachable), 6278 links
+american [[ FLYWHEEL(oov) => PLYWOOD OWE ]] also will add to its engineering team california auto designer peter brock credited with the designs of the [[ CORVETTE(oov) STINGRAY(oov) => QUARTET STINGER RAID ]] and the ford [[ COBRAS(oov) => KOPPERS ]] of the nineteen sixties and oak ridge [[ FLYWHEEL(oov) => WYATT WIELD ]] expert john [[ COYNER(oov) => COIN AIR ]] (4tic0207) << 37 ref; 6 16.2% oov; 41 hyp; 31 83.8% corr; 10 27.0% err; 0.1s CPU >>
+==    7204 ref;   165   2.3% oov;    7305 hyp;    6919  96.0% corr;    399   5.5% err;  23.4s CPU; 4tic0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0208.lat
+INFO: ../dpalign.c(491): 4tic0208: 1778 frames, 2340 nodes (600 reachable), 10139 links
+also richard [[ DARMAN => GARMENTS ]] former director of the federal office of management and budget and now an investment banker with the washington d. c. based carlyle group will join a board of advisers that already includes cabinet veterans elliot l. richardson and james r. schlesinger (4tic0208) << 44 ref; 0 0.0% oov; 44 hyp; 43 97.7% corr; 1 2.3% err; 0.2s CPU >>
+==    7248 ref;   165   2.3% oov;    7349 hyp;    6962  96.1% corr;    400   5.5% err;  23.6s CPU; 4tic0208
+INFO: ../dpalign.c(774): Adding DELAND to dictionary
+INFO: ../dpalign.c(774): Adding ZORZI to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic0209.lat
+INFO: ../dpalign.c(491): 4tic0209: 1586 frames, 2109 nodes (514 reachable), 6729 links
+[[ FURIA(oov) => THREE OF ]] previously an official for the u. s. environmental protection agency founded the company with michael r. [[ DELAND(oov) => DEALINGS ]] former chairman of the white house council on environmental quality and engineer edward s. [[ ZORZI(oov) => STORE'S E. ]] (4tic0209) << 33 ref; 3 9.1% oov; 35 hyp; 30 90.9% corr; 5 15.2% err; 0.1s CPU >>
+==    7281 ref;   168   2.3% oov;    7384 hyp;    6992  96.0% corr;    405   5.6% err;  23.7s CPU; 4tic0209
+INFO: ../dpalign.c(774): Adding TELECOMMUTING to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020a.lat
+INFO: ../dpalign.c(491): 4tic020a: 1386 frames, 1817 nodes (333 reachable), 5021 links
+[[ TELECOMMUTING(oov) => DELLA COMMUTING ]] remains slow to catch on in the american work force a new survey shows that less than one percent of the staff at organizations that allow employees to work at home actually taking advantage of the option (4tic020a) << 38 ref; 1 2.6% oov; 39 hyp; 37 97.4% corr; 2 5.3% err; 0.1s CPU >>
+==    7319 ref;   169   2.3% oov;    7423 hyp;    7029  96.0% corr;    407   5.6% err;  23.8s CPU; 4tic020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020b.lat
+INFO: ../dpalign.c(491): 4tic020b: 1322 frames, 1279 nodes (216 reachable), 1947 links
+the nationwide study based on a poll of one hundred and fifty five employers found that skeptical middle managers are the main obstacle preventing the more widespread practice of [[ TELECOMMUTING(oov) => TALENT COMMUNITY ]] (4tic020b) << 30 ref; 1 3.3% oov; 31 hyp; 29 96.7% corr; 2 6.7% err; 0.0s CPU >>
+==    7349 ref;   170   2.3% oov;    7454 hyp;    7058  96.0% corr;    409   5.6% err;  23.8s CPU; 4tic020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020c.lat
+INFO: ../dpalign.c(491): 4tic020c: 450 frames, 622 nodes (68 reachable), 611 links
+[[ => DO ]] managers won't give up control (4tic020c) << 5 ref; 0 0.0% oov; 6 hyp; 5 100.0% corr; 1 20.0% err; 0.0s CPU >>
+==    7354 ref;   170   2.3% oov;    7460 hyp;    7063  96.0% corr;    410   5.6% err;  23.8s CPU; 4tic020c
+INFO: ../dpalign.c(774): Adding ZACKIN to dictionary
+INFO: ../dpalign.c(774): Adding COAUTHOR to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020d.lat
+INFO: ../dpalign.c(491): 4tic020d: 1623 frames, 2108 nodes (351 reachable), 4107 links
+they still can't trust that employees are working when they aren't present in the conventional workplace says dana [[ ZACKIN(oov) COAUTHOR(oov) => STACK END COPPER ]] of the study commissioned by the conference board a business research group in new york (4tic020d) << 35 ref; 2 5.7% oov; 36 hyp; 33 94.3% corr; 3 8.6% err; 0.1s CPU >>
+==    7389 ref;   172   2.3% oov;    7496 hyp;    7096  96.0% corr;    413   5.6% err;  23.9s CPU; 4tic020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020e.lat
+INFO: ../dpalign.c(491): 4tic020e: 1537 frames, 2179 nodes (540 reachable), 6709 links
+while other studies have found that only a tiny percentage of office workers do their jobs from home what [[ ZACKIN(oov) => SACK END ]] found most surprising was that the number remained low even at organizations that at least on paper endorse [[ TELECOMMUTING(oov) => TAYLOR COMMUTING ]] (4tic020e) << 39 ref; 2 5.1% oov; 41 hyp; 37 94.9% corr; 4 10.3% err; 0.1s CPU >>
+==    7428 ref;   174   2.3% oov;    7537 hyp;    7133  96.0% corr;    417   5.6% err;  24.0s CPU; 4tic020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tic020f.lat
+INFO: ../dpalign.c(491): 4tic020f: 1182 frames, 1037 nodes (159 reachable), 1394 links
+more than two thirds of these employers also contributed to the cost of [[ TELECOMMUTING(oov) DOING => TELECOMMUNICATIONS ]] such things as paying for computers telephone service and office supplies (4tic020f) << 26 ref; 1 3.8% oov; 25 hyp; 24 92.3% corr; 2 7.7% err; 0.0s CPU >>
+==    7454 ref;   175   2.3% oov;    7562 hyp;    7157  96.0% corr;    419   5.6% err;  24.1s CPU; 4tic020f
+INFO: ../dpalign.c(774): Adding UNITARY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0201.lat
+INFO: ../dpalign.c(491): 4tjc0201: 1058 frames, 1505 nodes (346 reachable), 4375 links
+the supreme court monday declared constitutional california's worldwide [[ UNITARY(oov) => UNIT'S HERRING ]] method of taxation deciding a long legal battle with an estimated four billion dollars at stake (4tjc0201) << 25 ref; 1 4.0% oov; 26 hyp; 24 96.0% corr; 2 8.0% err; 0.1s CPU >>
+==    7479 ref;   176   2.4% oov;    7588 hyp;    7181  96.0% corr;    421   5.6% err;  24.1s CPU; 4tjc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0202.lat
+INFO: ../dpalign.c(491): 4tjc0202: 841 frames, 1483 nodes (358 reachable), 6777 links
+california governor pete wilson hailed the decision which upheld his state's worldwide [[ UNITARY(oov) => UNIT R. ]] method of taxation on multinational companies (4tjc0202) << 19 ref; 1 5.3% oov; 20 hyp; 18 94.7% corr; 2 10.5% err; 0.1s CPU >>
+==    7498 ref;   177   2.4% oov;    7608 hyp;    7199  96.0% corr;    423   5.6% err;  24.2s CPU; 4tjc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0203.lat
+INFO: ../dpalign.c(491): 4tjc0203: 626 frames, 1235 nodes (270 reachable), 5061 links
+this is a strong vindication of california's position on the [[ UNITARY(oov) => MATURE ]] tax issue wilson said in a statement (4tjc0203) << 18 ref; 1 5.6% oov; 18 hyp; 17 94.4% corr; 1 5.6% err; 0.1s CPU >>
+==    7516 ref;   178   2.4% oov;    7626 hyp;    7216  96.0% corr;    424   5.6% err;  24.3s CPU; 4tjc0203
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0204.lat
+INFO: ../dpalign.c(491): 4tjc0204: 1095 frames, 1805 nodes (504 reachable), 10568 links
+the nation's court by a seven to two vote rejected a challenge against the controversial taxing method which takes into account a foreign based multinational corporation's operations outside the state (4tjc0204) << 30 ref; 0 0.0% oov; 30 hyp; 30 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7546 ref;   178   2.4% oov;    7656 hyp;    7246  96.0% corr;    424   5.6% err;  24.4s CPU; 4tjc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0205.lat
+INFO: ../dpalign.c(491): 4tjc0205: 1068 frames, 1714 nodes (367 reachable), 6495 links
+under the [[ UNITARY(oov) => INACCURATE ]] tax system california had collected taxes from multinational firms based on the proportion of their worldwide property payroll and sales activities in the state (4tjc0205) << 27 ref; 1 3.7% oov; 27 hyp; 26 96.3% corr; 1 3.7% err; 0.1s CPU >>
+==    7573 ref;   179   2.4% oov;    7683 hyp;    7272  96.0% corr;    425   5.6% err;  24.5s CPU; 4tjc0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0206.lat
+INFO: ../dpalign.c(491): 4tjc0206: 718 frames, 1007 nodes (232 reachable), 2667 links
+in contrast most other states and the u. s. government base such taxes on a percentage of profits reported within their borders (4tjc0206) << 22 ref; 0 0.0% oov; 22 hyp; 22 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7595 ref;   179   2.4% oov;    7705 hyp;    7294  96.0% corr;    425   5.6% err;  24.5s CPU; 4tjc0206
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0207.lat
+INFO: ../dpalign.c(491): 4tjc0207: 883 frames, 1343 nodes (214 reachable), 3408 links
+the state tax which dates back several decades was significantly scaled back in nineteen eighty eight and then was essentially ended by california last year (4tjc0207) << 25 ref; 0 0.0% oov; 25 hyp; 25 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7620 ref;   179   2.3% oov;    7730 hyp;    7319  96.0% corr;    425   5.6% err;  24.6s CPU; 4tjc0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0208.lat
+INFO: ../dpalign.c(491): 4tjc0208: 743 frames, 1606 nodes (440 reachable), 6190 links
+but the case still was important because a number of mainly foreign based firms still sought refunds of taxes paid in past years (4tjc0208) << 23 ref; 0 0.0% oov; 23 hyp; 23 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7643 ref;   179   2.3% oov;    7753 hyp;    7342  96.1% corr;    425   5.6% err;  24.7s CPU; 4tjc0208
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc0209.lat
+INFO: ../dpalign.c(491): 4tjc0209: 676 frames, 877 nodes (131 reachable), 1848 links
+financially strapped california estimated its total potential liability at four billion dollars if the tax were struck down (4tjc0209) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    7661 ref;   179   2.3% oov;    7771 hyp;    7360  96.1% corr;    425   5.5% err;  24.7s CPU; 4tjc0209
+INFO: ../dpalign.c(774): Adding EQUALIZATION to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020a.lat
+INFO: ../dpalign.c(491): 4tjc020a: 782 frames, 1397 nodes (423 reachable), 5147 links
+brad sherman chairman of the california board of [[ EQUALIZATION(oov) => BECAUSE ASIANS ]] an elected tax commission said he was very pleased by the court's decision (4tjc020a) << 22 ref; 1 4.5% oov; 23 hyp; 21 95.5% corr; 2 9.1% err; 0.1s CPU >>
+==    7683 ref;   180   2.3% oov;    7794 hyp;    7381  96.1% corr;    427   5.6% err;  24.8s CPU; 4tjc020a
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020b.lat
+INFO: ../dpalign.c(491): 4tjc020b: 577 frames, 964 nodes (246 reachable), 2790 links
+it means about one point five billion dollars of refund checks do not need to be mailed today (4tjc020b) << 18 ref; 0 0.0% oov; 18 hyp; 18 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    7701 ref;   180   2.3% oov;    7812 hyp;    7399  96.1% corr;    427   5.5% err;  24.8s CPU; 4tjc020b
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020c.lat
+INFO: ../dpalign.c(491): 4tjc020c: 354 frames, 710 nodes (137 reachable), 1559 links
+thank god we don't have to send those out sherman said (4tjc020c) << 11 ref; 0 0.0% oov; 11 hyp; 11 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    7712 ref;   180   2.3% oov;    7823 hyp;    7410  96.1% corr;    427   5.5% err;  24.8s CPU; 4tjc020c
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020d.lat
+INFO: ../dpalign.c(491): 4tjc020d: 935 frames, 1338 nodes (314 reachable), 3281 links
+challenging the law in the supreme court were barclays bank p. l. c. and colgate palmolive company which has foreign subsidiaries of operating in more than fifty countries (4tjc020d) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7740 ref;   180   2.3% oov;    7851 hyp;    7438  96.1% corr;    427   5.5% err;  24.9s CPU; 4tjc020d
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020e.lat
+INFO: ../dpalign.c(491): 4tjc020e: 1015 frames, 1465 nodes (224 reachable), 3771 links
+a number of foreign governments including the twelve european community member states australia canada and japan supported barclays in an bid to get the tax overturned (4tjc020e) << 26 ref; 0 0.0% oov; 26 hyp; 26 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7766 ref;   180   2.3% oov;    7877 hyp;    7464  96.1% corr;    427   5.5% err;  25.0s CPU; 4tjc020e
+INFO: ../dpalign.c(774): Adding BADER to dictionary
+INFO: ../dpalign.c(774): Adding INORDINATE to dictionary
+INFO: ../dpalign.c(774): Adding UNCONSTITUTIONALLY to dictionary
+INFO: ../dpalign.c(774): Adding DISCRIMINATES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tjc020f.lat
+INFO: ../dpalign.c(491): 4tjc020f: 1194 frames, 2316 nodes (776 reachable), 13784 links
+but writing the [[ HIGH => A ]] court's majority opinion justice ruth [[ BADER(oov) => LATER ]] ginsburg rejected the argument that the tax imposes [[ INORDINATE(oov) => IMPORT THAT ]] compliance burdens on foreign firms and [[ UNCONSTITUTIONALLY(oov) DISCRIMINATES(oov) => UNCONSTITUTIONAL EAT DISCRIMINATE ]] against foreign commerce (4tjc020f) << 30 ref; 4 13.3% oov; 32 hyp; 25 83.3% corr; 7 23.3% err; 0.2s CPU >>
+==    7796 ref;   184   2.4% oov;    7909 hyp;    7489  96.1% corr;    434   5.6% err;  25.1s CPU; 4tjc020f
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0201.lat
+INFO: ../dpalign.c(491): 4tkc0201: 929 frames, 1293 nodes (263 reachable), 3108 links
+when o. j. simpson brutally beat his wife five years ago and got off with only a slap on the wrist it wasn't because he was a celebrity (4tkc0201) << 28 ref; 0 0.0% oov; 28 hyp; 28 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7824 ref;   184   2.4% oov;    7937 hyp;    7517  96.1% corr;    434   5.5% err;  25.2s CPU; 4tkc0201
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0202.lat
+INFO: ../dpalign.c(491): 4tkc0202: 435 frames, 797 nodes (75 reachable), 2068 links
+most spouse abusers receive lenient treatment (4tkc0202) << 6 ref; 0 0.0% oov; 6 hyp; 6 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    7830 ref;   184   2.3% oov;    7943 hyp;    7523  96.1% corr;    434   5.5% err;  25.2s CPU; 4tkc0202
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0203.lat
+INFO: ../dpalign.c(491): 4tkc0203: 1920 frames, 2329 nodes (343 reachable), 3723 links
+for all the media hype about the former football star t. v. and movie actor and now the most prominent accused murderer of our age the most important point in this sad story is what it reveals about domestic violence or what senator bill bradley calls the dirty little secret of america (4tkc0203) << 52 ref; 0 0.0% oov; 52 hyp; 52 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7882 ref;   184   2.3% oov;    7995 hyp;    7575  96.1% corr;    434   5.5% err;  25.3s CPU; 4tkc0203
+INFO: ../dpalign.c(774): Adding SIMPSONS' to dictionary
+INFO: ../dpalign.c(774): Adding HEAPED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0204.lat
+INFO: ../dpalign.c(491): 4tkc0204: 1610 frames, 2167 nodes (391 reachable), 5944 links
+during the [[ SIMPSONS'(oov) => SIMPSONS ]] stormy relationship police were summoned on at least nine occasions because of the physical abuse [[ HEAPED(oov) => KEEP ]] on nicole simpson her husband never spent a minute in jail for these crimes or received any court supervised counseling (4tkc0204) << 39 ref; 2 5.1% oov; 39 hyp; 37 94.9% corr; 2 5.1% err; 0.1s CPU >>
+==    7921 ref;   186   2.3% oov;    8034 hyp;    7612  96.1% corr;    436   5.5% err;  25.4s CPU; 4tkc0204
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0205.lat
+INFO: ../dpalign.c(491): 4tkc0205: 495 frames, 958 nodes (103 reachable), 1351 links
+domestic violence is an epidemic in america (4tkc0205) << 7 ref; 0 0.0% oov; 7 hyp; 7 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    7928 ref;   186   2.3% oov;    8041 hyp;    7619  96.1% corr;    436   5.5% err;  25.5s CPU; 4tkc0205
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0206.lat
+INFO: ../dpalign.c(491): 4tkc0206: 1694 frames, 1832 nodes (288 reachable), 3113 links
+according to a study last year by the commonwealth fund seven percent of all women or four million women were physically abused by their husbands or partners in a one year period as many as four thousand of these victims die every year (4tkc0206) << 43 ref; 0 0.0% oov; 43 hyp; 43 100.0% corr; 0 0.0% err; 0.1s CPU >>
+==    7971 ref;   186   2.3% oov;    8084 hyp;    7662  96.1% corr;    436   5.5% err;  25.5s CPU; 4tkc0206
+INFO: ../dpalign.c(774): Adding FEDDERS to dictionary
+INFO: ../dpalign.c(774): Adding BEATER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0207.lat
+INFO: ../dpalign.c(491): 4tkc0207: 1247 frames, 1559 nodes (426 reachable), 4840 links
+nearly a decade ago when this newspaper wrote a story disclosing that john [[ FEDDERS(oov) => VENDORS ]] the top law enforcement official at the securities and exchange commission was a violent wife [[ BEATER(oov) => TEETER ]] he lost his job (4tkc0207) << 34 ref; 2 5.9% oov; 34 hyp; 32 94.1% corr; 2 5.9% err; 0.1s CPU >>
+==    8005 ref;   188   2.3% oov;    8118 hyp;    7694  96.1% corr;    438   5.5% err;  25.6s CPU; 4tkc0207
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0208.lat
+INFO: ../dpalign.c(491): 4tkc0208: 752 frames, 1164 nodes (182 reachable), 1892 links
+but i was besieged by readers asking why it [[ WAS => ONCE ]] such a big deal if it didn't affect his job (4tkc0208) << 20 ref; 0 0.0% oov; 20 hyp; 19 95.0% corr; 1 5.0% err; 0.0s CPU >>
+==    8025 ref;   188   2.3% oov;    8138 hyp;    7713  96.1% corr;    439   5.5% err;  25.6s CPU; 4tkc0208
+INFO: ../dpalign.c(774): Adding SIMPSON'S to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc0209.lat
+INFO: ../dpalign.c(491): 4tkc0209: 1343 frames, 2095 nodes (474 reachable), 9456 links
+in nineteen eighty nine when police arrived at o. j. [[ SIMPSON'S(oov) => SIMPSONS ]] home to find his beaten wife fearing for her life the football star insisted this is a family matter we can handle it (4tkc0209) << 34 ref; 1 2.9% oov; 34 hyp; 33 97.1% corr; 1 2.9% err; 0.1s CPU >>
+==    8059 ref;   189   2.3% oov;    8172 hyp;    7746  96.1% corr;    440   5.5% err;  25.8s CPU; 4tkc0209
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020a.lat
+INFO: ../dpalign.c(491): 4tkc020a: 580 frames, 856 nodes (192 reachable), 1841 links
+well it's a lot more than a family matter and it is a very big deal (4tkc020a) << 16 ref; 0 0.0% oov; 16 hyp; 16 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    8075 ref;   189   2.3% oov;    8188 hyp;    7762  96.1% corr;    440   5.4% err;  25.8s CPU; 4tkc020a
+INFO: ../dpalign.c(774): Adding TACKLES to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020b.lat
+INFO: ../dpalign.c(491): 4tkc020b: 768 frames, 1276 nodes (332 reachable), 5257 links
+the current crime bill heading through congress [[ TACKLES(oov) THE => TACKLED SEN ]] issue with some good and a few bad ideas (4tkc020b) << 18 ref; 1 5.6% oov; 18 hyp; 16 88.9% corr; 2 11.1% err; 0.1s CPU >>
+==    8093 ref;   190   2.3% oov;    8206 hyp;    7778  96.1% corr;    442   5.5% err;  25.9s CPU; 4tkc020b
+INFO: ../dpalign.c(774): Adding SPOUSAL to dictionary
+INFO: ../dpalign.c(774): Adding INGRAINED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020c.lat
+INFO: ../dpalign.c(491): 4tkc020c: 905 frames, 1133 nodes (231 reachable), 2311 links
+as [[ SPOUSAL(oov) => THOUSAND ]] violence becomes more [[ INGRAINED(oov) => IN GRAIN ]] in the political dialogue there are some useful reminders for politicians (4tkc020c) << 17 ref; 2 11.8% oov; 18 hyp; 15 88.2% corr; 3 17.6% err; 0.0s CPU >>
+==    8110 ref;   192   2.4% oov;    8224 hyp;    7793  96.1% corr;    445   5.5% err;  25.9s CPU; 4tkc020c
+INFO: ../dpalign.c(774): Adding WOEFULLY to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020d.lat
+INFO: ../dpalign.c(491): 4tkc020d: 415 frames, 545 nodes (93 reachable), 818 links
+the criminal justice system has been [[ WOEFULLY(oov) => WOOL FOLEY ]] insensitive (4tkc020d) << 8 ref; 1 12.5% oov; 9 hyp; 7 87.5% corr; 2 25.0% err; 0.0s CPU >>
+==    8118 ref;   193   2.4% oov;    8233 hyp;    7800  96.1% corr;    447   5.5% err;  26.0s CPU; 4tkc020d
+INFO: ../dpalign.c(774): Adding SCHOENBERG to dictionary
+INFO: ../dpalign.c(774): Adding ABUSER to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020e.lat
+INFO: ../dpalign.c(491): 4tkc020e: 1426 frames, 2031 nodes (413 reachable), 6583 links
+if los angeles municipal county judge ronald [[ SCHOENBERG(oov) => FOUND BARRACKS ]] had sentenced repeated [[ ABUSER(oov) => USER ]] o. j. simpson to thirty days in prison and a tough mandatory one year counseling program today's headlines might be different (4tkc020e) << 33 ref; 2 6.1% oov; 34 hyp; 31 93.9% corr; 3 9.1% err; 0.1s CPU >>
+==    8151 ref;   195   2.4% oov;    8267 hyp;    7831  96.1% corr;    450   5.5% err;  26.1s CPU; 4tkc020e
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020f.lat
+INFO: ../dpalign.c(491): 4tkc020f: 422 frames, 806 nodes (160 reachable), 1969 links
+his judicial attitude wasn't unique (4tkc020f) << 5 ref; 0 0.0% oov; 5 hyp; 5 100.0% corr; 0 0.0% err; 0.0s CPU >>
+==    8156 ref;   195   2.4% oov;    8272 hyp;    7836  96.1% corr;    450   5.5% err;  26.1s CPU; 4tkc020f
+INFO: ../dpalign.c(774): Adding STITCHES to dictionary
+INFO: ../dpalign.c(774): Adding UNPROVOKED to dictionary
+INFO: ../dpalign.c(151): Reading DAG file: /net/alf20/local_tmp/lat/et94/4tkc020g.lat
+INFO: ../dpalign.c(491): 4tkc020g: 1384 frames, 1682 nodes (344 reachable), 4551 links
+rkm      18745 15.6  2.6 6403 6784  ?  S N  14:17   0:30 ../linux/dpalign -dict /net/alf20/usr/rkm/SHARED/dict/nov94/h1c1-94.dic -fdict filler.dic -hom /net/alf20/usr/rkm/SHARED/ctl/HOM.94 -latdir /net/alf20/local_tmp/lat/et94 -mdef /net/alf20/usr1/rkm/s3-test/h1c1-94.mdef -ref /net/alf20/usr/rkm/SHARED/ctl/h1_
+rkm      18750  0.0  0.1   81  512  ?  S N  14:21   0:00 sh -c ps aguxwww | grep dpalign
+rkm      18752  0.0  0.1  100  368  ?  S N  14:21   0:00 grep dpalign
+last year a new hampshire superior court judge told a victim of domestic violence resulting in seventeen [[ STITCHES(oov) => STATUS ]] in her face that i can't conclude that it was completely [[ UNPROVOKED(oov) => UNTRUE VOTE BY ]] (4tkc020g) << 30 ref; 2 6.7% oov; 32 hyp; 28 93.3% corr; 4 13.3% err; 0.1s CPU >>
+==    8186 ref;   197   2.4% oov;    8304 hyp;    7864  96.1% corr;    454   5.5% err;  26.2s CPU; 4tkc020g
+SUMMARY: 8186 ref; 197 2.407% oov; 8304 hyp; 7864 96.066% corr; 454 5.546% err; 26.2s CPU

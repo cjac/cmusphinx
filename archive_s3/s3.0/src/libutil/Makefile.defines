@@ -1,0 +1,39 @@
+#
+# Copyright (c) 1999 Carnegie Mellon University.  ALL RIGHTS RESERVED.
+#
+# Makefile
+# 
+# HISTORY
+# 
+# 28-Apr-99	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Added AR definitions.
+# 
+# 23-Dec-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Created.
+#
+
+
+alpha_CFLAGS      = -O2 -std1 -warnprotos -DALPHA_OSF1=1
+alpha_osf1_CFLAGS = $(alpha_CFLAGS)
+linux_CFLAGS      = -O2        -D__LINUX__=1
+sun4_CFLAGS       = -g             -D_SUN4=1 -D__PURIFY__=1
+hp_CFLAGS         = -O -Aa  -D_HPUX_SOURCE=1
+hp700_ux_CFLAGS   = $(hp_CFLAGS)
+
+alpha_cc = cc
+alpha_osf1_cc = $(alpha_cc)
+linux_cc = cc
+sun4_cc = gcc
+hp_cc = cc
+hp700_ux_cc = $(hp_cc)
+
+CC = ${${MACHINE}_cc}
+
+alpha_ar = ar
+alpha_osf1_ar = $(alpha_ar)
+linux_ar = ar
+sun4_ar = /usr/ccs/bin/ar
+hp_ar = ar
+hp700_ux_ar = $(hp_ar)
+
+AR = ${${MACHINE}_ar}
