@@ -40,7 +40,7 @@ BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 H = cmd_ln_args.h fe_dump.h feat_dump.h new_fe_sp_dump.h live_dump.h metrics.h
 LIVEDECSRCS = parse_args_file.c fe_dump.c feat_dump.c new_fe_sp_dump.c live_dump.c metrics.c
-MAINSRCS = dump_frontend.c
+MAINSRCS = dump_frontend.c batch_metrics.c
 # OTHERSRCS = main.c
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) $(BASESRCS:.c=.o) 
 FILES = Makefile $(SRCS) $(H)
@@ -48,11 +48,13 @@ LIBNAME= tests
 
 LOCAL_INCLUDES = -I$(TOP)/src -I$(TOP)/src/libs3decoder -I$(TOP)/src/libs3audio
 
-ALL = $(BINDIR)/dumpfrontend
+ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics
 
 include $(TOP)/config/common_make_rules
 
 $(BINDIR)/dumpfrontend: dump_frontend.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ dump_frontend.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
 
+$(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
+	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
 
