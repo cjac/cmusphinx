@@ -51,7 +51,7 @@
 #include <string.h>
 #include <dmedia/audio.h>
 
-#include "s3types.h"
+#include <s3types.h>
 #include "ad.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}

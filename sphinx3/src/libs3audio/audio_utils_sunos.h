@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/12/05  18:32:39  arthchan2003
- * added doxygen config and doxygen main page, to run just type doxygen -cfg ./doc/doxygen.cfg . Also added list of machines in compile farm
+ * Revision 1.6  2004/12/14  00:39:49  arthchan2003
+ * add <s3types.h> to the code, change some comments to doxygen style
  * 
+ * Revision 1.5  2004/12/05 18:32:39  arthchan2003
+ * added doxygen config and doxygen main page, to run just type doxygen -cfg ./doc/doxygen.cfg . Also added list of machines in compile farm
+ *
  * Revision 1.5  2004/07/23 23:44:46  egouvea
  * Changed the cygwin code to use the same audio files as the MS Visual code, removed unused variables from fe_interface.c
  *
@@ -125,6 +128,7 @@
 
 #endif
 
+#include <s3types.h>
 
 #define AD_SAMPLE_SIZE		(sizeof(int16))
 #define DEFAULT_SAMPLES_PER_SEC	16000
