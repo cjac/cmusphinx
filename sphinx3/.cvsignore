@@ -1,7 +1,6 @@
 *.gz
 INSTALL
 Makefile
-Makefile.in
 aclocal.m4
 config.cache
 config.guess
@@ -10,7 +9,6 @@ config.h.in
 config.log
 config.status
 config.sub
-configure
 gmon.out
 install-sh
 libtool
