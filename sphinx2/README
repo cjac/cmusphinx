@@ -3,16 +3,17 @@ This is Sphinx 2, one of Carnegie Mellon University's open source
 large vocabulary, speaker-independent continuous speech recognition
 engine. Please see the LICENSE file for terms of use.
 
-THIS IS A RESEARCH SYSTEM.  This is also an early release
-of a research system.  We know the APIs and function
-names are likely to change, and that several tools need
-to be made available to make this all complete.  With
-your help and contributions, this can progress in response
-to the needs and patches provided.
+THIS IS A RESEARCH SYSTEM.  This is also an early release of a
+research system.  We know the APIs and function names are likely to
+change, and that several tools need to be made available to make this
+all complete.  With your help and contributions, this can progress in
+response to the needs and patches provided.
 
-Once the system is built, try running the perl script
-sphinx2-demo.  you may have to change the bang path
-to perl at the top.
+Once the system is built, try running sphinx2-test to see if the
+system correctly decodes a pre-recorded file.  sphinx2-simple is a
+simple script to run the decoder with a set of command line
+arguments. The perl script sphinx2-demo is slightly more elaborate,
+but you may have to change the bang path to perl at the top.
 
 Please see the web site at
 
