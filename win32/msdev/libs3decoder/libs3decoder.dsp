@@ -97,10 +97,6 @@ SOURCE=..\..\..\src\libs3decoder\approx_cont_mgau.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\args.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libs3decoder\ascr.c
 # End Source File
 # Begin Source File
@@ -181,7 +177,11 @@ SOURCE=..\..\..\src\libs3decoder\lextree.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\live_decode.c
+SOURCE=..\..\..\src\libs3decoder\live_decode_API.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\live_decode_args.c
 # End Source File
 # Begin Source File
 
@@ -254,10 +254,6 @@ SOURCE=..\..\..\src\libs3decoder\wid.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\agc.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\args.h
 # End Source File
 # Begin Source File
 
@@ -342,6 +338,14 @@ SOURCE=..\..\..\src\libs3decoder\lextree.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\live2.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\live_decode_API.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\live_decode_args.h
 # End Source File
 # Begin Source File
 

@@ -13,9 +13,6 @@ echo .
 echo This batch script assumes all files are relative to the main
 echo directory (S3ROOT).
 echo .
-echo When running this, look for a line that starts with "FWDVIT:"
-echo If the installation is correct, this line should read:
-echo FWDVID: P I T T S B U R G H (null)
 
 
 %S3BATCH%  -mean ./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means -var  ./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances -mixw  ./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights -svspec 0-38 -iter 20 -svqrows 16 -subvq subvq.out 
