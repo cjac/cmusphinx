@@ -1,6 +1,5 @@
 SUBDIRS = src \
 	doc \
-	model \
 	scripts
 
 EXTRA_DIST = autogen.sh 
