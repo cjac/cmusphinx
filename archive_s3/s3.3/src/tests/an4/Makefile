@@ -53,7 +53,7 @@ ALL = $(BINDIR)/batchmetrics
 include $(TOP)/config/common_make_rules
 
 $(BINDIR)/batchmetrics: ../batch_metrics.o $(LIVEDECOBJS)
-	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -R$(LIBDIR)
+	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -Wl,-R$(LIBDIR)
 
 an4_words_unigram:
 	rm -f gmake-an4-words-unigram.results
