@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.11  2004/03/01  00:50:03  egouvea
+ * Cleanup refs to WIN32 when CYGWIN is also defined
  * 
+ * Revision 1.10  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.9  2001/12/07 17:30:01  lenzo
  * Clean up and remove extra lines.
  *
@@ -108,7 +111,7 @@
 #include <assert.h>
 #include <signal.h>
 
-#ifdef WIN32
+#if (defined(WIN32) && !defined(__CYGWIN__))
 #include <posixwin32.h>
 #else
 #include <unistd.h>
@@ -409,7 +412,7 @@ static void s2srv_loop ( void )
 	if ((sd = server_await_conn ()) == INVALID_SOCKET) {
 	    server_end ();
 	    E_INFO("No connection; retrying after a few seconds\n");
-#if WIN32
+#if defined(WIN32)
 	    Sleep (3000);
 #else
 	    sleep (30);

@@ -53,7 +53,7 @@
 #include "err.h"
 #include "ad.h"
 
-#if (! WIN32)
+#if (!defined(WIN32) || defined(__CYGWIN__))
 #include <sys/types.h>
 #include <sys/time.h>
 #endif

@@ -47,7 +47,7 @@
 
 #include <s2types.h>
 
-#ifdef WIN32
+#if (defined(WIN32) && !defined(__CYGWIN__))
 #include "win32sock.h"
 #else
 #include "posixsock.h"

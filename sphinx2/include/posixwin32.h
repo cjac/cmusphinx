@@ -47,7 +47,7 @@
  */
 
 
- #ifdef WIN32
+ #if (defined(WIN32) && !defined(__CYGWIN__))
  typedef char * caddr_t;
  typedef unsigned long u_long;
  typedef unsigned int u_int;

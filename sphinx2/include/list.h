@@ -52,9 +52,7 @@
 
 #include <sys/types.h>
 
-#ifdef WIN32
 #include <posixwin32.h>
-#endif
 
 typedef struct {
     int32	size_hint;		/* For initial allocation */

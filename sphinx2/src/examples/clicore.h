@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.7  2004/03/01  00:50:03  egouvea
+ * Cleanup refs to WIN32 when CYGWIN is also defined
  * 
+ * Revision 1.6  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.5  2001/12/07 17:30:01  lenzo
  * Clean up and remove extra lines.
  *
@@ -76,7 +79,7 @@
 
 #include "s2types.h"
 
-#if (WIN32)
+#if (defined(WIN32) && !defined(__CYGWIN__))
 #include "win32sock.h"
 #else
 #include "posixsock.h"

@@ -47,7 +47,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
-#if !defined(WIN32) || defined(__CUGWIN__)
+#if !defined(WIN32) || defined(__CYGWIN__)
 #include <unistd.h>
 #endif
 
