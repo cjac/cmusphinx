@@ -267,8 +267,8 @@ void utt_end (kb_t *kb)
     
     ptmr_reset (&(kb->tm_sen));
     ptmr_reset (&(kb->tm_srch));
-    
-#ifndef WIN32    
+
+#if (!defined(WIN32) && !defined(sparc))    
     system ("ps aguxwww | grep dec");
 #endif
     

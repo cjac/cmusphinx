@@ -60,8 +60,8 @@ $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 
 ti46:
 	rm -f gmake-ti46.results
-	../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46.results
+	$(BINDIR)/batchmetrics ./ti46.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46.results
 
 ti46-quick:
 	rm -f gmake-ti46-quick.results
-	../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46-quick.results
+	$(BINDIR)/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46-quick.results
