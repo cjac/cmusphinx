@@ -82,7 +82,7 @@ The rest of this document is structured as follows:
   </UL>
 <LI><A HREF="#sec_faq">Frequently Asked Questions</A>
   <UL>
-  <LI><A HREF="#sec_speed">Speeding up Decoding</A>
+  <LI><A HREF="#sec_tune">Decoder Tuning</A>
   <LI><A HREF="#sec_lmdump">Building LM Dump Files</A>
   <LI><A HREF="#sec_sendump">Building 8-Bit Senone Dump Files</A>
   <LI><A HREF="#sec_fsgfmt">Finite State Grammar File Format</A>
@@ -286,6 +286,7 @@ delta-delta-cepstra concatenated together (i.e., the
 <strong><code>1s_12c_12d_3p_12dd</code></strong> feature type in the Sphinx3
 trainer).
 </ul>
+
 
 
 <br><br>
@@ -2614,7 +2615,7 @@ In addition to the topics covered below, the reader is encouraged to look at
 
 <br><br>
 
-<H3><A NAME="sec_speed">Speeding up Decoding</A></H3>
+<H3><A NAME="sec_tune">Decoder Tuning</A></H3>
 
 There are several ways to speed up decoding:
 <UL>
@@ -2655,6 +2656,33 @@ to build such new models.)
 vocabulary for each utterance.  (Remember that the active vocabulary is the
 <em>intersection</em> of the currently active LM and the dictionary.)
 </UL>
+
+<P>
+
+When using continuous density models, the tuning parameters can be quite different
+from those for semi-continuous models.  In particular, the dynamic range of
+acoustic scores is usually larger, hence the language-weight
+(<strong><code>-langwt</code></strong> argument) probably needs to be increased.
+All the pruning thresholds (<strong><code>-beam</code></strong>,
+<strong><code>-npbeam</code></strong>, <strong><code>-nwbeam</code></strong>,
+<strong><code>-lpbeam</code></strong>, <strong><code>-lponlybeam</code></strong>,
+<strong><code>-fwdflatbeam</code></strong> and
+<strong><code>-fwdflatnwbeam</code></strong>) have to be lowered as well.
+It is preferable to disable <em>phone lookahead</em> (i.e., not specifying the
+<strong><code>-topsen</code></strong> argument), since phone lookahead requires
+the evaluation of all senones every frame, which is expensive for continuous
+density models.
+
+<P>
+
+Finally, to reduce the problem of integer overflow caused by the larger dynamic
+range of scores, an acoustic scaling parameter
+(<strong><code>-ascrscale</code></strong> argument) has been added.  This
+parameter specifies the number of bits by which raw acoustic likelihoods are
+scaled down.  For instance, a value of 1 implies that raw acoustic scores are
+halved, thus compressing the dynamic range.  (Unfortunately, this usually
+requires further tuning of language-weight and pruning threshold parameters.)
+
 
 
 <br><br>
@@ -2815,7 +2843,7 @@ indicated by a <strong><code>#</code></strong> character in the first column.
 <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
 <!-- Created: Jan 01, 1997 -->
 <!-- hhmts start -->
-Last modified: Mon Dec 13 13:34:43 EST 2004
+Last modified: Tue Dec 14 11:03:59 EST 2004
 <!-- hhmts end -->
 
 </BODY>
