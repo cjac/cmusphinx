@@ -17,7 +17,7 @@ EXTRA_DIST = autogen.sh \
 
 test:
 	$(LIBTOOL) --mode=execute echo "LIVEPRETEND TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD THE RECOGNITION ANSWER IS P I T T S B U R G H "
+	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNIZED ANSWER WOULD BE P I T T S B U R G H "
 
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
 		$(top_srcdir)/model/lm/an4/an4.ctl \
@@ -25,7 +25,7 @@ test:
 		$(top_srcdir)/model/lm/an4/args.an4.test
 
 	$(LIBTOOL) --mode=execute echo "DECODE TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD THE RECOGNITION ANSWER IS P I T T S B U R G H "
+	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION ANSWER WOULD BE P I T T S B U R G H "
 
 	$(LIBTOOL) --mode=execute src/programs/decode \
 	       -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
