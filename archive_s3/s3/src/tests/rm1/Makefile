@@ -44,7 +44,7 @@ rm1_flat_unigram:
 	/bin/echo "-lmfn /lab/speech/sphinx4/data/rm1/lists/RM.unigram.arpa.DMP" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-langwt 8" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-120" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-nwbeam 1e-60" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-nwbeam 1e-40" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-matchfn rm1_flat_unigram$(MODEAFFIX).match" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
