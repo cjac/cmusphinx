@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.7  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.8  2001/12/07  19:19:49  lenzo
+ * unistd.h header inclusion.
  * 
+ * Revision 1.7  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.6  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -234,9 +237,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef _SUN4
-#include <unistd.h>
-#endif
 
 #include <stdlib.h>
 

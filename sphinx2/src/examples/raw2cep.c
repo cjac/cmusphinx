@@ -45,6 +45,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "s2types.h"
 #include "CM_macros.h"
