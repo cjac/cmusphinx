@@ -159,14 +159,9 @@ int32 fe_start_utt(fe_t *FE)
 **********************************************************************/
 int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
 {
-    int32 frame_start, frame_count=0, whichframe=0;
-    int32 i, spbuf_len, offset=0;  
+    int32 i, spbuf_len;
     float64 *spbuf, *fr_data, *fr_fea;
-    int16 *tmp_spch = spch;
-    float32 **cep=NULL;
    
-    int j; 
-
     spbuf_len = FE->FRAME_SIZE;    
 
     /* assert(spbuf_len <= nsamps);*/
