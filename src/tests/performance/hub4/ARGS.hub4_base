@@ -16,16 +16,7 @@
 -fdict	/lab/speech/sphinx4/data/hub4_model/fillerdict
 -agc	none
 -cmn	current
--feat s3_1x39
--logbase 	1.0001
--varnorm 	no
--samprate       16000
--upperf 6855.49756
--lowerf 133.33334
--nfilt  40
--nfft 512
--wlen 0.0256
--frate 100
+
 
 
 
