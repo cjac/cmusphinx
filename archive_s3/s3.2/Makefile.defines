@@ -1,0 +1,27 @@
+################################################################################
+# CMU ARPA Speech Project
+#
+# Copyright (c) 1999 Carnegie Mellon University.
+# ALL RIGHTS RESERVED.
+################################################################################
+#
+# Makefile.defines -- Common definitions used by all submodules.
+# 
+# HISTORY
+# 
+# 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Created.
+#
+
+UTILDIR = /net/alf20/usr2/rkm/libutil
+
+include $(UTILDIR)/Makefile.defines
+
+S3BINDIR = $(S3DIR)/bin/$(MACHINE)
+S3LIBDIR = $(S3DIR)/lib/$(MACHINE)
+
+INCLDIRLIST = -I. -I$(S3DIR)/src -I$(UTILDIR)/..
+LIBDIRLIST  = -L$(S3LIBDIR) -L$(UTILDIR)/$(MACHINE)
+
+# CMDFLAGS, below, is for the user to pass additional command-line arguments to "make"
+CFLAGS = ${$(MACHINE)_CFLAGS} $(INCLDIRLIST) $(LIBDIRLIST) $(CMDFLAGS)

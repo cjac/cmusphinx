@@ -1,0 +1,23 @@
+This s3.2 module contains the following programs:
+  1. decode: The Sphinx-3 s3.2 decoder
+  2. gausubvq: A utility for creating a compact, sub-vector quantized form of
+     continuous density acoustic models.  The compact form is used to speed
+     up acoustic likelihood computation in the decoder.
+
+This module depends on the "libutil" library module.
+
+
+This distribution (specifically, the Makefiles) has been prepared for Unix
+platforms.  However, it should be easy to create an equivalent setup on the
+Windows platform, and compile the software there as well.
+
+For documentation on compiling and running the decoder, see doc/s3.html.
+
+
+
+Contact:
+  M. K. Ravishankar
+  School of Computer Science
+  Carnegie Mellon University
+  Pittsburgh, PA 15213
+  email: rkm@cs.cmu.edu
