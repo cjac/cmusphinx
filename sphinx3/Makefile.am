@@ -1,6 +1,7 @@
 SUBDIRS = src \
 	doc \
-	scripts
+	scripts \
+	model
 
 EXTRA_DIST = autogen.sh \
 	win32/batch/an4.ctl \

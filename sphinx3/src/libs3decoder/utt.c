@@ -310,9 +310,11 @@ void utt_end (kb_t *kb)
     ptmr_reset (&(kb->tm_srch));
     ptmr_reset (&(kb->tm_ovrhd));
 
-#if (!defined(WIN32) && !defined(sparc))    
-    system ("ps aguxwww | grep /live | grep -v grep");
-    system ("ps aguxwww | grep /dec | grep -v grep");
+#if (!defined(WIN32))
+    if (! system("ps auxgw > /dev/null 2>&1")) {
+      system ("ps aguxwww | grep /live | grep -v grep");
+      system ("ps aguxwww | grep /dec | grep -v grep");
+    }
 #endif
     
     for (i = 0; i < kb->n_lextree; i++) {
