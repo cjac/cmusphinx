@@ -1,9 +1,0 @@
-*.o
-Makefile
-.deps
-.libs
-livedecode
-livepretend
-decode
-gausubvq
-
