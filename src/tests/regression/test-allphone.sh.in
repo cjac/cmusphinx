@@ -1,0 +1,28 @@
+#!/bin/sh
+
+echo "ALLPHONE TEST"
+tmpout="test-allphone.out"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone \
+-logbase 1.0003 \
+-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+-var @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+-mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+-tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+-feat 1s_c_d_dd \
+-topn 1000 \
+-beam 1e-80 \
+-senmgau .cont. \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
+-cepdir @abs_top_srcdir@/model/lm/an4/ \
+-phsegdir ./ \
+-phlatdir ./
+
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+then echo "ALLPHONE allp test PASSED"; else \
+echo "ALLPHONE allp test FAILED"; fi
+
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+then echo "ALLPHONE phlat test PASSED"; else \
+echo "allphone phlat test FAILED"; fi
