@@ -6,7 +6,7 @@ username=$1
 address=${username}@cvs.sf.net
 
 # Define a path, just in case
-export PATH="/usr/local/bin:/bin:/usr/bin"
+export PATH="/usr/local/bin:/bin:/usr/bin:/usr/ccs/bin"
 
 # Try to find an executable that can send mail
 # Default to sendmail
@@ -45,12 +45,15 @@ S3LIST='archan egouvea yitao dhuggins'
 S4LIST='cmusphinx-commits@lists.sourceforge.net'
 STLIST='archan egouvea yitao dhuggins'
 
-# Try to find gmake, supposedly the GNU make
-MAKE=`which gmake`
-if test `echo ${MAKE} | awk '{if (NF > 1) print 1}'`; then
+# Try to find gmake, supposedly the GNU make. autogen.sh is too smart
+# for our own good though: it defines MAKE internally in the Makefile,
+# so beware of how you name this variable
+
+GMAKE=`which gmake`
+if test `echo ${GMAKE} | awk '{if (NF > 1) print 1}'`; then
 # If we failed, try make
-    MAKE=`which make`
-    if test `echo ${MAKE} | awk '{if (NF > 1) print 1}'`; then
+    GMAKE=`which make`
+    if test `echo ${GMAKE} | awk '{if (NF > 1) print 1}'`; then
 # If we failed again, bail out: we cannot make the project!
     ${MAILX} -s "Make not found in system `hostname`" ${S3LIST} < /dev/null
 # Exit with non zero value
@@ -78,7 +81,7 @@ pushd sphinx2 >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify if both were successful
-if ! ${MAKE} all test >> $outfile 2>&1 ;
+if ! ${GMAKE} all test >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx2 compilation failed" ${S2LIST} < $outfile
  elif ! (grep BESTPATH $outfile | grep -q 'GO FORWARD TEN METERS');
  then ${MAILX} -s "Sphinx2 test failed" ${S2LIST} < $outfile;
@@ -97,7 +100,7 @@ pushd sphinx3 >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify that all tests ran successfully
-if ! ${MAKE} all test-full >> $outfile 2>&1 ;
+if ! ${GMAKE} all test-full >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx3 compilation failed" ${S3LIST} < $outfile;
  elif ! (grep FWDVIT $outfile | grep -q 'P I T T S B U R G H');
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
@@ -118,7 +121,7 @@ pushd SphinxTrain >> $outfile 2>&1
 ./configure >> $outfile 2>&1
 
 # Compile and make sure it's successful
-if ! ${MAKE} all >> $outfile 2>&1 ;
+if ! ${GMAKE} all >> $outfile 2>&1 ;
  then ${MAILX} -s "SphinxTrain compilation failed" ${STLIST} < $outfile;
  else ${MAILX} -s "SphinxTrain compilation succeeded" ${STLIST} < $outfile;
 fi
