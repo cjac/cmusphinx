@@ -838,7 +838,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext, int32 s
 	  sprintf (path, "%s/%s.%s", dir, file,"mfc");
       }else{
 	if(cepext!=NULL)
-	  sprintf (path, "%s.%s", file,cepext);
+	  sprintf (path, "%s%s", file,cepext);
 	else
 	  sprintf (path, "%s.%s", file,"mfc");
       }

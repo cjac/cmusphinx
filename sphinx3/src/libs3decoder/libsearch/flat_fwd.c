@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.8  2004/12/06  10:52:00  arthchan2003
- * Enable doxygen documentation in libs3decoder
+ * Revision 1.9  2004/12/23  21:00:51  arthchan2003
+ * 1, Fixed problems in the code of -cepext, 2, Enabled the generic HMM computation routine flat_fwd.c. This is the key problem of the decode_anytopo.
  * 
+ * Revision 1.8  2004/12/06 10:52:00  arthchan2003
+ * Enable doxygen documentation in libs3decoder
+ *
  * Revision 1.7  2004/12/05 12:01:30  arthchan2003
  * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  *
@@ -195,7 +198,7 @@
  * 		Started.
  */
 
-
+#define ANY
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -247,6 +250,14 @@ static int8 *word_start_ci;
 static int8 *word_end_ci;
 static whmm_t **whmm;
 
+
+/**
+ * First, the within word triphone models.  wwpid[w] = list of triphone pronunciations
+ * for word w.
+ * Since left and right extremes require cross-word modelling (see below), wwpid[w][0]
+ * and wwpid[w][pronlen-1] contain no information and shouldn't be touched.
+ */
+static s3pid_t **wwpid;
 
     
 /**
@@ -698,7 +709,6 @@ static void lattice_dump (FILE *fp)
 {
     int32 i;
     
-    E_INFO("n_lat_entry %d\n",n_lat_entry);
     for (i = 0; i < n_lat_entry; i++) {
 	fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
 		 lattice[i].frm, lattice[i].history, lattice[i].score,
@@ -914,7 +924,7 @@ static void chk_tp_uppertri ( void )
 /** For partial evaluation of incoming state score (prev state score + senone score) */
 static int32 *st_sen_scr;
 
-
+#define ANYHMMTOPO 1
 #if (! ANYHMMTOPO)
 /**
  * Like the general eval_nonmpx_whmm and eval_mpx_whmm below, but hardwired for
@@ -927,7 +937,7 @@ static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     register int32 *tp;
     s3pid_t p;
     s3senid_t *senp;
-    
+
     p = *(h->pid);
     senp = mdef->phone[p].state;
     tp = tmat->tp[mdef->phone[p].tmat][0];	/* HACK!! Assumes tp 2-D data allocated
@@ -1184,7 +1194,7 @@ static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     int32 **tp;
     int32 to, from, bestfrom;
     int32 newscr, scr, bestscr;
-    
+
     pid = *(h->pid);
     
     sen = mdef->phone[pid].state;
@@ -1251,7 +1261,7 @@ static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     int32 newscr, scr, bestscr;
     
     /* Compute previous state-score + observation output prob for each state */
-    prevpid = BAD_PID;
+    prevpid = BAD_S3PID;
     for (from = n_state-2; from >= 0; --from) {
 	if ((pid = h->pid[from]) != prevpid) {
 	    senp = mdef->phone[pid].state;
@@ -1266,7 +1276,7 @@ static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     to = final_state;
     scr = S3_LOGPROB_ZERO;
     bestfrom = -1;
-    prevpid = BAD_PID;
+    prevpid = BAD_S3PID;
     for (from = to-1; from >= 0; --from) {
 	if ((pid = h->pid[from]) != prevpid) {
 	    tp = tmat->tp[mdef->phone[pid].tmat];
@@ -1352,7 +1362,7 @@ static int32 whmm_eval (int32 *senscr)
 		    eval_nonmpx_whmm (w, h, senscr);
 		    n_nonmpx++;
 		}
-
+		
 		if (best < h->bestscore)
 		    best = h->bestscore;
 
@@ -1433,7 +1443,7 @@ static void whmm_transition (int32 w, whmm_t *h)
     whmm_t *nexth, *prevh;
     s3cipid_t rc;
     s3pid_t *pid;
-    
+
     lastpos = dict->word[w].pronlen - 1;
     nf = n_frm+1;
     
@@ -2424,9 +2434,10 @@ static s3latid_t lat_final_entry ( void )
     bestl=BAD_S3LATID;
 
     /* Find lattice entry in last frame for FINISH_WORD */
-    for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++)
+    for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++){
 	if (dict_basewid(dict,lattice[l].wid) == finishwid)
 	    break;
+    }
 
     if (l < n_lat_entry) {
 	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
