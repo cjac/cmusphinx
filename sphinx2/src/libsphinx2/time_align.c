@@ -53,9 +53,15 @@
  *
  * Revision History
  * $Log$
- * Revision 1.14  2004/07/16  00:57:11  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.15  2004/11/13  00:38:43  egouvea
+ * Replaced most printf with E_INFO (or E_WARN or...). Changed the output
+ * of the time_align code so it's consistent with the other decoder modes
+ * (allphone, normal decoding etc). Added the file utt id to the
+ * time_align output.
  * 
+ * Revision 1.14  2004/07/16 00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.2  2004/05/27 14:22:57  rkm
  * FSG cross-word triphones completed (but for single-phone words)
  *
@@ -328,7 +334,7 @@ void
 void time_align_set_beam_width(double bw)
 {
 #if SHOW&SHOW_INVOKATION
-    printf("time_align_set_beam_width(%e) called\n", bw);
+    E_INFO("time_align_set_beam_width(%e) called\n", bw);
 #endif
     beam_width = 8 * LOG(bw);
 }
@@ -406,8 +412,7 @@ mk_compound_word_list(int *out_cnt)
     int			*compound_word_id;
     COMPOUND_WORD_T	*compound_word_list;
 
-    E_INFO("%s(%d): Scanning dictionary for compound words: ",
-	   __FILE__, __LINE__);
+    E_INFO("Scanning dictionary for compound words: ");
 
     for (i = 0, compound_word_cnt = 0; i < WordDict->dict_entry_count; i++) {
 	word = dict_list[i]->word;
@@ -418,7 +423,7 @@ mk_compound_word_list(int *out_cnt)
 	    ++compound_word_cnt;
 	}
     }
-    printf("%d compound words found\n", compound_word_cnt);
+    E_INFO("%d compound words found\n", compound_word_cnt);
 
     compound_word_id = (int *)calloc(compound_word_cnt, sizeof(int));
 
@@ -434,14 +439,14 @@ mk_compound_word_list(int *out_cnt)
 	    
 	    if (alt_marker == NULL) {
 		compound_word_id[j++] = i;
-		printf("\tadding c. %s to list\n", word);
+		E_INFO("\tadding c. %s to list\n", word);
 	    }
 	    else {
 		if (isdigit(alt_marker[1]) && (alt_marker[2] == ')')) {
-		    printf("skipping c. alt pron %s\n", word);
+		    E_INFO("skipping c. alt pron %s\n", word);
 		}
 		else {
-		    printf("unusual word format %s.  Word not added to compound list\n", word);
+		    E_WARN("unusual word format %s.  Word not added to compound list\n", word);
 		}
 	    }
 	}
@@ -478,10 +483,10 @@ time_align_init(void)
     static char const *rcsid = "$Id$";
 
 #if SHOW&SHOW_INVOKATION    
-    printf("time_align_init() called\n");
+    E_INFO("time_align_init() called\n");
 #endif
 
-    printf("%s(%d): rcsid == %s\n", __FILE__, __LINE__, rcsid);
+    E_INFO("rcsid == %s\n", rcsid);
 
     WordDict   = kb_get_word_dict();
     totalDists = kb_get_total_dists ();
@@ -497,16 +502,16 @@ time_align_init(void)
     sile_phone_id = phone_to_id("SILe", FALSE);
     
     state_bp_table = (BACK_POINTER_T *)CM_calloc(max_state_bp_table_size, sizeof(BACK_POINTER_T));
-    printf("%s(%d): state_bp_table size %dK\n",
-	   __FILE__, __LINE__, max_state_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
+    E_INFO("state_bp_table size %dK\n",
+	   max_state_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
 
     phone_bp_table = (BACK_POINTER_T *)CM_calloc(max_phone_bp_table_size, sizeof(BACK_POINTER_T));
-    printf("%s(%d): phone_bp_table size %dK\n",
-	   __FILE__, __LINE__, max_phone_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
+    E_INFO("phone_bp_table size %dK\n",
+	   max_phone_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
 
     word_bp_table  = (BACK_POINTER_T *)CM_calloc(max_word_bp_table_size, sizeof(BACK_POINTER_T));
-    printf("%s(%d): word_bp_table size %dK\n",
-	   __FILE__, __LINE__, max_word_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
+    E_INFO("word_bp_table size %dK\n",
+	   max_word_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
 
     compound_word_list = mk_compound_word_list(&compound_word_cnt);
 
@@ -535,10 +540,10 @@ time_align_set_input(float *c,
     frame_cnt = n_f;
 
 #if SHOW&SHOW_INVOKATION
-    printf("time_align_set_input() called\n");
+    E_INFO("time_align_set_input() called\n");
 #endif
 #if SHOW&SHOW_SUMMARY_INFO
-    printf("time_align_set_input() received %d of input\n", frame_cnt);
+    E_INFO("time_align_set_input() received %d of input\n", frame_cnt);
 #endif
 }
 
@@ -570,7 +575,7 @@ begin_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s) approx'ed as %s\n",
+	E_INFO("%s(%s,%s) approx'ed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -579,7 +584,7 @@ begin_triphone(int32 phone_id,
     sprintf(phone_str, "%s(SIL,%s)b", phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s) approx'ed as %s\n",
+	E_INFO("%s(%s,%s) approx'ed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -588,7 +593,7 @@ begin_triphone(int32 phone_id,
     sprintf(phone_str, "%s(SIL,%s)", phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s) approx'ed as %s\n",
+	E_INFO("%s(%s,%s) approx'ed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -597,14 +602,14 @@ begin_triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s) approx'ed as %s\n",
+	E_INFO("%s(%s,%s) approx'ed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
 
-    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
-              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
+    E_ERROR(" %s(%s,%s) returned id NO_PHONE\n", 
+             phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
     return 0;
@@ -642,7 +647,7 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)s approxed as %s\n",
+	E_INFO("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name, phone_str);
 	return out_phone_id;
     }
@@ -650,7 +655,7 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)e", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)s approxed as %s\n",
+	E_INFO("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -659,7 +664,7 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)s approxed as %s\n",
+	E_INFO("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -668,14 +673,14 @@ single_phone_word_triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)s approxed as %s\n",
+	E_INFO("%s(%s,%s)s approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
 
-    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
-              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
+    E_ERROR("%s(%s,%s) returned id NO_PHONE\n", 
+             phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
     return 0;
@@ -708,7 +713,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,%s)", phone_name, lc_phone_name, rc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approxed as %s\n",
+	E_INFO("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -717,7 +722,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)e", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approxed as %s\n",
+	E_INFO("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -726,7 +731,7 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s(%s,SIL)", phone_name, lc_phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approxed as %s\n",
+	E_INFO("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
@@ -735,14 +740,14 @@ end_triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approxed as %s\n",
+	E_INFO("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
 
-    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
-              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
+    E_ERROR("%s(%s,%s) returned id NO_PHONE\n", 
+	    phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
     return 0;
@@ -776,14 +781,14 @@ triphone(int32 phone_id,
     sprintf(phone_str, "%s", phone_name);
     out_phone_id = phone_to_id(phone_str, FALSE);
     if (out_phone_id != NO_PHONE) {
-	printf("%s(%s,%s)e approxed as %s\n",
+	E_INFO("%s(%s,%s)e approxed as %s\n",
 	       phone_name, lc_phone_name, rc_phone_name,
 	       phone_str);
 	return out_phone_id;
     }
 
-    fprintf (stderr, "%s(%d): **ERROR** %s(%s,%s) returned id NO_PHONE\n", 
-              __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
+    E_ERROR("%s(%s,%s) returned id NO_PHONE\n", 
+            phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE);	/* should never get here */
     return 0;
@@ -926,7 +931,7 @@ expand_phone_graph(short *amatrix,
 	if (ci_phone_id_map[node] != sil_phone_id) {
 	    /* non-filler phones are expanded */
 #if SHOW&SHOW_NODE_EXPANSION
-	    printf("%s expands to ", phone_from_id(ci_phone_id_map[node]));
+	    E_INFO("%s expands to ", phone_from_id(ci_phone_id_map[node]));
 #endif
 	    
 	    lc_cnt = rc_cnt = 0;	
@@ -973,7 +978,7 @@ expand_phone_graph(short *amatrix,
 		    for (j = 0; j < rc_cnt; j++) {
 			triphone_id = single_phone_word_triphone(ci_phone_id_map[node], lc_phone_id[i], rc_phone_id[j]);
 #if SHOW&SHOW_NODE_EXPANSION
-			printf(" %s", phone_from_id(triphone_id));
+			E_INFOCONT(" %s", phone_from_id(triphone_id));
 #endif
 			if (num_expanded == 0) {
 			    phone_id_map[node] = triphone_id;
@@ -991,7 +996,7 @@ expand_phone_graph(short *amatrix,
 		    }
 		}
 #if SHOW&SHOW_NODE_EXPANSION
-		printf("\n");
+		E_INFOCONT("\n");
 #endif
 	    }
 	    else if (lc_is_end_word) {
@@ -1001,7 +1006,7 @@ expand_phone_graph(short *amatrix,
 		    for (j = 0; j < rc_cnt; j++) {
 			triphone_id = begin_triphone(ci_phone_id_map[node], lc_phone_id[i], rc_phone_id[j]);
 #if SHOW&SHOW_NODE_EXPANSION
-			printf(" %s", phone_from_id(triphone_id));
+			E_INFOCONT(" %s", phone_from_id(triphone_id));
 #endif
 			if (num_expanded == 0) {
 			    phone_id_map[node] = triphone_id;
@@ -1019,7 +1024,7 @@ expand_phone_graph(short *amatrix,
 		    }
 		}
 #if SHOW&SHOW_NODE_EXPANSION
-		printf("\n");
+		E_INFOCONT("\n");
 #endif
 	    }
 	    else if (rc_is_start_word) {
@@ -1029,7 +1034,7 @@ expand_phone_graph(short *amatrix,
 		    for (j = 0; j < rc_cnt; j++) {
 			triphone_id = end_triphone(ci_phone_id_map[node], lc_phone_id[i], rc_phone_id[j]);
 #if SHOW&SHOW_NODE_EXPANSION
-			printf(" %s", phone_from_id(triphone_id));
+			E_INFOCONT(" %s", phone_from_id(triphone_id));
 #endif
 			if (num_expanded == 0) {
 			    phone_id_map[node] = triphone_id;
@@ -1047,7 +1052,7 @@ expand_phone_graph(short *amatrix,
 		    }
 		}
 #if SHOW&SHOW_NODE_EXPANSION
-		printf("\n");
+		E_INFOCONT("\n");
 #endif
 	    }
 	    else {
@@ -1058,7 +1063,7 @@ expand_phone_graph(short *amatrix,
 			triphone_id = triphone(ci_phone_id_map[node], lc_phone_id[i], rc_phone_id[j]);
 
 #if SHOW&SHOW_NODE_EXPANSION
-			printf(" %s", phone_from_id(triphone_id));
+			E_INFOCONT(" %s", phone_from_id(triphone_id));
 #endif
 			if (num_expanded == 0) {
 			    phone_id_map[node] = triphone_id;
@@ -1076,17 +1081,17 @@ expand_phone_graph(short *amatrix,
 		    }
 		}
 #if SHOW&SHOW_NODE_EXPANSION
-		printf("\n");
+		E_INFOCONT("\n");
 #endif
 	    }
 	}
 	else {
 #if SHOW&SHOW_NODE_EXPANSION
 	    if (ci_phone_id_map[node] >= 0) {
-		printf("%s:%d not expanded\n", phone_from_id(ci_phone_id_map[node]), node);
+		E_INFO("%s:%d not expanded\n", phone_from_id(ci_phone_id_map[node]), node);
 	    }
 	    else {
-		printf("FILL:%d not expanded\n", node);
+		E_INFO("FILL:%d not expanded\n", node);
 	    }
 #endif
 	}
@@ -1133,9 +1138,8 @@ add_word(short  *amatrix,
 
     cur_word_id = kb_get_word_id(cur_word_str);
     if (cur_word_id < 0) {
-	fprintf (stderr, "%s(%d): **ERROR** Unknown word: %s\n",
-		 __FILE__, __LINE__, cur_word_str);
-	return -1;
+      E_ERROR("Unknown word: %s\n", cur_word_str);
+      return -1;
     }
     
     do {
@@ -1209,8 +1213,7 @@ char *next_transcript_word(char **out_rem_word_seq)
     if (sp) {
 	fchar = *(sp+1); /* should be the first character of the next word */
 	if (isspace(fchar) || (fchar == '\0')) {
-	    printf("Please remove the extra spaces in:\n|%s|\n", rem_word_seq);
-	    exit(1);
+	    E_FATAL("Please remove the extra spaces in:\n|%s|\n", rem_word_seq);
 	}
 
 	*out_rem_word_seq = sp+1;
@@ -1251,15 +1254,15 @@ mk_phone_graph(short *amatrix,
     int word_cnt;
 
     if (left_word_id < 0) {
-	fprintf(stderr, "%s(%d): Cannot find left word %s in the dictionary\n",
-		__FILE__, __LINE__, left_word_str);
-	return -1;
+      E_ERROR("Cannot find left word %s in the dictionary\n",
+	      left_word_str);
+      return -1;
     }
 
     if (right_word_id < 0) {
-	fprintf(stderr, "%s(%d): Cannot find right word %s in the dictionary\n",
-		__FILE__, __LINE__, right_word_str);
-	return -1;
+      E_ERROR("Cannot find right word %s in the dictionary\n",
+	      right_word_str);
+      return -1;
     }
 
     left_word  = WordDict->dict_list[left_word_id];
@@ -1310,7 +1313,7 @@ mk_phone_graph(short *amatrix,
 		    (rem_word_seq[strlen(compound_word_list[m].match_str)] == '\0')) {
 		    /* and end of word */
 		    
-		    printf("\t%s applies to %s\n", 
+		    E_INFOCONT("\t%s applies to %s\n", 
 			   compound_word_list[m].match_str, rem_word_seq);
 
 		    next_end = end_node[end_list_index[compound_word_list[m].word_cnt]];
@@ -1420,21 +1423,21 @@ print_phone_graph(short *amatrix, int node_cnt, int32 *phone_id_map, int *word_i
 
     for (i = 0; i < node_cnt; i++) {
 	if (phone_id_map[i] != FILLER_PHONE_SEQ)
-	    printf("\"%s:%d\"\t", phone_from_id(phone_id_map[i]), i);
+	    E_INFOCONT("\"%s:%d\"\t", phone_from_id(phone_id_map[i]), i);
 	else
-	    printf("\"FILL:%d\"\t", i);
+	    E_INFOCONT("\"FILL:%d\"\t", i);
 	
 	for (j = 0; j < node_cnt; j++) {
 	    int a = amatrix[i*MAX_NODES + j];
 	    
 	    if (a == RIGHT_ADJACENT) {
 		if (phone_id_map[j] != FILLER_PHONE_SEQ)
-		    printf("\"%s:%d\" ", phone_from_id(phone_id_map[j]), j);
+		    E_INFOCONT("\"%s:%d\" ", phone_from_id(phone_id_map[j]), j);
 		else
-		    printf("\"FILL:%d\" ", j);
+		    E_INFOCONT("\"FILL:%d\" ", j);
 	    }
 	}
-	printf(";\n");
+	E_INFOCONT(";\n");
     }
 #endif
 }
@@ -1576,8 +1579,7 @@ static BACK_POINTER_T
     int max_entries = *in_out_max_entries;
 
     if (entries_needed > max_entries) {
-	printf ("%s(%d): Increasing BPTable size from %dK by %dK\n",
-		__FILE__, __LINE__,
+	E_INFO ("Increasing BPTable size from %dK by %dK\n",
 		max_entries*sizeof(BACK_POINTER_T) / 1024,
 		size_increment*sizeof(BACK_POINTER_T) / 1024);
 
@@ -2821,13 +2823,14 @@ time_align_word_sequence(char const * Utt,
     extern int32 time_align_word;	/* Whether to output word alignment */
     extern int32 time_align_phone;	/* Whether to output phone alignment */
     extern int32 time_align_state;	/* Whether to output state alignment */
+    extern char *build_uttid (const char *utt);		/* in fbs_main.c */
 
     assert(frame_cnt > 0);
     assert(left_word != NULL);
     assert(word_seq != NULL);
     assert(right_word != NULL);
 
-    time_align_set_utt (uttproc_get_uttid());
+    time_align_set_utt (build_uttid(Utt));
     
     if (all_models) {
 	int32 i;
@@ -2882,7 +2885,7 @@ time_align_word_sequence(char const * Utt,
 					 &ddcep_f[cur_frame*13]);
 
 #if SHOW&SHOW_SUMMARY_INFO
-	printf("in> frame %d, %d active models\n", cur_frame, cur_active_cnt);
+	E_INFO("in> frame %d, %d active models\n", cur_frame, cur_active_cnt);
 #endif
 #if SHOW&SHOW_ACTIVE
 	print_active_models(cur_active_models, cur_active_cnt, TRUE, pruning_threshold);
@@ -2926,7 +2929,7 @@ time_align_word_sequence(char const * Utt,
 	total_models_pruned += (cur_active_cnt - next_active_cnt);
 
 #if SHOW&SHOW_SUMMARY_INFO
-	printf("out> frame %d, %d active models, %d boundaries, best_score %d, pruning_threshold %d\n",
+	E_INFO("out> frame %d, %d active models, %d boundaries, best_score %d, pruning_threshold %d\n",
 	       cur_frame, cur_active_cnt, phone_bnd_cnt, best_score, pruning_threshold);
 #endif
 			    
@@ -2944,20 +2947,19 @@ time_align_word_sequence(char const * Utt,
     } while (cur_frame < frame_cnt);
 
     if (cur_active_cnt == 0) {
-	E_WARN("%s(%d): WARNING: all paths pruned at end of input\n",
-	       __FILE__, __LINE__);
-	return -1;
+      E_WARN("all paths pruned at end of input\n");
+      return -1;
     }
 
 #if SHOW&SHOW_SYS_INFO
-    printf("%s(%d): %d eval mod/frame avg\n",
-	   __FILE__, __LINE__, total_models_evaluated / frame_cnt);
-    printf("%s(%d): %d eval bnd/frame avg\n",
-	   __FILE__, __LINE__, total_model_boundaries_crossed / frame_cnt);
-    printf("%s(%d): %d prun mod/frame avg\n",
-	   __FILE__, __LINE__, total_models_pruned / frame_cnt);
-    printf("%s(%d): %d avg outprobs/frame\n",
-	   __FILE__, __LINE__, probs_computed_cnt / frame_cnt);
+    E_INFO("%d eval mod/frame avg\n",
+	   total_models_evaluated / frame_cnt);
+    E_INFO("%d eval bnd/frame avg\n",
+	   total_model_boundaries_crossed / frame_cnt);
+    E_INFO("%d prun mod/frame avg\n",
+	   total_models_pruned / frame_cnt);
+    E_INFO("%d avg outprobs/frame\n",
+	   probs_computed_cnt / frame_cnt);
 #endif
 
     n_word_segments  = 0;
@@ -2979,18 +2981,35 @@ time_align_word_sequence(char const * Utt,
 	bp = new_word_bp(word_id_map[final_model], bp, all_models[final_model].score[NODE_CNT-1]);
 
 #if SHOW&SHOW_BEST_WORD_PATH
+      /*
 	printf("%20s %4s %4s %s\n",
 	       "Word", "Beg", "End", "Acoustic Score");
+      */
 	traverse_back_trace(word_bp_table,
 			    bp, 
 			    NULL,
 			    build_word_segment, lcl_utt_id);
 	if (time_align_word) {
 	    int32 i;
+	    printf ("\n\t%5s %5s %10s %11s %s (Word-falign) (%s)\n",
+		    "SFrm", "EFrm", "AScr/Frm", "AScr", "Word",
+		    lcl_utt_id);
+	    printf ("\t------------------------------------------------------------\n");
 	    for (i = 0; i < n_word_segments; i++) {
+	      /*
 		printf ("%20s %4d %4d %12d\n",
 			wdseg[i].name, wdseg[i].start, wdseg[i].end, wdseg[i].score);
+	      */
+	      printf ("\t%5d %5d %10d %11d %s\n",
+		      wdseg[i].start, wdseg[i].end, 
+		      wdseg[i].score/(wdseg[i].end -wdseg[i].start + 1), 
+		      wdseg[i].score, wdseg[i].name);
 	    }
+	    printf ("\t------------------------------------------------------------\n");
+	    printf ("\t%5d %5d %10d %11d %s(TOTAL)\n",
+		    wdseg[0].start, wdseg[n_word_segments - 1].end, 
+		    all_models[final_model].score[NODE_CNT-1]/(wdseg[n_word_segments - 1].end + 1), 
+		    all_models[final_model].score[NODE_CNT-1], lcl_utt_id);
 	}
 #endif
 
@@ -3000,18 +3019,37 @@ time_align_word_sequence(char const * Utt,
 	bp = new_phone_bp(final_model,
 			  bp, all_models[final_model].score[NODE_CNT-1]);
 #if SHOW&SHOW_BEST_PHONE_PATH
+	/*
 	printf("%20s %4s %4s %s\n",
 	       "Phone", "Beg", "End", "Acoustic Score");
+	*/
 	traverse_back_trace(phone_bp_table,
 			    bp,
 			    NULL,
 			    build_phone_segment, lcl_utt_id);
 	if (time_align_phone) {
 	    int32 i;
+	    /*
 	    for (i = 0; i < n_phone_segments; i++) {
 		printf ("%20s %4d %4d %12d\n",
 			phseg[i].name, phseg[i].start, phseg[i].end, phseg[i].score);
 	    }
+	    */
+	    printf ("\n\t%5s %5s %10s %11s %s (Phone-falign) (%s)\n",
+		    "SFrm", "EFrm", "AScr/Frm", "AScr", "Phone",
+		    lcl_utt_id);
+	    printf ("\t------------------------------------------------------------\n");
+	    for (i = 0; i < n_phone_segments; i++) {
+	      printf ("\t%5d %5d %10d %11d %s\n",
+		      phseg[i].start, phseg[i].end, 
+		      phseg[i].score/(phseg[i].end -phseg[i].start + 1), 
+		      phseg[i].score, phseg[i].name);
+	    }
+	    printf ("\t------------------------------------------------------------\n");
+	    printf ("\t%5d %5d %10d %11d %s(TOTAL)\n",
+		    phseg[0].start, phseg[n_phone_segments - 1].end, 
+		    all_models[final_model].score[NODE_CNT-1]/(phseg[n_phone_segments - 1].end + 1), 
+		    all_models[final_model].score[NODE_CNT-1], lcl_utt_id);
 	}
 
 	if (phonelabdirname)
@@ -3027,8 +3065,10 @@ time_align_word_sequence(char const * Utt,
 #if (1||(SHOW&SHOW_BEST_STATE_PATH))
 	if (time_align_state) {
 	    bp = all_models[final_model].sbp[NODE_CNT-1];
+	    /*
 	    printf("%20s %4s %4s %s\n",
 		   "State", "Beg", "End", "Acoustic Score");
+	    */
 	    traverse_back_trace(state_bp_table,
 				bp,
 				NULL,
@@ -3037,14 +3077,14 @@ time_align_word_sequence(char const * Utt,
 #endif
     }
     else {
-	printf("*** last state not reached at end of utterance ***\n");
+	E_ERROR("Last state not reached at end of utterance\n");
 	return -1;
     }
 
-    printf("acscr> %d\n", all_models[final_model].score[NODE_CNT-1]);
+    E_INFO("acscr> %d\n", all_models[final_model].score[NODE_CNT-1]);
 
     if (kb_get_no_lm_flag() == FALSE)
-	printf("lmscr> %d\n", lm_score(left_word, word_seq, right_word));
+	E_INFO("lmscr> %d\n", lm_score(left_word, word_seq, right_word));
 
     free(active_models[0]);
     free(active_models[1]);
@@ -3208,9 +3248,7 @@ append_segment(int id,
 	break;
 
 	default:
-	fprintf(stderr, "%s(%d): unhandled segment kind %d\n",
-		__FILE__, __LINE__, kind);
-	exit(1);
+	  E_FATAL("unhandled segment kind %d\n", kind);
     }
 
     (*seg_idx)++;
@@ -3231,8 +3269,8 @@ time_align_get_segmentation(seg_kind_t kind, int *seg_cnt)
 	break;
 
     default:
-	fprintf (stderr, "Invalid 'kind' argument: %d\n", kind);
-	return NULL;
+      E_ERROR("Invalid 'kind' argument: %d\n", kind);
+      return NULL;
     }
 
 #if 0
