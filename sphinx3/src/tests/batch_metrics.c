@@ -175,6 +175,8 @@ int main (int argc, char *argv[])
 
 	if ((sfp = fopen(cepfile,"rb")) == NULL)
 	    E_FATAL("Unable to read %s\n",cepfile);
+
+        E_INFO("\nDecoding: %s\n\n", cepfile);
         
         nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
         
