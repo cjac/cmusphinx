@@ -77,6 +77,10 @@ typedef struct argval_s {
 static argval_t *argval = NULL;
 static hash_table_t *ht;	/* Hash table */
 
+/*variables that allow redirecting all files to a log file */
+static FILE orig_stdout, orig_stderr;
+static FILE *logfp;
+
 
 #if 0
 static const char *arg_type2str (argtype_t t)
@@ -188,6 +192,87 @@ static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
     return 0;
 }
 
+
+void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
+{
+  /* Look for default or specified arguments file */
+  char *str;
+  int32 i;
+  char *logfile;
+  
+  str = NULL;
+
+  if ((argc == 2) && (strcmp (argv[1], "help") == 0)) {
+    cmd_ln_print_help(stderr, defn);
+    exit(1); 
+  }
+
+  if ((argc == 2) && (argv[1][0] != '-'))
+    str = argv[1];
+  else if (argc == 1) {
+    E_INFO("Looking for default argument file: %s\n",default_argfn);
+  }
+
+  if (str) {
+    /* Build command line argument list from file */
+    E_INFO("Parsing command lines from file %s\n",str);
+    if (cmd_ln_parse_file(defn, str)){
+      fprintf (stderr, "Usage:\n");
+      fprintf (stderr, "\t%s argument-list, or\n", argv[0]);
+      fprintf (stderr, "\t%s [argument-file] (default file: . %s)\n\n",
+	       argv[0],default_argfn);
+      cmd_ln_print_help(stderr, defn);
+      exit(1);
+    }
+  }else{
+
+    E_INFO("Parsing command line:\n");
+    for (i = 0; i < argc; i++) {
+      if (argv[i][0] == '-')
+	printf ("\\\n\t");
+      printf ("%s ", argv[i]);
+    }
+    printf ("\n\n");
+    fflush (stdout);
+    
+    cmd_ln_parse (defn, argc, argv);
+  }
+
+  logfp = NULL;
+  if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
+    if ((logfp = fopen(logfile, "w")) == NULL) {
+      E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
+    } else {
+      /* ARCHAN: Do we still need this hack nowadays? */
+      orig_stdout = *stdout;	/* Hack!! To avoid hanging problem under Linux */
+      orig_stderr = *stderr;	/* Hack!! To avoid hanging problem under Linux */
+      *stdout = *logfp;
+      *stderr = *logfp;
+      
+      E_INFO("Command line:\n");
+      for (i = 0; i < argc; i++) {
+	if (argv[i][0] == '-')
+	  printf ("\\\n\t");
+	printf ("%s ", argv[i]);
+      }
+      printf ("\n\n");
+      fflush (stdout);
+    }
+  }
+  E_INFO("Configuration in effect:\n");
+  cmd_ln_print_help(stderr, defn);
+  printf ("\n");
+  fflush(stdout);
+}
+
+void cmd_ln_appl_exit()
+{
+  if (logfp) {
+    fclose (logfp);
+    *stdout = orig_stdout;
+    *stderr = orig_stderr;
+  }
+}
 
 static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
 {

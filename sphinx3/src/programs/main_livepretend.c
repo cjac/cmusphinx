@@ -54,6 +54,8 @@
 
 int main (int argc, char *argv[])
 {
+  print_appl_info(argv[0]);
+
     short *samps;
     int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
     char   *argsfile, *ctlfile, *indir;

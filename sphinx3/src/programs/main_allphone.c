@@ -92,32 +92,32 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "1.0001",
       "Base in which all log values calculated" },
-    { "-mdeffn", 
+    { "-mdef", 
       ARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmatfn",
+    { "-tmat",
       ARG_STRING,
       NULL,
       "Transition matrix input file" },
-    { "-meanfn",
+    { "-mean",
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks mean parameters input file" },
-    { "-varfn",
+    { "-var",
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
-    { "-senmgaufn",
+    { "-senmgau",
       ARG_STRING,
       ".cont.",
       "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixwfn",
+    { "-mixw",
       ARG_STRING,
       NULL,
       "Senone mixture weights parameters input file" },
 #ifdef INTERP
-    { "-lambdafn",
+    { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
@@ -125,15 +125,15 @@ static arg_t defn[] = {
     { "-tpfloor",
       ARG_FLOAT32,
       "0.0001",
-      "Triphone state transition probability floor applied to -tmatfn file" },
+      "Triphone state transition probability floor applied to -tmat file" },
     { "-varfloor",
       ARG_FLOAT32,
       "0.0001",
-      "Codebook variance floor applied to -varfn file" },
+      "Codebook variance floor applied to -var file" },
     { "-mwfloor",
       ARG_FLOAT32,
       "0.0000001",
-      "Codebook mixture weight floor applied to -mixwfn file" },
+      "Codebook mixture weight floor applied to -mixw file" },
     { "-agc",
       ARG_STRING,
       "max",
@@ -154,26 +154,26 @@ static arg_t defn[] = {
       ARG_STRING,
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-ctlfn",
+    { "-ctl",
       ARG_STRING,
       NULL,
       "Input control file listing utterances to be decoded" },
     { "-ctloffset",
       ARG_INT32,
       "0",
-      "No. of utterances at the beginning of -ctlfn file to be skipped" },
+      "No. of utterances at the beginning of -ctl file to be skipped" },
     { "-ctlcount",
       ARG_INT32,
       NULL,
-      "No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF" },
+      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-cepdir",
       ARG_STRING,
       ".",
-      "Directory for utterances in -ctlfn file (if relative paths specified)." },
+      "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
       "mfc",
-      "File extension appended to utterances listed in -ctlfn file" },
+      "File extension appended to utterances listed in -ctl file" },
     { "-topn",
       ARG_INT32,
       "4",
@@ -186,7 +186,7 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-20",
       "Pruning beam for writing phone lattice" },
-    { "-phonetpfn",
+    { "-phonetp",
       ARG_STRING,
       NULL,
       "Phone transition probabilities inputfile (default: flat probs)" },
@@ -218,54 +218,6 @@ static arg_t defn[] = {
     { NULL, ARG_INT32, NULL, NULL }
 };
 
-
-/* Hacks to avoid hanging problem under Linux */
-static FILE *logfp;	/* The log file. File descriptor dupped to stderr + stdout. */
-
-static int32 cmdline_parse (int argc, char *argv[])
-{
-    int32 i;
-    char *logfile;
-    
-    E_INFO("Parsing command line:\n");
-    for (i = 0; i < argc; i++) {
-	if (argv[i][0] == '-')
-	    printf ("\\\n\t");
-	printf ("%s ", argv[i]);
-    }
-    printf ("\n\n");
-    fflush (stdout);
-
-    cmd_ln_parse (defn, argc, argv);
-
-    logfp = NULL;
-    if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
-	if ((logfp = fopen(logfile, "w")) == NULL) {
-	    E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
-	} else {
-	    fflush(stdout);
-	    fflush(stderr);
-	    /* Probably should deal with EINTR here... */
-	    if (dup2(fileno(logfp), 1) < 0) E_ERROR("Log file dup failed!");
-	    if (dup2(fileno(logfp), 2) < 0) E_ERROR("Log file dup failed!");
-	    
-	    E_INFO("Command line:\n");
-	    for (i = 0; i < argc; i++) {
-		if (argv[i][0] == '-')
-		    printf ("\\\n\t");
-		printf ("%s ", argv[i]);
-	    }
-	    printf ("\n\n");
-	    fflush (stdout);
-	}
-    }
-    
-    E_INFO("Configuration in effect:\n");
-    cmd_ln_print_help(stderr, defn);
-    printf ("\n");
-    
-    return 0;
-}
 
 
 /*  The definition of mdef and tmat can be found in s3_allphone.c
@@ -303,12 +255,12 @@ static void models_init ( void )
     char *arg;
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdeffn"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
 
     /* Codebooks */
     varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-meanfn"),
-		     (char *) cmd_ln_access("-varfn"),
+    g = gauden_init ((char *) cmd_ln_access("-mean"),
+		     (char *) cmd_ln_access("-var"),
 		     varfloor);
 
     /* Verify codebook feature dimensions against libfeat */
@@ -325,8 +277,8 @@ static void models_init ( void )
     
     /* Senone mixture weights */
     mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixwfn"),
-		       (char *) cmd_ln_access("-senmgaufn"),
+    sen = senone_init ((char *) cmd_ln_access("-mixw"),
+		       (char *) cmd_ln_access("-senmgau"),
 		       mixwfloor);
     
     /* Verify senone parameters against gauden parameters */
@@ -348,7 +300,7 @@ static void models_init ( void )
 
 #ifdef INTERP
     /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambdafn")) != NULL) {
+    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
 	interp = interp_init (arg);
 
 	/* Verify interpolation weights size with senones */
@@ -361,7 +313,7 @@ static void models_init ( void )
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tpfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmatfn"), tpfloor);
+    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
 
     /* Verify transition matrices parameters against model definition parameters */
     if (mdef->n_tmat != tmat->n_tmat)
@@ -501,7 +453,8 @@ static void allphone_utt (int32 nfr, char *uttid)
 	E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid, (w<<1)+1, nfr);
 	return;
     }
-    
+    ptmr_start (&tm_utt);
+
     allphone_start_utt (uttid);
 
     for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
@@ -577,7 +530,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 }
 
 
-/* Process utterances in the control file (-ctlfn argument) */
+/* Process utterances in the control file (-ctl argument) */
 static void process_ctlfile ( void )
 {
   FILE *ctlfp;
@@ -587,7 +540,7 @@ static void process_ctlfile ( void )
   char uttid[1024];
   int32 k,i;
   
-  ctlfile = (char *) cmd_ln_access("-ctlfn");
+  ctlfile = (char *) cmd_ln_access("-ctl");
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
   
@@ -667,110 +620,15 @@ static void process_ctlfile ( void )
     fclose (ctlfp);
 }
 
-
-static int32 load_argfile (char *file, char *pgm, char ***argvout)
-{
-    FILE *fp;
-    char line[1024], word[1024], *lp, **argv;
-    int32 len, n;
-
-    E_INFO("Reading arguments from %s\n", file);
-
-    if ((fp = fopen (file, "r")) == NULL) {
-	E_ERROR("fopen(%s,r) failed\n", file);
-	return -1;
-    }
-
-    /* Count #arguments */
-    n = 1;	/* Including pgm */
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    n++;
-	}
-    }
-    
-    /* Allocate space for arguments */
-    argv = (char **) ckd_calloc (n+1, sizeof(char *));
-    
-    /* Create argv list */
-    rewind (fp);
-    argv[0] = pgm;
-    n = 1;
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    argv[n] = ckd_salloc (word);
-	    n++;
-	}
-    }
-    argv[n] = NULL;
-    *argvout = argv;
-
-    fclose (fp);
-
-    return n;
-}
-
-
 int
 main (int32 argc, char *argv[])
 {
-    char *str;
+    /*  kb_t kb;
+      ptmr_t tm;*/
 
-#if 0
-    ckd_debug(100000);
-#endif
-    
-    if ((argc == 2) && (strcmp (argv[1], "help") == 0)) {
-	cmd_ln_print_help(stderr, defn);
-	exit(1); 
-    }
-
-    /* Look for default or specified arguments file */
-    str = NULL;
-    if ((argc == 2) && (argv[1][0] != '-'))
-	str = argv[1];
-    else if (argc == 1) {
-	str = "s3allphone.arg";
-	E_INFO("Default argument file: %s\n", str);
-    }
-    if (str) {
-	/* Build command line argument list from file */
-	if ((argc = load_argfile (str, argv[0], &argv)) < 0) {
-	    fprintf (stderr, "Usage:\n");
-	    fprintf (stderr, "\t%s argument-list, or\n", argv[0]);
-	    fprintf (stderr, "\t%s [argument-file] (default file: s3allphone.arg)\n\n",
-		     argv[0]);
-	    fflush(stderr);
-	    cmd_ln_print_help(stderr, defn);
-	    exit(1);
-	}
-    }
-    
-    cmdline_parse (argc, argv);
-
-    unlimit ();
-    
-#if (! WIN32)
-    {
-	char buf[1024];
-	
-	gethostname (buf, 1024);
-	buf[1023] = '\0';
-	E_INFO ("Executing on: %s\n", buf);
-    }
-#endif
-    
-    E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
+  print_appl_info(argv[0]);
+  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
+  unlimit ();
     
     /*
      * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
@@ -821,9 +679,7 @@ main (int32 argc, char *argv[])
     system ("ps aguxwww | grep s3allphone");
 #endif
 
-    if (logfp) {
-	fclose (logfp);
-    }
+    cmd_ln_appl_exit();
     
     return 0;
 }

@@ -69,8 +69,6 @@
 #include <time.h>		/* RAH */
 #endif
 
-
-
 float64 vector_sum_norm (float32 *vec, int32 len)
 {
     float64 sum, f;
@@ -122,6 +120,25 @@ void vector_print(FILE *fp, vector_t v, int32 dim)
     fflush (fp);
 }
 
+int vector_normalize(vector_t v, uint32 dim)
+{
+    uint32 i;
+    float64 s;
+    int ret_val = S3_SUCCESS;
+
+    for (i = 0, s = 0; i < dim; i++)
+        s += v[i];
+
+    if (s != 0) {
+        for (i = 0; i < dim; i++)
+            v[i] /= s;
+    }
+    else {
+        ret_val = S3_WARNING;
+    }
+
+    return ret_val;
+}
 
 int32 vector_is_zero (float32 *vec, int32 len)
 {
@@ -342,7 +359,6 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
 
     for (i = 0; i < vqrows; i++) {
 	/* Find r = a random, previously unselected row from the input */
-
 #ifndef WIN32			/* RAH */
 	r = (random() & (int32)0x7fffffff) % rows;
 #else  /* RAH */

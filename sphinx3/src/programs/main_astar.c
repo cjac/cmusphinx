@@ -46,10 +46,22 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2004/10/07  22:46:26  dhdfu
+ * Revision 1.4  2004/11/16  05:13:19  arthchan2003
+ * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
+ * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
+ * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
+ * 4, Make the same command line frontends for decode, align, dag, astar, allphone, decode_anytopo and ep . Allow the use a file to configure the application.
+ * 5, Make changes in test such that test-allphone becomes a repeatability test.
+ * 6, cepview, wave2feat and decode_anytopo will not be installed in 3.5 RCIII
+ * (Known bugs after this commit)
+ * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
+ * 2, default argument file's mechanism is not yet supported, we need to fix it.
+ * 3, the bug discovered by SonicFoundry is still not fixed.
+ * 
+ * Revision 1.3  2004/10/07 22:46:26  dhdfu
  * Fix compiler warnings that are also real bugs (but why does this
  * function take an int32 when -lw is a float parameter?)
- * 
+ *
  * Revision 1.2  2004/09/13 08:13:28  arthchan2003
  * update copyright notice from 200x to 2004
  *
@@ -140,15 +152,15 @@ static arg_t defn[] = {
       ARG_INT32,
       "1",
       "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-mdeffn",
+    { "-mdef",
       ARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
-    { "-dictfn",
+    { "-dict",
       ARG_STRING,
       NULL,
       "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdictfn",
+    { "-fdict",
       ARG_STRING,
       NULL,
       "Optional filler word (noise word) pronunciation dictionary input file" },
@@ -156,11 +168,11 @@ static arg_t defn[] = {
       ARG_INT32,
       "0",
       "Whether compound words should be broken up internally into component words" },
-    { "-lmfn",
+    { "-lm",
       ARG_STRING,
       NULL,
       "Language model input file (precompiled .DMP file)" },
-    { "-langwt",
+    { "-lw",
       ARG_FLOAT32,
       "9.5",
       "Language weight: empirical exponent applied to LM probabilty" },
@@ -184,7 +196,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "0.05",
       "Language model 'probability' of each non-silence filler word" },
-    { "-fillpenfn",
+    { "-fillpen",
       ARG_STRING,
       NULL,
       "Filler word probabilities input file (used in place of -silpen and -noisepen)" },
@@ -204,18 +216,18 @@ static arg_t defn[] = {
       ARG_INT32,
       "1000000",
       "Max partial paths created after which utterance aborted; controls CPU/memory use" },
-    { "-ctlfn",
+    { "-ctl",
       ARG_STRING,
       NULL,
       "Input control file listing utterances to be decoded" },
     { "-ctloffset",
       ARG_INT32,
       "0",
-      "No. of utterances at the beginning of -ctlfn file to be skipped" },
+      "No. of utterances at the beginning of -ctl file to be skipped" },
     { "-ctlcount",
       ARG_INT32,
       0,
-      "No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF" },
+      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-inlatdir",
       ARG_STRING,
       NULL,
@@ -256,64 +268,17 @@ static arg_t defn[] = {
     { NULL, ARG_INT32, NULL, NULL }
 };
 
-
-/* Hacks to avoid hanging problem under Linux */
-static FILE *logfp;
-
-static int32 cmdline_parse (int argc, char *argv[])
-{
-    int32 i;
-    char *logfile;
-    
-    E_INFO("Parsing command line:\n");
-    for (i = 0; i < argc; i++) {
-	if (argv[i][0] == '-')
-	    printf ("\\\n\t");
-	printf ("%s ", argv[i]);
-    }
-    printf ("\n\n");
-    fflush (stdout);
-
-    cmd_ln_parse (defn, argc, argv);
-
-    logfp = NULL;
-    if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
-	if ((logfp = fopen(logfile, "w")) == NULL) {
-	    E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
-	} else {
-	    dup2(fileno(logfp), 1);
-	    dup2(fileno(logfp), 2);
-	    
-	    E_INFO("Command line:\n");
-	    for (i = 0; i < argc; i++) {
-		if (argv[i][0] == '-')
-		    printf ("\\\n\t");
-		printf ("%s ", argv[i]);
-	    }
-	    printf ("\n\n");
-	    fflush (stdout);
-	}
-    }
-    
-    E_INFO("Configuration in effect:\n");
-    cmd_ln_print_help(stderr, defn);
-    printf ("\n");
-    
-    return 0;
-}
-
-
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
  */
 static void models_init ( void )
 {
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdeffn"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
 
     /* Dictionary */
-    dict = dict_init (mdef, (char *) cmd_ln_access("-dictfn"),
-		      (char *) cmd_ln_access("-fdictfn"), 0);
+    dict = dict_init (mdef, (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"), 0);
 
     /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
     silwid = dict_wordid (dict, S3_SILENCE_WORD);
@@ -331,21 +296,21 @@ static void models_init ( void )
     {
 	char *lmfile;
 	
-	lmfile = (char *) cmd_ln_access("-lmfn");
+	lmfile = (char *) cmd_ln_access("-lm");
 	if (! lmfile)
-	    E_FATAL("-lmfn argument missing\n");
-	lm = lm_read (lmfile, *(float32 *)cmd_ln_access("-langwt"),
+	    E_FATAL("-lm argument missing\n");
+	lm = lm_read (lmfile, *(float32 *)cmd_ln_access("-lw"),
 	    		      *(float32 *)cmd_ln_access("-inspen"),
 			      *(float32 *)cmd_ln_access("-ugwt"));
 
-	fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpenfn"),
+	fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
 		      *(float32 *)cmd_ln_access("-silpen"),
 		      *(float32 *)cmd_ln_access("-noisepen"),
-		      *(float32 *)cmd_ln_access("-langwt"),
+		      *(float32 *)cmd_ln_access("-lw"),
 		      *(float32 *)cmd_ln_access("-inspen"));
     }
 
-    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-langwt"));
+    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
 }
 
 
@@ -389,7 +354,7 @@ static void decode_utt (char *uttid, char *nbestdir)
 }
 
 
-/* Process utterances in the control file (-ctlfn argument) */
+/* Process utterances in the control file (-ctl argument) */
 static void process_ctlfile ( void )
 {
     FILE *ctlfp;
@@ -398,8 +363,8 @@ static void process_ctlfile ( void )
     int32 ctloffset, ctlcount;
     int32 i, k, sf, ef;
     
-    if ((ctlfile = (char *) cmd_ln_access("-ctlfn")) == NULL)
-	E_FATAL("No -ctlfn argument\n");
+    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
+	E_FATAL("No -ctl argument\n");
     
     E_INFO("Processing ctl file %s\n", ctlfile);
     
@@ -468,110 +433,16 @@ static void process_ctlfile ( void )
     fclose (ctlfp);
 }
 
-
-static int32 load_argfile (char *file, char *pgm, char ***argvout)
-{
-    FILE *fp;
-    char line[1024], word[1024], *lp, **argv;
-    int32 len, n;
-
-    E_INFO("Reading arguments from %s\n", file);
-
-    if ((fp = fopen (file, "r")) == NULL) {
-	E_ERROR("fopen(%s,r) failed\n", file);
-	return -1;
-    }
-
-    /* Count #arguments */
-    n = 1;	/* Including pgm */
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    n++;
-	}
-    }
-    
-    /* Allocate space for arguments */
-    argv = (char **) ckd_calloc (n+1, sizeof(char *));
-    
-    /* Create argv list */
-    rewind (fp);
-    argv[0] = pgm;
-    n = 1;
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    argv[n] = ckd_salloc (word);
-	    n++;
-	}
-    }
-    argv[n] = NULL;
-    *argvout = argv;
-
-    fclose (fp);
-
-    return n;
-}
-
-
 int
 main (int32 argc, char *argv[])
 {
-    char *str;
-    
-#if 0
-    ckd_debug(100000);
-#endif
-    
-    if ((argc == 2) && (strcmp (argv[1], "help") == 0)) {
-	cmd_ln_print_help(stderr, defn);
-	exit(1); 
-    }
+  /*  kb_t kb;
+      ptmr_t tm;*/
 
-    /* Look for default or specified arguments file */
-    str = NULL;
-    if ((argc == 2) && (argv[1][0] != '-'))
-	str = argv[1];
-    else if (argc == 1) {
-	str = "s3astar.arg";
-	E_INFO("Looking for default argument file: %s\n", str);
-    }
-    if (str) {
-	/* Build command line argument list from file */
-	if ((argc = load_argfile (str, argv[0], &argv)) < 0) {
-	    fprintf (stderr, "Usage:\n");
-	    fprintf (stderr, "\t%s argument-list, or\n", argv[0]);
-	    fprintf (stderr, "\t%s [argument-file] (default file: s3astar.arg)\n\n",
-		     argv[0]);
-	    cmd_ln_print_help(stderr, defn);
-	    exit(1);
-	}
-    }
-    
-    cmdline_parse (argc, argv);
-
-    /* Remove memory allocation restrictions */
-    unlimit ();
-    
-#if (! WIN32)
-    {
-	char buf[1024];
-	
-	gethostname (buf, 1024);
-	buf[1023] = '\0';
-	E_INFO ("Executing on: %s\n", buf);
-    }
-#endif
-
-    E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
+  char *str;
+  print_appl_info(argv[0]);
+  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
+  unlimit ();
     
     /*
      * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
@@ -604,8 +475,7 @@ main (int32 argc, char *argv[])
     system ("ps aguxwww | grep s3astar");
 #endif
 
-    if (logfp) fclose (logfp);
-
+    cmd_ln_appl_exit();
     return 0;
 }
 

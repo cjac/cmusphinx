@@ -353,6 +353,10 @@ static arg_t arg[] = {
       ARG_INT32,
       "1",
       "If TRUE (non-0), Use unigram probs in lextree" },
+    { "-logfn",
+      ARG_STRING,
+      NULL,
+      "Log file (default stdout/stderr)" },
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -360,32 +364,10 @@ int32 main (int32 argc, char *argv[])
 {
     kb_t kb;
     ptmr_t tm;
-    int i;
     
-#if (! WIN32)
-    {
-	char host[4096], path[16384];
-	
-	gethostname (host, 1024);
-	host[1023] = '\0';
-	getcwd (path, sizeof(path));
-	
-	E_INFO ("Host: '%s'\n", host);
-	E_INFO ("Directory: '%s'\n", path);
-    }
-#endif
-    
-    E_INFO("Compiled on %s, at %s\n\n", __DATE__, __TIME__);
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc,argv,"default.arg",arg);
 
-    for (i = 0; i < argc; i++) {
-	if (argv[i][0] == '-')
-	    printf ("\\\n\t");
-	printf ("%s ", argv[i]);
-    }
-    printf ("\n\n");
-    fflush (stdout);
-
-    cmd_ln_parse (arg, argc, argv);
     unlimit ();
     
     kb_init (&kb);

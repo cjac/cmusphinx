@@ -83,7 +83,7 @@ extern "C" {
 
 typedef struct {
     arraysize_t origsize;	/* origsize.r = #codebooks (or states) in original model;
-				   origsize.c = max #codewords/codebook in original model */
+				   origsize.c = max #codewords/codebook in original model. */
     int32 n_sv;			/* #Subvectors */
     int32 vqsize;		/* #Codewords in each subvector quantized mean/var table */
     int32 **featdim;		/* featdim[s] = Original feature dimensions in subvector s */
@@ -92,9 +92,8 @@ typedef struct {
 				   sequence of nearest vector quantized subvector codewords;
 				   so, each map[i][j] is of length n_sv.  Finally, map is
 				   LINEARIZED, so that it indexes into a 1-D array of scores
-				   rather than a 2-D array (for faster access). */
-    
-    /* Working space used during evaluation */
+				   rather than a 2-D array (for faster access). */ 
+  /* Working space used during evaluation. */
     float32 *subvec;		/* Subvector extracted from feature vector */
     int32 **vqdist;		/* vqdist[i][j] = score (distance) for i-th subvector compared
 				   to j-th subvector-codeword */
@@ -102,15 +101,14 @@ typedef struct {
     int32 *mgau_sl;		/* Shortlist for one mixture (based on gauscore[]) */
 
   /* ARCHAN, 1111, 04, move the static global variables to the structure again. */
-/* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
- * compute the shortlist, for now this value is only relevant when n_sv =3.
- * Setting it to 1 means that only the CEP values are estimated, 2 means that 
- * CEP and delta values are estimated, 3 means all three are estimated.
- * Note, we must adjust the beam widths as we muck around with these.
- */
+  /* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
+   * compute the shortlist, for now this value is only relevant when n_sv =3.
+   * Setting it to 1 means that only the CEP values are estimated, 2 means that 
+   * CEP and delta values are estimated, 3 means all three are estimated.
+   * Note, we must adjust the beam widths as we muck around with these.
+   */
 
     int32 VQ_EVAL;              /* Number of sub-vector to be computed */
-
 } subvq_t;
 
 

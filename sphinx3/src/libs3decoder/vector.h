@@ -100,6 +100,10 @@ void vector_floor(vector_t v, int32 dim, float64 f);
 void vector_nz_floor(vector_t v, int32 dim, float64 f);
 
 
+/* Normalize the vector. */
+int32 vector_normalize(vector_t v, uint32 dim);
+
+
 /*
  * Normalize the elements of the given vector so that they sum to 1.0.  If the sum is 0.0
  * to begin with, the vector is left untouched.  Return value: The normalization factor.
@@ -305,9 +309,21 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.8  2004/11/13  21:25:19  arthchan2003
- * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ * Revision 1.9  2004/11/16  05:13:18  arthchan2003
+ * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
+ * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
+ * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
+ * 4, Make the same command line frontends for decode, align, dag, astar, allphone, decode_anytopo and ep . Allow the use a file to configure the application.
+ * 5, Make changes in test such that test-allphone becomes a repeatability test.
+ * 6, cepview, wave2feat and decode_anytopo will not be installed in 3.5 RCIII
+ * (Known bugs after this commit)
+ * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
+ * 2, default argument file's mechanism is not yet supported, we need to fix it.
+ * 3, the bug discovered by SonicFoundry is still not fixed.
  * 
+ * Revision 1.8  2004/11/13 21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ *
  * Revision 1.7  2004/09/13 08:13:26  arthchan2003
  * update copyright notice from 200x to 2004
  *

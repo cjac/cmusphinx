@@ -81,6 +81,7 @@ extern "C" {
 typedef int32 argtype_t;
 
 
+
 typedef struct {
     char *name;		/* Name of the command line switch (case-insensitive) */
     argtype_t type;
@@ -105,6 +106,26 @@ int32 cmd_ln_parse (arg_t *defn,	/* In: Array of argument name definitions */
  * into an argv[] for cmd_ln_parse().
  */
 int32 cmd_ln_parse_file(arg_t *defn, char *filename);
+
+/*
+ *Default application routine for command-line initialization, this
+ *control the relationship between specified argument file and
+ *argument list.  
+ */
+
+void cmd_ln_appl_enter(int argc,   /* In: #Actual arguments */
+		       char *argv[], /* In: Actual arguments */
+		       char* default_argfn, /* In: default argument file name*/
+		       arg_t *defn);
+
+
+/*
+ *Default application routine for command-line initialization, this
+ *control the relationship between specified argument file and
+ *argument list.  
+ */
+
+void cmd_ln_appl_exit();
 
 /*
  * Return a pointer to the previously parsed value for the given argument name.
@@ -134,3 +155,5 @@ void cmd_ln_free ();
 #endif
 
 #endif
+
+

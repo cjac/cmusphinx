@@ -87,6 +87,8 @@
 #include <assert.h>
 
 #include <libutil/libutil.h>
+#include "kb.h";
+
 
 #include "s3types.h"
 #include "logs3.h"
@@ -111,42 +113,42 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "1.0003",
       "Base in which all log values calculated" },
-    { "-mdeffn", 
+    { "-mdef", 
       ARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmatfn",
+    { "-tmat",
       ARG_STRING,
       NULL,
       "Transition matrix input file" },
-    { "-meanfn",
+    { "-mean",
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks mean parameters input file" },
-    { "-varfn",
+    { "-var",
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
-    { "-senmgaufn",
+    { "-senmgau",
       ARG_STRING,
       ".cont.",
       "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixwfn",
+    { "-mixw",
       ARG_STRING,
       NULL,
       "Senone mixture weights parameters input file" },
     { "-tpfloor",
       ARG_FLOAT32,
       "0.0001",
-      "Triphone state transition probability floor applied to -tmatfn file" },
+      "Triphone state transition probability floor applied to -tmat file" },
     { "-varfloor",
       ARG_FLOAT32,
       "0.0001",
-      "Codebook variance floor applied to -varfn file" },
+      "Codebook variance floor applied to -var file" },
     { "-mwfloor",
       ARG_FLOAT32,
       "0.0000001",
-      "Codebook mixture weight floor applied to -mixwfn file" },
+      "Codebook mixture weight floor applied to -mixw file" },
     { "-agc",
       ARG_STRING,
       "max",
@@ -167,11 +169,11 @@ static arg_t defn[] = {
       ARG_STRING,
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-dictfn",
+    { "-dict",
       ARG_STRING,
       NULL,
       "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdictfn",
+    { "-fdict",
       ARG_STRING,
       NULL,
       "Optional filler word (noise word) pronunciation dictionary input file" },
@@ -179,33 +181,33 @@ static arg_t defn[] = {
       ARG_INT32,
       "0",
       "Compound words in dictionary (not supported yet)" },
-    { "-ctlfn",
+    { "-ctl",
       ARG_STRING,
       NULL,
       "Input control file listing utterances to be decoded" },
     { "-ctloffset",
       ARG_INT32,
       "0",
-      "No. of utterances at the beginning of -ctlfn file to be skipped" },
+      "No. of utterances at the beginning of -ctl file to be skipped" },
     { "-ctlcount",
       ARG_INT32,
       0,
-      "No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF" },
+      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-cepdir",
       ARG_STRING,
       ".",
-      "Directory for utterances in -ctlfn file (if relative paths specified)." },
+      "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
       "mfc",
-      "File extension appended to utterances listed in -ctlfn file" },
+      "File extension appended to utterances listed in ctl file" },
 
-    { "-mllrctlfn",
+    { "-mllrctl",
       ARG_STRING,
       NULL,
-      "Input control file listing MLLR input data; parallel to -ctlfn argument file" },
+      "Input control file listing MLLR input data; parallel to ctl argument file" },
 
-    { "-lambdafn",
+    { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
@@ -218,11 +220,11 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Main pruning beam applied to triphones in forward search" },
-    { "-insentfn",
+    { "-insent",
       ARG_STRING,
       NULL,
       "Input transcript file corresponding to control file" },
-    { "-outsentfn",
+    { "-outsent",
       ARG_STRING,
       NULL,
       "Output transcript file with exact pronunciation/transcription" },
@@ -249,59 +251,6 @@ static arg_t defn[] = {
     
     { NULL, ARG_INT32, NULL, NULL }
 };
-
-
-static FILE *logfp;	/* The log file. File descriptor dupped to stderr + stdout. */
-/* Hacks to avoid hanging problem under Linux */
-static FILE orig_stdout, orig_stderr;
-static FILE *logfp;
-
-
-static int32 cmdline_parse (int argc, char *argv[])
-{
-    int32 i;
-    char *logfile;
-    
-    E_INFO("Parsing command line:\n");
-    for (i = 0; i < argc; i++) {
-	if (argv[i][0] == '-')
-	    printf ("\\\n\t");
-	printf ("%s ", argv[i]);
-    }
-    printf ("\n\n");
-    fflush (stdout);
-
-    cmd_ln_parse (defn, argc, argv);
-
-    logfp = NULL;
-    if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
-	if ((logfp = fopen(logfile, "w")) == NULL) {
-	    E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
-	} else {
-
-	  orig_stdout = *stdout;	/* Hack!! To avoid hanging problem under Linux */
-	  orig_stderr = *stderr;	/* Hack!! To avoid hanging problem under Linux */
-	  *stdout = *logfp;
-	  *stderr = *logfp;
-	    
-	    E_INFO("Command line:\n");
-	    for (i = 0; i < argc; i++) {
-		if (argv[i][0] == '-')
-		    printf ("\\\n\t");
-		printf ("%s ", argv[i]);
-	    }
-	    printf ("\n\n");
-	    fflush (stdout);
-	}
-    }
-    
-    E_INFO("Configuration in effect:\n");
-    cmd_ln_print_help(stderr, defn);
-    printf ("\n");
-    
-    return 0;
-}
-
 
 static mdef_t *mdef;		/* Model definition */
 static gauden_t *g;		/* Gaussian density codebooks */
@@ -337,12 +286,12 @@ static void models_init ( void )
     char *arg;
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdeffn"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
 
     /* Dictionary */
     dict = dict_init (mdef,
-		      (char *) cmd_ln_access("-dictfn"),
-		      (char *) cmd_ln_access("-fdictfn"),
+		      (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"),
 		      '_');	/* Compound word separator.  Default: none. */
 
     /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
@@ -359,8 +308,8 @@ static void models_init ( void )
 
     /* Codebooks */
     varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-meanfn"),
-		     (char *) cmd_ln_access("-varfn"),
+    g = gauden_init ((char *) cmd_ln_access("-mean"),
+		     (char *) cmd_ln_access("-var"),
 		     varfloor);
 
     /* Verify codebook feature dimensions against libfeat */
@@ -377,8 +326,8 @@ static void models_init ( void )
     
     /* Senone mixture weights */
     mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixwfn"),
-		       (char *) cmd_ln_access("-senmgaufn"),
+    sen = senone_init ((char *) cmd_ln_access("-mixw"),
+		       (char *) cmd_ln_access("-senmgau"),
 		       mixwfloor);
     
     /* Verify senone parameters against gauden parameters */
@@ -399,7 +348,7 @@ static void models_init ( void )
 		mdef->n_sen, sen->n_sen);
 
     /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambdafn")) != NULL) {
+    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
 	interp = interp_init (arg);
 
 	/* Verify interpolation weights size with senones */
@@ -411,7 +360,7 @@ static void models_init ( void )
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tpfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmatfn"), tpfloor);
+    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
 
     /* Verify transition matrices parameters against model definition parameters */
     if (mdef->n_tmat != tmat->n_tmat)
@@ -959,7 +908,7 @@ static int32 id_cmp (char *str1, char *str2)
 }
 
 
-/* Process utterances in the control file (-ctlfn argument) */
+/* Process utterances in the control file (ctl argument) */
 static void process_ctlfile ( void )
 {
     FILE *ctlfp, *sentfp, *mllrctlfp;
@@ -970,22 +919,22 @@ static void process_ctlfile ( void )
     char uttid[1024];
     int32 i, k;
     
-    ctlfile = (char *) cmd_ln_access("-ctlfn");
+    ctlfile = (char *) cmd_ln_access("-ctl");
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", ctlfile);
     
-    if ((mllrctlfile = (char *) cmd_ln_access("-mllrctlfn")) != NULL) {
+    if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
 	if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
 	    E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
     } else
 	mllrctlfp = NULL;
     prevmllr[0] = '\0';
     
-    sentfile = (char *) cmd_ln_access("-insentfn");
+    sentfile = (char *) cmd_ln_access("-insent");
     if ((sentfp = fopen (sentfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", sentfile);
 
-    if ((outsentfile = (char *) cmd_ln_access("-outsentfn")) != NULL) {
+    if ((outsentfile = (char *) cmd_ln_access("-outsent")) != NULL) {
 	if ((outsentfp = fopen (outsentfile, "w")) == NULL)
 	    E_FATAL("fopen(%s,r) failed\n", outsentfile);
     }
@@ -1061,7 +1010,7 @@ static void process_ctlfile ( void )
 		int32 gid, sid;
 		uint8 *mgau_xform;
 		
-		gauden_mean_reload (g, (char *) cmd_ln_access("-meanfn"));
+		gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
 		
 		if (ms_mllr_read_regmat (mllrfile, &A, &B,
 				      fcb->stream_len, feat_n_stream(fcb)) < 0)
@@ -1152,110 +1101,33 @@ static void process_ctlfile ( void )
 	fclose (mllrctlfp);
 }
 
-
-static int32 load_argfile (char *file, char *pgm, char ***argvout)
-{
-    FILE *fp;
-    char line[1024], word[1024], *lp, **argv;
-    int32 len, n;
-
-    E_INFO("Reading arguments from %s\n", file);
-
-    if ((fp = fopen (file, "r")) == NULL) {
-	E_ERROR("fopen(%s,r) failed\n", file);
-	return -1;
-    }
-
-    /* Count #arguments */
-    n = 1;	/* Including pgm */
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    n++;
-	}
-    }
-    
-    /* Allocate space for arguments */
-    argv = (char **) ckd_calloc (n+1, sizeof(char *));
-    
-    /* Create argv list */
-    rewind (fp);
-    argv[0] = pgm;
-    n = 1;
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	if (line[0] == '#')
-	    continue;
-
-	lp = line;
-	while (sscanf (lp, "%s%n", word, &len) == 1) {
-	    lp += len;
-	    argv[n] = ckd_salloc (word);
-	    n++;
-	}
-    }
-    argv[n] = NULL;
-    *argvout = argv;
-
-    fclose (fp);
-
-    return n;
-}
-
-
 int
 main (int32 argc, char *argv[])
 {
-    char *str;
-    
-    E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
-    
-    if ((argc == 2) && (strcmp (argv[1], "help") == 0)) {
-	cmd_ln_print_help(stderr, defn);
-	exit(1); 
-    }
+  /*  kb_t kb;
+      ptmr_t tm;*/
 
-    /* Look for default or specified arguments file */
-    str = NULL;
-    if ((argc == 2) && (argv[1][0] != '-'))
-	str = argv[1];
-    else if (argc == 1) {
-	str = "s3align.arg";
-	E_INFO("Looking for default argument file: %s\n", str);
-    }
-    if (str) {
-	/* Build command line argument list from file */
-	if ((argc = load_argfile (str, argv[0], &argv)) < 0) {
-	    fprintf (stderr, "Usage:\n");
-	    fprintf (stderr, "\t%s argument-list, or\n", argv[0]);
-	    fprintf (stderr, "\t%s [argument-file] (default file: s3astar.arg)\n\n",
-		     argv[0]);
-	    cmd_ln_print_help(stderr, defn);
-	    exit(1);
-	}
-    }
+  print_appl_info(argv[0]);
+  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     
-    cmdline_parse (argc, argv);
+  unlimit();
+  
+  if ((cmd_ln_access("-mdef") == NULL) ||
+      (cmd_ln_access("-mean") == NULL) ||
+      (cmd_ln_access("-var") == NULL)  ||
+      (cmd_ln_access("-mixw") == NULL)  ||
+      (cmd_ln_access("-tmat") == NULL) ||
+      (cmd_ln_access("-dict") == NULL))
+    E_FATAL("Missing -mdef, -mean, -var, -mixw, -tmat, or -dict argument\n");
     
-    if ((cmd_ln_access("-mdeffn") == NULL) ||
-	(cmd_ln_access("-meanfn") == NULL) ||
-	(cmd_ln_access("-varfn") == NULL)  ||
-	(cmd_ln_access("-mixwfn") == NULL)  ||
-	(cmd_ln_access("-tmatfn") == NULL) ||
-	(cmd_ln_access("-dictfn") == NULL))
-	E_FATAL("Missing -mdeffn, -meanfn, -varfn, -mixwfn, -tmatfn, or -dictfn argument\n");
-    
-    if ((cmd_ln_access("-ctlfn") == NULL) || (cmd_ln_access("-insentfn") == NULL))
-	E_FATAL("Missing -ctlfn or -insentfn argument\n");
+    if ((cmd_ln_access("-ctl") == NULL) || (cmd_ln_access("-insent") == NULL))
+	E_FATAL("Missing -ctl or -insent argument\n");
 
     if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
 	(cmd_ln_access ("-stsegdir") == NULL) &&
 	(cmd_ln_access ("-phsegdir") == NULL) &&
 	(cmd_ln_access ("-wdsegdir") == NULL) &&
-	(cmd_ln_access ("-outsentfn") == NULL))
+	(cmd_ln_access ("-outsent") == NULL))
 	E_FATAL("Missing output file/directory argument(s)\n");
     
     /*
@@ -1267,7 +1139,6 @@ main (int32 argc, char *argv[])
 	logs3_init (1.0001);
     else {
 	float32 logbase;
-    
 	logbase = *((float32 *) cmd_ln_access("-logbase"));
 	if (logbase <= 1.0)
 	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
@@ -1314,13 +1185,6 @@ main (int32 argc, char *argv[])
     system ("ps aguxwww | grep s3align");
 #endif
 
-    /* Hack!! To avoid hanging problem under Linux */
-    if (logfp) {
-	fclose (logfp);
-       *stdout = orig_stdout;
-       *stderr = orig_stderr;
-
-    }
-    
+    cmd_ln_appl_exit();
     return 0;
 }

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1998-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,22 +33,10 @@
  * ====================================================================
  *
  */
-/*********************************************************************
- *
- * File: cmd_ln_defn.h
- * 
- * Description: 
- * 	Command line argument definition
- *
- * Author: 
- *      
- *********************************************************************/
 
-#ifndef CMD_LN_DEFN_H
-#define CMD_LN_DEFN_H
-
-/*#include <s3/cmd_ln.h>
-#include "wave2feat.h"*/
+#include "cont_mgau.h"
+#include "classify.h"
+#include "endptr.h"
 #include "fe.h"
 
 const char helpstr[] =
@@ -69,9 +57,9 @@ const char examplestr[] =
   "Example: \n\
 This example creates a cepstral file named \"output.mfc\" from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n \
 \n									\
-ep -i  input.raw \n						\
+wave2feat -i  input.raw \n						\
         -o   output.mfc \n						\
-        -raw no \n							\
+        -raw 1 \n							\
         -input_endian little \n						\
         -samprate  16000 \n						\
         -lowerf    130 \n						\
@@ -79,238 +67,182 @@ ep -i  input.raw \n						\
         -nfilt     40 \n						\
         -nfft      512";
 
-static arg_t arg[] = {
+static arg_t defn[] = {
   { "-help",
     ARG_INT32,
-    
     "0",
     "Shows the usage of the tool"},
-  
   { "-example",
     ARG_INT32,
-    
     "0",
     "Shows example of how to use the tool"},
-  
   { "-i",
     ARG_STRING,
-    
     NULL,
     "Single audio input file" },
-  
-  
+  { "-o",
+    ARG_STRING,
+    NULL,
+    "Single cepstral output file" },
   { "-c",
     ARG_STRING,
-    
     NULL,
     "Control file for batch processing" },
-  
   { "-di",
     ARG_STRING,
-    
     NULL,
     "Input directory, input file names are relative to this, if defined" },
-  
   { "-ei",
     ARG_STRING,
-    
     NULL,
     "Input extension to be applied to all input files" },
-  
   { "-do",
     ARG_STRING,
-    
     NULL,
     "Output directory, output files are relative to this" },
-  
   { "-eo",
     ARG_STRING,
-    
     NULL,
     "Output extension to be applied to all output files" },
-  
   { "-nist",
     ARG_INT32,
-    
     "0",
     "Defines input format as NIST sphere" },
-  
   { "-raw",
     ARG_INT32,
-    
     "0",
     "Defines input format as raw binary data" },
-  
   { "-mswav",
     ARG_INT32,
-    
     "0",
     "Defines input format as Microsoft Wav (RIFF)" },
-  
   { "-input_endian",
     ARG_STRING,
-    
     "little",
     "Endianness of input data, big or little, ignored if NIST or MS Wav" },
-  
   { "-nchans",
     ARG_INT32,
-    
-    "1",
+    ONE_CHAN,
     "Number of channels of data (interlaced samples assumed)" },
-  
   { "-whichchan",
     ARG_INT32,
-    
-    "1",
+    ONE_CHAN,
     "Channel to process" },
-  
   { "-logspec",
     ARG_INT32,
-    
     "0",
     "Write out logspectral files instead of cepstra" },
-  
   { "-feat",
     ARG_STRING,
-    
     "sphinx",
     "SPHINX format - big endian" },
-  
   { "-mach_endian",
     ARG_STRING,
-    
 #ifdef WORDS_BIGENDIAN
     "big",
 #else
     "little",
 #endif
     "Endianness of machine, big or little" },
-  
   { "-alpha",
     ARG_FLOAT32,
-    
-    "0.97",
+    DEFAULT_PRE_EMPHASIS_ALPHA,
     "Preemphasis parameter" },
-  
   { "-srate",
     ARG_FLOAT32,
-    
-    "16000.0",
+    DEFAULT_SAMPLING_RATE,
     "Sampling rate" },
-  
   { "-frate",
     ARG_INT32,
-    
-    "100",
+    DEFAULT_FRAME_RATE,
     "Frame rate" },
-  
   { "-wlen",
     ARG_FLOAT32,
-    
-    "0.0256",
+    DEFAULT_WINDOW_LENGTH,
     "Hamming window length" },
-  
   { "-nfft",
     ARG_INT32,
-    
-    "512",
+    DEFAULT_FFT_SIZE,
     "Size of FFT" },
-  
   { "-nfilt",
     ARG_INT32,
-    
-    "40",
+    DEFAULT_NUM_FILTERS,
     "Number of filter banks" },
-  
   { "-lowerf",
     ARG_FLOAT32,
-    
-    "200",
+    DEFAULT_LOWER_FILT_FREQ,
     "Lower edge of filters" },
-  
   { "-upperf",
     ARG_FLOAT32,
-    
-    "3500",
+    DEFAULT_UPPER_FILT_FREQ,
     "Upper edge of filters" },
-  
   { "-ncep",
     ARG_INT32,
-    
-    "13",
+    DEFAULT_NUM_CEPSTRA,
     "Number of cep coefficients" },
-  
   { "-doublebw",
     ARG_INT32,
-    
     "0",
     "Use double bandwidth filters (same center freq)" },
-  
   { "-blocksize",
     ARG_INT32,
-    
-    "200000",
+    DEFAULT_BLOCKSIZE,
     "Block size, used to limit the number of samples used at a time when reading very large audio files" },
-  
   { "-dither",
     ARG_INT32,
-    
     "0",
     "Add 1/2-bit noise" },
-  
   { "-verbose",
     ARG_INT32,
-    
     "0",
     "Show input filenames" },
-
-  { "-mean",
+  { "-logfn",
     ARG_STRING,
     NULL,
-    "The mean file" },
-
-  { "-var",
-    ARG_STRING,
-    NULL,
-    "The var file" },
-
-  { "-varfloor",
-    ARG_FLOAT32,
-    "0.0001",
-    "Mixture gaussian variance floor (applied to data from -var file)" },
+    "Log file (default stdout/stderr)" },
   
-  { "-mixw",
-    ARG_STRING,
-    NULL,
-    "The mixture weight file" },
-  
-  { "-mixwfloor",
-    ARG_FLOAT32,
-    "0.0000001",
-    "Senone mixture weights floor (applied to data from -mixw file)" },
-
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
-    
-#define CMD_LN_DEFN_H
+/*       
+	 7-Feb-00 M. Seltzer - wrapper created for new front end -
+	 does blockstyle processing if necessary. If input stream is
+	 greater than DEFAULT_BLOCKSIZE samples (currently 200000)
+	 then it will read and write in DEFAULT_BLOCKSIZE chunks. 
+	 
+	 Had to change fe_process_utt(). Now the 2d feature array
+	 is allocated internally to that function rather than
+	 externally in the wrapper. 
+	 
+	 Added usage display with -help switch for help
 
-#endif /* CMD_LN_DEFN_H */ 
-
-/*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.1  2004/10/22  22:14:41  arthchan2003
- * Endpointer code check-in, test can be done by test-ep
- * 
- * Revision 1.1  2004/09/21 05:42:52  archan
- * Incorporating a command-line front-end in the off-line end-pointer.  Some arguments are still not under strick checking.
- *
- * Revision 1.1  2004/09/09 17:59:30  egouvea
- * Adding missing files to wave2feat
- *
- *
- *
- */
+	 14-Feb-00 M. Seltzer - added NIST header parsing for 
+	 big endian/little endian parsing. kind of a hack.
+
+	 changed -wav switch to -nist to avoid future confusion with
+	 MS wav files
+	 
+	 added -mach_endian switch to specify machine's byte format
+*/
+
+int32 main(int32 argc, char **argv)
+{
+  print_appl_info(argv[0]);
+  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
+  unlimit();
+
+  param_t *P;
+
+  P = fe_parse_options(argc,argv);
+  if (fe_convert_files(P) != FE_SUCCESS){
+    E_FATAL("error converting files...exiting\n");
+  }
+  
+  fe_free_param(P);
+
+  cmd_ln_appl_exit();
+
+  return(0);
+}
+
+

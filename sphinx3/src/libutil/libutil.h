@@ -84,6 +84,7 @@
 #include "str2words.h"
 #include "unlimit.h"
 #include "nextword.h"
+#include "info.h"
 
 
 #ifdef __cplusplus

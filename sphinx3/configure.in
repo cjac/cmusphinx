@@ -139,6 +139,7 @@ src/Makefile
 src/libs3audio/Makefile
 src/libs3audio/ad_conf.h
 src/libs3decoder/Makefile
+src/libclust/Makefile
 src/libutil/Makefile
 src/programs/Makefile
 src/tests/Makefile
