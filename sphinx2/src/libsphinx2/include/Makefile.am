@@ -8,8 +8,8 @@ noinst_HEADERS = \
 	hmm_tied_r.h \
 	kb.h \
 	linklist.h \
-	lm.h \
 	logmsg.h \
+	lm.h \
 	magic.h \
 	msd.h \
 	pconf.h \
