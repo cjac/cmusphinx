@@ -106,8 +106,10 @@ WED_m1:
 THU_m1:   
 	make -C $(top_srcdir)/src/tests/performance/Communicator base fast
 
-FRI_m1:
+SAT_m1:
 	make -C $(top_srcdir)/src/tests/performance/wsj5k quick slow
+
+
 
 
 #Cannot not be used because libtool will confuse valgrind.  Need to figure out later. 
