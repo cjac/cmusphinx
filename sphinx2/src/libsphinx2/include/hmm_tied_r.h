@@ -34,6 +34,16 @@
  *
  */
 
+/*
+ * HISTORY
+ *
+ * $Log$
+ * Revision 1.8  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ */
+
 
 #ifndef __S2_HMM_TIED_R_H__
 #define __S2_HMM_TIED_R_H__	1

@@ -46,6 +46,8 @@
 
 #include "s2types.h"
 #include "strfuncs.h"
+#include "err.h"
+
 
 char *salloc (char const *str)
 {
@@ -53,8 +55,7 @@ char *salloc (char const *str)
     char *buf;
     
     if ((buf = (char *) malloc (len)) == NULL) {
-	printf ("%s(%d): malloc failed\n", __FILE__, __LINE__);
-	exit(-1);
+	E_FATAL("malloc(%d) failed\n", len);
     }
 	
     strcpy (buf, str);

@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * err.h -- Package for checking and catching common errors, printing out
  *		errors nicely, etc.
@@ -40,9 +41,15 @@
  * Copyright (c) 1996 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  *
  * 6/01/95  Paul Placeway  CMU speech group
  */
+
 
 #ifndef _LIBUTIL_ERR_H_
 #define _LIBUTIL_ERR_H

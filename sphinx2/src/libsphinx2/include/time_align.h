@@ -33,8 +33,17 @@
  * ====================================================================
  *
  */
+
 /*
  * time_align.h
+ * 
+ * HISTORY
+ * 
+ * $Log$
+ * Revision 1.9  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  */
 
 

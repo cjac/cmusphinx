@@ -33,10 +33,16 @@
  * ====================================================================
  *
  */
+
 /*
  * agc_emax.c - Estimated Max AGC
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.8  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 25-Aug-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified the update procedure for estimated max to simply average over
@@ -53,6 +59,7 @@
  * 01-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added functions agcemax_set and agcemax_get.
  */
+
 
 #include <stdio.h>
 #include <string.h>

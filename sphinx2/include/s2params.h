@@ -30,15 +30,23 @@
  * ====================================================================
  *
  */
+
 /*
  * s2params.h -- various (unfortunately) global params
  *
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.6  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 28-Mar-00	Alan W Black (awb@cs.cmu.edu) Created.
  *              (trying to collect together some random globals
  *               while hopefully not making thing worse).
  */
+
+
 #ifndef _S2PARAMS_H_
 #define _S2PARAMS_H_
 

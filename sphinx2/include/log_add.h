@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * log_add.h -- Lookup table for addition for 8-bit logprob values.
  *
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.5  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 16-May-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.

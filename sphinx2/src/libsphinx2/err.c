@@ -33,9 +33,15 @@
  * ====================================================================
  *
  */
+
 /*
  * Package for checking and catching common errors, printing out
  * errors nicely, etc.
+ * 
+ * $Log$
+ * Revision 1.10  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  *
  * 6/01/95  Paul Placeway  CMU speech group
  *

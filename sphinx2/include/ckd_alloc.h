@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * ckd_alloc.h -- Memory allocation package.
  *
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.3  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 19-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Removed file,line arguments from free functions.

@@ -33,6 +33,18 @@
  * ====================================================================
  *
  */
+
+/*
+ * fe.h
+ * 
+ * $Log$
+ * Revision 1.10  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
+ *
+ */
+
+
 #ifndef _NEW_FE_H_
 #define _NEW_FE_H_
 

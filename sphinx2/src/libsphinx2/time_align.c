@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * time_align.c
  *
@@ -52,13 +53,21 @@
  *   - allow optional filler word sequence between words (e.g. ++COUGH++ ++SNIFF++ SIL ++SNIFF++).
  *
  * Revision History
+ * 
  * $Log$
- * Revision 1.15  2004/11/13  00:38:43  egouvea
+ * Revision 1.16  2004/12/10  16:48:57  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Modified to use senscr module for senone score evaluation.
+ * 
+ * Revision 1.15  2004/11/13 00:38:43  egouvea
  * Replaced most printf with E_INFO (or E_WARN or...). Changed the output
  * of the time_align code so it's consistent with the other decoder modes
  * (allphone, normal decoding etc). Added the file utt id to the
  * time_align output.
- * 
+ *
  * Revision 1.14  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -230,6 +239,7 @@
 #include "log.h"
 #include "hmm_tied_r.h"
 #include "scvq.h"
+#include "senscr.h"
 #include "s2params.h"
 #include "fbs.h"
 #include "search.h"
@@ -2877,12 +2887,12 @@ time_align_word_sequence(char const * Utt,
 	find_active_senones(all_models, cur_active_models, cur_active_cnt);
 
 	/* compute the output probabilities for the active shared states */
-	probs_computed_cnt += SCVQScores(distScores,
-					 &cep_f[cur_frame*13],
-					 &dcep_f[cur_frame*13],
-					 &dcep_80ms_f[cur_frame*13],
-					 &pcep_f[cur_frame*3],
-					 &ddcep_f[cur_frame*13]);
+	probs_computed_cnt += senscr_active(distScores,
+					    &cep_f[cur_frame*13],
+					    &dcep_f[cur_frame*13],
+					    &dcep_80ms_f[cur_frame*13],
+					    &pcep_f[cur_frame*3],
+					    &ddcep_f[cur_frame*13]);
 
 #if SHOW&SHOW_SUMMARY_INFO
 	E_INFO("in> frame %d, %d active models\n", cur_frame, cur_active_cnt);

@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * byteorder.h -- Byte swapping ordering macros.
  * 
@@ -44,6 +45,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 16-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created from Fil Alleva's original.

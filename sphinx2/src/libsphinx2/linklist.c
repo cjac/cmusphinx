@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * linklist.c -- generic module for efficient memory management of 
  * linked list elements of various sizes; a separate list for each 
@@ -41,9 +42,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2004/05/18  19:02:40  egouvea
- * Removed line including malloc.h, already defined in stdlib.h, and added initial support for macosx
+ * Revision 1.9  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
  * 
+ * Revision 1.8  2004/05/18 19:02:40  egouvea
+ * Removed line including malloc.h, already defined in stdlib.h, and added initial support for macosx
+ *
  * Revision 1.7  2001/12/11 00:24:48  lenzo
  * Acknowledgement in License.
  *
@@ -86,6 +90,7 @@
 #include <stdlib.h>
 
 #include "s2types.h"
+#include "err.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -116,13 +121,14 @@ void *listelem_alloc (int32 elem_size)
     if (i >= n_list) {
 	/* New list element size encountered, create new list entry */
 	if (n_list >= MAX_LIST)
-	    QUIT((stdout, "%s(%d): **ERROR** Increase MAX_LIST\n", __FILE__, __LINE__));
+	    E_FATAL("Increase MAX_LIST\n");
+	
 	if (elem_size > MAX_ALLOC)
-	    QUIT((stdout, "%s(%d): **ERROR** Increase MAX_ALLOC to %d\n",
-		  __FILE__, __LINE__, elem_size));
+	    E_FATAL("Increase MAX_ALLOC to %d\n", elem_size);
+
 	if ((elem_size % sizeof(char *)))
-	    QUIT((stdout, "%s(%d): **ERROR** Element size (%d) not multiple of (char *)\n",
-		  __FILE__, __LINE__, elem_size));
+	    E_FATAL("Element size (%d) not multiple of (char *)\n",
+		    elem_size);
 	
 	list[n_list].freelist = NULL;
 	list[n_list].elem_size = elem_size;
@@ -156,8 +162,7 @@ void listelem_free (void *elem, int32 elem_size)
 	    break;
     }
     if (i >= n_list)
-	QUIT((stdout, "%s(%d): **ERROR** elem_size (%d) not in known list\n",
-	      __FILE__, __LINE__, elem_size));
+	E_FATAL("elem_size (%d) not in known list\n", elem_size);
     
     cpp = elem;
     *cpp = list[i].freelist;

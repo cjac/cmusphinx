@@ -33,10 +33,16 @@
  * ====================================================================
  *
  */
+
 /*
  * lab.c -- File I/O for label files
  *
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.8  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 23-Oct-01    Kevin A. Lenzo (lenzo@cs.cmu.edu) Fixed the
  *              magic numbers in save_labs, but it's still hard-coded.
@@ -44,6 +50,7 @@
  *
  * 28-Mar-00	Alan W Black (awb@cs.cmu.edu) Created.
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,12 +87,11 @@ int save_labs(SEGMENT_T *segs,
 
     if ((labfd = fopen(path,"w")) == NULL)
     {
-	fprintf(stderr, "%s(%d): failed to open label file: %s\n",
-		__FILE__, __LINE__, path);
+	E_ERROR("Failed to open label file: %s\n", path);
 	free(path);
 	exit(1);
     }
-
+    
     if (strcmp(labtype,"xlabel") == 0)
     {
 	fprintf(labfd,"#\n");

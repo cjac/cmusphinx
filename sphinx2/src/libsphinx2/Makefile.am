@@ -21,15 +21,19 @@ libsphinx2_la_SOURCES = \
 	awritefloat.c \
 	awriteint.c \
 	awriteshort.c \
+	bio.c \
 	bisearch.c \
+	bitvec.c \
 	blk_cdcn_norm.c \
 	blkarray_list.c \
 	cache_lm.c \
+	case.c \
 	cdcn_init.c \
 	cdcn_norm.c \
 	cdcn_update.c \
 	cep_rw.c \
 	ckd_alloc.c \
+	cont_mgau.c \
 	dict.c \
 	eht_quit.c \
 	err.c \
@@ -53,7 +57,9 @@ libsphinx2_la_SOURCES = \
 	lm_3g.c \
 	lmclass.c \
 	logmsg.c \
+	logs3.c \
 	longio.c \
+	mdef.c \
 	nxtarg.c \
 	norm.c \
 	pconf.c \
@@ -62,11 +68,14 @@ libsphinx2_la_SOURCES = \
 	prime.c \
 	r_agc_noise.c \
 	resfft.c \
+	s3hash.c \
+	s3mdef_s2map.c \
 	salloc.c \
 	sc_cbook_r.c \
 	sc_vq.c \
 	search.c \
 	searchlat.c \
+	senscr.c \
 	skipto.c \
 	str2words.c \
 	strcasecmp.c \
@@ -74,6 +83,7 @@ libsphinx2_la_SOURCES = \
 	unlimit.c \
 	util.c \
 	uttproc.c \
+	vector.c \
 	word_fsg.c
 
 

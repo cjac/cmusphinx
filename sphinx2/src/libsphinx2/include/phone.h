@@ -33,6 +33,18 @@
  * ====================================================================
  *
  */
+
+/*
+ * HISTORY
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ */
+
+
 #ifndef _PHONE_H_
 #define _PHONE_H_
 

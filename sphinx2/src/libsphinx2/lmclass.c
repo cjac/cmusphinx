@@ -33,14 +33,21 @@
  * ====================================================================
  *
  */
+
 /*
  * lmclass.c -- Class-of-words objects in language models.
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 24-Mar-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>

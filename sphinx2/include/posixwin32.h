@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * posixwin32.h -- Containing PC win32 specific mappings to Unix names.
  * 
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.6  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 16-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Copied from Chengxiang Lu and Brian Milnes original.

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,8 +33,17 @@
  * ====================================================================
  *
  */
+
 /* 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.10  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 24-Nov-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Added search_get_bestpscr() definition.
  * 
  * 12-Aug-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added search_get_current_startwid().
@@ -258,6 +267,13 @@ void search_chan_deactivate(CHAN_T *);
 
 /* Note the top senone score for the given frame */
 void search_set_topsen_score (int32 frm, int32 score);
+
+/*
+ * Return the array that maintains the best senone score (CI or CD) for
+ * each CI phone.  (The array is updated every frame by the senone score
+ * evaluation module.)
+ */
+int32 *search_get_bestpscr( void );
 
 
 #endif

@@ -704,3 +704,16 @@ set of changes from dhd (below)
 	  be commented out of the Makefile.
 	* Built and sphinx2-test ran successfully on SunOS 5.5.1
 	* Guarded unistd.h header includes behind ifdef conditions
+
+2004-07-16 Ravi Mosur (rkm@cs.cmu.edu)
+	* Support for FSGs added
+
+2004-07-23 Ravi Mosur (rkm@cs.cmu.edu)
+	* Some extensions to FSG code, including ability for an
+	  application to pass an in-memory FSG data structure to the
+	  FSG module.
+	* Log files modified to have same "look and feel".
+
+2004-12-09 Ravi Mosur (rkm@cs.cmu.edu)
+	* Support for continuous density acoustic models added.
+

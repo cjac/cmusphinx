@@ -33,10 +33,19 @@
  * ====================================================================
  *
  */
+
 /*
  * searchlat.c -- construct word lattice and search all paths for best path.
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.12  2004/12/10  16:48:57  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 12-Aug-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Bugfix: Obtained current start_wid at the start of lattice_rescore().
  * 
  * 03-Apr-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added searchlat_set_rescore_lm().
@@ -480,7 +489,7 @@ static int32 build_lattice (int32 bptbl_sz)
 	    break;
     }
     if (! node) {
-	E_ERROR("%s(%d): Couldn't find <s>.0\n", __FILE__, __LINE__);
+	E_ERROR("Couldn't find <s>.0\n");
 	return (0);
     }
     start_node = node;
@@ -492,7 +501,7 @@ static int32 build_lattice (int32 bptbl_sz)
 	    break;
     }
     if (! node) {
-	E_ERROR("%s(%d): Couldn't find </s>.%d\n", __FILE__, __LINE__, last_frame);
+	E_ERROR("Couldn't find </s>.%d\n", last_frame);
 	return 0;
     }
     final_node = node;
@@ -544,7 +553,7 @@ static int32 build_lattice (int32 bptbl_sz)
     
     /* There must be at least one path between <s>.0 and </s>.last_frame */
     if (! start_node->reachable) {
-	E_ERROR ("%s(%d): <s> unreachable\n", __FILE__, __LINE__);
+	E_ERROR ("<s>.0 isolated; unreachable\n");
 	return (0);
     }
 
@@ -712,7 +721,8 @@ static void lattice_seg_back_trace (latlink_t *link)
 
 	if (ISA_REAL_WORD(link->from->wid)) {
 	    if (seg >= HYP_SZ-1)
-		QUIT((stdout, "%s(%d): **ERROR** Increase HYP_SZ\n", __FILE__, __LINE__));
+		E_FATAL("**ERROR** Increase HYP_SZ\n");
+	    
 	    hyp[seg].wid = link->from->wid;
 	    hyp[seg].sf = uttproc_feat2rawfr(link->from->sf);
 	    hyp[seg].ef = uttproc_feat2rawfr(link->ef);
@@ -776,6 +786,8 @@ int32 lattice_rescore ( double lwf )
     sil_pen = search_get_sil_penalty ();
     filler_pen = search_get_filler_penalty ();
     lw_factor = lwf;
+    
+    start_wid = search_get_current_startwid();
     
     if (latnode_list) {
 	destroy_lattice (latnode_list);
@@ -1311,9 +1323,9 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
     }
 
 #if defined(SEARCH_PROFILE)
-    printf ("%s(%d): #HYP = %d, #INSERT = %d, #REJECT = %d, Avg insert depth = %.2f\n",
-	    __FILE__, __LINE__, n_hyp_tried, n_hyp_insert, n_hyp_reject,
-	    insert_depth/((double)n_hyp_insert+1.0));
+    E_INFO("#HYP = %d, #INSERT = %d, #REJECT = %d, Avg insert depth = %.2f\n",
+	   n_hyp_tried, n_hyp_insert, n_hyp_reject,
+	   insert_depth/((double)n_hyp_insert+1.0));
 #endif
     
     /* Clean up */

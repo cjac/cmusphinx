@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * str2words.h -- Convert a line to an array of words
  *
@@ -44,6 +45,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.5  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 07-Apr-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.

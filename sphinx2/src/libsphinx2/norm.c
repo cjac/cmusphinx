@@ -33,9 +33,15 @@
  * ====================================================================
  *
  */
+
 /* norm.c - feature normalization
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 20-Aug-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Extended normalization to C0.

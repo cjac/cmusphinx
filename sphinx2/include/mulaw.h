@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * muLaw.h -- Table for converting mu-law data into 16-bit linear PCM format.
  *
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.4  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 21-Jul-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created from Sunil Issar's version.

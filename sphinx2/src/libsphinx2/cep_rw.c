@@ -33,10 +33,17 @@
  * ====================================================================
  *
  */
+
 /*
  * cepstrum file read routines.
  *
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.11  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 12-Mar-92  Eric Thayer (eht) at Carnegie-Mellon University
  *	Fixed byte reversal check.
  *
@@ -55,6 +62,8 @@
  *	Created.  Should be made more robust across machine architectures.
  *
  */
+
+
 /* #include <c.h>  -- this breaks something on DEC alpha's */
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,8 +115,7 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
 #endif
 
   if (fd < 0) {
-    E_ERROR("%s(%d): Couldn't open %s\n",
-	    __FILE__, __LINE__, file);
+    E_ERROR("Couldn't open %s\n", file);
     return errno;
   }
 
@@ -127,7 +135,7 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
    */
   if ((floatCount+4 != st_buf.st_size) &&
       ((floatCount * sizeof(float32) + 4) != st_buf.st_size)) {
-	E_INFO("%s(%d): Byte reversing %s\n", __FILE__, __LINE__, file);
+	E_INFO("Byte reversing %s\n", file);
 	byteReverse = TRUE;
 	floatCount = SWABL (floatCount);
   }
@@ -173,8 +181,7 @@ int32 cep_write_bin(char const *file, float32 *buf, int32 len)
 #endif
 
   if (fd < 0) {
-    E_ERROR("%s(%d): Couldn't open %s for writing\n",
-	    __FILE__, __LINE__, file);
+    E_ERROR("Couldn't open %s for writing\n", file);
     return errno;
   }
   len *= sizeof(float32);

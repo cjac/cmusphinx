@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /* CM_macros.h
  *
  * **********************************************
@@ -44,9 +45,16 @@
  *	CMPSL macros to make error handling a little easier.
  *------------------------------------------------------------*
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.5  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * Spring 89, Fil Alleva (faa) Carnegie Mellon
  *	Created
  */
+
 
 #ifndef _CM_MACROS_H_
 #define _CM_MACROS_H_

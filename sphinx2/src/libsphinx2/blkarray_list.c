@@ -30,15 +30,19 @@
  * ====================================================================
  *
  */
+
 /*
  * blkarray_list.c -- block array-based list structure.
  * 
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/07/16  00:57:11  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.2  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
  * 
+ * Revision 1.1  2004/07/16 00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.1.1.1  2004/03/29 20:42:01  rkm
  *
  *

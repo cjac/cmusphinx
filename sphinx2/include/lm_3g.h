@@ -30,10 +30,16 @@
  * ====================================================================
  *
  */
+
 /*
  * lm_3g.h - darpa standard trigram language model header file
  *
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.8  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 28-Oct-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added lm3g_access_type().

@@ -33,7 +33,20 @@
  * ====================================================================
  *
  */
+
 /* KB.C - for compile_kb
+ * 
+ * $Log$
+ * Revision 1.11  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 02-Dec-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added acoustic score weight (applied only to S3 continuous
+ * 		acoustic models).
+ * 
+ * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Incorporated continuous acoustic model handling.
  * 
  * 06-Aug-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added phonetp (phone transition probs matrix) for use in
@@ -116,13 +129,16 @@
 #include "s2types.h"
 #include "CM_macros.h"
 #include "basic_types.h"
+#include "cont_mgau.h"
 #include "search_const.h"
 #include "list.h"
 #include "hash.h"
 #include "err.h"
+#include "ckd_alloc.h"
 #include "c.h"
 #include "pconf.h"
 #include "log.h"
+#include "logs3.h"
 #include "dict.h"
 #include "msd.h"
 #include "smmap4f.h"
@@ -134,8 +150,8 @@
 #include "kb.h"
 #include "phone.h"
 #include "fbs.h"
+#include "s3mdef_s2map.h"
 
-#define QUIT(x)		{fprintf x; exit(-1);}
 
 static char *fsg_ctlfile_name = NULL;
 static char *fsg_file_name = NULL;
@@ -157,50 +173,59 @@ static char *lm_tag_file_name = NULL;
 static char *lm_word_tags_file_name = NULL;
 static char const *lm_start_sym = "<s>";
 static char const *lm_end_sym = "</s>";
-static char *phone_file_name = 0;
-static char *mapFileName = 0;
-static char *dict_file_name = 0;
-static char *oov_dict_file_name = 0;
-static char *personal_dict_file_name = 0;
-static char *phrase_dict_file_name = 0;
-static char *noise_dict_file_name = 0;
-static char *phonetp_file_name = 0;
-static float32 ptplw = 5.0;		/* Pulled out of thin air */
-static float32 uptpwt = 0.001;		/* Pulled out of thin air */
-static char *hmm_dir = 0;
-static char *hmm_dir_list = 0;
+static char *phone_file_name = NULL;
+static char *mapFileName = NULL;
+static char *mdefFileName = NULL;
+static char *meanFileName = NULL;
+static char *varFileName = NULL;
+static char *mixwFileName = NULL;
+static float32 s3varfloor = 0.0001f;
+static float32 s3mixwfloor = 0.0000001f;
+static char *dict_file_name = NULL;
+static char *oov_dict_file_name = NULL;
+static char *personal_dict_file_name = NULL;
+static char *phrase_dict_file_name = NULL;
+static char *noise_dict_file_name = NULL;
+static char *phonetp_file_name = NULL;
+static float32 ptplw = 5.0f;		/* Pulled out of thin air */
+static float32 uptpwt = 0.001f;		/* Pulled out of thin air */
+static char *hmm_dir = NULL;
+static char *hmm_dir_list = NULL;
 static char const *hmm_ext = "chmm";
-static double  hmm_smooth_min = 0.0000001;
+static double  hmm_smooth_min = 0.0000001f;
 static char const *code1_ext = "ccode";
 static char const *code2_ext = "d2code";
 static char const *code3_ext = "p3code";
 static char const *code4_ext = "xcode";
 static int32  num_cb = 4;		/* Number of code books */
-static char  *sendumpfile = 0;		/* Senone probs dump file */
+static char  *sendumpfile = NULL;	/* Senone probs dump file */
 static int32  Use8BitSenProb = FALSE;	/* TRUE=>use sen-probs compressed to 8bits */
 static int32  UseDarpaStandardLM = TRUE;	/* FALSE => Use Roni Rosenfeld LM */
 static int32  UseBigramOnly = FALSE;	/* Only use bigram even is trigram is avaiable */
 static int32  UseWordPair = FALSE;	/* Use word pair probs only */
 static int32 use_left_context = TRUE;
-static float unigramWeight = 1.0;	/* Unigram wieght */
-static double transSmooth = 0.0001;	/* Transition smoothing floor */
-static double transWeight = 1.0;	/* Transition Weight */
+static float unigramWeight = 1.0f;	/* Unigram wieght */
+static double transSmooth = 0.0001f;	/* Transition smoothing floor */
+static double transWeight = 1.0f;	/* Transition Weight */
 static int32 NoLangModel = TRUE;
 static int32 useBigHmmFiles = FALSE;	/* use big hmms files for IO */
 static int32 useCiTrans = TRUE;		/* only ci transitions in hmms */
 static int32 useCiPhonesOnly = FALSE;	/* only ci phones */
 static int32 useWDPhonesOnly = FALSE;	/* only with in word phones */
 
-static float silence_word_penalty = 0.005;
-static float insertion_penalty = 0.65;
-static float filler_word_penalty = 1e-8;
+static float silence_word_penalty = 0.005f;
+static float insertion_penalty = 0.65f;
+static float filler_word_penalty = 1e-8f;
 
 /* Per frame penalty for filler words; no lang wt applied to this */
-static float filler_pfpen = 1.0;	/* Default: no penalty (0 => infinite) */
+static float filler_pfpen = 1.0f;	/* Default: no penalty (0 => infinite) */
 
-static float language_weight = 9.5;
+static float language_weight = 9.5f;
+static int32 ascr_scale = 0;		/* Acoustic score scaling: SCALED DOWN by so
+					   many bits.  Applicable to S3 continuous
+					   models only, not semi-continuous models */
 static int32 max_new_oov = 0;		/* #new OOVs that can be added at run time */
-static float oov_ugprob = -4.5;		/* (Actually log10(ugprob)) of OOVs */
+static float oov_ugprob = -4.5f;	/* (Actually log10(ugprob)) of OOVs */
 
 extern void unlimit(void);
 
@@ -241,6 +266,18 @@ config_t kb_param[] = {
 		BOOL, (caddr_t) &UseBigramOnly }, 
 	{ "UseWordPair", "Use word pair probabilities", "-usewordpair",
 		BOOL, (caddr_t) &UseWordPair }, 
+	{ "S3MdefFile", "S3 Model Definition File", "-mdeffn",
+		STRING, (caddr_t) &mdefFileName }, 
+	{ "S3MeanFile", "S3 Gauden Means File", "-meanfn",
+		STRING, (caddr_t) &meanFileName }, 
+	{ "S3VarFile", "S3 Gauden Variances File", "-varfn",
+		STRING, (caddr_t) &varFileName }, 
+	{ "S3MixwFile", "S3 Mixture Weights File", "-mixwfn",
+		STRING, (caddr_t) &mixwFileName }, 
+	{ "S3VarFloor", "Variance Floor for S3 var file", "-varfloor",
+		FLOAT, (caddr_t) &s3varfloor },
+	{ "S3MixwFloor", "Mixture Weights Floor for S3 mixw file", "-mixwfloor",
+		FLOAT, (caddr_t) &s3mixwfloor },
 	{ "MapFile", "Distribution map", "-mapfn",
 		STRING, (caddr_t) &mapFileName }, 
 	{ "DictFile", "Dictionary file name", "-dictfn",
@@ -309,6 +346,8 @@ config_t kb_param[] = {
 		FLOAT, (caddr_t) &filler_pfpen }, 
 	{ "LanguageWeight", "Weighting on Language Probabilities", "-langwt",
 		FLOAT, (caddr_t) &language_weight }, 
+	{ "AcousticWeight", "Weighting on Acoustic Scores", "-ascrwt",
+		INT, (caddr_t) &ascr_scale }, 
 	{ "MaxNewOOV", "MAX New OOVs that can be added at run time", "-maxnewoov",
 		INT, (caddr_t) &max_new_oov }, 
 	{ "OOVUgProb", "OOV Unigram Log Prob", "-oovugprob",
@@ -325,9 +364,29 @@ int32  num_alphabet = NUMOFCODEENTRIES;
 SMD   *smds;		  	/* Pointer to the smd's */
 int32  numSmds;			/* Number of SMDs allocated */
 dictT *word_dict;
-static int32 **phonetp;		/* Phone transition LOG(probability) matrix */
 
+/* Phone transition LOG(probability) matrix */
+static int32 **phonetp;
 static float phone_insertion_penalty;
+
+/* S3 model definition to S2 mapping */
+static s3mdef_s2map_t *s3mdef_s2map = NULL;
+
+/* S3 (continuous) acoustic model */
+static mgau_model_t *mgau = NULL;
+
+/*
+ * Array for storing s3 senone scores in any frame.
+ * S3 senone order different from S2 order
+ */
+static int32 *s3senscr = NULL;
+
+/*
+ * Array for s3 format feature vector in any frame.
+ * S3 feature vector = cep[12], dcep[12], pow[3], ddcep[12] concatenated
+ * into a single vector.
+ */
+static float32 *s3feat = NULL;
 
 
 int32 kb_get_silence_word_id ( void )
@@ -369,6 +428,12 @@ float32 kb_get_wip ( void )
 float32 kb_get_lw ( void )
 {
   return language_weight;
+}
+
+
+int32 kb_get_ascr_scale ( void )
+{
+  return ascr_scale;
 }
 
 
@@ -446,6 +511,8 @@ void kb (int argc, char *argv[],
     int32 i, j, n, use_darpa_lm;
     float32 p, uptp;
     int32 logp;
+    char filename[4096];
+    mdef_t *mdef;
     
     /* FIXME: This is evil.  But if we do it, let's prototype it
        somewhere, OK? */
@@ -456,32 +523,132 @@ void kb (int argc, char *argv[],
     phone_insertion_penalty = pip;
 
     pconf (argc, argv, kb_param, 0, 0, 0);
-
-    if ((phone_file_name == 0) ||
-	(dict_file_name == 0))
-	pusage (pname, (Config_t *)kb_param);
-
-    E_INFO("%s(%d): Reading phone file [%s]\n",
-	     __FILE__, __LINE__, phone_file_name);
+    
+    /* This test can be A LOT more comprehensive! :) */
+    if (((phone_file_name == NULL) && (mdefFileName == NULL))
+	|| (dict_file_name == NULL)) {
+      pusage (pname, (Config_t *)kb_param);
+    }
+    
+    if (mdefFileName != NULL) {
+      if (((phone_file_name != NULL) && (mapFileName == NULL))
+	  || ((phone_file_name == NULL) && (mapFileName != NULL))) {
+	E_FATAL("Must specify both map/phone files, or neither\n");
+      }
+    }
+    
+    if (mdefFileName != NULL) {
+      /*
+       * mdefFileName != NULL indicates use of S3 (continuous) instead of S2
+       * (semi-continuous) models.  Still, unfortunately, the S2 equivalent
+       * of the mdef file (map/phone files) is also needed.  These can be
+       * specified via the usual -phnfn and -mapfn flags.  However, if they
+       * are omitted, the map and phone files are automatically generated.
+       * If the -kbdumpdir flag is specified, the generated files are written
+       * to that directory, otherwise to /tmp.  The map/phone filenames are
+       * __s3_s2__.{phone,map}.
+       * The generated files can be saved and used in subsequent runs that
+       * deploy the same model configuration.
+       */
+      logs3_init (1.0001);	/* Hack!! Hardwired constant */
+      
+      if ((meanFileName == NULL)
+	  || (varFileName == NULL)
+	  || (mixwFileName == NULL)) {
+	E_FATAL("No S3 mean/var/mixw files specified\n");
+      }
+      
+      /* Read S3 model definition (mdef) and build s2 mapping */
+      s3mdef_s2map = s3mdef_s2map_init (mdefFileName);
+      
+      if (phone_file_name == NULL) {
+	/* Write temporary phone file */
+	if (kb_dump_dir != NULL)
+	  sprintf (filename, "%s/__s3_s2__.phone", kb_dump_dir);
+	else
+	  strcpy (filename, "/tmp/__s3_s2__.phone");
+	phone_file_name = ckd_salloc (filename);
+	if (s2phonefile_write (s3mdef_s2map, phone_file_name) < 0)
+	  E_FATAL("Cannot write phone-file... exiting\n");
+      }
+      
+      if (mapFileName == NULL) {
+	/* Write temporary map file */
+	if (kb_dump_dir != NULL)
+	  sprintf (filename, "%s/__s3_s2__.map", kb_dump_dir);
+	else
+	  strcpy (filename, "/tmp/__s3_s2__.map");
+	mapFileName = ckd_salloc (filename);
+	if (s2mapfile_write (s3mdef_s2map, mapFileName) < 0)
+	  E_FATAL("Cannot write map-file... exiting\n");
+      }
+      
+      /* Read S3 format acoustic model files */
+      mgau = mgau_init (meanFileName, varFileName, s3varfloor,
+			mixwFileName, s3mixwfloor,
+			TRUE);
+      
+      /* Allocate senone scores array */
+      s3senscr = (int32 *) CM_calloc (mgau_n_mgau(mgau), sizeof(int32));
+      
+      /* Allocate feature vector array (cep,dcep,pow,ddcep concatenated) */
+      s3feat = (float32 *) CM_calloc (CEP_VECLEN * 3, sizeof(float32));
+    }
+    
+    E_INFO("Reading phone file [%s]\n", phone_file_name);
     if (phone_read (phone_file_name))
 	exit (-1);
     if (useWDPhonesOnly)
 	phone_add_diphones();
-
+    
     num_ci_phones = phoneCiCount();
-
+    
     /* Read the distribution map file */
-    E_INFO("%s(%d): Reading map file [%s]\n", __FILE__, __LINE__, mapFileName);
-
+    E_INFO("Reading map file [%s]\n", mapFileName);
     read_map (mapFileName, TRUE /* useCiTrans compress */);
-    E_INFO("%s(%d): Reading dict file [%s]\n",
-	     __FILE__, __LINE__, dict_file_name);
-
+    
+    if (mdefFileName != NULL) {
+      E_INFO("Checking mdef and phone/map files for consistency\n");
+      
+      /* A few sanity checks between mdef and phone/map files */
+      mdef = s3mdef_s2map->s3mdef;
+      
+      if (mdef_n_ciphone(mdef) != phoneCiCount())
+	E_FATAL("#CIphones(%s) = %d(S3); #CIphones(%s) = %d(S2)\n",
+		mdefFileName, mdef_n_ciphone(mdef),
+		phone_file_name, phoneCiCount());
+      
+      j = 0;
+      for (i = 0; i < mdef_n_ciphone(mdef); i++) {
+	if (strcmp (mdef_ciphone_str(mdef, i), phone_from_id(i)) != 0) {
+	  E_ERROR("Phone mismatch: '%s'(S3) vs '%s'(S2)\n",
+		  mdef_ciphone_str(mdef, i), phone_from_id(i));
+	  j++;
+	}
+      }
+      if (j > 0)
+	E_FATAL("%d CIphones mismatched between mdef and phone/map\n", j);
+      
+      if (mdef_n_phone(mdef) != phone_count())
+	E_FATAL("#Phones(%s) = %d(S3); #Phones(%s) = %d(S2)\n",
+		mdefFileName, mdef_n_phone(mdef),
+		phone_file_name, phone_count());
+      
+      if (mdef_n_sseq(mdef) != hmm_num_sseq())
+	E_FATAL("#SSeq(%s) = %d(S3); #SSeq(%s) = %d(S2)\n",
+		mdefFileName, mdef_n_sseq(mdef),
+		mapFileName, hmm_num_sseq());
+      
+      /* Other checks can be added here */
+    }
+    
+    E_INFO("Reading dict file [%s]\n", dict_file_name);
     word_dict = dict_new ();
     if (dict_read (word_dict, dict_file_name, phrase_dict_file_name, 
-		   noise_dict_file_name, !useWDPhonesOnly))
-	exit (-1);
-
+		   noise_dict_file_name, !useWDPhonesOnly)) {
+      exit (-1);
+    }
+    
     use_darpa_lm = TRUE;
 
     if (use_darpa_lm) {
@@ -652,13 +819,16 @@ void kb (int argc, char *argv[],
 	    }
 	}
     }
-    /*
-     * Read the distributions
-     */
-    read_dists (hmm_dir, code1_ext, code2_ext, code3_ext, code4_ext,
-		NUMOFCODEENTRIES, hmm_smooth_min, useCiPhonesOnly);
-    if (Use8BitSenProb)
+
+    if (mdefFileName == NULL) {		/* Only if not using S3 models */
+      /*
+       * Read the distributions
+       */
+      read_dists (hmm_dir, code1_ext, code2_ext, code3_ext, code4_ext,
+		  NUMOFCODEENTRIES, hmm_smooth_min, useCiPhonesOnly);
+      if (Use8BitSenProb)
 	SCVQSetSenoneCompression (8);
+    }
     
     /*
      * Map the distributions to the correct locations
@@ -909,7 +1079,7 @@ int32 kb_get_word_id (char const *word)
 	}
     }
     if (id == -1) {
-	E_WARN(stdout, "%s: Couldn't find word \"%s\"\n", rname, word);
+	E_WARN("%s: Couldn't find word \"%s\"\n", rname, word);
     }
 
     return id;
@@ -1035,4 +1205,34 @@ int32 **kb_get_phonetp ( void )
 float32 kb_get_filler_pfpen ( void )
 {
   return filler_pfpen;
+}
+
+
+mgau_model_t *kb_s3model ( void )
+{
+  return mgau;
+}
+
+
+int32 *kb_s3senscr ( void )
+{
+  return s3senscr;
+}
+
+
+float32 *kb_s3feat ( void )
+{
+  return s3feat;
+}
+
+
+int32 *kb_s3_s2_senmap ( void )
+{
+  return s3mdef_s2map->s2map;
+}
+
+
+int32 *kb_s2_s3_senmap ( void )
+{
+  return s3mdef_s2map->s3map;
 }

@@ -33,11 +33,18 @@
  * ====================================================================
  *
  */
+
 /*
  * HISTORY
  *
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:57  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 14-Oct-92 Eric Thayer (eht+@cmu.edu) Carnegie Mellon University
  *	added formal declarations for a and
+ * 
  * 14-Oct-92 Eric Thayer (eht+@cmu.edu) Carnegie Mellon University
  *	installed ulstrcmp() for strcasecmp() because DEC alpha for some reason
  *	seg faults on call to strcasecmp(). (OSF/1 BL8)

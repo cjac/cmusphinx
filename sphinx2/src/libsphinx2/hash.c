@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /* HASH.C
  *------------------------------------------------------------*
  * SYNOPSIS
@@ -52,6 +53,12 @@
  *	It would be trivial to add a deletion function.
  *------------------------------------------------------------*
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.11  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 27-Aug-94  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
  * 	Changed hash_lookup to be case-insensitive.
  * 

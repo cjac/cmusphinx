@@ -33,14 +33,21 @@
  * ====================================================================
  *
  */
+
 /*
  * bisearch.c
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 01-Jan-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created by an ANONYMOUS.
  */
+
 
 /* You know, there's a bsearch() in the standard library. */
 int 

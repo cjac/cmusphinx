@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * Sphinxp -- a protocol for communicating with Sphinx over internet sockets.
  * 
@@ -46,9 +47,12 @@
      5-Mar-95
 
 $Log$
- * Revision 1.4  2004/07/16  00:57:10  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.5  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
  * 
+Revision 1.4  2004/07/16 00:57:10  egouvea
+Added Ravi's implementation of FSG support.
+
 Revision 1.2  2004/05/27 14:22:57  rkm
 FSG cross-word triphones completed (but for single-phone words)
 

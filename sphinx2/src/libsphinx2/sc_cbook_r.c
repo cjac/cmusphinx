@@ -33,10 +33,16 @@
  * ====================================================================
  *
  */
+
 /*
  * Semi-continuous codebook read routines
  *
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 19-Nov-97  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
  * 	Added ability to read power variance file if it exists.
@@ -44,6 +50,7 @@
  * 08-Oct-91  Eric Thayer (eht) at Carnegie-Mellon University
  *	Created from system by Xuedong Huang
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>

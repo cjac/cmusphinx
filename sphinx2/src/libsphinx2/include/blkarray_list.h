@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * blkarray_list.h -- array-based list structure, for memory and access
  * 	efficiency.
@@ -37,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/07/16  00:57:12  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.2  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
  * 
+ * Revision 1.1  2004/07/16 00:57:12  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.2  2004/05/27 14:22:57  rkm
  * FSG cross-word triphones completed (but for single-phone words)
  *

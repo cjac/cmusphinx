@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * cdcn.h -- From the robust speech group at CMU-ECE/SCS
  * 
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.5  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 19-Jun-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Copied from Uday Jain.  Added ifndef _CDCN_H_.

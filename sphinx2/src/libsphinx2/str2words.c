@@ -33,13 +33,21 @@
  * ====================================================================
  *
  */
+
 /*
  * str2words.c -- Convert a string to an array of words
+ * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:57  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 21-Oct-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /* 
  *------------------------------------------------------------*
  * DESCRIPTION
@@ -40,6 +41,11 @@
  *------------------------------------------------------------*
  * HISTORY
  *
+ * $Log$
+ * Revision 1.14  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 23-Jan-01    H J Fox (hjf@cs.brown.edu) at Brown University
  *              Hacked to run under Solaris 8 - flipped the byte swap
  *              condition.
@@ -195,10 +201,10 @@ static int fread_int32(FILE *fp, int min, int max, char const *name)
     int k;
     
     if (fread (&k, sizeof (int), 1, fp) != 1)
-	QUIT((stdout, "%s(%d): fread(%s) failed\n", __FILE__, __LINE__, name));
+	E_FATAL("fread(%s) failed\n", name);
     SWAP_L(k);
     if ((min > k) || (max < k))
-	QUIT((stdout, "%s(%d): %s outside range [%d,%d]\n", __FILE__, __LINE__, name, min, max));
+	E_FATAL("%s outside range [%d,%d]\n", name, min, max);
     return (k);
 }
 
@@ -225,31 +231,29 @@ load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
     size_t n;
     int32 i;
     
-    E_INFO("%s(%d): Loading HMMs from dump file %s\n",
-	     __FILE__, __LINE__, file);
+    E_INFO("Loading HMMs from dump file %s\n", file);
     
     fp = CM_fopen (file, "rb");
 
     /* Read title size, title */
     n = fread_int32 (fp, 1, 999, "Title length");
     if (fread (line, sizeof(char), n, fp) != n)
-	QUIT((stdout, "%s(%d): Cannot read title\n", __FILE__, __LINE__));
+	E_FATAL("Cannot read title\n");
     if (line[n-1] != '\0')
-	QUIT((stdout, "%s(%d): Bad title in dump file\n", __FILE__, __LINE__));
-    E_INFO("%s(%d): %s\n", __FILE__, __LINE__, line);
+	E_FATAL("Bad title in dump file\n");
+    E_INFO("%s\n", line);
     
     /* Read header size, header */
     n = fread_int32 (fp, 1, 999, "Header length");
     if (fread (line, sizeof(char), n, fp) != n)
-	QUIT((stdout, "%s(%d): Cannot read header\n", __FILE__, __LINE__));
+	E_FATAL("Cannot read header\n");
     if (line[n-1] != '\0')
-	QUIT((stdout, "%s(%d): Bad header in dump file\n", __FILE__, __LINE__));
+	E_FATAL("Bad header in dump file\n");
     
 #if 0
     if (strcmp (line, dir) != 0) {
-	E_INFO("%s(%d): ***** WARNING *****\n", __FILE__, __LINE__);
-	E_INFO("    HMM DIRECTORY NAME IN DUMPFILE HEADER: %s\n", line);
-	E_INFO("    INCONSISTENT WITH -hmmdir ARGUMENT:    %s\n\n", dir);
+	E_WARN("HMM DIRECTORY NAME IN DUMPFILE HEADER: %s\n", line);
+	E_INFOCONT("\tINCONSISTENT WITH -hmmdir ARGUMENT:    %s\n\n", dir);
     }
 #endif
 
@@ -259,7 +263,7 @@ load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
 	if (n == 0)
 	    break;
 	if (fread (line, sizeof(char), n, fp) != n)
-	    QUIT((stdout, "%s(%d): Cannot read header\n", __FILE__, __LINE__));
+	    E_FATAL("Cannot read header\n");
     }
     
     /* Read #codewords, #pdfs */
@@ -276,7 +280,7 @@ load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
     for (n = 0; n < 4; n++) {
 	for (i = 0; i < r; i++) {
 	    if (fread (p[n].prob[i], sizeof(int32), 256, fp) != 256)
-		QUIT((stdout, "%s(%d): fread failed\n", __FILE__, __LINE__));
+		E_FATAL("fread failed\n");
 #if (__BIG_ENDIAN__)
 	    {
 		int j;
@@ -286,7 +290,7 @@ load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
 	    }
 #endif
 	    if (fread (p[n].id[i], sizeof (unsigned char), c, fp) != (size_t) c)
-		QUIT((stdout, "%s(%d): fread failed\n", __FILE__, __LINE__));
+		E_FATAL("fread failed\n");
 	}
     }
     
@@ -304,10 +308,10 @@ dump_probs(int32 *p0, int32 *p1,
     int32 i, k;
     static char const *title = "V6 Senone Probs, Smoothed, Normalized";
     
-    E_INFO("%s(%d): Dumping HMMs to dump file %s\n",
-	     __FILE__, __LINE__, file);
+    E_INFO("Dumping HMMs to dump file %s\n", file);
+    
     if ((fp = fopen (file, "wb")) == NULL) {
-	E_ERROR("%s(%d): fopen(%s,wb) failed\n", __FILE__, __LINE__, file);
+	E_ERROR("fopen(%s,wb) failed\n", file);
 	return;
     }
     
@@ -371,7 +375,7 @@ void read_dists (
 
     if (kb_get_senprob_size() == 8) {
 	if ((dumpfile = kb_get_senprob_dump_file()) == NULL)
-	    QUIT((stdout, "%s(%d): Precompiled 8-bit senone probs dump file not specified\n    Compression to be done offline\n", __FILE__, __LINE__));
+	    E_FATAL("Precompiled 8-bit senone probs dump file not specified\n\tCompression to be done offline\n");
 	load_senone_dists_8bits (out_prob_8b, numAlphabet, totalDists, dumpfile, distDir);
 	return;
     }
@@ -465,7 +469,7 @@ compress_sen_dists_16bits (int32 num_alphabet)
 {
     int32 i, sz, min, max, minmin, absmin, shift;
 
-    E_INFO ("%s(%d): Compressing senone probs to 16 bits\n", __FILE__, __LINE__);
+    E_INFO ("Compressing senone probs to 16 bits\n");
     
     sz = totalDists * num_alphabet;
     
@@ -476,24 +480,24 @@ compress_sen_dists_16bits (int32 num_alphabet)
 
     dist_min_max (Out_Prob1, sz, &min, &max);
     if (max > 0)
-	QUIT((stderr, "%s(%d): Cannot compress; dist1 range = %d..%d\n", __FILE__, __LINE__, min, max));
+	E_FATAL("Cannot compress; dist1 range = %d..%d\n", min, max);
     minmin = min;
     
     dist_min_max (Out_Prob2, sz, &min, &max);
     if (max > 0)
-	QUIT((stderr, "%s(%d): Cannot compress; dist2 range = %d..%d\n", __FILE__, __LINE__, min, max));
+	E_FATAL("Cannot compress; dist2 range = %d..%d\n", min, max);
     if (minmin > min)
 	minmin = min;
     
     dist_min_max (Out_Prob3, sz, &min, &max);
     if (max > 0)
-	QUIT((stderr, "%s(%d): Cannot compress; dist3 range = %d..%d\n", __FILE__, __LINE__, min, max));
+	E_FATAL("Cannot compress; dist3 range = %d..%d\n", min, max);
     if (minmin > min)
 	minmin = min;
     
     dist_min_max (Out_Prob4, sz, &min, &max);
     if (max > 0)
-	QUIT((stderr, "%s(%d): Cannot compress; dist4 range = %d..%d\n", __FILE__, __LINE__, min, max));
+	E_FATAL("Cannot compress; dist4 range = %d..%d\n", min, max);
     if (minmin > min)
 	minmin = min;
 
@@ -519,7 +523,7 @@ compress_sen_dists_16bits (int32 num_alphabet)
     free (Out_Prob3);
     free (Out_Prob4);
 
-    E_INFO ("%s(%d): %d LSBs lost in compression\n", __FILE__, __LINE__, shift);
+    E_INFO ("%d LSBs lost in compression\n", shift);
 
     return (shift);
 }
@@ -670,7 +674,7 @@ hmm_tied_read_bin (char const *dir_list,   /* directory search list */
     if (magic != TIED_DIST) {
 	swapLong (&magic);
 	if (magic != TIED_DIST) {
-	    E_FATAL ("%s(%d): in %s, magic = %d expected %d\n", __FILE__, __LINE__, 
+	    E_FATAL ("in %s, magic = %d expected %d\n",
 		  file, magic, TIED_DIST);
 	}
 	else
@@ -682,7 +686,7 @@ hmm_tied_read_bin (char const *dir_list,   /* directory search list */
 
     fread (&tmp, sizeof (int32), 1, fp);
     if (fread (&tmp, sizeof (int32), 1, fp) != 0) {
-	E_FATAL ("%s(%d): EOF not encountered in %s\n", __FILE__, __LINE__, file);
+	E_FATAL ("EOF not encountered in %s\n", file);
     }
     fclose (fp);
 }
@@ -714,8 +718,8 @@ hmm_tied_read_big_bin (char const *dir_list,/* directory search list */
 
 	if (0 == fread (&magic, sizeof (int32), 1, fp)) {
 	    if (parsed == 0)
-		E_INFO("%s(%d): file [%s] is empty\n", 
-			 __FILE__, __LINE__, file);
+		E_INFO("file [%s] is empty\n", file);
+	    
 	    break;
   	}
   	parsed++;
@@ -759,8 +763,8 @@ hmm_tied_read_big_bin (char const *dir_list,/* directory search list */
 	/* make sure we parsed an hmmName
 	 */	    
 	if ((i == sizeof(hmmName)) || (hmmName[i] != '\0')) {
-	    E_FATAL ("%s(%d): failed to parse hmmName [%s] from [%s]\n",
-		     __FILE__, __LINE__, hmmName, file);
+	    E_FATAL ("failed to parse hmmName [%s] from [%s]\n",
+		     hmmName, file);
 	}
 
         pid = phone_to_id (hmmName, TRUE);
@@ -824,8 +828,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	swapLong (&numAlphabet);
 
     if (numAlphabet != numAlphaExpected) {
-	E_FATAL ("%s(%d): in %s, VQ size != %d\n", hmmName, numAlphaExpected,
-		__FILE__, __LINE__);
+      E_FATAL ("In %s, VQ size != %d\n", hmmName, numAlphaExpected);
     }
 
     CM_fread (&numOMatrix, sizeof (int32), 1, fp);
@@ -837,8 +840,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	swapLong (&smd_r->stateCnt);
 
     if (smd_r->stateCnt != (HMM_LAST_STATE+1)) {
-	E_FATAL ("%s(%d): Unexpected state count = %d, in %s\n",
-	         __FILE__, __LINE__, smd_r->stateCnt, hmmName);
+	E_FATAL ("Unexpected state count = %d, in %s\n",
+	         smd_r->stateCnt, hmmName);
     }
 
     CM_fread (&numInitial, sizeof (int32), 1, fp);
@@ -846,8 +849,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	swapLong (&numInitial);
 
     if (numInitial != 1) {
-	E_FATAL ("%s(%d): Unexpected num. initial states = %d, in %s\n",
-	        __FILE__, __LINE__, numInitial, hmmName);
+	E_FATAL ("Unexpected num. initial states = %d, in %s\n",
+		 numInitial, hmmName);
     }
 
     for (i = 0; i < numInitial; i++) {
@@ -858,8 +861,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	    swapLong (&state);
 
 	if (state != 0) {
-	    E_FATAL ("%s(%d): Unexpected initial state = %d, in %s\n",
-		    __FILE__, __LINE__, numInitial, hmmName);
+	    E_FATAL ("Unexpected initial state = %d, in %s\n",
+		     numInitial, hmmName);
 	}
     }
 
@@ -868,8 +871,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	swapLong (&numFinal);
 
     if (numFinal != 1) {
-	E_FATAL ("%s(%d): Unexpected num. final states = %d, in %s\n",
-	        __FILE__, __LINE__, numFinal, hmmName);
+	E_FATAL ("Unexpected num. final states = %d, in %s\n",
+		 numFinal, hmmName);
     }
 
     for (i = 0; i < numFinal; i++) {
@@ -880,8 +883,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	    swapLong (&state);
 
 	if (state != HMM_LAST_STATE) {
-	    E_FATAL ("%s(%d): Unexpected final state = %d, in %s\n",
-		    __FILE__, __LINE__, numArcs, hmmName);
+	    E_FATAL ("Unexpected final state = %d, in %s\n",
+		     state, hmmName);
 	}
     }
 
@@ -890,8 +893,8 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	swapLong (&numArcs);
 
     if (numArcs != TRANS_CNT) {
-	E_FATAL ("%s(%d): Unexpected number of arcs = %d, in %s\n",
-	        __FILE__, __LINE__, numArcs, hmmName);
+	E_FATAL ("Unexpected number of arcs = %d, in %s\n",
+		 numArcs, hmmName);
     }
 
     for (i = 0; i < numArcs; i++) {
@@ -913,14 +916,14 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	 */
 	if ((dist >= numOMatrix) ||
 	    (dist < 0 && dist != NULL_TRANSITION)) {
-	    E_FATAL ("%s(%d): Illegal out_prob_index = %d, arc %d, in %s\n",
-		    __FILE__, __LINE__, dist, i, hmmName);
+	    E_FATAL ("Illegal out_prob_index = %d, arc %d, in %s\n",
+		     dist, i, hmmName);
 	}
 
 	if ((from >= smd_r->stateCnt) || (from < 0) ||
 	    (to >= smd_r->stateCnt) || (to < 0)) {
-	    E_FATAL ("%s(%d): Illegal arc(%d) from(%d)->to(%d) in %s\n",
-		    __FILE__, __LINE__, i, from, to, hmmName);
+	    E_FATAL ("Illegal arc(%d) from(%d)->to(%d) in %s\n",
+		     i, from, to, hmmName);
 	}
 
 	/*
@@ -953,7 +956,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     if (norm)
 	if (hmmArcNormalize (smd, smd_r, transSmooth, arcWeight) < 0) {
-	    E_FATAL ("%s(%d): Problem with trans probs in %s\n", __FILE__, __LINE__, hmmName);
+	    E_FATAL ("Problem with trans probs in %s\n", hmmName);
 	}
 }
 
@@ -1089,8 +1092,8 @@ read_map_line(FILE *fp, char *line,
     /* Find triphone */
     for (lp = line; (*lp != '<') && (*lp != '\0'); lp++);
     if (*lp == '\0')
-        QUIT((stdout, "%s(%d): **ERROR** Cannot find <state>: %s\n",
-	      __FILE__, __LINE__, line));
+        E_FATAL("Cannot find <state>: %s\n", line);
+    
     *lp = '\0';
     ++lp;
     
@@ -1100,7 +1103,7 @@ read_map_line(FILE *fp, char *line,
     
     /* read global id */
     if (sscanf(lp, "%d", id) != 1)
-	QUIT((stdout, "%s(%d): **ERROR** Cannot read senone id\n", __FILE__, __LINE__));
+	E_FATAL("Cannot read senone id\n");
     
     return (1);
 }
@@ -1156,7 +1159,7 @@ void read_map (char const *map_file, int32 compress)
     {
  	triphoneId = phone_to_id (triphone, TRUE);
 	if (triphoneId < 0)
-	    QUIT((stderr, "%s(%d): cannot find triphone %s\n", __FILE__, __LINE__, triphone));
+	    E_FATAL("Cannot find triphone %s\n", triphone);
 
  	ciPhoneId = phone_id_to_base_id (triphoneId);
 
@@ -1198,8 +1201,7 @@ void read_map (char const *map_file, int32 compress)
 	    offset = (phoneType - PT_WWCPHONE) * NUMDISTRTYPES;
 
 	if (offset == -1) {
-	    E_WARN ("%s(%d): Ignoring unknown phone type %d\n",
-		     __FILE__, __LINE__, phoneType);
+	    E_WARN ("Ignoring unknown phone type %d\n", phoneType);
 	    continue;
 	}
 
@@ -1270,8 +1272,8 @@ void read_map (char const *map_file, int32 compress)
 	    for (j = 0; j < NUMDISTRTYPES; j++) {
 	        distMap[i][j] += distIndexBase[phone_id_to_base_id(i)];
 	        if ((distMap[i][j] > totalDists) || (distMap[i][j] < 0)) {
-		    E_FATAL ("%s(%d): distMap[%d][%d] == %d\n",
-			    __FILE__, __LINE__, i, j, distMap[i][j]);
+		    E_FATAL ("distMap[%d][%d] == %d\n",
+			     i, j, distMap[i][j]);
 		}
 	    }
   	}
@@ -1378,8 +1380,8 @@ static void dist_read (
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
-	E_FATAL ("%s(%d): %s length trouble (%d expected, read %d)\n",
-	        __FILE__, __LINE__, filename, expected, numints);
+	E_FATAL ("%s length trouble (%d expected, read %d)\n",
+		 filename, expected, numints);
     }
     /*
      * If useCiDistsOnly then copy only the context independent senones.
@@ -1396,8 +1398,8 @@ static void dist_read (
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
-	E_FATAL ("%s(%d): %s length trouble (%d expected, read %d)\n",
-	        __FILE__, __LINE__, filename, expected, numints);
+	E_FATAL ("%s length trouble (%d expected, read %d)\n",
+		 filename, expected, numints);
     }
     /*
      * If useCiDistsOnly then copy only the context independent senones.
@@ -1414,8 +1416,8 @@ static void dist_read (
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
-	E_FATAL ("%s(%d): %s length trouble (%d expected, read %d)\n",
-	        __FILE__, __LINE__, filename, expected, numints);
+	E_FATAL ("%s length trouble (%d expected, read %d)\n",
+		 filename, expected, numints);
     }
     /*
      * If useCiDistsOnly then copy only the context independent senones.
@@ -1432,8 +1434,8 @@ static void dist_read (
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
-	E_FATAL ("%s(%d): %s length trouble (%d expected, read %d)\n",
-	        __FILE__, __LINE__, filename, expected, numints);
+	E_FATAL ("%s length trouble (%d expected, read %d)\n",
+		 filename, expected, numints);
     }
     /*
      * If useCiDistsOnly then copy only the context independent senones.
@@ -1481,7 +1483,7 @@ hmm_num_sseq (void)
  */
 {
     if (numSSeq == 0) {
-	E_FATAL ("%s(%d): numSSeq (number of senone sequences is 0\n", __FILE__, __LINE__);
+	E_FATAL ("numSSeq (number of senone sequences is 0\n");
     }
     return numSSeq;
 }

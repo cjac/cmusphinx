@@ -38,6 +38,8 @@
 #include "s2types.h"
 #include "c.h"
 
+#include "err.h"
+
 static float agc_thresh = 0.2;
 
 static int32
@@ -170,8 +172,7 @@ delete_background (float *cep, int32 fcnt, int32 cf_cnt, double thresh)
     static char delete[8000];
 
     if (cf_cnt > 8000) {
-	printf ("%s(%d): number frames %d, exceeds max (8000)\n",
-		__FILE__, __LINE__, fcnt);
+	E_INFO("Number frames %d, exceeds max (8000)\n", fcnt);
 	return fcnt;
     }
 
@@ -205,8 +206,8 @@ delete_background (float *cep, int32 fcnt, int32 cf_cnt, double thresh)
 	    j++;
 	}
     }
-    printf ("%s(%d): Deleted %d background frames out of %d frames\n",
-	    __FILE__, __LINE__, fcnt-j, fcnt);
+    E_INFO ("Deleted %d background frames out of %d frames\n",
+	    fcnt-j, fcnt);
     return (j);
 }
 

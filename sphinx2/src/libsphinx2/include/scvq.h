@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * scvq.h -- Interface to semi-continous quantization
  * 
@@ -44,6 +45,17 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.5  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 24-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Changed return type for SCVQScores and SCVQScores_all to void,
+ * 		and removed scvq_sen_psen() and scvq_set_bestpscr() definitions.
+ * 		These are now in the senscr module, for integrating with S3
+ * 		(continuous) acoustic model handling.
  * 
  * 16-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created from Fil Alleva's original.
@@ -89,20 +101,23 @@ int32 SCVQNewFrame(float *in);
 
 /* used by search to compute scores */
 int32 SCVQGetNextScores(int32 *scores);
-int32 SCVQScores (int32 *scores,
-		  float *cep, float *dcep,
-		  float *dcep_80ms, float *pcep, float *ddcep);
-int32 SCVQScores_all (int32 *scores,
-		      float *cep, float *dcep, float *dcep_80ms,
-		      float *pcep, float *ddcep);
+void SCVQScores (int32 *scores,
+		 float *cep,
+		 float *dcep,
+		 float *dcep_80ms,
+		 float *pcep, float *ddcep);
+void SCVQScores_all (int32 *scores,
+		     float *cep,
+		     float *dcep,
+		     float *dcep_80ms,
+		     float *pcep,
+		     float *ddcep);
 
 void setVarFloor(double aVal);
 int32  readMeanCBFile(feat_t feat, float **CB, char *MeanCBFile);
 int32  readVarCBFile(feat_t feat, register int32 *det, float **CB, char *VarCBFile);
 int32  setPowVar(register int32 *det, float **CB, double pow_var);
 
-void scvq_set_psen (int32 n, int32 *p);
-void scvq_set_bestpscr (int32 *p);
 
 #ifndef FALSE
 #define FALSE		0

@@ -33,16 +33,26 @@
  * ====================================================================
  *
  */
+
 /*
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.9  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 11-Jun-89 Fil Alleva
  *	Fixed BUG that occured when $LPATH is not in the environment
+ * 
  * 14-Oct-92 Eric Thayer (eht+@cmu.edu) Carnegie Mellon University
  *	added formal declaration of args to phone_to_id()
+ * 
  * 14-Oct-92 Eric Thayer (eht+@cmu.edu) Carnegie Mellon University
  *	added type casts so that calls into hash.c use caddr_t so that
  *	code would work on an Alpha
  */
+
 
 #include <stdio.h>
 #include <string.h>
@@ -127,8 +137,7 @@ phone_read (char *filename)
 	    model_len = 1;
 
 	if (model_len <= 0) {
-	    printf ("WARNING %s(%d): %s has length %d\n", __FILE__, __LINE__,
-		    phone_str, model_len);
+	    E_WARN("%s has length %d\n", phone_str, model_len);
 	}
 
 	add_phone (phone_str, phone_id, base_id, field1, model_len);
@@ -424,9 +433,8 @@ void phone_add_diphones (void)
 	    case '\0':
 		break;
 	    default:
-		printf ("%s(%d): Unknown position context in %s == '%c'\n",
-			__FILE__, __LINE__, tp, pc[0]);
-		exit (-1);
+		E_FATAL("Unknown position context in %s == '%c'\n",
+			tp, pc[0]);
 	    }
 	}
     }
@@ -435,8 +443,8 @@ void phone_add_diphones (void)
      */
     mk_phone_map ();
 
-    printf ("%s(%d): added %d new begin/end word diphones\n", __FILE__,
-	    __LINE__, new_phone_id - phone_cnt);
+    E_INFO("Added %d new begin/end word diphones\n",
+	   new_phone_id - phone_cnt);
 }
 
 static void add_phone (char *phn, int32 id, int32 base_id, int32 type, int32 len)

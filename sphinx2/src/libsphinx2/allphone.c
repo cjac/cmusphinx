@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,10 +33,20 @@
  * ====================================================================
  *
  */
+
 /*
  * allphone.c -- All CI phone decoding.
  *
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.12  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Modified to use unified semi-continuous/continuous acoustic
+ * 		model evaluation module (senscr).
  * 
  * 06-Aug-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added phonetp (phone transition probs matrix) to search.
@@ -71,6 +81,7 @@
 #include "err.h"
 #include "log.h"
 #include "scvq.h"
+#include "senscr.h"
 #include "msd.h"
 #include "dict.h"
 #include "hmm_tied_r.h"
@@ -170,7 +181,8 @@ static int32 allphone_eval_ci_chan (int32 f)
 static void allphone_bp_entry (int32 f, int32 p)
 {
     if (n_bp == ALLPHONE_BP_MAX-2)
-	fprintf (stderr, "%s(%d): **ERROR** BP table full\n", __FILE__, __LINE__);
+	E_ERROR("BP table full\n");
+    
     if (n_bp >= ALLPHONE_BP_MAX)
 	return;
     
@@ -354,11 +366,10 @@ search_hyp_t *allphone_utt (int32 nfr,
     renorm_scr[0] = 0;
     
     for (f = 0, c = 0, p = 0; f < nfr; f++, c += CEP_SIZE, p += POW_SIZE) {
-	SCVQScores (senscr, cep+c, dcep+c, dcep_80ms+c, pcep+p, ddcep+c);
+	senscr_active (senscr, cep+c, dcep+c, dcep_80ms+c, pcep+p, ddcep+c);
 
 	if ((bestscr = allphone_eval_ci_chan (f)) <= WORST_SCORE) {
-	    fprintf (stderr, "%s(%d): POOR MATCH: bestscore= %d\n",
-		     __FILE__, __LINE__, bestscr);
+	    E_ERROR ("POOR MATCH: bestscore= %d\n", bestscr);
 	    break;
 	}
 	
@@ -409,6 +420,6 @@ allphone_init (double bw, double exitbw, double pip)
 
     phonetp = kb_get_phonetp();
     
-    printf ("%s(%d): bw= %d, wordbw= %d, pip= %d\n", __FILE__, __LINE__,
-	    allphone_bw, allphone_exitbw, allphone_pip);
+    E_INFO("bw= %d, wordbw= %d, pip= %d\n",
+	   allphone_bw, allphone_exitbw, allphone_pip);
 }

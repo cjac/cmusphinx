@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,17 +33,30 @@
  * ====================================================================
  *
  */
+
 /*
  * search.c -- HMM-tree version
  * 
  * HISTORY
- * 
+ *
  * $Log$
- * Revision 1.13  2004/11/09  19:01:41  egouvea
+ * Revision 1.14  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
+ * 01-Dec-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Consolidated senone_active updates into senscr.c.
+ * 
+ * 22-Nov-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Changed senone score computation to use senscr module,
+ * 		for integrated handling of semi-continuous and continuous
+ * 		acoustic model evaluation.
+ * 
+ * Revision 1.13  2004/11/09 19:01:41  egouvea
  * Added Ravi's changes, which add a phone transition probability to the
  * allphone search. Also, when using a start word in the search, do not
  * assume a default if startword not defined.
- * 
+ *
  * 12-Aug-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added search_get_current_startwid().
  * 
@@ -225,6 +238,7 @@
 #include "c.h"
 #include "assert.h"
 #include "scvq.h"
+#include "senscr.h"
 #include "fbs.h"
 #include "search.h"
 #include "hmm_tied_r.h"
@@ -2005,15 +2019,16 @@ search_initialize (void)
 
     topsen_score = (int32 *) CM_calloc (MAX_FRAMES, sizeof(int32));
 
-    /* Inform SCVQ module of senones/phone and bestscore/phone array */
-    {
-	bestpscr = (int32 *) CM_calloc (NumCiPhones, sizeof(int32));
-	utt_pscr = (uint16 **) CM_2dcalloc (MAX_FRAMES, NumCiPhones,
-						    sizeof(uint16));
-	scvq_set_psen (NumCiPhones, hmm_get_psen());
-	scvq_set_bestpscr (bestpscr);
-    }
+    /*
+     * Allocate bestscore/phone arrays:
+     * bestpscr = single array of best-senone-based CIphones scores, updated
+     * every frame.
+     * utt_pscr = scaled version of bestpscr, maintained for entire utterance.
+     */
+    bestpscr = (int32 *) CM_calloc (NumCiPhones, sizeof(int32));
+    utt_pscr = (uint16 **) CM_2dcalloc (MAX_FRAMES, NumCiPhones, sizeof(uint16));
 }
+
 
 int32 *search_get_dist_scores(void)
 {
@@ -2135,42 +2150,23 @@ compute_sen_active (void)
 {
     ROOT_CHAN_T *rhmm;
     CHAN_T *hmm, **acl;
-    int32 i, j, cf, w, *awl, s, *dist, d;
-    char *flagptr;
+    int32 i, cf, w, *awl;
     
     cf = CurrentFrame;
     
-    memset (senone_active_flag, 0, TotalDists * sizeof(char));
-    n_senone_active = 0;
+    sen_active_clear();
     
     /* Flag active senones for root channels */
     for (i = n_root_chan, rhmm = root_chan; i > 0; --i, rhmm++) {
-	if (rhmm->active == cf) {
-	    if (rhmm->mpx) {
-		for (s = 0; s < HMM_LAST_STATE; s++) {
-		    dist = Models[rhmm->sseqid[s]].dist;
-		    d = dist[s*3];
-		    senone_active_flag[d] = 1;
-		}
-	    } else {
-		dist = Models[rhmm->sseqid[0]].dist;
-		for (s = 0; s < TRANS_CNT; s += 3) {
-		    d = dist[s];
-		    senone_active_flag[d] = 1;
-		}
-	    }
-	}
+	if (rhmm->active == cf)
+	  rhmm_sen_active(rhmm);
     }
 
     /* Flag active senones for nonroot channels in HMM tree */
     i = n_active_chan[cf & 0x1];
     acl = active_chan_list[cf & 0x1];
     for (hmm = *(acl++); i > 0; --i, hmm = *(acl++)) {
-	dist = Models[hmm->sseqid].dist;
-	for (s = 0; s < TRANS_CNT; s += 3) {
-	    d = dist[s];
-	    senone_active_flag[d] = 1;
-	}
+      hmm_sen_active(hmm);
     }
     
     /* Flag active senones for individual word channels */
@@ -2178,39 +2174,18 @@ compute_sen_active (void)
     awl = active_word_list[cf & 0x1];
     for (w = *(awl++); i > 0; --i, w = *(awl++)) {
 	for (hmm = word_chan[w]; hmm; hmm = hmm->next) {
-	    dist = Models[hmm->sseqid].dist;
-	    for (s = 0; s < TRANS_CNT; s += 3) {
-		d = dist[s];
-		senone_active_flag[d] = 1;
-	    }
+	  hmm_sen_active(hmm);
 	}
     }
     for (i = 0; i < n_1ph_words; i++) {
 	w = single_phone_wid[i];
 	rhmm = (ROOT_CHAN_T *) word_chan[w];
-	if (rhmm->active == cf) {
-	    if (rhmm->mpx) {
-		for (s = 0; s < HMM_LAST_STATE; s++) {
-		    dist = Models[rhmm->sseqid[s]].dist;
-		    d = dist[s*3];
-		    senone_active_flag[d] = 1;
-		}
-	    } else {
-		dist = Models[rhmm->sseqid[0]].dist;
-		for (s = 0; s < TRANS_CNT; s += 3) {
-		    d = dist[s];
-		    senone_active_flag[d] = 1;
-		}
-	    }
-	}
+	
+	if (rhmm->active == cf)
+	  rhmm_sen_active(rhmm);
     }
-
-    /* Form active senone list */
-    j = 0;
-    for (i = 0, flagptr = senone_active_flag; i < TotalDists; i++, flagptr++)
-	if (*flagptr)
-	    senone_active[j++] = i;
-    n_senone_active = j;
+    
+    sen_active_flags2list();
 }
 
 /*
@@ -2234,9 +2209,9 @@ search_fwd (float *cep, float *dcep, float *dcep_80ms, float *pcep, float *ddcep
 
     if (! compute_all_senones) {
 	compute_sen_active ();
-	topsen_score[cf] = SCVQScores(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
+	topsen_score[cf] = senscr_active(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
     } else {
-	topsen_score[cf] = SCVQScores_all(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
+	topsen_score[cf] = senscr_all(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
     }
     n_senone_active_utt += n_senone_active;
     
@@ -2995,6 +2970,7 @@ search_set_lw (double p1lw, double p2lw, double p3lw)
     
     E_INFO ("LW = fwdtree: %.1f, fwdflat: %.1f, bestpath: %.1f\n",
 	    fwdtree_lw, fwdflat_lw, bestpath_lw);
+    E_INFO ("Log2(AscrScale) = %d\n", kb_get_ascr_scale());
 }
 
 void
@@ -4095,9 +4071,9 @@ search_fwdflat_frame (float *cep, float *dcep, float *dcep_80ms, float *pcep, fl
     
     if (! compute_all_senones) {
 	compute_fwdflat_senone_active ();
-	SCVQScores(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
+	senscr_active(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
     } else
-	SCVQScores_all(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
+	senscr_all(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
     n_senone_active_utt += n_senone_active;
 
     if (CurrentFrame >= MAX_FRAMES-1)
@@ -4147,13 +4123,12 @@ search_fwdflat_frame (float *cep, float *dcep, float *dcep_80ms, float *pcep, fl
 void
 compute_fwdflat_senone_active ( void )
 {
-    int32 i, cf, w, s, d;
-    int32 *awl, *dist;
+    int32 i, cf, w;
+    int32 *awl;
     ROOT_CHAN_T *rhmm;
     CHAN_T *hmm;
     
-    memset (senone_active_flag, 0, TotalDists * sizeof(char));
-    n_senone_active = 0;
+    sen_active_clear();
     
     cf = CurrentFrame;
     
@@ -4163,40 +4138,17 @@ compute_fwdflat_senone_active ( void )
     for (w = *(awl++); i > 0; --i, w = *(awl++)) {
 	rhmm = (ROOT_CHAN_T *) word_chan[w];
 	if (rhmm->active == cf) {
-	    if (rhmm->mpx) {
-		for (s = 0; s < HMM_LAST_STATE; s++) {
-		    dist = Models[rhmm->sseqid[s]].dist;
-		    d = dist[s*3];
-		    if (! senone_active_flag[d]) {
-			senone_active_flag[d] = 1;
-			senone_active[n_senone_active++] = d;
-		    }
-		}
-	    } else {
-		dist = Models[rhmm->sseqid[0]].dist;
-		for (s = 0; s < TRANS_CNT; s += 3) {
-		    d = dist[s];
-		    if (! senone_active_flag[d]) {
-			senone_active_flag[d] = 1;
-			senone_active[n_senone_active++] = d;
-		    }
-		}
-	    }
+	  rhmm_sen_active(rhmm);
 	}
-
+	
 	for (hmm = rhmm->next; hmm; hmm = hmm->next) {
 	    if (hmm->active == cf) {
-		dist = Models[hmm->sseqid].dist;
-		for (s = 0; s < TRANS_CNT; s += 3) {
-		    d = dist[s];
-		    if (! senone_active_flag[d]) {
-			senone_active_flag[d] = 1;
-			senone_active[n_senone_active++] = d;
-		    }
-		}
+	      hmm_sen_active(hmm);
 	    }
 	}
     }
+    
+    sen_active_flags2list();
 }
 
 void
@@ -5045,4 +4997,10 @@ void search_set_topsen_score (int32 frm, int32 score)
 {
   assert (frm < MAX_FRAMES);
   topsen_score[frm] = score;
+}
+
+
+int32 *search_get_bestpscr ( void )
+{
+  return bestpscr;
 }

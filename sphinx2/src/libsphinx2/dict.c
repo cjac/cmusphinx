@@ -33,8 +33,14 @@
  * ====================================================================
  *
  */
+
 /* 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.14  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 05-Nov-98  M K Ravishankar (rkm@cs.cmu.edu) at Carnegie-Mellon University
  * 		dict_load now terminates program if input dictionary 
@@ -281,8 +287,8 @@ dict_read(dictT *dict,
     /* Placeholders (dummy pronunciations) for new words that can be added at runtime */
     initial_dummy = first_dummy = word_id;
     if ((max_new_oov = kb_get_max_new_oov ()) > 0)
-	E_INFO ("%s(%d): Allocating %d placeholders for new OOVs\n",
-		__FILE__, __LINE__, max_new_oov);
+	E_INFO ("Allocating %d placeholders for new OOVs\n",
+		max_new_oov);
     for (i = 0; i < max_new_oov; i++) {
 	char tmpstr[100], pronstr[100];
 	
@@ -319,8 +325,8 @@ dict_read(dictT *dict,
 		if (! entry)
 		    E_FATAL("Failed to add </s>(SIL) to dictionary\n");
 	    } else {
-		E_INFO ("%s(%d): using special end silence for %s\n",
-			 __FILE__, __LINE__, kb_get_lm_end_sym());
+		E_INFO ("Using special end silence for %s\n",
+			kb_get_lm_end_sym());
 		entry = _new_dict_entry (kb_get_lm_end_sym(), "SILe", FALSE);
 	    }
 	    _dict_list_add (dict, entry);
@@ -339,14 +345,14 @@ dict_read(dictT *dict,
 	    char line[1000], startsym[1000];
 	    char const *startsym_phone;
 	    
-	    E_INFO ("%s(%d):  Reading start-syms file %s\n",
-		    __FILE__, __LINE__, startsym_file);
+	    E_INFO ("Reading start-syms file %s\n", startsym_file);
 	    
 	    startsym_phone = (phone_to_id ("SILb", FALSE) == NO_PHONE) ? "SIL" : "SILb";
 	    ssfp = CM_fopen (startsym_file, "r");
 	    while (fgets (line, sizeof(line), ssfp) != NULL) {
 		if (sscanf (line, "%s", startsym) != 1)
-		    QUIT((stdout, "%s(%d):  File format error\n", __FILE__, __LINE__));
+		  E_FATAL("File format error\n");
+		
 		entry = _new_dict_entry (startsym, startsym_phone, FALSE);
 		if (! entry)
 		    E_FATAL("Failed to add %s to dictionary\n", startsym);
@@ -367,8 +373,8 @@ dict_read(dictT *dict,
 		if (! entry)
 		    E_FATAL("Failed to add <s>(SIL) to dictionary\n");
 	    } else {
-		E_INFO ("%s(%d): using special begin silence for %s\n",
-			 __FILE__, __LINE__, kb_get_lm_start_sym());
+		E_INFO ("Using special begin silence for %s\n",
+			kb_get_lm_start_sym());
 		entry = _new_dict_entry (kb_get_lm_start_sym(), "SILb", FALSE);
 		if (! entry)
 		    E_FATAL("Failed to add <s>(SILb) to dictionary\n");
@@ -862,7 +868,7 @@ static int32 replace_dict_entry (dictT *dict,
 
     /* For the moment, no single phone new word... */
     if (pronoun_len < 2) {
-	E_ERROR("%s(%d): Pronunciation string too short\n", __FILE__, __LINE__);
+	E_ERROR("Pronunciation string too short\n");
 	return (0);
     }
 
@@ -873,8 +879,7 @@ static int32 replace_dict_entry (dictT *dict,
 	    *p = '\0';
 	    if (hash_lookup (&dict->dict, word_str, &idx)) {
 		*p = '(';
-		E_ERROR("%s(%d): Base word missing for %s\n",
-			 __FILE__, __LINE__, word_str);
+		E_ERROR("Base word missing for %s\n", word_str);
 		return 0;
 	    }
 	    *p = '(';
@@ -887,7 +892,7 @@ static int32 replace_dict_entry (dictT *dict,
     i = 0;
     sprintf (triphoneStr, "%s(%%s,%s)b", phone[i], phone[i+1]);
     if (hash_lookup (&lcHT, triphoneStr, &idx) < 0) {
-	E_ERROR("%s(%d): Unknown left diphone\n", __FILE__, __LINE__);
+	E_ERROR("Unknown left diphone '%s'\n", triphoneStr);
 	return (0);
     }
     triphone_ids[i] = (int32) idx;
@@ -902,7 +907,7 @@ static int32 replace_dict_entry (dictT *dict,
 
     sprintf (triphoneStr, "%s(%s,%%s)e", phone[i], phone[i-1]);
     if (hash_lookup (&rcHT, triphoneStr, &idx) < 0) {
-	E_ERROR("%s(%d): Unknown right diphone\n", __FILE__, __LINE__);
+	E_ERROR("Unknown right diphone '%s'\n", triphoneStr);
 	return (0);
     }
     triphone_ids[i] = (int32) idx;
@@ -949,7 +954,7 @@ int32 dict_add_word (dictT *dict, char const *word, char const *pron)
     new_entry = 0;
     if ((wid = kb_get_word_id(word)) < 0) {
 	if (first_dummy > last_dummy) {
-	    E_ERROR ("%s(%d): Dictionary full\n", __FILE__, __LINE__);
+	    E_ERROR ("Dictionary full; cannot add word\n");
 	    return -1;
 	}
 	wid = first_dummy++;
@@ -974,8 +979,7 @@ _dict_list_add (dictT *dict, dict_entry_t *entry)
 	    CM_calloc (dict->dict.size_hint, sizeof (dict_entry_t *));
 
     if (dict->dict_entry_count >= dict->dict.size_hint) {
-	E_FATAL("%s(%d): **ERROR** dict size (%d) exceeded\n",
-		 __FILE__, __LINE__, dict->dict.size_hint);
+	E_FATAL("dict size (%d) exceeded\n", dict->dict.size_hint);
 #if 0
 	dict->dict.size_hint = dict->dict_entry_count + 16;
 	dict->dict_list = (dict_entry_t **)
@@ -1297,12 +1301,12 @@ int32 dict_write_oovdict (dictT *dict, char const *file)
 
     /* If no new words added at run time, no need to write a new file */
     if (initial_dummy == first_dummy) {
-	E_ERROR("%s(%d): No new word added; no OOV file written\n", __FILE__, __LINE__);
+	E_ERROR("No new word added; no OOV file written\n");
 	return 0;
     }
 
     if ((fp = fopen(file, "w")) == NULL) {
-	E_ERROR("%s(%d): fopen(%s,w) failed\n", __FILE__, __LINE__, file);
+	E_ERROR("fopen(%s,w) failed\n", file);
 	return -1;
     }
 

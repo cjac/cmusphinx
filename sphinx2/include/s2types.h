@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * prim_type.h -- Primitive types; more machine-independent.
  *
@@ -43,9 +44,16 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/07/16  00:57:10  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.6  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
  * 
+ * 
+ * 12-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 		Added some useful constant definitions.
+ * 
+ * Revision 1.5  2004/07/16 00:57:10  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.2  2004/05/27 14:22:57  rkm
  * FSG cross-word triphones completed (but for single-phone words)
  *
@@ -73,8 +81,9 @@
  */
 
 
-#ifndef _S2TYPES_
-#define _S2TYPES_
+#ifndef __S2TYPES_H__
+#define __S2TYPES_H__
+
 
 typedef int		int32;
 typedef short		int16;
@@ -96,6 +105,34 @@ typedef unsigned char	boolean;
 #ifndef NULL
 #define NULL (void *)0
 #endif
+
+
+/* Useful constants */
+#define MAX_INT32		((int32) 0x7fffffff)
+#define MAX_INT16		((int16) 0x00007fff)
+#define MAX_INT8		((int8)  0x0000007f)
+
+#define MAX_NEG_INT32		((int32) 0x80000000)
+#define MAX_NEG_INT16		((int16) 0xffff8000)
+#define MAX_NEG_INT8		((int8)  0xffffff80)
+
+#define MAX_UINT64		((uint64) 0xffffffffffffffff)
+#define MAX_UINT32		((uint32) 0xffffffff)
+#define MAX_UINT16		((uint16) 0x0000ffff)
+#define MAX_UINT8		((uint8)  0x000000ff)
+
+/* The following are approximate; IEEE floating point standards might quibble! */
+#define MAX_POS_FLOAT32		3.4e+38f
+#define MIN_POS_FLOAT32		1.2e-38f	/* But not 0 */
+#define MAX_POS_FLOAT64		1.8e+307
+#define MIN_POS_FLOAT64		2.2e-308
+
+/* Will the following really work?? */
+#define MAX_NEG_FLOAT32		((float32) (-MAX_POS_FLOAT32))
+#define MIN_NEG_FLOAT32		((float32) (-MIN_POS_FLOAT32))
+#define MAX_NEG_FLOAT64		((float64) (-MAX_POS_FLOAT64))
+#define MIN_NEG_FLOAT64		((float64) (-MIN_POS_FLOAT64))
+
 
 typedef union anytype_s {
   boolean boolean;

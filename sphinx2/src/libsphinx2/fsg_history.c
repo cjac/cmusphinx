@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * fsg_history.c -- FSG Viterbi decode history
  * 
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.3  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 25-Feb-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started..

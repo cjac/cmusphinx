@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * glist.h -- Module for maintaining a generic, linear linked-list structure.
  *
@@ -41,6 +42,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.2  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 24-Jun-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added glist_insert_*() and gnode_free() functions.

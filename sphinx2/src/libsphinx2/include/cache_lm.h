@@ -33,14 +33,21 @@
  * ====================================================================
  *
  */
+
 /*
  * cache_lm.h -- Dynamic cache language model based on Roni Rosenfeld's work.
  *
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.7  2004/12/10  16:48:58  rkm
+ * Added continuous density acoustic model handling
+ * 
+ * 
  * 01-Apr-97	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Started, based on earlier FBS6 version.
  */
+
 
 #ifndef _CACHE_LM_H_
 #define _CACHE_LM_H_

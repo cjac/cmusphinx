@@ -30,6 +30,7 @@
  * ====================================================================
  *
  */
+
 /*
  * log.h -- LOG based probability ops
  * 
@@ -40,6 +41,11 @@
  * **********************************************
  * 
  * HISTORY
+ * 
+ * $Log$
+ * Revision 1.6  2004/12/10  16:48:55  rkm
+ * Added continuous density acoustic model handling
+ * 
  * 
  * 16-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created from Fil Alleva's original.

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,19 +44,26 @@
  *
  *-----------------------------------------------------------------------*
  * HISTORY
- *
+ * 
  * $Log$
- * Revision 1.17  2004/11/13  00:45:48  egouvea
+ * Revision 1.18  2004/12/10  16:48:56  rkm
+ * Added continuous density acoustic model handling
+ * 
+ *
+ * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Modified to use unified semi-continuous/continuous acoustic
+ * 		model evaluation module (senscr).
+ *
+ * Revision 1.17  2004/11/13 00:45:48  egouvea
  * Replaced QUIT macro with E_FATAL, and removed the __FILE__ macros,
  * since E_INFO already provides the info. Also changed float constants
  * so the compiler doesn't complain about truncation from double to float
  * (added f to the constant value).
- * 
+ *
  * Revision 1.16  2004/11/09 19:01:39  egouvea
  * Added Ravi's changes, which add a phone transition probability to the
  * allphone search. Also, when using a start word in the search, do not
  * assume a default if startword not defined.
- *
  * 
  * 09-Nov-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  *     		In setting startword for listen project in run_sc_utterance(),
@@ -1162,7 +1169,7 @@ fbs_init (int32 argc, char **argv)
     
 #if defined(PROF_TIME)
     if (timer_open() < 0) {
-	E_FATAL(stderr, "Could not open timer module\n");
+	E_FATAL("Could not open timer module\n");
     }
 #endif
 #if defined(PROF_MEM)
@@ -1177,24 +1184,52 @@ fbs_init (int32 argc, char **argv)
     
     /* Load the KB */
     kb (argc, argv, insertion_penalty, fwdtree_lw, phone_insertion_penalty);
-
-    exts[0] = cext;
-    exts[1] = dext;
-    exts[2] = pext;
-    exts[3] = xext;
-
-    /*
-     * Read the code books. These probably should be put into the KB
-     * at a later date.
-     */
-    if ((ccbfn == NULL) || (dcbfn == NULL) || (pcbfn == NULL) || (xcbfn == NULL))
-      E_FATAL("One or more codebooks not specified\n");
-
-    /* initialize semi-continuous acoustic and model scoring subsystem */
-    SCVQInit(scVqTopN, kb_get_total_dists(), 1,
-	     (double) Cep_Floor, use20msDiffPow);
     
-    SCVQSetdcep80msWeight (dcep80msWeight);
+    if (kb_s3model() == NULL) {
+      E_INFO("Not using S3 continuous models; initializing SCVQ module\n");
+      
+      exts[0] = cext;
+      exts[1] = dext;
+      exts[2] = pext;
+      exts[3] = xext;
+      
+      /*
+       * Read the code books. These probably should be put into the KB
+       * at a later date.
+       */
+      if ((ccbfn == NULL) || (dcbfn == NULL) || (pcbfn == NULL) || (xcbfn == NULL))
+	E_FATAL("One or more codebooks not specified\n");
+      
+      /* initialize semi-continuous acoustic and model scoring subsystem */
+      SCVQInit(scVqTopN, kb_get_total_dists(), 1,
+	       (double) Cep_Floor, use20msDiffPow);
+      SCVQSetdcep80msWeight (dcep80msWeight);
+      
+      {
+	char mpath[MAXPATHLEN+1], vpath[MAXPATHLEN+1];
+	
+	sprintf(mpath, "%s/%s.vec", cbdir, ccbfn);
+	sprintf(vpath, "%s/%s.var", cbdir, ccbfn);
+	if (SCVQInitFeat(CEP_FEAT, mpath, vpath, kb_get_codebook_0_dist()) < 0)
+	  E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
+	
+	sprintf(mpath, "%s/%s.vec", cbdir, dcbfn);
+	sprintf(vpath, "%s/%s.var", cbdir, dcbfn);
+	if (SCVQInitFeat(DCEP_FEAT, mpath, vpath, kb_get_codebook_1_dist()) < 0)
+	  E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
+	
+	sprintf(mpath, "%s/%s.vec", cbdir, pcbfn);
+	sprintf(vpath, "%s/%s.var", cbdir, pcbfn);
+	if (SCVQInitFeat(POW_FEAT, mpath, vpath, kb_get_codebook_2_dist()) < 0)
+	  E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
+	
+	sprintf(mpath, "%s/%s.vec", cbdir, xcbfn);
+	sprintf(vpath, "%s/%s.var", cbdir, xcbfn);
+	if (SCVQInitFeat(DDCEP_FEAT, mpath, vpath, kb_get_codebook_3_dist()) < 0)
+	  E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
+      }
+    }
+    
     if (agcNoise || agcMax) {
 	agc_set_threshold (agcThresh);
 #if 0
@@ -1219,30 +1254,6 @@ fbs_init (int32 argc, char **argv)
 	}
     }
     
-    {
-	char mpath[MAXPATHLEN+1], vpath[MAXPATHLEN+1];
-	
-	sprintf(mpath, "%s/%s.vec", cbdir, ccbfn);
-	sprintf(vpath, "%s/%s.var", cbdir, ccbfn);
-	if (SCVQInitFeat(CEP_FEAT, mpath, vpath, kb_get_codebook_0_dist()) < 0)
-	    E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
-	
-	sprintf(mpath, "%s/%s.vec", cbdir, dcbfn);
-	sprintf(vpath, "%s/%s.var", cbdir, dcbfn);
-	if (SCVQInitFeat(DCEP_FEAT, mpath, vpath, kb_get_codebook_1_dist()) < 0)
-	    E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
-	
-	sprintf(mpath, "%s/%s.vec", cbdir, pcbfn);
-	sprintf(vpath, "%s/%s.var", cbdir, pcbfn);
-	if (SCVQInitFeat(POW_FEAT, mpath, vpath, kb_get_codebook_2_dist()) < 0)
-	    E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
-	
-	sprintf(mpath, "%s/%s.vec", cbdir, xcbfn);
-	sprintf(vpath, "%s/%s.var", cbdir, xcbfn);
-	if (SCVQInitFeat(DDCEP_FEAT, mpath, vpath, kb_get_codebook_3_dist()) < 0)
-	    E_FATAL("SCVQInitFeat(%s,%s) failed\n", mpath, vpath);
-    }
-    
     search_initialize ();
     
     search_set_beam_width (beam_width);
@@ -1258,8 +1269,10 @@ fbs_init (int32 argc, char **argv)
     search_set_skip_alt_frm (skip_alt_frm);
     search_set_fwdflat_bw (fwdflat_beam_width, fwdflat_new_word_beam_width);
     
-    searchSetScVqTopN (scVqTopN);
-
+    if (kb_s3model() == NULL) {
+      searchSetScVqTopN (scVqTopN);
+    }
+    
 #if 0
     SCVQSetSilCompression (compress);
 #endif
