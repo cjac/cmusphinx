@@ -5,5 +5,6 @@ SUBDIRS = an4 \
 	tidigits \
 	wsj20k \
 	wsj5k \
-	Communicator 
+	Communicator \
+	ICSI
 	
