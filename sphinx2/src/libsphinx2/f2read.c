@@ -40,13 +40,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#if (! WIN32)
-#include <sys/file.h>
-#include <sys/fcntl.h>
-#include <unistd.h>
-#else
-#include <io.h>
 #include <fcntl.h>
+
+#ifdef WIN32
+#include <io.h>
+#else
+#include <sys/file.h>
+#include <unistd.h>
 #endif
 #include "byteorder.h"
 
