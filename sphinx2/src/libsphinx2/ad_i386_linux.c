@@ -310,7 +310,7 @@ int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
     
     if (length < 0) {
 	if (errno!=EAGAIN){ 
-	    E_ERROR("Audio read errorn"); 
+	    E_ERROR("Audio read error"); 
 	    return AD_ERR_GEN; 
 	} else {
 	    length=0; 
