@@ -1,5 +1,4 @@
-/* $Header$
- * 
+/*
  * **********************************************
  * CMU ARPA Speech Project
  *
@@ -47,15 +46,13 @@
  * 		with the new LM name (instead of reporting error and exiting).
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
- * $Log$
- * Revision 1.3  2000/12/05  22:50:04  lenzo
+ * Revision 1.3  2000/12/05 22:50:04  lenzo
  * Removed unused variables
- * 
+ *
  * Revision 1.2  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
  * Revision 1.1  2000/04/25 22:15:00  lenzo
- * *** empty log message ***
  *
  * Revision 8.9  94/10/11  12:36:28  rkm
  * Changed lm_tg_score to call lm_bg_score if no trigrams present or
@@ -93,7 +90,6 @@
  * Corrected bug relating to input file format.
  * 
  * Revision 6.11  93/12/17  13:14:52  rkm
- * *** empty log message ***
  * 
  * Revision 6.10  93/12/03  17:09:59  rkm
  * Added ability to handle bigram-only dump files.
@@ -169,6 +165,8 @@ extern char *kb_get_dump_dir();	/* directory for binary LM dump */
 extern char *dictid_to_str ();
 extern double kb_get_oov_ugprob ();
 
+static double  oov_ugprob = -5.0;	/* Actually, logprob */
+
 #endif
 
 #define UG_MAPID(m,u)		((m)->unigrams[u].mapid)
@@ -197,8 +195,6 @@ extern char *salloc();
 extern char *listelem_alloc ();
 extern void  listelem_free ();
 
-static double  oov_ugprob = -5.0;	/* Actually, logprob */
-
 static char   *start_sym = "<s>";
 static char   *end_sym = "</s>";
 static char   *darpa_hdr = "Darpa Trigram LM";
@@ -225,6 +221,9 @@ static int32 notindict;
 
 /* Words in LM; used only for building internal LM from LM file */
 static char **word_str;
+
+/* from eht_quit.c */
+extern void quit (int status, char const *fmt, ...);
 
 #define MIN_PROB_F		-99.0
 
@@ -505,7 +504,7 @@ static void ReadUnigrams (fp, model)
 
 	/* Associate name with word id */
 	word_str[wcnt] = (char *) salloc (name);
-	hash_add (&(model->HT), word_str[wcnt], wcnt);
+	hash_add (&(model->HT), word_str[wcnt], (void *) wcnt);
 	model->unigrams[wcnt].prob1.f = p1;
 	model->unigrams[wcnt].bo_wt1.f = bo_wt;
 
@@ -616,7 +615,8 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
     
     printf ("%s(%d): Reading trigrams\n", __FILE__, __LINE__);
     fflush (stdout);
-    
+
+    tgoff = 0;
     tgcount = 0;
     tgptr = model->trigrams;
     prev_w1 = -1;
@@ -1061,6 +1061,8 @@ int32 lm_add_word (lm_t *model, int32 dictwid)
 	model->dictwid_map[dictwid] = model->ucount;
     
     return (model->ucount++);
+#else 
+    return -1;
 #endif
 }
 
@@ -1092,7 +1094,7 @@ void lm_add (char const *lmname, lm_t *model, double lw, double uw, double wip)
 /*
  * Delete named LM from list of LMs and reclaim all space.
  */
-int32 lm_delete (char *name)
+int32 lm_delete (char const *name)
 {
     int32 i, u;
     lm_t *model;
@@ -1162,7 +1164,7 @@ int32 lm_set_current (char const *name)
     return (0);
 }
 
-static int32 lmname_to_id (char *name)
+static int32 lmname_to_id (char const *name)
 {
     int32 i;
     
@@ -1233,7 +1235,7 @@ static int32 fread_int32(fp, min, max, name)
     return (k);
 }
 
-static fwrite_int32 (fp, val)
+static void fwrite_int32 (fp, val)
     FILE *fp;
     int32 val;
 {
@@ -1241,7 +1243,7 @@ static fwrite_int32 (fp, val)
     fwrite (&val, sizeof(int32), 1, fp);
 }
 
-static fwrite_ug (fp, ug)
+static void fwrite_ug (fp, ug)
     FILE *fp;
     unigram_t *ug;
 {
@@ -1254,7 +1256,7 @@ static fwrite_ug (fp, ug)
     fwrite (&tmp_ug, sizeof(unigram_t), 1, fp);
 }
 
-static fwrite_bg (fp, bg)
+static void fwrite_bg (fp, bg)
     FILE *fp;
     bigram_t *bg;
 {
@@ -1267,7 +1269,7 @@ static fwrite_bg (fp, bg)
     fwrite (&tmp_bg, sizeof(bigram_t), 1, fp);
 }
 
-static fwrite_tg (fp, tg)
+static void fwrite_tg (fp, tg)
     FILE *fp;
     trigram_t *tg;
 {
@@ -1295,7 +1297,8 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     bigram_t *bgptr;
     trigram_t *tgptr;
     char *tmp_word_str;
-    
+
+    err = 0;
     printf ("%s(%d): Looking for precompiled LM dump file %s\n",
 	    __FILE__, __LINE__, file);
     if ((fp = fopen (file, "rb")) == NULL) {
@@ -1666,7 +1669,7 @@ static void lm_set_param (lm_t *model, double lw, double uw, double wip, int32 w
 }
 
 
-main (argc, argv)
+int main (argc, argv)
     int32 argc;
     char *argv[];
 {
@@ -1682,7 +1685,7 @@ main (argc, argv)
     uw = 0.7;
     wip = 0.2;
     
-    lm_read(lmfile, "", lw, uw, wip);
+    return lm_read(lmfile, "", lw, uw, wip);
 }
 
 

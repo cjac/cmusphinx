@@ -594,4 +594,7 @@ set of changes from dhd (below)
 
 2000-12-13 Kevin A. Lenzo <lenzo@cs.cmu.edu>
 	* Renamed turtle demo files from 'demo.*' to 'turtle.*'
-	
+
+	* Explicitly made various functions return void in lm3g2dmp
+	  and cleaned up all the warnings.
+

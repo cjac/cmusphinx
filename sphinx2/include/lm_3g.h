@@ -63,10 +63,9 @@
  * 01-Jul-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added tginfo_t to help speed up find_bg() and find_tg() searches.
  * 
- * $Log$
- * Revision 1.1  2000/12/05  01:33:29  lenzo
+ * Revision 1.1  2000/12/05 01:33:29  lenzo
  * files added or moved
- * 
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:58  lenzo
  * Initial import of sphinx2
  *
@@ -231,5 +230,7 @@ int32	lm3g_access_type (void);
 void	lm3g_cache_reset (void);
 void	lm3g_cache_stats_dump (FILE *file);
 void	lm_next_frame (void);
+
+int32   lm_delete (char const *name);
 
 #endif /* _LM_3G_H_ */
