@@ -105,6 +105,9 @@ ld_init(live_decoder_t *decoder, int argc, char **argv)
   fe_param.PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
   fe_param.FFT_SIZE = cmd_ln_int32("-nfft");
   fe_param.WINDOW_LENGTH = cmd_ln_float32("-wlen");
+  fe_param.doublebw = cmd_ln_int32("-doublebw");
+  fe_param.machine_endian = cmd_ln_int32("-machine_endian");
+  fe_param.input_endian = cmd_ln_int32("-input_endian");
 	
   decoder->fe = fe_init(&fe_param);
   if (!decoder->fe) {
