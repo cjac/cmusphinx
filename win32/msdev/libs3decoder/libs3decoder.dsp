@@ -153,10 +153,6 @@ SOURCE=..\..\..\src\libs3decoder\fillpen.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\flat_fwd.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libs3decoder\gs.c
 # End Source File
 # Begin Source File
@@ -226,14 +222,6 @@ SOURCE=..\..\..\src\libs3decoder\ms_mllr.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\ms_senone.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\s3_align.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\s3_dag.c
 # End Source File
 # Begin Source File
 
@@ -386,14 +374,6 @@ SOURCE=..\..\..\src\libs3decoder\ms_mllr.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\ms_senone.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\s3_align.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\s3_dag.h
 # End Source File
 # Begin Source File
 
