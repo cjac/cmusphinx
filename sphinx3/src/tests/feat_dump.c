@@ -133,9 +133,6 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 {
     static float32 **feat=NULL;
     static float32 **cepbuf=NULL;
-    /* static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
-    /* static unsigned char   bufpos, curpos;   */
-    /* static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	   */
     static int32   bufpos;
     /* RAH 4.15.01 upgraded unsigned char variables to int32*/
     static int32   curpos;
@@ -159,8 +156,10 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
     metricsStart("cmn");
 
-    if (fcb->cmn) /* Only cmn_prior in block computation mode */
+    if (fcb->cmn) {
+        /* Only cmn_prior in block computation mode */
 	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+    }
 
     metricsStop("cmn");
 
