@@ -20,4 +20,4 @@
 -lextreedump 0
 -lw   26
 -beam     1e-120
--nwbeam   1e-100
+-wbeam   1e-100
