@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.7  2004/12/23  21:05:22  arthchan2003
- * Enable compilation of decode_anytopo, change option names from -match to -hyp, it makes the code more consistent.
+ * Revision 1.8  2005/02/05  15:30:07  egouvea
+ * Changed default cepdir to null, so a user can choose not to specify it, and making it consistent with decode.c. Removed assert checking if cepdir was null
  * 
+ * Revision 1.7  2004/12/23 21:05:22  arthchan2003
+ * Enable compilation of decode_anytopo, change option names from -match to -hyp, it makes the code more consistent.
+ *
  * Revision 1.6  2004/12/14 00:50:33  arthchan2003
  * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
  *
@@ -411,7 +414,7 @@ static arg_t defn[] = {
       "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-cepdir",
       ARG_STRING,
-      ".",
+      NULL,
       "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
@@ -1222,7 +1225,7 @@ static int32 process_ctlfile ( void )
     
     cepdir = (char *) cmd_ln_access("-cepdir");
     cepext = (char *) cmd_ln_access("-cepext");
-    assert ((cepdir != NULL) && (cepext != NULL));
+    assert (cepext != NULL);
 
 /* BHIKSHA: ADDING VECLEN TO ALLOW VECTORS OF DIFFERENT SIZES */
     veclen = *((int32 *) cmd_ln_access("-ceplen"));

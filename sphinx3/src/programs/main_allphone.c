@@ -169,7 +169,7 @@ static arg_t defn[] = {
       "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-cepdir",
       ARG_STRING,
-      ".",
+      NULL,
       "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
@@ -549,7 +549,7 @@ static void process_ctlfile ( void )
   
   cepdir = (char *) cmd_ln_access("-cepdir");
   cepext = (char *) cmd_ln_access("-cepext");
-  assert ((cepdir != NULL) && (cepext != NULL));
+  assert (cepext != NULL);
   
   ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
   if (! cmd_ln_access("-ctlcount"))
@@ -601,7 +601,12 @@ static void process_ctlfile ( void )
       nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
       if (nfr <= 0){
-	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", uttid, ctlspec,cepdir, cepext);
+	if (cepdir != NULL) {
+	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+		  uttid, ctlspec, cepdir, cepext);
+	} else {
+	  E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ctlspec, cepext);
+	}
       }
       else {
 	  E_INFO ("%s: %d input frames\n", uttid, nfr);
