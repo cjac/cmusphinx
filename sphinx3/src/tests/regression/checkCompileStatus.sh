@@ -37,8 +37,12 @@ pushd sphinx3
 
 if ! make all test-full >> test.out 2>&1 ;
  then mhmail -s "sphinx3 compilation failed" ${S3LIST} < test.out;
- elif ! grep 'FWDVIT: P I T T S B U R G H ' test.out;
- then mhmail -s "sphinx3 test failed" ${S3LIST} < test.out;
+ elif ! (grep FWDVIT ../test.out | grep -q 'P I T T S B U R G H');
+ then mhmail -s "Sphinx3 test failed" ${S3LIST} < ../test.out;
+ elif ! (grep BSTPTH ../test.out | grep -q 'P I T T S B U R G H');
+ then mhmail -s "Sphinx3 test failed" ${S3LIST} < ../test.out;
+ elif grep -q FAILED ../test.out;
+ then mhmail -s "Sphinx3 test failed" ${S3LIST} < ../test.out;
  else mhmail -s "sphinx3 test succeeded" ${S3LIST} < test.out;
  fi
 
