@@ -300,8 +300,8 @@ int ld_process_ceps(live_decoder_t *decoder,
     </PRE>
     
     @param decoder Pointer to the decoder.
-    @param hyp_str Returned pointer to a READ-ONLY string.  If <I>null</I>, the
-    string is not returned.
+    @param hyp_str Returned pointer to a READ-ONLY string.  If <I>null</I>,
+    the string is not returned.
     @param hyp_segs Returned pointer to a null-terminated array of word
     segments.  If <I>null</I>, the array is not returned.
     @return 0 for success.  -1 for failure.
