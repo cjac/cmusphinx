@@ -43,7 +43,7 @@ AUDIOFILES= ad_osf.c ad_sunos.c mulaw_base.c \
             ad_base.c ad_oss.c audio_utils_sunos.c play_win32.c \
             ad_irix.c ad_oss_bsd.c cont_ad_base.c rec_win32.c ad_alsa.c
 BASEFILES = mulaw_base.c ad_base.c cont_ad_base.c 
-AUDIOFILE= ad_oss.c 
+AUDIOFILE= ad_base.c 
 SRCS = $(BASEFILES) $(AUDIOFILE)
 
 FILES = Makefile $(H) $(BASEFILES) $(AUDIOFILES)
