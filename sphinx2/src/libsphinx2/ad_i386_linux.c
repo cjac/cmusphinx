@@ -303,8 +303,12 @@ int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
     }
     
     if (length < 0) {
-	E_ERROR("Audio read error\n");
-	return AD_ERR_GEN;
+	if (errno!=EAGAIN){ 
+	    E_ERROR("Audio read errorn"); 
+	    return AD_ERR_GEN; 
+	} else {
+	    length=0; 
+	}
     }
     
     if ((length == 0) && (! handle->recording))
