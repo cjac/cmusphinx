@@ -688,3 +688,4 @@ set of changes from dhd (below)
 	  - projects for each example program
 	* Fixes for Solaris from awb <awb@cs.cmu.edu>, though this
 	  probably still requires some tweaking.
+	* Makefile.am whitespace changes, small line continuation fix
