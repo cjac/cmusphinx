@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE(sphinx3,0.4)
 AM_CONFIG_HEADER(config.h)
 
 
-CFLAGS=${CFLAGS:--g -O2 -Wall}
+CFLAGS=${CFLAGS:--g -Wall}
 
 AC_ISC_POSIX
 AC_PROG_CC

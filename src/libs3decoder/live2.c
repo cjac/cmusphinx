@@ -278,7 +278,7 @@ ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
       kb->hyp_segs = (hyp_t **)ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
     }
     if (hyp_str) {
-      kb->hyp_str = (char *)ckd_calloc(kb->hyp_strlen, sizeof(char));
+      kb->hyp_str = (char *)ckd_calloc(kb->hyp_strlen+1, sizeof(char));
     }
 		
     /* iterate thru to fill in the array of segments and/or decoded string */
