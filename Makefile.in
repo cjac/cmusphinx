@@ -143,7 +143,18 @@ SUBDIRS = src \
 	scripts
 
 
-EXTRA_DIST = autogen.sh 
+EXTRA_DIST = autogen.sh \
+	win32/batch/an4.ctl \
+	win32/batch/sphinx3-simple.bat \
+	win32/batch/sphinx3-test.bat \
+	win32/msdev/libs3audio/libs3audio.dsp \
+	win32/msdev/libs3decoder/libs3decoder.dsp \
+	win32/msdev/libutil/libutil.dsp \
+	win32/msdev/programs/gausubvq/gausubvq.dsp \
+	win32/msdev/programs/programs.dsw \
+	win32/msdev/programs/livedecode/livedecode.dsp \
+	win32/msdev/programs/livepretend/livepretend.dsp
+
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -349,7 +360,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/model/lm/an4 $(distdir)/scripts $(distdir)/src/libs3audio
+	$(mkinstalldirs) $(distdir)/model/lm/an4 $(distdir)/scripts $(distdir)/src/libs3audio $(distdir)/win32/batch $(distdir)/win32/msdev/libs3audio $(distdir)/win32/msdev/libs3decoder $(distdir)/win32/msdev/libutil $(distdir)/win32/msdev/programs $(distdir)/win32/msdev/programs/gausubvq $(distdir)/win32/msdev/programs/livedecode $(distdir)/win32/msdev/programs/livepretend
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
