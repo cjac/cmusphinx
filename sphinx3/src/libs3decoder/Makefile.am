@@ -17,6 +17,8 @@ libs3decoder_la_SOURCES = \
         corpus.c \
         dict.c \
         dict2pid.c \
+	fe_interface.c \
+	fe_sigproc.c \
         feat.c \
         fillpen.c \
 	gs.c \
@@ -29,8 +31,6 @@ libs3decoder_la_SOURCES = \
 	lmclass.c \
         logs3.c \
         mdef.c \
-        new_fe.c \
-        new_fe_sp.c \
         subvq.c \
         tmat.c \
         utt.c \
@@ -52,6 +52,8 @@ noinst_HEADERS = \
         corpus.h \
         dict.h \
         dict2pid.h \
+	fe.h \
+	fe_internal.h \
         feat.h \
         fillpen.h \
 	gs.h \
@@ -65,8 +67,6 @@ noinst_HEADERS = \
 	lmclass.h \
         logs3.h \
         mdef.h \
-        new_fe.h \
-        new_fe_sp.h \
         s3types.h \
         subvq.h \
         tmat.h \

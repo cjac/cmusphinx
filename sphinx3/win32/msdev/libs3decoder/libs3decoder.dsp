@@ -145,6 +145,14 @@ SOURCE=..\..\..\src\libs3decoder\dict2pid.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\fe_interface.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\fe_sigproc.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\feat.c
 # End Source File
 # Begin Source File
@@ -198,14 +206,6 @@ SOURCE=..\..\..\src\libs3decoder\logs3.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\mdef.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\new_fe.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\new_fe_sp.c
 # End Source File
 # Begin Source File
 
@@ -281,6 +281,14 @@ SOURCE=..\..\..\src\libs3decoder\dict2pid.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\fe.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\fe_internal.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\feat.h
 # End Source File
 # Begin Source File
@@ -322,14 +330,6 @@ SOURCE=..\..\..\src\libs3decoder\logs3.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\mdef.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\new_fe.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\new_fe_sp.h
 # End Source File
 # Begin Source File
 
