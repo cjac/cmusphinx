@@ -207,6 +207,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     float32 **mfcbuf;
 
     if (live_begin_new_utt){
+        kb->uttid = "bogus ID";
         fe_start_utt(fe);
 	utt_begin (kb);
 	frmno = 0;
@@ -227,8 +228,6 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
                                          live_nfr, live_begin_new_utt,
 					 live_endutt, &live_feat);
-    E_INFO ("live_nfeatvec: %ld\n",live_nfeatvec);
-
 
     /* decode the block */
     utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
@@ -248,11 +247,17 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 	live_begin_new_utt = 0;
     }
 
-    /* I'm starting to think that fe_process_utt should not be allocating its memory,
-       that or it should allocate some max and just keep on going, this idea of constantly allocating freeing
-       memory seems dangerous to me.*/
-    ckd_free_2d((void **) mfcbuf); /* RAH, this must be freed since fe_process_utt allocates it */
+    /* I'm starting to think that fe_process_utt should not be
+       allocating its memory,
+       that or it should allocate some max and just keep on going, 
+       this idea of constantly allocating freeing
+       memory seems dangerous to me.
 
+       ckd_free_2d((void **) mfcbuf);
+
+       RAH, this must be freed since fe_process_utt allocates it
+
+       */
 
     return(nwds);
 }

@@ -135,7 +135,7 @@ void utt_end (kb_t *kb)
     dict_t *dict;
     int32 i;
     
-    fp = stdout;
+    fp = stderr;
     dict = kbcore_dict (kb->kbcore);
     
     if ((id = vithist_utt_end (kb->vithist, kb->kbcore)) >= 0) {
