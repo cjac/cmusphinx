@@ -1,3 +1,4 @@
+2001-12-07 CMU Sphinx2-0.4.
 
 This is Sphinx 2, one of Carnegie Mellon University's open source
 large vocabulary, speaker-independent continuous speech recognition
@@ -10,10 +11,9 @@ all complete.  With your help and contributions, this can progress in
 response to the needs and patches provided.
 
 Once the system is built, try running sphinx2-test to see if the
-system correctly decodes a pre-recorded file.  sphinx2-simple is a
-simple script to run the decoder with a set of command line
-arguments. The perl script sphinx2-demo is slightly more elaborate,
-but you may have to change the bang path to perl at the top.
+system works for a pre-recorded file.  Then you may want to try
+sphinx2-simple, and the perl script sphinx2-demo.  You may have to
+change the bang path to perl at the top.
 
 Please see the web site at
 
@@ -21,5 +21,5 @@ Please see the web site at
 
 for up-to-date information.
 
-sphinx2-test should run sphinx2-batch over an example
-utterance of "go forward ten meters" once it's built.
+sphinx2-test should run sphinx2-batch over an example utterance of "go
+forward ten meters" once it's built.
