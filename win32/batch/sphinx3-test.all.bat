@@ -7,4 +7,3 @@ call .\sphinx3-test.decode.bat
 call .\sphinx3-test.ep.bat
 call .\sphinx3-test.gausubvq.bat
 call .\sphinx3-test.livepretend.bat
-call .\sphinx3-test.simple.bat
