@@ -281,7 +281,7 @@ test-cepview:
 	@echo "CEPVIEW TEST"
 	$(LIBTOOL) --mode=execute src/programs/cepview \
 	-i 13 \
-	-d 13\
+	-d 13 \
 	-f ./model/ep/chan3.mfc \
 	> $@.out
 	@if (diff $@.out $(top_srcdir)/model/ep/chan3.cepview > /dev/null 2>&1); \
