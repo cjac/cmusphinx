@@ -43,7 +43,7 @@ test-full : test-decode test-align test-allphone test-livepretend test-astar tes
 test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview
 
 test-livepretend:
-	. src/tests/regression/test_livepretend.sh
+	./src/tests/regression/test_livepretend.sh
 
 test-valgrind:
 	@echo "LIVEPRETEND TEST"
