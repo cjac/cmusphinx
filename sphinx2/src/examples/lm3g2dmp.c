@@ -1392,7 +1392,7 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     if ((int)fread (model->unigrams, sizeof(unigram_t), model->ucount+1, fp) != model->ucount+1)
 	QUIT((stderr, "%s(%d): fread(unigrams) failed\n", __FILE__, __LINE__));
     for (i = 0, ugptr = model->unigrams; i <= model->ucount; i++, ugptr++) {
-	SWAPL(ugptr->wid);
+	SWAPL(ugptr->mapid);
 	SWAPL(ugptr->prob1.l);
 	SWAPL(ugptr->bo_wt1.l);
 	SWAPL(ugptr->bigrams);
