@@ -22,7 +22,6 @@ noinst_HEADERS = cmd_ln_args.h \
 dumpfrontend_SOURCES = dump_frontend.c \
 			${LIVEDECSRCS}
 
-
 #batchmetrics_SOURCES = batch_metrics.c \
 #			${LIVEDECSRCS}
 
