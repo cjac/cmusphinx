@@ -45,6 +45,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "metrics.h"
 #include <libutil/libutil.h>
 #include <libs3decoder/lm.h>
 #include <libs3decoder/logs3.h>
@@ -65,6 +66,8 @@ int main(int argc, char *argv[])
     char *lm_file;
     char *args_file;
     char *ngrams_file;
+    char *lmLoadTimer = "LM Load";
+    char *lmLookupTimer = "LM Lookup";
 
     char *ngrams[MAX_NGRAMS];
 
@@ -74,6 +77,7 @@ int main(int argc, char *argv[])
     
     int32 *nwdptr;
     int32 nwords[MAX_NGRAMS];
+    int scores[MAX_NGRAMS];
 
     lm_t *lm;
 
@@ -96,18 +100,36 @@ int main(int argc, char *argv[])
     logbase = cmd_ln_float32("-logbase");
 
     logs3_init(logbase);
+
+    metricsStart(lmLoadTimer);
     
     /* initialize the language model */
     lm = lm_read(lm_file, lw, wip, uw);
 
+    metricsStop(lmLoadTimer);
+
     /* read in all the N-grams */
     n = read_ngrams(ngrams_file, ngrams, wid, nwords, MAX_NGRAMS, lm);
 
+    metricsStart(lmLookupTimer);
+
     /* scores the N-grams */
     for (i = 0; i < n; i++) {
-        score = score_ngram(wid[i], nwords[i], lm);
-        printf("%10d %s\n", score, ngrams[i]);
+        scores[i] = score_ngram(wid[i], nwords[i], lm);
     }
+
+    metricsStop(lmLookupTimer);
+
+    for (i = 0; i < n; i++) {
+        printf("%-10d %s\n", scores[i], ngrams[i]);
+    }
+
+    printf("Bigram misses: %d \n", lm->n_bg_bo);
+    printf("Trigram misses: %d \n", lm->n_tg_bo);
+
+    fflush(stdout);
+
+    metricsPrint();
 }
 
 
