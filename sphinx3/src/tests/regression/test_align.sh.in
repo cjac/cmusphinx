@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "ALIGN TEST 1"
+echo "ALIGN TEST simple"
 
 tmpout="test-align.out"
 
@@ -26,16 +26,16 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ali
 -phsegdir ./ 
 
 if (diff $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out > /dev/null 2>&1); \
-then echo "ALIGN output test PASSED"; else \
-echo "ALIGN output test FAILED"; fi 
+then echo "ALIGN simple output test PASSED"; else \
+echo "ALIGN simple output test FAILED"; fi 
 if (diff `head -1 @abs_top_builddir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
-then echo "ALIGN wdseg test PASSED"; else \
-echo "ALIGN wdseg test FAILED"; fi 
+then echo "ALIGN simple wdseg test PASSED"; else \
+echo "ALIGN simple wdseg test FAILED"; fi 
 if (diff `head -1 @abs_top_builddir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
-then echo "ALIGN phseg test PASSED"; else \
-echo "ALIGN phseg test FAILED"; fi 
+then echo "ALIGN simple phseg test PASSED"; else \
+echo "ALIGN simple phseg test FAILED"; fi 
 
-echo "ALIGN TEST 2"
+echo "ALIGN TEST cepext"
 
 #test for extension
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/align \
@@ -59,12 +59,12 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ali
 -wdsegdir ./ \
 -phsegdir ./ 
 if (diff test-align.out  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out > /dev/null 2>&1); \
-then echo "ALIGN output test PASSED"; else \
-echo "ALIGN output test FAILED"; fi 
+then echo "ALIGN cepext output test PASSED"; else \
+echo "ALIGN cepext output test FAILED"; fi 
 if (diff `head -1 @abs_top_builddir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
-then echo "ALIGN wdseg test PASSED"; else \
-echo "ALIGN wdseg test FAILED"; fi 
+then echo "ALIGN cepext wdseg test PASSED"; else \
+echo "ALIGN cepext wdseg test FAILED"; fi 
 if (diff `head -1 @abs_top_builddir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
-then echo "ALIGN phseg test PASSED"; else \
-echo "ALIGN phseg test FAILED"; fi 
+then echo "ALIGN cepext phseg test PASSED"; else \
+echo "ALIGN cepext phseg test FAILED"; fi 
 
