@@ -2,6 +2,8 @@
 
 lib_LTLIBRARIES = libs3audio.la
 
+libs3audio_la_LDFLAGS = -version-info 0:4:0
+
 libs3audio_la_SOURCES = cont_ad_base.c
 
 EXTRA_libs3audio_la_SOURCES = ad_base.c \
@@ -12,7 +14,6 @@ EXTRA_libs3audio_la_SOURCES = ad_base.c \
 	ad_irix.c \
 	ad_sunos.c \
 	audio_utils_sunos.c \
-	cont_ad_base.c \
 	play_win32.c \
 	rec_win32.c \
 	mulaw_base.c
@@ -22,8 +23,6 @@ noinst_HEADERS = audio_utils_sunos.h mulaw.h ad.h
 libs3audio_la_DEPENDENCIES = @ad_files@
 
 libs3audio_la_LIBADD = @ad_files@ @ad_libs@
-
-libs3audio_la_LDFLAGS = -version-info 0:4:0
 
 INCLUDES = -I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/libutil \
