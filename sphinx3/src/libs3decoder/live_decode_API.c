@@ -531,7 +531,7 @@ ld_process_raw_impl(live_decoder_t *_decoder,
 	 frames again.  The computation will then be correct.  Should
 	 clean up the finite state logic in fe_interface layer. 
       */
-      frames=ckd_calloc_2d(1,_decoder->fe->NUM_CEPSTRA,sizeof(float32));
+      frames=(float32 **)ckd_calloc_2d(1,_decoder->fe->NUM_CEPSTRA,sizeof(float32));
       memcpy(frames[0],dummy_frame,_decoder->fe->NUM_CEPSTRA*sizeof(float32));
     }
   }

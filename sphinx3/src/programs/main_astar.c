@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/11/16  05:53:10  arthchan2003
- * small warning problems in main_astar.c
+ * Revision 1.6  2004/12/02  18:24:42  dhdfu
+ * Remove some compiler warnings
  * 
+ * Revision 1.5  2004/11/16 05:53:10  arthchan2003
+ * small warning problems in main_astar.c
+ *
  * Revision 1.4  2004/11/16 05:13:19  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
@@ -135,7 +138,7 @@ extern fillpen_t *fpen;		/* The filler penalty structure. */
 extern s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
 void nbest_search (char *filename, char *uttid);
-int32 dag_load (char *file);
+int32 s3astar_dag_load (char *file);
 int32 dag_destroy ( void );
 void nbest_init ( void );
 
