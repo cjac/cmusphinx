@@ -640,4 +640,7 @@ set of changes from dhd (below)
 	* Integrated some comments and code from Heidi J. Fox
 	to make things work under solaris (not yet completed,
 	but someone can take another shot at it now)
-	
+
+2001-03-30 Kevin A. Lenzo <lenzo@cs.cmu.edu> 
+	* added <string.h> to fe_interface.c and uttproc.c
+	* re-included the win32 tree in dist (thanks to wei xu)
