@@ -47,7 +47,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "_SIMPLERESULT" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /G6 /MD /W3 /GX /O2 /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "NDEBUG" /D "_SIMPLERESULT" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "AD_BACKEND_WIN32" /FR /Yu"stdafx.h" /FD /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -58,7 +58,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 winmm.lib ..\libsphinx2\release\libsphinx2.lib /nologo /subsystem:windows /dll /debug /machine:I386
+# ADD LINK32 winmm.lib /nologo /subsystem:windows /dll /debug /machine:I386
 # SUBTRACT LINK32 /nodefaultlib
 # Begin Custom Build - z
 OutDir=.\Release
@@ -92,7 +92,7 @@ PostBuild_Cmds=link /lib /out:libsphinx2.lib *.obj
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "AD_BACKEND_WIN32" /FR /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
@@ -102,7 +102,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 ..\libsphinx2\debug\libsphinx2.lib winmm.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\fbs8-6-97a\lib"
+# ADD LINK32 winmm.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept /libpath:"..\fbs8-6-97a\lib"
 # Begin Custom Build - Registering ActiveX Control...
 OutDir=.\Debug
 TargetPath=.\Debug\Sphinx.ocx
@@ -131,7 +131,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "u:\projects\Communicator\src\fbs8-6-97\include" /I "u:\projects\Communicator\src\fbs8-6-97\src\libfbs\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "_UNICODE" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "u:\projects\Communicator\src\fbs8-6-97\include" /I "u:\projects\Communicator\src\fbs8-6-97\src\libfbs\include" /D "_DEBUG" /D "_UNICODE" /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "AD_BACKEND_WIN32" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
@@ -170,7 +170,7 @@ SOURCE="$(InputPath)"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\fbs8-6-97\include" /I "..\fbs8-6-97\src\libfbs\include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "_UNICODE" /D int32=int /D int16=short /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\fbs8-6-97\include" /I "..\fbs8-6-97\src\libfbs\include" /D "NDEBUG" /D "_UNICODE" /D int32=int /D int16=short /D "WIN32" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_USRDLL" /D "AD_BACKEND_WIN32" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
@@ -239,7 +239,63 @@ SOURCE=.\StdAfx.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\..\..\include\ad.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\include\basic_types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\cont_ad.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\dict.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\err.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\fbs.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\hash.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\include\kb.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\lm_3g.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\lmclass.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\include\msd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\posixwin32.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\s2types.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\include\search_const.h
 # End Source File
 # Begin Source File
 
@@ -276,6 +332,10 @@ SOURCE=.\StdAfx.h
 # Begin Source File
 
 SOURCE=.\Sphinx.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\Debug\Sphinx.tlb
 # End Source File
 # Begin Source File
 

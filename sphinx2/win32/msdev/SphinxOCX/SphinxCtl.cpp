@@ -23,6 +23,7 @@
 
 #include <assert.h>
 
+#include "s2types.h"
 #include "Sphinx.h"
 #include "SphinxCtl.h"
 #include "objbase.h"
@@ -39,7 +40,7 @@ extern "C" {
 #include "dict.h"
 #include "search.h"
 #include "fbs.h"
-  unsigned __int16 **search_get_uttpscr();
+  uint16 **search_get_uttpscr();
   int searchFrame();
 #include <io.h>
 }
@@ -926,6 +927,15 @@ long CSphinxCtrl::GetDictWordID( LPCTSTR szWord )
 VARIANT CSphinxCtrl::GetUttPscr() 
 {
 	VARIANT vaResult;
+	/* Let's make the compiler happy by initializing the variable 
+	 * with a meaningless value. 
+	 */
+	vaResult.vt = VT_EMPTY;
+	/* The function is all commented out, so if we call it, the call must
+	 * be wrong.
+	 */
+	assert(0);
+
 /*	VARIANT vaTemp;
 	SAFEARRAY FAR* psaResult;
 	unsigned __int16** ppnUttPscr;

@@ -3,14 +3,55 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Sphinx"=.\Sphinx.dsp - Package Owner=<4>
+Project: "Sphinx"=".\Sphinx.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Communicator/Sphinx", WHAAAAAA
-    .
-    end source code control
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2ad
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2fe
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "libsphinx2"="..\libsphinx2\libsphinx2.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libsphinx2ad"="..\libsphinx2ad\libsphinx2ad.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libsphinx2fe"="..\libsphinx2fe\libsphinx2fe.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
 }}}
 
 Package=<4>
@@ -23,10 +64,6 @@ Global:
 
 Package=<5>
 {{{
-    begin source code control
-    "$/Communicator/Sphinx", WHAAAAAA
-    .
-    end source code control
 }}}
 
 Package=<3>

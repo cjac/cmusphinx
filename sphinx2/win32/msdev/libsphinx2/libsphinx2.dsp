@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\..\..\lib\libsphinx2.lib"
+# ADD LIB32 /nologo
 
 !ELSEIF  "$(CFG)" == "libsphinx2 - Win32 Debug"
 
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\..\..\lib\libsphinx2-debug.lib"
+# ADD LIB32 /nologo
 
 !ENDIF 
 
