@@ -62,6 +62,7 @@ check: test-full
 test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview test-decode_anytopo
 test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview 
 
+
 test-decode_anytopo \
 test-decode \
 test-align \
@@ -74,6 +75,21 @@ test-gausubvq \
 test-ep \
 test-wave2feat:
 	$(top_builddir)/src/tests/regression/$@.sh
+
+
+perf-std : 
+	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode ti46-decany
+	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode tidigits-decany
+	make -C $(top_srcdir)/src/tests/performance/Communicator com-fast-lp com-fast-decode
+
+perf-full:	
+	make -C $(top_srcdir)/src/tests/performance/an4 quick slow
+	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
+	make -C $(top_srcdir)/src/tests/performance/tidigits quick slow
+	make -C $(top_srcdir)/src/tests/performance/rm1 lp
+	make -C $(top_srcdir)/src/tests/performance/Communicator quick slow
+	make -C $(top_srcdir)/src/tests/performance/wsj5k quick slow
+
 
 #Cannot not be used because libtool will confuse valgrind.  Need to figure out later. 
 #test-valgrind:

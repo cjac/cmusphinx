@@ -81,7 +81,6 @@
  * Since left and right extremes require cross-word modelling (see below), wwpid[w][0]
  * and wwpid[w][pronlen-1] contain no information and shouldn't be touched.
  */
-static s3pid_t **wwpid;
 
 typedef struct {
     s3pid_t   *pid;	/* Pid list for all context ciphones; compressed, unique */

@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.9  2004/12/23  21:00:51  arthchan2003
- * 1, Fixed problems in the code of -cepext, 2, Enabled the generic HMM computation routine flat_fwd.c. This is the key problem of the decode_anytopo.
+ * Revision 1.10  2004/12/27  19:46:19  arthchan2003
+ * 1, Add perf-std to Makefile.am , developers can type make perf-std as the standard performance test target. This only works in CMU. 2, Fix warning in flat_fwd.[ch], 3, Apply Yitao's change in cmd_ln.c . 4, 2,3 are standard regression tested.
  * 
+ * Revision 1.9  2004/12/23 21:00:51  arthchan2003
+ * 1, Fixed problems in the code of -cepext, 2, Enabled the generic HMM computation routine flat_fwd.c. This is the key problem of the decode_anytopo.
+ *
  * Revision 1.8  2004/12/06 10:52:00  arthchan2003
  * Enable doxygen documentation in libs3decoder
  *
@@ -1260,6 +1263,8 @@ static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     int32 to, from, bestfrom;
     int32 newscr, scr, bestscr;
     
+    senp=NULL;
+    tp=NULL;
     /* Compute previous state-score + observation output prob for each state */
     prevpid = BAD_S3PID;
     for (from = n_state-2; from >= 0; --from) {
