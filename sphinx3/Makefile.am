@@ -38,9 +38,10 @@ ctags:
 test-simple : test-livepretend
 
 test: test-simple
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep 
-
-test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview
+tet-ep : test-ep-match
+test-gausubvq : test-gausubvq-match
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match
+test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
 
 test-livepretend:
 	./src/tests/regression/test_livepretend.sh
@@ -209,22 +210,6 @@ test-dag:
 	@grep "BSTPTH:" $@.out 
 	@grep "BSTXCT" $@.out 
 
-test-gausubvq:
-	@echo "GAUSUBVQ TEST"
-#	@echo "This will compare the answer with a pre-generated svq file"
-	$(LIBTOOL) --mode=execute src/programs/gausubvq \
-        -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-        -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-        -mixw  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-        -svspec 0-38 \
-        -iter 20 \
-        -svqrows 16 \
-	-seed 1111 \
-        -subvq $@.out 
-#	@grep -v "#" $@.out > tmp.out
-#	@diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-#	@rm tmp.out 
-
 test-gausubvq-match:
 	@echo "GAUSUBVQ TEST"
 	@echo "This will compare the answer with a pre-generated svq file"
@@ -241,28 +226,6 @@ test-gausubvq-match:
 	@if(diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq > /dev/null 2>&1); \
 	then echo "gausubvq test PASSED"; else \
 	echo "gausubvq test FAILED"; fi 
-	@rm tmp.out 
-
-test-ep :
-	@echo "EP TEST"
-	$(LIBTOOL) --mode=execute src/programs/ep \
-		-i $(top_srcdir)/model/ep/chan3.raw  \
-	        -srate 11025 \
-	        -frate 105 \
-	        -wlen 0.024 \
-	        -alpha 0.97 \
-	        -ncep 13 \
-	        -nfft 512 \
-	        -nfilt 36 \
-	        -upperf 5400 \
-	        -lowerf 130 \
-	        -blocksize 262500 \
-	        -mean ./model/ep/means \
-	        -var ./model/ep/variances \
-	        -mixw ./model/ep/mixture_weights \
-	        -o $@.tmp \
-		-raw 1 \
-		2>&1 |grep "Utt_" > $@.out
 
 test-ep-match:
 	@echo "EP TEST"
@@ -288,7 +251,7 @@ test-ep-match:
 			 $(top_srcdir)/model/ep/ep.result | diff $@.out - > /dev/null 2>&1); \
 	then echo "EP test PASSED"; else \
 	echo "EP test FAILED"; fi 
-	rm $@.out		
+#	rm $@.out		
 
 test-wave2feat:
 	@echo "WAVE2FEAT TEST"
@@ -306,7 +269,7 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /deve/null 2>&1) ; \
+	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev</null 2>&1) ; \
 	then echo "wave2feat test PASSED"; else \
 	echo "wave2feat test FAILED"; fi
 
