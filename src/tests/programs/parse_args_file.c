@@ -50,6 +50,7 @@
 #include <libutil/libutil.h>
 
 #include "cmd_ln_args.h"
+#include "config.h"
 
 static arg_t arg[] = {
     { "-logbase",
@@ -373,7 +374,7 @@ static arg_t arg[] = {
       "whether mel filter triangle will have double the bandwidth, 0 is false"},
     { "-machine_endian",
       ARG_INT32,
-#if defined(__BIG_ENDIAN__)
+#if defined(WORDS_BIGENDIAN)
       "1",
 #else
       "0",
