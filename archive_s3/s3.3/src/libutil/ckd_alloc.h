@@ -121,6 +121,9 @@ void ***__ckd_calloc_3d__(int32 d1, int32 d2, int32 d3,	/* In: #elems in the dim
 			  int32 elemsize,		/* In: Size (#bytes) per element */
 			  const char *caller_file, int32 caller_line);	/* In */
 
+/* Test and free an array */
+void ckd_free(void *ptr);
+
 /* Free a 2-D array (ptr) previously allocated by ckd_calloc_2d */
 void ckd_free_2d(void **ptr);
 
@@ -140,7 +143,6 @@ void ckd_free_3d(void ***ptr);
 #define ckd_calloc_2d(d1,d2,sz)	__ckd_calloc_2d__((d1),(d2),(sz),__FILE__,__LINE__)
 #define ckd_calloc_3d(d1,d2,d3,sz) __ckd_calloc_3d__((d1),(d2),(d3),(sz),__FILE__,__LINE__)
 
-#define ckd_free(ptr)		free(ptr)
 
 
 /*

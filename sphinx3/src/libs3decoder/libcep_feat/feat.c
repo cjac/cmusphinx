@@ -593,7 +593,7 @@ void feat_1s_c_d_dd_cep2feat (feat_t *fcb, float32 **mfc, float32 **feat)
     float32 *w, *_w;
     float32 *w1, *w_1, *_w1, *_w_1;
     float32 d1, d2;
-    int32 i, j;
+    int32 i;
     
     assert (fcb);
     assert (feat_cepsize (fcb) == 13);
@@ -944,11 +944,11 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     }
 
 
-    if (fcb->cmn) /* Only cmn_prior in block computation mode */
+    if (fcb->cmn && nfr>0) /* Only cmn_prior in block computation mode */
 	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
 
     residualvecs = 0;
-    if (beginutt){
+    if (beginutt && nfr>0){
 	/* Replicate first frame into the first win frames */
 	for (i=0;i<win;i++) 
 	   memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
@@ -981,22 +981,25 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     if (endutt){
 	/* Replicate last frame into the last win frames */
 	if (nfr > 0) {
-	  for (i=0;i<win;i++) {
-	    assert(bufpos < LIVEBUFBLOCKSIZE);
-	   memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	   bufpos %= LIVEBUFBLOCKSIZE;
-	  }
+	    for (i=0;i<win;i++) {
+	        assert(bufpos < LIVEBUFBLOCKSIZE);
+	        memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	        bufpos %= LIVEBUFBLOCKSIZE;
+	    }
+            residualvecs += win;
         }
 	else {
-	    int16 tpos = bufpos-1;
-	    tpos %= LIVEBUFBLOCKSIZE;
-	    for (i=0;i<win;i++) {
-	      assert(bufpos < LIVEBUFBLOCKSIZE);
-	        memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-		bufpos %= LIVEBUFBLOCKSIZE;
+	    if (bufpos > 0) {
+	        int16 tpos = bufpos-1;
+	        tpos %= LIVEBUFBLOCKSIZE;
+	        for (i=0;i<win;i++) {
+	            assert(bufpos < LIVEBUFBLOCKSIZE);
+	            memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+		    bufpos %= LIVEBUFBLOCKSIZE;
+	        }
+                residualvecs += win;
 	    }
 	}
-        residualvecs += win;
     }
 
     /* Create feature vectors */

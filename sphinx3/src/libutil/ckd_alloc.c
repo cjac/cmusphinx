@@ -155,9 +155,14 @@ void **__ckd_calloc_2d__ (int32 d1, int32 d2, int32 elemsize,
 }
 
 
+void ckd_free (void *ptr)
+{
+    if (ptr) free(ptr);
+}
+
 void ckd_free_2d (void **ptr)
 {
-    ckd_free(ptr[0]);
+    if (ptr) ckd_free(ptr[0]);
     ckd_free(ptr);
 }
 
@@ -189,8 +194,8 @@ void ***__ckd_calloc_3d__ (int32 d1, int32 d2, int32 d3, int32 elemsize,
 
 void ckd_free_3d (void ***ptr)
 {
-    ckd_free(ptr[0][0]);
-    ckd_free(ptr[0]);
+    if (ptr && ptr[0]) ckd_free(ptr[0][0]);
+    if (ptr) ckd_free(ptr[0]);
     ckd_free(ptr);
 }
 
