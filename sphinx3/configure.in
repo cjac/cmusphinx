@@ -132,6 +132,7 @@ src/libutil/Makefile
 src/programs/Makefile
 scripts/Makefile
 scripts/sphinx3-test
+scripts/sphinx3-test.livepretend
 scripts/sphinx3-simple
 model/Makefile
 model/hmm/Makefile
