@@ -83,13 +83,13 @@ int32 lm_get_classid (lm_t *model, char *name)
     int32 i;
     
     if (! model->lmclass)
-	return -1;
+	return BAD_LMCLASSID;
     
     for (i = 0; i < model->n_lmclass; i++) {
 	if (strcmp (lmclass_getname(model->lmclass[i]), name) == 0)
 	    return (i + LM_CLASSID_BASE);
     }
-    return -1;
+    return BAD_LMCLASSID;
 }
 
 

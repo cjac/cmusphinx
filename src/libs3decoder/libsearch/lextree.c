@@ -722,7 +722,7 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
     /* Code for heursitic score */
     static int32 maxNewHeurScore=MAX_NEG_INT32;
     static int32 lastfrm=-1;
-    int32 hth;
+    int32 hth = 0;
 
     mdef = kbcore_mdef(kbc);
     
