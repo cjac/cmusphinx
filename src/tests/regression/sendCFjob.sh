@@ -42,7 +42,7 @@ root=./sphinxDailyCF.$$
 outfile=test.out
 
 # The log analysis log
-analysislog = analysis.out
+analysislog=analysis.out
 
 # Define a path, just in case
 export PATH="/usr/local/bin:/bin:/usr/bin"
@@ -69,7 +69,7 @@ fi
 # If we found one of the above, use it. Otherwise, keep sendmail
 if test z${TMPMAIL} != z; then MAILX=${TMPMAIL};fi
 
-S3DISTLIST='archan'
+S3DISTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu dhuggins@cs.cmu.edu yitao@cs.cmu.edu scotts+@pitt.edu '
 
 
 mkdir $root
@@ -148,16 +148,16 @@ tar zxvf ./log.tgz
 cp -r ${logdir} ./log${tmp}
 
 pushd ./log${tmp}
-echo "Sphinx 3 CF compilation report" > analysislog
+echo "Sphinx 3 CF compilation report" > $analysislog
 for i in `find . -name  "*.log" -maxdepth 1`
 do 
-    echo "Platform $i" >> analysislog
-    grep PASS $i >> analysislog
-    grep FAIL $i >> analysislog
-    echo "`grep PASS $i |wc -l` PASSES"  >> analysislog 
-    echo "`grep FAIL $i |wc -l` FAILS" >> analysislog
+    echo "Platform $i" >> $analysislog
+    grep PASS $i >> $analysislog
+    grep FAIL $i >> $analysislog
+    echo "`grep PASS $i |wc -l` PASSES"  >> $analysislog 
+    echo "`grep FAIL $i |wc -l` FAILS" >> $analysislog
 done
-${MAILX} -s "${headstring} Compilation completed. analysis " ${S3DISTLIST} < analysislog
+${MAILX} -s "${headstring} Compilation completed. analysis " ${S3DISTLIST} < $analysislog
 ${MAILX} -s "${headstring} Compilation completed " ${S3DISTLIST} < $outfile
 popd
 
