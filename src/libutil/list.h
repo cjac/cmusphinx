@@ -56,14 +56,16 @@ typedef struct _list_t
   node_t *tail;
 } list_t;
 
-int list_init(list_t *);
-int list_free(list_t *);
+list_t list_init(void (*)(void *));
+void list_free(list_t *);
 int list_insert_head(list_t *, void *);
 int list_insert_tail(list_t *, void *);
 int list_remove_head(list_t *, void **);
 int list_remove_tail(list_t *, void **);
-int list_clear(list_t *);
-int list_wait(list_t *, int32);
+int list_peek_head(list_t *, void **);
+int list_peek_tail(list_t *, void **); 
+void list_clear(list_t *);
+void list_wait(list_t *, int32);
 
 #ifdef __cplusplus
 }
