@@ -77,7 +77,7 @@ test-decode:
 	       -wbeam 1e-20 \
 	       -maxhmmpf 1500 \
 	       -wend_beam 1e-1 \
-	       -ci_pbeam 1e-3 \
+	       -ci_pbeam 1e-5 \
 	       -ds 2  > $@.out 2>&1
 
 	@grep "P I T T S B U R G H (" $@.out 
