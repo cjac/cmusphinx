@@ -187,27 +187,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livedecode2"=.\win32\msdev\programs\livedecode2\livedecode2.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libs3decoder
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "livepretend"=.\win32\msdev\programs\livepretend\livepretend.dsp - Package Owner=<4>
 
 Package=<5>
@@ -219,24 +198,6 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name libs3audio
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libs3decoder
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "livepretend2"=.\WIN32\MSDEV\PROGRAMS\livepretend2\livepretend2.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
     Begin Project Dependency
     Project_Dep_Name libs3decoder
     End Project Dependency
