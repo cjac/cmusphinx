@@ -178,8 +178,6 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
 	/* RAH */
 	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
 	memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
-	/* memcpy(FE->OVERFLOW_SAMPS + FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); */ /*  */
-	/* spch = FE->OVERFLOW_SAMPS; */ /*  */
 	nsamps += FE->NUM_OVERFLOW_SAMPS;
 	FE->NUM_OVERFLOW_SAMPS = 0; /*reset overflow samps count */
       }
