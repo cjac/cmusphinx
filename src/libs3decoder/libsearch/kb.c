@@ -554,29 +554,6 @@ void kb_lextree_active_swap (kb_t *kb)
     }
 }
 
-void
-kb_freehyps(kb_t *kb)
-{
-  int i = 0;
-
-  if (kb->hyp_segs) {
-    for (; i < kb->hyp_seglen; i++) {
-      if (kb->hyp_segs[i]) {
-	ckd_free(kb->hyp_segs[i]);
-      }
-    }
-    ckd_free(kb->hyp_segs);
-	kb->hyp_segs = 0;
-    kb->hyp_seglen = 0;
-  }
-	
-  if (kb->hyp_str) {
-    ckd_free(kb->hyp_str);
-	kb->hyp_str = 0;
-    kb->hyp_strlen = 0;
-  }
-}
-
 /* RAH 4.15.01 Lots of memory is allocated, but never freed, this function will clean up.
  * First pass will get the low hanging fruit.*/
 void kb_free (kb_t *kb)
@@ -628,5 +605,4 @@ void kb_free (kb_t *kb)
 
   if(kb->prevmllrfn) ckd_free((char*) kb->prevmllrfn);
   if(kb->regA && kb->regB) mllr_free_regmat(kb->regA, kb->regB);
-  kb_freehyps(kb);
 }

@@ -49,13 +49,17 @@
 *   Modified by Yitao Sun.  Added argument parsing.
 */
 
-#include "libutil/libutil.h"
+#include <libutil/libutil.h>
 #include "live_decode.h"
 #include "args.h"
+#include "utt.h"
 
-#define LD_STATE_IDLE			0
-#define LD_STATE_STARTED		1
-#define LD_STATE_ENDED			2
+/* Function declaration */
+int
+ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt);
+
+int
+ld_utt_free_hyps(live_decoder_t *decoder);
 
 int
 ld_utt_proc_raw_impl(live_decoder_t *decoder,
@@ -83,9 +87,7 @@ ld_init(live_decoder_t *decoder)
   unlimit();
   decoder->internal_cmd_ln = 1;
 	
-  /*
-   * decoder parameter capturing
-   */
+  /* decoder parameter capturing */
   memset(decoder, 0, sizeof(live_decoder_t));
   kb_init(&decoder->kb);
   decoder->max_wpf = cmd_ln_int32 ("-maxwpf");;
@@ -96,17 +98,15 @@ ld_init(live_decoder_t *decoder)
 	
   decoder->kbcore = decoder->kb.kbcore;
   decoder->kb.uttid = decoder->uttid;
-  decoder->hypsegs = 0;
-  decoder->num_hypsegs = 0;
-  decoder->hypstr_len = 0;
-  decoder->hypstr[0] = '\0';
+  decoder->hyp_frame_num = -1;
+  decoder->hyp_segs = 0;
+  decoder->hyp_seglen = 0;
+  decoder->hyp_strlen = 0;
+  decoder->hyp_str = 0;
   decoder->features =
     feat_array_alloc(kbcore_fcb(decoder->kbcore), LIVEBUFBLOCKSIZE);
-  decoder->ld_state = LD_STATE_IDLE;
 	
-  /*
-   * front-end parameter capturing
-   */
+  /* front-end parameter capturing */
   memset(&fe_param, 0, sizeof(param_t));
   fe_param.SAMPLING_RATE = (float32)cmd_ln_int32 ("-samprate");
   fe_param.LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
@@ -134,22 +134,20 @@ ld_finish(live_decoder_t *decoder)
   }
   kb_free(&decoder->kb);
 	
-  /*
-   * consult the implementation of feat_array_alloc() for the following two
-   * lines
-   */
+  /* consult the implementation of feat_array_alloc() for the following two
+   * lines */
   ckd_free((void *)**decoder->features);
   ckd_free_2d((void **)decoder->features);
-	
-  decoder->ld_state = LD_STATE_IDLE;
-	
+
+  ld_utt_free_hyps(decoder);
+
   return 0;
 }
 
 int
 ld_utt_begin(live_decoder_t *decoder, char *uttid)
 {
-  kb_freehyps(&decoder->kb);
+  ld_utt_free_hyps(decoder);
 	
   fe_start_utt(decoder->fe);
   utt_begin(&decoder->kb);
@@ -158,7 +156,6 @@ ld_utt_begin(live_decoder_t *decoder, char *uttid)
   decoder->kb.utt_hmm_eval = 0;
   decoder->kb.utt_sen_eval = 0;
   decoder->kb.utt_gau_eval = 0;
-  decoder->ld_state = LD_STATE_STARTED;
 	
   return 0;
 }
@@ -168,8 +165,8 @@ ld_utt_end(live_decoder_t *decoder)
 {
   ld_utt_proc_raw_impl(decoder, 0, 0, decoder->frame_num == 0, 1);
   decoder->kb.tot_fr += decoder->kb.nfr;
+  ld_utt_record_hyps(decoder, 1);
   utt_end(&decoder->kb);
-  decoder->ld_state = LD_STATE_ENDED;
 	
   return 0;
 }
@@ -238,94 +235,126 @@ ld_utt_proc_feat(live_decoder_t *decoder,
 int
 ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 {
-  int32	id;
-  int32	i = 0;
-  glist_t hyp_list;
-  gnode_t *node;
-  hyp_t *hyp;
-  dict_t *dict;
-  char *hyp_strptr = NULL;
-  kb_t *kb = &decoder->kb;
-
-  if (decoder->ld_state == LD_STATE_ENDED) {
-    if (hyp_segs) {
-      *hyp_segs = kb->hyp_segs;
-    }
-    if (hyp_str) {
-      *hyp_str = kb->hyp_str;
-    }
-    return 0;
-  }
-  else {
-    kb_freehyps(kb);
-  }
-
-  dict = kbcore_dict (decoder->kbcore);
-  id = vithist_partialutt_end(kb->vithist, decoder->kbcore);
-  if (id >= 0) {
-    hyp_list = vithist_backtrace(kb->vithist, id);
-
-    /* record the segment length and the overall string length */
-    for (node = hyp_list; node; node = gnode_next(node)) {
-      hyp = (hyp_t *)gnode_ptr(node);
-      if (hyp_segs) {
-	kb->hyp_seglen++;
-      }
-      if (hyp_str) {
-	if (!dict_filler_word(dict, hyp->id) && 
-	    hyp->id != dict_finishwid(dict)) {
-	  kb->hyp_strlen +=
-	    strlen(dict_wordstr(dict, dict_basewid(dict, hyp->id))) + 1;
-	}
-      }
-    }
-
-    /* allocate array to hold the segments and/or decoded string */
-    if (hyp_segs) {
-      kb->hyp_segs = (hyp_t **)ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
-    }
-    if (hyp_str) {
-      kb->hyp_str = (char *)ckd_calloc(kb->hyp_strlen+1, sizeof(char));
-    }
-		
-    /* iterate thru to fill in the array of segments and/or decoded string */
-    i = 0;
-    if (hyp_str) {
-      hyp_strptr = kb->hyp_str;
-    }
-    for (node = hyp_list; node; node = gnode_next(node), i++) {
-      hyp = (hyp_t *)gnode_ptr(node);
-      if (hyp_segs) {
-	kb->hyp_segs[i] = hyp;
-      }
-      if (hyp_str) {
-	strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
-	hyp_strptr += strlen(hyp_strptr);
-	strcat(hyp_strptr, " ");
-	hyp_strptr += 1;
-      }
-    }
-    glist_free(hyp_list);
-
-    if (hyp_str) {
-      kb->hyp_str[kb->hyp_strlen - 1] = '\0';
-    }
-  }
-
-  if (hyp_segs) {
-    *hyp_segs = kb->hyp_segs;
+  if (decoder->frame_num != decoder->hyp_frame_num) {
+    ld_utt_record_hyps(decoder, 0);
   }
 
   if (hyp_str) {
-    *hyp_str = kb->hyp_str;
+    *hyp_str = decoder->hyp_str;
   }
 
+  if (hyp_segs) {
+    *hyp_segs = decoder->hyp_segs;
+  }
+  
   return 0;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
+
+int
+ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
+{
+  int32	id;
+  int32	i = 0;
+  glist_t hyp_list;
+  gnode_t *node;
+  hyp_t *hyp;
+  char *hyp_strptr = 0;
+  char *hyp_str = 0;
+  hyp_t **hyp_segs = 0;
+  int hyp_seglen = 0;
+  int hyp_strlen = 0;
+  int finish_wid = 0;
+  kb_t *kb = 0;
+  dict_t *dict;
+
+  ld_utt_free_hyps(decoder);
+
+  kb = &decoder->kb;
+  dict = kbcore_dict(decoder->kbcore);
+  id = end_utt ?
+    vithist_utt_end(kb->vithist, decoder->kbcore) :
+    vithist_partialutt_end(kb->vithist, decoder->kbcore);
+  if (id < 0) {
+    return -1;
+  }
+
+  /* record the segment length and the overall string length */
+  hyp_list = vithist_backtrace(kb->vithist, id);
+  finish_wid = dict_finishwid(dict);
+  for (node = hyp_list; node; node = gnode_next(node)) {
+    hyp = (hyp_t *)gnode_ptr(node);
+    hyp_seglen++;
+    if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
+      hyp_strlen +=
+	strlen(dict_wordstr(dict, dict_basewid(dict, hyp->id))) + 1;
+    }
+  }
+  /* if hyp_str is non-trivial, we've counted one too many byte */
+  if (hyp_strlen > 0) {
+    hyp_strlen--;
+  }
+
+  /* allocate array to hold the segments and/or decoded string */
+  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen, sizeof(hyp_t *));
+  hyp_str = (char *)ckd_calloc(hyp_strlen + 1, sizeof(char));
+  if (hyp_segs == 0 || hyp_str == 0) {
+    return -1;
+  }
+		
+  /* iterate thru to fill in the array of segments and/or decoded string */
+  i = 0;
+  hyp_strptr = hyp_str;
+  for (node = hyp_list; node; node = gnode_next(node), i++) {
+    hyp = (hyp_t *)gnode_ptr(node);
+    hyp_segs[i] = hyp;
+
+    if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
+      strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
+      hyp_strptr += strlen(hyp_strptr);
+      *hyp_strptr = ' ';
+      hyp_strptr += 1;
+    }
+  }
+  glist_free(hyp_list);
+  
+  hyp_str[hyp_strlen] = '\0';
+  decoder->hyp_frame_num = decoder->frame_num;
+  decoder->hyp_segs = hyp_segs;
+  decoder->hyp_seglen = hyp_seglen;
+  decoder->hyp_str = hyp_str;
+  decoder->hyp_strlen = hyp_strlen;
+
+  return 0;
+}
+
+int
+ld_utt_free_hyps(live_decoder_t *decoder)
+{
+  int i;
+
+  decoder->hyp_frame_num = -1;
+
+  if (decoder->hyp_str) {
+    ckd_free(decoder->hyp_str);
+    decoder->hyp_str = 0;
+    decoder->hyp_strlen = 0;
+  }
+  
+  if (decoder->hyp_segs) {
+    for (i = decoder->hyp_seglen - 1; i >= 0; i--) {
+      ckd_free(decoder->hyp_segs[i]);
+    }
+    ckd_free(decoder->hyp_segs);
+    decoder->hyp_segs = 0;
+    decoder->hyp_seglen = 0;
+  }
+
+  return 0;
+}
 
 int
 ld_utt_proc_raw_impl(live_decoder_t *decoder,

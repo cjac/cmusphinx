@@ -181,7 +181,6 @@ void utt_end (kb_t *kb)
     
     fp = stderr;
     dict = kbcore_dict (kb->kbcore);
-    kb_freehyps(kb);
     
     if ((id = vithist_utt_end (kb->vithist, kb->kbcore)) >= 0) {
       if (cmd_ln_str("-bptbldir")) {
@@ -216,43 +215,12 @@ void utt_end (kb_t *kb)
 	
 	ascr += h->ascr;
 	lscr += h->lscr;
-	kb->hyp_seglen++;
-	if (!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
-	  kb->hyp_strlen +=
-	    strlen(dict_wordstr(dict, dict_basewid(dict, h->id))) + 1;
-
-	}
       }
 
       fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,kb->nfr,ascr,lscr);
 
-      kb->hyp_segs = (hyp_t**)ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
-
-      /* In linux, strcat will replace the ending '\0' and replace with strings *src, THEN, add '\0' at the end again.*/
-      /* To make the following algorithm works, has to create a kb->hyp_strlen+1 size character memory array */
-      kb->hyp_str = (char*) ckd_calloc(kb->hyp_strlen+1, sizeof(char));
-      hyp_strptr = kb->hyp_str;
-      hyp_strptr[0]='\0';
-
       /* Match */
-      fprintf (fp, "\nFWDVIT: ");
-      i = 0;
-      for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
-	kb->hyp_segs[i++] = h;
-
-
-	if(!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
-	  strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict,h->id)));
-	  hyp_strptr += strlen(hyp_strptr);
-	  strcat(hyp_strptr, " ");
-	  hyp_strptr++;
-	}
-      }
-
-
-      kb->hyp_str[kb->hyp_strlen - 1] = '\0';
-      fprintf (fp, "%s (%s)\n\n", kb->hyp_str, kb->uttid);
+      match_write(fp, kb, hyp, "\nFWDVIT: ");
       
       /* Matchseg */
       if (kb->matchsegfp)
@@ -305,10 +273,8 @@ void utt_end (kb_t *kb)
 	}
       }
       
-      /* free the list containing hyps (we've saved the actual hyps
-       * themselves).
-       */
-      glist_free (hyp);
+      /* free the list containing hyps */
+      glist_myfree(hyp, sizeof(hyp_t));
     } else
       E_ERROR("%s: No recognition\n\n", kb->uttid);
     
