@@ -1,0 +1,10 @@
+*.o
+Makefile
+Makefile.in
+.deps
+.libs
+livedecode
+livepretend
+decode
+gausubvq
+
