@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <libutil/libutil.h>
 #include "live.h"
+#include "cmd_ln_args.h"
 
 #define MAXSAMPLES 	1000000
 
@@ -60,8 +61,11 @@ int main (int argc, char *argv[])
     FILE *fp, *sfp;
 
 
-    if (argc != 4)
-	    E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",argv[0]);
+    if (argc != 4) {
+      argsfile = NULL;
+      parse_args_file(argsfile);
+      E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",argv[0]);
+    }
     ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
 
 	samps = (short *) calloc(MAXSAMPLES,sizeof(short));

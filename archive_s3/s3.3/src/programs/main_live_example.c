@@ -46,6 +46,7 @@
 #include <libutil/libutil.h>
 #include <stdio.h>
 #include "live.h"
+#include "cmd_ln_args.h"
 #include "ad.h"
 
 #define MAXSAMPLES 	10000
@@ -144,7 +145,9 @@ int main (int argc, char *argv[])
     FILE *fp, *sfp;
 
     if (argc != 2) {
-	E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
+      argsfile = NULL;
+      parse_args_file(argsfile);
+      E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
     }
     argsfile = argv[1];
     live_initialize_decoder(argsfile);

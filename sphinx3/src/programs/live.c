@@ -77,6 +77,7 @@ void live_initialize_decoder(char *live_args)
     static kb_t live_kb;
     int32   maxcepvecs, maxhyplen, samprate, ceplen;
     param_t *fe_param;
+    char const *uttIdNotDefined = "null";
 
     parse_args_file(live_args);
     unlimit();
@@ -84,6 +85,7 @@ void live_initialize_decoder(char *live_args)
     kb = &live_kb;
     kbcore = kb->kbcore;
 
+    kb->uttid = ckd_salloc(uttIdNotDefined);
     hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
     maxwpf    = cmd_ln_int32 ("-maxwpf");
     maxhistpf = cmd_ln_int32 ("-maxhistpf");
@@ -100,6 +102,9 @@ void live_initialize_decoder(char *live_args)
 	E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",samprate);
 
     fe_param->SAMPLING_RATE = (float32) samprate;
+    fe_param->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
+    fe_param->UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
+    fe_param->NUM_FILTERS = cmd_ln_int32("-nfilt");
     fe_param->FRAME_RATE = 100; /* HARD CODED TO 100 FRAMES PER SECOND */
     fe_param->PRE_EMPHASIS_ALPHA = (float32) 0.97;
     fe = fe_init(fe_param);
@@ -118,6 +123,7 @@ int32 live_free_memory ()
 {
   parse_args_free();		/* Free memory allocated during the argument parseing stage */
   fe_close (fe);		/*  */
+  ckd_free(kb->uttid);  /* Free memory allocated in live_initialize_decoder() */
   kb_free (kb);		/*  */
   ckd_free ((void *) dummyframe); /*  */
   ckd_free ((void *) parthyp);  /*  */

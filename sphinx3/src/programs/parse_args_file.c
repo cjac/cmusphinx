@@ -279,6 +279,18 @@ static arg_t arg[] = {
       ARG_INT32,
       "8000",
       "Sampling rate (only 8K and 16K currently supported)" },
+    { "-nfilt",
+      ARG_INT32,
+      "31",
+      "Number of mel filters" },
+    { "-lowerf",
+      ARG_FLOAT32,
+      "200",
+      "Lower edge of filters" },
+    { "-upperf",
+      ARG_FLOAT32,
+      "3500",
+      "Upper edge of filters" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -293,6 +305,10 @@ void  parse_args_file(char *live_args)
     char  *argline, *targ; 
     FILE *fp;
 
+    if (live_args == NULL) {
+      cmd_ln_print_help(stderr, arg);
+      return;
+    }
     if ((fp = fopen(live_args,"r")) == NULL)
 	E_FATAL("Unable to open arguments file %s for reading\n",live_args);
 
