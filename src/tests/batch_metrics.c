@@ -316,18 +316,14 @@ void analyzeResults(const char* referenceResult, const char* hypotheses)
     while (referenceIndex < numReferences || hypothesisIndex < numHypothesis) {
 
         if (referenceIndex >= numReferences) {
-            printf("reference %d %d\n", referenceIndex, numReferences);
             addInsert();
         } else if (hypothesisIndex >= numHypothesis) {
-            printf("addDeletion()\n");
             addDeletion();
         } else if (strcmp(references[referenceIndex], 
                           hypothesis[hypothesisIndex]) != 0) {
-            printf("processMismatch()\n");
             processMismatch(references, numReferences, 
                             hypothesis, numHypothesis);
         } else {
-            printf("addMatch()\n");
             addMatch();
         }
     }
