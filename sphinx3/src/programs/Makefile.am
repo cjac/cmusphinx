@@ -1,5 +1,4 @@
 bin_PROGRAMS = livepretend \
-	livepretendDEVEL \
 	decode \
 	gausubvq \
 	align \
@@ -8,9 +7,8 @@ bin_PROGRAMS = livepretend \
 	allphone \
 	ep
 
-livepretend_SOURCES = main_livepretend.c live.c parse_args_file.c 
-livepretendDEVEL_SOURCES = main_livepretend_devel.c 
-decode_SOURCES = decode.c parse_args_file.c
+livepretend_SOURCES = main_livepretend.c
+decode_SOURCES = decode.c
 decode_anytopo_SOURCES = main_decode_anytopo.c  s3_dag.c
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
@@ -26,9 +24,6 @@ noinst_PROGRAMS = \
 	decode_anytopo \
 	cepview
 
-noinst_HEADERS = \
-	cmd_ln_args.h \
-	live.h
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \

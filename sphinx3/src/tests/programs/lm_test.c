@@ -45,11 +45,13 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "metrics.h"
 #include <libutil/libutil.h>
-#include <libs3decoder/lm.h>
-#include <libs3decoder/logs3.h>
-#include <programs/cmd_ln_args.h>
+#include <lm.h>
+#include <logs3.h>
+
+#include "cmd_ln_args.h"
+#include "metrics.h"
+
 
 #define MAX_NGRAMS 5100
 #define MAX_STRLEN 100

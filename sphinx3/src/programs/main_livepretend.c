@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.	All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,86 +33,87 @@
  * ====================================================================
  *
  */
-/********************************************************************
- * Example program to show usage of the live mode routines
- * The decoder is initialized with live_initialize_decoder()
- * Blocks of samples are decoded by live_utt_decode_block()
- * To compile an excutable compile using
- * $(CC) -I. -Isrc -Llibutil/linux -Lsrc/linux main_live_example.c -lutil -ldecoder -lm
- * from the current directory 
- * Note the include directories (-I*) and the library directories (-L*)
+ /*************************************************
+ * CMU ARPA Speech Project
  *
- ********************************************************************/
+ * Copyright (c) 2000 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ *************************************************
+ *
+ *  Aug 6, 2004
+ *  Created by Yitao Sun (yitao@cs.cmu.edu).
+ */
 
 #include <stdio.h>
-#include <libutil/libutil.h>
-#include "live.h"
-#include "cmd_ln_args.h"
-#include <libs3decoder/bio.h>
+#include <live_decode_API.h>
+#include <live_decode_args.h>
 
-#define MAXSAMPLES 	1000000
+#define SAMPLE_BUFFER_LENGTH	4096
+#define FILENAME_LENGTH		512
 
-int main (int argc, char *argv[])
+int
+main(int _argc, char **_argv)
 {
-    short *samps;
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
-    char   *argsfile, *ctlfile, *indir;
-    char   filename[512], cepfile[512];
-    partialhyp_t *parthyp;
-    FILE *fp, *sfp;
-    int swap;
 
-  print_appl_info(argv[0]);
+  live_decoder_t decoder;
+  short samples[SAMPLE_BUFFER_LENGTH];
+  int len;
+  char *hypstr;
+  char *ctrlfn;
+  char *cfgfn;
+  char *rawdirfn;
+  char rawfn[FILENAME_LENGTH];
+  char fullrawfn[FILENAME_LENGTH];
+  FILE *ctrlfd;
+  FILE *rawfd;
 
+  print_appl_info(_argv[0]);
 
-    if (argc != 4) {
-      argsfile = NULL;
-      parse_args_file(argsfile);
-      E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",argv[0]);
+  if (_argc != 4) {
+    printf("\nUSAGE: %s <ctrlfile> <rawdir> <cfgfile>\n", _argv[0]);
+    return -1;
+  }
+
+  ctrlfn = _argv[1];
+  rawdirfn = _argv[2];
+  cfgfn = _argv[3];
+
+  if ((ctrlfd = fopen(ctrlfn, "r")) == NULL) {
+    E_FATAL("Cannot open control file %s.\n", ctrlfn);
+  }
+
+  if (cmd_ln_parse_file(arg_def, cfgfn)) {
+    E_FATAL("Bad configuration file %s.\n", cfgfn);
+  }
+
+  if (ld_init(&decoder) != LD_SUCCESS) {
+    E_FATAL("Failed to initialize live-decoder.\n");
+  }
+
+  while (fscanf(ctrlfd, "%s", rawfn) != EOF) {
+    sprintf(fullrawfn, "%s/%s.raw", rawdirfn, rawfn);
+    if ((rawfd = fopen(fullrawfn, "rb")) == NULL) {
+      E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
-    ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
 
-    samps = (short *) calloc(MAXSAMPLES,sizeof(short));
-    blksize = 2000;
-
-    if ((fp = fopen(ctlfile,"r")) == NULL)
-	E_FATAL("Unable to read %s\n",ctlfile);
-
-    live_initialize_decoder(argsfile);
-
-    /* If machine endian and input endian are different, we need to swap */
-    swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
-    if (swap) {
-      E_INFO("Input data WILL be byte swapped\n");
-    } else {
-      E_INFO("Input data will NOT be byte swapped\n");
+    if (ld_begin_utt(&decoder, rawfn) != LD_SUCCESS) {
+      E_FATAL("Cannot begin utterance decoding.\n");
     }
-    while (fscanf(fp,"%s",filename) != EOF){
-	sprintf(cepfile,"%s/%s.raw",indir,filename);
-	live_utt_set_uttid(filename);
-	if ((sfp = fopen(cepfile,"rb")) == NULL)
-	    E_FATAL("Unable to read %s\n",cepfile);
-	nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
-	if (swap) {
-	  for (i = 0; i < nsamp; i++) {
-	    SWAP_INT16(samps + i);
-	  }
-	}
-        fprintf(stdout,"%d samples in file %s.\nWill be decoded in blocks of %d\n",nsamp,cepfile,blksize);
-        fflush(stdout); fclose(sfp);
+    len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
+    while (len > 0) {
+      ld_process_raw(&decoder, samples, len);
 
-        for (i=0;i<nsamp;i+=blksize){
-	    buflen = i+blksize < nsamp ? blksize : nsamp-i;
-	    endutt = i+blksize <= nsamp-1 ? 0 : 1;
-	    nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
-
-	    E_INFO("PARTIAL HYP:");
-	    if (nhypwds > 0)
-                for (j=0; j < nhypwds; j++) fprintf(stderr," %s",parthyp[j].word);
-	    fprintf(stderr,"\n");
-        }
+      if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
+	E_INFO("PARTIAL_HYP: %s\n", hypstr);
+      }
+      len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
     }
-    
-    live_utt_summary();
-    return 0;
+    fclose(rawfd);
+    ld_end_utt(&decoder);
+
+  }
+
+  ld_finish(&decoder);
+
+  return 0;
 }
