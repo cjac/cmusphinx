@@ -47,7 +47,7 @@
 #include <math.h> 
 
 #include "classify.h"
-
+#include "mdef.h"
 
 /********************************************************************/
 // This function reports the majority class 
@@ -66,7 +66,7 @@ void majority_class(class_t *CLASSW, int *classcount, int frame_count)
     }
   }
 
-  printf("\nClass: %s, Number of frames: %d - N: %d, O: %d, S: %d, SIL: %d\n",CLASSW->classname[myclass],frame_count, classcount[0], classcount[1], classcount[2], classcount[3]);
+  printf("\nClass: %s, Number of frames: %d - N: %d, O: %d, S: %d, SIL: %d\n",CLASSW->classname[myclass],frame_count, classcount[CLASS_N], classcount[CLASS_O], classcount[CLASS_S], classcount[CLASS_SIL]);
 
 }
 
@@ -93,10 +93,13 @@ void classw_free(class_t *CLASSW)
 // This function initializes the class wrapper
 /*********************************************************************/
 
-class_t * classw_initialize(char* meanfile, char *varfile, float64 varfloor,
-			    char* mixwfile, float64 mixwfloor, int32 precomp, char *senmgau)
+class_t * classw_initialize(char * mdeffile, char* meanfile, 
+			    char *varfile, float64 varfloor,
+			    char* mixwfile, float64 mixwfloor, 
+			    int32 precomp, char *senmgau)
 {
   class_t *CLASSW = (class_t*) calloc(1,sizeof(class_t));
+  mdef_t *mdef;
 
   /************ Read the means, variances, and mixture weights ****************/
 
@@ -108,16 +111,46 @@ class_t * classw_initialize(char* meanfile, char *varfile, float64 varfloor,
 		       senmgau,
 		       FULL_FLOAT_COMP);
 
+  mdef = mdef_init(mdeffile);
+
+  /* Make sure we have only one emitting state */
+  assert(mdef_n_emit_state(mdef) == 1);
+
+  /* Map classes to CI models, using the model definition */
+  CLASSW->classmap[CLASS_N] = mdef_ciphone_id(mdef, "N");
+  if (CLASSW->classmap[CLASS_N] == BAD_S3CIPID) {
+    E_WARN("Phone N not defined in current model set\n");
+  }
+  CLASSW->classmap[CLASS_S] = mdef_ciphone_id(mdef, "S");
+  if (CLASSW->classmap[CLASS_S] == BAD_S3CIPID) {
+    E_WARN("Phone S not defined in current model set\n");
+  }
+  CLASSW->classmap[CLASS_SIL] = mdef_ciphone_id(mdef, "SIL");
+  if (CLASSW->classmap[CLASS_SIL] == BAD_S3CIPID) {
+    E_WARN("Phone SIL not defined in current model set\n");
+  }
+  CLASSW->classmap[CLASS_O] = mdef_ciphone_id(mdef, "O");
+  if (CLASSW->classmap[CLASS_O] == BAD_S3CIPID) {
+    E_FATAL("Phone O not defined in current model set\n");
+  }
+
+  if (mdef != NULL) {
+    mdef_free(mdef);
+  }
+
   mgau_precomp_hack_log_to_float(CLASSW->g);
+
   E_INFO("Classification\n");
+  E_INFO("Will use %d cepstral components\n", DIMENSIONS);
+
   /*  mgau_dump(CLASSW->g,MGAU_MEAN);*/
   
   /******** Set the priors of the classes *************/
 
-  CLASSW->priors[0] = (float32)PRIOR_N;    // N
-  CLASSW->priors[1] = (float32)PRIOR_O;    // O
-  CLASSW->priors[2] = (float32)PRIOR_S;    // S
-  CLASSW->priors[3] = (float32)PRIOR_SIL;  // SIL
+  CLASSW->priors[CLASS_N] = (float32)PRIOR_N;    // N
+  CLASSW->priors[CLASS_O] = (float32)PRIOR_O;    // O
+  CLASSW->priors[CLASS_S] = (float32)PRIOR_S;    // S
+  CLASSW->priors[CLASS_SIL] = (float32)PRIOR_SIL;  // SIL
 
   /********* Initialize voting window parameters **********/
 
@@ -130,14 +163,14 @@ class_t * classw_initialize(char* meanfile, char *varfile, float64 varfloor,
   else
     CLASSW->classlatency = 0;
   
-  CLASSW->classname[0] = (char*) malloc ( 10 * sizeof(char));
-  strcpy(CLASSW->classname[0], "Noise");
-  CLASSW->classname[1] = (char*) malloc ( 10 * sizeof(char));
-  strcpy(CLASSW->classname[1], "Owner");
-  CLASSW->classname[2] = (char*) malloc ( 10 * sizeof(char));
-  strcpy(CLASSW->classname[2], "Secondary");
-  CLASSW->classname[3] = (char*) malloc ( 10 * sizeof(char));
-  strcpy(CLASSW->classname[3] ,"Silence");
+  CLASSW->classname[CLASS_N] = (char*) malloc ( 10 * sizeof(char));
+  strcpy(CLASSW->classname[CLASS_N], "Noise");
+  CLASSW->classname[CLASS_O] = (char*) malloc ( 10 * sizeof(char));
+  strcpy(CLASSW->classname[CLASS_O], "Owner");
+  CLASSW->classname[CLASS_S] = (char*) malloc ( 10 * sizeof(char));
+  strcpy(CLASSW->classname[CLASS_S], "Secondary");
+  CLASSW->classname[CLASS_SIL] = (char*) malloc ( 10 * sizeof(char));
+  strcpy(CLASSW->classname[CLASS_SIL] ,"Silence");
 
   return(CLASSW);
 }
@@ -252,30 +285,34 @@ void readfeatures (char *filename, float *array[MAXFRAMES], int *numofframes)
 /******** Function to calculate the likelihood for each class given the frame ****************/
 /* Only work when mgau_precomp_hack_log_to_float is run before it */
 
-void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
-		 float *frame,    /*Input: the frame */
-		 float likeli[NUMCLASSES]) /* Output the, likelihood for each class */
+void calclikeli (float *frame,    /*Input: the frame */
+		 mgau_model_t *g, /*Input: multiptle mixture models */
+		 float likeli[NUMCLASSES], /* Output the, likelihood for each class */
+		 s3cipid_t *map) /* map between ci models and classes */
 {
   int i,j,k;
-  
+
   float32 a, b, pmix;	
   float32 m, v, f;
   /* a is the product(k) [1/(2 * pi * varijk )^(1/2)]*/
   /* b is the sum (k) [ -0.5 * pow ( (x[k] - meansijk), 2 )  */
   /* p is the likelihood given class and gaussian mixture */
   
-  assert (g->n_mgau==NUMCLASSES);
+  /* assert (g->n_mgau==NUMCLASSES); */
 
-  for (i = 0; i < g->n_mgau; i++){	/* for each class*/
+  for (i = 0; i < NUMCLASSES; i++){	/* for each class*/
+      if (map[i] == BAD_S3CIPID) {
+        continue;
+      }
       likeli[i] = 0;	
       for (j = 0; j < g->mgau->n_comp; j++)	{/* for each mixture in the class */
-	a = g->mgau[i].lrd[j];
+	a = g->mgau[map[i]].lrd[j];
 	b = 0;	
 	/*NOTE: CHANGE HERE: ignore C_8 to C_12 */
 	for (k = 0; k  < DIMENSIONS; k++) {
 	  f=frame[k];
-	  m=g->mgau[i].mean[j][k];
-	  v= g->mgau[i].var[j][k];
+	  m=g->mgau[map[i]].mean[j][k];
+	  v= g->mgau[map[i]].var[j][k];
 
 	  b += (f - m) * (f - m) * v; 
 	}	
@@ -283,8 +320,8 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 			 (this number is arbitrary!) */
 		pmix = 0.0f;
 	else
-		pmix = a * exp (-0.5 * b);
-	likeli[i] += g->mgau[i].mixw_f[j] * pmix; 
+	  pmix = (float)(a * exp (-0.5 * b));
+	likeli[i] += g->mgau[map[i]].mixw_f[j] * pmix; 
       }	
   }
 }
@@ -292,13 +329,14 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 
 /********* Function to classify the frame *******************/ 
 
-int classify (mgau_model_t *g,float *frame, float priors[NUMCLASSES])
+int classify (float *frame, mgau_model_t *g, float priors[NUMCLASSES], 
+	      s3cipid_t *classmap)
 {
   int i, myclass;
   float maxpost, post;
   float likeli[NUMCLASSES];
 
-  calclikeli(g, frame, likeli);
+  calclikeli(frame, g, likeli, classmap);
 	
   /* Second calculate the posterior	*/
   maxpost = 0;
