@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/09/13  08:13:28  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.3  2004/12/05  12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  * 
+ * Revision 1.2  2004/09/13 08:13:28  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.1  2004/08/09 03:19:26  arthchan2003
  * fix syntax problems in Makefile.am and add s3_allphone.h
  *
@@ -67,9 +70,7 @@
 #ifndef _LIBFBS_ALLPHONE_H_
 #define _LIBFBS_ALLPHONE_H_
 
-
-#include <libutil/libutil.h>
-#include "s3types.h"
+#include <s3types.h>
 
 /* Phone level segmentation information */
 typedef struct phseg_s {

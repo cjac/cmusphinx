@@ -56,10 +56,9 @@
 #ifndef _S3_FEAT_DUMP_H_
 #define _S3_FEAT_DUMP_H_
 
-
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "metrics.h"
-#include "libs3decoder/feat.h"
+#include <feat.h>
 
 /* Feature computation routine for live mode decoder. Computes features
  * for blocks of incoming data. Retains an internal buffer for computing

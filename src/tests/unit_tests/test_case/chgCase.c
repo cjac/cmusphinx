@@ -64,7 +64,7 @@ main(int argc, char **argv){
 	atoi(argv[2]) >= NUM_STRS ||
 	0 >= atoi(argv[3]) ||
 	atoi(argv[3]) >= NUM_STRS){
-      E_INFO(stderr,"INVALID PARAMS TO chkCase\n");
+      E_INFO("INVALID PARAMS TO chkCase\n");
       exit(1);
     }
 
@@ -81,7 +81,7 @@ main(int argc, char **argv){
       cmp = strcmp_nocase(s1, s2);
     }
 
-    E_INFO("Value of cmp %d\n", cmp);
+    /*    E_INFO("Value of cmp %d\n", cmp);*/
     if(0 != cmp){
       E_FATAL("test failed\nstr1:|%s|\nstr2:|%s|\n", s1, s2);
     }

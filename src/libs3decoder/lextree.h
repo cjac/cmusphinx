@@ -60,7 +60,7 @@
 #ifndef _S3_LEXTREE_H_
 #define _S3_LEXTREE_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "kbcore.h"
 #include "hmm.h"
 #include "vithist.h"

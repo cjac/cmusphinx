@@ -36,7 +36,7 @@
 #ifndef _UTT_H_
 #define _UTT_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "kb.h"
 #include "approx_cont_mgau.h"
 

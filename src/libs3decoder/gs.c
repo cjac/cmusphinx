@@ -51,8 +51,6 @@
 
 #include <stdio.h>
 #include "gs.h"
-#include <libutil/libutil.h>
-
 
 int gs_free(gs_t* gs);
 

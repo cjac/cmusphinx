@@ -52,7 +52,7 @@
 #ifndef _S3_WID_H_
 #define _S3_WID_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "dict.h"
 #include "lm.h"
 #include "lmclass.h"

@@ -42,8 +42,8 @@
 extern "C" {
 #endif
 
-#include <libutil/libutil.h>
-#include "libs3decoder/feat.h"
+#include <s3types.h>
+#include <feat.h>
 
 #define SWAPW(x)        *(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
 #define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\

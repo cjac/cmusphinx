@@ -49,7 +49,10 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.6  2004/11/16  05:13:18  arthchan2003
+ * Revision 1.7  2004/12/05  12:01:30  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * 
+ * Revision 1.6  2004/11/16 05:13:18  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
  * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
@@ -60,7 +63,7 @@
  * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
  * 2, default argument file's mechanism is not yet supported, we need to fix it.
  * 3, the bug discovered by SonicFoundry is still not fixed.
- * 
+ *
  * Revision 1.2  2004/11/14 07:00:08  arthchan2003
  * 1, Finally, a version of working flat decoder is completed. It is not compiled in the standard compilation yet because there are two many warnings. 2, eliminate the statics variables in  fe_sigproc.c
  *
@@ -195,9 +198,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
 
-#include "s3types.h"
+#include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"
 #include "dict.h"

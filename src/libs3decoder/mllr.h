@@ -60,7 +60,7 @@
 extern "C" {
 #endif
 
-#include <libutil/prim_type.h>
+#include <s3types.h>
 #include "cont_mgau.h"
 #include "mdef.h"
 

@@ -72,7 +72,7 @@
 #ifndef _S3_SUBVQ_H_
 #define _S3_SUBVQ_H_
 
-#include <libutil/libutil.h>
+#include "s3types.h"
 #include "cont_mgau.h"
 #include "vector.h"
 #include "logs3.h"

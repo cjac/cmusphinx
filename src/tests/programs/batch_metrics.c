@@ -45,10 +45,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <libutil/libutil.h>
-#include <libutil/profile.h>
-#include <libs3decoder/fe.h>
-#include <libs3decoder/bio.h>
+#include <s3types.h>
+#include <profile.h>
+#include <fe.h>
+#include <bio.h>
 #include "live_dump.h"
 #include "metrics.h"
 

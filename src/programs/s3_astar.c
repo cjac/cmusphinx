@@ -79,8 +79,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
-
 #include <s3types.h>
 #include "s3_dag.h"
 #include <mdef.h>

@@ -56,7 +56,7 @@
 #ifndef _S3_LOGS3_H_
 #define _S3_LOGS3_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #ifdef __cplusplus
 extern "C" {

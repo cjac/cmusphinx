@@ -53,6 +53,9 @@
  */
 
 
+#include <assert.h>
+#include <math.h>
+
 #include "logs3.h"
 #include "s3types.h"
 

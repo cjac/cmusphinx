@@ -53,7 +53,6 @@
 #ifndef _S3_APPROXCONGAU_H_
 #define _S3_APPROXCONGAU_H_
 
-#include <libutil/libutil.h>
 #include "cont_mgau.h"
 #include "vector.h"
 #include "subvq.h"

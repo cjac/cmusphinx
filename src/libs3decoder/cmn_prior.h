@@ -53,7 +53,7 @@
 #ifndef _S3_CMN_PRIOR_H_
 #define _S3_CMN_PRIOR_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #ifdef __cplusplus
 extern "C" {

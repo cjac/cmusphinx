@@ -61,14 +61,12 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include <float.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
  * Size definitions for more semantially meaningful units.
  * Illegal value definitions, limits, and tests for specific types.

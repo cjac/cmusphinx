@@ -94,7 +94,6 @@
  */
 
 
-#include <libutil/libutil.h>
 #include "feat.h"
 #include "bio.h"
 #include "cmn.h"

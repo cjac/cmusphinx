@@ -36,8 +36,7 @@
 #ifndef _FE_H_
 #define _FE_H_
 
-#include "s3types.h"
-#include <libutil/libutil.h>
+#include <s3types.h>
 
 #ifdef __cplusplus
 extern "C" {

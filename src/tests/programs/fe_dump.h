@@ -40,10 +40,9 @@
 #define HEXADECIMAL 2
 #define SCIENTIFIC 3
 
-#include <libutil/libutil.h>
 #include "metrics.h"
-#include "s3types.h"
-#include "libs3decoder/fe.h"
+#include <s3types.h>
+#include <fe.h>
 
 FILE *fe_dumpfile;
 int fe_dump;

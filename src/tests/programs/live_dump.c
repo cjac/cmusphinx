@@ -52,11 +52,10 @@
  * Created
  */
 
-#include <libutil/libutil.h>
-#include <libutil/profile.h>
+#include <utt.h>
+#include <profile.h>
 #include <kb.h>
-#include <libs3decoder/utt.h>
-#include <fe.h>  /* 01.15.01 - RAH, use new_fe.h instead */
+#include <fe.h> 
 #include "live_dump.h"
 #include "fe_dump.h"
 #include "feat_dump.h"

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2004/12/02  18:24:42  dhdfu
- * Remove some compiler warnings
+ * Revision 1.7  2004/12/05  12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  * 
+ * Revision 1.6  2004/12/02 18:24:42  dhdfu
+ * Remove some compiler warnings
+ *
  * Revision 1.5  2004/11/16 05:53:10  arthchan2003
  * small warning problems in main_astar.c
  *
@@ -112,8 +115,6 @@
 #include <unistd.h>
 #endif
 #include <assert.h>
-
-#include <libutil/libutil.h>
 
 #include <s3types.h>
 #include <logs3.h>

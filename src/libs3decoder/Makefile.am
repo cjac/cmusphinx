@@ -97,6 +97,7 @@ noinst_HEADERS = \
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \
+	   -I$(top_srcdir)/src/libutil/ \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

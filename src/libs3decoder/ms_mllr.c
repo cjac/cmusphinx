@@ -24,7 +24,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <libutil/libutil.h>
 /* #include <s3.h>*/
 
 #include "ms_mllr.h"

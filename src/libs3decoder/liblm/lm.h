@@ -71,7 +71,6 @@ extern "C" {
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
 #define MIN_PROB_F -99.0
 
-#include <libutil/libutil.h>
 #include "s3types.h"
 #include "lmclass.h"
 #include "dict.h"

@@ -62,8 +62,7 @@
 #ifndef _S3_VITHIST_H_
 #define _S3_VITHIST_H_
 
-#include <libutil/libutil.h>
-#include "s3types.h"
+#include <s3types.h>
 #include "kbcore.h"
 #include "hyp.h"
 #include "dict.h"

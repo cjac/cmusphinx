@@ -54,12 +54,12 @@
 #ifndef _S3_FILLPEN_H_
 #define _S3_FILLPEN_H_
 
+#include <s3types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
-#include <libutil/libutil.h>
 #include "dict.h"
 
 

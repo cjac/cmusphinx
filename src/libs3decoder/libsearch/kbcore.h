@@ -59,7 +59,7 @@
 #ifndef _S3_KBCORE_H_
 #define _S3_KBCORE_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
 #include "feat.h"
 #include "cont_mgau.h"
 #include "mdef.h"

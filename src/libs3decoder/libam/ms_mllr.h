@@ -18,8 +18,7 @@
 #ifndef _MS_MLLR_H_
 #define _MS_MLLR_H_
 
-
-#include <libutil/prim_type.h>
+#include <s3types.h>
 
 #ifdef __cplusplus
 extern "C" {

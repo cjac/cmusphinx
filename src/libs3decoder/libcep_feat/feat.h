@@ -56,7 +56,8 @@
 #ifndef _S3_FEAT_H_
 #define _S3_FEAT_H_
 
-#include <libutil/libutil.h>
+#include <s3types.h>
+
 #include "cmn.h"
 
 #ifdef __cplusplus
