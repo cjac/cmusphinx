@@ -323,18 +323,20 @@ main (int32 argc, char **argv)
 	param_t param;
 	float *mfcp;
 
-	mfcp = (float *) CM_calloc (4096 * DEFAULT_NUM_CEPSTRA, sizeof(float));
+	memset(&param, 0, sizeof(param));
+	param.SAMPLING_RATE = sps;
+
+	if ((fe = fe_init (&param)) == NULL)
+	    E_FATAL("fe_init(%d) failed\n", sps);
+
+	mfcp = (float *) CM_calloc (4096 * fe->NUM_CEPSTRA, sizeof(float));
 	mfcbuf = (float **) CM_calloc (4096, sizeof(float *));
 
 	for (i = 0; i < 4096; i++) {
 	    mfcbuf[i] = mfcp;
-	    mfcp += DEFAULT_NUM_CEPSTRA;
+	    mfcp += fe->NUM_CEPSTRA;
 	}
 
-	memset(&param, 0, sizeof(param));
-	param.SAMPLING_RATE = sps;
-	if ((fe = fe_init (&param)) == NULL)
-	    E_FATAL("fe_init(%d) failed\n", sps);
     }
     
     adout = mfcout = NULL;
@@ -358,20 +360,22 @@ main (int32 argc, char **argv)
 
 	    if (mfcout) {
 		int slop;
-
 		slop = fe_end_utt(fe, mfcbuf[0]);
-		if (slop)
-		    fwrite (mfcbuf[0], sizeof(float), 13, mfcout);
-
+		if (slop) {
+		    fwrite (mfcbuf[0], sizeof(float), fe->NUM_CEPSTRA, mfcout);
+		    nc += 1;
+		}
 		fflush (mfcout);
+
+		/* set the float count */
 		fseek (mfcout, 0, SEEK_SET);
-		k = nc * 13;
+		k = nc * fe->NUM_CEPSTRA;
 		fwrite (&k, sizeof(int32), 1, mfcout);
-		
+		fflush (mfcout);
+
 		fclose (mfcout);
 
-		/* E_INFO("%s: %d samples, %d cepstrum frames\n", uttid, ns, nc); */
-		printf("%s: %d samples, %d cepstrum frames\n", uttid, ns, nc);
+		printf("%s: %d samples in, %d cepstrum frames out\n", uttid, ns, nc); 
 	    }
 	    
 	    adout = mfcout = NULL;
@@ -425,7 +429,7 @@ main (int32 argc, char **argv)
 		nc += k;
 		
 		for (i = 0; i < k; i++)
-		    fwrite (mfcbuf[i], sizeof(float), 13, mfcout);
+		    fwrite (mfcbuf[i], sizeof(float), fe->NUM_CEPSTRA, mfcout);
 		fflush (mfcout);
 	    }
 	}

@@ -125,14 +125,17 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
   /* assume float count file */
   if (read(fd, (char *)&floatCount, sizeof(int32)) != sizeof(int32))
     return errno;
-  /*
-   * Check if this is a byte reversed file !
-   */
+
   if (fstat (fd, &st_buf) < 0) {
     perror("cep_read_bin: fstat failed");
     return errno;
   }
 
+  /*  printf("Float count: %d st_buf.st_size: %d \n", floatCount, st_buf.st_size); */
+
+  /*
+   * Check if this is a byte reversed file !
+   */
   if ((floatCount+4 != st_buf.st_size) &&
       ((floatCount * sizeof(float32) + 4) != st_buf.st_size)) {
 	E_INFO("%s(%d): Byte reversing %s\n", __FILE__, __LINE__, file);
