@@ -56,7 +56,6 @@ if test "x$ad_files" = "x"; then
                 # FIXME: isn't this the same OSS as on Linux?
                 *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
-                        ad_libs="-lossaudio"
                         ad_backend="AD_BACKEND_OSS_BSD"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
                         ;;
@@ -141,6 +140,7 @@ model/lm/Makefile
 model/lm/an4/Makefile
 model/lm/an4/an4.ctl
 model/lm/an4/args.an4
+model/lm/an4/args.an4.test
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
