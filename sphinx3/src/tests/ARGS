@@ -8,10 +8,10 @@
 -var	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian
 -mixw	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian
 -tmat	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/transition_matrices.LittleEndian
-
 -upperf	6800
 -lowerf	130
 -nfilt	40
+-nfft 512
 -agc	none
 -varnorm	no
 -cmn	current
