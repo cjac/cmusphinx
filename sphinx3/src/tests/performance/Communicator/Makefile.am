@@ -64,11 +64,6 @@ com-base-decode:
 	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.decode$(MODEAFFIX)
 	../../../programs/decode ARGS.com.base.decode$(MODEAFFIX);
 
-com-base-decode_anytopo:
-	rm -f gmake.com.base.decode_anytopo$(MODEAFFIX).results
-	/bin/cp ARGS.com.base.dec_any ARGS.com.base.dec_any.slow$(MODEAFFIX)
-	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.dec_any.slow$(MODEAFFIX)
-	../../../programs/decode_anytopo ARGS.com.base.dec_any.slow$(MODEAFFIX)
 
 com-fast-lp:
 	rm -f gmake.com.fast.lp$(MODEAFFIX).results
@@ -81,3 +76,9 @@ com-fast-decode:
 	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.fast.decode$(MODEAFFIX)
 	../../../programs/decode ARGS.com.fast.decode$(MODEAFFIX)
 
+#20041205 DON'T USE at this point
+com-base-decode_anytopo:
+	rm -f gmake.com.base.decode_anytopo$(MODEAFFIX).results
+	/bin/cp ARGS.com.base.dec_any ARGS.com.base.dec_any.slow$(MODEAFFIX)
+	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.dec_any.slow$(MODEAFFIX)
+	../../../programs/decode_anytopo ARGS.com.base.dec_any.slow$(MODEAFFIX)
