@@ -1,0 +1,4 @@
+rm -f gmake-hub4_flatunigram.results
+/bin/cp ARGS.hub4_base ARGS.hub4_flatunigram
+echo "-lm /lab/speech/sphinx4/data/hub4_model/hub4.flat_unigram.lm.DMP" >> ARGS.hub4_flatunigram
+../batchmetrics /lab/speech/sphinx4/data/hub4/eval99/supervised/all_hub4.batch / ./ARGS.hub4_flatunigram > gmake-hub4_flatunigram.results

@@ -74,9 +74,8 @@ int main(int argc, char *argv[])
 
     float64 lw, wip, uw, logbase;
 
-    int i, n, score;
+    int i, n;
     
-    int32 *nwdptr;
     int32 nwords[MAX_NGRAMS];
     int scores[MAX_NGRAMS];
 
@@ -147,6 +146,7 @@ int main(int argc, char *argv[])
     fflush(stdout);
 
     metricsPrint();
+    return 0;
 }
 
 
@@ -236,7 +236,6 @@ int read_ngrams(FILE *fp,
  */
 int str_cmp(char *s1, char *s2)
 {
-  int i;
   while (*s1 != '\0' && *s2 != '\0') {
     if (*s1++ != *s2++) {
       return -1;
@@ -308,7 +307,7 @@ int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
  */
 int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
 {
-    int32 score, tgscr;
+    int32 score;
     
     score = 0;
     if (nwd == 3) {

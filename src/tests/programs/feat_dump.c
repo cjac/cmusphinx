@@ -128,13 +128,15 @@
  * to change this variable from 256 to something else, the cyclic buffer
  * will still work.  (ebg)
  */
+
+/* ARCHAN: This functions is duplicated.  
+   We should consider separate the function into different parts. 
+*/
 int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 				 int32 beginutt, int32 endutt, float32 ***ofeat)
 {
   static float32 **cepbuf=NULL;
   static float32 **tmpcepbuf=NULL;
-  static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-  static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
 
   int32 win, cepsize; 
   int32 i, j, nfeatvec, residualvecs;
@@ -168,7 +170,7 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
   if (fcb->cmn) {
     /* Only cmn_prior in block computation mode */
-    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
   }
 
   metricsStop("cmn");
@@ -192,34 +194,34 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
       else
 	memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
     }
-    bufpos = win;
-    bufpos %= LIVEBUFBLOCKSIZE;
-    curpos = bufpos;
+    fcb->bufpos = win;
+    fcb->bufpos %= LIVEBUFBLOCKSIZE;
+    fcb->curpos = fcb->bufpos;
     residualvecs -= win;
   }
 
   for (i=0;i<nfr;i++){
-    assert(bufpos < LIVEBUFBLOCKSIZE);
-    memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
-    bufpos %= LIVEBUFBLOCKSIZE;
+    assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+    memcpy(cepbuf[fcb->bufpos++],uttcep[i],cepsize*sizeof(float32));
+    fcb->bufpos %= LIVEBUFBLOCKSIZE;
   }
 
   if (endutt){
     /* Replicate last frame into the last win frames */
     if (nfr > 0) {
       for (i=0;i<win;i++) {
-	assert(bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	bufpos %= LIVEBUFBLOCKSIZE;
+	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[fcb->bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	fcb->bufpos %= LIVEBUFBLOCKSIZE;
       }
     }
     else {
-      int16 tpos = bufpos-1;
+      int16 tpos = fcb->bufpos-1;
       tpos %= LIVEBUFBLOCKSIZE;
       for (i=0;i<win;i++) {
-	assert(bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-	bufpos %= LIVEBUFBLOCKSIZE;
+	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[fcb->bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+	fcb->bufpos %= LIVEBUFBLOCKSIZE;
       }
     }
     residualvecs += win;
@@ -230,18 +232,18 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   nfr += residualvecs;
   
   for (i=0; i < nfr; i++,nfeatvec++){
-    if(curpos <win || curpos > LIVEBUFBLOCKSIZE -win-1){
+    if(fcb->curpos <win || fcb->curpos > LIVEBUFBLOCKSIZE -win-1){
       /* HACK! Just copy the frames and read them to compute_feat */
       for(j=-win;j<=win;j++){
-	tmppos= (j+ curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
+	tmppos= (j+ fcb->curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
 	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
       }
       fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
     }else{
-      fcb->compute_feat(fcb, cepbuf+curpos, ofeat[i]);
+      fcb->compute_feat(fcb, cepbuf+fcb->curpos, ofeat[i]);
     }
-    curpos++;
-    curpos %= LIVEBUFBLOCKSIZE;
+    fcb->curpos++;
+    fcb->curpos %= LIVEBUFBLOCKSIZE;
   }
 
   metricsStop("FeatureExtractor");
