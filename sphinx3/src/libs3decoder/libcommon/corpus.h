@@ -68,6 +68,10 @@
 #ifndef _S3_CORPUS_H_
 #define _S3_CORPUS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -215,5 +219,9 @@ void ctl_outfile (char *file,	/* Out: Generated filename (allocated by caller) *
 				   with or without extension.  This is usually the first
 				   field in a control file. */
 		  char *uttid);	/* In: Utterance ID (derived from the control file */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -64,6 +64,10 @@
 #ifndef _S3_MDEF_H_
 #define _S3_MDEF_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "s3types.h"
@@ -245,5 +249,9 @@ void mdef_dump (FILE *fp, mdef_t *m);
 void mdef_free_recursive_lc (ph_lc_t *lc);
 void mdef_free_recursive_rc (ph_rc_t *rc);
 void mdef_free (mdef_t *mdef);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

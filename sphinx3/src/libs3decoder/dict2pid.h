@@ -56,6 +56,10 @@
 #ifndef _S3_DICT2PID_H_
 #define _S3_DICT2PID_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "dict.h"
@@ -144,6 +148,10 @@ void dict2pid_comsseq2sen_active (dict2pid_t *d2p,
 
 /* For debugging */
 void dict2pid_dump (FILE *fp, dict2pid_t *d2p, mdef_t *mdef, dict_t *dict);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

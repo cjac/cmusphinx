@@ -52,6 +52,10 @@
 #ifndef __LIVE2_H
 #define __LIVE2_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "kb.h"
 #include "utt.h"
 #include "new_fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
@@ -160,10 +164,6 @@ typedef struct
   float32 ***features;
 
 } live_decoder_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*
  * Initialize the live-decoder.  Assume arguments have been parsed.

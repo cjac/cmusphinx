@@ -53,6 +53,10 @@
 #ifndef _S3_AGC_H_
 #define _S3_AGC_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -65,5 +69,9 @@
  */
 void agc_max (float32 **mfc,	/* In/Out: mfc[f] = cepstrum vector in frame f */
 	      int32 n_frame);	/* In: #frames of cepstrum vectors supplied */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

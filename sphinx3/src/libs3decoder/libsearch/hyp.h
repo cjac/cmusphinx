@@ -53,6 +53,9 @@
 #ifndef _S3_HYP_H_
 #define _S3_HYP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <libutil/libutil.h>
 
@@ -66,5 +69,8 @@ typedef struct {
     int32 type;		/* Uninterpreted data; see vithist_entry_t in vithist.h */
 } hyp_t;
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -61,6 +61,9 @@
 
 #ifndef _S3_VITHIST_H_
 #define _S3_VITHIST_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #include <libutil/libutil.h>
@@ -262,5 +265,9 @@ void vithist_dag_write (vithist_t *vh,	/* In: From which word segmentations are 
 			int32 oldfmt,	/* In: If TRUE, old format, edges: srcnode dstnode ascr;
 					 * else new format, edges: srcnode endframe ascr */
 			FILE *fp);	/* Out: File to be written */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

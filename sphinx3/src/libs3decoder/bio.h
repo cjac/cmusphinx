@@ -53,6 +53,10 @@
 #ifndef _S3_BIO_H_
 #define _S3_BIO_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -139,5 +143,8 @@ void bio_verify_chksum (FILE *fp,	/* In: File to read */
 			int32 byteswap,	/* In: Byteswap iff (swap != 0) */
 			uint32 chksum);	/* In: Value to compare with checksum in file */
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -72,6 +72,10 @@
 #ifndef _S3_SUBVQ_H_
 #define _S3_SUBVQ_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "cont_mgau.h"
@@ -187,4 +191,9 @@ int32 subvq_mgau_eval (mgau_model_t *g,
 		       int32 n, /* #Components in a specified mixture */
 		       int32 *active /*Active list of mixture */
 		       );
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

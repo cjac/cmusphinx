@@ -52,6 +52,9 @@
 #ifndef _S3_WID_H_
 #define _S3_WID_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <libutil/libutil.h>
 #include "dict.h"
@@ -82,5 +85,9 @@ int32 wid_wordprob2alt (dict_t *dict,	/* In: Dictionary */
 					   already exist in it.  Caller must have allocated
 					   this array. */
 			int32 n);	/* In: #Input entries in the wordprob array */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

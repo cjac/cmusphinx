@@ -54,6 +54,10 @@
 #ifndef _S3_FILLPEN_H_
 #define _S3_FILLPEN_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 #include "dict.h"
@@ -99,5 +103,9 @@ int32 fillpen (fillpen_t *f,		/* In: Filler word probabilities structure */
    free memory allocated by fillpen_init
  */
 void fillpen_free (fillpen_t *f);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

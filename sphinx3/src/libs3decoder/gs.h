@@ -52,6 +52,10 @@
 #ifndef _LIB_GS_H_
 #define _LIB_GS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/prim_type.h>
 #include <libutil/libutil.h>
 #include "s3types.h"
@@ -80,5 +84,8 @@ int32 gs_mgau_shortlist(gs_t *gs,  /*gaussain selector */
 			float32 *feat, /* feature vector */
 			int32 bst_codeid); /*best code indx */
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

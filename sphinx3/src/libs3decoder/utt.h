@@ -36,6 +36,10 @@
 #ifndef _UTT_H_
 #define _UTT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libutil/libutil.h>
 #include "kb.h"
 #include "approx_cont_mgau.h"
@@ -71,5 +75,9 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
                        int32 ptranskip,      /* intervals at which wbeam
                                                 is used for phone transitions */
                        FILE *hmmdumpfp);     /* dump file */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -56,6 +56,10 @@
 #ifndef _S3_FEAT_H_
 #define _S3_FEAT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <libutil/libutil.h>
 
@@ -243,6 +247,9 @@ int32   feat_s2mfc2feat_block(feat_t  *fcb,    /* Descriptor from feat_init() */
  */
 void feat_free (feat_t *f);
 
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif
