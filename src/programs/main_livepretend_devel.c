@@ -86,12 +86,8 @@ main(int argc, char **argv)
   }
 
   while ((len = fread(samples, sizeof(short), BUFFER_LENGTH, rawfd)) > 0) {
-    if (ld_process_raw(&decoder, samples, len)) {
-      printf("Data processing error.\n");
-      break;
-    }
-    
-    if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
+    ld_process_raw(&decoder, samples, len);
+    if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
       printf("Cannot retrieve hypothesis.\n");
     }
     else {
@@ -101,12 +97,9 @@ main(int argc, char **argv)
 
   fclose(rawfd);
 
-  if (ld_end_utt(&decoder)) {
-    printf("Cannot end decoding.\n");
-    return -1;
-  }
+  ld_end_utt(&decoder);
 
-  if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
+  if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
     printf("Cannot retrieve hypothesis.\n");
   }
   else {

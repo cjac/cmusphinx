@@ -102,208 +102,236 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 #include "live_decode_API.h"
 #include "live_decode_args.h"
 #include "utt.h"
+#include <time.h>
 
-/** Utility function declarations */
-int
-ld_set_uttid(live_decoder_t *decoder, char *uttid, int autogen);
+/* Decoder states */
+enum {
+  LD_STATE_IDLE,
+  LD_STATE_DECODING,
+  LD_STATE_FINISHED
+};
 
-int
-ld_record_hyps(live_decoder_t *decoder, int end_utt);
+/* Utility function declarations */
+static int
+ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln);
 
-int
-ld_free_hyps(live_decoder_t *decoder);
+static int
+ld_set_uttid(live_decoder_t *_decoder, char *_uttid);
 
-int
-ld_process_raw_impl(live_decoder_t *decoder,
-		    int16 *samples,
-		    int32 num_samples,
-		    int32 begin_utt,
-		    int32 end_utt);
+static int
+ld_record_hyps(live_decoder_t *_decoder, int _end_utt);
 
-int
-ld_init_with_args(live_decoder_t *decoder, int argc, char **argv)
-{
-  int rv;
-  cmd_ln_parse(arg_def, argc, argv);
-  rv = ld_init(decoder);
-  /** ld_init(decoder) sets internal_cmd_ln to 0, set it back to 1 */
-  decoder->internal_cmd_ln = 1;
-  return rv;
-}
+static void
+ld_free_hyps(live_decoder_t *_decoder);
 
-int
-ld_init(live_decoder_t *decoder)
+static void
+ld_process_raw_impl(live_decoder_t *_decoder,
+		    int16 *_samples,
+		    int32 _num_samples,
+		    int32 _begin_utt,
+		    int32 _end_utt);
+
+static int
+ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
 {
   param_t fe_param;
 	
+  assert(_decoder != NULL);
+
   unlimit();
 	
-  /** decoder parameter capturing */
-  memset(decoder, 0, sizeof(live_decoder_t));
-  kb_init(&decoder->kb);
-  decoder->max_wpf = cmd_ln_int32 ("-maxwpf");;
-  decoder->max_histpf = cmd_ln_int32 ("-maxhistpf");
-  decoder->max_hmmpf = cmd_ln_int32 ("-maxhmmpf");
-  decoder->phones_skip = cmd_ln_int32 ("-ptranskip");
-  decoder->hmm_log = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-	
-  decoder->kbcore = decoder->kb.kbcore;
-  decoder->kb.uttid = decoder->uttid;
-  decoder->hyp_frame_num = -1;
-  decoder->hyp_segs = 0;
-  decoder->hyp_str = 0;
-  decoder->features =
-    feat_array_alloc(kbcore_fcb(decoder->kbcore), LIVEBUFBLOCKSIZE);
-	
-  /** front-end parameter capturing */
-  memset(&fe_param, 0, sizeof(param_t));
+  /* allocate and initialize front-end */
   fe_param.SAMPLING_RATE = (float32)cmd_ln_int32 ("-samprate");
+  fe_param.FRAME_RATE = cmd_ln_int32("-frate");
+  fe_param.WINDOW_LENGTH = cmd_ln_float32("-wlen");
+  fe_param.FB_TYPE = strcmp("mel_scale", cmd_ln_str("-fbtype")) == 0 ?
+    MEL_SCALE : LOG_LINEAR;
+  fe_param.NUM_CEPSTRA = cmd_ln_int32("-ncep");
+  fe_param.NUM_FILTERS = cmd_ln_int32("-nfilt");
+  fe_param.FFT_SIZE = cmd_ln_int32("-nfft");
   fe_param.LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
   fe_param.UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
-  fe_param.NUM_FILTERS = cmd_ln_int32("-nfilt");
-  fe_param.FRAME_RATE = cmd_ln_int32("-frate");
   fe_param.PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
-  fe_param.FFT_SIZE = cmd_ln_int32("-nfft");
-  fe_param.WINDOW_LENGTH = cmd_ln_float32("-wlen");
-	
-  decoder->fe = fe_init(&fe_param);
-  if (!decoder->fe) {
-    E_WARN("Front end initialization fe_init() failed\n");
-    return -1;
+  if ((_decoder->fe = fe_init(&fe_param)) == NULL) {
+    goto ld_init_impl_cleanup;
   }
-	
-  return 0;
-}
 
-int
-ld_finish(live_decoder_t *decoder)
-{
-  if (decoder->internal_cmd_ln) {
+  /* capture decoder parameters */
+  kb_init(&_decoder->kb);
+  _decoder->hmm_log = cmd_ln_int32("-hmmdump") ? stderr : NULL;
+  _decoder->max_wpf = cmd_ln_int32("-maxwpf");;
+  _decoder->max_histpf = cmd_ln_int32("-maxhistpf");
+  _decoder->max_hmmpf = cmd_ln_int32("-maxhmmpf");
+  _decoder->phones_skip = cmd_ln_int32 ("-ptranskip");
+
+  /* initialize decoder variables */
+  _decoder->kbcore = _decoder->kb.kbcore;
+  _decoder->hyp_frame_num = -1;
+  _decoder->uttid = NULL;
+  _decoder->ld_state = LD_STATE_IDLE;
+  _decoder->hyp_str = NULL;
+  _decoder->hyp_segs = NULL;
+  _decoder->internal_cmdln = _internal_cmdln;
+  _decoder->features =
+    feat_array_alloc(kbcore_fcb(_decoder->kbcore), LIVEBUFBLOCKSIZE);
+  if (_decoder->features == NULL) {
+    goto ld_init_impl_cleanup;
+  }
+
+  return 0;
+
+ ld_init_impl_cleanup:
+  if (_decoder->fe != NULL) {
+    fe_close(_decoder->fe);
+  }
+  if (_decoder->features != NULL) {
+    /* consult the implementation of feat_array_alloc() for how to free our
+     * internal feature vector buffer */
+    ckd_free((void *)**_decoder->features);
+    ckd_free_2d((void **)_decoder->features);
+  }
+  if (_internal_cmdln == TRUE) {
     cmd_ln_free();
   }
+  _decoder->ld_state = LD_STATE_FINISHED;
 
-  kb_free(&decoder->kb);
-	
-  /**
-   * consult the implementation of feat_array_alloc() for how to free our
-   * internal feature vector buffer
-   */
-  ckd_free((void *)**decoder->features);
-  ckd_free_2d((void **)decoder->features);
-
-  ld_free_hyps(decoder);
-
-  ld_set_uttid(decoder, 0, 0);
-
-  return 0;
+  return -1;
 }
 
 int
-ld_begin_utt(live_decoder_t *decoder, char *uttid)
+ld_init_with_args(live_decoder_t *_decoder, int _argc, char **_argv)
 {
-  ld_free_hyps(decoder);
+  assert(_decoder != NULL);
 
-  fe_start_utt(decoder->fe);
-  utt_begin(&decoder->kb);
+  if (cmd_ln_parse(arg_def, _argc, _argv) != 0) {
+    return -1;
+  }
 
-  decoder->frame_num = 0;
-  decoder->kb.nfr = 0;
-  decoder->kb.utt_hmm_eval = 0;
-  decoder->kb.utt_sen_eval = 0;
-  decoder->kb.utt_gau_eval = 0;
-
-  return ld_set_uttid(decoder, uttid, 1);
+  return ld_init_impl(_decoder, TRUE);
 }
 
 int
-ld_end_utt(live_decoder_t *decoder)
+ld_init(live_decoder_t *_decoder)
 {
-  ld_process_raw_impl(decoder, 0, 0, decoder->frame_num == 0, 1);
-  decoder->kb.tot_fr += decoder->kb.nfr;
-  ld_record_hyps(decoder, 1);
-  utt_end(&decoder->kb);
-	
-  return 0;
+  return ld_init_impl(_decoder, FALSE);
 }
 
-int
-ld_process_raw(live_decoder_t *decoder, int16 *samples, int32 num_samples)
+void
+ld_finish(live_decoder_t *_decoder)
 {
-  return ld_process_raw_impl(decoder, samples, num_samples,
-			     decoder->frame_num == 0, 0);
+  assert(_decoder != NULL);
+
+  if (_decoder->fe != NULL) {
+    fe_close(_decoder->fe);
+  }
+  if (_decoder->features != NULL) {
+    /* consult the implementation of feat_array_alloc() for how to free our
+     * internal feature vector buffer */
+    ckd_free((void *)**_decoder->features);
+    ckd_free_2d((void **)_decoder->features);
+  }
+  if (_decoder->internal_cmdln == TRUE) {
+    cmd_ln_free();
+  }
+  kb_free(&_decoder->kb);
+  ld_free_hyps(_decoder);
+  if (_decoder->uttid != NULL) {
+    ckd_free(_decoder->uttid);
+    _decoder->uttid = NULL;
+  }
+  _decoder->ld_state = LD_STATE_FINISHED;
 }
 
 int
-ld_process_ceps(live_decoder_t *decoder, 
-		  float32 **cep_frames,
-		  int32 num_frames)
+ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
+{
+  assert(_decoder != NULL);
+  assert(_decoder->ld_state == LD_STATE_IDLE);
+
+  ld_free_hyps(_decoder);
+
+  fe_start_utt(_decoder->fe);
+  utt_begin(&_decoder->kb);
+
+  _decoder->frame_num = 0;
+  _decoder->kb.nfr = 0;
+  _decoder->kb.utt_hmm_eval = 0;
+  _decoder->kb.utt_sen_eval = 0;
+  _decoder->kb.utt_gau_eval = 0;
+
+  return ld_set_uttid(_decoder, _uttid);
+}
+
+void
+ld_end_utt(live_decoder_t *_decoder)
+{
+  assert(_decoder != NULL);
+
+  ld_process_raw_impl(_decoder, NULL, 0, _decoder->frame_num == 0, TRUE);
+  _decoder->kb.tot_fr += _decoder->kb.nfr;
+  ld_record_hyps(_decoder, TRUE);
+  utt_end(&_decoder->kb);
+}
+
+void
+ld_process_raw(live_decoder_t *_decoder, int16 *_samples, int32 _num_samples)
+{
+  ld_process_raw_impl(_decoder, _samples, _num_samples,
+		      _decoder->frame_num == 0, FALSE);
+}
+
+void
+ld_process_ceps(live_decoder_t *_decoder, 
+		float32 **_cep_frames,
+		int32 _num_frames)
 {
   int32 num_features = 0;
+
+  assert(_decoder != NULL);
 	
-  if (num_frames > 0) {
-    num_features = feat_s2mfc2feat_block(kbcore_fcb(decoder->kbcore),
-					 cep_frames,
-					 num_frames,
-					 decoder->frame_num == 0,
-					 0,
-					 decoder->features);
+  if (_num_frames > 0) {
+    num_features = feat_s2mfc2feat_block(kbcore_fcb(_decoder->kbcore),
+					 _cep_frames,
+					 _num_frames,
+					 _decoder->frame_num == 0,
+					 FALSE,
+					 _decoder->features);
   }
 
   if (num_features > 0) {
-    utt_decode_block(decoder->features, 
+    utt_decode_block(_decoder->features, 
 		     num_features, 
-		     &decoder->frame_num, 
-		     &decoder->kb, 
-		     decoder->max_wpf, 
-		     decoder->max_histpf, 
-		     decoder->max_hmmpf, 
-		     decoder->phones_skip, 
-		     decoder->hmm_log);
+		     &_decoder->frame_num, 
+		     &_decoder->kb, 
+		     _decoder->max_wpf, 
+		     _decoder->max_histpf, 
+		     _decoder->max_hmmpf, 
+		     _decoder->phones_skip, 
+		     _decoder->hmm_log);
   }
-	
-  return 0;
 }
 
-#if 0
 int
-ld_process_features(live_decoder_t *decoder, 
-		    float32 ***features,
-		    int32 num_features)
-{
-  if (num_features > 0) {
-    utt_decode_block(decoder->features, 
-		     num_features, 
-		     &decoder->frame_num, 
-		     &decoder->kb, 
-		     decoder->max_wpf, 
-		     decoder->max_histpf, 
-		     decoder->max_hmmpf, 
-		     decoder->phones_skip, 
-		     decoder->hmm_log);
-  }
-	
-  return 0;
-}
-#endif
-
-int
-ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
+ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
+		 hyp_t ***_hyp_segs)
 {
   int rv = 0;
 
-  /** re-record the hypothesis if there is a frame number mismatch */
-  if (decoder->frame_num != decoder->hyp_frame_num) {
-    rv = ld_record_hyps(decoder, 0);
+  assert(_decoder != NULL);
+
+  /* re-record the hypothesis if there is a frame number mismatch */
+  if (_decoder->frame_num != _decoder->hyp_frame_num) {
+    rv = ld_record_hyps(_decoder, FALSE);
   }
   
-  /** return the hypothesis string if the user requested it */
-  if (hyp_str) {
-    *hyp_str = decoder->hyp_str;
+  if (_uttid != NULL) {
+    *_uttid = _decoder->uttid;
   }
-
-  /** return the hypothesis word segments if the user requested it */
-  if (hyp_segs) {
-    *hyp_segs = decoder->hyp_segs;
+  if (_hyp_str != NULL) {
+    *_hyp_str = _decoder->hyp_str;
+  }
+  if (_hyp_segs != NULL) {
+    *_hyp_segs = _decoder->hyp_segs;
   }
   
   return rv;
@@ -314,26 +342,42 @@ ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 /***************************************************************************/
 
 int
-ld_set_uttid(live_decoder_t *decoder, char *uttid, int autogen)
+ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
 {
-  char *local_uttid = 0;
+  char *local_uttid = NULL;
+  struct tm *times;
 
-  if (decoder->uttid) {
-    ckd_free(decoder->uttid);
+  assert(_decoder != NULL);
+
+  if (_decoder->uttid != NULL) {
+    ckd_free(_decoder->uttid);
+    _decoder->uttid = NULL;
   }
-  if (uttid) {
-    if ((local_uttid = ckd_calloc(1, strlen(uttid) + 1)) == 0) {
+
+  /* automatically-generated uttid */
+  if (_uttid == NULL) {
+    times = localtime(NULL);
+    if ((local_uttid = ckd_malloc(17)) == NULL) {
       return -1;
     }
-    strcpy(local_uttid, uttid);
+    snprintf(local_uttid, 20, "*%4d%2d%2dZ%2d%2d%2d",
+	     times->tm_year, times->tm_mon, times->tm_mday,
+	     times->tm_hour, times->tm_min, times->tm_sec);
   }
-  decoder->uttid = local_uttid;
+  /* user-defined uttid */
+  else {
+    if ((local_uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
+      return -1;
+    }
+    strcpy(local_uttid, _uttid);
+  }
+  _decoder->uttid = local_uttid;
 
   return 0;
 }
 
 int
-ld_record_hyps(live_decoder_t *decoder, int end_utt)
+ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
 {
   int32	id;
   int32	i = 0;
@@ -349,13 +393,15 @@ ld_record_hyps(live_decoder_t *decoder, int end_utt)
   kb_t *kb = 0;
   dict_t *dict;
 
-  ld_free_hyps(decoder);
+  assert(_decoder != NULL);
 
-  kb = &decoder->kb;
-  dict = kbcore_dict(decoder->kbcore);
-  id = end_utt ?
-    vithist_utt_end(kb->vithist, decoder->kbcore) :
-    vithist_partialutt_end(kb->vithist, decoder->kbcore);
+  ld_free_hyps(_decoder);
+
+  kb = &_decoder->kb;
+  dict = kbcore_dict(_decoder->kbcore);
+  id = _end_utt ?
+    vithist_utt_end(kb->vithist, _decoder->kbcore) :
+    vithist_partialutt_end(kb->vithist, _decoder->kbcore);
   if (id < 0) {
     return -1;
   }
@@ -401,41 +447,39 @@ ld_record_hyps(live_decoder_t *decoder, int end_utt)
   
   hyp_str[hyp_strlen] = '\0';
   hyp_segs[hyp_seglen] = 0;
-  decoder->hyp_frame_num = decoder->frame_num;
-  decoder->hyp_segs = hyp_segs;
-  decoder->hyp_str = hyp_str;
+  _decoder->hyp_frame_num = _decoder->frame_num;
+  _decoder->hyp_segs = hyp_segs;
+  _decoder->hyp_str = hyp_str;
 
   return 0;
 }
 
-int
-ld_free_hyps(live_decoder_t *decoder)
+void
+ld_free_hyps(live_decoder_t *_decoder)
 {
   hyp_t **h;
 
   /** set the reference frame number to something invalid */
-  decoder->hyp_frame_num = -1;
+  _decoder->hyp_frame_num = -1;
 
   /** free and reset the hypothesis string */
-  if (decoder->hyp_str) {
-    ckd_free(decoder->hyp_str);
-    decoder->hyp_str = 0;
+  if (_decoder->hyp_str) {
+    ckd_free(_decoder->hyp_str);
+    _decoder->hyp_str = 0;
   }
   
   /** free and reset the hypothesis word segments */
-  if (decoder->hyp_segs) {
-    for (h = decoder->hyp_segs; *h; h++) {
+  if (_decoder->hyp_segs) {
+    for (h = _decoder->hyp_segs; *h; h++) {
       ckd_free(*h);
     }
-    ckd_free(decoder->hyp_segs);
-    decoder->hyp_segs = 0;
+    ckd_free(_decoder->hyp_segs);
+    _decoder->hyp_segs = 0;
   }
-
-  return 0;
 }
 
-int
-ld_process_raw_impl(live_decoder_t *decoder,
+void
+ld_process_raw_impl(live_decoder_t *_decoder,
 		    int16 *samples,
 		    int32 num_samples,
 		    int32 begin_utt,
@@ -445,38 +489,38 @@ ld_process_raw_impl(live_decoder_t *decoder,
   float32 **frames = 0;
   int32 num_frames = 0;
   int32 num_features = 0;
+
+  assert(_decoder != NULL);
 	
-  num_frames = fe_process_utt(decoder->fe, samples, num_samples, &frames);
+  num_frames = fe_process_utt(_decoder->fe, samples, num_samples, &frames);
 	
   if (end_utt) {
-    fe_end_utt(decoder->fe, dummy_frame);
+    fe_end_utt(_decoder->fe, dummy_frame);
   }
 	
   if (num_frames > 0) {
-    num_features = feat_s2mfc2feat_block(kbcore_fcb(decoder->kbcore),
+    num_features = feat_s2mfc2feat_block(kbcore_fcb(_decoder->kbcore),
 					 frames,
 					 num_frames,
 					 begin_utt,
 					 end_utt,
-					 decoder->features);
+					 _decoder->features);
   }
 
   if (num_features > 0) {
-    utt_decode_block(decoder->features, 
+    utt_decode_block(_decoder->features, 
 		     num_features, 
-		     &decoder->frame_num, 
-		     &decoder->kb, 
-		     decoder->max_wpf, 
-		     decoder->max_histpf, 
-		     decoder->max_hmmpf, 
-		     decoder->phones_skip, 
-		     decoder->hmm_log);
+		     &_decoder->frame_num, 
+		     &_decoder->kb, 
+		     _decoder->max_wpf, 
+		     _decoder->max_histpf, 
+		     _decoder->max_hmmpf, 
+		     _decoder->phones_skip, 
+		     _decoder->hmm_log);
   }
 	
   if (frames) {
     ckd_free_2d((void **)frames);
   }
-	
-  return 0;
 }
 

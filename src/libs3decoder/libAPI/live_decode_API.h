@@ -197,16 +197,16 @@ typedef struct
   hyp_t **hyp_segs;
 
   /*
+   * Boolean indicator whether we've internally allocated space for the
+   * command line arguments.
+   */
+  int32 internal_cmdln;
+
+  /*
    * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
    * we allocate once per live decoder.
    */ 
   float32 ***features;
-
-  /*
-   * Boolean indicator whether we've internally allocated space for the
-   * command line arguments.
-   */
-  int32 internal_cmd_ln;
 
 } live_decoder_t;
 
@@ -224,7 +224,7 @@ typedef struct
     @return 0 for success.  -1 for failure.
     @see ld_finish
 */
-int ld_init(live_decoder_t *decoder);
+int ld_init(live_decoder_t *_decoder);
 
 /** Initializes the live-decoder.  Internal modules, including the cepstrum-
     generating front-end, the language model, and the accoustic models are
@@ -241,18 +241,17 @@ int ld_init(live_decoder_t *decoder);
     @return 0 for success.  -1 for failure.
     @see ld_finish
 */
-int ld_init_with_args(live_decoder_t *decoder, int argc, char **argv);
+int ld_init_with_args(live_decoder_t *_decoder, int _argc, char **_argv);
 
 /** Wraps up the live-decoder.  All internal modules are closed or unloaded.
     Internal variables are either freed or set to a finishing state.  This
     function should be called once the user is finished with the live-decoder.
 
     @param decoder Pointer to the decoder.
-    @return Always return 0 (for success).
     @see ld_init
     @see ld_init_with_args
 */
-int ld_finish(live_decoder_t *decoder);
+void ld_finish(live_decoder_t *_decoder);
 
 /** Marks the start of the current utterance.  An utterance is a session of
     speech decoding that starts with a call to <I>ld_begin_utt()</I> and ends 
@@ -276,7 +275,7 @@ int ld_finish(live_decoder_t *decoder);
     @see ld_process_ceps
     @see ld_retrieve_hyps
 */
-int ld_begin_utt(live_decoder_t *decoder, char *uttid);
+int ld_begin_utt(live_decoder_t *_decoder, char *_uttid);
 
 /** Marks the end of the current utterance.  The Live-Decode API can no longer
     process speech data until the start of the next utterance.  Any hypothesis
@@ -286,13 +285,12 @@ int ld_begin_utt(live_decoder_t *decoder, char *uttid);
     to retrieve hypothesis.
 
     @param decoder Pointer to the decoder
-    @return 0 for success.  -1 for failure.
     @see ld_begin_utt
     @see ld_process_raw
     @see ld_process_ceps
     @see ld_retrieve_hyps
 */
-int ld_end_utt(live_decoder_t *decoder);
+void ld_end_utt(live_decoder_t *_decoder);
 
 /** Process raw 16-bit samples for the current utterance decoding.  This
     function has to be called in the duration of an utterance.  That is,
@@ -302,15 +300,14 @@ int ld_end_utt(live_decoder_t *decoder);
     @param decoder Pointer to the decoder.
     @param samples Buffer of int16 audio samples.
     @param num_samples Number of samples in the buffer.
-    @return 0 for success.  -1 for failure.
     @see ld_begin_utt
     @see ld_end_utt
     @see ld_process_ceps
 */
-int ld_process_raw(live_decoder_t *decoder, 
-		   int16 *samples,
-		   int32 num_samples);
-
+void ld_process_raw(live_decoder_t *_decoder, 
+		    int16 *_samples,
+		    int32 _num_samples);
+  
 /** Process a buffer of cepstrum frames for the current utterance.  To use
     this function, make sure that the parameters to the cepstra-generating
     front-end that matches the parameters to the decoder's accoustic 
@@ -326,9 +323,9 @@ int ld_process_raw(live_decoder_t *decoder,
     @see ld_end_utt
     @see ld_process_ceps
 */
-int ld_process_ceps(live_decoder_t *decoder, 
-		    float32 **frames,
-		    int32 num_frames);
+void ld_process_ceps(live_decoder_t *_decoder, 
+		     float32 **_frames,
+		     int32 _num_frames);
 
 /** Retrieve partial or final decoding results (hypothesis).  Any
     hypothesis retrieved prior to the end of the utterance is called a 
@@ -364,8 +361,8 @@ int ld_process_ceps(live_decoder_t *decoder,
     segments.  If <I>null</I>, the array is not returned.
     @return 0 for success.  -1 for failure.
 */
-int ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str,
-		     hyp_t ***hyp_segs);
+int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
+		     hyp_t ***_hyp_segs);
 
 
 /** Abort the current decoding process immediately.  As opposed to
@@ -375,10 +372,9 @@ int ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str,
     <EM>!!! NOT IMPLEMENTED YET !!!</EM>
 
     @param decoder Pointer to the decoder.
-    @return 0 for success.  -1 for failure.
     @see ld_end_utt
 */
-int ld_abort_utt(live_decoder_t *decoder);
+void ld_abort_utt(live_decoder_t *_decoder);
 
 #ifdef __cplusplus
 }
