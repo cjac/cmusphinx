@@ -13,11 +13,13 @@ an4.ug.lm.DMP		the language model in arpabo format, binary version
 
 filler.dict		list of non-speech words
 
-pittsburgh.dire.raw	a raw, 16-bit 16kHz audio file containing the 
+pittsburgh.bigendian.raw	
+			a raw, 16-bit 16kHz audio file containing the 
 			utterance "p i t t s b u r g h" (Pittsburgh 
 			spelled out) in big endian format
 
-pittsburgh.swap.raw	a raw, 16-bit 16kHz audio file containing the 
+pittsburgh.littleendian.raw
+			a raw, 16-bit 16kHz audio file containing the 
 			utterance "p i t t s b u r g h" (Pittsburgh 
 			spelled out) in little endian format
 
