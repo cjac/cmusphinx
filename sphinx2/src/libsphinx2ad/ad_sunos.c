@@ -90,6 +90,18 @@ ad_rec_t *ad_open ( void )
     return r;
 }
 
+ad_rec_t *ad_open_sps (int32 sps)
+{
+    ad_rec_t *r;
+     
+    if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
+        return NULL;
+    
+    r->audio_fd = audioOpen (sps);
+    r->recording = 0;
+    
+    return r;
+}
 
 int32 ad_start_rec (ad_rec_t *r)
 {
