@@ -1,0 +1,68 @@
+#############################################################################
+This is a 2-gram language model, based on a vocabulary of 13 words,
+  which begins "<s>", "</s>", "oh"...
+This is an OPEN-vocabulary model (type 1)
+  (OOVs were mapped to UNK, which is treated as any other vocabulary word)
+This file is in the ARPA-standard format introduced by Doug Paul.
+
+p(wd3|wd1,wd2)= if(trigram exists)           p_3(wd1,wd2,wd3)
+                else if(bigram w1,w2 exists) bo_wt_2(w1,w2)*p(wd3|wd2)
+                else                         p(wd3|w2)
+
+p(wd2|wd1)= if(bigram exists) p_2(wd1,wd2)
+            else              bo_wt_1(wd1)*p_1(wd2)
+
+All probs and back-off weights (bo_wt) are given in log10 form.
+
+Data formats:
+
+Beginning of data mark: \data\
+ngram 1=nr            # number of 1-grams
+ngram 2=nr            # number of 2-grams
+
+\1-grams:
+p_1     wd_1 bo_wt_1
+\2-grams:
+p_2     wd_1 wd_2 
+
+end of data mark: \end\
+
+\data\
+ngram 1=29
+ngram 2=1
+
+\1-grams:
+-1.4472 <UNK>	0.0000
+-1.4472 </s>	-99.0000
+-99.0000 <s>	0.0000
+-1.4472 A 0.0000
+-1.4472 B 0.0000
+-1.4472 C 0.0000
+-1.4472 D 0.0000
+-1.4472 E 0.0000
+-1.4472 F 0.0000
+-1.4472 G 0.0000
+-1.4472 H 0.0000
+-1.4472 I 0.0000
+-1.4472 J 0.0000
+-1.4472 K 0.0000
+-1.4472 L 0.0000
+-1.4472 M 0.0000
+-1.4472 N 0.0000
+-1.4472 O 0.0000
+-1.4472 P 0.0000
+-1.4472 Q 0.0000
+-1.4472 R 0.0000
+-1.4472 S 0.0000
+-1.4472 T 0.0000
+-1.4472 U 0.0000
+-1.4472 V 0.0000
+-1.4472 W 0.0000
+-1.4472 X 0.0000
+-1.4472 Y 0.0000
+-1.4472 Z 0.0000
+
+\2-grams:
+0.0000 </s> <s> 
+
+\end\
