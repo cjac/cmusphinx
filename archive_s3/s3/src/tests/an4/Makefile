@@ -75,14 +75,14 @@ an4_spelling_journey_trigram:
 	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_journey_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling_journey.trigram.DMP" >> ARGS.an4_spelling_journey_trigram
 	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_journey_trigram
-	echo "-matchfn    an4_spelling_trigram.match" >> ARGS.an4_spelling_journey_trigram
+	echo "-matchfn    an4_spelling_journey_trigram.match" >> ARGS.an4_spelling_journey_trigram
 	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_journey_trigram > gmake-an4_spelling_journey_trigram.results
 	$(BINDIR)/align -ref an4_spelling.ref -hyp an4_spelling_journey_trigram.match > an4_spelling_journey_trigram.align
 
 an4_full_trigram:
 	rm -f gmake-an4_full_trigram.results
 	/bin/cp ARGS.an4_trigram ARGS.an4_full_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.trigram.DMP" >> ARGS.an4_full_trigram
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4.trigram.DMP" >> ARGS.an4_full_trigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_full_trigram
 	echo "-matchfn    an4_full_trigram.match" >> ARGS.an4_full_trigram
 	$(BINDIR)/s3decode-anytopo ARGS.an4_full_trigram > gmake-an4_full_trigram.results
@@ -93,7 +93,7 @@ an4_plus_trigram:
 	/bin/cp ARGS.an4_trigram ARGS.an4_plus_trigram
 	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_plus.trigram.DMP" >> ARGS.an4_plus_trigram
 	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_plus_trigram
-	echo "-matchfn    an4_full_trigram.match" >> ARGS.an4_plus_trigram
+	echo "-matchfn    an4_plus_trigram.match" >> ARGS.an4_plus_trigram
 	$(BINDIR)/s3decode-anytopo ARGS.an4_plus_trigram > gmake-an4_plus_trigram.results
 	$(BINDIR)/align -ref an4_full.ref -hyp an4_plus_trigram.match > an4_plus_trigram.align
 
