@@ -67,6 +67,7 @@
 #include "classify.h"
 #include "endptr.h"
 #include "fe.h"
+#include "config.h"
 
 const char helpstr[] =
   "Description: \n\

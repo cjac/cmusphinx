@@ -10,6 +10,7 @@ CFLAGS=${CFLAGS:--g -O2 -Wall}
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
+AC_C_BIGENDIAN
 AC_HEADER_STDC
 
 AC_TYPE_SIGNAL
@@ -85,19 +86,19 @@ dnl found instead, then use the latter.
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DSUN4 -DAD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -DSUN4 -DAD_BACKEND_SUNOS"
                         ;;
                 *86*-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__LITTLE_ENDIAN__ -DAD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -DAD_BACKEND_SUNOS"
                         ;;
                 *-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -DAD_BACKEND_SUNOS"
                         ;;
                 *-*-*cygwin*)
                         ad_files="play_win32.lo rec_win32.lo"
@@ -108,7 +109,7 @@ dnl found instead, then use the latter.
                 *-*apple*-*)
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_NONE"
+                        CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
                         ;;
                 *)
                         ad_files="ad_base.lo"
