@@ -1,4 +1,4 @@
-S2CONTINUOUS=sphinx2-continuous
+S2CONTINUOUS=@prefix@/bin/sphinx2-continuous
 HMM=@prefix@/share/sphinx2/model/hmm/4k
 TASK=@prefix@/share/sphinx2/model/lm/turtle
 
