@@ -350,15 +350,6 @@ SOURCE=..\..\..\src\libsphinx2\util.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\uttproc.c
-
-!IF  "$(CFG)" == "libsphinx2 - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "libsphinx2 - Win32 Debug"
-
-# SUBTRACT CPP /I "..\..\..\include ..\..\..\src\libsphinx2\include"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
