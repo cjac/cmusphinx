@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/07/23  23:44:46  egouvea
- * Changed the cygwin code to use the same audio files as the MS Visual code, removed unused variables from fe_interface.c
+ * Revision 1.6  2004/12/06  11:17:55  arthchan2003
+ * Update the copyright information of ad.h, *sigh* start to feel tired of updating documentation system.  Anyone who has time, please take up libs3audio. That is the last place which is undocumented
  * 
+ * Revision 1.5  2004/07/23 23:44:46  egouvea
+ * Changed the cygwin code to use the same audio files as the MS Visual code, removed unused variables from fe_interface.c
+ *
  * Revision 1.4  2004/02/29 23:48:31  egouvea
  * Updated configure.in to the recent automake/autoconf, fixed win32
  * references in audio files.
