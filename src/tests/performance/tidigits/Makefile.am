@@ -56,7 +56,10 @@ BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
 DECANYBIN = $(PROGRAMDIR)/decode_anytopo
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 
 ALLTARGET=tidigits-lp tidigits-quick-lp tidigits-decode tidigits-quick-decode
 
@@ -70,43 +73,41 @@ ALLTARGET=tidigits-lp tidigits-quick-lp tidigits-decode tidigits-quick-decode
 quick : tidigits-quick-lp tidigits-quick-decode tidigits-quick-decany
 slow : tidigits-lp tidigits-decode tidigits-decany
 
-clean : 
-	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.tidigits-*
+CLEANFILES = *.ctl *.sent  *.lex *.results *.match *.match.* ARGS.tidigits-*
 
 #Targets which we are actively using. 
 tidigits-lp tidigits-quick-lp : 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}' $(subst -lp,,$@).batch |sed "s/\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}' $(subst -lp,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	cat ARGS ARGS.live > ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
+	echo "-rawext .wav.raw" >> ARGS.$@
 	$(LPBIN) ./$@.ctl $(TIDIGITSRAWPATH) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 tidigits-decode tidigits-quick-decode: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(subst -decode,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	/bin/cp ARGS ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-cepdir $(TIDIGITSCEPPATH)" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	touch $@.lex #empty lexicon
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
+	awk -F/ '{print $$NF}' $(subst -decode,,$@).batch | awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}'  | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 tidigits-decany tidigits-quick-decany: 
-	-rm -f $@.results $@.match $@.match.align
-	awk '{print $$1}'  $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.match $@.match.*
+	awk '{print $$1}'  $(subst -decany,,$@).batch | sed "s/\.wav\.raw//" > ./$@.ctl
 	/bin/cp ARGS.decany ARGS.$@
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-cepdir $(TIDIGITSCEPPATH)" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-	touch $@.lex #empty lexicon
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
+	awk -F/ '{print $$NF}' $(subst -decany,,$@).batch | awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}'  | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 

@@ -55,13 +55,15 @@ AN4RESULTPATH= ${top_builddir}/src/tests/performance/an4/
 MODELSPATH=/lab/speech/sphinx4/data/an4/lists/
 AN4BASE="ARGS.an4_base"
 AN4LIVE="ARGS.an4_base.live"
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 
 #	echo $(wordlist 2,3,$(subst _, ,$@))
 #	echo $(word 3,$(subst _, ,$@))
 
-clean :
-	- rm *.results *.tmp *.match *.match.align *.sent *.ctl ARGS.*-{lp,decode,decany} 
+CLEANFILES = *.results *.tmp *.match *.match.* *.sent *.ctl ARGS.*-{lp,decode,decany} 
 
 SIMTASK="words spelling full"
 GRAMMAR="unigram bigram flat_unigram trigram"
@@ -172,15 +174,14 @@ an4_full_quick-trigram-lp \
 an4_words_quick-flat_unigram-lp \
 an4_spelling_quick-flat_unigram-lp \
 an4_full_quick-flat_unigram-lp :
-	- rm -r $@.results $@.tmp $@.match $@.sent $@.ctl
-	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch |sed "s/\.raw//" > ./$@.ctl
+	-rm -f $@.results $@.tmp $@.match $@.sent $@.ctl
+	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch | sed "s/\.raw//" > ./$@.ctl
 	cat $(AN4BASE) $(AN4LIVE) ./ARGS/ARGS.an4_$(word 2,$(subst -, ,$@)) > ARGS.$@
 	echo "-lm $(MODELSPATH)/$(subst -,.,$(subst _quick,,$(subst -lp,,$@))).lm.DMP" >> ARGS.$@
 	echo "-hyp ./$@.match" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results 2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  |sed "s/\.raw//" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  | sed "s/\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 an4_words-unigram-decode \
 an4_spelling-unigram-decode \
@@ -206,17 +207,15 @@ an4_full_quick-trigram-decode \
 an4_words_quick-flat_unigram-decode \
 an4_spelling_quick-flat_unigram-decode \
 an4_full_quick-flat_unigram-decode :
-	- rm -r $@.results $@.tmp $@.match $@.sent $@.ctl
-	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > ./$@.ctl
+	-rm -f $@.results $@.tmp $@.match $@.sent $@.ctl
+	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch | sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > ./$@.ctl
 	cat $(AN4BASE) ./ARGS/ARGS.an4_$(word 2,$(subst -, ,$@)) > ARGS.$@
 	echo "-lm $(MODELSPATH)/$(subst -,.,$(subst _quick,,$(subst -decode,,$@))).lm.DMP" >> ARGS.$@
-	echo "-cepdir / " >> ARGS.$@
 	echo "-ctl ./$@.ctl " >> ARGS.$@
 	echo "-hyp ./$@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  | sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 an4_words-unigram-decany \
@@ -243,17 +242,15 @@ an4_full_quick-trigram-decany \
 an4_words_quick-flat_unigram-decany \
 an4_spelling_quick-flat_unigram-decany \
 an4_full_quick-flat_unigram-decany :
-	- rm -r $@.results $@.tmp $@.match $@.sent $@.ctl
-	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > ./$@.ctl
+	-rm -f $@.results $@.tmp $@.match $@.sent $@.ctl
+	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch | sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > ./$@.ctl
 	cat $(AN4BASE).decany ./ARGS/ARGS.an4_$(word 2,$(subst -, ,$@)).decany > ARGS.$@
 	echo "-lm $(MODELSPATH)/$(subst -,.,$(subst _quick,,$(subst -decany,,$@))).lm.DMP" >> ARGS.$@
-	echo "-cepdir / " >> ARGS.$@
 	echo "-ctl ./$@.ctl " >> ARGS.$@
 	echo "-hyp ./$@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  | sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 #an4_words_unigram-bm \
@@ -265,7 +262,7 @@ an4_full_quick-flat_unigram-decany :
 #an4_words_trigram-bm \
 #an4_spelling_trigram-bm \
 #an4_full_trigram-bm:
-#	 - rm -r $@.results $@.tmp $@.match
+#	 -rm -f $@.results $@.tmp $@.match
 #	 cat $(AN4BASE) $(AN4LIVE) ./ARGS/ARGS.an4_$(word 3,$(subst _, ,$(subst -bm,, $@))) > ARGS.$@
 #	 echo "-lm $(MODELSPATH)/an4_$(word 2,$(subst _, ,$@)).$(word 3,$(subst _, ,$(subst -bm,,$@)).lm.DMP" >> ARGS.$@
 #	 $(BMBIN) batch/an4_$(word 2,$(subst _, ,$(subst -bm,,$@))).batch / ARGS.$@ > $@.results 2>&1
@@ -275,7 +272,7 @@ an4_full_quick-flat_unigram-decany :
 #an4_words_flat_unigram-bm \
 #an4_spelling_flat_unigram-bm \
 #an4_full_flat_unigram-bm :
-#	 - rm -r $@.results $@.tmp $@.match
+#	 -rm -f $@.results $@.tmp $@.match
 #	 cat $(AN4BASE) $(AN4LIVE) ./ARGS/ARGS.an4_flat_unigram > ARGS.$@
 #	 echo "-lm $(MODELSPATH)/an4_$(word 2,$(subst _, ,$(subst -bm,,$@))).flat_unigram.lm.DMP" >> ARGS.$@
 #	 $(BMBIN) batch/an4_$(word 2,$(subst _, ,$(subst -bm,,$@))).batch / ARGS.$@ > $@.results 2>&1

@@ -54,7 +54,10 @@ RMBATCH="./rm1.batch"
 RMQUICKBATCH="./rm1_quick.batch"
 RMARG="ARGS.rm1"
 LVRMARG="ARGS.rm1.live"
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i rm -o rsum -f 0 
 
 #all : lp decode lp_quick decode_quick
 slow : lp decode
@@ -68,8 +71,7 @@ decode : decode_quick decode_slow
 decode_slow : rm1_flat_unigram-decode rm1_unigram-decode rm1_bigram-decode rm1_trigram-decode
 decode_quick : rm1_quick_flat_unigram-decode rm1_quick_unigram-decode rm1_quick_bigram-decode rm1_quick_trigram-decode
 
-clean :
-	 -rm -f *.ctl *.sent *.results *.match  *.match.align ARG.rm1_*-* *-lp *-bm *-decode 
+CLEANFILES = *.ctl *.sent *.results *.match  *.match.* ARG.rm1_*-* *-lp *-bm *-decode 
 
 #Arthur: Should use suffix rules, didn't know how to use it at this point. Argument substitution is also ugly.
 
@@ -77,36 +79,37 @@ rm1_flat_unigram-lp \
 rm1_unigram-lp \
 rm1_bigram-lp \
 rm1_trigram-lp :
-	-rm -f $@.results $@.match $@.match.align
+	-rm -f $@.results $@.match $@.match.*
 	/bin/cat $(RMARG) $(LVRMARG) ARGS.$(subst -lp,,$@) > ARGS.$@	
-	awk '{print $$1}' $(RMBATCH) |sed "s/\.raw//"> ./$@.ctl
+	awk '{print $$1}' $(RMBATCH) | sed "s/\.wav\.raw//"> ./$@.ctl
 	/bin/echo "-hyp $@.match" >> ARGS.$@
+	/bin/echo "-rawext .wav.raw" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMBATCH) |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMBATCH) | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 rm1_flat_unigram_quick-lp \
 rm1_unigram_quick-lp \
 rm1_bigram_quick-lp \
 rm1_trigram_quick-lp: 
-	-rm -f $@.results $@.match $@.match.align
+	-rm -f $@.results $@.match $@.match.*
 	/bin/cat $(RMARG) $(LVRMARG) ARGS.$(subst _quick,,$(subst -lp,,$@)) > ARGS.$@	
-	awk '{print $$1}' $(RMQUICKBATCH) |sed "s/\.raw//"> ./$@.ctl
+	awk '{print $$1}' $(RMQUICKBATCH) | sed "s/\.wav\.raw//"> ./$@.ctl
 	/bin/echo "-hyp $@.match" >> ARGS.$@
+	/bin/echo "-rawext .wav.raw" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMQUICKBATCH) |sed "s/\.wav\.raw//" > $@.sent
-	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMQUICKBATCH) | sed "s/\.wav\.raw//" > $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 #rm1_flat_unigram-decode rm1_unigram-decode rm1_bigram-decode rm1_trigram-decode: 
 #	 /bin/cat $(RMARG) ARGS.$(subst -decode,,$@) > ARGS.$@
-#	 awk '{print $$1}' $(RMBATCH) |sed "s/\.wav\.raw//"> ./$@.ctl
+#	 awk '{print $$1}' $(RMBATCH) | sed "s/\.wav\.raw//"> ./$@.ctl
 #	 /bin/echo "-ctl $@.ctl" >> ARGS.$@
-#	 /bin/echo "-cepdir / " >> ARGS.$@
 #	 /bin/echo "-hyp $@.match" >> ARGS.$@
 #	 $(DECODEBIN) ARGS.$@ > $@.results 2>&1
-#	 awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
-#	 - $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+#	awk -F/ '{print $$NF}' $(subst -decode,,$@).batch | awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' | sed "s/\.wav\.raw//" > $@.sent
+#	 $(ALIGNBIN) -r $@.sent -h $@.match
 #
 
 #legacy targets using BM

@@ -53,7 +53,10 @@ BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
 DECANYBIN = $(PROGRAMDIR)/decode_anytopo
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 CTLFILE = ./CALO.test.ctl
 TRANSFILE = ./CALO.test.wosil.trans
 ICSIPATH = /net/scylla/usr0/archan/ICSI_feat/
@@ -61,27 +64,26 @@ ICSIPATH = /net/scylla/usr0/archan/ICSI_feat/
 #all : base fast
 base :  icsi-base-decode icsi-base-decany
 
-clean :
-	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
+CLEANFILES = *.tmp *.ctl *.sent  *.lex *.results *.match *.match.* *.hyp* ARGS.*-{lp,decode}
 
 icsi-base-decode:
-	-rm -f $@.results $@.match $@.match.align $@.tmp
+	-rm -f $@.results $@.match $@.match.* $@.hyp*
 	/bin/cp ARGS ARGS.$@
 	echo "-ctl $(CTLFILE)" >> ARGS.$@
 	echo "-cepdir $(ICSIPATH)/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1 
-	sed "s/_/ /g" $@.match > $@.tmp
-	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
+	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
 icsi-base-decany:
-	-rm -f $@.results $@.match $@.match.align $@.tmp
+	-rm -f $@.results $@.match $@.match.* $@.hyp*
 	/bin/cp ARGS.decany ARGS.$@
 	echo "-ctl $(CTLFILE)" >> ARGS.$@
 	echo "-cepdir $(ICSIPATH)/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
-	sed "s/_/ /g" $@.match > $@.tmp
-	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
+	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
 

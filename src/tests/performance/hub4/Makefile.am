@@ -17,10 +17,12 @@ PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
-ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+# Add 
+# "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
+# to your path if you have alinux machine
+ALIGNBIN = sclite -i wsj -o rsum -f 0 
 
-clean : 
-	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
+CLEANFILES = *.ctl *.sent  *.lex *.results *.match *.match.* ARGS.*-{lp,decode}
 
 #all : lp decode
 lp :hub4_flatunigram-lp hub4_trigram-lp
@@ -33,26 +35,23 @@ decode :hub4_flatunigram-decode hub4_trigram-decode
 
 
 hub4_flatunigram-lp hub4_trigram-lp:
-	-rm -f $@.results $@.match $@.match.align
+	-rm -f $@.results $@.match $@.match.*
 	/bin/cat ARGS.hub4_base ARGS.hub4_base.live ARGS.$(subst -lp,,$@) > ARGS.$@
-	awk '{print $$1}' $(CTL_FILE) |sed "s/\.raw//" > ./$@.ctl
+	awk '{print $$1}' $(CTL_FILE) | sed "s/\.raw//" > ./$@.ctl
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ./ARGS.$@ > $@.results 2>&1
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |sed "s/\.raw//" > $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	 - $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) | sed "s/\.raw//" > $@.sent
+	 $(ALIGNBIN) -r $@.sent -h $@.match
 
 hub4_flatunigram-decode hub4_trigram-decode:
-	-rm -f $@.results $@.match $@.match.align
+	-rm -f $@.results $@.match $@.match.*
 	/bin/cat ARGS.hub4_base ARGS.$(subst -decode,,$@) > ARGS.$@
-	awk '{print $$1}' $(CTL_FILE) |sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	awk '{print $$1}' $(CTL_FILE) | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
 	echo "-ctl $@.ctl" >> ARGS.$@
-	echo "-cepdir / " >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
-	tr 'A-Z' 'a-z' < $@.match > $@.tmp
-	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
 
