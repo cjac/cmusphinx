@@ -53,10 +53,10 @@ ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics
 include $(TOP)/config/common_make_rules
 
 $(BINDIR)/dumpfrontend: dump_frontend.o $(LIVEDECOBJS)
-	$(CC) $(CFLAGS) -o $@ dump_frontend.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -R$(LIBDIR)
+	$(CC) $(CFLAGS) -o $@ dump_frontend.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)  -Wl,-R$(LIBDIR)
 
 $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
-	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -R$(LIBDIR)
+	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)  -Wl,-R$(LIBDIR)
 
 ti46:
 	rm -f gmake-ti46.results
