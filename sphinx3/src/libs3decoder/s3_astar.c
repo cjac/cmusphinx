@@ -502,6 +502,7 @@ int32 s3astar_dag_load (char *file)
     dag.entry.node = darray[k];
     dag.entry.ascr = 0;
     dag.entry.next = NULL;
+    dag.entry.pscr_valid = 0;
 
     /* Read final node ID */
     k = dag_param_read (fp, "Final", &lineno);
@@ -512,6 +513,8 @@ int32 s3astar_dag_load (char *file)
     dag.exit.node = darray[k];
     dag.exit.ascr = 0;
     dag.exit.next = NULL;
+    dag.exit.pscr_valid = 0;
+    dag.exit.bypass = NULL;
     final = k;
 
     /* Read bestsegscore entries */
