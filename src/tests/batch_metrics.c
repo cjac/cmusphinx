@@ -63,9 +63,10 @@ int main (int argc, char *argv[])
 {
     short *samps;
 
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp, sampleRate;
+    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
     int numberMatches, numberFiles;
     
+    double sampleRate;
     double totalAudioTime;
     double totalProcessingTime;
     double audioTime;
@@ -169,7 +170,7 @@ int main (int argc, char *argv[])
 
         /* collect the processing times data */
         processingTime = metricsDuration(fileTimer);
-        audioTime = nsamp / sampleRate;
+        audioTime = ((double) nsamp) / sampleRate;
         totalProcessingTime += processingTime;
         totalAudioTime += audioTime;
 
