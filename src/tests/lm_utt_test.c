@@ -120,13 +120,13 @@ int main(int argc, char *argv[])
 
       /* read in all the N-grams */
       n = read_ngrams(fp, ngrams, wid, nwords, MAX_NGRAMS, lm);
-      printf("n1 = %d\n", n);
       
       metricsStart(lmLookupTimer);
 
       /* scores the N-grams */
       for (i = 0; i < n; i++) {
         scores[i] = score_ngram(wid[i], nwords[i], lm);
+        printf("%-10d %s\n", scores[i], ngrams[i]);
 	/*
 	printf("%-10d %s %d %d %d\n", scores[i], ngrams[i], 
 	       wid[i][0], wid[i][1], wid[i][2]);
@@ -139,8 +139,6 @@ int main(int argc, char *argv[])
       }
 
       metricsStop(lmLookupTimer);
-
-      printf("n2 = %d\n", n);
     }
 
     printf("Bigram misses: %d \n", lm->n_bg_bo);
@@ -162,11 +160,20 @@ int main(int argc, char *argv[])
  */
 int has_more_utterances(FILE* fp)
 {
-  char line_read[MAX_STRLEN];
-  if (fgets(line_read, MAX_STRLEN, fp) != NULL) {
-    return 1;
-  }
-  return 0;
+    int i;
+    char line_read[MAX_STRLEN];
+    if (fgets(line_read, MAX_STRLEN, fp) != NULL) {
+
+        if (str_cmp("<START_UTT>\n", line_read) != 0) {
+
+            /* if not <START_UTT>, we want to push the line back */
+            for (i = strlen(line_read) - 1; i >= 0; i--) {
+                ungetc(line_read[i], fp);
+            }
+        }
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -199,10 +206,10 @@ int read_ngrams(FILE *fp,
       if (n < max_lines) {
 	length = strlen(line_read);
 	line_read[length-1] = '\0';
-	/*
+
 	ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
 	strncpy(ngrams[n], line_read, length-1);
-	*/
+
 	nwords[n] = ngram2wid(line_read, length, wid[n], lm);
 	n++;
       } else {
