@@ -25,7 +25,7 @@ CFG=libs3decoder - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libs3decoder - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -70,7 +70,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -101,10 +101,6 @@ SOURCE=..\..\..\src\libs3decoder\ascr.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\beam.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libs3decoder\bio.c
 # End Source File
 # Begin Source File
@@ -130,6 +126,10 @@ SOURCE=..\..\..\src\libs3decoder\dict.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\dict2pid.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\fast_algo_struct.c
 # End Source File
 # Begin Source File
 
@@ -261,10 +261,6 @@ SOURCE=..\..\..\src\libs3decoder\ascr.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\beam.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libs3decoder\bio.h
 # End Source File
 # Begin Source File
@@ -290,6 +286,10 @@ SOURCE=..\..\..\src\libs3decoder\dict.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\dict2pid.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\fast_algo_struct.h
 # End Source File
 # Begin Source File
 
