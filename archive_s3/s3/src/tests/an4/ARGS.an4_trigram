@@ -16,3 +16,4 @@
 -nwbeam   1e-120
 -inspen   0.2
 -varnorm  no
+-bestpath 1

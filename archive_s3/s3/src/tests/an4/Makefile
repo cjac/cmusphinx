@@ -16,84 +16,116 @@ FILES = Makefile
 LIBNAME= tests
 BINDIR = $(TOP)/bin/$(MACHINE)
 
-an4_words:
-	rm -f gmake-an4_words.results
-	/bin/cp ARGS.an4_unigram ARGS.an4_words_unigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.ug.lm.DMP" >> ARGS.an4_words_unigram
-	echo "-ctlfn    an4_words.ctl" >> ARGS.an4_words_unigram
-	echo "-matchfn    an4_words.match" >> ARGS.an4_words_unigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_words_unigram > gmake-an4_words.results
-	$(BINDIR)/align -ref an4_words.ref -hyp an4_words.match > an4_words.align
+ifeq ($(MODE),quick)
+  MODEAFFIX = _quick
+else
+  MODE = 
+endif
 
-an4_spelling:
-	rm -f gmake-an4_spelling.results
-	/bin/cp ARGS.an4_unigram ARGS.an4_spelling_unigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.ug.lm.DMP" >> ARGS.an4_spelling_unigram
-	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_unigram
-	echo "-matchfn    an4_spelling.match" >> ARGS.an4_spelling_unigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_unigram > gmake-an4_spelling.results
-	$(BINDIR)/align -ref an4_spelling.ref -hyp an4_spelling.match > an4_spelling.align
+an4_words_unigram:
+	rm -f gmake-an4_words_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_words_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.DMP" >> ARGS.an4_words_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_words$(MODEAFFIX).ctl" >> ARGS.an4_words_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_words_unigram$(MODEAFFIX).match" >> ARGS.an4_words_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_words_unigram$(MODEAFFIX) > gmake-an4_words_unigram$(MODEAFFIX).result
+	$(BINDIR)/align -ref an4_words$(MODEAFFIX).ref -hyp an4_words_unigram$(MODEAFFIX).match > an4_words_unigram$(MODEAFFIX).align
 
-an4_full:
-	rm -f gmake-an4_full.results
-	/bin/cp ARGS.an4_unigram ARGS.an4_full_unigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4.ug.lm.DMP" >> ARGS.an4_full_unigram
-	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_full_unigram
-	echo "-matchfn    an4_full.match" >> ARGS.an4_full_unigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_full_unigram > gmake-an4_full.results
-	$(BINDIR)/align -ref an4_full.ref -hyp an4_full.match > an4_full.align
+an4_spelling_unigram:
+	rm -f gmake-an4_spelling_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_spelling_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.unigram.DMP" >> ARGS.an4_spelling_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_spelling$(MODEAFFIX).ctl" >> ARGS.an4_spelling_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_spelling_unigram$(MODEAFFIX).match" >> ARGS.an4_spelling_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_unigram$(MODEAFFIX) > gmake-an4_spelling_unigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_spelling$(MODEAFFIX).ref -hyp an4_spelling_unigram$(MODEAFFIX).match > an4_spelling_unigram$(MODEAFFIX).align
 
-an4_plus:
-	rm -f gmake-an4_plus.results
-	/bin/cp ARGS.an4_unigram ARGS.an4_plus_unigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_plus.ug.lm.DMP" >> ARGS.an4_plus_unigram
-	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_plus_unigram
-	echo "-matchfn    an4_plus.match" >> ARGS.an4_plus_unigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_plus_unigram > gmake-an4_plus.results
-	$(BINDIR)/align -ref an4_plus.ref -hyp an4_plus.match > an4_plus.align
+an4_full_unigram:
+	rm -f gmake-an4_full_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_full_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.unigram.DMP" >> ARGS.an4_full_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_full$(MODEAFFIX).ctl" >> ARGS.an4_full_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_full_unigram$(MODEAFFIX).match" >> ARGS.an4_full_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_full_unigram$(MODEAFFIX) > gmake-an4_full_unigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_full$(MODEAFFIX).ref -hyp an4_full_unigram$(MODEAFFIX).match > an4_full_unigram$(MODEAFFIX).align
+
+an4_words_flat_unigram:
+	rm -f gmake-an4_words_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.flat_unigram.DMP" >> ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_words$(MODEAFFIX).ctl" >> ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_words_flat_unigram$(MODEAFFIX).match" >> ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_words_flat_unigram$(MODEAFFIX) > gmake-an4_words_flat_unigram$(MODEAFFIX).result
+	$(BINDIR)/align -ref an4_words$(MODEAFFIX).ref -hyp an4_words_flat_unigram$(MODEAFFIX).match > an4_words_flat_unigram$(MODEAFFIX).align
+
+an4_spelling_flat_unigram:
+	rm -f gmake-an4_spelling_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.flat_unigram.DMP" >> ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_spelling$(MODEAFFIX).ctl" >> ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_spelling_flat_unigram$(MODEAFFIX).match" >> ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_flat_unigram$(MODEAFFIX) > gmake-an4_spelling_flat_unigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_spelling$(MODEAFFIX).ref -hyp an4_spelling_flat_unigram$(MODEAFFIX).match > an4_spelling_flat_unigram$(MODEAFFIX).align
+
+an4_full_flat_unigram:
+	rm -f gmake-an4_full_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.flat_unigram.DMP" >> ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	echo "-ctlfn    an4_full$(MODEAFFIX).ctl" >> ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	echo "-matchfn    an4_full_flat_unigram$(MODEAFFIX).match" >> ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_full_flat_unigram$(MODEAFFIX) > gmake-an4_full_flat_unigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_full$(MODEAFFIX).ref -hyp an4_full_flat_unigram$(MODEAFFIX).match > an4_full_flat_unigram$(MODEAFFIX).align
+
+an4_words_bigram:
+	rm -f gmake-an4_words_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_words_bigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.bigram.DMP" >> ARGS.an4_words_bigram$(MODEAFFIX)
+	echo "-ctlfn    an4_words$(MODEAFFIX).ctl" >> ARGS.an4_words_bigram$(MODEAFFIX)
+	echo "-matchfn    an4_words_bigram$(MODEAFFIX).match" >> ARGS.an4_words_bigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_words_bigram$(MODEAFFIX) > gmake-an4_words_bigram$(MODEAFFIX).result
+	$(BINDIR)/align -ref an4_words$(MODEAFFIX).ref -hyp an4_words_bigram$(MODEAFFIX).match > an4_words_bigram$(MODEAFFIX).align
+
+an4_spelling_bigram:
+	rm -f gmake-an4_spelling_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_spelling_bigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.bigram.DMP" >> ARGS.an4_spelling_bigram$(MODEAFFIX)
+	echo "-ctlfn    an4_spelling$(MODEAFFIX).ctl" >> ARGS.an4_spelling_bigram$(MODEAFFIX)
+	echo "-matchfn    an4_spelling_bigram$(MODEAFFIX).match" >> ARGS.an4_spelling_bigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_bigram$(MODEAFFIX) > gmake-an4_spelling_bigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_spelling$(MODEAFFIX).ref -hyp an4_spelling_bigram$(MODEAFFIX).match > an4_spelling_bigram$(MODEAFFIX).align
+
+an4_full_bigram:
+	rm -f gmake-an4_full_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_full_bigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.bigram.DMP" >> ARGS.an4_full_bigram$(MODEAFFIX)
+	echo "-ctlfn    an4_full$(MODEAFFIX).ctl" >> ARGS.an4_full_bigram$(MODEAFFIX)
+	echo "-matchfn    an4_full_bigram$(MODEAFFIX).match" >> ARGS.an4_full_bigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_full_bigram$(MODEAFFIX) > gmake-an4_full_bigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_full$(MODEAFFIX).ref -hyp an4_full_bigram$(MODEAFFIX).match > an4_full_bigram$(MODEAFFIX).align
 
 an4_words_trigram:
-	rm -f gmake-an4_words_trigrams.results
-	/bin/cp ARGS.an4_trigram ARGS.an4_words_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.trigram.DMP" >> ARGS.an4_words_trigram
-	echo "-ctlfn    an4_words.ctl" >> ARGS.an4_words_trigram
-	echo "-matchfn    an4_words_trigram.match" >> ARGS.an4_words_trigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_words_trigram > gmake-an4_words_trigram.result
-	$(BINDIR)/align -ref an4_words.ref -hyp an4_words_trigram.match > an4_words_trigram.align
+	rm -f gmake-an4_words_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_words_trigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_words.trigram.DMP" >> ARGS.an4_words_trigram$(MODEAFFIX)
+	echo "-ctlfn    an4_words$(MODEAFFIX).ctl" >> ARGS.an4_words_trigram$(MODEAFFIX)
+	echo "-matchfn    an4_words_trigram$(MODEAFFIX).match" >> ARGS.an4_words_trigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_words_trigram$(MODEAFFIX) > gmake-an4_words_trigram$(MODEAFFIX).result
+	$(BINDIR)/align -ref an4_words$(MODEAFFIX).ref -hyp an4_words_trigram$(MODEAFFIX).match > an4_words_trigram$(MODEAFFIX).align
 
 an4_spelling_trigram:
-	rm -f gmake-an4_spelling_trigram.results
-	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.trigram.DMP" >> ARGS.an4_spelling_trigram
-	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_trigram
-	echo "-matchfn    an4_spelling_trigram.match" >> ARGS.an4_spelling_trigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_trigram > gmake-an4_spelling_trigram.results
-	$(BINDIR)/align -ref an4_spelling.ref -hyp an4_spelling_trigram.match > an4_spelling_trigram.align
-
-an4_spelling_journey_trigram:
-	rm -f gmake-an4_spelling_journey_trigram.results
-	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_journey_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling_journey.trigram.DMP" >> ARGS.an4_spelling_journey_trigram
-	echo "-ctlfn    an4_spelling.ctl" >> ARGS.an4_spelling_journey_trigram
-	echo "-matchfn    an4_spelling_journey_trigram.match" >> ARGS.an4_spelling_journey_trigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_journey_trigram > gmake-an4_spelling_journey_trigram.results
-	$(BINDIR)/align -ref an4_spelling.ref -hyp an4_spelling_journey_trigram.match > an4_spelling_journey_trigram.align
+	rm -f gmake-an4_spelling_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_trigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_spelling.trigram.DMP" >> ARGS.an4_spelling_trigram$(MODEAFFIX)
+	echo "-ctlfn    an4_spelling$(MODEAFFIX).ctl" >> ARGS.an4_spelling_trigram$(MODEAFFIX)
+	echo "-matchfn    an4_spelling_trigram$(MODEAFFIX).match" >> ARGS.an4_spelling_trigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_spelling_trigram$(MODEAFFIX) > gmake-an4_spelling_trigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_spelling$(MODEAFFIX).ref -hyp an4_spelling_trigram$(MODEAFFIX).match > an4_spelling_trigram$(MODEAFFIX).align
 
 an4_full_trigram:
-	rm -f gmake-an4_full_trigram.results
-	/bin/cp ARGS.an4_trigram ARGS.an4_full_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4.trigram.DMP" >> ARGS.an4_full_trigram
-	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_full_trigram
-	echo "-matchfn    an4_full_trigram.match" >> ARGS.an4_full_trigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_full_trigram > gmake-an4_full_trigram.results
-	$(BINDIR)/align -ref an4_full.ref -hyp an4_full_trigram.match > an4_full_trigram.align
-
-an4_plus_trigram:
-	rm -f gmake-an4_plus_trigram.results
-	/bin/cp ARGS.an4_trigram ARGS.an4_plus_trigram
-	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_plus.trigram.DMP" >> ARGS.an4_plus_trigram
-	echo "-ctlfn    an4_full.ctl" >> ARGS.an4_plus_trigram
-	echo "-matchfn    an4_plus_trigram.match" >> ARGS.an4_plus_trigram
-	$(BINDIR)/s3decode-anytopo ARGS.an4_plus_trigram > gmake-an4_plus_trigram.results
-	$(BINDIR)/align -ref an4_full.ref -hyp an4_plus_trigram.match > an4_plus_trigram.align
-
+	rm -f gmake-an4_full_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_full_trigram$(MODEAFFIX)
+	echo "-lmfn   /lab/speech/sphinx4/data/an4/lists/an4_full.trigram.DMP" >> ARGS.an4_full_trigram$(MODEAFFIX)
+	echo "-ctlfn    an4_full$(MODEAFFIX).ctl" >> ARGS.an4_full_trigram$(MODEAFFIX)
+	echo "-matchfn    an4_full_trigram$(MODEAFFIX).match" >> ARGS.an4_full_trigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.an4_full_trigram$(MODEAFFIX) > gmake-an4_full_trigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref an4_full$(MODEAFFIX).ref -hyp an4_full_trigram$(MODEAFFIX).match > an4_full_trigram$(MODEAFFIX).align
