@@ -1,0 +1,121 @@
+#############################################################################
+This is a 2-gram language model, based on a vocabulary of 13 words,
+  which begins "<s>", "</s>", "oh"...
+This is an OPEN-vocabulary model (type 1)
+  (OOVs were mapped to UNK, which is treated as any other vocabulary word)
+This file is in the ARPA-standard format introduced by Doug Paul.
+
+p(wd3|wd1,wd2)= if(trigram exists)           p_3(wd1,wd2,wd3)
+                else if(bigram w1,w2 exists) bo_wt_2(w1,w2)*p(wd3|wd2)
+                else                         p(wd3|w2)
+
+p(wd2|wd1)= if(bigram exists) p_2(wd1,wd2)
+            else              bo_wt_1(wd1)*p_1(wd2)
+
+All probs and back-off weights (bo_wt) are given in log10 form.
+
+Data formats:
+
+Beginning of data mark: \data\
+ngram 1=nr            # number of 1-grams
+ngram 2=nr            # number of 2-grams
+
+\1-grams:
+p_1     wd_1 bo_wt_1
+\2-grams:
+p_2     wd_1 wd_2
+
+end of data mark: \end\
+
+\data\
+ngram 1=82
+ngram 2=1
+
+\1-grams:
+-1.9085 <UNK>	0.0000
+-1.9085 </s>	-99.0000
+-99 <s>	0.0000
+-1.9085 AND	0.0000
+-1.9085 APOSTROPHE	0.0000
+-1.9085 APRIL	0.0000
+-1.9085 AREA	0.0000
+-1.9085 AUGUST	0.0000
+-1.9085 CODE	0.0000
+-1.9085 DECEMBER	0.0000
+-1.9085 EIGHT	0.0000
+-1.9085 EIGHTEEN	0.0000
+-1.9085 EIGHTEENTH	0.0000
+-1.9085 EIGHTH	0.0000
+-1.9085 EIGHTY	0.0000
+-1.9085 ELEVEN	0.0000
+-1.9085 ELEVENTH	0.0000
+-1.9085 ENTER	0.0000
+-1.9085 ERASE	0.0000
+-1.9085 FEBRUARY	0.0000
+-1.9085 FIFTEEN	0.0000
+-1.9085 FIFTEENTH	0.0000
+-1.9085 FIFTH	0.0000
+-1.9085 FIFTY	0.0000
+-1.9085 FIRST	0.0000
+-1.9085 FIVE	0.0000
+-1.9085 FORTY	0.0000
+-1.9085 FOUR	0.0000
+-1.9085 FOURTEEN	0.0000
+-1.9085 FOURTH	0.0000
+-1.9085 GO	0.0000
+-1.9085 HALF	0.0000
+-1.9085 HALL	0.0000
+-1.9085 HELP	0.0000
+-1.9085 HUNDRED	0.0000
+-1.9085 JANUARY	0.0000
+-1.9085 JULY	0.0000
+-1.9085 JUNE	0.0000
+-1.9085 LANE	0.0000
+-1.9085 MARCH	0.0000
+-1.9085 MAY	0.0000
+-1.9085 MEMORY	0.0000
+-1.9085 NINE	0.0000
+-1.9085 NINETEEN	0.0000
+-1.9085 NINETY	0.0000
+-1.9085 NINTH	0.0000
+-1.9085 NO	0.0000
+-1.9085 NOVEMBER	0.0000
+-1.9085 OCTOBER	0.0000
+-1.9085 OF	0.0000
+-1.9085 OH	0.0000
+-1.9085 ONE	0.0000
+-1.9085 REPEAT	0.0000
+-1.9085 RUBOUT	0.0000
+-1.9085 SECOND	0.0000
+-1.9085 SEPTEMBER	0.0000
+-1.9085 SEVEN	0.0000
+-1.9085 SEVENTEEN	0.0000
+-1.9085 SEVENTH	0.0000
+-1.9085 SEVENTY	0.0000
+-1.9085 SIX	0.0000
+-1.9085 SIXTEEN	0.0000
+-1.9085 SIXTEENTH	0.0000
+-1.9085 SIXTH	0.0000
+-1.9085 SIXTY	0.0000
+-1.9085 START	0.0000
+-1.9085 STOP	0.0000
+-1.9085 TEN	0.0000
+-1.9085 THIRD	0.0000
+-1.9085 THIRTEEN	0.0000
+-1.9085 THIRTIETH	0.0000
+-1.9085 THIRTY	0.0000
+-1.9085 THOUSAND	0.0000
+-1.9085 THREE	0.0000
+-1.9085 TWELFTH	0.0000
+-1.9085 TWELVE	0.0000
+-1.9085 TWENTIETH	0.0000
+-1.9085 TWENTY	0.0000
+-1.9085 TWO	0.0000
+-1.9085 WEAN	0.0000
+-1.9085 YES	0.0000
+-1.9085 ZERO	0.0000
+
+\2-grams:
+0.0000 <s> </s>
+\end\
+
