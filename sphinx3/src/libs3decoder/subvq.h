@@ -87,23 +87,23 @@ extern "C" {
   /** Wrapper structures of sub-vector quantization
    */
 typedef struct {
-    arraysize_t origsize;	/** origsize.r = #codebooks (or states) in original model;
+    arraysize_t origsize;	/**< origsize.r = #codebooks (or states) in original model;
 				   origsize.c = max #codewords/codebook in original model. */
-    int32 n_sv;			/** #Subvectors */
-    int32 vqsize;		/** #Codewords in each subvector quantized mean/var table */
-    int32 **featdim;		/** featdim[s] = Original feature dimensions in subvector s */
-    vector_gautbl_t *gautbl;	/** Vector-quantized Gaussians table for each sub-vector */
-    int32 ***map;		/** map[i][j] = map from original codebook(i)/codeword(j) to
+    int32 n_sv;			/**< #Subvectors */
+    int32 vqsize;		/**< #Codewords in each subvector quantized mean/var table */
+    int32 **featdim;		/**< featdim[s] = Original feature dimensions in subvector s */
+    vector_gautbl_t *gautbl;	/**< Vector-quantized Gaussians table for each sub-vector */
+    int32 ***map;		/**< map[i][j] = map from original codebook(i)/codeword(j) to
 				   sequence of nearest vector quantized subvector codewords;
 				   so, each map[i][j] is of length n_sv.  Finally, map is
 				   LINEARIZED, so that it indexes into a 1-D array of scores
 				   rather than a 2-D array (for faster access). */ 
   /* Working space used during evaluation. */
-    float32 *subvec;		/** Subvector extracted from feature vector */
-    int32 **vqdist;		/** vqdist[i][j] = score (distance) for i-th subvector compared
+    float32 *subvec;		/**< Subvector extracted from feature vector */
+    int32 **vqdist;		/**< vqdist[i][j] = score (distance) for i-th subvector compared
 				   to j-th subvector-codeword */
-    int32 *gauscore;		/** Subvq-based approx. Gaussian density scores for one mixture */
-    int32 *mgau_sl;		/** Shortlist for one mixture (based on gauscore[]) */
+    int32 *gauscore;		/**< Subvq-based approx. Gaussian density scores for one mixture */
+    int32 *mgau_sl;		/**< Shortlist for one mixture (based on gauscore[]) */
 
   /* ARCHAN, 1111, 04, move the static global variables to the structure again. */
   /* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
@@ -137,13 +137,18 @@ typedef struct {
  *   Repeated for each subvector codebook 2
  *   ...
  *   End
+ *   @return initialized sub-vq
  */
-subvq_t *subvq_init (char *file,	/** In: Subvector model file */
-		     float64 varfloor,	/** In: Floor to be applied to variance values */
-		     int32 max_sv,	/** In: Use the first so many subvectors instead of all;
+subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
+		     float64 varfloor,	/**< In: Floor to be applied to variance values */
+		     int32 max_sv,	/**< In: Use the first so many subvectors instead of all;
 					   if <0, use all */
-		     mgau_model_t *g);	/** In: Original model from which this subvq model was
-					   built, for cross-validation; optional */
+		     mgau_model_t *g    /**< In: Original model from
+					   which this subvq model was
+					   built, for
+					   cross-validation; optional */
+		     );	
+
 
 
   /** Deallocate sub-vector quantization */
@@ -155,55 +160,68 @@ void subvq_free (subvq_t *vq);
  * get approximate Gaussian density scores using it; obtain a shortlist of Gaussians using
  * these scores, then evaluate the shortlist exactly.  If no subvq model, evaluate senones
  * using all Gaussian densities.  Finally, scale senone scores by subtracting the best.
- * Return value: The normalization factor (best senone absolute score).
+ * @return The normalization factor (best senone absolute score).
  */
-int32 subvq_frame_eval (subvq_t *vq,	/** In: Sub-vector model */
-			mgau_model_t *g,/** In: Exact mixture Gaussian model */
-			int32 beam,	/** In: (Logs3) threshold for selecting shortlist;
+int32 subvq_frame_eval (subvq_t *vq,	/**< In: Sub-vector model */
+			mgau_model_t *g,/**< In: Exact mixture Gaussian model */
+			int32 beam,	/**< In: (Logs3) threshold for selecting shortlist;
 					   range = [-infinity(widest beam), 0(narrowest)] */
-			float32 *feat,	/** In: Input feature vector for this frame */
-			int32 *sen_active,	/** In: Active flags for each senone (optional).
+			float32 *feat,	/**< In: Input feature vector for this frame */
+			int32 *sen_active,	/**< In: Active flags for each senone (optional).
 						   If not NULL, only active ones evaluated */
-			int32 *senscr);	/** Out: Normalized senone scores */
+			int32 *senscr /**< Out: Normalized senone scores */
+			);	
 
   /**
  * Evaluate the Mahalanobis distances between the given feature vector and each entry in the
  * given subvq codebook.  Save results, as logs3 values, in vq->vqdist[][].
  */
-void subvq_gautbl_eval_logs3 (subvq_t *vq,	/** In/Out: Reference subvq structure */
-			      float32 *feat);	/** In: Subvectors extracted from this, and
-						   compared to relevant subvq codewords */
+void subvq_gautbl_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structure */
+			      float32 *feat	/**< In: Subvectors
+						   extracted from this, and compared to
+						   relevant subvq codewords */
+			      );
 
   /**
  * Evaluate the codewords for a single given subvector sv, wrt the input feature vector.
  * Save results, as logs3 values, in vq->vqdist[sv][].
  * (Basically, like subvq_gautbl_eval_logs3, but for a single given subvector instead of all.)
  */
-void subvq_subvec_eval_logs3 (subvq_t *vq,	/** In/Out: Reference subvq structure */
-			      float32 *feat,	/** In: Input feature subvector extracted from
-						 ** this, and compared to relevant codewords */
-			      int32 sv);	/** In: ID of subvector being evaluated */
+void subvq_subvec_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structure */
+			      float32 *feat,	/**< In: Input feature
+						 ** subvector
+						 ** extracted from
+						 ** this, and compared
+						 ** to relevant
+						 ** codewords */
+
+			      int32 sv	        /**< In: ID of
+                                                    subvector being
+                                                    evaluated */
+			      );
 
 /*
  * Based on previously computed subvq scores (Mahalanobis distances), determine the active
  * components in the given mixture (using the vq->map).
- * Return value: #Candidates in the returned shortlist.
+ * @return Number of candidates in the returned shortlist.
  */
-int32 subvq_mgau_shortlist (subvq_t *vq,
-				   int32 m,	/** In: GMM index */
-				   int32 n,	/** In: #Components in specified mixture */
-				   int32 beam);	/** In: Threshold to select active components */
+  int32 subvq_mgau_shortlist (subvq_t *vq,        /**< In subvq */
+				   int32 m,	/**< In: GMM index */
+				   int32 n,	/**< In: #Components in specified mixture */
+				   int32 beam	/**< In: Threshold to select active components */
+			    );
 
 
-/*
- * Compute the scores of a gaussian using only sum of the sub-vector scores. 
- */
+  /**
+   * Compute the scores of a gaussian using only sum of the sub-vector scores. 
+   * @return best senone score. 
+   */
 
-int32 subvq_mgau_eval (mgau_model_t *g,
-		       subvq_t *vq, /*the SVQ */
-		       int32 m, /*In: GMM Index */
-		       int32 n, /* #Components in a specified mixture */
-		       int32 *active /*Active list of mixture */
+  int32 subvq_mgau_eval (mgau_model_t *g, /**< In: Gaussian */
+		       subvq_t *vq, /**< In: the SVQ */
+		       int32 m, /**< In: GMM Index */
+		       int32 n, /**< In :#Components in a specified mixture */
+		       int32 *active /**< In:Active list of mixture */
 		       );
 
 #ifdef __cplusplus
