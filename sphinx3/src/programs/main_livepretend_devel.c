@@ -99,9 +99,14 @@ main(int _argc, char **_argv)
     len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
     while (len > 0) {
       ld_process_raw(&decoder, samples, len);
-      if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
+
+      if (ld_retrieve_hyps(&decoder, &hypstr, NULL) == LD_SUCCESS) {
 	E_INFO("PARTIAL_HYP: %s\n", hypstr);
       }
+      /* 20041101: quick fix to bypass the non-check-in files problem.*/
+      /*      if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
+	E_INFO("PARTIAL_HYP: %s\n", hypstr);
+	}*/
       len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
     }
     fclose(rawfd);
