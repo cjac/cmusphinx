@@ -18,7 +18,8 @@ noinst_HEADERS = cmd_ln_args.h \
 	fe_internal_dump.h \
 	feat_dump.h \
 	live_dump.h \
-	metrics.h
+	metrics.h \
+	gmm_compute.h
 
 dumpfrontend_SOURCES = dump_frontend.c \
 			${LIVEDECSRCS}
