@@ -58,10 +58,15 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.3  2001/05/12  15:20:14  dhdfu
+ * Revision 1.4  2001/10/23  22:20:30  lenzo
+ * Change error logging and reporting to the E_* macros that call common
+ * functions.  This will obsolete logmsg.[ch] and they will be removed
+ * or changed in future versions.
+ * 
+ * Revision 1.3  2001/05/12 15:20:14  dhdfu
  * Crap!  Yes, it *is* supposed to persist between control file commands.
  * Sorry, folks :(
- * 
+ *
  * Revision 1.2  2001/02/13 19:51:38  lenzo
  * *** empty log message ***
  *
@@ -254,7 +259,6 @@
 #include "fbs.h"
 #include "search.h"
 #include "cepio.h"
-#include "logmsg.h"
 
 #include "s2params.h"
 
@@ -910,7 +914,7 @@ static void init_norm_agc_cmp ( void )
     else if (agcEMax) agc = AGC_EMAX;
     if ((! ctl_file_name) && live && (agc != AGC_NONE) && (agc != AGC_EMAX)) {
 	agc = AGC_EMAX;
-	log_info("%s(%d): Live mode; AGC set to AGC_EMAX\n", __FILE__, __LINE__);
+	E_INFO("%s(%d): Live mode; AGC set to AGC_EMAX\n", __FILE__, __LINE__);
     }
     
     norm = NORM_NONE;
@@ -918,7 +922,7 @@ static void init_norm_agc_cmp ( void )
 	norm = normalizeMeanPrior ? NORM_PRIOR : NORM_UTT;
     if ((! ctl_file_name) && live && (norm == NORM_UTT)) {
 	norm = NORM_PRIOR;
-	log_info("%s(%d): Live mode; MeanNorm set to NORM_PRIOR\n", __FILE__, __LINE__);
+	E_INFO("%s(%d): Live mode; MeanNorm set to NORM_PRIOR\n", __FILE__, __LINE__);
     }
     
     cmp = COMPRESS_NONE;
@@ -926,7 +930,7 @@ static void init_norm_agc_cmp ( void )
 	cmp = compress_prior ? COMPRESS_PRIOR : COMPRESS_UTT;
     if ((! ctl_file_name) && live && (cmp == COMPRESS_UTT)) {
 	cmp = COMPRESS_PRIOR;
-	log_info("%s(%d): Live mode; Silence compression set to COMPRESS_PRIOR\n",
+	E_INFO("%s(%d): Live mode; Silence compression set to COMPRESS_PRIOR\n",
 		__FILE__, __LINE__);
     }
     
@@ -1082,8 +1086,7 @@ fbs_init (int32 argc, char **argv)
     
 #if defined(PROF_TIME)
     if (timer_open() < 0) {
-	log_error(stderr, "Could not open timer module\n");
-	exit(-1);
+	E_FATAL(stderr, "Could not open timer module\n");
     }
 #endif
 #if defined(PROF_MEM)
@@ -1300,7 +1303,7 @@ run_ctl_file (char const *ctl_file_name)
     
     for (;;) {
 	if (ctl_fs == stdin)
-	    log_info ("\nFile(no ext): ");
+	    E_INFO ("\nFile(no ext): ");
 	if (fgets (line, sizeof(line), ctl_fs) == NULL)
 	    break;
 	
@@ -1355,7 +1358,7 @@ run_ctl_file (char const *ctl_file_name)
 	    force_str = ref_sentence;
         }
 
-	log_info ("\nUtterance: %s\n", idspec);
+	E_INFO ("\nUtterance: %s\n", idspec);
 
 	if (! allphone_mode)
 	    run_sc_utterance (mfcfile, sf, ef, idspec);
@@ -1422,8 +1425,7 @@ int32 uttfile_open (char const *utt)
 
     if (adc_input) {
 	if ((uttfp = fopen (inputfile, "rb")) == NULL) {
-	    log_error ("%s(%d): fopen(%s,rb) failed\n", __FILE__, __LINE__, inputfile);
-	    return -1;
+	    E_FATAL ("%s(%d): fopen(%s,rb) failed\n", __FILE__, __LINE__, inputfile);
 	}
 	if (adc_hdr > 0) {
 	    if (fseek (uttfp, adc_hdr, SEEK_SET) < 0) {
@@ -1440,7 +1442,7 @@ int32 uttfile_open (char const *utt)
 #endif
     } else {
 	if (cep_read_bin (&coeff, &ncoeff, inputfile) != 0) {
-	    log_error ("%s(%d): **ERROR** Read(%s) failed\n", __FILE__, __LINE__, inputfile);
+	    E_ERROR ("%s(%d): **ERROR** Read(%s) failed\n", __FILE__, __LINE__, inputfile);
 	    ncoeff = 0;
 	    return -1;
 	}
@@ -1554,7 +1556,7 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
     time_align_init();
     beam_width = 1e-9;
     time_align_set_beam_width(beam_width);
-    log_info ("%s(%d): ****** USING WIDE BEAM ****** (1e-9)\n", __FILE__, __LINE__);
+    E_INFO ("%s(%d): ****** USING WIDE BEAM ****** (1e-9)\n", __FILE__, __LINE__);
 
     utt_ctl_fs = CM_fopen (utt_ctl_file_name, "r");
     pe_ctl_fs = CM_fopen (pe_ctl_file_name, "r");
@@ -1578,7 +1580,7 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
 	    continue;
 
 	if  (!strncmp(time_align_spec, "*align_all*", strlen("*align_all*"))) {
-	    log_info("%s(%d): Aligning whole utterances\n", __FILE__, __LINE__);
+	    E_INFO("%s(%d): Aligning whole utterances\n", __FILE__, __LINE__);
 	    align_all = 1;
 	    fgets(time_align_spec, 1023, pe_ctl_fs);
 	}
@@ -1590,14 +1592,14 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
 	    time_align_spec[strlen(time_align_spec)-1] = '\0';
 	    strcpy(pe_words, time_align_spec);
 
-	    log_info ("%s(%d): Utt %s\n", __FILE__, __LINE__, Utt);
+	    E_INFO ("%s(%d): Utt %s\n", __FILE__, __LINE__, Utt);
 	    fflush (stdout);
 	}
 	else {
 	    sscanf(time_align_spec,
 		   "%s %d %d %s %[^\n]",
 		   left_word, &begin_frame, &end_frame, right_word, pe_words);
-	    log_info ("\nDoing  '%s %d) %s (%d %s' in utterance %s\n",
+	    E_INFO ("\nDoing  '%s %d) %s (%d %s' in utterance %s\n",
 		    left_word, begin_frame,
 		    pe_words,
 		    end_frame, right_word, Utt);
@@ -1744,7 +1746,7 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 	char utt_lmname_file[1000], lmname[1000];
 	
 	sprintf (utt_lmname_file, "%s/%s.%s", utt_lmname_dir, utt_name, lmname_ext);
-	log_info ("%s(%d): Looking for LM-name file %s\n",
+	E_INFO ("%s(%d): Looking for LM-name file %s\n",
 		__FILE__, __LINE__, utt_lmname_file);
 	if ((lmname_fp = fopen (utt_lmname_file, "r")) != NULL) {
 	    /* File containing LM name for this utt exists */
@@ -1753,7 +1755,7 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 	    fclose (lmname_fp);
 	} else {
 	    /* No LM name specified for this utt; use default (with no name) */
-	    log_info ("%s(%d): File %s not found, using default LM\n",
+	    E_INFO ("%s(%d): File %s not found, using default LM\n",
 		    __FILE__, __LINE__, utt_lmname_file);
 	    lmname[0] = '\0';
 	}
@@ -1778,7 +1780,7 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     if ((sw_fp = fopen(startword_filename, "r")) != NULL) {
 	fscanf(sw_fp, "%s", startWord);
 	fclose(sw_fp);
-	log_info("startWord: %s\n", startWord);
+	E_INFO("startWord: %s\n", startWord);
     } else startWord[0] = 0;
     
     uttproc_set_startword (startWord);
@@ -1865,7 +1867,7 @@ time_align_utterance (char const *utt,
 #endif
 
     if ((begin_frame != NO_FRAME) || (end_frame != NO_FRAME)) {
-	log_error ("%s(%d): Partial alignment not implemented\n", __FILE__, __LINE__);
+	E_ERROR ("%s(%d): Partial alignment not implemented\n", __FILE__, __LINE__);
 	return;
     }
 
@@ -1891,11 +1893,11 @@ time_align_utterance (char const *utt,
 
 	    switch (time_align_seg_output(&seg, &seg_cnt)) {
 		case NO_SEGMENTATION:
-		log_error("NO SEGMENTATION for %s\n", utt);
+		E_ERROR("NO SEGMENTATION for %s\n", utt);
 		break;
 
 		case NO_MEMORY:
-		log_error("NO MEMORY for %s\n", utt);
+		E_ERROR("NO MEMORY for %s\n", utt);
 		break;
 
 		default:
@@ -1929,7 +1931,7 @@ time_align_utterance (char const *utt,
 			    sprintf (seg_file_basename, "%s.%s", utt, seg_file_ext);
 			}
 		    }
-		    log_info("%s(%d): Seg output %s\n",
+		    E_INFO("%s(%d): Seg output %s\n",
 			    __FILE__, __LINE__, seg_file_basename);
 		    awriteshort(seg_file_basename, seg, seg_cnt);
 		}
@@ -1948,7 +1950,7 @@ time_align_utterance (char const *utt,
 	}
     }
     else {
-	log_error("%s(%d): No alignment for %s\n", __FILE__, __LINE__, utt_name);
+	E_ERROR("%s(%d): No alignment for %s\n", __FILE__, __LINE__, utt_name);
     }
     
 #ifndef WIN32
@@ -1957,18 +1959,18 @@ time_align_utterance (char const *utt,
 #endif /* _HPUX_SOURCE */
     gettimeofday (&e_stop, 0);
 
-    log_info(" %5.2f SoS", n_frames*0.01);
-    log_info(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
+    E_INFO(" %5.2f SoS", n_frames*0.01);
+    E_INFO(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
     if (n_frames > 0)
-	log_info(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(n_frames*0.01));
+	E_INFO(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(n_frames*0.01));
     
 #ifndef _HPUX_SOURCE
-    log_info(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
+    E_INFO(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
     if (n_frames > 0)
-	log_info(", %5.2f xRT",
+	E_INFO(", %5.2f xRT",
 		MakeSeconds (&start.ru_utime, &stop.ru_utime)/(n_frames*0.01));
 #endif /* _HPUX_SOURCE */
-    log_info("\n");
+    E_INFO("\n");
     
     TotalCPUTime += MakeSeconds (&start.ru_utime, &stop.ru_utime);
     TotalElapsedTime += MakeSeconds (&e_start, &e_stop);

@@ -65,9 +65,14 @@
  *
  * Revision History
  * $Log$
- * Revision 1.7  2001/07/02  16:47:12  lenzo
- * Fixed triphone lookup fallback case.
+ * Revision 1.8  2001/10/23  22:20:30  lenzo
+ * Change error logging and reporting to the E_* macros that call common
+ * functions.  This will obsolete logmsg.[ch] and they will be removed
+ * or changed in future versions.
  * 
+ * Revision 1.7  2001/07/02 16:47:12  lenzo
+ * Fixed triphone lookup fallback case.
+ *
  * Revision 1.6  2001/02/13 19:51:38  lenzo
  * *** empty log message ***
  *
@@ -205,7 +210,7 @@
 #include "s2params.h"
 #include "fbs.h"
 #include "search.h"
-#include "logmsg.h"
+#include "err.h"
 
 /* This module stuff */
 #include "time_align.h"
@@ -385,7 +390,7 @@ mk_compound_word_list(int *out_cnt)
     int			*compound_word_id;
     COMPOUND_WORD_T	*compound_word_list;
 
-    log_info("%s(%d): Scanning dictionary for compound words: ",
+    E_INFO("%s(%d): Scanning dictionary for compound words: ",
 	   __FILE__, __LINE__);
 
     for (i = 0, compound_word_cnt = 0; i < WordDict->dict_entry_count; i++) {
@@ -2927,7 +2932,7 @@ time_align_word_sequence(char const * Utt,
     } while (cur_frame < frame_cnt);
 
     if (cur_active_cnt == 0) {
-	log_warn("%s(%d): WARNING: all paths pruned at end of input\n",
+	E_WARN("%s(%d): WARNING: all paths pruned at end of input\n",
 	       __FILE__, __LINE__);
 	return -1;
     }

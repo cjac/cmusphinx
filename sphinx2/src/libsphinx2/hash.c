@@ -82,6 +82,7 @@
 #include "s2types.h"
 #include "list.h"
 #include "hash.h"
+#include "err.h"
 
 #define ERR_ARG		1
 #define ERR_MALLOC	2
@@ -154,8 +155,7 @@ hash_add (hash_t *ht, char const *sym, caddr_t val)
      * Hash 'sym' into ht
      */
     if (hash_in (ht, sym, val)) {
-	log_error ("\n%s: Error: [%s] hash conflict\nThere are two entries in the dictionary for [%s]\nPlease change or remove one of them and re-run.\n\n", rname, sym, sym);
-	exit (-1);
+	E_FATAL ("\n%s: Error: [%s] hash conflict\nThere are two entries in the dictionary for [%s]\nPlease change or remove one of them and re-run.\n\n", rname, sym, sym);
     }
     return (0);
 }

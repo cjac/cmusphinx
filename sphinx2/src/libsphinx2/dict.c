@@ -135,7 +135,6 @@
 #include "hash.h"
 #include "phone.h"
 #include "dict.h"
-#include "logmsg.h"
 #include "err.h"
 #include "assert.h"
 #include "search_const.h"
@@ -292,7 +291,7 @@ dict_read(dictT *dict,
     /* Placeholders (dummy pronunciations) for new words that can be added at runtime */
     initial_dummy = first_dummy = word_id;
     if ((max_new_oov = kb_get_max_new_oov ()) > 0)
-	log_info ("%s(%d): Allocating %d placeholders for new OOVs\n",
+	E_INFO ("%s(%d): Allocating %d placeholders for new OOVs\n",
 		__FILE__, __LINE__, max_new_oov);
     for (i = 0; i < max_new_oov; i++) {
 	char tmpstr[100], pronstr[100];
@@ -330,7 +329,7 @@ dict_read(dictT *dict,
 		if (! entry)
 		    E_FATAL("Failed to add </s>(SIL) to dictionary\n");
 	    } else {
-		log_info ("%s(%d): using special end silence for %s\n",
+		E_INFO ("%s(%d): using special end silence for %s\n",
 			 __FILE__, __LINE__, kb_get_lm_end_sym());
 		entry = _new_dict_entry (kb_get_lm_end_sym(), "SILe", FALSE);
 	    }
@@ -347,7 +346,7 @@ dict_read(dictT *dict,
 	    char line[1000], startsym[1000];
 	    char const *startsym_phone;
 	    
-	    log_info ("%s(%d):  Reading start-syms file %s\n",
+	    E_INFO ("%s(%d):  Reading start-syms file %s\n",
 		    __FILE__, __LINE__, startsym_file);
 	    
 	    startsym_phone = (phone_to_id ("SILb", FALSE) == NO_PHONE) ? "SIL" : "SILb";
@@ -375,7 +374,7 @@ dict_read(dictT *dict,
 		if (! entry)
 		    E_FATAL("Failed to add <s>(SIL) to dictionary\n");
 	    } else {
-		log_info ("%s(%d): using special begin silence for %s\n",
+		E_INFO ("%s(%d): using special begin silence for %s\n",
 			 __FILE__, __LINE__, kb_get_lm_start_sym());
 		entry = _new_dict_entry (kb_get_lm_start_sym(), "SILb", FALSE);
 		if (! entry)
@@ -405,15 +404,15 @@ dict_read(dictT *dict,
 		   FALSE, /* use_context */
 		   FALSE  /* is a phrase dict */ );
     
-    log_info ("LEFT CONTEXT TABLES\n");
+    E_INFO ("LEFT CONTEXT TABLES\n");
     buildEntryTable(&lcList, &lcFwdTable);
     buildExitTable(&lcList, &lcBwdTable, &lcBwdPermTable, &lcBwdSizeTable);
 
-    log_info ("RIGHT CONTEXT TABLES\n");
+    E_INFO ("RIGHT CONTEXT TABLES\n");
     buildEntryTable(&rcList, &rcBwdTable);
     buildExitTable(&rcList, &rcFwdTable, &rcFwdPermTable, &rcFwdSizeTable);
 
-    log_info("%5d unique triphones were mapped to ci phones\n",
+    E_INFO("%5d unique triphones were mapped to ci phones\n",
 	     mtpHT.inuse);
 
     mtpList = hash_to_list (&mtpHT);
@@ -451,9 +450,9 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 
     fscanf (fs, "%s\n", dict_str);
     if (strcmp(dict_str, "!") != 0) {
-	log_info("%s: first line of %s was %s, expecting '!'\n",
+	E_INFO("%s: first line of %s was %s, expecting '!'\n",
 		 rname, filename, dict_str);
-	log_info("%s: will assume first line contains a word\n",
+	E_INFO("%s: will assume first line contains a word\n",
 		 rname);
 	rewind (fs);
     }
@@ -465,7 +464,7 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 #endif
 	entry = _new_dict_entry (dict_str, pronoun_str, use_context);
 	if (! entry) {
-	    log_error("Failed to add %s to dictionary\n", dict_str);
+	    E_ERROR("Failed to add %s to dictionary\n", dict_str);
 	    err = 1;
 	    continue;
 	}
@@ -510,7 +509,7 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 		if (q) *q = '\0';
 
 		if (hash_lookup (&dict->dict, dict_str, &wid)) {
-		    log_error("\n%s: Missing first pronunciation for [%s]\nThis means that e.g. [%s(2)] was found with no [%s]\nPlease correct the dictionary and re-run.\n\n",
+		    E_FATAL("%s: Missing first pronunciation for [%s]\nThis means that e.g. [%s(2)] was found with no [%s]\nPlease correct the dictionary and re-run.\n",
 			      rname, dict_str, dict_str, dict_str);
 		    exit(1);
 		}
@@ -533,10 +532,10 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 		r += 1;
 		
 		if (hash_lookup (&dict->dict, r, &wid)) {
-		    log_info("%s: Missing first pronunciation for [%s]\n",
+		    E_INFO("%s: Missing first pronunciation for [%s]\n",
 			     rname, r);
 		}
-	 	log_info("phrase transcription for [%s](wid = %d)\n",
+	 	E_INFO("phrase transcription for [%s](wid = %d)\n",
 			   entry->word, (int32)wid);
 		entry->fwid = (int32)wid;
 	    }
@@ -594,8 +593,7 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 	    pid = phone_to_id (entry->word, TRUE);
 
 	    if (phone_type(pid) != PT_WWPHONE) {
-		log_error ("%s: No with in word for for %s\n", rname, entry->word);
-	        exit (-1);
+		E_FATAL ("%s: No with in word for for %s\n", rname, entry->word);
 	    }
 
 	    entry_copy->phone_ids[1] = hmm_pid2sid(pid);
@@ -618,7 +616,7 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 #endif
     }
   
-    log_info("%6d = words in file [%s]\n",
+    E_INFO("%6d = words in file [%s]\n",
 	     *word_id - start_wid, filename);
     
     if (fs)
@@ -804,7 +802,7 @@ _new_dict_entry (char const *word_str, char const *pronoun_str, int32 use_contex
 	entry->phone_ids = (int32 *) calloc ((size_t)pronoun_len, sizeof (int32));
 	memcpy (entry->phone_ids, triphone_ids, pronoun_len * sizeof (int32));
     } else {
-    	log_warn("%s has no pronounciation, will treat as dummy word\n",
+    	E_WARN("%s has no pronounciation, will treat as dummy word\n",
 		 word_str);
     }
 
@@ -851,7 +849,7 @@ static int32 replace_dict_entry (dictT *dict,
 
     /* For the moment, no single phone new word... */
     if (pronoun_len < 2) {
-	log_error("%s(%d): Pronunciation string too short\n", __FILE__, __LINE__);
+	E_ERROR("%s(%d): Pronunciation string too short\n", __FILE__, __LINE__);
 	return (0);
     }
 
@@ -862,7 +860,7 @@ static int32 replace_dict_entry (dictT *dict,
 	    *p = '\0';
 	    if (hash_lookup (&dict->dict, word_str, &idx)) {
 		*p = '(';
-		log_error("%s(%d): Base word missing for %s\n",
+		E_ERROR("%s(%d): Base word missing for %s\n",
 			 __FILE__, __LINE__, word_str);
 		return 0;
 	    }
@@ -876,7 +874,7 @@ static int32 replace_dict_entry (dictT *dict,
     i = 0;
     sprintf (triphoneStr, "%s(%%s,%s)b", phone[i], phone[i+1]);
     if (hash_lookup (&lcHT, triphoneStr, &idx) < 0) {
-	log_error("%s(%d): Unknown left diphone\n", __FILE__, __LINE__);
+	E_ERROR("%s(%d): Unknown left diphone\n", __FILE__, __LINE__);
 	return (0);
     }
     triphone_ids[i] = (int32) idx;
@@ -891,7 +889,7 @@ static int32 replace_dict_entry (dictT *dict,
 
     sprintf (triphoneStr, "%s(%s,%%s)e", phone[i], phone[i-1]);
     if (hash_lookup (&rcHT, triphoneStr, &idx) < 0) {
-	log_error("%s(%d): Unknown right diphone\n", __FILE__, __LINE__);
+	E_ERROR("%s(%d): Unknown right diphone\n", __FILE__, __LINE__);
 	return (0);
     }
     triphone_ids[i] = (int32) idx;
@@ -938,7 +936,7 @@ int32 dict_add_word (dictT *dict, char const *word, char const *pron)
     new_entry = 0;
     if ((wid = kb_get_word_id(word)) < 0) {
 	if (first_dummy > last_dummy) {
-	    log_error ("%s(%d): Dictionary full\n", __FILE__, __LINE__);
+	    E_ERROR ("%s(%d): Dictionary full\n", __FILE__, __LINE__);
 	    return -1;
 	}
 	wid = first_dummy++;
@@ -964,9 +962,8 @@ _dict_list_add (dictT *dict, dict_entry_t *entry)
 	    CM_calloc (dict->dict.size_hint, sizeof (dict_entry_t *));
 
     if (dict->dict_entry_count >= dict->dict.size_hint) {
-	log_error("%s(%d): **ERROR** dict size (%d) exceeded\n",
+	E_FATAL("%s(%d): **ERROR** dict size (%d) exceeded\n",
 		 __FILE__, __LINE__, dict->dict.size_hint);
-	exit(-1);
 #if 0
 	dict->dict.size_hint = dict->dict_entry_count + 16;
 	dict->dict_list = (dict_entry_t **)
@@ -1068,8 +1065,8 @@ buildEntryTable (list_t *list, int32 ***table_p)
 
     *table_p = (int32 **) CM_calloc (list->in_use, sizeof (int32 *));
     table = *table_p;
-    log_info("Entry Context table contains\n\t%6d entries\n", list->in_use);
-    log_info("\t%6d possible cross word triphones.\n", list->in_use * ciCount);
+    E_INFO("Entry Context table contains\n\t%6d entries\n", list->in_use);
+    E_INFO("\t%6d possible cross word triphones.\n", list->in_use * ciCount);
 
     for (i = 0; i < list->in_use; i++) {
 	table[i] = (int32 *) CM_calloc (ciCount, sizeof(int32));
@@ -1105,7 +1102,7 @@ buildEntryTable (list_t *list, int32 ***table_p)
 	    table[i][j] = hmm_pid2sid(phone_map(table[i][j]));
 	}
     }
-    log_info("\t%6d triphones\n\t%6d pseudo diphones\n\t%6d uniphones\n",
+    E_INFO("\t%6d triphones\n\t%6d pseudo diphones\n\t%6d uniphones\n",
 	     triphoneContext, silContext, noContext);
 }
 
@@ -1131,8 +1128,8 @@ buildExitTable (list_t *list, int32 ***table_p, int32 ***permuTab_p, int32 **siz
     *sizeTab_p = (int32 *) CM_calloc (list->in_use, sizeof (int32 *));
     sizeTab = *sizeTab_p;
 
-    log_info("Exit Context table contains\n\t%6d entries\n", list->in_use);
-    log_info("\t%6d possible cross word triphones.\n", list->in_use * ciCount);
+    E_INFO("Exit Context table contains\n\t%6d entries\n", list->in_use);
+    E_INFO("\t%6d possible cross word triphones.\n", list->in_use * ciCount);
 
     for (i = 0; i < list->in_use; i++) {
 	for (j = 0; j < ciCount; j++) {
@@ -1195,10 +1192,10 @@ buildExitTable (list_t *list, int32 ***table_p, int32 ***permuTab_p, int32 **siz
 	sizeTab[i] = k+1;
 	entries += k+1;
     }
-    log_info("\t%6d triphones\n\t%6d pseudo diphones\n\t%6d uniphones\n",
+    E_INFO("\t%6d triphones\n\t%6d pseudo diphones\n\t%6d uniphones\n",
 	     triphoneContext, silContext, noContext);
-    log_info("\t%6d right context entries\n", entries);
-    log_info("\t%6d ave entries per exit context\n",
+    E_INFO("\t%6d right context entries\n", entries);
+    E_INFO("\t%6d ave entries per exit context\n",
 	    ((list->in_use == 0) ? 0 : entries/list->in_use));
 }
 
@@ -1292,12 +1289,12 @@ int32 dict_write_oovdict (dictT *dict, char const *file)
 
     /* If no new words added at run time, no need to write a new file */
     if (initial_dummy == first_dummy) {
-	log_error("%s(%d): No new word added; no OOV file written\n", __FILE__, __LINE__);
+	E_ERROR("%s(%d): No new word added; no OOV file written\n", __FILE__, __LINE__);
 	return 0;
     }
 
     if ((fp = fopen(file, "w")) == NULL) {
-	log_error("%s(%d): fopen(%s,w) failed\n", __FILE__, __LINE__, file);
+	E_ERROR("%s(%d): fopen(%s,w) failed\n", __FILE__, __LINE__, file);
 	return -1;
     }
 

@@ -73,7 +73,7 @@
 #include "hash.h"
 #include "phone.h"
 #include "c.h"
-#include "logmsg.h"
+#include "err.h"
 
 static hash_t phones;
 static list_t phones_list;
@@ -388,7 +388,7 @@ static void mk_phone_map (void)
 	}
     }
 #endif /* VERBOSE_PHONE_MAP */
-    log_info ("Using %d phonological mappings\n", numPhoneMappings);
+    E_INFO ("Using %d phonological mappings\n", numPhoneMappings);
 }
 
 void phone_add_diphones (void)

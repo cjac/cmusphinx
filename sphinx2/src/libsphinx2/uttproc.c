@@ -51,9 +51,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2001/03/31  00:56:12  lenzo
- * Added <string.h>
+ * Revision 1.9  2001/10/23  22:20:30  lenzo
+ * Change error logging and reporting to the E_* macros that call common
+ * functions.  This will obsolete logmsg.[ch] and they will be removed
+ * or changed in future versions.
  * 
+ * Revision 1.8  2001/03/31 00:56:12  lenzo
+ * Added <string.h>
+ *
  * Revision 1.6  2001/01/25 19:36:28  lenzo
  * Fixing some memory leaks
  *
@@ -192,7 +197,6 @@
 #include "fe.h"
 #include "fbs.h"
 #include "search.h"
-#include "logmsg.h"
 
 #define MAX_UTT_LEN	6000	/* #frames */
 #define MAX_CEP_LEN	(MAX_UTT_LEN*CEP_SIZE)
@@ -379,7 +383,7 @@ static void timing_stop ( void )
     if (searchFrame() == 0)
 	return;
     
-    log_info(" %5.2f SoS", searchFrame()*0.01);
+    E_INFO(" %5.2f SoS", searchFrame()*0.01);
     TotalSpeechTime += searchFrame()*0.01;
     
 #ifdef WIN32
@@ -387,10 +391,10 @@ static void timing_stop ( void )
     e_stop = (float)clock()/CLOCKS_PER_SEC;
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
     
-    log_info(", %6.2f sec elapsed", (e_stop - e_start));
-    log_info(", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
-    log_info(", %6.2f sec CPU", win32_cputime(&ust, &uet));
-    log_info(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
+    E_INFO(", %6.2f sec elapsed", (e_stop - e_start));
+    E_INFO(", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
+    E_INFO(", %6.2f sec CPU", win32_cputime(&ust, &uet));
+    E_INFO(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
     
     TotalCPUTime += win32_cputime(&ust, &uet);
     TotalElapsedTime += (e_stop - e_start);
@@ -401,12 +405,12 @@ static void timing_stop ( void )
 #endif
     gettimeofday (&e_stop, 0);
     
-    log_info(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
-    log_info(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
+    E_INFO(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
+    E_INFO(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
     
 #ifndef _HPUX_SOURCE
-    log_info(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
-    log_info(", %5.2f xRT",
+    E_INFO(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
+    E_INFO(", %5.2f xRT",
 	    MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
 #endif
     
@@ -414,7 +418,7 @@ static void timing_stop ( void )
     TotalElapsedTime += MakeSeconds (&e_start, &e_stop);
 #endif
     
-    log_info("\n");
+    E_INFO("\n");
 }
 
 
@@ -423,20 +427,20 @@ static void timing_stop ( void )
  */
 static void timing_end ( void )
 {
-    log_info("\n");
+    E_INFO("\n");
 
-    log_info("TOTAL Elapsed time %.2f seconds\n",TotalElapsedTime);
+    E_INFO("TOTAL Elapsed time %.2f seconds\n",TotalElapsedTime);
 #ifndef _HPUX_SOURCE
-    log_info("TOTAL CPU time %.2f seconds\n", TotalCPUTime);
+    E_INFO("TOTAL CPU time %.2f seconds\n", TotalCPUTime);
 #endif
-    log_info("TOTAL Speech %.2f seconds\n", TotalSpeechTime);
+    E_INFO("TOTAL Speech %.2f seconds\n", TotalSpeechTime);
 
     if (TotalSpeechTime > 0.0) {
-	log_info("AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
+	E_INFO("AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
 #ifndef _HPUX_SOURCE
-	log_info(", %.2f xRT(CPU)\n", TotalCPUTime/TotalSpeechTime);
+	E_INFO(", %.2f xRT(CPU)\n", TotalCPUTime/TotalSpeechTime);
 #endif
-	log_info("\n");
+	E_INFO("\n");
     }
 }
 
@@ -1100,8 +1104,8 @@ int32 uttproc_end_utt ( void )
     if (k > 0) {
 	E_INFO("Samples histogram (%s) (4/8/16/30/32K):", uttproc_get_uttid());
 	for (i = 0; i < 5; i++)
-	    log_info(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
-	log_info("; max: %d\n", max_samp);
+	    E_INFO(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
+	E_INFO("; max: %d\n", max_samp);
     }
     
     if (uttstate != UTTSTATE_BEGUN) {
