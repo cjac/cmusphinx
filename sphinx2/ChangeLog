@@ -668,3 +668,7 @@ set of changes from dhd (below)
 	  changing language models at run-time and want to free the
 	  prior dictionary to save memory.
 	
+2001-11-06 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Patch supplied by rkm (Ravi) for search.c fixes a serious error
+	  in search
+	
