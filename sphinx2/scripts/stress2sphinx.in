@@ -54,9 +54,7 @@ while ( <> )
 
         # 2. TS (based on tsX.sed)
 
-        s/\bT S\b/TS/g;
-
-
+        # s/\bT S\b/TS/g;  # TS is no longer in the default phoneset
 
         # 3. deletable stops (based on deletableX.sed)
 
@@ -68,12 +66,12 @@ while ( <> )
         # s/\bT L\b/TD L/g;
 
         # 3. Remove deletable stops
-        s/\bTD/T/g;
-        s/\bPD/T/g;
-        s/\bBD/T/g;
-        s/\bDD/T/g;
-        s/\bGD/T/g;
-        s/\bKD/T/g;
+        # s/\bTD/T/g;
+        # s/\bPD/T/g;
+        # s/\bBD/T/g;
+        # s/\bDD/T/g;
+        # s/\bGD/T/g;
+        # s/\bKD/T/g;
 
         # 4. unstressed Sphinx 2 forms (based on postmodX.sed)
 
