@@ -366,7 +366,8 @@ static void build_pred_ci (pnode_t *nodelist, s3cipid_t *pred_ci)
 	pred_ci[p] = 0;
 
     for (node = nodelist; node; node = node->next)
-	pred_ci[(unsigned)node->ci] = 1;
+	if (node->ci != BAD_S3CIPID)
+	    pred_ci[(unsigned)node->ci] = 1;
 
     i = 0;
     for (p = 0; p < mdef->n_ciphone; p++) {
