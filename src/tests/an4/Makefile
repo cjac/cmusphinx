@@ -80,7 +80,7 @@ an4_plus_unigram:
 	rm -f gmake-an4-plus-unigram.results
 	/bin/cp ARGS.an4_base ARGS.an4_plus_unigram
 	echo "-lm an4_plus.ug.lm.DMP" >> ARGS.an4_plus_unigram
-	$(BINDIR)/batchmetrics ./an4_plus.batch / ./ARGS.an4_plus_unigram > gmake-an4-plus-unigram.results
+	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_plus_unigram > gmake-an4-plus-unigram.results
 
 an4_words_trigram:
 	rm -f gmake-an4-words-trigram.results
@@ -94,6 +94,12 @@ an4_spelling_trigram:
 	echo "-lm an4_spelling.trigram.DMP" >> ARGS.an4_spelling_trigram
 	$(BINDIR)/batchmetrics ./an4_spelling.batch / ./ARGS.an4_spelling_trigram > gmake-an4-spelling-trigram.results
 
+an4_spelling_journey_trigram:
+	rm -f gmake-an4-spelling-journey-trigram.results
+	/bin/cp ARGS.an4_base ARGS.an4_spelling_journey_trigram
+	echo "-lm an4_spelling_journey.trigram.DMP" >> ARGS.an4_spelling_journey_trigram
+	$(BINDIR)/batchmetrics ./an4_spelling.batch / ./ARGS.an4_spelling_journey_trigram > gmake-an4-spelling-journey-trigram.results
+
 an4_full_trigram:
 	rm -f gmake-an4-full-trigram.results
 	/bin/cp ARGS.an4_base ARGS.an4_full_trigram
@@ -104,5 +110,5 @@ an4_plus_trigram:
 	rm -f gmake-an4-plus-trigram.results
 	/bin/cp ARGS.an4_base ARGS.an4_plus_trigram
 	echo "-lm an4_plus.trigram.DMP" >> ARGS.an4_plus_trigram
-	$(BINDIR)/batchmetrics ./an4_plus.batch / ./ARGS.an4_plus_trigram > gmake-an4-plus-trigram.results
+	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_plus_trigram > gmake-an4-plus-trigram.results
 
