@@ -5,4 +5,5 @@ libtool
 config.status
 stamp-h
 Makefile
+Makefile.in
 *.gz
