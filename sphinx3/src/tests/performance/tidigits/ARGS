@@ -23,3 +23,4 @@
 -wip	0.00000000000001
 -lextreedump 0
 -samprate 16000
+-input_endian 1 

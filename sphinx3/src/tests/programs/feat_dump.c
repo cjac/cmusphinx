@@ -192,14 +192,12 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     residualvecs -= win;
   }
 
-  E_INFO("curpos %d bufpos %d %d\n",fcb->curpos,fcb->bufpos,residualvecs);
   for (i=0;i<nfr;i++){
     assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
     memcpy(cepbuf[fcb->bufpos++],uttcep[i],cepsize*sizeof(float32));
     fcb->bufpos %= LIVEBUFBLOCKSIZE;
   }
 
-  E_INFO("%d %d %d\n",fcb->curpos,fcb->bufpos,residualvecs);
 
   if (endutt){
     /* Replicate last frame into the last win frames */
@@ -227,12 +225,10 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   nfr += residualvecs;
   
   for (i=0; i < nfr; i++,nfeatvec++){
-    E_INFO("Frame %d\n",i);
     if(fcb->curpos <win || fcb->curpos > LIVEBUFBLOCKSIZE -win-1){
       /* HACK! Just copy the frames and read them to compute_feat */
       for(j=-win;j<=win;j++){
 	tmppos= (j+ fcb->curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
-	E_INFO("%d %d %d\n",fcb->curpos,tmppos,cepsize);
 	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
       }
       fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);

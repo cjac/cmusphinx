@@ -255,8 +255,10 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     metricsStart("ScorePrune");
 
-    utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
-		      hmmdumpfp);
+    if(live_nfeatvec>0){
+      utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
+			hmmdumpfp);
+    }
     
     metricsStop("ScorePrune");
 
