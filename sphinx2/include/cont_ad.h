@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/02/01  22:21:12  rkm
- * Added raw data logging, and raw data pass-through mode to cont_ad
+ * Revision 1.9  2005/02/13  01:29:40  rkm
+ * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
  * 
+ * Revision 1.8  2005/02/01 22:21:12  rkm
+ * Added raw data logging, and raw data pass-through mode to cont_ad
+ *
  * Revision 1.7  2004/07/27 21:29:46  egouvea
  * Fixed license terms
  *
@@ -147,7 +150,8 @@ typedef struct {
 
     int32 sps;		/* Samples/sec; moved from ad->sps to break dependence on
 			   ad by N. Roy.*/
-
+    int32 eof;		/* Whether the source ad device has encountered EOF */
+  
     int32 spf;		/* Samples/frame; audio level is analyzed within frames */
     int32 adbufsize;	/* Buffer size (#samples) */
     int32 prev_sample;	/* For pre-emphasis filter */
@@ -185,7 +189,6 @@ typedef struct {
     int32 win_validfrm;	/* #Frames currently available from win_startfrm for analysis */
     int32 n_other;	/* If in SILENCE state, #frames in analysis window considered to
 			   be speech; otherwise #frames considered to be silence */
-    int32 n_in_a_row;	/* number of frames sequentially other side of thresh */
     spseg_t *spseg_head;/* First of unconsumed speech segments */
     spseg_t *spseg_tail;/* Last of unconsumed speech segments */
     
@@ -197,7 +200,6 @@ typedef struct {
 			   progress to the file.  Controlled by user application
 			   via cont_ad_set_logfp().  NULL when cont_ad object is
 			   initially created. */
-    int32 log_frmno;	/* Frame count maintained by the logger. */
 } cont_ad_t;
 
 
@@ -211,6 +213,13 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
 					/* In: adfunc = source function to be invoked
 					   to obtain raw A/D data.  See ad.h for the
 					   required prototype definition. */
+
+/*
+ * Like cont_ad_init, but put the module in raw mode; i.e., all data is passed
+ * through, unfiltered.  (By special request.)
+ */
+cont_ad_t *cont_ad_init_rawmode (ad_rec_t *ad,
+				 int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max));
 
 /*
  * Calibration to determine an initial silence threshold.  This function can be called
@@ -238,9 +247,15 @@ int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max);
 
 
 /*
- * Read A/D data pre-filtered to remove silence segments.
+ * Read A/D data pre-filtered to remove silence segments.  Raw speech data is
+ * segmented into alternating speech and silence segments. But any single call to
+ * cont_ad_read will never cross a speech/silence boundary.  That is, if the first
+ * available segment is silence, it will consume that segment (and simply update
+ * r->read_ts and r->siglvl).  Or, if the first available segment is speech, it
+ * will return as much speech data from that one segment as possible, without
+ * spilling over into subsequent segments.  The function also updates r->read_ts
+ * and r->siglvl (see above).
  * Return value: #samples actually read, possibly 0; <0 if EOF on A/D source.
- * The function also updates r->read_ts and r->siglvl (see above).
  */
 int32 cont_ad_read (cont_ad_t *r,	/* In: Object pointer returned by cont_ad_init */
 		    int16 *buf,		/* Out: On return, buf contains A/D data returned
@@ -352,18 +367,6 @@ int32 cont_ad_set_logfp (cont_ad_t *c,	/* The cont_ad object being addressed */
  * level adaptation.
  */
 int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech);
-
-
-/*
- * If mode is non-zero, put the continuous listening object into "raw" mode, where
- * the input data is passed to the application without any silence filtering.
- * However, all the other computation (i.e., noiselevel estimate, power histograms,
- * etc.) are performed normally.
- * (Use with care; set the mode once at the beginning.  Might cause problems if the
- * application keeps switching modes.)
- * Return value: 0 if successful, -1 if any error.
- */
-int32 cont_ad_set_rawmode (cont_ad_t *r, int32 mode);
 
 
 #endif

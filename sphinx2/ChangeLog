@@ -722,3 +722,9 @@ set of changes from dhd (below)
 
 2005-01-26 Ravi Mosur (rkm@cs.cmu.edu)
 	* Added -maxhmmpf absolute pruning parameter for FSG mode.
+
+2005-01-26 Ravi Mosur (rkm@cs.cmu.edu)
+	* Added rawmode to cont_ad module.
+	* Fixed bug in cont_ad module that sometimes dropped final few frames.
+	* Fixed cont_ad module so cont_ad_read never crosses speech/silence
+	  boundary.

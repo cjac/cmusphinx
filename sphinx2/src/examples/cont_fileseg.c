@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/02/01  22:21:13  rkm
- * Added raw data logging, and raw data pass-through mode to cont_ad
+ * Revision 1.9  2005/02/13  01:29:48  rkm
+ * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
  * 
+ * Revision 1.8  2005/02/01 22:21:13  rkm
+ * Added raw data logging, and raw data pass-through mode to cont_ad
+ *
  * Revision 1.7  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -276,16 +279,16 @@ main (int32 argc, char **argv)
      */
     ad.sps = sps;
     ad.bps = sizeof(int16);
-    cont = cont_ad_init (&ad, file_ad_read);
+    if (! rawmode)
+      cont = cont_ad_init (&ad, file_ad_read);
+    else
+      cont = cont_ad_init_rawmode (&ad, file_ad_read);
     printf ("Calibrating ..."); fflush (stdout);
     if (cont_ad_calib (cont) < 0)
 	printf (" failed; file too short?\n");
     else
 	printf (" done\n");
     rewind (infp);
-    
-    if (rawmode)
-      cont_ad_set_rawmode (cont, 1);
     
     /* Convert desired min. inter-utterance silence duration to #samples */
     siltime = (int32) (endsil * sps);
@@ -340,8 +343,19 @@ main (int32 argc, char **argv)
     
     /* Read first non-silence speech */
     while ((k = cont_ad_read (cont, buf, 4096)) == 0);
-    if (k < 0)
-	E_FATAL("cont_ad_read failed\n");
+    
+    if (k < 0) {
+	E_WARN("Input is all silence; no speech detected\n");
+	E_INFO("Total raw input speech = %d frames, %d samples, %.2f sec\n",
+	       cont->tot_frm, cont->tot_frm * cont->spf,
+	       (cont->tot_frm * cont->spf) / (float32) cont->sps);
+	E_INFO("Total speech detected = %d samples, %.2f sec\n",
+	       total_speech_samples, total_speech_sec);
+	
+	cont_ad_close (cont);
+	
+	exit(0);
+    }
     
     /*
      * Start recording new utterance in next file.
@@ -423,10 +437,13 @@ main (int32 argc, char **argv)
     if (rawfp)
       fclose(rawfp);
     
-    cont_ad_close (cont);
-    
+    E_INFO("Total raw input speech = %d frames, %d samples, %.2f sec\n",
+	   cont->tot_frm, cont->tot_frm * cont->spf,
+	   (cont->tot_frm * cont->spf) / (float32) cont->sps);
     E_INFO("Total speech detected = %d samples, %.2f sec\n",
 	   total_speech_samples, total_speech_sec);
+    
+    cont_ad_close (cont);
     
     return 0;
 }
