@@ -49,7 +49,7 @@
 
 
 #ifndef _LIBUTIL_ERR_H_
-#define _LIBUTIL_ERR_H
+#define _LIBUTIL_ERR_H_
 
 /* 01.18.01 RAH, allow for C++ compiles */
 #ifdef __cplusplus
