@@ -59,7 +59,7 @@ static ad_rec_t *ad;
 /* Determine if the user has indicated end of utterance (keyboard hit at end of utt) */
 
 static void ui_ready ( void ){
-#if (WIN32)
+#if defined(WIN32)
     printf ("\nSystem will listen for ~ %.1f sec of speech\n", LISTENTIME);
     printf ("Hit <cr> before speaking: ");
 #else

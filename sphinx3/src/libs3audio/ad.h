@@ -46,10 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2004/02/29  23:48:31  egouvea
+ * Revision 1.5  2004/07/23  23:44:46  egouvea
+ * Changed the cygwin code to use the same audio files as the MS Visual code, removed unused variables from fe_interface.c
+ * 
+ * Revision 1.4  2004/02/29 23:48:31  egouvea
  * Updated configure.in to the recent automake/autoconf, fixed win32
  * references in audio files.
- * 
+ *
  * Revision 1.3  2002/11/10 19:27:38  egouvea
  * Fixed references to sun's implementation of audio interface,
  * referring to the correct .h file, and replacing sun4 with sunos.
@@ -87,15 +90,19 @@
 #ifndef _AD_H_
 #define _AD_H_
 
-#if defined(WIN32)
+#if !defined(WIN32)
+#include "ad_conf.h"
+#endif
 
 #if defined (__CYGWIN__)
+
 #include <w32api/windows.h>
 #include <w32api/mmsystem.h>
-#else
+
+#elif defined(WIN32)
+
 #include <windows.h>
 #include <mmsystem.h>
-#endif
 
 #elif defined(AD_BACKEND_OSF) /* Not implemented, it seems */
 
@@ -127,7 +134,7 @@
 #define AD_ERR_WAVE	-3
 
 
-#if defined(WIN32)
+#if  (defined(WIN32) || defined(AD_BACKEND_WIN32))
 typedef struct {
     HGLOBAL h_whdr;
     LPWAVEHDR p_whdr;
@@ -143,7 +150,7 @@ typedef struct {
  * NOTE: ad_rec_t and ad_play_t are READ-ONLY structures for the user.
  */
 
-#if defined(WIN32)
+#if (defined(WIN32) || defined(AD_BACKEND_WIN32))
 
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
