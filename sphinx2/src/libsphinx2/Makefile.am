@@ -73,7 +73,10 @@ libsphinx2_la_LDFLAGS = -version-info 1:0:1
 # hjf@cs.brown.edu - Added for Solaris build
 # LDADD = -L/usr/demo/SOUND/lib/ -laudio
 
-INCLUDES = -I$(top_srcdir)/src/libsphinx2/include -I$(top_srcdir)/include 
+INCLUDES = -I$(top_srcdir)/src/libsphinx2/include \
+           -I$(top_srcdir)/include \
+           -I$(top_builddir)/include 
+
 # add for solaris
 #           -I/usr/demo/SOUND/include
 
