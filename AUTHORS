@@ -62,7 +62,7 @@ Evandro Gouvea - Package Sphinx3.0 and Sphinx 3.x, maintainer of
 Sphinx X including the code, websites, machine queues and networks.
 
 Developers from Sun, including Willie Walker, Paul Lamere and Philip
-Kok.  They first ported s3.3 to s3j, a java version of s3.3.  Later,
+Kwok.  They first ported s3.3 to s3j, a java version of s3.3.  Later,
 they proposed to design and implement Sphinx 4.  For Sphinx 4's
 contributors, please consult Sphinx 4's documentation. 
 
