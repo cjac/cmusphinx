@@ -10,12 +10,14 @@ libs3decoder_la_SOURCES = \
 	ascr.c \
         beam.c \
         bio.c \
+	classify.c \
         cmn.c \
         cmn_prior.c \
         cont_mgau.c \
         corpus.c \
         dict.c \
         dict2pid.c \
+	endptr.c \
 	fe_interface.c \
 	fe_sigproc.c \
         feat.c \
@@ -51,12 +53,14 @@ noinst_HEADERS = \
         ascr.h \
         beam.h \
         bio.h \
+	classify.h \
         cmn.h \
         cmn_prior.h \
         cont_mgau.h \
         corpus.h \
         dict.h \
         dict2pid.h \
+	endptr.h \
 	fe.h \
 	fe_internal.h \
         feat.h \
