@@ -370,7 +370,8 @@ main (int32 argc, char **argv)
 		
 		fclose (mfcout);
 
-		E_INFO("%s: %d samples, %d cepstrum frames\n", uttid, ns, nc);
+		/* E_INFO("%s: %d samples, %d cepstrum frames\n", uttid, ns, nc); */
+		printf("%s: %d samples, %d cepstrum frames\n", uttid, ns, nc);
 	    }
 	    
 	    adout = mfcout = NULL;
@@ -432,6 +433,9 @@ main (int32 argc, char **argv)
 
     E_INFO("%d utterances, %.2f sec read, %.2f sec written\n", n_utt,
 	   (double) cur_ns_read / (double) sps, (double) tot_ns / (double) sps);
+    printf("%d utterances, %.2f sec read, %.2f sec written\n", n_utt,
+	   (double) cur_ns_read / (double) sps, 
+	   (double) tot_ns / (double) sps);
 
     cleanup_and_exit();
     return 0;

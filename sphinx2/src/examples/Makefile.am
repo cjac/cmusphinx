@@ -5,14 +5,16 @@ bin_PROGRAMS = \
 	sphinx2-server \
 	sphinx2-client \
 	sphinx2-allphone \
-        lm3g2dmp  \
-	raw2cep
-
-EXTRA_DIST=
 	cont_adseg \
 	cont_fileseg \
 	adpow \
 	adrec \
+        lm3g2dmp  \
+	raw2cep
+
+EXTRA_DIST=
+	README \
+	README.bin \
 	cdcn_test
 
 sphinx2_continuous_SOURCES =  tty-continuous.c
