@@ -356,6 +356,7 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
 {
   char *local_uttid = NULL;
   struct tm *times;
+  time_t t;
 
   assert(_decoder != NULL);
 
@@ -366,17 +367,15 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
 
   /* automatically-generated uttid */
   if (_uttid == NULL) {
-    time_t t;
-
     t = time(NULL);
     times = localtime(&t);
     if ((local_uttid = ckd_malloc(17)) == NULL) {
       E_WARN("Failed to allocate space for utterance id.\n");
       return LD_ERROR_OUT_OF_MEMORY;
     }
-    snprintf(local_uttid, 20, "*%4d%2d%2dZ%2d%2d%2d",
-	     times->tm_year, times->tm_mon, times->tm_mday,
-	     times->tm_hour, times->tm_min, times->tm_sec);
+    sprintf(local_uttid, "*%4d%2d%2dZ%2d%2d%2d",
+	    times->tm_year, times->tm_mon, times->tm_mday,
+	    times->tm_hour, times->tm_min, times->tm_sec);
   }
   /* user-defined uttid */
   else {
