@@ -67,6 +67,8 @@
 #include "s3types.h"
 #include "kbcore.h"
 #include "hyp.h"
+#include "dict.h"
+#include "wid.h"
 
 
 /*

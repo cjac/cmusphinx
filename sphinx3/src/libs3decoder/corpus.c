@@ -66,7 +66,7 @@
 
 
 #include "corpus.h"
-
+#include "kb.h"
 
 corpus_t *corpus_load_headid (char *file,
 			      int32 (*validate)(char *str),
@@ -344,6 +344,8 @@ ptmr_t ctl_process (char *ctlfile, int32 nskip, int32 count,
   int32 sf, ef;
   ptmr_t tm;
   
+  E_INFO("Batch mode recognition without dynamic LM\n");
+
   if (ctlfile) {
     if ((fp = fopen(ctlfile, "r")) == NULL)
       E_FATAL_SYSTEM("fopen(%s,r) failed\n", ctlfile);
@@ -375,7 +377,8 @@ ptmr_t ctl_process (char *ctlfile, int32 nskip, int32 count,
     
     E_INFO("%s: %6.1f sec CPU, %6.1f sec Clk;  TOT: %8.1f sec CPU, %8.1f sec Clk\n\n",
 	   uttid, tm.t_cpu, tm.t_elapsed, tm.t_tot_cpu, tm.t_tot_elapsed);
-    
+
+
     ptmr_reset (&tm);
   }
   
@@ -383,6 +386,85 @@ ptmr_t ctl_process (char *ctlfile, int32 nskip, int32 count,
   
   return tm;
 }
+
+ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, int32 nskip, int32 count,
+		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+		    void *kb)
+{
+  FILE *fp;
+  FILE *ctllmfp;
+  char uttfile[16384], uttid[4096];
+  char lmname[4096];
+  char tmp[4096];
+  int32 sf, ef;
+  ptmr_t tm;
+  
+  ctllmfp=NULL;
+  E_INFO("Batch mode recognition with dynamic LM\n");
+  if (ctlfile) {
+    if ((fp = fopen(ctlfile, "r")) == NULL)
+      E_FATAL_SYSTEM("fopen(%s,r) failed\n", ctlfile);
+  } else
+    fp = stdin;
+
+  if(ctllmfile){
+    if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
+      E_FATAL_SYSTEM("fopen(%s,r) failed\n", ctllmfile);
+  }
+
+  ptmr_init (&tm);
+  
+  if (nskip > 0) {
+    E_INFO("Skipping %d entries at the beginning of %s\n", nskip, ctlfile);
+    
+    for (; nskip > 0; --nskip) {
+      if (ctl_read_entry (fp, uttfile, &sf, &ef, uttid) < 0) {
+	fclose (fp);
+	return tm;
+      }
+
+      /*This checks the size of the control file in batch mode*/
+      if (ctl_read_entry (ctllmfp, lmname, &sf, &ef, tmp) < 0) {
+	fclose (ctllmfp);
+	E_ERROR("Class cannot be read when skipping the %d-th sentence\n",nskip);
+	return tm;
+      }
+    }
+  }
+  
+  for (; count > 0; --count) {
+    if (ctl_read_entry (fp, uttfile, &sf, &ef, uttid) < 0)
+      break;
+
+    /*This checks the size of the control file in batch mode*/
+    if (ctl_read_entry (ctllmfp, lmname, &sf, &ef, tmp) < 0) {
+      fclose (ctllmfp);
+      E_ERROR("Class cannot be read when counting the %d-th sentence\n",count);
+      return tm;
+    }
+    
+    /* Process this utterance */
+    ptmr_start (&tm);
+    E_INFO("filename %s, lmname %s\n",uttfile,lmname);
+    if (func){
+      kb_setlm(lmname,kb);
+
+      (*func)(kb, uttfile, sf, ef, uttid);
+    }
+    ptmr_stop (&tm);
+    
+    E_INFO("%s: %6.1f sec CPU, %6.1f sec Clk;  TOT: %8.1f sec CPU, %8.1f sec Clk\n\n",
+	   uttid, tm.t_cpu, tm.t_elapsed, tm.t_tot_cpu, tm.t_tot_elapsed);
+
+
+    ptmr_reset (&tm);
+  }
+  
+  fclose (fp);
+  
+  return tm;
+}
+
 
 
 ptmr_t ctl_process_utt (char *uttfile, int32 count,

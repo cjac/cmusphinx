@@ -204,10 +204,9 @@ static arg_t arg[] = {
       NULL,
       "Output subvq file (stdout if not specified)" },
     { "-log3table",
-      ARG_INT32,
-      "1",
+      ARG_FLOAT64,
+      "1.0003",
       "Determines whether to use the log3 table or to compute the values at run time."},
-    
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -224,14 +223,18 @@ int32 main (int32 argc, char *argv[])
     int32 stdev;
     int32 i, j, v, m, c;
     
+    for(i=0;i<argc;i++)
+      {
+	printf("Argument %d: %s\n",i,argv[i]);
+      }
     cmd_ln_parse (arg, argc, argv);
     
-    logs3_init ((float64) 1.0003);
+    logs3_init (cmd_ln_float64("-log3table"));
     
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init (cmd_ln_str("-mean"), cmd_ln_str("-var"), 0.0 /* no varfloor */,
 		      cmd_ln_str("-mixw"), cmd_ln_float64 ("-mixwfloor"),
-		      FALSE);
+		      FALSE,".cont.");
     mgau_var_nzvec_floor (mgau, cmd_ln_float64 ("-varfloor"));
     
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */

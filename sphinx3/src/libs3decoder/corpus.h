@@ -160,6 +160,20 @@ ptmr_t ctl_process (char *ctlfile,	/* In: Control file to read; use stdin if NUL
 					   the first argument to func above */
 
 /*
+ * A small modification of ctl_process.  It changes the LM dynamically according to the utterances. User can use option -ctl_lm to specify which LM should be used in each utterance.  
+ */
+ptmr_t ctl_process_dyn_lm (char *ctlfile,	/* In: Control file to read; use stdin if NULL */
+			   char *ctllmfile,     /* In: Control file that specify the lm used for the corresponding utterance */
+		    int32 nskip,	/* In: No. of entries to skip at the head */
+		    int32 count,	/* In: No. of entries to process after nskip */
+		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+		    			/* In: Function to be invoked for each of the
+					   count entries processed. */
+		    void *kb);		/* In: A catch-all data pointer to be passed as
+					   the first argument to func above */
+
+
+/*
  * Like ctl_process, but process the single filename given (uttfile), count times.  After each
  * processing, wait for the time of modification on the given file to change.  In this mode,
  * the decoder can be used to process a dynamically generated sequence of utterances.  To avoid

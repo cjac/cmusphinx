@@ -76,6 +76,7 @@
 #include <libutil/libutil.h>
 #include "cont_mgau.h"
 #include "vector.h"
+#include "logs3.h"
 
 
 typedef struct {
@@ -165,4 +166,25 @@ void subvq_subvec_eval_logs3 (subvq_t *vq,	/* In/Out: Reference subvq structure 
 						 * this, and compared to relevant codewords */
 			      int32 sv);	/* In: ID of subvector being evaluated */
 
+/*
+ * Based on previously computed subvq scores (Mahalanobis distances), determine the active
+ * components in the given mixture (using the vq->map).
+ * Return value: #Candidates in the returned shortlist.
+ */
+int32 subvq_mgau_shortlist (subvq_t *vq,
+				   int32 m,	/* In: GMM index */
+				   int32 n,	/* In: #Components in specified mixture */
+				   int32 beam);	/* In: Threshold to select active components */
+
+
+/*
+ * Compute the scores of a gaussian using only sum of the sub-vector scores. 
+ */
+
+int32 subvq_mgau_eval (mgau_model_t *g,
+		       subvq_t *vq, /*the SVQ */
+		       int32 m, /*In: GMM Index */
+		       int32 n, /* #Components in a specified mixture */
+		       int32 *active /*Active list of mixture */
+		       );
 #endif

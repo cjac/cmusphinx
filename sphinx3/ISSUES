@@ -1,0 +1,110 @@
+Compiler related issues
+=======================
+
+
+Changing defaults
+-----------------
+
+If you want to use compilers or flags other than the default in 
+a Unix/linux like environment, specify so when running 'configure'.
+
+Some useful options to try:
+
+./configure CC=cc  # Will use the regular c compiler to build Sphinx-3
+
+./configure CFLAGS="-O9"  # Will optimize the compiler to this level.
+
+./configure AR=/usr/ccs/bin/ar  # If you need to specify the archiver location
+
+Type 'configure --help' for a full list of options.
+
+
+Intel-based compilers
+---------------------
+
+Intel processors perform floating point operations using 80 bits. Even
+if doubles are defined as 64 bit floats, the operations still uses 80
+bits. These causes differences when using the same compiler in
+different platforms. For example, gcc under solaris and under linux
+result in slightly different results for operations such as divide
+(/), random number generation (drand48), log (log, exp). gcc under
+linux and under cygwin yield the same results.
+
+Therefore, if you want to verify results across platforms, beware of
+floating point differences!
+
+Microsoft Visual C++
+--------------------
+
+Version 6.0 does not have some of the functionalities available in
+other C compilers. Among them, Visual C++ does not have the function
+drand48(), which returns a double between 0 and 1 ([0,1)). The
+alternative is rand(), which returns an integer between 0 and
+RAND_MAX (0x7fff = 32767). The range is different, the number of bits is
+different, the algorithm is different. This function affects the front
+end (dither generator uses drand48()), and, in SphinxTrain, kmeans.
+
+GCC 
+---
+
+To change compilation options for GCC, see the item "Changing defaults" above.
+
+For Linux running on a Pentium 4 machine, the following is the best flags to use in compilation we found so
+far, 
+
+  ./configure CFLAGS="-O9 -funroll-loops -ffast-math \
+    -fomit-frame-pointer -malign-double -mcpu=pentiumpro \
+    -finline-functions -march=pentiumpro -fno-exceptions"
+
+Even though in gcc 3.2.3, option -sse is supported for Pentium 3 or
+later processors for optimization of SIMD instruction.  We found that
+the use of it doesn't beat the performance of simple loop unrolling.
+This statement is true for option -387 and -sse,387 as well.  We
+recommend not to use these options.
+
+Intel C Compiler
+----------------
+
+Although usage of Intel C Compiler doesn't improve the performance of
+Sphinx 3.4, we incorporated these description because in some cases
+developer may want to link applications which ICC was used as the
+compiler and one may want to compile S3.4 using ICC as well.
+
+To use Intel C Compiler (ICC), 
+In Windows,
+
+Using Microsoft Visual C++ 6.0, 
+1) Download and install ICC from Intel Web site.
+2) In the menu bar, choose tool-> Intel C++ Compiler Selection Tool. 
+For Pentium 4 or other IA-32 architecture machine, just click the check 
+box of "Intel C++ Compiler". (For Itanium processor, please consult
+Intel's web site before proceed.)
+
+In Linux, 
+This is a hack that allows you to use ICC to compile Sphinx 3.4 in Linux.
+1) Download and install ICC from Intel Web site. You are required to have
+root access of the computer. 
+2) Run configure with the CC option:
+  ./configure CC=icc
+3) Optionally, run it with additional flags:
+  ./configure CC=icc CFLAGS="your flags here"
+4) Do standard "make" and "make install"
+
+
+Mac OS X
+--------
+
+When compiling under Mac OS X, disable shared libraries when compiling:
+
+./configure --enable-shared=no
+
+Shared libraries are enabled by default. 
+
+
+
+Comments contributed by:
+------------------------
+
+Evandro Gouvea
+Arthur Chan
+

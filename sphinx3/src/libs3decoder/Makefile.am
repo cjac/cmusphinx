@@ -6,7 +6,8 @@ libs3decoder_la_LDFLAGS = -version-info 0:1:0
 
 libs3decoder_la_SOURCES = \
         agc.c \
-        ascr.c \
+	approx_cont_mgau.c \
+	ascr.c \
         beam.c \
         bio.c \
         cmn.c \
@@ -17,11 +18,13 @@ libs3decoder_la_SOURCES = \
         dict2pid.c \
         feat.c \
         fillpen.c \
+	gs.c \
         hmm.c \
         kb.c \
         kbcore.c \
         lextree.c \
         lm.c \
+	lmclass.c \
         logs3.c \
         mdef.c \
         new_fe.c \
@@ -36,6 +39,7 @@ libs3decoder_la_SOURCES = \
 
 noinst_HEADERS = \
         agc.h \
+	approx_cont_mgau.h \
         ascr.h \
         beam.h \
         bio.h \
@@ -47,6 +51,7 @@ noinst_HEADERS = \
         dict2pid.h \
         feat.h \
         fillpen.h \
+	gs.h \
         hmm.h \
         hyp.h \
         kb.h \

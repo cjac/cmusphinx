@@ -236,7 +236,10 @@ void lextree_hmm_propagate (lextree_t *lextree,	/* In/Out: Propagate scores acro
 			    int32 cf,		/* In: Current frame */
 			    int32 th,		/* In: General (HMM survival) pruning thresh */
 			    int32 pth,		/* In: Phone transition pruning threshold */
-			    int32 wth);		/* In: Word exit pruning threshold */
+			    int32 wth,		/* In: Word exit pruning threshold */
+                            int32 *phn_heur_list,  /* Added on 20040227 by JSHERWAN for phoneme lookahead */
+			    int32 heur_beam, /* Added on 20040228 by JSHERWAN for phoneme lookahead heuristic */
+			    int32 heur_type);   /*Heuristic type, used it to by-pass the code if heur_type is 0 */
 
 /*
  * In order to use histogram pruning, get a histogram of the bestscore of each active HMM in

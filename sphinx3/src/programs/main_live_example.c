@@ -82,7 +82,8 @@ static void utterance_loop()
     int  j,nhypwds;
     partialhyp_t *parthyp;
     
-    for (;;) {		/* Loop for each new utterance */
+    /*    for (;;) */
+    {		/* Commented the loop */
 	ui_ready ();
 
 	fgets (line, sizeof(line), stdin);
@@ -119,7 +120,6 @@ static void utterance_loop()
 	      nhypwds = live_utt_decode_block(adbuf,k,0,&parthyp);
 
 	    /* Send whatever data was read above to decoder */
-	    // uttproc_rawdata (adbuf, k, 0);
 	    ns += k;
 
 	    /* Time to report partial result? (every 4000 samples or 1/4 sec) */
@@ -137,12 +137,13 @@ static void utterance_loop()
 
 int main (int argc, char *argv[])
 {
-  short samps[MAXSAMPLES];
-  int  i, /*j,*/ buflen, endutt, blksize, nhypwds, nsamp;
-    char   *argsfile, *ctlfile, *indir;
-    char   filename[512], cepfile[512];
+  /*  short samps[MAXSAMPLES];
+    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
+    char   filename[512], cepfile[512],*ctlfile, *indir;
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
+  */
+    char   *argsfile;
 
     if (argc != 2) {
       argsfile = NULL;
@@ -151,7 +152,24 @@ int main (int argc, char *argv[])
     }
     argsfile = argv[1];
     live_initialize_decoder(argsfile);
+    live_utt_set_uttid("null");
 
+    /*ARCHAN*/
+    {
+      int samprate = 8000;
+
+      samprate = cmd_ln_int32 ("-samprate");
+      if ((ad = ad_open_sps(samprate)) == NULL)
+	E_FATAL("ad_open_sps failed\n");
+
+      utterance_loop();
+    }
+
+    exit(0);
+}
+
+/*ARCHAN: Comment the old code back in 2001 */
+#if 0
     if (0) {
       if (argc != 4)
 	E_FATAL("\nUSAGE: %s <ctlfile> <infeatdir> <argsfile>\n",argv[0]);
@@ -183,7 +201,6 @@ int main (int argc, char *argv[])
         }
       }
     } else {    
-      // RAH
       int samprate = 8000;
 
       samprate = cmd_ln_int32 ("-samprate");
@@ -192,5 +209,4 @@ int main (int argc, char *argv[])
 
       utterance_loop();
     }
-    exit(0);
-}
+#endif

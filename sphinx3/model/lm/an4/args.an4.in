@@ -1,0 +1,26 @@
+-mdef	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
+-fdict	@prefix@/share/sphinx3/model/lm/an4/filler.dict
+-dict	@prefix@/share/sphinx3/model/lm/an4/an4.dict
+-mean	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means
+-var	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
+-mixw	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
+-tmat	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices
+-subvq	@prefix@/share/sphinx3/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/8gau.6000sen.quant
+-upperf	6855.49756
+-lowerf	133.33334
+-nfilt	40
+-feat 1s_c_d_dd
+-samprate 16000
+-agc	none
+-varnorm	no
+-cmn	current
+-subvqbeam 1e-02
+-epl	4
+-fillprob	0.02
+-lw	9.5
+-maxwpf	10
+-beam	1e-60
+-wbeam	1e-35
+-lm 	@prefix@/share/sphinx3/model/lm/an4/an4.ug.lm.DMP
+
+

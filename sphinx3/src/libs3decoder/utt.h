@@ -38,6 +38,7 @@
 
 #include <libutil/libutil.h>
 #include "kb.h"
+#include "approx_cont_mgau.h"
 
 #define MAXHYPLEN       1000
 
@@ -58,7 +59,7 @@ void utt_decode (void *data, char *uttfile, int32 sf,
  * is passed in.
  */
 
-void utt_decode_block (float **block_feat,   /* Incoming block of featurevecs */
+void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs */
                        int32 block_nfeatvec, /* No. of vecs in cepblock */
                        int32 *curfrm,        /* Utterance level index of
                                                 frames decoded so far */

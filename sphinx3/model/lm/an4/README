@@ -1,0 +1,24 @@
+This directory contains a few files that you can use to test if your
+installation of Sphinx-3 is working fine.
+
+
+an4.ctl			list of files to be recognized
+
+an4.dict		the pronunciation dictionary for the task
+
+an4.phonelist		
+an4.ug.lm		the language model in arpabo format, text version
+
+an4.ug.lm.DMP		the language model in arpabo format, binary version
+
+filler.dict		list of non-speech words
+
+pittsburgh.dire.raw	a raw, 16-bit 16kHz audio file containing the 
+			utterance "p i t t s b u r g h" (Pittsburgh 
+			spelled out) in big endian format
+
+pittsburgh.swap.raw	a raw, 16-bit 16kHz audio file containing the 
+			utterance "p i t t s b u r g h" (Pittsburgh 
+			spelled out) in little endian format
+
+

@@ -96,15 +96,20 @@ typedef struct {
     int32 n_comp;	/* #Component Gaussians in this mixture.  NOTE: May be 0 (for the
 			   untrained states). */
     float32 **mean;	/* The n_comp means of the Gaussians. */
-    float32 **var;	/* The n_comp (diagonal) variances of the Gaussians.  Could be
+  float32 **var;	/* The n_comp (diagonal) variances of the Gaussians.  Could be
 			   converted to 1/(2*var) for faster computation (see above comment). */
-    int32 *mixw;	/* Mixture weights for the n_comp components (int32 instead of float32
-			   because these values are in logs3 domain) */
+
     float32 *lrd;	/* Log(Reciprocal(Determinant (variance))).  (Then there is also a
 			   (2pi)^(veclen) involved...) */
+
+  int32 *mixw;	/* Mixture weights for the n_comp components (int32 instead of float32
+			   because these values are in logs3 domain) */
+
 } mgau_t;
 
 
+#define CONTHMM  10001
+#define SEMIHMM  10002
 /*
  * The set of mixture-Gaussians in an acoustic model.
  */
@@ -118,6 +123,9 @@ typedef struct {
     /* Statistics */
     int32 frm_sen_eval;		/* #Senones evaluated in the most recent frame */
     int32 frm_gau_eval;		/* #Gaussian densities evaluated in the most recent frame */
+  int32 gau_type; /* gau_type=CONTHMM if it is fully continous HMM, 
+		     gau_type=SEMIHMM if it is semi continous HMM.*/
+		     
 } mgau_model_t;
 
 
@@ -130,6 +138,7 @@ typedef struct {
 #define mgau_var(g,m,c)		((g)->mgau[m].var[c])
 #define mgau_mixw(g,m,c)	((g)->mgau[m].mixw[c])
 #define mgau_lrd(g,m,c)		((g)->mgau[m].lrd[c])
+#define mgau_lrdi(g,m,c)	((g)->mgau[m].lrdi[c])
 #define mgau_frm_sen_eval(g)	((g)->frm_sen_eval)
 #define mgau_frm_gau_eval(g)	((g)->frm_gau_eval)
 
@@ -145,9 +154,12 @@ mgau_init (char *meanfile,	/* In: File containing means of mixture gaussians */
 	   float64 varfloor,	/* In: Floor value applied to variances; e.g., 0.0001 */
 	   char *mixwfile,	/* In: File containing mixture weights */
 	   float64 mixwfloor,	/* In: Floor value for mixture weights; e.g., 0.0000001 */
-	   int32 precomp);	/* In: If TRUE, create and precompute mgau_t.lrd and also
+	   int32 precomp,       /* In: If TRUE, create and precompute mgau_t.lrd and also
 				   transform each var value to 1/(2*var).  (If FALSE, one
 				   cannot use the evaluation routines provided here.) */
+	   char* senmgau);	/* type of the gaussians distribution, .cont. or .semi. FIX me!
+				   This is confusing!
+				 */
 
 /*
  * Floor any variance vector that is non-zero (vector).
@@ -168,7 +180,8 @@ mgau_eval (mgau_model_t *g,	/* In: The entire mixture Gaussian model */
 	   int32 *active_comp,	/* In: An optional, -1 terminated list of active component
 				   indices; if non-NULL, only the specified components are
 				   used in the evaluation. */
-	   float32 *x);		/* In: Input observation vector (of length g->veclen). */
+	   float32 *x /* In: Input observation vector (of length g->veclen). */
+  );		
 
 /*
  * Like mgau_eval, but return the scores of the individual components, instead of combining

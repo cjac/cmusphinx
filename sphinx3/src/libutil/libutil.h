@@ -83,7 +83,7 @@
 #include "unlimit.h"
 
 
-#if defined(WIN32)
+#if (defined(WIN32) && !defined(__CYGWIN__))
 #define SLEEP_SEC(sec)	(0)			/* Why doesn't Sleep((sec)*1000) work? */
 #else
 #define SLEEP_SEC(sec)	sleep(sec)		/* sec must be integer */
