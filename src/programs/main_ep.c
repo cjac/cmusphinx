@@ -444,13 +444,16 @@ int32 main(int32 argc, char **argv)
   int32 splen, nframes;
   int16 *spbuffer;
 
+
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+
+  if(cmd_ln_int32("-logspec"))
+    E_FATAL("-logspec is currently not supported\n");
 
   unlimit();
   ptmr_init(&tm_class);
 
-  
   FEW = few_initialize();
   CLASSW = classw_initialize(cmd_ln_str("-mean"),
 			     cmd_ln_str("-var") ,cmd_ln_float32("-varfloor"),
