@@ -47,15 +47,58 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
+DATAPATH = /lab/speech/sphinx4/data/ti46/ti20/test/test/
+TI46RAWPATH = $(DATAPATH)/raw16k
+TI46CEPPATH = $(DATAPATH)/cepstra 
+TI46RESULTPATH = ${top_builddir}/src/tests/performance/ti46/
+PROGRAMDIR = ${top_builddir}/src/programs
+BMBIN = ${top_builddir}/src/test/programs/batchmetrics
+LPBIN = $(PROGRAMDIR)/livepretend
+DECODEBIN = $(PROGRAMDIR)/decode
+ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
-CLEANFILES = gmake-ti46$(MODEAFFIX).results \
-	gmake-ti46-quick$(MODEAFFIX).results 
+ALLTARGET=ti46-lp ti46-quick-lp ti46-decode ti46-quick-decode
 
-ti46:
-	rm -f gmake-tidigits$(MODEAFFIX).results
-	../../programs/batchmetrics ./ti46.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k ARGS > gmake-ti46$(MODEAFFIX).results
+#legacy targets, For ti46, batchmetric doesn't work at all.
+#ti46-bm ti46-quick-bm:
+#	rm -f $@.results $@.ctl
+#	cat ARGS ARGS.live > ARGS.$@
+#	$(BMBIN) $(subst -bm,,$@).batch $(TI46RAWPATH) ARGS.$@ > $@.results 2>&1
+
+#all : $(ALLTARGET)
+quick : ti46-quick-lp ti46-quick-decode
+slow : ti46-lp ti46-decode
+
+clean : 
+	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.ti46-*
+
+#Targets which we are actively using. 
+ti46-lp ti46-quick-lp : 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}' $(subst -lp,,$@).batch |sed "s/\.raw//" > ./$@.ctl
+	cat ARGS ARGS.live > ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) ./$@.ctl $(TI46RAWPATH) ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+
+ti46-decode ti46-quick-decode: 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	/bin/cp ARGS ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir $(TI46CEPPATH)" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
 
 
-ti46-quick:
-	rm -f gmake-ti46-quick$(MODEAFFIX).results
-	../../programs/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k  ARGS > gmake-ti46-quick$(MODEAFFIX).results
+
+
+
+
+
+
+
+
