@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.1  2004/11/14  07:00:08  arthchan2003
- * 1, Finally, a version of working flat decoder is completed. It is not compiled in the standard compilation yet because there are two many warnings. 2, eliminate the statics variables in  fe_sigproc.c
+ * Revision 1.1  2004/11/15  19:51:32  dhdfu
+ * Put decode_anytopo back, compile it but don't install it (seems to do the right thing).
  * 
+ * Revision 1.1  2004/11/14 07:00:08  arthchan2003
+ * 1, Finally, a version of working flat decoder is completed. It is not compiled in the standard compilation yet because there are two many warnings. 2, eliminate the statics variables in  fe_sigproc.c
+ *
  * Revision 1.2  2002/12/03 23:02:40  egouvea
  * Updated slow decoder with current working version.
  * Added copyright notice to Makefiles, *.c and *.h files.

@@ -21,6 +21,7 @@ libs3decoder_la_SOURCES = \
 	fe_sigproc.c \
         feat.c \
         fillpen.c \
+	flat_fwd.c \
 	gs.c \
         hmm.c \
 	interp.c \
@@ -63,6 +64,7 @@ noinst_HEADERS = \
 	fe_internal.h \
         feat.h \
         fillpen.h \
+	flat_fwd.h 
 	gs.h \
         hmm.h \
 	interp.h \
@@ -96,5 +98,3 @@ INCLUDES = -I$(top_srcdir) \
 
 LIBOBJS = @LIBOBJS@
 
-#	flat_fwd.c \
-#	flat_fwd.h 
