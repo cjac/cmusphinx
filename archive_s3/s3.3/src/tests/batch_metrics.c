@@ -117,6 +117,10 @@ int main (int argc, char *argv[])
     audioTime = 0.0;
     processingTime = 0.0;
 
+
+    numSentences = 0;
+    numRefWords = 0;
+    numHypWords = 0;
     numMatchingWords = 0;
     numMatchingSentences = 0;
     recognitionErrors = 0;
@@ -190,36 +194,25 @@ int main (int argc, char *argv[])
 	    endutt = i+blksize <= nsamp-1 ? 0 : 1;
 	    nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
 
-            if (endutt && nhypwds > 0) {
-
-                hypothesis[0] = '\0';
-
-                for (j=0; j < nhypwds; j++) {
-                    word = parthyp[j].word;
-                    if (strcmp(word, "<sil>") != 0 &&
-                        (strcmp(word, "<s>") != 0 &&
-                         strcmp(word, "</s>") != 0)) {
-                        
-                        if (strlen(hypothesis) > 0) {
-                            strcat(hypothesis, " ");
-                        }
-                        strcat(hypothesis, word);
-                    }
-                }
-
-                /* 
-                 * If hypothesis is equal to referenceResult
-                 * increment the number of matches
-                 */
-                fprintf(rfp, "REF:  %s\n", referenceResult);
-                fprintf(rfp, "HYP:  %s\n", hypothesis);
-
-                analyzeResults(referenceResult, hypothesis);
-                showAccuracy(rfp);
-            }
         }
 
         metricsStop(fileTimer);
+
+        if (endutt && nhypwds > 0) {
+
+            /* convert the hypothesis into a string */
+            partialHypToString(parthyp, nhypwds, hypothesis, STRLEN);
+            
+            /* 
+             * If hypothesis is equal to referenceResult
+             * increment the number of matches
+             */
+            fprintf(rfp, "REF:  %s\n", referenceResult);
+            fprintf(rfp, "HYP:  %s\n", hypothesis);
+            
+            analyzeResults(referenceResult, hypothesis);
+            showAccuracy(rfp);
+        }
 
         /* collect the processing times data */
         processingTime = metricsDuration(fileTimer);
@@ -243,6 +236,32 @@ int main (int argc, char *argv[])
     showMemory(rfp);
 
     return 0;
+}
+
+
+/**
+ * Converts the words in the given partialhyp_t struct into a string.
+ */
+void partialHypToString(partialhyp_t *parthyp, int nhypwds, 
+                        char* hypothesis, int bufferSize)
+{
+    char* word;
+    int j;
+
+    hypothesis[0] = '\0';
+
+    for (j = 0; j < nhypwds; j++) {
+        word = parthyp[j].word;
+        if (strcmp(word, "<sil>") != 0 &&
+            (strcmp(word, "<s>") != 0 &&
+             strcmp(word, "</s>") != 0)) {
+            
+            if (strlen(hypothesis) > 0) {
+                strcat(hypothesis, " ");
+            }
+            strcat(hypothesis, word);
+        }
+    }
 }
 
 
