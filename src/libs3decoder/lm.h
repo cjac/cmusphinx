@@ -10,6 +10,9 @@
  *
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Adding lm_free() to free allocated memory
+ * 
  * 24-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added lm_t.access_type; made lm_wid externally visible.
  * 
@@ -282,6 +285,10 @@ s3lmwid_t lm_wid (lm_t *lm, char *wd);
 /* LM cache related */
 void lm_cache_reset (lm_t *lmp);
 void lm_cache_stats_dump (lm_t *lmp);
+
+/* RAH, added code for freeing allocated memory */
+void lm_free (lm_t *lm);
+
 
 
 /* Macro versions of access functions */

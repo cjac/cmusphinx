@@ -257,8 +257,8 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2001/12/03  16:02:04  egouvea
- * Initial revision
+ * Revision 1.2  2001/12/04  02:57:47  egouvea
+ * Merged memory leak fixes from RAH  (egouvea@cs.cmu.edu)
  * 
  * Revision 1.1.1.1  2001/01/17 05:17:15  ricky
  * Initial Import of the s3.3 decoder, has working decodeaudiofile, s3.3_live

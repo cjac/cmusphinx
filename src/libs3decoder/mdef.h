@@ -9,6 +9,7 @@
  * **********************************************
  * 
  * HISTORY
+ * 19.Apr-2001  Ricky Houghton, added code for free allocated memory
  * 
  * 14-Oct-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added mdef_sseq2sen_active().
@@ -205,5 +206,9 @@ void mdef_sseq2sen_active (mdef_t *mdef,
 /* For debugging */
 void mdef_dump (FILE *fp, mdef_t *m);
 
+/* RAH, For freeing memory */
+void mdef_free_recursive_lc (ph_lc_t *lc);
+void mdef_free_recursive_rc (ph_rc_t *rc);
+void mdef_free (mdef_t *mdef);
 
 #endif

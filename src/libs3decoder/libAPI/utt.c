@@ -26,8 +26,10 @@
  * 		Started.
  */
 
+#ifdef WIN32
+#include <direct.h>		/* RAH, added */
+#endif
 
-/* #include <direct.h>*/
 #include "kb.h"
 #include "corpus.h"
 #include "utt.h"
@@ -307,7 +309,7 @@ void utt_word_trans (kb_t *kb, int32 cf)
   /* Transition to unigram lextrees */
   for (p = 0; p < n_ci; p++) {
     if (bv[p] >= 0)
-      lextree_enter (kb->ugtree[k], (s3cipid_t)p, cf, bs[p], bv[p], th);
+      lextree_enter (kb->ugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); /* RAH, typecast p to (s3cipid_t) to make compiler happy */
   }
   
   /* Transition to filler lextrees */

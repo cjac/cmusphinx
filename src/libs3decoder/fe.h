@@ -1,9 +1,7 @@
 #ifndef _NEW_FE_H_
 #define _NEW_FE_H_
 
-#define int32 int
-
-#define int16 short
+#include "s3types.h"
 
 typedef struct{
     float SAMPLING_RATE;
@@ -87,12 +85,14 @@ typedef struct{
 #define DEFAULT_START_FLAG 0
 
 #define BB_SAMPLING_RATE 16000
+#define DEFAULT_BB_FFT_SIZE 512
 #define DEFAULT_BB_FRAME_SHIFT 160
 #define DEFAULT_BB_NUM_FILTERS 40
 #define DEFAULT_BB_LOWER_FILT_FREQ 133.33334
 #define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
 
 #define NB_SAMPLING_RATE 8000
+#define DEFAULT_NB_FFT_SIZE 256
 #define DEFAULT_NB_FRAME_SHIFT 80
 #define DEFAULT_NB_NUM_FILTERS 31
 #define DEFAULT_NB_LOWER_FILT_FREQ 200
@@ -107,7 +107,7 @@ fe_t *fe_init(param_t *P);
 int32 fe_start_utt(fe_t *FE);
 int32 fe_end_utt(fe_t *FE, float *cepvector);
 int32 fe_close(fe_t *FE);
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block);
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block);
 
 

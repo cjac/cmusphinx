@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added tmat_free to free allocated memory 
+ *
  * 29-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added tmat_chk_1skip(), and made tmat_chk_uppertri() public.
  * 
@@ -61,6 +64,11 @@ int32 tmat_chk_uppertri (tmat_t *tmat);
  * Returns 0 if successful, -1 if check failed.
  */
 int32 tmat_chk_1skip (tmat_t *tmat);
+
+/*
+ * RAH, add code to remove memory allocated by tmat_init
+ */
+void tmat_free (tmat_t *t);
 
 
 #endif

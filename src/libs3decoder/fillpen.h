@@ -60,4 +60,9 @@ fillpen_t *fillpen_init (dict_t *dict,		/* In: Dictionary containing filler word
 int32 fillpen (fillpen_t *f,		/* In: Filler word probabilities structure */
 	       s3wid_t w);		/* In: Dictionary word-ID of filler word */
 
+/* RAH 
+   free memory allocated by fillpen_init
+ */
+void fillpen_free (fillpen_t *f);
+
 #endif

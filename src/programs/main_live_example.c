@@ -102,7 +102,7 @@ static void utterance_loop()
 int main (int argc, char *argv[])
 {
   short samps[MAXSAMPLES];
-    int  i, buflen, endutt, blksize, nhypwds, nsamp;
+  int  i, /*j,*/ buflen, endutt, blksize, nhypwds, nsamp;
     char   *argsfile, *ctlfile, *indir;
     char   filename[512], cepfile[512];
     partialhyp_t *parthyp;

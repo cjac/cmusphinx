@@ -10,6 +10,8 @@
  * **********************************************
  * 
  * HISTORY
+ * 20-Apr-2001  Ricky Houghton (ricky.houghton@cs.cmu.edu or rhoughton@mediasite.com)
+ *              Added fillpen_free to free memory allocated by fillpen_init
  * 
  * 30-Dec-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Removed language weight application to wip. To maintain
@@ -107,4 +109,15 @@ int32 fillpen (fillpen_t *f, s3wid_t w)
 {
     assert ((w >= f->dict->filler_start) && (w <= f->dict->filler_end));
     return (f->prob[w - f->dict->filler_start]);
+}
+
+
+/* RAH, free memory allocated above */
+void fillpen_free (fillpen_t *f)
+{
+  if (f) {
+    if (f->prob) 
+      ckd_free ((void *) f->prob);
+    ckd_free ((void *) f);
+  }
 }

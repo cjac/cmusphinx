@@ -1,9 +1,13 @@
+
+#ifdef WIN32			/* RAH, needed for memcpy */
+#include <memory.h>
+#endif
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <string.h>
-
+#include "s3types.h"
 /*
 #include <s2types.h>
 */
@@ -22,6 +26,11 @@
       allocated 2d feature array internally and assigns the passed
       pointer to it. This was done to allow for varying numbers of
       frames to be written when block i/o processing
+      
+      17-Apr-01 RAH, upgraded all floats to float32, it was causing
+      some conflicts with external functions that were using float32.
+      I know that it doesn't matter for the most part because floats
+      are normally float32, however it makes things cleaner.
       
  */  
 
@@ -113,13 +122,13 @@ int32 fe_start_utt(fe_t *FE)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	/* RAH, upgraded cep_block to float32 */
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
     double *spbuf, *fr_data, *fr_fea;
     int16 *tmp_spch = spch;
-    float **cep=NULL;
+    float32 **cep=NULL;
     
     /* are there enough samples to make at least 1 frame? */
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
@@ -134,8 +143,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
 	/* RAH */
 	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
 	memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
-	/*	memcpy(FE->OVERFLOW_SAMPS + FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16)));
-		spch = FE->OVERFLOW_SAMPS;*/
+	/* memcpy(FE->OVERFLOW_SAMPS + FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); */ /*  */
+	/* spch = FE->OVERFLOW_SAMPS; */ /*  */
 	nsamps += FE->NUM_OVERFLOW_SAMPS;
 	FE->NUM_OVERFLOW_SAMPS = 0; /*reset overflow samps count */
       }
@@ -145,9 +154,13 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
 	frame_count++;
 
 
-      if (cep!=NULL) fe_free_2d((void**)cep);
-      /* 01.14.01 RAH, added +1 */
-      cep = (float **)fe_create_2d(frame_count+1,FE->NUM_CEPSTRA,sizeof(float)); /*MLS*/
+      /*      if (cep!=NULL) fe_free_2d((void**)cep); */ /* It should never not be NULL */
+      /* 01.14.01 RAH, added +1 Adding one gives us space to stick the last flushed buffer*/
+      if ((cep = (float32 **)fe_create_2d(frame_count+1,FE->NUM_CEPSTRA,sizeof(float32))) == NULL) {
+	fprintf(stderr,"memory alloc for cep failed in fe_process_utt()\n\tfe_create_2d(%ld,%d,%d)\n...exiting\n",(long int) (frame_count+1),FE->NUM_CEPSTRA,sizeof(float32));  /* typecast to make the compiler happy - EBG */
+	exit(0);
+      }
+
 
       spbuf_len = (frame_count-1)*FE->FRAME_SHIFT + FE->FRAME_SIZE;    
       /* assert(spbuf_len <= nsamps);*/
@@ -171,8 +184,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
 	  fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
 	  exit(0);
       }
-      for (whichframe=0;whichframe<frame_count;whichframe++){
 
+      for (whichframe=0;whichframe<frame_count;whichframe++){
 	for (i=0;i<FE->FRAME_SIZE;i++)
 	  fr_data[i] = spbuf[whichframe*FE->FRAME_SHIFT + i];
 	
@@ -181,7 +194,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
 	fe_frame_to_fea(FE, fr_data, fr_fea);
 	
 	for (i=0;i<FE->NUM_CEPSTRA;i++)
-	  cep[whichframe][i] = (float)fr_fea[i];
+	  cep[whichframe][i] = (float32)fr_fea[i];
       }
       /* done making cepstra */
       
@@ -226,7 +239,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block)
    cepstra. also deactivates start flag of FE, and resets overflow
    buffer count. 
 **********************************************************************/
-int32 fe_end_utt(fe_t *FE, float *cepvector)
+int32 fe_end_utt(fe_t *FE, float32 *cepvector)
 {
   int32 pad_len=0, frame_count=0;
   int32 i;
@@ -262,7 +275,7 @@ int32 fe_end_utt(fe_t *FE, float *cepvector)
     fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
     fe_frame_to_fea(FE, spbuf, fr_fea);	
     for (i=0;i<FE->NUM_CEPSTRA;i++)
-      cepvector[i] = (float)fr_fea[i];
+      cepvector[i] = (float32)fr_fea[i];
     frame_count=1;
     free(fr_fea);		/* RAH - moved up */
     free (spbuf);		/* RAH */

@@ -10,6 +10,13 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Adding feat_free() to free allocated memory
+ *
+ * 02-Jan-2001	Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
+ *		Modified feat_s2mfc2feat_block() to handle empty buffers at
+ *		the end of an utterance
+ *
  * 30-Dec-2000	Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Added feat_s2mfc2feat_block() to allow feature computation
  *		from sequences of blocks of cepstral vectors
@@ -204,7 +211,7 @@ int32 feat_writefile (feat_t *fcb, char *file, float32 ***feat, int32 nfr)
     }
     
     /* Feature data is assumed to be in a single block, starting at feat[0][0][0] */
-    if (fwrite (feat[0][0], sizeof(float32), nfr*k, fp) != (uint32)nfr*k) {
+    if ((int32) fwrite (feat[0][0], sizeof(float32), nfr*k, fp) != nfr*k) {
 	E_ERROR("%s: fwrite(%dx%d feature data) failed\n", file, nfr, k);
 	fclose (fp);
 	return -1;
@@ -253,11 +260,11 @@ int32 feat_s2mfc_read (char *file, int32 sf, int32 ef, float32 **mfc, int32 maxf
     
     /* Check if n_float32 matches file size */
     byterev = FALSE;
-    if ((n_float32*sizeof(float32) + 4) != (uint32)statbuf.st_size) {
+    if ((int32) (n_float32*sizeof(float32) + 4) !=  (int32) statbuf.st_size) { /* RAH, typecast both sides to remove compile warning */
 	n = n_float32;
 	SWAP_INT32(&n);
 
-	if ((n*sizeof(float32) + 4) != (uint32)statbuf.st_size) {
+	if ((int32) (n*sizeof(float32) + 4) != (int32) (statbuf.st_size)) { /* RAH, typecast both sides to remove compile warning */
 	    E_ERROR("%s: Header size field: %d(%08x); filesize: %d(%08x)\n",
 		    file, n_float32, n_float32, statbuf.st_size, statbuf.st_size);
 	    fclose (fp);
@@ -797,14 +804,19 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 {
     static float32 **feat=NULL;
     static float32 **cepbuf=NULL;
-    static unsigned char   bufpos, curpos;
-    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;
+    /*    static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
+    /*    static unsigned char   bufpos, curpos; */ /*  */
+    /*    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	*/ /*  */
+    static int32   bufpos, curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    static int32  jp1, jp2, jp3, jf1, jf2, jf3;	/* RAH 4.15.01 upgraded unsigned char variables to int32 */
     int32  win, cepsize; 
     int32  i, j, nfeatvec, residualvecs;
 
     float32 *w, *_w, *f;
     float32 *w1, *w_1, *_w1, *_w_1;
     float32 d1, d2;
+
+    win = feat_window_size(fcb);
 
     if (fcb->cepsize <= 0) 
 	E_FATAL("Bad cepsize: %d\n", fcb->cepsize);
@@ -813,14 +825,18 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 	feat = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
 					 feat_stream_len(fcb,0),
 					 sizeof(float32));
-    if (cepbuf==NULL){
+    if (cepbuf == NULL){
 	cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
 					 cepsize,
 					 sizeof(float32));
 	beginutt = 1; /* If no buffer was present we are beginning an utt */
+    if (! feat)
+      E_FATAL("Unable to allocate feat ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,feat_stream_len(fcb,0),sizeof(float32));
+    if (! cepbuf)
+      E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
 	E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
     }
-    win = feat_window_size(fcb);
+
 
     if (fcb->cmn) /* Only cmn_prior in block computation mode */
 	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
@@ -830,7 +846,8 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 	/* Replicate first frame into the first win frames */
 	for (i=0;i<win;i++) 
 	   memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
-	beginutt = 0;
+	/* beginutt = 0; */  /* Removed by Rita Singh around 02-Jan-2001 */
+                             /* See History at the top of this file */
 	bufpos = win;
         curpos = bufpos;
         jp1 = curpos - 1;
@@ -847,8 +864,15 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     }
     if (endutt){
 	/* Replicate last frame into the last win frames */
+	if (nfr > 0) {
 	for (i=0;i<win;i++) 
 	   memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+        }
+	else {
+	    unsigned char tpos = bufpos-1;
+	    for (i=0;i<win;i++) 
+	        memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+	}
         residualvecs += win;
     }
 
@@ -901,4 +925,19 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     *ofeat = feat;
 
     return(nfeatvec);
+}
+
+/*
+ * RAH, remove memory allocated by feat_init
+ * What is going on? feat_vector_alloc doesn't appear to be called
+ */
+void feat_free (feat_t *f)
+{
+  if (f) {
+    //    if (f->stream_len)
+      //      ckd_free ((void *) f->stream_len);
+
+    //    ckd_free ((void *) f);
+  }
+
 }

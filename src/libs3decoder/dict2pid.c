@@ -202,6 +202,7 @@ static s3ssid_t ssidlist2comsseq (glist_t g, mdef_t *mdef, dict2pid_t *dict2pid,
 }
 
 
+/* RAH 4.16.01 This code has several leaks that must be fixed */
 dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict)
 {
     dict2pid_t *dict2pid;
@@ -238,6 +239,7 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict)
 	    E_FATAL("Pronunciation-length(%s)= %d\n", dict_wordstr(dict, w), pronlen);
 	n += pronlen;
     }
+
     internal = (s3ssid_t *) ckd_calloc (n, sizeof(s3ssid_t));
     
     /* Temporary */
@@ -458,7 +460,7 @@ void dict2pid_dump (FILE *fp, dict2pid_t *d2p, mdef_t *mdef, dict_t *dict)
 			     mdef_ciphone_str (mdef, (s3cipid_t)b),
 			     mdef_ciphone_str (mdef, (s3cipid_t)r),
 			     mdef_ciphone_str (mdef, (s3cipid_t)l),
-			     d2p->ldiph_lc[b][r][l]);
+			     d2p->ldiph_lc[b][r][l]); /* RAH, ldiph_lc is returning an int32, %d expects an int16 */
 	    }
 	}
     }
@@ -471,7 +473,7 @@ void dict2pid_dump (FILE *fp, dict2pid_t *d2p, mdef_t *mdef, dict_t *dict)
 		fprintf (fp, "%6s %6s %5d\n",
 			 mdef_ciphone_str (mdef, (s3cipid_t)b),
 			 mdef_ciphone_str (mdef, (s3cipid_t)l),
-			 d2p->single_lc[b][l]);
+			 d2p->single_lc[b][l]);	/* RAH, single_lc is returning an int32, %d expects an int16 */
 	}
     }
     fprintf (fp, "#\n");

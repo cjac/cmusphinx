@@ -81,5 +81,6 @@ typedef struct {
 
 void kb_init (kb_t *kb);
 void kb_lextree_active_swap (kb_t *kb);
+void kb_free (kb_t *kb);	/* RAH 4.16.01 */
 
 #endif

@@ -48,7 +48,9 @@ float64 vector_sum_norm (float32 *vec, int32 len)
     if (sum != 0.0) {
 	f = 1.0 / sum;
 	for (i = 0; i < len; i++)
-	    vec[i] *= (float)f;
+	  /*	  vec[i] *=  f;		*/  /*  */
+	  /* The compiler was complaining about the above line, to make sure we don't lose accuracy, use this  */
+	  vec[i] = (float32) ((float64) vec[i] * (float64)  f);		
     }
     
     return sum;
@@ -351,7 +353,8 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
 	    if (count[i] > 1) {
 		t = 1.0 / (float64)(count[i]);
 		for (j = 0; j < cols; j++)
-		    mean[i][j] *= (float)t;
+		  /*		  mean[i][j] *= t; */ /* RAH, compiler was complaining about this,  */
+		  mean[i][j] = (float32) ((float64) mean[i][j] * (float64) t); /*  */
 	    } else if (count[i] == 0) {
 		E_ERROR("Iter %d: mean[%d] unmapped\n", it, i);
 		memcpy (mean[i], gmean, cols * sizeof(float32));

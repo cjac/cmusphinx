@@ -10,6 +10,8 @@
  *
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added mgau_free to free memory allocated by mgau_init()
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added mgau_var_nzvec_floor().
  * 
@@ -554,4 +556,47 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
     }
     
     return score;
+}
+
+/* RAH, free memory allocated in mgau_init
+   I've not verified that this function catches all of the leaks, just most of them.
+ */
+void mgau_free (mgau_model_t *g)
+{
+  //  int i,j;
+  if (g) {
+    /* Free memory allocated for the mean structure*/
+    //    for (i=0;i<g->n_mgau;i++) {
+    //      for (j=0;j<g->max_comp;j++) {
+    //	if (g->mgau[i].mean[j]) 
+    //	  ckd_free ((void *) g->mgau[i].mean[j]);
+    //      }
+    //    }
+    if (g->mgau[0].mean) 
+      ckd_free ((void *) g->mgau[0].mean);
+
+    /* Free memory allocated for the var structure*/
+//    for (i=0;i<g->n_mgau;i++) {
+//      for (j=0;j<g->max_comp;j++) {
+//	if (g->mgau[i].var[j]) 
+//	  ckd_free ((void *) g->mgau[i].var[j]);
+//      }
+//    }
+    if (g->mgau[0].var) 
+      ckd_free ((void *) g->mgau[0].var);
+    if (g->mgau[0].lrd) 
+      ckd_free ((void *) g->mgau[0].lrd);
+
+    /* Free memory allocated for the mixture weights*/
+//    for (i=0;i<g->n_mgau;i++) 
+//      if (g->mgau[i].mixw[0]) 
+//	ckd_free ((void *) g->mgau[i].mixw[0]);
+    
+    if (g->mgau[0].mixw) 
+      ckd_free ((void *) g->mgau[0].mixw);
+    
+    if (g->mgau)
+      ckd_free ((void *) g->mgau);
+    ckd_free ((void *) g);
+  }
 }
