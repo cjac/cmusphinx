@@ -126,6 +126,8 @@ void match_write (FILE *fp, kb_t *kb, glist_t hyp, char *hdr)
 
     dict = kbcore_dict(kb->kbcore);
 
+    fprintf (fp, "%s ", (hdr ? hdr : ""));
+
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
       h = (hyp_t *) gnode_ptr (gn);
       if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)))
