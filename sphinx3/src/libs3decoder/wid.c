@@ -65,10 +65,10 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 {
     int32 u, n;
     s3wid_t w,dictid;
-    int32 classid;
+    int32 classid = BAD_LMCLASSID;
     s3lmwid_t *map;
     int32 maperr;
-	lmclass_word_t lmclass_word;
+    lmclass_word_t lmclass_word;
 
     maperr=0;
 
@@ -93,11 +93,12 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 	lm_lmwid2dictwid(lm, u) = w;
 	
 	if (IS_S3WID(w)) { 
-	  if(lm->lmclass&&classid>=0){    /* It is a valid word and it is also valid class name. 
-			       Hmm, this causes problem in computing LM probablity.  
-			       Lets dump more info to allow user know which word(s)
-			       have problems. 
-			    */
+	  if((lm->lmclass)&&(classid!=BAD_LMCLASSID)){    
+	    /* It is a valid word and it is also valid class name.
+	       Hmm, this causes problem in computing LM probablity.
+	       Lets dump more info to allow user know which word(s)
+	       have problems.
+	    */
 	    E_ERROR("%s is both a word and an LM class name\n",lm_wordstr(lm,u));
 	    maperr=1;
 	  }else{ /* It is a valid word and it is not a class, Ok, it is normal.
@@ -119,7 +120,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 	      map[w] = (s3lmwid_t) u;
 	  }
 	} else {
-	  if(lm->lmclass&&classid>=0){ /* it is not a valid word ID but it is a valid class ID */
+	  if((lm->lmclass)&&(classid!=BAD_LMCLASSID)){ /* it is not a valid word ID but it is a valid class ID */
 
 	    /*	    E_INFO("CLASS INFO: %d, %s\n",classid,lm_wordstr(lm,u));*/
 	    lm_lmwid2dictwid(lm, u) = classid;
@@ -130,7 +131,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 
 	      /*	      E_INFO("CLASS INFO Inside the word loop: %d, %d, %s\n",dictid,classid,lm_wordstr(lm,u));*/
 	      if (dictid >= 0) { 
-		if (map[dictid] >= 0 && map[dictid]!=BAD_S3LMWID) {
+		if (map[dictid]!=BAD_S3LMWID) {
 		  /* 
 		   *  This will tell us whether this word is already a normal word,
 		   *  Again, we don't do multiple mappings. 

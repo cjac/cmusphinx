@@ -107,6 +107,7 @@ typedef uint16		s3lmwid_t;	/* LM word id (uint16 for conserving space) */
 #define NOT_S3LMWID(w)	((w)==BAD_S3LMWID)
 #define IS_S3LMWID(w)	((w)!=BAD_S3LMWID)
 #define MAX_S3LMWID	((uint32)0xfffe)
+#define BAD_LMCLASSID   (-1)
 
 typedef int32		s3latid_t;	/* Lattice entry id */
 #define BAD_S3LATID	((s3latid_t) -1)
