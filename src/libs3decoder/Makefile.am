@@ -39,6 +39,7 @@ libs3decoder_la_SOURCES = \
 	ms_mllr.c \
 	ms_senone.c \
 	s3_align.c \
+	s3_astar.c \
 	s3_dag.c \
         subvq.c \
         tmat.c \
