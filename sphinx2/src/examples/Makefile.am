@@ -1,13 +1,15 @@
-bin_PROGRAMS = sphinx2-continuous \
-	sphinx2-ptt \
-	sphinx2-batch \
-	sphinx2-allphone \
+bin_PROGRAMS = adpow \
+	adrec \
 	cont_adseg \
 	cont_fileseg \
-	adpow \
-	adrec \
+	lm_fsg_test \
+	lm_fsg_test2 \
         lm3g2dmp \
 	raw2cep \
+	sphinx2-allphone \
+	sphinx2-batch \
+	sphinx2-continuous \
+	sphinx2-ptt \
 	sphinx2-server \
 	sphinx2-client
 
@@ -17,33 +19,37 @@ EXTRA_DIST = README \
 	clicore.h \
 	srvcore.h
 
+adpow_SOURCES = adpow.c
+
+adrec_SOURCES = adrec.c
+
+#cdcn_test_SOURCES = cdcn_test.c
+
+cont_adseg_SOURCES = cont_adseg.c
+
+cont_fileseg_SOURCES = cont_fileseg.c
+
+lm_fsg_test_SOURCES = lm_fsg_test.c
+
+lm_fsg_test2_SOURCES = lm_fsg_test2.c
+
+lm3g2dmp_SOURCES = lm3g2dmp.c
+
+raw2cep_SOURCES = raw2cep.c
+
+sphinx2_allphone_SOURCES = allphone-test.c
+
+sphinx2_batch_SOURCES = batch.c
+
 sphinx2_continuous_SOURCES =  tty-continuous.c
 
 sphinx2_ptt_SOURCES = tty-ptt.c
-
-sphinx2_batch_SOURCES = batch.c
 
 sphinx2_server_SOURCES = server.c \
 	srvcore.c
 
 sphinx2_client_SOURCES = client.c \
 	clicore.c
-
-sphinx2_allphone_SOURCES = allphone-test.c
-
-adrec_SOURCES = adrec.c
-
-adpow_SOURCES = adpow.c
-
-cont_adseg_SOURCES = cont_adseg.c
-
-cont_fileseg_SOURCES = cont_fileseg.c
-
-lm3g2dmp_SOURCES = lm3g2dmp.c
-
-raw2cep_SOURCES = raw2cep.c
-
-#cdcn_test_SOURCES = cdcn_test.c
 
 LDADD = $(top_builddir)/src/libsphinx2/libsphinx2.la \
 	$(top_builddir)/src/libsphinx2fe/libsphinx2fe.la \
