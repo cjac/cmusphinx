@@ -264,8 +264,6 @@ void kb_init (kb_t *kb)
 	     kb->n_lextree, lextree_n_node(kb->ugtree[0]));
     }
 
-
-
     /* Create filler lextrees */
     /* ARCHAN : only one filler tree is supposed to be build even for dynamic LMs */
     n = 0;
@@ -336,6 +334,7 @@ void kb_init (kb_t *kb)
 				cmd_ln_int32("-svq4svq"),
 				cmd_ln_float64("-subvqbeam"),
 				cmd_ln_float64("-ci_pbeam"),
+				cmd_ln_float64("-tighten_factor"),
 				cmd_ln_int32("-maxcdsenpf"),
 				kb->kbcore->mdef->n_ci_sen
 				);
