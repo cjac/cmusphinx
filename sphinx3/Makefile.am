@@ -44,11 +44,11 @@ test-full : test-decode test-align test-allphone test-livepretend test-astar tes
 test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
 
 
-tet-ep : test-ep-match
+test-ep : test-ep-match
 test-gausubvq : test-gausubvq-match
 
 test-livepretend:
-	./src/tests/regression/test_livepretend.sh
+	$(top_builddir)/src/tests/regression/test_livepretend.sh
 
 test-valgrind:
 	@echo "LIVEPRETEND TEST"
@@ -74,7 +74,7 @@ test-decode:
 	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl model/lm/an4/an4.ctl \
+	       -ctl $(top_builddir)/model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
 	       -agc none \
 	       -varnorm no \
@@ -108,7 +108,7 @@ test-decode_anytopo:
 	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl model/lm/an4/an4.ctl \
+	       -ctl $(top_builddir)/model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
 	       -agc none \
 	       -varnorm no \
@@ -139,7 +139,7 @@ test-align:
 	    -senmgau .cont. \
             -fdict $(top_srcdir)/model/lm/an4/filler.dict \
             -dict $(top_srcdir)/model/lm/an4/an4.dict \
-	    -ctl model/lm/an4/an4.ctl \
+	    -ctl $(top_builddir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -insent $(top_srcdir)/model/lm/an4/align.correct \
 	    -outsent $@.out \
@@ -148,10 +148,10 @@ test-align:
 	@if (diff test-align.out  $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out > /dev/null 2>&1); \
 	then echo "align output test PASSED"; else \
 	echo "align output test FAILED"; fi 
-	@if (diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.wdseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
+	@if (diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.wdseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
 	then echo "ALIGN wdseg test PASSED"; else \
 	echo "ALIGN wdseg test FAILED"; fi 
-	@if (diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
+	@if (diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
 	then echo "ALIGN phseg test PASSED"; else \
 	echo "ALIGN phseg test FAILED"; fi 
 
@@ -169,14 +169,14 @@ test-allphone:
 	    -topn 1000 \
 	    -beam 1e-80 \
 	    -senmgau .cont. \
-	    -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
+	    -ctl $(top_builddir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./ \
 	    -phlatdir ./
-	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
 	then echo "allphone allp test PASSED"; else \
 	echo "allphone allp test FAILED"; fi
-	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
 	then echo "allphone phlat test PASSED"; else \
 	echo "allphone phlat test FAILED"; fi
 
@@ -231,6 +231,7 @@ test-gausubvq-match:
 	then echo "gausubvq test PASSED"; else \
 	echo "gausubvq test FAILED"; fi 
 
+
 test-ep-match:
 	@echo "EP TEST"
 	$(LIBTOOL) --mode=execute src/programs/ep \
@@ -245,9 +246,9 @@ test-ep-match:
 	        -upperf 5400 \
 	        -lowerf 130 \
 	        -blocksize 262500 \
-	        -mean ./model/ep/means \
-	        -var ./model/ep/variances \
-	        -mixw ./model/ep/mixture_weights \
+	        -mean $(top_srcdir)/model/ep/means \
+	        -var $(top_srcdir)/model/ep/variances \
+	        -mixw $(top_srcdir)/model/ep/mixture_weights \
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" |perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' > $@.out	
@@ -256,6 +257,7 @@ test-ep-match:
 	then echo "EP test PASSED"; else \
 	echo "EP test FAILED"; fi 
 #	rm $@.out		
+
 
 test-wave2feat:
 	@echo "WAVE2FEAT TEST"
@@ -270,7 +272,7 @@ test-wave2feat:
 		 -upperf 5400 \
 		 -lowerf 130 \
 		 -blocksize 262500 \
-		 -i ./model/ep/chan3.raw \
+		 -i $(top_srcdir)/model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
 	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev/null 2>&1) ; \
@@ -282,7 +284,7 @@ test-cepview:
 	$(LIBTOOL) --mode=execute src/programs/cepview \
 	-i 13 \
 	-d 13 \
-	-f ./model/ep/chan3.mfc \
+	-f $(top_srcdir)/model/ep/chan3.mfc \
 	> $@.out
 	@if (diff $@.out $(top_srcdir)/model/ep/chan3.cepview > /dev/null 2>&1); \
 	then echo "Cepview test PASSED"; else \
