@@ -1,0 +1,73 @@
+# Microsoft Developer Studio Generated Dependency File, included by Sphinx.mak
+
+.\Sphinx.cpp : \
+	".\Sphinx.h"\
+	
+
+.\Sphinx.rc : \
+	".\Release\Sphinx.tlb"\
+	".\Sphinx.ico"\
+	".\SphinxCtl.bmp"\
+	
+
+.\SphinxArgfileUpdate.cpp : \
+	".\Sphinx.h"\
+	".\SphinxArgfileUpdate.h"\
+	
+
+.\SphinxBuildLm.cpp : \
+	".\Sphinx.h"\
+	".\SphinxBuildLm.h"\
+	
+
+.\SphinxConf.cpp : \
+	"..\..\sphinx2\include\cdcn.h"\
+	"..\..\sphinx2\include\fbs.h"\
+	"..\..\sphinx2\include\hash.h"\
+	"..\..\sphinx2\include\posixwin32.h"\
+	"..\..\sphinx2\include\s2types.h"\
+	"..\..\sphinx2\src\fbs\include\basic_types.h"\
+	"..\..\sphinx2\src\fbs\include\cache_lm.h"\
+	"..\..\sphinx2\src\fbs\include\dict.h"\
+	"..\..\sphinx2\src\fbs\include\kb_exports.h"\
+	"..\..\sphinx2\src\fbs\include\lm_3g.h"\
+	"..\..\sphinx2\src\fbs\include\lmclass.h"\
+	"..\..\sphinx2\src\fbs\include\msd.h"\
+	"..\..\sphinx2\src\fbs\include\search_const.h"\
+	".\Sphinx.h"\
+	".\SphinxConf.h"\
+	
+
+.\SphinxCtl.cpp : \
+	"..\..\sphinx2\include\ad.h"\
+	"..\..\sphinx2\include\cdcn.h"\
+	"..\..\sphinx2\include\cont_ad.h"\
+	"..\..\sphinx2\include\err.h"\
+	"..\..\sphinx2\include\fbs.h"\
+	"..\..\sphinx2\include\hash.h"\
+	"..\..\sphinx2\include\posixwin32.h"\
+	"..\..\sphinx2\include\s2types.h"\
+	"..\..\sphinx2\src\fbs\include\basic_types.h"\
+	"..\..\sphinx2\src\fbs\include\dict.h"\
+	"..\..\sphinx2\src\fbs\include\kb_exports.h"\
+	"..\..\sphinx2\src\fbs\include\lm_3g.h"\
+	"..\..\sphinx2\src\fbs\include\lmclass.h"\
+	"..\..\sphinx2\src\fbs\include\msd.h"\
+	"..\..\sphinx2\src\fbs\include\search_const.h"\
+	".\Sphinx.h"\
+	".\SphinxArgfileUpdate.h"\
+	".\SphinxBuildLm.h"\
+	".\SphinxConf.h"\
+	".\SphinxCtl.h"\
+	".\SphinxPpg.h"\
+	
+
+.\SphinxPpg.cpp : \
+	".\Sphinx.h"\
+	".\SphinxPpg.h"\
+	
+
+.\StdAfx.cpp : \
+	".\StdAfx.h"\
+	"c:\program files\microsoft visual studio\vc98\include\basetsd.h"\
+	

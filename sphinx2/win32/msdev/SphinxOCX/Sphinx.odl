@@ -1,0 +1,102 @@
+// Sphinx.odl : type library source for ActiveX Control project.
+
+// This file will be processed by the Make Type Library (mktyplib) tool to
+// produce the type library (Sphinx.tlb) that will become a resource in
+// Sphinx.ocx.
+
+#include <olectl.h>
+#include <idispids.h>
+
+[ uuid(C8BFB24D-466B-11D1-B8FC-006008165B1E), version(1.0),
+  helpfile("Sphinx.hlp"),
+  helpstring("Sphinx ActiveX Control module"),
+  control ]
+library SPHINXLib
+{
+	importlib(STDOLE_TLB);
+	importlib(STDTYPE_TLB);
+
+	//  Primary dispatch interface for CSphinxCtrl
+
+	[ uuid(C8BFB24E-466B-11D1-B8FC-006008165B1E),
+	  helpstring("Dispatch interface for Sphinx Control"), hidden ]
+	dispinterface _DSphinx
+	{
+		properties:
+			// NOTE - ClassWizard will maintain property information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_PROP(CSphinxCtrl)
+			[id(1)] BSTR ArgFile;
+			[id(2)] BSTR LogFile;
+			[id(3)] boolean IgnoreEmptyUtterance;
+			[id(DISPID_FONT), bindable] IFontDisp* Font;
+			[id(4)] BSTR LogDirectory;
+			[id(5)] long SamplesPerSecond;
+			[id(6)] BSTR RawLogDir;
+			[id(7)] long PartialResultInterval;
+			[id(8)] boolean RequirePartialResult;
+			[id(9)] BSTR UttIdPrefix;
+			[id(10)] long ConfThreshPercentage;
+			//}}AFX_ODL_PROP
+
+		methods:
+			// NOTE - ClassWizard will maintain method information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_METHOD(CSphinxCtrl)
+			[id(11)] long StartListening();
+			[id(12)] long StopListening();
+			[id(13)] long ToggleListening();
+			[id(14)] long SaveLattice(BSTR szFilename);
+			[id(15)] long Init();
+			[id(16)] BSTR GetDictWord(long lID);
+			[id(17)] long GetDictWordID(BSTR szWord);
+			[id(18)] VARIANT GetUttPscr();
+			[id(19)] long SetLM(BSTR lmName);
+			[id(20)] long GetUttSeqCount();
+			[id(21)] long ReadLM(BSTR szLmFile, BSTR szLmName, double lw, double uw, double wip);
+			[id(22)] long UpdateLM(BSTR szLmName);
+			[id(23)] long DeleteLM(BSTR szLmName);
+			[id(24)] void AddNewWord(BSTR lmName, BSTR className, BSTR newWord, BSTR pron);
+			//}}AFX_ODL_METHOD
+
+			[id(DISPID_ABOUTBOX)] void AboutBox();
+	};
+
+	//  Event dispatch interface for CSphinxCtrl
+
+	[ uuid(C8BFB24F-466B-11D1-B8FC-006008165B1E),
+	  helpstring("Event interface for Sphinx Control") ]
+	dispinterface _DSphinxEvents
+	{
+		properties:
+			//  Event interface has no properties
+
+		methods:
+			// NOTE - ClassWizard will maintain event information here.
+			//    Use extreme caution when editing this section.
+			//{{AFX_ODL_EVENT(CSphinxCtrl)
+			[id(1)] void UtteranceResult(BSTR Result);
+			[id(2)] void NewUtterance();
+			[id(3)] void EndUtterance();
+			[id(4)] void UtteranceError(long Error);
+			[id(5)] void StartListening();
+			[id(6)] void StopListening();
+			[id(7)] void UtterancePartialResult(BSTR Result);
+			[id(8)] void UtterancePower(long Power);
+			//}}AFX_ODL_EVENT
+	};
+
+	//  Class information for CSphinxCtrl
+
+	[ uuid(9CD6AB6F-7302-11D0-9553-0000F802BD8E),
+	  helpstring("Sphinx Control"), control ]
+	coclass Sphinx
+	{
+		[default] dispinterface _DSphinx;
+		[default, source] dispinterface _DSphinxEvents;
+	};
+
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};
