@@ -13,13 +13,13 @@ export PATH="/usr/local/bin:/bin:/usr/bin"
 MAILX=sendmail
 
 # Try to find mhmail
-TMPMAIL=`which mhmail 2> /dev/null`
+TMPMAIL=`which mhmail > /dev/null 2>&1`
 if test z${TMPMAIL} == z; then
 # If we failed, try mailx
-    TMPMAIL=`which mailx 2> /dev/null`
+    TMPMAIL=`which mailx > /dev/null 2>&1`
     if test z${TMPMAIL} == z; then
 # If we failed again, try mail
-	TMPMAIL=`which mail 2> /dev/null`
+	TMPMAIL=`which mail > /dev/null 2>&1`
     fi
 fi
 
@@ -34,10 +34,10 @@ S4LIST='cmusphinx-commits@lists.sourceforge.net'
 STLIST='archan egouvea yitao dhuggins'
 
 # Try to find gmake, supposedly the GNU make
-MAKE=`which gmake 2> /dev/null`
+MAKE=`which gmake > /dev/null 2>&1`
 if test z${MAKE} == z; then
 # If we failed, try make
-    MAKE=`which make 2> /dev/null`
+    MAKE=`which make > /dev/null 2>&1`
     if test z${MAKE} == z; then
 # If we failed again, bail out: we cannot make the project!
     ${MAILX} -s "Make not found in system `hostname`" ${S3LIST}
