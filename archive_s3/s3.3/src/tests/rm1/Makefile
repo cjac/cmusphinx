@@ -71,9 +71,9 @@ rm1_flat_unigram:
 	rm -f gmake-rm1_flat_unigram$(MODEAFFIX).results
 	/bin/cp ARGS.rm1 ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-lw 8" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-120" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-40" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-lw 7" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-140" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-80" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
 	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
 
@@ -82,7 +82,7 @@ rm1_unigram:
 	rm -f gmake-rm1_unigram$(MODEAFFIX).results
 	/bin/cp ARGS.rm1 ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-lm RM.2845.unigram.arpa.DMP" >> ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-lw 13" >> ARGS.rm1_unigram$(MODEAFFIX)
+	/bin/echo "-lw 10" >> ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-beam 1e-120" >> ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-60" >> ARGS.rm1_unigram$(MODEAFFIX)
 	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_unigram$(MODEAFFIX)
@@ -93,8 +93,8 @@ rm1_bigram:
 	rm -f gmake-rm1_bigram$(MODEAFFIX).results
 	/bin/cp ARGS.rm1 ARGS.rm1_bigram$(MODEAFFIX)
 	/bin/echo "-lm RM.2845.bigram.arpa.DMP" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-lw 17" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-140" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-lw 13" >> ARGS.rm1_bigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-120" >> ARGS.rm1_bigram$(MODEAFFIX)
 	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_bigram$(MODEAFFIX)
 	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_bigram$(MODEAFFIX)
 	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
@@ -103,9 +103,9 @@ rm1_trigram:
 	rm -f gmake-rm1_trigram$(MODEAFFIX).results
 	/bin/cp ARGS.rm1 ARGS.rm1_trigram$(MODEAFFIX)
 	/bin/echo "-lm RM.2845.trigram.arpa.DMP" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-lw 27" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-160" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-120" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-lw 14" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-beam 1e-140" >> ARGS.rm1_trigram$(MODEAFFIX)
+	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_trigram$(MODEAFFIX)
 	/bin/echo "-ctl $(CTLFILE)" >> ARGS.rm1_trigram$(MODEAFFIX)
 	$(BINDIR)/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
 
