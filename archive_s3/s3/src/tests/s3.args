@@ -1,0 +1,65 @@
+INFO: ../main.c(1433): Default argument file: s3decode.arg
+INFO: ../main.c(1363): Reading arguments from s3decode.arg
+[Switch]      [Default] [Description]
+-logbase      1.0001    Base in which all log values calculated
+-mdeffn                 Model definition input file: triphone -> senones/tmat tying
+-tmatfn                 Transition matrix input file
+-meanfn                 Mixture gaussian codebooks mean parameters input file
+-varfn                  Mixture gaussian codebooks variance parameters input file
+-senmgaufn    .cont.    Senone to mixture-gaussian mapping file (or .semi. or .cont.)
+-mixwfn                 Senone mixture weights parameters input file
+-lambdafn               Interpolation weights (CD/CI senone) parameters input file
+-tpfloor      0.0001    Triphone state transition probability floor applied to -tmatfn file
+-varfloor     0.0001    Codebook variance floor applied to -varfn file
+-mwfloor      0.0000001 Codebook mixture weight floor applied to -mixwfn file
+-agc          max       AGC.  max: C0 -= max(C0) in current utt; none: no AGC
+-cmn          current   Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN
+-varnorm      no        Cepstral var norm. yes: C[0..n-1] /= stddev(C[0..n-1]); no = no norm */
+-feat         s2_4x     Feature stream:
+				s2_4x: Sphinx-II type 4 streams, 12cep, 24dcep, 3pow, 12ddcep
+				s3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep
+				1s_12c_12d_3p_12dd: Single stream, 12cep+12dcep+3pow+12ddcep
+				1s_c: Single stream, given input vector only
+				1s_c_d: Feature + Deltas only
+				1s_c_dd: Feature + Double deltas only
+				1s_c_d_dd: Feature + Deltas + Double deltas
+				1s_c_wd_dd: Feature cep+windowed delcep+deldel 
+			1s_c_d_ld_dd: Feature + delta + longter delta + doubledelta
+-ceplen       13        Length of input feature vector
+-dictfn                 Main pronunciation dictionary (lexicon) input file
+-fdictfn                Silence and filler (noise) word pronunciation dictionary input file
+-lmfn                   Language model input file (precompiled .DMP file)
+-langwt       9.5       Language weight: empirical exponent applied to LM probabilty
+-ugwt         0.7       LM unigram weight: unigram probs interpolated with uniform distribution with this weight
+-bestpath     0         Whether to run bestpath DAG search after forward Viterbi pass
+-min_endfr    3         Nodes ignored during search if they persist for fewer than so many end frames
+-dagfudge     2         (0..2); 1 or 2: add edge if endframe == startframe; 2: if start == end-1
+-bestpathlw             Language weight for bestpath DAG search (default: same as -langwt)
+-inspen       0.65      Word insertion penalty
+-silpen       0.1       Language model 'probability' of silence word
+-noisepen     0.05      Language model 'probability' of each non-silence filler word
+-fillpenfn              Filler word probabilities input file (used in place of -silpen and -noisepen)
+-ctlfn                  Input control file listing utterances to be decoded
+-ctloffset    0         No. of utterances at the beginning of -ctlfn file to be skipped
+-ctlcount               No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF
+-cepdir       .         Directory for utterances in -ctlfn file (if relative paths specified).
+-cepext       mfc       File extension appended to utterances listed in -ctlfn file
+-mllrctlfn              Input control file listing MLLR input data; parallel to -ctlfn argument file
+-topn         4         No. of top scoring densities computed in each mixture gaussian codebook
+-beam         1e-64     Main pruning beam applied to triphones in forward search
+-nwbeam       1e-27     Pruning beam applied in forward search upon word exit
+-phonepen     1.0       Penalty applied for each phone transition
+-tracewhmm              Word whose active HMMs are to be traced (for debugging/diagnosis/analysis)
+-hmmdumpsf              Starting frame for dumping all active HMMs (for debugging/diagnosis/analysis)
+-worddumpsf             Starting frame for dumping all active words (for debugging/diagnosis/analysis)
+-inlatdir               Input word-lattice directory with per-utt files for restricting words searched
+-inlatwin     50        Input word-lattice words starting within +/- <this argument> of current frame considered during search
+-outlatdir              Directory for writing word lattices (one file/utterance); optional ,NODES suffix to write only the nodes
+-latext       lat.gz    Word-lattice filename extension (.gz or .Z extension for compression)
+-bestscoredir           Directory for writing best score/frame (used to set beamwidth; one file/utterance)
+-matchfn                Recognition result output file (pre-1995 NIST format) (optional ,EXACT suffix)
+-matchsegfn             Exact recognition result file with word segmentations and scores
+-logfn                  Log file (default stdout/stderr)
+-backtrace    1         Whether detailed backtrace information (word segmentation/scores) shown in log
+-bptblsize    32767     Number of BPtable entries to allocate initially (grown as necessary)
+-bptbldump    0         Whether BPTable should be dumped to log output (for debugging)
