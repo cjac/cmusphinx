@@ -35,7 +35,7 @@ test-simple : test-livepretend
 
 test: test-simple
 
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep
 
 test-livepretend:
 	@echo "LIVEPRETEND TEST"
@@ -185,6 +185,23 @@ test-gausubvq:
 #	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
 #	rm tmp.out subvq.out
 
+test-ep :
+	@echo "EP TEST"
+	$(LIBTOOL) --mode=execute src/programs/ep \
+		-i $(top_srcdir)/ep_model/chan3.raw  \
+	        -srate 11025 \
+	        -frate 105 \
+	        -wlen 0.024 \
+	        -alpha 0.97 \
+	        -ncep 13 \
+	        -nfft 512 \
+	        -nfilt 36 \
+ 	        -upperf 5400 \
+	        -lowerf 130 \
+	        -blocksize 262500 \
+	        -mean ./ep_model/means \
+	        -var ./ep_model/variances \
+	        -mixw ./ep_model/mixture_weights 
 
 
 

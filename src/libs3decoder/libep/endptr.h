@@ -1,0 +1,105 @@
+ /* ====================================================================
+ * Copyright (c) 2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
+/*************************************************
+ * CMU CALO Speech Project
+ *
+ * Copyright (c) 2004 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ * **********************************************
+ * 
+ * 11-Jul-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
+ * Created
+ */
+
+#include "fe.h"
+#include "classify.h"
+
+#ifdef __cplusplus
+ extern "C" {
+#endif 
+
+#ifndef __END_POINTER__
+#define __END_POINTER__
+
+/* Struct to hold the end-pointer parameters */
+
+typedef struct{
+        int     status;                 // current status of recording
+        int     leader;                 // pointer to the start of the utterance to be passed to decoder
+        int     spbegin;                // pointer to the start of speech
+        int     spend;                  // pointer to the end of speech
+        int     trailer;                // pointer to the end of the utterance passed to the decoder
+	int 	utt_counter;		// to count the number of utterances in a meeting
+
+        int     PAD_F_BEFORE;           // to pad this much of frames before spbegin
+        int     PAD_F_AFTER;            // to pad this much of frames after spend  
+        int     UTT_F_START;            // to announce STAT_SPEECH after this much of speech frames
+        int     UTT_F_END;              // to end an utterance after this much of non-speech frames
+        int     UTT_F_CANCEL;           // to cancel an utterance after this much of non-speech frames
+
+} endpointer_t;
+
+
+/* Status of the recording */
+
+#define STAT_OTHER      0               // non-speech period, noise, silence, or secondary speech
+#define STAT_BEGIN      1               // beginning of speech period, starts with first speech frame
+#define STAT_SPEECH     2               // inter-speech period, once
+#define STAT_END        3               // end of speech period
+#define STAT_CANCEL     4               // non-speech frames while an utterances is in STAT_BEGIN
+
+/* End-Pointing parameters */
+
+#define PAD_T_BEFORE    0.15    /* to pad this much of seconds before spbegin*/
+#define PAD_T_AFTER     0.2    // to pad this much of seconds after spend
+#define UTT_T_START     0.08    // to announce STAT_SPEECH after this much of speech seconds
+#define UTT_T_END       0.30    // to end an utterance after this much of non-speech seconds
+#define UTT_T_CANCEL    0.05    // to cancel an utterance after this much of non-speech seconds
+
+   /*#define PAD_T_AFTER     0.15    // to pad this much of seconds after spend
+     #define UTT_T_END       0.20    // to end an utterance after this much of non-speech seconds 
+     #define UTT_T_CANCEL    0.08    // to cancel an utterance after this much of non-speech seconds */
+
+
+
+endpointer_t * endpointer_initialize(fe_t *FE);
+void endpointer_free(endpointer_t *ENDPTR);
+void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, int class);
+float endptr_frame2secs_beg (fe_t *FE, int frame);
+float endptr_frame2secs_end (fe_t *FE, int frame);
+
+#endif /*__END_POINTER__*/
+
+#ifdef __cplusplus
+ }
+#endif 
+
