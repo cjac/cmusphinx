@@ -9,6 +9,9 @@
 -mixw	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/mixture_weights 
 -tmat	/lab/speech/sphinx3j/data/connected_digits/wdclean.cd_continuous_8gau/transition_matrices
 
+-upperf	3600
+-lowerf	130
+-nfilt	32
 -agc	none
 -varnorm	no
 -cmn	current
