@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -298,9 +298,13 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.6  2004/07/27  21:53:05  yitao
- * weird.  i only changed kb.c to fix a small bug.  why so many changes?
+ * Revision 1.7  2004/09/13  08:13:26  arthchan2003
+ * update copyright notice from 200x to 2004
  * 
+ * Revision 1.6  2004/07/27 21:53:05  yitao
+ *
+ * weird.  i only changed kb.c to fix a small bug.  why so many changes?
+ *
  * Revision 1.5  2004/07/21 06:12:47  arthchan2003
  * add precompiler directive __cplusplus to all header files
  *

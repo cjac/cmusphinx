@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.2  2004/08/29  02:39:54  arthchan2003
- * New data structure and routines for enable floating point version of GMM computation, I also did some fixes that allow sphinx3 be portable to Mac OSX. I don't think this snapshot is very stable though.  In general, we need more unit test in sphinx3.
+ * Revision 1.3  2004/09/13  08:13:14  arthchan2003
+ * update copyright notice from 200x to 2004
  * 
+ * Revision 1.2  2004/08/29 02:39:54  arthchan2003
+ * New data structure and routines for enable floating point version of GMM computation, I also did some fixes that allow sphinx3 be portable to Mac OSX. I don't think this snapshot is very stable though.  In general, we need more unit test in sphinx3.
+ *
  * Revision 1.1  2004/08/09 00:17:11  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *
