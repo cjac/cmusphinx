@@ -1,2 +1,7 @@
-EXTRA_DIST = README.bin  README.lib  phoneset
+docdir = $(prefix)/share/sphinx2/doc
+
+doc_DATA = @docdata@
+
+EXTRA_DIST = @docdata@
+
 

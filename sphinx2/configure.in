@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx2,0.1)
+AM_INIT_AUTOMAKE(sphinx2,0.2)
 AM_CONFIG_HEADER(config.h)
 
 AC_ISC_POSIX
@@ -12,15 +12,19 @@ AC_HEADER_STDC
 
 AC_TYPE_SIGNAL
 
-hmmdata=`ls -1 $srcdir/model/hmm/4k | egrep -v '(Makefile|CVS)'`
-lmdata=`ls -1 $srcdir/model/lm/turtle/ | egrep -v '(Makefile|CVS)'`
+hmmdata=`ls -1 $srcdir/model/hmm/6k | egrep -v '(Makefile|CVS)'`
 hmmdata=`echo $hmmdata`
+
+lmdata=`ls -1 $srcdir/model/lm/turtle/ | egrep -v '(Makefile|CVS)'`
 lmdata=`echo $lmdata`
+
+docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
+docdata=`echo $docdata`
 
 myarch=`uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 
 if test "x$myarch" = "xi386_linux"; then
-	echo "boo!"
+	# echo "boo!"
 	archfiles="ad_i386_linux.lo cont_ad_base.lo mulaw_base.lo"
 else
 	if test "x$myarch" = "xalpha"; then
@@ -52,6 +56,7 @@ AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
 AC_SUBST(hmmdata)
 AC_SUBST(lmdata)
+AC_SUBST(docdata)
 AC_SUBST(archfiles)
 AC_SUBST(LIBOBJS)
 AC_SUBST(PERL)
@@ -68,24 +73,31 @@ src/libsphinx2/include/Makefile
 src/examples/Makefile
 model/Makefile
 model/hmm/Makefile
-model/hmm/4k/Makefile
+model/hmm/6k/Makefile
 model/lm/Makefile
 model/lm/turtle/Makefile
 doc/Makefile
 scripts/Makefile
-scripts/sphinx2-demo
 scripts/attila-sphinx2.pl
 scripts/poe-sphinx-server-demo
 scripts/allphone-test.csh
 scripts/batch.csh
+scripts/sphinx2-demo
 scripts/sphinx2-simple
-scripts/sphinx2-test
 scripts/sphinx2-phone
+scripts/sphinx2-test
+scripts/stress2sphinx
+scripts/sphinx2-align
 ])
 
-chmod +x scripts/sphinx2-demo
 chmod +x scripts/attila-sphinx2.pl
 chmod +x scripts/poe-sphinx-server-demo
 chmod +x scripts/allphone-test.csh
 chmod +x scripts/batch.csh
+chmod +x scripts/sphinx2-demo
 chmod +x scripts/sphinx2-simple
+chmod +x scripts/sphinx2-test
+chmod +x scripts/sphinx2-phone
+chmod +x scripts/stress2sphinx
+chmod +x scripts/sphinx2-align
+

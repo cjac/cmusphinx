@@ -6,3 +6,4 @@ SUBDIRS = src \
 
 EXTRA_DIST = sphinx2.spec \
 		    autogen.sh
+

@@ -76,7 +76,7 @@ closedir DIR;
 
 my $cepdir    = "$task/ctl";
 
-my $modeldir     = "$s2root/model/hmm/4k";
+my $modeldir     = "$s2root/model/hmm/6k";
 my $sendumpfile  = "$modeldir/sendump";
 
 $phonefile       = "$modeldir/phone";

@@ -1,1 +1,1 @@
-SUBDIRS = 4k
+SUBDIRS = 6k
