@@ -1,5 +1,5 @@
 # Note that this is NOT a relocatable package
-%define ver      0.1.1
+%define ver      0.4
 %define rel      0
 %define prefix   /usr
 
@@ -65,7 +65,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{prefix}/bin/*
 %{prefix}/share/sphinx2/model/lm/turtle/*
-%{prefix}/share/sphinx2/model/hmm/4k/*
+%{prefix}/share/sphinx2/model/hmm/6k/*
 
 %doc AUTHORS
 %doc COPYING

@@ -6,6 +6,25 @@ SUBDIRS = src \
 
 EXTRA_DIST = sphinx2.spec \
 		autogen.sh \
+	win32/batch/sphinx2-align.bat \
+	win32/batch/sphinx2-phone.bat \
+	win32/batch/sphinx2-simple.bat \
+	win32/batch/sphinx2-test.bat \
+	win32/msdev/SphinxExamples/SphinxExamples.dsw \
+	win32/msdev/SphinxExamples/adpow/adpow.dsp \
+	win32/msdev/SphinxExamples/adrec/adrec.dsp \
+	win32/msdev/SphinxExamples/adrec/adrec.dsp \
+	win32/msdev/SphinxExamples/cont_adseg/cont_adseg.dsp \
+	win32/msdev/SphinxExamples/cont_fileseg/cont_fileseg.dsp \
+	win32/msdev/SphinxExamples/lm3g2dmp/lm3g2dmp.dsp \
+	win32/msdev/SphinxExamples/raw2cep/raw2cep.dsp \
+	win32/msdev/SphinxExamples/sphinx2_allphone/sphinx2_allphone.dsp \
+	win32/msdev/SphinxExamples/sphinx2_batch/sphinx2_batch.dsp \
+	win32/msdev/SphinxExamples/sphinx2_client/sphinx2_client.dsp \
+	win32/msdev/SphinxExamples/sphinx2_continuous/sphinx2_continuous.dsp \
+	win32/msdev/SphinxExamples/sphinx2_ptt/sphinx2_ptt.dsp \
+	win32/msdev/SphinxExamples/sphinx2_client/sphinx2_client.dsp \
+	win32/msdev/SphinxExamples/sphinx2_server/sphinx2_server.dsp \
         win32/msdev/SphinxOCX/ReadMe.txt \
         win32/msdev/SphinxOCX/Sphinx.cpp \
         win32/msdev/SphinxOCX/Sphinx.def \
@@ -40,14 +59,3 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/libsphinx2fe/Debug \
         win32/msdev/libsphinx2fe/Release \
         win32/msdev/libsphinx2fe/libsphinx2fe.dsp
-
-## these files were missing
-#        win32/msdev/SphinxOCX/Sphinx.aps \
-#        win32/msdev/SphinxOCX/Sphinx.clw \
-#        win32/msdev/SphinxOCX/Sphinx.mak \
-#        win32/msdev/SphinxOCX/Sphinx.ncb \
-#        win32/msdev/SphinxOCX/Sphinx.opt \
-#        win32/msdev/SphinxOCX/Sphinx.plg \
-#        win32/msdev/libsphinx2/libsphinx2.opt \
-#        win32/msdev/libsphinx2/libsphinx2.plg \
-
