@@ -54,7 +54,13 @@ if test "x$ad_files" = "x"; then
 			ad_libs="-laudio"
 			ad_backend="AD_BACKEND_IRIX"
 			;;
-		*-*-sunos4*|*-*-solaris*)
+		*-*-sunos4*)
+			ad_files="ad_sunos.lo audio_utils_sunos.lo"
+			ad_libs="-lm -lnsl -lsocket -ldl"
+			ad_backend="AD_BACKEND_SUNOS"
+			CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DSUN4"
+			;;
+		*-*-solaris*)
 			ad_files="ad_sunos.lo audio_utils_sunos.lo"
 			ad_libs="-lm -lnsl -lsocket -ldl"
 			ad_backend="AD_BACKEND_SUNOS"

@@ -34,6 +34,9 @@
  * audio_utils.h -- From Bob Brennan for Sun audio utilities.
  * 
  * HISTORY
+ *
+ * 07-Dec-01    K A Lenzo (lenzo@cs.cmu.edu) at Carnegie Mellon University
+ *              ifdefed around the sun4/solaris header location diff.
  * 
  * 15-Jul-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		sys/audioio.h and sys/filio.h included following Alex 
@@ -44,9 +47,13 @@
  */
 
 
+#ifdef SUN4
+#include <sun/audioio.h>
+#include <sun/filio.h>
+#else
 #include <sys/audioio.h>
 #include <sys/filio.h>
-
+#endif
 
 int	audioOpen(int rate);
 void	audioPause(void);
