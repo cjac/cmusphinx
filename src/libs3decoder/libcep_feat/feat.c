@@ -804,44 +804,45 @@ void feat_print (feat_t *fcb, float32 ***feat, int32 nfr, FILE *fp)
 }
 
 
-int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext, int32 sf, int32 ef, float32 ***feat,
-		       int32 maxfr)
+int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext, 
+		       int32 sf, int32 ef, float32 ***feat, int32 maxfr)
 {
     char path[16384];
     int32 win, nfr;
-    int32 i, k;
+    int32 i, k, file_length, cepext_length;
     float32 **mfc;
 
-    
+    assert(cepext);
+
     if (fcb->cepsize <= 0) {
 	E_ERROR("Bad cepsize: %d\n", fcb->cepsize);
 	return -1;
     }
     
-    /* Create mfc filename, combining file, dir and extension (.mfc) if necessary */
-    k = strlen(file);
+    /* 
+     * Create mfc filename, combining file, dir and extension if
+     * necessary
+     */
 
-#if 0
-    if ((k > 4) && (strcmp (file+k-4, ".mfc") == 0)) {	/* Hack!! Hardwired .mfc extension */
-#endif
-      /*20041212: ARCHAN fixed the mfc hacks. */
-    if ((k > 4) && (strcmp (file+k-4, ".mfc") == 0)) { 
-	if (dir && (file[0] != '/'))
-	    sprintf (path, "%s/%s", dir, file);
-	else
-	    strcpy (path, file);
+    /*
+     * First we decide about the path. If dir is defined, then use
+     * it. Otherwise. assume the filename already contains the path.
+     */
+
+    if (dir != NULL) {
+      sprintf (path, "%s/%s", dir, file);
     } else {
-      if (dir && (file[0] != '/')){
-	if(cepext!=NULL)
-	  sprintf (path, "%s/%s%s", dir, file,cepext);
-	else
-	  sprintf (path, "%s/%s.%s", dir, file,"mfc");
-      }else{
-	if(cepext!=NULL)
-	  sprintf (path, "%s%s", file,cepext);
-	else
-	  sprintf (path, "%s.%s", file,"mfc");
-      }
+      strcpy (path, file);
+    }
+
+    /*
+     * Now include the cepext, if it's not already part of the filename.
+     */
+    file_length = strlen(file);
+    cepext_length = strlen(cepext);
+    if ((file_length <= cepext_length) 
+	|| (strcmp (file + file_length - cepext_length, cepext) != 0)) { 
+	    strcat (path, cepext);
     }
     
     win = feat_window_size(fcb);

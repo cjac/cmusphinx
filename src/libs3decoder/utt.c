@@ -575,7 +575,8 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   pheurtype = cmd_ln_int32 ("-pheurtype");
   
   /* Read mfc file and build feature vectors for entire utterance */
-  kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
+  kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, 
+			    cmd_ln_str("-cepdir"), cmd_ln_str("-cepext")
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
   
   for (i = 0; i < kb->hmm_hist_bins; i++)
@@ -856,8 +857,9 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 
   
   /* Read mfc file and build feature vectors for entire utterance */
-  total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
-			    sf, ef, kb->feat, S3_MAX_FRAMES);
+  total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, 
+				cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
+				sf, ef, kb->feat, S3_MAX_FRAMES);
 
   utt_begin (kb);
   
