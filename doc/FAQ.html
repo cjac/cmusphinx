@@ -43,7 +43,7 @@ models</a>
 <li><a href="#20">Training context-dependent models with untied states<a>
 <li><a href="#21">Acoustic likelihoods and scores<a>
 <li><a href="#22">Decoding problems<a>
-
+<li><a href="#23">(Added at 20040910 by Arthur Chan) Why Sphinx III's performance is poorer than recognizer X? <a>
 </ol>
 
 
@@ -1574,6 +1574,36 @@ to recognize are not distorted or clipped due to hardware problems in your
 setup. Check out especially the utterances which are really badly recognized 
 by actually looking at a display of the speech signals. In fact, this is the
 first thing that you must check.
+
+<hr>
+<a NAME="23"></a>
+<TABLE width="100%" bgcolor="#ffffff">
+<td>WHY SPHINX III'S PERFORMANCE IS POORER THAN RECOGNIZER X?</td>
+</table>
+<p>
+Q<font color="#483d8b">.
+Sphinx III's default acoustic and language models appear to be not
+able to take care of tasks like dictation.  Why?  </font>
+<p>
+
+<p> 
+
+(By Arthur Chan at 20040910) Design of a speech recognizer is largely
+affected by the goal of the recognizer.  In the case of CMU Sphinx,
+most of the effort were driven by DARPA research in 90s.  The
+broadcast news models were trained in the so called eval97 task.
+Where transcription are required to be done for broadcast news.  
+
+The above explains why the model don't really work well for task like
+dictation.  The data simply just for the use of dictation.
+
+Commercial speech application also requires a lot of specific tuning
+and application engineering. For example, most commercial dictation
+engine use more well-processed training material to train the acoustic
+model and language model. They also apply techniques such as speaker
+adaptation.  CMU was very unfortunately don't have enough resource to
+carry out these researches. 
+</p> 
 
 <hr>
 <a NAME="17"></a>
