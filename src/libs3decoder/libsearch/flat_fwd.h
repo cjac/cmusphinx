@@ -54,7 +54,9 @@
  End modification by BHIKSHA */
 
 
-/*
+/** \file flat_fwd.h
+   \brief (Currently not opened to public) Header for forward search for flat lexicon
+
  * SOME ASSUMPTIONS
  *   - All phones (ciphones and triphones) have same HMM topology with n_state states.
  *   - Initial state = state 0; final state = state n_state-1.
@@ -63,7 +65,8 @@
  */
 
 
-/*
+
+/**
  * Triphone information for all word hmm modelling broken up into 4 cases:
  * 	within-word triphones
  * 	left-context cross-word triphones (multi-phone words)
@@ -72,7 +75,7 @@
  * These 4 cases captured by the following data structures.
  */
 
-/*
+/**
  * First, the within word triphone models.  wwpid[w] = list of triphone pronunciations
  * for word w.
  * Since left and right extremes require cross-word modelling (see below), wwpid[w][0]
@@ -86,7 +89,7 @@ typedef struct {
     int32    n_pid;	/* #Unique pid in above, compressed pid list */
 } xwdpid_t;
 
-/*
+/**
  * Word HMM instance: the basic structure searched during recognition.
  * 
  * whmm[w] = head of list of all active HMM for word w:
@@ -114,6 +117,8 @@ typedef struct whmm_s {
 				   index into rcpid[][].pid or lrcpid[][].pid */
     int32      active;		/* Whether active in current frame */
 } whmm_t;
+
+
 
 int32 fwd_frame (int32 *senscr);
 void fwd_sen_active (int8 *senlist, int32 n_sen);

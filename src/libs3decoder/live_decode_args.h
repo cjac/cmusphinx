@@ -63,6 +63,9 @@ he library.
 
 #include <libutil/libutil.h>
 
+/** \file live_decode_args.h
+    \brief The argument file for livedecode and livepretend.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif

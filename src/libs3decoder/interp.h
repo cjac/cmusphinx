@@ -57,7 +57,16 @@
 #include <s3types.h>
 #include "bio.h"
 
+/** \file interp.h
+ * \brief Interpolation of CD/CI senones. 
+ */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+  /**
+   * Wrapper structure of CD/CI interpolation
+   */
 typedef struct {
     int32 n_sen;	/* #senones */
     struct interp_wt_s {
@@ -67,14 +76,14 @@ typedef struct {
 } interp_t;
 
 
-/*
+/**
  * Read a set of CD/CI senone interpolation weights from the given file.
  * Return value: pointer to interpolation structure created.  Caller MUST NOT change its
  * contents.
  */
 interp_t *interp_init (char *interpfile);	/* In: interpolation weights file */
 
-/*
+/**
  * Interpolate a single given CD senone with the given CI senone score.
  * Return value: 0 if successful, -1 otherwise.
  */
@@ -83,7 +92,7 @@ int32 interp_cd_ci (interp_t *ip,	/* In: Interpolation weights parameters */
 		    int32 cd,		/* In: see senscr above */
 		    int32 ci);		/* In: see senscr above */
 
-/*
+/**
  * Interpolate each CD senone with its corresponding CI senone score.
  * Return value: 0 if successful, -1 otherwise.
  */
@@ -92,5 +101,9 @@ int32 interp_all (interp_t *ip,		/* In: Interpolation weights parameters */
 					   senscr[cimap[cd]], for cd >= n_ci_sen */
 		  s3senid_t *cimap,	/* In: see senscr above */
 		  int32 n_ci_sen);	/* In: see senscr above */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -57,7 +57,11 @@
 #include "logs3.h"
 
 
-/*
+  /** \file dict2pid.c
+   * \brief Implementation of dict2pid
+   */
+
+/**
  * Build a glist of triphone senone-sequence IDs (ssids) derivable from [b][r] at the word
  * begin position.  If no triphone found in mdef, include the ssid for basephone b.
  * Return the generated glist.
@@ -84,7 +88,7 @@ static glist_t ldiph_comsseq (mdef_t *mdef, int32 b, int32 r)
 }
 
 
-/*
+/**
  * Build a glist of triphone senone-sequence IDs (ssids) derivable from [r][b] at the word
  * end position.  If no triphone found in mdef, include the ssid for basephone b.
  * Return the generated glist.
@@ -111,7 +115,7 @@ static glist_t rdiph_comsseq (mdef_t *mdef, int32 b, int32 l)
 }
 
 
-/*
+/**
  * Build a glist of triphone senone-sequence IDs (ssids) derivable from [b] as a single
  * phone word.  If no triphone found in mdef, include the ssid for basephone b.
  * Return the generated glist.
@@ -140,7 +144,7 @@ static glist_t single_comsseq (mdef_t *mdef, int32 b)
 }
 
 
-/*
+/**
  * Build a glist of triphone senone-sequence IDs (ssids) derivable from [b] as a single
  * phone word, with a given left context l.  If no triphone found in mdef, include the ssid
  * for basephone b.  Return the generated glist.
@@ -167,7 +171,7 @@ static glist_t single_lc_comsseq (mdef_t *mdef, int32 b, int32 l)
 }
 
 
-/*
+/**
  * Convert the glist of ssids to a composite sseq id.  Return the composite ID.
  */
 static s3ssid_t ssidlist2comsseq (glist_t g, mdef_t *mdef, dict2pid_t *dict2pid,

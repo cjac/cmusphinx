@@ -58,41 +58,45 @@
 
 #include <s3types.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/*
+/** \file logs3.h
+ * \brief s3 log table implementation. 
+ *
  * In evaluating HMM models, probability values are often kept in log domain,
  * to avoid overflow.  Furthermore, to enable these logprob values to be held
  * in int32 variables without significant loss of precision, a logbase of
  * (1+epsilon), epsilon<<1, is used.  This module maintains this logbase, and
  * other functions to support it.
+ *
+ *
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
-/* Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
+
+  /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
 int32 logs3_init (float64 base);
 
-/* Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
+  /** Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
 int32 logs3_add (int32 logs3p, int32 logs3q);
 
-/* Given p, return logs3(p) */
+  /** Given p, return logs3(p) */
 int32 logs3 (float64 p);
 
-/* Given log(p), return logs3(p) */
+  /** Given log(p), return logs3(p) */
 int32 log_to_logs3 (float64 logp);
 
-/* Return the multiplication factor used for converting log values to logs3 */
+  /** Return the multiplication factor used for converting log values to logs3 */
 float64 log_to_logs3_factor( void );
 
-/* Given logs3(p), return log(p) */
+  /** Given logs3(p), return log(p) */
 float64 logs3_to_log (int32 logs3p);
 
-/* Given logs3(p), return p */
+  /** Given logs3(p), return p */
 float64 logs3_to_p (int32 logs3p);
 
-/* Given log10(p), return logs3(p) */
+  /** Given log10(p), return logs3(p) */
 int32 log10_to_logs3 (float64 log10p);
 
 /* RAH, free the add_tbl if still allocated */

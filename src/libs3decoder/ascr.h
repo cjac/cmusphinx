@@ -62,8 +62,8 @@ extern "C" {
 #endif
 
   /**
- * Structure to hold senone scores (ordinary and composite), in one frame.
- */
+   * Structure to hold senone scores (ordinary and composite), in one frame.
+   */
 
 typedef struct {
     int32 *sen;		/* Senone scores in current frame */

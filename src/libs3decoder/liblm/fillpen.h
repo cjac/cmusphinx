@@ -56,6 +56,10 @@
 
 #include <s3types.h>
 
+/** \file fillpen.h
+   \brief Filler penalties, penalties for words that do not show up in
+ * the main LM.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -64,16 +68,16 @@ extern "C" {
 
 
 typedef struct {
-    dict_t *dict;	/* Reference dictionary for which the filler word probabilities
+    dict_t *dict;	/** Reference dictionary for which the filler word probabilities
 			   are maintained in this structure */
-    int32 *prob;	/* Filler word probability (in logs3 space, after
+    int32 *prob;	/** Filler word probability (in logs3 space, after
 			   langwt and inspen application) */
-    float64 lw;		/* Language weight */
-    float64 wip;	/* Word insertion penalty */
+    float64 lw;		/** Language weight */
+    float64 wip;	/** Word insertion penalty */
 } fillpen_t;
 
 
-/*
+  /**
  * Initialize filler probabilities (penalties, whatever) module and return a pointer to the
  * structure created.  Filler word probabilities are simple unigram probabilities.  Here is an
  * example of such a file (one entry per line; a word and a probability):
@@ -85,19 +89,19 @@ typedef struct {
  * filler words get fillprob.  As with the trigram LM, the resulting log-probabilities are
  * multiplied by a language weight and finally a word insertion penalty is tacked on.
  */
-fillpen_t *fillpen_init (dict_t *dict,		/* In: Dictionary containing filler words */
-			 char *file,		/* In: Filler word probabilities file, if any */
-			 float64 silprob,	/* In: Default probability for silence word */
-			 float64 fillprob,	/* In: Default probability for non-silence filler
+fillpen_t *fillpen_init (dict_t *dict,		/** In: Dictionary containing filler words */
+			 char *file,		/** In: Filler word probabilities file, if any */
+			 float64 silprob,	/** In: Default probability for silence word */
+			 float64 fillprob,	/** In: Default probability for non-silence filler
 						   words */
-			 float64 lw,		/* In: Language weight (see lm.h) */
-			 float64 wip);		/* In: Word insertion penalty (see lm.h) */
+			 float64 lw,		/** In: Language weight (see lm.h) */
+			 float64 wip);		/** In: Word insertion penalty (see lm.h) */
 
-/*
+  /**
  * Return the filler word probability for the given dictionary word-ID.
  */
-int32 fillpen (fillpen_t *f,		/* In: Filler word probabilities structure */
-	       s3wid_t w);		/* In: Dictionary word-ID of filler word */
+int32 fillpen (fillpen_t *f,		/** In: Filler word probabilities structure */
+	       s3wid_t w);		/** In: Dictionary word-ID of filler word */
 
 /* RAH 
    free memory allocated by fillpen_init

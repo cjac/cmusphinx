@@ -64,44 +64,49 @@
 
 #include <s3types.h>
 
+/** \file tmat.h
+ *  \brief Transition matrix data structure.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
+  /**
  * Transition matrix data structure.  All phone HMMs are assumed to have the same
  * topology.
  */
 typedef struct {
-    int32 ***tp;	/* The transition matrices; int32 since probs in logs3 domain:
+    int32 ***tp;	/** The transition matrices; int32 since probs in logs3 domain:
 			   tp[tmatid][from-state][to-state] */
-    int32 n_tmat;	/* #matrices */
-    int32 n_state;	/* #source states in matrix (only the emitting states);
+    int32 n_tmat;	/** #matrices */
+    int32 n_state;	/** #source states in matrix (only the emitting states);
 			   #destination states = n_state+1, it includes the exit state */
 } tmat_t;
 
 
-tmat_t *tmat_init (char *tmatfile,	/* In: input file */
-		   float64 tpfloor);	/* In: floor value for each non-zero transition
+  /** Initialize transition matrix */
+tmat_t *tmat_init (char *tmatfile,	/** In: input file */
+		   float64 tpfloor);	/** In: floor value for each non-zero transition
 					   probability */
 
-void tmat_dump (tmat_t *tmat, FILE *fp);	/* For debugging */
+  /** Dumping the transition matrix */
+void tmat_dump (tmat_t *tmat, FILE *fp);	/** For debugging */
 
 
-/*
+  /**
  * Checks that no transition matrix in the given object contains backward arcs.
  * Returns 0 if successful, -1 if check failed.
  */
 int32 tmat_chk_uppertri (tmat_t *tmat);
 
 
-/*
+  /**
  * Checks that transition matrix arcs in the given object skip over at most 1 state.
  * Returns 0 if successful, -1 if check failed.
  */
 int32 tmat_chk_1skip (tmat_t *tmat);
 
-/*
+  /**
  * RAH, add code to remove memory allocated by tmat_init
  */
 void tmat_free (tmat_t *t);

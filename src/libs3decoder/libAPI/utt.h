@@ -44,18 +44,27 @@
 extern "C" {
 #endif
 
+  /** \file utt.h
+      \brief high level caller of the Viterbi algorithm
+   */
+
 #define MAXHYPLEN       1000
 
+  /** Begin utterance */
 void utt_begin (kb_t *kb);
 
+    /** End utterance */
 void utt_end (kb_t *kb);
 
+  /** Word transition */
 void utt_word_trans (kb_t *kb, int32 cf);
 
+  /** Decoding the whole utterance */
 void utt_decode (void *data, char *uttfile, int32 sf, 
 			     int32 ef, char *uttid);
 
-/* This function decodes a block of incoming feature vectors.
+  
+  /** This function decodes a block of incoming feature vectors.
  * Feature vectors have to be computed by the calling routine.
  * The utterance level index of the last feature vector decoded
  * (before the current block) must be passed.

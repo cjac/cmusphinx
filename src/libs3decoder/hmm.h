@@ -68,15 +68,15 @@
 extern "C" {
 #endif
 
-/*
- * An individual HMM among the HMM search space.  An HMM with N emitting states consists
- * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
- * For compatibility with Sphinx-II, we assume that the initial or entry state can only
- * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
- * where the extra destination dimension correponds to the final or exit state.
- */
 
-/*
+  /** \file hmm.h
+   * \brief HMM data structure and operation
+   *
+   * Arthur : This is Sphinx 3.X specific implementation of HMM
+   * computation.  It is optimized for 3-state and 5-state
+   * left-to-right HMM.  The following is the origianl description 
+   * written by Ravi.
+   *
  * NOTE: For efficiency, this version is hardwired for two possible HMM topologies:
  * 
  * 5-state left-to-right HMMs:  (0 is the entry state and E is a non-emitting exit state;
@@ -98,33 +98,41 @@ extern "C" {
  *           1       x   x   x
  *           2           x   x 
  *    (source-states)
- * 3-state topologies that contain a subset of the above transitions should work as well.
- */
+ * 3-state topologies that contain a subset of the above transitions should work as well.  */
 
 
-/* A single state in the HMM */
+  /** A single state in the HMM */
 typedef struct {
-    int32 score;	/* State score (path log-likelihood) */
-    int32 history;	/* History index */
+    int32 score;	/** State score (path log-likelihood) */
+    int32 history;	/** History index */
 } hmm_state_t;
 
+
+  /**
+ * An individual HMM among the HMM search space.  An HMM with N emitting states consists
+ * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
+ * For compatibility with Sphinx-II, we assume that the initial or entry state can only
+ * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
+ * where the extra destination dimension correponds to the final or exit state.
+ */
+
 typedef struct {
-    hmm_state_t *state;	/* Per-state data for emitting states */
-    hmm_state_t in;	/* Non-emitting entry state */
-    hmm_state_t out;	/* Non-emitting exit state */
-    int32 **tp;		/* State transition scores tp[from][to] (logs3 values) */
-    int32 bestscore;	/* Best [emitting] state score in current frame (for pruning) */
+    hmm_state_t *state;	/** Per-state data for emitting states */
+    hmm_state_t in;	/** Non-emitting entry state */
+    hmm_state_t out;	/** Non-emitting exit state */
+    int32 **tp;		/** State transition scores tp[from][to] (logs3 values) */
+    int32 bestscore;	/** Best [emitting] state score in current frame (for pruning) */
 } hmm_t;
 
 
-/*
+  /**
  * Reset the states of the HMM to the invalid or inactive condition; i.e., scores to
  * LOGPROB_ZERO and hist to undefined.
  */
 void hmm_clear (hmm_t *h, int32 n_emit_state);
 
 
-/*
+  /**
  * Viterbi evaluation of given HMM.  (NOTE that if this module were being used for tracking
  * state segmentations, the dummy, non-emitting exit state would have to be updated separately.
  * In the Viterbi DP diagram, transitions to the exit state occur from the current time; they
@@ -134,23 +142,23 @@ void hmm_clear (hmm_t *h, int32 n_emit_state);
  * Hardwired for 5-state HMMs with topology shown above.
  * Return value: Best state score after evaluation.
  */
-int32 hmm_vit_eval_5st (hmm_t *hmm,		/* In/Out: HMM being updated */
-			s3senid_t *senid,	/* In: Senone ID for each HMM state */
-			int32 *senscore);	/* In: Senone scores, for all senones */
+int32 hmm_vit_eval_5st (hmm_t *hmm,		/** In/Out: HMM being updated */
+			s3senid_t *senid,	/** In: Senone ID for each HMM state */
+			int32 *senscore);	/** In: Senone scores, for all senones */
 
-/*
+  /**
  * Like hmm_vit_eval_5st, but hardwired for 3-state HMMs with topology shown above.
  * Return value: Best state score after evaluation.
  */
-int32 hmm_vit_eval_3st (hmm_t *hmm,		/* In/Out: HMM being updated */
-			s3senid_t *senid,	/* In: Senone ID for each HMM state */
-			int32 *senscore);	/* In: Senone scores, for all senones */
+int32 hmm_vit_eval_3st (hmm_t *hmm,		/** In/Out: HMM being updated */
+			s3senid_t *senid,	/** In: Senone ID for each HMM state */
+			int32 *senscore);	/** In: Senone scores, for all senones */
 
-/* Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging */
+  /** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging */
 int32 hmm_dump_vit_eval (hmm_t *hmm, int32 n_emit_state,
 			 s3senid_t *senid, int32 *senscr, FILE *fp);
 
-/* For debugging */
+  /** For debugging */
 void hmm_dump (hmm_t *h, int32 n_emit_state, s3senid_t *senid, int32 *senscr, FILE *fp);
 
 

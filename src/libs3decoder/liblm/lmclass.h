@@ -51,7 +51,11 @@
 extern "C" {
 #endif
 
-/*
+  /** \file lmclass.h
+      \brief Language model class. 
+   */
+
+  /**
  * This module maintains classes of words and associated probabilities (P(word | class)).
  * Examples of such classes: days of week, months of year, digits, last names, etc.
  * Restrictions:
@@ -62,7 +66,7 @@ extern "C" {
  */
 
 
-/*
+  /**
  * A single word in an LM class.
  */
 typedef struct lmclass_word_s {
@@ -75,7 +79,7 @@ typedef struct lmclass_word_s {
 } *lmclass_word_t;
 
 
-/*
+  /**
  * An LM class object.
  */
 typedef struct lmclass_s {
@@ -86,7 +90,7 @@ typedef struct lmclass_s {
 } *lmclass_t;
 
 
-/*
+  /**
  * Collection of LM classes.  Most applications would use multiple classes.  This data
  * type is provided as a convenience for maintaining several such classes.
  */
@@ -95,11 +99,11 @@ typedef struct lmclass_set_s {
 } *lmclass_set_t;
 
 
-/* Initialize and return a new, empty LMclass set */
+  /** Initialize and return a new, empty LMclass set */
 lmclass_set_t lmclass_newset ( void );
 
 
-/*
+  /**
  * Load LM classes defined in the given file into the given set, and return the new,
  * updated set.  Note that the input file can contain several class definitions.
  * File format:
@@ -126,23 +130,23 @@ lmclass_set_t lmclass_newset ( void );
 lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file);
 
 
-/*
+  /**
  * Get the LMclass object for the given name from the given set.
  */
 lmclass_t lmclass_get_lmclass (lmclass_set_t set, char *name);
 
 
-/*
+  /**
  * Get the number of LMclass objects in the given set.
  */
 int32 lmclass_get_nclass (lmclass_set_t set);
 
 
-/* Set the dictwid field of the given LMclass word entry to the given value */
+  /** Set the dictwid field of the given LMclass word entry to the given value */
 void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
 
 
-/* Various access functions (macros) */
+  /** Various access functions (macros) */
 #define lmclass_getname(class)		((class)->name)
 #define lmclass_firstword(class)	((class)->wordlist)
 #define lmclass_nextword(class,w)	((w)->next)
