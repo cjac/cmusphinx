@@ -36,9 +36,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.13  2001/12/07  17:46:00  lenzo
+ * Un-ifdef the include for <unistd.h>
  * 
+ * Revision 1.12  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.11  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -162,9 +165,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef SUN4
 #include <unistd.h>
-#endif
 #include <time.h>
 
 #ifdef WIN32
