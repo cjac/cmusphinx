@@ -5,7 +5,7 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  *
@@ -20,7 +20,10 @@
  *	- Added an error message option that does a perror() call.
  */
 
+
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #if ((! WIN32) && (! _SGI_SOURCE))
 #include <sys/errno.h>
 #else
@@ -28,6 +31,7 @@
 #endif
 
 #include "err.h"
+
 
 void
 _E__pr_header(const char *f, long ln, const char *msg)
@@ -41,10 +45,10 @@ _E__pr_info_header(f, ln, msg)
 char *f, *msg;
 long ln;
 {
-    (void) fflush(stderr);
+    (void) fflush(stdout);
 
     /* make different format so as not to be parsed by emacs compile */
-    (void) fprintf(stdout, "%s: %s(%ld): ", msg, f, ln);
+    (void) fprintf(stderr, "%s: %s(%ld): ", msg, f, ln);
 }
 
 void
@@ -65,10 +69,10 @@ _E__pr_info( char *fmt, ... )
     va_list pvar;
 
     va_start(pvar, fmt);
-    (void) vfprintf(stdout, fmt, pvar);
+    (void) vfprintf(stderr, fmt, pvar);
     va_end(pvar);
 
-    (void) fflush(stdout);
+    (void) fflush(stderr);
 }
 
 void _E__die_error( char *fmt, ... ) 

@@ -1,101 +1,98 @@
+# ====================================================================
+# Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
 #
-# Copyright (c) 1995 Carnegie Mellon University.  ALL RIGHTS RESERVED.
-# 
-# HISTORY
-# 
-# 23-Aug-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
-# 		Created.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
 #
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer. 
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
+#    endorse or promote products derived from this software without
+#    prior written permission. To obtain permission, contact 
+#    sphinx@cs.cmu.edu.
+#
+# 4. Products derived from this software may not be called "Sphinx"
+#    nor may "Sphinx" appear in their names without prior written
+#    permission of Carnegie Mellon University. To obtain permission,
+#    contact sphinx@cs.cmu.edu.
+#
+# 5. Redistributions of any form whatsoever must retain the following
+#    acknowledgment:
+#    "This product includes software developed by Carnegie
+#    Mellon University (http://www.speech.cs.cmu.edu/)."
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# ====================================================================
+#
+#  Top Level Makefile for Sphinx 3
+#
+# ====================================================================
+TOP=.
+DIRNAME=.
+BUILD_DIRS = src
+ALL_DIRS=config lib doc $(BUILD_DIRS)
+CONFIG=config.guess config.sub configure configure.in \
+       install-sh missing mkinstalldirs 
+FILES = Makefile README ReleaseNotes $(CONFIG)
 
-# Before building:
-#     setenv MACHINE alpha (or sun4, hp700_ux, linux, etc. as appropriate)
-# 
-# Create the following directories if not already existing:
-#     lib/$(MACHINE),
-#     bin/$(MACHINE),
-#     src/libutil/$(MACHINE),
-#     src/libio/$(MACHINE),
-#     src/libfeat/$(MACHINE),
-#     src/libmisc/$(MACHINE),
-#     src/libfbs/$(MACHINE),
+ALL = 
 
-s3decode:
-	(cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-anytopo install)
-# Note that the default Makefile for s3decode above (i.e., libfbs/Makefile) builds a
-# version of s3decode in which the HMM topology is hardwired to the Sphinx-II form.
-# (That is, the HMM topology is not derived from the transition matrices input.)
-# The second version, libfbs/Makefile-anytopo, builds another version of s3decode that
-# can handle any left-to-right HMM topology.
+# Try and see if config hasn't been created
+config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Running configure to make default config file ***'; echo '*** '; ./configure; )  >&2)
 
-s3dag:
-	(cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-dag install)
+# force a check on the system file
+system_dummy := $(shell test -f config/system.mak || config/system.sh >config/system.mak)
 
-s3astar:
-	(cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-astar install)
+include $(TOP)/config/common_make_rules
 
-s3align:
-	(cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-align install)
+backup: time-stamp
+	@ $(RM) -f $(TOP)/FileList
+	@ $(MAKE) file-list
+	@ echo .time-stamp >>FileList
+	@ sed 's/^\.\///' <FileList | sed 's/^/'$(PROJECT_PREFIX)'\//' >.file-list-all
+	@ (cd ..; tar zcvf $(PROJECT_PREFIX)/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz `cat $(PROJECT_PREFIX)/.file-list-all`)
+	@ $(RM) -f $(TOP)/.file-list-all
+	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
 
-s3allphone:
-	(cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-allphone install)
+tags:
+	@ $(RM) -f $(TOP)/FileList
+	@ $(MAKE) file-list
+	etags `cat FileList | grep "\.[ch]$$"`
 
-only-s3decode:
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile install)
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-anytopo install)
+time-stamp :
+	@ echo $(PROJECT_NAME) >.time-stamp
+	@ echo $(PROJECT_PREFIX) >>.time-stamp
+	@ echo $(PROJECT_VERSION) >>.time-stamp
+	@ echo $(PROJECT_DATE) >>.time-stamp
+	@ echo $(PROJECT_STATE) >>.time-stamp
+	@ echo $(LOGNAME) >>.time-stamp
+	@ hostname >>.time-stamp
+	@ date >>.time-stamp
 
-only-s3dag:
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-dag install)
+config/config: config/config.in config.status
+	./config.status
 
-only-s3astar:
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-astar install)
+configure: configure.in
+	autoconf
 
-only-s3align:
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-align install)
+test:
+	@ $(MAKE) --no-print-directory -C testsuite test
 
-only-s3allphone:
-	(cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile-allphone install)
-
-clean:
-	- (cd src/libutil/$(MACHINE); $(MAKE) -f ../Makefile clean)
-	- (cd src/libio/$(MACHINE);   $(MAKE) -f ../Makefile clean)
-	- (cd src/libfeat/$(MACHINE); $(MAKE) -f ../Makefile clean)
-	- (cd src/libmisc/$(MACHINE); $(MAKE) -f ../Makefile clean)
-	- (cd src/libfbs/$(MACHINE);  $(MAKE) -f ../Makefile clean)
-	- (cd src/libutil/;	$(MAKE) -f ./Makefile clean)
-	- (cd src/libio/;   	$(MAKE) -f ./Makefile clean)
-	- (cd src/libfeat/; 	$(MAKE) -f ./Makefile clean)
-	- (cd src/libmisc/; 	$(MAKE) -f ./Makefile clean)
-	- (cd src/libfbs/;  	$(MAKE) -f ./Makefile clean)
-
-clean-all-obj:
-	- (cd src/libutil/;	rm */*.o)
-	- (cd src/libio/;   	rm */*.o)
-	- (cd src/libfeat/; 	rm */*.o)
-	- (cd src/libmisc/; 	rm */*.o)
-	- (cd src/libfbs/;  	rm */*.o)
-
-clean-purify:
-	- (cd lib; rm */*pure*.a)
-
-all: s3decode s3dag s3astar s3align s3allphone

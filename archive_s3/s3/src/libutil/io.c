@@ -4,11 +4,17 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
+ * 
+ * 08-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added stat_mtime().
+ * 
+ * 11-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added _myfopen().
  * 
  * 05-Sep-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -18,11 +24,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if (! WIN32)
+#include <unistd.h>
+#endif
 #include <assert.h>
 
-#include "prim_type.h"
-#include "err.h"
 #include "io.h"
+#include "err.h"
 
 
 FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
@@ -113,7 +121,6 @@ void fclose_comp (FILE *fp, int32 ispipe)
 FILE *fopen_compchk (char *file, int32 *ispipe)
 {
     char tmpfile[16384];
-    FILE *fp;
     int32 k, isgz;
     struct stat statbuf;
     
@@ -233,4 +240,33 @@ int32 stat_retry (char *file, struct stat *statbuf)
     }
     
     return -1;
+}
+
+
+int32 stat_mtime (char *file)
+{
+    struct stat statbuf;
+    
+    if (stat (file, &statbuf) != 0)
+	return -1;
+    
+    return ((int32)statbuf.st_mtime);
+}
+
+
+FILE *_myfopen (char *file, char *mode, char *pgm, int32 line)
+{
+    FILE *fp;
+    
+    if ((fp = fopen(file, mode)) == NULL) {
+	fflush (stdout);
+	fprintf (stderr, "FATAL_ERROR: \"%s\", line %d: fopen(%s,%s) failed; ",
+		 pgm, line, file, mode);
+	perror("");
+	fflush (stderr);
+	
+	exit(errno);
+    }
+    
+    return fp;
 }

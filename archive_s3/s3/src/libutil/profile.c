@@ -4,21 +4,17 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
  * 
- * 01-Aug-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Changed timer_ names to cyctimer_ (for cycle counter).
- * 		Added timing_ structures and functions using system calls for timing.
+ * 11-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added ptmr_init().
  * 
- * 13-Dec-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added ifdefs around cyctimer_print_all and cyctimer_print_all_norm.
- * 
- * 27-Nov-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Created from Sphinx-II version.
+ * 19-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Created.
  */
 
 
@@ -27,6 +23,7 @@
 #include <string.h>
 
 #if (! WIN32)
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #else
@@ -36,116 +33,56 @@
 
 #include "profile.h"
 #include "err.h"
-#include "ckd_alloc.h"
 
 
-#if (ALPHA_OSF1)
-extern uint32 rpcc();		/* On an alpha, use the RPCC instruction */
-static int32 mhz = 0;		/* Guess regarding clock rate on machine (in MHz) */
+#if (__ALPHA_OSF1__)
+extern uint32 rpcc( void );	/* On an alpha, use the RPCC instruction */
 #endif
 
-typedef struct {
-    char *name;
-    uint32 start_time;
-    float accum_time;
-} cyctimer_t;
-static cyctimer_t *timer = NULL;
-static int32 n_timer = 0;
-#define MAX_TIMER		30
-#define ACCUM_SCALE		0.001
 
-typedef struct {
-    char *name;
-    uint32 count;
-} ctr_t;
-static ctr_t *ctr = NULL;
-static int32 n_ctr = 0;
-
-#define MAX_CTR			30
-
-
-int32 counter_new (char *name)
+void pctr_reset (pctr_t *ctr)
 {
-    if (! ctr)
-	ctr = (ctr_t *) ckd_calloc (MAX_CTR, sizeof(ctr_t));
-    if (n_ctr >= MAX_CTR) {
-	E_WARN("#counters (%d) exceeded\n", MAX_CTR);
-	return -1;
-    }
-    ctr[n_ctr].name = (char *) ckd_salloc (name);
-    ctr[n_ctr].count = 0;
-    
-    return (n_ctr++);
+    ctr->count = 0;
 }
 
 
-void counter_increment (int32 id, int32 inc)
+void pctr_reset_all (pctr_t *ctr)
 {
-    if ((id < 0) || (id >= MAX_CTR))
+    for (; ctr->name; ctr++)
+	pctr_reset (ctr);
+}
+
+
+void pctr_print_all (FILE *fp, pctr_t *ctr)
+{
+    if (! ctr->name)
 	return;
     
-    ctr[id].count += inc;
+    fprintf (fp, "CTR:");
+    for (; ctr->name; ctr++)
+	fprintf (fp, "  %d %s", ctr->count, ctr->name);
+    fprintf (fp, "\n");
 }
 
 
-void counter_reset (int32 id)
+int32 host_pclk (int32 dummy)
 {
-    if ((id < 0) || (id >= MAX_CTR))
-	return;
-    
-    ctr[id].count = 0;
-}
-
-
-void counter_reset_all ( void )
-{
-    int32 i;
-    
-    for (i = 0; i < n_ctr; i++)
-	counter_reset (i);
-}
-
-
-static int32 get_namelen ( void )
-{
-    int32 i, len;
-
-    len = 0;
-    for (i = 0; i < n_ctr; i++)
-	if (len < strlen(ctr[i].name))
-	    len = strlen(ctr[i].name);
-    for (i = 0; i < n_timer; i++)
-	if (len < strlen(timer[i].name))
-	    len = strlen(timer[i].name);
-
-    return (len);
-}
-
-
-void counter_print_all (FILE *fp)
-{
-    int32 i;
-    
-    if (n_ctr > 0) {
-	fprintf (fp, "CTR:");
-	for (i = 0; i < n_ctr; i++)
-	    fprintf (fp, "[%s %10d]", ctr[i].name, ctr[i].count);
-	fprintf (fp, "\n");
-    }
-}
-
-
-#if (ALPHA_OSF1)
-static int32 clock_speed (int32 dummy)
-{
+    int32 mhz = 0;
+#if (__ALPHA_OSF1__)
     int32 i, j, k, besti, bestj, diff;
     uint32 rpcc_start, rpcc_end;
     struct rusage start, stop;
     float64 t;
     
+    memset (&start, 0, sizeof(struct rusage));
+    memset (&stop, 0, sizeof(struct rusage));
+    
     getrusage (RUSAGE_SELF, &start);
     rpcc_start = rpcc();
-    for (i = 0; i < 100000000; i++)
+    /* Consume some cpu cycles; dummy to forced compiler not to optimize loop away */
+    dummy &= 0x7fffffff;
+    dummy |= 0x70000000;
+    for (i = 1; i < 100000000; i++)
 	if (i > dummy)
 	    return (i);
     rpcc_end = rpcc();
@@ -170,127 +107,9 @@ static int32 clock_speed (int32 dummy)
     mhz = besti/bestj;
     E_INFO("%d ticks in %.3f sec; machine clock rate = %d MHz\n",
 	   rpcc_end - rpcc_start, t, mhz);
-    
-    return 0;
-}
 #endif
-
-
-int32 cyctimer_new (char *name)
-{
-#if (ALPHA_OSF1)
-    {
-	int32 dummy;
-	
-	dummy = name[0] | ((int32) 0x70000000);
-	if (mhz == 0)
-	    clock_speed (dummy);
-    }
     
-    if (! timer)
-	timer = (cyctimer_t *) ckd_calloc (MAX_TIMER, sizeof(cyctimer_t));
-    if (n_timer >= MAX_TIMER) {
-	E_WARN("#timers (%d) exceeded\n", MAX_TIMER);
-	return -1;
-    }
-    timer[n_timer].name = (char *) ckd_salloc (name);
-    timer[n_timer].accum_time = 0.0;
-
-    return (n_timer++);
-#else
-    return -1;
-#endif
-}
-
-
-void cyctimer_resume (int32 id)
-{
-#if (ALPHA_OSF1)
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].start_time = rpcc();
-#endif
-}
-
-
-void cyctimer_pause (int32 id)
-{
-#if (ALPHA_OSF1)
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].accum_time += (rpcc() - timer[id].start_time) * ACCUM_SCALE;
-#endif
-}
-
-
-void cyctimer_reset (int32 id)
-{
-    if ((id < 0) || (id >= MAX_TIMER))
-	return;
-    
-    timer[id].accum_time = 0.0;
-}
-
-
-void cyctimer_reset_all ( void )
-{
-    int32 i;
-    
-    for (i = 0; i < n_timer; i++)
-	cyctimer_reset (i);
-}
-
-
-void cyctimer_print_all (FILE *fp)
-{
-#if (ALPHA_OSF1)
-    int32 i;
-    char fmtstr[1024];
-    
-    if (n_timer > 0) {
-	fprintf (fp, "PROFILING TIMERS:\n");
-
-	sprintf (fmtstr, "  TMR: %%-%ds %%10d\n", get_namelen());
-	for (i = 0; i < n_timer; i++)
-	    fprintf (fp, fmtstr, timer[i].name, (int32)(timer[i].accum_time));
-    }
-#endif
-}
-
-
-float64 cyctimer_get_sec (int32 id)
-{
-#if (ALPHA_OSF1)
-    float64 t;
-    
-    t = (timer[id].accum_time / ACCUM_SCALE) / (1000000.0 * mhz);	/* Sec */
-    return (t);
-#else
-    return (0.0);
-#endif
-}
-
-
-void cyctimer_print_all_norm (FILE *fp, float64 norm_sec, int32 norm_id)
-{
-#if (ALPHA_OSF1)
-    int32 i;
-    float64 t;
-    
-    if (n_timer > 0) {
-	fprintf (fp, "TMR:");
-	for (i = 0; i < n_timer; i++) {
-	    t = (timer[i].accum_time / ACCUM_SCALE) / (1000000.0 * mhz);	/* Sec */
-
-	    fprintf (fp, "[%s %6.1fs %5.1fx %3.0f%%]",
-		     timer[i].name, t, t / norm_sec,
-		     (timer[i].accum_time * 100.0) / timer[norm_id].accum_time);
-	}
-	fprintf (fp, "\n");
-    }
-#endif
+    return mhz;
 }
 
 
@@ -305,7 +124,7 @@ static float64 make_sec (FILETIME *tm)
     
     dt = tm->dwLowDateTime * TM_LOWSCALE;
     dt += tm->dwHighDateTime * TM_HIGHSCALE;
-
+    
     return (dt);
 }
 
@@ -319,34 +138,8 @@ static float64 make_sec (struct timeval *s)
 #endif
 
 
-/*
- * Obtain and initialize a timing module
- */
-timing_t *timing_new ( void )
+void ptmr_start (ptmr_t *tm)
 {
-    timing_t *tm;
-
-#if (ALPHA_OSF1)
-    {
-	int32 dummy;
-	
-	dummy = (dummy & 0x000000ff) | ((int32) 0x70000000);
-	if (mhz == 0)
-	    clock_speed (dummy);
-    }
-#endif
-
-    tm = (timing_t *) ckd_calloc (1, sizeof(timing_t));
-    tm->t_elapsed = 0.0;
-    tm->t_cpu = 0.0;
-
-    return tm;
-}
-
-
-void timing_start (timing_t *tm)
-{
-#if (! _SUN4)
 #if (! WIN32)
     struct timeval e_start;	/* Elapsed time */
     
@@ -371,13 +164,11 @@ void timing_start (timing_t *tm)
 
     tm->start_elapsed = (float64)clock() / CLOCKS_PER_SEC;
 #endif
-#endif
 }
 
 
-void timing_stop (timing_t *tm)
+void ptmr_stop (ptmr_t *tm)
 {
-#if (! _SUN4)
     float64 dt_cpu, dt_elapsed;
     
 #if (! WIN32)
@@ -411,12 +202,84 @@ void timing_stop (timing_t *tm)
 
     tm->t_tot_cpu += dt_cpu;
     tm->t_tot_elapsed += dt_elapsed;
-#endif
 }
 
 
-void timing_reset (timing_t *tm)
+void ptmr_reset (ptmr_t *tm)
 {
     tm->t_cpu = 0.0;
     tm->t_elapsed = 0.0;
+}
+
+
+void ptmr_init (ptmr_t *tm)
+{
+    tm->t_cpu = 0.0;
+    tm->t_elapsed = 0.0;
+    tm->t_tot_cpu = 0.0;
+    tm->t_tot_elapsed = 0.0;
+}
+
+
+void ptmr_reset_all (ptmr_t *tm)
+{
+    for (; tm->name; tm++)
+	ptmr_reset (tm);
+}
+
+
+void ptmr_print_all (FILE *fp, ptmr_t *tm, float64 norm)
+{
+    if (norm != 0.0) {
+	norm = 1.0/norm;
+	for (; tm->name; tm++)
+	    fprintf (fp, "  %6.2fx %s", tm->t_cpu * norm, tm->name);
+    }
+}
+
+
+int32 host_endian ( void )
+{
+    FILE *fp;
+    int32 BYTE_ORDER_MAGIC;
+    char *file;
+    char buf[8];
+    int32 k, endian;
+    
+    file = "/tmp/__EnDiAn_TeSt__";
+    
+    if ((fp = fopen(file, "wb")) == NULL) {
+	E_ERROR("fopen(%s,wb) failed\n", file);
+	return -1;
+    }
+    
+    BYTE_ORDER_MAGIC = (int32)0x11223344;
+    
+    k = (int32) BYTE_ORDER_MAGIC;
+    if (fwrite (&k, sizeof(int32), 1, fp) != 1) {
+	E_ERROR("fwrite(%s) failed\n", file);
+	fclose (fp);
+	unlink(file);
+	return -1;
+    }
+    
+    fclose (fp);
+    if ((fp = fopen (file, "rb")) == NULL) {
+	E_ERROR ("fopen(%s,rb) failed\n", file);
+	unlink(file);
+	return -1;
+    }
+    if (fread (buf, 1, sizeof(int32), fp) != sizeof(int32)) {
+	E_ERROR ("fread(%s) failed\n", file);
+	fclose (fp);
+	unlink(file);
+	return -1;
+    }
+    fclose (fp);
+    unlink(file);
+    
+    /* If buf[0] == lsB of BYTE_ORDER_MAGIC, we are little-endian */
+    endian = (buf[0] == (BYTE_ORDER_MAGIC & 0x000000ff)) ? 1 : 0;
+    
+    return (endian);
 }

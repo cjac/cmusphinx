@@ -4,7 +4,7 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 

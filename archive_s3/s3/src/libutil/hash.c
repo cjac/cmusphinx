@@ -1,16 +1,27 @@
 /*
- * hash.c -- Hash table module with case insensitive word strings as keys.
+ * hash.c -- Hash table module.
  *
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
  * 
- * 08-31-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 05-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 		Removed hash_key2hash().  Added hash_enter_bkey() and hash_lookup_bkey(),
+ * 		and len attribute to hash_entry_t.
+ * 
+ * 30-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 		Added hash_key2hash().
+ * 
+ * 18-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
+ * 		Included case sensitive/insensitive option.  Removed local, static
+ * 		maintenance of all hash tables.
+ * 
+ * 31-Jul-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Created.
  */
 
@@ -20,28 +31,10 @@
 #include <string.h>
 #include <assert.h>
 
-#include "prim_type.h"
+#include "hash.h"
 #include "err.h"
 #include "ckd_alloc.h"
-#include "hash.h"
-
-
-typedef struct hash_entry_s {
-    char *key;			/* Original key, NULL if empty slot */
-    int32 val;			/* Associated with this key */
-    struct hash_entry_s *next;	/* For collision resolution */
-} hash_entry_t;
-
-typedef struct {
-    hash_entry_t *table;	/* Primary hash table, excluding entries that collide */
-    char *name;			/* For identification purposes */
-    int32 size;			/* Primary hash table size, (is a prime#) */
-} hash_table_t;
-
-static hash_table_t *hash_table;	/* A number of hash tables */
-static int32 n_table = 0;		/* Current active number of hash tables */
-static int32 n_table_alloc = 0;		/* Current number of hash tables allocated, not
-					   all may be actively in use */
+#include "case.h"
 
 
 #if 0
@@ -65,8 +58,9 @@ static void prime_sieve (int32 max)
 
 
 /*
- * HACK!!  Max hash tables size restricted by this set of primes.  (Of course, collision
- * resolution by chaining will accommodate more entries, but efficiency will drop.)
+ * HACK!!  Initial hash table size is restricted by this set of primes.  (Of course,
+ * collision resolution by chaining will accommodate more entries indefinitely, but
+ * efficiency will drop.)
  */
 static int32 prime[] = {
     101, 211, 307, 401, 503, 601, 701, 809, 907,
@@ -83,104 +77,139 @@ static int32 prime_size (int32 size)
     
     for (i = 0; (prime[i] > 0) && (prime[i] < size); i++);
     if (prime[i] <= 0) {
-	E_WARN("Very large hash table (%d entries)\n", size);
+	E_WARN("Very large hash table requested (%d entries)\n", size);
 	--i;
     }
     return (prime[i]);
 }
 
 
-hash_t hash_new (char *name, int32 size)
+hash_table_t *hash_new (int32 size, int32 casearg)
 {
-    if (n_table == n_table_alloc) {
-	/* Need to grow allocated tables */
-	if (n_table_alloc > 0) {
-	    n_table_alloc += 8;
-	    hash_table = (hash_table_t *) ckd_realloc (hash_table,
-						       n_table_alloc*sizeof(hash_table_t));
-	} else {
-	    n_table_alloc = 7;
-	    hash_table = (hash_table_t *) ckd_calloc (n_table_alloc, sizeof(hash_table_t));
-	}
-    }
+    hash_table_t *h;
     
-    hash_table[n_table].name = name;
-    hash_table[n_table].size = prime_size (size+(size>>1));
-    hash_table[n_table].table = (hash_entry_t *) ckd_calloc (hash_table[n_table].size,
-							     sizeof(hash_entry_t));
+    h = (hash_table_t *) ckd_calloc (1, sizeof(hash_table_t));
+    h->size = prime_size (size+(size>>1));
+    h->nocase = (casearg == HASH_CASE_NO);
+    h->table = (hash_entry_t *) ckd_calloc (h->size, sizeof(hash_entry_t));
+    /* The above calloc clears h->table[*].key and .next to NULL, i.e. an empty table */
 
-#if _HASH_TEST_
-    E_INFO("hash_new(%s,%d): handle= %d, tablesize= %d\n",
-	   name, size, n_table, hash_table[n_table].size);
-#endif
-
-    return (n_table++);
+    return h;
 }
 
 
-#define UPPER_CASE(c)	((((c) >= 'a') && ((c) <= 'z')) ? (c-32) : c)
-
 /*
  * Compute hash value for given key string.
- * Somewhat tuned for normal text word strings.
+ * Somewhat tuned for English text word strings.
  */
-static uint32 key2hash (hash_t h, char *key)
+static uint32 key2hash (hash_table_t *h, const char *key)
 {
-    register char *cp, c;
+    register const char *cp;
+    register char c;
     register int32 s;
     register uint32 hash;
     
     hash = 0;
     s = 0;
-    for (cp = key; *cp; cp++) {
-	c = *cp;
-	c = UPPER_CASE(c);
-	hash += c << s;
-	s += 5;
-	if (s >= 25)
-	    s -= 24;
+    
+    if (h->nocase) {
+	for (cp = key; *cp; cp++) {
+	    c = *cp;
+	    c = UPPER_CASE(c);
+	    hash += c << s;
+	    s += 5;
+	    if (s >= 25)
+		s -= 24;
+	}
+    } else {
+	for (cp = key; *cp; cp++) {
+	    hash += (*cp) << s;
+	    s += 5;
+	    if (s >= 25)
+		s -= 24;
+	}
     }
-
-    return (hash % hash_table[h].size);
+    
+    return (hash % h->size);
 }
 
 
-/*
- * Case insensitive key string compare.  Return the usual -1, 0, +1, depending on
- * key1 <, =, > key2 (case insensitive, of course).
- */
-static int32 keycmp (char *key1, char *key2)
+static char *makekey (uint8 *data, int32 len, char *key)
+{
+    int32 i, j;
+    
+    if (! key)
+	key = (char *) ckd_calloc (len*2 + 1, sizeof(char));
+    
+    for (i = 0, j = 0; i < len; i++, j += 2) {
+	key[j] = 'A' + (data[i] & 0x000f);
+	key[j+1] = 'J' + ((data[i] >> 4) & 0x000f);
+    }
+    key[j] = '\0';
+    
+    return key;
+}
+
+
+static int32 keycmp_nocase (hash_entry_t *entry, const char *key)
 {
     char c1, c2;
+    int32 i;
+    const char *str;
     
-    for (;;) {
-	c1 = *(key1++);
+    str = entry->key;
+    for (i = 0; i < entry->len; i++) {
+	c1 = *(str++);
 	c1 = UPPER_CASE(c1);
-	c2 = *(key2++);
+	c2 = *(key++);
 	c2 = UPPER_CASE(c2);
 	if (c1 != c2)
 	    return (c1-c2);
-	if (c1 == '\0')
-	    return 0;
     }
+    
+    return 0;
+}
+
+
+static int32 keycmp_case (hash_entry_t *entry, const char *key)
+{
+    char c1, c2;
+    int32 i;
+    const char *str;
+    
+    str = entry->key;
+    for (i = 0; i < entry->len; i++) {
+	c1 = *(str++);
+	c2 = *(key++);
+	if (c1 != c2)
+	    return (c1-c2);
+    }
+    
+    return 0;
 }
 
 
 /*
  * Lookup chained entries with hash-value hash in table h for given key and return
- * associated value.  If successful return 0, else -1.
+ * associated value in *val.
+ * Return value: 0 if key found in hash table, else -1.
  */
-static int32 lookup (hash_t h, uint32 hash, char *key, int32 *val)
+static int32 lookup (hash_table_t *h, uint32 hash, const char *key, int32 len, int32 *val)
 {
     hash_entry_t *entry;
     
-    entry = &(hash_table[h].table[hash]);
+    entry = &(h->table[hash]);
     if (entry->key == NULL)
 	return -1;
     
-    while (entry && (keycmp(entry->key, key) != 0))
-	entry = entry->next;
-
+    if (h->nocase) {
+	while (entry && ((entry->len != len) || (keycmp_nocase (entry, key) != 0)))
+	    entry = entry->next;
+    } else {
+	while (entry && ((entry->len != len) || (keycmp_case (entry, key) != 0)))
+	    entry = entry->next;
+    }
+    
     if (entry) {
 	*val = entry->val;
 	return 0;
@@ -189,136 +218,127 @@ static int32 lookup (hash_t h, uint32 hash, char *key, int32 *val)
 }
 
 
-/*
- * Lookup hash table h for given key and return associated val.  If successful, return
- * 0, else -1.
- */
-int32 hash_lookup (hash_t h, char *key, int32 *val)
+int32 hash_lookup (hash_table_t *h, const char *key, int32 *val)
 {
     uint32 hash;
-    int32 res;
+    int32 len;
     
-    assert ((h >= 0) && (h < n_table));		/* Must be a valid, active hash table */
-    assert (key != NULL);
-
     hash = key2hash (h, key);
-    res = lookup (h, hash, key, val);
-
-#if _HASH_TEST_
-    E_INFO("hash_lookup(%s, %s): hash= %d, lookup= %d, val= %d\n",
-	   hash_table[h].name, key, hash, res, *val);
-#endif
-
-    return (res);
+    len = strlen(key);
+    
+    return (lookup (h, hash, key, len, val));
 }
 
 
-/*
- * Add a new entry with given key and associated value to hash table h.  The key must
- * not already exist in the table.
- */
-int32 hash_enter (hash_t h, char *key, int32 val)
+int32 hash_lookup_bkey (hash_table_t *h, const char *key, int32 len, int32 *val)
 {
     uint32 hash;
-    int32 junk;
+    char *str;
+    
+    str = makekey ((uint8 *)key, len, NULL);
+    hash = key2hash (h, str);
+    ckd_free (str);
+    
+    return (lookup (h, hash, key, len, val));
+}
+
+
+static int32 enter (hash_table_t *h, uint32 hash, const char *key, int32 len, int32 val)
+{
+    int32 old;
     hash_entry_t *cur, *new;
     
-    assert ((h >= 0) && (h < n_table));		/* Must be a valid, active hash table */
-    assert (key != NULL);
-    
-    hash = key2hash (h, key);
-
-#if _HASH_TEST_
-    E_INFO("hash_enter(%s, %s, %d): hash= %d\n", hash_table[h].name, key, val, hash);
-#endif
-
-    if (lookup (h, hash, key, &junk) >= 0) {
-	E_ERROR("Hash table %s: Duplicate definition: %s\n", hash_table[h].name, key);
-	return -1;
+    if (lookup (h, hash, key, len, &old) == 0) {
+	/* Key already exists */
+	return old;
     }
     
-    cur = &(hash_table[h].table[hash]);
+    cur = &(h->table[hash]);
     if (cur->key == NULL) {
 	/* Empty slot at hashed location; add this entry */
 	cur->key = key;
+	cur->len = len;
 	cur->val = val;
-	assert (cur->next == NULL);
     } else {
+	/* Key collision; create new entry and link to hashed location */
 	new = (hash_entry_t *) ckd_calloc (1, sizeof(hash_entry_t));
 	new->key = key;
+	new->len = len;
 	new->val = val;
 	new->next = cur->next;
 	cur->next = new;
     }
 
-    return 0;
+    return val;
 }
 
 
-#if _HASH_TEST_
-
-static void hash_stat (hash_t h)
+int32 hash_enter (hash_table_t *h, const char *key, int32 val)
 {
-    int32 i, m, n, sz;
-    hash_entry_t *entry;
+    uint32 hash;
+    int32 len;
     
-    sz = hash_table[h].size;
-    m = n = 0;
+    hash = key2hash (h, key);
+    len = strlen(key);
+    return (enter (h, hash, key, len, val));
+}
+
+
+int32 hash_enter_bkey (hash_table_t *h, const char *key, int32 len, int32 val)
+{
+    uint32 hash;
+    char *str;
     
-    for (i = 0; i < sz; i++) {
-	entry = &(hash_table[h].table[i]);
-	if (entry->key) {
-	    m++;
-	    n++;
-	    for (entry = entry->next; entry; entry = entry->next)
-		n++;
+    str = makekey ((uint8 *)key, len, NULL);
+    hash = key2hash (h, str);
+    ckd_free (str);
+    
+    return (enter (h, hash, key, len, val));
+}
+
+
+glist_t hash_tolist (hash_table_t *h, int32 *count)
+{
+    glist_t g;
+    hash_entry_t *e;
+    int32 i, j;
+    
+    g = NULL;
+    
+    j = 0;
+    for (i = 0; i < h->size; i++) {
+	e = &(h->table[i]);
+	
+	if (e->key != NULL) {
+	    g = glist_add_ptr (g, (void *)e);
+	    j++;
+	    
+	    for (e = e->next; e; e = e->next) {
+		g = glist_add_ptr (g, (void *)e);
+		j++;
+	    }
 	}
     }
-
-    E_INFO("hash_stat(%s): %d keys entered, %d collisions\n",
-	   hash_table[h].name, n, n-m);
+    
+    *count = j;
+    
+    return g;
 }
 
 
-main (int32 argc, char *argv[])
+void hash_free (hash_table_t *h)
 {
-    FILE *fp;
-    char str[1024];
-    char wd[1024], *tmp;
-    int32 i, n;
-    hash_t h;
+    hash_entry_t *e, *e2;
+    int32 i;
     
-    if (argc < 2) {
-	E_INFO("Usage: %s <dictionary file>\n", argv[0]);
-	exit(-1);
-    }
-    if ((fp = fopen(argv[1], "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", argv[1]);
-    
-    n = 0;
-    while (fgets (str, sizeof(str), fp) != NULL)
-	n++;
-    h = hash_new (n);
-    
-    rewind (fp);
-    i = 0;
-    while (fgets (str, sizeof(str), fp) != NULL) {
-	if (sscanf (str, "%s", wd) == 1) {
-	    tmp = (char *) ckd_malloc (strlen(wd)+1);
-	    strcpy (tmp, wd);
-	    if (hash_enter (h, tmp, i) < 0)
-		E_FATAL("hash_enter failed\n");
-	    i++;
+    /* Free additional entries created for key collision cases */
+    for (i = 0; i < h->size; i++) {
+	for (e = h->table[i].next; e; e = e2) {
+	    e2 = e->next;
+	    ckd_free ((void *) e);
 	}
     }
-
-    rewind (fp);
-    while (fgets (str, sizeof(str), fp) != NULL) {
-	if (sscanf (str, "%s", wd) == 1)
-	    hash_lookup (h, wd, &i);
-    }
-
-    hash_stat (h);
+    
+    ckd_free ((void *) h->table);
+    ckd_free ((void *) h);
 }
-
-#endif

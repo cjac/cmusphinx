@@ -1,807 +1,1704 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title>Sphinx-3 Decoder Set</title>
+    <title>Sphinx-3 s3.2 Decoder</title>
+    <style type="text/css">
+      body { margin-left: 6%; margin-right: 3%; background: white; }
+      h1 { color: green; align: center; }
+      h2 { margin-left: -6%; color: green; margin-top: 6em; }
+      h3 { margin-left: -3%; margin-top: 1em; }
+      h4,h5,h6 { margin-top: 1em; }
+      pre { margin-left: 3%; font-family: monospace; }
+      code { font-family: monospace; font-weight: bold; }
+      div.wheatbox { background: wheat; padding: 0.5em; border: solid; border-width: thin; }
+      div.silverbox { background: silver; padding: 0.5em; border: solid; border-width: thin; }
+      div.endsec { background: wheat; border: solid; border-width: thin; }
+    </style>
   </head>
-
-  <BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
-    <H1 align=center>
-      <U>Sphinx-3 Decoder Set</U>
-    </H1>
-    <H4 align=center>
+  
+  <BODY>
+    <H1><U>Sphinx-3 s3.2 Decoder</U></H1>
+    <center>
       Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
       Sphinx Speech Group<br>
       School of Computer Science<br>
       Carnegie Mellon University<br>
+      Pittsburgh, PA 15213<br>
       <a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu.edu</a><br>
-      <br>
-      23 Feb 1999
-    </H4>
-    <P></P>
-
-    <hr>
-
-    <H2>
-      <U>Contents</U>
-    </H2>
-
+      24 Feb 2000
+    </center>
+    
+    
+    <H2><U>Contents</U></H2>
+    
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#sec_intro">Introduction</A></LI>
+	<LI><A HREF="#sec_decoverview">Overview of the s3.2 Decoder</A>
+          <UL>
+	    <LI><A HREF="#sec_dec_input">Inputs</A></LI>
+	    <LI><A HREF="#sec_dec_output">Outputs</A></LI>
+          </UL>
+	</LI>
+        <LI><A HREF="#sec_compile">Compiling s3.2</A></LI>
+        <LI><A HREF="#sec_exec">Running s3.2</A>
+          <UL>
+	    <LI><A HREF="#sec_args_overview">Command Line Arguments Overview</A></LI>
+	    <LI><A HREF="#sec_dec_op">Decoder Operation</A></LI>
+	    <LI><A HREF="#sec_dec_tune">Performance Tuning</A>
+              <UL>
+        	<LI><A HREF="#sec_tune_prune">Tuning the Pruning Behaviour</a></LI>
+        	<LI><A HREF="#sec_tune_lw">Tuning Language Model Related Parameters</a></LI>
+              </UL>
+	    </LI>
+            <LI><A HREF="#sec_dec_errors">Some Common Errors and Failure Modes</A></LI>
+          </UL>
+	</LI>
+        <LI><A HREF="#sec_dict">Pronunciation Lexicon</A></LI>
+        <LI><A HREF="#sec_am">Acoustic Model</A></LI>
+        <LI><A HREF="#sec_lm">Language Model</A></LI>
+        <LI><A HREF="#sec_ctl">Speech Input Control File</A></LI>
+        <LI><A HREF="#sec_hypseg">Recognition Hypothesis Output</A></LI>
+        <LI><A HREF="#sec_wordlat">Word Lattice Output</A></LI>
+        <LI><A HREF="#sec_utilpgm">Other Utilities</A>
+	  <UL>
+	    <LI><A HREF="#sec_gausubvq">Gaussian Sub-Vector Quantization Utility</a></LI>
+	    <LI><A HREF="#sec_lmtest">Language Model Test Utility</a></LI>
+	  </UL>
+	</LI>
+        <LI><A HREF="#sec_src">Source Code</A></LI>
+      </UL>
+    </div>
+    
+    
+    
+    <H2><A NAME="sec_intro"><U>Introduction</U></A></H2>
+    
+    <P>Sphinx-3 (S3) is the successor to the Sphinx-II speech recognition system from
+      Carnegie Mellon University.  
+      It includes both an acoustic <em>trainer</em> (link) and various
+      <em>decoders</em>, i.e., text recognition, phoneme recognition, N-best list generation,
+      etc.
+    </P>
+    
+    <P>The s3.2 decoder is a recent implementation for speech-to-text recognition,
+      its main goal being speed improvements
+      over the original Sphinx-3 decoder.  It runs about 10 times faster than the latter on
+      large vocabulary tasks.  The following is a brief summary of its main features and
+      limitations:
+    </P>
     <UL>
-      <LI><A HREF="#sec_intro">Introduction</A>
-      <LI><A HREF="#sec_s3set">The Sphinx-3 Decoder Set Overview</A>
-	<UL>
-	  <LI><A HREF="#sec_s3set_modules">What's In It</A>
-	  <LI><A HREF="#sec_s3set_where">Where To Find It</A>
-	</UL>
-      <LI><A HREF="#sec_models">Input Models</A>
-	<UL>
-	  <LI><A HREF="#sec_models_speech">Speech Data</A>
-	  <LI><A HREF="#sec_models_acoustic">Acoustic Model</A>
-	  <LI><A HREF="#sec_models_lexicon">Pronunciation Lexicon</A>
-	  <LI><A HREF="#sec_models_language">Language Model</A>
-	</UL>
-      <LI><A HREF="#sec_modules">Decoder Modules and Libraries</A>
-	<UL>
-	  <LI><A HREF="#sec_lib">Support Libraries</A>
-	  <LI><A HREF="#sec_s3core">Sphinx-3 Core Modules </A>
-	  <LI><A HREF="#sec_s3pgm">Sphinx-3 Decoder Programs</A>
-	</UL>
-      <LI><A HREF="#sec_use">Compiling and Running Sphinx-3 Programs</A>
-	<UL>
-	  <LI><A HREF="#sec_compile">Compiling Sphinx-3</A>
-	  <LI><A HREF="#sec_exec">Running Sphinx-3</A>
-	</UL>
-      <LI><A HREF="#sec_argref">Command Line Argument Reference</A>
-      <LI><A HREF="#sec_s3train">Sphinx-3 Trainer</A>
-      <LI><A HREF="#sec_bib">Bibliography</A>
+      <LI>5-10x real-time recognition time on large vocabulary tasks</LI>
+      <LI>Limited to fully continuous acoustic models</LI>
+      <LI>Limited to 3 or 5-state left-to-right HMM topologies</LI>
+      <LI>Bigram or trigram language model</LI>
+      <LI>Batch-mode operation from pre-recorded speech</LI>
     </UL>
-    <P></P>
-    (Here's a <A href="../README">README</a> summary as well.)
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-
-    <H2>
-      <A NAME="sec_intro"><U>Introduction</U></A>
-    </H2>
     
-    Sphinx-3 (S3) is the successor to the Sphinx-II speech recognition system from
-    Carnegie Mellon University.  The main differences between the two are:
+    <P>This package contains the following programs:
+    </P>
+    <OL>
+      <LI><code>decode</code>: The Sphinx-3 s3.2 decoder</LI>
+      <LI><code>gausubvq</code>: A utility for creating a compact, quantized form of continuous
+	density acoustic models.  The compact form is used to speed up acoustic likelihood
+	computation in the decoder</LI>
+      <LI><code>lmtest</code>: A language model test utility</LI>
+    </OL>
+    <P>This distribution (specifically the Makefiles) has been prepared for Unix platforms.
+      However, it should be easy to create an equivalent setup on the
+      Windows platform, and compile the software there as well.  Note that the s3.2 decoder
+      depends on the <code>libutil</code> module (link), which is also a part of the
+      Sphinx distribution.
+    </P>
+
+    <P>This document is a brief user's manual for the above programs.
+      It is <em>not</em> meant to be a detailed description of the
+      decoding algorithm, or an in-depth tutorial on speech recognition technology.
+      However, a set of (Microsoft) <a href="s3-2.ppt">PowerPoint slides</a> are available
+      that give additional information about the decoder.
+    </P>
+    
+    <P>The initial part of this document provides an overview of the decoder.  It is
+      followed by descriptions of the main input and output databases; i.e., the lexicon,
+      language model, acoustic model, etc.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_intro">Back to top of this section</a>
+    </div>
+
+    
+    <H2><A NAME="sec_decoverview"><U>Overview of the s3.2 Decoder</U></A></H2>
+    
+    <P>The s3.2 decoder is based on the conventional <em>Viterbi search</em> algorithm and
+      <em>beam search</em> heuristics [cite].
+      It uses a <em>lexical-tree</em> search structure somewhat like the Sphinx-II
+      decoder [citeRavi] (link), but with some improvements for greater accuracy than the
+      latter.  However, unlike the Sphinx-II system, this one as yet provides no
+      convenient API for the
+      development of applications based on speech-recognition.  Instead, it only has a
+      stand-alone, batch-mode recognition application (i.e., the decoder).  It takes its
+      input from pre-recorded speech that has already been processed into
+      <em>cepstrum</em> data files (cite,link), and writes its recognition results to
+      output files.
+    </P>
+    
+    
+    
+    <H3><A NAME="sec_dec_input"><U>Inputs</U></A></H3>
+    
+    <P>We first give a brief outline of the input and output characteristics of the decoder.
+      More detailed information is available in later sections.  The decoder needs
+      the following inputs:
+    </P>
     <UL>
-      <LI> Sphinx-3 supports a much more flexible range of acoustic modelling.
-	Specifically, it can handle discrete, semi-continuous, or fully continuous
-	acoustic models.  Sphinx-II can only handle semi-continuous models.
-      <LI> Sphinx-3 is completely written from scratch and does not contain any
-	historical appendages from Sphinx-I or Sphinx-II.
-    </UL>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-    
-    <H2>
-      <A NAME="sec_s3set"><U>The Sphinx-3 Decoder Set Overview</U></A>
-    </H2>
-    
-    The Sphinx-3 decoder collection includes several independent modules listed
-    <A HREF="#sec_s3set_modules">below</A>.  They all share a number of common
-    features:
-    <UL>
-      <LI>At the moment, every program is set up only for <b>batch mode</b>
-	operation.
+      <LI><a href="#sec_dict"><em>The lexical model</em></a>:  The lexical or pronunciation
+	model contains
+	pronunciations for all the words of interest to the decoder.  Like most modern
+	speech recognition systems, Sphinx-3 uses <em>phonetic units</em> to build word
+	pronunciations.  Currently, the pronunciation lexicon is almost entirely
+	hand-crafted.
       </LI>
+      <P></P>
+    
+      <LI><a href="#sec_am"><em>The acoustic model</em></a>:  Sphinx uses acoustic models
+        based on statistical <em>hidden
+	Markov models</em> (HMMs).  The acoustic model is trained from acoustic
+	training data using the Sphinx-3 trainer (link).  The trainer is capable of
+	building acoustic models with a wide range of structures, such as <em>discrete</em>,
+	<em>semi-continuous</em>, or <em>continuous</em>.  However, the s3.2 decoder is only
+        capable of handling continuous acoustic models.
+      </LI>
+      <P></P>
       
-      <LI>Each module operates on finite length <b>utterances</b>.  Sphinx-3 is not
-	capable of processing a stream of speech input of arbitrary duration.
-	Utterances must be limited to less than 300 sec.  Shorter utterances will
-	reduce system resource requirements.
+      <LI><a href="#sec_lm"><em>The language model (LM)</em></a>:  Sphinx-3 uses a
+        conventional backoff bigram or trigram language model.
       </LI>
-
-      <LI>For the modules that decode speech data, the speech input must be in the
-	form of <b>cepstra</b>.  Front end processing to transform audio data into
-	cepstra has to take place offline.  The <b>robust</b> group at CMU has
-	traditionally been responsible for this task.
-      </LI>
-    </UL>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_s3set_modules"><U>What's In It</U></A>
-    </H3>
-
-    The following is a brief overview of the modules in the Sphinx-3 decoder set:
-    <dl>
-      <dt><u><b>s3decode:</b></u>
-      <dd>This performs a basic <b>Viterbi decoding</b> using <b>beam search</b>.
-	It also produces a word lattice that contains word segmentations and
-	scores used by other programs mentioned below.  (Note that this is not a
-	real-time decoder.  For that we still have to use the Sphinx-II decoder.)
-
-      <dt><u><b>s3dag:</b></u>
-      <dd>This does a <b>shortest path search</b> of a
-	<b>directed acyclic graph</b> (DAG) constructed from the word lattice.  It
-	is also loosely referred to as the <b>DAG search</b> [cite].
-	For each utterance it produces a single recognition hypothesis which is
-	usually a little more accurate than the Viterbi search hypothesis.  Since
-	there is no pruning in this algorithm, and it finds the <b>globally optimum</b>
-	path through the word lattice, the optimum language weight can be tuned at
-	will.
-
-      <dt><u><b>s3astar:</b></u>
-      <dd>For each utterance this generates an <b>N-best list</b> from the word
-	lattice using the <b>A* search</b> algorithm [cite].  N-best lists
-	can then be rescored, using, for example, better acoustic or language models.
-
-      <dt><u><b>s3align:</b></u>
-      <dd>For each utterance this produces a <b>time alignment</b> or
-	<b>segmentation</b>, given the input speech and the corresponding word-level
-	transcript.  Segmentations can be obtained at the word, phone, or HMM state
-	level.  In addition, it also selects the most likely pronunciation for each
-	word instance in the transcript.
-
-      <dt><u><b>s3allphone:</b></u>
-      <dd>This performs a Viterbi decoding like <code>s3decode</code>, but at the
-	phone level, producing a <b>phone recognition hypothesis</b> as well as a
-	<b>phone lattice</b> for each utterance.
-    </dl>
-    Running any of these programs without any arguments produces a short description of
-    the respective command line arguments.
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_s3set_where"><U>Where To Find It</U></A>
-    </H3>
+      <P></P>
       
-    The root directory for the set of Sphinx-3 decoder programs is (in CMU-CS only):
-    <A href="file:/net/alf20/usr/rkm/s3/"><b>/net/alf20/usr/rkm/s3</b></a> (i.e.,
-    <A href="../"><b>one level above</b></a> this <b>doc</b> directory).  Its
-    primary contents are the following subdirectories:
-    <dl>
-      <dt><A href="../src/"><b>src:</b></a>
-      <dd>The source code.
-
-      <dt><A href="../lib/"><b>lib/*:</b></a>
-      <dd>Libraries (binaries) for various platforms.
-
-      <dt><A href="../bin/"><b>bin/*:</b></a>
-      <dd>Executables for various platforms.
-
-      <dt><A href="../doc/"><b>doc:</b></a>
-      <dd>Documentation.
-
-      <dt><A href="../tests/"><b>tests:</b></a>
-      <dd>Sample scripts and output for each Sphinx-3 module.
-    </dl>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-    
-    <H2>
-      <A NAME="sec_models"><U>Input Models</U></A>
-    </H2>
-    
-    Several categories of input data are required by the Sphinx-3 system.  They are
-    briefly described in this section.  Note that not all modules need the entire
-    set of input models.  For example, the allphone recognizer does not need a
-    <A HREF="#sec_models_lexicon">pronunciation lexicon</A>.
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_models_speech"><U>Speech Data</U></A>
-    </H3>
-
-    As mentioned above, raw speech input data has to be converted through some
-    <b>front-end</b> signal processing into <b>cepstra</b> before it can be decoded.
-    The result is a stream of cepstrum vectors, typically one vector every 10 msec
-    <b>frame</b>.  The currently used cepstrum vector contains 13 elements
-    <b>c0</b>...<b>c12</b> (where c0 corresponds to signal energy in the frame).
-    <P></P>
-
-    The cepstrum vector is usually further augmented into a <b>feature vector</b>,
-    by appending it with its first and second derivatives (differences).  These are
-    also commonly referred to as <b>delta</b> and <b>double delta</b>, respectively.
-    It is the feature vector that ultimately represents the speech in a given frame.
-    <P></P>
-
-    Note that the conversion of a cepstrum vector stream into a feature vector
-    stream occurs as part of the decoding process.  It is relatively easy to plug in
-    a new feature definition into the Sphinx-3 decoder software (see the
-    <A href="#sec_s3lib_feat">libfeat</a> library).
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_models_acoustic"><U>Acoustic Model</U></A>
-    </H3>
-
-    Sphinx-3 uses <b>subphonetic acoustic models</b> [cite].  First, the basic sounds
-    in the language are classified into phonemes or <b>phones</b>.  There are roughly
-    50 phones in the English language.  Here is the 7-phone pronunciation for the
-    word <code>MINIMUM</code>:
-    <pre>	M  IH  N  AX  M  AX  M</pre>
-    These phones are then further refined into context-dependent <b>triphones</b>,
-    i.e., phones occurring in given left and right phonetic contexts are treated
-    distinctly.  For example, the two occurrences of the <code>AX</code> basephone
-    above have different left contexts.  (Context independent phones are often
-    referred to as <b>basephones</b> or <b>CI phones</b> to explicitly distinguish
-    them from triphones.)  Note that context-dependency gives rise to cross-word
-    triphones; e.g., the left context for the leftmost basephone depends on the
-    previous word.
-    <P></P>
-    
-    Triphones are further distinguished according to the position of the center phone
-    within the word: beginning, end, middle, or single.  The three occurrences of
-    the phone <code>M</code> in the word <code>MINIMUM</code> have three different
-    position attributes.  
-    <P></P>
-
-    Each triphone and each basephone is modelled by a <b>hidden Markov model</b> or
-    <b>HMM</b> [cite].  Typically, 3 or 5 state left-to-right models are used.
-    Basically, each state models its underlying acoustics.  But with 50 basephones,
-    we end up with a total of 4*50<sup>3</sup>*3 possible triphone states!  To keep
-    things manageable, HMM states are <b>clustered</b> into a much smaller number
-    of groups.  Each such group is called a <b>senone</b>, and all the states mapped
-    into one senone share the same underlying HMM model.  The clustering process
-    is based on similarity of states and is fairly involved [cite].
-    <P></P>
-
-    Thus, it is the senones that make up the acoustic model.  Acoustic models can be
-    of different degrees of sophistication.  Two forms are commonly used:
-    <UL>
-      <LI><b>continuous</b> distribution model.
-      <LI><b>semi-continuous</b> or <b>tied-mixture</b> distribution model,
+      <LI><a href="#sec_ctl"><em>Speech input specification</em></a>:
+        This is a <em>control file</em> that describes the input to be decoded into text.
+        Currently, the entire input to be processed must be available beforehand.  The
+	raw audio samples must have been preprocessed into cepstrum files
+	(link to <code>libfe</code> in Sphinx-II).  Also note that the decoder cannot handle
+	arbitrary lengths of speech input.  Each separate piece (or <em>utterance</em>) to be
+	processed by the decoder must be no more than 300 sec. long.  Typically, one uses
+        a <em>segmenter</em> (link to <code>CMUSeg</code>) to chop up a cepstrum stream
+        into manageable segments of up to 20 or 30 sec. duration.
+      </LI>
     </UL>
-    In the first, each senone has its own, private <b>mixture Gaussian</b> distribution
-    model for its corner of the speech feature space.  In the second case, all the
-    senones share a single set of Gaussian distributions, but each senone has its own
-    set of <b>mixing weights</b> applied to them [cite].  Sphinx-3 supports both models,
-    and other, intermediate degrees of state-tying as well. 
-    <P></P>
-
-    Each triphone also has a <b>state transition probability matrix</b> that
-    defines the topology of the HMM.  Once again, to conserve resources, there is
-    a considerable amount of sharing.  Typically, there is one such matrix per
-    basephone, and all triphones with the same center basephone share its matrix.
-    <P></P>
     
-    Thus, it should be clear that acoustic modelling is a large subject in itself.
-    Contact <a href="mailto:eht@cs.cmu.edu">Eric Thayer</a> for details of
-    <b>training</b> acoustic models using the <b>Sphinx-3 trainer</b>.
-    <P></P>
     
-    The acoustic model is input through the following types of files:
+    
+    <H3><A NAME="sec_dec_output"><U>Outputs</U></A></H3>
+    
+    <P>The decoder can produce two types of recognition output:
+    </P>
     <UL>
-      <LI><b>Model definition</b> (or <b>mdef</b>) file.  It defines the set of
+      <LI><a href="#sec_hypseg"><em>Recognition hypothesis</em></a>:  A single best
+	recognition result (or <em>hypothesis</em>) for each utterance
+	processed.  It is a linear word	sequence, with additional attributes such as their
+	time segmentation and scores.
+      </LI>
+      <P></P>
+      
+      <LI><a href="#sec_wordlat"><em>Word lattice</em></a>:  A word-graph of all possible
+        candidate words recognized during the decoding of an utterance, including other
+        attributes such as their time segmentation and acoustic likelihood scores.
+      </LI>
+    </UL>
+    
+    <P>In addition, the decoder also produces a detailed log to stdout/stderr that can be
+      useful in debugging, gathering statistics, etc.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_decoverview">Back to top of this section</a>
+    </div>
+    
+    
+    
+    <H2><A NAME="sec_compile"><u>Compiling s3.2</u></A></H2>
+    
+    <P>The Makefiles provided are set up for Unix platforms.
+      The following steps are needed to compile the decoder and other utilities:
+    </P>
+    <OL>
+      <LI>Obtain and install the <code>libutil</code> library module (link) wherever it is
+	convenient</LI>
+      <LI><code>setenv MACHINE linux</code> (or <code>alpha</code>, <code>sun</code>,
+	etc. as appropriate)</LI>
+      <LI><code>setenv S3DIR</code> to your installation of the Sphinx-3 (s3.2) root
+	directory</LI>
+      <LI>Set the <code>UTILDIR</code> variable in
+	<a href="../Makefile.defines"><code>$S3DIR/Makefile.defines</code></a> to point
+	to your installation of the <code>libutil</code> module</LI>
+      <LI><code>cd $S3DIR/src</code></LI>
+      <LI><code>make clean</code>;  This should remove any old object files</LI>
+      <LI><code>make</code>;  This first compiles <code>libutil</code> if it is out of date.
+	Then it compiles the decoder and other utilities.
+    </OL>
+    <P>The executable files are placed in machine specific directories under
+      <a href="../bin/"><code>$S3DIR/bin</code></a>.
+    </P>
+    
+    <P>Note that the Makefiles aren't foolproof; they do not eliminate the need for
+      sometimes manually determining dependencies, especially upon updates to header
+      files.  When in doubt, first clean out the compilation directories entirely.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_compile">Back to top of this section</a>
+    </div>
+    
+    
+    
+    <H2><A NAME="sec_exec"><u>Running s3.2</u></A></H2>
+    
+    <P>Running the decoder is simply a matter of invoking the binary
+      (i.e., <code>decode</code>), with a number
+      of command line arguments specifying the various input and output files, as
+      well as decoding
+      configuration parameters.
+    </p>
+
+    <P>Invoking the binary without any argument produces
+      a <a href="cmdhelp.txt">help message</a> with short descriptions of all
+      the command line arguments.
+    </P>
+    
+    
+    
+    <H3><A name="sec_args_overview"><U>Command Line Arguments Overview</U></a></H3>
+    
+    <P>This section gives a brief overview of the main command line arguments.  They are
+      broken down into separate groups, based on whether they are the primary flags
+      specifying input and output data, arguments for optional configuration, or for
+      performance tuning.
+    </P>
+    
+    <P>Note that not all the available command line arguments are covered below.  There
+      are a few additional and undocumented flags, intended mainly for debugging purposes.
+    </P>
+    
+    <H4><A name="sec_flags_primary"><U>Primary Flags</U></a></H4>
+    
+    <P>Many of the flags have reasonable defaults.  The ones that a user minimally needs
+      to provide are the input and output databases or files, which have been discussed
+      <a href="#sec_decoverview">above</a>:
+    </P>
+    <table cellpadding="8">
+      <tr>
+	<td><UL><LI><code>-mdef</code></LI></UL></td>
+	<td><a href="#sec_am">Model definition</a> input file</td>
+      </tr>
+      
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-mean</code></LI>
+	    <LI><code>-var</code></LI>
+	    <LI><code>-mixw</code></LI>
+	    <LI><code>-tmat</code></LI>
+	    <LI><code>-subvq</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#am_files">Acoustic model</a> files</td>
+      </tr>
+      
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-dict</code></LI>
+	    <LI><code>-fdict</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#dict_main_filler">Main and filler lexicons</a></td>
+      </tr>
+      
+      <tr>
+	<td><UL><LI><code>-lm</code></LI></UL></td>
+	<td>Language model <a href="#lm_dumpfile">binary dump file</a></td>
+      </tr>
+      
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-fillpen</code></LI>
+	    <LI><code>-fillprob</code></LI>
+	    <LI><code>-silprob</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#lm_filler">Filler word</a> probabilities</td>
+      </tr>
+      
+      <tr>
+	<td><UL><LI><code>-hypseg</code></LI></UL></td>
+	<td>Output <a href="#sec_hypseg">hypotheses file</a></td>
+      </tr>
+    </table>
+    
+    
+    <H4><A name="sec_flags_config"><U>Additional Configuration Flags</U></a></H4>
+    
+    <P>It may often be necessary to provide additional parameters to obtain the right
+      decoder configuration:
+    </P>
+    <table cellpadding="8">
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-cmn</code></LI>
+	    <LI><code>-agc</code></LI>
+	    <LI><code>-varnorm</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#am_feature">Feature type</a> configuration</td>
+      </tr>
+      
+      <tr>
+	<td><UL><LI><code>-cepdir</code></LI></UL></td>
+	<td>Directory prefix for cepstrum files specified in the
+	  <a href="#sec_ctl">control file</a></td>
+      </tr>
+      
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-ctloffset</code></LI>
+	    <LI><code>-ctlcount</code></LI>
+	  </UL>
+	</td>
+	<td>Selecting a portion of the <a href="#sec_ctl">control file</a> to be processed</td>
+      </tr>
+      
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-outlatdir</code></LI>
+	    <LI><code>-latext</code></LI>
+	  </UL>
+	</td>
+	<td>Directory, file-extension for <a href="#sec_wordlat">word lattices</a> output</td>
+      </tr>
+    </table>
+
+    
+    
+    <H4><A name="sec_flags_tune"><u>Performance Tuning Flags</u></a></H4>
+    <P>In yet other cases, it may be necessary to tune the following parameters to obtain
+      the optimal computational efficiency or recognition accuracy:
+    </P>
+    <table cellpadding="8">
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-beam</code></LI>
+	    <LI><code>-pbeam</code></LI>
+	    <LI><code>-wbeam</code></LI>
+	    <LI><code>-subvqbeam</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#sec_dec_prune">Beam pruning</a> parameters</td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-maxwpf</code></LI>
+	    <LI><code>-maxhistpf</code></LI>
+	    <LI><code>-maxhmmpf</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#sec_dec_prune">Absolute pruning</a> parameters</td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-lw</code></LI>
+	    <LI><code>-wip</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#lm_lw_wip">Language weight, word insertion penalty</a></td>
+      </tr>
+    
+      <tr>
+	<td><UL><LI><code>-Nlextree</code></LI></UL></td>
+	<td>Number of lexical tree instances (link)</td>
+      </tr>
+    </table>
+    
+    
+    
+    <H3><A name="sec_dec_op"><U>Decoder Operation</U></a></H3>
+    
+    <P>This section is a bit of a mish-mash; its contents probably belong in an FAQ
+      section.  But, hopefully, through this section a newcomer to Sphinx can get an
+      idea of the structure, capabilities, and limitations of the s3.2 decoder.
+    </P>
+
+
+
+    <H4><A name="sec_dec_init"><U>Initialization</U></a></H4>
+    
+    <P>The decoder is configured during the initialization step, and the configuration
+      holds for the entire batch run.  This means, for example, that the decoder does
+      not dynamically reconfigure the acoustic models to <em>adapt</em> to the input.
+      To choose another example, there is no mechanism in this decoder to switch
+      language models from utterance to utterance, unlike in Sphinx-II (link).
+      The main initialization steps are outlined below.
+    </P>
+
+    <P><b>Log-Base Initialization.</b>  Sphinx performs all likelihood computations in
+      the log-domain.  Furthermore, for computational efficiency, the <em>base</em>
+      of the logarithm is chosen such
+      that the likelihoods can be maintained as 32-bit integer values.  Thus,
+      all the scores reported by the decoder are <em>log-likelihood</em> values in
+      this peculiar log-base.  The default base
+      is typically 1.0003, and can be changed using the <code>-logbase</code> command line
+      argument.  The main reason for modifying the log-base would be to control the length
+      (duration) of an input utterance before the accumulated log-likelihood values overflow
+      the 32-bit representation, causing the decoder to fail catastrophically.  The log-base
+      can be changed over a wide range without affecting the recognition.  
+    </P>
+
+    <P><b>Models Initialization.</b>  The lexical, acoustic, and language models
+      specified via the command line arguments are loaded during initialization.  This set of
+      models is used to decode all the utterances in the input.
+      (The language model is actually only partly loaded, since s3.2 uses a
+      <a href="#lm_dumpfile">disk-based LM</a> strategy.)
+    </P>
+
+    <P><b>The Effective Vocabulary.</b>  After the models are loaded,
+      the <em>effective vocabulary</em> is determined.  It is the
+      set of words that the decoder is capable of recognizing.  Recall that the decoder
+      is initialized with three sources of words:
+      the <a href="#dict_main_filler">main and filler lexicon</a> files,
+      and the <a href="#sec_lm">language model</a>.  The effective vocabulary
+      is determined from them as follows:
+    </P>
+    <OL>
+      <LI>Find the intersection of the words in the LM and the main
+	pronunciation lexicon</LI>
+      <LI>Include all the alternative pronunciations to the set derived above (using
+	the main lexicon)
+      <LI>Include all the filler words from the filler lexicon, but excluding the
+	distinguished beginning and end of sentence words: <code>&lt;s&gt</code> and
+	<code>&lt;/s&gt</code>.</LI>
+    </OL>
+    <P>The effective vocabulary remains in effect throughout the batch run.  It is not
+      possible to add to or remove from this vocabulary dynamically, unlike in the
+      Sphinx-II system.
+    </P>
+
+    <P><b>Lexical Tree Construction.</b>  The decoder constructs <em>lexical trees</em>
+      from the effective vocabulary described above.  Separate trees are constructed
+      for words in the <a href="#dict_main_filler">main and filler lexicons</a>.
+      Furthermore, several copies may be instantiated for the two, depending on the
+      <code>-Nlextree</code> command line argument.  Further details of the lexical
+      tree construction are available on the PowerPoint <a href="s3-2.ppt">slides</a>.
+    </P>
+
+
+
+    <H4><A name="sec_ctl_process"><U>Control File Processing</U></a></H4>
+
+    <P>Folloing initialization, the decoder processes the entries in the control file
+      sequentially, one at a
+      time, and independent of each other.  It is possible to process a contiguous
+      subset of the control file, using the <code>-ctloffset</code> and <code>-ctlcount</code>
+      flags, as mentioned earlier.  The independent processing of each entry implies
+      that there is no learning or <em>adaptation</em> capability as decoding progresses.
+      But it also implies that rearranging the order of the entries in the control file
+      has no effect on the individual results, which is a useful attribute in
+      experimentation and debugging.
+    </P>
+
+
+
+    <H4><A name="sec_dec_prune"><U>Pruning</U></a></H4>
+
+    <P>Each entry in the control file, or utterance, is processed using the
+      given input models, and using the <em>Viterbi search algorithm</em>.  In order
+      to constrain the active search space to computationally manageable limits,
+      <em>pruning</em> is employed, which means that the less promising hypotheses are
+      continually discarded during the recognition process.  There are two kinds of
+      pruning in s3.2, <em>beam pruning</em> and <em>beam pruning</em>.
+    </P>
+
+    <P><b>Beam Pruning.</b>  Each utterance is processed in a <em>time-synchronous</em>
+      manner, one frame at a time.  At each frame
+      the decoder has a number of currently
+      <em>active</em> HMMs to match with the next frame of input speech.  But it
+      first discards or deactivates those whose state likelihoods are below some
+      <em>threshold</em>, relative to best HMM state likelihood at that time.  The
+      threshold value is obtained by <em>multiplying</em> the best state likelihood
+      by a fixed <em>beamwidth</em>.  The beamwidth is a value between 0 and 1, the former
+      permitting all HMMs to survive, and the latter permitting only the best scoring HMMs
+      to survive.
+    </P>
+    
+    <P>Similar beam pruning is also used in a number of other situations in the decoder,
+      e.g., to determine the candidate words recognized at any time, or to determine
+      the component densities in a mixture Gaussian that are closest to a given speech
+      feature vector.  The various beamwidths have to be determined empirically and
+      are set using
+      <a href="#sec_flags_tune">command line arguments</a>.
+    </P>
+
+    <P><b>Absolute Pruning.</b>  Even with beam pruning, the number of active entities
+      can sometimes become computationally overwhelming.
+      If there are a large number of HMMs that fall within the pruning
+      threshold, the decoder will keep all of them active.  However, when the number
+      of active HMMs grows beyond certain limits, the chances of detecting the
+      correct word among the many candidates are considerably reduced.
+      Such situations can occur, for
+      example, if the input speech is noisy or quite mismatched to the acoustic
+      models.  In such cases, there is no point in allowing the active search space to grow
+      to arbitrary extents.  It can be contained using pruning parameters that
+      limit the <em>absolute number</em> of active entities at any instant.
+      These parameters are also determined empirically, and set using
+      <a href="#sec_flags_tune">command line arguments</a>.
+    </P>
+
+
+
+    <H4><U>Output Generation</U></H4>
+
+    <P>During recognition, the decoder builds an internal <em>backpointer table</em>
+      data structure, from which the final outputs are generated.  This table records all
+      the candidate words recognized during decoding, and their attributes such as their
+      time segmentation, acoustic and LM likelihoods, as well as their predecessor entries
+      in the table.  When an utterance has been fully processed, the best
+      <a href="#sec_hypseg">recognition hypothesis</a>
+      is extracted from this table.  Optionally, the table is also converted
+      into a <a href="#sec_wordlat">word-lattice</a> and written out to a file.
+    </P>
+    
+    <P>More information on the backpointer table is available in the PowerPoint
+      <a href="s3-2.ppt">slides</a>.
+    </P>
+
+
+    <H4><U>Miscellaneous Issues</U></H4>
+
+    <P><b>Role of <code>&lt;s&gt</code> and <code>&lt;/s&gt</code>.</b>
+      The distinguished <em>beginning-of-sentence</em> and
+      <em>end-of-sentence</em> tokens <code>&lt;s&gt</code> and
+      <code>&lt;/s&gt</code> are not in the effective vocabulary, and no part of the
+      input speech is decoded into either of them.  They are merely
+      anchors at the ends of each utterance, and provide context for the LM.
+      This is in contrast to earlier versions of Sphinx, which required some
+      silence at the either end of each speech utterance, to be decoded into these
+      tokens.
+    </P>
+
+    
+    
+    <H3><A name="sec_dec_tune"><U>Performance Tuning</U></a></H3>
+    
+    <P>To obtain the best recognition performance, it is necessary to select the
+      appropriate front-end and feature type computation, train
+      the various models, as well as tune the decoder configuration parameters.  This
+      section deals with the last issue.  There are mainly two groups of parameters
+      to be tuned, pertaining to
+      <a href="#sec_tune_prune">pruning</a> and <a href="#sec_tune_lw">LM related</a>.
+      Unfortunately, there are no automatic methods for determining the values of
+      these parameters; it is necessary to derive them by trial and error.
+      Additionally, the following points should be kept in mind with regard to the pruning
+      parameters:
+    </P>
+    <UL>
+      <LI>The pruning parameters need to be tuned whenever the acoustic model is
+	changed.</LI>
+      <P></P>
+
+      <LI>Changing the LM related parameters affects the effective
+	pruning behaviour.  The pruning parameters ought to be re-tuned after the former
+        have been tuned (although this step is often skipped in practice).</LI>
+      <P></P>
+
+      <LI>For computational efficiency, the beamwidth parameter values should be as narrow
+        as possible (values closer to 1.0 are narrower), and the absolute pruning parameter
+        values should be as small as possible.</LI>
+      <P></P>
+
+      <LI>But, for recognition accuracy, the pruning parameters should be as relaxed as
+        possible.  (However, relaxing the beamwidth parameters too much can
+	actually <em>worsen</em> recognition accuracy.  The reasons for such perverse
+	behaviour are not quite understood.)</LI>
+    </UL>
+
+
+
+    <H4><A name="sec_tune_prune"><U>Tuning the Pruning Behaviour</U></a></H4>
+
+    <P>The pruning parameters are the following:</P>
+    <UL>
+      <LI><code>-beam</code>:  Determines which HMMs remain active at
+	any given point (frame) during recognition.  (Based on the best state score
+	within each HMM.)
+      </LI>
+      <LI><code>-pbeam</code>:  Determines which active HMM can transition to its
+	successor in the lexical tree at any point.
+	(Based on the exit state score of the source HMM.)
+      </LI>
+      <LI><code>-wbeam</code>:  Determines which words are recognized at any frame
+	during decoding.  (Based on the exit state scores of leaf HMMs in the
+	lexical trees.)</LI>
+      <LI><code>-maxhmmpf</code>:  Determines the number of HMMs (approx.) that can
+	remain active at any frame.</LI>
+      <LI><code>-maxwpf</code>:  Controls the number of distinct words recognized at
+	any given frame.</LI>
+      <LI><code>-maxhistpf</code>:  Controls the number of distinct word histories
+	recorded in the backpointer table at any given frame.</LI>
+      <LI><code>-subvqbeam</code>:  For each <a href="#sec_am">senone</a>
+	and its underlying acoustic model, determines its active mixture components at
+	any frame.</LI>
+    </UL>
+    
+    
+    <P>In order to determine the pruning parameter values empirically,
+      it is first necessary to obtain a <em>test set</em>, i.e.,
+      a collection of test sentences not used in any training data.  The test set should
+      be sufficiently large to ensure statistically reliable results.  For example, a
+      large-vocabulary task might require a test set that includes a half-hour of speech,
+      or more.
+    </P>
+    
+    <P>It is difficult to tune a handful of parameters simultaneously, especially when
+      the input models are completely new.  The following steps
+      may be followed to deal with this complex problem.
+    </P>
+    <OL>
+      <LI>To begin with, set the absolute pruning parameters to large values, making
+	them essentially ineffective.  Set both <code>-beam</code> and
+	<code>-pbeam</code> to <code>1e-60</code>, and <code>-wbeam</code> to
+	<code>1e-30</code>.  Set <code>-subvqbeam</code> to a small value
+	(e.g., the same as <code>-beam</code>).
+	Run the decoder on the chosen test set and obtain accuracy results.
+	(Use default values for the <a href="#sec_tune_lw">LM related parameters</a>
+	when tuning the pruning parameters for the first time.)
+      </LI>
+      <P></P>
+    
+      <LI>Repeat the decoder runs, varying <code>-beam</code> up and down, until the
+        setting for best accuracy is identified.
+        (Keep <code>-pbeam</code> the same as <code>-beam</code> every time.)
+      </LI>
+      <P></P>
+    
+      <LI>Now vary <code>-wbeam</code> up and down and identify
+        its best possible setting (keeping <code>-beam</code> and
+        <code>-pbeam</code> fixed at their most recently obtained value).
+      </LI>
+      <P></P>
+    
+      <LI>Repeat the above two steps, alternately optimizing
+        <code>-beam</code> and <code>-wbeam</code>, until convergence.  Note that
+        during these iterations
+        <code>-pbeam</code> should always be the same as <code>-beam</code>.
+        (This step can be omitted if the accuracy attained after the first iteration is
+        acceptable.)
+      </LI>
+      <P></P>
+    
+      <LI>Gradually increase <code>-subvqbeam</code> (i.e., towards 1.0 for a narrower
+        setting), stopping when recognition accuracy
+        begins to drop noticeably.  Values near the default are reasonable.  (This step is
+        needed only if a <a href="#am_subvq">sub-vector quantized</a> model
+        is available for speeding up acoustic model evaluation.)
+      </LI>
+      <P></P>
+    
+      <LI>Now gradually increase <code>-pbeam</code> (i.e., towards 1.0),
+        stopping when recognition accuracy begins to drop noticeably.  (This step
+        is optional; it mainly optimizes the computational effort a little more.)
+      </LI>
+      <P></P>
+    
+      <LI>Reduce <code>-maxhmmpf</code> gradually until accuracy begins to be affected.
+        Repeat the process with <code>-maxwpf</code>, and then with <code>-maxhistpf</code>.
+        (However, in some situations, especially when the vocabulary size is small, it may
+        not be necessary to tune these absolute pruning parameters.)
+      </LI>
+    </OL>
+
+    <P>In practice, it may not always be possible to follow the above steps strictly.  For
+      example, considerations of computational cost might dictate that the absolute pruning
+      parameters or the <code>-subvqbeam</code> parameter be tuned earlier in the sequence.
+    </P>
+
+
+
+    <H4><A name="sec_tune_lw"><U>Tuning Language Model Related Parameters</U></a></H4>
+
+    <P>The parameters needed to be tuned are the following:</P>
+    <UL>
+      <LI><code>-lw</code>:  The <a href="#lm_lw_wip">language weight</a>.
+      <LI><code>-wip</code>:  The <a href="#lm_lw_wip">word insertion penalty</a>.
+      </LI>
+    </UL>
+    <P>Like the pruning parameters, the above two are tuned on a test set.  Since the
+      decoder is much more sensitive to the language weight, that is typically tuned first,
+      using the default word insertion penalty.  The latter is then tuned.  It is usually
+      not necessary to repeat the process.
+    </P>
+
+
+
+    
+    <H3><A name="sec_dec_errors"><U>Some Common Errors and Failure Modes</U></a></H3>
+    <P></P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_exec">Back to top of this section</a>
+    </div>
+    
+
+    
+    
+    <H2><a name="sec_dict"><U>Pronunciation Lexicon</U></a></H2>
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#dict_struct">Lexicon Structure</A>
+	  <UL>
+	    <LI><A HREF="#dict_multipron">Multiple Pronunciations</a></LI>
+	    <LI><A HREF="#dict_compwd">Compound Words</a></LI>
+	  </UL>
+	</LI>
+	<LI><A HREF="#dict_main_filler">Main and Filler Lexicons</A></LI>
+      </UL>
+    </div>
+
+    <H3><a name="dict_struct"><U>Lexicon Structure</U></a></H3>
+
+    <P>A pronunciation lexicon (or dictionary) file specifies word pronunciations.  In
+      Sphinx, pronunciations are specified as a linear sequence of <em>phonemes</em>.
+      Each line in the file contains one pronunciation specification, except that
+      any line that begins with a "#" character <u>in the first column</u> is treated as
+      a comment and is ignored.  Example dictionary for digits:
+    </P>
+    <pre>
+ZERO               Z IH R OW
+ONE                W AH N
+TWO                T UW
+THREE              TH R IY
+FOUR               F AO R
+FIVE               F AY V
+SIX                S IH K S
+SEVEN              S EH V AX N
+EIGHT              EY TD
+NINE               N AY N</pre>
+    <P>The lexicon is completely <em>case-insensitive</em> (unfortunately).  For example,
+      it's not possible to have two different entries <code>Brown</code> and
+      <code>brown</code> in the dictionary.
+    </P>
+    
+    <H4><a name="dict_multipron"><U>Multiple Pronunciations</U></a></H4>
+    
+    <P>A word may have more than one pronunciation, each
+      one on a separate line.  They are distinguished by a unique parenthesized suffix
+      for the word string.  For example:
+    </P>
+    <pre>
+ACTUALLY          AE K CH AX W AX L IY
+ACTUALLY(2nd)     AE K SH AX L IY
+ACTUALLY(3rd)     AE K SH L IY</pre>
+    <P>If a word has more than one pronunciation, its first
+      appearance must be the unparenthesized form.  For the rest, the parenthesized
+      suffix may be any string, as long as it is unique for that word.
+      There is no other significance to the order of the alternatives; each one is
+      considered to be equallly likely.
+    </P>
+    
+    <H4><a name="dict_compwd"><U>Compound Words</U></a></H4>
+    
+    <P>In Sphinx-3, the lexicon may also contain <em>compound words</em>.  A compound word is
+      usually a short phrase whose pronunciation happens to differ significantly from the
+      mere concatenation of the pronunciations of its constituent words.  Compound word
+      tokens are formed by concatenating the component word strings with an underscore
+      character; e.g.:
+    </P>
+    <pre>WANT_TO           W AA N AX</pre>
+    <P>(The s3.2 decoder, however, treats a compound word as just another word in the
+      language, and does not do anything special with it.)
+    </P>
+    
+    
+    <H3><a name="dict_main_filler"><U>Main and Filler Lexicons</U></a></H3>
+    
+    <P>The Sphinx-3 decoders actually need two separate lexicons: a "regular" one
+      containing the words in the language of interest, and also a <em>filler</em> or
+      <em>noise</em> lexicon.
+      The latter defines "words" not in the language.  More specifically, it defines legal
+      "words" that do not appear in the language model (link) used by the decoder, but are
+      nevertheless encountered in normal speech.
+      This lexicon must include the <em>silence word</em> <code>&lt;sil&gt</code>,
+      as well as the special <em>beginning-of-sentence</em> and <em>end-of-sentence</em> tokens
+      <code>&lt;s&gt</code>, and 
+      <code>&lt;/s&gt</code>, respectively.  All of them usually
+      have the silence-phone <code>SIL</code> as their pronunciation.  In addition,
+      this lexicon may also contain "pronunciations" for other noise event words such as
+      breath noise, "UM" and "UH" sounds made during spontaneous speech, etc.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_dict">Back to top of this section</a>
+    </div>
+    
+    
+
+    <H2><a name="sec_am"><U>Acoustic Model</U></a></H2>
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#am_intro">Introduction</A></LI>
+	<LI><A HREF="#am_feature">Acoustic Features Computation</A></LI>
+	<LI><A HREF="#am_training">Acoustic Model Training</A></LI>
+	<LI><A HREF="#am_struct">Model Structures</A></LI>
+	<LI><A HREF="#am_subvq">Sub-Vector Quantized Models</A></LI>
+	<LI><A HREF="#am_files">Model Files</A></LI>
+      </UL>
+    </div>
+    
+
+    <H3><a name="am_intro"><U>Introduction</U></a></H3>
+
+    <P>Sphinx-3 is based on <em>subphonetic acoustic models</em> [citeMeiYuh].
+      First, the basic
+      sounds in the language are classified into phonemes or <em>phones</em>.
+      There are roughly 50 phones in the English language.  For example, here is a
+      pronunciation for the word <code>LANDSAT</code>:
+    </P>
+    <pre>L  AE  N  D  S  AE  TD</pre>
+    <P>
+      Phones are then further refined into context-dependent <em>triphones</em>,
+      i.e., phones occurring in given left and right phonetic contexts.  The reason is
+      that the same phone within different contexts can have widely different acoustic
+      manifestations, requiring separate acoustic models.  For example, the two occurrences
+      of the <code>AE</code> phone above have different contexts, only the first of which
+      is nasal.
+    </P>
+    
+    <P>In contrast to triphones, a phone considered without any specific context
+      is referred to as a <em>context-independent</em> phone or <em>basephone</em>.
+      Note also that context-dependency gives rise to the notion of <em>cross-word</em>
+      triphones.  That is, the left context for the leftmost basephone of a word depends
+      on what was the previous word spoken.
+    </P>
+    
+    <P>Phones are also distinguished according to their position
+      within the word: beginning, end, internal, or single
+      (abbreviated <code>b</code>, <code>e</code>, <code>i</code> and <code>s</code>,
+      respectively).
+      For example, in the word <code>MINIMUM</code> with the following pronunciation:
+    </P>
+    <pre>M  IH  N  AX  M  AX  M</pre>
+    <P>the three occurrences of the phone <code>M</code> have three different position
+      attributes.  The <code>s</code> attribute applies if a word has just a single phone as
+      its pronunciation.
+    </P>
+    
+    <P>For most applications, one builds acoustic models for triphones, qualified by the
+      four position attributes.  (This provides far greater modelling detail and accuracy
+      than if one relies on just basephone models.)
+      Each triphone is modelled by a <em>hidden Markov model</em> or
+      <em>HMM</em> [citeRabiner].  Typically, 3 or 5 state HMMs are used, where
+      each state has a statistical model for its underlying acoustics.
+      But if we have 50 basephones, with
+      4 position qualifiers and 3-state HMMs,
+      we end up with a total of 50<sup>3</sup>*4*3 distinct HMM states!  Such a model
+      would be too large and impractical to train.  To keep
+      things manageable, HMM states are <em>clustered</em> into a much smaller number
+      of groups.  Each such group is called a <em>senone</em> (in Sphinx terminology),
+      and all the states mapped
+      into one senone share the same underlying statistical model.  (The clustering of
+      HMM states into senones is described in [citeMeiYuh].)
+    </P>
+    
+    <P>Each triphone also has a <em>state transition probability matrix</em> that
+      defines the topology of its HMM.  Once again, to conserve resources, there is
+      a considerable amount of sharing.  Typically, there is one such matrix per
+      basephone, and all triphones derived from the same parent basephone share its
+      state transition matrix.
+    </P>
+    
+    <P>The information regarding triphones and mapping from triphone states to senones and
+      transition matrices is captured in a <em>model definition</em>, or <em>mdef</em> input
+      file.
+    </P>
+    
+    
+    
+    <H3><a name="am_feature"><U>Acoustic Features Computation</U></a></H3>
+    
+    <P>For various reasons, it is undesirable to build acoustic models directly in terms
+      of the raw audio samples.  Instead, the audio is processed to extract a vector of
+      relevant features.  All acoustic modelling is carried out in terms of such feature
+      vectors.
+    </P>
+    
+    <P>In Sphinx, feature vector computation is a two-stage process.  An off-line
+      <em>front-end</em> module (link) is first responsible for processing the raw audio
+      sample stream into a <em>cepstral</em> stream [cite], which can then
+      be input to the Sphinx software.  The input audio stream consists of
+      16-bit samples, at a rate of 8 or 16 KHz depending on whether the input
+      is narrow or wide-band speech.  The output is a stream of 13-dimensional
+      real-valued <em>cepstrum vectors</em>, at a rate of 100 vectors/sec.  The 10msec step
+      between successive vectors is usually called a <em>frame</em>.
+    </P>
+    
+    <P>In the second stage, the Sphinx software (both trainer and decoder) internally
+      converts the stream of cepstrum vectors
+      into a <em>feature stream</em>.  This process consists of the following steps:
+    </P>
+    <OL>
+      <LI>An optional <em>cepstrum mean-normalization</em> (CMN) step, which itself
+	includes an optional <em>variance normalization</em> (VN) step.
+      </LI>
+      <P></P>
+
+      <LI>An optional <em>automatic gain control</em> (AGC) step, in which the signal
+	power component of the cepstral vectors is normalized.
+      </LI>
+      <P></P>
+
+      <LI><em>Feature vector generation</em>.  The final speech feature vector is created
+	by typically augmenting the cepstrum vector (after CMN and AGC, if any) with one
+	or more time derivatives.  In s3.2, the feature vector in each frame is computed
+	by concatenating first and second derivatives to the cepstrum vector, giving
+	a 39-dimensional vector:
+	<div class="silverbox">
+	  <center><IMG ALT="* " SRC="feat.gif"></center>
+	</div>
+      </LI>
+    </OL>
+    
+    
+    
+    <H3><a name="am_training"><U>Acoustic Model Training</U></a></H3>
+    
+    <P>This refers to the computation of a (statistical) model for each senone in the
+      model.  As a <u>very rough approximation</u>, this process can be described by the
+      following <u>conceptual</u> steps:
+    <P>
+    <OL>
+      <LI>Obtain a corpus of training data.  This may include thousands of sentences
+	(or <em>utterances</em>, in Sphinx jargon), consisting of the spoken text and
+	corresponding audio sample stream.
+      </LI>
+      <P></P>
+      
+      <LI>For each utterance,
+	convert the audio data to a stream of feature vectors as described above.
+      </LI>
+      <P></P>
+
+      <LI>For each utterance, convert the text into a linear sequence of triphone HMMs
+	using the <a href="#sec_dict">pronunciation lexicon</a>.
+	(This is usually called the <em>sentence HMM</em>.)
+      </LI>
+      <P></P>
+
+      <LI>For each utterance, find the best <em>state sequence</em> or
+        <em>state alignment</em> through the sentence HMM, for
+	the corresponding feature vector sequence.  For example, the figure below
+	shows a single HMM with 3 states (using senones 0, 1, 2), and an utterance of
+        14-frames of feature vectors.  The figure also shows a sample HMM-state (senone)
+	sequence: each feature frame is labelled with a senone ID.
+	<div class="silverbox">
+	  <center><IMG ALT="* " SRC="falign.gif"></center>
+	</div>
+	The best state sequence is one with the <em>smallest mismatch</em> between the
+	input feature vectors and the labelled senones' underlying statistical models.
+      </LI>
+      <P></P>
+
+      <LI>For each senone, gather all the frames in the training corpus that mapped to
+	that senone in the above step, and build a suitable statistical model for the
+	corresponding collection of feature vectors.
+      </LI>
+    </OL>
+    <P>Note that there is a circularity in the above description.  We wish to train the
+      senone models, but in the penultimate step, we need the senone models to compute
+      the best possible state alignment.  This circularity is resolved by using the
+      iterative <em>Baum-Welch</em> or <em>forward-backward</em>
+      training algorithm [citeRabiner].  The algorithm begins with some initial set of models,
+      which could be completely flat, for the senones.
+      It then repeats the last two steps several times.  Each iteration uses the
+      model computed at the end of the previous iteration.
+    </P>
+    
+    <P>Although not mentioned above, the HMM state-transition probability matrices are also
+      trained from the state alignments.
+      Acoustic modelling is described in greater detail in the Sphinx-3 trainer module
+      (link) and [citeRabiner].
+    </P>
+    
+    
+    <H3><a name="am_struct"><U>Model Structures</U></a></H3>
+    
+    <P>The acoustic models trained as described above can be
+      of different degrees of sophistication.  Two forms are commonly used:
+    </P>
+    <UL>
+      <LI><em>continuous</em>, and
+      <LI><em>semi-continuous</em> or <em>tied-mixture</em>.
+    </UL>
+    <P>In a continuous model, each senone has its own, private <em>mixture-Gaussian</em>
+      distribution that describes the statistics of its underlying speech feature space.
+      In a semi-continuous model, all the
+      senones share a single <em>codebook</em> of Gaussian distributions, but each senone has
+      its own set of <em>mixture weights</em> applied to the codebook components.
+      Sphinx-3 supports both models, and other, intermediate degrees of state-tying as well.
+      (The s3.2 decoder, however, can only handle continuous density acoustic models.)
+    </P>
+    
+    <P>Similarly, Sphinx-3 in general supports "arbitrary" HMM topologies, unlike Sphinx-II,
+      which is restricted to a specific 5-state topology.
+      However, for efficiency's sake, the s3.2 decoder is hardwired to deal with only two
+      types of HMM topologies: 3-state and 5-state,
+      described briefly in <a href="../src/hmm.h">src/hmm.h</a>.
+    </P>
+
+
+    <H3><a name="am_subvq"><U>Sub-Vector Quantized Models</U></a></H3>
+    
+    <P>Continuous density acoustic models are computationally expensive to deal with, since
+      they can contain hundreds of thousands of Gaussian densities that must be evaluated
+      in each frame.  To reduce this cost, one can use an approximate model that
+      efficiently identifies the top scoring candidate densities in each Gaussian mixture
+      in any given frame.  The remaining densities can be ignored during that frame.
+    </P>
+    
+    <P>In Sphinx-3, such an approximate model is built by <em>sub-vector quantizing</em> the
+      acoustic model densities [citeRavi].  The utility that performs this conversion is
+      included in this distribution and is called <code>gausubvq</code>,
+      which stands for Gaussian Sub-Vector Quantization).
+    </P>
+    
+    <P>Note that if the original model consists of mixture Gaussians that only contain a
+      few component densities (say, 4 or fewer per mixture), a sub-vector quantized model
+      may not be effective in reducing the computational load.
+    </P>
+
+
+    
+    <H3><a name="am_files"><U>Model Files</U></a></H3>
+    
+    <P>An acoustic model is represented by the following collection of files:
+    </P>
+    <UL>
+      <LI>A <em>model definition</em> (or <em>mdef</em>) file.  It defines the set of
 	basephone and triphone HMMs, the mapping of each HMM state to a senone,
 	and the mapping of each HMM to a state transition matrix.
-      <LI><b>Mean</b> and <b>var</b> files.  These files contain the mean and
-	variance vector values for all the Gaussian distributions in the system.
-      <LI>A <b>state transition matrix</b> (or <b>tmat</b>) file containing the
-	actual HMM state transition topology and prior probabilities for each
-	transition.
+      </LI>
+      <LI>Gaussian <em>mean</em> and <em>variance</em> (or <em>mean</em> and <em>var</em>)
+	files.  These files contain all the
+	Gaussian codebooks in the model.  The Gaussian means and
+	corresponding variance vectors are separated into the two files.
+      </LI>
+      <LI>A <em>mixture weights</em> (or <em>mixw</em>) file containing the Gaussian
+	mixture weights for all the senones in the model.
+      </LI>
+      <LI>A <em>state transition matrix</em> (or <em>tmat</em>) file containing all the
+	HMM state transition topologies and their transition probabilities in the
+	model.
+      </LI>
+      <LI>An optional <em>sub-vector quantized model</em> (or <em>subvq</em>) file
+	containing an approximation of the acoustic model, for efficient evaluation.
+      </LI>
     </UL>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+    
+    <P>The <em>mean</em>, <em>var</em>, <em>mixw</em>, and <em>tmat</em> files are
+      produced by the Sphinx-3 trainer, and their file formats should be documented
+      there.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_am">Back to top of this section</a>
+    </div>
+    
+    
 
+    <H2><a name="sec_lm"><U>Language Model</U></a></H2>
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#lm_intro">Introduction</a></LI>
+	<LI><A HREF="#lm_ngrams">Unigrams, Bigrams, Trigrams, LM Vocabulary</a></LI>
+	<LI><A HREF="#lm_pron_case">Pronunciation and Case Considerations</a></LI>
+	<LI><A HREF="#lm_dumpfile">Binary LM File</A></LI>
+	<LI><A HREF="#lm_filler">Silence and Filler Words</a></LI>
+	<LI><A HREF="#lm_lw_wip">Language Weight and Insertion Penalty</A></LI>
+      </UL>
+    </div>
+    
 
+    <H3><a name="lm_intro"><U>Introduction</U></a></H3>
 
-    <H3>
-      <A NAME="sec_models_lexicon"><U>Pronunciation Lexicon</U></A>
-    </H3>
+    <P>The main language model (LM) used by the Sphinx decoder is a conventional bigram or
+      trigram backoff language model.  The <em>CMU-Cambridge SLM toolkit</em> (link) is
+      capable of generating such a model from LM training data.  Its output is an ascii
+      text file.  But a large text LM file can be very slow to load into memory.  To
+      speed up this process, the LM must be compiled into a
+      <a href="#lm_dumpfile">binary form</a>.  This distribution also includes an
+      <code>lmtest</code> utility program, which reads in a binary LM file and prints
+      out language model scores (log-likelihoods) for sentences typed in by the user.
+    </P>
+    
+    
+    <H3><a name="lm_ngrams"><U>Unigrams, Bigrams, Trigrams, LM Vocabulary</U></a></H3>
 
-    A pronunciation lexicon (or dictionary) file specifies word pronunciations using
-    a phone set defined in the model definition
-    (i.e., <b>mdef</b>) file mentioned above.  Each line in the file contains one
-    pronunciation specification.  A word may have more than one pronunciation, each
-    one on a separate line.  They are distinguished by a unique parenthesized suffix
-    for the word string.  For example:
-    <pre>
-	ACTUALLY	AE K CH AX W AX L IY
-	ACTUALLY(2nd)	AE K SH AX L IY
-	ACTUALLY(3rd)	AE K SH L IY</pre>
-    There is no particular significance to the above order; each one is considered to
-    be equallly likely.  If a word has more than one pronunciation, its first
-    appearance must be the unparenthesized form.  For the rest, the parenthesized
-    suffix may be any string, as long as it is unique for that word.
-    <P></P>
-
-    The lexicon may also contain <b>compound words</b>.  A compound word is usually
-    a short phrase whose pronunciation happens to differ significantly from the mere
-    concatenation of the pronunciation of its constituent words.  Compound word tokens
-    are formed by concatenating the component word strings with an underscore
-    character; e.g.:
-    <pre>	WANT_TO		W AA N AX</pre>
-    For language modelling purposes, however, compound words are broken down into
-    their component words.
-    <P></P>
-
-    The lexicon is <b>case-insensitive</b>; the following would be an error:
-    <pre>
-	Brown		B R AW N
-	brown		B R AW N</pre>
-    <P></P>
-
-    Finally, any line that begins with a "#" character <u>in the first column</u>
-    is treated as a comment and is ignored.
-    <P></P>
-    One  must also specify a filler-word lexicon.  This must include the silence
-    filler word (<b>&lt sil&gt</b>), as well as the special beginning and end of
-    sentence words (<b>&lt s&gt</b>) and (<b>&lt/s&gt</b>).  All of them usually
-    have the silence-phone <b>SIL</b> as their pronunciation.
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_models_language"><U>Language Model</U></A>
-    </H3>
-
-    Sphinx-3 currently only deals with word trigram (or bigram) language models.  The
-    input file is actually a pre-compiled binary dump, created from the standard
-    <b>.arpabo</b> format.  (The same binary dump file is also used by the Sphinx-II
-    decoder.  But whereas the Sphinx-II decoder requires both the dump and at least
-    the header portion of the ascii arpabo file, Sphinx-3 uses only the former.)
-    Refer to the Sphinx-II documentation for creating such binary dump files.
-    <P></P>
-    The language model does not distinguish between different pronunciations of the
-    same word.  For example, even though the lexicon might contain three different
-    pronunciation entries for the word "ACTUALLY" (<b>ACTUALLY</b>, <b>actually(2)</b>,
-    and <b>actually(3)</b>), the language model would only refer to the first form.
-    Furthermore, the language model is <b>case-insensitive</b>, like the lexicon.
-    <P></P>
-    The language model must also include the special beginning and end of sentence
-    words (<b>&lt s&gt</b>) and (<b>&lt/s&gt</b>).
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-
-    <H2>
-      <A NAME="sec_modules"><u>Decoder Modules and Libraries</u></A>
-    </H2>
-
-    <H3>
-      <A NAME="sec_lib"><u>Support Libraries</u></A>
-    </H3>
-
-    The Sphinx-3 decoder software includes several support libraries:
-    <dl>
-      <dt><A href="../src/libio/"><b>libio:</b></a>
-      <dd>Support routines for reading the binary format Sphinx-3 model files.  In
-	particular, for determining byte-order, byte-swapping, checksumming, etc.
-
-      <dt><A href="../src/libfeat/"><b>libfeat:</b></a>
-      <dd>Support routines reading Mel-frequency cepstrum (<b>MFC</b>) files, and
-	computing various types of feature streams from the cepstra.
-
-      <dt><A href="../src/libmisc/"><b>libmisc:</b></a>
-      <dd>Miscellaneous, Sphinx-3 specific support routines.
-
-      <dt><A href="../src/libutil/"><b>libutil:</b></a>
-      <dd>Sphinx-3 independent utility routines for memory allocation, parsing
-	command line arguments, string manipulation, hash tables, error reporting,
-	CPU usage profiling, etc.
-    </dl>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_s3core"><u>Sphinx-3 Core Modules</u></A>
-    </H3>
-
-    The main decoder code is in <A href="../src/libfbs/"><b>libfbs</b></a> (a
-    misnomer; it's not a library, really).  There are separate modules for reading
-    and maintaining the various input models and databases.  They are fairly cleanly
-    isolated from each other, following a more-or-less object-oriented design.  The
-    main ones are:
-    <dl>
-      <dt><u><b>mdef.{c,h}:</b></u>
-      <dd>Model definition information, including the
-	specification of the phone set, and triphone HMM-state to senone mapping.
-	
-      <dt><u><b>dict.{c,h}:</b></u>
-      <dd>Pronunciation lexicon.
-
-      <dt><u><b>gauden.{c,h}:</b></u>
-      <dd>Mixture Gaussian densities used to model HMM states (actually, senones).
-
-      <dt><u><b>senone.{c,h}:</b></u>
-      <dd>Mixture weights applied to the underlying mixture Gaussian codebook for
-	each senone.
-
-      <dt><u><b>tmat.{c,h}:</b></u>
-      <dd>HMM transition matrices (topology and transition probabilities) in the
-	acoustic model.
-
-      <dt><u><b>lm.{c,h}:</b></u>
-      <dd>Word trigram or bigram language model.  The model is <b>disk-based</b>;
-	i.e., bigrams and trigrams are only read in from the disk file on demand,
-	and are cached in memory temporarily.  This reduces the memory requirement
-	for large vocabulary LMs.
-
-      <dt><u><b>mllr.{c,h}:</b></u>
-      <dd>Module for reading and applying MLLR-based linear transformation on the
-	Gaussian mean vectors, for speaker adaptation.
-
-      <dt><u><b>logs3.{c,h}:</b></u>
-      <dd>All likelihood computation is carried out in log-space.  In order to
-	maintain the likelihood values as integers, a funny log-base (typically in
-	the range 1.0001 to 1.0003) is used.  This module provides support for
-	computation in this log-base.
-
-      <dt><u><b>cmn.{c,h}:</b></u>
-      <dd>Cepstral mean normalization (subtracting the mean cepstra for each
-	utterance).
-
-      <dt><u><b>agc.{c,h}:</b></u>
-      <dd>Automatic gain control (normalizing the power coefficients such that the
-	maximum frame power in any utterance is 0.)
-    </dl>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
-
-
-
-    <H3>
-      <A NAME="sec_s3pgm"><u>Sphinx-3 Decoder Programs</u></A>
-    </H3>
-    <dl>
-      <dt><A href="../src/libfbs/fwd.c"><b>fwd.c</b></a> and
-	<A href="../src/libfbs/main.c"><b>main.c</b></a>:
-      <dd>Forward pass Viterbi search, and main decoder driver code.
-
-      <dt><A href="../src/libfbs/dag.c"><b>dag.c</b></a> and
-	<A href="../src/libfbs/dag-main.c"><b>dag-main.c</b></a>:
-      <dd>Shortest path search; core and driver code.
-
-      <dt><A href="../src/libfbs/astar.c"><b>astar.c</b></a> and
-	<A href="../src/libfbs/astar-main.c"><b>astar-main.c</b></a>:
-      <dd>N-best list generation using A* search; core and driver code.
-
-      <dt><A href="../src/libfbs/align.c"><b>align.c</b></a> and
-	<A href="../src/libfbs/align-main.c"><b>align-main.c</b></a>:
-      <dd>Forced alignment; core and driver code.
-
-      <dt><A href="../src/libfbs/allphone.c"><b>allphone.c</b></a> and
-	<A href="../src/libfbs/allphone-main.c"><b>allphone-main.c</b></a>:
-      <dd>Allphone recognition; core and driver code.
-    </dl>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-
-    <H2>
-      <A NAME="sec_use"><u>Compiling and Running Sphinx-3 Programs</u></A>
-    </H2>
-
-
-
-    <H3>
-      <A NAME="sec_compile"><u>Compiling Sphinx-3</u></A>
-    </H3>
-
-    Compiling the Sphinx-3 decoder programs is easy.  Follow these steps:
+    <P>A trigram LM primarily consists of the following:</P>
     <UL>
-      <LI>Double check the file <A href="../Makefile.defines">Makefile.defines</a>
-	under the root Sphinx-3 directory to ensure that the correct compiler flags
-	are set for your platform.  If necessary, add new platform-specific variables
-	similar to the existing ones.
-      <LI>Update the S3ROOT variable definition in all the subdirectory Makefiles to
-	point to the Sphinx-3 root directory.
-      <LI>Follow the instructions at the top of the top-level
-	<A href="../Makefile">Makefile</a> for compilation instructions.
+      <LI><em>Unigrams:</em>  The entire set of words in this LM, and their individual
+	probabilities of occurrence in the language.
+	The unigrams must include the special
+	<em>beginning-of-sentence</em> and <em>end-of-sentence</em>
+	tokens: <code>&lt;s&gt</code>, and
+	<code>&lt;/s&gt</code> repsectively.</LI>
+      <P></P>
+    
+      <LI><em>Bigrams:</em>  A <em>bigram</em> is mathematically <em>P(word2 | word1)</em>.
+        That is, the <em>conditional probability</em> that <em>word2</em> immediately
+        follows <em>word1</em> in the language.  An LM typically contains this information
+        for some subset of the possible word pairs.  That is, not all possible
+        <em>word1, word2</em> pairs need be covered by the bigrams.</LI>
+      <P></P>
+    
+      <LI><em>Trigrams:</em>  Similar to a bigram, a <em>trigram</em> is
+        <em>P(word3 | word1, word2)</em>, or the conditional probability that <em>word3</em>
+        immediately follows a <em>word1</em>, <em>word2</em> sequence
+        in the language.  Not all possible 3-word combinations need be covered by the
+        trigrams.</LI>
+      <P></P>
     </UL>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+    <P>The <em>vocabulary</em> of the LM is the set of words covered by the unigrams.</P>
+    <P>The LM probability of an entire sentence is the product of the individual word
+      probabilities.  For example, the LM probability of the sentence
+      <code>"HOW ARE YOU"</code> is:</P>
+    <pre>
+P(HOW | &lt;s&gt) * 
+P(ARE | &lt;s&gt, HOW) * 
+P(YOU | HOW, ARE) * 
+P(&lt;/s&gt | ARE, YOU)</pre>
+
+
+    
+    <H3><a name="lm_pron_case"><U>Pronunciation and Case Considerations</U></a></H3>
+
+    <P>In Sphinx, the LM cannot distinguish between different pronunciations of the
+      same word.  For example, even though the lexicon might contain two different
+      pronunciation entries for the word <code>READ</code> (present and past tense forms),
+      the language model cannot distinguish between the two.  Both pronunciations would
+      inherit the same probability from the language model.
+    </P>
+    
+    <P>Secondly, the LM is <em>case-insensitive</em>.  For example, it cannot contain
+      two different tokens <code>READ</code> and <code>read</code>.
+    </P>
+
+    <P>The reasons for the above restrictions are historical.  Precise pronunciation and
+      case information has rarely been present in LM training data.  It would certainly be
+      desirable to do away with the restrictions at some time in the future.
+    </P>
+
+    
+    
+    <H3><a name="lm_dumpfile"><U>Binary LM File</U></a></H3>
+    
+    <P>The binary LM file (also referred to as the LM <em>dump</em> file)
+      is more or less a disk image
+      of the LM data structure constructed in memory.
+      This data structure was originally designed during the Sphinx-II days, when
+      efficient memory usage was the focus.
+      In Sphinx-3, however, memory usage is no longer an issue since the binary file
+      enables the decoder to use a <em>disk-based LM</em> strategy.
+      That is, the LM binary file is no longer read entirely into memory.
+      Rather, the portions required during decoding are read in on demand, and cached.
+      For large vocabulary recognition, the memory
+      resident portion is typically about 10-20% of the bigrams, and 5-10% of the trigrams.
+    </P>
+
+    <P>Since the decoder uses a
+      <a href="#lm_dumpfile">disk-based LM</a>, it is necessary to have
+      efficient access to the binary LM file.  Thus, network access to an LM file
+      at a remote location is not recommended.  It is desirable to have the LM file be
+      resident on the local machine.
+    </P>
+      
+    <P>The binary dump file can be created from the ascii form using
+      the <code>lm3g2dmp</code> utility (link), which is part of the Sphinx distribution.
+      (The header of the dump file itself contains a brief description of the
+      file format.)
+    </P>
     
 
+    
+    <H3><a name="lm_filler"><U>Silence and Filler Words</U></a></H3>
 
-    <H3>
-      <A NAME="sec_exec"><u>Running Sphinx-3</u></A>
-    </H3>
-
-    As mentioned earlier, there is a sample script for each program in the
-    <A href="../tests/"><b>tests</b></a> directory.  They should be fairly obvious
-    to follow.  However, some notes on the processing are in order.
-    <P></P>
-
-
-    <H4>
-      <A NAME="sec_ctlfile"><u>The Control File</u></A>
-    </H4>
-
-    Each program processes utterances
-    listed in a <b>control file</b>.  Each entry (on a separate line) in the control
-    file identifies an MFC file for one utterance (without the .mfc file extension).
-    In the case of the Viterbi decoder (<b>s3decode</b>), aligner (<b>s3align</b>),
-    and allphone decoder (<b>s3allphone</b>), the specified MFC file is processed.
-    An <b>Utterance-ID</b> is also associated with each such utterance.  This ID is
-    derived from the control file entry, by stripping the pathname from it.  For
-    example, if the control file contains the following entries:
+    <P>Language models typically do not cover acoustically significant events such as
+      silence, breath-noise, <em>UM</em> or <em>UH</em> sounds made by a person hunting
+      for the right phrase, etc.  These are known generally as <em>filler words</em>, and
+      are excluded from the LM vocabulary.
+      The reason is that a language model training corpus,
+      which is simply a lot of text, usually does not include such information.
+    </P>
+    
+    <P>Since the main trigram LM ignores silence and filler words,
+      their "language model probability" has
+      to be specified in a separate file, called the <em>filler penalty file</em>.
+      The format of this file is very straightforward; each line contains one word
+      and its probability, as in the following example:
+    </P>
     <pre>
-	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0201
-	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0202
-	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0203</pre>
-    three utterances are processed, with IDs <b>4t0c0201</b>, <b>4t0c0202</b>, and
-    <b>4t0c0203</b>, respectively.
-    The utterance ID is crucial since it is used to identify <u>all the output</u>
-    generated by these programs.  Thus, word lattice files produced by <b>s3decode</b>
-    would be named <b>4t0c0201.lat</b>, <b>4t0c0202.lat</b>, etc.
-    <P></P>
-    Note that even the shortest-path search and N-best generation programs---which do
-    not process MFC files, but rather the word lattices produced by the Viterbi
-    decoder---are driven by the same control files.  Specifically, they use the
-    utterance ID derived from the control file entries to look for appropriately named
-    word lattice input files.  In other words, the utterance ID also identifies
-    <u>all the non-MFC input data</u> needed by any program.
-    <P></P>
-    Therefore, it is crucial to ensure that the utterance ID is unique for each
-    utterance in the test corpus.  Otherwise, one might inadvertently overwrite
-    output files.
-    <P></P>
-    There is an alternative control file format that allows one to specify partial
-    segments within an MFC file as individual utterances.  Each line, in addition to
-    the MFC filename, includes start frame, end frame, and utterance-ID information.
-    For example, the control file:
+++UH++      0.10792
+++UM++      0.00866
+++BREATH++  0.00147</pre>
+    <P>The filler penalty file is not required.  If it <em>is</em> present, it does not
+      have to contain entries for every filler word.  The decoder allows a default value
+      to be specified for filler word probabilities (through the <code>-fillprob</code>
+      command line argument), and a default silence word probability (through
+      the <code>-silprob</code> argument).
+    </P>
+    
+    <P>Like the main trigram LM, filler and silence word probabilities are obtained from
+      appropriate training data.  However, training them is considerably easier since they
+      are merely unigram probabilities.
+    </P>
+
+    <P>Filler words are invisible or <em>transparent</em> to the trigram language model.
+      For example, the LM probability of the sentence
+      <code>"HAVE CAR &lt;sil&gt WILL TRAVEL"</code> is:</P>
     <pre>
-	file1 001225 003517 file1_001225_003517
-	file1 003511 005172 file1_003511_005172</pre>
-    specifies two utterances, both chosen from the MFC file "file1.mfc".  The first
-    starts at frame 1225 and ends at 3517 within that file, and has the utterance ID
-    <b>file1_001225_003517</b>.  (And so on.)  This format is useful for processing
-    long input files such as in the Hub-4 evaluation.
+P(HAVE | &lt;s&gt) * 
+P(CAR | &lt;s&gt, HAVE) * 
+P(&lt;sil&gt) *
+P(WILL | HAVE, CAR) * 
+P(TRAVEL | CAR WILL) * 
+P(&lt;/s&gt | WILL, TRAVEL)</pre>
+
+
+    
+    <H3><a name="lm_lw_wip"><U>Language Weight and Word Insertion Penalty</U></a></H3>
+    
+    <P>During recognition the decoder combines both acoustic likelihoods and language
+      model probabilities into a single score in order to compare various
+      hypotheses.  This combination of the two is not just a straightforward
+      product.  In order to obtain optimal recognition accuracy, it is usually necessary
+      to <em>exponentiate</em> the language model probability using a
+      <em>language weight</em> before combining the result with the acoustic likelihood.
+      (Since likelihood computations are actually carried out in the log-domain in the
+      Sphinx decoder, the LM weight becomes a multiplicative factor applied to LM
+      log-probabilities.)
+    </P>
+    
+    <P>The language weight parameter is typically obtained through trial and error.
+      In the case of Sphinx, the optimum value for this parameter has usually ranged
+      between 6 and 13, depending on the task at hand.
+    </P>
+    
+    <P>Similarly, though with lesser impact, it has also been found useful to include
+      a <em>word insertion penalty</em> parameter which is a fixed penalty for each
+      new word hypothesized by the decoder.  It is effectively another multiplicative
+      factor in the language model probability computation (before the application of
+      the language weight).
+      This parameter has usually ranged between 0.2 and 0.7, depending on the task.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_lm">Back to top of this section</a>
+    </div>
+
+
+    
+    <H2><a name="sec_ctl"><U>Speech Input Control File</U></a></H2>
+    
+    <P>The Sphinx-3 decoder processes entries
+      listed in a <em>control file</em>.  Each line in the control
+      file identifies a separate <em>utterance</em>.  A line has the following format
+      (the brackets indicate a group of fields that is optional):
+    </P>
+    <pre>
+CepFile [ StartFrame EndFrame UttID ]</pre>
+    <P><em>CepFile</em> is the speech input file containing cepstrum data.
+      (The filename extension should be omitted from the specification.)
+      If this is the only field in the line, the entire file is processed as one
+      utterance.  In this case, an <em>utterance ID</em> string is automatically
+      derived from the cepstrum
+      filename, by stripping any leading directory name components from it.  E.g.:
+      if the control file contains the following entries:
+    </P>
+    <pre>
+/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0201
+/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0202
+/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0203</pre>
+    <P>three utterances are processed, with IDs <code>4t0c0201</code>, <code>4t0c0202</code>,
+      and <code>4t0c0203</code>, respectively.
+    </P>
+    
+    <P>If, on the other hand, a control file entry includes the
+      <em>StartFrame</em> and <em>EndFrame</em> fields,
+      only that portion of the cepstrum file is processed.  This form of
+      the control file is frequently used if the speech input can be arbitrarily long,
+      such as an entire TV news show.  There is one big cepstrum file, but it is
+      processed in smaller chunks or segments.  In this case, the final <em>UttID</em>
+      field is the utterance ID string for the entry.
+    </P>
+    
+    <P>The utterance ID associated with a control file entry is used to identify all the
+      output from the decoder for that utterance.  For example, if the decoder is used
+      to generate <a href="#sec_wordlat">word lattice</a> files,
+      they are named using the utterance ID.
+      Hence, each ID, whether automatically derived or explicitly specified, should be
+      unique over the entire control file.
+    </P>
+
+    <P>Any line in the control file beginning a <code>#</code> character is a comment line,
+      and is ignored.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_ctl">Back to top of this section</a>
+    </div>
+    
+
+    
+    <H2><a name="sec_hypseg"><U>Recognition Hypothesis Output</U></a></H2>
+    
+    <P>The Sphinx-3 decoder produces a single recognition <em>hypothesis</em> for each
+      utterance it processes.  The hypotheses for all the utterances processed in a
+      single run are written to a single output file, one line per utterance.  The
+      line format is as follows:
+    </P>
+    <pre><em>u</em> S <em>s</em> T <em>t</em> A <em>a</em> L <em>l</em>  <em>sf</em> <em>wa</em> <em>wl</em> <em>wd</em>  <em>sf</em> <em>wa</em> <em>sl</em> <em>wd</em> ... <em>nf</em></pre>
+    <P>The <code>S</code>, <code>T</code>, <code>A</code>, and <code>L</code> fields are keywords and
+      appear in the output as shown.  The remaining fields are briefly described below:
+    </P>
+    <UL>
+      <LI><em>u</em>: the utterance ID
+      <LI><em>s</em>: an acoustic score scaling done during acoustic likelihood computation
+	(However, this field is 0 in the s3.2 decoder output.)
+      <LI><em>t</em>: the total score for this hypothesis
+      <LI><em>a</em>: the total acoustic score for this hypothesis
+      <LI><em>l</em>: the total language model score for this hypothesis
+    </UL>
+    <P>The <em>lscr</em> field is followed by groups of four fields, one group for
+      each successive word in the output hypothesis.  The four fields are:
+    </P>
+    <UL>
+      <LI><em>sf</em>: Start frame for the word (its end frame is just before the start frame
+	of the next word)
+      <LI><em>wa</em>: Acoustic score for the word
+      <LI><em>wl</em>: LM score for the word
+      <LI><em>wd</em>: The word string itself.
+    </UL>
+    <P>The final field, <em>nf</em>, in each hypothesis line is the total number of frames
+      in the utterance.</P>
+    
+    <P>Note that all scores are <em>log-likelihood</em> values in the
+      peculiar logbase used by the decoder.  Secondly, the acoustic scores are <em>scaled</em>
+      values; in each frame, the acoustic scores of all active <a href="#sec_am">senones</a>
+      are scaled such that the best senone
+      has a log-likelihood of 0.  Finally, the language model scores reported include
+      the <a href="#lm_lw_wip"><em>language weight</em> and <em>word-insertion penalty</em></a>
+      parameters.
+    </P>
+    
+    <P>Here is an <a href="hypseg.txt">example hypothesis file</a> for three utterances.
+    </P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_hypseg">Back to top of this section</a>
+    </div>
+    
+
+    
+    <H2><a name="sec_wordlat"><U>Word Lattice Output</U></a></H2>
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#wordlat_overview">Word Lattice Overview</A></LI>
+	<LI><A HREF="#wordlat_format">Word Lattice File Format</A></LI>
+      </UL>
+    </div>
+    
+
+    <h3><a name="wordlat_overview"><U>Word Lattice Overview</U></a></H3>
+    
+    <P>During recognition the decoder maintains not just the single best hypothesis, but also
+      a number of alternatives or candidates.  For example, <code>REED</code> is a perfectly
+      reasonable alternative to <code>READ</code>.  The alternatives are useful in many
+      ways: for instance, in N-best list generation.  To facilitate such
+      <em>post-processing</em>, the decoder can optionally produce a <em>word lattice</em>
+      output for each input utterance.  This output records all the candidate words
+      recognized by the decoder at any point in time, and their main attributes such as
+      time segmentation and acoustic likelihood scores.
+    </P>
+    
+    <P>The term "lattice" is used somewhat loosely.  The word-lattice is really a
+      <em>directed acyclic graph</em> or <em>DAG</em>.
+      Each node of the DAG denotes a word instance
+      that begins at a particular frame within the utterance.  That is, it is a unique
+      <code>&lt;word,start-time&gt</code> pair.  (However, there could be a number of
+      end-times for this word instance.  One of the features of a time-synchronous Viterbi
+      search using beam pruning is that word candidates hypothesized by the decoder have a
+      well-defined start-time, but a fuzzy range of end-times.  This is because the start-time
+      is primarily determined by <em>Viterbi pruning</em>, while the possible end-times are
+      determined by beam pruning.)
+    </P>
+    
+    <P>There is a directed edge between two nodes in the DAG if the start-time of the
+      destination node immediately follows one of the end times of the source node.  That is,
+      the two nodes can be adjacent in time.  Thus,
+      the edge determines one possible segmentation for the source node: beginning at
+      the source's start-time and ending one frame before the destination's start-time.
+      The edge also contains an acoustic likelihood for this particular segmentation of
+      the source node.
+    </P>
+    
+    <P><em>Note:</em> The beginning and end of sentence tokens, <code>&lt;s&gt</code> and
+      <code>&lt;/s&gt</code>, are not decoded as part of an utterance by the s3.2 decoder.
+      However, they have to be included in the word lattice file, for compatibility with
+      the older Sphinx-3 decoder software.  They are assigned 1-frame
+      segmentations, with log-likelihood scores of 0.  To accommodate them, the
+      segmentations of adjacent nodes have to be "fudged" by 1 frame.
+    </P>
+
+
+
+    <h3><a name="wordlat_format"><U>Word Lattice File Format</U></a></H3>
+
+    <P>A word lattice file essentially contains the above information regarding the
+      nodes and edges in the DAG.  It is structured in several sections, as follows:
+    </P>
+    <OL>
+      <LI>A comment section, listing important command line arguments as comments</LI>
+      <LI><code>Frames</code> section, specifying the number of frames in utterance</LI>
+      <LI><code>Nodes</code> section, list the nodes in the DAG</LI>
+      <LI><code>Initial</code> and <code>Final</code> nodes
+	(for <code>&lt;s&gt</code> and <code>&lt;/s&gt</code>, respectively)
+      </LI>
+      <LI><code>BestSegAscr</code> section, a historical remnant now essentially empty</LI>
+      <LI><code>Edges</code> section, listing the edges in the DAG</LI>
+    </OL>
+    
+    <P>The file is formatted as follows.  Note that any line in the file that begins with
+      the "#" character in the first column is considered to be a comment.
+    </P>
+    <pre>
+# getcwd: &lt;current-working-directory&gt
+# -logbase &lt;logbase-in-effect&gt
+# -dict &lt;main lexicon&gt
+# -fdict &lt;filler lexicon&gt
+# ... (other arguments, written out as comment lines)
+#
+Frames &lt;number-of-frames-in-utterance&gt
+#
+Nodes &lt;number-of-nodes-in-DAG&gt (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)
+&lt;Node-ID&gt &lt;Word-String&gt &lt;Start-Time&gt &lt;Earliest-End-time&gt &lt;Latest-End-Time&gt
+&lt;Node-ID&gt &lt;Word-String&gt &lt;Start-Time&gt &lt;Earliest-End-time&gt &lt;Latest-End-Time&gt
+&lt;Node-ID&gt &lt;Word-String&gt &lt;Start-Time&gt &lt;Earliest-End-time&gt &lt;Latest-End-Time&gt
+... (for all nodes in DAG)
+#
+Initial &lt;Initial-Node-ID&gt
+Final &lt;Final-Node-ID&gt
+#
+BestSegAscr 0 (NODEID ENDFRAME ASCORE)
+#
+Edges (FROM-NODEID TO-NODEID ASCORE)
+&lt;Source-Node-ID&gt &lt;Destination-Node-ID&gt &lt;Acoustic Score&gt
+&lt;Source-Node-ID&gt &lt;Destination-Node-ID&gt &lt;Acoustic Score&gt
+&lt;Source-Node-ID&gt &lt;Destination-Node-ID&gt &lt;Acoustic Score&gt
+... (for all edges in DAG)
+End</pre>
+    
+    <P>Note that the <em>node-ID</em> values for DAG nodes are assigned sequentially,
+      starting from 0.  Furthermore, they are
+      sorted in <em>descending order</em> of their <em>earliest-end-time</em> attribute.
+    </P>
+    <P>Here is an <a href="4t0c020c.lat">example word lattice</a> file.</P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_wordlat">Back to top of this section</a>
+    </div>
+
+
+    
+    <H2><a name="sec_utilpgm"><U>Other Utilities</U></a></H2>
+    
+    <P>In addition to the s3.2 decoder, this distribution also provides a number of other
+      utility programs, some of which are simply intended for debugging.</P>
+
+    <H4><A NAME="sec_gausubvq"><U>Gaussian Sub-Vector Quantization Utility</U></A></H4>
+    
+    <H4><A NAME="sec_lmtest"><U>Language Model Test Utility</U></A></H4>
+
+    
     <P></P>
+    <div class="endsec">
+      &curren
+      <a href="#sec_utilpgm">Back to top of this section</a>
+    </div>
 
+    
+    <H2><a name="sec_src"><U>Source Code</U></a></H2>
+    
+    <P>In alphabetical order:</P>
+    <table>
+      <tr>
+	<td><a href="../src/agc.c"><code>src/agc.c</code></a></td>
+	<td>Automatic gain control (on signal energy)</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/ascr.c"><code>src/ascr.c</code></a></td>
+	<td>Senone acoustic scores</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/beam.c"><code>src/beam.c</code></a></td>
+	<td>Pruning beam widths</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/bio.c"><code>src/bio.c</code></a></td>
+	<td>Binary file I/O support</td>
+      </tr>
 
-    <H4>
-      <A NAME="sec_effvocab"><u>The Effective Vocabulary</u></A>
-    </H4>
+      <tr>
+	<td><a href="../src/cmn.c"><code>src/cmn.c</code></a></td>
+	<td>Cepstral mean normalization and variance normalization</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/corpus.c"><code>src/corpus.c</code></a></td>
+	<td>Control file processing</td>
+      </tr>
 
-    In Viterbi decoding, a language model as well as a pronunciation lexicon is used.
-    Each defines a vocabulary.  However, the effective vocabulary is the intersection
-    of the two.
+      <tr>
+	<td><a href="../src/cont_mgau.c"><code>src/cont_mgau.c</code></a></td>
+	<td>Mixture Gaussians (acoustic model)</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/dict.c"><code>src/dict.c</code></a></td>
+	<td>Pronunciation lexicon</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/dict2pid.c"><code>src/dict2pid.c</code></a></td>
+	<td>Generation of triphones for the pronunciation dictionary</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/feat.c"><code>src/feat.c</code></a></td>
+	<td>Feature vectors computation</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/fillpen.c"><code>src/fillpen.c</code></a></td>
+	<td>Filler word probabilities</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/gausubvq.c"><code>src/gausubvq.c</code></a></td>
+	<td>Standalone acoustic model sub-vector quantizer</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/hmm.c"><code>src/hmm.c</code></a></td>
+	<td>HMM evaluation</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/hyp.h"><code>src/hyp.h</code></a></td>
+	<td>Recognition hypotheses data type</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/kb.h"><code>src/kb.h</code></a></td>
+	<td>All knowledge bases, search structures used by decoder</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/kbcore.c"><code>src/kbcore.c</code></a></td>
+	<td>Collection of core knowledge bases</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/lextree.c"><code>src/lextree.c</code></a></td>
+	<td>Lexical search tree</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/lm.c"><code>src/lm.c</code></a></td>
+	<td>Trigram language model</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/lmtest.c"><code>src/lmtest.c</code></a></td>
+	<td>Standalone LM test program</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/logs3.c"><code>src/logs3.c</code></a></td>
+	<td>Support for log-likelihood operations</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/main.c"><code>src/main.c</code></a></td>
+	<td>Main decoder driver</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/mdef.c"><code>src/mdef.c</code></a></td>
+	<td>Acoustic model definition</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/s3types.h"><code>src/s3types.h</code></a></td>
+	<td>Various data types, for ease of modification</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/subvq.c"><code>src/subvq.c</code></a></td>
+	<td>Sub-vector quantized acoustic model</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/tmat.c"><code>src/tmat.c</code></a></td>
+	<td>HMM transition matrices (topology definition)</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/vector.c"><code>src/vector.c</code></a></td>
+	<td>Vector operations, quantization, etc.</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/vithist.c"><code>src/vithist.c</code></a></td>
+	<td>Backpointer table (Viterbi history)</td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/wid.c"><code>src/wid.c</code></a></td>
+	<td>Mapping between LM and lexicon word IDs</td>
+      </tr>
+    </table>
     <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-
-    <H2>
-      <A NAME="sec_argref"><u>Command Line Arguments Reference</u></A>
-    </H2>
-
-    Each Sphinx-3 decoder program takes a number of command line arguments.  A number
-    of these are quite generic, common among two or more programs.  Others are unique
-    (semantically) to specific programs.  (Yet others are used only for debugging or
-    fine-tuning and are not described here.)
-    <P></P>
-    (<em>Note that running any of the decoder programs without any argument produces
-      a short description of all its command line arguments.</em>)
+    <div class="endsec">
+      &curren
+      <a href="#sec_src">Back to top of this section</a>
+    </div>
     <P></P>
     
-    Here is a partial listing of the main command line arguments, in some logical
-    order:
-
-    <dl>
-      <dt><b>-ctlfn:</b>
-      <dd>Input "control file", listing the utterances to be decoded.  Typically,
-	each entry specifies an MFC file (without the .mfc extension) to be processed.
-	In some cases, as in N-best list generation from lattices, there may be no
-	MFC file involved.  Nevertheless, the control that was originally used to
-	generate the word lattices is the reference point.
-
-      <dt><b>-ctloffset:</b>
-      <dd>No. of utterances at the beginning of the control file that are to be
-	skipped.
-
-      <dt><b>-ctlcount:</b>
-      <dd>No. of utterances that are to be processed from the control file (after
-	skipping the number indicated by -ctloffset).
-
-      <dt><b>-cepdir:</b>
-      <dd>If a control file entry is a relative path name, an optional directory
-	prefix to be applied to it.
-
-      <dt><b>-mdeffn:</b>
-      <dd>Model definition input file.  Specifies phone set, and triphone state to
-	senone mapping.  Also specifies transition matrix used by each triphone.
-	(A similar file is also used by the Sphinx-3 trainer.)
-
-      <dt><b>-senmgaufn:</b>
-      <dd>File specifying senone to mixture Gaussian codebook mapping.  Two special
-	cases exist: the keyword <b>.cont.</b> indicates a continuous-density model
-	with a separate codebook per senone, and the keyword <b>.semi.</b> indicates
-	a semi-continuous model with a single codebook shared by all senones.  A
-	similar file is also used by the Sphinx-3 trainer.
-
-      <dt><b>-meanfn:</b>
-      <dd>File containing all mixture Gaussian codebook mean vectors.  This file is
-	produced by the Sphinx-3 trainer.
-
-      <dt><b>-varfn:</b>
-      <dd>File containing all mixture Gaussian codebook variance vectors.  This file
-	is identical in structure to the means file and is created by the Sphinx-3
-	trainer.
-
-      <dt><b>-varfloor:</b>
-      <dd>A floor value applied to Gaussian density variance values.
-
-      <dt><b>-mixwfn:</b>
-      <dd>Senone mixture weights input file.  Each senone (or shared state) has a set
-	of mixture weights applied to its underlying Gaussian codebook.  Generated by
-	the Sphinx-3 trainer.
-
-      <dt><b>-mwfloor:</b>
-      <dd>A floor value applied to the mixture weights.
-
-      <dt><b>-tmatfn:</b>
-      <dd>HMM state transition probabilities input file.  Generated by the Sphinx-3
-	trainer.
-
-      <dt><b>-tpfloor:</b>
-      <dd>A floor value applied to the HMM state transition probabilities.
-
-      <dt><b>-dictfn:</b>
-      <dd>Main pronunciation dictionary (lexicon) input file.
-
-      <dt><b>-fdictfn:</b>
-      <dd>Silence and filler (noise) word pronunciation input file.  Words in this
-	file are <b>transparent</b> to the language model.
-
-      <dt><b>-compwd:</b>
-      <dd>Whether underscores in the pronunciation lexicon should be interpreted as
-	compound word concatenation characters.
-
-      <dt><b>-lmfn:</b>
-      <dd>The word trigram language model binary dump file.
-
-      <dt><b>-langwt:</b>
-      <dd>Language weight; an empirical exponent applied to LM probabilty values
-	in overall utterance likelihoods (i.e., combined acoustic and language model
-	likelihoods).
-
-      <dt><b>-fillpenfn:</b>
-      <dd>Filler word probabilities input file.  (Recall that filler words are
-	transparent to the language model; instead, they onlyhave independent unigram
-	probabilities.)
-
-      <dt><b>-logbase:</b>
-      <dd>Base in which all log-likelihood values are calculated.
-
-      <dt><b>-cmn:</b>
-      <dd>Can be "current" or "none".  If the former, cepstral coefficients 1..12 of
-	each frame in an utterance are normalized by subtracting the mean value for
-	that utterance.
-	
-      <dt><b>-agc:</b>
-      <dd>Can be "max" or "none".  If the former, the cepstrum-0 coefficients within
-	each utterance are normalized by subtracting the max from each.
-
-      <dt><b>-feat:</b>
-      <dd>Feature stream specification.  The two main ones are "s2_4x" (four separate
-	feature streams for Sphinx-II compatibility), and "s3_1x39" (single-vector
-	feature stream obtained by concatenating the cepstrum vector and its first
-	and second order differences).
-
-      <dt><b>-topn:</b>
-      <dd>No. of top scoring densities computed in each mixture gaussian codebook in
-	each input speech frame.  Only these are used to compute the acoustic
-	likelihoods for each senone in that frame.  The remaining density values are
-	discarded.
-
-      <dt><b>-matchfn:</b>
-      <dd>Recognition result output file (pre-1995, NIST format).
-
-      <dt><b>-matchsegfn:</b>
-      <dd>Exact recognition result output file with word segmentations and scores.
-
-      <dt><b>-outlatdir:</b>
-      <dd>Directory for writing word lattices (one file/utterance).  Only the Viterbi
-	decoder <b>s3decode</b> generates word lattices.  They contain word 
-	segmentation information as well as transitions between words and associated
-	acoustic scores.  They can be used as input to constrain subsequent Viterbi
-	decoding on the same utterances (e.g., using different acoustic or language
-	models).  They are also used as input to <b>s3dag</b> and <b>s3astar</b>
-	programs.
-
-      <dt><b>-beam:</b>
-      <dd>Main pruning threshold for beam search.  The lower this threshold, the wider
-	the beamwidth (and greater the space searched).
-
-      <dt><b>-nwbeam:</b>
-      <dd>Additional pruning threshold used by Viterbi search (<b>s3decode</b>), for
-	determining which words are actually entered in the Viterbi word lattice.
-	This threshold is usually much tighter than the main threshold.
-
-      <dt><b>-bptblsize:</b>
-      <dd>Size of word lattice table to be allocated initially in the Viterbi
-	(<b>s3decode</b>) decoder.  (It is grown as necessary.)  Longer utterances
-	need larger tables.
-
-      <dt><b>-inlatdir:</b>
-      <dd>Directory of word lattice files input to the Viterbi decoder, shortest path
-	search, or N-best generation program (<b>s3decode</b>, <b>s3dag</b>, or
-	<b>s3astar</b>).
-
-      <dt><b>-nbest:</b>
-      <dd>The maximum number of N-best hypotheses to be produced for each utterance.
-	(Relevant only to the A* search program, <b>s3astar</b>.)
-
-      <dt><b>-nbestdir:</b>
-      <dd>Directory in which the N-best hypotheses files are to be written.
-	(Relevant only to the A* search program, <b>s3astar</b>.)
-
-      <dt><b>-insentfn:</b>
-      <dd>Input file containing the correct word-level transcription for each
-	utterance in the control file.  This is used by the forced alignment program
-	(<b>s3align</b>).
-
-      <dt><b>-outsentfn:</b>
-      <dd>Output file containing the exact word sequence for each utterance, including
-	the specific pronunciation and insertion of noise and filler words, as
-	determined by the forced alignment program (<b>s3align</b>).  This output is
-	usually used by the Sphinx-3 trainer.
-
-      <dt><b>-wdsegdir:</b>
-      <dd>Directory in which detailed word segmentation and acoustic score information
-	is written by the forced aligner (<b>s3align</b>).  (One file per utterance.)
-
-      <dt><b>-phsegdir:</b>
-      <dd>Directory in which detailed phone segmentation and acoustic score
-	information is written by the forced aligner (<b>s3align</b>).  (One file per
-	utterance.)
-
-      <dt><b>-stsegdir:</b>
-      <dd>Directory in which detailed phone HMM-state segmentation and acoustic score
-	information is written by the forced aligner (<b>s3align</b>).  (One file per
-	utterance.)
-
-      <dt><b>-s2stsegdir:</b>
-      <dd>Directory in which phone HMM-state segmentation information is written by
-	the forced aligner (<b>s3align</b>).  This file is in Sphinx-II format.  (One
-	file per utterance.)
-
-      <dt><b>-phlatbeam:</b>
-      <dd>Pruning threshold (loosely, beamwidth) used by the allphone decoder
-	(<b>s3allphone</b>) to produce a phone lattice for each utterance.
-
-      <dt><b>-phlatdir:</b>
-      <dd>Directory in which phone lattice files are written by the allphone decoder
-	(<b>s3allphone</b>).  (One file per utterance.)
-    </dl>
-    <P></P>
-    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
-
-
-
-    <H2>
-      <A NAME="sec_s3train"><u>Sphinx-3 Trainer</u></A>
-    </H2>
-    Contact <a href="mailto:eht@cs.cmu.edu">Eric Thayer</a> for details of
-    <b>training</b> acoustic models using the <b>Sphinx-3 trainer</b>.
-    <P></P>
-
-    <hr>
+    <H2></H2><!-- Just to provide some space -->
     
     <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
-<!-- Created: Sun Feb 22 14:03:14 EST 1998 -->
-<!-- hhmts start -->
-Last modified: Tue Feb  8 17:03:17 EST 2000
+    <!-- Created: Sun Feb 22 14:03:14 EST 1998 -->
+    <!-- hhmts start -->
+Last modified: Mon Mar 13 17:49:03 EST 2000
 <!-- hhmts end -->
   </body>
 </html>

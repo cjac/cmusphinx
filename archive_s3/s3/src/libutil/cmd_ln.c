@@ -4,40 +4,22 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
  * 
- * 01-Jan-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Created.
+ * 10-Sep-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Changed strcasecmp() call in cmp_name() to strcmp_nocase() call.
+ * 
+ * 15-Jul-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added required arguments handling.
+ * 
+ * 07-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Created, based on Eric's implementation.  Basically, combined several
+ *		functions into one, eliminated validation, and simplified the interface.
  */
-
-
-/*********************************************************************
- *
- * $Header$
- *
- * Carnegie Mellon ARPA Speech Group
- *
- * Copyright (c) 1994 Carnegie Mellon University.
- * All rights reserved.
- *
- *********************************************************************
- *
- * file: cmd_ln.c
- * 
- * Description: 
- *	This library parses command line arguments and provides
- *	an interface for accessing them.
- *
- * Author: 
- *	$Author$
- * 
- *********************************************************************/
-
-static char rcsid[] = "@(#)$Id$";
 
 
 #include <stdio.h>
@@ -45,545 +27,314 @@ static char rcsid[] = "@(#)$Id$";
 #include <string.h>
 #include <assert.h>
 
-#include "prim_type.h"
-#include "ckd_alloc.h"
 #include "cmd_ln.h"
 #include "err.h"
+#include "ckd_alloc.h"
+#include "hash.h"
+#include "case.h"
 
 
-void
-cmd_ln_initialize(void)
+/* Storage for argument values */
+typedef struct argval_s {
+    anytype_t val;
+    const void *ptr;	/* Needed (with NULL value) in case there is no default */
+} argval_t;
+static argval_t *argval = NULL;
+static hash_table_t *ht;	/* Hash table */
+
+
+#if 0
+static const char *arg_type2str (argtype_t t)
 {
-}
-
-
-/*********************************************************************
- *
- * Function: alloc_type	(local scope)
- * 
- * Description: 
- * 	Initializes the command line parsing subsystem
- * 
- * Traceability: 
- * 
- * Function Inputs: 
- *	arg_type_t t -
- *		A command line argument type.
- * 
- * Return Values: 
- *	A pointer to an allocated item of the given type.  An
- *	exception to this is the string type.  There is no
- *	allocation needed for this as it is already represented
- *	by a pointer type.
- * 
- * Global Outputs: 
- * 
- * Errors: 
- * 
- * Pre-Conditions: 
- * 
- * Post-Conditions: 
- * 
- * Design: 
- * 
- * Notes: 
- * 
- *********************************************************************/
-static void *
-alloc_type(arg_type_t t)
-{
-    void *mem;
-
     switch (t) {
-    case CMD_LN_INT32:
-	mem = ckd_malloc(sizeof(int32));
+    case ARG_INT32:
+    case REQARG_int32:
+	return ("int32");
 	break;
-	
-    case CMD_LN_FLOAT32:
-	mem = ckd_malloc(sizeof(float32));
+    case ARG_FLOAT32:
+    case REQARG_FLOAT32:
+	return ("float32");
 	break;
-	
-    case CMD_LN_FLOAT64:
-	mem = ckd_malloc(sizeof(float64));
+    case ARG_FLOAT64:
+    case REQARG_FLOAT64:
+	return ("float64");
 	break;
-
-    case CMD_LN_STRING:
-	mem = NULL;	/* no allocations done for string type */
+    case ARG_STRING:
+    case REQARG_STRING:
+	return ("string");
 	break;
-	
-    case CMD_LN_BOOLEAN:
-	mem = ckd_malloc(sizeof(int32));
-	break;
-
-    case CMD_LN_UNDEF:
-	E_FATAL("undefined argument type\n");
-    }
-    
-    return mem;
-}
-
-
-static void *
-arg_to_str(arg_type_t t, void *val)
-{
-    static char big_str[1024];
-    char **strlst;
-    int i;
-
-    switch (t) {
-    case CMD_LN_INT32:
-	sprintf(big_str, "%d", *(int32 *)val);
-	break;
-	
-    case CMD_LN_FLOAT32:
-	sprintf(big_str, "%e", *(float32 *)val);
-	break;
-	
-    case CMD_LN_FLOAT64:
-	sprintf(big_str, "%le", *(float64 *)val);
-	break;
-	
-    case CMD_LN_STRING:
-	strcpy(big_str, val);
-	break;
-	
-    case CMD_LN_STRING_LIST:
-	strlst = (char **)val;
-	
-	strcpy(big_str, strlst[0]);
-	for (i = 1; strlst[i] != NULL; i++) {
-	    strcat(big_str, " ");
-	    strcat(big_str, strlst[i]);
-	}
-	
-	break;
-	
-    case CMD_LN_BOOLEAN:
-	sprintf(big_str, "%s",
-		(*(int32 *)val ? "yes" : "no"));
-	break;
-	
-    case CMD_LN_UNDEF:
-	E_FATAL("undefined argument type\n");
-    }
-    
-    return big_str;
-}
-
-
-static arg_def_t *defn_list = NULL;
-static int defn_list_len = 0;
-static void **parsed_arg_list = NULL;
-
-#define SWITCH_HEADER	"[Switch]"
-#define DEFAULT_HEADER	"[Default]"
-#define VALUE_HEADER	"[Value]"
-#define DOC_HEADER	"[Description]"
-
-static uint32
-strlst_len(char **lst)
-{
-    uint32 len;
-    uint32 i;
-
-    
-    len = strlen(lst[0]);
-
-    for (i = 1; lst[i] != NULL; i++) {
-	len += strlen(lst[i]) + 1;
-    }
-
-    return len;
-}
-
-
-static void
-strlst_print(char **lst)
-{
-    uint32 i;
-
-    printf("%s", lst[0]);
-    for (i = 1; lst[i] != NULL; i++) {
-	printf(" %s", lst[i]);
+    default: E_FATAL("Unknown argument type: %d\n", t);
     }
 }
-
-
-void
-cmd_ln_print_configuration()
-{
-    int i;
-    int len;
-    int mx_sw_len = 0;
-    int mx_df_len = 0;
-    int mx_vl_len = 0;
-    char fmt_str[64];
-
-    if (defn_list == NULL) {
-	E_WARN("No switches defined.  None printed\n");
-
-	return;
-    }
-
-    for (i = 0; i < defn_list_len; i++) {
-	len = strlen(defn_list[i].switch_name);
-	if (len > mx_sw_len) mx_sw_len = len;
-
-	if (defn_list[i].default_value) {
-	    if (defn_list[i].type != CMD_LN_STRING_LIST)
-		len = strlen(defn_list[i].default_value);
-	    else
-		len = strlst_len(defn_list[i].default_value);
-
-	    if (len > mx_df_len) mx_df_len = len;
-	}
-
-	if (parsed_arg_list[i]) {
-	    len = strlen(arg_to_str(defn_list[i].type,
-				    parsed_arg_list[i]));
-	    if (len > mx_vl_len) mx_vl_len = len;
-	}
-    }
-
-    if (mx_sw_len < strlen(SWITCH_HEADER)) mx_sw_len = strlen(SWITCH_HEADER);
-    if (mx_df_len < strlen(DEFAULT_HEADER)) mx_df_len = strlen(DEFAULT_HEADER);
-    if (mx_vl_len < strlen(VALUE_HEADER)) mx_df_len = strlen(VALUE_HEADER);
-    
-    sprintf(fmt_str, "%%-%ds %%-%ds %%-%ds\n",
-	    mx_sw_len, mx_df_len, mx_vl_len);
-    printf(fmt_str, SWITCH_HEADER, DEFAULT_HEADER, VALUE_HEADER);
-
-    for (i = 0; i < defn_list_len; i++) {
-	printf(fmt_str,
-	       defn_list[i].switch_name,
-	       (defn_list[i].default_value ? defn_list[i].default_value : ""),
-	       (parsed_arg_list[i]? arg_to_str(defn_list[i].type,
-					       parsed_arg_list[i]) : ""));
-    }
-
-    fflush(stdout);
-}
-
-
-void
-cmd_ln_print_definitions()
-{
-    int i;
-    int len;
-    int mx_sw_len = 0;
-    int mx_df_len = 0;
-    int mx_ds_len = 0;
-    char fmt_str[64];
-
-    if (defn_list == NULL) {
-	E_WARN("No switches defined.  None printed\n");
-
-	return;
-    }
-
-    for (i = 0; i < defn_list_len; i++) {
-	len = strlen(defn_list[i].switch_name);
-	if (len > mx_sw_len) mx_sw_len = len;
-
-	if (defn_list[i].default_value) {
-	    len = strlen(defn_list[i].default_value);
-	    if (len > mx_df_len) mx_df_len = len;
-	}
-
-	if (defn_list[i].doc) {
-	    len = strlen(defn_list[i].doc);
-	    if (len > mx_ds_len) mx_ds_len = len;
-	}
-    }
-
-    if (mx_sw_len < strlen(SWITCH_HEADER)) mx_sw_len = strlen(SWITCH_HEADER);
-    if (mx_df_len < strlen(DEFAULT_HEADER)) mx_df_len = strlen(DEFAULT_HEADER);
-    if (mx_ds_len < strlen(DOC_HEADER)) mx_ds_len = strlen(DOC_HEADER);
-
-    /* sprintf(fmt_str, "%%-%ds %%-%ds %%-%ds\n", mx_sw_len, mx_df_len, mx_ds_len); */
-    sprintf(fmt_str, "%%-%ds %%-%ds %%s\n", mx_sw_len, mx_df_len);
-    printf(fmt_str, SWITCH_HEADER, DEFAULT_HEADER, DOC_HEADER);
-
-    for (i = 0; i < defn_list_len; i++) {
-	printf(fmt_str,
-	       defn_list[i].switch_name,
-	       (defn_list[i].default_value ? defn_list[i].default_value : ""),
-	       (defn_list[i].doc ? defn_list[i].doc : ""));
-    }
-
-    fflush(stdout);
-}
-
-
-static void
-free_and_alloc(void **arg_ptr, arg_type_t t)
-{
-    if (*arg_ptr)
-	ckd_free(*arg_ptr);
-    
-    *arg_ptr = alloc_type(t);
-}
-
-
-static void
-free_and_alloc_strlst(void **arg_ptr, int new_len)
-{
-    if (*arg_ptr)
-	ckd_free(*arg_ptr);
-    
-    *arg_ptr = ckd_calloc(new_len, sizeof(char *));
-}
-
-
-static int
-parse_arg(int defn_idx, int argc, char *argv[], int start)
-{
-    arg_type_t arg_type;
-    int n_parsed;
-    int end;
-    int len;
-    char *cur_arg;
-    int i;
-
-    arg_type = defn_list[defn_idx].type;
-
-    cur_arg = argv[start];
-
-    switch (arg_type) {
-	case CMD_LN_INT32:
-	free_and_alloc(&parsed_arg_list[defn_idx], arg_type);
-	*((int *)parsed_arg_list[defn_idx]) = atoi(cur_arg);
-	n_parsed = 1;
-	break;
-
-	case CMD_LN_FLOAT32:
-	free_and_alloc(&parsed_arg_list[defn_idx], arg_type);
-	*((float *)parsed_arg_list[defn_idx]) = (float)atof(cur_arg);
-	n_parsed = 1;
-	break;
-
-	case CMD_LN_FLOAT64:
-	free_and_alloc(&parsed_arg_list[defn_idx], arg_type);
-	*((double *)parsed_arg_list[defn_idx]) = atof(cur_arg);
-	n_parsed = 1;
-	break;
-
-	case CMD_LN_STRING:
-	parsed_arg_list[defn_idx] = (void *)cur_arg;
-	n_parsed = 1;
-	break;
-
-	case CMD_LN_STRING_LIST:
-	if (start > 0) {
-	    /* start > 0 always the case if parsing a command line. */
-	    for (i = start+1; i < argc; i++) {
-		if (argv[i][0] == '-')
-		    break;
-	    }
-	}
-	else {
-	    /* start == 0 always the case if parsing a default */
-
-	    assert(argc == 0);	/* caller must ensure this.  Should help
-				 * to avoid bogus conditions */
-
-	    for (i = start+1; argv[i] != NULL; i++);
-	}
-	
-	end = i;
-
-	len = end - start;
-	len++;	/* need space for terminating NULL */
-
-	free_and_alloc_strlst(&parsed_arg_list[defn_idx], len);
-
-	for (i = start; i < end; i++) {
-	    ((char **)parsed_arg_list[defn_idx])[i-start] = argv[i];
-	}
-	((char **)parsed_arg_list[defn_idx])[i-start] = NULL;
-
-	n_parsed = len-1;
-	break;
-	
-	case CMD_LN_BOOLEAN:
-	free_and_alloc(&parsed_arg_list[defn_idx], arg_type);
-	if ((cur_arg[0] == 'y') || (cur_arg[0] == 't') ||
-	    (cur_arg[0] == 'Y') || (cur_arg[0] == 'T')) {
-	    *(int *)parsed_arg_list[defn_idx] = TRUE;
-	    n_parsed = 1;
-	}
-	else if ((cur_arg[0] == 'n') || (cur_arg[0] == 'f') ||
-		 (cur_arg[0] == 'N') || (cur_arg[0] == 'F')) {
-	    *(int *)parsed_arg_list[defn_idx] = FALSE;
-	    n_parsed = 1;
-	}
-	else {
-	    E_ERROR("Unparsed boolean value '%s'\n", cur_arg);
-	    n_parsed = -1;
-	}
-	break;
-
-	case CMD_LN_UNDEF:
-	E_FATAL("Definition for argument %s has undefined type\n",
-		defn_list[defn_idx].switch_name);
-
-	default:
-	E_FATAL("No case in switch() {} for enum value.\n");
-    }
-
-    return n_parsed;
-}
-
-
-int
-cmd_ln_define(arg_def_t *defn)
-{
-    int i;
-
-    assert(defn != NULL);
-
-    defn_list = defn;
-
-    for (i = 0; defn_list[i].switch_name != NULL; i++);
-    defn_list_len = i;
-
-    parsed_arg_list = ckd_calloc(defn_list_len, sizeof(void *));
-
-    for (i = 0; i < defn_list_len; i++) {
-	if (defn_list[i].default_value) {
-	    if (defn_list[i].type != CMD_LN_STRING_LIST) {
-		parse_arg(i,
-			  0,	/* ignored if start == 0 */
-			  (char **) &defn_list[i].default_value,
-			  0);
-	    }
-	    else {
-		parse_arg(i,
-			  0,	/* ignored if start == 0 */
-			  defn_list[i].default_value,
-			  0);
-	    }
-	}
-    }
-
-    return 0;
-}
-
-
-static int did_parse = FALSE;
-
-int
-cmd_ln_parse(int argc, char *argv[])
-{
-    int i, j, err, n_arg_parsed;
-
-    if (defn_list == NULL) {
-	E_WARN("No switches defined.  None parsed\n");
-
-	did_parse = TRUE;
-
-	return 0;
-    }
-
-    for (i = 1, err = 0; i < argc; i++) {
-	if (argv[i][0] != '-') {
-	    E_ERROR("Expecting '%s -switch_1 <arg_1> -switch_2 <arg_2> ...'\n",
-		    argv[0]);
-
-	    err = 1;
-	    break;
-	}
-
-	for (j = 0; j < defn_list_len; j++) {
-	    if (strcmp(argv[i], defn_list[j].switch_name) == 0) {
-
-		n_arg_parsed = parse_arg(j, argc, argv, i+1);
-		if (n_arg_parsed < 0) {
-		    err = 1;
-		}
-
-		i += n_arg_parsed;	/* i incremented for each switch as well */
-
-		break;
-	    }
-	}
-
-	if (j == defn_list_len) {
-	    E_ERROR("Unknown switch %s seen\n", argv[i]);
-
-	    err = 1;
-	}
-    }
-
-    if (err) {
-	exit(1);
-    }
-
-    did_parse = TRUE;
-    
-    return 0;
-}
-
-
-int
-cmd_ln_validate()
-{
-    int i;
-    int err;
-
-    if (!did_parse) {
-	E_FATAL("cmd_ln_parse() must be called before cmd_ln_validate()\n");
-    }
-
-    for (i = 0, err = 0; i < defn_list_len; i++) {
-	if (defn_list[i].validate_arg) {
-	    if (defn_list[i].validate_arg(defn_list[i].switch_name,
-					  parsed_arg_list[i]) == FALSE) {
-		err = 1;
-	    }
-	}
-    }
-
-    if (err) return FALSE;
-
-    return TRUE;
-}
-
-
-const void *cmd_ln_access(char *switch_name)
-{
-    int i;
-
-    if (!did_parse) {
-	E_FATAL("cmd_ln_parse() must be called before cmd_ln_access()\n");
-    }
-
-    for (i = 0; i < defn_list_len; i++) {
-	if (strcmp(defn_list[i].switch_name, switch_name) == 0) {
-	    break;
-	}
-    }
-
-    if (i == defn_list_len) {
-	E_FATAL("Unknown switch %s\n", switch_name);
-    }
-
-    return parsed_arg_list[i];
-}
+#endif
 
 
 /*
- * Log record.  Maintained by RCS.
- *
- * $Log$
- * Revision 1.1  2000/04/24  09:39:42  lenzo
- * s3 import.
- * 
- * Revision 1.2  1995/06/02  14:52:54  eht
- * Use pwp's error printing package
- *
- * Revision 1.1  1995/02/13  15:47:41  eht
- * Initial revision
- *
- *
+ * Find max length of name and default fields in the given defn array.
+ * Return #items in defn array.
  */
+static int32 arg_strlen (arg_t *defn, int32 *namelen, int32 *deflen)
+{
+    int32 i, l;
+    
+    *namelen = *deflen = 0;
+    for (i = 0; defn[i].name; i++) {
+	l = strlen (defn[i].name);
+	if (*namelen < l)
+	    *namelen = l;
+	
+	if (defn[i].deflt) {
+	    l = strlen (defn[i].deflt);
+	    if (*deflen < l)
+		*deflen = l;
+	}
+    }
+
+    return i;
+}
+
+
+/* For sorting argument definition list by name */
+static arg_t *tmp_defn;
+
+static int32 cmp_name (const void *a, const void *b)
+{
+    return (strcmp_nocase (tmp_defn[*((int32 *)a)].name, tmp_defn[*((int32 *)b)].name));
+}
+
+static int32 *arg_sort (arg_t *defn, int32 n)
+{
+    int32 *pos;
+    int32 i;
+    
+    pos = (int32 *) ckd_calloc (n, sizeof(int32));
+    for (i = 0; i < n; i++)
+	pos[i] = i;
+    tmp_defn = defn;
+    qsort (pos, n, sizeof(int32), cmp_name);
+    tmp_defn = NULL;
+
+    return pos;
+}
+
+
+static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
+{
+    if (! str)
+	v->ptr = NULL;
+    else {
+	switch (t) {
+	case ARG_INT32:
+	case REQARG_INT32:
+	    if (sscanf (str, "%d", &(v->val.int32)) != 1)
+		return -1;
+	    v->ptr = (void *) &(v->val.int32);
+	    break;
+	case ARG_FLOAT32:
+	case REQARG_FLOAT32:
+	    if (sscanf (str, "%f", &(v->val.float32)) != 1)
+		return -1;
+	    v->ptr = (void *) &(v->val.float32);
+	    break;
+	case ARG_FLOAT64:
+	case REQARG_FLOAT64:
+	    if (sscanf (str, "%lf", &(v->val.float64)) != 1)
+		return -1;
+	    v->ptr = (void *) &(v->val.float64);
+	    break;
+	case ARG_STRING:
+	case REQARG_STRING:
+	    v->ptr = (void *) str;
+	    break;
+	default: E_FATAL("Unknown argument type: %d\n", t);
+	}
+    }
+    
+    return 0;
+}
+
+
+static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
+{
+    int32 *pos;
+    int32 i, j, l, n;
+    int32 namelen, deflen;
+    const void *vp;
+    
+    /* Find max lengths of name and default value fields, and #entries in defn */
+    n = arg_strlen (defn, &namelen, &deflen);
+    namelen = namelen & 0xfffffff8;	/* Previous tab position */
+    deflen = deflen & 0xfffffff8;	/* Previous tab position */
+
+    fprintf (fp, "[NAME]");
+    for (l = 6; l < namelen; l += 8)	/* strlen("[NAME]") */
+	fprintf (fp, "\t");
+    fprintf (fp, "\t[DEFLT]");
+    for (l = 6; l < deflen; l += 8)	/* strlen("[DEFLT]") */
+	fprintf (fp, "\t");
+    fprintf (fp, "\t[VALUE]\n");
+    
+    /* Print current configuration, sorted by name */
+    pos = arg_sort (defn, n);
+    for (i = 0; i < n; i++) {
+	j = pos[i];
+	
+	fprintf (fp, "%s", defn[j].name);
+	for (l = strlen(defn[j].name); l < namelen; l += 8)
+	    fprintf (fp, "\t");
+
+	fprintf (fp, "\t");
+	if (defn[j].deflt) {
+	    fprintf (fp, "%s", defn[j].deflt);
+	    l = strlen (defn[j].deflt);
+	} else
+	    l = 0;
+	for (; l < deflen; l += 8)
+	    fprintf (fp, "\t");
+	
+	fprintf (fp, "\t");
+	if (doc) {
+	    if (defn[j].doc)
+		fprintf (fp, "%s", defn[j].doc);
+	} else {
+	    vp = cmd_ln_access (defn[j].name);
+	    if (vp) {
+		switch (defn[j].type) {
+		case ARG_INT32:
+		case REQARG_INT32:
+		    fprintf (fp, "%d", *((int32 *) vp));
+		    break;
+		case ARG_FLOAT32:
+		case REQARG_FLOAT32:
+		    fprintf (fp, "%e", *((float32 *) vp));
+		    break;
+		case ARG_FLOAT64:
+		case REQARG_FLOAT64:
+		    fprintf (fp, "%e", *((float64 *) vp));
+		    break;
+		case ARG_STRING:
+		case REQARG_STRING:
+		    fprintf (fp, "%s", (char *)vp);
+		    break;
+		default: E_FATAL("Unknown argument type: %d\n", defn[j].type);
+		}
+	    }
+	}
+	
+	fprintf (fp, "\n");
+    }
+    ckd_free (pos);
+    
+    fprintf (fp, "\n");
+    fflush (fp);
+}
+
+
+int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
+{
+    int32 i, j, n;
+    
+    if (argval)
+	E_FATAL("Multiple sets of argument definitions not supported\n");
+    
+    /* Echo command line */
+    E_INFO("Parsing command line:\n");
+    for (i = 0; i < argc; i++) {
+	if (argv[i][0] == '-')
+	    fprintf (stderr, "\\\n\t");
+	fprintf (stderr, "%s ", argv[i]);
+    }
+    fprintf (stderr, "\n\n");
+    fflush (stderr);
+    
+    /* Find number of argument names in definition */
+    for (n = 0; defn[n].name; n++);
+    
+    /* Allocate memory for argument values */
+    ht = hash_new (n, 0 /* argument names are case-sensitive */);
+    argval = (argval_t *) ckd_calloc (n, sizeof(argval_t));
+    
+    /* Enter argument names into hash table */
+    for (i = 0; i < n; i++) {
+	/* Associate argument name with index i */
+	if (hash_enter (ht, defn[i].name, i) != i)
+	    E_FATAL("Duplicate argument name: %s\n", defn[i].name);
+    }
+    
+    /* Parse command line arguments (name-value pairs); skip argv[0] if argc is odd */
+    for (j = 1; j < argc; j += 2) {
+	if (hash_lookup(ht, argv[j], &i) < 0) {
+	    E_ERROR("Unknown argument: %s\n", argv[j]);
+	    cmd_ln_print_help (stderr, defn);
+	    exit(-1);
+	}
+	
+	/* Check if argument has already been parsed before */
+	if (argval[i].ptr)
+	    E_FATAL("Multiple occurrences of argument %s\n", argv[j]);
+	
+	if (j+1 >= argc) {
+	    E_ERROR("Argument value for '%s' missing\n", argv[j]);
+	    cmd_ln_print_help (stderr, defn);
+	    exit(-1);
+	}
+	
+	/* Enter argument value */
+	if (arg_str2val (argval+i, defn[i].type, argv[j+1]) < 0) {
+	    E_ERROR("Bad argument value for %s: %s\n", argv[j], argv[j+1]);
+	    cmd_ln_print_help (stderr, defn);
+	    exit(-1);
+	}
+
+	assert (argval[i].ptr);
+    }
+    
+    /* Fill in default values, if any, for unspecified arguments */
+    for (i = 0; i < n; i++) {
+	if (! argval[i].ptr) {
+	    if (arg_str2val (argval+i, defn[i].type, defn[i].deflt) < 0)
+		E_FATAL("Bad default argument value for %s: %s\n",
+			defn[i].name, defn[i].deflt);
+	}
+    }
+    
+    /* Check for required arguments; exit if any missing */
+    j = 0;
+    for (i = 0; i < n; i++) {
+	if ((defn[i].type & ARG_REQUIRED) && (! argval[i].ptr)) {
+	    E_ERROR("Missing required argument %s\n", defn[i].name);
+	    j++;
+	}
+    }
+    if (j > 0) {
+	cmd_ln_print_help (stderr, defn);
+	exit(-1);
+    }
+    
+    /* Print configuration */
+    fprintf (stderr, "Configuration in effect:\n");
+    arg_dump (stderr, defn, 0);
+    
+    return 0;
+}
+
+
+void cmd_ln_print_help (FILE *fp, arg_t *defn)
+{
+    fprintf (fp, "Arguments list definition:\n");
+    arg_dump (fp, defn, 1);
+}
+
+
+const void *cmd_ln_access (char *name)
+{
+    int32 i;
+    
+    if (! argval)
+	E_FATAL("cmd_ln_access invoked before cmd_ln_parse\n");
+    
+    if (hash_lookup (ht, name, &i) < 0)
+	E_FATAL("Unknown argument: %s\n", name);
+    
+    return (argval[i].ptr);
+}

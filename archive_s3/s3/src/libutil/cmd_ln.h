@@ -4,139 +4,81 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
  * 
- * 01-Jan-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Created.
+ * 15-Jul-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added required arguments types.
+ * 
+ * 07-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Created, based on Eric's implementation.  Basically, combined several
+ *		functions into one, eliminated validation, and simplified the interface.
  */
 
-
-/*********************************************************************
- *
- * $Header$
- *
- * Carnegie Mellon ARPA Speech Group
- *
- * Copyright (c) 1994 Carnegie Mellon University.
- * All rights reserved.
- *
- *********************************************************************
- *
- * file: cmd_ln.h
- * 
- * traceability: 
- * 
- * description: 
- *	This module defines, parses and manages the validation
- * of command line arguments.
- * 
- * author: 
- *	Eric H. Thayer (eht@cs.cmu.edu)
- *
- *********************************************************************/
 
 #ifndef _LIBUTIL_CMD_LN_H_
 #define _LIBUTIL_CMD_LN_H_
 
-#ifndef NULL
-#define NULL	((void *)0)
-#endif
 
-typedef int (*validation_fn_t)(char *switch_name, void *arg);
+#include "prim_type.h"
 
-#define CMD_LN_NO_VALIDATION	((validation_fn_t)NULL)
-#define CMD_LN_NO_DEFAULT	((char *)NULL)
+#define ARG_REQUIRED	1
 
-typedef enum {
-    CMD_LN_UNDEF,
-    CMD_LN_INT32,
-    CMD_LN_FLOAT32,
-    CMD_LN_FLOAT64,
-    CMD_LN_STRING,
-    CMD_LN_STRING_LIST,
-    CMD_LN_BOOLEAN
-} arg_type_t;
+/* Arguments of these types are OPTIONAL */
+#define ARG_INT32	2
+#define ARG_FLOAT32	4
+#define ARG_FLOAT64	6
+#define ARG_STRING	8
+
+/* Arguments of these types are REQUIRED */
+#define REQARG_INT32	(ARG_INT32 | ARG_REQUIRED)
+#define REQARG_FLOAT32	(ARG_FLOAT32 | ARG_REQUIRED)
+#define REQARG_FLOAT64	(ARG_FLOAT64 | ARG_REQUIRED)
+#define REQARG_STRING	(ARG_STRING | ARG_REQUIRED)
+typedef int32 argtype_t;
+
 
 typedef struct {
-    char *switch_name;	/* name of the command line switch */
-    arg_type_t type;	/* type of the argument */
-    validation_fn_t validate_arg; /* a function which validates
-				     argument values */
-    void *default_value; /* the default value of the argument, if any */
-    char *doc;		 /* a documentation string for the argument */
-} arg_def_t;
-
-/* Initializes the command line parsing subsystem */
-void
-cmd_ln_initialize(void);
-
-/* Defines the set of acceptable command line arguments
- * given the list of command line argument defintions
- * contained in the switch_definition_array.  An element
- * of the array contains the following information:
- *
- *	. switch name (e.g. "-dictionary")
- *
- *	. type of the argument following the switch
- *
- *	. an optional validation function for the
- *	  value given on the command line.
- *
- *	. a translation function for the
- *	  value given on the command line.  This
- *	  function is optional except for
- *	  enumerated types.
- *
- * This function allocates memory, if necessary, for 
- * parsed command line arguments.
-*/
-int
-cmd_ln_define(arg_def_t *defn);
-
-/*
- * Reads the command line and converts the arguments,
- * if necessary, according to their definitions.
- */
-int
-cmd_ln_parse(int argc, char *argv[]);
-
-/*
- * Calls the validation functions for each of the
- * command line arguments.
- */
-int
-cmd_ln_validate();
-
-/* Returns a pointer to the parsed command line argument.
-   (The returned pointer must not be given to the
-   function free())
-   It is const because the caller should not modify the thing
-   referred to by this pointer. */
-
-const void *
-cmd_ln_access(char *switch_name);
-
-/* Prints out the command line argument definitions to stderr */
-
-void
-cmd_ln_print_definitions(void);
-
-void
-cmd_ln_print_configuration( void );
-
-#endif /* CMD_LN_H */ 
+    char *name;		/* Name of the command line switch (case-insensitive) */
+    argtype_t type;
+    char *deflt;	/* Default value (as a printed string) or NULL if none */
+    char *doc;		/* Documentation/description string */
+} arg_t;
 
 
 /*
- * Log record.  Maintained by CVS.
- *
- * $Log$
- * Revision 1.1  2000/04/24  09:39:42  lenzo
- * s3 import.
- * 
- *
+ * Parse the given list of arguments (name-value pairs) according to the given definitions.
+ * Argument values can be retrieved in future using cmd_ln_access().  argv[0] is assumed to be
+ * the program name and skipped.  Any unknown argument name causes a fatal error.  The routine
+ * also prints the prevailing argument values (to stderr) after parsing.
+ * Return value: 0 if successful, -1 if error.
  */
+int32 cmd_ln_parse (arg_t *defn,	/* In: Array of argument name definitions */
+		    int32 argc,		/* In: #Actual arguments */
+		    char *argv[]);	/* In: Actual arguments */
+
+
+/*
+ * Return a pointer to the previously parsed value for the given argument name.
+ * The pointer should be cast to the appropriate type before use:
+ * e.g., *((float32 *) cmd_ln_access ("-eps") to get the float32 argument named "-eps".
+ * And, some convenient wrappers around this function.
+ */
+const void *cmd_ln_access (char *name);	/* In: Argument name whose value is sought */
+#define cmd_ln_str(name)	((char *)cmd_ln_access(name))
+#define cmd_ln_int32(name)	(*((int32 *)cmd_ln_access(name)))
+#define cmd_ln_float32(name)	(*((float32 *)cmd_ln_access(name)))
+#define cmd_ln_float64(name)	(*((float64 *)cmd_ln_access(name)))
+
+
+/*
+ * Print a help message listing the valid argument names, and the associated
+ * attributes as given in defn.
+ */
+void  cmd_ln_print_help (FILE *fp,	/* In: File to which to print */
+			 arg_t *defn);	/* In: Array of argument name definitions */
+
+#endif

@@ -1,0 +1,163 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:p="urn:schemas-microsoft-com:office:powerpoint"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=PowerPoint.Slide>
+<meta name=Generator content="Microsoft PowerPoint 9">
+<link id=Main-File rel=Main-File href="../s3-2.htm">
+<link rel=Preview href=preview.wmf>
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+p\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+v\:textbox {display:none;}
+</style>
+<![endif]-->
+<title>No Slide Title</title>
+<meta name=Description content="7-Feb-01: Viterbi Search (contd.)">
+<link rel=Stylesheet href="master03_stylesheet.css">
+<![if !ppt]>
+<style media=print>
+<!--.sld
+	{left:0px !important;
+	width:6.0in !important;
+	height:4.5in !important;
+	font-size:107% !important;}
+-->
+</style>
+<script src=script.js></script><script><!--
+gId="slide0016.htm"
+if( !IsNts() ) Redirect( "PPTSld", gId );
+//-->
+</script><!--[if vml]><script>g_vml = 1;
+</script><![endif]--><script for=window event=onload><!--
+if( !IsSldOrNts() ) return;
+if( MakeNotesVis() ) return;
+LoadSld( gId );
+MakeSldVis(0);
+//-->
+</script><![endif]>
+</head>
+
+<body lang=EN-US style='margin:0px;background-color:black'
+onclick="DocumentOnClick()" onresize="_RSW()" onkeypress="_KPH()">
+
+<div id=SlideObj class=sld style='position:absolute;top:0px;left:0px;
+width:534px;height:400px;font-size:16px;background-color:black;clip:rect(0%, 101%, 101%, 0%);
+visibility:hidden'><p:slide coordsize="720,540"
+ colors="#000000,#FFFFFF,#393939,#CCFFFF,#B2B2B2,#FF3300,#33CCFF,#DDDDDD"
+ masterhref="master03.xml" href="slide0016.xml">
+ <p:shaperange href="master03.xml#_x0000_s1025"/><![if !ppt]><p:shaperange
+  href="master03.xml#_x0000_s1026"/><![if !vml]><img border=0
+ v:shapes="_x0000_s1026" src="master03_image002.gif" style='position:absolute;
+ top:13.0%;left:2.24%;width:95.88%;height:1.25%'><![endif]><p:shaperange
+  href="master03.xml#_x0000_s1033"/>
+ <div v:shape="_x0000_s1033" class=O style='position:absolute;top:95.25%;
+ left:3.55%;width:10.48%;height:2.75%'><span style='font-size:50%'><i>19 Nov
+ 1999</i></span><span style='font-family:Arial;font-size:50%;mso-special-format:
+ lastCR;display:none'>&#13;</span></div>
+ <p:shaperange href="master03.xml#_x0000_s1034"/>
+ <div v:shape="_x0000_s1034" class=O style='text-align:center;position:absolute;
+ top:95.25%;left:16.85%;width:65.73%;height:2.75%'><span style='font-size:50%'><i>Sphinx
+ Speech Group, CMU-SCS (rkm@cs.cmu.edu)</i></span><span style='font-size:58%;
+ mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <![endif]><p:shaperange href="slide0016.xml#_x0000_s32770"/><![if !vml]><img
+ border=0 v:shapes="_x0000_s32770" src="slide0016_image009.gif"
+ style='position:absolute;top:42.0%;left:13.29%;width:.56%;height:43.0%'><![endif]><p:shaperange
+  href="master03.xml#_x0000_m1027"/><p:shaperange
+  href="slide0016.xml#_x0000_s32771"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32771" src="slide0016_image010.gif" style='position:absolute;
+ top:42.0%;left:26.59%;width:.56%;height:43.0%'><![endif]>
+ <div v:shape="_x0000_s32776" class=T style='position:absolute;top:5.0%;
+ left:3.55%;width:93.25%;height:7.75%'>Viterbi Search (contd.)</div>
+ <p:shaperange href="slide0016.xml#_x0000_s32777"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32777" src="slide0016_image011.gif" style='position:absolute;
+ top:24.0%;left:19.85%;width:4.68%;height:2.25%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32778"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32778,_x0000_s32779,_x0000_s32780,_x0000_s32781,_x0000_s32782,_x0000_s32783"
+ src="slide0016_image012.gif" style='position:absolute;top:37.75%;left:11.61%;
+ width:3.74%;height:49.5%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32784"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32784,_x0000_s32785,_x0000_s32786,_x0000_s32787,_x0000_s32788,_x0000_s32789"
+ src="slide0016_image013.gif" style='position:absolute;top:37.75%;left:24.9%;
+ width:3.74%;height:49.5%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32791"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32791,_x0000_s32792" src="slide0016_image014.gif"
+ style='position:absolute;top:68.75%;left:14.98%;width:10.48%;height:16.25%'><![endif]>
+ <div v:shape="_x0000_s32869" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:82.0%;left:85.95%;width:7.67%;height:5.25%'><span
+ style='font-family:Arial'>time</span></div>
+ <p:shaperange href="slide0016.xml#_x0000_s32870"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32870,_x0000_s32871,_x0000_s32872,_x0000_s32873,_x0000_s32874,_x0000_s32875,_x0000_s32876,_x0000_s32877,_x0000_s32878,_x0000_s32879,_x0000_s32880,_x0000_s32881,_x0000_s32882,_x0000_s32883,_x0000_s32884,_x0000_s32885,_x0000_s32886,_x0000_s32887,_x0000_s32888,_x0000_s32889"
+ src="slide0016_image015.gif" style='position:absolute;top:16.5%;left:23.59%;
+ width:46.25%;height:17.75%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32890"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32890" src="slide0016_image016.gif" style='position:absolute;
+ top:83.5%;left:28.27%;width:57.11%;height:2.25%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32915"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32915,_x0000_s32891,_x0000_s32892,_x0000_s32893,_x0000_s32894,_x0000_s32895,_x0000_s32896,_x0000_s32897,_x0000_s32906,_x0000_s32898,_x0000_s32899,_x0000_s32900,_x0000_s32902,_x0000_s32903,_x0000_s32904,_x0000_s32905"
+ src="slide0016_image017.gif" style='position:absolute;top:36.5%;left:38.2%;
+ width:43.82%;height:28.25%'><![endif]>
+ <div v:shape="_x0000_s32894" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:38.75%;left:45.13%;width:34.83%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>State with best path-score</span></div>
+ <div v:shape="_x0000_s32895" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:43.25%;left:45.13%;width:37.45%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>State with path-score &lt; best</span></div>
+ <div v:shape="_x0000_s32896" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:47.5%;left:45.13%;width:41.94%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>State without a valid path-score</span></div>
+ <div v:shape="_x0000_s32898" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:55.5%;left:40.26%;width:7.49%;height:5.25%'><i>P </i>(<i>t</i>)</div>
+ <div v:shape="_x0000_s32899" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:57.75%;left:41.76%;width:1.31%;height:5.25%'><i>j</i></div>
+ <div v:shape="_x0000_s32900" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:55.25%;left:47.75%;width:38.2%;height:5.25%'><span
+ style='font-family:Arial'>= </span><i>max </i>[<i>P </i>(<i>t-1</i>)<i> a<span
+ style="mso-spacerun: yes">   </span>b<span style="mso-spacerun: yes">  </span></i>(<i>t</i>)]<span
+ style='mso-special-format:lastCR;display:none'><i>&#13;</i></span></div>
+ <div v:shape="_x0000_s32902" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:57.75%;left:59.36%;width:1.31%;height:5.25%'><i>i</i></div>
+ <div v:shape="_x0000_s32903" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:57.75%;left:69.28%;width:2.43%;height:5.25%'><i>ij</i></div>
+ <div v:shape="_x0000_s32904" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:57.75%;left:73.59%;width:1.31%;height:5.25%'><i>j</i></div>
+ <div v:shape="_x0000_s32905" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:58.75%;left:52.62%;width:1.31%;height:5.25%'><i>i</i></div>
+ <div v:shape="_x0000_s32908" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:76.5%;left:35.95%;width:59.73%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>Total path-score ending up at state </span><span
+ style='font-size:75%'><i>j</i></span><span style='font-family:Arial;
+ font-size:75%'> at time </span><span style='font-size:75%'><i>t</i></span><span
+ style='font-family:Arial;font-size:75%;mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <div v:shape="_x0000_s32909" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:65.25%;left:41.76%;width:42.13%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>State transition probability, </span><span
+ style='font-size:75%'><i>i</i></span><span style='font-family:Arial;
+ font-size:75%'> to </span><span style='font-size:75%'><i>j</i></span><span
+ style='font-family:Arial;font-size:75%;mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <div v:shape="_x0000_s32910" class=O style='mso-line-spacing:"100 50 0";
+ position:absolute;top:71.0%;left:48.5%;width:54.11%;height:4.0%'><span
+ style='font-family:Arial;font-size:75%'>Score for state </span><span
+ style='font-size:75%'><i>j</i></span><span style='font-family:Arial;
+ font-size:75%'>, given the input at time </span><span style='font-size:75%'><i>t</i></span><span
+ style='font-family:Arial;font-size:75%;mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <p:shaperange href="slide0016.xml#_x0000_s32912"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32912" src="slide0016_image018.gif" style='position:absolute;
+ top:61.0%;left:36.51%;width:3.93%;height:15.0%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32913"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32913,_x0000_s32914" src="slide0016_image019.gif"
+ style='position:absolute;top:61.0%;left:62.35%;width:27.15%;height:10.75%'><![endif]><p:shaperange
+  href="slide0016.xml#_x0000_s32916"/><![if !vml]><img border=0
+ v:shapes="_x0000_s32916" src="slide0016_image020.gif" style='position:absolute;
+ top:83.5%;left:14.98%;width:10.48%;height:2.5%'><![endif]></p:slide>
+</div>
+
+</body>
+
+</html>

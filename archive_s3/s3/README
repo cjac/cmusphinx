@@ -1,47 +1,30 @@
-**********************************************
-CMU ARPA Speech Project
-SPHINX-III Decoder
+The s3.3 decoder is a live-mode capable version of the s3.2 decoder.
+The decoder routine is stored in a library called libdecoder.a
+The decoder function takes blocks of speech samples and returns partial 
+hypotheses for the blocks decoded during runtime. An example of its
+use is given in main_live_example.c
 
-Copyright (c) 1996 Carnegie Mellon University.
-ALL RIGHTS RESERVED.
-**********************************************
+---------------
+This s3.2 module contains the following programs:
+  1. decode: The Sphinx-3 s3.2 decoder
+  2. gausubvq: A utility for creating a compact, sub-vector quantized form of
+     continuous density acoustic models.  The compact form is used to speed
+     up acoustic likelihood computation in the decoder.
 
-This is the collection of Sphinx3 decoder programs.
-There's the beginnings of documentation in doc/s3.html; however it is
-far from complete.
+This module depends on the "libutil" library module.
 
-The following components are provided:
-  * s3decode	-- Viterbi decoder
-  * s3dag	-- Shortest path search of Viterbi lattice
-  * s3astar	-- A* search of Viterbi lattice to produce N-best list
-  * s3align	-- Forced alignment for word/phone/state segmentation
-  * s3allphone	-- Viterbi allphone decoder
 
-The software collection is organized as follows:
-  * ./Makefile.defines and ./Makefile -- Top-level Makefiles for Sphinx3.
-  * ./src	-- Source files
-  * ./include	-- Main include file (nothing much here)
-  * ./lib/*	-- Compiled libraries binaries go here
-  * ./bin/*	-- Compiled executables binaries go here
-  * ./tests	-- Sample scripts and respective outputs
-  * ./doc	-- Documentation (very incomplete)
+This distribution (specifically, the Makefiles) has been prepared for Unix
+platforms.  However, it should be easy to create an equivalent setup on the
+Windows platform, and compile the software there as well.
 
-To make the software for your platform:
-  * Double-check Makefile.defines for platform specific definitions.
-  * Update the S3ROOT definition in all the subdirectory Makefiles to
-    point to your root S3 directory.  The Makefiles are:
-    - src/libutil/Makefile
-    - src/libio/Makefile
-    - src/libfeat/Makefile
-    - src/libmisc/Makefile
-    - src/libfbs/Makefile* (note that there are several of these)
-  * Check Makefile for compilation instructions.
+For documentation on compiling and running the decoder, see doc/s3.html.
+
+
 
 Contact:
-    Mosur K. Ravishankar
-    School of Computer Science
-    Carnegie Mellon University
-    Pittsburgh, PA 15213
-    Tel: (412)268-3344
-    E-mail: rkm@cs.cmu.edu
-    URL: http://www.cs.cmu.edu/~rkm
+  M. K. Ravishankar
+  School of Computer Science
+  Carnegie Mellon University
+  Pittsburgh, PA 15213
+  email: rkm@cs.cmu.edu

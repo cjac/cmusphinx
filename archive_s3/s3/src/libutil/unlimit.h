@@ -4,7 +4,7 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1996 Carnegie Mellon University.
+ * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
@@ -18,6 +18,9 @@
 #ifndef _LIBUTIL_UNLIMIT_H_
 #define _LIBUTIL_UNLIMIT_H_
 
+
+/* To remove resource (memory) usage restrictions */
 void unlimit ( void );
+
 
 #endif
