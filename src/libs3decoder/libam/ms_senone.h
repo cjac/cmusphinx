@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/08/09  00:17:11  arthchan2003
- * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ * Revision 1.2  2004/08/31  08:43:47  arthchan2003
+ * Fixing _cpluscplus directive
  * 
+ * Revision 1.1  2004/08/09 00:17:11  arthchan2003
+ * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ *
  * Revision 1.1  2003/02/14 14:40:34  cbq
  * Compiles.  Analysis is probably hosed.
  *
@@ -36,6 +39,10 @@
 #include "s3types.h"
 #include "ms_gauden.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef uint8 senprob_t;	/* Senone logs3-probs, truncated to 8 bits */
 
@@ -93,5 +100,9 @@ void senone_eval_all (senone_t *s,		/* In: Senone structure */
 		      int32 n_top,		/* In: as in senone_eval above */
 		      int32 *senscr);		/* Out: Upon return, senscr[i] will contain
 						   score for senone i */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

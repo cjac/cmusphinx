@@ -56,11 +56,12 @@
 #ifndef _LIBUTIL_PROFILE_H_
 #define _LIBUTIL_PROFILE_H_
 
+
+#include "prim_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
 
 
 /*

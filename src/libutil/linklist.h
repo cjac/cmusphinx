@@ -20,6 +20,9 @@
 #ifndef _LIBUTIL_LINKLIST_H_
 #define _LIBUTIL_LINKLIST_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Allocate a link-list element of given size and return pointer to it */
 char *__listelem_alloc__ (int32 elemsize, char *file, int32 line);
@@ -31,5 +34,9 @@ void listelem_free (char *elem, int32 elemsize);
 /* Print #allocation, #free operation stats */
 void linklist_stats ( void );
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

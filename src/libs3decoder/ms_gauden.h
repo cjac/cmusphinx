@@ -31,6 +31,9 @@
 #include "s3types.h"
 #include "vector.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * Multivariate gaussian mixture density parameters
@@ -112,5 +115,9 @@ gauden_dist_norm (gauden_t *g,		/* In: handle to all collection of codebooks */
 					   normalized. */
 		  int8 *active);	/* In: active[gid] is non-0 iff codebook gid is
 					   active.  If NULL, all codebooks active */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GAUDEN_H */ 

@@ -21,6 +21,10 @@
 
 #include "prim_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Yet another attempt at a clean "next-word-in-string" function.  See arguments below.
  * Return value: length of word if one was found, otherwise -1.
@@ -36,5 +40,9 @@ nextword (char *line,		/* In: String being searched for next word */
 	  char *delimfound);	/* Out: *delimfound = original delimiter found at the end
 				   of the word.  (This way, the caller can restore the
 				   delimiter, preserving the original string.) */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
