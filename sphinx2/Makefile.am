@@ -71,7 +71,7 @@ test:
 		-kbdumpdir $(top_srcdir)/model/lm/turtle \
 		-lmfn $(top_srcdir)/model/lm/turtle/turtle.lm \
 		-dictfn $(top_srcdir)/model/lm/turtle/turtle.dic \
-		-noisedict $(top_srcdir)/model/hmm/6k/noisedict \
+		-ndictfn $(top_srcdir)/model/hmm/6k/noisedict \
 		-phnfn $(top_srcdir)/model/hmm/6k/phone \
 		-mapfn $(top_srcdir)/model/hmm/6k/map \
 		-hmmdir $(top_srcdir)/model/hmm/6k \

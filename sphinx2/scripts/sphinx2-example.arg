@@ -22,7 +22,7 @@
  -lmfn       /usr/local/share/sphinx2/model/lm/turtle/turtle.lm
  -kbdumpdir  /usr/local/share/sphinx2/model/lm/turtle
  -dictfn     /usr/local/share/sphinx2/model/lm/turtle/turtle.dic
- -noisedict  /usr/local/share/sphinx2/model/hmm/6k/noisedict
+ -ndictfn  /usr/local/share/sphinx2/model/hmm/6k/noisedict
  -oovdictfn  /usr/local/share/sphinx2/model/lm/turtle.handdict
  -oovugprob  -4.5
  -phnfn      /usr/local/share/sphinx2/model/hmm/6k/phone
