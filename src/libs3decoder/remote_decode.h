@@ -55,20 +55,23 @@
  *    rd_interrupt().
  */
 
-#ifndef __LIVE_DECODE_H
-#define __LIVE_DECODE_H
+#ifndef __REMOTE_DECODE_H
+#define __REMOTE_DECODE_H
 
 #include "live_decode.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct _control_block;
+struct _result_block;
   
 typedef struct
 {
   live_decoder_t ld;
-  void *control_queue;
-  void *return_queue;
+  struct _control_block *control_queue;
+  struct _result_block *result_queue;
   int32 state;
   void *mutex;
   int32 internal_cmd_ln;

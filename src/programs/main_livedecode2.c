@@ -55,12 +55,15 @@
 #include <live_decode.h>
 #include <args.h>
 #include <ad.h>
+#include <stdio.h>
 
 #define BUFSIZE 4096
 
 HANDLE startEvent;
 HANDLE finishEvent;
 live_decoder_t decoder;
+
+FILE *dump = 0;
 
 DWORD WINAPI
 process_thread(LPVOID aParam)
@@ -77,7 +80,12 @@ process_thread(LPVOID aParam)
   while (WaitForSingleObject(finishEvent, 0) == WAIT_TIMEOUT) {
     num_samples = ad_read(in_ad, samples, BUFSIZE);
     if (num_samples > 0) {
-      if (ld_utt_proc_raw(&decoder, samples, num_samples) < 0) {
+      /** dump the recorded audio to disk */
+      if (fwrite(samples, sizeof(int16), num_samples, dump) < num_samples) {
+	printf("Error writing audio to dump file.\n");
+      }
+
+      if (ld_process_raw(&decoder, samples, num_samples) < 0) {
 	printf("Data processing error.\n");
 	return -1;
       }
@@ -87,7 +95,7 @@ process_thread(LPVOID aParam)
   ad_stop_rec(in_ad);
   ad_close(in_ad);
 
-  if (ld_utt_end(&decoder)) {
+  if (ld_end_utt(&decoder)) {
     printf("Cannot end decoding.\n");
     return -1;
   }
@@ -120,8 +128,14 @@ main(int argc, char **argv)
     return -1;
   }
 
-  if (ld_utt_begin(&decoder, 0)) {
+  if (ld_begin_utt(&decoder, 0)) {
     printf("Cannot start decoding\n");
+    return -1;
+  }
+
+  /** initializing a file to dump the recorded audio */
+  if ((dump = fopen("out.raw", "wb")) == 0) {
+    printf("Cannot open dump file out.raw\n");
     return -1;
   }
 
@@ -153,7 +167,7 @@ main(int argc, char **argv)
   /*
    *  Print the decoding output
    */
-  if (ld_utt_hyps(&decoder, &hypstr, 0)) {
+  if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
     printf("Cannot retrieve hypothesis.\n");
   }
   else {
@@ -161,6 +175,8 @@ main(int argc, char **argv)
   }
 
   ld_finish(&decoder);
+  
+  fclose(dump);
 
   return 0;
 }
