@@ -5,13 +5,15 @@ bin_PROGRAMS = \
 	sphinx2-server \
 	sphinx2-client \
 	sphinx2-allphone \
-	adrec \
-	adpow \
-	cont_adseg \
-	cont_fileseg \
         lm3g2dmp  \
 	raw2cep
-# 	cdcn_test
+
+EXTRA_DIST=
+	cont_adseg \
+	cont_fileseg \
+	adpow \
+	adrec \
+	cdcn_test
 
 sphinx2_continuous_SOURCES =  tty-continuous.c
 
@@ -59,4 +61,3 @@ INCLUDES = -I$(top_srcdir)/include \
 
 # add for solaris
 # -I/usr/demo/SOUND/include
-

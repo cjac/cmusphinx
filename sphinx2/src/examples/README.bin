@@ -1,0 +1,82 @@
+
+Sphinx 2
+
+
+bin/ : binaries of example programs and scripts.  sources
+          for these are in src/examples/ and they link
+          against lib/libsphinx2.a
+
+  sphinx2-test: a simple shell script that calls sphinx2-batch
+          to decode an example utterance in the demo, called
+          goforward.16k, which contains the utterance 
+          "GO FORWARD TEN METERS".  If you've built Sphinx2
+          successfully, and this decodes, you'll know the
+          basic engine is working, and the acoustic models and
+          language models are working.  From there you'll
+          have to worry about audio.
+
+  sphinx2-demo: a perl script that invokes tty-continuous
+          as a pipe.  Prints out the result whenever it
+          gets one. may take one argument: the name
+          of a directory containing an unpacked tar file
+          from the lmtool web page, or a set of files
+          with the extensions .lm, .dict, .map, etc.
+          If you do that, it will run with your language
+          model.  otherwise, it will run with the example
+          "turtle robot" demo (see model/lm/turtle/demo.corpus
+          for an example of the input file to the lmtool
+          web page.
+
+          The lmtool web page is available from 
+              http://www.speech.cs.cmu.edu/sphinx/
+
+  sphinx2-simple: a simple command-line call that runs 
+          sphinx2-continuous with all the necessary
+          command-line options.  this is a good thing
+          to look at and use when you first start out.
+          This gives a lot of diagnostic info that 
+          sphinx2-demo suppresses.
+          
+  sphinx2-continuous: this is a compiled example that takes
+          a large number of command line arguments to 
+          run directly -- thus the sphinx2-demo script
+          above.  it takes audio from /dev/dsp and prints
+          out its status while decoding. listens all the
+          time.  
+
+  sphinx2-ptt: like sphinx2-continuous, but you press
+          a key to start and stop listening.  hack 
+          sphinx2-demo if you prefer this behaviour;
+          change $PGM.
+
+  sphinx2-batch: batch mode executable.  use this on 
+          pre-recorded files; requires command line switches 
+          similar to those shown in turtle-demo.
+
+  sphinx2-client and sphinx2-server: a lightweight client
+          and a server version of sphinx so that you can
+          have the recognizer on one machine and be 
+          using the results somewhere else.
+
+  adpow:  a little utility to measure the power of the
+          signal coming into the A/D device from the 
+          audio in.
+
+          example:
+
+            lenzo@protected 221] adpow 
+            Hit <CR> to measure A/D power; Q<CR> to quit: 
+            INFO: adpow.c(51): log(Power) = 36.25 dB
+
+  adrec: record some audio from audio in.  
+
+         adrec <sampling-rate> <#sec-to-record> <output-file>
+
+
+
+  cont_adseg: segment continuous audio into chunks
+         cont_adseg <sampling-rate> <utt-end-sil(sec)>
+
+  cont_fileseg: segment audio files into chunks
+        cont_fileseg <sampling-rate> <utt-end-sil(sec)> 
+                          <in-file> [-byteswap] [-debug]
