@@ -1,1 +1,1 @@
-EXTRA_DIST = README.bin  README.lib  sphinx2.html
+EXTRA_DIST = README.bin  README.lib  
