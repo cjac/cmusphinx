@@ -132,77 +132,79 @@ extern "C" {
 #define LD_STATE_DECODING			1
 #define LD_STATE_FINISHED			2
 
+  /** Wrapper structure for live-mode recognition
+   */
 typedef struct
 {
-  /*
+  /**
    * Knowledge base.
    */
   kb_t kb;
 
-  /*
+  /**
    * Pointer to the knowledge base core.
    */
   kbcore_t *kbcore;
 
-  /*
+  /**
    * Pointer to the front-end.
    */
   fe_t *fe;
 
-  /*
+  /**
    * File pointer to the HMM logfile.
    */
   FILE *hmm_log;
 
-  /*
+  /**
    * Parameter: intervals at which wbeam is used for phone transitions.
    */
   int32 phones_skip;
 
-  /*
+  /**
    * Number of frames decoded.
    */
   int32 num_frames_decoded;
 
-  /*
+  /**
    * Number of frames entered.
    */
   int32 num_frames_entered;
 
-  /*
+  /**
    * Current state of the live decoder.
    */
   int32 ld_state;
 
-  /*
+  /**
    * UTTID (obviously NOT) filled in by knowledge-base.
    */
   char *uttid;
 
-  /*
+  /**
    * The frame number at which the hypothesis is recorded.
    */
   int32 hyp_frame_num;
 
-  /*
+  /**
    * Hypothesis string.  Result (or partial result) of the recognition is
    * stored as a complete string.
    */
   char *hyp_str;
 
-  /*
+  /**
    * Hypothesis word segments.  Result (or partial result) of the recognition
    * is stored as word segments.  Null-terminated array.
    */
   hyp_t **hyp_segs;
 
-  /*
+  /**
    * Boolean indicator whether we've internally allocated space for the
    * command line arguments.
    */
   int32 internal_cmdln;
 
-  /*
+  /**
    * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
    * we allocate once per live decoder.
    */ 
