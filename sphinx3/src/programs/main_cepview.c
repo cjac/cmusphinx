@@ -50,6 +50,8 @@
 #define IO_ERR  (-1)
 #define IO_SUCCESS  (0)
 
+#define SHOW_ALL "-1"
+
 /* Default cepstral vector size */
 #define NUM_COEFF  "13"
 
@@ -57,6 +59,7 @@
  * frame per line.
  */
 #define DISPLAY_SIZE "8"
+#define STR_MAX_INT "2147483647"
 
 static arg_t arg[] = {
   { "-i",
@@ -66,14 +69,22 @@ static arg_t arg[] = {
   { "-d",
     ARG_INT32,
     DISPLAY_SIZE,
-    "Width of display"},
+    "# of displayed coefficients"},
+  { "-header",
+    ARG_INT32,
+    "0",
+    "Whether header is shown"},
+  { "-describe",
+    ARG_INT32,
+    "0",
+    "Whether description will be shown. \n"},
   { "-b",
     ARG_INT32,
     "0",
     "The beginning frame 0-based."},
   { "-e",
     ARG_INT32,
-    "10000",
+    "2147483647",
     "The ending frame. "},
   { "-input",
     ARG_STRING,
@@ -91,8 +102,9 @@ int read_cep(char *file, float ***cep, int *nframes, int numcep);
 int main(int argc, char *argv[])
 {
   int i, j, k, offset;
-  int noframe, vsize, dsize, column;
-  int frm_begin, frm_end;
+  int32 noframe, vsize, dsize, column;
+  int32 frm_begin, frm_end;
+  int is_header, is_describe;
   float *z, **cep;
   char* cepfile;
   
@@ -104,6 +116,8 @@ int main(int argc, char *argv[])
   dsize = cmd_ln_int32("-d");
   frm_begin= cmd_ln_int32("-b");  
   frm_end= cmd_ln_int32("-e");  
+  is_header =cmd_ln_int32("-header");
+  is_describe =cmd_ln_int32("-describe");
 
   if(vsize<0) E_FATAL("-i : Input vector size should be larger than 0.\n");
   if(dsize<0) E_FATAL("-d : Column size should be larger than 0\n");
@@ -116,11 +130,9 @@ int main(int argc, char *argv[])
     E_FATAL("input file is not specified\n");
   }
   if (read_cep((char*)cmd_ln_access("-input"),&cep,&noframe,vsize) == IO_ERR)
-    E_INFO("ERROR opening %s for reading\n",cepfile);
+    E_FATAL("ERROR opening %s for reading\n",cepfile);
       
   z = cep[0];
-
-  printf("%d frames\n", noframe);
 
   offset = 0;
   column = (vsize > dsize) ? dsize : vsize;
@@ -129,18 +141,15 @@ int main(int argc, char *argv[])
   /* This part should be moved to a special library if this file is
      longer than 300 lines. */
 
-  for(k=0 ; k < floor(vsize/dsize);k++){
-    if(k==0) printf("\n%6s ","frame#");
-    else printf("%6s ","");
-
-    for ( j =k*column ; j < (k+1)*column; ++j){
-      printf("%3s%3d%s ","c[",j,"]");
+  if(is_header){
+    if(is_describe){
+      printf("%d frames\n", noframe);
+      if(k==0) 
+	printf("\n%6s","frame#:");
+      else printf("%6s:  ","");
     }
-    printf("\n");
-  }
-  if(j!=vsize){
-    printf("%6s ","");
-    for( j = (k)*column ; j < vsize ; j++){
+      
+    for ( j = 0 ; j < column; ++j){
       printf("%3s%3d%s ","c[",j,"]");
     }
     printf("\n");
@@ -148,23 +157,14 @@ int main(int argc, char *argv[])
 
   offset += frm_begin *vsize;
   for (i = frm_begin; i < frm_end; ++i){
-    for(k=0 ; k < floor(vsize/dsize);k++){
-
-      if(k==0) printf("%6d ",i);
-      else printf("%6s ","");
-
-      for ( j =k*column ; j < (k+1)*column; ++j)
-	printf("%7.3f ", z[offset + j]);
-      printf("\n");
+    if(is_describe){
+      if(k==0) printf("%6d:",i);
+      else printf("%6s:","");
     }
+    for ( j =0 ; j < column; ++j)
+      printf("%7.3f ", z[offset + j]);
+    printf("\n");
       
-    if(j!=vsize){
-      printf("%6s ","");
-      for( j = (k)*column ; j < vsize ; j++){
-	printf("%7.3f ", z[offset + j]);
-      }
-      printf("\n");
-    }
     offset += vsize;
   }
   fflush(stdout);
