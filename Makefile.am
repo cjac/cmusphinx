@@ -235,8 +235,28 @@ test-ep :
 	        -var ./model/ep/variances \
 	        -mixw ./model/ep/mixture_weights \
 		2>&1 |grep "Utt_" > $@.out
+#	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
+#	$(LIBTOOL) --mode=execute rm $@.out		
+	
+test-ep-match:
+	@echo "EP TEST"
+	$(LIBTOOL) --mode=execute src/programs/ep \
+		-i $(top_srcdir)/model/ep/chan3.raw  \
+	        -srate 11025 \
+	        -frate 105 \
+	        -wlen 0.024 \
+	        -alpha 0.97 \
+	        -ncep 13 \
+	        -nfft 512 \
+	        -nfilt 36 \
+ 	        -upperf 5400 \
+	        -lowerf 130 \
+	        -blocksize 262500 \
+	        -mean ./model/ep/means \
+	        -var ./model/ep/variances \
+	        -mixw ./model/ep/mixture_weights \
+		2>&1 |grep "Utt_" > $@.out
 	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
 	$(LIBTOOL) --mode=execute rm $@.out		
-	
 
 
