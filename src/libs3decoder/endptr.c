@@ -92,7 +92,7 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
 					ENDPTR->leader = ENDPTR->spbegin - ENDPTR->PAD_F_BEFORE;
 					ENDPTR->utt_counter++;
 
-					printf("Utt_Start#%d, Leader: %f,  Begin: %f\n", ENDPTR->utt_counter,endptr_frame2secs_beg( FE,ENDPTR->leader), endptr_frame2secs_beg(FE, ENDPTR->spbegin) ); 
+					printf("Utt_Start#%d, Leader: %6.5f,  Begin: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_beg( FE,ENDPTR->leader), endptr_frame2secs_beg(FE, ENDPTR->spbegin) ); 
 				}
                         	break;
 
@@ -145,7 +145,7 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
 				else
 				{
 					ENDPTR->status = STAT_OTHER;
-					printf("Utt_End#%d, End: %f,  Trailer: %f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend), endptr_frame2secs_end(FE, ENDPTR->trailer));
+					printf("Utt_End#%d, End: %6.5f,  Trailer: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend), endptr_frame2secs_end(FE, ENDPTR->trailer));
 				//	printf("Utt_End End: %d,  Trailer: %d\n",ENDPTR->spend, ENDPTR->trailer);
 				}
                         	break;
@@ -167,7 +167,7 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
                                 else
                                 {
                                         ENDPTR->status = STAT_OTHER;
-					printf("Utt_Cancel#%d End: %f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend));
+					printf("Utt_Cancel#%d End: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend));
 				//	printf("Utt_Cancel End: %d\n",ENDPTR->spend);
 						
 					ENDPTR->utt_counter--;
