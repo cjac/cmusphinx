@@ -2,7 +2,7 @@ echo off
 
 set S3ROOT=..\..
 cd %S3ROOT%
-set S3BATCH=.\win32\msdev\programs\livepretend\Debug\livepretend.exe
+set S3BATCH=.\bin\Debug\livepretend.exe
 set TASK=.\model\lm\an4
 set CTLFILE=.\win32\batch\an4.ctl
 set ARGS=.\model\lm\an4\args.an4.test

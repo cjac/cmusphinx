@@ -5,7 +5,7 @@ rem directory (S3ROOT).
 
 set S3ROOT=..\..
 cd %S3ROOT%
-set S3CONTINUOUS=.\win32\msdev\programs\livedecode\Debug\livedecode.exe
+set S3CONTINUOUS=.\bin\Debug\livedecode.exe
 
 set ARGS=.\model\lm\an4\args.an4.test
 

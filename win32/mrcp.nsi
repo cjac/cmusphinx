@@ -41,10 +41,10 @@ Section "Sphinx Install"
   SetOutPath $INSTDIR
   
   ; Put file there
-  File ".\msdev\programs\decode\Debug\decode.exe"
-  File ".\msdev\programs\gausubvq\Debug\gausubvq.exe"
-  File ".\msdev\programs\livedecode\Debug\livedecode.exe"
-  File ".\msdev\programs\livepretend\Debug\livepretend.exe"
+  File "..\bin\Debug\decode.exe"
+  File "..\bin\Debug\gausubvq.exe"
+  File "..\bin\Debug\livedecode.exe"
+  File "..\bin\Debug\livepretend.exe"
 
 
 SectionEnd
