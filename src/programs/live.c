@@ -216,6 +216,8 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
     static float32 ***live_feat = NULL;
+    float32 **frames = 0;
+
     int32 return_value;
 
     int32   live_nfr, live_nfeatvec;
@@ -240,64 +242,30 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     mfcbuf = NULL;
 
     return_value = fe_process_utt(fe, samples, nsamples, &mfcbuf, &live_nfr); /**/
-    if (live_endutt) 	       /* RAH, It seems that we shouldn't throw out this data */
+    if (live_endutt){ 	       /* RAH, It seems that we shouldn't throw out this data */
+      /* fe_end_utt assumes someone put in vector which is preallocated. */
+      /* We need to do it because no matter whether it is end of the utterance,
+	 we need to put mfcbug into feat_s2mfc2feat_block
+       */
       return_value = fe_end_utt(fe,dummyframe, &live_nfr); /* Flush out the fe */
-
-  if (FE_ZERO_ENERGY_ERROR == return_value) {
-    E_WARN("Zero energy frame(s). Consider using dither\n");
-  }
-
-#if 0
-    E_INFO("Number frame after fe_process_utt %d\n",live_nfr);
-    for(i=0;i<live_nfr;i++){
-      printf("%d ",i);
-      for(j=0;j<13;j++){
-	printf("%f ",mfcbuf[i][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
+      mfcbuf=ckd_calloc_2d(live_nfr,fe->NUM_CEPSTRA,sizeof(float32));
+      memcpy(mfcbuf[0],dummyframe,fe->NUM_CEPSTRA*sizeof(float32));
     }
-#endif
-    if(live_nfr>0){
+
+    if (FE_ZERO_ENERGY_ERROR == return_value) {
+      E_WARN("Zero energy frame(s). Consider using dither\n");
+    }
+
+    if(live_nfr>0 ){ /* ARCHAN, if fe_end_utt say there is only one frame left and we still process it,
+					then the behavior of feat_s2mfc2feat_block can be very hard to predict. I just
+					drop it at some point */
+					
     /* Compute feature vectors */
       live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
                                          live_nfr, live_begin_new_utt,
 					 live_endutt, live_feat);
 
       E_INFO ("live_nfeatvec: %ld\n",live_nfeatvec);
-#if 0
-      E_INFO("Current frame number %d, Number of frames %d, Number frame after feat_s2mfcfeat_block %d\n",frmno,live_nfr,live_nfeatvec);
-
-    for(i=0;i<live_nfeatvec;i++){
-      printf("%d\n",i);
-      printf("Cep: ");
-      fflush(stdout);
-      for(j=0;j<13;j++){
-	printf("%f ",live_feat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Del: ");
-      fflush(stdout);
-      for(j=13;j<26;j++){
-	printf("%f ",live_feat[i][0][j]);
-	fflush(stdout); 
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Acc: ");
-      fflush(stdout);
-      for(j=26;j<39;j++){
-	printf("%f ",live_feat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-
-    }
-#endif
 
 
     /* decode the block */
@@ -348,3 +316,47 @@ void live_utt_summary(){
 
 
 
+#if 0
+    E_INFO("Number frame after fe_process_utt %d\n",live_nfr);
+    for(i=0;i<live_nfr;i++){
+      printf("%d ",i);
+      for(j=0;j<13;j++){
+	printf("%f ",mfcbuf[i][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+    }
+#endif
+#if 0
+      E_INFO("Current frame number %d, Number of frames %d, Number frame after feat_s2mfcfeat_block %d\n",frmno,live_nfr,live_nfeatvec);
+
+    for(i=0;i<live_nfeatvec;i++){
+      printf("%d\n",i);
+      printf("Cep: ");
+      fflush(stdout);
+      for(j=0;j<13;j++){
+	printf("%f ",live_feat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Del: ");
+      fflush(stdout);
+      for(j=13;j<26;j++){
+	printf("%f ",live_feat[i][0][j]);
+	fflush(stdout); 
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Acc: ");
+      fflush(stdout);
+      for(j=26;j<39;j++){
+	printf("%f ",live_feat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+
+    }
+#endif

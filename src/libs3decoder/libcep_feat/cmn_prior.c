@@ -57,7 +57,7 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   float32 sf;
   int32   i, j;
 
-  E_INFO("Number of frames %d\n",nfr);
+  /*  E_INFO("Number of frames %d\n",nfr);*/
   assert(incep!=NULL);
   
   if (varnorm)
