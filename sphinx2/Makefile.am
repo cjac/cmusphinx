@@ -7,8 +7,6 @@ SUBDIRS = src \
 EXTRA_DIST = sphinx2.spec \
 		autogen.sh \
         win32/msdev/SphinxOCX/ReadMe.txt \
-        win32/msdev/SphinxOCX/Sphinx.aps \
-        win32/msdev/SphinxOCX/Sphinx.clw \
         win32/msdev/SphinxOCX/Sphinx.cpp \
         win32/msdev/SphinxOCX/Sphinx.def \
         win32/msdev/SphinxOCX/Sphinx.dep \
@@ -16,11 +14,7 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/SphinxOCX/Sphinx.dsw \
         win32/msdev/SphinxOCX/Sphinx.h \
         win32/msdev/SphinxOCX/Sphinx.ico \
-        win32/msdev/SphinxOCX/Sphinx.mak \
-        win32/msdev/SphinxOCX/Sphinx.ncb \
         win32/msdev/SphinxOCX/Sphinx.odl \
-        win32/msdev/SphinxOCX/Sphinx.opt \
-        win32/msdev/SphinxOCX/Sphinx.plg \
         win32/msdev/SphinxOCX/Sphinx.rc \
         win32/msdev/SphinxOCX/SphinxArgfileUpdate.cpp \
         win32/msdev/SphinxOCX/SphinxArgfileUpdate.h \
@@ -42,10 +36,18 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/SphinxOCX/Release \
         win32/msdev/libsphinx2/libsphinx2.dsp \
         win32/msdev/libsphinx2/libsphinx2.dsw \
-        win32/msdev/libsphinx2/libsphinx2.opt \
-        win32/msdev/libsphinx2/libsphinx2.plg \
         win32/msdev/libsphinx2ad/libsphinx2ad.dsp \
         win32/msdev/libsphinx2fe/Debug \
         win32/msdev/libsphinx2fe/Release \
         win32/msdev/libsphinx2fe/libsphinx2fe.dsp
+
+## these files were missing
+#        win32/msdev/SphinxOCX/Sphinx.aps \
+#        win32/msdev/SphinxOCX/Sphinx.clw \
+#        win32/msdev/SphinxOCX/Sphinx.mak \
+#        win32/msdev/SphinxOCX/Sphinx.ncb \
+#        win32/msdev/SphinxOCX/Sphinx.opt \
+#        win32/msdev/SphinxOCX/Sphinx.plg \
+#        win32/msdev/libsphinx2/libsphinx2.opt \
+#        win32/msdev/libsphinx2/libsphinx2.plg \
 

@@ -5,7 +5,6 @@
  * CMU ARPA Speech Project
  *
  * Copyright (c) 1996 Carnegie Mellon University.
- * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
@@ -38,12 +37,13 @@ extern int32 Table_Size;
 
 #define EXP(x)	(exp ((double) (x) * LOG_BASE))
 
-#define ADD(x,y)	((x) > (y) ?					\
-			 (((y) <= MIN_LOG || (x) - (y) >= Table_Size) ?	\
-			  (x) : Addition_Table[(x) - (y)] + (x))	\
-			 :						\
-			 (((x) <= MIN_LOG || (y) - (x) >= Table_Size) ?	\
-			  (y) : Addition_Table[(y) - (x)] + (y)))
+/* tkharris++ for additional overflow check */
+#define ADD(x,y) ((x) > (y) ? \
+                  (((y) <= MIN_LOG ||(x)-(y)>=Table_Size ||(x) - +(y)<0) ? \
+		           (x) : Addition_Table[(x) - (y)] + (x))	\
+		   : \
+		  (((x) <= MIN_LOG ||(y)-(x)>=Table_Size ||(y) - +(x)<0) ? \
+		          (y) : Addition_Table[(y) - (x)] + (y)))
 
 #define FAST_ADD(res, x, y, table, table_size)		\
 {							\

@@ -6,7 +6,6 @@ DICT=@prefix@/share/sphinx2/model/lm/turtle/turtle.dic
 echo " "
 echo "sphinx2-simple:"
 echo "  Demo CMU Sphinx2 decoder called with command line arguments."
-echo "  Run sphinx2-demo and read the docs to grok the arguments."
 echo " "
 
 echo "<executing $S2CONTINUOUS, please wait>"

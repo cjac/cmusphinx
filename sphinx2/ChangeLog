@@ -671,4 +671,12 @@ set of changes from dhd (below)
 2001-11-06 Kevin A. Lenzo <lenzo@cs.cmu.edu>
 	* Patch supplied by rkm (Ravi) for search.c fixes a serious error
 	  in search
-	
+
+2001-12-06 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* TCP server fixes in sphinx2-server (server.c)
+	* Applied two patches from Thomas K. Harris <tkharris@cs.cmu.edu>
+	  - overflow check in log.h ADD macro, topN normalization fix
+	* Checks and patches from Evandro Gouvea <egouvea@cs.cmu.edu> for
+	  win32 issues.
+	  - maintenance fixes for cygwin and visual studio buils
+	  - addition of example batch files

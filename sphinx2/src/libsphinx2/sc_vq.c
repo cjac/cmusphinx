@@ -77,6 +77,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <limits.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -743,8 +744,9 @@ int32 SCVQScores (int32 *scores,
 	for (j = 0; j < NUM_FEATURES; j++) {
 	    f[j][i].val.score -= tmp[j];
 	    if (f[j][i].val.score > 0)
-		QUIT((stderr, "%s(%d):  **ERROR** VQ score= %d\n",
-		      __FILE__, __LINE__, f[j][i].val.score));
+	      f[j][i].val.score = INT_MIN; /* tkharris++ */
+	    /*  QUIT((stderr, "%s(%d):  **ERROR** VQ score= %d\n",
+		__FILE__, __LINE__, f[j][i].val.score)); */
 	}
     
 #ifdef WIN32
@@ -798,8 +800,9 @@ int32 SCVQScores_all (int32 *scores,
 	for (j = 0; j < NUM_FEATURES; j++) {
 	    f[j][i].val.score -= tmp[j];
 	    if (f[j][i].val.score > 0)
-		QUIT((stderr, "%s(%d):  **ERROR** VQ score= %d\n",
-		      __FILE__, __LINE__, f[j][i].val.score));
+	      f[j][i].val.score = INT_MIN; /* tkharris++ */
+	    /*  QUIT((stderr, "%s(%d):  **ERROR** VQ score= %d\n",
+		__FILE__, __LINE__, f[j][i].val.score)); */
 	}
     
 #ifdef WIN32
