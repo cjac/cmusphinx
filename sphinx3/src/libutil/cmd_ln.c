@@ -225,7 +225,10 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
       exit(1);
     }
   }else{
-
+    /*
+     * This is repeated in cmd_ln_parse()
+     */
+    /*
     E_INFO("Parsing command line:\n");
     for (i = 0; i < argc; i++) {
       if (argv[i][0] == '-')
@@ -234,14 +237,15 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
     }
     printf ("\n\n");
     fflush (stdout);
-    
+    */
+
     cmd_ln_parse (defn, argc, argv);
   }
 
   logfp = NULL;
   if ((logfile = (char *)cmd_ln_access("-logfn")) != NULL) {
     if ((logfp = fopen(logfile, "w")) == NULL) {
-      E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n");
+      E_ERROR("fopen(%s,w) failed; logging to stdout/stderr\n", logfile);
     } else {
       /* ARCHAN: Do we still need this hack nowadays? */
       orig_stdout = *stdout;	/* Hack!! To avoid hanging problem under Linux */
@@ -259,10 +263,15 @@ void cmd_ln_appl_enter(int argc, char *argv[], char* default_argfn, arg_t *defn)
       fflush (stdout);
     }
   }
-  E_INFO("Configuration in effect:\n");
+  /*
+   * Repeated in cmd_ln_access()
+   */
+  /*
+  E_INFO("Default configuration (superseded by the above):\n");
   cmd_ln_print_help(stderr, defn);
   printf ("\n");
   fflush(stdout);
+  */
 }
 
 void cmd_ln_appl_exit()
@@ -432,7 +441,7 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     }
     
     /* Print configuration */
-    fprintf (stderr, "Configuration in effect:\n");
+    fprintf (stderr, "Default configuration (superseded by the above):\n");
     arg_dump (stderr, defn, 0);
     
     return 0;
