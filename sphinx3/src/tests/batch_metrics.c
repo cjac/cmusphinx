@@ -70,6 +70,8 @@ void processMismatch(char *references[], int numReferences,
 int countMatches(char *references[], int r, int numReferences,
                  char *parthyp[], int h, int numHypothesis);
 int stringToArray(char *string, char *array[]);
+void partialHypToString(partialhyp_t *parthyp, int nhypwds, 
+                        char* hypothesis, int bufferSize);
 
 
 int numSentences;
@@ -89,7 +91,7 @@ int main (int argc, char *argv[])
 {
     short *samps;
 
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
+    int  i, buflen, endutt, blksize, nhypwds, nsamp;
     int numberFiles;
     int space, lastChar;
     
@@ -111,6 +113,7 @@ int main (int argc, char *argv[])
     space = ' ';
     numberFiles = 0;
     sampleRate = 8000;
+    endutt = 0;
 
     totalAudioTime = 0.0;
     totalProcessingTime = 0.0;
