@@ -845,8 +845,10 @@ static int32 dag_chk_linkscr (dag_t *dag)
     
     for (d = dag->list; d; d = d->alloc_next) {
 	for (l = d->succlist; l; l = l->next) {
-	  /*E_INFO("l->ascr %d\n",l->ascr); */
-	  if (l->ascr >= 0){
+	  /*	  E_INFO("l->ascr %d\n",l->ascr); */
+
+	  /* 20040909: I change this from >= to > because s3.5 sometimes generate lattice which has 0 as the beginning node of the lattice.  This should be regarded as temporary change*/
+	  if (l->ascr > 0){
 		return -1;
 	  }
 	}
