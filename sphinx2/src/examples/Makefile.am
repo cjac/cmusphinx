@@ -8,7 +8,8 @@ bin_PROGRAMS = \
 	adrec \
 	adpow \
 	cont_adseg \
-	cont_fileseg
+	cont_fileseg \
+        lm3g2dmp
 	# cdcn_test
 
 sphinx2_continuous_SOURCES =  tty-continuous.c
@@ -35,11 +36,15 @@ cont_adseg_SOURCES = cont_adseg.c
 
 cont_fileseg_SOURCES = cont_fileseg.c
 
+lm3g2dmp_SOURCES = lm3g2dmp.c
+
 # cdcn_test_SOURCES = cdcn_test.c
 
 EXTRA_DIST = clicore.h  srvcore.h
 
 LDADD = $(top_builddir)/src/libsphinx2/.libs/libsphinx2.a -lm
 
-INCLUDES = -I$(top_srcdir)/include  -I$(top_srcdir)/libsphinx/include \
-		-I$(top_srcdir)/src/examples/
+INCLUDES = -I$(top_srcdir)/include  -I$(top_srcdir)/src/libsphinx2/include \
+		-I$(top_srcdir)/src/examples
+
+
