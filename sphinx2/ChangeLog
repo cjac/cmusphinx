@@ -1,3 +1,7 @@
+NOTE that this ChangeLog is not complete.  The CVS logs 
+contain more information.
+	
+	
 Tue Jan 25 14:14:58 PST 2000
 (Mandrake)
 
@@ -676,7 +680,9 @@ set of changes from dhd (below)
 	* TCP server fixes in sphinx2-server (server.c)
 	* Applied two patches from Thomas K. Harris <tkharris@cs.cmu.edu>
 	  - overflow check in log.h ADD macro, topN normalization fix
+	* Added win32 examples to EXTRA_DIST so they get included
 	* Checks and patches from Evandro Gouvea <egouvea@cs.cmu.edu> for
 	  win32 issues.
-	  - maintenance fixes for cygwin and visual studio buils
+	  - maintenance fixes for cygwin and visual studio builds
 	  - addition of example batch files
+	  - projects for each example program
