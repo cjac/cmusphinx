@@ -46,6 +46,11 @@ AC_ARG_WITH(alsa,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
 
+dnl soundcard.h defaults to <soundcard.h>. If <sys/soundcard.h> is
+dnl found instead, then use the latter.
+AC_CHECK_HEADER(sys/soundcard.h,
+	CFLAGS="$CFLAGS -DSYS_SOUNDCARD_H")
+
 if test "x$ad_files" = "x"; then
         case $host in
                 *-*-linux*)
@@ -58,7 +63,13 @@ if test "x$ad_files" = "x"; then
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
                         ad_backend="AD_BACKEND_OSS_BSD"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
-                        ;;
+dnl soundcard.h defaults to <soundcard.h>. If <sys/soundcard.h> is
+dnl found instead, then use the latter.
+			AC_CHECK_HEADER(sys/soundcard.h,
+				CFLAGS="$CFLAGS -DSYS_SOUNDCARD_H")
+			AC_CHECK_LIB(ossaudio, _oss_ioctl, 
+				LIBS="$LIBS -lossaudio")
+			;;
                 *-*-osf*)
                         ad_files="ad_osf.lo mulaw_base.lo"
                         ad_backend="AD_BACKEND_OSF"

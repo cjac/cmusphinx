@@ -64,7 +64,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#if defined(SYS_SOUNDCARD_H)
 #include <sys/soundcard.h>
+#else
+#include <soundcard.h>
+#endif
 #include <errno.h>
 
 #include "s3types.h"
