@@ -44,6 +44,10 @@
  *  Created by Yitao Sun (yitao@cs.cmu.edu).
  */
 
+
+/* \file main_livepretend.c
+ * \brief Driver for live-mode simulation.
+ */
 #include <stdio.h>
 #include <live_decode_API.h>
 #include <live_decode_args.h>

@@ -73,6 +73,9 @@
  * 		Started, copying from nbest.c.
  */
 
+/** \file s3_astar.c
+ * \brief engine for s3.0 astar
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

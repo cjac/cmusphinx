@@ -68,6 +68,10 @@
 #include "endptr.h"
 #include "fe.h"
 
+/** \file main_ep.c
+    \brief Driver for end-pointing
+ */
+
 const char helpstr[] =
   "Description: \n\
 Create cepstra from audio file.\n		\

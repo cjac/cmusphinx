@@ -41,6 +41,12 @@
  *************************************************
  *
  *  Aug 6, 2004
+ *
+ */
+
+/* \file main_livedecode.c
+ * \brief live-mode decoder demo. 
+ *
  *  Created by Yitao Sun (yitao@cs.cmu.edu).  This is a test program written
  *  for the Win32 platform.  The program initializes Sphinx3 live-decode API,
  *  then in a press-to-start and press-to-stop fashion, records and decodes a 

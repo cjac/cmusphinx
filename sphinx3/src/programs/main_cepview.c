@@ -47,6 +47,10 @@
 #include <s3types.h>
 #include "bio.h"
 
+
+/** \file main_cepview.c
+    \brief Main driver of cepview
+ */
 #define IO_ERR  (-1)
 #define IO_SUCCESS  (0)
 

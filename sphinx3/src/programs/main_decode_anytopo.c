@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.3  2004/12/05  12:01:32  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.4  2004/12/06  11:15:11  arthchan2003
+ * Enable doxygen in the program directory.
  * 
+ * Revision 1.3  2004/12/05 12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.2  2004/11/16 05:13:19  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
@@ -180,6 +183,9 @@
  * 		Created.
  */
 
+/* \file main_decode_anytopo.c
+ * \brief Main driver for sphinx 3.0 decoding (or the slow decoder)
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
