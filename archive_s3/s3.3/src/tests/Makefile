@@ -86,4 +86,4 @@ tidigits-quick:
 
 
 lm-test:
-	$(BINDIR)/lm_test ./lm.ARGS /lab/speech/sphinx4/data/hub4_model/language_model.arpaformat.DMP /lab/speech/sphinx4/data/hub4_model/random_ngrams.txt
+	$(BINDIR)/lm_test ./lm_test.ARGS /lab/speech/sphinx4/data/hub4_model/language_model.arpaformat.DMP /lab/speech/sphinx4/data/hub4_model/random_ngrams.txt

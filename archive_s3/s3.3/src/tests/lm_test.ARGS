@@ -1,0 +1,12 @@
+-lm	/lab/speech/sphinx4/data/language_model.arpaformat.DMP
+-lw	9.5
+-wip	0.7
+-uw     0.7
+
+-mdef	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.500.mdef
+-dict	/lab/speech/sphinx4/data/tidigits_model/dictionary
+-fdict	/lab/speech/sphinx4/data/tidigits_model/fillerdict
+-mean	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/means.LittleEndian
+-var	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian
+-mixw	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian
+-tmat	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/transition_matrices.LittleEndian
