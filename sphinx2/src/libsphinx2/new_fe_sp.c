@@ -519,19 +519,45 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
  
     if (P->NUM_FILTERS != 0)	
 	MEL->num_filters = P->NUM_FILTERS;
-    else 
-	MEL->num_filters = DEFAULT_NUM_FILTERS;
+    else {
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	    MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
+        else {
+            fprintf(stderr,"Please define the number of MEL filters needed\n");
+            fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+            fflush(stderr); exit(0);
+        }
+    }
 
     if (P->UPPER_FILT_FREQ != 0)	
 	MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
-    else 
-	MEL->upper_filt_freq = DEFAULT_UPPER_FILT_FREQ;
+    else{
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	    MEL->upper_filt_freq = DEFAULT_BB_UPPER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->upper_filt_freq = DEFAULT_NB_UPPER_FILT_FREQ;
+        else {
+            fprintf(stderr,"Please define the upper filt frequency needed\n");
+            fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+            fflush(stderr); exit(0);
+        }
+    } 
 
     if (P->LOWER_FILT_FREQ != 0)	
 	MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
-    else 
-	MEL->lower_filt_freq = DEFAULT_LOWER_FILT_FREQ;
-
+    else {
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	    MEL->lower_filt_freq = DEFAULT_BB_LOWER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->lower_filt_freq = DEFAULT_NB_LOWER_FILT_FREQ;
+        else {
+            fprintf(stderr,"Please define the lower filt frequency needed\n");
+            fprintf(stderr,"Modify include/new_fe.h and new_fe_sp.c\n");
+            fflush(stderr); exit(0);
+        }
+    } 
 }
 
 void fe_print_current(fe_t *FE)
