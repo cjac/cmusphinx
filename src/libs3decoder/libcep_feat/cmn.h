@@ -62,9 +62,10 @@
 extern "C" {
 #endif
 
-/*
- * Apply Cepstral Mean Normalization (CMN) to the set of input mfc frames, by subtracting
- * the mean of the input from each frame.  C0 is also included in this process.
+  /** \file cmn.h
+ * \brief Apply Cepstral Mean Normalization (CMN) to the set of input mfc frames.
+ *
+ * By subtractingthe mean of the input from each frame.  C0 is also included in this process.
  * This function operates on an entire utterance at a time.  Hence, the entire utterance
  * must be available beforehand (batchmode).
  */
@@ -81,13 +82,16 @@ typedef struct {
 
 cmn_t* cmn_init();
 
-void cmn (float32 **mfc,	/* In/Out: mfc[f] = mfc vector in frame f */
-	  int32 varnorm,	/* In: if not FALSE, variance normalize the input vectors
+  /**
+     CMN for the whole sentence
+   */
+void cmn (float32 **mfc,	/** In/Out: mfc[f] = mfc vector in frame f */
+	  int32 varnorm,	/** In: if not FALSE, variance normalize the input vectors
 				   to have unit variance (along each dimension independently);
 				   Irrelevant if no cmn is performed */
-	  int32 n_frame,	/* In: #frames of mfc vectors */
-	  int32 veclen,         /* In: mfc vector length */
-	  cmn_t *cmn);	        /* In/Out: cmn normalization, which contains the cmn_mean and cmn_var) */
+	  int32 n_frame,	/** In: #frames of mfc vectors */
+	  int32 veclen,         /** In: mfc vector length */
+	  cmn_t *cmn);	        /** In/Out: cmn normalization, which contains the cmn_mean and cmn_var) */
 
 
 #define CMN_WIN_HWM     800     /* #frames after which window shifted */

@@ -53,7 +53,7 @@
 #include "agc.h"
 
 
-/*
+/**
  * Normalize c0 for all frames such that max(c0) = 0.
  */
 void agc_max (float **mfc, int32 n_frame)

@@ -51,6 +51,9 @@
 
 #include <s3types.h>
 
+/** \file ascr.h
+    \brief Wrapper to hold senone scores. 
+ */
 #ifndef _S3_ASCR_H_
 #define _S3_ASCR_H_
 
@@ -58,7 +61,7 @@
 extern "C" {
 #endif
 
-/*
+  /**
  * Structure to hold senone scores (ordinary and composite), in one frame.
  */
 
@@ -68,7 +71,7 @@ typedef struct {
 } ascr_t;
 
 
-/*
+  /**
  * Create an ascr_t structure for the given number of senones (ordinary and composite).
  * Return value: Ptr to created structure if successful, NULL otherwise.
  */

@@ -63,7 +63,10 @@
 extern "C" {
 #endif
 
-/* Master function to compute the approximate score of mixture of Gaussians 
+  /** \file approx_cont_mgau.h
+   * \brief Master function to compute the approximate score of mixture of Gaussians 
+      \warning You need to have some knowledge in fast GMM computation in order to modifed this function. 
+      
    This is the current schemes included:
    1, VQ-based Gaussian Selection 
    2, Subvq-based Gaussian Selection
@@ -72,32 +75,44 @@ extern "C" {
       a, dumb approach,
       b, conditional down sampling (currently can only be used with VQ-based Gaussian Selection
       c, distance-based down sampling 
-*/
+      
+      The above method of categorizing GMM computation in 4 levels are
+      presented in ICSLP 2004.  For the publication, please visit
+      Arthur Chan's web site at www.cs.cmu.edu/~archan/ .  
+  */
 
-/*
+  /**
  * Evaluate the approximation gaussian score for one frame. 
  */
-int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /* Input, kbcore, for mdef, svq and gs*/
-				   fast_gmm_t *fastgmm,	 /* Input/Output: wrapper for
+int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /** Input, kbcore, for mdef, svq and gs*/
+				   fast_gmm_t *fastgmm,	 /** Input/Output: wrapper for
 							    parameters for Fast GMM , for
 							    all beams and parameters, during
 							    the computation, the */
-				   float32 *feat,	/*Input: the current feature vector */
-				   int32 frame,         /*Input: the current frame number */
-				   int32 *sen_active,	/*Input: the current active senones */
-				   int32 *rec_sen_active, /*Input: the most recent active senones */
-				   int32 *senscr,         /*Output: the output senone scores */
-				   int32 *cache_ci_senscr, /*Input: the CI senone scores for CI GMMS */
-				   ptmr_t *tm_ovrhd        /*Output: the timer used for computing overhead */
+				   float32 *feat,	/**Input: the current feature vector */
+				   int32 frame,         /**Input: the current frame number */
+				   int32 *sen_active,	/**Input: the current active senones */
+				   int32 *rec_sen_active, /**Input: the most recent active senones */
+				   int32 *senscr,         /**Output: the output senone scores */
+				   int32 *cache_ci_senscr, /**Input: the CI senone scores for CI GMMS */
+				   ptmr_t *tm_ovrhd        /**Output: the timer used for computing overhead */
 				   );
 
 
-void approx_cont_mgau_ci_eval (/*mgau_model_t *g, */
-			       kbcore_t *kbc,
-				 fast_gmm_t *fg,
-			       mdef_t *mdef, 
-			       float32 *feat,
-			       int32 *ci_senscr);
+  /**
+   * Evaluate the approximation gaussian score for CI senone for one frame. 
+   */
+
+void approx_cont_mgau_ci_eval (
+			       kbcore_t *kbc, /** Input, kbcore, for mdef, svq and gs*/
+			       fast_gmm_t *fg, /** Input/Output: wrapper for
+							    parameters for Fast GMM , for
+							    all beams and parameters, during
+							    the computation, the */
+			       mdef_t *mdef,  /** Input : model definition */
+			       float32 *feat, /* Input : the current frame of feature */
+			       int32 *ci_senscr /* Output : the ci senscore for this frame */
+			       );
 
 #ifdef __cplusplus
 }
