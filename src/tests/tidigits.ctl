@@ -1,3 +1,4 @@
+man/man.hm.5a.wav.raw five
 man/man.ah.111a.wav.raw one one one
 man/man.ah.139oa.wav.raw one three nine oh
 man/man.ah.155a.wav.raw one five five
@@ -2262,7 +2263,6 @@ man/man.hm.53a.wav.raw five three
 man/man.hm.56z3a.wav.raw five six zero three
 man/man.hm.57369a.wav.raw five seven three six nine
 man/man.hm.58oa.wav.raw five eight oh
-man/man.hm.5a.wav.raw five
 man/man.hm.5b.wav.raw five
 man/man.hm.5oo4o32a.wav.raw five oh oh four oh three two
 man/man.hm.6236a.wav.raw six two three six
