@@ -14,15 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -92,7 +86,7 @@ This example creates a cepstral file named \"output.mfc\" from an input audio fi
 \n									\
 ep -i  input.raw \n						\
         -o   output.mfc \n						\
-        -raw no \n							\
+        -raw 1 \n							\
         -input_endian little \n						\
         -samprate  16000 \n						\
         -lowerf    130 \n						\
@@ -132,7 +126,7 @@ static arg_t arg[] = {
   { "-ei",
     ARG_STRING,
     NULL,
-    "input extension to be applied to all input files" },
+    "Input extension to be applied to all input files" },
   { "-do",
     ARG_STRING,
     NULL,
@@ -159,11 +153,11 @@ static arg_t arg[] = {
     "Endianness of input data, big or little, ignored if NIST or MS Wav" },
   { "-nchans",
     ARG_INT32,
-    "1",
+    ONE_CHAN,
     "Number of channels of data (interlaced samples assumed)" },
   { "-whichchan",
     ARG_INT32,
-    "1",
+    ONE_CHAN,
     "Channel to process" },
   { "-logspec",
     ARG_INT32,
@@ -183,39 +177,39 @@ static arg_t arg[] = {
     "Endianness of machine, big or little" },
   { "-alpha",
     ARG_FLOAT32,
-    "0.97",
+    DEFAULT_PRE_EMPHASIS_ALPHA,
     "Preemphasis parameter" },
   { "-srate",
     ARG_FLOAT32,
-    "16000.0",
+    DEFAULT_SAMPLING_RATE,
     "Sampling rate" },
   { "-frate",
     ARG_INT32,
-    "100",
+    DEFAULT_FRAME_RATE,
     "Frame rate" },
   { "-wlen",
     ARG_FLOAT32,
-    "0.0256",
+    DEFAULT_WINDOW_LENGTH,
     "Hamming window length" },
   { "-nfft",
     ARG_INT32,
-    "512",
+    DEFAULT_FFT_SIZE,
     "Size of FFT" },
   { "-nfilt",
     ARG_INT32,
-    "40",
+    DEFAULT_NUM_FILTERS,
     "Number of filter banks" },
   { "-lowerf",
     ARG_FLOAT32,
-    "200",
+    DEFAULT_LOWER_FILT_FREQ,
     "Lower edge of filters" },
   { "-upperf",
     ARG_FLOAT32,
-    "3500",
+    DEFAULT_UPPER_FILT_FREQ,
     "Upper edge of filters" },
   { "-ncep",
     ARG_INT32,
-    "13",
+    DEFAULT_NUM_CEPSTRA,
     "Number of cep coefficients" },
   { "-doublebw",
     ARG_INT32,
@@ -223,7 +217,7 @@ static arg_t arg[] = {
     "Use double bandwidth filters (same center freq)" },
   { "-blocksize",
     ARG_INT32,
-    "200000",
+    DEFAULT_BLOCKSIZE,
     "Block size, used to limit the number of samples used at a time when reading very large audio files" },
   { "-dither",
     ARG_INT32,
