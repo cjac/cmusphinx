@@ -53,8 +53,11 @@
 #define MAX_NGRAMS 5100
 #define MAX_STRLEN 100
 
-int read_ngrams(char *ngrams_file, char *ngrams[], int max_lines);
-void print_ngrams(char *ngrams[], int nlines);
+int read_ngrams(char *ngrams_file, char **ngrams, 
+                s3lmwid_t *wid[], int32 nwords[], int max_lines, lm_t *lm);
+int ngram2wid(char *word, int length, s3lmwid_t *w, lm_t *lm);
+int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
+
 
 
 int main(int argc, char *argv[])
@@ -67,9 +70,15 @@ int main(int argc, char *argv[])
 
     float64 lw, wip, uw, logbase;
 
-    int n;
+    int i, n, score;
+    
+    int32 *nwdptr;
+    int32 nwords[MAX_NGRAMS];
 
     lm_t *lm;
+
+    s3lmwid_t *wid[MAX_NGRAMS];
+
 
     if (argc < 3) {
         E_FATAL("USAGE: %s <lm_file> <args_file> <ngrams_file>\n", argv[0]);
@@ -92,10 +101,13 @@ int main(int argc, char *argv[])
     lm = lm_read(lm_file, lw, wip, uw);
 
     /* read in all the N-grams */
-    n = read_ngrams(ngrams_file, ngrams, MAX_NGRAMS);
-    /* print_ngrams(ngrams, n); */
+    n = read_ngrams(ngrams_file, ngrams, wid, nwords, MAX_NGRAMS, lm);
 
-    
+    /* scores the N-grams */
+    for (i = 0; i < n; i++) {
+        score = score_ngram(wid[i], nwords[i], lm);
+        printf("%10d %s\n", score, ngrams[i]);
+    }
 }
 
 
@@ -108,7 +120,12 @@ int main(int argc, char *argv[])
  *
  * returns: the number of ngrams read
  */
-int read_ngrams(char *ngrams_file, char *ngrams[], int max_lines)
+int read_ngrams(char *ngrams_file, 
+                char **ngrams, 
+                s3lmwid_t *wid[], 
+                int32 nwords[],
+                int max_lines, 
+                lm_t *lm)
 {
     FILE *fp;
     char line_read[MAX_STRLEN];
@@ -124,8 +141,11 @@ int read_ngrams(char *ngrams_file, char *ngrams[], int max_lines)
     while (fgets(line_read, MAX_STRLEN, fp) != NULL) {
         if (n < max_lines) {
             length = strlen(line_read);
-            ngrams[n] = (char *) calloc(length, sizeof(char));
+            line_read[length-1] = '\0';
+            ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
             strncpy(ngrams[n], line_read, length-1);
+            wid[n] = (s3lmwid_t *) ckd_calloc(3, sizeof(s3lmwid_t));
+            nwords[n] = ngram2wid(line_read, length, wid[n], lm);
             n++;
         } else {
             break;
@@ -137,17 +157,65 @@ int read_ngrams(char *ngrams_file, char *ngrams[], int max_lines)
 
 
 /**
- * Prints an array of N-grams.
+ * Map the given ngram string to an array of word IDs of the individual
+ * words in the ngram.
  *
  * args:
- * ngrams - the N-gram array to print
- * nlines - the number of N-grams in the array
+ * ngram - the ngram string to map
+ * length - the length of the ngram string
+ * w - the word ID array
+ * lm - the language model to use
+ *
+ * returns:
+ * the number of words in the ngram string, or 0 if the string contains an
+ * unknown word
  */
-void print_ngrams(char *ngrams[], int nlines)
+int ngram2wid(char *ngram, int length, s3lmwid_t *w, lm_t *lm)
 {
+    char *word[1024];
+    int nwd;
     int i;
     
-    for (i = 0; i < nlines; i++) {
-        printf("%s\n", ngrams[i]);
+    if ((nwd = str2words(ngram, word, length)) < 0)
+	E_FATAL("Increase word[] and w[] arrays size\n");
+    
+    for (i = 0; i < nwd; i++) {
+	w[i] = lm_wid (lm, word[i]);
+	if (NOT_S3LMWID(w[i])) {
+	    E_ERROR("Unknown word: %s\n", word[i]);
+	    return 0;
+	}
     }
+
+    return nwd;
+}
+
+
+/**
+ * Scores the given N-gram using the given language model.
+ *
+ * args:
+ * wid - the IDs of the sequence of words in the n-gram
+ * nwd - the number of words in the n-gram
+ * lm - the language model to use
+ *
+ * return: the language model score of the given sequence of words
+ */
+int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
+{
+    int32 score, tgscr;
+    int32 i, j;
+    
+    score = 0;
+    if (nwd == 3) {
+	score = lm_tg_score(lm, wid[0], wid[1], wid[2]);
+    } else if (nwd == 2) {
+        score = lm_bg_score(lm, wid[0], wid[1]);
+    } else if (nwd == 1) {
+        score = lm_ug_score(lm, wid[0]);
+    } else {
+        printf("%d grams not supported\n", nwd);
+    }
+    
+    return score;
 }
