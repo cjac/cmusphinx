@@ -101,7 +101,6 @@
 #include "agc.h"
 #include "s3types.h"
 
-
 #if (! WIN32)
 #include <sys/file.h>
 #include <sys/errno.h>
@@ -833,6 +832,11 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
  * and end-of-utterance flags to be set to indicate the beginning of
  * a new utterance or the end of an utterance in order to function
  * properly
+ * The cyclic buffer of size 256 was controlled by using an unsigned
+ * char. Replaced it so that the pointers into the buffer cycle, according
+ * to the variable LIVEBUFBLOCKSIZE. This was, if one day we decide
+ * to change this variable from 256 to something else, the cyclic buffer
+ * will still work.  (ebg)
  */
 int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 			      int32 beginutt, int32 endutt, float32 ***ofeat)
@@ -840,10 +844,11 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     static float32 **feat=NULL;
     static float32 **cepbuf=NULL;
     /*    static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
-    /*    static unsigned char   bufpos, curpos; */ /*  */
-    /*    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	*/ /*  */
-    static int32   bufpos, curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32  jp1, jp2, jp3, jf1, jf2, jf3;	/* RAH 4.15.01 upgraded unsigned char variables to int32 */
+    /*    static unsigned char   bufpos, curpos;   */
+    /*    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	   */
+    static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    static int32  jp1, jp2, jp3, jf1, jf2, jf3; /* RAH 4.15.01 upgraded unsigned char variables to int32 */
     int32  win, cepsize; 
     int32  i, j, nfeatvec, residualvecs;
 
@@ -851,6 +856,9 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     float32 *w1, *w_1, *_w1, *_w_1;
     float32 d1, d2;
 
+    /* If this assert fails, you're risking overwriting elements
+     * in the buffer. -EBG */
+    assert(nfr < LIVEBUFBLOCKSIZE);
     win = feat_window_size(fcb);
 
     if (fcb->cepsize <= 0) 
@@ -884,29 +892,46 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 	/* beginutt = 0; */  /* Removed by Rita Singh around 02-Jan-2001 */
                              /* See History at the top of this file */
 	bufpos = win;
+	bufpos %= LIVEBUFBLOCKSIZE;
         curpos = bufpos;
         jp1 = curpos - 1;
+	jp1 %= LIVEBUFBLOCKSIZE;
         jp2 = curpos - 2;
+	jp2 %= LIVEBUFBLOCKSIZE;
         jp3 = curpos - 3;
+	jp3 %= LIVEBUFBLOCKSIZE;
         jf1 = curpos + 1;
+	jf1 %= LIVEBUFBLOCKSIZE;
         jf2 = curpos + 2;
+	jf2 %= LIVEBUFBLOCKSIZE;
         jf3 = curpos + 3;
+	jf3 %= LIVEBUFBLOCKSIZE;
 	residualvecs -= win;
     }
 
     for (i=0;i<nfr;i++){
+      assert(bufpos < LIVEBUFBLOCKSIZE);
 	memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
+	bufpos %= LIVEBUFBLOCKSIZE;
     }
+
     if (endutt){
 	/* Replicate last frame into the last win frames */
 	if (nfr > 0) {
-	for (i=0;i<win;i++) 
+	  for (i=0;i<win;i++) {
+	    assert(bufpos < LIVEBUFBLOCKSIZE);
 	   memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	   bufpos %= LIVEBUFBLOCKSIZE;
+	  }
         }
 	else {
-	    unsigned char tpos = bufpos-1;
-	    for (i=0;i<win;i++) 
+	    int16 tpos = bufpos-1;
+	    tpos %= LIVEBUFBLOCKSIZE;
+	    for (i=0;i<win;i++) {
+	      assert(bufpos < LIVEBUFBLOCKSIZE);
 	        memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+		bufpos %= LIVEBUFBLOCKSIZE;
+	    }
 	}
         residualvecs += win;
     }
@@ -956,6 +981,13 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 	jf1++; jf2++; jf3++;
 	jp1++; jp2++; jp3++;
 	curpos++;
+	jf1 %= LIVEBUFBLOCKSIZE;
+	jf2 %= LIVEBUFBLOCKSIZE;
+	jf3 %= LIVEBUFBLOCKSIZE;
+	jp1 %= LIVEBUFBLOCKSIZE;
+	jp2 %= LIVEBUFBLOCKSIZE;
+	jp3 %= LIVEBUFBLOCKSIZE;
+	curpos %= LIVEBUFBLOCKSIZE;
     }
     *ofeat = feat;
 
