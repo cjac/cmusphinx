@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/07/27  21:29:46  egouvea
- * Fixed license terms
+ * Revision 1.8  2005/02/01  22:21:12  rkm
+ * Added raw data logging, and raw data pass-through mode to cont_ad
  * 
+ * Revision 1.7  2004/07/27 21:29:46  egouvea
+ * Fixed license terms
+ *
  * Revision 1.6  2004/07/16 00:57:10  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -135,6 +138,8 @@ typedef struct {
     int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max);
     ad_rec_t *ad;	/* A/D device argument for adfunc.  Also, ad->sps used to
 			   determine frame size (spf, see below) */
+    int32 rawmode;	/* Pass all input data through, without filtering silence */
+    
     int16 *adbuf;	/* Circular buffer for maintaining A/D data read until consumed */
     int32 read_ts;	/* Timestamp (total no. of raw A/D samples read, silence+speech)
 			   at the end of the most recent cont_ad_read call */
@@ -183,6 +188,16 @@ typedef struct {
     int32 n_in_a_row;	/* number of frames sequentially other side of thresh */
     spseg_t *spseg_head;/* First of unconsumed speech segments */
     spseg_t *spseg_tail;/* Last of unconsumed speech segments */
+    
+    FILE *rawfp;	/* If non-NULL, raw audio input data processed by cont_ad
+			   is dumped to this file.  Controlled by user application
+			   via cont_ad_set_rawfp().  NULL when cont_ad object is
+			   initially created. */
+    FILE *logfp;	/* If non-NULL, write detailed logs of this object's
+			   progress to the file.  Controlled by user application
+			   via cont_ad_set_logfp().  NULL when cont_ad object is
+			   initially created. */
+    int32 log_frmno;	/* Frame count maintained by the logger. */
 } cont_ad_t;
 
 
@@ -197,7 +212,6 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
 					   to obtain raw A/D data.  See ad.h for the
 					   required prototype definition. */
 
-
 /*
  * Calibration to determine an initial silence threshold.  This function can be called
  * any number of times.  It should be called at least once immediately after cont_ad_init.
@@ -210,6 +224,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
  */
 int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad_init */
 
+
 /*
  * If the application has not passed an audio device into the silence filter
  * at initialisation,  this routine can be used to calibrate the filter. The
@@ -221,6 +236,7 @@ int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad
  */
 int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max); 
 
+
 /*
  * Read A/D data pre-filtered to remove silence segments.
  * Return value: #samples actually read, possibly 0; <0 if EOF on A/D source.
@@ -228,10 +244,10 @@ int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max);
  */
 int32 cont_ad_read (cont_ad_t *r,	/* In: Object pointer returned by cont_ad_init */
 		    int16 *buf,		/* Out: On return, buf contains A/D data returned
-					   by this function, if any.
-					   NOTE: buf must be at least 256 samples long */
-		    int32 max);		/* In: Max #samples to be filled into buf */
-
+					   by this function, if any. */
+		    int32 max);		/* In: Max #samples to be filled into buf.
+					   NOTE: max must be at least 256; otherwise
+					   the functions returns -1. */
 
 /*
  * Set silence and speech threshold parameters.  The silence threshold is the max power
@@ -308,15 +324,46 @@ int32 cont_ad_detach (cont_ad_t *c);
 int32 cont_ad_attach (cont_ad_t *c, ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32));
 
 
-void cont_ad_set_logfp (FILE *fp);	/* File containing detailed logs (if non-NULL) */
+/*
+ * The application can ask cont_ad to dump the raw audio input that cont_ad
+ * processes to a file.  Use this function to give the FILE* to the cont_ad
+ * object.  If invoked with fp == NULL, dumping is turned off.  The application
+ * is responsible for opening and closing the file.  If fp is non-NULL, cont_ad
+ * assumes the file pointer is valid and opened for writing.
+ * Return 0 if successful, -1 otherwise.
+ */
+int32 cont_ad_set_rawfp (cont_ad_t *c,	/* The cont_ad object being addressed */
+			 FILE *fp);	/* File to which raw audio data is to
+					   be dumped; NULL to stop dumping. */
 
 /*
- * Set the silence and speech thresholds. For this to have any effect, the
- * auto_thresh field of the continuous listening module should be set to
- * FALSE.
+ * Set the file to which cont_ad logs its progress.  Mainly for debugging.  If
+ * fp is NULL, logging is turned off.
+ * Return 0 if successful, -1 otherwise.
  */
+int32 cont_ad_set_logfp (cont_ad_t *c,	/* The cont_ad object being addressed */
+			 FILE *fp);	/* File to which logs are written;
+					   NULL to stop logging. */
 
+/*
+ * Set the silence and speech thresholds. For this to remain permanently in
+ * effect, the auto_thresh field of the continuous listening module should be
+ * set to FALSE or 0.  Otherwise the thresholds may be modified by the noise-
+ * level adaptation.
+ */
 int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech);
+
+
+/*
+ * If mode is non-zero, put the continuous listening object into "raw" mode, where
+ * the input data is passed to the application without any silence filtering.
+ * However, all the other computation (i.e., noiselevel estimate, power histograms,
+ * etc.) are performed normally.
+ * (Use with care; set the mode once at the beginning.  Might cause problems if the
+ * application keeps switching modes.)
+ * Return value: 0 if successful, -1 if any error.
+ */
+int32 cont_ad_set_rawmode (cont_ad_t *r, int32 mode);
 
 
 #endif
