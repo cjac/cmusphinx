@@ -53,7 +53,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <assert.h>
 
 #include "filename.h"
 
@@ -74,6 +74,7 @@ void strip_fileext (char *path, char *root)
 {
     int32 i, l;
     
+    assert (0);
     l = strlen(path);
     for (i = l-1; (i >= 0) && (path[i] != '.'); --i);
     if (i < 0)
