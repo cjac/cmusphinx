@@ -2,7 +2,7 @@
 -wbeam	1e-35
 -mdef	/lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
 -fdict	/lab/speech/sphinx4/data/wsj/dict/fillerdict
--dict	/lab/speech/sphinx4/data/rm1/lists/RM.dictionary
+-dict	/lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d+rm1.txt
 -mean	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means
 -var	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances
 -mixw	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights 
