@@ -11,10 +11,33 @@
       h4,h5,h6 { color: green; }
       pre { margin-left: 3%; font-family: monospace; }
       code { font-family: monospace; font-weight: bold; }
+      legacy { color: gray; }
       div.wheatbox { background: wheat; padding: 0.5em; border: solid; border-width: thin; }
       div.silverbox { background: silver; padding: 0.5em; border: solid; border-width: thin; }
       div.endsec { background: silver; border: solid; border-width: thin; }
     </style>
+
+<SCRIPT  TYPE="text/javascript">
+
+<!--
+// protected email script by Joe Maller
+// JavaScripts available at http://www.joemaller.com
+// this script is free to use and distribute
+// but please credit me and/or link to my site
+
+function printAddress(userid, name){
+emailE='cs.cmu.edu'
+emailE=(userid + '+sourceforge@' + emailE)
+document.write('<A href="mailto:' + emailE + '">' + name + '</a>')
+}
+ //-->
+</script>
+
+<NOSCRIPT>
+    <em>Email address protected by JavaScript.<BR>
+    Please enable JavaScript to contact me.</em>
+</NOSCRIPT>
+
 </head>
     <body>
        
@@ -28,6 +51,12 @@
 </center>
                  
 <h2><u>What's Around and Where</u></h2>
+
+<p>In the table below, you will find information about the several
+versions of the Sphinx decoder. Descriptions in <legacy>gray</legacy>
+are older versions, and are not being maintained. Follow the links to
+find instructions on how to download the packages.
+</p>
  
 <table border="1" cellpadding="7">
         <tbody>
@@ -39,22 +68,23 @@
        <td>Sphinx-3.5 (Live-mode APIs, Speaker Adaptation and Code Convergence)</td>
   	<td> 	         
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, release available.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, release available.</li>
   	    <li>Based on Sphinx-3.4 and Sphinx 3.0. </li>
 	    <li>Live-mode APIs are implemented an thoroughly tested </li>
 	    <li>Speaker adaptation based on single regression class
 	    is implemented. </li>
-	    <li> 4 tools of s3.0 are now incorporated in Sphinx 3.x 
+	    <li> Four tools of s3.0 are now incorporated in Sphinx 3.x 
 	    <ul>
   		<li><code>align (s3align in 3.0)</code>: Forced alignment</li>
-  		<li><code>allphone (s3allphine in 3.0)</code>: Allphone decoding</li>
+  		<li><code>allphone (s3allphone in 3.0)</code>: Allphone decoding</li>
   		<li><code>astar (s3astar in 3.0)</code>: A* search, nbest generation</li>
   		<li><code>dag (s3dag in 3.0)</code>: Shortest-path search</li>
 	    </ul>
 	    </li>
 	    <li> The feature extraction libraries of sphinx 3 is now EXACTLY the same as SphinxTrain</li>
 	    <li> Corresponding changes in SphinxTrian </li>
-	    <li> <ul> Two new tools are introduced: 
+	    <li> Two new tools are introduced: 
+<ul>
 	    <li><code> mllr_solve </code>: compute the regression matrix based on MLLR algorithm. </li>
 	    <li><code> mllr_transform </code>: given a regression matrix, this program converts the mean based on linear transformation.</li>
 	    </ul> 
@@ -65,10 +95,10 @@
   	</td>
         </tr>
          <tr>
-       <td>Sphinx-3.4 (Fast GMM computation)</td>
+       <td><legacy>Sphinx-3.4 (Fast GMM computation)</legacy></td>
   	<td> 	         
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.4</b> in cvs tree.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, module <b>archive_s3/s3.4</b> in cvs tree.</li>
   	    <li>Based on Sphinx-3.3, Fast GMM computation is implemented
           <ul>
   		<li>frame down-sampling</li>
@@ -85,10 +115,10 @@
         </tr>
 
          <tr>
-       <td>Sphinx-3.3 (fast decoder)</td>
-  	<td> 	         
+       <td><legacy>Sphinx-3.3 (fast decoder)</legacy></td>
+  	<td>
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.3</b> in cvs tree.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, module <b>archive_s3/s3.3</b> in cvs tree.</li>
   	    <li>Fast Sphinx-3 decoder using lextree organization: 	          
       
           <ul>
@@ -98,12 +128,10 @@
   	                 
           </ul>
   	    </li>
-  	    <li><code>gausubvq</code>: Sub-vector clustered acoustic model building
- 	                 
-          <ul>
-  		<li>Needed for fast acoustic model evaluation</li>
-  	                 
-          </ul>
+<li>Other tools
+<ul>
+  	    <li><code>gausubvq</code>: Sub-vector clustered acoustic model building, needed for fast acoustic model evaluation</li>
+</ul>
   	    </li>
   	         
       </ul>
@@ -111,10 +139,10 @@
         </tr>
                <tr>
          <tr>
-       <td>Sphinx-3.2</td>
+       <td><legacy>Sphinx-3.2</legacy></td>
   	<td> 	         
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.2</b> in cvs tree.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, module <b>archive_s3/s3.2</b> in cvs tree.</li>
   	    <li>Same features as s3.3, but capable of batch-mode operation only.</li>
       </ul>
   	</td>
@@ -123,7 +151,7 @@
        <td>Sphinx-3 (slow decoder)</td>
   	<td> 	         
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3</b> in cvs tree.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, module <b>archive_s3/s3</b> in cvs tree.</li>
   	    <li>Original Sphinx-3 decoder</li>
   	    <li>Slow; 50-100x real time speed on large vocabulary tasks (measured at 1999)</li>
   	    <li>Any kind of acoustic model (discrete, semi-continuous, continuous, 
@@ -154,7 +182,7 @@ Decoding</li>
        <td>Sphinx-2 (fbs8)</td>
   	<td> 	         
       <ul>
-  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx">Open source</a>, release available.</li>
+  	    <li>Location: <a href="http://cmusphinx.org">Open source</a>, release available.</li>
   	    <li>Sphinx-II decoder</li>
   	    <li>Real-time operation</li>
   	    <li>Semi-continuous, Sphinx-II acoustic models only (Sphinx-II format)</li>
@@ -194,10 +222,10 @@ Decoding</li>
               
 <div class="endsec">&curren;</div>
                  
-<address>Maintained by <a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a<a> and  <a href="mailto:archan+sourceforge@cs.cmu.edu"> Arthur Chan <a> </address>
+<address>Maintained by <SCRIPT>printAddress("egouvea", "Evandro B. Gouv&ecirc;a")</script> and  <script>printAddress("archan", "Arthur Chan")</script></address>
 <!-- Created: Fri Mar  3 11:03:47 EST 2000 -->
 <!-- hhmts start -->
-Last modified: Mon Nov 25 18:25:40 EST 2002
+Last modified: Sun Sep 12 12:26:40 EDT 2004
 <!-- hhmts end --> 
 </body>
 </html>
