@@ -152,133 +152,103 @@ typedef struct
 
 } live_decoder_t;
 
-/*
- * Initializes the live-decoder.  Assumes the user has externally allocated
- * and parsed arguments by calling cmd_ln_parse() or cmd_ln_parse_file().  The
- * user is responsible for calling cmd_ln_free() when he/she is done with
- * the live decoder.
- *
- * A better alternative is to wrap the parsed arguments in a structure and pass  * it to ld_init().  It makes the use of cmd_ln interface much more explicit.
- * It would also allow finer control over decoder parameters, in case if any
- * user want to have separate sets of decoder parameters.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Initializes the live-decoder.  Assumes the user has externally allocated
+    and parsed arguments by calling <I>cmd_ln_parse()</I> or
+    <I>cmd_ln_parse_file()</I>.  The user is responsible for calling
+    <I>cmd_ln_free()</I> when he/she is done with the live decoder.
+ 
+    A better alternative would be to wrap the parsed arguments in a structure
+    and pass it to <I>ld_init()</I>.  It makes the use of <I>cmd_ln</I> 
+    interface more explicit. It would also allow finer control over decoder
+    parameters, in case if any user wants to have separate sets of decoder 
+    parameters.
+
+    @param decoder Pointer to the decoder.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_init(live_decoder_t *decoder);
 
-/*
- * Initializes the live-decoder.  The users who call ld_init_with_args might
- * not want to deal with the cmd_ln interface at all.  This initialization
- * function allocates and parses arguments internally, and frees them later
- * when ld_finish() is called.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Initializes the live-decoder.  This version makes the use of the
+    <I>cmd_ln.h</I> interface transparent to the user.  Arguments are parsed
+    and stored internally, and freed later when <I>ld_finish()</I> is called.
+
+    @param decoder Pointer to the decoder.
+    @param argc Argument count.
+    @param argv Argument string array.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_init_with_args(live_decoder_t *decoder, int argc, char **argv);
 
-/*
- * Wraps up the live-decoder and frees up allocated memory in the process.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Wraps up the live-decoder and frees up allocated memory in the process.
+
+    @param decoder Pointer to the decoder.
+    @return Always return 0 (for success).
+*/
 int ld_finish(live_decoder_t *decoder);
 
-/*
- * Starts decoding an utterance.  This function has to be called before any
- * calls to ld_utt_proc_*() and ld_utt_hyps() functions.  
- *
- * Arguments:
- *   char *uttid - The utterance id, or utterance label, for the next
- *   utterance.  If null, then a generated id/label will be applied to the 
- *   utterance.  !!! NOT IMPLEMENTED AT ALL !!!
- * 
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Starts decoding an utterance.  This function has to be called before any
+    calls to <I>ld_process_raw()</I>, <I>ld_process_frames()</I>, or
+    <I>ld_retrieve_hyps()</I> functions.  
+
+    @param decoder Pointer to the decoder.
+    @param uttid Utterance id string.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_begin_utt(live_decoder_t *decoder, char *uttid);
 
-/*
- * Finishes decoding the current utterance.  This function can be used to abort
- * the decoding as well.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Finishes decoding the current utterance.  The user can retrieve the final
+    hypothesis after calling this function.
+
+    @param decoder Pointer to the decoder
+    @return 0 for success.  -1 for failure.
+*/
 int ld_end_utt(live_decoder_t *decoder);
 
-/*
- * Process raw 16-bit samples for the current utterance decoding.  This is the
- * most basic of ld_utt_proc_*() functions.  Audio data is passed directly to
- * the decoder for processing.
- *
- * Arguments:
- *   int16 *samples - A buffer of audio sample.
- *   int32 num_samples - Number of samples in the buffer above.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Process raw 16-bit samples for the current utterance decoding.
+
+    @param decoder Pointer to the decoder.
+    @param samples Buffer of int16 audio samples.
+    @param num_samples Number of samples in the buffer.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_process_raw(live_decoder_t *decoder, 
 		   int16 *samples,
 		   int32 num_samples);
 
-/*
- * Process a buffer of framed data for the current utterance decoding.  
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Process a buffer of feature frames for the current utterance decoding.  To
+    use this function, make sure that the parameters to the front-end that
+    generated the frames matches the parameters to the decoder's accoustic 
+    model.
+
+    @param decoder Pointer to the decoder.
+    @param frames Buffer of audio feature frames.
+    @param num_frames Number of frames in the buffer.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_process_frames(live_decoder_t *decoder, 
 		      float32 **frames,
 		      int32 num_frames);
 
-/*
- * Process a block of feature vectors for the current utterance decoding.  The
- * user is responsible for converting audio samples to feature vectors using
- * Sphinx3 front-end.  This might be the case when the user is interested in
- * the feature vectors themselves.
- *
- * Arguments:
- *   float32 ***features - An array of 2-dimensional feature vectors.
- *   int32 num_features - Number of entries in the array above.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
-int ld_process_features(live_decoder_t *decoder, 
-			float32 ***features,
-			int32 num_features);
-
-/*
- * Retrieve any partial or final decoding results in a plain READ-ONLY string
- * as well as an array of READ-ONLY word segments.  Each call to this function
- * may clobber the return value of previous calls.
- *
- * Arguments:
- *   char **hyp_str - A pointer to a READ-ONLY string.
- *   hyp_t ***hyp_segs - A pointer to a list of word segments.
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+/** Retrieve partial or final decoding results.  The result can be returned
+    in a plain READ-ONLY string and/or an array of READ-ONLY word segments.
+    
+    @param decoder Pointer to the decoder.
+    @param hyp_str Returned pointer to a READ-ONLY string.  If <I>null</I>, the
+    string is not returned.
+    @param hyp_segs Returned pointer to a null-terminated array of word
+    segments.  If <I>null</I>, the array is not returned.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str,
 		     hyp_t ***hyp_segs);
 
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
+/** Abort the current decoding process immediately.  Retrieving the hypothesis
+    after an abort is not guaranteed.
 
-/*
- * Abort the current decoding process (in case you don't care about any partial
- * or final results returned by the decoder).
- *
- * Return value:
- *   0 for success.  -1 for failure.
- */
+    @param decoder Pointer to the decoder.
+    @return 0 for success.  -1 for failure.
+*/
 int ld_abort_utt(live_decoder_t *decoder);
 
 #ifdef __cplusplus

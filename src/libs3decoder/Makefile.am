@@ -38,7 +38,6 @@ libs3decoder_la_SOURCES = \
 	ms_gauden.c \
 	ms_mllr.c \
 	ms_senone.c \
-	remote_decode.c \
 	s3_align.c \
 	s3_astar.c \
 	s3_dag.c \
@@ -85,7 +84,6 @@ noinst_HEADERS = \
 	ms_gauden.h \
 	ms_mllr.h \
 	ms_senone.h \
-	remote_decode.h \
         s3types.h \
 	s3_align.h \
 	s3_dag.h \
