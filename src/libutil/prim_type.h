@@ -71,10 +71,10 @@ typedef double		float64;
 
 typedef union anytype_s {
     void *ptr;		/* User defined data types at this ptr */
-    int32 int32;
-    uint32 uint32;
-    float32 float32;
-    float64 float64;
+    int int32;
+    unsigned int uint32;
+    float float32;
+    double float64;
 } anytype_t;
 
 
