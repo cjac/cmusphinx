@@ -284,7 +284,7 @@ static void dag_compute_hscr ( void )
     int32 hscr, best_hscr;
     
     for (d = dag.list; d; d = d->alloc_next) {
-	bw0 = filler_word (d->wid) ? BAD_S3WID : dict2lmwid[dict_basewid (dict, d->wid)];
+	bw0 = filler_word (d->wid) ? BAD_S3WID : dict_basewid (dict, d->wid);
 
 	/* For each link from d, compute heuristic score */
 	for (l1 = d->succlist; l1; l1 = l1->next) {
@@ -294,7 +294,7 @@ static void dag_compute_hscr ( void )
 	    if (d1 == dag.exit.node)
 		l1->hscr = 0;
 	    else {
-		bw1 = filler_word (d1->wid) ? BAD_S3WID : dict2lmwid[dict_basewid (dict, d1->wid)];
+		bw1 = filler_word (d1->wid) ? BAD_S3WID : dict_basewid (dict, d1->wid);
 		if (NOT_S3WID(bw1)) {
 		    bw1 = bw0;
 		    bw0 = BAD_S3WID;
@@ -306,7 +306,7 @@ static void dag_compute_hscr ( void )
 		    if (filler_word (d2->wid))
 			continue;
 		    
-		    bw2 = dict2lmwid[dict_basewid (dict, d2->wid)];
+		    bw2 = dict_basewid (dict, d2->wid);
 		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, dict2lmwid[bw0], dict2lmwid[bw1], dict2lmwid[bw2], bw2);
 		    
 		    if (hscr > best_hscr)
@@ -1103,9 +1103,9 @@ void nbest_search (char *filename, char *uttid)
 	/* Find two word (trigram) history beginning at this node */
 	pp = (filler_word (top->dagnode->wid)) ? top->lmhist : top;
 	if (pp) {
-	    bw1 = dict2lmwid[dict_basewid(dict, pp->dagnode->wid)];
+	    bw1 = dict_basewid(dict, pp->dagnode->wid);
 	    pp = pp->lmhist;
-	    bw0 = pp ? dict2lmwid[dict_basewid(dict, pp->dagnode->wid)] : BAD_S3WID;
+	    bw0 = pp ? dict_basewid(dict, pp->dagnode->wid) : BAD_S3WID;
 	} else
 	    bw0 = bw1 = BAD_S3WID;
 	
