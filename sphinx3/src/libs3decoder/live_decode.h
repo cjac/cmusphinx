@@ -52,11 +52,10 @@
  *    by subsequent calls.
  */
 
-#ifndef __LIVE2_H
-#define __LIVE2_H
+#ifndef __LIVE_DECODE_H
+#define __LIVE_DECODE_H
 
 #include "kb.h"
-#include "utt.h"
 #include "fe.h"
 
 #ifdef __cplusplus
@@ -126,39 +125,31 @@ typedef struct
   char uttid[MAX_UTTID_LEN];
 
   /*
+   * The frame number at which the hypothesis is recorded.
+   */
+  int32 hyp_frame_num;
+
+  /*
    * Hypothesis string.  Result (or partial result) of the recognition is
    * stored as a complete string.
    */
-  char hypstr[MAX_HYPSTR_LEN + 1];
+  char *hyp_str;
 
   /*
    * Length of the hypothesis string above.
    */
-  int32 hypstr_len;
+  int32 hyp_strlen;
 
   /*
    * Hypothesis word segments.  Result (or partial result) of the recognition
    * is stored as word segments.
    */
-  hyp_t **hypsegs;
+  hyp_t **hyp_segs;
 
   /*
    * Number of word/hypothesis segments.
    */
-  int32 num_hypsegs;
-
-  /*
-   * The frame number at which the last recognition result was recorded.  We
-   * use this as a time-flag to determine whether this is the latest result.
-   */
-  int32 hyps_frame_num;
-
-  /*
-   * The uttid associated with the last recorded recognition result.  We use
-   * this along with the time-flag above to determine whether we have the
-   * latest result.
-   */
-  char hyps_uttid[MAX_UTTID_LEN];
+  int32 hyp_seglen;
 
   /*
    * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
