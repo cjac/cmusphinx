@@ -52,60 +52,86 @@ ALL = $(BINDIR)/batchmetrics
 
 include $(TOP)/config/common_make_rules
 
+ifeq ($(MODE),quick)
+  MODEAFFIX = _quick
+else
+  MODEAFFIX = 
+endif
+
 $(BINDIR)/batchmetrics: ../batch_metrics.o $(LIVEDECOBJS)
 	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -Wl,-R$(LIBDIR)
 
 an4_words_unigram:
-	rm -f gmake-an4-words-unigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_words_unigram
-	echo "-lm an4_words.ug.lm.DMP" >> ARGS.an4_words_unigram
-	$(BINDIR)/batchmetrics ./an4_words.batch / ./ARGS.an4_words_unigram > gmake-an4-words-unigram.results
+	rm -f gmake-an4_words_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_words_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP" >> ARGS.an4_words_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_words$(MODEAFFIX).batch / ./ARGS.an4_words_unigram$(MODEAFFIX) > gmake-an4_words_unigram$(MODEAFFIX).results
 
 an4_spelling_unigram:
-	rm -f gmake-an4-spelling-unigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_unigram
-	echo "-lm an4_spelling.ug.lm.DMP" >> ARGS.an4_spelling_unigram
-	$(BINDIR)/batchmetrics ./an4_spelling.batch / ./ARGS.an4_spelling_unigram > gmake-an4-spelling-unigram.results
+	rm -f gmake-an4_spelling_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_spelling_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_spelling.unigram.lm.DMP" >> ARGS.an4_spelling_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_spelling$(MODEAFFIX).batch / ./ARGS.an4_spelling_unigram$(MODEAFFIX) > gmake-an4_spelling_unigram$(MODEAFFIX).results
 
 an4_full_unigram:
-	rm -f gmake-an4-full-unigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_full_unigram
-	echo "-lm an4.ug.lm.DMP" >> ARGS.an4_full_unigram
-	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_full_unigram > gmake-an4-full-unigram.results
+	rm -f gmake-an4_full_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_unigram ARGS.an4_full_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_full.unigram.lm.DMP" >> ARGS.an4_full_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_full$(MODEAFFIX).batch / ./ARGS.an4_full_unigram$(MODEAFFIX) > gmake-an4_full_unigram$(MODEAFFIX).results
 
-an4_plus_unigram:
-	rm -f gmake-an4-plus-unigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_plus_unigram
-	echo "-lm an4_plus.ug.lm.DMP" >> ARGS.an4_plus_unigram
-	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_plus_unigram > gmake-an4-plus-unigram.results
+an4_words_flat_unigram:
+	rm -f gmake-an4_words_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.flat_unigram.lm.DMP" >> ARGS.an4_words_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_words$(MODEAFFIX).batch / ./ARGS.an4_words_flat_unigram$(MODEAFFIX) > gmake-an4_words_flat_unigram$(MODEAFFIX).results
+
+an4_spelling_flat_unigram:
+	rm -f gmake-an4_spelling_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_spelling.flat_unigram.lm.DMP" >> ARGS.an4_spelling_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_spelling$(MODEAFFIX).batch / ./ARGS.an4_spelling_flat_unigram$(MODEAFFIX) > gmake-an4_spelling_flat_unigram$(MODEAFFIX).results
+
+an4_full_flat_unigram:
+	rm -f gmake-an4_full_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_flat_unigram ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_full.flat_unigram.lm.DMP" >> ARGS.an4_full_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_full$(MODEAFFIX).batch / ./ARGS.an4_full_flat_unigram$(MODEAFFIX) > gmake-an4_full_flat_unigram$(MODEAFFIX).results
+
+an4_words_bigram:
+	rm -f gmake-an4_words_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_words_bigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.bigram.lm.DMP" >> ARGS.an4_words_bigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_words$(MODEAFFIX).batch / ./ARGS.an4_words_bigram$(MODEAFFIX) > gmake-an4_words_bigram$(MODEAFFIX).results
+
+an4_spelling_bigram:
+	rm -f gmake-an4_spelling_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_spelling_bigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_spelling.bigram.lm.DMP" >> ARGS.an4_spelling_bigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_spelling$(MODEAFFIX).batch / ./ARGS.an4_spelling_bigram$(MODEAFFIX) > gmake-an4_spelling_bigram$(MODEAFFIX).results
+
+an4_full_bigram:
+	rm -f gmake-an4_full_bigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_bigram ARGS.an4_full_bigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_full.bigram.lm.DMP" >> ARGS.an4_full_bigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_full$(MODEAFFIX).batch / ./ARGS.an4_full_bigram$(MODEAFFIX) > gmake-an4_full_bigram$(MODEAFFIX).results
 
 an4_words_trigram:
-	rm -f gmake-an4-words-trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_words_trigram
-	echo "-lm an4_words.trigram.DMP" >> ARGS.an4_words_trigram
-	$(BINDIR)/batchmetrics ./an4_words.batch / ./ARGS.an4_words_trigram > gmake-an4-words-trigram.results
+	rm -f gmake-an4_words_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_words_trigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.trigram.lm.DMP" >> ARGS.an4_words_trigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_words$(MODEAFFIX).batch / ./ARGS.an4_words_trigram$(MODEAFFIX) > gmake-an4_words_trigram$(MODEAFFIX).results
 
 an4_spelling_trigram:
-	rm -f gmake-an4-spelling-trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_trigram
-	echo "-lm an4_spelling.trigram.DMP" >> ARGS.an4_spelling_trigram
-	$(BINDIR)/batchmetrics ./an4_spelling.batch / ./ARGS.an4_spelling_trigram > gmake-an4-spelling-trigram.results
-
-an4_spelling_journey_trigram:
-	rm -f gmake-an4-spelling-journey-trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_spelling_journey_trigram
-	echo "-lm an4_spelling_journey.trigram.DMP" >> ARGS.an4_spelling_journey_trigram
-	$(BINDIR)/batchmetrics ./an4_spelling.batch / ./ARGS.an4_spelling_journey_trigram > gmake-an4-spelling-journey-trigram.results
+	rm -f gmake-an4_spelling_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_spelling_trigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_spelling.trigram.lm.DMP" >> ARGS.an4_spelling_trigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_spelling$(MODEAFFIX).batch / ./ARGS.an4_spelling_trigram$(MODEAFFIX) > gmake-an4_spelling_trigram$(MODEAFFIX).results
 
 an4_full_trigram:
-	rm -f gmake-an4-full-trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_full_trigram
-	echo "-lm an4.trigram.DMP" >> ARGS.an4_full_trigram
-	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_full_trigram > gmake-an4-full-trigram.results
+	rm -f gmake-an4_full_trigram$(MODEAFFIX).results
+	/bin/cp ARGS.an4_trigram ARGS.an4_full_trigram$(MODEAFFIX)
+	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_full.trigram.lm.DMP" >> ARGS.an4_full_trigram$(MODEAFFIX)
+	$(BINDIR)/batchmetrics ./an4_full$(MODEAFFIX).batch / ./ARGS.an4_full_trigram$(MODEAFFIX) > gmake-an4_full_trigram$(MODEAFFIX).results
 
-an4_plus_trigram:
-	rm -f gmake-an4-plus-trigram.results
-	/bin/cp ARGS.an4_base ARGS.an4_plus_trigram
-	echo "-lm an4_plus.trigram.DMP" >> ARGS.an4_plus_trigram
-	$(BINDIR)/batchmetrics ./an4_full.batch / ./ARGS.an4_plus_trigram > gmake-an4-plus-trigram.results
+
 

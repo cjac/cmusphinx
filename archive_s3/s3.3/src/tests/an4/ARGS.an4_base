@@ -1,5 +1,3 @@
--beam	1e-60
--wbeam	1e-35
 -mdef	/lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
 -fdict	/lab/speech/sphinx4/data/wsj/dict/fillerdict
 -dict	/lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d
@@ -17,7 +15,6 @@
 -subvqbeam 1e-02
 -epl	4
 -fillprob	0.02
--lw	9.5
 -maxwpf	10
 -wip	0.2
 -lextreedump 0
