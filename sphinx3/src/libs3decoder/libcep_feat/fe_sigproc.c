@@ -364,10 +364,7 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
   static int32
     s, k,			/* as above				*/
     lgN;			/* log2(N)				*/
-  complex
-    *f1, *f2,			/* pointers into from array		*/
-    *t1, *t2,			/* pointers into to array		*/
-    *ww;			/* pointer into w array			*/
+
   static complex
     *w, *from, *to,		/* as above				*/
     wwf2,			/* temporary for ww*f2			*/
@@ -377,6 +374,11 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
   static float64
     div,			/* amount to divide result by: N or 1	*/
     x;				/* misc.				*/
+
+  complex
+    *f1, *f2,			/* pointers into from array		*/
+    *t1, *t2,			/* pointers into to array		*/
+    *ww;			/* pointer into w array			*/
 
   
   /* check N, compute lgN						*/

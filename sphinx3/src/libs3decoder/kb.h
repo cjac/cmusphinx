@@ -66,6 +66,7 @@
 #include "ascr.h"
 #include "fast_algo_struct.h"
 #include "mllr.h"
+#include "cmn.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -106,6 +107,7 @@ typedef struct {
                                    recognizer has been
                                    recognized. Mainly for bookeeping.  */
     
+  cmn_t *cmn;                   /* The structure for cepstral mean normalization. */
 
   /* Thing that are used by multiple parts of the recognizer.  Pretty
      hard to wrap them into one data structure. Just leave it there
@@ -139,15 +141,19 @@ typedef struct {
   int32 utt_hmm_eval;
   int32 utt_sen_eval;
   int32 utt_gau_eval;
+  int32 utt_cisen_eval;
+  int32 utt_cigau_eval;
   
   float64 tot_sen_eval;	/* Senones evaluated over the entire session */
   float64 tot_gau_eval;	/* Gaussian densities evaluated over the entire session */
+  float64 tot_ci_sen_eval;	/* Senones evaluated over the entire session */
+  float64 tot_ci_gau_eval;	/* Senones evaluated over the entire session */
+
   float64 tot_hmm_eval;	/* HMMs evaluated over the entire session */
   float64 tot_wd_exit;	/* Words hypothesized over the entire session */
   
   FILE *matchfp;
   FILE *matchsegfp;
-
 
 
   /* Things I want to move to somewhere else. */
@@ -156,6 +162,10 @@ typedef struct {
   int32 pl_win_strt;      /* The start index of the window near the end of a block */
   int32 pl_win_efv;  /* Effective window size in livemode */
   int32 pl_beam;              /* Beam for phoneme look-ahead */
+
+  int32 *wordbestscore;
+  int32 *wordbestexit;
+  int32 epl;
 
   /*variables for mllrmatrix */
   char* prevmllrfn;
@@ -170,6 +180,8 @@ void kb_lextree_active_swap (kb_t *kb);
 void kb_free (kb_t *kb);	/* RAH 4.16.01 */
 void kb_setlm(char* lmname,kb_t *kb);    /* ARCHAN 20040228 */
 void kb_setmllr(char* mllrname,kb_t *kb);    /* ARCHAN 20040724 */
+void kb_set_uttid(char *uttid,kb_t *kb);   /* ARCHAN 20041111 */
+
 
 #ifdef __cplusplus
 }

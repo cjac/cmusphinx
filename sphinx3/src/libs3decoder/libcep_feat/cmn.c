@@ -61,17 +61,28 @@
 
 #include "cmn.h"
 
-static float32 *cmn_mean = NULL;
-static float32 *cmn_var = NULL;
-
-
-void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen)
+cmn_t* cmn_init()
 {
-  /*    static float32 *mean = NULL; */ /*  */
-  /*    static float32 *var = NULL;	*/ /*  */
+  cmn_t *cmn;
+  cmn=(cmn_t*)ckd_calloc (1, sizeof (cmn_t));
+  cmn->cmn_mean=NULL;
+  cmn->cmn_var=NULL;
+  cmn->cur_mean=NULL;
+  cmn->sum=NULL;
+  cmn->nframe=0;
+  return cmn;
+}
+
+void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
+{
     float32 *mfcp;
     float32 t;
     int32 i, f;
+    float32 *cmn_mean;
+    float32 *cmn_var;
+    
+    cmn_mean=cmn->cmn_mean;
+    cmn_var=cmn->cmn_var;
 
     /* assert ((n_frame > 0) && (veclen > 0)); */
     /* Added by PPK to prevent this assert from aborting Sphinx 3 */
@@ -127,11 +138,86 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen)
     }
 }
 
+void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen, 
+							   int32 endutt, cmn_t *cmn)
+{
+  float32 *cur_mean;
+  float32 *sum;
+  float32 sf;
+  int32   i, j;
+  
+  cur_mean = cmn-> cur_mean;
+  sum = cmn-> sum;
+
+  if (varnorm)
+    E_FATAL("Variance normalization not implemented in live mode decode\n");
+  
+
+  if(cur_mean == NULL){
+    cur_mean = (float32 *) ckd_calloc(ceplen, sizeof(float32));
+    
+    /* A front-end dependent magic number */
+    cur_mean[0] = 12.0;
+
+    if(sum == NULL)
+    sum      = (float32 *) ckd_calloc(ceplen, sizeof(float32));
+  }
+
+  E_INFO("mean[0]= %.2f, mean[1..%d]= 0.0\n", cur_mean[0], ceplen-1);
+  
+  
+  if (nfr <= 0)
+    return;
+  
+  for (i = 0; i < nfr; i++){
+    for (j = 0; j < ceplen; j++){
+      sum[j] += incep[i][j];
+      incep[i][j] -= cur_mean[j];
+    }
+    ++(cmn->nframe);
+  }
+  
+  /* Shift buffer down if we have more than CMN_WIN_HWM frames */
+  if (cmn->nframe > CMN_WIN_HWM) {
+    sf = (float32) (1.0/cmn->nframe);
+    for (i = 0; i < ceplen; i++)
+      cur_mean[i] = sum[i] * sf;
+    
+    /* Make the accumulation decay exponentially */
+    if (cmn->nframe >= CMN_WIN_HWM) {
+      sf = CMN_WIN * sf;
+      for (i = 0; i < ceplen; i++)
+	sum[i] *= sf;
+      cmn->nframe = CMN_WIN;
+    }
+  }
+  
+  if (endutt) {
+    /* Update mean buffer */
+    
+    sf = (float32) (1.0/cmn->nframe);
+    for (i = 0; i < ceplen; i++)
+      cur_mean[i] = sum[i] * sf;
+    
+    /* Make the accumulation decay exponentially */
+    if (cmn->nframe > CMN_WIN_HWM) {
+      sf = CMN_WIN * sf;
+      for (i = 0; i < ceplen; i++)
+	sum[i] *= sf;
+      cmn->nframe = CMN_WIN;
+    }
+    
+  }
+  E_INFO("Hihi\n");
+}
+
 /* 
  * RAH, free previously allocated memory
  */
-void cmn_free ()
+void cmn_free (cmn_t *cmn)
 {
-  ckd_free ((void *) cmn_var);
-  ckd_free ((void *) cmn_mean);
+  if(cmn->cmn_var)
+  ckd_free ((void *) cmn->cmn_var);
+  if(cmn->cmn_mean)
+  ckd_free ((void *) cmn->cmn_mean);
 }

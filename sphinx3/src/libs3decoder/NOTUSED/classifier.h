@@ -12,6 +12,10 @@ extern "C" {
 #define CEP_LEN			13
 #define VOTING_LEN		5
 #define CLASS_LATENCY		2
+#define CLASS_SILENCE_PROB      0.4
+#define CLASS_OWNER_PROB      0.1
+#define CLASS_SECONDARY_PROB      0.1
+#define CLASS_NOISE      0.4
 
 enum {
   CLASS_SILENCE = 0,
@@ -27,9 +31,6 @@ enum {
   EP_SPEECH
 };
 
-/* static char class_labels[NUM_CLASSES] = "OSN."; */
-static float32 class_prior_prob[NUM_CLASSES] = { 0.4, 0.1, 0.1, 0.4 };
-
 typedef struct {
   mgau_model_t *gmm;
   float32 frame_gmm[NUM_CLASSES];
@@ -38,6 +39,8 @@ typedef struct {
   int max_frames;
   int voting_frames[VOTING_LEN];
   int post_classify;
+  float32 class_prior_prob[NUM_CLASSES] ; 
+
 } classifier_t;
 
 typedef struct {

@@ -374,6 +374,8 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
     strcpy(local_uttid, _uttid);
   }
   _decoder->uttid = local_uttid;
+  /* Also set the kb internal uttid. This makes the uttid in the results. */
+  kb_set_uttid(_decoder->uttid, &(_decoder->kb));
 
   return LD_SUCCESS;
 }

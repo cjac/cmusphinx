@@ -336,7 +336,8 @@ void kb_init (kb_t *kb)
 				cmd_ln_int32("-svq4svq"),
 				cmd_ln_float64("-subvqbeam"),
 				cmd_ln_float64("-ci_pbeam"),
-				kb->kbcore->mdef->n_emit_state
+				cmd_ln_int32("-maxcdsenpf"),
+				kb->kbcore->mdef->n_ci_sen
 				);
 
     E_INFO("Parameters used in Fast GMM computation:\n");
@@ -363,6 +364,10 @@ void kb_init (kb_t *kb)
     kb->cache_ci_senscr=(int32**)ckd_calloc_2d(kb->pl_win,cisencnt,sizeof(int32));
     kb->cache_best_list=(int32*)ckd_calloc(kb->pl_win,sizeof(int32));
     kb->phn_heur_list=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
+
+    kb->wordbestscore=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
+    kb->wordbestexit=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
+    kb->epl = cmd_ln_int32 ("-epl");
 
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
 	E_FATAL("feat_array_alloc() failed\n");
@@ -416,6 +421,21 @@ void kb_init (kb_t *kb)
     kb->prevmllrfn=(char*)ckd_calloc(1024,sizeof(char));
     kb->prevmllrfn[0]='\0';
     
+}
+
+void kb_set_uttid(char *_uttid,kb_t* _kb)
+{
+  assert(_kb != NULL);
+  assert(_uttid!=NULL);
+
+  if (_kb->uttid != NULL) {
+    ckd_free(_kb->uttid);
+    _kb->uttid = NULL;
+  }
+  if ((_kb->uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
+    E_FATAL("Failed to allocate space for utterance id.\n");
+  }
+  strcpy(_kb->uttid,_uttid);
 }
 
 void kb_setlm(char* lmname,kb_t* kb)

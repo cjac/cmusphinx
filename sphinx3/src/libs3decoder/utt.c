@@ -284,12 +284,14 @@ void utt_end (kb_t *kb)
 
     /** do not print anything if nfr is 0 */
     if (kb->nfr > 0) {
-      E_INFO("%4d frm;  %4d sen, %5d gau/fr, Sen %4.2f CPU %4.2f "
+      E_INFO("%4d frm;  %4d cdsen, %4d cisen, %5d cdgau %5d cigau/fr, Sen %4.2f, CPU %4.2f "
 	     "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
 	     "%5d hmm, %3d wd/fr, %4.2f CPU %4.2f Clk (%s)\n",
 	     kb->nfr,
 	     (kb->utt_sen_eval + (kb->nfr >> 1)) / kb->nfr,
+	     (kb->utt_cisen_eval + (kb->nfr >> 1)) / kb->nfr,
 	     (kb->utt_gau_eval + (kb->nfr >> 1)) / kb->nfr,
+	     (kb->utt_cigau_eval + (kb->nfr >> 1)) / kb->nfr,
 	     kb->tm_sen.t_cpu * 100.0 / kb->nfr,
 	     kb->tm_sen.t_elapsed * 100.0 / kb->nfr,
 	     kb->tm_ovrhd.t_cpu * 100.0 / kb->nfr,
@@ -316,6 +318,10 @@ void utt_end (kb_t *kb)
     
     kb->tot_sen_eval += kb->utt_sen_eval;
     kb->tot_gau_eval += kb->utt_gau_eval;
+
+    kb->tot_ci_sen_eval += kb->utt_cisen_eval;
+    kb->tot_ci_gau_eval += kb->utt_cigau_eval;
+
     kb->tot_hmm_eval += kb->utt_hmm_eval;
     kb->tot_wd_exit += vithist_n_entry(kb->vithist);
     
@@ -349,14 +355,14 @@ void utt_word_trans (kb_t *kb, int32 cf)
   vithist_entry_t *ve;
   int32 vhid, le, n_ci, score;
   int32 maxpscore;
-  static int32 *bs = NULL, *bv = NULL, epl;
+  int32 *bs = NULL, *bv = NULL, epl;
   s3wid_t wid;
   int32 p;
   dict_t *dict;
   mdef_t *mdef;
   maxpscore=MAX_NEG_INT32;
 
-  
+
   vh = kb->vithist;
   th = kb->bestscore + kb->beam->hmm;	/* Pruning threshold */
   
@@ -368,11 +374,11 @@ void utt_word_trans (kb_t *kb, int32 cf)
   n_ci = mdef_n_ciphone(mdef);
   
   /* Initialize best exit for each distinct word-final CIphone to NONE */
-  if (! bs) {
-    bs = (int32 *) ckd_calloc (n_ci, sizeof(int32));
-    bv = (int32 *) ckd_calloc (n_ci, sizeof(int32));
-    epl = cmd_ln_int32 ("-epl");
-  }
+  
+  bs=kb->wordbestscore;
+  bv=kb->wordbestexit;
+  epl=kb->epl;
+
   for (p = 0; p < n_ci; p++) {
     bs[p] = MAX_NEG_INT32;
     bv[p] = -1;
@@ -569,6 +575,8 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   n_hmm_eval = 0;
   kb->utt_sen_eval = 0;
   kb->utt_gau_eval = 0;
+  kb->utt_cisen_eval = 0;
+  kb->utt_cigau_eval = 0;
   
   /* initialization of ci-phoneme look-ahead scores */
   ptmr_start (&(kb->tm_sen));
@@ -581,7 +589,12 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
     kb->cache_best_list[f]=MAX_NEG_INT32;
-    approx_cont_mgau_ci_eval(mgau,kb->kbcore->mdef,kb->feat[f][0],kb->cache_ci_senscr[f]);
+    approx_cont_mgau_ci_eval(kb->kbcore,kb->fastgmm,kb->kbcore->mdef,kb->feat[f][0],kb->cache_ci_senscr[f]);
+    kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
+    kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
+
+    /*    E_INFO("%d %d\n",kb->utt_cisen_eval,kb->utt_cigau_eval);*/
+
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
 	kb->cache_best_list[f]=kb->cache_ci_senscr[f][i];
@@ -594,6 +607,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   for (f = 0; f < kb->nfr; f++) {
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(kb->tm_sen));
+
   
     /* Find active senones and composite senones, from active lextree nodes */
 
@@ -616,6 +630,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
       dict2pid_comsseq2sen_active (d2p, mdef, kb->comssid_active, kb->sen_active);
     }
 
+    
     /* Always use the first buffer in the cache*/
     /* Remember, this function will always back off to the simplest
        GMM computation by default.  So don't worry about
@@ -630,8 +645,10 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 				kb->ascr->sen,
 				kb->cache_ci_senscr[kb->pl_win_strt],
 				&(kb->tm_ovrhd));
+
     kb->utt_sen_eval += mgau_frm_sen_eval(mgau);
     kb->utt_gau_eval += mgau_frm_gau_eval(mgau);
+
     
     /* Evaluate composite senone scores from senone scores */
     dict2pid_comsenscr (kbcore_dict2pid(kbcore), kb->ascr->sen, kb->ascr->comsen);
@@ -741,7 +758,7 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 	  lextree_hmm_propagate (lextree, kbcore, kb->vithist, f, th, wth, wth,kb->phn_heur_list,kb->pl_beam,pheurtype);
       }
     }
-
+    ptmr_stop (&(kb->tm_srch));
 	  
     /*Slide the window and compute the next frame of ci phone scores,
       Shift the scores in the cache by one frame and compute the new frames of CI senone score 
@@ -750,7 +767,10 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     /*
      * Shift the window for look-ahead of one frame, update scores in the buffer. 
      */ 
-	  
+
+    ptmr_start (&(kb->tm_sen));
+    ptmr_start (&(kb->tm_ovrhd));
+
     if(f<kb->nfr-kb->pl_win_efv){
       for(i=0;i<kb->pl_win_efv-1;i++){
 	kb->cache_best_list[i]=kb->cache_best_list[i+1];
@@ -759,11 +779,15 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 	}
       }
       
-      approx_cont_mgau_ci_eval(mgau,
+      approx_cont_mgau_ci_eval(kb->kbcore,
+			       kb->fastgmm,
 			       kb->kbcore->mdef,
 			       kb->feat[f+kb->pl_win_efv][0],
 			       kb->cache_ci_senscr[kb->pl_win_efv-1]);
-      
+
+      kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
+      kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
+
       kb->cache_best_list[kb->pl_win_efv-1]=MAX_NEG_INT32;
       for(i=0;i==mdef->cd2cisen[i];i++){
 	if(kb->cache_ci_senscr[kb->pl_win_efv-1][i]>kb->cache_best_list[kb->pl_win_efv-1])
@@ -773,8 +797,10 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
       /* We are near the end of the block, so shrink the window from the left*/
       kb->pl_win_strt++;
     }
-	
-	  
+    ptmr_stop (&(kb->tm_ovrhd));
+    ptmr_stop (&(kb->tm_sen));
+
+    ptmr_start (&(kb->tm_srch));
     /* Limit vithist entries created this frame to specified max */
     vithist_prune (kb->vithist, dict, f, maxwpf, maxhistpf, wb);
     	  
@@ -879,10 +905,24 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
     kb->cache_best_list[f]=MAX_NEG_INT32;
-    approx_cont_mgau_ci_eval(mgau,
-			     kb->kbcore->mdef,
+
+      approx_cont_mgau_ci_eval(kb->kbcore,
+			       kb->fastgmm,
+			       kb->kbcore->mdef,
+
+			       /*    approx_cont_mgau_ci_eval(mgau,
+				     kb->kbcore->mdef,*/
 			     block_feat[f][0],
 			     kb->cache_ci_senscr[f]);
+
+    kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
+    kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
+
+    /*    E_INFO("%d %d\n",kb->utt_cisen_eval,kb->utt_cigau_eval);*/
+
+    /*      kb->utt_cisen_eval += mgau_frm_cisen_eval(mgau);
+	    kb->utt_cigau_eval += mgau_frm_cigau_eval(mgau);*/
+
 
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
@@ -1043,6 +1083,12 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
       }
     }
       
+    ptmr_stop (&(kb->tm_srch));
+
+    ptmr_start (&(kb->tm_sen));
+    ptmr_start (&(kb->tm_ovrhd));
+
+    
     /* if the current block's current frame (t) is less than the total frames in this block minus the efv window */
     if(t<block_nfeatvec-kb->pl_win_efv){
       for(i=0;i<kb->pl_win_efv-1;i++){
@@ -1052,11 +1098,16 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 	}
       }
       /* get the CI sen scores for the t+pl_win'th frame (a slice) */
-      approx_cont_mgau_ci_eval(mgau,
+      approx_cont_mgau_ci_eval(kb->kbcore,
+			       kb->fastgmm,
 			       kb->kbcore->mdef,
 			       block_feat[t+kb->pl_win_efv][0],
 			       kb->cache_ci_senscr[kb->pl_win_efv-1]);
+
       
+      kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
+      kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
+
       kb->cache_best_list[kb->pl_win_efv-1]=MAX_NEG_INT32;
       for(i=0;i==mdef->cd2cisen[i];i++){
 	if(kb->cache_ci_senscr[kb->pl_win_efv-1][i]>kb->cache_best_list[kb->pl_win_efv-1])
@@ -1067,6 +1118,11 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
       kb->pl_win_strt++;
     }
   
+    ptmr_stop (&(kb->tm_ovrhd));
+    ptmr_stop (&(kb->tm_sen));
+
+
+    ptmr_start (&(kb->tm_srch));
     /* Limit vithist entries created this frame to specified max */
     vithist_prune (kb->vithist, dict, frmno, maxwpf, maxhistpf, wb);
     

@@ -54,6 +54,7 @@
 #include "s3types.h"
 #include "gs.h"
 #include "mdef.h"
+#include <stdlib.h> 
 
 int32 most_recent_best_cid=-1;
 
@@ -203,6 +204,58 @@ int32 approx_mgau_eval (gs_t* gs,
   return ng;
 }
 
+int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
+				 fast_gmm_t *fastgmm,
+				 mgau_model_t *g,
+				 int32* ci_occ,
+				 int32* sen_active,
+				 int32* cache_ci_senscr,
+				 s3senid_t *cd2cisen
+				 )
+{
+  int s;
+  int32* idx;
+  int32 pbest;
+  int32 total;
+  int32 is_ciphone;
+
+  idx= fastgmm->gmms->idx;
+
+  int intcmp(const void *v1, const void *v2){
+    return (cache_ci_senscr[* (int32*) v2 ] - cache_ci_senscr[*(int32*)v1]);
+  }
+
+  for( s = 0 ; s <g->n_mgau ;s++){
+    is_ciphone= mdef_is_cisenone(mdef,s);
+    if(is_ciphone) {  /*Initialize the ci_occ in the fast_gmm_struct */
+      ci_occ[s]=0;
+    }else{
+      if(!sen_active || sen_active[s]){
+	ci_occ[cd2cisen[s]]++;
+      }
+    }
+  }
+  for(s=0 ; s< mdef->n_ci_sen ; s++) idx[s]=s;
+  /* ARCHAN: we only have around 200 ci phones so it should be fine
+     for sorting. How about Chinese then? Hmm. We'll think about that
+     later...... */
+
+  qsort(idx,mdef->n_ci_sen,sizeof(int32), intcmp);
+
+  total=0;
+  pbest=cache_ci_senscr[idx[0]];
+  fastgmm->gmms->dyn_ci_pbeam = fastgmm->gmms->ci_pbeam;
+  for(s=0; s< mdef-> n_ci_sen && cache_ci_senscr[idx[s]] > pbest + fastgmm->gmms->ci_pbeam ;s++){
+    total+=ci_occ[idx[s]];
+    if(total > fastgmm->gmms->max_cd){
+      fastgmm->gmms->dyn_ci_pbeam = cache_ci_senscr[idx[s]] - pbest;
+      break;
+    }
+  }
+  /*  E_INFO("The dynamic beam %d\n",fastgmm->gmms->dyn_ci_pbeam);*/
+  return fastgmm->gmms->dyn_ci_pbeam;
+}
+
 
 /* This function,
   1, It only compute the ci-phones score.
@@ -211,15 +264,51 @@ int32 approx_mgau_eval (gs_t* gs,
      The best score is determined by the later function. 
 */
 
-void approx_cont_mgau_ci_eval (mgau_model_t *g, 
+void approx_cont_mgau_ci_eval (kbcore_t *kbc,
+			       fast_gmm_t *fg, 
 			       mdef_t *mdef,
 			       float32 *feat,int32 *ci_senscr)
 {
   int32 s;
   s3senid_t *cd2cisen;
+  int32 best_cid;
+  gs_t* gs;
+  subvq_t* svq;
+  mgau_model_t *g;
+  int32 svq_beam;
+  int32 n_cig;
+  int32 n_cis;
+  n_cis=0;
+  n_cig=0;
   cd2cisen=mdef_cd2cisen(mdef);
-  for (s = 0; mdef_is_cisenone(mdef,s); s++) 
+  svq_beam=fg->gaus->subvqbeam;  
+
+  gs=kbcore_gs(kbc);
+  svq=kbcore_svq(kbc);
+  g=kbcore_mgau(kbc);
+
+  /*#ifdef APPROX_CONT_MGAU*/
+  /*Always turn on, so users can be the one who decide how fast/slow the recognizer can be */
+#if 1
+  if(gs)  best_cid=gc_compute_closest_cw(gs,feat);
+  if(svq) subvq_gautbl_eval_logs3 (svq, feat);
+
+  for (s = 0; mdef_is_cisenone(mdef,s); s++) {
+    n_cig+=approx_mgau_eval (gs,svq,g,fg,s,ci_senscr,feat,best_cid,svq_beam);
+    n_cis++;
+  }
+#else
+
+  for (s = 0; mdef_is_cisenone(mdef,s); s++) {
     ci_senscr[s] = mgau_eval (g, s, NULL, feat);
+    n_cig+=mgau_n_comp(g,s);
+    n_cis++;
+  }
+
+#endif
+
+  g->frm_ci_sen_eval=n_cis;
+  g->frm_ci_gau_eval=n_cig;
 }
 
 /* approx_con_mgau_frame_eval encapsulates all approximations in the
@@ -290,6 +379,7 @@ void approx_cont_mgau_ci_eval (mgau_model_t *g,
 */
 
 
+
 int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 				   fast_gmm_t *fastgmm,
 				   float32 *feat,	
@@ -302,39 +392,55 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 {
   int32 s;
   int32 t;
-  int32 best, ns, ng;
+  int32 best, ns, ng, n_cis,n_cig;
   int32 best_cid;
   int32 is_skip;
   int32 is_compute;
   int32 pbest;
   int32 is_ciphone;
   int32 svq_beam;
+  int32* ci_occ;
   mdef_t* mdef;
   s3senid_t *cd2cisen;
   gs_t* gs;
   subvq_t* svq;
   mgau_model_t *g;
 
+  int32 total;
+  int32 dyn_ci_pbeam;
+
   best = MAX_NEG_INT32;
   pbest = MAX_NEG_INT32;
   ns = 0;
+  n_cis=0;  
+  n_cig=0;
   ng = 0;
+  total=0;
   best_cid=-1;
   gs=kbcore_gs(kbc);
   svq=kbcore_svq(kbc);
   g=kbcore_mgau(kbc);
 
+  svq_beam=fastgmm->gaus->subvqbeam;  
+  mdef=kbc->mdef;
+
+  ci_occ=fastgmm->gmms->ci_occu;
+  cd2cisen=mdef_cd2cisen(mdef);
+
   ptmr_start(tm_ovrhd);
   if(gs)  best_cid=gc_compute_closest_cw(gs,feat);
   if(svq) subvq_gautbl_eval_logs3 (svq, feat);
+
+  if(fastgmm->gmms->max_cd < mdef->n_sen-mdef->n_ci_sen)
+    dyn_ci_pbeam=approx_compute_dyn_ci_pbeam(mdef,fastgmm,g,
+					     ci_occ,sen_active,cache_ci_senscr,cd2cisen);
+  else
+    dyn_ci_pbeam=fastgmm->gmms->ci_pbeam;
+
   ptmr_stop(tm_ovrhd);
 
   is_skip=approx_isskip(frame,fastgmm,best_cid);
   fastgmm->gaus->rec_bstcid=best_cid; 
-
-  svq_beam=fastgmm->gaus->subvqbeam;  
-  mdef=kbc->mdef;
-  cd2cisen=mdef_cd2cisen(mdef);
 
   /* Use the original */
   for (s = 0; s < g->n_mgau; s++) {
@@ -354,12 +460,12 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 	if (pbest < senscr[s]) pbest = senscr[s];
 	if (best < senscr[s]) best = senscr[s];
 	sen_active[s]=1;
-	ng+=mgau_n_comp(g,s); /*Assume all CIs are computed fully*/
-	ns++;
+	/*n_cig+=mgau_n_comp(g,s); *//*Assume all CIs are computed fully*/
+	/*n_cis++;*/
 
       }else{
 	if(is_compute) {
-	  if((senscr[cd2cisen[s]] >= pbest + fastgmm->gmms->ci_pbeam)){
+	  if((senscr[cd2cisen[s]] >= pbest + dyn_ci_pbeam )){
 	    ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam);
 	    ns++;
 	  }else {
@@ -421,13 +527,16 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 #endif
   }
 
+
+  /*Don't delete this line, it is very useful in analysing the performance*/
+
 #if APPROX_ANALYSE
-  E_INFO("time: %d , sen: %d, gau: %d\n",frame, ns, ng);
+  E_INFO("time: %d , cisen %d, sen: %d, gau: %d\n",frame, n_cis, ns, ng);
 #endif
-    
+
   g->frm_sen_eval = ns;
   g->frm_gau_eval = ng;
-    
+  ci_occ=NULL;
   return best;
 
 }

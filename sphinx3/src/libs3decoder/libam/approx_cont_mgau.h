@@ -93,7 +93,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /* Input, kbcore, for mdef, 
 				   );
 
 
-void approx_cont_mgau_ci_eval (mgau_model_t *g, 
+void approx_cont_mgau_ci_eval (/*mgau_model_t *g, */
+			       kbcore_t *kbc,
+				 fast_gmm_t *fg,
 			       mdef_t *mdef, 
 			       float32 *feat,
 			       int32 *ci_senscr);

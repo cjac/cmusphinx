@@ -95,13 +95,12 @@ void gauden_dump (const gauden_t *g)
 #endif
 
 
-static int32
-gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_param == NULL */
-		  int32 *out_n_mgau,
-		  int32 *out_n_feat,
-		  int32 *out_n_density,
-		  int32 **out_veclen,
-		  const char *file_name)
+static int32 gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_param == NULL */
+			       int32 *out_n_mgau,
+			       int32 *out_n_feat,
+			       int32 *out_n_density,
+			       int32 **out_veclen,
+			       const char *file_name)
 {
     char tmp;
     FILE *fp;
@@ -317,15 +316,17 @@ int32 gauden_mean_reload (gauden_t *g, char *meanfile)
     return 0;
 }
 
-
 /*
  * Temporary structure for computing density values.  The only difference between
  * this and gauden_dist_t is the use of float64 for dist.
  */
+
+
 typedef struct {
     int32 id;
     float64 dist;		/* Can probably use float32 */
 } dist_t;
+
 static dist_t *dist;
 static int32 n_dist = 0;
 
@@ -432,6 +433,7 @@ static int32 compute_dist (dist_t *out_dist, int32 n_top,
 }
 
 
+#if 1
 /*
  * Compute distances of the input observation from the top N codewords in the given
  * codebook (g->{mean,var}[mgau]).  The input observation, obs, includes vectors for
@@ -482,7 +484,7 @@ int32 gauden_dist (gauden_t *g,
     
     return 0;
 }
-
+#endif
 
 /*
  * Normalize density values, but globally.

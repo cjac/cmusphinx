@@ -643,7 +643,7 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
 	   type, cmn, varnorm, agc);
     
     fcb = (feat_t *) ckd_calloc (1, sizeof(feat_t));
-    
+
     fcb->name = (char *) ckd_salloc (type);
     if (strcmp (type, "s2_4x") == 0) {
 	/* Sphinx-II format 4-stream feature (Hack!! hardwired constants below) */
@@ -743,7 +743,8 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
 	fcb->window_size = 0;
 	fcb->compute_feat = NULL;
     }
-    
+
+    fcb->cmn_struct=cmn_init();
     if (strcmp (cmn, "current") == 0)
 	fcb->cmn = 1;
     else if (strcmp (cmn, "none") == 0)
@@ -764,7 +765,7 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
 	fcb->agc = 0;
     else
 	E_FATAL("Unsupported AGC type '%s'\n", agc);
-    
+
     return fcb;
 }
 
@@ -883,7 +884,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
     
     if (fcb->cmn){
       E_INFO("CMN\n");
-	cmn (mfc, fcb->varnorm, nfr, fcb->cepsize);
+	cmn (mfc, fcb->varnorm, nfr, fcb->cepsize,fcb->cmn_struct);
     }
     if (fcb->agc){
       E_INFO("AGC\n");
@@ -941,20 +942,21 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 }
 
 
-/* 20040324: ARCHAN: Nearly rewrite the whole thing because I got quite madden by 
-   the whole static data structure mainitained in the function. 
- */
+
+/* 20041111: ARCHAN: Nearly rewrite the whole thing because some
+ variables are STATIC. bufpos and curpos were orignially static
+ function, I decided to eliminate by putting all of them into the
+ structure feat.  This is slower, but we were not optimizing the
+ front-end yet. */
+
 int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 			      int32 beginutt, int32 endutt, float32 ***ofeat)
 {
   static float32 **cepbuf=NULL;
   static float32 **tmpcepbuf=NULL;
-  static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-  static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
 
   int32 win, cepsize; 
   int32 i, j, nfeatvec, residualvecs;
-  /* int32 l,m;*/
   int32 tmppos;
 
   assert(nfr < LIVEBUFBLOCKSIZE);
@@ -977,8 +979,7 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   }
 
   if (fcb->cmn) /* Only cmn_prior in block computation mode */
-    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
-
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
 
   residualvecs = 0;
   
@@ -990,17 +991,78 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
       else
 	memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
     }
-    bufpos = win;
-    bufpos %= LIVEBUFBLOCKSIZE;
-    curpos = bufpos;
+    fcb->bufpos = win;
+    fcb->bufpos %= LIVEBUFBLOCKSIZE;
+    fcb->curpos = fcb->bufpos;
     residualvecs -= win;
   }
 
   for (i=0;i<nfr;i++){
-    assert(bufpos < LIVEBUFBLOCKSIZE);
-    memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
-    bufpos %= LIVEBUFBLOCKSIZE;
+    assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+    memcpy(cepbuf[fcb->bufpos++],uttcep[i],cepsize*sizeof(float32));
+    fcb->bufpos %= LIVEBUFBLOCKSIZE;
   }
+
+  if (endutt){
+    /* Replicate last frame into the last win frames */
+    if (nfr > 0) {
+      for (i=0;i<win;i++) {
+	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[fcb->bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	fcb->bufpos %= LIVEBUFBLOCKSIZE;
+      }
+    }
+    else {
+      int16 tpos = fcb->bufpos-1;
+      tpos %= LIVEBUFBLOCKSIZE;
+      for (i=0;i<win;i++) {
+	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[fcb->bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+	fcb->bufpos %= LIVEBUFBLOCKSIZE;
+      }
+    }
+    residualvecs += win;
+  }
+  /*  E_INFO("curpos %d, bufpos %d beginutt %d\n",curpos,bufpos,beginutt);*/
+  nfeatvec = 0;
+  nfr += residualvecs;
+  
+  for (i=0; i < nfr; i++,nfeatvec++){
+    if(fcb->curpos <win || fcb->curpos > LIVEBUFBLOCKSIZE -win-1){
+      /* HACK! Just copy the frames and read them to compute_feat */
+      for(j=-win;j<=win;j++){
+	tmppos= (j+ fcb->curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
+	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
+      }
+      fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
+    }else{
+      fcb->compute_feat(fcb, cepbuf+fcb->curpos, ofeat[i]);
+    }
+    fcb->curpos++;
+    fcb->curpos %= LIVEBUFBLOCKSIZE;
+  }
+  /*  E_INFO("curpos %d, bufpos %d\n",curpos,bufpos);*/
+
+    return(nfeatvec);
+
+}
+
+/*
+ * RAH, remove memory allocated by feat_init
+ * What is going on? feat_vector_alloc doesn't appear to be called
+ */
+void feat_free (feat_t *f)
+{
+  if (f) {
+    //    if (f->stream_len)
+      //      ckd_free ((void *) f->stream_len);
+
+    //    ckd_free ((void *) f);
+  }
+
+}
+
+/* ARCHAN: Unused code in the past. Keep them to show my respect to the original author*/
 #if 0
   for(l=0;l<nfr;l++){
     printf(" %d ",l);
@@ -1013,87 +1075,13 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   }
 #endif
 
-  if (endutt){
-    /* Replicate last frame into the last win frames */
-    if (nfr > 0) {
-      for (i=0;i<win;i++) {
-	assert(bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	bufpos %= LIVEBUFBLOCKSIZE;
-      }
-    }
-    else {
-      int16 tpos = bufpos-1;
-      tpos %= LIVEBUFBLOCKSIZE;
-      for (i=0;i<win;i++) {
-	assert(bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-	bufpos %= LIVEBUFBLOCKSIZE;
-      }
-    }
-    residualvecs += win;
-  }
-  /*  E_INFO("curpos %d, bufpos %d beginutt %d\n",curpos,bufpos,beginutt);*/
-  nfeatvec = 0;
-  nfr += residualvecs;
-  
-  for (i=0; i < nfr; i++,nfeatvec++){
-    if(curpos <win || curpos > LIVEBUFBLOCKSIZE -win-1){
-      /* HACK! Just copy the frames and read them to compute_feat */
-      for(j=-win;j<=win;j++){
-	tmppos= (j+ curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
-	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
-      }
-      fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
-    }else{
-      fcb->compute_feat(fcb, cepbuf+curpos, ofeat[i]);
-    }
-    curpos++;
-    curpos %= LIVEBUFBLOCKSIZE;
-  }
-  /*  E_INFO("curpos %d, bufpos %d\n",curpos,bufpos);*/
+    /* This part of the code is contaminated by static-style programming. */
 #if 0
-    for(i=0;i<curpos;i++){
-      printf("%d\n",i);
-      printf("Cep: ");
-      fflush(stdout);
-      for(j=0;j<13;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Del: ");
-      fflush(stdout);
-      for(j=13;j<26;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout); 
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Acc: ");
-      fflush(stdout);
-      for(j=26;j<39;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-
-    }
-#endif
-
-    return(nfeatvec);
-
-#if 0
-    static float32 **feat=NULL;
-    static float32 **cepbuf=NULL;
-    /*    static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
-    /*    static unsigned char   bufpos, curpos;   */
-    /*    static unsigned char  jp1, jp2, jp3, jf1, jf2, jf3;	   */
-    static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-    static int32  jp1, jp2, jp3, jf1, jf2, jf3; /* RAH 4.15.01 upgraded unsigned char variables to int32 */
+    /*static*/ float32 **feat=NULL;
+    /*static*/ float32 **cepbuf=NULL;
+    /*static*/ int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    /*static*/ int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    /*static*/ int32  jp1, jp2, jp3, jf1, jf2, jf3; /* RAH 4.15.01 upgraded unsigned char variables to int32 */
     int32  win, cepsize; 
     int32  i, j, nfeatvec, residualvecs;
 
@@ -1127,7 +1115,7 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
 
     if (fcb->cmn) /* Only cmn_prior in block computation mode */
-	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
 
     residualvecs = 0;
     if (beginutt){
@@ -1252,19 +1240,34 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
     return(nfeatvec);
 #endif
-}
 
-/*
- * RAH, remove memory allocated by feat_init
- * What is going on? feat_vector_alloc doesn't appear to be called
- */
-void feat_free (feat_t *f)
-{
-  if (f) {
-    //    if (f->stream_len)
-      //      ckd_free ((void *) f->stream_len);
+#if 0
+    for(i=0;i<curpos;i++){
+      printf("%d\n",i);
+      printf("Cep: ");
+      fflush(stdout);
+      for(j=0;j<13;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Del: ");
+      fflush(stdout);
+      for(j=13;j<26;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout); 
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Acc: ");
+      fflush(stdout);
+      for(j=26;j<39;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
 
-    //    ckd_free ((void *) f);
-  }
-
-}
+    }
+#endif

@@ -79,15 +79,6 @@
 #include "subvq.h"
 #include "s3types.h"
 
-/* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
- * compute the shortlist, for now this value is only relevant when n_sv =3.
- * Setting it to 1 means that only the CEP values are estimated, 2 means that 
- * CEP and delta values are estimated, 3 means all three are estimated.
- * Note, we must adjust the beam widths as we muck around with these.
- */
-static int VQ_EVAL = 3;		
-
-
 /*
  * Precompute variances/(covariance-matrix-determinants) to simplify Mahalanobis distance
  * calculation.  Also, calculate 1/(det) for the original codebooks, based on the VQ vars.
@@ -193,12 +184,13 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     char *strp;
     subvq_t *vq;
     
-    VQ_EVAL = cmd_ln_int32 ("-vqeval");	/*Arthur : It nows work for arbitrary size of sub-vector*/
 
-    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,VQ_EVAL);
+
+    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,vq->VQ_EVAL);
     
     vq = (subvq_t *) ckd_calloc (1, sizeof(subvq_t));
-    
+
+    vq->VQ_EVAL = cmd_ln_int32 ("-vqeval");	/*Arthur : It nows work for arbitrary size of sub-vector*/    
     fp = myfopen(file, "r");
     
     /* Read until "Sub-vectors" */
@@ -227,8 +219,8 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     
     n_sv = vq->n_sv;
     vq->n_sv = max_sv;
-    if (vq->n_sv < VQ_EVAL)	/* RAH, 5.9.01, sanity check to make sure VQ_EVAL isn't higher than the n_sv */
-      VQ_EVAL = vq->n_sv;
+    if (vq->n_sv < vq->VQ_EVAL)	/* RAH, 5.9.01, sanity check to make sure VQ_EVAL isn't higher than the n_sv */
+      vq->VQ_EVAL = vq->n_sv;
     vq->featdim = (int32 **) ckd_calloc (vq->n_sv, sizeof(int32 *));
     vq->gautbl = (vector_gautbl_t *) ckd_calloc (vq->n_sv, sizeof(vector_gautbl_t));
     vq->map = (int32 ***) ckd_calloc_3d (vq->origsize.r, vq->origsize.c, vq->n_sv,
@@ -365,13 +357,13 @@ int32 subvq_mgau_shortlist (subvq_t *vq,
     switch (vq->n_sv) {
     case 3:
 	for (i = 0; i < n; i++) {
-	  if (VQ_EVAL == 1) {
+	  if (vq->VQ_EVAL == 1) {
 	    v = (int32) vqdist[*map];/* If we are not weighting the cep values, we need to adjust the subvqbeam */
 	    map += 3;
 	  } else {
 	    /* RAH, we are ignoring the delta-delta, scoring the delta twice, strangely this works better than weighting the scores  */
 	    /* I believe it has to do with the beam widths */
-	    if (VQ_EVAL == 2) {
+	    if (vq->VQ_EVAL == 2) {
 	    v = vqdist[*(map++)];
 	      v += 2 * vqdist[*map]; /* RAH Count delta twice, we can keep the same subvqbeam as vq_eval = 3 if we double the delta*/
 	      map += 2;
@@ -460,7 +452,7 @@ void subvq_gautbl_eval_logs3 (subvq_t *vq, float32 *feat)
 	
 	/* Evaluate distances between extracted subvector and corresponding codebook */
     /* RAH, only evaluate the first VQ_EVAL set of features */
-    if (s < VQ_EVAL) 
+    if (s < vq->VQ_EVAL) 
 	vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec, vq->vqdist[s]);
     }
 }

@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/08/09  01:02:33  arthchan2003
- * check in the windows setup for align
+ * Revision 1.3  2004/11/13  21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  * 
+ * Revision 1.2  2004/08/09 01:02:33  arthchan2003
+ * check in the windows setup for align
+ *
  * Revision 1.1  2004/08/09 00:17:11  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *
@@ -294,7 +297,8 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 	    E_FATAL("#senones inconsistent: %d in %s; %d in %s\n",
 		    n, sen2mgau_map_file, s->n_sen, mixwfile);
     }
-    
+
+    s->featscr=NULL;
     return s;
 }
 
@@ -347,8 +351,10 @@ int32 senone_eval (senone_t *s, s3senid_t id, gauden_dist_t **dist, int32 n_top)
 void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *senscr)
 {
     int32 i, f, k, cwdist, scr;
-    static int32 *featscr = NULL;
+
     senprob_t *pdf;
+    int32 *featscr = NULL;
+    featscr=s->featscr;
     
     assert (s->n_gauden == 1);
     assert ((n_top > 0) && (n_top <= s->n_cw));

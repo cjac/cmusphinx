@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.3  2004/09/13  08:13:14  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.1  2004/11/13  21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  * 
+ * Revision 1.3  2004/09/13 08:13:14  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.2  2004/08/29 02:39:54  arthchan2003
  * New data structure and routines for enable floating point version of GMM computation, I also did some fixes that allow sphinx3 be portable to Mac OSX. I don't think this snapshot is very stable though.  In general, we need more unit test in sphinx3.
  *

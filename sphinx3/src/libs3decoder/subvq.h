@@ -100,6 +100,17 @@ typedef struct {
 				   to j-th subvector-codeword */
     int32 *gauscore;		/* Subvq-based approx. Gaussian density scores for one mixture */
     int32 *mgau_sl;		/* Shortlist for one mixture (based on gauscore[]) */
+
+  /* ARCHAN, 1111, 04, move the static global variables to the structure again. */
+/* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
+ * compute the shortlist, for now this value is only relevant when n_sv =3.
+ * Setting it to 1 means that only the CEP values are estimated, 2 means that 
+ * CEP and delta values are estimated, 3 means all three are estimated.
+ * Note, we must adjust the beam widths as we muck around with these.
+ */
+
+    int32 VQ_EVAL;              /* Number of sub-vector to be computed */
+
 } subvq_t;
 
 
