@@ -38,17 +38,17 @@ rm1_unigram:
 	$(BINDIR)/s3decode-anytopo ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
 	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_unigram$(MODEAFFIX).match > rm1_unigram$(MODEAFFIX).align
 
-rm1_flatunigram:
-	rm -f gmake-rm1_flatunigram$(MODEAFFIX).results
-	/bin/cp ARGS.rm1 ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-lmfn /lab/speech/sphinx4/data/rm1/lists/RM.unigram.arpa.DMP" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-langwt 8" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-beam 1e-120" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-nwbeam 1e-60" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	echo "-matchfn rm1_flatunigram$(MODEAFFIX).match" >> ARGS.rm1_flatunigram$(MODEAFFIX)
-	$(BINDIR)/s3decode-anytopo ARGS.rm1_flatunigram$(MODEAFFIX) > gmake-rm1_flatunigram$(MODEAFFIX).results
-	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_flatunigram$(MODEAFFIX).match > rm1_flatunigram$(MODEAFFIX).align
+rm1_flat_unigram:
+	rm -f gmake-rm1_flat_unigram$(MODEAFFIX).results
+	/bin/cp ARGS.rm1 ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-lmfn /lab/speech/sphinx4/data/rm1/lists/RM.unigram.arpa.DMP" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-langwt 8" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-beam 1e-120" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-nwbeam 1e-60" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-ctlfn $(CTLFILE)" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	echo "-matchfn rm1_flat_unigram$(MODEAFFIX).match" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
+	$(BINDIR)/s3decode-anytopo ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
+	$(BINDIR)/align -ref $(REFFILE) -hyp rm1_flat_unigram$(MODEAFFIX).match > rm1_flat_unigram$(MODEAFFIX).align
 
 rm1_bigram:
 	rm -f gmake-rm1_bigram$(MODEAFFIX).results
