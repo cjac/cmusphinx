@@ -127,6 +127,10 @@ int main(int argc, char *argv[])
       /* scores the N-grams */
       for (i = 0; i < n; i++) {
         scores[i] = score_ngram(wid[i], nwords[i], lm);
+	/*
+	printf("%-10d %s %d %d %d\n", scores[i], ngrams[i], 
+	       wid[i][0], wid[i][1], wid[i][2]);
+	*/
       }
 
       /* reset cache if <END_UTT> was reached */
@@ -195,6 +199,10 @@ int read_ngrams(FILE *fp,
       if (n < max_lines) {
 	length = strlen(line_read);
 	line_read[length-1] = '\0';
+	/*
+	ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
+	strncpy(ngrams[n], line_read, length-1);
+	*/
 	nwords[n] = ngram2wid(line_read, length, wid[n], lm);
 	n++;
       } else {
@@ -257,10 +265,11 @@ int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
 
     i = 0, nwd = 0;
 
-    while (*ngram) {
+    while (1) {
       if (*ngram == ' ' || *ngram == '\0') {
 	word[i++] = '\0';
 	w[nwd] = lm_wid(lm, word);
+
 	if (NOT_S3LMWID(w[nwd])) {
 	  E_ERROR("Unknown word: %s\n", word[nwd]);
 	  return 0;
