@@ -87,9 +87,9 @@ main(int _argc, char **_argv)
     E_FATAL("Failed to initialize live-decoder.\n");
   }
 
-  while (fscanf(ctrlfd, "%##FILENAME_LENGTH##s", rawfn) != EOF) {
-    snprintf(fullrawfn, FILENAME_LENGTH, "%s/%s", rawdirfn, rawfn);
-    if ((rawfd = fopen(fullrawfn, "r")) == NULL) {
+  while (fscanf(ctrlfd, "%s", rawfn) != EOF) {
+    sprintf(fullrawfn, "%s/%s.raw", rawdirfn, rawfn);
+    if ((rawfd = fopen(fullrawfn, "rb")) == NULL) {
       E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
 
