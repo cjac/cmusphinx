@@ -101,10 +101,10 @@ static s3wid_t finishwid;	/* End silence */
 
 
 /* Global variables : Hack! */
-dict_t *dict;		/* The dictionary */
-fillpen_t *fpen;         /* The fillpenalty data structure */
-lm_t *lm;                /* Global variables */
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+static dict_t *dict;		/* The dictionary */
+static fillpen_t *fpen;         /* The fillpenalty data structure */
+static lm_t *lm;                /* Global variables */
+static s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
 
 static srch_hyp_t *hyp = NULL;	/* The final recognition result */

@@ -192,7 +192,12 @@ kbcore_t *kbcore_init (float64 logbase,
     if (meanfile) {
 	if ((! varfile) || (! mixwfile))
 	    E_FATAL("Varfile or mixwfile not specified along with meanfile(%s)\n", meanfile);
-	kb->mgau = mgau_init (meanfile, varfile, varfloor, mixwfile, mixwfloor, TRUE,senmgau);
+	kb->mgau = mgau_init (meanfile, 
+			      varfile, varfloor, 
+			      mixwfile, mixwfloor, 
+			      TRUE,  /* Do precomputation*/
+			      senmgau,
+			      MIX_INT_FLOAT_COMP); /*Use hybrid integer and float routine */
 	if (kb->mgau == NULL)
 	    E_FATAL("gauden_init(%s, %s, %e) failed\n", meanfile, varfile, varfloor);
 

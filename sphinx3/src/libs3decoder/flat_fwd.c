@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.1  2004/08/09  00:17:11  arthchan2003
- * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ * Revision 1.2  2004/08/29  02:39:54  arthchan2003
+ * New data structure and routines for enable floating point version of GMM computation, I also did some fixes that allow sphinx3 be portable to Mac OSX. I don't think this snapshot is very stable though.  In general, we need more unit test in sphinx3.
  * 
+ * Revision 1.1  2004/08/09 00:17:11  arthchan2003
+ * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ *
  * Revision 1.2  2002/12/03 23:02:38  egouvea
  * Updated slow decoder with current working version.
  * Added copyright notice to Makefiles, *.c and *.h files.
@@ -304,7 +307,7 @@ static fillpen_t *fpen;         /* Filler penalty */
 static lm_t   *lm;		/* The currently active language model */
 static dag_t dag;
 
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+static s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
 
 static char *uttid = NULL;	/* Utterance id; for error reporting */
