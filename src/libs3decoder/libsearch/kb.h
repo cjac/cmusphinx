@@ -69,6 +69,7 @@ extern "C" {
 #include "vithist.h"
 #include "ascr.h"
 #include "beam.h"
+#include "mllr.h"
 
 
 /*
@@ -152,18 +153,25 @@ typedef struct {
   FILE *matchfp;
     FILE *matchsegfp;
 
+  /* variables for dumping hypothesis segments */
   hyp_t		**hyp_segs;	/* hypothesis segments */
   int32		hyp_seglen;	/* number of hypthesis segments */
   char		*hyp_str;	/* hypothesis string */
   int32		hyp_strlen;	/* hypothesis string length */
+
+  /*variables for mllrmatrix */
+  char* prevmllrfn;
+  float32** regA;
+  float32* regB;
 } kb_t;
 
 
 void kb_init (kb_t *kb);
 void kb_lextree_active_swap (kb_t *kb);
 void kb_free (kb_t *kb);	/* RAH 4.16.01 */
-void kb_freehyps(kb_t *kb);  /* YITAO 20040614 */
+void kb_freehyps(kb_t *kb);              /* YITAO 20040614 */
 void kb_setlm(char* lmname,kb_t *kb);    /* ARCHAN 20040228 */
+void kb_setmllr(char* mllrname,kb_t *kb);    /* ARCHAN 20040724 */
 
 #ifdef __cplusplus
 }

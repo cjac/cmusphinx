@@ -531,7 +531,7 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 }
 
 
-/* Invoked by ctl_process in libmisc/corpus.c */
+/* Invoked by ctl_process and ctl_process_dyn_lm in libs3decoder/corpus.c */
 void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 {
   kb_t *kb;

@@ -259,7 +259,11 @@ static arg_t arg[] = {
     { "-ctl_lm",
       ARG_STRING,
       NULL,
-      "Control file that list the corresponding LMs" },
+      "Control file that list the corresponding LM for an utterance" },
+    { "-ctl_mllr",
+      ARG_STRING,
+      NULL,
+      "Control file that list the corresponding MLLR matrix for an utterance"},
     { "-utt",
       ARG_STRING,
       NULL,
@@ -382,6 +386,7 @@ int32 main (int32 argc, char *argv[])
       if(cmd_ln_str("-ctl_lm")&&cmd_ln_str("-lmctlfn")) {
 	tm = ctl_process_dyn_lm (cmd_ln_str("-ctl"),
 				 cmd_ln_str("-ctl_lm"),
+				 cmd_ln_str("-ctl_mllr"),
 			  cmd_ln_int32("-ctloffset"),
 			  cmd_ln_int32("-ctlcount"),
 			  utt_decode, &kb);
@@ -390,11 +395,13 @@ int32 main (int32 argc, char *argv[])
 	  E_ERROR("Ignoring argument from option -ctl_lm\n");
 	}
 	tm = ctl_process (cmd_ln_str("-ctl"),
+			  cmd_ln_str("-ctl_mllr"),
 			  cmd_ln_int32("-ctloffset"),
 			  cmd_ln_int32("-ctlcount"),
 			  utt_decode, &kb);
       }
     } else if (cmd_ln_str ("-utt")) {
+      /* Defunct at this moment, LM and MLLR is not correctly loaded in in this mode. */
 	tm = ctl_process_utt (cmd_ln_str("-utt"), cmd_ln_int32("-ctlcount"), utt_decode, &kb);
     }
     

@@ -95,7 +95,7 @@ extern "C" {
 typedef struct {
     int32 n_comp;	/* #Component Gaussians in this mixture.  NOTE: May be 0 (for the
 			   untrained states). */
-    float32 **mean;	/* The n_comp means of the Gaussians. */
+  float32 **mean;	/* The n_comp means of the Gaussians. */
   float32 **var;	/* The n_comp (diagonal) variances of the Gaussians.  Could be
 			   converted to 1/(2*var) for faster computation (see above comment). */
 
@@ -192,12 +192,19 @@ int32 mgau_comp_eval (mgau_model_t *g,	/* In: Set of mixture Gaussians */
 		      float32 *x,	/* In: Input vector being compared to the components */
 		      int32 *score);	/* Out: Array of scores for each component */
 
+/*
+ * A routine that dump all mean and variance parameters of a set of gaussian distribution.   
+ */
+
+int32 mgau_dump (mgau_model_t *g,  /* In: Set of mixture Gaussians */
+		 int32 type);      /* In: type of output, 0 for mean or 1 for variance.  */
 
 /* RAH
  * Free memory allocated by mgau_init
  */
 void mgau_free (mgau_model_t *g);
 
+int32 mgau_mean_reload(mgau_model_t *g, char* mean_file_name);
 
 #ifdef __cplusplus
 }

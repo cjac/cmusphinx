@@ -155,6 +155,7 @@ int32 ctl_read_entry (FILE *fp,
  * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
 ptmr_t ctl_process (char *ctlfile,	/* In: Control file to read; use stdin if NULL */
+		    char *ctlmllrfile,   /* In: Contorl file that specify the mllr used for the corresponding utterance */
 		    int32 nskip,	/* In: No. of entries to skip at the head */
 		    int32 count,	/* In: No. of entries to process after nskip */
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
@@ -168,6 +169,7 @@ ptmr_t ctl_process (char *ctlfile,	/* In: Control file to read; use stdin if NUL
  */
 ptmr_t ctl_process_dyn_lm (char *ctlfile,	/* In: Control file to read; use stdin if NULL */
 			   char *ctllmfile,     /* In: Control file that specify the lm used for the corresponding utterance */
+			   char *ctlmllrfile,   /* In: Contorl file that specify the mllr used for the corresponding utterance */
 		    int32 nskip,	/* In: No. of entries to skip at the head */
 		    int32 count,	/* In: No. of entries to process after nskip */
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
