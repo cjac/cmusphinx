@@ -356,7 +356,10 @@ ld_set_uttid(live_decoder_t *_decoder, char *_uttid)
 
   /* automatically-generated uttid */
   if (_uttid == NULL) {
-    times = localtime(time(NULL));
+    time_t t;
+
+    t = time(NULL);
+    times = localtime(&t);
     if ((local_uttid = ckd_malloc(17)) == NULL) {
       return -1;
     }
