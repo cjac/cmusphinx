@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -129,7 +132,6 @@ static void allphone_start_utt ( void )
     n_bp = 0;
 }
 
-
 static void allphone_senone_active ( void )
 {
     int32 p, s, n, *dist;
@@ -142,7 +144,6 @@ static void allphone_senone_active ( void )
     }
     n_senone_active = n;
 }
-
 
 static int32 allphone_eval_ci_chan (int32 f)
 {
@@ -162,7 +163,6 @@ static int32 allphone_eval_ci_chan (int32 f)
     return (bestscr);
 }
 
-
 static void allphone_bp_entry (int32 f, int32 p)
 {
     if (n_bp == ALLPHONE_BP_MAX-2)
@@ -176,7 +176,6 @@ static void allphone_bp_entry (int32 f, int32 p)
     allphone_bp[n_bp].bp = ci_chan[p].path[HMM_LAST_STATE];
     n_bp++;
 }
-
 
 static void allphone_chan_prune (int32 f, int32 bestscr)
 {
@@ -198,7 +197,6 @@ static void allphone_chan_prune (int32 f, int32 bestscr)
     }
 }
 
-
 static void allphone_chan_trans (int32 f, int32 bp)
 {
     int32 p, scr, s;
@@ -216,7 +214,6 @@ static void allphone_chan_trans (int32 f, int32 bp)
     }
 }
 
-
 static void allphone_renorm (int32 f, int32 bestscr)
 {
     int32 p, s;
@@ -231,7 +228,6 @@ static void allphone_renorm (int32 f, int32 bestscr)
 
     renorm_scr[f] = bestscr;
 }
-
 
 static void allphone_backtrace (int32 bp)
 {
@@ -275,7 +271,6 @@ static void allphone_backtrace (int32 bp)
     }
 }
 
-
 static void allphone_result ( void )
 {
     int32 i, b, f, sile, bestbp;
@@ -307,7 +302,6 @@ static void allphone_result ( void )
     
     allphone_backtrace (bestbp);
 }
-
 
 search_hyp_t *allphone_utt (int32 nfr,
 			    float *cep,
@@ -359,7 +353,6 @@ search_hyp_t *allphone_utt (int32 nfr,
 
     return allp_seghyp;
 }
-
 
 void
 allphone_init (double bw, double exitbw, double pip)

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -83,7 +86,6 @@
  * 		Created, based loosely on Steve Reed's original implementation.
  */
 
-
 /*
  * This module is intended to be interposed as a filter between any raw A/D source and the
  * application to remove silence regions.  It is initialized with a raw A/D source function
@@ -112,7 +114,6 @@
  * responsible for using this timestamp to make any policy decisions regarding utterance
  * boundaries or whatever.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -167,11 +168,9 @@
  * SReed had 400 ms == 25 fr contiguous; rkm had 14 out of 16
  */
 
-
 #define CONT_AD_LEADER		5	/* On transition to SPEECH state, so many frames
 					   BEFORE window included in speech data (>0) */
 				/* SReed had 200 ms == 12.5 fr; rkm had 5 */
-
 
 #define CONT_AD_TRAILER		10	/* On transition to SILENCE state, so many frames
 					   of silence included in speech data (>0).
@@ -185,7 +184,6 @@ static FILE *rawfp;
 static FILE *logfp = NULL;	/* Detailed info written to fp if non-NULL */
 static int32 frmno = 0;
 
-
 void cont_ad_powhist_dump (FILE *fp, cont_ad_t *r)
 {
     int32 i;
@@ -198,7 +196,6 @@ void cont_ad_powhist_dump (FILE *fp, cont_ad_t *r)
 	    r->noise_level, r->thresh_sil, r->thresh_speech);
     fflush (fp);
 }
-
 
 /*
  * Compute frame power.  Interface deliberately kept low level to allow arbitrary
@@ -250,7 +247,6 @@ int32 cont_ad_frame_pow (int16 *buf, int32 *prev, int32 spf)
     return (i);
 }
 
-
 /*
  * Classify frame (id=frm, starting at sample position s) as sil/nonsil.  Classification
  * done in isolation, independent of any other frame, based only on power histogram.
@@ -273,12 +269,10 @@ static void compute_frame_pow (cont_ad_t *r, int32 frm)
     r->thresh_update--;
 }
 
-
 void cont_ad_set_logfp (FILE *fp)
 {
     logfp = fp;
 }
-
 
 /* PWP: $$$ check this */
 /*
@@ -292,7 +286,6 @@ static void decay_hist (cont_ad_t *r)
     for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
 	r->pow_hist[i] >>= 1;
 }
-
 
 /*
  * Find silence threshold from power histogram.
@@ -366,7 +359,6 @@ static int32 find_thresh (cont_ad_t *r)
 
     return 0;
 }
-
 
 /*
  * Main silence/speech region detection routine.  If currently in
@@ -496,7 +488,6 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	r->win_startfrm = 0;
 }
 
-
 static int32 max_siglvl (cont_ad_t *r, int32 startfrm, int32 nfrm)
 {
     int32 siglvl, i, f;
@@ -515,7 +506,6 @@ static int32 max_siglvl (cont_ad_t *r, int32 startfrm, int32 nfrm)
 
 void get_audio_data(cont_ad_t *r, int16 *buf, int32 max) {
 }
-
 
 /*
  * Main function called by the application to filter out silence regions.  Maintains a
@@ -723,7 +713,6 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 	return len;
 }
 
-
 /*
  * Calibrate input channel for silence threshold.
  */
@@ -792,7 +781,6 @@ int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max)
     return (find_thresh (r));
 }
 
-
 /* PWP 1/14/98 -- modified for compatibility with old code */
 int32 cont_ad_set_thresh (cont_ad_t *r, int32 sil, int32 speech)
 {
@@ -806,7 +794,6 @@ int32 cont_ad_set_thresh (cont_ad_t *r, int32 sil, int32 speech)
     
     return 0;
 }
-
 
 /*
  * PWP 1/14/98 -- set the changable params.
@@ -895,7 +882,6 @@ int32 cont_ad_get_params (cont_ad_t *r, int32 *delta_sil, int32 *delta_speech,
     return 0;
 }
 
-
 /*
  * Reset, discarded any accumulated speech.
  */
@@ -923,7 +909,6 @@ int32 cont_ad_reset (cont_ad_t *r)
     return 0;
 }
 
-
 int32 cont_ad_close (cont_ad_t *cont)
 {
     free (cont->adbuf);
@@ -934,14 +919,12 @@ int32 cont_ad_close (cont_ad_t *cont)
     return 0;
 }
 
-
 int32 cont_ad_detach (cont_ad_t *c)
 {
     c->ad = NULL;
     c->adfunc = NULL;
     return 0;
 }
-
 
 int32 cont_ad_attach (cont_ad_t *c, ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
 {
@@ -987,7 +970,6 @@ int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech) {
 
   return 0;
 }
-
 
 /*
  * One-time initialization.
@@ -1047,7 +1029,6 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->sil_onset = CONT_AD_SIL_ONSET;
     r->leader = CONT_AD_LEADER;
     r->trailer = CONT_AD_TRAILER;
-
 
     r->thresh_sil = r->noise_level + r->delta_sil;
     r->thresh_speech = r->noise_level + r->delta_speech;

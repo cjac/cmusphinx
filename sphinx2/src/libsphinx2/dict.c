@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -184,7 +187,6 @@ static int32 first_dummy;	/* 1st dummy available for dynamic OOVs at any time */
 static int32 last_dummy;	/* last dummy available for dynamic OOVs */
 
 #define MAX_PRONOUN_LEN 	100
-
 
 static int32 get_dict_size (char *file)
 {
@@ -636,7 +638,6 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
     }
 }
 
-
 caddr_t
 dictStrToWordId (dictT *dict, char const *dict_str, int verbose)
 /*------------------------------------------------------------*
@@ -961,7 +962,6 @@ int32 dict_add_word (dictT *dict, char const *word, char const *pron)
     return (wid);
 }
 
-
 static void
 _dict_list_add (dictT *dict, dict_entry_t *entry)
 /*------------------------------------------------------------*/
@@ -982,7 +982,6 @@ _dict_list_add (dictT *dict, dict_entry_t *entry)
 
     dict->dict_list[dict->dict_entry_count++] = entry;
 }
-
 
 dict_entry_t *
 dict_get_entry (dictT *dict, int i)
@@ -1276,19 +1275,16 @@ int32 dict_is_new_word (int32 wid)
     return ((wid >= initial_dummy) && (wid <= last_dummy));
 }
 
-
 int32 dict_pron (dictT *dict, int32 w, int32 **pron)
 {
     *pron = dict->dict_list[w]->ci_phone_ids;
     return (dict->dict_list[w]->len);
 }
 
-
 int32 dict_next_alt (dictT *dict, int32 w)
 {
     return (dict->dict_list[w]->alt);
 }
-
 
 /* Write OOV words added at run time to the given file and return #words written */
 int32 dict_write_oovdict (dictT *dict, char const *file)

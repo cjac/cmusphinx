@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -36,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2001/12/07  17:30:01  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.10  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.9  2001/12/07 17:30:01  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.8  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -77,7 +83,6 @@
  * 		Creating from version of 1995.
  */
 
-
 /*
  * This server uses nonblocking sockets for communicating with clients.  It serves
  * one client at a time.
@@ -95,7 +100,6 @@
  * Exit the above sequence by hitting q<CR> instead of just <CR>.  At this point, the
  * server closes the client connection and is ready for the next client.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +132,6 @@
 #include "kb.h"
 #include "fbs.h"
 
-
 #define DEFAULT_LISTEN_PORT	7027
 static int32 listenport;	/* Port on which server should listen for clients */
 static SOCKET sd;		/* Socket connection to a particular client */
@@ -138,7 +141,6 @@ static cont_ad_t *cont;		/* Continuous listening/silence filtering module */
 #define MIN_ENDSIL	5000	/* #samples of silence to declare end of utterance */
 
 static int32 startwid;
-
 
 /* Sleep for specified #msec */
 static void sleep_msec (int32 ms)
@@ -156,11 +158,9 @@ static void sleep_msec (int32 ms)
 #endif
 }
 
-
 static void server_error ( void )
 {
 }
-
 
 #define RBUFSIZE	1024
 
@@ -194,7 +194,6 @@ static int32 await_ack ( void )
     
     return 0;
 }
-
 
 #define END_UTT_MARKER	"END_UTT\n"
 
@@ -251,7 +250,6 @@ static int32 send_result (char *best, search_hyp_t **alt, int32 n_alt)
 
     return 0;
 }
-
 
 #define MAX_ALT		30
 
@@ -363,7 +361,6 @@ static int32 listen_loop()
     return 0;
 }
 
-
 /*
  * Process current client until told to quit.
  */
@@ -386,7 +383,6 @@ static int32 process_client ( void )
     return 0;
 }
 
-
 static void sigint_handler (int arg)
 {
     E_INFO("^C...Exiting\n");
@@ -396,7 +392,6 @@ static void sigint_handler (int arg)
     
     exit (0);
 }
-
 
 /*
  * Main server loop.  Await client connections and process them.
@@ -438,7 +433,6 @@ static void s2srv_loop ( void )
     /* Never really get here...!! */
     server_end ();
 }
-
 
 int32 s2srv_init (char *portarg)
 {

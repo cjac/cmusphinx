@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -79,9 +82,12 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.10  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.11  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.10  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.9  2001/12/07 13:11:30  lenzo
  * Consolidate byte order code into byteorder.h.  Note that there are still
  * two "senses" of byte swapping that are confusing, and all this should
@@ -291,13 +297,11 @@ static int32 lm_last_access_type;	/* Hack!! See ACCESS definitions in .h */
 
 #define MAX_SORTED_ENTRIES	65534
 
-
 /* Base values for ranges of unigram_t.mapid */
 #define LM_DICTWID_BASE		0		/* Do not change this */
 #define LM_CLASSID_BASE		0x01000000	/* Interpreted as LMclass ID */
 #define LM_DICTWID_BADMAP	-16000		/* An illegal mapping */
 #define LM_CLASSID_TO_CLASS(m,i)	((model)->lmclass[(i)-LM_CLASSID_BASE])
-
 
 /*
  * Bigram probs and bo-wts, and trigram probs are kept in separate tables
@@ -465,7 +469,6 @@ NewModel (n_ug, n_bg, n_tg, n_dict)
 #define GET_WORD_IDX(w)		dictStrToWordId (WordDict, w, FALSE)
 #endif
 
-
 static int32 wstr2wid (lm_t *model, char *w)
 {
     caddr_t val;
@@ -474,7 +477,6 @@ static int32 wstr2wid (lm_t *model, char *w)
 	return NO_WORD;
     return ((int32) val);
 }
-
 
 /*
  * Read and return #unigrams, #bigrams, #trigrams as stated in input file.
@@ -563,7 +565,6 @@ static void ReadUnigrams (FILE *fp, lm_t *model)
     }
 }
 
-
 /*
  * Read bigrams from given file into given model structure.  File may be arpabo
  * or arpabo-id format, depending on idfmt = 0 or 1.
@@ -642,7 +643,6 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
     for (prev_w1++; prev_w1 <= model->ucount; prev_w1++)
 	model->unigrams[prev_w1].bigrams = bgcount;
 }
-
 
 /*
  * Very similar to ReadBigrams.
@@ -797,7 +797,6 @@ static FILE *lm_file_open (char const *filename, int32 usepipe)
     return (fp);
 }
 
-
 static int32 lm_get_classid (lm_t *model, char *name)
 {
     int32 i;
@@ -811,7 +810,6 @@ static int32 lm_get_classid (lm_t *model, char *name)
     }
     return -1;
 }
-
 
 /*
  * Read in a trigram language model from the given file.  The LM tokens can be word
@@ -1113,13 +1111,11 @@ int32 lm_read_clm (char const *filename,
     return 0;
 }
 
-
 int32 lm_read (char const *filename, char const *lmname,
 	       double lw, double uw, double wip)
 {
     return lm_read_clm(filename, lmname, lw, uw, wip, NULL, 0);
 }
-
 
 void lm_init_oov ( void )
 {
@@ -1310,7 +1306,6 @@ int32 get_n_lm ()
 {
     return (n_lm);
 }
-
 
 int32 lm3g_n_lm ( void )
 {
@@ -1833,7 +1828,6 @@ int32 lm3g_ug_score (int32 wid)
     return (lmp->unigrams[lwid].prob1.l + lmp->inclass_ugscore[wid]);
 }
 
-
 /* Locate a specific bigram within a bigram list */
 static int32 find_bg (bigram_t *bg, int32 n, int32 w)
 {
@@ -1856,7 +1850,6 @@ static int32 find_bg (bigram_t *bg, int32 n, int32 w)
     for (i = b; (i < e) && (bg[i].wid != w); i++);
     return ((i < e) ? i : -1);
 }
-
 
 /* w1, w2 are dictionary (base-)word ids */
 int32 lm3g_bg_score (int32 w1, int32 w2)
@@ -1897,7 +1890,6 @@ int32 lm3g_bg_score (int32 w1, int32 w2)
     return (score);
 }
 
-
 static void load_tginfo (lm_t *lm, int32 lw1, int32 lw2)
 {
     int32 i, n, b, t;
@@ -1934,7 +1926,6 @@ static void load_tginfo (lm_t *lm, int32 lw1, int32 lw2)
     }
 }
 
-
 /* Similar to find_bg */
 static int32 find_tg (trigram_t *tg, int32 n, int32 w)
 {
@@ -1955,7 +1946,6 @@ static int32 find_tg (trigram_t *tg, int32 n, int32 w)
     for (i = b; (i < e) && (tg[i].wid != w); i++);
     return ((i < e) ? i : -1);
 }
-
 
 /* w1, w2, w3 are dictionary wids */
 int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
@@ -2018,7 +2008,6 @@ int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
     return (score);
 }
 
-
 void lm3g_cache_reset ( void )
 {
     int32 i;
@@ -2048,17 +2037,14 @@ void lm3g_cache_reset ( void )
     }
 }
 
-
 void lm3g_cache_stats_dump (FILE *file)
 {
     /* FIXME: does nothing! */
 }
 
-
 void lm_next_frame ( void )
 {
 }
-
 
 int32 lm3g_raw_score (int32 score)
 {
@@ -2067,7 +2053,6 @@ int32 lm3g_raw_score (int32 score)
     
     return score;
 }
-
 
 int32 lm3g_access_type ( void )
 {

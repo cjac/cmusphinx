@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -35,7 +38,6 @@
  * 
  */
 
-
 #define HMM_EXT		"bhmm4"
 #define CONVERGE	1
 #define MIN_PROB	0.000001
@@ -55,7 +57,6 @@ struct transition
       out_prob_index,		/* Index to Output_Prob. -1 -> null trans/ */
       trans_prob;		/* Transitional probability of the arc */
 };
-
 
 /* State describes a state in the HMM */
 

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,10 +42,8 @@
  * 		Started, based on earlier FBS6 version.
  */
 
-
 #ifndef _CACHE_LM_H_
 #define _CACHE_LM_H_
-
 
 /*
  * Bigram cache entry.  Pointed to by a parent unigram cache entry (see below).
@@ -52,7 +53,6 @@ typedef struct clm_bg_s {
     int32 count;		/* #times this bigram seen */
     struct clm_bg_s *next;	/* Next bigram entry for parent unigram */
 } clm_bg_t;
-
 
 /* 
  * Unigram cache entry.  count can be different from sum_w2count because count is
@@ -65,7 +65,6 @@ typedef struct {
     int32 sum_w2count;		/* Sum of counts in w2list (different from count above) */
     clm_bg_t *w2list;		/* Successors to this word */
 } clm_ug_t;
-
 
 typedef struct {
     clm_ug_t *clm_ug;		/* clm_ug[w] = cache information for dictionary wid w */
@@ -87,7 +86,6 @@ typedef struct {
     int32 log_bw;		/* LOGPROB(bw) */
     int32 log_remwt;		/* LOG(remaining weight) */
 } cache_lm_t;
-
 
 /*
  * Interface
@@ -118,6 +116,5 @@ int32 cache_lm_score (cache_lm_t *lm, int32 w1, int32 w2, int32 *remwt);
 void cache_lm_dump (cache_lm_t *lm, char *file);
 
 void cache_lm_load (cache_lm_t *lm, char *file);
-
 
 #endif /* _CACHE_LM_H_ */

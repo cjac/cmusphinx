@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -44,7 +47,6 @@
 
 #include <stdio.h>
 
-
 long read_long (FILE *stream)
 {
   int             c;
@@ -68,7 +70,6 @@ long read_long (FILE *stream)
   return word << 8 | c;
 }
 
-
 int write_long (FILE *stream, long word)
 {
   if (putc (word >> 24, stream) == EOF)
@@ -81,7 +82,6 @@ int write_long (FILE *stream, long word)
     return -1;
   return 0;
 }
-
 
 int read_long_array (FILE *stream, long *base, int length)
 {
@@ -118,7 +118,6 @@ int read_long_array (FILE *stream, long *base, int length)
   return 0;
 #endif
 }
-
 
 int write_long_array (FILE *stream, long *base, int length)
 {

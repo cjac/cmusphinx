@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Creating.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,7 +60,6 @@
 
 #include "clicore.h"
 
-
 /*
  * NOTE: Each incoming line must be shorter than RBUFSIZE
  */
@@ -69,7 +70,6 @@ static int32 roff;
 static int32 rlen;
 
 static SOCKET sd;		/* Socket connection to server */
-
 
 static char *get_next_line ( void )
 {
@@ -109,7 +109,6 @@ static char *get_next_line ( void )
     }
 }
 
-
 static int32 send_line (char *str)
 {
     int32 len;
@@ -120,7 +119,6 @@ static int32 send_line (char *str)
     
     return 0;
 }
-
 
 int main (int32 argc, char *argv[])
 {

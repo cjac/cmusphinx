@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -37,9 +40,12 @@
  *------------------------------------------------------------*
  * HISTORY
  * $Log$
- * Revision 1.3  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.4  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.3  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.2  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -75,7 +81,6 @@ typedef enum {NOTYPE,
 typedef enum {
 	SRC_NONE, SRC_HSA, SRC_VQFILE, SRC_CEPFILE, SRC_ADCFILE
 } data_src_t;
-
 
 typedef union _ptr {
     char	*CharP;

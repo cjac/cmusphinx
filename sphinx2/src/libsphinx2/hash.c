@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -82,7 +85,6 @@ static int32 hash_in(hash_t *ht, char const *sym, caddr_t val);
 static int32 next_prime(int32 p);
 
 extern int mystrcasecmp(char const *, char const *);
-
 
 /* HASH_ADD
  *------------------------------------------------------------*
@@ -233,7 +235,6 @@ rehash:
     rehash_count++;
     goto rehash;
 }
-
 
 /* HASH_IN
  *------------------------------------------------------------*

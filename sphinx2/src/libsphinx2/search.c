@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -451,7 +454,6 @@ static int32 n_lastphn_cand;
 
 extern int32 print_back_trace;
 
-
 #if 0
 /*
  * Evaluate arcprobs of all active HMMs (actually sseqids) in current frame.
@@ -781,7 +783,6 @@ root_chan_v_mpx_eval (ROOT_CHAN_T *chan)
     						\
     chan->bestscore = bestScore;		\
 }						\
-
 
 void
 root_chan_v_eval (ROOT_CHAN_T *chan)
@@ -1664,7 +1665,6 @@ word_transition (void)
     }
 }
 
-
 #if 0
 static void dump_hmm_tp ( void )
 {
@@ -1679,7 +1679,6 @@ static void dump_hmm_tp ( void )
     }
 }
 #endif
-
 
 void
 search_initialize (void)
@@ -1840,7 +1839,6 @@ search_init (beam_width, all_word_mode, force_str)
 }
 #endif
 
-
 void search_set_startword (char const *str)
 {
     char const *startWord;
@@ -1859,7 +1857,6 @@ void search_set_startword (char const *str)
     E_INFO("%s(%d): startword= %s (id= %d)\n",
 	     __FILE__, __LINE__, startWord, StartWordId);
 }
-
 
 /*
  * Set previous two LM context words for search; ie, the first word decoded by
@@ -1983,7 +1980,6 @@ compute_sen_active (void)
 	    senone_active[j++] = i;
     n_senone_active = j;
 }
-
 
 /*
  * Tree-Search one frame forward.
@@ -2413,7 +2409,6 @@ search_postprocess_bptable (double lwf, char const *pass)
 	    HypTotalScore, HypTotalScore - TotalLangScore, TotalLangScore);
 }
 
-
 void bestpath_search ( void )
 {
     if (! renormalized) {
@@ -2423,7 +2418,6 @@ void bestpath_search ( void )
 	E_INFO ("Renormalized in fwd pass; cannot rescore lattice\n");
     }
 }
-
 
 /*
  * Convert search hypothesis (word-id sequence) to a single string.
@@ -2449,7 +2443,6 @@ search_hyp_to_str ( void )
     }
 }
 
-
 int32 seg_topsen_score (int32 sf, int32 ef)
 {
     int32 f, sum;
@@ -2460,7 +2453,6 @@ int32 seg_topsen_score (int32 sf, int32 ef)
     
     return (sum);
 }
-
 
 /* SEG_BACK_TRACE
  *-------------------------------------------------------------*
@@ -2646,12 +2638,10 @@ int32 search_get_score (void)
     return HypTotalScore;
 }
 
-
 void search_set_beam_width (double beam)
 {
     LogBeamWidth =  8 * LOG (beam);
 }
-
 
 /* SEARCH_SET_NEW_WORD_BEAM
  *-------------------------------------------------------------*
@@ -2952,7 +2942,6 @@ search_dump_lattice_ascii (char const *file)
 
     fclose (fp);
 }
-
 
 #if SEARCH_TRACE_CHAN_DETAILED
 char *trace_wid;
@@ -3565,7 +3554,6 @@ static int32 *expand_word_list = NULL;
 #define MIN_EF_WIDTH		4
 #define MAX_SF_WIN		25
 
-
 static void build_fwdflat_wordlist ( void )
 {
     int32 i, f, sf, ef, wid, nwd;
@@ -3645,7 +3633,6 @@ static void build_fwdflat_wordlist ( void )
      */
 }
 
-
 void destroy_frm_wordlist ( void )
 {
     latnode_t *node, *tnode;
@@ -3661,7 +3648,6 @@ void destroy_frm_wordlist ( void )
 	}
     }
 }
-
 
 void
 build_fwdflat_chan ( void )
@@ -3720,7 +3706,6 @@ build_fwdflat_chan ( void )
 	word_chan[wid] = (CHAN_T *) rhmm;
     }
 }
-
 
 void
 destroy_fwdflat_chan ( void )
@@ -4213,7 +4198,6 @@ search_fwdflat_finish ( void )
 #endif
 }
 
-
 static void fwdflat_renormalize_scores (int32 norm)
 {
     ROOT_CHAN_T *rhmm;
@@ -4290,7 +4274,6 @@ search_fwdflat_init ( void )
 #endif
 }
 
-
 /* ------------------ CODE FOR TOP SENONES BASED SEARCH PRUNING ----------------- */
 
 #define DUMP_PHN_TOPSEN_SCR	0
@@ -4334,7 +4317,6 @@ static void compute_phone_perplexity( void )
 	phone_perplexity[f] = 1.0;
 }
 
-
 static void topsen_init ( void )
 {
     int32 p; /* ,s; */
@@ -4355,7 +4337,6 @@ static void topsen_init ( void )
 	    npa[p] = 1;
     }
 }
-
 
 static void compute_phone_active (int32 topsenscr, int32 npa_th)
 {
@@ -4419,12 +4400,10 @@ static void compute_phone_active (int32 topsenscr, int32 npa_th)
     }
 }
 
-
 uint16 **search_get_uttpscr ( void )
 {
     return utt_pscr;
 }
-
 
 typedef struct {
     int32 score;
@@ -4432,11 +4411,9 @@ typedef struct {
     int16 pred;
 } vithist_t;
 
-
 /* Min frames for each phone in allphone decoding */
 #define MIN_ALLPHONE_SEG	3
 #define PHONE_TRANS_PROB	0.0001
-
 
 int32
 search_uttpscr2phlat_print ( void )
@@ -4609,7 +4586,6 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
     return head;
 }
 
-
 static void print_pscr_path (FILE *fp, search_hyp_t *hyp, char const *caption)
 {
     search_hyp_t *h;
@@ -4635,7 +4611,6 @@ static void print_pscr_path (FILE *fp, search_hyp_t *hyp, char const *caption)
     fprintf (fp, "\n");
     fflush (fp);
 }
-
 
 search_hyp_t *search_uttpscr2allphone ( void )
 {
@@ -4682,7 +4657,6 @@ search_hyp_t *search_uttpscr2allphone ( void )
 
     return allp;
 }
-
 
 static search_hyp_t *fwdtree_pscr_path ( void )
 {
@@ -4742,7 +4716,6 @@ static search_hyp_t *fwdtree_pscr_path ( void )
     return hyp;
 }
 
-
 /*
  * Search bptable for word wid and return its BPTable index.
  * Start search from the given frame frm.
@@ -4759,7 +4732,6 @@ int32 search_bptbl_wordlist (int32 wid, int32 frm)
     }
     return -1;
 }
-
 
 int32 search_bptbl_pred (int32 b)
 {

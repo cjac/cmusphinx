@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -34,7 +37,6 @@
  * DESCRIPTION
  *	CMPSL functions to make error handling a little easier.
  */
-
 
 #include <stdio.h>
 #include <string.h>
@@ -99,7 +101,6 @@ void *_CM_calloc (int32 cnt, int32 size, char const *file, int32 line)
     }
     return (ret);
 }
-
 
 void *_CM_2dcalloc (int32 rcnt, int32 ccnt, int32 size,
 		    char const *srcfile, int32 srcline)
@@ -166,7 +167,6 @@ void *_CM_3dcalloc (int32 lcnt, int32 rcnt, int32 ccnt, int32 size,
 
     return (ret);
 }
-
 
 void *_CM_recalloc (void *ptr, int32 cnt, int32 size,
 		    char const *srcfile, int32 srcline)

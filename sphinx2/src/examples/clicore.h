@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -36,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2001/12/07  17:30:01  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.6  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.5  2001/12/07 17:30:01  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.4  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -65,19 +71,16 @@
  * 		Created.
  */
 
-
 #ifndef _CLICORE_H_
 #define _CLICORE_H_
 
 #include "s2types.h"
-
 
 #if (WIN32)
 #include "win32sock.h"
 #else
 #include "posixsock.h"
 #endif
-
 
 SOCKET cli_open (char *hostname, int32 port);
 				/* Open socket connection to server on host using port as

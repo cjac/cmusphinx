@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -50,9 +53,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created, based on Brian Milnes's earlier version.
  * $Log$
- * Revision 1.8  2001/12/07  17:30:01  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.9  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.8  2001/12/07 17:30:01  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.7  2001/12/07 12:21:45  lenzo
  * Move some headers.
  *
@@ -85,11 +91,9 @@
  *
  */
 
-
 /*
  * This file tries to hide much of system-specific socket implementation details.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -115,14 +119,12 @@
 
 #include "srvcore.h"
 
-
 #define QUIT(x)		{fflush(stdout); fprintf x; exit(-1);}
 #ifdef NOERRLOG
 #define ERRLOG(x)	{}
 #else
 #define ERRLOG(x)	{fprintf x;}
 #endif
-
 
 static SOCKET listen_sd = INVALID_SOCKET;	/* Socket over which server listens for
 						   connection req */
@@ -132,7 +134,6 @@ static uint16 bindport;
 
 static FILE *fp = NULL;				/* Recvd pkts logfile */
 #define RECVLOGFILE	"RCV.LOG"
-
 
 #ifdef WIN32
 
@@ -183,7 +184,6 @@ static void print_errno (char *hdr)
 
 #endif
 
-
 static char *prt_ctime ()
 {
     time_t cur_time;
@@ -191,7 +191,6 @@ static char *prt_ctime ()
     time (&cur_time);
     return (ctime(&cur_time));
 }
-
 
 int32 server_recv_noblock (SOCKET sd, char *buf, int32 len)
 {
@@ -214,7 +213,6 @@ int32 server_recv_noblock (SOCKET sd, char *buf, int32 len)
     }
 }
 
-
 int32 server_recv_block (SOCKET sd, char *buf, int32 len)
 {
     fd_set readfds;
@@ -227,7 +225,6 @@ int32 server_recv_block (SOCKET sd, char *buf, int32 len)
     }
     return (server_recv_noblock (sd, buf, len));
 }
-
 
 int32 server_send_block (SOCKET sd, char *buf, int32 len)
 {
@@ -249,7 +246,6 @@ int32 server_send_block (SOCKET sd, char *buf, int32 len)
     }
     return len;
 }
-
 
 #ifdef WIN32
 /*
@@ -274,13 +270,11 @@ static int32 win32_init ( void )
     return 0;
 }
 
-
 static void win32_end ( void )
 {
     WSACleanup();
 }
 #endif
-
 
 /*
  * Initialize server; create socket on which to listen for connection request from
@@ -365,7 +359,6 @@ int32 server_initialize (int32 port)
     return 0;
 }
 
-
 /*
  * Close existing connection to client.
  */
@@ -376,7 +369,6 @@ void server_close_conn (SOCKET sd)
     conn_sd = INVALID_SOCKET;
     ERRLOG((stderr, "%s(%d): Connection closed at %s\n", __FILE__, __LINE__, prt_ctime()));
 }
-
 
 /*
  * Await connection.  Return conn_sd if successful, INVALID_SOCKET otherwise.
@@ -419,7 +411,6 @@ SOCKET server_await_conn ( void )
     return conn_sd;
 }
 
-
 /*
  * Cleanup; ready to terminate program.
  */
@@ -435,7 +426,6 @@ void server_end ( void )
     ERRLOG((stderr, "%s(%d): Sockets closed\n", __FILE__, __LINE__));
 }
 
-
 void server_openlog ( void )
 {
     if ((fp = fopen (RECVLOGFILE, "wb")) == NULL)
@@ -443,14 +433,12 @@ void server_openlog ( void )
 		 __FILE__, __LINE__, RECVLOGFILE);
 }
 
-
 void server_closelog ( void )
 {
     if (fp)
 	fclose (fp);
     fp = NULL;
 }
-
 
 void server_writelog (char *buf, int32 len)
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -49,7 +52,6 @@
  * 		Created.
  */
 
-
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
@@ -59,12 +61,10 @@
 #include "s2types.h"
 #include "ad.h"
 
-
 #define DEFAULT_N_WI_BUF	32	/* #Recording bufs */
 #define WI_BUFSIZE		2500	/* Samples/buf (Why this specific value??
 					   So that at reasonable sampling rates
 					   data is returned frequently enough.) */
-
 
 static void wavein_error (char *src, int32 ret)
 {
@@ -74,7 +74,6 @@ static void wavein_error (char *src, int32 ret)
     fprintf(stderr, "%s error %d: %s\n", src, ret, errbuf);
 }
 
-
 static void wavein_free_buf (ad_wbuf_t *b)
 {
     GlobalUnlock (b->h_whdr);
@@ -82,7 +81,6 @@ static void wavein_free_buf (ad_wbuf_t *b)
     GlobalUnlock (b->h_buf);
     GlobalFree (b->h_buf);
 }
-
 
 static int32 wavein_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
 {
@@ -135,7 +133,6 @@ static int32 wavein_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
     return 0;
 }
 
-
 static int32 wavein_enqueue_buf (HWAVEIN h, LPWAVEHDR whdr)
 {
     int32 st;
@@ -151,7 +148,6 @@ static int32 wavein_enqueue_buf (HWAVEIN h, LPWAVEHDR whdr)
     
     return 0;
 }
-
 
 static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
@@ -183,7 +179,6 @@ static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
     return h;
 }
 
-
 static int32 wavein_close (ad_rec_t *r)
 {
     int32 i, st;
@@ -211,7 +206,6 @@ static int32 wavein_close (ad_rec_t *r)
     
     return 0;
 }
-
 
 ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
 {
@@ -264,18 +258,15 @@ ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
     return r;
 }
 
-
 ad_rec_t *ad_open_sps (int32 sps)
 {
     return (ad_open_sps_bufsize (sps, WI_BUFSIZE*DEFAULT_N_WI_BUF*1000/sps));
 }
 
-
 ad_rec_t *ad_open ( void )
 {
     return (ad_open_sps (DEFAULT_SAMPLES_PER_SEC));	/* HACK!! Rename this constant */
 }
-
 
 int32 ad_close (ad_rec_t *r)
 {
@@ -291,7 +282,6 @@ int32 ad_close (ad_rec_t *r)
 
     return 0;
 }
-
 
 int32 ad_start_rec (ad_rec_t *r)
 {
@@ -313,7 +303,6 @@ int32 ad_start_rec (ad_rec_t *r)
 
     return 0;
 }
-
 
 int32 ad_stop_rec (ad_rec_t *r)
 {
@@ -341,7 +330,6 @@ int32 ad_stop_rec (ad_rec_t *r)
 
     return 0;
 }
-
 
 int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 {

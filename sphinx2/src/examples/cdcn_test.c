@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Started.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +55,6 @@
 #include "CM_macros.h"
 #include "err.h"
 
-
 extern int32 uttproc_parse_ctlfile_entry (char *line,
 					    char *filename,
 					    int32 *sf, int32 *ef,
@@ -62,7 +63,6 @@ extern int32 query_sampling_rate ( void );
 extern int32 query_adc_input ( void );
 extern int32 uttfile_open (char *file);
 extern void uttfile_close ( void );
-
 
 main (int32 argc, char *argv[])
 {

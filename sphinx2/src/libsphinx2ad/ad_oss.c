@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -52,7 +55,6 @@
  * 18-May-1999	Kevin Lenzo (lenzo@cs.cmu.edu) added <errno.h>.
  */
 
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +66,6 @@
 
 #include "s2types.h"
 #include "ad.h"
-
 
 #define AUDIO_FORMAT AFMT_S16_LE	/* 16-bit signed, little endian */
 #define INPUT_GAIN   (80)
@@ -237,12 +238,10 @@ ad_rec_t *ad_open_sps (int32 sps) {
   return(handle);
 }
 
-
 ad_rec_t *ad_open ( void )
 {
     return ad_open_sps (DEFAULT_SAMPLES_PER_SEC);
 }
-
 
 int32 ad_close (ad_rec_t *handle)
 {
@@ -259,7 +258,6 @@ int32 ad_close (ad_rec_t *handle)
     
     return(0);
 }
-
 
 int32 ad_start_rec (ad_rec_t *handle)
 {
@@ -282,7 +280,6 @@ int32 ad_start_rec (ad_rec_t *handle)
     return(0);
 }
 
-
 int32 ad_stop_rec (ad_rec_t *handle)
 {
     if (handle->dspFD < 0)
@@ -300,7 +297,6 @@ int32 ad_stop_rec (ad_rec_t *handle)
     
     return (0);
 }
-
 
 int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
 {

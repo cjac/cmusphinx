@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -38,7 +41,6 @@
  * 01-Apr-97	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Started, based on earlier FBS6 version.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,7 +68,6 @@ static int32 log0;
 static int32 *log_count_tbl = NULL;
 #define LOG_COUNT_TBLSIZE	4096
 #define LOG_COUNT(x) (((x) >= LOG_COUNT_TBLSIZE) ? LOG((double)(x)) : log_count_tbl[(x)])
-
 
 /*
  * Cache LM initialize.
@@ -108,7 +109,6 @@ cache_lm_t *cache_lm_init (double ug_thresh,
     return lm;
 }
 
-
 void cache_lm_reset (cache_lm_t *lm)
 {
     clm_bg_t *bg, *nextbg;
@@ -129,7 +129,6 @@ void cache_lm_reset (cache_lm_t *lm)
     lm->log_remwt = LOG(1.0 - lm->min_uw - lm->bw);
 }
 
-
 void cache_lm_add_ug (cache_lm_t *lm, int32 w)
 {
     lm->clm_ug[w].count++;
@@ -143,7 +142,6 @@ void cache_lm_add_ug (cache_lm_t *lm, int32 w)
     lm->log_uw = LOG(lm->uw);
     lm->log_remwt = LOG(1.0 - lm->uw - lm->bw);
 }
-
 
 void cache_lm_add_bg (cache_lm_t *lm, int32 w1, int32 w2)
 {
@@ -164,7 +162,6 @@ void cache_lm_add_bg (cache_lm_t *lm, int32 w1, int32 w2)
     
     lm->clm_ug[w1].sum_w2count++;
 }
-
 
 /* NOTE: Some approximations in the way the relative language weights are applied */
 int32 cache_lm_score (cache_lm_t *lm, int32 w1, int32 w2, int32 *remwt)
@@ -198,7 +195,6 @@ int32 cache_lm_score (cache_lm_t *lm, int32 w1, int32 w2, int32 *remwt)
     return (clmscr);
 }
 
-
 void cache_lm_dump (cache_lm_t *lm, char *file)
 {
     FILE *fp;
@@ -230,7 +226,6 @@ void cache_lm_dump (cache_lm_t *lm, char *file)
 
     fclose (fp);
 }
-
 
 void cache_lm_load (cache_lm_t *lm, char *file)
 {

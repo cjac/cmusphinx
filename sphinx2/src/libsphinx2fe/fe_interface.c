@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -48,7 +51,6 @@
  *             M Siegler, M Ravishankar, and others
  *             
  */  
-
 
 /*********************************************************************
    FUNCTION:   fe_init
@@ -98,7 +100,6 @@ fe_t *fe_init(param_t const *P)
     return(FE);
 }
 
-
 /*********************************************************************
    FUNCTION: fe_start_utt
    PARAMETERS: fe_t *FE
@@ -114,7 +115,6 @@ int32 fe_start_utt(fe_t *FE)
     FE->PRIOR = 0;
     return 0;
 }
-
 
 /*********************************************************************
    FUNCTION: fe_process_utt
@@ -210,7 +210,6 @@ int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep)
     }
     return frame_count;
 }
-
 
 /*********************************************************************
    FUNCTION: fe_end_utt

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -364,14 +367,12 @@ static int32 sorted_id (l, val)
     }
 }
 
-
 #ifdef NO_DICT
 static char *kb_get_dump_dir ( void )
 {
     return dumpdir;
 }
 #endif
-
 
 /*
  * allocate, initialize and return pointer to an array of unigram entries.
@@ -450,7 +451,6 @@ lm3g2dmp_NewModel (n_ug, n_bg, n_tg, n_dict)
 #define GET_WORD_IDX(w)		dictStrToWordId (WordDict, w, FALSE)
 #endif
 
-
 static int32 wstr2wid (lm_t *model, char *w)
 {
     caddr_t val;
@@ -459,7 +459,6 @@ static int32 wstr2wid (lm_t *model, char *w)
 	return NO_WORD;
     return ((int32) val);
 }
-
 
 /*
  * Read and return #unigrams, #bigrams, #trigrams as stated in input file.
@@ -552,7 +551,6 @@ static void ReadUnigrams (fp, model)
     }
 }
 
-
 /*
  * Read bigrams from given file into given model structure.  File may be arpabo
  * or arpabo-id format, depending on idfmt = 0 or 1.
@@ -633,7 +631,6 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
     for (prev_w1++; prev_w1 <= model->ucount; prev_w1++)
 	model->unigrams[prev_w1].bigrams = bgcount;
 }
-
 
 /*
  * Very similar to ReadBigrams.
@@ -1026,7 +1023,6 @@ static int32 lm3g2dmp_lm_read (char *filename, char *lmname, double lw, double u
     return 0;
 }
 
-
 static void lm3g2dmp_lm_init_oov ( void )
 {
 #if (! NO_DICT)
@@ -1053,7 +1049,6 @@ static void lm3g2dmp_lm_init_oov ( void )
     }
 #endif
 }
-
 
 /*
  * Add new word with given dictionary wid and unigram prob = oov_ugprob to
@@ -1099,7 +1094,6 @@ static int32 lm3g2dmp_lm_add_word (lm_t *model, int32 dictwid)
     return -1;
 #endif
 }
-
 
 /*
  * Add named model to list of models.  If another with same name exists, delete it first.
@@ -1702,7 +1696,6 @@ static void lm_set_param (lm_t *model, double lw, double uw, double wip, int32 w
     }
 }
 
-
 int main (argc, argv)
     int32 argc;
     char *argv[];
@@ -1722,9 +1715,7 @@ int main (argc, argv)
     return lm3g2dmp_lm_read(lmfile, "", lw, uw, wip);
 }
 
-
 #define BINARY_SEARCH_THRESH	16
-
 
 static int32 lm3g2dmp_lm3g_ug_score (int32 wid)
 {
@@ -1734,7 +1725,6 @@ static int32 lm3g2dmp_lm3g_ug_score (int32 wid)
 	quit(-1, "%s(%d): dictwid[%d] not in LM\n", __FILE__, __LINE__, wid);
     return (lmp->unigrams[lwid].prob1.l);
 }
-
 
 /* Locate a specific bigram within a bigram list */
 static int32 find_bg (bigram_t *bg, int32 n, int32 w)
@@ -1758,7 +1748,6 @@ static int32 find_bg (bigram_t *bg, int32 n, int32 w)
     for (i = b; (i < e) && (bg[i].wid != w); i++);
     return ((i < e) ? i : -1);
 }
-
 
 /* w1, w2 are dictionary (base-)word ids */
 static int32 lm3g2dmp_lm3g_bg_score (int32 w1, int32 w2)
@@ -1789,7 +1778,6 @@ static int32 lm3g2dmp_lm3g_bg_score (int32 w1, int32 w2)
 
     return (score);
 }
-
 
 static void load_tginfo (lm_t *lm, int32 lw1, int32 lw2)
 {
@@ -1827,7 +1815,6 @@ static void load_tginfo (lm_t *lm, int32 lw1, int32 lw2)
     }
 }
 
-
 /* Similar to find_bg */
 static int32 find_tg (trigram_t *tg, int32 n, int32 w)
 {
@@ -1848,7 +1835,6 @@ static int32 find_tg (trigram_t *tg, int32 n, int32 w)
     for (i = b; (i < e) && (tg[i].wid != w); i++);
     return ((i < e) ? i : -1);
 }
-
 
 /* w1, w2, w3 are dictionary wids */
 static int32 lm3g2dmp_lm3g_tg_score (int32 w1, int32 w2, int32 w3)
@@ -1903,7 +1889,6 @@ static int32 lm3g2dmp_lm3g_tg_score (int32 w1, int32 w2, int32 w3)
     return (score);
 }
 
-
 static void lm3g2dmp_lm3g_cache_reset ( void )
 {
     int32 i;
@@ -1933,16 +1918,13 @@ static void lm3g2dmp_lm3g_cache_reset ( void )
     }
 }
 
-
 static void lm3g2dmp_lm3g_cache_stats_dump (FILE *file)
 {
 }
 
-
 static void lm3g2dmp_lm_next_frame ( void )
 {
 }
-
 
 static int32 lm3g2dmp_lm3g_raw_score (int32 score)
 {

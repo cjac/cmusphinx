@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -72,7 +75,6 @@
 #include <stdlib.h>
 #include "err.h"
 
-
 #include "s2types.h"
 
 static int   veclen;		/* the feature vector length */
@@ -82,7 +84,6 @@ static int   nframe;		/* the total number of input frames */
 
 #define CMN_WIN_HWM	800	/* #frames after which window shifted */
 #define CMN_WIN		500
-
 
 int32 cepmean_set (float *vec)
 {

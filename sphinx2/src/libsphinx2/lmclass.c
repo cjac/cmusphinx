@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Started.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,9 +57,7 @@
 
 #include "lmclass.h"
 
-
 #define LMCLASS_UNDEFINED_PROB		32001	/* Some large +ve non-logprob value */
-
 
 void lmclass_dump (lmclass_t cl, FILE *fp)
 {
@@ -73,7 +73,6 @@ void lmclass_dump (lmclass_t cl, FILE *fp)
     fflush (fp);
 }
 
-
 void lmclass_set_dump (lmclass_set_t set, FILE *fp)
 {
     lmclass_t cl;
@@ -84,7 +83,6 @@ void lmclass_set_dump (lmclass_set_t set, FILE *fp)
 	lmclass_dump (cl, fp);
 }
 
-
 lmclass_set_t lmclass_newset ( void )
 {
     lmclass_set_t set;
@@ -93,7 +91,6 @@ lmclass_set_t lmclass_newset ( void )
     set->lmclass_list = NULL;
     return set;
 }
-
 
 static lmclass_set_t lmclass_add (lmclass_set_t set, lmclass_t new)
 {
@@ -120,7 +117,6 @@ static lmclass_set_t lmclass_add (lmclass_set_t set, lmclass_t new)
     return set;
 }
 
-
 static lmclass_t lmclass_addword (lmclass_t class, lmclass_word_t new)
 {
     lmclass_word_t w, prev;
@@ -142,7 +138,6 @@ static lmclass_t lmclass_addword (lmclass_t class, lmclass_word_t new)
     
     return class;
 }
-
 
 lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
 {
@@ -266,13 +261,11 @@ lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
     return lmclass_set;
 }
 
-
 void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid)
 {
     assert (w != NULL);
     w->dictwid = dictwid;
 }
-
 
 lmclass_t lmclass_get_lmclass (lmclass_set_t set, char *name)
 {
@@ -284,7 +277,6 @@ lmclass_t lmclass_get_lmclass (lmclass_set_t set, char *name)
     
     return cl;
 }
-
 
 int32 lmclass_get_nclass (lmclass_set_t set)
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -100,7 +103,6 @@ cdcn_update (float *z,		/* The observed cepstrum vectors */
     correction (tilt, noise, codebook, corrbook, num_codes);  
     return (distortion);
 }
-
 
 /*************************************************************************
  *
@@ -191,7 +193,6 @@ initialize (float data[][NUM_COEFF+1],	/* The observation cepstrum vectors */
     return (speech_power);
 }
 
-
 /*************************************************************************
  *
  * Subroutine correction computes the correction cepstrum vectors for a 
@@ -237,7 +238,6 @@ void correction(float *tilt, 	/* The spectral tilt cepstrum vector */
 	    corrbook[offset + j] = aux[j] / N2;
     }
 } 
-
 
 /*************************************************************************
  *
@@ -364,5 +364,4 @@ float max_q (float *variance,   /* Speech cepstral variances of the modes */
      */
     return (loglikelihood);
 }
-
 

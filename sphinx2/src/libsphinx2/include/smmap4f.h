@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -54,7 +57,6 @@
 #define BOUNDARYERROR	0x80000000	
 #define MEMSIZEERROR	-200
 
-
 #define EMPTY	0		/* marks an empty entry in the beam table */
 #define	ENDOFLIST	0	/* end of history tree */
 #define HON_WORD_END	1	/* marks last phoneme of word in sib */
@@ -75,7 +77,6 @@
 #define MAX_WORDS_PER_SENT	200
 #define NUMOFWORDS	1017
 #define ENDOFBEAM	-1
-
 
 /****************************************/
 #define USERSMBASE			0

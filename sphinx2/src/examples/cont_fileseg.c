@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Created.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,10 +53,8 @@
 #include "cont_ad.h"
 #include "err.h"
 
-
 static FILE *infp;	/* File being segmented */
 static int32 swap;
-
 
 /*
  * Need to provide cont_ad_init with a read function to read the input file.
@@ -75,12 +75,10 @@ static int32 file_ad_read (ad_rec_t *r, int16 *buf, int32 max)
     return ((k > 0) ? k : -1);
 }
 
-
 static void usagemsg (char *pgm)
 {
     E_FATAL("Usage: %s <sampling-rate> <utt-end-sil(sec)> <in-file> [-byteswap] [-debug]\n", pgm);
 }
-
 
 /*
  * Read specified input file, segment it into utterances wherever a silence segment of

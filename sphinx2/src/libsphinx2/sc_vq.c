@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -84,7 +87,6 @@
 
 #define RPCC(x) asm ("rpcc %t0;" "stq %t0,(%0)",&x)
 
-
 static int32   detArr[NUM_FEATURES*NUM_ALPHABET];	/* storage for det vectors */
 static int32   *dets[NUM_FEATURES];	/* det values foreach feature */
 static float *means[NUM_FEATURES];	/* mean vectors foreach feature */
@@ -114,7 +116,6 @@ static double vq_time;
 static double scr_time;
 extern double win32_cputime();
 #endif
-
 
 static void cepDist0(vqFeature_t *topn, float *z)
 {
@@ -400,7 +401,6 @@ static void dcepDist0(vqFeature_t *topn, float *dzs, float *dzl)
     memcpy (ldfrm, topn, sizeof(vqFeature_t)*topN);
 }
 
-
 static void ddcepDist0(vqFeature_t *topn, float *z)
 {
     register int32 i, j, cw;
@@ -468,7 +468,6 @@ static void ddcepDist0(vqFeature_t *topn, float *z)
     memcpy(lxfrm, topn, sizeof(vqFeature_t)*topN);
 }
 
-
 static void powDist(vqFeature_t *topn, float *pz)
 {
   register int32	i, j, cw;
@@ -517,7 +516,6 @@ static int32    inIdx = 0;
 static float   dBufArr[CEP_VECLEN*(DIFF_MASK+1)];
 static int32    dIdx = 0;
 
-
 void SCVQInit(int32 top, int32 numModels, int32 numDist, double vFloor, 
 	      int32 use20msdp)
 {
@@ -554,7 +552,6 @@ void SCVQInit(int32 top, int32 numModels, int32 numDist, double vFloor,
 #endif
 }
 
-
 void SCVQNewUtt(void)
 {
     num_frames = 0;
@@ -564,14 +561,12 @@ void SCVQNewUtt(void)
 #endif
 }
 
-
 void SCVQEndUtt ( void )
 {
 #ifdef WIN32
     E_INFO ("VQ-TIME= %.1fsec, SCR-TIME= %.1fsec (CPU)\n", vq_time, scr_time);
 #endif
 }
-
 
 int SCVQComputeFeatures(float **cep,
 			float **dcep,
@@ -648,7 +643,6 @@ int SCVQComputeFeatures(float **cep,
 	return 0;
     }
 }
-
 
 /* Output PDF/feature (32-bit logprobs) */
 int32 *OPDF[NUM_FEATURES] = {NULL, NULL, NULL, NULL};
@@ -750,7 +744,6 @@ int32 SCVQScores (int32 *scores,
     return (best);
 }
 
-
 /*
  * Compute scores for all senones.  Compute best senone score per phone into bestpscr.
  * Return bestscore.
@@ -806,7 +799,6 @@ int32 SCVQScores_all (int32 *scores,
     return (best);
 }
 
-
 static int32 SCVQComputeScores(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     int32 	ret;
@@ -827,7 +819,6 @@ static int32 SCVQComputeScores(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     
     return ret;
 }
-
 
 static int32 SCVQComputeScores_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -851,7 +842,6 @@ static int32 SCVQComputeScores_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return ret;
 }
 
-
 static int32 compute_bestpscr (int32 *scrp)
 {
     int32 b, i, j, k;
@@ -869,12 +859,10 @@ static int32 compute_bestpscr (int32 *scrp)
     return (b);
 }
 
-
 static int32 get_scores (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     return (get_scores_all (scores, frm));
 }
-
 
 static int32 get_scores_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -939,7 +927,6 @@ static int32 get_scores_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 
     return (compute_bestpscr (scores));
 }
-
 
 static int32 get_scores4(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -1026,7 +1013,6 @@ static int32 get_scores4(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (k);
 }
 
-
 static int32 get_scores4_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     int32 i; /*, k; */
@@ -1041,12 +1027,10 @@ static int32 get_scores4_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (compute_bestpscr (scores));
 }
 
-
 static int32 get_scores1(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     return (get_scores1_all (scores, frm));
 }
-
 
 static int32 get_scores1_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -1084,18 +1068,15 @@ static int32 get_scores1_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (best);
 }
 
-
 static int32 get_scores_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     QUIT((stderr, "%s(%d): get_scores_8b() not implemented\n", __FILE__, __LINE__));
 }
 
-
 static int32 get_scores_8b_all(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     QUIT((stderr, "%s(%d): get_scores_8b_all () not implemented\n", __FILE__, __LINE__));
 }
-
 
 #if (! FAST8B)
 
@@ -1191,7 +1172,6 @@ static int32 get_scores4_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 
     return (k);
 }
-
 
 static int32 get_scores4_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -1314,7 +1294,6 @@ static int32 get_scores4_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (k);
 }
 
-
 /*
  * Like get_scores4, but uses OPDF_8B:
  *     LogProb(feature f, codeword c, senone s) =
@@ -1426,7 +1405,6 @@ static int32 get_scores4_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (compute_bestpscr(scores));
 }
 
-
 static int32 get_scores2_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     register int32 j, k; /* , bestscore; */
@@ -1505,7 +1483,6 @@ static int32 get_scores2_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 
 #endif
 
-
 static int32 get_scores1_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
     int32 j, k, bestscore;
@@ -1541,7 +1518,6 @@ static int32 get_scores1_8b(int32 *scores, vqFeature_t frm[][MAX_TOPN])
     
     return (bestscore);
 }
-
 
 static int32 get_scores1_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
 {
@@ -1586,7 +1562,6 @@ static int32 get_scores1_8b_all (int32 *scores, vqFeature_t frm[][MAX_TOPN])
     return (bestscore);
 }
 
-
 /*
  * Parameter and setup code
  */
@@ -1617,7 +1592,6 @@ static void quantize_pdfs (int32 f)
 }
 
 #endif
-
 
 /*
  * Read & initialize SC codebooks & output pdfs
@@ -1660,7 +1634,6 @@ int32 SCVQInitFeat(feat_t feat, char *meanPath, char *varPath, int32 *opdf)
     return 0;
 }
 
-
 /*
  * SCVQSetSenoneCompression:  Must be called before SCVQInitFeat (if senone-probs
  * are compressed).
@@ -1673,12 +1646,10 @@ SCVQSetSenoneCompression (int32 size)
     prob_size = size;
 }
 
-
 void SCVQSetdcep80msWeight (double arg)
 {
      dcep80msWeight = arg;
 }
-
 
 /*
  * Set senones/phone array
@@ -1688,7 +1659,6 @@ void scvq_set_psen (int32 n, int32 *p)
     n_phone = n;
     psen = p;
 }
-
 
 /*
  * Set best phone score array.

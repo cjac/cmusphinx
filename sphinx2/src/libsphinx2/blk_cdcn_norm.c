@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -32,7 +35,6 @@
  */
 #include <math.h>
 #include "cdcn.h"
-
 
 /************************************************************************
  *   Dummy routine to convert from suitcase to sane varibles
@@ -105,7 +107,6 @@ block_actual_cdcn_norm(float variance[][NUM_COEFF+1], /* Speech cepstral varianc
     int         i,              /* Index frames in utterance */
                 j,              /* Index coefficients within frame */
                 k;              /* Index codewords in codebook */
-
 
     float x[NUM_COEFF+1];
 

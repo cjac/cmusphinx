@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Adapted from Brian Milnes's initial version.
  */
 
-
 #ifndef _SRVCORE_H_
 #define _SRVCORE_H_
 
@@ -50,7 +52,6 @@
 #else
 #include "posixsock.h"
 #endif
-
 
 int32 server_initialize (int32 port);	/* Initialize server, use port as binding addr.
 					   Return 0 if successful, -1 otherwise. */

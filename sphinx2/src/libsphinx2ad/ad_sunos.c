@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -50,7 +53,6 @@
  * 		Adapted to latest ad.h interface.
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -59,9 +61,7 @@
 #include "s2types.h"
 #include "ad.h"
 
-
 #define QUIT(x)		{fprintf x; exit(-1);}
-
 
 ad_rec_t *ad_open ( void )
 {
@@ -100,7 +100,6 @@ int32 ad_start_rec (ad_rec_t *r)
     return 0;
 }
 
-
 int32 ad_stop_rec (ad_rec_t *r)
 {
     if (! r->recording)
@@ -111,7 +110,6 @@ int32 ad_stop_rec (ad_rec_t *r)
 
     return 0;
 }
-
 
 int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 {
@@ -135,7 +133,6 @@ int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 
     return 0;
 }
-
 
 int32 ad_close (ad_rec_t *r)
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -45,9 +48,12 @@
  * 25-Apr-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
  * $Log$
- * Revision 1.7  2001/12/07  17:30:01  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.8  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.7  2001/12/07 17:30:01  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.6  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -77,11 +83,9 @@
  *
  */
 
-
 /*
  * This file tries to hide some of system-specific socket implementation details.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -104,16 +108,13 @@
 
 #include "clicore.h"
 
-
 #if (! NOERRLOG)
 #define ERRLOG(x)	{fprintf x;}
 #else
 #define ERRLOG(x)	{}
 #endif
 
-
 static SOCKET conn_sd = INVALID_SOCKET;
-
 
 #if (WIN32)
 
@@ -188,7 +189,6 @@ static void print_errno (char *hdr)
 
 #endif
 
-
 int32 cli_recv_noblock (SOCKET sd, char *buf, int32 len)
 {
     int32 k;
@@ -205,7 +205,6 @@ int32 cli_recv_noblock (SOCKET sd, char *buf, int32 len)
 	return k;
 }
 
-
 int32 cli_recv_block (SOCKET sd, char *buf, int32 len)
 {
     fd_set readfds;
@@ -218,7 +217,6 @@ int32 cli_recv_block (SOCKET sd, char *buf, int32 len)
     }
     return (cli_recv_noblock (sd, buf, len));
 }
-
 
 int32 cli_send_noblock (SOCKET sd, char *buf, int32 len)
 {
@@ -235,7 +233,6 @@ int32 cli_send_noblock (SOCKET sd, char *buf, int32 len)
     else
 	return k;
 }
-
 
 int32 cli_send_block (SOCKET sd, char *buf, int32 len)
 {
@@ -257,7 +254,6 @@ int32 cli_send_block (SOCKET sd, char *buf, int32 len)
     }
     return len;
 }
-
 
 #if (WIN32)
 /*
@@ -282,13 +278,11 @@ static int32 win32_init ( void )
     return 0;
 }
 
-
 static void win32_end ( void )
 {
     WSACleanup();
 }
 #endif
-
 
 SOCKET cli_open (char *hostname, int32 port)
 {
@@ -364,7 +358,6 @@ SOCKET cli_open (char *hostname, int32 port)
     
     return (conn_sd);
 }
-
 
 /*
  * Close existing connection to server.

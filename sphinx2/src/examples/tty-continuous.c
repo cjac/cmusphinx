@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,7 +46,6 @@
  * 		Created.
  */
 
-
 /*
  * This is a simple, tty-based example of a SphinxII client that uses continuous listening
  * with silence filtering to automatically segment a continuous stream of audio input
@@ -54,7 +56,6 @@
  *   - Single-threaded implementation for portability.
  *   - Uses fbs8 audio library; can be replaced with an equivalent custom library.
  */
-
 
 #include <stdio.h>
 #include <signal.h>
@@ -78,7 +79,6 @@
 
 static ad_rec_t *ad;
 
-
 /* Sleep for specified msec */
 static void sleep_msec (int32 ms)
 {
@@ -94,7 +94,6 @@ static void sleep_msec (int32 ms)
     select(0, NULL, NULL, NULL, &tmo);
 #endif
 }
-
 
 /*
  * Main utterance processing loop:
@@ -208,7 +207,6 @@ static void sighandler(int signo)
 {
     longjmp(jbuf, 1);
 }
-
 
 int main (int argc, char *argv[])
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Started.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +56,6 @@
 #include "cont_ad.h"
 #include "fe.h"
 
-
 /*
  * Convert raw A/D data (16KHz, 16-bit PCM) into cepstra
  * Options:
@@ -66,7 +67,6 @@
  * no.) the utterance begins in the input stream.
  */
 
-
 static ad_rec_t *ad = NULL;
 static cont_ad_t *cont = NULL;
 static FILE *adfp = NULL;
@@ -76,7 +76,6 @@ static int32 cur_ns_read;	/* #Raw (unfiltered) samples read so far */
 static int32 max_ns_read;	/* Max #raw (unfiltered) samples to read */
 
 #define ADBUFSIZE	4096
-
 
 /*
  * Read A/D device or rawfile, depending on which of ad or adfp is non-NULL
@@ -97,7 +96,6 @@ static int32 adread_raw (ad_rec_t *dummy, int16 *buf, int32 len)
 	return ((k <= 0) ? -1 : k);
     }
 }
-
 
 /*
  * Pass result of adread_raw through silence filter, if specified.  Return only when
@@ -141,7 +139,6 @@ static int32 adread_filtered (int16 *buf, int32 len)
     }
 }
 
-
 static void cleanup_and_exit ( void )
 {
     if (ad)
@@ -159,7 +156,6 @@ static void cleanup_and_exit ( void )
     exit(0);
 }
 
-
 static void usage (char *pgm)
 {
     printf ("Usage: %s \\\n", pgm);
@@ -172,7 +168,6 @@ static void usage (char *pgm)
 
     cleanup_and_exit();
 }
-
 
 int
 main (int32 argc, char **argv)

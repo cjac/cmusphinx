@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,9 +42,7 @@
  * 		Started, based on earlier FBS6 version.
  */
 
-
 /* Currently, interpolation of dynamic cache LM and static trigram LM */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,9 +65,7 @@
 #include "err.h"
 #include "log.h"
 
-
 static cache_lm_t *clm = NULL;
-
 
 int32 lm_tg_score (int32 w1, int32 w2, int32 w3)
 {
@@ -90,7 +89,6 @@ int32 lm_tg_score (int32 w1, int32 w2, int32 w3)
     return (cscr > tscr) ? cscr : tscr;
 }
 
-
 int32 lm_bg_score (int32 w1, int32 w2)
 {
     int32 cscr, tscr, remwt;
@@ -113,12 +111,10 @@ int32 lm_bg_score (int32 w1, int32 w2)
     return (cscr > tscr) ? cscr : tscr;
 }
 
-
 int32 lm_ug_score (int32 w)
 {
     return (lm3g_ug_score (w));
 }
-
 
 void lm_cache_lm_init ( void )
 {
@@ -128,7 +124,6 @@ void lm_cache_lm_init ( void )
     /* Hack!!  Hardwired parameters to cache_lm_init */
     clm = cache_lm_init (0.0001, 0.001, 0.04, 100, 0.07);
 }
-
 
 void lm_cache_lm_add_ug (int32 w)
 {
@@ -149,7 +144,6 @@ void lm_cache_lm_add_ug (int32 w)
     cache_lm_add_ug (clm, w);
 }
 
-
 void lm_cache_lm_add_bg (int32 w1, int32 w2)
 {
     if (! clm)
@@ -161,14 +155,12 @@ void lm_cache_lm_add_bg (int32 w1, int32 w2)
     cache_lm_add_bg (clm, w1, w2);
 }
 
-
 void lm_cache_lm_dump (char *file)
 {
     if (! clm)
 	return;
     cache_lm_dump (clm, file);
 }
-
 
 void lm_cache_lm_load (char *file)
 {

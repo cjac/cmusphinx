@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -51,20 +54,17 @@
  * 		Added functions agcemax_set and agcemax_get.
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <err.h>
 
 #include "s2types.h"
 
-
 static float max = 10.0;	/* Estimated C0 max used for AGC in current utterance */
 static float obs_max = -1000.0;	/* Observed C0 max in current utterance (before update) */
 static int obs_frame = 0;	/* Whether any data was observed after prev update */
 static int obs_utt = 0;		/* Whether any utterances have been observed */
 static float obs_max_sum = 0.0;
-
 
 int32 agcemax_set (double m)
 {
@@ -73,12 +73,10 @@ int32 agcemax_set (double m)
     return 0;
 }
 
-
 double agcemax_get ( void )
 {
     return ((double) max);
 }
-
 
 /* AGC_EMAX_PROC - do the agc
  *------------------------------------------------------------*
@@ -105,7 +103,6 @@ int agc_emax_proc (float *ocep, float const *icep, int veclen)
     
     return 1;
 }
-
 
 /* Update estimated max for next utterance */
 void agc_emax_update ( void )

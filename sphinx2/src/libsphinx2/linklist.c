@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -38,9 +41,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.7  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.6  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.5  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -81,10 +87,8 @@
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
-
 #define MAX_LIST	16
 #define MAX_ALLOC	40944
-
 
 /*
  * Elements are seen as structures with an array of void pointers.  So element size
@@ -97,7 +101,6 @@ typedef struct list_s {
 } list_t;
 static list_t list[MAX_LIST];
 static int32 n_list = 0;
-
 
 void *listelem_alloc (int32 elem_size)
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -42,7 +45,6 @@
  * 		Created.
  */
 
-
 /*
  * This is a simple, tty-based example of a SphinxII client.  The user marks 
  * the beginning and end of each utterance by hitting the return (<CR>) key.
@@ -53,7 +55,6 @@
  *   - Single-threaded implementation for portability.
  *   - Uses audio library; can be replaced with an equivalent custom library.
  */
-
 
 #include <stdio.h>
 #include <string.h>
@@ -70,13 +71,11 @@
 #include "ad.h"
 #include "fbs.h"
 
-
 #define LISTENTIME		5.0
 #define SAMPLE_RATE             16000
 
 static int32 last_fr;		/* Last frame for which partial result was reported */
 static ad_rec_t *ad;
-
 
 /* Function for reporting partial recognition result */
 static void update_result ( void )
@@ -93,7 +92,6 @@ static void update_result ( void )
 	last_fr = fr;
     }
 }
-
 
 /* Determine if the user has indicated end of utterance (keyboard hit at end of utt) */
 static int32 speaking (int32 ns)
@@ -132,7 +130,6 @@ static int32 speaking (int32 ns)
 #endif
 }
 
-
 static void ui_ready ( void )
 {
 #ifdef WIN32
@@ -143,7 +140,6 @@ static void ui_ready ( void )
 #endif
     fflush (stdout);
 }
-
 
 /* Main utterance processing loop: decode each utt */
 static void utterance_loop()
@@ -229,7 +225,6 @@ static void utterance_loop()
 	}
     }
 }
-
 
 int
 main (int32 argc, char *argv[])

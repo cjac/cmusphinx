@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -39,7 +42,6 @@
  * 		Created.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -57,7 +59,6 @@
 #include "ad.h"
 #include "err.h"
 
-
 /* Linked list of buffers of data to be played back */
 typedef struct buf_s {
     int16 buf[4000];
@@ -65,12 +66,10 @@ typedef struct buf_s {
     struct buf_s *next;
 } buf_t;
 
-
 static void sw16 (unsigned int16 *data)
 {
     *data = ((*data >> 8) & 0x00ff) | ((*data << 8) & 0xff00);
 }
-
 
 static void playfile (char *file,
 		      int32 sps,	/* Sampling rate */
@@ -175,12 +174,10 @@ static void playfile (char *file,
     ad_close_play (ad);
 }
 
-
 static void usagemsg (char *pgm)
 {
     E_FATAL("Usage: %s <file(8/16khz,16bit)> [-r<samplingrate> -s<start-frame> -e<end-frame> -h<headersize(bytes)> -m<max-scaled-sample-value> -b(to byteswap)]\n", pgm);
 }
-
 
 main (int32 argc, char *argv[])
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,9 +46,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.8  2001/12/07  19:19:49  lenzo
- * unistd.h header inclusion.
+ * Revision 1.9  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.8  2001/12/07 19:19:49  lenzo
+ * unistd.h header inclusion.
+ *
  * Revision 1.7  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -264,7 +270,6 @@
 
 #include "s2params.h"
 
-
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 /* Default parameter initialization
@@ -401,7 +406,6 @@ static int32 topsen_thresh = -60000;
 static float TotalElapsedTime;
 static float TotalCPUTime;
 static float TotalSpeechTime;
-
 
 /* Report actual pronunciation in output; default = report base pronunciation */
 static int32 report_altpron = FALSE;
@@ -804,7 +808,6 @@ config_t param[] = {
 
 search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec);
 
-
 static int32 nextarg(char *line, int32 *start, int32 *len, int32 *next)
 {
     int32 i, lineLen;
@@ -833,7 +836,6 @@ static int32 nextarg(char *line, int32 *start, int32 *len, int32 *next)
 	return 0;
     }
 }
-
 
 /*
  * Read arguments from file and append to command line arguments.
@@ -902,7 +904,6 @@ static int32 argfile_read (const int32 argc, char ***argv, const char *argfile)
     return (narg);
 }
 
-
 /* Set SCVQ parameters mean normalization, AGC, and silence compression */
 static void init_norm_agc_cmp ( void )
 {
@@ -940,7 +941,6 @@ static void init_norm_agc_cmp ( void )
     uttproc_set_agc (agc);
     uttproc_set_silcmp (cmp);
 }
-
 
 static FILE *uttfp = NULL;
 static float *coeff;
@@ -980,7 +980,6 @@ int32 adc_file_read (int16 *buf, int32 max)
     return n;
 }
 
-
 /*
  * Code for reading passing cep data from a buffer (previously filled from a cep file)
  * to the decoder in batch mode.
@@ -997,12 +996,10 @@ static int32 cep_buf_read (float *cepbuf)
     return 1;
 }
 
-
 static int32 final_argc;
 static char **final_argv;
 static FILE *logfp = NULL;
 static char logfile[4096];	/* Hack!! Hardwired constant 4096 */
-
 
 static void log_arglist (FILE *fp, int32 argc, char *argv[])
 {
@@ -1017,7 +1014,6 @@ static void log_arglist (FILE *fp, int32 argc, char *argv[])
     fprintf (fp, "\n\n");
     fflush (fp);
 }
-
 
 /* Should be in uttproc.c, but ... */
 int32 uttproc_set_logfile (char const *file)
@@ -1258,7 +1254,6 @@ fbs_end (void)
     return 0;
 }
 
-
 /*
  * Too lazy to put this into uttproc.c.
  */
@@ -1455,7 +1450,6 @@ int32 uttfile_open (char const *utt)
     return (0);
 }
 
-
 void uttfile_close ( void )
 {
     if (adc_input) {
@@ -1465,7 +1459,6 @@ void uttfile_close ( void )
     } else
 	free (coeff);
 }
-
 
 /* Return #frames converted to feature vectors; -1 if error */
 int32 utt_file2feat (char *utt, int32 nosearch)
@@ -1507,7 +1500,6 @@ int32 utt_file2feat (char *utt, int32 nosearch)
     return (uttproc_get_featbuf (&cep, &dcep, &dcep_80ms, &pcep, &ddcep));
 }
 
-
 char *build_uttid (char *utt)
 {
     char *utt_id;
@@ -1530,7 +1522,6 @@ char *build_uttid (char *utt)
 
     return utt_name;
 }
-
 
 void
 run_time_align_ctl_file (char const *utt_ctl_file_name,
@@ -1625,13 +1616,11 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
     fclose (pe_ctl_fs);
 }
 
-
 /* Macro to byteswap an int32 variable.  x = ptr to variable */
 #define SWAP_INT32(x)   *(x) = ((0x000000ff & (*(x))>>24) | \
                                 (0x0000ff00 & (*(x))>>8) | \
                                 (0x00ff0000 & (*(x))<<8) | \
                                 (0xff000000 & (*(x))<<24))
-
 
 /*
  * Read specified segment [sf..ef] of Sphinx-II format mfc file and write to
@@ -1704,7 +1693,6 @@ void s2mfc_read (char *file, int32 sf, int32 ef, char *outfile)
     fclose (outfp);
 }
 
-
 static int32 mfcseg_extract (char *mfcfile, int32 sf, int32 ef, char *utt)
 {
     char inputfile[1024], outputfile[1024];
@@ -1722,7 +1710,6 @@ static int32 mfcseg_extract (char *mfcfile, int32 sf, int32 ef, char *utt)
 
     return 0;
 }
-
 
 /*
  * Decode utterance.
@@ -1847,7 +1834,6 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 
     return hypseg;
 }
-
 
 /*
  * Run time align on a semi-continuous utterance.
@@ -1979,7 +1965,6 @@ time_align_utterance (char const *utt,
     TotalSpeechTime += n_frames * 0.01;
 #endif /* WIN32 */
 }
-
 
 char const *get_ref_sent (void)
 {

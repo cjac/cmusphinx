@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -51,7 +54,6 @@
 #include "ad.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
-
 
 ad_rec_t *ad_open_sps (int32 samples_per_sec)
 {
@@ -101,7 +103,6 @@ ad_rec_t *ad_open_sps (int32 samples_per_sec)
     printf("sample rate is set to %d\n", sampleRate);
 #endif
 
-
     if (alSetChannels(portconfig, 1) < 0) {
       fprintf(stderr, "alSetChannels failed: %s\n",alGetErrorString(oserror()));
       return NULL; 
@@ -128,25 +129,21 @@ ad_rec_t *ad_open_sps (int32 samples_per_sec)
     return handle;
 }
 
-
 ad_rec_t *ad_open ( void )
 {
     return ad_open_sps(DEFAULT_SAMPLES_PER_SEC);
 }
-
 
 int32 ad_start_rec (ad_rec_t *r)
 {
     return 0;
 }
 
-
 int32 ad_stop_rec (ad_rec_t *r)
 {
   /* how do we start/stop recording on an sgi? */
     return 0;
 }
-
 
 int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 {
@@ -160,7 +157,6 @@ int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
     return length;
   }
 }
-
 
 int32 ad_close (ad_rec_t *r)
 {

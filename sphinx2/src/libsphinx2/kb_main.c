@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -291,7 +294,6 @@ void kbAddGrammar(char const *fileName, char const *grammarName)
     lm_read (fileName, grammarName, language_weight, unigramWeight, insertion_penalty);
 }
 
-
 static void kb_init_lmclass_dictwid (lmclass_t cl)
 {
     lmclass_word_t w;
@@ -302,7 +304,6 @@ static void kb_init_lmclass_dictwid (lmclass_t cl)
 	lmclass_set_dictwid (w, wid);
     }
 }
-
 
 void kb (int argc, char *argv[],
 	 float ip,	/* word insertion penalty */

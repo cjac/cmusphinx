@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -167,7 +170,6 @@ static int32 n_node, n_link;
 static double lw_factor;	/* Lang-weight factor (lw(2nd pass)/lw(1st pass)) */
 static char *rescore_lmname = NULL;
 
-
 void
 searchlat_set_rescore_lm (char const *lmname)
 {
@@ -176,7 +178,6 @@ searchlat_set_rescore_lm (char const *lmname)
     if ((rescore_lmname = (char *)salloc(lmname)) == NULL)
 	E_ERROR("salloc('%s') failed\n", lmname);
 }
-
 
 /*
  * Create a directed link between "from" and "to" nodes, but if a link already exists,
@@ -211,7 +212,6 @@ static void link_latnodes (latnode_t *from, latnode_t *to, int32 score, int32 ef
 	}
     }
 }
-
 
 static void bypass_filler_nodes ( void )
 {
@@ -303,7 +303,6 @@ static void bypass_filler_nodes ( void )
     }
 }
 
-
 static void mark_reachable (latnode_t *from)
 {
     latlink_t *link;
@@ -340,7 +339,6 @@ static void delete_unreachable ( void )
     }
 }
 
-
 static int32 latnode_seqid (latnode_t *target)
 {
     int32 i;
@@ -350,7 +348,6 @@ static int32 latnode_seqid (latnode_t *target)
     assert (d);
     return (i);
 }
-
 
 static int32 dump_lattice (char *filename)
 {
@@ -413,7 +410,6 @@ static int32 dump_lattice (char *filename)
 
     return 0;
 }
-
 
 /*
  * Build lattice from bptable and identify the start and final nodes.
@@ -586,7 +582,6 @@ static int32 build_lattice (int32 bptbl_sz)
     return (1);
 }
 
-
 static void destroy_lattice (latnode_t *node_list)
 {
     latnode_t *node, *tnode;
@@ -601,7 +596,6 @@ static void destroy_lattice (latnode_t *node_list)
 	listelem_free (node, sizeof(latnode_t));
     }
 }
-
 
 int32 bptbl2latdensity (int32 bptbl_sz, int32 *density)
 {
@@ -697,7 +691,6 @@ int32 bptbl2latdensity (int32 bptbl_sz, int32 *density)
     return 0;
 }
 
-
 static int32 seg;	/* for traversing hyp[] */
 extern int32 print_back_trace;
 
@@ -757,7 +750,6 @@ static void lattice_seg_back_trace (latlink_t *link)
 		    "LatDen", "PhPerp");
     }
 }
-
 
 /*
  * Lattice rescoring:  Goal: Form DAG of nodes based on unique <wid,start-fram> values,
@@ -940,7 +932,6 @@ int32 lattice_rescore ( double lwf )
     return 0;
 }
 
-
 /*
  * Sort lattice nodes according to extent of end frames.
  */
@@ -981,12 +972,10 @@ void sort_lattice (void)
     lattice.latnode_list = tmplist;
 }
 
-
 latnode_t *search_get_lattice ( void )
 {
     return (lattice.latnode_list);
 }
-
 
 void searchlat_init ( void )
 {
@@ -1005,7 +994,6 @@ void searchlat_init ( void )
     lattice.latnode_list = NULL;
     lattice.final_node = NULL;
 }
-
 
 /* -----------Code for n-best hypotheses, uses the same lattice structure------------- */
 
@@ -1172,7 +1160,6 @@ static void  path_extend (latpath_t *path)
     }
 }
 
-
 void search_hyp_free (search_hyp_t *h)
 {
     search_hyp_t *tmp;
@@ -1184,7 +1171,6 @@ void search_hyp_free (search_hyp_t *h)
     }
 }
 
-
 static int32 hyp_diff (search_hyp_t *hyp1, search_hyp_t *hyp2)
 {
     search_hyp_t *h1, *h2;
@@ -1194,7 +1180,6 @@ static int32 hyp_diff (search_hyp_t *hyp1, search_hyp_t *hyp2)
 	 h1 = h1->next, h2 = h2->next);
     return (h1 || h2) ? 1 : 0;
 }
-
 
 /*
  * Get n best alternatives in lattice for the given frame range [sf..ef].
@@ -1366,12 +1351,10 @@ void search_delete_saved_lattice ( void )
     }
 }
 
-
 char	*searchGetAltLMName(void)
 {
     return altLMName;
 }
-
 
 int32	searchSetAltUttid(char *uttid)
 {
@@ -1395,7 +1378,6 @@ int32	searchSetAltUttid(char *uttid)
     /* return failure because we could not find alts for the desired utt. */
     return 1;
 }
-
 
 void	searchSaveLatQueue(char *uttid, char *lmName)
 {

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -50,7 +53,6 @@
 
 static int32 exception();
 
-
 /* NEW_LIST
  *-----------------------------------------------------------*
  * DESCRIPTION
@@ -60,7 +62,6 @@ list_t *new_list (void)
 {
     return (list_t *) calloc (1, sizeof(list_t));
 }
-
 
 /* LIST_ADD
  *------------------------------------------------------------*
@@ -121,7 +122,6 @@ void list_insert (list_t *list, caddr_t sym)
     list->in_use++;
 }
 
-
 void list_unique_insert (list_t *list, caddr_t sym)
 /*-------------------*
  * Add sym to list at the in_use position and increment in_use.
@@ -136,7 +136,6 @@ void list_unique_insert (list_t *list, caddr_t sym)
     list_add (list, sym, list->in_use);
     list->in_use++;
 }
-
 
 /* LIST_FREE
  *------------------------------------------------------------*

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -92,6 +95,5 @@ double kb_get_oov_ugprob(void);
 int32  kb_get_max_new_oov(void);
 
 void kb (int argc, char *argv[], float ip, float lw, float pip);
-
 
 #endif /* _KB_EXPORTS_H_ */

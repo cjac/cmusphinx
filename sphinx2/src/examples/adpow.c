@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -42,7 +45,6 @@
  * 		Created.
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -50,7 +52,6 @@
 #include "s2types.h"
 #include "ad.h"
 #include "err.h"
-
 
 /*
  * Compute power in input signal for about 2 sec
@@ -85,7 +86,6 @@ static void adpow (ad_rec_t *ad)
     fflush(stdout);
     /*     E_INFO("log(Power) = %.2f dB\n", 10.0 * log10(p)); */
 }
-
 
 /*
  * Wait for the user to type a <CR> then capture input audio for approx. 2 sec
@@ -122,8 +122,4 @@ main (int32 argc, char *argv[])
     ad_close (ad);
     return 0;
 }
-
-
-
-
 

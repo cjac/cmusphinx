@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -184,10 +187,8 @@ static int hmmArcNormalize (SMD *smd, SMD_R *smd_r,
    function... !@#$%@!#$ (from util.c) */
 extern void swapLong(int32 *intp);
 
-
 /* FIXME: needs a header file */
 extern int areadint (char *file, int **data_ref, int *length_ref);
-
 
 static int fread_int32(FILE *fp, int min, int max, char const *name)
 {
@@ -999,7 +1000,6 @@ normalize_out (register int32 *out, double weight, int32 numAlphabet)
 		out[i] = (int32) (((double) out[i] - sum) * weight);
 }
 
-
 static void
 insert_floor (register int32 *out, int32 min, int32 numAlphabet)
 {
@@ -1070,7 +1070,6 @@ cmp_dmap (void const *a, void const *b)
     }
     return (0);
 }
-
 
 /*
  * HACK!!  This routine is full of hacks.
@@ -1261,7 +1260,6 @@ void read_map (char const *map_file, int32 compress)
         int32           numCiWdPhones = phoneCiCount () + phoneWdCount();
         int32		numPhones = phone_count();
 	int32		*distIndexBase;
-
 
         distIndexBase = (int32 *) CM_calloc (numCiWdPhones, sizeof(int32));
         distIndexBase[0] = 0;
@@ -1573,7 +1571,6 @@ static void zero_senone (int32 s)
     }
 }
 
-
 int32
 senid2pid (int32 senid)
 {
@@ -1588,7 +1585,6 @@ senid2pid (int32 senid)
     }
     return (-1);
 }
-
 
 int32 *
 hmm_get_psen ( void )

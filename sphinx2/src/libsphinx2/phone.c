@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -245,7 +248,6 @@ static char const *voc[] = {"IY","IH","EY","EH","AE","AH","AX", "IX","UW","UH",
 static char const *ust[] = {"AX","IX","AXR"};
 #endif
 
-
 int32 *PhoneMap = 0;
 
 static void mk_phone_map (void)
@@ -388,7 +390,6 @@ void phone_add_diphones (void)
     int32	new_phone_id = phone_cnt;
     char	tp[64];
     char 	ci[32], lc[64], rc[64], pc[64];
-
 
     for (pid = 0; pid < phone_cnt; pid++) {
 	strcpy (tp, phone_from_id (pid));

@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -36,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.14  2001/12/07  20:32:59  lenzo
- * No unistd.h on Windows.
+ * Revision 1.15  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.14  2001/12/07 20:32:59  lenzo
+ * No unistd.h on Windows.
+ *
  * Revision 1.13  2001/12/07 17:46:00  lenzo
  * Un-ifdef the include for <unistd.h>
  *
@@ -158,13 +164,11 @@
  *		Added uttproc_set_lm() and uttproc_set_startword().
  */
 
-
 /*
  * BUGS:
  *   - Instead of using query_fwdtree_flag() to determine which first pass to run
  *     (tree or flag), there should be an explicit uttproc_set_firstpass() call.
  */
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -217,7 +221,6 @@ typedef enum {UTTSTATE_UNDEF=-1,
 	      UTTSTATE_STOPPED=3
 } uttstate_t;
 static uttstate_t uttstate = UTTSTATE_UNDEF;
-
 
 static int32 inputtype;
 #define INPUT_UNKNOWN	0
@@ -347,7 +350,6 @@ double MakeSeconds (struct timeval const *s, struct timeval const *e)
 
 #endif
 
-
 /*
  * One time initialization
  */
@@ -362,7 +364,6 @@ static void timing_init ( void )
 
     TotalCPUTime = TotalElapsedTime = TotalSpeechTime = 0.0;
 }
-
 
 /*
  * Start of each utterance
@@ -379,7 +380,6 @@ static void timing_start ( void )
     GetProcessTimes (pid, &t_create, &t_exit, &kst, &ust);
 #endif /* WIN32 */
 }
-
 
 /*
  * End of each utterance
@@ -427,7 +427,6 @@ static void timing_stop ( void )
     E_INFO("\n");
 }
 
-
 /*
  * One time cleanup before exiting program
  */
@@ -450,7 +449,6 @@ static void timing_end ( void )
     }
 }
 
-
 static void feat_alloc ( void )
 {
     int32 k;
@@ -469,7 +467,6 @@ static void feat_alloc ( void )
     }
 }
 
-
 int32 uttproc_get_featbuf (float **cep, float **dcep, float **dcep_80ms, float **pcep,
 float **ddcep)
 {
@@ -481,7 +478,6 @@ float **ddcep)
 
     return n_featfr;
 }
-
 
 /*
  * Compute sphinx-II feature vectors (cep, dcep, ddcep, pow) from input melcep vector.
@@ -516,13 +512,11 @@ static int32 compute_features(float *cep_o,
 	return 0;
 }
 
-
 static void warn_notidle (char const *func)
 {
     if (uttstate != UTTSTATE_IDLE)
 	E_WARN("%s called when not in IDLE state\n", func);
 }
-
 
 static void mfc2feat_live_frame (float *incep, int32 rawfr)
 {
@@ -554,7 +548,6 @@ static void mfc2feat_live_frame (float *incep, int32 rawfr)
     }
 }
 
-
 /* Convert all given mfc vectors to feature vectors */
 static int32 mfc2feat_live (float **mfc, int32 nfr)
 {
@@ -565,7 +558,6 @@ static int32 mfc2feat_live (float **mfc, int32 nfr)
 
     return 0;
 }
-
 
 static int32 cmn_batch (float **mfc, int32 nfr)
 {
@@ -580,7 +572,6 @@ static int32 cmn_batch (float **mfc, int32 nfr)
 
     return 0;
 }
-
 
 static int32 agc_batch (float **mfc, int32 nfr)
 {
@@ -601,7 +592,6 @@ static int32 agc_batch (float **mfc, int32 nfr)
 
     return 0;
 }
-
 
 static int32 silcomp_batch (float **mfc, int32 nfr)
 {
@@ -632,7 +622,6 @@ static int32 silcomp_batch (float **mfc, int32 nfr)
     
     return nfr;
 }
-
 
 static int32 mfc2feat_batch (float **mfc, int32 nfr)
 {
@@ -692,7 +681,6 @@ static int32 mfc2feat_batch (float **mfc, int32 nfr)
     return 0;
 }
 
-
 /* Convert all given mfc vectors to feature vectors, and search one frame */
 static int32 uttproc_frame ( void )
 {
@@ -716,7 +704,6 @@ static int32 uttproc_frame ( void )
     return 0;
 }
 
-
 static void fwdflat_search (int32 n_frames)
 {
     int32 i, j, k;
@@ -728,7 +715,6 @@ static void fwdflat_search (int32 n_frames)
 
     search_fwdflat_finish ();
 }
-
 
 static void write_results (char const *hyp, int32 aborted)
 {
@@ -767,7 +753,6 @@ static void write_results (char const *hyp, int32 aborted)
 #endif /* 0 */
 }
 
-
 static void uttproc_windup (int32 *fr, char **hyp)
 {
     /* Wind up first pass and run next pass, if necessary */
@@ -792,7 +777,6 @@ static void uttproc_windup (int32 *fr, char **hyp)
     uttstate = UTTSTATE_IDLE;
 }
 
-
 /*
  * One time initialization
  */
@@ -813,7 +797,6 @@ int32 uttproc_init ( void )
     }
     
     sps = query_sampling_rate ();
-
 
     if ((sps != 16000) && (sps != 8000))
 	E_FATAL("Sampling rate must be 8000 or 16000, is %d\n", sps);
@@ -863,12 +846,10 @@ int32 uttproc_init ( void )
     return 0;
 }
 
-
 CDCN_type *uttproc_get_cdcn_ptr ( void )
 {
     return &cdcn;
 }
-
 
 /*
  * One time cleanup
@@ -889,7 +870,6 @@ int32 uttproc_end ( void )
 
     return 0;
 }
-
 
 int32 uttproc_begin_utt (char const *id)
 {
@@ -973,7 +953,6 @@ int32 uttproc_begin_utt (char const *id)
     return 0;
 }
 
-
 int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
 {
     int32 i, k, v;
@@ -1046,7 +1025,6 @@ int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
     return (n_featfr - n_searchfr);
 }
 
-
 int32 uttproc_cepdata (float **cep, int32 nfr, int32 block)
 {
     int32 i, k;
@@ -1092,7 +1070,6 @@ int32 uttproc_cepdata (float **cep, int32 nfr, int32 block)
 
     return (n_featfr - n_searchfr);
 }
-
 
 int32 uttproc_end_utt ( void )
 {
@@ -1174,7 +1151,6 @@ int32 uttproc_end_utt ( void )
     return 0;
 }
 
-
 int32 uttproc_abort_utt ( void )
 {
     int32 fr;
@@ -1205,7 +1181,6 @@ int32 uttproc_abort_utt ( void )
     return 0;
 }
 
-
 int32 uttproc_stop_utt ( void )
 {
     if (uttstate != UTTSTATE_BEGUN) {
@@ -1224,7 +1199,6 @@ int32 uttproc_stop_utt ( void )
     
     return 0;
 }
-
 
 int32 uttproc_restart_utt ( void )
 {
@@ -1249,7 +1223,6 @@ int32 uttproc_restart_utt ( void )
     return 0;
 }
 
-
 int32 uttproc_partial_result (int32 *fr, char **hyp)
 {
     if ((uttstate != UTTSTATE_BEGUN) && (uttstate != UTTSTATE_ENDED)) {
@@ -1263,7 +1236,6 @@ int32 uttproc_partial_result (int32 *fr, char **hyp)
     
     return 0;
 }
-
 
 int32 uttproc_result (int32 *fr, char **hyp, int32 block)
 {
@@ -1291,12 +1263,10 @@ int32 uttproc_result (int32 *fr, char **hyp, int32 block)
     return 0;
 }
 
-
 void uttproc_align (char *sent)
 {
     time_align_utterance ("alignment", NULL, "<s>", -1, sent, -1, "</s>");
 }
-
 
 void utt_seghyp_free (search_hyp_t *h)
 {
@@ -1308,7 +1278,6 @@ void utt_seghyp_free (search_hyp_t *h)
 	h = tmp;
     }
 }
-
 
 static void build_utt_seghyp ( void )
 {
@@ -1337,7 +1306,6 @@ static void build_utt_seghyp ( void )
     }
 }
 
-
 int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
 {
     char *str;
@@ -1360,7 +1328,6 @@ int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
     return 0;
 }
 
-
 int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyp, int32 block)
 {
     char *str;
@@ -1379,7 +1346,6 @@ int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyp, int32 block)
     return 0;
 }
 
-
 int32 uttproc_lmupdate (char const *lmname)
 {
     lm_t *lm, *cur_lm;
@@ -1395,7 +1361,6 @@ int32 uttproc_lmupdate (char const *lmname)
 
     return 0;
 }
-
 
 int32 uttproc_set_context (char const *wd1, char const *wd2)
 {
@@ -1439,7 +1404,6 @@ int32 uttproc_set_context (char const *wd1, char const *wd2)
     return 0;
 }
 
-
 int32 uttproc_set_lm (char const *lmname)
 {
     warn_notidle ("uttproc_set_lm");
@@ -1456,13 +1420,11 @@ int32 uttproc_set_lm (char const *lmname)
     return 0;
 }
 
-
 int32 uttproc_set_rescore_lm (char const *lmname)
 {
     searchlat_set_rescore_lm (lmname);
     return 0;
 }
-
 
 int32 uttproc_set_startword (char const *str)
 {
@@ -1472,7 +1434,6 @@ int32 uttproc_set_startword (char const *str)
     return 0;
 }
 
-
 int32 uttproc_set_cmn (scvq_norm_t n)
 {
     warn_notidle ("uttproc_set_cmn");
@@ -1481,7 +1442,6 @@ int32 uttproc_set_cmn (scvq_norm_t n)
     return 0;
 }
 
-
 int32 uttproc_set_agc (scvq_agc_t a)
 {
     warn_notidle ("uttproc_set_agc");
@@ -1489,7 +1449,6 @@ int32 uttproc_set_agc (scvq_agc_t a)
     agc = a;
     return 0;
 }
-
 
 int32 uttproc_set_silcmp (scvq_compress_t c)
 {
@@ -1501,7 +1460,6 @@ int32 uttproc_set_silcmp (scvq_compress_t c)
     silcomp = c;
     return 0;
 }
-
 
 #if 0
 int32 uttproc_set_uttid (char const *id)
@@ -1515,12 +1473,10 @@ int32 uttproc_set_uttid (char const *id)
 }
 #endif
 
-
 char const *uttproc_get_uttid ( void )
 {
     return uttid;
 }
-
 
 int32 uttproc_set_auto_uttid_prefix (char const *prefix)
 {
@@ -1532,13 +1488,11 @@ int32 uttproc_set_auto_uttid_prefix (char const *prefix)
     return 0;
 }
 
-
 int32	uttprocGetcomp2rawfr(int16 **ptr)
 {
     *ptr = comp2rawfr;
     return n_featfr;
 }
-
 
 void	uttprocSetcomp2rawfr(int32 num, int32 const *ptr)
 {
@@ -1549,7 +1503,6 @@ void	uttprocSetcomp2rawfr(int32 num, int32 const *ptr)
 	comp2rawfr[i] = ptr[i];
 }
 
-
 int32 uttproc_feat2rawfr (int32 fr)
 {
     if (fr >= n_featfr)
@@ -1559,7 +1512,6 @@ int32 uttproc_feat2rawfr (int32 fr)
 
     return comp2rawfr[fr+8]-4;
 }
-
 
 int32 uttproc_raw2featfr (int32 fr)
 {
@@ -1572,7 +1524,6 @@ int32 uttproc_raw2featfr (int32 fr)
     return (i-8);
 }
 
-
 int32 uttproc_cepmean_set (float *cep)
 {
     warn_notidle ("uttproc_cepmean_set");
@@ -1580,12 +1531,10 @@ int32 uttproc_cepmean_set (float *cep)
     return (cepmean_set (cep));
 }
 
-
 int32 uttproc_cepmean_get (float *cep)
 {
     return (cepmean_get (cep));
 }
-
 
 int32 uttproc_agcemax_set (float c0max)
 {
@@ -1593,7 +1542,6 @@ int32 uttproc_agcemax_set (float c0max)
     agcemax_set (c0max);
     return 0;
 }
-
 
 double uttproc_agcemax_get ( void )
 {
@@ -1603,7 +1551,6 @@ double uttproc_agcemax_get ( void )
     return agcemax_get ();
 }
 
-
 int32 uttproc_nosearch (int32 flag)
 {
     warn_notidle ("uttproc_nosearch");
@@ -1611,7 +1558,6 @@ int32 uttproc_nosearch (int32 flag)
     nosearch = flag;
     return 0;
 }
-
 
 int32 uttproc_set_rawlogdir (char const *dir)
 {
@@ -1629,7 +1575,6 @@ int32 uttproc_set_rawlogdir (char const *dir)
     return 0;
 }
 
-
 int32 uttproc_set_mfclogdir (char const *dir)
 {
     warn_notidle ("uttproc_set_mfclogdir");
@@ -1645,7 +1590,6 @@ int32 uttproc_set_mfclogdir (char const *dir)
 
     return 0;
 }
-
 
 search_hyp_t *uttproc_allphone_file (char const *utt)
 {

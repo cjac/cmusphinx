@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -50,9 +53,12 @@
  *
  * Revision History
  * $Log$
- * Revision 1.12  2001/12/07  17:30:02  lenzo
- * Clean up and remove extra lines.
+ * Revision 1.13  2001/12/11  00:24:48  lenzo
+ * Acknowledgement in License.
  * 
+ * Revision 1.12  2001/12/07 17:30:02  lenzo
+ * Clean up and remove extra lines.
+ *
  * Revision 1.11  2001/12/07 05:09:30  lenzo
  * License.xsxc
  *
@@ -382,7 +388,6 @@ int descending_order_by_len(const void *a, const void *b)
     else
 	return 0;
 }
-
 
 COMPOUND_WORD_T *
 mk_compound_word_list(int *out_cnt)
@@ -907,7 +912,6 @@ expand_phone_graph(short *amatrix,
 	 node < in_node_cnt;
 	 node++, amatrix_row += MAX_NODES) {
 
-
 	memset(is_in_lc, 0, ci_cnt*sizeof(char));
 	memset(is_in_rc, 0, ci_cnt*sizeof(char));
 
@@ -1212,7 +1216,6 @@ char *next_transcript_word(char **out_rem_word_seq)
     return cur_word_str;
 }
 
-
 static int
 mk_phone_graph(short *amatrix,
 	       char  *boundary,
@@ -1317,7 +1320,6 @@ mk_phone_graph(short *amatrix,
 			     next_end_cnt,
 			     prior_end,
 			     prior_end_cnt);
-
 
 		    /* add optional filler phone sequence after words just added */
 		    phone_id_map[new_node] = sil_phone_id;
@@ -1558,7 +1560,6 @@ mk_models(int32 **out_phone_id_map,	/* mapping from graph node to associated pho
 
     return model;
 }
-
 
 static BACK_POINTER_T
 *ck_alloc(BACK_POINTER_T *bp_table,
@@ -2106,7 +2107,6 @@ evaluate_active_models_internal(int *phone_bnd_models,
 	else {
 	    scores[2] = WORST_SCORE;
 	}
-
 
 	score = T11;		/* (1->1) is best so far */
 	if (score < T01)	/* (0->1) is best */
@@ -2669,7 +2669,6 @@ build_phone_segment(int model_index,
     ++n_phone_segments;
 }
 
-
 void
 cnt_state_segments(int id,
 		   int begin,
@@ -2851,7 +2850,6 @@ time_align_word_sequence(char const * Utt,
 				      right_word) < 0)
 	return -1;
 
-
     saved_phone_id_map = phone_id_map;
     saved_final_model  = final_model;
 
@@ -2868,7 +2866,6 @@ time_align_word_sequence(char const * Utt,
 	
 	/* compute only necessary senones */
 	find_active_senones(all_models, cur_active_models, cur_active_cnt);
-
 
 	/* compute the output probabilities for the active shared states */
 	probs_computed_cnt += SCVQScores(distScores,
@@ -3212,7 +3209,6 @@ append_segment(int id,
 
     (*seg_idx)++;
 }
-
 
 SEGMENT_T *
 time_align_get_segmentation(seg_kind_t kind, int *seg_cnt)

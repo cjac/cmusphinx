@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -34,7 +37,11 @@
 #include <stdlib.h>
 
 /************************************************************************
- *									*
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
  *	This subroutine computes a split-radix FFT for real and		*
  *	even data of length 2n where n = 2^(m). It uses a real FFT 	*
  *	of length n/2 and the algorithm described in "On the Use	*
@@ -89,9 +96,12 @@ void resfft (float *x, int n, int m)
     free (y);
 }
 
-
 /************************************************************************
- *									*
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
  *	This subroutine computes a split-radix FFT for real data	*
  *	It is a C version of the FORTRAN program in "Real-Valued	*
  *	Fast Fourier Transform Algorithms" by H. Sorensen et al.	*
