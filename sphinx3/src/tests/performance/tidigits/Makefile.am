@@ -55,6 +55,7 @@ PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
+DECANYBIN = $(PROGRAMDIR)/decode_anytopo
 ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
 ALLTARGET=tidigits-lp tidigits-quick-lp tidigits-decode tidigits-quick-decode
@@ -66,8 +67,8 @@ ALLTARGET=tidigits-lp tidigits-quick-lp tidigits-decode tidigits-quick-decode
 #	$(BMBIN) $(subst -bm,,$@).batch $(TIDIGITSRAWPATH) ARGS.$@ > $@.results 2>&1
 
 #all : $(ALLTARGET)
-quick : tidigits-quick-lp tidigits-quick-decode
-slow : tidigits-lp tidigits-decode
+quick : tidigits-quick-lp tidigits-quick-decode tidigits-quick-decany
+slow : tidigits-lp tidigits-decode tidigits-decany
 
 clean : 
 	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.tidigits-*
@@ -94,6 +95,18 @@ tidigits-decode tidigits-quick-decode:
 	touch $@.lex #empty lexicon
 	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
 
+
+tidigits-decany tidigits-quick-decany: 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	/bin/cp ARGS.decany ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir $(TIDIGITSCEPPATH)" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results 2>&1
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decany,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	touch $@.lex #empty lexicon
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
 
 
 
