@@ -50,6 +50,10 @@
  *
  * HISTORY
  * 
+ * 23-Oct-01    Kevin A. Lenzo (lenzo@cs.cmu.edu) Fixed the
+ *              magic numbers in save_labs, but it's still hard-coded.
+ *              This needs to be calculated from the sample rate and shift.
+ *
  * 28-Mar-00	Alan W Black (awb@cs.cmu.edu) Created.
  */
 
@@ -99,10 +103,11 @@ int save_labs(SEGMENT_T *segs,
 	fprintf(labfd,"#\n");
 	for (i=0; i<num_entries; i++)
 	{
-	    fprintf(labfd,"%0.6f 125 %s ; %d\n",
-		    segs[i].end*0.00625,  /* need to check this - awb */
-		    segs[i].name,
-		    segs[i].score);
+	  fprintf(labfd,"%0.6f 125 %s ; %d\n", 
+		  /*		    segs[i].end * 0.00625,  */
+		  segs[i].end * 0.01,
+		  segs[i].name,
+		  segs[i].score);
 	}
     }
 /*    else if (strcmp(labtype,"something else") == 0) */
