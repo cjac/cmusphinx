@@ -1,5 +1,6 @@
 bin_PROGRAMS = adpow \
 	adrec \
+	cdcn_test \
 	cont_adseg \
 	cont_fileseg \
 	lm_fsg_test \
@@ -15,7 +16,6 @@ bin_PROGRAMS = adpow \
 
 EXTRA_DIST = README \
 	README.bin \
-	cdcn_test \
 	clicore.h \
 	srvcore.h
 
@@ -23,7 +23,7 @@ adpow_SOURCES = adpow.c
 
 adrec_SOURCES = adrec.c
 
-#cdcn_test_SOURCES = cdcn_test.c
+cdcn_test_SOURCES = cdcn_test.c
 
 cont_adseg_SOURCES = cont_adseg.c
 

@@ -55,16 +55,16 @@
 #include "CM_macros.h"
 #include "err.h"
 
+extern char *build_uttid (const char *utt);  
 extern int32 uttproc_parse_ctlfile_entry (char *line,
 					    char *filename,
 					    int32 *sf, int32 *ef,
 					    char *idspec);
 extern int32 query_sampling_rate ( void );
 extern int32 query_adc_input ( void );
-extern int32 uttfile_open (char *file);
 extern void uttfile_close ( void );
 
-main (int32 argc, char *argv[])
+int main (int32 argc, char *argv[])
 {
     char line[4096], filename[4096], idspec[4096], *uttid, *result;
     int32 sf, ef, sps, adcin, nf;
@@ -73,7 +73,10 @@ main (int32 argc, char *argv[])
     float32 **mfcbuf;
     FILE *fp;
     CDCN_type *cdcn;
-    
+    param_t param;
+    fe_t *fe = NULL;
+
+
     fbs_init (argc, argv);     
     /* Assume that cdcn_init is part of the above fbs_init() */
     cdcn = uttproc_get_cdcn_ptr();
@@ -81,8 +84,15 @@ main (int32 argc, char *argv[])
     adcin = query_adc_input();
     assert (adcin);	/* Limited to processing audio input files (not cep) */
     sps = query_sampling_rate();
-    fe_init (sps, -1, -1);
 
+    memset(&param, 0, sizeof(param));
+    param.SAMPLING_RATE = (float)sps;
+
+    if ((fe = fe_init (&param)) == NULL)
+    {
+        E_ERROR("fe_init() failed to initialize\n");
+        exit (-1);
+    }
     mfcbuf = (float32 **) CM_2dcalloc (8192, 13, sizeof(float32));
     
     /* Process "control file" input through stdin */
@@ -100,14 +110,15 @@ main (int32 argc, char *argv[])
 	    E_ERROR("uttfile_open(%s) failed\n", filename);
 	    continue;
 	}
-	fe_start();
+	fe_start_utt(fe);
 	nf = 0;
 	while ((k = adc_file_read (adbuf, 4096)) >= 0) {
-	    k = fe_raw2cep (adbuf, k, mfcbuf+nf);
+	    k = fe_process_utt (fe, adbuf, k, mfcbuf+nf);
 	    nf += k;
 	    /* WARNING!! No check for mfcbuf overflow */
 	}
-	fe_stop();
+	fe_end_utt(fe, mfcbuf + nf);
+	fe_close(fe);
 	uttfile_close ();
 	
 	if (nf <= 0) {
