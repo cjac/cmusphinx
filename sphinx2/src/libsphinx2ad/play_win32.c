@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * HISTORY
  * 
@@ -46,6 +47,7 @@
  * 		Created.
  */
 
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
@@ -54,6 +56,7 @@
 
 #include "s2types.h"
 #include "ad.h"
+
 
 #define WO_BUFSIZE	3200	/* Samples/buf */
 #define N_WO_BUF	2	/* #Playback bufs */
@@ -67,6 +70,7 @@ static void waveout_error (char *src, int32 ret)
     fprintf(stderr, "%s error %d: %s\n", src, ret, errbuf);
 }
 
+
 static void waveout_free_buf (ad_wbuf_t *b)
 {
     GlobalUnlock (b->h_whdr);
@@ -74,6 +78,7 @@ static void waveout_free_buf (ad_wbuf_t *b)
     GlobalUnlock (b->h_buf);
     GlobalFree (b->h_buf);
 }
+
 
 static int32 waveout_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
 {
@@ -126,6 +131,7 @@ static int32 waveout_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
     return 0;
 }
 
+
 static int32 waveout_enqueue_buf (HWAVEOUT h, LPWAVEHDR whdr)
 {
     int32 st;
@@ -143,9 +149,10 @@ static int32 waveout_enqueue_buf (HWAVEOUT h, LPWAVEHDR whdr)
     return 0;
 }
 
+
 static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
-    PCMWAVEFORMAT wfmt;
+    WAVEFORMATEX wfmt;
     int32 st;
     HWAVEOUT h;
     
@@ -154,13 +161,14 @@ static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
 	return NULL;
     }
     
-    wfmt.wf.wFormatTag      =  WAVE_FORMAT_PCM;
-    wfmt.wf.nChannels       =  1;
-    wfmt.wf.nSamplesPerSec  =  samples_per_sec;
-    wfmt.wf.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
-    wfmt.wf.nBlockAlign     =  bytes_per_sample;
-    wfmt.wBitsPerSample     =  8 * bytes_per_sample;
-    
+    wfmt.wFormatTag      =  WAVE_FORMAT_PCM;
+    wfmt.nChannels       =  1;
+    wfmt.nSamplesPerSec  =  samples_per_sec;
+    wfmt.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
+    wfmt.nBlockAlign     =  bytes_per_sample;
+    wfmt.wBitsPerSample  =  8 * bytes_per_sample;
+    wfmt.cbSize          =  0;
+
     /* There should be a check here for a device of the desired type; later... */
     
     st = waveOutOpen ((LPHWAVEOUT) &h, WAVE_MAPPER, (LPWAVEFORMATEX) &wfmt,
@@ -173,6 +181,7 @@ static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
     return h;
 }
 
+
 static void waveout_mem_cleanup (ad_play_t *p, int32 n_buf)
 {
     int32 i;
@@ -184,6 +193,7 @@ static void waveout_mem_cleanup (ad_play_t *p, int32 n_buf)
     if (p->busy)
 	free (p->busy);
 }
+
 
 static int32 waveout_close (ad_play_t *p)
 {
@@ -200,6 +210,7 @@ static int32 waveout_close (ad_play_t *p)
     
     return 0;
 }
+
 
 ad_play_t *ad_open_play_sps (int32 sps)
 {
@@ -250,10 +261,12 @@ ad_play_t *ad_open_play_sps (int32 sps)
     return p;
 }
 
+
 ad_play_t *ad_open_play ( void )
 {
     return (ad_open_play_sps (DEFAULT_SAMPLES_PER_SEC));
 }
+
 
 int32 ad_close_play (ad_play_t *p)
 {
@@ -270,6 +283,7 @@ int32 ad_close_play (ad_play_t *p)
     return 0;
 }
 
+
 int32 ad_start_play (ad_play_t *p)
 {
     int32 i;
@@ -284,6 +298,7 @@ int32 ad_start_play (ad_play_t *p)
 
     return 0;
 }
+
 
 int32 ad_stop_play (ad_play_t *p)
 {
@@ -315,6 +330,7 @@ int32 ad_stop_play (ad_play_t *p)
 
     return 0;
 }
+
 
 int32 ad_write (ad_play_t *p, int16 *buf, int32 size)
 {

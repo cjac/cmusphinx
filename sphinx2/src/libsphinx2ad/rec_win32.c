@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * rec.c -- low level audio recording for Windows NT/95.
  *
@@ -52,6 +53,7 @@
  * 		Created.
  */
 
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
@@ -61,10 +63,12 @@
 #include "s2types.h"
 #include "ad.h"
 
+
 #define DEFAULT_N_WI_BUF	32	/* #Recording bufs */
 #define WI_BUFSIZE		2500	/* Samples/buf (Why this specific value??
 					   So that at reasonable sampling rates
 					   data is returned frequently enough.) */
+
 
 static void wavein_error (char *src, int32 ret)
 {
@@ -74,6 +78,7 @@ static void wavein_error (char *src, int32 ret)
     fprintf(stderr, "%s error %d: %s\n", src, ret, errbuf);
 }
 
+
 static void wavein_free_buf (ad_wbuf_t *b)
 {
     GlobalUnlock (b->h_whdr);
@@ -81,6 +86,7 @@ static void wavein_free_buf (ad_wbuf_t *b)
     GlobalUnlock (b->h_buf);
     GlobalFree (b->h_buf);
 }
+
 
 static int32 wavein_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
 {
@@ -133,6 +139,7 @@ static int32 wavein_alloc_buf (ad_wbuf_t *b, int32 samples_per_buf)
     return 0;
 }
 
+
 static int32 wavein_enqueue_buf (HWAVEIN h, LPWAVEHDR whdr)
 {
     int32 st;
@@ -149,9 +156,10 @@ static int32 wavein_enqueue_buf (HWAVEIN h, LPWAVEHDR whdr)
     return 0;
 }
 
+
 static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
-    PCMWAVEFORMAT wfmt;
+    WAVEFORMATEX wfmt;
     int32 st;
     HWAVEIN h;
     
@@ -160,11 +168,11 @@ static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
 	return NULL;
     }
     
-    wfmt.wf.wFormatTag      =  WAVE_FORMAT_PCM;
-    wfmt.wf.nChannels       =  1;
-    wfmt.wf.nSamplesPerSec  =  samples_per_sec;
-    wfmt.wf.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
-    wfmt.wf.nBlockAlign     =  bytes_per_sample;
+    wfmt.wFormatTag      =  WAVE_FORMAT_PCM;
+    wfmt.nChannels       =  1;
+    wfmt.nSamplesPerSec  =  samples_per_sec;
+    wfmt.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
+    wfmt.nBlockAlign     =  bytes_per_sample;
     wfmt.wBitsPerSample     =  8 * bytes_per_sample;
     
     /* There should be a check here for a device of the desired type; later... */
@@ -178,6 +186,7 @@ static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
     
     return h;
 }
+
 
 static int32 wavein_close (ad_rec_t *r)
 {
@@ -206,6 +215,7 @@ static int32 wavein_close (ad_rec_t *r)
     
     return 0;
 }
+
 
 ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
 {
@@ -258,15 +268,18 @@ ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
     return r;
 }
 
+
 ad_rec_t *ad_open_sps (int32 sps)
 {
     return (ad_open_sps_bufsize (sps, WI_BUFSIZE*DEFAULT_N_WI_BUF*1000/sps));
 }
 
+
 ad_rec_t *ad_open ( void )
 {
     return (ad_open_sps (DEFAULT_SAMPLES_PER_SEC));	/* HACK!! Rename this constant */
 }
+
 
 int32 ad_close (ad_rec_t *r)
 {
@@ -282,6 +295,7 @@ int32 ad_close (ad_rec_t *r)
 
     return 0;
 }
+
 
 int32 ad_start_rec (ad_rec_t *r)
 {
@@ -303,6 +317,7 @@ int32 ad_start_rec (ad_rec_t *r)
 
     return 0;
 }
+
 
 int32 ad_stop_rec (ad_rec_t *r)
 {
@@ -330,6 +345,7 @@ int32 ad_stop_rec (ad_rec_t *r)
 
     return 0;
 }
+
 
 int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 {

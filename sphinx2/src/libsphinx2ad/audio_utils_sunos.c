@@ -50,9 +50,9 @@
 #include	<sys/types.h>
 #include	<sys/ioctl.h>
 #include	<fcntl.h>
-#include        <unistd.h>
 #include	<stropts.h>
 #include	<errno.h>
+#include        <unistd.h>
 #include	"audio_utils_sunos.h"
 
 #define		AUDIO_DEF_GAIN	50

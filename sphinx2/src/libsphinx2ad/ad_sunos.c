@@ -54,7 +54,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -64,6 +63,19 @@
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
+ad_rec_t *ad_open_sps (int32 sps)
+{
+    ad_rec_t *r;
+     
+    if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
+        return NULL;
+    
+    r->audio_fd = audioOpen ((int)sps);
+    r->recording = 0;
+    
+    return r;
+}
+
 ad_rec_t *ad_open ( void )
 {
     ad_rec_t *r;
@@ -72,19 +84,6 @@ ad_rec_t *ad_open ( void )
 	return NULL;
     
     r->audio_fd = audioOpen (16000);
-    r->recording = 0;
-    
-    return r;
-}
-
-ad_rec_t *ad_open_sps (int32 sps)
-{
-    ad_rec_t *r;
-     
-    if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
-        return NULL;
-    
-    r->audio_fd = audioOpen (sps);
     r->recording = 0;
     
     return r;

@@ -61,7 +61,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <machine/soundcard.h>
+#include <sys/ioctl.h>
+#include <soundcard.h>
 #include <errno.h>
 
 #include "s2types.h"
