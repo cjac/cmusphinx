@@ -157,7 +157,7 @@ int32 fe_start_utt(fe_t *FE)
 /*********************************************************************
    FUNCTION: fe_process_frame
    PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float32 **cep
-   RETURNS: number of frames of cepstra computed 
+   RETURNS: status, successful or not 
    DESCRIPTION: processes the given speech data and returns
    features. Modified to process one frame of speech only. 
 **********************************************************************/
@@ -165,12 +165,13 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
 {
     int32 i, spbuf_len;
     float64 *spbuf, *fr_data, *fr_fea;
+    int32 return_value = FE_SUCCESS;
    
     spbuf_len = FE->FRAME_SIZE;    
 
     /* assert(spbuf_len <= nsamps);*/
     if ((spbuf=(float64 *)calloc(spbuf_len, sizeof(float64)))==NULL){
-      E_FATAL("memory alloc failed in fe_process_utt()...exiting\n");
+      E_FATAL("memory alloc failed in fe_process_frame()...exiting\n");
       exit(0);
     }
     
@@ -189,13 +190,13 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     fr_data = spbuf;
     
     if (fr_data==NULL || fr_fea==NULL){
-      E_FATAL("memory alloc failed in fe_process_utt()...exiting\n");
+      E_FATAL("memory alloc failed in fe_process_frame()...exiting\n");
       exit(0);
     }
     
     fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
     
-    fe_frame_to_fea(FE, fr_data, fr_fea);
+    return_value = fe_frame_to_fea(FE, fr_data, fr_fea);
     
     for (i=0;i<FE->NUM_CEPSTRA;i++)
       fr_cep[i] = (float32)fr_fea[i];
@@ -205,25 +206,29 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     free(spbuf);
     free(fr_fea);
     
-    return 1;
+    return return_value;
 }
 
 
 /*********************************************************************
    FUNCTION: fe_process_utt
-   PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float32 **cep
-   RETURNS: number of frames of cepstra computed 
+   PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float32 **cep, int32 nframes
+   RETURNS: status, successful or not
    DESCRIPTION: processes the given speech data and returns
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/* RAH, upgraded cep_block to float32 */
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, 
+		     float32 ***cep_block, int32 *nframes)
+/* RAH, upgraded cep_block to float32 */
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
     float64 *spbuf, *fr_data, *fr_fea;
     int16 *tmp_spch = spch;
     float32 **cep=NULL;
+    int32 return_value = FE_SUCCESS;
+    int32 frame_return_value;
     
     /* are there enough samples to make at least 1 frame? */
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
@@ -284,8 +289,12 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/
 	
 	fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
 	
-	fe_frame_to_fea(FE, fr_data, fr_fea);
+	frame_return_value = fe_frame_to_fea(FE, fr_data, fr_fea);
 	
+	if (FE_SUCCESS != frame_return_value) {
+	  return_value = frame_return_value;
+	}
+
 	for (i=0;i<FE->NUM_CEPSTRA;i++)
 	  cep[whichframe][i] = (float32)fr_fea[i];
       }
@@ -319,24 +328,26 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)/
     }
 
     *cep_block = cep; /* MLS */
-    return frame_count;
+    *nframes = frame_count;
+    return return_value;
 }
 
 
 /*********************************************************************
    FUNCTION: fe_end_utt
-   PARAMETERS: fe_t *FE, float32 *cepvector
-   RETURNS: number of frames processed (0 or 1) 
+   PARAMETERS: fe_t *FE, float32 *cepvector, int32 nframes
+   RETURNS: status, successful or not
    DESCRIPTION: if there are overflow samples remaining, it will pad
    with zeros to make a complete frame and then process to
    cepstra. also deactivates start flag of FE, and resets overflow
    buffer count. 
 **********************************************************************/
-int32 fe_end_utt(fe_t *FE, float32 *cepvector)
+int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
 {
   int32 pad_len=0, frame_count=0;
   int32 i;
   float64 *spbuf, *fr_fea = NULL;
+  int32 return_value = FE_SUCCESS;
   
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
@@ -366,7 +377,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     }
 
     fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
-    fe_frame_to_fea(FE, spbuf, fr_fea);	
+    return_value = fe_frame_to_fea(FE, spbuf, fr_fea);	
     for (i=0;i<FE->NUM_CEPSTRA;i++)
       cepvector[i] = (float32)fr_fea[i];
     frame_count=1;
@@ -382,7 +393,8 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
   FE->NUM_OVERFLOW_SAMPS = 0;
   FE->START_FLAG=0;
   
-  return frame_count;
+  *nframes = frame_count;
+  return return_value;
 }
 
 /*********************************************************************

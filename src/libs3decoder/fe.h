@@ -191,6 +191,7 @@ typedef struct{
 #define FE_MEM_ALLOC_ERROR 6
 #define FE_OUTPUT_FILE_WRITE_ERROR 7
 #define FE_OUTPUT_FILE_OPEN_ERROR 8
+#define FE_ZERO_ENERGY_ERROR 9
 
 #define COUNT_PARTIAL 1
 #define COUNT_WHOLE 0
@@ -230,7 +231,7 @@ fe_t *fe_init(param_t const *P);
 
 int32 fe_start_utt(fe_t *FE);
 
-int32 fe_end_utt(fe_t *FE, float32 *cepvector);
+  int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
 
 int32 fe_close(fe_t *FE);
 
@@ -238,7 +239,8 @@ int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 
 int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
+		     float32 ***cep_block, int32 *nframes);
 
 /* Functions that wrap up the front-end operations on the front-end
    wrapper operations.  */
