@@ -11,6 +11,7 @@ libs3decoder_la_SOURCES = \
         bio.c \
 	classify.c \
         cmn.c \
+	cmn_prior.c \
         cont_mgau.c \
         corpus.c \
         dict.c \
@@ -55,6 +56,7 @@ noinst_HEADERS = \
         bio.h \
 	classify.h \
         cmn.h \
+	cmn_prior.h \
         cont_mgau.h \
         corpus.h \
         dict.h \

@@ -979,6 +979,7 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
   if (fcb->cmn) /* Only cmn_prior in block computation mode */
     cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
+    /*    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);*/
 
   residualvecs = 0;
   
@@ -1100,7 +1101,8 @@ void feat_free (feat_t *f)
 
 
     if (fcb->cmn) /* Only cmn_prior in block computation mode */
-	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
+     cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+     /*cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);*/
 
     residualvecs = 0;
     if (beginutt){

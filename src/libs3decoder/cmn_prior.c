@@ -45,7 +45,7 @@
  */
 
 
-#include "cmn.c"
+#include "cmn_prior.h"
 
 void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen, 
 							   int32 endutt)
@@ -56,6 +56,9 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   static int32   initialize=1;
   float32 sf;
   int32   i, j;
+
+  E_INFO("Number of frames %d\n",nfr);
+  assert(incep!=NULL);
   
   if (varnorm)
     E_FATAL("Variance normalization not implemented in live mode decode\n");
