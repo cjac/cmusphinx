@@ -38,8 +38,7 @@ TOP=..
 DIRNAME=config
 BUILD_DIRS = 
 ALL_DIRS=
-FILES = Makefile common_make_rules project.mak \
-        system.mak.in config.in
+FILES = Makefile common_make_rules project.mak
 ALL = 
 
 include $(TOP)/config/common_make_rules
