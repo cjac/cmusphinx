@@ -30,6 +30,8 @@ etags:
 ctags:
 	ctags `find . -name "*.[ch]"`
 
+doxygen: 
+	doxygen ./doc/doxygen.cfg
 
 #######################################################################
 #Session of testing

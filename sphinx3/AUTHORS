@@ -7,9 +7,14 @@ contributions which can be derived from the source code.  The
 description may not be accurate enough.  Please kindly correct us if
 there is any descripencies of this file.
 
+There are also countless contributers for Sphinx. It is possibly
+impossible to list them in a single file.  Do protest to us if you
+want your name to be somewhere here.  We are more than willing to do
+it. 
+
 -Arthur Chan.  20040825
 
-Kai Fu Lee - The one who propose Sphinx. 
+Kai Fu Lee - The one who proposed Sphinx. 
 
 Hsiao-wen Hon - According to Dr. Kai-Fu Lee's "Sphinx: a speaker
 independent speech recognition system", Hsiao-wen is the implementer
@@ -25,7 +30,7 @@ introduced from Sphinx 1 to Sphinx 2.
 
 Ravishankar Mosur - Implementer of Sphinx 2(fbs-6,7,8) and Sphinx 3
 (both flat lexicon decoder and tree lexicon decoder.  Many fast
-algorithms in S2 and S3 were designed and implemented by him
+algorithms in S2 and S3 were designed and implemented by him. 
 
 Eric Thayer - Architect of SphinxTrain, he unified a lot of toolkits
 of CMU's researchers and create the backbone of the current
@@ -71,6 +76,12 @@ Sphinx 3.x
 
 Yitao Sun - Designer and Implementer of Sphinx 3.x live mode APIs. 
 
+David Huggins-Daines - Implementer of unsupervised speaker adaptation
+routine.
+
+Scott Silliman - Tester of libutil library.  Help us to fence out a
+lot of bugs.
+
 Arthur Chan - The author of this document. :-) Before I left CMU,
 let's make this description empty. :-)
 
@@ -79,7 +90,19 @@ Special Thanks
 Carl Quillen - He submitted a patch for allowing three s3.0 tools to
 s3.x.  This allows developers of Sphinx to incorporate other tools
 very quickly to s3.x.  He also submitted a patch of mean
-transformation.  It was unfortunate that 
+transformation.  
+
+Joseph Donohue - He gave us a lot of invaluable advices on code
+integrity.  We took most of it and was benefited a lot. 
+
+Ziad Al Bawab - He implemented the current end-pointing routine. 
+
+Rong Zhang - He implemented the C-version of confidence annotation
+routines. 
+
+Michael Pust, Jia Pu and Keith Herold - They give us invaluable
+suggestions and advices on how to improve the code quality.  We used
+their suggestions to adopt the use of doxygen. 
 
 Thanks
 
@@ -106,4 +129,9 @@ To make this list complete, we may need to put all the names of CMU's
 graduates and faculties here. 
 
 
+Others we'd like to thank
+
+Dr Takuji Nishimura and Dr Makoto Matsumoto. - Thanks to their effort
+in open sourcing a Mersene Twister prime-based random generator, we
+now have an extremely good portable random generator. 
 
