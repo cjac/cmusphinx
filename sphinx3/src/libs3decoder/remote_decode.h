@@ -125,10 +125,15 @@ int rd_utt_proc_feat(remote_decoder_t *decoder, float32 ***features,
 		     int32 num_features);
 
 /**
+ * Informs the remote-decoder to record the hypothesis.
+ */
+int rd_utt_record_hyps(remote_decoder_t *decoder);
+
+/**
  * Retrieves the oldest results from the result queue.
  */
-int rd_utt_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str,
-		hyp_t ***hyp_segs);
+int rd_retrieve_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str,
+		     hyp_t ***hyp_segs);
 
 /**
  * Main function for decoding.  Should be run on a separate thread.
