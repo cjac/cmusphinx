@@ -7,7 +7,7 @@ LIVEDECSRCS = parse_args_file.c \
 
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) 
 
-noinst_PROGRAMS = dumpfrontend  \
+bin_PROGRAMS = dumpfrontend  \
 	 	batchmetrics \
 		lm_test \
 		lm_utt_test
