@@ -457,6 +457,7 @@ void subvq_gautbl_eval_logs3 (subvq_t *vq, float32 *feat)
 }
 
 
+#if 0
 int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
 			int32 *sen_active, int32 *senscr)
 {
@@ -506,7 +507,7 @@ int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
     
     return best;
 }
-
+#endif
 int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *active)
 {
     mgau_t *mgau;
