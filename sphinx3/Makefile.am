@@ -59,7 +59,7 @@ doxygen:
 check: test-full
 	@:
 
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview 
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview test-decode_anytopo
 test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview 
 
 test-decode_anytopo \
