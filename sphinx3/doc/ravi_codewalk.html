@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
+<html>
+  <head>
+    <title>Sphinx Decoders Codewalk, Mar 2000</title>
+    <style type="text/css">
+      body { margin-left: 6%; margin-right: 3%; background: white; }
+      h1 { color: green; align: center; }
+      h2 { margin-left: -6%; color: green; margin-top: 6em; }
+      h3 { margin-left: -3%; color: green; margin-top: 1em; }
+      h4,h5,h6 { color: green; }
+      pre { margin-left: 3%; font-family: monospace; }
+      code { font-family: monospace; font-weight: bold; }
+      div.wheatbox { background: wheat; padding: 0.5em; border: solid; border-width: thin; }
+      div.silverbox { background: silver; padding: 0.5em; border: solid; border-width: thin; }
+      div.endsec { background: silver; border: solid; border-width: thin; }
+    </style>
+  </head>
+  
+  <BODY>
+    <H1><U>Sphinx-3 Decoders Codewalk</U></H1>
+    <center>
+      Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
+      Sphinx Speech Group<br>
+      School of Computer Science<br>
+      Carnegie Mellon University<br>
+      Pittsburgh, PA 15213<br>
+      <a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu.edu</a><br>
+      03 Mar 2000
+    </center>
+    
+    
+    <H2><U>Contents</U></H2>
+    
+    <div class="wheatbox">
+      <UL>
+	<LI><A HREF="#sec_intro">What's Around and Where</A></LI>
+	<LI><A HREF="#sec_s32">s3.2</A></LI>
+	<LI><A HREF="#sec_s3">s3 (Original)</A></LI>
+	<LI><A HREF="#sec_s2">s2 FBS8</A></LI>
+      </UL>
+    </div>
+    
+    
+    <H2><a name="sec_intro"><U>What's Around and Where</U></a></H2>
+
+    <table border="1" cellpadding="6">
+      <tr><th>Name</th><th>Remarks</th></tr>
+      <tr><td>CVSROOT</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr1/rkm/cvsroot"><code>/net/alf20/usr1/rkm/cvsroot</code></a></LI>
+	    <LI>Not everything listed below is under CVS, however</LI>
+	  </UL>
+	</td>
+      </tr>
+
+      <tr><td>s3.2</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr1/rkm/cvsroot/s3.2"><code>$CVSROOT/s3.2</code></a></LI>
+	    <LI>Fast Sphinx-3 decoder using lextree organization:
+	      <UL>
+		<LI>5-10x real time speed on large vocabulary tasks</LI>
+		<LI>Continuous density acoustic models only</LI>
+		<LI>Batch-Mode operation only</LI>
+	      </UL>
+	    </LI>
+	    <LI><code>gausubvq</code>: Sub-vector clustered acoustic model building
+	      <UL>
+		<LI>Needed for fast acoustic model evaluation</LI>
+	      </UL>
+	    </LI>
+	    <LI>Documentation:
+	      <UL>
+		<LI><a href="/net/alf20/usr2/rkm/s3.2/doc/s3.html"><code>s3.2/doc/s3.html</code></a>:
+		  User manual
+		</LI>
+		<LI><a href="/net/alf20/usr2/rkm/s3.2/doc/s3-2.ppt"><code>s3.2/doc/s3-2.ppt</code></a>:
+		  Decoder tutorial
+		</LI>
+	      </UL>
+	    </LI>
+	  </UL>
+	</td>
+      </tr>
+      
+      <tr><td>libutil</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr1/rkm/cvsroot/libutil"><code>$CVSROOT/libutil</code></a></LI>
+	    <LI>Miscellaneous utilities needed by s3.2 (some of them by Eric Thayer
+	      and Paul Placeway):
+	      <UL>
+		<LI>Platform-independent data types</LI>
+		<LI>Command-line arguments parsing</LI>
+		<LI>Hash tables</LI>
+		<LI>Heap structures (for sorting)</LI>
+		<LI>Memory allocation</LI>
+		<LI>CPU usage profiling</LI>
+		<LI>Error reporting</LI>
+	      </UL>
+	    </LI>
+	    <LI>Not Sphinx specific</LI>
+	  </UL>
+	</td>
+      </tr>
+
+      <tr><td>s3</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr2/rkm/s3/"><code>/net/alf20/usr2/rkm/s3</code></a></LI>
+	    <LI>Original Sphinx-3 decoder</LI>
+	    <LI>Slow; 50-100x real time speed on large vocabulary tasks</LI>
+	    <LI>Any kind of acoustic model (discrete, semi-continuous, continuous, others)</LI>
+	    <LI>Major applications:
+	      <UL>
+		<LI><code>s3decode</code> and <code>s3decode-anytopo</code>: Speech-to-text Decoding</LI>
+		<LI><code>s3align</code>: Forced alignment</LI>
+		<LI><code>s3allphone</code>: Allphone decoding</LI>
+		<LI><code>s3astar</code>: A* search, nbest generation</LI>
+		<LI><code>s3dag</code>: Shortest-path search</LI>
+	      </UL>
+	    </LI>
+	    <LI>Other utilities:
+	      <UL>
+		<LI><code>stseg-read</code>: State-segmentation binary file reader</LI>
+		<LI><code>sen2s2</code>: Sphinx-II "sendump" file creation from Sphinx-3
+		  acoustic model</LI>
+	      </UL>
+	    </LI>
+	    <LI>Documentation:
+	      <UL>
+		<LI><a href="/net/alf20/usr2/rkm/s3/doc/s3.html"><code>s3/doc/s3.html</code></a>:
+		  User manual; <em>needs to be updated</em>
+		</LI>
+	      </UL>
+	  </UL>
+	</td>
+      </tr>
+
+      <tr><td>s2 (fbs8)</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="http://sourceforge.net/">Open source</a> (search for
+	      "CMU Sphinx")</LI>
+	    <LI>Sphinx-II decoder</LI>
+	    <LI>Real-time operation</LI>
+	    <LI>Semi-continuous, Sphinx-II acoustic models only (Sphinx-II format)</LI>
+	    <LI>User applications support:
+	      <UL>
+		<LI>Compiled into a library with a straightforward API for building
+		  speech-enabled applications</LI>
+		<LI>Continuous-listening support</LI>
+		<LI>Dynamic language model loading and switching</LI>
+	      </UL>
+	    </LI>
+	    <LI>Several test applications:
+	      <UL>
+		<LI>Basic dictation with and without "push-to-talk"</LI>
+		<LI>Basic audio recording and playback</LI>
+		<LI>Audio segmentation using the continuous listener</LI>
+	      </UL>
+	    </LI>
+	    <LI>Additional recognition modes:
+	      <UL>
+		<LI>Forced alignment</LI>
+		<LI>Allphone decoding</LI>
+		<LI>A* search, nbest generation</LI>
+		<LI>Shortest-path search</LI>
+	      </UL>
+	    </LI>
+	  </UL>
+	</td>
+      </tr>
+      
+      <tr><td>lm3g2dmp</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr1/rkm/cvsroot/lm3g2dmp"><code>$CVSROOT/lm3g2dmp</code></a></LI>
+	    <LI>Conversion from "arpabo" format language model file to binary ("dump")
+	      format used by all decoders</LI>
+	  </UL>
+	</td>
+      </tr>
+      
+      <tr><td>SphinxOCX</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="//ppro7/c/users/rkm/SphinxOCX/"><code>//ppro7/c/users/rkm/SphinxOCX</code></a></LI>
+	    <LI>OCX wrapper for the fbs8 libraries</LI>
+	    <LI>Windows NT only</LI>
+	  </UL>
+	</td>
+      </tr>
+      
+      <tr><td>data</td>
+	<td>
+	  <UL>
+	    <LI>Location: <a href="/net/alf20/usr/rkm/SHARED/"><code>/net/alf20/usr/rkm/SHARED</code></a></LI>
+	    <LI>An attempt at collecting all available data and models under one roof (not
+	      entirely successful):
+	      <UL>
+		<LI>Cepstrum files</LI>
+		<LI>Control files</LI>
+		<LI>HMMs (acoustic models)</LI>
+		<LI>Language models</LI>
+		<LI>Dictionaries</LI>
+	      </UL>
+	    </LI>
+	    <LI>Implemented mainly via symbolic links, rather than physical copies</LI>
+	  </UL>
+	</td>
+      </tr>
+    </table>
+    <P></P>
+    <div class="endsec">&curren</div>
+    
+    
+    <H2><a name="sec_s32"><U>s3.2</U></a></H2>
+    
+    <P>See <a href="/net/alf20/usr2/rkm/s3.2/doc/s3.html">s3.2/doc/s3.html</a>.
+    </P>
+
+    <pre>
+ s3types.h
+ logs3.c
+ logs3.h
+ bio.c
+ bio.h
+ vector.c
+ vector.h
+ corpus.c
+ corpus.h
+ agc.c
+ agc.h
+ cmn.c
+ cmn.h
+ feat.c
+ feat.h
+ dict.c
+ dict.h
+ lm.c
+ lm.h
+ lmtest.c
+ mdef.c
+ mdef.h
+ mdeftest.c
+ cont_mgau.c
+ cont_mgau.h
+ subvq.c
+ subvq.h
+ svqtest.c
+ fillpen.c
+ fillpen.h
+ tmat.c
+ tmat.h
+ wid.c
+ wid.h
+ dict2pid.c
+ dict2pid.h
+ dict2pidtest.c
+ kbcore.c
+ kbcore.h
+ hyp.h
+
+ main.c
+ ascr.c
+ ascr.h
+ beam.c
+ beam.h
+ hmm.c
+ hmm.h
+ kb.h
+ lextree.c
+ lextree.h
+ vithist.c
+ vithist.h
+
+ gausubvq.c
+ gautest.c</pre>
+
+
+    <div class="endsec">&curren</div>
+    <P></P>
+    
+    
+    <H2><a name="sec_s3"><U>s3 (Original)</U></a></H2>
+    
+    <P>See <a href="/net/alf20/usr2/rkm/s3/doc/s3.html">s3/doc/s3.html</a> (needs
+      to be updated), and <a href="/net/alf20/usr2/rkm/s3/tests/">s3/tests</a>.
+    </P>
+    <div class="endsec">&curren</div>
+    <P></P>
+    
+    
+    <H2><a name="sec_s2"><U>s2 FBS8</U></a></H2>
+    
+    <P><a href="http://sourceforge.net/">Open source</a> (search for CMU Sphinx)</P>
+    <div class="endsec">&curren</div>
+    <P></P>
+
+
+    <address><a href="mailto:rkm@alf20.speech.cs.cmu.edu">Ravishankar Mosur</a></address>
+<!-- Created: Fri Mar  3 11:03:47 EST 2000 -->
+<!-- hhmts start -->
+Last modified: Wed Mar  8 13:25:39 EST 2000
+<!-- hhmts end -->
+  </body>
+</html>
