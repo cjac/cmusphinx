@@ -4,7 +4,7 @@ SUBDIRS = include
 
 lib_LTLIBRARIES = libsphinx2.la
 
-libsphinx2_la_LDFLAGS = -version-info 1:0:0
+libsphinx2_la_LDFLAGS = -version-info 0:4:0
 
 libsphinx2_la_SOURCES = \
 	CM_funcs.c \

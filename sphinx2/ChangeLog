@@ -698,5 +698,6 @@ set of changes from dhd (below)
 	* Changed all unigram_t.wid to unigram_t.mapid (lm_3g)
 	* Define NULL for systems that don't (sun4m).
 	* Added headers, etc for sun4.  Everything now compiles
-	  under SunOS except the client/server code which can
+	  under sun4 except the client/server code which can
 	  be commented out of the Makefile.
+	* Built and sphinx2-test ran successfully on SunOS 5.5.1

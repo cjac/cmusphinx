@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES = libsphinx2ad.la
 
-libsphinx2ad_la_LDFLAGS = -version-info 1:0:0
+libsphinx2ad_la_LDFLAGS = -version-info 0:4:0
 
 libsphinx2ad_la_SOURCES = cont_ad_base.c
 
@@ -24,6 +24,6 @@ libsphinx2ad_la_DEPENDENCIES = @ad_files@
 
 libsphinx2ad_la_LIBADD = @ad_files@ @ad_libs@
 
-libsphinx2ad_la_LDFLAGS = -version-info 0:0:0
+libsphinx2ad_la_LDFLAGS = -version-info 0:4:0
 
 INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include

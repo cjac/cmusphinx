@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx2,0.4_p5)
+AM_INIT_AUTOMAKE(sphinx2,0.4_p6)
 AM_CONFIG_HEADER(config.h)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall}
