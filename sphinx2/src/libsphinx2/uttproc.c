@@ -51,9 +51,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2000/12/12  23:01:42  lenzo
- * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ * Revision 1.5  2000/12/21  18:04:51  lenzo
+ * Fixed a nasty (but small) FRAME_RATE error.  This will need cleanup later.
  * 
+ * Revision 1.4  2000/12/12 23:01:42  lenzo
+ * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ *
  * Revision 1.3  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
  *
@@ -801,7 +804,8 @@ int32 uttproc_init ( void )
     frame_spacing = sps/100;
 
     fe_param->SAMPLING_RATE = sps;
-    fe_param->FRAME_RATE    = frame_spacing;
+  /*    fe_param->FRAME_RATE    = frame_spacing; */  /* removed; KAL */
+    fe_param->FRAME_RATE    = 100;
     fe_param->PRE_EMPHASIS_ALPHA = 0.97;
     
     fe = fe_init(fe_param);
