@@ -116,6 +116,8 @@ int32 fe_convert_files(param_t *P)
     int32 fp_in,fp_out, last_blocksize=0,curr_block,total_frames;
     float32 **cep = NULL, **last_frame_cep;
     int32 return_value;
+    int32 warn_zero_energy = OFF;
+    int32 process_utt_return_value;
     
     if ((FE = fe_init(P))==NULL){
 	E_ERROR("memory alloc failed...exiting\n");
@@ -137,6 +139,8 @@ int32 fe_convert_files(param_t *P)
 	      return(return_value);
 	    }
 
+	    warn_zero_energy = OFF;
+
 	    if (nblocks*P->blocksize>=total_samps) 
 		last_blocksize = total_samps - (nblocks-1)*P->blocksize;
 	    
@@ -155,7 +159,13 @@ int32 fe_convert_files(param_t *P)
 			E_ERROR("error reading speech data\n");
 			return(FE_INPUT_FILE_READ_ERROR);
 		    }
-		    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		    process_utt_return_value = 
+		      fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		      warn_zero_energy = ON;
+		    } else {
+		      assert(process_utt_return_value == FE_SUCCESS);
+		    }
 		    if (frames_proc>0)
 			fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 		    ckd_free_2d((void **)cep);
@@ -182,7 +192,13 @@ int32 fe_convert_files(param_t *P)
 		    return(FE_INPUT_FILE_READ_ERROR);
 		}
 		
-		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		process_utt_return_value = 
+		  fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 		ckd_free_2d((void **)cep);
@@ -191,7 +207,13 @@ int32 fe_convert_files(param_t *P)
 		    last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 		else
 		    last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
-		last_frame = fe_end_utt(FE, last_frame_cep[0]);
+		process_utt_return_value = 
+		  fe_end_utt(FE, last_frame_cep[0], &last_frame);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (last_frame>0){
 		    fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
 		    frames_proc++;
@@ -209,6 +231,9 @@ int32 fe_convert_files(param_t *P)
 	    }
 	}
 	fe_close(FE);
+	if (ON == warn_zero_energy) {
+	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+	}
     }
     
     else if (P->is_single){
@@ -219,6 +244,8 @@ int32 fe_convert_files(param_t *P)
 	if (return_value != FE_SUCCESS){
 	  return(return_value);
 	}
+
+	warn_zero_energy = OFF;
 	
 	if (nblocks*P->blocksize>=total_samps) 
 	    last_blocksize = total_samps - (nblocks-1)*P->blocksize;
@@ -238,7 +265,13 @@ int32 fe_convert_files(param_t *P)
 		    E_ERROR("Error reading speech data\n");
 		    return(FE_INPUT_FILE_READ_ERROR);
 		}
-		frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+		process_utt_return_value = 
+		  fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+		  warn_zero_energy = ON;
+		} else {
+		  assert(process_utt_return_value == FE_SUCCESS);
+		}
 		if (frames_proc>0)
 		    fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 		ckd_free_2d((void **)cep);
@@ -260,7 +293,13 @@ int32 fe_convert_files(param_t *P)
 		E_ERROR("Error reading speech data\n");
 		return(FE_INPUT_FILE_READ_ERROR);
 	    }
-	    frames_proc = fe_process_utt(FE,spdata,splen,&cep);
+	    process_utt_return_value = 
+	      fe_process_utt(FE,spdata,splen,&cep, &frames_proc);
+	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+	      warn_zero_energy = ON;
+	    } else {
+	      assert(process_utt_return_value == FE_SUCCESS);
+	    }
 	    if (frames_proc>0)
 		fe_writeblock_feat(P,FE,fp_out,frames_proc,cep);
 	    ckd_free_2d((void **)cep);
@@ -270,7 +309,13 @@ int32 fe_convert_files(param_t *P)
 	        last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->NUM_CEPSTRA,sizeof(float32));
 	    else
 	        last_frame_cep = (float32 **)ckd_calloc_2d(1,FE->MEL_FB->num_filters,sizeof(float32));
-	    last_frame = fe_end_utt(FE, last_frame_cep[0]);
+	    process_utt_return_value = 
+	      fe_end_utt(FE, last_frame_cep[0], &last_frame);
+	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+	      warn_zero_energy = ON;
+	    } else {
+	      assert(process_utt_return_value == FE_SUCCESS);
+	    }
 	    if (last_frame>0){
 	      fe_writeblock_feat(P,FE,fp_out,last_frame,last_frame_cep);
 	      frames_proc++;
@@ -288,6 +333,9 @@ int32 fe_convert_files(param_t *P)
 	}
 	
 	fe_close(FE);
+	if (ON == warn_zero_energy) {
+	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+	}
     }
     else{
 	E_ERROR("Unknown mode - single or batch?\n");

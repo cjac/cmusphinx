@@ -514,6 +514,7 @@ ld_process_raw_impl(live_decoder_t *_decoder,
   int32 num_frames = 0;
   int32 num_features = 0;
   int32 begin_utt = _decoder->num_frames_entered == 0;
+  int32 return_value;
 
   assert(_decoder != NULL);
 
@@ -521,12 +522,16 @@ ld_process_raw_impl(live_decoder_t *_decoder,
     fe_start_utt(_decoder->fe);
   }
 	
-  num_frames = fe_process_utt(_decoder->fe, samples, num_samples, &frames);
+  return_value = fe_process_utt(_decoder->fe, samples, num_samples, &frames, &num_frames);
 
   if (end_utt) {
-    fe_end_utt(_decoder->fe, dummy_frame);
+    return_value = fe_end_utt(_decoder->fe, dummy_frame, &num_frames);
   }
 	
+  if (FE_ZERO_ENERGY_ERROR == return_value) {
+    E_WARN("Zero energy frame(s). Consider using dither\n");
+  }
+
   if (num_frames > 0) {
     num_features = feat_s2mfc2feat_block(kbcore_fcb(_decoder->kbcore),
 					 frames,

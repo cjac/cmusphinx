@@ -216,6 +216,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
     static float32 ***live_feat = NULL;
+    int32 return_value;
 
     int32   live_nfr, live_nfeatvec;
     int32   nwds =0;
@@ -238,9 +239,13 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
     mfcbuf = NULL;
 
-    live_nfr = fe_process_utt(fe, samples, nsamples, &mfcbuf); /**/
+    return_value = fe_process_utt(fe, samples, nsamples, &mfcbuf, &live_nfr); /**/
     if (live_endutt) 	       /* RAH, It seems that we shouldn't throw out this data */
-      fe_end_utt(fe,dummyframe); /* Flush out the fe */
+      return_value = fe_end_utt(fe,dummyframe, &live_nfr); /* Flush out the fe */
+
+  if (FE_ZERO_ENERGY_ERROR == return_value) {
+    E_WARN("Zero energy frame(s). Consider using dither\n");
+  }
 
 #if 0
     E_INFO("Number frame after fe_process_utt %d\n",live_nfr);
