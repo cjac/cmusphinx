@@ -606,7 +606,6 @@ static void process_ctlfile ( void )
 	else
 	  strcpy (uttid, ctlspec+i+1);
       }
-
       if (! feat) 
 	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
 
