@@ -137,7 +137,15 @@ SOURCE=..\..\..\src\libsphinx2\awriteshort.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\bio.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\bisearch.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\bitvec.c
 # End Source File
 # Begin Source File
 
@@ -150,6 +158,10 @@ SOURCE=..\..\..\src\libsphinx2\blkarray_list.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\cache_lm.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\case.c
 # End Source File
 # Begin Source File
 
@@ -174,6 +186,10 @@ SOURCE=..\..\..\src\libsphinx2\ckd_alloc.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\CM_funcs.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\cont_mgau.c
 # End Source File
 # Begin Source File
 
@@ -269,7 +285,15 @@ SOURCE=..\..\..\src\libsphinx2\logmsg.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\logs3.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\longio.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\mdef.c
 # End Source File
 # Begin Source File
 
@@ -305,6 +329,14 @@ SOURCE=..\..\..\src\libsphinx2\resfft.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\s3hash.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\s3mdef_s2map.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\salloc.c
 # End Source File
 # Begin Source File
@@ -322,6 +354,10 @@ SOURCE=..\..\..\src\libsphinx2\search.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\searchlat.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\senscr.c
 # End Source File
 # Begin Source File
 
@@ -350,6 +386,10 @@ SOURCE=..\..\..\src\libsphinx2\util.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\uttproc.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\vector.c
 # End Source File
 # Begin Source File
 
