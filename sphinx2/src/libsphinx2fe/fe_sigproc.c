@@ -15,6 +15,8 @@
 
 
 /*
+   6 Dec 01 lenzo    - removed the -1 from the numerator of the 
+                       hamming window.
   31 Jan 00 mseltzer - changed rounding of filter edges to -not- use 
                         rint() function. 
    3 Dec 99 mseltzer - corrected inverse DCT-2 
@@ -167,8 +169,8 @@ void fe_create_hamming(float64 *in, int32 in_len)
     int i;
      
     if (in_len>1){
-	for (i=0; i<in_len; i++)
-	    in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len));
+      for (i=0; i<in_len; i++) /* was in_len-1  kal */
+	in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len)); 
     }
     return;
     
