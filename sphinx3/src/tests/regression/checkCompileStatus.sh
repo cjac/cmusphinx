@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if test $[$# < 1]  = 1
-then
-    echo "$0 <Sourceforge username>"
-    exit 1
-fi
-
 username=$1
 
 # The repository address
