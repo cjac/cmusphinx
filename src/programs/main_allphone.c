@@ -438,7 +438,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 					   frame to compute one feature vector */
 	topn = *((int32 *) cmd_ln_access("-topn"));
 	if (topn > g->n_density) {
-	    E_ERROR("-topn argument (%d) > #density codewords (%d); set to latter\n",
+	    E_WARN("-topn argument (%d) > #density codewords (%d); set to latter\n",
 		   topn, g->n_density);
 	    topn = g->n_density;
 	}

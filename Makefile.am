@@ -30,7 +30,10 @@ test-livepretend:
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
 		$(top_srcdir)/model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
-		$(top_srcdir)/model/lm/an4/args.an4.test
+		$(top_srcdir)/model/lm/an4/args.an4.test > an4.log 2>&1 
+	$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" an4.log 
+	$(LIBTOOL) --mode=execute grep "FWDXCT" an4.log 
+	$(LIBTOOL) --mode=execute rm an4.log 
 
 test-decode:
 	$(LIBTOOL) --mode=execute echo "DECODE TEST"
@@ -62,10 +65,15 @@ test-decode:
                -maxhmmpf 1500 \
                -wend_beam 1e-1 \
                -ci_pbeam 1e-3 \
-               -ds 2 
+               -ds 2  > an4.log 2>&1
+
+	$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" an4.log 
+	$(LIBTOOL) --mode=execute grep "FWDXCT" an4.log 
+	$(LIBTOOL) --mode=execute rm an4.log 
 
 test-align:
 	$(LIBTOOL) --mode=execute echo "ALIGN TEST"
+	$(LIBTOOL) --mode=execute echo "THIS IS JUST A FUNCTION TEST"
 	$(LIBTOOL) --mode=execute src/programs/align \
 	    -logbase 1.0003 \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
@@ -85,9 +93,12 @@ test-align:
 	    -outsentfn ./align.answer \
 	    -wdsegdir ./ \
 	    -phsegdir ./
+	$(LIBTOOL) --mode=execute rm pittsburgh*.*seg align.answer
+
 
 test-allphone:
 	$(LIBTOOL) --mode=execute echo "ALLPHONE TEST"
+	$(LIBTOOL) --mode=execute echo "THIS IS JUST A FUNCTION TEST"
 	$(LIBTOOL) --mode=execute src/programs/allphone \
 	    -logbase 1.0003 \
 	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
@@ -102,6 +113,7 @@ test-allphone:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
+	$(LIBTOOL) --mode=execute rm ./.allp
 
 test-astar:
 	$(LIBTOOL) --mode=execute echo "ASTAR TEST"
@@ -117,6 +129,10 @@ test-astar:
   	    -inlatdir $(top_srcdir)/model/lm/an4/ \
   	    -logbase 1.0003 \
   	    -nbestdir . 
+	$(LIBTOOL) --mode=execute gzip -fd pittsburgh.nbest.gz 
+	$(LIBTOOL) --mode=execute cat pittsburgh.nbest 
+	$(LIBTOOL) --mode=execute rm pittsburgh.nbest
+
 
 test-dag:
 	$(LIBTOOL) --mode=execute echo "DAG TEST"
@@ -130,19 +146,26 @@ test-dag:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
   	    -inlatdir $(top_srcdir)/model/lm/an4/ \
   	    -logbase 1.0003 \
-	    -backtrace 1 
-	
+	    -backtrace 1 > an4.log 
+
+	$(LIBTOOL) --mode=execute grep "BSTPTH: P I T T S B U R G H " an4.log 
+	$(LIBTOOL) --mode=execute grep "BSTXCT" an4.log 
+	$(LIBTOOL) --mode=execute rm an4.log 
+
 test-gausubvq:
 	$(LIBTOOL) --mode=execute echo "GAUSUBVQ TEST"
-	/net/elroy/usr1/archan/Sourceforge/sphinx3/src/programs/.libs/lt-gausubvq \
-        -mean model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-        -var model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-        -mixw model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-        -svspec 0-12/13-25/26-38 \
-        -iter 1 \
-        -svqrows 1024 \
-        -subvq subvq
-
+	$(LIBTOOL) --mode=execute echo "This will compare the answer with a pre-generated svq file"
+	$(LIBTOOL) --mode=execute src/programs/gausubvq \
+        -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+        -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+        -mixw  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+        -svspec 0-38 \
+        -iter 20 \
+        -svqrows 16 \
+        -subvq subvq.out
+	$(LIBTOOL) --mode=execute grep -v "#" subvq.out > tmp.out
+	$(LIBTOOL) --mode=execute diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+	$(LIBTOOL) --mode=execute rm tmp.out subvq.out
 
 
 
