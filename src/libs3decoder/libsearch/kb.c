@@ -76,6 +76,9 @@ void kb_init (kb_t *kb)
     bitvec_t lc_active;
     char *str;
     
+    /* Initialize the kb structure to zero, just in case */
+    memset(kb, 0, sizeof(*kb));
+
     kb->kbcore = kbcore_init (cmd_ln_float32 ("-logbase"),
 			      "s3_1x39",    /* Hack!! Hardwired constant 
 						for -feat argument */

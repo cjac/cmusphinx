@@ -269,7 +269,7 @@ void utt_end (kb_t *kb)
     ptmr_reset (&(kb->tm_srch));
 
 #if (!defined(WIN32) && !defined(sparc))    
-    system ("ps aguxwww | grep dec");
+    system ("ps aguxwww | grep /live | grep -v grep");
 #endif
     
     for (i = 0; i < kb->n_lextree; i++) {
