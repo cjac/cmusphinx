@@ -50,8 +50,8 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2000/12/12  23:01:42  lenzo
- * Rationalizing libs and names some more.  Split a/d and fe libs out.
+ * Revision 1.5  2001/11/27  21:51:57  lenzo
+ * Fix it so client ACK works cross-platform.
  * 
  * Revision 1.3  2000/12/05 01:45:12  lenzo
  * Restructuring, hear rationalization, warning removal, ANSIfy
@@ -178,8 +178,8 @@ static int32 await_ack ( void )
 	rlen += len;
     }
     rbuf[rlen] = '\0';
-    
-    if ((rlen > 4) || (strcmp(rbuf, "ACK\n") != 0)) {
+
+    if ((rlen > 5) || (strncmp(rbuf, "ACK", 3) != 0)) {
 	E_ERROR("Expecting ACK\n, received:\n\t");
 	for (i = 0; i < rlen; i++)
 	    fprintf (stderr, " %02x", rbuf[i]);
