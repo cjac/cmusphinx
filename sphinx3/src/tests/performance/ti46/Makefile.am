@@ -53,9 +53,9 @@ CLEANFILES = gmake-ti46$(MODEAFFIX).results \
 
 ti46:
 	rm -f gmake-tidigits$(MODEAFFIX).results
-	../../programs/batchmetrics ./ti46.ctl /lab/speech/sphinx4/data/ti46/test/raw16k ARGS > gmake-ti46$(MODEAFFIX).results
+	../../programs/batchmetrics ./ti46.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k ARGS > gmake-ti46$(MODEAFFIX).results
 
 
 ti46-quick:
 	rm -f gmake-ti46-quick$(MODEAFFIX).results
-	../../programs/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx4/data/ti46/test/raw16k ARGS > gmake-ti46-quick$(MODEAFFIX).results
+	../../programs/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx4/data/ti46/ti20/test/test/raw16k  ARGS > gmake-ti46-quick$(MODEAFFIX).results
