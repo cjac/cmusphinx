@@ -11,6 +11,7 @@ libutil_la_SOURCES = \
         cmd_ln.c \
         err.c \
         filename.c \
+	genrand.c \
         glist.c \
         hash.c \
         heap.c \
@@ -29,6 +30,7 @@ noinst_HEADERS = \
         cmd_ln.h \
         err.h \
         filename.h \
+	genrand.h \
         glist.h \
         hash.h \
         heap.h \
