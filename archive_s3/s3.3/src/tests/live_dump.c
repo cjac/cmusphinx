@@ -53,6 +53,7 @@
  */
 
 #include <libutil/libutil.h>
+#include <libutil/profile.h>
 #include <libs3decoder/kb.h>
 #include <libs3decoder/utt.h>
 #include <programs/cmd_ln_args.h>
@@ -351,4 +352,11 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
     ckd_free_2d((void **) mfcbuf);
 
     return 0;
+}
+
+
+void live_print_profiles(FILE *file)
+{
+    ptmr_print_all(file, &kb->tm_sen, (float64) 1);
+    ptmr_print_all(file, &kb->tm_srch, (float64) 1);
 }

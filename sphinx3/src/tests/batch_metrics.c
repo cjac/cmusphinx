@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <libutil/libutil.h>
+#include <libutil/profile.h>
 #include <libs3decoder/new_fe.h>
 #include "live_dump.h"
 #include "metrics.h"
@@ -65,6 +66,7 @@ int main (int argc, char *argv[])
 
     int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
     int numberMatches, numberFiles;
+    int space, lastChar;
     
     double sampleRate;
     double totalAudioTime;
@@ -72,15 +74,16 @@ int main (int argc, char *argv[])
     double audioTime;
     double processingTime;
 
-    char   *argsfile, *ctlfile, *indir;
-    char   filename[512], cepfile[512];
-    char   hypothesis[512], referenceResult[512];
+    char   *argsfile, *ctlfile, *indir, *filename, *referenceResult;
+    char   cepfile[512];
+    char   line[512], hypothesis[512];
     char   *word;
     char   *fileTimer = "file";
 
     partialhyp_t *parthyp;
     FILE *fp, *sfp, *rfp;
 
+    space = ' ';
     numberMatches = 0;
     numberFiles = 0;
     sampleRate = 8000;
@@ -111,12 +114,25 @@ int main (int argc, char *argv[])
 
     live_initialize_decoder(argsfile);
 
-    while (fscanf(fp,"%s %s", filename, referenceResult) != EOF){
-        
+    while (fgets(line, 512, fp) != NULL) {
+
+        /* Parse the speech file and the reference result. */
+        referenceResult = strchr(line, space);
+        if (referenceResult == NULL) {
+            E_FATAL("No reference result\n", cepfile);
+        } else {
+            referenceResult++;
+        }
+        lastChar = strlen(referenceResult) - 1;
+        if (referenceResult[lastChar] == '\n') {
+            referenceResult[lastChar] = '\0';
+        }
+        filename = strtok(line, " ");
+
         numberFiles++;
         nhypwds = 0;
 
-	sprintf(cepfile,"%s/%s.raw",indir,filename);
+	sprintf(cepfile,"%s/%s",indir,filename);
 
         fprintf(rfp, "\nDecoding: %s\n\n", cepfile);
 
@@ -181,6 +197,8 @@ int main (int argc, char *argv[])
         showMemory(rfp);
         fprintf(rfp, "--------------\n");
     }
+
+    live_print_profiles(rfp);
 
     metricsPrint();
 
