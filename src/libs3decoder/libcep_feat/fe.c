@@ -56,8 +56,10 @@
 #if defined(WIN32)
 #include <io.h>
 #include <errno.h>
-#define srand48(x) srand(x)
-#define lrand48() rand()
+
+/*Now using customized random generator. */
+/*#define srand48(x) srand(x)
+  #define lrand48() rand()*/
 #endif
 
 #if (WIN32) 
@@ -66,6 +68,7 @@
 #endif
 
 int32 ep_fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, int32 *nframes, int32 *nblocks);
+void fe_init_dither(int32 seed);
 
 /*** Function to free the front-end wrapper ***/
 void few_free(fewrap_t *FEW)
@@ -549,7 +552,11 @@ param_t *fe_parse_options()
     }
     P->dither = *(int32 *)cmd_ln_access("-dither");
     P->logspec = *(int32 *)cmd_ln_access("-logspec");
-    
+
+    if(P->dither){
+      fe_init_dither(*(int32 *)cmd_ln_access("-seed"));
+    }
+
     fe_validate_parameters(P);
     
     return (P);
@@ -1156,14 +1163,23 @@ int32 fe_closefiles(int32 fp_in, int32 fp_out)
     return 0;
 }
 
+void fe_init_dither(int32 seed)
+{
+  if(seed<0){
+    E_INFO("You are using the internal mechanism to generate the seed.");
+    s3_rand_seed((long)time(0));
+  }else{
+    E_INFO("You are using %d as the seed.",seed);
+    s3_rand_seed(seed);
+  }
+}
 
 /* adds 1/2-bit noise */
 int32 fe_dither(int16 *buffer,int32 nsamps)
 {
   int32 i;
-  srand48((long)time(0));
   for (i=0;i<nsamps;i++)
-    buffer[i] += (short)((!(lrand48()%4))?1:0);
+    buffer[i] += (short)((!(s3_rand_int31()%4))?1:0);
   
   return 0;
 }

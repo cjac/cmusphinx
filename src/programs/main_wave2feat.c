@@ -200,7 +200,10 @@ static arg_t defn[] = {
     ARG_STRING,
     NULL,
     "Log file (default stdout/stderr)" },
-  
+  { "-seed",
+    ARG_INT32,
+    "-1",
+    "The seed for the random generator"},
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
