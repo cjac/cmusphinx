@@ -10,7 +10,7 @@ echo "sphinx3-test.livepretend"
 echo "Run CMU Sphinx-3's livepretend to decode an example utterance."
 echo " "
 
-$S3BATCH ${CTLFILE} ${TASK} ${ARGS}  2>&1  livepretend.log
+$S3BATCH ${CTLFILE} ${TASK} ${ARGS} > livepretend.log 2>&1
 echo ""
 grep FWDVIT livepretend.log
 
