@@ -602,7 +602,7 @@ static int32 mgau_precomp (mgau_model_t *g)
 /* Hack! Temporary measuer to make classifier works. */
 int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
 {
-    int32 m, c, i;
+    int32 m, c;
 
     if(g->verbose)
       E_INFO("Revert log values back to normal\n");

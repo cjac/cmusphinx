@@ -1344,9 +1344,9 @@ int32 lm_rawscore (lm_t *lm, int32 score, float64 lwf)
 {
 
     if (lwf != 1.0)
-        score /= lwf;
+        score /= (int32)lwf;
     score -= lm->wip;
-    score /= lm->lw;
+    score /= (int32)lm->lw;
     
     return score;
 }

@@ -493,7 +493,7 @@ void kb_setlm(char* lmname,kb_t* kb)
 
 void kb_setmllr(char* mllrname,kb_t* kb)
 {
-  int32 veclen;
+/*  int32 veclen;*/
   E_INFO("Using MLLR matrix %s\n", mllrname);
   
   if(strcmp(kb->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
