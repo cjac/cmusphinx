@@ -282,6 +282,7 @@ static int32 dag_remove_filler_nodes ( void )
 	for (plink = d->predlist; plink; plink = plink->next) {
 	    pnode = plink->node;
 
+	    ascr = plink->ascr; 
 	    ascr += fillpen(fpen,dict_basewid (dict,d->wid));
 	    
 	    /* Link this predecessor of d to successors of d */
