@@ -152,85 +152,152 @@ typedef struct
 
 } live_decoder_t;
 
-/** Initializes the live-decoder.  Assumes the user has externally allocated
-    and parsed arguments by calling <I>cmd_ln_parse()</I> or
-    <I>cmd_ln_parse_file()</I>.  The user is responsible for calling
-    <I>cmd_ln_free()</I> when he/she is done with the live decoder.
- 
-    A better alternative would be to wrap the parsed arguments in a structure
-    and pass it to <I>ld_init()</I>.  It makes the use of <I>cmd_ln</I> 
-    interface more explicit. It would also allow finer control over decoder
-    parameters, in case if any user wants to have separate sets of decoder 
-    parameters.
+/** Initializes the live-decoder.  Internal modules, including the cepstra-
+    generating front-end, the language model, and the accoustic models are
+    initialized, and live-decoder internal variables are set to a starting
+    state.
+
+    This version of the live-decoder assumes the user has externally parsed
+    arguments using <I>cmd_ln_parse()</I> or <I>cmd_ln_parse_file()</I>.  The
+    user is responsible for calling <I>cmd_ln_free()</I> when he/she is done
+    with the live-decoder.
 
     @param decoder Pointer to the decoder.
     @return 0 for success.  -1 for failure.
+    @see ld_finish
 */
 int ld_init(live_decoder_t *decoder);
 
-/** Initializes the live-decoder.  This version makes the use of the
-    <I>cmd_ln.h</I> interface transparent to the user.  Arguments are parsed
-    and stored internally, and freed later when <I>ld_finish()</I> is called.
+/** Initializes the live-decoder.  Internal modules, including the cepstrum-
+    generating front-end, the language model, and the accoustic models are
+    initialized, and live-decoder internal variables are set to a starting
+    state.
+    
+    This version uses the <I>cmd_ln.h</I> interface internally.  Arguments are
+    parsed and stored internally, and freed later when
+    <I>{@link ld_finish ld_finish()}</I> is called.
 
     @param decoder Pointer to the decoder.
     @param argc Argument count.
     @param argv Argument string array.
     @return 0 for success.  -1 for failure.
+    @see ld_finish
 */
 int ld_init_with_args(live_decoder_t *decoder, int argc, char **argv);
 
-/** Wraps up the live-decoder and frees up allocated memory in the process.
+/** Wraps up the live-decoder.  All internal modules are closed or unloaded.
+    Internal variables are either freed or set to a finishing state.  This
+    function should be called once the user is finished with the live-decoder.
 
     @param decoder Pointer to the decoder.
     @return Always return 0 (for success).
+    @see ld_init
+    @see ld_init_with_args
 */
 int ld_finish(live_decoder_t *decoder);
 
-/** Starts decoding an utterance.  This function has to be called before any
-    calls to <I>ld_process_raw()</I>, <I>ld_process_frames()</I>, or
-    <I>ld_retrieve_hyps()</I> functions.  
+/** Marks the start of the current utterance.  An utterance is a session of
+    speech decoding that starts with a call to <I>ld_begin_utt()</I> and ends 
+    with a call to <I>{@link ld_end_utt ld_end_utt()}</I>.  In the duration of 
+    an utterance, speech data is processed with either
+    <I>{@link ld_process_raw ld_process_raw()}</I> or
+    <I>{@link ld_process_ceps ld_process_ceps()}</I>.  Decoding results
+    (hypothesis) can be retrieved any time after the start of an utterance
+    using <I>{@link ld_retrieve_hyps ld_retrieve_hyps()}</I>.  However, all 
+    previous results will be clobbered at the start of a new utterance.
+
+    At the moment, there is an undocumented time limit to the length of an
+    utterance.
 
     @param decoder Pointer to the decoder.
-    @param uttid Utterance id string.
+    @param uttid Utterance ID string.  If <I>null</I>, the utterance ID is
+    ignored.
     @return 0 for success.  -1 for failure.
+    @see ld_end_utt
+    @see ld_process_raw
+    @see ld_process_ceps
+    @see ld_retrieve_hyps
 */
 int ld_begin_utt(live_decoder_t *decoder, char *uttid);
 
-/** Finishes decoding the current utterance.  The user can retrieve the final
-    hypothesis after calling this function.
+/** Marks the end of the current utterance.  The Live-Decode API can no longer
+    process speech data until the start of the next utterance.  Any hypothesis
+    retrieved prior to the end of the utterance is called a partial hypothesis.
+    Any hypothesis retrieved after the end of the utterance is called the final
+    hypothesis.  See <I>{@link ld_retrieve_hyps ld_retrieve_hyps()}</I> on how
+    to retrieve hypothesis.
 
     @param decoder Pointer to the decoder
     @return 0 for success.  -1 for failure.
+    @see ld_begin_utt
+    @see ld_process_raw
+    @see ld_process_ceps
+    @see ld_retrieve_hyps
 */
 int ld_end_utt(live_decoder_t *decoder);
 
-/** Process raw 16-bit samples for the current utterance decoding.
+/** Process raw 16-bit samples for the current utterance decoding.  This
+    function has to be called in the duration of an utterance.  That is,
+    in between calls to <I>{@link ld_begin_utt ld_begin_utt()}</I> and 
+    <I>{@link ld_end_utt ld_end_utt()}</I>.
 
     @param decoder Pointer to the decoder.
     @param samples Buffer of int16 audio samples.
     @param num_samples Number of samples in the buffer.
     @return 0 for success.  -1 for failure.
+    @see ld_begin_utt
+    @see ld_end_utt
+    @see ld_process_ceps
 */
 int ld_process_raw(live_decoder_t *decoder, 
 		   int16 *samples,
 		   int32 num_samples);
 
-/** Process a buffer of feature frames for the current utterance decoding.  To
-    use this function, make sure that the parameters to the front-end that
-    generated the frames matches the parameters to the decoder's accoustic 
-    model.
+/** Process a buffer of cepstrum frames for the current utterance.  To use
+    this function, make sure that the parameters to the cepstra-generating
+    front-end that matches the parameters to the decoder's accoustic 
+    model.  This  function has to be called in the duration of an utterance.
+    That is, in between calls to <I>{@link ld_begin_utt ld_begin_utt()}</I> and
+    <I>{@link ld_end_utt ld_end_utt()}</I>.
 
     @param decoder Pointer to the decoder.
     @param frames Buffer of audio feature frames.
     @param num_frames Number of frames in the buffer.
     @return 0 for success.  -1 for failure.
+    @see ld_begin_utt
+    @see ld_end_utt
+    @see ld_process_ceps
 */
-int ld_process_frames(live_decoder_t *decoder, 
-		      float32 **frames,
-		      int32 num_frames);
+int ld_process_ceps(live_decoder_t *decoder, 
+		    float32 **frames,
+		    int32 num_frames);
 
-/** Retrieve partial or final decoding results.  The result can be returned
-    in a plain READ-ONLY string and/or an array of READ-ONLY word segments.
+/** Retrieve partial or final decoding results (hypothesis).  Any
+    hypothesis retrieved prior to the end of the utterance is called a 
+    partial hypothesis.  Any hypothesis retrieved after the end of the 
+    utterance is called the final hypothesis.  The hypothesis can be
+    returned in a plain READ-ONLY string and/or an array of READ-ONLY word
+    segments.  In the plain string result, all filler and end words are
+    filtered out as well as the pronouciation information.  What is left is a
+    very readable string representation of the decoding result.  There is no
+    filtering in the word segment result.
+
+    Here is an example on how to use the result returned by
+    <I>ld_retrieve_hyps</I>:
+
+    <PRE>
+    live_decoder_t d;
+    char *str;
+    hyp_t **segs;
+
+    ...
+
+    ld_retrieve_hyps(&d, &str, &segs);
+    printf("Decoded string: %s\n", str);
+    for (; *segs; segs++) {
+      printf("Word-segment id: %i\n", (*segs)->id);
+    }
+    </PRE>
     
     @param decoder Pointer to the decoder.
     @param hyp_str Returned pointer to a READ-ONLY string.  If <I>null</I>, the
@@ -243,11 +310,15 @@ int ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str,
 		     hyp_t ***hyp_segs);
 
 
-/** Abort the current decoding process immediately.  Retrieving the hypothesis
-    after an abort is not guaranteed.
+/** Abort the current decoding process immediately.  As opposed to
+    <I>{@link ld_end_utt ld_end_utt()}</I>.  Retrieving the hypothesis after an
+    abort is not guaranteed.
+
+    <EM>!!! NOT IMPLEMENTED YET !!!</EM>
 
     @param decoder Pointer to the decoder.
     @return 0 for success.  -1 for failure.
+    @see ld_end_utt
 */
 int ld_abort_utt(live_decoder_t *decoder);
 
