@@ -48,6 +48,7 @@
 #include <libutil/libutil.h>
 #include "live.h"
 #include "cmd_ln_args.h"
+#include <libs3decoder/bio.h>
 
 #define MAXSAMPLES 	1000000
 
@@ -59,6 +60,7 @@ int main (int argc, char *argv[])
     char   filename[512], cepfile[512];
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
+    int swap;
 
 
     if (argc != 4) {
@@ -76,12 +78,24 @@ int main (int argc, char *argv[])
 
     live_initialize_decoder(argsfile);
 
+    /* If machine endian and input endian are different, we need to swap */
+    swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+    if (swap) {
+      E_INFO("Input data WILL be byte swapped\n");
+    } else {
+      E_INFO("Input data will NOT be byte swapped\n");
+    }
     while (fscanf(fp,"%s",filename) != EOF){
 	sprintf(cepfile,"%s/%s.raw",indir,filename);
 	live_utt_set_uttid(filename);
 	if ((sfp = fopen(cepfile,"rb")) == NULL)
 	    E_FATAL("Unable to read %s\n",cepfile);
-		nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
+	nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
+	if (swap) {
+	  for (i = 0; i < nsamp; i++) {
+	    SWAP_INT16(samps + i);
+	  }
+	}
         fprintf(stdout,"%d samples in file %s.\nWill be decoded in blocks of %d\n",nsamp,cepfile,blksize);
         fflush(stdout); fclose(sfp);
 
