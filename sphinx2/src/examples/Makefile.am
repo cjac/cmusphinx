@@ -1,5 +1,4 @@
-bin_PROGRAMS = \
-	sphinx2-continuous \
+bin_PROGRAMS = sphinx2-continuous \
 	sphinx2-ptt \
 	sphinx2-batch \
 	sphinx2-server \
@@ -9,11 +8,10 @@ bin_PROGRAMS = \
 	cont_fileseg \
 	adpow \
 	adrec \
-        lm3g2dmp  \
+        lm3g2dmp \
 	raw2cep
 
-EXTRA_DIST=
-	README \
+EXTRA_DIST = README \
 	README.bin \
 	cdcn_test
 
@@ -23,12 +21,10 @@ sphinx2_ptt_SOURCES = tty-ptt.c
 
 sphinx2_batch_SOURCES = batch.c
 
-sphinx2_server_SOURCES = \
-	server.c \
+sphinx2_server_SOURCES = server.c \
 	srvcore.c
 
-sphinx2_client_SOURCES = \
-	client.c \
+sphinx2_client_SOURCES = client.c \
 	clicore.c
 
 sphinx2_allphone_SOURCES = allphone-test.c
