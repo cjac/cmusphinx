@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,17 +41,8 @@
 #include "fe.h"
 #include "fe_internal.h"
 
-#ifndef	M_PI
-#define M_PI	(3.14159265358979323846)
-#endif /* M_PI */
-
-#define FORWARD_FFT 1
-#define INVERSE_FFT -1
-
 
 /*
-   6 Dec 01 lenzo    - removed the -1 from the numerator of the 
-                       hamming window.
   31 Jan 00 mseltzer - changed rounding of filter edges to -not- use 
                         rint() function. 
    3 Dec 99 mseltzer - corrected inverse DCT-2 
@@ -115,9 +106,7 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	}
     }
     
-    
-
-    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt)
+    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) 
     {
 
 	/*line triangle edges up with nearest dft points... */
@@ -192,12 +181,12 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
 
 float32 fe_mel(float32 x)
 {
-    return((float32) 2595.0*(float32)log10(1.0+x/700.0));
+    return (float32)(2595.0*log10(1.0+x/700.0));
 }
 
 float32 fe_melinv(float32 x)
 {
-    return((float32) 700.0*((float32)pow(10.0,x/2595.0) - (float32) 1.0));
+    return (float32)(700.0*(pow(10.0,x/2595.0) - 1.0));
 }
 
 
@@ -227,8 +216,8 @@ void fe_create_hamming(float64 *in, int32 in_len)
     int i;
      
     if (in_len>1){
-      for (i=0; i<in_len; i++) /* was in_len-1  kal */
-	in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len-1.0)); 
+	for (i=0; i<in_len; i++)
+	    in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len-1.0));
     }
     return;
     
@@ -382,7 +371,7 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     return;
 }
 
-int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
+int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
   static int32
     s, k,			/* as above				*/
@@ -403,11 +392,11 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
 
   
   /* check N, compute lgN						*/
-  for (k = n, lgN = 0; k > 1; k /= 2, lgN++)
+  for (k = N, lgN = 0; k > 1; k /= 2, lgN++)
   {
-    if (k%2 != 0 || n < 0)
+    if (k%2 != 0 || N < 0)
     {
-      fprintf(stderr, "fft: N must be a power of 2 (is %d)\n", n);
+      fprintf(stderr, "fft: N must be a power of 2 (is %d)\n", N);
       return(-1);
     }
   }
@@ -416,7 +405,7 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
   if (invert == 1)
     div = 1.0;
   else if (invert == -1)
-    div = n;
+    div = N;
   else
   {
     fprintf(stderr, "fft: invert must be either +1 or -1 (is %d)\n", invert);
@@ -424,7 +413,7 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
   }
 
   /* get the to, from buffers right, and init				*/
-  buffer = (complex *)calloc(n, sizeof(complex));
+  buffer = (complex *)calloc(N, sizeof(complex));
   if (lgN%2 == 0)
   {
     from = out;
@@ -437,7 +426,7 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
   }
 
   
-  for (s = 0; s<n; s++)
+  for (s = 0; s<N; s++)
   {
       from[s].r = in[s].r/div;
       from[s].i = in[s].i/div;
@@ -445,23 +434,23 @@ int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert)
   }
 
   /* w = exp(-2*PI*i/N), w[k] = w^k					*/
-  w = (complex *) calloc(n/2, sizeof(complex));
-  for (k = 0; k < n/2; k++)
+  w = (complex *) calloc(N/2, sizeof(complex));
+  for (k = 0; k < N/2; k++)
   {
-    x = -6.28318530717958647*invert*k/n;
+    x = -6.28318530717958647*invert*k/N;
     w[k].r = cos(x);
     w[k].i = sin(x);
   }
-  wEnd = &w[n/2];
+  wEnd = &w[N/2];
   
   /* go for it!								*/
-  for (k = n/2; k > 0; k /= 2)
+  for (k = N/2; k > 0; k /= 2)
   {
     for (s = 0; s < k; s++)
     {
       /* initialize pointers						*/
       f1 = &from[s]; f2 = &from[s+k];
-      t1 = &to[s]; t2 = &to[s+n/2];
+      t1 = &to[s]; t2 = &to[s+N/2];
       ww = &w[0];
       /* compute <s,k>							*/
       while (ww < wEnd)
@@ -576,8 +565,14 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 
     if (P->FFT_SIZE != 0) 
 	MEL->fft_size = P->FFT_SIZE;
-    else 
+    else {
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_BB_FFT_SIZE;
+      if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_NB_FFT_SIZE;
+      else 
 	MEL->fft_size = DEFAULT_FFT_SIZE;
+    }
  
     if (P->NUM_CEPSTRA != 0) 
 	MEL->num_cepstra = P->NUM_CEPSTRA;
@@ -602,9 +597,9 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 	MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
     else{
         if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	    MEL->upper_filt_freq = DEFAULT_BB_UPPER_FILT_FREQ;
+	    MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
         else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-            MEL->upper_filt_freq = DEFAULT_NB_UPPER_FILT_FREQ;
+            MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
         else {
             fprintf(stderr,"Please define the upper filt frequency needed\n");
             fprintf(stderr,"Modify include/fe.h and fe_sigproc.c\n");
@@ -616,9 +611,9 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 	MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
     else {
         if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	    MEL->lower_filt_freq = DEFAULT_BB_LOWER_FILT_FREQ;
+	    MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
         else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-            MEL->lower_filt_freq = DEFAULT_NB_LOWER_FILT_FREQ;
+            MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
         else {
             fprintf(stderr,"Please define the lower filt frequency needed\n");
             fprintf(stderr,"Modify include/fe.h and fe_sigproc.c\n");
@@ -630,7 +625,6 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
 	MEL->doublewide = ON;
     else
 	MEL->doublewide = OFF;
-    
 
 }
 

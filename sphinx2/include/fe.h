@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -44,7 +47,27 @@ typedef struct{
     float32 LOWER_FILT_FREQ;
     float32 UPPER_FILT_FREQ;
     float32 PRE_EMPHASIS_ALPHA;
+
+    char *wavfile;
+    char *cepfile;
+    char *ctlfile;
+    char *wavdir;
+    char *cepdir;
+    char *wavext;
+    char *cepext;
+    int32 input_format;
+    int32 is_batch;
+    int32 is_single;
+    int32 blocksize;
+    int32 verbose;
+    int32 machine_endian;
+    int32 input_endian;
+    int32 output_endian;
+    int32 dither;
+    int32 logspec;
     int32 doublebw;
+    int32 nchans;
+    int32 whichchan;
 } param_t;
 
 
@@ -79,7 +102,7 @@ typedef struct{
     int32 START_FLAG;
     int16 PRIOR;
     float64 *HAMMING_WINDOW;
-    
+    int32 FRAME_COUNTER;
 } fe_t;
 
 
@@ -93,31 +116,51 @@ typedef struct{
 /* Default values */
 #define DEFAULT_SAMPLING_RATE 16000.0
 #define DEFAULT_FRAME_RATE 100
+#define DEFAULT_FRAME_SHIFT 160
+/* The default below is set so that we have an integral number of
+ * samples in a frame.
+ */
 #define DEFAULT_WINDOW_LENGTH 0.025625
+/* Since the default sampling rate is 16000, let's make the default
+ * fft size consistent with it.
+ */
 #define DEFAULT_FFT_SIZE 512
 #define DEFAULT_FB_TYPE MEL_SCALE
 #define DEFAULT_NUM_CEPSTRA 13
+#define DEFAULT_NUM_FILTERS 40
+#define DEFAULT_LOWER_FILT_FREQ 133.33334
+#define DEFAULT_UPPER_FILT_FREQ 6855.4976
 #define DEFAULT_PRE_EMPHASIS_ALPHA 0.97
 #define DEFAULT_START_FLAG 0
 
 #define BB_SAMPLING_RATE 16000
+#define DEFAULT_BB_FFT_SIZE 512
 #define DEFAULT_BB_FRAME_SHIFT 160
 #define DEFAULT_BB_NUM_FILTERS 40
 #define DEFAULT_BB_LOWER_FILT_FREQ 133.33334
 #define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
 
 #define NB_SAMPLING_RATE 8000
+#define DEFAULT_NB_FFT_SIZE 256 /*512*/
 #define DEFAULT_NB_FRAME_SHIFT 80
 #define DEFAULT_NB_NUM_FILTERS 31
 #define DEFAULT_NB_LOWER_FILT_FREQ 200
 #define DEFAULT_NB_UPPER_FILT_FREQ 3500
 
+
+#define DEFAULT_BLOCKSIZE 200000
+#define DITHER  OFF
+
 /* Interface */
 fe_t *fe_init(param_t const *P);
 int32 fe_start_utt(fe_t *FE);
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep);
+
 int32 fe_end_utt(fe_t *FE, float32 *cepvector);
+
 int32 fe_close(fe_t *FE);
+
 int32 fe_process(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep );
 
-#endif /* _NEW_FE_H_ */
+int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep);
+
+#endif

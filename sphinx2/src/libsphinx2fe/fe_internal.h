@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,21 +33,30 @@
  * ====================================================================
  *
  */
-/* FIXME: Namespace pollution */
+
+
+#ifndef	M_PI
+#define M_PI	(3.14159265358979323846)
+#endif	/* M_PI */
+
+#define FORWARD_FFT 1
+#define INVERSE_FFT -1
+
 typedef struct { float64 r, i; } complex;
 
+/* functions */
 int32 fe_build_melfilters(melfb_t *MEL_FB);
 int32 fe_compute_melcosine(melfb_t *MEL_FB);
 float32 fe_mel(float32 x);
 float32 fe_melinv(float32 x);
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
+void fe_create_hamming(float64 *in, int32 in_len);
 void fe_hamming_window(float64 *in, float64 *window, int32 in_len);
-void fe_create_hamming(float64 *win, int32 len);
 void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize);
 void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea);
 void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec);
 void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep);
-int32 fe_fft(complex const *in, complex *out, int32 n, int32 invert);
+int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert);
 void fe_short_to_double(int16 const *in, float64 *out, int32 len);
 void *fe_create_2d(int32 d1, int32 d2, int32 elem_size);
 void fe_free_2d(void *arr);

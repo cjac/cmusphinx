@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ typedef struct{
     float32 **mel_cosine;
     float32 *left_apex;
     int32 *width;
-    int32 doublewide;    
+    int32 doublewide;
 }melfb_t;
 
 
@@ -114,7 +114,6 @@ typedef struct{
 
 #define ON 1
 #define OFF 0
-
 
 /* Default values */
 #define DEFAULT_SAMPLING_RATE 16000.0
@@ -154,20 +153,18 @@ typedef struct{
 #define DEFAULT_BLOCKSIZE 200000
 #define DITHER  OFF
 
-/* Functions */
-
-fe_t *fe_init(param_t *P);
-
+/* Interface */
+fe_t *fe_init(param_t const *P);
 int32 fe_start_utt(fe_t *FE);
 
 int32 fe_end_utt(fe_t *FE, float32 *cepvector);
 
 int32 fe_close(fe_t *FE);
 
-int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
+int32 fe_process(fe_t *FE, int16 const *spch, int32 nsamps, float32 ***cep_block);
 
 int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
+int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps,float32 ***cep_block);
 
 #endif

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,20 +49,20 @@
  *   HISTORY
  *
  *   12-Aug-99 Created by M Seltzer for opensource SPHINX III system
- *             Based in part on past implementations by R Singh, 
- *             M Siegler, M Ravishankar, and others
+ *   Based in part on past implementations by R Singh, M Siegler, M
+ *   Ravishankar, and others
  *             
-
-      7-Feb-00 M. Seltzer - changed fe_process_utt usage. Function now
-      allocated 2d feature array internally and assigns the passed
-      pointer to it. This was done to allow for varying numbers of
-      frames to be written when block i/o processing
-      
-      17-Apr-01 RAH, upgraded all floats to float32, it was causing
-      some conflicts with external functions that were using float32.
-      I know that it doesn't matter for the most part because floats
-      are normally float32, however it makes things cleaner.
-      
+ *
+ *    7-Feb-00 M. Seltzer - changed fe_process_utt usage. Function now
+ *    allocated 2d feature array internally and assigns the passed
+ *    pointer to it. This was done to allow for varying numbers of
+ *    frames to be written when block i/o processing
+ *      
+ *    17-Apr-01 RAH, upgraded all floats to float32, it was causing
+ *    some conflicts with external functions that were using float32.
+ *    I know that it doesn't matter for the most part because floats
+ *    are normally float32, however it makes things cleaner.
+ *    
  */  
 
 
@@ -79,7 +79,7 @@
    problematic for init of this parameter...
 **********************************************************************/
 
-fe_t *fe_init(param_t *P)
+fe_t *fe_init(param_t const *P)
 {
     fe_t  *FE = (fe_t *) calloc(1,sizeof(fe_t));
 
@@ -120,8 +120,7 @@ fe_t *fe_init(param_t *P)
 
 	fe_build_melfilters(FE->MEL_FB);
 	fe_compute_melcosine(FE->MEL_FB);
-    } 
-    else {
+    } else {
 	fprintf(stderr,"MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
 	return(NULL);
     }
@@ -219,7 +218,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	/* RAH, upgraded cep_block to float32 */
+int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 ***cep_block)	/* RAH, upgraded cep_block to float32 */
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
@@ -280,6 +279,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
       }
 
       for (whichframe=0;whichframe<frame_count;whichframe++){
+
 	for (i=0;i<FE->FRAME_SIZE;i++)
 	  fr_data[i] = spbuf[whichframe*FE->FRAME_SHIFT + i];
 	
@@ -375,6 +375,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     free (spbuf);		/* RAH */
   } else {
     frame_count=0;
+    /* FIXME: This statement has no effect whatsoever! */
     cepvector = NULL;
   }
   
