@@ -12,9 +12,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/08/09  00:17:12  arthchan2003
- * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ * Revision 1.1  2004/08/30  22:29:19  arthchan2003
+ * Refactor the s3.0 tools, currently it is still quite messy, we need to make it modularize later on.
  * 
+ * Revision 1.1  2004/08/09 00:17:12  arthchan2003
+ * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ *
  * Revision 1.1  2003/02/14 14:40:34  cbq
  * Compiles.  Analysis is probably hosed.
  *
