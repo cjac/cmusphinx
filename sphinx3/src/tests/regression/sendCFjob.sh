@@ -1,9 +1,10 @@
 #!/bin/bash -x
 
-if test $[$# < 1]  = 1
+#This script is run in developer side to initiate the chain of compilation.
+
+if test $[$# > 0]  = 1
 then
-    echo "$0 <Sourceforge username>"
-    exit 1
+    username=$1
 fi
 
 #Written by Arthur Chan 20041207
@@ -12,9 +13,6 @@ if test $1 = "archan"
     echo "Arthur Chan ! Your user name in Sourceforge is not archan! Do you have any long-term memory!?"
     exit 1
 fi
-
-#This script is run in developer side to initiate the chain of compilation.
-username=$1
 
 # Arthur : To be replaced by global symbol
 sphinx_ver="sphinx3-0.5"
@@ -144,8 +142,10 @@ if ! ssh ${cfsh_address} rm -r ${distfn} ${package_name}/ >> $outfile 2>&1
  fi
 
 tmp=`date --iso-8601`
-tar zxvf ./log.tgz 
-cp -r ${logdir} ./log${tmp}
+#tar zxvf ./log.tgz 
+#cp -r ${logdir} ./log${tmp}
+mv ${logdir} ./log${tmp}
+perl ./createWebFromCFLog.pl ./log${tmp} > compileFarmLog.html
 
 pushd ./log${tmp}
 echo "Sphinx 3 CF compilation report" > $analysislog
