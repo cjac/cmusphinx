@@ -61,8 +61,6 @@
 
 void lcase(register char *cp)
 {
-   assert( NULL != cp ) ;
-   
    if ( cp ){
      while( *cp ){
        *cp = LOWER_CASE( *cp ) ;
@@ -73,8 +71,6 @@ void lcase(register char *cp)
 
 void ucase(register char *cp)
 {
-   assert( NULL != cp ) ;
-   
    if ( cp ){
      while ( *cp ){
        *cp = UPPER_CASE( *cp ) ;
@@ -86,9 +82,9 @@ void ucase(register char *cp)
 int32 strcmp_nocase (const char *str1, const char *str2)
 {
     char c1, c2;
-    assert( NULL != str1 ) ;
-    assert( NULL != str2 ) ;    
 
+    if(str1 == str2)
+      return 0;
     if(str1 && str2){
       for (;;) {
 	c1 = *(str1++);
@@ -101,6 +97,8 @@ int32 strcmp_nocase (const char *str1, const char *str2)
 	  return 0;
       }
     }
+    else
+      return (str1 == NULL) ? -1 : 1;
 
    return 0;
 }
