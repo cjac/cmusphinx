@@ -19,6 +19,7 @@ libs3decoder_la_SOURCES = \
 	fast_algo_struct.c \
 	fe_interface.c \
 	fe_sigproc.c \
+	fe.c \
         feat.c \
         fillpen.c \
 	flat_fwd.c \
@@ -64,7 +65,7 @@ noinst_HEADERS = \
 	fe_internal.h \
         feat.h \
         fillpen.h \
-	flat_fwd.h 
+	flat_fwd.h \
 	gs.h \
         hmm.h \
 	interp.h \

@@ -820,7 +820,7 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
     chk_tp_uppertri ();
     
     phmm_build ();
-    file = (char *)cmd_ln_access("-phonetpfn");
+    file = (char *)cmd_ln_access("-phonetp");
     if (! file)
 	E_ERROR("-phonetpfn argument missing; assuming uniform transition probs\n");
     tpfloor = *((float32 *) cmd_ln_access ("-phonetpfloor"));

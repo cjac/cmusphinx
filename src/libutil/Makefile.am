@@ -15,6 +15,7 @@ libutil_la_SOURCES = \
         hash.c \
         heap.c \
         io.c \
+	info.c \
 	linklist.c \
 	nextword.c \
         profile.c \
@@ -32,6 +33,7 @@ noinst_HEADERS = \
         hash.h \
         heap.h \
         io.h \
+	info.h \
 	linklist.h \
         libutil.h \
 	nextword.h \

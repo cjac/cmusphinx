@@ -76,7 +76,7 @@ extern "C" {
  * no type will be uint32).
  */
 
-typedef int8		s3cipid_t;	/* Ci phone id */
+typedef int16		s3cipid_t;	/* Ci phone id */
 #define BAD_S3CIPID	((s3cipid_t) -1)
 #define NOT_S3CIPID(p)	((p)<0)
 #define IS_S3CIPID(p)	((p)>=0)
@@ -152,6 +152,37 @@ typedef int16   	s3mgauid_t;	/* Mixture-gaussian codebook id */
 #define S3_MAX_FRAMES		15000    /* RAH, I believe this is still too large, but better than before */
 
 #define RENORM_THRESH     ((int32) ((S3_LOGPROB_ZERO)>>1))       /* Bestscore getting close to 0 */
+
+#define S3_SUCCESS      0
+#define S3_ERROR        -1
+#define S3_WARNING      -2
+
+/* The maximum # of states for any given acoustic model */
+#define MAX_N_STATE     20
+
+/* The maximum # of attributes associated with any
+ * given acoustic model */
+#define MAX_N_ATTRIB    5
+
+#ifndef TRUE
+#define TRUE  1
+#define FALSE 0 /* assume that true is never defined w/o false */
+#endif
+
+/* Timer for elapsed I/O time */
+#define IO_ELAPSED      0
+
+/* Timer for utt processing elapsed time */
+#define UTT_ELAPSED     1
+#define UTT_IO_ELAPSED  2
+#define UTT_BW_ELAPSED  3
+
+#define TYING_NON_EMITTING      (0xffffffff)
+#define TYING_NO_ID             (0xffffffff)
+
+#define MAX_VERSION_LEN 128
+
+#define MEG *1024*1024
 
 #ifdef __cplusplus
 }

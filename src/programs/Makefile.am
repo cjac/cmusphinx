@@ -6,39 +6,25 @@ bin_PROGRAMS = livepretend \
 	astar \
 	dag \
 	allphone \
-	ep
+	ep 
 
-noinst_PROGRAMS = decode_anytopo
-
-livepretend_SOURCES = \
-	main_livepretend.c \
-	live.c \
-	parse_args_file.c 
-
-livepretendDEVEL_SOURCES = \
-	main_livepretend_devel.c 
-
-decode_SOURCES = decode.c \
-	parse_args_file.c
-
-decode_anytopo_SOURCES = main_decode_anytopo.c  \
-	s3_dag.c
-
-align_SOURCES = main_align.c \
-	s3_align.c
-
-astar_SOURCES = main_astar.c \
-	s3_astar.c
-
-dag_SOURCES = main_dag.c \
-	s3_dag.c 
-
-allphone_SOURCES = main_allphone.c \
-	s3_allphone.c 
-
+livepretend_SOURCES = main_livepretend.c live.c parse_args_file.c 
+livepretendDEVEL_SOURCES = main_livepretend_devel.c 
+decode_SOURCES = decode.c parse_args_file.c
+decode_anytopo_SOURCES = main_decode_anytopo.c  s3_dag.c
+align_SOURCES = main_align.c s3_align.c
+astar_SOURCES = main_astar.c s3_astar.c
+dag_SOURCES = main_dag.c s3_dag.c 
+allphone_SOURCES = main_allphone.c s3_allphone.c 
 gausubvq_SOURCES = gausubvq.c
-
 ep_SOURCES = main_ep.c
+wave2feat_SOURCES = main_wave2feat.c 
+cepview_SOURCES = main_cepview.c
+
+noinst_PROGRAMS = \
+	wave2feat \
+	decode_anytopo \
+	cepview
 
 noinst_HEADERS = \
 	cmd_ln_args.h \

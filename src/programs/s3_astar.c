@@ -1057,7 +1057,7 @@ void nbest_search (char *filename, char *uttid)
     fprintf (fp, "# frames %d\n", dag.nfrm);
     f32arg = *((float32 *) cmd_ln_access ("-logbase"));
     fprintf (fp, "# logbase %e\n", f32arg);
-    f32arg = *((float32 *) cmd_ln_access ("-langwt"));
+    f32arg = *((float32 *) cmd_ln_access ("-lw"));
     fprintf (fp, "# langwt %e\n", f32arg);
     f32arg = *((float32 *) cmd_ln_access ("-inspen"));
     fprintf (fp, "# inspen %e\n", f32arg);
@@ -1223,7 +1223,7 @@ void nbest_init ( void )
     if ((NOT_S3WID(startwid)) || (NOT_S3WID(finishwid)))
 	E_FATAL("%s or %s missing from dictionary\n", S3_START_WORD, S3_FINISH_WORD);
 
-    lw = *((float32 *) cmd_ln_access("-langwt"));
+    lw = *((float32 *) cmd_ln_access("-lw"));
     wip = *((float32 *) cmd_ln_access("-inspen"));
 
     f64arg = (float64 *) cmd_ln_access ("-beam");

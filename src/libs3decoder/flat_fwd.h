@@ -109,7 +109,7 @@ typedef struct whmm_s {
     s3pid_t   *pid;		/* Triphone id: 1 per state if 1st phone in word,
 				   otherwise single pid for entire phone */
     int32      bestscore;	/* Best among this whmm.score[] in current frame */
-    int8       pos;		/* Word pronunciation position index */
+    int16       pos;		/* Word pronunciation position index */
     s3cipid_t  rc;		/* Right context position (only for last phone in word);
 				   index into rcpid[][].pid or lrcpid[][].pid */
     int32      active;		/* Whether active in current frame */

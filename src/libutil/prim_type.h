@@ -100,11 +100,19 @@ typedef union anytype_s {
 #define MAX_POS_FLOAT64		1.8e+307
 #define MIN_POS_FLOAT64		2.2e-308
 
+#define MAX_IEEE_NORM_POS_FLOAT32        3.4e+38f
+#define MIN_IEEE_NORM_POS_FLOAT32        1.2e-38f
+#define MIN_IEEE_NORM_NEG_FLOAT32       -3.4e+38f
+#define MAX_IEEE_NORM_POS_FLOAT64        1.8e+307
+#define MIN_IEEE_NORM_POS_FLOAT64        2.2e-308
+#define MIN_IEEE_NORM_NEG_FLOAT64       -1.8e+307
+
 /* Will the following really work?? */
 #define MAX_NEG_FLOAT32		((float32) (-MAX_POS_FLOAT32))
 #define MIN_NEG_FLOAT32		((float32) (-MIN_POS_FLOAT32))
 #define MAX_NEG_FLOAT64		((float64) (-MAX_POS_FLOAT64))
 #define MIN_NEG_FLOAT64		((float64) (-MIN_POS_FLOAT64))
+
 
 #ifdef __cplusplus
 }

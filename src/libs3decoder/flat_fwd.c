@@ -49,8 +49,17 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.5  2004/11/15  19:51:32  dhdfu
- * Put decode_anytopo back, compile it but don't install it (seems to do the right thing).
+ * Revision 1.6  2004/11/16  05:13:18  arthchan2003
+ * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
+ * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
+ * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
+ * 4, Make the same command line frontends for decode, align, dag, astar, allphone, decode_anytopo and ep . Allow the use a file to configure the application.
+ * 5, Make changes in test such that test-allphone becomes a repeatability test.
+ * 6, cepview, wave2feat and decode_anytopo will not be installed in 3.5 RCIII
+ * (Known bugs after this commit)
+ * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
+ * 2, default argument file's mechanism is not yet supported, we need to fix it.
+ * 3, the bug discovered by SonicFoundry is still not fixed.
  * 
  * Revision 1.2  2004/11/14 07:00:08  arthchan2003
  * 1, Finally, a version of working flat decoder is completed. It is not compiled in the standard compilation yet because there are two many warnings. 2, eliminate the statics variables in  fe_sigproc.c
@@ -340,6 +349,7 @@ static ptmr_t tm_wdtrans;
 static void hyp_free ( void )
 {
     srch_hyp_t *tmphyp;
+
     
     while (hyp) {
 	tmphyp = hyp->next;
@@ -387,6 +397,7 @@ static void dump_xwdpidmap (xwdpid_t **x)
 #endif
 
 
+
 /*
  * Utility function for building cross-word pid maps.  Compresses cross-word pid list
  * to unique ones.
@@ -397,7 +408,6 @@ static int32 xwdpid_compress (s3pid_t p, s3pid_t *pid, s3cipid_t *map, s3cipid_t
     s3senid_t *senmap, *prevsenmap;
     int32 s;
     s3cipid_t i;
-    s3pid_t temp_pid;
 
     senmap = mdef->phone[p].state;
     
@@ -680,6 +690,7 @@ static void lattice_dump (FILE *fp)
 {
     int32 i;
     
+    E_INFO("n_lat_entry %d\n",n_lat_entry);
     for (i = 0; i < n_lat_entry; i++) {
 	fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
 		 lattice[i].frm, lattice[i].history, lattice[i].score,
@@ -2396,10 +2407,13 @@ static s3latid_t lat_final_entry ( void )
     s3latid_t l, bestl;
     int32 f, bestscore;
     
+    bestl=BAD_S3LATID;
+
     /* Find lattice entry in last frame for FINISH_WORD */
     for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++)
 	if (dict_basewid(dict,lattice[l].wid) == finishwid)
 	    break;
+
     if (l < n_lat_entry) {
 	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
 	return (l);
@@ -2416,6 +2430,7 @@ static s3latid_t lat_final_entry ( void )
 	    }
 	}
     }
+    assert(! NOT_S3LATID(l));
     return ((f >= 0) ? bestl : BAD_S3LATID);
 }
 
@@ -2445,18 +2460,17 @@ srch_hyp_t *fwd_end_utt ( void )
     hyp_free ();
     
     /* Check if bptable should be dumped (for debugging) */
-    {
-	int32 k;
-	
-	k = *((int32 *) cmd_ln_access ("-bptbldump"));
-	if (k)
-	    lattice_dump (stdout);
+    if (cmd_ln_int32 ("-bptbldump")){
+      E_INFO("Dumping the whole lattice\n");
+      lattice_dump (stdout);
     }
 
     /* Backtrack through lattice for Viterbi result */
     l = lat_final_entry ();
-    if (NOT_S3LATID(l))
-	E_ERROR("%s: NO RECOGNITION\n", uttid);
+    if (NOT_S3LATID(l)){
+      E_INFO("lattice ID: %d\n",l);
+      E_ERROR("%s: NO RECOGNITION\n", uttid);
+    }
     else
 	lattice_backtrace (l, BAD_S3WID);	/* BAD_S3WID => Any right context */
 
@@ -2849,7 +2863,7 @@ static srch_hyp_t *dag_backtrace (daglink_t *l, float64 lwf)
     daglink_t *bl, *hist;
     
     hyp = NULL;
-    
+    dst = NULL;
     for (; l; l = hist) {
 	hist = l->history;
 	
@@ -2961,7 +2975,7 @@ srch_hyp_t *s3flat_fwd_dag_search (char *utt)
     }
     
     f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-langwt"))) : 1.0;
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
     
     /* Add fudge edges to DAG if specified */
     if (! dag.fudged) {
@@ -3047,16 +3061,16 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
     logbase = *((float32 *) cmd_ln_access("-logbase"));
     fprintf (fp, "# -logbase %e\n", logbase);
 
-    fprintf (fp, "# -dictfn %s\n", (char *) cmd_ln_access ("-dictfn"));
-    if (cmd_ln_access ("-fdictfn"))
-	fprintf (fp, "# -fdictfn %s\n", (char *) cmd_ln_access ("-fdictfn"));
-    fprintf (fp, "# -lmfn %s\n", (char *) cmd_ln_access ("-lmfn"));
-    fprintf (fp, "# -mdeffn %s\n", (char *) cmd_ln_access ("-mdeffn"));
-    fprintf (fp, "# -senmgaufn %s\n", (char *) cmd_ln_access ("-senmgaufn"));
-    fprintf (fp, "# -meanfn %s\n", (char *) cmd_ln_access ("-meanfn"));
-    fprintf (fp, "# -varfn %s\n", (char *) cmd_ln_access ("-varfn"));
-    fprintf (fp, "# -mixwfn %s\n", (char *) cmd_ln_access ("-mixwfn"));
-    fprintf (fp, "# -tmatfn %s\n", (char *) cmd_ln_access ("-tmatfn"));
+    fprintf (fp, "# -dict %s\n", (char *) cmd_ln_access ("-dict"));
+    if (cmd_ln_access ("-fdict"))
+	fprintf (fp, "# -fdict %s\n", (char *) cmd_ln_access ("-fdict"));
+    fprintf (fp, "# -lm %s\n", (char *) cmd_ln_access ("-lm"));
+    fprintf (fp, "# -mdef %s\n", (char *) cmd_ln_access ("-mdef"));
+    fprintf (fp, "# -senmgau %s\n", (char *) cmd_ln_access ("-senmgau"));
+    fprintf (fp, "# -mean %s\n", (char *) cmd_ln_access ("-mean"));
+    fprintf (fp, "# -var %s\n", (char *) cmd_ln_access ("-var"));
+    fprintf (fp, "# -mixw %s\n", (char *) cmd_ln_access ("-mixw"));
+    fprintf (fp, "# -tmat %s\n", (char *) cmd_ln_access ("-tmat"));
     fprintf (fp, "# -min_endfr %d\n", *((int32 *) cmd_ln_access ("-min_endfr")));
     fprintf (fp, "#\n");
     

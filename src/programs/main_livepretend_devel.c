@@ -54,6 +54,8 @@
 int
 main(int _argc, char **_argv)
 {
+  print_appl_info(_argv[0]);
+
   live_decoder_t decoder;
   short samples[SAMPLE_BUFFER_LENGTH];
   int len;
