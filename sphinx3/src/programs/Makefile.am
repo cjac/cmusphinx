@@ -9,7 +9,7 @@ bin_PROGRAMS = livepretend \
 
 livepretend_SOURCES = main_livepretend.c
 decode_SOURCES = decode.c
-#decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
+decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
 
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
@@ -23,7 +23,8 @@ cepview_SOURCES = main_cepview.c
 
 noinst_PROGRAMS = \
 	wave2feat \
-	cepview 
+	cepview \
+	decode_anytopo
 
 noinst_HEADERS = \
 	main_ep.h \
