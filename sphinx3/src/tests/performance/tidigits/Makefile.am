@@ -47,15 +47,59 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
+DATAPATH = /lab/speech/sphinx4/data/tidigits/test/
+TIDIGITSRAWPATH = $(DATAPATH)/raw16k
+TIDIGITSCEPPATH = $(DATAPATH)/cepstra 
+TIDIGITSRESULTPATH = ${top_builddir}/src/tests/performance/tidigits/
+PROGRAMDIR = ${top_builddir}/src/programs
+BMBIN = ${top_builddir}/src/test/programs/batchmetrics
+LPBIN = $(PROGRAMDIR)/livepretend
+DECODEBIN = $(PROGRAMDIR)/decode
+ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
-CLEANFILES = gmake-tidigits$(MODEAFFIX).results \
-	gmake-tidigits-quick$(MODEAFFIX).results 
+ALLTARGET=tidigits-lp tidigits-quick-lp tidigits-decode tidigits-quick-decode
 
-tidigits:
-	rm -f gmake-tidigits$(MODEAFFIX).results
-	../../programs/batchmetrics ./tidigits.ctl /lab/speech/sphinx4/data/tidigits/test/raw16k ARGS > gmake-tidigits$(MODEAFFIX).results
+#legacy targets, For tidigits, batchmetric doesn't work at all.
+#tidigits-bm tidigits-quick-bm:
+#	rm -f $@.results $@.ctl
+#	cat ARGS ARGS.live > ARGS.$@
+#	$(BMBIN) $(subst -bm,,$@).batch $(TIDIGITSRAWPATH) ARGS.$@ > $@.results 2>&1
+
+#all : $(ALLTARGET)
+quick : tidigits-quick-lp tidigits-quick-decode
+slow : tidigits-lp tidigits-decode
+
+clean : 
+	-rm -f *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.tidigits-*
+
+#Targets which we are actively using. 
+tidigits-lp tidigits-quick-lp : 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}' $(subst -lp,,$@).batch |sed "s/\.raw//" > ./$@.ctl
+	cat ARGS ARGS.live > ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) ./$@.ctl $(TIDIGITSRAWPATH) ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -lp,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+
+tidigits-decode tidigits-quick-decode: 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > ./$@.ctl
+	/bin/cp ARGS ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir $(TIDIGITSCEPPATH)" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+	touch $@.lex #empty lexicon
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match  > $@.match.align
 
 
-tidigits-quick:
-	rm -f gmake-tidigits-quick$(MODEAFFIX).results
-	../../programs/batchmetrics ./tidigits-quick.ctl /lab/speech/sphinx4/data/tidigits/test/raw16k ARGS > gmake-tidigits-quick$(MODEAFFIX).results
+
+
+
+
+
+
+
+
