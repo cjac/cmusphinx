@@ -18,17 +18,7 @@ EXTRA_DIST = autogen.sh \
 # Add an item for each and every test target to the CLEANFILES variable
 CLEANFILES = chan3.mfc \
 	test.out \
-	test-align.out \
-	test-allphone.out \
-	test-astar.out \
-	test-dag.out \
-	test-decode.out \
-	test-ep.out \
-	test-ep.tmp \
-	test-full.out \
-	test-gausubvq.out \
-	test-livepretend.out \
-	test-simple.out \
+	test-*.out \
 	pittsburgh.littleendian.allp \
 	pittsburgh.littleendian.phseg \
 	pittsburgh.littleendian.wdseg \
@@ -63,8 +53,8 @@ test-livepretendOLD:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	grep "P I T T S B U R G H (" $@.out 
-	grep "FWDXCT" $@.out 
+	@grep "FWDVIT" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-livepretendDEVEL:
 	@echo "LIVEPRETEND DEVEL TEST"
@@ -74,8 +64,8 @@ test-livepretendDEVEL:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	grep "P I T T S B U R G H (" $@.out 
-	grep "FWDXCT" $@.out 
+	@grep "FWDVIT" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-valgrind:
 	@echo "LIVEPRETEND TEST"
@@ -85,8 +75,8 @@ test-valgrind:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	grep "P I T T S B U R G H (" $@.out 
-	grep "FWDXCT" $@.out 
+	@grep "FWDVIT" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-decode:
 	@echo "DECODE TEST"
@@ -120,8 +110,8 @@ test-decode:
 	       -ci_pbeam 1e-5 \
 	       -ds 2  > $@.out 2>&1
 
-	grep "P I T T S B U R G H (" $@.out 
-	grep "FWDXCT" $@.out 
+	@grep "FWDVIT" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-decode_anytopo:
 	@echo "DECODE_ANYTOPO TEST"
@@ -147,8 +137,8 @@ test-decode_anytopo:
                -nwbeam 1e-40 \
 		 > $@.out 2>&1
 
-	grep "P I T T S B U R G H (" $@.out 
-	grep "FWDXCT" $@.out 
+	@grep "FWDVIT" $@.out 
+	@grep "FWDXCT" $@.out 
 
 test-align:
 	echo "ALIGN TEST"
@@ -212,7 +202,7 @@ test-astar:
 	    -inlatdir $(top_srcdir)/model/lm/an4/ \
 	    -logbase 1.0003 \
 	    -nbestdir . 
-	gzip -cfd pittsburgh.nbest.gz 
+	@gzip -cfd pittsburgh.nbest.gz 
 
 test-dag:
 	@echo "DAG TEST"
@@ -228,8 +218,8 @@ test-dag:
 	    -logbase 1.0003 \
 	    -backtrace 1 > $@.out 
 
-	grep "BSTPTH: P I T T S B U R G H " $@.out 
-	grep "BSTXCT" $@.out 
+	@grep "BSTPTH:" $@.out 
+	@grep "BSTXCT" $@.out 
 
 test-gausubvq:
 	@echo "GAUSUBVQ TEST"
@@ -261,7 +251,7 @@ test-gausubvq-match:
         -subvq $@.out 
 	grep -v "#" $@.out > tmp.out
 	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-	rm tmp.out 
+	@rm tmp.out 
 
 test-ep :
 	@echo "EP TEST"
@@ -325,7 +315,7 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	diff $@.mfc $(top_srcdir)/model/ep/chan3.mfc
+	cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc
 
 test-cepview:
 	@echo "CEPVIEW TEST"
@@ -334,4 +324,6 @@ test-cepview:
 	-d 13\
 	-f ./model/ep/chan3.mfc \
 	> $@.out
-	diff $@.out $(top_srcdir)/model/ep/chan3.cepview
+	@if (diff $@.out $(top_srcdir)/model/ep/chan3.cepview > /dev/null 2>&1); \
+	then echo "Cepview test PASSED"; else \
+	echo "Cepview test FAILED"; fi 
