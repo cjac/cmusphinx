@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2004/12/10  16:48:58  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.11  2005/01/20  15:11:47  rkm
+ * Cleaned up pscr-related functions
  * 
+ * Revision 1.10  2004/12/10 16:48:58  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 24-Nov-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added search_get_bestpscr() definition.
@@ -182,7 +185,7 @@ BPTBL_T *search_get_bptable ( void );
 void search_postprocess_bptable (double lwf, char const *pass);
 int32 *search_get_bscorestack ( void );
 double search_get_lw ( void );
-uint16 **search_get_uttpscr ( void );
+int32 **search_get_uttpscr ( void );
 int32 search_uttpscr2phlat_print ( void );
 search_hyp_t *search_uttpscr2allphone ( void );
 void search_remove_context (search_hyp_t *hyp);

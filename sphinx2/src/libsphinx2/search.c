@@ -40,9 +40,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.14  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.15  2005/01/20  15:11:47  rkm
+ * Cleaned up pscr-related functions
  * 
+ * Revision 1.14  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 01-Dec-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Consolidated senone_active updates into senscr.c.
@@ -459,7 +462,7 @@ static dump_search_tree ();
 static int32 topsen_window = 1;		/* Lookahead window of frames over which top
 					   senones used to predict ciphones.
 					   No prediction if topsen_window == 1 */
-static int32 n_topsen_frm;		/* #frames evaluated so far (lookahead version
+static int32 n_topsen_frm = 0;		/* #frames evaluated so far (lookahead version
 					   of CurrentFrame) */
 static int32 topsen_thresh = -60000;	/* Threshold for determining active phones from
 					   top senone (initial value is a HACK!!) */
@@ -472,7 +475,8 @@ static int32 *filler_phone;		/* filler_phone[p] = 1 iff p is filler */
 
 static int32 *topsen_score;		/* Top senone score in each frame */
 static int32 *bestpscr;			/* Best senone score within each phone in frame */
-static uint16 **utt_pscr = NULL;	/* bestpscr for entire utt; scaled */
+static int32 **utt_pscr = NULL;		/* bestpscr for entire utt */
+static int32 utt_pscr_valid = FALSE;
 
 static void topsen_init ( void );
 static void compute_phone_active (int32 topsenscr, int32 npa_th);
@@ -2023,10 +2027,10 @@ search_initialize (void)
      * Allocate bestscore/phone arrays:
      * bestpscr = single array of best-senone-based CIphones scores, updated
      * every frame.
-     * utt_pscr = scaled version of bestpscr, maintained for entire utterance.
+     * utt_pscr = bestpscr, maintained for entire utterance.
      */
     bestpscr = (int32 *) CM_calloc (NumCiPhones, sizeof(int32));
-    utt_pscr = (uint16 **) CM_2dcalloc (MAX_FRAMES, NumCiPhones, sizeof(uint16));
+    utt_pscr = (int32 **) CM_2dcalloc (MAX_FRAMES, NumCiPhones, sizeof(int32));
 }
 
 
@@ -2205,13 +2209,21 @@ search_fwd (float *cep, float *dcep, float *dcep_80ms, float *pcep, float *ddcep
     newscr = distScores;
     
     /* Compute senone scores */
-    cf = CurrentFrame;
-
+    cf = (topsen_window > 1) ? n_topsen_frm : CurrentFrame;
+    
     if (! compute_all_senones) {
 	compute_sen_active ();
 	topsen_score[cf] = senscr_active(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
     } else {
 	topsen_score[cf] = senscr_all(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
+	
+	if (cf < MAX_FRAMES) {
+	  /* Save bestpscr in utt_pscr */
+	  for (i = 0; i < NumCiPhones; i++)
+	    utt_pscr[cf][i] = bestpscr[i];
+	  
+	  utt_pscr_valid = TRUE;
+	}
     }
     n_senone_active_utt += n_senone_active;
     
@@ -2330,7 +2342,7 @@ search_start_fwd (void)
     }
 
     compute_all_senones = query_compute_all_senones() || (topsen_window > 1);
-
+    
     if (topsen_window > 1) {
 	/* Initialize next-phone-active flags */
 	memset (npa, 0, NumCiPhones * sizeof(int32));
@@ -2338,6 +2350,8 @@ search_start_fwd (void)
 	    memset (npa_frm[i], 0, NumCiPhones * sizeof(int32));
     }
     n_topsen_frm = 0;
+    
+    utt_pscr_valid = FALSE;
 }
 
 void
@@ -4072,8 +4086,17 @@ search_fwdflat_frame (float *cep, float *dcep, float *dcep_80ms, float *pcep, fl
     if (! compute_all_senones) {
 	compute_fwdflat_senone_active ();
 	senscr_active(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
-    } else
+    } else {
 	senscr_all(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
+	
+	if (CurrentFrame < MAX_FRAMES) {
+	  /* Save bestpscr in utt_pscr */
+	  for (i = 0; i < NumCiPhones; i++)
+	    utt_pscr[CurrentFrame][i] = bestpscr[i];
+	  
+	  utt_pscr_valid = TRUE;
+	}
+    }
     n_senone_active_utt += n_senone_active;
 
     if (CurrentFrame >= MAX_FRAMES-1)
@@ -4519,17 +4542,16 @@ static void compute_phone_perplexity( void )
 
     for (f = 0; f < nf - topsen_window; f++) {
 	/* Find Sum(pscr[p]) over p */
-	sum = - (utt_pscr[f][0] << 4);
+	sum = utt_pscr[f][0];
 	for (p = 1; p < NumCiPhones; p++) {
-	    prob = - (utt_pscr[f][p] << 4);
+	    prob = utt_pscr[f][p];
 	    FAST_ADD(sum, sum, prob, at, ts);
 	}
 	
 	perp = 0.0;
 	sumpp = 0.0;
 	for (p = 0; p < NumCiPhones; p++) {
-	    logpp = (utt_pscr[f][p] << 4);
-	    logpp = -logpp;
+	    logpp = utt_pscr[f][p];
 	    logpp -= sum;
 	    logpp *= LOG_BASE;
 	    pp = exp(logpp);
@@ -4569,7 +4591,6 @@ static void topsen_init ( void )
 static void compute_phone_active (int32 topsenscr, int32 npa_th)
 {
     int32 *tmp, i, p, *newlist, thresh;
-    uint16 *uttpscrp;
     
     thresh = topsenscr + npa_th;
     
@@ -4584,11 +4605,9 @@ static void compute_phone_active (int32 topsenscr, int32 npa_th)
 
     /* Compute phones predicted by top senones in current frame */
     memset (newlist, 0, NumCiPhones * sizeof(int32));
-    uttpscrp = utt_pscr[n_topsen_frm];
     for (i = 0; i < NumCiPhones; i++) {
 	if (bestpscr[i] > thresh)
 	    newlist[i] = 1;
-	uttpscrp[i] = (-bestpscr[i]) >> 4;
     }
     
     /* Add phones active in current frame to cumulative active phone list */
@@ -4628,7 +4647,7 @@ static void compute_phone_active (int32 topsenscr, int32 npa_th)
     }
 }
 
-uint16 **search_get_uttpscr ( void )
+int32 **search_get_uttpscr ( void )
 {
     return utt_pscr;
 }
@@ -4645,24 +4664,37 @@ typedef struct {
 #define PHONE_TRANS_PROB	0.0001
 #endif
 
-int32
-search_uttpscr2phlat_print ( void )
+
+/*
+ * Dump a "phone lattice" to stdout:
+ *   For each frame, determine the CIphones with top scoring senones, threshold
+ *   and sort them in descending order.  (Threshold based on topsen_thresh.)
+ */
+int32 search_uttpscr2phlat_print ( void )
 {
-    int32 *pval;
+    int32 *pval, *pid;
     int32 f, i, p, nf, maxp, best, np;
-    int32 *pid;
     
+#if 0
     if (topsen_window == 1)
 	return -1;	/* No lattice available */
-    
+#else
+    if (! utt_pscr_valid)
+      return -1;
+#endif
+
     pval = (int32 *) CM_calloc (NumCiPhones, sizeof(int32));
     pid = (int32 *) CM_calloc (NumCiPhones, sizeof(int32));
     
-    E_INFO ("Phone lattice:\n");
-    nf = n_topsen_frm;
+    printf(" SFrm #Ph Phones (PhoneLattice) (%s)\n", uttproc_get_uttid());
+    printf("----------------------------------------------\n");
+    
+    /* Strictly, #frames may be > LastFrame, but... */
+    nf = LastFrame;
+    
     for (f = 0; f < nf; f++) {
 	for (p = 0; p < NumCiPhones; p++)
-	    pval[p] = -(utt_pscr[f][p] << 4);
+	    pval[p] = utt_pscr[f][p];
 
 	best = (int32)0x80000000;
 	np = 0;
@@ -4686,8 +4718,11 @@ search_uttpscr2phlat_print ( void )
 	    printf (" %s", phone_from_id(pid[i]));
 	printf("\n");
     }
+    printf("----------------------------------------------\n");
     
     free (pval);
+    free (pid);
+    
     return 0;
 }
 
@@ -4723,21 +4758,29 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
 		  double tprob,		/* State transition (exit) probability */
 		  int32 final_state)	/* Nominally, where search should exit */
 {
-    int32 i, j, f, tp, newscore, bestscore, bestp, pred_bestp, nseg;
+    int32 i, j, f, tp, newscore, bestscore, bestp, pred_bestp, nseg, nfrm;
     search_hyp_t *head, *tmp;
-    
+
+#if 0    
     if (topsen_window <= 1) {
 	E_ERROR("Must use -topsen prediction to use this feature\n");
 	return NULL;
     }
+#else
+    if (! utt_pscr_valid)
+      return NULL;
+#endif
+    
+    /* Strictly, nfrm may be greater than LastFrame, but... */
+    nfrm = LastFrame;
     
     tp = LOG(tprob);
     
     /* Search */
-    for (f = 0; f < n_topsen_frm; f++) {
+    for (f = 0; f < nfrm; f++) {
 	/* Update path scores for current frame state scores */
 	for (i = 0; i < n_state; i++) {
-	    vithist[f][i].score -= (utt_pscr[f][pid[i]] << 4);
+	    vithist[f][i].score += utt_pscr[f][pid[i]];
 	    
 	    /* Propagate to next frame */
 	    if (vithist[f][i].sf <= f-minseg) {
@@ -4760,21 +4803,21 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
     }
     
     /* Find proper final state to use */
-    if (vithist[n_topsen_frm-1][final_state].pred < 0) {
+    if (vithist[nfrm-1][final_state].pred < 0) {
 	E_ERROR("%s: search_pscr_path() didn't end in final state\n", uttproc_get_uttid());
 #ifdef DUMP_VITHIST
-	vithist_dump (stdout, vithist, pid, n_topsen_frm, n_state);
+	vithist_dump (stdout, vithist, pid, nfrm, n_state);
 #endif
 	
 	bestscore = (int32)0x80000000;
 	bestp = -1;
 	for (i = 0; i < n_state; i++) {
-	    if (vithist[n_topsen_frm-1][i].score > bestscore) {
-		bestscore = vithist[n_topsen_frm-1][i].score;
+	    if (vithist[nfrm-1][i].score > bestscore) {
+		bestscore = vithist[nfrm-1][i].score;
 		bestp = i;
 	    }
 	}
-	if ((bestp < 0) || (vithist[n_topsen_frm-1][bestp].score <= WORST_SCORE)) {
+	if ((bestp < 0) || (vithist[nfrm-1][bestp].score <= WORST_SCORE)) {
 	    E_ERROR("%s: search_pscr_path() failed\n", uttproc_get_uttid());
 	    return NULL;
 	}
@@ -4784,13 +4827,13 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
     /* Backtrace.  (Hack!! Misuse of search_hyp_t to store phones, rather than words) */
     head = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
     head->wid = pid[final_state];
-    head->ef = n_topsen_frm - 1;
+    head->ef = nfrm - 1;
     head->next = NULL;
-    head->ascr = vithist[n_topsen_frm-1][final_state].score;	/* Fixed later */
+    head->ascr = vithist[nfrm-1][final_state].score;	/* Fixed later */
     nseg = 1;
     
     bestp = final_state;
-    for (f = n_topsen_frm-2; f >= 0; --f) {
+    for (f = nfrm-2; f >= 0; --f) {
 	pred_bestp = vithist[f+1][bestp].pred;
 	
 	if (pred_bestp != bestp) {
@@ -4861,7 +4904,7 @@ search_hyp_t *search_uttpscr2allphone ( void )
     static int32 **allphone_tmat;
     static int32 *allphone_pid;
     search_hyp_t *allp;
-    int32 i, j;
+    int32 i, j, nfrm;
     
     if (allphone_vithist == NULL) {
 	allphone_vithist = (vithist_t **) CM_2dcalloc (MAX_FRAMES, NumCiPhones,
@@ -4873,8 +4916,11 @@ search_hyp_t *search_uttpscr2allphone ( void )
 	allphone_tmat = kb_get_phonetp();
     }
     
+    /* Strictly, nfrm may be greater than LastFrame, but... */
+    nfrm =  LastFrame;
+    
     /* Start search with silencephoneid; all others inactive */
-    for (i = 0; i < n_topsen_frm; i++) {
+    for (i = 0; i < nfrm; i++) {
 	for (j = 0; j < NumCiPhones; j++) {
 	    allphone_vithist[i][j].score = WORST_SCORE;
 	    allphone_vithist[i][j].sf = 0;
