@@ -111,8 +111,6 @@ AM_PROG_LIBTOOL
 
 AC_OUTPUT([ 
 Makefile
-config/config
-config/system.mak
 src/Makefile
 src/libs3audio/Makefile
 src/libs3decoder/Makefile
