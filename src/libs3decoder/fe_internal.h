@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,9 +70,6 @@ void fe_free_2d(void **arr);
 void fe_print_current(fe_t *FE);
 void fe_parse_general_params(param_t const *P, fe_t *FE);
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
-
-
-
 
 #ifdef __cplusplus
 }
