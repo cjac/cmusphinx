@@ -38,6 +38,9 @@
  *
  * HISTORY
  * 
+ * 06-Aug-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added phonetp (phone transition probs matrix) to search.
+ * 
  * 10-Sep-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified to let allphone_utt return phone segmentation result,
  * 		instead of simply printing it to the standard log file.
@@ -87,6 +90,7 @@ static int32 *renorm_scr;
 static int32 allphone_bw;	/* beam width */
 static int32 allphone_exitbw;	/* phone exit beam width */
 static int32 allphone_pip;	/* phone insertion penalty */
+static int32 **phonetp;		/* phone transition LOGprob */
 
 typedef struct {
     int32 f;
@@ -199,18 +203,23 @@ static void allphone_chan_prune (int32 f, int32 bestscr)
 
 static void allphone_chan_trans (int32 f, int32 bp)
 {
-    int32 p, scr, s;
+    int32 p, scr, s, predp;
 
-    scr = allphone_bp[bp].scr + allphone_pip;
+    predp = allphone_bp[bp].p;
+    
     for (p = 0; p < n_ciphone; p++) {
-	if ((ci_chan[p].active < f) || (ci_chan[p].score[0] < scr)) {
-	    ci_chan[p].score[0] = scr;
-	    if (ci_chan[p].active < f)
-		for (s = 1; s < HMM_LAST_STATE; s++)
-		    ci_chan[p].score[s] = WORST_SCORE;
-	    ci_chan[p].path[0] = bp;
-	    ci_chan[p].active = f+1;
-	}
+      scr = allphone_bp[bp].scr + phonetp[predp][p];
+      
+      if ((ci_chan[p].active < f) || (ci_chan[p].score[0] < scr)) {
+	ci_chan[p].score[0] = scr;
+	
+	if (ci_chan[p].active < f)
+	  for (s = 1; s < HMM_LAST_STATE; s++)
+	    ci_chan[p].score[s] = WORST_SCORE;
+	
+	ci_chan[p].path[0] = bp;
+	ci_chan[p].active = f+1;
+      }
     }
 }
 
@@ -398,6 +407,8 @@ allphone_init (double bw, double exitbw, double pip)
     allphone_exitbw = LOG(exitbw) * 8;
     allphone_pip = LOG(pip);
 
+    phonetp = kb_get_phonetp();
+    
     printf ("%s(%d): bw= %d, wordbw= %d, pip= %d\n", __FILE__, __LINE__,
 	    allphone_bw, allphone_exitbw, allphone_pip);
 }

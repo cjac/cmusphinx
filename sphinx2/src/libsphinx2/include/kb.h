@@ -120,5 +120,12 @@ int32 query_fsg_use_altpron ( void );
 
 int32 query_fsg_use_filler ( void );
 
+/*
+ * Phone transition LOGprobs table; langwt and pip already applied.
+ */
+int32 **kb_get_phonetp ( void );
+
+float32 kb_get_filler_pfpen ( void );
+
 
 #endif

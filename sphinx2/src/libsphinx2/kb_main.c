@@ -35,6 +35,10 @@
  */
 /* KB.C - for compile_kb
  * 
+ * 06-Aug-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added phonetp (phone transition probs matrix) for use in
+ * 		allphone search.
+ * 
  * 27-May-97  M K Ravishankar (rkm@cs.cmu.edu) at Carnegie-Mellon University
  * 		Included Bob Brennan's personaldic handling (similar to 
  *              oovdic).
@@ -107,6 +111,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
+#include <assert.h>
 
 #include "s2types.h"
 #include "CM_macros.h"
@@ -159,6 +164,9 @@ static char *oov_dict_file_name = 0;
 static char *personal_dict_file_name = 0;
 static char *phrase_dict_file_name = 0;
 static char *noise_dict_file_name = 0;
+static char *phonetp_file_name = 0;
+static float32 ptplw = 5.0;		/* Pulled out of thin air */
+static float32 uptpwt = 0.001;		/* Pulled out of thin air */
 static char *hmm_dir = 0;
 static char *hmm_dir_list = 0;
 static char const *hmm_ext = "chmm";
@@ -186,6 +194,10 @@ static int32 useWDPhonesOnly = FALSE;	/* only with in word phones */
 static float silence_word_penalty = 0.005;
 static float insertion_penalty = 0.65;
 static float filler_word_penalty = 1e-8;
+
+/* Per frame penalty for filler words; no lang wt applied to this */
+static float filler_pfpen = 1.0;	/* Default: no penalty (0 => infinite) */
+
 static float language_weight = 9.5;
 static int32 max_new_oov = 0;		/* #new OOVs that can be added at run time */
 static float oov_ugprob = -4.5;		/* (Actually log10(ugprob)) of OOVs */
@@ -241,6 +253,12 @@ config_t kb_param[] = {
 		STRING, (caddr_t) &phrase_dict_file_name }, 
 	{ "NoiseDictFile", "Noise Dictionary file name", "-ndictfn",
 		STRING, (caddr_t) &noise_dict_file_name }, 
+	{ "PhoneTransCountsFile", "Phone transition counts file", "-phonetpfn",
+		STRING, (caddr_t) &phonetp_file_name }, 
+	{ "PhoneTPLanguageWeight", "Weighting on Phone Transition Probabilities", "-ptplw",
+		FLOAT, (caddr_t) &ptplw }, 
+	{ "UniformPTPWeight", "Unigram phone transition prob weight", "-uptpwt",
+		FLOAT, (caddr_t) &uptpwt },
 	{ "StartSymbolsFile", "Start symbols file name", "-startsymfn",
 		STRING, (caddr_t) &startsym_file }, 
 	{ "UseLeftContext", "Use the left context models", "-useleftcontext",
@@ -287,6 +305,8 @@ config_t kb_param[] = {
 		FLOAT, (caddr_t) &silence_word_penalty }, 
 	{ "FillerWordPenalty", "Penalty for filler word transitions", "-fillpen",
 		FLOAT, (caddr_t) &filler_word_penalty }, 
+	{ "FillerPerFramePenalty", "Per frame penalty for filler words", "-fpfpen",
+		FLOAT, (caddr_t) &filler_pfpen }, 
 	{ "LanguageWeight", "Weighting on Language Probabilities", "-langwt",
 		FLOAT, (caddr_t) &language_weight }, 
 	{ "MaxNewOOV", "MAX New OOVs that can be added at run time", "-maxnewoov",
@@ -305,6 +325,7 @@ int32  num_alphabet = NUMOFCODEENTRIES;
 SMD   *smds;		  	/* Pointer to the smd's */
 int32  numSmds;			/* Number of SMDs allocated */
 dictT *word_dict;
+static int32 **phonetp;		/* Phone transition LOG(probability) matrix */
 
 static float phone_insertion_penalty;
 
@@ -369,6 +390,51 @@ static void kb_init_lmclass_dictwid (lmclass_t cl)
     }
 }
 
+
+static void phonetp_load_file (char *file, int32 **tp)
+{
+  FILE *fp;
+  char line[16384], p1[4096], p2[4096];
+  int32 i, j, k, n;
+  
+  E_INFO("Reading phone transition counts file '%s'\n", file);
+  fp = CM_fopen(file, "r");
+  
+  while (fgets (line, sizeof(line), fp) != NULL) {
+    if (line[0] == '#')
+      continue;
+    
+    k = sscanf (line, "%s %s %d", p1, p2, &n);
+    if ((k != 0) && (k != 3))
+      E_FATAL("Expecting 'srcphone dstphone count'; found:\n%s\n", line);
+    
+    i = phone_to_id(p1, TRUE);
+    j = phone_to_id(p2, TRUE);
+    if ((i == NO_PHONE) || (j == NO_PHONE))
+      E_FATAL("Unknown src or dst phone: %s or %s\n", p1, p2);
+    if (n < 0)
+      E_FATAL("Phone transition count cannot be < 0:\n%s\n", line);
+    
+    tp[i][j] = n;
+  }
+  
+  fclose (fp);
+}
+
+
+static void phonetp_dump (int32 **tp, int32 np)
+{
+  int32 i, j;
+  
+  E_INFO("Phone transition prob LOGprobs:\n");
+  for (i = 0; i < np; i++) {
+    for (j = 0; j < np; j++) {
+      E_INFOCONT ("\t%s\t%s\t%10d\n", phone_from_id(i), phone_from_id(j), tp[i][j]);
+    }
+  }
+}
+
+
 void kb (int argc, char *argv[],
 	 float ip,	/* word insertion penalty */
 	 float lw,	/* language weight */
@@ -377,8 +443,10 @@ void kb (int argc, char *argv[],
     char *pname = argv[0];
     char hmm_file_name[256];
     int32 num_phones, num_ci_phones;
-    int32 i, use_darpa_lm;
-
+    int32 i, j, n, use_darpa_lm;
+    float32 p, uptp;
+    int32 logp;
+    
     /* FIXME: This is evil.  But if we do it, let's prototype it
        somewhere, OK? */
     unlimit ();		/* Remove memory size limits */
@@ -596,7 +664,53 @@ void kb (int argc, char *argv[],
      * Map the distributions to the correct locations
      */
     remap (smds);
+    
+    /*
+     * Create phone transition logprobs matrix
+     */
+    phonetp = (int32 **) CM_2dcalloc(num_ci_phones, num_ci_phones, sizeof(int32));
+    if (phonetp_file_name) {
+      /* Load phone transition counts file */
+      phonetp_load_file (phonetp_file_name, phonetp);
+    } else {
+      /* No transition probs file specified; use uniform probs */
+      for (i = 0; i < num_ci_phones; i++) {
+	for (j = 0; j < num_ci_phones; j++) {
+	  phonetp[i][j] = 1;
+	}
+      }
+    }
+    /* Convert counts to probs; smooth; convert to LOG-probs; apply lw/pip */
+    for (i = 0; i < num_ci_phones; i++) {
+      n = 0;
+      for (j = 0; j < num_ci_phones; j++)
+	n += phonetp[i][j];
+      assert (n >= 0);
+      
+      if (n == 0) {	/* No data here, use uniform probs */
+	p = 1.0 / (float32)num_ci_phones;
+	p *= pip;	/* Phone insertion penalty */
+	logp = (int32)(LOG(p) * ptplw);
+	
+	for (j = 0; j < num_ci_phones; j++)
+	  phonetp[i][j] = logp;
+      } else {
+	uptp = 1.0 / (float32)num_ci_phones;	/* Uniform prob trans prob*/
+	
+	for (j = 0; j < num_ci_phones; j++) {
+	  p = ((float32)phonetp[i][j] / (float32)n);
+	  p = ((1.0 - uptpwt) * p) + (uptpwt * uptp);	/* Smooth */
+	  p *= pip;	/* Phone insertion penalty */
+	  
+	  phonetp[i][j] = (int32)(LOG(p) * ptplw);
+	}
+      }
+    }
+#if 0
+    phonetp_dump(phonetp, num_ci_phones);
+#endif
 }
+
 
 #if 0
 computePhraseLMProbs ()
@@ -909,4 +1023,16 @@ int32 query_fsg_use_altpron ( void )
 int32 query_fsg_use_filler ( void )
 {
   return fsg_use_filler;
+}
+
+
+int32 **kb_get_phonetp ( void )
+{
+  return phonetp;
+}
+
+
+float32 kb_get_filler_pfpen ( void )
+{
+  return filler_pfpen;
 }

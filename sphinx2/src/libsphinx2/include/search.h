@@ -36,6 +36,9 @@
 /* 
  * HISTORY
  * 
+ * 12-Aug-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ * 		Added search_get_current_startwid().
+ * 
  * 02-Aug-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Changed latnode_t.fef and latnode_t.lef to int32.
  */
@@ -140,6 +143,8 @@ void search_set_hyp_total_score (int32 score);
 void search_set_hyp_total_lscr (int32 lscr);
 void search_set_context (int32 w1, int32 w2);
 void search_set_startword (char const *str);
+int32 search_get_current_startwid ( void );
+
 
 int32 search_result(int32 *fr, char **res);	/* Decoded result as a single string */
 int32 search_partial_result (int32 *fr, char **res);
