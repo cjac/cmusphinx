@@ -113,8 +113,6 @@ if test "x$ad_files" = "x"; then
         esac
 fi
 
-AC_CHECK_LIB(pthread,pthread_create)
-
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
 AC_SUBST(hmmdata)
