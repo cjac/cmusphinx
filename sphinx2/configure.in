@@ -23,6 +23,9 @@ docdata=`echo $docdata`
 
 myarch=`uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 
+archfiles=""
+archlibs=""
+
 if test "x$myarch" = "xi386_linux"; then
 	# echo "boo!"
 	archfiles="ad_i386_linux.lo cont_ad_base.lo mulaw_base.lo"
@@ -42,8 +45,10 @@ else
 					if test "x$myarch" = "xi386_freebsd"; then
 						archfiles="ad_i386_freebsd.lo cont_ad_base.lo mulaw_base.lo"
 					else
+						myarch=`uname`	
 						if test "x$myarch" = "xIRIX" || test "x$myarch" = "xIRIX64" ; then
-							archfiles="ad_sgi.lo"
+							archfiles="ad_sgi.lo cont_ad_base.lo mulaw_base.lo"
+                                                        archlibs="-laudio" 
 						else
 						   	archfiles=""
 						fi
@@ -55,6 +60,7 @@ else
 fi
 
 archfiles=`echo $archfiles`
+archlibs=`echo $archlibs`
 
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
@@ -62,6 +68,7 @@ AC_SUBST(hmmdata)
 AC_SUBST(lmdata)
 AC_SUBST(docdata)
 AC_SUBST(archfiles)
+AC_SUBST(archlibs)
 AC_SUBST(LIBOBJS)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
