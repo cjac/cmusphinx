@@ -1,8 +1,0 @@
-0 23 * * 0 (. $HOME/.profile ; ./regressionTest ti46 batch)
-0 23 * * 1 (. $HOME/.profile ; ./regressionTest tidigits batch)
-0 23 * * 2 (. $HOME/.profile ; ./regressionTest an4_words batch)
-0 23 * * 3 (. $HOME/.profile ; ./regressionTest an4_spelling batch)
-0 23 * * 4 (. $HOME/.profile ; ./regressionTest an4_full batch)
-0 23 * * 5 (. $HOME/.profile ; ./regressionTest an4_plus batch)
-0 23 * * 6 (. $HOME/.profile ; ./regressionTest rm1 batch)
-0 21 * * * (. $HOME/.profile ; ./regressionTest standard batch)
