@@ -154,7 +154,7 @@ hash_add (hash_t *ht, char const *sym, caddr_t val)
      * Hash 'sym' into ht
      */
     if (hash_in (ht, sym, val)) {
-	fprintf (stderr, "%s: Error '%s' hash conflict\n", rname, sym);
+	log_error ("\n%s: Error: [%s] hash conflict\nThere are two entries in the dictionary for [%s]\nPlease change or remove one of them and re-run.\n\n", rname, sym, sym);
 	exit (-1);
     }
     return (0);
@@ -208,7 +208,7 @@ hash_lookup (hash_t *ht, char const *sym, caddr_t *val)
     key = 0;
     i = -1;
     cp = sym;
-/* kal 18-Jul-2000 - replaced with patch from Jose Renau
+/* kal 18-Jul-2000 - replaced with patch from Jose Renau 
     do {
 	c = *cp++;
 	if ((c >= 'a') && (c <= 'z'))

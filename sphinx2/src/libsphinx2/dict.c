@@ -465,7 +465,7 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 #endif
 	entry = _new_dict_entry (dict_str, pronoun_str, use_context);
 	if (! entry) {
-	    E_ERROR("Failed to add %s to dictionary\n", dict_str);
+	    log_error("Failed to add %s to dictionary\n", dict_str);
 	    err = 1;
 	    continue;
 	}
@@ -510,8 +510,9 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 		if (q) *q = '\0';
 
 		if (hash_lookup (&dict->dict, dict_str, &wid)) {
-		    log_info("%s: Missing first pronunciation for [%s]\n",
-			     rname, dict_str);
+		    log_error("\n%s: Missing first pronunciation for [%s]\nThis means that e.g. [%s(2)] was found with no [%s]\nPlease correct the dictionary and re-run.\n\n",
+			      rname, dict_str, dict_str, dict_str);
+		    exit(1);
 		}
 	 	DFPRINTF((stdout, "Alternate transcription for [%s](wid = %d)\n",
 			  entry->word, (int32)wid));
