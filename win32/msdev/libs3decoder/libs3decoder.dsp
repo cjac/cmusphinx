@@ -25,7 +25,7 @@ CFG=libs3decoder - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libs3decoder - Win32 Release"
@@ -41,13 +41,13 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\..\src\" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\..\src\\" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -64,13 +64,13 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\src\" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\src\\" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -86,6 +86,14 @@ LIB32=link.exe -lib
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\agc.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\approx_cont_mgau.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\approx_cont_mgau.h
 # End Source File
 # Begin Source File
 
@@ -133,6 +141,14 @@ SOURCE=..\..\..\src\libs3decoder\fillpen.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\gs.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\gs.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\hmm.c
 # End Source File
 # Begin Source File
@@ -150,6 +166,14 @@ SOURCE=..\..\..\src\libs3decoder\lextree.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\lm.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\lmclass.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\lmclass.h
 # End Source File
 # Begin Source File
 
