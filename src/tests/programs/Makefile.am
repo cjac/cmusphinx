@@ -10,7 +10,8 @@ LIVEDECOBJS = $(LIVEDECSRCS:.c=.o)
 
 noinst_PROGRAMS = lm_test \
 		  lm_utt_test \
-		  dumpfrontend  
+		  dumpfrontend \
+		  analysis 
 
 noinst_HEADERS = cmd_ln_args.h \
 	fe_dump.h \
@@ -22,8 +23,8 @@ noinst_HEADERS = cmd_ln_args.h \
 dumpfrontend_SOURCES = dump_frontend.c \
 			${LIVEDECSRCS}
 
-#batchmetrics_SOURCES = batch_metrics.c \
-#			${LIVEDECSRCS}
+analysis_SOURCES = analysis.c \
+		   gmm_compute.c 
 
 lm_test_SOURCES = lm_test.c \
 			${LIVEDECSRCS}
