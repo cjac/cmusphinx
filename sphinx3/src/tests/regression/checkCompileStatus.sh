@@ -48,7 +48,7 @@ export CVS_RSH=ssh
 cvs -d:ext:${address}:/cvsroot/cmusphinx co sphinx2 > $outfile 2>&1
 
 # Configure it
-pushd sphinx2 2>&1
+pushd sphinx2 >> $outfile 2>&1
 
 ./autogen.sh >> $outfile 2>&1 
 ./autogen.sh >> $outfile 2>&1 
@@ -59,15 +59,15 @@ if ! make all test >> $outfile 2>&1 ;
  elif ! (grep BESTPATH $outfile | grep -q 'GO FORWARD TEN METERS');
  then ${MAILX} -s "Sphinx2 test failed" ${S2LIST} < $outfile;
  else ${MAILX} -s "sphinx2 compilation or test succeeded" ${S2LIST} < $outfile
- fi
+fi
 
-popd
+popd >> $outfile 2>&1
 
 # Fresh download of sphinx3
 cvs -d:ext:${address}:/cvsroot/cmusphinx co sphinx3 > $outfile 2>&1
 
 # Configure it
-pushd sphinx3 2>&1
+pushd sphinx3 >> $outfile 2>&1
 
 ./autogen.sh >> $outfile 2>&1 
 ./autogen.sh >> $outfile 2>&1 
@@ -82,23 +82,24 @@ if ! make all test-full >> $outfile 2>&1 ;
  elif grep -q FAILED $outfile;
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
  else ${MAILX} -s "sphinx3 test succeeded" ${S3LIST} < $outfile;
- fi
+fi
 
-popd 
+popd >> $outfile 2>&1
 
 # Fresh download of SphinxTrain
 cvs -d:ext:${address}:/cvsroot/cmusphinx co SphinxTrain > $outfile 2>&1
 
 # Configure it
-pushd SphinxTrain 2>&1
+pushd SphinxTrain >> $outfile 2>&1
 ./configure >> $outfile 2>&1
 
 # Coompile and make sure it's successful
 if ! make all >> $outfile 2>&1 ;
  then ${MAILX} -s "SphinxTrain compilation failed" ${STLIST} < $outfile;
  else ${MAILX} -s "SphinxTrain compilation succeeded" ${STLIST} < $outfile;
- fi
-popd
+fi
+
+popd >> $outfile 2>&1
 
 # Remove what we created
 cd /tmp
