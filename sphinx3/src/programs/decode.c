@@ -56,7 +56,7 @@
  * 		Started.
  */
 
-/* \file decode.c
+/** \file decode.c
  * \brief main function for application decode
  */
 #include "utt.h"

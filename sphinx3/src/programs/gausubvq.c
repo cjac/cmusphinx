@@ -55,7 +55,7 @@
 #include "logs3.h"
 #include "vector.h"
 
-/* \file gausubvq.c 
+/** \file gausubvq.c 
  * \brief Compute the SVQ map 
  */
 

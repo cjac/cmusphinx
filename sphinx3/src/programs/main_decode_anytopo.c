@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.4  2004/12/06  11:15:11  arthchan2003
- * Enable doxygen in the program directory.
+ * Revision 1.5  2004/12/06  11:31:47  arthchan2003
+ * Fix brief comments for programs.
  * 
+ * Revision 1.4  2004/12/06 11:15:11  arthchan2003
+ * Enable doxygen in the program directory.
+ *
  * Revision 1.3  2004/12/05 12:01:32  arthchan2003
  * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
  *
@@ -183,7 +186,7 @@
  * 		Created.
  */
 
-/* \file main_decode_anytopo.c
+/** \file main_decode_anytopo.c
  * \brief Main driver for sphinx 3.0 decoding (or the slow decoder)
  */
 

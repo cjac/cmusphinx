@@ -50,6 +50,9 @@
  * Created
  */
 
+/** \file main_ep.h
+    \brief Just a master header for ep.
+ */
 
 #include "fe.h"
 #include "fe_internal.h"
