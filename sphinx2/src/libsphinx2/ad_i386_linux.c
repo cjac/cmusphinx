@@ -83,6 +83,7 @@
 #define INPUT_GAIN   (85)
 
 #define SPS_EPSILON   200
+#define SAMPLERATE_TOLERANCE 0.01
 
 ad_rec_t *ad_open_sps (int32 sps) {
     ad_rec_t *handle;
