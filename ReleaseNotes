@@ -1,10 +1,44 @@
+2004-08-25  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
+	sphinx 3.5 release
+	The corresponding SphinxTrain timestamp is ????????
+	One can check out the matching SphinxTrain of the sphinx3.5 release by command,
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
+	New features of this release, 
+	-Live-mode APIs are stable and are now officially released. 
+	-Mean transformation by matrix is now supported. 
+	-4 tools of s3.0 are now incorporated in Sphinx 3.x. 
+	 1, align - an aligner,
+	 2, astar - an N-best genertor,
+	 3, allphone - a phoneme-recognizer,
+	 4, dag - a best-path finder for a lattice.
+	-The feature extraction libraries of sphinx3 is now EXACTLY the
+	 same sas SphinxTrain.
+	
+	Corresponding changes in SphinxTrain
+	SphinxTrian timestamp ???????? 
+	correspond to sphinx 3.5 release
+	Changes since the last record.
+	-The feature extraction libraries of SphinxTrain is now
+	EXACTLY the same as sphinx3. 
+	-New tools introduced:
+	1, mllr_solve, given the EM posterior probabilities of the
+	mean and regression class definition. This routine estimate
+	regression matrices for each class. 
+	2, mllr_transform, given a matrix, this tools applies the
+	transformation to the mean vector of the models. 
+	-The command line interface for 35 out of 37
+	SphinxTrain's tools are unified. Only wave2feat and QUICKCOUNT
+	are not yet bind to that rule. 
+
+	
+
 2004-05-24  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
 	sphinx 3.4 release. 
 	-Numerous bugs of s3.3 are fixed 
 	 1, -feat_type is not hard-wired now. 
 	 2, bugs of the live_mode recognizer is exterminated. 
 	 3, sphinx3-simple and sphinx3-test are working. 
-	-Developers in Sun added new set of directories for testing.  
+	-Evandro added are directory for testing.  
 	Those are mainly for internal use.
 	-Fast GMM computation techniques are included,
 	 1, Support of down-sampling
