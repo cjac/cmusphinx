@@ -127,7 +127,6 @@ AC_SUBST(docdata)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
 AC_SUBST(ad_backend)
-AC_SUBST(audio_test_file)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
 
@@ -163,7 +162,6 @@ model/hmm/Makefile
 model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/Makefile
 model/lm/Makefile
 model/lm/an4/Makefile
-model/lm/an4/an4.ctl
 model/lm/an4/args.an4
 model/lm/an4/args.an4.test
 doc/Makefile])
