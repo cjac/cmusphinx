@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- saved from url=(0048)http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html -->
+<!-- saved from url=(0048)http://www.speech.cs.cmu.edu/sphinxman/FAQ.html -->
 <HTML><HEAD>
 <META content="text/html; charset=windows-1252" http-equiv=Content-Type>
 <META content="MSHTML 5.00.3207.2500" name=GENERATOR></HEAD>
@@ -7,40 +7,40 @@
 document is under construction...) 
 <OL>
   <LI><A 
-  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#1">Data-preparation for 
+  href="#1">Data-preparation for 
   training acoustic models</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#2">Selecting 
+  <LI><A href="#2">Selecting 
   modeling parameters</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#13">Feature 
+  <LI><A href="#13">Feature 
   computation</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#15">Modeling 
+  <LI><A href="#15">Modeling 
   filled pauses and non-speech events</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#3">Training 
+  <LI><A href="#3">Training 
   speed</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#5">Questions 
+  <LI><A href="#5">Questions 
   specific to log files</A> 
   <LI><A 
-  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#6">Vector-quantization 
+  href="#6">Vector-quantization 
   for discrete and semi-continuous models</A> 
   <LI><A 
-  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#14">Flat-initialization</A> 
+  href="#14">Flat-initialization</A> 
 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#7">Updating 
+  <LI><A href="#7">Updating 
   existing models</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#8">Utterance, 
+  <LI><A href="#8">Utterance, 
   word and phone segmentations</A> 
   <LI><A 
-  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#9">Force-alignment(Viterbi 
+  href="#9">Force-alignment(Viterbi 
   alignment)</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#10">Baum-Welch 
+  <LI><A href="#10">Baum-Welch 
   iterations and associated likelihoods</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#11">Dictionary, 
+  <LI><A href="#11">Dictionary, 
   pronunciations and phone-sets</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#12">Decision 
+  <LI><A href="#12">Decision 
   tree building and parameter sharing</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#4">Post-training 
+  <LI><A href="#4">Post-training 
   disasters</A> 
-  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#16">Why is my 
+  <LI><A href="#16">Why is my 
   recognition accuracy poor?<A> </LI></OL>
 <HR>
 <A name=1></A>
@@ -257,7 +257,7 @@ your mu law value is 16, the PCM value is linear[16]); <PRE>
   32, 24, 16, 8, 0};
 ------------- mu-law to PCM conversion table-----------------------
 </PRE>
-<P><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<P><A href="#top">back to top 
 <HR>
 <A name=2></A>
 <TABLE bgColor=#ffffff width="100%">
@@ -324,7 +324,7 @@ A and B, does this difference in the number of senones matter?</FONT>
 <P>A. If A and B have been optimally trained (i.e. the amount of data available 
 for training each has been well considered), then the difference in the number 
 of tied states used should not matter. 
-<P><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<P><A href="#top">back to top 
 <HR>
 <A name=3></A>
 <TABLE bgColor=#ffffff width="100%">
@@ -353,7 +353,7 @@ throughout the computation.
 you partition your training data. Alternatively, you can shorten your training 
 set, since you only want to use the models for forced alignment. Models trained 
 with about 10 hours of data will do the job just as well. 
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<H4><A href="#top">back to top 
 <HR width="100%">
 <A name=4></A></A><FONT color=#ffffff>POST-TRAINING DISASTERS</FONT></H4>
 <P>Q: <FONT color=#483d8b>I've trained with clean speech. However, when I try to 
@@ -397,7 +397,7 @@ more ways from the settings you used while training with the new data. The most
 dangerous setting mismatches is the agc (max/none). Check the other settings 
 too, and finally make sure that during decoding you use the same agc (and other 
 relevant settings like varnorm and cmn) during training. 
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+<H4><A href="#top">back to 
 top</A></H4>
 <HR>
 <A name=5></A>
@@ -418,7 +418,7 @@ turn that the sequence of words in your transcript for the corresponding feature
 file given to the force-aligner is rather unlikely. The most common reasons are 
 that you may have the wrong model settings or the transcripts being considered 
 may be inaccurate. For more on this go to <A 
-href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#9">Viterbi-alignment</A> 
+href="#9">Viterbi-alignment</A> 
 <P>Q.<FONT color=#483d8b> I am trying to do flat-initialization for training ci 
 models. The cp_parm program is complaining about the -feat option. The original 
 script did not specify a -feat option, however the cp_parm program complained 
@@ -495,7 +495,7 @@ No, for the rest of the training because it may cause random problems. The entry
 in the control file and the corresponding transcript have to be removed, if you 
 cannot correct them for some reason. 
 <P>
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+<H4><A href="#top">back to 
 top</A></H4>
 <HR>
 <A name=6></A>
@@ -580,7 +580,7 @@ are the common causes you can check for:
   <LI>negative file lengths 
   <LI>bad vectors in the feature files, such as those computed from headers 
   <LI>the presence of very short files (a vector or two long) </LI></OL>
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+<H4><A href="#top">back to 
 top</A></H4>
 <HR>
 <A name=7></A>
@@ -620,7 +620,7 @@ fillers (or phones) in A. In this case, it will be a many-to-one mapping from B
 to A. 
 <P>To force-align, add the above filler transcriptions to the *main* dictionary 
 used to force-align. 
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+<H4><A href="#top">back to 
 top</A></H4>
 <HR>
 <A name=8></A>
@@ -660,7 +660,7 @@ speech that you are about to decode). They will certainly be applicable in
 situations where you do have transcripts, but aligning your transcripts to the 
 segments would involve some extra work. 
 <P>
-<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+<H4><A href="#top">back to 
 top</A></H4>
 <HR>
 <A name=9></A>
@@ -759,7 +759,7 @@ you track down the problem:
   means much *narrower* beams). 
   <UL></UL>
   <P>
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <A name=10></A>
@@ -859,7 +859,7 @@ component=1) &lt; 0
   means and variances are OK. Also check to see if all the cepstra files are 
   being read properly. 
   <P>
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <A name=11></A>
@@ -906,7 +906,7 @@ A(2) AX
   decision trees for all phones, especially T ans S. When decision trees get 
   affected, state tying gets affected, and so the models for all phones turn out 
   to be slightly different. 
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <A name=12></A>
@@ -940,7 +940,7 @@ FATAL_ERROR: "../main.c", line 276: Fewer state weights than states
   given to adjacent states *one removed* from the immediately adjacent one (if 
   there are any), and so on. 
   <P>
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <A name=13></A>
@@ -983,7 +983,7 @@ FATAL_ERROR: "../main.c", line 276: Fewer state weights than states
   <P>A. No. The difference features are computed during runtime by the 
   SPHINX-III trainer and decoders. 
   <P>
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <A name=15></A>
@@ -1113,7 +1113,7 @@ FATAL_ERROR: "../main.c", line 276: Fewer state weights than states
   setup. Check out especially the utterances which are really badly recognized 
   by actually looking at a display of the speech signals. In fact, this is the 
   first thing that you must check. 
-  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  <H4><A href="#top">back to 
   top</A></H4>
   <HR>
   <I>last modified: 17 Nov 2000, 5:05 pm</I> </LI></OL></BODY></HTML>
