@@ -118,14 +118,14 @@ typedef struct {
  * 
  * Return value: Ptr to corpus if successful.
  */
-corpus_t *corpus_load_headid (char *file,	/**< Must be seekable and rewindable */
+corpus_t *corpus_load_headid (char *file,	/**< Input file name, the file must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
   /**
  * Similar to corpus_load_headid, but the ID is at the END of each line, in parentheses.
  */
-corpus_t *corpus_load_tailid (char *file,	/**< Must be seekable and rewindable */
+corpus_t *corpus_load_tailid (char *file,	/**< Input file name, the file must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
