@@ -159,9 +159,8 @@ if ! ssh ${cfsh_address} rm -r ${distfn} ${package_name}/ >> $outfile 2>&1
  fi
 
 tmp=`date --iso-8601`
-#tar zxvf ./log.tgz 
-#cp -r ${logdir} ./log${tmp}
-mv ${logdir} ./log${tmp}
+tar zxvf ./log.tgz 
+cp -r ${logdir} ./log${tmp}
 perl ./createWebFromCFLog.pl ./log${tmp} > compileFarmLog.html
 
 pushd ./log${tmp}
