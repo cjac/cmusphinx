@@ -1,0 +1,7 @@
+*.lo
+Makefile
+.deps
+.libs
+libsphinx2.la
+.cvsignore
+
