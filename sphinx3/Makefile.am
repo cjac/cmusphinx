@@ -39,8 +39,10 @@ CLEANFILES = chan3.mfc \
 	test-*.out \
 	pittsburgh.littleendian.allp \
 	pittsburgh.littleendian.phseg \
+	pittsburgh.littleendian.phlat \
 	pittsburgh.littleendian.wdseg \
-	pittsburgh.nbest.gz
+	pittsburgh.nbest.gz \
+	pittsburgh.nbest
 
 
 etags:
@@ -63,23 +65,14 @@ test-full : test-decode test-align test-allphone test-livepretend test-astar tes
 
 test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
 
-
 test-ep : test-ep-match
 test-gausubvq : test-gausubvq-match
 
 test-livepretend:
-	$(top_builddir)/src/tests/regression/test_livepretend.sh
+	$(top_builddir)/src/tests/regression/test_livepretend.sh 
 
-test-valgrind:
-	@echo "LIVEPRETEND TEST"
-	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
-
-	$(LIBTOOL) --mode=execute valgrind --skin=memcheck src/programs/livepretend \
-		model/lm/an4/an4.ctl \
-		$(top_srcdir)/model/lm/an4 \
-		model/lm/an4/args.an4.test > $@.out 2>&1 
-	@grep "FWDVIT" $@.out 
-	@grep "FWDXCT" $@.out 
+test-align:
+	$(top_builddir)/src/tests/regression/test_align.sh
 
 test-decode:
 	@echo "DECODE TEST"
@@ -112,9 +105,11 @@ test-decode:
 	       -wend_beam 1e-1 \
 	       -ci_pbeam 1e-5 \
 	       -ds 2  > $@.out 2>&1
-
 	@grep "FWDVIT" $@.out 
 	@grep "FWDXCT" $@.out 
+	@if(grep "FWDVIT" $@.out |grep "P I T T S B U R G H" > /dev/null 2>&1); \
+	then echo "DECODE test PASSED" ; else \
+	echo "DECODE test FAILED" ; fi
 
 test-decode_anytopo:
 	@echo "DECODE_ANYTOPO TEST"
@@ -139,41 +134,10 @@ test-decode_anytopo:
                -beam 1e-80 \
                -nwbeam 1e-40 \
 		 > $@.out 2>&1
-
 	@grep "FWDVIT" $@.out 
 	@grep "FWDXCT" $@.out 
 
-test-align:
-	echo "ALIGN TEST"
-	echo "THIS IS JUST A FUNCTION TEST"
-	$(LIBTOOL) --mode=execute src/programs/align \
-	    -logbase 1.0003 \
-	    -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-            -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-            -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-            -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-            -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
-	    -feat 1s_c_d_dd \
-	    -topn 1000 \
-	    -beam 1e-80 \
-	    -senmgau .cont. \
-            -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-            -dict $(top_srcdir)/model/lm/an4/an4.dict \
-	    -ctl $(top_builddir)/model/lm/an4/an4.ctl \
-	    -cepdir $(top_srcdir)/model/lm/an4/ \
-	    -insent $(top_srcdir)/model/lm/an4/align.correct \
-	    -outsent $@.out \
-	    -wdsegdir ./ \
-	    -phsegdir ./
-	@if (diff test-align.out  $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out > /dev/null 2>&1); \
-	then echo "align output test PASSED"; else \
-	echo "align output test FAILED"; fi 
-	@if (diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.wdseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
-	then echo "ALIGN wdseg test PASSED"; else \
-	echo "ALIGN wdseg test FAILED"; fi 
-	@if (diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
-	then echo "ALIGN phseg test PASSED"; else \
-	echo "ALIGN phseg test FAILED"; fi 
+
 
 test-allphone:
 	@echo "ALLPHONE TEST"
@@ -194,10 +158,10 @@ test-allphone:
 	    -phsegdir ./ \
 	    -phlatdir ./
 	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
-	then echo "allphone allp test PASSED"; else \
-	echo "allphone allp test FAILED"; fi
+	then echo "ALLPHONE allp test PASSED"; else \
+	echo "ALLPHONE allp test FAILED"; fi
 	@if(diff `head -1 $(top_builddir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
-	then echo "allphone phlat test PASSED"; else \
+	then echo "ALLPHONE phlat test PASSED"; else \
 	echo "allphone phlat test FAILED"; fi
 
 
@@ -216,6 +180,9 @@ test-astar:
 	    -logbase 1.0003 \
 	    -nbestdir . 
 	@gzip -cfd pittsburgh.nbest.gz 
+	@if(diff pittsburgh.nbest $(top_srcdir)/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
+	then echo "ASTAR PASSED"; else \
+	echo "ASTAR FAILED"; fi
 
 test-dag:
 	@echo "DAG TEST"
@@ -230,9 +197,12 @@ test-dag:
 	    -inlatdir $(top_srcdir)/model/lm/an4/ \
 	    -logbase 1.0003 \
 	    -backtrace 1 > $@.out 
-
 	@grep "BSTPTH:" $@.out 
 	@grep "BSTXCT" $@.out 
+	@if(grep "BSTPTH:" $@.out |grep "P I T T S B U R G H" > /dev/null 2>&1); \
+	then echo "DAG test PASSED" ; else \
+	echo "DAG test FAILED" ; fi
+
 
 test-gausubvq-match:
 	@echo "GAUSUBVQ TEST"
@@ -248,8 +218,8 @@ test-gausubvq-match:
         -subvq $@.out 
 	grep -v "#" $@.out > tmp.out
 	@if(diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq > /dev/null 2>&1); \
-	then echo "gausubvq test PASSED"; else \
-	echo "gausubvq test FAILED"; fi 
+	then echo "GAUSUBVQ test PASSED"; else \
+	echo "GAUSUBVQ test FAILED"; fi 
 
 
 test-ep-match:
@@ -296,8 +266,8 @@ test-wave2feat:
 	         -o $@.mfc  \
 		 -raw 1
 	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev/null 2>&1) ; \
-	then echo "wave2feat test PASSED"; else \
-	echo "wave2feat test FAILED"; fi
+	then echo "WAVE2FEAT test PASSED"; else \
+	echo "WAVE2FEAT test FAILED"; fi
 
 test-cepview:
 	@echo "CEPVIEW TEST"
@@ -307,5 +277,16 @@ test-cepview:
 	-f $(top_srcdir)/model/ep/chan3.mfc \
 	> $@.out
 	@if (diff $@.out $(top_srcdir)/model/ep/chan3.cepview > /dev/null 2>&1); \
-	then echo "Cepview test PASSED"; else \
-	echo "Cepview test FAILED"; fi 
+	then echo "CEPVIEW test PASSED"; else \
+	echo "CEPVIEW test FAILED"; fi 
+
+#test-valgrind:
+#	@echo "LIVEPRETEND TEST"
+#	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+#
+#	$(LIBTOOL) --mode=execute valgrind --skin=memcheck src/programs/livepretend \
+#		model/lm/an4/an4.ctl \
+#		$(top_srcdir)/model/lm/an4 \
+#		model/lm/an4/args.an4.test > $@.out 2>&1 
+#	@grep "FWDVIT" $@.out 
+#	@grep "FWDXCT" $@.out 

@@ -28,5 +28,6 @@
 -ci_pbeam 1e-3
 -ds 2
 -lm 	@abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP
+-phypdump 0
 
 
