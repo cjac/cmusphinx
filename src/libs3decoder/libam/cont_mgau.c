@@ -222,7 +222,6 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	    pbuf += n_density;
 	  }
 
-
 	  buf = (float32 *) ckd_calloc (n_mgau * n_density, sizeof(float32));
 	  
 	  for (i = 0; i < n_mgau; i++) {
@@ -249,6 +248,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     if(g->verbose)
       E_INFO("%d mixture Gaussians, %d components, %d streams, veclen %d\n", n_mgau, n_density, n_feat, blk);
     
+    ckd_free(veclen);
     return 0;
 }
 
@@ -805,37 +805,33 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 /* RAH, free memory allocated in mgau_init
    I've not verified that this function catches all of the leaks, just most of them.
  */
+
+/* ARCHAN, I noticed this program because of Ricky's comment.  In
+ 2004, a very useful tool called valgrind started to be available for
+ Linux.  This tool allows me to pick up a lot of memory problems
+ easily. */
+
 void mgau_free (mgau_model_t *g)
 {
-  //  int i,j;
   if (g) {
     /* Free memory allocated for the mean structure*/
-    //    for (i=0;i<g->n_mgau;i++) {
-    //      for (j=0;j<g->max_comp;j++) {
-    //	if (g->mgau[i].mean[j]) 
-    //	  ckd_free ((void *) g->mgau[i].mean[j]);
-    //      }
-    //    }
-
+    if (g->mgau[0].mean[0])
+      ckd_free (g->mgau[0].mean[0]);
     if (g->mgau[0].mean) 
       ckd_free ((void *) g->mgau[0].mean);
 
     /* Free memory allocated for the var structure*/
-//    for (i=0;i<g->n_mgau;i++) {
-//      for (j=0;j<g->max_comp;j++) {
-//	if (g->mgau[i].var[j]) 
-//	  ckd_free ((void *) g->mgau[i].var[j]);
-//      }
-//    }
+
+    if (g->mgau[0].var[0])
+      ckd_free (g->mgau[0].var[0]);
+
     if (g->mgau[0].var) 
       ckd_free ((void *) g->mgau[0].var);
+
     if (g->mgau[0].lrd) 
       ckd_free ((void *) g->mgau[0].lrd);
 
     /* Free memory allocated for the mixture weights*/
-//    for (i=0;i<g->n_mgau;i++) 
-//      if (g->mgau[i].mixw[0]) 
-//	ckd_free ((void *) g->mgau[i].mixw[0]);
     
     if (g->mgau[0].mixw) 
       ckd_free ((void *) g->mgau[0].mixw);
