@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.10  2004/12/27  19:46:19  arthchan2003
- * 1, Add perf-std to Makefile.am , developers can type make perf-std as the standard performance test target. This only works in CMU. 2, Fix warning in flat_fwd.[ch], 3, Apply Yitao's change in cmd_ln.c . 4, 2,3 are standard regression tested.
+ * Revision 1.11  2005/02/09  05:59:30  arthchan2003
+ * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
  * 
+ * Revision 1.10  2004/12/27 19:46:19  arthchan2003
+ * 1, Add perf-std to Makefile.am , developers can type make perf-std as the standard performance test target. This only works in CMU. 2, Fix warning in flat_fwd.[ch], 3, Apply Yitao's change in cmd_ln.c . 4, 2,3 are standard regression tested.
+ *
  * Revision 1.9  2004/12/23 21:00:51  arthchan2003
  * 1, Fixed problems in the code of -cepext, 2, Enabled the generic HMM computation routine flat_fwd.c. This is the key problem of the decode_anytopo.
  *
@@ -1957,7 +1960,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     f64arg = (float64 *) cmd_ln_access ("-beam");
     beam = logs3 (*f64arg);
 
-    f64arg = (float64 *) cmd_ln_access ("-nwbeam");
+    f64arg = (float64 *) cmd_ln_access ("-wbeam");
     wordbeam = logs3 (*f64arg);
 
     f32arg = (float32 *) cmd_ln_access ("-phonepen");
