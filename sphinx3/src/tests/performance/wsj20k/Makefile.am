@@ -47,16 +47,46 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
+WSJBATCH = ./wsj20k.e.batch
+PROGRAMDIR = ${top_builddir}/src/programs
+BMBIN = ${top_builddir}/src/test/programs/batchmetrics
+LPBIN = $(PROGRAMDIR)/livepretend
+DECODEBIN = $(PROGRAMDIR)/decode
+ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
-CLEANFILES = gmake-wsj20k_bigram$(MODEAFFIX).results \
- 	     gmake-wsj20k_trigram$(MODEAFFIX).results	
 
+#legacy targets
+#wsj20k_bigram-bm wsj20k_trigram-bm:
+#	rm -f $@.results 
+#	../../programs/batchmetrics $(WSJBATCH) / ./ARGS.$@ > $@.results
 
-wsj20k_bigram:
-	rm -f gmake-wsj20k_bigram$(MODEAFFIX).results
-	../../programs/batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_bigram > gmake-wsj20k_bigram$(MODEAFFIX).results
+clean :
+	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
 
-wsj20k_trigram:
-	rm -f gmake-wsj20k_trigram$(MODEAFFIX).results
-	../../programs/batchmetrics /lab/speech/sphinx4/data/wsj0/wsj0/wsj20k.e$(MODEAFFIX).batch / ./ARGS.wsj20k_trigram > gmake-wsj20k_trigram$(MODEAFFIX).results
+#all: wsj20k_bigram-lp wsj20k_trigram-lp wsj20k_bigram-decode wsj20k_trigram-decode
+lp: wsj20k_bigram-lp wsj20k_trigram-lp 
+decode: wsj20k_bigram-decode wsj20k_trigram-decode
+
+wsj20k_bigram-lp wsj20k_trigram-lp:
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(WSJBATCH) |sed "s/\.raw//" > ./$@.ctl
+	cat ARGS ARGS.live ARGS.$(subst -lp,,$@) > ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) |sed "s/\.raw//" > $@.sent
+	tr 'A-Z' 'a-z' < $@.match > $@.tmp
+	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+
+wsj20k_bigram-decode wsj20k_trigram-decode: 
+	-rm -f $@.results $@.match $@.match.align
+	awk '{print $$1}'  $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/"> ./$@.ctl
+	cat ARGS ARGS.$(subst -decode,,$@) > ARGS.$@
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-cepdir / " >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ARGS.$@ > $@.results 2>&1
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJBATCH) |sed -e "s/\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	tr 'A-Z' 'a-z' < $@.match > $@.tmp
+	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
+
 
