@@ -47,38 +47,45 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
-CLEANFILES = gmake.com.base.lp$(MODEAFFIX).results \
-	     gmake.com.base.decode$(MODEAFFIX).results \
-	     gmake.com.base.decode_anytopo$(MODEAFFIX).results \
-	     gmake.com.fast.lp$(MODEAFFIX).results \
-	     gmake.com.fast.decode$(MODEAFFIX).results  
 
-com-base-lp:
-	rm -f gmake.com.base.lp$(MODEAFFIX).results
-	/bin/cp ARGS.com.base ARGS.com.base.lp$(MODEAFFIX)
-	../../../programs/livepretend ./nist.ctl.no_comment.no_id /net/wilma/usr1/archan/Communicator/nist_data ARGS.com.base.lp$(MODEAFFIX)
+PROGRAMDIR = ${top_builddir}/src/programs
+BMBIN = ${top_builddir}/src/test/programs/batchmetrics
+LPBIN = $(PROGRAMDIR)/livepretend
+DECODEBIN = $(PROGRAMDIR)/decode
+ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
+CTLFILE = ./nist.ctl.no_comment.no_id
+TRANSFILE = ./nist.trans.no_comment.no_id
+COMPATH = /net/wilma/usr1/archan/Communicator
 
-com-base-decode:
-	rm -f gmake.com.base.decode$(MODEAFFIX).results
-	/bin/cp ARGS.com.base ARGS.com.base.decode$(MODEAFFIX)
-	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.decode$(MODEAFFIX)
-	../../../programs/decode ARGS.com.base.decode$(MODEAFFIX);
+#all : base fast
+base : com-base-lp com-base-decode
+fast : com-fast-lp com-fast-decode
 
+clean :
+	-rm -f *.tmp *.ctl *.sent  *.lex *.results *.match *.match.align ARGS.*-{lp,decode}
 
-com-fast-lp:
-	rm -f gmake.com.fast.lp$(MODEAFFIX).results
-	/bin/cp ARGS.com.fast ARGS.com.fast.lp$(MODEAFFIX)
-	../../../programs/livepretend ./nist.ctl.no_comment.no_id /net/wilma/usr1/archan/Communicator/nist_data ARGS.com.fast.lp$(MODEAFFIX)
+com-base-lp com-fast-lp:
+	-rm -f $@.results $@.match $@.match.align $@.tmp
+	/bin/cp ARGS.$(subst -lp,,$@) ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) $(CTLFILE) $(COMPATH)/nist_data/ ARGS.$@ > $@.results 2>&1 
+	sed "s/_/ /g" $@.match > $@.tmp
+	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
 
-com-fast-decode:
-	rm -f gmake.com.fast.decode$(MODEAFFIX).results
-	/bin/cp ARGS.com.fast ARGS.com.fast.decode$(MODEAFFIX)
-	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.fast.decode$(MODEAFFIX)
-	../../../programs/decode ARGS.com.fast.decode$(MODEAFFIX)
+com-base-decode com-fast-decode:
+	-rm -f $@.results $@.match $@.match.align $@.tmp
+	/bin/cp ARGS.$(subst -decode,,$@) ARGS.$@
+	echo "-ctl $(CTLFILE)" >> ARGS.$@
+	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ARGS.$@ > $@.results 2>&1 
+	sed "s/_/ /g" $@.match > $@.tmp
+	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
 
+ 	 	 	
 #20041205 DON'T USE at this point
-com-base-decode_anytopo:
-	rm -f gmake.com.base.decode_anytopo$(MODEAFFIX).results
-	/bin/cp ARGS.com.base.dec_any ARGS.com.base.dec_any.slow$(MODEAFFIX)
-	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.dec_any.slow$(MODEAFFIX)
-	../../../programs/decode_anytopo ARGS.com.base.dec_any.slow$(MODEAFFIX)
+#com-base-decode_anytopo:
+#	rm -f com.base.decode_anytopo.results
+#	/bin/cp ARGS.com.base.dec_any ARGS.com.base.dec_any.slow
+#	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.dec_any.slow
+#	../../../programs/decode_anytopo ARGS.com.base.dec_any.slow

@@ -3,21 +3,22 @@
 -var /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/variances 
 -mixw /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/mixture_weights 
 -tmat /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/transition_matrices 
+-subvq /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/svq.13.64 
 -dict /net/wilma/usr1/archan/Communicator/lists/communicator.dict.reduced 
 -fdict /net/wilma/usr1/archan/Communicator/lists/noise.dict.reduced.cmu.1 
+-lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
 -lw 7.5 
 -feat s3_1x39 
--beam 1e-80 
--pbeam 1e-60 
--wbeam 1e-40 
--maxhistpf 200 
--maxhmmpf 100000 
--maxwpf 40 
--lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
--hyp ./log/quick/quick.match 
--ctl ./nist.ctl.no_comment.no_id
+-wend_beam 1e-5
+-ci_pbeam 1e-10
+-beam 1e-40
+-pbeam 1e-35 
+-wbeam 1e-25
+-maxhmmpf 1500 
+-maxwpf 10
+-maxhistpf 40
+-vqeval 13
 -agc none 
 -varnorm no 
--vqeval 3
 
 
