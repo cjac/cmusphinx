@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo "GAUSUBVQ TEST"
+tmpout="test-gausubvq.out"
+
+echo "This will compare the answer with a pre-generated svq file"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/gausubvq \
+-mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+-var  @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+-mixw  @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+-svspec 0-38 \
+-iter 20 \
+-svqrows 16 \
+-seed 1111 \
+-subvq $tmpout 
+
+if(grep -v "#" $tmpout | diff @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq - > /dev/null 2>&1); \
+then echo "GAUSUBVQ test PASSED"; else \
+echo "GAUSUBVQ test FAILED"; fi 

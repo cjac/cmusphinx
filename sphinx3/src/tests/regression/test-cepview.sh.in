@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "CEPVIEW TEST"
+tmpout="test-cepview.out"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cepview \
+-i 13 \
+-d 13 \
+-f @abs_top_srcdir@/model/ep/chan3.mfc \
+> $tmpout
+if (diff $tmpout @abs_top_srcdir@/model/ep/chan3.cepview > /dev/null 2>&1); \
+then echo "CEPVIEW test PASSED"; else \
+echo "CEPVIEW test FAILED"; fi 
