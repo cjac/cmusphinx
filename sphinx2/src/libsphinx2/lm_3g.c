@@ -81,9 +81,14 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.8  2001/12/07  05:09:30  lenzo
- * License.xsxc
+ * Revision 1.9  2001/12/07  13:11:30  lenzo
+ * Consolidate byte order code into byteorder.h.  Note that there are still
+ * two "senses" of byte swapping that are confusing, and all this should
+ * be cleaned up and verified.
  * 
+ * Revision 1.8  2001/12/07 05:09:30  lenzo
+ * License.xsxc
+ *
  * Revision 1.7  2001/12/07 04:27:35  lenzo
  * License cleanup.  Remove conditions on the names.  Rationale: These
  * conditions don't belong in the license itself, but in other fora that
@@ -216,6 +221,7 @@
 #include "dict.h"
 #include "kb.h"
 #include "fbs.h"
+#include "byteorder.h"
 
 #ifdef NO_DICT
 #define NO_WORD	-1
@@ -1319,27 +1325,14 @@ char *lm3g_index2name (int k)
 }
 
 /*
- * dict base wid; check if present in LM.  return TRUE if present, FALSE otherwise.
+ * dict base wid; check if present in LM.  
+ * return TRUE if present, FALSE otherwise.
  */
 int32 dictwd_in_lm (wid)
     int32 wid;
 {
     return (lmp->dictwid_map[wid] >= 0);
 }
-
-/* __BIG_ENDIAN__ should be set to 1 somewhere for sun/solaris */
-#if (__BIG_ENDIAN__)
-
-#define SWAPW(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
-#define SWAPL(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
-    			      (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
-
-#else
-
-#define SWAPW(x)
-#define SWAPL(x)
-
-#endif
 
 static int32 fread_int32(FILE *fp, int32 min, int32 max,
 			 char const *name)
@@ -1348,7 +1341,7 @@ static int32 fread_int32(FILE *fp, int32 min, int32 max,
     
     if (fread (&k, sizeof (int32), 1, fp) != 1)
 	QUIT((stderr, "%s(%d): fread(%s) failed\n", __FILE__, __LINE__, name));
-    SWAPL(k);
+    SWAP_L(k);
     if ((min > k) || (max < k))
 	QUIT((stderr, "%s(%d): %s outside range [%d,%d]\n", __FILE__, __LINE__, name, min, max));
     return (k);
@@ -1356,7 +1349,7 @@ static int32 fread_int32(FILE *fp, int32 min, int32 max,
 
 static void fwrite_int32 (FILE *fp, int32 val)
 {
-    SWAPL(val);
+    SWAP_L(val);
     fwrite (&val, sizeof(int32), 1, fp);
 }
 
@@ -1364,10 +1357,10 @@ static void fwrite_ug (FILE *fp, unigram_t *ug)
 {
     unigram_t tmp_ug = *ug;
     
-    SWAPL(tmp_ug.mapid);
-    SWAPL(tmp_ug.prob1.l);
-    SWAPL(tmp_ug.bo_wt1.l);
-    SWAPL(tmp_ug.bigrams);
+    SWAP_L(tmp_ug.mapid);
+    SWAP_L(tmp_ug.prob1.l);
+    SWAP_L(tmp_ug.bo_wt1.l);
+    SWAP_L(tmp_ug.bigrams);
     fwrite (&tmp_ug, sizeof(unigram_t), 1, fp);
 }
 
@@ -1375,10 +1368,10 @@ static void fwrite_bg (FILE *fp, bigram_t *bg)
 {
     bigram_t tmp_bg = *bg;
     
-    SWAPW(tmp_bg.wid);
-    SWAPW(tmp_bg.prob2);
-    SWAPW(tmp_bg.bo_wt2);
-    SWAPW(tmp_bg.trigrams);
+    SWAP_W(tmp_bg.wid);
+    SWAP_W(tmp_bg.prob2);
+    SWAP_W(tmp_bg.bo_wt2);
+    SWAP_W(tmp_bg.trigrams);
     fwrite (&tmp_bg, sizeof(bigram_t), 1, fp);
 }
 
@@ -1386,8 +1379,8 @@ static void fwrite_tg (FILE *fp, trigram_t *tg)
 {
     trigram_t tmp_tg = *tg;
     
-    SWAPW(tmp_tg.wid);
-    SWAPW(tmp_tg.prob3);
+    SWAP_W(tmp_tg.wid);
+    SWAP_W(tmp_tg.prob3);
     fwrite (&tmp_tg, sizeof(trigram_t), 1, fp);
 }
 
@@ -1468,10 +1461,10 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	!= (size_t) model->ucount+1)
 	QUIT((stderr, "%s(%d): fread(unigrams) failed\n", __FILE__, __LINE__));
     for (i = 0, ugptr = model->unigrams; i <= model->ucount; i++, ugptr++) {
-	SWAPL(ugptr->mapid);
-	SWAPL(ugptr->prob1.l);
-	SWAPL(ugptr->bo_wt1.l);
-	SWAPL(ugptr->bigrams);
+	SWAP_L(ugptr->mapid);
+	SWAP_L(ugptr->prob1.l);
+	SWAP_L(ugptr->bo_wt1.l);
+	SWAP_L(ugptr->bigrams);
     }
     for (i = 0, ugptr = model->unigrams; i < model->ucount; i++, ugptr++) {
 	if (ugptr->mapid != i)
@@ -1489,10 +1482,10 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	!= (size_t) model->bcount+1)
 	QUIT((stderr, "%s(%d): fread(bigrams) failed\n", __FILE__, __LINE__));
     for (i = 0, bgptr = model->bigrams; i <= model->bcount; i++, bgptr++) {
-	SWAPW(bgptr->wid);
-	SWAPW(bgptr->prob2);
-	SWAPW(bgptr->bo_wt2);
-	SWAPW(bgptr->trigrams);
+	SWAP_W(bgptr->wid);
+	SWAP_W(bgptr->prob2);
+	SWAP_W(bgptr->bo_wt2);
+	SWAP_W(bgptr->trigrams);
     }
     E_INFO("%s(%d): %8d = LM.bigrams(+trailer) read\n",
 	   __FILE__, __LINE__, model->bcount);
@@ -1503,8 +1496,8 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	    != (size_t) model->tcount)
 	    QUIT((stderr, "%s(%d): fread(trigrams) failed\n", __FILE__, __LINE__));
 	for (i = 0, tgptr = model->trigrams; i < model->tcount; i++, tgptr++) {
-	    SWAPW(tgptr->wid);
-	    SWAPW(tgptr->prob3);
+	    SWAP_W(tgptr->wid);
+	    SWAP_W(tgptr->prob3);
 	}
 	E_INFO("%s(%d): %8d = LM.trigrams read\n", __FILE__, __LINE__, model->tcount);
     }
@@ -1515,7 +1508,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
     if (fread (model->prob2, sizeof (log_t), k, fp) != (size_t) k)
 	QUIT((stderr, "%s(%d): fread(prob2) failed\n", __FILE__, __LINE__));
     for (i = 0; i < k; i++)
-	SWAPL(model->prob2[i].l);
+	SWAP_L(model->prob2[i].l);
     E_INFO("%s(%d): %8d = LM.prob2 entries read\n", __FILE__, __LINE__, k);
 
     /* read n_bo_wt2 and bo_wt2 array */
@@ -1526,7 +1519,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->bo_wt2, sizeof (log_t), k, fp) != (size_t) k)
 	    QUIT((stderr, "%s(%d): fread(bo_wt2) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
-	    SWAPL(model->bo_wt2[i].l);
+	    SWAP_L(model->bo_wt2[i].l);
 	E_INFO("%s(%d): %8d = LM.bo_wt2 entries read\n", __FILE__, __LINE__, k);
     }
 	
@@ -1538,7 +1531,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->prob3, sizeof (log_t), k, fp) != (size_t) k)
 	    QUIT((stderr, "%s(%d): fread(prob3) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
-	    SWAPL(model->prob3[i].l);
+	    SWAP_L(model->prob3[i].l);
 	E_INFO("%s(%d): %8d = LM.prob3 entries read\n", __FILE__, __LINE__, k);
     }
     
@@ -1549,7 +1542,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->tseg_base, sizeof(int32), k, fp) != (size_t) k)
 	    QUIT((stderr, "%s(%d): fread(tseg_base) failed\n", __FILE__, __LINE__));
 	for (i = 0; i < k; i++)
-	    SWAPL(model->tseg_base[i]);
+	    SWAP_L(model->tseg_base[i]);
 	E_INFO("%s(%d): %8d = LM.tseg_base entries read\n", __FILE__, __LINE__, k);
     }
 

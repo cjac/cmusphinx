@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx2,0.4_p3)
+AM_INIT_AUTOMAKE(sphinx2,0.4_p5)
 AM_CONFIG_HEADER(config.h)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall}
@@ -58,6 +58,7 @@ if test "x$ad_files" = "x"; then
 			ad_files="ad_sunos.lo audio_utils_sunos.lo"
 			ad_libs="-lm -lnsl -lsocket -ldl"
 			ad_backend="AD_BACKEND_SUNOS"
+			CFLAGS="$CFLAGS -D__BIG_ENDIAN__"
 			;;
 		*-*-*win32*)
 			ad_files="play_win32.lo rec_win32.lo"

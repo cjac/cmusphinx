@@ -102,6 +102,7 @@
 #include "kb.h"
 #include "hmm_tied_r.h"
 #include "err.h"
+#include "byteorder.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -181,22 +182,10 @@ static void insert_floor (register int32 *out, int32 min,
 static int hmmArcNormalize (SMD *smd, SMD_R *smd_r,
 			    double transSmooth, double arcWeight);
 
-/* FIXME: ARGH!  These are exactly the opposite of the similarly named
-   macros in "byteorder.h".  And then we also have a set of functions
-   which also swap bytes.  */
-/* put a define __BIG_ENDIAN__ 1 here for suns/solaris */
-#if (__BIG_ENDIAN__)
-#define SWAP_W(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
-#define SWAP_L(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
-    			      (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
-#else
-#define SWAP_W(x)
-#define SWAP_L(x)
-#endif
-
 /* FIXME: Yes, this one swaps unconditionally, and it's a
    function... !@#$%@!#$ (from util.c) */
 extern void swapLong(int32 *intp);
+
 
 /* FIXME: needs a header file */
 extern int areadint (char *file, int **data_ref, int *length_ref);
