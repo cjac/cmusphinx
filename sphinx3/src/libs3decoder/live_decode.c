@@ -54,7 +54,7 @@
 #include "args.h"
 #include "utt.h"
 
-/* Function declaration */
+/** Function declaration */
 int
 ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt);
 
@@ -87,7 +87,7 @@ ld_init(live_decoder_t *decoder)
   unlimit();
   decoder->internal_cmd_ln = 1;
 	
-  /* decoder parameter capturing */
+  /** decoder parameter capturing */
   memset(decoder, 0, sizeof(live_decoder_t));
   kb_init(&decoder->kb);
   decoder->max_wpf = cmd_ln_int32 ("-maxwpf");;
@@ -106,7 +106,7 @@ ld_init(live_decoder_t *decoder)
   decoder->features =
     feat_array_alloc(kbcore_fcb(decoder->kbcore), LIVEBUFBLOCKSIZE);
 	
-  /* front-end parameter capturing */
+  /** front-end parameter capturing */
   memset(&fe_param, 0, sizeof(param_t));
   fe_param.SAMPLING_RATE = (float32)cmd_ln_int32 ("-samprate");
   fe_param.LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
@@ -134,8 +134,10 @@ ld_finish(live_decoder_t *decoder)
   }
   kb_free(&decoder->kb);
 	
-  /* consult the implementation of feat_array_alloc() for the following two
-   * lines */
+  /**
+   * consult the implementation of feat_array_alloc() for the following two
+   * lines
+   */
   ckd_free((void *)**decoder->features);
   ckd_free_2d((void **)decoder->features);
 
@@ -235,14 +237,17 @@ ld_utt_proc_feat(live_decoder_t *decoder,
 int
 ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 {
+  /** re-record the hypothesis if there is a frame number mismatch */
   if (decoder->frame_num != decoder->hyp_frame_num) {
     ld_utt_record_hyps(decoder, 0);
   }
-
+  
+  /** return the hypothesis string if the user requested it */
   if (hyp_str) {
     *hyp_str = decoder->hyp_str;
   }
 
+  /** return the hypothesis word segments if the user requested it */
   if (hyp_segs) {
     *hyp_segs = decoder->hyp_segs;
   }
@@ -282,7 +287,7 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
     return -1;
   }
 
-  /* record the segment length and the overall string length */
+  /** record the segment length and the overall string length */
   hyp_list = vithist_backtrace(kb->vithist, id);
   finish_wid = dict_finishwid(dict);
   for (node = hyp_list; node; node = gnode_next(node)) {
@@ -293,19 +298,19 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
 	strlen(dict_wordstr(dict, dict_basewid(dict, hyp->id))) + 1;
     }
   }
-  /* if hyp_str is non-trivial, we've counted one too many byte */
+  /** if hyp_str is non-trivial, we've counted one too many byte */
   if (hyp_strlen > 0) {
     hyp_strlen--;
   }
 
-  /* allocate array to hold the segments and/or decoded string */
+  /** allocate array to hold the segments and/or decoded string */
   hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen, sizeof(hyp_t *));
   hyp_str = (char *)ckd_calloc(hyp_strlen + 1, sizeof(char));
   if (hyp_segs == 0 || hyp_str == 0) {
     return -1;
   }
 		
-  /* iterate thru to fill in the array of segments and/or decoded string */
+  /** iterate thru to fill in the array of segments and/or decoded string */
   i = 0;
   hyp_strptr = hyp_str;
   for (node = hyp_list; node; node = gnode_next(node), i++) {
@@ -336,14 +341,17 @@ ld_utt_free_hyps(live_decoder_t *decoder)
 {
   int i;
 
+  /** set the reference frame number to something invalid */
   decoder->hyp_frame_num = -1;
 
+  /** free and reset the hypothesis string */
   if (decoder->hyp_str) {
     ckd_free(decoder->hyp_str);
     decoder->hyp_str = 0;
     decoder->hyp_strlen = 0;
   }
   
+  /** free and reset the hypothesis word segments */
   if (decoder->hyp_segs) {
     for (i = decoder->hyp_seglen - 1; i >= 0; i--) {
       ckd_free(decoder->hyp_segs[i]);
