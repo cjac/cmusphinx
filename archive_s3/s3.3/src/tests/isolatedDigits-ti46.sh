@@ -12,6 +12,6 @@
 # ARGS              : the Sphinx 3 arguments/options file
 #
 
-../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS
+../../bin.sparc-sun-solaris2.8/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS
 
 

@@ -80,6 +80,8 @@ void live_initialize_decoder(char *live_args)
     int32   maxcepvecs, maxhyplen, samprate, ceplen;
     param_t *fe_param;
 
+    metricsStart("Loading");
+
     parse_args_file(live_args);
     unlimit();
     kb_init(&live_kb);
@@ -112,6 +114,8 @@ void live_initialize_decoder(char *live_args)
     ceplen = kbcore->fcb->cepsize;
 
     dummyframe = (float32*) ckd_calloc(1 * ceplen,sizeof(float32));	/*  */
+
+    metricsStop("Loading");
 }
 
 
@@ -206,6 +210,8 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     int32   nwds;
     float32 **mfcbuf;
 
+    metricsStart("Decode");
+
     if (live_begin_new_utt){
         kb->uttid = "bogus ID";
         fe_start_utt(fe);
@@ -220,24 +226,46 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
     mfcbuf = NULL;
 
+    metricsStart("FrontEnd");
+
     live_nfr = fe_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
-    if (live_endutt) 		/* RAH, It seems that we shouldn't throw out this data */
+
+    if (live_endutt) {
+        /* RAH, It seems that we shouldn't throw out this data */
         fe_end_utt(fe,dummyframe); /* Flush out the fe */
+    }
 
     /* Compute feature vectors */
     live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
-                                         live_nfr, live_begin_new_utt,
-					 live_endutt, &live_feat);
+                                          live_nfr, live_begin_new_utt,
+                                          live_endutt, &live_feat);
+    metricsStop("FrontEnd");
 
     /* decode the block */
+
+    metricsStart("ScorePrune");
+
     utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
 		      maxwpf, maxhistpf, maxhmmpf, ptranskip, hmmdumpfp);
+    
+    metricsStop("ScorePrune");
+
+    metricsStop("Decode");
+
 
     /* Pull out partial hypothesis */
+
+    metricsStart("ExtractHypothesis");
+
     nwds =  live_get_partialhyp(live_endutt);
     *ohyp = parthyp;
 
+    metricsStop("ExtractHypothesis");
+
     /* Clean up */
+
+    metricsStart("Decode");
+
     if (live_endutt) {
 	live_begin_new_utt = 1;
 	kb->tot_fr += kb->nfr;
@@ -246,6 +274,8 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     else {
 	live_begin_new_utt = 0;
     }
+
+    metricsStop("Decode");
 
     /* I'm starting to think that fe_process_utt should not be
        allocating its memory,
@@ -285,7 +315,8 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
         live_begin_new_utt = 0;
     }
 
-    /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
+    /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf
+       and it allocates the memory internally) */
     mfcbuf = NULL;
 
     metricsStart("FrontEnd");

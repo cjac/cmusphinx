@@ -128,6 +128,7 @@ int main (int argc, char *argv[])
         fflush(stdout); 
         fclose(sfp);
 
+        metricsReset(fileTimer);
         metricsStart(fileTimer);
 
         for (i = 0; i < nsamp; i += blksize) {
@@ -179,9 +180,9 @@ int main (int argc, char *argv[])
         showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
         showMemory(rfp);
         fprintf(rfp, "--------------\n");
-
-        metricsReset(fileTimer);
     }
+
+    metricsPrint();
 
     fprintf(rfp, "------------- Summary statistics -----------\n");
     showAccuracy(rfp, numberFiles, numberMatches);
