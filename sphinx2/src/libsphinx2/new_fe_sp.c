@@ -1,49 +1,3 @@
-/* ====================================================================
- * Copyright (c) 1999-2000 Carnegie Mellon University.  All rights 
- * reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in
- *    the documentation and/or other materials provided with the
- *    distribution.
- *
- * 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
- *    endorse or promote products derived from this software without
- *    prior written permission. To obtain permission, contact 
- *    sphinx@cs.cmu.edu.
- *
- * 4. Products derived from this software may not be called "Sphinx"
- *    nor may "Sphinx" appear in their names without prior written
- *    permission of Carnegie Mellon University. To obtain permission,
- *    contact sphinx@cs.cmu.edu.
- *
- * 5. Redistributions of any form whatsoever must retain the following
- *    acknowledgment:
- *    "This product includes software developed by Carnegie
- *    Mellon University (http://www.speech.cs.cmu.edu/)."
- *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
- * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * ====================================================================
- *
- */
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -52,12 +6,15 @@
 
 
 /*
-  3 Dec 99 mseltzer - corrected inverse DCT-2 
+  31 Jan 00 mseltzer - changed rounding of filter edges to -not- use 
+                        rint() function. 
+   3 Dec 99 mseltzer - corrected inverse DCT-2 
                         period is 1/NumFilts not 1/(2*NumFilts)
 			added "beta" factor in summation
-		    - changed mel filter bank construction so that 
+	  	     - changed mel filter bank construction so that 
                         left,right,center freqs are rounded to DFT 
                         points before filter is constructed
+  
 */
                         
 
@@ -72,7 +29,12 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     MEL_FB->left_apex = (float32 *) calloc(MEL_FB->num_filters,sizeof(float32));
     MEL_FB->width = (int32 *) calloc(MEL_FB->num_filters,sizeof(int32));
     
-    filt_edge = (float32*) calloc(MEL_FB->num_filters+2,sizeof(float32));
+    filt_edge = (float32 *) calloc(MEL_FB->num_filters+2,sizeof(float32));
+
+    if (MEL_FB->filter_coeffs==NULL || MEL_FB->left_apex==NULL || MEL_FB->width==NULL || filt_edge==NULL){
+	fprintf(stderr,"memory alloc failed in fe_build_mel_filters()\n...exiting\n");
+	exit(0);
+    }
     
     dfreq = MEL_FB->sampling_rate/(float32)MEL_FB->fft_size;
     
@@ -91,10 +53,17 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     {
 
 	/*line triangle edges up with nearest dft points... */
-	leftfr = (float32)rint((float64)(filt_edge[whichfilt]/dfreq))*dfreq;
-	centerfr = (float32)rint((float64)(filt_edge[whichfilt+1]/dfreq))*dfreq;
-	rightfr = (float32)rint((float64)(filt_edge[whichfilt+2]/dfreq))*dfreq;
-
+	
+	/*	
+		leftfr = (float32)rint((float64)(filt_edge[whichfilt]/dfreq))*dfreq;
+		centerfr = (float32)rint((float64)(filt_edge[whichfilt+1]/dfreq))*dfreq;
+		rightfr = (float32)rint((float64)(filt_edge[whichfilt+2]/dfreq))*dfreq;
+	*/
+	
+	leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
+	rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	
 	MEL_FB->left_apex[whichfilt] = leftfr;
 	
 	fwidth = rightfr - leftfr;
@@ -134,8 +103,12 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
     
     period = (float32)2*MEL_FB->num_filters;
 
-    MEL_FB->mel_cosine = (float32 **) fe_create_2d(MEL_FB->num_cepstra,MEL_FB->num_filters,
-					      sizeof(float32));
+    if ((MEL_FB->mel_cosine = (float32 **) fe_create_2d(MEL_FB->num_cepstra,MEL_FB->num_filters,
+					      sizeof(float32)))==NULL){
+	fprintf(stderr,"memory alloc failed in fe_compute_melcosine()\n...exiting\n");
+	exit(0);
+    }
+    
     
     for (i=0; i<MEL_FB->num_cepstra; i++) {
 	freq = 2*(float32)M_PI*(float32)i/period;
@@ -214,7 +187,12 @@ void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
     if (FE->FB_TYPE = MEL_SCALE){
 	spec = (float64 *)calloc(FE->FFT_SIZE, sizeof(float64));
 	mfspec = (float64 *)calloc(FE->MEL_FB->num_filters, sizeof(float64));
- 
+
+	if (spec==NULL || mfspec==NULL){
+	    fprintf(stderr,"memory alloc failed in fe_frame_to_fea()\n...exiting\n");
+	    exit(0);
+	}
+	
  	fe_spec_magnitude(in, FE->FRAME_SIZE, spec, FE->FFT_SIZE);
 	fe_mel_spec(FE, spec, mfspec);
 	fe_mel_cep(FE, mfspec, fea);
@@ -241,6 +219,11 @@ void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsi
     FFT = (complex *) calloc(fftsize,sizeof(complex));
     IN = (complex *) calloc(fftsize,sizeof(complex));
     
+    if (FFT==NULL || IN==NULL){
+	fprintf(stderr,"memory alloc failed in fe_spec_magnitude()\n...exiting\n");
+	exit(0);
+    }
+	
     if (data_len > fftsize)  /*aliasing */
     {
 	
@@ -450,12 +433,15 @@ char **fe_create_2d(int32 d1, int32 d2, int32 elem_size)
 
     if (store == NULL) {
 	fprintf(stderr,"fe_create_2d failed\n");
+	return(NULL);
     }
     
     out = calloc(d1, sizeof(void *));
 
     if (out == NULL) {
 	fprintf(stderr,"fe_create_2d failed\n");
+	free(store);
+	return(NULL);
     }
     
     for (i = 0, j = 0; i < d1; i++, j += d2) {
@@ -467,8 +453,11 @@ char **fe_create_2d(int32 d1, int32 d2, int32 elem_size)
 
 void fe_free_2d(void **arr)
 {
-   free(arr[0]);
-   free(arr);
+    if (arr!=NULL){
+	free(arr[0]);
+	free(arr);
+    }
+    
 }
 
 void fe_parse_general_params(param_t *P, fe_t *FE)
