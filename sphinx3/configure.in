@@ -148,6 +148,9 @@ src/tests/performance/hub4/Makefile
 src/tests/performance/rm1/Makefile
 src/tests/performance/wsj20k/Makefile
 src/tests/performance/wsj5k/Makefile
+src/tests/performance/tidigits/Makefile
+src/tests/performance/ti46/Makefile
+src/tests/performance/Communicator/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
 src/tests/regression/test_livepretend.sh
