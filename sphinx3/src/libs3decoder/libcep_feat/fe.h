@@ -148,8 +148,8 @@ typedef struct{
 #define DEFAULT_SAMPLING_RATE "16000.0" /**Default sampling rate */
 #define DEFAULT_FRAME_RATE "100"  /**Default frame rate */
 #define DEFAULT_FRAME_SHIFT "160" /**Default frame shift */
-#define DEFAULT_WINDOW_LENGTH "0.0256" /*0.025625*/ /** Default window length */
-#define DEFAULT_FFT_SIZE "256" /*512*/ /** Default FFT size */
+#define DEFAULT_WINDOW_LENGTH "0.025625" /** Default window length */
+#define DEFAULT_FFT_SIZE "512" /** Default FFT size */
 #define DEFAULT_FB_TYPE MEL_SCALE  /** Default filter bank type */
 #define DEFAULT_NUM_CEPSTRA "13"  /** Default number of ceptral */
 #define DEFAULT_NUM_FILTERS "40" /** Default number of filter banks */
