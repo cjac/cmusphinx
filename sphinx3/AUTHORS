@@ -18,9 +18,9 @@ of Sphinx I.
 Fil Alleva - 
 Robert Brennan -
 
-Mei-Yu Huang - The proposer of the concept of senones. 
+Mei-Yuh Hwang - The proposer of the concept of senones. 
 
-Xiaodong Huang - Manager of Sphinx 2.  A lot of improvement were
+Xue Dong Huang- Manager of Sphinx 2.  A lot of improvement were
 introduced from Sphinx 1 to Sphinx 2.
 
 Ravishankar Mosur - Implementer of Sphinx 2(fbs-6,7,8) and Sphinx 3
@@ -37,7 +37,7 @@ decoder and write a comprehensive on-line tutorial for SphinxTrain,
 sphinx2 and sphinx3.  Many researchers were benefited by her version
 of modified code. 
 
-Bhiksha Raj - Implementer of silence deletion in the alignement in
+Bhiksha Raj - Implementer of silence deletion in the alignment in
 s3align and a version of SAT in SphinxTrain.  Main designer of Sphinx
 4.
 
