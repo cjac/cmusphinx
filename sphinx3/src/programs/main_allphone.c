@@ -1,3 +1,4 @@
+
 /*
  * allphone-main.c -- Main driver routine for allphone Viterbi decoding.
  * 
@@ -549,7 +550,7 @@ static void process_ctlfile ( void )
   char line[1024], cepfile[1024], ctlspec[1024];
   int32 ctloffset, ctlcount, sf, ef, nfr;
   char uttid[1024];
-  int32 k;
+  int32 k,i;
   
   ctlfile = (char *) cmd_ln_access("-ctlfn");
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
@@ -595,6 +596,15 @@ static void process_ctlfile ( void )
 	  E_ERROR("Error in ctlfile spec; skipped\n");
 	  /* What happens to ctlcount??? */
 	  continue;
+      }
+
+      if (k < 4) {
+	/* Create utt-id from mfc-filename (and sf/ef if specified) */
+	for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
+	if (k == 3)
+	  sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
+	else
+	  strcpy (uttid, ctlspec+i+1);
       }
 
       if (! feat) 
