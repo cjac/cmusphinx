@@ -552,7 +552,7 @@ const void *cmd_ln_access (char *name)
 void cmd_ln_free ()
 {
   hash_free (ht);
-  ht=NULL;
+  /*  ht=NULL;*/
   ckd_free ((void *) argval);
-  argval = NULL
+  /* argval = NULL;*/
 }
