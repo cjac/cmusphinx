@@ -515,9 +515,13 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     ptmr_reset (&tm);
   }
   
-  fclose (fp);
-  fclose (ctllmfp);
-  fclose (ctlmllrfp);
+  if(fp)
+    fclose (fp);
+  if(ctllmfp)
+    fclose (ctllmfp);
+
+  if(ctlmllrfp)
+    fclose (ctlmllrfp);
   
   return tm;
 }
