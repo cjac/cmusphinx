@@ -57,6 +57,7 @@ enum {
 };
 
 enum {
+  RD_CTRL_NONE,
   RD_CTRL_INIT,
   RD_CTRL_FINISH,
   RD_CTRL_BEGIN_UTT,
@@ -438,6 +439,7 @@ rd_run(remote_decoder_t *d)
 	  hyp_segs1[i] = &hyp_seg_buff[i];
 	  memcpy(hyp_seg_buff, hyp_segs0[i], sizeof(hyp_t));
 	}
+	hyp_segs[hyp_seglen] = 0;
 
 	/** queue the result */
 	rd_queue_result(rd, uttid1, hyp_str1, hyp_segs1);
@@ -492,20 +494,60 @@ rd_queue_control(remote_decoder_t *decoder, int32 cmd, int32 param, void *data)
 {
   control_block *cb;
 
-  if ((cb = ckd_calloc(1, sizeof(control_block))) == 0) {
+  if ((cb = ckd_malloc(sizeof(control_block))) == 0) {
     return -1;
   }
-  
   *cb = { cmd, param, data, decoder->control_queue == 0 ?
 	  cb : (struct _control_block *)decoder->control_queue };
   decoder->control_queue = cb;
+
   return 0;
 }
 
 int
-rd_dequeue_control(remote_decoder_t *decoder, int32 cmd, int32 *param,
+rd_dequeue_control(remote_decoder_t *decoder, int32 *cmd, int32 *param,
 		   void **data)
 {
+  control_block *cb;
+
+  /** check if the queue is empty */
+  if (decoder->control_queue == 0) {
+    if (cmd) {
+      *cmd = RD_CTRL_NONE;
+    }
+    if (param) {
+      *param = 0;
+    }
+    if (data) {
+      *data = 0;
+    }
+    return -1;
+  }
+
+  /** dequeue the control block */
+  cb = decoder->control_queue->next_block;
+  if (decoder->control_queue == cb) {
+    decoder->control_queue = 0;
+  }
+  else {
+    decoder->control_queue->next_block = cb->next_block;
+  }
+
+  /** return the information in the control block */
+  if (cmd) {
+    *cmd = cb->cmd;
+  }
+  if (param) {
+    *param = cb->param;
+  }
+  if (data) {
+    *data = cb->data;
+  }
+
+  /** free the dequeued control block */
+  ckd_free(cb);
+
+  return 0;
 }
 
 int
@@ -514,7 +556,7 @@ rd_queue_result(remote_decoder_t *decoder, char *uttid, char *hyp_str,
 {
   result_block *rb = 0;
       
-  if ((rb = ckd_calloc(1, sizeof(result_block))) == 0) {
+  if ((rb = ckd_malloc(sizeof(result_block))) == 0) {
     return -1;
   }
   *rb = { uttid, hyp_str, hyp_segs, decoder->result_queue == 0 ?
@@ -528,4 +570,44 @@ int
 rd_dequeue_result(remote_decoder_t *decoder, char **uttid, char **hyp_str,
 		  hyp_t ***hyp_segs)
 {
+  result_block *rb;
+
+  /** check if the queue is empty */
+  if (decoder->result_queue == 0) {
+    if (uttid) {
+      *uttid = RD_CTRL_NONE;
+    }
+    if (hyp_str) {
+      *hyp_str = 0;
+    }
+    if (hyp_segs) {
+      *hyp_segs = 0;
+    }
+    return -1;
+  }
+
+  /** dequeue the result block */
+  rb = decoder->result_queue->next_block;
+  if (decoder->result_queue == rb) {
+    decoder->result_queue = 0;
+  }
+  else {
+    decoder->result_queue->next_block = rb->next_block;
+  }
+
+  /** return the information in the result block */
+  if (uttid) {
+    *uttid = rb->uttid;
+  }
+  if (hyp_str) {
+    *hyp_str = rb->hyp_str;
+  }
+  if (hyp_segs) {
+    *hyp_segs = rb->hyp_segs;
+  }
+
+  /** free the dequeued result block */
+  ckd_free(rb);
+
+  return 0;
 }
