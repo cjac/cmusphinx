@@ -1,0 +1,15 @@
+0.3
+4 n_base
+0 n_tri
+8 n_state_map
+4 n_tied_state
+4 n_tied_ci_state
+4 n_tied_tmat
+#
+# Columns definitions
+#base lft  rt p attrib tmat      ... state id's ...
+    N   -   - -    n/a    0    0    N
+    O   -   - -    n/a    1    1    N
+    S   -   - -    n/a    2    2    N
+  SIL   -   - - filler    3    3    N
+
