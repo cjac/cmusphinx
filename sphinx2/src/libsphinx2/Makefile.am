@@ -36,6 +36,7 @@ libsphinx2_la_SOURCES = \
 	hash.c \
 	hmm_tied_r.c \
 	kb.c \
+	lab.c \
 	linklist.c \
 	list.c \
 	live_norm.c \

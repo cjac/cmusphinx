@@ -19,6 +19,7 @@ EXTRA_DIST = \
 	posixsock.h \
 	posixwin32.h \
 	profile.h \
+	s2params.h \
 	s2types.h \
 	scvq.h \
 	sphinxp.h \

@@ -66,7 +66,7 @@ void
 			 int n_f);
 
 int
-    time_align_word_sequence(
+    time_align_word_sequence(char * utt,
 			     char *left_word,
 			     char *word_seq,
 			     char *right_word

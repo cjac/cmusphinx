@@ -58,10 +58,13 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.2  2000/02/08  21:06:46  lenzo
+ * Revision 1.3  2000/03/29  14:30:28  awb
+ * *** empty log message ***
+ * 
+ * Revision 1.2  2000/02/08 21:06:46  lenzo
  * More to get the sphinx2-phone example working. Also
  * removed a couple of vestigial files from the demo lm.
- * 
+ *
  * Revision 1.1.1.1  2000/01/28 22:08:52  lenzo
  * Initial import of sphinx2
  *
@@ -228,6 +231,8 @@
 #include <fbs.h>
 #include <err.h>
 
+#include "s2params.h"
+
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -337,6 +342,16 @@ static char *seg_file_ext = NULL;
 
 /* State-by-state score */
 static char *score_file_ext = NULL;
+
+/* For saving phone labels in alignment */
+char *phonelabdirname = NULL;
+char *phonelabextname = "lab";
+char *phonelabtype = "xlabel";
+
+/* For saving word labels in alignment */
+char *wordlabdirname = NULL;
+char *wordlabextname = "wrd";
+char *wordlabtype = "xlabel";
 
 /* "Best" alternative word sent output file */
 static char *out_sent_filename = NULL;
@@ -527,6 +542,24 @@ config_t param[] = {
 
 	"SentExt", "Sentence File Extension", "-sentext",
   	        STRING, (caddr_t) &sent_ext,
+
+	"PhoneLabDir", "Phone Label Directory", "-phonelabdir",
+  	        STRING, (caddr_t) &phonelabdirname,
+
+	"PhoneLabExt", "Phone Label Extension (default lab)", "-phonelabext",
+  	        STRING, (caddr_t) &phonelabextname,
+
+	"PhoneLabType", "Phone Label Type (default xlabel)", "-phonelabtype",
+  	        STRING, (caddr_t) &phonelabtype,
+
+	"WordLabDir", "Word Label Directory", "-wordlabdir",
+  	        STRING, (caddr_t) &wordlabdirname,
+
+	"WordLabExt", "Word Label Extension (default wrd)", "-wordlabext",
+  	        STRING, (caddr_t) &wordlabextname,
+
+	"WordLabType", "Word Label Type (default xlabel)", "-wordlabtype",
+  	        STRING, (caddr_t) &wordlabtype,
 	
 	"LMNamesDir", "Directory for LM-name file for each utt", "-lmnamedir",
 		STRING, (caddr_t) &utt_lmname_dir,
@@ -1819,7 +1852,7 @@ time_align_utterance (char *utt,
     gettimeofday (&e_start, 0);
 #endif
 
-    if (time_align_word_sequence(left_word, pe_words, right_word) == 0) {
+    if (time_align_word_sequence(utt,left_word, pe_words, right_word) == 0) {
 	if (seg_file_ext) {
 	    unsigned short *seg;
 	    int seg_cnt;

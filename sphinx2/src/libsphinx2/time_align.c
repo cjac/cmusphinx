@@ -65,9 +65,13 @@
  *
  * Revision History
  * $Log$
- * Revision 1.1  2000/01/28  22:08:57  lenzo
- * Initial revision
+ * Revision 1.2  2000/03/29  14:30:28  awb
+ * *** empty log message ***
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:57  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 02-Jan-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added time_align_word flag to determine whether word segmentation is
@@ -170,6 +174,7 @@
 #include <phone.h>
 #include <log.h>
 #include <CM_macros.h>
+#include "s2params.h"
 
 /* This module stuff */
 #include "time_align.h"
@@ -2786,7 +2791,7 @@ static int
 }
 
 int
-    time_align_word_sequence(
+    time_align_word_sequence(char * Utt,
 			     char *left_word,
 			     char *word_seq,
 			     char *right_word
@@ -3008,6 +3013,15 @@ int
 		printf ("%20s %4d %4d %12d\n",
 			phseg[i].name, phseg[i].start, phseg[i].end, phseg[i].score);
 	    }
+	}
+
+	if (phonelabdirname)
+	{
+	    save_labs(phseg,n_phone_segments,
+		      phonelabdirname,
+		      Utt,
+		      phonelabextname,
+		      phonelabtype);
 	}
 #endif
 	
