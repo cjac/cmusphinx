@@ -90,7 +90,7 @@
 ad_rec_t *ad_open_sps (int32 sps) {
     ad_rec_t *handle;
     int32 dspFD, mixerFD;
-    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN;
+    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN, devMask=0;
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;
@@ -209,12 +209,31 @@ ad_rec_t *ad_open_sps (int32 sps) {
     }
 
     /* Set the same gain for left and right channels. */
-
     inputGain = inputGain << 8 | inputGain;
-    if(ioctl(mixerFD, SOUND_MIXER_WRITE_IGAIN, &inputGain)<0){
-      fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
-              inputGain, strerror(errno));
-      exit(1);
+
+    /* Some OSS devices have no input gain control, but do have a
+       recording level control.  Find out if this is one of them and
+       adjust accordingly. */
+    if (ioctl(mixerFD, SOUND_MIXER_READ_DEVMASK, &devMask) < 0) {
+	fprintf(stderr, "%s %d: failed to read device mask: %s\n", __FILE__, __LINE__,
+		strerror(errno));
+	exit(1); /* FIXME: not a well-behaved-library thing to do! */
+    }
+    if (devMask & SOUND_MASK_IGAIN) {
+	if (ioctl(mixerFD, SOUND_MIXER_WRITE_IGAIN, &inputGain) < 0){
+	    fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
+		    inputGain, strerror(errno));
+	    exit(1);
+	}
+    } else if (devMask & SOUND_MASK_RECLEV) {
+	if (ioctl(mixerFD, SOUND_MIXER_WRITE_RECLEV, &inputGain) < 0){
+	    fprintf(stderr, "%s %d: mixer record level to %d: %s\n", __FILE__, __LINE__,
+		    inputGain, strerror(errno));
+	    exit(1);
+	}
+    } else {
+        fprintf(stderr, "%s %d: can't set input gain/recording level for this device.\n",
+                __FILE__, __LINE__);
     }
 
     close(mixerFD);
