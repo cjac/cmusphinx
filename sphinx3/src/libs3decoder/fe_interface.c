@@ -145,13 +145,13 @@ fe_t *fe_init(param_t const *P)
    DESCRIPTION: called at the start of an utterance. resets the
    overflow buffer and activates the start flag of the front end
 **********************************************************************/
-int32 fe_start_utt(fe_t *FE)
+int32 fe_start_utt(fe_t *_FE)
 {
-    FE->NUM_OVERFLOW_SAMPS = 0;
-    memset(FE->OVERFLOW_SAMPS,0,FE->FRAME_SIZE*sizeof(int16));
-    FE->START_FLAG=1;
-    FE->PRIOR = 0;
-    return 0;
+  _FE->NUM_OVERFLOW_SAMPS = 0;
+  memset(_FE->OVERFLOW_SAMPS,0,_FE->FRAME_SIZE*sizeof(int16));
+  _FE->START_FLAG=1;
+  _FE->PRIOR = 0;
+  return 0;
 }
 
 /*********************************************************************
@@ -305,8 +305,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
       
       
       /* assign samples which don't fill an entire frame to FE overflow buffer for use on next pass */
-      if (spbuf_len < nsamps)	{
-	offset = ((frame_count)*FE->FRAME_SHIFT);
+      if ((offset = ((frame_count)*FE->FRAME_SHIFT)) < nsamps)	{
 	memcpy(FE->OVERFLOW_SAMPS,tmp_spch+offset,(nsamps-offset)*sizeof(int16));
 	FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
 	FE->PRIOR = tmp_spch[offset-1];
