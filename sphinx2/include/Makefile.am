@@ -5,6 +5,7 @@ EXTRA_DIST = \
 pkginclude_HEADERS = \
 	CM_macros.h \
 	ad.h \
+	ad_conf.h \
 	cdcn.h \
 	ckd_alloc.h \
 	cont_ad.h \
