@@ -691,6 +691,8 @@ set of changes from dhd (below)
 	* Makefile.am whitespace changes, small line continuation fix
 
 2001-12-07 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Changed default input gain to 80 (from 85).  80 seemed
+	  'too hot' on most machines.
 	* Consolidate byte order macros into byteorder.h.  Note
 	  that SWAPL and SWAP_L are both present and used (as reversed 
 	  senses) and this will have to be cleaned up. 
@@ -701,3 +703,4 @@ set of changes from dhd (below)
 	  under sun4 except the client/server code which can
 	  be commented out of the Makefile.
 	* Built and sphinx2-test ran successfully on SunOS 5.5.1
+	* Guarded unistd.h header includes behind ifdef conditions
