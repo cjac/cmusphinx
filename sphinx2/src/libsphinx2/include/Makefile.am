@@ -9,6 +9,7 @@ noinst_HEADERS = \
 	kb.h \
 	linklist.h \
 	lm.h \
+	logmsg.h \
 	magic.h \
 	msd.h \
 	pconf.h \

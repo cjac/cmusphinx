@@ -211,7 +211,7 @@ ad_rec_t *ad_open_sps (int32 sps) {
     /* Set the same gain for left and right channels. */
 
     inputGain = inputGain << 8 | inputGain;
-    if(ioctl(mixerFD, SOUND_MIXER_WRITE_MIC, &inputGain)<0){
+    if(ioctl(mixerFD, SOUND_MIXER_WRITE_IGAIN, &inputGain)<0){
       fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
               inputGain, strerror(errno));
       exit(1);

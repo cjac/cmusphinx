@@ -2,3 +2,6 @@
 .libs
 Makefile
 Makefile.in
+ad_oss.lo
+cont_ad_base.lo
+libsphinx2ad.la

@@ -113,6 +113,7 @@
 #include "list.h"
 #include "hash.h"
 #include "err.h"
+#include "logmsg.h"
 #include "dict.h"
 #include "lm.h"
 #include "lmclass.h"
@@ -496,7 +497,7 @@ static int32 build_lattice (int32 bptbl_sz)
 	    break;
     }
     if (! node) {
-	printf ("%s(%d): Couldn't find <s>.0\n", __FILE__, __LINE__);
+	log_error("%s(%d): Couldn't find <s>.0\n", __FILE__, __LINE__);
 	return (0);
     }
     start_node = node;
@@ -508,7 +509,7 @@ static int32 build_lattice (int32 bptbl_sz)
 	    break;
     }
     if (! node) {
-	printf ("%s(%d): Couldn't find </s>.%d\n", __FILE__, __LINE__, last_frame);
+	log_error("%s(%d): Couldn't find </s>.%d\n", __FILE__, __LINE__, last_frame);
 	return 0;
     }
     final_node = node;
@@ -560,8 +561,7 @@ static int32 build_lattice (int32 bptbl_sz)
     
     /* There must be at least one path between <s>.0 and </s>.last_frame */
     if (! start_node->reachable) {
-	printf ("%s(%d): <s> unreachable\n", __FILE__, __LINE__);
-	fflush (stdout);
+	log_error ("%s(%d): <s> unreachable\n", __FILE__, __LINE__);
 	return (0);
     }
 
@@ -939,10 +939,10 @@ int32 lattice_rescore ( double lwf )
 	search_set_hyp_total_score (best->path_scr+final_node_ascr);
     
 	search_result (&fr, &res);
-	printf ("BESTPATH: %s (%s %d)\n",
+	log_info("BESTPATH: %s (%s %d)\n",
 		res, uttproc_get_uttid (), best->path_scr+final_node_ascr);
     
-	printf ("%8d nodes, %d links searched\n", n_node, n_link);
+	log_info("%8d nodes, %d links searched\n", n_node, n_link);
     }
 
     if (rescore_lmname) {

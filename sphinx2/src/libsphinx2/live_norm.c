@@ -85,7 +85,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
+#include "err.h"
+#include "logmsg.h"
 
 
 #include "s2types.h"
@@ -173,10 +174,10 @@ void mean_norm_update(void)
     if (nframe <= 0)
 	return;
     
-    printf("mean_norm_update: from < ");
+    log_info("mean_norm_update: from < ");
     for (i = 0; i < veclen; i++)
-	printf("%5.2f ", cur_mean[i]);
-    printf(">\n");
+	log_info("%5.2f ", cur_mean[i]);
+    log_info(">\n");
 
     sf = (1.0/nframe);
     for (i = 0; i < veclen; i++)
@@ -190,8 +191,8 @@ void mean_norm_update(void)
 	nframe = CMN_WIN;
     }
 
-    printf("mean_norm_update: to   < ");
+    log_info("mean_norm_update: to   < ");
     for (i = 0; i < veclen; i++)
-	printf("%5.2f ", cur_mean[i]);
-    printf(">\n");
+	log_info("%5.2f ", cur_mean[i]);
+    log_info(">\n");
 }

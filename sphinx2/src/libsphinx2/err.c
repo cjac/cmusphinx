@@ -66,11 +66,18 @@
 #else
 #include <errno.h>
 #endif
-#include <err.h>
+
+#include "s2types.h"
+#include "err.h"
+
+extern int32 verbosity_level;
 
 void
 _E__pr_header(char const *f, long ln, char const *msg)
 {
+    if (verbosity_level < 1)
+	    return;
+
     (void) fflush(stdout);
     (void) fprintf(stderr, "%s: \"%s\", line %ld: ", msg, f, ln);
 }
@@ -78,8 +85,10 @@ _E__pr_header(char const *f, long ln, char const *msg)
 void
 _E__pr_info_header(char const *f, long ln, char const *msg)
 {
-    (void) fflush(stdout);
+    if (verbosity_level < 2)
+	    return;
 
+    (void) fflush(stdout);
     /* make different format so as not to be parsed by emacs compile */
     (void) fprintf(stderr, "%s: %s(%ld): ", msg, f, ln);
 }
@@ -88,6 +97,9 @@ void
 _E__pr_warn( char const *fmt, ... ) 
 {
     va_list pvar;
+
+    if (verbosity_level < 1)
+	    return;
 
     va_start(pvar, fmt);
     (void) vfprintf(stderr, fmt, pvar);
@@ -100,6 +112,9 @@ void
 _E__pr_info( char const *fmt, ... ) 
 {
     va_list pvar;
+
+    if (verbosity_level < 2)
+	    return;
 
     va_start(pvar, fmt);
     (void) vfprintf(stderr, fmt, pvar);

@@ -43,6 +43,7 @@ libsphinx2_la_SOURCES = \
 	lm.c \
 	lm_3g.c \
 	lmclass.c \
+	logmsg.c \
 	longio.c \
 	nxtarg.c \
 	norm.c \

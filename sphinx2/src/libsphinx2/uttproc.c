@@ -51,9 +51,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2001/01/25  19:36:28  lenzo
- * Fixing some memory leaks
+ * Revision 1.7  2001/02/13  19:51:38  lenzo
+ * *** empty log message ***
  * 
+ * Revision 1.6  2001/01/25 19:36:28  lenzo
+ * Fixing some memory leaks
+ *
  * Revision 1.5  2000/12/21 18:04:51  lenzo
  * Fixed a nasty (but small) FRAME_RATE error.  This will need cleanup later.
  *
@@ -188,6 +191,7 @@
 #include "fe.h"
 #include "fbs.h"
 #include "search.h"
+#include "logmsg.h"
 
 #define MAX_UTT_LEN	6000	/* #frames */
 #define MAX_CEP_LEN	(MAX_UTT_LEN*CEP_SIZE)
@@ -374,7 +378,7 @@ static void timing_stop ( void )
     if (searchFrame() == 0)
 	return;
     
-    printf (" %5.2f SoS", searchFrame()*0.01);
+    log_info(" %5.2f SoS", searchFrame()*0.01);
     TotalSpeechTime += searchFrame()*0.01;
     
 #ifdef WIN32
@@ -382,10 +386,10 @@ static void timing_stop ( void )
     e_stop = (float)clock()/CLOCKS_PER_SEC;
     GetProcessTimes (pid, &t_create, &t_exit, &ket, &uet);
     
-    printf (", %6.2f sec elapsed", (e_stop - e_start));
-    printf (", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
-    printf (", %6.2f sec CPU", win32_cputime(&ust, &uet));
-    printf (", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
+    log_info(", %6.2f sec elapsed", (e_stop - e_start));
+    log_info(", %5.2f xRT", (e_stop - e_start)/(searchFrame()*0.01));
+    log_info(", %6.2f sec CPU", win32_cputime(&ust, &uet));
+    log_info(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
     
     TotalCPUTime += win32_cputime(&ust, &uet);
     TotalElapsedTime += (e_stop - e_start);
@@ -396,12 +400,12 @@ static void timing_stop ( void )
 #endif
     gettimeofday (&e_stop, 0);
     
-    printf (", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
-    printf (", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
+    log_info(", %6.2f sec elapsed", MakeSeconds (&e_start, &e_stop));
+    log_info(", %5.2f xRT", MakeSeconds (&e_start, &e_stop)/(searchFrame()*0.01));
     
 #ifndef _HPUX_SOURCE
-    printf (", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
-    printf (", %5.2f xRT",
+    log_info(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
+    log_info(", %5.2f xRT",
 	    MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
 #endif
     
@@ -409,7 +413,7 @@ static void timing_stop ( void )
     TotalElapsedTime += MakeSeconds (&e_start, &e_stop);
 #endif
     
-    printf ("\n");
+    log_info("\n");
 }
 
 
@@ -418,20 +422,20 @@ static void timing_stop ( void )
  */
 static void timing_end ( void )
 {
-    fprintf (stdout, "\n");
+    log_info("\n");
 
-    fprintf (stdout, "TOTAL Elapsed time %.2f seconds\n",TotalElapsedTime);
+    log_info("TOTAL Elapsed time %.2f seconds\n",TotalElapsedTime);
 #ifndef _HPUX_SOURCE
-    fprintf (stdout, "TOTAL CPU time %.2f seconds\n", TotalCPUTime);
+    log_info("TOTAL CPU time %.2f seconds\n", TotalCPUTime);
 #endif
-    fprintf (stdout, "TOTAL Speech %.2f seconds\n", TotalSpeechTime);
+    log_info("TOTAL Speech %.2f seconds\n", TotalSpeechTime);
 
     if (TotalSpeechTime > 0.0) {
-	fprintf (stdout, "AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
+	log_info("AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
 #ifndef _HPUX_SOURCE
-	fprintf (stdout, ", %.2f xRT(CPU)\n", TotalCPUTime/TotalSpeechTime);
+	log_info(", %.2f xRT(CPU)\n", TotalCPUTime/TotalSpeechTime);
 #endif
-	fprintf (stdout, "\n");
+	log_info("\n");
     }
 }
 
@@ -1095,9 +1099,8 @@ int32 uttproc_end_utt ( void )
     if (k > 0) {
 	E_INFO("Samples histogram (%s) (4/8/16/30/32K):", uttproc_get_uttid());
 	for (i = 0; i < 5; i++)
-	    fprintf (stdout, " %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
-	fprintf (stdout, "; max: %d\n", max_samp);
-	fflush (stdout);
+	    log_info(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
+	log_info("; max: %d\n", max_samp);
     }
     
     if (uttstate != UTTSTATE_BEGUN) {

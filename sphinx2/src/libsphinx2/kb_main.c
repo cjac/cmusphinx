@@ -126,6 +126,7 @@
 #include "list.h"
 #include "hash.h"
 #include "err.h"
+#include "logmsg.h"
 #include "c.h"
 #include "pconf.h"
 #include "log.h"
@@ -342,9 +343,8 @@ void kb (int argc, char *argv[],
 	(dict_file_name == 0))
 	pusage (pname, (Config_t *)kb_param);
 
-    fprintf (stdout, "%s(%d): Reading phone file [%s]\n",
+    log_info("%s(%d): Reading phone file [%s]\n",
 	     __FILE__, __LINE__, phone_file_name);
-    fflush (stdout);
     if (phone_read (phone_file_name))
 	exit (-1);
     if (useWDPhonesOnly)
@@ -353,13 +353,12 @@ void kb (int argc, char *argv[],
     num_ci_phones = phoneCiCount();
 
     /* Read the distribution map file */
-    fprintf (stdout, "%s(%d): Reading map file [%s]\n", __FILE__, __LINE__, mapFileName);
-    fflush (stdout);
-    read_map (mapFileName, TRUE /* useCiTrans compress */);
+    log_info("%s(%d): Reading map file [%s]\n", __FILE__, __LINE__, mapFileName);
 
-    fprintf (stdout, "%s(%d): Reading dict file [%s]\n",
+    read_map (mapFileName, TRUE /* useCiTrans compress */);
+    log_info("%s(%d): Reading dict file [%s]\n",
 	     __FILE__, __LINE__, dict_file_name);
-    fflush (stdout);
+
     word_dict = dict_new ();
     if (dict_read (word_dict, dict_file_name, phrase_dict_file_name, 
 		   noise_dict_file_name, !useWDPhonesOnly))
@@ -593,7 +592,7 @@ computePhraseLMProbs ()
 		p = r;
 	    }
 
-	    printf ("Phrase log prob [%20s] = %8d\n",
+	    log_info ("Phrase log prob [%20s] = %8d\n",
 		    word_dict->dict_list[i]->word, prob);
 	    word_dict->dict_list[i]->lm_pprob = prob;
 	}
@@ -746,7 +745,7 @@ int32 kb_get_word_id (char const *word)
 	}
     }
     if (id == -1) {
-	fprintf (stdout, "%s: Couldn't find word \"%s\"\n", rname, word);
+	log_warn(stdout, "%s: Couldn't find word \"%s\"\n", rname, word);
     }
 
     return id;

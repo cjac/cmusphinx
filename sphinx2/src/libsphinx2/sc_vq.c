@@ -87,6 +87,7 @@
 #include "log.h"
 #include "scvq.h"
 #include "sc_vq_internal.h"
+#include "logmsg.h"
 
 #if FAST8B
 #include "log_add.h"
@@ -546,9 +547,8 @@ void SCVQInit(int32 top, int32 numModels, int32 numDist, double vFloor,
 	lxfrm[i].val.dist = ldfrm[i].val.dist = lcfrm[i].val.dist = WORST_DIST;
 	lxfrm[i].codeword = ldfrm[i].codeword = lcfrm[i].codeword = i;
     }
-    fprintf(stdout,
-	    "SCVQInit: top %d, %d models, %d dist, %f var floor.\n",
-	    top, numModels, numDist, vFloor);
+    log_info("SCVQInit: top %d, %d models, %d dist, %f var floor.\n",
+	     top, numModels, numDist, vFloor);
     /*
      * Configure TopN
      */
@@ -581,7 +581,7 @@ void SCVQNewUtt(void)
 void SCVQEndUtt ( void )
 {
 #ifdef WIN32
-    fprintf (stdout, "VQ-TIME= %.1fsec, SCR-TIME= %.1fsec (CPU)\n", vq_time, scr_time);
+    log_info ("VQ-TIME= %.1fsec, SCR-TIME= %.1fsec (CPU)\n", vq_time, scr_time);
 #endif
 }
 
@@ -1608,8 +1608,7 @@ static void quantize_pdfs (int32 f)
 {
     int32 s, c, pid, scr, qscr;
     
-    printf ("%s(%d): Quantizing senone PDFs to 8 bits\n", __FILE__, __LINE__);
-    fflush (stdout);
+    log_info ("%s(%d): Quantizing senone PDFs to 8 bits\n", __FILE__, __LINE__);
 
     for (c = 0; c < NUM_ALPHABET; c++) {
 	for (s = 0; s < CdWdPDFMod; s++) {
@@ -1651,9 +1650,7 @@ int32 SCVQInitFeat(feat_t feat, char *meanPath, char *varPath, int32 *opdf)
 	if (feat != POW_FEAT)
 	    return -1;
 	else {
-	    fflush (stdout);
-	    fprintf(stderr, "Synthesizing power codebook variances\n");
-	    fflush (stderr);
+	    log_debug("Synthesizing power codebook variances\n");
 	    if (setPowVar(detP, vars + (int32)feat,
 			  (use20ms_diff_pow ? 0.125 : 0.05)) < 0)
 		return -1;

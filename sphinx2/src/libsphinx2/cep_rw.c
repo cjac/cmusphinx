@@ -94,6 +94,7 @@
 #include "s2types.h"
 #include "strfuncs.h"
 #include "cepio.h"
+#include "logmsg.h"
 
 #ifndef ESUCCESS
 #define ESUCCESS 0
@@ -116,7 +117,7 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
 #endif
 
   if (fd < 0) {
-    fprintf(stderr, "%s(%d): Couldn't open %s\n",
+    log_error("%s(%d): Couldn't open %s\n",
 	    __FILE__, __LINE__, file);
     return errno;
   }
@@ -134,7 +135,7 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
 
   if ((floatCount+4 != st_buf.st_size) &&
       ((floatCount * sizeof(float32) + 4) != st_buf.st_size)) {
-	printf("%s(%d): Byte reversing %s\n", __FILE__, __LINE__, file);
+	log_info("%s(%d): Byte reversing %s\n", __FILE__, __LINE__, file);
 	byteReverse = TRUE;
 	floatCount = SWABL (floatCount);
   }
@@ -180,7 +181,7 @@ int32 cep_write_bin(char const *file, float32 *buf, int32 len)
 #endif
 
   if (fd < 0) {
-    fprintf(stderr, "%s(%d): Couldn't open %s for writing\n",
+    log_error("%s(%d): Couldn't open %s for writing\n",
 	    __FILE__, __LINE__, file);
     return errno;
   }

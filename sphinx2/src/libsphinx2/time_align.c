@@ -65,9 +65,12 @@
  *
  * Revision History
  * $Log$
- * Revision 1.5  2001/01/25  19:36:29  lenzo
- * Fixing some memory leaks
+ * Revision 1.6  2001/02/13  19:51:38  lenzo
+ * *** empty log message ***
  * 
+ * Revision 1.5  2001/01/25 19:36:29  lenzo
+ * Fixing some memory leaks
+ *
  * Revision 1.4  2000/12/12 23:01:42  lenzo
  * Rationalizing libs and names some more.  Split a/d and fe libs out.
  *
@@ -199,6 +202,7 @@
 #include "s2params.h"
 #include "fbs.h"
 #include "search.h"
+#include "logmsg.h"
 
 /* This module stuff */
 #include "time_align.h"
@@ -378,9 +382,8 @@ mk_compound_word_list(int *out_cnt)
     int			*compound_word_id;
     COMPOUND_WORD_T	*compound_word_list;
 
-    printf("%s(%d): Scanning dictionary for compound words: ",
+    log_info("%s(%d): Scanning dictionary for compound words: ",
 	   __FILE__, __LINE__);
-    fflush(stdout);
 
     for (i = 0, compound_word_cnt = 0; i < WordDict->dict_entry_count; i++) {
 	word = dict_list[i]->word;
@@ -2907,13 +2910,10 @@ time_align_word_sequence(char const * Utt,
 	++cur_frame;
 	
 	cur_active_cnt = next_active_cnt;
-
-	fflush(stdout);
-	fflush(stderr);
     } while (cur_frame < frame_cnt);
 
     if (cur_active_cnt == 0) {
-	printf("%s(%d): WARNING: all paths pruned at end of input\n",
+	log_warn("%s(%d): WARNING: all paths pruned at end of input\n",
 	       __FILE__, __LINE__);
 	return -1;
     }
@@ -3020,9 +3020,6 @@ time_align_word_sequence(char const * Utt,
 
     free(word_id_map);
     free(boundary);
-
-    fflush(stdout);
-    fflush(stderr);
 
     return 0;
 }
