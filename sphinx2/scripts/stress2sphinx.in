@@ -1,0 +1,102 @@
+#!#!@PERL@ -w
+
+# stress2sphinx
+# original by eht
+#
+# DX contexts:
+# left:  
+#               [+vowel]
+#               [+vowel] R
+#               ER0
+#               AXR0
+# right: 
+#               [+vowel -stress] #
+#               [+vowel -stress] [anything but "N"]  (implemented as two opts)
+#               ER0
+#               AXR0
+#
+$dx_left = '\b[AEIOU][A-Z]\d|\b[AEIOU][A-Z]\d R|\bER0|\bAXR0';
+$dx_right = '[AEIOU][A-Z]0$|[AEIOU][A-Z]0 [^N]|[AEIOU][A-Z]0 NG|ER0|AXR';
+
+while ( <> )
+{
+        # Extract label, index, and pronunciation
+        # Note that by separating pronunciation from other strings,
+        # it is no longer possible to inadvertently corrupt the word label 
+        # (e.g., "A42128" becomes "A48" in new2sphinx)
+
+        chop;
+        next if ( ! /\S/ );
+        die "Bad dictionary format\n" if ( ! /((\S+))\s+/ );
+        $label = $1;
+        $phonetic = $';
+        $word = $label;
+# RAH 2.19.2000 - what is the relevance of this? 
+# Neither is used again and it seems that (2) for multiple pronunciations should remain
+#        $index = 1;
+#        $index = $1 if ( $word =~ s/\((\d+)\)// );
+	
+        # Clean up pronunciation, remove extraneous spaces
+	
+        $_ = $phonetic;
+        s/^\s+//;
+        s/\s+$//;
+        s/\s+/ /g;
+	
+        # 1. add flap (based on to-flap-newX.sed)
+	
+        # This is the crossproduct of left and right contexts
+        # itemized above
+        # Target:  [TD]
+        # Result:  $1 DX $2
+	
+        while ( s/\b(${dx_left}) [TD] (${dx_right})/$1 DX $2/g ) {}
+
+        # 2. TS (based on tsX.sed)
+
+        s/\bT S\b/TS/g;
+
+
+
+        # 3. deletable stops (based on deletableX.sed)
+
+        #    2nd substitution makes explicit that +deletable precedes
+        #    DH, TH, and newly created TS
+        # s/\b([BPDTGK]) ([BPDTGK])\b/$1D $2/g;
+        # s/\b([BPDTGK]) (DH|TH|TS)\b/$1D $2/g;
+        # s/\b([BPDTGK])$/$1D/g;
+        # s/\bT L\b/TD L/g;
+
+        # 3. Remove deletable stops
+        s/\bTD/T/g;
+        s/\bPD/T/g;
+        s/\bBD/T/g;
+        s/\bDD/T/g;
+        s/\bGD/T/g;
+        s/\bKD/T/g;
+
+        # 4. unstressed Sphinx 2 forms (based on postmodX.sed)
+
+        s/\bER0\b/AXR0/g;
+        s/\bIH0\b/IX0/g;
+        s/\bAH0\b/AX0/g;
+        s/\bIY0 NG\b/IX0 NG/g;
+
+        # Note restrictions on IY0 transforms.  According to postmodX.sed:
+        # IY0 must be (1) word-initial or after word-initial B or D
+        #         and (2) not at the end of the word
+        # Hence, "BE(2)  B IY0" is not transformed to "B IX" but to "B IY"
+        # and collapses with "BE  B IY1".  Is this as intended?
+
+        s/^IY0 /IX0 /g;
+        s/^B IY0 /B IX0 /g;
+        s/^D IY0 /D IX0 /g;
+
+        # 5. remove the stress information
+        #    Note that the sed 's/0//g' etc. commands will remove [012]
+        #    from the word label as well.
+        
+        s/[012]//g;
+
+        printf "%-30s %s\n", $word, $_;
+}
