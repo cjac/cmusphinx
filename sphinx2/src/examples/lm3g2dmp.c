@@ -1285,7 +1285,7 @@ static void fwrite_ug (fp, ug)
 {
     unigram_t tmp_ug = *ug;
     
-    SWAPL(tmp_ug.wid);
+    SWAPL(tmp_ug.mapid);
     SWAPL(tmp_ug.prob1.l);
     SWAPL(tmp_ug.bo_wt1.l);
     SWAPL(tmp_ug.bigrams);
