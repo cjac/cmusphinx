@@ -82,6 +82,8 @@ int32 fe_dump_end_utt(fe_t *FE, float32 *cepvector);
 void fe_dump_short_frame(FILE *stream, short *shortframe, int bufferSize);
 void fe_dump_double_frame(FILE *stream, double *preemphasizedAudio,
 			  int bufferSize, char *processorName);
+void fe_dump_float_frame(FILE *stream, float32 *data, int eachArraySize,
+			 char *processorName, char *individualName);
 void fe_dump2d_float_frame(FILE *stream, float32 **data, int array2DSize,
 			   int eachArraySize, char *processorName,
 			   char *individualName);
