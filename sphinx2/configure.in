@@ -42,7 +42,11 @@ else
 					if test "x$myarch" = "xi386_freebsd"; then
 						archfiles="ad_i386_freebsd.lo cont_ad_base.lo mulaw_base.lo"
 					else
-					    archfiles=""
+						if test "x$myarch" = "xIRIX" || test "x$myarch" = "xIRIX64" ; then
+							archfiles="ad_sgi.lo"
+						else
+						   	archfiles=""
+						fi
 					fi
 				fi
 			fi
