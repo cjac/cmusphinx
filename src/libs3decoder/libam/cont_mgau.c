@@ -298,9 +298,9 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 	E_FATAL("#Features streams(%d) != 1 in continuous HMM\n", n_feat);
     }else if (g->gau_type==SEMIHMM){
       if (n_feat != 4)
-	E_FATAL("#Features streams(%d) != 1 in semi-continuous HMM\n", n_feat);
+	E_FATAL("#Features streams(%d) != 4 in semi-continuous HMM\n", n_feat);
     }else{
-	E_FATAL("How can this happened? Someone must have move this part of the code somewhere! Not my fault! ARCHAN at 20040504 :-)\n");
+	E_FATAL("How can this happen? Someone must have moved this part of the code somewhere! Not my fault! ARCHAN at 20040504 :-)\n");
     }
 
     if (n != n_mgau * n_comp) {
