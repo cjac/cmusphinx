@@ -46,11 +46,17 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.16  2004/11/09  19:01:39  egouvea
+ * Revision 1.17  2004/11/13  00:45:48  egouvea
+ * Replaced QUIT macro with E_FATAL, and removed the __FILE__ macros,
+ * since E_INFO already provides the info. Also changed float constants
+ * so the compiler doesn't complain about truncation from double to float
+ * (added f to the constant value).
+ * 
+ * Revision 1.16  2004/11/09 19:01:39  egouvea
  * Added Ravi's changes, which add a phone transition probability to the
  * allphone search. Also, when using a start word in the search, do not
  * assume a default if startword not defined.
- * 
+ *
  * 
  * 09-Nov-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  *     		In setting startword for listen project in run_sc_utterance(),
@@ -313,7 +319,9 @@
 
 #include "s2params.h"
 
-#define QUIT(x)		{fprintf x; exit(-1);}
+/*
+ * #define QUIT(x)		{fprintf x; exit(-1);}
+ */
 
 /* Default parameter initialization
  *----------------------------------*/
@@ -340,9 +348,9 @@ static char const *dcbfn = "d2cep.256";	/* Diff Cepstrum Codebook file name */
 static char const *pcbfn = "p3cep.256";	/* Power Codebook file name */
 static char const *xcbfn = "xcep.256";	/* Xcode Codebook file name */
 
-static float Cep_Floor  = 0.0001;
-static float Dcep_Floor = 0.0001;
-static float Pow_Floor  = 0.0001;
+static float Cep_Floor  = 0.0001f;
+static float Dcep_Floor = 0.0001f;
+static float Pow_Floor  = 0.0001f;
 
 static int32 scVqTopN = 4;	/* Number of semi-contnuous entries to use */
 static int32 ctl_offset = 0;	/* No. of lines to skip at start of ctlfile */
@@ -359,21 +367,21 @@ static char const *pext = "PCODE";
 static char const *xext = NULL;
 static char const *cep_ext = "mfc";
 static char const *sent_ext = "sent";
-static float beam_width = 1e-6;
-static float new_phone_beam_width = 1e-6;
-static float last_phone_beam_width = 1e-5;
-static float lastphone_alone_beam_width  = 3e-4;
-static float new_word_beam_width  = 3e-4;
-static float fwdflat_beam_width = 1e-8;
-static float fwdflat_new_word_beam_width  = 3e-4;
-static float filler_word_penalty = 1e-8;
-static float silence_word_penalty = 0.005;
-static float phone_insertion_penalty = 1.0;
-static float insertion_penalty = 0.65;
-static float fwdtree_lw = 6.5;
-static float fwdflat_lw = 8.5;
-static float bestpath_lw = 9.5;
-static float nw_pen = 1.0;
+static float beam_width = 1e-6f;
+static float new_phone_beam_width = 1e-6f;
+static float last_phone_beam_width = 1e-5f;
+static float lastphone_alone_beam_width  = 3e-4f;
+static float new_word_beam_width  = 3e-4f;
+static float fwdflat_beam_width = 1e-8f;
+static float fwdflat_new_word_beam_width  = 3e-4f;
+static float filler_word_penalty = 1e-8f;
+static float silence_word_penalty = 0.005f;
+static float phone_insertion_penalty = 1.0f;
+static float insertion_penalty = 0.65f;
+static float fwdtree_lw = 6.5f;
+static float fwdflat_lw = 8.5f;
+static float bestpath_lw = 9.5f;
+static float nw_pen = 1.0f;
 
 static int32 fwdtree_flag = TRUE;
 static int32 fwdflat_flag = TRUE;
@@ -391,7 +399,7 @@ static int32 normalizeMean = TRUE;
 static int32 normalizeMeanPrior = FALSE;
 static int32 compress = FALSE;
 static int32 compress_prior = FALSE;
-static float agcThresh = 0.2;
+static float agcThresh = 0.2f;
 static int32 wsj1Sent = FALSE;
 static int32 use20msDiffPow = FALSE;
 static double dcep80msWeight = 1.0;
@@ -987,7 +995,7 @@ static void init_norm_agc_cmp ( void )
     else if (agcEMax) agc = AGC_EMAX;
     if ((! ctl_file_name) && live && (agc != AGC_NONE) && (agc != AGC_EMAX)) {
 	agc = AGC_EMAX;
-	E_INFO("%s(%d): Live mode; AGC set to AGC_EMAX\n", __FILE__, __LINE__);
+	E_INFO("Live mode; AGC set to AGC_EMAX\n");
     }
     
     norm = NORM_NONE;
@@ -995,7 +1003,7 @@ static void init_norm_agc_cmp ( void )
 	norm = normalizeMeanPrior ? NORM_PRIOR : NORM_UTT;
     if ((! ctl_file_name) && live && (norm == NORM_UTT)) {
 	norm = NORM_PRIOR;
-	E_INFO("%s(%d): Live mode; MeanNorm set to NORM_PRIOR\n", __FILE__, __LINE__);
+	E_INFO("Live mode; MeanNorm set to NORM_PRIOR\n");
     }
     
     cmp = COMPRESS_NONE;
@@ -1003,8 +1011,7 @@ static void init_norm_agc_cmp ( void )
 	cmp = compress_prior ? COMPRESS_PRIOR : COMPRESS_UTT;
     if ((! ctl_file_name) && live && (cmp == COMPRESS_UTT)) {
 	cmp = COMPRESS_PRIOR;
-	E_INFO("%s(%d): Live mode; Silence compression set to COMPRESS_PRIOR\n",
-		__FILE__, __LINE__);
+	E_INFO("Live mode; Silence compression set to COMPRESS_PRIOR\n");
     }
     
     uttproc_set_cmn (norm);
@@ -1166,8 +1173,7 @@ fbs_init (int32 argc, char **argv)
     if (forward_only)
 	bestpath_flag = FALSE;
     if ((! fwdtree_flag) && (! fwdflat_flag))
-	QUIT((stderr, "%s(%d): At least one of -fwdtree and -fwdflat flags must be TRUE\n",
-	      __FILE__, __LINE__));
+        E_FATAL("At least one of -fwdtree and -fwdflat flags must be TRUE\n");
     
     /* Load the KB */
     kb (argc, argv, insertion_penalty, fwdtree_lw, phone_insertion_penalty);
@@ -1182,8 +1188,7 @@ fbs_init (int32 argc, char **argv)
      * at a later date.
      */
     if ((ccbfn == NULL) || (dcbfn == NULL) || (pcbfn == NULL) || (xcbfn == NULL))
-	QUIT ((stderr, "%s(%d): One or more codebooks not specified\n",
-	       __FILE__, __LINE__));
+      E_FATAL("One or more codebooks not specified\n");
 
     /* initialize semi-continuous acoustic and model scoring subsystem */
     SCVQInit(scVqTopN, kb_get_total_dists(), 1,
@@ -1202,7 +1207,7 @@ fbs_init (int32 argc, char **argv)
 	    SCVQAgcSet(AGC_BETA);
 	    SCVQAgcInit(TRUE, 25);
 #else
-	    QUIT((stdout, "%s(%d): agc beta not supported\n", __FILE__, __LINE__));
+	    E_FATAL("agc beta not supported\n");
 #endif
 	} else {
 #if 0
@@ -1509,7 +1514,7 @@ int32 uttfile_open (char const *utt)
 
     if (adc_input) {
 	if ((uttfp = fopen (inputfile, "rb")) == NULL) {
-	    E_FATAL ("%s(%d): fopen(%s,rb) failed\n", __FILE__, __LINE__, inputfile);
+	    E_FATAL ("fopen(%s,rb) failed\n", inputfile);
 	}
 	if (adc_hdr > 0) {
 	    if (fseek (uttfp, adc_hdr, SEEK_SET) < 0) {
@@ -1526,7 +1531,7 @@ int32 uttfile_open (char const *utt)
 #endif
     } else {
 	if (cep_read_bin (&coeff, &ncoeff, inputfile) != 0) {
-	    E_ERROR ("%s(%d): **ERROR** Read(%s) failed\n", __FILE__, __LINE__, inputfile);
+	    E_ERROR ("Read(%s) failed\n", inputfile);
 	    ncoeff = 0;
 	    return -1;
 	}
@@ -1587,9 +1592,9 @@ int32 utt_file2feat (char *utt, int32 nosearch)
     return (uttproc_get_featbuf (&cep, &dcep, &dcep_80ms, &pcep, &ddcep));
 }
 
-char *build_uttid (char *utt)
+char *build_uttid (char const *utt)
 {
-    char *utt_id;
+    char const *utt_id;
     
     /* Find uttid */
 #ifdef WIN32
@@ -1634,9 +1639,9 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
     int32 align_all = 0;
     
     time_align_init();
-    beam_width = 1e-9;
+    beam_width = 1e-9f;
     time_align_set_beam_width(beam_width);
-    E_INFO ("%s(%d): ****** USING WIDE BEAM ****** (1e-9)\n", __FILE__, __LINE__);
+    E_INFO ("****** USING WIDE BEAM ****** (1e-9)\n");
 
     utt_ctl_fs = CM_fopen (utt_ctl_file_name, "r");
     pe_ctl_fs = CM_fopen (pe_ctl_file_name, "r");
@@ -1660,7 +1665,7 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
 	    continue;
 
 	if  (!strncmp(time_align_spec, "*align_all*", strlen("*align_all*"))) {
-	    E_INFO("%s(%d): Aligning whole utterances\n", __FILE__, __LINE__);
+	    E_INFO("Aligning whole utterances\n");
 	    align_all = 1;
 	    fgets(time_align_spec, 1023, pe_ctl_fs);
 	}
@@ -1672,7 +1677,7 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
 	    time_align_spec[strlen(time_align_spec)-1] = '\0';
 	    strcpy(pe_words, time_align_spec);
 
-	    E_INFO ("%s(%d): Utt %s\n", __FILE__, __LINE__, Utt);
+	    E_INFO ("Utt %s\n", Utt);
 	    fflush (stdout);
 	}
 	else {
@@ -1822,17 +1827,17 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 	char utt_lmname_file[1000], lmname[1000];
 	
 	sprintf (utt_lmname_file, "%s/%s.%s", utt_lmname_dir, utt_name, lmname_ext);
-	E_INFO ("%s(%d): Looking for LM-name file %s\n",
-		__FILE__, __LINE__, utt_lmname_file);
+	E_INFO ("Looking for LM-name file %s\n",
+		utt_lmname_file);
 	if ((lmname_fp = fopen (utt_lmname_file, "r")) != NULL) {
 	    /* File containing LM name for this utt exists */
 	    if (fscanf (lmname_fp, "%s", lmname) != 1)
-		QUIT((stdout, "%s(%d): Cannot read lmname from file %s\n", __FILE__, __LINE__, utt_lmname_file));
+	      E_FATAL("Cannot read lmname from file %s\n", utt_lmname_file);
 	    fclose (lmname_fp);
 	} else {
 	    /* No LM name specified for this utt; use default (with no name) */
-	    E_INFO ("%s(%d): File %s not found, using default LM\n",
-		    __FILE__, __LINE__, utt_lmname_file);
+	    E_INFO ("File %s not found, using default LM\n",
+		    utt_lmname_file);
 	    lmname[0] = '\0';
 	}
 	
@@ -1948,7 +1953,7 @@ time_align_utterance (char const *utt,
 #endif
 
     if ((begin_frame != NO_FRAME) || (end_frame != NO_FRAME)) {
-	E_ERROR ("%s(%d): Partial alignment not implemented\n", __FILE__, __LINE__);
+	E_ERROR ("Partial alignment not implemented\n");
 	return;
     }
 
@@ -2012,8 +2017,8 @@ time_align_utterance (char const *utt,
 			    sprintf (seg_file_basename, "%s.%s", utt, seg_file_ext);
 			}
 		    }
-		    E_INFO("%s(%d): Seg output %s\n",
-			    __FILE__, __LINE__, seg_file_basename);
+		    E_INFO("Seg output %s\n",
+			    seg_file_basename);
 		    awriteshort(seg_file_basename, seg, seg_cnt);
 		}
 	    }
@@ -2031,7 +2036,7 @@ time_align_utterance (char const *utt,
 	}
     }
     else {
-	E_ERROR("%s(%d): No alignment for %s\n", __FILE__, __LINE__, utt_name);
+	E_ERROR("No alignment for %s\n", utt_name);
     }
     
 #ifndef WIN32
