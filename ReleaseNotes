@@ -26,9 +26,7 @@
 	regression matrices for each class. 
 	2, mllr_transform, given a matrix, this tools applies the
 	transformation to the mean vector of the models. 
-	-The command line interface for 35 out of 37
-	SphinxTrain's tools are unified. Only wave2feat and QUICKCOUNT
-	are not yet bind to that rule. 
+	-The command line interface for all SphinxTrain's tools are unified. 
 
 	
 
