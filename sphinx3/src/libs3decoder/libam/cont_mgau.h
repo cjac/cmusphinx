@@ -62,26 +62,29 @@
 
 #include <s3types.h>
 
+/** \file cont_mgau.h
+ *  \brief Interface of full GMM computation with integer value of log likelihood. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
+  /**
  * Specification of sets of GMM 
  */
 
-#define CONTHMM  10001
-#define SEMIHMM  10002
+#define CONTHMM  10001 /**(NOT USED, for backward compatibility only)  */
+#define SEMIHMM  10002 /**(NOT USED, for backward compatibllity only)  */
 
-#define FULL_INT_COMP 20001  /* Use full integer computation */
-#define FULL_FLOAT_COMP 20002 /* Use full floating point computation */
-#define MIX_INT_FLOAT_COMP 20003 /* Use mixture of integer and floating point computation */
+#define FULL_INT_COMP 20001  /** (NOT USED) Use full integer computation */
+#define FULL_FLOAT_COMP 20002 /** (NOT USED) Use full floating point computation */
+#define MIX_INT_FLOAT_COMP 20003 /** (NOT USED) Use mixture of integer and floating point computation */
 
-#define MGAU_MEAN		1
-#define MGAU_VAR		2
+#define MGAU_MEAN		1 /** Constant fo specified the mean is used */
+#define MGAU_VAR		2 /** Constant fo specified the variance is used */
 
-/*
- * Mixture Gaussians: Weighted set of Gaussian densities, each with its own mean vector and
+  /**
+   * Mixture Gaussians: Weighted set of Gaussian densities, each with its own mean vector and
  * diagonal covariance matrix.  Specialized for continuous HMMs to improve speed performance.
  * So, a separate mixture Gaussian, with its own mixture weights, for each HMM state.  Also,
  * a single feature stream assumed.  (In other words, the mgau_t structure below represents
@@ -99,7 +102,7 @@ extern "C" {
  * weights are applied).  Thus, to reiterate, the final scores are (int32) logs3 values.
  */
 
-/* 20040826 ARCHAN: 
+  /** 20040826 ARCHAN: 
  * Introduced hook to the GMM definition to allow gaussian computation using full float 
  * operations. Also added another hook that allows potential use of full covariance matrix. 
  * At this point, full covariance matrix computation was not fully implemented. 
@@ -109,67 +112,88 @@ extern "C" {
  * weights. 
  */
 
-/*
- * A single mixture-Gaussian model for one senone (see above comment).
- */
+  /**
+   * A single mixture-Gaussian model for one senone (see above comment).
+   */
 typedef struct {
-  int32 n_comp;	/* #Component Gaussians in this mixture.  NOTE: May be 0 (for the
+  int32 n_comp;	/** #Component Gaussians in this mixture.  NOTE: May be 0 (for the
 			   untrained states). */
 
   /* Definition for mean */
-  float32 **mean;	/* The n_comp means of the Gaussians. */
-                        /* The mean vector for a single mixture-Gaussian model for one senone*/
-                        /* Dimension: n_comp * dimension */
+  float32 **mean;	/** The n_comp means of the Gaussians. The mean vector for a single mixture-Gaussian model for one senone. Dimension: n_comp * dimension */
 
   /* Definition for variances */
-  float32 **var;	/* The n_comp (diagonal) variances of the Gaussians.  Could be
-			   converted to 1/(2*var) for faster computation (see above comment). */
-                        /* The diagonal variance vector for a single mixture-Gaussian model for
-			   one senone */
-                        /* Dimension: n_comp * dimension */
+  float32 **var;	/** The n_comp (diagonal) variances of the Gaussians.  Could be
+			   converted to 1/(2*var) for faster computation (see above comment).  The diagonal variance vector for a single mixture-Gaussian model for one senone. Dimension: n_comp * dimension */
 
-  float32 ***fullvar;   /* The n_comp (full) variances of the Gaussians. */
+  float32 ***fullvar;   /* (NOT USED) The n_comp (full) variances of the Gaussians. */
                         /* A full co-variance matrix for a single mixture-Gaussian model for one senone */
                         /* Dimension: n_comp * dimension * dimension */
 
   /* Definition for the log reciprocal terms */
-  float32 *lrd;	        /* Log(Reciprocal(Determinant (variance))).  (Then there is also a
+  float32 *lrd;	        /** Log(Reciprocal(Determinant (variance))).  (Then there is also a
 			   (2pi)^(veclen) involved...) */
 
   /* Definitions for the mixture weights */
-  int32 *mixw;	        /* Mixture weights for the n_comp components (int32 instead of float32
+  int32 *mixw;	        /** Mixture weights for the n_comp components (int32 instead of float32
 			   because these values are in logs3 domain)*/
-  float32 *mixw_f;      /* Mixture weights for the n_comp components in float32 */
+  float32 *mixw_f;      /** Mixture weights for the n_comp components in float32 */
 
 } mgau_t;
 
 
 
-/*
+  /**
  * The set of mixture-Gaussians in an acoustic model.
  */
 typedef struct {
-  int32 n_mgau;	/* #Mixture Gaussians in this model (i.e., #senones) */
-  int32 max_comp;	/* Max components in any mixture */
-  int32 veclen;	/* Vector length of the Gaussian density means (and diagonal vars) */
-  mgau_t *mgau;	/* The n_mgau mixture Gaussians */
-  float64 distfloor;	/* Mahalanobis distances can underflow when finally converted to
+  int32 n_mgau;	/** #Mixture Gaussians in this model (i.e., #senones) */
+  int32 max_comp;	/** Max components in any mixture */
+  int32 veclen;	/** Vector length of the Gaussian density means (and diagonal vars) */
+  mgau_t *mgau;	/** The n_mgau mixture Gaussians */
+  float64 distfloor;	/** Mahalanobis distances can underflow when finally converted to
 			   logs3 values.  To prevent this, floor the log values first. */
-  int32 comp_type;  /*Type of computation used in this set of mixture-Gaussians*/		     
-  int32 verbose;    /*Whether to display information */
+  int32 comp_type;  /**Type of computation used in this set of mixture-Gaussians*/		     
+  int32 verbose;    /**Whether to display information */
 
   /* Used only in the flat lexicon decoder, statistics */
-  int32 frm_sen_eval;		/* #Senones evaluated in the most recent frame */
-  int32 frm_gau_eval;		/* #Gaussian densities evaluated in the most recent frame */
-  int32 frm_ci_sen_eval;        /* #CI Senones evaluated in most recent frame*/
-  int32 frm_ci_gau_eval;        /* #CI Senones evaluated in most recent frame*/
+  int32 frm_sen_eval;		/** #Senones evaluated in the most recent frame */
+  int32 frm_gau_eval;		/** #Gaussian densities evaluated in the most recent frame */
+  int32 frm_ci_sen_eval;        /** #CI Senones evaluated in most recent frame*/
+  int32 frm_ci_gau_eval;        /** #CI Senones evaluated in most recent frame*/
 
-  int32 gau_type; /* gau_type=CONTHMM if it is fully continous HMM, 
+  int32 gau_type; /** gau_type=CONTHMM if it is fully continous HMM, 
 		     gau_type=SEMIHMM if it is semi continous HMM.*/
 } mgau_model_t;
 
 
-/* Access macros */
+  /** Access macros */
+  /** \def mgau_n_mgau
+      Access number of GMMs
+      \def mgau_max_comp
+      Access the maximum number of components. It can be different across GMMs
+      \def mgau_veclen
+      Access an integer array contains the size of each stream
+      \def mgau_n_comp
+      Access the number of component for a particular mixture in a GMM
+      \def mgau_mean 
+      Access the mean
+      \def mgau_var
+      Access the variance
+      \def mgau_lrd
+      Access the floating point version of the Gaussian constant
+      \def mgau_lrd
+      Access the integer version of the Gaussian constant
+      \def mgau_frm_sen_eval
+      Number of senones evaluated in this frame
+      \def mgau_frm_gau_eval
+      Number of gaussians evaluated in this frame
+      \def mgau_frm_ci_sen_eval
+      Number of CI senones evaluated in this frame
+      \def mgau_frm_ci_gau_eval
+      Number of CI gaussians evaluated in this frame
+
+   */
 #define mgau_n_mgau(g)		((g)->n_mgau)
 #define mgau_max_comp(g)	((g)->max_comp)
 #define mgau_veclen(g)		((g)->veclen)
@@ -186,33 +210,33 @@ typedef struct {
 #define mgau_frm_cisen_eval(g)	((g)->frm_ci_sen_eval)
 #define mgau_frm_cigau_eval(g)	((g)->frm_ci_gau_eval)
 
-/*
+  /**
  * Create a new mixture Gaussian model from the given files (Sphinx3 format).  Optionally,
  * apply the precomputations mentioned in the main comment above.
  * Return value: pointer to the model created if successful; NULL if error.
  */
 mgau_model_t *
-mgau_init (char *meanfile,	/* In: File containing means of mixture gaussians */
-	   char *varfile,	/* In: File containing variances of mixture gaussians */
-	   float64 varfloor,	/* In: Floor value applied to variances; e.g., 0.0001 */
-	   char *mixwfile,	/* In: File containing mixture weights */
-	   float64 mixwfloor,	/* In: Floor value for mixture weights; e.g., 0.0000001 */
-	   int32 precomp,       /* In: If TRUE, create and precompute mgau_t.lrd and also
+mgau_init (char *meanfile,	/** In: File containing means of mixture gaussians */
+	   char *varfile,	/** In: File containing variances of mixture gaussians */
+	   float64 varfloor,	/** In: Floor value applied to variances; e.g., 0.0001 */
+	   char *mixwfile,	/** In: File containing mixture weights */
+	   float64 mixwfloor,	/** In: Floor value for mixture weights; e.g., 0.0000001 */
+	   int32 precomp,       /** In: If TRUE, create and precompute mgau_t.lrd and also
 				   transform each var value to 1/(2*var).  (If FALSE, one
 				   cannot use the evaluation routines provided here.) */
-	   char* senmgau,	/* In: type of the gaussians distribution, .cont. or .semi. FIX 
+	   char* senmgau,	/** In: type of the gaussians distribution, .cont. or .semi. FIX 
 				   me! This is confusing!*/
-	   int32 comp_type);    /* In: Type of computation in this set of gaussian mixtures. */
+	   int32 comp_type);    /** In: Type of computation in this set of gaussian mixtures. */
 				
 
-/*
+  /**
  * Floor any variance vector that is non-zero (vector).
  * Return value: No. of variance VALUES floored.
  */
 int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor);
 
 
-/*
+  /**
  * Evaluate a single mixture Gaussian at the given vector x; i.e., compute the Mahalanobis
  * distance of x from each mean in the mixture, and combine them using the mixture weights.
  * Return value: The final score from this evaluation (a logs3 domain value).  NOTE: if the
@@ -221,41 +245,46 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor);
   /* The hybrid integer and floating point implementation of GMM computation */
 
 int32
-mgau_eval (mgau_model_t *g,	/* In: The entire mixture Gaussian model */
-	   int32 m,		/* In: The chosen mixture in the model (i.e., g->mgau[m]) */
-	   int32 *active_comp,	/* In: An optional, -1 terminated list of active component
+mgau_eval (mgau_model_t *g,	/** In: The entire mixture Gaussian model */
+	   int32 m,		/** In: The chosen mixture in the model (i.e., g->mgau[m]) */
+	   int32 *active_comp,	/** In: An optional, -1 terminated list of active component
 				   indices; if non-NULL, only the specified components are
 				   used in the evaluation. */
-	   float32 *x /* In: Input observation vector (of length g->veclen). */
+	   float32 *x /** In: Input observation vector (of length g->veclen). */
   );		
 
-/*
+  /**
  * Like mgau_eval, but return the scores of the individual components, instead of combining
  * them into a senone score.  Return value: Best component score.
  */
-int32 mgau_comp_eval (mgau_model_t *g,	/* In: Set of mixture Gaussians */
-		      int32 m,		/* In: Mixture being considered */
-		      float32 *x,	/* In: Input vector being compared to the components */
-		      int32 *score);	/* Out: Array of scores for each component */
+int32 mgau_comp_eval (mgau_model_t *g,	/** In: Set of mixture Gaussians */
+		      int32 m,		/** In: Mixture being considered */
+		      float32 *x,	/** In: Input vector being compared to the components */
+		      int32 *score);	/** Out: Array of scores for each component */
 
-/* 20040829 : ARCHAN: a temporary hacked function to convert the log domain value back to float domain */
+  /** 20040829 : ARCHAN: a temporary hacked function to convert the log domain value back to float domain */
 
 int32 mgau_precomp_hack_log_to_float(mgau_model_t *g);
 
-/*
- * A routine that dump all mean and variance parameters of a set of gaussian distribution.   
- */
+  /**
+   * A routine that dump all mean and variance parameters of a set of gaussian distribution.   
+   */
 
+int32 mgau_dump (mgau_model_t *g,  /** In: Set of mixture Gaussians */
+		 int32 type);      /** In: type of output, MGAU_MEAN for mean or MGAU_VAR for variance.  */
 
-int32 mgau_dump (mgau_model_t *g,  /* In: Set of mixture Gaussians */
-		 int32 type);      /* In: type of output, MGAU_MEAN for mean or MGAU_VAR for variance.  */
-
-/* RAH
- * Free memory allocated by mgau_init
- */
+  /** RAH
+   * Free memory allocated by mgau_init
+   */
 void mgau_free (mgau_model_t *g);
 
-int32 mgau_mean_reload(mgau_model_t *g, char* mean_file_name);
+
+  /** 
+   * Reloading the means. This is particularly useful for speaker adaptation. 
+   */
+
+  int32 mgau_mean_reload(mgau_model_t *g,  /** In/Out : The mean which will be resetted*/
+			 char* mean_file_name); /** In: The mean files */
 
 #ifdef __cplusplus
 }

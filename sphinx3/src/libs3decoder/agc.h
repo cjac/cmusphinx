@@ -55,11 +55,19 @@
 
 #include <s3types.h>
 
+/** \file agc.h
+ *  \brief routine that implements automatic gain control
+ *  
+ *  \warning This function may not be fully compatible with
+ *  SphinxTrain's family of AGC. 
+ *
+ *  This implements AGC. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
+  /**
  * Apply AGC to the given mfc vectors (normalize all C0 mfc coefficients in the given
  * input such that the max C0 value is 0, by subtracting the input max C0 from all).
  * This function operates on an entire utterance at a time.  Hence, the entire utterance

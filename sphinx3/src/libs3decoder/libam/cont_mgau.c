@@ -72,7 +72,12 @@
 #define MGAU_PARAM_VERSION	"1.0"	/* Sphinx-3 file format version for mean/var */
 #define MGAU_MIXW_VERSION	"1.0"	/* Sphinx-3 file format version for mixw */
 
-/*
+/** \file cont_mgau.c 
+    \brief Implementation detail of full GMM
+ *  computation with integer value of log likelihood.  
+ */
+
+/**
  * Sphinx-3 model mean and var files have the same format.  Use this routine for reading
  * either one.
  * Warning! You can only read the variance after reading the mean.  
@@ -464,7 +469,7 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 }
 
 
-/*
+/**
  * Compact each mixture Gaussian in the given model by removing any uninitialized components.
  * A component is considered to be uninitialized if its variance is the 0 vector.  Compact by
  * copying the data rather than moving pointers.  Otherwise, malloc pointers could get
@@ -569,7 +574,7 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor)
 }
 
 
-/*
+/**
  * Some of the Mahalanobis distance computation (between Gaussian density means and given
  * vectors) can be carried out in advance.  (See comment in .h file.)
  */
@@ -599,7 +604,8 @@ static int32 mgau_precomp (mgau_model_t *g)
     return 0;
 }
 
-/* Hack! Temporary measuer to make classifier works. */
+/** Hack! Temporary measure to make classifier works. 
+ */
 int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
 {
     int32 m, c;
@@ -618,7 +624,9 @@ int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
 
 }
 
-/* At the moment, S3 models have the same #means in each codebook and 1 var/mean */
+/** At the moment, S3 models have the same #means in each codebook and
+    1 var/mean */
+
 mgau_model_t *mgau_init (char *meanfile, 
 			 char *varfile, float64 varfloor,
 			 char *mixwfile, float64 mixwfloor,

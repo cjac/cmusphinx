@@ -62,7 +62,13 @@ int32 most_recent_best_cid=-1;
 
 #define DEBUG_GSCORE 1
 
-/* Decide whether this frame should be skip or not. */
+  /** \file approx_cont_mgau.c
+   * \brief Implementation detail of approx_cont_mgau
+      \warning You need to have some knowledge in fast GMM computation in order to modifed this function. 
+      
+  */
+
+/** Decide whether this frame should be skip or not. */
 
 int32 approx_isskip(int32 frame, fast_gmm_t* fg, int32 best_cid)
 {
@@ -114,19 +120,41 @@ int32 approx_isskip(int32 frame, fast_gmm_t* fg, int32 best_cid)
 
 
 
-/*Update the senone score given index, return the number of gaussians compute, 
-  This took care of Gaussian level of optimization. This will called Feature Level Optimization routine 
+/** 
+
+    Update the senone score given index, return the number of
+    gaussians compute, This took care of Gaussian level of
+    optimization. This will called Feature Level Optimization routine
+
    Gaussian Level:
+
    ^^^^^^^^^^^^^^^
-   Shortlist of Gaussians was determined using Gaussian-Selection (Bochierri 93) in gs_mgau_shortlist or Sub-VQ-based Gaussian Selection (Ravi 98) in subvq_mgau_shortlist. Note that the term "shortlist" was also used in (P. Douglas 99) which is basically are variant of (Bochierri 93) with a clever scheme which resolves the back-off problem. 
-   We have plans to further enhance schemes of Gaussian Selection by combining them using machine learning techniques. 
+
+   Shortlist of Gaussians was determined using Gaussian-Selection
+   (Bochierri 93) in gs_mgau_shortlist or Sub-VQ-based Gaussian
+   Selection (Ravi 98) in subvq_mgau_shortlist. Note that the term
+   "shortlist" was also used in (P. Douglas 99) which is basically are
+   variant of (Bochierri 93) with a clever scheme which resolves the
+   back-off problem.  We have plans to further enhance schemes of
+   Gaussian Selection by combining them using machine learning
+   techniques.
+
    Feature Component Level:
+
    ^^^^^^^^^^^^^^^^^^^^^^^^
-   SVQ is used for feature level optimization only if svq4svq is set to 1.  This use the sum of sub-vector scores will be used as the gaussian scores. 
+
+   SVQ is used for feature level optimization only if svq4svq is set
+   to 1.  This use the sum of sub-vector scores will be used as the
+   gaussian scores.
 
    Safe Guarding abnomal scores:
+
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   We discover that even using our Gaussian Selection routine, the code can break because of some gaussian score is extremely low, we tried to detect them and avoid them by 
+
+   We discover that even using our Gaussian Selection routine, the
+   code can break because of some gaussian score is extremely low, we
+   tried to detect them and avoid them by asserting the score and
+   checked them at the end of a routines. 
    
 */
 int32 approx_mgau_eval (gs_t* gs,
@@ -217,13 +245,17 @@ int32 approx_mgau_eval (gs_t* gs,
   return ng;
 }
 
-
 int32 *ci;
 
 int intcmp(const void *v1, const void *v2){
     return (ci[*(int32*) v2 ] - ci[*(int32*)v1]);
 }
 
+
+/** This function compute the dynamic beam using histogram-based CI
+    senone evaluation. This will probably be another paper on speed
+    up.
+  */
 int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
 				 fast_gmm_t *fastgmm,
 				 mgau_model_t *g,
@@ -275,10 +307,9 @@ int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
 }
 
 
-/* This function,
+/** In this function,
   1, It only compute the ci-phones score.
-  2, There is no optimization schemes applied to this routine.
-  3, The score is not normalize, this routine is supposed to be used before approx_cont_mgau_frame_eval,
+  2, The score is not normalize, this routine is supposed to be used before approx_cont_mgau_frame_eval,
      The best score is determined by the later function. 
 */
 
@@ -331,7 +362,7 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
   g->frm_ci_gau_eval=n_cig;
 }
 
-/* approx_con_mgau_frame_eval encapsulates all approximations in the
+/** approx_con_mgau_frame_eval encapsulates all approximations in the
    Gaussian computation.  This assumes programmers NOT to initialize the
    senone scores at every frame (FIX me!) before using this function.
 
@@ -339,7 +370,9 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
    Leval and GMM Level.
 
    Frame Level:
+
    ^^^^^^^^^^^^
+
    We select to compute the scores only if it is not similar to the
    most recently computed frames.  There are multiple ways to
    configures this.
@@ -357,6 +390,7 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
    computed frame.  In those case, we chose to compute those senones
 
    GMM Level:
+
    ^^^^^^^^^^
 
    In the implementation of CI-based GMM selection makes use of the
@@ -375,18 +409,23 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
 	     back-off using the parent senone score. 
 
    About renormalization
+
    ^^^^^^^^^^^^^^^^^^^^^
+
    Sphinx 3.4 generally renormalize the score using the best
    score. Notice that this introduce extra complication to the
    implementation.  I have separated the logic of computing or not
    computing the scores.  This will clarify the code a bit.
    
    Accounting of senone and gaussian computation
+
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
    This function assumes approx_cont_mgau_ci_eval was run before it,
    hence at the end the score was added on top of the it.
    
    Design
+
    ^^^^^^ 
 
    The whole idea of this function is based on my paper on "4-level

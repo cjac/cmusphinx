@@ -43,6 +43,9 @@
 
 #include "cont_mgau.h"
 
+/** \file classify.h
+    \brief Frame-by-frame classifier written by Ziad. To be replaced by Yitao's version. 
+*/
 #ifdef __cplusplus
  extern "C" {
  #endif 
@@ -89,7 +92,9 @@
 
 /**************************************************/
 
-/*** class to store the classifier parameters ***/ 
+/**
+   class to store the classifier parameters 
+ */ 
 typedef struct{
   char *classname[NUMCLASSES];
   int32 windowlen;
@@ -106,12 +111,12 @@ typedef struct{
 
 
 
-/* Macro to byteswap an int variable.  x = ptr to variable */
+   /** Macro to byteswap an int variable.  x = ptr to variable */
 #define SWAP_INT(x)   *(x) = ((0x000000ff & (*(x))>>24) | \
                                 (0x0000ff00 & (*(x))>>8) | \
                                 (0x00ff0000 & (*(x))<<8) | \
                                 (0xff000000 & (*(x))<<24))
-/* Macro to byteswap a float variable.  x = ptr to variable */
+   /** Macro to byteswap a float variable.  x = ptr to variable */
 #define SWAP_FLOAT(x) SWAP_INT((int *) x)
 
 void majority_class(class_t* CLASSW, int *classcount, int frame_count);
@@ -126,25 +131,6 @@ class_t * classw_initialize(char* meanfile,   /* The mean file */
 			    char *senmgau);       /* whether it is SCHMM, ".semi." or FCHMM ".cont." */
 
 void classw_free(class_t *CLASSW);
-
-/*Not open this function for now */
-/*void readfeatures (char *filename, float *features[MAXFRAMES], int *numofframes);*/
-
-/*void calclikeli (float *means[NUMCLASSES][NUMMIXTURES], 
-		 float *vars[NUMCLASSES][NUMMIXTURES], 
-		 float mixwghts[NUMCLASSES][NUMMIXTURES], 
-		 float *frame, 
-		 float likeli[NUMCLASSES]);*/
-
-/*void calclikeli (mgau_model_t *g, Input: multiptle mixture models 
-		 float *frame,    Input: the frame 
-		 float likeli[NUMCLASSES]);*/
-
-/*int classify (float *means[NUMCLASSES][NUMMIXTURES], 
-	      float *vars[NUMCLASSES][NUMMIXTURES], 
-	      float mixwghts[NUMCLASSES][NUMMIXTURES], 
-	      float *frame, 
-	      float priors[NUMCLASSES]);*/
 
 int classify (mgau_model_t *g,  /* multiple mixture models */
 	      float *frame,     /* the frame */
