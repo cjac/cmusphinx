@@ -234,8 +234,8 @@ void kb_init (kb_t *kb)
 	for (j = 0; j < kb->n_lextree; j++) {
 	  kb->ugtreeMulti[i*kb->n_lextree+j] = lextree_build (kbcore, wp, n, lc);
 	  lextree_type (kb->ugtreeMulti[i*kb->n_lextree+j]) = 0;
-	  E_INFO("Lextrees (%d) for lm %d name %s, %d nodes(ug)\n",
-		 kb->n_lextree, i, lmset[i].name,lextree_n_node(kb->ugtreeMulti[i*kb->n_lextree+j]));
+	  E_INFO("Lextrees (%d) for lm %d, its name is %s, it has %d nodes(ug)\n",
+		 j, i, lmset[i].name,lextree_n_node(kb->ugtreeMulti[i*kb->n_lextree+j]));
 	}
       }
 
@@ -333,7 +333,7 @@ void kb_init (kb_t *kb)
     E_INFO("GS map would be used for Gaussian Selection? = %d\n",kb->gs4gs);
 
     kb->svq4svq=cmd_ln_int32("-svq4svq");
-    E_INFO("SVQ would be used as Gaussian Score ?= %d\n",kb->svq4svq);
+    E_INFO("SVQ would be used as Gaussian Score? = %d\n",kb->svq4svq);
 
     kb->ci_pbeam=-1*logs3(cmd_ln_float64("-ci_pbeam"));
     E_INFO("CI phone beam to prune the number of parent CI phones in CI-base GMM Selection = %d\n",kb->ci_pbeam);
@@ -420,14 +420,11 @@ void kb_setlm(char* lmname,kb_t* kb)
 
   kbc=kb->kbcore;
   lms=kbc->lmset;
-
-  E_INFO("Inside kb_setlm\n");
   kbc->lm=NULL;
   for(j=0;j<kb->n_lextree;j++){
     kb->ugtree[j]=NULL;
   }
 
-  E_INFO("Inside kb_setlm\n");
   if(lms!=NULL || cmd_ln_str("-lmctlfn")){
     for(i=0;i<kbc->n_lm;i++){
       if(!strcmp(lmname,lms[i].name)){
@@ -458,14 +455,14 @@ void kb_setlm(char* lmname,kb_t* kb)
    */
   assert (i < kbc->n_lm);
 
-  E_INFO("Current LM name %s.\n",lms[i].name);
-  /*  if((kb->vithist->lms2vh_root=
+
+  if((kb->vithist->lms2vh_root=
      (vh_lms2vh_t**)ckd_realloc(kb->vithist->lms2vh_root,
 				lm_n_ug(kbc->lm)*sizeof(vh_lms2vh_t *)
 				))==NULL) 
     {
       E_FATAL("failed to allocate memory for vithist\n");
-      }*/
+    }
 
 
   n = ((kb->ugtree[0]->n_node) + (kb->fillertree[0]->n_node)) * kb->n_lextree;

@@ -270,7 +270,7 @@ static int32 lm_fread_int32 (lm_t *lm)
  * LM classes in a trigram LM, one MUST use the -lmctlfn flag.  It is not
  * possible to read in a class-based trigram LM using the -lmfn flag.)
  * 
- * No "comments" allowed in this file.
+ * ARCHAN, 
  */
 
 lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64 uw,char *lmdumpdir,int32* n_lm, int32* n_alloclm,int32 dict_size)
@@ -285,7 +285,8 @@ lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64
   lm_t *lm;
   lmset_t *lmset=NULL;
   tmp=NULL;
-	    
+	
+
   lmclass_set = lmclass_newset();
 	    
   E_INFO("Reading LM control file '%s'\n",ctlfile);
@@ -882,13 +883,18 @@ int32 lm_ug_wordprob (lm_t *lm, dict_t *dict,int32 th, wordprob_t *wp)
 	    while(lmclass_isword(lm_cw)){
 	      dictid =lmclass_getwid(lm_cw); 
 
-	      if(dictid !=dict_basewid(dict,dictid)){
-		dictid=dict_basewid(dict,dictid);
-	      }
-	      if((p=lm->ug[i].prob.l+lm->inclass_ugscore[dictid])>=th){
-		wp[j].wid=dictid;
-		wp[j].prob=lm->ug[i].prob.l;
-		j++;
+	      /*E_INFO("Lookup dict_id using dict_basewid %d\n",dictid);*/
+	      if(IS_S3WID(dictid)){
+		if(dictid !=dict_basewid(dict,dictid)){
+		  dictid=dict_basewid(dict,dictid);
+		}
+		if((p=lm->ug[i].prob.l+lm->inclass_ugscore[dictid])>=th){
+		  wp[j].wid=dictid;
+		  wp[j].prob=lm->ug[i].prob.l;
+		  j++;
+		}
+	      }else{
+		E_INFO("Word %s cannot be found \n", lmclass_getword(lm_cw));
 	      }
 
 	      lm_cw= lmclass_nextword (lmclass,lm_cw);

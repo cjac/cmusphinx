@@ -162,6 +162,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 		}
 
 	      } else{
+		E_ERROR("%s is a class tag, its word %s but does not appear in dictionary. Dict ID: %d. \n",lm_wordstr(lm,u), lmclass_getword(lmclass_word), dictid);
 		n++;
 	      }
 
@@ -169,7 +170,11 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 lmclass_word);
 	    }
 	  }else{ /*it is not a valid word ID and it is not valid class ID */
-	    E_ERROR("%s is not a word in dictionary and it is not a class tag. \n",lm_wordstr(lm,u));
+	    E_ERROR("%s is not a word in dictionary and it is not a class tag. \n",
+
+lm_wordstr(lm,u)
+
+);
 	    n++;
 	  }
 	}

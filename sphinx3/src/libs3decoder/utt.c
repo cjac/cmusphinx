@@ -220,13 +220,19 @@ void utt_end (kb_t *kb)
 	if (!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
 	  kb->hyp_strlen +=
 	    strlen(dict_wordstr(dict, dict_basewid(dict, h->id))) + 1;
+
 	}
       }
+
       fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,kb->nfr,ascr,lscr);
 
-      kb->hyp_segs = ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
-      kb->hyp_str = ckd_calloc(kb->hyp_strlen, sizeof(char));
+      kb->hyp_segs = (hyp_t**)ckd_calloc(kb->hyp_seglen, sizeof(hyp_t *));
+
+      /* In linux, strcat will replace the ending '\0' and replace with strings *src, THEN, add '\0' at the end again.*/
+      /* To make the following algorithm works, has to create a kb->hyp_strlen+1 size character memory array */
+      kb->hyp_str = (char*) ckd_calloc(kb->hyp_strlen+1, sizeof(char));
       hyp_strptr = kb->hyp_str;
+      hyp_strptr[0]='\0';
 
       /* Match */
       fprintf (fp, "\nFWDVIT: ");
@@ -234,6 +240,8 @@ void utt_end (kb_t *kb)
       for (gn = hyp; gn; gn = gnode_next(gn)) {
 	h = (hyp_t *) gnode_ptr (gn);
 	kb->hyp_segs[i++] = h;
+
+
 	if(!dict_filler_word(dict,h->id) && (h->id!=dict_finishwid(dict))) {
 	  strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict,h->id)));
 	  hyp_strptr += strlen(hyp_strptr);
@@ -241,6 +249,8 @@ void utt_end (kb_t *kb)
 	  hyp_strptr++;
 	}
       }
+
+
       kb->hyp_str[kb->hyp_strlen - 1] = '\0';
       fprintf (fp, "%s (%s)\n\n", kb->hyp_str, kb->uttid);
       
