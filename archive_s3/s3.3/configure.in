@@ -37,12 +37,6 @@ ad_files=""
 ad_libs=""
 audio_test_file=""
 
-AC_ARG_WITH(alsa, [use ALSA library for sound I/O],
-            AC_CHECK_HEADER(sys/asoundlib.h,
-                [ad_libs="-lasound"; ad_files="ad_alsa.lo";
-                 ad_backend="AD_BACKEND_ALSA"],
-                AC_ERROR(ALSA header file <sys/asoundlib.h> not found!)))
-
 if test "x$ad_files" = "x"; then
         case $host in
                 *-*-linux*)
@@ -54,45 +48,45 @@ if test "x$ad_files" = "x"; then
                 # FIXME: isn't this the same OSS as on Linux?
                 *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
-                        ad_backend="AD_BACKEND_OSS_BSD"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *-*-osf*)
                         ad_files="ad_osf.lo mulaw_base.lo"
-                        ad_backend="AD_BACKEND_OSF"
                         CFLAGS="$CFLAGS -DAD_BACKEND_OSF"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *-*-irix*)
                         ad_files="ad_irix.lo mulaw_base.lo"
                         ad_libs="-laudio"
-                        ad_backend="AD_BACKEND_IRIX"
                         CFLAGS="$CFLAGS -DAD_BACKEND_IRIX"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *-*-sunos4*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.bigendian"
                         ;;
                 *-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.bigendian"
                         ;;
-                *-*-*win32*)
+                                *86*-*-solaris*)
+                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
+                        ad_libs="-lm -lnsl -lsocket -ldl"
+                        ad_backend="AD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+*-*-*win32*)
                         ad_files="play_win32.lo rec_win32.lo"
-                        ad_backend="AD_BACKEND_WIN32"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *)
                         ad_files="ad_base.lo"
-                        ad_backend="AD_BACKEND_NONE"
                         CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
 			audio_test_file="pittsburgh.littleendian"
                         AC_MSG_RESULT([No audio interface for host type $host.])
@@ -107,9 +101,7 @@ AC_SUBST(lmdata)
 AC_SUBST(docdata)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
-AC_SUBST(ad_backend)
 AC_SUBST(audio_test_file)
-AC_SUBST(LIBOBJS)
 AC_SUBST(PERL)
 AC_SUBST(CSH)
 
