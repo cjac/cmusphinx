@@ -67,7 +67,7 @@
 
 
 /*
- * This application reads in mfc filenames, one at a time, and performs allphone
+ * This application reads in filenames, one at a time, and performs allphone
  * recognition on each.  The result is written to stdout.  (But note that the
  * recognition engine also writes a log to stdout.  So a real application might
  * prefer to write the results to a file instead.)
@@ -82,7 +82,7 @@ main (int argc, char *argv[])
     fbs_init (argc, argv);
 
     for (;;) {
-	printf ("MFC filename (without .mfc extension): ");
+	printf ("Audio filename (without extension): ");
 	if (scanf ("%s", utt) != 1)
 	    break;
 

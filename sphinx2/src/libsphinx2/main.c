@@ -58,9 +58,14 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1  2000/01/28  22:08:52  lenzo
- * Initial revision
+ * Revision 1.2  2000/02/08  21:06:46  lenzo
+ * More to get the sphinx2-phone example working. Also
+ * removed a couple of vestigial files from the demo lm.
  * 
+ * Revision 1.1.1.1  2000/01/28 22:08:52  lenzo
+ * Initial import of sphinx2
+ *
+ *
  * 
  * 06-Jan-99	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Added set_adc_input().
@@ -1293,7 +1298,7 @@ run_ctl_file (char *ctl_file_name)
 	if (! allphone_mode)
 	    run_sc_utterance (mfcfile, sf, ef, idspec);
 	else
-	    uttproc_allphone_cepfile (mfcfile);
+	    uttproc_allphone_file (mfcfile);
 
 #if 0
 	/* This stuff no longer works -- rkm@cs.cmu.edu (02/03/1999) */

@@ -1,6 +1,6 @@
 # Note that this is NOT a relocatable package
-%define ver      0.9
-%define rel      1
+%define ver      0.1.1
+%define rel      0
 %define prefix   /usr
 
 Summary: CMU Sphinx Recognition System
@@ -64,7 +64,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root)
 
 %{prefix}/bin/*
-%{prefix}/share/flipbook/pixmaps/*
+%{prefix}/share/sphinx2/model/lm/turtle/*
+%{prefix}/share/sphinx2/model/hmm/4k/*
 
 %doc AUTHORS
 %doc COPYING

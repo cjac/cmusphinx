@@ -22,9 +22,8 @@ a task.
 
   demo.vocab    the vocabulary of the task
 
-  demo_10000.map   the state map for each HMM needed in the task
-
-  demo_10000.phone the triphone map for the task
-
+  goforward.16k a raw, 16-bit 16kHz audio file containing the utterance
+                'go forward ten meters'
 
 Not all of these are needed, but they're all here.
+
