@@ -49,7 +49,6 @@
 #include <stdio.h>
 #include <libutil/libutil.h>
 
-#include "config.h"
 #include "cmd_ln_args.h"
 
 static arg_t arg[] = {
