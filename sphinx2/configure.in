@@ -112,7 +112,7 @@ AM_PROG_LIBTOOL
 AC_OUTPUT([
 Makefile
 include/Makefile
-include/ad.h
+include/ad_conf.h
 src/Makefile
 src/libsphinx2/Makefile
 src/libsphinx2/include/Makefile
