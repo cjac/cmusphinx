@@ -2,11 +2,9 @@
 
 lib_LTLIBRARIES = libsphinx2ad.la
 
-libsphinx2ad_la_SOURCES = \
-	cont_ad_base.c
+libsphinx2ad_la_SOURCES = cont_ad_base.c
 
-EXTRA_libsphinx2ad_la_SOURCES = \
-	ad_base.c \
+EXTRA_libsphinx2ad_la_SOURCES = ad_base.c \
 	ad_oss.c \
 	ad_oss_bsd.c \
 	ad_alsa.c \
@@ -15,7 +13,7 @@ EXTRA_libsphinx2ad_la_SOURCES = \
 	ad_sunos.c \
 	audio_utils_sunos.c \
 	play_win32.c \
-	rec_win32.c
+	rec_win32.c \
 	mulaw_base.c
 
 noinst_HEADERS = audio_utils_sunos.h
