@@ -1154,11 +1154,21 @@ To compile Sphinx2 libraries on Unix platforms:
 To compile Sphinx2 libraries on Windows platforms:
 <UL>
 <LI> Unpack the distribution
-<LI> Load the workspace <strong><code>sphinx2/sphinx2.dsw</code></strong> onto Microsoft Visual C++ 6.0 or better.
+<LI> Load the workspace <strong><code>.\sphinx2.dsw</code></strong> onto Microsoft Visual C++ 6.0 or better.
 <LI> Compile the project <code><strong>sphinx2-continuous</code></strong>, minimally
-<LI> On a command prompt, <code><strong>cd sphinx2/win32/batch</code></strong>
+<li> In a command prompt (follow the menu "<code>Start</code>" -> "<code>Run</code>" and type  <code><strong>cmd</strong></code>), cd
+to the location where you installed sphinx2 (e.g., <code><strong>c:\sphinx2-0.5</strong></code>) 
+<LI> Still in the command prompt, <code><strong>cd .\win32\batch</code></strong>.
 <LI> Run <code><strong>sphinx2-test.bat</code></strong>
 </UL>
+
+<p>MS Visual Studio will build the executables under
+<code><strong>.\bin\Release</strong></code> or
+<code><strong>.\bin\Debug</strong></code> (depending on the setting
+you choose on MS Visual Studio), and the libraries under
+<code><strong>.\lib\Release</strong></code> or
+<code><strong>.\lib\Build</strong></code>.
+</p>
 
 <p>In a successful installation, the test produces the recognition result <code><strong>GO FORWARD TEN METERS</code></strong></p>
 <br><br><br><br><br><br>
@@ -2507,7 +2517,7 @@ treated as a comment line.  Blank lines are also allowed anywhere in the file.
 <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
 <!-- Created: Jan 01, 1997 -->
 <!-- hhmts start -->
-Last modified: Fri Jul 23 21:16:57 EDT 2004
+Last modified: Sat Jul 31 00:27:12 EDT 2004
 <!-- hhmts end -->
 
 </BODY>
