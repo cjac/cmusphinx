@@ -7,3 +7,11 @@ stamp-h
 Makefile
 Makefile.in
 *.gz
+aclocal.m4
+config.guess
+config.h.in
+config.sub
+configure
+ltconfig
+ltmain.sh
+stamp-h.in
