@@ -52,8 +52,8 @@
 
 
 #define MAXSAMPLES 	1000000
-#define STRLEN          512
-#define MAX_REFERENCES  50
+#define STRLEN          2048
+#define MAX_REFERENCES  200
 
 
 void showAccuracy(FILE *rfp);
@@ -111,6 +111,9 @@ int main (int argc, char *argv[])
 
     partialhyp_t *parthyp;
     FILE *fp, *sfp, *rfp;
+
+setbuf(stdout, NULL);
+setbuf(stderr, NULL);
 
     space = ' ';
     numberFiles = 0;
