@@ -75,5 +75,5 @@ main ()
     }
 }
 
-#endif MAIN
+#endif /* MAIN */
 
