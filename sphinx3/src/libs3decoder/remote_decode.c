@@ -67,95 +67,110 @@ enum {
   RD_CTRL_END_UTT,
   RD_CTRL_RECORD_HYPS,
   RD_CTRL_PROCESS_RAW,
-  RD_CTRL_PROCESS_FRAMES,
-  RD_CTRL_PROCESS_FEATURES,
+  RD_CTRL_PROCESS_CEPS,
+  RD_CTRL_PROCESS_FEATS,
   RD_CTRL_JOIN,
 };
 
 #define RD_PARAM_NONE  0
 #define RD_DATA_NONE   0
 
-typedef struct _control_block
+typedef struct
 {
   int32 cmd;
   int32 param;
   void* data;
-  struct _control_block *next_block;
-} control_block;
+} control_t;
 
-typedef struct _result_block
+typedef struct
 {
   char *uttid;
   char *hyp_str;
   hyp_t **hyp_segs;
-  struct _result_block *next_block;
-} result_block;
+} result_t;
 
-static int rd_lock_internal(remote_decoder_t *);
-static int rd_unlock_internal(remote_decoder_t *);
-static int rd_wait_internal(remote_decoder_t *);
-static int rd_wake_internal(remote_decoder_t *);
-static int rd_queue_control(remote_decoder_t *, int32, int32, void *);
-static int rd_replace_control_all(remote_decoder_t *, int32, int32, void *);
-static int rd_dequeue_control_all(remote_decoder_t *);
-static int rd_dequeue_control(remote_decoder_t *, int32 *, int32 *, void **);
-static int rd_queue_result(remote_decoder_t *, char *, char *, hyp_t **);
-static int rd_dequeue_result(remote_decoder_t *, char **, char **, hyp_t ***);
-static control_block* rd_copy_control(remote_decoder_t *, int32, int32,
-				      void *);
-static int rd_free_control(int32, int32, void *);
-static result_block* rd_copy_result(remote_decoder_t *, char *, char *,
-				    hyp_t **);
-static int rd_free_result(char *, char *, hyp_t **);
+static control_t* create_control(remote_decoder_t *, int32, int32, void *);
+static void free_control(control *);
+static result_t* create_result(remote_decoder_t *, char *, char *, hyp_t **);
+static int free_result(result *);
+static int rd_control_impl(remote_decoder_t *, int32, int32, void *);
 static int rd_init_impl(remote_decoder_t *, int32);
 
 static int
-rd_init_impl(remote_decoder_t *_decoder, int32 _internal_cmd_ln)
+rd_control_impl(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
+		void *_data)
 {
-  HANDLE mutex;
-  HANDLE cond;
+  control_t *ctrl;
 
-  /******************************** execution *******************************/
+  assert(_decoder != null);
 
-  /** Win32 - Creating mutex and conditional variable */
-  if ((mutex = CreateMutex(NULL, FALSE, NULL)) == NULL) {
-    goto rd_init_impl_cleanup;
-  }
-  if ((cond = CreateEvent(NULL, TRUE, FALSE, NULL)) == NULL) {
-    goto rd_init_impl_cleanup;
+  ctrl = create_control(_decoder, _cmd, _param, _data);
+  if (ctrl == null) {
+    free_control(ctrl);
+    return RD_FAILURE;
   }
 
-  _decoder->control_queue = null;
-  _decoder->result_queue = null;
-  _decoder->state = RD_STATE_UNINIT;
-  _decoder->internal_cmd_ln = _internal_cmd_ln;
-  _decoder->mutex = mutex;
-  _decoder->cond = cond;
-
-  if (rd_queue_control(_decoder, RD_CTRL_INIT, RD_PARAM_NONE, null) != 
-      RD_SUCCESS) {
-    goto rd_init_impl_cleanup;
+  if (list_insert_tail(_decoder->control_queue, ctrl) != 0) {
+    free_control(ctrl);
+    return RD_FAILURE;
   }
 
   return RD_SUCCESS;
+}
+
+static remote_decoder_t*
+rd_init_impl(int32 _internal_cmd_ln)
+{
+  remote_decoder_t *decoder;
+
+  /******************************** execution *******************************/
+
+  decoder = (remote_decoder_t *)ckd_malloc(sizeof(remote_decoder_t));
+  if (decoder == null) {
+    return null;
+  }
+
+  decoder->state = RD_STATE_UNINIT;
+  decoder->internal_cmd_ln = _internal_cmd_ln;
+  decoder->control_queue = null;
+  decoder->result_queue = null;
+
+  if ((decoder->control_queue = list_init(&free_control)) == null) {
+    goto rd_init_impl_cleanup;
+  }
+
+  if ((decoder->result_queue = list_init(&free_result)) == null) {
+    goto rd_init_impl_cleanup;
+  }
+
+  if (rd_control_impl(decoder, RD_CTRL_INIT, RD_PARAM_NONE, null) != 0) {
+    goto rd_init_impl_cleanup;
+  }
+
+  return decoder;
 
   /********************************** cleanup *******************************/
   rd_init_impl_cleanup:
 
-  if (_decoder->mutex != NULL) {
-    CloseHandle(_decoder-
+  if (decoder->control_queue != null) {
+    list_free(_decoder->control_queue);
+  }
 
-  return RD_FAILURE;
+  if (_decoder->result_queue != null) {
+    list_free(_decoder->result_queue);
+  }
+
+  return null;
 }
 
-int
-rd_init(remote_decoder_t *_decoder)
+remote_decoder_t *
+rd_init()
 {
   return rd_init_impl(_decoder, false);
 }
 
-int
-rd_init_with_args(remote_decoder_t *_decoder, int _argc, char **_argv)
+remote_decoder_t *
+rd_init_with_args(int _argc, char **_argv)
 {
   cmd_ln_parse(arg_def, argc, argv);
   return rd_init_impl(_decoder, true);
@@ -164,173 +179,135 @@ rd_init_with_args(remote_decoder_t *_decoder, int _argc, char **_argv)
 int
 rd_finish(remote_decoder_t *_decoder)
 {
-  return rd_queue_control(_decoder, RD_CTRL_FINISH, RD_PARAM_NONE, null);
+  assert(_decoder != null);
+
+  return rd_control_impl(_decoder, RD_CTRL_FINISH, RD_PARAM_NONE, null);
 }
 
 int
-rd_begin_utt(remote_decoder_t *decoder, char *uttid)
+rd_begin_utt(remote_decoder_t *_decoder, char *_uttid)
 {
-  int rv;
-  char *local_uttid;
+  assert(_decoder != null);
 
-  if (uttid && (local_uttid = ckd_calloc(1, strlen(uttid) + 1)) == 0) {
-    return -1;
-  }
-  strcpy(local_uttid, uttid);
-
-  rv = rd_queue_control(decoder, RD_CTRL_BEGIN_UTT, 0, local_uttid);
-  if (rv != 0) {
-    rd_free_control(RD_CTRL_BEGIN_UTT, 0, local_uttid);
-  }
-
-  return rv;
+  return rd_control_impl(_decoder, RD_CTRL_BEGIN_UTT, RD_PARAM_NONE, _uttid);
 }
 
 int
-rd_end_utt(remote_decoder_t *decoder)
+rd_end_utt(remote_decoder_t *_decoder)
 {
-  return rd_queue_control(decoder, RD_CTRL_END_UTT, 0, 0);
+  assert(_decoder != null);
+
+  return rd_control_impl(_decoder, RD_CTRL_END_UTT, RD_PARAM_NONE, null);
 }
 
 int
-rd_abort_utt(remote_decoder_t *decoder)
+rd_abort_utt(remote_decoder_t *_decoder)
 {
-  rd_dequeue_control_all(decoder);
-  return rd_queue_control(decoder, RD_CTRL_END_UTT, 0, 0);
+  control_t *ctrl;
+
+  assert(_decoder != null);
+
+  for (;;) {
+    if (list_peek_head(_decoder->control_queue, &ctrl) != 0) {
+      break;
+    }
+
+    if (ctrl->cmd == RD_END_UTT) {
+      return RD_SUCCESS;
+    }
+    else if (list_remove_head(_decoder->control_queue, null) != 0) {
+      return RD_FAILURE;
+    }      
+  }
+
+  return rd_control_impl(_decoder, RD_CTRL_END_UTT, RD_PARAM_NONE, null);
 }
 
 int
-rd_process_raw(remote_decoder_t *decoder, int16 *samples, int32 num_samples)
+rd_process_raw(remote_decoder_t *_decoder, int16 *_samples, int32 _len)
 {
-  int rv;
-  int16 *local_samples;
+  assert(_decoder != null);
 
-  if (samples == 0) {
-    return -1;
-  }
-
-  local_samples = ckd_calloc(sizeof(int16), num_samples);
-  if (local_samples == 0) {
-    return -1;
-  }
-  memcpy(local_samples, samples, num_samples * sizeof(int16));
-
-  rv = rd_queue_control(decoder, RD_CTRL_PROCESS_RAW, num_samples,
-			local_samples);
-  if (rv != 0) {
-    rd_free_control(RD_CTRL_PROCESS_RAW, num_samples, local_samples);
-  }
-
-  return rv;
+  return rd_control_impl(_decoder, RD_CTRL_PROCESS_RAW, len, samples);
 }
 
 int
-rd_process_frames(remote_decoder_t *decoder,
-		  float32 **frames,
-		  int32 num_frames)
+rd_process_ceps(remote_decoder_t *_decoder, float32 **_ceps, int32 _len)
 {
-  int rv;
-  int i;
-  int frame_size;
-  float32 **local_frames;
+  assert(_decoder != null);
 
-  if (frames == 0) {
-    return -1;
-  }
-
-  frame_size = decoder->ld.fe->NUM_CEPSTRA;
-  local_frames = (float32 **)ckd_calloc_2d(num_frames, frame_size,
-					   sizeof(float32));
-  if (local_frames == 0) {
-    return -1;
-  }
-  for (i = num_frames - 1; i >= 0; i--) {
-    memcpy(local_frames[i], frames[i], frame_size * sizeof(float32));
-  }
-
-  rv = rd_queue_control(decoder, RD_CTRL_PROCESS_FRAMES, num_frames,
-			local_frames);
-  if (rv != 0) {
-    rd_free_control(RD_CTRL_PROCESS_FRAMES, num_frames, local_frames);
-  }
-
-  return rv;
+  return rd_control_impl(_decoder, RD_CTRL_PROCESS_CEPS, _len, _ceps);
 }
 
 /** let's not implement this just yet */
 #if 0
 int
-rd_process_features(remote_decoder_t *decoder,
-		    float32 ***features,
-		    int32 num_features)
+rd_process_feats(remote_decoder_t *_decoder, float32 ***_feats, int32 _len)
 {
-  int rv;
+  assert(_decoder != null);
 
-  rd_lock_internal(decoder);
-  rv = rd_queue_control(decoder, RD_CTRL_PROC_FEAT, num_features,
-			      features);
-  rd_unlock_internal(decoder);
-
-  return rv;
+  return rd_control_impl(_decoder, RD_CTRL_PROCESS_FEATS, _len, _feats);
 }
 #endif
 
 int
-rd_record_hyps(remote_decoder_t *decoder)
+rd_record_hyps(remote_decoder_t *_decoder)
 {
-  return rd_queue_control(decoder, RD_CTRL_RECORD_HYPS, 0, 0);
+  assert(_decoder != null);
+
+  return rd_control_impl(_decoder, RD_CTRL_RECORD_HYPS, RD_PARAM_NONE, null);
 }
 
 int
-rd_join(remote_decoder_t *decoder)
+rd_join(remote_decoder_t *_decoder)
 {
-  return rd_queue_control(decoder, RD_CTRL_JOIN, 0, 0);
+  return rd_control_impl(_decoder, RD_CTRL_JOIN, RD_PARAM_NONE, null);
 }
 
 int
-rd_interrupt(remote_decoder_t *decoder)
+rd_interrupt(remote_decoder_t *_decoder)
 {
-  rd_dequeue_control_all(decoder);
-  return rd_queue_control(decoder, RD_CTRL_JOIN, 0, 0);
+  assert(_decoder != null);
+
+  list_clear(_decoder->control_queue);
+  return rd_control_impl(_decoder, RD_CTRL_JOIN, RD_PARAM_NONE, null);
 }
 
 int
-rd_retrieve_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str, 
-		 hyp_t ***hyp_segs)
+rd_retrieve_hyps(remote_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
+		 hyp_t ***_hyp_segs)
 {
-  int rv;
-  char *local_uttid;
-  char *local_hyp_str;
-  hyp_t **local_hyp_segs;
+  result_t *rv = null;
 
-  rv = rd_dequeue_result(decoder, &local_uttid, &local_hyp_str,
-			 &local_hyp_segs);
-
-  if (uttid) {
-    *uttid = local_uttid;
-  }
-  else if (local_uttid) {
-    ckd_free(uttid);
+  if (list_remove_head(_decoder, &rv) != 0) {
+    return RD_FAILURE;
   }
 
-  if (hyp_str) {
-    *hyp_str = local_hyp_str;
+  if (_uttid) {
+    *_uttid = rv->uttid;
   }
-  else if (local_hyp_str) {
-    ckd_free(local_hyp_str);
+  else if (rv->uttid) {
+    ckd_free(rv->uttid);
   }
 
-  if (hyp_segs) {
-    *hyp_segs = local_hyp_segs;
+  if (_hyp_str) {
+    *_hyp_str = rv->hyp_str;
   }
-  else if (local_hyp_segs) {
-    if (local_hyp_segs[0]) {
-      ckd_free(local_hyp_segs[0]);
+  else if (rv->hyp_str) {
+    ckd_free(rv->hyp_str);
+  }
+
+  if (_hyp_segs) {
+    *_hyp_segs = rv->hyp_segs;
+  }
+  else if (rv->hyp_segs) {
+    if (rv->hyp_segs[0]) {
+      ckd_free(rv->hyp_segs[0]);
     }
-    ckd_free(local_hyp_segs);
+    ckd_free(rv->hyp_segs);
   }
 
-  return rv;
+  return RD_SUCCESS;
 }
 
 int
@@ -354,155 +331,99 @@ rd_free_hyps(char *uttid, char *hyp_str, hyp_t **hyp_segs)
   return 0;
 }
 
-int
-rd_run(remote_decoder_t *d)
+void
+rd_run(remote_decoder_t *_decoder)
 {
-  int rv;
-  int32 cmd;
-  int32 param;
-  void *data;
+  control_t *ctrl;
+  result_t *result;
 
-  char *uttid0;
-  char *uttid1 = 0;
-  char *hyp_str0;
-  char *hyp_str1 = 0;
-  hyp_t **hyp_segs0;
-  hyp_t **hyp_segs1 = 0;
-  hyp_t *hyp_seg_buffer = 0;
-  int hyp_seglen = 0;
-  hyp_t *h;
-  int i;
+  char *uttid;
+  char *hyp_str;
+  hyp_t **hyp_segs;
 
   while (1) {
-    rd_lock_internal(d);
-    rv = rd_dequeue_control(d, &cmd, &param, &data);
-    rd_unlock_internal(d);
-
-    /** dequeue timed out */
-    if (rv != 0) {
-      continue;
+    if (list_remove_head(_decoder->control_queue, &ctrl) != 0) {
+      list_wait(_decoder->control_queue, 0);
     }
 
     /** thread is asked to join */
-    if (cmd == RD_CTRL_JOIN) {
-      if (d->state == RD_STATE_UTT) {
-	ld_end_utt(&d->ld);
-	ld_finish(&d->ld);
+    if (ctrl->cmd == RD_CTRL_JOIN) {
+      if (_decoder->state == RD_STATE_UTT) {
+	ld_end_utt(&_decoder->ld);
+	ld_finish(&_decoder->ld);
       }
-      if (d->state == RD_STATE_IDLE) {
-	ld_finish(&d->ld);
+      if (_decoder->state == RD_STATE_IDLE) {
+	ld_finish(&_decoder->ld);
       }
       break;
     }
     
-    switch (cmd) {
-    case RD_CTRL_INIT:
-      if (d->state == RD_STATE_UNINIT && ld_init(&d->ld) == 0) {
-	d->state = RD_STATE_IDLE;
+    switch (ctrl->cmd) {case RD_CTRL_INIT:
+      if (_decoder->state == RD_STATE_UNINIT && ld_init(&_decoder->ld) == 0) {
+	_decoder->state = RD_STATE_IDLE;
       }
       break;
       
     case RD_CTRL_FINISH:
-      ld_finish(&d->ld);
-      d->state = RD_STATE_UNINIT;
+      ld_finish(&_decoder->ld);
+      _decoder->state = RD_STATE_UNINIT;
       break;
       
     case RD_CTRL_BEGIN_UTT:
-      if (d->state == RD_STATE_IDLE && ld_begin_utt(&d->ld, data) == 0) {
-	d->state = RD_STATE_UTT;
+      if (_decoder->state == RD_STATE_IDLE &&
+	  ld_begin_utt(&_decoder->ld, ctrl->data) == 0) {
+	_decoder->state = RD_STATE_UTT;
       }
       break;
       
     case RD_CTRL_END_UTT:
-      if (d->state == RD_STATE_UTT && ld_end_utt(&d->ld) == 0) {
-	d->state = RD_STATE_IDLE;
+      if (_decoder->state == RD_STATE_UTT && ld_end_utt(&_decoder->ld) == 0) {
+	_decoder->state = RD_STATE_IDLE;
       }
       break;
       
     case RD_CTRL_PROCESS_RAW:
-      if (d->state == RD_STATE_UTT) {
-	ld_process_raw(&d->ld, data, param);
+      if (_decoder->state == RD_STATE_UTT) {
+	ld_process_raw(&_decoder->ld, ctrl->data, ctrl->param);
       }
       break;
       
     case RD_CTRL_PROCESS_FRAMES:
-      if (d->state == RD_STATE_UTT) {
-	ld_process_frames(&d->ld, data, param);
+      if (_decoder->state == RD_STATE_UTT) {
+	ld_process_ceps(&_decoder->ld, ctrl->data, ctrl->param);
       }
       break;
 
 #if 0
     case RD_CTRL_PROCESS_FEATURES:
-      if (d->state == RD_STATE_UTT) {
-	ld_process_features(&d->ld, data, param);
+      if (_decoder->state == RD_STATE_UTT) {
+	ld_process_features(&_decoder->ld, data, param);
       }
       break;
 #endif
 
     case RD_CTRL_RECORD_HYPS:
-      if (d->state == RD_STATE_UTT || d->state == RD_STATE_IDLE) {
+      if (_decoder->state == RD_STATE_UTT || 
+	  _decoder->state == RD_STATE_IDLE) {
 	/** retrieve the hypothesis segments and string */
-	ld_retrieve_hyps(&d->ld, &hyp_str0, &hyp_segs0);
-	
-	/** allocate space for the utterance id */
-	uttid0 = d->ld.uttid;
-	if (uttid0) {
-	  uttid1 = ckd_malloc(strlen(d->ld.uttid) + 1);
-	}
-
-	/** allocate space for the hypothesis string */
-	if (hyp_str0) {
-	  hyp_str1 = ckd_malloc(strlen(hyp_str0) + 1);
-	}
-
-	/** allocate space for the hypothesis segments */
-	for (hyp_seglen = 0, h = *hyp_segs0; h; h++, hyp_seglen++);
-	if (hyp_seglen > 0) {
-	  hyp_segs1 = ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
-	  hyp_seg_buffer = ckd_calloc(hyp_seglen, sizeof(hyp_t));
-	}
-
-	/** if any of allocation failed, free everything */
-	if ((uttid0 && uttid1) || (hyp_str0 && !hyp_str1) ||
-	    (hyp_segs0 && (!hyp_segs1 || !hyp_seg_buffer))) {
-	  if (uttid1) {
-	    ckd_free(uttid1);
-	  }
-	  if (hyp_str1) {
-	    ckd_free(hyp_str1);
-	  }
-	  if (hyp_segs1) {
-	    ckd_free(hyp_segs1);
-	  }
-	  if (hyp_seg_buffer) {
-	    ckd_free(hyp_seg_buffer);
-	  }
+	ld_retrieve_hyps(&_decoder->ld, &hyp_str, &hyp_segs);
+	/** copy the retrieved segments and string */
+	result = create_result(_decoder->ld.uttid, hyp_str, hyp_segs);
+	if (result == null) {
 	  break;
 	}
-
-	/** copy uttid, hyp_str, and hyp_segs into new storage */
-	strcpy(uttid1, d->ld.uttid);
-	strcpy(hyp_str1, hyp_str0);
-	for (i = 0; i < hyp_seglen; i++) {
-	  hyp_segs1[i] = &hyp_seg_buffer[i];
-	  memcpy(hyp_seg_buffer, hyp_segs0[i], sizeof(hyp_t));
-	}
-	hyp_segs1[hyp_seglen] = 0;
-
 	/** queue the result */
-	rd_queue_result(d, uttid1, hyp_str1, hyp_segs1);
+	if (list_queue_tail(_decoder->result_queue, result) != 0) {
+	  free_result(result);
+	}
       }
       break;
     }
 
-    rd_free_control(cmd, param, data);
+    free_control(ctrl);
   }
 
-  rd_dequeue_control_all(d);
-
-  /** Win32 - closing mutex and conditional variable */
-  CloseHandle((HANDLE)d->mutex);
-  CloseHandle((HANDLE)d->cond);
+  list_free(_decoder->control_queue);
 
   return rv;
 }
@@ -511,30 +432,32 @@ rd_run(remote_decoder_t *d)
 /*****************************************************************************/
 /*****************************************************************************/
 
-control_block*
-rd_copy_control(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
-		void *_data)
+static control_t*
+create_control(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
+	       void *_data)
 {
-  control_block *cb;
+  control_t *ctrl;
   void *data;
   int ncep;
 
+  assert(_decoder != null);
+
   /******************************** execution *******************************/
-  if ((cb = (control_block *)ckd_malloc(sizeof(control_block))) == null) {
-    goto rd_copy_control_cleanup;
+  if ((ctrl = (control_t *)ckd_malloc(sizeof(control_t))) == null) {
+    goto create_control_cleanup;
   }
 
   switch (cmd) {
   case RD_CTRL_BEGIN_UTT:
     if ((data = ckd_malloc(strlen((char *)_data) + 1)) == null) {
-      goto rd_copy_control_cleanup;
+      goto create_control_cleanup;
     }
     strcpy((char *)data, (char *)_data);
     break;
     
   case RD_CTRL_PROCESS_RAW:
     if ((data = (int16 *)ckd_malloc(_param * sizeof(int16))) == null) {
-      goto rd_copy_control_cleanup;
+      goto create_control_cleanup;
     }
     memcpy((int16 *)data, (int16 *)_data, _param * sizeof(int16));
     break;
@@ -543,7 +466,7 @@ rd_copy_control(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
     ncep = _decoder->ld.fe->NUM_CEPSTRA;
     data = (float32 **)ckd_calloc_2d(_param, ncep, sizeof(float32));
     if (data == null) {
-      goto rd_copy_control_cleanup;
+      goto create_control_cleanup;
     }
     for (i = _param - 1; i >= 0; i--) {
       memcpy((float32 *)data[i], (float32 *)_data[i], ncep * sizeof(float32));
@@ -551,56 +474,65 @@ rd_copy_control(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
     break;
   }
   
-  /** return the new control_block */
-  cb->cmd = _cmd;
-  cb->param = _param;
-  cb->data = data;
+  /** return the new control_t structure */
+  ctrl->cmd = _cmd;
+  ctrl->param = _param;
+  ctrl->data = data;
 
-  return cb;
+  return ctrl;
 
   /********************************** cleanup *******************************/
-  rd_copy_control_cleanup:
+  create_control_cleanup:
 
-  if (cb != null) {
-    rd_free_control(_cmd, _param, data);
-    ckd_free(cb);
+  if (ctrl != null) {
+    ckd_free(ctrl);
+  }
+  if (data != null) {
+    if (_cmd == RD_CTRL_PROCESS_CEPS) {
+      ckd_free_2d(data);
+    }
+    else {
+      ckd_free(data);
+    }
   }
 
   return null;
 }
 
 void
-rd_free_control(int32 _cmd, int32 _param, void *_data)
+free_control(control_t _ctrl)
 {
-  if (_data) {
-    if (_cmd == RD_CTRL_PROCESS_FRAMES && ((float32 **)_data)[0]) {
-      ckd_free(((float32 **)_data)[0]);
+  if (_ctrl->data) {
+    if (_ctrl->cmd == RD_CTRL_PROCESS_CEPS) {
+      ckd_free_2d(ctrl->data);
     }
-    ckd_free(_data);
+    else {
+      ckd_free(_data);
+    }
   }
+  ckd_free(ctrl);
 }
 
 result_block*
-rd_copy_result(remote_decoder_t _decoder, char *_uttid, char *_hyp_str,
-	       hyp_t **_hyp_segs)
+create_result(char *_uttid, char *_hyp_str, hyp_t **_hyp_segs)
 {
-  result_block *rb;
+  result_t *result;
   char *uttid = null;
   char *hyp_str = null;
   hyp_t **hyp_segs = null;
+  hyp_t *hyp_seg_buffer = null;
   int hyp_seglen;
   hyp_t *hyp_ptr;
-  hyp_t *hyp_seg_buffer;
 
   /******************************** execution *******************************/
-  if ((rb = (result_block *)ckd_malloc(sizeof(result_block))) == null) {
-    goto rd_copy_result_cleanup;
+  if ((result = (result_t *)ckd_malloc(sizeof(result_t))) == null) {
+    goto create_result_cleanup;
   }
   
   /** allocate space for the utterance id (if needed) */
   if (_uttid != null) {
     if ((uttid = (char *)ckd_malloc(strlen(_uttid) + 1)) == null) {
-      goto rd_copy_result_cleanup;
+      goto create_result_cleanup;
     }
     strcpy(uttid, _uttid);
   }
@@ -608,23 +540,24 @@ rd_copy_result(remote_decoder_t _decoder, char *_uttid, char *_hyp_str,
   /** allocate space for the hypothesis string */
   if (_hyp_str != null) {
     if ((hyp_str = (char *)ckd_malloc(strlen(_hyp_str) + 1)) == null) {
-      goto rd_copy_result_cleanup;
+      goto create_result_cleanup;
     }
     strcpy(hyp_str, _hyp_str);
   }
 
   /** allocate space for the hypothesis segments */
-  for (hyp_seglen = 0, hyp_ptr = *_hyp_segs; hyp_ptr; hyp_ptr++, hyp_seglen++);
+  for (hyp_seglen = 0, hyp_ptr = *_hyp_segs; hyp_ptr != null;
+       hyp_ptr++, hyp_seglen++);
   if (hyp_seglen > 0) {
     hyp_seg_buffer = (hyp_t *)ckd_calloc(hyp_seglen, sizeof(hyp_t));
     if (hyp_seg_buffer == null) {
-      goto rd_copy_result_cleanup;
+      goto create_result_cleanup;
     }
 
     /** allocate extra spot for null-termination */
     hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
     if (hyp_segs == null) {
-      goto rd_copy_result_cleanup;
+      goto create_result_cleanup;
     }
     /** null-terminate the hypothesis segment array */
     hyp_segs[hyp_seglen--] = null;
@@ -635,304 +568,49 @@ rd_copy_result(remote_decoder_t _decoder, char *_uttid, char *_hyp_str,
   }
 
   /** return the new result block */
-  rb->uttid = uttid;
-  rb->hyp_str = hyp_str;
-  rb->hyp_segs = hyp_segs;
+  result->uttid = uttid;
+  result->hyp_str = hyp_str;
+  result->hyp_segs = hyp_segs;
 
-  return rb;
+  return result;
 
   /********************************** cleanup *******************************/
-  rd_copy_result_cleanup:
+  create_result_cleanup:
 
-  if (rb != null) {
-    if (rb->uttid) {
-      ckd_free(rb->uttid1);
-    }
-    if (rb->hyp_str) {
-      ckd_free(hyp_str1);
-    }
-    if (rb->hyp_segs) {
-      ckd_free(hyp_segs1);
-    }
-    if (hyp_seg_buffer) {
-      ckd_free(hyp_seg_buffer);
-    }
-    ckd_free(rb);
+  if (result != null) {
+    ckd_free(result);
+  }
+  if (uttid) {
+    ckd_free(uttid);
+  }
+  if (hyp_str) {
+    ckd_free(hyp_str);
+  }
+  if (hyp_segs) {
+    ckd_free(hyp_segs);
+  }
+  if (hyp_seg_buffer) {
+    ckd_free(hyp_seg_buffer);
   }
 
   return null;
 }
 
 void
-rd_free_result(char *_uttid, char *_hyp_str, hyp_t **_hyp_segs)
+free_result(result_t *_result)
 {
-  if (_uttid) {
-    ckd_free(uttid1);
-  }
-  if (_hyp_str) {
-    ckd_free(hyp_str1);
-  }
-  if (_hyp_segs) {
-    if (_hyp_segs[0]) {
-      ckd_free(_hyp_segs[0]);
+  if (_result) {
+    if (_result->uttid) {
+      ckd_free(result->uttid);
     }
-    ckd_free(_hyp_segs);
-  }
-}
-
-int
-rd_lock_internal(remote_decoder_t *decoder)
-{
-  /** Win32 specific code */
-  WaitForSingleObject(decoder->mutex, INFINITE);
-
-  return 0;
-}
-
-int
-rd_unlock_internal(remote_decoder_t *decoder)
-{
-  /** Win32 specific code */
-  ReleaseMutex(decoder->mutex);
-
-  return 0;
-}
-
-int
-rd_wait_internal(remote_decoder_t *decoder)
-{
-  /** Win32 specific code */
-  DWORD wait_result;
-  const HANDLE mutex_and_cond[] = { decoder->cond, decoder->mutex };
-
-  ResetEvent(decoder->cond);
-  ReleaseMutex(decoder->mutex);
-
-  wait_result = WaitForMultipleObjects(2, mutex_and_cond, TRUE, INFINITE);
-
-  return wait_result == WAIT_OBJECT_0 ? 0 : -1;
-}
-
-int
-rd_wake_internal(remote_decoder_t *decoder)
-{
-  /** Win32 specific code */
-  SetEvent(decoder->cond);
-
-  return 0;
-}
-
-int
-rd_queue_control(remote_decoder_t *_decoder, int32 _cmd, int32 _param,
-		 void *_data)
-{
-  control_block *cb;
-
-  /******************************** execution *******************************/
-
-  if ((cb = rd_copy_control(_decoder, _cmd, _param, _data)) == null) {
-    goto rd_queue_control_cleanup;
-  }
-
-  rd_lock_internal(decoder);
-
-  cb->next_block = decoder->control_queue == 0 ? cb : decoder->control_queue;
-  decoder->control_queue = cb;
-
-  rd_wake_internal(decoder);
-  rd_unlock_internal(decoder);
-
-  return RD_SUCCESS;
-
-  /********************************** cleanup *******************************/
-  rd_queue_control_cleanup:
-  
-  rd_free_control(cb->cmd, cb->param, cb->data);
-  ckd_free(cb);
-
-  return RD_FAILURE;
-}
-
-int
-rd_dequeue_control(remote_decoder_t *decoder, int32 *cmd, int32 *param,
-		   void **data)
-{
-  control_block *cb;
-
-  /******************************** execution *******************************/
-
-  rd_lock_internal(decoder);
-
-  /** check if the queue is empty */
-  if (decoder->control_queue == 0) {
-    if (rd_wait_internal(decoder) != RD_SUCCESS) {
-      return RD_FAILURE;
+    if (result->hyp_str) {
+      ckd_free(result->hyp_str);
+    }
+    if (result->hyp_segs) {
+      if (result->hyp_segs[0]) {
+	ckd_free(result->hyp_segs[0]);
+      }
+      ckd_free(result->hyp_segs);
     }
   }
-
-  /** dequeue the control block */
-  cb = decoder->control_queue->next_block;
-  if (decoder->control_queue == cb) {
-    decoder->control_queue = 0;
-  }
-  else {
-    decoder->control_queue->next_block = cb->next_block;
-  }
-
-  /** return the information in the control block */
-  if (cmd) {
-    *cmd = cb->cmd;
-  }
-  if (param) {
-    *param = cb->param;
-  }
-  if (data) {
-    *data = cb->data;
-  }
-
-
-  /** free the dequeued control block */
-  ckd_free(cb);
-
-  rd_unlock_internal(decoder);
-
-  return RD_SUCCESS;
 }
-
-int
-rd_replace_control_all(remote_decoder_t *decoder, int32 cmd, int32 param,
-		       void *data)
-{
-  control_block *cb;
-  control_block *next;
-  
-  rd_lock_internal(decoder);
-  
-  for (cb = decoder->control_queue; cb; cb = next) {
-    rd_free_control(cb->cmd, cb->param, cb->data);
-    next = cb->next_block;
-    ckd_free(cb);
-  }
-
-  cb = ckd_malloc(sizeof(control_block));
-  decoder->control_queue = cb;
-  if (cb) {
-    cb->cmd = cmd;
-    cb->param = param;
-    cb->data = data;
-    cb->next_block = cb;
-  }
-
-  rd_unlock_internal(decoder);
-
-  return 0;
-}
-
-int
-rd_dequeue_control_all(remote_decoder_t *decoder)
-{
-  control_block *cb;
-  control_block *next;
-  
-  rd_lock_internal(decoder);
-  
-  for (cb = decoder->control_queue; cb; cb = next) {
-    rd_free_control(cb->cmd, cb->param, cb->data);
-    next = cb->next_block;
-    ckd_free(cb);
-  }
-  decoder->control_queue = 0;
-
-  rd_unlock_internal(decoder);
-
-  return 0;
-}
-
-int
-rd_queue_result(remote_decoder_t *decoder, char *uttid, char *hyp_str,
-		hyp_t **hyp_segs)
-{
-  result_block *rb = 0;
-      
-  if ((rb = ckd_malloc(sizeof(result_block))) == 0) {
-    return -1;
-  }
-
-  rb->uttid = uttid;
-  rb->hyp_str = hyp_str;
-  rb->hyp_segs = hyp_segs;
-
-  rd_lock_internal(decoder);
-
-  rb->next_block = decoder->result_queue == 0 ? rb : decoder->result_queue;
-  decoder->result_queue = rb;
-
-  rd_unlock_internal(decoder);
-
-  return 0;
-}
-
-int
-rd_dequeue_result(remote_decoder_t *decoder, char **uttid, char **hyp_str,
-		  hyp_t ***hyp_segs)
-{
-  result_block *rb;
-
-  rd_lock_internal(decoder);
-
-  /** check if the queue is empty */
-  if (!decoder->result_queue || !uttid || !hyp_str || !hyp_segs) {
-    if (uttid) {
-      *uttid = 0;
-    }
-    if (hyp_str) {
-      *hyp_str = 0;
-    }
-    if (hyp_segs) {
-      *hyp_segs = 0;
-    }
-
-    return -1;
-  }
-
-  /** dequeue the result block */
-  rb = decoder->result_queue->next_block;
-  if (decoder->result_queue == rb) {
-    decoder->result_queue = 0;
-  }
-  else {
-    decoder->result_queue->next_block = rb->next_block;
-  }
-
-  /** return the information in the result block */
-  if (uttid) {
-    *uttid = rb->uttid;
-  }
-  else if (rb->uttid) {
-    ckd_free(rb->uttid);
-  }
-
-  if (hyp_str) {
-    *hyp_str = rb->hyp_str;
-  }
-  else if (rb->hyp_str) {
-    ckd_free(rb->hyp_str);
-  }
-
-  if (hyp_segs) {
-    *hyp_segs = rb->hyp_segs;
-  }
-  else if (rb->hyp_segs) {
-    if (rb->hyp_segs[0]) {
-      ckd_free(rb->hyp_segs[0]);
-    }
-    ckd_free(rb->hyp_segs);
-  }
-
-  /** free the dequeued result block */
-  ckd_free(rb);
-
-  rd_unlock_internal(decoder);
-  return 0;
-}
-
