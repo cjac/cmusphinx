@@ -1,0 +1,160 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:p="urn:schemas-microsoft-com:office:powerpoint"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=PowerPoint.Slide>
+<meta name=Generator content="Microsoft PowerPoint 9">
+<link id=Main-File rel=Main-File href="../s3-2.htm">
+<link rel=Preview href=preview.wmf>
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+p\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+v\:textbox {display:none;}
+</style>
+<![endif]-->
+<title>No Slide Title</title>
+<meta name=Description content="7-Feb-01: Beam Search (Pruning)">
+<link rel=Stylesheet href="master03_stylesheet.css">
+<![if !ppt]>
+<style media=print>
+<!--.sld
+	{left:0px !important;
+	width:6.0in !important;
+	height:4.5in !important;
+	font-size:107% !important;}
+-->
+</style>
+<script src=script.js></script><script><!--
+gId="slide0019.htm"
+if( !IsNts() ) Redirect( "PPTSld", gId );
+//-->
+</script><!--[if vml]><script>g_vml = 1;
+</script><![endif]--><script for=window event=onload><!--
+if( !IsSldOrNts() ) return;
+if( MakeNotesVis() ) return;
+LoadSld( gId );
+MakeSldVis(0);
+//-->
+</script><![endif]><o:shapelayout v:ext="edit">
+ <o:idmap v:ext="edit" data="35"/>
+</o:shapelayout>
+</head>
+
+<body lang=EN-US style='margin:0px;background-color:black'
+onclick="DocumentOnClick()" onresize="_RSW()" onkeypress="_KPH()">
+
+<div id=SlideObj class=sld style='position:absolute;top:0px;left:0px;
+width:534px;height:400px;font-size:16px;background-color:black;clip:rect(0%, 101%, 101%, 0%);
+visibility:hidden'><p:slide coordsize="720,540"
+ colors="#000000,#FFFFFF,#393939,#CCFFFF,#B2B2B2,#FF3300,#33CCFF,#DDDDDD"
+ masterhref="master03.xml">
+ <p:shaperange href="master03.xml#_x0000_s1025"/><![if !ppt]><p:shaperange
+  href="master03.xml#_x0000_s1026"/><![if !vml]><img border=0
+ v:shapes="_x0000_s1026" src="master03_image002.gif" style='position:absolute;
+ top:13.0%;left:2.24%;width:95.88%;height:1.25%'><![endif]><p:shaperange
+  href="master03.xml#_x0000_s1033"/>
+ <div v:shape="_x0000_s1033" class=O style='position:absolute;top:95.25%;
+ left:3.55%;width:10.48%;height:2.75%'><span style='font-size:50%'><i>19 Nov
+ 1999</i></span><span style='font-family:Arial;font-size:50%;mso-special-format:
+ lastCR;display:none'>&#13;</span></div>
+ <p:shaperange href="master03.xml#_x0000_s1034"/>
+ <div v:shape="_x0000_s1034" class=O style='text-align:center;position:absolute;
+ top:95.25%;left:16.85%;width:65.73%;height:2.75%'><span style='font-size:50%'><i>Sphinx
+ Speech Group, CMU-SCS (rkm@cs.cmu.edu)</i></span><span style='font-size:58%;
+ mso-special-format:lastCR;display:none'>&#13;</span></div>
+ <![endif]><p:shaperange href="master03.xml#_x0000_m1027"/><v:shape id="_x0000_s35842"
+  type="#_x0000_m1027" style='position:absolute;left:18pt;top:18pt;width:684pt;
+  height:51pt'>
+  <v:fill o:detectmouseclick="f"/>
+  <v:stroke o:forcedash="f"/>
+  <p:placeholder type="title"/></v:shape><p:shaperange
+  href="master03.xml#_x0000_m1028"/><v:shape id="_x0000_s35843" type="#_x0000_m1028"
+  style='position:absolute;left:18pt;top:84pt;width:684pt;height:420pt'>
+  <v:fill o:detectmouseclick="f"/>
+  <v:stroke o:forcedash="f"/>
+  <p:placeholder type="body" position="1"/></v:shape>
+ <div v:shape="_x0000_s35842" class=T style='position:absolute;top:4.5%;
+ left:3.55%;width:93.25%;height:7.75%'>Beam Search (Pruning)</div>
+ <div v:shape="_x0000_s35843">
+ <div class=B><span style='position:absolute;top:16.5%;left:7.3%;width:106.74%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.5%;font-family:Symbol'>·</span></span>Exhaustive
+ search over large vocabulary too expensive, </span><span style='position:absolute;
+ top:21.75%;left:7.3%;width:89.51%'>and unnecessary&#13;</span></div>
+ <div class=B style='mso-line-spacing:"110 20 0";position:absolute;top:28.75%;
+ left:3.55%;width:96.81%;height:5.25%'><span style='position:absolute;
+ top:0%;left:3.86%;width:96.13%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-4.02%;font-family:Symbol'>·</span></span>Use a “beam” to
+ “prune” the set of active HMMs:&#13;</span></div>
+ <div class=B1 style='position:absolute;top:35.0%;left:8.42%;width:88.95%;
+ height:4.5%'><span style='position:absolute;top:0%;left:3.57%;width:96.42%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.71%;font-family:Symbol'>·</span></span>At
+ start of each frame, find best available path-score <span style='font-family:
+ "Times New Roman"'><b><i>S</i></b></span>&#13;</span></div>
+ <div class=B1 style='position:absolute;top:40.25%;left:8.42%;width:97.94%;
+ height:4.5%'><span style='position:absolute;top:0%;left:3.25%;width:96.74%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.35%;font-family:Symbol'>·</span></span>Use
+ a scale-factor <span style='font-family:"Times New Roman"'><b><i>f</i></b></span><span
+ style="mso-spacerun: yes">  </span>(&lt; <span style='font-family:"Times New Roman"'><b><i>1.0</i></b></span>)
+ to set a pruning threshold <span style='font-family:"Times New Roman"'><b><i>T</i></b></span>
+ = <span style='font-family:"Times New Roman"'><b><i>S</i></b></span>*<span
+ style='font-family:"Times New Roman"'><b><i>f&#13;</i></b></span></span></div>
+ <div class=B1 style='position:absolute;top:45.5%;left:8.42%;width:89.32%;
+ height:4.5%'><span style='position:absolute;top:0%;left:3.56%;width:96.43%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.69%;font-family:Symbol'>·</span></span>Deactivate
+ an HMM if <b><u>no</u></b> state in it has path score &gt;= <span
+ style='font-family:"Times New Roman"'><b><i>T&#13;</i></b></span></span></div>
+ <div class=B style='position:absolute;top:51.0%;left:3.55%;width:109.36%;
+ height:5.25%'><span style='position:absolute;top:0%;left:3.42%;width:96.4%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.55%;font-family:Symbol'>·</span></span>Effect:
+ No. of active HMMs larger if no clear frontrunner&#13;</span></div>
+ <div class=B style='mso-line-spacing:"110 20 0";position:absolute;top:58.0%;
+ left:3.55%;width:93.25%;height:5.25%'><span style='position:absolute;
+ top:0%;left:4.01%;width:95.98%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-4.18%;font-family:Symbol'>·</span></span>Two kinds of
+ beams:&#13;</span></div>
+ <div class=B1 style='position:absolute;top:64.25%;left:8.42%;width:88.2%;
+ height:4.5%'><span style='position:absolute;top:0%;left:3.6%;width:96.39%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-3.74%;font-family:Symbol'>·</span></span>To
+ control active set of HMMs&#13;</span></div>
+ <div class=B2 style='position:absolute;top:69.5%;left:12.92%;width:88.95%;
+ height:4.0%'><span style='position:absolute;top:0%;left:2.73%;width:97.05%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-2.81%;font-family:Symbol'>·</span></span>No.
+ of active HMMs per frame typically 10-20% of total space&#13;</span></div>
+ <div class=B1 style='mso-line-spacing:"110 20 0";position:absolute;top:74.75%;
+ left:8.42%;width:88.95%;height:4.5%'><span style='position:absolute;
+ top:0%;left:3.57%;width:96.63%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-3.7%;font-family:Symbol'>·</span></span>To control word exits
+ taken (and recorded in BP table)&#13;</span></div>
+ <div class=B2 style='position:absolute;top:80.0%;left:12.92%;width:83.89%;
+ height:4.0%'><span style='position:absolute;top:0%;left:2.9%;width:96.87%'><span
+ style='font-weight:normal'><span style='mso-special-format:bullet;color:#FF3300;
+ mso-color-index:5;position:absolute;left:-2.99%;font-family:Symbol'>·</span></span>No.
+ of words exited typically 10-20 per frame&#13;</span></div>
+ <div class=B style='mso-line-spacing:"110 20 0";position:absolute;top:85.5%;
+ left:3.55%;width:93.25%;height:5.25%'><span style='position:absolute;
+ top:0%;left:4.01%;width:95.98%'><span style='font-weight:normal'><span
+ style='mso-special-format:bullet;color:#FF3300;mso-color-index:5;position:
+ absolute;left:-4.18%;font-family:Symbol'>·</span></span>Recognition accuracy
+ essentially unaffected</span></div>
+ </div>
+</p:slide></div>
+
+</body>
+
+</html>

@@ -1,0 +1,27 @@
+AC_INIT(src/libs3decoder/s3types.h)
+
+AC_CANONICAL_SYSTEM
+AC_PROG_CC
+if test "x$GCC" = "xyes"; then
+	CFLAGS="$CFLAGS -Wall"
+fi
+AC_PROG_RANLIB
+AC_CHECK_TOOL(AR, ar)
+
+AC_C_BIGENDIAN
+
+dnl
+dnl determine audio type or use none if none supported on this platform
+dnl
+AUDIOTYPE=-DCST_AUDIO_NONE
+AC_CHECK_FILE(/usr/include/sys/soundcard.h,
+              [AUDIOTYPE=-DCST_AUDIO_LINUX])
+AC_CHECK_FILE(/usr/include/machine/soundcard.h,
+              [AUDIOTYPE=-DCST_AUDIO_FREEBSD])
+AC_CHECK_FILE(/usr/include/sys/audioio.h,
+              [AUDIOTYPE=-DCST_AUDIO_SUNOS])
+AC_ARG_WITH( audio, [  --with-audio          with specific audio support (LINUX, FREEBSD, NONE etc) ],
+        AUDIOTYPE="-DCST_AUDIO_"$with_audio )
+AC_SUBST(AUDIOTYPE)
+
+AC_OUTPUT(config/config config/system.mak)

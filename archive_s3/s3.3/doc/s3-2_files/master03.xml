@@ -1,0 +1,77 @@
+<xml xmlns:v="urn:schemas-microsoft-com:vml"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:p="urn:schemas-microsoft-com:office:powerpoint">
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout><p:colorscheme
+  colors="#000000,#FFFFFF,#393939,#CCFFFF,#B2B2B2,#FF3300,#33CCFF,#DDDDDD"/>
+ <v:background id="_x0000_s1025" o:bwmode="white" fillcolor="black [0]"/>
+ <p:shaperange id="_x0000_s1026">
+  <v:line id="_x0000_s1026" style='position:absolute;mso-wrap-style:none;
+   v-text-anchor:middle' from="18pt,1in" to="702pt,1in" strokecolor="#f30 [5]"
+   strokeweight="4pt">
+   <v:shadow color="#393939 [2]"/>
+  </v:line></p:shaperange>
+ <p:shaperange id="_x0000_m1027">
+  <v:shapetype id="_x0000_m1027" style='position:absolute;left:18pt;top:21pt;
+   width:684pt;height:51pt;v-text-anchor:bottom' coordsize="21600,21600"
+   o:master="" o:spt="1" path="m0,0l0,21600,21600,21600,21600,0xe" filled="f"
+   fillcolor="#b2b2b2 [4]" stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]" o:detectmouseclick="t"/>
+   <v:stroke joinstyle="miter" o:forcedash="t"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+   <o:lock v:ext="edit" grouping="t"/>
+   <v:textbox inset="90488emu,3.5pt,90488emu,3.5pt"/>
+   <p:placeholder type="title"/>
+  </v:shapetype></p:shaperange>
+ <p:shaperange id="_x0000_m1028">
+  <v:shapetype id="_x0000_m1028" style='position:absolute;left:18pt;top:84pt;
+   width:684pt;height:420pt' coordsize="21600,21600" o:master="" o:spt="1"
+   path="m0,0l0,21600,21600,21600,21600,0xe" filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]" o:detectmouseclick="t"/>
+   <v:stroke joinstyle="miter" o:forcedash="t"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+   <o:lock v:ext="edit" grouping="t"/>
+   <v:textbox inset="90488emu,3.5pt,90488emu,3.5pt"/>
+   <p:placeholder type="body" position="1"/>
+  </v:shapetype></p:shaperange>
+ <p:shaperange id="_x0000_s1033">
+  <v:shapetype id="_x0000_s1033" style='position:absolute;left:18pt;top:510pt;
+   width:84pt;height:24pt' coordsize="21600,21600" o:master="" o:spt="1"
+   path="m0,0l0,21600,21600,21600,21600,0xe" filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]" o:detectmouseclick="t"/>
+   <v:stroke joinstyle="miter" o:forcedash="t"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+   <o:lock v:ext="edit" grouping="t"/>
+   <p:placeholder type="dateTime" position="2" size="half"/>
+  </v:shapetype></p:shaperange>
+ <p:shaperange id="_x0000_s1034">
+  <v:shapetype id="_x0000_s1034" style='position:absolute;left:114pt;top:510pt;
+   width:486pt;height:24pt' coordsize="21600,21600" o:master="" o:spt="1"
+   path="m0,0l0,21600,21600,21600,21600,0xe" filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]" o:detectmouseclick="t"/>
+   <v:stroke joinstyle="miter" o:forcedash="t"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+   <o:lock v:ext="edit" grouping="t"/>
+   <p:placeholder type="footer" position="3" size="quarter"/>
+  </v:shapetype></p:shaperange>
+ <p:shaperange id="_x0000_s1035">
+  <v:shapetype id="_x0000_s1035" style='position:absolute;left:612pt;top:510pt;
+   width:90pt;height:24pt' coordsize="21600,21600" o:master="" o:spt="1"
+   path="m0,0l0,21600,21600,21600,21600,0xe" filled="f" fillcolor="#b2b2b2 [4]"
+   stroked="f" strokecolor="white [1]" strokeweight="1pt">
+   <v:fill color2="black [0]" o:detectmouseclick="t"/>
+   <v:stroke joinstyle="miter" o:forcedash="t"/>
+   <v:shadow color="#393939 [2]"/>
+   <v:path gradientshapeok="t" o:connecttype="rect"/>
+   <o:lock v:ext="edit" grouping="t"/>
+   <p:placeholder type="slideNumber" position="4" size="quarter"/>
+  </v:shapetype></p:shaperange>
+</xml>
