@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,11 +227,11 @@ static arg_t defn[] = {
 
 int32 main(int32 argc, char **argv)
 {
+  param_t *P;
+
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit();
-
-  param_t *P;
 
   P = fe_parse_options(argc,argv);
   if (fe_convert_files(P) != FE_SUCCESS){

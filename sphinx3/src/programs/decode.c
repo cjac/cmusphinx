@@ -421,6 +421,7 @@ int32 main (int32 argc, char *argv[])
 	   kb.tm_srch.t_tot_cpu * 100.0 / kb.tot_fr,
 	   tm.t_tot_cpu * 100.0 / kb.tot_fr,
 	   tm.t_tot_elapsed * 100.0 / kb.tot_fr);
-    
-    exit(0);
+
+  cmd_ln_appl_exit();
+  exit(0);
 }
