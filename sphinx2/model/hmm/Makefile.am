@@ -1,1 +1,0 @@
-SUBDIRS = 6k
