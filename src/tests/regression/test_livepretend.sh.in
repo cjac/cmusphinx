@@ -8,5 +8,5 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/liv
 @abs_top_builddir@/model/lm/an4 \
 @abs_top_builddir@/model/lm/an4/args.an4.test > an4.out 2>&1
 
-grep "P I T T S B U R G H (" an4.out
+grep "FWDVIT" an4.out
 grep "FWDXCT" an4.out
