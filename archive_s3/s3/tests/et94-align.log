@@ -1,0 +1,1857 @@
+Executing ../bin/alpha/s3align
+/tmp/s3align.13383 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -senmgaufn .cont. -meanfn ../testdata/hmm-sphinx3/mean -varfn ../testdata/hmm-sphinx3/var -mixwfn ../testdata/hmm-sphinx3/mixw -tmatfn ../testdata/hmm-sphinx3/tmat -feat s3_1x39 -topn 1000 -beam 1e-80 -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 20 -cepdir ../testdata/ctl -insentfn ../testdata/ctl/h1_et_94-g.correct -outsentfn et94-align.out -wdsegdir /dev/null -phsegdir /dev/null
+INFO: ../align-main.c(1222): /tmp/s3align.13383 COMPILED ON: Aug 31 1998, AT: 14:29:49
+
+INFO: ../align-main.c(248): Parsing command line:
+/tmp/s3align.13383 \
+	-mdeffn ../testdata/dict/nov94/h1c1-94.mdef \
+	-senmgaufn .cont. \
+	-meanfn ../testdata/hmm-sphinx3/mean \
+	-varfn ../testdata/hmm-sphinx3/var \
+	-mixwfn ../testdata/hmm-sphinx3/mixw \
+	-tmatfn ../testdata/hmm-sphinx3/tmat \
+	-feat s3_1x39 \
+	-topn 1000 \
+	-beam 1e-80 \
+	-dictfn ../testdata/dict/nov94/h1c1-94.dic \
+	-fdictfn ../testdata/dict/nov94/filler.dic \
+	-ctlfn ../testdata/ctl/h1_et_94-g.ctl \
+	-ctloffset 0 \
+	-ctlcount 20 \
+	-cepdir ../testdata/ctl \
+	-insentfn ../testdata/ctl/h1_et_94-g.correct \
+	-outsentfn et94-align.out \
+	-wdsegdir /dev/null \
+	-phsegdir /dev/null 
+
+INFO: ../align-main.c(284): Configuration in effect:
+[Switch]    [Default] [Value]                            
+-logbase                                                 
+-mdeffn               ../testdata/dict/nov94/h1c1-94.mdef
+-tmatfn               ../testdata/hmm-sphinx3/tmat       
+-meanfn               ../testdata/hmm-sphinx3/mean       
+-varfn                ../testdata/hmm-sphinx3/var        
+-senmgaufn  .cont.    .cont.                             
+-mixwfn               ../testdata/hmm-sphinx3/mixw       
+-lambdafn                                                
+-tpfloor    0.0001    1.000000e-04                       
+-varfloor   0.0001    1.000000e-04                       
+-mwfloor    0.0000001 1.000000e-07                       
+-agc        max       max                                
+-cmn        current   current                            
+-feat       s2_4x     s3_1x39                            
+-dictfn               ../testdata/dict/nov94/h1c1-94.dic 
+-fdictfn              ../testdata/dict/nov94/filler.dic  
+-compwd     0         0                                  
+-ctlfn                ../testdata/ctl/h1_et_94-g.ctl     
+-ctloffset  0         0                                  
+-ctlcount             20                                 
+-cepdir     .         ../testdata/ctl                    
+-cepext     mfc       mfc                                
+-mllrctlfn                                               
+-topn       4         1000                               
+-beam       1e-64     1.000000e-80                       
+-insentfn             ../testdata/ctl/h1_et_94-g.correct 
+-outsentfn            et94-align.out                     
+-stsegdir                                                
+-phsegdir             /dev/null                          
+-wdsegdir             /dev/null                          
+-s2stsegdir                                              
+-logfn                                                   
+
+INFO: ../profile.c(171): 503600490 ticks in 1.893 sec; machine clock rate = 266 MHz
+INFO: ../logs3.c(56): Initializing logbase: 1.000100e+00
+INFO: ../logs3.c(113): Log-Add table size = 99042
+INFO: ../feat.c(557): Initializing feature stream to type: s3_1x39
+INFO: ../mdef.c(472): Reading model definition: ../testdata/dict/nov94/h1c1-94.mdef
+INFO: ../mdef.c(591): 55 CI-phones, 75774 CD-phones, 5 emitting states/phone, 6275 sen, 275 CI-sen
+INFO: ../dict.c(225): Reading dictionary
+INFO: ../dict.c(269): Reading main dictionary: ../testdata/dict/nov94/h1c1-94.dic
+INFO: ../dict.c(272): 21737 words read
+INFO: ../dict.c(277): Reading filler dictionary: ../testdata/dict/nov94/filler.dic
+INFO: ../dict.c(280): 5 words read
+INFO: ../gauden.c(118): Reading mixture gaussian parameter: ../testdata/hmm-sphinx3/mean
+INFO: ../gauden.c(209): 6275 codebook, 1 feature, size 16x39
+INFO: ../gauden.c(118): Reading mixture gaussian parameter: ../testdata/hmm-sphinx3/var
+INFO: ../gauden.c(209): 6275 codebook, 1 feature, size 16x39
+INFO: ../senone.c(137): Reading senone mixture weights: ../testdata/hmm-sphinx3/mixw
+INFO: ../senone.c(182): Truncating senone logs3(pdf) values by 10 bits, to 8 bits
+ERROR: "../senone.c", line 227: Weight normalization failed for 250 senones
+INFO: ../senone.c(239): Read mixture weights for 6275 senones: 1 features x 16 codewords
+INFO: ../tmat.c(67): Reading HMM transition matrix: ../testdata/hmm-sphinx3/tmat
+INFO: ../tmat.c(146): Read 55 transition matrices of size 5x6
+INFO: ../align.c(1252): logs3(beam)= -1842160
+
+INFO: ../align-main.c(986): Processing ctl file ../testdata/ctl/h1_et_94-g.ctl
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0201
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0201.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0201: 915 input frames
+ERROR: "../align-main.c", line 755: -topn argument (1000) > #density codewords (16); set to latter
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c0201.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c0201.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c0201):
+PH:4t0c0201>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c0201>	    0    15   1766979 SIL
+ph:4t0c0201>	   16    38     43615 +INHALE+
+ph:4t0c0201>	   39    50   -100071 AE SIL Z b
+ph:4t0c0201>	   51    56   -298946 Z AE K e
+ph:4t0c0201>	   57    67  -1310299 K Z AO b
+ph:4t0c0201>	   68    70   -513122 AO K M i
+ph:4t0c0201>	   71    75   -582805 M AO P i
+ph:4t0c0201>	   76    80   -880463 P M IX i
+ph:4t0c0201>	   81    86  -2268089 IX P T i
+ph:4t0c0201>	   87    94  -1770073 T IX IH i
+ph:4t0c0201>	   95   104    364689 IH T SH i
+ph:4t0c0201>	  105   114   1600374 SH IH AX i
+ph:4t0c0201>	  115   118   -217389 AX SH N i
+ph:4t0c0201>	  119   125     -8173 N AX IH e
+ph:4t0c0201>	  126   132    580565 IH N N b
+ph:4t0c0201>	  133   138    200350 N IH DH e
+ph:4t0c0201>	  139   141    191431 DH N AX b
+ph:4t0c0201>	  142   145    155653 AX DH M e
+ph:4t0c0201>	  146   151    253619 M AX Y b
+ph:4t0c0201>	  152   156   -150861 Y M UW i
+ph:4t0c0201>	  157   162   -674008 UW Y CH i
+ph:4t0c0201>	  163   169   -454602 CH UW UW i
+ph:4t0c0201>	  170   174   -261663 UW CH AX i
+ph:4t0c0201>	  175   178    163812 AX UW L i
+ph:4t0c0201>	  179   183    503906 L AX F e
+ph:4t0c0201>	  184   192    -59576 F L AH b
+ph:4t0c0201>	  193   201    411811 AH F N i
+ph:4t0c0201>	  202   210    645804 N AH DD i
+ph:4t0c0201>	  211   213    -36923 DD N B e
+ph:4t0c0201>	  214   216   -271624 B DD IH b
+ph:4t0c0201>	  217   223    -35456 IH B Z i
+ph:4t0c0201>	  224   229    197031 Z IH N i
+ph:4t0c0201>	  230   235   -229947 N Z IX i
+ph:4t0c0201>	  236   243   -190646 IX N S i
+ph:4t0c0201>	  244   250   -265550 S IX G e
+ph:4t0c0201>	  251   257   -752714 G S R b
+ph:4t0c0201>	  258   262   -222067 R G OW i
+ph:4t0c0201>	  263   272    932197 OW R Z i
+ph:4t0c0201>	  273   280   -186346 Z OW IX e
+ph:4t0c0201>	  281   283   -796991 IX Z N b
+ph:4t0c0201>	  284   286   -381356 N IX K i
+ph:4t0c0201>	  287   292   -447121 K N R i
+ph:4t0c0201>	  293   298   -408937 R K IY i
+ph:4t0c0201>	  299   307    125930 IY R S i
+ph:4t0c0201>	  308   319    119875 S IY IX i
+ph:4t0c0201>	  320   322   -122544 IX S NG i
+ph:4t0c0201>	  323   332    300371 NG IX L i
+ph:4t0c0201>	  333   339     21575 L NG IY i
+ph:4t0c0201>	  340   350    435422 IY L IX e
+ph:4t0c0201>	  351   353     60627 IX IY N b
+ph:4t0c0201>	  354   359    108800 N IX T i
+ph:4t0c0201>	  360   365   -226015 T N EH i
+ph:4t0c0201>	  366   379    401103 EH T N i
+ph:4t0c0201>	  380   389    235084 N EH S i
+ph:4t0c0201>	  390   403    307788 S N SIL e
+ph:4t0c0201>	  404   429   1587032 +INHALE+
+ph:4t0c0201>	  430   441     11859 M SIL AO b
+ph:4t0c0201>	  442   446   -399688 AO M R i
+ph:4t0c0201>	  447   454   -617081 R AO P e
+ph:4t0c0201>	  455   467   -853810 P R L b
+ph:4t0c0201>	  468   473    -21159 L P EY i
+ph:4t0c0201>	  474   487   1650047 EY L AXR i
+ph:4t0c0201>	  488   493   -169225 AXR EY Z i
+ph:4t0c0201>	  494   503    121691 Z AXR IH e
+ph:4t0c0201>	  504   509   -217433 IH Z N b
+ph:4t0c0201>	  510   516    185290 N IH DH e
+ph:4t0c0201>	  517   521     34790 DH N AX b
+ph:4t0c0201>	  522   525    271384 AX DH IH e
+ph:4t0c0201>	  526   531    723966 IH AX N b
+ph:4t0c0201>	  532   535    198094 N IH D i
+ph:4t0c0201>	  536   540   -152083 D N AX i
+ph:4t0c0201>	  541   545     -4072 AX D S i
+ph:4t0c0201>	  546   549      4649 S AX T i
+ph:4t0c0201>	  550   556   -134706 T S R i
+ph:4t0c0201>	  557   559    -64356 R T IY i
+ph:4t0c0201>	  560   565    635403 IY R AX e
+ph:4t0c0201>	  566   570    190480 AX IY P b
+ph:4t0c0201>	  571   582   -205209 P AX IH i
+ph:4t0c0201>	  583   588   -497979 IH P R i
+ph:4t0c0201>	  589   592   -222455 R IH W e
+ph:4t0c0201>	  593   599   -436478 W R IH b
+ph:4t0c0201>	  600   604   -171157 IH W L i
+ph:4t0c0201>	  605   610    451715 L IH IX i
+ph:4t0c0201>	  611   617   -126903 IX L NG i
+ph:4t0c0201>	  618   625   -548755 NG IX T e
+ph:4t0c0201>	  626   632   -409591 T NG AX b
+ph:4t0c0201>	  633   635   -228424 AX T S e
+ph:4t0c0201>	  636   645     42234 S AX AE b
+ph:4t0c0201>	  646   654   -401733 AE S K i
+ph:4t0c0201>	  655   662    -61396 K AE R i
+ph:4t0c0201>	  663   665   -133618 R K AX i
+ph:4t0c0201>	  666   668   -369476 AX R F i
+ph:4t0c0201>	  669   677   -976280 F AX AY i
+ph:4t0c0201>	  678   692    397243 AY F S i
+ph:4t0c0201>	  693   704   1048960 S AY IX e
+ph:4t0c0201>	  705   709   -440749 IX S N b
+ph:4t0c0201>	  710   713   -339668 N IX T i
+ph:4t0c0201>	  714   720   -596689 T N EH i
+ph:4t0c0201>	  721   726   -130607 EH T G i
+ph:4t0c0201>	  727   734  -1187619 G EH R i
+ph:4t0c0201>	  735   739   -271749 R G IX i
+ph:4t0c0201>	  740   744   -456479 IX R DX i
+ph:4t0c0201>	  745   747   -315370 DX IX IY i
+ph:4t0c0201>	  748   763   1803923 IY DX IH e
+ph:4t0c0201>	  764   766    -69122 IH IY N b
+ph:4t0c0201>	  767   770     -1606 N IH DH e
+ph:4t0c0201>	  771   775    112272 DH N AX b
+ph:4t0c0201>	  776   778    -27055 AX DH N e
+ph:4t0c0201>	  779   782   -224413 N AX EY b
+ph:4t0c0201>	  783   794   1543399 EY N M i
+ph:4t0c0201>	  795   797    -88291 M EY AX e
+ph:4t0c0201>	  798   802    -61614 AX M V b
+ph:4t0c0201>	  803   809   -408660 V AX P e
+ph:4t0c0201>	  810   818    342142 P V AXR b
+ph:4t0c0201>	  819   821   -300886 AXR P F i
+ph:4t0c0201>	  822   833    815372 F AXR AO i
+ph:4t0c0201>	  834   837   -197588 AO F R i
+ph:4t0c0201>	  838   844    343303 R AO M i
+ph:4t0c0201>	  845   850    -40679 M R AX i
+ph:4t0c0201>	  851   856   -297527 AX M N i
+ph:4t0c0201>	  857   867    450291 N AX S i
+ph:4t0c0201>	  868   889   2173790 S N SIL e
+ph:4t0c0201>	  890   914   2562074 SIL
+PH:4t0c0201> Total score:      825999
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c0201.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c0201.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c0201):
+WD:4t0c0201>	 SFrm  EFrm    SegAScr Word
+wd:4t0c0201>	    0    15    1766979 <s>
+wd:4t0c0201>	   16    38      43615 ++INHALE++
+wd:4t0c0201>	   39    56    -399017 AS(2)
+wd:4t0c0201>	   57   125   -5585350 COMPETITION
+wd:4t0c0201>	  126   138     780915 IN(2)
+wd:4t0c0201>	  139   145     347084 THE
+wd:4t0c0201>	  146   183    -619797 MUTUAL
+wd:4t0c0201>	  184   213     961116 FUND
+wd:4t0c0201>	  214   250    -796192 BUSINESS
+wd:4t0c0201>	  251   280    -228930 GROWS
+wd:4t0c0201>	  281   350   -1153776 INCREASINGLY
+wd:4t0c0201>	  351   403     887387 INTENSE
+wd:4t0c0201>	  404   429    1587032 ++INHALE++
+wd:4t0c0201>	  430   454   -1004910 MORE
+wd:4t0c0201>	  455   503     727544 PLAYERS
+wd:4t0c0201>	  504   516     -32143 IN(2)
+wd:4t0c0201>	  517   525     306174 THE
+wd:4t0c0201>	  526   565    1206895 INDUSTRY
+wd:4t0c0201>	  566   592    -735163 APPEAR
+wd:4t0c0201>	  593   625    -831578 WILLING
+wd:4t0c0201>	  626   635    -638015 TO
+wd:4t0c0201>	  636   704    -454066 SACRIFICE
+wd:4t0c0201>	  705   763   -1935007 INTEGRITY
+wd:4t0c0201>	  764   770     -70728 IN(2)
+wd:4t0c0201>	  771   778      85217 THE
+wd:4t0c0201>	  779   797    1230695 NAME
+wd:4t0c0201>	  798   809    -470274 OF
+wd:4t0c0201>	  810   889    3288218 PERFORMANCE
+wd:4t0c0201>	  890   914    2562074 </s>
+WD:4t0c0201> Total score:      825999
+
+TMR:[U    2.0s   0.2x 100%][G    1.4s   0.2x  67%][S    0.5s   0.1x  26%][A    0.1s   0.0x   6%]
+CTR:[NS      52539]
+EXECTIME:   915 frames,    2.08 sec CPU,   0.23 xRT;    2.12 sec elapsed,   0.23 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0202
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0202.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0202: 694 input frames
+ERROR: "../align.c", line 797: DISHEARTENING not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c0202
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0203
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0203.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0203: 1474 input frames
+ERROR: "../align.c", line 797: UNSAVORY not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c0203
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0204
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0204.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0204: 1298 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c0204.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c0204.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c0204):
+PH:4t0c0204>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c0204>	    0     8   1036842 SIL
+ph:4t0c0204>	    9    52   3974043 +INHALE+
+ph:4t0c0204>	   53    69    703705 AE SIL N b
+ph:4t0c0204>	   70    74    285211 N AE DD i
+ph:4t0c0204>	   75    79    -85786 DD N IX e
+ph:4t0c0204>	   80    83    389328 IX DD N b
+ph:4t0c0204>	   84    88    309302 N IX DH e
+ph:4t0c0204>	   89    93    299372 DH N AX b
+ph:4t0c0204>	   94    97    -39154 AX DH L e
+ph:4t0c0204>	   98   103   -110378 L AX EY b
+ph:4t0c0204>	  104   113    882828 EY L DX i
+ph:4t0c0204>	  114   117     36215 DX EY IX i
+ph:4t0c0204>	  118   124   -458635 IX DX S i
+ph:4t0c0204>	  125   129    -48941 S IX TD i
+ph:4t0c0204>	  130   133     46474 TD S B e
+ph:4t0c0204>	  134   139   -184873 B TD L b
+ph:4t0c0204>	  140   145   -336985 L B OW i
+ph:4t0c0204>	  146   157    433017 OW L T e
+ph:4t0c0204>	  158   161   -669094 T OW AX b
+ph:4t0c0204>	  162   164   -267544 AX T P e
+ph:4t0c0204>	  165   173   -176187 P AX AH b
+ph:4t0c0204>	  174   180   -564008 AH P B i
+ph:4t0c0204>	  181   184   -318373 B AH L i
+ph:4t0c0204>	  185   188   -445341 L B IX i
+ph:4t0c0204>	  189   196   -382543 IX L KD i
+ph:4t0c0204>	  197   199   -188260 KD IX K e
+ph:4t0c0204>	  200   207   -962360 K KD AO b
+ph:4t0c0204>	  208   214   -755007 AO K N i
+ph:4t0c0204>	  215   222   -244536 N AO F i
+ph:4t0c0204>	  223   228   -579920 F N IX i
+ph:4t0c0204>	  229   232   -184600 IX F D i
+ph:4t0c0204>	  233   236      7659 D IX AX i
+ph:4t0c0204>	  237   242    422020 AX D N i
+ph:4t0c0204>	  243   247   -686588 N AX S i
+ph:4t0c0204>	  248   253   -231461 S N IH e
+ph:4t0c0204>	  254   261   -222970 IH S N b
+ph:4t0c0204>	  262   265    286364 N IH DH e
+ph:4t0c0204>	  266   270    236712 DH N AX b
+ph:4t0c0204>	  271   273   -405396 AX DH F e
+ph:4t0c0204>	  274   281     -1132 F AX AH b
+ph:4t0c0204>	  282   294    936205 AH F N i
+ph:4t0c0204>	  295   302    395087 N AH D i
+ph:4t0c0204>	  303   309   -172006 D N Z i
+ph:4t0c0204>	  310   317    240942 Z D SIL e
+ph:4t0c0204>	  318   341   1910326 SIL
+ph:4t0c0204>	  342   357   1258047 S SIL AH b
+ph:4t0c0204>	  358   361      3459 AH S M i
+ph:4t0c0204>	  362   365   -171784 M AH W i
+ph:4t0c0204>	  366   369   -475803 W M AH i
+ph:4t0c0204>	  370   374   -503031 AH W N i
+ph:4t0c0204>	  375   378   -359659 N AH AE e
+ph:4t0c0204>	  379   386   -189305 AE N TD b
+ph:4t0c0204>	  387   389   -315946 TD AE SIL e
+ph:4t0c0204>	  390   392   -313861 SIL
+ph:4t0c0204>	  393   400    421695 IH SIL N b
+ph:4t0c0204>	  401   405    215650 N IH D i
+ph:4t0c0204>	  406   410    100294 D N AX i
+ph:4t0c0204>	  411   415    250207 AX D S i
+ph:4t0c0204>	  416   420    -42036 S AX T i
+ph:4t0c0204>	  421   427    157386 T S R i
+ph:4t0c0204>	  428   430    178704 R T IY i
+ph:4t0c0204>	  431   440     69355 IY R T e
+ph:4t0c0204>	  441   451   -131553 T IY AY b
+ph:4t0c0204>	  452   464   -103695 AY T T i
+ph:4t0c0204>	  465   469   -319720 T AY AX i
+ph:4t0c0204>	  470   474    163408 AX T N i
+ph:4t0c0204>	  475   477    173951 N AX F e
+ph:4t0c0204>	  478   487    447916 F N AX b
+ph:4t0c0204>	  488   493   -235013 AX F D i
+ph:4t0c0204>	  494   498   -182389 D AX EH i
+ph:4t0c0204>	  499   507    686862 EH D L i
+ph:4t0c0204>	  508   513    929752 L EH AX i
+ph:4t0c0204>	  514   519    341549 AX L DX i
+ph:4t0c0204>	  520   530   -877963 DX AX IY i
+ph:4t0c0204>	  531   543   1357575 IY DX IX e
+ph:4t0c0204>	  544   551    -39537 IX IY N b
+ph:4t0c0204>	  552   557    159484 N IX V i
+ph:4t0c0204>	  558   564   -556024 V N EH i
+ph:4t0c0204>	  565   571    157321 EH V S i
+ph:4t0c0204>	  572   578    281733 S EH TD i
+ph:4t0c0204>	  579   583   -103966 TD S M i
+ph:4t0c0204>	  584   586   -164987 M TD AX i
+ph:4t0c0204>	  587   591    -92651 AX M N i
+ph:4t0c0204>	  592   598   -547151 N AX TS i
+ph:4t0c0204>	  599   612   -124411 TS N SIL e
+ph:4t0c0204>	  613   630   1805556 +INHALE+
+ph:4t0c0204>	  631   640   -445958 D SIL IX b
+ph:4t0c0204>	  641   645    -54395 IX D S i
+ph:4t0c0204>	  646   651   -177361 S IX AY i
+ph:4t0c0204>	  652   660    702430 AY S DX i
+ph:4t0c0204>	  661   663   -110330 DX AY IX i
+ph:4t0c0204>	  664   669    656229 IX DX DD i
+ph:4t0c0204>	  670   675   -368927 DD IX L e
+ph:4t0c0204>	  676   680   -357360 L DD AE b
+ph:4t0c0204>	  681   690   1004313 AE L S i
+ph:4t0c0204>	  691   698     24994 S AE TD i
+ph:4t0c0204>	  699   703    474562 TD S F e
+ph:4t0c0204>	  704   708    500438 F TD R b
+ph:4t0c0204>	  709   712     -1003 R F AY i
+ph:4t0c0204>	  713   721    625870 AY R D i
+ph:4t0c0204>	  722   725    -83676 D AY EY i
+ph:4t0c0204>	  726   746   2206022 EY D SIL e
+ph:4t0c0204>	  747   763   -327824 SIL
+ph:4t0c0204>	  764   770   -348160 T SIL AX b
+ph:4t0c0204>	  771   775   -231256 AX T S e
+ph:4t0c0204>	  776   783    710958 S AX EH b
+ph:4t0c0204>	  784   789    378480 EH S N i
+ph:4t0c0204>	  790   792    124492 N EH DD i
+ph:4t0c0204>	  793   795    262096 DD N N e
+ph:4t0c0204>	  796   798   -125299 N DD UW b
+ph:4t0c0204>	  799   803   -572581 UW N S i
+ph:4t0c0204>	  804   808   -591690 S UW P i
+ph:4t0c0204>	  809   815   -681663 P S EY i
+ph:4t0c0204>	  816   823   -371997 EY P P i
+ph:4t0c0204>	  824   832    101474 P EY AXR i
+ph:4t0c0204>	  833   843    963661 AXR P Z i
+ph:4t0c0204>	  844   860    344354 Z AXR TH e
+ph:4t0c0204>	  861   869   -180719 TH Z ER b
+ph:4t0c0204>	  870   877    448645 ER TH Z i
+ph:4t0c0204>	  878   884    204268 Z ER D i
+ph:4t0c0204>	  885   889   -603913 D Z EY i
+ph:4t0c0204>	  890   897    289158 EY D Z i
+ph:4t0c0204>	  898   904   -194430 Z EY P e
+ph:4t0c0204>	  905   913    443191 P Z R b
+ph:4t0c0204>	  914   916   -301385 R P AY i
+ph:4t0c0204>	  917   928    241189 AY R S i
+ph:4t0c0204>	  929   936    621856 S AY IX i
+ph:4t0c0204>	  937   943    501618 IX S Z i
+ph:4t0c0204>	  944   952    152562 Z IX F e
+ph:4t0c0204>	  953   957   -183484 F Z AXR b
+ph:4t0c0204>	  958   962    -49258 AXR F M e
+ph:4t0c0204>	  963   969     48778 M AXR OW b
+ph:4t0c0204>	  970   976    653154 OW M S i
+ph:4t0c0204>	  977   984    147670 S OW TD i
+ph:4t0c0204>	  985   987    190776 TD S F e
+ph:4t0c0204>	  988   992     25543 F TD AX b
+ph:4t0c0204>	  993   996   -159954 AX F D i
+ph:4t0c0204>	  997  1001   -600852 D AX EH i
+ph:4t0c0204>	 1002  1008    360574 EH D L i
+ph:4t0c0204>	 1009  1013    780222 L EH AX i
+ph:4t0c0204>	 1014  1018    205481 AX L DX i
+ph:4t0c0204>	 1019  1021   -289021 DX AX IY i
+ph:4t0c0204>	 1022  1030    130374 IY DX F e
+ph:4t0c0204>	 1031  1038   -271724 F IY AH b
+ph:4t0c0204>	 1039  1049    280079 AH F N i
+ph:4t0c0204>	 1050  1055       176 N AH D i
+ph:4t0c0204>	 1056  1063    479712 D N Z i
+ph:4t0c0204>	 1064  1074    519270 Z D SIL e
+ph:4t0c0204>	 1075  1093   1716328 +INHALE+
+ph:4t0c0204>	 1094  1103   -121014 B SIL IX b
+ph:4t0c0204>	 1104  1108   -994016 IX B K i
+ph:4t0c0204>	 1109  1115   -689729 K IX AH i
+ph:4t0c0204>	 1116  1121     34114 AH K Z i
+ph:4t0c0204>	 1122  1127    -99603 Z AH DH e
+ph:4t0c0204>	 1128  1131   -384196 DH Z AX b
+ph:4t0c0204>	 1132  1135    140092 AX DH F e
+ph:4t0c0204>	 1136  1142    687421 F AX R b
+ph:4t0c0204>	 1143  1146    -88148 R F AY i
+ph:4t0c0204>	 1147  1151   -430554 AY R D i
+ph:4t0c0204>	 1152  1156   -290029 D AY EY i
+ph:4t0c0204>	 1157  1166    973776 EY D D e
+ph:4t0c0204>	 1167  1171   -211368 D EY EY b
+ph:4t0c0204>	 1172  1179    549828 EY D DX i
+ph:4t0c0204>	 1180  1189    267925 DX EY AX i
+ph:4t0c0204>	 1190  1193   -790772 AX DX W e
+ph:4t0c0204>	 1194  1199   -261393 W AX AH b
+ph:4t0c0204>	 1200  1205     94770 AH W Z i
+ph:4t0c0204>	 1206  1212    136718 Z AH AX i
+ph:4t0c0204>	 1213  1215    -32722 AX Z N i
+ph:4t0c0204>	 1216  1218   -368458 N AX TD i
+ph:4t0c0204>	 1219  1222      -797 TD N R e
+ph:4t0c0204>	 1223  1229    -23094 R TD EH b
+ph:4t0c0204>	 1230  1236    202389 EH R DX i
+ph:4t0c0204>	 1237  1240    114779 DX EH IY i
+ph:4t0c0204>	 1241  1265    104551 IY DX SIL e
+ph:4t0c0204>	 1266  1297   4084435 SIL
+PH:4t0c0204> Total score:    19860675
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c0204.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c0204.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c0204):
+WD:4t0c0204>	 SFrm  EFrm    SegAScr Word
+wd:4t0c0204>	    0     8    1036842 <s>
+wd:4t0c0204>	    9    52    3974043 ++INHALE++
+wd:4t0c0204>	   53    79     903130 AND(2)
+wd:4t0c0204>	   80    88     698630 IN
+wd:4t0c0204>	   89    97     260218 THE
+wd:4t0c0204>	   98   133     347563 LATEST
+wd:4t0c0204>	  134   157     -88841 BLOW
+wd:4t0c0204>	  158   164    -936638 TO
+wd:4t0c0204>	  165   199   -2074712 PUBLIC
+wd:4t0c0204>	  200   253   -3214793 CONFIDENCE
+wd:4t0c0204>	  254   265      63394 IN(2)
+wd:4t0c0204>	  266   273    -168684 THE
+wd:4t0c0204>	  274   317    1399096 FUNDS
+wd:4t0c0204>	  318   341    1910326 <sil>
+wd:4t0c0204>	  342   378    -248771 SOMEONE
+wd:4t0c0204>	  379   389    -505251 AT
+wd:4t0c0204>	  390   392    -313861 <sil>
+wd:4t0c0204>	  393   440    1351255 INDUSTRY
+wd:4t0c0204>	  441   477    -217609 TITAN
+wd:4t0c0204>	  478   543    2468289 FIDELITY
+wd:4t0c0204>	  544   612   -1030189 INVESTMENTS
+wd:4t0c0204>	  613   630    1805556 ++INHALE++
+wd:4t0c0204>	  631   675     201688 DECIDED
+wd:4t0c0204>	  676   703    1146509 LAST
+wd:4t0c0204>	  704   746    3247651 FRIDAY(2)
+wd:4t0c0204>	  747   763    -327824 <sil>
+wd:4t0c0204>	  764   775    -579416 TO
+wd:4t0c0204>	  776   795    1476026 SEND
+wd:4t0c0204>	  796   860    -933741 NEWSPAPERS
+wd:4t0c0204>	  861   904     -36991 THURSDAY'S
+wd:4t0c0204>	  905   952    1659031 PRICES
+wd:4t0c0204>	  953   962    -232742 FOR
+wd:4t0c0204>	  963   987    1040378 MOST
+wd:4t0c0204>	  988  1030     452367 FIDELITY
+wd:4t0c0204>	 1031  1074    1007513 FUNDS
+wd:4t0c0204>	 1075  1093    1716328 ++INHALE++
+wd:4t0c0204>	 1094  1127   -1870248 BECAUSE
+wd:4t0c0204>	 1128  1135    -244104 THE
+wd:4t0c0204>	 1136  1166     852466 FRIDAY(2)
+wd:4t0c0204>	 1167  1193    -184387 DATA
+wd:4t0c0204>	 1194  1222    -431882 WASN'T
+wd:4t0c0204>	 1223  1265     398625 READY
+wd:4t0c0204>	 1266  1297    4084435 </s>
+WD:4t0c0204> Total score:    19860675
+
+TMR:[U    2.9s   0.2x 100%][G    2.0s   0.2x  68%][S    0.8s   0.1x  26%][A    0.2s   0.0x   6%]
+CTR:[NS      83823]
+EXECTIME:  1298 frames,    2.99 sec CPU,   0.23 xRT;    3.07 sec elapsed,   0.24 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0205
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0205.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0205: 1231 input frames
+ERROR: "../align.c", line 797: FESS not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c0205
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0206
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0206.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0206: 1763 input frames
+ERROR: "../align.c", line 797: UNKNOWINGLY not in dictionary
+ERROR: "../align.c", line 797: EFFECTED not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c0206
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0207
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0207.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0207: 842 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c0207.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c0207.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c0207):
+PH:4t0c0207>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c0207>	    0     3    449554 SIL
+ph:4t0c0207>	    4    23   2296107 SIL
+ph:4t0c0207>	   24    38    809805 B SIL AX b
+ph:4t0c0207>	   39    42    -95296 AX B TD i
+ph:4t0c0207>	   43    45   -454734 TD AX DH e
+ph:4t0c0207>	   46    48   -699747 DH TD AE b
+ph:4t0c0207>	   49    58    -48833 AE DH TD i
+ph:4t0c0207>	   59    61   -579942 TD AE D e
+ph:4t0c0207>	   62    65   -536179 D TD AH b
+ph:4t0c0207>	   66    71   -167775 AH D Z i
+ph:4t0c0207>	   72    78    -17518 Z AH AX i
+ph:4t0c0207>	   79    83   -779331 AX Z N i
+ph:4t0c0207>	   84    89   -805820 N AX TD i
+ph:4t0c0207>	   90    92   -605122 TD N CH e
+ph:4t0c0207>	   93   101    163471 CH TD EY b
+ph:4t0c0207>	  102   112    287991 EY CH N i
+ph:4t0c0207>	  113   117   -719115 N EY JH i
+ph:4t0c0207>	  118   120   -682489 JH N DH e
+ph:4t0c0207>	  121   124   -583640 DH JH AX b
+ph:4t0c0207>	  125   129   -112141 AX DH F e
+ph:4t0c0207>	  130   137    149621 F AX AE b
+ph:4t0c0207>	  138   147    884808 AE F KD i
+ph:4t0c0207>	  148   153   -109260 KD AE TD i
+ph:4t0c0207>	  154   156    -19978 TD KD DH e
+ph:4t0c0207>	  157   161    369873 DH TD AE b
+ph:4t0c0207>	  162   167     64870 AE DH TD i
+ph:4t0c0207>	  168   170   -163051 TD AE M e
+ph:4t0c0207>	  171   176   -286773 M TD OW b
+ph:4t0c0207>	  177   184    155973 OW M S i
+ph:4t0c0207>	  185   190     16486 S OW TD i
+ph:4t0c0207>	  191   193    162480 TD S F e
+ph:4t0c0207>	  194   197    -42588 F TD AX b
+ph:4t0c0207>	  198   200   -591244 AX F D i
+ph:4t0c0207>	  201   205   -693655 D AX EH i
+ph:4t0c0207>	  206   213    452696 EH D L i
+ph:4t0c0207>	  214   219    714963 L EH AX i
+ph:4t0c0207>	  220   224    -14250 AX L DX i
+ph:4t0c0207>	  225   228   -207471 DX AX IY i
+ph:4t0c0207>	  229   236    146784 IY DX Z i
+ph:4t0c0207>	  237   242     66105 Z IY SH e
+ph:4t0c0207>	  243   252    469459 SH Z EH b
+ph:4t0c0207>	  253   260    375440 EH SH R i
+ph:4t0c0207>	  261   263     66253 R EH HH i
+ph:4t0c0207>	  264   269   -637699 HH R OW i
+ph:4t0c0207>	  270   274   -116053 OW HH L i
+ph:4t0c0207>	  275   280   -943839 L OW D i
+ph:4t0c0207>	  281   286   -596109 D L AXR i
+ph:4t0c0207>	  287   295     76794 AXR D Z i
+ph:4t0c0207>	  296   306   -260391 Z AXR W e
+ph:4t0c0207>	  307   310   -477901 W Z ER b
+ph:4t0c0207>	  311   316   -774760 ER W L e
+ph:4t0c0207>	  317   325   -925349 L ER AY b
+ph:4t0c0207>	  326   339    -34415 AY L DD i
+ph:4t0c0207>	  340   343    -99470 DD AY T e
+ph:4t0c0207>	  344   352    -54070 T DD UW b
+ph:4t0c0207>	  353   373    716394 UW T SIL e
+ph:4t0c0207>	  374   395   1119098 SIL
+ph:4t0c0207>	  396   406   -202501 IX SIL N b
+ph:4t0c0207>	  407   409   -290406 N IX V e
+ph:4t0c0207>	  410   420    618952 V N EH b
+ph:4t0c0207>	  421   428    714313 EH V R i
+ph:4t0c0207>	  429   432    685806 R EH IY i
+ph:4t0c0207>	  433   438    164737 IY R IX i
+ph:4t0c0207>	  439   441    168330 IX IY NG i
+ph:4t0c0207>	  442   446     -9528 NG IX D e
+ph:4t0c0207>	  447   452   -157521 D NG IX b
+ph:4t0c0207>	  453   457   -176630 IX D G i
+ph:4t0c0207>	  458   463  -1312154 G IX R i
+ph:4t0c0207>	  464   469   -547489 R G IY i
+ph:4t0c0207>	  470   489    930471 IY R Z i
+ph:4t0c0207>	  490   505    763507 Z IY SIL e
+ph:4t0c0207>	  506   523    368017 +INHALE+
+ph:4t0c0207>	  524   537    111841 IX SIL F b
+ph:4t0c0207>	  538   541   -161260 F IX DH e
+ph:4t0c0207>	  542   545    -15252 DH F EY b
+ph:4t0c0207>	  546   551    -78537 EY DH L e
+ph:4t0c0207>	  552   556    -48497 L EY UH b
+ph:4t0c0207>	  557   562   -826734 UH L KD i
+ph:4t0c0207>	  563   566   -389693 KD UH TD i
+ph:4t0c0207>	  567   571   -144157 TD KD AE e
+ph:4t0c0207>	  572   576    -75803 AE TD TD b
+ph:4t0c0207>	  577   581   -190366 TD AE DH e
+ph:4t0c0207>	  582   585   -212808 DH TD EH b
+ph:4t0c0207>	  586   590    151183 EH DH R i
+ph:4t0c0207>	  591   595     30086 R EH F e
+ph:4t0c0207>	  596   603     59430 F R AH b
+ph:4t0c0207>	  604   611    532588 AH F N i
+ph:4t0c0207>	  612   616     93337 N AH DD i
+ph:4t0c0207>	  617   621   -231936 DD N P e
+ph:4t0c0207>	  622   627    191615 P DD R b
+ph:4t0c0207>	  628   630   -198099 R P AY i
+ph:4t0c0207>	  631   643    961898 AY R S i
+ph:4t0c0207>	  644   651    512785 S AY IX i
+ph:4t0c0207>	  652   656    522609 IX S Z i
+ph:4t0c0207>	  657   667    212645 Z IX IH e
+ph:4t0c0207>	  668   675   -709387 IH Z N b
+ph:4t0c0207>	  676   680     40255 N IH N e
+ph:4t0c0207>	  681   683    309742 N N Y b
+ph:4t0c0207>	  684   686     31238 Y N UW i
+ph:4t0c0207>	  687   690   -489180 UW Y S i
+ph:4t0c0207>	  691   694   -369204 S UW P i
+ph:4t0c0207>	  695   701   -800007 P S EY i
+ph:4t0c0207>	  702   710    317090 EY P P i
+ph:4t0c0207>	  711   717    502256 P EY AXR i
+ph:4t0c0207>	  718   724     20242 AXR P Z i
+ph:4t0c0207>	  725   733   -785219 Z AXR L e
+ph:4t0c0207>	  734   739   -147758 L Z AE b
+ph:4t0c0207>	  740   749    867603 AE L S i
+ph:4t0c0207>	  750   756   -204097 S AE TD i
+ph:4t0c0207>	  757   763   -322159 TD S W e
+ph:4t0c0207>	  764   767   -538282 W TD IY b
+ph:4t0c0207>	  768   776    420599 IY W K i
+ph:4t0c0207>	  777   784   -867384 K IY EH i
+ph:4t0c0207>	  785   793    -52510 EH K N i
+ph:4t0c0207>	  794   804    244690 N EH DD i
+ph:4t0c0207>	  805   808   -364085 DD N SIL e
+ph:4t0c0207>	  809   822    426755 SIL
+ph:4t0c0207>	  823   841   2304304 SIL
+PH:4t0c0207> Total score:    -1560702
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c0207.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c0207.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c0207):
+WD:4t0c0207>	 SFrm  EFrm    SegAScr Word
+wd:4t0c0207>	    0     3     449554 <s>
+wd:4t0c0207>	    4    23    2296107 <sil>
+wd:4t0c0207>	   24    45     259775 BUT
+wd:4t0c0207>	   46    61   -1328522 THAT
+wd:4t0c0207>	   62    92   -2911745 DOESN'T
+wd:4t0c0207>	   93   120    -950142 CHANGE
+wd:4t0c0207>	  121   129    -695781 THE
+wd:4t0c0207>	  130   156     905191 FACT
+wd:4t0c0207>	  157   170     271692 THAT
+wd:4t0c0207>	  171   193      48166 MOST
+wd:4t0c0207>	  194   242    -168660 FIDELITY'S
+wd:4t0c0207>	  243   306   -1566145 SHAREHOLDERS
+wd:4t0c0207>	  307   316   -1252661 WERE
+wd:4t0c0207>	  317   343   -1059234 LIED
+wd:4t0c0207>	  344   373     662324 TO(2)
+wd:4t0c0207>	  374   395    1119098 <sil>
+wd:4t0c0207>	  396   409    -492907 IN
+wd:4t0c0207>	  410   446    2342610 VARYING
+wd:4t0c0207>	  447   505    -499816 DEGREES
+wd:4t0c0207>	  506   523     368017 ++INHALE++
+wd:4t0c0207>	  524   541     -49419 IF
+wd:4t0c0207>	  542   551     -93789 THEY
+wd:4t0c0207>	  552   571   -1409081 LOOKED
+wd:4t0c0207>	  572   581    -266169 AT
+wd:4t0c0207>	  582   595     -31539 THEIR
+wd:4t0c0207>	  596   621     453419 FUND
+wd:4t0c0207>	  622   667    2203453 PRICES
+wd:4t0c0207>	  668   680    -669132 IN(2)
+wd:4t0c0207>	  681   733   -1263042 NEWSPAPERS(2)
+wd:4t0c0207>	  734   763     193589 LAST
+wd:4t0c0207>	  764   808   -1156972 WEEKEND
+wd:4t0c0207>	  809   822     426755 <sil>
+wd:4t0c0207>	  823   841    2304304 </s>
+WD:4t0c0207> Total score:    -1560702
+
+TMR:[U    1.8s   0.2x 100%][G    1.2s   0.1x  68%][S    0.5s   0.1x  26%][A    0.1s   0.0x   5%]
+CTR:[NS      49630]
+EXECTIME:   842 frames,    1.85 sec CPU,   0.22 xRT;    1.93 sec elapsed,   0.23 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0208
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0208.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0208: 756 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c0208.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c0208.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c0208):
+PH:4t0c0208>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c0208>	    0    34   4295608 SIL
+ph:4t0c0208>	   35    45   1078547 DH SIL IY b
+ph:4t0c0208>	   46    55    -18258 IY DH AH e
+ph:4t0c0208>	   56    64   -306018 AH IY N b
+ph:4t0c0208>	   65    69   -347099 N AH AY i
+ph:4t0c0208>	   70    76   -901917 AY N D i
+ph:4t0c0208>	   77    82  -1225694 D AY EH i
+ph:4t0c0208>	   83    87   -285448 EH D N i
+ph:4t0c0208>	   88    91     46523 N EH T i
+ph:4t0c0208>	   92    95     35929 T N AX i
+ph:4t0c0208>	   96   100   -979284 AX T F i
+ph:4t0c0208>	  101   107   -910152 F AX AY i
+ph:4t0c0208>	  108   118   -189831 AY F DD i
+ph:4t0c0208>	  119   122   -413660 DD AY F e
+ph:4t0c0208>	  123   131     92154 F DD AX b
+ph:4t0c0208>	  132   135   -363301 AX F D i
+ph:4t0c0208>	  136   140   -781301 D AX EH i
+ph:4t0c0208>	  141   149    539990 EH D L i
+ph:4t0c0208>	  150   153    426914 L EH AX i
+ph:4t0c0208>	  154   158      2437 AX L DX i
+ph:4t0c0208>	  159   161   -178046 DX AX IY i
+ph:4t0c0208>	  162   170    737521 IY DX EH e
+ph:4t0c0208>	  171   173   -229237 EH IY M b
+ph:4t0c0208>	  174   180   -639764 M EH P i
+ph:4t0c0208>	  181   189   -226390 P M L i
+ph:4t0c0208>	  190   194   -161291 L P OY i
+ph:4t0c0208>	  195   199    121160 OY L IY i
+ph:4t0c0208>	  200   230   2150350 IY OY HH e
+ph:4t0c0208>	  231   236  -1200154 HH IY UW b
+ph:4t0c0208>	  237   242   -715183 UW HH M e
+ph:4t0c0208>	  243   251    139102 M UW EY b
+ph:4t0c0208>	  252   262    667849 EY M DD i
+ph:4t0c0208>	  263   265   -197875 DD EY DH e
+ph:4t0c0208>	  266   269   -479956 DH DD IY b
+ph:4t0c0208>	  270   272   -102827 IY DH D e
+ph:4t0c0208>	  273   279    -55787 D IY IX b
+ph:4t0c0208>	  280   285     93935 IX D S i
+ph:4t0c0208>	  286   293    434350 S IX IH i
+ph:4t0c0208>	  294   299    376557 IH S ZH i
+ph:4t0c0208>	  300   310    519824 ZH IH AX i
+ph:4t0c0208>	  311   314     61677 AX ZH N i
+ph:4t0c0208>	  315   320    381955 N AX T e
+ph:4t0c0208>	  321   327   -174964 T N AX b
+ph:4t0c0208>	  328   331   -345052 AX T G e
+ph:4t0c0208>	  332   341   -880263 G AX OW b
+ph:4t0c0208>	  342   348    167722 OW G W e
+ph:4t0c0208>	  349   351   -109149 W OW IX b
+ph:4t0c0208>	  352   357   -118607 IX W TH i
+ph:4t0c0208>	  358   361   -424468 TH IX IH e
+ph:4t0c0208>	  362   373   -230806 IH TH N b
+ph:4t0c0208>	  374   378   -341424 N IH K i
+ph:4t0c0208>	  379   387  -1712606 K N AXR i
+ph:4t0c0208>	  388   390   -466239 AXR K EH i
+ph:4t0c0208>	  391   396   -126758 EH AXR KD i
+ph:4t0c0208>	  397   399   -494268 KD EH TD i
+ph:4t0c0208>	  400   402     -5825 TD KD P e
+ph:4t0c0208>	  403   411    794460 P TD R b
+ph:4t0c0208>	  412   415    -98770 R P AY i
+ph:4t0c0208>	  416   427    740378 AY R S i
+ph:4t0c0208>	  428   435    374106 S AY IX i
+ph:4t0c0208>	  436   447   1843606 IX S Z i
+ph:4t0c0208>	  448   461    385422 Z IX SIL e
+ph:4t0c0208>	  462   484   2688009 +INHALE+
+ph:4t0c0208>	  485   498    641614 SH SIL UH b
+ph:4t0c0208>	  499   503   -319286 UH SH DD i
+ph:4t0c0208>	  504   508   -291813 DD UH S e
+ph:4t0c0208>	  509   517    136829 S DD IH b
+ph:4t0c0208>	  518   523   -194776 IH S M i
+ph:4t0c0208>	  524   528   -360111 M IH P i
+ph:4t0c0208>	  529   533    -99805 P M L i
+ph:4t0c0208>	  534   537   -255935 L P IY i
+ph:4t0c0208>	  538   543    443678 IY L HH e
+ph:4t0c0208>	  544   548    320000 HH IY AE b
+ph:4t0c0208>	  549   553   -226047 AE HH V i
+ph:4t0c0208>	  554   559    166369 V AE L e
+ph:4t0c0208>	  560   563    -12289 L V IH b
+ph:4t0c0208>	  564   571    659299 IH L S i
+ph:4t0c0208>	  572   586   1394688 S IH T i
+ph:4t0c0208>	  587   591    -12765 T S IX i
+ph:4t0c0208>	  592   596    172725 IX T DD i
+ph:4t0c0208>	  597   601    -61750 DD IX DH e
+ph:4t0c0208>	  602   606    -56024 DH DD EH b
+ph:4t0c0208>	  607   620   1601771 EH DH M i
+ph:4t0c0208>	  621   633   -516681 M EH SIL e
+ph:4t0c0208>	  634   637   -329531 SIL
+ph:4t0c0208>	  638   650    566796 AE SIL Z b
+ph:4t0c0208>	  651   656   -142602 Z AE N e
+ph:4t0c0208>	  657   664   -900854 N Z AO b
+ph:4t0c0208>	  665   675   -270040 AO N TD i
+ph:4t0c0208>	  676   678   -341882 TD AO AX e
+ph:4t0c0208>	  679   682   -185540 AX TD V b
+ph:4t0c0208>	  683   689   -420049 V AX EY i
+ph:4t0c0208>	  690   699    258295 EY V L i
+ph:4t0c0208>	  700   705    338613 L EY AX i
+ph:4t0c0208>	  706   709   -106630 AX L B i
+ph:4t0c0208>	  710   713     81013 B AX AX i
+ph:4t0c0208>	  714   718    457702 AX B L i
+ph:4t0c0208>	  719   740   1460534 L AX SIL e
+ph:4t0c0208>	  741   755   1463244 SIL
+PH:4t0c0208> Total score:     7817173
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c0208.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c0208.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c0208):
+WD:4t0c0208>	 SFrm  EFrm    SegAScr Word
+wd:4t0c0208>	    0    34    4295608 <s>
+wd:4t0c0208>	   35    55    1060289 THE(2)
+wd:4t0c0208>	   56   122   -5476651 UNIDENTIFIED(2)
+wd:4t0c0208>	  123   170     476368 FIDELITY
+wd:4t0c0208>	  171   230    1014828 EMPLOYEE
+wd:4t0c0208>	  231   242   -1915337 WHO
+wd:4t0c0208>	  243   265     609076 MADE
+wd:4t0c0208>	  266   272    -582783 THE(2)
+wd:4t0c0208>	  273   320    1812511 DECISION
+wd:4t0c0208>	  321   331    -520016 TO
+wd:4t0c0208>	  332   348    -712541 GO
+wd:4t0c0208>	  349   361    -652224 WITH(3)
+wd:4t0c0208>	  362   402   -3377926 INCORRECT
+wd:4t0c0208>	  403   461    4039202 PRICES
+wd:4t0c0208>	  462   484    2688009 ++INHALE++
+wd:4t0c0208>	  485   508      30515 SHOULD
+wd:4t0c0208>	  509   543    -330120 SIMPLY
+wd:4t0c0208>	  544   559     260322 HAVE
+wd:4t0c0208>	  560   601    2139908 LISTED
+wd:4t0c0208>	  602   633    1029066 THEM
+wd:4t0c0208>	  634   637    -329531 <sil>
+wd:4t0c0208>	  638   656     424194 AS(2)
+wd:4t0c0208>	  657   678   -1512776 NOT
+wd:4t0c0208>	  679   740    1883938 AVAILABLE
+wd:4t0c0208>	  741   755    1463244 </s>
+WD:4t0c0208> Total score:     7817173
+
+TMR:[U    1.6s   0.2x 100%][G    1.1s   0.1x  68%][S    0.4s   0.1x  27%][A    0.1s   0.0x   5%]
+CTR:[NS      44797]
+EXECTIME:   756 frames,    1.64 sec CPU,   0.22 xRT;    1.70 sec elapsed,   0.23 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c0209
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0209.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c0209: 690 input frames
+ERROR: "../align.c", line 797: JAMIESON not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c0209
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020a
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020a.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020a: 2114 input frames
+ERROR: "../align.c", line 797: ENTRUSTED not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t0c020a
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020b
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020b.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020b: 565 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c020b.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c020b.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c020b):
+PH:4t0c020b>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c020b>	    0    22   2242150 SIL
+ph:4t0c020b>	   23    35    407236 DH SIL AX b
+ph:4t0c020b>	   36    41    -56205 AX DH P e
+ph:4t0c020b>	   42    50     42583 P AX R b
+ph:4t0c020b>	   51    57   -586111 R P AO i
+ph:4t0c020b>	   58    65  -1049531 AO R B i
+ph:4t0c020b>	   66    68   -271093 B AO L i
+ph:4t0c020b>	   69    71   -363674 L B AX i
+ph:4t0c020b>	   72    77   -558615 AX L M i
+ph:4t0c020b>	   78    82  -1457446 M AX IX e
+ph:4t0c020b>	   83    93  -1258525 IX M Z b
+ph:4t0c020b>	   94    98   -510589 Z IX DH e
+ph:4t0c020b>	   99   103    -42808 DH Z AE b
+ph:4t0c020b>	  104   112    412011 AE DH TD i
+ph:4t0c020b>	  113   115   -227257 TD AE IX e
+ph:4t0c020b>	  116   121   -484132 IX TD TD b
+ph:4t0c020b>	  122   125   -655639 TD IX K e
+ph:4t0c020b>	  126   133   -338953 K TD AE b
+ph:4t0c020b>	  134   137    -63297 AE K N i
+ph:4t0c020b>	  138   141    148460 N AE B e
+ph:4t0c020b>	  142   144   -198561 B N IX b
+ph:4t0c020b>	  145   151   -348976 IX B K i
+ph:4t0c020b>	  152   160   -742149 K IX AH i
+ph:4t0c020b>	  161   166     73156 AH K M i
+ph:4t0c020b>	  167   172     51533 M AH V e
+ph:4t0c020b>	  173   178   -160317 V M EH b
+ph:4t0c020b>	  179   183     42087 EH V R i
+ph:4t0c020b>	  184   187    173056 R EH IY i
+ph:4t0c020b>	  188   198   -293184 IY R T e
+ph:4t0c020b>	  199   208   -293482 T IY EH b
+ph:4t0c020b>	  209   214   -205984 EH T M i
+ph:4t0c020b>	  215   219   -389032 M EH PD i
+ph:4t0c020b>	  220   222   -289948 PD M T i
+ph:4t0c020b>	  223   226   -550727 T PD IX i
+ph:4t0c020b>	  227   231    172083 IX T NG i
+ph:4t0c020b>	  232   240    420246 NG IX T e
+ph:4t0c020b>	  241   247   -440115 T NG AX b
+ph:4t0c020b>	  248   252      1513 AX T B e
+ph:4t0c020b>	  253   259    311615 B AX EH b
+ph:4t0c020b>	  260   271   1898069 EH B N i
+ph:4t0c020b>	  272   274    177523 N EH DD i
+ph:4t0c020b>	  275   281   -570633 DD N AO e
+ph:4t0c020b>	  282   284   -207917 AO DD R b
+ph:4t0c020b>	  285   290    444192 R AO B e
+ph:4t0c020b>	  291   296    -21950 B R R b
+ph:4t0c020b>	  297   300   -390827 R B EY i
+ph:4t0c020b>	  301   305    -26372 EY R KD i
+ph:4t0c020b>	  306   313   -609379 KD EY DH e
+ph:4t0c020b>	  314   317   -227498 DH KD AX b
+ph:4t0c020b>	  318   323   -849102 AX DH R e
+ph:4t0c020b>	  324   329   -132587 R AX UW b
+ph:4t0c020b>	  330   335   -107139 UW R L i
+ph:4t0c020b>	  336   349    823456 L UW Z i
+ph:4t0c020b>	  350   359    258343 Z L IX e
+ph:4t0c020b>	  360   364   -633808 IX Z N b
+ph:4t0c020b>	  365   368    145835 N IX DH e
+ph:4t0c020b>	  369   372    352929 DH N AX b
+ph:4t0c020b>	  373   378    277025 AX DH N e
+ph:4t0c020b>	  379   382    -42075 N AX EY b
+ph:4t0c020b>	  383   394   1206322 EY N M i
+ph:4t0c020b>	  395   401    295042 M EY AX e
+ph:4t0c020b>	  402   409    277392 AX M V b
+ph:4t0c020b>	  410   413   -257368 V AX S e
+ph:4t0c020b>	  414   426   -233490 S V T b
+ph:4t0c020b>	  427   438    247306 T S EY i
+ph:4t0c020b>	  439   441   -126835 EY T IX i
+ph:4t0c020b>	  442   453   1237998 IX EY NG i
+ph:4t0c020b>	  454   464    306766 NG IX K e
+ph:4t0c020b>	  465   478   -588005 K NG AX b
+ph:4t0c020b>	  479   482   -344743 AX K M i
+ph:4t0c020b>	  483   488   -123821 M AX P i
+ph:4t0c020b>	  489   494   -290709 P M EH i
+ph:4t0c020b>	  495   497   -310320 EH P DX i
+ph:4t0c020b>	  498   502   -528767 DX EH IX i
+ph:4t0c020b>	  503   508    -36549 IX DX DX i
+ph:4t0c020b>	  509   515   -969647 DX IX IX i
+ph:4t0c020b>	  516   529   1160917 IX DX V i
+ph:4t0c020b>	  530   548    536976 V IX SIL e
+ph:4t0c020b>	  549   564   2824867 SIL
+PH:4t0c020b> Total score:    -2497204
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c020b.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c020b.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c020b):
+WD:4t0c020b>	 SFrm  EFrm    SegAScr Word
+wd:4t0c020b>	    0    22    2242150 <s>
+wd:4t0c020b>	   23    41     351031 THE
+wd:4t0c020b>	   42    82   -4243887 PROBLEM
+wd:4t0c020b>	   83    98   -1769114 IS
+wd:4t0c020b>	   99   115     141946 THAT
+wd:4t0c020b>	  116   125   -1139771 IT
+wd:4t0c020b>	  126   141    -253790 CAN
+wd:4t0c020b>	  142   172   -1164997 BECOME(2)
+wd:4t0c020b>	  173   198    -238358 VERY
+wd:4t0c020b>	  199   240   -1136844 TEMPTING
+wd:4t0c020b>	  241   252    -438602 TO
+wd:4t0c020b>	  253   281    1816574 BEND
+wd:4t0c020b>	  282   290     236275 OR
+wd:4t0c020b>	  291   313   -1048528 BREAK
+wd:4t0c020b>	  314   323   -1076600 THE
+wd:4t0c020b>	  324   359     842073 RULES
+wd:4t0c020b>	  360   368    -487973 IN
+wd:4t0c020b>	  369   378     629954 THE
+wd:4t0c020b>	  379   401    1459289 NAME
+wd:4t0c020b>	  402   413      20024 OF
+wd:4t0c020b>	  414   464    1431745 STAYING
+wd:4t0c020b>	  465   548   -1494668 COMPETITIVE
+wd:4t0c020b>	  549   564    2824867 </s>
+WD:4t0c020b> Total score:    -2497204
+
+TMR:[U    1.4s   0.2x 100%][G    0.9s   0.2x  69%][S    0.3s   0.1x  25%][A    0.1s   0.0x   5%]
+CTR:[NS      37443]
+EXECTIME:   565 frames,    1.37 sec CPU,   0.24 xRT;    1.43 sec elapsed,   0.25 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020c
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020c.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020c: 252 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c020c.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c020c.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c020c):
+PH:4t0c020c>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c020c>	    0     9   -512207 SIL
+ph:4t0c020c>	   10    24   1763491 +INHALE+
+ph:4t0c020c>	   25    41    -74462 T SIL EY b
+ph:4t0c020c>	   42    49   -425315 EY T KD i
+ph:4t0c020c>	   50    52   -316272 KD EY F e
+ph:4t0c020c>	   53    62   -120555 F KD AX b
+ph:4t0c020c>	   63    67   -818641 AX F D i
+ph:4t0c020c>	   68    71   -306652 D AX EH i
+ph:4t0c020c>	   72    81    210421 EH D L i
+ph:4t0c020c>	   82    87    631015 L EH AX i
+ph:4t0c020c>	   88    90   -189325 AX L DX i
+ph:4t0c020c>	   91    93   -193825 DX AX IY i
+ph:4t0c020c>	   94   101    538082 IY DX Z i
+ph:4t0c020c>	  102   109    -54236 Z IY K e
+ph:4t0c020c>	  110   119   -482500 K Z EY b
+ph:4t0c020c>	  120   133   1317531 EY K S i
+ph:4t0c020c>	  134   142    120779 S EY AE e
+ph:4t0c020c>	  143   156   1275380 AE S Z b
+ph:4t0c020c>	  157   163    474898 Z AE AX e
+ph:4t0c020c>	  164   166   -267302 AX Z N b
+ph:4t0c020c>	  167   171   -413855 N AX IX e
+ph:4t0c020c>	  172   175   -624090 IX N G b
+ph:4t0c020c>	  176   180   -609826 G IX Z i
+ph:4t0c020c>	  181   188    -57440 Z G AE i
+ph:4t0c020c>	  189   198    630116 AE Z M i
+ph:4t0c020c>	  199   205     17340 M AE P i
+ph:4t0c020c>	  206   210     -5508 P M AX i
+ph:4t0c020c>	  211   214    149478 AX P L i
+ph:4t0c020c>	  215   233   2041978 L AX SIL e
+ph:4t0c020c>	  234   251    880640 SIL
+PH:4t0c020c> Total score:     4579138
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c020c.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c020c.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c020c):
+WD:4t0c020c>	 SFrm  EFrm    SegAScr Word
+wd:4t0c020c>	    0     9    -512207 <s>
+wd:4t0c020c>	   10    24    1763491 ++INHALE++
+wd:4t0c020c>	   25    52    -816049 TAKE
+wd:4t0c020c>	   53   109    -303716 FIDELITY'S
+wd:4t0c020c>	  110   142     955810 CASE
+wd:4t0c020c>	  143   163    1750278 AS(2)
+wd:4t0c020c>	  164   171    -681157 AN
+wd:4t0c020c>	  172   233    1542048 EXAMPLE
+wd:4t0c020c>	  234   251     880640 </s>
+WD:4t0c020c> Total score:     4579138
+
+TMR:[U    0.5s   0.2x 100%][G    0.3s   0.1x  67%][S    0.1s   0.1x  28%][A    0.0s   0.0x   5%]
+CTR:[NS      12489]
+EXECTIME:   252 frames,    0.50 sec CPU,   0.20 xRT;    0.50 sec elapsed,   0.20 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020d
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020d.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020d: 1064 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c020d.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c020d.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c020d):
+PH:4t0c020d>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c020d>	    0    14   2517891 SIL
+ph:4t0c020d>	   15    34   2105774 S SIL AH b
+ph:4t0c020d>	   35    41    207567 AH S M i
+ph:4t0c020d>	   42    45   -171054 M AH W i
+ph:4t0c020d>	   46    48   -372867 W M AH i
+ph:4t0c020d>	   49    55    -88906 AH W N i
+ph:4t0c020d>	   56    61   -287314 N AH DH e
+ph:4t0c020d>	   62    65   -495810 DH N EH b
+ph:4t0c020d>	   66    74    300875 EH DH R i
+ph:4t0c020d>	   75    80    572882 R EH HH e
+ph:4t0c020d>	   81    88    184953 HH R AE b
+ph:4t0c020d>	   89    97    438924 AE HH DD i
+ph:4t0c020d>	   98   101   -392337 DD AE T e
+ph:4t0c020d>	  102   109   -245104 T DD AX b
+ph:4t0c020d>	  110   112   -257799 AX T M e
+ph:4t0c020d>	  113   119   -260999 M AX EY b
+ph:4t0c020d>	  120   127    826511 EY M KD i
+ph:4t0c020d>	  128   135   -417713 KD EY AX e
+ph:4t0c020d>	  136   142   -383541 AX KD F s
+ph:4t0c020d>	  143   151   -694575 F AX AE b
+ph:4t0c020d>	  152   167   1518569 AE F S i
+ph:4t0c020d>	  168   173     35420 S AE TD i
+ph:4t0c020d>	  174   176    -29208 TD S D e
+ph:4t0c020d>	  177   180   -357637 D TD IX b
+ph:4t0c020d>	  181   186      2710 IX D S i
+ph:4t0c020d>	  187   196   1261734 S IX IH i
+ph:4t0c020d>	  197   202    222840 IH S ZH i
+ph:4t0c020d>	  203   212    695430 ZH IH AX i
+ph:4t0c020d>	  213   220    115029 AX ZH N i
+ph:4t0c020d>	  221   237   1077809 N AX SIL e
+ph:4t0c020d>	  238   253   1371692 +INHALE+
+ph:4t0c020d>	  254   265    730603 HH SIL W b
+ph:4t0c020d>	  266   268   -247529 W HH EH i
+ph:4t0c020d>	  269   272   -493564 EH W N i
+ph:4t0c020d>	  273   275   -192103 N EH AX e
+ph:4t0c020d>	  276   281    416763 AX N S s
+ph:4t0c020d>	  282   292    899940 S AX AO b
+ph:4t0c020d>	  293   302   -319148 AO S F i
+ph:4t0c020d>	  303   306      9587 F AO T i
+ph:4t0c020d>	  307   309   -137938 T F W i
+ph:4t0c020d>	  310   313   -645037 W T EH i
+ph:4t0c020d>	  314   317   -434495 EH W R i
+ph:4t0c020d>	  318   321   -396338 R EH P e
+ph:4t0c020d>	  322   331    575886 P R R b
+ph:4t0c020d>	  332   338   -238319 R P AO i
+ph:4t0c020d>	  339   342   -305712 AO R B i
+ph:4t0c020d>	  343   349    139552 B AO L i
+ph:4t0c020d>	  350   352    -99520 L B AX i
+ph:4t0c020d>	  353   357    247825 AX L M i
+ph:4t0c020d>	  358   360   -158200 M AX R e
+ph:4t0c020d>	  361   364   -557574 R M IX b
+ph:4t0c020d>	  365   370   -598202 IX R Z i
+ph:4t0c020d>	  371   378    420149 Z IX AH i
+ph:4t0c020d>	  379   383    279508 AH Z L i
+ph:4t0c020d>	  384   390    474720 L AH T i
+ph:4t0c020d>	  391   399   -723147 T L IX i
+ph:4t0c020d>	  400   403   -197761 IX T DD i
+ph:4t0c020d>	  404   406     -5057 DD IX IX e
+ph:4t0c020d>	  407   415    -54226 IX DD N b
+ph:4t0c020d>	  416   418   -254369 N IX B e
+ph:4t0c020d>	  419   430  -1031330 B N AA b
+ph:4t0c020d>	  431   443  -1044799 AA B CH i
+ph:4t0c020d>	  444   454   -229985 CH AA TD i
+ph:4t0c020d>	  455   457   -366271 TD CH F e
+ph:4t0c020d>	  458   462     59680 F TD AH b
+ph:4t0c020d>	  463   469    596757 AH F N i
+ph:4t0c020d>	  470   473   -284251 N AH DD i
+ph:4t0c020d>	  474   478   -285434 DD N P e
+ph:4t0c020d>	  479   482   -517087 P DD R b
+ph:4t0c020d>	  483   487    -58568 R P AY i
+ph:4t0c020d>	  488   496    -71010 AY R S i
+ph:4t0c020d>	  497   504    686557 S AY IX i
+ph:4t0c020d>	  505   508    324211 IX S Z i
+ph:4t0c020d>	  509   515   -144730 Z IX L e
+ph:4t0c020d>	  516   520   -385661 L Z AE b
+ph:4t0c020d>	  521   529    979315 AE L S i
+ph:4t0c020d>	  530   538   -311926 S AE TD i
+ph:4t0c020d>	  539   541     89214 TD S F e
+ph:4t0c020d>	  542   547    217481 F TD R b
+ph:4t0c020d>	  548   551     36093 R F AY i
+ph:4t0c020d>	  552   561    603273 AY R D i
+ph:4t0c020d>	  562   564   -299141 D AY EY i
+ph:4t0c020d>	  565   584    934647 EY D SIL e
+ph:4t0c020d>	  585   613   3566461 SIL
+ph:4t0c020d>	  614   630    889442 SH SIL AO b
+ph:4t0c020d>	  631   633   -271473 AO SH R i
+ph:4t0c020d>	  634   638   -132357 R AO TD i
+ph:4t0c020d>	  639   642   -398696 TD R L i
+ph:4t0c020d>	  643   646   -254500 L TD IY i
+ph:4t0c020d>	  647   651   -472775 IY L B e
+ph:4t0c020d>	  652   657   -795848 B IY IX b
+ph:4t0c020d>	  658   663   -112512 IX B F i
+ph:4t0c020d>	  664   672    686778 F IX AO i
+ph:4t0c020d>	  673   675   -241393 AO F R i
+ph:4t0c020d>	  676   683   -526347 R AO DH e
+ph:4t0c020d>	  684   686    195493 DH R AX b
+ph:4t0c020d>	  687   692   -284203 AX DH K e
+ph:4t0c020d>	  693   700  -1154613 K AX AH b
+ph:4t0c020d>	  701   707    -47881 AH K M i
+ph:4t0c020d>	  708   713    -66404 M AH P i
+ph:4t0c020d>	  714   718  -1294537 P M AX i
+ph:4t0c020d>	  719   721   -259839 AX P N i
+ph:4t0c020d>	  722   725    -71734 N AX IY i
+ph:4t0c020d>	  726   733   -213875 IY N W e
+ph:4t0c020d>	  734   736   -434146 W IY AO b
+ph:4t0c020d>	  737   740   -292387 AO W Z i
+ph:4t0c020d>	  741   750   -405121 Z AO D e
+ph:4t0c020d>	  751   758   -367176 D Z UW b
+ph:4t0c020d>	  759   766    299632 UW D T e
+ph:4t0c020d>	  767   774   -888214 T UW AX b
+ph:4t0c020d>	  775   777   -414789 AX T R e
+ph:4t0c020d>	  778   780   -528318 R AX IX b
+ph:4t0c020d>	  781   787   -250219 IX R P i
+ph:4t0c020d>	  788   798    143828 P IX AO i
+ph:4t0c020d>	  799   802   -207584 AO P R i
+ph:4t0c020d>	  803   810   -246285 R AO TD i
+ph:4t0c020d>	  811   818  -1828100 TD R DH e
+ph:4t0c020d>	  819   825     36550 DH TD AX b
+ph:4t0c020d>	  826   831    278031 AX DH D e
+ph:4t0c020d>	  832   842   -192927 D AX EY b
+ph:4t0c020d>	  843   867   4408849 EY D Z i
+ph:4t0c020d>	  868   888    504900 Z EY SIL e
+ph:4t0c020d>	  889   909   2000135 +INHALE+
+ph:4t0c020d>	  910   926   1532447 D SIL EY b
+ph:4t0c020d>	  927   937    749296 EY D DX i
+ph:4t0c020d>	  938   941    348482 DX EY AX i
+ph:4t0c020d>	  942   949    346635 AX DX T e
+ph:4t0c020d>	  950   958   -869173 T AX AX b
+ph:4t0c020d>	  959   968   -945558 AX T N e
+ph:4t0c020d>	  969   974    -34994 N AX Y b
+ph:4t0c020d>	  975   978     95787 Y N UW i
+ph:4t0c020d>	  979   982   -137695 UW Y S i
+ph:4t0c020d>	  983   987   -129866 S UW P i
+ph:4t0c020d>	  988   994   -781994 P S EY i
+ph:4t0c020d>	  995  1004    -69318 EY P P i
+ph:4t0c020d>	 1005  1011    133244 P EY AXR i
+ph:4t0c020d>	 1012  1020    132966 AXR P Z i
+ph:4t0c020d>	 1021  1048   1728524 Z AXR SIL e
+ph:4t0c020d>	 1049  1063   1200534 SIL
+PH:4t0c020d> Total score:    10290238
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c020d.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c020d.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c020d):
+WD:4t0c020d>	 SFrm  EFrm    SegAScr Word
+wd:4t0c020d>	    0    14    2517891 <s>
+wd:4t0c020d>	   15    61    1393200 SOMEONE
+wd:4t0c020d>	   62    80     377947 THERE
+wd:4t0c020d>	   81   101     231540 HAD
+wd:4t0c020d>	  102   112    -502903 TO
+wd:4t0c020d>	  113   135     147799 MAKE
+wd:4t0c020d>	  136   142    -383541 A
+wd:4t0c020d>	  143   176     830206 FAST
+wd:4t0c020d>	  177   237    3017915 DECISION
+wd:4t0c020d>	  238   253    1371692 ++INHALE++
+wd:4t0c020d>	  254   275    -202593 WHEN
+wd:4t0c020d>	  276   281     416763 A
+wd:4t0c020d>	  282   321   -1023429 SOFTWARE
+wd:4t0c020d>	  322   360     161512 PROBLEM
+wd:4t0c020d>	  361   406    -907364 RESULTED
+wd:4t0c020d>	  407   418    -308595 IN
+wd:4t0c020d>	  419   457   -2672385 BOTCHED
+wd:4t0c020d>	  458   478      86752 FUND
+wd:4t0c020d>	  479   515     219373 PRICES
+wd:4t0c020d>	  516   541     370942 LAST
+wd:4t0c020d>	  542   584    1492353 FRIDAY(2)
+wd:4t0c020d>	  585   613    3566461 <sil>
+wd:4t0c020d>	  614   651    -640359 SHORTLY
+wd:4t0c020d>	  652   683    -989322 BEFORE
+wd:4t0c020d>	  684   692     -88710 THE
+wd:4t0c020d>	  693   733   -3108883 COMPANY
+wd:4t0c020d>	  734   750   -1131654 WAS
+wd:4t0c020d>	  751   766     -67544 DUE
+wd:4t0c020d>	  767   777   -1303003 TO
+wd:4t0c020d>	  778   818   -2916678 REPORT
+wd:4t0c020d>	  819   831     314581 THE
+wd:4t0c020d>	  832   888    4720822 DAY'S
+wd:4t0c020d>	  889   909    2000135 ++INHALE++
+wd:4t0c020d>	  910   949    2976860 DATA
+wd:4t0c020d>	  950   968   -1814731 TO
+wd:4t0c020d>	  969  1048     936654 NEWSPAPERS(2)
+wd:4t0c020d>	 1049  1063    1200534 </s>
+WD:4t0c020d> Total score:    10290238
+
+TMR:[U    2.3s   0.2x 100%][G    1.6s   0.1x  68%][S    0.6s   0.1x  26%][A    0.1s   0.0x   5%]
+CTR:[NS      65933]
+EXECTIME:  1064 frames,    2.37 sec CPU,   0.22 xRT;    2.43 sec elapsed,   0.23 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020e
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020e.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020e: 994 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c020e.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c020e.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c020e):
+PH:4t0c020e>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c020e>	    0     4    561063 SIL
+ph:4t0c020e>	    5    28   2324977 +SMACK+
+ph:4t0c020e>	   29    48    573531 IX SIL F b
+ph:4t0c020e>	   49    51    -67917 F IX F e
+ph:4t0c020e>	   52    57    116851 F F AX b
+ph:4t0c020e>	   58    61   -190780 AX F D i
+ph:4t0c020e>	   62    66   -302205 D AX EH i
+ph:4t0c020e>	   67    76    472122 EH D L i
+ph:4t0c020e>	   77    82    228537 L EH AX i
+ph:4t0c020e>	   83    87   -275741 AX L DX i
+ph:4t0c020e>	   88    91   -371338 DX AX IY i
+ph:4t0c020e>	   92    98     -6113 IY DX HH e
+ph:4t0c020e>	   99   102    -39768 HH IY AE b
+ph:4t0c020e>	  103   107   -412969 AE HH DD i
+ph:4t0c020e>	  108   110   -151220 DD AE P e
+ph:4t0c020e>	  111   115    269429 P DD R b
+ph:4t0c020e>	  116   118   -148782 R P AX i
+ph:4t0c020e>	  119   121    -45242 AX R V i
+ph:4t0c020e>	  122   129   -424104 V AX AY i
+ph:4t0c020e>	  130   140      1199 AY V DX i
+ph:4t0c020e>	  141   143   -294852 DX AY IX i
+ph:4t0c020e>	  144   151    669112 IX DX DD i
+ph:4t0c020e>	  152   155   -142915 DD IX N e
+ph:4t0c020e>	  156   160   -208572 N DD OW b
+ph:4t0c020e>	  161   171     45331 OW N P e
+ph:4t0c020e>	  172   180   -511403 P OW R b
+ph:4t0c020e>	  181   184     58527 R P AY i
+ph:4t0c020e>	  185   198   1048706 AY R S i
+ph:4t0c020e>	  199   207    820590 S AY IX i
+ph:4t0c020e>	  208   212    467758 IX S Z i
+ph:4t0c020e>	  213   220     80168 Z IX F e
+ph:4t0c020e>	  221   227    335426 F Z AXR b
+ph:4t0c020e>	  228   231   -341016 AXR F M e
+ph:4t0c020e>	  232   241    281474 M AXR OW b
+ph:4t0c020e>	  242   249    998771 OW M S i
+ph:4t0c020e>	  250   258    495925 S OW TD i
+ph:4t0c020e>	  259   264    196093 TD S AX e
+ph:4t0c020e>	  265   268     29398 AX TD V b
+ph:4t0c020e>	  269   273    299637 V AX IX e
+ph:4t0c020e>	  274   279    310526 IX V TS b
+ph:4t0c020e>	  280   288   -316651 TS IX F e
+ph:4t0c020e>	  289   297   -275976 F TS AH b
+ph:4t0c020e>	  298   310   1663743 AH F N i
+ph:4t0c020e>	  311   316    127266 N AH D i
+ph:4t0c020e>	  317   324     81089 D N Z i
+ph:4t0c020e>	  325   334    358983 Z D SIL e
+ph:4t0c020e>	  335   354   1722004 +INHALE+
+ph:4t0c020e>	  355   364    395487 DH SIL AX b
+ph:4t0c020e>	  365   369   -280396 AX DH K e
+ph:4t0c020e>	  370   377   -225033 K AX AH b
+ph:4t0c020e>	  378   384   -101512 AH K M i
+ph:4t0c020e>	  385   389    174337 M AH P i
+ph:4t0c020e>	  390   394   -275809 P M AX i
+ph:4t0c020e>	  395   397   -311342 AX P N i
+ph:4t0c020e>	  398   401      8600 N AX IY i
+ph:4t0c020e>	  402   407   -999920 IY N W e
+ph:4t0c020e>	  408   414  -1412958 W IY UH b
+ph:4t0c020e>	  415   418   -229751 UH W DD i
+ph:4t0c020e>	  419   421   -345567 DD UH HH e
+ph:4t0c020e>	  422   424    -68729 HH DD AE b
+ph:4t0c020e>	  425   427     25106 AE HH V i
+ph:4t0c020e>	  428   431    145248 V AE AX e
+ph:4t0c020e>	  432   441    498925 AX V P b
+ph:4t0c020e>	  442   453    322842 P AX IH i
+ph:4t0c020e>	  454   458    187768 IH P R i
+ph:4t0c020e>	  459   465    266768 R IH DD i
+ph:4t0c020e>	  466   469   -184422 DD R T e
+ph:4t0c020e>	  470   474   -113774 T DD AX b
+ph:4t0c020e>	  475   477   -332553 AX T B e
+ph:4t0c020e>	  478   481   -199792 B AX IY b
+ph:4t0c020e>	  482   491    423808 IY B HH e
+ph:4t0c020e>	  492   499    123440 HH IY AE b
+ph:4t0c020e>	  500   508    848986 AE HH V i
+ph:4t0c020e>	  509   514   -361914 V AE IX i
+ph:4t0c020e>	  515   517   -121534 IX V NG i
+ph:4t0c020e>	  518   522     -9538 NG IX AX e
+ph:4t0c020e>	  523   528   -509344 AX NG P s
+ph:4t0c020e>	  529   539    253666 P AX R b
+ph:4t0c020e>	  540   547   -643918 R P AO i
+ph:4t0c020e>	  548   554    215240 AO R B i
+ph:4t0c020e>	  555   557   -147402 B AO L i
+ph:4t0c020e>	  558   560     76051 L B AX i
+ph:4t0c020e>	  561   566    433789 AX L M i
+ph:4t0c020e>	  567   579   -308333 M AX SIL e
+ph:4t0c020e>	  580   599    990396 +INHALE+
+ph:4t0c020e>	  600   610   -368715 DH SIL AE b
+ph:4t0c020e>	  611   614   -500654 AE DH TD i
+ph:4t0c020e>	  615   618   -303480 TD AE W e
+ph:4t0c020e>	  619   621   -431895 W TD AH b
+ph:4t0c020e>	  622   628   -332064 AH W Z i
+ph:4t0c020e>	  629   636   -311094 Z AH AX i
+ph:4t0c020e>	  637   640   -875715 AX Z N i
+ph:4t0c020e>	  641   643   -569474 N AX TD i
+ph:4t0c020e>	  644   646   -541975 TD N SH e
+ph:4t0c020e>	  647   656    237698 SH TD EH b
+ph:4t0c020e>	  657   664    140577 EH SH R i
+ph:4t0c020e>	  665   669   -358640 R EH DD i
+ph:4t0c020e>	  670   672   -125905 DD R B e
+ph:4t0c020e>	  673   676    -94740 B DD AY b
+ph:4t0c020e>	  677   687    747977 AY B AH e
+ph:4t0c020e>	  688   698   -389515 AH AY DH b
+ph:4t0c020e>	  699   706   -739168 DH AH AXR i
+ph:4t0c020e>	  707   715    572312 AXR DH F e
+ph:4t0c020e>	  716   723     96711 F AXR AH b
+ph:4t0c020e>	  724   730    -56214 AH F N i
+ph:4t0c020e>	  731   734     47990 N AH DD i
+ph:4t0c020e>	  735   741   -873079 DD N K e
+ph:4t0c020e>	  742   747   -742178 K DD AH b
+ph:4t0c020e>	  748   754    116719 AH K M i
+ph:4t0c020e>	  755   759    125658 M AH P i
+ph:4t0c020e>	  760   764  -1256097 P M AX i
+ph:4t0c020e>	  765   767   -221021 AX P N i
+ph:4t0c020e>	  768   773   -306805 N AX IY i
+ph:4t0c020e>	  774   786   1334833 IY N Z i
+ph:4t0c020e>	  787   797    616768 Z IY SIL e
+ph:4t0c020e>	  798   812   1072099 SIL
+ph:4t0c020e>	  813   827    924343 HH SIL W b
+ph:4t0c020e>	  828   831   -350328 W HH IH i
+ph:4t0c020e>	  832   837   -504719 IH W CH i
+ph:4t0c020e>	  838   845   -640189 CH IH AX e
+ph:4t0c020e>	  846   851   -517033 AX CH V b
+ph:4t0c020e>	  852   855   -203375 V AX K e
+ph:4t0c020e>	  856   867   -601489 K V AO b
+ph:4t0c020e>	  868   872    -75800 AO K R i
+ph:4t0c020e>	  873   881    282636 R AO S i
+ph:4t0c020e>	  882   891    238906 S R W e
+ph:4t0c020e>	  892   894   -241712 W S AO b
+ph:4t0c020e>	  895   901    -31617 AO W Z i
+ph:4t0c020e>	  902   910    588184 Z AO T e
+ph:4t0c020e>	  911   919    -31408 T Z R b
+ph:4t0c020e>	  920   924    250457 R T UW i
+ph:4t0c020e>	  925   954    323809 UW R SIL e
+ph:4t0c020e>	  955   993   4113564 SIL
+PH:4t0c020e> Total score:     7552731
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c020e.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c020e.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c020e):
+WD:4t0c020e>	 SFrm  EFrm    SegAScr Word
+wd:4t0c020e>	    0     4     561063 <s>
+wd:4t0c020e>	    5    28    2324977 ++SMACK++
+wd:4t0c020e>	   29    51     505614 IF
+wd:4t0c020e>	   52    98    -328667 FIDELITY
+wd:4t0c020e>	   99   110    -603957 HAD
+wd:4t0c020e>	  111   155    -116155 PROVIDED
+wd:4t0c020e>	  156   171    -163241 NO
+wd:4t0c020e>	  172   220    1964346 PRICES
+wd:4t0c020e>	  221   231      -5590 FOR
+wd:4t0c020e>	  232   264    1972263 MOST
+wd:4t0c020e>	  265   273     329035 OF
+wd:4t0c020e>	  274   288      -6125 ITS
+wd:4t0c020e>	  289   334    1955105 FUNDS
+wd:4t0c020e>	  335   354    1722004 ++INHALE++
+wd:4t0c020e>	  355   369     115091 THE
+wd:4t0c020e>	  370   407   -1730679 COMPANY
+wd:4t0c020e>	  408   421   -1988276 WOULD
+wd:4t0c020e>	  422   431     101625 HAVE
+wd:4t0c020e>	  432   469    1091881 APPEARED
+wd:4t0c020e>	  470   477    -446327 TO
+wd:4t0c020e>	  478   491     224016 BE
+wd:4t0c020e>	  492   522     479440 HAVING
+wd:4t0c020e>	  523   528    -509344 A
+wd:4t0c020e>	  529   579    -120907 PROBLEM
+wd:4t0c020e>	  580   599     990396 ++INHALE++
+wd:4t0c020e>	  600   618   -1172849 THAT
+wd:4t0c020e>	  619   646   -3062217 WASN'T
+wd:4t0c020e>	  647   672    -106270 SHARED
+wd:4t0c020e>	  673   687     653237 BY
+wd:4t0c020e>	  688   715    -556371 OTHER
+wd:4t0c020e>	  716   741    -784592 FUND
+wd:4t0c020e>	  742   797    -332123 COMPANIES
+wd:4t0c020e>	  798   812    1072099 <sil>
+wd:4t0c020e>	  813   845    -570893 WHICH
+wd:4t0c020e>	  846   855    -720408 OF
+wd:4t0c020e>	  856   891    -155747 COURSE
+wd:4t0c020e>	  892   910     314855 WAS
+wd:4t0c020e>	  911   954     542858 TRUE
+wd:4t0c020e>	  955   993    4113564 </s>
+WD:4t0c020e> Total score:     7552731
+
+TMR:[U    2.1s   0.2x 100%][G    1.4s   0.1x  68%][S    0.6s   0.1x  27%][A    0.1s   0.0x   5%]
+CTR:[NS      55266]
+EXECTIME:   994 frames,    2.15 sec CPU,   0.22 xRT;    2.20 sec elapsed,   0.22 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t0/4t0c020f
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c020f.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t0c020f: 1071 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t0c020f.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t0c020f.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t0c020f):
+PH:4t0c020f>	 SFrm  EFrm   SegAScr Phone
+ph:4t0c020f>	    0    67  10091211 SIL
+ph:4t0c020f>	   68    87    324380 M SIL AO b
+ph:4t0c020f>	   88    91   -381126 AO M R i
+ph:4t0c020f>	   92    98    279164 R AO OW i
+ph:4t0c020f>	   99   114    150861 OW R V i
+ph:4t0c020f>	  115   117   -129105 V OW AXR i
+ph:4t0c020f>	  118   141   1838430 AXR V SIL e
+ph:4t0c020f>	  142   156    878498 SIL
+ph:4t0c020f>	  157   170   -391698 IX SIL N b
+ph:4t0c020f>	  171   178   -872614 N IX V i
+ph:4t0c020f>	  179   183   -206491 V N EH i
+ph:4t0c020f>	  184   191   -150892 EH V S i
+ph:4t0c020f>	  192   195   -801867 S EH T i
+ph:4t0c020f>	  196   202     53486 T S AXR i
+ph:4t0c020f>	  203   206   -246750 AXR T Z i
+ph:4t0c020f>	  207   216     22467 Z AXR HH e
+ph:4t0c020f>	  217   220   -395810 HH Z UW b
+ph:4t0c020f>	  221   227   -287429 UW HH K e
+ph:4t0c020f>	  228   234   -372302 K UW AX b
+ph:4t0c020f>	  235   237     18993 AX K M i
+ph:4t0c020f>	  238   243     -5430 M AX P i
+ph:4t0c020f>	  244   250   -721166 P M EH i
+ph:4t0c020f>	  251   259    538905 EH P R i
+ph:4t0c020f>	  260   264    -97727 R EH F e
+ph:4t0c020f>	  265   272    194666 F R AH b
+ph:4t0c020f>	  273   279    -64396 AH F N i
+ph:4t0c020f>	  280   285    -31744 N AH DD i
+ph:4t0c020f>	  286   289   -437210 DD N P e
+ph:4t0c020f>	  290   295   -246411 P DD R b
+ph:4t0c020f>	  296   299   -101211 R P AY i
+ph:4t0c020f>	  300   311    609993 AY R S i
+ph:4t0c020f>	  312   320    538553 S AY IX i
+ph:4t0c020f>	  321   328    686420 IX S Z i
+ph:4t0c020f>	  329   337     35805 Z IX AE e
+ph:4t0c020f>	  338   347   -148264 AE Z N b
+ph:4t0c020f>	  348   350   -230975 N AE DD i
+ph:4t0c020f>	  351   354    -51346 DD N P e
+ph:4t0c020f>	  355   357   -333971 P DD AXR b
+ph:4t0c020f>	  358   363   -115556 AXR P F i
+ph:4t0c020f>	  364   376    708954 F AXR AO i
+ph:4t0c020f>	  377   381   -204312 AO F R i
+ph:4t0c020f>	  382   385    -27146 R AO M i
+ph:4t0c020f>	  386   392    -49301 M R AX i
+ph:4t0c020f>	  393   397   -256116 AX M N i
+ph:4t0c020f>	  398   401   -735760 N AX S i
+ph:4t0c020f>	  402   407   -477380 S N B e
+ph:4t0c020f>	  408   412     85588 B S AY b
+ph:4t0c020f>	  413   421    298078 AY B Y e
+ph:4t0c020f>	  422   429    945594 Y AY UW b
+ph:4t0c020f>	  430   432    -20346 UW Y Z i
+ph:4t0c020f>	  433   438    188633 Z UW IX i
+ph:4t0c020f>	  439   441   -342478 IX Z NG i
+ph:4t0c020f>	  442   446   -358497 NG IX W e
+ph:4t0c020f>	  447   456   -214920 W NG IY b
+ph:4t0c020f>	  457   464   -158198 IY W K i
+ph:4t0c020f>	  465   472   -715353 K IY EH i
+ph:4t0c020f>	  473   477   -205621 EH K N i
+ph:4t0c020f>	  478   481    199192 N EH DD i
+ph:4t0c020f>	  482   484     35078 DD N N e
+ph:4t0c020f>	  485   487   -284837 N DD UW b
+ph:4t0c020f>	  488   492   -297117 UW N S i
+ph:4t0c020f>	  493   498   -383439 S UW P i
+ph:4t0c020f>	  499   506   -674448 P S EY i
+ph:4t0c020f>	  507   515   -198216 EY P P i
+ph:4t0c020f>	  516   523   -452241 P EY AXR i
+ph:4t0c020f>	  524   534   -280203 AXR P Z i
+ph:4t0c020f>	  535   548   -880478 Z AXR SIL e
+ph:4t0c020f>	  549   570   1848617 SIL
+ph:4t0c020f>	  571   591    759217 W SIL UH b
+ph:4t0c020f>	  592   596   -976195 UH W DD i
+ph:4t0c020f>	  597   600   -469165 DD UH HH e
+ph:4t0c020f>	  601   607     33734 HH DD AE b
+ph:4t0c020f>	  608   613   -307683 AE HH V i
+ph:4t0c020f>	  614   619   -762575 V AE HH e
+ph:4t0c020f>	  620   625    147249 HH V AE b
+ph:4t0c020f>	  626   635     97103 AE HH DD i
+ph:4t0c020f>	  636   639   -398303 DD AE L e
+ph:4t0c020f>	  640   644   -118125 L DD IH b
+ph:4t0c020f>	  645   651    313506 IH L DX i
+ph:4t0c020f>	  652   654     28793 DX IH AX i
+ph:4t0c020f>	  655   657      8642 AX DX L i
+ph:4t0c020f>	  658   663    -52857 L AX D e
+ph:4t0c020f>	  664   670  -1025436 D L EY b
+ph:4t0c020f>	  671   681    904661 EY D DX i
+ph:4t0c020f>	  682   685    363569 DX EY AX i
+ph:4t0c020f>	  686   697    779759 AX DX AO e
+ph:4t0c020f>	  698   705     39553 AO AX N b
+ph:4t0c020f>	  706   713     42694 N AO F e
+ph:4t0c020f>	  714   722   -167234 F N AX b
+ph:4t0c020f>	  723   726    -95007 AX F D i
+ph:4t0c020f>	  727   732   -511651 D AX EH i
+ph:4t0c020f>	  733   741    517339 EH D L i
+ph:4t0c020f>	  742   747    812731 L EH AX i
+ph:4t0c020f>	  748   753    173425 AX L DX i
+ph:4t0c020f>	  754   756   -590444 DX AX IY i
+ph:4t0c020f>	  757   764    100734 IY DX F e
+ph:4t0c020f>	  765   773    -41483 F IY AH b
+ph:4t0c020f>	  774   787   1161060 AH F N i
+ph:4t0c020f>	  788   794    479201 N AH D i
+ph:4t0c020f>	  795   799   -208402 D N Z i
+ph:4t0c020f>	  800   809   -128101 Z D SIL e
+ph:4t0c020f>	  810   825    641520 +INHALE+
+ph:4t0c020f>	  826   836    131109 P SIL AXR b
+ph:4t0c020f>	  837   839   -671631 AXR P HH i
+ph:4t0c020f>	  840   845   -114198 HH AXR AE i
+ph:4t0c020f>	  846   855   1129020 AE HH P i
+ph:4t0c020f>	  856   862   -146260 P AE S i
+ph:4t0c020f>	  863   869     89752 S P K e
+ph:4t0c020f>	  870   877   -640862 K S AO b
+ph:4t0c020f>	  878   885    501370 AO K S i
+ph:4t0c020f>	  886   893     89654 S AO T i
+ph:4t0c020f>	  894   898     38588 T S IX i
+ph:4t0c020f>	  899   901   -372195 IX T NG i
+ph:4t0c020f>	  902   910      9085 NG IX F e
+ph:4t0c020f>	  911   917   -382234 F NG AX b
+ph:4t0c020f>	  918   920   -439489 AX F D i
+ph:4t0c020f>	  921   925   -782862 D AX EH i
+ph:4t0c020f>	  926   932    338531 EH D L i
+ph:4t0c020f>	  933   938    752065 L EH AX i
+ph:4t0c020f>	  939   943    154405 AX L DX i
+ph:4t0c020f>	  944   946   -113011 DX AX IY i
+ph:4t0c020f>	  947   953    517398 IY DX S e
+ph:4t0c020f>	  954   963     74780 S IY AX b
+ph:4t0c020f>	  964   969     20615 AX S M i
+ph:4t0c020f>	  970   972   -139245 M AX N e
+ph:4t0c020f>	  973   976   -225975 N M UW b
+ph:4t0c020f>	  977   983    302462 UW N IX e
+ph:4t0c020f>	  984   989    190717 IX UW N b
+ph:4t0c020f>	  990   994   -215277 N IX V i
+ph:4t0c020f>	  995  1000   -360867 V N EH i
+ph:4t0c020f>	 1001  1009    869955 EH V S i
+ph:4t0c020f>	 1010  1016    147428 S EH TD i
+ph:4t0c020f>	 1017  1020    109596 TD S M i
+ph:4t0c020f>	 1021  1023    -50281 M TD AX i
+ph:4t0c020f>	 1024  1030    169983 AX M N i
+ph:4t0c020f>	 1031  1035   -229102 N AX TD i
+ph:4t0c020f>	 1036  1041   -231857 TD N SIL e
+ph:4t0c020f>	 1042  1047    186999 SIL
+ph:4t0c020f>	 1048  1070   2699872 SIL
+PH:4t0c020f> Total score:    11493535
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t0c020f.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t0c020f.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t0c020f):
+WD:4t0c020f>	 SFrm  EFrm    SegAScr Word
+wd:4t0c020f>	    0    67   10091211 <s>
+wd:4t0c020f>	   68   141    2082604 MOREOVER
+wd:4t0c020f>	  142   156     878498 <sil>
+wd:4t0c020f>	  157   216   -2594359 INVESTORS
+wd:4t0c020f>	  217   227    -683239 WHO
+wd:4t0c020f>	  228   264    -638727 COMPARE
+wd:4t0c020f>	  265   289    -338684 FUND
+wd:4t0c020f>	  290   337    1523149 PRICES
+wd:4t0c020f>	  338   354    -430585 AND(2)
+wd:4t0c020f>	  355   407   -1490588 PERFORMANCE
+wd:4t0c020f>	  408   421     383666 BY
+wd:4t0c020f>	  422   446     412906 USING
+wd:4t0c020f>	  447   484   -1059822 WEEKEND
+wd:4t0c020f>	  485   548   -3450979 NEWSPAPERS
+wd:4t0c020f>	  549   570    1848617 <sil>
+wd:4t0c020f>	  571   600    -686143 WOULD
+wd:4t0c020f>	  601   619   -1036524 HAVE
+wd:4t0c020f>	  620   639    -153951 HAD
+wd:4t0c020f>	  640   663     179959 LITTLE
+wd:4t0c020f>	  664   697    1022553 DATA
+wd:4t0c020f>	  698   713      82247 ON
+wd:4t0c020f>	  714   764     239893 FIDELITY
+wd:4t0c020f>	  765   809    1262275 FUNDS
+wd:4t0c020f>	  810   825     641520 ++INHALE++
+wd:4t0c020f>	  826   869     417792 PERHAPS(2)
+wd:4t0c020f>	  870   910    -374360 COSTING
+wd:4t0c020f>	  911   953      44803 FIDELITY
+wd:4t0c020f>	  954   972     -43850 SOME
+wd:4t0c020f>	  973   983      76487 NEW
+wd:4t0c020f>	  984  1041     400295 INVESTMENT
+wd:4t0c020f>	 1042  1047     186999 <sil>
+wd:4t0c020f>	 1048  1070    2699872 </s>
+WD:4t0c020f> Total score:    11493535
+
+TMR:[U    2.1s   0.2x 100%][G    1.4s   0.1x  67%][S    0.6s   0.1x  28%][A    0.1s   0.0x   5%]
+CTR:[NS      50900]
+EXECTIME:  1071 frames,    2.17 sec CPU,   0.20 xRT;    2.25 sec elapsed,   0.21 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t1/4t1c0201
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t1/4t1c0201.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t1c0201: 787 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t1c0201.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t1c0201.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t1c0201):
+PH:4t1c0201>	 SFrm  EFrm   SegAScr Phone
+ph:4t1c0201>	    0    49   9907374 SIL
+ph:4t1c0201>	   50    82   5044443 SIL
+ph:4t1c0201>	   83   104   2723404 Y SIL IY b
+ph:4t1c0201>	  105   112    649029 IY Y L i
+ph:4t1c0201>	  113   118    268690 L IY D i
+ph:4t1c0201>	  119   122   -401990 D L Z i
+ph:4t1c0201>	  123   126   -389084 Z D AO e
+ph:4t1c0201>	  127   131   -308234 AO Z N b
+ph:4t1c0201>	  132   139    -66506 N AO T e
+ph:4t1c0201>	  140   147   -347235 T N AE b
+ph:4t1c0201>	  148   159    735853 AE T K i
+ph:4t1c0201>	  160   165   -115459 K AE S i
+ph:4t1c0201>	  166   170   -170818 S K AX i
+ph:4t1c0201>	  171   174   -323700 AX S B i
+ph:4t1c0201>	  175   178   -207954 B AX AX i
+ph:4t1c0201>	  179   182   -379797 AX B L i
+ph:4t1c0201>	  183   188    340376 L AX M e
+ph:4t1c0201>	  189   195    497947 M L AH b
+ph:4t1c0201>	  196   201   -236632 AH M N i
+ph:4t1c0201>	  202   206   -270803 N AH IY i
+ph:4t1c0201>	  207   213     70539 IY N M e
+ph:4t1c0201>	  214   220   -294485 M IY AA b
+ph:4t1c0201>	  221   224   -365622 AA M R i
+ph:4t1c0201>	  225   232    -82236 R AA K i
+ph:4t1c0201>	  233   241    -97727 K R IX i
+ph:4t1c0201>	  242   248    -95647 IX K TD i
+ph:4t1c0201>	  249   253    -24574 TD IX M e
+ph:4t1c0201>	  254   258     17398 M TD Y b
+ph:4t1c0201>	  259   264    253409 Y M UW i
+ph:4t1c0201>	  265   268   -321712 UW Y CH i
+ph:4t1c0201>	  269   276    300027 CH UW UW i
+ph:4t1c0201>	  277   281      6617 UW CH AX i
+ph:4t1c0201>	  282   285       570 AX UW L i
+ph:4t1c0201>	  286   289     98546 L AX F e
+ph:4t1c0201>	  290   300    927776 F L AH b
+ph:4t1c0201>	  301   312   1637156 AH F N i
+ph:4t1c0201>	  313   321    188446 N AH D i
+ph:4t1c0201>	  322   325    266751 D N Z i
+ph:4t1c0201>	  326   336    228205 Z D SIL e
+ph:4t1c0201>	  337   344    423091 SIL
+ph:4t1c0201>	  345   354    768579 R SIL OW b
+ph:4t1c0201>	  355   362    634887 OW R Z i
+ph:4t1c0201>	  363   368   -232581 Z OW S e
+ph:4t1c0201>	  369   378    969933 S Z L b
+ph:4t1c0201>	  379   382   -245365 L S AY i
+ph:4t1c0201>	  383   392    264797 AY L TD i
+ph:4t1c0201>	  393   398    249058 TD AY L i
+ph:4t1c0201>	  399   403   -221653 L TD IY i
+ph:4t1c0201>	  404   415   1894347 IY L IH e
+ph:4t1c0201>	  416   420    450483 IH IY N b
+ph:4t1c0201>	  421   426    242364 N IH DH e
+ph:4t1c0201>	  427   431     92657 DH N AX b
+ph:4t1c0201>	  432   434    -60065 AX DH L e
+ph:4t1c0201>	  435   443   -572774 L AX EY b
+ph:4t1c0201>	  444   453   -180119 EY L DX i
+ph:4t1c0201>	  454   457    352457 DX EY IX i
+ph:4t1c0201>	  458   463    110217 IX DX S i
+ph:4t1c0201>	  464   471    395493 S IX TD i
+ph:4t1c0201>	  472   482   -762777 TD S W e
+ph:4t1c0201>	  483   486    105303 W TD IY b
+ph:4t1c0201>	  487   497   1390535 IY W KD i
+ph:4t1c0201>	  498   509     19910 KD IY SIL e
+ph:4t1c0201>	  510   542   3423581 SIL
+ph:4t1c0201>	  543   551   1360952 HH SIL W b
+ph:4t1c0201>	  552   555    209593 W HH AY i
+ph:4t1c0201>	  556   560    245274 AY W L i
+ph:4t1c0201>	  561   566   -173725 L AY T e
+ph:4t1c0201>	  567   576  -1374694 T L AE b
+ph:4t1c0201>	  577   589    861664 AE T K i
+ph:4t1c0201>	  590   595    -98822 K AE S i
+ph:4t1c0201>	  596   601    124272 S K IX e
+ph:4t1c0201>	  602   606   -507332 IX S G b
+ph:4t1c0201>	  607   612   -296718 G IX Z i
+ph:4t1c0201>	  613   618    125729 Z G EH i
+ph:4t1c0201>	  619   626    513531 EH Z M i
+ph:4t1c0201>	  627   630   -205840 M EH PD i
+ph:4t1c0201>	  631   634   -352231 PD M TD i
+ph:4t1c0201>	  635   638   -473757 TD PD Y e
+ph:4t1c0201>	  639   649    556307 Y TD IY b
+ph:4t1c0201>	  650   657   1215350 IY Y L i
+ph:4t1c0201>	  658   663    336942 L IY D i
+ph:4t1c0201>	  664   669    237097 D L Z i
+ph:4t1c0201>	  670   677   -146839 Z D D e
+ph:4t1c0201>	  678   684   -243059 D Z R b
+ph:4t1c0201>	  685   689    -16494 R D AO i
+ph:4t1c0201>	  690   702   -652973 AO R PD i
+ph:4t1c0201>	  703   711    444105 PD AO TD i
+ph:4t1c0201>	  712   719    593975 TD PD SIL e
+ph:4t1c0201>	  720   732   1344620 +SMACK+
+ph:4t1c0201>	  733   786  10492351 SIL
+PH:4t1c0201> Total score:    43293977
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t1c0201.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t1c0201.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t1c0201):
+WD:4t1c0201>	 SFrm  EFrm    SegAScr Word
+wd:4t1c0201>	    0    49    9907374 <s>
+wd:4t1c0201>	   50    82    5044443 <sil>
+wd:4t1c0201>	   83   126    2850049 YIELDS
+wd:4t1c0201>	  127   139    -374740 ON
+wd:4t1c0201>	  140   188    -468734 TAXABLE
+wd:4t1c0201>	  189   213      61051 MONEY
+wd:4t1c0201>	  214   253    -960291 MARKET
+wd:4t1c0201>	  254   289     354855 MUTUAL
+wd:4t1c0201>	  290   336    3248334 FUNDS
+wd:4t1c0201>	  337   344     423091 <sil>
+wd:4t1c0201>	  345   368    1170885 ROSE
+wd:4t1c0201>	  369   415    2911117 SLIGHTLY
+wd:4t1c0201>	  416   426     692847 IN(2)
+wd:4t1c0201>	  427   434      32592 THE
+wd:4t1c0201>	  435   482    -657503 LATEST
+wd:4t1c0201>	  483   509    1515748 WEEK
+wd:4t1c0201>	  510   542    3423581 <sil>
+wd:4t1c0201>	  543   566    1642094 WHILE
+wd:4t1c0201>	  567   601    -487580 TAX
+wd:4t1c0201>	  602   638   -1196618 EXEMPT
+wd:4t1c0201>	  639   677    2198857 YIELDS
+wd:4t1c0201>	  678   719     125554 DROPPED
+wd:4t1c0201>	  720   732    1344620 ++SMACK++
+wd:4t1c0201>	  733   786   10492351 </s>
+WD:4t1c0201> Total score:    43293977
+
+TMR:[U    1.5s   0.2x 100%][G    1.0s   0.1x  66%][S    0.4s   0.1x  29%][A    0.1s   0.0x   4%]
+CTR:[NS      34679]
+EXECTIME:   787 frames,    1.51 sec CPU,   0.19 xRT;    1.59 sec elapsed,   0.20 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t1/4t1c0202
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t1/4t1c0202.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t1c0202: 1638 input frames
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t1c0202
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t1/4t1c0203
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t1/4t1c0203.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t1c0203: 362 input frames
+
+INFO: ../align-main.c(621): Writing phone segmentation to: /dev/null/4t1c0203.phseg
+ERROR: "../align-main.c", line 623: fopen(/dev/null/4t1c0203.phseg,w) failed
+INFO: ../align-main.c(625): Phone segmentation (4t1c0203):
+PH:4t1c0203>	 SFrm  EFrm   SegAScr Phone
+ph:4t1c0203>	    0    27   4493762 SIL
+ph:4t1c0203>	   28    50   3209267 SIL
+ph:4t1c0203>	   51    60   -399204 K SIL AO b
+ph:4t1c0203>	   61    67    -55461 AO K M i
+ph:4t1c0203>	   68    75     67805 M AO P i
+ph:4t1c0203>	   76    80   -469765 P M AW i
+ph:4t1c0203>	   81    92    522848 AW P N i
+ph:4t1c0203>	   93    97   -452003 N AW DD i
+ph:4t1c0203>	   98   100   -435739 DD N Y e
+ph:4t1c0203>	  101   113    -80714 Y DD IY b
+ph:4t1c0203>	  114   122   1106600 IY Y L i
+ph:4t1c0203>	  123   132    993804 L IY D i
+ph:4t1c0203>	  133   136   -260678 D L Z i
+ph:4t1c0203>	  137   143    228396 Z D SIL e
+ph:4t1c0203>	  144   148    199739 SIL
+ph:4t1c0203>	  149   156    178111 AX SIL S b
+ph:4t1c0203>	  157   167    203148 S AX UW i
+ph:4t1c0203>	  168   178   -142460 UW S M i
+ph:4t1c0203>	  179   183    445214 M UW R e
+ph:4t1c0203>	  184   188    278539 R M IY b
+ph:4t1c0203>	  189   193     51564 IY R IX i
+ph:4t1c0203>	  194   200   -213488 IX IY N i
+ph:4t1c0203>	  201   204   -222205 N IX V i
+ph:4t1c0203>	  205   211       566 V N EH i
+ph:4t1c0203>	  212   221    797008 EH V S i
+ph:4t1c0203>	  222   228     94130 S EH TD i
+ph:4t1c0203>	  229   232    -97398 TD S M i
+ph:4t1c0203>	  233   236   -223212 M TD AX i
+ph:4t1c0203>	  237   239   -226636 AX M N i
+ph:4t1c0203>	  240   242   -251486 N AX TD i
+ph:4t1c0203>	  243   245   -156737 TD N AX e
+ph:4t1c0203>	  246   250   -141955 AX TD V b
+ph:4t1c0203>	  251   256   -449416 V AX D e
+ph:4t1c0203>	  257   262    243853 D V IH b
+ph:4t1c0203>	  263   267    -72642 IH D V i
+ph:4t1c0203>	  268   273    319651 V IH IX i
+ph:4t1c0203>	  274   277   -116337 IX V D i
+ph:4t1c0203>	  278   283   -511629 D IX EH i
+ph:4t1c0203>	  284   291   -705715 EH D N i
+ph:4t1c0203>	  292   295   -245905 N EH D i
+ph:4t1c0203>	  296   306    272016 D N Z i
+ph:4t1c0203>	  307   318   -243236 Z D SIL e
+ph:4t1c0203>	  319   361   9068732 SIL
+PH:4t1c0203> Total score:    16600732
+
+INFO: ../align-main.c(672): Writing word segmentation to: /dev/null/4t1c0203.wdseg
+ERROR: "../align-main.c", line 674: fopen(/dev/null/4t1c0203.wdseg,w) failed
+INFO: ../align-main.c(676): Word segmentation (4t1c0203):
+WD:4t1c0203>	 SFrm  EFrm    SegAScr Word
+wd:4t1c0203>	    0    27    4493762 <s>
+wd:4t1c0203>	   28    50    3209267 <sil>
+wd:4t1c0203>	   51   100   -1221519 COMPOUND
+wd:4t1c0203>	  101   143    1987408 YIELDS
+wd:4t1c0203>	  144   148     199739 <sil>
+wd:4t1c0203>	  149   183     684013 ASSUME
+wd:4t1c0203>	  184   245    -169355 REINVESTMENT
+wd:4t1c0203>	  246   256    -591371 OF
+wd:4t1c0203>	  257   318   -1059944 DIVIDENDS
+wd:4t1c0203>	  319   361    9068732 </s>
+WD:4t1c0203> Total score:    16600732
+
+TMR:[U    0.7s   0.2x 100%][G    0.5s   0.1x  67%][S    0.2s   0.1x  29%][A    0.0s   0.0x   4%]
+CTR:[NS      15535]
+EXECTIME:   362 frames,    0.70 sec CPU,   0.19 xRT;    0.74 sec elapsed,   0.20 xRT
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t1/4t1c0204
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t1/4t1c0204.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t1c0204: 999 input frames
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t1c0204
+
+INFO: ../align-main.c(1029): Utterance: h1_et_94/4t1/4t1c0205
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t1/4t1c0205.mfc'[0..2147483632]
+INFO: ../align-main.c(1137): 4t1c0205: 1285 input frames
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align.c", line 797: .POINT not in dictionary
+ERROR: "../align.c", line 797: %PERCENT not in dictionary
+ERROR: "../align-main.c", line 808: No sentence HMM; no alignment for 4t1c0205
+
+INFO: ../align-main.c(1147): Skipping rest of control file beginning with:
+	h1_et_94/4t1/4t1c0206
+rkm      13397 92.0 18.6 52.6M  476 ttyp1    R    12:32:01     0:31.73 /tmp/s3align.13383 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -senmgaufn .cont. -meanfn ../testdata/hmm-sphinx3/mean -varfn ../testdata/hmm-sphinx3/var -mixwfn ../testdata/hmm-sphinx3/mixw -tmatfn ../testdata/hmm-sphinx3/tmat -feat s3_1x39 -topn 1000 -beam 1e-80 -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 20 -cepdir ../testdata/ctl -insentfn ../testdata/ctl/h1_et_94-g.correct -outsentfn et94-align.out -wdsegdir /dev/null -phsegdir /dev/null
+rkm      13371  0.0  0.1 1.71M 160K ttyp1    S    12:32:40     0:00.01 sh -c ps aguxwww | grep s3align
+rkm      13370  0.0  0.1 1.23M 136K ttyp1    S    12:32:40     0:00.01 grep s3align
+rkm      13383  0.0  0.1 1.88M 312K ttyp1    I    12:32:01     0:00.05 csh ./et94-align.csh ../bin/alpha/s3align et94-align 0 20
+
+TOTAL FRAMES:           8906
+TOTAL CPU TIME:           19.34 sec,    0.22 xRT
+TOTAL ELAPSED TIME:       19.97 sec,    0.22 xRT

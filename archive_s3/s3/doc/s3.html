@@ -1,0 +1,807 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Sphinx-3 Decoder Set</title>
+  </head>
+
+  <BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000EE" VLINK="#551A8B" ALINK="#FF0000">
+    <H1 align=center>
+      <U>Sphinx-3 Decoder Set</U>
+    </H1>
+    <H4 align=center>
+      Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
+      Sphinx Speech Group<br>
+      School of Computer Science<br>
+      Carnegie Mellon University<br>
+      <a href="mailto:rkm@cs.cmu.edu">rkm@cs.cmu.edu</a><br>
+      <br>
+      23 Feb 1999
+    </H4>
+    <P></P>
+
+    <hr>
+
+    <H2>
+      <U>Contents</U>
+    </H2>
+
+    <UL>
+      <LI><A HREF="#sec_intro">Introduction</A>
+      <LI><A HREF="#sec_s3set">The Sphinx-3 Decoder Set Overview</A>
+	<UL>
+	  <LI><A HREF="#sec_s3set_modules">What's In It</A>
+	  <LI><A HREF="#sec_s3set_where">Where To Find It</A>
+	</UL>
+      <LI><A HREF="#sec_models">Input Models</A>
+	<UL>
+	  <LI><A HREF="#sec_models_speech">Speech Data</A>
+	  <LI><A HREF="#sec_models_acoustic">Acoustic Model</A>
+	  <LI><A HREF="#sec_models_lexicon">Pronunciation Lexicon</A>
+	  <LI><A HREF="#sec_models_language">Language Model</A>
+	</UL>
+      <LI><A HREF="#sec_modules">Decoder Modules and Libraries</A>
+	<UL>
+	  <LI><A HREF="#sec_lib">Support Libraries</A>
+	  <LI><A HREF="#sec_s3core">Sphinx-3 Core Modules </A>
+	  <LI><A HREF="#sec_s3pgm">Sphinx-3 Decoder Programs</A>
+	</UL>
+      <LI><A HREF="#sec_use">Compiling and Running Sphinx-3 Programs</A>
+	<UL>
+	  <LI><A HREF="#sec_compile">Compiling Sphinx-3</A>
+	  <LI><A HREF="#sec_exec">Running Sphinx-3</A>
+	</UL>
+      <LI><A HREF="#sec_argref">Command Line Argument Reference</A>
+      <LI><A HREF="#sec_s3train">Sphinx-3 Trainer</A>
+      <LI><A HREF="#sec_bib">Bibliography</A>
+    </UL>
+    <P></P>
+    (Here's a <A href="../README">README</a> summary as well.)
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+
+    <H2>
+      <A NAME="sec_intro"><U>Introduction</U></A>
+    </H2>
+    
+    Sphinx-3 (S3) is the successor to the Sphinx-II speech recognition system from
+    Carnegie Mellon University.  The main differences between the two are:
+    <UL>
+      <LI> Sphinx-3 supports a much more flexible range of acoustic modelling.
+	Specifically, it can handle discrete, semi-continuous, or fully continuous
+	acoustic models.  Sphinx-II can only handle semi-continuous models.
+      <LI> Sphinx-3 is completely written from scratch and does not contain any
+	historical appendages from Sphinx-I or Sphinx-II.
+    </UL>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+    
+    <H2>
+      <A NAME="sec_s3set"><U>The Sphinx-3 Decoder Set Overview</U></A>
+    </H2>
+    
+    The Sphinx-3 decoder collection includes several independent modules listed
+    <A HREF="#sec_s3set_modules">below</A>.  They all share a number of common
+    features:
+    <UL>
+      <LI>At the moment, every program is set up only for <b>batch mode</b>
+	operation.
+      </LI>
+      
+      <LI>Each module operates on finite length <b>utterances</b>.  Sphinx-3 is not
+	capable of processing a stream of speech input of arbitrary duration.
+	Utterances must be limited to less than 300 sec.  Shorter utterances will
+	reduce system resource requirements.
+      </LI>
+
+      <LI>For the modules that decode speech data, the speech input must be in the
+	form of <b>cepstra</b>.  Front end processing to transform audio data into
+	cepstra has to take place offline.  The <b>robust</b> group at CMU has
+	traditionally been responsible for this task.
+      </LI>
+    </UL>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_s3set_modules"><U>What's In It</U></A>
+    </H3>
+
+    The following is a brief overview of the modules in the Sphinx-3 decoder set:
+    <dl>
+      <dt><u><b>s3decode:</b></u>
+      <dd>This performs a basic <b>Viterbi decoding</b> using <b>beam search</b>.
+	It also produces a word lattice that contains word segmentations and
+	scores used by other programs mentioned below.  (Note that this is not a
+	real-time decoder.  For that we still have to use the Sphinx-II decoder.)
+
+      <dt><u><b>s3dag:</b></u>
+      <dd>This does a <b>shortest path search</b> of a
+	<b>directed acyclic graph</b> (DAG) constructed from the word lattice.  It
+	is also loosely referred to as the <b>DAG search</b> [cite].
+	For each utterance it produces a single recognition hypothesis which is
+	usually a little more accurate than the Viterbi search hypothesis.  Since
+	there is no pruning in this algorithm, and it finds the <b>globally optimum</b>
+	path through the word lattice, the optimum language weight can be tuned at
+	will.
+
+      <dt><u><b>s3astar:</b></u>
+      <dd>For each utterance this generates an <b>N-best list</b> from the word
+	lattice using the <b>A* search</b> algorithm [cite].  N-best lists
+	can then be rescored, using, for example, better acoustic or language models.
+
+      <dt><u><b>s3align:</b></u>
+      <dd>For each utterance this produces a <b>time alignment</b> or
+	<b>segmentation</b>, given the input speech and the corresponding word-level
+	transcript.  Segmentations can be obtained at the word, phone, or HMM state
+	level.  In addition, it also selects the most likely pronunciation for each
+	word instance in the transcript.
+
+      <dt><u><b>s3allphone:</b></u>
+      <dd>This performs a Viterbi decoding like <code>s3decode</code>, but at the
+	phone level, producing a <b>phone recognition hypothesis</b> as well as a
+	<b>phone lattice</b> for each utterance.
+    </dl>
+    Running any of these programs without any arguments produces a short description of
+    the respective command line arguments.
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_s3set_where"><U>Where To Find It</U></A>
+    </H3>
+      
+    The root directory for the set of Sphinx-3 decoder programs is (in CMU-CS only):
+    <A href="file:/net/alf20/usr/rkm/s3/"><b>/net/alf20/usr/rkm/s3</b></a> (i.e.,
+    <A href="../"><b>one level above</b></a> this <b>doc</b> directory).  Its
+    primary contents are the following subdirectories:
+    <dl>
+      <dt><A href="../src/"><b>src:</b></a>
+      <dd>The source code.
+
+      <dt><A href="../lib/"><b>lib/*:</b></a>
+      <dd>Libraries (binaries) for various platforms.
+
+      <dt><A href="../bin/"><b>bin/*:</b></a>
+      <dd>Executables for various platforms.
+
+      <dt><A href="../doc/"><b>doc:</b></a>
+      <dd>Documentation.
+
+      <dt><A href="../tests/"><b>tests:</b></a>
+      <dd>Sample scripts and output for each Sphinx-3 module.
+    </dl>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+    
+    <H2>
+      <A NAME="sec_models"><U>Input Models</U></A>
+    </H2>
+    
+    Several categories of input data are required by the Sphinx-3 system.  They are
+    briefly described in this section.  Note that not all modules need the entire
+    set of input models.  For example, the allphone recognizer does not need a
+    <A HREF="#sec_models_lexicon">pronunciation lexicon</A>.
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_models_speech"><U>Speech Data</U></A>
+    </H3>
+
+    As mentioned above, raw speech input data has to be converted through some
+    <b>front-end</b> signal processing into <b>cepstra</b> before it can be decoded.
+    The result is a stream of cepstrum vectors, typically one vector every 10 msec
+    <b>frame</b>.  The currently used cepstrum vector contains 13 elements
+    <b>c0</b>...<b>c12</b> (where c0 corresponds to signal energy in the frame).
+    <P></P>
+
+    The cepstrum vector is usually further augmented into a <b>feature vector</b>,
+    by appending it with its first and second derivatives (differences).  These are
+    also commonly referred to as <b>delta</b> and <b>double delta</b>, respectively.
+    It is the feature vector that ultimately represents the speech in a given frame.
+    <P></P>
+
+    Note that the conversion of a cepstrum vector stream into a feature vector
+    stream occurs as part of the decoding process.  It is relatively easy to plug in
+    a new feature definition into the Sphinx-3 decoder software (see the
+    <A href="#sec_s3lib_feat">libfeat</a> library).
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_models_acoustic"><U>Acoustic Model</U></A>
+    </H3>
+
+    Sphinx-3 uses <b>subphonetic acoustic models</b> [cite].  First, the basic sounds
+    in the language are classified into phonemes or <b>phones</b>.  There are roughly
+    50 phones in the English language.  Here is the 7-phone pronunciation for the
+    word <code>MINIMUM</code>:
+    <pre>	M  IH  N  AX  M  AX  M</pre>
+    These phones are then further refined into context-dependent <b>triphones</b>,
+    i.e., phones occurring in given left and right phonetic contexts are treated
+    distinctly.  For example, the two occurrences of the <code>AX</code> basephone
+    above have different left contexts.  (Context independent phones are often
+    referred to as <b>basephones</b> or <b>CI phones</b> to explicitly distinguish
+    them from triphones.)  Note that context-dependency gives rise to cross-word
+    triphones; e.g., the left context for the leftmost basephone depends on the
+    previous word.
+    <P></P>
+    
+    Triphones are further distinguished according to the position of the center phone
+    within the word: beginning, end, middle, or single.  The three occurrences of
+    the phone <code>M</code> in the word <code>MINIMUM</code> have three different
+    position attributes.  
+    <P></P>
+
+    Each triphone and each basephone is modelled by a <b>hidden Markov model</b> or
+    <b>HMM</b> [cite].  Typically, 3 or 5 state left-to-right models are used.
+    Basically, each state models its underlying acoustics.  But with 50 basephones,
+    we end up with a total of 4*50<sup>3</sup>*3 possible triphone states!  To keep
+    things manageable, HMM states are <b>clustered</b> into a much smaller number
+    of groups.  Each such group is called a <b>senone</b>, and all the states mapped
+    into one senone share the same underlying HMM model.  The clustering process
+    is based on similarity of states and is fairly involved [cite].
+    <P></P>
+
+    Thus, it is the senones that make up the acoustic model.  Acoustic models can be
+    of different degrees of sophistication.  Two forms are commonly used:
+    <UL>
+      <LI><b>continuous</b> distribution model.
+      <LI><b>semi-continuous</b> or <b>tied-mixture</b> distribution model,
+    </UL>
+    In the first, each senone has its own, private <b>mixture Gaussian</b> distribution
+    model for its corner of the speech feature space.  In the second case, all the
+    senones share a single set of Gaussian distributions, but each senone has its own
+    set of <b>mixing weights</b> applied to them [cite].  Sphinx-3 supports both models,
+    and other, intermediate degrees of state-tying as well. 
+    <P></P>
+
+    Each triphone also has a <b>state transition probability matrix</b> that
+    defines the topology of the HMM.  Once again, to conserve resources, there is
+    a considerable amount of sharing.  Typically, there is one such matrix per
+    basephone, and all triphones with the same center basephone share its matrix.
+    <P></P>
+    
+    Thus, it should be clear that acoustic modelling is a large subject in itself.
+    Contact <a href="mailto:eht@cs.cmu.edu">Eric Thayer</a> for details of
+    <b>training</b> acoustic models using the <b>Sphinx-3 trainer</b>.
+    <P></P>
+    
+    The acoustic model is input through the following types of files:
+    <UL>
+      <LI><b>Model definition</b> (or <b>mdef</b>) file.  It defines the set of
+	basephone and triphone HMMs, the mapping of each HMM state to a senone,
+	and the mapping of each HMM to a state transition matrix.
+      <LI><b>Mean</b> and <b>var</b> files.  These files contain the mean and
+	variance vector values for all the Gaussian distributions in the system.
+      <LI>A <b>state transition matrix</b> (or <b>tmat</b>) file containing the
+	actual HMM state transition topology and prior probabilities for each
+	transition.
+    </UL>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_models_lexicon"><U>Pronunciation Lexicon</U></A>
+    </H3>
+
+    A pronunciation lexicon (or dictionary) file specifies word pronunciations using
+    a phone set defined in the model definition
+    (i.e., <b>mdef</b>) file mentioned above.  Each line in the file contains one
+    pronunciation specification.  A word may have more than one pronunciation, each
+    one on a separate line.  They are distinguished by a unique parenthesized suffix
+    for the word string.  For example:
+    <pre>
+	ACTUALLY	AE K CH AX W AX L IY
+	ACTUALLY(2nd)	AE K SH AX L IY
+	ACTUALLY(3rd)	AE K SH L IY</pre>
+    There is no particular significance to the above order; each one is considered to
+    be equallly likely.  If a word has more than one pronunciation, its first
+    appearance must be the unparenthesized form.  For the rest, the parenthesized
+    suffix may be any string, as long as it is unique for that word.
+    <P></P>
+
+    The lexicon may also contain <b>compound words</b>.  A compound word is usually
+    a short phrase whose pronunciation happens to differ significantly from the mere
+    concatenation of the pronunciation of its constituent words.  Compound word tokens
+    are formed by concatenating the component word strings with an underscore
+    character; e.g.:
+    <pre>	WANT_TO		W AA N AX</pre>
+    For language modelling purposes, however, compound words are broken down into
+    their component words.
+    <P></P>
+
+    The lexicon is <b>case-insensitive</b>; the following would be an error:
+    <pre>
+	Brown		B R AW N
+	brown		B R AW N</pre>
+    <P></P>
+
+    Finally, any line that begins with a "#" character <u>in the first column</u>
+    is treated as a comment and is ignored.
+    <P></P>
+    One  must also specify a filler-word lexicon.  This must include the silence
+    filler word (<b>&lt sil&gt</b>), as well as the special beginning and end of
+    sentence words (<b>&lt s&gt</b>) and (<b>&lt/s&gt</b>).  All of them usually
+    have the silence-phone <b>SIL</b> as their pronunciation.
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_models_language"><U>Language Model</U></A>
+    </H3>
+
+    Sphinx-3 currently only deals with word trigram (or bigram) language models.  The
+    input file is actually a pre-compiled binary dump, created from the standard
+    <b>.arpabo</b> format.  (The same binary dump file is also used by the Sphinx-II
+    decoder.  But whereas the Sphinx-II decoder requires both the dump and at least
+    the header portion of the ascii arpabo file, Sphinx-3 uses only the former.)
+    Refer to the Sphinx-II documentation for creating such binary dump files.
+    <P></P>
+    The language model does not distinguish between different pronunciations of the
+    same word.  For example, even though the lexicon might contain three different
+    pronunciation entries for the word "ACTUALLY" (<b>ACTUALLY</b>, <b>actually(2)</b>,
+    and <b>actually(3)</b>), the language model would only refer to the first form.
+    Furthermore, the language model is <b>case-insensitive</b>, like the lexicon.
+    <P></P>
+    The language model must also include the special beginning and end of sentence
+    words (<b>&lt s&gt</b>) and (<b>&lt/s&gt</b>).
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+
+    <H2>
+      <A NAME="sec_modules"><u>Decoder Modules and Libraries</u></A>
+    </H2>
+
+    <H3>
+      <A NAME="sec_lib"><u>Support Libraries</u></A>
+    </H3>
+
+    The Sphinx-3 decoder software includes several support libraries:
+    <dl>
+      <dt><A href="../src/libio/"><b>libio:</b></a>
+      <dd>Support routines for reading the binary format Sphinx-3 model files.  In
+	particular, for determining byte-order, byte-swapping, checksumming, etc.
+
+      <dt><A href="../src/libfeat/"><b>libfeat:</b></a>
+      <dd>Support routines reading Mel-frequency cepstrum (<b>MFC</b>) files, and
+	computing various types of feature streams from the cepstra.
+
+      <dt><A href="../src/libmisc/"><b>libmisc:</b></a>
+      <dd>Miscellaneous, Sphinx-3 specific support routines.
+
+      <dt><A href="../src/libutil/"><b>libutil:</b></a>
+      <dd>Sphinx-3 independent utility routines for memory allocation, parsing
+	command line arguments, string manipulation, hash tables, error reporting,
+	CPU usage profiling, etc.
+    </dl>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_s3core"><u>Sphinx-3 Core Modules</u></A>
+    </H3>
+
+    The main decoder code is in <A href="../src/libfbs/"><b>libfbs</b></a> (a
+    misnomer; it's not a library, really).  There are separate modules for reading
+    and maintaining the various input models and databases.  They are fairly cleanly
+    isolated from each other, following a more-or-less object-oriented design.  The
+    main ones are:
+    <dl>
+      <dt><u><b>mdef.{c,h}:</b></u>
+      <dd>Model definition information, including the
+	specification of the phone set, and triphone HMM-state to senone mapping.
+	
+      <dt><u><b>dict.{c,h}:</b></u>
+      <dd>Pronunciation lexicon.
+
+      <dt><u><b>gauden.{c,h}:</b></u>
+      <dd>Mixture Gaussian densities used to model HMM states (actually, senones).
+
+      <dt><u><b>senone.{c,h}:</b></u>
+      <dd>Mixture weights applied to the underlying mixture Gaussian codebook for
+	each senone.
+
+      <dt><u><b>tmat.{c,h}:</b></u>
+      <dd>HMM transition matrices (topology and transition probabilities) in the
+	acoustic model.
+
+      <dt><u><b>lm.{c,h}:</b></u>
+      <dd>Word trigram or bigram language model.  The model is <b>disk-based</b>;
+	i.e., bigrams and trigrams are only read in from the disk file on demand,
+	and are cached in memory temporarily.  This reduces the memory requirement
+	for large vocabulary LMs.
+
+      <dt><u><b>mllr.{c,h}:</b></u>
+      <dd>Module for reading and applying MLLR-based linear transformation on the
+	Gaussian mean vectors, for speaker adaptation.
+
+      <dt><u><b>logs3.{c,h}:</b></u>
+      <dd>All likelihood computation is carried out in log-space.  In order to
+	maintain the likelihood values as integers, a funny log-base (typically in
+	the range 1.0001 to 1.0003) is used.  This module provides support for
+	computation in this log-base.
+
+      <dt><u><b>cmn.{c,h}:</b></u>
+      <dd>Cepstral mean normalization (subtracting the mean cepstra for each
+	utterance).
+
+      <dt><u><b>agc.{c,h}:</b></u>
+      <dd>Automatic gain control (normalizing the power coefficients such that the
+	maximum frame power in any utterance is 0.)
+    </dl>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+
+
+
+    <H3>
+      <A NAME="sec_s3pgm"><u>Sphinx-3 Decoder Programs</u></A>
+    </H3>
+    <dl>
+      <dt><A href="../src/libfbs/fwd.c"><b>fwd.c</b></a> and
+	<A href="../src/libfbs/main.c"><b>main.c</b></a>:
+      <dd>Forward pass Viterbi search, and main decoder driver code.
+
+      <dt><A href="../src/libfbs/dag.c"><b>dag.c</b></a> and
+	<A href="../src/libfbs/dag-main.c"><b>dag-main.c</b></a>:
+      <dd>Shortest path search; core and driver code.
+
+      <dt><A href="../src/libfbs/astar.c"><b>astar.c</b></a> and
+	<A href="../src/libfbs/astar-main.c"><b>astar-main.c</b></a>:
+      <dd>N-best list generation using A* search; core and driver code.
+
+      <dt><A href="../src/libfbs/align.c"><b>align.c</b></a> and
+	<A href="../src/libfbs/align-main.c"><b>align-main.c</b></a>:
+      <dd>Forced alignment; core and driver code.
+
+      <dt><A href="../src/libfbs/allphone.c"><b>allphone.c</b></a> and
+	<A href="../src/libfbs/allphone-main.c"><b>allphone-main.c</b></a>:
+      <dd>Allphone recognition; core and driver code.
+    </dl>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+
+    <H2>
+      <A NAME="sec_use"><u>Compiling and Running Sphinx-3 Programs</u></A>
+    </H2>
+
+
+
+    <H3>
+      <A NAME="sec_compile"><u>Compiling Sphinx-3</u></A>
+    </H3>
+
+    Compiling the Sphinx-3 decoder programs is easy.  Follow these steps:
+    <UL>
+      <LI>Double check the file <A href="../Makefile.defines">Makefile.defines</a>
+	under the root Sphinx-3 directory to ensure that the correct compiler flags
+	are set for your platform.  If necessary, add new platform-specific variables
+	similar to the existing ones.
+      <LI>Update the S3ROOT variable definition in all the subdirectory Makefiles to
+	point to the Sphinx-3 root directory.
+      <LI>Follow the instructions at the top of the top-level
+	<A href="../Makefile">Makefile</a> for compilation instructions.
+    </UL>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep10.bmp"></center>
+    
+
+
+    <H3>
+      <A NAME="sec_exec"><u>Running Sphinx-3</u></A>
+    </H3>
+
+    As mentioned earlier, there is a sample script for each program in the
+    <A href="../tests/"><b>tests</b></a> directory.  They should be fairly obvious
+    to follow.  However, some notes on the processing are in order.
+    <P></P>
+
+
+    <H4>
+      <A NAME="sec_ctlfile"><u>The Control File</u></A>
+    </H4>
+
+    Each program processes utterances
+    listed in a <b>control file</b>.  Each entry (on a separate line) in the control
+    file identifies an MFC file for one utterance (without the .mfc file extension).
+    In the case of the Viterbi decoder (<b>s3decode</b>), aligner (<b>s3align</b>),
+    and allphone decoder (<b>s3allphone</b>), the specified MFC file is processed.
+    An <b>Utterance-ID</b> is also associated with each such utterance.  This ID is
+    derived from the control file entry, by stripping the pathname from it.  For
+    example, if the control file contains the following entries:
+    <pre>
+	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0201
+	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0202
+	/net/alf20/usr/rkm/SHARED/cep/nov94/h1_et_94/4t0/4t0c0203</pre>
+    three utterances are processed, with IDs <b>4t0c0201</b>, <b>4t0c0202</b>, and
+    <b>4t0c0203</b>, respectively.
+    The utterance ID is crucial since it is used to identify <u>all the output</u>
+    generated by these programs.  Thus, word lattice files produced by <b>s3decode</b>
+    would be named <b>4t0c0201.lat</b>, <b>4t0c0202.lat</b>, etc.
+    <P></P>
+    Note that even the shortest-path search and N-best generation programs---which do
+    not process MFC files, but rather the word lattices produced by the Viterbi
+    decoder---are driven by the same control files.  Specifically, they use the
+    utterance ID derived from the control file entries to look for appropriately named
+    word lattice input files.  In other words, the utterance ID also identifies
+    <u>all the non-MFC input data</u> needed by any program.
+    <P></P>
+    Therefore, it is crucial to ensure that the utterance ID is unique for each
+    utterance in the test corpus.  Otherwise, one might inadvertently overwrite
+    output files.
+    <P></P>
+    There is an alternative control file format that allows one to specify partial
+    segments within an MFC file as individual utterances.  Each line, in addition to
+    the MFC filename, includes start frame, end frame, and utterance-ID information.
+    For example, the control file:
+    <pre>
+	file1 001225 003517 file1_001225_003517
+	file1 003511 005172 file1_003511_005172</pre>
+    specifies two utterances, both chosen from the MFC file "file1.mfc".  The first
+    starts at frame 1225 and ends at 3517 within that file, and has the utterance ID
+    <b>file1_001225_003517</b>.  (And so on.)  This format is useful for processing
+    long input files such as in the Hub-4 evaluation.
+    <P></P>
+
+
+    <H4>
+      <A NAME="sec_effvocab"><u>The Effective Vocabulary</u></A>
+    </H4>
+
+    In Viterbi decoding, a language model as well as a pronunciation lexicon is used.
+    Each defines a vocabulary.  However, the effective vocabulary is the intersection
+    of the two.
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+
+    <H2>
+      <A NAME="sec_argref"><u>Command Line Arguments Reference</u></A>
+    </H2>
+
+    Each Sphinx-3 decoder program takes a number of command line arguments.  A number
+    of these are quite generic, common among two or more programs.  Others are unique
+    (semantically) to specific programs.  (Yet others are used only for debugging or
+    fine-tuning and are not described here.)
+    <P></P>
+    (<em>Note that running any of the decoder programs without any argument produces
+      a short description of all its command line arguments.</em>)
+    <P></P>
+    
+    Here is a partial listing of the main command line arguments, in some logical
+    order:
+
+    <dl>
+      <dt><b>-ctlfn:</b>
+      <dd>Input "control file", listing the utterances to be decoded.  Typically,
+	each entry specifies an MFC file (without the .mfc extension) to be processed.
+	In some cases, as in N-best list generation from lattices, there may be no
+	MFC file involved.  Nevertheless, the control that was originally used to
+	generate the word lattices is the reference point.
+
+      <dt><b>-ctloffset:</b>
+      <dd>No. of utterances at the beginning of the control file that are to be
+	skipped.
+
+      <dt><b>-ctlcount:</b>
+      <dd>No. of utterances that are to be processed from the control file (after
+	skipping the number indicated by -ctloffset).
+
+      <dt><b>-cepdir:</b>
+      <dd>If a control file entry is a relative path name, an optional directory
+	prefix to be applied to it.
+
+      <dt><b>-mdeffn:</b>
+      <dd>Model definition input file.  Specifies phone set, and triphone state to
+	senone mapping.  Also specifies transition matrix used by each triphone.
+	(A similar file is also used by the Sphinx-3 trainer.)
+
+      <dt><b>-senmgaufn:</b>
+      <dd>File specifying senone to mixture Gaussian codebook mapping.  Two special
+	cases exist: the keyword <b>.cont.</b> indicates a continuous-density model
+	with a separate codebook per senone, and the keyword <b>.semi.</b> indicates
+	a semi-continuous model with a single codebook shared by all senones.  A
+	similar file is also used by the Sphinx-3 trainer.
+
+      <dt><b>-meanfn:</b>
+      <dd>File containing all mixture Gaussian codebook mean vectors.  This file is
+	produced by the Sphinx-3 trainer.
+
+      <dt><b>-varfn:</b>
+      <dd>File containing all mixture Gaussian codebook variance vectors.  This file
+	is identical in structure to the means file and is created by the Sphinx-3
+	trainer.
+
+      <dt><b>-varfloor:</b>
+      <dd>A floor value applied to Gaussian density variance values.
+
+      <dt><b>-mixwfn:</b>
+      <dd>Senone mixture weights input file.  Each senone (or shared state) has a set
+	of mixture weights applied to its underlying Gaussian codebook.  Generated by
+	the Sphinx-3 trainer.
+
+      <dt><b>-mwfloor:</b>
+      <dd>A floor value applied to the mixture weights.
+
+      <dt><b>-tmatfn:</b>
+      <dd>HMM state transition probabilities input file.  Generated by the Sphinx-3
+	trainer.
+
+      <dt><b>-tpfloor:</b>
+      <dd>A floor value applied to the HMM state transition probabilities.
+
+      <dt><b>-dictfn:</b>
+      <dd>Main pronunciation dictionary (lexicon) input file.
+
+      <dt><b>-fdictfn:</b>
+      <dd>Silence and filler (noise) word pronunciation input file.  Words in this
+	file are <b>transparent</b> to the language model.
+
+      <dt><b>-compwd:</b>
+      <dd>Whether underscores in the pronunciation lexicon should be interpreted as
+	compound word concatenation characters.
+
+      <dt><b>-lmfn:</b>
+      <dd>The word trigram language model binary dump file.
+
+      <dt><b>-langwt:</b>
+      <dd>Language weight; an empirical exponent applied to LM probabilty values
+	in overall utterance likelihoods (i.e., combined acoustic and language model
+	likelihoods).
+
+      <dt><b>-fillpenfn:</b>
+      <dd>Filler word probabilities input file.  (Recall that filler words are
+	transparent to the language model; instead, they onlyhave independent unigram
+	probabilities.)
+
+      <dt><b>-logbase:</b>
+      <dd>Base in which all log-likelihood values are calculated.
+
+      <dt><b>-cmn:</b>
+      <dd>Can be "current" or "none".  If the former, cepstral coefficients 1..12 of
+	each frame in an utterance are normalized by subtracting the mean value for
+	that utterance.
+	
+      <dt><b>-agc:</b>
+      <dd>Can be "max" or "none".  If the former, the cepstrum-0 coefficients within
+	each utterance are normalized by subtracting the max from each.
+
+      <dt><b>-feat:</b>
+      <dd>Feature stream specification.  The two main ones are "s2_4x" (four separate
+	feature streams for Sphinx-II compatibility), and "s3_1x39" (single-vector
+	feature stream obtained by concatenating the cepstrum vector and its first
+	and second order differences).
+
+      <dt><b>-topn:</b>
+      <dd>No. of top scoring densities computed in each mixture gaussian codebook in
+	each input speech frame.  Only these are used to compute the acoustic
+	likelihoods for each senone in that frame.  The remaining density values are
+	discarded.
+
+      <dt><b>-matchfn:</b>
+      <dd>Recognition result output file (pre-1995, NIST format).
+
+      <dt><b>-matchsegfn:</b>
+      <dd>Exact recognition result output file with word segmentations and scores.
+
+      <dt><b>-outlatdir:</b>
+      <dd>Directory for writing word lattices (one file/utterance).  Only the Viterbi
+	decoder <b>s3decode</b> generates word lattices.  They contain word 
+	segmentation information as well as transitions between words and associated
+	acoustic scores.  They can be used as input to constrain subsequent Viterbi
+	decoding on the same utterances (e.g., using different acoustic or language
+	models).  They are also used as input to <b>s3dag</b> and <b>s3astar</b>
+	programs.
+
+      <dt><b>-beam:</b>
+      <dd>Main pruning threshold for beam search.  The lower this threshold, the wider
+	the beamwidth (and greater the space searched).
+
+      <dt><b>-nwbeam:</b>
+      <dd>Additional pruning threshold used by Viterbi search (<b>s3decode</b>), for
+	determining which words are actually entered in the Viterbi word lattice.
+	This threshold is usually much tighter than the main threshold.
+
+      <dt><b>-bptblsize:</b>
+      <dd>Size of word lattice table to be allocated initially in the Viterbi
+	(<b>s3decode</b>) decoder.  (It is grown as necessary.)  Longer utterances
+	need larger tables.
+
+      <dt><b>-inlatdir:</b>
+      <dd>Directory of word lattice files input to the Viterbi decoder, shortest path
+	search, or N-best generation program (<b>s3decode</b>, <b>s3dag</b>, or
+	<b>s3astar</b>).
+
+      <dt><b>-nbest:</b>
+      <dd>The maximum number of N-best hypotheses to be produced for each utterance.
+	(Relevant only to the A* search program, <b>s3astar</b>.)
+
+      <dt><b>-nbestdir:</b>
+      <dd>Directory in which the N-best hypotheses files are to be written.
+	(Relevant only to the A* search program, <b>s3astar</b>.)
+
+      <dt><b>-insentfn:</b>
+      <dd>Input file containing the correct word-level transcription for each
+	utterance in the control file.  This is used by the forced alignment program
+	(<b>s3align</b>).
+
+      <dt><b>-outsentfn:</b>
+      <dd>Output file containing the exact word sequence for each utterance, including
+	the specific pronunciation and insertion of noise and filler words, as
+	determined by the forced alignment program (<b>s3align</b>).  This output is
+	usually used by the Sphinx-3 trainer.
+
+      <dt><b>-wdsegdir:</b>
+      <dd>Directory in which detailed word segmentation and acoustic score information
+	is written by the forced aligner (<b>s3align</b>).  (One file per utterance.)
+
+      <dt><b>-phsegdir:</b>
+      <dd>Directory in which detailed phone segmentation and acoustic score
+	information is written by the forced aligner (<b>s3align</b>).  (One file per
+	utterance.)
+
+      <dt><b>-stsegdir:</b>
+      <dd>Directory in which detailed phone HMM-state segmentation and acoustic score
+	information is written by the forced aligner (<b>s3align</b>).  (One file per
+	utterance.)
+
+      <dt><b>-s2stsegdir:</b>
+      <dd>Directory in which phone HMM-state segmentation information is written by
+	the forced aligner (<b>s3align</b>).  This file is in Sphinx-II format.  (One
+	file per utterance.)
+
+      <dt><b>-phlatbeam:</b>
+      <dd>Pruning threshold (loosely, beamwidth) used by the allphone decoder
+	(<b>s3allphone</b>) to produce a phone lattice for each utterance.
+
+      <dt><b>-phlatdir:</b>
+      <dd>Directory in which phone lattice files are written by the allphone decoder
+	(<b>s3allphone</b>).  (One file per utterance.)
+    </dl>
+    <P></P>
+    <center><IMG ALT="* " SRC="images/sep40.bmp"></center>
+
+
+
+    <H2>
+      <A NAME="sec_s3train"><u>Sphinx-3 Trainer</u></A>
+    </H2>
+    Contact <a href="mailto:eht@cs.cmu.edu">Eric Thayer</a> for details of
+    <b>training</b> acoustic models using the <b>Sphinx-3 trainer</b>.
+    <P></P>
+
+    <hr>
+    
+    <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
+<!-- Created: Sun Feb 22 14:03:14 EST 1998 -->
+<!-- hhmts start -->
+Last modified: Tue Feb  8 17:03:17 EST 2000
+<!-- hhmts end -->
+  </body>
+</html>

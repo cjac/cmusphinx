@@ -1,0 +1,29 @@
+#
+# Makefile
+# 
+# HISTORY
+# 
+# 23-Dec-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+# 		Created.
+#
+
+
+# S3ROOT = /net/alf20/usr/rkm/s3
+include $(S3ROOT)/Makefile.defines
+VPATH = .:..
+
+TARGET = libio.a
+
+OBJS =	bio.o
+
+CFLAGS = $(S3DEBUG) ${$(MACHINE)_CFLAGS}
+
+$(TARGET): $(OBJS)
+	$(AR) crv $@ $?
+	ranlib $@
+
+install: $(TARGET)
+	mv $(TARGET) $(LIBDIR)
+
+clean:
+	rm -f *.o *.a *.BAK *.CKP .*.BAK .*.CKP *~ .*~ #*#

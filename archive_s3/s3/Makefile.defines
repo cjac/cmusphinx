@@ -1,0 +1,34 @@
+#
+# Copyright (c) 1995 Carnegie Mellon University.  ALL RIGHTS RESERVED.
+#
+
+TYPES = -DTRUE=1 -DFALSE=0
+
+INCLUDEDIR = -I. -I$(S3ROOT)/include -I$(S3ROOT)/src
+LIBDIR = $(S3ROOT)/lib/$(MACHINE)
+BINDIR = $(S3ROOT)/bin/$(MACHINE)
+
+alpha_CFLAGS       = -O2 $(S3DEBUG) -std1 -warnprotos -DALPHA_OSF1=1 $(TYPES) $(INCLUDEDIR)
+alpha_osf1_CFLAGS  = $(alpha_CFLAGS)
+hp_CFLAGS          = -O -Aa  -D_HPUX_SOURCE=1 $(TYPES) $(INCLUDEDIR)
+hp700_ux_CFLAGS    = $(hp_CFLAGS)
+sun4_CFLAGS        = -g             -D_SUN4=1 $(TYPES) $(INCLUDEDIR)
+linux_CFLAGS       = -O2 $(S3DEBUG) -D__LINUX__=1 $(TYPES) $(INCLUDEDIR)
+
+alpha_cc = cc
+alpha_osf1_cc = $(alpha_cc)
+hp_cc = cc
+hp700_ux_cc = $(hp_cc)
+sun4_cc = gcc
+linux_cc = cc
+
+CC = ${${MACHINE}_cc}
+
+alpha_ar = ar
+alpha_osf1_ar = $(alpha_ar)
+hp_ar = ar
+hp700_ux_ar = $(hp_ar)
+sun4_ar = /usr/ccs/bin/ar
+linux_ar = ar
+
+AR = ${${MACHINE}_ar}

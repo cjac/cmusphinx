@@ -1,0 +1,47 @@
+**********************************************
+CMU ARPA Speech Project
+SPHINX-III Decoder
+
+Copyright (c) 1996 Carnegie Mellon University.
+ALL RIGHTS RESERVED.
+**********************************************
+
+This is the collection of Sphinx3 decoder programs.
+There's the beginnings of documentation in doc/s3.html; however it is
+far from complete.
+
+The following components are provided:
+  * s3decode	-- Viterbi decoder
+  * s3dag	-- Shortest path search of Viterbi lattice
+  * s3astar	-- A* search of Viterbi lattice to produce N-best list
+  * s3align	-- Forced alignment for word/phone/state segmentation
+  * s3allphone	-- Viterbi allphone decoder
+
+The software collection is organized as follows:
+  * ./Makefile.defines and ./Makefile -- Top-level Makefiles for Sphinx3.
+  * ./src	-- Source files
+  * ./include	-- Main include file (nothing much here)
+  * ./lib/*	-- Compiled libraries binaries go here
+  * ./bin/*	-- Compiled executables binaries go here
+  * ./tests	-- Sample scripts and respective outputs
+  * ./doc	-- Documentation (very incomplete)
+
+To make the software for your platform:
+  * Double-check Makefile.defines for platform specific definitions.
+  * Update the S3ROOT definition in all the subdirectory Makefiles to
+    point to your root S3 directory.  The Makefiles are:
+    - src/libutil/Makefile
+    - src/libio/Makefile
+    - src/libfeat/Makefile
+    - src/libmisc/Makefile
+    - src/libfbs/Makefile* (note that there are several of these)
+  * Check Makefile for compilation instructions.
+
+Contact:
+    Mosur K. Ravishankar
+    School of Computer Science
+    Carnegie Mellon University
+    Pittsburgh, PA 15213
+    Tel: (412)268-3344
+    E-mail: rkm@cs.cmu.edu
+    URL: http://www.cs.cmu.edu/~rkm

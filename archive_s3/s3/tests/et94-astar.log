@@ -1,0 +1,126 @@
+Executing ../bin/alpha/s3astar
+/tmp/s3astar.13447 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP -inspen 0.2 -beam 1e-64 -nbest 100 -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 5 -inlatdir LATDIR -nbestdir NBESTDIR
+INFO: ../astar-main.c(220): Parsing command line:
+/tmp/s3astar.13447 \
+	-mdeffn ../testdata/dict/nov94/h1c1-94.mdef \
+	-dictfn ../testdata/dict/nov94/h1c1-94.dic \
+	-fdictfn ../testdata/dict/nov94/filler.dic \
+	-lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP \
+	-inspen 0.2 \
+	-beam 1e-64 \
+	-nbest 100 \
+	-ctlfn ../testdata/ctl/h1_et_94-g.ctl \
+	-ctloffset 0 \
+	-ctlcount 5 \
+	-inlatdir LATDIR \
+	-nbestdir NBESTDIR 
+
+INFO: ../astar-main.c(256): Configuration in effect:
+[Switch]   [Default] [Value]                                         
+-logbase   1.0001    1.000100e+00                                    
+-mdeffn              ../testdata/dict/nov94/h1c1-94.mdef             
+-dictfn              ../testdata/dict/nov94/h1c1-94.dic              
+-fdictfn             ../testdata/dict/nov94/filler.dic               
+-compwd    0         0                                               
+-lmfn                ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP
+-langwt    9.5       9.500000e+00                                    
+-ugwt      0.7       7.000000e-01                                    
+-inspen    0.65      2.000000e-01                                    
+-beam      1e-64     1.000000e-64                                    
+-silpen    0.1       1.000000e-01                                    
+-noisepen  0.05      5.000000e-02                                    
+-fillpenfn                                                           
+-maxlpf    40000     40000                                           
+-maxlmop   100000000 100000000                                       
+-maxedge   2000000   2000000                                         
+-maxppath  1000000   1000000                                         
+-ctlfn               ../testdata/ctl/h1_et_94-g.ctl                  
+-ctloffset 0         0                                               
+-ctlcount            5                                               
+-inlatdir            LATDIR                                          
+-latext    lat.gz    lat.gz                                          
+-nbestdir  .         NBESTDIR                                        
+-nbestext  nbest.gz  nbest.gz                                        
+-nbest     200       100                                             
+-min_endfr 3         3                                               
+-dagfudge  2         2                                               
+-logfn                                                               
+
+INFO: ../astar-main.c(526): Executing on: alf20.speech.cs.cmu.edu
+INFO: ../astar-main.c(530): /tmp/s3astar.13447 COMPILED ON: Sep 22 1998, AT: 14:59:12
+
+INFO: ../logs3.c(56): Initializing logbase: 1.000100e+00
+INFO: ../logs3.c(113): Log-Add table size = 99023
+INFO: ../mdef.c(472): Reading model definition: ../testdata/dict/nov94/h1c1-94.mdef
+INFO: ../mdef.c(591): 55 CI-phones, 75774 CD-phones, 5 emitting states/phone, 6275 sen, 275 CI-sen
+INFO: ../dict.c(225): Reading dictionary
+INFO: ../dict.c(269): Reading main dictionary: ../testdata/dict/nov94/h1c1-94.dic
+INFO: ../dict.c(272): 21737 words read
+INFO: ../dict.c(277): Reading filler dictionary: ../testdata/dict/nov94/filler.dic
+INFO: ../dict.c(280): 5 words read
+INFO: ../lm.c(536): Reading ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP, name ""
+INFO: ../lm.c(379):    19980 unigrams
+INFO: ../lm.c(389):  5027012 bigrams [on disk]
+INFO: ../lm.c(398):  6703115 trigrams [on disk]
+INFO: ../lm.c(418):    45311 bigram prob entries
+INFO: ../lm.c(435):    25423 trigram bowt entries
+INFO: ../lm.c(450):    42281 trigram prob entries
+INFO: ../lm.c(465):     9819 trigram segtable entries (512 segsize)
+INFO: ../lm.c(510):    19980 word strings
+INFO: ../lm.c(512): 1 LM words not in dict; ignored
+INFO: ../lm.c(254): LM("") added
+INFO: ../astar.c(1236): beam= -1473483
+
+INFO: ../profile.c(171): 504170576 ticks in 1.894 sec; machine clock rate = 266 MHz
+INFO: ../astar-main.c(358): Processing ctl file ../testdata/ctl/h1_et_94-g.ctl
+
+INFO: ../astar-main.c(386): Utterance: h1_et_94/4t0/4t0c0201
+INFO: ../astar.c(416): Reading DAG file: LATDIR/4t0c0201.lat.gz
+INFO: ../astar.c(706):   915 frames,   1580 nodes,     6578 edges,      619 bypass
+CTR(4t0c0201):   915 frm  100 hyp   1431 pop   1312 exp     1968 pp
+INFO: ../lm.c(622):    37125 tg(), 28207 bo; 2190 fills, 133982 in mem (2.0%)
+INFO: ../lm.c(625):    33634 bg(), 12780 bo; 231 fills, 510897 in mem (10.2%)
+4t0c0201: TMR:   915 Frm   0.12 xEl   0.10 xCPU
+
+INFO: ../astar-main.c(386): Utterance: h1_et_94/4t0/4t0c0202
+INFO: ../astar.c(416): Reading DAG file: LATDIR/4t0c0202.lat.gz
+INFO: ../astar.c(706):   694 frames,   1368 nodes,     8006 edges,      634 bypass
+CTR(4t0c0202):   694 frm  100 hyp   1257 pop   1155 exp     4150 pp
+INFO: ../lm.c(622):    69207 tg(), 66239 bo; 3771 fills, 186665 in mem (2.8%)
+INFO: ../lm.c(625):    74050 bg(), 34809 bo; 235 fills, 713778 in mem (14.2%)
+INFO: ../lm.c(610): 737 tg frees, 89084 in mem; 164 bg frees, 548846 in mem
+4t0c0202: TMR:   694 Frm   0.16 xEl   0.14 xCPU
+
+INFO: ../astar-main.c(386): Utterance: h1_et_94/4t0/4t0c0203
+INFO: ../astar.c(416): Reading DAG file: LATDIR/4t0c0203.lat.gz
+INFO: ../astar.c(706):  1474 frames,   2463 nodes,    15738 edges,     2948 bypass
+CTR(4t0c0203):  1474 frm  100 hyp   2145 pop   2010 exp     4905 pp
+INFO: ../lm.c(622):    99076 tg(), 92296 bo; 5423 fills, 215108 in mem (3.2%)
+INFO: ../lm.c(625):   113060 bg(), 51415 bo; 355 fills, 815822 in mem (16.2%)
+INFO: ../lm.c(610): 913 tg frees, 162004 in mem; 207 bg frees, 678251 in mem
+4t0c0203: TMR:  1474 Frm   0.13 xEl   0.11 xCPU
+
+INFO: ../astar-main.c(386): Utterance: h1_et_94/4t0/4t0c0204
+INFO: ../astar.c(416): Reading DAG file: LATDIR/4t0c0204.lat.gz
+INFO: ../astar.c(706):  1298 frames,   2353 nodes,    12602 edges,     1913 bypass
+CTR(4t0c0204):  1298 frm  100 hyp   2230 pop   2128 exp     9478 pp
+INFO: ../lm.c(622):   100267 tg(), 91799 bo; 4849 fills, 286637 in mem (4.3%)
+INFO: ../lm.c(625):   107234 bg(), 41680 bo; 268 fills, 905236 in mem (18.0%)
+INFO: ../lm.c(610): 1416 tg frees, 197228 in mem; 351 bg frees, 666743 in mem
+4t0c0204: TMR:  1298 Frm   0.14 xEl   0.12 xCPU
+
+INFO: ../astar-main.c(386): Utterance: h1_et_94/4t0/4t0c0205
+INFO: ../astar.c(416): Reading DAG file: LATDIR/4t0c0205.lat.gz
+INFO: ../astar.c(706):  1231 frames,   2522 nodes,    17557 edges,     2695 bypass
+CTR(4t0c0205):  1231 frm  100 hyp   1822 pop   1722 exp    11586 pp
+INFO: ../lm.c(622):   158104 tg(), 149263 bo; 7606 fills, 331254 in mem (4.9%)
+INFO: ../lm.c(625):   166604 bg(), 80281 bo; 361 fills, 966307 in mem (19.2%)
+INFO: ../lm.c(610): 1664 tg frees, 236164 in mem; 255 bg frees, 788588 in mem
+4t0c0205: TMR:  1231 Frm   0.20 xEl   0.17 xCPU
+
+INFO: ../astar-main.c(417): Skipping rest of control file beginning with:
+	h1_et_94/4t0/4t0c0206
+rkm      13419 88.0  9.2 26.6M  236 ttyp1    R    12:34:42     0:15.99 /tmp/s3astar.13447 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP -inspen 0.2 -beam 1e-64 -nbest 100 -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 5 -inlatdir LATDIR -nbestdir NBESTDIR
+rkm      13157  0.0  0.1 1.23M 136K ttyp1    S    12:34:59     0:00.01 grep s3astar
+rkm      13393  0.0  0.1 1.71M 160K ttyp1    S    12:34:59     0:00.01 sh -c ps aguxwww | grep s3astar
+rkm      13447  0.0  0.1 1.88M 312K ttyp1    S    12:34:41     0:00.04 csh ./et94-astar.csh ../bin/alpha/s3astar et94-astar 0 5

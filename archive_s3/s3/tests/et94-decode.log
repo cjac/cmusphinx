@@ -1,0 +1,414 @@
+Executing ../bin/alpha/s3decode
+/tmp/s3decode.13101 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -senmgaufn .cont. -meanfn ../testdata/hmm-sphinx3/mean -varfn ../testdata/hmm-sphinx3/var -mixwfn ../testdata/hmm-sphinx3/mixw -tmatfn ../testdata/hmm-sphinx3/tmat -feat s3_1x39 -topn 1000 -beam 1e-80 -nwbeam 1e-40 -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP -inspen 0.2 -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 5 -cepdir ../testdata/ctl -outlatdir LATDIR -matchfn et94-decode.match
+INFO: ../main.c(474): Parsing command line:
+/tmp/s3decode.13101 \
+	-mdeffn ../testdata/dict/nov94/h1c1-94.mdef \
+	-senmgaufn .cont. \
+	-meanfn ../testdata/hmm-sphinx3/mean \
+	-varfn ../testdata/hmm-sphinx3/var \
+	-mixwfn ../testdata/hmm-sphinx3/mixw \
+	-tmatfn ../testdata/hmm-sphinx3/tmat \
+	-feat s3_1x39 \
+	-topn 1000 \
+	-beam 1e-80 \
+	-nwbeam 1e-40 \
+	-dictfn ../testdata/dict/nov94/h1c1-94.dic \
+	-fdictfn ../testdata/dict/nov94/filler.dic \
+	-lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP \
+	-inspen 0.2 \
+	-ctlfn ../testdata/ctl/h1_et_94-g.ctl \
+	-ctloffset 0 \
+	-ctlcount 5 \
+	-cepdir ../testdata/ctl \
+	-outlatdir LATDIR \
+	-matchfn et94-decode.match 
+
+INFO: ../main.c(510): Configuration in effect:
+[Switch]      [Default] [Value]                                         
+-logbase      1.0001    1.000100e+00                                    
+-mdeffn                 ../testdata/dict/nov94/h1c1-94.mdef             
+-tmatfn                 ../testdata/hmm-sphinx3/tmat                    
+-meanfn                 ../testdata/hmm-sphinx3/mean                    
+-varfn                  ../testdata/hmm-sphinx3/var                     
+-senmgaufn    .cont.    .cont.                                          
+-mixwfn                 ../testdata/hmm-sphinx3/mixw                    
+-lambdafn                                                               
+-tpfloor      0.0001    1.000000e-04                                    
+-varfloor     0.0001    1.000000e-04                                    
+-mwfloor      0.0000001 1.000000e-07                                    
+-agc          max       max                                             
+-cmn          current   current                                         
+-feat         s2_4x     s3_1x39                                         
+-dictfn                 ../testdata/dict/nov94/h1c1-94.dic              
+-fdictfn                ../testdata/dict/nov94/filler.dic               
+-compwd       0         0                                               
+-lmfn                   ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP
+-langwt       9.5       9.500000e+00                                    
+-ugwt         0.7       7.000000e-01                                    
+-lmcontextfn                                                            
+-bestpath     0         0                                               
+-min_endfr    3         3                                               
+-dagfudge     2         2                                               
+-bestpathlw                                                             
+-inspen       0.65      2.000000e-01                                    
+-silpen       0.1       1.000000e-01                                    
+-noisepen     0.05      5.000000e-02                                    
+-fillpenfn                                                              
+-ctlfn                  ../testdata/ctl/h1_et_94-g.ctl                  
+-ctloffset    0         0                                               
+-ctlcount               5                                               
+-cepdir       .         ../testdata/ctl                                 
+-cepext       mfc       mfc                                             
+-mllrctlfn                                                              
+-topn         4         1000                                            
+-beam         1e-64     1.000000e-80                                    
+-nwbeam       1e-27     1.000000e-40                                    
+-phonepen     1.0       1.000000e+00                                    
+-tracewhmm                                                              
+-hmmdumpsf                                                              
+-worddumpsf                                                             
+-inlatdir                                                               
+-inlatwin     50        50                                              
+-outlatdir              LATDIR                                          
+-latext       lat.gz    lat.gz                                          
+-bestscoredir                                                           
+-matchfn                et94-decode.match                               
+-matchsegfn                                                             
+-logfn                                                                  
+-backtrace    1         1                                               
+-bptblsize    32767     32767                                           
+-bptbldump    0         0                                               
+
+INFO: ../main.c(1484): Executing on: alf20.speech.cs.cmu.edu
+INFO: ../main.c(1488): /tmp/s3decode.13101 COMPILED ON: Sep 22 1998, AT: 14:58:41
+
+INFO: ../logs3.c(56): Initializing logbase: 1.000100e+00
+INFO: ../logs3.c(113): Log-Add table size = 99023
+INFO: ../feat.c(557): Initializing feature stream to type: s3_1x39
+INFO: ../mdef.c(472): Reading model definition: ../testdata/dict/nov94/h1c1-94.mdef
+INFO: ../mdef.c(591): 55 CI-phones, 75774 CD-phones, 5 emitting states/phone, 6275 sen, 275 CI-sen
+INFO: ../dict.c(225): Reading dictionary
+INFO: ../dict.c(269): Reading main dictionary: ../testdata/dict/nov94/h1c1-94.dic
+INFO: ../dict.c(272): 21737 words read
+INFO: ../dict.c(277): Reading filler dictionary: ../testdata/dict/nov94/filler.dic
+INFO: ../dict.c(280): 5 words read
+INFO: ../gauden.c(118): Reading mixture gaussian parameter: ../testdata/hmm-sphinx3/mean
+INFO: ../gauden.c(209): 6275 codebook, 1 feature, size 16x39
+INFO: ../gauden.c(118): Reading mixture gaussian parameter: ../testdata/hmm-sphinx3/var
+INFO: ../gauden.c(209): 6275 codebook, 1 feature, size 16x39
+INFO: ../senone.c(137): Reading senone mixture weights: ../testdata/hmm-sphinx3/mixw
+INFO: ../senone.c(182): Truncating senone logs3(pdf) values by 10 bits, to 8 bits
+ERROR: "../senone.c", line 227: Weight normalization failed for 250 senones
+INFO: ../senone.c(239): Read mixture weights for 6275 senones: 1 features x 16 codewords
+INFO: ../tmat.c(67): Reading HMM transition matrix: ../testdata/hmm-sphinx3/tmat
+INFO: ../tmat.c(146): Read 55 transition matrices of size 5x6
+INFO: ../lm.c(536): Reading ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP, name ""
+INFO: ../lm.c(379):    19980 unigrams
+INFO: ../lm.c(389):  5027012 bigrams [on disk]
+INFO: ../lm.c(398):  6703115 trigrams [on disk]
+INFO: ../lm.c(418):    45311 bigram prob entries
+INFO: ../lm.c(435):    25423 trigram bowt entries
+INFO: ../lm.c(450):    42281 trigram prob entries
+INFO: ../lm.c(465):     9819 trigram segtable entries (512 segsize)
+INFO: ../lm.c(510):    19980 word strings
+INFO: ../lm.c(512): 1 LM words not in dict; ignored
+INFO: ../lm.c(254): LM("") added
+INFO: ../profile.c(171): 504110304 ticks in 1.894 sec; machine clock rate = 266 MHz
+INFO: ../fwd.c(2021): Forward Viterbi Initialization
+INFO: ../fwd.c(2033): Hardwired Sphinx-II style 5-state topology
+INFO: ../fwd.c(2068): logs3(beam)= -1841854, logs3(nwbeam)= -920927
+INFO: ../fwd.c(601): Building within-word triphones
+INFO: ../fwd.c(2083): 0 within-word triphone instances mapped to CI-phones
+INFO: ../fwd.c(641): Building cross-word triphones
+INFO: ../fwd.c(2087): 0 cross-word triphones mapped to CI-phones
+
+INFO: ../main.c(1194): Processing ctl file ../testdata/ctl/h1_et_94-g.ctl
+WARNING: "../main.c", line 1222: No -matchsegfn argument
+
+INFO: ../main.c(1259): Utterance: h1_et_94/4t0/4t0c0201
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0201.mfc'[0..2147483632]
+INFO: ../main.c(1352): 4t0c0201: 915 input frames
+WARNING: "../main.c", line 813: -topn argument (1000) > #density codewords (16); set to latter
+INFO: ../main.c(832): Computing all codebooks and senones each frame
+...........................................................................................
+FV:4t0c0201>                 WORD  SFrm  EFrm        AScr       LScr     Conf
+fv:4t0c0201>                  <s>     0    15     1738118          0   0.2608
+fv:4t0c0201>           ++INHALE++    16    38       50130    -300645   0.0786
+fv:4t0c0201>                AS(2)    39    56     -386444    -483121   0.0188
+fv:4t0c0201>          COMPETITION    57   125    -5585289    -775113   0.0479
+fv:4t0c0201>                IN(2)   126   138      783606    -214727   0.0806
+fv:4t0c0201>                  THE   139   145      346679     -84416   0.0417
+fv:4t0c0201>               MUTUAL   146   183     -618426    -867282   0.1008
+fv:4t0c0201>                 FUND   184   213      959680     -68864   0.5786
+fv:4t0c0201>             BUSINESS   214   250     -793463    -382184   0.1892
+fv:4t0c0201>                GROWS   251   280     -233341    -868954   0.0526
+fv:4t0c0201>         INCREASINGLY   281   350    -1156747    -501855   0.1549
+fv:4t0c0201>              INTENSE   351   403      894136    -656211   0.1204
+fv:4t0c0201>           ++INHALE++   404   429     1569766    -300645   0.1534
+fv:4t0c0201>                  MAR   430   454     -327791   -1188525   0.0206
+fv:4t0c0201>              PLAYERS   455   503      727410   -1063077   0.0774
+fv:4t0c0201>                IN(2)   504   516      -29859    -246248   0.0547
+fv:4t0c0201>                  THE   517   525      305767     -73234   0.0247
+fv:4t0c0201>             INDUSTRY   526   565     1203693    -568840   0.1153
+fv:4t0c0201>               APPEAR   566   592     -731080   -1002733   0.0466
+fv:4t0c0201>              WILLING   593   625     -831789    -554599   0.1817
+fv:4t0c0201>                   TO   626   635     -634885     -21051   0.4082
+fv:4t0c0201>            SACRIFICE   636   704     -451060    -512714   0.3557
+fv:4t0c0201>            INTEGRITY   705   763    -1941985   -1164537   0.0458
+fv:4t0c0201>                IN(2)   764   770      -65577    -369739   0.0668
+fv:4t0c0201>                  THE   771   778       84851    -121580   0.0259
+fv:4t0c0201>                 NAME   779   797     1217224    -647775   0.0232
+fv:4t0c0201>                   OF   798   809     -457728     -83171   0.0587
+fv:4t0c0201>          PERFORMANCE   810   889     3290248   -1014342   0.2274
+fv:4t0c0201>                 </s>   890   914     2538021    -197295   0.2340
+FV:4t0c0201>                TOTAL                 1463865  -14333477
+FWDVIT: AS COMPETITION IN THE MUTUAL FUND BUSINESS GROWS INCREASINGLY INTENSE MAR PLAYERS IN THE INDUSTRY APPEAR WILLING TO SACRIFICE INTEGRITY IN THE NAME OF PERFORMANCE  (4t0c0201 -56826557)
+FWDXCT: 4t0c0201 S 43956945 T -56826557 A -42493080 L -1461340 0 -324340 0 <s> 16 -849756 -29952 ++INHALE++ 39 -637802 -49160 AS(2) 57 -5023684 -79896 COMPETITION 126 -331415 -20908 IN(2) 139 -250255 -7192 THE 146 -2050833 -89598 MUTUAL 184 -1383331 -5554 FUND 214 -1958984 -38536 BUSINESS 251 -1478939 -89774 GROWS 281 -3363889 -51132 INCREASINGLY 351 -2034359 -67380 INTENSE 404 -702332 -29952 ++INHALE++ 430 -1060108 -123414 MAR 455 -2025124 -110208 PLAYERS 504 -510574 -24226 IN(2) 517 -611022 -6014 THE 526 -1784166 -58184 INDUSTRY 566 -1256227 -103856 APPEAR 593 -1535218 -56684 WILLING 626 -534426 -522 TO 636 -4034583 -52276 SACRIFICE 705 -3509000 -120888 INTEGRITY 764 -214850 -37226 IN(2) 771 -431920 -11104 THE 779 -929148 -66492 NAME 798 -765452 -7060 OF 810 -2524344 -105078 PERFORMANCE 890 -376999 -19074 </s> 915
+INFO: ../lm.c(622):       25 tg(), 11 bo; 775 fills, 127129 in mem (1.9%)
+INFO: ../lm.c(625):       12 bg(), 3 bo; 447 fills, 797031 in mem (15.9%)
+INFO: ../fwd.c(3379): Writing lattice file: LATDIR/4t0c0201.lat.gz
+INFO: ../lm.c(622):     8490 tg(), 5886 bo; 0 fills, 127129 in mem (1.9%)
+INFO: ../lm.c(625):     7126 bg(), 1900 bo; 0 fills, 797031 in mem (15.9%)
+4t0c0201: CTR:[frm        915][sen    5741625][mpx   12595602][~mpx   10275318][lat       6923]
+4t0c0201: TMR:   915 Frm  42.95 xEl  40.51 xCPU [fwd  40.47x  99%][gau+sen  18.34x 45%][srch  22.12x 54%][H   7.37x 18%][XH   4.12x 10%][XW  10.61x 26%]
+
+INFO: ../main.c(1259): Utterance: h1_et_94/4t0/4t0c0202
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0202.mfc'[0..2147483632]
+INFO: ../main.c(1352): 4t0c0202: 694 input frames
+.....................................................................
+FV:4t0c0202>                 WORD  SFrm  EFrm        AScr       LScr     Conf
+fv:4t0c0202>                  <s>     0    19     3089106          0   0.2181
+fv:4t0c0202>                  FOR    20    34     -269463    -477611   0.0204
+fv:4t0c0202>                 A(2)    35    45     -298923    -340935   0.0144
+fv:4t0c0202>                  TWO    46    71    -2189806    -466648   0.0142
+fv:4t0c0202>             TRILLION    72   107    -1317961    -800573   0.0388
+fv:4t0c0202>               DOLLAR   108   133     -693835    -203574   0.0888
+fv:4t0c0202>             BUSINESS   134   179     -342838    -512429   0.4031
+fv:4t0c0202>                 BILL   180   197      881620   -1069726   0.0716
+fv:4t0c0202>                   ON   198   211      315382    -492982   0.0491
+fv:4t0c0202>               PUBLIC   212   245    -3101811    -709515   0.1973
+fv:4t0c0202>           CONFIDENCE   246   309     -707491    -547531   0.1022
+fv:4t0c0202>           ++INHALE++   310   329     2083735    -300645   0.1678
+fv:4t0c0202>              THIS(2)   330   351     1881495    -770857   0.0519
+fv:4t0c0202>                TREND   352   379      -88529    -709686   0.2067
+fv:4t0c0202>                   IS   380   390      233008    -219895   0.1507
+fv:4t0c0202>                 THIS   391   410    -1236074    -684578   0.0419
+fv:4t0c0202>            HAPPENING   411   448    -3485021    -548890   0.0229
+fv:4t0c0202>               AND(2)   449   462      -83239    -333715   0.0256
+fv:4t0c0202>                 BEST   463   501     2346147    -888334   0.0356
+fv:4t0c0202>                <sil>   502   514     1156101    -234810   0.1129
+fv:4t0c0202>               AND(2)   515   539      928526    -462715   0.0572
+fv:4t0c0202>            DOWNRIGHT   540   577     -795542   -1232804   0.0270
+fv:4t0c0202>            DANGEROUS   578   619     -651907    -338731   0.0658
+fv:4t0c0202>                   AT   620   628    -1183718    -634228   0.0189
+fv:4t0c0202>                WORST   629   681     1864343    -800260   0.0661
+fv:4t0c0202>                 </s>   682   693      749687    -202852   0.1771
+FV:4t0c0202>                TOTAL                 -917008  -13984524
+FWDVIT: FOR A TWO TRILLION DOLLAR BUSINESS BILL ON PUBLIC CONFIDENCE THIS TREND IS THIS HAPPENING AND BEST AND DOWNRIGHT DANGEROUS AT WORST  (4t0c0202 -51708651)
+FWDXCT: 4t0c0202 S 36807119 T -51708651 A -37724127 L -1429690 0 -734579 0 <s> 20 -551030 -48580 FOR 35 -729007 -34194 A(2) 46 -1567043 -47426 TWO 72 -2738864 -82576 TRILLION 108 -2314821 -19734 DOLLAR 134 -2301784 -52246 BUSINESS 180 -856669 -110908 BILL 198 -718286 -50198 ON 212 -2288940 -72991 PUBLIC 246 -3558704 -55940 CONFIDENCE 310 -463002 -29952 ++INHALE++ 330 -698657 -79448 THIS(2) 352 -906576 -73009 TREND 380 -256695 -21452 IS 391 -1397773 -70366 THIS 411 -3779260 -56084 HAPPENING 449 -629076 -33434 AND(2) 463 -2126537 -91814 BEST 502 -367080 -23022 <sil> 515 -847907 -47012 AND(2) 540 -1980329 -128074 DOWNRIGHT 578 -2303782 -33962 DANGEROUS 620 -569923 -65066 AT 629 -2340671 -82544 WORST 682 -697132 -19658 </s> 694
+INFO: ../lm.c(622):       22 tg(), 13 bo; 800 fills, 184576 in mem (2.8%)
+INFO: ../lm.c(625):       14 bg(), 0 bo; 392 fills, 1013611 in mem (20.2%)
+INFO: ../fwd.c(3379): Writing lattice file: LATDIR/4t0c0202.lat.gz
+INFO: ../lm.c(622):     9937 tg(), 7706 bo; 0 fills, 184576 in mem (2.8%)
+INFO: ../lm.c(625):     8829 bg(), 2469 bo; 0 fills, 1013611 in mem (20.2%)
+INFO: ../lm.c(610): 456 tg frees, 95595 in mem; 301 bg frees, 745754 in mem
+4t0c0202: CTR:[frm        694][sen    4354850][mpx   10107866][~mpx    7616969][lat       6515]
+4t0c0202: TMR:   694 Frm  42.26 xEl  40.82 xCPU [fwd  40.78x  99%][gau+sen  18.29x 44%][srch  22.47x 55%][H   7.89x 19%][XH   4.40x 10%][XW  10.17x 24%]
+
+INFO: ../main.c(1259): Utterance: h1_et_94/4t0/4t0c0203
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0203.mfc'[0..2147483632]
+INFO: ../main.c(1352): 4t0c0203: 1474 input frames
+...................................................................................................................................................
+FV:4t0c0203>                 WORD  SFrm  EFrm        AScr       LScr     Conf
+fv:4t0c0203>                  <s>     0    32     4559754          0   0.2549
+fv:4t0c0203>                   SO    33    62      630854    -565971   0.0223
+fv:4t0c0203>                  FAR    63    86    -2242882    -158193   0.0420
+fv:4t0c0203>              THIS(2)    87   111     1392701    -189011   0.1422
+fv:4t0c0203>                 YEAR   112   135      863298     -31510   0.4411
+fv:4t0c0203>                  THE   136   147    -1091660    -312406   0.0572
+fv:4t0c0203>             INDUSTRY   148   187     1181306    -560917   0.1386
+fv:4t0c0203>                 SLAM   188   226     1151601   -1306286   0.0309
+fv:4t0c0203>                  HAS   227   244     -888896    -721020   0.0241
+fv:4t0c0203>              BEEN(3)   245   259      614313    -171664   0.2140
+fv:4t0c0203>             APPARENT   260   304      697740    -887622   0.0981
+fv:4t0c0203>                IN(2)   305   321      338294    -265932   0.0518
+fv:4t0c0203>          ALLEGATIONS   322   390    -1084336   -1181352   0.1050
+fv:4t0c0203>                   OF   391   401      534042     -81917   0.1275
+fv:4t0c0203>              INSIDER   402   445     1862299    -431090   0.1857
+fv:4t0c0203>              TRADING   446   491    -2536117     -35928   0.6777
+fv:4t0c0203>                <sil>   492   513     2052316    -234810   0.1503
+fv:4t0c0203>                   BY   514   534     -558179    -406608   0.0424
+fv:4t0c0203>                 FUND   535   562     -690736    -463067   0.1750
+fv:4t0c0203>             MANAGERS   563   631     2325443    -131640   0.2603
+fv:4t0c0203>           ++INHALE++   632   652     2295624    -300645   0.2190
+fv:4t0c0203>               AND(2)   653   674       80399    -280828   0.0439
+fv:4t0c0203>                 SAVE   675   695     -450715    -939121   0.0257
+fv:4t0c0203>               REFUND   696   737     1008798   -1240651   0.0246
+fv:4t0c0203>                SALES   738   772     2575127    -728525   0.1449
+fv:4t0c0203>            PRACTICES   773   855     5188250    -621289   0.2997
+fv:4t0c0203>           ++INHALE++   856   877     1637312    -300645   0.2149
+fv:4t0c0203>                   AT   878   899      486306    -319759   0.1284
+fv:4t0c0203>                BANKS   900   940      481908    -840293   0.0221
+fv:4t0c0203>                <sil>   941   943       41016    -234810   0.0716
+fv:4t0c0203>               AND(2)   944   960      197445    -133692   0.1045
+fv:4t0c0203>               USE(2)   961   983      -81390    -863862   0.0194
+fv:4t0c0203>                   OF   984   992     -409919    -150203   0.0295
+fv:4t0c0203>                 HIGH   993  1012     1027112    -555055   0.1101
+fv:4t0c0203>                 RISK  1013  1039      915535    -358101   0.0625
+fv:4t0c0203>                <sil>  1040  1059     3625520    -234810   0.0551
+fv:4t0c0203>           DERIVATIVE  1060  1121     2210445   -1312157   0.0144
+fv:4t0c0203>           SECURITIES  1122  1195     -410069    -224351   0.2983
+fv:4t0c0203>                <sil>  1196  1210      268695    -234810   0.2134
+fv:4t0c0203>                IN(2)  1211  1232     1566991    -337173   0.1356
+fv:4t0c0203>             NORMALLY  1233  1269     -146296   -1264382   0.0133
+fv:4t0c0203>         CONSERVATIVE  1270  1332     -664807    -727556   0.0898
+fv:4t0c0203>                MONEY  1333  1350    -1185051    -765404   0.0782
+fv:4t0c0203>               MARKET  1351  1387    -1289629    -320833   0.4082
+fv:4t0c0203>                FUNDS  1388  1441     2454650    -135440   0.3040
+fv:4t0c0203>                 </s>  1442  1473     3263399    -197038   0.3187
+FV:4t0c0203>                TOTAL                33797811  -21758377
+FWDVIT: SO FAR THIS YEAR THE INDUSTRY SLAM HAS BEEN APPARENT IN ALLEGATIONS OF INSIDER TRADING BY FUND MANAGERS AND SAVE REFUND SALES PRACTICES AT BANKS AND USE OF HIGH RISK DERIVATIVE SECURITIES IN NORMALLY CONSERVATIVE MONEY MARKET FUNDS  (4t0c0203 -86667244)
+FWDXCT: 4t0c0203 S 98706678 T -86667244 A -64908867 L -2214100 0 -659483 0 <s> 33 -1432210 -57882 SO 63 -1640031 -14958 FAR 87 -1026000 -18202 THIS(2) 112 -803539 -1622 YEAR 136 -976648 -31190 THE 148 -1707036 -57350 INDUSTRY 188 -1660231 -135809 SLAM 227 -596372 -74202 HAS 245 -434294 -16376 BEEN(3) 260 -1976265 -91740 APPARENT 305 -870820 -26298 IN(2) 322 -4126758 -122658 ALLEGATIONS 391 -425758 -6928 OF 402 -2068533 -43684 INSIDER 446 -2326118 -2088 TRADING 492 -585015 -23022 <sil> 514 -851374 -41106 BY 535 -1398776 -47050 FUND 563 -2149700 -12162 MANAGERS 632 -377965 -29952 ++INHALE++ 653 -1107242 -27866 AND(2) 675 -1341580 -97160 SAVE 696 -2034869 -128900 REFUND 738 -829805 -74992 SALES 773 -2128985 -63704 PRACTICES 856 -740991 -29952 ++INHALE++ 878 -918586 -31964 AT 900 -2673466 -86758 BANKS 941 -151512 -23022 <sil> 944 -600949 -12378 AND(2) 961 -1720001 -89238 USE(2) 984 -475479 -14116 OF 993 -412614 -56732 HIGH 1013 -1683582 -36000 RISK 1040 -643644 -23022 <sil> 1060 -3994362 -136427 DERIVATIVE 1122 -4149763 -21922 SECURITIES 1196 -616275 -23022 <sil> 1211 -410003 -33798 IN(2) 1233 -2507771 -131398 NORMALLY 1270 -3236711 -74890 CONSERVATIVE 1333 -776301 -78874 MONEY 1351 -1126417 -32078 MARKET 1388 -1560518 -12562 FUNDS 1442 -974515 -19046 </s> 1474
+INFO: ../lm.c(622):       38 tg(), 16 bo; 1264 fills, 196236 in mem (2.9%)
+INFO: ../lm.c(625):       17 bg(), 4 bo; 594 fills, 1108060 in mem (22.0%)
+INFO: ../fwd.c(3379): Writing lattice file: LATDIR/4t0c0203.lat.gz
+INFO: ../lm.c(622):    17430 tg(), 12384 bo; 0 fills, 196236 in mem (2.9%)
+INFO: ../lm.c(625):    13022 bg(), 4422 bo; 0 fills, 1108060 in mem (22.0%)
+INFO: ../lm.c(610): 493 tg frees, 139998 in mem; 329 bg frees, 926749 in mem
+4t0c0203: CTR:[frm       1474][sen    9249350][mpx   19084862][~mpx   13169219][lat      11415]
+4t0c0203: TMR:  1474 Frm  38.02 xEl  37.27 xCPU [fwd  37.23x  99%][gau+sen  18.31x 49%][srch  18.90x 50%][H   6.71x 18%][XH   3.76x 10%][XW   8.41x 22%]
+
+INFO: ../main.c(1259): Utterance: h1_et_94/4t0/4t0c0204
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0204.mfc'[0..2147483632]
+INFO: ../main.c(1352): 4t0c0204: 1298 input frames
+.................................................................................................................................
+FV:4t0c0204>                 WORD  SFrm  EFrm        AScr       LScr     Conf
+fv:4t0c0204>                  <s>     0     8     1021299          0   0.2873
+fv:4t0c0204>           ++INHALE++     9    52     3966679    -300645   0.1822
+fv:4t0c0204>               AND(2)    53    79      916979    -449434   0.0783
+fv:4t0c0204>                   IN    80    88      696389    -323626   0.0469
+fv:4t0c0204>                  THE    89    97      261742    -156768   0.0649
+fv:4t0c0204>               LATEST    98   133      347810    -509807   0.1097
+fv:4t0c0204>                 BLOW   134   157      -97931    -600380   0.0312
+fv:4t0c0204>                   TO   158   164     -927990     -68598   0.0358
+fv:4t0c0204>               PUBLIC   165   199    -2085855    -846743   0.0917
+fv:4t0c0204>           CONFIDENCE   200   253    -3199938    -604009   0.1276
+fv:4t0c0204>                IN(2)   254   265       61355     -63677   0.1599
+fv:4t0c0204>                  THE   266   273     -169962     -83143   0.0626
+fv:4t0c0204>                FUNDS   274   317     1397595    -884078   0.1262
+fv:4t0c0204>                <sil>   318   341     1890703    -234810   0.1995
+fv:4t0c0204>             SUMMONED   342   379      304090   -1324279   0.0335
+fv:4t0c0204>                    A   380   393     -644011    -350425   0.0201
+fv:4t0c0204>             INDUSTRY   394   440     1182486   -1276798   0.0575
+fv:4t0c0204>            TIGHTENED   441   481      111332   -1240917   0.0332
+fv:4t0c0204>             FIDELITY   482   543     2062311   -1149014   0.1297
+fv:4t0c0204>          INVESTMENTS   544   612    -1028929    -183320   0.2848
+fv:4t0c0204>           ++INHALE++   613   630     1794020    -300645   0.1682
+fv:4t0c0204>              DECIDED   631   675      210350    -983790   0.0423
+fv:4t0c0204>                 LAST   676   703     1151417    -463760   0.2672
+fv:4t0c0204>            FRIDAY(2)   704   746     3244734    -570711   0.2172
+fv:4t0c0204>                <sil>   747   763     -333089    -234810   0.0741
+fv:4t0c0204>                  THE   764   775     -256637    -270483   0.0356
+fv:4t0c0204>               SENATE   776   805      724001    -513654   0.0472
+fv:4t0c0204>              STEEPER   806   838     -251532   -1375009   0.0121
+fv:4t0c0204>                   AS   839   860      879656    -489923   0.0205
+fv:4t0c0204>           THURSDAY'S   861   904      -37178   -1069746   0.0452
+fv:4t0c0204>               PRICES   905   952     1658537    -493752   0.1719
+fv:4t0c0204>                  FOR   953   962     -232241    -534905   0.0997
+fv:4t0c0204>                 MOST   963   987     1041404    -424459   0.4547
+fv:4t0c0204>             FIDELITY   988  1030      447723   -1214013   0.1095
+fv:4t0c0204>                FUNDS  1031  1074     1009986    -437645   0.1321
+fv:4t0c0204>           ++INHALE++  1075  1093     1703378    -300645   0.2053
+fv:4t0c0204>              BECAUSE  1094  1130    -2054157    -592238   0.0946
+fv:4t0c0204>                   OF  1131  1137      -16830    -121988   0.0499
+fv:4t0c0204>            FRIDAY(2)  1138  1166      708754    -983572   0.0432
+fv:4t0c0204>                 DATA  1167  1186      879052    -980636   0.0189
+fv:4t0c0204>                   IT  1187  1194     -701718    -591060   0.0383
+fv:4t0c0204>               WASN'T  1195  1222     -442161    -525919   0.0562
+fv:4t0c0204>                READY  1223  1265      394000    -561705   0.2614
+fv:4t0c0204>                 </s>  1266  1297     4080402    -262123   0.3954
+FV:4t0c0204>                TOTAL                21668025  -24947662
+FWDVIT: AND IN THE LATEST BLOW TO PUBLIC CONFIDENCE IN THE FUNDS SUMMONED A INDUSTRY TIGHTENED FIDELITY INVESTMENTS DECIDED LAST FRIDAY THE SENATE STEEPER AS THURSDAY'S PRICES FOR MOST FIDELITY FUNDS BECAUSE OF FRIDAY DATA IT WASN'T READY  (4t0c0204 -84919417)
+FWDXCT: 4t0c0204 S 81639780 T -84919417 A -59971755 L -2553204 0 -440529 0 <s> 9 -885441 -29952 ++INHALE++ 53 -687451 -45614 AND(2) 80 -277672 -32372 IN 89 -215915 -14808 THE 98 -1913682 -51970 LATEST 134 -1433554 -61504 BLOW 158 -456310 -5526 TO 165 -2294887 -87436 PUBLIC 200 -3690817 -61886 CONFIDENCE 254 -219800 -5008 IN(2) 266 -505303 -7058 THE 274 -1360955 -91366 FUNDS 318 -605708 -23022 <sil> 342 -1719833 -137703 SUMMONED 380 -780710 -35192 A 394 -1811883 -132705 INDUSTRY 441 -1947723 -128928 TIGHTENED 482 -3474217 -119254 FIDELITY 544 -3632067 -17602 INVESTMENTS 613 -544945 -29952 ++INHALE++ 631 -2505301 -101862 DECIDED 676 -1045633 -47122 LAST 704 -2034735 -58380 FRIDAY(2) 747 -1089102 -23022 <sil> 764 -621992 -26778 THE 776 -1790501 -52374 SENATE 806 -1884660 -143043 STEEPER 839 -1125571 -49876 AS 861 -2284792 -110910 THURSDAY'S 905 -1595980 -50280 PRICES 953 -334824 -54611 FOR 963 -852740 -42986 MOST 988 -2222155 -126096 FIDELITY 1031 -1600421 -44374 FUNDS 1075 -554723 -29952 ++INHALE++ 1094 -2084637 -60646 BECAUSE 1131 -456770 -11146 OF 1138 -1324199 -101840 FRIDAY(2) 1167 -1077018 -101530 DATA 1187 -635608 -60522 IT 1195 -1673989 -53666 WASN'T 1223 -1213666 -57432 READY 1266 -1063336 -25898 </s> 1298
+INFO: ../lm.c(622):       37 tg(), 21 bo; 1086 fills, 241973 in mem (3.6%)
+INFO: ../lm.c(625):       22 bg(), 4 bo; 408 fills, 1205671 in mem (24.0%)
+INFO: ../fwd.c(3379): Writing lattice file: LATDIR/4t0c0204.lat.gz
+INFO: ../lm.c(622):    15186 tg(), 10036 bo; 0 fills, 241973 in mem (3.6%)
+INFO: ../lm.c(625):    10429 bg(), 2835 bo; 0 fills, 1205671 in mem (24.0%)
+INFO: ../lm.c(610): 734 tg frees, 167108 in mem; 589 bg frees, 897816 in mem
+4t0c0204: CTR:[frm       1298][sen    8144950][mpx   18241265][~mpx   12498327][lat      10026]
+4t0c0204: TMR:  1298 Frm  40.30 xEl  39.83 xCPU [fwd  39.79x  99%][gau+sen  18.30x 45%][srch  21.47x 53%][H   7.33x 18%][XH   4.09x 10%][XW  10.03x 25%]
+
+INFO: ../main.c(1259): Utterance: h1_et_94/4t0/4t0c0205
+INFO: ../feat.c(235): Reading mfc file: '../testdata/ctl/h1_et_94/4t0/4t0c0205.mfc'[0..2147483632]
+INFO: ../main.c(1352): 4t0c0205: 1231 input frames
+...........................................................................................................................
+FV:4t0c0205>                 WORD  SFrm  EFrm        AScr       LScr     Conf
+fv:4t0c0205>                  <s>     0     2        -522          0   1.0000
+fv:4t0c0205>                IN(2)     3    34     -288635    -327891   0.0869
+fv:4t0c0205>                 MEAN    35    54      197784   -1487404   0.0233
+fv:4t0c0205>                 SAME    55    95       62976    -940897   0.0157
+fv:4t0c0205>               PUBLIC    96   138    -1932387    -811897   0.2262
+fv:4t0c0205>                <sil>   139   147    -1989930    -234810   0.0737
+fv:4t0c0205>          HUMILIATION   148   206     -521487    -763960   0.0478
+fv:4t0c0205>              SEVERED   207   238     -820756   -1200171   0.0586
+fv:4t0c0205>                   BY   239   253      414321    -356420   0.1129
+fv:4t0c0205>             FIDELITY   254   309     1864171    -983372   0.1675
+fv:4t0c0205>              THIS(2)   310   329      927747    -775218   0.0696
+fv:4t0c0205>                 WEEK   330   364     -323244    -284628   0.1667
+fv:4t0c0205>           ++INHALE++   365   391     2085612    -300645   0.2279
+fv:4t0c0205>                AS(2)   392   412      -66559    -410988   0.2719
+fv:4t0c0205>                  ILL   413   421     -237814   -1031841   0.0152
+fv:4t0c0205>                   AS   422   434      252063    -639767   0.0256
+fv:4t0c0205>               FOR(2)   435   458      302010    -517834   0.0348
+fv:4t0c0205>                STIFF   459   489      -26375   -1125102   0.0205
+fv:4t0c0205>                ASSET   490   534     1929183   -1122661   0.0241
+fv:4t0c0205>                TO(2)   535   551      135347    -414968   0.0404
+fv:4t0c0205>                  ITS   552   570     -361056    -616292   0.0166
+fv:4t0c0205>          INTENTIONAL   571   622    -2081507   -1398170   0.0575
+fv:4t0c0205>              MISTAKE   623   675     2829123   -1126299   0.1477
+fv:4t0c0205>                <sil>   676   697     2444822    -234810   0.2218
+fv:4t0c0205>               THE(2)   698   714      873710    -389508   0.0434
+fv:4t0c0205>              COMPANY   715   758    -1392444    -420478   0.0845
+fv:4t0c0205>                  HAS   759   773      519098    -292903   0.0552
+fv:4t0c0205>               SOUGHT   774   796      990986    -598974   0.1242
+fv:4t0c0205>                   TO   797   807     -749233     -75115   0.2808
+fv:4t0c0205>                 MAKE   808   825       40076    -402761   0.4191
+fv:4t0c0205>                CLEAR   826   855    -1208658    -552699   0.0542
+fv:4t0c0205>                 THAT   856   868      783731    -111035   0.1269
+fv:4t0c0205>               NOBODY   869   905    -2049109    -889978   0.0903
+fv:4t0c0205>               BOUGHT   906   931     -352233    -702058   0.0712
+fv:4t0c0205>                   OR   932   942     -180905    -462715   0.0195
+fv:4t0c0205>                 SOLD   943   982     -392608     -50035   0.0895
+fv:4t0c0205>                    A   983   988     -351101    -469840   0.0281
+fv:4t0c0205>                 FUND   989  1018      518291    -842848   0.0534
+fv:4t0c0205>                RACKS  1019  1044     -280168   -1382315   0.0182
+fv:4t0c0205>                  AND  1045  1056      -78054    -216694   0.0144
+fv:4t0c0205>             FIDELITY  1057  1103      858818    -976921   0.0514
+fv:4t0c0205>                   AT  1104  1114     -779063    -725153   0.0284
+fv:4t0c0205>                  THE  1115  1122     -179671    -150906   0.0334
+fv:4t0c0205>                WRONG  1123  1144      120224    -682327   0.0666
+fv:4t0c0205>                PRICE  1145  1202     3732657    -871168   0.0994
+fv:4t0c0205>                 </s>  1203  1230     2169944    -272886   0.2462
+FV:4t0c0205>                TOTAL                 7409175  -28645362
+FWDVIT: IN MEAN SAME PUBLIC HUMILIATION SEVERED BY FIDELITY THIS WEEK AS ILL AS FOR STIFF ASSET TO ITS INTENTIONAL MISTAKE THE COMPANY HAS SOUGHT TO MAKE CLEAR THAT NOBODY BOUGHT OR SOLD A FUND RACKS AND FIDELITY AT THE WRONG PRICE  (4t0c0205 -85550077)
+FWDXCT: 4t0c0205 S 64313890 T -85550077 A -56904715 L -2939046 0 -210159 0 <s> 3 -1188052 -32820 IN(2) 35 -799217 -154874 MEAN 55 -2173655 -97347 SAME 96 -1998781 -83768 PUBLIC 139 -591977 -23022 <sil> 148 -3812182 -78722 HUMILIATION 207 -1949179 -124639 SEVERED 239 -530103 -35824 BY 254 -2225393 -101818 FIDELITY 310 -688036 -79908 THIS(2) 330 -1536688 -28266 WEEK 365 -883472 -29952 ++INHALE++ 392 -403468 -41568 AS(2) 413 -662636 -106920 ILL 422 -597444 -65650 AS 435 -1059393 -52814 FOR(2) 459 -1322126 -116737 STIFF 490 -2481075 -116480 ASSET 535 -630660 -41986 TO(2) 552 -1166763 -63178 ITS 571 -2132179 -145481 INTENTIONAL 623 -1280214 -116863 MISTAKE 676 -451800 -23022 <sil> 698 -617580 -39306 THE(2) 715 -2286041 -42566 COMPANY 759 -555947 -29138 HAS 774 -996223 -61356 SOUGHT 797 -274543 -6212 TO 808 -661208 -40702 MAKE 826 -1841866 -56484 CLEAR 856 -479102 -9994 THAT 869 -2925974 -91988 NOBODY 906 -1762013 -72206 BOUGHT 932 -1242573 -47012 OR 943 -1739095 -3572 SOLD 983 -391526 -47762 A 989 -1095070 -87026 FUND 1019 -1407221 -143812 RACKS 1045 -509086 -21116 AND 1057 -2433178 -101139 FIDELITY 1104 -615809 -74638 AT 1115 -413588 -14190 THE 1123 -824134 -70130 WRONG 1145 -2101115 -90008 PRICE 1203 -957171 -27030 </s> 1231
+INFO: ../lm.c(622):       41 tg(), 31 bo; 1446 fills, 253602 in mem (3.8%)
+INFO: ../lm.c(625):       32 bg(), 6 bo; 567 fills, 1202091 in mem (23.9%)
+INFO: ../fwd.c(3379): Writing lattice file: LATDIR/4t0c0205.lat.gz
+INFO: ../lm.c(622):    20943 tg(), 16681 bo; 0 fills, 253602 in mem (3.8%)
+INFO: ../lm.c(625):    17116 bg(), 5325 bo; 0 fills, 1202091 in mem (23.9%)
+INFO: ../lm.c(610): 670 tg frees, 176490 in mem; 375 bg frees, 1001932 in mem
+4t0c0205: CTR:[frm       1231][sen    7724525][mpx   17777041][~mpx   12680376][lat      11585]
+4t0c0205: TMR:  1231 Frm  41.97 xEl  40.80 xCPU [fwd  40.74x  99%][gau+sen  18.30x 44%][srch  22.42x 54%][H   7.69x 18%][XH   4.25x 10%][XW  10.45x 25%]
+
+INFO: ../main.c(1365): Skipping rest of control file beginning with:
+	h1_et_94/4t0/4t0c0206
+
+TOTAL FRAMES:           5612
+TOTAL CPU TIME:         2222.58 sec,   39.60 xRT
+TOTAL ELAPSED TIME:     2286.53 sec,   40.74 xRT
+rkm      13169 50.0 28.5 74.5M  725 ttyp1    S    11:05:20    37:15.97 /tmp/s3decode.13101 -mdeffn ../testdata/dict/nov94/h1c1-94.mdef -senmgaufn .cont. -meanfn ../testdata/hmm-sphinx3/mean -varfn ../testdata/hmm-sphinx3/var -mixwfn ../testdata/hmm-sphinx3/mixw -tmatfn ../testdata/hmm-sphinx3/tmat -feat s3_1x39 -topn 1000 -beam 1e-80 -nwbeam 1e-40 -dictfn ../testdata/dict/nov94/h1c1-94.dic -fdictfn ../testdata/dict/nov94/filler.dic -lmfn ../testdata/lm/nov94/t94-top20k-1-3.arpabo.Z.DMP -inspen 0.2 -ctlfn ../testdata/ctl/h1_et_94-g.ctl -ctloffset 0 -ctlcount 5 -cepdir ../testdata/ctl -outlatdir LATDIR -matchfn et94-decode.match
+rkm      13101  0.0  0.0 1.88M   0K ttyp1    IW   11:05:20     0:00.05 csh ./et94-decode.csh ../bin/alpha/s3decode et94-decode 0 5
+rkm      13174  0.0  0.1 1.23M 136K ttyp1    S    11:43:41     0:00.01 grep s3decode
+rkm      13203  0.0  0.1 1.71M 160K ttyp1    S    11:43:41     0:00.01 sh -c ps aguxwww | grep s3decode
