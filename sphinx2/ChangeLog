@@ -661,3 +661,10 @@ set of changes from dhd (below)
 	  for people without apparent error; this is now reported with
 	  diagnosis.
 
+2001-10-26 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Fixed an error in raw2cep that prevented sphinx2 from reading
+	  the output .mfc files.
+	* Added dict_free to dict.c and dict.h for people who are 
+	  changing language models at run-time and want to free the
+	  prior dictionary to save memory.
+	
