@@ -34,7 +34,7 @@
  *
  */
 /*
- * decode.c -- 
+ * decode.c --  
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -56,7 +56,9 @@
  * 		Started.
  */
 
-
+/* \file decode.c
+ * \brief main function for application decode
+ */
 #include "utt.h"
 #include "kb.h"
 #include "logs3.h"		/* RAH, added to resolve log3_free */

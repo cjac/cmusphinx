@@ -34,7 +34,7 @@
  *
  */
 /*
- * astar-main.c -- Driver for N-best list creation from DAGs using A* algorithm.
+ * main_astar.c -- Driver for N-best list creation from DAGs using A* algorithm.
  *
  * **********************************************
  * CMU ARPA Speech Project
@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/12/05  12:01:32  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.8  2004/12/06  11:15:11  arthchan2003
+ * Enable doxygen in the program directory.
  * 
+ * Revision 1.7  2004/12/05 12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.6  2004/12/02 18:24:42  dhdfu
  * Remove some compiler warnings
  *
@@ -107,6 +110,9 @@
  * 		Created from nbest-main.c
  */
 
+/* \file main_astar.c 
+ * \brief Driver for N-best list creation from DAGs using A* algorithm.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

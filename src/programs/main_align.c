@@ -106,7 +106,9 @@
 #include "ms_senone.h"
 #include "interp.h"
 
-
+/* \file main_align.c
+   \brief Main driver routine for time alignment.
+*/
 static arg_t defn[] = {
     { "-logbase",
       ARG_FLOAT32,

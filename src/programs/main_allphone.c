@@ -85,7 +85,9 @@
 #include "agc.h"
 #include "cmn.h"
 
-
+/* \file main_allphone.c
+ * \brief  Main driver routine for allphone Viterbi decoding
+ */
 static arg_t defn[] = {
     { "-logbase",
       ARG_FLOAT32,

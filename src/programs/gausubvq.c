@@ -55,8 +55,11 @@
 #include "logs3.h"
 #include "vector.h"
 
+/* \file gausubvq.c 
+ * \brief Compute the SVQ map 
+ */
 
-/*
+/**
  * Parse subvectors specification string.  Format:
  *   - '/' separated list of subvectors
  *   - each subvector is a ',' separated list of subranges

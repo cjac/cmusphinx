@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.6  2004/12/05  12:01:32  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.7  2004/12/06  11:15:11  arthchan2003
+ * Enable doxygen in the program directory.
  * 
+ * Revision 1.6  2004/12/05 12:01:32  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.5  2004/11/16 05:13:19  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
@@ -118,7 +121,9 @@
  * 		Creating.
  */
 
-
+/* \file main_dag.c
+ * \brief main driver for DAG and find the best path. 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

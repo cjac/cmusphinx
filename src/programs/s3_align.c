@@ -57,7 +57,9 @@
  * 		Created.
  */
 
-
+/** \file s3_align.c
+    \brief Engine for Sphinx 3 aligner
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,7 +73,7 @@
 #include "s3_align.h"
 
 
-/*
+/**
  * SOME ASSUMPTIONS
  *   - All phones (ciphones and triphones) have same HMM topology with n_state states.
  *   - Initial state = state 0; final state = state n_state-1.
@@ -80,7 +82,7 @@
  */
 
 
-/*
+/**
  * Phone-level sentence HMM structures:
  *     pnode_t: nodes of phones forming sentence HMM.
  *     plink_t: a link between two pnode_t nodes.
@@ -93,13 +95,13 @@
  */
 
 typedef struct pnode_s {
-    s3wid_t wid;	/* Parent word id */
-    s3cipid_t ci;	/* CI phone id corresponding to this node */
-    s3cipid_t lc;	/* Left context CI phone */
-    s3cipid_t rc;	/* Right context CI phone */
-    int8 pos;		/* Phone position within word for this node */
-    s3pid_t pid;	/* Triphone id for this node */
-    int32 id;		/* Unique id for identifying node, debugging */
+    s3wid_t wid;	/** Parent word id */
+    s3cipid_t ci;	/** CI phone id corresponding to this node */
+    s3cipid_t lc;	/** Left context CI phone */
+    s3cipid_t rc;	/** Right context CI phone */
+    int8 pos;		/** Phone position within word for this node */
+    s3pid_t pid;	/** Triphone id for this node */
+    int32 id;		/** Unique id for identifying node, debugging */
     struct plink_s *succlist;	/* Links to successor nodes */
     struct plink_s *predlist;	/* Links to predecessor nodes */
     struct pnode_s *next;	/* For building various lists of nodes */
@@ -107,39 +109,39 @@ typedef struct pnode_s {
     struct snode_s *startstate;	/* Start state of underlying HMM */
 } pnode_t;
 
-/*
+/**
  * A may have links (transitions) to several successor or predecessor nodes.
  * They are captured by a list of the following plink_t type.
  */
 typedef struct plink_s {
-    pnode_t *node;		/* Target node for this link for a given parent node */
-    struct plink_s *next;	/* Next link for same parent node */
+    pnode_t *node;		/** Target node for this link for a given parent node */
+    struct plink_s *next;	/** Next link for same parent node */
 } plink_t;
 
 
-/*
+/**
  * Viterbi search history for each state at each time.
  */
 typedef struct history_s {
     int32 score;
-    struct snode_s *snode;		/* State for which this history node created */
-    struct history_s *pred;		/* Previous frame history */
-    struct history_s *alloc_next;	/* Linear list of all allocated history nodes */
+    struct snode_s *snode;		/** State for which this history node created */
+    struct history_s *pred;		/** Previous frame history */
+    struct history_s *alloc_next;	/** Linear list of all allocated history nodes */
 } history_t;
-static history_t *hist_head;		/* Head of list of all history nodes */
+static history_t *hist_head;		/** Head of list of all history nodes */
 
-/*
+/**
  * State DAG structures similar to phone DAG structures.
  */
 typedef struct snode_s {
-    pnode_t *pnode;		/* Parent phone node */
-    struct slink_s *succlist;	/* List of successor states */
-    struct slink_s *predlist;	/* List of predecessor states */
-    int32 score, newscore;	/* Score at start, end of each frame */
-    history_t *hist, *newhist;	/* Path history at start, end of each frame */
-    int32 active_frm;		/* Frame no. most recently active */
-    s3senid_t sen;		/* Senone id, BAD_S3SENID if dummy node (head/tail) */
-    int8 state;			/* Local state no. (within parent HMM) */
+    pnode_t *pnode;		/** Parent phone node */
+    struct slink_s *succlist;	/** List of successor states */
+    struct slink_s *predlist;	/** List of predecessor states */
+    int32 score, newscore;	/** Score at start, end of each frame */
+    history_t *hist, *newhist;	/** Path history at start, end of each frame */
+    int32 active_frm;		/** Frame no. most recently active */
+    s3senid_t sen;		/** Senone id, BAD_S3SENID if dummy node (head/tail) */
+    int8 state;			/** Local state no. (within parent HMM) */
 } snode_t;
 
 typedef struct slink_s {
@@ -148,35 +150,35 @@ typedef struct slink_s {
     int32 prob;
 } slink_t;
 
-static pnode_t phead, ptail;	/* Dummies at the beginning and end of the sent hmm */
-static pnode_t *pnode_list;	/* List of all dynamically allocated pnodes */
-static int32 n_pnode;		/* #pnodes allocated (used to ID each pnode) */
+static pnode_t phead, ptail;	/** Dummies at the beginning and end of the sent hmm */
+static pnode_t *pnode_list;	/** List of all dynamically allocated pnodes */
+static int32 n_pnode;		/** #pnodes allocated (used to ID each pnode) */
 
-static snode_t shead, stail;	/* State-level DAG head and tail */
+static snode_t shead, stail;	/** State-level DAG head and tail */
 
-static dict_t *dict;		/* The dictionary */
-static mdef_t *mdef;		/* Model definition */
-static tmat_t *tmat;		/* Transition probability matrices */
+static dict_t *dict;		/** The dictionary */
+static mdef_t *mdef;		/** Model definition */
+static tmat_t *tmat;		/** Transition probability matrices */
 
-static s3wid_t silwid, startwid, finishwid;	/* Base wids */
-static s3wid_t *fillwid;	/* BAD_S3WID terminated array of optional filler basewid */
+static s3wid_t silwid, startwid, finishwid;	/** Base wids */
+static s3wid_t *fillwid;	/** BAD_S3WID terminated array of optional filler basewid */
 
-static snode_t **cur_active;	/* NULL-terminated active state list for current frame */
-static snode_t **next_active;	/* Similar list for next frame */
+static snode_t **cur_active;	/** NULL-terminated active state list for current frame */
+static snode_t **next_active;	/** Similar list for next frame */
 static int32 active_list_size = 0;
 #define ACTIVE_LIST_SIZE_INCR	16380
 static int32 n_active;
 
-static int32 curfrm;		/* Current frame */
-static int32 beam;		/* Pruning beamwidth */
-static int32 *score_scale;	/* Score by which state scores scaled in each frame */
+static int32 curfrm;		/** Current frame */
+static int32 beam;		/** Pruning beamwidth */
+static int32 *score_scale;	/** Score by which state scores scaled in each frame */
 
-/* Lists of state, phone and word-level alignments for most recent utterance */
+/** Lists of state, phone and word-level alignments for most recent utterance */
 static align_stseg_t *align_stseg;
 static align_phseg_t *align_phseg;
 static align_wdseg_t *align_wdseg;
 
-/* Free all allocated pnodes */
+/** Free all allocated pnodes */
 static void pnodes_free ( void )
 {
     pnode_t *p;
@@ -189,7 +191,7 @@ static void pnodes_free ( void )
 }
 
 
-/* Free the specified set of plinks */
+/** Free the specified set of plinks */
 static void plinks_free (plink_t *l)
 {
     plink_t *tmp;
@@ -202,7 +204,7 @@ static void plinks_free (plink_t *l)
 }
 
 
-/*
+/**
  * Append a pnode to a list of pnodes (maintained in a list of plinks).
  */
 static plink_t *append_pnode (plink_t *list, pnode_t *node)
@@ -216,7 +218,7 @@ static plink_t *append_pnode (plink_t *list, pnode_t *node)
 }
 
 
-/*
+/**
  * Allocate a pnode with the given attributes and automatically link it to the global
  * list.  Return the allocated node pointer.
  */
@@ -250,7 +252,7 @@ static pnode_t *alloc_pnode (s3wid_t w, int32 pos,
 }
 
 
-/*
+/**
  * Link source and destination phone HMM nodes.
  */
 static void link_pnodes (pnode_t *src, pnode_t *dst)
@@ -260,7 +262,7 @@ static void link_pnodes (pnode_t *src, pnode_t *dst)
 }
 
 
-/*
+/**
  * Create phone-level HMM for a single word and append to partial sentence HMM.
  * Replicate HMM nodes as needed to account for all possible left and right context
  * phones.
@@ -401,7 +403,7 @@ static void build_succ_ci (s3wid_t w, int32 append_filler, s3cipid_t *succ_ci)
 }
 
 
-/*
+/**
  * Append a new word to partially build phone-level sentence HMM.  (Handle alternative
  * pronunciations.)  Link new word to end phones of previous words.
  * Append optional filler words before w, if indicated.
@@ -410,11 +412,11 @@ static void build_succ_ci (s3wid_t w, int32 append_filler, s3cipid_t *succ_ci)
  * the global node list.)
  */
 static pnode_t *append_transcript_word
-    (s3wid_t w,			/* Transcript word to be appended */
-     pnode_t *prev_end,		/* Previous end points to be attached to w */
-     s3wid_t nextw,		/* Next word to follow w (ignoring optional fillers) */
-     int32 prefix_filler,	/* Whether optional filler words to precede w */
-     int32 append_filler)	/* Whether optional filler words to follow w */
+    (s3wid_t w,			/** Transcript word to be appended */
+     pnode_t *prev_end,		/** Previous end points to be attached to w */
+     s3wid_t nextw,		/** Next word to follow w (ignoring optional fillers) */
+     int32 prefix_filler,	/** Whether optional filler words to precede w */
+     int32 append_filler)	/** Whether optional filler words to follow w */
 {
     int32 i;
     pnode_t *new_end, *tmp_end, *node;
@@ -535,7 +537,7 @@ static void dump_pdag ( void )
 #endif
 
 
-/*
+/**
  * Append an snode to a list of snodes (maintained in a list of slinks).
  */
 static slink_t *append_snode (slink_t *list, snode_t *node, int32 prob)
@@ -551,7 +553,7 @@ static slink_t *append_snode (slink_t *list, snode_t *node, int32 prob)
 }
 
 
-/*
+/**
  * Link source and destination state nodes.
  */
 static void link_snodes (snode_t *src, snode_t *dst, int32 prob)
@@ -561,7 +563,7 @@ static void link_snodes (snode_t *src, snode_t *dst, int32 prob)
 }
 
 
-/*
+/**
  * Remove src->dst link and return the associated prob.
  */
 static int32 un_slink_succ (snode_t *src, snode_t *dst)
@@ -599,7 +601,7 @@ static void slinks_free (slink_t *l)
 }
 
 
-/*
+/**
  * Build a state-level DAG from the phone-level one.  This DAG is the one actually
  * searched.
  */
@@ -742,7 +744,7 @@ static void dump_sent_hmm ( void )
 #endif
 
 
-/*
+/**
  * Build a sentence HMM for the given transcription (wordstr).  A two-level DAG is
  * built: phone-level and state-level.
  *   - <s> and </s> always added at the beginning and end of sentence to form an
@@ -926,7 +928,7 @@ static void activate (snode_t *s, int32 frm)
 }
 
 
-/*
+/**
  * Flag the active senones.
  */
 void align_sen_active (s3senid_t *senlist, int32 n_sen)
@@ -943,7 +945,7 @@ void align_sen_active (s3senid_t *senlist, int32 n_sen)
 }
 
 
-/*
+/**
  * Start Viterbi alignment using the sentence HMM previously built.
  * Assumes that each utterance will only be aligned once; state member variables
  * initialized during sentence HMM building.
@@ -969,7 +971,7 @@ int32 align_start_utt (char *uttid)
 }
 
 
-/*
+/**
  * One frame of Viterbi time alignment.
  */
 int32 align_frame (int32 *senscr)
@@ -1168,7 +1170,7 @@ static void build_wdseg (history_t *rooth)
 }
 
 
-/*
+/**
  * All frames consumed.  Trace back best Viterbi state sequence and dump it out.
  */
 int32 align_end_utt (align_stseg_t **stseg_out,

@@ -52,6 +52,9 @@
  * 		Started.
  */
 
+/** \file s3_allphone.c
+    \brief Engine for s3 phoneme recognition
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,7 +67,7 @@
 #include "logs3.h"
 #include "s3_allphone.h"
 
-/*
+/**
  * SOME ASSUMPTIONS
  *   - All phones (ciphones and triphones) have same HMM topology with n_state states.
  *   - Initial state = state 0; final state = state n_state-1.
@@ -73,51 +76,51 @@
  */
 
 
-/*
+/**
  * Phone-HMM (PHMM) structure:  Models a single unique <senone-sequence, tmat> pair.
  * Can represent several different triphones, but all with the same parent basephone.
  * (NOTE: Word-position attribute of triphone is ignored.)
  */
 typedef struct phmm_s {
-    s3pid_t pid;	/* Phone id (temp. during init.) */
-    s3tmatid_t tmat;	/* Transition matrix id for this PHMM */
-    s3cipid_t ci;	/* Parent basephone for this PHMM */
-    s3frmid_t active;	/* Latest frame in which this PHMM is/was active */
-    uint32 *lc;		/* Set (bit-vector) of left context phones seen for this PHMM */
-    uint32 *rc;		/* Set (bit-vector) of right context phones seen for this PHMM */
-    s3senid_t *sen;	/* Senone-id sequence underlying this PHMM */
-    int32 *score;	/* Total path score during Viterbi decoding */
-    struct history_s **hist;	/* Viterbi history (for backtrace) */
-    int32 bestscore;	/* Best state score in any frame */
-    int32 inscore;	/* Incoming score from predecessor PHMMs */
-    struct history_s *inhist;	/* History corresponding to inscore */
-    struct phmm_s *next;	/* Next unique PHMM for same parent basephone */
-    struct plink_s *succlist;	/* List of predecessor PHMM nodes */
+    s3pid_t pid;	/** Phone id (temp. during init.) */
+    s3tmatid_t tmat;	/** Transition matrix id for this PHMM */
+    s3cipid_t ci;	/** Parent basephone for this PHMM */
+    s3frmid_t active;	/** Latest frame in which this PHMM is/was active */
+    uint32 *lc;		/** Set (bit-vector) of left context phones seen for this PHMM */
+    uint32 *rc;		/** Set (bit-vector) of right context phones seen for this PHMM */
+    s3senid_t *sen;	/** Senone-id sequence underlying this PHMM */
+    int32 *score;	/** Total path score during Viterbi decoding */
+    struct history_s **hist;	/** Viterbi history (for backtrace) */
+    int32 bestscore;	/** Best state score in any frame */
+    int32 inscore;	/** Incoming score from predecessor PHMMs */
+    struct history_s *inhist;	/** History corresponding to inscore */
+    struct phmm_s *next;	/** Next unique PHMM for same parent basephone */
+    struct plink_s *succlist;	/** List of predecessor PHMM nodes */
 } phmm_t;
-static phmm_t **ci_phmm;	/* PHMM lists (for each CI phone) */
+static phmm_t **ci_phmm;	/** PHMM lists (for each CI phone) */
 
-/*
+/**
  * List of links from a PHMM node to its successors; one link per successor.
  */
 typedef struct plink_s {
-    phmm_t *phmm;		/* Successor PHMM node */
-    struct plink_s *next;	/* Next link for parent PHMM node */
+    phmm_t *phmm;		/** Successor PHMM node */
+    struct plink_s *next;	/** Next link for parent PHMM node */
 } plink_t;
 
-/*
+/**
  * History (paths) information at any point in allphone Viterbi search.
  */
 typedef struct history_s {
-    phmm_t *phmm;	/* PHMM ending this path */
-    int32 score;	/* Path score for this path */
-    s3frmid_t ef;	/* End frame */
-    struct history_s *hist;	/* Previous history entry */
-    struct history_s *next;	/* Next in allocated list */
+    phmm_t *phmm;	/** PHMM ending this path */
+    int32 score;	/** Path score for this path */
+    s3frmid_t ef;	/** End frame */
+    struct history_s *hist;	/** Previous history entry */
+    struct history_s *next;	/** Next in allocated list */
 } history_t;
-static history_t **frm_hist;	/* List of history nodes allocated in each frame */
+static history_t **frm_hist;	/** List of history nodes allocated in each frame */
 
-extern mdef_t *mdef;		/* Model definition */
-extern tmat_t *tmat;		/* Transition probability matrices */
+extern mdef_t *mdef;		/** Model definition */
+extern tmat_t *tmat;		/** Transition probability matrices */
 
 static int32 lrc_size = 0;
 static int32 curfrm;		/* Current frame */
@@ -128,7 +131,7 @@ static int32 **tp;		/* Phone transition probabilities */
 static int32 n_histnode;	/* No. of history entries */
 
 
-/*
+/**
  * Find PHMM node with same senone sequence and tmat id as the given triphone.
  * Return ptr to PHMM node if found, NULL otherwise.
  */
@@ -363,7 +366,7 @@ static void phmm_dump ( void )
 }
 #endif
 
-/*
+/**
  * Check model tprob matrices that they conform to upper-diagonal assumption.
  */
 static void chk_tp_uppertri ( void )
@@ -482,7 +485,7 @@ static void phmm_eval (phmm_t *p, int32 *senscr)
 }
 
 
-/* Evaluate active PHMMs */
+/** Evaluate active PHMMs */
 static int32 phmm_eval_all (int32 *senscr)
 {
     s3cipid_t ci;
@@ -601,7 +604,7 @@ int32 allphone_frame (int32 *senscr)
 }
 
 
-/* Return accumulated score scale in frame range [sf..ef] */
+/** Return accumulated score scale in frame range [sf..ef] */
 static int32 seg_score_scale (int32 sf, int32 ef)
 {
     int32 scale, s;

@@ -39,6 +39,9 @@
 #include "endptr.h"
 #include "fe.h"
 
+/** \file wave2feat.c
+ * \brief Driver for wave2feat
+ */
 const char helpstr[] =
   "Description: \n\
 Create cepstra from audio file.\n		\
