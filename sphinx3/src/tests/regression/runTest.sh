@@ -6,8 +6,8 @@
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin
 export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib
 
-# cd to sphinx3 :-)
-cd sphinx3
+# goto sphinx3 :-)
+pushd sphinx3
 # Create a machine-specific directory
 mkdir `hostname`
 # Run test from the machine-specific directory
@@ -22,4 +22,8 @@ cp -p pittsburgh* log/
 # Clean thoroughly the binaries, libraries, etc, in preparation for 
 # another test
 make distclean
+popd
+
+# Store all the information from a particular host.
+mv sphinx3/`hostname` logCompile/ 
 
