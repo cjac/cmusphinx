@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title>Sphinx-3 s3.3 Decoder</title>
+    <title>Sphinx-3 s3.4 Decoder</title>
     <style type="text/css">
       body { margin-left: 6%; margin-right: 3%; background: white; }
       h1 { color: green; align: center; }
@@ -17,7 +17,7 @@
   </head>
   
   <BODY>
-    <H1><U>Sphinx-3 s3.3 Decoder</U></H1>
+    <H1><U>Sphinx-3 s3.4 Decoder</U></H1>
     <center>
       Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
       Sphinx Speech Group<br>
@@ -32,14 +32,14 @@
     <div class="wheatbox">
       <UL>
 	<LI><A HREF="#sec_intro">Introduction</A></LI>
-	<LI><A HREF="#sec_decoverview">Overview of the s3.3 Decoder</A>
+	<LI><A HREF="#sec_decoverview">Overview of the s3.4 Decoder</A>
           <UL>
 	    <LI><A HREF="#sec_dec_input">Inputs</A></LI>
 	    <LI><A HREF="#sec_dec_output">Outputs</A></LI>
           </UL>
 	</LI>
-        <LI><A HREF="#sec_compile">Compiling s3.3</A></LI>
-        <LI><A HREF="#sec_exec">Running s3.3</A>
+        <LI><A HREF="#sec_compile">Compiling s3.4</A></LI>
+        <LI><A HREF="#sec_exec">Running s3.4</A>
           <UL>
 	    <LI><A HREF="#sec_args_overview">Configuration Arguments Overview</A></LI>
 	    <LI><A HREF="#sec_dec_op">Decoder Operation</A></LI>
@@ -77,12 +77,12 @@
     acoustic <em>trainer</em> and various <em>decoders</em>,
     <em>i.e.</em>, text recognition, phoneme recognition, N-best list
     generation, etc. In this document, "Sphinx-3" refers to any
-    version of the Sphinx-3 decoder, and "s3.3" refers to the version
-    available in this distribution. Notice that s3.3 is in fact a
+    version of the Sphinx-3 decoder, and "s3.4" refers to the version
+    available in this distribution. Notice that s3.4 is in fact a
     branch from Sphinx-3, not a more recent release.
     </P>
     
-    <P>The s3.3 decoder is a recent implementation for speech-to-text
+    <P>The s3.4 decoder is a recent implementation for speech-to-text
     recognition, its main goal being speed improvements over the
     original Sphinx-3 decoder.  It runs about 10 times faster than the
     latter on large vocabulary tasks.  The following is a brief
@@ -99,9 +99,10 @@
     <P>This package contains the following programs:
     </P>
     <OL>
-      <LI><code>livedecode</code>: The Sphinx-3 s3.3 decoder in live mode</LI>
-      <LI><code>livepretend</code>: The Sphinx-3 s3.3 decoder in batch mode</LI>
+      <LI><code>decode</code>: The Sphinx-3 s3.2/s3.3/s3.4 decoder processing cesptra files</li>
       <LI><code>gausubvq</code>: Sub-vector clustered acoustic model building</LI>
+      <LI><code>livedecode</code>: The Sphinx-3 s3.4 decoder in live mode</LI>
+      <LI><code>livepretend</code>: The Sphinx-3 s3.4 decoder in batch mode</LI>
     </OL>
     <P>This distribution has been prepared for Unix platforms. Port to
     MS Windows (MS Visual C++ 6.0 workspace and project files) has
@@ -114,8 +115,8 @@
     technology.  However, a set of Microsoft PowerPoint <a
     href="s3-2.ppt">slides</a> are available that give additional
     information about the decoder. Even though the slides refer to
-    s3.2, keep in mind that the only major difference between s3.2 and
-    s3.3 is that s3.3 is capable of running in live mode.
+    s3.2, keep in mind that the basic search structure remains te same
+    in s3.4.
     </P>
     
     <P>The initial part of this document provides an overview of the
@@ -129,9 +130,9 @@
     </div>
 
     
-    <H2><A NAME="sec_decoverview"><U>Overview of the s3.3 Decoder</U></A></H2>
+    <H2><A NAME="sec_decoverview"><U>Overview of the s3.4 Decoder</U></A></H2>
     
-    <P>The s3.3 decoder is based on the conventional <em>Viterbi
+    <P>The s3.4 decoder is based on the conventional <em>Viterbi
     search</em> algorithm and <em>beam search</em> heuristics.  It
     uses a <em>lexical-tree</em> search structure somewhat like the
     Sphinx-II decoder, but with some improvements for greater accuracy
@@ -164,7 +165,7 @@
       training data using the Sphinx-3 trainer.  The trainer is
       capable of building acoustic models with a wide range of
       structures, such as <em>discrete</em>, <em>semi-continuous</em>,
-      or <em>continuous</em>.  However, the s3.3 decoder is only
+      or <em>continuous</em>.  However, the s3.4 decoder is only
       capable of handling continuous acoustic models.
       </LI>
       <P></P>
@@ -176,15 +177,17 @@
       <P></P>
       
       <LI><a href="#sec_ctl"><em>Speech input specification</em></a>:
-      This distribution contains two executable
-      files. <code>livedecode</code> decodes live speech, that is,
-      speech incoming from your audio card. <code>livepretend</code>
-      decodes in batch mode using a <em>control file</em> that
-      describes the input to be decoded into text.  In the latter, the
-      entire input to be processed must be available beforehand,
-      <em>i.e.</em>, the raw audio samples must have been preprocessed
-      into cepstrum files. Also note that the decoder cannot handle
-      arbitrary lengths of speech input.  Each separate piece (or
+      This distribution contains four executable files, three of which
+      perform recognition. <code>livedecode</code> decodes live
+      speech, that is, speech incoming from your audio
+      card. <code>livepretend</code> decodes in batch mode using a
+      <em>control file</em> that describes the input to be decoded
+      into text. <code>decode</code> decodes also uses a control file
+      for batch mode processing. In the latter, the entire input to be
+      processed must be available beforehand, <em>i.e.</em>, the raw
+      audio samples must have been preprocessed into cepstrum
+      files. Also note that the decoder cannot handle arbitrary
+      lengths of speech input.  Each separate piece (or
       <em>utterance</em>) to be processed by the decoder must be no
       more than 300 sec. long.  Typically, one uses a
       <em>segmenter</em> to chop up a cepstrum stream into manageable
@@ -225,16 +228,16 @@
     
     
     
-    <H2><A NAME="sec_compile"><u>Compiling s3.3</u></A></H2>
+    <H2><A NAME="sec_compile"><u>Compiling s3.4</u></A></H2>
     
     <P>The current distribution has been set up for Unix platforms.
     The following steps are needed to compile the decoder:
     </P>
     <OL>
       <LI><code>./configure [--prefix=/my/install/directory]</code>:
-      the argument is optional. If not given, it will install s3.3
+      the argument is optional. If not given, it will install s3.4
       under /usr/local, provided you have the proper permissions. This
-      step is only necessary the first time you compile s3.3.</LI>
+      step is only necessary the first time you compile s3.4.</LI>
 
       <LI><code>make clean</code>: This should remove any old object
       files.</LI> 
@@ -242,7 +245,7 @@
       <LI><code>make</code>: This compiles the libraries and example
       programs.</LI>
 
-      <LI><code>make install</code>: This will install s3.3 in the
+      <LI><code>make install</code>: This will install s3.4 in the
       directory that you specified when you ran <code>configure</code>
       and also the provided models and documentation.</LI>
     </OL>
@@ -261,17 +264,17 @@
     
     
     
-    <H2><A NAME="sec_exec"><u>Running s3.3</u></A></H2>
+    <H2><A NAME="sec_exec"><u>Running s3.4</u></A></H2>
     
     <P>Running the decoder is simply a matter of invoking the binary
-    (<em>i.e.</em>, <code>livedecode</code> or
+    (<em>i.e.</em>, <code>decode</code>, <code>livedecode</code> or
     <code>livepretend</code>), with a number of command line arguments
     specifying the various input files, as well as decoding
-    configuration parameters. <code>livepretend</code> requires a
-    control file, the directory where the audio files are available,
-    and a file containing the configuration
-    arguments. <code>livedecode</code>, which runs live, requires only
-    the file with the arguments.
+    configuration parameters. <code>decode</code> and
+    <code>livepretend</code> require a control file, the directory
+    where the audio files are available, and a file containing the
+    configuration arguments. <code>livedecode</code>, which runs live,
+    requires only the file with the arguments.
     </p>
 
     <P>Invoking the binary without any argument produces a <a
@@ -459,7 +462,7 @@
     <P>This section is a bit of a mish-mash; its contents probably
     belong in an FAQ section.  But, hopefully, through this section a
     newcomer to Sphinx can get an idea of the structure, capabilities,
-    and limitations of the s3.3 decoder.
+    and limitations of the s3.4 decoder.
     </P>
 
 
@@ -494,7 +497,7 @@
     language models specified via the configuration arguments are
     loaded during initialization.  This set of models is used to
     decode all the utterances in the input.  (The language model is
-    actually only partly loaded, since s3.3 uses a <a
+    actually only partly loaded, since s3.4 uses a <a
     href="#lm_dumpfile">disk-based LM</a> strategy.)
     </P>
 
@@ -536,17 +539,19 @@
 
     <H4><A name="sec_ctl_process"><U>Control File Processing</U></a></H4>
 
-    <P>Following initialization, <code>livepretend</code> processes
-    the entries in the control file sequentially, one at a time.  It
-    is possible to process a contiguous subset of the control file,
-    using the <code>-ctloffset</code> and <code>-ctlcount</code>
-    flags, as mentioned earlier.  There is no learning or
-    <em>adaptation</em> capability as decoding progresses.  Since this
-    code behaves as if the files were being spoken at the time of
+    <P>Following initialization, <code>decode</code> and
+    <code>livepretend</code> processes the entries in the control file
+    sequentially, one at a time.  It is possible to process a
+    contiguous subset of the control file, using the
+    <code>-ctloffset</code> and <code>-ctlcount</code> flags, as
+    mentioned earlier.  There is no learning or <em>adaptation</em>
+    capability as decoding progresses.  Since <code>livepretend</code>
+    behaves as if the files were being spoken at the time of
     processing, rearranging the order of the entries in the control
     file may affect the individual results, but this change may be
     imperceptible if the environment in which the files were recorded
-    remains constant.
+    remains constant. The order of entries in the control file does
+    not affect <code>decode</code>.
     </P>
 
 
@@ -559,7 +564,7 @@
     computationally manageable limits, <em>pruning</em> is employed,
     which means that the less promising hypotheses are continually
     discarded during the recognition process.  There are two kinds of
-    pruning in s3.3, <em>beam pruning</em> and <em>absolute
+    pruning in s3.4, <em>beam pruning</em> and <em>absolute
     pruning</em>.
     </P>
 
@@ -895,7 +900,7 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
 
     <pre>WANT_TO           W AA N AX</pre>
 
-    <P>(The s3.3 decoder, however, treats a compound word as just
+    <P>(The s3.4 decoder, however, treats a compound word as just
     another word in the language, and does not do anything special
     with it.)
     </P>
@@ -1053,7 +1058,7 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
       <LI><em>Feature vector generation</em>.  The final speech
       feature vector is created by typically augmenting the cepstrum
       vector (after CMN and AGC, if any) with one or more time
-      derivatives.  In s3.3, the feature vector in each frame is
+      derivatives.  In s3.4, the feature vector in each frame is
       computed by concatenating first and second derivatives to the
       cepstrum vector, giving a 39-dimensional vector:
 	<div class="silverbox">
@@ -1147,13 +1152,13 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
     <em>codebook</em> of Gaussian distributions, but each senone has
     its own set of <em>mixture weights</em> applied to the codebook
     components.  Sphinx-3 supports both models, and other,
-    intermediate degrees of state-tying as well.  (The s3.3 decoder,
+    intermediate degrees of state-tying as well.  (The s3.4 decoder,
     however, can only handle continuous density acoustic models.)
     </P>
     
     <P>Similarly, Sphinx-3 in general supports "arbitrary" HMM
     topologies, unlike Sphinx-II, which is restricted to a specific
-    5-state topology.  However, for efficiency's sake, the s3.3
+    5-state topology.  However, for efficiency's sake, the s3.4
     decoder is hardwired to deal with only two types of HMM
     topologies: 3-state and 5-state, described briefly in <a
     href="../src/libs3decoder/hmm.h">hmm.h</a>.
@@ -1457,7 +1462,7 @@ P(&lt;/s&gt | WILL, TRAVEL)</pre>
 AudioFile [ StartFrame EndFrame UttID ]</pre>
 
     <P><em>AudioFile</em> is the speech input file. In this
-    distribution of s3.3, this file is in raw audio format. In all
+    distribution of s3.4, this file is in raw audio format. In all
     other versions of Sphinx-3, this file contains cepstrum data.  The
     filename extension should be omitted from the specification.  If
     this is the only field in the line, the entire file is processed
@@ -1523,7 +1528,7 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
       <LI><em>u</em>: the utterance ID
 
       <LI><em>s</em>: an acoustic score scaling done during acoustic
-      likelihood computation (However, this field is 0 in the s3.3
+      likelihood computation (However, this field is 0 in the s3.4
       decoder output.)
 
       <LI><em>t</em>: the total score for this hypothesis
@@ -1618,7 +1623,7 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
     
     <P><em>Note:</em> The beginning and end of sentence tokens,
     <code>&lt;s&gt</code> and <code>&lt;/s&gt</code>, are not decoded
-    as part of an utterance by the s3.3 decoder.  However, they have
+    as part of an utterance by the s3.4 decoder.  However, they have
     to be included in the word lattice file, for compatibility with
     the older Sphinx-3 decoder software.  They are assigned 1-frame
     segmentations, with log-likelihood scores of 0.  To accommodate
@@ -1699,8 +1704,9 @@ End</pre>
     
     <H2><a name="sec_utilpgm"><U>Other Utilities</U></a></H2>
     
-    <P>In addition to the s3.3 decoders, <code>livedecode</code> and <code>livrepretend</code>, this distribution also
-    provides other utility programs.</P>
+    <P>In addition to the s3.4 decoders, <code>decode</code>,
+    <code>livedecode</code> and <code>livrepretend</code>, this
+    distribution also provides other utility programs.</P>
 
     <H4><a name="sec_gausubvq"><U>Gaussian Sub-Vector Quantization
     Utility</U></A></H4>
@@ -1749,6 +1755,12 @@ End</pre>
       <tr>
 	<td><a href="../src/libs3decoder/cont_mgau.c"><code>cont_mgau.c</code></a></td>
 	<td>Mixture Gaussians (acoustic model)</td>
+      </tr>
+
+      <tr>
+	<td><a
+	href="../src/programs/decode.c"><code>decode.c</code></a></td>
+	<td>Main file for <code>decode</code></td>
       </tr>
 
       <tr>
@@ -1877,7 +1889,7 @@ End</pre>
     <address>Maintained by <a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a</a></address>
     <!-- Created: Sun Feb 22 14:03:14 EST 1998 -->
     <!-- hhmts start -->
-Last modified: Sun Nov 17 23:05:53 EST 2002
+Last modified: Thu Jul 22 09:35:27 EDT 2004
 <!-- hhmts end -->
   </body>
 </html>
