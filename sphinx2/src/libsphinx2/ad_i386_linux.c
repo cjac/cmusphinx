@@ -142,9 +142,14 @@ ad_rec_t *ad_open_sps (int32 sps) {
 	return NULL;
     }
     if (sampleRate != sps) {
-	E_ERROR("Audio ioctl(SPEED): %d, expected: %d\n", sampleRate, sps);
-	close (dspFD);
-	return NULL;
+        if (abs(sampleRate - sps) <= (sampleRate * SAMPLERATE_TOLERANCE)) {
+            E_ERROR("Audio ioctl(SPEED) not perfect, but is acceptable. "
+                    "(Wanted %d, but got %d)\n",sampleRate, sps);
+        } else {
+            E_ERROR("Audio ioctl(SPEED): %d, expected: %d\n", sampleRate, sps);
+	    close(dspFD);
+	    return NULL;
+        }
     }
     
     if (ioctl (dspFD, SNDCTL_DSP_NONBLOCK, &nonBlocking) < 0) {

@@ -11,9 +11,19 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2000/01/28  23:42:14  awb
- * *** empty log message ***
+ * Revision 1.3  2000/02/01  22:34:06  pjf
+ * Fixed bug where certain soundcards would be unable to set an exact sampling
+ * rate (eg, 16000Hz), but something close to it (eg, 16032Hz).  This is fairly
+ * harmless, but causes sphinx to die with an error.
  * 
+ * Sound-card sampling rates are now accepted provided they are within a
+ * certain tolerance of the desired samplin rate (by default, 10%).  This
+ * value can be set by changing the constant SAMPLERATE_TOLERANCE
+ * in include/ad.h.
+ * 
+ * Revision 1.2  2000/01/28 23:42:14  awb
+ * *** empty log message ***
+ *
  * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
  * Initial import of sphinx2
  *
@@ -62,6 +72,7 @@
 
 #define AD_SAMPLE_SIZE		(sizeof(int16))
 #define DEFAULT_SAMPLES_PER_SEC	16000
+#define SAMPLERATE_TOLERANCE	0.10
 
 /* Return codes */
 #define AD_OK		0
