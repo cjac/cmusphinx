@@ -1,0 +1,5 @@
+-beam     1e-160
+-wbeam   1e-080
+-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP
+
+
