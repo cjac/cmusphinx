@@ -10,6 +10,11 @@ use strict;
 
 $| = 1;  # turn off STDOUT buffering 
 
+print "# $0 started at ", scalar(localtime), "\n";
+print "\n";
+print "  Simple real-time demo of CMU Sphinx2 using a toy grammar.\n";
+print "\n";
+
 my ($pgm, $beamwidth, $output, $ctloffset, $ctlcount) = @ARGV;
 my $arch;
 
@@ -91,10 +96,44 @@ die "$lmfile: $!" unless -e $lmfile;
 die "$dictfile: $!" unless -e $dictfile;
 die "$noisedict: $!" unless -e $noisedict;
 
+print "  The CMU Sphinx demo uses several resources:\n";
 print "\n";
-print "task: $task\n";
-print "lm:   $lmfile\n";
-print "dict: $dictfile\n";
+print "     task directory: $task\n";
+print "                     A directory with the task resources in it; the\n";
+print "                     language model and the dictionary in particular.\n";
+print "\n";
+print "     language model: $lmfile\n";
+print "                     A language model. This describes the probability\n";
+print "                     sequences of words, which helps guide the search.\n";
+print "\n";
+print "         dictionary: $dictfile\n";
+print "                     A pronunciation dictionary that contains every word\n";
+print "                     that is supposed to appear in the input.\n";
+print "\n";
+print "      HMM directory: $modeldir\n";
+print "                     A directory containing the acoustic models,\n";
+print "                     which are implemented as Hidden Markov Models (HMMs).\n";
+print "                     In quirky CMU terms, each state is a senone, and\n";
+print "                     there are five senones for each triphone HMM.\n";
+print "\n";
+print "     noiseword dict: $noisedict\n";
+print "                     The noise word dictionary, if any. Sounds such as\n";
+print "                     ++BREATH++, ++COUGH++, ++SMACK++, ++LAUGH++, ++UH++\n";
+print "                     By convention, +BREATH+ is a noise phone and \n";
+print "                     ++BREATH++ is a noise word pronounced +BREATH+\n";
+print "\n";
+print "  The grammar contains things like\n";
+print "     GO FORWARD SEVEN METERS\n";
+print "     GO FORWARD TEN METERS\n";
+print "     GO BACKWARD\n";
+print "     TURN LEFT NINETY DEGREES\n";
+print "     EXIT\n";
+print "  and so in made into a trigram language model.\n";
+print "\n";
+print "  Say things like \"go forward ten meters\"\n";
+print "               or \"rotate right 45 degrees\"\n";
+print "\n";
+print "  Say  EXIT  or  QUIT  to quit.\n";
 print "\n";
 
 $ctloffset = 0 unless defined $ctloffset;
@@ -188,7 +227,12 @@ my $what = join " ", ($pgm,
 #       -matchfn => $matchfile,
        );
 
-print "$what\n";
+print "  Executing $pgm... (see sphinx2-simple for example)\n";
+print "  See sphinx2-simple for example arguments, or edit this script.\n";
+print "\n";
+
+# uncomment the line below to see the whole argument list.
+# print "# $what\n"; 
 
 open SPHINX, "$what 2>\&1 |" or die "something failed: $!";
 print "[initializing]\n";
@@ -200,17 +244,23 @@ if ($target_command) {
 }
 
 while (<SPHINX>) {
+  # take the output of the $pgm binary and process it
+  # this is usually sphinx2-continuous, and example binary
+  # linked against the sphinx2 library.
+
   print $_ if 0; # make this if 1 to debug the output
 
+  # some simple handlers
   /READY..../ and do { print "[silence] "; next };
   /Listening.../ and do { print "[audio] "; next };
 
+  # handle the output results
   if (/^(\d+):\s+(.*?)\s*$/) {
       my ($frame, $result) = ($1, $2);
       $result = uc $result;
       print "$result\n";
       print TARGET "$result\n" if $target_command;
-      
+
       $result =~ /^(exit|quit)$/i and do {
 	  print "[exit]\n";
 	  exit ;
@@ -221,3 +271,5 @@ while (<SPHINX>) {
 close TARGET if $target_command;
 
 $@ and print "error: $@\n";
+
+

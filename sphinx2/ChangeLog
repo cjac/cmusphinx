@@ -649,3 +649,8 @@ set of changes from dhd (below)
 	* fixed a lookup bug in time_align.c (thanks to Yan Ke)
 	* Noted that most changes are actually now in the CVS 
 	  commits rathter than in this file...
+
+-------------------------------------------------------------------------------
+
+2001-09-18 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+        * Added notes to sphinx2-demo	
