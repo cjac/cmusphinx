@@ -179,7 +179,7 @@ test-astar:
 	    -inlatdir $(top_srcdir)/model/lm/an4/ \
 	    -logbase 1.0003 \
 	    -nbestdir . 
-	@gzip -cfd ./pittsburgh.nbest.gz 
+	@gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
 	@if(diff ./pittsburgh.nbest $(top_srcdir)/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
 	then echo "ASTAR PASSED"; else \
 	echo "ASTAR FAILED"; fi
