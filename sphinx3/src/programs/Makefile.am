@@ -5,7 +5,8 @@ bin_PROGRAMS = livepretend \
 	align \
 	astar \
 	dag \
-	allphone 
+	allphone \
+	ep
 
 livepretend_SOURCES = \
 	main_livepretend.c \
@@ -32,7 +33,7 @@ allphone_SOURCES = main_allphone.c \
 
 gausubvq_SOURCES = gausubvq.c
 
-#ep_SOURCES = main_ep.c
+ep_SOURCES = main_ep.c
 
 noinst_HEADERS = \
 	cmd_ln_args.h \
