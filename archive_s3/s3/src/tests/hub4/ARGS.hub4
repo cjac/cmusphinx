@@ -1,8 +1,8 @@
 -mdeffn   /lab/speech/sphinx4/data/hub4_model/hub4opensrc.6000.mdef
--meanfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8/means
--varfn    /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8/variances
--mixwfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8/mixture_weights
--tmatfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8/transition_matrices
+-meanfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8gau/means
+-varfn    /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8gau/variances
+-mixwfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8gau/mixture_weights
+-tmatfn   /lab/speech/sphinx4/data/hub4_model/6000senones/hub4opensrc.cd_continuous_8gau/transition_matrices
 -dictfn   /lab/speech/sphinx4/data/hub4_model/cmudict.06d
 -fdictfn	/lab/speech/sphinx4/data/hub4_model/fillerdict
 -agc	none
@@ -11,7 +11,7 @@
 -feat 	1s_c_d_dd
 -cepdir /lab/speech/sphinx4/data/hub4/eval99/cepstra
 -cepext mfc
--ctlfn 	h4.ctl
+-ctlfn 	hub4.ctl
 -logbase 	1.0001
 -bestpath     	1
 -senmgaufn 	.cont.
