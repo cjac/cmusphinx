@@ -121,7 +121,6 @@ static void
 ld_process_raw_impl(live_decoder_t *_decoder,
 		    int16 *_samples,
 		    int32 _num_samples,
-		    int32 _begin_utt,
 		    int32 _end_utt);
 
 static int
@@ -251,7 +250,8 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 
   utt_begin(&_decoder->kb);
 
-  _decoder->frame_num = 0;
+  _decoder->num_frames_decoded = 0;
+  _decoder->num_frames_entered = 0;
   _decoder->kb.nfr = 0;
   _decoder->kb.utt_hmm_eval = 0;
   _decoder->kb.utt_sen_eval = 0;
@@ -266,7 +266,7 @@ ld_end_utt(live_decoder_t *_decoder)
 {
   assert(_decoder != NULL);
 
-  ld_process_raw_impl(_decoder, NULL, 0, _decoder->frame_num == 0, TRUE);
+  ld_process_raw_impl(_decoder, NULL, 0, TRUE);
   _decoder->kb.tot_fr += _decoder->kb.nfr;
   ld_record_hyps(_decoder, TRUE);
   utt_end(&_decoder->kb);
@@ -276,8 +276,7 @@ ld_end_utt(live_decoder_t *_decoder)
 void
 ld_process_raw(live_decoder_t *_decoder, int16 *_samples, int32 _num_samples)
 {
-  ld_process_raw_impl(_decoder, _samples, _num_samples,
-		      _decoder->frame_num == 0, FALSE);
+  ld_process_raw_impl(_decoder, _samples, _num_samples, FALSE);
 }
 
 void
@@ -286,6 +285,7 @@ ld_process_ceps(live_decoder_t *_decoder,
 		int32 _num_frames)
 {
   int32 num_features = 0;
+  int32 begin_utt = _decoder->num_frames_entered == 0;
 
   assert(_decoder != NULL);
 	
@@ -293,22 +293,23 @@ ld_process_ceps(live_decoder_t *_decoder,
     num_features = feat_s2mfc2feat_block(kbcore_fcb(_decoder->kbcore),
 					 _cep_frames,
 					 _num_frames,
-					 _decoder->frame_num == 0,
+					 begin_utt,
 					 FALSE,
 					 _decoder->features);
+    _decoder->num_frames_entered += _num_frames;
   }
 
   if (num_features > 0) {
     utt_decode_block(_decoder->features, 
 		     num_features, 
-		     &_decoder->frame_num, 
+		     &_decoder->num_frames_decoded,
 		     &_decoder->kb, 
 		     _decoder->hmm_log);
   }
 }
 
 int
-ld_retrieve_hyps(live_decoder_t *_decoder, /*char **_uttid,*/ char **_hyp_str, 
+ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
 		 hyp_t ***_hyp_segs)
 {
   int rv = LD_SUCCESS;
@@ -316,13 +317,13 @@ ld_retrieve_hyps(live_decoder_t *_decoder, /*char **_uttid,*/ char **_hyp_str,
   assert(_decoder != NULL);
 
   /* re-record the hypothesis if there is a frame number mismatch */
-  if (_decoder->frame_num != _decoder->hyp_frame_num) {
+  if (_decoder->num_frames_decoded != _decoder->hyp_frame_num) {
     rv = ld_record_hyps(_decoder, FALSE);
   }
   
-/*  if (_uttid != NULL) {
+  if (_uttid != NULL) {
     *_uttid = _decoder->uttid;
-  }*/
+  }
 
   if (_hyp_str != NULL) {
     *_hyp_str = _decoder->hyp_str;
@@ -420,39 +421,41 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
 	strlen(dict_wordstr(dict, dict_basewid(dict, hyp->id))) + 1;
     }
   }
-  /** if hyp_str is non-trivial, we've counted one too many byte */
-  if (hyp_strlen > 0) {
-    /** allocate array to hold the segments and/or decoded string */
-    hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
-    hyp_str = (char *)ckd_calloc(hyp_strlen, sizeof(char));
-    if (hyp_segs == NULL || hyp_str == NULL) {
-      E_WARN("Failed to allocate storage for hypothesis.\n");
-      rv = LD_ERROR_OUT_OF_MEMORY;
-      goto ld_record_hyps_cleanup;
-    }
-		
-    /** iterate thru to fill in the array of segments and/or decoded string */
-    i = 0;
-    hyp_strptr = hyp_str;
-    for (node = hyp_list; node != NULL; node = gnode_next(node), i++) {
-      hyp = (hyp_t *)gnode_ptr(node);
-      hyp_segs[i] = hyp;
-      
-      if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
-	strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
-	hyp_strptr += strlen(hyp_strptr);
-	*hyp_strptr = ' ';
-	hyp_strptr += 1;
-      }
-    }
-    glist_free(hyp_list);
-  
-    hyp_str[hyp_strlen - 1] = '\0';
-    hyp_segs[hyp_seglen] = 0;
-    _decoder->hyp_frame_num = _decoder->frame_num;
-    _decoder->hyp_segs = hyp_segs;
-    _decoder->hyp_str = hyp_str;
+
+  if (hyp_strlen == 0) {
+    hyp_strlen = 1;
   }
+
+  /** allocate array to hold the segments and/or decoded string */
+  hyp_str = (char *)ckd_calloc(hyp_strlen, sizeof(char));
+  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
+  if (hyp_segs == NULL || hyp_str == NULL) {
+    E_WARN("Failed to allocate storage for hypothesis.\n");
+    rv = LD_ERROR_OUT_OF_MEMORY;
+    goto ld_record_hyps_cleanup;
+  }
+		
+  /** iterate thru to fill in the array of segments and/or decoded string */
+  i = 0;
+  hyp_strptr = hyp_str;
+  for (node = hyp_list; node != NULL; node = gnode_next(node), i++) {
+    hyp = (hyp_t *)gnode_ptr(node);
+    hyp_segs[i] = hyp;
+    
+    if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
+      strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
+      hyp_strptr += strlen(hyp_strptr);
+      *hyp_strptr = ' ';
+      hyp_strptr += 1;
+    }
+  }
+  glist_free(hyp_list);
+  
+  hyp_str[hyp_strlen - 1] = '\0';
+  hyp_segs[hyp_seglen] = 0;
+  _decoder->hyp_frame_num = _decoder->num_frames_decoded;
+  _decoder->hyp_segs = hyp_segs;
+  _decoder->hyp_str = hyp_str;
 
   return LD_SUCCESS;
 
@@ -502,13 +505,13 @@ void
 ld_process_raw_impl(live_decoder_t *_decoder,
 		    int16 *samples,
 		    int32 num_samples,
-		    int32 begin_utt,
 		    int32 end_utt)
 {
   float32 dummy_frame[MAX_CEP_LEN];
   float32 **frames = 0;
   int32 num_frames = 0;
   int32 num_features = 0;
+  int32 begin_utt = _decoder->num_frames_entered == 0;
 
   assert(_decoder != NULL);
 
@@ -529,12 +532,13 @@ ld_process_raw_impl(live_decoder_t *_decoder,
 					 begin_utt,
 					 end_utt,
 					 _decoder->features);
+    _decoder->num_frames_entered += num_frames;
   }
 
   if (num_features > 0) {
     utt_decode_block(_decoder->features, 
 		     num_features, 
-		     &_decoder->frame_num, 
+		     &_decoder->num_frames_decoded, 
 		     &_decoder->kb, 
 		     _decoder->hmm_log);
   }
