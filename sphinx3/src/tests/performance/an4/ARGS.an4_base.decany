@@ -1,0 +1,15 @@
+-mdef	/lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
+-fdict	/lab/speech/sphinx4/data/wsj/dict/fillerdict
+-dict	/lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d
+-mean	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means
+-var	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances
+-mixw	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights 
+-tmat	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices
+-agc	none
+-varnorm	no
+-cmn	current
+-inspen	0.2
+-feat 1s_c_d_dd
+-beam 1e-80
+-nwbeam 1e-40
+
