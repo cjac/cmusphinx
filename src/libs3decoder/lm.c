@@ -840,7 +840,7 @@ void lm_cache_stats_dump (lm_t *lm)
 
 int32 lm_ug_score (lm_t *lm, s3lmwid_t lwid, s3wid_t wid)
 {
-    if (NOT_S3LMWID(lwid) || (wid >= lm->n_ug))
+    if (NOT_S3LMWID(lwid) || (lwid >= lm->n_ug))
 	E_FATAL("Bad argument (%d) to lm_ug_score\n", lwid);
 
     lm->access_type = 1;
