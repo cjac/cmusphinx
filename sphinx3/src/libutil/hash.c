@@ -97,7 +97,7 @@ static void prime_sieve (int32 max)
  * collision resolution by chaining will accommodate more entries indefinitely, but
  * efficiency will drop.)
  */
-static int32 prime[] = {
+const int32 prime[] = {
     101, 211, 307, 401, 503, 601, 701, 809, 907,
     1009, 1201, 1601, 2003, 2411, 3001, 4001, 5003, 6007, 7001, 8009, 9001,
     10007, 12007, 16001, 20011, 24001, 30011, 40009, 50021, 60013, 70001, 80021, 90001,
