@@ -206,7 +206,7 @@ load multiple models and switch between them dynamically at run time.
 <H3>Language Model</H3>
 
 Sphinx2 accepts two flavors of language models (LMs) or grammars:
-<em>finite-state</em>, and <em>N-gram</em> (for <em>N</em> = 2 or 3, i.e.,
+<em>finite-state</em> (FSG), and <em>N-gram</em> (for <em>N</em> = 2 or 3, i.e.,
 bigrams or trigrams).  One can load
 multiple LMs, N-gram or FSG, into the decoder, either during
 initialization or at run time.
@@ -228,7 +228,8 @@ Any new word added to the dictionary is also automatically added as a unigram to
 the <em>unnamed</em> N-gram language model.  (<em>This is a HACK</em>.
 There ought to be a mechanism for adding a word to a specified language model.
 Currently the only way to accomplish this is to delete a currently loaded language
-model, create a new LM file including the new word and reload it.)
+model, create a new model with the new word, and load it.  This is also the case
+with FSGs; there is no way to dynamically modify a loaded FSG.)
 
 <P>
 
@@ -271,10 +272,10 @@ recognition modes.
 
 The core speech decoder operates on finite-length segments of speech or
 <em>utterances</em>, one utterance at a time.
-Operationally, an utterance is the chunk of speech data processed
+(Operationally, an utterance is the chunk of speech data processed
 between calls to the Sphinx2 API functions
 <strong><code>uttproc_begin_utt</code></strong> and the next
-<strong><code>uttproc_end_utt</code></strong>.
+<strong><code>uttproc_end_utt</code></strong>; see further below.)
 An utterance can be up to a minute long.  In practice, most applications would
 typically treat a sentence or a phrase as an utterance, which would be much
 shorter than the maximum of 60 sec.
@@ -284,8 +285,14 @@ shorter than the maximum of 60 sec.
 
 <H3>Basic Recognition</H3>
 
-In Sphinx2, each utterance is decoded using up to three <em>passes</em>, two of
-which are optional:
+The recognition structure in Sphinx2 depends on whether the currently active
+language model is an N-gram or an FSG model.  (The API, however, is substantially
+the same for both.)
+
+<P>
+
+In N-gram decoding, each utterance is decoded using up to three <em>passes</em>,
+two of which are optional:
 <UL>
 <LI> A <em>lexical-tree Viterbi</em> search.  It produces a recognition result
 as well as a <em>word lattice</em>.
@@ -297,9 +304,6 @@ yet another recognition result.
 </UL>
 The optional passes generally improve recognition accuracy.  However, the second
 pass (flat Viterbi search) can increase latency significantly.
-
-<P>
-
 The passes to be active are configured once at initialization.  From then on, the
 presence of the multiple passes is invisible to the application.  It only receives
 the result from the last active pass.  However, the word lattice can subsequently
@@ -308,7 +312,15 @@ application.
 
 <P>
 
-Details of the Sphinx2 recognition engine can be found in
+In FSG decoding, on the other hand, there is only one pass of
+Viterbi search.  The optional passes described above are not used, and neither is
+it possible to obtain N-best lists (yet).  (Moreover, even the one pass has a
+separate implementation than the first pass of the N-gram decoder.  This is in
+order to facilitate porting FSG decoding to Sphinx3.)
+
+<P>
+
+Details of the Sphinx2 recognition engine (with N-gram models) can be found in
 <A HREF="http://reports-archive.adm.cs.cmu.edu/anon/1996/CMU-CS-96-143.ps">Ravishankar's Ph.D
 thesis</A>.
 
@@ -1156,7 +1168,7 @@ To compile Sphinx2 libraries on Windows platforms:
 <LI> Unpack the distribution
 <LI> Load the workspace <strong><code>.\sphinx2.dsw</code></strong> onto Microsoft Visual C++ 6.0 or better.
 <LI> Compile the project <code><strong>sphinx2-continuous</code></strong>, minimally
-<li> In a command prompt (follow the menu "<code>Start</code>" -> "<code>Run</code>" and type  <code><strong>cmd</strong></code>), cd
+<li> On a command prompt (follow the menu "<code>Start</code>" -> "<code>Run</code>" and type  <code><strong>cmd</strong></code>), cd
 to the location where you installed sphinx2 (e.g., <code><strong>c:\sphinx2-0.5</strong></code>) 
 <LI> Still in the command prompt, <code><strong>cd .\win32\batch</code></strong>.
 <LI> Run <code><strong>sphinx2-test.bat</code></strong>
@@ -2505,6 +2517,15 @@ lexicon, the transition is simply ignored.
 
 <P>
 
+Note that the decoder automatically adds filler word transitions (such as
+the silence word) at every state (i.e., from a state to itself; assuming the
+<strong><code>-fsgusefiller</code></strong> argument is
+<strong><code>TRUE</code></strong>).  This is the principal mechanism for
+transparently allowing optional silences to occur in between any two words
+in any sentence allowed by the FSG.
+
+<P>
+
 Comment lines can also be embedded anywhere in the file.
 Any line that begins with the <strong><code>#</code></strong> character is
 treated as a comment line.  Blank lines are also allowed anywhere in the file.
@@ -2517,7 +2538,7 @@ treated as a comment line.  Blank lines are also allowed anywhere in the file.
 <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
 <!-- Created: Jan 01, 1997 -->
 <!-- hhmts start -->
-Last modified: Sat Jul 31 00:27:12 EDT 2004
+Last modified: Thu Aug 26 18:53:42 EDT 2004
 <!-- hhmts end -->
 
 </BODY>
