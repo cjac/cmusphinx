@@ -5,10 +5,10 @@ username=$1
 export PATH="/usr/local/bin:/bin:/usr/bin"
 
 root=/tmp/sphinxCompilation.$$
-S2LIST='archan'
-S3LIST='archan'
-S4LIST='archan'
-STLIST='archan'
+S2LIST='archan egouvea yitao dhuggins'
+S3LIST='archan egouvea yitao dhuggins'
+S4LIST='archan egouvea yitao dhuggins'
+STLIST='archan egouvea yitao dhuggins'
 
 mkdir $root
 cd $root
@@ -38,7 +38,8 @@ pushd sphinx3
 if ! make all test-full >> test.out 2>&1 ;
  then mhmail -s "sphinx3 compilation failed" ${S3LIST} < test.out;
  elif ! grep 'FWDVIT: P I T T S B U R G H ' test.out;
- then mhmail -s "sphinx3 test succeeded" ${S3LIST} < test.out;
+ then mhmail -s "sphinx3 test failed" ${S3LIST} < test.out;
+ else mhmail -s "sphinx3 test succeeded" ${S3LIST} < test.out;
  fi
 
 popd 
