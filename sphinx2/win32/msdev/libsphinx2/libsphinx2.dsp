@@ -145,6 +145,10 @@ SOURCE=..\..\..\src\libsphinx2\blk_cdcn_norm.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\blkarray_list.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\cache_lm.c
 # End Source File
 # Begin Source File
@@ -162,6 +166,10 @@ SOURCE=..\..\..\src\libsphinx2\cdcn_update.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\cep_rw.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\ckd_alloc.c
 # End Source File
 # Begin Source File
 
@@ -193,7 +201,27 @@ SOURCE=..\..\..\src\libsphinx2\fbs_main.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\fsg_history.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\fsg_lextree.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\fsg_psubtree.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\fsg_search.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\get_a_word.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\glist.c
 # End Source File
 # Begin Source File
 
@@ -331,6 +359,10 @@ SOURCE=..\..\..\src\libsphinx2\uttproc.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\word_fsg.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
