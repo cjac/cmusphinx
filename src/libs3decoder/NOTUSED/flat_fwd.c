@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,18 +49,9 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.1  2004/11/13  21:25:19  arthchan2003
- * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ * Revision 1.2  2004/11/14  07:00:08  arthchan2003
+ * 1, Finally, a version of working flat decoder is completed. It is not compiled in the standard compilation yet because there are two many warnings. 2, eliminate the statics variables in  fe_sigproc.c
  * 
- * Revision 1.3  2004/09/13 08:13:14  arthchan2003
- * update copyright notice from 200x to 2004
- *
- * Revision 1.2  2004/08/29 02:39:54  arthchan2003
- * New data structure and routines for enable floating point version of GMM computation, I also did some fixes that allow sphinx3 be portable to Mac OSX. I don't think this snapshot is very stable though.  In general, we need more unit test in sphinx3.
- *
- * Revision 1.1  2004/08/09 00:17:11  arthchan2003
- * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
- *
  * Revision 1.2  2002/12/03 23:02:38  egouvea
  * Updated slow decoder with current working version.
  * Added copyright notice to Makefiles, *.c and *.h files.
@@ -203,7 +194,7 @@
 #include "logs3.h"
 #include "search.h"
 
-#include "s3_dag.h"
+#include "programs/s3_dag.h"
 #include "flat_fwd.h"
 
 
@@ -232,9 +223,10 @@ static xwdpid_t **rcpid;
 static xwdpid_t **lrcpid;
 
 static int32 n_backoff_ci;	/* #Triphone instances backed off to ciphones */
-static int32 *word_start_ci;
-static int32 *word_end_ci;
+static int8 *word_start_ci;
+static int8 *word_end_ci;
 static whmm_t **whmm;
+
 
     
 /*
@@ -306,14 +298,14 @@ static s3wid_t silwid;		/* General silence word id */
 static s3wid_t startwid;	/* Begin silence */
 static s3wid_t finishwid;	/* End silence */
 
-static dict_t *dict;		/* The dictionary */
-static mdef_t *mdef;		/* HMM model definition parameters */
-static tmat_t *tmat;		/* HMM transition probabilities matrices */
-static fillpen_t *fpen;         /* Filler penalty */
-static lm_t   *lm;		/* The currently active language model */
+dict_t *dict;		/* The dictionary */
+tmat_t *tmat;		/* HMM transition probabilities matrices */
+fillpen_t *fpen;         /* Filler penalty */
+mdef_t *mdef;
+lm_t   *lm;		/* The currently active language model */
 static dag_t dag;
 
-static s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
 
 static char *uttid = NULL;	/* Utterance id; for error reporting */
@@ -330,8 +322,9 @@ static int32 hmm_dump_sf;	/* Start frame for HMMs to be dumped for debugging */
 
 /* Event count statistics */
 
-enum {ctr_mpx_whmm,ctr_nonmpx_whmm,ctr_latentry};
-pctr_t* counters;
+pctr_t ctr_mpx_whmm;
+pctr_t ctr_nonmpx_whmm;
+pctr_t ctr_latentry;
 
 
 static ptmr_t tm_hmmeval;
@@ -395,34 +388,33 @@ static void dump_xwdpidmap (xwdpid_t **x)
  * Utility function for building cross-word pid maps.  Compresses cross-word pid list
  * to unique ones.
  */
-static int32 xwdpid_compress (s3pid_t p, s3pid_t *pid, s3pid_t *map, s3cipid_t ctx,
+static int32 xwdpid_compress (s3pid_t p, s3pid_t *pid, s3cipid_t *map, s3cipid_t ctx,
 			      int32 n)
 {
     s3senid_t *senmap, *prevsenmap;
     int32 s;
-    s3pid_t i;
+    s3cipid_t i;
+    s3pid_t temp_pid;
 
-    s3pid_t pid_ctx=(s3pid_t)ctx;
-    
-    
     senmap = mdef->phone[p].state;
     
-    for (i = 0; i < (s3pid_t) n; i++) {
+    for (i = 0; i < n; i++) {
 	if (mdef->phone[p].tmat != mdef->phone[pid[i]].tmat)
 	    continue;
 
 	prevsenmap = mdef->phone[pid[i]].state;
 	for (s = 0; (s < n_state-1) && (senmap[s] == prevsenmap[s]); s++);
+	
 
 	if (s == n_state-1) {
 	    /* This state sequence same as a previous ones; just map to it */
-	    map[pid_ctx] = i;
+	    map[ctx] = i;
 	    return n;
 	}
     }
 
     /* This state sequence different from all previous ones; allocate new entry */
-    map[pid_ctx] = n;
+    map[ctx] = n;
     pid[n] = p;
     
     return (n+1);
@@ -439,21 +431,16 @@ static s3pid_t *tmp_xwdpid = NULL;
  */
 static void build_lcpid (s3cipid_t b, s3cipid_t rc)
 {
-    s3pid_t lc, *map;
+    s3cipid_t lc, *map;
     s3pid_t p;
     int32 n;
-    s3pid_t pid_b;
-    s3pid_t pid_rc;
-
-    pid_b = (s3pid_t)b;
-    pid_rc = (s3pid_t)rc;
-
-    map = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
+    
+    map = (s3cipid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
     
     n = 0;
     for (lc = 0; lc < mdef->n_ciphone; lc++) {
-	p = mdef_phone_id_nearest (mdef, pid_b, lc, pid_rc, WORD_POSN_BEGIN);
-	if ((! mdef->ciphone[pid_b].filler) && word_end_ci[lc] &&
+	p = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_BEGIN);
+	if ((! mdef->ciphone[b].filler) && word_end_ci[lc] &&
 	    mdef_is_ciphone(mdef, p))
 	    n_backoff_ci++;
 	
@@ -461,11 +448,12 @@ static void build_lcpid (s3cipid_t b, s3cipid_t rc)
     }
 
     /* Copy/Move to lcpid */
-    lcpid[pid_b][pid_rc].cimap = (s3cipid_t *)map;
-    lcpid[pid_b][pid_rc].n_pid = n;
-    lcpid[pid_b][pid_rc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
-    memcpy (lcpid[pid_b][pid_rc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
+    lcpid[b][rc].cimap = map;
+    lcpid[b][rc].n_pid = n;
+    lcpid[b][rc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
+    memcpy (lcpid[b][rc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
 }
+
 
 
 /*
@@ -474,21 +462,16 @@ static void build_lcpid (s3cipid_t b, s3cipid_t rc)
  */
 static void build_rcpid (s3cipid_t b, s3cipid_t lc)
 {
-    s3pid_t rc, *map;
+    s3cipid_t rc, *map;
     s3pid_t p;
     int32 n;
-
-    s3pid_t pid_b;
-    s3pid_t pid_lc;
-    pid_b = (s3pid_t)b;
-    pid_lc = (s3pid_t)lc;
     
-    map = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
+    map = (s3cipid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
     
     n = 0;
     for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	p = mdef_phone_id_nearest (mdef, pid_b, pid_lc, rc, WORD_POSN_END);
-	if ((! mdef->ciphone[pid_b].filler) && word_start_ci[rc] &&
+	p = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_END);
+	if ((! mdef->ciphone[b].filler) && word_start_ci[rc] &&
 	    mdef_is_ciphone(mdef, p))
 	    n_backoff_ci++;
 
@@ -496,11 +479,12 @@ static void build_rcpid (s3cipid_t b, s3cipid_t lc)
     }
 
     /* Copy/Move to rcpid */
-    rcpid[pid_b][pid_lc].cimap = (s3cipid_t *)map;
-    rcpid[pid_b][pid_lc].n_pid = n;
-    rcpid[pid_b][pid_lc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
-    memcpy (rcpid[pid_b][pid_lc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
+    rcpid[b][lc].cimap = map;
+    rcpid[b][lc].n_pid = n;
+    rcpid[b][lc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
+    memcpy (rcpid[b][lc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
 }
+
 
 
 /*
@@ -509,43 +493,38 @@ static void build_rcpid (s3cipid_t b, s3cipid_t lc)
  */
 static void build_lrcpid (s3cipid_t b)
 {
-    s3pid_t rc, lc;
-    s3pid_t pid_b;
-    pid_b= (s3pid_t)b;
+    s3cipid_t rc, lc;
     
     for (lc = 0; lc < mdef->n_ciphone; lc++) {
-	lrcpid[pid_b][lc].pid = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3pid_t));
-	lrcpid[pid_b][lc].cimap = (s3cipid_t *) ckd_calloc (mdef->n_ciphone,
-							sizeof(s3cipid_t));
+	lrcpid[b][lc].pid = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3pid_t));
+	lrcpid[b][lc].cimap = (s3cipid_t *) ckd_calloc (mdef->n_ciphone,sizeof(s3cipid_t));
+							
 	
 	for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	    lrcpid[pid_b][lc].cimap[rc] = rc;
-	    lrcpid[pid_b][lc].pid[rc] = mdef_phone_id_nearest (mdef, pid_b, lc, rc,
+	    lrcpid[b][lc].cimap[rc] = rc;
+	    lrcpid[b][lc].pid[rc] = mdef_phone_id_nearest (mdef, b, lc, rc,
 							   WORD_POSN_SINGLE);
-	    if ((! mdef->ciphone[pid_b].filler) &&
+	    if ((! mdef->ciphone[b].filler) &&
 		word_start_ci[rc] && word_end_ci[lc] &&
-		mdef_is_ciphone(mdef, lrcpid[pid_b][lc].pid[rc]))
+		mdef_is_ciphone(mdef, lrcpid[b][lc].pid[rc]))
 		n_backoff_ci++;
 	}
-	lrcpid[pid_b][lc].n_pid = mdef->n_ciphone;
+	lrcpid[b][lc].n_pid = mdef->n_ciphone;
     }
 }
+
 
 
 /*
  * Build within-word triphones sequence for each word.  The extreme ends are not needed
  * since cross-word modelling is used for those.  (See lcpid, rcpid, lrcpid.)
  */
+
 static void build_wwpid ( void )
 {
     s3wid_t w;
     int32 pronlen, l;
     s3cipid_t b, lc, rc;
-    s3pid_t pid_b;
-    
-    b=0;
-    pid_b=(s3pid_t)b;
-    pid_b=0;
     
     E_INFO ("Building within-word triphones\n");
     
@@ -562,7 +541,7 @@ static void build_wwpid ( void )
 	for (l = 1; l < pronlen-1; l++) {
 	    rc = dict->word[w].ciphone[l+1];
 	    wwpid[w][l] = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_INTERNAL);
-	    if ((! mdef->ciphone[pid_b].filler) && mdef_is_ciphone(mdef, wwpid[w][l]))
+	    if ((! mdef->ciphone[b].filler) && mdef_is_ciphone(mdef, wwpid[w][l]))
 		n_backoff_ci++;
 	    
 	    lc = b;
@@ -585,19 +564,18 @@ static void build_xwdpid_map ( void )
 {
     s3wid_t w;
     int32 pronlen;
-    s3pid_t b, lc, rc;
+    s3cipid_t b, lc, rc;
     
     E_INFO ("Building cross-word triphones\n");
     
-    word_start_ci = (int32 *) ckd_calloc (mdef->n_ciphone, sizeof(int32));
-    word_end_ci = (int32 *) ckd_calloc (mdef->n_ciphone, sizeof(int32));
+    word_start_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
+    word_end_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
 
     /* Mark word beginning and ending ciphones that occur in given dictionary */
     for (w = 0; w < dict->n_word; w++) {
-	word_start_ci[(s3pid_t)dict->word[w].ciphone[0]] = 1;
-	word_end_ci[(s3pid_t)dict->word[w].ciphone[dict->word[w].pronlen-1]] = 1;
+	word_start_ci[dict->word[w].ciphone[0]] = 1;
+	word_end_ci[dict->word[w].ciphone[dict->word[w].pronlen-1]] = 1;
     }
-    
     lcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
     rcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
     lrcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
@@ -606,19 +584,20 @@ static void build_xwdpid_map ( void )
 	pronlen = dict->word[w].pronlen;
 	if (pronlen > 1) {
 	    /* Multi-phone word; build rcmap and lcmap if not already present */
+
 	    b = dict->word[w].ciphone[pronlen-1];
 	    lc = dict->word[w].ciphone[pronlen-2];
 	    if (! rcpid[b])
 		rcpid[b] = (xwdpid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t));
 	    if (! rcpid[b][lc].cimap)
 		build_rcpid (b, lc);
-	    
 	    b = dict->word[w].ciphone[0];
 	    rc = dict->word[w].ciphone[1];
 	    if (! lcpid[b])
 		lcpid[b] = (xwdpid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t));
 	    if (! lcpid[b][rc].cimap)
 		build_lcpid (b, rc);
+
 	} else {
 	    /* Single-phone word; build lrcmap if not already present */
 	    b = dict->word[w].ciphone[0];
@@ -628,7 +607,6 @@ static void build_xwdpid_map ( void )
 	    }
 	}
     }
-
     ckd_free (word_start_ci);
     ckd_free (word_end_ci);
 
@@ -648,7 +626,7 @@ static void build_xwdpid_map ( void )
 static s3cipid_t *get_rc_cimap (s3wid_t w)
 {
     int32 pronlen;
-    s3pid_t b, lc;
+    s3cipid_t b, lc;
     
     pronlen = dict->word[w].pronlen;
     b = dict->word[w].ciphone[pronlen-1];
@@ -665,7 +643,7 @@ static s3cipid_t *get_rc_cimap (s3wid_t w)
 static void get_rcpid (s3wid_t w, s3pid_t **pid, int32 *npid)
 {
     int32 pronlen;
-    s3pid_t b, lc;
+    s3cipid_t b, lc;
     
     pronlen = dict->word[w].pronlen;
     assert (pronlen > 1);
@@ -681,7 +659,7 @@ static void get_rcpid (s3wid_t w, s3pid_t **pid, int32 *npid)
 static int32 get_rc_npid (s3wid_t w)
 {
     int32 pronlen;
-    s3pid_t b, lc;
+    s3cipid_t b, lc;
     
     pronlen = dict->word[w].pronlen;
     b = dict->word[w].ciphone[pronlen-1];
@@ -1368,8 +1346,8 @@ static int32 whmm_eval (int32 *senscr)
 	}
     }
 
-    pctr_increment (&counters[ctr_mpx_whmm], n_mpx);
-    pctr_increment (&counters[ctr_nonmpx_whmm], n_nonmpx);
+    pctr_increment (ctr_mpx_whmm, n_mpx);
+    pctr_increment (ctr_nonmpx_whmm, n_nonmpx);
     
     return best;
 }
@@ -1382,7 +1360,7 @@ static int32 whmm_eval (int32 *senscr)
  */
 static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 {
-    s3pid_t rc, npid;
+    s3cipid_t rc, npid;
     
     if ((n_lat_entry <= 0) ||
 	(lattice[n_lat_entry-1].wid != w) || (lattice[n_lat_entry-1].frm != f)) {
@@ -1416,7 +1394,7 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 	lattice[n_lat_entry-1].score = h->score[final_state];
 	lattice[n_lat_entry-1].history = h->history[final_state];
     }
-    lattice[n_lat_entry-1].rcscore[(s3pid_t)h->rc] = h->score[final_state];
+    lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
 }
 
 
@@ -1445,7 +1423,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 	if ((! h->next) || (h->next->pos != h->pos+1)) {
 	    nexth = whmm_alloc (h->pos+1);
 
-	    nexth->pid = &(wwpid[w][(int)nexth->pos]);
+	    nexth->pid = &(wwpid[w][nexth->pos]);
 	    
 	    nexth->next = h->next;
 	    h->next = nexth;
@@ -1471,7 +1449,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 		nexth = whmm_alloc (h->pos+1);
 
 		nexth->rc = rc;
-		nexth->pid = &(pid[(s3pid_t)rc]);
+		nexth->pid = &(pid[rc]);
 		
 		nexth->next = prevh->next;
 		prevh->next = nexth;
@@ -1552,22 +1530,21 @@ if (l1 == -1) *w0 = BAD_S3WID; else
  * If the first phone is also the last (single-phone word), we must also model all
  * possible right context ciphones, by instantiating separate whmm models for each rc.
  */
+
 static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 {
     whmm_t *h, *prevh;
-    s3pid_t b, rc;
+    s3cipid_t b, rc;
     s3pid_t pid, *rpid;
     int32 s, npid, nf;
-    int32 pid_lc;
-    pid_lc=(s3pid_t) lc;
-
+    
     nf = n_frm+1;
     
     b = dict->word[w].ciphone[0];
 
     if (dict->word[w].pronlen > 1) {	/* Multi-phone word; no right context problem */
 	rc = dict->word[w].ciphone[1];
-	pid = lcpid[b][rc].pid[(s3pid_t)lcpid[b][rc].cimap[pid_lc]];
+	pid = lcpid[b][rc].pid[lcpid[b][rc].cimap[lc]];
 
 	if ((! whmm[w]) || (whmm[w]->pos != 0)) {
 	    h = whmm_alloc (0);
@@ -1591,7 +1568,7 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	prevh = NULL;
 	h = whmm[w];
 	npid = get_rc_npid (w);
-	rpid = lrcpid[b][pid_lc].pid;
+	rpid = lrcpid[b][lc].pid;
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! h) || (h->rc != rc)) {
@@ -1626,6 +1603,7 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	}
     }
 }
+
 
 
 /*
@@ -1701,7 +1679,7 @@ static void build_word_cand_cf (int32 cf)
 static void word_trans (int32 thresh)
 {
     s3latid_t l;	/* lattice entry index */
-    s3pid_t *rcmap, rc, lc;
+    s3cipid_t *rcmap, rc, lc;
     s3wid_t w, bw0, bw1, nextwid;
     tg_t *tgptr;
     bg_t *bgptr;
@@ -1710,6 +1688,8 @@ static void word_trans (int32 thresh)
     int32 cand, lscr;
     int32 lat_start;
     
+    /*    int32 tempi, temp_j;*/
+
     lat_start = frm_latstart[n_frm];
     
     for (rc = 0; rc < mdef->n_ciphone; rc++) {
@@ -1731,9 +1711,9 @@ static void word_trans (int32 thresh)
 	lc = dict->word[w].ciphone[dict->word[w].pronlen-1];
 	
 	/* Uncompact path scores for all right context ciphones for word just finished */
-	rcmap = (s3pid_t*)get_rc_cimap (w);
+	rcmap = get_rc_cimap (w);
 	for (rc = 0; rc < mdef->n_ciphone; rc++)
-	    rcscore[rc] = lattice[l].rcscore[rcmap[rc]];
+	  rcscore[rc] = lattice[l].rcscore[rcmap[rc]];
 
 	/* Find the last real (non-filler, non-silence) two-word history */
 	two_word_history (l, &bw0, &bw1);
@@ -1746,7 +1726,9 @@ static void word_trans (int32 thresh)
 
 	    /* First, transition to trigram followers of bw0, bw1 */
 	    acc_bowt = 0;
-	    if ((IS_S3WID(bw0)) && ((n_tg = lm_tglist (lm,bw0, bw1, &tgptr, &bowt)) > 0)) {
+	    if ((IS_S3WID(bw0)) && ((n_tg = lm_tglist (lm,
+						       dict2lmwid[dict_basewid(dict,bw0)], 
+						       dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt)) > 0)) {
 		/* Transition to trigram followers of bw0, bw1, if any */
 		for (; n_tg > 0; --n_tg, tgptr++) {
 		    /* Transition to all alternative pronunciations for trigram follower */
@@ -1754,7 +1736,7 @@ static void word_trans (int32 thresh)
 		    
 		    if (IS_S3WID(nextwid) && (nextwid != startwid)) {
 			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-			    newscore = rcscore[(s3pid_t) dict->word[w].ciphone[0]] +
+			    newscore = rcscore[dict->word[w].ciphone[0]] +
 				LM_TGPROB (lm, tgptr) + phone_penalty;
 			    
 			    if (newscore >= thresh) {
@@ -1769,7 +1751,10 @@ static void word_trans (int32 thresh)
 	    }
 	    
 	    /* Transition to bigram followers of bw1 */
-	    if ((n_bg = lm_bglist (lm,bw1, &bgptr, &bowt)) > 0) {
+	    if ((n_bg = lm_bglist (lm,
+				   dict2lmwid[dict_basewid(dict,bw1)], 
+				   &bgptr, 
+				   &bowt)) > 0) {
 		/* Transition to bigram followers of bw1, if any */
 		for (; n_bg > 0; --n_bg, bgptr++) {
 		    /* Transition to all alternative pronunciations for bigram follower */
@@ -1779,7 +1764,7 @@ static void word_trans (int32 thresh)
 			(! tg_trans_done[nextwid]) &&	/* TG transition already done */
 			(nextwid != startwid)) {	/* No transition to <s> */
 			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-			    newscore = rcscore[(s3pid_t)dict->word[w].ciphone[0]] +
+			    newscore = rcscore[dict->word[w].ciphone[0]] +
 				LM_BGPROB (lm, bgptr) + acc_bowt + phone_penalty;
 			    
 			    if (newscore >= thresh)
@@ -1807,11 +1792,14 @@ static void word_trans (int32 thresh)
 	    for (cand = 0; IS_S3WID(word_cand_cf[cand]); cand++) {
 		nextwid = word_cand_cf[cand];
 		
-		/* Is it correct?  Don't really know : ARCHAN */
-		lscr = lm_tg_score (lm,bw0, bw1, nextwid,cand);
+		lscr = lm_tg_score (lm,
+				    dict2lmwid[dict_basewid(dict,bw0)],
+				    dict2lmwid[dict_basewid(dict,bw1)],
+				    dict2lmwid[nextwid],
+				    nextwid);
 
 		for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-		    newscore = rcscore[(s3pid_t)dict->word[w].ciphone[0]] + lscr + phone_penalty;
+		    newscore = rcscore[dict->word[w].ciphone[0]] + lscr + phone_penalty;
 		    
 		    if (newscore >= thresh)
 			word_enter (w, newscore, l, lc);
@@ -1907,6 +1895,8 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     dict = _dict;
     lm   = _lm;
     
+    assert (mdef && tmat && dict && lm);
+
     /* HMM states information */
     n_state = mdef->n_emit_state + 1;
     final_state = n_state - 1;
@@ -1983,9 +1973,9 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 
     /* Allocate timers and counters for statistics gathering */
     
-    pctr_new(counters,"mpx");
-    pctr_new(counters,"~mpx");
-    pctr_new(counters,"lat");
+    pctr_new(ctr_mpx_whmm,"mpx");
+    pctr_new(ctr_nonmpx_whmm,"~mpx");
+    pctr_new(ctr_latentry,"lat");
 
     /* Word to be traced in detail */
     if ((tmpstr = (char *) cmd_ln_access ("-tracewhmm")) != NULL) {
@@ -2022,7 +2012,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 	    for (; IS_S3WID(w); w = dict->word[w].alt) {
 		ci = dict->word[w].ciphone[0];
 		prevwp = NULL;
-		for (wp = word_ugprob[(s3pid_t)ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
+		for (wp = word_ugprob[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
 		    prevwp = wp;
 		wp = (word_ugprob_t *) listelem_alloc (sizeof(word_ugprob_t));
 		wp->wid = w;
@@ -2031,8 +2021,8 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 		    wp->next = prevwp->next;
 		    prevwp->next = wp;
 		} else {
-		    wp->next = word_ugprob[(s3pid_t)ci];
-		    word_ugprob[(s3pid_t)ci] = wp;
+		    wp->next = word_ugprob[ci];
+		    word_ugprob[ci] = wp;
 		}
 	    }
 	}
@@ -2298,7 +2288,7 @@ static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
     
     rcmap = get_rc_cimap (lattice[l].wid);
     rc = dict->word[w_rc].ciphone[0];
-    return (lattice[l].rcscore[(s3pid_t)rcmap[(s3pid_t)rc]]);
+    return (lattice[l].rcscore[rcmap[rc]]);
 }
 
 
@@ -2323,17 +2313,24 @@ static int32 lat_seg_lscr (s3latid_t l)
     }
     
     two_word_history (lattice[l].history, &bw0, &bw1);
-    lscr = lm_tg_score (lm, bw0, bw1, bw2,lattice[l].wid);
+    lscr = lm_tg_score (lm, 
+			dict2lmwid[dict_basewid(dict,bw0)], 
+			dict2lmwid[dict_basewid(dict,bw1)], 
+			dict2lmwid[bw2],
+			bw2);
     if (n_word_cand > 0)
 	return lscr;
 
-    /* Correction for backoff case if that scores better (see word_trans) */
+    /* Correction for backoff cpase if that scores better (see word_trans) */
     bo_lscr = 0;
-    if ((IS_S3WID(bw0)) && (lm_tglist (lm,bw0, bw1, &tgptr, &bowt) > 0))
+    if ((IS_S3WID(bw0)) && (lm_tglist (lm,
+				       dict2lmwid[dict_basewid(dict,bw0)], 
+				       dict2lmwid[dict_basewid(dict,bw1)],
+				       &tgptr, &bowt) > 0))
 	bo_lscr = bowt;
-    if (lm_bglist (lm, bw1, &bgptr, &bowt) > 0)
+    if (lm_bglist (lm, dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
 	bo_lscr += bowt;
-    bo_lscr += lm_ug_score (lm,bw2,lattice[l].wid);
+    bo_lscr += lm_ug_score (lm,dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
 
     return ((lscr > bo_lscr) ? lscr : bo_lscr);
 }
@@ -2426,7 +2423,7 @@ srch_hyp_t *fwd_end_utt ( void )
     s3wid_t w;
     s3latid_t l;
     frm_latstart[n_frm] = n_lat_entry;	/* Add sentinel */
-    pctr_increment (&counters[ctr_latentry], n_lat_entry);
+    pctr_increment (ctr_latentry, n_lat_entry);
     
     /* Free whmm search structures */
     for (w = 0; w < dict->n_word; w++) {
@@ -2805,12 +2802,16 @@ static void dag_bestpath (daglink_t *l,		/* Backward link! */
 	if (pl->pscr > (int32)0x80000000) {
 	    score = pl->pscr + l->ascr;
 	    if (pd)
-		lscr = lwf * lm_tg_score (lm,dict_basewid(dict, pd->wid),
-					    dict_basewid(dict,d->wid),
-					    dict_basewid(dict, src->wid),
-					  src->wid);
+		lscr = lwf * lm_tg_score (lm,
+					  dict2lmwid[dict_basewid(dict, pd->wid)],
+					  dict2lmwid[dict_basewid(dict,d->wid)],
+					  dict2lmwid[dict_basewid(dict, src->wid)],
+					  dict_basewid(dict, src->wid));
 	    else
-		lscr = lwf * lm_bg_score (lm,dict_basewid(dict,d->wid), dict_basewid(dict,src->wid),src->wid);
+		lscr = lwf * lm_bg_score (lm,
+					  dict2lmwid[dict_basewid(dict,d->wid)],
+					  dict2lmwid[dict_basewid(dict,src->wid)],
+					  dict_basewid(dict,src->wid));
 	    score += lscr;
 	    
 	    /* Update best path and score beginning with l */

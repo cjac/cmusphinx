@@ -95,3 +95,6 @@ INCLUDES = -I$(top_srcdir) \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@
+
+#	flat_fwd.c \
+#	flat_fwd.h 

@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,50 +74,33 @@
 extern uint32 rpcc( void );	/* On an alpha, use the RPCC instruction */
 #endif
 
-#define MAX_CTR 30
 
-int32 pctr_new (pctr_t *ctr, char *name)
+int32 pctr_new (pctr_t ctr, char *nm)
 {
-    if (! ctr)
-        ctr = (pctr_t *) ckd_calloc (MAX_CTR, sizeof(pctr_t));
-    if (ctr->n_ctr >= MAX_CTR) {
-        E_WARN("#counters (%d) exceeded\n", MAX_CTR);
-        return -1;
-    }
-    ctr[ctr->n_ctr].name = (char *) ckd_salloc (name);
-    ctr[ctr->n_ctr].count = 0;
-    
-    return (ctr->n_ctr++);
+  ctr.name = ckd_salloc (nm); 
+  ctr.count = 0;
+  return 1;
 }
 
-void pctr_reset (pctr_t *ctr)
+void pctr_reset (pctr_t ctr)
 {
-    ctr->count = 0;
+    ctr.count = 0;
 }
 
 
-void pctr_increment (pctr_t *ctr, int32 inc)
+void pctr_increment (pctr_t ctr, int32 inc)
 {
-    ctr->count += inc;
+    ctr.count += inc;
 }
 
-void pctr_reset_all (pctr_t *ctr)
+void pctr_print(FILE *fp, pctr_t ctr)
 {
-    for (; ctr->name; ctr++)
-	pctr_reset (ctr);
+  if(!ctr.name)
+    return 0;
+  fprintf (fp, "CTR:");
+  fprintf (fp, "  %d %s", ctr.count, ctr.name);
 }
 
-
-void pctr_print_all (FILE *fp, pctr_t *ctr)
-{
-    if (! ctr->name)
-	return;
-    
-    fprintf (fp, "CTR:");
-    for (; ctr->name; ctr++)
-	fprintf (fp, "  %d %s", ctr->count, ctr->name);
-    fprintf (fp, "\n");
-}
 
 
 int32 host_pclk (int32 dummy)

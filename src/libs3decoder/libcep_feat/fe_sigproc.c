@@ -361,19 +361,20 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 
 int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert)
 {
-  static int32
-    s, k,			/* as above				*/
-    lgN;			/* log2(N)				*/
-
-  static complex
+  complex
     *w, *from, *to,		/* as above				*/
     wwf2,			/* temporary for ww*f2			*/
     *buffer,			/* from and to flipflop btw out and buffer */
     *exch,			/* temporary for exchanging from and to	*/
     *wEnd;			/* to keep ww from going off end	*/
-  static float64
+
+  float64
     div,			/* amount to divide result by: N or 1	*/
     x;				/* misc.				*/
+
+  int32
+    s, k,			/* as above				*/
+    lgN;			/* log2(N)				*/
 
   complex
     *f1, *f2,			/* pointers into from array		*/
