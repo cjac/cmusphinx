@@ -398,9 +398,8 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     /* Parse command line arguments (name-value pairs); skip argv[0] if argc is odd */
     for (j = 1; j < argc; j += 2) {
 	if (hash_lookup(ht, argv[j], &i) < 0) {
-	    E_ERROR("Unknown argument: %s\n", argv[j]);
 	    cmd_ln_print_help (stderr, defn);
-	    exit(-1);
+	    E_FATAL("Unknown argument: %s\n", argv[j]);
 	}
 	
 	/* Check if argument has already been parsed before */
@@ -408,16 +407,14 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
 	    E_FATAL("Multiple occurrences of argument %s\n", argv[j]);
 	
 	if (j+1 >= argc) {
-	    E_ERROR("Argument value for '%s' missing\n", argv[j]);
 	    cmd_ln_print_help (stderr, defn);
-	    exit(-1);
+	    E_FATAL("Argument value for '%s' missing\n", argv[j]);
 	}
 	
 	/* Enter argument value */
 	if (arg_str2val (argval+i, defn[i].type, argv[j+1]) < 0) {
-	    E_ERROR("Bad argument value for %s: %s\n", argv[j], argv[j+1]);
 	    cmd_ln_print_help (stderr, defn);
-	    exit(-1);
+	    E_FATAL("Bad argument value for %s: %s\n", argv[j], argv[j+1]);
 	}
 
 	assert (argval[i].ptr);
@@ -451,7 +448,7 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     }
 
     /* Print configuration */
-    fprintf (stderr, "Default configuration (superseded by the above):\n");
+    fprintf (stderr, "Current configuration:\n");
     arg_dump (stderr, defn, 0);
     
     return 0;

@@ -55,10 +55,10 @@
 /* Default cepstral vector size */
 #define NUM_COEFF  "13"
 
-/* Default display size, less than the vector size so we display one
- * frame per line.
+/* Default display size, i.e., number of coefficients displayed, less
+ * than the vector size so we display one frame per line.
  */
-#define DISPLAY_SIZE "8"
+#define DISPLAY_SIZE "10"
 #define STR_MAX_INT "2147483647"
 
 static arg_t arg[] = {
@@ -69,15 +69,15 @@ static arg_t arg[] = {
   { "-d",
     ARG_INT32,
     DISPLAY_SIZE,
-    "# of displayed coefficients"},
+    "Number of displayed coefficients."},
   { "-header",
     ARG_INT32,
     "0",
-    "Whether header is shown"},
+    "Whether header is shown."},
   { "-describe",
     ARG_INT32,
     "0",
-    "Whether description will be shown. \n"},
+    "Whether description will be shown."},
   { "-b",
     ARG_INT32,
     "0",
@@ -85,15 +85,15 @@ static arg_t arg[] = {
   { "-e",
     ARG_INT32,
     "2147483647",
-    "The ending frame. "},
-  { "-input",
+    "The ending frame."},
+  { "-f",
     ARG_STRING,
     NULL,
-    "Input cepstral file"},
+    "Input feature file."},
   { "-logfn",
     ARG_STRING,
     NULL,
-    "Log file (default stdout/stderr)" },
+    "Log file (default stdout/stderr)." },
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
@@ -101,67 +101,64 @@ int read_cep(char *file, float ***cep, int *nframes, int numcep);
 
 int main(int argc, char *argv[])
 {
-  int i, j, k, offset;
+  int i, j, offset;
   int32 noframe, vsize, dsize, column;
   int32 frm_begin, frm_end;
   int is_header, is_describe;
   float *z, **cep;
   char* cepfile;
   
-  i=0;j=0;k=0;
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
   vsize = cmd_ln_int32("-i");
   dsize = cmd_ln_int32("-d");
-  frm_begin= cmd_ln_int32("-b");  
-  frm_end= cmd_ln_int32("-e");  
-  is_header =cmd_ln_int32("-header");
-  is_describe =cmd_ln_int32("-describe");
+  frm_begin = cmd_ln_int32("-b");  
+  frm_end = cmd_ln_int32("-e");  
+  is_header = cmd_ln_int32("-header");
+  is_describe = cmd_ln_int32("-describe");
 
-  if(vsize<0) E_FATAL("-i : Input vector size should be larger than 0.\n");
-  if(dsize<0) E_FATAL("-d : Column size should be larger than 0\n");
-  if(frm_begin<0) E_FATAL("-b : Beginning frame should be larger than 0\n");
-  if(frm_end<0) E_FATAL("-e : Ending frame should be larger than 0\n");
-  if(frm_begin>=frm_end) E_FATAL("Ending frame (-e) should be larger than beginning frame (-b).\n");
+  if (vsize < 0) E_FATAL("-i : Input vector size should be larger than 0.\n");
+  if (dsize < 0) E_FATAL("-d : Column size should be larger than 0\n");
+  if (frm_begin < 0) E_FATAL("-b : Beginning frame should be larger than 0\n");
+  /* The following condition is redundant
+   * if (frm_end < 0) E_FATAL("-e : Ending frame should be larger than 0\n");
+   */
+  if (frm_begin >= frm_end) E_FATAL("Ending frame (-e) should be larger than beginning frame (-b).\n");
   
-  cepfile=ckd_salloc(argv[argc-1]);
-  if (!cmd_ln_access("-input")){
-    E_FATAL("input file is not specified\n");
+  if ((cepfile = cmd_ln_str("-f")) == NULL){
+    E_FATAL("Input file was not specified with (-f)\n");
   }
-  if (read_cep((char*)cmd_ln_access("-input"),&cep,&noframe,vsize) == IO_ERR)
-    E_FATAL("ERROR opening %s for reading\n",cepfile);
+  if (read_cep(cepfile, &cep, &noframe, vsize) == IO_ERR)
+    E_FATAL("ERROR opening %s for reading\n", cepfile);
       
   z = cep[0];
 
   offset = 0;
   column = (vsize > dsize) ? dsize : vsize;
-  frm_end= (frm_end> noframe) ? noframe : frm_end;
+  frm_end = (frm_end> noframe) ? noframe : frm_end;
 
   /* This part should be moved to a special library if this file is
      longer than 300 lines. */
 
-  if(is_header){
-    if(is_describe){
+  if (is_header) {
+    if (is_describe) {
       printf("%d frames\n", noframe);
-      if(k==0) 
-	printf("\n%6s","frame#:");
-      else printf("%6s:  ","");
+      printf("\n%6s", "frame#:");
     }
       
-    for ( j = 0 ; j < column; ++j){
-      printf("%3s%3d%s ","c[",j,"]");
+    for (j = 0; j < column; ++j) {
+      printf("%3s%3d%s ", "c[", j, "]");
     }
     printf("\n");
   }
 
-  offset += frm_begin *vsize;
-  for (i = frm_begin; i < frm_end; ++i){
-    if(is_describe){
-      if(k==0) printf("%6d:",i);
-      else printf("%6s:","");
+  offset += frm_begin * vsize;
+  for (i = frm_begin; i < frm_end; ++i) {
+    if (is_describe) {
+      printf("%6d:", i);
     }
-    for ( j =0 ; j < column; ++j)
+    for (j = 0; j < column; ++j)
       printf("%7.3f ", z[offset + j]);
     printf("\n");
       
@@ -170,7 +167,7 @@ int main(int argc, char *argv[])
   fflush(stdout);
   cmd_ln_appl_exit();
 
-  return(0);
+  return(IO_SUCCESS);
 
 }
 
