@@ -51,6 +51,8 @@ typedef struct{
     int32 NUM_CEPSTRA;
     int32 NUM_FILTERS;
     int32 FFT_SIZE;
+    int32 LOG_SPEC;
+    int32 FEATURE_DIMENSION;
     float32 LOWER_FILT_FREQ;
     float32 UPPER_FILT_FREQ;
     float32 PRE_EMPHASIS_ALPHA;
@@ -105,9 +107,7 @@ typedef struct{
     int32 FRAME_SIZE;
     int32 FFT_SIZE;
     int32 FB_TYPE;
-    int32 LOG_SPEC;
     int32 NUM_CEPSTRA;
-    int32 FEATURE_DIMENSION;
     float32 PRE_EMPHASIS_ALPHA;
     int16 *OVERFLOW_SAMPS;
     int32 NUM_OVERFLOW_SAMPS;    
@@ -168,8 +168,6 @@ typedef struct{
 
 /* The following only use in the application level */
 
-#define ON 1
-#define OFF 0
 #define NULL_CHAR '\0'
 #define MAXCHARS 2048
 
