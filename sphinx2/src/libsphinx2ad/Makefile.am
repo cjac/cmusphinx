@@ -2,6 +2,8 @@
 
 lib_LTLIBRARIES = libsphinx2ad.la
 
+libsphinx2ad_la_LDFLAGS = -version-info 1:0:0
+
 libsphinx2ad_la_SOURCES = cont_ad_base.c
 
 EXTRA_libsphinx2ad_la_SOURCES = ad_base.c \

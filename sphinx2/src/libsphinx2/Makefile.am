@@ -4,6 +4,8 @@ SUBDIRS = include
 
 lib_LTLIBRARIES = libsphinx2.la
 
+libsphinx2_la_LDFLAGS = -version-info 1:0:0
+
 libsphinx2_la_SOURCES = \
 	CM_funcs.c \
 	add-table.c \
@@ -66,7 +68,6 @@ libsphinx2_la_SOURCES = \
 	util.c \
 	uttproc.c
 
-libsphinx2_la_LDFLAGS = -version-info 1:0:1
 
 # libsphinx2_la_LIBADD = -lc -lm $(top_srcdir)/src/libsphinx2fe/libsphinx2fe.la
 
