@@ -809,7 +809,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 {
     char path[16384];
     int32 win, nfr;
-    int32 i, k;
+    int32 i, j, k;
     float32 **mfc;
     
     if (fcb->cepsize <= 0) {
@@ -849,7 +849,16 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 	ckd_free_2d((void **) mfc);
 	return -1;
     }
-    
+
+#if 0
+    for(i=0;i<nfr;i++){
+      for(j=0 ; j< fcb->cepsize ; j++){
+	fprintf(stderr,"%f ",mfc[i][j]);
+      }
+      fprintf(stderr,"\n");
+    }
+#endif
+
     if (nfr < 2*win+1) {
 	E_ERROR("%s: MFC file/segment too short to compute features: %d frames\n", file, nfr);
 	ckd_free_2d((void **) mfc);
@@ -862,6 +871,15 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 	    memcpy (mfc[i], mfc[i-sf+1], fcb->cepsize * sizeof(float32));
 	nfr -= sf;
     }
+
+#if 0
+    for(i=0;i<nfr;i++){
+      for(j=0 ; j< fcb->cepsize ; j++){
+	fprintf(stderr,"%f ",mfc[i][j]);
+      }
+      fprintf(stderr,"\n");
+    }
+#endif
     
     /* Add padding at the end by replicating input data, if necessary */
     k = ef - sf + 1;
@@ -881,20 +899,45 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 	ckd_free_2d((void **) mfc);
 	return -1;
     }
+
     
     if (fcb->cmn){
       E_INFO("CMN\n");
 	cmn (mfc, fcb->varnorm, nfr, fcb->cepsize,fcb->cmn_struct);
     }
+
+#if 0
+    E_INFO("Before CMN. \n");
+    for(i=0;i<nfr;i++){
+      for(j=0 ; j< fcb->cepsize ; j++){
+	fprintf(stderr,"%f ",mfc[i][j]);
+      }
+      fprintf(stderr,"\n");
+    }
+#endif
+
     if (fcb->agc){
       E_INFO("AGC\n");
 	agc_max (mfc, nfr);
     }
 
+#if 0
+    for(i=0;i<nfr;i++){
+      for(j=0 ; j< fcb->cepsize ; j++){
+	fprintf(stderr,"%f ",mfc[i][j]);
+      }
+      fprintf(stderr,"\n");
+    }
+#endif
     
     /* Create feature vectors */
     for (i = win; i < nfr-win; i++)
 	fcb->compute_feat (fcb, mfc+i, feat[i-win]);
+
+#if 0    
+    E_INFO("After dynamic coefficients computation. \n");
+    feat_print(fcb,feat,nfr,stderr);
+#endif
 
     ckd_free_2d((void **) mfc);
     
@@ -1183,61 +1226,3 @@ void feat_free (feat_t *f)
     return(nfeatvec);
 #endif
 
-#if 0
-    for(i=0;i<curpos;i++){
-      printf("%d\n",i);
-      printf("Cep: ");
-      fflush(stdout);
-      for(j=0;j<13;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Del: ");
-      fflush(stdout);
-      for(j=13;j<26;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout); 
-      }
-      printf("\n");
-      fflush(stdout);
-      printf("Acc: ");
-      fflush(stdout);
-      for(j=26;j<39;j++){
-	printf("%f ",ofeat[i][0][j]);
-	fflush(stdout);
-      }
-      printf("\n");
-      fflush(stdout);
-
-    }
-#endif
-
-#if 0
-    {
-      int32 i, j, k;
-    
-      for (i = 0; i < nfr; i++) {
-	fprintf (stderr, "%8d:", i);
-	
-	for (j = 0; j < feat_n_stream(fcb); j++) {
-	  fprintf (stderr, " %2d:", j);
-	  
-	  for (k = 0; k < 13; k++)
-	    fprintf (stderr, " %f", feat[i][j][k]);
-	  fprintf (stderr, "\n");
-	  for (k = 13; k < 26; k++)
-	    fprintf (stderr, " %f", feat[i][j][k]);
-	  fprintf (stderr, "\n");
-	  for (k = 26; k < 39; k++)
-	    fprintf (stderr, " %f", feat[i][j][k]);
-	  fprintf (stderr, "\n");
-
-	}
-      }
-
-    }
-#endif 
-
-    

@@ -142,6 +142,8 @@ int32 approx_mgau_eval (gs_t* gs,
 {
   int32 ng=0;
   int32 *mgau_sl;
+  int32 i;
+
 
   if(gs&&fastgmm->gs4gs){
     ng = gs_mgau_shortlist (gs, s, mgau_n_comp(g,s),feat,best_cid);
@@ -155,20 +157,27 @@ int32 approx_mgau_eval (gs_t* gs,
   }
 
 #if _DEBUG_GSCORE_
+  for(i=0;i<mgau_veclen(g);i++){
+    fprintf(stderr,"%f ",feat[i]);
+  }
+  fprintf(stderr,"\n");
+  fflush(stderr);
   E_INFO("Full computation: Idx %d using subvq, Senscr %d ng %d\n",s,senscr[s],ng);
   senscr[s] = mgau_eval (g, s, NULL, feat);
   E_INFO("Full computationIdx %d using normal, Senscr %d ng %d\n",s,senscr[s],ng);
   senscr[s] = subvq_mgau_eval(g, svq, s, mgau_n_comp(g,s),mgau_sl);
   E_INFO("Partial Computation: Idx %d using subvq, Senscr %d ng %d\n",s,senscr[s],ng);
   senscr[s] = mgau_eval (g, s, mgau_sl, feat);
-  E_INFO("Partial Computation: Idx %d using normal, Senscr %d ng %d\n",s,senscr[s],ng);
+  E_INFO("Partial Computation: Idx %d using normal, Senscr %d ng %d\n",s,senscr[s],ng)
 #endif
 
   /* This safe guard the algorithmic error of other 3rd party converter*/
   if(ng==0){
+
 #if _DEBUG_GSCORE_
-    E_INFO("short list has 0 element, turn to compute all, please check the Gaussian Selection algorithm\n");*/
+    E_INFO("short list has 0 element, turn to compute all, please check the Gaussian Selection algorithm\n");
 #endif
+
     mgau_sl=NULL;
     ng=mgau_n_comp(g,s);
   }
@@ -186,7 +195,7 @@ int32 approx_mgau_eval (gs_t* gs,
     if(mgau_sl==NULL){
 
 #if _DEBUG_GSCORE_
-      /*E_INFO("WARNING!! Score is S3_LOGPROB_ZERO even computing full gaussians! %d\n",s);*/
+      E_INFO("WARNING!! Score is S3_LOGPROB_ZERO even computing full gaussians! %d\n",s);
 #endif
 	
     }

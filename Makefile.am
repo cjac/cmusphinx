@@ -48,9 +48,9 @@ ctags:
 test-simple : test-livepretend
 
 test: test-simple
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep 
 
-test-hell : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-livepretendDEVEL test-wave2feat
+test-hell : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-livepretendDEVEL test-wave2feat test-cepview
 
 test-livepretend:
 	@echo "LIVEPRETEND TEST"
@@ -169,9 +169,9 @@ test-align:
 	    -outsent $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
-	$(LIBTOOL) --mode=execute diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
-	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
-	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	@diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
+	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
 
 test-allphone:
 	@echo "ALLPHONE TEST"
@@ -191,8 +191,8 @@ test-allphone:
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./ \
 	    -phlatdir ./
-	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp
-	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat
+	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp
+	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat
 
 
 test-astar:
@@ -240,9 +240,9 @@ test-gausubvq:
         -svqrows 16 \
 	-seed 1111 \
         -subvq $@.out 
-#	grep -v "#" $@.out > tmp.out
-#	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-#	rm tmp.out 
+#	@grep -v "#" $@.out > tmp.out
+#	@diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+#	@rm tmp.out 
 
 test-gausubvq-match:
 	@echo "GAUSUBVQ TEST"
@@ -257,8 +257,8 @@ test-gausubvq-match:
 	-seed 1111 \
         -subvq $@.out 
 	grep -v "#" $@.out > tmp.out
-	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-	rm tmp.out 
+	@diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+	@rm tmp.out 
 
 test-ep :
 	@echo "EP TEST"
@@ -280,8 +280,8 @@ test-ep :
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" > $@.out
-#	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
-#	$(LIBTOOL) --mode=execute rm $@.out		
+#	@diff $@.out $(top_srcdir)/model/ep/ep.result
+#	@rm $@.out		
 	
 test-ep-match:
 	@echo "EP TEST"
@@ -303,8 +303,8 @@ test-ep-match:
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" > $@.out
-	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
-	$(LIBTOOL) --mode=execute rm $@.out		
+	@diff $@.out $(top_srcdir)/model/ep/ep.result
+	@rm $@.out		
 
 test-wave2feat:
 	@echo "WAVE2FEAT TEST"
@@ -322,10 +322,14 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	$(LIBTOOL) --mode=execute diff $@.mfc $(top_srcdir)/model/ep/chan3.mfc
+	@diff $@.mfc $(top_srcdir)/model/ep/chan3.mfc
 
 test-cepview:
 	@echo "CEPVIEW TEST"
 	$(LIBTOOL) --mode=execute src/programs/cepview \
+	-i 13 \
+	-d 13\
 	 -input ./model/ep/chan3.mfc \
-	 -logfn $@.out
+	 > $@.out
+	@diff $@.out $(top_srcdir)/model/ep/chan3.cepview
+	

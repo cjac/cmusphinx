@@ -585,10 +585,14 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
    * mode */
   kb->pl_win_efv = kb->pl_win > kb->nfr ? kb->nfr : kb->pl_win;
   kb->pl_win_strt=0;
+
+  /*  feat_print(kb->kbcore->fcb,kb->feat,kb->nfr,stderr);*/
   
   for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
+
     kb->cache_best_list[f]=MAX_NEG_INT32;
+
     approx_cont_mgau_ci_eval(kb->kbcore,kb->fastgmm,kb->kbcore->mdef,kb->feat[f][0],kb->cache_ci_senscr[f]);
     kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
     kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
@@ -635,6 +639,14 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     /* Remember, this function will always back off to the simplest
        GMM computation by default.  So don't worry about
        fast-computation/adaptation issues :-)*/
+
+#if _DEBUG_GSCORE_
+  for(i=0;i<mgau_veclen(kb->kbcore->mgau);i++){
+    fprintf(stderr,"%f ",kb->feat[f][0][i]);
+  }
+  fprintf(stderr,"\n");
+  fflush(stderr);
+#endif
   
     approx_cont_mgau_frame_eval(kb->kbcore,
 				kb->fastgmm,
@@ -917,12 +929,6 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 
     kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
     kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
-
-    /*    E_INFO("%d %d\n",kb->utt_cisen_eval,kb->utt_cigau_eval);*/
-
-    /*      kb->utt_cisen_eval += mgau_frm_cisen_eval(mgau);
-	    kb->utt_cigau_eval += mgau_frm_cigau_eval(mgau);*/
-
 
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
