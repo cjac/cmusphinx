@@ -3,10 +3,64 @@
 #include "list.h"
 #include "ckd_alloc.h"
 
+/** Win32 implementation */
+#include <windows.h>
+
 static void list_lock_internal(list_t *);
 static void list_unlock_internal(list_t *);
-static void list_wait_internal(list_t *, int32);
+static int list_wait_internal(list_t *, int32);
 static void list_wake_internal(list_t *);
+
+list_t*
+list_init(void (*_free_data)(void *))
+{
+  list_t *list = null;
+
+  if ((list = (list_t *)ckd_malloc(sizeof(list_t))) == null) {
+    goto list_init_cleanup;
+  }
+
+  list->mutex = null;
+  list->cond = null;
+  list->tail = null;
+  list->free_data = null;
+
+  if ((list->mutex = CreateMutex()) == NULL) {
+    goto list_init_cleanup;
+  }
+
+  if ((list->cond = CreateEvent()) == NULL) {
+    goto list_init_cleanup;
+  }
+
+  list->free_data = _free_data;
+
+  return list;
+
+  list_init_cleanup:
+
+  if (list->mutex != null) {
+    CloseHandle(list->mutex);
+  }
+
+  if (list->cond != null) {
+    CloseHandle(list->cond);
+  }
+
+  return null;
+}
+
+void
+list_free(list_t *_list)
+{
+  assert(_list != null && _list->mutex != null && _list->cond != null);
+
+  list_clear(_list);
+
+  CloseHandle(_list->mutex);
+  CloseHandle(_list->cond);
+  ckd_free(_list);
+}
 
 int
 list_insert_head(list_t *_list, void *_element)
@@ -14,8 +68,6 @@ list_insert_head(list_t *_list, void *_element)
   node_t *node;
 
   assert(_list != null);
-
-  /******************************** execution *******************************/
 
   if ((node = (node_t *)ckd_malloc(sizeof(node_t))) == null) {
     goto list_insert_head_cleanup;
@@ -41,7 +93,6 @@ list_insert_head(list_t *_list, void *_element)
 
   return 0;
 
-  /********************************** cleanup *******************************/
   list_insert_head_cleanup:
 
   if (node != null) {
@@ -58,7 +109,6 @@ list_insert_tail(list_t *_list, void *_element)
 
   assert(_list != null);
 
-  /******************************** execution *******************************/
 
   if ((node = (node_t *)ckd_malloc(sizeof(node_t))) == null) {
     goto list_insert_tail_cleanup;
@@ -84,7 +134,6 @@ list_insert_tail(list_t *_list, void *_element)
 
   return 0;
 
-  /********************************** cleanup *******************************/
   list_insert_tail_cleanup:
 
   if (node != null) {
@@ -101,7 +150,6 @@ list_remove_head(list_t *_list, void **_element)
 
   assert(_list != null);
 
-  /******************************** execution *******************************/
 
   list_lock_internal(_list);
 
@@ -147,8 +195,6 @@ list_remove_tail(list_t *_list, void **_element)
 
   assert(_list != null);
 
-  /******************************** execution *******************************/
-
   list_lock_internal(_list);
 
   if (_list->tail != null) {
@@ -188,14 +234,56 @@ list_remove_tail(list_t *_list, void **_element)
 }
 
 int
+list_peek_head(list_t *_list, void **_element)
+{
+  assert(_list != null);
+
+  list_lock_internal(_list);
+
+  if (_list->tail != null) {
+    *_element = _list->tail->next->data;
+    list_unlock_internal(_list);
+
+    return 0;
+    
+  }
+  else {
+    *_element = null;
+    list_unlock_internal(_list);
+
+    return -1;
+  }
+}
+
+int
+list_peek_tail(list_t *_list, void **_element)
+{
+  assert(_list != null);
+
+  list_lock_internal(_list);
+
+  if (_list->tail != null) {
+    *_element = _list->tail->data;
+    list_unlock_internal(_list);
+
+    return 0;
+    
+  }
+  else {
+    *_element = null;
+    list_unlock_internal(_list);
+
+    return -1;
+  }
+}
+
+void
 list_clear(list_t *_list)
 {
   node_t *itr;
   node_t *node;
 
-  assert(_list != null);
-
-  /******************************** execution *******************************/
+  assert(_list != null && _list->free_data != null);
 
   list_lock_internal(_list);
 
@@ -205,16 +293,13 @@ list_clear(list_t *_list)
   }
 
   list_unlock_internal(_list);
-
-  return 0;
 }
 
-int
+void
 list_wait(list_t *_list, int32 _msec)
 {
   assert(_list != null);
 
-  /******************************** execution *******************************/
 
   list_lock_internal(_list);
 
@@ -223,58 +308,53 @@ list_wait(list_t *_list, int32 _msec)
   }
 
   list_unlock_internal(_list);
-
-  return 0;
 }
 
-static int
+static void
 list_lock_internal(list_t *_list)
 {
   assert(_list != null);
-
-  /******************************** execution *******************************/
+  assert(_list->mutex != NULL);
 
   /** Win32 implementation */
-
-  return 0;
-
-  /********************************** cleanup *******************************/
-
-  return -1;
+  WaitForSingleObject(_list->mutex, INFINITE);
 }
 
-static int
+static void
 list_unlock_internal(list_t *_list)
 {
-  /******************************** execution *******************************/
+  assert(_list != null);
+  assert(_list->mutex != NULL);
 
-  return 0;
-
-  /********************************** cleanup *******************************/
-
-  return -1;
+  /** Win32 implementation */
+  ReleaseMutex(_list->mutex);
 }
 
-static int
-list_wait_internal(list_t *_list)
+static void
+list_wait_internal(list_t *_list, int32 _millisec)
 {
-  /******************************** execution *******************************/
+  HANDLE obj[2];
 
-  return 0;
+  assert(_list != null);
+  assert(_list->mutex != NULL && _list->cond != NULL);
 
-  /********************************** cleanup *******************************/
-
-  return -1;
+  /** Win32 implementation */
+  WaitForSingleObject(_list->mutex, INFINITE);
+  obj[0] = _list->mutex;
+  obj[1] = _list->cond;
+  ResetEvent(_list->cond);
+  ReleaseMutex(_list->mutex);
+  WaitForMultipleObjects(2, obj, TRUE,
+			 _millisec == 0 ? INFINITE : _millisec);
 }
 
-static int
+static void
 list_wake_internal(list_t *_list)
 {
-  /******************************** execution *******************************/
+  assert(_list != null);
+  assert(_list->mutex != NULL && _list->cond != NULL);
 
-  return 0;
-
-  /********************************** cleanup *******************************/
-
-  return -1;
+  /** Win32 implementation */
+  WaitForSingleObject(_list->mutex, INFINITE);
+  SetEvent(_list->cond);
 }
