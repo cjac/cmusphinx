@@ -602,11 +602,13 @@ static void write_phseg (char *dir, align_phseg_t *phseg, char *uttid, char *ctl
 	dir = NULL;	/* Flag to indicate fp shouldn't be closed at the end */
     }
     
-    if (! dir)
+    if (! dir){
 	fprintf (fp, "PH:%s>", uttid);
+	fflush(fp);
+    }
     fprintf (fp, "\t%5s %5s %9s %s\n",
 	     "SFrm", "EFrm", "SegAScr", "Phone");
-    
+    fflush(fp);
     uttscr = 0;
     for (; phseg; phseg = phseg->next) {
 	mdef_phone_str (mdef, phseg->pid, str);
@@ -618,22 +620,29 @@ static void write_phseg (char *dir, align_phseg_t *phseg, char *uttid, char *ctl
 	    scale += senscale[f];
 	}
 	
-	if (! dir)
+	if (! dir){
 	    fprintf (fp, "ph:%s>", uttid);
+	    fflush(fp);
+	}
 	fprintf (fp, "\t%5d %5d %9d %s\n",
 		 phseg->sf, phseg->ef, phseg->score + scale, str);
-	
+	fflush(fp);
 	uttscr += (phseg->score + scale);
     }
 
-    if (! dir)
+    if (! dir){
 	fprintf (fp, "PH:%s>", uttid);
+	fflush(fp);
+    }
     fprintf (fp, " Total score: %11d\n", uttscr);
+    fflush(fp);
 
     if (dir)
 	fclose (fp);
-    else
+    else{
 	fprintf (fp, "\n");
+	fflush(fp);
+    }
 }
 
 
@@ -655,11 +664,13 @@ static void write_wdseg (char *dir, align_wdseg_t *wdseg, char *uttid, char *ctl
 	dir = NULL;	/* Flag to indicate fp shouldn't be closed at the end */
     }
     
-    if (! dir)
+    if (! dir){
 	fprintf (fp, "WD:%s>", uttid);
+	fflush(fp);
+    }
     fprintf (fp, "\t%5s %5s %10s %s\n",
 	     "SFrm", "EFrm", "SegAScr", "Word");
-    
+    fflush(fp);
     uttscr = 0;
     for (; wdseg; wdseg = wdseg->next) {
 	/* Account for senone score scaling in each frame */
@@ -667,22 +678,31 @@ static void write_wdseg (char *dir, align_wdseg_t *wdseg, char *uttid, char *ctl
 	for (f = wdseg->sf; f <= wdseg->ef; f++)
 	    scale += senscale[f];
 
-	if (! dir)
+	if (! dir){
 	    fprintf (fp, "wd:%s>", uttid);
+	    fflush(fp);
+	}
 	fprintf (fp, "\t%5d %5d %10d %s\n",
 		 wdseg->sf, wdseg->ef, wdseg->score + scale, dict_wordstr (dict, wdseg->wid));
+	fflush(fp);
+
 
 	uttscr += (wdseg->score + scale);
     }
 
-    if (! dir)
+    if (! dir){
 	fprintf (fp, "WD:%s>", uttid);
-    fprintf (fp, " Total score: %11d\n", uttscr);
+	fflush(fp);
+    }
 
+    fprintf (fp, " Total score: %11d\n", uttscr);
+    fflush(fp);
     if (dir)
 	fclose (fp);
-    else
+    else{
 	fprintf (fp, "\n");
+	fflush(fp);
+    }
 }
 
 
@@ -1225,6 +1245,7 @@ main (int32 argc, char *argv[])
 	logs3_init ((float64) logbase);
     }
 
+    E_INFO("Log value of 3.785471 is %d\n", log_to_logs3(3.785471));
     /* Initialize feaure stream type */
     fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
 		      (char *) cmd_ln_access ("-cmn"),
