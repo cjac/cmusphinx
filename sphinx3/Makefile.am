@@ -78,16 +78,35 @@ test-wave2feat:
 
 
 perf-std : 
-	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode ti46-decany
-	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode tidigits-decany
+	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode 
+	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode 
 	make -C $(top_srcdir)/src/tests/performance/Communicator com-fast-lp com-fast-decode
 
+perf-std-s3 : 
+	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-decany
+	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-decany
+	make -C $(top_srcdir)/src/tests/performance/Communicator com-base-decany
+
 perf-full:	
-	make -C $(top_srcdir)/src/tests/performance/an4 quick slow
 	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
 	make -C $(top_srcdir)/src/tests/performance/tidigits quick slow
 	make -C $(top_srcdir)/src/tests/performance/rm1 lp
-	make -C $(top_srcdir)/src/tests/performance/Communicator quick slow
+	make -C $(top_srcdir)/src/tests/performance/Communicator base fast
+	make -C $(top_srcdir)/src/tests/performance/wsj5k quick slow
+
+MON_m1:
+	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
+
+TUE_m1:
+	make -C $(top_srcdir)/src/tests/performance/tidigits quick slow
+
+WED_m1:
+	make -C $(top_srcdir)/src/tests/performance/rm1 lp
+
+THU_m1:   
+	make -C $(top_srcdir)/src/tests/performance/Communicator base fast
+
+FRI_m1:
 	make -C $(top_srcdir)/src/tests/performance/wsj5k quick slow
 
 
