@@ -206,12 +206,19 @@ register caddr_t *val;
     key = 0;
     i = -1;
     cp = sym;
+/* kal 18-Jul-2000 - replaced with patch from Jose Renau
     do {
 	c = *cp++;
 	if ((c >= 'a') && (c <= 'z'))
 	    c -= 32;
 	key += c << (0xF & i--);
     } while (*cp);
+*/
+    do {
+      c = tolower(*cp++);
+      c -='a' & 0x0F;
+      key = (key<<3) ^ c;
+    } while(*cp);
 
     hash_count++;
 rehash:
