@@ -365,11 +365,13 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
 	fp = stdout;	/* Segmentations can be directed to stdout this way */
 	E_INFO ("Phone segmentation (%s):\n", uttid);
 	fprintf (fp, "PH:%s>", uttid);
+	fflush(fp);
     }
     
     fprintf (fp, "\t%5s %5s %9s %s\n",
 	     "SFrm", "EFrm", "SegAScr", "Phone");
-    
+    fflush(fp);
+
     uttscr = 0;
     for (; phseg; phseg = phseg->next) {
 	/* Account for senone score scaling in each frame */
@@ -377,23 +379,29 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
 	for (f = phseg->sf; f <= phseg->ef; f++)
 	    scale += senscale[f];
 	
-	if (! dir)
+	if (! dir){
 	    fprintf (fp, "ph:%s>", uttid);
+	    fflush(fp);
+	}
 	fprintf (fp, "\t%5d %5d %9d %s\n",
 		 phseg->sf, phseg->ef, phseg->score + scale,
 		 mdef_ciphone_str (mdef, phseg->ci));
-	
+	fflush(fp);
 	uttscr += (phseg->score + scale);
     }
 
-    if (! dir)
+    if (! dir){
 	fprintf (fp, "PH:%s>", uttid);
+	fflush(fp);
+    }
     fprintf (fp, " Total score: %11d\n", uttscr);
-
+    fflush(fp);
     if (dir)
 	fclose (fp);
-    else
+    else{
 	fprintf (fp, "\n");
+	fflush(fp);
+    }
 }
 
 
@@ -698,6 +706,7 @@ main (int32 argc, char *argv[])
 	    fprintf (stderr, "\t%s argument-list, or\n", argv[0]);
 	    fprintf (stderr, "\t%s [argument-file] (default file: s3allphone.arg)\n\n",
 		     argv[0]);
+	    fflush(stderr);
 	    cmd_ln_print_help(stderr, defn);
 	    exit(1);
 	}
