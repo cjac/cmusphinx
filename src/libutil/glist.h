@@ -82,10 +82,10 @@ typedef gnode_t *glist_t;	/* Head of a list of gnodes */
 
 /* Access macros, for convenience */
 #define gnode_ptr(g)		((g)->data.ptr)
-#define gnode_int32(g)		((g)->data.int32)
-#define gnode_uint32(g)		((g)->data.uint32)
-#define gnode_float32(g)	((g)->data.float32)
-#define gnode_float64(g)	((g)->data.float64)
+#define gnode_int32(g)		((g)->data.i_32)
+#define gnode_uint32(g)		((g)->data.ui_32)
+#define gnode_float32(g)	((g)->data.fl_32)
+#define gnode_float64(g)	((g)->data.fl_64)
 #define gnode_next(g)		((g)->next)
 
 

@@ -161,21 +161,21 @@ static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 	switch (t) {
 	case ARG_INT32:
 	case REQARG_INT32:
-	    if (sscanf (str, "%d", &(v->val.int32)) != 1)
+	    if (sscanf (str, "%d", &(v->val.i_32)) != 1)
 		return -1;
-	    v->ptr = (void *) &(v->val.int32);
+	    v->ptr = (void *) &(v->val.i_32);
 	    break;
 	case ARG_FLOAT32:
 	case REQARG_FLOAT32:
-	    if (sscanf (str, "%f", &(v->val.float32)) != 1)
+	    if (sscanf (str, "%f", &(v->val.fl_32)) != 1)
 		return -1;
-	    v->ptr = (void *) &(v->val.float32);
+	    v->ptr = (void *) &(v->val.fl_32);
 	    break;
 	case ARG_FLOAT64:
 	case REQARG_FLOAT64:
-	    if (sscanf (str, "%lf", &(v->val.float64)) != 1)
+	    if (sscanf (str, "%lf", &(v->val.fl_64)) != 1)
 		return -1;
-	    v->ptr = (void *) &(v->val.float64);
+	    v->ptr = (void *) &(v->val.fl_64);
 	    break;
 	case ARG_STRING:
 	case REQARG_STRING:
