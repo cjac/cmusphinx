@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title>Sphinx-3 s3.4 Decoder</title>
+    <title>Sphinx-3 s3.X Decoder (X=5)</title>
     <style type="text/css">
       body { margin-left: 6%; margin-right: 3%; background: white; }
       h1 { color: green; align: center; }
@@ -17,7 +17,7 @@
   </head>
   
   <BODY>
-    <H1><U>Sphinx-3 s3.4 Decoder</U></H1>
+    <H1><U>Sphinx-3 s3.X Decoder (X=5)</U></H1>
     <center>
       Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
       Sphinx Speech Group<br>
@@ -32,14 +32,14 @@
     <div class="wheatbox">
       <UL>
 	<LI><A HREF="#sec_intro">Introduction</A></LI>
-	<LI><A HREF="#sec_decoverview">Overview of the s3.4 Decoder</A>
+	<LI><A HREF="#sec_decoverview">Overview of the s3.X Decoder</A>
           <UL>
 	    <LI><A HREF="#sec_dec_input">Inputs</A></LI>
 	    <LI><A HREF="#sec_dec_output">Outputs</A></LI>
           </UL>
 	</LI>
-        <LI><A HREF="#sec_compile">Compiling s3.4</A></LI>
-        <LI><A HREF="#sec_exec">Running s3.4</A>
+        <LI><A HREF="#sec_compile">Compiling s3.X</A></LI>
+        <LI><A HREF="#sec_exec">Running s3.X</A>
           <UL>
 	    <LI><A HREF="#sec_args_overview">Configuration Arguments Overview</A></LI>
 	    <LI><A HREF="#sec_dec_op">Decoder Operation</A></LI>
@@ -61,7 +61,6 @@
         <LI><A HREF="#sec_utilpgm">Other Utilities</A>
 	  <UL>
 	    <LI><A HREF="#sec_gausubvq">Gaussian Sub-Vector Quantization Utility</a></LI>
-	    <LI><A HREF="#sec_lmtest">Language Model Test Utility</a></LI>
 	  </UL>
 	</LI>
         <LI><A HREF="#sec_src">Source Code</A></LI>
@@ -77,12 +76,12 @@
     acoustic <em>trainer</em> and various <em>decoders</em>,
     <em>i.e.</em>, text recognition, phoneme recognition, N-best list
     generation, etc. In this document, "Sphinx-3" refers to any
-    version of the Sphinx-3 decoder, and "s3.4" refers to the version
-    available in this distribution. Notice that s3.4 is in fact a
+    version of the Sphinx-3 decoder, and "s3.X" refers to the version
+    available in this distribution. Notice that s3.X is in fact a
     branch from Sphinx-3, not a more recent release.
     </P>
     
-    <P>The s3.4 decoder is a recent implementation for speech-to-text
+    <P>The s3.X decoder is a recent implementation for speech-to-text
     recognition, its main goal being speed improvements over the
     original Sphinx-3 decoder.  It runs about 10 times faster than the
     latter on large vocabulary tasks.  The following is a brief
@@ -99,14 +98,19 @@
     <P>This package contains the following programs:
     </P>
     <OL>
-      <LI><code>decode</code>: The Sphinx-3 s3.2/s3.3/s3.4 decoder processing cesptra files</li>
+      <LI><code>decode</code>: The Sphinx-3 s3.2/s3.3/s3.X decoder processing cesptra files</li>
       <LI><code>gausubvq</code>: Sub-vector clustered acoustic model building</LI>
-      <LI><code>livedecode</code>: The Sphinx-3 s3.4 decoder in live mode</LI>
-      <LI><code>livepretend</code>: The Sphinx-3 s3.4 decoder in batch mode</LI>
+      <LI><code>livedecode</code>: The Sphinx-3 s3.X decoder in live mode</LI>
+      <LI><code>livepretend</code>: The Sphinx-3 s3.X decoder in batch mode</LI>      
+      <LI><code>align</code>: The Sphinx-3 aligner</LI>
+      <LI><code>allphone</code>: The Sphinx-3 phoneme recognizer</LI>
+      <LI><code>astar</code>: The Sphinx-3 N-best generator</LI>
+      <LI><code>dag</code>: The Sphinx-3 application for best-path searching</LI>
+
     </OL>
     <P>This distribution has been prepared for Unix platforms. Port to
     MS Windows (MS Visual C++ 6.0 workspace and project files) has
-    been provided, even though this has not been thoroughly tested.
+    been provided. 
     </P>
 
     <P>This document is a brief user's manual for the above programs.
@@ -116,7 +120,7 @@
     href="s3-2.ppt">slides</a> are available that give additional
     information about the decoder. Even though the slides refer to
     s3.2, keep in mind that the basic search structure remains te same
-    in s3.4.
+    in s3.X (where x=3,4 and 5)
     </P>
     
     <P>The initial part of this document provides an overview of the
@@ -130,9 +134,9 @@
     </div>
 
     
-    <H2><A NAME="sec_decoverview"><U>Overview of the s3.4 Decoder</U></A></H2>
+    <H2><A NAME="sec_decoverview"><U>Overview of the s3.X Decoder</U></A></H2>
     
-    <P>The s3.4 decoder is based on the conventional <em>Viterbi
+    <P>The s3.X decoder is based on the conventional <em>Viterbi
     search</em> algorithm and <em>beam search</em> heuristics.  It
     uses a <em>lexical-tree</em> search structure somewhat like the
     Sphinx-II decoder, but with some improvements for greater accuracy
@@ -165,7 +169,7 @@
       training data using the Sphinx-3 trainer.  The trainer is
       capable of building acoustic models with a wide range of
       structures, such as <em>discrete</em>, <em>semi-continuous</em>,
-      or <em>continuous</em>.  However, the s3.4 decoder is only
+      or <em>continuous</em>.  However, the s3.X decoder is only
       capable of handling continuous acoustic models.
       </LI>
       <P></P>
@@ -228,16 +232,16 @@
     
     
     
-    <H2><A NAME="sec_compile"><u>Compiling s3.4</u></A></H2>
+    <H2><A NAME="sec_compile"><u>Compiling s3.X</u></A></H2>
     
     <P>The current distribution has been set up for Unix platforms.
     The following steps are needed to compile the decoder:
     </P>
     <OL>
       <LI><code>./configure [--prefix=/my/install/directory]</code>:
-      the argument is optional. If not given, it will install s3.4
+      the argument is optional. If not given, it will install s3.X
       under /usr/local, provided you have the proper permissions. This
-      step is only necessary the first time you compile s3.4.</LI>
+      step is only necessary the first time you compile s3.X.</LI>
 
       <LI><code>make clean</code>: This should remove any old object
       files.</LI> 
@@ -245,7 +249,7 @@
       <LI><code>make</code>: This compiles the libraries and example
       programs.</LI>
 
-      <LI><code>make install</code>: This will install s3.4 in the
+      <LI><code>make install</code>: This will install s3.X in the
       directory that you specified when you ran <code>configure</code>
       and also the provided models and documentation.</LI>
     </OL>
@@ -264,7 +268,7 @@
     
     
     
-    <H2><A NAME="sec_exec"><u>Running s3.4</u></A></H2>
+    <H2><A NAME="sec_exec"><u>Running s3.X</u></A></H2>
     
     <P>Running the decoder is simply a matter of invoking the binary
     (<em>i.e.</em>, <code>decode</code>, <code>livedecode</code> or
@@ -442,6 +446,16 @@
       <tr>
 	<td>
 	  <UL>
+	    <LI><code>-ci_pbeam</code></LI>
+	    <LI><code>-ds</code></LI>
+	  </UL>
+	</td>
+	<td><a href="#sec_gmm_compute">Fast GMM Computation</a> parameters</td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
 	    <LI><code>-lw</code></LI>
 	    <LI><code>-wip</code></LI>
 	  </UL>
@@ -462,7 +476,7 @@
     <P>This section is a bit of a mish-mash; its contents probably
     belong in an FAQ section.  But, hopefully, through this section a
     newcomer to Sphinx can get an idea of the structure, capabilities,
-    and limitations of the s3.4 decoder.
+    and limitations of the s3.X decoder.
     </P>
 
 
@@ -497,7 +511,7 @@
     language models specified via the configuration arguments are
     loaded during initialization.  This set of models is used to
     decode all the utterances in the input.  (The language model is
-    actually only partly loaded, since s3.4 uses a <a
+    actually only partly loaded, since s3.X uses a <a
     href="#lm_dumpfile">disk-based LM</a> strategy.)
     </P>
 
@@ -564,7 +578,7 @@
     computationally manageable limits, <em>pruning</em> is employed,
     which means that the less promising hypotheses are continually
     discarded during the recognition process.  There are two kinds of
-    pruning in s3.4, <em>beam pruning</em> and <em>absolute
+    pruning in s3.X, <em>beam pruning</em> and <em>absolute
     pruning</em>.
     </P>
 
@@ -606,7 +620,23 @@
     href="#sec_flags_tune">configuration arguments</a>.
     </P>
 
+    <H4><A name="sec_gmm_compute"><U>(Added in s3.4) Fast GMM
+    Computation</U></a></H4>
 
+    <p> The computation of likelihood Gaussian distribution can be one
+    of the dominating factor of the GMM computation. Tuning the
+    following parameters can control the amount of time required.  </p>
+
+    <ul>
+      <LI><code>-ci_pbeam</code>: Enable a two-pass computation where
+      CI models were computed first and the CD models were then
+      computed.  If this beam is used, only CD models, which correspond
+      to CI models within the beam (relative to the max CI scores), are
+      computed </LI>
+
+      <LI><code>-ds  </code> : Enable frame down-sampling. Only 1
+      another N frames were computed.  </LI>
+    </ul>
 
     <H4><U>Output Generation</U></H4>
 
@@ -900,7 +930,7 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
 
     <pre>WANT_TO           W AA N AX</pre>
 
-    <P>(The s3.4 decoder, however, treats a compound word as just
+    <P>(The s3.X decoder, however, treats a compound word as just
     another word in the language, and does not do anything special
     with it.)
     </P>
@@ -1058,11 +1088,11 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
       <LI><em>Feature vector generation</em>.  The final speech
       feature vector is created by typically augmenting the cepstrum
       vector (after CMN and AGC, if any) with one or more time
-      derivatives.  In s3.4, the feature vector in each frame is
+      derivatives.  In s3.X, the feature vector in each frame is
       computed by concatenating first and second derivatives to the
       cepstrum vector, giving a 39-dimensional vector:
 	<div class="silverbox">
-	  <center><IMG ALT="* " SRC="feat.gif"></center>
+	  <center><IMG ALT="* " SRC="./s3/feat.gif"></center>
 	</div>
       </LI>
     </OL>
@@ -1104,7 +1134,7 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
       also shows a sample HMM-state (senone) sequence: each feature
       frame is labelled with a senone ID.
 	<div class="silverbox">
-	  <center><IMG ALT="* " SRC="falign.gif"></center>
+	  <center><IMG ALT="* " SRC="./s3/falign.gif"></center>
 	</div>
       The best state sequence is one with the <em>smallest
       mismatch</em> between the input feature vectors and the labelled
@@ -1152,13 +1182,13 @@ ACTUALLY(3rd)       AE K SH L IY</pre>
     <em>codebook</em> of Gaussian distributions, but each senone has
     its own set of <em>mixture weights</em> applied to the codebook
     components.  Sphinx-3 supports both models, and other,
-    intermediate degrees of state-tying as well.  (The s3.4 decoder,
+    intermediate degrees of state-tying as well.  (The s3.X decoder,
     however, can only handle continuous density acoustic models.)
     </P>
     
     <P>Similarly, Sphinx-3 in general supports "arbitrary" HMM
     topologies, unlike Sphinx-II, which is restricted to a specific
-    5-state topology.  However, for efficiency's sake, the s3.4
+    5-state topology.  However, for efficiency's sake, the s3.X
     decoder is hardwired to deal with only two types of HMM
     topologies: 3-state and 5-state, described briefly in <a
     href="../src/libs3decoder/hmm.h">hmm.h</a>.
@@ -1462,7 +1492,7 @@ P(&lt;/s&gt | WILL, TRAVEL)</pre>
 AudioFile [ StartFrame EndFrame UttID ]</pre>
 
     <P><em>AudioFile</em> is the speech input file. In this
-    distribution of s3.4, this file is in raw audio format. In all
+    distribution of s3.X, this file is in raw audio format. In all
     other versions of Sphinx-3, this file contains cepstrum data.  The
     filename extension should be omitted from the specification.  If
     this is the only field in the line, the entire file is processed
@@ -1528,7 +1558,7 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
       <LI><em>u</em>: the utterance ID
 
       <LI><em>s</em>: an acoustic score scaling done during acoustic
-      likelihood computation (However, this field is 0 in the s3.4
+      likelihood computation (However, this field is 0 in the s3.X
       decoder output.)
 
       <LI><em>t</em>: the total score for this hypothesis
@@ -1564,7 +1594,7 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
     penalty</em></a> parameters.
     </P>
     
-    <P>Here is an <a href="hypseg.txt">example hypothesis file</a>
+    <P>Here is an <a href="./s3/hypseg.txt">example hypothesis file</a>
     for three utterances.
     </P>
     <div class="endsec">
@@ -1623,7 +1653,7 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
     
     <P><em>Note:</em> The beginning and end of sentence tokens,
     <code>&lt;s&gt</code> and <code>&lt;/s&gt</code>, are not decoded
-    as part of an utterance by the s3.4 decoder.  However, they have
+    as part of an utterance by the s3.X decoder.  However, they have
     to be included in the word lattice file, for compatibility with
     the older Sphinx-3 decoder software.  They are assigned 1-frame
     segmentations, with log-likelihood scores of 0.  To accommodate
@@ -1704,7 +1734,7 @@ End</pre>
     
     <H2><a name="sec_utilpgm"><U>Other Utilities</U></a></H2>
     
-    <P>In addition to the s3.4 decoders, <code>decode</code>,
+    <P>In addition to the s3.X decoders, <code>decode</code>,
     <code>livedecode</code> and <code>livrepretend</code>, this
     distribution also provides other utility programs.</P>
 
@@ -1722,6 +1752,11 @@ End</pre>
     
     <P>In alphabetical order:</P>
     <table>
+      <tr>
+	<td><a href="../src/libs3decoder/approx_cont_mgau.c"><code>approx_cont_mgau.c</code></a></td>
+	<td>Fast Gaussian Distribution Computation</td>
+      </tr>
+
       <tr>
 	<td><a href="../src/libs3decoder/agc.c"><code>agc.c</code></a></td>
 	<td>Automatic gain control (on signal energy)</td>
@@ -1848,6 +1883,11 @@ End</pre>
       </tr>
 
       <tr>
+	<td><a href="../src/libs3decoder/mllr.c"><code>mllr.c</code></a></td>
+	<td>transformation of mean based on a linear regression matrix. </td>
+      </tr>
+
+      <tr>
 	<td><a href="../src/libs3decoder/s3types.h"><code>s3types.h</code></a></td>
 	<td>Various data types, for ease of modification</td>
       </tr>
@@ -1885,8 +1925,9 @@ End</pre>
     <P></P>
     
     <H2></H2><!-- Just to provide some space -->
+
+    <address>Maintained by <a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a<a> and  <a href="mailto:archan+sourceforge@cs.cmu.edu"> Arthur Chan <a> </address>
     
-    <address>Maintained by <a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a</a></address>
     <!-- Created: Sun Feb 22 14:03:14 EST 1998 -->
     <!-- hhmts start -->
 Last modified: Thu Jul 22 09:35:27 EDT 2004
