@@ -5,10 +5,6 @@
 -var	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances
 -mixw	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights 
 -tmat	/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices
--upperf	6800
--lowerf	130
--nfilt	40
--samprate 16000
 -agc	none
 -varnorm	no
 -cmn	current
@@ -18,6 +14,4 @@
 -maxwpf	10
 -wip	0.2
 -lextreedump 0
--input_endian 1 
--nfft 512
 
