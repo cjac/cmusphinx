@@ -43,14 +43,20 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2004/05/14  19:58:33  egouvea
- * Removed system dependencies from ad.h, and added an ad_conf.h with the system dependent part
+ * Revision 1.10  2004/07/16  00:59:49  egouvea
+ * Cosmetic changes to comments.
  * 
+ * Revision 1.2  2004/05/27 14:22:57  rkm
+ * FSG cross-word triphones completed (but for single-phone words)
+ *
+ * Revision 1.9  2004/05/14 19:58:33  egouvea
+ * Removed system dependencies from ad.h, and added an ad_conf.h with the system dependent part
+ *
  * Revision 1.3  2004/03/01 00:00:48  egouvea
  * Fixed refs to win32, and clean up files used by autoconf/automake
  *
  * Revision 1.2  2004/02/17 22:34:15  egouvea
- * First steps to get rid of the AD_BACKEND_SUNOS, used by autoconf.
+ * First steps to get rid of the AD_BACKEND_*, used by autoconf.
  *
  * Revision 1.1  2000/12/12 23:01:41  lenzo
  * Rationalizing libs and names some more.  Split a/d and fe libs out.
