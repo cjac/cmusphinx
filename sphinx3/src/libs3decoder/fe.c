@@ -83,7 +83,6 @@ void few_free(fewrap_t *FEW)
 /*** Function to initialize the front-end wrapper ***/
 fewrap_t * few_initialize()
 {
-  E_INFO("HIHI\n");
   fewrap_t *FEW = (fewrap_t *) ckd_calloc(1,sizeof(fewrap_t));
   
   /********************** INITIALIZING COMPONENTS ******************/
@@ -722,7 +721,7 @@ int32 ep_fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *n
                 if (readChar == dataString[charPointer]) {
                   charPointer++;
                 }
-                if (charPointer == strlen(dataString)) {
+                if (charPointer == (int16)strlen(dataString)) {
                   found = ON;
                   strcpy(hdr_buf->datatag, dataString);
                   if (read(fp,&(hdr_buf->datalength),sizeof(int32)) != sizeof(int32)){
