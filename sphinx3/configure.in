@@ -119,13 +119,6 @@ src/programs/Makefile
 scripts/Makefile
 scripts/sphinx3-test
 scripts/sphinx3-simple
-model/Makefile
-model/hmm/Makefile
-model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/Makefile
-model/lm/Makefile
-model/lm/an4/Makefile
-model/lm/an4/an4.ctl
-model/lm/an4/args.an4
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
