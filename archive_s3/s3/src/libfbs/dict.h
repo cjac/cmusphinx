@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * dict.h -- dictionary
  *
@@ -9,10 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 31-Oct-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added support for handling compound words.  Compound words are
- * 		concatenations of non-compound words, with a different pronunciation.
  * 
  * 11-Oct-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Changed dict_init to return dict_t *.
@@ -34,25 +65,17 @@
 #include "s3types.h"
 #include <libutil/libutil.h>
 
-/* Structure for components of a "compound word" */
-typedef struct {
-    s3wid_t wid;	/* Base word id of this component of the compound word */
-    int32 pronoff;	/* Approx. offset for this component in compound word pronunc. */
-} dict_compword_t;
-
 typedef struct {
     char *word;		/* Ascii word string */
     s3cipid_t *ciphone;	/* Pronunciation */
     int32 pronlen;	/* Pronunciation length */
     s3wid_t alt;	/* Next alternative pronunciation id, NO_WID if none */
     s3wid_t basewid;	/* Base pronunciation id */
-    int32 n_comp;	/* If this is a compound word, no. of component words; else 0 */
-    dict_compword_t *comp;	/* If this is a compound word, its components */
 } dictword_t;
 
 typedef struct {
     dictword_t *word;	/* Array of entries in dictionary */
-    hash_table_t* ht;		/* Hash table for mapping word strings to word ids */
+    hash_t ht;		/* Hash table for mapping word strings to word ids */
     int32 max_words;	/* #Entries allocated in dict, including empty slots */
     int32 n_word;	/* #Occupied entries in dict; ie, excluding empty slots */
     int32 filler_start;	/* First filler word id (read from filler dict) */
@@ -80,14 +103,6 @@ int32 dict_filler_word (s3wid_t w);
 
 /* Return word string for given word id, which must be valid */
 char *dict_wordstr (s3wid_t wid);
-
-/*
- * Return the base word string for the given word string (i.e., after removing any
- * alternative (...) qualifier at the end of the word.
- * NOTE: The given word string is ALTERED by stripping off the alternative qualifier.
- * Return value: A pointer to the possibly altered word string.
- */
-char *dict_basestr (char *word);
 
 /* Return a pointer to the dictionary.  It MUST NOT be modified outside this module */
 dict_t *dict_getdict ( void );

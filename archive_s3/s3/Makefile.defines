@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 #
 # Copyright (c) 1995 Carnegie Mellon University.  ALL RIGHTS RESERVED.
 #
@@ -7,13 +42,15 @@ TYPES = -DTRUE=1 -DFALSE=0
 INCLUDEDIR = -I. -I$(S3ROOT)/include -I$(S3ROOT)/src
 LIBDIR = $(S3ROOT)/lib/$(MACHINE)
 BINDIR = $(S3ROOT)/bin/$(MACHINE)
+DEBUGLIBDIR = $(S3ROOT)/libdbg/$(MACHINE)
+DEBUGBINDIR = $(S3ROOT)/bindbg/$(MACHINE)
 
-alpha_CFLAGS       = -O2 $(S3DEBUG) -std1 -warnprotos -DALPHA_OSF1=1 $(TYPES) $(INCLUDEDIR)
+alpha_CFLAGS       = -O2 -std1 -DALPHA_OSF1=1 $(TYPES) $(INCLUDEDIR)
 alpha_osf1_CFLAGS  = $(alpha_CFLAGS)
 hp_CFLAGS          = -O -Aa  -D_HPUX_SOURCE=1 $(TYPES) $(INCLUDEDIR)
 hp700_ux_CFLAGS    = $(hp_CFLAGS)
-sun4_CFLAGS        = -g             -D_SUN4=1 $(TYPES) $(INCLUDEDIR)
-linux_CFLAGS       = -O2 $(S3DEBUG) -D__LINUX__=1 $(TYPES) $(INCLUDEDIR)
+sun4_CFLAGS        = -O             -D_SUN4=1 $(TYPES) $(INCLUDEDIR)
+linux_CFLAGS       = -O2        -D__LINUX__=1 $(TYPES) $(INCLUDEDIR)
 
 alpha_cc = cc
 alpha_osf1_cc = $(alpha_cc)
@@ -23,12 +60,3 @@ sun4_cc = gcc
 linux_cc = cc
 
 CC = ${${MACHINE}_cc}
-
-alpha_ar = ar
-alpha_osf1_ar = $(alpha_ar)
-hp_ar = ar
-hp700_ux_ar = $(hp_ar)
-sun4_ar = /usr/ccs/bin/ar
-linux_ar = ar
-
-AR = ${${MACHINE}_ar}

@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * align-main.c -- Main driver routine for time alignment.
  * 
@@ -9,9 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 19-Jun-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Modified to handle the new libfeat interface.
  * 
  * 11-Oct-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added MLLR transformation for each utterance.
@@ -136,11 +168,17 @@ static arg_def_t defn[] = {
       CMD_LN_NO_VALIDATION,
       "current",
       "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
+    { "-varnorm",
+      CMD_LN_STRING,
+      CMD_LN_NO_VALIDATION,
+      "no",
+      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
+ { "-feat",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
       "s2_4x",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
+      "Feature stream:\n\t\t\t\ts2_4x: Sphinx-II type 4 streams, 12cep, 24dcep,3pow, 12ddcep\n\t\t\t\ts3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_12c_12d_3p_12dd: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_c: Single stream, given input vector only\n\t\t\t\t1s_c_d: Feature + Deltas only\n\t\t\t\t1s_c_dd: Feature + Double deltas only\n\t\t\t\t1s_c_d_dd: Feature + Deltas + Double deltas" },
+/* ADDED BY BHIKSHA: 6 JAN 98 */ 
     { "-dictfn",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
@@ -151,11 +189,6 @@ static arg_def_t defn[] = {
       CMD_LN_NO_VALIDATION,
       CMD_LN_NO_DEFAULT,
       "Optional filler word (noise word) pronunciation dictionary input file" },
-    { "-compwd",
-      CMD_LN_INT32,
-      CMD_LN_NO_VALIDATION,
-      "0",
-      "Compound words in dictionary (not supported yet)" },
     { "-ctlfn",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
@@ -176,6 +209,13 @@ static arg_def_t defn[] = {
       CMD_LN_NO_VALIDATION,
       ".",
       "Directory for utterances in -ctlfn file (if relative paths specified)." },
+/* ADDED BY BHIKSHA: 6 JAN 98 */
+    { "-ceplen",
+      CMD_LN_INT32,
+      CMD_LN_NO_VALIDATION,
+      "13",
+      "Length of input feature vector" },
+/* END CHANGES BY BHIKSHA */
     { "-cepext",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
@@ -295,9 +335,8 @@ static senone_t *sen;		/* Senones */
 static interp_t *interp;	/* CD/CI interpolation */
 static tmat_t *tmat;		/* HMM transition matrices */
 
-static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
-static float32 ***feat = NULL;	/* Speech feature data */
-static float32 **mfc = NULL;	/* MFC data for entire utterance */
+static int32 n_feat, *featlen;	/* #features, vector-length/feature */
+static int32 cepsize;		/* Input mfc vector size (C0..C<cepsize-1>) */
 
 static s3wid_t startwid, finishwid, silwid;
 
@@ -353,17 +392,14 @@ static void models_init ( void )
 		     varfloor);
 
     /* Verify codebook feature dimensions against libfeat */
-    if (feat_n_stream(fcb) != g->n_feat) {
-	E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-		feat_n_stream(fcb), g->n_feat);
-    }
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-	if (feat_stream_len(fcb,i) != g->featlen[i]) {
-	    E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-		    feat_stream_len(fcb, i), g->featlen[i]);
-	}
-    }
-    
+    n_feat = feat_featsize (&featlen);
+    if (n_feat != g->n_feat)
+	E_FATAL("#feature mismatch: s2= %d, mean/var= %d\n", n_feat, g->n_feat);
+    for (i = 0; i < n_feat; i++)
+	if (featlen[i] != g->featlen[i])
+	    E_FATAL("featlen[%d] mismatch: s2= %d, mean/var= %d\n", i,
+		    featlen[i], g->featlen[i]);
+
     /* Senone mixture weights */
     mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
     sen = senone_init ((char *) cmd_ln_access("-mixwfn"),
@@ -722,14 +758,16 @@ static void write_outsent (FILE *fp, align_wdseg_t *wdseg, char *uttid)
  * Find Viterbi alignment.
  */
 static void align_utt (char *sent,	/* In: Reference transcript */
+		       float32 **mfc,	/* In: MFC cepstra for input utterance */
 		       int32 nfr,	/* In: #frames of input */
 		       char *ctlspec,	/* In: Utt specifiction from control file */
 		       char *uttid)	/* In: Utterance id, for logging and other use */
 {
+    static float32 **feat = NULL;
     static int32 w;
     static int32 topn;
     static gauden_dist_t ***dist;
-    static int32 *senscr = NULL;
+    static int32 *senscr;
     static s3senid_t *sen_active;
     static int8 *mgau_active;
     static char *s2stsegdir;
@@ -742,13 +780,17 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     align_stseg_t *stseg;
     align_phseg_t *phseg;
     align_wdseg_t *wdseg;
-    float32 **fv;
-    
-    if (! senscr) {
+
+    if (! feat) {
 	/* One-time allocation of necessary intermediate variables */
 
+	/* Allocate space for a feature vector */
+	feat = (float32 **) ckd_calloc (n_feat, sizeof(float32 *));
+	for (i = 0; i < n_feat; i++)
+	    feat[i] = (float32 *) ckd_calloc (featlen[i], sizeof(float32));
+	
 	/* Allocate space for top-N codeword density values in a codebook */
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+	w = feat_window_size ();	/* #MFC vectors needed on either side of current
 					   frame to compute one feature vector */
 	topn = *((int32 *) cmd_ln_access("-topn"));
 	if (topn > g->n_density) {
@@ -756,7 +798,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 		   topn, g->n_density);
 	    topn = g->n_density;
 	}
-	dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, topn,
+	dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, n_feat, topn,
 						  sizeof(gauden_dist_t));
 	
 	/* Space for one frame of senone scores, and per frame active flags */
@@ -792,14 +834,12 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     cyctimer_resume (tmr_utt);
 
     /* AGC and CMN */
-    if (mfc) {
-	arg = (char *) cmd_ln_access ("-cmn");
-	if (strcmp (arg, "current") == 0)
-	    norm_mean (mfc, nfr, feat_cepsize(fcb));
-	arg = (char *) cmd_ln_access ("-agc");
-	if (strcmp (arg, "max") == 0)
-	    agc_max (mfc, nfr);
-    }
+    arg = (char *) cmd_ln_access ("-cmn");
+    if (strcmp (arg, "current") == 0)
+	norm_mean (mfc, nfr, cepsize);
+    arg = (char *) cmd_ln_access ("-agc");
+    if (strcmp (arg, "max") == 0)
+	agc_max (mfc, nfr);
     
     if (align_build_sent_hmm (sent) != 0) {
 	align_destroy_sent_hmm ();
@@ -812,27 +852,23 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     
     align_start_utt (uttid);
     
+    /*
+     * A feature vector for frame f depends on input MFC vectors [f-w..f+w].  Hence
+     * the feature vector corresponding to the first w and last w input frames is
+     * undefined.  We define them by simply replicating the first and last true
+     * feature vectors (presumably silence regions).
+     */
     for (i = 0; i < nfr; i++) {
 	cyctimer_resume (tmr_utt);
 	
-	/*
-	 * Compute feature vector for current frame from input speech cepstra.
-	 * A feature vector for frame f depends on input MFC vectors [f-w..f+w].  Hence
-	 * the feature vector corresponding to the first w and last w input frames is
-	 * undefined.  We define them by simply replicating the first and last true
-	 * feature vectors (presumably silence regions).
-	 */
-	if (mfc) {
-	    if (i < w)
-		fcb->compute_feat (fcb, mfc+w, feat[0]);
-	    else if (i >= nfr-w)
-		fcb->compute_feat (fcb, mfc+(nfr-w-1), feat[0]);
-	    else
-		fcb->compute_feat (fcb, mfc+i, feat[0]);
-	    fv = feat[0];
-	} else
-	    fv = feat[i];
-	
+	/* Compute feature vector for current frame from input speech cepstra */
+	if (i < w)
+	    feat_cep2feat (mfc+w, feat);
+	else if (i >= nfr-w)
+	    feat_cep2feat (mfc+(nfr-w-1), feat);
+	else
+	    feat_cep2feat (mfc+i, feat);
+
 	/*
 	 * Evaluate gaussian density codebooks and senone scores for input codeword.
 	 * Evaluate only active codebooks and senones.
@@ -865,7 +901,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	/* Compute topn gaussian density values (for active codebooks) */
 	for (gid = 0; gid < g->n_mgau; gid++)
 	    if (mgau_active[gid])
-		gauden_dist (g, gid, topn, fv, dist[gid]);
+		gauden_dist (g, gid, topn, feat, dist[gid]);
 	cyctimer_pause (tmr_gauden);
 	
 	/* Evaluate active senones */
@@ -958,10 +994,13 @@ static void process_ctlfile ( void )
     FILE *ctlfp, *sentfp, *mllrctlfp;
     char *ctlfile, *cepdir, *cepext, *sentfile, *outsentfile, *mllrctlfile;
     char line[1024], cepfile[1024], ctlspec[1024];
-    int32 ctloffset, ctlcount, sf, ef, nfr;
+/* CHANGE BY BHIKSHA: ADDED veclen AS A VARIABLE, 6 JAN 98 */
+    int32 ctloffset, ctlcount, veclen, sf, ef, nfr;
+/* END OF CHANGES BY BHIKSHA */
     char mllrfile[4096], prevmllr[4096], sent[16384];
     char uttid[1024];
     int32 i, k;
+    float32 **mfc;
     
     ctlfile = (char *) cmd_ln_access("-ctlfn");
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
@@ -988,6 +1027,9 @@ static void process_ctlfile ( void )
     cepdir = (char *) cmd_ln_access("-cepdir");
     cepext = (char *) cmd_ln_access("-cepext");
     assert ((cepdir != NULL) && (cepext != NULL));
+/* BHIKSHA: ADDING VECLEN TO ALLOW VECTORS OF DIFFERENT SIZES */
+    veclen = *((int32 *) cmd_ln_access("-ceplen"));
+/* END CHANGES, 6 JAN 1998, BHIKSHA */
     
     ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
     if (! cmd_ln_access("-ctlcount"))
@@ -1056,8 +1098,7 @@ static void process_ctlfile ( void )
 		
 		gauden_mean_reload (g, (char *) cmd_ln_access("-meanfn"));
 		
-		if (mllr_read_regmat (mllrfile, &A, &B,
-				      fcb->stream_len, feat_n_stream(fcb)) < 0)
+		if (mllr_read_regmat (mllrfile, &A, &B, featlen, n_feat) < 0)
 		    E_FATAL("mllr_read_regmat failed\n");
 		
 		mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
@@ -1068,7 +1109,7 @@ static void process_ctlfile ( void )
 			gid = sen->mgau[sid];
 			if (! mgau_xform[gid]) {
 			    mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-					    fcb->stream_len, feat_n_stream(fcb));
+					    featlen, n_feat);
 			    mgau_xform[gid] = 1;
 			}
 		    }
@@ -1076,7 +1117,7 @@ static void process_ctlfile ( void )
 
 		ckd_free (mgau_xform);
 		
-		mllr_free_regmat (A, B, fcb->stream_len, feat_n_stream(fcb));
+		mllr_free_regmat (A, B, featlen, n_feat);
 
 		strcpy (prevmllr, mllrfile);
 	    }
@@ -1113,29 +1154,17 @@ static void process_ctlfile ( void )
 	    }
 	}
 	
-	if (! feat) {
-	    /* One time allocation of space for MFC data/feature vector */
-	    if (fcb->compute_feat) {
-		mfc = (float32 **) ckd_calloc_2d (S3_MAX_FRAMES, feat_cepsize(fcb),
-						  sizeof(float32));
-		feat = feat_array_alloc (fcb, 1);
-	    } else {
-		/* Speech input is directly feature vectors; no MFC input */
-		feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-	    }
-	}
-	
-	/* Read and process mfc/feature speech input file */
-	if (fcb->compute_feat)
-	    nfr = s2mfc_read (cepfile, sf, ef, mfc, S3_MAX_FRAMES);
-	else
-	    nfr = feat_readfile (fcb, cepfile, sf, ef, feat, S3_MAX_FRAMES);
-	
-	if (nfr <= 0)
-	    E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
+	/* Read and process mfc file */
+/* CHANGE BY BHIKSHA; PASSING VECLEN TO s2mfc_read(), 6 JAN 98 */
+	/* Read mfc file */
+	if ((nfr = s2mfc_read (cepfile, sf, ef, &mfc, veclen)) <= 0) 
+	    E_ERROR("Utt %s: MFC file read (%s) failed\n", uttid, cepfile);
+/* END CHANGES BY BHIKSHA */
 	else {
-	    E_INFO ("%s: %d input frames\n", uttid, nfr);
-	    align_utt (sent, nfr, ctlspec, uttid);
+	    E_INFO ("%d mfc frames\n", nfr);
+	    
+	    /* Align utterance */
+	    align_utt (sent, mfc, nfr, ctlspec, uttid);
 	}
 	
 	--ctlcount;
@@ -1290,7 +1319,11 @@ main (int32 argc, char *argv[])
     }
 
     /* Initialize feature stream type */
-    fcb = feat_init ((char *) cmd_ln_access ("-feat"));
+    feat_init ((char *) cmd_ln_access ("-feat"));
+/* BHIKSHA: PASS CEPSIZE TO FEAT_CEPSIZE, 6 Jan 98 */
+    cepsize = *((int32 *) cmd_ln_access("-ceplen"));
+    cepsize = feat_cepsize (cepsize);
+/* END CHANGES BY BHIKSHA */
     
     /* Read in input databases */
     models_init ();

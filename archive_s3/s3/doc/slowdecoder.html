@@ -1,0 +1,59 @@
+<HTML>
+<HEAD>
+<TITLE> Sphinx-3 Decoder User Guide </TITLE>
+<!-- Changed by: Ravishankar Mosur, 10-Nov-1997 -->
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0">
+<!--  BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0" -->
+
+<h1>Carnegie Mellon Sphinx Speech Group</h1><P>
+<HR>
+
+<H1 align=center> Sphinx-3 Decoder User Guide </H1>
+<P align=center>Mosur Ravishankar (Ravi)<br>
+School of Computer Science<br>
+Carnegie Mellon University<br>
+Pittsburgh, PA 15213<br>
+10 Nov 1997<br>
+<strong>Copyright (c) 1997 Carnegie Mellon University.  ALL RIGHTS RESERVED.</strong>
+</P>
+<HR>
+
+
+<H2 align=center> Introduction </H2>
+
+Sphinx-3 (S3) is the successor to the Sphinx-II speech recognition system from
+Carnegie Mellon University.  The main differences between the two are:
+<UL>
+<LI> S3 supports a much more flexible range of acoustic modelling.  Specifically, it
+can handle discrete, semi-continuous, or fully continuous acoustic models.  Sphinx-II
+can only handle semi-continuous models.
+<LI> S3 is completely written from scratch and does not contain any historical
+appendages.
+</UL>
+
+<HR>
+
+
+<H2 align=center><A NAME="sec_s3suite">The Sphinx-3 Decoder Suite</A></H2>
+The entire set of Sphinx-3 decoder programs can be found here.
+The binaries include the following:
+<UL>
+<LI><strong><code>s3decode</code></strong>: The Viterbi decoder using beam search.
+<LI><strong><code>s3dag</code></strong>: Shortest path search of the DAG constructed
+from the Viterbi decoder word lattice.
+<LI><strong><code>s3astar</code></strong>: N-best list generation from the Viterbi
+decoder word lattice.
+<LI><strong><code>s3align</code></strong>: Viterbi forced alignment.
+<LI><strong><code>s3allphone</code></strong>: Allphone Viterbi decoder.
+</UL>
+
+Running any of these programs without any arguments produces a short description of
+the command line arguments (and their defaults) needed to run the program.
+<P>
+
+<HR>
+
+
+</BODY>
+</HTML>

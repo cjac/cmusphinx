@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * err.c -- Package for checking and catching common errors, printing out
  *		errors nicely, etc.
@@ -5,7 +40,7 @@
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1999 Carnegie Mellon University.
+ * Copyright (c) 1996 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  *
@@ -20,10 +55,7 @@
  *	- Added an error message option that does a perror() call.
  */
 
-
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #if ((! WIN32) && (! _SGI_SOURCE))
 #include <sys/errno.h>
 #else
@@ -31,7 +63,6 @@
 #endif
 
 #include "err.h"
-
 
 void
 _E__pr_header(const char *f, long ln, const char *msg)
@@ -45,10 +76,10 @@ _E__pr_info_header(f, ln, msg)
 char *f, *msg;
 long ln;
 {
-    (void) fflush(stdout);
+    (void) fflush(stderr);
 
     /* make different format so as not to be parsed by emacs compile */
-    (void) fprintf(stderr, "%s: %s(%ld): ", msg, f, ln);
+    (void) fprintf(stdout, "%s: %s(%ld): ", msg, f, ln);
 }
 
 void
@@ -69,10 +100,10 @@ _E__pr_info( char *fmt, ... )
     va_list pvar;
 
     va_start(pvar, fmt);
-    (void) vfprintf(stderr, fmt, pvar);
+    (void) vfprintf(stdout, fmt, pvar);
     va_end(pvar);
 
-    (void) fflush(stderr);
+    (void) fflush(stdout);
 }
 
 void _E__die_error( char *fmt, ... ) 

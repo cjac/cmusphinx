@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 #
 # Makefile
 # 
@@ -8,18 +43,17 @@
 #
 
 
-# S3ROOT = /net/alf20/usr/rkm/s3
 include $(S3ROOT)/Makefile.defines
 VPATH = .:..
 
 TARGET = libfeat.a
 
-OBJS = feat.o
+OBJS = feat.o feat_s2_4x.o feat_s3_1x39.o feat_1s_c.o feat_1s_c_d.o feat_1s_c_dd.o feat_1s_c_d_dd.o feat_1s_c_wd_dd.o feat_1s_c_d_cd.o feat_1s_c_d_ld_dd.o
 
 CFLAGS = ${$(MACHINE)_CFLAGS}
 
 $(TARGET): $(OBJS)
-	$(AR) crv $@ $?
+	ar crv $@ $?
 	ranlib $@
 
 install: $(TARGET)
@@ -28,5 +62,5 @@ install: $(TARGET)
 clean:
 	rm -f *.o *.a *.BAK *.CKP .*.BAK .*.CKP *~ .*~ #*#
 
-feattest: feat.c
-	cc -g $(CFLAGS) -DFEAT_TEST=1 -L. -L$(LIBDIR) -o feattest feat.c -lio -lutil
+testfeat: testfeat.c
+	cc $(CFLAGS) -L. -L../libutil -o testfeat testfeat.c -lfeat -lutil

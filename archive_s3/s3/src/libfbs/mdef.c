@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * mdef.c -- HMM model definition: base (CI) phones and triphones
  *
@@ -519,14 +554,6 @@ mdef_t *mdef_init (char *mdeffile)
     if ((n_ci == 0) || (mdef->n_ci_sen == 0) || (mdef->n_tmat == 0) ||
 	(mdef->n_ci_sen > mdef->n_sen))
         E_FATAL("Incorrect information in header\n");
-    if (n_ci >= MAX_CIPID)
-	E_FATAL("%s: #CI phones (%d) >= %d limit\n", mdeffile, n_ci, MAX_CIPID);
-    if (n_ci + n_tri >= MAX_PID)
-	E_FATAL("%s: #Phones (%d) >= %d limit\n", mdeffile, n_ci+n_tri, MAX_PID);
-    if (mdef->n_sen >= MAX_SENID)
-	E_FATAL("%s: #senones (%d) >= %d limit\n", mdeffile, mdef->n_sen, MAX_SENID);
-    if (mdef->n_tmat >= MAX_TMATID)
-	E_FATAL("%s: #tmats (%d) >= %d limit\n", mdeffile, mdef->n_tmat, MAX_TMATID);
     
     mdef->n_emit_state = (n_map / (n_ci+n_tri)) - 1;
     if ((mdef->n_emit_state+1) * (n_ci+n_tri) != n_map)

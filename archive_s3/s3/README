@@ -1,30 +1,33 @@
-The s3.3 decoder is a live-mode capable version of the s3.2 decoder.
-The decoder routine is stored in a library called libdecoder.a
-The decoder function takes blocks of speech samples and returns partial 
-hypotheses for the blocks decoded during runtime. An example of its
-use is given in main_live_example.c
+The s3 decoder is the full decoder version of CMU's Sphinx speech
+recognition system. It is sometimes referred to as "slow decoder".
 
----------------
-This s3.2 module contains the following programs:
-  1. decode: The Sphinx-3 s3.2 decoder
-  2. gausubvq: A utility for creating a compact, sub-vector quantized form of
-     continuous density acoustic models.  The compact form is used to speed
-     up acoustic likelihood computation in the decoder.
+# To compile:
 
-This module depends on the "libutil" library module.
+# In this directory first give
+setenv S3ROOT $cwd
+
+# and
+setenv MACHINE (alpha | hpux | linux | sun4)
+
+# Then create the directories
+mkdir lib/${MACHINE}
+mkdir bin/${MACHINE}
+mkdir src/libutil/${MACHINE}
+mkdir src/libio/${MACHINE}
+mkdir src/libfeat/${MACHINE}
+mkdir src/libfbs/${MACHINE}
+
+# For cleanliness
+make clean
 
 
-This distribution (specifically, the Makefiles) has been prepared for Unix
-platforms.  However, it should be easy to create an equivalent setup on the
-Windows platform, and compile the software there as well.
+# Thereafter, you can run any of the following commands to make the
+# corresponding binaries (in bin/$(MACHINE)/* or bindbg/$(MACHINE)/*)
 
-For documentation on compiling and running the decoder, see doc/s3.html.
+make s3decode
+make s3decode-dbg
+make s3decode-anytopo
+make s3decode-anytopodbg
+make s3align
+make s3allphone
 
-
-
-Contact:
-  M. K. Ravishankar
-  School of Computer Science
-  Carnegie Mellon University
-  Pittsburgh, PA 15213
-  email: rkm@cs.cmu.edu

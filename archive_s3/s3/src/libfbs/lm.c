@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * lm.c -- Disk-based backoff word trigram LM module.
  *
@@ -9,13 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 22-Sep-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added check for validity of START_ and FINISH_WORD in lm_read_dump().
- * 
- * 31-Oct-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added compound words handling option.  Compound words are broken up
- * 		into component words for computing LM probabilities.
  * 
  * 23-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added lm_t.log_bg_seg_sz and lm_t.bg_seg_sz.
@@ -72,10 +100,6 @@ static int32 dictsize;			/* #words in dictionary */
 
 static char *darpa_hdr = "Darpa Trigram LM";
 #define MIN_PROB_F	((float32)-99.0)
-
-#if (! NO_DICT)
-static dict_t *dict = NULL;
-#endif
 
 
 #if (NO_DICT || _LM_TEST_)
@@ -511,18 +535,12 @@ static int32 lm_read_dump (char *file, char *name)
     if (notindict > 0)
 	E_INFO("%d LM words not in dict; ignored\n", notindict);
     
-    /* Force ugprob(<s>) = MIN_PROB_F */
-    if (lm->startwid >= 0)
-	lm->ug[lm->startwid].prob.f = MIN_PROB_F;
-    else
-	E_ERROR("%s not in LM\n", START_WORD);
-    
     /* Force bowt(</s>) = MIN_PROB_F */
-    if (lm->endwid >= 0)
-	lm->ug[lm->endwid].bowt.f = MIN_PROB_F;
-    else
-	E_ERROR("%s not in LM\n", FINISH_WORD);
+    lm->ug[lm->endwid].bowt.f = MIN_PROB_F;
     
+    /* Force ugprob(<s>) = MIN_PROB_F */
+    lm->ug[lm->startwid].prob.f = MIN_PROB_F;
+
     lm_add (lm, name, lw, uw, wip);
 
     return (0);
@@ -539,7 +557,6 @@ int32 lm_read (char *file, char *name)
 	/* One-time allocation of dictwid->LMwid map */
 #if (! NO_DICT)
 	dictsize = dict_size ();
-	dict = dict_getdict();
 #else
 	dictsize = MAX_UG;
 #endif
@@ -746,7 +763,7 @@ int32 lm_bglist (s3wid_t w1, bg_t **bgptr, int32 *bowt)
 
 
 /* w1, w2 are dictionary (base-)word ids */
-static int32 lm_bg_score_nocomp (s3wid_t w1, s3wid_t w2)
+int32 lm_bg_score (s3wid_t w1, s3wid_t w2)
 {
     s3lmwid_t lw1, lw2;
     int32 i, n, score;
@@ -937,7 +954,7 @@ int32 lm_tglist (s3wid_t w1, s3wid_t w2, tg_t **tgptr, int32 *bowt)
 
 
 /* w1, w2, w3 are dictionary wids */
-static int32 lm_tg_score_nocomp (s3wid_t w1, s3wid_t w2, s3wid_t w3)
+int32 lm_tg_score (s3wid_t w1, s3wid_t w2, s3wid_t w3)
 {
     s3lmwid_t lw1, lw2, lw3;
     int32 i, n, score;
@@ -949,10 +966,10 @@ static int32 lm_tg_score_nocomp (s3wid_t w1, s3wid_t w2, s3wid_t w3)
     
 #if (! NO_DICT)
     if ((lm->n_tg == 0) || (NOT_WID(w1)))
-	return (lm_bg_score_nocomp (w2, w3));
+	return (lm_bg_score (w2, w3));
 #else
     if ((lm->n_tg == 0) || (NOT_LMWID(w1)))
-	return (lm_bg_score_nocomp (w2, w3));
+	return (lm_bg_score (w2, w3));
 #endif
 
     lm->n_tg_score++;
@@ -998,7 +1015,7 @@ static int32 lm_tg_score_nocomp (s3wid_t w1, s3wid_t w2, s3wid_t w3)
 	score = lm->tgprob[tg[i].probid].l;
     else {
 	lm->n_tg_bo++;
-	score = tginfo->bowt + lm_bg_score_nocomp (w2, w3);
+	score = tginfo->bowt + lm_bg_score(w2, w3);
     }
 
 #if 0
@@ -1006,126 +1023,6 @@ static int32 lm_tg_score_nocomp (s3wid_t w1, s3wid_t w2, s3wid_t w3)
 #endif
 
     return (score);
-}
-
-
-int32 lm_bg_score (s3wid_t w1, s3wid_t w2)
-{
-    lm_t *lm;
-    s3wid_t w[32];	/* HACK!! Assuming compound words are no longer than this */
-    int32 i, n;
-    int32 lscr;
-    
-    lm = cur_lm;
-    
-#if (NO_DICT)
-    return (lm_bg_score_nocomp (w1, w2));
-#else
-    assert (dict->word[w2].n_comp < 30);	/* Ensure we don't overflow w[32] */
-    
-    /* Obtain the 2-word history; check if w1 is a compound word */
-    if (IS_WID(w1)) {
-	n = dict->word[w1].n_comp;
-	if (n > 0) {
-	    assert (n > 1);
-	    w[1] = dict->word[w1].comp[n-1].wid;
-	    w[0] = dict->word[w1].comp[n-2].wid;
-	} else {
-	    w[1] = w1;
-	    w[0] = BAD_WID;
-	}
-    } else {
-	w[1] = BAD_WID;
-	w[0] = BAD_WID;
-    }
-    
-    /* Break up w2 into component words if it's a compound word */
-    n = dict->word[w2].n_comp;
-    if (n > 0) {
-	for (i = 0; i < n; i++)
-	    w[i+2] = dict->word[w2].comp[i].wid;
-    } else {
-	w[2] = w2;
-	n = 1;
-    }
-    
-    /* Find LM score for w3 */
-    lscr = 0;
-    for (i = 0; i < n; i++)
-	lscr += lm_tg_score_nocomp (w[i], w[i+1], w[i+2]);
-    
-    return lscr;
-#endif
-}
-
-
-/*
- * With compound word handling:  Find the score for transition to w3 (which may be a
- * compound word), given the history w1,w2, either or both of which may also be compound
- * words.
- */
-int32 lm_tg_score (s3wid_t w1, s3wid_t w2, s3wid_t w3)
-{
-    lm_t *lm;
-    s3wid_t w[32];	/* HACK!! Assuming compound words are no longer than this */
-    int32 i, n;
-    int32 lscr;
-    
-    lm = cur_lm;
-    
-#if (NO_DICT)
-    return (lm_tg_score_nocomp (w1, w2, w3));
-#else
-    assert (dict->word[w3].n_comp < 30);	/* Ensure we don't overflow w[32] */
-    
-    if (NOT_WID(w2)) {
-	assert (NOT_WID(w1));
-	return lm_bg_score (w2, w3);
-    }
-    
-    /* Obtain the 2-word history; first check if w2 is a compound word, then w1 */
-    n = dict->word[w2].n_comp;
-    if (n > 0) {
-	assert (n > 1);
-	w[1] = dict->word[w2].comp[n-1].wid;
-	w[0] = dict->word[w2].comp[n-2].wid;
-    } else {
-	w[1] = w2;
-	if (IS_WID(w1)) {
-	    n = dict->word[w1].n_comp;
-	    if (n > 0) {
-		assert (n > 1);
-		w[0] = dict->word[w1].comp[n-1].wid;
-	    } else
-		w[0] = w1;
-	} else
-	    w[0] = BAD_WID;
-    }
-
-    /* Break up w3 into component words if it's a compound word */
-    n = dict->word[w3].n_comp;
-    if (n > 0) {
-	for (i = 0; i < n; i++)
-	    w[i+2] = dict->word[w3].comp[i].wid;
-    } else {
-	w[2] = w3;
-	n = 1;
-    }
-    
-    /* Find LM score for w3 */
-    lscr = 0;
-    for (i = 0; i < n; i++)
-	lscr += lm_tg_score_nocomp (w[i], w[i+1], w[i+2]);
-    
-    return lscr;
-#endif
-}
-
-
-s3lmwid_t lm_lmwid (s3wid_t w)
-{
-    assert (IS_WID(w));
-    return (dict2lmwid[w]);
 }
 
 

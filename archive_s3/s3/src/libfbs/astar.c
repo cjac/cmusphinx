@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * astar.c -- A* DAG search to create N-best lists
  *
@@ -9,9 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 27-Feb-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added check in building DAG for avoiding cycles with dagfudge.
  * 
  * 08-Sep-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added .Z compression option to lattice and nbest files.
@@ -473,32 +505,21 @@ int32 dag_load (char *file)
 	E_ERROR("Nodes parameter missing or invalid\n");
 	goto load_error;
     }
-
+    
     /* Read nodes */
     darray = (dagnode_t **) ckd_calloc (nnode, sizeof(dagnode_t *));
     for (i = 0; i < nnode; i++) {
-	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR ("Premature EOF(%s) while loading Nodes\n", file);
+	if (fgets (line, 1024, fp) == NULL)
 	    goto load_error;
-	}
-
 	lineno++;
 	
-	if ((k = sscanf (line, "%d %s %d %d %d", &seqid, wd, &sf, &fef, &lef)) != 5) {
-	    E_ERROR("Cannot parse line: %s\n", line);
+	if ((k = sscanf (line, "%d %s %d %d %d", &seqid, wd, &sf, &fef, &lef)) != 5)
 	    goto load_error;
-	}
-	
 	w = dict_wordid (wd);
-	if (NOT_WID(w)) {
-	    E_ERROR("Unknown word in line: %s\n", line);
+	if (NOT_WID(w))
 	    goto load_error;
-	}
-	
-	if (seqid != i) {
-	    E_ERROR("Seqno error: %s\n", line);
+	if (seqid != i)
 	    goto load_error;
-	}
 	
 	d = (dagnode_t *) listelem_alloc (sizeof(dagnode_t));
 	darray[i] = d;
@@ -551,22 +572,14 @@ int32 dag_load (char *file)
     
     j = -1;
     for (i = 0; i < k; i++) {
-	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR ("Premature EOF(%s) while loading BestSegAscr\n", file);
+	if (fgets (line, 1024, fp) == NULL)
 	    goto load_error;
-	}
-	
 	lineno++;
 
-	if (sscanf (line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
-	    E_ERROR("Cannot parse line: %s\n", line);
+	if (sscanf (line, "%d %d %d", &seqid, &ef, &ascr) != 3)
 	    goto load_error;
-	}
-	
-	if ((seqid < 0) || (seqid >= nnode)) {
-	    E_ERROR("Seqno error: %s\n", line);
+	if ((seqid < 0) || (seqid >= nnode))
 	    goto load_error;
-	}
 	
 	if (ef != j) {
 	    for (j++; j <= ef; j++)
@@ -613,10 +626,8 @@ int32 dag_load (char *file)
 	    k++;
 	}
     }
-    if (strcmp (line, "End\n") != 0) {
-	E_ERROR("Terminating End missing\n");
+    if (strcmp (line, "End\n") != 0)
 	goto load_error;
-    }
     
 #if 0
     /* Build edges from lattice end-frame scores if no edges input */
@@ -653,7 +664,6 @@ int32 dag_load (char *file)
 	    for (l = frm2lat[d->sf]; l < frm2lat[d->sf+1]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
 		if ((pd->wid != finishwid) && (pd->fef == d->sf) &&
-		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
 		    dag_link (pd, d, lat[l].ascr);
 		    k++;
@@ -667,7 +677,6 @@ int32 dag_load (char *file)
 	    for (l = frm2lat[d->sf+1]; l < frm2lat[d->sf+2]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
 		if ((pd->wid != finishwid) && (pd->fef == d->sf+1) &&
-		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
 		    dag_link (pd, d, lat[l].ascr);
 		    k++;
@@ -1059,7 +1068,6 @@ int32 nbest_search (char *filename, char *uttid)
     s3wid_t bw0, bw1, bw2;
     int32 i, k;
     int32 ispipe;
-    int32 ppathdebug;
     
     /* Create Nbest file and write header comments */
     if ((fp = fopen_comp (filename, "w", &ispipe)) == NULL) {
@@ -1076,8 +1084,7 @@ int32 nbest_search (char *filename, char *uttid)
     fprintf (fp, "# inspen %e\n", f32arg);
     f64arg = *((float64 *) cmd_ln_access ("-beam"));
     fprintf (fp, "# beam %e\n", f64arg);
-    ppathdebug = *((int32 *) cmd_ln_access ("-ppathdebug"));
-    
+
     assert (heap_root == NULL);
     assert (ppath_list == NULL);
     
@@ -1175,12 +1182,6 @@ int32 nbest_search (char *filename, char *uttid)
 	    pscr = top->pscr + l->ascr + lscr;
 	    tscr = pscr + l->hscr;
 
-	    if (ppathdebug) {
-		printf ("pscr= %11d, tscr= %11d, sf= %5d, %s%s\n",
-			pscr, tscr, l->node->sf, dict_wordstr(l->node->wid),
-			(tscr-beam >= besttscr) ? "" : " (pruned)");
-	    }
-	    
 	    /* Insert extended path if within beam of best so far */
 	    if (tscr - beam >= besttscr) {
 		ppath_insert (top, l, pscr, tscr, lscr);
@@ -1226,7 +1227,7 @@ void nbest_init ( void )
 
     fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
     if ((fudge < 0) || (fudge > 2))
-	E_FATAL("Bad -dagfudge argument: %d, must be in range 0..2\n", fudge);
+	E_FATAL("Bad -dagfudge argument: %d\n", fudge);
     
     dict = dict_getdict ();
 

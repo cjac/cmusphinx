@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * dag.c -- DAG search
  *
@@ -9,9 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 27-Feb-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added check in building DAG for avoiding cycles with dagfudge.
  * 
  * 08-Sep-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added .Z compression option to lattice files.
@@ -139,12 +171,6 @@ static int32 filler_word (s3wid_t w)
 
 void dag_init ( void )
 {
-    int32 fudge;
-
-    fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
-    if ((fudge < 0) || (fudge > 2))
-	E_FATAL("Bad -dagfudge argument: %d, must be in range 0..2\n", fudge);
-
     dict = dict_getdict ();
 
     /* Some key word ids */
@@ -409,19 +435,19 @@ int32 dag_load (char *file)
     darray = (dagnode_t **) ckd_calloc (nnode, sizeof(dagnode_t *));
     for (i = 0; i < nnode; i++) {
 	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR ("Premature EOF(%s) while loading Nodes\n", file);
+	    E_ERROR ("Premature EOF(%s)\n", file);
 	    goto load_error;
 	}
 	lineno++;
 	
 	if ((k = sscanf (line, "%d %s %d %d %d", &seqid, wd, &sf, &fef, &lef)) != 5) {
-	    E_ERROR("Cannot parse line: %s\n", line);
+	    E_ERROR("Bad line: %s\n", line);
 	    goto load_error;
 	}
 
 	w = dict_wordid (wd);
 	if (NOT_WID(w)) {
-	    E_ERROR("Unknown word in line: %s\n", line);
+	    E_ERROR("Unknown word: %s\n", line);
 	    goto load_error;
 	}
 	
@@ -478,21 +504,20 @@ int32 dag_load (char *file)
 	E_ERROR("BestSegAscr parameter missing\n");
 	goto load_error;
     }
-    if (k > 0)
-	lat = (struct lat_s *) ckd_calloc (k, sizeof(struct lat_s));
+    lat = (struct lat_s *) ckd_calloc (k, sizeof(struct lat_s));
     frm2lat = (int32 *) ckd_calloc (nfrm+1, sizeof(int32));
     
     j = -1;
     for (i = 0; i < k; i++) {
 	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR ("Premature EOF(%s) while loading BestSegAscr\n", file);
+	    E_ERROR("Premature EOF(%s)\n", line);
 	    goto load_error;
 	}
 	
 	lineno++;
 
 	if (sscanf (line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
-	    E_ERROR("Cannot parse line: %s\n", line);
+	    E_ERROR("Bad line: %s\n", line);
 	    goto load_error;
 	}
 	
@@ -576,7 +601,7 @@ int32 dag_load (char *file)
 #endif
 
     fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
-    if ((fudge > 0) && lat) {
+    if (fudge > 0) {
 	/* Add "illegal" links that are near misses */
 	for (d = dag.list; d; d = d->alloc_next) {
 	    if (d->lef - d->fef < min_ef_range-1)
@@ -586,7 +611,6 @@ int32 dag_load (char *file)
 	    for (l = frm2lat[d->sf]; l < frm2lat[d->sf+1]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
 		if ((pd->wid != finishwid) && (pd->fef == d->sf) &&
-		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
 		    dag_link (pd, d, lat[l].ascr, d->sf-1, NULL);
 		    k++;
@@ -600,7 +624,6 @@ int32 dag_load (char *file)
 	    for (l = frm2lat[d->sf+1]; l < frm2lat[d->sf+2]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
 		if ((pd->wid != finishwid) && (pd->fef == d->sf+1) &&
-		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
 		    dag_link (pd, d, lat[l].ascr, d->sf-1, NULL);
 		    k++;
@@ -839,7 +862,7 @@ static int32 dag_chk_linkscr (dag_t *dag)
     
     for (d = dag->list; d; d = d->alloc_next) {
 	for (l = d->succlist; l; l = l->next) {
-	    if (l->ascr > 0)
+	    if (l->ascr >= 0)
 		return -1;
 	}
     }
@@ -882,11 +905,11 @@ hyp_t *dag_search (char *utt)
     final = dag.exit.node;
     bestscore = (int32) 0x80000000;
     bestl = NULL;
-    
+
     /* Check that all edge scores are -ve; error if not so. */
     if (dag_chk_linkscr (&dag) < 0)
 	return NULL;
-    
+
     for (l = final->predlist; l; l = l->next) {
 	d = l->node;
 	if (! filler_word (d->wid)) {	/* Ignore filler node */

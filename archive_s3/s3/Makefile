@@ -1,98 +1,107 @@
-# ====================================================================
-# Copyright (c) 2000 Carnegie Mellon University.  All rights reserved.
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
+# Copyright (c) 1995 Carnegie Mellon University.  ALL RIGHTS RESERVED.
+# 
+# HISTORY
+# 
+# 23-Aug-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+# 		Created.
 #
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer. 
-#
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in
-#    the documentation and/or other materials provided with the
-#    distribution.
-#
-# 3. The names "Sphinx" and "Carnegie Mellon" must not be used to
-#    endorse or promote products derived from this software without
-#    prior written permission. To obtain permission, contact 
-#    sphinx@cs.cmu.edu.
-#
-# 4. Products derived from this software may not be called "Sphinx"
-#    nor may "Sphinx" appear in their names without prior written
-#    permission of Carnegie Mellon University. To obtain permission,
-#    contact sphinx@cs.cmu.edu.
-#
-# 5. Redistributions of any form whatsoever must retain the following
-#    acknowledgment:
-#    "This product includes software developed by Carnegie
-#    Mellon University (http://www.speech.cs.cmu.edu/)."
-#
-# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
-# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
-# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# ====================================================================
-#
-#  Top Level Makefile for Sphinx 3
-#
-# ====================================================================
-TOP=.
-DIRNAME=.
-BUILD_DIRS = src
-ALL_DIRS=config lib doc $(BUILD_DIRS)
-CONFIG=config.guess config.sub configure configure.in \
-       install-sh missing mkinstalldirs 
-FILES = Makefile README ReleaseNotes $(CONFIG)
 
-ALL = 
+# Before building:
+# setenv MACHINE alpha {or sun4, hp700_ux, linux, etc. as appropriate}
+# 
+# Also, create the following directories if not already existing:
+#     lib/$(MACHINE),
+#     bin/$(MACHINE),
+#     src/libutil/$(MACHINE),
+#     src/libio/$(MACHINE),
+#     src/libfeat/$(MACHINE),
+#     src/libfbs/$(MACHINE),
 
-# Try and see if config hasn't been created
-config_dummy := $(shell test -f config/config || ( echo '*** '; echo '*** Running configure to make default config file ***'; echo '*** '; ./configure; )  >&2)
+s3decode:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile install)
 
-# force a check on the system file
-system_dummy := $(shell test -f config/system.mak || config/system.sh >config/system.mak)
+s3decode-dbg:
+	(cd src/libutil/$(MACHINE)-debug; make -f ../Makefile-debug install)
+	(cd src/libio/$(MACHINE)-debug;   make -f ../Makefile-debug install)
+	(cd src/libfeat/$(MACHINE)-debug; make -f ../Makefile-debug install)
+	(cd src/libfbs/$(MACHINE)-debug;  make -f ../Makefile-debug install)
 
-include $(TOP)/config/common_make_rules
+s3decode-anytopo:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-anytopo install)
 
-backup: time-stamp
-	@ $(RM) -f $(TOP)/FileList
-	@ $(MAKE) file-list
-	@ echo .time-stamp >>FileList
-	@ sed 's/^\.\///' <FileList | sed 's/^/'$(PROJECT_PREFIX)'\//' >.file-list-all
-	@ (cd ..; tar zcvf $(PROJECT_PREFIX)/$(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz `cat $(PROJECT_PREFIX)/.file-list-all`)
-	@ $(RM) -f $(TOP)/.file-list-all
-	@ ls -l $(PROJECT_PREFIX)-$(PROJECT_VERSION)-$(PROJECT_STATE).tar.gz
+s3decode-anytopodbg:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile-debug install)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile-debug install)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile-debug install)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-anytopodbg install)
 
-tags:
-	@ $(RM) -f $(TOP)/FileList
-	@ $(MAKE) file-list
-	etags `cat FileList | grep "\.[ch]$$"`
+s3align:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-align install)
 
-time-stamp :
-	@ echo $(PROJECT_NAME) >.time-stamp
-	@ echo $(PROJECT_PREFIX) >>.time-stamp
-	@ echo $(PROJECT_VERSION) >>.time-stamp
-	@ echo $(PROJECT_DATE) >>.time-stamp
-	@ echo $(PROJECT_STATE) >>.time-stamp
-	@ echo $(LOGNAME) >>.time-stamp
-	@ hostname >>.time-stamp
-	@ date >>.time-stamp
+s3allphone:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-allphone install)
 
-config/config: config/config.in config.status
-	./config.status
+only-s3decode:
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile install)
 
-configure: configure.in
-	autoconf
+only-s3align:
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-align install)
 
-test:
-	@ $(MAKE) --no-print-directory -C testsuite test
+only-s3allphone:
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-allphone install)
 
+clean:
+	(cd src/libutil/$(MACHINE); make -f ../Makefile clean)
+	(cd src/libio/$(MACHINE);   make -f ../Makefile clean)
+	(cd src/libfeat/$(MACHINE); make -f ../Makefile clean)
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile clean)
+	(cd lib/$(MACHINE); rm -f *.*)
+	(cd bin/$(MACHINE); rm -f *.*)

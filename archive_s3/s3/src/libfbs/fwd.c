@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * fwd.c -- Forward Viterbi beam search
  *
@@ -11,21 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2000/04/24  09:39:41  lenzo
- * s3 import.
+ * Revision 1.2  2002/12/03  23:02:38  egouvea
+ * Updated slow decoder with current working version.
+ * Added copyright notice to Makefiles, *.c and *.h files.
+ * Updated some of the documentation.
  * 
- * 
- * 22-Sep-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added check for <s> and </s> being in LM in fwd_init().
- * 
- * 27-Feb-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added check in building DAG for avoiding cycles with dagfudge.
- * 
- * 31-Oct-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added compound words handling option.  Compound words are broken up
- * 		into component words for computing LM probabilities.
- * 		Added utterance boundary LM context.  If some context is explicitly
- * 		specified, utterance need not begin with <s> and end with </s>.
+ * Revision 1.1.1.1  2002/12/03 20:20:46  robust
+ * Import of s3decode.
+ *
  * 
  * 08-Sep-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added .Z compression option to lattice files.
@@ -147,11 +175,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include <assert.h>
 
 #include <libutil/libutil.h>
-#include <libmisc/libmisc.h>
 #include <s3.h>
 
 #include "s3types.h"
@@ -161,8 +187,11 @@
 #include "lm.h"
 #include "fillpen.h"
 #include "logs3.h"
-#include "lmcontext.h"
 #include "search.h"
+
+/* Added by BHIKSHA; Fix for 3 state hmms? 
+#define ANYHMMTOPO	1
+ End modification by BHIKSHA */
 
 
 /*
@@ -356,19 +385,6 @@ static word_cand_t **word_cand;	/* Word candidates for each frame.  (NOTE!! Anot
 static int32 n_word_cand;	/* #candidate entries in word_cand for current utterance.
 				   If <= 0; full search performed for current utterance */
 
-/*
- * Structure for "efficient" implementation of breaking up search through compound words
- * into a sequence of component words.  I.e., compound words are needed only for lexical
- * modelling; for the language model we consider them as sequences of the component
- * words.  To implement this, when we transition to the beginning of a compound word,
- * we apply the LM transition probability for only the first component.  The LM scores
- * for the remaining component words are added as we go through the phone sequence for
- * the compound word, approximately evenly spaced through the pronunciation.
- */
-static s3wid_t *comp_alt;	/* If w is not a compound word, comp_alt[w] is the head
-				   of the list of compound words with w as the first
-				   component.  All such compound words are linked using
-				   this same array. */
 
 /* Various search-related parameters */
 static int32 beam;		/* General beamwidth */
@@ -394,11 +410,6 @@ static s3latid_t *frm_latstart;	/* frm_latstart[f] = first lattice entry in fram
 
 static hyp_t *hyp = NULL;	/* The final recognition result */
 static int32 renormalized;	/* Whether scores had to be renormalized in current utt */
-
-static int32 *latden;		/* Lattice density/frame */
-
-static corpus_t *lmcontext_corp;
-static s3wid_t lmcontext_pred[2], lmcontext_succ;
 
 /* Debugging */
 static s3wid_t trace_wid;	/* Word to be traced; for debugging */
@@ -1244,7 +1255,6 @@ static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     tp = tmat->tp[mdef->phone[pid].tmat];
 
     /* Compute previous state-score + observation output prob for each state */
-    assert (n_state >= 2);	/* At least 1 emitting state + 1 non-emitting exit state */
     for (from = n_state-2; from >= 0; --from) {
 	if ((st_sen_scr[from] = h->score[from] + senscr[sen[from]]) < LOGPROB_ZERO)
 	    st_sen_scr[from] = LOGPROB_ZERO;
@@ -1306,7 +1316,6 @@ static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
     
     /* Compute previous state-score + observation output prob for each state */
     prevpid = BAD_PID;
-    assert (n_state >= 2);	/* At least 1 emitting state + 1 non-emitting exit state */
     for (from = n_state-2; from >= 0; --from) {
 	if ((pid = h->pid[from]) != prevpid) {
 	    senp = mdef->phone[pid].state;
@@ -1476,49 +1485,6 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 
 
 /*
- * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
- * starting from l.  Also, break up any compound words in the history into components
- * and return only the last two.  Finally, take LM context into account if run past
- * the beginning of utt.
- */
-static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
-{
-    s3latid_t l0, l1;
-    int32 n;
-    
-    for (l1 = l; filler_word(lattice[l1].wid); l1 = lattice[l1].history);
-
-    l0 = lattice[l1].history;
-    if (NOT_LATID(l0)) {
-	assert (lattice[l1].wid == startwid);
-	/* Instead of startwid use the LM context */
-	*w0 = lmcontext_pred[0];
-	*w1 = lmcontext_pred[1];
-	return;
-    }
-
-    *w1 = dict_basewid(lattice[l1].wid);
-    if ((n = dict->word[*w1].n_comp) > 0) {
-	*w0 = dict->word[*w1].comp[n-2].wid;
-	*w1 = dict->word[*w1].comp[n-1].wid;
-	return;
-    }
-    
-    for (; filler_word(lattice[l0].wid); l0 = lattice[l0].history);
-    
-    if (NOT_LATID(lattice[l0].history)) {
-	assert (lattice[l0].wid == startwid);
-	/* Instead of startwid use the LM context */
-	*w0 = lmcontext_pred[1];
-    } else {
-	*w0 = dict_basewid(lattice[l0].wid);
-	if ((n = dict->word[*w0].n_comp) > 0)
-	    *w0 = dict->word[*w0].comp[n-1].wid;
-    }
-}
-
-
-/*
  * Transition from hmm h into the next appropriate one for word w.
  * Threshold check for incoming score already completed.
  * The next HMM may be the last triphone for the word w, in which case, instantiate
@@ -1527,40 +1493,13 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
  */
 static void whmm_transition (int32 w, whmm_t *h)
 {
-    int32 lastpos, npid, nf, lscr;
+    int32 lastpos, npid, nf;
     whmm_t *nexth, *prevh;
     s3cipid_t rc;
     s3pid_t *pid;
-    int32 i;
-    s3wid_t bw0, bw1;
     
     lastpos = dict->word[w].pronlen - 1;
     nf = n_frm+1;
-    
-    /*
-     * If this is a compound word, compute LM score to be added if an internal word
-     * boundary is being crossed.
-     */
-    lscr = 0;
-    if (dict->word[w].n_comp > 0) {
-	assert (w != startwid);
-	
-	for (i = 1; i < dict->word[w].n_comp; i++) {
-	    if (dict->word[w].comp[i].pronoff == h->pos+1) {
-		if (i >= 2)
-		    lscr += lm_tg_score (dict->word[w].comp[i-2].wid,
-					 dict->word[w].comp[i-1].wid,
-					 dict->word[w].comp[i].wid);
-		else {
-		    /* Find the one word history for h and obtain LM score */
-		    assert (IS_LATID(h->history[final_state]));
-		    two_word_history (h->history[final_state], &bw0, &bw1);
-		    lscr += lm_tg_score (bw1, dict->word[w].comp[i-1].wid,
-					 dict->word[w].comp[i].wid);
-		}
-	    }
-	}
-    }
     
     if (h->pos < lastpos-1) {
 	/*
@@ -1575,11 +1514,11 @@ static void whmm_transition (int32 w, whmm_t *h)
 	    nexth->next = h->next;
 	    h->next = nexth;
 	}
-	
+
 	/* Transition to next HMM */
 	nexth = h->next;
-	if (h->score[final_state]+lscr > nexth->score[0]) {
-	    nexth->score[0] = h->score[final_state]+lscr;
+	if (h->score[final_state] > nexth->score[0]) {
+	    nexth->score[0] = h->score[final_state];
 	    nexth->history[0] = h->history[final_state];
 	    nexth->active = nf;		/* Ensure it doesn't get pruned */
 	}
@@ -1606,8 +1545,8 @@ static void whmm_transition (int32 w, whmm_t *h)
 
 	/* Transition to next HMMs */
 	for (rc = 0, nexth = h->next; rc < npid; rc++, nexth = nexth->next) {
-	    if (h->score[final_state]+lscr > nexth->score[0]) {
-		nexth->score[0] = h->score[final_state]+lscr;
+	    if (h->score[final_state] > nexth->score[0]) {
+		nexth->score[0] = h->score[final_state];
 		nexth->history[0] = h->history[final_state];
 		nexth->active = nf;	/* Ensure it doesn't get pruned */
 	    }
@@ -1641,6 +1580,30 @@ static void whmm_exit (int32 thresh, int32 wordthresh)
 	    }
 	}
     }
+}
+
+
+/*
+ * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
+ * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
+ */
+static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
+{
+    s3latid_t l0, l1;
+    
+    for (l1 = l; filler_word(lattice[l1].wid); l1 = lattice[l1].history);
+
+/* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+if (l1 != -1) 
+    for (l0 = lattice[l1].history; 
+         (IS_LATID(l0)) && (filler_word(lattice[l0].wid));
+	 l0 = lattice[l0].history);
+
+/* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+if (l1 == -1) *w1 = 0; else
+    *w1 = dict_basewid(lattice[l1].wid);
+if (l1 == -1) *w0 = BAD_WID; else
+    *w0 = (NOT_LATID(l0)) ? BAD_WID : dict_basewid(lattice[l0].wid);
 }
 
 
@@ -1800,7 +1763,7 @@ static void word_trans (int32 thresh)
 {
     s3latid_t l;	/* lattice entry index */
     s3cipid_t *rcmap, rc, lc;
-    s3wid_t w, bw0, bw1, bw2, nextwid;
+    s3wid_t w, bw0, bw1, nextwid;
     tg_t *tgptr;
     bg_t *bgptr;
     ug_t *ugptr;
@@ -1861,17 +1824,6 @@ static void word_trans (int32 thresh)
 				tg_trans_done[w] = 1;
 			    }
 			}
-
-			/* Also transition to compound words that begin with nextwid */
-			for (w = comp_alt[nextwid]; IS_WID(w); w = comp_alt[w]) {
-			    newscore = rcscore[dict->word[w].ciphone[0]] +
-				LM_TGPROB (lm, tgptr) + phone_penalty;
-			    
-			    if (newscore >= thresh) {
-				word_enter (w, newscore, l, lc);
-				tg_trans_done[w] = 1;
-			    }
-			}
 		    }
 		}
 		
@@ -1879,7 +1831,7 @@ static void word_trans (int32 thresh)
 	    }
 	    
 	    /* Transition to bigram followers of bw1 */
-	    if ((IS_WID(bw1)) && ((n_bg = lm_bglist (bw1, &bgptr, &bowt)) > 0)) {
+	    if ((n_bg = lm_bglist (bw1, &bgptr, &bowt)) > 0) {
 		/* Transition to bigram followers of bw1, if any */
 		for (; n_bg > 0; --n_bg, bgptr++) {
 		    /* Transition to all alternative pronunciations for bigram follower */
@@ -1889,15 +1841,6 @@ static void word_trans (int32 thresh)
 			(! tg_trans_done[nextwid]) &&	/* TG transition already done */
 			(nextwid != startwid)) {	/* No transition to <s> */
 			for (w = nextwid; IS_WID(w); w = dict->word[w].alt) {
-			    newscore = rcscore[dict->word[w].ciphone[0]] +
-				LM_BGPROB (lm, bgptr) + acc_bowt + phone_penalty;
-			    
-			    if (newscore >= thresh)
-				word_enter (w, newscore, l, lc);
-			}
-
-			/* Also transition to compound words that begin with nextwid */
-			for (w = comp_alt[nextwid]; IS_WID(w); w = comp_alt[w]) {
 			    newscore = rcscore[dict->word[w].ciphone[0]] +
 				LM_BGPROB (lm, bgptr) + acc_bowt + phone_penalty;
 			    
@@ -1926,13 +1869,8 @@ static void word_trans (int32 thresh)
 	    for (cand = 0; IS_WID(word_cand_cf[cand]); cand++) {
 		nextwid = word_cand_cf[cand];
 		
-		/* If a compound word, add LM score for only the first component */
-		if (dict->word[nextwid].n_comp > 0)
-		    bw2 = dict->word[nextwid].comp[0].wid;
-		else
-		    bw2 = nextwid;
-		lscr = lm_tg_score (bw0, bw1, bw2);
-		
+		lscr = lm_tg_score (bw0, bw1, nextwid);
+
 		for (w = nextwid; IS_WID(w); w = dict->word[w].alt) {
 		    newscore = rcscore[dict->word[w].ciphone[0]] + lscr + phone_penalty;
 		    
@@ -2029,16 +1967,10 @@ void fwd_init ( void )
     tmat = tmat_gettmat ();
     dict = dict_getdict ();
     lm   = lm_current ();
-
+    
     /* HMM states information */
     n_state = mdef->n_emit_state + 1;
     final_state = n_state - 1;
-    
-#if (! ANYHMMTOPO)
-    E_INFO("Hardwired Sphinx-II style 5-state topology\n");
-    if (n_state != 6)
-	E_FATAL("States/HMM = %d; compile with -DANYHMMTOPO=1\n", mdef->n_emit_state);
-#endif
 
     /* Variables for speeding up whmm evaluation */
     st_sen_scr = (int32 *) ckd_calloc (n_state-1, sizeof(int32));
@@ -2050,15 +1982,6 @@ void fwd_init ( void )
     if ((NOT_WID(silwid)) || (NOT_WID(startwid)) || (NOT_WID(finishwid)))
 	E_FATAL("%s, %s, or %s missing from dictionary\n",
 		SILENCE_WORD, START_WORD, FINISH_WORD);
-    /* Check that startwid and finishwid are present in LM */
-    {
-	s3lmwid_t w1, w2;
-	w1 = lm_lmwid(startwid);
-	w2 = lm_lmwid(finishwid);
-	if ((NOT_LMWID(w1)) || (NOT_LMWID(w2)))
-	    E_FATAL("%s or %s not in LM\n",
-		    dict_wordstr(startwid), dict_wordstr(finishwid));
-    }
 
     /* Beam widths and penalties */
     f64arg = (float64 *) cmd_ln_access ("-beam");
@@ -2116,21 +2039,6 @@ void fwd_init ( void )
 	word_cand_cf = (s3wid_t *) ckd_calloc (dict->n_word+1, sizeof(s3wid_t));
     }
 
-    /* Initialize comp_alt */
-    comp_alt = (s3wid_t *) ckd_calloc (dict->n_word, sizeof(s3wid_t));
-    {
-	int32 w;
-	
-	for (w = 0; w < dict->n_word; w++)
-	    comp_alt[w] = BAD_WID;
-	for (w = 0; w < dict->n_word; w++) {
-	    if (dict->word[w].n_comp > 0) {
-		comp_alt[w] = comp_alt[dict->word[w].comp[0].wid];
-		comp_alt[dict->word[w].comp[0].wid] = w;
-	    }
-	}
-    }
-    
     /* Space for first lattice entry in each frame (+ terminating sentinel) */
     frm_latstart = (s3latid_t *) ckd_calloc (S3_MAX_FRAMES+1, sizeof(s3latid_t));
 
@@ -2169,31 +2077,12 @@ void fwd_init ( void )
 						     sizeof(word_ugprob_t *));
 	n_ug = lm_uglist (&ugptr);
 	for (; n_ug > 0; --n_ug, ugptr++) {
-	    w = ugptr->dictwid;
-	    if (NOT_WID(w) || (w == startwid))
+	    if ((w = ugptr->dictwid) == startwid)
 		continue;
-	    
+
 	    ugprob = LM_UGPROB(lm, ugptr);
 
 	    for (; IS_WID(w); w = dict->word[w].alt) {
-		ci = dict->word[w].ciphone[0];
-		prevwp = NULL;
-		for (wp = word_ugprob[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
-		    prevwp = wp;
-		wp = (word_ugprob_t *) listelem_alloc (sizeof(word_ugprob_t));
-		wp->wid = w;
-		wp->ugprob = ugprob;
-		if (prevwp) {
-		    wp->next = prevwp->next;
-		    prevwp->next = wp;
-		} else {
-		    wp->next = word_ugprob[ci];
-		    word_ugprob[ci] = wp;
-		}
-	    }
-
-	    /* Also add compound words */
-	    for (w = comp_alt[ugptr->dictwid]; IS_WID(w); w = comp_alt[w]) {
 		ci = dict->word[w].ciphone[0];
 		prevwp = NULL;
 		for (wp = word_ugprob[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
@@ -2214,93 +2103,15 @@ void fwd_init ( void )
 
     /* Initialize bestpath search related */
     dag.list = NULL;
-
-    /* Create lattice density array */
-    latden = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
-
-    /* Initialize LM context, corpus */
-    if ((tmpstr = (char *) cmd_ln_access ("-lmcontextfn")) != NULL)
-	lmcontext_corp = corpus_load_headid (tmpstr);
-    else
-	lmcontext_corp = NULL;
-    lmcontext_pred[0] = BAD_WID;
-    lmcontext_pred[1] = startwid;
-    lmcontext_succ = finishwid;
-}
-
-
-static int32 cand_compwd_split (char *wd, s3wid_t *wid, int32 max)
-{
-    int32 i, j, l, n;
-    char tmp;
-    s3lmwid_t lwid;
-    
-    l = strlen(wd);
-    for (i = 1; (i < l-1) && (wd[i] != '_'); i++);
-    if (i >= l-1)
-	return 0;	/* Not a compound word */
-    
-    n = 0;
-    for (i = 0; i < l; ) {
-	for (j = i; (i < l) && (wd[i] != '_'); i++);
-	if (j == i) {
-	    E_ERROR("Badly formed compound word (%s); ignored\n", wd);
-	    return 0;
-	}
-	
-	if (n >= max) {
-	    E_ERROR("Compound word (%s) has too many components; ignored\n", wd);
-	    return 0;
-	}
-	
-	tmp = wd[i];
-	wd[i] = '\0';
-	wid[n] = dict_wordid (wd+j);
-	wd[i] = tmp;
-	
-	if (NOT_WID(wid[n])) {
-	    E_ERROR("Component word not in dictionary; %s ignored\n", wd);
-	    return 0;
-	}
-	
-	lwid = lm_lmwid(wid[n]);
-	if (NOT_LMWID(lwid)) {
-	    E_ERROR("Component word not in LM; %s ignored\n", wd);
-	    return 0;
-	}
-	
-	n++;
-	i++;
-    }
-
-    return n;
-}
-
-
-static int32 word_cand_add (s3wid_t w, int32 f)
-{
-    word_cand_t *candp;
-    
-    /* Check if node not already present; avoid duplicates */
-    for (candp = word_cand[f]; candp && (candp->wid != w); candp = candp->next);
-    if (candp)
-	return 0;	/* Not added */
-    
-    candp = (word_cand_t *) listelem_alloc (sizeof(word_cand_t));
-    candp->wid = w;
-    candp->next = word_cand[f];
-    word_cand[f] = candp;
-    
-    return 1;		/* Added */
 }
 
 
 static int32 word_cand_load (FILE *fp)
 {
     char line[1024], word[1024];
-    int32 i, k, n, nn, sf, fef, lef, df, f, seqno, lineno, nc;
-    s3wid_t w[32];
-    s3lmwid_t lwid;
+    int32 i, k, n, nn, sf, seqno, lineno;
+    s3wid_t w;
+    word_cand_t *candp;
     
     /* Skip past Nodes parameter */
     lineno = 0;
@@ -2324,7 +2135,7 @@ static int32 word_cand_load (FILE *fp)
 	}
 	lineno++;
 
-	if ((k = sscanf (line, "%d %s %d %d %d", &seqno, word, &sf, &fef, &lef)) != 5) {
+	if ((k = sscanf (line, "%d %s %d", &seqno, word, &sf)) != 3) {
 	    E_ERROR("%s: Error in lattice, line %d: %s\n", uttid, lineno, line);
 	    return -1;
 	}
@@ -2337,33 +2148,24 @@ static int32 word_cand_load (FILE *fp)
 	    return -1;
 	}
 	
-	/* Ignore specific pronunciation spec; strip off trailing (...) */
-	dict_basestr (word);
-	w[0] = dict_wordid (word);
+	w = dict_wordid (word);
+	if (NOT_WID(w)) {
+	    E_ERROR("%s: Unknown word in lattice: %s; ignored\n", uttid, word);
+	    continue;
+	}
+	w = dict_basewid(w);
+	
+	/* Check node not already present; avoid duplicates */
+	for (candp = word_cand[sf]; candp && (candp->wid != w); candp = candp->next);
+	if (candp)
+	    continue;
+	
+	candp = (word_cand_t *) listelem_alloc (sizeof(word_cand_t));
+	candp->wid = w;
+	candp->next = word_cand[sf];
+	word_cand[sf] = candp;
 
-	/* If a compound word, split into components */
-	nc = cand_compwd_split (word, w+1, 31);
-	assert ((nc == 0) || (nc >= 2));
-	
-	/* Check if word qualifies as a candidate, given the current dictionary and LM */
-	if (IS_WID(w[0])) {
-	    lwid = lm_lmwid (w[0]);
-	    if ( ((dict->word[w[0]].n_comp == 0) && IS_LMWID(lwid)) ||
-		 ((dict->word[w[0]].n_comp > 0) && (nc > 0)) ) {
-		/* I.e., if a compound word, all components are in both dict and LM */
-		n += word_cand_add (w[0], sf);
-	    }
-	}
-	
-	/*
-	 * Add components (if any) to candidate list.  Components spread evenly
-	 * through the word duration (HACK!!).
-	 */
-	if (nc > 0) {
-	    df = (((fef+lef+1)>>1) - sf + 1)/nc;	/* Frames between components */
-	    for (k = 0, f = sf; k < nc; k++, f += df)
-		n += word_cand_add (w[k+1], f);
-	}
+	n++;
     }
     
     return n;
@@ -2393,7 +2195,7 @@ static void word_cand_free ( void )
  */
 void fwd_start_utt (char *id)
 {
-    int32 l, ispipe;
+    int32 w, l, ispipe;
     char str[1024];
     FILE *fp;
     
@@ -2432,22 +2234,13 @@ void fwd_start_utt (char *id)
 	}
     }
     
-    /* If LM context available, load it */
-    if (lmcontext_corp) {
-	lmcontext_load (lmcontext_corp, id, lmcontext_pred, &lmcontext_succ);
-	E_INFO("LM-context(%s): %s %s, %s\n", id,
-	       IS_WID(lmcontext_pred[0]) ? dict_wordstr(lmcontext_pred[0]) : "-",
-	       IS_WID(lmcontext_pred[1]) ? dict_wordstr(lmcontext_pred[1]) : "-",
-	       IS_WID(lmcontext_succ) ? dict_wordstr(lmcontext_succ) : "-");
-    } else {
-	/* See initialization in fwd_init() */
-    }
-    
+    /* Enter all pronunciations of startwid (begin silence) */
     n_frm = -1;	/* Since word_enter transitions to "NEXT" frame */
-    word_enter (startwid, 0, BAD_LATID,
-		dict->word[silwid].ciphone[dict->word[silwid].pronlen-1]);
+    for (w = startwid; IS_WID(w); w = dict->word[w].alt)
+	word_enter (w, 0, BAD_LATID,
+		    dict->word[silwid].ciphone[dict->word[silwid].pronlen-1]);
     n_frm = 0;
-    
+
     renormalized = 0;
 }
 
@@ -2456,7 +2249,7 @@ void fwd_sen_active (int8 *senlist, int32 n_sen)
 {
     s3wid_t w;
     whmm_t *h;
-    int32 sen, st;
+    int32 sen, st, n;
     s3pid_t p;
     s3senid_t *senp;
     
@@ -2575,7 +2368,7 @@ static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
 static int32 lat_seg_lscr (s3latid_t l)
 {
     s3wid_t bw0, bw1, bw2;
-    int32 lscr, bowt, bo_lscr, t_lscr;
+    int32 lscr, bowt, bo_lscr;
     tg_t *tgptr;
     bg_t *bgptr;
     
@@ -2591,29 +2384,18 @@ static int32 lat_seg_lscr (s3latid_t l)
     
     two_word_history (lattice[l].history, &bw0, &bw1);
     lscr = lm_tg_score (bw0, bw1, bw2);
+    if (n_word_cand > 0)
+	return lscr;
 
     /* Correction for backoff case if that scores better (see word_trans) */
-    if (n_word_cand > 0)
-	return lscr;		/* No correction needed */
     bo_lscr = 0;
     if ((IS_WID(bw0)) && (lm_tglist (bw0, bw1, &tgptr, &bowt) > 0))
 	bo_lscr = bowt;
-    if ((IS_WID(bw1)) && (lm_bglist (bw1, &bgptr, &bowt) > 0))
+    if (lm_bglist (bw1, &bgptr, &bowt) > 0)
 	bo_lscr += bowt;
+    bo_lscr += lm_ug_score (bw2);
 
-    if (dict->word[bw2].n_comp == 0) {
-	bo_lscr += lm_ug_score (bw2);
-	if (bo_lscr > lscr)
-	    lscr = bo_lscr;
-    } else {
-	bw2 = dict->word[bw2].comp[0].wid;
-	t_lscr = lm_tg_score (bw0, bw1, bw2);
-	bo_lscr += lm_ug_score (bw2);
-	if (bo_lscr > t_lscr)
-	    lscr += (bo_lscr - t_lscr);
-    }
-
-    return lscr;
+    return ((lscr > bo_lscr) ? lscr : bo_lscr);
 }
 
 
@@ -2660,8 +2442,6 @@ static hyp_t *lattice_backtrace (s3latid_t l, s3wid_t w_rc)
 	h->sf = prevh ? prevh->ef+1 : 0;
 	h->ef = lattice[l].frm;
 	h->pscr = lattice[l].score;
-	h->conf = 0.0;
-	
 	lat_seg_ascr_lscr (l, w_rc, &(h->ascr), &(h->lscr));
 
 	return h;
@@ -2677,18 +2457,16 @@ static s3latid_t lat_final_entry ( void )
     int32 f, bestscore;
     
     /* Find lattice entry in last frame for FINISH_WORD */
-    if (lmcontext_succ == finishwid) {
-	for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++)
-	    if (dict_basewid(lattice[l].wid) == finishwid)
-		break;
-	if (l < n_lat_entry) {
-	    /* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
-	    return (l);
-	} else
-	    E_WARN("%s: Search didn't end in %s\n", uttid, dict_wordstr(finishwid));
+    for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++)
+	if (dict_basewid(lattice[l].wid) == finishwid)
+	    break;
+    if (l < n_lat_entry) {
+	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
+	return (l);
     }
     
     /* Find last available lattice entry with best ending score */
+    E_WARN("%s: Search didn't end in %s\n", uttid, dict_wordstr(finishwid));
     bestscore = LOGPROB_ZERO;
     for (f = n_frm-1; (f >= 0) && (bestscore <= LOGPROB_ZERO); --f) {
 	for (l = frm_latstart[f]; l < frm_latstart[f+1]; l++) {
@@ -2707,12 +2485,7 @@ hyp_t *fwd_end_utt ( void )
     whmm_t *h, *nexth;
     s3wid_t w;
     s3latid_t l;
-    dagnode_t *d;
-    int32 i;
-    int32 min_ef_range;
-    hyp_t *hp;
-    float64 p;
-    
+
     frm_latstart[n_frm] = n_lat_entry;	/* Add sentinel */
     counter_increment (ctr_latentry, n_lat_entry);
     
@@ -2751,33 +2524,6 @@ hyp_t *fwd_end_utt ( void )
     /* Note final lattice entry in DAG structure */
     dag.latfinal = l;
 
-    /* Add confidence information (based on lattice density) to hypothesis */
-    memset (latden, 0, S3_MAX_FRAMES * sizeof(int32));
-    if (dag_nodes_build() == 0) {
-	/* Min. endframes that a node must persist for it to be not ignored */
-	min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
-	
-	for (d = dag.list; d; d = d->alloc_next) {
-	    if (d->lef - d->fef >= min_ef_range - 1) {
-		for (i = d->sf; i <= d->lef; i++)
-		    latden[i]++;
-	    }
-	}
-	
-	/* Confidence measure = geometric mean of 1/latden over word segment */
-	for (hp = hyp; hp; hp = hp->next) {
-	    p = 0.0;
-	    for (i = hp->sf; i <= hp->ef; i++) {
-		if (latden[i] > 0)	/* If frames are skipped this might be FALSE */
-		    p -= log(latden[i]);
-	    }
-	    
-	    hp->conf = exp (p / (hp->ef - hp->sf + 1));
-	}
-	
-	dag_destroy();
-    }
-    
     return hyp;
 }
 
@@ -2866,18 +2612,35 @@ static void dag_update_link (dagnode_t *pd, dagnode_t *d, int32 ascr,
 }
 
 
-int32 dag_nodes_build ( void )
+/*
+ * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
+ * a single start time but it can represent several end times.  Links are created
+ * whenever nodes are adjacent in time.
+ * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
+ * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
+ * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
+ * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
+ * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
+ * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
+ * absurdum.
+ */
+int32 dag_build ( void )
 {
     int32 l;
     s3wid_t w;
     int32 sf;
-    dagnode_t *d;
+    dagnode_t *d, *pd;
+    int32 ascr, lscr;
     s3latid_t latfinal;
+    int32 min_ef_range;
     
     dag.list = NULL;
     latfinal = dag.latfinal;
     if (NOT_LATID(latfinal))
 	return -1;
+    
+    /* Min. endframes value that a node must persist for it to be not ignored */
+    min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
     
     /* Build DAG nodes list from the lattice */
     for (l = 0; l < n_lat_entry; l++) {
@@ -2907,52 +2670,24 @@ int32 dag_nodes_build ( void )
 	lattice[l].dagnode = d;
     }
     
-    /* Find initial node */
-    for (d = dag.list; d && (d->sf != 0); d = d->alloc_next);
+    /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
+    for (d = dag.list; d; d = d->alloc_next) {
+	if ((dict_basewid(d->wid) == startwid) && (d->sf == 0))
+	    break;
+    }
     assert (d);
-    assert (d->wid == startwid);
     dag.root = d;
 
-    return 0;
-}
-
-
-/*
- * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
- * a single start time but it can represent several end times.  Links are created
- * whenever nodes are adjacent in time.
- * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
- * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
- * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
- * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
- * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
- * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
- * absurdum.
- */
-int32 dag_build ( void )
-{
-    int32 l;
-    dagnode_t *d, *pd;
-    int32 ascr, lscr;
-    s3latid_t latfinal;
-    int32 min_ef_range;
-    
-    if (dag_nodes_build () < 0)
-	return -1;
-    
-    /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
-
-    latfinal = dag.latfinal;
-    
     /* Build DAG edges: between nodes satisfying time adjacency */
     for (d = dag.list; d; d = d->alloc_next) {
 	/* Skip links to this node if too short lived */
 	if ((d != lattice[latfinal].dagnode) && (d->lef - d->fef < min_ef_range-1))
 	    continue;
 	
-	if (d->sf == 0)
-	    assert (d->wid == startwid);	/* No predecessors to this */
+	if (d->sf == 0) 
+{}
+/*
+	    assert (d->wid == startwid);	*/ /* No predecessors to this */
 	else {
 	    /* Link from all end points == d->sf-1 to d */
 	    for (l = frm_latstart[d->sf-1]; l < frm_latstart[d->sf]; l++) {
@@ -3004,7 +2739,6 @@ static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
 
 	    if ((pd->wid != finishwid) &&
 		(pd->fef == d->sf) &&
-		(pd->sf < d->sf) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
 		lat_seg_ascr_lscr (l, BAD_WID, &ascr, &lscr);
 		dag_link (pd, d, ascr, d->sf-1, NULL);
@@ -3020,7 +2754,6 @@ static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
 
 	    if ((pd->wid != finishwid) &&
 		(pd->fef == d->sf+1) &&
-		(pd->sf < d->sf) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
 		lat_seg_ascr_lscr (l, BAD_WID, &ascr, &lscr);
 		dag_link (pd, d, ascr, d->sf-1, NULL);
@@ -3298,6 +3031,7 @@ hyp_t *dag_search (char *utt)
     daglink_t *l, *bestl;
     dagnode_t *d, *final;
     int32 bestscore;
+    hyp_t *h;
     float32 *f32arg;
     float64 lwf;
     int32 fudge, min_ef_range;

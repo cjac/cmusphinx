@@ -1,20 +1,49 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * io.c -- Packaged I/O routines.
  *
  * **********************************************
  * CMU ARPA Speech Project
  *
- * Copyright (c) 1999 Carnegie Mellon University.
+ * Copyright (c) 1996 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
  * 
  * HISTORY
- * 
- * 08-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added stat_mtime().
- * 
- * 11-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added _myfopen().
  * 
  * 05-Sep-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -24,13 +53,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#if (! WIN32)
-#include <unistd.h>
-#endif
 #include <assert.h>
 
-#include "io.h"
+#include "prim_type.h"
 #include "err.h"
+#include "io.h"
 
 
 FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
@@ -121,6 +148,7 @@ void fclose_comp (FILE *fp, int32 ispipe)
 FILE *fopen_compchk (char *file, int32 *ispipe)
 {
     char tmpfile[16384];
+    FILE *fp;
     int32 k, isgz;
     struct stat statbuf;
     
@@ -240,33 +268,4 @@ int32 stat_retry (char *file, struct stat *statbuf)
     }
     
     return -1;
-}
-
-
-int32 stat_mtime (char *file)
-{
-    struct stat statbuf;
-    
-    if (stat (file, &statbuf) != 0)
-	return -1;
-    
-    return ((int32)statbuf.st_mtime);
-}
-
-
-FILE *_myfopen (char *file, char *mode, char *pgm, int32 line)
-{
-    FILE *fp;
-    
-    if ((fp = fopen(file, mode)) == NULL) {
-	fflush (stdout);
-	fprintf (stderr, "FATAL_ERROR: \"%s\", line %d: fopen(%s,%s) failed; ",
-		 pgm, line, file, mode);
-	perror("");
-	fflush (stderr);
-	
-	exit(errno);
-    }
-    
-    return fp;
 }

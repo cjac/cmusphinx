@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * allphone-main.c -- Main driver routine for allphone Viterbi decoding.
  * 
@@ -9,9 +44,6 @@
  * **********************************************
  * 
  * HISTORY
- * 
- * 19-Jun-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Modified to handle the new libfeat interface.
  * 
  * 02-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added allphone lattice output.
@@ -110,16 +142,26 @@ static arg_def_t defn[] = {
       CMD_LN_NO_VALIDATION,
       "max",
       "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
+    { "-varnorm",
+      CMD_LN_STRING,
+      CMD_LN_NO_VALIDATION,
+      "no",
+      "Variance Normalization Flag" },
     { "-cmn",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
       "current",
       "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
+    { "-feat",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
       "s2_4x",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
+      "Feature stream:\n\t\t\t\ts2_4x: Sphinx-II type 4 streams, 12cep, 24dcep, 3pow, 12ddcep\n\t\t\t\ts3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep" },
+    { "-ceplen",
+      CMD_LN_INT32,
+      CMD_LN_NO_VALIDATION,
+      "13",
+      "Length of input feature vector" },
     { "-ctlfn",
       CMD_LN_STRING,
       CMD_LN_NO_VALIDATION,
@@ -259,9 +301,8 @@ static senone_t *sen;		/* Senones */
 static interp_t *interp;	/* CD/CI interpolation */
 static tmat_t *tmat;		/* HMM transition matrices */
 
-static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
-static float32 ***feat = NULL;	/* Speech feature data */
-static float32 **mfc = NULL;	/* MFC data for entire utterance */
+static int32 n_feat, *featlen;	/* #features, vector-length/feature */
+static int32 cepsize;		/* Input mfc vector size (C0..C<cepsize-1>) */
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 
@@ -291,17 +332,14 @@ static void models_init ( void )
 		     varfloor);
 
     /* Verify codebook feature dimensions against libfeat */
-    if (feat_n_stream(fcb) != g->n_feat) {
-	E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-		feat_n_stream(fcb), g->n_feat);
-    }
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-	if (feat_stream_len(fcb,i) != g->featlen[i]) {
-	    E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-		    feat_stream_len(fcb, i), g->featlen[i]);
-	}
-    }
-    
+    n_feat = feat_featsize (&featlen);
+    if (n_feat != g->n_feat)
+	E_FATAL("#feature mismatch: s2= %d, mean/var= %d\n", n_feat, g->n_feat);
+    for (i = 0; i < n_feat; i++)
+	if (featlen[i] != g->featlen[i])
+	    E_FATAL("featlen[%d] mismatch: s2= %d, mean/var= %d\n", i,
+		    featlen[i], g->featlen[i]);
+
     /* Senone mixture weights */
     mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
     sen = senone_init ((char *) cmd_ln_access("-mixwfn"),
@@ -422,25 +460,30 @@ typedef struct mgau2sen_s {
 /*
  * Find Viterbi allphone decoding.
  */
-static void allphone_utt (int32 nfr, char *uttid)
+static void allphone_utt (float32 **mfc, int32 nfr, char *uttid)
 {
+    static float32 **feat = NULL;
     static int32 w;
     static int32 topn;
     static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
-    static int32 **senscr = NULL;	/* Senone scores for window of frames */
+    static int32 **senscr;		/* Senone scores for window of frames */
     static mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
 
     int32 i, j, k, s, gid, best;
     char *arg;
     phseg_t *phseg;
     mgau2sen_t *m2s;
-    float32 **fv;
 
-    if (! senscr) {
+    if (! feat) {
 	/* One-time allocation of necessary intermediate variables */
+
+	/* Allocate space for a feature vector */
+	feat = (float32 **) ckd_calloc (n_feat, sizeof(float32 *));
+	for (i = 0; i < n_feat; i++)
+	    feat[i] = (float32 *) ckd_calloc (featlen[i], sizeof(float32));
 	
 	/* Allocate space for top-N codeword density values in a codebook */
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+	w = feat_window_size ();	/* #MFC vectors needed on either side of current
 					   frame to compute one feature vector */
 	topn = *((int32 *) cmd_ln_access("-topn"));
 	if (topn > g->n_density) {
@@ -448,7 +491,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 		   topn, g->n_density);
 	    topn = g->n_density;
 	}
-	dist = (gauden_dist_t **) ckd_calloc_2d (g->n_feat, topn, sizeof(gauden_dist_t));
+	dist = (gauden_dist_t **) ckd_calloc_2d (n_feat, topn, sizeof(gauden_dist_t));
 	
 	/* Space for one frame of senone scores, and per frame active flags */
 	senscr = (int32 **) ckd_calloc_2d (GAUDEN_EVAL_WINDOW, sen->n_sen, sizeof(int32));
@@ -476,42 +519,36 @@ static void allphone_utt (int32 nfr, char *uttid)
     }
     
     /* AGC and CMN */
-    if (mfc) {
-	arg = (char *) cmd_ln_access ("-cmn");
-	if (strcmp (arg, "current") == 0)
-	    norm_mean (mfc, nfr, feat_cepsize(fcb));
-	arg = (char *) cmd_ln_access ("-agc");
-	if (strcmp (arg, "max") == 0)
-	    agc_max (mfc, nfr);
-    }
+    arg = (char *) cmd_ln_access ("-cmn");
+    if (strcmp (arg, "current") == 0)
+	norm_mean (mfc, nfr, cepsize);
+    arg = (char *) cmd_ln_access ("-agc");
+    if (strcmp (arg, "max") == 0)
+	agc_max (mfc, nfr);
     
     allphone_start_utt (uttid);
 
+    /*
+     * A feature vector for frame f depends on input MFC vectors [f-w..f+w].  Hence
+     * the feature vector corresponding to the first w and last w input frames is
+     * undefined.  We define them by simply replicating the first and last true
+     * feature vectors (presumably silence regions).
+     */
     for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
 	/* Compute Gaussian densities and senone scores for window of frames */
 	timing_start (tm_gausen);
 	for (gid = 0; gid < g->n_mgau; gid++) {
 	    for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		/*
-		 * Compute feature vector for current frame from input speech cepstra
-		 * A feature vector for frame f depends on input MFC vectors [f-w..f+w].
-		 * Hence the feature vector corresponding to the first w and last w input
-		 * frames is undefined.  We define them by simply replicating the first
-		 * and last true feature vectors (presumably silence regions).
-		 */
-		if (mfc) {
-		    if (i < w)
-			fcb->compute_feat (fcb, mfc+w, feat[0]);
-		    else if (i >= nfr-w)
-			fcb->compute_feat (fcb, mfc+(nfr-w-1), feat[0]);
-		    else
-			fcb->compute_feat (fcb, mfc+i, feat[0]);
-		    fv = feat[0];
-		} else
-		    fv = feat[i];
+		/* Compute feature vector for current frame from input speech cepstra */
+		if (i < w)
+		    feat_cep2feat (mfc+w, feat);
+		else if (i >= nfr-w)
+		    feat_cep2feat (mfc+(nfr-w-1), feat);
+		else
+		    feat_cep2feat (mfc+i, feat);
 		
 		/* Evaluate mixture Gaussian densities */
-		gauden_dist (g, gid, topn, fv, dist);
+		gauden_dist (g, gid, topn, feat, dist);
 		
 		/* Compute senone scores */
 		if (g->n_mgau > 1) {
@@ -580,9 +617,12 @@ static void process_ctlfile ( void )
     FILE *ctlfp;
     char *ctlfile, *cepdir, *cepext;
     char line[1024], cepfile[1024], ctlspec[1024];
-    int32 ctloffset, ctlcount, sf, ef, nfr;
+/* CHANGE BY BHIKSHA: ADDED veclen AS A VARIABLE, 6 JAN 98 */
+    int32 ctloffset, ctlcount, veclen, sf, ef, nfr;
+/* END OF CHANGES BY BHIKSHA */
     char uttid[1024];
     int32 i, k;
+    float32 **mfc;
     
     ctlfile = (char *) cmd_ln_access("-ctlfn");
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
@@ -593,6 +633,9 @@ static void process_ctlfile ( void )
     cepdir = (char *) cmd_ln_access("-cepdir");
     cepext = (char *) cmd_ln_access("-cepext");
     assert ((cepdir != NULL) && (cepext != NULL));
+/* BHIKSHA: ADDING VECLEN TO ALLOW VECTORS OF DIFFERENT SIZES */
+    veclen = *((int32 *) cmd_ln_access("-ceplen"));
+/* END CHANGES, 6 JAN 1998, BHIKSHA */
     
     ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
     if (! cmd_ln_access("-ctlcount"))
@@ -643,29 +686,15 @@ static void process_ctlfile ( void )
 	else
 	    sprintf (cepfile, "%s.%s", ctlspec, cepext);
 	
-	if (! feat) {
-	    /* One time allocation of space for MFC data/feature vector */
-	    if (fcb->compute_feat) {
-		mfc = (float32 **) ckd_calloc_2d (S3_MAX_FRAMES, feat_cepsize(fcb),
-						  sizeof(float32));
-		feat = feat_array_alloc (fcb, 1);
-	    } else {
-		/* Speech input is directly feature vectors; no MFC input */
-		feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-	    }
-	}
-	
-	/* Read MFC/feature speech input file */
-	if (fcb->compute_feat)
-	    nfr = s2mfc_read (cepfile, sf, ef, mfc, S3_MAX_FRAMES);
-	else
-	    nfr = feat_readfile (fcb, cepfile, sf, ef, feat, S3_MAX_FRAMES);
-
-	if (nfr <= 0)
-	    E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
+	/* Read and process mfc file */
+/* CHANGE BY BHIKSHA; PASSING VECLEN TO s2mfc_read(), 6 JAN 98 */
+	/* Read mfc file */
+	if ((nfr = s2mfc_read (cepfile, sf, ef, &mfc, veclen)) <= 0) 
+	    E_ERROR("Utt %s: MFC file read (%s) failed\n", uttid, cepfile);
+/* END CHANGES BY BHIKSHA */
 	else {
-	    E_INFO ("%s: %d input frames\n", uttid, nfr);
-	    allphone_utt (nfr, uttid);
+	    E_INFO ("%d mfc frames\n", nfr);
+	    allphone_utt (mfc, nfr, uttid);
 	}
 	
 	--ctlcount;
@@ -805,7 +834,11 @@ main (int32 argc, char *argv[])
     }
 
     /* Initialize feature stream type */
-    fcb = feat_init ((char *) cmd_ln_access ("-feat"));
+    feat_init ((char *) cmd_ln_access ("-feat"));
+/* BHIKSHA: PASS CEPSIZE TO FEAT_CEPSIZE, 6 Jan 98 */
+    cepsize = *((int32 *) cmd_ln_access("-ceplen"));
+    cepsize = feat_cepsize (cepsize);
+/* END CHANGES BY BHIKSHA */
     
     /* Read in input databases */
     models_init ();

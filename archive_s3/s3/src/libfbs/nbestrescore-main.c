@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * nbestrescore-main.c -- Main driver routine for Alpha (forward) rescoring of
  * 	N-best lists.
@@ -492,7 +527,9 @@ static void process_ctlfile ( void )
     FILE *ctlfp;
     char *ctlfile, *cepdir, *cepext, *nbestdir;
     char cepfile[1024], ctlspec[1024], uttid[1024];
-    int32 ctloffset, ctlcount, sf, ef, nfr, nhyp;
+/* CHANGE BY BHIKSHA: ADDED veclen AS A VARIABLE, 6 JAN 98 */
+    int32 ctloffset, ctlcount, veclen, sf, ef, nfr, nhyp;
+/* END OF CHANGES BY BHIKSHA */
     float32 **mfc;
     hyp_t **hyplist;
     
@@ -512,6 +549,9 @@ static void process_ctlfile ( void )
 
     cepdir = (char *) cmd_ln_access("-cepdir");
     cepext = (char *) cmd_ln_access("-cepext");
+/* BHIKSHA: ADDING VECLEN TO ALLOW VECTORS OF DIFFERENT SIZES */
+    veclen = *((int32 *) cmd_ln_access("-ceplen"));
+/* END CHANGES, 6 JAN 1998, BHIKSHA */
 
     nbestdir = (char *) cmd_ln_access("-nbestdir");
 
@@ -525,8 +565,11 @@ static void process_ctlfile ( void )
 	    sprintf (cepfile, "%s/%s.%s", cepdir, ctlspec, cepext);
 	else
 	    sprintf (cepfile, "%s.%s", ctlspec, cepext);
-	if ((nfr = s2mfc_read (cepfile, sf, ef, &mfc)) <= 0)
+/* CHANGE BY BHIKSHA; PASSING VECLEN TO s2mfc_read(), 6 JAN 98 */
+	/* Read mfc file */
+	if ((nfr = s2mfc_read (cepfile, sf, ef, &mfc, veclen)) <= 0) 
 	    E_ERROR("Utt %s: MFC file read (%s) failed\n", uttid, cepfile);
+/* END CHANGES BY BHIKSHA */
 	
 	/* Read Nbest file; hyplist only contains word strings, not ids */
 	if ((nhyp = nbestfile_load (nbestdir, uttid, &hyplist)) <= 0)
@@ -596,7 +639,10 @@ main (int32 argc, char *argv[])
 
     /* Initialize feature stream type */
     feat_init ((char *) cmd_ln_access ("-feat"));
-    cepsize = feat_cepsize ();
+/* BHIKSHA: PASS CEPSIZE TO FEAT_CEPSIZE, 6 Jan 98 */
+    cepsize = *((int32 *) cmd_ln_access("-ceplen"));
+    cepsize = feat_cepsize (cepsize);
+/* END CHANGES BY BHIKSHA */
     
     /* Read in input databases */
     models_init ();
