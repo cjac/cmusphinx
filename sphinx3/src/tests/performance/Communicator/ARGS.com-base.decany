@@ -5,13 +5,12 @@
 -tmat /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/transition_matrices 
 -dict /net/wilma/usr1/archan/Communicator/lists/communicator.dict.reduced 
 -fdict /net/wilma/usr1/archan/Communicator/lists/noise.dict.reduced.cmu.1 
--lw 7.5 
+-lw 9.5
 -feat s3_1x39 
 -beam 1e-80 
--nwbeam 1e-40
+-nwbeam 1e-40 
+-lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
 -agc none 
 -varnorm no 
--lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
--ctl ./nist.ctl.no_comment.no_id
 
 
