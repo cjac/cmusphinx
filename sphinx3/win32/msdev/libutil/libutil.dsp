@@ -109,6 +109,10 @@ SOURCE=..\..\..\src\libutil\filename.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libutil\genrand.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libutil\glist.c
 # End Source File
 # Begin Source File
@@ -174,6 +178,10 @@ SOURCE=..\..\..\src\libutil\err.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libutil\filename.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libutil\genrand.h
 # End Source File
 # Begin Source File
 

@@ -61,14 +61,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#if !defined(WIN32)
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#endif
 #include "cmd_ln.h"
 #include "err.h"
 #include "ckd_alloc.h"
 #include "hash.h"
 #include "case.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 
 /* Storage for argument values */
