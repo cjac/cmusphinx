@@ -70,8 +70,11 @@ void processMismatch(char *references[], int numReferences,
 int countMatches(char *references[], int r, int numReferences,
                  char *parthyp[], int h, int numHypothesis);
 int stringToArray(char *string, char *array[]);
+void stringToUpperCase(char *string);
 void partialHypToString(partialhyp_t *parthyp, int nhypwds, 
                         char* hypothesis, int bufferSize);
+int isFillerWord(char *string);
+void stringRemoveEndingParenthesis(char *string);
 
 
 int numSentences;
@@ -245,6 +248,11 @@ int main (int argc, char *argv[])
 
 /**
  * Converts the words in the given partialhyp_t struct into a string.
+ *
+ * @param parthyp the partial hypothesis struct to extract words from
+ * @param nhypwds number of words in the partial hypothesis struct
+ * @param hypothesis the string to put hypothesized words into
+ * @param bufferSize length of hypothesis char array
  */
 void partialHypToString(partialhyp_t *parthyp, int nhypwds, 
                         char* hypothesis, int bufferSize)
@@ -258,12 +266,37 @@ void partialHypToString(partialhyp_t *parthyp, int nhypwds,
         word = parthyp[j].word;
         if (strcmp(word, "<sil>") != 0 &&
             (strcmp(word, "<s>") != 0 &&
-             strcmp(word, "</s>") != 0)) {
-            
+             (strcmp(word, "</s>") != 0 &&
+              isFillerWord(word) != 1))) {
+
+            stringRemoveEndingParenthesis(word);
+
             if (strlen(hypothesis) > 0) {
                 strcat(hypothesis, " ");
             }
             strcat(hypothesis, word);
+        }
+    }
+}
+
+
+/**
+ * If the given string has a pair of ending parenthesis,
+ * a return the string without the parenthesis.
+ */
+void stringRemoveEndingParenthesis(char *string)
+{
+    int i;
+    int length;
+    length = strlen(string);
+    
+
+    /* if it ends with ')' */
+    if (length > 1 && string[length-1] == ')') {
+        for (i = length - 2; i >= 0; i--) {
+            if (string[i] == '(') {
+                string[i] = '\0';
+            }
         }
     }
 }
@@ -325,10 +358,12 @@ void analyzeResults(const char* referenceResult, const char* hypotheses)
     char myHypothesis[STRLEN];
     
     strcpy(myReferenceResult, referenceResult);
+    stringToUpperCase(myReferenceResult);
     numReferences = stringToArray(myReferenceResult, references);
     referenceIndex = 0;
 
     strcpy(myHypothesis, hypotheses);
+    stringToUpperCase(myHypothesis);
     numHypothesis = stringToArray(myHypothesis, hypothesis);
     hypothesisIndex = 0;
 
@@ -463,7 +498,8 @@ int countMatches(char *references[], int r, int numReferences,
  * Converts the individual words in the string into an array of strings.
  *
  * @param string the string to convert
- * @param the array of string pointers
+ * @param array the array of string pointers
+ * @param skipFillerWords non-zero to skip filler words, 0 to no skip them
  *
  * @return the number of words
  */
@@ -479,13 +515,46 @@ int stringToArray(char *string, char *array[])
         for (c = 0; c < length; c++) {
             if (string[c] == ' ') {
                 string[c++] = '\0';
+                /* skip all blanks */
                 while (string[c] == ' ') {
                     c++;
                 }
-                array[i++] = &string[c];
+                /* start a new word only if its not the end of the string */
+                if (string[c] != '\0') {
+                    array[i++] = &string[c];
+                }
             }
         }
     }
 
     return i;
+}
+
+/**
+ * Returns 1 if the given string is a filler word, 0 if not.
+ *
+ * @param string the string to test
+ */
+int isFillerWord(char *string)
+{
+    if (strlen(string) > 1) {
+        if (string[0] == '+' && string[1] == '+') {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Converts the given string to uppercase in place.
+ *
+ * @param string the string to be converted
+ */
+void stringToUpperCase(char *string)
+{
+    int i, length;
+    length = strlen(string);
+    for (i = 0; i < length; i++) {
+        string[i] = toupper(string[i]);
+    }
 }
