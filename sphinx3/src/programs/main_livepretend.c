@@ -70,6 +70,8 @@ main(int _argc, char **_argv)
   char fullrawfn[FILENAME_LENGTH];
   FILE *ctrlfd;
   FILE *rawfd;
+  ptmr_t tm;
+
 
   print_appl_info(_argv[0]);
 
@@ -81,6 +83,8 @@ main(int _argc, char **_argv)
   ctrlfn = _argv[1];
   rawdirfn = _argv[2];
   cfgfn = _argv[3];
+
+  ptmr_init(&tm);
 
   if ((ctrlfd = fopen(ctrlfn, "r")) == NULL) {
     E_FATAL("Cannot open control file %s.\n", ctrlfn);
@@ -94,8 +98,9 @@ main(int _argc, char **_argv)
     E_FATAL("Failed to initialize live-decoder.\n");
   }
 
+
   while (fscanf(ctrlfd, "%s", rawfn) != EOF) {
-    sprintf(fullrawfn, "%s/%s.raw", rawdirfn, rawfn);
+    sprintf(fullrawfn, "%s/%s%s", rawdirfn, rawfn,decoder.rawext);
     if ((rawfd = fopen(fullrawfn, "rb")) == NULL) {
       E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
@@ -104,20 +109,41 @@ main(int _argc, char **_argv)
       E_FATAL("Cannot begin utterance decoding.\n");
     }
     len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
+
     while (len > 0) {
+      ptmr_start (&tm);
       ld_process_raw(&decoder, samples, len);
+      ptmr_stop (&tm);
 
       if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
-	E_INFO("PARTIAL_HYP: %s\n", hypstr);
+	if(decoder.phypdump){
+	  E_INFO("PARTIAL_HYP: %s\n", hypstr);
+	}
       }
       len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
     }
     fclose(rawfd);
     ld_end_utt(&decoder);
+    ptmr_reset(&tm);
 
   }
 
   ld_finish(&decoder);
 
+  E_INFO("SUMMARY:  %d fr;  %d cdsen, %d cisen, %d cdgau %d cigau/fr, %.2f xCPU [%.2f xOvrhd];  %d hmm/fr, %d wd/fr, %.2f xCPU;  tot: %.2f xCPU, %.2f xClk\n",
+	 decoder.kb.tot_fr,
+	 (int32)(decoder.kb.tot_sen_eval / decoder.kb.tot_fr),
+	 (int32)(decoder.kb.tot_ci_sen_eval / decoder.kb.tot_fr),
+	 (int32)(decoder.kb.tot_gau_eval / decoder.kb.tot_fr),
+	 (int32)(decoder.kb.tot_ci_gau_eval / decoder.kb.tot_fr),
+	 decoder.kb.tm_sen.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
+	 decoder.kb.tm_ovrhd.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
+	 (int32)(decoder.kb.tot_hmm_eval / decoder.kb.tot_fr),
+	 (int32)(decoder.kb.tot_wd_exit / decoder.kb.tot_fr),
+	 decoder.kb.tm_srch.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
+	 tm.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
+	 tm.t_tot_elapsed * 100.0 / decoder.kb.tot_fr);
+  
   return 0;
 }
+

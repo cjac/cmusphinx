@@ -101,6 +101,8 @@ ep -i  input.raw \n						\
         -nfft      512";
 
 static arg_t arg[] = {
+
+#if 0 /* ARCHAN: temporarily removed in 3.5 release */
   { "-help",
     ARG_INT32,
     "0",
@@ -109,6 +111,8 @@ static arg_t arg[] = {
     ARG_INT32,
     "0",
     "Shows example of how to use the tool"},
+#endif
+
   { "-i",
     ARG_STRING,
     NULL,

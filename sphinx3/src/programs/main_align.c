@@ -200,7 +200,7 @@ static arg_t defn[] = {
       "Directory for utterances in -ctl file (if relative paths specified)." },
     { "-cepext",
       ARG_STRING,
-      "mfc",
+      ".mfc",
       "File extension appended to utterances listed in ctl file" },
 
     { "-mllrctl",
@@ -914,7 +914,7 @@ static void process_ctlfile ( void )
 {
     FILE *ctlfp, *sentfp, *mllrctlfp;
     char *ctlfile, *cepdir, *cepext, *sentfile, *outsentfile, *mllrctlfile;
-    char line[1024], cepfile[1024], ctlspec[1024];
+    char line[1024], ctlspec[1024];
     int32 ctloffset, ctlcount, sf, ef, nfr;
     char mllrfile[4096], prevmllr[4096], sent[16384];
     char uttid[1024];
@@ -1039,11 +1039,7 @@ static void process_ctlfile ( void )
 	    }
 	}
 
-	if (ctlspec[0] != '/')
-	    sprintf (cepfile, "%s/%s.%s", cepdir, ctlspec, cepext);
-	else
-	    sprintf (cepfile, "%s.%s", ctlspec, cepext);
-	
+
 	/* Read utterance transcript */
 	if (fgets (sent, sizeof(sent), sentfp) == NULL) {
 	    E_ERROR("EOF(%s)\n", sentfile);
@@ -1074,10 +1070,11 @@ static void process_ctlfile ( void )
 	    feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
 	
 	/* Read and process mfc/feature speech input file */
-	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, sf, ef, feat, S3_MAX_FRAMES);
+	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 	
-	if (nfr <= 0)
-	    E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
+	if (nfr <= 0){
+	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", uttid, ctlspec,cepdir, cepext);
+	}
 	else {
 	    E_INFO ("%s: %d input frames\n", uttid, nfr);
 	    align_utt (sent, nfr, ctlspec, uttid);

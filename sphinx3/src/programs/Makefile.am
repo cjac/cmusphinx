@@ -5,12 +5,11 @@ bin_PROGRAMS = livepretend \
 	astar \
 	dag \
 	allphone \
-	ep
+	ep 
 
 livepretend_SOURCES = main_livepretend.c
 decode_SOURCES = decode.c
-
-#decode_anytopo_SOURCES = main_decode_anytopo.c  s3_dag.
+#decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
 
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
@@ -21,9 +20,10 @@ ep_SOURCES = main_ep.c
 wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
 
+
 noinst_PROGRAMS = \
 	wave2feat \
-	cepview
+	cepview 
 
 noinst_HEADERS = \
 	main_ep.h \
