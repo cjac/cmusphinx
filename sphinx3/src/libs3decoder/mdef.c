@@ -590,6 +590,8 @@ mdef_t *mdef_init (char *mdeffile)
     int32 n_ci, n_tri, n_map, n;
     char tag[1024], buf[1024];
     s3senid_t **senmap;
+    s3senid_t *tempsenmap;
+
     s3pid_t p;
     int32 s, ci, cd;
     mdef_t *m;
@@ -673,9 +675,28 @@ mdef_t *mdef_init (char *mdeffile)
     m->phone = (phone_t *) ckd_calloc (m->n_phone, sizeof(phone_t)); /* freed in mdef_free */
 
     /* Allocate space for state->senone map for each phone */
+    /* Fast decoder-specific */
     senmap = (s3senid_t **) ckd_calloc_2d (m->n_phone, m->n_emit_state, sizeof(s3senid_t));/* freed in mdef_free */
     m->sseq = senmap;	/* TEMPORARY; until it is compressed into just the unique ones */
+
+    /* Flat decoder-specific */
+    /* Allocate space for state->senone map for each phone */
+
+    /* ARCHAN 20040820, this sacrifice readability and may cause pointer
+       problems in future. However, this is a less evil than
+       duplication of code.  This is trick point all the state mapping
+       to the global mapping and avoid duplicated memory.  
+    */
+
+    /* S3 xwdpid_compress will compress the below list phone list. 
+     */
     
+    /* ARCHAN, this part should not be used when one of the recognizer is used. */ 
+    tempsenmap = (s3senid_t *) ckd_calloc (m->n_phone * m->n_emit_state, sizeof(s3senid_t));
+    for (p = 0; p < m->n_phone; p++)
+        m->phone[p].state = tempsenmap + (p * m->n_emit_state);
+
+        
     /* Allocate initial space for <ci,lc,rc,wpos> -> pid mapping */
     m->wpos_ci_lclist = (ph_lc_t ***) ckd_calloc_2d (N_WORD_POSN, m->n_ciphone, sizeof(ph_lc_t *)); /* freed in mdef_free */
 

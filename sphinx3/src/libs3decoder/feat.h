@@ -92,7 +92,7 @@ typedef struct feat_s {
 			   (feat[stream][]).  If NULL, no conversion available, the
 			   speech input must be feature vector itself.
 			   Return value: 0 if successful, -ve otherwise. */
-  cmn_t* cmn_struct;           /* Structure that stores the temporary variables for cepstral 
+  cmn_t* cmn_struct;       /* Structure that stores the temporary variables for cepstral 
 			   means normalization*/
   float32 **cepbuf;
   float32 **tmpcepbuf;

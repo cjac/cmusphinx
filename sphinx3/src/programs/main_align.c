@@ -1210,10 +1210,6 @@ int
 main (int32 argc, char *argv[])
 {
     char *str;
-
-#if 0
-    ckd_debug(100000);
-#endif
     
     E_INFO("%s COMPILED ON: %s, AT: %s\n\n", argv[0], __DATE__, __TIME__);
     
