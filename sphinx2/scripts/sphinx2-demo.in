@@ -78,6 +78,7 @@ my $cepdir    = "$task/ctl";
 
 my $modeldir     = "$s2root/model/hmm/6k";
 my $sendumpfile  = "$modeldir/sendump";
+my $noisedict    = "$modeldir/noisedict";
 
 $phonefile       = "$modeldir/phone";
 $mapfile         = "$modeldir/map";
@@ -88,6 +89,7 @@ die "$phonefile: $!" unless -e $phonefile;
 die "$mapfile: $!" unless -e $mapfile;
 die "$lmfile: $!" unless -e $lmfile;
 die "$dictfile: $!" unless -e $dictfile;
+die "$noisedict: $!" unless -e $noisedict;
 
 print "\n";
 print "task: $task\n";
@@ -172,6 +174,7 @@ my $what = join " ", ($pgm,
        -kbdumpdir => $kbdumpdir,
        -lmfn => $lmfile,
        -dictfn => $dictfile,
+       -noisedict => $noisedict,
        -phnfn => $phonefile,
        -mapfn => $mapfile,
        -hmmdir => $modeldir,
