@@ -52,13 +52,14 @@ PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
 LPBIN = $(PROGRAMDIR)/livepretend
 DECODEBIN = $(PROGRAMDIR)/decode
+DECANYBIN = $(PROGRAMDIR)/decode_anytopo
 ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 CTLFILE = ./nist.ctl.no_comment.no_id
 TRANSFILE = ./nist.trans.no_comment.no_id
 COMPATH = /net/wilma/usr1/archan/Communicator
 
 #all : base fast
-base : com-base-lp com-base-decode
+base : com-base-lp com-base-decode com-base-decany
 fast : com-fast-lp com-fast-decode
 
 clean :
@@ -82,9 +83,17 @@ com-base-decode com-fast-decode:
 	sed "s/_/ /g" $@.match > $@.tmp
 	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
 
- 	 	 	
-#20041205 DON'T USE at this point
-#com-base-decode_anytopo:
+com-base-decany:
+	-rm -f $@.results $@.match $@.match.align $@.tmp
+	/bin/cp ARGS.com-base.decany ARGS.$@
+	echo "-ctl $(CTLFILE)" >> ARGS.$@
+	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
+	sed "s/_/ /g" $@.match > $@.tmp
+	- $(ALIGNBIN) -def $(TRANSFILE) -hyp $@.tmp > $@.match.align
+
+
 #	rm -f com.base.decode_anytopo.results
 #	/bin/cp ARGS.com.base.dec_any ARGS.com.base.dec_any.slow
 #	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.dec_any.slow
