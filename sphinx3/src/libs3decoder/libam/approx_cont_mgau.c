@@ -314,7 +314,6 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   gs_t* gs;
   subvq_t* svq;
   mgau_model_t *g;
-  downsampling_t *downs; 
 
   best = MAX_NEG_INT32;
   pbest = MAX_NEG_INT32;
