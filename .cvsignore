@@ -3,6 +3,7 @@ INSTALL
 Makefile
 Makefile.in
 aclocal.m4
+autom4te.cache
 config.cache
 config.guess
 config.h
@@ -20,3 +21,4 @@ missing
 mkinstalldirs
 stamp-h
 stamp-h.in
+stamp-h1
