@@ -159,7 +159,7 @@ static int32 wavein_enqueue_buf (HWAVEIN h, LPWAVEHDR whdr)
 
 static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
-    PCMWAVEFORMAT wfmt;
+    WAVEFORMATEX wfmt;
     int32 st;
     HWAVEIN h;
     
@@ -168,16 +168,16 @@ static HWAVEIN wavein_open (int32 samples_per_sec, int32 bytes_per_sample)
 	return NULL;
     }
     
-    wfmt.wf.wFormatTag      =  WAVE_FORMAT_PCM;
-    wfmt.wf.nChannels       =  1;
-    wfmt.wf.nSamplesPerSec  =  samples_per_sec;
-    wfmt.wf.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
-    wfmt.wf.nBlockAlign     =  bytes_per_sample;
+    wfmt.wFormatTag      =  WAVE_FORMAT_PCM;
+    wfmt.nChannels       =  1;
+    wfmt.nSamplesPerSec  =  samples_per_sec;
+    wfmt.nAvgBytesPerSec =  samples_per_sec * bytes_per_sample;
+    wfmt.nBlockAlign     =  bytes_per_sample;
     wfmt.wBitsPerSample     =  8 * bytes_per_sample;
     
     /* There should be a check here for a device of the desired type; later... */
     
-    st = waveInOpen ((LPHWAVEIN) &h, WAVE_MAPPER, (LPWAVEFORMAT) &wfmt,
+    st = waveInOpen ((LPHWAVEIN) &h, WAVE_MAPPER, (LPWAVEFORMATEX) &wfmt,
 		     (DWORD) 0L, 0L, (DWORD) CALLBACK_NULL);
     if (st != 0) {
 	wavein_error ("waveInOpen", st);
