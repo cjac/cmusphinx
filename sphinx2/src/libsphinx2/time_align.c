@@ -65,11 +65,14 @@
  *
  * Revision History
  * $Log$
- * Revision 1.8  2001/10/23  22:20:30  lenzo
+ * Revision 1.9  2001/12/07  00:51:49  lenzo
+ * Quiet warnings.
+ * 
+ * Revision 1.8  2001/10/23 22:20:30  lenzo
  * Change error logging and reporting to the E_* macros that call common
  * functions.  This will obsolete logmsg.[ch] and they will be removed
  * or changed in future versions.
- * 
+ *
  * Revision 1.7  2001/07/02 16:47:12  lenzo
  * Fixed triphone lookup fallback case.
  *
@@ -591,6 +594,7 @@ begin_triphone(int32 phone_id,
               __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
+    return 0;
 }
 
 static int32
@@ -661,6 +665,7 @@ single_phone_word_triphone(int32 phone_id,
               __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
+    return 0;
 }
 
 static int32
@@ -727,6 +732,7 @@ end_triphone(int32 phone_id,
               __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE); /* should never get here.  But if we do, there are some big problems */
+    return 0;
 }
 
 static int32
@@ -767,6 +773,7 @@ triphone(int32 phone_id,
               __FILE__, __LINE__, phone_name, lc_phone_name, rc_phone_name);
 
     assert(FALSE);	/* should never get here */
+    return 0;
 }
 
 static void
