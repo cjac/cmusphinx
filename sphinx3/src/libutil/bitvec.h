@@ -62,37 +62,84 @@
 #include "prim_type.h"
 #include "ckd_alloc.h"
 
+  /** \file bitvec.h
+   * \brief An implementation of bit vector
+   *
+   * \warning: The bitvec functions is not for arbitrary usage!!  
+   * 
+   * Implementation of basic operations of bit vectors.  
+   *
+   */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef uint32 *bitvec_t;
 
-/*
- * NOTE: The following definitions haven't been designed for arbitrary usage!!
- */
 
-/* No. of uint32 words allocated to represent a bitvector of the given size n */
+  /**
+   * No. of uint32 words allocated to represent a bitvector of the given size n
+   */
 #define bitvec_uint32size(n)	(((n)+31)>>5)
 
+  /**
+   * Allocate a bit vector.
+   */
 #define bitvec_alloc(n)		((bitvec_t) ckd_calloc (((n)+31)>>5, sizeof(uint32)))
 
+  /**
+   * Free a bit vector.
+   */
 #define bitvec_free(v)		ckd_free((char *)(v))
+
+  /**
+   * Set the b-th bit of bit vector v
+   * @param v is a vector
+   * @param b is the bit which will be set
+   */
 
 #define bitvec_set(v,b)		(v[(b)>>5] |= (1 << ((b) & 0x001f)))
 
+  /**
+   * Clear the b-th bit of bit vector v
+   * @param v is a vector
+   * @param b is the bit which will be set
+   */
+
 #define bitvec_clear(v,b)	(v[(b)>>5] &= ~(1 << ((b) & 0x001f)))
+
+  /**
+   * Clear the n words bit vector v
+   * @param v is a vector
+   * @param n is the number of words. 
+   */
 
 #define bitvec_clear_all(v,n)	memset(v, 0, (((n)+31)>>5)*sizeof(uint32))
 
+  /**
+   * Check whether the b-th bit is set in vector v
+   * @param v is a vector
+   * @param b is the bit which will be checked
+   */
+
 #define bitvec_is_set(v,b)	(v[(b)>>5] & (1 << ((b) & 0x001f)))
+
+  /**
+   * Check whether the b-th bit is cleared in vector v
+   * @param v is a vector
+   * @param b is the bit which will be checked
+   */
 
 #define bitvec_is_clear(v,b)	(! (bitvec_is_set(v,b)))
 
 
-/*
- * Return the number of bits set in the given bit-vector.
- */
+  /**
+   * Return the number of bits set in the given bit-vector vec with length len
+   * @param vec is the bit vector
+   * @param len is the length of bit vector #vec
+   * @return the number of bits being set in vector #vec
+   */
 int32 bitvec_count_set (bitvec_t vec,	/* In: Bit vector to search */
 			int32 len);	/* In: Lenght of above bit vector */
 

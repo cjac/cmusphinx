@@ -53,6 +53,10 @@
 #ifndef _LIBUTIL_UNLIMIT_H_
 #define _LIBUTIL_UNLIMIT_H_
 
+/** \file unlimit.h
+    \brief (Obsolete, keep it for compilation purposes) 
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

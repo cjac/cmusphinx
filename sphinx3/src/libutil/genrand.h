@@ -109,28 +109,46 @@
 #define S3_RAND_MAX_INT32 0x7fffffff
 #include <stdio.h>
 
+/** \file genrand.h
+ *\brief High performance prortable random generator created by Takuji
+ *Nishimura and Makoto Matsumoto.  
+ * 
+ * A high performance which applied Mersene twister primes to generate
+ * random number. If probably seeded, the random generator can achieve 
+ * 19937-bits period.  For technical detail.  Please take a look at 
+ * (FIXME! Need to search for the web site.) http://www.
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
- * Macros to simplify calling of random generator function.
- *
- */
+
+  /**
+   * Macros to simplify calling of random generator function.
+   *
+   */
 #define s3_rand_seed(s) genrand_seed(s);
 #define s3_rand_int31()  genrand_int31()
 #define s3_rand_real() genrand_real3()
 #define s3_rand_res53()  genrand_res53()
 
-  /*Initialize the seed of the random generator. */
+  /**
+   *Initialize the seed of the random generator. 
+   */
   void genrand_seed(unsigned long s);
 
-  /* generates a random number on [0,0x7fffffff]-interval */
+  /**
+   *generates a random number on [0,0x7fffffff]-interval 
+   */
   long genrand_int31(void);
 
-  /* generates a random number on (0,1)-real-interval */
+  /**
+   *generates a random number on (0,1)-real-interval 
+   */
   double genrand_real3(void);
 
-  /* generates a random number on [0,1) with 53-bit resolution*/
+  /**
+   *generates a random number on [0,1) with 53-bit resolution
+   */
   double genrand_res53(void);
 
 #ifdef __cplusplus

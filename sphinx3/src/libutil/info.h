@@ -43,13 +43,17 @@
 #include <string.h>
 #include <assert.h>
 
+/** \file info.h
+ *  \brief Print hostname, directory name, compile time and date. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 
-  /* This function prints the hostname, the directory, and the compile
-     time and date */
+  /**
+     This function prints the hostname, the directory, compile time
+     and date .  */
 
   void print_appl_info(char* appl_name);
 

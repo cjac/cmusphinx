@@ -55,18 +55,31 @@
 #ifndef _LIBUTIL_LINKLIST_H_
 #define _LIBUTIL_LINKLIST_H_
 
+/** \file linklist.h
+    \brief generic linklist used by s3.0 family of tools. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Allocate a link-list element of given size and return pointer to it */
+  /** 
+      Allocate a link-list element of given size and return pointer to it 
+   */
+
 char *__listelem_alloc__ (int32 elemsize, char *file, int32 line);
+
+  /** 
+      Macro of __listelem_alloc__
+   */
 #define listelem_alloc(sz)	__listelem_alloc__((sz),__FILE__,__LINE__)
 
-/* Free link-list element of given size */
+  /** Free link-list element of given size 
+   */
 void listelem_free (char *elem, int32 elemsize);
 
-/* Print #allocation, #free operation stats */
+  /**
+     Print number of allocation, numer of free operation stats 
+   */
 void linklist_stats ( void );
 
 

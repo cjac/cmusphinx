@@ -59,13 +59,35 @@
 
 #include "prim_type.h"
 
+/** \file cmd_ln.h
+ *  \brief Command-line parsing and handling.
+ *  
+ *  A command-line parsing routine that handle command-line input and
+ *  file input of arguments. 
+ */
+  
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /**
+   * Type of reguired argument. 
+   */
 #define ARG_REQUIRED	1
 
 /* Arguments of these types are OPTIONAL */
+
+  /** \def ARG_INT32
+   * Type of 32-bit integer
+   * \def ARG_FLOAT32
+   * Type of 32-bit floating-point number
+   * \def ARG_FLOAT64
+   * Type of 64-bit floating-point number
+   * \def ARG_STRING
+   * Type of String
+   */
+  
 #define ARG_INT32	2
 #define ARG_FLOAT32	4
 #define ARG_FLOAT64	6
@@ -73,7 +95,7 @@ extern "C" {
 
 #define ARG_MAX_LENGTH 256
 
-/* Arguments of these types are REQUIRED */
+  /** Arguments of these types are REQUIRED */
 #define REQARG_INT32	(ARG_INT32 | ARG_REQUIRED)
 #define REQARG_FLOAT32	(ARG_FLOAT32 | ARG_REQUIRED)
 #define REQARG_FLOAT64	(ARG_FLOAT64 | ARG_REQUIRED)
@@ -83,46 +105,46 @@ typedef int32 argtype_t;
 
 
 typedef struct {
-    char *name;		/* Name of the command line switch (case-insensitive) */
+    char *name;		/** Name of the command line switch (case-insensitive) */
     argtype_t type;
-    char *deflt;	/* Default value (as a printed string) or NULL if none */
-    char *doc;		/* Documentation/description string */
+    char *deflt;	/** Default value (as a printed string) or NULL if none */
+    char *doc;		/** Documentation/description string */
 } arg_t;
 
 
-/*
+  /**
  * Parse the given list of arguments (name-value pairs) according to the given definitions.
  * Argument values can be retrieved in future using cmd_ln_access().  argv[0] is assumed to be
  * the program name and skipped.  Any unknown argument name causes a fatal error.  The routine
  * also prints the prevailing argument values (to stderr) after parsing.
  * Return value: 0 if successful, -1 if error.
  */
-int32 cmd_ln_parse (arg_t *defn,	/* In: Array of argument name definitions */
-		    int32 argc,		/* In: #Actual arguments */
-		    char *argv[]);	/* In: Actual arguments */
+int32 cmd_ln_parse (arg_t *defn,	/** In: Array of argument name definitions */
+		    int32 argc,		/** In: #Actual arguments */
+		    char *argv[]);	/** In: Actual arguments */
 
-/*
- * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
+  /**
+   * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
  * into an argv[] for cmd_ln_parse().
  */
 int32 cmd_ln_parse_file(arg_t *defn, char *filename);
 
-/*
- *Default application routine for command-line initialization, this
- *control the relationship between specified argument file and
- *argument list.  
+  /**
+ *Default entering routine application routine for command-line
+ *initialization, this control the relationship between specified
+ *argument file and argument list.
  */
 
-void cmd_ln_appl_enter(int argc,   /* In: #Actual arguments */
-		       char *argv[], /* In: Actual arguments */
-		       char* default_argfn, /* In: default argument file name*/
-		       arg_t *defn);
+void cmd_ln_appl_enter(int argc,   /** In: #Actual arguments */
+		       char *argv[], /** In: Actual arguments */
+		       char* default_argfn, /** In: default argument file name*/
+		       arg_t *defn); /** Command-line argument definition */
 
 
-/*
- *Default application routine for command-line initialization, this
- *control the relationship between specified argument file and
- *argument list.  
+  /**
+ *Default exit routine for application for command-line
+ *uninitialization , this control the relationship between specified
+ *argument file and argument list.  
  */
 
 void cmd_ln_appl_exit();
@@ -140,12 +162,12 @@ const void *cmd_ln_access (char *name);	/* In: Argument name whose value is soug
 #define cmd_ln_float64(name)	(*((float64 *)cmd_ln_access(name)))
 
 
-/*
- * Print a help message listing the valid argument names, and the associated
+  /**
+   * Print a help message listing the valid argument names, and the associated
  * attributes as given in defn.
  */
-void  cmd_ln_print_help (FILE *fp,	/* In: File to which to print */
-			 arg_t *defn);	/* In: Array of argument name definitions */
+void  cmd_ln_print_help (FILE *fp,	/** In: File to which to print */
+			 arg_t *defn);	/** In: Array of argument name definitions */
 
 /* RAH, 4.17.01, call this to free memory allocated during cmd_ln_parse() */
 void cmd_ln_free ();

@@ -56,6 +56,12 @@
 #ifndef _LIBUTIL_LIBUTIL_H_
 #define _LIBUTIL_LIBUTIL_H_
 
+/** \file libutil.h
+ * \brief (Considered as dangenous) master header for libutil.h
+ * 
+ * Master file for all the headers in libutil/ . Though many people point out
+ * using libutil.h can easily result in nested include. 
+ */
 
 
 #include <stdio.h>
