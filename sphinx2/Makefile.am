@@ -55,3 +55,26 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/libsphinx2/libsphinx2.dsw \
         win32/msdev/libsphinx2ad/libsphinx2ad.dsp \
         win32/msdev/libsphinx2fe/libsphinx2fe.dsp
+
+test:
+	$(LIBTOOL) --mode=execute src/examples/sphinx2-continuous \
+		-verbose 9 -adcin TRUE -adcext 16k \
+		-ctlfn $(top_srcdir)/model/lm/turtle/turtle.ctl \
+		-ctloffset 0 -ctlcount 100000000 \
+		-datadir $(top_srcdir)/model/lm/turtle \
+		-agcmax TRUE -langwt 6.5 -fwdflatlw 8.5 -rescorelw 9.5 \
+		-ugwt 0.5 -fillpen 1e-10 -silpen 0.005 -inspen 0.65 \
+		-top 1 -topsenfrm 3 -topsenthresh -70000 -beam 2e-06 \
+		-npbeam 2e-06 -lpbeam 2e-05 -lponlybeam 0.0005 \
+		-nwbeam 0.0005 -fwdflat FALSE -fwdflatbeam 1e-08 \
+		-fwdflatnwbeam 0.0003 -bestpath TRUE \
+		-kbdumpdir $(top_srcdir)/model/lm/turtle \
+		-lmfn $(top_srcdir)/model/lm/turtle/turtle.lm \
+		-dictfn $(top_srcdir)/model/lm/turtle/turtle.dic \
+		-noisedict $(top_srcdir)/model/hmm/6k/noisedict \
+		-phnfn $(top_srcdir)/model/hmm/6k/phone \
+		-mapfn $(top_srcdir)/model/hmm/6k/map \
+		-hmmdir $(top_srcdir)/model/hmm/6k \
+		-hmmdirlist $(top_srcdir)/model/hmm/6k \
+		-8bsen TRUE -sendumpfn $(top_srcdir)/model/hmm/6k/sendump \
+		-cbdir $(top_srcdir)/model/hmm/6k
