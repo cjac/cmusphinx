@@ -677,7 +677,7 @@ set of changes from dhd (below)
 	  in search
 
 2001-12-06 Kevin A. Lenzo <lenzo@cs.cmu.edu>
-	* TCP server fixes in sphinx2-server (server.c)
+	* TCP server fixes in sphinx2-server (server.c, srvcore.c)
 	* Applied two patches from Thomas K. Harris <tkharris@cs.cmu.edu>
 	  - overflow check in log.h ADD macro, topN normalization fix
 	* Added win32 examples to EXTRA_DIST so they get included
@@ -689,3 +689,9 @@ set of changes from dhd (below)
 	* Fixes for Solaris from awb <awb@cs.cmu.edu>, though this
 	  probably still requires some tweaking.
 	* Makefile.am whitespace changes, small line continuation fix
+
+2001-12-07 Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* Consolidate byte order macros into byteorder.h.  Note
+	  that SWAPL and SWAP_L are both present and used (as reversed 
+	  senses) and this will have to be cleaned up. 
+	* Add __BIG_ENDIAN__ definition in configure.in
