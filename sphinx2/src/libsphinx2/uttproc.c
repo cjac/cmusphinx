@@ -36,9 +36,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2001/12/07  17:46:00  lenzo
- * Un-ifdef the include for <unistd.h>
+ * Revision 1.14  2001/12/07  20:32:59  lenzo
+ * No unistd.h on Windows.
  * 
+ * Revision 1.13  2001/12/07 17:46:00  lenzo
+ * Un-ifdef the include for <unistd.h>
+ *
  * Revision 1.12  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -165,7 +168,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
 
 #ifdef WIN32
@@ -176,6 +178,7 @@
 #else
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <unistd.h>
 #endif
 
 #include <assert.h>
