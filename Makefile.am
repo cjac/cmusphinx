@@ -38,6 +38,9 @@ CLEANFILES = chan3.mfc \
 etags:
 	etags `find . -name *.[ch]`
 
+ctags:
+	ctags `find . -name *.[ch]`
+
 
 #######################################################################
 #Session of testing
