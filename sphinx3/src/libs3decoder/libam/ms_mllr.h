@@ -21,6 +21,10 @@
 
 #include <libutil/prim_type.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Load a regression matrix from the given file.  Space for the matrix is allocated
  * by this routine.  (The regression "matrix" is actually a matrix A and a vector B.)
@@ -52,5 +56,9 @@ int32 ms_mllr_norm_mgau (float32 ***mean,	/* In/Out: Set of vectors to be transf
 		      float32 **B,	/* In: "vector" portion of regression matrix */
 		      int32 *streamlen,	/* In: Dimension of each feature stream */
 		      int32 n_stream);	/* In: #Feature streams */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

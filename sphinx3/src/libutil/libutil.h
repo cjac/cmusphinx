@@ -56,9 +56,6 @@
 #ifndef _LIBUTIL_LIBUTIL_H_
 #define _LIBUTIL_LIBUTIL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 
 #include <stdio.h>
@@ -88,6 +85,10 @@ extern "C" {
 #include "unlimit.h"
 #include "nextword.h"
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 #if (defined(WIN32) && !defined(__CYGWIN__))
