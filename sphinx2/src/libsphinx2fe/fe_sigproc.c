@@ -205,7 +205,7 @@ void fe_create_hamming(float64 *in, int32 in_len)
      
     if (in_len>1){
       for (i=0; i<in_len; i++) /* was in_len-1  kal */
-	in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len)); 
+	in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len-1.0)); 
     }
     return;
     
