@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,8 @@ int main (int argc, char *argv[])
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
     int swap;
+
+  print_appl_info(argv[0]);
 
 
     if (argc != 4) {

@@ -31,6 +31,7 @@ INCLUDES = -I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/libs3decoder \
        -I$(top_srcdir)/src/libs3audio \
+       -I$(top_srcdir)/src/test/programs/ \
        -I$(top_builddir)/include
 
 
