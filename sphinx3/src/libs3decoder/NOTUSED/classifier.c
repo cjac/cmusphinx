@@ -16,18 +16,15 @@ cl_init(classifier_t *_cl, char *_means_file,  char *_vars_file,
   for (i = 0; i < VOTING_LEN; i++) {
     _cl->voting_frames[i] = CLASS_SILENCE;
   }
-  if (_cl->gmm != NULL) {
-    mgau_free(_cl->gmm);
-  }
   _cl->gmm = mgau_init(_means_file, _vars_file, _var_floor, _mix_weights_file,
 		       _mix_weight_floor, TRUE, _gm_type, FULL_FLOAT_COMP);
   if (_cl->gmm == NULL) {
     return -1;
   }
-  _cl->class_prior_prob[0]=CLASS_SILENCE_PROB;
-  _cl->class_prior_prob[1]=CLASS_OWNER_PROB;
-  _cl->class_prior_prob[2]=CLASS_SECONDARY_PROB;
-  _cl->class_prior_prob[3]=CLASS_NOISE;
+  _cl->class_prior_prob[CLASS_SILENCE] = CLASS_SILENCE_PROB;
+  _cl->class_prior_prob[CLASS_OWNER] = CLASS_OWNER_PROB;
+  _cl->class_prior_prob[CLASS_SECONDARY] = CLASS_SECONDARY_PROB;
+  _cl->class_prior_prob[CLASS_NOISE] = CLASS_NOISE_PROB;
 
   mgau_precomp_hack_log_to_float(_cl->gmm);
 
@@ -41,9 +38,11 @@ cl_finish(classifier_t *_cl)
 
   if (_cl->gmm != NULL) {
     mgau_free(_cl->gmm);
+    _cl->gmm = NULL;
   }
   if (_cl->classed_frames != NULL) {
     ckd_free(_cl->classed_frames);
+    _cl->classed_frames = NULL;
   }
   _cl->max_frames = _cl->num_frames = 0;
 }
@@ -79,7 +78,7 @@ cl_calc_frame_gmm(classifier_t *_cl, float32 *_frame)
       dsum = 0.0;
       for (i = 0; i < CEP_LEN; i++) {
 	diff = _frame[i] - gmm->mgau[class_index].mean[gau_index][i];
-	dsum = diff * diff * gmm->mgau[class_index].var[gau_index][i];
+	dsum += diff * diff * gmm->mgau[class_index].var[gau_index][i];
       }
       _cl->frame_gmm[class_index] +=
 	gmm->mgau[class_index].mixw_f[gau_index] * adjust * exp(dsum * -0.5);
@@ -103,9 +102,13 @@ cl_post_classify(classifier_t *_cl)
   num_frames = _cl->num_frames;
 
   /* reset the totals */
-  for (i = 0; i < NUM_CLASSES; votes[i++] = 0);
+  for (i = 0; i < NUM_CLASSES; i++) {
+    votes[i] = 0;
+  }
   /* tally up the votes from voting frames */
-  for (i = 0; i < VOTING_LEN; votes[voting_frames[i++]]);
+  for (i = 0; i < VOTING_LEN; i++) {
+    votes[voting_frames[i]]++;
+  }
 
   for (i = 0; i < num_frames; i++) {
     /* subtract the vote from the oldest frame */
@@ -148,6 +151,7 @@ cl_classify_frames(classifier_t *_cl, float32 **_frames, int _num_frames,
     /* free the old frame classification array */
     if (_cl->classed_frames != NULL) {
       ckd_free(_cl->classed_frames);
+      _cl->classed_frames = NULL;
     }
     _cl->max_frames = _cl->num_frames = 0;
 
@@ -162,6 +166,8 @@ cl_classify_frames(classifier_t *_cl, float32 **_frames, int _num_frames,
 
   for (frame_index = 0; frame_index < _num_frames; frame_index++) {
     cl_calc_frame_gmm(_cl, _frames[frame_index]);
+    best_class = -1;
+    best_prob = 0.0f;
     for (class_index = NUM_CLASSES - 1; class_index >= 0; class_index--) {
       prob = _cl->frame_gmm[class_index] * _cl->class_prior_prob[class_index];
       if (best_prob < prob) {
@@ -175,6 +181,8 @@ cl_classify_frames(classifier_t *_cl, float32 **_frames, int _num_frames,
   if (_cl->post_classify == TRUE) {
     cl_post_classify(_cl);
   }
+
+  *_classes = _cl->classed_frames;
 
   return 0;
 }
@@ -194,6 +202,7 @@ enum {
 static void
 ep_reset(endptr_t *_ep)
 {
+  _ep->state = EP_STATE_IDLE;
   _ep->num_endpts = 0;
   _ep->start_counter = 0;
   _ep->cancel_counter = 0;
@@ -221,6 +230,7 @@ ep_finish(endptr_t *_ep)
   ep_reset(_ep);
   if (_ep->endpts != NULL) {
     ckd_free(_ep->endpts);
+    _ep->endpts = NULL;
   }
   _ep->endpts = NULL;
   _ep->max_endpts = 0;
@@ -256,10 +266,10 @@ ep_endpoint(endptr_t *_ep, int *_classes, int _num_frames, int **_endpts)
       if (_classes[i] == CLASS_OWNER) {
 	_ep->start_counter = 1;
 	_ep->state = EP_STATE_LEADER;
-	endpts[i] = EP_SILENCE;
+	endpts[i] = EP_MAYBE;
       }
       else {
-	endpts[i] = EP_MAYBE;
+	endpts[i] = EP_SILENCE;
       }
       break;
 

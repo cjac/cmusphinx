@@ -12,16 +12,17 @@ extern "C" {
 #define CEP_LEN			13
 #define VOTING_LEN		5
 #define CLASS_LATENCY		2
-#define CLASS_SILENCE_PROB      0.4
-#define CLASS_OWNER_PROB      0.1
-#define CLASS_SECONDARY_PROB      0.1
-#define CLASS_NOISE      0.4
+#define CLASS_SILENCE_PROB      0.4f
+#define CLASS_OWNER_PROB	0.4f
+#define CLASS_SECONDARY_PROB	0.1f
+#define CLASS_NOISE_PROB	0.1f
+
 
 enum {
-  CLASS_SILENCE = 0,
+  CLASS_NOISE = 0,
   CLASS_OWNER,
   CLASS_SECONDARY,
-  CLASS_NOISE,
+  CLASS_SILENCE,
   NUM_CLASSES
 };
 
