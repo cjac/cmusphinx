@@ -195,14 +195,14 @@ int main (int argc, char *argv[])
         showTiming(rfp, "This", audioTime, processingTime);
         showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
         showMemory(rfp);
-        fprintf(rfp, "--------------\n");
+        fprintf(rfp, "# --------------\n");
     }
 
     live_print_profiles(rfp);
 
     metricsPrint();
 
-    fprintf(rfp, "------------- Summary statistics -----------\n");
+    fprintf(rfp, "# ------------- Summary statistics -----------\n");
     showAccuracy(rfp, numberFiles, numberMatches);
     showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
     showMemory(rfp);
@@ -215,10 +215,10 @@ void showAccuracy(FILE *rfp, int numberFiles, int numberMatches)
 {
     float accuracy = ((float) numberMatches)/((float) numberFiles) * 100.0;
 
-    fprintf(rfp, "   Accuracy : %%%.1f   Errors: %d\n",
+    fprintf(rfp, "   Accuracy: %%%.1f   Errors: %d\n",
             accuracy, (numberFiles - numberMatches));
 
-    fprintf(rfp, "   Sentences: %d      Words : %d   Matches: %d\n",
+    fprintf(rfp, "   Sentences: %d      Words: %d   Matches: %d\n",
             numberFiles, numberFiles, numberMatches);
 }
 
