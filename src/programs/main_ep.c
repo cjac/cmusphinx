@@ -73,9 +73,9 @@ Create cepstra from audio file.\n		\
 The main parameters that affect the final output, with typical values, are:\n \
 									\
 samprate, typically 8000, 11025, or 16000\n				\
-lowerf, 130, 200, 130, for the respective sampling rates above\n	\
-upperf, 3700, 5200, 6800, for the respective sampling rates above\n	\
-nfilt, 31, 37, 40, for the respective sampling rates above\n		\
+lowerf, 200, 130, 130, for the respective sampling rates above\n	\
+upperf, 3700, 5400, 6800, for the respective sampling rates above\n	\
+nfilt, 31, 36, 40, for the respective sampling rates above\n		\
 nfft, 256 or 512\n							\
 format, raw or nist or mswav\n						\
 \"";
