@@ -50,6 +50,7 @@ PROGRAMDIR= ${top_builddir}/src/programs
 BMBIN= ${top_builddir}/src/tests/programs/batchmetrics
 LPBIN= $(PROGRAMDIR)/livepretend
 DECODEBIN= $(PROGRAMDIR)/decode
+DECANYBIN= $(PROGRAMDIR)/decode_anytopo
 AN4RESULTPATH= ${top_builddir}/src/tests/performance/an4/
 MODELSPATH=/lab/speech/sphinx4/data/an4/lists/
 AN4BASE="ARGS.an4_base"
@@ -60,7 +61,7 @@ ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align
 #	echo $(word 3,$(subst _, ,$@))
 
 clean :
-	- rm *.results *.tmp *.match *.match.align *.sent *.ctl ARGS.*-{lp,decode} 
+	- rm *.results *.tmp *.match *.match.align *.sent *.ctl ARGS.*-{lp,decode,decany} 
 
 SIMTASK="words spelling full"
 GRAMMAR="unigram bigram flat_unigram trigram"
@@ -71,7 +72,7 @@ MODEAFFIX="quick"
 
 #all : SLOW QUICK
 
-SLOW : an4_words-unigram-lp \
+slow : an4_words-unigram-lp \
 	an4_spelling-unigram-lp \
 	an4_full-unigram-lp \
 	an4_words-bigram-lp \
@@ -79,6 +80,7 @@ SLOW : an4_words-unigram-lp \
 	an4_full-bigram-lp \
 	an4_words-trigram-lp \
 	an4_spelling-trigram-lp \
+	an4_full-trigram-lp \
 	an4_words-flat_unigram-lp \
 	an4_spelling-flat_unigram-lp \
 	an4_full-flat_unigram-lp \
@@ -90,11 +92,24 @@ SLOW : an4_words-unigram-lp \
 	an4_full-bigram-decode \
 	an4_words-trigram-decode \
 	an4_spelling-trigram-decode \
+	an4_full-trigram-decode \
 	an4_words-flat_unigram-decode \
 	an4_spelling-flat_unigram-decode \
-	an4_full-flat_unigram-decode 
+	an4_full-flat_unigram-decode \
+	an4_words-unigram-decany \
+	an4_spelling-unigram-decany \
+	an4_full-unigram-decany \
+	an4_words-bigram-decany \
+	an4_spelling-bigram-decany \
+	an4_full-bigram-decany \
+	an4_words-trigram-decany \
+	an4_spelling-trigram-decany \
+	an4_full-trigram-decany \
+	an4_words-flat_unigram-decany \
+	an4_spelling-flat_unigram-decany \
+	an4_full-flat_unigram-decany 
 
-QUICK : an4_words_quick-unigram-lp \
+quick : an4_words_quick-unigram-lp \
 	an4_spelling_quick-unigram-lp \
 	an4_full_quick-unigram-lp \
 	an4_words_quick-bigram-lp \
@@ -102,6 +117,7 @@ QUICK : an4_words_quick-unigram-lp \
 	an4_full_quick-bigram-lp \
 	an4_words_quick-trigram-lp \
 	an4_spelling_quick-trigram-lp \
+	an4_full_quick-trigram-lp \
 	an4_words_quick-flat_unigram-lp \
 	an4_spelling_quick-flat_unigram-lp \
 	an4_full_quick-flat_unigram-lp \
@@ -113,9 +129,22 @@ QUICK : an4_words_quick-unigram-lp \
 	an4_full_quick-bigram-decode \
 	an4_words_quick-trigram-decode \
 	an4_spelling_quick-trigram-decode \
-	an4_words_quick-flat_unigram-decode \
-	an4_spelling_quick-flat_unigram-decode \
-	an4_full_quick-flat_unigram-decode 
+	an4_full_quick-trigram-decode \
+	an4_words_quick-flat_unigram-decany \
+	an4_spelling_quick-flat_unigram-decany \
+	an4_full_quick-flat_unigram-decany \
+	an4_words_quick-unigram-decany \
+	an4_spelling_quick-unigram-decany \
+	an4_full_quick-unigram-decany \
+	an4_words_quick-bigram-decany \
+	an4_spelling_quick-bigram-decany \
+	an4_full_quick-bigram-decany \
+	an4_words_quick-trigram-decany \
+	an4_spelling_quick-trigram-decany \
+	an4_full_quick-trigram-decany \
+	an4_words_quick-flat_unigram-decany \
+	an4_spelling_quick-flat_unigram-decany \
+	an4_full_quick-flat_unigram-decany 
 
 
 
@@ -189,6 +218,42 @@ an4_full_quick-flat_unigram-decode :
 	tr 'A-Z' 'a-z' < $@.match > $@.tmp
 	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
 
+
+an4_words-unigram-decany \
+an4_spelling-unigram-decany \
+an4_full-unigram-decany \
+an4_words-bigram-decany \
+an4_spelling-bigram-decany \
+an4_full-bigram-decany \
+an4_words-trigram-decany \
+an4_spelling-trigram-decany \
+an4_full-trigram-decany \
+an4_words-flat_unigram-decany \
+an4_spelling-flat_unigram-decany \
+an4_full-flat_unigram-decany \
+an4_words_quick-unigram-decany \
+an4_spelling_quick-unigram-decany \
+an4_full_quick-unigram-decany \
+an4_words_quick-bigram-decany \
+an4_spelling_quick-bigram-decany \
+an4_full_quick-bigram-decany \
+an4_words_quick-trigram-decany \
+an4_spelling_quick-trigram-decany \
+an4_full_quick-trigram-decany \
+an4_words_quick-flat_unigram-decany \
+an4_spelling_quick-flat_unigram-decany \
+an4_full_quick-flat_unigram-decany :
+	- rm -r $@.results $@.tmp $@.match $@.sent $@.ctl
+	awk '{print $$1}' batch/$(word 1,$(subst -, ,$@)).batch |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > ./$@.ctl
+	cat $(AN4BASE).decany ./ARGS/ARGS.an4_$(word 2,$(subst -, ,$@)).decany > ARGS.$@
+	echo "-lm $(MODELSPATH)/$(subst -,.,$(subst _quick,,$(subst -decany,,$@))).lm.DMP" >> ARGS.$@
+	echo "-cepdir / " >> ARGS.$@
+	echo "-ctl ./$@.ctl " >> ARGS.$@
+	echo "-hyp ./$@.match" >> ARGS.$@
+	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' batch/$(word 1,$(subst -, ,$@)).batch  |sed -e "s/\.raw//" -e "s/an4_clstk/cepstra/" > $@.sent
+	tr 'A-Z' 'a-z' < $@.match > $@.tmp
+	- $(ALIGNBIN) -def $@.sent -hyp $@.tmp > $@.match.align
 
 
 #an4_words_unigram-bm \
