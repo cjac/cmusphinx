@@ -60,6 +60,7 @@
 #include <libs3decoder/new_fe.h>  /* 01.15.01 - RAH, use new_fe.h instead */
 #include "live_dump.h"
 #include "fe_dump.h"
+#include "feat_dump.h"
 
 static fe_t  *fe;
 
@@ -99,6 +100,7 @@ void live_initialize_decoder(char *live_args)
     if (!parthyp) 
         parthyp  = (partialhyp_t *) ckd_calloc(maxhyplen, sizeof(partialhyp_t));
 
+    needswap = cmd_ln_int32("-swapbyteorder");
     fe_param = (param_t *) ckd_calloc(1, sizeof(param_t));
     samprate = cmd_ln_int32 ("-samprate");
     if (samprate != 8000 && samprate != 16000)
@@ -224,6 +226,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
         kb->utt_gau_eval = 0;
         live_begin_new_utt = 0;
     }
+
     /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
     mfcbuf = NULL;
 

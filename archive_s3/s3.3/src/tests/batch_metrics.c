@@ -144,6 +144,12 @@ int main (int argc, char *argv[])
         fflush(stdout); 
         fclose(sfp);
 
+	if (needswap) {
+	  for (i = 0; i < nsamp; i++) {
+	    SWAPW(samps + i);
+	  }
+	}
+
         metricsReset(fileTimer);
         metricsStart(fileTimer);
 

@@ -279,6 +279,10 @@ static arg_t arg[] = {
       ARG_INT32,
       "8000",
       "Sampling rate (only 8K and 16K currently supported)" },
+    { "-swapbyteorder",
+      ARG_INT32,
+      "0",
+      "If TRUE (non-0), swaps input raw audio data" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
