@@ -1,0 +1,4 @@
+-lm RM.2845.bigram.arpa.DMP
+-lw 13
+-beam 1e-120
+-wbeam 1e-100

@@ -47,46 +47,70 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
+BMBIN=$(top_builddir)/src/tests/programs/batchmetrics
+LPBIN=$(top_builddir)/src/programs/livepretend
+DECODEBIN=$(top_builddir)/src/programs/decode
+RMBATCH="./rm1.batch"
+RMQUICKBATCH="./rm1_quick.batch"
+RMARG="ARGS.rm1"
+LVRMARG="ARGS.rm1.live"
+ALIGNBIN = /net/elroy/usr1/archan/src/ravi/ALIGN/linux/align 
 
-CLEANFILES = gmake-rm1_flat_unigram$(MODEAFFIX).results \
-             gmake-rm1_unigram$(MODEAFFIX).results \
-             gmake-rm1_trigram$(MODEAFFIX).results
+#all : lp decode lp_quick decode_quick
+slow : lp decode
+quick : lp_quick decode_quick
 
-rm1_flat_unigram:
-	rm -f gmake-rm1_flat_unigram$(MODEAFFIX).results
-	/bin/cp ARGS.rm1 ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-lw 7" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-140" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-80" >> ARGS.rm1_flat_unigram$(MODEAFFIX)
-	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_flat_unigram$(MODEAFFIX) > gmake-rm1_flat_unigram$(MODEAFFIX).results
+lp : lp_quick lp_slow
+lp_slow : rm1_flat_unigram-lp rm1_unigram-lp rm1_bigram-lp rm1_trigram-lp 
+lp_quick : rm1_flat_unigram_quick-lp rm1_unigram_quick-lp rm1_bigram_quick-lp rm1_trigram_quick-lp
+
+decode : decode_quick decode_slow
+decode_slow : rm1_flat_unigram-decode rm1_unigram-decode rm1_bigram-decode rm1_trigram-decode
+decode_quick : rm1_quick_flat_unigram-decode rm1_quick_unigram-decode rm1_quick_bigram-decode rm1_quick_trigram-decode
+
+clean :
+	 -rm -f *.ctl *.sent *.results *.match  *.match.align ARG.rm1_*-* *-lp *-bm *-decode 
+
+#Arthur: Should use suffix rules, didn't know how to use it at this point. Argument substitution is also ugly.
+
+rm1_flat_unigram-lp \
+rm1_unigram-lp \
+rm1_bigram-lp \
+rm1_trigram-lp :
+	-rm -f $@.results $@.match $@.match.align
+	/bin/cat $(RMARG) $(LVRMARG) ARGS.$(subst -lp,,$@) > ARGS.$@	
+	awk '{print $$1}' $(RMBATCH) |sed "s/\.raw//"> ./$@.ctl
+	/bin/echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMBATCH) |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+
+rm1_flat_unigram_quick-lp \
+rm1_unigram_quick-lp \
+rm1_bigram_quick-lp \
+rm1_trigram_quick-lp: 
+	-rm -f $@.results $@.match $@.match.align
+	/bin/cat $(RMARG) $(LVRMARG) ARGS.$(subst _quick,,$(subst -lp,,$@)) > ARGS.$@	
+	awk '{print $$1}' $(RMQUICKBATCH) |sed "s/\.raw//"> ./$@.ctl
+	/bin/echo "-hyp $@.match" >> ARGS.$@
+	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(RMQUICKBATCH) |sed "s/\.wav\.raw//" > $@.sent
+	- $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
 
 
-rm1_unigram:
-	rm -f gmake-rm1_unigram$(MODEAFFIX).results
-	/bin/cp ARGS.rm1 ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-lm RM.2845.unigram.arpa.DMP" >> ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-lw 10" >> ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-120" >> ARGS.rm1_unigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-60" >> ARGS.rm1_unigram$(MODEAFFIX)
-	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_unigram$(MODEAFFIX) > gmake-rm1_unigram$(MODEAFFIX).results
+#rm1_flat_unigram-decode rm1_unigram-decode rm1_bigram-decode rm1_trigram-decode: 
+#	 /bin/cat $(RMARG) ARGS.$(subst -decode,,$@) > ARGS.$@
+#	 awk '{print $$1}' $(RMBATCH) |sed "s/\.wav\.raw//"> ./$@.ctl
+#	 /bin/echo "-ctl $@.ctl" >> ARGS.$@
+#	 /bin/echo "-cepdir / " >> ARGS.$@
+#	 /bin/echo "-hyp $@.match" >> ARGS.$@
+#	 $(DECODEBIN) ARGS.$@ > $@.results 2>&1
+#	 awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(subst -decode,,$@).batch |sed "s/\.wav\.raw//" > $@.sent
+#	 - $(ALIGNBIN) -def $@.sent -hyp $@.match > $@.match.align
+#
 
-
-rm1_bigram:
-	rm -f gmake-rm1_bigram$(MODEAFFIX).results
-	/bin/cp ARGS.rm1 ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-lm RM.2845.bigram.arpa.DMP" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-lw 13" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-120" >> ARGS.rm1_bigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_bigram$(MODEAFFIX)
-	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_bigram$(MODEAFFIX) > gmake-rm1_bigram$(MODEAFFIX).results
-
-rm1_trigram:
-	rm -f gmake-rm1_trigram$(MODEAFFIX).results
-	/bin/cp ARGS.rm1 ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-lm RM.2845.trigram.arpa.DMP" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-lw 14" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-beam 1e-140" >> ARGS.rm1_trigram$(MODEAFFIX)
-	/bin/echo "-wbeam 1e-100" >> ARGS.rm1_trigram$(MODEAFFIX)
-	../../programs/batchmetrics ./rm1$(MODEAFFIX).batch / ./ARGS.rm1_trigram$(MODEAFFIX) > gmake-rm1_trigram$(MODEAFFIX).results
-
+#legacy targets using BM
+#rm1_flat_unigram-bm rm1_unigram-bm rm1_bigram-bm rm1_trigram-bm:
+#	rm -f $@.results
+#	cat $(RMARG) $(LVRMARG) ARGS.$(subst -bm,,$@) >ARGS.$@
+#	$(BMBIN) $(RMBATCH) / ./ARGS.$@ > $@.results
