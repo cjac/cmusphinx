@@ -114,7 +114,10 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
   mdef = mdef_init(mdeffile);
 
   /* Make sure we have only one emitting state */
-  assert(mdef_n_emit_state(mdef) == 1);
+  if (mdef_n_emit_state(mdef) != 1) {
+    E_FATAL("Models required to have a single emitting state, currently have %d", 
+	    mdef_n_emit_state(mdef));
+  }
 
   /* Map classes to CI models, using the model definition */
   CLASSW->classmap[CLASS_N] = mdef_ciphone_id(mdef, "N");
