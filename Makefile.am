@@ -42,9 +42,9 @@ test-livepretend:
 	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
-		$(top_srcdir)/model/lm/an4/an4.ctl \
+		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
-		$(top_srcdir)/model/lm/an4/args.an4.test > $@.out 2>&1 
+		model/lm/an4/args.an4.test > $@.out 2>&1 
 	@grep "P I T T S B U R G H (" $@.out 
 	@grep "FWDXCT" $@.out 
 
@@ -61,7 +61,7 @@ test-decode:
 	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
+	       -ctl model/lm/an4/an4.ctl \
 	       -cepdir $(top_srcdir)/model/lm/an4/ \
 	       -agc none \
 	       -varnorm no \
@@ -99,7 +99,7 @@ test-align:
 	    -senmgaufn .cont. \
             -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
             -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
-	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
+	    -ctlfn model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -insentfn $(top_srcdir)/model/lm/an4/align.correct \
 	    -outsentfn $@.out \
@@ -121,7 +121,7 @@ test-allphone:
 	    -topn 1000 \
 	    -beam 1e-80 \
 	    -senmgaufn .cont. \
-	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
+	    -ctlfn model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
 
