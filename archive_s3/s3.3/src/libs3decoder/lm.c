@@ -858,14 +858,20 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 	tginfo->bowt = 0;
 	n = tginfo->n_tg = 0;
     }
-    
-	assert (t != -1);
+
+    /* "t" has not been assigned any meanigful value, so if you use it
+     * beyond this point, make sure it's been properly assigned.
+     */   
+//	assert (t != -1);
 
     /* At this point, n = #trigrams for lw1,lw2.  Read them in */
 
     if (LM_IN_MEMORY) {
-      if (n > 0)		/* RAH, already have this in memory */
+		/* RAH, already have this in memory */
+      if (n > 0){
+	assert(t != -1);
 	tg = tginfo->tg = &lm->tg[t];
+      }
     } else {
     if (n > 0) {
 	tg = tginfo->tg = (tg_t *) ckd_calloc (n, sizeof(tg_t));
