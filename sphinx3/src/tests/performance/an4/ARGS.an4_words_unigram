@@ -21,4 +21,6 @@
 -lw   23
 -beam     1e-160
 -wbeam   1e-080
+-input_endian 1
+-nfft 512
 -lm   /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP
