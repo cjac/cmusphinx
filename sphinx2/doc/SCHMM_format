@@ -1,0 +1,186 @@
+
+=======================================================
+The sphinx II SCHMM format is rather complicated. It has the following
+main components (each of which has sub-components):
+
+A set of codebooks
+A "sendump" file that stores state (senone) distributions
+A "phone" and a "map" file which map senones on to states of a triphone
+A set of ".chmm" files that store transition matrices
+
+Codebooks:
+---------
+There are 8 codebook files. The sphinx-2 uses a four stream feature set:
+cepstral feature: [c1-c12],  (12 components)
+delta    feature: [delta_c1-delta_c12,longterm_delta_c1-longterm_delta_c12], 
+                                                                (24 components)
+power feature:    [c0,delta_c0,doubledelta_c0],   (3 components)
+doubledelta feature: [doubledelta_c-doubledelta_c12] (12 components)
+
+The 8 codebooks files store the means and variances of all the gaussians
+for each of these 4 features. The 8 codebooks are,
+
+cep.256.vec    [this is the file of means for the cepstral feature]
+cep.256.var    [this is the file of variacnes for the cepstral feature]
+d2cep.256.vec  [this is the file of means for the delta cepstral feature]
+d2cep.256.var  [this is the file of variances for the delta cepstral feature]
+p3cep.256.vec  [this is the file of means for the power feature]
+p3cep.256.var  [this is the file of variances for the power feature]
+xcep.256.vec   [this is the file of means for the double delta feature]
+xcep.256.var   [this is the file of variances for the double delta feature]
+
+All files are binary and have the following format:
+[4 byte int][4 byte float][4 byte float][4 byte float]......
+The 4 byte integer header stores the number of floating point values to
+follow in the file. For the cep.256.var, cep.256.vec, xcep.256.var and
+xcep.256.vec this value should be 3328. For d2cep.* it should be 6400,
+and for p3cep.* it should be 768.
+The floating point numbers are the components of the mean vectors (or
+variance vectors) laid end to end. So cep.256.[vec,var] have 256 mean 
+(or variance) vectors, each 13 dimensions long, 
+d2cep.256.[vec,var] have 256 mean/var vectors, each 25 dimensions long, 
+p3cep.256.[vec,var] have 256 vectors, each of dimension 3,
+xcep.256.[vec,var] have 256 vectors of length 13 each.
+
+The 0th component of the cep,d2cep and xcep distributions are not used in
+likelihood computation and are part of the format for purely historical
+reasons.
+
+
+The "sendump" file:
+------------------
+The "sendump" file stores the mixture weights of the states associated with
+each phone.  (this file has a little ascii header, which might help you
+a little). Except for the header, this is a binary file. The mixture weights
+have all been transformed to 8 bit integer by the following operation
+intmixw = (-log(float mixw)  >> shift)
+The log base is 1.0003. The "shift" is the number of bits the smallest
+mixture weight has to be shifted right to fit in 8 bits.
+The sendump file stores, 
+for each feature (4 features in all)
+  for each codeword (256 in all)
+    for each ci-phone (including noise phones)
+      for each tied state associated with ci phone,
+        probability of codeword in tied state
+      end
+      for each CI state associated with ci phone, ( 5 states )
+        probability of codeword in CI state
+      end
+    end
+  end
+end
+The sendump file has the following storage format (all data, except for
+the header string are binary):
+
+Length of header as 4 byte int (including terminating '\0') 
+HEADER string (including terminating '\0')
+0 (as 4 byte int, indicates end of header strings).
+256 (codebooksize, 4 byte int)
+Num senones (Total number of tied states, 4 byte int)
+[lut[0],    (4 byte integer, lut[i] = -(i<<shift))
+prob_of_codeword[0]_of_feat[0]_1st_CD_sen_of_1st_ciphone (unsigned char)
+prob_of_codeword[0]_of_feat[0]_2nd_CD_sen_of_1st_ciphone (unsigned char)
+..
+prob_of_codeword[0]_of_feat[0]_1st_CI_sen_of_1st_ciphone (unsigned char)
+prob_of_codeword[0]_of_feat[0]_2nd_CI_sen_of_1st_ciphone (unsigned char)
+..
+prob_of_codeword[0]_of_feat[0]_1st_CD_sen_of_2nd_ciphone (unsigned char)
+prob_of_codeword[0]_of_feat[0]_2nd_CD_sen_of_2nd_ciphone (unsigned char)
+..
+prob_of_codeword[0]_of_feat[0]_1st_CI_sen_of_2st_ciphone (unsigned char)
+prob_of_codeword[0]_of_feat[0]_2nd_CI_sen_of_2st_ciphone (unsigned char)
+..
+]
+[lut[1],    (4 byte integer)
+prob_of_codeword[1]_of_feat[0]_1st_CD_sen_of_1st_ciphone (unsigned char)
+prob_of_codeword[1]_of_feat[0]_2nd_CD_sen_of_1st_ciphone (unsigned char)
+..
+prob_of_codeword[1]_of_feat[0]_1st_CD_sen_of_2nd_ciphone (unsigned char)
+prob_of_codeword[1]_of_feat[0]_2nd_CD_sen_of_2nd_ciphone (unsigned char)
+..
+]
+... 256 times ..
+Above repeats for each of the 4 features
+
+
+
+PHONE file:
+----------
+The phone file stores a list of phones and triphones used by the
+decoder. This is an ascii file
+It has 2 sections.
+The first section lists the CI phones in the models
+and consists of lines of the format
+AA      0       0       8       8
+
+"AA" is the CI phone, the first "0" indicates that it is a CI phone,
+the first 8 is the index of the CI phone, and the last 8 is the
+line number in the file.
+The second 0 is there for historical reasons.
+
+The second section lists TRIPHONES 
+and consists of lines of the format
+
+A(B,C)P -1 0 num num2
+
+"A" stands for the central phone, "B" for the left context, and
+"C" for the right context phone. The "P" stands for the position of
+the triphone and can take 4 values "s","b","i", and "e", standing
+for single word, word beginning, word internal, and word ending triphone.
+The -1 indicates that it is a triphone and not a CI phone. num 
+is the index of the CI phone "A", and num2 is the position of the
+triphone (or ciphone) in the list, essentially the number of the
+line in the file (beginning with 0).
+
+
+map file:
+-------
+The "map" file stores mapping table to show which senones each state of 
+each triphone are mapped to. This is also an ascii file with lines of the form
+AA(AA,AA)s<0>       4
+AA(AA,AA)s<1>      27
+AA(AA,AA)s<2>      69
+AA(AA,AA)s<3>      78
+AA(AA,AA)s<4>     100
+
+These lines indicate that the 0th state of the triphone "AA" in the
+context of "AA" and "AA" is modelled by th 4th senone associated
+with the CI phone AA. Note that the numbering is specific to the
+CI phone. So the 4th senone of "AX" would also be numbered 4 (but
+this should not cause confusion)
+
+
+chmm FILES
+-----------
+There is one *.chmm file per ci phone. Each stores the transition matrix
+associated with that partiular ci phone in following binary format.
+(Note all triphones associated with a ci phone share its transition matrix)
+(all numbers are 4 byte integers):
+
+-10     (a  header to indicate this is a tmat file)
+256     (no of codewords)
+5       (no of emitting states)
+6       (total no. of states, including non-emitting state)
+1       (no. of initial states. In fbs8 a state sequence can only begin 
+         with state[0]. So there is only 1 possible initial state)
+0       (list of initial states. Here there is only one, namely state 0)
+1       (no. of terminal states. There is only one non-emitting terminal state)
+5       (id of terminal state. This is 5 for a 5 state HMM)
+14      (total no. of non-zero transitions allowed by topology)
+[0 0 (int)log(tmat[0][0]) 0]   (source, dest, transition prob, source id)
+[0 1 (int)log(tmat[0][1]) 0]
+[1 1 (int)log(tmat[1][1]) 1]
+[1 2 (int)log(tmat[1][2]) 1]
+[2 2 (int)log(tmat[2][2]) 2]
+[2 3 (int)log(tmat[2][3]) 2]
+[3 3 (int)log(tmat[3][3]) 3]
+[3 4 (int)log(tmat[3][4]) 3]
+[4 4 (int)log(tmat[4][4]) 4]
+[4 5 (int)log(tmat[4][5]) 4]
+[0 2 (int)log(tmat[0][2]) 0]
+[1 3 (int)log(tmat[1][3]) 1]
+[2 4 (int)log(tmat[2][4]) 2]
+[3 5 (int)log(tmat[3][5]) 3]
+
+There are thus 65 integers in all, and so each *.chmm file should be
+65*4 = 260 bytes in size.
