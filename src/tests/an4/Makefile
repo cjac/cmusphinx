@@ -36,7 +36,7 @@
 # ====================================================================
 TOP=../../..
 DIRNAME=src/tests/an4
-BUILD_DIRS = an4
+BUILD_DIRS =
 ALL_DIRS= $(BUILD_DIRS)
 # H = cmd_ln_args.h fe_dump.h feat_dump.h new_fe_sp_dump.h live_dump.h metrics.h
 # LIVEDECSRCS = parse_args_file.c fe_dump.c feat_dump.c new_fe_sp_dump.c live_dump.c metrics.c
@@ -60,4 +60,4 @@ $(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
 
 an4_words_unigram:
 	rm -f gmake-an4-words-unigram.results
-	$(BINDIR)/batchmetrics ./an4_words.batch /lab/speech/sphinx4/data/an4/an4_s4 ./ARGS.an4_words.unigram > gmake-an4-words-unigram.results
+	$(BINDIR)/batchmetrics ./an4_words.batch /lab/speech/sphinx4/data/an4/an4_s4 ./ARGS.an4_words_unigram > gmake-an4-words-unigram.results
