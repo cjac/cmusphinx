@@ -265,6 +265,7 @@ int32 mgau_dump(mgau_model_t *g, int32 type)
 {
   int32 d, c, i;
   char* tmpstr;
+  mgau_t m;
   assert (g!=NULL);
   assert (g->mgau!=NULL);
   assert (g->mgau[0].mean!=NULL);
@@ -273,7 +274,6 @@ int32 mgau_dump(mgau_model_t *g, int32 type)
   tmpstr=ckd_calloc((mgau_veclen(g) * 20),sizeof(char));
 
   E_INFO("\n");
-  mgau_t m;
 
   if(type==MGAU_MEAN){
     for(d=0;d<mgau_n_mgau(g);d++){
