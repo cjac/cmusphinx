@@ -1,0 +1,2060 @@
+<HTML>
+<HEAD>
+<TITLE> Sphinx-II User Guide </TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0">
+<!--  BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#0000B0" -->
+
+<H1 align=center> Sphinx-II User Guide </H1>
+
+<center>
+<p>
+<a href="http://www.speech.cs.cmu.edu/sphinx/">CMU Sphinx Group</a><p>
+Original by Mosur Ravishankar (Ravi)<br>
+Maintained by Kevin A. Lenzo (<a href="mailto:lenzo@cs.cmu.edu">lenzo@cs.cmu.edu</a>)<p>
+School of Computer Science<br>
+Carnegie Mellon University<br>
+<strong>Copyright (c) 1997-2001 Carnegie Mellon University.</strong>
+<HR>
+This document is not complete, but should be helpful during construction.<br>
+Last updated 2001-03-29.
+<HR>
+</center>
+
+<H2 align=center> <U>Introduction</U> </H2>
+
+Sphinx2 is a decoding engine for the Sphinx-II speech recognition system developed at
+Carnegie Mellon University.  It can be used to build small, medium or large
+vocabulary applications.  It's main features are:
+<UL>
+<LI> Continuous speech decoding (as opposed to isolated word recognition)
+<LI> Speaker-independent (doesn't require the user to train the system)
+<LI> Ability to provide a single best or several alternative recognitions
+<LI> Semi-continuous acoustic models
+<LI> Bigram or trigram language models
+</UL>
+
+<P>
+Sphinx2 consists of a set of libraries that include core speech recognition functions as
+well as auxiliary ones such as low-level audio capture.  The libraries are written in
+C and have been compiled on several Unix platforms (DEC Alpha, Sun Sparc, HPs) and
+Pentium/PentiumPro PCs running WindowsNT or Windows95.  A number of demo applications
+based on this recognition engine are also provided.
+
+<P>
+Several features specifically intended for developing real applications have been
+included in Sphinx2.  For example, many aspects of the decoder can be reconfigured at
+run time.  New language models can be loaded or switched dynamically.  Similarly, new
+words and pronunciations can be added.  The audio input data can be automatically
+logged to files for any future analysis.
+
+<P>
+The rest of this document is structured as follows:
+<UL>
+<LI><A HREF="#sec_Sphinx2_sw">Sphinx2 Software</A>
+<LI><A HREF="#sec_models">The Recognition Engine</A>
+<LI><A HREF="#sec_api">The Application Programming Interface</A>
+  <UL>
+  <LI><A HREF="#sec_ad">Low-Level Audio Access</A>
+  <LI><A HREF="#sec_cont_ad">Continuous Listening and Silence Filtering</A>
+  <LI><A HREF="#sec_fbs">Speech-to-text Decoding</A>
+  <LI><A HREF="#sec_allphone_api">Allphone Decoding</A>
+  </UL>
+<LI><A HREF="#sec_demos">Application Examples</A>
+<LI><A HREF="#sec_Sphinx2_compile">Compiling the Libraries and Demos</A>
+<LI><A HREF="#sec_allphone">Allphone Mode</A>
+<LI><A HREF="#sec_timealign">Forced Time-Alignment Mode</A>
+<LI><A HREF="#sec_cmdline">Arguments Reference</A>
+  <UL>
+  <LI><A HREF="#sec_cmdline_searchconfig">Decoder Configuration</A>
+  <LI><A HREF="#sec_cmdline_beam">Beam Widths</A>
+  <LI><A HREF="#sec_cmdline_langwt">Language Weights/Penalties</A>
+  <LI><A HREF="#sec_cmdline_outputspec">Output Specifications</A>
+  <LI><A HREF="#sec_cmdline_list">Alphabetical List of Arguments</A>
+  </UL>
+<LI><A HREF="#sec_faq">Frequently Asked Questions</A>
+  <UL>
+  <LI><A HREF="#sec_speed">Speeding up Decoding</A>
+  <LI><A HREF="#sec_lmdump">Building LM Dump Files</A>
+  <LI><A HREF="#sec_sendump">Building 8-Bit Senone Dump Files</A>
+  </UL>
+</UL>
+
+<HR>
+
+
+<H3><A NAME="sec_models"><U>Models for Running Sphinx2 Applications</U></A></H3>
+
+In order to run Sphinx2 applications, several model files are needed.  Applications
+must configure these for the decoder through several <A HREF="#sec_cmdline">arguments</A>
+that are described later in this document.  The decoder must be initialized with
+the following databases:
+<UL>
+<LI><strong><em>Acoustic Model</em></strong> :
+Several files that make up a semi-continuous acoustic model set.  The decoder is
+initialized with <strong><em>one</em></strong> such model.  Acoustic
+models produced by the Sphinx-II trainer store probability values in 32-bit
+<strong><code>int</code></strong> variables.  The memory requirements can be
+considerably reduced by converting the senone PDF values to 8-bit quantities (see
+Section <A HREF="#sec_sendump">Building 8-Bit Senone Dump Files</A>).
+
+<P>
+
+<LI><strong><em>Pronunciation Dictionary</em></strong> :
+The decoder must be initialized with <strong><em>one</em></strong> pronunciation
+dictionary that defines all the words of interest to the application and the
+phoneme pronunciation for each word.  For the chosen dictionary and acoustic model,
+there is also an associated <em>mapping</em> information that defines the <em>senone
+mapping</em> for each triphone state encountered in the dictionary.  (The mapping
+information is usually stored in a <strong><code>.phone</code></strong> and a
+<strong><code>.map</code></strong> file.)
+
+<P>
+
+It is not necessary to create a new
+senone mapping for every distinct dictionary.  Smaller dictionaries can use the
+senone mapping created for larger dictionaries.  However, the mapping information
+must be consistent with the acoustic model being used.
+
+<P>
+
+<LI><strong><em>Language Model(s)</em></strong> :
+Sphinx2 accepts <em>word trigram</em> language model (LM) files.  One can load multiple
+LMs into the decoder during initialization.  (At least one must be loaded.)
+An application can even create LM files dynamically at run time and load them
+on-the-fly.  However, only one LM can be active at a time.  The active vocabulary
+for each utterance is given by the <em>intersection</em> of the pronunciation
+dictionary and the currently active LM.
+
+<P>
+
+Large LMs load very slowly.  The delay can be avoided by providing LM <em>dump</em>
+files along with the original LMs.  The Sphinx2 decoder automatically creates LM dump
+files for large LMs (see Section <A HREF="#sec_lmdump">Building LM
+Dump Files</A>).
+</UL>
+
+There are also other databases, such as pre-recorded speech data, which are generally
+only accessible within CMU-SCS.
+
+<P><br>
+
+<H2 align=center><A NAME="sec_engine"><U>The Recognition Engine</U></A></H2>
+
+The core speech decoder operates on finite-length segments of speech or
+<em>utterances</em>, one utterance at a time.  An utterance can be upto some tens of
+seconds long.  (Though most human-computer interactions would probably proceed in
+short phrases or sentences.)
+
+<H3><U>Basic Recognition</U></H3>
+
+Each utterance is decoded using upto three <em>passes</em>, two of which are optional:
+<UL>
+<LI> A <em>lexical-tree Viterbi</em> search.  It produces a recognition result as well
+as a <em>word lattice</em>.
+<LI> An optional <em>flat-structured</em> Viterbi search restricted to the word lattice
+from above.  It produces a new recognition result and word lattice.
+<LI> An optional <em>global best-path</em> search of the word lattice that produces a
+final result.
+</UL>
+The optional passes improve accuracy.  However, the second pass (the flat Viterbi
+search) can increase latency significantly.
+
+The active passes are configured once at initialization.  From then on, the presence
+of the multiple passes is invisible to the application.  It only receives the result
+from the final pass.  However, the word lattice can subsequently searched for additional,
+alternative--or <em>N-best</em>--hypotheses by the application.
+
+<P>Details of the recognition engine can be found in
+<A HREF="ftp://reports.adm.cs.cmu.edu/usr/anon/1996/CMU-CS-96-143.ps">Ravishankar's Ph.D
+thesis poscript file</A>.
+
+
+<P><HR width=50%>
+
+<H3><U>Configuring the Active Language Model and Vocabulary</U></H3>
+
+Several language models can be loaded into the recognizer, but exactly one is active
+during the recognition of any utterance.  Language models are identified by a string
+<em>name</em>.  Typically, the main language model for an application in the
+<em>unnamed</em> one whose name is the empty string.
+
+<P>
+The <em>active vocabulary</em> is the <em>intersection</em> of the words in
+the active language model and the pronunciation dictionary.  The recognizer can only
+output words from this intersection.
+
+<P>
+The recognition engine can be recognfigured in several ways, but generally only
+<em>in between</em> utterances:
+<UL>
+<LI>The active language model can be switched in between utterances.
+<LI>New words and their pronunciations can be added to the dictionary in between
+utterances.  The words are automatically added to the <em>unnamed</em> language model
+as unigrams.  (<em>This is a HACK.  There ought to be a mechanism for adding a word
+to a specified language model.</em>)
+</UL>
+
+
+<P><HR width=50%>
+
+<H3><U>Forced Alignment and Allphone Recognition Modes</U></H3>
+
+The recognizer can be run to <em>time-align</em> given transcripts to input
+speech, producing time segmentations for the input transcripts, as well as identifying
+silence regions.  Time-alignment is only available in batch mode.  It is covered in
+more detail below.
+<P></P>
+
+Sphinx2 can also be used in <em>allphone</em> mode to produce a purely phonetic
+recognition instead of the normal word recognition.  The allphone recognition API is
+available to user-written applications as well.  However, the input can only be from
+pre-recorded files.
+<P></P>
+
+<b>Note</b>: The recognition engine is configured in one of <em>normal</em>,
+<em>forced-alignment</em>, or <em>allphone</em> modes during initialization.  It
+cannot be dynamically switched between these modes later.
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_api"><U>The Application Programming Interface</U></A></H2>
+
+There are three main groups of functions or application programming interface
+(API) available with Sphinx2: raw audio access, continuous listening/silence
+filtering, and the core decoder itself.
+
+<P>
+As we shall see below, none of the core decoder API functions directly accesses
+any audio device.  Rather, the application is responsible for collecting
+audio data to be decoded.  This gives applications the freedom to decode audio
+data originating at any source at all---standard audio devices, pre-recorded files,
+data from a remote location over a network, etc.  Since most applications
+ultimately need to access common audio devices and to perform some form of silence
+filtering to detect speech/no-speech conditions, the two additional modules are
+provided with Sphinx2 as a convenience.
+
+<P>
+
+(<strong>NOTE:</strong> The APIs often use <strong><code>int32</code></strong>
+and <strong><code>int16</code></strong> for 32-bit and 16-bit integer types.
+These are <em>#defined</em> at compile time, usually as
+<strong><code>int</code></strong> and <strong><code>short</code></strong>,
+respectively.)
+
+<P><br>
+
+
+
+<H3><A NAME="sec_ad"><U>Low-Level Audio Access</U></A></H3>
+
+No two platforms provide the same interface to audio devices.  To accommodate this
+diversity, the platform-dependent code is encapsulated within a generic interface
+for low-level audio recording and playback.  The following functions are for recording.
+Complete details can be found in
+<strong><code>include/ad.h</code></strong>.
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_open</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Opens an audio device for recording.  Returns a <em>handle</em>
+to the opened device.  (Currently 16KHz, 16-bit PCM only.)
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_start_rec</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Starts recording on the audio device associated with the specified handle.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_read</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Reads upto a specified number of samples into a given buffer.  It returns the number
+of samples actually read, which may be less than the number requested.  In particular
+it may return 0 samples if no data is available.  Most systems typically have a limited
+amount of internal buffering (at most a few seconds).  Hence, this function must be
+called frequently enough to avoid buffer overflow.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_stop_rec</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Stops recording.  (However, the system may still have internally buffered data
+remaining to be read.)
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_close</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Closes the audio device associated with the specified audio handle.
+</TD>
+</TR>
+
+</TABLE>
+
+See <strong><code>examples/adrec.c</code></strong>
+and <strong><code>examples/adpow.c</code></strong>
+for two examples demonstrating the use of the above functions.
+
+<P>
+
+
+
+A similar set of playback functions are provided (<em>currently implemented only on
+WindowsNT/Windows95 PC platforms</em>):
+
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_open_play</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Opens an audio device for playback.  Returns a <em>handle</em>
+to the opened device.  (Currently 16KHz, 16-bit PCM only.)
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_start_play</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Starts playback on the device associated with the given handle.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_write</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Sends a buffer of samples for playback.  The function may
+accept fewer than the samples provided, depending on available internal buffers.
+It returns the number of samples actually accepted.  The application must provide data
+sufficiently rapidly to avoid breaks in playback.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_stop_play</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+End of playback.  Playback is continued until all buffered data has been consumed.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>ad_close_play</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Closes the audio device associated with the specified handle.
+</TD>
+</TR>
+
+</TABLE>
+
+Finally, the audio library includes a function
+<strong><code>ad_mu2li</code></strong> for converting 8-bit mu-law samples into
+16-bit linear PCM samples.
+<P>
+
+See <strong><code>examples/adplay.c</code></strong>
+for an example that plays back audio samples from a given input file.
+
+<P>
+
+The implementation of the audio API for various platforms is contained in
+analog-to-digital library for the given architecture.
+
+<P><HR width=50%>
+
+
+
+<H3><A NAME="sec_cont_ad"><U>Continuous Listening and Silence Filtering</U></A></H3>
+
+As mentioned earlier, Sphinx2 can only decode utterances that are limited to less than
+about 30 sec at a time.  However, one often wants to leave the audio recording
+running continuously and automatically determine utterance boundaries based on
+pauses in the input speech.  The continuous listening module in Sphinx2 provides the
+mechanisms for this purpose.
+
+<P>
+The silence filtering module is interposed between the raw audio input source
+and the application.  The application calls the function
+<strong><code>cont_ad_read</code></strong> instead of directly reading the raw A/D
+input source (e.g., via the <strong><code>ad_read</code></strong> function described
+<A HREF="#sec_ad">above</A>).
+<strong><code>cont_ad_read</code></strong> returns only those segments of
+input audio that it determines to be non-silence.  Additional timestamp information
+is provided to inform the application about silence regions that have been dropped.
+
+
+<P>
+
+The complete continuous listening API is defined in
+<strong><code>include/cont_ad.h</code></strong></A>
+and is summarized below:
+
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_init</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Associates a new continuous listening module instance with a specified raw A/D
+<em>handle</em> and a corresponding <em>read</em> function pointer.  E.g., these
+may be the handle returned by <strong><code>ad_open</code></strong> and function
+<strong><code>ad_read</code></strong> described <A HREF="#sec_ad">above</A>.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_calib</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Calibrates the background silence level by reading the raw audio for a few seconds.
+It should be done once immediately after <strong><code>cont_ad_init</code></strong>,
+and after any environmental change.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_read</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Reads and returns the next available block of non-silence data in a given buffer.
+(Uses the <em>read</em> function and <em>handle</em> supplied to
+<strong><code>cont_ad_init</code></strong> to obtain the raw A/D data.)  More details
+are provided below.
+
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_reset</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Flushes any data buffered inside the module.  Useful for discarding accumulated,
+but unprocessed speech.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_set_thresh</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Useful for adjusting the silence and speech thresholds.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_detach</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Detaches the specified continuous listening module from the associated audio device.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_attach</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Attaches the specified continuous listening module to the specified audio device.
+(Similar to <strong><code>cont_ad_init</code></strong>, but without the need to
+calibrate the audio device.)
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>cont_ad_close</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Closes the continuous listening module.
+</TD>
+</TR>
+
+</TABLE>
+
+Some more details on the <strong><code>cont_ad_read</code></strong> function:
+Operationally, every call to <strong><code>cont_ad_read</code></strong> causes the
+module to read the associated raw A/D source (as much data as possible and available),
+scan it for speech (non-silence) segments and enqueue them internally.  It returns
+the first available segment of speech data, if any.  In addition to returning
+non-silence data, the function also updates a couple of parameters that may be of
+interest to the application:
+<UL>
+<li> The <em>signal level</em> for the most recently read data.  This is the
+    <strong><code>siglvl</code></strong> member variable of the
+    <strong><code>cont_ad_t</code></strong> structure returned by
+    <strong><code>cont_ad_init()</code></strong>.
+</li>
+<li> A <em>timestamp</em> value indicating the total number of raw audio samples
+    that have been consumed at the end of the most recent
+    <strong><code>cont_ad_read()</code></strong> call.  This is in
+    the <strong><code>read_ts</code></strong> member variable of the
+    <strong><code>cont_ad_t</code></strong> structure.
+</li>
+</UL>
+So, for example, if on two successive calls to
+<strong><code>cont_ad_read</code></strong>, the timestamp is 100000 and 116000,
+respectively, the application can determine that 1 sec (16000 samples) of silence
+have been gobbled up between the two calls.
+<P>
+
+Silence regions aren't chopped off completely.  About 50-100ms worth of silence
+is preserved at either end of a speech segment and passed on to the application.
+<P>
+
+Finally, the continuous listener won't concatenate speech segments separated by
+silence.  That is, the data returned by a single call to
+<strong><code>cont_ad_read</code></strong> will not span raw audio separated by
+silence that has been gobbled up.
+<P>
+
+<strong><code>cont_ad_read</code></strong> must be called frequently enough to avoid
+loss of input data owing to buffer overflow.  The application is responsible for
+turning actual recording on and off, if applicable.  In particular, it must ensure
+that recording is on during calibration and normal operation.
+
+<P>
+
+See <strong><code>examples/cont_adseg.c</code></strong>
+for an example that uses the continuous listening module to segment live audio input
+into separate utterances.  Similarly,
+<strong><code>examples/cont_fileseg.c</code></strong>
+segments a given pre-recorded file containing audio data into utterances.
+
+<P>
+
+The implementation of continuous listening is in
+<strong><code>src/libfe/cont_ad.c</code></strong>.
+Applications that use this module are required to link with
+<strong><code>libfe</code></strong> and <strong><code>libcommon</code></strong>
+(and <strong><code>libad</code></strong> if necessary).
+
+
+<P><HR width=50%>
+
+
+
+<H3><A NAME="sec_fbs"><U>Speech-to-Text Decoding</U></A></H3>
+
+There are several aspects to speech decoding: initialization, basic speech
+decoding, dynamic management of domains (LMs), logging and book-keeping, etc.
+This section briefly describes the related Sphinx2 API functions.  The complete
+specification can be found in
+<strong><code>include/fbs.h</code></strong>.
+
+<P>
+
+
+
+The two functions pertaining to initialization and final cleanup are:
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>fbs_init</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Initializes the decoder.  The input arguments (in the form of the common
+command line argument list <strong><code>argc,argv</code></strong>) specify the
+input databases (acoustic, lexical, and language models) and various other
+decoder configuration options.  (See <A HREF="#sec_cmdline">Arguments Reference</A>.)
+If batch-mode processing is indicated
+(see <A HREF="#sec_cmdline_searchconfig"><strong><code>-ctlfn</code></strong></A>
+option below) it happens as part of this initialization.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>fbs_end</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Cleans up the internals of the decoder before the application exits.
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+Sphinx2 applications can use the following functions to decode speech into text,
+one utterance at a time:
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_begin_utt</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Begins decoding the next utterance.  The application can assign an <em>id</em>
+string to it.  If not, one is automatically created and assigned.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_rawdata</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Processes (decodes) the next chunk of raw A/D data in the current utterance.  This
+can be <em>non-blocking</em>, in which case much of the data may be simply queued
+internally for later processing.  Note that only 16-bit linear PCM-encoded samples
+can be processed.  The A/D library provides a separate function
+<strong><code>ad_mu2li</code></strong> for converting 8-bit mu-law encoded data
+into 16-bit PCM format.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_cepdata</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+This is an alternative to <strong><code>uttproc_rawdata</code></strong> if the
+application wishes to decode <em>cepstrum</em> data instead of raw A/D data.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_end_utt</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Indicates that no more input data is forthcoming in the current utterance.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_result</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Finishes processing internally queued up data and returns the final recognition
+result string.  It can also be <em>non-blocking</em>, in which case it may return
+after processing only some of the internally queued up data.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_result_seg</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Like <strong><code>uttproc_result</code></strong>, but returns word segmentation
+information (measured in 10msec frames) instead of the recognition string.  One
+can use either this function or <strong><code>uttproc_result</code></strong> to
+finish decoding, but not both.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_partial_result</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Before the final result is available, this function can be used to obtain the
+most up-to-date partial result (for example, as feedback to the user).
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_partial_result_seg</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Like <strong><code>uttproc_partial_result</code></strong>, but returns word
+segmentation information (measured in 10msec frames) instead of the recognition
+string.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_abort_utt</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+This is an alternative to <strong><code>uttproc_end_utt</code></strong> that
+terminates the current utterance.  No further recognition results can be obtained for it.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>search_get_alt</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Returns N-best hypotheses for the utterance (see further details in
+<strong><code>include/fbs.h</code></strong>).
+</TD>
+</TR>
+
+</TABLE>
+The <em>non-blocking</em> option in some of the above functions is useful if
+decoding is slower than real-time, and there is a chance of losing input A/D
+data if processing them takes too long.  In the non-blocking mode, the data may
+simply be queued up internally and processed only after all the input data for
+the current utterance has been acquired.  Similarly, the non-blocking option in
+<strong><code>uttproc_result</code></strong> allows the application to respond
+to user-interface events in real-time.
+
+<P>
+
+The application code fragment for decoding one utterance typically looks as follows:
+<pre>
+    uttproc_begin_utt (....)
+    while (not end of utterance) {   /* indicated externally, somehow */
+	read any available A/D data; /* possibly 0 length */
+        uttproc_rawdata (A/D data read above, non-blocking);
+    }
+    uttproc_end_utt ();
+    uttproc_result (...., blocking);
+</pre>
+See demo applications in
+<strong><code>examples</code></strong> for several
+variations:
+
+<P><br>
+
+
+Multiple, <em>named</em> LMs can be resident with the decoder module, either
+read in during initialization, or dynamically at run time.  However, exactly
+<em>one</em> LM must be selected and active for decoding any given utterance.
+As mentioned earlier, the active vocabulary for each utterance is given by the
+<em>intersection</em> of the pronunciation dictionary and the currently active
+LM.  The following auxiliary functions allow the application to control language
+modelling related aspects of the decoder:
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>lm_read</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Reads in a new language model from a given file, and is associated with a given
+name.  The application only needs this function to create and load LMs
+<em>dynamically</em> at run time, rather than at initialization.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>lm_delete</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Deletes the named LM from the decoder repertory.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_set_lm</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Sets the currently active LM to the named one.  Must only be invoked in-between
+utterances.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_set_context</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Sets a two-word history for the next utterance to be decoded, giving its first
+words additional context that can be exploited by the LM.
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+The raw input data for each utterance and/or the cepstrum data derived from it
+can be logged to specified directories:
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_set_rawlogdir</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Specifies the directory to which utterance A/D data should be logged.  An
+utterance is logged to file &ltid&gt.raw, where &ltid&gt is the string
+assigned to it by <strong><code>uttproc_begin_utt</code></strong>.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_set_mfclogdir</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Specifies the directory to which utterance cepstrum data should be logged.
+Like A/D files above, an utterance is logged to file &ltid&gt.mfc.
+</TD>
+</TR>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_get_uttid</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Retrieves the string <em>id</em> for the current or most recent utterance.
+Useful for locating the logged A/D data and cepstrum files, for example.
+</TD>
+</TR>
+
+</TABLE>
+
+
+<P><HR width=50%>
+
+
+
+<H3><A NAME="sec_allphone_api"><U>Allphone Decoding</U></A></H3>
+
+The API for allphone decoding includes a single function that supports recognition
+from pre-recorded files:
+<TABLE>
+
+<TR>
+<TD nowrap VALIGN=TOP>
+<LI><strong><code>uttproc_allphone_cepfile</code></strong>:
+</TD>
+<TD VALIGN=TOP>
+Performs allphone recognition on the given file and returns the resulting phone
+segmentation.
+</TD>
+</TR>
+
+</TABLE>
+
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_demos"><U>Application Examples</U></A></H2>
+
+Two simple speech decoding applications, implemented with a tty-based interface as
+well as with a Windows interface, are included in directory
+<strong><code>examples</code></strong>:
+<UL>
+<LI><strong><code>sphinx2-ptt</code></strong>:
+demonstrates an application in which the user explicitly indicates the start and
+end of each utterance using the &lt<code>RETURN</code>&gt keyboard key.
+(On WindowsNT/Windows95 systems, the ending &lt<code>RETURN</code>&gt is not
+used.  Instead, the utterance is terminated after a fixed duration.)
+<p>
+<LI><strong><code>sphinx2-continuous</code></strong>:
+demonstrates the interaction of continuous listening and decoding.  An endless
+audio input stream is automatically segmented into utterances using the continuous
+listening module, and the utterances are decoded.  The timestamps returned by the
+continuous listening module are used to locate gaps in speech data of at least 1 sec,
+thus marking the utterance boundaries.
+</UL>
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_Sphinx2_compile"><U>Compiling the Libraries and Demos</U></A></H2>
+
+To compile Sphinx2 libraries on Unix platforms:
+<UL>
+<LI> Unpack the distribution
+<LI> Run <code>sh autogen.sh</code> if necessary
+<LI> Run <code>./configure</code>
+<LI> <code>make</code>
+<LI> <code>make test</code>
+<LI> <code>make install</code>
+</UL>
+
+<P><HR>
+
+
+<H2 align=center><A NAME="sec_allphone"><U>Allphone Mode</U></A></H2>
+
+Sphinx2 runs in allphone mode if the <b><code>-allphone</code></b> flag is
+<b><code>TRUE</code></b> during the initialization.  In this mode, no
+language model should be provided; i.e., the <strong><code>-lmfn</code></strong>
+and <strong><code>-lmctlfn</code></strong> arguments should be omitted.
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_timealign"><U>Forced Time-Alignment Mode</U></A></H2>
+
+Sphinx2 (in batch mode) can be used for aligning transcripts to speech, in order to
+obtain time-segmentations at the word, phone, or state levels.  In this mode, no
+language model should be provided; i.e., the <strong><code>-lmfn</code></strong>
+and <strong><code>-lmctlfn</code></strong> arguments should be omitted.  The
+set of utterances (speech data) is given by the <strong><code>-ctlfn</code></strong>
+argument, as usual.  In addition, the corresponding transcripts should be given
+in a parallel file, which should be the <strong><code>-tactlfn</code></strong>
+argument.  Each line in this file should contain the transcript for one utterance
+(and nothing else; in particular, no utterance-id).  The first line of this file 
+should contain just the string <strong><code>*align_all*</code></strong>.
+<P>
+
+Alignments at the word, phone and state levels can be obtained by setting the flags
+<strong><code>-taword</code></strong>, <strong><code>-taphone</code></strong>, and
+<strong><code>-tastate</code></strong> individually to
+<strong><code>TRUE</code></strong> or <strong><code>FALSE</code></strong>.  Alignments
+are written to stdout (the log file).
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_cmdline"><U>Arguments Reference</U></A></H2>
+
+The core Sphinx2 decoding engine accepts a long list of arguments during
+initialization.  These are the arguments to the library function
+<strong><code>fbs_init(int argc, char *argv[])</code></strong> defined in
+<strong><code>include/fbs.h</code></strong>.
+(Applications built around the Sphinx2 libraries, of course, can have additional
+arguments.)  Many arguments, such as the input model databases, must be
+specified by the user.  We cover the more important ones below (the remaining
+have reasonable default values):
+
+<P>
+
+<H3><A NAME="sec_cmdline_inputdb"><U>Input Model Databases</U></A></H3>
+
+<TABLE border>
+
+<TR>
+<TH>Flag</TH>
+<TH>Description</TH>
+<TH>Default</TH>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-lmfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional DARPA format bigram/trigram backoff LM file with the empty string as its name.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-lmctlfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional LM control file with a list of LM files and associated names
+(one line per entry).  This is how multiple LMs can be loaded during initialization.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-kbdumpdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional directory containing precompiled binary versions of LM files
+(see <A HREF="#sec_lmdump">Building LM Dump Files</A>).
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-dictfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Main pronunciation dictionary file.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-oovdictfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional out-of-vocabulary (OOV) pronunciation dictionary.  These are added to the
+unnamed LM (read from <strong><code>-lmfn</code></strong> file) with unigram
+probability given by <strong><code>-oovugprob</code></strong>.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-ndictfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional "noise" words pronunciation dictionary.  Noise words are not part of any
+LM and, like silence, can be inserted transparently anywhere in the utterance.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-phnfn</code></strong><br>
+<strong><code>-mapfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Phone and map files with senone mapping information for the given dictionary and
+acoustic model.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-hmmdir</code></strong><br>
+<strong><code>-hmmdirlist</code></strong><br>
+<strong><code>-cbdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Directory with Sphinx-II semi-continuous HMM acoustic models and codebooks.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-sendumpfn</code></strong><br>
+<strong><code>-8bsen</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Optional 8-bit senone model file created from the 32-bit HMM models
+(see <A HREF="#sec_sendump">Building 8-Bit Senone Dump Files</A>).
+<strong><code>-8bsen</code></strong> should be <strong><code>TRUE</code></strong> if
+the 8-bit senones are used.
+</TD>
+<TD VALIGN=TOP>
+None.
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+<H3><A NAME="sec_cmdline_searchconfig"><U>Decoder Configuration</U></A></H3>
+
+<TABLE border>
+
+<TR>
+<TH>Flag</TH>
+<TH>Description</TH>
+<TH>Default</TH>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-ctlfn</code></strong><br>
+<strong><code>-ctloffset</code></strong><br>
+<strong><code>-ctlcount</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Batch-mode control file listing utterance files (without their file-extension)
+to decode.  <strong><code>-ctloffset</code></strong> is the number of initial
+utterances in the file to be skipped, and <strong><code>-ctlcount</code></strong>
+the number to be processed (after the skip, if any).
+<strong><code>-ctlfn</code></strong> must not be specified for live-mode or
+application-driven operation.
+</TD>
+<TD VALIGN=TOP>
+None<br>
+0<br>
+All<br>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-datadir</code></strong><br>
+</TD>
+<TD VALIGN=TOP>
+If the control file (-ctlfn argument) entries are relative pathnames, an optional
+directory prefix for them may be specified using this argument.
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-allphone</code></strong><br>
+</TD>
+<TD VALIGN=TOP>
+Should be <strong><code>TRUE</code></strong> to configure the recognition engine for
+allphone mode operation.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-tactlfn</code></strong><br>
+</TD>
+<TD VALIGN=TOP>
+Input transcript file, parallel to the control file (<strong><code>-ctlfn</code></strong>)
+in forced alignment mode.
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-adcin</code></strong><br>
+<strong><code>-adcext</code></strong><br>
+<strong><code>-adchdr</code></strong><br>
+<strong><code>-adcendian</code></strong>
+</TD>
+<TD VALIGN=TOP>
+In batch mode, <strong><code>-adcin</code></strong> selects A/D
+(<strong><code>TRUE</code></strong>) or cepstrum input data
+(<strong><code>FALSE</code></strong>).
+If <strong><code>TRUE</code></strong>, <strong><code>-adcext</code></strong>
+is the file extension to be appended to names listed in the
+<strong><code>-ctlfn</code></strong> argument file,
+<strong><code>-adchdr</code></strong> the number of bytes of header in each
+input file, and <strong><code>-adcendian</code></strong> their byte ordering:
+0 for big-endian, 1 for little-endian.  With these flags, most A/D data file
+formats can be processed directly.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong><br>
+<strong><code>raw</code></strong><br>
+0<br>
+1
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-normmean</code></strong><br>
+<strong><code>-nmprior</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Cepstral mean normalization (CMN) option.  If <strong><code>-nmprior</code></strong>
+is <strong><code>FALSE</code></strong>, CMN computed on current utterance only
+(usually batch mode), otherwise based on past history (live mode).
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong><br>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-compress</code></strong><br>
+<strong><code>-compressprior</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Silence deletion (within decoder, not related to <A HREF="#sec_cont_ad">continuous
+listening</A>).  If <strong><code>-compressprior</code></strong> is
+<strong><code>FALSE</code></strong>, based on current utterance statistics
+(batch mode), otherwise based on past history (live mode).
+<strong><code>-compress</code></strong> should be
+<strong><code>FALSE</code></strong> if continuous listening is used.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong><br>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-agcmax</code></strong><br>
+<strong><code>-agcemax</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Automatic gain control (AGC) option.  In batch mode <em>only</em>
+<strong><code>-agcmax</code></strong> should be <strong><code>TRUE</code></strong>,
+and in live mode <em>only</em> <strong><code>-agcemax</code></strong>.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong><br>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-live</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Forces some live mode flags: <strong><code>-nmprior</code></strong>
+<strong><code>-compressprior</code></strong> and
+<strong><code>-agcemax</code></strong> to <strong><code>TRUE</code></strong>
+if any AGC is on.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-samp</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Sampling rate; must be 8000 or 16000.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>16000</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-fwdflat</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Run flat-lexical Viterbi search after tree-structured pass (for better
+accuracy).  Usually <strong><code>FALSE</code></strong> in live mode.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-bestpath</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Run global best path search over Viterbi search word lattice output (for better
+accuracy).
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-compallsen</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Compute all senones, whether active or inactive, in each frame.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-latsize</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Word lattice entries to be allocated.  Longer sentences need larger lattices.
+</TD>
+<TD VALIGN=TOP>
+50000
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+<H3><A NAME="sec_cmdline_beam"><U>Beam Widths</U></A></H3>
+
+<TABLE border>
+
+<TR>
+<TH>Flag</TH>
+<TH>Description</TH>
+<TH>Default</TH>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-top</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Number of codewords computed per frame.  Usually, narrowed to 1 in live mode.
+</TD>
+<TD VALIGN=TOP>
+4
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-beam</code></strong><br>
+<strong><code>-npbeam</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Main pruning thresholds for tree search.  Usually narrowed down to 2e-6 in live mode.
+</TD>
+<TD VALIGN=TOP>
+1e-6<br>
+1e-6
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-lpbeam</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Additional pruning threshold for <em>transitions to</em> leaf nodes of lexical tree.
+Usually narrowed down to 2e-5 in live mode.
+</TD>
+<TD VALIGN=TOP>
+1e-5
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-lponlybeam</code></strong><br>
+<strong><code>-nwbeam</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Yet more pruning thresholds for leaf nodes and exits from lexical tree.
+Usually narrowed down to 5e-4 in live mode.
+</TD>
+<TD VALIGN=TOP>
+3e-4<br>
+3e-4
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-fwdflatbeam</code></strong><br>
+<strong><code>-fwdflatnwbeam</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Main and word-exit pruning thresholds for the optional, flat lexical Viterbi search.
+</TD>
+<TD VALIGN=TOP>
+1e-8<br>
+3e-4
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-topsenfrm</code></strong><br>
+<strong><code>-topsenthresh</code></strong>
+</TD>
+<TD VALIGN=TOP>
+No. of lookahead frames for predicting active base phones.  (If &lt=1, all base phones
+assumed to be active every frame.)  <strong><code>-topsenthresh</code></strong> is
+log(pruning threshold) applied to raw senone scores to determine active phones in each
+frame.
+</TD>
+<TD VALIGN=TOP>
+1<br>
+-60000
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+<H3><A NAME="sec_cmdline_langwt"><U>Language Weights/Penalties</U></A></H3>
+
+<TABLE border>
+
+<TR>
+<TH>Flag</TH>
+<TH>Description</TH>
+<TH>Default</TH>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-langwt</code></strong><br>
+<strong><code>-fwdflatlw</code></strong><br>
+<strong><code>-rescorelw</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Language weights applied during lexical tree Viterbi search, flat-structured Viterbi
+search, and global word lattice search, respectively.
+</TD>
+<TD VALIGN=TOP>
+6.5<br>
+8.5<br>
+9.5
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-ugwt</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Unigram weight for interpolating unigram probabilities with uniform distribution.
+Typically in the range 0.5-0.8.
+</TD>
+<TD VALIGN=TOP>
+1.0
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-inspen</code></strong><br>
+<strong><code>-silpen</code></strong><br>
+<strong><code>-fillpen</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Word insertion penalty or probability (for words in the LM),
+insertion penalty for the silence word, and
+insertion penalty for noise words (from <strong><code>-ndictfn</code></strong> file) if any.
+</TD>
+<TD VALIGN=TOP>
+0.65<br>
+0.005<br>
+1e-8
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-oovugprob</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Unigram probability (logprob) for OOV words from
+<strong><code>-oovdictfn</code></strong> file, if any.
+</TD>
+<TD VALIGN=TOP>
+-4.5
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+
+
+<H3><A NAME="sec_cmdline_outputspec"><U>Output Specifications</U></A></H3>
+
+<TABLE border>
+
+<TR>
+<TH>Flag</TH>
+<TH>Description</TH>
+<TH>Default</TH>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-matchfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Filename to which final recognition string for each utterance written.
+(Old format, word-id at the end.)
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-matchsegfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Like <strong><code>-matchfn</code></strong>, but contains word segmentation
+info: <em>startframe #frames word</em>...
+(New format, word-id at the beginning.)
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-reportpron</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Causes word pronunciation to be included in output files.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-rawlogdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+If specified, logs raw A/D input samples for each utterance to the indicated directory.
+(One file per utterance, named &ltuttid&gt.raw.)
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-mfclogdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+If specified, logs cepstrum data for each utterance to the indicated directory.
+(One file per utterance, named &ltuttid&gt.mfc.)
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-dumplatdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+If specified, dumps word lattice for each utterance to a file in this directory.
+</TD>
+<TD VALIGN=TOP>
+None
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-logfn</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Filename to which decoder logging information is written.
+</TD>
+<TD VALIGN=TOP>
+stdout/stderr
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-backtrace</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Includes detailed word backtrace information in log file.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-nbest</code></strong>
+</TD>
+<TD VALIGN=TOP>
+No. of N-best hypotheses to be produced.  Currently, this flag is only useful in batch
+mode.  But an application can always directly invoke
+<A HREF="#sec_fbs"><strong><code>search_get_alt</code></strong></A> to obtain them.
+Also, the current implementation is lacking in some details (e.g., in returning
+detailed scores).
+</TD>
+<TD VALIGN=TOP>
+0
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-nbestdir</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Directory to which N-best files written (one/utterance).
+</TD>
+<TD VALIGN=TOP>
+Current dir.
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
+<strong><code>-taword</code></strong><br>
+<strong><code>-taphone</code></strong><br>
+<strong><code>-tastate</code></strong>
+</TD>
+<TD VALIGN=TOP>
+Whether word, phone, and state alignment output should be produced when running
+in forced alignment mode.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>TRUE</code></strong><br>
+<strong><code>TRUE</code></strong><br>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+</TABLE>
+
+<P><br>
+
+Finally, one of the arguments can be:
+<strong><code>-argfile</code></strong> <em>filename</em>.
+This causes additional arguments to be read in from the given
+file.  Lines beginning with the '#' character in this file are ignored.
+Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
+
+<P><br>
+
+<H3><A NAME="sec_cmdline_list"><U>Alphabetical List of Arguments</U></A></H3>
+
+<TABLE>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">8bsen</A>:</TD>
+<TD VALIGN=TOP>Use 8-bit senone dump file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">adcendian</A>:</TD>
+<TD VALIGN=TOP>A/D input file byte-ordering.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">adcext</A>:</TD>
+<TD VALIGN=TOP>A/D input file extension.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">adchdr</A>:</TD>
+<TD VALIGN=TOP>No. bytes of header in A/D input file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">adcin</A>:</TD>
+<TD VALIGN=TOP>Input file contains A/D samples or cepstra (TRUE/FALSE).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">agcemax</A>:</TD>
+<TD VALIGN=TOP>Compute AGC (max C0 normalized to 0; estimated, live mode).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">agcmax</A>:</TD>
+<TD VALIGN=TOP>Compute AGC (max C0 normalized to 0 based on current utterance).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">argfile</A>:</TD>
+<TD VALIGN=TOP>Arguments file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">backtrace</A>:</TD>
+<TD VALIGN=TOP>Provide detailed backtrace in log file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">beam</A>:</TD>
+<TD VALIGN=TOP>Main pruning beamwidth.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">bestpath</A>:</TD>
+<TD VALIGN=TOP>Run global best path algorithm on word lattice.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">cbdir</A>:</TD>
+<TD VALIGN=TOP>Codebooks directory.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">compallsen</A>:</TD>
+<TD VALIGN=TOP>Compute all senones.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">compress</A>:</TD>
+<TD VALIGN=TOP>Remove silence frames (based on C0 statistics).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">compressprior</A>:</TD>
+<TD VALIGN=TOP>Remove silence frames (based on C0 statistics from prior history).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">ctlcount</A>:</TD>
+<TD VALIGN=TOP>No. of utterances to decode in batch mode.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">ctlfn</A>:</TD>
+<TD VALIGN=TOP>Control file listing utterances to decode in batch mode.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">ctloffset</A>:</TD>
+<TD VALIGN=TOP>No. of initial utterances to be skipped from control file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">datadir</A>:</TD>
+<TD VALIGN=TOP>Directory prefix for control file entries.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">dictfn</A>:</TD>
+<TD VALIGN=TOP>Main pronunciation dictionary.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">dumplatdir</A>:</TD>
+<TD VALIGN=TOP>Directory for dumping word lattices.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">fillpen</A>:</TD>
+<TD VALIGN=TOP>Noise word penalty (probability).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">fwdflat</A>:</TD>
+<TD VALIGN=TOP>Run flat-lexical Viterbi search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">fwdflatbeam</A>:</TD>
+<TD VALIGN=TOP>Main beam width for flat search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">fwdflatlw</A>:</TD>
+<TD VALIGN=TOP>Language weight for flat search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">fwdflatnwbeam</A>:</TD>
+<TD VALIGN=TOP>Word-exit beam width for flat search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">hmmdir</A>:</TD>
+<TD VALIGN=TOP>Directory containing acoustic models.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">hmmdirlist</A>:</TD>
+<TD VALIGN=TOP>Directory containing acoustic models.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">inspen</A>:</TD>
+<TD VALIGN=TOP>Word insertion penalty (probability).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">kbdumpdir</A>:</TD>
+<TD VALIGN=TOP>Directory containing LM dump files.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">langwt</A>:</TD>
+<TD VALIGN=TOP>Language weight for lexical tree search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">latsize</A>:</TD>
+<TD VALIGN=TOP>Size of word lattice to be allocated.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">live</A>:</TD>
+<TD VALIGN=TOP>Live mode.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">lmctlfn</A>:</TD>
+<TD VALIGN=TOP>Control file listing named language model files to be loaded at initialization.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">lmfn</A>:</TD>
+<TD VALIGN=TOP>Unnamed language model file to load at initialization.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">logfn</A>:</TD>
+<TD VALIGN=TOP>Output log file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">lpbeam</A>:</TD>
+<TD VALIGN=TOP>Transition to last phone beam width.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">lponlybeam</A>:</TD>
+<TD VALIGN=TOP>Last phone internal beam width.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">mapfn</A>:</TD>
+<TD VALIGN=TOP>Senone mapping file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">matchfn</A>:</TD>
+<TD VALIGN=TOP>Output match file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">matchsegfn</A>:</TD>
+<TD VALIGN=TOP>Output match file with word segmentation.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">mfclogdir</A>:</TD>
+<TD VALIGN=TOP>Directory for logging cepstrum data for each utterance.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">nbest</A>:</TD>
+<TD VALIGN=TOP>No. of N-best hypotheses to be produced/utterance.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">nbestdir</A>:</TD>
+<TD VALIGN=TOP>Directory for writing N-best hypotheses files.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">ndictfn</A>:</TD>
+<TD VALIGN=TOP>Noise words dictionary.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">nmprior</A>:</TD>
+<TD VALIGN=TOP>Cepstral mean normalization based on prior utterances statistics.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">normmean</A>:</TD>
+<TD VALIGN=TOP>Cepstram mean normalization.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">npbeam</A>:</TD>
+<TD VALIGN=TOP>Next phone beam width for tree search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">nwbeam</A>:</TD>
+<TD VALIGN=TOP>Word-exit beam width for tree search. </TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">oovdictfn</A>:</TD>
+<TD VALIGN=TOP>Out-of-vocabulary words pronunciation dictionary.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">oovugprob</A>:</TD>
+<TD VALIGN=TOP>Unigram probability for OOV words.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">phnfn</A>:</TD>
+<TD VALIGN=TOP>Phone file (senone mapping information).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">rawlogdir</A>:</TD>
+<TD VALIGN=TOP>Directory for logging A/D data for each utterance.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">reportpron</A>:</TD>
+<TD VALIGN=TOP>Show actual word pronunciation in output match files.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">rescorelw</A>:</TD>
+<TD VALIGN=TOP>Language weight for best path search.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">samp</A>:</TD>
+<TD VALIGN=TOP>Input audio sampling rate(16000/8000).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">sendumpfn</A>:</TD>
+<TD VALIGN=TOP>(8-bit) Senone dump file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">silpen</A>:</TD>
+<TD VALIGN=TOP>Silence word penalty (probability).</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_searchconfig">tactlfn</A>:</TD>
+<TD VALIGN=TOP>Forced alignment transcript file.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">taphone</A>:</TD>
+<TD VALIGN=TOP>Whether phone-level alignment information should be output.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">tastate</A>:</TD>
+<TD VALIGN=TOP>Whether state-level alignment information should be output.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">taword</A>:</TD>
+<TD VALIGN=TOP>Whether word-level alignment information should be output.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">top</A>:</TD>
+<TD VALIGN=TOP>No. of top codewords to evaluate in each frame.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">topsenfrm</A>:</TD>
+<TD VALIGN=TOP>No. of frames to lookahead to determine active base phones.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_beam">topsenthresh</A>:</TD>
+<TD VALIGN=TOP>Pruning threshold applied to determine active base phones.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_langwt">ugwt</A>:</TD>
+<TD VALIGN=TOP>Unigram weight for interpolating unigram probability with uniform probability.</TD>
+</TR>
+</TABLE>
+
+<P><HR>
+
+
+
+<H2 align=center><A NAME="sec_faq"><U>Frequently Asked Questions</U></A></H2>
+
+<H3><A NAME="sec_speed"><U>Speeding up Decoding</U></A></H3>
+
+There are several ways to speed up decoding:
+<UL>
+<LI> Tightening pruning thresholds:  Increasing
+<A HREF="#sec_cmdline_beam"><strong><code>-beam</code></strong></A>
+<A HREF="#sec_cmdline_beam"><strong><code>-npbeam</code></strong></A>
+<A HREF="#sec_cmdline_beam"><strong><code>-lpbeam</code></strong></A>
+<A HREF="#sec_cmdline_beam"><strong><code>-lponlybeam</code></strong></A>,
+and
+<A HREF="#sec_cmdline_beam"><strong><code>-nwbeam</code></strong></A>
+uniformly by a factor &gt1.
+
+<LI> Reducing <A HREF="#sec_cmdline_beam"><strong><code>-top</code></strong></A>
+from 4 to 1.
+
+<LI> Using phone activation with
+<A HREF="#sec_cmdline_beam"><strong><code>-topsenfrm</code></strong></A> &gt1,
+and adjusting the corresponding pruning beamwidth
+<A HREF="#sec_cmdline_beam"><strong><code>-topsenthresh</code></strong></A>.
+The former can be set to 3, and the latter between -50000 and -70000.
+(Threshold values closer to 0 provide tigher pruning.)
+
+<LI> Controlling
+<A HREF="#sec_cmdline_searchconfig"><strong><code>-compallsen</code></strong></A>.
+When <A HREF="#sec_cmdline_beam"><strong><code>-top</code></strong></A> is 1,
+it is generally more efficient to compute <em>all</em> senones, but not when
+<A HREF="#sec_cmdline_beam"><strong><code>-top</code></strong></A> is 4.  However,
+when using very small vocabularies of just tens of words, it is preferable to
+compute only the active senones, regardless of the value of
+<A HREF="#sec_cmdline_beam"><strong><code>-top</code></strong></A>.  (But if
+<A HREF="#sec_cmdline_beam"><strong><code>-topsenfrm</code></strong></A> &gt1,
+all senones are computed anyway.)
+
+<LI> Using acoustic models with fewer senones.  (The Sphinx-3 trainer can be used
+to build such new models.)
+
+<LI> Switching to a context specific language model to restrict the active
+vocabulary for each utterance.  (Remember that the active vocabulary is the
+<em>intersection</em> of the currently active LM and the dictionary.)
+</UL>
+
+<P><HR width=50%>
+
+
+
+<H3><A NAME="sec_lmdump"><U>Building LM Dump Files</U></A></H3>
+
+LM files are usually ASCII files.  If they are large, it is time consuming to read
+them into the decoder.  A binary "dump" file is much faster to read and more compact.
+
+<P>
+LM dump files can be created by either a standalone program
+<strong><code>examples/lm3g2dmp.c</code></strong>
+or the decoder.  The standalone version can be compiled from the
+<strong><code>examples</code></strong></A> directory.
+
+The program takes two arguments, the LM source file and a directory in which the
+dump file is to be created.  It reads the header from the original LM file to determine
+the size of the LM.  It then forms the binary dump file name by appending a
+<strong><code>.DMP</code></strong> extension to the LM file name.  This file is written
+to the second (directory) argument.  (<em>NOTE: The dump file must not already
+exist!!</em>)
+
+<P>
+Any version of the decoder can also automatically create binary "dump" files
+similar to the standalone version described above.  It first looks for the
+dump file in the directory given by the
+<A HREF="#sec_cmdline_inputdb"><strong><code>-kbdumpdir</code></strong></A>
+argument.  If the dump file is present it reads it and ignores the rest of the
+original LM file.  Otherwise, it reads the LM file and creates a dump file in the
+<A HREF="#sec_cmdline_inputdb"><strong><code>-kbdumpdir</code></strong></A>
+directory so that it can be used in subsequent decoder runs.
+
+<P>
+The decoder does not create dump files for small LMs that have fewer than an
+internally defined number of bigrams and trigrams.
+
+<P><HR width=50%>
+
+
+
+<H3><A NAME="sec_sendump"><U>Building 8-Bit Senone Dump Files</U></A></H3>
+
+The Sphinx-II senonic acoustic model files contain 32-bit data.  (These are in the
+directory specified by the
+<A HREF="#sec_cmdline_inputdb"><strong><code>-hmmdir</code></strong></A>
+argument.)  However, they can be
+<em>clustered</em> down to 8-bits for memory efficiency, without loss of recognition
+accuracy.  The clustering is carried out by an offline process as follows:
+<OL>
+<LI> Create a <em>temporary</em> 32-bit senone dump file by running the decoder with
+the <strong><code>-sendumpfn</code></strong> flag set to the temporary file name,
+the <strong><code>-8bsen</code></strong> flag set to
+<strong><code>FALSE</code></strong>, and omitting the
+<strong><code>-lmfn</code></strong> argument.
+The decoder can be killed after it creates the 32-bit senone dump file, which happens
+during the initialization and is announced in the log output.
+
+<LI> Run: <strong><code>/afs/cs/project/plus-2/s2/Sphinx2/bin/alpha/pdf32to8b 32bit-file 8bit-file</code></strong><BR>
+to create the 8-bit senone dump file.
+That is, the first argument to <strong><code>pdf32to8b</code></strong>
+is the temporary 32-bit dump file created above, and the second argument is the
+8-bit output file.
+
+<LI> Delete the temporary 32-bit file.
+</OL>
+The 8-bit senone dump file can now be used as the <strong><code>-sendumpfn</code></strong>
+argument to the decoder with the <strong><code>-8bsen</code></strong> argument set to <strong><code>TRUE</code></strong>.
+
+</BODY>
+</HTML>
