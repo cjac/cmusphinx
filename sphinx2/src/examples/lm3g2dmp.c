@@ -48,9 +48,12 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.2  2000/12/05  01:45:12  lenzo
- * Restructuring, hear rationalization, warning removal, ANSIfy
+ * Revision 1.3  2000/12/05  22:50:04  lenzo
+ * Removed unused variables
  * 
+ * Revision 1.2  2000/12/05 01:45:12  lenzo
+ * Restructuring, hear rationalization, warning removal, ANSIfy
+ *
  * Revision 1.1  2000/04/25 22:15:00  lenzo
  * *** empty log message ***
  *
@@ -432,7 +435,7 @@ static void ReadNgramCounts (fp, n_ug, n_bg, n_tg)
     FILE *fp;
     int32 *n_ug, *n_bg, *n_tg;		/* return the info here */
 {
-    char string[256], c;
+    char string[256];
     int32 ngram, ngram_cnt;
     
     /* skip file until past the '\data\' marker */
@@ -482,7 +485,6 @@ static void ReadUnigrams (fp, model)
     char name[128];
     int32 wcnt;
     float p1, bo_wt;
-    double ignored_prob = 0.0;
     
     printf ("%s(%d): Reading unigrams\n", __FILE__, __LINE__);
     fflush (stdout);
@@ -765,12 +767,9 @@ int32 lm_read (char *filename, char *lmname, double lw, double uw, double wip)
     int32 n_bigram;
     int32 n_trigram;
     int32 dict_size;
-    int32 file_pos;
     int32 i, j, k, last_bg, last_tg;
     char *kbdumpdir, dumpfile[1024];
     struct stat statbuf;
-    int32 first_oov = 0, last_oov = -1;
-    int32 max_new_oov = 0;
     int32 idfmt;
 
     printf ("%s(%d): Reading LM file %s (name \"%s\")\n", __FILE__, __LINE__,
@@ -1292,8 +1291,6 @@ static int32 lm3g_load (file, model, lmfile, mtime)
     int32 i, j, k, vn, ts, err;
     FILE *fp;
     char str[1024];
-    trigram_t tmp_tg;
-    log_t tmp_log_t;
     unigram_t *ugptr;
     bigram_t *bgptr;
     trigram_t *tgptr;
@@ -1519,7 +1516,6 @@ static int32 lm3g_dump (file, model, lmfile, mtime)
 {
     int32 i, k;
     FILE *fp;
-    char *str;
 
     printf ("%s(%d): Dumping LM to %s\n", __FILE__, __LINE__, file);
     fflush (stdout);
@@ -1675,12 +1671,6 @@ main (argc, argv)
     char *argv[];
 {
     char *lmfile;
-    char filename[16384];
-    lm_t *model;
-    int32 i, n, score;
-    char wd[3][100], line[1000];
-    int32 wid[3];
-    int32 unkwid;
     float64 lw, uw, wip;
     
     if (argc != 3)
@@ -1768,7 +1758,6 @@ static void load_tginfo (lm_t *lm, int32 lw1, int32 lw2)
 {
     int32 i, n, b, t;
     bigram_t *bg;
-    trigram_t *tg;
     tginfo_t *tginfo;
     
     /* First allocate space for tg information for bg lw1,lw2 */
@@ -1829,7 +1818,6 @@ int32 lm3g_tg_score (int32 w1, int32 w2, int32 w3)
 {
     int32 lw1, lw2, lw3, i, n, score;
     lm_t *lm;
-    bigram_t *bg;
     trigram_t *tg;
     tginfo_t *tginfo, *prev_tginfo;
     

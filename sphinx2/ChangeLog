@@ -534,3 +534,13 @@ set of changes from dhd (below)
 	(uttproc_begin_utt) leftover_cep is (float *) not (float **) now.
 	(uttproc_align) remove unused variable 'fp'.
 		
+-------------------------------------------------------------------------------
+
+2000-12-05  Kevin A. Lenzo <lenzo@cs.cmu.edu>
+	* src/examples/lm3g2dmp.c: Removed unused variables "c", "max_new_oov",
+	"last_oov", "first_oov", "file_pos", "bg", "tg", "filename", "model",
+	"i", "n", "score", "wd", "line", "wid", "unkwid", "tmp_tg", 
+	"tmp_log_t", "ignored_prob", "str" as needed.  
+		
+
+	
