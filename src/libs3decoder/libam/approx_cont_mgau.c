@@ -204,6 +204,13 @@ int32 approx_mgau_eval (gs_t* gs,
   return ng;
 }
 
+
+int32 *ci;
+
+int intcmp(const void *v1, const void *v2){
+    return (ci[*(int32*) v2 ] - ci[*(int32*)v1]);
+}
+
 int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
 				 fast_gmm_t *fastgmm,
 				 mgau_model_t *g,
@@ -217,13 +224,11 @@ int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
   int32* idx;
   int32 pbest;
   int32 total;
-  int32 is_ciphone;
+  int32 is_ciphone; 
+  
+  ci=cache_ci_senscr;
 
   idx= fastgmm->gmms->idx;
-
-  int intcmp(const void *v1, const void *v2){
-    return (cache_ci_senscr[* (int32*) v2 ] - cache_ci_senscr[*(int32*)v1]);
-  }
 
   for( s = 0 ; s <g->n_mgau ;s++){
     is_ciphone= mdef_is_cisenone(mdef,s);

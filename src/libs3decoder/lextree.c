@@ -719,13 +719,12 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
     hmm_t *hmm, *hmm2;
     gnode_t *gn;
     int32 i, n;
+    int32 hth ;
 
     /* Code for heursitic score */
     kbc->maxNewHeurScore=MAX_NEG_INT32;
     kbc->lastfrm=-1;
-
-    int32 hth = 0;
-
+	hth = 0;
     mdef = kbcore_mdef(kbc);
     
     nf = cf+1;

@@ -57,7 +57,7 @@
 #define _S3_FEAT_H_
 
 #include <libutil/libutil.h>
-#include <cmn.h>
+#include "cmn.h"
 
 #ifdef __cplusplus
 extern "C" {
