@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -105,7 +105,9 @@ typedef struct{
     int32 FRAME_SIZE;
     int32 FFT_SIZE;
     int32 FB_TYPE;
+    int32 LOG_SPEC;
     int32 NUM_CEPSTRA;
+    int32 FEATURE_DIMENSION;
     float32 PRE_EMPHASIS_ALPHA;
     int16 *OVERFLOW_SAMPS;
     int32 NUM_OVERFLOW_SAMPS;    
@@ -231,7 +233,7 @@ fe_t *fe_init(param_t const *P);
 
 int32 fe_start_utt(fe_t *FE);
 
-  int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
+int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
 
 int32 fe_close(fe_t *FE);
 
