@@ -53,41 +53,52 @@
 #     src/libfeat/$(MACHINE),
 #     src/libfbs/$(MACHINE),
 
-s3decode:
+all: s3decode-anytopo s3align s3allphone s3dag s3astar s3nbestrescore
+
+libutil:
 	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
+
+libio:
 	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
+
+libfeat:
 	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+
+libutil-dbg:
+	(cd src/libutil/$(MACHINE)-debug; make -f ../Makefile-debug install)
+
+libio-dbg:
+	(cd src/libio/$(MACHINE)-debug;   make -f ../Makefile-debug install)
+
+libfeat-dbg:
+	(cd src/libfeat/$(MACHINE)-debug; make -f ../Makefile-debug install)
+
+s3decode: libutil libio libfeat
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile install)
 
-s3decode-dbg:
-	(cd src/libutil/$(MACHINE)-debug; make -f ../Makefile-debug install)
-	(cd src/libio/$(MACHINE)-debug;   make -f ../Makefile-debug install)
-	(cd src/libfeat/$(MACHINE)-debug; make -f ../Makefile-debug install)
+s3decode-dbg: libutil-dbg libio-dbg libfeat-dbg
 	(cd src/libfbs/$(MACHINE)-debug;  make -f ../Makefile-debug install)
 
-s3decode-anytopo:
-	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+s3decode-anytopo: libutil libio libfeat
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-anytopo install)
 
 s3decode-anytopodbg:
-	(cd src/libutil/$(MACHINE); make -f ../Makefile-debug install)
-	(cd src/libio/$(MACHINE);   make -f ../Makefile-debug install)
-	(cd src/libfeat/$(MACHINE); make -f ../Makefile-debug install)
-	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-anytopodbg install)
+	(cd src/libfbs/$(MACHINE)-debug;  make -f ../Makefile-anytopodbg install)
 
-s3align:
-	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+s3align: libutil libio libfeat
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-align install)
 
-s3allphone:
-	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
-	(cd src/libio/$(MACHINE);   make -f ../Makefile install)
-	(cd src/libfeat/$(MACHINE); make -f ../Makefile install)
+s3allphone: libutil libio libfeat
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-allphone install)
+
+s3dag: libutil libio libfeat
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-dag install)
+
+s3astar: libutil libio libfeat
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-astar install)
+
+s3nbestrescore: libutil libio libfeat
+	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-nbestrescore install)
 
 only-s3decode:
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile install)
