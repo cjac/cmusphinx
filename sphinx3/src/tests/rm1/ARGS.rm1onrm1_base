@@ -2,11 +2,12 @@
 -wbeam	1e-35
 -mdef	/lab/speech/sphinx4/data/rm1_model/etc/RM1_clean_13dCep_16k_40mel_130Hz_6800Hz.1800.mdef
 -fdict	/lab/speech/sphinx4/data/rm1_model/dict/fillerdict
--dict	/lab/speech/sphinx4/data/rm1_model/dict/cmudict.0.6d+rm1.txt
+-dict	/lab/speech/sphinx4/data/rm1_model/dict/RM.dictionary
 -mean	/lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/means
 -var	/lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/variances
 -mixw	/lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/mixture_weights 
 -tmat	/lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/transition_matrices
+-subvq  /lab/speech/sphinx4/data/rm1_model/cd_continuous_8gau/8gau.1800sen.quant
 -upperf	6800
 -lowerf	130
 -nfilt	40

@@ -78,10 +78,10 @@ rm1_trigram:
 
 
 rm1onrm1_flatunigram:
-	rm -f gmake-rm1onrm1_unigram.results
-	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_unigram
-	echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1onrm1_unigram
-	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_unigram > gmake-rm1onrm1_unigram.results
+	rm -f gmake-rm1onrm1_flatunigram.results
+	/bin/cp ARGS.rm1onrm1_base ARGS.rm1onrm1_flatunigram
+	echo "-lm RM.unigram.arpa.DMP" >> ARGS.rm1onrm1_flatunigram
+	$(BINDIR)/batchmetrics ./rm1.batch / ./ARGS.rm1onrm1_flatunigram > gmake-rm1onrm1_flatunigram.results
 
 
 rm1onrm1_unigram:
