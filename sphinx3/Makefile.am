@@ -187,6 +187,22 @@ test-dag:
 
 test-gausubvq:
 	@echo "GAUSUBVQ TEST"
+#	@echo "This will compare the answer with a pre-generated svq file"
+	$(LIBTOOL) --mode=execute src/programs/gausubvq \
+        -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+        -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+        -mixw  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+        -svspec 0-38 \
+        -iter 20 \
+        -svqrows 16 \
+	-seed 1111 \
+        -subvq $@.out 
+#	grep -v "#" $@.out > tmp.out
+#	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+#	rm tmp.out 
+
+test-gausubvq-match:
+	@echo "GAUSUBVQ TEST"
 	@echo "This will compare the answer with a pre-generated svq file"
 	$(LIBTOOL) --mode=execute src/programs/gausubvq \
         -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
