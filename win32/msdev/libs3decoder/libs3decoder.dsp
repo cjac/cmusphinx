@@ -105,6 +105,10 @@ SOURCE=..\..\..\src\libs3decoder\bio.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\classify.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\cmn.c
 # End Source File
 # Begin Source File
@@ -126,6 +130,10 @@ SOURCE=..\..\..\src\libs3decoder\dict.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\dict2pid.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\endptr.c
 # End Source File
 # Begin Source File
 
@@ -265,6 +273,10 @@ SOURCE=..\..\..\src\libs3decoder\bio.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\classify.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\cmn.h
 # End Source File
 # Begin Source File
@@ -286,6 +298,10 @@ SOURCE=..\..\..\src\libs3decoder\dict.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\dict2pid.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\endptr.h
 # End Source File
 # Begin Source File
 
