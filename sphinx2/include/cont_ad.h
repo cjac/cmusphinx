@@ -14,6 +14,9 @@
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
  *
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
@@ -43,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2004/07/16  00:57:10  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.7  2004/07/27  21:29:46  egouvea
+ * Fixed license terms
  * 
+ * Revision 1.6  2004/07/16 00:57:10  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.2  2004/06/23 20:29:33  rkm
  * Added adapt_rate parameter
  *
