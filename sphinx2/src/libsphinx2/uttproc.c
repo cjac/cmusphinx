@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.19  2004/12/10  16:48:57  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.20  2005/01/20  00:09:43  egouvea
+ * Replace subtraction of elements in FILETIME structure with a subtraction of 64 bit integers, and removed some warnings about type casting
  * 
+ * Revision 1.19  2004/12/10 16:48:57  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon Univ.
  * 		Modified to use senscr module for senone score computation.
@@ -424,12 +427,20 @@ static fsg_search_t *fsg_search;
 
 #ifdef WIN32
 
+/* The FILETIME manual page says: "It is not recommended that you add
+ * and subtract values from the FILETIME structure to obtain relative
+ * times."
+ */
 double win32_cputime (FILETIME *st, FILETIME *et)
 {
     double dt;
-    
-    dt = (et->dwLowDateTime - st->dwLowDateTime) * lowscale;
-    dt += (et->dwHighDateTime - st->dwHighDateTime) * highscale;
+    ULARGE_INTEGER l_st = *(ULARGE_INTEGER *)st;
+    ULARGE_INTEGER l_et = *(ULARGE_INTEGER *)et;
+    LONGLONG ltime;
+
+    ltime = l_et.QuadPart - l_st.QuadPart;
+
+    dt = (ltime * lowscale);
 
     return (dt);
 }
@@ -486,7 +497,7 @@ static void timing_stop (int32 nfr)
 	return;
     
     E_INFO(" %5.2f SoS", searchFrame()*0.01);
-    TotalSpeechTime += searchFrame()*0.01;
+    TotalSpeechTime += searchFrame()*0.01f;
     
 #ifdef WIN32
     /* ---------------- WIN32 ---------------- */
@@ -498,7 +509,7 @@ static void timing_stop (int32 nfr)
     E_INFOCONT(", %6.2f sec CPU", win32_cputime(&ust, &uet));
     E_INFOCONT(", %5.2f xRT", win32_cputime(&ust, &uet)/(searchFrame()*0.01));
     
-    TotalCPUTime += win32_cputime(&ust, &uet);
+    TotalCPUTime += (float) win32_cputime(&ust, &uet);
     TotalElapsedTime += (e_stop - e_start);
 #else
     /* ---------------- Unix ---------------- */
@@ -1020,10 +1031,10 @@ int32 uttproc_init ( void )
 
     frame_spacing = sps/100;
 
-    fe_param->SAMPLING_RATE = sps;
+    fe_param->SAMPLING_RATE = (float)sps;
   /*    fe_param->FRAME_RATE    = frame_spacing; */  /* removed; KAL */
     fe_param->FRAME_RATE    = 100;
-    fe_param->PRE_EMPHASIS_ALPHA = 0.97;
+    fe_param->PRE_EMPHASIS_ALPHA = 0.97f;
     
     if ((fe_param->doublebw = query_doublebw()) == TRUE) {
         E_INFO("Will use double bandwidth in mel filter\n");
