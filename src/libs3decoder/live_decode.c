@@ -185,15 +185,15 @@ ld_process_raw(live_decoder_t *decoder, int16 *samples, int32 num_samples)
 }
 
 int
-ld_process_frames(live_decoder_t *decoder, 
-		  float32 **frames,
+ld_process_ceps(live_decoder_t *decoder, 
+		  float32 **cep_frames,
 		  int32 num_frames)
 {
   int32 num_features = 0;
 	
   if (num_frames > 0) {
     num_features = feat_s2mfc2feat_block(kbcore_fcb(decoder->kbcore),
-					 frames,
+					 cep_frames,
 					 num_frames,
 					 decoder->frame_num == 0,
 					 0,
@@ -215,6 +215,7 @@ ld_process_frames(live_decoder_t *decoder,
   return 0;
 }
 
+#if 0
 int
 ld_process_features(live_decoder_t *decoder, 
 		    float32 ***features,
@@ -234,13 +235,16 @@ ld_process_features(live_decoder_t *decoder,
 	
   return 0;
 }
+#endif
 
 int
 ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 {
+  int rv = 0;
+
   /** re-record the hypothesis if there is a frame number mismatch */
   if (decoder->frame_num != decoder->hyp_frame_num) {
-    ld_record_hyps(decoder, 0);
+    rv = ld_record_hyps(decoder, 0);
   }
   
   /** return the hypothesis string if the user requested it */
@@ -253,12 +257,12 @@ ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
     *hyp_segs = decoder->hyp_segs;
   }
   
-  return 0;
+  return rv;
 }
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
+/***************************************************************************/
+/***************************************************************************/
+/***************************************************************************/
 
 int
 ld_set_uttid(live_decoder_t *decoder, char *uttid, int autogen)
@@ -358,7 +362,7 @@ ld_record_hyps(live_decoder_t *decoder, int end_utt)
 int
 ld_free_hyps(live_decoder_t *decoder)
 {
-  hyp_t *h;
+  hyp_t **h;
 
   /** set the reference frame number to something invalid */
   decoder->hyp_frame_num = -1;
@@ -371,8 +375,8 @@ ld_free_hyps(live_decoder_t *decoder)
   
   /** free and reset the hypothesis word segments */
   if (decoder->hyp_segs) {
-    for (h = *decoder->hyp_segs; h; h++) {
-      ckd_free(h);
+    for (h = decoder->hyp_segs; *h; h++) {
+      ckd_free(*h);
     }
     ckd_free(decoder->hyp_segs);
     decoder->hyp_segs = 0;
