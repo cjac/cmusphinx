@@ -80,18 +80,18 @@ main(int argc, char **argv)
     return -1;
   }
 
-  if (ld_utt_begin(&decoder, 0)) {
+  if (ld_begin_utt(&decoder, 0)) {
     printf("Cannot start decoding.\n");
     return -1;
   }
 
   while ((len = fread(samples, sizeof(short), BUFFER_LENGTH, rawfd)) > 0) {
-    if (ld_utt_proc_raw(&decoder, samples, len)) {
+    if (ld_process_raw(&decoder, samples, len)) {
       printf("Data processing error.\n");
       break;
     }
     
-    if (ld_utt_hyps(&decoder, &hypstr, 0)) {
+    if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
       printf("Cannot retrieve hypothesis.\n");
     }
     else {
@@ -101,12 +101,12 @@ main(int argc, char **argv)
 
   fclose(rawfd);
 
-  if (ld_utt_end(&decoder)) {
+  if (ld_end_utt(&decoder)) {
     printf("Cannot end decoding.\n");
     return -1;
   }
 
-  if (ld_utt_hyps(&decoder, &hypstr, 0)) {
+  if (ld_retrieve_hyps(&decoder, &hypstr, 0)) {
     printf("Cannot retrieve hypothesis.\n");
   }
   else {
