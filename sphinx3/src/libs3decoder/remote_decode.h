@@ -64,18 +64,19 @@
 extern "C" {
 #endif
 
-struct _control_block;
-struct _result_block;
-  
-typedef struct
+typedef struct _remote_decoder_t
 {
   live_decoder_t ld;
-  struct _control_block *control_queue;
-  struct _result_block *result_queue;
+  void *control_queue;
+  void *result_queue;
   int32 state;
   void *mutex;
+  void *cond;
   int32 internal_cmd_ln;
 } remote_decoder_t;
+
+#define RD_SUCCESS	0
+#define RD_FAILURE	-1
 
 /**
  * Informs the remote-decoder to initialize and begin a new session.
@@ -138,6 +139,11 @@ int rd_record_hyps(remote_decoder_t *decoder);
  */
 int rd_retrieve_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str,
 		     hyp_t ***hyp_segs);
+
+/**
+ * Free the results retrieved by rd_retrieve_hyps.
+ */
+int rd_free_hyps(char *uttid, char *hyp_str, hyp_t **hyp_segs);
 
 /**
  * Main function for decoding.  Should be run on a separate thread.
