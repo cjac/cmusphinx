@@ -193,7 +193,6 @@ print "$what\n";
 open SPHINX, "$what 2>\&1 |" or die "something failed: $!";
 print "[initializing]\n";
 
-my ($result, $score);
 my (%is, %are);
 
 if ($target_command) {
@@ -206,16 +205,16 @@ while (<SPHINX>) {
   /READY..../ and do { print "[silence] "; next };
   /Listening.../ and do { print "[audio] "; next };
 
-  /BESTPATH: (.*?)\s*\((.*?)\)/ and do { 
-    ($result, $score) = ($1, $2);
-    $result = uc $result;
-    print "$result\n";
-    print TARGET "$result\n" if $target_command;
-
-    $result =~ /^(exit|quit)$/i and do {
-      print "[exit]\n";
-      exit ;
-    };
+  if (/^(\d+):\s+(.*?)\s*$/) {
+      my ($frame, $result) = ($1, $2);
+      $result = uc $result;
+      print "$result\n";
+      print TARGET "$result\n" if $target_command;
+      
+      $result =~ /^(exit|quit)$/i and do {
+	  print "[exit]\n";
+	  exit ;
+      };
   }
 }
 
