@@ -34,6 +34,8 @@
  *
  */
 
+#ifndef _FE_INTERNAL_H_
+#define _FE_INTERNAL_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +44,6 @@ extern "C" {
 #ifndef	M_PI
 #define M_PI	(3.14159265358979323846)
 #endif	/* M_PI */
-
 
 #define FORWARD_FFT 1
 #define INVERSE_FFT -1
@@ -75,4 +76,6 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
