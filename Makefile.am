@@ -113,7 +113,7 @@ test-allphone:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
-	$(LIBTOOL) --mode=execute rm ./.allp
+	$(LIBTOOL) --mode=execute rm ./*.allp
 
 test-astar:
 	$(LIBTOOL) --mode=execute echo "ASTAR TEST"
