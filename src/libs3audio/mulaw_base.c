@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2001/12/11  04:40:55  lenzo
- * License cleanup.
+ * Revision 1.4  2004/12/14  00:39:49  arthchan2003
+ * add <s3types.h> to the code, change some comments to doxygen style
  * 
+ * Revision 1.3  2001/12/11 04:40:55  lenzo
+ * License cleanup.
+ *
  * Revision 1.2  2001/12/11 04:10:16  lenzo
  * License.
  *
@@ -64,7 +67,7 @@
  */
 
 
-#include "s3types.h"
+#include <s3types.h>
 #include "ad.h"
 #include "mulaw.h"
 

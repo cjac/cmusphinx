@@ -73,7 +73,7 @@
 #include <sys/asoundlib.h>
 #include <errno.h>
 
-#include "s3types.h"
+#include <s3types.h>
 #include "ad.h"
 
 

@@ -60,7 +60,7 @@
 #include <assert.h>
 
 #include "audio_utils_sunos.h"
-#include "s3types.h"
+#include <s3types.h>
 #include "ad.h"
 
 

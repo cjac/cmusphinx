@@ -78,8 +78,9 @@
 #ifndef _CONT_AD_H_
 #define _CONT_AD_H_
 
+#include <s3types.h>
 
-/*
+/**
  * This module is intended to be interposed as a filter between any raw A/D source and the
  * application to remove silence regions.  Its main purpose is to remove regions of
  * silence from the raw input speech.  It is initialized with a raw A/D source function
@@ -101,7 +102,7 @@
 
 #include <stdio.h>
 
-/*
+/**
  * Data structure for maintaining speech (non-silence) segments not yet consumed by the
  * application.  FOR THE INTERNAL USE OF THIS MODULE.
  */
@@ -112,7 +113,7 @@ typedef struct spseg_s {
 } spseg_t;
 
 
-/*
+/**
  * Continuous listening module or object.  An application can open and maintain several
  * such objects, if necessary.
  * FYI: Module always in one of two states: SILENCE or SPEECH.  Transitions between the
@@ -187,7 +188,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
 					   required prototype definition. */
 
 
-/*
+/**
  * Calibration to determine an initial silence threshold.  This function can be called
  * any number of times.  It should be called at least once immediately after cont_ad_init.
  * The silence threshold is also updated internally once in a while, so this function
@@ -199,7 +200,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
  */
 int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad_init */
 
-/*
+/**
  * If the application has not passed an audio device into the silence filter
  * at initialisation,  this routine can be used to calibrate the filter. The
  * buf (of length max samples) should contain audio data for calibration. This
@@ -210,7 +211,7 @@ int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad
  */
 int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max); 
 
-/*
+/**
  * Read A/D data pre-filtered to remove silence segments.
  * Return value: #samples actually read, possibly 0; <0 if EOF on A/D source.
  * The function also updates r->read_ts and r->siglvl (see above).
@@ -222,7 +223,7 @@ int32 cont_ad_read (cont_ad_t *r,	/* In: Object pointer returned by cont_ad_init
 		    int32 max);		/* In: Max #samples to be filled into buf */
 
 
-/*
+/**
  * Set silence and speech threshold parameters.  The silence threshold is the max power
  * level, RELATIVE to the peak background noise level, in any silence frame.  Similarly,
  * the speech threshold is the min power level, RELATIVE to the peak background noise
@@ -237,7 +238,7 @@ int32 cont_ad_set_thresh (cont_ad_t *cont,	/* In: Object ptr from cont_ad_init *
 			  int32 sp);	/* In: speech threshold (default 2) */
 
 
-/*
+/**
  * PWP 1/14/98 -- set the changable params.
  *
  *   delta_sil, delta_speech, min_noise, and max_noise are in dB,
@@ -250,7 +251,7 @@ int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
 			  int32 leader, int32 trailer,
 			  float32 adapt_rate);
 
-/*
+/**
  * PWP 1/14/98 -- get the changable params.
  *
  *   delta_sil, delta_speech, min_noise, and max_noise are in dB,
@@ -263,33 +264,33 @@ int32 cont_ad_get_params (cont_ad_t *r, int32 *delta_sil, int32 *delta_speech,
 			  int32 *leader, int32 *trailer,
 			  float32 *adapt_rate);
 
-/*
+/**
  * Reset, discarding any accumulated speech segments.
  * Return value: 0 if successful, <0 otherwise.
  */
 int32 cont_ad_reset (cont_ad_t *cont);	/* In: Object pointer from cont_ad_init */
 
 
-/*
+/**
  * Close the continuous listening object.
  */
 int32 cont_ad_close (cont_ad_t *cont);	/* In: Object pointer from cont_ad_init */
 
 
-/*
+/**
  * Dump the power histogram.  For debugging...
  */
 void cont_ad_powhist_dump (FILE *fp, cont_ad_t *cont);
 
 
-/*
+/**
  * Detach the given continuous listening module from the associated audio device.
  * Return 0 if successful, -1 otherwise.
  */
 int32 cont_ad_detach (cont_ad_t *c);
 
 
-/*
+/**
  * Attach the continuous listening module to the given audio device/function.
  * (Like cont_ad_init, but without the calibration.)
  * Return 0 if successful, -1 otherwise.
