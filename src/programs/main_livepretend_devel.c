@@ -93,7 +93,7 @@ main(int _argc, char **_argv)
       E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
 
-    if (ld_begin_utt(&decoder, 0) != LD_SUCCESS) {
+    if (ld_begin_utt(&decoder, rawfn) != LD_SUCCESS) {
       E_FATAL("Cannot begin utterance decoding.\n");
     }
     len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);

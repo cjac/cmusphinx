@@ -203,10 +203,17 @@ static arg_t arg[] = {
       ARG_STRING,
       NULL,
       "Output subvq file (stdout if not specified)" },
+
     { "-log3table",
       ARG_FLOAT64,
       "1.0003",
       "Determines whether to use the log3 table or to compute the values at run time."},
+    { "-seed",
+      ARG_INT32,
+      "-1",
+      "User defined seed to seed the random generator of the K-mean algorithm, if it is a value smaller than 0, internal mechanism will be used."
+    },
+
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -338,7 +345,7 @@ int32 main (int32 argc, char *argv[])
 	/* VQ the subvector copy built above */
 	sqerr = vector_vqgen (data, datarows, svqcols, svqrows,
 			      cmd_ln_float64("-eps"), cmd_ln_int32("-iter"),
-			      vqmean, vqmap);
+			      vqmean, vqmap, cmd_ln_int32("-seed"));
 	
 	/* Output VQ */
 	fprintf (fpout, "Codebook %d Sqerr %e\n", v, sqerr);
