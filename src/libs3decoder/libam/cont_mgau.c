@@ -156,7 +156,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 
     if (n != n_mgau * n_density * blk) {
 	E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
-		file_name, n, n_mgau, n_density, veclen);
+		file_name, n, n_mgau, n_density, blk);
     }
     
     if(g->gau_type==SEMIHMM){
@@ -195,7 +195,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	if (g->max_comp != n_density)
 	    E_FATAL("#Components(%d) doesn't match that of means(%d)\n", n_density, g->max_comp);
 	if (g->veclen != blk)
-	    E_FATAL("#Vector length(%d) doesn't match that of means(%d)\n", veclen, g->veclen);
+	    E_FATAL("#Vector length(%d) doesn't match that of means(%d)\n", blk, g->veclen);
 	
 	buf = (float32 *) ckd_calloc (n, sizeof(float32));
 	pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
@@ -241,7 +241,7 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     
     fclose(fp);
     
-    E_INFO("%d mixture Gaussians, %d components, veclen %d\n", n_mgau, n_density, veclen);
+    E_INFO("%d mixture Gaussians, %d components, %d streams, veclen %d\n", n_mgau, n_density, n_feat, blk);
     
     return 0;
 }
