@@ -1,5 +1,7 @@
 2004-08-25  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
+
 	sphinx 3.5 release
+	^^^^^^^^^^^^^^^^^^
 	The corresponding SphinxTrain timestamp is ????????
 	One can check out the matching SphinxTrain of the sphinx3.5 release by command,
 	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
@@ -15,7 +17,11 @@
 	 same sas SphinxTrain.
 	
 	Corresponding changes in SphinxTrain
-	SphinxTrian timestamp ???????? 
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	Please noted that SphinxTrain is distributed as a separate package and you can get it 
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co SphinxTrain
+	through time stamp ???????? 
+
 	correspond to sphinx 3.5 release
 	Changes since the last record.
 	-The feature extraction libraries of SphinxTrain is now
