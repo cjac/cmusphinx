@@ -54,7 +54,6 @@
 int
 main(int _argc, char **_argv)
 {
-  print_appl_info(_argv[0]);
 
   live_decoder_t decoder;
   short samples[SAMPLE_BUFFER_LENGTH];
@@ -67,6 +66,8 @@ main(int _argc, char **_argv)
   char fullrawfn[FILENAME_LENGTH];
   FILE *ctrlfd;
   FILE *rawfd;
+
+  print_appl_info(_argv[0]);
 
   if (_argc != 4) {
     printf("\nUSAGE: %s <ctrlfile> <rawdir> <cfgfile>\n", _argv[0]);
