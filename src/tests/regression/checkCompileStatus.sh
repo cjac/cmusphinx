@@ -26,13 +26,25 @@ fi
 # If we found one of the above, use it. Otherwise, keep sendmail
 if test z${TMPMAIL} != z; then MAILX=${TMPMAIL};fi
 
-
 # Define the variables for compilation root, mailing lists
 root=/tmp/sphinxCompilation.$$
 S2LIST='archan egouvea yitao dhuggins'
 S3LIST='archan egouvea yitao dhuggins'
 S4LIST='cmusphinx-commits@lists.sourceforge.net'
 STLIST='archan egouvea yitao dhuggins'
+
+# Try to find gmake, supposedly the GNU make
+MAKE=`which gmake 2> /dev/null`
+if test z${MAKE} == z; then
+# If we failed, try make
+    MAKE=`which make 2> /dev/null`
+    if test z${MAKE} == z; then
+# If we failed again, bail out: we cannot make the project!
+    ${MAILX} -s "Make not found in system `hostname`" ${S3LIST}
+# Exit with non zero value
+    exit 1;
+    fi
+fi
 
 # Create root and move there
 mkdir $root
@@ -54,7 +66,7 @@ pushd sphinx2 >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify if both were successful
-if ! make all test >> $outfile 2>&1 ;
+if ! ${MAKE} all test >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx2 compilation failed" ${S2LIST} < $outfile
  elif ! (grep BESTPATH $outfile | grep -q 'GO FORWARD TEN METERS');
  then ${MAILX} -s "Sphinx2 test failed" ${S2LIST} < $outfile;
@@ -73,7 +85,7 @@ pushd sphinx3 >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify that all tests ran successfully
-if ! make all test-full >> $outfile 2>&1 ;
+if ! ${MAKE} all test-full >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx3 compilation failed" ${S3LIST} < $outfile;
  elif ! (grep FWDVIT $outfile | grep -q 'P I T T S B U R G H');
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
@@ -93,8 +105,8 @@ cvs -d:ext:${address}:/cvsroot/cmusphinx co SphinxTrain > $outfile 2>&1
 pushd SphinxTrain >> $outfile 2>&1
 ./configure >> $outfile 2>&1
 
-# Coompile and make sure it's successful
-if ! make all >> $outfile 2>&1 ;
+# Compile and make sure it's successful
+if ! ${MAKE} all >> $outfile 2>&1 ;
  then ${MAILX} -s "SphinxTrain compilation failed" ${STLIST} < $outfile;
  else ${MAILX} -s "SphinxTrain compilation succeeded" ${STLIST} < $outfile;
 fi
