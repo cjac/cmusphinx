@@ -1,0 +1,32 @@
+-mdef	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
+-fdict	./model/lm/an4/filler.dict
+-dict	./model/lm/an4/an4.dict
+-mean	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means
+-var	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
+-mixw	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
+-tmat	./model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices
+-upperf	6855.49756
+-lowerf	133.33334
+-nfilt	40
+-feat 1s_c_d_dd
+-nfft 512
+-wlen 0.025625
+-samprate 16000
+-agc	none
+-varnorm	no
+-cmn	current
+-subvqbeam 1e-02
+-epl	4
+-fillprob	0.02
+-lw	9.5
+-maxwpf	1
+-beam	1e-40
+-pbeam  1e-30
+-wbeam	1e-20
+-maxhmmpf 1500
+-wend_beam 1e-1
+-ci_pbeam 1e-3
+-ds 2
+-lm 	./model/lm/an4/an4.ug.lm.DMP
+
+

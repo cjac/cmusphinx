@@ -71,17 +71,31 @@
 #include "bio.h"
 #include "logs3.h"
 
-
-#define MIN_PROB_F	((float32)-99.0)
-
-
 static char *darpa_hdr = "Darpa Trigram LM";
 static int LM_IN_MEMORY = 0;	/* RAH, 5.8.01 Allow this as an option to sphinx */
 
 
-#if 0
-int32 lm_delete (lm_t *lm)
+static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw,int32 n_lmclass_used,lmclass_t *lmclass,int32 dict_size);
+
+
+int32 lm_get_classid (lm_t *model, char *name)
 {
+    int32 i;
+    
+    if (! model->lmclass)
+	return -1;
+    
+    for (i = 0; i < model->n_lmclass; i++) {
+	if (strcmp (lmclass_getname(model->lmclass[i]), name) == 0)
+	    return (i + LM_CLASSID_BASE);
+    }
+    return -1;
+}
+
+
+int32 lm_delete (lm_t *lm,lmset_t *lmset)
+{
+#if 0
     int32 i;
     tginfo_t *tginfo, *next_tginfo;
     
@@ -94,7 +108,7 @@ int32 lm_delete (lm_t *lm)
 	if (lm->bg)		/* Memory-based; free all bg */
 	    free (lm->bg);
 	else {		/* Disk-based; free in-memory bg */
-	    for (i = 0; i < lm->n_ug; i++)
+	  for (i = 0; i < lm->n_ug; i++)
 		if (lm->membg[i].bg)
 		    free (lm->membg[i].bg);
 	    free (lm->membg);
@@ -131,12 +145,14 @@ int32 lm_delete (lm_t *lm)
     for (; i < n_lm-1; i++)
 	lmset[i] = lmset[i+1];
     --n_lm;
-    
     E_INFO("LM(\"%s\") deleted\n", name);
+#endif    
     
+    E_INFO("Warning, lm_delete is currently empty, no memory is deleted\n");
+
     return (0);
 }
-#endif
+
 
 
 /* Apply unigram weight; should be part of LM creation, but... */
@@ -230,11 +246,214 @@ static int32 lm_fread_int32 (lm_t *lm)
 }
 
 
+
+/* read in the LM control structure */
+/* 20040218 Arthur: This function is largely copied from Sphinx 2 because I don't want
+ *  to spend too much time in writing file reading routine. 
+ * I attached the comment in Sphinx 2 here.  It specifies the restriction of the Darpa file format. 
+ *
+*/
+
+/*
+ * Read control file describing multiple LMs, if specified.
+ * File format (optional stuff is indicated by enclosing in []):
+ * 
+ *   [{ LMClassFileName LMClassFilename ... }]
+ *   TrigramLMFileName LMName [{ LMClassName LMClassName ... }]
+ *   TrigramLMFileName LMName [{ LMClassName LMClassName ... }]
+ *   ...
+ * (There should be whitespace around the { and } delimiters.)
+ * 
+ * This is an extension of the older format that had only TrigramLMFilenName
+ * and LMName pairs.  The new format allows a set of LMClass files to be read
+ * in and referred to by the trigram LMs.  (Incidentally, if one wants to use
+ * LM classes in a trigram LM, one MUST use the -lmctlfn flag.  It is not
+ * possible to read in a class-based trigram LM using the -lmfn flag.)
+ * 
+ * No "comments" allowed in this file.
+ */
+
+lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64 uw,char *lmdumpdir,int32* n_lm, int32* n_alloclm,int32 dict_size)
+{
+  FILE *ctlfp;
+  FILE *tmp;
+  char lmfile[4096], lmname[4096], str[4096];
+  lmclass_set_t lmclass_set;
+  lmclass_t *lmclass, cl;
+  int32 n_lmclass, n_lmclass_used;
+  int32 i;
+  lm_t *lm;
+  lmset_t *lmset=NULL;
+  tmp=NULL;
+	    
+  lmclass_set = lmclass_newset();
+	    
+  E_INFO("Reading LM control file '%s'\n",ctlfile);
+
+  if (cmd_ln_int32 ("-lminmemory")) 
+    LM_IN_MEMORY = 1;    
+  else
+    LM_IN_MEMORY = 0;
+
+	    
+  ctlfp = myfopen (ctlfile, "r");
+
+  if (fscanf (ctlfp, "%s", str) == 1) {
+    if (strcmp (str, "{") == 0) {
+      /* Load LMclass files */
+      while ((fscanf (ctlfp, "%s", str) == 1) && (strcmp (str, "}") != 0))
+	lmclass_set = lmclass_loadfile (lmclass_set, str);
+		    
+      if (strcmp (str, "}") != 0)
+	E_FATAL("Unexpected EOF(%s)\n", ctlfile);
+		    
+      if (fscanf (ctlfp, "%s", str) != 1)
+	str[0] = '\0';
+    }
+  } else
+    str[0] = '\0';
+	
+#if 0
+  tmp=myfopen("./tmp","w");
+  lmclass_set_dump(lmclass_set,tmp);
+  fclose(tmp);		   
+#endif
+
+  /* Fill in dictionary word id information for each LMclass word */
+  for (cl = lmclass_firstclass(lmclass_set);
+       lmclass_isclass(cl);
+       cl = lmclass_nextclass(lmclass_set, cl)) {
+    
+    /*
+      For every words in the class, set the dictwid correctly 
+      The following piece of code replace s2's kb_init_lmclass_dictwid (cl);
+      doesn't do any checking even the id is a bad dict id. 
+      This only sets the information in the lmclass_set, but not 
+      lm-2-dict or dict-2-lm map.  In Sphinx 3, they are done in 
+      wid_dict_lm_map in wid.c.
+     */
+    
+    lmclass_word_t w;
+    int32 wid;
+    for (w = lmclass_firstword(cl); lmclass_isword(w); w = lmclass_nextword(cl, w)) {
+      wid = dict_wordid (dict,lmclass_getword(w));
+#if 0
+      E_INFO("In class %s, Word %s, wid %d\n",cl->name,lmclass_getword(w),wid);
+#endif
+      lmclass_set_dictwid (w, wid);
+    }
+  }
+
+  /* At this point if str[0] != '\0', we have an LM filename */
+
+  n_lmclass = lmclass_get_nclass(lmclass_set);
+  lmclass = (lmclass_t *) ckd_calloc (n_lmclass, sizeof(lmclass_t));
+
+  E_INFO("Number of LM class specified %d in file %s\n",n_lmclass,ctlfile);
+
+  /* Read in one LM at a time */
+  while (str[0] != '\0') {
+    strcpy (lmfile, str);
+    if (fscanf (ctlfp, "%s", lmname) != 1)
+      E_FATAL("LMname missing after LMFileName '%s'\n", lmfile);
+    
+    n_lmclass_used = 0;
+		
+    if (fscanf (ctlfp, "%s", str) == 1) {
+      if (strcmp (str, "{") == 0) {
+	while ((fscanf (ctlfp, "%s", str) == 1) &&
+	       (strcmp (str, "}") != 0)) {
+	  if (n_lmclass_used >= n_lmclass){
+	    E_FATAL("Too many LM classes specified for '%s'\n",
+		    lmfile);
+	  }
+
+	  lmclass[n_lmclass_used] = lmclass_get_lmclass (lmclass_set,
+							 str);
+	  if (! (lmclass_isclass(lmclass[n_lmclass_used])))
+	    E_FATAL("LM class '%s' not found\n", str);
+	  n_lmclass_used++;
+	}
+	if (strcmp (str, "}") != 0)
+	  E_FATAL("Unexpected EOF(%s)\n", ctlfile);
+	if (fscanf (ctlfp, "%s", str) != 1)
+	  str[0] = '\0';
+      }
+    } else
+      str[0] = '\0';
+		
+    if (n_lmclass_used > 0){
+      /*ARCHAN DON'T do txt reading for a moment, just try to 
+	read the dmp file, bypass it for a moment. 
+	lm_read_clm(lmfile, lmname,
+		  lw,uw,wip,
+		  lmclass, 
+		  lmset,
+		  dict,
+		  n_lmclass_used,
+		  lmdumpdir);*/
+
+      lm = (lm_t*) lm_read_dump (lmfile, lw, wip, uw, n_lmclass_used,lmclass,dict_size);
+
+      /* Initialize the fast trigram cache, with all entries invalid */
+      lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
+      for (i = 0; i < LM_TGCACHE_SIZE; i++)
+	lm->tgcache[i].lwid[0] = BAD_S3LMWID;
+    }
+    else{
+      /*Again, bypass this currently, 
+	lm_read_txt(lmfile, lmname,lw,uw,wip,lmset,dict,lmdumpdir);*/
+
+      lm = (lm_t*) lm_read_dump (lmfile, lw, wip, uw,0,NULL,dict_size);
+
+      /* Initialize the fast trigram cache, with all entries invalid */
+      lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
+      for (i = 0; i < LM_TGCACHE_SIZE; i++)
+	lm->tgcache[i].lwid[0] = BAD_S3LMWID;
+    }
+
+    if(*n_lm == *n_alloclm){
+      lmset= (lmset_t *) ckd_realloc(lmset,(*n_alloclm+16)*sizeof(lmset_t));
+      *n_alloclm+=16;
+    }
+    lmset[*n_lm].name = ckd_salloc(lmname);
+    lmset[*n_lm].lm=lm;
+    *n_lm+=1;
+  }
+  
+  E_INFO("No. of LM set allocated %d, no. of LM %d \n",*n_alloclm,*n_lm);
+
+
+
+  fclose (ctlfp);
+  return lmset;
+}
+
+static int32 lm_build_lmclass_info(lm_t *lm,float64 lw, float64 uw, float64 wip,int32 n_lmclass_used,lmclass_t *lmclass)
+{
+  int i;
+  if(n_lmclass_used >0){
+    lm->lmclass=(lmclass_t*) ckd_calloc(n_lmclass_used,sizeof(lmclass_t));
+    for(i=0; i<n_lmclass_used ;i++)
+      lm->lmclass[i]=lmclass[i];
+  }else
+    lm->lmclass= NULL;
+  lm->n_lmclass = n_lmclass_used;
+
+  lm->inclass_ugscore = (int32*)ckd_calloc(lm->dict_size,sizeof(int32));
+
+  E_INFO("LM->inclass_ugscore size %d\n",lm->dict_size);
+  E_INFO("Number of class used %d\n",n_lmclass_used);
+  return 1;
+}
+
+
+
 /*
  * Read LM dump (<lmname>.DMP) file and make it the current LM.
  * Same interface as lm_read except that the filename refers to a .DMP file.
  */
-static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
+static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw,int32 n_lmclass_used, lmclass_t *lmclass,int32 dict_size)
 {
     lm_t *lm;
     int32 i, j, k, vn;
@@ -244,6 +463,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
     
     lm = (lm_t *) ckd_calloc (1, sizeof(lm_t));
     
+    lm->dict_size=dict_size;
     if ((lm->fp = fopen (file, "rb")) == NULL)
 	E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file);
     
@@ -306,7 +526,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
 	lm->log_bg_seg_sz = LOG2_BG_SEG_SZ;	/* Default */
     }
     if ((lm->n_ug <= 0) || (lm->n_ug >= MAX_S3LMWID))
-	E_FATAL("Bad #unigrams: %d (must be >0, <%d\n", lm->n_ug, MAX_S3LMWID);
+	E_FATAL("Bad #ug: %d (must be >0, <%d\n", lm->n_ug, MAX_S3LMWID);
 
     lm->bg_seg_sz = 1 << lm->log_bg_seg_sz;
 
@@ -320,7 +540,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
     if (lm->n_tg < 0)
 	E_FATAL("Bad #trigrams: %d\n", lm->n_tg);
 
-    /* Read unigrams; remember sentinel ug at the end! */
+    /* Read ug; remember sentinel ug at the end! */
     lm->ug = (ug_t *) ckd_calloc (lm->n_ug+1, sizeof(ug_t));
     if (fread (lm->ug, sizeof(ug_t), lm->n_ug+1, lm->fp) != (size_t)(lm->n_ug+1))
 	E_FATAL("fread(%s) failed\n", file);
@@ -330,9 +550,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
 	    SWAP_INT32(&(lm->ug[i].bowt.l));
 	    SWAP_INT32(&(lm->ug[i].firstbg));
 	}
-    E_INFO("%8d unigrams\n", lm->n_ug);
-
-    /* Space for in-memory bigrams/trigrams info; FOR NOW, DISK-BASED LM OPTION ONLY!! */
+    E_INFO("%8d ug\n", lm->n_ug);
 
     /* RAH, 5.1.01 - Let's try reading the whole damn thing in here   */
     if (LM_IN_MEMORY) {
@@ -355,25 +573,25 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
 	lm->tginfo = (tginfo_t **) ckd_calloc (lm->n_ug, sizeof(tginfo_t *));
       }
     } else {
-    lm->bg = NULL;
-    lm->tg = NULL;
-
-    /* Skip bigrams; remember sentinel at the end */
-    if (lm->n_bg > 0) {
+      lm->bg = NULL;
+      lm->tg = NULL;
+      
+      /* Skip bigrams; remember sentinel at the end */
+      if (lm->n_bg > 0) {
 	lm->bgoff = ftell (lm->fp);
 	fseek (lm->fp, (lm->n_bg+1) * sizeof(bg_t), SEEK_CUR);
 	E_INFO("%8d bigrams [on disk]\n", lm->n_bg);
 	lm->membg = (membg_t *) ckd_calloc (lm->n_ug, sizeof(membg_t));
-    }
-    
-    /* Skip trigrams */
-    if (lm->n_tg > 0) {
+      }
+      
+      /* Skip trigrams */
+      if (lm->n_tg > 0) {
 	lm->tgoff = ftell (lm->fp);
 	fseek (lm->fp, lm->n_tg * sizeof(tg_t), SEEK_CUR);
 	E_INFO("%8d trigrams [on disk]\n", lm->n_tg);
-
+	
 	lm->tginfo = (tginfo_t **) ckd_calloc (lm->n_ug, sizeof(tginfo_t *));
-    }
+      }
     }
     
     if (lm->n_bg > 0) {
@@ -399,32 +617,32 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
 	/* Trigram bowt table size */
 	lm->n_tgbowt = lm_fread_int32 (lm);
 	if ((lm->n_tgbowt <= 0) || (lm->n_tgbowt > 65536))
-	    E_FATAL("Bad trigram bowt table size: %d\n", lm->n_tgbowt);
+	  E_FATAL("Bad trigram bowt table size: %d\n", lm->n_tgbowt);
 	
 	/* Allocate and read trigram bowt table */
 	lm->tgbowt = (lmlog_t *) ckd_calloc (lm->n_tgbowt, sizeof (lmlog_t));
 	if (fread (lm->tgbowt, sizeof (lmlog_t), lm->n_tgbowt, lm->fp) !=
 	    (size_t)lm->n_tgbowt)
-	    E_FATAL("fread(%s) failed\n", file);
+	  E_FATAL("fread(%s) failed\n", file);
 	if (lm->byteswap) {
-	    for (i = 0; i < lm->n_tgbowt; i++)
-		SWAP_INT32(&(lm->tgbowt[i].l));
+	  for (i = 0; i < lm->n_tgbowt; i++)
+	    SWAP_INT32(&(lm->tgbowt[i].l));
 	}
 	E_INFO("%8d trigram bowt entries\n", lm->n_tgbowt);
 
 	/* Trigram prob table size */
 	lm->n_tgprob = lm_fread_int32 (lm);
 	if ((lm->n_tgprob <= 0) || (lm->n_tgprob > 65536))
-	    E_FATAL("Bad trigram bowt table size: %d\n", lm->n_tgprob);
+	  E_FATAL("Bad trigram bowt table size: %d\n", lm->n_tgprob);
 	
 	/* Allocate and read trigram bowt table */
 	lm->tgprob = (lmlog_t *) ckd_calloc (lm->n_tgprob, sizeof (lmlog_t));
 	if (fread (lm->tgprob, sizeof (lmlog_t), lm->n_tgprob, lm->fp) !=
 	    (size_t)lm->n_tgprob)
-	    E_FATAL("fread(%s) failed\n", file);
+	  E_FATAL("fread(%s) failed\n", file);
 	if (lm->byteswap) {
-	    for (i = 0; i < lm->n_tgprob; i++)
-		SWAP_INT32(&(lm->tgprob[i].l));
+	  for (i = 0; i < lm->n_tgprob; i++)
+	    SWAP_INT32(&(lm->tgprob[i].l));
 	}
 	E_INFO("%8d trigram prob entries\n", lm->n_tgprob);
 
@@ -453,7 +671,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
     if (fread (tmp_word_str, sizeof(char), k, lm->fp) != (size_t)k)
 	E_FATAL("fread(%s) failed\n", file);
 
-    /* First make sure string just read contains ucount words (PARANOIA!!) */
+    /* First make sure string just read contains n_ug words (PARANOIA!!) */
     for (i = 0, j = 0; i < k; i++)
 	if (tmp_word_str[i] == '\0')
 	    j++;
@@ -488,14 +706,18 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw)
 	lm->ug[endwid].bowt.f = MIN_PROB_F;
 	lm->finishlwid = endwid;
     }
-    
+
+    if(n_lmclass_used>0) {
+      lm_build_lmclass_info(lm,lw,uw,wip,n_lmclass_used,lmclass);
+    }
+
     lm2logs3 (lm, uw);	/* Applying unigram weight; convert to logs3 values */
     
     /* Apply the new lw and wip values */
     lm->lw = 1.0;	/* The initial settings for lw and wip */
     lm->wip = 0;	/* logs3(1.0) */
     lm_set_param (lm, lw, wip);
-    
+
     return lm;
 }
 
@@ -521,7 +743,7 @@ lm_t *lm_read (char *file, float64 lw, float64 wip, float64 uw)
       LM_IN_MEMORY = 0;
     
     /* For now, only dump files can be read; they are created offline */
-    lm = lm_read_dump (file, lw, wip, uw);
+    lm = lm_read_dump (file, lw, wip, uw,0,NULL,0);
 
     for (u = 0; u < lm->n_ug; u++)
 	lm->ug[u].dictwid = BAD_S3WID;
@@ -545,7 +767,8 @@ void lm_cache_reset (lm_t *lm)
     
     n_bgfree = n_tgfree = 0;
     
-  if (LM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
+    /* ARCHAN: RAH only short-circult this function only */
+    if (LM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
     return;
   
     if ((lm->n_bg > 0) && (! lm->bg)) {	/* Disk-based; free "stale" bigrams */
@@ -614,14 +837,17 @@ void lm_cache_stats_dump (lm_t *lm)
 }
 
 
-int32 lm_ug_score (lm_t *lm, s3lmwid_t wid)
+int32 lm_ug_score (lm_t *lm, s3lmwid_t lwid, s3wid_t wid)
 {
-    if (NOT_S3LMWID(wid) || (wid >= lm->n_ug))
-	E_FATAL("Bad argument (%d) to lm_ug_score\n", wid);
+    if (NOT_S3LMWID(lwid) || (wid >= lm->n_ug))
+	E_FATAL("Bad argument (%d) to lm_ug_score\n", lwid);
 
     lm->access_type = 1;
     
-    return (lm->ug[wid].prob.l);
+    if(lm->inclass_ugscore)
+      return (lm->ug[lwid].prob.l +lm->inclass_ugscore[wid]);
+    else
+      return (lm->ug[lwid].prob.l );
 }
 
 
@@ -632,22 +858,43 @@ int32 lm_uglist (lm_t *lm, ug_t **ugptr)
 }
 
 
-int32 lm_ug_wordprob (lm_t *lm, int32 th, wordprob_t *wp)
+/* This create a mapping from either the unigram or words in a class*/
+int32 lm_ug_wordprob (lm_t *lm, dict_t *dict,int32 th, wordprob_t *wp)
 {
     int32 i, j, n, p;
-    s3wid_t w;
-    
+    s3wid_t w,dictid;
+    lmclass_t lmclass;
+    lmclass_word_t lm_cw;
     n = lm->n_ug;
     
     for (i = 0, j = 0; i < n; i++) {
 	w = lm->ug[i].dictwid;
-	
-	if (IS_S3WID(w)) {
+	if (IS_S3WID(w)) { /*Is w>0? Then it can be either wid or class id*/
+	  if (w <  LM_CLASSID_BASE){ /*It is just a word*/
 	    if ((p = lm->ug[i].prob.l) >= th) {
 		wp[j].wid = w;
 		wp[j].prob = p;
 		j++;
 	    }
+	  }else{ /* It is a class */
+	    lmclass=LM_CLASSID_TO_CLASS(lm,w); /* Get the class*/
+	    lm_cw=lmclass_firstword(lmclass);
+	    while(lmclass_isword(lm_cw)){
+	      dictid =lmclass_getwid(lm_cw); 
+
+	      if(dictid !=dict_basewid(dict,dictid)){
+		dictid=dict_basewid(dict,dictid);
+	      }
+	      if((p=lm->ug[i].prob.l+lm->inclass_ugscore[dictid])>=th){
+		wp[j].wid=dictid;
+		wp[j].prob=lm->ug[i].prob.l;
+		j++;
+	      }
+
+	      lm_cw= lmclass_nextword (lmclass,lm_cw);
+	      
+	    }
+	  }
 	}
     }
     
@@ -742,6 +989,7 @@ int32 lm_bglist (lm_t *lm, s3lmwid_t w1, bg_t **bgptr, int32 *bowt)
 }
 
 
+#if 0 /*Obsolete, not used */
 int32 lm_bg_wordprob (lm_t *lm, s3lmwid_t lwid, int32 th, wordprob_t *wp, int32 *bowt)
 {
     bg_t *bgptr;
@@ -767,40 +1015,55 @@ int32 lm_bg_wordprob (lm_t *lm, s3lmwid_t lwid, int32 th, wordprob_t *wp, int32 
     
     return j;
 }
+#endif
 
+/*
+ *  This function look-ups the bigram score of p(lw2|lw1)
+ *  The information for lw2 and w2 are repeated because the legacy 
+ *  implementation(since s3.2) of vithist used only LM wid rather 
+ *  than dictionary wid.  
+ */
 
-int32 lm_bg_score (lm_t *lm, s3lmwid_t w1, s3lmwid_t w2)
+int32 lm_bg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3wid_t w2)
 {
     int32 i, n, score;
     bg_t *bg=0;
 
-    if ((lm->n_bg == 0) || (NOT_S3LMWID(w1)))
-	return (lm_ug_score (lm, w2));
+    if ((lm->n_bg == 0) || (NOT_S3LMWID(lw1)))
+	return (lm_ug_score (lm, lw2, w2));
 
     lm->n_bg_score++;
 
-    if (NOT_S3LMWID(w2) || (w2 >= lm->n_ug))
-	E_FATAL("Bad w2 argument (%d) to lm_bg_score\n", w2);
+    if (NOT_S3LMWID(lw2) || (lw2 >= lm->n_ug))
+	E_FATAL("Bad lw2 argument (%d) to lm_bg_score\n", lw2);
     
-    n = lm->ug[w1+1].firstbg - lm->ug[w1].firstbg;
+    n = lm->ug[lw1+1].firstbg - lm->ug[lw1].firstbg;
     
     if (n > 0) {
-	if (! lm->membg[w1].bg)
-	    load_bg (lm, w1);
-	lm->membg[w1].used = 1;
-	bg = lm->membg[w1].bg;
+	if (! lm->membg[lw1].bg)
+	    load_bg (lm, lw1);
+	lm->membg[lw1].used = 1;
+	bg = lm->membg[lw1].bg;
 
-	i = find_bg (bg, n, w2);
+	i = find_bg (bg, n, lw2);
     } else
 	i = -1;
     
     if (i >= 0) {
 	score = lm->bgprob[bg[i].probid].l;
+	if(lm->inclass_ugscore){ /*Only add within class prob if class information exists.
+				  Is actually ok to just add the score because if the word
+				  is not within-class. The returning scores will be 0. I just
+				  love to safe-guard it :-). 
+				 */
+	  score += lm->inclass_ugscore[w2];
+	}
+
 	lm->access_type = 2;
     } else {
 	lm->n_bg_bo++;
 	lm->access_type = 1;
-	score = lm->ug[w1].bowt.l + lm->ug[w2].prob.l;
+	score = lm->ug[lw1].bowt.l + lm->ug[lw2].prob.l;
     }
 
 #if 0
@@ -897,7 +1160,7 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 static int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w)
 {
     int32 i, b, e;
-    
+
     b = 0;
     e = n;
     while (e-b > BINARY_SEARCH_THRESH) {
@@ -953,16 +1216,25 @@ int32 lm_tglist (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, tg_t **tgptr, int32 *bo
     return (tginfo->n_tg);
 }
 
+/*
+ *  This function look-ups the trigram score of p(lw3|lw2,lw1)
+ *  and compute the in-class ug probability of w3.
+ *  The information for lw3 and w3 are repeated because the legacy 
+ *  implementation(since s3.2) of vithist used only LM wid rather 
+ *  than dictionary wid.  
+ *  
+ */
 
-int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3)
+int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid_t w3)
 {
     int32 i, h, n, score;
     tg_t *tg;
     tginfo_t *tginfo, *prev_tginfo;
     
+
     if ((lm->n_tg == 0) || (NOT_S3LMWID(lw1)))
-	return (lm_bg_score (lm, lw2, lw3));
-    
+	return (lm_bg_score (lm, lw2, lw3, w3));
+
     lm->n_tg_score++;
 
     if (NOT_S3LMWID(lw1) || (lw1 >= lm->n_ug))
@@ -971,24 +1243,25 @@ int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3)
 	E_FATAL("Bad lw2 argument (%d) to lm_tg_score\n", lw2);
     if (NOT_S3LMWID(lw3) || (lw3 >= lm->n_ug))
 	E_FATAL("Bad lw3 argument (%d) to lm_tg_score\n", lw3);
-    
+
     /* Lookup tgcache first; compute hash(lw1, lw2, lw3) */
     h = ((lw1 & 0x000003ff) << 21) + ((lw2 & 0x000003ff) << 11) + (lw3 & 0x000007ff);
     h %= LM_TGCACHE_SIZE;
+
     if ((lm->tgcache[h].lwid[0] == lw1) &&
 	(lm->tgcache[h].lwid[1] == lw2) &&
 	(lm->tgcache[h].lwid[2] == lw3)) {
+
 	lm->n_tgcache_hit++;
 	return lm->tgcache[h].lscr;
     }
-    
     prev_tginfo = NULL;
     for (tginfo = lm->tginfo[lw2]; tginfo; tginfo = tginfo->next) {
 	if (tginfo->w1 == lw1)
 	    break;
 	prev_tginfo = tginfo;
     }
-    
+
     if (! tginfo) {
     	load_tg (lm, lw1, lw2);
 	tginfo = lm->tginfo[lw2];
@@ -999,18 +1272,24 @@ int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3)
     }
 
     tginfo->used = 1;
-    
+
     /* Trigrams for w1,w2 now in memory; look for w1,w2,w3 */
     n = tginfo->n_tg;
     tg = tginfo->tg;
+
     if ((i = find_tg (tg, n, lw3)) >= 0) {
-	score = lm->tgprob[tg[i].probid].l;
+	score = lm->tgprob[tg[i].probid].l ;
+	if(lm->inclass_ugscore){ /*Only add within class prob if class information exists.
+				  Is actually ok to just add the score because if the word
+				  is not within-class. The returning scores will be 0. 
+				 */
+	  score += lm->inclass_ugscore[w3];
+	}
 	lm->access_type = 3;
     } else {
 	lm->n_tg_bo++;
-	score = tginfo->bowt + lm_bg_score(lm, lw2, lw3);
+	score = tginfo->bowt + lm_bg_score(lm, lw2, lw3, w3);
     }
-
 #if 0
     printf ("%5d %5d %5d -> %8d\n", lw1, lw2, lw3, score);
 #endif

@@ -143,6 +143,7 @@ void ckd_free_3d(void ***ptr);
 #define ckd_calloc_2d(d1,d2,sz)	__ckd_calloc_2d__((d1),(d2),(sz),__FILE__,__LINE__)
 #define ckd_calloc_3d(d1,d2,d3,sz) __ckd_calloc_3d__((d1),(d2),(d3),(sz),__FILE__,__LINE__)
 
+/*#define ckd_free(ptr)		free(ptr)*/
 
 
 /*

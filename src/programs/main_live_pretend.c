@@ -68,7 +68,7 @@ int main (int argc, char *argv[])
     }
     ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
 
-	samps = (short *) calloc(MAXSAMPLES,sizeof(short));
+    samps = (short *) calloc(MAXSAMPLES,sizeof(short));
     blksize = 2000;
 
     if ((fp = fopen(ctlfile,"r")) == NULL)
@@ -78,6 +78,7 @@ int main (int argc, char *argv[])
 
     while (fscanf(fp,"%s",filename) != EOF){
 	sprintf(cepfile,"%s/%s.raw",indir,filename);
+	live_utt_set_uttid(filename);
 	if ((sfp = fopen(cepfile,"rb")) == NULL)
 	    E_FATAL("Unable to read %s\n",cepfile);
 		nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
@@ -95,5 +96,7 @@ int main (int argc, char *argv[])
 	    fprintf(stderr,"\n");
         }
     }
+    
+    live_utt_summary();
     return 0;
 }

@@ -1,3 +1,22 @@
+2004-05-24  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
+	sphinx 3.4 release. 
+	-Numerous bugs of s3.3 are fixed 
+	 1, -feat_type is not hard-wired now. 
+	 2, bugs of the live_mode recognizer is exterminated. 
+	 3, sphinx3-simple and sphinx3-test are working. 
+	-Developers in Sun added new set of directories for testing.  
+	Those are mainly for internal use.
+	-Fast GMM computation techniques are included,
+	 1, Support of down-sampling
+	 2, Support of CI-based GMM selection
+	 3, Support of VQ-based and SVQ-based Gaussian Selection
+	 4, Support of SVQ with arbitrary number of sub-vectors. 
+	-Phoneme look-ahead implemented, currently it supports 4 types of heuristics. 
+	0, no, 1, max , 2 sum, 3 1st. 
+	-Support multi-LM specified offline. 
+	-Support class-based LM 
+	-prototype of live-mode APIs are included. Not stable, for internal use only. 
+
 2002-11-08  Evandro Gouvea (egouvea@cs.cmu.edu) at Carnegie Mellon University.
 	- Converted Makefiles to use GNU's autoconf, automake, libtool etc.
 	- Added acoustic model, language model, dictionary, etc to use as

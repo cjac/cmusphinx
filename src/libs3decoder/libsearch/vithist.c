@@ -67,7 +67,13 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist)
 {
     vithist_t *vh;
     lm_t *lm;
-    
+    lmset_t *lmset;
+    dict_t *dict;
+    wordprob_t *wp;
+    int i;
+    /*    int n;*/
+    int max=-1;
+
     E_INFO("Initializing Viterbi-history module\n");
     
     vh = (vithist_t *) ckd_calloc (1, sizeof(vithist_t));
@@ -84,7 +90,26 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist)
     vh->bghist = bghist;
     
     lm = kbcore_lm (kbc);
-    vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (lm_n_ug(lm), sizeof(vh_lms2vh_t *));
+    lmset =kbcore_lmset(kbc);
+    dict =kbcore_dict(kbc);
+
+    wp = (wordprob_t *) ckd_calloc (dict_size(dict), sizeof(wordprob_t));    
+    if(lmset){
+      /* Don't do anything. Allow it to be done in run-time */
+
+      for(i=0;i<kbcore_nlm(kbc);i++){
+	if(lm_n_ug(lmset[i].lm)>max){
+	  max=lm_n_ug(lmset[i].lm);
+	}
+      }
+      E_INFO("Allocation for viterbi history, finall size %d\n",max);
+      vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (max,sizeof(vh_lms2vh_t *));
+
+    }else if(lm){
+      vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (lm_n_ug(lm), sizeof(vh_lms2vh_t *));
+    }
+    ckd_free ((void *) wp);
+
     vh->lwidlist = NULL;
     
     return vh;
@@ -165,7 +190,7 @@ static int32 vh_lmstate_find (vithist_t *vh, vh_lmstate_t *lms)
     lwid = lms->lm3g.lwid[0];
     if ((lms2vh = vh->lms2vh_root[lwid]) == NULL)
 	return -1;
-    
+
     assert (lms2vh->state == lwid);
     
     lwid = lms->lm3g.lwid[1];
@@ -257,9 +282,12 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     int32 i;
     
     assert (vh->n_frm == ef);
-    
+    if(pred == -1) { 
+      E_FATAL("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
+      exit(-1);
+    }
+ 
     pve = vh->entry[VITHIST_ID2BLK(pred)] + VITHIST_ID2BLKOFFSET(pred);
-    
     /* Create a temporary entry with all the info currently available */
     tve.wid = wid;
     tve.sf = pve->ef + 1;
@@ -267,7 +295,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.type = type;
     tve.valid = 1;
     tve.ascr = score - pve->score;
-    
+
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;
 	fe = 1;
@@ -275,16 +303,21 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	se = vh->frame_start[pve->ef];
 	fe = vh->frame_start[pve->ef + 1];
     }
-    
     if (dict_filler_word (kbcore_dict(kbc), wid)) {
 	tve.lscr = fillpen (kbcore_fillpen(kbc), wid);
 	tve.score = score + tve.lscr;
 	tve.pred = pred;
 	tve.lmstate.lm3g = pve->lmstate.lm3g;
-	
 	vithist_enter (vh, kbc, &tve);
     } else {
+
+      if(kbc->lmset)
+	lwid = kbc->lm->dict2lmwid[wid];
+      else 
 	lwid = kbcore_dict2lmwid (kbc, wid);
+
+      /*E_INFO("lwid %d, wid %d wordstr %s\n",lwid, wid, dict_wordstr(kbc->dict,wid));*/
+
 	tve.lmstate.lm3g.lwid[0] = lwid;
 	
 	for (i = se; i < fe; i++) {
@@ -294,7 +327,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		tve.lscr = lm_tg_score (kbcore_lm(kbc),
 					pve->lmstate.lm3g.lwid[1],
 					pve->lmstate.lm3g.lwid[0],
-					lwid);
+					lwid,
+					wid);
 		
 		tve.score = pve->score + tve.ascr + tve.lscr;
 		
@@ -468,7 +502,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     s3lmwid_t endwid;
     lm_t *lm;
     dict_t *dict;
-    
+
     /* Find last frame with entries in vithist table */
     for (f = vh->n_frm-1; f >= 0; --f) {
 	sv = vh->frame_start[f];	/* First vithist entry in frame f */
@@ -486,6 +520,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     /* Terminate in a final </s> node (make this optional?) */
     lm = kbcore_lm (kbc);
     endwid = lm_finishwid (lm);
+    dict = kbcore_dict (kbc);
     
     bestscore = MAX_NEG_INT32;
     bestvh = -1;
@@ -496,7 +531,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	ve = vh->entry[b] + l;
 	
 	scr = ve->score;
-	scr += lm_tg_score (lm, ve->lmstate.lm3g.lwid[1], ve->lmstate.lm3g.lwid[0], endwid);
+	scr += lm_tg_score (lm, ve->lmstate.lm3g.lwid[1], ve->lmstate.lm3g.lwid[0], endwid,dict_finishwid(dict));
 	
 	if (bestscore < scr) {
 	    bestscore = scr;
@@ -506,7 +541,6 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     }
     assert (bestvh >= 0);
 
-    dict = kbcore_dict (kbc);
     
     if (f != vh->n_frm-1) {
 	E_ERROR("No word exit in frame %d, using exits from frame %d\n", vh->n_frm-1, f);
@@ -548,7 +582,8 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
     vithist_entry_t *ve, *bestve;
     s3lmwid_t endwid;
     lm_t *lm;
-    
+    dict_t *dict;
+
     /* Find last frame with entries in vithist table */
     for (f = vh->n_frm-1; f >= 0; --f) {
 	sv = vh->frame_start[f];	/* First vithist entry in frame f */
@@ -567,6 +602,7 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
     
     /* Terminate in a final </s> node (make this optional?) */
     lm = kbcore_lm (kbc);
+    dict = kbcore_dict (kbc);    
     endwid = lm_finishwid (lm);
     
     bestscore = MAX_NEG_INT32;
@@ -578,7 +614,7 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
 	ve = vh->entry[b] + l;
 	
 	scr = ve->score;
-	scr += lm_tg_score (lm, ve->lmstate.lm3g.lwid[1], ve->lmstate.lm3g.lwid[0], endwid);
+	scr += lm_tg_score (lm, ve->lmstate.lm3g.lwid[1], ve->lmstate.lm3g.lwid[0], endwid, dict_finishwid(dict));
 	
 	if (bestscore < scr) {
 	    bestscore = scr;

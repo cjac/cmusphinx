@@ -51,6 +51,8 @@ typedef struct {
     int32 ef;
 } partialhyp_t;
 
+void live_utt_summary();
+void live_utt_set_uttid(char* uttname);
 void live_initialize_decoder (char *argsfile);
 
 int32 live_get_partialhyp(int32 endutt);

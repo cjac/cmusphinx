@@ -56,7 +56,7 @@ modename="$progname"
 PROGRAM=ltmain.sh
 PACKAGE=libtool
 VERSION=1.5
-TIMESTAMP=" (1.1220.2.1 2003/04/14 22:48:00)"
+TIMESTAMP=" (1.1220 2003/04/05 19:32:58)"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -4509,7 +4509,6 @@ EOF
 #include <malloc.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <sys/stat.h>
 
 #if defined(PATH_MAX)
 # define LT_PATHMAX PATH_MAX
@@ -4520,19 +4519,15 @@ EOF
 #endif
 
 #ifndef DIR_SEPARATOR
-# define DIR_SEPARATOR '/'
-# define PATH_SEPARATOR ':'
+#define DIR_SEPARATOR '/'
 #endif
 
 #if defined (_WIN32) || defined (__MSDOS__) || defined (__DJGPP__) || \
   defined (__OS2__)
-# define HAVE_DOS_BASED_FILE_SYSTEM
-# ifndef DIR_SEPARATOR_2 
-#  define DIR_SEPARATOR_2 '\\'
-# endif
-# ifndef PATH_SEPARATOR_2 
-#  define PATH_SEPARATOR_2 ';'
-# endif
+#define HAVE_DOS_BASED_FILE_SYSTEM
+#ifndef DIR_SEPARATOR_2 
+#define DIR_SEPARATOR_2 '\\'
+#endif
 #endif
 
 #ifndef DIR_SEPARATOR_2
@@ -4542,30 +4537,17 @@ EOF
         (((ch) == DIR_SEPARATOR) || ((ch) == DIR_SEPARATOR_2))
 #endif /* DIR_SEPARATOR_2 */
 
-#ifndef PATH_SEPARATOR_2
-# define IS_PATH_SEPARATOR(ch) ((ch) == PATH_SEPARATOR)
-#else /* PATH_SEPARATOR_2 */
-# define IS_PATH_SEPARATOR(ch) ((ch) == PATH_SEPARATOR_2)
-#endif /* PATH_SEPARATOR_2 */
-
 #define XMALLOC(type, num)      ((type *) xmalloc ((num) * sizeof(type)))
 #define XFREE(stale) do { \
   if (stale) { free ((void *) stale); stale = 0; } \
 } while (0)
-
-#if defined DEBUGWRAPPER
-# define DEBUG(format, ...) fprintf(stderr, format, __VA_ARGS__)
-#else
-# define DEBUG(format, ...) 
-#endif
 
 const char *program_name = NULL;
 
 void * xmalloc (size_t num);
 char * xstrdup (const char *string);
 char * basename (const char *name);
-char * find_executable(const char *wrapper);
-int    check_executable(const char *path);
+char * fnqualify(const char *path);
 char * strendzap(char *str, const char *pat);
 void lt_fatal (const char *message, ...);
 
@@ -4576,8 +4558,6 @@ main (int argc, char *argv[])
   int i;
   
   program_name = (char *) xstrdup ((char *) basename (argv[0]));
-  DEBUG("(main) argv[0]      : %s\n",argv[0]);
-  DEBUG("(main) program_name : %s\n",program_name);
   newargz = XMALLOC(char *, argc+2);
 EOF
 
@@ -4586,23 +4566,13 @@ EOF
 EOF
 
 	    cat >> $cwrappersource <<"EOF"
-  newargz[1] = find_executable(argv[0]);
-  if (newargz[1] == NULL)
-    lt_fatal("Couldn't find %s", argv[0]);
-  DEBUG("(main) found exe at : %s\n",newargz[1]);
+  newargz[1] = fnqualify(argv[0]);
   /* we know the script has the same name, without the .exe */
   /* so make sure newargz[1] doesn't end in .exe */
   strendzap(newargz[1],".exe"); 
   for (i = 1; i < argc; i++)
     newargz[i+1] = xstrdup(argv[i]);
   newargz[argc+1] = NULL;
-
-  for (i=0; i<argc+1; i++)
-  {
-    DEBUG("(main) newargz[%d]   : %s\n",i,newargz[i]);
-    ;
-  }
-
 EOF
 
 	    cat >> $cwrappersource <<EOF
@@ -4646,125 +4616,31 @@ basename (const char *name)
   return (char *) base;
 }
 
-int
-check_executable(const char * path)
+char * 
+fnqualify(const char *path)
 {
-  struct stat st;
-
-  DEBUG("(check_executable)  : %s\n", path ? (*path ? path : "EMPTY!") : "NULL!");
-  if ((!path) || (!*path))
-    return 0;
-
-  if ((stat (path, &st) >= 0) &&
-      (((st.st_mode & S_IXOTH) == S_IXOTH) ||
-       ((st.st_mode & S_IXGRP) == S_IXGRP) ||
-       ((st.st_mode & S_IXUSR) == S_IXUSR)))
-    return 1;
-  else
-    return 0;
-}
-
-/* Searches for the full path of the wrapper.  Returns
-   newly allocated full path name if found, NULL otherwise */
-char *
-find_executable (const char* wrapper)
-{
-  int has_slash = 0;
-  const char* p;
-  const char* p_next;
-  struct stat st;
-  /* static buffer for getcwd */
+  size_t size;
+  char *p;
   char tmp[LT_PATHMAX + 1];
-  int tmp_len;
-  char* concat_name;
 
-  DEBUG("(find_executable)  : %s\n", wrapper ? (*wrapper ? wrapper : "EMPTY!") : "NULL!");
-  
-  if ((wrapper == NULL) || (*wrapper == '\0'))
-    return NULL;
+  assert(path != NULL);
 
-  /* Absolute path? */
+  /* Is it qualified already? */
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  if (isalpha (wrapper[0]) && wrapper[1] == ':')
-  {
-    concat_name = xstrdup (wrapper);
-    if (check_executable(concat_name))
-      return concat_name;
-    XFREE(concat_name);
-  }
-  else
-  {
+  if (isalpha (path[0]) && path[1] == ':')
+    return xstrdup (path);
 #endif
-    if (IS_DIR_SEPARATOR (wrapper[0]))
-    {
-      concat_name = xstrdup (wrapper);
-      if (check_executable(concat_name))
-        return concat_name;
-      XFREE(concat_name);
-    }
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  }
-#endif
+  if (IS_DIR_SEPARATOR (path[0]))
+    return xstrdup (path);
 
-  for (p = wrapper; *p; p++)
-    if (*p == '/')
-    {
-      has_slash = 1;
-      break;
-    }
-  if (!has_slash)
-  {
-    /* no slashes; search PATH */
-    const char* path = getenv ("PATH");
-    if (path != NULL)
-    {
-      for (p = path; *p; p = p_next)
-      {
-        const char* q;
-        size_t p_len;
-        for (q = p; *q; q++)
-          if (IS_PATH_SEPARATOR(*q))
-            break;
-        p_len = q - p;
-        p_next = (*q == '\0' ? q : q + 1);
-        if (p_len == 0)
-        {
-          /* empty path: current directory */
-          if (getcwd (tmp, LT_PATHMAX) == NULL)
-            lt_fatal ("getcwd failed");
-          tmp_len = strlen(tmp);
-          concat_name = XMALLOC(char, tmp_len + 1 + strlen(wrapper) + 1);
-          memcpy (concat_name, tmp, tmp_len);
-          concat_name[tmp_len] = '/';
-          strcpy (concat_name + tmp_len + 1, wrapper);
-        }
-        else
-        {
-          concat_name = XMALLOC(char, p_len + 1 + strlen(wrapper) + 1);
-          memcpy (concat_name, p, p_len);
-          concat_name[p_len] = '/';
-          strcpy (concat_name + p_len + 1, wrapper);
-        }
-        if (check_executable(concat_name))
-          return concat_name;
-        XFREE(concat_name);
-      }
-    }
-    /* not found in PATH; assume curdir */
-  }
-  /* Relative path | not found in path: prepend cwd */
+  /* prepend the current directory */
+  /* doesn't handle '~' */
   if (getcwd (tmp, LT_PATHMAX) == NULL)
     lt_fatal ("getcwd failed");
-  tmp_len = strlen(tmp);
-  concat_name = XMALLOC(char, tmp_len + 1 + strlen(wrapper) + 1);
-  memcpy (concat_name, tmp, tmp_len);
-  concat_name[tmp_len] = '/';
-  strcpy (concat_name + tmp_len + 1, wrapper);
-
-  if (check_executable(concat_name))
-    return concat_name;
-  XFREE(concat_name);
-  return NULL;
+  size = strlen(tmp) + 1 + strlen(path) + 1; /* +2 for '/' and '\0' */
+  p = XMALLOC(char, size);
+  sprintf(p, "%s%c%s", tmp, DIR_SEPARATOR, path);
+  return p;
 }
 
 char *

@@ -60,7 +60,6 @@
 
 #include "lextree.h"
 
-
 /*
  * Lextree nodes, and the HMMs contained within, are cleared upon creation, and whenever
  * they become active during search.  Thus, when activated during search, they are always
@@ -618,10 +617,15 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		assert (ln->frame == frm);
 		
 		if (! ln->composite)
+		  {
+
 		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		  }
 		else
+		  {
 		    k = hmm_vit_eval_3st (&(ln->hmm), d2p->comsseq[ln->ssid], ascr->comsen);
-		
+
+		  }
 		if (best < k)
 		    best = k;
 		
@@ -706,15 +710,20 @@ void lextree_hmm_histbin (lextree_t *lextree, int32 bestscr, int32 *bin, int32 n
 
 
 void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
-			    int32 cf, int32 th, int32 pth, int32 wth)
+			    int32 cf, int32 th, int32 pth, int32 wth,int32 *phn_heur_list,int32 heur_beam,int32 heur_type)
 {
     mdef_t *mdef;
-    int32 nf, newscore;
+    int32 nf, newscore, newHeurScore;
     lextree_node_t **list, *ln, *ln2;
     hmm_t *hmm, *hmm2;
     gnode_t *gn;
     int32 i, n;
-    
+
+    /* Code for heursitic score */
+    static int32 maxNewHeurScore=MAX_NEG_INT32;
+    static int32 lastfrm=-1;
+    int32 hth;
+
     mdef = kbcore_mdef(kbc);
     
     nf = cf+1;
@@ -732,7 +741,7 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
 		ln->frame = nf;
 		lextree->next_active[n++] = ln;
 	    } else {				/* Deactivate */
-		ln->frame = -1;
+	      ln->frame = -1;
 		hmm_clear (hmm, mdef_n_emit_state(mdef));
 	    }
 	}
@@ -745,13 +754,40 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
 	    if (hmm->out.score < pth)
 		continue;			/* HMM exit score not good enough */
 #endif
+	    if(heur_type >0){
+	      if (cf!=lastfrm) {
+		lastfrm=cf;
+		maxNewHeurScore=MAX_NEG_INT32;
+	      }
+	      for (gn = ln->children; gn; gn = gnode_next(gn)) {
+		ln2 = gnode_ptr(gn);
+                
+		newHeurScore = hmm->out.score + (ln2->prob - ln->prob) + phn_heur_list[(int32)ln2->ci];
+		if (maxNewHeurScore < newHeurScore)  maxNewHeurScore = newHeurScore;
+	      }
+	      hth = maxNewHeurScore + heur_beam;
+	    }
+
 	    /* Transition to each child */
 	    for (gn = ln->children; gn; gn = gnode_next(gn)) {
 		ln2 = gnode_ptr(gn);
 		hmm2 = &(ln2->hmm);
 		
 		newscore = hmm->out.score + (ln2->prob - ln->prob);
-		if ((newscore >= th) && (hmm2->in.score < newscore)) {
+		newHeurScore = newscore + phn_heur_list[(int32)ln2->ci];
+
+#if 0
+                E_INFO("Newscore %d, Heurscore %d, hth %d, CI phone ID %d, CI phone Str %s\n",newscore, newHeurScore, hth, ln2->ci,mdef_ciphone_str(mdef,ln2->ci));
+#endif
+
+ 		if (((heur_type==0)||                          /*If the heuristic type is 0, 
+								by-pass heuristic score OR */
+		     (heur_type>0 && newHeurScore >= hth)) &&  /*If the heuristic type is other 
+								and if the heur score is within threshold*/
+		    (newscore >= th) &&                       /*If the score is smaller than the
+								phone score, prune away*/
+		    (hmm2->in.score < newscore)               /*Just the Viterbi Update */
+		   ) {
 		    hmm2->in.score = newscore;
 		    hmm2->in.history = hmm->out.history;
 	    
@@ -764,7 +800,10 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
 	} else {			/* Leaf node; word exit */
 	    if (hmm->out.score < wth)
 		continue;		/* Word exit score not good enough */
-	    
+
+	    if(hmm->out.history==-1)
+	      E_ERROR("Hmm->out.history equals to -1 with score %d and active idx %d, lextree->type\n",hmm->out.score,i,lextree->type);
+
 	    /* Rescore the LM prob for this word wrt all possible predecessors */
 	    vithist_rescore (vh, kbc, ln->wid, cf,
 			     hmm->out.score - ln->prob, hmm->out.history, lextree->type);

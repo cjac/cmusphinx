@@ -1,3 +1,10 @@
+2004-05-26 Update this NEWS files again. We already gone through 2 
+	   sub-version during this period of time. From 3.2 to 3.3, 
+	   a live mode recognzier is included, from 3.3 to 3.4, the
+	   bugs in live mode recognizer is large exterminated and 
+	   a lot of facilities such as fast GMM computation and phoneme
+	   look-ahead are included. 
+	
 2002-11-30 Release of Sphinx-3.
 
 2001-12-07 Dropped "naming" conditions from LICENSE.

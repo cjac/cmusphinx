@@ -62,9 +62,15 @@
 #ifndef _S3_LM_H_
 #define _S3_LM_H_
 
+#define LM_DICTWID_BADMAP	-16000		/* An illegal mapping */
+#define LM_CLASSID_BASE		0x01000000	/* Interpreted as LMclass ID */
+#define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
+#define MIN_PROB_F -99.0
 
 #include <libutil/libutil.h>
 #include "s3types.h"
+#include "lmclass.h"
+#include "dict.h"
 
 
 /* Log quantities represented in either floating or integer format */
@@ -151,7 +157,20 @@ typedef struct {
 #define BG_SEG_SZ       (1 << (LOG2_BG_SEG_SZ))
 
 #define LM_TGCACHE_SIZE		100003	/* A prime no. (hopefully it IS one!) */
+/* 20040211 ARCHAN: Yes! Indeed it is a prime */
 
+
+/*
+ *  The structure for control of LM
+ */
+/* Never used!*/
+#if 0
+typedef struct lm_ctl_s{
+  char *classInfoFn;
+  char **gramfnlist;
+  char **gramlist;
+} lm_ctl_t;
+#endif
 
 /*
  * The language model.
@@ -214,7 +233,25 @@ typedef struct lm_s {
     
     int32 access_type;	/* Updated on every lm_{tg,bg,ug}_score call to reflect the kind of
 			   n-gram accessed: 3 for 3-gram, 2 for 2-gram and 1 for 1-gram */
+
+  /* 20040225 ARCHAN : Data structure to maintain dictionary information */
+  /* Data structure for dictionary to LM words look up mapping */
+  s3lmwid_t *dict2lmwid; 
+  
+  /* Data structure to maintain the class information */
+  int32 dict_size;	/* #words in lexicon */
+  /* Data structure that maintains the class information */
+  lmclass_t *lmclass;
+  int32 n_lmclass;
+  int32 *inclass_ugscore;
+  
 } lm_t;
+
+/*20040222 ARCHAN: Structure for multiple, named LMs, copied from s2*/
+typedef struct lmset_s {
+  char *name;
+  lm_t *lm;
+} lmset_t;
 
 /* Access macros; not meant for arbitrary use */
 #define lm_lmwid2dictwid(lm,u)	((lm)->ug[u].dictwid)
@@ -234,6 +271,7 @@ typedef struct {
 } wordprob_t;
 
 
+int32 lm_get_classid (lm_t *model, char *name);
 /*
  * Read an LM (dump) file; return pointer to LM structure created.
  */
@@ -241,6 +279,22 @@ lm_t *lm_read (char *file,	/* In: LM file being read */
 	       float64 lw,	/* In: Language weight */
 	       float64 wip,	/* In: Word insertion penalty */
 	       float64 uw);	/* In: Unigram weight (interpolation with uniform distr.) */
+
+/*
+ * Read the LM control file, also initialize kb->lm
+ */
+
+lmset_t* lm_read_ctl(char * ctlfile,/* Control file name */
+		 dict_t* dict,  /* In: Dictionary */
+		 float64 lw,	/* In: Language weight */
+		 float64 wip,	/* In: Word insertion penalty */
+		 float64 uw,    /* In: Unigram weight */
+		 char* lmdumpdir, /* In: LMdumpdir */
+		 int32* n_lm,    /* In/Out: number of LM */
+		 int32* n_alloclm, /* In/Out: number of allocated LM */
+		     int32 dict_size  /* In: dictionary size */
+		     );	
+
 
 /*
  * Return trigram followers for given two words.  Both w1 and w2 must be valid.
@@ -261,6 +315,8 @@ int32 lm_bglist (lm_t *lmp,	/* In: LM being queried */
 		 bg_t **bg,	/* Out: *bg = array of bigrams for w */
 		 int32 *bowt);	/* Out: *bowt = backoff-weight for w */
 
+
+#if 0 /*Obsolete and it will cause conflict the code, so comment for now*/
 /*
  * Somewhat like lm_bglist, but fill up a wordprob_t array from the bigram list found, instead
  * of simply returning the bglist.  The wordprob array contains dictionary word IDs.  But note
@@ -274,12 +330,14 @@ int32 lm_bg_wordprob(lm_t *lm,		/* In: LM being queried */
 		     wordprob_t *wp,	/* In/Out: Array to be filled; caller must have
 					   allocated this array */
 		     int32 *bowt);	/* Out: *bowt = backoff-weight associated with w */
+#endif
 
 /*
  * Like lm_bg_wordprob, but for unigrams.
  * Return value:  #entries filled in the wordprob array.
  */
 int32 lm_ug_wordprob(lm_t *lm,
+		     dict_t *dict,
 		     int32 th,
 		     wordprob_t *wp);
 
@@ -289,21 +347,25 @@ int32 lm_uglist (lm_t *lmp,	/* In: LM being queried */
 
 
 /* Return unigram score for the given word */
-int32 lm_ug_score (lm_t *lmp, s3lmwid_t w);
+/* 20040227: This also account the in-class probability of wid*/
+int32 lm_ug_score (lm_t *lmp, s3lmwid_t lwid,s3wid_t wid);
 
 
 /*
  * Return bigram score for the given two word sequence.  If w1 is BAD_S3LMWID, return
  * lm_ug_score (w2).
+ * 20040227: This also account the in-class probability of w2. 
  */
-int32 lm_bg_score (lm_t *lmp, s3lmwid_t w1, s3lmwid_t w2);
+int32 lm_bg_score (lm_t *lmp, s3lmwid_t lw1, s3lmwid_t lw2,s3wid_t w2);
 
 
 /*
  * Return trigram score for the given three word sequence.  If w1 is BAD_S3LMWID, return
- * lm_bg_score (w2, w3).  If both w1 and w2 are BAD_S3LMWID, return lm_ug_score (w3).
+ * lm_bg_score (w2, w3).  If both lw1 and lw2 are BAD_S3LMWID, return lm_ug_score (lw3).
+ * 
+ * 20040227: This also account the in-class probability of w3. 
  */
-int32 lm_tg_score (lm_t *lmp, s3lmwid_t w1, s3lmwid_t w2, s3lmwid_t w3);
+int32 lm_tg_score (lm_t *lmp, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid_t w3);
 
 
 /*

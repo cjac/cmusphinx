@@ -292,9 +292,15 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2001/12/11  04:40:56  lenzo
- * License cleanup.
+ * Revision 1.4  2004/05/27  22:47:43  arthchan2003
+ * Sphinx 3.4 code commit
  * 
+ * Revision 1.3  2004/03/11 21:47:57  archan
+ * Check-in code for dynamic LM and fixes in Gaussian Selection. Temporarily cover J's change. Waiting for more stable code
+ *
+ * Revision 1.3  2001/12/11 04:40:56  lenzo
+ * License cleanup.
+ *
  * Revision 1.2  2001/12/04 02:57:47  egouvea
  * Merged memory leak fixes from RAH  (egouvea@cs.cmu.edu)
  *

@@ -1,10 +1,10 @@
-This is Sphinx 3.3 (s3.3), one of Carnegie Mellon University's open
+This is Sphinx 3.4 (s3.4), one of Carnegie Mellon University's open
 source large vocabulary, speaker-independent continuous speech
 recognition engine. Please see the LICENSE file for terms of use.
 
 Over the course of development, Sphinx-3 branched into different
 versions. The version available here, often times referred to as
-"sphinx3.3", "s3.3", or "fast decoder", is a faster version of the
+"sphinx3.4", "s3.4", or "fast decoder", is a faster version of the
 original code. Higher speed has been achieved at the cost of less
 accuracy compared to the slow decoder.
 
@@ -26,7 +26,7 @@ For up-to-date information, please see the web site at
    http://cmusphinx.org
 
 
-The s3.3 decoder is a live-mode capable version of the s3.2 decoder.
+The s3.4 decoder is a live-mode capable version of the s3.2 decoder.
 The decoder routine is stored in a library called libs3decoder.a. The
 decoder function takes blocks of speech samples and returns partial
 hypotheses for the blocks decoded during runtime. Examples of its use
@@ -37,6 +37,19 @@ decoding speech input using the CMU Sphinx Recognizer.
 
 This distribution is free software, see LICENSE for license.
 
+This work was built over a large number of years at CMU by most of the
+people in the Sphinx Group. Some code goes back to 1986. The most
+recent work in tidying this up for release includes the following,
+listed alphabetically (at least these are the people who are most
+likely able to help you).
+
+
+Installation Guide:
+^^^^^^^^^^^^^^^^^^^
+This sections contain installation guide for various platforms. 
+
+Linux/Unix Installation:
+^^^^^^^^^^^^^^^^^^^^^^^^
 This distribution now uses GNU autoconf to find out basic information
 about your system, and should compile on most Unix and Unix-like
 systems, and certainly on Linux.  To build, simply run
@@ -59,11 +72,25 @@ customize it by running ./configure with an argument, as in
 
     ./configure --prefix=/my/own/installation/directory
 
-This work was built over a large number of years at CMU by most of the
-people in the Sphinx Group. Some code goes back to 1986. The most
-recent work in tidying this up for release includes the following,
-listed alphabetically (at least these are the people who are most
-likely able to help you).
+Windows Installation:
+^^^^^^^^^^^^^^^^^^^^^
+To compile the sphinx 3.4 in Visual C++ 6.0, 
+1, unzip the file.
+2, go to sphinx3-0.1/win32/msdev/programs/
+3, click programs.dsw 
+4, build the projects in the following order, libaudio, libdecoder, libutil.
+5, build the live-mode decoder project, livedecode.
+6, build the live-mode simulator project, livepretend.
+7, build the batch-mode recognizer project, decode.  
+
+Steps 4-7 can be done easily by in the "File View" of VC6.0 by
+left-clicking the project and choose "Build".  To run the executable,
+please remember to set the corresponding active project. 
+
+If you are using cygwin, the installation procedure is very similar to
+the Unix installation. However, there is no audio driver support in
+cygwin currently so one can only use the batch mode recognzier. 
+
 
 Alan W Black (awb@cs.cmu.edu)
 Evandro Gouvea (egouvea+@cs.cmu.edu)
@@ -72,3 +99,4 @@ Kevin Lenzo (lenzo@cs.cmu.edu)
 Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)
 Eric Thayer
+Arthur Chan (archan@cs.cmu.edu)

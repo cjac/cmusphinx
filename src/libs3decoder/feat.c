@@ -508,7 +508,6 @@ static void feat_s3_1x39_cep2feat (feat_t *fcb, float32 **mfc, float32 **feat)
     
     /* CEP; skip C0 */
     memcpy (feat[0], mfc[0]+1, (feat_cepsize(fcb)-1) * sizeof(float32));
-    
     /*
      * DCEP: mfc[2] - mfc[-2];
      */
@@ -797,6 +796,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
     int32 win, nfr;
     int32 i, k;
     float32 **mfc;
+    /*    int32 l,m;*/
     
     if (fcb->cepsize <= 0) {
 	E_ERROR("Bad cepsize: %d\n", fcb->cepsize);
@@ -835,6 +835,19 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 	ckd_free_2d((void **) mfc);
 	return -1;
     }
+
+#if 0
+    for(l=0;l<nfr;l++){
+      printf(" %d ",l);
+      for(m=0;m<13;m++){
+	printf("%f ",mfc[l][m]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+    }
+#endif
+
     
     if (nfr < 2*win+1) {
 	E_ERROR("%s: MFC file/segment too short to compute features: %d frames\n", file, nfr);
@@ -868,14 +881,59 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 	return -1;
     }
     
-    if (fcb->cmn)
+    if (fcb->cmn){
+      E_INFO("CMN\n");
 	cmn (mfc, fcb->varnorm, nfr, fcb->cepsize);
-    if (fcb->agc)
+    }
+    if (fcb->agc){
+      E_INFO("AGC\n");
 	agc_max (mfc, nfr);
+    }
+
+
+#if 0
+    for(l=0;l<nfr;l++){
+      printf(" %d ",l);
+      for(m=0;m<13;m++){
+	printf("%f ",mfc[l][m]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+    }
+#endif
+
     
     /* Create feature vectors */
     for (i = win; i < nfr-win; i++)
 	fcb->compute_feat (fcb, mfc+i, feat[i-win]);
+
+#if 0
+    {
+      int32 i, j, k;
+    
+      for (i = 0; i < nfr; i++) {
+	fprintf (stderr, "%8d:", i);
+	
+	for (j = 0; j < feat_n_stream(fcb); j++) {
+	  fprintf (stderr, " %2d:", j);
+	  
+	  for (k = 0; k < 13; k++)
+	    fprintf (stderr, " %f", feat[i][j][k]);
+	  fprintf (stderr, "\n");
+	  for (k = 13; k < 26; k++)
+	    fprintf (stderr, " %f", feat[i][j][k]);
+	  fprintf (stderr, "\n");
+	  for (k = 26; k < 39; k++)
+	    fprintf (stderr, " %f", feat[i][j][k]);
+	  fprintf (stderr, "\n");
+
+	}
+      }
+
+    }
+#endif 
+
     
     ckd_free_2d((void **) mfc);
     
@@ -883,27 +941,151 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
 }
 
 
-/* Feature computation module for live mode decoder. Computes featuers
- * for incoming blocks of data. Maintains a cyclic buffer of size 256
- * for computing cross-block deltas etc. Needs explicit begin-utterance
- * and end-of-utterance flags to be set to indicate the beginning of
- * a new utterance or the end of an utterance in order to function
- * properly
- *
- * The cyclic buffer of size 256 was controlled by using an unsigned
- * char. Replaced it so that the pointers into the buffer have a cycle
- * of LIVEBUFBLOCKSIZE. This was done so that if one day we decide to
- * change this variable from 256 to something else, the cyclic buffer
- * will still work.  (ebg)
- *
- * Feature type is hardwired in this routine!!! Currently it's
- * hardwired to follow the more intuitive order of cepstra followed by
- * delta cepstra followed by delta delta cepstra, as opposed to the
- * traditional Sphinx-3 order of c1-12,d1-12,c0,d0,dd,dd1-12.
+/* 20040324: ARCHAN: Nearly rewrite the whole thing because I got quite madden by 
+   the whole static data structure mainitained in the function. 
  */
-int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
+int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 			      int32 beginutt, int32 endutt, float32 ***ofeat)
 {
+  static float32 **cepbuf=NULL;
+  static float32 **tmpcepbuf=NULL;
+  static int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+  static int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+
+  int32 win, cepsize; 
+  int32 i, j, nfeatvec, residualvecs;
+  /* int32 l,m;*/
+  int32 tmppos;
+
+  assert(nfr < LIVEBUFBLOCKSIZE);
+  win = feat_window_size(fcb);
+
+  if (fcb->cepsize <= 0) 
+    E_FATAL("Bad cepsize: %d\n", fcb->cepsize);
+  cepsize = feat_cepsize(fcb);
+
+  if (cepbuf == NULL){
+    cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,cepsize, sizeof(float32));
+    if (! cepbuf) E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,cepsize,sizeof(float32));
+    beginutt = 1; /* If no buffer was present we are beginning an utt */
+    E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
+  }
+
+  if(tmpcepbuf ==NULL){
+    tmpcepbuf=(float32 **) ckd_calloc_2d(2*win+1,cepsize, sizeof(float32));
+    if(!tmpcepbuf) E_FATAL("Unable to allocate tmpcepbuf ckd_calloc_2d(%ld,%d,%d)\n",2*win+1,cepsize,sizeof(float32));
+  }
+
+  if (fcb->cmn) /* Only cmn_prior in block computation mode */
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+
+
+  residualvecs = 0;
+  
+  if (beginutt){
+    /* Replicate first frame into the first win frames */
+    for (i=0;i<win;i++) {
+      if(nfr>=win+1)
+	memcpy(cepbuf[i],uttcep[0+i+1],cepsize*sizeof(float32));
+      else
+	memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
+    }
+    bufpos = win;
+    bufpos %= LIVEBUFBLOCKSIZE;
+    curpos = bufpos;
+    residualvecs -= win;
+  }
+
+  for (i=0;i<nfr;i++){
+    assert(bufpos < LIVEBUFBLOCKSIZE);
+    memcpy(cepbuf[bufpos++],uttcep[i],cepsize*sizeof(float32));
+    bufpos %= LIVEBUFBLOCKSIZE;
+  }
+#if 0
+  for(l=0;l<nfr;l++){
+    printf(" %d ",l);
+    for(m=0;m<13;m++){
+      printf("%f ",cepbuf[l][m]);
+      fflush(stdout);
+    }o
+    printf("\n");
+    fflush(stdout);
+  }
+#endif
+
+  if (endutt){
+    /* Replicate last frame into the last win frames */
+    if (nfr > 0) {
+      for (i=0;i<win;i++) {
+	assert(bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	bufpos %= LIVEBUFBLOCKSIZE;
+      }
+    }
+    else {
+      int16 tpos = bufpos-1;
+      tpos %= LIVEBUFBLOCKSIZE;
+      for (i=0;i<win;i++) {
+	assert(bufpos < LIVEBUFBLOCKSIZE);
+	memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+	bufpos %= LIVEBUFBLOCKSIZE;
+      }
+    }
+    residualvecs += win;
+  }
+  /*  E_INFO("curpos %d, bufpos %d beginutt %d\n",curpos,bufpos,beginutt);*/
+  nfeatvec = 0;
+  nfr += residualvecs;
+  
+  for (i=0; i < nfr; i++,nfeatvec++){
+    if(curpos <win || curpos > LIVEBUFBLOCKSIZE -win-1){
+      /* HACK! Just copy the frames and read them to compute_feat */
+      for(j=-win;j<=win;j++){
+	tmppos= (j+ curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
+	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
+      }
+      fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
+    }else{
+      fcb->compute_feat(fcb, cepbuf+curpos, ofeat[i]);
+    }
+    curpos++;
+    curpos %= LIVEBUFBLOCKSIZE;
+  }
+  /*  E_INFO("curpos %d, bufpos %d\n",curpos,bufpos);*/
+#if 0
+    for(i=0;i<curpos;i++){
+      printf("%d\n",i);
+      printf("Cep: ");
+      fflush(stdout);
+      for(j=0;j<13;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Del: ");
+      fflush(stdout);
+      for(j=13;j<26;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout); 
+      }
+      printf("\n");
+      fflush(stdout);
+      printf("Acc: ");
+      fflush(stdout);
+      for(j=26;j<39;j++){
+	printf("%f ",ofeat[i][0][j]);
+	fflush(stdout);
+      }
+      printf("\n");
+      fflush(stdout);
+
+    }
+#endif
+
+    return(nfeatvec);
+
+#if 0
     static float32 **feat=NULL;
     static float32 **cepbuf=NULL;
     /*    static int32 nfr_allocated = 0; */ /* Variable never used. - EBG */
@@ -944,11 +1126,11 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     }
 
 
-    if (fcb->cmn && nfr>0) /* Only cmn_prior in block computation mode */
+    if (fcb->cmn) /* Only cmn_prior in block computation mode */
 	cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
 
     residualvecs = 0;
-    if (beginutt && nfr>0){
+    if (beginutt){
 	/* Replicate first frame into the first win frames */
 	for (i=0;i<win;i++) 
 	   memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
@@ -981,54 +1163,75 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     if (endutt){
 	/* Replicate last frame into the last win frames */
 	if (nfr > 0) {
-	    for (i=0;i<win;i++) {
-	        assert(bufpos < LIVEBUFBLOCKSIZE);
-	        memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	        bufpos %= LIVEBUFBLOCKSIZE;
-	    }
-            residualvecs += win;
+	  for (i=0;i<win;i++) {
+	    assert(bufpos < LIVEBUFBLOCKSIZE);
+	   memcpy(cepbuf[bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
+	   bufpos %= LIVEBUFBLOCKSIZE;
+	  }
         }
 	else {
-	    if (bufpos > 0) {
-	        int16 tpos = bufpos-1;
-	        tpos %= LIVEBUFBLOCKSIZE;
-	        for (i=0;i<win;i++) {
-	            assert(bufpos < LIVEBUFBLOCKSIZE);
-	            memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-		    bufpos %= LIVEBUFBLOCKSIZE;
-	        }
-                residualvecs += win;
+	    int16 tpos = bufpos-1;
+	    tpos %= LIVEBUFBLOCKSIZE;
+	    for (i=0;i<win;i++) {
+	      assert(bufpos < LIVEBUFBLOCKSIZE);
+	        memcpy(cepbuf[bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
+		bufpos %= LIVEBUFBLOCKSIZE;
 	    }
 	}
+        residualvecs += win;
     }
 
     /* Create feature vectors */
     nfeatvec = 0;
     nfr += residualvecs;
 
+    /* ARCHAN : "Polluted code", reference to s3.3 to know the original */
     for (i = 0; i < nfr; i++,nfeatvec++){
         /* CEP */
-        memcpy (feat[i], cepbuf[curpos], (cepsize) * sizeof(float32));
+      /*        memcpy (feat[i], cepbuf[curpos], (cepsize) * sizeof(float32));*/
+        memcpy (feat[i], cepbuf[curpos]+1, (cepsize-1) * sizeof(float32));
     
         /*
          * DCEP: mfc[2] - mfc[-2];
          */
-        f = feat[i] + cepsize;
-        w  = cepbuf[jf2];	/* +1 to skip C0 */
-        _w = cepbuf[jp2];
+        /*f = feat[i] + cepsize ;*/
+	f=feat[i]+ cepsize -1;
 
-        for (j = 0; j < cepsize; j++)
+	/*        w  = cepbuf[jf2]; */	/* +1 to skip C0 */
+        /*_w = cepbuf[jp2];*/
+
+	w  = cepbuf[jf2] +1 ; 
+        _w = cepbuf[jp2] +1 ;
+
+	/*        for (j = 0; j < cepsize; j++)*/
+	for (j = 0; j < cepsize-1; j++)
 	    f[j] = w[j] - _w[j];
-    
-        /* D2CEP: (mfc[3] - mfc[-1]) - (mfc[1] - mfc[-3]) */
-        f += cepsize;
-    
-        w1   = cepbuf[jf3];	/* Final +1 to skip C0 */
-        _w1  = cepbuf[jp1];
-        w_1  = cepbuf[jf1];
-        _w_1 = cepbuf[jp3];
 
-        for (j = 0; j < cepsize; j++) {
+	f += cepsize-1;
+    
+	f[0]=cepbuf[curpos][0];
+	f[1]=cepbuf[jf2][0]-cepbuf[jp2][0];
+	d1 = cepbuf[jf3][0]-cepbuf[jp1][0];
+	d2 = cepbuf[jf1][0]-cepbuf[jp3][0];
+	f[2] = d1 -d2;
+
+        /* D2CEP: (mfc[3] - mfc[-1]) - (mfc[1] - mfc[-3]) */
+        /*f += cepsize;*/
+	f+=3;
+    
+	/*        w1   = cepbuf[jf3];*/
+	/* Final +1 to skip C0 */
+        /*_w1  = cepbuf[jp1];
+        w_1  = cepbuf[jf1];
+        _w_1 = cepbuf[jp3];*/
+
+	w1   = cepbuf[jf3] +1;
+        _w1  = cepbuf[jp1] +1;
+        w_1  = cepbuf[jf1] +1;
+        _w_1 = cepbuf[jp3] +1;
+
+	/*        for (j = 0; j < cepsize; j++) {*/
+	for (j = 0; j < cepsize -1; j++) {
 	    d1 =  w1[j] -  _w1[j];
 	    d2 = w_1[j] - _w_1[j];
 
@@ -1048,6 +1251,7 @@ int32	feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     *ofeat = feat;
 
     return(nfeatvec);
+#endif
 }
 
 /*

@@ -45,6 +45,8 @@
  *
  * HISTORY
  * 
+ * 26-May-2004  ARCHAN (archan@cs.cmu.edu)
+ *              Incorporate code for numerous fixes. 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added mgau_free to free memory allocated by mgau_init()
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
@@ -79,11 +81,13 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     int32 n_mgau;
     int32 n_feat;
     int32 n_density;
-    int32 veclen;
+    int32 *veclen;
+    int32 blk;
     int32 byteswap, chksum_present;
     float32 *buf, **pbuf;
     char **argname, **argval;
     uint32 chksum;
+    float64 f;
     
     E_INFO("Reading mixture gaussian file '%s'\n", file_name);
     
@@ -120,42 +124,64 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     /* #Features/codebook */
     if (bio_fread (&n_feat, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
 	E_FATAL("fread(%s) (#features) failed\n", file_name);
-    if (n_feat != 1)
-	E_FATAL("#Features streams(%d) != 1\n", n_feat);
+    
+    if(g->gau_type==CONTHMM){
+      if (n_feat != 1)
+	E_FATAL("#Features streams(%d) != 1 in continuous HMM\n", n_feat);
+    }else if (g->gau_type==SEMIHMM){
+      if (n_feat != 4)
+	E_FATAL("#Features streams(%d) != 1 in semi-continuous HMM\n", n_feat);
+    }
     
     /* #Gaussian densities/feature in each codebook */
     if (bio_fread (&n_density, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
 	E_FATAL("fread(%s) (#density/codebook) failed\n", file_name);
     
     /* Vector length of feature stream */
-    if (bio_fread (&veclen, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
-	E_FATAL("fread(%s) (feature vector-length) failed\n", file_name);
+
+    veclen = ckd_calloc(n_feat, sizeof(uint32));
+
+    if (bio_fread (veclen, sizeof(int32), n_feat, fp, byteswap, &chksum) != n_feat)
+	E_FATAL("fread(%s) (feature-lengths) failed\n", file_name);
+
+    for (i = 0, blk = 0; i < n_feat; i++)
+	blk += veclen[i];
+
+    /*    if (bio_fread (&veclen, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
+	  E_FATAL("fread(%s) (feature vector-length) failed\n", file_name);*/
     
     /* #Floats to follow; for the ENTIRE SET of CODEBOOKS */
     if (bio_fread (&n, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
 	E_FATAL("fread(%s) (total #floats) failed\n", file_name);
-    if (n != n_mgau * n_density * veclen) {
+
+    if (n != n_mgau * n_density * blk) {
 	E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
 		file_name, n, n_mgau, n_density, veclen);
     }
     
+    if(g->gau_type==SEMIHMM){
+      E_FATAL("Currently S2 semi-continous HMM is not supported\n");
+    }
+
     if (type == MGAU_MEAN) {
 	/* Allocate memory for mixture gaussian densities */
 	g->n_mgau = n_mgau;
 	g->max_comp = n_density;
-	g->veclen = veclen;
+	g->veclen = blk;
 	g->mgau = (mgau_t *) ckd_calloc (n_mgau, sizeof(mgau_t));
 	
 	buf = (float32 *) ckd_calloc (n, sizeof(float));
 	pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
-	
+
+
 	for (i = 0; i < n_mgau; i++) {
 	    g->mgau[i].n_comp = n_density;
 	    g->mgau[i].mean = pbuf;
 	    
 	    for (k = 0; k < n_density; k++) {
 		g->mgau[i].mean[k] = buf;
-		buf += veclen;
+		buf += blk;
+
 	    }
 	    pbuf += n_density;
 	}
@@ -168,12 +194,13 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	    E_FATAL("#Mixtures(%d) doesn't match that of means(%d)\n", n_mgau, g->n_mgau);
 	if (g->max_comp != n_density)
 	    E_FATAL("#Components(%d) doesn't match that of means(%d)\n", n_density, g->max_comp);
-	if (g->veclen != veclen)
+	if (g->veclen != blk)
 	    E_FATAL("#Vector length(%d) doesn't match that of means(%d)\n", veclen, g->veclen);
 	
 	buf = (float32 *) ckd_calloc (n, sizeof(float32));
 	pbuf = (float32 **) ckd_calloc (n_mgau * n_density, sizeof(float32 *));
-	
+
+
 	for (i = 0; i < n_mgau; i++) {
 	    if (g->mgau[i].n_comp != n_density)
 		E_FATAL("Mixture %d: #Components(%d) doesn't match that of means(%d)\n",
@@ -183,12 +210,15 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	    
 	    for (k = 0; k < n_density; k++) {
 		g->mgau[i].var[k] = buf;
-		buf += veclen;
+		buf += blk;
+
+		
 	    }
 	    pbuf += n_density;
 	}
 	
 	buf = (float32 *) ckd_calloc (n_mgau * n_density, sizeof(float32));
+
 	for (i = 0; i < n_mgau; i++) {
 	    g->mgau[i].lrd = buf;
 	    buf += n_density;
@@ -200,6 +230,8 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     /* Read mixture gaussian densities data */
     if (bio_fread (buf, sizeof(float32), n, fp, byteswap, &chksum) != n)
 	E_FATAL("fread(%s) (densitydata) failed\n", file_name);
+
+    f = log_to_logs3_factor();    
 
     if (chksum_present)
 	bio_verify_chksum (fp, byteswap, chksum);
@@ -261,8 +293,16 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 	(bio_fread (&n, sizeof(int32), 1, fp, byteswap, &chksum) != 1)) {
 	E_FATAL("bio_fread(%s) (arraysize) failed\n", file_name);
     }
-    if (n_feat != 1)
-	E_FATAL("#Features streams(%d) != 1\n", n_feat);
+    if(g->gau_type==CONTHMM){
+      if (n_feat != 1)
+	E_FATAL("#Features streams(%d) != 1 in continuous HMM\n", n_feat);
+    }else if (g->gau_type==SEMIHMM){
+      if (n_feat != 4)
+	E_FATAL("#Features streams(%d) != 1 in semi-continuous HMM\n", n_feat);
+    }else{
+	E_FATAL("How can this happened? Someone must have move this part of the code somewhere! Not my fault! ARCHAN at 20040504 :-)\n");
+    }
+
     if (n != n_mgau * n_comp) {
 	E_FATAL("%s: #float32s(%d) doesn't match header dimensions: %d x %d\n",
 		file_name, i, n_mgau, n_comp);
@@ -424,9 +464,11 @@ static int32 mgau_precomp (mgau_model_t *g)
 {
     int32 m, c, i;
     float64 lrd;
-    
+    float64 f;
+
+    f = log_to_logs3_factor();            
     E_INFO("Precomputing Mahalanobis distance invariants\n");
-    
+
     for (m = 0; m < mgau_n_mgau(g); m++) {
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
 	    lrd = 0.0;
@@ -449,10 +491,11 @@ static int32 mgau_precomp (mgau_model_t *g)
 /* At the moment, S3 models have the same #means in each codebook and 1 var/mean */
 mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
 			 char *mixwfile, float64 mixwfloor,
-			 int32 precomp)
+			 int32 precomp,char* senmgau)
 {
     mgau_model_t *g;
-    
+    /*    int32 c_id,f_id; */
+
     assert (meanfile != NULL);
     assert (varfile != NULL);
     assert (varfloor >= 0.0);
@@ -460,6 +503,14 @@ mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
     assert (mixwfloor >= 0.0);
     
     g = (mgau_model_t *) ckd_calloc (1, sizeof(mgau_model_t));
+
+    if(strcmp(senmgau,".cont.") == 0) {
+      g->gau_type=CONTHMM;
+    }else if(strcmp(senmgau,".semi.") == 0){
+      g->gau_type=SEMIHMM;
+    }else{
+      E_FATAL("Feature should be either .semi. or .cont.");
+    }
     
     /* Read means and (diagonal) variances for all mixture gaussians */
     mgau_file_read (g, meanfile, MGAU_MEAN);
@@ -475,6 +526,7 @@ mgau_model_t *mgau_init (char *meanfile, char *varfile, float64 varfloor,
 	mgau_precomp (g);		/* Precompute Mahalanobis distance invariants */
     
     g->distfloor = logs3_to_log (S3_LOGPROB_ZERO);	/* Floor for Mahalanobis distance values */
+
     
     return g;
 }
@@ -520,16 +572,23 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 {
     mgau_t *mgau;
     int32 veclen, score;
+    /*tmpscore;*/
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2, f;
+
+
     int32 i, j, c;
     
     veclen = mgau_veclen(g);
     mgau = &(g->mgau[m]);
     f = log_to_logs3_factor();
     score = S3_LOGPROB_ZERO;
-    
+
+
     if (! active) {	/* No short list; use all */
+
+     
+#if 1
 	for (c = 0; c < mgau->n_comp-1; c += 2) {	/* Interleave 2 components for speed */
 	    m1 = mgau->mean[c];
 	    m2 = mgau->mean[c+1];
@@ -543,6 +602,8 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 		dval1 -= diff1 * diff1 * v1[i];
 		diff2 = x[i] - m2[i];
 		dval2 -= diff2 * diff2 * v2[i];
+		/*		E_INFO("x %10f m1 %10f m2 %10f v1 %10f, v2 %10f\n",x[i],m1[i],m2[i],v1[i],v2[i]);
+				E_INFO("diff1 %10f,dval1 %10f, diff2 %10f, dval2 %10f\n",diff1,dval1,diff2,dval2);*/
 	    }
 	    
 	    if (dval1 < g->distfloor)	/* Floor */
@@ -570,6 +631,9 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    
 	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
 	}
+
+#endif
+
     } else {
 	for (j = 0; active[j] >= 0; j++) {
 	    c = active[j];
@@ -589,7 +653,11 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
 	}
     }
+
     
+    if(score == S3_LOGPROB_ZERO){
+      /*      E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n");*/
+    }
     return score;
 }
 
@@ -635,3 +703,16 @@ void mgau_free (mgau_model_t *g)
     ckd_free ((void *) g);
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

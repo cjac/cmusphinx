@@ -56,7 +56,7 @@
 #include <libutil/libutil.h>
 #include "dict.h"
 #include "lm.h"
-
+#include "lmclass.h"
 
 /*
  * Create mappings between dictionary and LM word-IDs.  In short:
@@ -67,8 +67,10 @@
  * Return value: The map[] array built as described above.
  */
 s3lmwid_t *wid_dict_lm_map (dict_t *dict,	/* In: Dictionary */
-			    lm_t *lm);		/* In/Out: LM; lm->ug[].dictwid values are
+			    lm_t *lm,           /* In/Out: LM; lm->ug[].dictwid values are
 						   updated. */
+			    int32 lw
+			    );		
 
 /*
  * Augment the given wordprob array with alternative pronunciations from the dictionary.

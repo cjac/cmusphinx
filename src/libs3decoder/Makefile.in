@@ -147,7 +147,8 @@ libs3decoder_la_LDFLAGS = -version-info 0:1:0
 
 libs3decoder_la_SOURCES = \
         agc.c \
-        ascr.c \
+	approx_cont_mgau.c \
+	ascr.c \
         beam.c \
         bio.c \
         cmn.c \
@@ -158,11 +159,13 @@ libs3decoder_la_SOURCES = \
         dict2pid.c \
         feat.c \
         fillpen.c \
+	gs.c \
         hmm.c \
         kb.c \
         kbcore.c \
         lextree.c \
         lm.c \
+	lmclass.c \
         logs3.c \
         mdef.c \
         new_fe.c \
@@ -177,6 +180,7 @@ libs3decoder_la_SOURCES = \
 
 noinst_HEADERS = \
         agc.h \
+	approx_cont_mgau.h \
         ascr.h \
         beam.h \
         bio.h \
@@ -188,6 +192,7 @@ noinst_HEADERS = \
         dict2pid.h \
         feat.h \
         fillpen.h \
+	gs.h \
         hmm.h \
         hyp.h \
         kb.h \
@@ -219,30 +224,33 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libs3decoder_la_LIBADD =
-am_libs3decoder_la_OBJECTS = agc.lo ascr.lo beam.lo bio.lo cmn.lo \
-	cmn_prior.lo cont_mgau.lo corpus.lo dict.lo dict2pid.lo feat.lo \
-	fillpen.lo hmm.lo kb.lo kbcore.lo lextree.lo lm.lo logs3.lo \
-	mdef.lo new_fe.lo new_fe_sp.lo subvq.lo tmat.lo utt.lo \
-	vector.lo vithist.lo wid.lo
+am_libs3decoder_la_OBJECTS = agc.lo approx_cont_mgau.lo ascr.lo beam.lo \
+	bio.lo cmn.lo cmn_prior.lo cont_mgau.lo corpus.lo dict.lo \
+	dict2pid.lo feat.lo fillpen.lo gs.lo hmm.lo kb.lo kbcore.lo \
+	lextree.lo lm.lo lmclass.lo logs3.lo mdef.lo new_fe.lo \
+	new_fe_sp.lo subvq.lo tmat.lo utt.lo vector.lo vithist.lo \
+	wid.lo
 libs3decoder_la_OBJECTS = $(am_libs3decoder_la_OBJECTS)
 
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/agc.Plo ./$(DEPDIR)/ascr.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/beam.Plo ./$(DEPDIR)/bio.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/cmn.Plo ./$(DEPDIR)/cmn_prior.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/cont_mgau.Plo ./$(DEPDIR)/corpus.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/dict.Plo ./$(DEPDIR)/dict2pid.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/feat.Plo ./$(DEPDIR)/fillpen.Plo \
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/agc.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/approx_cont_mgau.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/ascr.Plo ./$(DEPDIR)/beam.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/bio.Plo ./$(DEPDIR)/cmn.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/cmn_prior.Plo ./$(DEPDIR)/cont_mgau.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/corpus.Plo ./$(DEPDIR)/dict.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/dict2pid.Plo ./$(DEPDIR)/feat.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/fillpen.Plo ./$(DEPDIR)/gs.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/hmm.Plo ./$(DEPDIR)/kb.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/kbcore.Plo ./$(DEPDIR)/lextree.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/lm.Plo ./$(DEPDIR)/logs3.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mdef.Plo ./$(DEPDIR)/new_fe.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/new_fe_sp.Plo ./$(DEPDIR)/subvq.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/tmat.Plo ./$(DEPDIR)/utt.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/vector.Plo ./$(DEPDIR)/vithist.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/wid.Plo
+@AMDEP_TRUE@	./$(DEPDIR)/lm.Plo ./$(DEPDIR)/lmclass.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/logs3.Plo ./$(DEPDIR)/mdef.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/new_fe.Plo ./$(DEPDIR)/new_fe_sp.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/subvq.Plo ./$(DEPDIR)/tmat.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/utt.Plo ./$(DEPDIR)/vector.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/vithist.Plo ./$(DEPDIR)/wid.Plo
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
@@ -303,6 +311,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/agc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/approx_cont_mgau.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ascr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/beam.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bio.Plo@am__quote@
@@ -314,11 +323,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dict2pid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/feat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fillpen.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hmm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/kbcore.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lextree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lm.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lmclass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logs3.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mdef.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/new_fe.Plo@am__quote@

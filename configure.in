@@ -15,11 +15,11 @@ AC_HEADER_STDC
 
 AC_TYPE_SIGNAL
 
-# hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
-hmmdata=`ls -1 /dev/null | egrep -v '(Makefile|CVS)'`
+hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
+#hmmdata=`ls -1 /dev/null | egrep -v '(Makefile|CVS)'`
 hmmdata=`echo $hmmdata`
 
-# lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
+lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
 lmdata=`ls -1 /dev/null | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
 lmdata=`echo $lmdata`
 
@@ -84,13 +84,6 @@ if test "x$ad_files" = "x"; then
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.bigendian"
                         ;;
-                *-*-solaris*)
-                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
-                        ad_libs="-lm -lnsl -lsocket -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
-			audio_test_file="pittsburgh.bigendian"
-                        ;;
                 *86*-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
@@ -98,11 +91,24 @@ if test "x$ad_files" = "x"; then
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
+                *-*-solaris*)
+                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
+                        ad_libs="-lm -lnsl -lsocket -ldl"
+                        ad_backend="AD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
+			audio_test_file="pittsburgh.bigendian"
+                        ;;
                 *-*-*cygwin*)
                         ad_files="play_win32.lo rec_win32.lo"
                         ad_backend="AD_BACKEND_WIN32"
                         ad_libs="-lwinmm"
 			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                *-*apple*-*)
+                        ad_files="ad_base.lo"
+                        ad_backend="AD_BACKEND_NONE"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_NONE"
+			audio_test_file="pittsburgh.bigendian"
                         ;;
                 *)
                         ad_files="ad_base.lo"
@@ -132,13 +138,20 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 src/libs3audio/Makefile
-src/libs3audio/ad.h
+src/libs3audio/ad_conf.h
 src/libs3decoder/Makefile
 src/libutil/Makefile
 src/programs/Makefile
 scripts/Makefile
 scripts/sphinx3-test
 scripts/sphinx3-simple
+model/Makefile
+model/hmm/Makefile
+model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/Makefile
+model/lm/Makefile
+model/lm/an4/Makefile
+model/lm/an4/an4.ctl
+model/lm/an4/args.an4
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple

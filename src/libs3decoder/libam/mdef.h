@@ -161,7 +161,7 @@ typedef struct {
 #define mdef_pid2tmatid(m,p)		((m)->phone[p].tmat)
 #define mdef_silphone(m)		((m)->sil)
 #define mdef_sen2cimap(m)		((m)->sen2cimap)
-
+#define mdef_cd2cisen(m)		((m)->cd2cisen)
 
 /*
  * Initialize the phone structure from the given model definition file.

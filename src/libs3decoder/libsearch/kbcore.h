@@ -63,11 +63,9 @@
 extern "C" {
 #endif
 
-
 #include <libutil/libutil.h>
 #include "feat.h"
 #include "cont_mgau.h"
-#include "subvq.h"
 #include "mdef.h"
 #include "dict.h"
 #include "dict2pid.h"
@@ -75,6 +73,8 @@ extern "C" {
 #include "lm.h"
 #include "wid.h"
 #include "tmat.h"
+#include "subvq.h"
+#include "gs.h"
 
 
 typedef struct {
@@ -83,11 +83,15 @@ typedef struct {
     dict_t *dict;
     dict2pid_t *dict2pid;
     lm_t *lm;
+    lmset_t *lmset;
     fillpen_t *fillpen;
     s3lmwid_t *dict2lmwid;
     mgau_model_t *mgau;
     subvq_t *svq;
+    gs_t *gs;
     tmat_t *tmat;
+  int32 n_lm;
+  int32 n_alloclm;
 } kbcore_t;
 
 
@@ -110,7 +114,10 @@ kbcore_t *kbcore_init (float64 logbase,		/* Must be specified */
 		       char *fdictfile,
 		       char *compsep,		/* Must be valid if dictfile specified */
 		       char *lmfile,
+		       char *lmctlfile,
+		       char *lmdumpdir,
 		       char *fillpenfile,
+		       char *senmgau,
 		       float64 silprob,		/* Must be valid if lmfile/fillpenfile is
 						   specified */
 		       float64 fillprob,	/* Must be valid if lmfile/fillpenfile is
@@ -128,6 +135,7 @@ kbcore_t *kbcore_init (float64 logbase,		/* Must be specified */
 		       float64 mixwfloor,	/* Must be valid if mixwfile specified */
 		       char *subvqfile,		/* Subvector quantized acoustic model
 						   (quantized mean/var values), optional */
+		       char *gsfile,		/* Gaussian Selection Mapping*/
 		       char *tmatfile,
 		       float64 tmatfloor);	/* Must be valid if tmatfile specified */
 
@@ -144,7 +152,10 @@ kbcore_t *kbcore_init (float64 logbase,		/* Must be specified */
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
 #define kbcore_svq(k)		((k)->svq)
+#define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
+#define kbcore_lmset(k)		((k)->lmset)
+#define kbcore_nlm(k)		((k)->n_lm)
 
 #ifdef __cplusplus
 }

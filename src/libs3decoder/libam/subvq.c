@@ -343,7 +343,7 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
  * components in the given mixture (using the vq->map).
  * Return value: #Candidates in the returned shortlist.
  */
-static int32 subvq_mgau_shortlist (subvq_t *vq,
+int32 subvq_mgau_shortlist (subvq_t *vq,
 				   int32 m,	/* In: Mixture index */
 				   int32 n,	/* In: #Components in specified mixture */
 				   int32 beam)	/* In: Threshold to select active components */
@@ -353,12 +353,12 @@ static int32 subvq_mgau_shortlist (subvq_t *vq,
     int32 i, v, bv, th, nc;
     int32 *sl;
     int32 *vqdist;
+    int32 sv_id;
     
     vqdist = vq->vqdist[0];	/* Since map is linearized for efficiency, must also
 				   look at vqdist[][] as vqdist[] */
     gauscore = vq->gauscore;
     sl = vq->mgau_sl;
-    
     /* Special case when vq->n_sv == 3; for speed */
     map = vq->map[m][0];
     bv = MAX_NEG_INT32;
@@ -383,10 +383,10 @@ static int32 subvq_mgau_shortlist (subvq_t *vq,
 	    }
 	  }
 
-	    gauscore[i] = v;
+	  gauscore[i] = v;
 	    
-	    if (bv < v)
-		bv = v;
+	  if (bv < v)
+	    bv = v;
 	}
 	break;
     case 2:
@@ -394,7 +394,7 @@ static int32 subvq_mgau_shortlist (subvq_t *vq,
 	    v = vqdist[*(map++)];
 	    v += vqdist[*(map++)];
 	    gauscore[i] = v;
-	    
+	   
 	    if (bv < v)
 		bv = v;
 	}
@@ -409,7 +409,16 @@ static int32 subvq_mgau_shortlist (subvq_t *vq,
       }
       break;
     default:
-      E_FATAL("#Subvectors %d not yet implemented\n", vq->n_sv);
+      for (i = 0; i < n; i++) {
+	v=0;
+	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
+	  v+=vqdist[*(map++)];
+	}
+	gauscore[i] = v;
+	
+	if (bv < v)
+	  bv = v;
+      }
     }
     
     th = bv + beam;
@@ -451,7 +460,6 @@ void subvq_gautbl_eval_logs3 (subvq_t *vq, float32 *feat)
 	    vq->subvec[i] = feat[featdim[i]];
 	
 	/* Evaluate distances between extracted subvector and corresponding codebook */
-    
     /* RAH, only evaluate the first VQ_EVAL set of features */
     if (s < VQ_EVAL) 
 	vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec, vq->vqdist[s]);
@@ -468,7 +476,6 @@ int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
   best = MAX_NEG_INT32;
   ns = 0;
   ng = 0;
-  
   if (! vq) {
     /* No subvq model, use the original (SLOW!!) */
     for (s = 0; s < g->n_mgau; s++) {
@@ -509,6 +516,70 @@ int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
     
     return best;
 }
+
+int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *active)
+{
+    mgau_t *mgau;
+    int32 *map;
+    int32 i,j, v, sv_id;
+    int32 c;
+    int32 *vqdist;
+    int32 score;
+	int32 last_active;
+
+    float64 f;
+    f = log_to_logs3_factor();
+
+    vqdist = vq->vqdist[0];	
+    score = S3_LOGPROB_ZERO;
+    mgau = &(g->mgau[m]);
+    map = vq->map[m][0];
+
+    if(!active){
+      for (i = 0; i < n; i++) {
+	v=0;
+	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
+	  v+=vqdist[*(map++)];
+	}
+	score = logs3_add (score, v + mgau->mixw[i]);
+	/*v=vqdist[*(map++)];
+	  v+=vqdist[*(map++)];
+	  v+=vqdist[*(map++)];*/
+      }
+    }else{
+
+      last_active=0;
+      for (i = 0; active[i] >=0; i++) {
+	c=active[i];
+      }
+      for (i = 0; active[i] >=0; i++) {
+
+	/*	E_INFO("Value of c %d\n",c);
+		E_INFO("Value of last_active %d\n",last_active);*/
+	c=active[i];
+	map+=(c-last_active)*vq->n_sv;
+	v=0;
+	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
+	  v+=vqdist[*(map++)];
+	}
+	/*v=vqdist[*(map++)];
+	v+=vqdist[*(map++)];
+	v+=vqdist[*(map++)];*/
+
+	last_active=c+1;
+
+	score = logs3_add (score, v + mgau->mixw[i]);
+      }
+    }
+
+    if(score == S3_LOGPROB_ZERO){
+      E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n");
+    }
+
+    return score;
+
+}
+
 
 /* RAH, free memory allocated by subvq_init() */
 void subvq_free (subvq_t *s)

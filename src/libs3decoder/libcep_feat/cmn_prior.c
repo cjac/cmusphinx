@@ -101,13 +101,6 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   if (endutt) {
     /* Update mean buffer */
     
-    /* 01.15.01 RAH - removing this printf, it is damn annoying
-       printf("Mean norm update: from <"); 
-       for (i = 0; i < ceplen; i++) 
-       printf("%5.2f ", cur_mean[i]); 
-       printf(">\n");
-    */
-    
     sf = (float32) (1.0/nframe);
     for (i = 0; i < ceplen; i++)
       cur_mean[i] = sum[i] * sf;
@@ -120,11 +113,5 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
       nframe = CMN_WIN;
     }
     
-    /* 01.15.01 RAH - removing this printf, it is damn annoying
-       printf("Mean norm update: to   < ");
-       for (i = 0; i < ceplen; i++)
-       printf("%5.2f ", cur_mean[i]);
-       printf(">\n");
-    */
   }
 }
