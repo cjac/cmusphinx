@@ -188,7 +188,7 @@ test-gausubvq:
 test-ep :
 	@echo "EP TEST"
 	$(LIBTOOL) --mode=execute src/programs/ep \
-		-i $(top_srcdir)/ep_model/chan3.raw  \
+		-i $(top_srcdir)/model/ep/chan3.raw  \
 	        -srate 11025 \
 	        -frate 105 \
 	        -wlen 0.024 \
@@ -199,9 +199,9 @@ test-ep :
  	        -upperf 5400 \
 	        -lowerf 130 \
 	        -blocksize 262500 \
-	        -mean ./ep_model/means \
-	        -var ./ep_model/variances \
-	        -mixw ./ep_model/mixture_weights 
+	        -mean ./model/ep/means \
+	        -var ./model/ep/variances \
+	        -mixw ./model/ep/mixture_weights 
 
 
 
