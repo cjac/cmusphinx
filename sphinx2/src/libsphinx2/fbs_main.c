@@ -58,9 +58,13 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.2  2001/02/13  19:51:38  lenzo
- * *** empty log message ***
+ * Revision 1.3  2001/05/12  15:20:14  dhdfu
+ * Crap!  Yes, it *is* supposed to persist between control file commands.
+ * Sorry, folks :(
  * 
+ * Revision 1.2  2001/02/13 19:51:38  lenzo
+ * *** empty log message ***
+ *
  * Revision 1.1  2000/12/12 23:30:00  lenzo
  * *** empty log message ***
  *
@@ -1545,6 +1549,7 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
     int32 begin_frame;
     int32 end_frame;
     int32 n_featfr;
+    int32 align_all = 0;
     
     time_align_init();
     beam_width = 1e-9;
@@ -1561,9 +1566,6 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
 	out_sent_fs = NULL;
 
     while (fscanf (utt_ctl_fs, "%s\n", Utt) != EOF) {
-	/* NOTE: I hope the value of this isn't supposed to persist
-           between spec file commands. */
-	int32 align_all = 0;
 	fgets(time_align_spec, 1023, pe_ctl_fs);
 
 	if (ctl_offset) {
