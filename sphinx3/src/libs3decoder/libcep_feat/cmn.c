@@ -208,7 +208,7 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
     }
     
   }
-  E_INFO("Hihi\n");
+/*  E_INFO("Hihi\n");*/
 }
 
 /* 

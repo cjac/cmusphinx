@@ -277,6 +277,8 @@ lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64
   FILE *ctlfp;
   FILE *tmp;
   char lmfile[4096], lmname[4096], str[4096];
+  int32 isLM_IN_MEMORY;
+
   lmclass_set_t lmclass_set;
   lmclass_t *lmclass, cl;
   int32 n_lmclass, n_lmclass_used;
@@ -284,8 +286,8 @@ lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64
   lm_t *lm;
   lmset_t *lmset=NULL;
   tmp=NULL;
-  int32 isLM_IN_MEMORY=0;
 
+  isLM_IN_MEMORY=0;
   lmclass_set = lmclass_newset();
 	    
   E_INFO("Reading LM control file '%s'\n",ctlfile);
