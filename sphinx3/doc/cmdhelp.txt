@@ -1,30 +1,48 @@
-Arguments list definition:
+This file contains the argument list of the tools of sphinx3.x (now x =5)
+
+Arguments list definition of livepretend
 [NAME]		[DEFLT]		[VALUE]
 -agc		max		Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))
+-alpha		0.97		alpha for pre-emphasis window
 -beam		1.0e-55		Beam selecting active HMMs (relative to best) in each frame [0(widest)..1(narrowest)]
 -bghist		0		Bigram-mode: If TRUE only one BP entry/frame; else one per LM state
 -bptbldir			Directory in which to dump word Viterbi back pointer table (for debugging)
 -cepdir				Input cepstrum files directory (prefixed to filespecs in control file)
+-ci_pbeam	1e-80		CI phone beam for CI-based GMM Selection. Good number should be [0(widest) .. 1(narrowest)]
 -cmn		current		Cepstral mean normalization scheme (default: Cep -= mean-over-current-sentence(Cep))
+-cond_ds	0		Conditional Down-sampling, override normal down sampling.
 -ctl				Control file listing utterances to be processed
 -ctlcount	1000000000	No. of utterances to be processed (after skipping -ctloffset entries)
 -ctloffset	0		No. of utterances at the beginning of -ctl file to be skipped
+-ctl_lm				Control file that list the corresponding LMs
 -dict				Pronunciation dictionary input file
+-doublebw	0		whether mel filter triangle will have double the bandwidth, 0 is false
+-ds		1		Ratio of Down-sampling the frame computation.
 -epl		3		Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next
 -fdict				Filler word pronunciation dictionary input file
+-feat		1s_c_d_dd	Feature type: Must be 1s_c_d_dd / s3_1x39 / s2_4x / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d
 -fillpen			Filler word probabilities input file
 -fillprob	0.1		Default non-silence filler word probability
+-frate		100		frame rate
+-gs				Gaussian Selection Mapping.
+-gs4gs		1		A flag that specified whether the input GS map will be used for Gaussian Selection. If it is disabled, the map will only provide information to other modules.
 -hmmdump	0		Whether to dump active HMM details to stderr (for debugging)
 -hmmhistbinsize	5000		Performance histogram: #frames vs #HMMs active; #HMMs/bin in this histogram
+-hyp				Recognition result file, with only words
 -hypseg				Recognition result file, with word segmentations and scores
+-input_endian	0		the input data byte order, 0 is little, 1 is big endian
 -latext		lat.gz		Filename extension for lattice files (gzip compressed, by default)
 -lextreedump	0		Whether to dump the lextree structure to stderr (for debugging)
 -lm				Word trigram language model input file
+-lmctlfn			Control file for language model
+
+-lmdumpdir			The directory for dumping the DMP file. 
 -lminmemory	0		Load language model into memory (default: use disk cache for lm
 -log3table	1		Determines whether to use the log3 table or to compute the values at run time.
 -logbase	1.0003		Base in which all log-likelihoods calculated
 -lowerf		200		Lower edge of filters
 -lw		8.5		Language weight
+-machine_endian	0		the machine's endian, 0 is little, 1 is big endian
 -maxcepvecs	256		Maximum number of cepstral vectors that can be obtained from a single sample buffer
 -maxhistpf	100		Max no. of histories to maintain at each frame
 -maxhmmpf	20000		Max no. of active HMMs to maintain at each frame; approx.
@@ -34,16 +52,22 @@ Arguments list definition:
 -mean				Mixture gaussian means input file
 -mixw				Senone mixture weights input file
 -mixwfloor	0.0000001	Senone mixture weights floor (applied to data from -mixw file)
+-nfft		256		no. pts for FFT
 -nfilt		31		Number of mel filters
 -Nlextree	3		No. of lextrees to be instantiated; entries into them staggered in time
 -outlatdir			Directory in which to dump word lattices
 -outlatoldfmt	1		Whether to dump lattices in old format
 -pbeam		1.0e-50		Beam selecting HMMs transitioning to successors in each frame [0(widest)..1(narrowest)]
+-pheurtype	0		0 = bypass, 1= sum of max, 2 = sum of avg, 3 = sum of 1st senones only
+-pl_beam	1.0e-80		Beam for phoneme look-ahead. [0(widest) .. 1(narrowest)]
+-pl_window	1		Window size (actually window size-1) of phoneme look-ahead.
 -ptranskip	0		Use wbeam for phone transitions every so many frames (if >= 1)
 -samprate	8000		Sampling rate (only 8K and 16K currently supported)
+-senmgau	.cont.		Senone to mixture-gaussian mapping file (or .semi. or .cont.)
 -silprob	0.1		Default silence word probability
 -subvq				Sub-vector quantized form of acoustic model
 -subvqbeam	3.0e-3		Beam selecting best components within each mixture Gaussian [0(widest)..1(narrowest)]
+-svq4svq	0		A flag that specified whether the input SVQ will be used as approximate scores of the Gaussians
 -tmat				HMM state transition matrix input file
 -tmatfloor	0.0001		HMM state transition probability floor (applied to -tmat file)
 -treeugprob	1		If TRUE (non-0), Use unigram probs in lextree
@@ -55,7 +79,231 @@ Arguments list definition:
 -varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
 -vqeval		3		How many vectors should be analyzed by VQ when building the shortlist. It speeds up the decoder, but at a cost.
 -wbeam		1.0e-35		Beam selecting word-final HMMs exiting in each frame [0(widest)..1(narrowest)]
+-wend_beam	1.0e-80		Beam selecting word-final HMMs exiting in each frame [0(widest) .. 1(narrowest)]
+-wip		0.7		Word insertion penalty
+-wlen		0.0256		window length
+
+
+
+Arguments list definition of decode
+[NAME]		[DEFLT]		[VALUE]
+-agc		max		Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))
+-beam		1.0e-55		Beam selecting active HMMs (relative to best) in each frame [0(widest)..1(narrowest)]
+-bghist		0		Bigram-mode: If TRUE only one BP entry/frame; else one per LM state
+-bptbldir			Directory in which to dump word Viterbi back pointer table (for debugging)
+-cepdir				Input cepstrum files directory (prefixed to filespecs in control file)
+-ci_pbeam	1e-80		CI phone beam for CI-based GMM Selection. [0(widest) .. 1(narrowest)]
+-cmn		current		Cepstral mean normalization scheme (default: Cep -= mean-over-current-sentence(Cep))
+-cond_ds	0		Conditional Down-sampling, override normal down sampling.
+-ctl				Control file listing utterances to be processed
+-ctlcount	1000000000	No. of utterances to be processed (after skipping -ctloffset entries)
+-ctloffset	0		No. of utterances at the beginning of -ctl file to be skipped
+-ctl_lm				Control file that list the corresponding LM for an utterance
+-ctl_mllr			Control file that list the corresponding MLLR matrix for an utterance
+-dict				Pronunciation dictionary input file
+-ds		1		Ratio of Down-sampling the frame computation.
+-epl		3		Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next
+-fdict				Filler word pronunciation dictionary input file
+-feat		1s_c_d_dd	Feature type: Must be s3_1x39 / 1s_c_d_dd/ s2_4x .
+-fillpen			Filler word probabilities input file
+-fillprob	0.1		Default non-silence filler word probability
+-gs				Gaussian Selection Mapping.
+-gs4gs		1		A flag that specified whether the input GS map will be used for Gaussian Selection. If it is disabled, the map will only provide information to other modules.
+-hmmdump	0		Whether to dump active HMM details to stderr (for debugging)
+-hmmhistbinsize	5000		Performance histogram: #frames vs #HMMs active; #HMMs/bin in this histogram
+-hyp				Recognition result file, with only words
+-hypseg				Recognition result file, with word segmentations and scores
+-latext		lat.gz		Filename extension for lattice files (gzip compressed, by default)
+-lextreedump	0		Whether to dump the lextree structure to stderr (for debugging)
+-lm				Word trigram language model input file
+-lmctlfn			Control file for language model
+
+-lmdumpdir			The directory for dumping the DMP file. 
+-lminmemory	0		Load language model into memory (default: use disk cache for lm
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
+-logbase	1.0003		Base in which all log-likelihoods calculated
+-lw		8.5		Language weight
+-maxhistpf	100		Max no. of histories to maintain at each frame
+-maxhmmpf	20000		Max no. of active HMMs to maintain at each frame; approx.
+-maxwpf		20		Max no. of distinct word exits to maintain at each frame
+-mdef				Model definition input file
+-mean				Mixture gaussian means input file
+-mixw				Senone mixture weights input file
+-mixwfloor	0.0000001	Senone mixture weights floor (applied to data from -mixw file)
+-Nlextree	3		No. of lextrees to be instantiated; entries into them staggered in time
+-outlatdir			Directory in which to dump word lattices
+-outlatoldfmt	1		Whether to dump lattices in old format
+-pbeam		1.0e-50		Beam selecting HMMs transitioning to successors in each frame [0(widest)..1(narrowest)]
+-pheurtype	0		0 = bypass, 1= sum of max, 2 = sum of avg, 3 = sum of 1st senones only
+-pl_beam	1.0e-80		Beam for phoneme look-ahead. [1 (narrowest)..10000000(very wide)]
+-pl_window	1		Window size (actually window size-1) of phoneme look-ahead.
+-ptranskip	0		Use wbeam for phone transitions every so many frames (if >= 1)
+-senmgau	.cont.		Senone to mixture-gaussian mapping file (or .semi. or .cont.)
+-silprob	0.1		Default silence word probability
+-subvq				Sub-vector quantized form of acoustic model
+-subvqbeam	3.0e-3		Beam selecting best components within each mixture Gaussian [0(widest)..1(narrowest)]
+-svq4svq	0		A flag that specified whether the input SVQ will be used as approximate scores of the Gaussians
+-tmat				HMM state transition matrix input file
+-tmatfloor	0.0001		HMM state transition probability floor (applied to -tmat file)
+-treeugprob	1		If TRUE (non-0), Use unigram probs in lextree
+-utt				Utterance file to be processed (-ctlcount argument times)
+-uw		0.7		Unigram weight
+-var				Mixture gaussian variances input file
+-varfloor	0.0001		Mixture gaussian variance floor (applied to data from -var file)
+-varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
+-vqeval		3		A value added which  used only part of the cepstral vector to do the estimation
+-wbeam		1.0e-35		Beam selecting word-final HMMs exiting in each frame [0(widest)..1(narrowest)]
+-wend_beam	1.0e-80		Beam selecting word-final HMMs exiting in each frame [0(widest) .. 1(narrowest)]
 -wip		0.7		Word insertion penalty
 
-FATAL_ERROR: "main_live_pretend.c", line 67: 
-USAGE: livepretend <ctlfile> <inrawdir> <argsfile>
+Arguments list definition of align
+[NAME]		[DEFLT]		[VALUE]
+-agc		max		AGC.  max: C0 -= max(C0) in current utt; none: no AGC
+-beam		1e-64		Main pruning beam applied to triphones in forward search
+-cepdir		.		Directory for utterances in -ctlfn file (if relative paths specified).
+-cepext		mfc		File extension appended to utterances listed in -ctlfn file
+-cmn		current		Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN
+-compwd		0		Compound words in dictionary (not supported yet)
+-ctlcount			No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF
+-ctlfn				Input control file listing utterances to be decoded
+-ctloffset	0		No. of utterances at the beginning of -ctlfn file to be skipped
+-dictfn				Main pronunciation dictionary (lexicon) input file
+-fdictfn			Optional filler word (noise word) pronunciation dictionary input file
+-feat		1s_c_d_dd	Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d
+-insentfn			Input transcript file corresponding to control file
+-lambdafn			Interpolation weights (CD/CI senone) parameters input file
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
+-logbase	1.0003		Base in which all log values calculated
+-logfn				Log file (default stdout/stderr)
+-mdeffn				Model definition input file: triphone -> senones/tmat tying
+-meanfn				Mixture gaussian codebooks mean parameters input file
+-mixwfn				Senone mixture weights parameters input file
+-mllrctlfn			Input control file listing MLLR input data; parallel to -ctlfn argument file
+-mwfloor	0.0000001	Codebook mixture weight floor applied to -mixwfn file
+-outsentfn			Output transcript file with exact pronunciation/transcription
+-phsegdir			Output directory for phone segmentation files; optionally end with ,CTL
+-s2stsegdir			Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL
+-senmgaufn	.cont.		Senone to mixture-gaussian mapping file (or .semi. or .cont.)
+-stsegdir			Output directory for state segmentation files; optionally end with ,CTL
+-tmatfn				Transition matrix input file
+-topn		4		No. of top scoring densities computed in each mixture gaussian codebook
+-tpfloor	0.0001		Triphone state transition probability floor applied to -tmatfn file
+-varfloor	0.0001		Codebook variance floor applied to -varfn file
+-varfn				Mixture gaussian codebooks variance parameters input file
+-varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
+-wdsegdir			Output directory for word segmentation files; optionally end with ,CTL
+
+Arguments list definition of allphone
+[NAME]		[DEFLT]		[VALUE]
+-agc		max		AGC.  max: C0 -= max(C0) in current utt; none: no AGC
+-beam		1e-64		Main pruning beam applied during search
+-cepdir		.		Directory for utterances in -ctlfn file (if relative paths specified).
+-cepext		mfc		File extension appended to utterances listed in -ctlfn file
+-cmn		current		Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN
+-ctlcount			No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF
+-ctlfn				Input control file listing utterances to be decoded
+-ctloffset	0		No. of utterances at the beginning of -ctlfn file to be skipped
+-feat		1s_c_d_dd	Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d
+-inspen		0.05		Phone insertion penalty (applied above phone transition probabilities)
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
+-logbase	1.0001		Base in which all log values calculated
+-logfn				Log file (default stdout/stderr)
+-mdeffn				Model definition input file: triphone -> senones/tmat tying
+-meanfn				Mixture gaussian codebooks mean parameters input file
+-mixwfn				Senone mixture weights parameters input file
+-mwfloor	0.0000001	Codebook mixture weight floor applied to -mixwfn file
+-phlatbeam	1e-20		Pruning beam for writing phone lattice
+-phlatdir			Output directory for phone lattice files
+-phonetpfloor	0.00001		Floor for phone transition probabilities
+-phonetpfn			Phone transition probabilities inputfile (default: flat probs)
+-phonetpwt	3.0		Weight (exponent) applied to phone transition probabilities
+-phsegdir			Output directory for phone segmentation files; optionally end with ,CTL
+-senmgaufn	.cont.		Senone to mixture-gaussian mapping file (or .semi. or .cont.)
+-tmatfn				Transition matrix input file
+-topn		4		No. of top scoring densities computed in each mixture gaussian codebook
+-tpfloor	0.0001		Triphone state transition probability floor applied to -tmatfn file
+-varfloor	0.0001		Codebook variance floor applied to -varfn file
+-varfn				Mixture gaussian codebooks variance parameters input file
+-varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
+
+
+Arguments list definition of astar
+[NAME]		[DEFLT]		[VALUE]
+-agc		max		AGC.  max: C0 -= max(C0) in current utt; none: no AGC
+-beam		1e-64		Main pruning beam applied during search
+-cepdir		.		Directory for utterances in -ctlfn file (if relative paths specified).
+-cepext		mfc		File extension appended to utterances listed in -ctlfn file
+-cmn		current		Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN
+-ctlcount			No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF
+-ctlfn				Input control file listing utterances to be decoded
+-ctloffset	0		No. of utterances at the beginning of -ctlfn file to be skipped
+-feat		1s_c_d_dd	Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d
+-inspen		0.05		Phone insertion penalty (applied above phone transition probabilities)
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
+-logbase	1.0001		Base in which all log values calculated
+-logfn				Log file (default stdout/stderr)
+-mdeffn				Model definition input file: triphone -> senones/tmat tying
+-meanfn				Mixture gaussian codebooks mean parameters input file
+-mixwfn				Senone mixture weights parameters input file
+-mwfloor	0.0000001	Codebook mixture weight floor applied to -mixwfn file
+-phlatbeam	1e-20		Pruning beam for writing phone lattice
+-phlatdir			Output directory for phone lattice files
+-phonetpfloor	0.00001		Floor for phone transition probabilities
+-phonetpfn			Phone transition probabilities inputfile (default: flat probs)
+-phonetpwt	3.0		Weight (exponent) applied to phone transition probabilities
+-phsegdir			Output directory for phone segmentation files; optionally end with ,CTL
+-senmgaufn	.cont.		Senone to mixture-gaussian mapping file (or .semi. or .cont.)
+-tmatfn				Transition matrix input file
+-topn		4		No. of top scoring densities computed in each mixture gaussian codebook
+-tpfloor	0.0001		Triphone state transition probability floor applied to -tmatfn file
+-varfloor	0.0001		Codebook variance floor applied to -varfn file
+-varfn				Mixture gaussian codebooks variance parameters input file
+-varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
+
+
+Arguments list definition of dag
+[NAME]		[DEFLT]		[VALUE]
+-backtrace	1		Whether detailed backtrace information (word segmentation/scores) shown in log
+-ctlcount			No. of utterances in -ctlfn file to be processed (after -ctloffset).  Default: Until EOF
+-ctlfn				Input control file listing utterances to be decoded
+-ctloffset	0		No. of utterances at the beginning of -ctlfn file to be skipped
+-dagfudge	2		(0..2); 1 or 2: add edge if endframe == startframe; 2: if start == end-1
+-dictfn				Main pronunciation dictionary (lexicon) input file
+-fdictfn			Optional filler word (noise word) pronunciation dictionary input file
+-fillpenfn			Filler word probabilities input file (used in place of -silpen and -noisepen)
+-inlatdir			Input word-lattice directory with per-utt files for restricting words searched
+-inspen		0.65		Word insertion penalty
+-langwt		9.5		Language weight: empirical exponent applied to LM probabilty
+-latext		lat.gz		Word-lattice filename extension (.gz or .Z extension for compression)
+-lmfn				Language model input file (precompiled .DMP file)
+-lminmemory	0		Load language model into memory (default: use disk cache for lm
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
+-logbase	1.0001		Base in which all log values calculated
+-logfn				Log file (default stdout/stderr)
+-matchfn			Recognition result output file (old NIST format; pre Nov95)
+-matchsegfn			Exact recognition result file with word segmentations and scores
+-maxedge	2000000		Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage
+-maxlmop	100000000	Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)
+-maxlpf		40000		Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)
+-mdeffn				Model definition input file: triphone -> senones/tmat tying
+-min_endfr	3		Nodes ignored during search if they persist for fewer than so many end frames
+-noisepen	0.05		Language model 'probability' of each non-silence filler word
+-silpen		0.1		Language model 'probability' of silence word
+-ugwt		0.7		LM unigram weight: unigram probs interpolated with uniform distribution with this weight
+
+Arguments list definition of gausubvq:
+[NAME]		[DEFLT]		[VALUE]
+-eps		0.0001		Stopping criterion: stop iterations if relative decrease in sq(error) < eps
+-iter		100		Max no. of k-means iterations for clustering
+-log3table	1.0003		Determines whether to use the log3 table or to compute the values at run time.
+-mean				Means file
+-mixw				Mixture weights file (needed, even though it's not part of the computation)
+-mixwfloor	0.0000001	Floor for non-zero mixture weight values in input model
+-stdev		0		Use std.dev. (rather than var) in computing vector distances during clustering
+-subvq				Output subvq file (stdout if not specified)
+-svqrows	4096		No. of codewords in output subvector codebooks
+-svspec				Subvectors specification (e.g., 24,0-11/25,12-23/26-38 or 0-12/13-25/26-38)
+-var				Variances file
+-varfloor	0.0001		Floor for non-zero variance values in input model
+
+
