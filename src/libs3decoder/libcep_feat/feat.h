@@ -57,6 +57,7 @@
 #define _S3_FEAT_H_
 
 #include <libutil/libutil.h>
+#include <cmn.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,7 +80,9 @@ typedef struct feat_s {
     int32 *stream_len;	/* Vector length of each feature stream */
     int32 window_size;	/* #Extra frames around given input frame needed to compute
 			   corresponding output feature (so total = window_size*2 + 1) */
+  /*This should be removed to somewhere else */
     int32 cmn;		/* Whether CMN is to be performed on each utterance */
+  
     int32 varnorm;	/* Whether variance normalization is to be performed on each utt;
 			   Irrelevant if no CMN is performed */
     int32 agc;		/* Whether AGC-Max is to be performed on each utterance */
@@ -89,6 +92,13 @@ typedef struct feat_s {
 			   (feat[stream][]).  If NULL, no conversion available, the
 			   speech input must be feature vector itself.
 			   Return value: 0 if successful, -ve otherwise. */
+  cmn_t* cmn_struct;           /* Structure that stores the temporary variables for cepstral 
+			   means normalization*/
+  /*  float32 **cepbuf;
+      float32 **tmpcepbuf;*/
+  int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+  int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+
 } feat_t;
 
 /* Access macros */

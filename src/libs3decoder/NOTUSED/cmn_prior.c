@@ -45,7 +45,7 @@
  */
 
 
-#include "cmn_prior.h"
+#include "cmn.c"
 
 void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen, 
 							   int32 endutt)

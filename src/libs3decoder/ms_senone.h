@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/08/31  08:43:47  arthchan2003
- * Fixing _cpluscplus directive
+ * Revision 1.3  2004/11/13  21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  * 
+ * Revision 1.2  2004/08/31 08:43:47  arthchan2003
+ * Fixing _cpluscplus directive
+ *
  * Revision 1.1  2004/08/09 00:17:11  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *
@@ -65,6 +68,7 @@ typedef struct {
     float32 mixwfloor;		/* floor applied to each PDF entry */
     int32 shift;		/* LSB bits truncated from original logs3 value */
     s3mgauid_t *mgau;		/* senone-id -> mgau-id mapping for senones in this set */
+    int32* featscr;              /* The feature score for every senone, will be initialized inside senone_eval_all */
 } senone_t;
 
 

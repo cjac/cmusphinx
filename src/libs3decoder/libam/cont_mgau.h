@@ -161,6 +161,9 @@ typedef struct {
   /* Used only in the flat lexicon decoder, statistics */
   int32 frm_sen_eval;		/* #Senones evaluated in the most recent frame */
   int32 frm_gau_eval;		/* #Gaussian densities evaluated in the most recent frame */
+  int32 frm_ci_sen_eval;        /* #CI Senones evaluated in most recent frame*/
+  int32 frm_ci_gau_eval;        /* #CI Senones evaluated in most recent frame*/
+
   int32 gau_type; /* gau_type=CONTHMM if it is fully continous HMM, 
 		     gau_type=SEMIHMM if it is semi continous HMM.*/
 } mgau_model_t;
@@ -180,7 +183,8 @@ typedef struct {
 #define mgau_lrdi(g,m,c)	((g)->mgau[m].lrdi[c])
 #define mgau_frm_sen_eval(g)	((g)->frm_sen_eval)
 #define mgau_frm_gau_eval(g)	((g)->frm_gau_eval)
-
+#define mgau_frm_cisen_eval(g)	((g)->frm_ci_sen_eval)
+#define mgau_frm_cigau_eval(g)	((g)->frm_ci_gau_eval)
 
 /*
  * Create a new mixture Gaussian model from the given files (Sphinx3 format).  Optionally,

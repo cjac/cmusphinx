@@ -71,9 +71,8 @@
 #include "bio.h"
 #include "logs3.h"
 
-static char *darpa_hdr = "Darpa Trigram LM";
-static int LM_IN_MEMORY = 0;	/* RAH, 5.8.01 Allow this as an option to sphinx */
-
+const char *darpa_hdr = "Darpa Trigram LM";
+/*ARCHAN, 20041112: NOP, NO STATIC VARIABLES! */
 
 static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw,int32 n_lmclass_used,lmclass_t *lmclass,int32 dict_size);
 
@@ -285,16 +284,16 @@ lmset_t* lm_read_ctl(char *ctlfile,dict_t* dict,float64 lw, float64 wip, float64
   lm_t *lm;
   lmset_t *lmset=NULL;
   tmp=NULL;
-	
+  int32 isLM_IN_MEMORY=0;
 
   lmclass_set = lmclass_newset();
 	    
   E_INFO("Reading LM control file '%s'\n",ctlfile);
 
   if (cmd_ln_int32 ("-lminmemory")) 
-    LM_IN_MEMORY = 1;    
+    isLM_IN_MEMORY = 1;    
   else
-    LM_IN_MEMORY = 0;
+    isLM_IN_MEMORY = 0;
 
 	    
   ctlfp = myfopen (ctlfile, "r");
@@ -461,7 +460,13 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw,int32
     char str[1024];
     char *tmp_word_str;
     s3lmwid_t startwid, endwid;
-    
+    int32 isLM_IN_MEMORY=0;
+
+    if (cmd_ln_int32 ("-lminmemory")) 
+      isLM_IN_MEMORY = 1;    
+    else
+      isLM_IN_MEMORY = 0;
+
     lm = (lm_t *) ckd_calloc (1, sizeof(lm_t));
     
     lm->dict_size=dict_size;
@@ -554,7 +559,7 @@ static lm_t *lm_read_dump (char *file, float64 lw, float64 wip, float64 uw,int32
     E_INFO("%8d ug\n", lm->n_ug);
 
     /* RAH, 5.1.01 - Let's try reading the whole damn thing in here   */
-    if (LM_IN_MEMORY) {
+    if (isLM_IN_MEMORY) {
       lm->bg = (bg_t *) ckd_calloc (lm->n_bg+1,sizeof(bg_t));
       lm->tg = (tg_t *) ckd_calloc (lm->n_tg+1,sizeof(tg_t));
 
@@ -727,7 +732,8 @@ lm_t *lm_read (char *file, float64 lw, float64 wip, float64 uw)
 {
     int32 i, u;
     lm_t *lm;
-    
+    int32 isLM_IN_MEMORY=0;
+      
     if (! file)
 	E_FATAL("No LM file\n");
     if (lw <= 0.0)
@@ -739,9 +745,9 @@ lm_t *lm_read (char *file, float64 lw, float64 wip, float64 uw)
     
     E_INFO ("LM read('%s', lw= %.2f, wip= %d, uw= %.2f)\n", file, lw, logs3(wip), uw);
     if (cmd_ln_int32 ("-lminmemory")) 
-      LM_IN_MEMORY = 1;    
+      isLM_IN_MEMORY = 1;    
     else
-      LM_IN_MEMORY = 0;
+      isLM_IN_MEMORY = 0;
     
     /* For now, only dump files can be read; they are created offline */
     lm = lm_read_dump (file, lw, wip, uw,0,NULL,0);
@@ -765,12 +771,19 @@ void lm_cache_reset (lm_t *lm)
 {
     int32 i, n_bgfree, n_tgfree;
     tginfo_t *tginfo, *next_tginfo, *prev_tginfo;
-    
+    int32 isLM_IN_MEMORY=0;
+
     n_bgfree = n_tgfree = 0;
     
+    if (cmd_ln_int32 ("-lminmemory")) 
+      isLM_IN_MEMORY = 1;    
+    else
+      isLM_IN_MEMORY = 0;
+
     /* ARCHAN: RAH only short-circult this function only */
-    if (LM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
+    if (isLM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
     return;
+
   
     if ((lm->n_bg > 0) && (! lm->bg)) {	/* Disk-based; free "stale" bigrams */
 	for (i = 0; i < lm->n_ug; i++) {
@@ -915,11 +928,18 @@ static void load_bg (lm_t *lm, s3lmwid_t lw1)
 {
     int32 i, n, b;
     bg_t *bg;
+    int32 isLM_IN_MEMORY=0;
     
     b = lm->ug[lw1].firstbg;		/* Absolute first bg index for ug lw1 */
     n = lm->ug[lw1+1].firstbg - b;	/* Not including guard/sentinel */
+
+    if (cmd_ln_int32 ("-lminmemory")) 
+      isLM_IN_MEMORY = 1;    
+    else
+      isLM_IN_MEMORY = 0;
+
     
-  if (LM_IN_MEMORY)		/* RAH, if LM_IN_MEMORY, then we don't need to go get it. */
+  if (isLM_IN_MEMORY)		/* RAH, if LM_IN_MEMORY, then we don't need to go get it. */
     bg = lm->membg[lw1].bg = &lm->bg[b];
   else {
     bg = lm->membg[lw1].bg = (bg_t *) ckd_calloc (n+1, sizeof(bg_t));
@@ -1084,10 +1104,17 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 {
     int32 i, n, b;
     int32 t = -1; /* Let's make sure that if t isn't initialized after the
-					    * "if" statement below, it makes things go bad */
+		   * "if" statement below, it makes things go bad */
+    int32 isLM_IN_MEMORY=0;
+
     bg_t *bg;
     tg_t *tg;
     tginfo_t *tginfo;
+
+    if (cmd_ln_int32 ("-lminmemory")) 
+      isLM_IN_MEMORY = 1;    
+    else
+      isLM_IN_MEMORY = 0;
     
     /* First allocate space for tg information for bg lw1,lw2 */
     tginfo = (tginfo_t *) ckd_malloc (sizeof(tginfo_t));
@@ -1135,7 +1162,7 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 
     /* At this point, n = #trigrams for lw1,lw2.  Read them in */
 
-    if (LM_IN_MEMORY) {
+    if (isLM_IN_MEMORY) {
 		/* RAH, already have this in memory */
       if (n > 0){
 	assert(t != -1);

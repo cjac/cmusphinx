@@ -205,9 +205,16 @@ float64 vector_vqgen (float32 **data,	/* In: Input Data to be quantized */
 		      int32 maxiter,	/* In: Max #iterations, regardless of convlimit */
 		      float32 **mean,	/* Out: Vector quantized array of centroids.  Caller
 					   must allocate this array */
-		      int32 *map);	/* Out: data->mean mapping; mean[map[i]] is the closest
+		      int32 *map,       /* Out: data->mean mapping; mean[map[i]] is the closest
 					   quantized vector corresponding to the input vector
 					   data[i].  Caller must allocate this array */
+
+		      int32 seed);      /* In : The seed for a random generator
+					   if it is smaller than 0, use the internal
+					   mechanism to generate seed. 
+					   else use the seed to seed the random
+					   generator.
+					 */
 
 /*
  * Find the entry (row) of mean that is closest (according to Euclidean distance) to vec.
@@ -298,9 +305,12 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.7  2004/09/13  08:13:26  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.8  2004/11/13  21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  * 
+ * Revision 1.7  2004/09/13 08:13:26  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.6  2004/07/27 21:53:05  yitao
  *
  * weird.  i only changed kb.c to fix a small bug.  why so many changes?

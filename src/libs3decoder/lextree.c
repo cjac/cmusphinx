@@ -710,7 +710,8 @@ void lextree_hmm_histbin (lextree_t *lextree, int32 bestscr, int32 *bin, int32 n
 
 
 void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
-			    int32 cf, int32 th, int32 pth, int32 wth,int32 *phn_heur_list,int32 heur_beam,int32 heur_type)
+			    int32 cf, int32 th, int32 pth, int32 wth,int32 *phn_heur_list,int32 heur_beam,
+			    int32 heur_type)
 {
     mdef_t *mdef;
     int32 nf, newscore, newHeurScore;
@@ -720,8 +721,9 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
     int32 i, n;
 
     /* Code for heursitic score */
-    static int32 maxNewHeurScore=MAX_NEG_INT32;
-    static int32 lastfrm=-1;
+    kbc->maxNewHeurScore=MAX_NEG_INT32;
+    kbc->lastfrm=-1;
+
     int32 hth = 0;
 
     mdef = kbcore_mdef(kbc);
@@ -755,17 +757,18 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
 		continue;			/* HMM exit score not good enough */
 #endif
 	    if(heur_type >0){
-	      if (cf!=lastfrm) {
-		lastfrm=cf;
-		maxNewHeurScore=MAX_NEG_INT32;
+	      if (cf!=kbc->lastfrm) {
+		kbc->lastfrm=cf;
+		kbc->maxNewHeurScore=MAX_NEG_INT32;
 	      }
+
 	      for (gn = ln->children; gn; gn = gnode_next(gn)) {
 		ln2 = gnode_ptr(gn);
                 
 		newHeurScore = hmm->out.score + (ln2->prob - ln->prob) + phn_heur_list[(int32)ln2->ci];
-		if (maxNewHeurScore < newHeurScore)  maxNewHeurScore = newHeurScore;
+		if (kbc->maxNewHeurScore < newHeurScore)  kbc->maxNewHeurScore = newHeurScore;
 	      }
-	      hth = maxNewHeurScore + heur_beam;
+	      hth = kbc->maxNewHeurScore + heur_beam;
 	    }
 
 	    /* Transition to each child */

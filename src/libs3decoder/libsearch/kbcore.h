@@ -91,6 +91,10 @@ typedef struct {
     tmat_t *tmat;
   int32 n_lm;
   int32 n_alloclm;
+
+   int32 maxNewHeurScore;
+   int32 lastfrm;
+
 } kbcore_t;
 
 

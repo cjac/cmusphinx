@@ -57,6 +57,7 @@ typedef struct {
     int32 id;		/* Index of codeword (gaussian density) */
     int32 dist;		/* Density value for input observation wrt above codeword;
 			   NOTE: result in logs3 domain; hence int32 */
+
 } gauden_dist_t;
 
 

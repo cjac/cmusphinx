@@ -248,7 +248,6 @@ typedef struct lm_s {
   lmclass_t *lmclass;
   int32 n_lmclass;
   int32 *inclass_ugscore;
-  
 } lm_t;
 
 /*20040222 ARCHAN: Structure for multiple, named LMs, copied from s2*/

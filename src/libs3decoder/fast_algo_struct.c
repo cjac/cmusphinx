@@ -88,7 +88,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 isSVQ4SVQ,
 			   float32 subvqbeam,
 			   float32 cipbeam,
-			   int32 n_emit_states)
+			   int32 maxcd,
+			   int32 n_ci_sen)
 {
   fast_gmm_t *fg;
 
@@ -106,8 +107,11 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
   fg->gmms->ci_pbeam=logs3(cipbeam);
   if(fg->gmms->ci_pbeam < -10000000)
     E_INFO("Virtually no CI phone beam is applied now. (ci_pbeam <-1000000)\n");
-  fg->gmms->ci_pbest=(int32*)ckd_calloc(n_emit_states,sizeof(int32));
+  fg->gmms->ci_occu= (int32*) ckd_calloc(n_ci_sen,sizeof(int32));
+  fg->gmms->idx=     (int32*) ckd_calloc(n_ci_sen,sizeof(int32));
+  fg->gmms->max_cd = maxcd;
 
+  E_INFO("max cd %d\n",maxcd);
   fg->gaus->rec_bstcid=-1;
 
   fg->gaus->subvqbeam=logs3(subvqbeam);

@@ -302,10 +302,9 @@ int32 vector_vqlabel (float32 *vec, float32 **mean, int32 rows, int32 cols, floa
 
 float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
 		      float64 epsilon, int32 maxiter,
-		      float32 **mean, int32 *map)
+		      float32 **mean, int32 *map,int32 seed)
 {
     int32 i, j, r, it;
-    static uint32 seed = 1;
     float64 sqerr, prev_sqerr=0, t;
     bitvec_t sel;
     int32 *count;
@@ -318,14 +317,21 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
     
     ptmr_init (&tm);
     ptmr_start (&tm);
+
     
     /* Pick a random initial set of centroids */
-#ifndef WIN32			/* RAH */
+
+    if(seed < 0){
+#ifndef WIN32			
     srandom (seed);
     seed ^= random();
-#else  /* RAH */
-      srand ((unsigned) time(NULL)); /* RAH */
+#else  
+    srand ((unsigned) time(NULL)); 
 #endif
+    }else{
+      srand(seed);
+    }
+
     for (i = 0; i < vqrows; i++) {
 	/* Find r = a random, previously unselected row from the input */
 
@@ -334,6 +340,7 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
 #else  /* RAH */
 	r = (rand() & (int32)0x7fffffff) % rows; /* RAH */
 #endif /* RAH */
+
 	while (bitvec_is_set (sel, r)) {	/* BUG: possible infinite loop!! */
 	    if (++r >= rows)
 		r = 0;

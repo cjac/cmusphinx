@@ -24,6 +24,11 @@ cl_init(classifier_t *_cl, char *_means_file,  char *_vars_file,
   if (_cl->gmm == NULL) {
     return -1;
   }
+  _cl->class_prior_prob[0]=CLASS_SILENCE_PROB;
+  _cl->class_prior_prob[1]=CLASS_OWNER_PROB;
+  _cl->class_prior_prob[2]=CLASS_SECONDARY_PROB;
+  _cl->class_prior_prob[3]=CLASS_NOISE;
+
   mgau_precomp_hack_log_to_float(_cl->gmm);
 
   return 0;
@@ -158,7 +163,7 @@ cl_classify_frames(classifier_t *_cl, float32 **_frames, int _num_frames,
   for (frame_index = 0; frame_index < _num_frames; frame_index++) {
     cl_calc_frame_gmm(_cl, _frames[frame_index]);
     for (class_index = NUM_CLASSES - 1; class_index >= 0; class_index--) {
-      prob = _cl->frame_gmm[class_index] * class_prior_prob[class_index];
+      prob = _cl->frame_gmm[class_index] * _cl->class_prior_prob[class_index];
       if (best_prob < prob) {
 	best_prob = prob;
 	best_class = class_index;

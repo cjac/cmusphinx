@@ -102,9 +102,14 @@ typedef struct{
 typedef struct{
   int32 ci_pbeam;             /* The beam which prune out unnesseary parent CI phones in 
 				 CI-based GMM selection*/
-  int32 *ci_pbest;            /* Array to store the best scores for
-                                 positions of CI phone*/
-
+  int32 dyn_ci_pbeam;         /* The dynamic CI-beam computed by using both CI-pbeam and 
+				 the counts*/
+  int32 *ci_occu;            /* Recorded number of CD senones for a
+				 particular base CI senone. */
+  int32 *idx;                /* temporary indices used in absolute
+				discounting of CI-based GMM selection */
+  int32 max_cd;              /* Maximum CD senones computed. 
+			      */
 } gmm_select_t;
 
 typedef struct{
@@ -158,8 +163,9 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 isGS4GS,
 			   int32 isSVQ4SVQ,
 			   float32 subvqbeam,
-			   float32 cibeam,
-			   int32 n_emit_states);
+			   float32 cibeam,  /* Input: CI phone beam */
+			   int32 max_cd,    /* Input: Max CD senone to be computed */
+			   int32 n_ci_sen); /* Input: no. of ci senone, use to initialize  the ci_occ array*/
 
 
 #ifdef __cplusplus
