@@ -413,7 +413,7 @@ void kb_setlm(char* lmname,kb_t* kb)
 {
   lmset_t* lms;
   kbcore_t* kbc=NULL;
-  int i;
+  int i = 0;
   int j;
   int n;
   /*  s3wid_t dictid;*/
@@ -444,11 +444,19 @@ void kb_setlm(char* lmname,kb_t* kb)
     if(kbc->lm==NULL){
       E_ERROR("LM name %s cannot be found! Fall back to use base LM model\n",lmname);
       kbc->lm=lms[0].lm;
+      /* Also, don't forget to reset 'i', since if the code reaches
+       * this point, i has a value of 'n_lm + 1'
+       */
+      i = 0;
       for(j=0;j<kb->n_lextree;j++){
 	kb->ugtree[j]=kb->ugtreeMulti[j];
       }
     }
   }
+  /*  Just to make sure we're not trying to point beyond the limit of
+   *  array lms.
+   */
+  assert (i < kbc->n_lm);
 
   E_INFO("Current LM name %s.\n",lms[i].name);
   /*  if((kb->vithist->lms2vh_root=
