@@ -75,6 +75,8 @@ union data32 {
 int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, 
                           float32 ***cep_block);
 
+int32 fe_dump_end_utt(fe_t *FE, float32 *cepvector);
+
 
 /* Dump functions */
 void fe_dump_short_frame(FILE *stream, short *shortframe, int bufferSize);

@@ -287,7 +287,7 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 
     live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
     if (live_endutt) /* RAH, It seems that we shouldn't throw out this data */
-        fe_end_utt(fe,dummyframe); /* Flush out the fe */
+        fe_dump_end_utt(fe,dummyframe); /* Flush out the fe */
 
     /* Compute feature vectors */
     live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,

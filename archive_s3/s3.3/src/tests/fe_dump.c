@@ -203,6 +203,104 @@ int32 fe_dump_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_bl
 }
 
 
+/*********************************************************************
+ *
+ * FUNCTION: fe_end_utt
+ * PARAMETERS: fe_t *FE, float *cepvector
+ * RETURNS: number of frames processed (0 or 1) 
+ * DESCRIPTION: if there are overflow samples remaining, it will pad
+ * with zeros to make a complete frame and then process to
+ * cepstra. also deactivates start flag of FE, and resets overflow
+ * buffer count.
+ * 
+ *********************************************************************/
+
+int32 fe_dump_end_utt(fe_t *FE, float32 *cepvector)
+{
+    int32 pad_len=0, frame_count=0;
+    int32 i;
+    double *spbuf, *fr_fea = NULL;
+    
+    /* if there are any samples left in overflow buffer, pad zeros to
+       make a frame and then process that frame */
+    
+    if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
+        pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
+        memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS), 0,
+               pad_len*sizeof(int16));
+        FE->NUM_OVERFLOW_SAMPS += pad_len;
+        assert(FE->NUM_OVERFLOW_SAMPS==FE->FRAME_SIZE);
+        
+        if ((spbuf=(double *)calloc(FE->FRAME_SIZE,sizeof(double)))==NULL){
+            fprintf(stderr,"memory alloc failed in fe_end_utt()\n...exiting\n");
+            exit(0);
+        }
+        
+        if (fe_dump) {
+            fe_dump_short_frame(fe_dumpfile, FE->OVERFLOW_SAMPS,
+                                FE->NUM_OVERFLOW_SAMPS);
+        }
+
+        /* pre-emphasis if needed,convert from int16 to double */
+        metricsStart("preemphasis");
+
+        if (FE->PRE_EMPHASIS_ALPHA != 0.0){
+            fe_pre_emphasis(FE->OVERFLOW_SAMPS, spbuf,
+                            FE->FRAME_SIZE,FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
+        } else {
+            fe_short_to_double(FE->OVERFLOW_SAMPS, spbuf, FE->FRAME_SIZE);
+        }
+
+        metricsStop("preemphasis");
+        
+        if (fe_dump) {
+            fe_dump_double_frame(fe_dumpfile, spbuf, FE->FRAME_SIZE,
+                                 "PREEMPHASIS");
+        }
+
+        /* again, who should implement cep vector? this can be implemented
+           easily from outside or easily from in here */
+        if ((fr_fea = (double *)calloc(FE->NUM_CEPSTRA, sizeof(double)))
+            == NULL){
+            fprintf(stderr,"memory alloc failed in fe_end_utt()\n...exiting\n");
+            exit(0);
+        }
+        
+        metricsStart("HammingWindow");
+        fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
+        metricsStop("HammingWindow");
+
+        if (fe_dump) {
+            fe_dump_double_frame
+                (fe_dumpfile, spbuf, FE->FRAME_SIZE, "HAMMING_WINDOW");
+        }
+
+        fe_frame_to_fea_dump(FE, spbuf, fr_fea);
+ 
+        for (i=0;i<FE->NUM_CEPSTRA;i++)
+            cepvector[i] = (float32)fr_fea[i];
+        
+        if (fe_dump) {
+            fe_dump2d_float_frame(fe_dumpfile, cepvector, frame_count, 
+                                  FE->NUM_CEPSTRA,
+                                  "CEPSTRUM_PRODUCER", "CEPSTRUM");
+        }
+
+        frame_count=1;
+        free(fr_fea);               /* RAH - moved up */
+        free (spbuf);               /* RAH */
+    } else {
+        frame_count=0;
+        cepvector = NULL;
+    }
+    
+    /* reset overflow buffers... */
+    FE->NUM_OVERFLOW_SAMPS = 0;
+    FE->START_FLAG=0;
+    
+    return frame_count;
+}
+
 
 /*********************************************************************
  *
