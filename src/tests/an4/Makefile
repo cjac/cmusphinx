@@ -48,15 +48,12 @@ LIBNAME= tests
 
 LOCAL_INCLUDES = -I$(TOP)/src -I$(TOP)/src/libs3decoder -I$(TOP)/src/libs3audio
 
-ALL = $(BINDIR)/dumpfrontend $(BINDIR)/batchmetrics
+ALL = $(BINDIR)/batchmetrics
 
 include $(TOP)/config/common_make_rules
 
-$(BINDIR)/dumpfrontend: dump_frontend.o $(LIVEDECOBJS)
-	$(CC) $(CFLAGS) -o $@ dump_frontend.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
-
-$(BINDIR)/batchmetrics: batch_metrics.o $(LIVEDECOBJS)
-	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS)
+$(BINDIR)/batchmetrics: ../batch_metrics.o $(LIVEDECOBJS)
+	$(CC) $(CFLAGS) -o $@ batch_metrics.o $(LIVEDECOBJS) $(LDFLAGS) $(LIBS) -R$(LIBDIR)
 
 an4_words_unigram:
 	rm -f gmake-an4-words-unigram.results

@@ -37,7 +37,7 @@
 ## Compile-time directories 
 BINDIR=$(shell test -d $(TOP)/bin || mkdir $(TOP)/bin; echo $(TOP)/bin;)
 SCRIPTDIR=$(BINDIR)
-LIBDIR=$(shell test -d $(TOP)/lib || mkdir $(TOP)/lib; echo $(TOP)/lib;)
+LIBDIR=$(shell test -d $(TOP)/lib || mkdir $(TOP)/lib; cd $(TOP)/lib; pwd;)
 
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG) $(LOCAL_INCLUDES) $(INCLUDES)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
