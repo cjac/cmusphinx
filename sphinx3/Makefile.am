@@ -28,9 +28,9 @@ test-livepretend:
 	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
-		$(top_srcdir)/model/lm/an4/args.an4.test \
-		$(top_srcdir)/model/lm/an4/`cat $(top_srcdir)/model/lm/an4/an4.ctl`.raw > an4.log 2>&1 
-
+		$(top_srcdir)/model/lm/an4/an4.ctl \
+		$(top_srcdir)/model/lm/an4 \
+		$(top_srcdir)/model/lm/an4/args.an4.test > an4.log 2>&1 
 	$(LIBTOOL) --mode=execute grep "P I T T S B U R G H (" an4.log 
 	$(LIBTOOL) --mode=execute grep "FWDXCT" an4.log 
 	$(LIBTOOL) --mode=execute rm an4.log 
