@@ -3282,7 +3282,7 @@ create_search_tree (dictT *dict, int32 use_lm)
 
 		for (; hmm && (hmm->sseqid != ph); hmm = hmm->alt)
 		    prev_hmm = hmm;
-		if (prev_hmm) {
+		if (! hmm) { /* thanks, rkm! */
 		    prev_hmm->alt = hmm = (CHAN_T *) listelem_alloc (sizeof(CHAN_T));
 		    init_nonroot_chan (hmm, ph, de->ci_phone_ids[1]);
 		    n_nonroot_chan++;
@@ -3302,7 +3302,7 @@ create_search_tree (dictT *dict, int32 use_lm)
 
 		    for (hmm = hmm->next; hmm && (hmm->sseqid != ph); hmm = hmm->alt)
 			prev_hmm = hmm;
-		    if (prev_hmm) {
+		    if (! hmm) { /* thanks, rkm! */
 			prev_hmm->alt = hmm = (CHAN_T *) listelem_alloc (sizeof(CHAN_T));
 			init_nonroot_chan (hmm, ph, de->ci_phone_ids[p]);
 			n_nonroot_chan++;
