@@ -72,6 +72,8 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 			     int32 live_endutt, partialhyp_t **ohyp);
 
 int32 live_free_memory ();
+
+void live_print_profiles(FILE *file);
   
 #ifdef __cplusplus
 }

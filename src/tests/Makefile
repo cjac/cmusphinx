@@ -65,3 +65,8 @@ ti46:
 ti46-quick:
 	rm -f gmake-ti46-quick.results
 	$(BINDIR)/batchmetrics ./ti46-quick.ctl /lab/speech/sphinx3j/data/ti46/ti20/test/test/raw ARGS > gmake-ti46-quick.results
+
+multi-batch:
+	rm -f gmake-multi-batch.results
+	$(BINDIR)/batchmetrics ./multiDigits.ctl /lab/speech/sphinx3j/data/connected_digits/sample_speechfiles ARGS > gmake-multi-batch.results
+
