@@ -5,7 +5,7 @@ cd %S3ROOT%
 set S3BATCH=.\bin\Debug\livepretend.exe
 set TASK=.\model\lm\an4
 set CTLFILE=.\win32\batch\an4.ctl
-set ARGS=.\model\lm\an4\args.an4.test
+set ARGS=.\model\lm\an4\args.an4.test.win32
 
 
 echo . 

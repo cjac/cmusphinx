@@ -7,7 +7,7 @@ set S3ROOT=..\..
 cd %S3ROOT%
 set S3CONTINUOUS=.\bin\Debug\livedecode.exe
 
-set ARGS=.\model\lm\an4\args.an4.test
+set ARGS=.\model\lm\an4\args.an4.test.win32
 
 echo " "
 echo "sphinx3-simple:"
