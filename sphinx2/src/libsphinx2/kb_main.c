@@ -37,9 +37,12 @@
 /* KB.C - for compile_kb
  * 
  * $Log$
- * Revision 1.11  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.12  2004/12/13  18:35:46  rkm
+ * Changed flag -ascrwt to -ascrscale
  * 
+ * Revision 1.11  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 02-Dec-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added acoustic score weight (applied only to S3 continuous
@@ -346,7 +349,7 @@ config_t kb_param[] = {
 		FLOAT, (caddr_t) &filler_pfpen }, 
 	{ "LanguageWeight", "Weighting on Language Probabilities", "-langwt",
 		FLOAT, (caddr_t) &language_weight }, 
-	{ "AcousticWeight", "Weighting on Acoustic Scores", "-ascrwt",
+	{ "AcousticWeight", "Weighting on Acoustic Scores", "-ascrscale",
 		INT, (caddr_t) &ascr_scale }, 
 	{ "MaxNewOOV", "MAX New OOVs that can be added at run time", "-maxnewoov",
 		INT, (caddr_t) &max_new_oov }, 
