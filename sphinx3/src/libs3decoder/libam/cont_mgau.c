@@ -80,7 +80,7 @@
 /**
  * Sphinx-3 model mean and var files have the same format.  Use this routine for reading
  * either one.
- * Warning! You can only read the variance after reading the mean.  
+ * \warning You can only read the variance after reading the mean.  
  */
 static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 {
@@ -186,12 +186,18 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	  for (i = 0; i < n_mgau; i++) {
 	    g->mgau[i].n_comp = n_density;
 	    g->mgau[i].mean = pbuf;
+
 	    
 	    for (k = 0; k < n_density; k++) {
 	      g->mgau[i].mean[k] = buf;
 		buf += blk;
 		
 	    }
+	    g->mgau[i].bstidx=NO_BSTIDX;
+	    g->mgau[i].bstscr=S3_LOGPROB_ZERO;
+	    g->mgau[i].updatetime=NOT_UPDATED;
+	    
+	    
 	    pbuf += n_density;
 	  }
 	}
@@ -224,6 +230,12 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	      buf += blk;
 	      
 	    }
+
+	    g->mgau[i].bstidx=NO_BSTIDX;
+	    g->mgau[i].bstscr=S3_LOGPROB_ZERO;
+	    g->mgau[i].updatetime=NOT_UPDATED;
+	    
+
 	    pbuf += n_density;
 	  }
 
@@ -257,7 +269,12 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     return 0;
 }
 
-int32 mgau_mean_reload(mgau_model_t *g, char* mean_file_name)
+/** reload the mean file 
+ */
+
+int32 mgau_mean_reload(mgau_model_t *g, /**< In/Out: The GMM */
+		       char* mean_file_name /**< In: file name for the mean file. */
+		       )
 {
   assert (g->mgau!=NULL);
   mgau_file_read (g, mean_file_name, MGAU_MEAN);
@@ -519,6 +536,11 @@ static void mgau_uninit_compact (mgau_model_t *g)
 }
 
 
+/**
+ * Floor the value of gaussian mixture weight using the parameter floor
+ * @param floor
+ */
+
 static void mgau_var_floor (mgau_model_t *g, float64 floor)
 {
   int32 m, c, i, n;
@@ -624,8 +646,9 @@ int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
 
 }
 
-/** At the moment, S3 models have the same #means in each codebook and
-    1 var/mean */
+/** At the moment, S3 models have the same # of means in each codebook and
+    1 var/mean 
+*/
 
 mgau_model_t *mgau_init (char *meanfile, 
 			 char *varfile, float64 varfloor,
@@ -716,13 +739,17 @@ int32 mgau_comp_eval (mgau_model_t *g, int32 s, float32 *x, int32 *score)
     return bs;
 }
 
-
-int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
+/** Compute the log likelihood of a Gaussian mixture model in fixed-point.
+    Notice that within the program, the Gaussian distribution is computed using
+    floating point. But log-add is done in fixed point (usually by table lookup).
+ */
+int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x, int32 fr,int32 bUpdBstId)
 {
     mgau_t *mgau;
     int32 veclen, score;
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2, f;
+    int32 gauscr ; /* This equals to log_to_logs3_factor *dval1 + the mixture weight */
     int32 i, j, c;
     
     veclen = mgau_veclen(g);
@@ -731,6 +758,14 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
     f = log_to_logs3_factor();
     score = S3_LOGPROB_ZERO;
 
+    if(bUpdBstId){
+      mgau->bstidx=NO_BSTIDX;
+      mgau->bstscr=S3_LOGPROB_ZERO;
+    }
+    
+    if(bUpdBstId){
+      mgau->updatetime=fr;
+    }
 
     if (! active) {	/* No short list; use all */
 	for (c = 0; c < mgau->n_comp-1; c += 2) {	/* Interleave 2 components for speed */
@@ -752,9 +787,25 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 		dval1 = g->distfloor;
 	    if (dval2 < g->distfloor)
 		dval2 = g->distfloor;
+
+	    /*	    E_INFO("Score %f, Index %d\n",dval1, c);
+		    E_INFO("Score %f, Index %d\n",dval2, c+1);*/
+
+	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
+
+	    score = logs3_add (score, gauscr);
+	    if(gauscr > mgau->bstscr){
+	      mgau->bstidx=c;
+	      mgau->bstscr=gauscr;
+	    }
 	    
-	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
-	    score = logs3_add (score, (int32)(f * dval2) + mgau->mixw[c+1]);
+	    gauscr= (int32)(f * dval2) + mgau->mixw[c+1];
+
+	    score = logs3_add (score, gauscr);
+	    if(bUpdBstId&&gauscr> mgau->bstscr){
+	      mgau->bstidx=c+1;
+	      mgau->bstscr=gauscr;
+	    }
 	}
 	
 	/* Remaining iteration if n_mean odd */
@@ -771,8 +822,19 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    if (dval1 < g->distfloor)
 		dval1 = g->distfloor;
 	    
-	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
+	    /*E_INFO("Score %f, Index %d\n",dval1, c);*/
+
+	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
+	    score = logs3_add (score, gauscr);
+
+	    if(bUpdBstId&&gauscr> mgau->bstscr){
+	      mgau->bstidx=c;
+	      mgau->bstscr=gauscr;
+	    }
+
 	}
+	/*E_INFO("No Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m,mgau->bstidx,mgau->bstscr,score);*/
+
     } else {
 	for (j = 0; active[j] >= 0; j++) {
 	    c = active[j];
@@ -788,9 +850,19 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
 	    
 	    if (dval1 < g->distfloor)
 		dval1 = g->distfloor;
-	    
-	    score = logs3_add (score, (int32)(f * dval1) + mgau->mixw[c]);
+
+	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
+
+	    score = logs3_add (score, gauscr);
+	    /*	    E_INFO("index c %d, gauscr %d , f*dval1 %d, mixw[c] %d\n",c,gauscr,f*dval1, mgau->mixw[c]);*/
+
+	    if(bUpdBstId&&gauscr > mgau->bstscr){
+	      mgau->bstidx=c;
+	      mgau->bstscr=gauscr;
+	    }
+
 	}
+	/*E_INFO("With Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m, mgau->bstidx,mgau->bstscr,score);*/
     }
     
     if(score == S3_LOGPROB_ZERO){
@@ -803,7 +875,7 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x)
    I've not verified that this function catches all of the leaks, just most of them.
  */
 
-/* ARCHAN, I noticed this program because of Ricky's comment.  In
+/** ARCHAN, I noticed this program because of Ricky's comment.  In
  2004, a very useful tool called valgrind started to be available for
  Linux.  This tool allows me to pick up a lot of memory problems
  easily. */
