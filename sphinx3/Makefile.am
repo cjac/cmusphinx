@@ -76,5 +76,21 @@ test:
 	    -wdsegdir ./ \
 	    -phsegdir ./
 
+	$(LIBTOOL) --mode=execute echo "ALLPHONE TEST"
+	$(LIBTOOL) --mode=execute src/programs/allphone \
+	    -logbase 1.0003 \
+	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+            -meanfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+            -varfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+            -mixwfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+            -tmatfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+	    -feat 1s_c_d_dd \
+    	    -topn 1000 \
+	    -beam 1e-80 \
+  	    -senmgaufn .cont. \
+	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
+	    -cepdir $(top_srcdir)/model/lm/an4/ \
+	    -phsegdir ./
+
 
 
