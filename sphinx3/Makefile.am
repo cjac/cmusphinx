@@ -5,6 +5,7 @@ SUBDIRS = src \
 
 EXTRA_DIST = autogen.sh \
 	programs.dsw \
+	src/programs/main_livedecode.c \
 	win32/batch/an4.ctl \
 	win32/batch/sphinx3-simple.bat \
 	win32/batch/sphinx3-test.align.bat \
