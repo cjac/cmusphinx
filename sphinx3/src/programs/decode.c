@@ -229,6 +229,10 @@ static arg_t arg[] = {
       ARG_FLOAT64,
       "1e-80", /*default is huge , so nearly every cd phone will be computed */
       "CI phone beam for CI-based GMM Selection. [0(widest) .. 1(narrowest)]"},
+    { "-maxcdsenpf",
+      ARG_INT32,
+      "100000",
+      "Max no. of distinct CD senone will be computed. " },
     { "-pheurtype",
       ARG_INT32,
       "0",
@@ -422,10 +426,12 @@ int32 main (int32 argc, char *argv[])
     if (kb.tot_fr == 0)
 	kb.tot_fr = 1;	/* Just to avoid /0 */
     
-    E_INFO("SUMMARY:  %d fr;  %d sen, %d gau/fr, %.2f xCPU [%.2f xOvrhd];  %d hmm/fr, %d wd/fr, %.2f xCPU;  tot: %.2f xCPU, %.2f xClk\n",
+    E_INFO("SUMMARY:  %d fr;  %d cdsen, %d cisen, %d cdgau %d cigau/fr, %.2f xCPU [%.2f xOvrhd];  %d hmm/fr, %d wd/fr, %.2f xCPU;  tot: %.2f xCPU, %.2f xClk\n",
 	   kb.tot_fr,
 	   (int32)(kb.tot_sen_eval / kb.tot_fr),
+	   (int32)(kb.tot_ci_sen_eval / kb.tot_fr),
 	   (int32)(kb.tot_gau_eval / kb.tot_fr),
+	   (int32)(kb.tot_ci_gau_eval / kb.tot_fr),
 	   kb.tm_sen.t_tot_cpu * 100.0 / kb.tot_fr,
 	   kb.tm_ovrhd.t_tot_cpu * 100.0 / kb.tot_fr,
 	   (int32)(kb.tot_hmm_eval / kb.tot_fr),
