@@ -22,6 +22,7 @@ CLEANFILES = test.out \
 	test-astar.out \
 	test-dag.out \
 	test-decode.out \
+	test-ep.out \
 	test-full.out \
 	test-gausubvq.out \
 	test-livepretend.out \
@@ -32,10 +33,10 @@ CLEANFILES = test.out \
 	pittsburgh.nbest.gz
 
 test-simple : test-livepretend
-
 test: test-simple
-
 test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep
+
+test-hell : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-livepretendDEVEL
 
 test-livepretend:
 	@echo "LIVEPRETEND TEST"
@@ -130,8 +131,6 @@ test-align:
 	$(LIBTOOL) --mode=execute diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
 	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
 	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
-
-	
 
 test-allphone:
 	@echo "ALLPHONE TEST"
