@@ -335,7 +335,9 @@ void kb_init (kb_t *kb)
 				cmd_ln_int32("-gs4gs"),
 				cmd_ln_int32("-svq4svq"),
 				cmd_ln_float64("-subvqbeam"),
-				cmd_ln_float64("-ci_pbeam"));
+				cmd_ln_float64("-ci_pbeam"),
+				kb->kbcore->mdef->n_emit_state
+				);
 
     E_INFO("Parameters used in Fast GMM computation:\n");
     E_INFO("   Frame-level: Down Sampling Ratio %d, Conditional Down Sampling? %d, Distance-based Down Sampling? %d\n",kb->fastgmm->downs->ds_ratio,kb->fastgmm->downs->cond_ds,kb->fastgmm->downs->dist_ds);

@@ -359,7 +359,7 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 
       }else{
 	if(is_compute) {
-	  if((pbest-senscr[cd2cisen[s]] > fastgmm->gmms->ci_pbeam)){
+	  if((senscr[cd2cisen[s]] >= pbest + fastgmm->gmms->ci_pbeam)){
 	    ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam);
 	    ns++;
 	  }else {
