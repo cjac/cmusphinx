@@ -1,27 +1,132 @@
-AC_INIT(src/libs3decoder/s3types.h)
+dnl Welcome to the Sphinx-3 automated build system.
+dnl try not to hurt yourself ;)
 
-AC_CANONICAL_SYSTEM
+AC_INIT(configure.in)
+AM_INIT_AUTOMAKE(sphinx3,0.1)
+AM_CONFIG_HEADER(config.h)
+
+
+CFLAGS=${CFLAGS:--g -O2 -Wall}
+
+AC_ISC_POSIX
 AC_PROG_CC
-if test "x$GCC" = "xyes"; then
-	CFLAGS="$CFLAGS -Wall"
-fi
-AC_PROG_RANLIB
-AC_CHECK_TOOL(AR, ar)
+AM_PROG_CC_STDC
+AC_HEADER_STDC
 
-AC_C_BIGENDIAN
+AC_TYPE_SIGNAL
+
+hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
+hmmdata=`echo $hmmdata`
+
+lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
+lmdata=`echo $lmdata`
+
+docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
+docdata=`echo $docdata`
+
+AC_CANONICAL_HOST
+
 
 dnl
 dnl determine audio type or use none if none supported on this platform
 dnl
-AUDIOTYPE=-DCST_AUDIO_NONE
-AC_CHECK_FILE(/usr/include/sys/soundcard.h,
-              [AUDIOTYPE=-DCST_AUDIO_LINUX])
-AC_CHECK_FILE(/usr/include/machine/soundcard.h,
-              [AUDIOTYPE=-DCST_AUDIO_FREEBSD])
-AC_CHECK_FILE(/usr/include/sys/audioio.h,
-              [AUDIOTYPE=-DCST_AUDIO_SUNOS])
-AC_ARG_WITH( audio, [  --with-audio          with specific audio support (LINUX, FREEBSD, NONE etc) ],
-        AUDIOTYPE="-DCST_AUDIO_"$with_audio )
-AC_SUBST(AUDIOTYPE)
 
-AC_OUTPUT(config/config config/system.mak)
+ad_files=""
+ad_libs=""
+audio_test_file=""
+
+AC_ARG_WITH(alsa, [use ALSA library for sound I/O],
+            AC_CHECK_HEADER(sys/asoundlib.h,
+                [ad_libs="-lasound"; ad_files="ad_alsa.lo";
+                 ad_backend="AD_BACKEND_ALSA"],
+                AC_ERROR(ALSA header file <sys/asoundlib.h> not found!)))
+
+if test "x$ad_files" = "x"; then
+        case $host in
+                *-*-linux*)
+                        ad_files="ad_oss.lo"
+                        ad_backend="AD_BACKEND_OSS"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                # FIXME: isn't this the same OSS as on Linux?
+                *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
+                        ad_files="ad_oss_bsd.lo mulaw_base.lo"
+                        ad_backend="AD_BACKEND_OSS_BSD"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                *-*-osf*)
+                        ad_files="ad_osf.lo mulaw_base.lo"
+                        ad_backend="AD_BACKEND_OSF"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                *-*-irix*)
+                        ad_files="ad_irix.lo mulaw_base.lo"
+                        ad_libs="-laudio"
+                        ad_backend="AD_BACKEND_IRIX"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                *-*-sunos4*)
+                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
+                        ad_libs="-lm -lnsl -ldl"
+                        ad_backend="AD_BACKEND_SUNOS"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos"
+			audio_test_file="pittsburgh.bigendian"
+                        ;;
+                *-*-solaris*)
+                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
+                        ad_libs="-lm -lnsl -lsocket -ldl"
+                        ad_backend="AD_BACKEND_SUNOS"
+			ad_backend="AD_BACKEND_NONE"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos"
+			audio_test_file="pittsburgh.bigendian"
+                        ;;
+                *-*-*win32*)
+                        ad_files="play_win32.lo rec_win32.lo"
+                        ad_backend="AD_BACKEND_WIN32"
+			audio_test_file="pittsburgh.littleendian"
+                        ;;
+                *)
+                        ad_files="ad_base.lo"
+                        ad_backend="AD_BACKEND_NONE"
+			audio_test_file="pittsburgh.littleendian"
+                        AC_MSG_RESULT([No audio interface for host type $host.])
+                        ;;
+        esac
+fi
+
+AC_PATH_PROG(PERL,perl)
+AC_PATH_PROG(CSH,csh)
+AC_SUBST(hmmdata)
+AC_SUBST(lmdata)
+AC_SUBST(docdata)
+AC_SUBST(ad_files)
+AC_SUBST(ad_libs)
+AC_SUBST(ad_backend)
+AC_SUBST(audio_test_file)
+AC_SUBST(LIBOBJS)
+AC_SUBST(PERL)
+AC_SUBST(CSH)
+
+AM_PROG_LIBTOOL
+
+AC_OUTPUT([ 
+Makefile
+src/Makefile
+src/libs3audio/Makefile
+src/libs3decoder/Makefile
+src/libutil/Makefile
+src/programs/Makefile
+scripts/Makefile
+scripts/sphinx3-test
+scripts/sphinx3-simple
+model/Makefile
+model/hmm/Makefile
+model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/Makefile
+model/lm/Makefile
+model/lm/an4/Makefile
+model/lm/an4/an4.ctl
+model/lm/an4/args.an4
+doc/Makefile])
+
+chmod +x scripts/sphinx3-simple
+chmod +x scripts/sphinx3-test

@@ -1,4 +1,3 @@
-
 This is Sphinx 3.3 (s3.3), one of Carnegie Mellon University's open
 source large vocabulary, speaker-independent continuous speech
 recognition engine. Please see the LICENSE file for terms of use.
@@ -10,11 +9,17 @@ to be made available to make this all complete.  With
 your help and contributions, this can progress in response
 to the needs and patches provided.
 
-Please see the web site at
+For documentation, please use your web browser to see
+doc/index.html. If you install the distribution in the default
+location, you can access the documentation here:
 
-   http://www.speech.cs.cmu.edu/sphinx/
+   http://localhost/usr/local/share/sphinx3/doc/
 
-for up-to-date information.
+
+For up-to-date information, please see the web site at
+
+   http://cmusphinx.org
+
 
 The s3.3 decoder is a live-mode capable version of the s3.2 decoder.
 The decoder routine is stored in a library called libs3decoder.a
@@ -23,7 +28,7 @@ hypotheses for the blocks decoded during runtime. An example of its
 use is given in main_live_example.c
 
 This directory contains the scripts and instructions necessary for
-building models for the CMU Sphinx Recogniser.
+decoding speech input using the CMU Sphinx Recogniser.
 
 This distribution is free software, see COPYING for licence.
 
@@ -35,9 +40,9 @@ systems, and certainly on Linux.  To build, simply run
     make
 
 (Or whatever you call GNU Make).  This should configure everything
-automatically, though it may fail if it cannot locate Perl 5 and
-Festival on your system.  To fix this, set the PERL and FESTIVAL
-environment variables to point to the appropriate binaries.
+automatically, though it may fail if it cannot locate Perl 5 on your
+system.  To fix this, set the PERL environment variables to point to
+the appropriate binaries.
 
 This work was build over a large number of years at CMU by most of the
 people in the Sphinx Group, some code goes back to 1986.  The most
@@ -49,5 +54,6 @@ Alan W Black (awb@cs.cmu.edu)
 Evandro Gouvea (egouvea+@cs.cmu.edu)
 Ricky Houghton (ricky.houghton@cs.cmu.edu)
 Kevin Lenzo (lenzo@cs.cmu.edu)
+Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)
 Eric Thayer
