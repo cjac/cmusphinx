@@ -93,41 +93,42 @@ int rd_finish(remote_decoder_t *decoder);
 /**
  * Informs the remote-decoder to begin utterance decoding.
  */
-int rd_utt_begin(remote_decoder_t *decoder, char *uttid);
+int rd_begin_utt(remote_decoder_t *decoder, char *uttid);
 
 /**
  * Informs the remote-decoder to end utterance decoding.
  */
-int rd_utt_end(remote_decoder_t *decoder);
+int rd_end_utt(remote_decoder_t *decoder);
 
 /**
  * Informs the remote-decoder to abort utterance decoding.
  */
-int rd_utt_abort(remote_decoder_t *decoder);
+int rd_abort_utt(remote_decoder_t *decoder);
 
 /**
  * Informs the remote-decoder there is new raw data for utterance decoding.
  */
-int rd_utt_proc_raw(remote_decoder_t *decoder, int16 *samples,
+int rd_process_raw(remote_decoder_t *decoder, int16 *samples,
 		    int32 num_samples);
 
 /**
  * Informs the remote-decoder there is new framed data for utterance decoding.
  */
-int rd_utt_proc_frame(remote_decoder_t *decoder, float32 **frames,
+int rd_process_frames(remote_decoder_t *decoder, float32 **frames,
 		      int32 num_frames);
 
 /**
  * Informs the remote-decoder there is new feature vectors for utterance
  * decoding.
  */
-int rd_utt_proc_feat(remote_decoder_t *decoder, float32 ***features,
-		     int32 num_features);
+int rd_process_features(remote_decoder_t *decoder, float32 ***features,
+			int32 num_features);
 
 /**
- * Informs the remote-decoder to record the hypothesis.
+ * Informs the remote-decoder to record the hypothesis (at the current stage
+ * of decoding).
  */
-int rd_utt_record_hyps(remote_decoder_t *decoder);
+int rd_record_hyps(remote_decoder_t *decoder);
 
 /**
  * Retrieves the oldest results from the result queue.

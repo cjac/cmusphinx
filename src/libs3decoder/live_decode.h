@@ -62,10 +62,7 @@
 extern "C" {
 #endif
 
-#define MAX_UTTID_LEN				64
 #define MAX_CEP_LEN				64
-#define MAX_HYPSEG_LEN				64
-#define MAX_HYPSTR_LEN				4095
 
 typedef struct
 {
@@ -122,7 +119,7 @@ typedef struct
   /*
    * UTTID (obviously NOT) filled in by knowledge-base.
    */
-  char uttid[MAX_UTTID_LEN];
+  char *uttid;
 
   /*
    * The frame number at which the hypothesis is recorded.
@@ -201,7 +198,7 @@ int ld_finish(live_decoder_t *decoder);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_begin(live_decoder_t *decoder, char *uttid);
+int ld_begin_utt(live_decoder_t *decoder, char *uttid);
 
 /*
  * Finishes decoding the current utterance.  This function can be used to abort
@@ -210,7 +207,7 @@ int ld_utt_begin(live_decoder_t *decoder, char *uttid);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_end(live_decoder_t *decoder);
+int ld_end_utt(live_decoder_t *decoder);
 
 /*
  * Process raw 16-bit samples for the current utterance decoding.  This is the
@@ -224,9 +221,9 @@ int ld_utt_end(live_decoder_t *decoder);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_raw(live_decoder_t *decoder, 
-		    int16 *samples,
-		    int32 num_samples);
+int ld_process_raw(live_decoder_t *decoder, 
+		   int16 *samples,
+		   int32 num_samples);
 
 /*
  * Process a buffer of framed data for the current utterance decoding.  
@@ -234,7 +231,7 @@ int ld_utt_proc_raw(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_frame(live_decoder_t *decoder, 
+int ld_process_frames(live_decoder_t *decoder, 
 		      float32 **frames,
 		      int32 num_frames);
 
@@ -251,9 +248,9 @@ int ld_utt_proc_frame(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_proc_feat(live_decoder_t *decoder, 
-		     float32 ***features,
-		     int32 num_features);
+int ld_process_features(live_decoder_t *decoder, 
+			float32 ***features,
+			int32 num_features);
 
 /*
  * Retrieve any partial or final decoding results in a plain READ-ONLY string
@@ -267,7 +264,8 @@ int ld_utt_proc_feat(live_decoder_t *decoder,
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
+int ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str,
+		     hyp_t ***hyp_segs);
 
 
 /*****************************************************************************/
@@ -281,7 +279,7 @@ int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
  * Return value:
  *   0 for success.  -1 for failure.
  */
-int ld_utt_abort(live_decoder_t *decoder);
+int ld_abort_utt(live_decoder_t *decoder);
 
 #ifdef __cplusplus
 }
