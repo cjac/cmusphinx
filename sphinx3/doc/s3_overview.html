@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
+<html>
+<head>
+  <title>Sphinx Decoders</title>
+                 
+  <style type="text/css">
+      body { margin-left: 6%; margin-right: 3%; background: white; }
+      h1 { color: green; align: center; }
+      h2 { margin-left: -6%; color: green; margin-top: 1em; }
+      h3 { margin-left: -3%; color: green; margin-top: 1em; }
+      h4,h5,h6 { color: green; }
+      pre { margin-left: 3%; font-family: monospace; }
+      code { font-family: monospace; font-weight: bold; }
+      div.wheatbox { background: wheat; padding: 0.5em; border: solid; border-width: thin; }
+      div.silverbox { background: silver; padding: 0.5em; border: solid; border-width: thin; }
+      div.endsec { background: silver; border: solid; border-width: thin; }
+    </style>
+</head>
+    <body>
+       
+<h1><center><u>Sphinx Decoders</u></center></h1>
+       
+<center>       Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
+        Sphinx Speech Group<br>
+        School of Computer Science<br>
+        Carnegie Mellon University<br>
+        Pittsburgh, PA 15213<br>
+</center>
+                 
+<h2><u>What's Around and Where</u></h2>
+ 
+<table border="1" cellpadding="6">
+        <tbody>
+     <tr>
+       <th>Name</th>
+       <th>Remarks</th>
+     </tr>
+         <tr>
+       <td>Sphinx-3.3 (fast decoder)</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, release available.</li>
+  	    <li>Fast Sphinx-3 decoder using lextree organization: 	          
+      
+          <ul>
+  		<li>5-10x real time speed on large vocabulary tasks</li>
+  		<li>Continuous density acoustic models only</li>
+  		<li>Batch-Mode or live operation</li>
+  	                 
+          </ul>
+  	    </li>
+  	    <li><code>gausubvq</code>: Sub-vector clustered acoustic model building
+ 	                 
+          <ul>
+  		<li>Needed for fast acoustic model evaluation</li>
+  	                 
+          </ul>
+  	    </li>
+  	         
+      </ul>
+  	</td>
+        </tr>
+               <tr>
+         <tr>
+       <td>Sphinx-3.2</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.2</b> in cvs tree.</li>
+  	    <li>Same features as s3.3, but capable of batch-mode operation only.</li>
+      </ul>
+  	</td>
+        </tr>
+         <tr>
+       <td>Sphinx-3 (slow decoder)</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3</b> in cvs tree.</li>
+  	    <li>Original Sphinx-3 decoder</li>
+  	    <li>Slow; 50-100x real time speed on large vocabulary tasks</li>
+  	    <li>Any kind of acoustic model (discrete, semi-continuous, continuous, 
+others)</li>
+  	    <li>Major applications: 	                 
+          <ul>
+  		<li><code>s3decode</code> and <code>s3decode-anytopo</code>: Speech-to-text 
+Decoding</li>
+  		<li><code>s3align</code>: Forced alignment</li>
+  		<li><code>s3allphone</code>: Allphone decoding</li>
+  		<li><code>s3astar</code>: A* search, nbest generation</li>
+  		<li><code>s3dag</code>: Shortest-path search</li>
+  	                 
+          </ul>
+  	    </li>
+  	    <li>Other utilities: 	                 
+          <ul>
+  		<li><code>stseg-read</code>: State-segmentation binary file reader</li>
+  		<li><code>sen2s2</code>: Sphinx-II "sendump" file creation from Sphinx-3
+ 		  acoustic model</li>
+  	                 
+          </ul>
+  	    </li>
+      </ul>
+  	</td>
+        </tr>
+         <tr>
+       <td>Sphinx-2 (fbs8)</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx">Open source</a>, release available.</li>
+  	    <li>Sphinx-II decoder</li>
+  	    <li>Real-time operation</li>
+  	    <li>Semi-continuous, Sphinx-II acoustic models only (Sphinx-II format)</li>
+  	    <li>User applications support: 	                 
+          <ul>
+  		<li>Compiled into a library with a straightforward API for building 		 
+ speech-enabled applications</li>
+  		<li>Continuous-listening support</li>
+  		<li>Dynamic language model loading and switching</li>
+  	                 
+          </ul>
+  	    </li>
+  	    <li>Several test applications: 	                 
+          <ul>
+  		<li>Basic dictation with and without "push-to-talk"</li>
+  		<li>Basic audio recording and playback</li>
+  		<li>Audio segmentation using the continuous listener</li>
+  	                 
+          </ul>
+  	    </li>
+  	    <li>Additional recognition modes: 	                 
+          <ul>
+  		<li>Forced alignment</li>
+  		<li>Allphone decoding</li>
+  		<li>A* search, nbest generation</li>
+  		<li>Shortest-path search</li>
+  	                 
+          </ul>
+  	    </li>
+  	         
+      </ul>
+  	</td>
+        </tr>
+        
+  </tbody> 
+</table>
+              
+<div class="endsec">&curren;</div>
+                 
+<address><a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a<a></address>
+<!-- Created: Fri Mar  3 11:03:47 EST 2000 --><!-- hhmts start --><!-- hhmts end --> 
+   Last modified: Fri Nov&nbsp; 8 17:08:27&nbsp; 2002   <br>
+ 
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
+<html>
+<head>
+    <title>Continuous Broadcast News Acoustic Models</title>
+</head>
+ 
+    <H1><center><U>Continuous Broadcast News Acoustic Models</U></center></H1>
+    <center>
+      Rita Singh<br>
+      Sphinx Speech Group<br>
+      School of Computer Science<br>
+      Carnegie Mellon University<br>
+      Pittsburgh, PA 15213<br>
+    </center>
+
+<p>Note: This file must be read by anyone who intends to use the
+models in this package for recognition. The specifications provided
+here must be exactly matched in the user's setup to prevent 
+recognition failures.</p>
+
+<p>The models have been trained using 140 hours of 1996 and 1997 hub4
+training data, available from the <a
+href="http://www.ldc.upenn.edu">Language Data Consortium</a>. The
+phoneset for which models have been provided is that of the <a
+href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMU dictionary</a>
+version 0.6d.  The dictionary has been used without stress markers,
+resulting in 40 phones, including the silence phone, SIL. Adding
+stress markers degrades performance by about 5% relative.</p>
+
+<p>The models have been trained with Mel-frequency cepstra (MFC) vectors
+derived from the hub4 data. Each vector is composed of 13 cepstral 
+coefficients, 13 delta cepstra and 13 double delta cepstra. Each vector
+is thus 39-dimensional. The correct SPHINX name for the vectors used
+is "1s_c_d_dd", and this must be specified to the decoder(s) for correct
+usage of the acoustic models provided. The specifications for the
+feature set are as follows:</p>
+
+    <ul>
+      <li>premphasis factor = 0.970</li>
+      <li>sampling rate = 16000.000 Hz</li>
+      <li>frame rate = 100.000 frames/sec</li>
+      <li>Hamming window length = 0.0256 sec</li>
+      <li>size of FFT = 512 samples</li>
+      <li>number of Mel filters = 40</li>
+      <li>lower edge of filter bank = 133.33334 Hz</li>
+      <li>upper edge of filter bank = 6855.49756 Hz</li>
+      <li>number of MFCC coefficients/frame = 13</li>
+      <li>dither = added</li>
+      <li>feature type = "1s_c_d_dd"</li>
+    </ul>
+
+<p> The models are 3-state within-word and cross-word triphone HMMs
+with no skips permitted between states.  There is one set of models in
+this package, comprised of 6000 senones. Other sets are or will soon
+be available from the <a href="http://cmusphinx.org">CMU Open Source
+Sphinx</a> web page. A set of quantized models have also been provided with
+the set of models. The models have 8 Gaussians per state, and the quantized models use 4096 codewords. </p>
+
+<p>The quantized models are for use with s3.2/3.3 (<em>fast
+decoder</em>), which also requires the corresponding un-quantized
+models during runtime (<em>ie</em>, both must be provided). The
+quantized models are labeled as .quant and are placed in the same
+subdirectory as the corresponding full model.</p>
+
+<p>The un-quantized models can be used with the s3 continuous decoder
+(<em>slow decoder</em>).</p>
+
+<p>The language model in this distribution is provided as an example
+of use and test for the installation, and is not meant to be used with
+any serious task. It is a flat unigram language model for CMU's <a
+href="http://www.speech.cs.cmu.edu/databases/an4/">Census</a>
+database. The dictionary, also provided, is restricted to the letters
+of the alphabet and some additional control words.</p>
+
+<p>Another language model, provided through the Sphinx web page
+referred above, , a simple trigram model, and which has been built for
+tasks similar to broadcast news, is or will soon be available from the
+Sphinx web page refered above. You are strongly encouraged to get this
+language models if you intend serious applications. The text used to
+build this model was taken from a variety of permitted sources,
+including broadcast news. The vocabulary covers 64000 words, and is
+listed in the file called language_model.vocabulary.  The file
+language_model.arpaformat.gz can be used with the Sphinx-2 decoder,
+while the file language_model.arpaformat.DMP.Z must be used with the
+Sphinx-3 decoders. Note that the system will only recognize words
+which are within the vocabulary. See a description of the <a
+href="http://www.speech.cs.cmu.edu/sphinxman/fr7.html">ARPA
+format</a>.</p>
+
+    <H2></H2><!-- Just to provide some space -->
+    
+    <address><a href="mailto:egouvea+sourceforge@cs.cmu.edu">Evandro B. Gouv&ecirc;a</a></address>
+    <!-- Created: Thu  Nov 14 17:05:14 EST 2002 -->
+    <!-- hhmts start -->
+Last modified: Thu Nov 14 23:55:51 EST 2002
+<!-- hhmts end -->
+</body>
+</html>
