@@ -10,10 +10,10 @@
 -feat     1s_c_d_dd
 -cepdir   /lab/speech/sphinx4/data/an4/cepstra
 -senmgaufn .cont.
--langwt   30.5
+-langwt   30
 -topn     8
 -beam     1e-140
--nwbeam   1e-120
+-nwbeam   1e-100
 -inspen   0.2
 -varnorm  no
 -bestpath 1
