@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/08/09  00:17:11  arthchan2003
- * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ * Revision 1.2  2004/08/09  01:02:33  arthchan2003
+ * check in the windows setup for align
  * 
+ * Revision 1.1  2004/08/09 00:17:11  arthchan2003
+ * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
+ *
  * Revision 1.1  2003/02/14 14:40:34  cbq
  * Compiles.  Analysis is probably hosed.
  *
@@ -45,7 +48,7 @@
 #include "ms_senone.h"
 #include "logs3.h"
 
-#include <bio.h>
+#include "bio.h"
 #include <libutil/libutil.h>
 
 #include <string.h>
