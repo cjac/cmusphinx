@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/08/31  08:43:47  arthchan2003
- * Fixing _cpluscplus directive
+ * Revision 1.3  2004/12/06  10:52:01  arthchan2003
+ * Enable doxygen documentation in libs3decoder
  * 
+ * Revision 1.2  2004/08/31 08:43:47  arthchan2003
+ * Fixing _cpluscplus directive
+ *
  * Revision 1.1  2004/08/09 00:17:12  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *
@@ -83,6 +86,9 @@
 #ifndef _LIBFBS_SEARCH_H_
 #define _LIBFBS_SEARCH_H_
 
+/** \file search.h
+   \brief The temporary header file for sphinx 3 functions. 
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -99,47 +105,19 @@ typedef struct srch_hyp_s {
     struct srch_hyp_s *next;
 } srch_hyp_t;
 
-
-/* ---------------- Forward Viterbi search related functions ---------------- */
-
-
-/*void fwd_init ( void );*/
-
-/*void fwd_start_utt (char *uttid);*/	/* In, READ-ONLY argument: utterance id */
-
-/*
- * Called at the beginning of a frame to build a list of active senones (any senone used
- * by active HMMs in that frame.
- * Return value: #active senones in the returned list senlist[].
- */
-/*void fwd_sen_active (int8 *senlist,*/	/* Out: Upon return senlist[s] TRUE iff
-					   s active in current frame.
-					   Caller allocates senlist[] array. */
-/*		      int32 n_sen);	*//* In: Size of senlist[] array */
-
-/*
- * One frame of forward Viterbi beam search.
- * Return value: best path score of all the states evaluated in the frame.
- */
-/*int32 fwd_frame (int32 *senscr);*//* Step search one frame forward;
-				   senscr: In: array of senone scores this frame */
-
-/*hyp_t *fwd_end_utt ( void );*/	/* Wind up utterance and return final result */
-
-
 /* ---------------- DAG related functions ---------------- */
 
 
-/* DAG built from forward pass lattice */
+  /** DAG built from forward pass lattice */
 int32 dag_build ( void );
 
-/* Dump DAG to file for postprocessing */
+  /** Dump DAG to file for postprocessing */
 int32 dag_dump (char *dir, int32 onlynodes, char *uttid);
 
-/* Best path search through DAG from fwdvit word lattice */
+  /** Best path search through DAG from fwdvit word lattice */
 srch_hyp_t *dag_search (char *uttid);
 
-/* Destroy DAG */
+  /** Destroy DAG */
 int32 dag_destroy ( void );
 
 #ifdef __cplusplus

@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2004/11/13  21:25:19  arthchan2003
- * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ * Revision 1.4  2004/12/06  10:52:01  arthchan2003
+ * Enable doxygen documentation in libs3decoder
  * 
+ * Revision 1.3  2004/11/13 21:25:19  arthchan2003
+ * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
+ *
  * Revision 1.2  2004/08/31 08:43:47  arthchan2003
  * Fixing _cpluscplus directive
  *
@@ -42,67 +45,70 @@
 #include "s3types.h"
 #include "ms_gauden.h"
 
+/** \file ms_senone.h
+ *  \brief (Sphinx 3.0 specific) multiple streams senones. used with ms_gauden.h
+ */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef uint8 senprob_t;	/* Senone logs3-probs, truncated to 8 bits */
+typedef uint8 senprob_t;	/** Senone logs3-probs, truncated to 8 bits */
 
-/*
+  /**
  * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
  * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
  */
 typedef struct {
-    senprob_t ***pdf;		/* gaussian density mixture weights, organized two possible
+    senprob_t ***pdf;		/** gaussian density mixture weights, organized two possible
 				   ways depending on n_gauden:
 				   if (n_gauden > 1): pdf[sen][feat][codeword].  Not an
 				       efficient representation--memory access-wise--but
 				       evaluating the many codebooks will be more costly.
 				   if (n_gauden == 1): pdf[feat][codeword][sen].  Optimized
 				       for the shared-distribution semi-continuous case. */
-    int32 n_sen;		/* #senones in this set */
-    int32 n_feat;		/* #feature streams */ 
-    int32 n_cw;			/* #codewords per codebook,stream */
-    int32 n_gauden;		/* #gaussian density codebooks referred to by senones */
-    float32 mixwfloor;		/* floor applied to each PDF entry */
-    int32 shift;		/* LSB bits truncated from original logs3 value */
-    s3mgauid_t *mgau;		/* senone-id -> mgau-id mapping for senones in this set */
-    int32* featscr;              /* The feature score for every senone, will be initialized inside senone_eval_all */
+    int32 n_sen;		/** #senones in this set */
+    int32 n_feat;		/** #feature streams */ 
+    int32 n_cw;			/** #codewords per codebook,stream */
+    int32 n_gauden;		/** #gaussian density codebooks referred to by senones */
+    float32 mixwfloor;		/** floor applied to each PDF entry */
+    int32 shift;		/** LSB bits truncated from original logs3 value */
+    s3mgauid_t *mgau;		/** senone-id -> mgau-id mapping for senones in this set */
+    int32* featscr;              /** The feature score for every senone, will be initialized inside senone_eval_all */
 } senone_t;
 
 
-/*
+  /**
  * Load a set of senones (mixing weights and mixture gaussian codebook mappings) from
  * the given files.  Normalize weights for each codebook, apply the given floor, convert
  * PDF values to logs3 domain and quantize to 8-bits.
  * Return value: pointer to senone structure created.  Caller MUST NOT change its contents.
  */
-senone_t *senone_init (char *mixwfile,		/* In: mixing weights file */
-		       char *mgau_mapfile,	/* In: file specifying mapping from each
+senone_t *senone_init (char *mixwfile,		/** In: mixing weights file */
+		       char *mgau_mapfile,	/** In: file specifying mapping from each
 						   senone to mixture gaussian codebook.
 						   If NULL all senones map to codebook 0 */
-		       float32 mixwfloor);	/* In: Floor value for senone weights */
+		       float32 mixwfloor);	/** In: Floor value for senone weights */
 
-/*
+  /**
  * Evaluate the score for the given senone wrt to the given top N gaussian codewords.
  * Return value: senone score (in logs3 domain).
  */
-int32 senone_eval (senone_t *s, s3senid_t id,	/* In: senone for which score desired */
-		   gauden_dist_t **dist,	/* In: top N codewords and densities for
+int32 senone_eval (senone_t *s, s3senid_t id,	/** In: senone for which score desired */
+		   gauden_dist_t **dist,	/** In: top N codewords and densities for
 						   all features, to be combined into
 						   senone score.  IE, dist[f][i] = i-th
 						   best <codeword,density> for feaure f */
-		   int32 n_top);		/* In: Length of dist[f], for each f */
+		   int32 n_top);		/** In: Length of dist[f], for each f */
 
-/*
+  /**
  * Like senone_eval, but compute all senone scores for the shared density case (ie,
  * #codebooks = 1).
  */
-void senone_eval_all (senone_t *s,		/* In: Senone structure */
-		      gauden_dist_t **dist,	/* In: as in senone_eval above */
-		      int32 n_top,		/* In: as in senone_eval above */
-		      int32 *senscr);		/* Out: Upon return, senscr[i] will contain
+void senone_eval_all (senone_t *s,		/** In: Senone structure */
+		      gauden_dist_t **dist,	/** In: as in senone_eval above */
+		      int32 n_top,		/** In: as in senone_eval above */
+		      int32 *senscr);		/** Out: Upon return, senscr[i] will contain
 						   score for senone i */
 
 #ifdef __cplusplus

@@ -64,72 +64,77 @@
 #include <libutil/libutil.h>
 #include <float.h>
 
+/** \file s3types.h
+ * \brief Size definition of semantically units. Common for both s3 and s3.X decoder. 
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
+
+  /**
  * Size definitions for more semantially meaningful units.
  * Illegal value definitions, limits, and tests for specific types.
  * NOTE: Types will be either int32 or smaller; only smaller ones may be unsigned (i.e.,
  * no type will be uint32).
  */
 
-typedef int16		s3cipid_t;	/* Ci phone id */
+typedef int16		s3cipid_t;	/** Ci phone id */
 #define BAD_S3CIPID	((s3cipid_t) -1)
 #define NOT_S3CIPID(p)	((p)<0)
 #define IS_S3CIPID(p)	((p)>=0)
 #define MAX_S3CIPID	127
 
-typedef int32		s3pid_t;	/* Phone id (triphone or ciphone) */
+typedef int32		s3pid_t;	/** Phone id (triphone or ciphone) */
 #define BAD_S3PID	((s3pid_t) -1)
 #define NOT_S3PID(p)	((p)<0)
 #define IS_S3PID(p)	((p)>=0)
 #define MAX_S3PID	((int32)0x7ffffffe)
 
-typedef s3pid_t		s3ssid_t;	/* Senone sequence id (triphone or ciphone) */
+typedef s3pid_t		s3ssid_t;	/** Senone sequence id (triphone or ciphone) */
 #define BAD_S3SSID	((s3ssid_t) -1)
 #define NOT_S3SSID(p)	((p)<0)
 #define IS_S3SSID(p)	((p)>=0)
 #define MAX_S3SSID	((int32)0x7ffffffe)
 
-typedef int32		s3tmatid_t;	/* Transition matrix id; there can be as many as pids */
+typedef int32		s3tmatid_t;	/** Transition matrix id; there can be as many as pids */
 #define BAD_S3TMATID	((s3tmatid_t) -1)
 #define NOT_S3TMATID(t)	((t)<0)
 #define IS_S3TMATID(t)	((t)>=0)
 #define MAX_S3TMATID	((int32)0x7ffffffe)
 
-typedef int32		s3wid_t;	/* Dictionary word id */
+typedef int32		s3wid_t;	/** Dictionary word id */
 #define BAD_S3WID	((s3wid_t) -1)
 #define NOT_S3WID(w)	((w)<0)
 #define IS_S3WID(w)	((w)>=0)
 #define MAX_S3WID	((int32)0x7ffffffe)
 
-typedef uint16		s3lmwid_t;	/* LM word id (uint16 for conserving space) */
+typedef uint16		s3lmwid_t;	/** LM word id (uint16 for conserving space) */
 #define BAD_S3LMWID	((s3lmwid_t) 0xffff)
 #define NOT_S3LMWID(w)	((w)==BAD_S3LMWID)
 #define IS_S3LMWID(w)	((w)!=BAD_S3LMWID)
 #define MAX_S3LMWID	((uint32)0xfffe)
 #define BAD_LMCLASSID   (-1)
 
-typedef int32		s3latid_t;	/* Lattice entry id */
+typedef int32		s3latid_t;	/** Lattice entry id */
 #define BAD_S3LATID	((s3latid_t) -1)
 #define NOT_S3LATID(l)	((l)<0)
 #define IS_S3LATID(l)	((l)>=0)
 #define MAX_S3LATID	((int32)0x7ffffffe)
 
-typedef int16   	s3frmid_t;	/* Frame id (must be SIGNED integer) */
+typedef int16   	s3frmid_t;	/** Frame id (must be SIGNED integer) */
 #define BAD_S3FRMID	((s3frmid_t) -1)
 #define NOT_S3FRMID(f)	((f)<0)
 #define IS_S3FRMID(f)	((f)>=0)
 #define MAX_S3FRMID	((int32)0x7ffe)
 
-typedef int16   	s3senid_t;	/* Senone id */
+typedef int16   	s3senid_t;	/** Senone id */
 #define BAD_S3SENID	((s3senid_t) -1)
 #define NOT_S3SENID(s)	((s)<0)
 #define IS_S3SENID(s)	((s)>=0)
 #define MAX_S3SENID	((int16)0x7ffe)
 
-typedef int16   	s3mgauid_t;	/* Mixture-gaussian codebook id */
+typedef int16   	s3mgauid_t;	/** Mixture-gaussian codebook id */
 #define BAD_S3MGAUID	((s3mgauid_t) -1)
 #define NOT_S3MGAUID(m)	((m)<0)
 #define IS_S3MGAUID(m)	((m)>=0)
@@ -142,23 +147,23 @@ typedef int16   	s3mgauid_t;	/* Mixture-gaussian codebook id */
 #define S3_UNKNOWN_WORD		"<UNK>"
 #define S3_SILENCE_CIPHONE	"SIL"
 
-#define S3_LOGPROB_ZERO		((int32) 0xc8000000)	/* Integer version of log of zero Approx -infinity!! */
-#define S3_LOGPROB_ZERO_F	((float32) -1e30)	/* Float version of log of zero Approx -infinity!! */
+#define S3_LOGPROB_ZERO		((int32) 0xc8000000)	/** Integer version of log of zero Approx -infinity!! */
+#define S3_LOGPROB_ZERO_F	((float32) -1e30)	/** Float version of log of zero Approx -infinity!! */
 
 /* RAH, I believe this is unreasonably large and not feasible */ /* Frame = 10msec */
 /* #define S3_MAX_FRAMES		30000   */ /* Frame = 10msec */  
 #define S3_MAX_FRAMES		15000    /* RAH, I believe this is still too large, but better than before */
 
-#define RENORM_THRESH     ((int32) ((S3_LOGPROB_ZERO)>>1))       /* Bestscore getting close to 0 */
+#define RENORM_THRESH     ((int32) ((S3_LOGPROB_ZERO)>>1))       /** Bestscore getting close to 0 */
 
 #define S3_SUCCESS      0
 #define S3_ERROR        -1
 #define S3_WARNING      -2
 
-/* The maximum # of states for any given acoustic model */
+  /** The maximum # of states for any given acoustic model */
 #define MAX_N_STATE     20
 
-/* The maximum # of attributes associated with any
+  /** The maximum # of attributes associated with any
  * given acoustic model */
 #define MAX_N_ATTRIB    5
 

@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.7  2004/12/05  12:01:30  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.8  2004/12/06  10:52:00  arthchan2003
+ * Enable doxygen documentation in libs3decoder
  * 
+ * Revision 1.7  2004/12/05 12:01:30  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.6  2004/11/16 05:13:18  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
@@ -212,8 +215,11 @@
 #include "flat_fwd.h"
 
 
+/** \file flat_fwd.c 
+    \brief Implementation of forward search in a flat lexicon. 
+ */
 
-/*
+/**
  * Left context mapping (for multiphone words): given the 1st base phone, b, of a word
  * and its right context, r, the triphone for any left context l =
  *     lcpid[b][r].pid[lcpid[b][r].cimap[l]].
@@ -243,7 +249,7 @@ static whmm_t **whmm;
 
 
     
-/*
+/**
  * Word lattice for recording decoded hypotheses.
  * 
  * lattice[i] = entry for a word ending at a particular frame.  There can be at most one
@@ -252,22 +258,22 @@ static whmm_t **whmm;
  * such an arbitrary internal limit.
  */
 typedef struct lattice_s {
-    s3wid_t   wid;	/* Decoded word */
-    s3frmid_t frm;	/* End frame for this entry */
-    s3latid_t history;	/* Index of predecessor lattice_t entry */
-    int32     score;	/* Best path score upto the end of this entry */
-    int32    *rcscore;	/* Individual path scores for different right context ciphones */
+    s3wid_t   wid;	/** Decoded word */
+    s3frmid_t frm;	/** End frame for this entry */
+    s3latid_t history;	/** Index of predecessor lattice_t entry */
+    int32     score;	/** Best path score upto the end of this entry */
+    int32    *rcscore;	/** Individual path scores for different right context ciphones */
     dagnode_t *dagnode;	/* DAG node representing this entry */
 } lattice_t;
 static lattice_t *lattice;
-static int32 lat_alloc;		/* #lattice entries allocated */
-static int32 n_lat_entry;	/* #lattice entries used at any point */
+static int32 lat_alloc;		/** #lattice entries allocated */
+static int32 n_lat_entry;	/** #lattice entries used at any point */
 #define LAT_ALLOC_INCR		32768
 
 #define LATID2SF(l)	(IS_S3LATID(lattice[l].history) ? \
 			 lattice[lattice[l].history].frm + 1 : 0)
 
-/*
+/**
  * Structures for decoding utterances subject to given input word lattices; ie, restricting
  * the decoding to words found in the lattice.  (For speeding up the decoding process.)
  * NOTE:  This mode is optional.  If no input lattice is given, the entire vocabulary is
@@ -282,57 +288,57 @@ static int32 n_lat_entry;	/* #lattice entries used at any point */
  * line may contain other info following these two fields; these are ignored.  Empty lines
  * and lines beginning with a # char in the first column (ie, comment lines) are ignored.
  */
-static char *word_cand_dir;	/* Directory containing candidate words files.  If NULL,
+static char *word_cand_dir;	/** Directory containing candidate words files.  If NULL,
 				   full search performed for entire run */
-static char *latfile_ext;	/* Complete word candidate filename for an utterance formed
+static char *latfile_ext;	/** Complete word candidate filename for an utterance formed
 				   by word_cand_dir/<uttid>.latfile_ext */
-static int32 word_cand_win;	/* In frame f, candidate words in input lattice from frames
+static int32 word_cand_win;	/** In frame f, candidate words in input lattice from frames
 				   [(f - word_cand_win) .. (f + word_cand_win)] will be
 				   the actual candidates to be started(entered) */
 typedef struct word_cand_s {
-    s3wid_t wid;		/* A particular candidate word starting in a given frame */
-    struct word_cand_s *next;	/* Next candidate starting in same frame; NULL if none */
+    s3wid_t wid;		/** A particular candidate word starting in a given frame */
+    struct word_cand_s *next;	/** Next candidate starting in same frame; NULL if none */
 } word_cand_t;
-static word_cand_t **word_cand;	/* Word candidates for each frame.  (NOTE!! Another array
+static word_cand_t **word_cand;	/** Word candidates for each frame.  (NOTE!! Another array
 				   with a hard limit on its size.) */
-static int32 n_word_cand;	/* #candidate entries in word_cand for current utterance.
+static int32 n_word_cand;	/** #candidate entries in word_cand for current utterance.
 				   If <= 0; full search performed for current utterance */
 
 
-/* Various search-related parameters */
-static int32 beam;		/* General beamwidth */
-static int32 wordbeam;		/* Beam for exiting a word */
+/** Various search-related parameters */
+static int32 beam;		/** General beamwidth */
+static int32 wordbeam;		/** Beam for exiting a word */
 
-static int32 phone_penalty;	/* Applied for each phone transition */
+static int32 phone_penalty;	/** Applied for each phone transition */
 
 static int32 n_state = 0;
 static int32 final_state;
 
-static s3wid_t silwid;		/* General silence word id */
-static s3wid_t startwid;	/* Begin silence */
-static s3wid_t finishwid;	/* End silence */
+static s3wid_t silwid;		/** General silence word id */
+static s3wid_t startwid;	/** Begin silence */
+static s3wid_t finishwid;	/** End silence */
 
-dict_t *dict;		/* The dictionary */
-tmat_t *tmat;		/* HMM transition probabilities matrices */
-fillpen_t *fpen;         /* Filler penalty */
+dict_t *dict;		/** The dictionary */
+tmat_t *tmat;		/** HMM transition probabilities matrices */
+fillpen_t *fpen;         /** Filler penalty */
 mdef_t *mdef;
-lm_t   *lm;		/* The currently active language model */
+lm_t   *lm;		/** The currently active language model */
 static dag_t dag;
 
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+s3lmwid_t *dict2lmwid;	/** Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
 
-static char *uttid = NULL;	/* Utterance id; for error reporting */
-static int32 n_frm;		/* Current frame being searched within utt */
-static s3latid_t *frm_latstart;	/* frm_latstart[f] = first lattice entry in frame f */
+static char *uttid = NULL;	/** Utterance id; for error reporting */
+static int32 n_frm;		/** Current frame being searched within utt */
+static s3latid_t *frm_latstart;	/** frm_latstart[f] = first lattice entry in frame f */
 
-static srch_hyp_t *hyp = NULL;	/* The final recognition result */
-static int32 renormalized;	/* Whether scores had to be renormalized in current utt */
+static srch_hyp_t *hyp = NULL;	/** The final recognition result */
+static int32 renormalized;	/** Whether scores had to be renormalized in current utt */
 
 /* Debugging */
-static s3wid_t trace_wid;	/* Word to be traced; for debugging */
-static int32 word_dump_sf;	/* Start frame for words to be dumped for debugging */
-static int32 hmm_dump_sf;	/* Start frame for HMMs to be dumped for debugging */
+static s3wid_t trace_wid;	/** Word to be traced; for debugging */
+static int32 word_dump_sf;	/** Start frame for words to be dumped for debugging */
+static int32 hmm_dump_sf;	/** Start frame for HMMs to be dumped for debugging */
 
 /* Event count statistics */
 
@@ -400,7 +406,7 @@ static void dump_xwdpidmap (xwdpid_t **x)
 
 
 
-/*
+/**
  * Utility function for building cross-word pid maps.  Compresses cross-word pid list
  * to unique ones.
  */
@@ -436,11 +442,11 @@ static int32 xwdpid_compress (s3pid_t p, s3pid_t *pid, s3cipid_t *map, s3cipid_t
 }
 
 
-/* Temporary array used during the creation of lexical triphones lists */
+/** Temporary array used during the creation of lexical triphones lists */
 static s3pid_t *tmp_xwdpid = NULL;
 
 
-/*
+/**
  * Given base b, and right context rc, build left context cross-word triphones map
  * for all left context ciphones.  Compress map to unique list.
  */
@@ -471,7 +477,7 @@ static void build_lcpid (s3cipid_t b, s3cipid_t rc)
 
 
 
-/*
+/**
  * Given base b, and left context lc, build right context cross-word triphones map
  * for all right context ciphones.  Compress map to unique list.
  */
@@ -502,7 +508,7 @@ static void build_rcpid (s3cipid_t b, s3cipid_t lc)
 
 
 
-/*
+/**
  * Given base b for a single-phone word, build context cross-word triphones map
  * for all left and right context ciphones.
  */
@@ -530,7 +536,7 @@ static void build_lrcpid (s3cipid_t b)
 
 
 
-/*
+/**
  * Build within-word triphones sequence for each word.  The extreme ends are not needed
  * since cross-word modelling is used for those.  (See lcpid, rcpid, lrcpid.)
  */
@@ -572,7 +578,7 @@ static void build_wwpid ( void )
 }
 
 
-/*
+/**
  * Build cross-word triphones map for the entire dictionary.
  */
 static void build_xwdpid_map ( void )
@@ -702,7 +708,7 @@ static void lattice_dump (FILE *fp)
 }
 
 
-/*
+/**
  * There are two sets of whmm freelists.  whmm_freelist[0] for word-initial HMMs
  * that need a separate HMM id every state, and whmm_freelist[1] for non-word-initial
  * HMMs that don't need that.
@@ -886,7 +892,7 @@ static void dump_all_word ( void )
 }
 
 
-/*
+/**
  * Check model tprob matrices that they conform to upper-diagonal assumption.
  */
 static void chk_tp_uppertri ( void )
@@ -905,12 +911,12 @@ static void chk_tp_uppertri ( void )
 }
 
 
-/* For partial evaluation of incoming state score (prev state score + senone score) */
+/** For partial evaluation of incoming state score (prev state score + senone score) */
 static int32 *st_sen_scr;
 
 
 #if (! ANYHMMTOPO)
-/*
+/**
  * Like the general eval_nonmpx_whmm and eval_mpx_whmm below, but hardwired for
  * the Sphinx-II 5-state Bakis topology.
  */
@@ -1167,7 +1173,7 @@ static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
 
 #else
 
-/*
+/**
  * Evaluate non-multiplexed word HMM (ie, the entire whmm really represents one
  * phone rather than each state representing a potentially different phone.
  */
@@ -1235,7 +1241,7 @@ static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
 }
 
 
-/* Like eval_nonmpx_whmm, except there's a different pid associated with each state */
+/** Like eval_nonmpx_whmm, except there's a different pid associated with each state */
 static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
 {
     s3pid_t pid, prevpid;
@@ -1369,7 +1375,7 @@ static int32 whmm_eval (int32 *senscr)
 }
 
 
-/*
+/**
  * Record a word exit in word lattice.
  * NOTE: All exits from a single word in a given frame (for different right context
  * ciphones) must occur contiguously.
@@ -1414,7 +1420,7 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 }
 
 
-/*
+/**
  * Transition from hmm h into the next appropriate one for word w.
  * Threshold check for incoming score already completed.
  * The next HMM may be the last triphone for the word w, in which case, instantiate
@@ -1513,7 +1519,7 @@ static void whmm_exit (int32 thresh, int32 wordthresh)
 }
 
 
-/*
+/**
  * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
  * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
  */
@@ -1538,7 +1544,7 @@ if (l1 == -1) *w0 = BAD_S3WID; else
 }
 
 
-/*
+/**
  * Transition into a word w.  Since we transition into the first phone position, the
  * triphone model must be derived from the incoming left context ciphone.  The first
  * state of the whmm instance inherits this triphone model and propagates it along with
@@ -1622,27 +1628,27 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 
 
 
-/*
+/**
  * Backoff node when backing off all the way to unigrams.  Since each word exits with
  * #ciphones different scores (for so many different right contexts), a separate node
  * exists for each context.
  */
 typedef struct {
-    s3latid_t latid;	/* History entry */
-    int32 score;	/* Acoustic + backed off LM score */
-    s3cipid_t lc;	/* Last ciphone of history entry, to be used as left context upon
+    s3latid_t latid;	/** History entry */
+    int32 score;	/** Acoustic + backed off LM score */
+    s3cipid_t lc;	/** Last ciphone of history entry, to be used as left context upon
 			   entering a new word. */
 } backoff_t;
 static backoff_t *ug_backoff, *filler_backoff;
-static uint8 *tg_trans_done;	/* If tg_trans_done[w] TRUE, trigram transition to w
+static uint8 *tg_trans_done;	/** If tg_trans_done[w] TRUE, trigram transition to w
 				   occurred for a given history, and backoff bigram
 				   transition from same history should be avoided */
-static int32 *rcscore = NULL;	/* rc scores uncompacted; one entry/rc-ciphone */
-static s3wid_t *word_cand_cf;	/* BAD_S3WID terminated array of candidate words for word
+static int32 *rcscore = NULL;	/** rc scores uncompacted; one entry/rc-ciphone */
+static s3wid_t *word_cand_cf;	/** BAD_S3WID terminated array of candidate words for word
 				   transition in current frame (if using input word
 				   lattices to restrict search). */
 
-/*
+/**
  * Unigrams re-organized for faster unigram word transitions.  Words partitioned by
  * their first CI phone and ordered in descending unigram probability within each
  * partition.
@@ -1655,7 +1661,7 @@ typedef struct word_ugprob_s {
 static word_ugprob_t **word_ugprob;
 
 
-/*
+/**
  * Build array of candidate words that start around the current frame (cf).
  * Note: filler words are not in this list since they are always searched (see
  * word_trans).
@@ -1691,7 +1697,8 @@ static void build_word_cand_cf (int32 cf)
     word_cand_cf[n] = BAD_S3WID;
 }
 
-
+/** Transition for one word. 
+ */
 static void word_trans (int32 thresh)
 {
     s3latid_t l;	/* lattice entry index */
@@ -1897,6 +1904,9 @@ static void word_trans (int32 thresh)
     /* Free rcscore here, if necessary to conserve memory space */
 }
 
+
+/** Initialize the forward search.
+ */
 
 void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 {
@@ -2237,6 +2247,8 @@ static void whmm_renorm (int32 bestscr)
 }
 
 
+/** Do forward search for one frame.
+ */
 int32 fwd_frame (int32 *senscr)
 {
     int32 bestscr;	/* Best state score for any whmm evaluated in this frame */
@@ -2291,7 +2303,7 @@ int32 fwd_frame (int32 *senscr)
 }
 
 
-/*
+/**
  * Find path score for lattice entry l for the given right context word.
  * If context word is BAD_S3WID it's a wild card; return the best path score.
  */
@@ -2308,7 +2320,7 @@ static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
 }
 
 
-/*
+/**
  * Find LM score for transition into lattice entry l.
  */
 static int32 lat_seg_lscr (s3latid_t l)
@@ -2352,7 +2364,7 @@ static int32 lat_seg_lscr (s3latid_t l)
 }
 
 
-/*
+/**
  * Find acoustic and LM score for segmentation corresponding to lattice entry l with
  * the given right context word.
  */
@@ -2546,7 +2558,7 @@ static daglink_t *find_predlink (dagnode_t *src, dagnode_t *dst)
 }
 
 
-/* Like dag_link but check if link already exists.  If so, replace if new score better */
+/** Like dag_link but check if link already exists.  If so, replace if new score better */
 static void dag_update_link (dagnode_t *pd, dagnode_t *d, int32 ascr,
 			     int32 ef, daglink_t *byp)
 {
@@ -2567,7 +2579,7 @@ static void dag_update_link (dagnode_t *pd, dagnode_t *d, int32 ascr,
 }
 
 
-/*
+/**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
  * whenever nodes are adjacent in time.
@@ -2672,7 +2684,7 @@ int32 dag_build ( void )
 }
 
 
-/*
+/**
  * Add "fudge" edges: from node P to another Q if Q starts IN THE SAME FRAME or ONE
  * FRAME EARLIER THAN the first end frame for P.
  */
@@ -2718,7 +2730,7 @@ static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
 }
 
 
-/*
+/**
  * Remove filler nodes from DAG by replacing each link TO a filler with links
  * to its successors.
  * lwf = language weight factor to be applied to LM scores.
@@ -2783,7 +2795,7 @@ static void dag_remove_filler_nodes (float64 lwf)
 
 
 
-/*
+/**
  * Recursive step in dag_search:  best backward path from src to root beginning with l.
  */
 static void dag_bestpath (daglink_t *l,		/* Backward link! */
@@ -2853,7 +2865,7 @@ static void dag_bestpath (daglink_t *l,		/* Backward link! */
 }
 
 
-/*
+/**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
  * Restore bypassed links during backtrace.
  */
@@ -2953,7 +2965,7 @@ static int32 dag_chk_linkscr (dag_t *dag)
 }
 
 
-/*
+/**
  * Final global best path through DAG constructed from the word lattice.
  * Assumes that the DAG has already been constructed and is consistent with the word
  * lattice.

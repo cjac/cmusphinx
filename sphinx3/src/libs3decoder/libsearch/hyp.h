@@ -55,10 +55,17 @@
 
 #include <s3types.h>
 
+/** \file hyp.h
+ * \brief data structure for storing the hypothesis. 
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /**
+   * Structure to store hypothesis. 
+   */
 typedef struct {
     int32 id;		/* Token ID; could be s3wid_t, s3cipid_t...  Interpreted by client. */
     int32 vhid;		/* Viterbi history (lattice) ID from which this entry created */

@@ -56,27 +56,58 @@
 #include "logs3.h"
 #include <stdio.h>
 
+/**  \file gs.h
+ * \brief (Not opened to public) Gaussian selector Implentation
+ * 
+ * Implementation of Bochierri 93's idea of Gaussian Selection. A
+ * pre-computed Gaussian selector map (not distributed in Sphinx 3 but
+ * in s3fast.tgz distributed in Arthur Chan's web page) encode the
+ * closest neighbors of a given codeword and a given GMM.
+ *
+ * In decoding, the closest codeword of the feature is first found and
+ * the nearest neighborhood(s) for all GMMs will be retrieved from the
+ * Gaussian selector map. 
+ * 
+ * The reason why this file is not opened to the public is because
+ * sub-vector quantization supersed this idea conceptually.  Although
+ * our SVQ implementation do not assume multiple Gaussians to be
+ * computed given a sub-stream(sub-vector) codeword is found. It is
+ * not difficult to extend the implementation to accomplish that. 
+ * 
+ * Saying this, for implementation symmetry, we should still check in the 
+ * Gaussian selector implementation in this archive. 
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /**
+   *  Wrapper structure of gaussian selector
+   */
 typedef struct gs_s {
-  int32 n_mgau;
-  int32 n_feat;
-  int32 n_code;
-  int32 n_density;
-  int32 n_featlen;
-  int32 n_mbyte; /* number of bytes to read each time */
-  float32 **codeword; /* n_code * n_featlen */
-  uint32 ***codemap; /* n_feat * n_mgau * n_code*/
+  int32 n_mgau;  /** number of GMMs */
+  int32 n_feat;  /** number of streams */
+  int32 n_code;  
+  int32 n_density; /** number of density */
+  int32 n_featlen; /** (This is not consistent to the Gaussian family of function */
+  int32 n_mbyte; /** number of bytes to read each time */
+  float32 **codeword; /** n_code * n_featlen */
+  uint32 ***codemap; /** n_feat * n_mgau * n_code*/
   FILE *fp;
-  int32* mgau_sl; /* The short list */
+  int32* mgau_sl; /** The short list for how many Gaussians will be computed */
 } gs_t;
 
+
+  /** display the Gaussian selector */
+
 int32 gs_display(char *file, gs_t *gs);
+
+  /** Read the Gaussian selector */
 gs_t* gs_read(char *file);
 int32 gc_compute_closest_cw ( gs_t *gs, float32 *feat);
 
+  /** Find the short list of the Gaussian selector */
 int32 gs_mgau_shortlist(gs_t *gs,  /*gaussain selector */
 			int32 m,   /*mixture index */
 			int32 n,   /*number of mixtures */

@@ -60,6 +60,9 @@
 #ifndef _S3_VECTOR_H_
 #define _S3_VECTOR_H_
 
+/** \file vector.h
+    \brief operation on Vector
+ */
 #include <s3types.h>
 #include <stdio.h>
 
@@ -87,40 +90,40 @@ typedef struct {
 } fpoint_t;		/* Like point_t, but with float32 values */
 
 
-/*
+  /**
  * The reason for some of the "trivial" routines below is that they could be OPTIMIZED for SPEED
  * at some point.
  */
 
 
-/* Floor all elements of v[0..dim-1] to min value of f */
+  /** Floor all elements of v[0..dim-1] to min value of f */
 void vector_floor(vector_t v, int32 dim, float64 f);
 
 
-/* Floor all non-0 elements of v[0..dim-1] to min value of f */
+  /** Floor all non-0 elements of v[0..dim-1] to min value of f */
 void vector_nz_floor(vector_t v, int32 dim, float64 f);
 
 
-/* Normalize the vector. */
+  /** Normalize the vector. */
 int32 vector_normalize(vector_t v, uint32 dim);
 
 
-/*
+  /**
  * Normalize the elements of the given vector so that they sum to 1.0.  If the sum is 0.0
  * to begin with, the vector is left untouched.  Return value: The normalization factor.
  */
 float64 vector_sum_norm(vector_t v, int32 dim);
 
 
-/* Print vector in one line, in %11.4e format, terminated by newline */
+  /** Print vector in one line, in %11.4e format, terminated by newline */
 void vector_print(FILE *fp, vector_t v, int32 dim);
 
 
-/* Return TRUE iff given vector is all 0.0 */
-int32 vector_is_zero (float32 *vec,	/* In: Vector to be checked */
-		      int32 len);	/* In: Length of above vector */
+  /** Return TRUE iff given vector is all 0.0 */
+int32 vector_is_zero (float32 *vec,	/** In: Vector to be checked */
+		      int32 len);	/** In: Length of above vector */
 
-/*
+  /**
  * Search for the max or min valued component in the given vector.  The vector length must be
  * strictly > 0 (val[] must have at least one valid value).  If more than one component
  * qualifies, the first one is chosen.
@@ -132,35 +135,35 @@ int32 vector_maxcomp_float32 (float32 *val, int32 len);
 int32 vector_mincomp_float32 (float32 *val, int32 len);
 
 
-/* Accumulate src into dst */
-void vector_accum (float32 *dst,	/* In/Out: dst[i] += src[i] */
-		   float32 *src,	/* In: See above */
-		   int32 len);		/* In: Length of above vectors */
+  /** Accumulate src into dst */
+void vector_accum (float32 *dst,	/** In/Out: dst[i] += src[i] */
+		   float32 *src,	/** In: See above */
+		   int32 len);		/** In: Length of above vectors */
 
-/*
+  /**
  * Compare the two given vectors.  Return -1, 0, or +1 depending on v1 <, =, or > v2 (as
  * determined by the earliest unequal component).
  */
-int32 vector_cmp (float32 *v1, float32 *v2,	/* In: Vectors to be compared */
-		  int32 len);		/* In: Length of each vector */
+int32 vector_cmp (float32 *v1, float32 *v2,	/** In: Vectors to be compared */
+		  int32 len);		/** In: Length of each vector */
 
-/*
+  /**
  * Compute the mean vector from the given set of vector data.
  * Return value: 0 if successful, -1 if any error (there shouldn't be any error).
  */
-int32 vector_mean (float32 *mean,	/* Out: Computed mean; caller should allocate
+int32 vector_mean (float32 *mean,	/** Out: Computed mean; caller should allocate
 					   this memory */
-		   float32 **data,	/* In: Set of data over which mean is computed */
-		   int32 n_vec,		/* In: #Vectors in data */
-		   int32 n_dim);	/* In: Dimensionality of each vector (and mean) */
+		   float32 **data,	/** In: Set of data over which mean is computed */
+		   int32 n_vec,		/** In: #Vectors in data */
+		   int32 n_dim);	/** In: Dimensionality of each vector (and mean) */
 
-/*
+  /**
  * Return the Euclidean distance (actually, distance^2) between the two given vectors.
  */
-float64 vector_dist_eucl (float32 *v1, float32 *v2,	/* In: The two input vectors */
-			  int32 len);	/* In: Length of each vector */
+float64 vector_dist_eucl (float32 *v1, float32 *v2,	/** In: The two input vectors */
+			  int32 len);	/** In: Length of each vector */
 
-/*
+  /**
  * Given a Gaussian density with mean vector m and diagonal variance vector v, and some
  * input vector x, all of length n, the Mahalanobis distance of x from the Gaussian mean m
  * is given by:
@@ -175,94 +178,94 @@ float64 vector_dist_eucl (float32 *v1, float32 *v2,	/* In: The two input vectors
  * are assumed to be strictly > 0.0.
  */
 float64
-vector_maha_precomp (float32 *var,	/* In/Out: Variance vector, modified to 1/2var */
-		     int32 len);	/* In: Length of the above vector */
+vector_maha_precomp (float32 *var,	/** In/Out: Variance vector, modified to 1/2var */
+		     int32 len);	/** In: Length of the above vector */
 
-/*
+  /**
  * Mahalanobis distance, using some precomputed portions of variance and determinant.
  * (Actually not "distance" at all, but Gaussian density value.)
  * Computed in log domain.
  * Return value: logbase-e(likelihood value).
  */
 float64
-vector_dist_maha (float32 *vec,		/* In: Vector for which distance from mean
+vector_dist_maha (float32 *vec,		/** In: Vector for which distance from mean
 					   being computed */
-		  float32 *mean,	/* In: Mean vector */
-		  float32 *varinv,	/* In: Variance vector, modified according to
+		  float32 *mean,	/** In: Mean vector */
+		  float32 *varinv,	/** In: Variance vector, modified according to
 					   vector_maha_precomp() */
-		  float64 norm,		/* In: Normalization factor computed by
+		  float64 norm,		/** In: Normalization factor computed by
 					   vector_maha_precomp() */
-		  int32 len);		/* In: Length of each vector involved */
+		  int32 len);		/** In: Length of each vector involved */
 
-/*
+  /**
  * Generate a vector quantized table for the input data, using the K-means algorithm, and the
  * Euclidean distance measure.
  * Return value: The squared quantization error of the final result.
  */
-float64 vector_vqgen (float32 **data,	/* In: Input Data to be quantized */
-		      int32 rows,	/* In: #Rows in input data */
-		      int32 cols,	/* In: #Cols in input data (and output VQ table) */
-		      int32 vqrows,	/* In: #Rows in vector quantized result */
-		      float64 epsilon,	/* In: Convergence limit; stop k-means iterations when
+float64 vector_vqgen (float32 **data,	/** In: Input Data to be quantized */
+		      int32 rows,	/** In: #Rows in input data */
+		      int32 cols,	/** In: #Cols in input data (and output VQ table) */
+		      int32 vqrows,	/** In: #Rows in vector quantized result */
+		      float64 epsilon,	/** In: Convergence limit; stop k-means iterations when
 					   the relative reduction in total squared error in
 					   successive iterations ((sqerr[t]-sqerr[t+1])/sqerr[t])
 					   is below this value. */
-		      int32 maxiter,	/* In: Max #iterations, regardless of convlimit */
-		      float32 **mean,	/* Out: Vector quantized array of centroids.  Caller
+		      int32 maxiter,	/** In: Max #iterations, regardless of convlimit */
+		      float32 **mean,	/** Out: Vector quantized array of centroids.  Caller
 					   must allocate this array */
-		      int32 *map,       /* Out: data->mean mapping; mean[map[i]] is the closest
+		      int32 *map,       /** Out: data->mean mapping; mean[map[i]] is the closest
 					   quantized vector corresponding to the input vector
 					   data[i].  Caller must allocate this array */
 
-		      int32 seed);      /* In : The seed for a random generator
+		      int32 seed);      /** In : The seed for a random generator
 					   if it is smaller than 0, use the internal
 					   mechanism to generate seed. 
 					   else use the seed to seed the random
 					   generator.
 					 */
 
-/*
+  /**
  * Find the entry (row) of mean that is closest (according to Euclidean distance) to vec.
  * Return value: index of the selected row.
  */
-int32 vector_vqlabel (float32 *vec,	/* In: Vector to be compared against VQ table */
-		      float32 **mean,	/* In: Table of centroids */
-		      int32 rows,	/* In: #Rows in mean */
-		      int32 cols,	/* In: #Cols in mean (and vec) */
-		      float64 *sqerr);	/* Out: Squared error (distance) between vec and the
+int32 vector_vqlabel (float32 *vec,	/** In: Vector to be compared against VQ table */
+		      float32 **mean,	/** In: Table of centroids */
+		      int32 rows,	/** In: #Rows in mean */
+		      int32 cols,	/** In: #Cols in mean (and vec) */
+		      float64 *sqerr);	/** Out: Squared error (distance) between vec and the
 					   selected codeword.  May be NULL if not needed. */
 
-/*
+  /**
  * Treat the given vector as a PDF and compute its entropy (-sum(p * log2(p))).  (The PDF values
  * must be >= 0.0, of course.)  The zero elements of the PDF are skipped.
  */
-float64 vector_pdf_entropy (float32 *p,	/* In: Vector (PDF) whose entropy is to be computed */
-			    int32 len);	/* In: Length of p[] */
+float64 vector_pdf_entropy (float32 *p,	/** In: Vector (PDF) whose entropy is to be computed */
+			    int32 len);	/** In: Length of p[] */
 
-/*
+  /**
  * Return cross-entropy of two PDFs; like vector_entropy, but (-sum(p1 * log2(p2))).  (The PDF
  * values must be >= 0.0, of course.)  The zero elements of p2 are skipped.
  */
 float64 vector_pdf_cross_entropy (float32 *p1,
-				  float32 *p2,	/* In: Zero elements of p2 are skipped */
+				  float32 *p2,	/** In: Zero elements of p2 are skipped */
 				  int32 len);
 
-/*
+  /**
  * Generic table of individual Gaussian vectors, with diagonal co-variance matrices (i.e.,
  * only the diagonal is maintained, as a vector).
  */
 typedef struct {
-    int32 n_gau;	/* #Gaussians in table */
-    int32 veclen;	/* Vector length */
-    float32 **mean;	/* n_cw x veclen mean values */
-    float32 **var;	/* n_cw x veclen corresponding (diagonal) variance values */
-    float32 *lrd;	/* Log(Reciprocal(Determinant(Co-var. matrix))) */
-    float64 distfloor;	/* When Mahalanobis distance values are converted to logs3 domain, the
+    int32 n_gau;	/** #Gaussians in table */
+    int32 veclen;	/** Vector length */
+    float32 **mean;	/** n_cw x veclen mean values */
+    float32 **var;	/** n_cw x veclen corresponding (diagonal) variance values */
+    float32 *lrd;	/** Log(Reciprocal(Determinant(Co-var. matrix))) */
+    float64 distfloor;	/** When Mahalanobis distance values are converted to logs3 domain, the
 			   int32 result can underflow.  To avoid this, floor before conversion */
 } vector_gautbl_t;
 
 
-/*
+  /**
  * The obvious allocation and free routines for vector_gautbl_t.{mean,var,lrd}.  Also sets
  * gautbl->{n_mgau, veclen, distfloor}; the last to the equivalent of S3_LOGPROB_ZERO.
  */
@@ -271,31 +274,31 @@ void vector_gautbl_alloc (vector_gautbl_t *gautbl,
 void vector_gautbl_free (vector_gautbl_t *gautbl);
 
 
-/*
+  /**
  * Floor all the variance values in the given Gaussians table.
  */
-void vector_gautbl_var_floor (vector_gautbl_t *gautbl,	/* In/Out: Table to be updated */
-			      float64 floor);		/* In: Floor value */
+void vector_gautbl_var_floor (vector_gautbl_t *gautbl,	/** In/Out: Table to be updated */
+			      float64 floor);		/** In: Floor value */
 
-/*
+  /**
  * Carry out the vector_maha_precomp, above, over all the Gaussians in the given table, updating
  * gau->lrd[] as a result.  The needed memory must have been already allocated by the caller.
  */
 void vector_gautbl_maha_precomp (vector_gautbl_t *gau);
 
 
-/*
+  /**
  * Compare the input vector to the given range of subvector codewords in the given codebook,
  * Enter the computed Mahalanobis distances, converted into logs3 values, into the given score
  * array.  (Why bother with the {offset,count} range??  For "blocking" such computation so that
  * cache behaviour is improved.)
  */
 void
-vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
-			  int32 offset,	/* In: First VQ codeword in the range to be evaluated */
-			  int32 count,	/* In: #Codewords to be evaluated (range size) */
-			  float32 *x,	/* In: Input vector being compared to codewords */
-			  int32 *scr);	/* Out: Mahalanobis distance scores (logs3 values).
+vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/** In: Table of Gaussians */
+			  int32 offset,	/** In: First VQ codeword in the range to be evaluated */
+			  int32 count,	/** In: #Codewords to be evaluated (range size) */
+			  float32 *x,	/** In: Input vector being compared to codewords */
+			  int32 *scr);	/** Out: Mahalanobis distance scores (logs3 values).
 					   Caller must allocate this array.  Note that only
 					   score[offset..offset+count-1] are updated. */
 
@@ -310,9 +313,12 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/* In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.10  2004/12/05  12:01:31  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.11  2004/12/06  10:52:01  arthchan2003
+ * Enable doxygen documentation in libs3decoder
  * 
+ * Revision 1.10  2004/12/05 12:01:31  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.9  2004/11/16 05:13:18  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.

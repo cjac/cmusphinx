@@ -38,9 +38,16 @@
 
 #include <s3types.h>
 
+/** \file fe.h
+    \brief High level function for converting waveforms to cepstral
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  /**
+     Base Struct to hold all front-end parameters 
+  */
 
 typedef struct{
     float32 SAMPLING_RATE;
@@ -82,6 +89,10 @@ typedef struct{
   int16* spdata;
 } param_t;
 
+
+  /**
+     Base Struct to hold all structure for MFCC computation. 
+  */
 
 typedef struct{
     float32 sampling_rate;
@@ -134,35 +145,35 @@ typedef struct{
 #define OFF 0
 
 /* Default values */
-#define DEFAULT_SAMPLING_RATE "16000.0"
-#define DEFAULT_FRAME_RATE "100"
-#define DEFAULT_FRAME_SHIFT "160"
-#define DEFAULT_WINDOW_LENGTH "0.0256" /*0.025625*/
-#define DEFAULT_FFT_SIZE "256" /*512*/
-#define DEFAULT_FB_TYPE MEL_SCALE
-#define DEFAULT_NUM_CEPSTRA "13"
-#define DEFAULT_NUM_FILTERS "40"
-#define DEFAULT_LOWER_FILT_FREQ "133.33334"
-#define DEFAULT_UPPER_FILT_FREQ "6855.4976"
-#define DEFAULT_PRE_EMPHASIS_ALPHA "0.97"
+#define DEFAULT_SAMPLING_RATE "16000.0" /**Default sampling rate */
+#define DEFAULT_FRAME_RATE "100"  /**Default frame rate */
+#define DEFAULT_FRAME_SHIFT "160" /**Default frame shift */
+#define DEFAULT_WINDOW_LENGTH "0.0256" /*0.025625*/ /** Default window length */
+#define DEFAULT_FFT_SIZE "256" /*512*/ /** Default FFT size */
+#define DEFAULT_FB_TYPE MEL_SCALE  /** Default filter bank type */
+#define DEFAULT_NUM_CEPSTRA "13"  /** Default number of ceptral */
+#define DEFAULT_NUM_FILTERS "40" /** Default number of filter banks */
+#define DEFAULT_LOWER_FILT_FREQ "133.33334" /** Default lower filter frequency */
+#define DEFAULT_UPPER_FILT_FREQ "6855.4976" /** Default upper filter frequency */
+#define DEFAULT_PRE_EMPHASIS_ALPHA "0.97" /** Default emphasis alpha */
 #define DEFAULT_START_FLAG 0
 
-#define BB_SAMPLING_RATE 16000
-#define DEFAULT_BB_FFT_SIZE 512
-#define DEFAULT_BB_FRAME_SHIFT 160
-#define DEFAULT_BB_NUM_FILTERS 40
-#define DEFAULT_BB_LOWER_FILT_FREQ 133.33334
-#define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
+#define BB_SAMPLING_RATE 16000 /**(For 16K sampling frequency) Broad band sampling rate */
+#define DEFAULT_BB_FFT_SIZE 512 /**(For 16K sampling frequency)Broad band FFT sampling rate */
+#define DEFAULT_BB_FRAME_SHIFT 160 /** (For 16K sampling frequency) Broad band frame shift  */
+#define DEFAULT_BB_NUM_FILTERS 40  /** (For 16K sampling frequency) Broad band number of filters   */
+#define DEFAULT_BB_LOWER_FILT_FREQ 133.33334  /** (For 16K sampling frequency) Broad lower filter frequency   */
+#define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976 /** (For 16K sampling frequency) Broad upper filter frequency   */
 
-#define NB_SAMPLING_RATE 8000
-#define DEFAULT_NB_FFT_SIZE 256 /*512*/
-#define DEFAULT_NB_FRAME_SHIFT 80
-#define DEFAULT_NB_NUM_FILTERS 31
-#define DEFAULT_NB_LOWER_FILT_FREQ 200
-#define DEFAULT_NB_UPPER_FILT_FREQ 3500
+#define NB_SAMPLING_RATE 8000 /**(For 8k sampling frequency) Narrow band sampling rate */
+#define DEFAULT_NB_FFT_SIZE 256 /*512*/ /**(For 8k sampling frequency) Narrow band FFT sampling rate */
+#define DEFAULT_NB_FRAME_SHIFT 80  /** (For 8k sampling frequency) Narrow band frame shift  */
+#define DEFAULT_NB_NUM_FILTERS 31 /** (For 8k sampling frequency) Narrow band number filters  */
+#define DEFAULT_NB_LOWER_FILT_FREQ 200  /** (For 8k sampling frequency) Narrow lower filter frequency   */
+#define DEFAULT_NB_UPPER_FILT_FREQ 3500   /** (For 8k sampling frequency) Narrow upper filter frequency   */
 
-#define DEFAULT_BLOCKSIZE "200000"
-#define DITHER  OFF
+#define DEFAULT_BLOCKSIZE "200000" /** Default block size*/
+#define DITHER  OFF /** By default, dithering is off */
 
 
 /* The following only use in the application level */
@@ -205,8 +216,8 @@ typedef struct{
 #define SWAPF(x)        SWAPL((int *) x)
 
 
-/* Some defines for MS Wav Files */
-/* The MS Wav file is a RIFF file, and has the following 44 byte header */
+  /** Some defines for MS Wav Files 
+      The MS Wav file is a RIFF file, and has the following 44 byte header */
 typedef struct RIFFHeader{
     char rifftag[4];      /* "RIFF" string */
     int32 TotalLength;      /* Total length */
@@ -241,8 +252,10 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
 int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
 		     float32 ***cep_block, int32 *nframes);
 
-/* Functions that wrap up the front-end operations on the front-end
-   wrapper operations.  */
+  /** 
+      Functions that wrap up the front-end operations on the front-end
+      wrapper operations.  
+  */
 
 fewrap_t * few_initialize();
 param_t *fe_parse_options();

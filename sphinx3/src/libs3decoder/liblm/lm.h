@@ -66,8 +66,8 @@
 extern "C" {
 #endif
 
-#define LM_DICTWID_BADMAP	-16000		/* An illegal mapping */
-#define LM_CLASSID_BASE		0x01000000	/* Interpreted as LMclass ID */
+#define LM_DICTWID_BADMAP	-16000		/** An illegal mapping */
+#define LM_CLASSID_BASE		0x01000000	/** Interpreted as LMclass ID */
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
 #define MIN_PROB_F -99.0
 
@@ -75,37 +75,40 @@ extern "C" {
 #include "lmclass.h"
 #include "dict.h"
 
+  /* \file lm.h
+     \brief Language model
+   */
 
-/* Log quantities represented in either floating or integer format */
+  /** Log quantities represented in either floating or integer format */
 typedef union {
     float32 f;
     int32 l;
 } lmlog_t;
 
 typedef struct {
-    s3wid_t dictwid;	/* Dictionary word id, or BAD_S3WID if unknown.  However, the LM
+    s3wid_t dictwid;	/** Dictionary word id, or BAD_S3WID if unknown.  However, the LM
 			   module merely sets this field to BAD_S3WID.  It is upto the
 			   application to fill in this field (HACK!!), so that this
 			   module can be independent of a dictionary. */
     lmlog_t prob;
     lmlog_t bowt;
-    int32 firstbg;	/* 1st bigram entry on disk */
+    int32 firstbg;	/** 1st bigram entry on disk */
 } ug_t;
 
 typedef struct {
-    s3lmwid_t wid;	/* LM wid (index into lm_t.ug) */
+    s3lmwid_t wid;	/** LM wid (index into lm_t.ug) */
     uint16 probid;
     uint16 bowtid;
-    uint16 firsttg;     /* 1st trigram entry on disk (see tg_segbase below) */
+    uint16 firsttg;     /** 1st trigram entry on disk (see tg_segbase below) */
 } bg_t;
 
 typedef struct {
-    s3lmwid_t wid;	/* LM wid (index into lm_t.ug) */
+    s3lmwid_t wid;	/** LM wid (index into lm_t.ug) */
     uint16 probid;
 } tg_t;
 
 
-/*
+  /**
  * Management of in-memory bigrams.  Not used if all bigrams in memory.
  */
 typedef struct {
@@ -175,66 +178,66 @@ typedef struct lm_ctl_s{
 } lm_ctl_t;
 #endif
 
-/*
+  /**
  * The language model.
  * All unigrams are read into memory on initialization.
  * Bigrams and trigrams read in on demand.
  */
 typedef struct lm_s {
-    int32 n_ug;         /* #unigrams in LM */
-    int32 n_bg;         /* #bigrams in entire LM */
-    int32 n_tg;         /* #trigrams in entire LM */
-    int32 max_ug;       /* To which n_ug can grow with dynamic addition of words */
+    int32 n_ug;         /** #unigrams in LM */
+    int32 n_bg;         /** #bigrams in entire LM */
+    int32 n_tg;         /** #trigrams in entire LM */
+    int32 max_ug;       /** To which n_ug can grow with dynamic addition of words */
     
-    char **wordstr;	/* The LM word list (in unigram order) */
+    char **wordstr;	/** The LM word list (in unigram order) */
     
     s3lmwid_t startlwid;	/* S3_START_WORD id, if it exists */
     s3lmwid_t finishlwid;	/* S3_FINISH_WORD id, if it exists */
     
-    int32 log_bg_seg_sz;/* See big comment above */
+    int32 log_bg_seg_sz;/** See big comment above */
     int32 bg_seg_sz;
     
-    ug_t *ug;           /* Unigrams */
-    bg_t *bg;		/* NULL iff disk-based */
-    tg_t *tg;		/* NULL iff disk-based */
-    membg_t *membg;	/* membg[w1] = bigrams for lm wid w1 (used iff disk-based) */
-    tginfo_t **tginfo;	/* tginfo[w2] = fast trigram access info for bigrams (*,w2) */
+    ug_t *ug;           /** Unigrams */
+    bg_t *bg;		/** NULL iff disk-based */
+    tg_t *tg;		/** NULL iff disk-based */
+    membg_t *membg;	/** membg[w1] = bigrams for lm wid w1 (used iff disk-based) */
+    tginfo_t **tginfo;	/** tginfo[w2] = fast trigram access info for bigrams (*,w2) */
     
-    lmlog_t *bgprob;    /* Table of actual bigram probs */
-    lmlog_t *tgprob;    /* Table of actual trigram probs */
-    lmlog_t *tgbowt;    /* Table of actual trigram backoff weights */
-    int32 *tg_segbase;  /* tg_segbase[i>>lm_t.log_bg_seg_sz] = index of 1st
+    lmlog_t *bgprob;    /** Table of actual bigram probs */
+    lmlog_t *tgprob;    /** Table of actual trigram probs */
+    lmlog_t *tgbowt;    /** Table of actual trigram backoff weights */
+    int32 *tg_segbase;  /** tg_segbase[i>>lm_t.log_bg_seg_sz] = index of 1st
 			   trigram for bigram segment (i>>lm_t.log_bg_seg_sz) */
     int32 n_bgprob;
     int32 n_tgprob;
     int32 n_tgbowt;
 
     FILE *fp;
-    int32 byteswap;     /* Whether this file is in the WRONG byte order */
-    int32 bgoff;        /* BG and TG offsets into DMP file (used iff disk-based) */
+    int32 byteswap;     /** Whether this file is in the WRONG byte order */
+    int32 bgoff;        /** BG and TG offsets into DMP file (used iff disk-based) */
     int32 tgoff;
 
-    float32 lw;		/* Language weight currently in effect for this LM */
-    int32 wip;          /* logs3(word insertion penalty) in effect for this LM */
+    float32 lw;		/** Language weight currently in effect for this LM */
+    int32 wip;          /** logs3(word insertion penalty) in effect for this LM */
     
-    /*
+  /**
      * <w0,w1,w2> hashed to an entry into this array.  Only the last trigram mapping to any
      * given hash entry is kept in that entry.  (The cache doesn't have to be super-efficient.)
      */
     lm_tgcache_entry_t *tgcache;
     
     /* Statistics */
-    int32 n_bg_fill;    /* #bg fill operations */
-    int32 n_bg_inmem;   /* #bg in memory */
-    int32 n_bg_score;   /* #bg_score operations */
-    int32 n_bg_bo;	/* #bg_score ops backed off to ug */
-    int32 n_tg_fill;	/* Similar stats for trigrams */
+    int32 n_bg_fill;    /** #bg fill operations */
+    int32 n_bg_inmem;   /** #bg in memory */
+    int32 n_bg_score;   /** #bg_score operations */
+    int32 n_bg_bo;	/** #bg_score ops backed off to ug */
+    int32 n_tg_fill;	/** Similar stats for trigrams */
     int32 n_tg_inmem;
     int32 n_tg_score;
     int32 n_tg_bo;
     int32 n_tgcache_hit;
     
-    int32 access_type;	/* Updated on every lm_{tg,bg,ug}_score call to reflect the kind of
+    int32 access_type;	/** Updated on every lm_{tg,bg,ug}_score call to reflect the kind of
 			   n-gram accessed: 3 for 3-gram, 2 for 2-gram and 1 for 1-gram */
 
   /* 20040225 ARCHAN : Data structure to maintain dictionary information */
@@ -249,13 +252,13 @@ typedef struct lm_s {
   int32 *inclass_ugscore;
 } lm_t;
 
-/*20040222 ARCHAN: Structure for multiple, named LMs, copied from s2*/
+  /** Structure for multiple, named LMs, started from s2*/
 typedef struct lmset_s {
   char *name;
   lm_t *lm;
 } lmset_t;
 
-/* Access macros; not meant for arbitrary use */
+  /** Access macros; not meant for arbitrary use */
 #define lm_lmwid2dictwid(lm,u)	((lm)->ug[u].dictwid)
 #define lm_n_ug(lm)		((lm)->n_ug)
 #define lm_n_bg(lm)		((lm)->n_bg)
@@ -266,56 +269,59 @@ typedef struct lmset_s {
 #define lm_access_type(lm)	((lm)->access_type)
 
 
-/* Generic structure that could be used at any n-gram level */
+  /** Generic structure that could be used at any n-gram level */
 typedef struct {
     s3wid_t wid;	/* NOTE: dictionary wid; may be BAD_S3WID if not available */
     int32 prob;
 } wordprob_t;
 
 
+  /** 
+      Get class ID given a LM. 
+   */
 int32 lm_get_classid (lm_t *model, char *name);
-/*
+  /**
  * Read an LM (dump) file; return pointer to LM structure created.
  */
-lm_t *lm_read (char *file,	/* In: LM file being read */
-	       float64 lw,	/* In: Language weight */
-	       float64 wip,	/* In: Word insertion penalty */
-	       float64 uw);	/* In: Unigram weight (interpolation with uniform distr.) */
+lm_t *lm_read (char *file,	/** In: LM file being read */
+	       float64 lw,	/** In: Language weight */
+	       float64 wip,	/** In: Word insertion penalty */
+	       float64 uw);	/** In: Unigram weight (interpolation with uniform distr.) */
 
-/*
+  /**
  * Read the LM control file, also initialize kb->lm
  */
 
-lmset_t* lm_read_ctl(char * ctlfile,/* Control file name */
-		 dict_t* dict,  /* In: Dictionary */
-		 float64 lw,	/* In: Language weight */
-		 float64 wip,	/* In: Word insertion penalty */
-		 float64 uw,    /* In: Unigram weight */
-		 char* lmdumpdir, /* In: LMdumpdir */
-		 int32* n_lm,    /* In/Out: number of LM */
-		 int32* n_alloclm, /* In/Out: number of allocated LM */
-		     int32 dict_size  /* In: dictionary size */
+lmset_t* lm_read_ctl(char * ctlfile,/** Control file name */
+		 dict_t* dict,  /** In: Dictionary */
+		 float64 lw,	/** In: Language weight */
+		 float64 wip,	/** In: Word insertion penalty */
+		 float64 uw,    /** In: Unigram weight */
+		 char* lmdumpdir, /** In: LMdumpdir */
+		 int32* n_lm,    /** In/Out: number of LM */
+		 int32* n_alloclm, /** In/Out: number of allocated LM */
+		     int32 dict_size  /** In: dictionary size */
 		     );	
 
 
-/*
+  /**
  * Return trigram followers for given two words.  Both w1 and w2 must be valid.
  * Return value: #trigrams in returned list.
  */
-int32 lm_tglist (lm_t *lmp,	/* In: LM being queried */
-		 s3lmwid_t w1,	/* In: LM word id of the first of a 2-word history */
-		 s3lmwid_t w2,	/* In: LM word id of the second of the 2-word history */
-		 tg_t **tg,	/* Out: *tg = array of trigrams for <w1,w2> */
-		 int32 *bowt);	/* Out: *bowt = backoff-weight for <w1, w2> */
+int32 lm_tglist (lm_t *lmp,	/** In: LM being queried */
+		 s3lmwid_t w1,	/** In: LM word id of the first of a 2-word history */
+		 s3lmwid_t w2,	/** In: LM word id of the second of the 2-word history */
+		 tg_t **tg,	/** Out: *tg = array of trigrams for <w1,w2> */
+		 int32 *bowt);	/** Out: *bowt = backoff-weight for <w1, w2> */
 
-/*
+  /**
  * Return the bigram followers for the given word w.
  * Return value: #bigrams in returned list.
  */
-int32 lm_bglist (lm_t *lmp,	/* In: LM being queried */
-		 s3lmwid_t w,	/* In: LM word id of the 1-word history */
-		 bg_t **bg,	/* Out: *bg = array of bigrams for w */
-		 int32 *bowt);	/* Out: *bowt = backoff-weight for w */
+int32 lm_bglist (lm_t *lmp,	/** In: LM being queried */
+		 s3lmwid_t w,	/** In: LM word id of the 1-word history */
+		 bg_t **bg,	/** Out: *bg = array of bigrams for w */
+		 int32 *bowt);	/** Out: *bowt = backoff-weight for w */
 
 
 #if 0 /*Obsolete and it will cause conflict the code, so comment for now*/
@@ -334,7 +340,7 @@ int32 lm_bg_wordprob(lm_t *lm,		/* In: LM being queried */
 		     int32 *bowt);	/* Out: *bowt = backoff-weight associated with w */
 #endif
 
-/*
+  /**
  * Like lm_bg_wordprob, but for unigrams.
  * Return value:  #entries filled in the wordprob array.
  */
@@ -343,7 +349,7 @@ int32 lm_ug_wordprob(lm_t *lm,
 		     int32 th,
 		     wordprob_t *wp);
 
-/* Return the unigrams in LM.  Return value: #unigrams in returned list. */
+  /** Return the unigrams in LM.  Return value: #unigrams in returned list. */
 int32 lm_uglist (lm_t *lmp,	/* In: LM being queried */
 		 ug_t **ug);	/* Out: *ug = unigram array */
 

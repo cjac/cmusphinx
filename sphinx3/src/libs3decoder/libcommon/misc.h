@@ -58,23 +58,25 @@
 #include "s3types.h"
 #include "search.h"
 
+/** \file misc.h
+   \brief (s3.0 specific ) Miscellaneus operation used by differerent sphinx 3.0 family of tools.
+ */
 
-/* Return value: control file; E_FATAL if cannot open */
+/** Return value: control file; E_FATAL if cannot open */
 FILE *ctlfile_open (char *file);
 
-/*
+/**
  * Read next control file entry.
  * Return value: 0 if successful, -1 otherwise.
  */
 int32 ctlfile_next (FILE *fp, char *ctlspec, int32 *sf_out, int32 *ef_out, char *uttid);
 
+/**
+ * Close the close file. 
+ */
+
 void  ctlfile_close (FILE *fp);
 
 int32 argfile_load (char *file, char *pgm, char ***argvout);
-
-void  nbestlist_free (srch_hyp_t **hyplist, int32 nhyp);
-
-int32 nbestfile_load (char *dir, char *uttid, srch_hyp_t ***hyplist_out);
-
 
 #endif

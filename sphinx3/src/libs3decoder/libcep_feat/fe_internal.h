@@ -37,6 +37,9 @@
 #ifndef _FE_INTERNAL_H_
 #define _FE_INTERNAL_H_
 
+/** \file fe_internal.h
+    \brief All signal processing functions are opned 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,23 +53,53 @@ extern "C" {
 
 typedef struct { float64 r, i; } complex;
 
-/* functions */
+
+  /** Build mel filters */
+
 int32 fe_build_melfilters(melfb_t *MEL_FB);
+
+  /** Compute mel cosine */
 int32 fe_compute_melcosine(melfb_t *MEL_FB);
 float32 fe_mel(float32 x);
 float32 fe_melinv(float32 x);
+
+  /** Perform pre-emphasis */
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
+
+  /** Create a hamming window */
 void fe_create_hamming(float64 *in, int32 in_len);
+
+  /** Apply hamming window */
 void fe_hamming_window(float64 *in, float64 *window, int32 in_len);
+
+  /** Initialize hamming window */
 void fe_init_hamming(float64 *win, int32 len);
+
+  /** Compute the magnitude of a spectrum */
 void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32 fftsize);
-int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea);
+  
+  /** Compute the feature from frame */
+int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea); 
+
+  /** Mel spectrum */
 void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec);
+
+  /** Mel cepstrum */
+
 int32 fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep);
+
+  /** FFT */
+
 int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert);
 void fe_short_to_double(int16 const *in, float64 *out, int32 len);
+
+  /** Front end specific memory allocation routine */
 char **fe_create_2d(int32 d1, int32 d2, int32 elem_size);
+
+  /** Front end specific memory delallocation routine */
 void fe_free_2d(void **arr);
+
+  /** Print the fe structure.  */
 void fe_print_current(fe_t *FE);
 void fe_parse_general_params(param_t const *P, fe_t *FE);
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);

@@ -43,6 +43,9 @@
 #include "fe.h"
 #include "classify.h"
 
+/** \file endptr.h
+    \brief Wrapper of the end-pointer. 
+ */
 #ifdef __cplusplus
  extern "C" {
 #endif 
@@ -50,51 +53,58 @@
 #ifndef __END_POINTER__
 #define __END_POINTER__
 
-/* Struct to hold the end-pointer parameters */
+/** Struct to hold the end-pointer parameters */
 
 typedef struct{
-        int     status;                 // current status of recording
-        int     leader;                 // pointer to the start of the utterance to be passed to decoder
-        int     spbegin;                // pointer to the start of speech
-        int     spend;                  // pointer to the end of speech
-        int     trailer;                // pointer to the end of the utterance passed to the decoder
-	int 	utt_counter;		// to count the number of utterances in a meeting
-
-        int     PAD_F_BEFORE;           // to pad this much of frames before spbegin
-        int     PAD_F_AFTER;            // to pad this much of frames after spend  
-        int     UTT_F_START;            // to announce STAT_SPEECH after this much of speech frames
-        int     UTT_F_END;              // to end an utterance after this much of non-speech frames
-        int     UTT_F_CANCEL;           // to cancel an utterance after this much of non-speech frames
+  int     status;                 /** current status of recording */
+  int     leader;                 /** pointer to the start of the utterance to be passed to decoder*/
+  int     spbegin;                /** pointer to the start of speech */
+  int     spend;                  /** pointer to the end of speech */
+  int     trailer;                /** pointer to the end of the utterance passed to the decoder */
+  int 	utt_counter;		/** to count the number of utterances in a meeting */
+  
+  int     PAD_F_BEFORE;           /** to pad this much of frames before spbegin */
+  int     PAD_F_AFTER;            /** to pad this much of frames after spend   */
+  int     UTT_F_START;            /** to announce STAT_SPEECH after this much of speech frames */
+  int     UTT_F_END;              /** to end an utterance after this much of non-speech frames */
+  int     UTT_F_CANCEL;           /** to cancel an utterance after this much of non-speech frames */
 
 } endpointer_t;
 
 
-/* Status of the recording */
+   /** Status of the recording */
 
-#define STAT_OTHER      0               // non-speech period, noise, silence, or secondary speech
-#define STAT_BEGIN      1               // beginning of speech period, starts with first speech frame
-#define STAT_SPEECH     2               // inter-speech period, once
-#define STAT_END        3               // end of speech period
-#define STAT_CANCEL     4               // non-speech frames while an utterances is in STAT_BEGIN
+#define STAT_OTHER      0               /** non-speech period, noise, silence, or secondary speech */
+#define STAT_BEGIN      1               /** beginning of speech period, starts with first speech frame */
+#define STAT_SPEECH     2               /** inter-speech period, once */
+#define STAT_END        3               /** end of speech period */
+#define STAT_CANCEL     4               /** non-speech frames while an utterances is in STAT_BEGIN*/
 
 /* End-Pointing parameters */
 
-#define PAD_T_BEFORE    0.15    /* to pad this much of seconds before spbegin*/
-#define PAD_T_AFTER     0.2    // to pad this much of seconds after spend
-#define UTT_T_START     0.08    // to announce STAT_SPEECH after this much of speech seconds
-#define UTT_T_END       0.30    // to end an utterance after this much of non-speech seconds
-#define UTT_T_CANCEL    0.05    // to cancel an utterance after this much of non-speech seconds
+#define PAD_T_BEFORE    0.15    /** to pad this much of seconds before spbegin*/
+#define PAD_T_AFTER     0.2    /** to pad this much of seconds after spend */
+#define UTT_T_START     0.08    /** to announce STAT_SPEECH after this much of speech seconds */
+#define UTT_T_END       0.30    /** to end an utterance after this much of non-speech seconds */
+#define UTT_T_CANCEL    0.05    /** to cancel an utterance after this much of non-speech seconds */
 
    /*#define PAD_T_AFTER     0.15    // to pad this much of seconds after spend
      #define UTT_T_END       0.20    // to end an utterance after this much of non-speech seconds 
      #define UTT_T_CANCEL    0.08    // to cancel an utterance after this much of non-speech seconds */
 
 
-
+/** Initialize the end pointer */
 endpointer_t * endpointer_initialize(fe_t *FE);
+
+/** Free the end pointer */
 void endpointer_free(endpointer_t *ENDPTR);
+
 void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, int class);
+
+/** Convert frames 2 seconds for beginning frame.*/
 float endptr_frame2secs_beg (fe_t *FE, int frame);
+
+/** Convert frames 2 seconds for ending frame. */
 float endptr_frame2secs_end (fe_t *FE, int frame);
 
 #endif /*__END_POINTER__*/

@@ -70,29 +70,33 @@
 
 #include <s3types.h>
 
+/** \file corpus.h
+ *  \brief Operations on corpus 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
+  /**
  * Structure for a corpus: essentially a set of strings each associated with a
  * unique ID.  (Such as a reference sentence file, hypothesis file, and various
  * control files.)
  * NOTE: IDs are CASE-SENSITIVE.
  */
 typedef struct {
-    hash_table_t *ht;	/* Hash table for IDs; CASE-SENSITIVE */
-    int32 n;		/* #IDs (and corresponding argument strings) in the corpus */
-    char **str;		/* The argument strings */
+    hash_table_t *ht;	/** Hash table for IDs; CASE-SENSITIVE */
+    int32 n;		/** #IDs (and corresponding argument strings) in the corpus */
+    char **str;		/** The argument strings */
 } corpus_t;
 
 
-/*
+  /**
  * Load a corpus from the given file and return it.
  * Each line is a separate entry in the corpus.  Blank lines are skipped.
  * The ID is the FIRST word in a line.
  * 
  * Validation:
+ *
  * validate is an optional, application-supplied function to determine if each input
  * corpus data entry is eligible (valid) for inclusion in the final corpus.  It should
  * return an integer value signifying the following actions:
@@ -101,6 +105,7 @@ typedef struct {
  * If validate is NULL, every input entry is included in the corpus.
  * 
  * Duplicate resolution:
+ *
  * dup_resolve is an optional, application-supplied function to resolve duplicate keys
  * (IDs).  It may be NULL if none is available.  If present, and a duplicate key is
  * encountered, the function is invoked with the original and the duplicate corpus
@@ -113,24 +118,24 @@ typedef struct {
  * 
  * Return value: Ptr to corpus if successful.
  */
-corpus_t *corpus_load_headid (char *file,	/* Must be seekable and rewindable */
+corpus_t *corpus_load_headid (char *file,	/** Must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
-/*
+  /**
  * Similar to corpus_load_headid, but the ID is at the END of each line, in parentheses.
  */
-corpus_t *corpus_load_tailid (char *file,	/* Must be seekable and rewindable */
+corpus_t *corpus_load_tailid (char *file,	/** Must be seekable and rewindable */
 			      int32 (*validate)(char *str),
 			      int32 (*dup_resolve)(char *s1, char *s2));
 
-/*
+  /**
  * Lookup the given corpus for the given ID and return the associated string.
  * Return NULL if ID not found.
  */
 char *corpus_lookup (corpus_t *corp, char *id);
 
-/*
+  /**
  * Read another entry from a S3 format "control file" and parse its various fields.
  * Blank lines and lines beginning with a hash-character (#) are omitted.
  * Control file entry format:
@@ -139,45 +144,45 @@ char *corpus_lookup (corpus_t *corp, char *id);
  * Return value: 0 if successful, -1 if no more entries left.
  */
 int32 ctl_read_entry (FILE *fp,
-		      char *uttfile,	/* Out: (Cep)file containing utterance data */
-		      int32 *sf,	/* Out: Start frame in uttfile; 0 if omitted */
-		      int32 *ef,	/* Out: End frame in uttfile; -1 (signifying
+		      char *uttfile,	/** Out: (Cep)file containing utterance data */
+		      int32 *sf,	/** Out: Start frame in uttfile; 0 if omitted */
+		      int32 *ef,	/** Out: End frame in uttfile; -1 (signifying
 					   until EOF) if omitted */
-		      char *uttid);	/* Out: Utterance ID (generated from uttfile/sf/ef
+		      char *uttid);	/** Out: Utterance ID (generated from uttfile/sf/ef
 					   if omitted) */
 
-/*
+  /**
  * Process the given control file (or stdin if NULL):  Skip the first nskip entries, and
  * process the next count entries by calling the given function (*func) for each entry.
  * Any error in reading the control file is FATAL.
  * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
-ptmr_t ctl_process (char *ctlfile,	/* In: Control file to read; use stdin if NULL */
-		    char *ctlmllrfile,   /* In: Contorl file that specify the mllr used for the corresponding utterance */
-		    int32 nskip,	/* In: No. of entries to skip at the head */
-		    int32 count,	/* In: No. of entries to process after nskip */
+ptmr_t ctl_process (char *ctlfile,	/** In: Control file to read; use stdin if NULL */
+		    char *ctlmllrfile,   /** In: Contorl file that specify the mllr used for the corresponding utterance */
+		    int32 nskip,	/** In: No. of entries to skip at the head */
+		    int32 count,	/** In: No. of entries to process after nskip */
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
-		    			/* In: Function to be invoked for each of the
+		    /** In: Function to be invoked for each of the
 					   count entries processed. */
-		    void *kb);		/* In: A catch-all data pointer to be passed as
+		    void *kb);		/** In: A catch-all data pointer to be passed as
 					   the first argument to func above */
 
-/*
+  /**
  * A small modification of ctl_process.  It changes the LM dynamically according to the utterances. User can use option -ctl_lm to specify which LM should be used in each utterance.  
  */
-ptmr_t ctl_process_dyn_lm (char *ctlfile,	/* In: Control file to read; use stdin if NULL */
-			   char *ctllmfile,     /* In: Control file that specify the lm used for the corresponding utterance */
-			   char *ctlmllrfile,   /* In: Contorl file that specify the mllr used for the corresponding utterance */
-		    int32 nskip,	/* In: No. of entries to skip at the head */
-		    int32 count,	/* In: No. of entries to process after nskip */
+ptmr_t ctl_process_dyn_lm (char *ctlfile,	/** In: Control file to read; use stdin if NULL */
+			   char *ctllmfile,     /** In: Control file that specify the lm used for the corresponding utterance */
+			   char *ctlmllrfile,   /** In: Contorl file that specify the mllr used for the corresponding utterance */
+		    int32 nskip,	/** In: No. of entries to skip at the head */
+		    int32 count,	/** In: No. of entries to process after nskip */
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
-		    			/* In: Function to be invoked for each of the
+			   /** In: Function to be invoked for each of the
 					   count entries processed. */
-		    void *kb);		/* In: A catch-all data pointer to be passed as
+		    void *kb);		/** In: A catch-all data pointer to be passed as
 					   the first argument to func above */
 
 
-/*
+  /**
  * Like ctl_process, but process the single filename given (uttfile), count times.  After each
  * processing, wait for the time of modification on the given file to change.  In this mode,
  * the decoder can be used to process a dynamically generated sequence of utterances.  To avoid
@@ -185,40 +190,40 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile,	/* In: Control file to read; use stdin
  * it under a temporary name and finally renaming it to the given filename atomically.
  * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
-ptmr_t ctl_process_utt (char *uttfile,	/* In: Filename to be process (in its entirety) */
-			int32 count,	/* In: No. of iterations to process uttfile */
+ptmr_t ctl_process_utt (char *uttfile,	/** In: Filename to be process (in its entirety) */
+			int32 count,	/** In: No. of iterations to process uttfile */
 			void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 			void *kb);
 
-/*
+  /**
  * Build a complete input filename from the given uttname, directory and file-extension:
  *   If utt begins with a / ignore dir, otherwise prefix dir/ to utt;
  *   If a non-empty file extension is provided, and utt doesn't already have that extension,
  * 	append .ext to filename.
  */
-void ctl_infile (char *file,	/* Out: Generated filename (allocated by caller) */
-		 char *dir,	/* In: Optional directory spec if relative utt specified */
-		 char *ext,	/* In: File extension to be appended to utt to generate
+void ctl_infile (char *file,	/** Out: Generated filename (allocated by caller) */
+		 char *dir,	/** In: Optional directory spec if relative utt specified */
+		 char *ext,	/** In: File extension to be appended to utt to generate
 				   complete filename */
-		 char *utt);	/* In: Utterance file pathname, absolute or relative,
+		 char *utt);	/** In: Utterance file pathname, absolute or relative,
 				   with or without file extension.  This is usually the
 				   first field in a control file */
 
-/*
+  /**
  * Build a complete output filename from the given components as follows:
  *     if dir ends with ,CTL and utt does not begin with /, use dir/utt
  *     if dir ends with ,CTL and utt DOES begin with /, filename is utt
  *     if dir does not end with ,CTL, filename is dir/uttid.
  * If a non-empty ext specified append .ext to generated filename.
  */
-void ctl_outfile (char *file,	/* Out: Generated filename (allocated by caller) */
-		  char *dir,	/* In: Directory for the generated filename; see comment
+void ctl_outfile (char *file,	/** Out: Generated filename (allocated by caller) */
+		  char *dir,	/** In: Directory for the generated filename; see comment
 				   for special handling of ,CTL suffix */
-		  char *ext,	/* In: File-extension applied to the generated filename */
-		  char *utt,	/* In: Utterance file pathname, absolute or relative,
+		  char *ext,	/** In: File-extension applied to the generated filename */
+		  char *utt,	/** In: Utterance file pathname, absolute or relative,
 				   with or without extension.  This is usually the first
 				   field in a control file. */
-		  char *uttid);	/* In: Utterance ID (derived from the control file */
+		  char *uttid);	/** In: Utterance ID (derived from the control file */
 
 #ifdef __cplusplus
 }

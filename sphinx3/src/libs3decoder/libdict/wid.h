@@ -57,11 +57,15 @@
 #include "lm.h"
 #include "lmclass.h"
 
+/** \file wid.h
+    \brief coversion of dictionary ID to LM ID. 
+ */
 #ifdef __cplusplus
 extern "C" {
 #endif
+  
 
-/*
+  /**
  * Create mappings between dictionary and LM word-IDs.  In short:
  *    - An array of s3lmwid_t entries (map[]) is created; where map[i] is the LM word-ID for
  * 	the dictionary word-ID i.  Mappings are created for the alternative pronunciations as
@@ -69,13 +73,14 @@ extern "C" {
  *    - Similarly, lm->ug[u].dictwid is assigned the dictionary word id for unigram word u.
  * Return value: The map[] array built as described above.
  */
+
 s3lmwid_t *wid_dict_lm_map (dict_t *dict,	/* In: Dictionary */
 			    lm_t *lm,           /* In/Out: LM; lm->ug[].dictwid values are
 						   updated. */
 			    int32 lw
 			    );		
 
-/*
+  /**
  * Augment the given wordprob array with alternative pronunciations from the dictionary.
  * Return value: #entries in the augmented wordprob array (including the original ones).
  */

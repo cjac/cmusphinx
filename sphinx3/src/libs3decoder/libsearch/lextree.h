@@ -70,7 +70,9 @@
 extern "C" {
 #endif
 
-/*
+  /** \file lextree.h
+   * \brief Data structure of lexical tree. 
+   *
  * A lextree can be built for a specific history (e.g., for all bigram successors of a given
  * word or trigram successors of a word-pair in a given LM).  The history provides a set of left
  * context CIphones (if the final history word has multiple pronunciations; and there is always
