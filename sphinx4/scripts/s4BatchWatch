@@ -1,3 +1,0 @@
-#!/usr/bin/bash
-while true; do s4BatchSummary $1/*; sleep 10; done
-
