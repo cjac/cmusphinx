@@ -11,9 +11,9 @@
  * HISTORY
  * 
  * $Log$
-# Revision 1.2  2004/02/17  22:34:15  egouvea
-# First steps to get rid of the @ad_backend@, used by autoconf.
-# 
+ * Revision 1.7  2004/02/17  22:34:15  egouvea
+ * First steps to get rid of the @ad_backend@, used by autoconf.
+ * 
  * Revision 1.1  2000/12/12 23:01:41  lenzo
  * Rationalizing libs and names some more.  Split a/d and fe libs out.
  *
@@ -46,10 +46,6 @@
 
 #ifndef _AD_H_
 #define _AD_H_
-
-#if !defined(@ad_backend@)
-#define @ad_backend@
-#endif
 
 #ifdef AD_BACKEND_WIN32
 
