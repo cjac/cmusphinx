@@ -49,7 +49,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"..\..\..\lib\libsphinx2.lib"
 
 !ELSEIF  "$(CFG)" == "libsphinx2 - Win32 Debug"
 
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "..\..\..\include ..\..\..\src\libsphinx2\include" /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "FAST8B" /D "LM_CACHE_PROFLE" /D FBSVQ_V8=1 /D UNPADDED_CEP=1 /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\include ..\..\..\src\libsphinx2\include" /I "..\..\..\src\libsphinx2\include" /I "..\..\..\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "FAST8B" /D "LM_CACHE_PROFLE" /D FBSVQ_V8=1 /D UNPADDED_CEP=1 /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -72,7 +72,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo
+# ADD LIB32 /nologo /out:"..\..\..\lib\libsphinx2-debug.lib"
 
 !ENDIF 
 
@@ -83,10 +83,6 @@ LIB32=link.exe -lib
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\ad_base.c
-# End Source File
 # Begin Source File
 
 SOURCE="..\..\..\src\libsphinx2\add-table.c"
@@ -173,10 +169,6 @@ SOURCE=..\..\..\src\libsphinx2\CM_funcs.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libsphinx2\cont_ad_base.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libsphinx2\dict.c
 # End Source File
 # Begin Source File
@@ -197,6 +189,10 @@ SOURCE=..\..\..\src\libsphinx2\f2write.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\fbs_main.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\get_a_word.c
 # End Source File
 # Begin Source File
@@ -209,7 +205,11 @@ SOURCE=..\..\..\src\libsphinx2\hmm_tied_r.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libsphinx2\kb.c
+SOURCE=..\..\..\src\libsphinx2\kb_main.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2\lab.c
 # End Source File
 # Begin Source File
 
@@ -237,23 +237,11 @@ SOURCE=..\..\..\src\libsphinx2\lmclass.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\logmsg.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\longio.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\main.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\mulaw_base.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\new_fe.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\new_fe_sp.c
 # End Source File
 # Begin Source File
 
@@ -277,19 +265,11 @@ SOURCE=..\..\..\src\libsphinx2\phone.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libsphinx2\play_win32.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libsphinx2\prime.c
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2\r_agc_noise.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libsphinx2\rec_win32.c
 # End Source File
 # Begin Source File
 
