@@ -3,7 +3,6 @@ dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(sphinx3,0.5)
-AM_CONFIG_HEADER(config.h)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall}
 

@@ -68,11 +68,6 @@
 #include "endptr.h"
 #include "fe.h"
 
-
-#if !defined _MSC_VER 
-#include "config.h"
-#endif
-
 const char helpstr[] =
   "Description: \n\
 Create cepstra from audio file.\n		\

@@ -37,7 +37,6 @@
 #include "cont_mgau.h"
 #include "classify.h"
 #include "endptr.h"
-#include "config.h"
 #include "fe.h"
 
 const char helpstr[] =

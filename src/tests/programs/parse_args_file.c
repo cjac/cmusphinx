@@ -50,7 +50,6 @@
 #include <libutil/libutil.h>
 
 #include "cmd_ln_args.h"
-#include "config.h"
 
 static arg_t arg[] = {
     { "-logbase",
