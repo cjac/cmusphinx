@@ -914,15 +914,17 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 {
   float32 **cepbuf=NULL;
   float32 **tmpcepbuf=NULL;
-
   int32 win, cepsize; 
   int32 i, j, nfeatvec, residualvecs;
   int32 tmppos;
 
-  assert(nfr < LIVEBUFBLOCKSIZE);
-  assert(fcb->cepsize >0);
   cepbuf=fcb->cepbuf;
   tmpcepbuf=fcb->tmpcepbuf;
+
+  assert(nfr < LIVEBUFBLOCKSIZE);
+  assert(fcb->cepsize >0);
+  assert(cepbuf);
+  assert(tmpcepbuf);
 
   win = feat_window_size(fcb);
   cepsize = feat_cepsize(fcb);
@@ -933,7 +935,7 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
   }
 
   if (fcb->cmn) /* Only cmn_prior in block computation mode */
-    cmn_prior (uttcep, fcb->varnorm, nfr, cepsize, endutt,fcb->cmn_struct);
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
 
   residualvecs = 0;
   
@@ -995,7 +997,6 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
     fcb->curpos++;
     fcb->curpos %= LIVEBUFBLOCKSIZE;
   }
-
   return(nfeatvec);
 
 }

@@ -32,6 +32,14 @@ CLEANFILES = test.out \
 	pittsburgh.littleendian.wdseg \
 	pittsburgh.nbest.gz
 
+
+etags:
+	etags `find . -name *.[ch]`
+
+
+#######################################################################
+#Session of testing
+#######################################################################
 test-simple : test-livepretend
 test: test-simple
 test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep
@@ -257,5 +265,4 @@ test-ep-match:
 		2>&1 |grep "Utt_" > $@.out
 	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
 	$(LIBTOOL) --mode=execute rm $@.out		
-
 
