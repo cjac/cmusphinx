@@ -142,6 +142,11 @@ src/libs3decoder/Makefile
 src/libutil/Makefile
 src/programs/Makefile
 src/tests/Makefile
+src/tests/an4/Makefile
+src/tests/hub4/Makefile
+src/tests/rm1/Makefile
+src/tests/wsj20k/Makefile
+src/tests/wsj5k/Makefile
 scripts/Makefile
 scripts/sphinx3-test
 scripts/sphinx3-test.livepretend
