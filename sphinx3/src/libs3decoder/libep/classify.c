@@ -279,7 +279,7 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 
 	  b += (f - m) * (f - m) * v; 
 	}	
-	pmix = a * exp ((float)(-0.5) * b);	
+	pmix = a * exp (-0.5 * b);	
 	likeli[i] += g->mgau[i].mixw_f[j] * pmix; 
       }	
   }
