@@ -12,14 +12,26 @@ export PATH="/usr/local/bin:/bin:/usr/bin"
 # Default to sendmail
 MAILX=sendmail
 
+# Hack. 'which' on Solaris (at least the SCS facilitized ones) sends
+# output to standard output *no matter what*, instead of sending it to
+# stderr when an error occurs. Therefore, we can't just redirect
+# stderr to /dev/null when doing, say, 'which mhmail'. Therefore, we
+# have to do this: try to find the executable using 'which'. Count the
+# number of items in the output. If it's only one, 'which' returned the
+# executable location. If it's more than one, it is an error
+# message. The bash test returns false if it has zero arguments, and
+# true if it has one true argument. Therefore, when we test the number
+# of items using awk, we output 1 (true) if the incoming string has
+# more than 1 item, and nothing otherwise.
+
 # Try to find mhmail
-TMPMAIL=`which mhmail 2> /dev/null`
-if test z${TMPMAIL} == z; then
+TMPMAIL=`which mhmail`
+if test `echo ${TMPMAIL} | awk '{if (NF > 1) print 1}'`; then
 # If we failed, try mailx
-    TMPMAIL=`which mailx 2> /dev/null`
-    if test z${TMPMAIL} == z; then
+    TMPMAIL=`which mailx`
+    if test `echo ${TMPMAIL} | awk '{if (NF > 1) print 1}'`; then
 # If we failed again, try mail
-	TMPMAIL=`which mail 2> /dev/null`
+	TMPMAIL=`which mail`
     fi
 fi
 
@@ -34,11 +46,11 @@ S4LIST='cmusphinx-commits@lists.sourceforge.net'
 STLIST='archan egouvea yitao dhuggins'
 
 # Try to find gmake, supposedly the GNU make
-MAKE=`which gmake 2> /dev/null`
-if test z${MAKE} == z; then
+MAKE=`which gmake`
+if test `echo ${MAKE} | awk '{if (NF > 1) print 1}'`; then
 # If we failed, try make
-    MAKE=`which make 2> /dev/null`
-    if test z${MAKE} == z; then
+    MAKE=`which make`
+    if test `echo ${MAKE} | awk '{if (NF > 1) print 1}'`; then
 # If we failed again, bail out: we cannot make the project!
     ${MAILX} -s "Make not found in system `hostname`" ${S3LIST} < /dev/null
 # Exit with non zero value
