@@ -46,9 +46,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.11  2004/07/16  00:57:11  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.12  2004/07/16  15:54:36  egouvea
+ * Commented out part of code moved from fbs_main.c to uttproc.c, and added comment
  * 
+ * Revision 1.11  2004/07/16 00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.4  2004/06/22 15:35:46  rkm
  * Added partial result reporting options in batch mode
  *
@@ -1887,6 +1890,7 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 	    fclose (nbestfp);
     }
 
+#if 0  /* Moved to uttproc.c (in uttproc_windup()) */
     if (phone_conf) {
 	search_hyp_t *allp, *search_uttpscr2allphone();
 	
@@ -1897,7 +1901,8 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     if (pscr2lat)
 	search_uttpscr2phlat_print ();
     }
-    
+#endif
+ 
     return hypseg;	/* Linked list of hypothesis words */
 }
 
