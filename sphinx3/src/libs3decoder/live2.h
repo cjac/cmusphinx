@@ -58,7 +58,7 @@ extern "C" {
 
 #include "kb.h"
 #include "utt.h"
-#include "new_fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
+#include "fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
 
 #define MAX_UTTID_LEN				64
 #define MAX_CEP_LEN				64

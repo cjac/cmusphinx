@@ -66,7 +66,7 @@ extern "C" {
 #endif
 
 
-#include <libutil.h>
+#include <libutil/libutil.h>
 
 
 /*

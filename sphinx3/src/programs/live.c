@@ -55,7 +55,7 @@
 #include "kb.h"
 #include "utt.h"
 #include "cmd_ln_args.h"
-#include "new_fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
+#include "fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
 #include "live.h"
 
 static fe_t  *fe;
