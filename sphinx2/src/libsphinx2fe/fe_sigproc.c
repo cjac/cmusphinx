@@ -75,7 +75,10 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     MEL_FB->left_apex = (float32 *) calloc(MEL_FB->num_filters,sizeof(float32));
     MEL_FB->width = (int32 *) calloc(MEL_FB->num_filters,sizeof(int32));
     
-    filt_edge = (float32 *) calloc(MEL_FB->num_filters+2,sizeof(float32));
+    if (MEL_FB->doublewide==ON)
+	filt_edge = (float32 *) calloc(MEL_FB->num_filters+4,sizeof(float32));
+    else	
+	filt_edge = (float32 *) calloc(MEL_FB->num_filters+2,sizeof(float32));
 
     if (MEL_FB->filter_coeffs==NULL || MEL_FB->left_apex==NULL || MEL_FB->width==NULL || filt_edge==NULL){
 	fprintf(stderr,"memory alloc failed in fe_build_mel_filters()\n...exiting\n");
@@ -87,10 +90,29 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     melmax = fe_mel(MEL_FB->upper_filt_freq);
     melmin = fe_mel(MEL_FB->lower_filt_freq);
     dmelbw = (melmax-melmin)/(MEL_FB->num_filters+1);
+
+    if (MEL_FB->doublewide==ON){
+	melmin = melmin-dmelbw;
+	melmax = melmax+dmelbw;
+	if ((fe_melinv(melmin)<0) ||
+	    (fe_melinv(melmax)>MEL_FB->sampling_rate/2)){
+	    fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
+	    fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
+	    fprintf(stderr,"exiting...\n");
+	    exit(0);
+	}
+    }    
     
-    for (i=0;i<=MEL_FB->num_filters+1; ++i){
-	filt_edge[i] = fe_melinv(i*dmelbw + melmin);
-	
+    
+    if (MEL_FB->doublewide==ON){
+        for (i=0;i<=MEL_FB->num_filters+3; ++i){
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);
+        }
+    }
+    else {
+	for (i=0;i<=MEL_FB->num_filters+1; ++i){
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);   
+	}
     }
     
     
@@ -100,15 +122,16 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 
 	/*line triangle edges up with nearest dft points... */
 	
-	/*	
-		leftfr = (float32)rint((float64)(filt_edge[whichfilt]/dfreq))*dfreq;
-		centerfr = (float32)rint((float64)(filt_edge[whichfilt+1]/dfreq))*dfreq;
-		rightfr = (float32)rint((float64)(filt_edge[whichfilt+2]/dfreq))*dfreq;
-	*/
-	
-	leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-	centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
-	rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	if (MEL_FB->doublewide==ON){
+	    leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	    centerfr = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	    rightfr  = (float32)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq; 
+	}
+	else{
+	    leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	    centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
+	    rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	}
 	
 	MEL_FB->left_apex[whichfilt] = leftfr;
 	
@@ -169,12 +192,12 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
 
 float32 fe_mel(float32 x)
 {
-    return(2595.0*(float32)log10(1.0+x/700.0));
+    return((float32) 2595.0*(float32)log10(1.0+x/700.0));
 }
 
 float32 fe_melinv(float32 x)
 {
-    return(700.0*((float32)pow(10.0,x/2595.0) - 1.0));
+    return((float32) 700.0*((float32)pow(10.0,x/2595.0) - (float32) 1.0));
 }
 
 
@@ -520,7 +543,7 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
     if (P->WINDOW_LENGTH != 0) 
 	FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
     else 
-	FE->WINDOW_LENGTH = DEFAULT_WINDOW_LENGTH;
+	FE->WINDOW_LENGTH = (float32) DEFAULT_WINDOW_LENGTH;
     
     if (P->FB_TYPE != 0) 
 	FE->FB_TYPE = P->FB_TYPE;
@@ -530,7 +553,7 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
     if (P->PRE_EMPHASIS_ALPHA != 0) 
 	FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
     else 
-	FE->PRE_EMPHASIS_ALPHA = DEFAULT_PRE_EMPHASIS_ALPHA;
+	FE->PRE_EMPHASIS_ALPHA = (float32) DEFAULT_PRE_EMPHASIS_ALPHA;
  
     if (P->NUM_CEPSTRA != 0) 
 	FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
@@ -602,6 +625,13 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
             fflush(stderr); exit(0);
         }
     } 
+
+    if (P->doublebw == ON)
+	MEL->doublewide = ON;
+    else
+	MEL->doublewide = OFF;
+    
+
 }
 
 void fe_print_current(fe_t *FE)
