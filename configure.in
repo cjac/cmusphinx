@@ -141,6 +141,7 @@ src/libs3audio/ad_conf.h
 src/libs3decoder/Makefile
 src/libutil/Makefile
 src/programs/Makefile
+src/tests/Makefile
 scripts/Makefile
 scripts/sphinx3-test
 scripts/sphinx3-test.livepretend

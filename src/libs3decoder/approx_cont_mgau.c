@@ -421,6 +421,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 #endif
   }
 
+#if APPROX_ANALYSE
+  E_INFO("time: %d , sen: %d, gau: %d\n",frame, ns, ng);
+#endif
     
   g->frm_sen_eval = ns;
   g->frm_gau_eval = ng;
