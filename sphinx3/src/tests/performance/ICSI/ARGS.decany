@@ -8,8 +8,8 @@
 -lm /net/scrappy/usr2/archan/training/ICSI_Phase3/CorpusTraining/ICSI_Phase3/Corpus/lm/ICSI71.lm1_091604.arpa.DMP 
 -feat 1s_c_d_dd 
 -beam 1e-80 
--nwbeam 1e-40 
+-wbeam 1e-40 
 -agc none 
 -varnorm no 
 -lw 10.5 
--inspen 0.02 
+-wip 0.02 

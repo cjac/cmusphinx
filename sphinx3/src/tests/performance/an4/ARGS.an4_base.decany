@@ -8,8 +8,8 @@
 -agc	none
 -varnorm	no
 -cmn	current
--inspen	0.2
+-wip	0.2
 -feat 1s_c_d_dd
 -beam 1e-80
--nwbeam 1e-40
+-wbeam 1e-40
 

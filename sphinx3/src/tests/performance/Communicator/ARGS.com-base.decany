@@ -8,7 +8,7 @@
 -lw 9.5
 -feat s3_1x39 
 -beam 1e-80 
--nwbeam 1e-40 
+-wbeam 1e-40 
 -lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
 -agc none 
 -varnorm no 

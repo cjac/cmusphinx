@@ -1,5 +1,5 @@
 -lw   21
 -beam     1e-60
--nwbeam   1e-35
+-wbeam   1e-35
 -lm     /lab/speech/sphinx4/data/wsj0/bcb20onp.Z.DMP
 
