@@ -78,3 +78,7 @@ tidigits-quick:
 	rm -f gmake-tidigits-quick.results
 	$(BINDIR)/batchmetrics ./tidigits-quick.ctl /lab/speech/sphinx3j/data/tidigits/test/raw ARGS > gmake-tidigits-quick.results
 
+tidigits-quick-adult:
+	rm -f gmake-tidigits-quick-adult.results
+	$(BINDIR)/batchmetrics ./tidigits-quick-adult.ctl /lab/speech/sphinx3j/data/tidigits/test/raw ARGS > gmake-tidigits-quick-adult.results
+
