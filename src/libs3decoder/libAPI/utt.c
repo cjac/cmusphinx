@@ -149,7 +149,14 @@ void utt_begin (kb_t *kb)
     int32 n, pred;
     
     kbc = kb->kbcore;
-    
+
+    kb->utt_hmm_eval = 0;
+    kb->utt_sen_eval = 0;
+    kb->utt_gau_eval = 0;
+    kb->utt_cisen_eval = 0;
+    kb->utt_cigau_eval = 0;
+    kb->nfr=0;
+
     /* Insert initial <s> into vithist structure */
     pred = vithist_utt_begin (kb->vithist, kbc);
     assert (pred == 0);	/* Vithist entry ID for <s> */
@@ -430,6 +437,12 @@ void utt_word_trans (kb_t *kb, int32 cf)
 }
 
 
+/* Determine which set of phonemes should be active in next stage
+   using the lookahead information*/
+/* Notice that this loop can be further optimized by implementing
+   it incrementally*/
+/* ARCHAN and JSHERWAN Eventually, this is implemented as a function */
+
 void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 {
   int32 nState;
@@ -515,7 +528,7 @@ void computePhnHeur(mdef_t* md,kb_t* kb,int32 heutype)
 
 }
 
-
+#if 0
 /* Invoked by ctl_process and ctl_process_dyn_lm in libs3decoder/corpus.c */
 /* Arthur: I hope that this function is less than 500 lines. This will allow
    next programmer still able to read it. 
@@ -538,7 +551,6 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   int32 n_hmm_eval, frm_nhmm, hb, pb, wb;
 
   FILE *hmmdumpfp;
-  float32 factor;
 
   int32 pheurtype;
   
@@ -566,18 +578,20 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
   
-  factor = (float32) log_to_logs3_factor();    
   for (i = 0; i < kb->hmm_hist_bins; i++)
     kb->hmm_hist[i] = 0;
   
   utt_begin (kb);
   
   n_hmm_eval = 0;
+
+  kb->utt_hmm_eval = 0;
   kb->utt_sen_eval = 0;
   kb->utt_gau_eval = 0;
   kb->utt_cisen_eval = 0;
   kb->utt_cigau_eval = 0;
-  
+  kb->nfr=0;
+
   /* initialization of ci-phoneme look-ahead scores */
   ptmr_start (&(kb->tm_sen));
 
@@ -586,19 +600,16 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   kb->pl_win_efv = kb->pl_win > kb->nfr ? kb->nfr : kb->pl_win;
   kb->pl_win_strt=0;
 
-  /*  feat_print(kb->kbcore->fcb,kb->feat,kb->nfr,stderr);*/
-  
+  /* Compute the first pl_win_efv number of frames */
   for(f = 0; f < kb->pl_win_efv; f++){
     /*Compute the CI phone score at here */
-
     kb->cache_best_list[f]=MAX_NEG_INT32;
 
     approx_cont_mgau_ci_eval(kb->kbcore,kb->fastgmm,kb->kbcore->mdef,kb->feat[f][0],kb->cache_ci_senscr[f]);
     kb->utt_cisen_eval += mgau_frm_cisen_eval(kb->kbcore->mgau);
     kb->utt_cigau_eval += mgau_frm_cigau_eval(kb->kbcore->mgau);
 
-    /*    E_INFO("%d %d\n",kb->utt_cisen_eval,kb->utt_cigau_eval);*/
-
+    /* Update the best for this frame */
     for(i=0;i==mdef->cd2cisen[i];i++){
       if(kb->cache_ci_senscr[f][i]>kb->cache_best_list[f])
 	kb->cache_best_list[f]=kb->cache_ci_senscr[f][i];
@@ -611,7 +622,6 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   for (f = 0; f < kb->nfr; f++) {
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(kb->tm_sen));
-
   
     /* Find active senones and composite senones, from active lextree nodes */
 
@@ -633,20 +643,11 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
       /* Add in senones needed for active composite senone-sequences */
       dict2pid_comsseq2sen_active (d2p, mdef, kb->comssid_active, kb->sen_active);
     }
-
     
     /* Always use the first buffer in the cache*/
     /* Remember, this function will always back off to the simplest
        GMM computation by default.  So don't worry about
        fast-computation/adaptation issues :-)*/
-
-#if _DEBUG_GSCORE_
-  for(i=0;i<mgau_veclen(kb->kbcore->mgau);i++){
-    fprintf(stderr,"%f ",kb->feat[f][0][i]);
-  }
-  fprintf(stderr,"\n");
-  fflush(stderr);
-#endif
   
     approx_cont_mgau_frame_eval(kb->kbcore,
 				kb->fastgmm,
@@ -670,11 +671,6 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     ptmr_start (&(kb->tm_srch));
 
     /* Compute phoneme heuristics */
-    /* Determine which set of phonemes should be active in next stage
-       using the lookahead information*/
-    /* Notice that this loop can be further optimized by implementing
-       it incrementally*/
-    /* ARCHAN and JSHERWAN Eventually, this is implemented as a function */
   
     if(pheurtype!=0) computePhnHeur(mdef,kb,pheurtype);
   
@@ -694,10 +690,6 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
       if (bestwordscr < lextree->wbest)
 	bestwordscr = lextree->wbest;
 
-#if 0
-      E_INFO("lextree->best %d\n",lextree->best);
-      E_INFO("best score %d at time %d, tree %d: af compute repl.\n",besthmmscr,f,i);
-#endif
       n_hmm_eval += lextree->n_active;
       frm_nhmm += lextree->n_active;
     }
@@ -706,7 +698,6 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 	      f, besthmmscr);
     }
     kb->hmm_hist[frm_nhmm / kb->hmm_hist_binsize]++;
-
   
     /* This part should be written as functions */
     /* Set pruning threshold depending on whether number of active HMMs within limit */
@@ -843,10 +834,40 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 
 
 }
+#endif
+
+void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
+{
+  kb_t *kb;
+  kbcore_t *kbcore;
+  int32 num_decode_frame;
+  int32 total_frame;
+  FILE *hmmdumpfp;
+  
+  num_decode_frame=0;
+  E_INFO("Processing: %s\n", uttid);
+
+  kb = (kb_t *) data;
+  kbcore = kb->kbcore;
+  kb->uttid = uttid;
+
+  hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
 
 
-#if 1
-/* ARCHAN: The speed up version of the function */
+  
+  /* Read mfc file and build feature vectors for entire utterance */
+  total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
+			    sf, ef, kb->feat, S3_MAX_FRAMES);
+
+  utt_begin (kb);
+  
+  utt_decode_block(kb->feat,total_frame,&num_decode_frame,kb,hmmdumpfp);
+  
+  utt_end (kb);
+
+  kb->tot_fr += kb->nfr;
+
+}
 
 
 /* This function decodes a block of incoming feature vectors.
@@ -1148,5 +1169,4 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   
   *curfrm = frmno;
 }
-#endif
 
