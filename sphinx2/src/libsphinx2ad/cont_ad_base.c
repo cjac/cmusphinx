@@ -1025,7 +1025,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
       r->sps = CONT_AD_SPS;
 
     /* Set samples/frame such that when sps=16000, spf=256 */
-    r->spf = (r->sps * 256) / 16000;
+    r->spf = (r->sps * 256) / CONT_AD_SPS;
     r->adbufsize = CONT_AD_ADFRMSIZE * r->spf;
 
     if ((r->adbuf = malloc (r->adbufsize * sizeof(*r->adbuf))) == NULL) {
