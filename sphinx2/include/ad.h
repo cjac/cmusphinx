@@ -11,23 +11,9 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2000/02/01  22:34:06  pjf
- * Fixed bug where certain soundcards would be unable to set an exact sampling
- * rate (eg, 16000Hz), but something close to it (eg, 16032Hz).  This is fairly
- * harmless, but causes sphinx to die with an error.
- * 
- * Sound-card sampling rates are now accepted provided they are within a
- * certain tolerance of the desired samplin rate (by default, 10%).  This
- * value can be set by changing the constant SAMPLERATE_TOLERANCE
- * in include/ad.h.
- * 
- * Revision 1.2  2000/01/28 23:42:14  awb
+ * Revision 1.4  2000/06/29  14:15:01  lenzo
  * *** empty log message ***
- *
- * Revision 1.1.1.1  2000/01/28 22:09:07  lenzo
- * Initial import of sphinx2
- *
- *
+ * 
  * 
  * 19-Jan-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added AD_ return codes.  Added ad_open_sps_bufsize(), and
@@ -67,12 +53,14 @@
 
 #include <audio/Alib.h>
 
+#elif (__sgi)
+#include <dmedia/audio.h>
+
 #endif
 
 
 #define AD_SAMPLE_SIZE		(sizeof(int16))
 #define DEFAULT_SAMPLES_PER_SEC	16000
-#define SAMPLERATE_TOLERANCE	0.10
 
 /* Return codes */
 #define AD_OK		0
@@ -145,17 +133,6 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
-
-#elif (__FreeBSD__)
-
-/* Added by awb@cs.cmu.edu, 28/01/2000: */
-typedef struct {
-    int32 dspFD;	/* Audio device descriptor */
-    int32 recording;
-    int32 sps;		/* Samples/sec */
-    int32 bps;		/* Bytes/sample */
-} ad_rec_t;
-
 #elif (_HPUX_SOURCE)
 
 typedef struct {
@@ -167,6 +144,13 @@ typedef struct {
     int32 bps;		/* Bytes/sample */
 } ad_rec_t;
 
+#elif (__sgi)
+typedef struct {
+    ALport audio;	/* The main audio handle */
+    int32 recording;	/* TRUE iff currently recording */
+    int32 sps;		/* Samples/sec */
+    int32 bps;		/* Bytes/sample */
+} ad_rec_t;
 #else
 
 typedef struct {

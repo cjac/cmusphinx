@@ -62,14 +62,80 @@
 #include <string.h>
 #include <ad.h>
 #include <err.h>
+#include <dmedia/audio.h>
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 
 ad_rec_t *ad_open_sps (int32 samples_per_sec)
 {
-    E_ERROR("A/D library not implemented\n");
-    return NULL;
+  // E_ERROR("A/D library not implemented\n");
+    ad_rec_t *handle;
+    ALpv          pv; 
+    int device  = AL_DEFAULT_INPUT;
+    ALconfig portconfig = alNewConfig(); 
+    ALport port; 
+    int32 sampleRate;
+    long long gainValue = alDoubleToFixed(8.5); 
+    
+    pv.param = AL_GAIN; 
+    pv.sizeIn = 1; 
+    pv.value.ptr = &gainValue; 
+    
+    if (alSetParams(device, &pv, 1)<0) {
+      E_ERROR("setparams failed: %s\n",alGetErrorString(oserror()));
+      return NULL; 
+    }
+    
+
+    pv.param = AL_RATE;
+    pv.value.ll = alDoubleToFixed(samples_per_sec);
+    
+    if (alSetParams(device, &pv, 1)<0) {
+      E_ERROR("setparams failed: %s\n",alGetErrorString(oserror()));
+      return NULL; 
+    }
+    
+    if (pv.sizeOut < 0) {
+      /*
+       * Not all devices will allow setting of AL_RATE (for example, digital 
+       * inputs run only at the frequency of the external device).  Check
+       * to see if the rate was accepted.
+       */
+      E_ERROR("AL_RATE was not accepted on the given resource\n");
+      return NULL; 
+    }
+    
+    if (alGetParams(device, &pv, 1)<0) {
+        E_ERROR("getparams failed: %s\n",alGetErrorString(oserror()));
+     }
+    
+    sampleRate = (int32)alFixedToDouble(pv.value.ll);
+    E_INFO("sample rate is set to %d\n", sampleRate);
+
+
+    if (alSetChannels(portconfig, 1) < 0) {
+      E_ERROR("alSetChannels failed: %s\n",alGetErrorString(oserror()));
+      return NULL; 
+    }
+
+    port = alOpenPort(" Sphinx-II input port", "r", portconfig); 
+
+    if (!port) {
+      E_ERROR("alOpenPort failed: %s\n", alGetErrorString(oserror()));
+      return NULL; 
+    }
+    if ((handle = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
+      E_FATAL("calloc(%d) failed\n", sizeof(ad_rec_t));
+
+    handle->audio = port; 
+    handle->recording = 0;
+    handle->sps = sampleRate;
+    handle->bps = sizeof(int16);
+
+    alFreeConfig(portconfig); 
+
+    return handle;
 }
 
 
@@ -81,23 +147,35 @@ ad_rec_t *ad_open ( void )
 
 int32 ad_start_rec (ad_rec_t *r)
 {
-    return -1;
+    return 0;
 }
 
 
 int32 ad_stop_rec (ad_rec_t *r)
 {
-    return -1;
+  /* how do we start/stop recording on an sgi? */
+    return 0;
 }
 
 
 int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 {
-    return -1;
+  int32 length = alGetFilled(r->audio);
+  
+  if (length > max) {
+    alReadFrames(r->audio, buf, max);
+    return max; 
+  } else {
+    alReadFrames(r->audio, buf, length); 
+    return length;
+  }
 }
 
 
 int32 ad_close (ad_rec_t *r)
 {
-    return 0;
+  if (r->audio) 
+    alClosePort(r->audio); 
+  free(r); 
+  return 0;
 }

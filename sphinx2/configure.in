@@ -100,4 +100,3 @@ chmod +x scripts/sphinx2-test
 chmod +x scripts/sphinx2-phone
 chmod +x scripts/stress2sphinx
 chmod +x scripts/sphinx2-align
-
