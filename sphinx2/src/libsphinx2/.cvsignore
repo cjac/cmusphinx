@@ -1,5 +1,6 @@
 *.lo
 Makefile
+Makefile.in
 .deps
 .libs
 libsphinx2.la
