@@ -157,8 +157,6 @@ src/tests/regression/test_livepretend.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_case/Makefile
 scripts/Makefile
-scripts/sphinx3-test
-scripts/sphinx3-test.livepretend
 scripts/sphinx3-simple
 model/Makefile
 model/hmm/Makefile
@@ -171,5 +169,4 @@ model/lm/an4/args.an4.test
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
-chmod +x scripts/sphinx3-test
 chmod +x src/tests/regression/test_livepretend.sh
