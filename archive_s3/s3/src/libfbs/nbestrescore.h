@@ -55,7 +55,7 @@
 
 
 #include <libutil/libutil.h>
-#include <search.h>
+#include "search.h"
 
 
 int32 alpha_start_utt (hyp_t **hyplist, int32 nhyp, char *uttid);
