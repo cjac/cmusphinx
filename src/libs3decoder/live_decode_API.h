@@ -128,6 +128,10 @@ extern "C" {
 #define LD_ERROR_INVALID_STATE			-0x04
 #define LD_ERROR_INTERNAL			-0x08
 
+#define LD_STATE_IDLE				0
+#define LD_STATE_DECODING			1
+#define LD_STATE_FINISHED			2
+
 typedef struct
 {
   /*
