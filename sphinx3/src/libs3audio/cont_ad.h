@@ -160,7 +160,10 @@ typedef struct {
     int32 thresh_sil;	/* Frame considered to be silence if power <= thresh_sil
 			   (for transitioning from SPEECH to SILENCE state) */
     int32 thresh_update;/* #Frames before next update to pow_hist/thresholds */
-
+    float32 adapt_rate;	/* Linear interpolation constant for rate at which noise level adapted
+			   to each estimate;
+			   range: 0-1; 0=> no adaptation, 1=> instant adaptation */
+    
     int32 state;	/* Current state, SILENCE or SPEECH */
     int32 win_startfrm;	/* Where next analysis window begins */
     int32 win_validfrm;	/* #Frames currently available from win_startfrm for analysis */
@@ -244,7 +247,8 @@ int32 cont_ad_set_thresh (cont_ad_t *cont,	/* In: Object ptr from cont_ad_init *
 int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
 			  int32 min_noise, int32 max_noise,
 			  int32 winsize, int32 speech_onset, int32 sil_onset,
-			  int32 leader, int32 trailer);
+			  int32 leader, int32 trailer,
+			  float32 adapt_rate);
 
 /*
  * PWP 1/14/98 -- get the changable params.
@@ -256,7 +260,8 @@ int32 cont_ad_set_params (cont_ad_t *r, int32 delta_sil, int32 delta_speech,
 int32 cont_ad_get_params (cont_ad_t *r, int32 *delta_sil, int32 *delta_speech,
 			  int32 *min_noise, int32 *max_noise,
 			  int32 *winsize, int32 *speech_onset, int32 *sil_onset,
-			  int32 *leader, int32 *trailer);
+			  int32 *leader, int32 *trailer,
+			  float32 *adapt_rate);
 
 /*
  * Reset, discarding any accumulated speech segments.

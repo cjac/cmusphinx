@@ -79,10 +79,11 @@
 ad_rec_t *ad_open_sps (int32 sps) {
     ad_rec_t *handle;
     int32 dspFD, mixerFD;
-    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN;
+    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN, devMask=0;
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;
+    char *dev;
     int32 numberChannels=1;
     
     if (sps != DEFAULT_SAMPLES_PER_SEC) {
@@ -98,11 +99,14 @@ ad_rec_t *ad_open_sps (int32 sps) {
     sampleRate = sps;
     
     /* Used to have O_NDELAY. */
-    if((dspFD = open ("/dev/dsp", O_RDONLY))<0){
+    dev = "/dev/dsp";
+    if((dspFD = open (dev, O_RDONLY))<0){
 	if (errno == EBUSY)
-	    fprintf(stderr, "Audio device busy\n");
+	    fprintf(stderr, "%s(%d): Audio device(%s) busy\n",
+		    __FILE__, __LINE__, dev);
 	else
-	    fprintf(stderr, "Failed to open audio device: %s\n", strerror(errno));
+	    fprintf(stderr, "%s(%d): Failed to open audio device(%s): %s\n",
+		    __FILE__, __LINE__, dev, strerror(errno));
 	return NULL;
     }
     
@@ -205,8 +209,8 @@ ad_rec_t *ad_open_sps (int32 sps) {
     }
 
     /* Set the same gain for left and right channels. */
-
     inputGain = inputGain << 8 | inputGain;
+
     if(ioctl(mixerFD, SOUND_MIXER_WRITE_MIC, &inputGain)<0){
       fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
               inputGain, strerror(errno));
