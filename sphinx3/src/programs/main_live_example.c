@@ -143,7 +143,9 @@ int main (int argc, char *argv[])
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
 
-
+    if (argc != 2) {
+	E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
+    }
     argsfile = argv[1];
     live_initialize_decoder(argsfile);
 
