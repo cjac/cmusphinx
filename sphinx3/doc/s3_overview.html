@@ -29,21 +29,70 @@
                  
 <h2><u>What's Around and Where</u></h2>
  
-<table border="1" cellpadding="6">
+<table border="1" cellpadding="7">
         <tbody>
      <tr>
        <th>Name</th>
        <th>Remarks</th>
      </tr>
          <tr>
-       <td>Sphinx-3.3 (fast decoder)</td>
+       <td>Sphinx-3.5 (Live-mode APIs, Speaker Adaptation and Code Convergence)</td>
   	<td> 	         
       <ul>
   	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, release available.</li>
+  	    <li>Based on Sphinx-3.4 and Sphinx 3.0. </li>
+	    <li>Live-mode APIs are implemented an thoroughly tested </li>
+	    <li>Speaker adaptation based on single regression class
+	    is implemented. </li>
+	    <li> 4 tools of s3.0 are now incorporated in Sphinx 3.x 
+	    <ul>
+  		<li><code>align (s3align in 3.0)</code>: Forced alignment</li>
+  		<li><code>allphone (s3allphine in 3.0)</code>: Allphone decoding</li>
+  		<li><code>astar (s3astar in 3.0)</code>: A* search, nbest generation</li>
+  		<li><code>dag (s3dag in 3.0)</code>: Shortest-path search</li>
+	    </ul>
+	    </li>
+	    <li> The feature extraction libraries of sphinx 3 is now EXACTLY the same as SphinxTrain</li>
+	    <li> Corresponding changes in SphinxTrian </li>
+	    <li> <ul> Two new tools are introduced: 
+	    <li><code> mllr_solve </code>: compute the regression matrix based on MLLR algorithm. </li>
+	    <li><code> mllr_transform </code>: given a regression matrix, this program converts the mean based on linear transformation.</li>
+	    </ul> 
+	    </li> 
+	    <li> The command line interface of all SphinxTrain's tools are now unified. 
+	    </li>
+      </ul>
+  	</td>
+        </tr>
+         <tr>
+       <td>Sphinx-3.4 (Fast GMM computation)</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.4</b> in cvs tree.</li>
+  	    <li>Based on Sphinx-3.3, Fast GMM computation is implemented
+          <ul>
+  		<li>frame down-sampling</li>
+  		<li>CI-based GMM selection</li>
+  		<li>VQ-based and SVQ-based Gaussian Selection</li>
+  	        <li>Support of SVQ with arbitrary number of sub-vectors.</li>
+          </ul>
+  	    </li>
+  	    <li> Phoneme look-ahead </li>
+	    <li> Support class-based LM and multiple LM </li>
+	    </li>
+      </ul>
+  	</td>
+        </tr>
+
+         <tr>
+       <td>Sphinx-3.3 (fast decoder)</td>
+  	<td> 	         
+      <ul>
+  	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3.3</b> in cvs tree.</li>
   	    <li>Fast Sphinx-3 decoder using lextree organization: 	          
       
           <ul>
-  		<li>5-10x real time speed on large vocabulary tasks</li>
+  		<li>5-10x real time speed on large vocabulary tasks (measured at 1999)</li>
   		<li>Continuous density acoustic models only</li>
   		<li>Batch-Mode or live operation</li>
   	                 
@@ -76,7 +125,7 @@
       <ul>
   	    <li>Location: <a href="http://sourceforge.net/projects/cmusphinx/">Open source</a>, module <b>archive_s3/s3</b> in cvs tree.</li>
   	    <li>Original Sphinx-3 decoder</li>
-  	    <li>Slow; 50-100x real time speed on large vocabulary tasks</li>
+  	    <li>Slow; 50-100x real time speed on large vocabulary tasks (measured at 1999)</li>
   	    <li>Any kind of acoustic model (discrete, semi-continuous, continuous, 
 others)</li>
   	    <li>Major applications: 	                 
