@@ -99,6 +99,7 @@ typedef struct{
   char *classname[NUMCLASSES];
   int32 windowlen;
   mgau_model_t *g ; 
+  s3cipid_t classmap[NUMCLASSES];
 
   float32 priors[NUMCLASSES];
 
@@ -121,7 +122,8 @@ typedef struct{
 
 void majority_class(class_t* CLASSW, int *classcount, int frame_count);
 
-class_t * classw_initialize(char* meanfile,   /* The mean file */
+class_t * classw_initialize(char *mdeffile,  /* The model def file */
+			    char* meanfile,   /* The mean file */
 			    char *varfile,       /* The variance file */
 			    float64 varfloor,    /* variance floor */
 			    char* mixwfile,         /* The mixture weight */
@@ -132,9 +134,10 @@ class_t * classw_initialize(char* meanfile,   /* The mean file */
 
 void classw_free(class_t *CLASSW);
 
-int classify (mgau_model_t *g,  /* multiple mixture models */
-	      float *frame,     /* the frame */
-	      float priors[NUMCLASSES]); /* The prior of each classes */
+int classify (float *frame,     /* the frame */
+	      mgau_model_t *g,  /* multiple mixture models */
+	      float priors[NUMCLASSES], /* The prior of each classes */
+	      s3cipid_t *map);  /* Map between ci phones and classes */
 
 int postclassify (int *window, int windowlen, int *wincap, int myclass);
 

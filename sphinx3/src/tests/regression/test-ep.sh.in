@@ -15,6 +15,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ep 
 -upperf 5400 \
 -lowerf 130 \
 -blocksize 262500 \
+-mdef @abs_top_srcdir@/model/ep/ep.mdef \
 -mean @abs_top_srcdir@/model/ep/means \
 -var @abs_top_srcdir@/model/ep/variances \
 -mixw @abs_top_srcdir@/model/ep/mixture_weights \

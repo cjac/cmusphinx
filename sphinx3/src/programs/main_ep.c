@@ -233,6 +233,10 @@ static arg_t arg[] = {
     ARG_INT32,
     "0",
     "Show input filenames" },
+  { "-mdef",
+    ARG_STRING,
+    NULL,
+    "The model definition file" },
   { "-mean",
     ARG_STRING,
     NULL,
@@ -371,7 +375,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
 	  fr_cep[i] = cepblock[frame_count][i];			
 	  cmn_prior(&fr_cep, varnorm, 1, DIMENSIONS, endutt);*/
 	
-	myclass = classify (mgau, FEW->fr_cep, CLASSW->priors);
+	myclass = classify (FEW->fr_cep, mgau, CLASSW->priors, CLASSW->classmap);
 	
 	if (CLASSW->postprocess == 1)
 	  {
@@ -474,7 +478,7 @@ int32 main(int32 argc, char **argv)
   ptmr_init(&tm_class);
 
   FEW = few_initialize();
-  CLASSW = classw_initialize(cmd_ln_str("-mean"),
+  CLASSW = classw_initialize(cmd_ln_str("-mdef"), cmd_ln_str("-mean"),
 			     cmd_ln_str("-var"), cmd_ln_float32("-varfloor"),
 			     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"),
 			     TRUE, ".cont.");
