@@ -7,9 +7,8 @@ LIVEDECSRCS = parse_args_file.c \
 
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) 
 
-#bin_PROGRAMS = 
-noinst_PROGRAMS = batchmetrics \
-		  lm_test \
+
+noinst_PROGRAMS = lm_test \
 		  lm_utt_test \
 		  dumpfrontend  
 
@@ -20,8 +19,8 @@ noinst_HEADERS = cmd_ln_args.h \
 	live_dump.h \
 	metrics.h
 
-dumpfrontend_SOURCES = dump_frontend.c \
-			${LIVEDECSRCS}
+#dumpfrontend_SOURCES = dump_frontend.c \
+#			${LIVEDECSRCS}
 
 
 batchmetrics_SOURCES = batch_metrics.c \
