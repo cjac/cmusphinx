@@ -94,8 +94,8 @@ typedef struct feat_s {
 			   Return value: 0 if successful, -ve otherwise. */
   cmn_t* cmn_struct;           /* Structure that stores the temporary variables for cepstral 
 			   means normalization*/
-  /*  float32 **cepbuf;
-      float32 **tmpcepbuf;*/
+  float32 **cepbuf;
+  float32 **tmpcepbuf;
   int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
   int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
 
