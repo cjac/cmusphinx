@@ -335,13 +335,13 @@ void kb_init (kb_t *kb)
     kb->svq4svq=cmd_ln_int32("-svq4svq");
     E_INFO("SVQ would be used as Gaussian Score ?= %d\n",kb->svq4svq);
 
-    kb->ci_pbeam=-1*logs3(cmd_ln_float32("-ci_pbeam"));
+    kb->ci_pbeam=-1*logs3(cmd_ln_float64("-ci_pbeam"));
     E_INFO("CI phone beam to prune the number of parent CI phones in CI-base GMM Selection = %d\n",kb->ci_pbeam);
     if(kb->ci_pbeam>10000000){
       E_INFO("Virtually no CI phone beam is applied now. (ci_pbeam>1000000)\n");
     }
     
-    kb->wend_beam=-1*logs3(cmd_ln_float32("-wend_beam"));
+    kb->wend_beam=-1*logs3(cmd_ln_float64("-wend_beam"));
     E_INFO("Word-end pruning beam: %d\n",kb->wend_beam);
 
     kb->pl_window=cmd_ln_int32("-pl_window");
@@ -349,7 +349,7 @@ void kb_init (kb_t *kb)
 
 	kb->pl_window_start=0;
 
-    kb->pl_beam=logs3(cmd_ln_float32("-pl_beam"));
+    kb->pl_beam=logs3(cmd_ln_float64("-pl_beam"));
     E_INFO("Phoneme look-ahead beam = %d\n",kb->pl_beam);
 
     for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) 
