@@ -10,7 +10,7 @@ echo "sphinx3-test"
 echo "Run CMU Sphinx-3 in Batch mode to decode an example utterance."
 echo " "
 
-$S3BATCH ${CTLFILE} ${TASK} ${ARGS}  2>&1 an4.log
+$S3BATCH ${CTLFILE} ${TASK} ${ARGS} > an4.log  2>&1
 echo ""
 grep FWDVIT an4.log
 
