@@ -186,8 +186,8 @@ test-astar:
 	    -nbestdir . 
 	@gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
 	@if(diff ./pittsburgh.nbest $(top_srcdir)/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
-	then echo "ASTAR PASSED"; else \
-	echo "ASTAR FAILED"; fi
+	then echo "ASTAR test PASSED"; else \
+	echo "ASTAR test FAILED"; fi
 
 test-dag:
 	@echo "DAG TEST"
