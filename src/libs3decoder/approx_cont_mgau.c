@@ -64,13 +64,18 @@ int32 most_recent_best_cid=-1;
 
   /** \file approx_cont_mgau.c
    * \brief Implementation detail of approx_cont_mgau
-      \warning You need to have some knowledge in fast GMM computation in order to modifed this function. 
+     \warning You need to have some knowledge in fast GMM computation in order to modifed this function. 
       
   */
 
-/** Decide whether this frame should be skip or not. */
+/** Decide whether this frame should be skip or not. 
+    @return 1 if it is skipped, 0 if it is not.
+ */
 
-int32 approx_isskip(int32 frame, fast_gmm_t* fg, int32 best_cid)
+int32 approx_isskip(int32 frame, /**< In: The frame index */
+		    fast_gmm_t* fg,  /**< In: The fast GMM computation structure */
+		    int32 best_cid /**< In: best code book index. Obtained from Gaussian Selector. Rarely used. */
+		    )
 {
 
   int32 ds_ratio;
@@ -156,16 +161,19 @@ int32 approx_isskip(int32 frame, fast_gmm_t* fg, int32 best_cid)
    tried to detect them and avoid them by asserting the score and
    checked them at the end of a routines. 
    
+   @see approx_cont_mgau_frame_eval
+   
 */
-int32 approx_mgau_eval (gs_t* gs,
-			subvq_t* svq,
-			mgau_model_t* g,
-			fast_gmm_t * fastgmm,
-			int32 s, /*senone index*/
-			int32 *senscr,
-			float32 *feat,
-			int32 best_cid,
-			int32 svq_beam
+int32 approx_mgau_eval (gs_t* gs, /**< In: The Gaussian Selector. If Null, Gaussian Selection is not used.*/
+			subvq_t* svq, /**< In: Sub VQ map, If Null, SVQ is not used.*/
+			mgau_model_t* g, /**< In: The set of senones */
+			fast_gmm_t * fastgmm, /**< In: The structure fast GMM computation */
+			int32 s, /**< In: senone index*/
+			int32 *senscr, /**< Out: The array of senone scores */
+			float32 *feat, /**< In: feature vector */
+			int32 best_cid, /**< In: The best codebok index used in Gaussian Selector*/
+			int32 svq_beam, /**< In: Beam for Sub-vector quantizor */
+			int32 fr /**< In: the frame number in question */
 			) 
 {
   int32 ng=0;
@@ -195,11 +203,11 @@ int32 approx_mgau_eval (gs_t* gs,
   fprintf(stderr,"\n");
   fflush(stderr);
   E_INFO("Full computation: Idx %d using subvq, Senscr %d ng %d\n",s,senscr[s],ng);
-  senscr[s] = mgau_eval (g, s, NULL, feat);
+  senscr[s] = mgau_eval (g, s, NULL, feat, fr, 1);
   E_INFO("Full computationIdx %d using normal, Senscr %d ng %d\n",s,senscr[s],ng);
   senscr[s] = subvq_mgau_eval(g, svq, s, mgau_n_comp(g,s),mgau_sl);
   E_INFO("Partial Computation: Idx %d using subvq, Senscr %d ng %d\n",s,senscr[s],ng);
-  senscr[s] = mgau_eval (g, s, mgau_sl, feat);
+  senscr[s] = mgau_eval (g, s, mgau_sl, feat,fr,1);
   E_INFO("Partial Computation: Idx %d using normal, Senscr %d ng %d\n",s,senscr[s],ng)
 #endif
 
@@ -217,7 +225,7 @@ int32 approx_mgau_eval (gs_t* gs,
   if(svq&&fastgmm->svq4svq)
     senscr[s] = subvq_mgau_eval(g, svq, s, mgau_n_comp(g,s),mgau_sl);
   else
-    senscr[s] = mgau_eval (g, s, mgau_sl, feat);
+    senscr[s] = mgau_eval (g, s, mgau_sl, feat, fr, 1);
 
   /*This routine safe guard the computation such that no abnomality will occur */
   if(senscr[s] < S3_LOGPROB_ZERO+100000){ 
@@ -237,7 +245,7 @@ int32 approx_mgau_eval (gs_t* gs,
       if(svq&&fastgmm->svq4svq)
 	senscr[s] = subvq_mgau_eval(g, svq, s, mgau_n_comp(g,s),NULL);
       else
-	senscr[s] = mgau_eval (g, s, NULL, feat);
+	senscr[s] = mgau_eval (g, s, NULL, feat, fr, 1);
 
     }
   }
@@ -255,14 +263,17 @@ int intcmp(const void *v1, const void *v2){
 /** This function compute the dynamic beam using histogram-based CI
     senone evaluation. This will probably be another paper on speed
     up.
+    @see approx_cont_mgau_frame_eval
+    @see approx_cont_mgau_ci_eval
   */
-int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
-				 fast_gmm_t *fastgmm,
-				 mgau_model_t *g,
-				 int32* ci_occ,
-				 int32* sen_active,
-				 int32* cache_ci_senscr,
-				 s3senid_t *cd2cisen
+
+int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef, /**< In: model definition */
+				  fast_gmm_t *fastgmm,  /**< In: fast gmm computasion structure. */
+				  mgau_model_t *g, /**< In: Gaussian distribution */
+				  int32* ci_occ,  /**< In/Out: An array of occupancies of ci senones*/
+				  int32* sen_active, /**< In: An array of activeness of senones */
+				 int32* cache_ci_senscr, /**< In: CD senone score, the user should precompute it using approx_cong_mgau_ci_eval*/
+				  s3senid_t *cd2cisen /** In: a mapping from CD senone to CI senone */
 				 )
 {
   int s;
@@ -310,13 +321,16 @@ int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef,
 /** In this function,
   1, It only compute the ci-phones score.
   2, The score is not normalize, this routine is supposed to be used before approx_cont_mgau_frame_eval,
-     The best score is determined by the later function. 
+  The best score is determined by the later function. 
 */
 
-void approx_cont_mgau_ci_eval (kbcore_t *kbc,
-			       fast_gmm_t *fg, 
-			       mdef_t *mdef,
-			       float32 *feat,int32 *ci_senscr)
+void approx_cont_mgau_ci_eval (kbcore_t *kbc, /** In: kbcore */
+			       fast_gmm_t *fg, /** In : The fast GMM structure */
+			       mdef_t *mdef, /** In : model definition */
+			       float32 *feat, /** In : the feature vector */
+			       int32 *ci_senscr, /** Output : ci senone score */
+			       int32 fr /** In : The frame number */
+			       )
 {
   int32 s;
   s3senid_t *cd2cisen;
@@ -345,13 +359,13 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
   if(svq) subvq_gautbl_eval_logs3 (svq, feat);
 
   for (s = 0; mdef_is_cisenone(mdef,s); s++) {
-    n_cig+=approx_mgau_eval (gs,svq,g,fg,s,ci_senscr,feat,best_cid,svq_beam);
+    n_cig+=approx_mgau_eval (gs,svq,g,fg,s,ci_senscr,feat,best_cid,svq_beam, fr);
     n_cis++;
   }
 #else
-
+  /*20050114 Not used */
   for (s = 0; mdef_is_cisenone(mdef,s); s++) {
-    ci_senscr[s] = mgau_eval (g, s, NULL, feat);
+    ci_senscr[s] = mgau_eval (g, s, NULL, feat, fr, 1);
     n_cig+=mgau_n_comp(g,s);
     n_cis++;
   }
@@ -362,80 +376,6 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
   g->frm_ci_gau_eval=n_cig;
 }
 
-/** approx_con_mgau_frame_eval encapsulates all approximations in the
-   Gaussian computation.  This assumes programmers NOT to initialize the
-   senone scores at every frame (FIX me!) before using this function.
-
-   This layer of code controls the optimization performance in Frame
-   Leval and GMM Level.
-
-   Frame Level:
-
-   ^^^^^^^^^^^^
-
-   We select to compute the scores only if it is not similar to the
-   most recently computed frames.  There are multiple ways to
-   configures this.
-
-   Naive down-sampling : Skip the computation one every other n-frames
-
-   Conditional down-sampling : Skip the computation only if the
-   current frame doesn't belong to the same neighborhood of the same
-   frame.  This neighborhood corresponds to the codeword which the
-   feature vector found to be the closest.
-   
-   No matter which down-sampling was used, the following problem will
-   appear in the computation.  Active senones of frame which supposed
-   to be skipped in computation were not computed in the most recently
-   computed frame.  In those case, we chose to compute those senones
-
-   GMM Level:
-
-   ^^^^^^^^^^
-
-   In the implementation of CI-based GMM selection makes use of the
-   fact that in s3.3 , CI models are always placed before all CD
-   models. Hence the following logic is implemented:
-
-   if(it is CI senone)
-      compute score
-   else if (it is CD senone)
-      if the ci-phone beam was not set 
-          compute score
-      else
-          if the CD senone's parent has a score within the beam
-	     compute_score
-	  else CD senone's parent has a score out of the beam
-	     back-off using the parent senone score. 
-
-   About renormalization
-
-   ^^^^^^^^^^^^^^^^^^^^^
-
-   Sphinx 3.4 generally renormalize the score using the best
-   score. Notice that this introduce extra complication to the
-   implementation.  I have separated the logic of computing or not
-   computing the scores.  This will clarify the code a bit.
-   
-   Accounting of senone and gaussian computation
-
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-   This function assumes approx_cont_mgau_ci_eval was run before it,
-   hence at the end the score was added on top of the it.
-   
-   Design
-
-   ^^^^^^ 
-
-   The whole idea of this function is based on my paper on "4-level
-   categorization of GMM computation " which basically describe how
-   different techniques of fast GMM computation should interact with
-   each others.  The current implementation was there to make the
-   code to be as short as possible. I hope that no one will try to make
-   the code to be longer than 500 lines. 
-
-*/
 
 
 
@@ -450,7 +390,6 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 				   ptmr_t *tm_ovrhd)
 {
   int32 s;
-  int32 t;
   int32 best, ns, ng, n_cis,n_cig;
   int32 best_cid;
   int32 is_skip;
@@ -467,6 +406,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 
   int32 total;
   int32 dyn_ci_pbeam;
+  float32 tighten_factor;
+
+  int32 single_el_list[2];
 
   best = MAX_NEG_INT32;
   pbest = MAX_NEG_INT32;
@@ -480,6 +422,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   svq=kbcore_svq(kbc);
   g=kbcore_mgau(kbc);
 
+
+  single_el_list[0]=-1;
+  single_el_list[1]=-1;
   svq_beam=fastgmm->gaus->subvqbeam;  
   mdef=kbc->mdef;
 
@@ -496,39 +441,86 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   else
     dyn_ci_pbeam=fastgmm->gmms->ci_pbeam;
 
+  tighten_factor =fastgmm->gmms->tighten_factor;
+
   ptmr_stop(tm_ovrhd);
 
   is_skip=approx_isskip(frame,fastgmm,best_cid);
   fastgmm->gaus->rec_bstcid=best_cid; 
 
   /* Use the original */
+
+
+#if 0
   for (s = 0; s < g->n_mgau; s++) {
     is_compute = !sen_active || sen_active[s];
     is_ciphone  = mdef_is_cisenone(mdef,s);
 
-#if _DEBUG_GSCORE_
-    E_INFO("Sen active %d, rec_sen_active %d, sen id %d \n",sen_active[s],rec_sen_active[s],s);
+#if 0
+    /*#if _DEBUG_GSCORE_ */
+    if(sen_active[s]){
+      E_INFO("Sen active %d, rec_sen_active %d, sen id %d cisen id %d, best index %d, update time %d\n",sen_active[s],rec_sen_active[s],s,cd2cisen[s], g->mgau[s].bstidx, g->mgau[s].updatetime);
+    }
 #endif
+
     if(!is_skip){ /* Loop handling main computation*/
       /* Compute the score of the CI phone even if it is not active. */
       if(is_ciphone){
 
 	/*Just copied from the cache, we just do accouting here */
-	/*E_INFO("At senone %d, CI phoneme score %d \n",s,cache_ci_senscr[s]);*/
+	/*	E_INFO("At ci senone %d, Compute or not? %d\n",s,is_compute);*/
 	senscr[s]=cache_ci_senscr[s];
 	if (pbest < senscr[s]) pbest = senscr[s];
 	if (best < senscr[s]) best = senscr[s];
 	sen_active[s]=1;
-	/*n_cig+=mgau_n_comp(g,s); *//*Assume all CIs are computed fully*/
-	/*n_cis++;*/
 
       }else{
 	if(is_compute) {
 	  if((senscr[cd2cisen[s]] >= pbest + dyn_ci_pbeam )){
-	    ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam);
+	    ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam,frame);
 	    ns++;
 	  }else {
-	    senscr[s]=senscr[cd2cisen[s]]; /* backoff to CI score, not gaussians computed */
+
+#if 1 /* 3.6 logic: 
+	 Whenever it is possible, CD senone score is backed off to the
+	 score computed by the best matching index. Otherwise, CI
+	 scores will be used.
+       */
+
+/* E_INFO("Senone %d Best Index %d, Best Score %d\n",s, g->mgau[s].bstidx, g->mgau[s].bstscr);*/
+
+	    if(g->mgau[s].bstidx==NO_BSTIDX|| /* If the gaussian was not computed before. or*/
+	       g->mgau[s].updatetime!=frame-1 /* It the gaussian was not updated in last frame */
+	       ){
+ 	       /*Previous frames, senone s is not computed. 
+		 or the best index is not trusted. 
+		 Use CI score in these cases. */
+	      /*E_INFO("USE CI SENONE SCORE at senone %d time %d\n",s,frame);*/
+
+	      senscr[s]=senscr[cd2cisen[s]]; 
+	      
+	    }else{
+	      /*	      assert(rec_sen_active[s]);*/
+	      /*Don't change the bstidx and updatetime*/
+
+	      /*	      approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam,frame);
+			      E_INFO("RECOMPUTE for senone %d USING BEST INDEX %d time %d, exact score %d, ci score %d. \n",s,g->mgau[s].bstidx,frame,senscr[s],senscr[cd2cisen[s]]);*/
+
+	      /*senscr[s]=senscr[s];*/
+
+	      single_el_list[0]=g->mgau[s].bstidx;
+
+	      senscr[s]=mgau_eval(g,s,single_el_list,feat,frame,0); /*Not update the best index in a Gaussian*/
+
+	      /*	      E_INFO("RECOMPUTE for senone %d USING BEST INDEX %d time %d, single Gauss score %d, ci score %d, last ci score %d. \n",s,g->mgau[s].bstidx,frame,senscr[s],senscr[cd2cisen[s]],g->mgau[s].bstscr);*/
+
+	      ng++; /* But don't increase the number of senone compute. It doesn't count. */
+
+	    }
+#endif
+#if 0 /* 3.4 logic: CD senone score backed off to CI senone scores. */
+	    senscr[s]=senscr[cd2cisen[s]]; /* backoff to CI score, no gaussians computed */
+#endif 
 	  }
 	  if (best < senscr[s]) best = senscr[s];
 	}
@@ -538,52 +530,151 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 
     }else{ /* Loop handling no computation*/
       /* All complexity of the skipping loop will be coded here */
-      if(is_compute){
-	if(rec_sen_active[s])
-	  senscr[s]=senscr[s]; /*Yes. No change to the score */
-	else{
-	  rec_sen_active[s]=1;
-	  ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam);
-	  ns++;
+      if(is_ciphone){
+	/*Just copied from the cache, we just do accouting here */
+	/*	E_INFO("At ci senone %d, Compute or not? %d\n",s,is_compute);*/
+	senscr[s]=cache_ci_senscr[s];
+	if (pbest < senscr[s]) pbest = senscr[s];
+	if (best < senscr[s]) best = senscr[s];
+	sen_active[s]=1;
+	
+      }else{
+	if(is_compute){
 
-	  if(senscr[s]>fastgmm->rec_bst_senscr){ 
-	    /* Rescore everything if we are better best scores*/
-	    E_INFO("Re-normalizing the previous score\n");
+	  /*	  E_INFO("dyn_ci_pbeam %d tightened_beam %d\n",dyn_ci_pbeam, (int32)((float32) dyn_ci_pbeam * tighten_factor));*/
+	  if((senscr[cd2cisen[s]] >= pbest + (int32)((float32) dyn_ci_pbeam * tighten_factor))){
+	    ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam,frame);
+	    ns++;
+	    /*E_INFO("RECOMPUTE EXACTLY\n");*/
+	  }else {
 
-	    /*Every thing except the new score are recomputed*/
-	    for (t = 0; t < g->n_mgau; t++) {
-	      if(rec_sen_active[t]&& t!=s ){
-		senscr[t]-=(senscr[s]-fastgmm->rec_bst_senscr);
-	      }
+	    if(g->mgau[s].bstidx==NO_BSTIDX|| /* If the gaussian was not computed before. or*/
+	       g->mgau[s].updatetime!=frame-1 /* It the gaussian was not updated in last frame */
+	       ){
+ 	       /*Previous frames, senone s is not computed. 
+		 or the best index is not trusted. 
+		 Use CI score in these cases. */
+	      /*E_INFO("USE CI SENONE SCORE at senone %d time %d\n",s,frame);*/
+
+	      senscr[s]=senscr[cd2cisen[s]]; 
+	      
+	    }else{
+	      /*	      assert(rec_sen_active[s]);*/
+	      /*Don't change the bstidx and updatetime*/
+	      single_el_list[0]=g->mgau[s].bstidx;
+
+	      senscr[s]=mgau_eval(g,s,single_el_list,feat,frame,1); /*Update the best idx, such that next frames can use it*/
+
+	      /*E_INFO("RECOMPUTE for senone %d USING BEST INDEX %d time %d, single Gauss score %d, ci score %d, last ci score %d. \n",s,g->mgau[s].bstidx,frame,senscr[s],senscr[cd2cisen[s]],g->mgau[s].bstscr);*/
+
+	      ng++; /* But don't increase the number of senone compute. It doesn't count. */
+
 	    }
-	    /*Update the best senone score*/
-	    fastgmm->rec_bst_senscr=senscr[s];
 	  }
+	  if (best < senscr[s]) best = senscr[s];
+	}
+      }
+      rec_sen_active[s]=sen_active[s];
+    }
 
-	  /*Update the new senone score*/
-	  senscr[s]-=fastgmm->rec_bst_senscr;
-	}
-      }
-    }
   }
-  if(!is_skip){
-    for (s = 0; s < g->n_mgau; s++){
-      if(sen_active[s])
-	senscr[s]-=best;
-    }
-  }else{
-   
+
+  for (s = 0; s < g->n_mgau; s++){
+    if(sen_active[s])
+      senscr[s]-=best;
+  }
+
+  /*Don't delete this line, it is very useful in analysing the performance*/
+
+#if APPROX_ANALYSE
+  E_INFO("time: %d , cisen %d, sen: %d, gau: %d\n",frame, n_cis, ns, ng);
+#endif
+
+  g->frm_sen_eval = ns;
+  g->frm_gau_eval = ng;
+  ci_occ=NULL;
+  return best;
+
+#endif
+
+
+#if 1
+  /* If the frame is "skipped", tighten the beam. */
+  if(is_skip) {
+    dyn_ci_pbeam = (int32)((float32) dyn_ci_pbeam * tighten_factor);
+  }
+
+  for (s = 0; s < g->n_mgau; s++) {
+    is_compute = !sen_active || sen_active[s];
+    is_ciphone  = mdef_is_cisenone(mdef,s);
+
 #if 0
-    E_INFO("Best score %d\n",fastgmm->rec_bst_senscr);
-    for(s=0 ;s < g-> n_mgau; s++){
-      if(sen_active[s]){
-	  E_INFO("At the end: Senone %d has scores %d\n",s,senscr[s]);
-	if(senscr[s]>0){
-	  E_FATAL("Something wrong, senone score > 0\n",s,senscr[s]);
-	}
-      }
+    if(sen_active[s]){
+      E_INFO("Sen active %d, rec_sen_active %d, sen id %d cisen id %d, best index %d, update time %d\n",sen_active[s],rec_sen_active[s],s,cd2cisen[s], g->mgau[s].bstidx, g->mgau[s].updatetime);
     }
 #endif
+
+    
+      /* Compute the score of the CI phone even if it is not active. */
+    if(is_ciphone){
+      /*Just copied from the cache, we just do accouting here */
+      /*E_INFO("At senone %d, CI phoneme score %d \n",s,cache_ci_senscr[s]);*/
+      senscr[s]=cache_ci_senscr[s];
+      if (pbest < senscr[s]) pbest = senscr[s];
+      if (best < senscr[s]) best = senscr[s];
+      sen_active[s]=1;
+    }else{
+      if(is_compute) {
+	if((senscr[cd2cisen[s]] >= pbest + dyn_ci_pbeam )){
+	  ng+=approx_mgau_eval (gs,svq,g,fastgmm,s,senscr,feat,best_cid,svq_beam,frame);
+	  ns++;
+	}else {
+
+	  /* 3.6 logic: 
+	     Whenever it is possible, CD senone score is backed off to the
+	     score computed by the best matching index. Otherwise, CI
+	     scores will be used.
+	  */
+	  if(g->mgau[s].bstidx==NO_BSTIDX|| /* If the gaussian was not computed before. or*/
+	     g->mgau[s].updatetime!=frame-1 /* It the gaussian was not updated in last frame */
+	     ){
+	    /*Previous frames, senone s is not computed. 
+	      or the best index is not trusted. 
+	      Use CI score in these cases. */
+#ifdef GAUDEBUG
+	    E_INFO("USE CI SENONE SCORE at senone %d time %d\n",s,frame);
+#endif
+
+	    senscr[s]=senscr[cd2cisen[s]]; 
+	      
+	  }else{
+	    /*Don't change the bstidx and updatetime*/
+	    single_el_list[0]=g->mgau[s].bstidx;
+
+	    /*ARCHAN: Please don't rewrite this two lines. I want to make a contrast between the two situations.*/
+	    if(is_skip)
+	      senscr[s]=mgau_eval(g,s,single_el_list,feat,frame,1); /*Update the best idx, such that next frames can use it*/
+	    else
+	      senscr[s]=mgau_eval(g,s,single_el_list,feat,frame,0); /*Not update the best index in a Gaussian*/
+
+	    ng++; /* But don't increase the number of senone compute. It doesn't count. */
+
+#ifdef GAUDEBUG
+	    E_INFO("RECOMPUTE for senone %d USING BEST INDEX %d time %d, single Gauss score %d, ci score %d, last ci score %d. \n",s,g->mgau[s].bstidx,frame,senscr[s],senscr[cd2cisen[s]],g->mgau[s].bstscr);
+#endif
+	    
+	  }
+	}
+	if (best < senscr[s]) best = senscr[s];
+      }
+    }
+    /*Make a copy to the most recent active list */
+    rec_sen_active[s]=sen_active[s];
+  }
+
+  for (s = 0; s < g->n_mgau; s++){
+    if(sen_active[s])
+      senscr[s]-=best;
   }
 
 
@@ -597,6 +688,8 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   g->frm_gau_eval = ng;
   ci_occ=NULL;
   return best;
+
+#endif
 
 }
 
