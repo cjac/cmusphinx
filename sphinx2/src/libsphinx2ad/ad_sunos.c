@@ -69,7 +69,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "audio_utils.h"
+#include "audio_utils_sunos.h"
 #include "s2types.h"
 #include "ad.h"
 

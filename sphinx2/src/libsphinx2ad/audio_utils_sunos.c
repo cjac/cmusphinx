@@ -63,7 +63,7 @@
 #include	<fcntl.h>
 #include	<stropts.h>
 #include	<errno.h>
-#include	"audio_utils_sun4m.h"
+#include	"audio_utils_sunos.h"
 
 #define		AUDIO_DEF_GAIN	50
 
