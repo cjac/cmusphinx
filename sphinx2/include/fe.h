@@ -38,9 +38,12 @@
  * fe.h
  * 
  * $Log$
- * Revision 1.10  2004/12/10  16:48:55  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.11  2005/02/05  02:15:02  egouvea
+ * Removed fe_process(), never used
  * 
+ * Revision 1.10  2004/12/10 16:48:55  rkm
+ * Added continuous density acoustic model handling
+ *
  *
  */
 
@@ -165,13 +168,12 @@ typedef struct{
 
 /* Interface */
 fe_t *fe_init(param_t const *P);
+
 int32 fe_start_utt(fe_t *FE);
 
 int32 fe_end_utt(fe_t *FE, float32 *cepvector);
 
 int32 fe_close(fe_t *FE);
-
-int32 fe_process(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep );
 
 int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep);
 
