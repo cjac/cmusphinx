@@ -104,7 +104,6 @@ int main (int argc, char *argv[])
     char   *argsfile, *ctlfile, *indir, *filename, *referenceResult;
     char   cepfile[STRLEN];
     char   line[STRLEN], hypothesis[STRLEN];
-    char   *word;
     char   *fileTimer = "file";
 
     partialhyp_t *parthyp;
@@ -468,16 +467,17 @@ int countMatches(char *references[], int r, int numReferences,
  */
 int stringToArray(char *string, char *array[])
 {
-    int i, c;
+    int i, c, length;
 
     i = 0;
+    length = strlen(string);
 
-    if (strlen(string) > 0) {
+    if (length > 0) {
         array[i++] = string;
-        for (c = 0; c < strlen(string); c++) {
+        for (c = 0; c < length; c++) {
             if (string[c] == ' ') {
                 string[c++] = '\0';
-                while (string[c] == '\0') {
+                while (string[c] == ' ') {
                     c++;
                 }
                 array[i++] = &string[c];
