@@ -152,8 +152,17 @@ src/tests/performance/ti46/Makefile
 src/tests/performance/Communicator/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
-src/tests/regression/test_livepretend.sh
-src/tests/regression/test_align.sh
+src/tests/regression/test-livepretend.sh
+src/tests/regression/test-align.sh
+src/tests/regression/test-allphone.sh
+src/tests/regression/test-astar.sh
+src/tests/regression/test-dag.sh
+src/tests/regression/test-decode_anytopo.sh
+src/tests/regression/test-decode.sh
+src/tests/regression/test-ep.sh
+src/tests/regression/test-gausubvq.sh
+src/tests/regression/test-wave2feat.sh
+src/tests/regression/test-cepview.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_case/Makefile
 scripts/Makefile
@@ -169,5 +178,14 @@ model/lm/an4/args.an4.test
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
-chmod +x src/tests/regression/test_livepretend.sh
-chmod +x src/tests/regression/test_align.sh
+chmod +x src/tests/regression/test-livepretend.sh
+chmod +x src/tests/regression/test-align.sh
+chmod +x src/tests/regression/test-allphone.sh
+chmod +x src/tests/regression/test-astar.sh
+chmod +x src/tests/regression/test-dag.sh
+chmod +x src/tests/regression/test-decode_anytopo.sh
+chmod +x src/tests/regression/test-decode.sh
+chmod +x src/tests/regression/test-ep.sh
+chmod +x src/tests/regression/test-gausubvq.sh
+chmod +x src/tests/regression/test-wave2feat.sh
+chmod +x src/tests/regression/test-cepview.sh

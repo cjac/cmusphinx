@@ -38,12 +38,7 @@ CLEANFILES = chan3.mfc \
 	test.out \
 	test-*.out \
 	tmp.out \
-	pittsburgh.littleendian.allp \
-	pittsburgh.littleendian.phseg \
-	pittsburgh.littleendian.phlat \
-	pittsburgh.littleendian.wdseg \
-	pittsburgh.nbest.gz \
-	pittsburgh.nbest
+	pittsburgh.* 
 
 etags:
 	etags `find . -name "*.[ch]"`
@@ -57,233 +52,30 @@ doxygen:
 #######################################################################
 #Session of testing
 #######################################################################
-test-simple : test-livepretend
 
-test: test-simple
 
 # Override the Automake target so that make test-full gets run during
 # distcheck
 check: test-full
 	@:
 
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-cepview 
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview 
+test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview 
 
-test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq-match test-ep-match test-wave2feat test-cepview 
-
-test-ep : test-ep-match
-test-gausubvq : test-gausubvq-match
-
-test-livepretend:
-	$(top_builddir)/src/tests/regression/test_livepretend.sh 
-
-test-align:
-	$(top_builddir)/src/tests/regression/test_align.sh
-
-test-decode:
-	@echo "DECODE TEST"
-	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
-
-	$(LIBTOOL) --mode=execute src/programs/decode \
-	       -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-	       -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-	       -dict $(top_srcdir)/model/lm/an4/an4.dict \
-	       -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-	       -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
-	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
-	       -cepdir $(top_srcdir)/model/lm/an4/ \
-	       -agc none \
-	       -varnorm no \
-	       -cmn current \
-	       -subvqbeam 1e-02 \
-	       -epl 4 \
-	       -fillprob 0.02 \
-	       -feat 1s_c_d_dd \
-	       -lw 9.5 \
-	       -maxwpf 1 \
-	       -beam 1e-40 \
-	       -pbeam 1e-30 \
-	       -wbeam 1e-20 \
-	       -maxhmmpf 1500 \
-	       -wend_beam 1e-1 \
-	       -ci_pbeam 1e-5 \
-	       -ds 2  > $@.out 2>&1
-	@grep "FWDVIT" $@.out 
-	@grep "FWDXCT" $@.out 
-	@if(grep "FWDVIT" $@.out |grep "P I T T S B U R G H" > /dev/null 2>&1); \
-	then echo "DECODE test PASSED" ; else \
-	echo "DECODE test FAILED" ; fi
-
-test-decode_anytopo:
-	@echo "DECODE_ANYTOPO TEST"
-	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
-	$(LIBTOOL) --mode=execute src/programs/decode_anytopo \
-	       -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-	       -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-	       -dict $(top_srcdir)/model/lm/an4/an4.dict \
-	       -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-	       -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-	       -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-	       -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
-	       -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	       -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
-	       -cepdir $(top_srcdir)/model/lm/an4/ \
-	       -agc none \
-	       -varnorm no \
-	       -cmn current \
-	       -feat 1s_c_d_dd \
-	       -lw 9.5 \
-	       -inspen 0.2 \
-               -beam 1e-80 \
-               -nwbeam 1e-40 \
-		 > $@.out 2>&1
-	@grep "FWDVIT" $@.out 
-	@grep "FWDXCT" $@.out 
-
-
-
-test-allphone:
-	@echo "ALLPHONE TEST"
-	@echo "THIS IS JUST A FUNCTION TEST"
-	$(LIBTOOL) --mode=execute src/programs/allphone \
-	    -logbase 1.0003 \
-	    -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-            -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-            -var $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-            -mixw $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-            -tmat $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
-	    -feat 1s_c_d_dd \
-	    -topn 1000 \
-	    -beam 1e-80 \
-	    -senmgau .cont. \
-	    -ctl $(top_srcdir)/model/lm/an4/an4.ctl \
-	    -cepdir $(top_srcdir)/model/lm/an4/ \
-	    -phsegdir ./ \
-	    -phlatdir ./
-	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
-	then echo "ALLPHONE allp test PASSED"; else \
-	echo "ALLPHONE allp test FAILED"; fi
-	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
-	then echo "ALLPHONE phlat test PASSED"; else \
-	echo "allphone phlat test FAILED"; fi
-
-
-test-astar:
-	@echo "ASTAR TEST"
-	$(LIBTOOL) --mode=execute src/programs/astar \
-	    -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-            -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-            -dict $(top_srcdir)/model/lm/an4/an4.dict \
-            -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	    -inspen 0.2 \
-	    -beam 1e-64 \
-	    -nbest 5 \
-	    -ctl $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
-	    -inlatdir $(top_srcdir)/model/lm/an4/ \
-	    -logbase 1.0003 \
-	    -nbestdir . 
-	@gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
-	@if(diff ./pittsburgh.nbest $(top_srcdir)/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
-	then echo "ASTAR test PASSED"; else \
-	echo "ASTAR test FAILED"; fi
-
-test-dag:
-	@echo "DAG TEST"
-	$(LIBTOOL) --mode=execute src/programs/dag \
-	    -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
-            -fdict $(top_srcdir)/model/lm/an4/filler.dict \
-            -dict $(top_srcdir)/model/lm/an4/an4.dict \
-            -lm $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
-	    -lw 13.0 \
-	    -inspen 0.2 \
-	    -ctl $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
-	    -inlatdir $(top_srcdir)/model/lm/an4/ \
-	    -logbase 1.0003 \
-	    -backtrace 1 > $@.out 
-	@grep "BSTPTH:" $@.out 
-	@grep "BSTXCT" $@.out 
-	@if(grep "BSTPTH:" $@.out |grep "P I T T S B U R G H" > /dev/null 2>&1); \
-	then echo "DAG test PASSED" ; else \
-	echo "DAG test FAILED" ; fi
-
-
-test-gausubvq-match:
-	@echo "GAUSUBVQ TEST"
-	@echo "This will compare the answer with a pre-generated svq file"
-	$(LIBTOOL) --mode=execute src/programs/gausubvq \
-        -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
-        -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
-        -mixw  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
-        -svspec 0-38 \
-        -iter 20 \
-        -svqrows 16 \
-	-seed 1111 \
-        -subvq $@.out 
-	grep -v "#" $@.out > tmp.out
-	@if(diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq > /dev/null 2>&1); \
-	then echo "GAUSUBVQ test PASSED"; else \
-	echo "GAUSUBVQ test FAILED"; fi 
-
-
-test-ep-match:
-	@echo "EP TEST"
-	$(LIBTOOL) --mode=execute src/programs/ep \
-		-i $(top_srcdir)/model/ep/chan3.raw  \
-	        -srate 11025 \
-	        -frate 105 \
-	        -wlen 0.024 \
-	        -alpha 0.97 \
-	        -ncep 13 \
-	        -nfft 512 \
-	        -nfilt 36 \
-	        -upperf 5400 \
-	        -lowerf 130 \
-	        -blocksize 262500 \
-	        -mean $(top_srcdir)/model/ep/means \
-	        -var $(top_srcdir)/model/ep/variances \
-	        -mixw $(top_srcdir)/model/ep/mixture_weights \
-	        -o $@.tmp \
-		-raw 1 \
-		2>&1 |grep "Utt_" |perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' > $@.out	
-	@if (perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $$1/ge' \
-			 $(top_srcdir)/model/ep/ep.result | diff $@.out - > /dev/null 2>&1); \
-	then echo "EP test PASSED"; else \
-	echo "EP test FAILED"; fi 
-
-
+test-decode_anytopo \
+test-decode \
+test-align \
+test-allphone \
+test-astar \
+test-cepview \
+test-dag \
+test-livepretend \
+test-gausubvq \
+test-ep \
 test-wave2feat:
-	@echo "WAVE2FEAT TEST"
-	$(LIBTOOL) --mode=execute src/programs/wave2feat \
-		 -srate 11025 \
-		 -frate 105 \
-		 -wlen 0.024 \
-		 -alpha 0.97 \
-		 -ncep 13 \
-		 -nfft 512 \
-		 -nfilt 36 \
-		 -upperf 5400 \
-		 -lowerf 130 \
-		 -blocksize 262500 \
-		 -i $(top_srcdir)/model/ep/chan3.raw \
-	         -o $@.mfc  \
-		 -raw 1
-	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /dev/null 2>&1) ; \
-	then echo "WAVE2FEAT test PASSED"; else \
-	echo "WAVE2FEAT test FAILED"; fi
+	$(top_builddir)/src/tests/regression/$@.sh
 
-test-cepview:
-	@echo "CEPVIEW TEST"
-	$(LIBTOOL) --mode=execute src/programs/cepview \
-	-i 13 \
-	-d 13 \
-	-f $(top_srcdir)/model/ep/chan3.mfc \
-	> $@.out
-	@if (diff $@.out $(top_srcdir)/model/ep/chan3.cepview > /dev/null 2>&1); \
-	then echo "CEPVIEW test PASSED"; else \
-	echo "CEPVIEW test FAILED"; fi 
-
+#Cannot not be used because libtool will confuse valgrind.  Need to figure out later. 
 #test-valgrind:
 #	@echo "LIVEPRETEND TEST"
 #	@echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
