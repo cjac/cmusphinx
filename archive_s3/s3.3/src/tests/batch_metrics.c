@@ -70,7 +70,7 @@ void processMismatch(char *references[], int numReferences,
 int countMatches(char *references[], int r, int numReferences,
                  char *parthyp[], int h, int numHypothesis);
 int stringToArray(char *string, char *array[]);
-void stringToUpperCase(char *string);
+void stringToLowerCase(char *string);
 void partialHypToString(partialhyp_t *parthyp, int nhypwds, 
                         char* hypothesis, int bufferSize);
 int isFillerWord(char *string);
@@ -209,6 +209,10 @@ int main (int argc, char *argv[])
 
             /* convert the hypothesis into a string */
             partialHypToString(parthyp, nhypwds, hypothesis, STRLEN);
+
+            /* convert the referenceResult to lowercase */
+            stringToLowerCase(referenceResult);
+            stringToLowerCase(hypothesis);
             
             /* 
              * If hypothesis is equal to referenceResult
@@ -358,12 +362,10 @@ void analyzeResults(const char* referenceResult, const char* hypotheses)
     char myHypothesis[STRLEN];
     
     strcpy(myReferenceResult, referenceResult);
-    stringToUpperCase(myReferenceResult);
     numReferences = stringToArray(myReferenceResult, references);
     referenceIndex = 0;
 
     strcpy(myHypothesis, hypotheses);
-    stringToUpperCase(myHypothesis);
     numHypothesis = stringToArray(myHypothesis, hypothesis);
     hypothesisIndex = 0;
 
@@ -550,11 +552,11 @@ int isFillerWord(char *string)
  *
  * @param string the string to be converted
  */
-void stringToUpperCase(char *string)
+void stringToLowerCase(char *string)
 {
     int i, length;
     length = strlen(string);
     for (i = 0; i < length; i++) {
-        string[i] = toupper(string[i]);
+        string[i] = tolower(string[i]);
     }
 }
