@@ -37,6 +37,18 @@ ad_files=""
 ad_libs=""
 audio_test_file=""
 
+dnl Added by Jasper van Veghel <jvveghel@vanboxtelsoftware.nl>, 02/03/2003:
+AC_ARG_WITH(alsa,
+           AC_HELP_STRING([--with-alsa], [Use ALSA library for sound I/O]),
+           [ad_files="ad_alsa.lo",
+            ad_backend="AD_BACKEND_ALSA",
+	    ad_libs="-lasound",
+       	    CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
+            audio_test_file="pittsburgh.littleendian",
+            AC_CHECK_HEADER(sys/asoundlib.h, 
+                    AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
+)
+
 if test "x$ad_files" = "x"; then
         case $host in
                 *-*-linux*)
@@ -74,15 +86,16 @@ if test "x$ad_files" = "x"; then
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.bigendian"
                         ;;
-                                *86*-*-solaris*)
+                *86*-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
                         CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -Dsunos -DAD_BACKEND_SUNOS"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
-*-*-*win32*)
+                *-*-*cygwin*)
                         ad_files="play_win32.lo rec_win32.lo"
+                        ad_libs="-lwinmm"
 			audio_test_file="pittsburgh.littleendian"
                         ;;
                 *)

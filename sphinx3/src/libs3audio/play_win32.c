@@ -152,8 +152,7 @@ static int32 waveout_enqueue_buf (HWAVEOUT h, LPWAVEHDR whdr)
 
 static HWAVEOUT waveout_open (int32 samples_per_sec, int32 bytes_per_sample)
 {
-/*    PCMWAVEFORMAT wfmt; */
-	WAVEFORMATEX wfmt;
+    WAVEFORMATEX wfmt;
     int32 st;
     HWAVEOUT h;
     
