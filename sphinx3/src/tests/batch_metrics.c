@@ -44,6 +44,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#if !defined(WIN32)
+  #include <netinet/in.h>
+#else
+  #include <winsock2.h>
+#endif
 #include <libutil/libutil.h>
 #include <libutil/profile.h>
 #include <libs3decoder/new_fe.h>
@@ -158,9 +163,11 @@ int main (int argc, char *argv[])
 
     live_initialize_decoder(argsfile);
 
-
     /* If machine endian and input endian are different, we need to swap */
+    /*
     swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+    */
+    swap = (!cmd_ln_int32("-input_endian"));
     if (swap) {
       E_INFO("Input data WILL be byte swapped\n");
     } else {
@@ -199,9 +206,17 @@ int main (int argc, char *argv[])
         fflush(stdout); 
         fclose(sfp);
 
+#if 0
 	if (swap) {
 	  for (i = 0; i < nsamp; i++) {
 	    SWAP_INT16(samps +i);
+	  }
+	}
+#endif
+	for (i = 0; i < nsamp; i++) {
+	  samps[i] = ntohs(samps[i]);
+	  if (swap) {
+	    SWAP_INT16(samps + i);
 	  }
 	}
 
