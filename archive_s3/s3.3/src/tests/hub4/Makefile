@@ -75,7 +75,5 @@ hub4_flatunigram:
 hub4_trigram:
 	rm -f gmake-hub4_trigram.results
 	/bin/cp ARGS.hub4_base ARGS.hub4_trigram
-	rm -f gmake-hub4_trigram.results
-	/bin/cp ARGS.hub4_base ARGS.hub4_trigram
-	echo "-lm ${HUB4_MODEL_DIR}/language_model.arpaformat.DMP.Z" >> ARGS.hub4_flatunigram
+	echo "-lm ${HUB4_MODEL_DIR}/language_model.arpaformat.DMP" >> ARGS.hub4_trigram
 	$(BINDIR)/batchmetrics $(CTL_FILE) / ./ARGS.hub4_trigram > gmake-hub4_trigram.results
