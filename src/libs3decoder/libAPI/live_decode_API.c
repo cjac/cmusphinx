@@ -101,6 +101,7 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 #include "live_decode_API.h"
 #include "live_decode_args.h"
 #include "utt.h"
+#include "bio.h"
 #include <time.h>
 
 /* Utility function declarations */
@@ -161,6 +162,22 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   _decoder->ld_state = LD_STATE_IDLE;
   _decoder->hyp_str = NULL;
   _decoder->hyp_segs = NULL;
+  _decoder->swap= (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+  _decoder->phypdump= (cmd_ln_int32("-phypdump"));
+  _decoder->rawext= (cmd_ln_str("-rawext"));
+
+  if(_decoder->phypdump)
+    E_INFO("Partial hypothesis WILL be dumped\n");
+  else
+    E_INFO("Partial hypothesis will NOT be dumped\n");
+
+
+  if(_decoder->swap) 
+    E_INFO("Input data WILL be byte swapped\n");
+  else 
+    E_INFO("Input data will NOT be byte swapped\n");
+  
+
   _decoder->internal_cmdln = _internal_cmdln;
   _decoder->features =
     feat_array_alloc(kbcore_fcb(_decoder->kbcore), LIVEBUFBLOCKSIZE);
@@ -255,6 +272,9 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
   _decoder->kb.utt_hmm_eval = 0;
   _decoder->kb.utt_sen_eval = 0;
   _decoder->kb.utt_gau_eval = 0;
+  _decoder->kb.utt_cisen_eval = 0;
+  _decoder->kb.utt_cigau_eval = 0;
+
   _decoder->ld_state = LD_STATE_DECODING;
 
   return ld_set_uttid(_decoder, _uttid);
@@ -514,13 +534,20 @@ ld_process_raw_impl(live_decoder_t *_decoder,
   int32 num_features = 0;
   int32 begin_utt = _decoder->num_frames_entered == 0;
   int32 return_value;
+  int i;
 
   assert(_decoder != NULL);
 
   if (begin_utt) {
     fe_start_utt(_decoder->fe);
   }
-	
+  
+  if(_decoder->swap){
+    for (i = 0; i < num_samples; i++) {
+      SWAP_INT16(samples + i);
+    }
+  }
+
   return_value = fe_process_utt(_decoder->fe, samples, num_samples, &frames, &num_frames);
 
   if (end_utt) {

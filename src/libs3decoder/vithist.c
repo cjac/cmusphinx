@@ -283,8 +283,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     
     assert (vh->n_frm == ef);
     if(pred == -1) { 
-      E_FATAL("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
-      exit(-1);
+      E_WARN("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
+      /*      exit(-1);*/
     }
  
     pve = vh->entry[VITHIST_ID2BLK(pred)] + VITHIST_ID2BLKOFFSET(pred);
@@ -596,7 +596,7 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
 	return -1;
     
     if (f != vh->n_frm-1){
-	E_ERROR("No word exits from last frame in block %d\n",vh->n_frm-1);
+	E_ERROR("No word exits from in block with last frame= %d\n",vh->n_frm-1);
 	return -1;
     }
     

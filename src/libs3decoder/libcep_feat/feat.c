@@ -804,13 +804,14 @@ void feat_print (feat_t *fcb, float32 ***feat, int32 nfr, FILE *fp)
 }
 
 
-int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, float32 ***feat,
+int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext, int32 sf, int32 ef, float32 ***feat,
 		       int32 maxfr)
 {
     char path[16384];
     int32 win, nfr;
     int32 i, k;
     float32 **mfc;
+
     
     if (fcb->cepsize <= 0) {
 	E_ERROR("Bad cepsize: %d\n", fcb->cepsize);
@@ -819,16 +820,28 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, int32 sf, int32 ef, f
     
     /* Create mfc filename, combining file, dir and extension (.mfc) if necessary */
     k = strlen(file);
+
+#if 0
     if ((k > 4) && (strcmp (file+k-4, ".mfc") == 0)) {	/* Hack!! Hardwired .mfc extension */
+#endif
+      /*20041212: ARCHAN fixed the mfc hacks. */
+    if ((k > 4) && (strcmp (file+k-4, ".mfc") == 0)) { 
 	if (dir && (file[0] != '/'))
 	    sprintf (path, "%s/%s", dir, file);
 	else
 	    strcpy (path, file);
     } else {
-	if (dir && (file[0] != '/'))
-	    sprintf (path, "%s/%s.mfc", dir, file);
+      if (dir && (file[0] != '/')){
+	if(cepext!=NULL)
+	  sprintf (path, "%s/%s%s", dir, file,cepext);
 	else
-	    sprintf (path, "%s.mfc", file);
+	  sprintf (path, "%s/%s.%s", dir, file,"mfc");
+      }else{
+	if(cepext!=NULL)
+	  sprintf (path, "%s.%s", file,cepext);
+	else
+	  sprintf (path, "%s.%s", file,"mfc");
+      }
     }
     
     win = feat_window_size(fcb);
