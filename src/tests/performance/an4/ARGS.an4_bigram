@@ -21,3 +21,5 @@
 -lw   21
 -beam     1e-160
 -wbeam   1e-100
+-nfft 512
+-input_endian 1
