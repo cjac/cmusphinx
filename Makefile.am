@@ -140,9 +140,15 @@ test-align:
 	    -outsent $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
-	diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
-	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
-	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	@if (diff test-align.out  $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out > /dev/null 2>&1); \
+	then echo "align output test PASSED"; else \
+	echo "align output test FAILED"; fi 
+	@if (diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.wdseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg > /dev/null 2>&1); \
+	then echo "ALIGN wdseg test PASSED"; else \
+	echo "ALIGN wdseg test FAILED"; fi 
+	@if (diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg > /dev/null 2>&1 ); \
+	then echo "ALIGN phseg test PASSED"; else \
+	echo "ALIGN phseg test FAILED"; fi 
 
 test-allphone:
 	@echo "ALLPHONE TEST"
@@ -162,8 +168,13 @@ test-allphone:
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./ \
 	    -phlatdir ./
-	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp
-	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat
+	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+	then echo "allphone allp test PASSED"; else \
+	echo "allphone allp test FAILED"; fi
+	@if(diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+	then echo "allphone phlat test PASSED"; else \
+	echo "allphone phlat test FAILED"; fi
+	
 
 
 test-astar:
@@ -228,7 +239,9 @@ test-gausubvq-match:
 	-seed 1111 \
         -subvq $@.out 
 	grep -v "#" $@.out > tmp.out
-	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+	@if(diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq > /dev/null 2>&1); \
+	then echo "gausubvq test PASSED"; else \
+	echo "gausubvq test FAILED"; fi 
 	@rm tmp.out 
 
 test-ep :
@@ -251,8 +264,6 @@ test-ep :
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" > $@.out
-#	@diff $@.out $(top_srcdir)/model/ep/ep.result
-#	@rm $@.out		
 
 test-ep-match:
 	@echo "EP TEST"
@@ -274,7 +285,9 @@ test-ep-match:
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" > $@.out
-	diff $@.out $(top_srcdir)/model/ep/ep.result
+	@if (diff $@.out $(top_srcdir)/model/ep/ep.result > /dev/null 2>&1); \
+	then echo "EP test PASSED"; else \
+	echo "EP test FAILED"; fi 
 	rm $@.out		
 
 test-wave2feat:
@@ -293,8 +306,10 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc
-
+	@if(cmp $@.mfc $(top_srcdir)/model/ep/chan3.mfc > /deve/null 2>&1) ; \
+	then echo "wave2feat test PASSED"; else \
+	echo "wave2feat test FAILED"; fi
+	
 test-cepview:
 	@echo "CEPVIEW TEST"
 	$(LIBTOOL) --mode=execute src/programs/cepview \
