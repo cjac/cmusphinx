@@ -67,6 +67,14 @@ static arg_t arg[] = {
     ARG_INT32,
     DISPLAY_SIZE,
     "Width of display"},
+  { "-b",
+    ARG_INT32,
+    "0",
+    "The beginning frame 0-based."},
+  { "-e",
+    ARG_INT32,
+    "10000",
+    "The ending frame. "},
   { "-input",
     ARG_STRING,
     NULL,
@@ -82,38 +90,83 @@ int read_cep(char *file, float ***cep, int *nframes, int numcep);
 
 int main(int argc, char *argv[])
 {
-  int i, j, offset;
-  int len, vsize, dsize, column;
+  int i, j, k, offset;
+  int noframe, vsize, dsize, column;
+  int frm_begin, frm_end;
   float *z, **cep;
   char* cepfile;
   
+  i=0;j=0;k=0;
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc, argv, "default.arg", arg);
+
   vsize = cmd_ln_int32("-i");
   dsize = cmd_ln_int32("-d");
+  frm_begin= cmd_ln_int32("-b");  
+  frm_end= cmd_ln_int32("-e");  
+
+  if(vsize<0) E_FATAL("-i : Input vector size should be larger than 0.\n");
+  if(dsize<0) E_FATAL("-d : Column size should be larger than 0\n");
+  if(frm_begin<0) E_FATAL("-b : Beginning frame should be larger than 0\n");
+  if(frm_end<0) E_FATAL("-e : Ending frame should be larger than 0\n");
+  if(frm_begin>=frm_end) E_FATAL("Ending frame (-e) should be larger than beginning frame (-b).\n");
   
   cepfile=ckd_salloc(argv[argc-1]);
   if (!cmd_ln_access("-input")){
     E_FATAL("input file is not specified\n");
   }
-  if (read_cep((char *)cmd_ln_access("-input"), &cep, &len, vsize) == IO_ERR)
-    E_INFO("ERROR opening %s for reading\n", cepfile);
+  if (read_cep((char*)cmd_ln_access("-input"),&cep,&noframe,vsize) == IO_ERR)
+    E_INFO("ERROR opening %s for reading\n",cepfile);
       
   z = cep[0];
-  printf("%d frames\n", len);
+
+  printf("%d frames\n", noframe);
 
   offset = 0;
   column = (vsize > dsize) ? dsize : vsize;
+  frm_end= (frm_end> noframe) ? noframe : frm_end;
 
-  printf("\n%13s%8s%8s%8s%8s\n\n", "frame#", "c[0]", "c[1]", "c[2]", "...");
-  for (i = 0; i < len; ++i)
-    {
-      printf("Frame> %6d ", i);
-      for ( j = 0 ; j < column; ++j)
+  /* This part should be moved to a special library if this file is
+     longer than 300 lines. */
+
+  for(k=0 ; k < floor(vsize/dsize);k++){
+    if(k==0) printf("\n%6s ","frame#");
+    else printf("%6s ","");
+
+    for ( j =k*column ; j < (k+1)*column; ++j){
+      printf("%3s%3d%s ","c[",j,"]");
+    }
+    printf("\n");
+  }
+  if(j!=vsize){
+    printf("%6s ","");
+    for( j = (k)*column ; j < vsize ; j++){
+      printf("%3s%3d%s ","c[",j,"]");
+    }
+    printf("\n");
+  }
+
+  offset += frm_begin *vsize;
+  for (i = frm_begin; i < frm_end; ++i){
+    for(k=0 ; k < floor(vsize/dsize);k++){
+
+      if(k==0) printf("%6d ",i);
+      else printf("%6s ","");
+
+      for ( j =k*column ; j < (k+1)*column; ++j)
 	printf("%7.3f ", z[offset + j]);
       printf("\n");
-      offset += vsize;
     }
+      
+    if(j!=vsize){
+      printf("%6s ","");
+      for( j = (k)*column ; j < vsize ; j++){
+	printf("%7.3f ", z[offset + j]);
+      }
+      printf("\n");
+    }
+    offset += vsize;
+  }
   fflush(stdout);
   cmd_ln_appl_exit();
 
@@ -130,7 +183,7 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     float32 **mfcbuf;
 
     if (stat(file, &statbuf) < 0) {
-        printf("stat_retry(%s) failed\n", file);
+        printf("stat(%s) failed\n", file);
         return IO_ERR;
     }
 
