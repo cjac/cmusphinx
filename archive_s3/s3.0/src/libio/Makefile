@@ -8,7 +8,7 @@
 #
 
 
-include ../../Makefile.defines
+include ../../../Makefile.defines
 
 VPATH = .:..
 

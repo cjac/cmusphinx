@@ -10,7 +10,7 @@
 
 VPATH = .:..
 
-include ../../Makefile.defines
+include ../../../Makefile.defines
 
 TARGET = timealign
 

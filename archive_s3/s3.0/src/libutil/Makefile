@@ -9,7 +9,7 @@
 
 VPATH = .:..
 
-include Makefile.defines
+include ../../Makefile.defines
 
 TARGET = libutil.a
 
