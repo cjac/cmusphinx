@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Updated subvq_free () to free allocated memory
+ * 
  * 17-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added handling of a single sub-vector in subvq_mgau_shortlist().
  * 
@@ -39,7 +42,16 @@
 
 
 #include "subvq.h"
+/* #include "cmd_ln_args.h"	*/ /* RAH, added so we can allow for -vqeval parameter */
 #include "s3types.h"
+
+/* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
+ * compute the shortlist, for now this value is only relevant when n_sv =3.
+ * Setting it to 1 means that only the CEP values are estimated, 2 means that 
+ * CEP and delta values are estimated, 3 means all three are estimated.
+ * Note, we must adjust the beam widths as we muck around with these.
+ */
+static int VQ_EVAL = 3;		
 
 
 /*
@@ -147,7 +159,9 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     char *strp;
     subvq_t *vq;
     
-    E_INFO("Loading Mixture Gaussian sub-VQ file '%s'\n", file);
+    VQ_EVAL = cmd_ln_int32 ("-vqeval");	/* RAH, Currently only works when n_sv = 3, values computed but ignored in other cases */
+
+    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,VQ_EVAL);
     
     vq = (subvq_t *) ckd_calloc (1, sizeof(subvq_t));
     
@@ -179,6 +193,8 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
     
     n_sv = vq->n_sv;
     vq->n_sv = max_sv;
+    if (vq->n_sv < VQ_EVAL)	/* RAH, 5.9.01, sanity check to make sure VQ_EVAL isn't higher than the n_sv */
+      VQ_EVAL = vq->n_sv;
     vq->featdim = (int32 **) ckd_calloc (vq->n_sv, sizeof(int32 *));
     vq->gautbl = (vector_gautbl_t *) ckd_calloc (vq->n_sv, sizeof(vector_gautbl_t));
     vq->map = (int32 ***) ckd_calloc_3d (vq->origsize.r, vq->origsize.c, vq->n_sv,
@@ -285,21 +301,6 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
 }
 
 
-void subvq_free (subvq_t *s)
-{
-    int32 i;
-    
-    for (i = 0; i < s->n_sv; i++) {
-	vector_gautbl_free (&(s->gautbl[i]));
-	ckd_free ((void *) s->featdim[i]);
-    }
-    
-    ckd_free_3d ((void ***) s->map);
-    ckd_free ((void *) s->gautbl);
-    ckd_free ((void *) s->featdim);
-    
-    ckd_free ((void *) s);
-}
 
 
 /*
@@ -330,9 +331,23 @@ static int32 subvq_mgau_shortlist (subvq_t *vq,
     switch (vq->n_sv) {
     case 3:
 	for (i = 0; i < n; i++) {
+	  if (VQ_EVAL == 1) {
+	    v = (int32) vqdist[*map];/* If we are not weighting the cep values, we need to adjust the subvqbeam */
+	    map += 3;
+	  } else {
+	    /* RAH, we are ignoring the delta-delta, scoring the delta twice, strangely this works better than weighting the scores  */
+	    /* I believe it has to do with the beam widths */
+	    if (VQ_EVAL == 2) {
 	    v = vqdist[*(map++)];
-	    v += vqdist[*(map++)];
-	    v += vqdist[*(map++)];
+	      v += 2 * vqdist[*map]; /* RAH Count delta twice, we can keep the same subvqbeam as vq_eval = 3 if we double the delta*/
+	      map += 2;
+	    } else {
+	      v = vqdist[*(map++)];/* Standard way */
+	      v += vqdist[*(map++)]; /*  */
+	      v += vqdist[*(map++)]; /*  */
+	    }
+	  }
+
 	    gauscore[i] = v;
 	    
 	    if (bv < v)
@@ -401,6 +416,9 @@ void subvq_gautbl_eval_logs3 (subvq_t *vq, float32 *feat)
 	    vq->subvec[i] = feat[featdim[i]];
 	
 	/* Evaluate distances between extracted subvector and corresponding codebook */
+    
+    /* RAH, only evaluate the first VQ_EVAL set of features */
+    if (s < VQ_EVAL) 
 	vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec, vq->vqdist[s]);
     }
 }
@@ -455,4 +473,48 @@ int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
     g->frm_gau_eval = ng;
     
     return best;
+}
+
+/* RAH, free memory allocated by subvq_init() */
+void subvq_free (subvq_t *s)
+{
+  int i;
+
+  if (s) {
+    
+    for (i=0;i<s->n_sv;i++) {
+      //      vector_gautbl_free (&(s->gautbl[i]));
+      if (s->featdim[i]) ckd_free ((void *) s->featdim[i]);
+    }
+
+
+    if (s->featdim) 
+      ckd_free ((void *) s->featdim);
+
+    /* Free gaussian table */
+    if (s->gautbl) 
+      ckd_free ((void *)s->gautbl);      
+
+
+    /* Free map */
+    if (s->map)
+      ckd_free_3d ((void ***) s->map);
+
+    if (s->subvec) 
+      ckd_free ((void *) s->subvec);
+
+    if (s->vqdist) 
+      ckd_free_2d ((void **) s->vqdist);
+
+    if (s->gauscore) 
+      ckd_free ((void *) s->gauscore);
+
+    if (s->mgau_sl) 
+      ckd_free ((void *) s->mgau_sl);
+
+	
+    ckd_free ((void *)s);
+
+
+  }
 }

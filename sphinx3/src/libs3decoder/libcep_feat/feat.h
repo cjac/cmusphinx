@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Adding feat_free() to free allocated memory
+ * 
  * 04-Jan-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
  */
@@ -194,5 +197,17 @@ int32   feat_s2mfc2feat_block(feat_t  *fcb,    /* Descriptor from feat_init() */
                               int32 endutt,     /* End of utterance flag */
                               float32 ***ofeat  /* Output feature buffer */
 			     );
+
+
+/* Feature computation routine for live mode decoder. Computes features
+ * for blocks of incoming data. Retains an internal buffer for computing
+ * deltas etc */
+
+/*
+ * RAH, remove memory allocated by feat_init
+ */
+void feat_free (feat_t *f);
+
+
 
 #endif

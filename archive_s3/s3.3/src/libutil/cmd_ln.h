@@ -81,4 +81,8 @@ const void *cmd_ln_access (char *name);	/* In: Argument name whose value is soug
 void  cmd_ln_print_help (FILE *fp,	/* In: File to which to print */
 			 arg_t *defn);	/* In: Array of argument name definitions */
 
+/* RAH, 4.17.01, call this to free memory allocated during cmd_ln_parse() */
+void cmd_ln_free ();
+
+
 #endif

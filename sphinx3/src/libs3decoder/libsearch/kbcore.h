@@ -96,6 +96,9 @@ kbcore_t *kbcore_init (float64 logbase,		/* Must be specified */
 		       char *tmatfile,
 		       float64 tmatfloor);	/* Must be valid if tmatfile specified */
 
+  void kbcore_free (kbcore_t *kbcore);
+
+
 /* Access macros; not meant for arbitrary use */
 #define kbcore_fcb(k)		((k)->fcb)
 #define kbcore_mdef(k)		((k)->mdef)

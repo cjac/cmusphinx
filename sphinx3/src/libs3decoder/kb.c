@@ -24,6 +24,7 @@
 
 
 #include "kb.h"
+#include "logs3.h"		/* RAH, added to resolve log3_free */
 
 void kb_init (kb_t *kb)
 {
@@ -237,3 +238,40 @@ void kb_lextree_active_swap (kb_t *kb)
     }
 }
 
+/* RAH 4.15.01 Lots of memory is allocated, but never freed, this function will clean up.
+ * First pass will get the low hanging fruit.*/
+void kb_free (kb_t *kb)
+{
+  vithist_t *vithist = kb->vithist;
+
+  if (kb->sen_active)
+    ckd_free ((void *)kb->sen_active);
+  if (kb->ssid_active) 
+    ckd_free ((void *)kb->ssid_active);
+  if (kb->comssid_active)
+    ckd_free ((void *)kb->comssid_active);
+  if (kb->fillertree) 
+    ckd_free ((void *)kb->fillertree);
+  if (kb->hmm_hist) 
+    ckd_free ((void *)kb->hmm_hist);
+  
+
+  /* vithist */
+  if (vithist) {
+    ckd_free ((void *) vithist->entry);
+    ckd_free ((void *) vithist->frame_start);
+    ckd_free ((void *) vithist->bestscore);
+    ckd_free ((void *) vithist->bestvh);
+    ckd_free ((void *) vithist->lms2vh_root);    
+    ckd_free ((void *) kb->vithist);
+  }
+
+
+  kbcore_free (kb->kbcore);
+
+  if (kb->feat) {
+    ckd_free ((void *)kb->feat[0][0]);
+    ckd_free_2d ((void **)kb->feat);
+  }
+    
+}

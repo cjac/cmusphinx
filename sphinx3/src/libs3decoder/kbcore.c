@@ -161,3 +161,57 @@ kbcore_t *kbcore_init (float64 logbase,
     
     return kb;
 }
+
+/* RAH 4.19.01 free memory allocated within this module */
+void kbcore_free (kbcore_t *kbcore)
+{
+  feat_t *fcb = kbcore_fcb (kbcore); /*  */
+  mdef_t *mdef = kbcore_mdef(kbcore);
+  dict_t *dict = kbcore_dict (kbcore);
+  dict2pid_t *dict2pid = kbcore_dict2pid (kbcore);		/*  */
+  /*   dictword_t *word;   */
+  lm_t *lm = kbcore_lm (kbcore); /*  */
+
+
+  lm_free (lm);
+  
+  /* Clean up the dictionary stuff*/
+  dict_free (dict);
+
+
+  /* dict2pid */
+  ckd_free ((void *) dict2pid->comwt );
+  ckd_free ((void *) dict2pid->comsseq );
+  ckd_free ((void *) dict2pid->comstate );
+  ckd_free_2d ((void *) dict2pid->single_lc );
+  ckd_free_3d ((void ***) dict2pid->ldiph_lc );
+  
+  /* RAH, this bombs    
+     for (i=0;i<dict_size(dict);i++) 
+     ckd_free ((void *) dict2pid->internal[i]); 
+  */
+  ckd_free ((void *) dict2pid->internal);
+
+  /* Clean up the mdef stuff */  
+  mdef_free (mdef);
+
+  fillpen_free (kbcore->fillpen);
+
+  tmat_free (kbcore->tmat);
+  subvq_free (kbcore->svq);
+  mgau_free (kbcore->mgau);
+
+  /* memory allocated in kbcore*/
+  if (fcb) {
+    ckd_free ((void *)fcb->name);
+    ckd_free ((void *)fcb->stream_len);
+    ckd_free ((void *)fcb);
+  }
+
+  /* Free the memory allocated by this module*/
+  logs_free();  
+  feat_free (kbcore->fcb);
+
+  /* Free the object */
+  ckd_free ((void *) kbcore);
+}

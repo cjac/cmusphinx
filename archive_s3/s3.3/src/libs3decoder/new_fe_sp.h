@@ -16,7 +16,7 @@ float fe_mel(float x);
 float fe_melinv(float x);
 void fe_pre_emphasis(int16 *in, double *out, int32 len, float factor, int16 prior);
 void fe_hamming_window(double *in, double *window, int32 in_len);
-void fe_create_hamming(double *win, int32 len);
+void fe_init_hamming(double *win, int32 len);
 void fe_spec_magnitude(double *data, int32 data_len, double *spec, int32 fftsize);
 void fe_frame_to_fea(fe_t *FE, double *in, double *fea);
 void fe_mel_spec(fe_t *FE, double *spec, double *mfspec);
@@ -28,7 +28,7 @@ void fe_free_2d(void **arr);
 void fe_print_current(fe_t *FE);
 void fe_parse_general_params(param_t *P, fe_t *FE);
 void fe_parse_melfb_params(param_t *P, melfb_t *MEL);
-
+void fe_create_hamming (double *in, int32 in_len);
 
 
 

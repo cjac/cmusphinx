@@ -5,6 +5,13 @@
  * ALL RIGHTS RESERVED.
  *************************************************
  *
+ * 13-Apr-2001  Ricky Houghton
+ *              Added live_free_memory to clean up memory allocated locally.
+ *
+ * 01-Jan-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
+ *		Created a separate function live_get_partialhyp() to 
+ *		generate partial hypotheses from the kb structure
+ *
  * 31-Dec-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  * Created
  */
@@ -27,6 +34,7 @@ static int32 maxhmmpf;
 static int32 ptranskip;
 
 static partialhyp_t *parthyp = NULL;
+static float32 *dummyframe;
 
 /* This routine initializes decoder variables for live mode decoding */
 void live_initialize_decoder(char *live_args)
@@ -55,6 +63,7 @@ void live_initialize_decoder(char *live_args)
     samprate = cmd_ln_int32 ("-samprate");
     if (samprate != 8000 && samprate != 16000)
 	E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",samprate);
+
     fe_param->SAMPLING_RATE = (float32) samprate;
     fe_param->FRAME_RATE = 100; /* HARD CODED TO 100 FRAMES PER SECOND */
     fe_param->PRE_EMPHASIS_ALPHA = (float32) 0.97;
@@ -64,67 +73,46 @@ void live_initialize_decoder(char *live_args)
 
     maxcepvecs = cmd_ln_int32 ("-maxcepvecs");
     ceplen = kbcore->fcb->cepsize;
+
+    dummyframe = (float32*) ckd_calloc(1 * ceplen,sizeof(float32));	/*  */
 }
 
 
-/* Routine to decode a block of incoming samples. A partial hypothesis
- * for the utterance upto the current block of samples is returned.
- * The calling routine has to inform the routine if the block of samples
- * being passed is the final block of samples for an utterance by
- * setting live_endutt to 1. On receipt of a live_endutt flag the routine
- * automatically assumes that the next block of samples is the beginning
- * of a new utterance 
- */
-
-int32 live_utt_decode_block (int16 *samples, int32 nsamples, 
-		      int32 live_endutt, partialhyp_t **ohyp)
+/* RAH Apr.13.2001: Memory was being held, Added Call fe_close to release memory held by fe and then release locally allocated memory */
+int32 live_free_memory ()
 {
-    static int32 live_begin_new_utt = 1;
-    static int32 frmno;
-    float32 **live_feat;
-    int32   live_nfr, live_nfeatvec;
-    int32   id, nwds;
-    glist_t hyp;
-    gnode_t *gn;
-    hyp_t   *h;
-    dict_t  *dict;
-    float32 **mfcbuf;
+  parse_args_free();		/* Free memory allocated during the argument parseing stage */
+  fe_close (fe);		/*  */
+  kb_free (kb);		/*  */
+  ckd_free ((void *) dummyframe); /*  */
+  ckd_free ((void *) parthyp);  /*  */
+  return (0);
+}
 
- 
-    if (live_begin_new_utt){
-        fe_start_utt(fe);
-	utt_begin (kb);
-	frmno = 0;
-	kb->nfr = 0;
-        kb->utt_hmm_eval = 0;
-        kb->utt_sen_eval = 0;
-        kb->utt_gau_eval = 0;
-        live_begin_new_utt = 0;
-    }
-    /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
-    mfcbuf = NULL;
-    live_nfr = fe_process_utt(fe, samples, nsamples, &mfcbuf);
-    if (live_endutt)	/*  */
-      /* RAH 10.jan.01 live_nfr = number of frames, not index. [live_nfr-1] is needed instead of [live_nfr]*/
-      fe_end_utt(fe,mfcbuf[live_nfr-1]); /* Flush out the fe, but dont use the returned final frame */
 
-    /* Compute feature vectors */
-    live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
-                                         live_nfr, live_begin_new_utt,
-					 live_endutt, &live_feat);
 
-    /* decode the block */
-    utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
-		      maxwpf, maxhistpf, maxhmmpf, ptranskip, hmmdumpfp);
+/*******************************************************************
+ * This routine retrieves the part hypothesis from the kb structure
+ * at any stage in the decoding. The "endutt" flag is needed to know
+ * whether the utterance is to be considered terminated or not
+ * The function stores the partial hypothesis in the global array
+ * "parthyp" and returns the number of words in the hypothesis
+ *******************************************************************/
 
-    /* Pull out partial hypothesis */
+int32 live_get_partialhyp(int32 endutt)
+{
+    int32 id, nwds;
+    glist_t   hyp;
+    gnode_t   *gn;
+    hyp_t     *h;
+    dict_t    *dict;
+
     dict = kbcore_dict (kb->kbcore);
-
-    if (live_endutt)
-      id = vithist_utt_end(kb->vithist, kb->kbcore);
+    if (endutt)
+        id = vithist_utt_end(kb->vithist, kb->kbcore);
     else
-      id = vithist_partialutt_end(kb->vithist, kb->kbcore);
-    
+        id = vithist_partialutt_end(kb->vithist, kb->kbcore);
+
     if (id > 0) {
         hyp = vithist_backtrace(kb->vithist,id);
 
@@ -157,6 +145,65 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
             parthyp[nwds].word = NULL;
         }
     }
+
+    return(nwds);
+}
+
+
+/* Routine to decode a block of incoming samples. A partial hypothesis
+ * for the utterance upto the current block of samples is returned.
+ * The calling routine has to inform the routine if the block of samples
+ * being passed is the final block of samples for an utterance by
+ * setting live_endutt to 1. On receipt of a live_endutt flag the routine
+ * automatically assumes that the next block of samples is the beginning
+ * of a new utterance 
+ */
+
+int32 live_utt_decode_block (int16 *samples, int32 nsamples, 
+		      int32 live_endutt, partialhyp_t **ohyp)
+{
+    static int32 live_begin_new_utt = 1;
+    static int32 frmno;
+    float32 **live_feat;
+    int32   live_nfr, live_nfeatvec;
+    int32   nwds;
+    /* int32   id;  */  /* unreferenced variable */
+    /* glist_t hyp;  */  /* unreferenced variable */
+    /* gnode_t *gn;  */  /* unreferenced variable */
+    /* hyp_t   *h;  */  /* unreferenced variable */
+    /* dict_t  *dict;  */  /* unreferenced variable */
+    float32 **mfcbuf;
+
+    if (live_begin_new_utt){
+        fe_start_utt(fe);
+	utt_begin (kb);
+	frmno = 0;
+	kb->nfr = 0;
+        kb->utt_hmm_eval = 0;
+        kb->utt_sen_eval = 0;
+        kb->utt_gau_eval = 0;
+        live_begin_new_utt = 0;
+    }
+    /* 10.jan.01 RAH, fe_process_utt now requires ***mfcbuf and it allocates the memory internally) */
+    mfcbuf = NULL;
+
+    live_nfr = fe_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
+    if (live_endutt) 		/* RAH, It seems that we shouldn't throw out this data */
+        fe_end_utt(fe,dummyframe); /* Flush out the fe */
+
+    /* Compute feature vectors */
+    live_nfeatvec = feat_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
+                                         live_nfr, live_begin_new_utt,
+					 live_endutt, &live_feat);
+    E_INFO ("live_nfeatvec: %ld\n",live_nfeatvec);
+
+
+    /* decode the block */
+    utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
+		      maxwpf, maxhistpf, maxhmmpf, ptranskip, hmmdumpfp);
+
+    /* Pull out partial hypothesis */
+    nwds =  live_get_partialhyp(live_endutt);
     *ohyp = parthyp;
 
     /* Clean up */
@@ -168,6 +215,12 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     else {
 	live_begin_new_utt = 0;
     }
+
+    /* I'm starting to think that fe_process_utt should not be allocating its memory,
+       that or it should allocate some max and just keep on going, this idea of constantly allocating freeing
+       memory seems dangerous to me.*/
+    ckd_free_2d((void **) mfcbuf); /* RAH, this must be freed since fe_process_utt allocates it */
+
 
     return(nwds);
 }

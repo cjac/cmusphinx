@@ -18,6 +18,8 @@ typedef struct {
 
 void live_initialize_decoder (char *argsfile);
 
+int32 live_get_partialhyp(int32 endutt);
+
 /* Routine to decode a block of incoming samples. A partial hypothesis
  * for the utterance upto the current block of samples is returned.
  * The calling routine has to inform the routine if the block of samples
@@ -32,6 +34,8 @@ int32 live_utt_decode_block (int16 *samples,    /* Incoming samples */
                       	     int32 live_endutt, /* End of utterance flag */
 			     partialhyp_t **ohyp);
 
+int32 live_free_memory ();
+  
 #ifdef __cplusplus
 }
 #endif

@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added vithist_free() to free allocated memory
+ * 
  * 30-Sep-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  *		Added vithist_entry_t.ascr.
  * 

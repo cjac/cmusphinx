@@ -9,6 +9,7 @@
  * **********************************************
  * 
  * HISTORY
+ * 19-Apr-01    Ricky Houghton, added code for freeing memory that is allocated internally.
  * 
  * 23-Apr-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Made usage of mdef optional.  If no mdef is specified while loading
@@ -150,5 +151,7 @@ s3wid_t _dict_nextalt (dict_t *d, s3wid_t wid);
  */
 int32 dict_word2basestr (char *word);
 
+/* RAH, free memory allocated for the dictionary */
+void dict_free (dict_t *d);
 
 #endif

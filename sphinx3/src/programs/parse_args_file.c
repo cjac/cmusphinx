@@ -28,6 +28,19 @@ static arg_t arg[] = {
       NULL,
       "Feature type: Must be s3_1x39 / s2_4x / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
 #endif
+    { "-lminmemory",
+      ARG_INT32,
+      "0",
+      "Load language model into memory (default: use disk cache for lm"},
+    { "-log3table",
+      ARG_INT32,
+      "1",
+      "Determines whether to use the log3 table or to compute the values at run time."},
+    { "-vqeval",
+      ARG_INT32,
+      "3",
+      "How many vectors should be analyzed by VQ when building the shortlist. It speeds up the decoder, but at a cost."},
+
     { "-cmn",
       ARG_STRING,
       "current",
@@ -235,9 +248,11 @@ static arg_t arg[] = {
     { NULL, ARG_INT32, NULL, NULL }
 };
 
+static char **liveargs = NULL;		/* RAH, make global so we can free it later */
+
 void  parse_args_file(char *live_args)
 {
-    static char **liveargs;
+  /*    static char **liveargs; */	/* RAH, 4.17.01 */
     static int32 nliveargs;
     int32 nargs, maxarglen;
     char  *argline, *targ; 
@@ -252,11 +267,11 @@ void  parse_args_file(char *live_args)
     while (fgets(argline,10000,fp) != NULL){
         if ((targ = strtok(argline," \t\n")) == NULL)
             continue; /* Empty line in argfile */
-	if (strlen(targ) > (unsigned int)maxarglen) maxarglen = strlen(targ);
+      if ((int32) strlen(targ) > maxarglen) maxarglen = strlen(targ);
 	nargs++; 
 
         while ((targ = strtok(NULL," \t\n")) != NULL){
-	    if (strlen(targ) > (unsigned int)maxarglen) maxarglen = strlen(targ);
+	if ((int32) strlen(targ) > maxarglen) maxarglen = strlen(targ);
 	    nargs++; 
 	}
     }
@@ -283,4 +298,11 @@ void  parse_args_file(char *live_args)
     cmd_ln_parse(arg, nliveargs, liveargs);
 
     return;
+}
+
+/* RAH, 4.17.01, free memory that was allocated above */
+void parse_args_free()
+{
+  cmd_ln_free();		/* Free stuff allocated in cmd_ln_parse */
+  ckd_free_2d ((void **) liveargs);
 }

@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added tmat_free to free allocated memory 
+ *
  * 29-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added tmat_chk_1skip(), and made tmat_chk_uppertri() public.
  * 
@@ -185,21 +188,43 @@ tmat_t *tmat_init (char *file_name, float64 tpfloor)
     return t;
 }
 
+/* 
+ *  RAH, Free memory allocated in tmat_init ()
+ */
+void tmat_free (tmat_t *t)
+{
+  if (t) {
+    if (t->tp)
+      ckd_free_3d ((void ***) t->tp);
+    ckd_free ((void *) t);
+  }
+}
+
 
 #if _TMAT_TEST_
+/* RAH, April 26th, 2001, opened file tmat_test.out and added tmat_free(t) call, there are no memory leaks here */
 main (int32 argc, char *argv[])
 {
     tmat_t *t;
     float64 flr;
+    FILE *fp;
     
     if (argc < 3)
 	E_FATAL("Usage: %s tmat floor\n", argv[0]);
     if (sscanf (argv[2], "%lf", &flr) != 1)
 	E_FATAL("Usage: %s tmat floor\n", argv[0]);
 
+    fp = fopen ("tmat_test.out","wt");
+    if (! fp) {
+      fprintf (stderr,"Unable to topen tmat_test.out for writing\n");
+      exit (-1);
+    }
+
     logs3_init ((float64) 1.0001);
     
     t = tmat_init (argv[1], flr);
-    tmat_dump (t);
+
+    tmat_dump (t,fp);
+    tmat_free (t);
 }
 #endif

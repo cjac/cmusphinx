@@ -281,6 +281,7 @@ void fe_mel_spec(fe_t *FE, double *spec, double *mfspec)
 void fe_mel_cep(fe_t *FE, double *mfspec, double *mfcep)
 {
     int32 i,j;
+    /*    static int first_run=1;  */  /* unreferenced variable */
     int32 period;
     float beta;
 
@@ -502,8 +503,14 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
 
     if (P->FFT_SIZE != 0) 
 	MEL->fft_size = P->FFT_SIZE;
+    else {
+      if (MEL->sampling_rate == BB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_BB_FFT_SIZE;
+      if (MEL->sampling_rate == NB_SAMPLING_RATE)
+	MEL->fft_size = DEFAULT_NB_FFT_SIZE;
     else 
 	MEL->fft_size = DEFAULT_FFT_SIZE;
+    }
  
     if (P->NUM_CEPSTRA != 0) 
 	MEL->num_cepstra = P->NUM_CEPSTRA;
@@ -528,7 +535,7 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
       MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
     else{
       if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	MEL->upper_filt_freq = (float)DEFAULT_BB_UPPER_FILT_FREQ;
+	MEL->upper_filt_freq = (float) DEFAULT_BB_UPPER_FILT_FREQ; /* RAH, typecast */
       else if (MEL->sampling_rate == NB_SAMPLING_RATE)
 	MEL->upper_filt_freq = DEFAULT_NB_UPPER_FILT_FREQ;
       else {
@@ -543,7 +550,7 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
       MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
     else {
       if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	MEL->lower_filt_freq = (float)DEFAULT_BB_LOWER_FILT_FREQ;
+	MEL->lower_filt_freq = (float) DEFAULT_BB_LOWER_FILT_FREQ; /*RAH, typecast  */
       else if (MEL->sampling_rate == NB_SAMPLING_RATE)
 	MEL->lower_filt_freq = DEFAULT_NB_LOWER_FILT_FREQ;
       else {

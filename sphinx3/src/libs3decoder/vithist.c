@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added vithist_free() to free allocated memory
+ * 
  * 30-Dec-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Added vithist_partialutt_end() to allow backtracking in
  *		the middle of an utterance
@@ -902,4 +905,15 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 	glist_free (sfwid[f]);
     }
     ckd_free ((void *) sfwid);
+}
+
+/* 
+ * RAH, free memory allocated in vithist_free 
+ */
+void vithist_free (vithist_t *v)
+{
+  if (v) {
+    ckd_free ((void *) v);
+  }
+
 }

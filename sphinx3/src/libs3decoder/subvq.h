@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Updated subvq_free () to free more allocated memory
+ * 
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Moved subvq_t.{frm_sen_eval,frm_gau_eval} to cont_mgau.h.
  * 

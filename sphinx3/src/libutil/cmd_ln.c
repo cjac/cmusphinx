@@ -338,3 +338,11 @@ const void *cmd_ln_access (char *name)
     
     return (argval[i].ptr);
 }
+
+/* RAH, 4.17.01, free memory allocated above  */
+void cmd_ln_free ()
+{
+  hash_free (ht);
+  ckd_free ((void *) argval);
+
+}

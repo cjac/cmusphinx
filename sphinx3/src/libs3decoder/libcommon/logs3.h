@@ -58,5 +58,8 @@ float64 logs3_to_p (int32 logs3p);
 /* Given log10(p), return logs3(p) */
 int32 log10_to_logs3 (float64 log10p);
 
+/* RAH, free the add_tbl if still allocated */
+void logs_free();
+
 
 #endif

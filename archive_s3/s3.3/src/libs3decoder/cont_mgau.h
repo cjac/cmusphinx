@@ -10,6 +10,8 @@
  *
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added mgau_free to free memory allocated by mgau_init()
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added mgau_model_t.{frm_sen_eval,frm_gau_eval}.
  * 		Added mgau_var_nzvec_floor().
@@ -141,6 +143,13 @@ int32 mgau_comp_eval (mgau_model_t *g,	/* In: Set of mixture Gaussians */
 		      int32 m,		/* In: Mixture being considered */
 		      float32 *x,	/* In: Input vector being compared to the components */
 		      int32 *score);	/* Out: Array of scores for each component */
+
+
+/* RAH
+ * Free memory allocated by mgau_init
+ */
+void mgau_free (mgau_model_t *g);
+
 
 #ifdef __cplusplus
 }

@@ -10,6 +10,9 @@
  * 
  * HISTORY
  * 
+ * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
+ *              Added cmn_free() and moved *mean and *var out global space and named them cmn_mean and cmn_var
+ * 
  * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Copied from previous version.
  */
@@ -44,5 +47,9 @@ void cmn_prior(float32 **incep,  /* In/Out: mfc[f] = mfc vector in frame f*/
 	      int32 nfr,        /* Number of incoming frames */
               int32 ceplen,     /* Length of the cepstral vector */
 	      int32 endutt);    /* Flag indicating end of utterance */
+
+
+/* RAH, free previously allocated memory */
+void cmn_free ();
 
 #endif
