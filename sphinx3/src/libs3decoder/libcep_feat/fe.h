@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,16 +39,16 @@
 #include "s3types.h"
 
 typedef struct{
-    float SAMPLING_RATE;
+    float32 SAMPLING_RATE;
     int32 FRAME_RATE;
-    float WINDOW_LENGTH;
+    float32 WINDOW_LENGTH;
     int32 FB_TYPE;
     int32 NUM_CEPSTRA;
     int32 NUM_FILTERS;
     int32 FFT_SIZE;
-    float LOWER_FILT_FREQ;
-    float UPPER_FILT_FREQ;
-    float PRE_EMPHASIS_ALPHA;
+    float32 LOWER_FILT_FREQ;
+    float32 UPPER_FILT_FREQ;
+    float32 PRE_EMPHASIS_ALPHA;
 
     char *wavfile;
     char *cepfile;
@@ -62,44 +62,48 @@ typedef struct{
     int32 is_single;
     int32 blocksize;
     int32 verbose;
+    int32 machine_endian;
+    int32 input_endian;
+    int32 output_endian;
+    int32 dither;
+    int32 logspec;
     int32 doublebw;
-
-
-    
+    int32 nchans;
+    int32 whichchan;
 } param_t;
 
 
 typedef struct{
-    float sampling_rate;
+    float32 sampling_rate;
     int32 num_cepstra;
     int32 num_filters;
     int32 fft_size;
-    float lower_filt_freq;
-    float upper_filt_freq;
-    float **filter_coeffs;
-    float **mel_cosine;
-    float *left_apex;
+    float32 lower_filt_freq;
+    float32 upper_filt_freq;
+    float32 **filter_coeffs;
+    float32 **mel_cosine;
+    float32 *left_apex;
     int32 *width;
     int32 doublewide;    
 }melfb_t;
 
 
 typedef struct{
-    float SAMPLING_RATE;
+    float32 SAMPLING_RATE;
     int32 FRAME_RATE;
     int32 FRAME_SHIFT;
-    float WINDOW_LENGTH;
+    float32 WINDOW_LENGTH;
     int32 FRAME_SIZE;
     int32 FFT_SIZE;
     int32 FB_TYPE;
     int32 NUM_CEPSTRA;
-    float PRE_EMPHASIS_ALPHA;
+    float32 PRE_EMPHASIS_ALPHA;
     int16 *OVERFLOW_SAMPS;
     int32 NUM_OVERFLOW_SAMPS;    
     melfb_t *MEL_FB;
     int32 START_FLAG;
     int16 PRIOR;
-    double *HAMMING_WINDOW;
+    float64 *HAMMING_WINDOW;
     
 } fe_t;
 
@@ -146,12 +150,15 @@ typedef struct{
 /* Functions */
 
 fe_t *fe_init(param_t *P);
+
 int32 fe_start_utt(fe_t *FE);
-int32 fe_end_utt(fe_t *FE, float *cepvector);
+
+int32 fe_end_utt(fe_t *FE, float32 *cepvector);
+
 int32 fe_close(fe_t *FE);
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
-int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float ***cep_block);
 
+int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
 
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,float32 ***cep_block);
 
 #endif

@@ -56,12 +56,12 @@
 int32 fe_build_melfilters(melfb_t *MEL_FB)
 {    
     int32 i, whichfilt, start_pt;
-    float leftfr, centerfr, rightfr, fwidth, height, *filt_edge;
-    float melmax, melmin, dmelbw, freq, dfreq, leftslope,rightslope;
+    float32 leftfr, centerfr, rightfr, fwidth, height, *filt_edge;
+    float32 melmax, melmin, dmelbw, freq, dfreq, leftslope,rightslope;
 
     /*estimate filter coefficients*/
-    MEL_FB->filter_coeffs = (float **)fe_create_2d(MEL_FB->num_filters, MEL_FB->fft_size, sizeof(float));
-    MEL_FB->left_apex = (float *) calloc(MEL_FB->num_filters,sizeof(float));
+    MEL_FB->filter_coeffs = (float32 **)fe_create_2d(MEL_FB->num_filters, MEL_FB->fft_size, sizeof(float32));
+    MEL_FB->left_apex = (float32 *) calloc(MEL_FB->num_filters,sizeof(float32));
     MEL_FB->width = (int32 *) calloc(MEL_FB->num_filters,sizeof(int32));
     
     if (MEL_FB->doublewide==ON)
@@ -74,11 +74,24 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	exit(0);
     }
     
-    dfreq = MEL_FB->sampling_rate/(float)MEL_FB->fft_size;
+    dfreq = MEL_FB->sampling_rate/(float32)MEL_FB->fft_size;
     
     melmax = fe_mel(MEL_FB->upper_filt_freq);
     melmin = fe_mel(MEL_FB->lower_filt_freq);
     dmelbw = (melmax-melmin)/(MEL_FB->num_filters+1);
+
+    if (MEL_FB->doublewide==ON){
+	melmin = melmin-dmelbw;
+	melmax = melmax+dmelbw;
+	if ((fe_melinv(melmin)<0) ||
+	    (fe_melinv(melmax)>MEL_FB->sampling_rate/2)){
+	    fprintf(stderr,"Out of Range: low  filter edge = %f (%f)\n",fe_melinv(melmin),0.0);
+	    fprintf(stderr,"              high filter edge = %f (%f)\n",fe_melinv(melmax),MEL_FB->sampling_rate/2);
+	    fprintf(stderr,"exiting...\n");
+	    exit(0);
+	}
+    }    
+    
     
     if (MEL_FB->doublewide==ON){
         for (i=0;i<=MEL_FB->num_filters+3; ++i){
@@ -91,19 +104,19 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	}
     }
     
-    
+    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) 
+    {
 
-    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) {
       /*line triangle edges up with nearest dft points... */
 
       if (MEL_FB->doublewide==ON){
-	leftfr   = (float)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-	centerfr = (float)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
-	rightfr  = (float)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq; 
+	leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	centerfr = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	rightfr  = (float32)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq; 
       }else{
-	leftfr   = (float)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-	centerfr = (float)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
-	rightfr  = (float)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
+	rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
       }
       
       
@@ -113,12 +126,12 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
       fwidth = rightfr - leftfr;
       
       /* 2/fwidth for triangles of area 1 */
-      height = 2/(float)fwidth;
+      height = 2/(float32)fwidth;
       leftslope = height/(centerfr-leftfr);
       rightslope = height/(centerfr-rightfr);
       
       start_pt = 1 + (int32)(leftfr/dfreq);
-      freq = (float)start_pt*dfreq;
+      freq = (float32)start_pt*dfreq;
       i=0;
       
       while (freq<=centerfr){
@@ -142,22 +155,22 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 int32 fe_compute_melcosine(melfb_t *MEL_FB)
 {
 
-    float period, freq;
+    float32 period, freq;
     int32 i,j;
     
-    period = (float)2*MEL_FB->num_filters;
+    period = (float32)2*MEL_FB->num_filters;
 
-    if ((MEL_FB->mel_cosine = (float **) fe_create_2d(MEL_FB->num_cepstra,MEL_FB->num_filters,
-					      sizeof(float)))==NULL){
+    if ((MEL_FB->mel_cosine = (float32 **) fe_create_2d(MEL_FB->num_cepstra,MEL_FB->num_filters,
+					      sizeof(float32)))==NULL){
 	fprintf(stderr,"memory alloc failed in fe_compute_melcosine()\n...exiting\n");
 	exit(0);
     }
     
     
     for (i=0; i<MEL_FB->num_cepstra; i++) {
-	freq = 2*(float)M_PI*(float)i/period;
+	freq = 2*(float32)M_PI*(float32)i/period;
 	for (j=0;j< MEL_FB->num_filters;j++)
-	    MEL_FB->mel_cosine[i][j] = (float)cos((double)(freq*(j+0.5)));	
+	    MEL_FB->mel_cosine[i][j] = (float32)cos((float64)(freq*(j+0.5)));	
     }    
 
     return(0);
@@ -165,52 +178,52 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
 }
 
 
-float fe_mel(float x)
+float32 fe_mel(float32 x)
 {
-    return (float)(2595.0*(float)log10(1.0+x/700.0));
+    return (float32)(2595.0*log10(1.0+x/700.0));
 }
 
-float fe_melinv(float x)
+float32 fe_melinv(float32 x)
 {
-    return(float)(700.0*((float)pow(10.0,x/2595.0) - 1.0));
+    return (float32)(700.0*(pow(10.0,x/2595.0) - 1.0));
 }
 
 
-void fe_pre_emphasis(int16 *in, double *out, int32 len, float
+void fe_pre_emphasis(int16 *in, float64 *out, int32 len, float32
 		     factor, int16 prior)
 {
     int32 i;
   
-    out[0] = (double)in[0]-factor*(double)prior;
+    out[0] = (float64)in[0]-factor*(float64)prior;
     for (i=1; i<len;i++) {
-	out[i] = (double)in[i] - factor*(double)in[i-1];
+	out[i] = (float64)in[i] - factor*(float64)in[i-1];
     }
  
 }
 
-void fe_short_to_double(int16 *in, double *out, int32 len)
+void fe_short_to_double(int16 *in, float64 *out, int32 len)
 {
     int32 i;
     
     for (i=0;i<len;i++)
-	out[i] = (double)in[i];
+	out[i] = (float64)in[i];
 }
 
     
-void fe_create_hamming(double *in, int32 in_len)
+void fe_create_hamming(float64 *in, int32 in_len)
 {
     int i;
      
     if (in_len>1){
 	for (i=0; i<in_len; i++)
-	    in[i] = 0.54 - 0.46*cos(2*M_PI*i/((double)in_len-1.0));
+	    in[i] = 0.54 - 0.46*cos(2*M_PI*i/((float64)in_len-1.0));
     }
     return;
     
 }
 
 
-void fe_hamming_window(double *in, double *window, int32 in_len)
+void fe_hamming_window(float64 *in, float64 *window, int32 in_len)
 {
     int i;
     
@@ -223,14 +236,13 @@ void fe_hamming_window(double *in, double *window, int32 in_len)
 }
 
 
-void fe_frame_to_fea(fe_t *FE, double *in, double *fea)
+void fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
 {
-    double *spec, *mfspec;
-
-    /* RAH, typo */
+    float64 *spec, *mfspec;
+    
     if (FE->FB_TYPE == MEL_SCALE){
-	spec = (double *)calloc(FE->FFT_SIZE, sizeof(double));
-	mfspec = (double *)calloc(FE->MEL_FB->num_filters, sizeof(double));
+	spec = (float64 *)calloc(FE->FFT_SIZE, sizeof(float64));
+	mfspec = (float64 *)calloc(FE->MEL_FB->num_filters, sizeof(float64));
 
 	if (spec==NULL || mfspec==NULL){
 	    fprintf(stderr,"memory alloc failed in fe_frame_to_fea()\n...exiting\n");
@@ -253,7 +265,7 @@ void fe_frame_to_fea(fe_t *FE, double *in, double *fea)
 
 
 
-void fe_spec_magnitude(double *data, int32 data_len, double *spec, int32 fftsize)
+void fe_spec_magnitude(float64 *data, int32 data_len, float64 *spec, int32 fftsize)
 {
     int32  j,wrap;
     complex  *FFT, *IN;
@@ -304,12 +316,12 @@ void fe_spec_magnitude(double *data, int32 data_len, double *spec, int32 fftsize
     return;
 }
 
-void fe_mel_spec(fe_t *FE, double *spec, double *mfspec)
+void fe_mel_spec(fe_t *FE, float64 *spec, float64 *mfspec)
 {
     int32 whichfilt, start, i;
-    float dfreq;
+    float32 dfreq;
     
-    dfreq = FE->SAMPLING_RATE/(float)FE->FFT_SIZE;
+    dfreq = FE->SAMPLING_RATE/(float32)FE->FFT_SIZE;
     
     for (whichfilt = 0; whichfilt<FE->MEL_FB->num_filters; whichfilt++){
 	start = (int32)(FE->MEL_FB->left_apex[whichfilt]/dfreq) + 1;
@@ -324,11 +336,11 @@ void fe_mel_spec(fe_t *FE, double *spec, double *mfspec)
 
 
 
-void fe_mel_cep(fe_t *FE, double *mfspec, double *mfcep)
+void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
 {
     int32 i,j;
     int32 period;
-    float beta;
+    float32 beta;
 
     period = FE->MEL_FB->num_filters;
 
@@ -350,7 +362,7 @@ void fe_mel_cep(fe_t *FE, double *mfspec, double *mfcep)
 		beta = 1.0;
 	    mfcep[i] += beta*mfspec[j]*FE->MEL_FB->mel_cosine[i][j];
 	}
-		mfcep[i] /= (float)period;
+		mfcep[i] /= (float32)period;
     }
     return;
 }
@@ -370,7 +382,7 @@ int32 fe_fft(complex *in, complex *out, int32 N, int32 invert)
     *buffer,			/* from and to flipflop btw out and buffer */
     *exch,			/* temporary for exchanging from and to	*/
     *wEnd;			/* to keep ww from going off end	*/
-  static double
+  static float64
     div,			/* amount to divide result by: N or 1	*/
     x;				/* misc.				*/
 
@@ -515,7 +527,7 @@ void fe_parse_general_params(param_t *P, fe_t *FE)
     if (P->WINDOW_LENGTH != 0) 
 	FE->WINDOW_LENGTH = P->WINDOW_LENGTH;
     else 
-	FE->WINDOW_LENGTH = (float)DEFAULT_WINDOW_LENGTH;
+	FE->WINDOW_LENGTH = (float32)DEFAULT_WINDOW_LENGTH;
     
     if (P->FB_TYPE != 0) 
 	FE->FB_TYPE = P->FB_TYPE;
@@ -525,7 +537,7 @@ void fe_parse_general_params(param_t *P, fe_t *FE)
     if (P->PRE_EMPHASIS_ALPHA != 0) 
 	FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
     else 
-	FE->PRE_EMPHASIS_ALPHA = (float)DEFAULT_PRE_EMPHASIS_ALPHA;
+	FE->PRE_EMPHASIS_ALPHA = (float32)DEFAULT_PRE_EMPHASIS_ALPHA;
  
     if (P->NUM_CEPSTRA != 0) 
 	FE->NUM_CEPSTRA = P->NUM_CEPSTRA;
@@ -580,7 +592,7 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
       MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
     else{
       if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	MEL->upper_filt_freq = (float) DEFAULT_BB_UPPER_FILT_FREQ; /* RAH, typecast */
+	MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ; /* RAH, typecast */
       else if (MEL->sampling_rate == NB_SAMPLING_RATE)
 	MEL->upper_filt_freq = DEFAULT_NB_UPPER_FILT_FREQ;
       else {
@@ -589,13 +601,12 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
 	fflush(stderr); exit(0);
       }
     } 
-    
-    
+
     if (P->LOWER_FILT_FREQ != 0)	
       MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
     else {
       if (MEL->sampling_rate == BB_SAMPLING_RATE)
-	MEL->lower_filt_freq = (float) DEFAULT_BB_LOWER_FILT_FREQ; /*RAH, typecast  */
+	MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ; /*RAH, typecast  */
       else if (MEL->sampling_rate == NB_SAMPLING_RATE)
 	MEL->lower_filt_freq = DEFAULT_NB_LOWER_FILT_FREQ;
       else {

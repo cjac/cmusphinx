@@ -33,12 +33,8 @@
  * ====================================================================
  *
  */
-
-#ifdef WIN32			/* RAH, needed for memcpy */
-#include <memory.h>
-#endif
-
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -102,7 +98,7 @@ fe_t *fe_init(param_t *P)
 
     /* establish buffers for overflow samps and hamming window */
     FE->OVERFLOW_SAMPS = (int16 *)calloc(FE->FRAME_SIZE,sizeof(int16));
-    FE->HAMMING_WINDOW = (double *) calloc(FE->FRAME_SIZE,sizeof(double));
+    FE->HAMMING_WINDOW = (float64 *) calloc(FE->FRAME_SIZE,sizeof(float64));
     
     if (FE->OVERFLOW_SAMPS==NULL || FE->HAMMING_WINDOW==NULL){
 	fprintf(stderr,"memory alloc failed in fe_init()\n...exiting\n");
@@ -151,7 +147,7 @@ int32 fe_start_utt(fe_t *FE)
 
 /*********************************************************************
    FUNCTION: fe_process_utt
-   PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float **cep
+   PARAMETERS: fe_t *FE, int16 *spch, int32 nsamps, float32 **cep
    RETURNS: number of frames of cepstra computed 
    DESCRIPTION: processes the given speech data and returns
    features. will prepend overflow data from last call and store new
@@ -161,7 +157,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
-    double *spbuf, *fr_data, *fr_fea;
+    float64 *spbuf, *fr_data, *fr_fea;
     int16 *tmp_spch = spch;
     float32 **cep=NULL;
     
@@ -197,12 +193,12 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
 
       spbuf_len = (frame_count-1)*FE->FRAME_SHIFT + FE->FRAME_SIZE;    
       /* assert(spbuf_len <= nsamps);*/
-      if ((spbuf=(double *)calloc(spbuf_len, sizeof(double)))==NULL){
+      if ((spbuf=(float64 *)calloc(spbuf_len, sizeof(float64)))==NULL){
 	  fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
 	  exit(0);
       }
       
-      /* pre-emphasis if needed,convert from int16 to double */
+      /* pre-emphasis if needed,convert from int16 to float64 */
       if (FE->PRE_EMPHASIS_ALPHA != 0.0){
 	fe_pre_emphasis(tmp_spch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
       } else{
@@ -210,8 +206,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
       }
       
       /* frame based processing - let's make some cepstra... */    
-      fr_data = (double *)calloc(FE->FRAME_SIZE, sizeof(double));
-      fr_fea = (double *)calloc(FE->NUM_CEPSTRA, sizeof(double));
+      fr_data = (float64 *)calloc(FE->FRAME_SIZE, sizeof(float64));
+      fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64));
       
       if (fr_data==NULL || fr_fea==NULL){
 	  fprintf(stderr,"memory alloc failed in fe_process_utt()\n...exiting\n");
@@ -265,7 +261,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block)	
 
 /*********************************************************************
    FUNCTION: fe_end_utt
-   PARAMETERS: fe_t *FE, float *cepvector
+   PARAMETERS: fe_t *FE, float32 *cepvector
    RETURNS: number of frames processed (0 or 1) 
    DESCRIPTION: if there are overflow samples remaining, it will pad
    with zeros to make a complete frame and then process to
@@ -276,7 +272,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
 {
   int32 pad_len=0, frame_count=0;
   int32 i;
-  double *spbuf, *fr_fea = NULL;
+  float64 *spbuf, *fr_fea = NULL;
   
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
@@ -287,7 +283,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     FE->NUM_OVERFLOW_SAMPS += pad_len;
     assert(FE->NUM_OVERFLOW_SAMPS==FE->FRAME_SIZE);
     
-    if ((spbuf=(double *)calloc(FE->FRAME_SIZE,sizeof(double)))==NULL){
+    if ((spbuf=(float64 *)calloc(FE->FRAME_SIZE,sizeof(float64)))==NULL){
 	fprintf(stderr,"memory alloc failed in fe_end_utt()\n...exiting\n");
 	exit(0);
     }
@@ -300,7 +296,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector)
     
     /* again, who should implement cep vector? this can be implemented
        easily from outside or easily from in here */
-    if ((fr_fea = (double *)calloc(FE->NUM_CEPSTRA, sizeof(double)))==NULL){
+    if ((fr_fea = (float64 *)calloc(FE->NUM_CEPSTRA, sizeof(float64)))==NULL){
 	fprintf(stderr,"memory alloc failed in fe_end_utt()\n...exiting\n");
 	exit(0);
     }
