@@ -104,13 +104,6 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 #include "utt.h"
 #include <time.h>
 
-/* Decoder states */
-enum {
-  LD_STATE_IDLE,
-  LD_STATE_DECODING,
-  LD_STATE_FINISHED
-};
-
 /* Utility function declarations */
 static int
 ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln);
@@ -256,7 +249,6 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 
   ld_free_hyps(_decoder);
 
-  fe_start_utt(_decoder->fe);
   utt_begin(&_decoder->kb);
 
   _decoder->frame_num = 0;
@@ -264,6 +256,7 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
   _decoder->kb.utt_hmm_eval = 0;
   _decoder->kb.utt_sen_eval = 0;
   _decoder->kb.utt_gau_eval = 0;
+  _decoder->ld_state = LD_STATE_DECODING;
 
   return ld_set_uttid(_decoder, _uttid);
 }
@@ -277,6 +270,7 @@ ld_end_utt(live_decoder_t *_decoder)
   _decoder->kb.tot_fr += _decoder->kb.nfr;
   ld_record_hyps(_decoder, TRUE);
   utt_end(&_decoder->kb);
+  _decoder->ld_state = LD_STATE_IDLE;
 }
 
 void
@@ -516,9 +510,13 @@ ld_process_raw_impl(live_decoder_t *_decoder,
   int32 num_features = 0;
 
   assert(_decoder != NULL);
+
+  if (begin_utt) {
+    fe_start_utt(_decoder->fe);
+  }
 	
   num_frames = fe_process_utt(_decoder->fe, samples, num_samples, &frames);
-	
+
   if (end_utt) {
     fe_end_utt(_decoder->fe, dummy_frame);
   }
@@ -540,7 +538,7 @@ ld_process_raw_impl(live_decoder_t *_decoder,
 		     _decoder->hmm_log);
   }
 	
-  if (frames) {
+  if (frames != NULL) {
     ckd_free_2d((void **)frames);
   }
 }
