@@ -1,0 +1,24 @@
+BatchDecoder: decoding files in /lab/speech/sphinx4/data/hub4/eval99/supervised/all_hub4.batch
+----------
+
+Decoding: /lab/speech/sphinx4/data/hub4/eval99/supervised/bn99en_1.1.f4.raw
+
+   This Timing Audio: 6.3s  Proc: 0.9s  Speed: 0.15 X real time
+   Total Timing Audio: 6.3s  Proc: 0.9s  Speed: 0.15 X real time
+   Memory usage data unavailable
+# --------------
+
+Decoding: /lab/speech/sphinx4/data/hub4/eval99/supervised/bn99en_1.2.fx.raw
+
+REF:   airline passengers and outrageous behavior at thirty thousand feet what can an airline do
+HYP:  ou
+   Accuracy: %0.0   Errors: 15  (Rec: 1  Ins: 0  Del: 14)
+   Words: 15   Matches: 0
+   Sentences: 1   Matches: 0   SentenceAcc: %0.0
+   This Timing Audio: 6.9s  Proc: 4.6s  Speed: 0.66 X real time
+   Total Timing Audio: 13.2s  Proc: 5.5s  Speed: 0.42 X real time
+   Memory usage data unavailable
+# --------------
+
+Decoding: /lab/speech/sphinx4/data/hub4/eval99/supervised/bn99en_1.3.f3.raw
+

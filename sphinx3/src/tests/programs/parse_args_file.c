@@ -92,6 +92,10 @@ static arg_t arg[] = {
       ARG_FLOAT64,
       "1e-80", /*default is huge , so nearly every cd phone will be computed */
       "CI phone beam for CI-based GMM Selection. Good number should be [0(widest) .. 1(narrowest)]"},
+    { "-maxcdsenpf",
+      ARG_INT32,
+      "100000",
+      "Max no. of distinct CD senone will be computed. " },
     { "-wend_beam",
       ARG_FLOAT64,
       "1.0e-80",

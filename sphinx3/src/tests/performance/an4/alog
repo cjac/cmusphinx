@@ -1,0 +1,167 @@
+rm -f gmake-an4_words_unigram.results
+/bin/cp ARGS.an4_unigram ARGS.an4_words_unigram
+echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP" >> ARGS.an4_words_unigram
+../batchmetrics ./an4_words.batch / ./ARGS.an4_words_unigram > gmake-an4_words_unigram.results
+INFO: cmd_ln.c(276): Parsing command line:
+ \
+	-mdef /lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef \
+	-fdict /lab/speech/sphinx4/data/wsj/dict/fillerdict \
+	-dict /lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d \
+	-mean /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means \
+	-var /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances \
+	-mixw /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights \
+	-tmat /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices \
+	-upperf 6800 \
+	-lowerf 130 \
+	-nfilt 40 \
+	-samprate 16000 \
+	-agc none \
+	-varnorm no \
+	-cmn current \
+	-subvqbeam 1e-02 \
+	-epl 4 \
+	-fillprob 0.02 \
+	-maxwpf 10 \
+	-wip 0.2 \
+	-lextreedump 0 \
+	-lw 23 \
+	-beam 1e-160 \
+	-wbeam 1e-080 \
+	-lm /lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP 
+
+Configuration in effect:
+[NAME]		[DEFLT]		[VALUE]
+-agc		max		none
+-alpha		0.97		9.700000e-01
+-beam		1.0e-55		1.000000e-160
+-bghist		0		0
+-bptbldir			
+-cepdir				
+-ci_pbeam	1e-80		1.000000e-80
+-cmn		current		current
+-cond_ds	0		0
+-ctl				
+-ctlcount	1000000000	1000000000
+-ctloffset	0		0
+-ctl_lm				
+-dict				/lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d
+-dist_ds	0		0
+-doublebw	0		0
+-ds		1		1
+-epl		3		4
+-fdict				/lab/speech/sphinx4/data/wsj/dict/fillerdict
+-feat		1s_c_d_dd	1s_c_d_dd
+-fillpen			
+-fillprob	0.1		2.000000e-02
+-frate		100		100
+-gs				
+-gs4gs		1		1
+-hmmdump	0		0
+-hmmhistbinsize	5000		5000
+-hyp				
+-hypseg				
+-input_endian	0		0
+-latext		lat.gz		lat.gz
+-lextreedump	0		0
+-lm				/lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP
+-lmctlfn			
+-lmdumpdir			
+-lminmemory	0		0
+-log3table	1		1
+-logbase	1.0003		1.000300e+00
+-lowerf		200		1.300000e+02
+-lw		8.5		2.300000e+01
+-machine_endian	0		0
+-maxcepvecs	256		256
+-maxhistpf	100		100
+-maxhmmpf	20000		20000
+-maxhyplen	1000		1000
+-maxwpf		20		10
+-mdef				/lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
+-mean				/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means
+-mixw				/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights
+-mixwfloor	0.0000001	1.000000e-07
+-nfft		256		256
+-nfilt		31		40
+-Nlextree	3		3
+-outlatdir			
+-outlatoldfmt	1		1
+-pbeam		1.0e-50		1.000000e-50
+-pheurtype	0		0
+-pl_beam	1.0e-80		1.000000e-80
+-pl_window	1		1
+-ptranskip	0		0
+-samprate	8000		16000
+-senmgau	.cont.		.cont.
+-silprob	0.1		1.000000e-01
+-subvq				
+-subvqbeam	3.0e-3		1.000000e-02
+-svq4svq	0		0
+-tmat				/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices
+-tmatfloor	0.0001		1.000000e-04
+-treeugprob	1		1
+-upperf		3500		6.800000e+03
+-utt				
+-uw		0.7		7.000000e-01
+-var				/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances
+-varfloor	0.0001		1.000000e-04
+-varnorm	no		no
+-vqeval		3		3
+-wbeam		1.0e-35		1.000000e-80
+-wend_beam	1.0e-80		1.000000e-80
+-wip		0.7		2.000000e-01
+-wlen		0.0256		2.560000e-02
+
+INFO: kbcore.c(95): Initializing core models:
+INFO: logs3.c(99): Initializing logbase: 1.000300e+00 (add table: 1)
+INFO: logs3.c(161): Log-Add table size = 29350
+INFO: feat.c(642): Initializing feature stream to type: '1s_c_d_dd', CMN='current', VARNORM='no', AGC='none'
+INFO: mdef.c(601): Reading model definition: /lab/speech/sphinx4/data/wsj/etc/WSJ_clean_13dCep_16k_40mel_130Hz_6800Hz.4000.mdef
+INFO: mdef.c(778): 49 CI-phone, 110829 CD-phone, 3 emitstate/phone, 147 CI-sen, 4147 Sen, 21440 Sen-Seq
+INFO: dict.c(358): Reading main dictionary: /lab/speech/sphinx4/data/wsj/dict/cmudict.0.6d
+INFO: dict.c(361): 129246 words read
+INFO: dict.c(366): Reading filler dictionary: /lab/speech/sphinx4/data/wsj/dict/fillerdict
+INFO: dict.c(369): 12 words read
+INFO: lm.c(740): LM read('/lab/speech/sphinx4/data/an4/lists/an4_words.unigram.lm.DMP', lw= 23.00, wip= -5364, uw= 0.70)
+INFO: lm.c(554):       72 ug
+INFO: lm.c(584):        1 bigrams [on disk]
+INFO: lm.c(614):        2 bigram prob entries
+INFO: lm.c(697):       72 word strings
+ERROR: "wid.c", line 173: <UNK> is not a word in dictionary and it is not a class tag. 
+INFO: wid.c(184): 1 LM words not in dictionary; ignored
+INFO: cont_mgau.c(95): Reading mixture gaussian file '/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/means'
+INFO: cont_mgau.c(249): 4147 mixture Gaussians, 8 components, 1 streams, veclen 39
+INFO: cont_mgau.c(95): Reading mixture gaussian file '/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/variances'
+INFO: cont_mgau.c(249): 4147 mixture Gaussians, 8 components, 1 streams, veclen 39
+INFO: cont_mgau.c(330): Reading mixture weights file '/lab/speech/sphinx4/data/wsj/cd_continuous_8gau/mixture_weights'
+INFO: cont_mgau.c(460): Read 4147 x 8 mixture weights
+INFO: cont_mgau.c(477): Removing uninitialized Gaussian densities
+ 1
+WARNING: "cont_mgau.c", line 513: 31 densities removed (1 mixtures removed entirely)
+INFO: cont_mgau.c(522): Applying variance floor
+INFO: cont_mgau.c(535): 55 variance values floored
+INFO: cont_mgau.c(582): Precomputing Mahalanobis distance invariants
+INFO: tmat.c(135): Reading HMM transition probability matrices: /lab/speech/sphinx4/data/wsj/cd_continuous_8gau/transition_matrices
+INFO: tmat.c(217): Read 49 transition matrices of size 3x4
+INFO: dict2pid.c(254): Building PID tables for dictionary
+INFO: dict2pid.c(422): 3757 composite states; 1768 composite sseq
+INFO: kbcore.c(231): Verifying models consistency:
+INFO: kb.c(197): Building lextrees
+INFO: kb.c(243): Creating Unigram Table
+INFO: kb.c(246): Size of word table after unigram + words in class: 69
+INFO: kb.c(263): Lextrees(3), 1094 nodes(ug)
+INFO: kb.c(291): Lextrees(3), 10 nodes(filler)
+INFO: kb.c(322): Parameters used in Beam Pruning of Viterbi Search: Beam= -1228025, PBeam= -383758, WBeam= -614012 (Skip=0), WEndBeam=-614012
+INFO: kb.c(328): Parameters used in histogram pruning: Max. HMM per frame=20000, Max. History per frame=100, Max. Word per frame=10
+WARNING: "logs3.c", line 203: logs3 argument: 0.000000e+00; using S3_LOGPROB_ZERO
+INFO: fast_algo_struct.c(108): Virtually no CI phone beam is applied now. (ci_pbeam <-1000000)
+INFO: kb.c(342): Parameters used in Fast GMM computation:
+INFO: kb.c(343):    Frame-level: Down Sampling Ratio 1, Conditional Down Sampling? 0, Distance-based Down Sampling? 0
+INFO: kb.c(344):      GMM-level: CI phone beam -939524096
+INFO: kb.c(345): Gaussian-level: GS map would be used for Gaussian Selection? =1, SVQ would be used as Gaussian Score? =0 SubVQ Beam -15350
+INFO: kb.c(354): Phoneme look-ahead window size = 1
+INFO: kb.c(359): Phoneme look-ahead beam = -614012
+INFO: vithist.c(77): Initializing Viterbi-history module
+INFO: batch_metrics.c(170): Input data will NOT be byte swapped
+FATAL_ERROR: "batch_metrics.c", line 196: Unable to read ///lab/speech/sphinx4/data/an4/an4/an4_clstk/fash/an251-fash-b.raw
+make: *** [an4_words_unigram] Error 255
