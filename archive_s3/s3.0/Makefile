@@ -25,7 +25,7 @@
 # When in doubt, make the necessary -clean targets first before the -install ones.
 # (The -clean targets basically remove backup copies, *.o, *.a files.)
 
-MAKE = gmake
+MAKE = make
 
 # Machine-specific flags for "make"
 #
