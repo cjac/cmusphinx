@@ -1043,7 +1043,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->thresh_sil = r->noise_level + r->delta_sil;
     r->thresh_speech = r->noise_level + r->delta_speech;
     r->thresh_update = CONT_AD_THRESH_UPDATE;
-    r->adapt_rate = CONT_AD_ADAPT_RATE;
+    r->adapt_rate = (float32)CONT_AD_ADAPT_RATE;
     
     r->state = CONT_AD_STATE_SIL;
 

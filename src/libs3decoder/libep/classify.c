@@ -114,10 +114,10 @@ class_t * classw_initialize(char* meanfile, char *varfile, float64 varfloor,
   
   /******** Set the priors of the classes *************/
 
-  CLASSW->priors[0] = PRIOR_N;    // N
-  CLASSW->priors[1] = PRIOR_O;    // O
-  CLASSW->priors[2] = PRIOR_S;    // S
-  CLASSW->priors[3] = PRIOR_SIL;  // SIL
+  CLASSW->priors[0] = (float32)PRIOR_N;    // N
+  CLASSW->priors[1] = (float32)PRIOR_O;    // O
+  CLASSW->priors[2] = (float32)PRIOR_S;    // S
+  CLASSW->priors[3] = (float32)PRIOR_SIL;  // SIL
 
   /********* Initialize voting window parameters **********/
 
@@ -258,8 +258,8 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 {
   int i,j,k;
   
-  float a, b, pmix;	
-  float m, v, f;
+  float32 a, b, pmix;	
+  float32 m, v, f;
   /* a is the product(k) [1/(2 * pi * varijk )^(1/2)]*/
   /* b is the sum (k) [ -0.5 * pow ( (x[k] - meansijk), 2 )  */
   /* p is the likelihood given class and gaussian mixture */
@@ -279,7 +279,7 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 
 	  b += (f - m) * (f - m) * v; 
 	}	
-	pmix = a * exp (-0.5 * b);	
+	pmix = a * exp ((float)(-0.5) * b);	
 	likeli[i] += g->mgau[i].mixw_f[j] * pmix; 
       }	
   }

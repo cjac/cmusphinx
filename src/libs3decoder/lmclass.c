@@ -238,7 +238,7 @@ lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file)
 	    if (SUMp >= 1.0)
 		E_FATAL("Sum(prob)(LMClass %s) = %e\n", lmclass->name, SUMp);
 	    
-	    p = (1.0 - SUMp) / (float)n_implicit_prob;
+	    p = ((float32)1.0 - SUMp) / (float32)n_implicit_prob;
 	    LOGp = logs3(p);
 	    
 	    for (lmclass_word = lmclass->wordlist;
