@@ -23,3 +23,5 @@
 -upperf 6855.49756
 -lowerf 133.33334
 -lm /lab/speech/sphinx4/data/wsj0/tcb05cnp.Z.DMP
+-nfft 512
+-input_endian 1

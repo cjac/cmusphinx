@@ -23,4 +23,6 @@
 -logbase 	1.0001
 -upperf 6855.49756
 -lowerf 133.33334
+-nfft 512
+-input_endian 1
 
