@@ -15,10 +15,12 @@ AC_HEADER_STDC
 
 AC_TYPE_SIGNAL
 
-hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
+# hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
+hmmdata=`ls -1 /dev/null | egrep -v '(Makefile|CVS)'`
 hmmdata=`echo $hmmdata`
 
-lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
+# lmdata=`ls -1 $srcdir/model/lm/an4 | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
+lmdata=`ls -1 /dev/null | egrep -v '(Makefile|CVS)' | sed 's/\.in//g'`
 lmdata=`echo $lmdata`
 
 docdata=`ls -1 $srcdir/doc | egrep -v '(Makefile|CVS)'`
