@@ -46,9 +46,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.12  2004/07/16  15:54:36  egouvea
- * Commented out part of code moved from fbs_main.c to uttproc.c, and added comment
+ * Revision 1.13  2004/07/16  16:15:44  egouvea
+ * Ooops, fixed bug: when commenting out code, commented one '}' too many
  * 
+ * Revision 1.12  2004/07/16 15:54:36  egouvea
+ * Commented out part of code moved from fbs_main.c to uttproc.c, and added comment
+ *
  * Revision 1.11  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -1900,9 +1903,9 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
     
     if (pscr2lat)
 	search_uttpscr2phlat_print ();
-    }
 #endif
- 
+    }
+    
     return hypseg;	/* Linked list of hypothesis words */
 }
 
