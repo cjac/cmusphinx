@@ -145,7 +145,8 @@ my $what = join " ", ($pgm,
        -ctlcount => $ctlcount,
        -cepdir => $cepdir,
        -datadir => $cepdir,
-       -agcmax => "FALSE",
+#       -agcmax => "FALSE",  # only agcmax in batch mode
+       -agcemax => "TRUE",   # only agcemax in live mode
 # language weights, other LM parameters ------------- 
        -langwt => $lw,
        -fwdflatlw => $fwdflatlw,
