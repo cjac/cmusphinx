@@ -1,18 +1,3 @@
-INFO: ../main.c(926): Host: 'alf20.speech.cs.cmu.edu'
-INFO: ../main.c(927): Directory: '/usr2/rkm/s3.2/doc'
-INFO: ../main.c(931): Compiled on Feb 23 2000, at 13:41:43
-
-INFO: ../cmd_ln.c(241): Parsing command line:
-../bin/alpha/dec3st 
-
-ERROR: "../cmd_ln.c", line 305: Missing required argument -mdef
-ERROR: "../cmd_ln.c", line 305: Missing required argument -dict
-ERROR: "../cmd_ln.c", line 305: Missing required argument -fdict
-ERROR: "../cmd_ln.c", line 305: Missing required argument -lm
-ERROR: "../cmd_ln.c", line 305: Missing required argument -mean
-ERROR: "../cmd_ln.c", line 305: Missing required argument -var
-ERROR: "../cmd_ln.c", line 305: Missing required argument -mixw
-ERROR: "../cmd_ln.c", line 305: Missing required argument -tmat
 Arguments list definition:
 [NAME]		[DEFLT]		[VALUE]
 -agc		max		Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))
@@ -28,38 +13,49 @@ Arguments list definition:
 -epl		3		Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next
 -fdict				Filler word pronunciation dictionary input file
 -fillpen			Filler word probabilities input file
--fillprob	0.02		Default non-silence filler word probability
+-fillprob	0.1		Default non-silence filler word probability
 -hmmdump	0		Whether to dump active HMM details to stderr (for debugging)
 -hmmhistbinsize	5000		Performance histogram: #frames vs #HMMs active; #HMMs/bin in this histogram
 -hypseg				Recognition result file, with word segmentations and scores
 -latext		lat.gz		Filename extension for lattice files (gzip compressed, by default)
 -lextreedump	0		Whether to dump the lextree structure to stderr (for debugging)
 -lm				Word trigram language model input file
+-lminmemory	0		Load language model into memory (default: use disk cache for lm
+-log3table	1		Determines whether to use the log3 table or to compute the values at run time.
 -logbase	1.0003		Base in which all log-likelihoods calculated
+-lowerf		200		Lower edge of filters
 -lw		8.5		Language weight
+-maxcepvecs	256		Maximum number of cepstral vectors that can be obtained from a single sample buffer
 -maxhistpf	100		Max no. of histories to maintain at each frame
 -maxhmmpf	20000		Max no. of active HMMs to maintain at each frame; approx.
+-maxhyplen	1000		Maximum number of words in a partial hypothesis (for block decoding)
 -maxwpf		20		Max no. of distinct word exits to maintain at each frame
 -mdef				Model definition input file
 -mean				Mixture gaussian means input file
 -mixw				Senone mixture weights input file
 -mixwfloor	0.0000001	Senone mixture weights floor (applied to data from -mixw file)
+-nfilt		31		Number of mel filters
 -Nlextree	3		No. of lextrees to be instantiated; entries into them staggered in time
 -outlatdir			Directory in which to dump word lattices
 -outlatoldfmt	1		Whether to dump lattices in old format
 -pbeam		1.0e-50		Beam selecting HMMs transitioning to successors in each frame [0(widest)..1(narrowest)]
 -ptranskip	0		Use wbeam for phone transitions every so many frames (if >= 1)
+-samprate	8000		Sampling rate (only 8K and 16K currently supported)
 -silprob	0.1		Default silence word probability
 -subvq				Sub-vector quantized form of acoustic model
 -subvqbeam	3.0e-3		Beam selecting best components within each mixture Gaussian [0(widest)..1(narrowest)]
 -tmat				HMM state transition matrix input file
 -tmatfloor	0.0001		HMM state transition probability floor (applied to -tmat file)
 -treeugprob	1		If TRUE (non-0), Use unigram probs in lextree
+-upperf		3500		Upper edge of filters
 -utt				Utterance file to be processed (-ctlcount argument times)
 -uw		0.7		Unigram weight
 -var				Mixture gaussian variances input file
 -varfloor	0.0001		Mixture gaussian variance floor (applied to data from -var file)
 -varnorm	no		Variance normalize each utterance (yes/no; only applicable if CMN is also performed)
+-vqeval		3		How many vectors should be analyzed by VQ when building the shortlist. It speeds up the decoder, but at a cost.
 -wbeam		1.0e-35		Beam selecting word-final HMMs exiting in each frame [0(widest)..1(narrowest)]
--wip		0.2		Word insertion penalty
+-wip		0.7		Word insertion penalty
 
+FATAL_ERROR: "main_live_pretend.c", line 67: 
+USAGE: livepretend <ctlfile> <inrawdir> <argsfile>

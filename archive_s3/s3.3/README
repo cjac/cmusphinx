@@ -2,12 +2,17 @@ This is Sphinx 3.3 (s3.3), one of Carnegie Mellon University's open
 source large vocabulary, speaker-independent continuous speech
 recognition engine. Please see the LICENSE file for terms of use.
 
-THIS IS A RESEARCH SYSTEM.  This is also an early release
-of a research system.  We know the APIs and function
-names are likely to change, and that several tools need
-to be made available to make this all complete.  With
-your help and contributions, this can progress in response
-to the needs and patches provided.
+Over the course of development, Sphinx-3 branched into different
+versions. The version available here, often times referred to as
+"sphinx3.3", "s3.3", or "fast decoder", is a faster version of the
+original code. Higher speed has been achieved at the cost of less
+accuracy compared to the slow decoder.
+
+THIS IS A RESEARCH SYSTEM. This is also an early release of a research
+system. We know the APIs and function names are likely to change, and
+that several tools need to be made available to make this all
+complete. With your help and contributions, this can progress in
+response to the needs and patches provided.
 
 For documentation, please use your web browser to see
 doc/index.html. If you install the distribution in the default
@@ -22,15 +27,15 @@ For up-to-date information, please see the web site at
 
 
 The s3.3 decoder is a live-mode capable version of the s3.2 decoder.
-The decoder routine is stored in a library called libs3decoder.a
-The decoder function takes blocks of speech samples and returns partial 
-hypotheses for the blocks decoded during runtime. An example of its
-use is given in main_live_example.c
+The decoder routine is stored in a library called libs3decoder.a. The
+decoder function takes blocks of speech samples and returns partial
+hypotheses for the blocks decoded during runtime. Examples of its use
+are given in main_live_example.c and main_live_pretend.c
 
 This directory contains the scripts and instructions necessary for
-decoding speech input using the CMU Sphinx Recogniser.
+decoding speech input using the CMU Sphinx Recognizer.
 
-This distribution is free software, see COPYING for licence.
+This distribution is free software, see LICENSE for license.
 
 This distribution now uses GNU autoconf to find out basic information
 about your system, and should compile on most Unix and Unix-like
@@ -39,13 +44,23 @@ systems, and certainly on Linux.  To build, simply run
     ./configure
     make
 
-(Or whatever you call GNU Make).  This should configure everything
-automatically, though it may fail if it cannot locate Perl 5 on your
-system.  To fix this, set the PERL environment variables to point to
-the appropriate binaries.
+(Or whatever you call GNU Make). This should configure everything
+automatically. After a successful compilation, you may test the system
+by running
 
-This work was build over a large number of years at CMU by most of the
-people in the Sphinx Group, some code goes back to 1986.  The most
+    make test
+
+and then install it with
+
+    make install
+
+This defaults to installing Sphinx-3 under /usr/local. You may
+customize it by running ./configure with an argument, as in
+
+    ./configure --prefix=/my/own/installation/directory
+
+This work was built over a large number of years at CMU by most of the
+people in the Sphinx Group. Some code goes back to 1986. The most
 recent work in tidying this up for release includes the following,
 listed alphabetically (at least these are the people who are most
 likely able to help you).
