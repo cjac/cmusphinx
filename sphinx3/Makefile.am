@@ -127,7 +127,11 @@ test-align:
 	    -outsentfn $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
+	$(LIBTOOL) --mode=execute diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
+	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	$(LIBTOOL) --mode=execute diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
 
+	
 
 test-allphone:
 	@echo "ALLPHONE TEST"
@@ -183,7 +187,7 @@ test-dag:
 
 test-gausubvq:
 	@echo "GAUSUBVQ TEST"
-#	@echo "This will compare the answer with a pre-generated svq file"
+	@echo "This will compare the answer with a pre-generated svq file"
 	$(LIBTOOL) --mode=execute src/programs/gausubvq \
         -mean $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
         -var  $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
@@ -191,10 +195,11 @@ test-gausubvq:
         -svspec 0-38 \
         -iter 20 \
         -svqrows 16 \
+	-seed 1111 \
         -subvq $@.out 
-#	grep -v "#" subvq.out > tmp.out
-#	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-#	rm tmp.out subvq.out
+	grep -v "#" $@.out > tmp.out
+	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+	rm tmp.out 
 
 test-ep :
 	@echo "EP TEST"
@@ -212,7 +217,10 @@ test-ep :
 	        -blocksize 262500 \
 	        -mean ./model/ep/means \
 	        -var ./model/ep/variances \
-	        -mixw ./model/ep/mixture_weights 
-
+	        -mixw ./model/ep/mixture_weights \
+		2>&1 |grep "Utt_" > $@.out
+	$(LIBTOOL) --mode=execute diff $@.out $(top_srcdir)/model/ep/ep.result
+	$(LIBTOOL) --mode=execute rm $@.out		
+	
 
 
