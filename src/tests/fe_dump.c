@@ -281,7 +281,7 @@ int32 fe_dump_end_utt(fe_t *FE, float32 *cepvector)
             cepvector[i] = (float32)fr_fea[i];
         
         if (fe_dump) {
-            fe_dump2d_float_frame(fe_dumpfile, cepvector, frame_count, 
+            fe_dump_float_frame(fe_dumpfile, cepvector, 
                                   FE->NUM_CEPSTRA,
                                   "CEPSTRUM_PRODUCER", "CEPSTRUM");
         }
@@ -343,13 +343,50 @@ void fe_dump_double_frame(FILE *stream, double *preemphasizedAudio,
         x.f = preemphasizedAudio[j];
         
         if (fe_dump_type == HEXADECIMAL) {
-            fprintf(stream, " 0x%08x%08x", x.i.half1, x.i.half2);
+            fprintf(stream, " 0x%08x%08x", (unsigned int) x.i.half1, 
+		    (unsigned int) x.i.half2);
         } else if (fe_dump_type == DECIMAL) { 
             fprintf(stream, " %15.5f", x.f);
         } else if (fe_dump_type == SCIENTIFIC) {
             fprintf(stream, " %.8E", x.f);
         }
     }
+    fprintf(stream, "\n");
+}
+
+
+/*********************************************************************
+ *
+ * FUNCTION: fe_dump_float_frame
+ * DESCRIPTION: dumps the given float32 vector to the given FILE
+ *    in the following format:
+ *     PROCESSOR_NAME 0 SIZE_0 data0 data1 data2 ...
+ *
+ *********************************************************************/
+
+void fe_dump_float_frame(FILE *stream, float32 *data, int eachArraySize,
+			 char *processorName, char *individualName)
+{
+    int j;
+    union data32 x;
+
+    fprintf(stream, "%s\n", processorName);
+
+    fprintf(stream, "%s %d ", individualName, eachArraySize);
+
+    for (j = 0; j < eachArraySize; j++) {
+
+      x.f = data[j];
+
+      if (fe_dump_type == HEXADECIMAL) {
+	fprintf(stream, " 0x%08x%08x", x.i.half1, x.i.half2);
+      } else if (fe_dump_type == DECIMAL) {
+	fprintf(stream, " %9.5f", x.f);
+      } else if (fe_dump_type == SCIENTIFIC) {
+	fprintf(stream, " %.8E", x.f);
+      }
+    }
+
     fprintf(stream, "\n");
 }
 
@@ -382,7 +419,7 @@ void fe_dump2d_float_frame(FILE *stream, float32 **data, int array2DSize,
             x.f = data[i][j];
 
             if (fe_dump_type == HEXADECIMAL) {
-                fprintf(stream, " 0x%08x", x.i.half1, x.i.half2);
+                fprintf(stream, " 0x%08x%08x", x.i.half1, x.i.half2);
             } else if (fe_dump_type == DECIMAL) {
                 fprintf(stream, " %9.5f", x.f);
             } else if (fe_dump_type == SCIENTIFIC) {
