@@ -383,6 +383,14 @@ arg_t arg_def[] = {
       ARG_STRING,
       NULL,
       "Control file for language model\n"},
+    { "-ncep",
+      ARG_INT32,
+      "13",
+      "Number of cepstrums" },
+    { "-fbtype",
+      ARG_STRING,
+      "mel_scale",
+      "FB Type of mel_scale or log_linear" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
