@@ -87,6 +87,11 @@ if test "x$ad_files" = "x"; then
 			ad_backend="AD_BACKEND_WIN32"
 			CFLAGS="$CFLAGS -DAD_BACKEND_WIN32"
 			;;
+                *-*apple*-*)
+                        ad_files="ad_base.lo"
+                        ad_backend="AD_BACKEND_NONE"
+                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_NONE"
+                        ;;
 		*)
 			ad_files="ad_base.lo"
 			ad_backend="AD_BACKEND_NONE"

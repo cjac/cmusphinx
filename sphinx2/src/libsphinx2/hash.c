@@ -63,7 +63,6 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include <ctype.h>
 #include <sys/types.h>
 

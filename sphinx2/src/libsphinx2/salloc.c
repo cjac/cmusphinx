@@ -43,7 +43,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 #include "s2types.h"
 #include "strfuncs.h"

@@ -41,9 +41,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2001/12/11  00:24:48  lenzo
- * Acknowledgement in License.
+ * Revision 1.8  2004/05/18  19:02:40  egouvea
+ * Removed line including malloc.h, already defined in stdlib.h, and added initial support for macosx
  * 
+ * Revision 1.7  2001/12/11 00:24:48  lenzo
+ * Acknowledgement in License.
+ *
  * Revision 1.6  2001/12/07 17:30:02  lenzo
  * Clean up and remove extra lines.
  *
@@ -81,7 +84,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 
 #include "s2types.h"
 
