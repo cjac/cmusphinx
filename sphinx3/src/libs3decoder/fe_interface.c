@@ -225,7 +225,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
     int32 frame_return_value;
     
     /* are there enough samples to make at least 1 frame? */
-    E_INFO("%d %d %d\n", nsamps, FE->NUM_OVERFLOW_SAMPS, FE->FRAME_SIZE);
+    /*E_INFO("%d %d %d\n", nsamps, FE->NUM_OVERFLOW_SAMPS, FE->FRAME_SIZE);*/
 
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
       
