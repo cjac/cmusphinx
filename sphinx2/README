@@ -20,3 +20,5 @@ Please see the web site at
 
 for up-to-date information.
 
+sphinx2-test should run sphinx2-batch over an example
+utterance of "go forward ten meters" once it's built.

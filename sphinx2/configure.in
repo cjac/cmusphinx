@@ -79,6 +79,7 @@ scripts/poe-sphinx-server-demo
 scripts/allphone-test.csh
 scripts/batch.csh
 scripts/sphinx2-simple
+scripts/sphinx2-test
 ])
 
 chmod +x scripts/sphinx2-demo
