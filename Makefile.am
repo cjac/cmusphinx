@@ -15,17 +15,20 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/livedecode/livedecode.dsp \
 	win32/msdev/programs/livepretend/livepretend.dsp
 
-test:
+test: test-decode test-align test-allphone test-livepretend
+
+test-livepretend:
 	$(LIBTOOL) --mode=execute echo "LIVEPRETEND TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNIZED ANSWER WOULD BE P I T T S B U R G H "
+	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/livepretend \
 		$(top_srcdir)/model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		$(top_srcdir)/model/lm/an4/args.an4.test
 
+test-decode:
 	$(LIBTOOL) --mode=execute echo "DECODE TEST"
-	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION ANSWER WOULD BE P I T T S B U R G H "
+	$(LIBTOOL) --mode=execute echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 	$(LIBTOOL) --mode=execute src/programs/decode \
 	       -mdef $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
@@ -55,6 +58,7 @@ test:
                -ci_pbeam 1e-3 \
                -ds 2 
 
+test-align:
 	$(LIBTOOL) --mode=execute echo "ALIGN TEST"
 	$(LIBTOOL) --mode=execute src/programs/align \
 	    -logbase 1.0003 \
@@ -64,18 +68,19 @@ test:
             -mixwfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
             -tmatfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	    -feat 1s_c_d_dd \
-    	    -topn 1000 \
+	    -topn 1000 \
 	    -beam 1e-80 \
-  	    -senmgaufn .cont. \
+	    -senmgaufn .cont. \
             -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
             -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
-    	    -insentfn $(top_srcdir)/model/lm/an4/align.correct \
+	    -insentfn $(top_srcdir)/model/lm/an4/align.correct \
 	    -outsentfn ./align.answer \
 	    -wdsegdir ./ \
 	    -phsegdir ./
 
+test-allphone:
 	$(LIBTOOL) --mode=execute echo "ALLPHONE TEST"
 	$(LIBTOOL) --mode=execute src/programs/allphone \
 	    -logbase 1.0003 \
@@ -85,9 +90,9 @@ test:
             -mixwfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
             -tmatfn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 	    -feat 1s_c_d_dd \
-    	    -topn 1000 \
+	    -topn 1000 \
 	    -beam 1e-80 \
-  	    -senmgaufn .cont. \
+	    -senmgaufn .cont. \
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
