@@ -78,7 +78,7 @@ glist_t glist_add_int32 (glist_t g, int32 val)
     gnode_t *gn;
     
     gn = (gnode_t *) mymalloc (sizeof(gnode_t));
-    gn->data.int32 = val;
+    gn->data.i_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
 }
@@ -89,7 +89,7 @@ glist_t glist_add_uint32 (glist_t g, uint32 val)
     gnode_t *gn;
     
     gn = (gnode_t *) mymalloc (sizeof(gnode_t));
-    gn->data.uint32 = val;
+    gn->data.ui_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
 }
@@ -100,7 +100,7 @@ glist_t glist_add_float32 (glist_t g, float32 val)
     gnode_t *gn;
     
     gn = (gnode_t *) mymalloc (sizeof(gnode_t));
-    gn->data.float32 = val;
+    gn->data.fl_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
 }
@@ -111,7 +111,7 @@ glist_t glist_add_float64 (glist_t g, float64 val)
     gnode_t *gn;
     
     gn = (gnode_t *) mymalloc (sizeof(gnode_t));
-    gn->data.float64 = val;
+    gn->data.fl_64 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
 }
@@ -191,7 +191,7 @@ void glist_apply_int32 (glist_t g, void (*func)(int32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.int32);
+	(*func)(gn->data.i_32);
 }
 
 
@@ -200,7 +200,7 @@ void glist_apply_uint32 (glist_t g, void (*func)(uint32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.uint32);
+	(*func)(gn->data.ui_32);
 }
 
 
@@ -209,7 +209,7 @@ void glist_apply_float32 (glist_t g, void (*func)(float32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.float32);
+	(*func)(gn->data.fl_32);
 }
 
 
@@ -218,7 +218,7 @@ void glist_apply_float64 (glist_t g, void (*func)(float64))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.float64);
+	(*func)(gn->data.fl_64);
 }
 
 
@@ -284,3 +284,9 @@ glist_t glist_reverse (glist_t g)
 
     return rev;
 }
+
+
+
+
+
+
