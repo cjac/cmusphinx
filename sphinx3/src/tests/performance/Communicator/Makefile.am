@@ -47,10 +47,32 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
-CLEANFILES = gmake-communicator-lp$(MODEAFFIX).results 
+CLEANFILES = gmake-com-base-lp$(MODEAFFIX).results \
+	     gmake-com-base-decode$(MODEAFFIX).results \
+	     gmake-com-fast-lp$(MODEAFFIX).results \
+	     gmake-com-fast-decode$(MODEAFFIX).results 
 
-communicator-lp:
-	rm -f gmake-communicator-lp$(MODEAFFIX).results
-	../../../programs/livepretend ./nist.ctl.no_comment.no_id /net/wilma/usr1/archan/Communicator/nist_data ARGS.communicator.base
+
+com-base-lp:
+	rm -f gmake-com-base-lp$(MODEAFFIX).results
+	/bin/cp ARGS.com.base ARGS.com.base.lp$(MODEAFFIX)
+	../../../programs/livepretend ./nist.ctl.no_comment.no_id /net/wilma/usr1/archan/Communicator/nist_data ARGS.com.base.lp$(MODEAFFIX)
+
+com-base-decode:
+	rm -f gmake-com-base-decode$(MODEAFFIX).results
+	/bin/cp ARGS.com.base ARGS.com.base.decode$(MODEAFFIX)
+	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.base.decode$(MODEAFFIX)
+	../../../programs/decode ARGS.com.base.decode$(MODEAFFIX);
+
+com-fast-lp:
+	rm -f gmake-com-fast-lp$(MODEAFFIX).results
+	/bin/cp ARGS.com.fast ARGS.com.fast.lp$(MODEAFFIX)
+	../../../programs/livepretend ./nist.ctl.no_comment.no_id /net/wilma/usr1/archan/Communicator/nist_data ARGS.com.fast.lp$(MODEAFFIX)
+
+com-fast-decode:
+	rm -f gmake-com-fast-decode$(MODEAFFIX).results
+	/bin/cp ARGS.com.fast ARGS.com.fast.decode$(MODEAFFIX)
+	echo "-cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/" >> ARGS.com.fast.decode$(MODEAFFIX)
+	../../../programs/decode ARGS.com.fast.decode$(MODEAFFIX)
 
 
