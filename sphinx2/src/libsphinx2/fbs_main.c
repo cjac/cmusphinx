@@ -46,9 +46,16 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.18  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.19  2005/01/21  18:48:36  egouvea
+ * Rolled back the dup2 fix for Windows only. In some applications, dup2
+ * was causing the behavior that the log file got opened, but nothing got
+ * written to it. Since the dup2 fix was introduced because of problems
+ * in linux and didn't seem to affect Windows, we rolled back to an
+ * implementation that works.
  * 
+ * Revision 1.18  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  *
  * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified to use unified semi-continuous/continuous acoustic
@@ -1114,9 +1121,20 @@ int32 uttproc_set_logfile (char const *file)
 	    fclose (logfp);
 
 	logfp = fp;
+	/* 
+	 * Rolled back the dup2() bug fix for windows only. In
+	 * Microsoft Visual C, dup2 seems to cause problems in some
+	 * applications: the files are opened, but nothing is written
+	 * to it.
+	 */
+#ifdef WIN32
+	*stdout = *logfp;
+	*stderr = *logfp;
+#else
 	dup2(fileno(logfp), 1);
 	dup2(fileno(logfp), 2);
-	
+#endif
+
 	E_INFO("Previous logfile: '%s'\n", logfile);
 	strcpy (logfile, file);
 	
@@ -1148,8 +1166,19 @@ fbs_init (int32 argc, char **argv)
 	    E_ERROR ("fopen(%s,w) failed; logging to stdout/stderr\n", logfn_arg);
 	} else {
 	    strcpy (logfile, logfn_arg);
+	    /* 
+	     * Rolled back the dup2() bug fix for windows only. In
+	     * Microsoft Visual C, dup2 seems to cause problems in
+	     * some applications: the files are opened, but nothing is
+	     * written to it.
+	     */
+#ifdef WIN32
+	    *stdout = *logfp;
+	    *stderr = *logfp;
+#else
 	    dup2(fileno(logfp), 1);
 	    dup2(fileno(logfp), 2);
+#endif
 	}
     }
 
