@@ -5,13 +5,30 @@ SUBDIRS = src \
 
 EXTRA_DIST = autogen.sh \
 	win32/batch/an4.ctl \
-	win32/batch/sphinx3-simple.bat \
-	win32/batch/sphinx3-test.bat \
-	win32/msdev/libs3audio/libs3audio.dsp \
-	win32/msdev/libs3decoder/libs3decoder.dsp \
-	win32/msdev/libutil/libutil.dsp \
-	win32/msdev/programs/gausubvq/gausubvq.dsp \
-	win32/msdev/programs/livedecode/livedecode.dsp \
+	win32/batch/sphinx3-simple.bat
+	win32/batch/sphinx3-test.align.bat
+	win32/batch/sphinx3-test.all.bat
+	win32/batch/sphinx3-test.allphone.bat
+	win32/batch/sphinx3-test.astar.bat
+	win32/batch/sphinx3-test.bat
+	win32/batch/sphinx3-test.dag.bat
+	win32/batch/sphinx3-test.decode.bat
+	win32/batch/sphinx3-test.ep.bat
+	win32/batch/sphinx3-test.gausubvq.bat
+	win32/batch/sphinx3-test.livepretend.bat
+	win32/batch/sphinx3-test.simple.bat
+	win32/msdev/libs3audio/libs3audio.dsp
+	win32/msdev/libs3decoder/libs3decoder.dsp
+	win32/msdev/libutil/libutil.dsp
+	win32/msdev/programs/align/align.dsp
+	win32/msdev/programs/allphone/allphone.dsp
+	win32/msdev/programs/astar/astar.dsp
+	win32/msdev/programs/dag/dag.dsp
+	win32/msdev/programs/decode/allphone.dsp
+	win32/msdev/programs/decode/decode.dsp
+	win32/msdev/programs/ep/ep.dsp
+	win32/msdev/programs/gausubvq/gausubvq.dsp
+	win32/msdev/programs/livedecode/livedecode.dsp
 	win32/msdev/programs/livepretend/livepretend.dsp
 
 # Add an item for each and every test target to the CLEANFILES variable

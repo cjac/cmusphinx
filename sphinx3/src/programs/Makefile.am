@@ -25,6 +25,12 @@ noinst_PROGRAMS = \
 	wave2feat \
 	cepview
 
+noinst_HEADERS = \
+	main_ep.h \
+	s3_align.h \
+	s3_allphone.h \
+	s3_dag.h
+
 # 20041205 : recent bug makes me remove this from standard compilation for a while. 
 #	decode_anytopo 
 
