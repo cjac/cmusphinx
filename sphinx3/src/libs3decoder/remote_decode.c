@@ -59,12 +59,12 @@ enum {
 enum {
   RD_CTRL_INIT,
   RD_CTRL_FINISH,
-  RD_CTRL_UTT_BEGIN,
-  RD_CTRL_UTT_END,
-  RD_CTRL_UTT_HYP,
-  RD_CTRL_PROC_RAW,
-  RD_CTRL_PROC_FRAME,
-  RD_CTRL_PROC_FEAT,
+  RD_CTRL_BEGIN_UTT,
+  RD_CTRL_END_UTT,
+  RD_CTRL_RECORD_HYPS,
+  RD_CTRL_PROCESS_RAW,
+  RD_CTRL_PROCESS_FRAMES,
+  RD_CTRL_PROCESS_FEATS,
   RD_CTRL_JOIN,
 };
 
@@ -156,7 +156,7 @@ rd_utt_begin(remote_decoder_t *decoder, char *uttid)
   strcpy(local_uttid, uttid);
 
   rd_lock_internal(decoder);
-  rv = rd_queue_control_block(decoder, RD_CTRL_UTT_BEGIN, 0, local_uttid);
+  rv = rd_queue_control_block(decoder, RD_CTRL_BEGIN_UTT, 0, local_uttid);
   rd_unlock_internal(decoder);
 
   return rv;
@@ -168,7 +168,7 @@ rd_utt_end(remote_decoder_t *decoder)
   int rv;
 
   rd_lock_internal(decoder);
-  rv = rd_queue_control_block(decoder, RD_CTRL_UTT_END, 0, 0);
+  rv = rd_queue_control_block(decoder, RD_CTRL_END_UTT, 0, 0);
   rd_unlock_internal(decoder);
 
   return rv;
@@ -182,7 +182,7 @@ rd_utt_abort(remote_decoder_t *decoder)
   rd_lock_internal(decoder);
   if (rd->state == RD_STATE_UTT) {
     while (rd_dequeue_control_block(decoder, 0, 0, 0) == 0);
-    rv = rd_queue_control_block(decoder, RD_CTRL_UTT_END, 0, 0);
+    rv = rd_queue_control_block(decoder, RD_CTRL_END_UTT, 0, 0);
   }
   rd_unlock_internal(decoder);
 
@@ -203,6 +203,7 @@ rd_utt_proc_raw(remote_decoder_t *decoder, int16 *samples, int32 num_samples)
   if (local_samples == 0) {
     return -1;
   }
+  memcpy(local_samples, samples, num_samples * sizeof(int16));
 
   rd_lock_internal(decoder);
   rv = rd_queue_control_block(decoder, RD_CTRL_PROC_RAW, num_samples,
@@ -218,16 +219,21 @@ rd_utt_proc_frame(remote_decoder_t *decoder,
 		  int32 num_frames)
 {
   int rv;
+  int i;
+  int frame_size;
   float32 **local_frames;
 
   if (frames == 0) {
     return -1;
   }
 
-  local_frames = ckd_calloc_2d(num_frames, decoder->ld.fe->NUM_CEPSTRA,
-			       sizeof(float32));
+  frame_size = decoder->ld.fe->NUM_CEPSTRA;
+  local_frames = ckd_calloc_2d(num_frames, frame_size, sizeof(float32));
   if (local_frames == 0) {
     return -1;
+  }
+  for (i = num_frames - 1; i >= 0; i--) {
+    memcpy(local_frames[i], frames[i], frame_size * sizeof(float32));
   }
 
   rd_lock_internal(decoder);
@@ -257,6 +263,11 @@ rd_utt_proc_feat(remote_decoder_t *decoder,
 int
 rd_utt_record_hyps(remote_decoder_t *decoder)
 {
+  int rv;
+  rd_lock_internal(decoder);
+  rv = rd_queue_control_block(decoder, RD_CTRL_RECORD_HYPS, 0, 0);
+  rd_unlock_internal(decoder);
+  return rv;
 }
 
 int
@@ -301,6 +312,17 @@ rd_run(remote_decoder_t *d)
   int32 param;
   void *data;
 
+  char *uttid0;
+  char *uttid1 = 0;
+  char *hyp_str0;
+  char *hyp_str1 = 0;
+  hyp_t **hyp_segs0;
+  hyp_t **hyp_segs1 = 0;
+  hyp_t *hyp_seg_buffer = 0;
+  int hyp_seglen = 0;
+  hyp_t *h;
+  int i;
+
   while (1) {
     rd_lock_internal(d);
     rv = rd_dequeue_control_block(d, &cmd, &param, &data);
@@ -322,62 +344,106 @@ rd_run(remote_decoder_t *d)
       }
       break;
     }
-
+    
     switch (cmd) {
-    case RD_CTRL_INIT: {
+    case RD_CTRL_INIT:
       if (d->state == RD_STATE_UNINIT && ld_init(&d->ld) == 0) {
 	d->state = RD_STATE_IDLE;
       }
-    }
-    break;
+      break;
       
-    case RD_CTRL_FINISH: {
+    case RD_CTRL_FINISH:
       ld_finish(&d->ld);
       d->state = RD_STATE_UNINIT;
-    }
-    break;
+      break;
       
-    case RD_CTRL_UTT_BEGIN: {
-      if (d->state == RD_STATE_IDLE && 
-	  ld_utt_begin(&d->ld, (char *)data) == 0) {
+    case RD_CTRL_BEGIN_UTT:
+      if (d->state == RD_STATE_IDLE && ld_begin_utt(&d->ld, data) == 0) {
 	d->state = RD_STATE_UTT;
       }
-    }
-    break;
+      break;
       
-    case RD_CTRL_UTT_END: {
-      if (d->state == RD_STATE_UTT && ld_utt_end(&d->ld) == 0) {
+    case RD_CTRL_END_UTT:
+      if (d->state == RD_STATE_UTT && ld_end_utt(&d->ld) == 0) {
 	d->state = RD_STATE_IDLE;
       }
-    }
-    break;
+      break;
       
-    case RD_CTRL_PROC_RAW: {
+    case RD_CTRL_PROCESS_RAW:
       if (d->state == RD_STATE_UTT) {
-	d_utt_proc_raw(&d->ld, (int16 *)data, param);
+	ld_process_raw(&d->ld, data, param);
       }
-    }
-    break;
+      break;
       
-    case RD_CTRL_PROC_FRAME: {
+    case RD_CTRL_PROCESS_FRAMES:
       if (d->state == RD_STATE_UTT) {
-	ld_utt_proc_frame(&d->ld, (float32 **)data, param);
+	ld_process_frames(&d->ld, data, param);
       }
-    }
-    break;
+      break;
       
-    case RD_CTRL_PROC_FEAT: {
+    case RD_CTRL_PROCESS_FEATS:
       if (d->state == RD_STATE_UTT) {
-	ld_utt_proc_feat(&d->ld, (float32 ***)data, param);
+	ld_process_features(&d->ld, data, param);
       }
-    }
-    break;
+      break;
 
-    case RD_CTRL_UTT_HYP: {
+    case RD_CTRL_RECORD_HYPS:
       if (d->state == RD_STATE UTT || d->state == RD_STATE_IDLE) {
-	ld_utt_hyps
+	/** retrieve the hypothesis segments and string */
+	ld_retrieve_hyps(&d->ld, &hyp_str0, &hyp_segs0);
+	
+	/** allocate space for the utterance id */
+	uttid0 = d->ld.uttid;
+	if (uttid0) {
+	  uttid1 = ckd_malloc(strlen(d->ld.uttid) + 1);
+	}
+
+	/** allocate space for the hypothesis string */
+	if (hyp_str0) {
+	  hyp_str1 = ckd_malloc(strlen(hyp_str0) + 1);
+	}
+
+	/** allocate space for the hypothesis segments */
+	for (hyp_seglen = 0, h = hyp_segs0; h; h++, hyp_seglen++);
+	if (hyp_seglen > 0) {
+	  hyp_segs1 = ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
+	  hyp_seg_buffer = ckd_calloc(hyp_seglen, sizeof(hyp_t));
+	}
+
+	/**
+	 * check whether any of the allocation failed.  if any of them did
+	 * fail, free any allocated space.
+	 */
+	if ((uttid0 && uttid1) || (hyp_str0 && !hyp_str1) ||
+	    (hyp_segs0 && (!hyp_segs1 || !hyp_seg_buffer))) {
+	  if (uttid1) {
+	    ckd_free(uttid1);
+	  }
+	  if (hyp_str1) {
+	    ckd_free(hyp_str1);
+	  }
+	  if (hyp_segs1) {
+	    ckd_free(hyp_segs1);
+	  }
+	  if (hyp_seg_buffer) {
+	    ckd_free(hyp_seg_buffer);
+	  }
+	  break;
+	}
+
+	/** copy uttid, hyp_str, and hyp_segs into new storage */
+	strcpy(uttid1, d->ld.uttid);
+	strcpy(hyp_str1, hyp_str0);
+	for (i = 0; i < hyp_seglen; i++) {
+	  hyp_segs1[i] = &hyp_seg_buff[i];
+	  memcpy(hyp_seg_buff, hyp_segs0[i], sizeof(hyp_t));
+	}
+
+	/** queue the result */
+	rd_queue_result(rd, uttid1, hyp_str1, hyp_segs1);
       }
-    }
+      break;
+      
     }
 
     if (data) {
@@ -390,7 +456,7 @@ rd_run(remote_decoder_t *d)
   rd_unlock_internal(d);
 
   /** Win32 specific code */
-  CloseHandle(d->mutex);
+  CloseHandle((HANDLE)d->mutex);
 
   return rv;
 }
@@ -424,11 +490,10 @@ rd_unlock_internal(remote_decoder_t *decoder)
 int
 rd_queue_control(remote_decoder_t *decoder, int32 cmd, int32 param, void *data)
 {
-  int rv;
   control_block *cb;
 
   if ((cb = ckd_calloc(1, sizeof(control_block))) == 0) {
-    rv = -1;
+    return -1;
   }
   
   *cb = { cmd, param, data, decoder->control_queue == 0 ?
@@ -447,67 +512,14 @@ int
 rd_queue_result(remote_decoder_t *decoder, char *uttid, char *hyp_str,
 		hyp_t **hyp_segs)
 {
-  int rv = 0;
   result_block *rb = 0;
-  char *local_uttid = 0;
-  char *local_hyp_str = 0;
-  hyp_t **local_hyp_segs = 0;
-  hyp_t *local_hyp_seg_buffer = 0;
-  int hyp_seglen = 0;
-  hyp_t *h;
-
-  if (rv == 0) {
-    if (uttid && (local_uttid = ckd_calloc(1, strlen(uttid) + 1)) == 0) {
-      rv = -1;
-    }
-    else {
-      strcpy(local_uttid, uttid);
-    }
-  }
-
-  if (rv == 0) {
-    if (hyp_str && (local_hyp_str = ckd_calloc(1, strlen(hyp_str) + 1)) == 0) {
-      rv == -1;
-    }
-    else {
-      strcpy(local_hyp_str, hyp_str);
-    }
-  }
-
-  if (rv == 0) {
-    for (h = hyp_segs; h; h++, hyp_seglen++);
-    if (hyp_segs && hyp_seglen > 0) {
-      local_hyp_segs = ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
-      if (local_hyp_segs == 0) {
-	rv = -1;
-      }
-      else {
-	*local_hyp_segs = ckd_calloc(
-  }
-
       
   if ((rb = ckd_calloc(1, sizeof(result_block))) == 0) {
-    rv = -1;
+    return -1;
   }
-  *rb = { local_uttid, local_hyp_str, local_hyp_segs,
-	  decoder->result_queue == 0 ?
+  *rb = { uttid, hyp_str, hyp_segs, decoder->result_queue == 0 ?
 	  cb : (struct _result_block *)decoder->result_queue };
   decoder->result_queue = rb;
-
-  if (rv != 0) {
-    if (rb) {
-      ckd_free(rb);
-    }
-    if (local_uttid) {
-      ckd_free(local_uttid);
-    }
-    if (local_hyp_str) {
-      ckd_free(local_hyp_str);
-    }
-    if (local_hyp_segs) {
-      ckd_free(local_hyp_segs);
-    }
-  }
 
   return rv;
 }

@@ -54,19 +54,22 @@
 #include "args.h"
 #include "utt.h"
 
-/** Function declaration */
+/** Utility function declarations */
 int
-ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt);
+ld_set_uttid(live_decoder_t *decoder, char *uttid, int autogen);
 
 int
-ld_utt_free_hyps(live_decoder_t *decoder);
+ld_record_hyps(live_decoder_t *decoder, int end_utt);
 
 int
-ld_utt_proc_raw_impl(live_decoder_t *decoder,
-		     int16 *samples,
-		     int32 num_samples,
-		     int32 begin_utt,
-		     int32 end_utt);
+ld_free_hyps(live_decoder_t *decoder);
+
+int
+ld_process_raw_impl(live_decoder_t *decoder,
+		    int16 *samples,
+		    int32 num_samples,
+		    int32 begin_utt,
+		    int32 end_utt);
 
 int
 ld_init_with_args(live_decoder_t *decoder, int argc, char **argv)
@@ -74,6 +77,7 @@ ld_init_with_args(live_decoder_t *decoder, int argc, char **argv)
   int rv;
   cmd_ln_parse(arg_def, argc, argv);
   rv = ld_init(decoder);
+  /** ld_init(decoder) sets internal_cmd_ln to 0, set it back to 1 */
   decoder->internal_cmd_ln = 1;
   return rv;
 }
@@ -128,61 +132,62 @@ ld_finish(live_decoder_t *decoder)
   if (decoder->internal_cmd_ln) {
     cmd_ln_free();
   }
+
   kb_free(&decoder->kb);
 	
   /**
-   * consult the implementation of feat_array_alloc() for the following two
-   * lines
+   * consult the implementation of feat_array_alloc() for how to free our
+   * internal feature vector buffer
    */
   ckd_free((void *)**decoder->features);
   ckd_free_2d((void **)decoder->features);
 
-  ld_utt_free_hyps(decoder);
+  ld_free_hyps(decoder);
+
+  ld_set_uttid(decoder, 0, 0);
 
   return 0;
 }
 
 int
-ld_utt_begin(live_decoder_t *decoder, char *uttid)
+ld_begin_utt(live_decoder_t *decoder, char *uttid)
 {
-  ld_utt_free_hyps(decoder);
-	
+  ld_free_hyps(decoder);
+
   fe_start_utt(decoder->fe);
   utt_begin(&decoder->kb);
+
   decoder->frame_num = 0;
   decoder->kb.nfr = 0;
   decoder->kb.utt_hmm_eval = 0;
   decoder->kb.utt_sen_eval = 0;
   decoder->kb.utt_gau_eval = 0;
-	
-  return 0;
+
+  return ld_set_uttid(decoder, uttid, 1);
 }
 
 int
-ld_utt_end(live_decoder_t *decoder)
+ld_end_utt(live_decoder_t *decoder)
 {
-  ld_utt_proc_raw_impl(decoder, 0, 0, decoder->frame_num == 0, 1);
+  ld_process_raw_impl(decoder, 0, 0, decoder->frame_num == 0, 1);
   decoder->kb.tot_fr += decoder->kb.nfr;
-  ld_utt_record_hyps(decoder, 1);
+  ld_record_hyps(decoder, 1);
   utt_end(&decoder->kb);
 	
   return 0;
 }
 
 int
-ld_utt_proc_raw(live_decoder_t *decoder, int16 *samples, int32 num_samples)
+ld_process_raw(live_decoder_t *decoder, int16 *samples, int32 num_samples)
 {
-  return ld_utt_proc_raw_impl(decoder,
-			      samples,
-			      num_samples,
-			      decoder->frame_num == 0,
-			      0);
+  return ld_process_raw_impl(decoder, samples, num_samples,
+			     decoder->frame_num == 0, 0);
 }
 
 int
-ld_utt_proc_frame(live_decoder_t *decoder, 
-		 float32 **frames,
-		 int32 num_frames)
+ld_process_frames(live_decoder_t *decoder, 
+		  float32 **frames,
+		  int32 num_frames)
 {
   int32 num_features = 0;
 	
@@ -211,9 +216,9 @@ ld_utt_proc_frame(live_decoder_t *decoder,
 }
 
 int
-ld_utt_proc_feat(live_decoder_t *decoder, 
-		 float32 ***features,
-		 int32 num_features)
+ld_process_features(live_decoder_t *decoder, 
+		    float32 ***features,
+		    int32 num_features)
 {
   if (num_features > 0) {
     utt_decode_block(decoder->features, 
@@ -231,11 +236,11 @@ ld_utt_proc_feat(live_decoder_t *decoder,
 }
 
 int
-ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
+ld_retrieve_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 {
   /** re-record the hypothesis if there is a frame number mismatch */
   if (decoder->frame_num != decoder->hyp_frame_num) {
-    ld_utt_record_hyps(decoder, 0);
+    ld_record_hyps(decoder, 0);
   }
   
   /** return the hypothesis string if the user requested it */
@@ -256,7 +261,26 @@ ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs)
 /*****************************************************************************/
 
 int
-ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
+ld_set_uttid(live_decoder_t *decoder, char *uttid, int autogen)
+{
+  char *local_uttid = 0;
+
+  if (decoder->uttid) {
+    ckd_free(decoder->uttid);
+  }
+  if (uttid) {
+    if ((local_uttid = ckd_calloc(1, strlen(uttid) + 1)) == 0) {
+      return -1;
+    }
+    strcpy(local_uttid, uttid);
+  }
+  decoder->uttid = local_uttid;
+
+  return 0;
+}
+
+int
+ld_record_hyps(live_decoder_t *decoder, int end_utt)
 {
   int32	id;
   int32	i = 0;
@@ -272,7 +296,7 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
   kb_t *kb = 0;
   dict_t *dict;
 
-  ld_utt_free_hyps(decoder);
+  ld_free_hyps(decoder);
 
   kb = &decoder->kb;
   dict = kbcore_dict(decoder->kbcore);
@@ -332,7 +356,7 @@ ld_utt_record_hyps(live_decoder_t *decoder, int32 end_utt)
 }
 
 int
-ld_utt_free_hyps(live_decoder_t *decoder)
+ld_free_hyps(live_decoder_t *decoder)
 {
   hyp_t *h;
 
@@ -358,11 +382,11 @@ ld_utt_free_hyps(live_decoder_t *decoder)
 }
 
 int
-ld_utt_proc_raw_impl(live_decoder_t *decoder,
-		     int16 *samples,
-		     int32 num_samples,
-		     int32 begin_utt,
-		     int32 end_utt)
+ld_process_raw_impl(live_decoder_t *decoder,
+		    int16 *samples,
+		    int32 num_samples,
+		    int32 begin_utt,
+		    int32 end_utt)
 {
   float32 dummy_frame[MAX_CEP_LEN];
   float32 **frames = 0;
