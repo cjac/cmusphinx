@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# Copyright 1999-2002 Carnegie Mellon University.  
+# Portions Copyright 2002 Sun Microsystems, Inc.  
+# Portions Copyright 2002 Mitsubishi Electronic Research Laboratories.
+# All Rights Reserved.  Use is subject to license terms.
+# 
+# See the file "license.terms" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL 
+# WARRANTIES.
+
+#
+# Creates the binary form of the WSJ acoustic model suitable
+# for use with Sphinx 3 and 3.3
+#
+
+BIN_ZIP=wsj_8gau_13dCep_16k_40mel_130Hz_6800Hz.bin.zip
+
+# where the WSJ acoustic model directory is, modify as you need
+MODEL_DIR=/lab/speech/sphinx4/data/wsj
+
+PWD=`pwd`
+
+rm -f ${BIN_ZIP}
+
+cd $MODEL_DIR
+
+zip -r ${BIN_ZIP} README am.props license.terms cd_continuous_8gau/means cd_continuous_8gau/mixture_weights cd_continuous_8gau/transition_matrices cd_continuous_8gau/variances dict/cmudict.0.6d dict/*.dict dict/fillerdict etc
+
+mv $BIN_ZIP $PWD
