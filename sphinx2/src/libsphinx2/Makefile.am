@@ -83,7 +83,7 @@ libsphinx2_la_DEPENDENCIES = @archfiles@
 
 libsphinx2_la_LIBADD = @archfiles@
 
-libsphinx2_la_LDFLAGS = -version-info 0:1:0
+libsphinx2_la_LDFLAGS = -version-info 1:0:1
 
 INCLUDES = -I$(top_srcdir)/src/libsphinx2/include -I$(top_srcdir)/include
 
