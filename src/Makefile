@@ -36,7 +36,7 @@
 # ====================================================================
 TOP=..
 DIRNAME=src
-BUILD_DIRS = libutil libs3audio libs3decoder programs
+BUILD_DIRS = libutil libs3audio libs3decoder programs tests
 ALL_DIRS= $(BUILD_DIRS)
 FILES = Makefile 
 ALL = 
