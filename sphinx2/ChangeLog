@@ -686,3 +686,5 @@ set of changes from dhd (below)
 	  - maintenance fixes for cygwin and visual studio builds
 	  - addition of example batch files
 	  - projects for each example program
+	* Fixes for Solaris from awb <awb@cs.cmu.edu>, though this
+	  probably still requires some tweaking.
