@@ -191,7 +191,7 @@ void glist_apply_int32 (glist_t g, void (*func)(int32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.i_32);
+      (*func)(gn->data.i_32);
 }
 
 
@@ -200,7 +200,7 @@ void glist_apply_uint32 (glist_t g, void (*func)(uint32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.ui_32);
+      (*func)(gn->data.ui_32);
 }
 
 
@@ -209,7 +209,7 @@ void glist_apply_float32 (glist_t g, void (*func)(float32))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.fl_32);
+      (*func)(gn->data.fl_32);
 }
 
 
@@ -218,7 +218,7 @@ void glist_apply_float64 (glist_t g, void (*func)(float64))
     gnode_t *gn;
     
     for (gn = g; gn; gn = gn->next)
-	(*func)(gn->data.fl_64);
+      (*func)(gn->data.fl_64);
 }
 
 

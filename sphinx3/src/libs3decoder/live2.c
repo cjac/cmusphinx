@@ -131,7 +131,7 @@ ld_finish(live_decoder_t *decoder)
   /* consult the implementation of feat_array_alloc() for the following two
    * lines
    */
-  ckd_free((void *)decoder->features);
+  ckd_free((void *)**decoder->features);
   ckd_free_2d((void **)decoder->features);
 	
   decoder->ld_state = LD_STATE_IDLE;

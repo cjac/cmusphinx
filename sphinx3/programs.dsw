@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "decode"=".\win32\msdev\programs\decode\decode.dsp" - Package Owner=<4>
+Project: "decode"=.\win32\msdev\programs\decode\decode.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -24,7 +24,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "gausubvq"=".\win32\msdev\programs\gausubvq\gausubvq.dsp" - Package Owner=<4>
+Project: "gausubvq"=.\win32\msdev\programs\gausubvq\gausubvq.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -45,7 +45,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libs3audio"=".\win32\msdev\libs3audio\libs3audio.dsp" - Package Owner=<4>
+Project: "libs3audio"=.\win32\msdev\libs3audio\libs3audio.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -57,7 +57,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libs3decoder"=".\win32\msdev\libs3decoder\libs3decoder.dsp" - Package Owner=<4>
+Project: "libs3decoder"=.\win32\msdev\libs3decoder\libs3decoder.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -69,7 +69,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libutil"=".\win32\msdev\libutil\libutil.dsp" - Package Owner=<4>
+Project: "libutil"=.\win32\msdev\libutil\libutil.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -81,7 +81,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livedecode"=".\win32\msdev\programs\livedecode\livedecode.dsp" - Package Owner=<4>
+Project: "livedecode"=.\win32\msdev\programs\livedecode\livedecode.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -102,7 +102,28 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livepretend"=".\win32\msdev\programs\livepretend\livepretend.dsp" - Package Owner=<4>
+Project: "livedecode2"=.\win32\msdev\programs\livedecode2\livedecode2.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libs3decoder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "livepretend"=.\win32\msdev\programs\livepretend\livepretend.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

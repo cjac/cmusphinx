@@ -161,6 +161,10 @@ typedef struct
 
 } live_decoder_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Initialize the live-decoder.  Assume arguments have been parsed.
  *
@@ -254,6 +258,10 @@ int ld_utt_hyps(live_decoder_t *decoder, char **hyp_str, hyp_t ***hyp_segs);
  *   0 for success.  -1 for failure.
  */
 int ld_utt_abort(live_decoder_t *decoder);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

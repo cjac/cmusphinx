@@ -50,6 +50,10 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy  Release\libutil.lib  ..\..\..\lib\ 
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "libutil - Win32 Debug"
 
@@ -73,6 +77,10 @@ BSC32=bscmake.exe
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy  Debug\libutil.lib  ..\..\..\lib\ 
+# End Special Build Tool
 
 !ENDIF 
 

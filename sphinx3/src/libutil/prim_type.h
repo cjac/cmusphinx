@@ -59,15 +59,37 @@
 #ifndef _LIBUTIL_PRIM_TYPE_H_
 #define _LIBUTIL_PRIM_TYPE_H_
 
-
+#ifndef int32
 typedef int		int32;
+#endif
+
+#ifndef int16
 typedef short		int16;
+#endif
+
+#ifndef int8
 typedef char		int8;
+#endif
+
+#ifndef uint32
 typedef unsigned int	uint32;
+#endif
+
+#ifndef uint16
 typedef unsigned short	uint16;
+#endif
+
+#ifndef uint8
 typedef unsigned char	uint8;
+#endif
+
+#ifndef float32
 typedef float		float32;
+#endif
+
+#ifndef float64
 typedef double		float64;
+#endif
 
 typedef union anytype_s {
     void *ptr;		/* User defined data types at this ptr */
