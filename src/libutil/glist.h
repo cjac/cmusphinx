@@ -67,6 +67,10 @@
 #ifndef _LIBUTIL_GLIST_H_
 #define _LIBUTIL_GLIST_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <stdlib.h>
 #include "prim_type.h"
@@ -82,10 +86,10 @@ typedef gnode_t *glist_t;	/* Head of a list of gnodes */
 
 /* Access macros, for convenience */
 #define gnode_ptr(g)		((g)->data.ptr)
-#define gnode_int32(g)		((g)->data.i_32)
-#define gnode_uint32(g)		((g)->data.ui_32)
-#define gnode_float32(g)	((g)->data.fl_32)
-#define gnode_float64(g)	((g)->data.fl_64)
+#define gnode_int32(g)		((g)->data.int32)
+#define gnode_uint32(g)		((g)->data.uint32)
+#define gnode_float32(g)	((g)->data.float32)
+#define gnode_float64(g)	((g)->data.float64)
 #define gnode_next(g)		((g)->next)
 
 
@@ -158,5 +162,8 @@ void glist_myfree (glist_t g, int32 datasize);
  */
 gnode_t *glist_tail (glist_t g);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

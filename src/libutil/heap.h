@@ -54,6 +54,9 @@
 #ifndef _LIBUTIL_HEAP_H_
 #define _LIBUTIL_HEAP_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "prim_type.h"
 
@@ -105,5 +108,8 @@ int32 heap_pop (heap_t heap, void **data, int32 *val);
  */
 int32 heap_destroy (heap_t heap);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

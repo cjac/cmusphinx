@@ -53,9 +53,16 @@
 #ifndef _LIBUTIL_UNLIMIT_H_
 #define _LIBUTIL_UNLIMIT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* To remove resource (memory) usage restrictions */
 void unlimit ( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

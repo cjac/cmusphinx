@@ -78,6 +78,10 @@
 #ifndef _LIBUTIL_CKD_ALLOC_H_
 #define _LIBUTIL_CKD_ALLOC_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 #include <stdlib.h>
 #include "prim_type.h"
@@ -170,5 +174,8 @@ void __myfree__ (char *elem, int32 elemsize, char *file, int32 line);
 #define mymalloc(sz)		__mymalloc__((sz),__FILE__,__LINE__)
 #define myfree(ptr,sz)		__myfree__(ptr,(sz),__FILE__,__LINE__)
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
