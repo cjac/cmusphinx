@@ -21,9 +21,9 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dec
 -cmn current \
 -feat 1s_c_d_dd \
 -lw 9.5 \
--inspen 0.2 \
+-wip 0.2 \
 -beam 1e-80 \
--nwbeam 1e-40 \
+-wbeam 1e-40 \
 > $tmpout 2>&1
 	
 grep "FWDVIT" $tmpout

@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.8  2005/02/05  15:30:07  egouvea
- * Changed default cepdir to null, so a user can choose not to specify it, and making it consistent with decode.c. Removed assert checking if cepdir was null
+ * Revision 1.9  2005/02/09  05:59:30  arthchan2003
+ * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
  * 
+ * Revision 1.8  2005/02/05 15:30:07  egouvea
+ * Changed default cepdir to null, so a user can choose not to specify it, and making it consistent with decode.c. Removed assert checking if cepdir was null
+ *
  * Revision 1.7  2004/12/23 21:05:22  arthchan2003
  * Enable compilation of decode_anytopo, change option names from -match to -hyp, it makes the code more consistent.
  *
@@ -311,7 +314,7 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
-    { "-tpfloor",
+    { "-tmatfloor",
       ARG_FLOAT32,
       "0.0001",
       "Triphone state transition probability floor applied to -tmat file" },
@@ -364,7 +367,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "9.5",
       "Language weight: empirical exponent applied to LM probabilty" },
-    { "-ugwt",
+    { "-uw",
       ARG_FLOAT32,
       "0.7",
       "LM unigram weight: unigram probs interpolated with uniform distribution with this weight" },
@@ -384,15 +387,15 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       NULL,
       "Language weight for bestpath DAG search (default: same as -lw)" },
-    { "-inspen",
+    { "-wip",
       ARG_FLOAT32,
-      "0.65",
+      "0.7",
       "Word insertion penalty" },
-    { "-silpen",
+    { "-silprob",
       ARG_FLOAT32,
       "0.1",
       "Language model 'probability' of silence word" },
-    { "-noisepen",
+    { "-fillprob",
       ARG_FLOAT32,
       "0.05",
       "Language model 'probability' of each non-silence filler word" },
@@ -432,7 +435,7 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Main pruning beam applied to triphones in forward search" },
-    { "-nwbeam",
+    { "-wbeam",
       ARG_FLOAT64,
       "1e-27",
       "Pruning beam applied in forward search upon word exit" },
@@ -586,7 +589,7 @@ static void models_init ( void )
 	interp = NULL;
 
     /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tpfloor"));
+    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
     tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
 
     /* Verify transition matrices parameters against model definition parameters */
@@ -608,18 +611,18 @@ static void models_init ( void )
 
       lm = lm_read (lmfile, 
 		    *(float32 *)cmd_ln_access("-lw"),
-		    *(float32 *)cmd_ln_access("-inspen"),
-		    *(float32 *)cmd_ln_access("-ugwt"));
+		    *(float32 *)cmd_ln_access("-wip"),
+		    *(float32 *)cmd_ln_access("-uw"));
       
 
       /* Filler penalties */
       
       fpen = fillpen_init (dict, 
 			   (char *) cmd_ln_access("-fillpen"),
-			   *(float32 *)cmd_ln_access("-silpen"),
-			   *(float32 *)cmd_ln_access("-noisepen"),
+			   *(float32 *)cmd_ln_access("-silprob"),
+			   *(float32 *)cmd_ln_access("-fillprob"),
 			   *(float32 *)cmd_ln_access("-lw"),
-			   *(float32 *)cmd_ln_access("-inspen"));
+			   *(float32 *)cmd_ln_access("-wip"));
     }
 
     dict2lmwid = wid_dict_lm_map(dict, lm, *(float32*) cmd_ln_access("-lw"));
