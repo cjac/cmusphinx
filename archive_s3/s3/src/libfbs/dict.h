@@ -52,7 +52,7 @@ typedef struct {
 
 typedef struct {
     dictword_t *word;	/* Array of entries in dictionary */
-    hash_t ht;		/* Hash table for mapping word strings to word ids */
+    hash_table_t* ht;		/* Hash table for mapping word strings to word ids */
     int32 max_words;	/* #Entries allocated in dict, including empty slots */
     int32 n_word;	/* #Occupied entries in dict; ie, excluding empty slots */
     int32 filler_start;	/* First filler word id (read from filler dict) */

@@ -74,7 +74,7 @@ typedef struct ph_lc_s {
 
 /* The main model definition structure */
 typedef struct {
-    hash_t ciphone_ht;		/* Hash table for mapping ciphone strings to ids */
+    hash_table_t* ciphone_ht;	/* Hash table for mapping ciphone strings to ids */
     ciphone_t *ciphone;		/* CI-phone information for all ciphones */
     phone_t *phone;		/* Information for all ciphones and triphones */
 
