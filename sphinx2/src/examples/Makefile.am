@@ -1,15 +1,15 @@
 bin_PROGRAMS = sphinx2-continuous \
 	sphinx2-ptt \
 	sphinx2-batch \
-	sphinx2-server \
-	sphinx2-client \
 	sphinx2-allphone \
 	cont_adseg \
 	cont_fileseg \
 	adpow \
 	adrec \
         lm3g2dmp \
-	raw2cep
+	raw2cep \
+	sphinx2-server \
+	sphinx2-client
 
 EXTRA_DIST = README \
 	README.bin \
