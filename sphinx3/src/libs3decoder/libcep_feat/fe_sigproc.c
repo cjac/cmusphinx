@@ -64,7 +64,10 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     MEL_FB->left_apex = (float *) calloc(MEL_FB->num_filters,sizeof(float));
     MEL_FB->width = (int32 *) calloc(MEL_FB->num_filters,sizeof(int32));
     
-    filt_edge = (float *) calloc(MEL_FB->num_filters+2,sizeof(float));
+    if (MEL_FB->doublewide==ON)
+	filt_edge = (float32 *) calloc(MEL_FB->num_filters+4,sizeof(float32));
+    else	
+	filt_edge = (float32 *) calloc(MEL_FB->num_filters+2,sizeof(float32));
 
     if (MEL_FB->filter_coeffs==NULL || MEL_FB->left_apex==NULL || MEL_FB->width==NULL || filt_edge==NULL){
 	fprintf(stderr,"memory alloc failed in fe_build_mel_filters()\n...exiting\n");
@@ -77,25 +80,33 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
     melmin = fe_mel(MEL_FB->lower_filt_freq);
     dmelbw = (melmax-melmin)/(MEL_FB->num_filters+1);
     
-    for (i=0;i<=MEL_FB->num_filters+1; ++i){
-	filt_edge[i] = fe_melinv(i*dmelbw + melmin);
-	
+    if (MEL_FB->doublewide==ON){
+        for (i=0;i<=MEL_FB->num_filters+3; ++i){
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);
+        }
+    }
+    else {
+	for (i=0;i<=MEL_FB->num_filters+1; ++i){
+	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);   
+	}
     }
     
     
 
     for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) {
       /*line triangle edges up with nearest dft points... */
+
+      if (MEL_FB->doublewide==ON){
+	leftfr   = (float)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	centerfr = (float)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+	rightfr  = (float)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq; 
+      }else{
+	leftfr   = (float)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+	centerfr = (float)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
+	rightfr  = (float)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+      }
       
-      /*	
-		leftfr = (float)rint((double)(filt_edge[whichfilt]/dfreq))*dfreq;
-		centerfr = (float)rint((double)(filt_edge[whichfilt+1]/dfreq))*dfreq;
-		rightfr = (float)rint((double)(filt_edge[whichfilt+2]/dfreq))*dfreq;
-      */
       
-      leftfr   = (float)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-      centerfr = (float)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
-      rightfr  = (float)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
       
       MEL_FB->left_apex[whichfilt] = leftfr;
       
@@ -316,7 +327,6 @@ void fe_mel_spec(fe_t *FE, double *spec, double *mfspec)
 void fe_mel_cep(fe_t *FE, double *mfspec, double *mfcep)
 {
     int32 i,j;
-    /*    static int first_run=1;  */  /* unreferenced variable */
     int32 period;
     float beta;
 
@@ -594,6 +604,12 @@ void fe_parse_melfb_params(param_t *P, melfb_t *MEL)
 	fflush(stderr); exit(0);
       }
     } 
+
+    if (P->doublebw == ON)
+	MEL->doublewide = ON;
+    else
+	MEL->doublewide = OFF;
+
 }
 
 void fe_print_current(fe_t *FE)

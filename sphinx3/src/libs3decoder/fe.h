@@ -62,7 +62,9 @@ typedef struct{
     int32 is_single;
     int32 blocksize;
     int32 verbose;
-    
+    int32 doublebw;
+
+
     
 } param_t;
 
@@ -78,6 +80,7 @@ typedef struct{
     float **mel_cosine;
     float *left_apex;
     int32 *width;
+    int32 doublewide;    
 }melfb_t;
 
 
@@ -104,6 +107,10 @@ typedef struct{
 
 #define MEL_SCALE 1
 #define LOG_LINEAR 2
+
+#define ON 1
+#define OFF 0
+
 
 /* Default values */
 #define DEFAULT_SAMPLING_RATE 16000.0

@@ -106,6 +106,7 @@ ld_init(live_decoder_t *decoder, int argc, char **argv)
   fe_param.PRE_EMPHASIS_ALPHA = 0.97f;
   fe_param.FFT_SIZE = 256;
   fe_param.WINDOW_LENGTH = 0.0256f;
+  fe_param.doublebw = OFF;
   decoder->fe = fe_init(&fe_param);
   if (!decoder->fe) {
     E_WARN("Front end initialization fe_init() failed\n");
