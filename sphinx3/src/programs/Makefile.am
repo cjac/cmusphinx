@@ -9,7 +9,9 @@ bin_PROGRAMS = livepretend \
 
 livepretend_SOURCES = main_livepretend.c
 decode_SOURCES = decode.c
-decode_anytopo_SOURCES = main_decode_anytopo.c  s3_dag.c
+
+#decode_anytopo_SOURCES = main_decode_anytopo.c  s3_dag.
+
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
 dag_SOURCES = main_dag.c s3_dag.c 
@@ -21,8 +23,10 @@ cepview_SOURCES = main_cepview.c
 
 noinst_PROGRAMS = \
 	wave2feat \
-	decode_anytopo \
 	cepview
+
+# 20041205 : recent bug makes me remove this from standard compilation for a while. 
+#	decode_anytopo 
 
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \

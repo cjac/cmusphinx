@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,9 @@
 ad_rec_t *ad_open_sps (int32 sps) {
     ad_rec_t *handle;
     int32 dspFD, mixerFD;
-    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN, devMask=0;
+    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN;
+    /*int32 devMask=0; ARCHAN 20041205*/ 
+
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;

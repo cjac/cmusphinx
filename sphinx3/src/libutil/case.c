@@ -54,34 +54,66 @@
 
 
 #include "case.h"
+#include <stdlib.h>
+#include <assert.h>
+#include <err.h>
 
 
 void lcase(register char *cp)
 {
-    for (; *cp; cp++)
-	*cp = LOWER_CASE(*cp);
+   assert( NULL != cp ) ;
+   
+   if ( cp )
+   {
+      while( *cp )
+      {
+        *cp = LOWER_CASE( *cp ) ;
+        cp++ ;
+      }
+   }
 }
-
 
 void ucase(register char *cp)
 {
-    for (; *cp; cp++)
-	*cp = UPPER_CASE(*cp);
+   assert( NULL != cp ) ;
+   
+   if ( cp )
+   {
+      while ( *cp )
+      {
+        *cp = UPPER_CASE( *cp ) ;
+        cp++ ;
+      }
+   }
 }
-
 
 int32 strcmp_nocase (const char *str1, const char *str2)
 {
     char c1, c2;
-    
-    for (;;) {
+    register int res ;
+
+    assert( NULL != str1 ) ;
+    assert( NULL != str2 ) ;    
+
+    if(str1 && str2){
+
+      res=0 ;
+
+      for (;;) {
 	c1 = *(str1++);
 	c1 = UPPER_CASE(c1);
 	c2 = *(str2++);
 	c2 = UPPER_CASE(c2);
+	
 	if (c1 != c2)
-	    return (c1-c2);
+	  return (c1-c2);
+
 	if (c1 == '\0')
-	    return 0;
+	  return 0;
+      }
     }
+
+   assert( -1 <= res ) ;
+   assert( 1 >= res ) ;
+   return res;
 }

@@ -131,6 +131,7 @@ int main(int argc, char *argv[])
     fflush(stdout);
 
     metricsPrint();
+    return 0;
 }
 
 

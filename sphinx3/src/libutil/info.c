@@ -36,6 +36,10 @@
 #include "info.h"
 #include "err.h"
 
+#if !defined(WIN32)
+#include <unistd.h>
+#endif
+
 void print_appl_info(char* appl_name)
 {
 #if (! WIN32)

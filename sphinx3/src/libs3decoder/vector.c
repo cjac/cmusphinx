@@ -64,7 +64,7 @@
 #include "logs3.h"
 #include "s3types.h"
 
-#if (WIN32) 
+#if (!WIN32) 
 /* RAH #include <random.h> */
 #include <time.h>		/* RAH */
 #endif

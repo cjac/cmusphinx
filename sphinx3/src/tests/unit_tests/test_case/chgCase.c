@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <case.h>
+#include <err.h>
 
 #define MAX_STR_LEN 64
 #define NUM_STRS 6
@@ -38,7 +39,7 @@ main(int argc, char **argv){
        strcmp(argv[1],"strcmp_nocase") 
        ))
     {
-      /*   printf("INVALID PARAMETERS to chgCase\n"); */
+      /*printf("INVALID PARAMETERS to chgCase\n"); */
       exit(1);
     }
   
@@ -57,14 +58,13 @@ main(int argc, char **argv){
     exit(0);
   }
 
-
   if(4 == argc){
 
     if( 0 >= atoi(argv[2]) ||
 	atoi(argv[2]) >= NUM_STRS ||
 	0 >= atoi(argv[3]) ||
 	atoi(argv[3]) >= NUM_STRS){
-      fprintf(stderr,"INVALID PARAMS TO chkCase\n");
+      E_INFO(stderr,"INVALID PARAMS TO chkCase\n");
       exit(1);
     }
 
@@ -81,8 +81,9 @@ main(int argc, char **argv){
       cmp = strcmp_nocase(s1, s2);
     }
 
+    E_INFO("Value of cmp %d\n", cmp);
     if(0 != cmp){
-      fprintf(stderr,"test failed\nstr1:|%s|\nstr2:|%s|\n", s1, s2);
+      E_FATAL("test failed\nstr1:|%s|\nstr2:|%s|\n", s1, s2);
     }
 
     return (cmp != 0);

@@ -74,7 +74,6 @@ an4_spelling_unigram:
 	/bin/cp ARGS.an4_unigram ARGS.an4_spelling_unigram$(MODEAFFIX)
 	echo "-lm   /lab/speech/sphinx4/data/an4/lists/an4_spelling.unigram.lm.DMP" >> ARGS.an4_spelling_unigram$(MODEAFFIX)
 	../../programs/batchmetrics ./an4_spelling$(MODEAFFIX).batch / ./ARGS.an4_spelling_unigram$(MODEAFFIX) > gmake-an4_spelling_unigram$(MODEAFFIX).results
-
 an4_full_unigram:
 	rm -f gmake-an4_full_unigram$(MODEAFFIX).results
 	/bin/cp ARGS.an4_unigram ARGS.an4_full_unigram$(MODEAFFIX)

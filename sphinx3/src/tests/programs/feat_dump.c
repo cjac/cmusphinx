@@ -100,6 +100,7 @@
 #include "fe_dump.h"
 #include "libs3decoder/bio.h"
 #include "libs3decoder/cmn.h"
+#include "libs3decoder/cmn_prior.h"
 #include "libs3decoder/agc.h"
 #include "s3types.h"
 
@@ -162,7 +163,7 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 
   if (fcb->cmn) {
     /* Only cmn_prior in block computation mode */
-    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt,fcb->cmn_struct);
+    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
   }
 
   metricsStop("cmn");
