@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.1  2004/08/20  08:25:19  arthchan2003
- * Sorry, I forget to add the main of dag.c
+ * Revision 1.2  2004/09/09  20:29:08  arthchan2003
+ * Added test for astar and dag.  Put a hack in s3_dag.c that allows 0 as acoustice score.
  * 
+ * Revision 1.1  2004/08/20 08:25:19  arthchan2003
+ * Sorry, I forget to add the main of dag.c
+ *
  * Revision 1.2  2002/12/03 23:02:37  egouvea
  * Updated slow decoder with current working version.
  * Added copyright notice to Makefiles, *.c and *.h files.
@@ -470,26 +473,29 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
     
     if ((nfrm = s3dag_dag_load (dagfile)) >= 0) {
 	hyp = s3dag_dag_search (uttid);
-	assert(hyp);
-
-	if ( *((int32 *) cmd_ln_access("-backtrace")) )
+	if(hyp!=NULL){
+	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
 	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp");
-	
-	/* Total scaled acoustic score and LM score */
-	ascr = lscr = 0;
-	for (h = hyp; h; h = h->next) {
+	  
+	  /* Total scaled acoustic score and LM score */
+	  ascr = lscr = 0;
+	  for (h = hyp; h; h = h->next) {
 	    ascr += h->ascr;
 	    lscr += h->lscr;
+	  }
+	  
+	  printf ("BSTPTH: ");
+	  log_hypstr (stdout, hyp, uttid, ascr+lscr);
+	  
+	  printf ("BSTXCT: ");
+	  log_hypseg (uttid, stdout, hyp, nfrm);
+	  
+	  lm_cache_stats_dump (lm);
+	  lm_cache_reset (lm);
+	}else{
+	  E_ERROR("DAG search (%s) failed\n", uttid);
+	  hyp = NULL;
 	}
-	
-	printf ("BSTPTH: ");
-	log_hypstr (stdout, hyp, uttid, ascr+lscr);
-
-	printf ("BSTXCT: ");
-	log_hypseg (uttid, stdout, hyp, nfrm);
-
-	lm_cache_stats_dump (lm);
-	lm_cache_reset (lm);
     } else {
 	E_ERROR("DAG search (%s) failed\n", uttid);
 	hyp = NULL;

@@ -15,7 +15,11 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/livedecode/livedecode.dsp \
 	win32/msdev/programs/livepretend/livepretend.dsp
 
-test: test-decode test-align test-allphone test-livepretend
+test-full : test
+
+test-simple : test-livepretend
+
+test: test-decode test-align test-allphone test-livepretend test-astar 
 
 test-livepretend:
 	$(LIBTOOL) --mode=execute echo "LIVEPRETEND TEST"
@@ -96,6 +100,38 @@ test-allphone:
 	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl \
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./
+
+test-astar:
+	$(LIBTOOL) --mode=execute echo "ASTAR TEST"
+	$(LIBTOOL) --mode=execute src/programs/astar \
+	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+            -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
+            -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
+            -lmfn $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
+  	    -inspen 0.2 \
+ 	    -beam 1e-64 \
+  	    -nbest 5 \
+	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
+  	    -inlatdir $(top_srcdir)/model/lm/an4/ \
+  	    -logbase 1.0003 \
+  	    -nbestdir . 
+
+test-dag:
+	$(LIBTOOL) --mode=execute echo "DAG TEST"
+	$(LIBTOOL) --mode=execute src/programs/dag \
+	    -mdeffn $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+            -fdictfn $(top_srcdir)/model/lm/an4/filler.dict \
+            -dictfn $(top_srcdir)/model/lm/an4/an4.dict \
+            -lmfn $(top_srcdir)/model/lm/an4/an4.ug.lm.DMP \
+	    -langwt 13.0 \
+	    -inspen 0.2 \
+	    -ctlfn $(top_srcdir)/model/lm/an4/an4.ctl.platform_independent \
+  	    -inlatdir $(top_srcdir)/model/lm/an4/ \
+  	    -logbase 1.0003 \
+	    -backtrace 1 
+	
+
+
 
 
 
