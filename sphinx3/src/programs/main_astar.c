@@ -46,7 +46,10 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2004/11/16  05:13:19  arthchan2003
+ * Revision 1.5  2004/11/16  05:53:10  arthchan2003
+ * small warning problems in main_astar.c
+ * 
+ * Revision 1.4  2004/11/16 05:13:19  arthchan2003
  * 1, s3cipid_t is upgraded to int16 because we need that, I already check that there are no magic code using 8-bit s3cipid_t
  * 2, Refactor the ep code and put a lot of stuffs into fe.c (should be renamed to something else.
  * 3, Check-in codes of wave2feat and cepview. (cepview will not dump core but Evandro will kill me)
@@ -57,7 +60,7 @@
  * 1, decode_anytopo has strange bugs in some situations that it cannot find the end of the lattice. This is urgent.
  * 2, default argument file's mechanism is not yet supported, we need to fix it.
  * 3, the bug discovered by SonicFoundry is still not fixed.
- * 
+ *
  * Revision 1.3  2004/10/07 22:46:26  dhdfu
  * Fix compiler warnings that are also real bugs (but why does this
  * function take an int32 when -lw is a float parameter?)
@@ -439,7 +442,6 @@ main (int32 argc, char *argv[])
   /*  kb_t kb;
       ptmr_t tm;*/
 
-  char *str;
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit ();
