@@ -1,0 +1,671 @@
+<xml xmlns:v="urn:schemas-microsoft-com:vml"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:p="urn:schemas-microsoft-com:office:powerpoint">
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="34"/>
+  <o:rules v:ext="edit">
+   <o:r id="V:Rule1" type="connector" idref="#_x0000_s34825"/>
+   <o:r id="V:Rule2" type="connector" idref="#_x0000_s34919">
+    <o:proxy start="" idref="#_x0000_s34918" connectloc="1"/>
+    <o:proxy end="" idref="#_x0000_s34918" connectloc="7"/>
+   </o:r>
+   <o:r id="V:Rule3" type="connector" idref="#_x0000_s34920">
+    <o:proxy start="" idref="#_x0000_s34918" connectloc="6"/>
+   </o:r>
+   <o:r id="V:Rule4" type="connector" idref="#_x0000_s34921">
+    <o:proxy start="" idref="#_x0000_s34918" connectloc="4"/>
+   </o:r>
+   <o:r id="V:Rule5" type="connector" idref="#_x0000_s34923">
+    <o:proxy start="" idref="#_x0000_s34922" connectloc="1"/>
+    <o:proxy end="" idref="#_x0000_s34922" connectloc="7"/>
+   </o:r>
+   <o:r id="V:Rule6" type="connector" idref="#_x0000_s34924">
+    <o:proxy start="" idref="#_x0000_s34922" connectloc="6"/>
+   </o:r>
+   <o:r id="V:Rule7" type="connector" idref="#_x0000_s34925">
+    <o:proxy start="" idref="#_x0000_s34922" connectloc="4"/>
+   </o:r>
+   <o:r id="V:Rule8" type="connector" idref="#_x0000_s34927">
+    <o:proxy start="" idref="#_x0000_s34926" connectloc="1"/>
+    <o:proxy end="" idref="#_x0000_s34926" connectloc="7"/>
+   </o:r>
+   <o:r id="V:Rule9" type="connector" idref="#_x0000_s34928">
+    <o:proxy start="" idref="#_x0000_s34926" connectloc="6"/>
+   </o:r>
+   <o:r id="V:Rule10" type="connector" idref="#_x0000_s34929">
+    <o:proxy start="" idref="#_x0000_s34926" connectloc="4"/>
+   </o:r>
+   <o:r id="V:Rule11" type="connector" idref="#_x0000_s34931">
+    <o:proxy start="" idref="#_x0000_s34930" connectloc="1"/>
+    <o:proxy end="" idref="#_x0000_s34930" connectloc="7"/>
+   </o:r>
+   <o:r id="V:Rule12" type="connector" idref="#_x0000_s34932">
+    <o:proxy start="" idref="#_x0000_s34930" connectloc="6"/>
+   </o:r>
+   <o:r id="V:Rule13" type="connector" idref="#_x0000_s34933">
+    <o:proxy start="" idref="#_x0000_s34930" connectloc="4"/>
+   </o:r>
+   <o:r id="V:Rule14" type="connector" idref="#_x0000_s34935">
+    <o:proxy start="" idref="#_x0000_s34934" connectloc="1"/>
+    <o:proxy end="" idref="#_x0000_s34934" connectloc="7"/>
+   </o:r>
+   <o:r id="V:Rule15" type="connector" idref="#_x0000_s34936">
+    <o:proxy start="" idref="#_x0000_s34934" connectloc="6"/>
+   </o:r>
+  </o:rules>
+  <o:regrouptable v:ext="edit">
+   <o:entry new="1" old="0"/>
+  </o:regrouptable>
+ </o:shapelayout><p:shaperange id="_x0000_s34824">
+  <v:shape id="_x0000_s34824" type="#_x0000_m1027" style='position:absolute;
+   left:18pt;top:21pt;width:684pt;height:51pt'>
+   <v:fill o:detectmouseclick="f"/>
+   <v:stroke o:forcedash="f"/>
+   <p:placeholder type="title"/>
+  </v:shape><v:group id="_x0000_s34939" style='position:absolute;left:2in;
+   top:120pt;width:357pt;height:30.125pt' coordorigin="1152,960" coordsize="2856,241">
+   <v:shapetype id="_x0000_t32" coordsize="21600,21600" o:spt="32" o:oned="t"
+    path="m0,0l21600,21600e" filled="f">
+    <v:path arrowok="t" fillok="f" o:connecttype="none"/>
+    <o:lock v:ext="edit" shapetype="t"/>
+   </v:shapetype><v:shape id="_x0000_s34825" type="#_x0000_t32" style='position:absolute;
+    left:1152;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34918" style='position:absolute;left:1368;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:shapetype id="_x0000_t38" coordsize="21600,21600" o:spt="38"
+    o:oned="t" path="m0,0c@0,0@1,5400@1,10800@1,16200@2,21600,21600,21600e"
+    filled="f">
+    <v:formulas>
+     <v:f eqn="mid #0 0"/>
+     <v:f eqn="val #0"/>
+     <v:f eqn="mid #0 21600"/>
+    </v:formulas>
+    <v:path arrowok="t" fillok="f" o:connecttype="none"/>
+    <v:handles>
+     <v:h position="#0,center"/>
+    </v:handles>
+    <o:lock v:ext="edit" shapetype="t"/>
+   </v:shapetype><v:shape id="_x0000_s34919" type="#_x0000_t38" style='position:absolute;
+    left:1487;top:911;width:1;height:170;rotation:270;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="-5983201,-217906,28749600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34920" type="#_x0000_t32" style='position:absolute;
+    left:1608;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34921" type="#_x0000_t38" style='position:absolute;
+    left:1967;top:721;width:1;height:960;rotation:90;flip:x;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="5443199,43200,-30585600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34922" style='position:absolute;left:1848;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:shape id="_x0000_s34923" type="#_x0000_t38" style='position:absolute;
+    left:1967;top:911;width:1;height:170;rotation:270;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="-5983201,-217906,28749600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34924" type="#_x0000_t32" style='position:absolute;
+    left:2088;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34925" type="#_x0000_t38" style='position:absolute;
+    left:2447;top:721;width:1;height:960;rotation:90;flip:x;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="5443199,43200,-30585600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34926" style='position:absolute;left:2328;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:shape id="_x0000_s34927" type="#_x0000_t38" style='position:absolute;
+    left:2447;top:911;width:1;height:170;rotation:270;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="-5983201,-217906,28749600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34928" type="#_x0000_t32" style='position:absolute;
+    left:2568;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34929" type="#_x0000_t38" style='position:absolute;
+    left:2927;top:721;width:1;height:960;rotation:90;flip:x;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="5443199,43200,-30585600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34930" style='position:absolute;left:2808;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:shape id="_x0000_s34931" type="#_x0000_t38" style='position:absolute;
+    left:2927;top:911;width:1;height:170;rotation:270;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="-5983201,-217906,28749600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34932" type="#_x0000_t32" style='position:absolute;
+    left:3048;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34933" type="#_x0000_t38" style='position:absolute;
+    left:3407;top:721;width:1;height:960;rotation:90;flip:x;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="5443199,43200,-30585600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34934" style='position:absolute;left:3288;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:shape id="_x0000_s34935" type="#_x0000_t38" style='position:absolute;
+    left:3407;top:911;width:1;height:170;rotation:270;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' o:connectortype="curved" adj="-5983201,-217906,28749600"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:shape id="_x0000_s34936" type="#_x0000_t32" style='position:absolute;
+    left:3528;top:1080;width:240;height:0;mso-wrap-style:none;v-text-anchor:middle'
+    o:connectortype="curved" adj="-138240,-1,-138240" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:shape><v:oval id="_x0000_s34937" style='position:absolute;left:3768;
+    top:960;width:240;height:240;mso-wrap-style:none;v-text-anchor:middle'
+    filled="f" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval></v:group><v:group id="_x0000_s34941" style='position:absolute;
+   left:84pt;top:204pt;width:588pt;height:270pt' coordorigin="672,1632"
+   coordsize="4704,2160">
+   <v:line id="_x0000_s34818" style='position:absolute;flip:y;mso-wrap-style:none;
+    v-text-anchor:middle' from="768,1824" to="768,3648" o:regroupid="1"
+    strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34819" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1536,1824" to="1536,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34820" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2304,1824" to="2304,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34821" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3072,1824" to="3072,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34822" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3840,1824" to="3840,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34823" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="4608,1824" to="4608,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:oval id="_x0000_s34826" style='position:absolute;left:672;top:3552;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34827" style='position:absolute;left:672;top:3168;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34828" style='position:absolute;left:672;top:2784;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34829" style='position:absolute;left:672;top:2400;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34830" style='position:absolute;left:672;top:2016;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34831" style='position:absolute;left:672;top:1632;
+    width:192;height:192;mso-wrap-style:none;v-text-anchor:middle' o:regroupid="1"
+    filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]" strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34832" style='position:absolute;left:1440;
+    top:3552;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34833" style='position:absolute;left:1440;
+    top:3168;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34834" style='position:absolute;left:1440;
+    top:2784;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34835" style='position:absolute;left:1440;
+    top:2400;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34836" style='position:absolute;left:1440;
+    top:2016;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#969696" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34837" style='position:absolute;left:1440;
+    top:1632;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:line id="_x0000_s34838" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="864,3648" to="1440,3648"
+    o:regroupid="1" strokecolor="white" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34839" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="864,3312" to="1440,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34840" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="864,2976" to="1440,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:oval id="_x0000_s34841" style='position:absolute;left:2208;
+    top:3168;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34842" style='position:absolute;left:2208;
+    top:3552;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34843" style='position:absolute;left:2208;
+    top:2784;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34844" style='position:absolute;left:2208;
+    top:2400;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34845" style='position:absolute;left:2208;
+    top:2016;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34846" style='position:absolute;left:2208;
+    top:1632;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:line id="_x0000_s34847" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,3648" to="2208,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34848" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,3312" to="2208,3648"
+    o:regroupid="1" strokecolor="white" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34849" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2976" to="2208,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34850" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,3264" to="2208,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34851" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2928" to="2208,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34852" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2592" to="2208,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34853" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2880" to="2208,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34854" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2544" to="2208,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34855" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="1632,2208" to="2208,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:oval id="_x0000_s34856" style='position:absolute;left:2976;
+    top:3168;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34857" style='position:absolute;left:2976;
+    top:3552;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34858" style='position:absolute;left:2976;
+    top:2784;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34859" style='position:absolute;left:2976;
+    top:2400;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34860" style='position:absolute;left:2976;
+    top:2016;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34861" style='position:absolute;left:2976;
+    top:1632;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:line id="_x0000_s34862" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,3648" to="2976,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34863" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,3312" to="2976,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34864" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2976" to="2976,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34865" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,3264" to="2976,3264"
+    o:regroupid="1" strokecolor="white" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34866" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2928" to="2976,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34867" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2592" to="2976,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34868" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2880" to="2976,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34869" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2544" to="2976,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34870" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2208" to="2976,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34871" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2496" to="2976,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34872" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2160" to="2976,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34873" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,1824" to="2976,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34874" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,2112" to="2976,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34875" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="2400,1776" to="2976,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:oval id="_x0000_s34876" style='position:absolute;left:3744;
+    top:2784;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34877" style='position:absolute;left:3744;
+    top:3552;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34878" style='position:absolute;left:3744;
+    top:3168;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34879" style='position:absolute;left:3744;
+    top:2400;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34880" style='position:absolute;left:3744;
+    top:2016;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34881" style='position:absolute;left:3744;
+    top:1632;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:line id="_x0000_s34882" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,3648" to="3744,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34883" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,3312" to="3744,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34884" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2976" to="3744,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34885" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,3264" to="3744,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34886" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2928" to="3744,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34887" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2592" to="3744,3264"
+    o:regroupid="1" strokecolor="white" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34888" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2880" to="3744,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34889" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2544" to="3744,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34890" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2208" to="3744,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34891" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2496" to="3744,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34892" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2160" to="3744,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34893" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,1824" to="3744,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34894" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,2112" to="3744,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34895" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3168,1776" to="3744,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:oval id="_x0000_s34896" style='position:absolute;left:4512;
+    top:2016;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="red" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34897" style='position:absolute;left:4512;
+    top:3552;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34898" style='position:absolute;left:4512;
+    top:2784;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34899" style='position:absolute;left:4512;
+    top:2400;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34900" style='position:absolute;left:4512;
+    top:3168;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" fillcolor="#f9c" strokecolor="white [1]" strokeweight="1pt">
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:oval id="_x0000_s34901" style='position:absolute;left:4512;
+    top:1632;width:192;height:192;mso-wrap-style:none;v-text-anchor:middle'
+    o:regroupid="1" filled="f" fillcolor="#b2b2b2 [4]" strokecolor="white [1]"
+    strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:oval><v:line id="_x0000_s34902" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,3648" to="4512,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34903" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,3312" to="4512,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34904" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2976" to="4512,3648"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34905" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,3264" to="4512,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34906" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2928" to="4512,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34907" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2592" to="4512,3264"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34908" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2880" to="4512,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34909" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2544" to="4512,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34910" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2208" to="4512,2880"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34911" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2496" to="4512,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34912" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2160" to="4512,2496"
+    o:regroupid="1" strokecolor="white" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34913" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,1824" to="4512,2496"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34914" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,2112" to="4512,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34915" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="3936,1776" to="4512,2112"
+    o:regroupid="1" strokecolor="#969696" strokeweight=".5pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:line id="_x0000_s34916" style='position:absolute;
+    mso-wrap-style:none;v-text-anchor:middle' from="4704,3648" to="4896,3648"
+    o:regroupid="1" strokecolor="white [1]" strokeweight="1pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line><v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202"
+    path="m0,0l0,21600,21600,21600,21600,0xe">
+    <v:stroke joinstyle="miter"/>
+    <v:path gradientshapeok="t" o:connecttype="rect"/>
+   </v:shapetype><v:shape id="_x0000_s34917" type="#_x0000_t202" style='position:absolute;
+    left:4896;top:3504;width:480;height:288' o:regroupid="1" filled="f"
+    fillcolor="#b2b2b2 [4]" stroked="f" strokecolor="white [1]" strokeweight="1pt">
+    <v:fill color2="black [0]"/>
+    <v:shadow color="#393939 [2]"/>
+    <v:textbox style='mso-fit-shape-to-text:t'/>
+   </v:shape><v:line id="_x0000_s34940" style='position:absolute;flip:y;
+    mso-wrap-style:none;v-text-anchor:middle' from="4608,1824" to="4608,2016"
+    strokecolor="white [1]" strokeweight="1.25pt">
+    <v:stroke endarrow="block"/>
+    <v:shadow color="#393939 [2]"/>
+   </v:line></v:group></p:shaperange>
+</xml>

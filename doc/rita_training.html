@@ -1,0 +1,1119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0048)http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html -->
+<HTML><HEAD>
+<META content="text/html; charset=windows-1252" http-equiv=Content-Type>
+<META content="MSHTML 5.00.3207.2500" name=GENERATOR></HEAD>
+<BODY bgColor=#cabaac text=#000000 vLink=#000000><A name=top></A>INDEX (this 
+document is under construction...) 
+<OL>
+  <LI><A 
+  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#1">Data-preparation for 
+  training acoustic models</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#2">Selecting 
+  modeling parameters</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#13">Feature 
+  computation</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#15">Modeling 
+  filled pauses and non-speech events</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#3">Training 
+  speed</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#5">Questions 
+  specific to log files</A> 
+  <LI><A 
+  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#6">Vector-quantization 
+  for discrete and semi-continuous models</A> 
+  <LI><A 
+  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#14">Flat-initialization</A> 
+
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#7">Updating 
+  existing models</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#8">Utterance, 
+  word and phone segmentations</A> 
+  <LI><A 
+  href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#9">Force-alignment(Viterbi 
+  alignment)</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#10">Baum-Welch 
+  iterations and associated likelihoods</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#11">Dictionary, 
+  pronunciations and phone-sets</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#12">Decision 
+  tree building and parameter sharing</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#4">Post-training 
+  disasters</A> 
+  <LI><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#16">Why is my 
+  recognition accuracy poor?<A> </LI></OL>
+<HR>
+<A name=1></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>DATA-PREPARATION FOR TRAINING ACOUSTIC MODELS</TD></TR></TBODY></TABLE>
+<P>Q<FONT color=#483d8b>. How can I tell the size of my speech corpus in hours? 
+Can I use it all for training?</FONT> 
+<P>A. You can only train with utterances for which you have transcripts. You 
+cannot usually tell the size of your corpus from the number of utterances you 
+have. Sometimes utterances are very long, and at other times they may be as 
+short as a single word or sound. The best way to estimate the size of your 
+corpus in hours is to look at the total size in bytes of all utterance files 
+which you can use to train your models. Speech data are usually stored in 
+integer format. Assuming that is so and ignoring any headers that your file 
+might have, an approximate estimate of the size of your corpus in hours can be 
+obtained from the following parameters of the speech data: <BR>&nbsp; 
+<TABLE border=0 cellSpacing=0 width=700>
+  <TBODY>
+  <TR>
+    <TD><B>Sampling Rate:&nbsp;</B></TD>
+    <TD>If this is <I>S</I> KiloHertz, then there are <I>S </I>x1000 samples 
+      or integers in every second of your data.</TD></TR>
+  <TR>
+    <TD><B>Sample Size:</B></TD>
+    <TD>If your sampling is "8bit" then every integer has 1 byte associated 
+      with it. If it is "16bit" then every integer in you data has 2 bytes 
+      associated with it</TD></TR>
+  <TR>
+    <TD><B>Hour Size:</B></TD>
+    <TD>3600 seconds in an hour</TD></TR></TBODY></TABLE>
+<P>Here's a quick reference table: <BR>&nbsp; 
+<TABLE border=0 cellPadding=0 cellSpacing=0 cols=4 width=500>
+  <TBODY>
+  <TR>
+    <TD>No. of bytes</TD>
+    <TD>Sampling rate</TD>
+    <TD>Sample size</TD>
+    <TD>Hours of data</TD></TR>
+  <TR>
+    <TD>X</TD>
+    <TD>8khz</TD>
+    <TD>8bit</TD>
+    <TD>X / (8000*1*3600)</TD></TR>
+  <TR>
+    <TD>X</TD>
+    <TD>16khz</TD>
+    <TD>16bit</TD>
+    <TD>X / (1600*2*3600)</TD></TR></TBODY></TABLE>
+<P>Q: <FONT color=#483d8b>I have about 7000 utterances or 12 hours of speech in 
+my training set. I found faligned transcripts for all but 114 utterances, and 
+those 114 utterances have no transcripts that I can find. Should I leave them 
+out of the training? I don't think it will make that much difference at its 1.4% 
+of the data. Also, for this much data, how many senones should I use?</FONT> 
+<P>A: Leave out utterances for which you don't have transcripts (unless you have 
+very little data in the first place, in which case hear out the audio and 
+transcribe it yourself). In this case, just leave them out. 
+<P>Thumb rule figures for the number of senones that you should be training are 
+given in the following table: <BR>&nbsp; 
+<CENTER>
+<TABLE border=1 cols=2 width=300>
+  <TBODY>
+  <TR>
+    <TD>Amount of training data(hours)</TD>
+    <TD>No. of senones</TD></TR>
+  <TR align=left>
+    <TD>1-3</TD>
+    <TD>500-1000</TD></TR>
+  <TR>
+    <TD>4-6</TD>
+    <TD>1000-2500</TD></TR>
+  <TR>
+    <TD>6-8</TD>
+    <TD>2500-4000</TD></TR>
+  <TR>
+    <TD>8-10</TD>
+    <TD>4000-5000</TD></TR>
+  <TR>
+    <TD>10-30&nbsp;</TD>
+    <TD>5000-5500</TD></TR>
+  <TR>
+    <TD>30-60</TD>
+    <TD>5500-6000</TD></TR>
+  <TR>
+    <TD>60-100&nbsp;</TD>
+    <TD>6000-8000</TD></TR>
+  <TR>
+    <TD>Greater than 100</TD>
+    <TD>8000 are enough</TD></TR></TBODY></TABLE></CENTER>
+<P>Q: <FONT color=#483d8b>What is force-alignment? Should I force-align my 
+transcripts before I train?</FONT> 
+<P>A: The process of force-alignment takes an existing transcript, and finds out 
+which, among the many pronunciations for the words occuring in the transcript, 
+are the correct pronunciations. So when you refer to "force-aligned" 
+transcripts, you are also inevitably referring to a *dictionary* with reference 
+to which the transcripts have been force-aligned. So if you have two 
+dictionaries and one has the word "PANDA" listed as: <BR>&nbsp; 
+<TABLE border=0 cellPadding=0 cellSpacing=0 width=300>
+  <TBODY>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AA N D AA</FONT></TT></TD></TR>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA(2)</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AE N D AA</FONT></TT></TD></TR>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA(3)</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AA N D AX</FONT></TT></TD></TR></TBODY></TABLE>
+<P>and the other one has the same word listed as <BR>&nbsp; 
+<TABLE border=0 cellPadding=0 cellSpacing=0 width=300>
+  <TBODY>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AE N D AA</FONT></TT></TD></TR>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA(2)</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AA N D AX</FONT></TT></TD></TR>
+  <TR>
+    <TD><TT><FONT size=+1>PANDA(3)</FONT></TT></TD>
+    <TD><TT><FONT size=+1>P AA N D AA</FONT></TT></TD></TR></TBODY></TABLE>
+<P>And you force-aligned using the first dictionary and get your transcript to 
+look like : <BR>I&nbsp; SAW&nbsp; A&nbsp; PANDA(3)&nbsp; BEAR, <BR>then if you 
+used that transcript to train but used the second dictionary to train, then you 
+would be giving the <I>wrong</I> pronunciation to the trainer. You would be 
+telling the trainer that the pronunciation for the word PANDA in your corpus is 
+"<TT><FONT size=+1>P AA N D AA</FONT></TT>"&nbsp; instead of the correct one, 
+which should have been "<TT><FONT size=+1>P AA N D AX</FONT></TT>". The data 
+corresponding to the phone <TT><FONT size=+1>AX</FONT></TT>will now be wrongly 
+used to train the phone <TT><FONT size=+1>AA</FONT></TT>. 
+<P>What you must really do is to collect your transcripts, use only the first 
+listed pronunciation in your training dictionary, train ci models, and use 
+*those ci models* to force-align your transcripts against the training 
+dictionary. Then go all the way back and re-train your ci models with the new 
+transcripts. <BR>&nbsp; 
+<P>Q: <FONT color=#483d8b>I don't have transcripts. How can I 
+force-align?</FONT> 
+<P>A: you cannot force-align any transcript that you do not have. <BR>&nbsp; 
+<P>Q: <FONT color=#483d8b>I am going to first train a set of coarse models to 
+force-align the transcripts. So I should submit begining and end silence marked 
+transcripts to the trainer for the coarse models. Currently I am keeping all the 
+fillers, such as UM, BREATH, NOISE etc. in my transcripts, but wrapped with "+". 
+Do you think the trainer will consider them as fillers instead of normal 
+words?</FONT> 
+<P>A: According to the trainer, ANY word listed in the dictionary in terms of 
+any phone/sequence of phones is a valid word. BUT the decision tree builder 
+ignores any +word+ phone as a noise phone and does not build decision trees for 
+the phone. So while training, mark the fillers as ++anything++ in the transcript 
+and then see that either the filler dictionary or the main dictionary has some 
+mapping 
+<P>++anything++ +something+ 
+<P>where +something+ is a phone listed in your phonelist. 
+<P>Q: <FONT color=#483d8b>I have a huge collection of data recorded under 
+different conditions. I would like to train good speaker-independent models 
+using this (or a subset of this) data. How should I select my data? I also 
+suspect that some of the transcriptions are not very accurate, but I can't 
+figure out which ones are inaccurate without listening to all the data. </FONT>
+<P>A. If the broad acoustic conditions are similar (for example, if all your 
+data has been recorded off TV shows), it is best to use all data you can get for 
+training speaker-independent bandwidth-independent models, gender-independent 
+models. If you suspect that some of the data you are using might be bad for some 
+reason, then during the baum-welch iterations you can monitor the likelihoods 
+corresponding to each utterance and discard the really low-likelihood 
+utterances. This would filter out the bad acoustic/badly transcribed data. 
+<P>Q:<FONT color=#483d8b> What is the purpose of the 4th field in the control 
+file: 
+<P>newfe/mfcc/sw02001 24915 25019 /phase1/disc01/sw2001.txt_a_249.15_250.19 
+<P>Should I leave the /phase1/disc01... as is or should it be formatted 
+differently? I'm not sure where/why this field is used so I can't make a good 
+guess as to what it should be. </FONT>
+<P>A. The fourth field in the control file is simply an utterance identifier. So 
+long as that field and the entry at the end of the corresponding utterance in 
+the transcript file are the same, you can have anything written there and the 
+training will go through. It is only a very convenient tag. The particular 
+format that you see for the fourth field is just an "informative" way of 
+tagging. Usually we use file paths and names alongwith other file attributes 
+that are of interest to us. 
+<P>Q:<FONT color=#483d8b> I am trying to train with Switchboard data. 
+Switchboard data is mulaw encoded. Do we have generic tools for converting from 
+stereo mulaw to standard raw file? </FONT>
+<P>A. NIST provides a tool called w_edit which lets you specify the output 
+format, the desired channel to decode and the beginning and ending sample that 
+you would like decoded. ch_wave, a part of the Edinburgh speech tools, does this 
+decoding as well (send mail to awb@cs.cmu.edu for more information on this). 
+Here is a conversion table for converting 8 bit mulaw to 16 bit PCM. The usage 
+must be clear from the table - linear_value = linear[mu_law_value]; (i.e. if 
+your mu law value is 16, the PCM value is linear[16]); <PRE>
+------------- mu-law to PCM conversion table-----------------------
+  static short int linear[256] = {-32124, -31100, -30076, -29052,
+ -28028, -27004, -25980, -24956, -23932, -22908, -21884, -20860,
+ -19836, -18812, -17788, -16764, -15996, -15484, -14972, -14460,
+ -13948, -13436, -12924, -12412, -11900, -11388, -10876, -10364,
+ -9852, -9340, -8828, -8316, -7932, -7676, -7420, -7164, -6908,
+ -6652, -6396, -6140, -5884, -5628, -5372, -5116, -4860, -4604,
+ -4348, -4092, -3900, -3772, -3644, -3516, -3388, -3260, -3132,
+ -3004, -2876, -2748, -2620, -2492, -2364, -2236, -2108, -1980,
+ -1884, -1820, -1756, -1692, -1628, -1564, -1500, -1436, -1372,
+ -1308, -1244, -1180, -1116, -1052, -988, -924, -876, -844, -812,
+ -780, -748, -716, -684, -652, -620, -588, -556, -524, -492, -460,
+ -428, -396, -372, -356, -340, -324, -308, -292, -276, -260, -244,
+ -228, -212, -196, -180, -164, -148, -132, -120, -112, -104, -96,
+ -88, -80, -72, -64, -56, -48, -40, -32, -24, -16, -8, 0, 32124,
+  31100, 30076, 29052, 28028, 27004, 25980, 24956, 23932, 22908,
+  21884, 20860, 19836, 18812, 17788, 16764, 15996, 15484, 14972,
+  14460, 13948, 13436, 12924, 12412, 11900, 11388, 10876, 10364,
+  9852, 9340, 8828, 8316, 7932, 7676, 7420, 7164, 6908, 6652, 6396,
+  6140, 5884, 5628, 5372, 5116, 4860, 4604, 4348, 4092, 3900, 3772,
+  3644, 3516, 3388, 3260, 3132, 3004, 2876, 2748, 2620, 2492, 2364,
+  2236, 2108, 1980, 1884, 1820, 1756, 1692, 1628, 1564, 1500, 1436,
+  1372, 1308, 1244, 1180, 1116, 1052, 988, 924, 876, 844, 812,
+  780, 748, 716, 684, 652, 620, 588, 556, 524, 492, 460, 428, 396,
+  372, 356, 340, 324, 308, 292, 276, 260, 244, 228, 212, 196, 180,
+  164, 148, 132, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40,
+  32, 24, 16, 8, 0};
+------------- mu-law to PCM conversion table-----------------------
+</PRE>
+<P><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<HR>
+<A name=2></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>SELECTING MODELING PARAMETERS</TD></TR></TBODY></TABLE>
+<P>Q:<FONT color=#483d8b>How many senones should I train?</FONT> 
+<P>A: Thumb rule figures for the number of senones that you should be 
+<BR>training are given in the following table: 
+<P>Amount of training data(hours) No. of senones <BR>&nbsp; 
+<CENTER>
+<TABLE border=1 cols=2 width=300>
+  <TBODY>
+  <TR>
+    <TD>Amount of training data(hours)</TD>
+    <TD>No. of senones</TD></TR>
+  <TR align=left>
+    <TD>1-3</TD>
+    <TD>500-1000</TD></TR>
+  <TR>
+    <TD>4-6</TD>
+    <TD>1000-2500</TD></TR>
+  <TR>
+    <TD>6-8</TD>
+    <TD>2500-4000</TD></TR>
+  <TR>
+    <TD>8-10</TD>
+    <TD>4000-5000</TD></TR>
+  <TR>
+    <TD>10-30&nbsp;</TD>
+    <TD>5000-5500</TD></TR>
+  <TR>
+    <TD>30-60</TD>
+    <TD>5500-6000</TD></TR>
+  <TR>
+    <TD>60-100&nbsp;</TD>
+    <TD>6000-8000</TD></TR>
+  <TR>
+    <TD>Greater than 100</TD>
+    <TD>8000 are enough</TD></TR></TBODY></TABLE></CENTER>
+<P>Q:<FONT color=#483d8b> How many states-per-hmm should I specify for my 
+training?</FONT> 
+<P>A: If you have "difficult" speech (noisy/spontaneous/damaged), use 3-state 
+hmms with a noskip topology. For clean speech you may choose to use any odd 
+number of states, depending on the amount of data you have and the type of 
+acoustic units you are training. If you are training word models, for example, 
+you might be better off using 5 states or higher. 3-5 states are good for 
+shorter acoustic units like phones. You cannot currently train 1 state hmms with 
+the Sphinx. 
+<P>Remember that the topology is also related to the frame rate and the minimum 
+expected duration of your basic sound units. For example the phoneme "T" rarely 
+lasts more than 10-15 ms. If your frame rate is 100 frames per second, "T" will 
+therefore be represented in no more than 3 frames. If you use a 5 state noskip 
+topology, this would force the recognizer to use at least 5 frames to model the 
+phone. Even a 7 state topology that permits skips between alternate states would 
+force the recognizer to visit at least 4 of these states, thereby requring the 
+phone to be at least 4 frames long. Both would be erroneous. Give this point 
+very serious thought before you decide on your HMM topology. If you are not 
+convinced, send us a mail and we'll help you out. 
+<P>Q:<FONT color=#483d8b>I have two sets of models, A and B. The set A has been 
+trained with 10,000 tied states (or senones) and B has been trained with 5,000 
+senones. If I want to compare the recognition results on a third database using 
+A and B, does this difference in the number of senones matter?</FONT> 
+<P>A. If A and B have been optimally trained (i.e. the amount of data available 
+for training each has been well considered), then the difference in the number 
+of tied states used should not matter. 
+<P><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<HR>
+<A name=3></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>TRAINING SPEED</TD></TR></TBODY></TABLE>
+<P><BR>Q: <FONT color=#483d8b>I am trying to train models on s single machine. I 
+just want want to train a set of coarse models for forced-alignment. The 
+baum-welch iterations are very slow. In 24 hours, it has only gone through 800 
+utterances. I have total 16,000 utterances. As this speed, it will take 20 days 
+for the first iteration of baum-welch, considering the convergence ratio to be 
+0.01, it will take several months to obtain the first CI-HMM, let alone CD-HMM. 
+Is there any way to speed this up?</FONT> 
+<P>A: If you start from flat-initialized models the first two iterations of baum 
+welch will always be very slow. This is because all paths through the utterance 
+are similar and the algorithm has to consider all of them. In the higher 
+iterations, when the various state distributions begin to differ from each 
+other, the computation speeds up a great deal. 
+<P>Given the observed speed of your machine, you cannot possibly hope to train 
+your models on a single machine. You may think of assigning a lower value to the 
+"topn" argument of the bw executable, but since you are training CI models, 
+changing the topn value from its default (99) to any smaller number will not 
+affect the speed, since there is only at best 1 Gaussian per state anyway 
+throughout the computation. 
+<P>Try to get more machines to share the jobs. There is a -npart option to help 
+you partition your training data. Alternatively, you can shorten your training 
+set, since you only want to use the models for forced alignment. Models trained 
+with about 10 hours of data will do the job just as well. 
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to top 
+<HR width="100%">
+<A name=4></A></A><FONT color=#ffffff>POST-TRAINING DISASTERS</FONT></H4>
+<P>Q: <FONT color=#483d8b>I've trained with clean speech. However, when I try to 
+decode noisy speech with my models, the decoder just dies. shouldn't it give at 
+least some junk hypothesis? 
+<P></FONT>A. Adding noise to the test data increases the mismatch between the 
+models and test data. So if the models are not really well trained (and hence 
+not very generalizable to slightly different data), the decoder dies. There are 
+multiple resons for this: 
+<UL>
+  <LI>The decoder cannot find any valid complete paths during decoding. All 
+  paths that lead to a valid termination may get pruned out 
+  <LI>The likelihood of the data may be so poor that the decoder goes into 
+  underflow. This happens if even *only one* of your models is very badly 
+  trained. The likelihood of this one model becomes very small and the resulting 
+  low likelihood get inverted to a very large positive number becuase the 
+  decoder uses integer arithmetic, and results in segmentation errors, 
+  artihmetic errors, etc. </LI></UL>One way to solve this problem is just to 
+retrain with noisy data. 
+<P>Q: <FONT color=#483d8b>I've trained models but I am not able to decode. The 
+decoder settings seem to be ok. It just dies when I try to decode.</FONT> 
+<P>A. If all flag setting are fine, then decoder is probably dying becuase the 
+acoustic models are bad. This is because of multiple reasons a) All paths that 
+lead to a valid termination may get pruned out b) The likelihood of the data may 
+be so poor that the decoder goes into underflow. This happens if even *only one* 
+of your models is very badly trained. The likelihood of this one model becomes 
+very small and the resulting low likelihood get inverted to a very large 
+positive number becuase the decoder uses integer arithmetic, and results in 
+segmentation errors, artihmetic errors, etc. 
+<P>You'll probably have to retrain the models in a better way. Force-align 
+properly, make sure that all phones and triphones that you do train are well 
+represented in your training data, use more data for training if you can, check 
+your dictionaries and use correct pronunciations, etc. 
+<P>Q: <FONT color=#483d8b>I started from one set of models, and trained further 
+using another bunch of data. This data looked more like my test data, and there 
+was a fair amount of it. So my models should have improved. When I use these 
+models for recognition, however, the performance of the system is awful. What 
+went wrong?</FONT> 
+<P>A: The settings use to train your base models may have differed in one or 
+more ways from the settings you used while training with the new data. The most 
+dangerous setting mismatches is the agc (max/none). Check the other settings 
+too, and finally make sure that during decoding you use the same agc (and other 
+relevant settings like varnorm and cmn) during training. 
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+top</A></H4>
+<HR>
+<A name=5></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>QUESTIONS SPECIFIC TO LOG-FILE OUTPUTS</TD></TR></TBODY></TABLE>Q. <FONT 
+color=#483d8b>My decode log file gives the following message: 
+<P>ERROR: "../feat.c", line 205: Header size field: -1466929664(a8906e00); 
+filesize: 1(00000001) <BR>================ <BR>exited with status 0 </FONT>
+<P>A. The feature files are byte swapped! 
+<P>
+<P>Q. <FONT color=#483d8b>During force-alignment, the log file has many messages 
+which say "Final state not reached" and the corresponding transcripts do not get 
+force-aligned. What's wrong? </FONT>
+<P>A. The message means that the utterance likelihood was very low, meaning in 
+turn that the sequence of words in your transcript for the corresponding feature 
+file given to the force-aligner is rather unlikely. The most common reasons are 
+that you may have the wrong model settings or the transcripts being considered 
+may be inaccurate. For more on this go to <A 
+href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#9">Viterbi-alignment</A> 
+<P>Q.<FONT color=#483d8b> I am trying to do flat-initialization for training ci 
+models. The cp_parm program is complaining about the -feat option. The original 
+script did not specify a -feat option, however the cp_parm program complained 
+that the default option was unimplemented. I've made several attempts at 
+specifing a -feat option with no luck. Below is the output of two run. Can you 
+give me an idea of what is happening here? 
+<P>Default (no -feat passed) produces: <PRE>-feat     c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]
+c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]
+ERROR: "../feat.c", line 121: Unimplemented feature
+c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]
+ERROR: "../feat.c", line 122: Implemented features are:
+        c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/
+        c/1..L-1/d/1..L-1/c/0/d/0/dd/0/dd/1..L-1/
+        c/0..L-1/d/0..L-1/dd/0..L-1/
+        c/0..L-1/d/0..L-1/
+INFO: ../s3gau_io.c(128): Read
+[path]/model_parameters/new_fe.ci_continuous_flatinitial
+/globalmean [1x1x1 array]
+gau 0 &lt;= 0
+gau 1 &lt;= 0
+gau 2 &lt;= 0
+</PRE>This is the error message if I attempt to specify the -feat option: <PRE> -feat     c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]
+....
+
+ERROR: "../feat.c", line 121: Unimplemented feature
+c[1..L-1]d[1..L-1]c[0]d[0]dd[0]dd[1..L-1]
+ERROR: "../feat.c", line 122: Implemented features are:
+        c/1..L-1/,d/1..L-1/,c/0/d/0/dd/0/,dd/1..L-1/
+        c/1..L-1/d/1..L-1/c/0/d/0/dd/0/dd/1..L-1/
+        c/0..L-1/d/0..L-1/dd/0..L-1/
+        c/0..L-1/d/0..L-1/
+</PRE></FONT>
+<P>A. The last three lines in the case when you do not specify the -feat option 
+say that the cp_parm is going through and the mean vector labelled "0" is being 
+copied to state 0, state 1, state 2.... The same "0" vector is being copied 
+because this is a flat_initialization where all means, variances etc are given 
+equal flat values. At this point, these errors in the log files can just be 
+ignored. 
+<P>Q.<FONT color=#483d8b> I am trying to make linguistic questions for state 
+tying. The program keeps failing because it can't allocate enough memory. Our 
+machines are rather large with 512MB and 1 to 2 GB swap space. Does it make 
+sense that it really doesn't have enough memory, or is it more likely something 
+else failed? Below is the log from this program. <PRE> -varfn
+{path]/model_parameters/new_fe.ci_continuous/variances \
+ -mixwfn
+[path]/model_parameters/new_fe.ci_continuous/mixture_weights \
+ -npermute 168 \
+ -niter 0 \
+ -qstperstt 20 \
+.....
+.....
+.....
+INFO: ../s3gau_io.c(128): Read
+/sphx_train/hub97/training/model_parameters/new_fe.ci_continuous/means
+[153x1x1 array]
+INFO: ../s3gau_io.c(128): Read
+/sphx_train/hub97/training/model_parameters/new_fe.ci_continuous/variances
+[153x1x1 array]
+FATAL_ERROR: "../ckd_alloc.c", line 109: ckd_calloc_2d failed for caller at
+../main.c(186) at ../ckd_alloc.c(110)
+</PRE></FONT>
+<P>A. make_quests searches 2^npermute combinations several times for the optimal 
+clustering of states. For this, it has to store 2^npermute values (for the 
+comparison). So, setting -npermute to anything greater than 8 or 10 makes the 
+program very slow, and anything over 28 will make the program fail. We usually 
+use a value of 8. 
+<P>Q.<FONT color=#483d8b> I'm getting a message about end of data beyond end of 
+file from agg_seg during vector-quantization. I assume this means the .ctl file 
+references a set of data beyond the end of the file. Should I ignore this? 
+</FONT>
+<P>A. Yes, for agg_seg if its going through in spite of the message. Agg-seg 
+only collects samples of feature vectors to use for quantization through kmeans. 
+No, for the rest of the training because it may cause random problems. The entry 
+in the control file and the corresponding transcript have to be removed, if you 
+cannot correct them for some reason. 
+<P>
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+top</A></H4>
+<HR>
+<A name=6></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>VECTOR-QUANTIZATION FOR DISCRETE AND SEMI-CONTINUOUS 
+  MODELS</TD></TR></TBODY></TABLE>
+<P>Q.<FONT color=#483d8b> I have a question about VQ. When you look at the 
+39-dimensional [cep + d-cep + dd-cep ] vector, it's clear that each part (cep, 
+d-cep, dd-cep) will have quite a different dynamic range and different mean. How 
+should we account for this when doing DISCRETE HMM modeling? Should we make a 
+separate codebook for each? If so, how should we "recombine" when recognizing? 
+Or should we rescale the d-cep and dd-cep up so they can "compete" with the 
+"larger" cep numbers in contributing to the overall VQ? 
+<P>In other words, suppose we want to train a complete discrete HMM system - is 
+there a way to incorporate the d-cep and dd-cep features into the system to take 
+advantage of their added information? If we just concatenate them all into one 
+long vector and do standard VQ, the d-cep and dd-cep won't have much of an 
+influence as to which VQ codebook entry matches best an incoming vector. Perhaps 
+we need to scale up the d-cep and dd-cep features so they have the same dynamic 
+range as the cep features? Is there a general strategy that people have done in 
+the past to make this work? Or do we have to "bite the bullet" and move up to 
+semi-continuous HMM modeling? </FONT>
+<P>A: You *could* add d-cep and dd-cep with the cepstra into one long feature. 
+However, this is always inferior to modeling them as separate feature streams 
+(unless you use codebooks with many thousand codewords). 
+<P>Secondly, for any cepstral vector, the dynamic range and value of c[12], for 
+example, is much smaller (by orders of magnitude) than c[1] and doesnt affect 
+the quantization at all. In fact, almost all the quantization is done on the 
+basis of the first few cepstra with the largest dynamic ranges. This does not 
+affect system performance in a big way. One of the reasons is that the 
+classification information in the features that do not affect VQ much is also 
+not too great. 
+<P>However, if you do really want to be careful with dynamic ranges, you could 
+perform VQ using Mahalanobis distances, instead of Euclidean distances. In the 
+Mahalanbis distance each dimension is weighted by the inverse of the standard 
+deviation of that component of the data vectors. e.g. c[12] would be weighted by 
+(1/std_dev(c[12])). The standard deviations could be computed either over the 
+entire data set (based on the global variance) or on a per-cluster basis (you 
+use the standard deviation of each of the clusters you obtain during VQ to 
+weight the distance from the mean of that cluster). Each of these two has a 
+slightly different philisophy, and could result in slightly different results. 
+<P>A third thing you could do is to compute a Gaussian mixture with your data, 
+and classify each data vector (or extended data vector, if you prefer to combine 
+cepstra/dcep/ddcep into a single vector) as belonging to one of your gaussians. 
+You then use the mean of that Gaussian as the codeword representing that vector. 
+Dynamic ranges of data will not be an issue at all in this case. 
+<P>Note: In the sphinx, for semi-continuous modeling, a separate codebook is 
+made for each of the four feature streams: 12c,24d,3energy,12dd. Throughout the 
+training, the four streams are handled independently of each other and so in the 
+end we have four sets of mixture weights corresponding to each senone or hmm 
+state. The sphinx does not do discrete modeling directly. 
+<P>Q<FONT color=#483d8b>. For vector-quantization, should the control file 
+entires correspond exactly to the transcript file entries? </FONT>
+<P>A. For the vq, the order of files in the ctl need not match the order of 
+transcripts. However, for the rest of the training, the way our system binaries 
+are configured, there has to be an exact match. The vq does not look at the 
+transcript file. It just groups data vectors (which are considered without 
+reference to the transcripts). 
+<P>Q<FONT color=#483d8b>. Regarding the size of the VQ Codebook: is there 
+something to say that the size 256 optimal? Would increasing the size affect the 
+speed of decoding? </FONT>
+<P>A. For more diverse acoustic environments, having a larger codebook size 
+would result in better models and better recognition. We have been using 256 
+codewords primarily for use with the SPHINX-II decoder, since for historical 
+reasons it does not handle larger codebbok sizes. The original sphinx-II used a 
+single byte integer to index the codewords. The largest number possible was 
+therefore 256. The format conversion code which converts models from SPHINX-III 
+format to SPHINX-II format accordingly requires that your models be trained with 
+a codebook size of 256. 
+<P>The standard Sphinx-III decoder, however, can handle larger codebooks. 
+Increasing the codebook size would slow down the speed of decoding since the the 
+number of mixture-weights would be higher for each HMM state. 
+<P>Q<FONT color=#483d8b>. I am trying to do VQ. It just doesn't go through. What 
+could be wrong? </FONT>
+<P>A. Its hard to say without looking at the log files. If a log file is not 
+being generated, check for machine/path problems. If it is being generated, here 
+are the common causes you can check for: 
+<OL>
+  <LI>byte-swap of the feature files 
+  <LI>negative file lengths 
+  <LI>bad vectors in the feature files, such as those computed from headers 
+  <LI>the presence of very short files (a vector or two long) </LI></OL>
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+top</A></H4>
+<HR>
+<A name=7></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>UPDATING EXISTING MODELS</TD></TR></TBODY></TABLE>
+<P>Q<FONT color=#483d8b>.I have 16 gaussian/state continuous models, which took 
+a lot of time to train. Now I have some more data and would like to update the 
+models. Should I train all over again starting with the tied mdef file (the 
+trees)? </FONT>
+<P>A. Training from the trees upto 16 or 32 gaussians per state takes a lot of 
+time. If you have more data from the same domain or thereabouts, and just want 
+to update your acoustic models, then you are probably better off starting with 
+the current 16 or 32 gaussians/state models and running a few iterations of 
+baum-welch from there on with *all* the data you have. While there would 
+probably be some improvment if you started from the trees I dont think it would 
+be very different from iterating from the current models. You *would* get better 
+models if you actually built the trees all over again using all the data you 
+have (since they would now consider more triphones), but that would take a long 
+time. 
+<P>Q<FONT color=#483d8b>.I have a set of models A, which have a few filler 
+phones. I want to use additional data from another corpus to adapt the model set 
+A to get a new adapted model set B. However, the corpus for B has many other 
+filler phones which are not the same as the filler models in set A. What do I do 
+to be able to adapt?</FONT> 
+<P>A. Edit the filler dictionary and insert the fillers you want to train. Map 
+each filler in B to a filler phone (or a sequence of phones) in model set A. for 
+example <PRE>++UM++       AX M
+++CLICK++    +SMACK+
+++POP++      +SMACK+
+++HMM++      HH M
+++BREATH++   +INHALE+
+++RUSTLE++   +INHALE+
+</PRE>On the LHS, list the fillers in B. On the RHS, put in the corresponding 
+fillers (or phones) in A. In this case, it will be a many-to-one mapping from B 
+to A. 
+<P>To force-align, add the above filler transcriptions to the *main* dictionary 
+used to force-align. 
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+top</A></H4>
+<HR>
+<A name=8></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>UTTERANCE, WORD AND PHONE SEGMENTATIONS</TD></TR></TBODY></TABLE>
+<P>Q<FONT color=#483d8b>. How do I use the sphinx-3 decoder to get phone 
+segmentations? </FONT>
+<P>A. The decoder works at the sentence level and outputs word level 
+segmentations. If your "words" are phones, you have a phone-decoder and you can 
+use the -matchsegfn flag to write the phone segmentations into a file. If your 
+words are not phones (and are proper words), then write out matchseg files 
+(using the -matchsegfn option rather than the -matchfn option), pull out all the 
+words from the output matchseg files *including all noises and silences* and 
+then run a force- alignment on the corresponding pronunciation transcript to get 
+the phone segmentation. You will have to remove the <S>, <SIL>and </S>markers 
+before you force-align though, since the aligner introduces them perforce. 
+<P>Q<FONT color=#483d8b>. How do I obtain word segmentations corresponding to my 
+transcripts?</FONT> 
+<P>A. You can use the SPHINX decoder to obtain phone or word level 
+segmentations. Replacing the flag -matchfn <MATCHFILE>with -matchsegfn 
+<MATCHFILE>in your decode options will generate the hypotheses alongwith word 
+segmentations in the matchfile. You can run a phone level decode in a similar 
+way to obtain phone segmentations. 
+<P>Q<FONT color=#483d8b>. The recordings in my training corpus are very long 
+(about 30 minutes each or more). Is there an easy way to break them up into 
+smaller utterances?</FONT> 
+<P>A. One easy way to segment is to build a language model from the transcripts 
+of the utterances you are trying to segment, and decode over 50 sec. sliding 
+windows to obtain the word boundaries. Following this, the utterances can be 
+segmented (say) at approx. 30 sec. slots. Silence or breath markers are good 
+breaking points. 
+<P>There are other, better ways to segment, but they are meant to do a good job 
+in situations where you do not have the transcripts for your recordings (eg. for 
+speech that you are about to decode). They will certainly be applicable in 
+situations where you do have transcripts, but aligning your transcripts to the 
+segments would involve some extra work. 
+<P>
+<H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+top</A></H4>
+<HR>
+<A name=9></A>
+<TABLE bgColor=#ffffff width="100%">
+  <TBODY>
+  <TR>
+    <TD>FORCE-ALIGNMENT (VITERBI ALIGNMENT)</TD></TR></TBODY></TABLE>
+<P>Q<FONT color=#483d8b>. Will the forced-aligner care if I leave the (correct) 
+alternate pronunciation markers in the transcript? Or do I need to remove them? 
+</FONT>
+<P>The force-aligner strips off the alternate pronunciation markers and 
+re-chooses the correct pronunciation from the dictionary. 
+<P>Q<FONT color=#483d8b>.Some utterances in my corpus just don't get 
+force-aligned. The aligner dies on them and produces no output. what's 
+wrong?</FONT> 
+<P>A. Firstly, let's note that "force-alignment" is CMU-specific jargon. The 
+force-aligner usually dies on some 1% of the files. If the models are good, it 
+dies in fewer cases. Force-alignment fails for various reasons - you may have 
+spurious phones in your dictionary or may not have any dictionary entry for one 
+or more words in the transcript, the models you are using may have been trained 
+on acoustic conditions which do not match the conditions in the corpus you are 
+trying to align, you may have trained initial models with transcripts which are 
+not force-aligned (this is a standard practice) and for some reason one or more 
+of the models may have zero parameter values, you may have bad transcriptions or 
+may be giving the wrong transcript for your feature files, there may be too much 
+noise in the current corpus, etc. The aligner does not check whether your list 
+of feature files and the transcript file entries are in the same order. Make 
+sure that you have them in order, where there is a one-to-one correspondence 
+between the two files. If these files are not aligned, the aligner will not 
+align most utterances. The ones that do get aligned will be out of sheer luck 
+and the alignments will be wrong. 
+<P>There may be another reason for alignment failure: if you are force-aligning 
+using a phoneset which is a subset of the phones for which you have 
+context-dependent models (such that the dictionary which was used to train your 
+models has been mapped on to a dictionary with lesser phones), then for certain 
+acoustic realizations of your phones, the context-dependent models may not be 
+present. This causes the aligner to back up to context-idependent (CI) models, 
+giving poor likelihoods. When the likelihoods are too poor, the alignment fails. 
+Here's a possible complication: sometimes in this situation, the backoff to CI 
+models does not work well (for various reasons which we will not discuss here). 
+If you find that too many of your utterances are not getting force-aligned and 
+suspect that this may be due to the fact that you are using a subset of the 
+phone-set in the models used for alignment, then an easy solution is to 
+temporarily restore the full phoneset in your dictionary for force-alignment, 
+and once it is done, revert to the smaller set for training, without changing 
+the order of the dictionary entries. 
+<P>After Viterbi-alignment, if you are still left with enough transcripts to 
+train, then it is a good idea to go ahead and train your new models. The new 
+models can be used to redo the force-alignment, and this would result in many 
+more utterances getting successfuly aligned. You can, of course, iterate the 
+process of training and force-alignment if getting most of the utterances to 
+train is important to you. Note that force-alignmnet is not necessary if a 
+recognizer uses phone-networks for training. However, having an explicit aligner 
+has many uses and offers a lot of flexibility in many situations. 
+<P>Q<FONT color=#483d8b>. I have a script for force-alignment with continuous 
+models. I want to force-align with some semi-continuous models that I have. What 
+needs to change in my script? </FONT>
+<P>A. In the script for force-alignment, apart from the paths and model file 
+names, the model type has to be changed from ".cont" to ".semi" and the feature 
+type has to be changed to "s2_4x", if you have 4-stream semi-continuous models. 
+<P>Q<FONT color=#483d8b>. I'm using sphinx-2 force-aligner to do some aligning, 
+it basically works but seems way too happy about inserting a SIL phone between 
+words (when there clearly isn't any silence). I've tried to compensate with this 
+by playing with the -silpen but it didn't help. why does the aligner insert so 
+many spurious silences? </FONT>
+<P>A. The problem may be due to many factors. Here's a checklist that might help 
+you track down the problem: 
+<OL>
+  <LI>Is there an agc mismatch between your models and your force-aligner 
+  settings? If you have trained your models with agc "max" then you must not set 
+  agc to "none" during force-alignment (and vice-versa). 
+  <LI>Listen to the words which are wrongly followed by the SIL phone after 
+  force-alignment. If such a word clearly does not have any silence following it 
+  in the utterance, then check the pronunciation of the word in your dictionary. 
+  If if the pronunciation is not really correct (for example if you have a 
+  flapped "R " in place of a retroflexed "R " or a "Z " in place of an "S " 
+  (quite likely to happen if the accent is non-native), the aligner is likely to 
+  make an error and insert a silence or noise word in the vicinity of that word. 
+
+  <LI>Are your features being computed exactly the same way as the features that 
+  were used to train the acoustic models that you are using to force-align? Your 
+  parametrization can go wrong even if you are using the *same* executable to 
+  compute features now as you used for training the models. If, for example, 
+  your training features were computed at the standard analysis rate of 100 
+  frame/sec with 16khz, 16bit sampling, and if you are now assuming either an 
+  8khz sampling rate or 8 bit data in your code, you'll get twice as many frames 
+  as you should for any given utterance. With features computed at this rate, 
+  the force-aligner will just get silence-happy. 
+  <LI>Are the acoustic conditions and *speech* bandwidth of the data you are 
+  force-aligning the same as those for which you have acoustic models? For 
+  example, if you are trying to force-align the data recorded directly off your 
+  TV with models built with telephone data, then even if your sampling rate is 
+  the same in both cases, the alignment will not be good. 
+  <LI>Are your beams too narrow? Beams should typically be of the order of 1e-40 
+  to 1e-80. You might mistakenly have them set at a much higher value (which 
+  means much *narrower* beams). 
+  <UL></UL>
+  <P>
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <A name=10></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>BAUM-WELCH ITERATIONS AND ASSOCIATED LIKELIHOODS</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>. How many iterations of Baum-Welch should I run for 
+  CI/CD-untied/CD-tied training?</FONT> 
+  <P>A. 6-10 iterations are good enough for each. It is better to check the 
+  ratio of total likelihoods from the previous iteration to the current one to 
+  decide if a desired convergence ratio has been achieved. The scripts provided 
+  with the SPHINX package keep track of these ratios to automatically decide how 
+  many iterations to run, based on a "desired" convergence ratio that you must 
+  provide. If you run too many iterations, the models get overfitted to the 
+  training data. You must decide if you want this to happen or not. 
+  <P>Q<FONT color=#483d8b>. The training data likelihoods at the end of my 
+  current iteration of Baum-Welch training are identical to the likelihoods at 
+  the end of the previous iteration. What's wrong and why are they not changing? 
+  </FONT>
+  <P>A. The most likely reason is that for some reason the acoustic models did 
+  not get updated on your disk at the end of the previous iteration. When you 
+  begin with the same acoustic models again and again, the likelihoods end up 
+  being the same every time. 
+  <P>Q<FONT color=#483d8b>. The total likelihood at the end of my current 
+  Baum-Welch iteration is actually lower than the likelihood at the end of the 
+  previous iteration. Should this happen?</FONT> 
+  <P>A. Theoretically, the likelihoods must increase monotonically. However, 
+  this condition holds only when the training data size is constant. In every 
+  iteration (especially if your data comes from difficult acoustic conditions), 
+  the Baum-Welch algorithm may fail in the backward pass on some random subset 
+  of the utterances. Since the effective training data size is no longer 
+  constant, the likelihoods may actually decrease at the end of the current 
+  iteration, compared to the previous likelihoods. However, this should not 
+  happen very often. If it does, then you might have to check out your 
+  transcripts and if they are fine, you might have to change your training 
+  strategy in some appropriate manner. 
+  <P>Q<FONT color=#483d8b>. In my training, as the forward-backward (Baum-Welch) 
+  iterations progress, there are more and more error messages in the log file 
+  saying that the backward pass failed on the given utterance. This should not 
+  happen since the algorithm guarantees that the models get better with every 
+  iteration. What's wrong? </FONT>
+  <P>A. As the models get better, the "bad" utterances are better identified 
+  through their very low likelihoods, and the backward pass fails on them. The 
+  data may be bad due to many reasons, the most common one being noise. The 
+  solution is to train coarser models, or train fewer triphones by setting the 
+  "maxdesired" flag to a lower number (of triphones) when making the untied mdef 
+  file, which lists the triphones you want to train. If this is happening during 
+  CI training, check your transcripts to see if the within-utterance silences 
+  and non-speech sounds are transcribed in appropriate places, and if your 
+  transcriptions are correct. Also check if your data has difficult acoustic 
+  conditions, as in noisy recordings with non-stationary noise. If all is well 
+  and the data is very noisy and you can't do anything about it, then reduce the 
+  number of states in your HMMs to 3 and train models with a noskip topology. If 
+  the utterances still die, you'll just have to live with it. Note that as more 
+  and more utterances die, more and more states in your mdef file are "not seen" 
+  during training. The log files will therefore have more and more messages to 
+  this effect. 
+  <P>Q<FONT color=#483d8b>. My baum-welch training is really slow! Is there 
+  something I can do to speed it up, apart from getting a faster processor? 
+  </FONT>
+  <P>A. In the first iteration, the models begin from flat distributions, and so 
+  the first iteration is usually very very slow. As the models get better in 
+  subsequent iterations, the training speeds up. There are other reasons why the 
+  iterations could be slow: the transcripts may not be force-aligned or the data 
+  may be noisy. For the same amount of training data, clean speech training gets 
+  done much faster than noisy speech training. The noisier the speech, the 
+  slower the training. If you have not force-aligned, the solution is to train 
+  CI models, force-align and retrain. If the data are noisy, try reducing the 
+  number of HMM states and/or not allowing skipped states in the HMM topology. 
+  Force-alignment also filters out bad transcripts and very noisy utterances. 
+  <P>Q<FONT color=#483d8b>. The first iteration of Baum-Welch through my data 
+  has an error: <PRE> INFO: ../main.c(757): Normalizing var
+ ERROR: "../gauden.c", line 1389: var (mgau=0, feat=2, density=176,
+component=1) &lt; 0
+</PRE>Is this critical? </FONT>
+  <P>A.This happens because we use the following formula to estimate variances: 
+  <P>variance = avg(x<SUP>2</SUP>) - [avg(x)]<SUP>2</SUP> 
+  <P>There are a few weighting terms included (the baum-welch "gamma" weights), 
+  but they are immaterial to this discussion. The *correct* way to estimate 
+  variances is 
+  <P>variance = avg[(x - avg(x)]<SUP>2</SUP>) 
+  <P>The two formulae are equivalent, of course, but the first one is far more 
+  sensitive to arithmetic precision errors in the computer and can result in 
+  negative variances. The second formula is too expensive to compute (we need 
+  one pass through the data to compute avg(x), and another to compute the 
+  variance). So we use the first one in the sphinx and we therefore get the 
+  errors of the kind we see above, sometimes. 
+  <P>The error is not critical (things will continue to work), but may be 
+  indicative of other problems, such as bad initialization, or isolated clumps 
+  of data with almost identical values (i.e. bad data). 
+  <P>Another thing that usually points to bad initialization is that you may 
+  have mixture-weight counts that are exactly zero (in the case of 
+  semi-continuous models) or the gaussians may have zero means and variances (in 
+  the case of continuous models) after the first iteration. 
+  <P>If you are computing semi-continuous models, check to make sure the initial 
+  means and variances are OK. Also check to see if all the cepstra files are 
+  being read properly. 
+  <P>
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <A name=11></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>DICTIONARY, PRONUNCIATIONS AND PHONE-SETS</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>.I've been using a script from someone that removes 
+  the stress markers in cmudict as well as removes the deleted stops. This 
+  script is removing the (2) or (3) markers that occur after multiple 
+  pronunciations of the same word. That is, <PRE> A  EY
+ A  AX
+</PRE>is produced instead of <PRE>A    EY
+A(2) AX
+</PRE>What is the consequence of removing this muliple pronunciation marker? 
+  Will things still work? </FONT>
+  <P>A. The (2), (3) etc. are important for the training. It is the only way the 
+  trainer knows which pronunciation of the word has been used in the utterance, 
+  and that is what the force-aligner decides for the rest of the training. So, 
+  once the force-alignment is done, the rest of the training has to go through 
+  with the same dictionary, and neither the pronunciations nor the pronunciation 
+  markers should change. 
+  <P>Independently of this, the script that you are using should be renumbering 
+  the dictionary pronunciations in the manner required by the trainer in order 
+  for you to use it for training and decoding. Pronunciation markers are 
+  required both during training and during decoding. 
+  <P>Q<FONT color=#483d8b>.I have trained a set of models, and one of the phones 
+  I have trained models for is "TS" (as in CATS = K AE TS). Now I want to remove 
+  the phone TS from the dictionary and do not want to retain it's models. What 
+  are the issues involved? </FONT>
+  <P>A. You can change every instance of the phone "TS" in your decode 
+  dictionary to "T S". In that case, you need not explicitly remove the models 
+  for TS from your model set. Those models will not be considered during 
+  decoding. However, if you just remove TS from the decode dictionary and use 
+  the models that you have, many of the new triphones involving T and S would 
+  not have corresponding models (since they were not there during training). 
+  This will adversely affect recognition performance. You can compose models for 
+  these new triphones from the existing set of models by making a new tied-mdef 
+  file with the new decode dictionary that you want to use. This is still not as 
+  good as training explicitly for those triphones, but is better than not having 
+  the triphones at all. The ideal thing to do would be to train models without 
+  "TS" in the training dictionary as well, because replacing TS with T S will 
+  create new triphones. Data will get redistributed and this will affect the 
+  decision trees for all phones, especially T ans S. When decision trees get 
+  affected, state tying gets affected, and so the models for all phones turn out 
+  to be slightly different. 
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <A name=12></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>DECISION-TREE BUILDING AND PARAMETER SHARING</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>. In HTK, after we do decision-tree-driven 
+  state-clustering, we run a "model compression" step, whereby any triphones 
+  which now (after clustering) point to the same sequence of states are mapped, 
+  so that they are effectively the same physical model. This would seem to have 
+  the benefit of reducing the recognition lattice size (although we've never 
+  verified that HVite actually does this.) Do you know if Sphinx 3.2 also has 
+  this feature? </FONT>
+  <P>A. The sphinx does not need to do any compression because it does not 
+  physically duplicate any distributions. all state-tying is done through a 
+  mapping table (mdef file), which points each state to the appropriate 
+  distributions. 
+  <P>Q<FONT color=#483d8b>. The log file for bldtree gives the following error: <PRE>INFO: ../main.c(261): 207 of 207 models have observation count greater than
+0.000010
+FATAL_ERROR: "../main.c", line 276: Fewer state weights than states
+</PRE></FONT>
+  <P>A. The -stwt flag has fewer arguments that the number of HMM-states that 
+  you are modeling in the current training. The -stwt flag needs a string of 
+  numbers equal to the number of HMM-states, for example, if you were using 
+  5-state HMMs, then the flag could be given as "-stwt 1.0 0.3 0.1 0.01 0.001". 
+  Each of these numbers specify the weights to be given to state distributions 
+  during tree building, beginning with the *current* state. The second number 
+  specifies the weight to be given to the states *immediately adjacent* to the 
+  current state (if there are any), the third number specifies the weight to be 
+  given to adjacent states *one removed* from the immediately adjacent one (if 
+  there are any), and so on. 
+  <P>
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <A name=13></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>FEATURE COMPUTATION</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>. How appropriate are the standard frame 
+  specifications for feature computation? I am using the default values but the 
+  features look a bit "shifted" with respect to the speech waveform. Is this a 
+  bug? </FONT>
+  <P>A. There are two factors here: the frame *size* and the frame *rate*. 
+  Analysis frame size is typically 25 ms. Frame rate is 100 frames/sec. In other 
+  words, we get one frame every 10 ms (a nice round number), but we may need to 
+  adjust boundaries a little bit because of the frame size (a 5ms event can get 
+  smeared over three frames - it could occur in the tail end of one frame, the 
+  middle of the next one, and the beginning of the third, for the 10ms frame 
+  shifts). The feature vectors sometimes look shifted with respect to the speech 
+  samples. However, there is no shift between the frames and the speech data. 
+  Any apparent shift is due to smearing. We do frequently get an additional 
+  frame at the end of the utterance because we pad zeros, if necessary, after 
+  the final samples in order to fill up the final frame. 
+  <P>Q<FONT color=#483d8b>. How do I find the center frequencies of the Mel 
+  filters? </FONT>
+  <P>A. The mel function we use to find the mel frequency for any frequency x is 
+
+  <P>(2595.0*(float32)log10(1.0+x/700.0)) 
+  <P>substitute x with the upper and lower frequencies, subtract the results, 
+  and divide by the number of filters you have + 1 : that will give you the 
+  bandwidth of each filter as twice the number you get after division. The 
+  number you get after division + the lower frequency is the center frequency of 
+  the first filter. The rest of the center frequencies can be found by using the 
+  bandwidths and the knowledge that the filters are equally spaced on the mel 
+  frequency axis and overlap by half the bandwidth. These center frequencies can 
+  be transformed back to normal frequency using the inverse mel function 
+  <P>(700.0*((float32)pow(10.0,x/2595.0) - 1.0)) 
+  <P>where x is now the center frequency. 
+  <P>Q<FONT color=#483d8b>. Does the front-end executable compute difference 
+  features? </FONT>
+  <P>A. No. The difference features are computed during runtime by the 
+  SPHINX-III trainer and decoders. 
+  <P>
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <A name=15></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>MODELING FILLED PAUSES AND NON-SPEECH EVENTS</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>. Can you explain the difference between putting the 
+  words as fillers ++()++ instead of just putting them in the normal dictionary? 
+  My dictionary currently contains pronunciations for UH-HUH, UH-HUH(2) and 
+  UH-HUH(3). Should all of these effectively be merged to ++UH-HUH++ and mapped 
+  to a single filler phone like +UH-HUH+? </FONT>
+  <P>A. Putting them as normal words in the dictionary should not matter if you 
+  are training CI models. However, at the CD stage when the list of training 
+  triphones is constructed, the phones corresponding to the (++ ++) entries are 
+  mapped by the trainer to silence. For example the triphone constructed from 
+  the utterance 
+  <P>++UM++ A ++AH++ 
+  <P>would be AX(SIL,SIL) and not AX(+UM+,AA) [if you have mapped ++UM++ to +UM+ 
+  and ++AH++ to the phone AA for training, in one of the training dictionaries] 
+  <P>Also, when you put ++()++ in the main dictionary and map it to some 
+  sequence of phones other than a single +()+ phone, you cannot build a model 
+  for the filler. For example UH-HUH may be mapped to AH HH AX , AX HH AX etc in 
+  the main dict, and when you train, the instances of UH-HUH just contribute to 
+  the models for AH, AX or HH and the corresponding triphones. On the other 
+  hand, if you map ++UH-HUH++ to +UH-HUH+, you can have the instances contribute 
+  exclusively to the phone +UH-HUH+. The decision to keep the filler as a normal 
+  word in the training dictionary and assign alternate pronunciations to it OR 
+  to model it exclusively by a filler phone must be judiciously made keeping the 
+  requirements of your task in mind. 
+  <P>During decoding and in the language model, the filler words ++()++ are 
+  treated very differently from the other words. The scores associated are 
+  computed in a different manner, taking certain additional insertion penalties 
+  into account. 
+  <P>Also, the SPHINX-II decoder is incapable of using a new filler unless there 
+  is an exclusive model for it (this is not the case with the SPHINX-III 
+  decoder). If there isn't, it will treat the filler as a normal dictionary word 
+  and will ignore it completely if it is not there in the language model (which 
+  usually doesn't have fillers), causing a significant loss in accuracy for some 
+  tasks. 
+  <P>Q<FONT color=#483d8b>. My training data contains no filler words (lipsmack, 
+  cough etc.) Do you think I should retrain trying to insert fillers during 
+  forced alignment so that I could train on them? Since what I have is 
+  spontaneous speech, I can't imagine that in all 20000 utterances there are no 
+  filled pauses etc. </FONT>
+  <P>A. Don't use falign to insert those fillers. The forced aligner has a 
+  tendency to arbitrarily introduce fillers all over the place. My guess is that 
+  you will lose about 5%-10% relative by not having the fillers to model. If you 
+  are going to use the SPHINX-III decoder, however, you can compose some 
+  improtant fillers like "UH" and "UM" as "AX" or "AX HH" or "AX M" and use them 
+  in the fillerdict. However, the sphinx-2 decoder cannot handle this. If 
+  possible, try listening to some utterances and see if you can insert about 50 
+  samples of each filler - that should be enough to train them crudely. 
+  <P>Q<FONT color=#483d8b>. How is SIL different from the other fillers? Is 
+  there any special reason why I should designate the filler phones as +()+? 
+  What if I *want* to make filler triphones?</FONT> 
+  <P>A.Silence is special in that it forms contexts for triphones, but doesn't 
+  have it's own triphones (for which it is the central phone, ie). The fillers 
+  neither form contexts nor occur as independent triphones. If you want to build 
+  triphones for a filler, then the filler must be designated as a proper phone 
+  without the "+" in the dictionaries. 
+  <P>Q<FONT color=#483d8b>. What is the meaning of the two columns in the 
+  fillerdict? I want to reduce the number of fillers in my training. </FONT>
+  <P>In a filler dictionary, we map all non-speech like sounds to some phones 
+  and we then train models for those phones. Forexample, we may say <PRE>++GUNSHOT++     +GUNSHOT+
+</PRE>The meaning is the same as "the pronunciation of the word ++GUNSHOT++ in 
+  the transcripts must be interpreted to be +GUNSHOT+" Now if I have five more 
+  filler words in my transcripts: <PRE>++FALLINGWATER++
+++LAUGH++
+++BANG++
+++BOMBING++
+++RIFLESHOT++
+</PRE>Then I know that the sounds of ++BANG++, ++BOMBING++ and ++RIFLESHOT++ 
+  are somewhat similar, so I can reduce the number of filler phones to be 
+  modelled by modifying the entries in the filler dict to look like <PRE>++GUNSHOT++     +GUNSHOT+
+++BANG++        +GUNSHOT+
+++BOMBING++     +GUNSHOT+
+++RIFLESHOT++   +GUNSHOT+
+++FALLINGWATER++        +WATERSOUND+
+++LAUGH++       +LAUGHSOUND+
+</PRE>so we have to build models only for the phones +GUNSHOT+, +WATERSOUND+ 
+  and +LAUGHSOUND+ now. 
+  <P>
+  <HR>
+  <A name=16></A>
+  <TABLE bgColor=#ffffff width="100%">
+    <TBODY>
+    <TR>
+      <TD>WHY IS MY RECOGNITION ACCURACY POOR?</TD></TR></TBODY></TABLE>
+  <P>Q<FONT color=#483d8b>. I am using acoustic models that were provided with 
+  the SPHINX package on opensource. The models seem to be really bad. Why is my 
+  recognition accuracy so poor?</FONT> 
+  <P>A. The reason why you are getting poor recognition with the current models 
+  is that they are not trained with data from your recording setup. while they 
+  have been trained with a large amount of data, the acoustic conditions 
+  specific to your recording setup may not have been encountered during training 
+  and so the models may not be generalizable to your recordings. More than 
+  noise, training under matched conditions makes a huge difference to the 
+  recognition performance. There may be other factors, such as feature set or 
+  agc mismatch. Check to see if you are indeed using all the models provided for 
+  decoding. For noisy data, it is important to enter all the relevant noise 
+  models (filler models) provided in the noise dictionary that is being used 
+  during decoding. 
+  <P>To improve the performance, the models must be adapted to the kind of data 
+  you are trying to recognize. If it is possible, collect about 30 minutes (or 
+  more if you can) of data from your setup, transcribe them carefully, and adapt 
+  the existing models using this data. This will definitely improve the 
+  recognition performance on your task. 
+  <P>It may also be that your task has a small, closed vocabulary. In that case 
+  having a large number of words in the decode dictionary and language model may 
+  actually cause acoustic confusions which are entirely avoidable. All you have 
+  to do in this situation is to retain *only* the words in your vocabulary in 
+  the decode dictionary. If you can build a language model with text that is 
+  exemplary of the kind of language you are likely to encounter in your task, it 
+  will boost up the performance hugely. 
+  <P>It may also be that you have accented speech for which correct 
+  pronunciations are not present in the decode dictionary. Check to see if that 
+  is the case, and if is, then it would help to revise the dictionary 
+  pronunciations, add newer variants to existing pronunciations etc. also check 
+  to see if you have all the words that you are trying to recognize in your 
+  recognition dictionary. 
+  <P>If you suspect that noise is a huge problem, then try using some noise 
+  compensation algorithm on your data prior to decoding. Spectral subtraction is 
+  a popular noise compensation method, but it does not always work. 
+  <P>All this, of course, assuming that the signals you are recording or trying 
+  to recognize are not distorted or clipped due to hardware problems in your 
+  setup. Check out especially the utterances which are really badly recognized 
+  by actually looking at a display of the speech signals. In fact, this is the 
+  first thing that you must check. 
+  <H4><A href="http://www.cs.cmu.edu/~rsingh/sphinxman/FAQ.html#top">back to 
+  top</A></H4>
+  <HR>
+  <I>last modified: 17 Nov 2000, 5:05 pm</I> </LI></OL></BODY></HTML>
