@@ -21,3 +21,8 @@ tidigits:
 	$(BINDIR)/s3decode-anytopo ARGS.tidigits > gmake-tidigits.results
 	$(BINDIR)/align -ref tidigits.ref -hyp tidigits.match > tidigits.align
 
+tidigits_quick:
+	rm -f gmake-tidigits-quick.results
+	$(BINDIR)/s3decode-anytopo ARGS.tidigits-quick > gmake-tidigits-quick.results
+	$(BINDIR)/align -ref tidigits-quick.ref -hyp tidigits-quick.match > tidigits-quick.align
+
