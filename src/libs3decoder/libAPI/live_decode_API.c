@@ -268,6 +268,13 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 
   _decoder->num_frames_decoded = 0;
   _decoder->num_frames_entered = 0;
+  _decoder->kb.nfr = 0;
+  _decoder->kb.utt_hmm_eval = 0;
+  _decoder->kb.utt_sen_eval = 0;
+  _decoder->kb.utt_gau_eval = 0;
+  _decoder->kb.utt_cisen_eval = 0;
+  _decoder->kb.utt_cigau_eval = 0;
+
   _decoder->ld_state = LD_STATE_DECODING;
 
   return ld_set_uttid(_decoder, _uttid);
