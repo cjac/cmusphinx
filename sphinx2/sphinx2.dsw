@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "adpow"=.\adpow\adpow.dsp - Package Owner=<4>
+Project: "adpow"=.\win32\msdev\SphinxExamples\adpow\adpow.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -24,7 +24,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "adrec"=.\adrec\adrec.dsp - Package Owner=<4>
+Project: "adrec"=.\win32\msdev\SphinxExamples\adrec\adrec.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -45,7 +45,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "cont_adseg"=.\cont_adseg\cont_adseg.dsp - Package Owner=<4>
+Project: "cont_adseg"=.\win32\msdev\SphinxExamples\cont_adseg\cont_adseg.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -66,7 +66,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "cont_fileseg"=.\cont_fileseg\cont_fileseg.dsp - Package Owner=<4>
+Project: "cont_fileseg"=.\win32\msdev\SphinxExamples\cont_fileseg\cont_fileseg.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -87,7 +87,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libsphinx2"=..\libsphinx2\libsphinx2.dsp - Package Owner=<4>
+Project: "libsphinx2"=.\win32\msdev\libsphinx2\libsphinx2.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -99,7 +99,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libsphinx2ad"=..\libsphinx2ad\libsphinx2ad.dsp - Package Owner=<4>
+Project: "libsphinx2ad"=.\win32\msdev\libsphinx2ad\libsphinx2ad.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -111,7 +111,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libsphinx2fe"=..\libsphinx2fe\libsphinx2fe.dsp - Package Owner=<4>
+Project: "libsphinx2fe"=.\win32\msdev\libsphinx2fe\libsphinx2fe.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -123,28 +123,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "lm3g2dmp"=.\lm3g2dmp\lm3g2dmp.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libsphinx2
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libsphinx2ad
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libsphinx2fe
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "raw2cep"=.\raw2cep\raw2cep.dsp - Package Owner=<4>
+Project: "lm3g2dmp"=.\win32\msdev\SphinxExamples\lm3g2dmp\lm3g2dmp.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -165,7 +144,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_allphone"=.\sphinx2_allphone\sphinx2_allphone.dsp - Package Owner=<4>
+Project: "raw2cep"=.\win32\msdev\SphinxExamples\raw2cep\raw2cep.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -186,7 +165,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_batch"=.\sphinx2_batch\sphinx2_batch.dsp - Package Owner=<4>
+Project: "sphinx2_allphone"=.\win32\msdev\SphinxExamples\sphinx2_allphone\sphinx2_allphone.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -207,7 +186,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_client"=.\sphinx2_client\sphinx2_client.dsp - Package Owner=<4>
+Project: "sphinx2_batch"=.\win32\msdev\SphinxExamples\sphinx2_batch\sphinx2_batch.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -228,7 +207,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_continuous"=.\sphinx2_continuous\sphinx2_continuous.dsp - Package Owner=<4>
+Project: "sphinx2_client"=.\win32\msdev\SphinxExamples\sphinx2_client\sphinx2_client.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -249,7 +228,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_ptt"=.\sphinx2_ptt\sphinx2_ptt.dsp - Package Owner=<4>
+Project: "sphinx2_continuous"=.\win32\msdev\SphinxExamples\sphinx2_continuous\sphinx2_continuous.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -270,7 +249,28 @@ Package=<4>
 
 ###############################################################################
 
-Project: "sphinx2_server"=.\sphinx2_server\sphinx2_server.dsp - Package Owner=<4>
+Project: "sphinx2_ptt"=.\win32\msdev\SphinxExamples\sphinx2_ptt\sphinx2_ptt.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2ad
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsphinx2fe
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "sphinx2_server"=.\win32\msdev\SphinxExamples\sphinx2_server\sphinx2_server.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
