@@ -11,7 +11,6 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/libs3decoder/libs3decoder.dsp \
 	win32/msdev/libutil/libutil.dsp \
 	win32/msdev/programs/gausubvq/gausubvq.dsp \
-	win32/msdev/programs/programs.dsw \
 	win32/msdev/programs/livedecode/livedecode.dsp \
 	win32/msdev/programs/livepretend/livepretend.dsp
 

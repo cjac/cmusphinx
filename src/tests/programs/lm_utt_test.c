@@ -64,6 +64,9 @@ int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
 int has_more_utterances(FILE* fp);
 
 
+/* FIX ME!, why do we use this function instead of strcmp? */
+int str_cmp(char *s1, char *s2);
+
 int main(int argc, char *argv[])
 {
     char *lm_file;

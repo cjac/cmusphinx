@@ -4,8 +4,7 @@ bin_SCRIPTS = \
 
 EXTRA_DIST = \
 	sphinx3-test.in \
-	sphinx3-simple.in \
-	args.an4.in
+	sphinx3-simple.in 
 
 
 
