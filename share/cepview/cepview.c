@@ -38,6 +38,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h> 
+#include <string.h>
 
 #define TRUE (1)
 #define FALSE (0)
@@ -140,11 +141,11 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     
     /* Check if n_float matches file size */
     byterev = FALSE;
-    if ((n_float*sizeof(float) + 4) != statbuf.st_size) {
+    if ((int)(n_float*sizeof(float) + 4) != statbuf.st_size) {
 	n = n_float;
 	SWAP_INT(&n);
 
-	if ((n*sizeof(float) + 4) != statbuf.st_size) {
+	if ((int)(n*sizeof(float) + 4) != statbuf.st_size) {
 	    printf("Header size field: %d(%08x); filesize: %d(%08x)\n",
 		    n_float,n_float,(int)statbuf.st_size,(int)statbuf.st_size);
 	    fclose (fp);
@@ -174,7 +175,7 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     
     /* Read mfc data and byteswap if necessary */
     n_float = n * cepsize;
-    if (fread (mfcbuf[0], sizeof(float), n_float, fp) != n_float) {
+    if ((int)fread (mfcbuf[0], sizeof(float), n_float, fp) != n_float) {
 	printf("Error reading mfc data\n");
 	fclose (fp);
 	return -1;
@@ -198,7 +199,6 @@ char          **alloc2d(int dim1,	/* "x" dimension */
 	int             i;		/* loop control variable */
 	unsigned        nelem;		/* total number of elements */
 
-        char           *calloc();                                   
 	char	       *p,		/* pointer to matrix memory */
 		      **pp;		/* pointer to matrix mem table */
 
@@ -211,7 +211,7 @@ char          **alloc2d(int dim1,	/* "x" dimension */
 	/*
 	 * Allocate the memory needed for the matrix
 	 */
-	p = calloc(nelem, (unsigned) size);
+	p = (char *) calloc(nelem, (unsigned) size);
 
 	/*
 	 * If the allocation were not successful, return a NULL pointer

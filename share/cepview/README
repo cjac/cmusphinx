@@ -1,0 +1,23 @@
+This program prints to screen the contents of a cepstral file.
+
+The code assumes a default of 13 elements per cepstral vector.
+
+To compile:
+
+-Unix (linux, solaris, cygwin, etc):
+
+    make
+
+-Windows (MS Visual C++):
+
+    load the cepview workspace into MS Visual C++
+    build the only project in the workspace (also named cepview)
+
+To run:
+
+-type 'cepview' (or 'Debug/cepview.exe' if compiled with MS Visual C++)
+ for the command line options
+
+To test:
+
+-rune 'cepview an253-fash-b.mfc' and compare the output to an253-fash-b.txt
