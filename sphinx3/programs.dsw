@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "align"=.\win32\msdev\programs\align\align.dsp - Package Owner=<4>
+Project: "align"=.\src\programs\win32\msdev\programs\align\align.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -24,7 +24,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "allphone"=.\win32\msdev\programs\allphone\allphone.dsp - Package Owner=<4>
+Project: "allphone"=.\src\programs\win32\msdev\programs\allphone\allphone.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -45,7 +45,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "astar"=.\win32\msdev\programs\astar\astar.dsp - Package Owner=<4>
+Project: "astar"=.\src\programs\win32\msdev\programs\astar\astar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -215,6 +215,12 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name libs3decoder
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
 }}}
 
 ###############################################################################
