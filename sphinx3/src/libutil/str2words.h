@@ -53,12 +53,11 @@
 #ifndef _LIBUTIL_STR2WORDS_H_
 #define _LIBUTIL_STR2WORDS_H_
 
+#include "prim_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
-
 
 /*
  * Convert a line to an array of "words", based on whitespace separators.  A word

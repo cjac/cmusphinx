@@ -52,7 +52,7 @@
 #ifndef __ARGS_H
 #define __ARGS_H
 
-#include "libutil/libutil.h"
+#include <libutil/libutil.h>
 
 #ifdef __cplusplus
 extern "C" {

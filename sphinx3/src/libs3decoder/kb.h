@@ -59,10 +59,6 @@
 #ifndef _S3_KB_H_
 #define _S3_KB_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "kbcore.h"
 #include "lextree.h"
@@ -71,6 +67,9 @@ extern "C" {
 #include "beam.h"
 #include "mllr.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * There can be several unigram lextrees.  If we're at the end of frame f, we can only

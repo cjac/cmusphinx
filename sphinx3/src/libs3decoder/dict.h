@@ -62,15 +62,13 @@
 #ifndef _S3_DICT_H_
 #define _S3_DICT_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "s3types.h"
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
     char *word;		/* Ascii word string */

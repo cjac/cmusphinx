@@ -53,13 +53,11 @@
 #ifndef _S3_AGC_H_
 #define _S3_AGC_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-#include <libutil/libutil.h>
-
 
 /*
  * Apply AGC to the given mfc vectors (normalize all C0 mfc coefficients in the given

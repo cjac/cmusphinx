@@ -53,17 +53,16 @@
 #ifndef _S3_APPROXCONGAU_H_
 #define _S3_APPROXCONGAU_H_
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "cont_mgau.h"
 #include "vector.h"
 #include "subvq.h"
 #include "gs.h"
 #include "kb.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*Determine whether a frame's computation should be skipped or not based on the down sampling ratio and other parameters*/
 

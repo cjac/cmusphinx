@@ -72,16 +72,14 @@
 #ifndef _S3_SUBVQ_H_
 #define _S3_SUBVQ_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "cont_mgau.h"
 #include "vector.h"
 #include "logs3.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
     arraysize_t origsize;	/* origsize.r = #codebooks (or states) in original model;

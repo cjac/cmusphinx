@@ -566,11 +566,13 @@ kb_freehyps(kb_t *kb)
       }
     }
     ckd_free(kb->hyp_segs);
+	kb->hyp_segs = 0;
     kb->hyp_seglen = 0;
   }
 	
   if (kb->hyp_str) {
     ckd_free(kb->hyp_str);
+	kb->hyp_str = 0;
     kb->hyp_strlen = 0;
   }
 }

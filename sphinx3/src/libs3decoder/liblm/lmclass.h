@@ -45,13 +45,12 @@
 #ifndef _S3_LMCLASS_H_
 #define _S3_LMCLASS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "s3types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * This module maintains classes of words and associated probabilities (P(word | class)).

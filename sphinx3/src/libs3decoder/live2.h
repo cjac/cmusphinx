@@ -52,13 +52,13 @@
 #ifndef __LIVE2_H
 #define __LIVE2_H
 
+#include "kb.h"
+#include "utt.h"
+#include "fe.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "kb.h"
-#include "utt.h"
-#include "fe.h"		   /* 01.15.01 - RAH, use new_fe.h instead */
 
 #define MAX_UTTID_LEN				64
 #define MAX_CEP_LEN				64

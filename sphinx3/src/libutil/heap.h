@@ -54,12 +54,11 @@
 #ifndef _LIBUTIL_HEAP_H_
 #define _LIBUTIL_HEAP_H_
 
+#include "prim_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "prim_type.h"
-
 
 typedef void *heap_t;
 

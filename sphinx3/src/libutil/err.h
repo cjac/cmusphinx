@@ -51,15 +51,13 @@
 #ifndef _LIBUTIL_ERR_H_
 #define _LIBUTIL_ERR_H_
 
+#include <stdarg.h>
+#include <errno.h>
+
 /* 01.18.01 RAH, allow for C++ compiles */
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-
-#include <stdarg.h>
-#include <errno.h>
 
 void _E__pr_header( char const *file, long line, char const *msg );
 void _E__pr_info_header( char const *file, long line, char const *tag );

@@ -78,14 +78,12 @@
 #ifndef _LIBUTIL_CKD_ALLOC_H_
 #define _LIBUTIL_CKD_ALLOC_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <stdlib.h>
 #include "prim_type.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * The following functions are similar to the malloc family, except that they have

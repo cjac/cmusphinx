@@ -53,13 +53,11 @@
 #ifndef _S3_BEAM_H_
 #define _S3_BEAM_H_
 
+#include <libutil/libutil.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <libutil/libutil.h>
-
 
 /*
  * Structure containing various beamwidth parameters.  All logs3 values; -infinite is widest,

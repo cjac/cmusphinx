@@ -54,14 +54,12 @@
 #ifndef _S3_FILLPEN_H_
 #define _S3_FILLPEN_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-
 #include <libutil/libutil.h>
 #include "dict.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
     dict_t *dict;	/* Reference dictionary for which the filler word probabilities

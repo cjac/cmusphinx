@@ -53,12 +53,11 @@
 #ifndef _S3_HYP_H_
 #define _S3_HYP_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <libutil/libutil.h>
-
 
 typedef struct {
     int32 id;		/* Token ID; could be s3wid_t, s3cipid_t...  Interpreted by client. */

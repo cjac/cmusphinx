@@ -60,14 +60,11 @@
 #ifndef _S3_CONT_MGAU_H_
 #define _S3_CONT_MGAU_H_
 
+#include <libutil/libutil.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-
-#include <libutil/libutil.h>
-
 
 /*
  * Mixture Gaussians: Weighted set of Gaussian densities, each with its own mean vector and

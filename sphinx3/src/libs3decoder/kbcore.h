@@ -59,10 +59,6 @@
 #ifndef _S3_KBCORE_H_
 #define _S3_KBCORE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <libutil/libutil.h>
 #include "feat.h"
 #include "cont_mgau.h"
@@ -76,6 +72,9 @@ extern "C" {
 #include "subvq.h"
 #include "gs.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct {
     feat_t *fcb;

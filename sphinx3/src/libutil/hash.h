@@ -71,13 +71,12 @@
 #ifndef _LIBUTIL_HASH_H_
 #define _LIBUTIL_HASH_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "prim_type.h"
 #include "glist.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * The hash table structures.
