@@ -52,12 +52,37 @@
 
 
 #define MAXSAMPLES 	1000000
+#define STRLEN          512
+#define MAX_REFERENCES  50
 
 
-void showAccuracy(FILE *rfp, int numberFiles, int numberMatches);
+void showAccuracy(FILE *rfp);
 void showTiming(FILE *ftp, const char* name, 
                 double audioTime, double processingTime);
 void showMemory(FILE *rfp);
+void analyzeResults(const char* referenceResult, const char* parthyp);
+void addMatch();
+void addInsert();
+void addDeletion();
+void addRecognitionError();
+void processMismatch(char *references[], int numReferences,
+                     char *parthyp[], int numHypothesis);
+int countMatches(char *references[], int r, int numReferences,
+                 char *parthyp[], int h, int numHypothesis);
+int stringToArray(char *string, char *array[]);
+
+
+int numSentences;
+int numRefWords;
+int numHypWords;
+int numMatchingWords;
+int numMatchingSentences;
+int recognitionErrors;
+int insertionErrors;
+int deletionErrors;
+
+int referenceIndex;
+int hypothesisIndex;
 
 
 int main (int argc, char *argv[])
@@ -65,7 +90,7 @@ int main (int argc, char *argv[])
     short *samps;
 
     int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
-    int numberMatches, numberFiles;
+    int numberFiles;
     int space, lastChar;
     
     double sampleRate;
@@ -75,8 +100,8 @@ int main (int argc, char *argv[])
     double processingTime;
 
     char   *argsfile, *ctlfile, *indir, *filename, *referenceResult;
-    char   cepfile[512];
-    char   line[512], hypothesis[512];
+    char   cepfile[STRLEN];
+    char   line[STRLEN], hypothesis[STRLEN];
     char   *word;
     char   *fileTimer = "file";
 
@@ -84,7 +109,6 @@ int main (int argc, char *argv[])
     FILE *fp, *sfp, *rfp;
 
     space = ' ';
-    numberMatches = 0;
     numberFiles = 0;
     sampleRate = 8000;
 
@@ -92,6 +116,13 @@ int main (int argc, char *argv[])
     totalProcessingTime = 0.0;
     audioTime = 0.0;
     processingTime = 0.0;
+
+    numMatchingWords = 0;
+    numMatchingSentences = 0;
+    recognitionErrors = 0;
+    insertionErrors = 0;
+    deletionErrors = 0;
+
 
     if (argc != 4) {
         E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",
@@ -114,7 +145,7 @@ int main (int argc, char *argv[])
 
     live_initialize_decoder(argsfile);
 
-    while (fgets(line, 512, fp) != NULL) {
+    while (fgets(line, STRLEN, fp) != NULL) {
 
         /* Parse the speech file and the reference result. */
         referenceResult = strchr(line, space);
@@ -183,9 +214,8 @@ int main (int argc, char *argv[])
                 fprintf(rfp, "REF:  %s\n", referenceResult);
                 fprintf(rfp, "HYP:  %s\n", hypothesis);
 
-                if (strcmp(hypothesis, referenceResult) == 0) {
-                    numberMatches++;
-                }
+                analyzeResults(referenceResult, hypothesis);
+                showAccuracy(rfp);
             }
         }
 
@@ -197,7 +227,6 @@ int main (int argc, char *argv[])
         totalProcessingTime += processingTime;
         totalAudioTime += audioTime;
 
-        showAccuracy(rfp, numberFiles, numberMatches);
         showTiming(rfp, "This", audioTime, processingTime);
         showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
         showMemory(rfp);
@@ -209,7 +238,7 @@ int main (int argc, char *argv[])
     metricsPrint();
 
     fprintf(rfp, "# ------------- Summary statistics -----------\n");
-    showAccuracy(rfp, numberFiles, numberMatches);
+    showAccuracy(rfp);
     showTiming(rfp, "Total", totalAudioTime, totalProcessingTime);
     showMemory(rfp);
 
@@ -217,15 +246,25 @@ int main (int argc, char *argv[])
 }
 
 
-void showAccuracy(FILE *rfp, int numberFiles, int numberMatches)
+void showAccuracy(FILE *rfp)
 {
-    float accuracy = ((float) numberMatches)/((float) numberFiles) * 100.0;
+    float wordAccuracy = 
+        ((float) numMatchingWords)/((float) numRefWords) * 100.0;
 
-    fprintf(rfp, "   Accuracy: %%%.1f   Errors: %d\n",
-            accuracy, (numberFiles - numberMatches));
+    float sentenceAccuracy =
+        ((float) numMatchingSentences) / ((float) numSentences) * 100.0;
 
-    fprintf(rfp, "   Sentences: %d      Words: %d   Matches: %d\n",
-            numberFiles, numberFiles, numberMatches);
+    int totalErrors = recognitionErrors + insertionErrors + deletionErrors;
+
+    fprintf(rfp,
+            "   Accuracy: %%%.1f   Errors: %d  (Rec: %d  Ins: %d  Del: %d)\n",
+            wordAccuracy, totalErrors,
+            recognitionErrors, insertionErrors, deletionErrors);
+
+    fprintf(rfp, "   Words: %d   Matches: %d\n", 
+            numRefWords, numMatchingWords);
+    fprintf(rfp, "   Sentences: %d   Matches: %d   SentenceAcc: %%%.1f\n",
+            numSentences, numMatchingSentences, sentenceAccuracy);
 }
 
 
@@ -241,4 +280,192 @@ void showTiming(FILE *rfp, const char* name,
 void showMemory(FILE *rfp)
 {
     fprintf(rfp, "   Memory usage data unavailable\n");
+}
+
+
+/**
+ * Compare the hypothesis to the reference string collecting
+ * statistics on it.
+ *
+ * @param ref the reference string
+ * @param hyp the hypothesis string
+ */
+void analyzeResults(const char* referenceResult, const char* hypotheses)
+{
+    int numReferences;
+    int numHypothesis;
+
+    char *references[MAX_REFERENCES];
+    char myReferenceResult[STRLEN];  /* copy because we will modify it */
+
+    char *hypothesis[MAX_REFERENCES];
+    char myHypothesis[STRLEN];
+    
+    strcpy(myReferenceResult, referenceResult);
+    numReferences = stringToArray(myReferenceResult, references);
+    referenceIndex = 0;
+
+    strcpy(myHypothesis, hypotheses);
+    numHypothesis = stringToArray(myHypothesis, hypothesis);
+    hypothesisIndex = 0;
+
+    numRefWords += numReferences;
+    numHypWords += numHypothesis;
+    numSentences++;
+
+    while (referenceIndex < numReferences || hypothesisIndex < numHypothesis) {
+
+        if (referenceIndex >= numReferences) {
+            printf("reference %d %d\n", referenceIndex, numReferences);
+            addInsert();
+        } else if (hypothesisIndex >= numHypothesis) {
+            printf("addDeletion()\n");
+            addDeletion();
+        } else if (strcmp(references[referenceIndex], 
+                          hypothesis[hypothesisIndex]) != 0) {
+            printf("processMismatch()\n");
+            processMismatch(references, numReferences, 
+                            hypothesis, numHypothesis);
+        } else {
+            printf("addMatch()\n");
+            addMatch();
+        }
+    }
+
+    if (strcmp(referenceResult, hypotheses) == 0) {
+        numMatchingSentences++;
+    }
+}
+
+
+/**
+ * Add an insertion error corresponding to the first item
+ * on the hypList
+ */
+void addInsert()
+{
+    insertionErrors++;
+    hypothesisIndex++;
+}
+
+
+/**
+ * Add a deletion error corresponding to the first item
+ * on the refList
+ */
+void addDeletion()
+{
+    deletionErrors++;
+    referenceIndex++;
+}
+
+
+/**
+ * Add a recognition error
+ */
+void addRecognitionError()
+{
+    recognitionErrors++;
+    referenceIndex++;
+    hypothesisIndex++;
+}
+
+
+/**
+ * Add a match.
+ */
+void addMatch()
+{
+    numMatchingWords++;
+    referenceIndex++;
+    hypothesisIndex++;
+}
+
+
+/**
+ * Process a mismatch by seeing which type of error is most likely
+ */
+void processMismatch(char *references[], int numReferences,
+                     char *parthyp[], int numHypothesis)
+{
+    int deletionMatches;
+    int insertMatches;
+    int normalMatches;
+
+    deletionMatches = countMatches(references, referenceIndex+1, numReferences,
+                                   parthyp, hypothesisIndex, numHypothesis);
+    insertMatches = countMatches(references, referenceIndex, numReferences,
+                                    parthyp, hypothesisIndex+1, numHypothesis);
+    normalMatches = countMatches(references, referenceIndex, numReferences,
+                                 parthyp, hypothesisIndex, numHypothesis);
+    
+    if (deletionMatches > insertMatches && deletionMatches > normalMatches) {
+        addDeletion();
+    } else if (insertMatches > deletionMatches && 
+               insertMatches > normalMatches) {
+        addInsert();
+    } else {
+        addRecognitionError();
+    }
+}
+
+
+
+/**
+ * Counts the number of matches between the two lists
+ * starting at the respective indexes
+ *
+ * @param refList the list of reference words
+ * @param r the starting point in the ref list
+ * @param numReferences the number of reference words
+ * @param hypList the list of hypothesis  words
+ * @param h the starting point in the hyp list
+ * @param numHypothesis the number of hypotheses
+ *
+ * @return the number of matching words
+ */
+int countMatches(char *references[], int r, int numReferences,
+                 char *parthyp[], int h, int numHypothesis)
+{
+    int match;
+    match = 0;
+
+    while (r < numReferences && h < numHypothesis) {
+        if (strcmp(references[r++], parthyp[h++]) == 0) {
+            match++;
+        }
+    }
+
+    return match;
+}
+
+
+/**
+ * Converts the individual words in the string into an array of strings.
+ *
+ * @param string the string to convert
+ * @param the array of string pointers
+ *
+ * @return the number of words
+ */
+int stringToArray(char *string, char *array[])
+{
+    int i, c;
+
+    i = 0;
+
+    if (strlen(string) > 0) {
+        array[i++] = string;
+        for (c = 0; c < strlen(string); c++) {
+            if (string[c] == ' ') {
+                string[c++] = '\0';
+                while (string[c] == '\0') {
+                    c++;
+                }
+                array[i++] = &string[c];
+            }
+        }
+    }
+
+    return i;
 }
