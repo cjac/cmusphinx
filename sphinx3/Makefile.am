@@ -15,11 +15,13 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/livedecode/livedecode.dsp \
 	win32/msdev/programs/livepretend/livepretend.dsp
 
-test-full : test
+
 
 test-simple : test-livepretend
 
-test: test-decode test-align test-allphone test-livepretend test-astar 
+test: test-simple
+
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq
 
 test-livepretend:
 	$(LIBTOOL) --mode=execute echo "LIVEPRETEND TEST"
@@ -130,6 +132,16 @@ test-dag:
   	    -logbase 1.0003 \
 	    -backtrace 1 
 	
+test-gausubvq:
+	$(LIBTOOL) --mode=execute echo "GAUSUBVQ TEST"
+	/net/elroy/usr1/archan/Sourceforge/sphinx3/src/programs/.libs/lt-gausubvq \
+        -mean model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+        -var model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+        -mixw model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+        -svspec 0-12/13-25/26-38 \
+        -iter 1 \
+        -svqrows 1024 \
+        -subvq subvq
 
 
 
