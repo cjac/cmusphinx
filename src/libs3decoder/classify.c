@@ -279,7 +279,11 @@ void calclikeli (mgau_model_t *g, /*Input: multiptle mixture models */
 
 	  b += (f - m) * (f - m) * v; 
 	}	
-	pmix = a * exp (-0.5 * b);	
+	if (b > 1000) /* HACK to prevent underflows on alpha
+			 (this number is arbitrary!) */
+		pmix = 0.0f;
+	else
+		pmix = a * exp (-0.5 * b);
 	likeli[i] += g->mgau[i].mixw_f[j] * pmix; 
       }	
   }
