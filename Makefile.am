@@ -36,10 +36,10 @@ CLEANFILES = chan3.mfc \
 
 
 etags:
-	etags `find . -name *.[ch]`
+	etags `find . -name "*.[ch]"`
 
 ctags:
-	ctags `find . -name *.[ch]`
+	ctags `find . -name "*.[ch]"`
 
 
 #######################################################################
@@ -60,8 +60,8 @@ test-livepretend:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	@grep "P I T T S B U R G H (" $@.out 
-	@grep "FWDXCT" $@.out 
+	grep "P I T T S B U R G H (" $@.out 
+	grep "FWDXCT" $@.out 
 
 test-livepretendDEVEL:
 	@echo "LIVEPRETEND DEVEL TEST"
@@ -71,8 +71,8 @@ test-livepretendDEVEL:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	@grep "P I T T S B U R G H (" $@.out 
-	@grep "FWDXCT" $@.out 
+	grep "P I T T S B U R G H (" $@.out 
+	grep "FWDXCT" $@.out 
 
 test-valgrind:
 	@echo "LIVEPRETEND TEST"
@@ -82,8 +82,8 @@ test-valgrind:
 		model/lm/an4/an4.ctl \
 		$(top_srcdir)/model/lm/an4 \
 		model/lm/an4/args.an4.test > $@.out 2>&1 
-	@grep "P I T T S B U R G H (" $@.out 
-	@grep "FWDXCT" $@.out 
+	grep "P I T T S B U R G H (" $@.out 
+	grep "FWDXCT" $@.out 
 
 test-decode:
 	@echo "DECODE TEST"
@@ -117,8 +117,8 @@ test-decode:
 	       -ci_pbeam 1e-5 \
 	       -ds 2  > $@.out 2>&1
 
-	@grep "P I T T S B U R G H (" $@.out 
-	@grep "FWDXCT" $@.out 
+	grep "P I T T S B U R G H (" $@.out 
+	grep "FWDXCT" $@.out 
 
 test-decode_anytopo:
 	@echo "DECODE_ANYTOPO TEST"
@@ -144,8 +144,8 @@ test-decode_anytopo:
                -nwbeam 1e-40 \
 		 > $@.out 2>&1
 
-	@grep "P I T T S B U R G H (" $@.out 
-	@grep "FWDXCT" $@.out 
+	grep "P I T T S B U R G H (" $@.out 
+	grep "FWDXCT" $@.out 
 
 test-align:
 	echo "ALIGN TEST"
@@ -169,9 +169,9 @@ test-align:
 	    -outsent $@.out \
 	    -wdsegdir ./ \
 	    -phsegdir ./
-	@diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
-	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
-	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	diff test-align.out $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out
+	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
+	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phseg $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg
 
 test-allphone:
 	@echo "ALLPHONE TEST"
@@ -191,8 +191,8 @@ test-allphone:
 	    -cepdir $(top_srcdir)/model/lm/an4/ \
 	    -phsegdir ./ \
 	    -phlatdir ./
-	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp
-	@diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat
+	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.allp $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp
+	diff `head -1 $(top_srcdir)/model/lm/an4/an4.ctl`.phlat $(top_srcdir)/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat
 
 
 test-astar:
@@ -209,7 +209,7 @@ test-astar:
 	    -inlatdir $(top_srcdir)/model/lm/an4/ \
 	    -logbase 1.0003 \
 	    -nbestdir . 
-	@gzip -cfd pittsburgh.nbest.gz 
+	gzip -cfd pittsburgh.nbest.gz 
 
 test-dag:
 	@echo "DAG TEST"
@@ -225,8 +225,8 @@ test-dag:
 	    -logbase 1.0003 \
 	    -backtrace 1 > $@.out 
 
-	@grep "BSTPTH: P I T T S B U R G H " $@.out 
-	@grep "BSTXCT" $@.out 
+	grep "BSTPTH: P I T T S B U R G H " $@.out 
+	grep "BSTXCT" $@.out 
 
 test-gausubvq:
 	@echo "GAUSUBVQ TEST"
@@ -257,8 +257,8 @@ test-gausubvq-match:
 	-seed 1111 \
         -subvq $@.out 
 	grep -v "#" $@.out > tmp.out
-	@diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
-	@rm tmp.out 
+	diff tmp.out $(top_srcdir)/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.subvq
+	rm tmp.out 
 
 test-ep :
 	@echo "EP TEST"
@@ -303,8 +303,8 @@ test-ep-match:
 	        -o $@.tmp \
 		-raw 1 \
 		2>&1 |grep "Utt_" > $@.out
-	@diff $@.out $(top_srcdir)/model/ep/ep.result
-	@rm $@.out		
+	diff $@.out $(top_srcdir)/model/ep/ep.result
+	rm $@.out		
 
 test-wave2feat:
 	@echo "WAVE2FEAT TEST"
@@ -322,7 +322,7 @@ test-wave2feat:
 		 -i ./model/ep/chan3.raw \
 	         -o $@.mfc  \
 		 -raw 1
-	@diff $@.mfc $(top_srcdir)/model/ep/chan3.mfc
+	diff $@.mfc $(top_srcdir)/model/ep/chan3.mfc
 
 test-cepview:
 	@echo "CEPVIEW TEST"
@@ -331,5 +331,5 @@ test-cepview:
 	-d 13\
 	 -input ./model/ep/chan3.mfc \
 	 > $@.out
-	@diff $@.out $(top_srcdir)/model/ep/chan3.cepview
+	diff $@.out $(top_srcdir)/model/ep/chan3.cepview
 	

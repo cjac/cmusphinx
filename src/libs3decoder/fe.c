@@ -119,6 +119,7 @@ int32 fe_convert_files(param_t *P)
     int32 warn_zero_energy = OFF;
     int32 process_utt_return_value;
     
+    splen=0;
     if ((FE = fe_init(P))==NULL){
 	E_ERROR("memory alloc failed...exiting\n");
 	return(FE_MEM_ALLOC_ERROR);
@@ -518,6 +519,7 @@ param_t *fe_parse_options()
     P->LOWER_FILT_FREQ = *(float32 *)cmd_ln_access("-lowerf");
     P->UPPER_FILT_FREQ = *(float32 *)cmd_ln_access("-upperf");
     P->FFT_SIZE = *(int32 *)cmd_ln_access("-nfft");
+    P->doublebw = OFF;
     if (*(int32 *)cmd_ln_access("-doublebw")) {
         P->doublebw = ON; 
     } else {
@@ -567,6 +569,7 @@ void fe_init_params(param_t *P)
     P->cepdir = NULL;
     P->wavext = NULL;
     P->cepext = NULL;
+    
     
 }
 

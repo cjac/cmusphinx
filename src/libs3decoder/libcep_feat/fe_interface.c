@@ -218,6 +218,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
+
 int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, 
 		     float32 ***cep_block, int32 *nframes)
 /* RAH, upgraded cep_block to float32 */
@@ -231,6 +232,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
     int32 frame_return_value;
     
     /* are there enough samples to make at least 1 frame? */
+    E_INFO("%d %d %d\n", nsamps, FE->NUM_OVERFLOW_SAMPS, FE->FRAME_SIZE);
+
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
       
       /* if there are previous samples, pre-pend them to input speech samps */
@@ -328,6 +331,8 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
     }
 
     *cep_block = cep; /* MLS */
+    /*    assert((*cep_block)!=NULL);
+	  assert(cep_block!=NULL);*/
     *nframes = frame_count;
     return return_value;
 }
@@ -342,6 +347,11 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
    cepstra. also deactivates start flag of FE, and resets overflow
    buffer count. 
 **********************************************************************/
+
+/*
+ * The 
+ */
+
 int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
 {
   int32 pad_len=0, frame_count=0;
@@ -352,6 +362,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
   
+  E_INFO("%d\n",FE->NUM_OVERFLOW_SAMPS);
   if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
     pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
     memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS),0,pad_len*sizeof(int16));
