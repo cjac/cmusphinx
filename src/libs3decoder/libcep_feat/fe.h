@@ -153,7 +153,7 @@ typedef struct{
 
 /* Functions */
 
-fe_t *fe_init(param_t *P);
+fe_t *fe_init(param_t const *P);
 
 int32 fe_start_utt(fe_t *FE);
 
