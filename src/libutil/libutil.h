@@ -85,6 +85,7 @@
 #include "unlimit.h"
 #include "nextword.h"
 #include "info.h"
+#include "genrand.h"
 
 
 #ifdef __cplusplus

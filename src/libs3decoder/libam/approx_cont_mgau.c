@@ -142,10 +142,14 @@ int32 approx_mgau_eval (gs_t* gs,
 {
   int32 ng=0;
   int32 *mgau_sl;
-  int32 i;
 
+#if _DEBUG_GSCORE_
+  int32 i;
+#endif
 
   if(gs&&fastgmm->gs4gs){
+    /* If GS is used, make sure best_cid > 0*/
+    assert(best_cid>0);
     ng = gs_mgau_shortlist (gs, s, mgau_n_comp(g,s),feat,best_cid);
     mgau_sl=gs->mgau_sl;
   }else if (svq){
@@ -303,6 +307,8 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc,
 
   /*#ifdef APPROX_CONT_MGAU*/
   /*Always turn on, so users can be the one who decide how fast/slow the recognizer can be */
+
+  best_cid=-1;
 #if 1
   if(gs)  best_cid=gc_compute_closest_cw(gs,feat);
   if(svq) subvq_gautbl_eval_logs3 (svq, feat);

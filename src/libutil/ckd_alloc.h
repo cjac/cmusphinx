@@ -133,7 +133,6 @@ void ckd_free_2d(void **ptr);
 /* Free a 3-D array (ptr) previously allocated by ckd_calloc_3d */
 void ckd_free_3d(void ***ptr);
 
-
 /*
  * Macros to simplify the use of above functions.
  * One should use these, rather than target functions directly.

@@ -340,12 +340,8 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
 
     if(seed < 0){
       E_INFO("You are using the internal mechanism of vector_vqgen to decide the seed.  \n");
-#ifndef WIN32			
-    srandom (seed);
-    seed ^= random();
-#else  
-    srand ((unsigned) time(NULL)); 
-#endif
+      s3_rand_seed((unsigned) time(NULL));
+
     }else{
       
     /*ARCHAN: DON'T delete this line! This will always give the
@@ -353,17 +349,16 @@ float64 vector_vqgen (float32 **data, int32 rows, int32 cols, int32 vqrows,
       make the result be repeatable*/
 
       E_INFO("You are using %d as the seed \n");
-      srand(seed);
+      s3_rand_seed(seed);
     }
 
 
     for (i = 0; i < vqrows; i++) {
 	/* Find r = a random, previously unselected row from the input */
-#ifndef WIN32			/* RAH */
-	r = (random() & (int32)0x7fffffff) % rows;
-#else  /* RAH */
-	r = (rand() & (int32)0x7fffffff) % rows; /* RAH */
-#endif /* RAH */
+
+      r = (s3_rand_int31() & (int32)0x7fffffff) % rows; 
+
+      /*	r = (rand() & (int32)0x7fffffff) % rows; */
 
 	while (bitvec_is_set (sel, r)) {	/* BUG: possible infinite loop!! */
 	    if (++r >= rows)
