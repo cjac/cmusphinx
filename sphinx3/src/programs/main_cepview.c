@@ -37,8 +37,8 @@
  * 
  * circa 1994	P J Moreno at Carnegie Mellon
  * 		Created.
- */
-/* later modified by Arthur Chan at 20041115. :-)
+ *
+ * For history information, please use 'cvs log'
  */
 
 #include <stdio.h>
@@ -48,17 +48,24 @@
 #include "bio.h"
 
 #define IO_ERR  (-1)
+#define IO_SUCCESS  (0)
 
+/* Default cepstral vector size */
 #define NUM_COEFF  "13"
+
+/* Default display size, less than the vector size so we display one
+ * frame per line.
+ */
+#define DISPLAY_SIZE "8"
 
 static arg_t arg[] = {
   { "-i",
     ARG_INT32,
-    "13",
+    NUM_COEFF,
     "Number of coefficients in the feature vector."},
   { "-d",
     ARG_INT32,
-    "13",
+    DISPLAY_SIZE,
     "Width of display"},
   { "-input",
     ARG_STRING,
@@ -81,7 +88,7 @@ int main(int argc, char *argv[])
   char* cepfile;
   
   print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
   vsize = cmd_ln_int32("-i");
   dsize = cmd_ln_int32("-d");
   
@@ -89,8 +96,8 @@ int main(int argc, char *argv[])
   if (!cmd_ln_access("-input")){
     E_FATAL("input file is not specified\n");
   }
-  if (read_cep(cmd_ln_access("-input"),&cep,&len,vsize) == IO_ERR)
-    E_INFO("ERROR opening %s for reading\n",cepfile);
+  if (read_cep((char *)cmd_ln_access("-input"), &cep, &len, vsize) == IO_ERR)
+    E_INFO("ERROR opening %s for reading\n", cepfile);
       
   z = cep[0];
   printf("%d frames\n", len);
@@ -98,23 +105,16 @@ int main(int argc, char *argv[])
   offset = 0;
   column = (vsize > dsize) ? dsize : vsize;
 
+  printf("\n%13s%8s%8s%8s%8s\n\n", "frame#", "c[0]", "c[1]", "c[2]", "...");
   for (i = 0; i < len; ++i)
     {
-      printf("%6d ",i);
-      for ( j =0 ; j < column; ++j)
+      printf("Frame> %6d ", i);
+      for ( j = 0 ; j < column; ++j)
 	printf("%7.3f ", z[offset + j]);
       printf("\n");
-      
-      if(j!=vsize){
-	printf("%6s ","");
-	for( j = column ; j < vsize ; j++){
-	  printf("%7.3f ", z[offset + j]);
-	}
-	printf("\n");
-      }
       offset += vsize;
     }
-
+  fflush(stdout);
   cmd_ln_appl_exit();
 
   return(0);
@@ -131,18 +131,18 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
 
     if (stat(file, &statbuf) < 0) {
         printf("stat_retry(%s) failed\n", file);
-        return -1;
+        return IO_ERR;
     }
 
     if ((fp = fopen(file, "rb")) == NULL) {
-	printf("fopen(%s,rb) failed\n", file);
-	return -1;
+	printf("fopen(%s, rb) failed\n", file);
+	return IO_ERR;
     }
     
     /* Read #floats in header */
     if (fread(&n_float, sizeof(int), 1, fp) != 1) {
 	fclose (fp);
-	return -1;
+	return IO_ERR;
     }
     
     /* Check if n_float matches file size */
@@ -153,9 +153,9 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
 
 	if ((int)(n*sizeof(float) + 4) != statbuf.st_size) {
 	    printf("Header size field: %d(%08x); filesize: %d(%08x)\n",
-		    n_float,n_float,(int)statbuf.st_size,(int)statbuf.st_size);
+		    n_float, n_float, (int)statbuf.st_size, (int)statbuf.st_size);
 	    fclose (fp);
-	    return -1;
+	    return IO_ERR;
 	}
 
 	n_float = n;
@@ -164,7 +164,7 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     if (n_float <= 0) {
 	printf("Header size field: %d\n",  n_float);
 	fclose (fp);
-	return -1;
+	return IO_ERR;
     }
     
     /* n = #frames of input */
@@ -172,7 +172,7 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     if (n * cepsize != n_float) {
 	printf("Header size field: %d; not multiple of %d\n", n_float, cepsize);
 	fclose (fp);
-	return -1;
+	return IO_ERR;
     }
     sf = 0;
     ef = n;
@@ -184,7 +184,7 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     if ((int)fread (mfcbuf[0], sizeof(float), n_float, fp) != n_float) {
 	printf("Error reading mfc data\n");
 	fclose (fp);
-	return -1;
+	return IO_ERR;
     }
     if (byterev) {
       for (i = 0; i < n_float; i++)
@@ -194,5 +194,5 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
 
     *numframes = n;
     *cep = mfcbuf;
-    return (1);
+    return IO_SUCCESS;
 }
