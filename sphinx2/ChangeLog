@@ -695,3 +695,5 @@ set of changes from dhd (below)
 	  that SWAPL and SWAP_L are both present and used (as reversed 
 	  senses) and this will have to be cleaned up. 
 	* Add __BIG_ENDIAN__ definition in configure.in
+	* Changed all unigram_t.wid to unigram_t.mapid (lm_3g)
+	* Define NULL for systems that don't (sun4m).
