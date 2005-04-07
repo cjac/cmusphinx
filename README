@@ -19,8 +19,8 @@ access the documentation here:
 
    file://localhost/usr/local/share/sphinx3/doc/
 
-There are couple of nice documents you could find in the ./doc
-directory.  That includes 
+There are couple of useful documents you could find in the ./doc
+directory.  These include:
 
 s3_codework.html : Code review document prepared by Ravi Mosur.
 s3_description.html : Code review document prepared by Ravi Mosur.
@@ -50,12 +50,6 @@ This directory contains the scripts and instructions necessary for
 decoding speech input using the CMU Sphinx Recognizer.
 
 This distribution is free software, see LICENSE for license.
-
-This work was built over a large number of years at CMU by most of the
-people in the Sphinx Group. Some code goes back to 1986. The most
-recent work in tidying this up for release includes the following,
-listed alphabetically (at least these are the people who are most
-likely able to help you).
 
 
 Installation Guide:
@@ -96,24 +90,36 @@ To compile the sphinx 3.5 in Visual C++ 6.0,
 5, build the live-mode simulator project, livepretend.
 6, build the batch-mode recognizer project, decode.  
 
-Steps 4-7 can be done easily by in the "File View" of VC6.0 by
-left-clicking the project and choose "Build".  To run the executable,
-please remember to set the corresponding active project. 
+Steps 4-7 can be done easily in VC6.0 by clicking the "Build" menu at
+the top bar, and selecting "Batch Build...". Make sure all projects
+are selected, preferably the "Release" version of each. You can also
+run with the "Debug" version, but this version is usually slower. To
+run the executable, please remember to set the corresponding active
+project.
 
 If you are using cygwin, the installation procedure is very similar to
 the Unix installation. However, there is no audio driver support in
 cygwin currently so one can only use the batch mode recognzier. 
 
 
+Acknowldegments
+^^^^^^^^^^^^^^^
+This work was built over a large number of years at CMU by most of the
+people in the Sphinx Group. Some code goes back to 1986. The most
+recent work in tidying this up for release includes the following,
+listed alphabetically (at least these are the people who are most
+likely able to help you).
+
+
 Alan W Black (awb@cs.cmu.edu)
+Arthur Chan (archan@cs.cmu.edu)
 Evandro Gouvea (egouvea+@cs.cmu.edu)
 Ricky Houghton (ricky.houghton@cs.cmu.edu)
+David Huggins-Daines (dhuggins@cs.cmu.edu)
 Kevin Lenzo (lenzo@cs.cmu.edu)
 Ravi Mosur
 Rita Singh (rsingh+@cs.cmu.edu)
-Eric Thayer
-Arthur Chan (archan@cs.cmu.edu)
 Yitao Sun (yitao@cs.cmu.edu)
-David Huggin-Dains (dhuggins@cs.cmu.edu)
+Eric Thayer
 
 
