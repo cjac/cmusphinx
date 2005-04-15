@@ -419,7 +419,9 @@ void kb_init (kb_t *kb)
     /* Setting for MLLR matrix */
     kb->prevmllrfn=(char*)ckd_calloc(1024,sizeof(char));
     kb->prevmllrfn[0]='\0';
-    
+    if (cmd_ln_str("-mllr")) {
+	kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
+    }
 }
 
 void kb_set_uttid(char *_uttid,kb_t* _kb)
@@ -511,12 +513,14 @@ void kb_setlm(char* lmname,kb_t* kb)
 
 }
 
-void kb_setmllr(char* mllrname,kb_t* kb)
+void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
 {
 /*  int32 veclen;*/
+  int32 *cb2mllr;
   E_INFO("Using MLLR matrix %s\n", mllrname);
   
-  if(strcmp(kb->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
+  /* If there is a change of mllr file name */
+  if (strcmp(kb->prevmllrfn,mllrname)!=0){
     /* Reread the gaussian mean from the file again */
     E_INFO("Reloading mean\n");
     mgau_mean_reload(kbcore_mgau(kb->kbcore),cmd_ln_str("-mean"));
@@ -531,18 +535,30 @@ void kb_setmllr(char* mllrname,kb_t* kb)
     mllr_read_regmat(mllrname,
 		     &(kb->regA),
 		     &(kb->regB),
+		     &(kb->mllr_nclass),
 		     mgau_veclen(kbcore_mgau(kb->kbcore)));
+    if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
+      int32 ncb, nmllr;
 
-
-
+      cb2mllr_read(cb2mllrname,
+		   &cb2mllr,
+		   &ncb, &nmllr);
+      if (nmllr != kb->mllr_nclass)
+	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+		ncb, kbcore_mdef(kb->kbcore)->n_sen);
+      if (ncb != kbcore_mdef(kb->kbcore)->n_sen)
+	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+		ncb, kbcore_mdef(kb->kbcore)->n_sen);
+    }
+    else
+      cb2mllr = NULL;
 
     /* Transform all the mean vectors */
-
-    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->regA,kb->regB,kbcore_mdef(kb->kbcore));
+    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->regA,kb->regB,kb->mllr_nclass,cb2mllr);
 
 #if MLLR_DEBUG
     /*#if 1*/
-    mllr_dump(kb->regA,kb->regB,mgau_veclen(kbcore_mgau(kb->kbcore)));
+    mllr_dump(kb->regA,kb->regB,mgau_veclen(kbcore_mgau(kb->kbcore)),kb->mllr_nclass);
     /*This generates huge amount of information */
     /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
 #endif 

@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.9  2005/02/09  05:59:30  arthchan2003
- * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
+ * Revision 1.10  2005/04/15  14:10:59  dhdfu
+ * Additional MLLR runtime support, multi-class (1 stream only) MLLR runtime support, regression and performance tests
  * 
+ * Revision 1.9  2005/02/09 05:59:30  arthchan2003
+ * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
+ *
  * Revision 1.8  2005/02/05 15:30:07  egouvea
  * Changed default cepdir to null, so a user can choose not to specify it, and making it consistent with decode.c. Removed assert checking if cepdir was null
  *
@@ -302,6 +305,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
+    { "-mllr",
+      ARG_STRING,
+      NULL,
+      "MLLR transfomation matrix to be applied to mixture gaussian means"},
+    { "-cb2mllr",
+      ARG_STRING,
+      ".1cls.",
+      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
     { "-senmgau",
       ARG_STRING,
       ".cont.",

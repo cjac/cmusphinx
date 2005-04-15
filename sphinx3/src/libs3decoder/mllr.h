@@ -70,23 +70,24 @@ extern "C" {
 
 
   /** Dump the regression matrix from a given file */
-void mllr_dump(float32 **A, float32 *B,int32 veclen);
+void mllr_dump(float32 ***A, float32 **B,int32 veclen, int32 nclass);
 /*
  * Load a regression matrix from the given file.  Space for the matrix is allocated
  * by this routine.  (The regression "matrix" is actually a matrix A and a vector B.)
  * Return value: 0 if successful, -1 otherwise.
  */
 int32 mllr_read_regmat (const char *regmatfile,	/* In: File to be read */
-			float32 ***A,		/* Out: [*A][streamlen][streamlen] */
-			float32 **B,		/* Out: [*B][streamlen] */
+			float32 ****A,		/* Out: [*A][nclass][streamlen][streamlen] */
+			float32 ***B,		/* Out: [*B][nclass][streamlen] */
+			int32 *nclass,		/* Out: number of classes */
 			int32 ceplen);          /* In: vector length */
 
   /**
  * Free a regression matrix previously read in by mllr_read_regmat.
  * Return value: 0 if successful, -1 otherwise.
  */
-int32 mllr_free_regmat (float32 **A,		/* In: A[streamlen][streamlen] */
-			float32 *B		/* In: B[streamlen] */
+int32 mllr_free_regmat (float32 ***A,		/* In: A[streamlen][streamlen] */
+			float32 **B		/* In: B[streamlen] */
 			);
 
 
@@ -96,9 +97,10 @@ int32 mllr_free_regmat (float32 **A,		/* In: A[streamlen][streamlen] */
  */
 
 int32 mllr_norm_mgau (mgau_model_t *mgauset, /** In/Out: The gaussian distribution needs to be transformed */
-		      float32 **A,	/** In: "matrix" portion of regression matrix */
-		      float32 *B,	/** In: "vector" portion of regression matrix */
-		      mdef_t *mdef      /** In : model definition file */
+		      float32 ***A,	/** In: "matrix" portion of regression matrix */
+		      float32 **B,	/** In: "vector" portion of regression matrix */
+		      int32 nclass,	/** In: number of classes */
+		      int32 *cb2mllr	/** In: class to senone mapping */
 		      );
 
 #ifdef __cplusplus

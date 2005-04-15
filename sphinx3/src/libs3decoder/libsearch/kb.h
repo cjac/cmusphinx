@@ -66,6 +66,7 @@
 #include "ascr.h"
 #include "fast_algo_struct.h"
 #include "mllr.h"
+#include "cb2mllr_io.h"
 #include "cmn.h"
 
 /** \file kb.h
@@ -180,10 +181,10 @@ typedef struct {
   int32 epl;  /**< End of word penalty */
 
   /*variables for mllrmatrix */
-  char* prevmllrfn; /**< Last MLLR matrix files */
-  float32** regA; /**< Regression matrix : the multiplcation term */
-  float32* regB; /**< Regression matrix : the bias term */
-
+  char* prevmllrfn; /** Last MLLR matrix file */
+  float32*** regA; /** Regression matrices : the multiplcation term */
+  float32** regB; /** Regression matrices : the bias term */
+  int32 mllr_nclass; /** Number of regression matrices */
 } kb_t;
 
 
@@ -206,6 +207,7 @@ void kb_setlm(char* lmname, /**< In: The name of the language model */
 
   /** Set MLLR */
 void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
+		char* cb2mllrname, /** < In: The filename of the MLLR class map */
 		kb_t *kb /**< In/Out: A empty kb_t */
 		);    /* ARCHAN 20040724 */
 

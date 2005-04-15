@@ -63,47 +63,47 @@
 
 #include "mllr.h"
 
-void mllr_dump(float32 **A, float32 *B,int32 veclen)
+void mllr_dump(float32 ***A, float32 **B,int32 veclen, int32 nclass)
 {
-  int32 i,j;
+    int32 i,j, k;
   char* tmpstr;
   assert(A!=NULL);
   assert(B!=NULL);
 
-
-
   tmpstr=ckd_calloc((veclen * 20),sizeof(char));
 
-  for(i=0;i<veclen;i++){
-    sprintf(tmpstr,"A %d ",i);
-    for(j=0;j<veclen;j++){
-      sprintf(tmpstr,"%s %f ",tmpstr, A[i][j]);
-    }
-    sprintf(tmpstr,"%s\n",tmpstr);
-
-    E_INFO("%s\n",tmpstr);
-  }
+  for (i = 0; i < nclass; i++) {
+      E_INFO("%d:\n", i);
+      for (j=0;j<veclen;j++){
+	  sprintf(tmpstr,"A %d ",j);
+	  for(k=0;k<veclen;k++){
+	      sprintf(tmpstr,"%s %f ",tmpstr, A[i][j][k]);
+	  }
+	  sprintf(tmpstr,"%s\n",tmpstr);
+	  E_INFO("%s\n",tmpstr);
+      }
   
-  sprintf(tmpstr,"B\n");
-  for(i=0;i<veclen;i++){
-    sprintf(tmpstr,"%s %f ",tmpstr, B[i]);
+      sprintf(tmpstr,"B\n");
+      for(j=0;j<veclen;j++){
+	  sprintf(tmpstr,"%s %f ",tmpstr, B[i][j]);
+      }
+      sprintf(tmpstr,"%s \n",tmpstr);
+      E_INFO("%s\n",tmpstr);
   }
-  sprintf(tmpstr,"%s \n",tmpstr);
-  E_INFO("%s\n",tmpstr);
-
 
   ckd_free(tmpstr);
 }
 
 int32 mllr_read_regmat (const char *regmatfile,
-			float32 ***A,
-			float32 **B,
+			float32 ****A,
+			float32 ***B,
+			int32 *nclass,
 			int32 ceplen
 			)
 {
-    int32 j, k, n;
+    int32 i, j, k, n, lnclass;
     FILE  *fp;
-    float32 **lA, *lB;
+    float32 ***lA, **lB;
 
     if ((fp = fopen(regmatfile, "r")) == NULL) {
 	E_ERROR ("fopen(%s,r) failed\n", regmatfile);
@@ -111,33 +111,40 @@ int32 mllr_read_regmat (const char *regmatfile,
     } else
 	E_INFO ("Reading MLLR transformation file %s\n", regmatfile);
 
-    lA = (float32 **) ckd_calloc_2d (ceplen, ceplen, sizeof(float32));    
-    lB = (float32 *) ckd_calloc (ceplen, sizeof (float32 ));
+    lA = NULL;
+    lB = NULL;
 
-    /* Read #MLLR-classes; must be 1 for now (rkm@cs.cmu.edu, 12-Dec-1996) */
-    if ((fscanf (fp, "%d", &n) != 1) || (n != 1))
+    if ((fscanf (fp, "%d", &n) != 1) || (n < 1))
 	goto readerror;
+    lnclass = n;
 
     /* The number of stream must be 1 for now (archan@cs.cmu.edu 24-Jul-2004) */
     if ((fscanf (fp, "%d", &n) != 1) || (n != 1))
 	goto readerror;
-    
-    if ((fscanf(fp, "%d", &n) != 1) || (ceplen != n))
-      goto readerror;
-    
-    for (j = 0; j < ceplen; j++) {
-      for (k = 0; k < ceplen; ++k) {
-	if (fscanf(fp, "%f ", &lA[j][k]) != 1)
-	  goto readerror;
-      }
-    }
-    for (j = 0; j < ceplen; j++) {
-      if (fscanf(fp, "%f ", &lB[j]) != 1)
-	goto readerror;
+
+    lA = (float32 ***) ckd_calloc_3d (lnclass, ceplen, ceplen, sizeof(float32));
+    lB = (float32 **) ckd_calloc_2d (lnclass, ceplen, sizeof (float32));
+
+    for (i = 0; i < lnclass; i++) {
+	/* We definitely do not allow different classes to have different
+	   feature vector lengths! (that would be silly) */
+	if ((fscanf(fp, "%d", &n) != 1) || (ceplen != n))
+	    goto readerror;
+	for (j = 0; j < ceplen; j++) {
+	    for (k = 0; k < ceplen; ++k) {
+		if (fscanf(fp, "%f ", &lA[i][j][k]) != 1)
+		    goto readerror;
+	    }
+	}
+	for (j = 0; j < ceplen; j++) {
+	    if (fscanf(fp, "%f ", &lB[i][j]) != 1)
+		goto readerror;
+	}
     }
 
     *A = lA;
     *B = lB;
+    if (nclass) *nclass = lnclass;
 
     fclose(fp);
 
@@ -145,8 +152,8 @@ int32 mllr_read_regmat (const char *regmatfile,
 
 readerror:
     E_ERROR("Error reading MLLR file %s\n", regmatfile);
-    ckd_free_2d ((void **)lA);
-    ckd_free (lB);
+    ckd_free_3d ((void ***)lA);
+    ckd_free_2d ((void **)lB);
 
     fclose (fp);
     
@@ -157,24 +164,25 @@ readerror:
 }
 
 
-int32 mllr_free_regmat (float32 **A,
-			float32 *B
+int32 mllr_free_regmat (float32 ***A,
+			float32 **B
 			)
 {
-    ckd_free_2d ((void **) A);
-    ckd_free (B);
+    ckd_free_3d ((void ***) A);
+    ckd_free_2d ((void **)B);
     return 0;
 }
 
 
 
 int32 mllr_norm_mgau (mgau_model_t *mgauset,
-		      float32 **A,
-		      float32 *B,
-		      mdef_t *mdef
-		      )
+		      float32 ***A,
+		      float32 **B,
+		      int32 nclass,
+		      int32 *cb2mllr)
 {
     int32 d, c, l, m;
+    int32 class;
     float32 *temp;
 
     int32 n_density=mgauset->n_mgau;
@@ -186,25 +194,29 @@ int32 mllr_norm_mgau (mgau_model_t *mgauset,
     temp = (float32 *) ckd_calloc (ceplen, sizeof(float32));
     
     /* Transform each density d in selected codebook */
+    mgau=mgauset->mgau;
 
     for (d = 0; d < n_density; d++) {
-      mgau=mgauset->mgau;
+	if (cb2mllr)
+	    class = cb2mllr[d];
+	else
+	    class = 0;
+	if (class == -1)
+	    continue;
 
-      if(mdef->cd2cisen[d]!=d){ /* If d is a CD senone */
-	for(c = 0 ; c < n_mix ; c++){
-	  for (l = 0; l < ceplen; l++){
-	    temp[l] = 0.0;
-	    for (m = 0; m < ceplen; m++) {
-	      temp[l] += A[l][m] * mgau[d].mean[c][m];
+	for (c = 0 ; c < n_mix ; c++){
+	    for (l = 0; l < ceplen; l++){
+		temp[l] = 0.0;
+		for (m = 0; m < ceplen; m++) {
+		    temp[l] += A[class][l][m] * mgau[d].mean[c][m];
+		}
+		temp[l] += B[class][l];
 	    }
-	    temp[l] += B[l];
-	  }
 
-	  for(l=0 ; l < ceplen ;l++){
-	    mgau[d].mean[c][l] = temp[l];
-	  }
+	    for(l=0 ; l < ceplen ;l++){
+		mgau[d].mean[c][l] = temp[l];
+	    }
 	}
-      }
     }
 
     ckd_free (temp);

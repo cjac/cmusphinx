@@ -1,0 +1,3 @@
+-ctl /net/scylla/usr3/dhuggins/adaptation/Spoke3/Corpus/lists/s3-94.4u0.test.ctl
+-mllr /net/scylla/usr3/dhuggins/adaptation/Spoke3/Training/4u0.14cd_ci/mllr_matrices
+-cb2mllr /net/scylla/usr3/dhuggins/adaptation/Spoke3/Training/model_architecture/cb2mllr/si-321-fxwd.cb2mllr.14cd_ci

@@ -151,6 +151,7 @@ src/tests/performance/tidigits/Makefile
 src/tests/performance/ti46/Makefile
 src/tests/performance/Communicator/Makefile
 src/tests/performance/ICSI/Makefile
+src/tests/performance/spoke3/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
 src/tests/regression/test-livepretend.sh
@@ -162,6 +163,8 @@ src/tests/regression/test-decode_anytopo.sh
 src/tests/regression/test-decode.sh
 src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
+src/tests/regression/test-mllr.sh
+src/tests/regression/test-mllr-lp.sh
 src/tests/regression/test-wave2feat.sh
 src/tests/regression/test-cepview.sh
 src/tests/unit_tests/Makefile
@@ -176,6 +179,7 @@ model/lm/Makefile
 model/lm/an4/Makefile
 model/lm/an4/args.an4
 model/lm/an4/args.an4.test
+model/lm/an4/args.an4.test.mllr
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
