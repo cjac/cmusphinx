@@ -9,6 +9,7 @@ libs3decoder_la_SOURCES = \
 	approx_cont_mgau.c \
 	ascr.c \
         bio.c \
+	cb2mllr_io.c \
 	classify.c \
         cmn.c \
 	cmn_prior.c \
@@ -54,6 +55,7 @@ noinst_HEADERS = \
 	approx_cont_mgau.h \
         ascr.h \
         bio.h \
+	cb2mllr_io.h \
 	classify.h \
         cmn.h \
 	cmn_prior.h \

@@ -6,5 +6,5 @@ SUBDIRS = an4 \
 	wsj20k \
 	wsj5k \
 	Communicator \
-	ICSI
-	
+	ICSI \
+	spoke3

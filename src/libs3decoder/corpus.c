@@ -336,13 +336,14 @@ int32 ctl_read_entry (FILE *fp, char *uttfile, int32 *sf, int32 *ef, char *uttid
 }
 
 
-ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
+ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile,
+		    int32 nskip, int32 count,
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 		    void *kb)
 {
   FILE *fp, *mllrfp;
   char uttfile[16384], uttid[4096];
-  char regmatfile[4096];
+  char regmatfile[4096], cb2mllrfile[4096];
   int32 sf, ef;
   ptmr_t tm;
   
@@ -374,7 +375,7 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
 
     if(ctlmllrfile){
       for (; nskip > 0; --nskip) {
-	if (ctl_read_entry (fp, regmatfile, &sf, &ef, uttid) < 0) {
+	if (ctl_read_entry (fp, regmatfile, &sf, &ef, cb2mllrfile) < 0) {
 	  E_ERROR("MLLR cannot be read when skipping the %d-th sentence\n",nskip);
 	  fclose (fp);
 	  return tm;
@@ -388,16 +389,21 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
       break;
 
     if(ctlmllrfile){
-      if (ctl_read_entry (mllrfp, regmatfile, &sf, &ef, uttid) < 0){
+      int32 tmp1, tmp2;
+
+      if (ctl_read_entry (mllrfp, regmatfile, &tmp1, &tmp2, cb2mllrfile) < 0){
 	E_ERROR("MLLR cannot be read when counting the %d-th sentence\n",count);
 	break;
       }
+      if (tmp2 == -1)
+	strcpy(cb2mllrfile, ".1cls.");
     }
     
     /* Process this utterance */
     ptmr_start (&tm);
     if (func){
-      if(ctlmllrfile) kb_setmllr(regmatfile,kb);
+      if(ctlmllrfile)
+	  kb_setmllr(regmatfile, cb2mllrfile, kb);
       (*func)(kb, uttfile, sf, ef, uttid);
     }
     ptmr_stop (&tm);
@@ -423,7 +429,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
   FILE *ctlmllrfp;
   char uttfile[16384], uttid[4096];
   char lmname[4096];
-  char regmatname[4096];
+  char regmatname[4096], cb2mllrname[4096];
   char tmp[4096];
   int32 sf, ef;
   ptmr_t tm;
@@ -490,11 +496,14 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     }
 
     if(ctlmllrfile){
-      if (ctl_read_entry (ctlmllrfp, regmatname, &sf, &ef, tmp) < 0) {
-	fclose (ctlmllrfp);
+      int32 tmp1, tmp2;
+
+      if (ctl_read_entry (ctlmllrfp, regmatname, &tmp1, &tmp2, cb2mllrname) < 0){
 	E_ERROR("MLLR cannot be read when counting the %d-th sentence\n",count);
-	return tm;
+	break;
       }
+      if (tmp2 == -1)
+	strcpy(cb2mllrname, ".1cls.");
     }
     
 
@@ -503,7 +512,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     E_INFO("filename %s, lmname %s\n",uttfile,lmname);
     if (func){
       kb_setlm(lmname,kb);
-      if(ctlmllrfile) kb_setmllr(regmatname,kb);
+      if(ctlmllrfile) kb_setmllr(regmatname,cb2mllrname,kb);
       (*func)(kb, uttfile, sf, ef, uttid);
     }
     ptmr_stop (&tm);
