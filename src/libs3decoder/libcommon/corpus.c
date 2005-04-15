@@ -485,19 +485,19 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
   }
   
   for (; count > 0; --count) {
+    int32 tmp1, tmp2;
+
     if (ctl_read_entry (fp, uttfile, &sf, &ef, uttid) < 0)
       break;
 
     /*This checks the size of the control file in batch mode*/
-    if (ctl_read_entry (ctllmfp, lmname, &sf, &ef, tmp) < 0) {
+    if (ctl_read_entry (ctllmfp, lmname, &tmp1, &tmp2, tmp) < 0) {
       fclose (ctllmfp);
       E_ERROR("LM cannot be read when counting the %d-th sentence\n",count);
       return tm;
     }
 
     if(ctlmllrfile){
-      int32 tmp1, tmp2;
-
       if (ctl_read_entry (ctlmllrfp, regmatname, &tmp1, &tmp2, cb2mllrname) < 0){
 	E_ERROR("MLLR cannot be read when counting the %d-th sentence\n",count);
 	break;
