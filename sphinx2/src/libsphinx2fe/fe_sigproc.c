@@ -94,7 +94,6 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	}
     }    
     
-    
     if (MEL_FB->doublewide==ON){
         for (i=0;i<=MEL_FB->num_filters+3; ++i){
 	    filt_edge[i] = fe_melinv(i*dmelbw + melmin);
@@ -106,49 +105,51 @@ int32 fe_build_melfilters(melfb_t *MEL_FB)
 	}
     }
     
-    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) 
-    {
+    for (whichfilt=0;whichfilt<MEL_FB->num_filters; ++whichfilt) {
+      /*line triangle edges up with nearest dft points... */
+      if (MEL_FB->doublewide==ON){
+        leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+        centerfr = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+        rightfr  = (float32)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq;
+      }else{
+        leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
+        centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
+        rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
+      }
+      MEL_FB->left_apex[whichfilt] = leftfr;
+      fwidth = rightfr - leftfr;
+      
+      /* 2/fwidth for triangles of area 1 */
+      height = 2/(float32)fwidth;
+      leftslope = height/(centerfr-leftfr);
+      rightslope = height/(centerfr-rightfr);
 
-	/*line triangle edges up with nearest dft points... */
-	
-	if (MEL_FB->doublewide==ON){
-	    leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-	    centerfr = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
-	    rightfr  = (float32)((int32)((filt_edge[whichfilt+4]/dfreq)+0.5))*dfreq; 
-	}
-	else{
-	    leftfr   = (float32)((int32)((filt_edge[whichfilt]/dfreq)+0.5))*dfreq;
-	    centerfr = (float32)((int32)((filt_edge[whichfilt+1]/dfreq)+0.5))*dfreq;
-	    rightfr  = (float32)((int32)((filt_edge[whichfilt+2]/dfreq)+0.5))*dfreq;
-	}
-	
-	MEL_FB->left_apex[whichfilt] = leftfr;
-	
-	fwidth = rightfr - leftfr;
-	
-	/* 2/fwidth for triangles of area 1 */
-	height = 2/(float32)fwidth;
-	leftslope = height/(centerfr-leftfr);
-	rightslope = height/(centerfr-rightfr);
-	
-	start_pt = 1 + (int32)(leftfr/dfreq);
-	freq = (float32)start_pt*dfreq;
-	i=0;
-
-	while (freq<=centerfr){
-	    MEL_FB->filter_coeffs[whichfilt][i] = (freq-leftfr)*leftslope;	    
-	    freq += dfreq;
-	    i++;
-	}
-	while (freq<rightfr){
-	    MEL_FB->filter_coeffs[whichfilt][i] = (freq-rightfr)*rightslope;
-	    freq += dfreq;
-	    i++;
-	}
-	
-	MEL_FB->width[whichfilt] = i;
+      /* Round to the nearest integer instead of truncating and adding
+         one, which breaks if the divide is already an integer */      
+      start_pt = (int32)(leftfr/dfreq + 0.5);
+      freq = (float32)start_pt*dfreq;
+      i=0;
+      
+      while (freq<centerfr){
+        MEL_FB->filter_coeffs[whichfilt][i] = (freq-leftfr)*leftslope;      
+        freq += dfreq;
+        i++;
+      }
+      /* If the two floats are equal, the leftslope computation above
+         results in Inf, so we handle the case here. */
+      if (freq==centerfr){
+        MEL_FB->filter_coeffs[whichfilt][i] = height;       
+        freq += dfreq;
+        i++;
+      }
+      while (freq<rightfr){
+        MEL_FB->filter_coeffs[whichfilt][i] = (freq-rightfr)*rightslope;
+        freq += dfreq;
+        i++;
+      }
+      MEL_FB->width[whichfilt] = i;
     }
-  
+    
     free(filt_edge);
     return(0);
 }
@@ -325,7 +326,10 @@ void fe_mel_spec(fe_t *FE, float64 const *spec, float64 *mfspec)
     dfreq = FE->SAMPLING_RATE/(float32)FE->FFT_SIZE;
     
     for (whichfilt = 0; whichfilt<FE->MEL_FB->num_filters; whichfilt++){
-	start = (int32)(FE->MEL_FB->left_apex[whichfilt]/dfreq) + 1;
+        /* Round to the nearest integer instead of truncating and
+	 adding one, which breaks if the divide is already an
+	 integer */      
+	start = (int32)(FE->MEL_FB->left_apex[whichfilt]/dfreq + 0.5);
 	mfspec[whichfilt] = 0;
 	for (i=0; i< FE->MEL_FB->width[whichfilt]; i++)
 	    mfspec[whichfilt] +=
@@ -345,8 +349,6 @@ void fe_mel_cep(fe_t *FE, float64 *mfspec, float64 *mfcep)
     
 
     period = FE->MEL_FB->num_filters;
-
-
 
     for (i=0;i<FE->MEL_FB->num_filters; ++i)
     {
