@@ -76,7 +76,7 @@ test-mllr-lp \
 test-gausubvq \
 test-ep \
 test-wave2feat:
-	$(top_builddir)/src/tests/regression/$@.sh
+	sh $(top_builddir)/src/tests/regression/$@.sh
 
 
 perf-std : 
