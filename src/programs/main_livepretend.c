@@ -71,7 +71,7 @@ main(int _argc, char **_argv)
   FILE *ctrlfd;
   FILE *rawfd;
   ptmr_t tm;
-
+  int32 nskip, count;
 
   print_appl_info(_argv[0]);
 
@@ -98,8 +98,21 @@ main(int _argc, char **_argv)
     E_FATAL("Failed to initialize live-decoder.\n");
   }
 
+  nskip = cmd_ln_int32("-ctloffset");
+  count = cmd_ln_int32("-ctlcount");
+
+  if (nskip > 0) {
+    E_INFO("Skipping %d entries at the beginning of %s\n", nskip, ctrlfn);
+    
+    for (; nskip > 0; --nskip)
+      if (fscanf(ctrlfd, "%s", rawfn) == EOF)
+	E_FATAL("EOF while skipping initial lines\n");
+  }
 
   while (fscanf(ctrlfd, "%s", rawfn) != EOF) {
+    if (count-- == 0)
+      break;
+
     sprintf(fullrawfn, "%s/%s%s", rawdirfn, rawfn,decoder.rawext);
     if ((rawfd = fopen(fullrawfn, "rb")) == NULL) {
       E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
