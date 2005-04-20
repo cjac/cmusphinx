@@ -37,5 +37,5 @@ grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout
 
 if(grep "FWDVIT" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
-then echo "DECODE test PASSED" ; else \
-echo "DECODE test FAILED" ; fi
+then echo "DECODE MLLR test PASSED" ; else \
+echo "DECODE MLLR test FAILED" ; fi
