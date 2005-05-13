@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2005/02/13  01:29:48  rkm
- * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
+ * Revision 1.10  2005/05/13  23:28:43  egouvea
+ * Changed null device to system dependent one: NUL for windows, /dev/null for everything else
  * 
+ * Revision 1.9  2005/02/13 01:29:48  rkm
+ * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
+ *
  * Revision 1.8  2005/02/01 22:21:13  rkm
  * Added raw data logging, and raw data pass-through mode to cont_ad
  *
@@ -76,6 +79,11 @@ static int32 swap;
 /* Max size read by file_ad_read function on each invocation, for debugging */
 static int32 max_ad_read_size;
 
+#if defined(WIN32)
+#define NULL_DEVICE "NUL"
+#else
+#define NULL_DEVICE "/dev/null"
+#endif
 
 /*
  * Need to provide cont_ad_init with a read function to read the input file.
@@ -365,7 +373,7 @@ main (int32 argc, char **argv)
     if (writeseg)
       sprintf (segfile, "%08d.raw", uttid);
     else
-      strcpy (segfile, "/dev/null");
+      strcpy (segfile, NULL_DEVICE);
     if ((fp = fopen(segfile, "wb")) == NULL)
 	E_FATAL("fopen(%s,wb) failed\n", segfile);
     fwrite (buf, sizeof(int16), k, fp);
@@ -407,7 +415,7 @@ main (int32 argc, char **argv)
 		if (writeseg)
 		  sprintf (segfile, "%08d.raw", uttid);
 		else
-		  strcpy (segfile, "/dev/null");
+		  strcpy (segfile, NULL_DEVICE);
 		if ((fp = fopen(segfile, "wb")) == NULL)
 		    E_FATAL("fopen(%s,wb) failed\n", segfile);
 		
