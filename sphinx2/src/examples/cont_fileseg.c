@@ -39,8 +39,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2005/05/13  23:28:43  egouvea
+ * Revision 1.11  2005/05/24  20:56:58  rkm
+ * Added min/max-noise parameters to cont_fileseg
+ * 
+ * Revision 1.10  2005/05/13 23:28:43  egouvea
  * Changed null device to system dependent one: NUL for windows, /dev/null for everything else
+ * 
+ * $Log$
+ * Revision 1.11  2005/05/24  20:56:58  rkm
+ * Added min/max-noise parameters to cont_fileseg
  * 
  * Revision 1.9  2005/02/13 01:29:48  rkm
  * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
@@ -85,6 +92,7 @@ static int32 max_ad_read_size;
 #define NULL_DEVICE "/dev/null"
 #endif
 
+
 /*
  * Need to provide cont_ad_init with a read function to read the input file.
  * This is it.  The ad_rec_t *r argument is ignored since there is no A/D
@@ -117,6 +125,8 @@ static void usagemsg (char *pgm)
     E_INFOCONT("\t[-b | -byteswap] \\\n");
     E_INFOCONT("\t[{-s | -silsep} <length-silence-separator(sec) (0.5)]> \\\n");
     E_INFOCONT("\t[-w | -writeseg] \\\n");
+    E_INFOCONT("\t[-min-noise <min-noise>] \\\n");
+    E_INFOCONT("\t[-max-noise <max-noise>] \\\n");
     E_INFOCONT("\t[-delta-sil <delta-sil>] \\\n");
     E_INFOCONT("\t[-delta-speech <delta-speech>] \\\n");
     E_INFOCONT("\t[-sil-onset <sil-onset>] \\\n");
@@ -146,9 +156,13 @@ main (int32 argc, char **argv)
     float endsil;
     ad_rec_t ad;
     int32 i, k;
-    int32 min_noise, max_noise, winsize, leader, trailer;
-    int32 orig_delta_sil, orig_delta_speech, orig_speech_onset, orig_sil_onset;
-    int32 delta_sil, delta_speech, sil_onset, speech_onset;
+    int32 winsize, leader, trailer;
+    int32 orig_min_noise, orig_max_noise;
+    int32 orig_delta_sil, orig_delta_speech;
+    int32 orig_speech_onset, orig_sil_onset;
+    int32 min_noise, max_noise;
+    int32 delta_sil, delta_speech;
+    int32 sil_onset, speech_onset;
     float32 orig_adapt_rate;
     float32 adapt_rate;
     int32 total_speech_samples;
@@ -161,7 +175,9 @@ main (int32 argc, char **argv)
     swap = 0;
     endsil = 0.5;
     writeseg = 0;
-    delta_sil = delta_speech = sil_onset = speech_onset = -1;
+    min_noise = max_noise = -1;
+    delta_sil = delta_speech = -1;
+    sil_onset = speech_onset = -1;
     adapt_rate = -1.0;
     max_ad_read_size = (int32) 0x7ffffff0;
     debug = 0;
@@ -202,6 +218,22 @@ main (int32 argc, char **argv)
       } else if ((strcmp (argv[i], "-writeseg") == 0)
 		 || (strcmp (argv[i], "-w") == 0)) {
 	writeseg = 1;
+      } else if (strcmp (argv[i], "-min-noise") == 0) {
+	i++;
+	if ((i == argc) ||
+	    (sscanf (argv[i], "%d", &min_noise) != 1) ||
+	    (min_noise < 0)) {
+	  E_ERROR("Invalid -min-noise argument\n");
+	  usagemsg(argv[0]);
+	}
+      } else if (strcmp (argv[i], "-max-noise") == 0) {
+	i++;
+	if ((i == argc) ||
+	    (sscanf (argv[i], "%d", &max_noise) != 1) ||
+	    (max_noise < 0)) {
+	  E_ERROR("Invalid -max-noise argument\n");
+	  usagemsg(argv[0]);
+	}
       } else if (strcmp (argv[i], "-delta-sil") == 0) {
 	i++;
 	if ((i == argc) ||
@@ -311,17 +343,25 @@ main (int32 argc, char **argv)
     
     cont_ad_get_params(cont,
 		       &orig_delta_sil, &orig_delta_speech,
-		       &min_noise, &max_noise,
+		       &orig_min_noise, &orig_max_noise,
 		       &winsize,
 		       &orig_speech_onset, &orig_sil_onset,
 		       &leader, &trailer,
 		       &orig_adapt_rate);
     
-    E_INFO("Standard configuration: delta-sil = %d, delta-speech = %d, sil-onset = %d, speech-onset = %d, adapt_rate = %.3f\n",
-	   orig_delta_sil, orig_delta_speech,
-	   orig_sil_onset, orig_speech_onset,
-	   orig_adapt_rate);
+    E_INFO("Default parameters:\n");
+    E_INFOCONT("\tmin-noise = %d, max-noise = %d\n",
+	       orig_min_noise, orig_max_noise);
+    E_INFOCONT("\tdelta-sil = %d, delta-speech = %d\n",
+	       orig_delta_sil, orig_delta_speech);
+    E_INFOCONT("\tsil-onset = %d, speech-onset = %d\n",
+	       orig_sil_onset, orig_speech_onset);
+    E_INFOCONT("\tadapt_rate = %.3f\n", orig_adapt_rate);
     
+    if (min_noise < 0)
+      min_noise = orig_min_noise;
+    if (max_noise < 0)
+      max_noise = orig_max_noise;
     if (delta_sil < 0)
       delta_sil = orig_delta_sil;
     if (delta_speech < 0)
@@ -340,11 +380,16 @@ main (int32 argc, char **argv)
 		       speech_onset, sil_onset,
 		       leader, trailer,
 		       adapt_rate);
-    E_INFO("Current configuration:  delta-sil = %d, delta-speech = %d, sil-onset = %d, speech-onset = %d, adapt_rate = %.3f\n",
-	   delta_sil, delta_speech, sil_onset, speech_onset, adapt_rate);
-    E_INFO("Sampling rate: %d\n", sps);
-    E_INFO("Byteswap: %s\n", swap ? "Yes" : "No");
-    E_INFO("Max ad-read size: %d\n", max_ad_read_size);
+
+    E_INFO("Current parameters:\n");
+    E_INFOCONT("\tmin-noise = %d, max-noise = %d\n", min_noise, max_noise);
+    E_INFOCONT("\tdelta-sil = %d, delta-speech = %d\n", delta_sil, delta_speech);
+    E_INFOCONT("\tsil-onset = %d, speech-onset = %d\n", sil_onset, speech_onset);
+    E_INFOCONT("\tadapt_rate = %.3f\n", adapt_rate);
+    
+    E_INFO("Sampling rate: %d", sps);
+    E_INFOCONT("; Byteswap: %s", swap ? "Yes" : "No");
+    E_INFOCONT("; Max ad-read size: %d\n", max_ad_read_size);
     
     if (debug)
 	cont_ad_set_logfp(cont, stdout);
