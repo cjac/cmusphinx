@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2005/01/26  17:54:51  rkm
- * Added -maxhmmpf absolute pruning parameter in FSG mode
+ * Revision 1.11  2005/05/24  20:55:24  rkm
+ * Added -fsgbfs flag
  * 
+ * Revision 1.10  2005/01/26 17:54:51  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
+ *
  * Revision 1.9  2005/01/13 15:22:11  rkm
  * Fixed some comments relating to s2_fsg_t structure
  *
@@ -632,12 +635,14 @@ char const *query_matchseg_file_name (void);
 char const *query_dumplat_dir (void);
 /* If TRUE, produce detailed backtrace in logfile */
 int32 query_back_trace ( void );
+/* If FALSE, backtrace from FSG state with best score, instead of final state */
+int32 query_fsg_backtrace_finalstate ( void );
 /* If TRUE, report exact pronunciation in hypothesis instead of just base word */
 int32 query_report_altpron ( void );
 /* If TRUE, perform allphone decoding as well (approx, for diagnostics) */
 int32 query_phone_conf ( void );
-/* If TRUE, report phone lattice (for diagnostics) */
-int32 query_pscr2lat ( void );
+/* If non-NULL, directory for writing phone lattice files (for diagnostics) */
+char *query_pscr2lat ( void );
 /* If > 0, report partial result every so many frames (in batch mode) */
 int32 query_report_partial_result ( void );
 int32 query_report_partial_result_seg ( void );

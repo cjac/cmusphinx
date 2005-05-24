@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.20  2005/01/26  17:54:52  rkm
- * Added -maxhmmpf absolute pruning parameter in FSG mode
+ * Revision 1.21  2005/05/24  20:55:24  rkm
+ * Added -fsgbfs flag
  * 
+ * Revision 1.20  2005/01/26 17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
+ *
  * Revision 1.19  2005/01/21 18:48:36  egouvea
  * Rolled back the dup2 fix for Windows only. In some applications, dup2
  * was causing the behavior that the log file got opened, but nothing got
@@ -353,7 +356,7 @@ static char *seg_data_directory = 0;
 static char const *sent_directory = ".";
 static char *utterance = 0;
 static int32 phone_conf = 0;
-static int32 pscr2lat = 0;
+static char *pscr2lat = NULL;		/* Directory for phone lattice files */
 
 static int32 nbest = 0;			/* #N-best hypotheses to generate/utterance */
 static char const *nbest_dir = ".";
@@ -468,6 +471,12 @@ static int32 allphone_mode = FALSE;
  */
 static int32 topsen_window = 1;
 static int32 topsen_thresh = -60000;
+
+/*
+ * In FSG mode, set to FALSE to force backtrace from FSG state that has best
+ * path score even if it is not the final state.
+ */
+static int32 fsg_backtrace_finalstate = TRUE;
 
 /* Local Storage
  *---------------*/
@@ -641,8 +650,8 @@ config_t param[] = {
 	{ "PhoneConfidence", "Phone confidence", "-phoneconf",
 		BOOL, (caddr_t) &phone_conf }, 
 
-	{ "PhoneLat", "Phone lattice based on best senone scores", "-pscr2lat",
-		BOOL, (caddr_t) &pscr2lat }, 
+	{ "PhoneLat", "Directory for writing phone lattices based on best senone scores", "-pscr2lat",
+		STRING, (caddr_t) &pscr2lat }, 
 
 	{ "LogFileName", "Recognition ouput file name", "-logfn",
 		STRING, (caddr_t) &logfn_arg }, 
@@ -901,6 +910,9 @@ config_t param[] = {
 
 	{ "VerbosityLevel", "Verbosity Level", "-verbose",
 	        INT, (caddr_t) &verbosity_level },
+
+	{ "FSGForceFinalState", "Force backtrace from FSG final state", "-fsgbfs",
+		BOOL, (caddr_t) &fsg_backtrace_finalstate },
 
 	{ 0,0,0,NOTYPE,0 }
 };
@@ -2246,7 +2258,7 @@ int32 query_phone_conf ( void )
     return phone_conf;
 }
 
-int32 query_pscr2lat ( void )
+char *query_pscr2lat ( void )
 {
     return pscr2lat;
 }
@@ -2284,4 +2296,9 @@ int32 query_report_partial_result ( void )
 int32 query_report_partial_result_seg ( void )
 {
   return report_partial_result_seg;
+}
+
+int32 query_fsg_backtrace_finalstate ( void )
+{
+  return fsg_backtrace_finalstate;
 }

@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2005/01/20  15:11:47  rkm
- * Cleaned up pscr-related functions
+ * Revision 1.12  2005/05/24  20:55:25  rkm
+ * Added -fsgbfs flag
  * 
+ * Revision 1.11  2005/01/20 15:11:47  rkm
+ * Cleaned up pscr-related functions
+ *
  * Revision 1.10  2004/12/10 16:48:58  rkm
  * Added continuous density acoustic model handling
  *
@@ -186,7 +189,14 @@ void search_postprocess_bptable (double lwf, char const *pass);
 int32 *search_get_bscorestack ( void );
 double search_get_lw ( void );
 int32 **search_get_uttpscr ( void );
-int32 search_uttpscr2phlat_print ( void );
+
+/*
+ * Dump a "phone lattice" to the given file:
+ *   For each frame, determine the CIphones with top scoring senones, threshold
+ *   and sort them in descending order.  (Threshold based on topsen_thresh.)
+ */
+int32 search_uttpscr2phlat_print (FILE *outfp);
+
 search_hyp_t *search_uttpscr2allphone ( void );
 void search_remove_context (search_hyp_t *hyp);
 void search_hyp_to_str ( void );
@@ -277,6 +287,18 @@ void search_set_topsen_score (int32 frm, int32 score);
  * evaluation module.)
  */
 int32 *search_get_bestpscr( void );
+
+/* Copy bestpscr to uttpscr[currentframe] */
+void search_bestpscr2uttpscr (int32 currentframe);
+
+/* Reset the uttpscr valid flag */
+void search_uttpscr_reset ( void );
+
+/*
+ * Set the hyp_wid (and n_hyp_wid) global variables in search.c to the given
+ * hypothesis (linked list of search_hyp_t entries).
+ */
+void search_set_hyp_wid (search_hyp_t *hyp);
 
 
 #endif

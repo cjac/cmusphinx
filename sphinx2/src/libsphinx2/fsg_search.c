@@ -44,9 +44,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.4  2005/01/26  17:54:52  rkm
- * Added -maxhmmpf absolute pruning parameter in FSG mode
+ * Revision 1.5  2005/05/24  20:55:24  rkm
+ * Added -fsgbfs flag
  * 
+ * Revision 1.4  2005/01/26 17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
+ *
  * Revision 1.3  2004/12/10 16:48:56  rkm
  * Added continuous density acoustic model handling
  *
@@ -946,6 +949,7 @@ static void fsg_search_set_result (fsg_search_t *search)
 {
   fsg_search_hyp_filter (search);
   searchSetFrame(search->frame);
+  search_set_hyp_wid (search->hyp);
   search_hyp_to_str();
   search_set_hyp_total_score (search->ascr + search->lscr);
   search_set_hyp_total_lscr (search->lscr);
@@ -1098,7 +1102,7 @@ void fsg_search_utt_end (fsg_search_t *search)
    * First check if the final state has been reached; otherwise just use
    * the best scoring state.
    */
-  fsg_search_history_backtrace (search, TRUE);
+  fsg_search_history_backtrace (search, query_fsg_backtrace_finalstate());
   
   if (query_back_trace())
     fsg_search_hyp_dump (search, stdout);

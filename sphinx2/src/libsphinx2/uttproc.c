@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.20  2005/01/20  00:09:43  egouvea
- * Replace subtraction of elements in FILETIME structure with a subtraction of 64 bit integers, and removed some warnings about type casting
+ * Revision 1.21  2005/05/24  20:55:24  rkm
+ * Added -fsgbfs flag
  * 
+ * Revision 1.20  2005/01/20 00:09:43  egouvea
+ * Replace subtraction of elements in FILETIME structure with a subtraction of 64 bit integers, and removed some warnings about type casting
+ *
  * Revision 1.19  2004/12/10 16:48:57  rkm
  * Added continuous density acoustic model handling
  *
@@ -850,6 +853,8 @@ static void uttproc_fsg_search_fwd ( void )
 		      dcep_80ms_buf + search_cep_i,
 		      pcep_buf + search_pow_i,
 		      ddcep_buf + search_cep_i);
+    
+    search_bestpscr2uttpscr (fsg_search->frame);
   } else {
     fsg_search_sen_active(fsg_search);
     
@@ -968,7 +973,11 @@ static void write_results (char const *hyp, int32 aborted)
 
 static void uttproc_windup (int32 *fr, char **hyp)
 {
-    /* Wind up first pass and run next pass, if necessary */
+  char *dir;
+  char filename[4096];
+  FILE *pscrlat_fp;
+  
+  /* Wind up first pass and run next pass, if necessary */
   if (fsg_search_mode)
     fsg_search_utt_end(fsg_search);
   else {
@@ -983,16 +992,31 @@ static void uttproc_windup (int32 *fr, char **hyp)
     /* Run bestpath pass if specified */
     if ((searchFrame() > 0) && query_bestpath_flag())
 	bestpath_search ();
+  }
+  
+  /* Moved out of the above else clause (rkm:2005/03/08) */
+  if (query_phone_conf()) {
+    search_hyp_t *pseg, *search_hyp_pscr_path(), *search_uttpscr2allphone();
     
-    if (query_phone_conf()) {
-      search_hyp_t *allp, *search_uttpscr2allphone();
-      
-      allp = search_uttpscr2allphone();
-      search_hyp_free (allp);
+    /* Obtain pscr-based phone segmentation for hypothesis */
+    pseg = search_hyp_pscr_path();
+    search_hyp_free (pseg);
+    
+    /* Obtain pscr-based allphone segmentation */
+    pseg = search_uttpscr2allphone();
+    search_hyp_free (pseg);
+  }
+  
+  /* Moved out of the above else clause (rkm:2005/03/02) */
+  if ((dir = query_pscr2lat()) != NULL) {
+    sprintf (filename, "%s/%s.pscrlat", dir, uttid);
+    
+    if ((pscrlat_fp = fopen(filename, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", filename);
+    else {
+      search_uttpscr2phlat_print (pscrlat_fp);
+      fclose (pscrlat_fp);
     }
-    
-    if (query_pscr2lat())
-      search_uttpscr2phlat_print ();
   }
   
   search_result (fr, hyp);
@@ -1232,6 +1256,8 @@ int32 uttproc_begin_utt (char const *id)
       else
 	search_fwdflat_start ();
     }
+    
+    search_uttpscr_reset ();
     
     uttstate = UTTSTATE_BEGUN;
     
