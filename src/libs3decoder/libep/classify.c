@@ -1,4 +1,4 @@
- /* ====================================================================
+/* ====================================================================
  * Copyright (c) 2004 Carnegie Mellon University.  All rights
  * reserved.
  *
@@ -132,6 +132,11 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
   if (CLASSW->classmap[CLASS_SIL] == BAD_S3CIPID) {
     E_WARN("Phone SIL not defined in current model set\n");
   }
+  if ((CLASSW->classmap[CLASS_N] == BAD_S3CIPID) &&
+      (CLASSW->classmap[CLASS_S] == BAD_S3CIPID) &&
+      (CLASSW->classmap[CLASS_SIL] == BAD_S3CIPID)) {
+    E_FATAL("Model set has to have at least one of N, S, or SIL\n");
+  }
   CLASSW->classmap[CLASS_O] = mdef_ciphone_id(mdef, "O");
   if (CLASSW->classmap[CLASS_O] == BAD_S3CIPID) {
     E_FATAL("Phone O not defined in current model set\n");
@@ -197,14 +202,14 @@ int postclassify (int *window, int windowlen, int *wincap, int myclass)
 		window[windowcap] = myclass;
 		windowcap ++;
 		*wincap = windowcap;
-		return 4;
+		return CLASS_SIL;
 	}
 	else if( (2 <= windowcap) && (windowcap < 4) )
  	{
 		window[windowcap] = myclass;
                 windowcap ++;
 		*wincap = windowcap;
-                return 3;
+                return CLASS_SIL;
 	}
 	else if ( windowcap == 4)
 	{
@@ -229,18 +234,22 @@ int postclassify (int *window, int windowlen, int *wincap, int myclass)
 int vote (int *window, int windowlen)
 {
 	int i, myclass, max;
-	int count[VOTEWINDOWLEN];
+	int count[NUMCLASSES];
 
-	for (i = 0; i < windowlen; i ++)
+	for (i = 0; i < NUMCLASSES; i ++)
 		count[i] = 0;
 
-	for (i = 0; i < windowlen; i ++)
-		count[window[i]] ++;
+	for (i = 0; i < windowlen; i ++) {
+	  assert (window[i] < NUMCLASSES);
+	  count[window[i]] ++;
+	}
 		
-	max = count[3];
-	myclass = 3;
+	/* Initialize the max */
+	max = count[0];
+	myclass = 0;
 
-	for (i = 0; i < windowlen; i++)
+	/* We can skip 0, since we initialized with it. */
+	for (i = 1; i < NUMCLASSES; i++)
 		if (count[i] > max)
 		{
 			max = count[i];
