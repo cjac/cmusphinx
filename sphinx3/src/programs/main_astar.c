@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2004/12/06  11:31:47  arthchan2003
- * Fix brief comments for programs.
+ * Revision 1.10  2005/05/26  21:54:44  dhdfu
+ * Add support for class-based LM to astar and dag
  * 
+ * Revision 1.9  2004/12/06 11:31:47  arthchan2003
+ * Fix brief comments for programs.
+ *
  * Revision 1.8  2004/12/06 11:15:11  arthchan2003
  * Enable doxygen in the program directory.
  *
@@ -152,6 +155,12 @@ int32 s3astar_dag_load (char *file);
 int32 dag_destroy ( void );
 void nbest_init ( void );
 
+static lmset_t *lmset;		/* The lmset (for class-based LM).	*/
+static int32 n_lm;
+static int32 n_alloc_lm;
+
+static int32 s3astar_set_lm(const char *lmname);
+
 /*
  * Command line arguments.
  */
@@ -188,6 +197,22 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Language model input file (precompiled .DMP file)" },
+    { "-lmctlfn",
+      ARG_STRING,
+      NULL,
+      "Language model control file (for class-based language model)" },
+    { "-lmname",
+      ARG_STRING,
+      NULL,
+      "Name of language model in -lmctlfn to use for all utterances" },
+    { "-ctl_lm",
+      ARG_STRING,
+      NULL,
+      "List of language model to use for each utterance (one line per utt)" },
+    { "-lmdumpdir",
+      ARG_STRING,
+      NULL,
+      "The directory for dumping the DMP file. "},
     { "-lw",
       ARG_FLOAT32,
       "9.5",
@@ -309,6 +334,28 @@ static void models_init ( void )
     /* No check that alternative pronunciations for filler words are in filler range!! */
 
     /* LM */
+    if (cmd_ln_access("-lmctlfn"))
+    {
+	lmset = lm_read_ctl((char *)cmd_ln_access("-lmctlfn"),
+			    dict,
+			    *(float32 *)cmd_ln_access("-lw"),
+			    *(float32 *)cmd_ln_access("-ugwt"),
+			    *(float32 *)cmd_ln_access("-inspen"),
+			    (char *)cmd_ln_access("-lmdumpdir"),
+			    &n_lm,
+			    &n_alloc_lm,
+			    dict_size(dict));
+	if (! lmset)
+	    E_FATAL("lm_read_ctl(%s,%e,%e,%e) failed\n:",
+		    cmd_ln_access("-lmctlfn"),
+		    *(float32 *)cmd_ln_access("-lw"),
+		    *(float32 *)cmd_ln_access("-ugwt"),
+		    *(float32 *)cmd_ln_access("-inspen"));
+
+	if (cmd_ln_access("-lmname"))
+	    s3astar_set_lm(cmd_ln_access("-lmname"));
+    }
+    else
     {
 	char *lmfile;
 	
@@ -318,15 +365,31 @@ static void models_init ( void )
 	lm = lm_read (lmfile, *(float32 *)cmd_ln_access("-lw"),
 	    		      *(float32 *)cmd_ln_access("-inspen"),
 			      *(float32 *)cmd_ln_access("-ugwt"));
-
-	fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
-		      *(float32 *)cmd_ln_access("-silpen"),
-		      *(float32 *)cmd_ln_access("-noisepen"),
-		      *(float32 *)cmd_ln_access("-lw"),
-		      *(float32 *)cmd_ln_access("-inspen"));
+	dict2lmwid = lm->dict2lmwid
+	  = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
     }
 
-    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
+    fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
+			 *(float32 *)cmd_ln_access("-silpen"),
+			 *(float32 *)cmd_ln_access("-noisepen"),
+			 *(float32 *)cmd_ln_access("-lw"),
+			 *(float32 *)cmd_ln_access("-inspen"));
+}
+
+static int32 s3astar_set_lm(const char *lmname)
+{
+    int i;
+
+    for (i = 0; i < n_lm; ++i) {
+	if (!strcmp(lmname, lmset[i].name)) {
+	    lm = lmset[i].lm;
+	    if (lm->dict2lmwid == NULL)
+	      lm->dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
+	    dict2lmwid = lm->dict2lmwid;
+	    break;
+	}
+    }
+    return S3_SUCCESS;
 }
 
 
@@ -373,9 +436,9 @@ static void decode_utt (char *uttid, char *nbestdir)
 /* Process utterances in the control file (-ctl argument) */
 static void process_ctlfile ( void )
 {
-    FILE *ctlfp;
-    char *ctlfile, *nbestdir;
-    char line[1024], ctlspec[1024], uttid[1024];
+    FILE *ctlfp, *ctllmfp;
+    char *ctlfile, *ctllmfile, *nbestdir;
+    char line[1024], ctlspec[1024], uttid[1024], lmname[1024];
     int32 ctloffset, ctlcount;
     int32 i, k, sf, ef;
     
@@ -386,6 +449,14 @@ static void process_ctlfile ( void )
     
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", ctlfile);
+
+    ctllmfile = (char *) cmd_ln_access("-ctl_lm");
+    if (ctllmfile) {
+	if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
+	    E_FATAL("fopen(%s,r) failed\n", ctllmfile);
+    }
+    else
+	ctllmfp = NULL;
     
     ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
     if (! cmd_ln_access("-ctlcount"))
@@ -406,6 +477,9 @@ static void process_ctlfile ( void )
     while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
 	if (sscanf (line, "%s", ctlspec) > 0)
 	    --ctloffset;
+	if (fgets(line, sizeof(line), ctllmfp) == NULL)
+	    E_FATAL("File size mismatch between %s and %s\n",
+		    ctlfile, ctllmfile);
     }
     
     while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
@@ -431,6 +505,12 @@ static void process_ctlfile ( void )
 		strcpy (uttid, ctlspec+i+1);
 	}
 
+	if (ctllmfp) {
+	    fgets(line, sizeof(line), ctllmfp);
+	    if (sscanf(line, "%s", lmname) > 0)
+		s3astar_set_lm(lmname);
+	}
+
 	decode_utt (uttid, nbestdir);
 #if 0
 	linklist_stats ();
@@ -447,6 +527,8 @@ static void process_ctlfile ( void )
     }
 
     fclose (ctlfp);
+    if (ctllmfp)
+	fclose (ctllmfp);
 }
 
 int
@@ -461,7 +543,7 @@ main (int32 argc, char *argv[])
     
     /*
      * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
-     * underflow.  At the same time, log base = 1.0001 (1+epsilon) to allow log values
+     * underflow.  At the same time, log base = 1.0003 (1+epsilon) to allow log values
      * to be maintained in int32 variables without significant loss of precision.
      */
     {
