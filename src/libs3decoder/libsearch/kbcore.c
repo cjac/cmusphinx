@@ -264,10 +264,20 @@ void kbcore_free (kbcore_t *kbcore)
   dict_t *dict = kbcore_dict (kbcore);
   dict2pid_t *dict2pid = kbcore_dict2pid (kbcore);		/*  */
   /*dictword_t *word;   */
+  lmset_t *lmset = kbcore_lmset (kbcore);
   lm_t *lm = kbcore_lm (kbcore); /*  */
 
+  if (lmset) {
+    int i;
 
-  lm_free (lm);
+    for (i = 0; i < kbcore_nlm(kbcore); ++i) {
+      ckd_free(lmset[i].name);
+      lm_free(lmset[i].lm);
+    }
+    ckd_free(lmset);
+  }
+  else
+    lm_free (lm);
   
   /* Clean up the dictionary stuff*/
   dict_free (dict);
