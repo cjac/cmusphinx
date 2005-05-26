@@ -52,6 +52,9 @@
 #include <live_decode_API.h>
 #include <live_decode_args.h>
 
+#include "kb.h"
+#include "cmd_ln.h"
+
 #define SAMPLE_BUFFER_LENGTH	4096
 #define FILENAME_LENGTH		512
 
@@ -67,8 +70,10 @@ main(int _argc, char **_argv)
   char *cfgfn;
   char *rawdirfn;
   char rawfn[FILENAME_LENGTH];
+  char lmname[FILENAME_LENGTH];
   char fullrawfn[FILENAME_LENGTH];
   FILE *ctrlfd;
+  FILE *ctllmfd;
   FILE *rawfd;
   ptmr_t tm;
   int32 nskip, count;
@@ -100,18 +105,36 @@ main(int _argc, char **_argv)
 
   nskip = cmd_ln_int32("-ctloffset");
   count = cmd_ln_int32("-ctlcount");
+  if (cmd_ln_str("-ctl_lm")) {
+    if ((ctllmfd = fopen(cmd_ln_str("-ctl_lm"), "r")) == NULL)
+      E_FATAL("Cannot open LM control file %s.\n", cmd_ln_str("-ctl_lm"));
+  }
+  else
+    ctllmfd = NULL;
 
   if (nskip > 0) {
     E_INFO("Skipping %d entries at the beginning of %s\n", nskip, ctrlfn);
     
-    for (; nskip > 0; --nskip)
+    for (; nskip > 0; --nskip) {
       if (fscanf(ctrlfd, "%s", rawfn) == EOF)
 	E_FATAL("EOF while skipping initial lines\n");
+      if (ctllmfd && fscanf(ctllmfd, "%s", lmname) == EOF)
+	E_FATAL("EOF while skipping initial lines (in ctl_lm)\n");
+    }
   }
 
   while (fscanf(ctrlfd, "%s", rawfn) != EOF) {
     if (count-- == 0)
       break;
+
+    if (ctllmfd) {
+      if (fscanf(ctllmfd, "%s", lmname) == EOF)
+	E_FATAL("EOF while reading LM control file\n");
+      /* This is somewhat inelegant; the live-decode API should make
+         an allowance for dynamic LM switching - dhuggins@cs,
+         2005-04-19 */
+      kb_setlm(lmname, &decoder.kb);
+    }
 
     sprintf(fullrawfn, "%s/%s%s", rawdirfn, rawfn,decoder.rawext);
     if ((rawfd = fopen(fullrawfn, "rb")) == NULL) {
