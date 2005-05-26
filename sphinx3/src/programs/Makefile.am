@@ -46,6 +46,7 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 INCLUDES = -I$(top_srcdir) \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/libs3decoder \
+	-I$(top_srcdir)/src/libutil \
        -I$(top_srcdir)/src/libs3audio \
        -I$(top_builddir)/include
 
