@@ -422,6 +422,23 @@ void kb_init (kb_t *kb)
     if (cmd_ln_str("-mllr")) {
 	kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
     }
+
+    /* Setting for (class-based) multiple LM */
+    if (lmset) {
+      char *lmname;
+
+      if (cmd_ln_str("-lmname") == NULL && cmd_ln_str("-ctl_lm") == NULL)
+	lmname = lmset[0].name;
+      else
+	lmname = cmd_ln_str("-lmname");
+
+      /* Set the default LM */
+      if (lmname)
+	kb_setlm(lmname, kb);
+      /* If this failed, then give up. */
+      if (kbcore_lm(kbcore) == NULL)
+	E_FATAL("Failed to set default LM\n");
+    }
 }
 
 void kb_set_uttid(char *_uttid,kb_t* _kb)
@@ -450,14 +467,14 @@ void kb_setlm(char* lmname,kb_t* kb)
 
   kbc=kb->kbcore;
   lms=kbc->lmset;
-  kbc->lm=NULL;
-  for(j=0;j<kb->n_lextree;j++){
-    kb->ugtree[j]=NULL;
-  }
 
   if(lms!=NULL || cmd_ln_str("-lmctlfn")){
     for(i=0;i<kbc->n_lm;i++){
       if(!strcmp(lmname,lms[i].name)){
+	/* Don't switch LM if we are already using this one. */
+	if (kbc->lm == lms[i].lm)
+	  return;
+
 	/* Point the current lm to a particular lm */
 	kbc->lm=lms[i].lm;
 
@@ -469,15 +486,8 @@ void kb_setlm(char* lmname,kb_t* kb)
       }
     }
     if(kbc->lm==NULL){
-      E_ERROR("LM name %s cannot be found in the preloaded lm ctl file (spefied by -lmctlfile)! Fall back to use base LM model\n",lmname);
-      kbc->lm=lms[0].lm;
-      /* Also, don't forget to reset 'i', since if the code reaches
-       * this point, i has a value of 'n_lm + 1'
-       */
-      i = 0;
-      for(j=0;j<kb->n_lextree;j++){
-	kb->ugtree[j]=kb->ugtreeMulti[j];
-      }
+      E_ERROR("LM name %s cannot be found in the preloaded lm ctl file (spefied by -lmctlfile)! Fall back to previous LM model\n",lmname);
+      return;
     }
   }
   /*  Just to make sure we're not trying to point beyond the limit of
