@@ -39,16 +39,22 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2005/05/24  20:56:58  rkm
- * Added min/max-noise parameters to cont_fileseg
+ * Revision 1.12  2005/05/31  15:54:38  rkm
+ * *** empty log message ***
  * 
+ * Revision 1.11  2005/05/24 20:56:58  rkm
+ * Added min/max-noise parameters to cont_fileseg
+ *
  * Revision 1.10  2005/05/13 23:28:43  egouvea
  * Changed null device to system dependent one: NUL for windows, /dev/null for everything else
  * 
  * $Log$
- * Revision 1.11  2005/05/24  20:56:58  rkm
- * Added min/max-noise parameters to cont_fileseg
+ * Revision 1.12  2005/05/31  15:54:38  rkm
+ * *** empty log message ***
  * 
+ * Revision 1.11  2005/05/24 20:56:58  rkm
+ * Added min/max-noise parameters to cont_fileseg
+ *
  * Revision 1.9  2005/02/13 01:29:48  rkm
  * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
  *
@@ -393,6 +399,9 @@ main (int32 argc, char **argv)
     
     if (debug)
 	cont_ad_set_logfp(cont, stdout);
+
+    total_speech_samples = 0;
+    total_speech_sec = 0.0;
     
     /* Read first non-silence speech */
     while ((k = cont_ad_read (cont, buf, 4096)) == 0);
@@ -427,8 +436,6 @@ main (int32 argc, char **argv)
     ts = cont->read_ts;
     starttime = ts - k;
     uttlen = k;
-    total_speech_samples = 0;
-    total_speech_sec = 0.0;
     
     /* Copy data for this utterance (until silence segment of desired duration) */
     for (;;) {
