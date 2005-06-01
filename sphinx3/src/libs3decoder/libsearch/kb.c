@@ -424,10 +424,10 @@ void kb_init (kb_t *kb)
     }
 
     /* Setting for (class-based) multiple LM */
-    if (lmset) {
+    if (lmset && cmd_ln_str("-ctl_lm") == NULL) {
       char *lmname;
 
-      if (cmd_ln_str("-lmname") == NULL && cmd_ln_str("-ctl_lm") == NULL)
+      if (cmd_ln_str("-lmname") == NULL)
 	lmname = lmset[0].name;
       else
 	lmname = cmd_ln_str("-lmname");
