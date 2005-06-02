@@ -53,7 +53,7 @@
 #include <live_decode_args.h>
 
 #include "kb.h"
-#include "cmd_ln.h"
+#include "s3types.h"
 
 #define SAMPLE_BUFFER_LENGTH	4096
 #define FILENAME_LENGTH		512
