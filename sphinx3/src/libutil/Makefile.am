@@ -23,7 +23,7 @@ libutil_la_SOURCES = \
         str2words.c \
         unlimit.c
 
-noinst_HEADERS = \
+pkginclude_HEADERS = \
         bitvec.h \
         case.h \
         ckd_alloc.h \

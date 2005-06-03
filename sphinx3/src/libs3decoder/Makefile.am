@@ -50,7 +50,7 @@ libs3decoder_la_SOURCES = \
         wid.c
 
 
-noinst_HEADERS = \
+pkginclude_HEADERS = \
         agc.h \
 	approx_cont_mgau.h \
         ascr.h \

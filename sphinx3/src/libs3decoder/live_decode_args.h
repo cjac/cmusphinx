@@ -61,7 +61,7 @@ he library.
 #ifndef __ARGS_H
 #define __ARGS_H
 
-#include <libutil/libutil.h>
+#include "libutil.h"
 
 /** \file live_decode_args.h
     \brief The argument file for livedecode and livepretend.
