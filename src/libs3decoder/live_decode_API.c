@@ -100,6 +100,8 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 
 #include "live_decode_API.h"
 #include "live_decode_args.h"
+#include "kb.h"
+#include "fe.h"
 #include "utt.h"
 #include "bio.h"
 #include <time.h>

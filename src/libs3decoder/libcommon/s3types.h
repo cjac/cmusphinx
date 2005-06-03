@@ -61,8 +61,8 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
-#include <libutil/libutil.h>
 #include <float.h>
+#include "libutil.h"
 
 /** \file s3types.h
  * \brief Size definition of semantically units. Common for both s3 and s3.X decoder. 
