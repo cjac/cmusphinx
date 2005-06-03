@@ -50,7 +50,7 @@
 #include "corpus.h"
 #include "utt.h"
 #include "logs3.h"
-#include <libutil/io.h>
+#include <pio.h>
 #include "gmm_compute.h"
 #define MAX_PREV_FRAMES 20
 

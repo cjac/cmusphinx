@@ -34,7 +34,7 @@
  *
  */
 /*
- * io.c -- Packaged I/O routines.
+ * pio.c -- Packaged I/O routines.
  *
  * **********************************************
  * CMU ARPA Speech Project
@@ -64,7 +64,7 @@
 #endif
 #include <assert.h>
 
-#include "io.h"
+#include "pio.h"
 #include "err.h"
 
 
