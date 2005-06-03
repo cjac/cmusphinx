@@ -84,7 +84,7 @@
 #include "glist.h"
 #include "hash.h"
 #include "heap.h"
-#include "io.h"
+#include "pio.h"
 #include "linklist.h"
 #include "profile.h"
 #include "str2words.h"

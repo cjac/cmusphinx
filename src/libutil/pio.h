@@ -34,7 +34,7 @@
  *
  */
 /*
- * io.h -- Packaged I/O routines.
+ * pio.h -- Packaged I/O routines.
  *
  * **********************************************
  * CMU ARPA Speech Project
@@ -56,15 +56,15 @@
  */
 
 
-#ifndef _LIBUTIL_IO_H_
-#define _LIBUTIL_IO_H_
+#ifndef _LIBUTIL_PIO_H_
+#define _LIBUTIL_PIO_H_
 
 #include <stdio.h>
 #include <sys/stat.h>
 #include "prim_type.h"
 
-/** \file io.h
- * \brief file IO related operations.  
+/** \file pio.h
+ * \brief packaged file IO related operations.  
  *
  * Custom fopen with error checking is implemented. fopen_comp can
  * open a file with .z, .Z, .gz or .GZ extension

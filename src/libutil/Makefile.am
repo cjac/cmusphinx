@@ -15,7 +15,7 @@ libutil_la_SOURCES = \
         glist.c \
         hash.c \
         heap.c \
-        io.c \
+        pio.c \
 	info.c \
 	linklist.c \
 	nextword.c \
@@ -34,7 +34,7 @@ pkginclude_HEADERS = \
         glist.h \
         hash.h \
         heap.h \
-        io.h \
+        pio.h \
 	info.h \
 	linklist.h \
         libutil.h \
