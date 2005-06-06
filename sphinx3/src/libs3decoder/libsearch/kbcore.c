@@ -160,7 +160,7 @@ kbcore_t *kbcore_init (float64 logbase,
 
     if (lmctlfile) {
       E_INFO("Reading LM ctl file\n");
-      kb->lmset=lm_read_ctl(lmctlfile,kb->dict,langwt,uw,inspen,lmdumpdir,&(kb->n_lm),&(kb->n_alloclm),dict_size(kb->dict));
+      kb->lmset=lm_read_ctl(lmctlfile,kb->dict,langwt,inspen,uw,lmdumpdir,&(kb->n_lm),&(kb->n_alloclm),dict_size(kb->dict));
 
       E_INFO("kb->lmset[0].name %s\n",kb->lmset[0].name);
       if(kb->lmset==NULL)
