@@ -165,6 +165,7 @@ src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
 src/tests/regression/test-mllr.sh
 src/tests/regression/test-mllr-lp.sh
+src/tests/regression/test-mllr-anytopo.sh
 src/tests/regression/test-wave2feat.sh
 src/tests/regression/test-cepview.sh
 src/tests/unit_tests/Makefile
@@ -183,14 +184,4 @@ model/lm/an4/args.an4.test.mllr
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
-chmod +x src/tests/regression/test-livepretend.sh
-chmod +x src/tests/regression/test-align.sh
-chmod +x src/tests/regression/test-allphone.sh
-chmod +x src/tests/regression/test-astar.sh
-chmod +x src/tests/regression/test-dag.sh
-chmod +x src/tests/regression/test-decode_anytopo.sh
-chmod +x src/tests/regression/test-decode.sh
-chmod +x src/tests/regression/test-ep.sh
-chmod +x src/tests/regression/test-gausubvq.sh
-chmod +x src/tests/regression/test-wave2feat.sh
-chmod +x src/tests/regression/test-cepview.sh
+chmod +x src/tests/regression/*.sh

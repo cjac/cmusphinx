@@ -59,8 +59,8 @@ doxygen:
 check: test-full
 	@:
 
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview test-decode_anytopo test-mllr test-mllr-lp
-test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview test-mllr test-mllr-lp
+test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview test-decode_anytopo test-mllr test-mllr-lp test-mllr-anytopo
+test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview test-mllr test-mllr-lp test-mllr-anytopo
 
 
 test-decode_anytopo \
@@ -73,6 +73,7 @@ test-cepview \
 test-dag \
 test-livepretend \
 test-mllr-lp \
+test-mllr-anytopo \
 test-gausubvq \
 test-ep \
 test-wave2feat:
