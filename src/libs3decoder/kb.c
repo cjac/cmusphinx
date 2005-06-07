@@ -555,7 +555,7 @@ void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
 		   &ncb, &nmllr);
       if (nmllr != kb->mllr_nclass)
 	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		ncb, kbcore_mdef(kb->kbcore)->n_sen);
+		ncb, kb->mllr_nclass);
       if (ncb != kbcore_mdef(kb->kbcore)->n_sen)
 	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
 		ncb, kbcore_mdef(kb->kbcore)->n_sen);
@@ -565,6 +565,7 @@ void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
 
     /* Transform all the mean vectors */
     mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->regA,kb->regB,kb->mllr_nclass,cb2mllr);
+    ckd_free(cb2mllr);
 
 #if MLLR_DEBUG
     /*#if 1*/
