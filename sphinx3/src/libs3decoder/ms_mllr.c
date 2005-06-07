@@ -30,14 +30,15 @@
 
 
 int32 ms_mllr_read_regmat (const char *regmatfile,
-			float32 ****A,
-			float32 ***B,
-			int32 *streamlen,
-			int32 n_stream)
+			   float32 *****A,
+			   float32 ****B,
+			   int32 *streamlen,
+			   int32 n_stream,
+			   int32 *nclass)
 {
-    int32 i, j, k, n;
+    int32 i, j, k, m, n, lnclass;
     FILE  *fp;
-    float32 ***lA, **lB;
+    float32 ****lA, ***lB;
 
     if ((fp = fopen(regmatfile, "r")) == NULL) {
 	E_ERROR ("fopen(%s,r) failed\n", regmatfile);
@@ -45,38 +46,42 @@ int32 ms_mllr_read_regmat (const char *regmatfile,
     } else
 	E_INFO ("Reading MLLR transformation file %s\n", regmatfile);
     
-    lA = (float32 ***) ckd_calloc (n_stream, sizeof (float32 **));
-    lB = (float32 **) ckd_calloc (n_stream, sizeof (float32 *));
-    for (i = 0; i < n_stream; ++i) {
-	lA[i] = (float32 **) ckd_calloc_2d (streamlen[i], streamlen[i], sizeof(float32));
-	lB[i] = (float32 *) ckd_calloc (streamlen[i], sizeof(float32));
-    }
-
-    /* Read #MLLR-classes; must be 1 for now (rkm@cs.cmu.edu, 12-Dec-1996) */
-    if ((fscanf (fp, "%d", &n) != 1) || (n != 1))
-	goto readerror;
+    if ((fscanf (fp, "%d", &n) != 1) || (n < 1))
+	return -1;
+    lnclass = n;
     
     if ((fscanf (fp, "%d", &n) != 1) || (n != n_stream))
-	goto readerror;
+	return -1;
     
+    lA = (float32 ****) ckd_calloc (n_stream, sizeof (float32 **));
+    lB = (float32 ***) ckd_calloc (n_stream, sizeof (float32 *));
+
+    for (i = 0; i < n_stream; ++i) {
+	lA[i] = (float32 ***) ckd_calloc_3d(lnclass, streamlen[i], streamlen[i], sizeof(float32));
+	lB[i] = (float32 **) ckd_calloc_2d(lnclass, streamlen[i], sizeof(float32));
+    }
+	
     for (i = 0; i < n_stream; ++i) {
 	if ((fscanf(fp, "%d", &n) != 1) || (streamlen[i] != n))
 	    goto readerror;
-	
-	for (j = 0; j < streamlen[i]; j++) {
-	    for (k = 0; k < streamlen[i]; ++k) {
-		if (fscanf(fp, "%f ", &lA[i][j][k]) != 1)
+
+	for (m = 0; m < lnclass; ++m) {
+	    for (j = 0; j < streamlen[i]; ++j) {
+		for (k = 0; k < streamlen[i]; ++k) {
+		    if (fscanf(fp, "%f ", &lA[i][m][j][k]) != 1)
+			goto readerror;
+		}
+	    }
+	    for (j = 0; j < streamlen[i]; ++j) {
+		if (fscanf(fp, "%f ", &lB[i][m][j]) != 1)
 		    goto readerror;
 	    }
-	}
-	for (j = 0; j < streamlen[i]; j++) {
-	    if (fscanf(fp, "%f ", &lB[i][j]) != 1)
-		goto readerror;
 	}
     }
 
     *A = lA;
     *B = lB;
+    *nclass = lnclass;
 
     fclose(fp);
 
@@ -84,9 +89,9 @@ int32 ms_mllr_read_regmat (const char *regmatfile,
 
 readerror:
     E_ERROR("Error reading MLLR file %s\n", regmatfile);
-    for (i = 0; i < n_stream; i++) {
-	ckd_free_2d ((void **)lA[i]);
-	ckd_free (lB[i]);
+    for (i = 0; i < n_stream; ++i) {
+	ckd_free_3d ((void ***)lA[i]);
+	ckd_free_2d ((void **)lB[i]);
     }
     ckd_free (lA);
     ckd_free (lB);
@@ -99,16 +104,15 @@ readerror:
 }
 
 
-int32 ms_mllr_free_regmat (float32 ***A,
-			float32 **B,
-			int32 *streamlen,
+int32 ms_mllr_free_regmat (float32 ****A,
+			float32 ***B,
 			int32 n_stream)
 {
     int32 i;
     
     for (i = 0; i < n_stream; i++) {
-	ckd_free_2d ((void **) A[i]);
-	ckd_free (B[i]);
+	ckd_free_3d ((void ***) A[i]);
+	ckd_free_2d ((void **)B[i]);
     }
 
     ckd_free (A);
@@ -119,11 +123,12 @@ int32 ms_mllr_free_regmat (float32 ***A,
 
 
 int32 ms_mllr_norm_mgau (float32 ***mean,
-		      int32 n_density,
-		      float32 ***A,
-		      float32 **B,
-		      int32 *streamlen,
-		      int32 n_stream)
+			 int32 n_density,
+			 float32 ****A,
+			 float32 ***B,
+			 int32 *streamlen,
+			 int32 n_stream,
+			 int32 class)
 {
     int32 s, d, l, m;
     float64 *temp;
@@ -137,9 +142,9 @@ int32 ms_mllr_norm_mgau (float32 ***mean,
 	    for (l = 0; l < streamlen[s]; l++) {
 		temp[l] = 0.0;
 		for (m = 0; m < streamlen[s]; m++) {
-		    temp[l] += A[s][l][m] * mean[s][d][m];
+		    temp[l] += A[s][class][l][m] * mean[s][d][m];
 		}
-		temp[l] += B[s][l];
+		temp[l] += B[s][class][l];
 	    }
 
 	    for (l = 0; l < streamlen[s]; l++) {
