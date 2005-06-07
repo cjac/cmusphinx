@@ -40,13 +40,11 @@
  *   Dummy routine to convert from suitcase to sane varibles
  ***************************************************************************/
 
+static void block_actual_cdcn_norm();
 void block_cdcn_norm (float z[][NUM_COEFF+1],  /* The input cepstrum */
 		      int num_frames,          /* Number of frames in utterance */
 		      CDCN_type *cdcn_variables)
 {
-    /* Multidimensional arrays in C suck, so we have to
-       forward-declare-hack this. */
-    static void block_actual_cdcn_norm();
     float *variance, *prob, *tilt, *noise, *codebook, *corrbook;
     int    num_codes;
 

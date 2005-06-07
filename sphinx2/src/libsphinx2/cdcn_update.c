@@ -39,73 +39,6 @@
 
 /*************************************************************************
  *
- * cdcn_update finds the vectors x, noise
- * and tilt that maximize the a posteriori probability.
- * only one iteration is performed.  this routine can be recalled to 
- * perform multiple iterations if cycles permit.
- * Coded by Alex Acero (acero@s),  November 1989 
- * Modified by Uday Jain, June 95
- *
- *************************************************************************/
-
-float
-cdcn_update (float *z,		/* The observed cepstrum vectors */
-	     int num_frames,	/* Number of frames in utterance */
-	     CDCN_type *cdcn_variables)
-{	
-    float       distortion;
-    float	*noise, *tilt, *codebook, *prob, *variance, *corrbook;
-    int 	num_codes;
-    /* Multidimensional arrays, gar gar gar */
-    static float initialize (float *, int, float *, float *, float,
-			     float *, float *, float *, int);
-    static void correction(float *, float *, float *, float *, int);
-    static float max_q (float *, float *, float *, float *, float *,
-			float *, int, float *, int);
-
-    /*
-     * If error, dont bother
-     */
-    if (!cdcn_variables->run_cdcn)
-	return((float)-1e+30);
-        
-    /*
-     * Open suitcase
-     */
-
-    noise	= cdcn_variables->noise;
-    tilt	= cdcn_variables->tilt;
-    codebook 	= cdcn_variables->means;
-    prob	= cdcn_variables->probs;
-    variance	= cdcn_variables->variance;
-    corrbook	= cdcn_variables->corrbook;
-    num_codes	= cdcn_variables->num_codes;
-
-    /*
-     * Initialize if this is the first time the routine is being called
-     */
-    if (cdcn_variables->firstcall)
-    {
-        /* Get initial estimates for noise, tilt, x, y */
-        initialize (z,num_frames,noise,tilt,SPEECH_THRESHOLD,codebook,
-						     prob,variance,num_codes);
-        correction (tilt, noise, codebook, corrbook, num_codes);
-        cdcn_variables->firstcall = FALSE;
-    }
-
-    /*
-     * Compute the correction terms for the means 
-     * Perform one iteration of the estimation of n and q
-     */ 
-    distortion = max_q (variance, prob, noise, tilt, codebook, corrbook, 
-			num_codes, z, num_frames);
-
-    correction (tilt, noise, codebook, corrbook, num_codes);  
-    return (distortion);
-}
-
-/*************************************************************************
- *
  * initialize finds an estimate of the noise vector as the average of all
  * frames whose power is below a threshold. It also computes the average
  * log-energy of the frames whose log-energy is above that threshold
@@ -365,3 +298,63 @@ float max_q (float *variance,   /* Speech cepstral variances of the modes */
     return (loglikelihood);
 }
 
+/*************************************************************************
+ *
+ * cdcn_update finds the vectors x, noise
+ * and tilt that maximize the a posteriori probability.
+ * only one iteration is performed.  this routine can be recalled to 
+ * perform multiple iterations if cycles permit.
+ * Coded by Alex Acero (acero@s),  November 1989 
+ * Modified by Uday Jain, June 95
+ *
+ *************************************************************************/
+
+float
+cdcn_update (float *z,		/* The observed cepstrum vectors */
+	     int num_frames,	/* Number of frames in utterance */
+	     CDCN_type *cdcn_variables)
+{	
+    float       distortion;
+    float	*noise, *tilt, *codebook, *prob, *variance, *corrbook;
+    int 	num_codes;
+
+    /*
+     * If error, dont bother
+     */
+    if (!cdcn_variables->run_cdcn)
+	return((float)-1e+30);
+        
+    /*
+     * Open suitcase
+     */
+
+    noise	= cdcn_variables->noise;
+    tilt	= cdcn_variables->tilt;
+    codebook 	= cdcn_variables->means;
+    prob	= cdcn_variables->probs;
+    variance	= cdcn_variables->variance;
+    corrbook	= cdcn_variables->corrbook;
+    num_codes	= cdcn_variables->num_codes;
+
+    /*
+     * Initialize if this is the first time the routine is being called
+     */
+    if (cdcn_variables->firstcall)
+    {
+        /* Get initial estimates for noise, tilt, x, y */
+        initialize (z,num_frames,noise,tilt,SPEECH_THRESHOLD,codebook,
+						     prob,variance,num_codes);
+        correction (tilt, noise, codebook, corrbook, num_codes);
+        cdcn_variables->firstcall = FALSE;
+    }
+
+    /*
+     * Compute the correction terms for the means 
+     * Perform one iteration of the estimation of n and q
+     */ 
+    distortion = max_q (variance, prob, noise, tilt, codebook, corrbook, 
+			num_codes, z, num_frames);
+
+    correction (tilt, noise, codebook, corrbook, num_codes);  
+    return (distortion);
+}

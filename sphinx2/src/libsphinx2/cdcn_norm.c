@@ -40,11 +40,10 @@
  *   Dummy routine to convert from suitcase to sane varibles
  ***************************************************************************/
 
+static void actual_cdcn_norm();
 void cdcn_norm (float z[NUM_COEFF+1], /* The input cepstrum */
 		CDCN_type *cdcn_variables)
 {
-    /* Multidimensional arrays, yuck. */
-    static void actual_cdcn_norm();
     float *variance, *prob, *tilt, *noise, *codebook, *corrbook;
     int num_codes;
 

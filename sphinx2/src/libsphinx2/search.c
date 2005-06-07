@@ -40,9 +40,14 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.16  2005/05/24  20:55:24  rkm
- * Added -fsgbfs flag
+ * Revision 1.17  2005/06/07  02:36:02  dhdfu
+ * Forward-declaring functions inside functions apparently no longer
+ * works in recent GCC versions (this code breaks on 3.3, 4.0).  No good
+ * reason for it anyway...
  * 
+ * Revision 1.16  2005/05/24 20:55:24  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.15  2005/01/20 15:11:47  rkm
  * Cleaned up pscr-related functions
  *
@@ -2465,6 +2470,7 @@ search_one_ply_fwd (void)
     lm_next_frame ();
 }
 
+static void compute_phone_perplexity( void );
 void
 search_finish_fwd (void)
 {
@@ -2474,7 +2480,6 @@ search_finish_fwd (void)
     CHAN_T *hmm, /* *thmm,*/ **acl;
     /* int32 bp, bestbp, bestscore; */
     /* int32 l_scr; */
-    static void compute_phone_perplexity( void );
     
     if ((CurrentFrame > 0) && (topsen_window > 1)) {
 	/* Wind up remaining frames */
