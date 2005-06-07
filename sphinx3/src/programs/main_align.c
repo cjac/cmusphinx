@@ -105,6 +105,7 @@
 #include "ms_gauden.h"
 #include "ms_senone.h"
 #include "interp.h"
+#include "cb2mllr_io.h"
 
 /** \file main_align.c
    \brief Main driver routine for time alignment.
@@ -130,6 +131,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
+    { "-mllr",
+      ARG_STRING,
+      NULL,
+      "MLLR transfomation matrix to be applied to mixture gaussian means"},
+    { "-cb2mllr",
+      ARG_STRING,
+      ".1cls.",
+      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
     { "-senmgau",
       ARG_STRING,
       ".cont.",
@@ -908,6 +917,66 @@ static int32 id_cmp (char *str1, char *str2)
     }
 }
 
+static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
+{
+    float32 ****A, ***B;
+    int32 *cb2mllr;
+    int32 gid, sid, nclass;
+    uint8 *mgau_xform;
+		
+    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
+		
+    if (ms_mllr_read_regmat (mllrfile, &A, &B,
+			     fcb->stream_len, feat_n_stream(fcb),
+			     &nclass) < 0)
+	E_FATAL("ms_mllr_read_regmat failed\n");
+
+    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
+	int32 ncb, nmllr;
+
+	cb2mllr_read(cb2mllrfile,
+		     &cb2mllr,
+		     &ncb, &nmllr);
+	if (nmllr != nclass)
+	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+		    ncb, nclass);
+	if (ncb != sen->n_sen)
+	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+		    ncb, sen->n_sen);
+    }
+    else
+	cb2mllr = NULL;
+
+		
+    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
+
+    /* Transform each non-CI mixture Gaussian */
+    for (sid = 0; sid < sen->n_sen; sid++) {
+	int32 class = 0;
+
+	if (cb2mllr)
+	    class = cb2mllr[sid];
+	if (class == -1)
+	    continue;
+
+	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
+	    gid = sen->mgau[sid];
+	    if (! mgau_xform[gid]) {
+		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
+				   fcb->stream_len, feat_n_stream(fcb),
+				   class);
+		mgau_xform[gid] = 1;
+	    }
+	}
+    }
+
+    ckd_free (mgau_xform);
+		
+    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
+    ckd_free(cb2mllr);
+
+    return S3_SUCCESS;
+}
 
 /* Process utterances in the control file (ctl argument) */
 static void process_ctlfile ( void )
@@ -916,7 +985,7 @@ static void process_ctlfile ( void )
     char *ctlfile, *cepdir, *cepext, *sentfile, *outsentfile, *mllrctlfile;
     char line[1024], ctlspec[1024];
     int32 ctloffset, ctlcount, sf, ef, nfr;
-    char mllrfile[4096], prevmllr[4096], sent[16384];
+    char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096], sent[16384];
     char uttid[1024];
     int32 i, k;
     
@@ -931,6 +1000,11 @@ static void process_ctlfile ( void )
 	mllrctlfp = NULL;
     prevmllr[0] = '\0';
     
+    if (cmd_ln_access("-mllr") != NULL) {
+	model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
+	strcpy(prevmllr, cmd_ln_access("-mllr"));
+    }
+
     sentfile = (char *) cmd_ln_access("-insent");
     if ((sentfp = fopen (sentfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", sentfile);
@@ -973,7 +1047,9 @@ static void process_ctlfile ( void )
 		break;
 	    }
 	    if (mllrctlfp) {
-		if (fscanf (mllrctlfp, "%s", mllrfile) != 1)
+		int32 tmp1, tmp2;
+		if (fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
+			    &tmp1, &tmp2, cb2mllrfile) <= 0)
 		    E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
 	    }
 	    --ctloffset;
@@ -1003,38 +1079,19 @@ static void process_ctlfile ( void )
 	}
 
 	if (mllrctlfp) {
-	    if (fscanf (mllrctlfp, "%s", mllrfile) != 1)
+	    int32 tmp1, tmp2;
+
+	    if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
+			     &tmp1, &tmp2, cb2mllrfile)) <= 0)
 		E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
+	    if (!(k == 1) || (k == 4))
+		E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
+			 mllrctlfile);
+	    if (k == 1)
+		strcpy(cb2mllrfile, ".1cls.");
 	    
 	    if (strcmp (prevmllr, mllrfile) != 0) {
-		float32 ***A, **B;
-		int32 gid, sid;
-		uint8 *mgau_xform;
-		
-		gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
-		
-		if (ms_mllr_read_regmat (mllrfile, &A, &B,
-				      fcb->stream_len, feat_n_stream(fcb)) < 0)
-		    E_FATAL("ms_mllr_read_regmat failed\n");
-		
-		mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
-
-		/* Transform each non-CI mixture Gaussian */
-		for (sid = 0; sid < sen->n_sen; sid++) {
-		    if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-			gid = sen->mgau[sid];
-			if (! mgau_xform[gid]) {
-			    ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-					    fcb->stream_len, feat_n_stream(fcb));
-			    mgau_xform[gid] = 1;
-			}
-		    }
-		}
-
-		ckd_free (mgau_xform);
-		
-		ms_mllr_free_regmat (A, B, fcb->stream_len, feat_n_stream(fcb));
-
+		model_set_mllr(mllrfile, cb2mllrfile);
 		strcpy (prevmllr, mllrfile);
 	    }
 	}
