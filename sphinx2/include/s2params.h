@@ -37,9 +37,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.7  2005/06/07  02:34:52  dhdfu
+ * Make these extern, as they ought to be (linking fails on Mac OS X otherwise)
  * 
+ * Revision 1.6  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 28-Mar-00	Alan W Black (awb@cs.cmu.edu) Created.
  *              (trying to collect together some random globals
@@ -51,14 +54,14 @@
 #define _S2PARAMS_H_
 
 /* For saving phone labels in alignment */
-char const *phonelabdirname;
-char const *phonelabextname;
-char const *phonelabtype;
+extern char const *phonelabdirname;
+extern char const *phonelabextname;
+extern char const *phonelabtype;
 
 /* For saving word labels in alignment */
-char const  *wordlabdirname;
-char const *wordlabextname;
-char const *wordlabtype;
+extern char const  *wordlabdirname;
+extern char const *wordlabextname;
+extern char const *wordlabtype;
 
 #endif
 
