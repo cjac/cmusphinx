@@ -72,6 +72,7 @@ typedef struct {
     int32 sf, ef;	/* Start/end frames, inclusive, for this segment */
     int32 ascr;		/* Segment acoustic score */
     int32 lscr;		/* LM score for transition to this segment (if applicable) */
+    int32 senscale;	/* Segment acoustic score scaling factor */
     int32 type;		/* Uninterpreted data; see vithist_entry_t in vithist.h */
 } hyp_t;
 

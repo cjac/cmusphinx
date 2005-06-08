@@ -443,6 +443,10 @@ arg_t arg_def[] = {
       ARG_INT32,
       "1",
       "dump parital hypothesis on the screen"},
-    { NULL, ARG_INT32, NULL, NULL }
+    { "-backtrace",
+      ARG_INT32,
+      "1",
+      "Whether detailed backtrace information (word segmentation/scores) shown in log" },
+     { NULL, ARG_INT32, NULL, NULL }
 };
 

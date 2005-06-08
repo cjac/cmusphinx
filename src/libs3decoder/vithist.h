@@ -97,6 +97,7 @@ typedef struct {
     int32 ascr;			/** Acoustic score for this node */
     int32 lscr;			/** LM score for this node, given its Viterbi history */
     int32 score;		/** Total path score ending here */
+    int32 senscale;		/** Scaling factor attached to score */
     int32 pred;			/** Immediate predecessor */
     int32 type;			/** >=0: regular n-gram word; <0: filler word entry */
     int32 valid;		/** Whether it should be a valid history for LM rescoring */
@@ -225,6 +226,7 @@ void vithist_rescore (vithist_t *vh,
 		      s3wid_t wid,
 		      int32 ef,		/** In: End frame for this word instance */
 		      int32 score,	/** In: Does not include LM score for this entry */
+		      int32 senscale,	/** In: Acoustic scaling factor for this entry */
 		      int32 pred,	/** In: Tentative predecessor */
 		      int32 type);
 
