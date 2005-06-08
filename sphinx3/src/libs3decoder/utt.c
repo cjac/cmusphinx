@@ -87,26 +87,41 @@ static int32 NO_UFLOW_ADD(int32 a, int32 b)
   return c;
 }
 
+/*
+ * Write exact hypothesis.  Format
+ *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
+ * where:
+ *   scl = acoustic score scaling for entire utterance
+ *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
+ *   ascr = scaled acoustic score for entire utterance
+ *   lscr = LM score (without lw or wip) for entire utterance
+ *   sf = start frame for word
+ *   wascr = scaled acoustic score for word
+ *   wlscr = LM score (without lw or wip) for word
+ *   ef = end frame for utterance.
+ */
 void matchseg_write (FILE *fp, kb_t *kb, glist_t hyp, char *hdr)
 {
     gnode_t *gn;
     hyp_t *h;
-    int32 ascr, lscr;
+    int32 ascr, lscr, scl;
     dict_t *dict;
     
     ascr = 0;
     lscr = 0;
+    scl = 0;
     
     for (gn = hyp; gn; gn = gnode_next(gn)) {
 	h = (hyp_t *) gnode_ptr (gn);
 	ascr += h->ascr;
 	lscr += h->lscr;
+	scl += h->senscale;
     }
     
     dict = kbcore_dict(kb->kbcore);
     
-    fprintf (fp, "%s%s S 0 T %d A %d L %d", (hdr ? hdr : ""), kb->uttid,
-	     ascr+lscr, ascr, lscr);
+    fprintf (fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), kb->uttid,
+	     scl, ascr+lscr, ascr, lscr);
     
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
 	h = (hyp_t *) gnode_ptr (gn);
@@ -218,24 +233,26 @@ void utt_end (kb_t *kb)
       hyp = vithist_backtrace (kb->vithist, id);
       
       /* Detailed backtrace */
-      fprintf (fp, "\nBacktrace(%s)\n", kb->uttid);
-      fprintf (fp, "%6s %5s %5s %11s %8s %4s\n",
-	       "LatID", "SFrm", "EFrm", "AScr", "LScr", "Type");
+      if (cmd_ln_int32("-backtrace")) {
+	fprintf (fp, "\nBacktrace(%s)\n", kb->uttid);
+	fprintf (fp, "%6s %5s %5s %11s %8s %4s\n",
+		 "LatID", "SFrm", "EFrm", "AScr", "LScr", "Type");
       
-      ascr = 0;
-      lscr = 0;
+	ascr = 0;
+	lscr = 0;
       
-      for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
-	fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
-		 h->vhid, h->sf, h->ef, h->ascr, h->lscr, h->type,
-		 dict_wordstr(dict, h->id));
+	for (gn = hyp; gn; gn = gnode_next(gn)) {
+	  h = (hyp_t *) gnode_ptr (gn);
+	  fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
+		   h->vhid, h->sf, h->ef, h->ascr + h->senscale, h->lscr, h->type,
+		   dict_wordstr(dict, h->id));
 	
-	ascr += h->ascr;
-	lscr += h->lscr;
-      }
+	  ascr += h->ascr + h->senscale;
+	  lscr += h->lscr;
+	}
 
-      fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,kb->nfr,ascr,lscr);
+	fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,kb->nfr,ascr,lscr);
+      }
 
       /* Match */
       match_write(fp, kb, hyp, "\nFWDVIT: ");
@@ -663,6 +680,7 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
   
 
   for (t = 0; t < block_nfeatvec; t++,frmno++) {
+    int32 senscale;
 
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(kb->tm_sen));
@@ -691,15 +709,15 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
     /* Always use the first buffer in the cache*/
     /* Why I didn't make a pointer of sen and sen_active to fast_gmm_t? 
        Because pointer is confusing. */
-    approx_cont_mgau_frame_eval(kb->kbcore,
-				kb->fastgmm,
-				block_feat[t][0],
-				t,
-				kb->sen_active,
-				kb->rec_sen_active,
-				kb->ascr->sen,
-				kb->cache_ci_senscr[kb->pl_win_strt],
-				&(kb->tm_ovrhd));
+    senscale = approx_cont_mgau_frame_eval(kb->kbcore,
+					   kb->fastgmm,
+					   block_feat[t][0],
+					   t,
+					   kb->sen_active,
+					   kb->rec_sen_active,
+					   kb->ascr->sen,
+					   kb->cache_ci_senscr[kb->pl_win_strt],
+					   &(kb->tm_ovrhd));
 
     kb->utt_sen_eval += mgau_frm_sen_eval(mgau);
     kb->utt_gau_eval += mgau_frm_gau_eval(mgau);
@@ -796,7 +814,8 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
       for (i = 0; i < (kb->n_lextree <<1); i++) {
 	lextree = (i < kb->n_lextree) ? kb->ugtree[i] : kb->fillertree[i - kb->n_lextree];
 	lextree_hmm_propagate(lextree, kbcore, kb->vithist, frmno,
-			      th, pth, wth,kb->phn_heur_list,kb->pl_beam,pheurtype);
+			      th, pth, wth, senscale,
+			      kb->phn_heur_list,kb->pl_beam,pheurtype);
       }
     }else{
       for (i = 0; i < (kb->n_lextree <<1); i++) {
@@ -804,10 +823,12 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
 	
 	if ((frmno % ptranskip) != 0)
 	  lextree_hmm_propagate(lextree, kbcore, kb->vithist, frmno,
-				th, pth, wth,kb->phn_heur_list,kb->pl_beam,pheurtype);
+				th, pth, wth, senscale,
+				kb->phn_heur_list,kb->pl_beam,pheurtype);
 	else
 	  lextree_hmm_propagate(lextree, kbcore, kb->vithist, frmno,
-				th, wth, wth,kb->phn_heur_list,kb->pl_beam,pheurtype);
+				th, wth, wth, senscale,
+				kb->phn_heur_list,kb->pl_beam,pheurtype);
       }
     }
       

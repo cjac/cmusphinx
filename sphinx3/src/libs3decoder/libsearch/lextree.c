@@ -710,7 +710,8 @@ void lextree_hmm_histbin (lextree_t *lextree, int32 bestscr, int32 *bin, int32 n
 
 
 void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
-			    int32 cf, int32 th, int32 pth, int32 wth,int32 *phn_heur_list,int32 heur_beam,
+			    int32 cf, int32 th, int32 pth, int32 wth, int32 senscale,
+			    int32 *phn_heur_list,int32 heur_beam,
 			    int32 heur_type)
 {
     mdef_t *mdef;
@@ -807,8 +808,8 @@ void lextree_hmm_propagate (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
 	      E_ERROR("Hmm->out.history equals to -1 with score %d and active idx %d, lextree->type\n",hmm->out.score,i,lextree->type);
 
 	    /* Rescore the LM prob for this word wrt all possible predecessors */
-	    vithist_rescore (vh, kbc, ln->wid, cf,
-			     hmm->out.score - ln->prob, hmm->out.history, lextree->type);
+	    vithist_rescore (vh, kbc, ln->wid, cf, hmm->out.score - ln->prob, senscale,
+			     hmm->out.history, lextree->type);
 	}
     }
     

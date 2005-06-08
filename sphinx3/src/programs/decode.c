@@ -380,6 +380,10 @@ static arg_t arg[] = {
       ARG_STRING,
       NULL,
       "Log file (default stdout/stderr)" },
+    { "-backtrace",
+      ARG_INT32,
+      "1",
+      "Whether detailed backtrace information (word segmentation/scores) shown in log" },
     { NULL, ARG_INT32, NULL, NULL }
 };
 

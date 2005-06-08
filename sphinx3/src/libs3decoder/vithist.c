@@ -166,6 +166,7 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     ve->ascr = 0;
     ve->lscr = 0;
     ve->score = 0;
+    ve->senscale = 0;
     ve->pred = -1;
     ve->type = 0;
     ve->valid = 1;
@@ -274,7 +275,8 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve)
 
 
 void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
-		      s3wid_t wid, int32 ef, int32 score, int32 pred, int32 type)
+		      s3wid_t wid, int32 ef, int32 score,
+		      int32 senscale, int32 pred, int32 type)
 {
     vithist_entry_t *pve, tve;
     s3lmwid_t lwid;
@@ -295,6 +297,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.type = type;
     tve.valid = 1;
     tve.ascr = score - pve->score;
+    tve.senscale = senscale;
 
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;
@@ -548,7 +551,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	/* Add a dummy silwid covering the remainder of the utterance */
 	assert (vh->frame_start[vh->n_frm-1] == vh->frame_start[vh->n_frm]);
 	vh->n_frm -= 1;
-	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score, bestvh, -1);
+	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score, 0, bestvh, -1);
 	vh->n_frm += 1;
 	vh->frame_start[vh->n_frm] = vh->n_entry;
 	
@@ -564,6 +567,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     ve->ef = vh->n_frm;
     ve->ascr = 0;
     ve->lscr = bestscore - bestve->score;
+    ve->senscale = 0;
     ve->score = bestscore;
     ve->pred = bestvh;
     ve->type = 0;
@@ -781,6 +785,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	h->ef = ve->ef;
 	h->ascr = ve->ascr;
 	h->lscr = ve->lscr;
+	h->senscale = ve->senscale;
 	h->type = ve->type;
 	h->vhid = id;
 	
