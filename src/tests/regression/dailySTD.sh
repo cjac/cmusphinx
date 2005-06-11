@@ -31,12 +31,12 @@ cd $PBS_O_WORKDIR
 
 if ! make perf-quick > perf-quick.log 2>&1 ;
  then
-    ${MAILX} -s "Quick Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR"
+    ${MAILX} -s "Quick Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-quick.log
  fi
 
 if ! make perf-std > perf-std.log 2>&1 ;
  then
-    ${MAILX} -s "Standard Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR"
+    ${MAILX} -s "Standard Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-std.log 
  fi
 
 #Store the results. 
