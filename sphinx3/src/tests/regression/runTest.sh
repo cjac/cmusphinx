@@ -20,7 +20,7 @@ cd `hostname`
 unlimit 262144
 # Do the dance: configure, make etc
 ../configure
-make all test-full
+make all check
 # Copy the log files to a safe location that won't de destroyed by a clean
 mkdir log
 cp -p *.out log/
