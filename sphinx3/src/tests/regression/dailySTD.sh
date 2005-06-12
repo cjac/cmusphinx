@@ -1,6 +1,7 @@
 #!/bin/sh
 # Try to find an executable that can send mail
-export PATH=/usr/local/bin:/bin/:/usr/bin/:/net/elroy/usr1/archan/toolbox/sctk-1.3/src/:$PATH
+export PATH=/usr/local/bin:/bin/:/usr/bin/:/net/elroy/usr1/archan/toolbox/sctk-1.3/src/:~robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin:$PATH
+
 # Default to mailto but safe guard by checking whether sendmail also exists
 MAILX=sendmail
 
@@ -31,7 +32,7 @@ echo "PBS job name $PBS_JOBNAME"
 echo "PBS environment $PBS_ENVIRONMENT"
 echo "This script is running on `hostname`"
 
-S3REGTESTLIST='archan@cs.cmu.edu'
+S3REGTESTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu yitao@cs.cmu.edu dhuggins@cs.cmu.edu'
 
 #Run test. 
 cd $PBS_O_WORKDIR
