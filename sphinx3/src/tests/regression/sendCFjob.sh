@@ -61,6 +61,10 @@ if test z${TMPMAIL} == z; then
     if test z${TMPMAIL} == z; then
 # If we failed again, try mail
 	TMPMAIL=`which mail 2> /dev/null`
+	if test z${TMPMAIL} == z; then
+# If we failed again, try mailto
+	    TMPMAIL=`which mailto 2> /dev/null`
+	fi
     fi
 fi
 
