@@ -1,6 +1,7 @@
 #!/bin/sh
 # Try to find an executable that can send mail
-# Default to sendmail
+export PATH=/usr/local/bin:/bin/:/usr/bin/:/net/elroy/usr1/archan/toolbox/sctk-1.3/src/:$PATH
+# Default to mailto but safe guard by checking whether sendmail also exists
 MAILX=sendmail
 
 # Try to find mhmail
@@ -30,21 +31,24 @@ echo "PBS job name $PBS_JOBNAME"
 echo "PBS environment $PBS_ENVIRONMENT"
 echo "This script is running on `hostname`"
 
+S3REGTESTLIST='archan@cs.cmu.edu'
+
 #Run test. 
 cd $PBS_O_WORKDIR
 
 if ! make perf-quick > perf-quick.log 2>&1 ;
  then
     ${MAILX} -s "Quick Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-quick.log
+    exit
  fi
 
 if ! make perf-std > perf-std.log 2>&1 ;
  then
     ${MAILX} -s "Standard Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-std.log 
+    exit
  fi
 
 #Store the results. 
-S3REGTESTLIST='archan@cs.cmu.edu'
 testdate=`date -I`
 logdir=log.$testdate
 resultfn=allresults
