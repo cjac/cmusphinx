@@ -100,8 +100,6 @@ perf-full:
 perf-quick:	
 	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
 	make -C $(top_srcdir)/src/tests/performance/tidigits quick
-	make -C $(top_srcdir)/src/tests/performance/Communicator fast
-	make -C $(top_srcdir)/src/tests/performance/wsj5k quick
 
 perf-slow:	
 	make -C $(top_srcdir)/src/tests/performance/ti46 slow
