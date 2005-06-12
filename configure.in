@@ -110,6 +110,11 @@ dnl found instead, then use the latter.
                         ad_backend="AD_BACKEND_NONE"
                         CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
                         ;;
+		*-*-*darwin)
+                        ad_files="ad_base.lo"
+                        ad_backend="AD_BACKEND_NONE"
+                        CFLAGS="$CFLAGS -no-cpp-precomp -DAD_BACKEND_NONE"
+                        ;;
                 *)
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
