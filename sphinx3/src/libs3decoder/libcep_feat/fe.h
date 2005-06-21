@@ -191,17 +191,17 @@ typedef struct{
 #define LITTLE 1
 #define BIG 2
 
-#define FE_SUCCESS 0
-#define FE_OUTPUT_FILE_SUCCESS 0
-#define FE_CONTROL_FILE_ERROR 1
-#define FE_START_ERROR 2
-#define FE_UNKNOWN_SINGLE_OR_BATCH 3
-#define FE_INPUT_FILE_OPEN_ERROR 4
-#define FE_INPUT_FILE_READ_ERROR 5
-#define FE_MEM_ALLOC_ERROR 6
-#define FE_OUTPUT_FILE_WRITE_ERROR 7
-#define FE_OUTPUT_FILE_OPEN_ERROR 8
-#define FE_ZERO_ENERGY_ERROR 9
+#define FE_SUCCESS 0 /** A general ID for successful operation. */
+#define FE_OUTPUT_FILE_SUCCESS 0 /** Synonym of FE_SUCCESS ?*/
+#define FE_CONTROL_FILE_ERROR 1 /** Unable to open a control file */
+#define FE_START_ERROR 2 /** An error that indicated the front end cannot start correctly */
+#define FE_UNKNOWN_SINGLE_OR_BATCH 3 /** Cannot determine whether the frontend is in batch mode or live mode */
+#define FE_INPUT_FILE_OPEN_ERROR 4 /** Cannot open an input file */
+#define FE_INPUT_FILE_READ_ERROR 5  /** Cannot read an input file */
+#define FE_MEM_ALLOC_ERROR 6 /** Cannot allocate memory */
+#define FE_OUTPUT_FILE_WRITE_ERROR 7 /** Cannot write on an output file  */
+#define FE_OUTPUT_FILE_OPEN_ERROR 8 /** Cannot open an output file */
+#define FE_ZERO_ENERGY_ERROR 9  /** The frame consists of no frames that has positive energy*/
 
 #define COUNT_PARTIAL 1
 #define COUNT_WHOLE 0
@@ -237,20 +237,63 @@ typedef struct RIFFHeader{
 
 /* Functions */
 
-fe_t *fe_init(param_t const *P);
+  /**
+     Function that initialize the routine 
+     @return, an initialized fe_t structure
+   */
+  fe_t *fe_init(param_t const *P /**< Input: A filled param_t structure */
+	      );
 
-int32 fe_start_utt(fe_t *FE);
+  /**
+     Function call for starting utternace 
+   */
+  int32 fe_start_utt(fe_t *FE /**< Input: A filled FE rountine */
+		   );
 
-int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
+  /**
+     Function call for the end of the utterance. It also collect the
+     rest of the sample and put in a cepstral vector: if there are
+     overflow samples remaining, it will pad with zeros to make a
+     complete frame and then process to cepstra. also deactivates
+     start flag of FE, and resets overflow buffer count.
+   */
+  int32 fe_end_utt(fe_t *FE,  /**< Input: A filled FE structure */
+		   float32 *cepvector, /**< Input: The cepstral vector */
+		   int32 *nframes /**Output: number of frames */
+		   );
 
-int32 fe_close(fe_t *FE);
+  /**
+     Close the front end. 
+     Free all allocated memory within FE and destroy FE. 
+   */
+  int32 fe_close(fe_t *FE /**< Input, a FE structure */
+		 );
+  
+  /**
+     Process frames. 
+     A wrapper function to batch process a block of cepstrum
+   */
+		 
+  int32 fe_process(fe_t *FE,  /**< A FE structure */
+		   int16 *spch, /**< */
+		   int32 nsamps,  /**< Number of samples */
+		   float32 ***cep_block /**< A block of cepstrum*/
+		   );
 
-int32 fe_process(fe_t *FE, int16 *spch, int32 nsamps, float32 ***cep_block);
+  /**
+     Process only one frame of samples
+   */
+int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
+		       int16 *spch, 
+		       int32 nsamps, /**< number of samples*/
+		       float32 *fr_cep /**< One frame of cepstrum*/
+		       );
 
-int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps,float32 *fr_cep);
-
-int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
-		     float32 ***cep_block, int32 *nframes);
+int32 fe_process_utt(fe_t *FE, 
+		     int16 *spch, 
+		     int32 nsamps,
+		     float32 ***cep_block, 
+		     int32 *nframes);
 
   /** 
       Functions that wrap up the front-end operations on the front-end
