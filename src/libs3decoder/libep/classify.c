@@ -39,6 +39,14 @@
  *
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
+ * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  21:06:47  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ * 
+ * Revision 1.3  2005/06/15 06:48:54  archan
+ * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
+ *
  */
 
 #include <stdio.h>
@@ -111,7 +119,7 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
                              senmgau,
                              FULL_FLOAT_COMP);
 
-        mdef = mdef_init(mdeffile);
+        mdef = mdef_init(mdeffile,1);
 
         /* Make sure we have only one emitting state */
         if (mdef_n_emit_state(mdef) != 1) {
