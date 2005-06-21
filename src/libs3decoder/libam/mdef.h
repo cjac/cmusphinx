@@ -44,6 +44,20 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.12  2005/06/21  18:47:39  arthchan2003
+ * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$ keyword.
+ * 
+ * Revision 1.5  2005/06/13 04:02:55  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 19.Apr-2001  Ricky Houghton, added code for free allocated memory
  * 
  * 14-Oct-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
@@ -173,90 +187,130 @@ typedef struct {
 
   /**
  * Initialize the phone structure from the given model definition file.
- * Return value: pointer to the phone structure created.
  * It should be treated as a READ-ONLY structure.
+ * @return pointer to the phone structure created.
  */
-mdef_t *mdef_init (char *mdeffile);
+  mdef_t *mdef_init (char *mdeffile, /**< In: Model definition file */
+		     int32 breport   /**< In: whether to report the progress or not */
+		     );
 
 
-  /** Return value: ciphone id for the given ciphone string name */
-s3cipid_t mdef_ciphone_id (mdef_t *m,		/** In: Model structure being queried */
-			   char *ciphone);	/** In: ciphone for which id wanted */
+  /** 
+      Get the ciphone id given a string name
+      @return ciphone id for the given ciphone string name 
+  */
+s3cipid_t mdef_ciphone_id (mdef_t *m,		/**< In: Model structure being queried */
+			   char *ciphone	/**< In: ciphone for which id wanted */
+			   );
 
-  /** Return value: READ-ONLY ciphone string name for the given ciphone id */
-const char *mdef_ciphone_str (mdef_t *m,	/** In: Model structure being queried */
-			      s3cipid_t ci);	/** In: ciphone id for which name wanted */
+  /** 
+      Get the phone string given the ci phone id.
+      @return: READ-ONLY ciphone string name for the given ciphone id 
+  */
+const char *mdef_ciphone_str (mdef_t *m,	/**< In: Model structure being queried */
+			      s3cipid_t ci	/**< In: ciphone id for which name wanted */
+			      );
 
-  /** Return 1 if given triphone argument is a ciphone, 0 if not, -1 if error */
-int32 mdef_is_ciphone (mdef_t *m,		/** In: Model structure being queried */
-		       s3pid_t p);		/** In: triphone id being queried */
+  /** 
+      Decide whether the phone is ci phone.
+      @return 1 if given triphone argument is a ciphone, 0 if not, -1 if error 
+  */
+int32 mdef_is_ciphone (mdef_t *m,		/**< In: Model structure being queried */
+		       s3pid_t p		/**< In: triphone id being queried */
+		       );
 
-  /**Return 1 if a given senone is a ci senone */  
-int32 mdef_is_cisenone(mdef_t *m,               /** In: Model structure being queried */
-		       s3senid_t s);            /** In: senone id being queried */
+  /**
+     Decide whether the senone is a senone for a ci phone, or a ci senone
+     @return 1 if a given senone is a ci senone
+  */  
+int32 mdef_is_cisenone(mdef_t *m,               /**< In: Model structure being queried */
+		       s3senid_t s            /**< In: senone id being queried */
+		       );
 
-  /** Return value: phone id for the given constituents if found, else BAD_S3PID */
-s3pid_t mdef_phone_id (mdef_t *m,		/** In: Model structure being queried */
-		       s3cipid_t b,		/** In: base ciphone id */
-		       s3cipid_t l,		/** In: left context ciphone id */
-		       s3cipid_t r,		/** In: right context ciphone id */
-		       word_posn_t pos);	/** In: Word position */
+  /** 
+      Decide the phone id given the left, right and base phones. 
+      @return: phone id for the given constituents if found, else BAD_S3PID 
+  */
+s3pid_t mdef_phone_id (mdef_t *m,		/**< In: Model structure being queried */
+		       s3cipid_t b,		/**< In: base ciphone id */
+		       s3cipid_t l,		/**< In: left context ciphone id */
+		       s3cipid_t r,		/**< In: right context ciphone id */
+		       word_posn_t pos	/**< In: Word position */
+		       );
 
   /**
  * Like phone_id, but backs off to other word positions if exact triphone not found.
  * Also, non-SILENCE_PHONE filler phones back off to SILENCE_PHONE.
  * Ultimately, backs off to base phone id.  Thus, it should never return BAD_S3PID.
  */
-s3pid_t mdef_phone_id_nearest (mdef_t *m,	/** In: Model structure being queried */
-			       s3cipid_t b,	/** In: base ciphone id */
-			       s3cipid_t l,	/** In: left context ciphone id */
-			       s3cipid_t r,	/** In: right context ciphone id */
-			       word_posn_t pos);	/** In: Word position */
+s3pid_t mdef_phone_id_nearest (mdef_t *m,	/**< In: Model structure being queried */
+			       s3cipid_t b,	/**< In: base ciphone id */
+			       s3cipid_t l,	/**< In: left context ciphone id */
+			       s3cipid_t r,	/**< In: right context ciphone id */
+			       word_posn_t pos	/**< In: Word position */
+			       );
 
   /**
  * Create a phone string for the given phone (base or triphone) id in the given buf.
- * Return value: 0 if successful, -1 if error.
+ * @return 0 if successful, -1 if error.
  */
-int32 mdef_phone_str (mdef_t *m,		/** In: Model structure being queried */
-		      s3pid_t pid,		/** In: phone id being queried */
-		      char *buf);		/** Out: On return, buf has the string */
+int32 mdef_phone_str (mdef_t *m,		/**< In: Model structure being queried */
+		      s3pid_t pid,		/**< In: phone id being queried */
+		      char *buf		/**< Out: On return, buf has the string */
+		      );
 
   /**
  * Obtain phone components: inverse of mdef_phone_id().
- * Return value: 0 if successful, -1 otherwise.
+ * @return 0 if successful, -1 otherwise.
  */
-int32 mdef_phone_components (mdef_t *m,		/** In: Model structure being queried */
-			     s3pid_t p,		/** In: triphone id being queried */
-			     s3cipid_t *b,	/** Out: base ciphone id */
-			     s3cipid_t *l,	/** Out: left context ciphone id */
-			     s3cipid_t *r,	/** Out: right context ciphone id */
-			     word_posn_t *pos);	/** Out: Word position */
+int32 mdef_phone_components (mdef_t *m,		/**< In: Model structure being queried */
+			     s3pid_t p,		/**< In: triphone id being queried */
+			     s3cipid_t *b,	/**< Out: base ciphone id */
+			     s3cipid_t *l,	/**< Out: left context ciphone id */
+			     s3cipid_t *r,	/**< Out: right context ciphone id */
+			     word_posn_t *pos	/**< Out: Word position */
+			     );
 
   /**
  * Compare the underlying HMMs for two given phones (i.e., compare the two transition
  * matrix IDs and the individual state(senone) IDs).
- * Return value: 0 iff the HMMs are identical, -1 otherwise.
+ * @return 0 iff the HMMs are identical, -1 otherwise.
  */
-int32 mdef_hmm_cmp (mdef_t *m,			/** In: Model being queried */
-		    s3pid_t p1, s3pid_t p2);	/** In: The two triphones being compared */
+int32 mdef_hmm_cmp (mdef_t *m,			/**< In: Model being queried */
+		    s3pid_t p1, /**< In: One of the two triphones being compared */
+		    s3pid_t p2	/**< In: One of the two triphones being compared */
+		    );
 
   /**
  * From the given array of active senone-sequence flags, mark the corresponding senones that
  * are active.  Caller responsible for allocating sen[], and for clearing it, if necessary.
  */
-void mdef_sseq2sen_active (mdef_t *mdef,
-			   int32 *sseq,		/** In: sseq[ss] is != 0 iff senone-sequence ID
+  void mdef_sseq2sen_active (mdef_t *mdef,        /**< In: The model definition */
+			   int32 *sseq,		/**< In: sseq[ss] is != 0 iff senone-sequence ID
 						   ss is active */
-			   int32 *sen);		/** In/Out: Set sen[s] to non-0 if so indicated
+			   int32 *sen		/**< In/Out: Set sen[s] to non-0 if so indicated
 						   by any active senone sequence */
+			   );
 
-  /** For debugging */
-void mdef_dump (FILE *fp, mdef_t *m);
+  /** For debugging: dump the mdef_t structure out. */
+  void mdef_dump (FILE *fp,  /**< In: a file pointer */
+		  mdef_t *m  /**< In: a model definition structure */
+		  );
+
+  /** Report the model definition's parameters */
+  void mdef_report(mdef_t *m /**<  In: model definition structure */
+		   );
 
   /** RAH, For freeing memory */
-void mdef_free_recursive_lc (ph_lc_t *lc);
-void mdef_free_recursive_rc (ph_rc_t *rc);
-void mdef_free (mdef_t *mdef);
+  void mdef_free_recursive_lc (ph_lc_t *lc /**< In: A list of left context */
+			     );
+  void mdef_free_recursive_rc (ph_rc_t *rc /**< In: A list of right context */
+			       );
+
+  /** Free an mdef_t */
+  void mdef_free (mdef_t *mdef /**< In : The model definition*/
+		);
+
 
 #ifdef __cplusplus
 }
