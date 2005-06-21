@@ -44,6 +44,22 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.11  2005/06/21  23:28:48  arthchan2003
+ * Log. Please also see comments of kb.[ch].  Major changes you could see
+ * is that the lmset interface is now used rather than several interfaces
+ * for reading lm. Other than that, you could say most changes are
+ * harmless internal interfaces changes.
+ * 
+ * Revision 1.5  2005/06/18 03:22:29  archan
+ * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
+ *
+ * Revision 1.4  2005/04/20 03:38:43  archan
+ * Do the corresponding code changes for the lm code.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 11-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Removed svqpp stuff.  It doesn't work too well anyway.
@@ -81,26 +97,38 @@ extern "C" {
    */
 
 typedef struct {
+
   feat_t *fcb; /**< feature end structure */
   mdef_t *mdef; /**< Model definition  */
   dict_t *dict; /**< Dictionary structure */
   dict2pid_t *dict2pid; /**< Conversion of dictionary to Phoneme ID */
-  lm_t *lm; /**< The current LM */
-  lmset_t *lmset; /**< LM Set, if it is used, LM is not used */
+  
+
+
+  lmset_t *lmset; /**< LM Set. ARCHAN, since sphinx 3.6, it is used whenever an lm is allocated. 
+		      This unified the internal data structure. */
+
+  mgau_model_t *mgau; /**< Acoustic Model */
+
   fillpen_t *fillpen; /**< Filler penalty */
-  s3lmwid_t *dict2lmwid; /**< Dictionary ID to LM ID mapping */
-  mgau_model_t *mgau; /**< Model */
   subvq_t *svq; /**< SVQ */
-  gs_t *gs; /*<* Gaussian Selector */
+  gs_t *gs; /**< Gaussian Selector */
   tmat_t *tmat; /**< Transition Matrix. */
+
+#if 0
+  lm_t *lm;    /**< The current lm used in the search for this
+                   utternace. In the case when using -lm in batch
+                   mode, it always points to lmset[0] */
+
   int32 n_lm; /**< number of language model */
   int32 n_alloclm; /**< Number of allocated language model */
+#endif
 
-  int32 maxNewHeurScore; /**< Temporary variables for phoneme
-                            lookahead. This stores the heuristic score */
-  int32 lastfrm; /**< Temporary variables, should be removed */
+  int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
+  int32 lastfrm; /**, Temporary variables, should be removed */
 
 } kbcore_t;
+
 
 
   /**
@@ -145,10 +173,12 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 						   (quantized mean/var values), optional */
 		       char *gsfile,		/**< Gaussian Selection Mapping*/
 		       char *tmatfile,          /**< Transition matrix */
-		       float64 tmatfloor);	/**< Transition probability floors, must be valid if tmatfile specified */
+		       float64 tmatfloor	/**< Transition probability floors, must be valid if tmatfile specified */
+		       );
 
   /** free the kbcore */
-  void kbcore_free (kbcore_t *kbcore);
+  void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
+		    );
 
 
   /** Access macros; not meant for arbitrary use */
@@ -156,7 +186,7 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_mdef(k)		((k)->mdef)
 #define kbcore_dict(k)		((k)->dict)
 #define kbcore_dict2pid(k)	((k)->dict2pid)
-#define kbcore_lm(k)		((k)->lm)
+#define kbcore_lm(k)		((k)->lmset->cur_lm)
 #define kbcore_fillpen(k)	((k)->fillpen)
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
@@ -164,7 +194,6 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
-#define kbcore_nlm(k)		((k)->n_lm)
 
 #ifdef __cplusplus
 }
