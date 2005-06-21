@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.6  2005/06/21  21:03:49  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 14-Sep-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added dict2pid_comsseq2sen_active().
@@ -423,12 +433,19 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict)
 #endif
     }
     
-    E_INFO("%d composite states; %d composite sseq\n",
-	   dict2pid->n_comstate, dict2pid->n_comsseq);
     
     return dict2pid;
 }
 
+void dict2pid_report(dict2pid_t* d2p)
+{
+  E_INFO_NOFN("Initialization of dict2pid_t, report:\n");
+  E_INFO_NOFN("%d composite states; %d composite sseq\n",
+	      d2p->n_comstate, d2p->n_comsseq);
+  E_INFO_NOFN("\n");
+
+
+}
 
 void dict2pid_comsenscr (dict2pid_t *d2p, int32 *senscr, int32 *comsenscr)
 {

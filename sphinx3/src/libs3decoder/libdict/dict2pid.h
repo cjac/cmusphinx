@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.8  2005/06/21  21:03:49  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.5  2005/06/13 04:02:57  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 14-Sep-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added dict2pid_comsseq2sen_active().
@@ -140,22 +153,31 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict);
   /**
  * Compute composite senone scores from ordinary senone scores (max of component senones)
  */
-void dict2pid_comsenscr (dict2pid_t *d2p,
-			 int32 *senscr,		/* In: Ordinary senone scores */
-			 int32 *comsenscr);	/* Out: Composite senone scores */
+  void dict2pid_comsenscr (dict2pid_t *d2p,        /**< In: a dict2pid_t structure */
+			 int32 *senscr,		/**< In: Ordinary senone scores */
+			 int32 *comsenscr	/**< Out: Composite senone scores */
+			 );
 
   /** 
  * Mark active senones as indicated by the input array of composite senone-sequence active flags.
  * Caller responsible for allocating and clearing sen[] before calling this function.
  */
-void dict2pid_comsseq2sen_active (dict2pid_t *d2p,
-				  mdef_t *mdef,
-				  int32 *comssid,	/* In: Active flag for each comssid */
-				  int32 *sen);		/* In/Out: Active flags set for senones
+void dict2pid_comsseq2sen_active (dict2pid_t *d2p,      /**< In: a dict2pid_t structure */
+				  mdef_t *mdef,         /**< In: a mdef_t structure */
+				  int32 *comssid,	/**< In: Active flag for each comssid */
+				  int32 *sen		/**< In/Out: Active flags set for senones
 							   indicated by the active comssid */
-
+				  );
   /** For debugging */
-void dict2pid_dump (FILE *fp, dict2pid_t *d2p, mdef_t *mdef, dict_t *dict);
+  void dict2pid_dump (FILE *fp,        /**< In: a file pointer */
+		      dict2pid_t *d2p, /**< In: a dict2pid_t structure */
+		      mdef_t *mdef,    /**< In: a mdef_t structure*/
+		      dict_t *dict     /**< In: a dictionary structure */
+		      );
+
+  /** Report a dict2pid data structure */
+  void dict2pid_report(dict2pid_t *d2p /**< In: a dict2pid_t structure */
+		       );
 
 #ifdef __cplusplus
 }
