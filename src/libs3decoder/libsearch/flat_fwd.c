@@ -49,9 +49,60 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.11  2005/02/09  05:59:30  arthchan2003
- * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
+ * Revision 1.12  2005/06/21  22:41:32  arthchan2003
+ * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
  * 
+ * Revision 1.6  2005/06/19 03:58:16  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.5  2005/06/18 18:17:50  archan
+ * Update decode_anytopo such that it also used the lmset interface. Notice it still doesn't support multiple LMs and class-based LM at this point
+ *
+ * Revision 1.4  2005/06/03 06:45:28  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.3  2005/06/03 05:46:19  archan
+ * Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.2  2005/05/26 22:03:06  archan
+ * Add support for backtracking without assuming silence </s> has to be the last word.
+ *
+ * Revision 1.1.1.1  2005/03/24 15:24:00  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
+ * Revision 1.11  2005/02/09 05:59:30  arthchan2003
+ * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
+ *
  * Revision 1.10  2004/12/27 19:46:19  arthchan2003
  * 1, Add perf-std to Makefile.am , developers can type make perf-std as the standard performance test target. This only works in CMU. 2, Fix warning in flat_fwd.[ch], 3, Apply Yitao's change in cmd_ln.c . 4, 2,3 are standard regression tested.
  *
@@ -221,6 +272,8 @@
 #include "search.h"
 
 #include "programs/s3_dag.h"
+
+#include "dag.h"
 #include "flat_fwd.h"
 
 
@@ -275,12 +328,12 @@ static s3pid_t **wwpid;
  * such an arbitrary internal limit.
  */
 typedef struct lattice_s {
-    s3wid_t   wid;	/** Decoded word */
-    s3frmid_t frm;	/** End frame for this entry */
-    s3latid_t history;	/** Index of predecessor lattice_t entry */
-    int32     score;	/** Best path score upto the end of this entry */
-    int32    *rcscore;	/** Individual path scores for different right context ciphones */
-    dagnode_t *dagnode;	/* DAG node representing this entry */
+    s3wid_t   wid;	/**< Decoded word */
+    s3frmid_t frm;	/**< End frame for this entry */
+    s3latid_t history;	/**< Index of predecessor lattice_t entry */
+    int32     score;	/**< Best path score upto the end of this entry */
+    int32    *rcscore;	/**< Individual path scores for different right context ciphones */
+    dagnode_t *dagnode;	/**< DAG node representing this entry */
 } lattice_t;
 static lattice_t *lattice;
 static int32 lat_alloc;		/** #lattice entries allocated */
@@ -331,18 +384,21 @@ static int32 phone_penalty;	/** Applied for each phone transition */
 static int32 n_state = 0;
 static int32 final_state;
 
-static s3wid_t silwid;		/** General silence word id */
-static s3wid_t startwid;	/** Begin silence */
-static s3wid_t finishwid;	/** End silence */
+tmat_t *tmat;		/** HMM transition probabilities matrices */
 
 dict_t *dict;		/** The dictionary */
-tmat_t *tmat;		/** HMM transition probabilities matrices */
-fillpen_t *fpen;         /** Filler penalty */
+fillpen_t *fpen;        /** Filler penalty */
+lmset_t *lmset;         /** The language model set */
+lm_t *lm;               /** NOT NICE: This is a pointer for current lm */
 mdef_t *mdef;
-lm_t   *lm;		/** The currently active language model */
-static dag_t dag;
 
+
+dag_t dag;              /** The dag used by decode_anytopo.c */
+
+#if 0
+lm_t   *lm;		/** The currently active language model */
 s3lmwid_t *dict2lmwid;	/** Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+#endif
 
 
 static char *uttid = NULL;	/** Utterance id; for error reporting */
@@ -369,29 +425,6 @@ static ptmr_t tm_hmmtrans;
 static ptmr_t tm_wdtrans;
 
 
-
-/* Get rid of old hyp, if any */
-static void hyp_free ( void )
-{
-    srch_hyp_t *tmphyp;
-
-    
-    while (hyp) {
-	tmphyp = hyp->next;
-	listelem_free ((char *)hyp, sizeof(srch_hyp_t));
-	hyp = tmphyp;
-    }
-}
-
-
-static int32 filler_word (s3wid_t w)
-{
-    if ((w == startwid) || (w == finishwid))
-	return 0;
-    if ((w >= dict->filler_start) && (w <= dict->filler_end))
-	return 1;
-    return 0;
-}
 
 
 #if 0
@@ -1546,12 +1579,12 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
     s3latid_t l0, l1;
     l0=0;
     
-    for (l1 = l; filler_word(lattice[l1].wid); l1 = lattice[l1].history);
+    for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lattice[l1].history);
 
 /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
 if (l1 != -1) 
     for (l0 = lattice[l1].history; 
-         (IS_S3LATID(l0)) && (filler_word(lattice[l0].wid));
+         (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
 	 l0 = lattice[l0].history);
 
 /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
@@ -1703,10 +1736,10 @@ static void build_word_cand_cf (int32 cf)
 	    word_cand_cf[candp->wid] = 1;
     }
 
-    word_cand_cf[startwid] = 0;	/* Never hypothesized (except at beginning) */
+    word_cand_cf[dict->startwid] = 0;	/* Never hypothesized (except at beginning) */
     for (w = dict->filler_start; w <= dict->filler_end; w++)
 	word_cand_cf[w] = 0;	/* Handled separately */
-    word_cand_cf[finishwid] = 1;	/* Always a candidate */
+    word_cand_cf[dict->finishwid] = 1;	/* Always a candidate */
 
     n = 0;
     for (w = 0; w < dict->n_word; w++)
@@ -1745,7 +1778,7 @@ static void word_trans (int32 thresh)
     for (l = lat_start; l < n_lat_entry; l++) {
 	w = lattice[l].wid;
 	
-	if (w == finishwid)
+	if (w == dict->finishwid)
 	    continue;
 	
 	/* Cross-word left context for new words to which we may transition */
@@ -1768,14 +1801,14 @@ static void word_trans (int32 thresh)
 	    /* First, transition to trigram followers of bw0, bw1 */
 	    acc_bowt = 0;
 	    if ((IS_S3WID(bw0)) && ((n_tg = lm_tglist (lm,
-						       dict2lmwid[dict_basewid(dict,bw0)], 
-						       dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt)) > 0)) {
+						       lm->dict2lmwid[dict_basewid(dict,bw0)], 
+						       lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt)) > 0)) {
 		/* Transition to trigram followers of bw0, bw1, if any */
 		for (; n_tg > 0; --n_tg, tgptr++) {
 		    /* Transition to all alternative pronunciations for trigram follower */
 		    nextwid = LM_DICTWID(lm, tgptr->wid);
 		    
-		    if (IS_S3WID(nextwid) && (nextwid != startwid)) {
+		    if (IS_S3WID(nextwid) && (nextwid != dict->startwid)) {
 			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
 			    newscore = rcscore[dict->word[w].ciphone[0]] +
 				LM_TGPROB (lm, tgptr) + phone_penalty;
@@ -1793,7 +1826,7 @@ static void word_trans (int32 thresh)
 	    
 	    /* Transition to bigram followers of bw1 */
 	    if ((n_bg = lm_bglist (lm,
-				   dict2lmwid[dict_basewid(dict,bw1)], 
+				   lm->dict2lmwid[dict_basewid(dict,bw1)], 
 				   &bgptr, 
 				   &bowt)) > 0) {
 		/* Transition to bigram followers of bw1, if any */
@@ -1803,7 +1836,7 @@ static void word_trans (int32 thresh)
 		    
 		    if (IS_S3WID(nextwid) &&
 			(! tg_trans_done[nextwid]) &&	/* TG transition already done */
-			(nextwid != startwid)) {	/* No transition to <s> */
+			(nextwid != dict->startwid)) {	/* No transition to <s> */
 			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
 			    newscore = rcscore[dict->word[w].ciphone[0]] +
 				LM_BGPROB (lm, bgptr) + acc_bowt + phone_penalty;
@@ -1834,9 +1867,9 @@ static void word_trans (int32 thresh)
 		nextwid = word_cand_cf[cand];
 		
 		lscr = lm_tg_score (lm,
-				    dict2lmwid[dict_basewid(dict,bw0)],
-				    dict2lmwid[dict_basewid(dict,bw1)],
-				    dict2lmwid[nextwid],
+				    lm->dict2lmwid[dict_basewid(dict,bw0)],
+				    lm->dict2lmwid[dict_basewid(dict,bw1)],
+				    lm->dict2lmwid[nextwid],
 				    nextwid);
 
 		for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
@@ -1873,7 +1906,7 @@ static void word_trans (int32 thresh)
 	n_ug = lm_uglist (&ugptr);
 	for (; n_ug > 0; --n_ug, ugptr++) {
 	    for (w = ugptr->dictwid; IS_S3WID(w); w = dict->word[w].alt) {
-		if (w == startwid)
+		if (w == dict->startwid)
 		    continue;
 		
 		rc = dict->word[w].ciphone[0];
@@ -1908,7 +1941,7 @@ static void word_trans (int32 thresh)
      * are all within filler_start..filler_end
      */
     for (w = dict->filler_start; w <= dict->filler_end; w++) {
-	if ((w == startwid) || (w == finishwid))
+	if ((w == dict->startwid) || (w == dict->finishwid))
 	    continue;
 	
 	rc = dict->word[w].ciphone[0];
@@ -1948,13 +1981,6 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     /* Variables for speeding up whmm evaluation */
     st_sen_scr = (int32 *) ckd_calloc (n_state-1, sizeof(int32));
 
-    /* Some key word ids */
-    silwid = dict_wordid (dict,S3_SILENCE_WORD);
-    startwid = dict_wordid (dict,S3_START_WORD);
-    finishwid = dict_wordid (dict,S3_FINISH_WORD);
-    if ((NOT_S3WID(silwid)) || (NOT_S3WID(startwid)) || (NOT_S3WID(finishwid)))
-	E_FATAL("%s, %s, or %s missing from dictionary\n",
-		S3_SILENCE_WORD, S3_START_WORD, S3_FINISH_WORD);
 
     /* Beam widths and penalties */
     f64arg = (float64 *) cmd_ln_access ("-beam");
@@ -2048,7 +2074,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 						     sizeof(word_ugprob_t *));
 	n_ug = lm_uglist (lm,&ugptr);
 	for (; n_ug > 0; --n_ug, ugptr++) {
-	    if ((w = ugptr->dictwid) == startwid)
+	    if ((w = ugptr->dictwid) == dict->startwid)
 		continue;
 
 	    ugprob = LM_UGPROB(lm, ugptr);
@@ -2073,7 +2099,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     }
 
     /* Initialize bestpath search related */
-    dag.list = NULL;
+    dag_init(&dag);
 }
 
 
@@ -2210,9 +2236,9 @@ void fwd_start_utt (char *id)
     
     /* Enter all pronunciations of startwid (begin silence) */
     n_frm = -1;	/* Since word_enter transitions to "NEXT" frame */
-    for (w = startwid; IS_S3WID(w); w = dict->word[w].alt)
+    for (w = dict->startwid; IS_S3WID(w); w = dict->word[w].alt)
 	word_enter (w, 0, BAD_S3LATID,
-		    dict->word[silwid].ciphone[dict->word[silwid].pronlen-1]);
+		    dict->word[dict->silwid].ciphone[dict->word[dict->silwid].pronlen-1]);
     n_frm = 0;
 
     renormalized = 0;
@@ -2350,19 +2376,19 @@ static int32 lat_seg_lscr (s3latid_t l)
     
     bw2 = dict_basewid (dict,lattice[l].wid);
 
-    if (filler_word (bw2))
+    if (dict_filler_word (dict,bw2))
 	return (fillpen(fpen,bw2));
     
     if (NOT_S3LATID(lattice[l].history)) {
-	assert (bw2 == startwid);
+	assert (bw2 == dict->startwid);
 	return 0;
     }
     
     two_word_history (lattice[l].history, &bw0, &bw1);
     lscr = lm_tg_score (lm, 
-			dict2lmwid[dict_basewid(dict,bw0)], 
-			dict2lmwid[dict_basewid(dict,bw1)], 
-			dict2lmwid[bw2],
+			lm->dict2lmwid[dict_basewid(dict,bw0)], 
+			lm->dict2lmwid[dict_basewid(dict,bw1)], 
+			lm->dict2lmwid[bw2],
 			bw2);
     if (n_word_cand > 0)
 	return lscr;
@@ -2370,13 +2396,13 @@ static int32 lat_seg_lscr (s3latid_t l)
     /* Correction for backoff cpase if that scores better (see word_trans) */
     bo_lscr = 0;
     if ((IS_S3WID(bw0)) && (lm_tglist (lm,
-				       dict2lmwid[dict_basewid(dict,bw0)], 
-				       dict2lmwid[dict_basewid(dict,bw1)],
+				       lm->dict2lmwid[dict_basewid(dict,bw0)], 
+				       lm->dict2lmwid[dict_basewid(dict,bw1)],
 				       &tgptr, &bowt) > 0))
 	bo_lscr = bowt;
-    if (lm_bglist (lm, dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
+    if (lm_bglist (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
 	bo_lscr += bowt;
-    bo_lscr += lm_ug_score (lm,dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
+    bo_lscr += lm_ug_score (lm,lm->dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
 
     return ((lscr > bo_lscr) ? lscr : bo_lscr);
 }
@@ -2441,23 +2467,28 @@ static s3latid_t lat_final_entry ( void )
     
     bestl=BAD_S3LATID;
 
-    /* Find lattice entry in last frame for FINISH_WORD */
-    for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++){
-	if (dict_basewid(dict,lattice[l].wid) == finishwid)
-	    break;
-    }
+    if(cmd_ln_int32("-bt_wsil")){
 
-    if (l < n_lat_entry) {
+      /* Find lattice entry in last frame for FINISH_WORD */
+      for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++){
+	if (dict_basewid(dict,lattice[l].wid) == dict->finishwid)
+	  break;
+      }
+      
+      if (l < n_lat_entry) {
 	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
 	return (l);
-    }
+      }
     
-    /* Find last available lattice entry with best ending score */
-    E_WARN("%s: Search didn't end in %s\n", uttid, dict_wordstr(dict,finishwid));
+      /* Find last available lattice entry with best ending score */
+      E_WARN("When %s is used as final word, %s: Search didn't end in %s\n", dict_wordstr(dict,dict->finishwid), uttid, dict_wordstr(dict,dict->finishwid));
+    }
+
+
     bestscore = S3_LOGPROB_ZERO;
     for (f = n_frm-1; (f >= 0) && (bestscore <= S3_LOGPROB_ZERO); --f) {
 	for (l = frm_latstart[f]; l < frm_latstart[f+1]; l++) {
-	    if ((lattice[l].wid != startwid) && (bestscore < lattice[l].score)) {
+	    if ((lattice[l].wid != dict->startwid) && (bestscore < lattice[l].score)) {
 		bestscore = lattice[l].score;
 		bestl = l;
 	    }
@@ -2490,7 +2521,7 @@ srch_hyp_t *fwd_end_utt ( void )
 	word_cand_free ();
 
     /* Get rid of old hyp, if any */
-    hyp_free ();
+    hyp_free (hyp);
     
     /* Check if bptable should be dumped (for debugging) */
     if (cmd_ln_int32 ("-bptbldump")){
@@ -2523,80 +2554,6 @@ void fwd_timing_dump (float64 tot)
     printf ("[XW %6.2fx %2d%%]",
 	    tm_wdtrans.t_cpu * 100.0 / n_frm, (int32)(tm_wdtrans.t_cpu * 100.0 / tot));
 }
-
-
-static void dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, daglink_t *byp)
-{
-    daglink_t *l;
-    
-    /* Link d into successor list for pd */
-    if (pd) {	/* Special condition for root node which doesn't have a predecessor */
-	l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
-	l->node = d;
-	l->src = pd;
-	l->bypass = byp;	/* This is a FORWARD link!! */
-	l->ascr = ascr;
-	l->pscr = (int32)0x80000000;
-	l->pscr_valid = 0;
-	l->history = NULL;
-	l->ef = ef;
-	l->next = pd->succlist;
-	pd->succlist = l;
-    }
-
-    /* Link pd into predecessor list for d */
-    l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
-    l->node = pd;
-    l->src = d;
-    l->bypass = byp;		/* This is a FORWARD link!! */
-    l->ascr = ascr;
-    l->pscr = (int32)0x80000000;
-    l->pscr_valid = 0;
-    l->history = NULL;
-    l->ef = ef;
-    l->next = d->predlist;
-    d->predlist = l;
-}
-
-
-static daglink_t *find_succlink (dagnode_t *src, dagnode_t *dst)
-{
-    daglink_t *l;
-
-    for (l = src->succlist; l && (l->node != dst); l = l->next);
-    return l;
-}
-
-
-static daglink_t *find_predlink (dagnode_t *src, dagnode_t *dst)
-{
-    daglink_t *l;
-
-    for (l = src->predlist; l && (l->node != dst); l = l->next);
-    return l;
-}
-
-
-/** Like dag_link but check if link already exists.  If so, replace if new score better */
-static void dag_update_link (dagnode_t *pd, dagnode_t *d, int32 ascr,
-			     int32 ef, daglink_t *byp)
-{
-    daglink_t *l, *r;
-    
-    l = find_succlink (pd, d);
-
-    if (! l)
-	dag_link (pd, d, ascr, ef, byp);
-    else if (l->ascr < ascr) {
-	r = find_predlink (d, pd);
-
-	assert (r && (r->ascr == l->ascr));
-	l->ascr = r->ascr = ascr;
-	l->ef = r->ef = ef;
-	l->bypass = r->bypass = byp;
-    }
-}
-
 
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
@@ -2658,7 +2615,7 @@ int32 dag_build ( void )
     
     /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
     for (d = dag.list; d; d = d->alloc_next) {
-	if ((dict_basewid(dict,d->wid) == startwid) && (d->sf == 0))
+	if ((dict_basewid(dict,d->wid) == dict->startwid) && (d->sf == 0))
 	    break;
     }
     assert (d);
@@ -2673,14 +2630,14 @@ int32 dag_build ( void )
 	if (d->sf == 0) 
 {}
 /*
-	    assert (d->wid == startwid);	*/ /* No predecessors to this */
+	    assert (d->wid == dict->startwid);	*/ /* No predecessors to this */
 	else {
 	    /* Link from all end points == d->sf-1 to d */
 	    for (l = frm_latstart[d->sf-1]; l < frm_latstart[d->sf]; l++) {
 		pd = lattice[l].dagnode;	/* Predecessor DAG node */
 		
 		/* Skip predecessor node under following conditions */
-		if (pd->wid == finishwid)	/* BUG: alternative prons for </s>?? */
+		if (pd->wid == dict->finishwid)	/* BUG: alternative prons for </s>?? */
 		    continue;
 		if ((pd != dag.root) && (pd->lef - pd->fef < min_ef_range-1))
 		    continue;
@@ -2691,7 +2648,7 @@ int32 dag_build ( void )
 		 */
 		lat_seg_ascr_lscr (l, d->wid, &ascr, &lscr);
 		if (ascr > S3_LOGPROB_ZERO)
-		    dag_link (pd, d, ascr, d->sf-1, NULL);
+		    dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
 	    }
 	}
     }
@@ -2723,11 +2680,11 @@ static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
 	for (l = frm_latstart[d->sf]; l < frm_latstart[d->sf+1]; l++) {
 	    pd = lattice[l].dagnode;		/* Predecessor DAG node */
 
-	    if ((pd->wid != finishwid) &&
+	    if ((pd->wid != dict->finishwid) &&
 		(pd->fef == d->sf) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
 		lat_seg_ascr_lscr (l, BAD_S3WID, &ascr, &lscr);
-		dag_link (pd, d, ascr, d->sf-1, NULL);
+		dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
 	    }
 	}
 	
@@ -2738,11 +2695,11 @@ static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
 	for (l = frm_latstart[d->sf+1]; l < frm_latstart[d->sf+2]; l++) {
 	    pd = lattice[l].dagnode;		/* Predecessor DAG node */
 
-	    if ((pd->wid != finishwid) &&
+	    if ((pd->wid != dict->finishwid) &&
 		(pd->fef == d->sf+1) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
 		lat_seg_ascr_lscr (l, BAD_S3WID, &ascr, &lscr);
-		dag_link (pd, d, ascr, d->sf-1, NULL);
+		dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
 	    }
 	}
     }
@@ -2764,8 +2721,8 @@ static void dag_remove_filler_nodes (float64 lwf)
     latfinal = dag.latfinal;
     
     /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
-    if (filler_word (lattice[latfinal].wid))
-	lattice[latfinal].dagnode->wid = finishwid;
+    if (dict_filler_word (dict,lattice[latfinal].wid))
+	lattice[latfinal].dagnode->wid = dict->finishwid;
 
     /*
      * Remove filler nodes.  In principle, successors can be fillers and the process
@@ -2773,7 +2730,7 @@ static void dag_remove_filler_nodes (float64 lwf)
      * dag.list ensures that succeeding fillers have already been eliminated.
      */
     for (d = dag.list; d; d = d->alloc_next) {
-	if (! filler_word (d->wid))
+	if (! dict_filler_word (dict,d->wid))
 	    continue;
 	
 	/* Replace each link TO d with links to d's successors */
@@ -2787,16 +2744,16 @@ static void dag_remove_filler_nodes (float64 lwf)
 		snode = slink->node;
 
 		/* Link only to non-filler successors; fillers have been eliminated */
-		if (! filler_word (snode->wid)) {
+		if (! dict_filler_word (dict,snode->wid)) {
 		    /* Update because a link may already exist */
-		    dag_update_link (pnode, snode, ascr + slink->ascr, plink->ef, slink);
+		    dag_update_link (&dag, pnode, snode, ascr + slink->ascr, plink->ef, slink);
 		}
 	    }
 	}
     }
 
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link (NULL, dag.root, 0, -1, NULL);
+    dag_link (&dag,NULL, dag.root, 0, -1, NULL);
     
     /* Attach a dummy predecessor link from nowhere into final DAG node */
     plink = &(dag.final);
@@ -2809,178 +2766,6 @@ static void dag_remove_filler_nodes (float64 lwf)
     plink->history = NULL;
     plink->ef = lattice[latfinal].frm;
     plink->next = NULL;
-}
-
-
-
-
-/**
- * Recursive step in dag_search:  best backward path from src to root beginning with l.
- */
-static void dag_bestpath (daglink_t *l,		/* Backward link! */
-			  dagnode_t *src,	/* Source node for backward link l */
-			  float64 lwf)		/* Language weight multiplication factor */
-{
-    dagnode_t *d, *pd;
-    daglink_t *pl;
-    int32 lscr, score;
-    
-    assert (! l->pscr_valid);
-    
-    if ((d = l->node) == NULL) {
-	/* If no destination at end of l, src is root node.  Recursion termination */
-	assert (dict_basewid(dict,src->wid) == startwid);
-	l->lscr = 0;
-	l->pscr = 0;
-	l->pscr_valid = 1;
-	l->history = NULL;
-	
-	return;
-    }
-    
-    /* Search all predecessor links of l */
-    for (pl = d->predlist; pl; pl = pl->next) {
-	pd = pl->node;
-	if (pd && filler_word (pd->wid))	/* Skip filler node */
-	    continue;
-
-	/* Evaluate best path along pl if not yet evaluated (recursive step) */
-	if (! pl->pscr_valid)
-	    dag_bestpath (pl, d, lwf);
-	
-	/* Accumulated path score along pl->l */
-	if (pl->pscr > (int32)0x80000000) {
-	    score = pl->pscr + l->ascr;
-	    if (pd)
-		lscr = lwf * lm_tg_score (lm,
-					  dict2lmwid[dict_basewid(dict, pd->wid)],
-					  dict2lmwid[dict_basewid(dict,d->wid)],
-					  dict2lmwid[dict_basewid(dict, src->wid)],
-					  dict_basewid(dict, src->wid));
-	    else
-		lscr = lwf * lm_bg_score (lm,
-					  dict2lmwid[dict_basewid(dict,d->wid)],
-					  dict2lmwid[dict_basewid(dict,src->wid)],
-					  dict_basewid(dict,src->wid));
-	    score += lscr;
-	    
-	    /* Update best path and score beginning with l */
-	    if (score > l->pscr) {
-		l->lscr = lscr;
-		l->pscr = score;
-		l->history = pl;
-	    }
-	}
-    }
-
-#if 0    
-    printf ("%s,%d -> %s,%d = %d\n",
-	    dict_wordstr (dict,d->wid), d->sf,
-	    dict_wordstr (dict,src->wid), src->sf,
-	    l->pscr);
-#endif
-
-    l->pscr_valid = 1;
-}
-
-
-/**
- * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
- * Restore bypassed links during backtrace.
- */
-static srch_hyp_t *dag_backtrace (daglink_t *l, float64 lwf)
-{
-    srch_hyp_t *h, *hhead, *htail;
-    int32 pscr;
-    dagnode_t *src, *dst;
-    daglink_t *bl, *hist;
-    
-    hyp = NULL;
-    dst = NULL;
-    for (; l; l = hist) {
-	hist = l->history;
-	
-	if (hyp)
-	    hyp->lscr = l->lscr;	/* As lscr actually applies to successor node */
-	
-	if (! l->node) {
-	    assert (! l->history);
-	    break;
-	}
-	
-	if (! l->bypass) {
-	    /* Link did not bypass any filler node */
-	    h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
-	    h->wid = l->node->wid;
-	    h->word = dict_wordstr (dict,h->wid);
-	    h->sf = l->node->sf;
-	    h->ef = l->ef;
-	    h->ascr = l->ascr;
-	    
-	    h->next = hyp;
-	    hyp = h;
-	} else {
-	    /* Link bypassed one or more filler nodes; restore bypassed link seq. */
-	    hhead = htail = NULL;
-	    
-	    src = l->node;	/* Note that l is a PREDECESSOR link */
-	    for (; l; l = l->bypass) {
-		h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
-		h->wid = src->wid;
-		h->word = dict_wordstr (dict,h->wid);
-		h->sf = src->sf;
-
-		if (hhead)
-		    h->lscr = lwf * fillpen (fpen,dict_basewid (dict,src->wid));
-		
-		if (l->bypass) {
-		    dst = l->bypass->src;
-		    assert (filler_word (dst->wid));
-		    bl = find_succlink (src, dst);
-		    assert (bl);
-		} else
-		    bl = l;
-
-		h->ef = bl->ef;
-		h->ascr = bl->ascr;
-		if (htail)
-		    htail->next = h;
-		else
-		    hhead = h;
-		htail = h;
-
-		src = dst;
-	    }
-
-	    htail->next = hyp;
-	    hyp = hhead;
-	}
-    }
-
-    /* Compute path score for each node in hypothesis */
-    pscr = 0;
-    for (h = hyp; h; h = h->next) {
-	pscr = pscr + h->lscr + h->ascr;
-	h->pscr = pscr;
-    }
-    
-    return hyp;
-}
-
-
-static int32 dag_chk_linkscr (dag_t *dag)
-{
-    dagnode_t *d;
-    daglink_t *l;
-    
-    for (d = dag->list; d; d = d->alloc_next) {
-	for (l = d->succlist; l; l = l->next) {
-	    if (l->ascr >= 0)
-		return -1;
-	}
-    }
-
-    return 0;
 }
 
 
@@ -3001,6 +2786,7 @@ srch_hyp_t *s3flat_fwd_dag_search (char *utt)
     float32 *f32arg;
     float64 lwf;
     int32 fudge, min_ef_range;
+    int32 k;
 
     if (renormalized) {
 	E_ERROR("Scores renormalized during forward Viterbi; cannot run bestpath\n");
@@ -3026,19 +2812,28 @@ srch_hyp_t *s3flat_fwd_dag_search (char *utt)
 	dag.filler_removed = 1;
     }
     
+    dag.maxlmop = *((int32 *) cmd_ln_access ("-maxlmop"));
+    k = *((int32 *) cmd_ln_access ("-maxlpf"));
+    k *= dag.nfrm;
+    if (dag.maxlmop > k)
+	dag.maxlmop = k;
+    dag.lmop = 0;
+
     /* Find the backward link from the final DAG node that has the best path to root */
     final = lattice[dag.latfinal].dagnode;
     bestscore = (int32) 0x80000000;
     bestl = NULL;
 
     /* Check that all edge scores are -ve; error if not so. */
-    if (dag_chk_linkscr (&dag) < 0)
-	return NULL;
+    if (dag_chk_linkscr (&dag) < 0){
+      E_ERROR("Some edges are not negative\n");
+      return NULL;
+    }
     
     for (l = final->predlist; l; l = l->next) {
 	d = l->node;
-	if (! filler_word (d->wid)) {	/* Ignore filler node */
-	    dag_bestpath (l, final, lwf);	/* Best path to root beginning with l */
+	if (! dict_filler_word (dict,d->wid)) {	/* Ignore filler node */
+	    dag_bestpath (&dag,l, final, lwf,dict,lm,lm->dict2lmwid);	/* Best path to root beginning with l */
 
 	    if (l->pscr > bestscore) {
 		bestscore = l->pscr;
@@ -3059,8 +2854,8 @@ srch_hyp_t *s3flat_fwd_dag_search (char *utt)
     l->pscr = bestl->pscr + l->ascr;
     
     /* Backtrack through DAG for best path; but first free any old hypothesis */
-    hyp_free ();
-    hyp = dag_backtrace (l, lwf);
+    hyp_free (hyp);
+    hyp = dag_backtrace (hyp, l, lwf, dict, fpen);
     
     return (hyp);
 }
