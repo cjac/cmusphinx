@@ -44,6 +44,21 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  22:32:25  arthchan2003
+ * Log. Significant expansion of ascr_t to be the container of all types
+ * of acoustic scores.  Implementations of init, report, free functions
+ * are now provided. ascr_shift_one_cache_frame is used to provide a
+ * wrapper for shifting one frame of cache frame in phoneme lookahead.
+ * It is expected to be used later more if more complicated scheme of
+ * lookahead is used.
+ * 
+ * Revision 1.5  2005/04/20 03:31:57  archan
+ * Part of refactoring: add ascr_shift_one_cache_frame which could shift one cache frame.
+ *
+ * Revision 1.4  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 19-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -66,21 +81,62 @@ extern "C" {
    */
 
 typedef struct {
-    int32 *sen;		/* Senone scores in current frame */
-    int32 *comsen;	/* Composite senone scores in current frame */
+  int32 *sen;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
+  int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
+
+  int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
+  int32 *comssid_active;        /**< TEMPORARY VARIABLES:  Composite senone active */
+  int32 *sen_active;            /**< TEMPORARY VARIABLES: Structure that record whether the current state is active. */
+  int32 *rec_sen_active;        /**< TEMPORARY VARIABLES: Most recent senone active state */
+  int32 **cache_ci_senscr;      /**< TEMPORARY VARIABLES: Cache of ci senscr in the next pl_windows frames, include this frame.*/
+  int32 *cache_best_list;       /**< TEMPORARY VARIABLES: Cache of best the ci sensr the next pl_windows, include this frame*/
+
+  int32 n_sen;    /**< No. of senone. */
+  int32 n_comsen; /**< No. of composite senone. */
+  int32 n_sseq;   /**< No. of senone sequence. */
+  int32 n_comsseq; /**< No. of composite senone sequence. */
+  int32 pl_win;    /**< Phoneme lookahead window. */
+  int32 n_cisen;    /**< No. of CI senone */
 } ascr_t;
 
 
   /**
- * Create an ascr_t structure for the given number of senones (ordinary and composite).
- * Return value: Ptr to created structure if successful, NULL otherwise.
- */
-ascr_t *ascr_init (int32 n_sen,		/* In: #Ordinary senones */
-		   int32 n_comsen);	/* In: #Composite senones */
+   * Create an ascr_t structure for the given number of senones (ordinary and composite).
+   * @return Pointer to created structure if successful, NULL otherwise.
+   */
+  ascr_t *ascr_init (int32 n_sen,		/**< Input: #Ordinary senones */
+		     int32 n_comsen,	/**< Input: #Composite senones */
+		     int32 n_sseq,        /**< Input: # of senone sequences */ 
+		     int32 n_comsseq,     /**< Input: # of composite senone sequences */ 
+		     int32 pl_win,        /**< Input: size of phoneme lookahead windows */
+		     int32 n_cisen        /**< Input: # of CI senones */
+		     );
 
+  /**
+   * Report the ascr parameters. 
+   */
+
+  void ascr_report(ascr_t * a /**<Input : ascr data structure */
+		   ) ;
+
+  /**
+   * Free ascr_t 
+   */ 
+
+  void ascr_free(ascr_t  *a /**<Input: an initialized ascr data structure */
+		 );
+
+  /**
+   * Shift one frame for the cache
+   */
+  void ascr_shift_one_cache_frame(ascr_t *a,  /**<Input: an initialized ascr data structure */
+				  int32 win_efv /**<Input: the effective size of cache windows */
+				  );
+       
 #ifdef __cplusplus
 }
 #endif
 
 
 #endif
+
