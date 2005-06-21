@@ -44,6 +44,21 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  18:05:12  arthchan2003
+ * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
+ * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
+ * taking care of maxing ci senone score for a frame.
+ * 
+ * Revision 1.6  2005/06/09 20:55:29  archan
+ * Add comments for approx_cont_mgau.h.
+ *
+ * Revision 1.5  2005/04/20 03:30:58  archan
+ * Part of refactoring: move best scores inside approx_cont_mgau.h
+ *
+ * Revision 1.4  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 23-Jan-2004 Arthur Chan (archan@cs.cmu.edu)
  *             started
@@ -57,7 +72,11 @@
 #include "vector.h"
 #include "subvq.h"
 #include "gs.h"
-#include "kb.h"
+#include "fast_algo_struct.h"
+
+/* These two headers should be eliminated to make libam more orthogonal to liblm and libcommon */ 
+#include "kbcore.h"  
+#include "ascr.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -193,19 +212,18 @@ extern "C" {
    @return the best senone score
 */
 
-int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef, svq and gs*/
-				   fast_gmm_t *fastgmm,	 /**< Input/Output: wrapper for
-							    parameters for Fast GMM , for
-							    all beams and parameters, during
-							    the computation, the */
-				   float32 *feat,	/**< Input: the current feature vector */
-				   int32 frame,         /**< Input: the current frame number */
-				   int32 *sen_active,	/**< Input: the current active senones */
-				   int32 *rec_sen_active, /**< Input: the most recent active senones */
-				   int32 *senscr,         /**< Output: the output senone scores */
-				   int32 *cache_ci_senscr, /**< Input: the CI senone scores for CI GMMS */
-				   ptmr_t *tm_ovrhd        /**< Output: the timer used for computing overhead */
-				   );
+  int32 approx_cont_mgau_frame_eval (kbcore_t * kbc,  /**< Input, kbcore, for mdef, svq and gs*/
+				     fast_gmm_t *fastgmm,	 /**< Input/Output: wrapper for
+								    parameters for Fast GMM , for
+								    all beams and parameters, during
+								    the computation, the */
+				     ascr_t *a,           /**< Input/Output: wrapper for all acoustic scores
+							     arrays */
+				     float32 *feat,	/**< Input: the current feature vector */
+				     int32 frame,         /**< Input: The frame number */
+				     int32 *cache_ci_senscr, /**< Input: The cache CI scores for this frame */
+				     ptmr_t *tm_ovrhd        /**< Output: the timer used for computing overhead */
+				     );
 
 
   /**
@@ -223,9 +241,9 @@ void approx_cont_mgau_ci_eval (
 							    the computation, the */
 			       mdef_t *mdef,  /**< Input : model definition */
 			       float32 *feat, /**< Input : the current frame of feature */
-			       int32 *ci_senscr, /**< Output : the ci senscore for this frame */
-			       int32 fr /**< Input : The frame number */
-
+			       int32 *ci_senscr, /** Input/Output : ci senone score, a one dimension array */
+			       int32 *best_score, /** Input/Output: the best score, a scalar */
+			       int32 fr /** In : The frame number */
 			       );
 
 #ifdef __cplusplus

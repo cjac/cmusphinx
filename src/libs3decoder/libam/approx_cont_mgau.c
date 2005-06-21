@@ -45,6 +45,18 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.15  2005/06/21  18:05:12  arthchan2003
+ * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
+ * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
+ * taking care of maxing ci senone score for a frame.
+ * 
+ * Revision 1.5  2005/04/20 03:30:57  archan
+ * Part of refactoring: move best scores inside approx_cont_mgau.h
+ *
+ * Revision 1.4  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 23-Jan-2004 Arthur Chan (archan@cs.cmu.edu)
  *             started
@@ -328,7 +340,8 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc, /** In: kbcore */
 			       fast_gmm_t *fg, /** In : The fast GMM structure */
 			       mdef_t *mdef, /** In : model definition */
 			       float32 *feat, /** In : the feature vector */
-			       int32 *ci_senscr, /** Output : ci senone score */
+			       int32 *ci_senscr, /** Input/Output : ci senone score, a one dimension array */
+			       int32 *best_score, /** Input/Output: the best score, a scalar */
 			       int32 fr /** In : The frame number */
 			       )
 {
@@ -341,10 +354,12 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc, /** In: kbcore */
   int32 svq_beam;
   int32 n_cig;
   int32 n_cis;
+
   n_cis=0;
   n_cig=0;
   cd2cisen=mdef_cd2cisen(mdef);
   svq_beam=fg->gaus->subvqbeam;  
+
 
   gs=kbcore_gs(kbc);
   svq=kbcore_svq(kbc);
@@ -372,6 +387,14 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc, /** In: kbcore */
 
 #endif
 
+  *best_score=MAX_NEG_INT32;
+
+  for(s =0;mdef_is_cisenone(mdef,s);s++){
+    if(ci_senscr[s]> *best_score)
+      *best_score=ci_senscr[s];
+  }
+
+
   g->frm_ci_sen_eval=n_cis;
   g->frm_ci_gau_eval=n_cig;
 }
@@ -381,11 +404,9 @@ void approx_cont_mgau_ci_eval (kbcore_t *kbc, /** In: kbcore */
 
 int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 				   fast_gmm_t *fastgmm,
+				   ascr_t *a,
 				   float32 *feat,	
 				   int32 frame,
-				   int32 *sen_active,  
-				   int32 *rec_sen_active,
-				   int32 *senscr,
 				   int32 *cache_ci_senscr,
 				   ptmr_t *tm_ovrhd)
 {
@@ -409,6 +430,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   float32 tighten_factor;
 
   int32 single_el_list[2];
+  int32 *sen_active;
+  int32 *rec_sen_active;
+  int32 *senscr;
 
   best = MAX_NEG_INT32;
   pbest = MAX_NEG_INT32;
@@ -431,6 +455,10 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   ci_occ=fastgmm->gmms->ci_occu;
   cd2cisen=mdef_cd2cisen(mdef);
 
+  sen_active=a->sen_active;
+  rec_sen_active=a->rec_sen_active;
+  senscr=a->sen;
+
   ptmr_start(tm_ovrhd);
   if(gs)  best_cid=gc_compute_closest_cw(gs,feat);
   if(svq) subvq_gautbl_eval_logs3 (svq, feat);
@@ -449,7 +477,7 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   fastgmm->gaus->rec_bstcid=best_cid; 
 
   /* Use the original */
-#if 1
+
   /* If the frame is "skipped", tighten the beam. */
   if(is_skip) {
     dyn_ci_pbeam = (int32)((float32) dyn_ci_pbeam * tighten_factor);
@@ -460,11 +488,9 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
     is_ciphone  = mdef_is_cisenone(mdef,s);
 
 #if 0
-    if(sen_active[s]){
+    if(sen_active[s])
       E_INFO("Sen active %d, rec_sen_active %d, sen id %d cisen id %d, best index %d, update time %d\n",sen_active[s],rec_sen_active[s],s,cd2cisen[s], g->mgau[s].bstidx, g->mgau[s].updatetime);
-    }
 #endif
-
     
       /* Compute the score of the CI phone even if it is not active. */
     if(is_ciphone){
@@ -540,7 +566,6 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
   ci_occ=NULL;
   return best;
 
-#endif
 
 }
 
