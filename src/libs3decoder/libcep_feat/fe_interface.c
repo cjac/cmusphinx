@@ -47,6 +47,13 @@
 
 /* 
  *   HISTORY
+ * $Log$
+ * Revision 1.21  2005/06/21  20:35:55  arthchan2003
+ * Add $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  *
  *   12-Aug-99 Created by M Seltzer for opensource SPHINX III system
  *   Based in part on past implementations by R Singh, M Siegler, M
