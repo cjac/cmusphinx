@@ -44,6 +44,22 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.6  2005/06/21  20:46:54  arthchan2003
+ * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ * 
+ * Revision 1.6  2005/06/03 06:12:56  archan
+ * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
+ *
+ * Revision 1.5  2005/05/27 01:15:44  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added log_to_logs3_factor(), and logs3_to_p().
@@ -91,18 +107,20 @@ static uint16 *add_tbl = NULL;	/* See discussion above */
 static int32 add_tbl_size;
 
 
-int32 logs3_init (float64 base)
+int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 {
     int32 i, k;
     float64 d, t, f;
 
+    USE_LOG3_ADD_TABLE = bLogTable;
 
-    USE_LOG3_ADD_TABLE = cmd_ln_int32 ("-log3table");
-
-    E_INFO("Initializing logbase: %e (add table: %d)\n", base,USE_LOG3_ADD_TABLE);
+    if(bReport)
+      E_INFO("Initializing logbase: %e (add table: %d)\n", base,USE_LOG3_ADD_TABLE);
 
     if (base <= 1.0)
-	E_FATAL("Illegal logbase: %e; must be > 1.0\n", base);
+      E_FATAL("Illegal logbase: %e; must be > 1.0\n", base);
+    if (base > 1.1)
+      E_WARN("Logbase %e perhaps too large??\n", base);
 
     if (add_tbl) {
 	if (B == base)
@@ -121,7 +139,7 @@ int32 logs3_init (float64 base)
     k = (int32) (log(2.0)*invlogB + 0.5);
     if (k > 65535) {
 	E_ERROR("Logbase too small: %e; needs int32 addtable[]\n", base);
-	return -1;
+	return LOGS3_FAILURE;
     }
 
     d = 1.0;
@@ -161,9 +179,8 @@ int32 logs3_init (float64 base)
 	d *= f;
     }
     
-    E_INFO("Log-Add table size = %d\n", add_tbl_size);
 
-    return 0;
+    return LOGS3_SUCCESS;
 }
 
 
@@ -253,6 +270,13 @@ void logs_free ()
 {
   if (add_tbl) 
     ckd_free ((void *) add_tbl);
+}
+
+void logs3_report()
+{
+  E_INFO_NOFN("Initialization of the log add table\n");
+  E_INFO_NOFN("Log-Add table size = %d\n", add_tbl_size);
+  E_INFO_NOFN("\n");
 }
 
 
