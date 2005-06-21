@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.15  2005/06/21  20:54:44  arthchan2003
+ * 1, Added $ keyword. 2, make a small change for compilation purpose.
+ * 
+ * Revision 1.5  2005/06/16 04:59:09  archan
+ * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
+ *
+ * Revision 1.4  2005/06/15 21:48:56  archan
+ * Sphinx3 to s3.generic: Changed noinst_HEADERS to pkginclude_HEADERS.  This make all the headers to be installed.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 13-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Changed typedef source for s3ssid_t from int32 to s3pid_t.
@@ -61,8 +74,8 @@
 #ifndef _S3_S3TYPES_H_
 #define _S3_S3TYPES_H_
 
+#include <libutil.h>
 #include <float.h>
-#include "libutil.h"
 
 /** \file s3types.h
  * \brief Size definition of semantically units. Common for both s3 and s3.X decoder. 
