@@ -33,6 +33,7 @@
  * ====================================================================
  *
  */
+
 /*
  * vector.c
  *
@@ -46,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15  2005/06/21  21:00:44  arthchan2003
- * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ * Revision 1.16  2005/06/21  21:02:05  arthchan2003
+ * Please ignore the last log. vector.c has now fix doxygen-style documents and fixed $ keyword.
  * 
+ * Revision 1.15  2005/06/21 21:00:44  arthchan2003
+ * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ *
  * Revision 1.2  2005/03/30 01:08:38  archan
  * codebase-wide update. Performed an age-old trick: Adding $Log into all .c and .h files. This will make sure the commit message be preprended into a file.
  *
