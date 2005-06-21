@@ -45,6 +45,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  21:09:22  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added  keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 20-Apr-2001  Ricky Houghton (ricky.houghton@cs.cmu.edu or rhoughton@mediasite.com)
  *              Added fillpen_free to free memory allocated by fillpen_init
  * 
