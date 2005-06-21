@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  20:40:46  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 02-Jul-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Bugfix: Added byteswapping in bio_verify_chksum().

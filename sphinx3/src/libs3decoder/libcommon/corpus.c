@@ -45,6 +45,11 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.11  2005/06/21  20:44:34  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * 
+ *
  * 09-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added ctl_process_utt ().
  * 
@@ -67,6 +72,7 @@
 
 #include "corpus.h"
 #include "kb.h"
+#include "srch.h"
 
 corpus_t *corpus_load_headid (char *file,
 			      int32 (*validate)(char *str),
@@ -336,8 +342,7 @@ int32 ctl_read_entry (FILE *fp, char *uttfile, int32 *sf, int32 *ef, char *uttid
 }
 
 
-ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile,
-		    int32 nskip, int32 count,
+ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 		    void *kb)
 {
@@ -414,8 +419,10 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile,
 
     ptmr_reset (&tm);
   }
-  
-  fclose (fp);
+
+  if(fp)
+    fclose (fp);
+
   
   return tm;
 }
@@ -433,6 +440,9 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
   char tmp[4096];
   int32 sf, ef;
   ptmr_t tm;
+  kb_t* k;
+
+  k=(kb_t*)kb;
   
   ctllmfp=NULL;
   ctlmllrfp=NULL;
@@ -511,7 +521,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     ptmr_start (&tm);
     E_INFO("filename %s, lmname %s\n",uttfile,lmname);
     if (func){
-      kb_setlm(lmname,kb);
+      srch_set_lm((srch_t*)k->srch,lmname);
       if(ctlmllrfile) kb_setmllr(regmatname,cb2mllrname,kb);
       (*func)(kb, uttfile, sf, ef, uttid);
     }
@@ -523,7 +533,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
 
     ptmr_reset (&tm);
   }
-  
+
   if(fp)
     fclose (fp);
   if(ctllmfp)

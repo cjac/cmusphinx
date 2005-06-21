@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.12  2005/06/21  20:44:34  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * 
+ * Revision 1.4  2005/06/18 20:05:23  archan
+ * Sphinx3 to s3.generic: Set lm correctly in dag.c and astar.c.  Same changes should also be applied to decode_anytopo.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 09-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added ctl_process_utt ().
@@ -135,6 +145,7 @@ corpus_t *corpus_load_tailid (char *file,	/**< Input file name, the file must be
  */
 char *corpus_lookup (corpus_t *corp, char *id);
 
+
   /**
  * Read another entry from a S3 format "control file" and parse its various fields.
  * Blank lines and lines beginning with a hash-character (#) are omitted.
@@ -143,13 +154,15 @@ char *corpus_lookup (corpus_t *corp, char *id);
  * Any error in control file entry format is FATAL.
  * Return value: 0 if successful, -1 if no more entries left.
  */
-int32 ctl_read_entry (FILE *fp,
+
+  int32 ctl_read_entry (FILE *fp,         /**< In: an input file pointer */
 		      char *uttfile,	/**< Out: (Cep)file containing utterance data */
 		      int32 *sf,	/**< Out: Start frame in uttfile; 0 if omitted */
 		      int32 *ef,	/**< Out: End frame in uttfile; -1 (signifying
 					   until EOF) if omitted */
-		      char *uttid);	/**< Out: Utterance ID (generated from uttfile/sf/ef
+		      char *uttid	/**< Out: Utterance ID (generated from uttfile/sf/ef
 					   if omitted) */
+		      );
 
   /**
  * Process the given control file (or stdin if NULL):  Skip the first nskip entries, and
@@ -164,11 +177,12 @@ ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if N
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 		    /**< In: Function to be invoked for each of the
 					   count entries processed. */
-		    void *kb);		/**< In: A catch-all data pointer to be passed as
+		    void *kb		/**< In: A catch-all data pointer to be passed as
 					   the first argument to func above */
+		    );
 
   /**
- * A small modification of ctl_process.  It changes the LM dynamically according to the utterances. User can use option -ctl_lm to specify which LM should be used in each utterance.  
+ * A small modification of ctl_process.  It changes the LM dynamically according to the utterances. User can use option -ctl_lm to specify which LM should be used in each utterance.   
  */
 ptmr_t ctl_process_dyn_lm (char *ctlfile,	/**< In: Control file to read; use stdin if NULL */
 			   char *ctllmfile,     /**< In: Control file that specify the lm used for the corresponding utterance */
@@ -178,8 +192,9 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile,	/**< In: Control file to read; use std
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 			   /**< In: Function to be invoked for each of the
 					   count entries processed. */
-		    void *kb);		/**< In: A catch-all data pointer to be passed as
+		    void *kb		/**< In: A catch-all data pointer to be passed as
 					   the first argument to func above */
+			   );
 
 
   /**
@@ -188,11 +203,11 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile,	/**< In: Control file to read; use std
  * the decoder can be used to process a dynamically generated sequence of utterances.  To avoid
  * race conditions, each new instance of the file should be created "in an instant": by creating
  * it under a temporary name and finally renaming it to the given filename atomically.
- * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
+ * @return: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
 ptmr_t ctl_process_utt (char *uttfile,	/**< In: Filename to be process (in its entirety) */
 			int32 count,	/**< In: No. of iterations to process uttfile */
-			void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+			void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),/**< A function pointer that do the actual processing */
 			void *kb);
 
   /**
@@ -205,9 +220,10 @@ void ctl_infile (char *file,	/**< Out: Generated filename (allocated by caller) 
 		 char *dir,	/**< In: Optional directory spec if relative utt specified */
 		 char *ext,	/**< In: File extension to be appended to utt to generate
 				   complete filename */
-		 char *utt);	/**< In: Utterance file pathname, absolute or relative,
+		 char *utt	/**< In: Utterance file pathname, absolute or relative,
 				   with or without file extension.  This is usually the
 				   first field in a control file */
+		 );
 
   /**
  * Build a complete output filename from the given components as follows:
@@ -223,7 +239,8 @@ void ctl_outfile (char *file,	/**< Out: Generated filename (allocated by caller)
 		  char *utt,	/**< In: Utterance file pathname, absolute or relative,
 				   with or without extension.  This is usually the first
 				   field in a control file. */
-		  char *uttid);	/**< In: Utterance ID (derived from the control file */
+		  char *uttid	/**< In: Utterance ID (derived from the control file */
+		  );
 
 #ifdef __cplusplus
 }
