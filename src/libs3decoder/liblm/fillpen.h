@@ -45,6 +45,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  21:09:22  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added  keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:58  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 11-Oct-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
@@ -89,24 +99,26 @@ typedef struct {
  * filler words get fillprob.  As with the trigram LM, the resulting log-probabilities are
  * multiplied by a language weight and finally a word insertion penalty is tacked on.
  */
-fillpen_t *fillpen_init (dict_t *dict,		/** In: Dictionary containing filler words */
-			 char *file,		/** In: Filler word probabilities file, if any */
-			 float64 silprob,	/** In: Default probability for silence word */
-			 float64 fillprob,	/** In: Default probability for non-silence filler
+fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler words */
+			 char *file,		/**< In: Filler word probabilities file, if any */
+			 float64 silprob,	/**< In: Default probability for silence word */
+			 float64 fillprob,	/**< In: Default probability for non-silence filler
 						   words */
-			 float64 lw,		/** In: Language weight (see lm.h) */
-			 float64 wip);		/** In: Word insertion penalty (see lm.h) */
+			 float64 lw,		/**< In: Language weight (see lm.h) */
+			 float64 wip		/**< In: Word insertion penalty (see lm.h) */
+			 );
 
   /**
  * Return the filler word probability for the given dictionary word-ID.
  */
-int32 fillpen (fillpen_t *f,		/** In: Filler word probabilities structure */
-	       s3wid_t w);		/** In: Dictionary word-ID of filler word */
-
+int32 fillpen (fillpen_t *f,		/**< In: Filler word probabilities structure */
+	       s3wid_t w		/**< In: Dictionary word-ID of filler word */
+	       );
 /* RAH 
    free memory allocated by fillpen_init
  */
-void fillpen_free (fillpen_t *f);
+  void fillpen_free (fillpen_t *f /**< A filler penalty structure */
+		   );
 
 #ifdef __cplusplus
 }
