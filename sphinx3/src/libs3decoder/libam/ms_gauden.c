@@ -9,6 +9,13 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  18:55:09  arthchan2003
+ * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Changed gauden_param_read to use the new libio/bio_fread functions.
