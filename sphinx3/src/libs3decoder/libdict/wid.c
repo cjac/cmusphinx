@@ -45,6 +45,13 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.7  2005/06/21  21:05:49  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.2  2005/03/30 01:08:38  archan
+ * codebase-wide update. Performed an age-old trick: Adding $Log into all .c and .h files. This will make sure the commit message be preprended into a file.
+ *
  * 26-Feb-2004  A Chan (archan@cs.cmu.edu) at Carnegie Mellon University
  *              Add information to correctly take care class id. 
  *
@@ -72,6 +79,8 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 
     maperr=0;
 
+    assert (dict);
+    assert (lm);
     assert (dict_size(dict) > 0);
     map = (s3lmwid_t *) ckd_calloc (dict_size(dict), sizeof(s3lmwid_t));
     for (n = 0; n < dict_size(dict); n++){

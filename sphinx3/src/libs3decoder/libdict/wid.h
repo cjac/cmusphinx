@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  21:05:49  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:58  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 01-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -74,22 +84,23 @@ extern "C" {
  * Return value: The map[] array built as described above.
  */
 
-s3lmwid_t *wid_dict_lm_map (dict_t *dict,	/* In: Dictionary */
-			    lm_t *lm,           /* In/Out: LM; lm->ug[].dictwid values are
+s3lmwid_t *wid_dict_lm_map (dict_t *dict,	/**< In: Dictionary */
+			    lm_t *lm,           /**< In/Out: LM; lm->ug[].dictwid values are
 						   updated. */
-			    int32 lw
+			    int32 lw            /**< In: Language Weight */
 			    );		
 
   /**
  * Augment the given wordprob array with alternative pronunciations from the dictionary.
  * Return value: #entries in the augmented wordprob array (including the original ones).
  */
-int32 wid_wordprob2alt (dict_t *dict,	/* In: Dictionary */
-			wordprob_t *wp,	/* In/Out: Input wordprob array, to be augmented with
+int32 wid_wordprob2alt (dict_t *dict,	/**< In: Dictionary */
+			wordprob_t *wp,	/**< In/Out: Input wordprob array, to be augmented with
 					   alternative pronunciations for the entries that
 					   already exist in it.  Caller must have allocated
 					   this array. */
-			int32 n);	/* In: #Input entries in the wordprob array */
+			int32 n	/**< In: #Input entries in the wordprob array */
+			);
 
 #ifdef __cplusplus
 }
