@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  19:28:00  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added cmn_free() and moved *mean and *var out global space and named them cmn_mean and cmn_var

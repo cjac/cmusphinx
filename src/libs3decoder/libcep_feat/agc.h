@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.8  2005/06/21  19:25:41  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:56  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Copied from previous version.
@@ -73,8 +83,9 @@ extern "C" {
  * This function operates on an entire utterance at a time.  Hence, the entire utterance
  * must be available beforehand (batchmode).
  */
-void agc_max (float32 **mfc,	/* In/Out: mfc[f] = cepstrum vector in frame f */
-	      int32 n_frame);	/* In: #frames of cepstrum vectors supplied */
+void agc_max (float32 **mfc,	/**< In/Out: mfc[f] = cepstrum vector in frame f */
+	      int32 n_frame	/**< In: #frames of cepstrum vectors supplied */
+	      );
 
 #ifdef __cplusplus
 }

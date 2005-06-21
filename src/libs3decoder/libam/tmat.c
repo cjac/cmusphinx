@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  19:23:35  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.5  2005/05/03 04:09:09  archan
+ * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added tmat_free to free allocated memory 
@@ -120,7 +133,7 @@ int32 tmat_chk_1skip (tmat_t *tmat)
 }
 
 
-tmat_t *tmat_init (char *file_name, float64 tpfloor)
+tmat_t *tmat_init (char *file_name, float64 tpfloor,int32 breport)
 {
     char tmp;
     int32 n_src, n_dst;
@@ -132,7 +145,10 @@ tmat_t *tmat_init (char *file_name, float64 tpfloor)
     char **argname, **argval;
     tmat_t *t;
     
-    E_INFO("Reading HMM transition probability matrices: %s\n", file_name);
+
+    if(breport){
+      E_INFO("Reading HMM transition probability matrices: %s\n", file_name);
+    }
 
     t = (tmat_t *) ckd_calloc (1, sizeof(tmat_t));
 
@@ -194,7 +210,7 @@ tmat_t *tmat_init (char *file_name, float64 tpfloor)
 	/* Normalize and floor */
 	for (j = 0; j < n_src; j++) {
 	    if (vector_sum_norm (tp[j], n_dst) == 0.0)
-		E_ERROR("Normalization failed for tmat %d from state %d\n", i, j);
+		E_WARN("Normalization failed for tmat %d from state %d\n", i, j);
 	    vector_nz_floor (tp[j], n_dst, tpfloor);
 	    vector_sum_norm (tp[j], n_dst);
 
@@ -214,13 +230,20 @@ tmat_t *tmat_init (char *file_name, float64 tpfloor)
 
     fclose(fp);
 
-    E_INFO("Read %d transition matrices of size %dx%d\n",
-	   t->n_tmat, t->n_state, t->n_state+1);
     
     if (tmat_chk_uppertri (t) < 0)
 	E_FATAL("Tmat not upper triangular\n");
     
     return t;
+}
+
+void tmat_report(tmat_t *t)
+{
+  E_INFO_NOFN("Initialization of tmat_t, report:\n");
+  E_INFO_NOFN("Read %d transition matrices of size %dx%d\n",
+	      t->n_tmat, t->n_state, t->n_state+1);
+  E_INFO_NOFN("\n");
+
 }
 
 /* 
