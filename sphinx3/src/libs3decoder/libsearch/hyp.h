@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  22:49:03  arthchan2003
+ * Add  keyword.
+ * 
+ * Revision 1.4  2005/06/16 04:59:10  archan
+ * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 01-Jun-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Started.
