@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  20:52:00  arthchan2003
+ * 1, remove hyp_free, it is now in the implementation of dag.c , 2, add incomplete comments for misc.h. 3, Added $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 26-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carngie Mellon Unversity 
  *              Adapted  fro
@@ -63,20 +70,34 @@
  */
 
 /** Return value: control file; E_FATAL if cannot open */
-FILE *ctlfile_open (char *file);
+FILE *ctlfile_open (char *file /**< The input file name*/
+		    );
 
 /**
  * Read next control file entry.
- * Return value: 0 if successful, -1 otherwise.
+ * @return: 0 if successful, -1 otherwise.
  */
-int32 ctlfile_next (FILE *fp, char *ctlspec, int32 *sf_out, int32 *ef_out, char *uttid);
+int32 ctlfile_next (FILE *fp, 
+		    char *ctlspec, 
+		    int32 *sf_out, 
+		    int32 *ef_out, 
+		    char *uttid /**< The utterance ID */
+		    );
 
 /**
- * Close the close file. 
+ * Close the control file. 
  */
 
-void  ctlfile_close (FILE *fp);
+void  ctlfile_close (FILE *fp /**< The input file pointer */
+		     );
 
-int32 argfile_load (char *file, char *pgm, char ***argvout);
+
+/** Loading arguments from a file 
+    Note: This function should move to cmd_ln.c
+ */
+int32 argfile_load (char *file, /**< The file name for input argument */
+		    char *pgm,  /**< The program name */
+		    char ***argvout /**< Output: The argument */
+		    );
 
 #endif
