@@ -1,4 +1,4 @@
-/* ====================================================================
+ /* ====================================================================
  * Copyright (c) 2004 Carnegie Mellon University.  All rights
  * reserved.
  *
@@ -38,6 +38,14 @@
  * 
  * 11-Jul-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
+ * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  21:07:28  arthchan2003
+ * Added  keyword.
+ * 
+ * Revision 1.2  2005/06/15 06:48:54  archan
+ * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
+ *
  */
 
 #include "fe.h"
