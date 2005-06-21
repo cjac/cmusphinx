@@ -41,6 +41,60 @@
  ************************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.26  2005/06/21  23:21:58  arthchan2003
+ * Log. This is a big refactoring for kb.c and it is worthwhile to give
+ * words on why and how things were done.  There were generally a problem
+ * that the kb structure itself is too flat.  That makes it has to
+ * maintained many structure that could be maintained by smaller
+ * structures.  For example, the count of A and the array of A should
+ * well be put into the same structure to increase readability and
+ * modularity. One can explain why histprune_t, pl_t, stat_t and
+ * adapt_am_t were introduced with that line of reasoning.
+ * 
+ * In srch_t, polymorphism of implementation is also one important
+ * element in separting all graph related members from kb_t to srch_t.
+ * One could probably implement the polymorphism as an interface of kb
+ * but it is not trivial from the semantic meaning of kb.  That is
+ * probably why srch_t is introduced as the gateway of search interfaces.
+ * 
+ * Another phenonemon one could see in the code was bad interaction
+ * between modules. This is quite serious in two areas: logging and
+ * checking. The current policy is unless something required cross
+ * checking two structures, they would be done internally inside a module
+ * initialization.
+ * 
+ * Finally, kb_setlm is now removed and is replaced by ld_set_lm (by
+ * users) or srch_set_lm (by developers). I think this is quite
+ * reasonable.
+ * 
+ * Revision 1.14  2005/06/19 19:41:23  archan
+ * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
+ *
+ * Revision 1.13  2005/06/10 03:01:50  archan
+ * Fixed file_open.
+ *
+ * Revision 1.12  2005/05/26 00:46:59  archan
+ * Added functionalities that such that <sil> will not be inserted at the end of the utterance.
+ *
+ * Revision 1.11  2005/05/04 05:15:25  archan
+ * reverted the last change, seems to be not working because of compilation issue. Try not to deal with it now.
+ *
+ * Revision 1.10  2005/05/04 04:46:04  archan
+ * Move srch.c and srch.h to search. More and more this type of refactoring will be done in future
+ *
+ * Revision 1.9  2005/04/25 23:53:35  archan
+ * 1, Some minor modification of vithist_t, vithist_rescore can now support optional LM rescoring, vithist also has its own reporting routine. A new argument -lmrescore is also added in decode and livepretend.  This can switch on and off the rescoring procedure. 2, I am reaching the final difficulty of mode 5 implementation.  That is, to implement an algorithm which dynamically decide which tree copies should be entered.  However, stuffs like score propagation in the leave nodes and non-leaves nodes are already done. 3, As briefly mentioned in 2, implementation of rescoring , which used to happened at leave nodes are now separated. The current implementation is not the most clever one. Wish I have time to change it before check-in to the canonical.
+ *
+ * Revision 1.8  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.7  2005/04/20 03:36:18  archan
+ * Remove setlm from kb entirely, refactor it to search implementations, do the corresponding change for the changes in ascr and pl
+ *
+ * Revision 1.6  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 30-Dec-2000	Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Moved kb_*() routines into kb.c to make them independent of
@@ -60,6 +114,28 @@
 
 #include "kb.h"
 #include "logs3.h"		/* RAH, added to resolve log3_free */
+#include "srch.h"
+
+
+#define REPORT_KB 1
+
+
+/* 20050321 Duplicated function. can also be io.c. Clean it up later. */
+FILE* file_open(char* filepath)
+{
+  FILE *fp;
+  fp=NULL;
+  if (filepath) {
+#ifdef WIN32
+    if ((fp= fopen(filepath, "wt")) == NULL)
+#else
+    if ((fp= fopen(filepath, "w")) == NULL)
+#endif
+      E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", filepath);
+  }
+  return fp;
+}
+
 
 /*ARCHAN, to allow backward compatibility -lm, -lmctlfn coexists. This makes the current implmentation more complicated than necessary. */
 void kb_init (kb_t *kb)
@@ -68,22 +144,12 @@ void kb_init (kb_t *kb)
     mdef_t *mdef;
     dict_t *dict;
     dict2pid_t *d2p;
-    lm_t *lm;
     lmset_t *lmset;
-    s3cipid_t sil, ci;
-    s3wid_t w;
-    int32 i, n, n_lc;
-    wordprob_t *wp;
-    s3cipid_t *lc;
-    bitvec_t lc_active;
-    char *str;
     int32 cisencnt;
-    int32 j;
     
-    /* Initialize the kb structure to zero, just in case */
+    /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
     kb->kbcore = NULL;
-
     kb->kbcore = kbcore_init (cmd_ln_float32 ("-logbase"),
 			      cmd_ln_str("-feat"),
 			      cmd_ln_str("-cmn"),
@@ -113,220 +179,31 @@ void kb_init (kb_t *kb)
 			      cmd_ln_str("-gs"),
 			      cmd_ln_str("-tmat"),
 			      cmd_ln_float32("-tmatfloor"));
-    if(kb->kbcore==NULL){
+    if(kb->kbcore==NULL)
       E_FATAL("Initialization of kb failed\n");
-    }
-
-    kbcore = kb->kbcore;
     
+    kbcore = kb->kbcore;
     mdef = kbcore_mdef(kbcore);
     dict = kbcore_dict(kbcore);
-    lm = kbcore_lm(kbcore);
     lmset=kbcore_lmset(kbcore);
     d2p = kbcore_dict2pid(kbcore);
-    
-    if (NOT_S3WID(dict_startwid(dict)) || NOT_S3WID(dict_finishwid(dict)))
-	E_FATAL("%s or %s not in dictionary\n", S3_START_WORD, S3_FINISH_WORD);
 
-    if(lmset){
-      for(i=0;i<kbcore_nlm(kbcore);i++){
-	if (NOT_S3LMWID(lm_startwid(lmset[i].lm)) || NOT_S3LMWID(lm_finishwid(lmset[i].lm)))
-	E_FATAL("%s or %s not in LM %s\n", S3_START_WORD, S3_FINISH_WORD,lmset[i].name);
-      }
-    }else if(lm){
-      if (NOT_S3LMWID(lm_startwid(lm)) || NOT_S3LMWID(lm_finishwid(lm)))
-	E_FATAL("%s or %s not in LM\n", S3_START_WORD, S3_FINISH_WORD);
-    }
-
-    
-    /* Check that HMM topology restrictions are not violated */
-    if (tmat_chk_1skip (kbcore->tmat) < 0)
-	E_FATAL("Tmat contains arcs skipping more than 1 state\n");
-    
-    /*
-     * Unlink <s> and </s> between dictionary and LM, to prevent their 
-     * recognition.  They are merely dummy words (anchors) at the beginning 
-     * and end of each utterance.
-     */
-    if(lmset){
-      for(i=0;i<kbcore_nlm(kbcore);i++){
-	lm_lmwid2dictwid(lmset[i].lm, lm_startwid(lmset[i].lm)) = BAD_S3WID;
-	lm_lmwid2dictwid(lmset[i].lm, lm_finishwid(lmset[i].lm)) = BAD_S3WID;
-
-	for (w = dict_startwid(dict); IS_S3WID(w); w = dict_nextalt(dict, w))
-	  lmset[i].lm->dict2lmwid[w] = BAD_S3LMWID;
-	for (w = dict_finishwid(dict); IS_S3WID(w); w = dict_nextalt(dict, w))
-	  lmset[i].lm->dict2lmwid[w] = BAD_S3LMWID;
-
-      }
-    }else if(lm){ /* No LM is set at this point*/
-      lm_lmwid2dictwid(lm, lm_startwid(lm)) = BAD_S3WID;
-      lm_lmwid2dictwid(lm, lm_finishwid(lm)) = BAD_S3WID;
-      for (w = dict_startwid(dict); IS_S3WID(w); w = dict_nextalt(dict, w))
-	kbcore->dict2lmwid[w] = BAD_S3LMWID;
-      for (w = dict_finishwid(dict); IS_S3WID(w); w = dict_nextalt(dict, w))
-	kbcore->dict2lmwid[w] = BAD_S3LMWID;
-
-    }
-    sil = mdef_silphone (kbcore_mdef (kbcore));
-    if (NOT_S3CIPID(sil))
-	E_FATAL("Silence phone '%s' not in mdef\n", S3_SILENCE_CIPHONE);
-    
-    
-    kb->sen_active = (int32 *) ckd_calloc (mdef_n_sen(mdef), sizeof(int32));
-    kb->rec_sen_active = (int32 *) ckd_calloc (mdef_n_sen(mdef), sizeof(int32));
-    kb->ssid_active = (int32 *) ckd_calloc (mdef_n_sseq(mdef), sizeof(int32));
-    kb->comssid_active = (int32 *) ckd_calloc (dict2pid_n_comsseq(d2p), sizeof(int32));
-    
-    /* Build set of all possible left contexts */
-    lc = (s3cipid_t *) ckd_calloc (mdef_n_ciphone(mdef) + 1, sizeof(s3cipid_t));
-    lc_active = bitvec_alloc (mdef_n_ciphone (mdef));
-    for (w = 0; w < dict_size (dict); w++) {
-	ci = dict_pron (dict, w, dict_pronlen(dict, w) - 1);
-	if (! mdef_is_fillerphone (mdef, (int)ci))
-	    bitvec_set (lc_active, ci);
-    }
-    ci = mdef_silphone(mdef);
-    bitvec_set (lc_active, ci);
-    for (ci = 0, n_lc = 0; ci < mdef_n_ciphone(mdef); ci++) {
-	if (bitvec_is_set (lc_active, ci))
-	    lc[n_lc++] = ci;
-    }
-    lc[n_lc] = BAD_S3CIPID;
-
-    E_INFO("Building lextrees\n");
-    /* Get the number of lexical tree*/
-    kb->n_lextree = cmd_ln_int32 ("-Nlextree");
-    if (kb->n_lextree < 1) {
-	E_ERROR("No. of ugtrees specified: %d; will instantiate 1 ugtree\n", 
-								kb->n_lextree);
-	kb->n_lextree = 1;
-    }
-
-    /* ARCHAN: This code was rearranged in s3.4 implementation of dynamic LM */
-    /* Build active word list */
-    wp = (wordprob_t *) ckd_calloc (dict_size(dict), sizeof(wordprob_t));
-
-
-    if(lmset){
-      kb->ugtreeMulti = (lextree_t **) ckd_calloc (kbcore_nlm(kbcore)*kb->n_lextree, sizeof(lextree_t *));
-      /* Just allocate pointers*/
-      kb->ugtree = (lextree_t **) ckd_calloc (kb->n_lextree, sizeof(lextree_t *));
-
-      for(i=0;i<kbcore_nlm(kbcore);i++){
-	E_INFO("Creating Unigram Table for lm %d name %s\n",i,lmset[i].name);
-	n=0;
-	for(j=0;j<dict_size(dict);j++){ /*try to be very careful again */
-	  wp[j].wid=-1;
-	  wp[j].prob=-1;
-	}
-	n = lm_ug_wordprob (lmset[i].lm, dict,MAX_NEG_INT32, wp);
-	E_INFO("Size of word table after unigram + words in class: %d.\n",n);
-	if (n < 1)
-	  E_FATAL("%d active words in %s\n", n,lmset[i].name);
-	n = wid_wordprob2alt(dict,wp,n);
-	E_INFO("Size of word table after adding alternative prons: %d.\n",n);
-	if (cmd_ln_int32("-treeugprob") == 0) {
-	  for (i = 0; i < n; i++)
-	    wp[i].prob = -1;    	/* Flatten all initial probabilities */
-	}
-
-	for (j = 0; j < kb->n_lextree; j++) {
-	  kb->ugtreeMulti[i*kb->n_lextree+j] = lextree_build (kbcore, wp, n, lc);
-	  lextree_type (kb->ugtreeMulti[i*kb->n_lextree+j]) = 0;
-	  E_INFO("Lextrees (%d) for lm %d, its name is %s, it has %d nodes(ug)\n",
-		 j, i, lmset[i].name,lextree_n_node(kb->ugtreeMulti[i*kb->n_lextree+j]));
-	}
-      }
-
-    }else if (lm){
-      E_INFO("Creating Unigram Table\n");
-      n=0;
-      n = lm_ug_wordprob (lm, dict,MAX_NEG_INT32, wp);
-      E_INFO("Size of word table after unigram + words in class: %d\n",n);
-      if (n < 1)
-	E_FATAL("%d active words\n", n);
-      n = wid_wordprob2alt (dict, wp, n);	   /* Add alternative pronunciations */
-      
-      /* Retain or remove unigram probs from lextree, depending on option */
-      if (cmd_ln_int32("-treeugprob") == 0) {
-	for (i = 0; i < n; i++)
-	  wp[i].prob = -1;    	/* Flatten all initial probabilities */
-      }
-      
-      /* Create the desired no. of unigram lextrees */
-      kb->ugtree = (lextree_t **) ckd_calloc (kb->n_lextree, sizeof(lextree_t *));
-      for (i = 0; i < kb->n_lextree; i++) {
-	kb->ugtree[i] = lextree_build (kbcore, wp, n, lc);
-	lextree_type (kb->ugtree[i]) = 0;
-      }
-      E_INFO("Lextrees(%d), %d nodes(ug)\n",
-	     kb->n_lextree, lextree_n_node(kb->ugtree[0]));
-    }
-
-    /* Create filler lextrees */
-    /* ARCHAN : only one filler tree is supposed to be build even for dynamic LMs */
-    n = 0;
-    for (i = dict_filler_start(dict); i <= dict_filler_end(dict); i++) {
-	if (dict_filler_word(dict, i)) {
-	    wp[n].wid = i;
-	    wp[n].prob = fillpen (kbcore->fillpen, i);
-	    n++;
-	}
-    }
-
-
-    kb->fillertree = (lextree_t **)ckd_calloc(kb->n_lextree,sizeof(lextree_t*));
-    for (i = 0; i < kb->n_lextree; i++) {
-	kb->fillertree[i] = lextree_build (kbcore, wp, n, NULL);
-	lextree_type (kb->fillertree[i]) = -1;
-    }
-    ckd_free ((void *) wp);
-    ckd_free ((void *) lc);
-    bitvec_free (lc_active);
-
-
-    E_INFO("Lextrees(%d), %d nodes(filler)\n",
-	     kb->n_lextree, 
-	     lextree_n_node(kb->fillertree[0]));
-    
-
-    if (cmd_ln_int32("-lextreedump")) {
-      if(lmset){
-	E_FATAL("Currently, doesn't support -lextreedump for multiple-LMs\n");
-      }
-      for (i = 0; i < kb->n_lextree; i++) {
-	fprintf (stderr, "UGTREE %d\n", i);
-	lextree_dump (kb->ugtree[i], dict, stderr);
-      }
-      for (i = 0; i < kb->n_lextree; i++) {
-	fprintf (stderr, "FILLERTREE %d\n", i);
-	lextree_dump (kb->fillertree[i], dict, stderr);
-      }
-      fflush (stderr);
-    }
-    
-    kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
-				kbcore->dict2pid->n_comstate);
-
+    /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
     kb->beam = beam_init (
 			  cmd_ln_float64("-beam"),
 			  cmd_ln_float64("-pbeam"),
 			  cmd_ln_float64("-wbeam"),
 			  cmd_ln_float64("-wend_beam"),
-			  cmd_ln_int32("-ptranskip")
+			  cmd_ln_int32("-ptranskip"),
+			  mdef_n_ciphone(mdef)
 			  );
 
-    E_INFO("Parameters used in Beam Pruning of Viterbi Search: Beam= %d, PBeam= %d, WBeam= %d (Skip=%d), WEndBeam=%d\n", kb->beam->hmm, kb->beam->ptrans, kb->beam->word, kb->beam->ptranskip, kb->beam->wordend);
+    /* REPORT : Report the parameters in the beam data structure */
+    if(REPORT_KB)
+      beam_report(kb->beam);
 
-    kb->histprune = histprune_init(cmd_ln_int32("-maxhmmpf"),
-				   cmd_ln_int32("-maxhistpf"),
-				   cmd_ln_int32("-maxwpf"));
 
-    E_INFO("Parameters used in histogram pruning: Max. HMM per frame=%d, Max. History per frame=%d, Max. Word per frame=%d\n", kb->histprune->maxhmmpf,kb->histprune->maxhistpf,kb->histprune->maxwpf);
-
-    /*Sections of fast GMM computation parameters*/
-
+    /* STRUCTURE INITIALIZATION: Initialize the fast GMM computation data structure */
     kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
 			        cmd_ln_int32("-cond_ds"),
 				cmd_ln_int32("-dist_ds"),
@@ -336,108 +213,82 @@ void kb_init (kb_t *kb)
 				cmd_ln_float64("-ci_pbeam"),
 				cmd_ln_float64("-tighten_factor"),
 				cmd_ln_int32("-maxcdsenpf"),
-				kb->kbcore->mdef->n_ci_sen
+				mdef->n_ci_sen
 				);
 
-    E_INFO("Parameters used in Fast GMM computation:\n");
-    E_INFO("   Frame-level: Down Sampling Ratio %d, Conditional Down Sampling? %d, Distance-based Down Sampling? %d\n",kb->fastgmm->downs->ds_ratio,kb->fastgmm->downs->cond_ds,kb->fastgmm->downs->dist_ds);
-    E_INFO("     GMM-level: CI phone beam %d\n",kb->fastgmm->gmms->ci_pbeam);
-    E_INFO("Gaussian-level: GS map would be used for Gaussian Selection? =%d, SVQ would be used as Gaussian Score? =%d SubVQ Beam %d\n",kb->fastgmm->gs4gs,kb->fastgmm->svq4svq,kb->fastgmm->gaus->subvqbeam);
+    /* REPORT : Report the parameters in the fast_gmm_t data struture */
+    if(REPORT_KB)
+      fast_gmm_report(kb->fastgmm);
     
-    /* Not really nice to check it here. Later when we move gs and svq
-       out of core. Things will be better. */
+    /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
+    kb->pl = pl_init(cmd_ln_int32("-pheurtype"),
+		     cmd_ln_int32("-pl_beam"),
+		     mdef_n_ciphone(mdef)
+		     );
 
-    if(kb->fastgmm->downs->cond_ds>0&&kb->kbcore->gs==NULL) 
-      E_FATAL("Conditional Down Sampling require the use of Gaussian Selection map\n");
+    /* REPORT : Report the parameters in the pl_t data struture */
+    if(REPORT_KB)
+      pl_report(kb->pl);
 
-    kb->pl_win=cmd_ln_int32("-pl_window");
-    E_INFO("Phoneme look-ahead window size = %d\n",kb->pl_win);
 
-    kb->pl_win_strt=0;
-
-    kb->pl_beam=logs3(cmd_ln_float64("-pl_beam"));
-    E_INFO("Phoneme look-ahead beam = %d\n",kb->pl_beam);
-
+    /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
     for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
+    kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
+			  kb->kbcore->dict2pid->n_comstate,
+			  mdef_n_sseq(mdef),
+			  dict2pid_n_comsseq(d2p),
+			  cmd_ln_int32("-pl_window"),
+			  cisencnt
+			  );
 
-    kb->cache_ci_senscr=(int32**)ckd_calloc_2d(kb->pl_win,cisencnt,sizeof(int32));
-    kb->cache_best_list=(int32*)ckd_calloc(kb->pl_win,sizeof(int32));
-    kb->phn_heur_list=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
+    if(REPORT_KB)
+      ascr_report(kb->ascr);
+    
+    /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+    kb->vithist = vithist_init(kbcore, kb->beam->word,
+			       cmd_ln_int32("-bghist"),
+			       cmd_ln_int32("-lmrescore"),
+			       cmd_ln_int32("-bt_wsil"),
+			       REPORT_KB);
 
-    kb->wordbestscore=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
-    kb->wordbestexit=(int32*)ckd_calloc(mdef_n_ciphone (mdef),sizeof(int32));
-    kb->epl = cmd_ln_int32 ("-epl");
+    if(REPORT_KB)
+      vithist_report(kb->vithist);
 
+    /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
 	E_FATAL("feat_array_alloc() failed\n");
-    
-    kb->vithist = vithist_init(kbcore, kb->beam->word, cmd_ln_int32("-bghist"));
-    
-    ptmr_init (&(kb->tm_sen));
-    ptmr_init (&(kb->tm_srch));
-    ptmr_init (&(kb->tm_ovrhd));
-    kb->tot_fr = 0;
-    kb->tot_sen_eval = 0.0;
-    kb->tot_gau_eval = 0.0;
-    kb->tot_hmm_eval = 0.0;
-    kb->tot_wd_exit = 0.0;
-    
-    kb->hmm_hist_binsize = cmd_ln_int32("-hmmhistbinsize");
 
-    if(lmset)
-      n = ((kb->ugtreeMulti[0]->n_node) + (kb->fillertree[0]->n_node)) * kb->n_lextree;
-    else
-      n = ((kb->ugtree[0]->n_node) + (kb->fillertree[0]->n_node)) * kb->n_lextree;
+    /* STRUCTURE INITIALIZATION : The statistics for the search */
+    kb->stat = stat_init();
 
-    n /= kb->hmm_hist_binsize;
-    kb->hmm_hist_bins = n+1;
-    kb->hmm_hist = (int32 *) ckd_calloc (n+1, sizeof(int32));	/* Really no need for +1 */
-    
-    /* Open hypseg file if specified */
-    str = cmd_ln_str("-hypseg");
-    kb->matchsegfp = NULL;
-    if (str) {
-#ifdef WIN32
-	if ((kb->matchsegfp = fopen(str, "wt")) == NULL)
-#else
-	if ((kb->matchsegfp = fopen(str, "w")) == NULL)
-#endif
-	    E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", str);
-    }
+    /* STRUCTURE INITIALIZATION : The adaptation routines of the search */
+    kb->adapt_am = adapt_am_init();
 
-    str = cmd_ln_str("-hyp");
-    kb->matchfp = NULL;
-    if (str) {
-#ifdef WIN32
-	if ((kb->matchfp = fopen(str, "wt")) == NULL)
-#else
-	if ((kb->matchfp = fopen(str, "w")) == NULL)
-#endif
-	    E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", str);
-    }
-    
-    /* Setting for MLLR matrix */
-    kb->prevmllrfn=(char*)ckd_calloc(1024,sizeof(char));
-    kb->prevmllrfn[0]='\0';
     if (cmd_ln_str("-mllr")) {
-	kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
+      kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
     }
 
-    /* Setting for (class-based) multiple LM */
-    if (lmset && cmd_ln_str("-ctl_lm") == NULL) {
-      char *lmname;
+    /* CHECK: make sure when (-cond_ds) is specified, a Gaussian map is also specified */
+    if(cmd_ln_int32("-cond_ds")>0&&kb->kbcore->gs==NULL) 
+      E_FATAL("Conditional Down Sampling require the use of Gaussian Selection map\n");
 
-      if (cmd_ln_str("-lmname") == NULL)
-	lmname = lmset[0].name;
-      else
-	lmname = cmd_ln_str("-lmname");
+    /* MEMORY ALLOCATION : Word best score and exit */
+    /* Open hypseg file if specified */
+    kb->matchsegfp = kb->matchfp = NULL; 
+    kb->matchsegfp=file_open(cmd_ln_str("-hypseg"));
+    kb->matchfp=file_open(cmd_ln_str("-hyp"));
+    kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
+    
+    /* STRUCTURE INITIALIZATION : The search data structure, done only
+       after kb is initialized kb is acted as a clipboard. */
 
-      /* Set the default LM */
-      if (lmname)
-	kb_setlm(lmname, kb);
-      /* If this failed, then give up. */
-      if (kbcore_lm(kbcore) == NULL)
-	E_FATAL("Failed to set default LM\n");
+    kb->op_mode=cmd_ln_int32("-op_mode");
+    if((kb->srch = (srch_t *) srch_init (kb, kb->op_mode))==NULL){
+      E_FATAL("Search initialization failed. Forced exit\n");
+    }
+
+    if(REPORT_KB){
+      srch_report(kb->srch);
     }
 }
 
@@ -456,81 +307,15 @@ void kb_set_uttid(char *_uttid,kb_t* _kb)
   strcpy(_kb->uttid,_uttid);
 }
 
-void kb_setlm(char* lmname,kb_t* kb)
-{
-  lmset_t* lms;
-  kbcore_t* kbc=NULL;
-  int i = 0;
-  int j;
-  int n;
-  /*  s3wid_t dictid;*/
-
-  kbc=kb->kbcore;
-  lms=kbc->lmset;
-
-  if(lms!=NULL || cmd_ln_str("-lmctlfn")){
-    for(i=0;i<kbc->n_lm;i++){
-      if(!strcmp(lmname,lms[i].name)){
-	/* Don't switch LM if we are already using this one. */
-	if (kbc->lm == lms[i].lm)
-	  return;
-
-	/* Point the current lm to a particular lm */
-	kbc->lm=lms[i].lm;
-
-	for(j=0;j<kb->n_lextree;j++){
-	  kb->ugtree[j]=kb->ugtreeMulti[i*kb->n_lextree+j];
-	}
-
-	break;
-      }
-    }
-    if(kbc->lm==NULL){
-      E_ERROR("LM name %s cannot be found in the preloaded lm ctl file (spefied by -lmctlfile)! Fall back to previous LM model\n",lmname);
-      return;
-    }
-  }
-  /*  Just to make sure we're not trying to point beyond the limit of
-   *  array lms.
-   */
-  assert (i < kbc->n_lm);
-
-
-  if((kb->vithist->lms2vh_root=
-     (vh_lms2vh_t**)ckd_realloc(kb->vithist->lms2vh_root,
-				lm_n_ug(kbc->lm)*sizeof(vh_lms2vh_t *)
-				))==NULL) 
-    {
-      E_FATAL("failed to allocate memory for vithist\n");
-    }
-
-
-  n = ((kb->ugtree[0]->n_node) + (kb->fillertree[0]->n_node)) * kb->n_lextree;
-  n /= kb->hmm_hist_binsize;
-  kb->hmm_hist_bins = n+1;
-  kb->hmm_hist = (int32 *) ckd_realloc (kb->hmm_hist,(n+1)*sizeof(int32));	/* Really no need for +1 */
-
-  E_INFO("Current LM name %s\n",lms[i].name);
-  E_INFO("LM ug size %d\n",kbc->lm->n_ug);
-  E_INFO("LM bg size %d\n",kbc->lm->n_bg);
-  E_INFO("LM tg size %d\n",kbc->lm->n_tg);
-  E_INFO("HMM history bin size %d\n", n+1);
-
-  for(j=0;j<kb->n_lextree;j++){
-    E_INFO("Lextrees(%d), %d nodes(ug)\n",
-	   kb->n_lextree, lextree_n_node(kb->ugtree[j]));
-  }
-
-}
-
-void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
+void kb_setmllr(char* mllrname,
+		char* cb2mllrname, /** < In: The filename of the MLLR class map */
+		kb_t* kb)
 {
 /*  int32 veclen;*/
   int32 *cb2mllr;
   E_INFO("Using MLLR matrix %s\n", mllrname);
   
-  /* If there is a change of mllr file name */
-  if (strcmp(kb->prevmllrfn,mllrname)!=0){
+  if(strcmp(kb->adapt_am->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
     /* Reread the gaussian mean from the file again */
     E_INFO("Reloading mean\n");
     mgau_mean_reload(kbcore_mgau(kb->kbcore),cmd_ln_str("-mean"));
@@ -543,19 +328,20 @@ void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
 #endif
 
     mllr_read_regmat(mllrname,
-		     &(kb->regA),
-		     &(kb->regB),
-		     &(kb->mllr_nclass),
+		     &(kb->adapt_am->regA),
+		     &(kb->adapt_am->regB),
+		     &(kb->adapt_am->mllr_nclass),
 		     mgau_veclen(kbcore_mgau(kb->kbcore)));
+
     if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
       int32 ncb, nmllr;
 
       cb2mllr_read(cb2mllrname,
 		   &cb2mllr,
 		   &ncb, &nmllr);
-      if (nmllr != kb->mllr_nclass)
+      if (nmllr != kb->adapt_am->mllr_nclass)
 	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		ncb, kb->mllr_nclass);
+		ncb, kb->adapt_am->mllr_nclass);
       if (ncb != kbcore_mdef(kb->kbcore)->n_sen)
 	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
 		ncb, kbcore_mdef(kb->kbcore)->n_sen);
@@ -564,12 +350,13 @@ void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
       cb2mllr = NULL;
 
     /* Transform all the mean vectors */
-    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->regA,kb->regB,kb->mllr_nclass,cb2mllr);
+
+    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->adapt_am->regA,kb->adapt_am->regB,kb->adapt_am->mllr_nclass,cb2mllr);
     ckd_free(cb2mllr);
 
 #if MLLR_DEBUG
     /*#if 1*/
-    mllr_dump(kb->regA,kb->regB,mgau_veclen(kbcore_mgau(kb->kbcore)),kb->mllr_nclass);
+    mllr_dump(kb->adapt_am->regA,kb->adapt_am->regB,mgau_veclen(kbcore_mgau(kb->kbcore)),kb-adapt_am->mllr_class,cb2mllr);
     /*This generates huge amount of information */
     /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
 #endif 
@@ -577,79 +364,57 @@ void kb_setmllr(char* mllrname,char *cb2mllrname, kb_t* kb)
 
     /* allocate memory for the prevmllrfn if it is too short*/
     if(strlen(mllrname)*sizeof(char) > 1024){
-      kb->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
+      kb->adapt_am->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
     }
 
-    strcpy(kb->prevmllrfn,mllrname);
+    strcpy(kb->adapt_am->prevmllrfn,mllrname);
   }else{
     /* No need to change anything for now */
   }
-}
-
-
-/*
- * Make the next_active information within all lextrees be the current one, after blowing
- * away the latter; in preparation for moving on to the next frame.
- */
-void kb_lextree_active_swap (kb_t *kb)
-{
-    int32 i;
-    
-    for (i = 0; i < kb->n_lextree; i++) {
-	lextree_active_swap (kb->ugtree[i]);
-	lextree_active_swap (kb->fillertree[i]);
-    }
 }
 
 /* RAH 4.15.01 Lots of memory is allocated, but never freed, this function will clean up.
  * First pass will get the low hanging fruit.*/
 void kb_free (kb_t *kb)
 {
-  vithist_t *vithist = kb->vithist;
 
-  if (kb->sen_active)
-    ckd_free ((void *)kb->sen_active);
-  if (kb->ssid_active) 
-    ckd_free ((void *)kb->ssid_active);
-  if (kb->comssid_active)
-    ckd_free ((void *)kb->comssid_active);
-  if (kb->fillertree) 
-    ckd_free ((void *)kb->fillertree);
-  if (kb->hmm_hist) 
-    ckd_free ((void *)kb->hmm_hist);
-  
-
-  /* vithist */
-  if (vithist) {
-    ckd_free ((void *) vithist->entry);
-    ckd_free ((void *) vithist->frame_start);
-    ckd_free ((void *) vithist->bestscore);
-    ckd_free ((void *) vithist->bestvh);
-    ckd_free ((void *) vithist->lms2vh_root);    
-    ckd_free ((void *) kb->vithist);
+  if(kb->srch){
+    /** Add search free code */
   }
 
+  /* vithist */
+  if (kb->vithist) 
+    vithist_free((void*) kb->vithist);
 
-  kbcore_free (kb->kbcore);
+  if(kb->ascr)
+    ascr_free((void*) kb->ascr);
+
+  if(kb->fastgmm)
+    ckd_free((void *) kb->fastgmm);
+
+  if(kb->beam)
+    beam_free((void*) kb->beam);
+
+  if(kb->histprune)
+    histprune_free((void*) kb->histprune);
+  
+  if(kb->pl)
+    pl_free((void*)kb->pl);
+
+  if(kb->kbcore)
+    kbcore_free (kb->kbcore);
+
+  /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 
+     to unify them yet. TBD*/
+  if(kb->adapt_am->regA && kb->adapt_am->regB) mllr_free_regmat(kb->adapt_am->regA, kb->adapt_am->regB);
+  if(kb->adapt_am) adapt_am_free(kb->adapt_am);
 
   if (kb->feat) {
     ckd_free ((void *)kb->feat[0][0]);
     ckd_free_2d ((void **)kb->feat);
   }
 
-  if (kb->cache_ci_senscr) {
-    ckd_free_2d ((void **)kb->cache_ci_senscr);
-  }
-  if( kb->cache_best_list) {
-    ckd_free((void*) kb->cache_best_list);
-  }
-  if(kb->phn_heur_list) {
-    ckd_free((void*) kb->phn_heur_list);
-  }
-
   if (kb->matchsegfp) fclose(kb->matchsegfp);
   if (kb->matchfp) fclose(kb->matchfp);
 
-  if(kb->prevmllrfn) ckd_free((char*) kb->prevmllrfn);
-  if(kb->regA && kb->regB) mllr_free_regmat(kb->regA, kb->regB);
 }

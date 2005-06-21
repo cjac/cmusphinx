@@ -44,6 +44,48 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.17  2005/06/21  23:21:58  arthchan2003
+ * Log. This is a big refactoring for kb.c and it is worthwhile to give
+ * words on why and how things were done.  There were generally a problem
+ * that the kb structure itself is too flat.  That makes it has to
+ * maintained many structure that could be maintained by smaller
+ * structures.  For example, the count of A and the array of A should
+ * well be put into the same structure to increase readability and
+ * modularity. One can explain why histprune_t, pl_t, stat_t and
+ * adapt_am_t were introduced with that line of reasoning.
+ * 
+ * In srch_t, polymorphism of implementation is also one important
+ * element in separting all graph related members from kb_t to srch_t.
+ * One could probably implement the polymorphism as an interface of kb
+ * but it is not trivial from the semantic meaning of kb.  That is
+ * probably why srch_t is introduced as the gateway of search interfaces.
+ * 
+ * Another phenonemon one could see in the code was bad interaction
+ * between modules. This is quite serious in two areas: logging and
+ * checking. The current policy is unless something required cross
+ * checking two structures, they would be done internally inside a module
+ * initialization.
+ * 
+ * Finally, kb_setlm is now removed and is replaced by ld_set_lm (by
+ * users) or srch_set_lm (by developers). I think this is quite
+ * reasonable.
+ * 
+ * Revision 1.10  2005/06/19 19:41:23  archan
+ * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
+ *
+ * Revision 1.9  2005/05/11 06:10:38  archan
+ * Code for lattice and back track pointer table dumping is now wrapped in reg_result_dump.  The function is shared across mode 4 and mode 5.  Possibly later for mode 3 and mode 6 as well.
+ *
+ * Revision 1.8  2005/04/25 23:53:35  archan
+ * 1, Some minor modification of vithist_t, vithist_rescore can now support optional LM rescoring, vithist also has its own reporting routine. A new argument -lmrescore is also added in decode and livepretend.  This can switch on and off the rescoring procedure. 2, I am reaching the final difficulty of mode 5 implementation.  That is, to implement an algorithm which dynamically decide which tree copies should be entered.  However, stuffs like score propagation in the leave nodes and non-leaves nodes are already done. 3, As briefly mentioned in 2, implementation of rescoring , which used to happened at leave nodes are now separated. The current implementation is not the most clever one. Wish I have time to change it before check-in to the canonical.
+ *
+ * Revision 1.7  2005/04/20 03:36:18  archan
+ * Remove setlm from kb entirely, refactor it to search implementations, do the corresponding change for the changes in ascr and pl
+ *
+ * Revision 1.6  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 14-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University
  *              Modified struct kb_t to save the last hypothesis.
@@ -66,8 +108,10 @@
 #include "ascr.h"
 #include "fast_algo_struct.h"
 #include "mllr.h"
-#include "cb2mllr_io.h"
 #include "cmn.h"
+#include "stat.h"
+#include "adaptor.h"
+#include "cb2mllr_io.h"
 
 /** \file kb.h
  * \brief The global wrapper structure for all variables in 3.X
@@ -93,121 +137,57 @@ extern "C" {
    *
    */
 typedef struct {
-  kbcore_t *kbcore;		/**< Core model structures */    
+  /** Core models, defined as acoustic and language models, dictionary
+     (pronounciation models_, front-ends, filler-penalties approximate
+     acoustic models such as sub vector quantization map and Gaussian
+     selector */
 
-  /*Feature related variables*/
-  float32 ***feat;		/**< Feature frames */
+  kbcore_t *kbcore;       /**< Core model structures */
 
-  /*Search related variables, e.g lexical tree and Viterbi history*/
+  /** Feature generation related variables*/
+  float32 ***feat;	  /**< Feature frames */
+  cmn_t *cmn;             /**< The structure for cepstral mean normalization. */
 
-  /**
-   * There can be several unigram lextrees.  If we're at the end of frame f, we can only
-   * transition into the roots of lextree[(f+1) % n_lextree]; same for fillertree[].  This
-   * alleviates the problem of excessive Viterbi pruning in lextrees.
-   */
+  /** Structures of storing parameters for different techniques. */
+  ascr_t *ascr;		  /**< Senone and composite senone scores for one frame. */
+  beam_t *beam;		  /**< Structure that wraps up parameters related to beam pruning. */
+  histprune_t *histprune; /**< Structure that wraps up parameters related to histogram pruning. */
+  fast_gmm_t *fastgmm;    /**< Structure that wraps up parameters for fast GMM computation. */
+  pl_t *pl;               /**< Structure that wraps up parameters for phoneme look-ahead. */
 
-  int32 n_lextree;		/**< See above comment about n_lextree */
-  lextree_t **ugtree;
-  lextree_t **fillertree;
-  int32 n_lextrans;		/**< #Transitions to lextree (root) made so far */
-  lextree_t **ugtreeMulti;  /**< This data structure allocate all trees for all LMs specified by the users */
-  vithist_t *vithist;		/**< Viterbi history, built during search */
+  /** Structure that wraps up adaptation variables. such as regression matrices in MLLR */
+  adapt_am_t * adapt_am;  /**< Structure that wraps up parameters for adaptation such as MLLR. */
 
-  char *uttid;                  /**< Utterance ID */
-  int32 nfr;			/**< #Frames in feat in current utterance */
-  int32 tot_fr;                 /**< The total number of frames that the
-                                   recognizer has been
-                                   recognized. Mainly for bookeeping.  */
-    
-  cmn_t *cmn;                   /**< The structure for cepstral mean normalization. */
+  /** Structure that records the search. */
+  vithist_t *vithist;	  /**< Structure that stores the viterbi history, built during search. */
+  stat_t *stat;           /**< Structure of statistics including timers and counters. */
 
-  /** Thing that are used by multiple parts of the recognizer.  Pretty
-     hard to wrap them into one data structure. Just leave it there
-     for now. */
+  /** FILE handle that handles output. */
+  FILE *matchfp;          /**< File handle for the match file */
+  FILE *matchsegfp;       /**< File handle for the match segmentation file */
+  FILE *hmmdumpfp;        /**< File handle for dumping hmms for debugging */
 
-  int32 *ssid_active;		/**< For determining the active senones in any frame */
-  int32 *comssid_active;        /**< Composite senone active */
-  int32 *sen_active;            /**< Structure that record whether the current state is active. */
-  int32 *rec_sen_active;        /**< Most recent senone active state */
+  /* The only variable I intend to make it be alone in the whole structure. It has its own uniqueness.  */
+  int32 op_mode; /** A mode for specifying operation */
+  char *uttid;   /**< Utterance ID. The one thing that should move to somewhere like srch */
 
-  int32 **cache_ci_senscr;     /**< Cache of ci senscr in the next pl_windows frames, include this frame.*/
-  int32 *cache_best_list;        /**< Cache of best the ci sensr the next pl_windows, include this frame*/
-
-  int32 bestscore;	/**< Best HMM state score in current frame */
-  int32 bestwordscore;	/**< Best wordexit HMM state score in current frame */
-    
-  ascr_t *ascr;		  /**< Senone and composite senone scores for one frame */
-  beam_t *beam;		  /**< Structure that wraps up parameters related to beam pruning */
-  histprune_t *histprune; /**< Structure that wraps up parameters related to histogram pruning */
-  fast_gmm_t *fastgmm;         /**< Structure that wraps up fast GMM computation */
-
-  int32 *hmm_hist;		/**< Histogram: #frames in which a given no. of HMMs are active */
-  int32 hmm_hist_bins;	/**< #Bins in above histogram */
-  int32 hmm_hist_binsize;	/**< Binsize in above histogram (#HMMs/bin) */
-    
-  /* All structure that measure the time and stuffs we computed */
-  ptmr_t tm_sen;    /**< timer for senone computation */
-  ptmr_t tm_srch;   /**< timer for search */
-  ptmr_t tm_ovrhd; /**< timer for GMM computation overhead */
   
-  int32 utt_hmm_eval; /**< HMM evaluated for utterance */
-  int32 utt_sen_eval; /**< CD Senones evaluated for utterance */
-  int32 utt_gau_eval; /**< CD Gaussians evaluated for utterance */
-  int32 utt_cisen_eval; /**< CI Senones evaluated for utterance */
-  int32 utt_cigau_eval; /**< CI Gaussians evaluated for utterance */
-  
-  float64 tot_sen_eval;	/**< Total CD Senones evaluated over the entire session */
-  float64 tot_gau_eval;	/**< Total CD Gaussian densities evaluated over the entire session */
-  float64 tot_ci_sen_eval;	/**< Total CI Senones evaluated over the entire session */
-  float64 tot_ci_gau_eval;	/**< Total CI Senones evaluated over the entire session */
-
-  float64 tot_hmm_eval;	/**< Total HMMs evaluated over the entire session */
-  float64 tot_wd_exit;	/**< Total Words hypothesized over the entire session */
-  
-  FILE *matchfp; /**< File handle for the match file */
-  FILE *matchsegfp; /**< File handle for the match segmentation file */
-
-
-  /** ARCHAN: Phoneme lookahead stuffs I want to move to somewhere
-      else. */
-  int32 *phn_heur_list;          /**< Cache of best the ci phoneme scores in the next pl_windows, include this frame*/
-  int32 pl_win;            /**< The window size of phoneme look-ahead */
-  int32 pl_win_strt;      /**< The start index of the window near the end of a block */
-  int32 pl_win_efv;  /**< Effective window size in livemode */
-  int32 pl_beam;              /**< Beam for phoneme look-ahead */
-
-  int32 *wordbestscore; /**< The word best score */
-  int32 *wordbestexit; /**< The word best exit */
-  int32 epl;  /**< End of word penalty */
-
-  /*variables for mllrmatrix */
-  char* prevmllrfn; /** Last MLLR matrix file */
-  float32*** regA; /** Regression matrices : the multiplcation term */
-  float32** regB; /** Regression matrices : the bias term */
-  int32 mllr_nclass; /** Number of regression matrices */
+  void *srch;  /**< The search structure */
 } kb_t;
 
 
   /** Initialize the kb */
   void kb_init (kb_t *kb /**< In/Out: A empty kb_t */
-	      );
-  /** Swap lexical trees */
+		);
 
-void kb_lextree_active_swap (kb_t *kb /**< In/Out: A empty kb_t */
-			     );
   
   /** Deallocate the kb structure */
-void kb_free (kb_t *kb /**< In/Out: A empty kb_t */
-	      );	/* RAH 4.16.01 */
+  void kb_free (kb_t *kb /**< In/Out: A empty kb_t */
+		);	/* RAH 4.16.01 */
   
-  /** Use LM with lmname */
-void kb_setlm(char* lmname, /**< In: The name of the language model */
-	      kb_t *kb /**< In/Out: A empty kb_t */
-	      );    /* ARCHAN 20040228 */
-
   /** Set MLLR */
 void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
-		char* cb2mllrname, /** < In: The filename of the MLLR class map */
+		char* cb2mllrname, /**< In: The filename of the MLLR class map */
 		kb_t *kb /**< In/Out: A empty kb_t */
 		);    /* ARCHAN 20040724 */
 
