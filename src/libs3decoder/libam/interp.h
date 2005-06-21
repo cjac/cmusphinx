@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  18:39:04  arthchan2003
+ * Log. 1, Fixed doxygen documentation, 2, Added $Log$ keyword
+ * 
+ * Revision 1.4  2005/06/13 04:02:55  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 05-Jun-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
@@ -57,8 +67,10 @@
 #include <s3types.h>
 #include "bio.h"
 
-/** \file interp.h
- * \brief Interpolation of CD/CI senones. 
+/** \file interp.h \brief Interpolation of CD/CI senones.
+ * Interpolation is used in the time of SCHMM and it is still a very
+ * useful technique for CDHMM as some experiments shown in Broadcast
+ * news evaluation in 99. 
  */
 #ifdef __cplusplus
 extern "C" {
@@ -80,27 +92,31 @@ typedef struct {
  * Read a set of CD/CI senone interpolation weights from the given file.
  * Return value: pointer to interpolation structure created.  Caller MUST NOT change its
  * contents.
+ * @return an initialized interp_t structure 
  */
-interp_t *interp_init (char *interpfile);	/* In: interpolation weights file */
+interp_t *interp_init (char *interpfile	/* In: interpolation weights file */
+		       );
 
 /**
  * Interpolate a single given CD senone with the given CI senone score.
- * Return value: 0 if successful, -1 otherwise.
+ * @return 0 if successful, -1 otherwise.
  */
-int32 interp_cd_ci (interp_t *ip,	/* In: Interpolation weights parameters */
-		    int32 *senscr,	/* In/Out: senscr[cd] interpolated with senscr[ci] */
-		    int32 cd,		/* In: see senscr above */
-		    int32 ci);		/* In: see senscr above */
+int32 interp_cd_ci (interp_t *ip,	/**< In: Interpolation weights parameters */
+		    int32 *senscr,	/**< In/Out: senscr[cd] interpolated with senscr[ci] */
+		    int32 cd,		/**< In: see senscr above */
+		    int32 ci		/**< In: see senscr above */
+		    );
 
 /**
  * Interpolate each CD senone with its corresponding CI senone score.
- * Return value: 0 if successful, -1 otherwise.
+ * @return 0 if successful, -1 otherwise.
  */
-int32 interp_all (interp_t *ip,		/* In: Interpolation weights parameters */
-		  int32 *senscr,	/* In/Out: senscr[cd] interpolated with
+int32 interp_all (interp_t *ip,		/**< In: Interpolation weights parameters */
+		  int32 *senscr,	/**< In/Out: senscr[cd] interpolated with
 					   senscr[cimap[cd]], for cd >= n_ci_sen */
-		  s3senid_t *cimap,	/* In: see senscr above */
-		  int32 n_ci_sen);	/* In: see senscr above */
+		  s3senid_t *cimap,	/**< In: see senscr above */
+		  int32 n_ci_sen	/**< In: see senscr above */
+		  );
 
 #ifdef __cplusplus
 }

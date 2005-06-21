@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  18:39:03  arthchan2003
+ * Log. 1, Fixed doxygen documentation, 2, Added $Log$ keyword
+ * 
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 27-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carnegie Mellon Unversity
  *              First incorporate it from s3 code base. 
