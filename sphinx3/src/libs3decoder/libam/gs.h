@@ -44,6 +44,16 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.6  2005/06/21  18:28:05  arthchan2003
+ * Log. 1, Fixed doxygen documentation. 2, Add $Log$ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:55  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 29-Dec-03    A. Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
  *              Initial version created           
@@ -101,18 +111,26 @@ typedef struct gs_s {
 
   /** display the Gaussian selector */
 
-int32 gs_display(char *file, gs_t *gs);
+  int32 gs_display(char *file, /**< file to display*/
+		   gs_t *gs    /**< The structure of the gaussian selector*/
+		 );
 
   /** Read the Gaussian selector */
-gs_t* gs_read(char *file);
-int32 gc_compute_closest_cw ( gs_t *gs, float32 *feat);
+  gs_t* gs_read(char *file /**< a file to display */
+	      );
+
+  /** Choose the closet Gaussian codebook to use */
+int32 gc_compute_closest_cw ( gs_t *gs, /**< gaussain selector */
+			      float32 *feat /**< feature */
+			      );
 
   /** Find the short list of the Gaussian selector */
-int32 gs_mgau_shortlist(gs_t *gs,  /*gaussain selector */
-			int32 m,   /*mixture index */
-			int32 n,   /*number of mixtures */
-			float32 *feat, /* feature vector */
-			int32 bst_codeid); /*best code indx */
+int32 gs_mgau_shortlist(gs_t *gs,  /**< gaussain selector */
+			int32 m,   /**< mixture index */
+			int32 n,   /**< number of mixtures */
+			float32 *feat, /**< feature vector */
+			int32 bst_codeid /**< best code indx */
+			);
 
 #ifdef __cplusplus
 }

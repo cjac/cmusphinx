@@ -44,6 +44,13 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.3  2005/06/21  18:28:05  arthchan2003
+ * Log. 1, Fixed doxygen documentation. 2, Add $Log$ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 29-Dec-03    A. Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
  *              Initial version created           
