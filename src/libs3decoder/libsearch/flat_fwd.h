@@ -121,18 +121,24 @@ typedef struct whmm_s {
 /**
  * Initialization of flat forward search 
  */
-void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm);
+void fwd_init (mdef_t* _mdef,  /**< A model definition */
+	       tmat_t* _tmat,  /**< A transition matrix */
+	       dict_t* _dict,  /**< A dictionary */
+	       lm_t *_lm       /**< An LM */
+	       );
 
 /**
  * Start of flat foward search 
  */ 
-void fwd_start_utt (char *id);
+void fwd_start_utt (char *id /**< ID of an utterance */
+		    );
 
 /** 
  * Make the search to go forward for one frame. 
  * @return best score of this frame. 
  */
-int32 fwd_frame (int32 *senscr); 
+int32 fwd_frame (int32 *senscr /**< An array of senone score */
+		 ); 
 
 /**
  * Find the active senone list. 
@@ -147,7 +153,14 @@ void fwd_sen_active (int8 *senlist, int32 n_sen);
 srch_hyp_t *fwd_end_utt ( void );
 
 void fwd_timing_dump (float64 tot);
-srch_hyp_t *s3flat_fwd_dag_search (char *utt);
+
+/**
+ * The flat forward search version of DAG search. Very similar to what
+ * one could find in s3dag_dag_search. 
+ */
+
+srch_hyp_t *s3flat_fwd_dag_search (char *utt /**< utterance id */
+				   );
 
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
@@ -167,7 +180,10 @@ int32 dag_build ( void );
 /** Dump dag in s3.0 format
  * A function that can dump a dag given a lattice_t structure. 
  */
-int32 dag_dump (char *dir, int32 onlynodes, char *id);
+int32 dag_dump (char *dir,  /**< The output directory */
+		int32 onlynodes, /**< Dump only nodes of the DAG*/
+		char *id    /**< Sentence ID*/
+		);
 
 #endif
 
