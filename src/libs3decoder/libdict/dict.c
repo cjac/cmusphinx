@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  21:04:36  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.5  2005/06/19 03:58:16  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 19-Apr-01    Ricky Houghton, added code for freeing memory that is allocated internally.
  * 
  * 23-Apr-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
@@ -291,7 +304,7 @@ static int32 dict_build_comp (dict_t *d,
 }
 
 
-dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep)
+dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep, int breport)
 {
     FILE *fp, *fp2;
     int32 n ;
@@ -374,14 +387,26 @@ dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep
     d->startwid = dict_wordid (d, S3_START_WORD);
     d->finishwid = dict_wordid (d, S3_FINISH_WORD);
     d->silwid = dict_wordid (d, S3_SILENCE_WORD);
-#if 0
+
+
+    /* This imposes the constraints of <s> </s> <sil> for the dictionary and filler dictionary*/
+    /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
     if (NOT_S3WID(d->startwid))
 	E_WARN("%s not in dictionary\n", S3_START_WORD);
     if (NOT_S3WID(d->finishwid))
 	E_WARN("%s not in dictionary\n", S3_FINISH_WORD);
     if (NOT_S3WID(d->silwid))
 	E_WARN("%s not in dictionary\n", S3_SILENCE_WORD);
-#endif
+
+    if (NOT_S3WID(d->silwid) || NOT_S3WID(d->startwid) || NOT_S3WID(d->finishwid)) {
+	E_FATAL("%s, %s, or %s missing from dictionary\n",
+		S3_SILENCE_WORD, S3_START_WORD, S3_FINISH_WORD);
+    }
+
+    if ((d->filler_start > d->filler_end) || (! dict_filler_word (d, d->silwid)))
+	E_FATAL("%s must occur (only) in filler dictionary\n", S3_SILENCE_WORD);
+
+    /* No check that alternative pronunciations for filler words are in filler range!! */
 
     /* Identify compound words if indicated */
     if (comp_sep) {
@@ -529,6 +554,18 @@ void dict_free (dict_t *d)
       hash_free (d->ht);
     ckd_free ((void *)d);
   }
+}
+
+void dict_report(dict_t *d)
+{
+  E_INFO_NOFN("Initialization of dict_t, report:\n");
+  /*
+    E_INFO_NOFN("No of CI phone: %d\n",d->n_ciphone);
+    E_INFO_NOFN("Max word: %d\n",d->max_words);
+  */
+  E_INFO_NOFN("No of word: %d\n",d->n_word);
+  E_INFO_NOFN("\n");
+
 }
 
 

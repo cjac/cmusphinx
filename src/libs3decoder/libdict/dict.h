@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  21:04:36  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.5  2005/06/13 04:02:57  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 19-Apr-01    Ricky Houghton, added code for freeing memory that is allocated internally.
  * 
  * 23-Apr-98	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
@@ -110,12 +123,14 @@ typedef struct {
  * (but external modules might impose their own requirements).
  * Return ptr to dict_t if successful, NULL otherwise.
  */
-dict_t *dict_init (mdef_t *mdef,	/** For looking up CI phone IDs; NULL if none,
+dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   in which case CI phones kept internally */
-		   char *dictfile,	/** Main dictionary file */
-		   char *fillerfile,	/** Filler dictionary file */
-		   char comp_sep);	/** Compound word separator character, or 0 if
+		   char *dictfile,	/**< Main dictionary file */
+		   char *fillerfile,	/**< Filler dictionary file */
+		   char comp_sep,	/**< Compound word separator character, or 0 if
 					   no compound words */
+		   int breport          /**< Whether we should report the progress */
+		   );
 
   /** Return word id for given word string if present.  Otherwise return BAD_S3WID */
 s3wid_t dict_wordid (dict_t *d, char *word);
@@ -124,28 +139,36 @@ s3wid_t dict_wordid (dict_t *d, char *word);
  * Return 1 if w is a filler word, 0 if not.  A filler word is one that was read in from the
  * filler dictionary; however, sentence START and FINISH words are not filler words.
  */
-int32 dict_filler_word (dict_t *d, s3wid_t w);
+  int32 dict_filler_word (dict_t *d,  /**< The dictionary structure */
+			s3wid_t w     /**< The The word */
+			);
 
   /**
- * Add a word with the given ciphone pronunciation list to the dictionary.
- * Return value: Result word id if successful, BAD_S3WID otherwise
- */
-s3wid_t dict_add_word (dict_t *d, char *word, s3cipid_t *p, int32 np);
+   * Add a word with the given ciphone pronunciation list to the dictionary.
+   * Return value: Result word id if successful, BAD_S3WID otherwise
+   */
+s3wid_t dict_add_word (dict_t *d,  /**< The dictionary structure */
+			char *word, /**< The word */
+			s3cipid_t *p, 
+			int32 np
+			);
 
   /**
  * Look for a compound word that matches the given word-id sequence.
  * Return value: Base ID of compound word if found, else BAD_S3WID.
  */
-s3wid_t dict_wids2compwid (dict_t *d,		/** In: Dictionary to look up */
-			   s3wid_t *wid,	/** In: Component words to look for */
-			   int32 len);		/** In: No. of component words */
+s3wid_t dict_wids2compwid (dict_t *d,		/**< In: Dictionary to look up */
+			   s3wid_t *wid,	/**< In: Component words to look for */
+			   int32 len		/**< In: No. of component words */
+			   );
 
   /**
  * Return value: CI phone string for the given word, phone position.
  */
-const char *dict_ciphone_str (dict_t *d,	/** In: Dictionary to look up */
-			      s3wid_t wid,	/** In: Component word being looked up */
-			      int32 pos);	/** In: Pronunciation phone position */
+const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
+			      s3wid_t wid,	/**< In: Component word being looked up */
+			      int32 pos   	/**< In: Pronunciation phone position */
+			      );
 
   /** Packaged macro access to dictionary members */
 #define dict_size(d)		((d)->n_word)
@@ -194,6 +217,9 @@ int32 dict_word2basestr (char *word);
   /** Free memory allocated for the dictionary */
 void dict_free (dict_t *d);
 
+  /** Report a diciontary structure */
+  void dict_report(dict_t *d /**< A dictionary structure */
+		   );
 
 #ifdef __cplusplus
 }
