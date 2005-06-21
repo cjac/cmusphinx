@@ -44,6 +44,22 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  19:23:35  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.6  2005/06/13 04:02:56  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.5  2005/05/03 04:09:09  archan
+ * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added tmat_free to free allocated memory 
@@ -72,45 +88,63 @@ extern "C" {
 #endif
 
   /**
- * Transition matrix data structure.  All phone HMMs are assumed to have the same
- * topology.
- */
-typedef struct {
-    int32 ***tp;	/** The transition matrices; int32 since probs in logs3 domain:
-			   tp[tmatid][from-state][to-state] */
-    int32 n_tmat;	/** #matrices */
-    int32 n_state;	/** #source states in matrix (only the emitting states);
-			   #destination states = n_state+1, it includes the exit state */
-} tmat_t;
+   * Transition matrix data structure.  All phone HMMs are assumed to have the same
+   * topology.
+   */
+  typedef struct {
+    int32 ***tp;	/**< The transition matrices; int32 since probs in logs3 domain:
+			    tp[tmatid][from-state][to-state] */
+    int32 n_tmat;	/**< #matrices */
+    int32 n_state;	/**< #source states in matrix (only the emitting states);
+			    #destination states = n_state+1, it includes the exit state */
+  } tmat_t;
 
 
   /** Initialize transition matrix */
-tmat_t *tmat_init (char *tmatfile,	/** In: input file */
-		   float64 tpfloor);	/** In: floor value for each non-zero transition
-					   probability */
 
-  /** Dumping the transition matrix */
-void tmat_dump (tmat_t *tmat, FILE *fp);	/** For debugging */
+  tmat_t *tmat_init (char *tmatfile,	/**< In: input file */
+		     float64 tpfloor,	/**< In: floor value for each non-zero transition probability */
+		     int32 breport      /**< In: whether reporting the process of tmat_t  */
+		     );
+					    
+
+
+  /** Dumping the transition matrix for debugging */
+
+  void tmat_dump (tmat_t *tmat,  /**< In: transition matrix */
+		  FILE *fp       /**< In: file pointer */
+		  );	
+
+
+  /**
+   * Checks that no transition matrix in the given object contains backward arcs.
+   * @returns 0 if successful, -1 if check failed.
+   */
+  int32 tmat_chk_uppertri (tmat_t *tmat /**< In: transition matrix */
+			   );
 
 
   /**
- * Checks that no transition matrix in the given object contains backward arcs.
- * Returns 0 if successful, -1 if check failed.
- */
-int32 tmat_chk_uppertri (tmat_t *tmat);
+   * Checks that transition matrix arcs in the given object skip over
+   * at most 1 state.  
+   * @returns 0 if successful, -1 if check failed.  
+   */
 
-
-  /**
- * Checks that transition matrix arcs in the given object skip over at most 1 state.
- * Returns 0 if successful, -1 if check failed.
- */
-int32 tmat_chk_1skip (tmat_t *tmat);
+  int32 tmat_chk_1skip (tmat_t *tmat /**< In: transition matrix */
+			);
 
   /**
- * RAH, add code to remove memory allocated by tmat_init
- */
-void tmat_free (tmat_t *t);
+   * RAH, add code to remove memory allocated by tmat_init
+   */
 
+  void tmat_free (tmat_t *t /**< In: transition matrix */
+		  );
+
+  /**
+   * Report the detail of the transition matrix structure. 
+   */
+  void tmat_report(tmat_t *t /**< In: transition matrix*/
+		   );
 
 #ifdef __cplusplus
 }

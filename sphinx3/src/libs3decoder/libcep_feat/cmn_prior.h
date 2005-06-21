@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  19:28:52  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:56  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Copied from previous version.
@@ -71,11 +81,12 @@ extern "C" {
   /*
    * Simple version of block version of CMN. 
    */
-void cmn_prior(float32 **incep, /** In/Out: mfc[f] = mfc vector in frame f*/
-	      int32 varnorm,    /** This flag should always be 0 for live */
-	      int32 nfr,        /** Number of incoming frames */
-              int32 ceplen,     /** Length of the cepstral vector */
-	      int32 endutt);    /** Flag indicating end of utterance */
+void cmn_prior(float32 **incep, /**< In/Out: mfc[f] = mfc vector in frame f*/
+	      int32 varnorm,    /**< This flag should always be 0 for live */
+	      int32 nfr,        /**< Number of incoming frames */
+              int32 ceplen,     /**< Length of the cepstral vector */
+	      int32 endutt    /**< Flag indicating end of utterance */
+	       );
 
 #ifdef __cplusplus
 }

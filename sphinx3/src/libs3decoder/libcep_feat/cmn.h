@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.11  2005/06/21  19:28:00  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:56  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added cmn_free() and moved *mean and *var out global space and named them cmn_mean and cmn_var
@@ -72,12 +82,12 @@ extern "C" {
 
 typedef struct {
   /*These two are used in cmn*/
-  float32 *cmn_mean;  
-  float32 *cmn_var;
+  float32 *cmn_mean;  /** Temporary variables: stored the cmn mean */
+  float32 *cmn_var;    /** Temporary variables: stored the cmn variance */
   /*These three are used in cmn_prior*/
-  float32 *cur_mean;
-  float32 *sum;
-  int32 nframe;
+  float32 *cur_mean;   /** Temporary variable: current means */
+  float32 *sum;        /** The sume of the cmn frames */
+  int32 nframe; /** Number of frames*/
 }cmn_t;
 
 cmn_t* cmn_init();
@@ -85,14 +95,14 @@ cmn_t* cmn_init();
   /**
      CMN for the whole sentence
    */
-void cmn (float32 **mfc,	/** In/Out: mfc[f] = mfc vector in frame f */
-	  int32 varnorm,	/** In: if not FALSE, variance normalize the input vectors
+void cmn (float32 **mfc,	/**< In/Out: mfc[f] = mfc vector in frame f */
+	  int32 varnorm,	/**< In: if not FALSE, variance normalize the input vectors
 				   to have unit variance (along each dimension independently);
 				   Irrelevant if no cmn is performed */
-	  int32 n_frame,	/** In: #frames of mfc vectors */
-	  int32 veclen,         /** In: mfc vector length */
-	  cmn_t *cmn);	        /** In/Out: cmn normalization, which contains the cmn_mean and cmn_var) */
-
+	  int32 n_frame,	/**< In: #frames of mfc vectors */
+	  int32 veclen,         /**< In: mfc vector length */
+	  cmn_t *cmn	        /**< In/Out: cmn normalization, which contains the cmn_mean and cmn_var) */
+	  );
 
 #define CMN_WIN_HWM     800     /* #frames after which window shifted */
 #define CMN_WIN         500
