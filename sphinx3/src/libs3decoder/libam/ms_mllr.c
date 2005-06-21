@@ -9,6 +9,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  18:56:13  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * 
+ * Revision 1.4  2005/06/19 04:50:02  archan
+ * Sphinx3 to s3.generic: allow multiple classes for MLLR
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 02-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added reading of MLLR classes in transformation file.  Currently must
