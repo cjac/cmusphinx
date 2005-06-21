@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2005/06/21  18:57:31  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.6  2005/06/21  19:00:19  arthchan2003
+ * Add more detail comments  to ms_senone.h
  * 
+ * Revision 1.5  2005/06/21 18:57:31  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.2  2005/06/13 04:02:56  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -56,6 +59,10 @@
 
 /** \file ms_senone.h
  *  \brief (Sphinx 3.0 specific) multiple streams senones. used with ms_gauden.h
+ *  In Sphinx 3.0 family of tools, ms_senone is used to combine the Gaussian scores.
+ *  Its existence is crucial in Sphinx 3.0 because 3.0 supports both SCHMM and CDHMM. 
+ *  There are optimization scheme for SCHMM (e.g. compute the top-N Gaussian) that is 
+ *  applicable to SCHMM than CDHMM.  This is wrapped in senone_eval_all. 
  */
 
 #ifdef __cplusplus
