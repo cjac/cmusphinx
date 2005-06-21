@@ -44,6 +44,22 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  20:46:54  arthchan2003
+ * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ * 
+ * Revision 1.6  2005/06/13 04:02:57  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.5  2005/05/27 01:15:44  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 28-Apr-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Added log_to_logs3_factor(), and logs3_to_p().
@@ -74,33 +90,49 @@ extern "C" {
 #endif
 
 
+#define LOGS3_SUCCESS 1;
+#define LOGS3_FAILURE 0;
 
   /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
-int32 logs3_init (float64 base);
+  int32 logs3_init (float64 base, /**< The log base of the module */
+		    int32 bReport,  /**< Whether progress should be reported */
+		    int32 bLogTable /**< Whether log table should be used or not */
+		    );
 
   /** Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
-int32 logs3_add (int32 logs3p, int32 logs3q);
+  int32 logs3_add (int32 logs3p, /**< The first number in s3 log */
+		   int32 logs3q  /**< The second number in s3 log */
+		   );
 
   /** Given p, return logs3(p) */
-int32 logs3 (float64 p);
+  int32 logs3 (float64 p   /**< The first number in float */
+	       );
 
   /** Given log(p), return logs3(p) */
-int32 log_to_logs3 (float64 logp);
+  int32 log_to_logs3 (float64 logp /**< The number in log domain */
+		      );
 
   /** Return the multiplication factor used for converting log values to logs3 */
-float64 log_to_logs3_factor( void );
+  float64 log_to_logs3_factor( void );
 
   /** Given logs3(p), return log(p) */
-float64 logs3_to_log (int32 logs3p);
+  float64 logs3_to_log (int32 logs3p    /**< A number in log s3 domain*/
+		      );
 
   /** Given logs3(p), return p */
-float64 logs3_to_p (int32 logs3p);
+  float64 logs3_to_p (int32 logs3p  /**< A number in log s3 domain*/
+		      );
 
   /** Given log10(p), return logs3(p) */
-int32 log10_to_logs3 (float64 log10p);
+  int32 log10_to_logs3 (float64 log10p /**< A number in log 10 domain */
+			);
 
-/* RAH, free the add_tbl if still allocated */
-void logs_free();
+  /* RAH, free the add_tbl if still allocated */
+  /** Free the add_tbl if still allocated */
+  void logs_free();
+
+  /** Report the parameters for s3 log table */
+  void logs3_report();
 
 #ifdef __cplusplus
 }
