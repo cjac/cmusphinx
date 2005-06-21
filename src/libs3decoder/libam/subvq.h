@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.13  2005/06/21  19:01:33  arthchan2003
+ * Added $ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Updated subvq_free () to free more allocated memory
