@@ -37,6 +37,16 @@
  * lmclass.c -- Class-of-words objects in language models.
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  22:25:04  arthchan2003
+ * Added  keyword.
+ * 
+ * Revision 1.1  2005/05/04 06:08:07  archan
+ * Refactor all lm routines except fillpen.c into ./libs3decoder/liblm/ . This will be equivalent to ./lib/liblm in future.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 19-Feb-2004  A Chan (archan@cs.cmu.edu) at Carnegie Mellon University
  * 		copied from sphinx 2 code base. 
