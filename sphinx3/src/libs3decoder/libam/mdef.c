@@ -44,6 +44,17 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/21  18:47:39  arthchan2003
+ * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$ keyword.
+ * 
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 19.Apr-2001  Ricky Houghton, added code for free allocated memory
  *
@@ -588,7 +599,7 @@ static int32 noncomment_line(char *line, int32 size, FILE *fp)
 /*
  * Initialize phones (ci and triphones) and state->senone mappings from .mdef file.
  */
-mdef_t *mdef_init (char *mdeffile)
+mdef_t *mdef_init (char *mdeffile, int32 breport)
 {
     FILE *fp;
     int32 n_ci, n_tri, n_map, n;
@@ -604,7 +615,8 @@ mdef_t *mdef_init (char *mdeffile)
     if (! mdeffile)
 	E_FATAL("No mdef-file\n");
 
-    E_INFO("Reading model definition: %s\n", mdeffile);
+    if(breport)
+      E_INFO("Reading model definition: %s\n", mdeffile);
 
     m = (mdef_t *) ckd_calloc (1, sizeof(mdef_t)); /* freed in mdef_free */
     
@@ -800,15 +812,21 @@ mdef_t *mdef_init (char *mdeffile)
 
     sseq_compress (m);
     
-    E_INFO("%d CI-phone, %d CD-phone, %d emitstate/phone, %d CI-sen, %d Sen, %d Sen-Seq\n",
-	   m->n_ciphone, m->n_phone - m->n_ciphone, m->n_emit_state,
-	   m->n_ci_sen, m->n_sen, m->n_sseq);
     
     fclose (fp);
     
     return m;
 }
 
+void mdef_report(mdef_t *m)
+{
+  E_INFO_NOFN("Initialization of mdef_t, report:\n");
+  E_INFO_NOFN("%d CI-phone, %d CD-phone, %d emitstate/phone, %d CI-sen, %d Sen, %d Sen-Seq\n",
+	 m->n_ciphone, m->n_phone - m->n_ciphone, m->n_emit_state,
+	 m->n_ci_sen, m->n_sen, m->n_sseq);
+  E_INFO_NOFN("\n");
+
+}
 
 void mdef_sseq2sen_active (mdef_t *mdef, int32 *sseq, int32 *sen)
 {
