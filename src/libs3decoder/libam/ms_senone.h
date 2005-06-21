@@ -11,9 +11,18 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2004/12/06  10:52:01  arthchan2003
- * Enable doxygen documentation in libs3decoder
+ * Revision 1.5  2005/06/21  18:57:31  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
  * 
+ * Revision 1.2  2005/06/13 04:02:56  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.1.1.1  2005/03/24 15:24:00  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
+ * Revision 1.4  2004/12/06 10:52:01  arthchan2003
+ * Enable doxygen documentation in libs3decoder
+ *
  * Revision 1.3  2004/11/13 21:25:19  arthchan2003
  * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  *
@@ -82,34 +91,37 @@ typedef struct {
  * Load a set of senones (mixing weights and mixture gaussian codebook mappings) from
  * the given files.  Normalize weights for each codebook, apply the given floor, convert
  * PDF values to logs3 domain and quantize to 8-bits.
- * Return value: pointer to senone structure created.  Caller MUST NOT change its contents.
+ * @return pointer to senone structure created.  Caller MUST NOT change its contents.
  */
-senone_t *senone_init (char *mixwfile,		/** In: mixing weights file */
-		       char *mgau_mapfile,	/** In: file specifying mapping from each
+senone_t *senone_init (char *mixwfile,		/**< In: mixing weights file */
+		       char *mgau_mapfile,	/**< In: file specifying mapping from each
 						   senone to mixture gaussian codebook.
 						   If NULL all senones map to codebook 0 */
-		       float32 mixwfloor);	/** In: Floor value for senone weights */
+		       float32 mixwfloor	/**< In: Floor value for senone weights */
+		       );
 
   /**
  * Evaluate the score for the given senone wrt to the given top N gaussian codewords.
- * Return value: senone score (in logs3 domain).
+ * @return senone score (in logs3 domain).
  */
-int32 senone_eval (senone_t *s, s3senid_t id,	/** In: senone for which score desired */
-		   gauden_dist_t **dist,	/** In: top N codewords and densities for
+int32 senone_eval (senone_t *s, s3senid_t id,	/**< In: senone for which score desired */
+		   gauden_dist_t **dist,	/**< In: top N codewords and densities for
 						   all features, to be combined into
 						   senone score.  IE, dist[f][i] = i-th
 						   best <codeword,density> for feaure f */
-		   int32 n_top);		/** In: Length of dist[f], for each f */
+		   int32 n_top		/**< In: Length of dist[f], for each f */
+		   );
 
   /**
  * Like senone_eval, but compute all senone scores for the shared density case (ie,
  * #codebooks = 1).
  */
-void senone_eval_all (senone_t *s,		/** In: Senone structure */
-		      gauden_dist_t **dist,	/** In: as in senone_eval above */
-		      int32 n_top,		/** In: as in senone_eval above */
-		      int32 *senscr);		/** Out: Upon return, senscr[i] will contain
+void senone_eval_all (senone_t *s,		/**< In: Senone structure */
+		      gauden_dist_t **dist,	/**< In: as in senone_eval above */
+		      int32 n_top,		/**< In: as in senone_eval above */
+		      int32 *senscr		/**< Out: Upon return, senscr[i] will contain
 						   score for senone i */
+		      );
 
 #ifdef __cplusplus
 }

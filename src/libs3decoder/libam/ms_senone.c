@@ -11,9 +11,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2004/12/05  12:01:31  arthchan2003
- * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ * Revision 1.5  2005/06/21  18:57:31  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
  * 
+ * Revision 1.1.1.1  2005/03/24 15:24:00  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
+ * Revision 1.4  2004/12/05 12:01:31  arthchan2003
+ * 1, move libutil/libutil.h to s3types.h, seems to me not very nice to have it in every files. 2, Remove warning messages of main_align.c 3, Remove warning messages in chgCase.c
+ *
  * Revision 1.3  2004/11/13 21:25:19  arthchan2003
  * commit of 1, absolute CI-GMMS , 2, fast CI senone computation using svq, 3, Decrease the number of static variables, 4, fixing the random generator problem of vector_vqgen, 5, move all unused files to NOTUSED
  *
