@@ -410,7 +410,6 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
 
     *splenp = splen; 
     *nframesp = nframes;   
-    
     return(spdata);
 }
 
