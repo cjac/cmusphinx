@@ -44,6 +44,29 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  23:32:58  arthchan2003
+ * Log. Introduced lextree_init and filler_init to wrap up lextree_build
+ * process. Split the hmm propagation to propagation for leaves and
+ * non-leaves node.  This allows an easier time for turning off the
+ * rescoring stage. However, the implementation is not clever enough. One
+ * should split the array to leave array and non-leave array.
+ * 
+ * Revision 1.7  2005/06/16 04:59:10  archan
+ * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
+ *
+ * Revision 1.6  2005/06/13 04:02:59  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.5  2005/04/25 23:53:35  archan
+ * 1, Some minor modification of vithist_t, vithist_rescore can now support optional LM rescoring, vithist also has its own reporting routine. A new argument -lmrescore is also added in decode and livepretend.  This can switch on and off the rescoring procedure. 2, I am reaching the final difficulty of mode 5 implementation.  That is, to implement an algorithm which dynamically decide which tree copies should be entered.  However, stuffs like score propagation in the leave nodes and non-leaves nodes are already done. 3, As briefly mentioned in 2, implementation of rescoring , which used to happened at leave nodes are now separated. The current implementation is not the most clever one. Wish I have time to change it before check-in to the canonical.
+ *
+ * Revision 1.4  2005/04/25 19:22:47  archan
+ * Refactor out the code of rescoring from lexical tree. Potentially we want to turn off the rescoring if we need.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 29-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified some functions to be able to deal with HMMs with any number
@@ -65,6 +88,7 @@
 #include "hmm.h"
 #include "vithist.h"
 #include "ascr.h"
+#include "fast_algo_struct.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -158,42 +182,68 @@ typedef struct {
 #define lextree_n_next_active(l)	((l)->n_next_active)
 
 
-/*
+  /** Initialize a lexical tree, also factor language model score through out the tree. Currently only
+   * unigram look-ahead is supported. 
+   */
+  lextree_t* lextree_init(
+		    kbcore_t *kbcore, /**< In: Initialized kbcore */
+		    lm_t* lm,         /**< In: LM, to decide which set of word list is used */
+		    char *lmname,     /**< In: LM name */
+		    int32 istreeUgProb, /**< In: Decide whether LM factoring is used or not */
+		    int32 bReport     /** In: Whether to report the progress so far. */
+		    );
+
+  /** Initialize a filler tree.
+   */
+  lextree_t* fillertree_init(
+			     kbcore_t *kbcore /**< In: Initialized kbcore */
+			     );
+
+
+  /** Report the lextree data structure. 
+   */
+  void lextree_report(
+		      lextree_t *ltree /**< In: Report a lexical tree*/
+		      );
+
+  /**
  * Build a lexical tree for the set of words specified in wordprob[] (with their
  * associated LM probabilities).  wordprob[] must contain EXACTLY the set of words for
  * which the lextree is to be built, i.e, including alternatives and excluding OOVs.
  * Return value: Pointer to lextree_t structure representing entire lextree.
  */
 lextree_t *
-lextree_build (kbcore_t *kbc,		/* In: All the necessary knowledge bases */
-	       wordprob_t *wordprob,	/* In: Words in the tree and their (LM) probabilities */
-	       int32 n_word,		/* In: Size of the wordprob[] array */
-	       s3cipid_t *lc);		/* In: BAD_S3CIPID terminated array of left context
+lextree_build (kbcore_t *kbc,		/**< In: All the necessary knowledge bases */
+	       wordprob_t *wordprob,	/**< In: Words in the tree and their (LM) probabilities */
+	       int32 n_word,		/**< In: Size of the wordprob[] array */
+	       s3cipid_t *lc		/**< In: BAD_S3CIPID terminated array of left context
 					   CIphones, or NULL if no specific left context */
+	       );
 
 /* Free a lextree that was created by lextree_build */
 void lextree_free (lextree_t *lextree);
 
 
-/*
+  /**
  * Reset the entire lextree (to the inactive state).  I.e., mark each HMM node as inactive,
  * (with lextree_node_t.frame = -1), and the active list size to 0.
  */
 void lextree_utt_end (lextree_t *l, kbcore_t *kbc);
 
 
-/*
+  /**
  * Enter root nodes of lextree for given left-context, with given incoming score/history.
  */
-void lextree_enter (lextree_t *lextree,	/* In/Out: Lextree being entered */
-		    s3cipid_t lc,	/* In: Left-context if any (can be BAD_S3CIPID) */
-		    int32 frame,	/* In: Frame from which being activated (for the next) */
-		    int32 inscore,	/* In: Incoming score */
-		    int32 inhist,	/* In: Incoming history */
-		    int32 thresh);	/* In: Pruning threshold; incoming scores below this
+void lextree_enter (lextree_t *lextree,	/**< In/Out: Lextree being entered */
+		    s3cipid_t lc,	/**< In: Left-context if any (can be BAD_S3CIPID) */
+		    int32 frame,	/**< In: Frame from which being activated (for the next) */
+		    int32 inscore,	/**< In: Incoming score */
+		    int32 inhist,	/**< In: Incoming history */
+		    int32 thresh	/**< In: Pruning threshold; incoming scores below this
 					   threshold will not enter successfully */
+		    );
 
-/*
+  /**
  * Swap the active and next_active lists of the given lextree.  (Usually done at the end of
  * each frame: from the current active list, we've built the next_active list for the next
  * frame, and finally need to make the latter the current active list.)
@@ -201,66 +251,96 @@ void lextree_enter (lextree_t *lextree,	/* In/Out: Lextree being entered */
 void lextree_active_swap (lextree_t *lextree);
 
 
-/*
+  /**
  * Marks the active ssid and composite ssids in the given lextree.  Caller must allocate ssid[]
  * and comssid[].  Caller also responsible for clearing them before calling this function.
  */
-void lextree_ssid_active (lextree_t *lextree,	/* In: lextree->active is scanned */
-			  int32 *ssid,		/* In/Out: ssid[s] is set to non-0 if senone
+void lextree_ssid_active (lextree_t *lextree,	/**< In: lextree->active is scanned */
+			  int32 *ssid,		/**< In/Out: ssid[s] is set to non-0 if senone
 						   sequence ID s is active */
-			  int32 *comssid);	/* In/Out: comssid[s] is set to non-0 if
+			  int32 *comssid	/**< In/Out: comssid[s] is set to non-0 if
 						   composite senone sequence ID s is active */
+			  );
 
-/*
+  /**
  * For each active lextree node, mark the corresponding CI phone as active.
  */
-void lextree_ci_active (lextree_t *lextree,	/* In: Lextree being traversed */
-			bitvec_t ci_active);	/* In/Out: Active/inactive flag for ciphones */
+void lextree_ci_active (lextree_t *lextree,	/**< In: Lextree being traversed */
+			bitvec_t ci_active	/**< In/Out: Active/inactive flag for ciphones */
+			);
 
-/*
+  /**
  * Evaluate the active HMMs in the given lextree, using the current frame senone scores.
  * Return value: The best HMM state score as a result.
+ * Note that the current
  */
-int32 lextree_hmm_eval (lextree_t *lextree,	/* In/Out: Lextree with HMMs to be evaluated */
-			kbcore_t *kbc,	/* In: */
-			ascr_t *ascr,	/* In: Senone scores (primary and composite) */
-			int32 f,	/* In: Frame in which being invoked */
-			FILE *fp);	/* In: If not-NULL, dump HMM state (for debugging) */
+int32 lextree_hmm_eval (lextree_t *lextree,	/**< In/Out: Lextree with HMMs to be evaluated */
+			kbcore_t *kbc,	/**< In: */
+			ascr_t *ascr,	/**< In: Senone scores (primary and composite) */
+			int32 f,	/**< In: Frame in which being invoked */
+			FILE *fp	/**< In: If not-NULL, dump HMM state (for debugging) */
+			);
 
-/*
- * Propagate HMMs in the given lextree through to the start of the next frame.  Called after
+  /*
+   * ARCHAN: Starting from Sphinx 3.6, lextree_hmm_propagate is separated to 
+   * lextree_hmm_propagate_non_leaves and lextree_hmm_propagate_leaves.  This allows 
+   * the rescoring routine to be more easily switched off
+   */
+
+  /**
+ * Propagate the non-leaves nodes of HMMs in the given lextree through to the start of the next frame.  Called after
  * HMM state scores have been updated.  Marks those with "good" scores as active for the next
- * frame, and propagates HMM exit scores through to successor HMM entry states.
+ * frame.
  */
-void lextree_hmm_propagate (lextree_t *lextree,	/* In/Out: Propagate scores across HMMs in
+void lextree_hmm_propagate_non_leaves (lextree_t *lextree,	/**< In/Out: Propagate scores across HMMs in
 						   this lextree */
-			    kbcore_t *kbc,	/* In: Core knowledge bases */
-			    vithist_t *vh,	/* In/Out: Viterbi history structure to be
-						   updated with word exits */
-			    int32 cf,		/* In: Current frame */
-			    int32 th,		/* In: General (HMM survival) pruning thresh */
-			    int32 pth,		/* In: Phone transition pruning threshold */
-			    int32 wth,		/* In: Word exit pruning threshold */
-			    int32 senscale,	/* In: Acoustic scaling factor for this frame */
-                            int32 *phn_heur_list,  /* Added on 20040227 by JSHERWAN for phoneme lookahead */
-			    int32 heur_beam, /* Added on 20040228 by JSHERWAN for phoneme lookahead heuristic */
-			    int32 heur_type);   /*Heuristic type, used it to by-pass the code if heur_type is 0 */
+			    kbcore_t *kbc,	/**< In: Core knowledge bases */
+			    int32 cf,		/**< In: Current frame index. */
+			    int32 th,		/**< In: General (HMM survival) pruning thresh */
+			    int32 pth,		/**< In: Phone transition pruning threshold */
+			    int32 wth,		/**< In: Word exit pruning threshold */
+			    pl_t* pl            /**< In: Phoneme lookahead struct*/
+			    ); 
 
-/*
+
+  /**
+ * Propagate the leaves nodes of HMMs in the given lextree through to
+ * the start of the next frame.  Called after HMM state scores have
+ * been updated.  Propagates HMM exit scores through to successor HMM
+ * entry states. It should be called right after
+ * lextree_hmm_propagate_leaves. 
+ */
+
+void lextree_hmm_propagate_leaves (lextree_t *lextree,	/**< In/Out: Propagate scores across HMMs in
+						   this lextree */
+				   kbcore_t *kbc,	/**< In: Core knowledge bases */
+				   vithist_t *vh,	/**< In/Out: Viterbi history structure to be
+							   updated with word exits */
+				   int32 cf,            /**< In: Current frame index */
+				   int32 wth,		/**< In: Word exit pruning threshold */
+				   int32 senscale       /**< In: The senscale for this frame */
+				   ); 
+
+
+  /**
  * In order to use histogram pruning, get a histogram of the bestscore of each active HMM in
  * the given lextree.  For a given HMM, its bin is determined by:
  * 	(bestscr - hmm->bestscore) / bw.
  * Invoked right after all active HMMs are evaluated.
  */
-void lextree_hmm_histbin (lextree_t *lextree,	/* In: Its active HMM bestscores are used */
-			  int32 bestscr,	/* In: Overall bestscore in current frame */
-			  int32 *bin,		/* In/Out: The histogram bins; caller allocates
+void lextree_hmm_histbin (lextree_t *lextree,	/**< In: Its active HMM bestscores are used */
+			  int32 bestscr,	/**< In: Overall bestscore in current frame */
+			  int32 *bin,		/**< In/Out: The histogram bins; caller allocates
 						 * this array */
-			  int32 nbin,		/* In: Size of bin[] */
-			  int32 bw);		/* In: Bin width; i.e., score range per bin */
+			  int32 nbin,		/**< In: Size of bin[] */
+			  int32 bw		/**< In: Bin width; i.e., score range per bin */
+			  );
 
-/* For debugging */
-void lextree_dump (lextree_t *lextree, dict_t *dict, FILE *fp);
+  /** For debugging, dump the whole lexical tree*/
+  void lextree_dump (lextree_t *lextree,  /**< In: A lexical tree*/
+		     dict_t *dict,       /**< In: a dictionary */
+		     FILE *fp            /**< A file pointer */
+		   );
 
 
 #ifdef __cplusplus
