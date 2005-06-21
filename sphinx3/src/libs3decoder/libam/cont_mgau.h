@@ -44,6 +44,16 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.13  2005/06/21  18:06:45  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added $Log:$ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:55  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added mgau_free to free memory allocated by mgau_init()
@@ -289,14 +299,16 @@ int32 mgau_precomp_hack_log_to_float(mgau_model_t *g);
    */
 
 int32 mgau_dump (mgau_model_t *g,  /**< In: Set of mixture Gaussians */
-		 int32 type);      /**< In: type of output, MGAU_MEAN
+		 int32 type      /**< In: type of output, MGAU_MEAN
                                       for mean or MGAU_VAR for
                                       variance.  */
+		 );
 
   /** RAH
    * Free memory allocated by mgau_init
    */
-void mgau_free (mgau_model_t *g);
+  void mgau_free (mgau_model_t *g /**< In: A set of model to free */
+		);
 
 
   /** 
@@ -304,7 +316,8 @@ void mgau_free (mgau_model_t *g);
    */
 
   int32 mgau_mean_reload(mgau_model_t *g,  /**< In/Out : The mean which will be resetted*/
-			 char* mean_file_name); /**< In: The mean files */
+			 char* mean_file_name /**< In: The mean files */
+			 );
 
 #ifdef __cplusplus
 }

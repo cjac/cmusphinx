@@ -44,6 +44,13 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.17  2005/06/21  18:06:45  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added $Log:$ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 26-Aug-2004  ARCHAN (archan@cs.cmu.edu)
  *              Include changes that allow full floating point-based computation. Checking of computation type 
