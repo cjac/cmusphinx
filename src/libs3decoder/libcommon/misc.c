@@ -44,6 +44,46 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.2  2005/06/21  20:52:00  arthchan2003
+ * 1, remove hyp_free, it is now in the implementation of dag.c , 2, add incomplete comments for misc.h. 3, Added $ keyword.
+ * 
+ * Revision 1.4  2005/06/03 05:46:19  archan
+ * Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 11-Nov-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
@@ -56,6 +96,7 @@
 #include <assert.h>
 
 #include "misc.h"
+#include "dag.h"
 
 
 FILE *ctlfile_open (char *file)
@@ -183,16 +224,6 @@ int32 argfile_load (char *file, char *pgm, char ***argvout)
 }
 
 
-static void hyp_free (srch_hyp_t *list)
-{
-    srch_hyp_t *h;
-    
-    while (list) {
-	h = list->next;
-	listelem_free ((char *)list, sizeof(srch_hyp_t));
-	list = h;
-    }
-}
 
 
 static srch_hyp_t *nbestfile_parseline (char *sent)
