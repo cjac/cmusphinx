@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.20  2005/06/21  20:37:12  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add a report flat to feat_init, 3, Add the  $ keyword.
+ * 
+ * Revision 1.4  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Adding feat_free() to free allocated memory
@@ -633,14 +643,15 @@ void feat_1s_c_d_dd_cep2feat (feat_t *fcb, float32 **mfc, float32 **feat)
     }
 }
 
-feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc)
+feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc, int32 breport)
 {
     feat_t *fcb;
     int32 i, l, k;
     char wd[16384], *strp;
-    
-    E_INFO("Initializing feature stream to type: '%s', CMN='%s', VARNORM='%s', AGC='%s'\n",
-	   type, cmn, varnorm, agc);
+ 
+    if(breport)
+      E_INFO("Initializing feature stream to type: '%s', CMN='%s', VARNORM='%s', AGC='%s'\n",
+	     type, cmn, varnorm, agc);
     
     fcb = (feat_t *) ckd_calloc (1, sizeof(feat_t));
 
@@ -916,7 +927,9 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 
     
     if (fcb->cmn){
-      E_INFO("CMN\n");
+
+      /*if(breport) E_INFO("CMN\n");*/
+
 	cmn (mfc, fcb->varnorm, nfr, fcb->cepsize,fcb->cmn_struct);
     }
 
@@ -931,7 +944,9 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 #endif
 
     if (fcb->agc){
-      E_INFO("AGC\n");
+
+      /*if(breport) E_INFO("AGC\n");*/
+
 	agc_max (mfc, nfr);
     }
 
@@ -1073,6 +1088,25 @@ void feat_free (feat_t *f)
   }
 
 }
+
+
+void feat_report(feat_t *f)
+{
+  int i;
+  E_INFO_NOFN("Initialization of feat_t, report:\n");
+  E_INFO_NOFN("Feature type        = %s\n",f->name);
+  E_INFO_NOFN("Cepstral size       = %d\n",f->cepsize);
+  E_INFO_NOFN("Cepstral size Used  = %d\n",f->cepsize_used);
+  E_INFO_NOFN("Number of stream    = %d\n",f->n_stream);
+  for(i=0;i<f->n_stream;i++){
+    E_INFO_NOFN("Vector size of stream[%d]: %d\n",i,f->stream_len[i]);
+  }
+  E_INFO_NOFN("Whether CMN is used = %d\n",f->cmn);
+  E_INFO_NOFN("Whether AGC is used = %d\n",f->agc);
+  E_INFO_NOFN("Whether variance is normalized = %d\n",f->varnorm);
+  E_INFO_NOFN("\n");
+}
+
 
 /* ARCHAN: Unused code in the past. I keep them to show my respect to the original author*/
 /* This part of the code is contaminated by static-style programming. */
