@@ -40,9 +40,12 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.4  2005/06/21  21:07:28  arthchan2003
- * Added  keyword.
+ * Revision 1.5  2005/06/21  21:12:05  arthchan2003
+ * Added some bogus comments to endptr.h
  * 
+ * Revision 1.4  2005/06/21 21:07:28  arthchan2003
+ * Added  keyword.
+ *
  * Revision 1.2  2005/06/15 06:48:54  archan
  * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
  *
@@ -102,18 +105,28 @@ typedef struct{
 
 
 /** Initialize the end pointer */
-endpointer_t * endpointer_initialize(fe_t *FE);
+   endpointer_t * endpointer_initialize(fe_t *FE /**< A FE structure */
+				     );
 
 /** Free the end pointer */
-void endpointer_free(endpointer_t *ENDPTR);
+   void endpointer_free(endpointer_t *ENDPTR /**< An end pointer structure */
+		     );
 
-void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, int class);
+   void endpointer_update_stat (endpointer_t *ENDPTR, /**< An end pointer structure */
+				fe_t *FE,  /**< A FE structure */
+				class_t *CLASSW,  /**< A CLASSW structure */
+				int class /**< The class*/
+			     );
 
 /** Convert frames 2 seconds for beginning frame.*/
-float endptr_frame2secs_beg (fe_t *FE, int frame);
+   float endptr_frame2secs_beg (fe_t *FE, /**<A FE structure */
+				int frame  /**< The frame*/
+			     );
 
 /** Convert frames 2 seconds for ending frame. */
-float endptr_frame2secs_end (fe_t *FE, int frame);
+float endptr_frame2secs_end (fe_t *FE, /**<A FE structure */
+			     int frame /**< The frame */
+			     );
 
 #endif /*__END_POINTER__*/
 
