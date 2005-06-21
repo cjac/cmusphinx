@@ -44,6 +44,16 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.8  2005/06/21  18:34:41  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$ keyword.
+ * 
+ * Revision 1.4  2005/06/13 04:02:55  archan
+ * Fixed most doxygen-style documentation under libs3decoder.
+ *
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 29-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified hmm_t.state to be a run-time array instead of a compile-time
@@ -129,7 +139,9 @@ typedef struct {
  * Reset the states of the HMM to the invalid or inactive condition; i.e., scores to
  * LOGPROB_ZERO and hist to undefined.
  */
-void hmm_clear (hmm_t *h, int32 n_emit_state);
+  void hmm_clear (hmm_t *h, /**<In/Out HMM being updated */
+		  int32 n_emit_state /**<Number of emitting state of a HMM */
+		);
 
 
   /**
@@ -140,26 +152,41 @@ void hmm_clear (hmm_t *h, int32 n_emit_state);
  * for the emitting states.  But we're not bothered with state segmentations, for now.  So, we
  * update the exit state as well.)
  * Hardwired for 5-state HMMs with topology shown above.
- * Return value: Best state score after evaluation.
+ * @return Best state score after evaluation.
  */
-int32 hmm_vit_eval_5st (hmm_t *hmm,		/** In/Out: HMM being updated */
-			s3senid_t *senid,	/** In: Senone ID for each HMM state */
-			int32 *senscore);	/** In: Senone scores, for all senones */
+int32 hmm_vit_eval_5st (hmm_t *hmm,		/**< In/Out: HMM being updated */
+			s3senid_t *senid,	/**< In: Senone ID for each HMM state */
+			int32 *senscore	/**< In: Senone scores, for all senones */
+			);
 
   /**
  * Like hmm_vit_eval_5st, but hardwired for 3-state HMMs with topology shown above.
- * Return value: Best state score after evaluation.
+ * @return Best state score after evaluation.
  */
-int32 hmm_vit_eval_3st (hmm_t *hmm,		/** In/Out: HMM being updated */
-			s3senid_t *senid,	/** In: Senone ID for each HMM state */
-			int32 *senscore);	/** In: Senone scores, for all senones */
+int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
+			s3senid_t *senid,	/**< In: Senone ID for each HMM state */
+			int32 *senscore	/**< In: Senone scores, for all senones */
+			);
 
-  /** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging */
-int32 hmm_dump_vit_eval (hmm_t *hmm, int32 n_emit_state,
-			 s3senid_t *senid, int32 *senscr, FILE *fp);
+  /** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging 
+      @see hmm_vit_eval_3st
+      @see hmm_vit_eval_5st
+      @see hmm_dump
+   */
+  int32 hmm_dump_vit_eval (hmm_t *hmm,  /**< In/Out: HMM being updated */
+			   int32 n_emit_state, /**< In: Number of emitting state */
+			   s3senid_t *senid, /**< An array of senone ID */
+			   int32 *senscr,  /**< An array of senone scores*/
+			 FILE *fp /**< An output file pointer */
+			 );
 
-  /** For debugging */
-void hmm_dump (hmm_t *h, int32 n_emit_state, s3senid_t *senid, int32 *senscr, FILE *fp);
+  /** For debugging, dump the whole hmm out */
+void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
+	       int32 n_emit_state, /**< In: Number of emitting state */
+	       s3senid_t *senid, /**< An array of senone ID */
+	       int32 *senscr, /**< An array of senone scores*/
+	       FILE *fp /**< An output file pointer */
+	       );
 
 
 #ifdef __cplusplus

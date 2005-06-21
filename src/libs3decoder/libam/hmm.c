@@ -44,6 +44,13 @@
  * **********************************************
  *
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/21  18:34:41  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$ keyword.
+ * 
+ * Revision 1.3  2005/03/30 01:22:46  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 30-Dec-2000  Rita Singh (rsingh@cs.cmu.edu) at Carnegie Mellon University
  *		Modified hmm_vit_eval_3st() to include explicit checks for
