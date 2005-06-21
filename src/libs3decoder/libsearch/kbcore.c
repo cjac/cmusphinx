@@ -44,6 +44,37 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/21  23:28:48  arthchan2003
+ * Log. Please also see comments of kb.[ch].  Major changes you could see
+ * is that the lmset interface is now used rather than several interfaces
+ * for reading lm. Other than that, you could say most changes are
+ * harmless internal interfaces changes.
+ * 
+ * Revision 1.11  2005/06/20 22:20:18  archan
+ * Fix non-conforming problems for Windows plot.
+ *
+ * Revision 1.10  2005/06/18 03:22:29  archan
+ * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
+ *
+ * Revision 1.9  2005/06/17 23:44:40  archan
+ * Sphinx3 to s3.generic, 1, Support -lmname in decode and livepretend.  2, Wrap up the initialization of dict2lmwid to lm initialization. 3, add Dave's trick in LM switching in mode 4 of the search.
+ *
+ * Revision 1.8  2005/06/13 22:30:30  archan
+ * Bug fix: In lmset_read_lm and lmset_read_ctl, the arguments of insertion penalty and unigram weight was switched.  This problem didn't shows up in standard regression test where the language model is very weak.  It only caused a 1 answer difference in ti46. However, it gives a very obvious effect in tidigits and Communicator and caused a lot of deletions.  This is now fixed.
+ *
+ * Revision 1.7  2005/05/27 01:15:44  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.6  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.5  2005/04/20 03:38:43  archan
+ * Do the corresponding code changes for the lm code.
+ *
+ * Revision 1.4  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 11-Feb-2000	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Removed svqpp stuff.  It doesn't work too well anyway.
@@ -58,7 +89,37 @@
 
 #include "kbcore.h"
 #include "logs3.h"
+#include "s3types.h"
+#define REPORT_KBCORE 1 
 
+
+void checkLMstartword(lm_t* l,char* name)
+{
+  if (NOT_S3LMWID(lm_startwid(l)) || NOT_S3LMWID(lm_finishwid(l))){
+    E_FATAL("%s or %s not in LM %s\n", S3_START_WORD, S3_FINISH_WORD,name);
+  }
+}
+
+/*
+ * Unlink <s> and </s> between dictionary and LM, to prevent their 
+ * recognition.  They are merely dummy words (anchors) at the beginning 
+ * and end of each utterance.
+ */
+/* This has to be done before tree is built */
+void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
+{
+  s3wid_t w;
+
+  lm_lmwid2dictwid(l, lm_startwid(l)) = BAD_S3WID;
+  lm_lmwid2dictwid(l, lm_finishwid(l)) = BAD_S3WID;
+
+
+  for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+    l->dict2lmwid[w] = BAD_S3LMWID;
+  for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+      l->dict2lmwid[w] = BAD_S3LMWID;
+
+}
 
 kbcore_t *kbcore_init (float64 logbase,
 		       char *feattype,
@@ -91,31 +152,34 @@ kbcore_t *kbcore_init (float64 logbase,
 {
     kbcore_t *kb;
     int i;
+    s3cipid_t sil;
     
-    E_INFO("Initializing core models:\n");
+    E_INFO("Begin Initialization of Core Models:\n");
     
     kb = (kbcore_t *) ckd_calloc (1, sizeof(kbcore_t));
     kb->fcb = NULL;
     kb->mdef = NULL;
     kb->dict = NULL;
     kb->dict2pid = NULL;
-    kb->lm = NULL;
     kb->fillpen = NULL;
-    kb->dict2lmwid = NULL;
+
     kb->mgau = NULL;
     kb->svq = NULL;
     kb->tmat = NULL;
-    kb->n_lm =0;
-    kb->n_alloclm=0;
-    
-    logs3_init (logbase);
-    
 
-    if (!feattype){
-      E_FATAL("Please specified the feature type\n");
+    
+    if(!logs3_init (logbase, REPORT_KBCORE,cmd_ln_int32 ("-log3table")))
+      E_FATAL("Error in logs3_init, exit\n");
+
+    if(REPORT_KBCORE){
+      logs3_report();
     }
+
+    if (!feattype)
+      E_FATAL("Please specified the feature type\n");
+    
     if (feattype) {
-	if ((kb->fcb = feat_init (feattype, cmn, varnorm, agc)) == NULL)
+	if ((kb->fcb = feat_init (feattype, cmn, varnorm, agc, REPORT_KBCORE)) == NULL)
 	    E_FATAL("feat_init(%s) failed\n", feattype);
 	
 	if(strcmp(senmgau,".cont.") == 0) {
@@ -129,9 +193,17 @@ kbcore_t *kbcore_init (float64 logbase,
 	}
     }
     
+    if(REPORT_KBCORE){
+      feat_report(kb->fcb);
+    }
+
     if (mdeffile) {
-	if ((kb->mdef = mdef_init (mdeffile)) == NULL)
+	if ((kb->mdef = mdef_init (mdeffile, REPORT_KBCORE)) == NULL)
 	    E_FATAL("mdef_init(%s) failed\n", mdeffile);
+    }
+
+    if(REPORT_KBCORE){
+      mdef_report(kb->mdef);
     }
     
     if (dictfile) {
@@ -141,32 +213,25 @@ kbcore_t *kbcore_init (float64 logbase,
 	    E_FATAL("Compound word separator(%s) must be empty or single character string\n",
 		    compsep);
 	}
-	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0])) == NULL)
+	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],REPORT_KBCORE)) == NULL)
 	    E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
 		    fdictfile ? fdictfile : "", compsep);
     }
-    
-    /* Make option lmfile and lmcftfile to be mutually exclusive */
-    if(lmfile && lmctlfile)
-      E_FATAL("Please only specify either -lmfile or -lmctlfile\n");
    
-    if(!lmfile && !lmctlfile)
-      E_FATAL("Please specify either one of -lmfile or -lmctlfile\n");
-
-    if (lmfile) {
-	if ((kb->lm = lm_read (lmfile, langwt, inspen, uw)) == NULL)
-	    E_FATAL("lm_read(%s, %e, %e, %e) failed\n", lmfile, langwt, inspen, uw);
+    if(REPORT_KBCORE) {
+      dict_report(kb->dict);
     }
+    
+    kb->lmset=lmset_init(lmfile,
+			 lmctlfile,
+			 cmd_ln_str("-ctl_lm"), /* This two are ugly.*/
+			 cmd_ln_str("-lmname"),
+			 lmdumpdir,
+			 langwt,
+			 inspen,
+			 uw,
+			 kb->dict);
 
-    if (lmctlfile) {
-      E_INFO("Reading LM ctl file\n");
-      kb->lmset=lm_read_ctl(lmctlfile,kb->dict,langwt,inspen,uw,lmdumpdir,&(kb->n_lm),&(kb->n_alloclm),dict_size(kb->dict));
-
-      E_INFO("kb->lmset[0].name %s\n",kb->lmset[0].name);
-      if(kb->lmset==NULL)
-	E_FATAL("lm_read_ctl(%s,%e,%e,%e) failed\n:",lmctlfile,langwt,inspen,uw);
-
-    }
     
     if (fillpenfile || (lmfile && kb->dict) || (lmctlfile && kb->dict)) {
 	if (! kb->dict)		/* Sic */
@@ -175,19 +240,8 @@ kbcore_t *kbcore_init (float64 logbase,
 	if ((kb->fillpen = fillpen_init (kb->dict, fillpenfile, silprob, fillprob,
 					 langwt, inspen)) == NULL)
 	    E_FATAL("fillpen_init(%s) failed\n", fillpenfile);
-
-
     }
 
-    if (kb->dict && kb->lm) {	/* Initialize dict2lmwid */
-	if ((kb->dict2lmwid = wid_dict_lm_map (kb->dict, kb->lm,langwt)) == NULL)
-	    E_FATAL("Dict/LM word-id mapping failed\n");
-    }
-    if(kb->dict && kb->lmset) {
-      for(i=0;i<kb->n_lm;i++)
-	if ((kb->lmset[i].lm->dict2lmwid = wid_dict_lm_map (kb->dict, kb->lmset[i].lm,langwt)) == NULL)
-	    E_FATAL("Dict/LM word-id mapping failed for LM index %d, named %s\n",i,kb->lmset[i].name);
-    }
     
     if (meanfile) {
 	if ((! varfile) || (! mixwfile))
@@ -217,18 +271,30 @@ kbcore_t *kbcore_init (float64 logbase,
 	}  
     }
     
+    /* STRUCTURE: Initialize the transition matrices */
     if (tmatfile) {
-	if ((kb->tmat = tmat_init (tmatfile, tmatfloor)) == NULL)
-	    E_FATAL("tmat_init (%s, %e) failed\n", tmatfile, tmatfloor);
+      if ((kb->tmat = tmat_init (tmatfile, tmatfloor, REPORT_KBCORE)) == NULL)
+	E_FATAL("tmat_init (%s, %e) failed\n", tmatfile, tmatfloor);
+      
+      if(REPORT_KBCORE){
+	tmat_report(kb->tmat);
+      }
     }
     
+    /* CHECK: that HMM topology restrictions are not violated */
+    if (tmat_chk_1skip (kb->tmat) < 0)
+	E_FATAL("Transition matrices contain arcs skipping more than 1 state, not supported in s3.x's decode\n");
     
     if (kb->mdef && kb->dict) {	/* Initialize dict2pid */
 	kb->dict2pid = dict2pid_build (kb->mdef, kb->dict);
     }
     
+    if(REPORT_KBCORE){
+      dict2pid_report(kb->dict2pid);
+    }
     /* ***************** Verifications ***************** */
-    E_INFO("Verifying models consistency:\n");
+    if(REPORT_KBCORE)
+      E_INFO("Inside kbcore: Verifying models consistency ...... \n");
     
     if (kb->fcb && kb->mgau) {
 	/* Verify feature streams against gauden codebooks */
@@ -253,6 +319,23 @@ kbcore_t *kbcore_init (float64 logbase,
 		    kb->mdef->n_emit_state, kb->tmat->n_state);
     }
 
+    /* CHECK: Verify whether the <s> and </s> is in the dictionary. */
+    if (NOT_S3WID(dict_startwid(kb->dict)) || NOT_S3WID(dict_finishwid(kb->dict)))
+	E_FATAL("%s or %s not in dictionary\n", S3_START_WORD, S3_FINISH_WORD);
+
+    /* CHECK: Verify whether <sil> is in the dictionary */
+    sil = mdef_silphone (kbcore_mdef (kb));
+    if (NOT_S3CIPID(sil))
+      E_FATAL("Silence phone '%s' not in mdef\n", S3_SILENCE_CIPHONE);
+
+    /* CHECK: check whether LM has a start word and end word 
+       Also make sure silences are unlinked. */
+    for(i=0;i<kb->lmset->n_lm;i++){
+      checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
+      unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
+    }
+
+    E_INFO("End of Initialization of Core Models:\n");
     return kb;
 }
 
@@ -263,25 +346,14 @@ void kbcore_free (kbcore_t *kbcore)
   mdef_t *mdef = kbcore_mdef(kbcore);
   dict_t *dict = kbcore_dict (kbcore);
   dict2pid_t *dict2pid = kbcore_dict2pid (kbcore);		/*  */
-  /*dictword_t *word;   */
-  lmset_t *lmset = kbcore_lmset (kbcore);
-  lm_t *lm = kbcore_lm (kbcore); /*  */
+  lmset_t *lms = kbcore_lmset(kbcore);
 
-  if (lmset) {
-    int i;
-
-    for (i = 0; i < kbcore_nlm(kbcore); ++i) {
-      ckd_free(lmset[i].name);
-      lm_free(lmset[i].lm);
-    }
-    ckd_free(lmset);
-  }
-  else
-    lm_free (lm);
+  if(lms)
+    lmset_free(lms);
   
   /* Clean up the dictionary stuff*/
-  dict_free (dict);
-
+  if(dict)
+    dict_free (dict);
 
   /* dict2pid */
   ckd_free ((void *) dict2pid->comwt );
@@ -301,7 +373,9 @@ void kbcore_free (kbcore_t *kbcore)
 
   fillpen_free (kbcore->fillpen);
 
-  tmat_free (kbcore->tmat);
+  if(kbcore->tmat)
+    tmat_free (kbcore->tmat);
+
   subvq_free (kbcore->svq);
   mgau_free (kbcore->mgau);
 
