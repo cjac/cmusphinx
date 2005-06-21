@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.4  2005/06/21  18:50:45  arthchan2003
+ * Log. 1, Fixed doxygen documentation, 2, Added $Log$ keyword.
+ * 
+ * Revision 1.4  2005/06/19 19:41:21  archan
+ * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 24-Jul-04    ARCHAN (archan@cs.cmu.edu) at Carnegie Mellon University
  *              First checked in from sphinx 3.0 to sphinx 3.5
