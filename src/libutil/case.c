@@ -44,6 +44,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.7  2005/06/22  02:58:54  arthchan2003
+ * Added  keyword
+ * 
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 18-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added strcmp_nocase.  Moved UPPER_CASE and LOWER_CASE definitions to .h.
