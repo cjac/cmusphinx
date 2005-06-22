@@ -45,8 +45,8 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/21  20:37:12  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add a report flat to feat_init, 3, Add the  $ keyword.
+ * Revision 1.16  2005/06/22  03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
  * 
  * Revision 1.5  2005/06/13 04:02:56  archan
  * Fixed most doxygen-style documentation under libs3decoder.
