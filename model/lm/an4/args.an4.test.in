@@ -26,7 +26,8 @@
 -maxhmmpf 1500
 -wend_beam 1e-1
 -ci_pbeam 1e-3
--ds 2
+-ds 4
+-tighten_factor 0.30
 -lm 	@abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP
 -phypdump 0
 

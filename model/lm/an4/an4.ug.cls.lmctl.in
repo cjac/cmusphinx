@@ -1,0 +1,6 @@
+{ @abs_top_srcdir@/model/lm/an4/an4.cls.probdef }
+@abs_top_srcdir@/model/lm/an4/an4.ug.cls.lm.DMP an4class {
+[a_class]
+}
+
+
