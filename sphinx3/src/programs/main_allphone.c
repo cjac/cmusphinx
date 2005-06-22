@@ -32,10 +32,7 @@
  *
  * ====================================================================
  *
- */
-
-/*
- * allphone-main.c -- Main driver routine for allphone Viterbi decoding.
+ * main_allphone.c -- Main driver routine for allphone Viterbi decoding.
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -46,6 +43,30 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.13  2005/06/22  05:37:45  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
+ * 
+ * Revision 1.8  2005/06/19 04:51:48  archan
+ * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
+ *
+ * Revision 1.7  2005/06/17 23:46:06  archan
+ * Sphinx3 to s3.generic 1, Remove bogus log messages in align and allphone, 2, Unified the logbase value from 1.0001 to 1.0003
+ *
+ * Revision 1.6  2005/06/03 06:12:57  archan
+ * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
+ *
+ * Revision 1.5  2005/05/27 01:15:45  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.4  2005/04/21 23:50:27  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ *
  * 19-Jun-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified to handle the new libfeat interface.
  * 
@@ -72,8 +93,11 @@
 
 #include "feat.h"
 #include "logs3.h"
+#include "ms_mllr.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
+#include "cb2mllr_io.h"
+
 
 #ifdef INTERP
 #include "interp.h"
@@ -91,7 +115,7 @@
 static arg_t defn[] = {
     { "-logbase",
       ARG_FLOAT32,
-      "1.0001",
+      "1.0003",
       "Base in which all log values calculated" },
     { "-mdef", 
       ARG_STRING,
@@ -109,6 +133,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
+    { "-mllr",
+      ARG_STRING,
+      NULL,
+      "MLLR transfomation matrix to be applied to mixture gaussian means"},
+    { "-cb2mllr",
+      ARG_STRING,
+      ".1cls.",
+      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
     { "-senmgau",
       ARG_STRING,
       ".cont.",
@@ -123,7 +155,7 @@ static arg_t defn[] = {
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
 #endif
-    { "-tpfloor",
+    { "-tmatfloor",
       ARG_FLOAT32,
       "0.0001",
       "Triphone state transition probability floor applied to -tmat file" },
@@ -131,7 +163,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "0.0001",
       "Codebook variance floor applied to -var file" },
-    { "-mwfloor",
+    { "-mixwfloor",
       ARG_FLOAT32,
       "0.0000001",
       "Codebook mixture weight floor applied to -mixw file" },
@@ -175,6 +207,10 @@ static arg_t defn[] = {
       ARG_STRING,
       ".mfc",
       "File extension appended to utterances listed in -ctl file" },
+    { "-mllrctl",
+      ARG_STRING,
+      NULL,
+      "Input control file listing MLLR input data; parallel to ctl argument file" },
     { "-topn",
       ARG_INT32,
       "4",
@@ -199,7 +235,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "3.0",
       "Weight (exponent) applied to phone transition probabilities" },
-    { "-inspen",
+    { "-wip",
       ARG_FLOAT32,
       "0.05",
       "Phone insertion penalty (applied above phone transition probabilities)" },
@@ -215,7 +251,6 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Log file (default stdout/stderr)" },
-    
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -256,7 +291,7 @@ static void models_init ( void )
     char *arg;
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Codebooks */
     varfloor = *((float32 *) cmd_ln_access("-varfloor"));
@@ -277,7 +312,7 @@ static void models_init ( void )
     }
     
     /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
+    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
     sen = senone_init ((char *) cmd_ln_access("-mixw"),
 		       (char *) cmd_ln_access("-senmgau"),
 		       mixwfloor);
@@ -313,8 +348,8 @@ static void models_init ( void )
 #endif
 
     /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tpfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
+    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
+    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
 
     /* Verify transition matrices parameters against model definition parameters */
     if (mdef->n_tmat != tmat->n_tmat)
@@ -401,6 +436,68 @@ typedef struct mgau2sen_s {
     s3senid_t sen;		/* Senone shared by this mixture Gaussian */
     struct mgau2sen_s *next;	/* Next entry in list for this mixture Gaussian */
 } mgau2sen_t;
+
+
+static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
+{
+    float32 ****A, ***B;
+    int32 *cb2mllr;
+    int32 gid, sid, nclass;
+    uint8 *mgau_xform;
+		
+    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
+		
+    if (ms_mllr_read_regmat (mllrfile, &A, &B,
+			     fcb->stream_len, feat_n_stream(fcb),
+			     &nclass) < 0)
+	E_FATAL("ms_mllr_read_regmat failed\n");
+
+    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
+	int32 ncb, nmllr;
+
+	cb2mllr_read(cb2mllrfile,
+		     &cb2mllr,
+		     &ncb, &nmllr);
+	if (nmllr != nclass)
+	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+		    ncb, nclass);
+	if (ncb != sen->n_sen)
+	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+		    ncb, sen->n_sen);
+    }
+    else
+	cb2mllr = NULL;
+
+		
+    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
+
+    /* Transform each non-CI mixture Gaussian */
+    for (sid = 0; sid < sen->n_sen; sid++) {
+	int32 class = 0;
+
+	if (cb2mllr)
+	    class = cb2mllr[sid];
+	if (class == -1)
+	    continue;
+
+	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
+	    gid = sen->mgau[sid];
+	    if (! mgau_xform[gid]) {
+		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
+				   fcb->stream_len, feat_n_stream(fcb),
+				   class);
+		mgau_xform[gid] = 1;
+	    }
+	}
+    }
+
+    ckd_free (mgau_xform);
+		
+    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
+    ckd_free(cb2mllr);
+
+    return S3_SUCCESS;
+}
 
 
 /*
@@ -534,10 +631,12 @@ static void allphone_utt (int32 nfr, char *uttid)
 /* Process utterances in the control file (-ctl argument) */
 static void process_ctlfile ( void )
 {
-  FILE *ctlfp;
-  char *ctlfile, *cepdir, *cepext;
+  FILE *ctlfp, *mllrctlfp;
+  char *ctlfile, *cepdir, *cepext, *mllrctlfile;
   char line[1024], ctlspec[1024];
   int32 ctloffset, ctlcount, sf, ef, nfr;
+
+  char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096]; 
   char uttid[1024];
   int32 k,i;
   
@@ -545,6 +644,18 @@ static void process_ctlfile ( void )
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
   
+  if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
+    if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
+      E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
+  } else
+    mllrctlfp = NULL;
+  prevmllr[0] = '\0';
+  
+  if (cmd_ln_access("-mllr") != NULL) {
+    model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
+    strcpy(prevmllr, cmd_ln_access("-mllr"));
+  }
+
   E_INFO("Processing ctl file %s\n", ctlfile);
   
   cepdir = (char *) cmd_ln_access("-cepdir");
@@ -595,6 +706,25 @@ static void process_ctlfile ( void )
 	else
 	  strcpy (uttid, ctlspec+i+1);
       }
+
+      if (mllrctlfp) {
+	int32 tmp1, tmp2;
+	
+	if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
+			 &tmp1, &tmp2, cb2mllrfile)) <= 0)
+	  E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
+	if (!(k == 1) || (k == 4))
+	  E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
+		   mllrctlfile);
+	if (k == 1)
+	  strcpy(cb2mllrfile, ".1cls.");
+	
+	if (strcmp (prevmllr, mllrfile) != 0) {
+	  model_set_mllr(mllrfile, cb2mllrfile);
+	  strcpy (prevmllr, mllrfile);
+	}
+      }
+
       if (! feat) 
 	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
 
@@ -625,6 +755,9 @@ static void process_ctlfile ( void )
     }
 
     fclose (ctlfp);
+
+    if (mllrctlfp)
+	fclose (mllrctlfp);
 }
 
 int
@@ -637,56 +770,43 @@ main (int32 argc, char *argv[])
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit ();
     
-    /*
-     * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
-     * underflow.  At the same time, log base = 1.0001 (1+epsilon) to allow log values
-     * to be maintained in int32 variables without significant loss of precision.
-     */
-    {
-	float32 logbase;
-    
-	logbase = *((float32 *) cmd_ln_access("-logbase"));
-	if (logbase <= 1.0)
-	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
-	if (logbase > 1.1)
-	    E_WARN("Logbase %e perhaps too large??\n", logbase);
-	logs3_init ((float64) logbase);
-    }
+  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
-    /* Initialize feature stream type */
-    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		      (char *) cmd_ln_access ("-cmn"),
-		      (char *) cmd_ln_access ("-varnorm"),
-		      (char *) cmd_ln_access ("-agc"));
+  /* Initialize feature stream type */
+  fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		    (char *) cmd_ln_access ("-cmn"),
+		    (char *) cmd_ln_access ("-varnorm"),
+		    (char *) cmd_ln_access ("-agc"),
+		    1);
     
     /* Read in input databases */
-    models_init ();
+  models_init ();
+  
+  /* Senone scaling factor in each frame */
+  senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
     
-    /* Senone scaling factor in each frame */
-    senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+  /* Initialize allphone decoder module */
+  allphone_init (mdef, tmat);
+  printf ("\n");
+  
+  tot_nfr = 0;
     
-    /* Initialize allphone decoder module */
-    allphone_init (mdef, tmat);
+  process_ctlfile ();
+  
+  if (tot_nfr > 0) {
     printf ("\n");
-    
-    tot_nfr = 0;
-    
-    process_ctlfile ();
-
-    if (tot_nfr > 0) {
-	printf ("\n");
-	printf("TOTAL FRAMES:       %8d\n", tot_nfr);
-	printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
-	       tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
-	printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
-	       tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
-    }
-
+    printf("TOTAL FRAMES:       %8d\n", tot_nfr);
+    printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
+	   tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
+    printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
+	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
+  }
+  
 #if (! WIN32)
-    system ("ps aguxwww | grep s3allphone");
+  system ("ps aguxwww | grep s3allphone");
 #endif
 
-    cmd_ln_appl_exit();
+  cmd_ln_appl_exit();
     
-    return 0;
+  return 0;
 }
