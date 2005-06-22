@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.9  2005/06/22  03:02:51  arthchan2003
+ * 1, Fixed doxygen documentation, 2, add  keyword.
+ * 
+ * Revision 1.4  2005/05/03 04:09:11  archan
+ * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 09-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added glist_chkdup_*().
@@ -101,11 +111,22 @@ typedef gnode_t *glist_t;	/** Head of a list of gnodes */
    * g may be NULL to indicate an initially empty list.
    * (Too bad there's no function overloading.)
    */
-glist_t glist_add_ptr (glist_t g, void *ptr);
-glist_t glist_add_int32 (glist_t g, int32 val);
-glist_t glist_add_uint32 (glist_t g, uint32 val);
-glist_t glist_add_float32 (glist_t g, float32 val);
-glist_t glist_add_float64 (glist_t g, float64 val);
+  glist_t glist_add_ptr (glist_t g,  /**< a link list */
+			 void *ptr   /**< a pointer */
+		       );
+  
+  glist_t glist_add_int32 (glist_t g, /**< a link list */
+			   int32 val  /**< an integer value */
+			   );
+  glist_t glist_add_uint32 (glist_t g,  /**< a link list */
+			    uint32 val  /**< an unsigned integer value */
+			    );
+  glist_t glist_add_float32 (glist_t g, /**< a link list */
+			     float32 val /**< a float32 vlaue */
+			     );
+  glist_t glist_add_float64 (glist_t g, /**< a link list */
+			     float64 val  /**< a float64 vlaue */
+			     );
 
 
   /**
