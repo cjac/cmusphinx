@@ -81,6 +81,9 @@
 #include <s3types.h>
 
 /**
+ * \file cond_ad.h
+ * \brief Continuous A/D listening and silence filtering module.
+ *
  * This module is intended to be interposed as a filter between any raw A/D source and the
  * application to remove silence regions.  Its main purpose is to remove regions of
  * silence from the raw input speech.  It is initialized with a raw A/D source function

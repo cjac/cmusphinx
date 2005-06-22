@@ -37,9 +37,12 @@
 /* gmm_wrap.h
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  22:48:14  arthchan2003
- * A wrapper that provide the function pointer interface of approx_cont_mgau_ci_eval  and approx_cont_mgau_frame_eval.  They are used in srch_gmm_compute_lv1  and srch_gmm_compute_lv2 respectively.  This will also be the home of other gmm computation routine. (Say the s3.0 version of GMM computation)
+ * Revision 1.2  2005/06/22  08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  * 
+ * Revision 1.1  2005/06/21 22:48:14  arthchan2003
+ * A wrapper that provide the function pointer interface of approx_cont_mgau_ci_eval  and approx_cont_mgau_frame_eval.  They are used in srch_gmm_compute_lv1  and srch_gmm_compute_lv2 respectively.  This will also be the home of other gmm computation routine. (Say the s3.0 version of GMM computation)
+ *
  * Revision 1.2  2005/06/13 04:02:59  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -48,6 +51,9 @@
  *
  */
 
+/** \file gmm_wrap.h
+ *  \brief Function pointer wrapper of GMM computation. 
+ */
 #include <s3types.h>
 #include "approx_cont_mgau.h"
 

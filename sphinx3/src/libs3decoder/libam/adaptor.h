@@ -45,12 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  17:59:44  arthchan2003
+ * Revision 1.2  2005/06/22  08:00:07  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * 
+ * Revision 1.1  2005/06/21 17:59:44  arthchan2003
  * Log: Implementation and Interface of adapt_am_t, a wrapper of
  * adaptation capabability of Sphinx 3.  It takes the responsibility from
  * kb_t to manage regA, regB and mllr_nclass.  Interfaces are not fully
  * completed. So "pointer" symtom code still appears in kb.c
- * 
+ *
  * Revision 1.3  2005/06/19 19:41:21  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -62,6 +65,9 @@
  *              First started. 
  */
 
+  /** \file adaptor.h
+   * \brief Wrapper function of speaker adaptation.
+   */
 
 
 #ifndef _ADAPT_H_

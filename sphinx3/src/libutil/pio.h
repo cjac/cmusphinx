@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  03:09:52  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * Revision 1.3  2005/06/22  08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  * 
+ * Revision 1.2  2005/06/22 03:09:52  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ *
  * Revision 1.2  2005/06/16 00:14:08  archan
  * Added const keyword to file argument for file_open
  *
@@ -82,7 +85,7 @@
 #include <sys/stat.h>
 #include "prim_type.h"
 
-/** \file io.h
+/** \file pio.h
  * \brief file IO related operations.  
  *
  * Custom fopen with error checking is implemented. fopen_comp can

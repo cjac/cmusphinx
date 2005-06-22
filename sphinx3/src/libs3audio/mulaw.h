@@ -49,6 +49,11 @@
  * 		Created from Sunil Issar's version.
  */
 
+/**
+ * \file muLaw.h
+ * \brief Table for converting mu-law data into 16-bit linear PCM format.
+ */
+
 
 #ifndef _MULAW_H_
 #define _MULAW_H_
