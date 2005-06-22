@@ -32,9 +32,6 @@
  *
  * ====================================================================
  *
- */
-
-/*
  * gausubvq.c -- Sub-vector cluster Gaussian densities
  * 
  * **********************************************
@@ -46,6 +43,22 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.9  2005/06/22  05:34:46  arthchan2003
+ * Change gausubvq to use a new mdef_init interface. Add  keyword.
+ * 
+ * Revision 1.3  2005/05/27 01:15:45  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.2  2005/03/30 00:43:40  archan
+ * Add $Log$
+ * Revision 1.9  2005/06/22  05:34:46  arthchan2003
+ * Change gausubvq to use a new mdef_init interface. Add  keyword.
+ * 
+ * Add Revision 1.3  2005/05/27 01:15:45  archan
+ * Add 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
+ *
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Porting initial version to s3.2.
  */
@@ -239,7 +252,7 @@ int32 main (int32 argc, char *argv[])
       }
     cmd_ln_parse (arg, argc, argv);
     
-    logs3_init (cmd_ln_float64("-log3table"));
+    logs3_init (cmd_ln_float64("-log3table"),1,1); /*Report Progress, use log table */
     
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init (cmd_ln_str("-mean"), 
