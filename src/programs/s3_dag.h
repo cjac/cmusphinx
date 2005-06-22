@@ -47,9 +47,18 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2004/12/14  00:50:33  arthchan2003
- * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
+ * Revision 1.6  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  * 
+ * Revision 1.3  2005/06/03 06:45:30  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.1.1.1  2005/03/24 15:24:01  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
+ * Revision 1.5  2004/12/14 00:50:33  arthchan2003
+ * 1, Change the code to accept extension, 2, add timer to livepretend, 3, fixing the s3_astar to separate the bypass variable to bypass and is_filler_bypass.  4, Add some doxygen comments. 5, Don't care about changes in main_decode_anytopo.c. It is still under work, 6, remove option -help and -example from 3.5 releases.
+ *
  * Revision 1.4  2004/12/06 11:31:48  arthchan2003
  * Fix brief comments for programs.
  *
@@ -80,85 +89,15 @@
  * 		Created.
  */
 
-#ifndef _LIBFBS_DAG_H_
-#define _LIBFBS_DAG_H_
+#ifndef _LIBFBS_S3DAG_H_
+#define _LIBFBS_S3DAG_H_
 
 #include <s3types.h>
 #include "search.h"
 #include "dict.h"
 
-/** \file s3_dag.h
-    \brief data structure for dag. 
- */
-/**
- * DAG structure representation of word lattice.  A unique <wordid,startframe> is a node.
- * Edges are formed if permitted by time adjacency.  (See comment before dag_build.)
- */
-typedef struct dagnode_s {
-    s3wid_t wid;
-    int32 seqid;			/** Running sequence no. for identification */
-    s3frmid_t sf;			/** Start frame for this occurrence of wid */
-    s3frmid_t fef, lef;			/** First and last end frames */
-    struct dagnode_s *alloc_next;	/** Next in linear list of allocated nodes */
-    struct daglink_s *succlist;		/** List of successor nodes (adjacent in time) */
-    struct daglink_s *predlist;		/** List of preceding nodes (adjacent in time) */
-
-  uint8 reachable;                      /** astar specific: Whether final node reachable from here */
-
-} dagnode_t;
-
-/** A DAG node can have several successor or predecessor nodes, each represented by a link */
-typedef struct daglink_s {
-    dagnode_t *node;		/** Target of link (source determined by dagnode_t.succlist
-				   or dagnode_t.predlist) */
-    dagnode_t *src;		/** Source node of link */
-    struct daglink_s *next;	/** Next in same dagnode_t.succlist or dagnode_t.predlist */
-    struct daglink_s *history;	/** Previous link along best path (for traceback) */
-    struct daglink_s *bypass;	/** If this links A->B, bypassing A->fillnode->B, then
-				   bypass is ptr to fillnode->B */
-
-    int32 ascr;			/** Acoustic score for segment of source node ending just
-
-				   before the end point of this link.  (Actually this gets
-
-				   corrupted because of filler node deletion.) */
-    int32 lscr;			/** LM score to the SUCCESSOR node */
-    int32 pscr;			/** Best path score to root beginning with this link */
-
-
-    s3frmid_t ef;		/** End time for this link.  Should be 1 before the start
-				   time of destination node (or source node for reverse
-				   links), but gets corrupted because of filler deletion */
-    uint8 pscr_valid;		/** Flag to avoid evaluating the same path multiple times */
-
-  int32 is_filler_bypass;       /** Astar specific:Whether this is a filler bypass link */
-  int32 hscr;			/** Astar specific:Heuristic score from end of link to dag exit node */
-
-} daglink_t;
-
-/** Summary of DAG structure information */
-typedef struct {
-    dagnode_t *list;		/** Linear list of nodes allocated */
-    dagnode_t *root;            /** Corresponding to (<s>,0) */
-    daglink_t final;            /** Exit link from final DAG node */
-    daglink_t entry;		/** Entering (<s>,0) */
-    daglink_t exit;		/** Exiting (</s>,finalframe) */
-    s3wid_t orig_exitwid;	/** If original exit node is not a filler word */
-
-    int32 nfrm;
-    int32 nlink;
-    int32 nbypass;
-
-    int32 filler_removed;       /** Whether filler nodes removed from DAG to help search */
-    int32 fudged;               /** Whether fudge edges have been added */
-
-    s3latid_t latfinal;         /** Lattice entry determined to be final end point */
-
-} dag_t;
-
 srch_hyp_t *s3dag_dag_search (char *utt);
 int32 s3dag_dag_load (char *file);
-int32 dag_destroy ( void );
-void dag_init (dict_t* _dict);
+void s3_dag_init (dict_t* _dict);
 
 #endif

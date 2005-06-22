@@ -49,13 +49,77 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.11  2005/06/07  19:32:37  dhdfu
- * Update align and decode_anytopo to support multiple MLLR regression
- * classes, and also to support the -mllr and -cb2mllr command line
- * options.
+ * Revision 1.12  2005/06/22  05:39:55  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  * 
- * Revision 1.10  2005/04/15 14:10:59  dhdfu
- * Additional MLLR runtime support, multi-class (1 stream only) MLLR runtime support, regression and performance tests
+ * Revision 1.13  2005/06/19 04:51:48  archan
+ * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
+ *
+ * Revision 1.12  2005/06/19 03:58:17  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.11  2005/06/18 18:17:52  archan
+ * Update decode_anytopo such that it also used the lmset interface. Notice it still doesn't support multiple LMs and class-based LM at this point
+ *
+ * Revision 1.10  2005/06/17 23:46:06  archan
+ * Sphinx3 to s3.generic 1, Remove bogus log messages in align and allphone, 2, Unified the logbase value from 1.0001 to 1.0003
+ *
+ * Revision 1.9  2005/06/03 06:53:00  archan
+ * Push required argument into decode_anytopo.c
+ *
+ * Revision 1.8  2005/06/03 06:45:30  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.7  2005/06/03 06:12:57  archan
+ * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
+ *
+ * Revision 1.6  2005/06/03 05:46:42  archan
+ * Log. Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.5  2005/05/27 01:15:46  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.4  2005/05/26 22:03:18  archan
+ * Add support for backtracking without assuming silence </s> has to be the last word.
+ *
+ * Revision 1.3  2005/04/21 23:50:27  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.2  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.1.1.1  2005/03/24 15:24:01  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
  *
  * Revision 1.9  2005/02/09 05:59:30  arthchan2003
  * Sychronize the -option names in slow and faster decoders.  This makes many peopple's lives easier. Also update command-line. make test-full is done.
@@ -240,6 +304,7 @@
 #include "ms_senone.h"
 #include "interp.h"
 #include "s3_dag.h"
+#include "dag.h"
 #include "cb2mllr_io.h"
 
 
@@ -254,13 +319,17 @@ static float32 ***feat = NULL;        /* Speech feature data */
 
 static mdef_t *mdef;		/* Model definition */
 
+#if 0
 extern lm_t* lm;
-extern dict_t* dict;
-extern fillpen_t* fpen;
 extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm ones.  
 				   They may not be the same! */
+#endif
 
-static s3wid_t startwid, finishwid, silwid;
+extern lmset_t *lmset;          /* The LM set */
+extern dict_t* dict;
+extern fillpen_t* fpen;
+extern dag_t dag;
+
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 static int32 *bestscr;		/* Best statescore in each frame */
 
@@ -282,6 +351,236 @@ static int32 outlat_onlynodes;
 static FILE *matchfp, *matchsegfp;
 static int32 matchexact;
 
+#if 0 
+/*
+ * Command line arguments.
+ */
+static arg_t defn[] = {
+    { "-log3table",
+      ARG_INT32,
+      "1",
+      "Determines whether to use the log3 table or to compute the values at run time."},
+    { "-logbase",
+      ARG_FLOAT32,
+      "1.0003",
+      "Base in which all log values calculated" },
+    { "-mdef", 
+      REQARG_STRING,
+      NULL,
+      "Model definition input file: triphone -> senones/tmat tying" },
+    { "-tmat",
+      REQARG_STRING,
+      NULL,
+      "Transition matrix input file" },
+    { "-mean",
+      REQARG_STRING,
+      NULL,
+      "Mixture gaussian codebooks mean parameters input file" },
+    { "-var",
+      REQARG_STRING,
+      NULL,
+      "Mixture gaussian codebooks variance parameters input file" },
+    { "-senmgau",
+      ARG_STRING,
+      ".cont.",
+      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
+    { "-mixw",
+      REQARG_STRING,
+      NULL,
+      "Senone mixture weights parameters input file" },
+    { "-lambda",
+      ARG_STRING,
+      NULL,
+      "Interpolation weights (CD/CI senone) parameters input file" },
+    { "-tmatfloor",
+      ARG_FLOAT32,
+      "0.0001",
+      "Triphone state transition probability floor applied to -tmat file" },
+    { "-varfloor",
+      ARG_FLOAT32,
+      "0.0001",
+      "Codebook variance floor applied to -var file" },
+    { "-mixwfloor",
+      ARG_FLOAT32,
+      "0.0000001",
+      "Codebook mixture weight floor applied to -mixw file" },
+    { "-agc",
+      ARG_STRING,
+      "max",
+      "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
+    { "-cmn",
+      ARG_STRING,
+      "current",
+      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
+    { "-varnorm",
+      ARG_STRING,
+      "no",
+      "Cepstral var norm. yes: C[0..n-1] /= stddev(C[0..n-1]); no = no norm */"},
+    { "-feat",
+      ARG_STRING,
+      "s2_4x",
+      "Feature stream:\n\t\t\t\ts2_4x: Sphinx-II type 4 streams, 12cep, 24dcep, 3pow, 12ddcep\n\t\t\t\ts3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_12c_12d_3p_12dd: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_c: Single stream, given input vector only\n\t\t\t\t1s_c_d: Feature + Deltas only\n\t\t\t\t1s_c_dd: Feature + Double deltas only\n\t\t\t\t1s_c_d_dd: Feature + Deltas + Double deltas\n\t\t\t\t1s_c_wd_dd: Feature cep+windowed delcep+deldel \n\t\t\t1s_c_d_ld_dd: Feature + delta + longter delta + doubledelta" },
+/* ADDED BY BHIKSHA: 6 JAN 98 */
+    { "-lminmemory",
+      ARG_INT32,
+      "0",
+      "Load language model into memory (default: use disk cache for lm"},
+    { "-ceplen",
+      ARG_INT32,
+      "13",
+      "Length of input feature vector" },
+    { "-dict",
+      REQARG_STRING,
+      NULL,
+      "Main pronunciation dictionary (lexicon) input file" },
+    { "-fdict",
+      ARG_STRING,
+      NULL,
+      "Silence and filler (noise) word pronunciation dictionary input file" },
+    { "-lm",
+      REQARG_STRING,
+      NULL,
+      "Language model input file (precompiled .DMP file)" },
+    { "-lw",
+      ARG_FLOAT32,
+      "9.5",
+      "Language weight: empirical exponent applied to LM probabilty" },
+    { "-uw",
+      ARG_FLOAT32,
+      "0.7",
+      "LM unigram weight: unigram probs interpolated with uniform distribution with this weight" },
+    { "-bestpath",
+      ARG_INT32,
+      "0",
+      "Whether to run bestpath DAG search after forward Viterbi pass" },
+    { "-min_endfr",
+      ARG_INT32,
+      "3",
+      "Nodes ignored during search if they persist for fewer than so many end frames" },
+    { "-dagfudge",
+      ARG_INT32,
+      "2",
+      "(0..2); 1 or 2: add edge if endframe == startframe; 2: if start == end-1" },
+    { "-bestpathlw",
+      ARG_FLOAT32,
+      NULL,
+      "Language weight for bestpath DAG search (default: same as -lw)" },
+    { "-wip",
+      ARG_FLOAT32,
+      "0.7",
+      "Word insertion penalty" },
+    { "-silprob",
+      ARG_FLOAT32,
+      "0.1",
+      "Language model 'probability' of silence word" },
+    { "-fillprob",
+      ARG_FLOAT32,
+      "0.05",
+      "Language model 'probability' of each non-silence filler word" },
+    { "-fillpen",
+      ARG_STRING,
+      NULL,
+      "Filler word probabilities input file (used in place of -silprob and -noisepen)" },
+    { "-ctl",
+      ARG_STRING,
+      NULL,
+      "Input control file listing utterances to be decoded" },
+    { "-ctloffset",
+      ARG_INT32,
+      "0",
+      "No. of utterances at the beginning of -ctl file to be skipped" },
+    { "-ctlcount",
+      ARG_INT32,
+      NULL,
+      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
+    { "-cepdir",
+      ARG_STRING,
+      NULL,
+      "Directory for utterances in -ctl file (if relative paths specified)." },
+    { "-cepext",
+      ARG_STRING,
+      ".mfc",
+      "File extension appended to utterances listed in -ctl file" },
+    { "-ctl_mllr",
+      ARG_STRING,
+      NULL,
+      "Input control file listing MLLR input data; parallel to -ctl argument file" },
+    { "-topn",
+      ARG_INT32,
+      "4",
+      "No. of top scoring densities computed in each mixture gaussian codebook" },
+    { "-beam",
+      ARG_FLOAT64,
+      "1e-64",
+      "Main pruning beam applied to triphones in forward search" },
+    { "-wbeam",
+      ARG_FLOAT64,
+      "1e-27",
+      "Pruning beam applied in forward search upon word exit" },
+    { "-phonepen",
+      ARG_FLOAT32,
+      "1.0",
+      "Penalty applied for each phone transition" },
+    { "-tracewhmm",
+      ARG_STRING,
+      NULL,
+      "Word whose active HMMs are to be traced (for debugging/diagnosis/analysis)" },
+    { "-hmmdumpsf",
+      ARG_INT32,
+      NULL,
+      "Starting frame for dumping all active HMMs (for debugging/diagnosis/analysis)" },
+    { "-worddumpsf",
+      ARG_INT32,
+      NULL,
+      "Starting frame for dumping all active words (for debugging/diagnosis/analysis)" },
+    { "-inlatdir",
+      ARG_STRING,
+      NULL,
+      "Input word-lattice directory with per-utt files for restricting words searched" },
+    { "-inlatwin",
+      ARG_INT32,
+      "50",
+      "Input word-lattice words starting within +/- <this argument> of current frame considered during search" },
+    { "-outlatdir",
+      ARG_STRING,
+      NULL,
+      "Directory for writing word lattices (one file/utterance); optional ,NODES suffix to write only the nodes" },
+    { "-latext",
+      ARG_STRING,
+      "lat.gz",
+      "Word-lattice filename extension (.gz or .Z extension for compression)" },
+    { "-bestscoredir",
+      ARG_STRING,
+      NULL,
+      "Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
+    { "-hyp",
+      ARG_STRING,
+      NULL,
+      "Recognition result output file (pre-1995 NIST format) (optional ,EXACT suffix)" },
+    { "-hypseg",
+      ARG_STRING,
+      NULL,
+      "Exact recognition result file with word segmentations and scores" },
+    { "-logfn",
+      ARG_STRING,
+      NULL,
+      "Log file (default stdout/stderr)" },
+    { "-backtrace",
+      ARG_INT32,
+      "1",
+      "Whether detailed backtrace information (word segmentation/scores) shown in log" },
+    { "-bptblsize",
+      ARG_INT32,
+      "32767",
+      "Number of BPtable entries to allocate initially (grown as necessary)" },
+    { "-bptbldump",
+      ARG_INT32,
+      "0",
+      "Whether BPTable should be dumped to log output (for debugging)" },
+};
+
+#endif
+
 
 /*
  * Command line arguments.
@@ -293,7 +592,7 @@ static arg_t defn[] = {
       "Determines whether to use the log3 table or to compute the values at run time."},
     { "-logbase",
       ARG_FLOAT32,
-      "1.0001",
+      "1.0003",
       "Base in which all log values calculated" },
     { "-mdef", 
       ARG_STRING,
@@ -339,7 +638,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "0.0001",
       "Codebook variance floor applied to -var file" },
-    { "-mwfloor",
+    { "-mixwfloor",
       ARG_FLOAT32,
       "0.0000001",
       "Codebook mixture weight floor applied to -mixw file" },
@@ -516,8 +815,25 @@ static arg_t defn[] = {
       ARG_INT32,
       "0",
       "Whether BPTable should be dumped to log output (for debugging)" },
-    
+    { "-bt_wsil",
+      ARG_INT32,
+      "0",
+      "Specify whether back-tracking using silences"},
+    { "-maxedge",
+      ARG_INT32,
+      "2000000",
+      "Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage" },
+    { "-maxlmop",
+      ARG_INT32,
+      "100000000",
+      "Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)" },
+    { "-maxlpf",
+      ARG_INT32,
+      "40000",
+      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" },
     { NULL, ARG_INT32,  NULL, NULL }
+
+
 };
 
 /*
@@ -530,26 +846,14 @@ static void models_init ( void )
     char *arg;
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Dictionary */
     dict = dict_init (mdef,
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
-		      0);
-
-
-    /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
-    silwid = dict_wordid (dict, S3_SILENCE_WORD);
-    startwid = dict_wordid (dict,S3_START_WORD);
-    finishwid = dict_wordid (dict, S3_FINISH_WORD);
-    if (NOT_S3WID(silwid) || NOT_S3WID(startwid) || NOT_S3WID(finishwid)) {
-	E_FATAL("%s, %s, or %s missing from dictionary\n",
-		S3_SILENCE_WORD, S3_START_WORD, S3_FINISH_WORD);
-    }
-    if ((dict->filler_start > dict->filler_end) || (! dict_filler_word (dict,silwid)))
-	E_FATAL("%s must occur (only) in filler dictionary\n", S3_SILENCE_WORD);
-    /* No check that alternative pronunciations for filler words are in filler range!! */
+		      0,
+		      1);
 
     /* Codebooks */
     varfloor = *((float32 *) cmd_ln_access("-varfloor"));
@@ -568,11 +872,9 @@ static void models_init ( void )
                    feat_stream_len(fcb, i), g->featlen[i]);
        }
      }
-     
-
 
     /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
+    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
     sen = senone_init ((char *) cmd_ln_access("-mixw"),
 		       (char *) cmd_ln_access("-senmgau"),
 		       mixwfloor);
@@ -607,7 +909,7 @@ static void models_init ( void )
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
+    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
 
     /* Verify transition matrices parameters against model definition parameters */
     if (mdef->n_tmat != tmat->n_tmat)
@@ -619,31 +921,28 @@ static void models_init ( void )
 
     /* LM */
 
-    {
-      char *lmfile;
-      lmfile = (char *) cmd_ln_access("-lm");
-      if (! lmfile)
-	E_FATAL("-lm argument missing\n");
+    /*At 20050618, Currently, decode_anytopo doesn't allow the use of
+     class-based LM (-lmctlfn).  It also doesn't support -ctl_lm,
+     -lmname.  That's why we set all three to NULL at this point. 
+     Consult Ravi or Arthur if you need this functionalty.
+    */
 
-
-      lm = lm_read (lmfile, 
-		    *(float32 *)cmd_ln_access("-lw"),
-		    *(float32 *)cmd_ln_access("-wip"),
-		    *(float32 *)cmd_ln_access("-uw"));
+    lmset=lmset_init(cmd_ln_str("-lm"),
+			 NULL,
+			 NULL,
+			 NULL,
+			 NULL,
+			 cmd_ln_float32("-lw"),
+			 cmd_ln_float32("-wip"),
+			 cmd_ln_float32("-uw"),
+			 dict);
       
-
-      /* Filler penalties */
-      
-      fpen = fillpen_init (dict, 
-			   (char *) cmd_ln_access("-fillpen"),
-			   *(float32 *)cmd_ln_access("-silprob"),
-			   *(float32 *)cmd_ln_access("-fillprob"),
-			   *(float32 *)cmd_ln_access("-lw"),
-			   *(float32 *)cmd_ln_access("-wip"));
-    }
-
-    dict2lmwid = wid_dict_lm_map(dict, lm, *(float32*) cmd_ln_access("-lw"));
-
+    fpen = fillpen_init (dict, 
+			 (char *) cmd_ln_access("-fillpen"),
+			 *(float32 *)cmd_ln_access("-silprob"),
+			 *(float32 *)cmd_ln_access("-fillprob"),
+			 *(float32 *)cmd_ln_access("-lw"),
+			 *(float32 *)cmd_ln_access("-wip"));
 
 }
 
@@ -674,8 +973,8 @@ static void log_hypseg (char *uttid,
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
 	ascr += h->ascr;
-	if (dict_basewid(dict,h->wid) != startwid) {
-	    lscr += lm_rawscore (lm,h->lscr, lwf);
+	if (dict_basewid(dict,h->wid) != dict->startwid) {
+	    lscr += lm_rawscore (lmset->cur_lm,h->lscr, lwf);
 	} else {
 	    assert (h->lscr == 0);
 	}
@@ -688,7 +987,7 @@ static void log_hypseg (char *uttid,
 	fprintf (fp, " (null)\n");
     else {
 	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->wid) != startwid) ? lm_rawscore (lm,h->lscr, lwf) : 0;
+	    lscr = (dict_basewid(dict,h->wid) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr, lwf) : 0;
 	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->wid));
 	}
 	fprintf (fp, " %d\n", nfrm);
@@ -711,7 +1010,7 @@ static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 exact, 
 	w = h->wid;
 	if (! exact) {
 	    w = dict_basewid (dict,w);
-	    if ((w != startwid) && (w != finishwid) && (! dict_filler_word (dict,w)))
+	    if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))
 		fprintf (fp, "%s ", dict_wordstr(dict,w));
 	} else
 	    fprintf (fp, "%s ", dict_wordstr(dict,w));
@@ -1096,7 +1395,7 @@ static void decode_utt (int32 nfr, char *uttid)
 
 	printf ("FWDXCT: ");
 	log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
-	lm_cache_stats_dump (lm);
+	lm_cache_stats_dump (lmset->cur_lm);
 
 	/* Check if need to dump bestscore/frame */
 	if ((bscrdir = (char *) cmd_ln_access ("-bestscoredir")) != NULL)
@@ -1140,11 +1439,11 @@ static void decode_utt (int32 nfr, char *uttid)
 		log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
 	    }
 	    
-	    dag_destroy ();
+	    dag_destroy (&dag);
 	}
 	
-	lm_cache_stats_dump (lm);
-	lm_cache_reset (lm);
+	lm_cache_stats_dump (lmset->cur_lm);
+	lm_cache_reset (lmset->cur_lm);
     } else {
 	E_ERROR ("%s: Viterbi search failed\n", uttid);
 	hyp = NULL;
@@ -1433,17 +1732,6 @@ int main (int32 argc, char *argv[])
     cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     unlimit ();
     
-    if ((cmd_ln_access("-mdef") == NULL) ||
-	(cmd_ln_access("-mean") == NULL) ||
-	(cmd_ln_access("-var") == NULL)  ||
-	(cmd_ln_access("-mixw") == NULL)  ||
-	(cmd_ln_access("-tmat") == NULL))
-	E_FATAL("Missing -mdef, -mean, -var, -mixw, or -tmat argument\n");
-
-    if ((cmd_ln_access("-dict") == NULL) ||
-	(cmd_ln_access("-lm") == NULL))
-	E_FATAL("Missing -dict or -lm argument\n");
-    
     inlatdir = (char *) cmd_ln_access ("-inlatdir");
     outlatdir = (char *) cmd_ln_access ("-outlatdir");
     if (outlatdir) {
@@ -1460,29 +1748,14 @@ int main (int32 argc, char *argv[])
     if (inlatdir && outlatdir && (strcmp (inlatdir, outlatdir) == 0))
 	E_FATAL("Input and output lattice directories are the same\n");
 
-    /*
-     * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
-     * underflow.  At the same time, log base = 1.0001 (1+epsilon) to allow log values
-     * to be maintained in int32 variables without significant loss of precision.
-     */
-    {
-	float32 logbase;
-    
-	logbase = *((float32 *) cmd_ln_access("-logbase"));
-	if (logbase <= 1.0)
-	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
-	if (logbase > 1.01)
-	    E_WARN("Logbase %e perhaps too large??\n", logbase);
-	logs3_init ((float64) logbase);
-    }
+    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
     /* Initialize feature stream type */
-    /*feat_init ((char *) cmd_ln_access ("-feat"));*/
-
     fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
 		      (char *) cmd_ln_access ("-cmn"),
 		      (char *) cmd_ln_access ("-varnorm"),
-		      (char *) cmd_ln_access ("-agc"));
+		      (char *) cmd_ln_access ("-agc"),
+		      1);
     
     /* Read in input databases */
     models_init ();
@@ -1504,7 +1777,7 @@ int main (int32 argc, char *argv[])
     pctr_new(ctr_nsen,"sen");
 
     /* Initialize forward Viterbi search module */
-    fwd_init (mdef,tmat,dict,lm);
+    fwd_init (mdef,tmat,dict,lmset->cur_lm);
     printf ("\n");
     
     tot_nfr = 0;

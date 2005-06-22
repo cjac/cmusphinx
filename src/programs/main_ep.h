@@ -48,6 +48,16 @@
  * 
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
+ * $Log$
+ * Revision 1.4  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.4  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *  into most of the .[ch] files. It is easy to keep track changes.
+ *
  */
 
 /** \file main_ep.h

@@ -42,6 +42,30 @@
  *
  *  Aug 6, 2004
  *  Created by Yitao Sun (yitao@cs.cmu.edu).
+ *
+ * HISTORY
+ * $Log$
+ * Revision 1.14  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.5  2005/06/15 21:41:56  archan
+ * Sphinx3 to s3.generic: 1) added -ctloffset and -ctlcount support for livepretend. 2) Also allow lmname to be set correctly.  Now it is using ld_set_lm instead of kb_setlm.  That makes the code cleaner.
+ *
+ * Revision 1.4  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.3  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.14  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Add Revision 1.5  2005/06/15 21:41:56  archan
+ * Add Sphinx3 to s3.generic: 1) added -ctloffset and -ctlcount support for livepretend. 2) Also allow lmname to be set correctly.  Now it is using ld_set_lm instead of kb_setlm.  That makes the code cleaner.
+ * Add
+ * Add Revision 1.4  2005/04/20 03:50:36  archan
+ * Add Add comments on all mains for preparation of factoring the command-line.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
+ *
  */
 
 
@@ -75,7 +99,7 @@ main(int _argc, char **_argv)
   FILE *ctrlfd;
   FILE *ctllmfd;
   FILE *rawfd;
-  ptmr_t tm;
+  stat_t* st;
   int32 nskip, count;
 
   print_appl_info(_argv[0]);
@@ -89,7 +113,7 @@ main(int _argc, char **_argv)
   rawdirfn = _argv[2];
   cfgfn = _argv[3];
 
-  ptmr_init(&tm);
+
 
   if ((ctrlfd = fopen(ctrlfn, "r")) == NULL) {
     E_FATAL("Cannot open control file %s.\n", ctrlfn);
@@ -102,6 +126,9 @@ main(int _argc, char **_argv)
   if (ld_init(&decoder) != LD_SUCCESS) {
     E_FATAL("Failed to initialize live-decoder.\n");
   }
+
+  st = decoder.kb.stat;
+  ptmr_init(&(st->tm));
 
   nskip = cmd_ln_int32("-ctloffset");
   count = cmd_ln_int32("-ctlcount");
@@ -130,10 +157,18 @@ main(int _argc, char **_argv)
     if (ctllmfd) {
       if (fscanf(ctllmfd, "%s", lmname) == EOF)
 	E_FATAL("EOF while reading LM control file\n");
+
       /* This is somewhat inelegant; the live-decode API should make
          an allowance for dynamic LM switching - dhuggins@cs,
          2005-04-19 */
-      kb_setlm(lmname, &decoder.kb);
+      /*kb_setlm(lmname, &decoder.kb);*/
+
+      /* 20050615 Dave's last comment is valid. Now a lm switching
+	 interface is available implemented and it is a two-layered
+	 wrapper of lm switching function in the search implementation
+	 modules.
+      */
+      ld_set_lm(&decoder,lmname);
     }
 
     sprintf(fullrawfn, "%s/%s%s", rawdirfn, rawfn,decoder.rawext);
@@ -147,9 +182,9 @@ main(int _argc, char **_argv)
     len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
 
     while (len > 0) {
-      ptmr_start (&tm);
+      ptmr_start (&(st->tm));
       ld_process_raw(&decoder, samples, len);
-      ptmr_stop (&tm);
+      ptmr_stop (&(st->tm));
 
       if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
 	if(decoder.phypdump){
@@ -160,25 +195,13 @@ main(int _argc, char **_argv)
     }
     fclose(rawfd);
     ld_end_utt(&decoder);
-    ptmr_reset(&tm);
+    ptmr_reset(&(st->tm));
 
   }
 
   ld_finish(&decoder);
 
-  E_INFO("SUMMARY:  %d fr;  %d cdsen, %d cisen, %d cdgau %d cigau/fr, %.2f xCPU [%.2f xOvrhd];  %d hmm/fr, %d wd/fr, %.2f xCPU;  tot: %.2f xCPU, %.2f xClk\n",
-	 decoder.kb.tot_fr,
-	 (int32)(decoder.kb.tot_sen_eval / decoder.kb.tot_fr),
-	 (int32)(decoder.kb.tot_ci_sen_eval / decoder.kb.tot_fr),
-	 (int32)(decoder.kb.tot_gau_eval / decoder.kb.tot_fr),
-	 (int32)(decoder.kb.tot_ci_gau_eval / decoder.kb.tot_fr),
-	 decoder.kb.tm_sen.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
-	 decoder.kb.tm_ovrhd.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
-	 (int32)(decoder.kb.tot_hmm_eval / decoder.kb.tot_fr),
-	 (int32)(decoder.kb.tot_wd_exit / decoder.kb.tot_fr),
-	 decoder.kb.tm_srch.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
-	 tm.t_tot_cpu * 100.0 / decoder.kb.tot_fr,
-	 tm.t_tot_elapsed * 100.0 / decoder.kb.tot_fr);
+  stat_report_corpus(decoder.kb.stat);
   
   return 0;
 }
