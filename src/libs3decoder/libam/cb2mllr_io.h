@@ -33,17 +33,8 @@
  * ====================================================================
  *
  */
-/*********************************************************************
- *
- * File: s3cb2mllr_io.h
- * 
- * Description: 
- * 
- * Author: 
- * 
- *********************************************************************/
 
-  /** \file s3cb2mllr_io.h
+  /** \file cb2mllr_io.h
    * \brief Implementation of code book to mllr regression class map. 
    */
 
@@ -65,9 +56,12 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.4  2005/06/22  08:05:55  arthchan2003
+ * Fixed spelling in doc
  * 
+ * Revision 1.3  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.2  2005/06/22 03:29:35  arthchan2003
  * Makefile.am s  for all subdirectory of libs3decoder/
  *
