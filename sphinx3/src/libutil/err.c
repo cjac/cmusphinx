@@ -53,6 +53,13 @@
  *      - Removed the automatic newline at the end of the error message
  *	  as that all S3 error messages have one in them now.
  *	- Added an error message option that does a perror() call.
+ * $Log$
+ * Revision 1.6  2005/06/22  03:00:23  arthchan2003
+ * 1, Add a E_INFO that produce no file names. 2, Add  keyword.
+ * 
+ * Revision 1.3  2005/06/15 04:21:46  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
  */
 
 
@@ -67,6 +74,14 @@
 
 #include "err.h"
 
+void
+_E__pr_info_header_wofn(char const *msg)
+{
+    (void) fflush(stderr);
+
+    /* make different format so as not to be parsed by emacs compile */
+    (void) fprintf(stderr, "%s:\t", msg);
+}
 
 void
 _E__pr_header(char const *f, long ln, char const *msg)
