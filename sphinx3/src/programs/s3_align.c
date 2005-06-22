@@ -45,6 +45,23 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.6  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.3  2005/06/19 03:58:17  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.6  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Add Revision 1.3  2005/06/19 03:58:17  archan
+ * Add 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
+ *
+ *
  * 13-Sep-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Changed align_sen_active to flag active senones instead of building a list
  * 		of them.
@@ -160,7 +177,6 @@ static dict_t *dict;		/** The dictionary */
 static mdef_t *mdef;		/** Model definition */
 static tmat_t *tmat;		/** Transition probability matrices */
 
-static s3wid_t silwid, startwid, finishwid;	/** Base wids */
 static s3wid_t *fillwid;	/** BAD_S3WID terminated array of optional filler basewid */
 
 static snode_t **cur_active;	/** NULL-terminated active state list for current frame */
@@ -809,7 +825,7 @@ int32 align_build_sent_hmm (char *wordstr)
     /* Obtain the first transcript word */
     k = nextword (wordstr, " \t\n", &wd, &delim);
     if (k < 0)
-	nextw = finishwid;
+	nextw = dict->finishwid;
     else {
 	wordstr = wd + k;
 	wdcopy = ckd_salloc (wd);
@@ -820,7 +836,7 @@ int32 align_build_sent_hmm (char *wordstr)
     }
     
     /* Create node(s) for <s> before any transcript word */
-    word_end = append_transcript_word (startwid, &phead, nextw, 0, 1);
+    word_end = append_transcript_word (dict->startwid, &phead, nextw, 0, 1);
 
     /* Append each word in transcription to partial sent HMM created so far */
     while (k >= 0) {
@@ -829,13 +845,13 @@ int32 align_build_sent_hmm (char *wordstr)
 	    E_ERROR("%s not in dictionary\n", wdcopy);
 	    oov = 1;
 	    /* Hack!! Temporarily set w to some dummy just to run through sentence */
-	    w = finishwid;
+	    w = dict->finishwid;
 	}
 	ckd_free (wdcopy);
 	
 	k = nextword (wordstr, " \t\n", &wd, &delim);
 	if (k < 0)
-	    nextw = finishwid;
+	    nextw = dict->finishwid;
 	else {
 	    wordstr = wd + k;
 	    wdcopy = ckd_salloc (wd);
@@ -851,7 +867,7 @@ int32 align_build_sent_hmm (char *wordstr)
 	return -1;
     
     /* Append phone HMMs for </s> at the end; link to tail node */
-    word_end = append_transcript_word (finishwid, word_end, BAD_S3WID, 1, 0);
+    word_end = append_transcript_word (dict->finishwid, word_end, BAD_S3WID, 1, 0);
     for (node = word_end; node; node = node->next)
 	link_pnodes (node, &ptail);
     
@@ -1253,26 +1269,16 @@ int32 align_init ( mdef_t *_mdef, tmat_t *_tmat, dict_t *_dict)
     dict = _dict;
     
     assert (mdef && tmat && dict);
-    
-    startwid = dict_wordid (dict, S3_START_WORD);
-    finishwid = dict_wordid (dict, S3_FINISH_WORD);
-    silwid = dict_wordid (dict, S3_SILENCE_WORD);
-    
-    if ((NOT_S3WID(startwid)) || (NOT_S3WID(finishwid)))
-	E_FATAL("%s or %s not in dictionary\n", S3_START_WORD, S3_FINISH_WORD);
-    if (NOT_S3WID(silwid))
-	E_ERROR("%s not in dictionary; no optional silence inserted between words\n",
-	       S3_SILENCE_WORD);
 
     /* Create list of optional filler words to be inserted between transcript words */
     fillwid = (s3wid_t *) ckd_calloc ((dict->filler_end - dict->filler_start + 3),
 				      sizeof(s3wid_t));
     k = 0;
-    if (IS_S3WID(silwid))
-	fillwid[k++] = silwid;
+    if (IS_S3WID(dict->silwid))
+	fillwid[k++] = dict->silwid;
     for (w = dict->filler_start; w <= dict->filler_end; w++) {
 	if ((dict_basewid (dict, w) == w) &&
-	    (w != silwid) && (w != startwid) && (w != finishwid))
+	    (w != dict->silwid) && (w != dict->startwid) && (w != dict->finishwid))
 	    fillwid[k++] = w;
     }
     fillwid[k] = BAD_S3WID;

@@ -32,6 +32,22 @@
  *
  * ====================================================================
  *
+ * $Log$
+ * Revision 1.8  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.3  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.8  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Add Revision 1.3  2005/04/20 03:50:36  archan
+ * Add Add comments on all mains for preparation of factoring the command-line.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
+ *
  */
 
 #include "cont_mgau.h"
@@ -69,6 +85,79 @@ wave2feat -i  input.raw \n						\
         -upperf    6800 \n						\
         -nfilt     40 \n						\
         -nfft      512";
+
+#if 0
+static arg_t w2f_specific_arg[] = {
+  /* This should be replaced by something else */
+  { "-raw", => 
+    ARG_STRING,
+    NULL,
+    "Single wave input file" },
+  { "-rawdir", => 
+    ARG_STRING,
+    NULL,
+    "Input directory, input file names are relative to this, if defined" },
+  { "-rawext", => 
+    ARG_STRING,
+    NULL,
+    "Input extension to be applied to all input files" },
+  { "-cep", => 
+    ARG_STRING,
+    NULL,
+    "Single cepstral output file" },
+  { "-cepdir", => 
+    ARG_STRING,
+    NULL,
+    "Output directory, output files are relative to this" },
+  { "cepext", => 
+    ARG_STRING,
+    NULL,
+    "Output extension to be applied to all output files" },
+
+  { "-ctl",  => 
+    ARG_STRING,
+    NULL,
+    "Control file for batch processing" },
+  { "-logspec",
+    ARG_INT32,
+    "0",
+    "Write out logspectral files instead of cepstra" },
+  { "-feat",
+    ARG_STRING,
+    "sphinx",
+    "SPHINX format - big endian" },
+  { "-verbose",
+    ARG_INT32,
+    "0",
+    "Show input filenames" },
+
+  { NULL, ARG_INT32,  NULL, NULL }
+};
+
+static arg_t wavfmt[] = {
+  { "-nist",
+    ARG_INT32,
+    "0",
+    "Defines input format as NIST sphere" },
+  { "-raw",
+    ARG_INT32,
+    "0",
+    "Defines input format as raw binary data" },
+  { "-mswav",
+    ARG_INT32,
+    "0",
+    "Defines input format as Microsoft Wav (RIFF)" },
+  { "-nchans",
+    ARG_INT32,
+    ONE_CHAN,
+    "Number of channels of data (interlaced samples assumed)" },
+  { "-whichchan",
+    ARG_INT32,
+    ONE_CHAN,
+    "Channel to process" },
+
+}
+#endif
 
 static arg_t defn[] = {
 

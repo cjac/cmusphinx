@@ -45,6 +45,22 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.6  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.3  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.6  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Add Revision 1.3  2005/04/20 03:50:36  archan
+ * Add Add comments on all mains for preparation of factoring the command-line.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
+ *
  * 02-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added allphone lattice output.
  * 
@@ -826,7 +842,7 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
     if (! file)
 	E_ERROR("-phonetpfn argument missing; assuming uniform transition probs\n");
     tpfloor = *((float32 *) cmd_ln_access ("-phonetpfloor"));
-    ip = *((float32 *) cmd_ln_access ("-inspen"));
+    ip = *((float32 *) cmd_ln_access ("-wip"));
     wt = *((float32 *) cmd_ln_access ("-phonetpwt"));
     phone_tp_init (file, tpfloor, wt, ip);
     

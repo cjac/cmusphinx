@@ -45,6 +45,60 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.8  2005/06/22  05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * 
+ * Revision 1.8  2005/06/19 03:58:17  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.7  2005/06/18 21:16:36  archan
+ * Fixed a bug in astar, introduced another two tests to test on functionality of class-based LM in dag and astar.
+ *
+ * Revision 1.6  2005/06/18 03:23:13  archan
+ * Change to lmset interface.
+ *
+ * Revision 1.5  2005/06/03 06:45:30  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.4  2005/06/03 05:46:42  archan
+ * Log. Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.3  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ *
  * 27-Feb-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added check in building DAG for avoiding cycles with dagfudge.
  * 
@@ -91,45 +145,40 @@
 #include <fillpen.h>
 #include <search.h>
 #include <logs3.h>
+#include <dag.h>
 
 
-static dag_t dag;
 
-static s3wid_t startwid;	/* Begin silence */
-static s3wid_t finishwid;	/* End silence */
-
-static int32 beam;
 
 /****************************************
  * Globals!   This is a hack!		*
  ****************************************/
 
 dict_t *dict;		/* The dictionary */
-lm_t *lm;		/* The Language model */
-fillpen_t *fpen;	/* The filler penalty structure. */
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 
+#if 0
+lm_t *lm;		/* The Language model */
+s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+#endif
+
+static int32 beam;
+
+lmset_t* lmset;           /* The language model set */
+
+fillpen_t *fpen;	/* The filler penalty structure. */
+
+dag_t dag;              /* The dag used by main_astar.c */
 
 static int32 maxlmop;		/* Max LM ops allowed before utterance aborted */
 static int32 lmop;		/* #LM ops actually made */
 static int32 maxedge;		/* Max #edges in DAG allowed before utterance aborted */
 
 
-static int32 filler_word (s3wid_t w)
-{
-    if ((w == startwid) || (w == finishwid))
-	return 0;
-    if ((w >= dict->filler_start) && (w <= dict->filler_end))
-	return 1;
-    return 0;
-}
-
-
 /**
  * Link two DAG nodes with the given arguments
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
  */
-static int32 dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr)
+static int32 astar_dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr)
 {
     daglink_t *l;
     
@@ -159,7 +208,7 @@ static int32 dag_link (dagnode_t *pd, dagnode_t *d, int32 ascr)
  * the new score is better.
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
  */
-static int32 dag_link_bypass (dagnode_t *pd, dagnode_t *d, int32 ascr)
+static int32 astar_dag_link_bypass (dagnode_t *pd, dagnode_t *d, int32 ascr)
 {
     daglink_t *l;
     
@@ -183,22 +232,6 @@ static int32 dag_link_bypass (dagnode_t *pd, dagnode_t *d, int32 ascr)
     }
 
     return (dag.nlink > maxedge) ? -1 : 0;
-}
-
-
-static int32 dag_param_read (FILE *fp, char *param, int32 *lineno)
-{
-    char line[1024], wd[1024];
-    int32 n;
-    
-    while (fgets (line, 1024, fp) != NULL) {
-	(*lineno)++;
-	if (line[0] == '#')
-	    continue;
-	if ((sscanf (line, "%s %d", wd, &n) == 2) && (strcmp (wd, param) == 0))
-	    return n;
-    }
-    return -1;
 }
 
 
@@ -272,7 +305,7 @@ static void dag_remove_unreachable ( void )
  * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
  * for complete transitive closure.  But removing fillers in the order in which they
  * appear in dag.list ensures that succeeding fillers have already been bypassed.
- * (See comment before dag_load.)
+ * (See comment before s3astar_dag_load.)
  * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
 static int32 dag_bypass_filler_nodes ( void )
@@ -283,7 +316,7 @@ static int32 dag_bypass_filler_nodes ( void )
     
     /* Create additional links in DAG bypassing filler nodes */
     for (d = dag.list; d; d = d->alloc_next) {
-	if (! filler_word (d->wid))	/* No need to bypass this node */
+	if (! dict_filler_word (dict,d->wid))	/* No need to bypass this node */
 	    continue;
 	
 	/* For each link TO d add a link to d's successors */
@@ -296,8 +329,8 @@ static int32 dag_bypass_filler_nodes ( void )
 		snode = slink->node;
 
 		/* Link only to non-filler successors; fillers have been bypassed */
-		if (! filler_word (snode->wid))
-		    if (dag_link_bypass (pnode, snode, scr + slink->ascr) < 0)
+		if (! dict_filler_word (dict,snode->wid))
+		    if (astar_dag_link_bypass (pnode, snode, scr + slink->ascr) < 0)
 			return -1;
 	    }
 	}
@@ -318,9 +351,12 @@ static void dag_compute_hscr ( void )
     daglink_t *l1, *l2;
     s3wid_t bw0, bw1, bw2;
     int32 hscr, best_hscr;
-    
+    lm_t* lm;
+
+    lm=lmset->cur_lm;
+
     for (d = dag.list; d; d = d->alloc_next) {
-	bw0 = filler_word (d->wid) ? BAD_S3WID : dict_basewid (dict, d->wid);
+	bw0 = dict_filler_word (dict, d->wid) ? BAD_S3WID : dict_basewid (dict, d->wid);
 
 	/* For each link from d, compute heuristic score */
 	for (l1 = d->succlist; l1; l1 = l1->next) {
@@ -330,7 +366,7 @@ static void dag_compute_hscr ( void )
 	    if (d1 == dag.exit.node)
 		l1->hscr = 0;
 	    else {
-		bw1 = filler_word (d1->wid) ? BAD_S3WID : dict_basewid (dict, d1->wid);
+		bw1 = dict_filler_word (dict, d1->wid) ? BAD_S3WID : dict_basewid (dict, d1->wid);
 		if (NOT_S3WID(bw1)) {
 		    bw1 = bw0;
 		    bw0 = BAD_S3WID;
@@ -339,11 +375,11 @@ static void dag_compute_hscr ( void )
 		best_hscr = (int32)0x80000000;
 		for (l2 = d1->succlist; l2; l2 = l2->next) {
 		    d2 = l2->node;
-		    if (filler_word (d2->wid))
+		    if (dict_filler_word (dict, d2->wid))
 			continue;
 		    
 		    bw2 = dict_basewid (dict, d2->wid);
-		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, dict2lmwid[bw0], dict2lmwid[bw1], dict2lmwid[bw2], bw2);
+		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, lm->dict2lmwid[bw0], lm->dict2lmwid[bw1], lm->dict2lmwid[bw2], bw2);
 		    
 		    if (hscr > best_hscr)
 			best_hscr = hscr;
@@ -610,14 +646,14 @@ int32 s3astar_dag_load (char *file)
 	if (sscanf (line, "%d %d %d", &from, &to, &ascr) != 3)
 	    break;
 	pd = darray[from];
-	if (pd->wid == finishwid)
+	if (pd->wid == dict->finishwid)
 	    continue;
 	d = darray[to];
 
 	/* Skip short-lived nodes */
 	if ((pd == dag.entry.node) || (d == dag.exit.node) ||
 	    ((d->lef - d->fef >= min_ef_range-1) && (pd->lef - pd->fef >= min_ef_range-1))) {
-	    if (dag_link (pd, d, ascr) < 0) {
+	    if (astar_dag_link (pd, d, ascr) < 0) {
 		E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, maxedge);
 		goto load_error;
 	    }
@@ -636,16 +672,16 @@ int32 s3astar_dag_load (char *file)
 	E_INFO("No edges in dagfile; using lattice scores\n");
 	for (d = dag.list; d; d = d->alloc_next) {
 	    if (d->sf == 0)
-		assert (d->wid == startwid);
+		assert (d->wid == dict->startwid);
 	    else if ((d == dag.exit.node) || (d->lef - d->fef >= min_ef_range-1)) {
 		/* Link from all end points == d->sf-1 to d */
 		for (l = frm2lat[d->sf-1]; l < frm2lat[d->sf]; l++) {
 		    pd = lat[l].node;		/* Predecessor DAG node */
-		    if (pd->wid == finishwid)
+		    if (pd->wid == dict->finishwid)
 			continue;
 
 		    if ((pd == dag.entry.node) || (pd->lef - pd->fef >= min_ef_range-1)) {
-			dag_link (pd, d, lat[l].ascr);
+			astar_dag_link (pd, d, lat[l].ascr);
 			k++;
 		    }
 		}
@@ -664,10 +700,10 @@ int32 s3astar_dag_load (char *file)
 	    /* Links to d from nodes that first ended just when d started */
 	    for (l = frm2lat[d->sf]; l < frm2lat[d->sf+1]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
-		if ((pd->wid != finishwid) && (pd->fef == d->sf) &&
+		if ((pd->wid != dict->finishwid) && (pd->fef == d->sf) &&
 		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
-		    dag_link (pd, d, lat[l].ascr);
+		    astar_dag_link (pd, d, lat[l].ascr);
 		    k++;
 		}
 	    }
@@ -678,10 +714,10 @@ int32 s3astar_dag_load (char *file)
 	    /* Links to d from nodes that first ended just BEYOND when d started */
 	    for (l = frm2lat[d->sf+1]; l < frm2lat[d->sf+2]; l++) {
 		pd = lat[l].node;		/* Predecessor DAG node */
-		if ((pd->wid != finishwid) && (pd->fef == d->sf+1) &&
+		if ((pd->wid != dict->finishwid) && (pd->fef == d->sf+1) &&
 		    (pd->sf < d->sf) &&
 		    (pd->lef - pd->fef >= min_ef_range-1)) {
-		    dag_link (pd, d, lat[l].ascr);
+		    astar_dag_link (pd, d, lat[l].ascr);
 		    k++;
 		}
 	    }
@@ -698,8 +734,8 @@ int32 s3astar_dag_load (char *file)
      * to avoid complications with LM scores at this point.
      */
     dag.orig_exitwid = dag.exit.node->wid;
-    if (filler_word(dag.exit.node->wid))
-	dag.exit.node->wid = finishwid;
+    if (dict_filler_word(dict, dag.exit.node->wid))
+	dag.exit.node->wid = dict->finishwid;
     
     /*
      * Mark nodes from which final exit node is reachable.  Add links bypassing filler
@@ -931,7 +967,7 @@ static void ppath_insert (ppath_t *top, daglink_t *l, int32 pscr, int32 tscr, in
      * Check if extended path would be a duplicate one with an inferior score.
      * First, find hash value for new node.
      */
-    lmhist = filler_word(top->dagnode->wid) ? top->lmhist : top;
+    lmhist = dict_filler_word(dict, top->dagnode->wid) ? top->lmhist : top;
     w = lmhist->dagnode->wid;
     h = lmhist->histhash - w + dict_basewid (dict, w);
     h = (h >> 5) | (h << 27);	/* Rotate right 5 bits */
@@ -992,7 +1028,7 @@ static void ppath_seg_write (FILE *fp, ppath_t *pp, int32 ascr)
     if (pp->hist)
 	ppath_seg_write (fp, pp->hist, pp->pscr - pp->hist->pscr - pp->lscr);
 
-    lscr_base = pp->hist ? lm_rawscore (lm, pp->lscr, 1.0) : 0;
+    lscr_base = pp->hist ? lm_rawscore (lmset->cur_lm, pp->lscr, 1.0) : 0;
 
     fprintf (fp, " %d %d %d %s",
 	     pp->dagnode->sf, ascr, lscr_base, dict_wordstr (dict, pp->dagnode->wid));
@@ -1007,7 +1043,7 @@ static void nbest_hyp_write (FILE *fp, ppath_t *top, int32 pscr, int32 nfr)
     lscr_base = 0;
     for (lscr = 0, pp = top; pp; lscr += pp->lscr, pp = pp->hist) {
 	if (pp->hist)
-	    lscr_base += lm_rawscore (lm, pp->lscr, 1.0);
+	    lscr_base += lm_rawscore (lmset->cur_lm, pp->lscr, 1.0);
 	else
 	    assert (pp->lscr == 0);
     }
@@ -1048,6 +1084,10 @@ void nbest_search (char *filename, char *uttid)
     int32 i, k;
     int32 ispipe;
     int32 ppathdebug;
+    lm_t *lm;
+    
+    lm=lmset->cur_lm;
+
     
     /* Create Nbest file and write header comments */
     if ((fp = fopen_comp (filename, "w", &ispipe)) == NULL) {
@@ -1060,7 +1100,7 @@ void nbest_search (char *filename, char *uttid)
     fprintf (fp, "# logbase %e\n", f32arg);
     f32arg = *((float32 *) cmd_ln_access ("-lw"));
     fprintf (fp, "# langwt %e\n", f32arg);
-    f32arg = *((float32 *) cmd_ln_access ("-inspen"));
+    f32arg = *((float32 *) cmd_ln_access ("-wip"));
     fprintf (fp, "# inspen %e\n", f32arg);
     f64arg = *((float64 *) cmd_ln_access ("-beam"));
     fprintf (fp, "# beam %e\n", f64arg);
@@ -1137,7 +1177,7 @@ void nbest_search (char *filename, char *uttid)
 	}
 	
 	/* Find two word (trigram) history beginning at this node */
-	pp = (filler_word (top->dagnode->wid)) ? top->lmhist : top;
+	pp = (dict_filler_word (dict,top->dagnode->wid)) ? top->lmhist : top;
 	if (pp) {
 	    bw1 = dict_basewid(dict, pp->dagnode->wid);
 	    pp = pp->lmhist;
@@ -1152,7 +1192,7 @@ void nbest_search (char *filename, char *uttid)
 
 	    /* Obtain LM score for link */
 	    bw2 = dict_basewid (dict, l->node->wid);
-	    lscr = (filler_word (bw2)) ? fillpen(fpen, bw2) : lm_tg_score (lm, dict2lmwid[bw0], dict2lmwid[bw1], dict2lmwid[bw2],bw2);
+	    lscr = (dict_filler_word (dict,bw2)) ? fillpen(fpen, bw2) : lm_tg_score (lm, lm->dict2lmwid[bw0], lm->dict2lmwid[bw1], lm->dict2lmwid[bw2],bw2);
 
 	    if (lmop++ > maxlmop) {
 		E_ERROR("%s: Max LM ops (%d) exceeded\n", uttid, maxlmop);
@@ -1214,18 +1254,9 @@ void nbest_init ( void )
     fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
     if ((fudge < 0) || (fudge > 2))
 	E_FATAL("Bad -dagfudge argument: %d, must be in range 0..2\n", fudge);
-    
-    /* dict = dict_getdict (); */
-
-    /* Some key word ids */
-
-    startwid = dict_wordid (dict, S3_START_WORD);
-    finishwid = dict_wordid (dict, S3_FINISH_WORD);
-    if ((NOT_S3WID(startwid)) || (NOT_S3WID(finishwid)))
-	E_FATAL("%s or %s missing from dictionary\n", S3_START_WORD, S3_FINISH_WORD);
 
     lw = *((float32 *) cmd_ln_access("-lw"));
-    wip = *((float32 *) cmd_ln_access("-inspen"));
+    wip = *((float32 *) cmd_ln_access("-wip"));
 
     f64arg = (float64 *) cmd_ln_access ("-beam");
     beam = logs3 (*f64arg);
@@ -1237,30 +1268,4 @@ void nbest_init ( void )
     heap_root = NULL;
     ppath_list = NULL;
     hash_list = (ppath_t **) ckd_calloc (HISTHASH_MOD, sizeof(ppath_t *));
-}
-
-
-int32 dag_destroy ( void )
-{
-    dagnode_t *d, *nd;
-    daglink_t *l, *nl;
-    
-    for (d = dag.list; d; d = nd) {
-	nd = d->alloc_next;
-	
-	for (l = d->succlist; l; l = nl) {
-	    nl = l->next;
-	    listelem_free ((char *)l, sizeof(daglink_t));
-	}
-	for (l = d->predlist; l; l = nl) {
-	    nl = l->next;
-	    listelem_free ((char *)l, sizeof(daglink_t));
-	}
-
-	listelem_free ((char *)d, sizeof(dagnode_t));
-    }
-
-    dag.list = NULL;
-
-    return 0;
 }
