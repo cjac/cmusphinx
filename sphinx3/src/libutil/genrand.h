@@ -89,6 +89,13 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.3  2005/06/22  03:01:50  arthchan2003
+ * Added  keyword
+ * 
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 18-Nov-04 ARCHAN (archan@cs.cmu.edu) at Carnegie Mellon University
  *              First incorporated from the Mersenne Twister Random
