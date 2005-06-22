@@ -47,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.7  2005/06/22  08:00:10  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  * 
+ * Revision 1.6  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.3  2005/06/03 06:45:30  archan
  * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
  *
@@ -89,6 +92,9 @@
  * 		Created.
  */
 
+/** \file s3_dag.h
+    \brief implement s3dag specific routines for manipulating dag structure. 
+ */
 #ifndef _LIBFBS_S3DAG_H_
 #define _LIBFBS_S3DAG_H_
 

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/12/14  00:39:49  arthchan2003
- * add <s3types.h> to the code, change some comments to doxygen style
+ * Revision 1.8  2005/06/22  08:00:06  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  * 
+ * Revision 1.7  2004/12/14 00:39:49  arthchan2003
+ * add <s3types.h> to the code, change some comments to doxygen style
+ *
  * Revision 1.6  2004/12/06 11:17:55  arthchan2003
  * Update the copyright information of ad.h, *sigh* start to feel tired of updating documentation system.  Anyone who has time, please take up libs3audio. That is the last place which is undocumented
  *
@@ -92,6 +95,9 @@
  *		Created.
  */
 
+/** \file ad.h
+ * \brief generic live audio interface for recording and playback
+ */
 
 #ifndef _AD_H_
 #define _AD_H_

@@ -38,11 +38,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.2  2005/06/22  08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * 
+ * Revision 1.1  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.9  2005/05/11 06:10:39  archan
  * Code for lattice and back track pointer table dumping is now wrapped in reg_result_dump.  The function is shared across mode 4 and mode 5.  Possibly later for mode 3 and mode 6 as well.
  *
@@ -51,6 +54,10 @@
  *
  * 17-Mar-2005 A. Chan (archan@cs.cmu.edu) at Carnegie Mellon University
  *             Started. Word condition tree search. Aka lexical tree copies. 
+ */
+
+/** \file srch_word_switch_tree.h
+    \brief Implementation of word-switching tree search. 
  */
 
 #include "s3types.h"

@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7  2005/06/21  18:26:38  arthchan2003
+ * Revision 1.8  2005/06/22  08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * 
+ * Revision 1.7  2005/06/21 18:26:38  arthchan2003
  * Log. fast_algo_struct.c go through major changes in the gentle
  * refactoring process. It is the location of several wrapper structures
  * that control fast search.  That includes beam_t for storing beams and
@@ -53,12 +56,12 @@
  * for storing structures for histogram pruning. Lastly
  * fast_algo_struct_t, for storing structures for fast GMM
  * computation.
- * 
+ *
  * Log. General Remark All of them now has consistent inteface, _init,
  * _report and _free.  They are respectively used for allocation,
  * reporting and deallocation of the routine. Doxygen documentation are
  * fixed for all structures.
- * 
+ *
  * Log. Individual changes; beam_t start to own bestscore, bestwordscore,
  * wordbestscores, wordbestexits. They were owned by kb_t. histprune_t
  * now wrapped up maxwpf, maxhmmpdf, maxhistpf and
@@ -68,7 +71,7 @@
  * between beam_t and histprune_t.  pl_t is now owning heuristic type,
  * the phoneme lookahead beam size. It also wrapped up phoneme heuristic
  * computation.
- * 
+ *
  * Revision 1.5  2005/04/20 03:33:54  archan
  * Remove pl_win and pl_win_strt, Now consider them as the parameters of the search abstraction in srch.c
  *
@@ -78,6 +81,11 @@
  * 
  * 19-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
+ */
+
+/** \file fast_algo_struct.h
+ * \brief File that implement various structure for fast algorithms.
+ * fast_algo_struct implement beam_t, histprune_t, pl_t and fast_algo_struct_t
  */
 
 
