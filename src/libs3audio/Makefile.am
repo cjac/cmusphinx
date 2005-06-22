@@ -26,5 +26,5 @@ libs3audio_la_LIBADD = @ad_files@ @ad_libs@
 
 INCLUDES = -I$(top_srcdir)/src \
 	-I$(top_srcdir)/src/libutil \
-	-I$(top_srcdir)/src/libs3decoder \
+	-I$(top_srcdir)/src/libs3decoder/libcommon \
 	-I$(top_builddir)/include
