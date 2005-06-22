@@ -46,9 +46,75 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2005/05/26  21:54:44  dhdfu
- * Add support for class-based LM to astar and dag
+ * Revision 1.11  2005/06/22  05:38:26  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset
  * 
+ * Revision 1.12  2005/06/19 03:58:17  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.11  2005/06/18 21:16:36  archan
+ * Fixed a bug in astar, introduced another two tests to test on functionality of class-based LM in dag and astar.
+ *
+ * Revision 1.10  2005/06/18 20:05:24  archan
+ * Sphinx3 to s3.generic: Set lm correctly in dag.c and astar.c.  Same changes should also be applied to decode_anytopo.
+ *
+ * Revision 1.9  2005/06/18 03:23:13  archan
+ * Change to lmset interface.
+ *
+ * Revision 1.8  2005/06/17 23:46:06  archan
+ * Sphinx3 to s3.generic 1, Remove bogus log messages in align and allphone, 2, Unified the logbase value from 1.0001 to 1.0003
+ *
+ * Revision 1.7  2005/06/03 06:45:30  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.6  2005/06/03 06:12:57  archan
+ * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
+ *
+ * Revision 1.5  2005/06/03 05:46:42  archan
+ * Log. Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.4  2005/05/27 01:15:45  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.3  2005/04/21 23:50:27  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.2  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.1.1.1  2005/03/24 15:24:01  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
  * Revision 1.9  2004/12/06 11:31:47  arthchan2003
  * Fix brief comments for programs.
  *
@@ -138,28 +204,25 @@
 #include <search.h>
 #include <hyp.h>
 #include <wid.h>
+#include <dag.h>
 
 static mdef_t *mdef;		/* Model definition */
-
-static s3wid_t startwid, finishwid, silwid;
 
 static ptmr_t tm_utt;		/* Entire utterance */
 
 extern dict_t *dict;		/* The dictionary	*/
-extern lm_t *lm;		/* The lm.		*/
 extern fillpen_t *fpen;		/* The filler penalty structure. */
+
+#if 0
 extern s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+#endif
+
+extern dag_t dag;
+extern lmset_t *lmset;		/* The lmset.		*/
 
 void nbest_search (char *filename, char *uttid);
 int32 s3astar_dag_load (char *file);
-int32 dag_destroy ( void );
 void nbest_init ( void );
-
-static lmset_t *lmset;		/* The lmset (for class-based LM).	*/
-static int32 n_lm;
-static int32 n_alloc_lm;
-
-static int32 s3astar_set_lm(const char *lmname);
 
 /*
  * Command line arguments.
@@ -217,11 +280,11 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "9.5",
       "Language weight: empirical exponent applied to LM probabilty" },
-    { "-ugwt",
+    { "-uw",
       ARG_FLOAT32,
       "0.7",
       "LM unigram weight: unigram probs interpolated with uniform distribution with this weight" },
-    { "-inspen",
+    { "-wip",
       ARG_FLOAT32,
       "0.65",
       "Word insertion penalty" },
@@ -229,7 +292,7 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Partial path pruned if below beam * score of best partial ppath so far" },
-    { "-silpen",
+    { "-silprob",
       ARG_FLOAT32,
       "0.1",
       "Language model 'probability' of silence word" },
@@ -315,81 +378,30 @@ static arg_t defn[] = {
 static void models_init ( void )
 {
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Dictionary */
     dict = dict_init (mdef, (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"), 0);
+		      (char *) cmd_ln_access("-fdict"), 0, 
+		      1);
 
-    /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
-    silwid = dict_wordid (dict, S3_SILENCE_WORD);
-    startwid = dict_wordid (dict, S3_START_WORD);
-    finishwid = dict_wordid (dict, S3_FINISH_WORD);
-    if (NOT_S3WID(silwid) || NOT_S3WID(startwid) || NOT_S3WID(finishwid)) {
-	E_FATAL("%s, %s, or %s missing from dictionary\n",
-		S3_SILENCE_WORD, S3_START_WORD, S3_FINISH_WORD);
-    }
-    if ((dict->filler_start > dict->filler_end) || (! dict_filler_word (dict, silwid)))
-	E_FATAL("%s must occur (only) in filler dictionary\n", S3_SILENCE_WORD);
-    /* No check that alternative pronunciations for filler words are in filler range!! */
+    lmset=lmset_init(cmd_ln_str("-lm"),
+			 cmd_ln_str("-lmctlfn"),
+			 cmd_ln_str("-ctl_lm"),
+			 cmd_ln_str("-lmname"),
+			 cmd_ln_str("-lmdumpdir"),
+			 cmd_ln_float32("-lw"),
+			 cmd_ln_float32("-wip"),
+			 cmd_ln_float32("-uw"),
+			 dict);
 
-    /* LM */
-    if (cmd_ln_access("-lmctlfn"))
-    {
-	lmset = lm_read_ctl((char *)cmd_ln_access("-lmctlfn"),
-			    dict,
-			    *(float32 *)cmd_ln_access("-lw"),
-			    *(float32 *)cmd_ln_access("-ugwt"),
-			    *(float32 *)cmd_ln_access("-inspen"),
-			    (char *)cmd_ln_access("-lmdumpdir"),
-			    &n_lm,
-			    &n_alloc_lm,
-			    dict_size(dict));
-	if (! lmset)
-	    E_FATAL("lm_read_ctl(%s,%e,%e,%e) failed\n:",
-		    cmd_ln_access("-lmctlfn"),
-		    *(float32 *)cmd_ln_access("-lw"),
-		    *(float32 *)cmd_ln_access("-ugwt"),
-		    *(float32 *)cmd_ln_access("-inspen"));
-
-	if (cmd_ln_access("-lmname"))
-	    s3astar_set_lm(cmd_ln_access("-lmname"));
-    }
-    else
-    {
-	char *lmfile;
-	
-	lmfile = (char *) cmd_ln_access("-lm");
-	if (! lmfile)
-	    E_FATAL("-lm argument missing\n");
-	lm = lm_read (lmfile, *(float32 *)cmd_ln_access("-lw"),
-	    		      *(float32 *)cmd_ln_access("-inspen"),
-			      *(float32 *)cmd_ln_access("-ugwt"));
-	dict2lmwid = lm->dict2lmwid
-	  = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
-    }
 
     fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
-			 *(float32 *)cmd_ln_access("-silpen"),
+			 *(float32 *)cmd_ln_access("-silprob"),
 			 *(float32 *)cmd_ln_access("-noisepen"),
 			 *(float32 *)cmd_ln_access("-lw"),
-			 *(float32 *)cmd_ln_access("-inspen"));
-}
+			 *(float32 *)cmd_ln_access("-wip"));
 
-static int32 s3astar_set_lm(const char *lmname)
-{
-    int i;
-
-    for (i = 0; i < n_lm; ++i) {
-	if (!strcmp(lmname, lmset[i].name)) {
-	    lm = lmset[i].lm;
-	    if (lm->dict2lmwid == NULL)
-	      lm->dict2lmwid = wid_dict_lm_map(dict, lm, *(float32 *)cmd_ln_access("-lw"));
-	    dict2lmwid = lm->dict2lmwid;
-	    break;
-	}
-    }
-    return S3_SUCCESS;
 }
 
 
@@ -415,11 +427,11 @@ static void decode_utt (char *uttid, char *nbestdir)
 	sprintf (nbestfile, "%s/%s.%s", nbestdir, uttid, nbestext);
 	nbest_search (nbestfile, uttid);
 	
-	lm_cache_stats_dump (lm);
-	lm_cache_reset (lm);
+	lm_cache_stats_dump (lmset->cur_lm);
+	lm_cache_reset (lmset->cur_lm);
     } else
 	E_ERROR("Dag load (%s) failed\n", uttid);
-    dag_destroy ();
+    dag_destroy (&dag);
 
     ptmr_stop (&tm_utt);
     
@@ -508,7 +520,9 @@ static void process_ctlfile ( void )
 	if (ctllmfp) {
 	    fgets(line, sizeof(line), ctllmfp);
 	    if (sscanf(line, "%s", lmname) > 0)
-		s3astar_set_lm(lmname);
+	      lmset_set_curlm_wname(lmset,lmname);
+
+	    /*s3astar_set_lm(lmsetlmname);*/
 	}
 
 	decode_utt (uttid, nbestdir);
@@ -540,39 +554,25 @@ main (int32 argc, char *argv[])
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit ();
-    
-    /*
-     * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
-     * underflow.  At the same time, log base = 1.0003 (1+epsilon) to allow log values
-     * to be maintained in int32 variables without significant loss of precision.
-     */
-    {
-	float32 logbase;
-	
-	logbase = *((float32 *) cmd_ln_access("-logbase"));
-	if (logbase <= 1.0)
-	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
-	if (logbase > 1.1)
-	    E_WARN("Logbase %e perhaps too large??\n", logbase);
-	logs3_init ((float64) logbase);
-    }
+
+  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
     
     /* Read in input databases */
-    models_init ();
+  models_init ();
 
-    /* Initialize forward Viterbi search module */
-    nbest_init ();
-    printf ("\n");
+  /* Initialize forward Viterbi search module */
+  nbest_init ();
+  printf ("\n");
 
-    ptmr_init (&tm_utt);
+  ptmr_init (&tm_utt);
     
-    process_ctlfile ();
+  process_ctlfile ();
 
 #if (! WIN32)
-    system ("ps aguxwww | grep s3astar");
+  system ("ps aguxwww | grep s3astar");
 #endif
 
-    cmd_ln_appl_exit();
-    return 0;
+  cmd_ln_appl_exit();
+  return 0;
 }
 
