@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/22  03:09:11  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.4  2005/06/15 04:21:46  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 21-Oct-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
@@ -66,16 +76,17 @@ extern "C" {
    */
 
 int32
-nextword (char *line,		/** Input: String being searched for next word */
-	  char *delim,		/** Input: A word, if found, must be delimited at either
+nextword (char *line,		/**< Input: String being searched for next word */
+	  char *delim,		/**< Input: A word, if found, must be delimited at either
 				    end by a character from this string (or at the end
 				    by the NULL char) */
-	  char **word,		/** Output: *word = ptr within line to beginning of first
+	  char **word,		/**< Output: *word = ptr within line to beginning of first
 				    word, if found.  Delimiter at the end of word replaced
 				    with the NULL char. */
-	  char *delimfound);	/** Output: *delimfound = original delimiter found at the end
+	  char *delimfound	/**< Output: *delimfound = original delimiter found at the end
 				    of the word.  (This way, the caller can restore the
 				    delimiter, preserving the original string.) */
+	  );
 
 #ifdef __cplusplus
 }

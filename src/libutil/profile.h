@@ -44,6 +44,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.10  2005/06/22  03:10:59  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.5  2005/06/15 04:21:47  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
+ * Revision 1.4  2005/04/25 19:22:48  archan
+ * Refactor out the code of rescoring from lexical tree. Potentially we want to turn off the rescoring if we need.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 11-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added ptmr_init().
@@ -112,43 +125,51 @@ void pctr_increment (pctr_t ctr,int32 inc);
    * using standard system calls.
    */
 typedef struct {
-    const char *name;		/* Timer print name; NULL terminates an array of timers.
+    const char *name;		/** Timer print name; NULL terminates an array of timers.
 				   Used by ptmr_print_all */
-    float64 t_cpu;		/* CPU time accumulated since most recent reset op */
-    float64 t_elapsed;		/* Elapsed time accumulated since most recent reset */
-    float64 t_tot_cpu;		/* Total CPU time since creation */
-    float64 t_tot_elapsed;	/* Total elapsed time since creation */
-    float64 start_cpu;		/* ---- FOR INTERNAL USE ONLY ---- */
-    float64 start_elapsed;	/* ---- FOR INTERNAL USE ONLY ---- */
+    float64 t_cpu;		/** CPU time accumulated since most recent reset op */
+    float64 t_elapsed;		/** Elapsed time accumulated since most recent reset */
+    float64 t_tot_cpu;		/** Total CPU time since creation */
+    float64 t_tot_elapsed;	/** Total elapsed time since creation */
+    float64 start_cpu;		/** ---- FOR INTERNAL USE ONLY ---- */
+    float64 start_elapsed;	/** ---- FOR INTERNAL USE ONLY ---- */
 } ptmr_t;
 
 
 
   /** Start timing using tmr */
-  void ptmr_start (ptmr_t *tmr);
+  void ptmr_start (ptmr_t *tmr /**< The timer*/
+		   );
 
-  /** Stop timing and accumulate tmr->{t_cpu, t_elapsed, t_tot_cpu, t_tot_elapsed} */
-  void ptmr_stop (ptmr_t *tmr);
+  /**< Stop timing and accumulate tmr->{t_cpu, t_elapsed, t_tot_cpu, t_tot_elapsed} */
+  void ptmr_stop (ptmr_t *tmr  /**< The timer*/
+		  );
 
   /** Reset tmr->{t_cpu, t_elapsed} to 0.0 */
-  void ptmr_reset (ptmr_t *tmr);
+  void ptmr_reset (ptmr_t *tmr  /**< The timer*/
+		   );
 
   /** Reset tmr->{t_cpu, t_elapsed, t_tot_cpu, t_tot_elapsed} to 0.0 
    */
-  void ptmr_init (ptmr_t *tmr);
+  void ptmr_init (ptmr_t *tmr /**< The timer*/
+		  );
 
 
   /**
    * Reset t_cpu, t_elapsed of all timer modules in array tmr[] to 0.0.
    * The array should be terminated with a sentinel with .name = NULL.
    */
-void ptmr_reset_all (ptmr_t *tmr);
+  void ptmr_reset_all (ptmr_t *tmr /**< The timer*/
+		       );
 
   /**
    * Print t_cpu for all timer modules in tmr[], normalized by norm (i.e., t_cpu/norm).
    * The array should be terminated with a sentinel with .name = NULL.
    */
-void ptmr_print_all (FILE *fp, ptmr_t *tmr, float64 norm);
+  void ptmr_print_all (FILE *fp,    /**< The file pointer */
+		     ptmr_t *tmr, /**< The timer*/
+		     float64 norm
+		       );
 
 
   /**
