@@ -50,7 +50,7 @@
  */
 
 /**
- * \file muLaw.h
+ * \file mulaw.h
  * \brief Table for converting mu-law data into 16-bit linear PCM format.
  */
 

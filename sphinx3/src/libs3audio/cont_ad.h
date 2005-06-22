@@ -81,7 +81,7 @@
 #include <s3types.h>
 
 /**
- * \file cond_ad.h
+ * \file cont_ad.h
  * \brief Continuous A/D listening and silence filtering module.
  *
  * This module is intended to be interposed as a filter between any raw A/D source and the
