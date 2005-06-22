@@ -40,6 +40,20 @@
 * ALL RIGHTS RESERVED.
 *************************************************
 *
+* HISTORY
+ * $Log$
+ * Revision 1.22  2005/06/22  02:49:34  arthchan2003
+ * 1, changed ld_set_lm to call srch_set_lm, 2, hand the accounting tasks to stat_t, 3, added several empty functions for future use.
+ * 
+ * Revision 1.6  2005/06/15 21:13:27  archan
+ * Open ld_set_lm, ld_delete_lm in live_decode_API.[ch], Not yet decided whether ld_add_lm and ld_update_lm should be added at this point.
+ *
+ * Revision 1.5  2005/04/20 03:40:23  archan
+ * Add many empty functions into ld, many of them are not yet implemented.
+ *
+ * Revision 1.4  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
 * May 14, 2004
 *   Created by Yitao Sun (yitao@cs.cmu.edu) based on the live.c created by
 *   Rita Singh.  This version is meant to expose features with a simpler and
@@ -100,10 +114,9 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 
 #include "live_decode_API.h"
 #include "live_decode_args.h"
-#include "kb.h"
-#include "fe.h"
 #include "utt.h"
 #include "bio.h"
+#include "lm.h"
 #include <time.h>
 
 /* Utility function declarations */
@@ -155,7 +168,6 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
 
   /* capture decoder parameters */
   kb_init(&_decoder->kb);
-  _decoder->hmm_log = cmd_ln_int32("-hmmdump") ? stderr : NULL;
 
   /* initialize decoder variables */
   _decoder->kbcore = _decoder->kb.kbcore;
@@ -270,12 +282,12 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 
   _decoder->num_frames_decoded = 0;
   _decoder->num_frames_entered = 0;
-  _decoder->kb.nfr = 0;
-  _decoder->kb.utt_hmm_eval = 0;
-  _decoder->kb.utt_sen_eval = 0;
-  _decoder->kb.utt_gau_eval = 0;
-  _decoder->kb.utt_cisen_eval = 0;
-  _decoder->kb.utt_cigau_eval = 0;
+  _decoder->kb.stat->nfr = 0;
+  _decoder->kb.stat->utt_hmm_eval = 0;
+  _decoder->kb.stat->utt_sen_eval = 0;
+  _decoder->kb.stat->utt_gau_eval = 0;
+  _decoder->kb.stat->utt_cisen_eval = 0;
+  _decoder->kb.stat->utt_cigau_eval = 0;
 
   _decoder->ld_state = LD_STATE_DECODING;
 
@@ -288,7 +300,7 @@ ld_end_utt(live_decoder_t *_decoder)
   assert(_decoder != NULL);
 
   ld_process_raw_impl(_decoder, NULL, 0, TRUE);
-  _decoder->kb.tot_fr += _decoder->kb.nfr;
+  _decoder->kb.stat->tot_fr += _decoder->kb.stat->nfr;
   ld_record_hyps(_decoder, TRUE);
   utt_end(&_decoder->kb);
   _decoder->ld_state = LD_STATE_IDLE;
@@ -324,8 +336,7 @@ ld_process_ceps(live_decoder_t *_decoder,
     utt_decode_block(_decoder->features, 
 		     num_features, 
 		     &_decoder->num_frames_decoded,
-		     &_decoder->kb, 
-		     _decoder->hmm_log);
+		     &_decoder->kb);
   }
 }
 
@@ -582,12 +593,55 @@ ld_process_raw_impl(live_decoder_t *_decoder,
     utt_decode_block(_decoder->features, 
 		     num_features, 
 		     &_decoder->num_frames_decoded, 
-		     &_decoder->kb, 
-		     _decoder->hmm_log);
+		     &_decoder->kb);
   }
 	
   if (frames != NULL) {
     ckd_free_2d((void **)frames);
   }
 }
+
+#if 0 /* Not yet decided whether ld_read_lm should handle addition of LM or not */
+void ld_read_lm(live_decoder_t *_decoder, 
+		const char* lmpath, 
+		const char* lmname,
+		double lw,
+		double uw,
+		double wip)
+{
+  srch_t* s;
+  lm_t* lm;
+  s=(srch_t*)_decoder->kb.srch;
+
+  lm=lm_read(lmpath,lw,wip,uw);
+  s->srch_add_lm(s,lm,lmname);
+}
+#endif
+
+
+void ld_set_lm(live_decoder_t *_decoder,const char *lmname)
+{
+  srch_t* s;
+  s=(srch_t*)_decoder->kb.srch;
+  s->srch_set_lm(s,lmname);
+}
+
+void ld_delete_lm(live_decoder_t *_decoder, const char *lmname)
+{
+  srch_t* s;
+  s=(srch_t*)_decoder->kb.srch;
+  s->srch_delete_lm(s,lmname);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
