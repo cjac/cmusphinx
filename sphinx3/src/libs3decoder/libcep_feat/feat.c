@@ -45,8 +45,8 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.20  2005/06/21  20:37:12  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add a report flat to feat_init, 3, Add the  $ keyword.
+ * Revision 1.21  2005/06/22  03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
  * 
  * Revision 1.4  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.

@@ -61,9 +61,15 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2005/04/15  14:16:51  dhdfu
- * Additional MLLR runtime support, multi-class (1 stream only) MLLR runtime support, regression and performance tests
+ * Revision 1.2  2005/06/22  03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
  * 
+ * Revision 1.1  2005/06/15 19:41:02  archan
+ * Added cb2mllr_io into libam
+ *
+ * Revision 1.1  2005/04/15 14:16:51  dhdfu
+ * Additional MLLR runtime support, multi-class (1 stream only) MLLR runtime support, regression and performance tests
+ *
  * Revision 1.5  2005/01/18 19:10:05  dhdfu
  * Fix signedness issues in multi-class MLLR code, incorporate extra error checking from original Sam-Joo Doh code
  *
