@@ -44,6 +44,25 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.2  2005/06/22  03:09:52  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.3  2005/06/16 00:14:08  archan
+ * Added const keyword to file argument for file_open
+ *
+ * Revision 1.2  2005/06/15 06:23:21  archan
+ * change headers from io.h to pio.h
+ *
+ * Revision 1.1  2005/06/15 06:11:03  archan
+ * sphinx3 to s3.generic: change io.[ch] to pio.[ch]
+ *
+ * Revision 1.4  2005/04/20 03:49:32  archan
+ * Add const to string argument of myfopen.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 08-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added stat_mtime().
@@ -68,7 +87,7 @@
 #include "err.h"
 
 
-FILE *fopen_comp (char *file, char *mode, int32 *ispipe)
+FILE *fopen_comp (const char *file, char *mode, int32 *ispipe)
 {
     char command[16384];
     FILE *fp;
@@ -289,7 +308,7 @@ int32 stat_mtime (char *file)
 }
 
 
-FILE *_myfopen (char *file, char *mode, char *pgm, int32 line)
+FILE *_myfopen (const char *file, char *mode, char *pgm, int32 line)
 {
     FILE *fp;
     

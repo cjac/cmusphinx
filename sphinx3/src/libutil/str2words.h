@@ -44,6 +44,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.7  2005/06/22  03:11:25  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * 
+ * Revision 1.4  2005/06/15 04:21:47  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 07-Apr-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
@@ -69,10 +79,11 @@ extern "C" {
    * every word in the line.
    * Return value: No. of words found; -1 if no. of words in line exceeds n_wptr.
    */
-int32 str2words (char *line,	/** In: line to be parsed */
-		 char **wptr,	/** In/Out: Array of pointers to words found in line.
+int32 str2words (char *line,	/**< In: line to be parsed */
+		 char **wptr,	/**< In/Out: Array of pointers to words found in line.
 				   The array must be allocated by the caller */
-		 int32 n_wptr);	/** In: Size of wptr array */
+		 int32 n_wptr	/**< In: Size of wptr array */
+		 );
 #ifdef __cplusplus
 }
 #endif
