@@ -44,6 +44,22 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.7  2005/06/22  03:04:01  arthchan2003
+ * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.8  2005/05/24 01:10:54  archan
+ * Fix a bug when the value only appear in the hash but there is no chain.   Also make sure that prev was initialized to NULL. All success cases were tested, but not tested with the deletion is tested.
+ *
+ * Revision 1.7  2005/05/24 00:12:31  archan
+ * Also add function prototype for hash_display in hash.h
+ *
+ * Revision 1.4  2005/05/03 04:09:11  archan
+ * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 05-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Removed hash_key2hash().  Added hash_enter_bkey() and hash_lookup_bkey(),
@@ -68,6 +84,16 @@
  * one can retrieve the integer value by providing the string key.
  * (The reverse functionality--obtaining the string given the
  * value--is not provided with the hash table module.)  
+ */
+
+/**
+ * A note by ARCHAN at 20050510: Technically what we use is so-called
+ * "hash table with buckets" which is very nice way to deal with
+ * external hashing.  There are definitely better ways to do internal
+ * hashing (i.e. when everything is stored in the memory.)  In Sphinx
+ * 3, this is a reasonable practice because hash table is only used in
+ * lookup in initialization or in lookups which is not critical for
+ * speed.
  */
 
 #ifndef _LIBUTIL_HASH_H_
@@ -120,18 +146,24 @@ typedef struct {
    * Return value: READ-ONLY handle to allocated hash table.
    */
 hash_table_t *
-hash_new (int32 size,		/* In: Expected #entries in the table */
-	  int32 casearg);	/* In: Whether case insensitive for key comparisons.
-				   Use values provided below */
+hash_new (int32 size,		/**< In: Expected #entries in the table */
+	  int32 casearg  	/**< In: Whether case insensitive for key comparisons.
+				     When 1, case is insentitive, 0, case is sensitive. */
+	  );
+
 #define HASH_CASE_YES		0
 #define HASH_CASE_NO		1
+
+#define HASH_OP_SUCCESS         1
+#define HASH_OP_FAILURE         0
 
 
   /**
  * Free the specified hash table; the caller is responsible for freeing the key strings
  * pointed to by the table entries.
  */
-void hash_free (hash_table_t *h);
+void hash_free (hash_table_t *h /**< In: Handle of hash table in which to create entry */
+		);
 
 
   /**
@@ -141,10 +173,22 @@ void hash_free (hash_table_t *h);
    * it is upto the caller to resolve the conflict.)
    */
 int32
-hash_enter (hash_table_t *h,	/* In: Handle of hash table in which to create entry */
-	    const char *key,	/* In: C-style NULL-terminated key string for the new entry */
-	    int32 val);		/* In: Value to be associated with above key */
+hash_enter (hash_table_t *h,	/**< In: Handle of hash table in which to create entry */
+	    const char *key,	/**< In: C-style NULL-terminated key string for the new entry */
+	    int32 val		/**< In: Value to be associated with above key */
+	    );
 
+
+  /**
+   * Delete an entry with given key and associated value to hash table
+   * h.  If the key doesn't exist, return HASH_OP_FAILURE, If the key
+   * exist, return HASH_OP_SUCCESS. 
+   */
+
+int32 
+hash_delete(hash_table_t *h,    /**< In: Handle of hash table in which a key will be deleted */
+	    const char *key     /**< In: C-style NULL-terminated key string for the new entry */
+	    );
   /**
    * Like hash_enter, but with an explicitly specified key length, instead of a NULL-terminated,
    * C-style key string.  So the key string is a binary key (or bkey).  Hash tables containing
@@ -152,19 +196,21 @@ hash_enter (hash_table_t *h,	/* In: Handle of hash table in which to create entr
    * unpredictable.
    */
 int32
-hash_enter_bkey (hash_table_t *h,	/* In: Handle of hash table in which to create entry */
-		 const char *key,	/* In: Key buffer */
-		 int32 len,		/* In: Length of above key buffer */
-		 int32 val);		/* In: Value to be associated with above key */
+hash_enter_bkey (hash_table_t *h,	/**< In: Handle of hash table in which to create entry */
+		 const char *key,	/**< In: Key buffer */
+		 int32 len,		/**< In: Length of above key buffer */
+		 int32 val		/**< In: Value to be associated with above key */
+		 );
 
 /*
  * Lookup hash table h for given key and return the associated value in *val.
  * Return value: 0 if key found in hash table, else -1.
  */
 int32
-hash_lookup (hash_table_t *h,	/* In: Handle of hash table being searched */
-	     const char *key,	/* In: C-style NULL-terminated string whose value is sought */
-	     int32 *val);	/* Out: *val = value associated with key */
+hash_lookup (hash_table_t *h,	/**< In: Handle of hash table being searched */
+	     const char *key,	/**< In: C-style NULL-terminated string whose value is sought */
+	     int32 *val  	/**< Out: *val = value associated with key */
+	     );
 
   /**
    * Like hash_lookup, but with an explicitly specified key length, instead of a NULL-terminated,
@@ -173,16 +219,31 @@ hash_lookup (hash_table_t *h,	/* In: Handle of hash table being searched */
    * unpredictable.
    */
 int32
-hash_lookup_bkey (hash_table_t *h,	/* In: Handle of hash table being searched */
-		  const char *key,	/* In: Key buffer */
-		  int32 len,		/* In: Length of above key buffer */
-		  int32 *val);		/* Out: *val = value associated with key */
+hash_lookup_bkey (hash_table_t *h,	/**< In: Handle of hash table being searched */
+		  const char *key,	/**< In: Key buffer */
+		  int32 len,		/**< In: Length of above key buffer */
+		  int32 *val		/**< Out: *val = value associated with key */
+		  );
 
   /**
    * Build a glist of valid hash_entry_t pointers from the given hash table.  Return the list.
    */
-glist_t hash_tolist (hash_table_t *h,	/* In: Hash table from which list is to be generated */
-		     int32 *count);	/* Out: #entries in the list */
+glist_t hash_tolist (hash_table_t *h,	/**< In: Hash table from which list is to be generated */
+		     int32 *count	/**< Out: #entries in the list */
+		     );
+
+  /**
+   * Display a hash-with-chaining representation on the screen.
+   * Currently, it will only works for situation where hash_enter was
+   * used to enter the keys. 
+   */
+  void  hash_display(hash_table_t *h, /**< In: Hash table to display */
+		     int32 showkey    /**< In: Show the string or not,
+					 Use 0 if hash_enter_bkey was
+					 used. */
+		    );
+
+
 
 #ifdef __cplusplus
 }
