@@ -115,6 +115,7 @@ date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
 
 #include "kb.h"
 #include "fe.h"
+#include "srch.h"
 
 /** \file live_decode_API.h
  * \brief header for live mode decoding API 
@@ -153,11 +154,6 @@ typedef struct
    * Pointer to the front-end.
    */
   fe_t *fe;
-
-  /**
-   * File pointer to the HMM logfile.
-   */
-  FILE *hmm_log;
 
   /**
    * Parameter: intervals at which wbeam is used for phone transitions.
@@ -396,9 +392,116 @@ int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
 */
 void ld_abort_utt(live_decoder_t *_decoder);
 
+
+/** Set LM 
+    @param _decode Pointer to the decode
+    @param lmname the language model name
+    @see ld_read_lm ld_delete_lm
+ */
+
+void ld_set_lm(live_decoder_t *_decoder,const char *lmname);
+
+/** Delete LM 
+    @param _decoder Pointer to the live mode decode
+    @param lmname the language model name 
+    @see ld_set_lm ld_read_lm
+*/
+
+void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
+
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
 
+
+
+
+#if 0 /* Do not support the following function at this point */
+/** Read LM from a file. 
+    @param _decoder Pointer to the decoder. 
+    @param lmfile LM file name. 
+    @param lmname LM name associated with this file. 
+    @param lw     Language weight; typically 6.5-9.5
+    @param uw     Unigram weight; typically 0.5 
+    @param wip    Word insertion penalty; typically 0.65 
+    @see ld_set_lm
+ */
+
+void ld_read_lm(live_decoder_t *_decoder, 
+		const char *lmfile, 
+		const char *lmname,
+		double lw,
+		double uw,
+		double wip
+		);
+
+
+
+  /**
+   */
+void ld_update_lm(live_decoder_t *_decoder, const char *lmname);
+
+
+/** Read FSG from a file.
+ */
+
+void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/**
+ */
+
+void ld_set_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/**
+ */
+
+void ld_update_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/**
+ */
+
+void ld_delete_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/** Read MLLR matrix from a file. 
+ */
+
+void ld_read_mllr(live_decoder_t *_decoder,const char *mllrname);
+
+/**
+ */
+
+void ld_set_mllr(live_decoder_t *_decoder,const char *mllrname);
+
+/**
+ */
+
+void ld_update_mllr(live_decoder_t *_decoder,const char *mllrname);
+
+/**
+ */
+
+void ld_delete_mllr(live_decoder_t *_decoder,const char *mllrname);
+
+/** Read acoustic model from a file. 
+ */
+
+void ld_read_am(live_decoder_t *_decoder,const char *amdir);
+
+/**
+ */
+
+void ld_set_am(live_decoder_t *_decoder,const char *amname);
+
+/**
+ */
+
+void ld_update_am(live_decoder_t *_decoder, const char *amname);
+
+/**
+ */
+
+void ld_delete_am(live_decoder_t *_decoder, const char *amname);
+#endif
