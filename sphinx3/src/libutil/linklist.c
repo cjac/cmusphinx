@@ -48,9 +48,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2004/09/13  08:13:27  arthchan2003
- * update copyright notice from 200x to 2004
+ * Revision 1.3  2005/06/22  03:07:58  arthchan2003
+ * Add  keyword.
  * 
+ * Revision 1.1.1.1  2005/03/24 15:24:00  archan
+ * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
+ *
+ * Revision 1.2  2004/09/13 08:13:27  arthchan2003
+ * update copyright notice from 200x to 2004
+ *
  * Revision 1.1  2004/08/09 00:17:13  arthchan2003
  * Incorporating s3.0 align, at this point, there are still some small problems in align but they don't hurt. For example, the score doesn't match with s3.0 and the output will have problem if files are piped to /dev/null/. I think we can go for it.
  *

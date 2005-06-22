@@ -43,6 +43,16 @@
 #include <string.h>
 #include <assert.h>
 
+/* HISTORY
+ * $Log$
+ * Revision 1.3  2005/06/22  03:06:46  arthchan2003
+ * Add  keyword.
+ * 
+ * Revision 1.2  2005/06/15 04:21:46  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
+ */
+
 /** \file info.h
  *  \brief Print hostname, directory name, compile time and date. 
  */
