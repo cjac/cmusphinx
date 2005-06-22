@@ -66,7 +66,6 @@ static fe_t  *fe;
 
 static kb_t  *kb;
 static kbcore_t *kbcore;
-static FILE  *hmmdumpfp;
 
 static partialhyp_t *parthyp = NULL;
 static float32 *dummyframe;
@@ -85,8 +84,6 @@ void live_initialize_decoder(char *live_args)
     kb_init(&live_kb);
     kb = &live_kb;
     kbcore = kb->kbcore;
-
-    hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
 
     maxhyplen = cmd_ln_int32 ("-maxhyplen");
     if (!parthyp) 
@@ -214,6 +211,9 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     int32   live_nfr, live_nfeatvec;
     int32   nwds;
     float32 **mfcbuf;
+    stat_t *st;
+
+    st=kb->stat;
 
     metricsStart("Decode");
 
@@ -225,10 +225,10 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
         fe_start_utt(fe);
 	utt_begin (kb);
 	frmno = 0;
-	kb->nfr = 0;
-        kb->utt_hmm_eval = 0;
-        kb->utt_sen_eval = 0;
-        kb->utt_gau_eval = 0;
+	st->nfr = 0;
+        st->utt_hmm_eval = 0;
+        st->utt_sen_eval = 0;
+        st->utt_gau_eval = 0;
         live_begin_new_utt = 0;
     }
 
@@ -255,8 +255,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     metricsStart("ScorePrune");
 
     if(live_nfeatvec>0){
-      utt_decode_block (live_feat, live_nfeatvec, &frmno, kb, 
-			hmmdumpfp);
+      utt_decode_block (live_feat, live_nfeatvec, &frmno, kb);
     }
     
     metricsStop("ScorePrune");
@@ -279,7 +278,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     if (live_endutt) {
 	live_begin_new_utt = 1;
-	kb->tot_fr += kb->nfr;
+	st->tot_fr += st->nfr;
 	utt_end(kb);
     }
     else {
@@ -315,14 +314,18 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
     float32 **live_feat;
     int32   live_nfr, live_nfeatvec;
     float32 **mfcbuf;
+    stat_t *st;
+
+    st=kb->stat;
+
 
     if (live_begin_new_utt) {
         fe_start_utt(fe);
 	frmno = 0;
-	kb->nfr = 0;
-        kb->utt_hmm_eval = 0;
-        kb->utt_sen_eval = 0;
-        kb->utt_gau_eval = 0;
+	st->nfr = 0;
+        st->utt_hmm_eval = 0;
+        st->utt_sen_eval = 0;
+        st->utt_gau_eval = 0;
         live_begin_new_utt = 0;
     }
 
@@ -353,7 +356,7 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
     /* Clean up */
     if (live_endutt) {
 	live_begin_new_utt = 1;
-	kb->tot_fr += kb->nfr;
+	st->tot_fr += st->nfr;
     }
     else {
 	live_begin_new_utt = 0;
@@ -367,6 +370,6 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 
 void live_print_profiles(FILE *file)
 {
-    ptmr_print_all(file, &kb->tm_sen, (float64) 1);
-    ptmr_print_all(file, &kb->tm_srch, (float64) 1);
+    ptmr_print_all(file, &kb->stat->tm_sen, (float64) 1);
+    ptmr_print_all(file, &kb->stat->tm_srch, (float64) 1);
 }
