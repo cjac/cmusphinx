@@ -50,7 +50,7 @@
 #include "corpus.h"
 #include "utt.h"
 #include "logs3.h"
-#include <pio.h>
+#include "pio.h"
 #include "gmm_compute.h"
 #define MAX_PREV_FRAMES 20
 
@@ -102,8 +102,6 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   int32* last_scr;
   int32 tmpint;
 
-  FILE *hmmdumpfp;
-
   int32 pheurtype;
   E_INFO("Processing: %s\n", uttid);
 
@@ -124,15 +122,14 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   maxhmmpf = kb->histprune->maxhmmpf;
   ptranskip = kb->beam->ptranskip;
 
-  hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-  pheurtype = cmd_ln_int32 ("-pheurtype");
+  pheurtype = kb->pl->pheurtype;
 
   single_el_list[0]=-1;
   single_el_list[1]=-1;
  
 
   /* Read mfc file and build feature vectors for entire utterance */
-  kb->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
+  kb->stat->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
 
   cd2cisen=mdef_cd2cisen(mdef);
@@ -162,7 +159,7 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 
 
 
-  for(f = 0; f < kb->nfr; f++){
+  for(f = 0; f < kb->stat->nfr; f++){
     for(s =0 ; s <mgau->n_mgau ; s++){
       /*1, Compute the approximate scores with the last best index. */
 	

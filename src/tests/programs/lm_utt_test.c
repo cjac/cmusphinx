@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     uw = cmd_ln_float32("-uw");
     logbase = cmd_ln_float32("-logbase");
 
-    logs3_init(logbase);
+    logs3_init(logbase,1,1); /*Report progress and use log table*/
 
     metricsStart(lmLoadTimer);
     

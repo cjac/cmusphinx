@@ -36,8 +36,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include "libs3decoder/fe.h"
-#include "libs3decoder/fe_internal.h"
+#include "fe.h"
+#include "fe_internal.h"
 #include "fe_internal_dump.h"
 #include "fe_dump.h"
 
