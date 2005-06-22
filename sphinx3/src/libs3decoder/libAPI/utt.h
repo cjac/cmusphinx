@@ -63,6 +63,9 @@ void utt_word_trans (kb_t *kb, int32 cf);
 void utt_decode (void *data, char *uttfile, int32 sf, 
 			     int32 ef, char *uttid);
 
+  /** Decoding the whole utterance using tree copies. 80-90% duplicated with utt_decode*/
+void utt_decode_tree_copies (void *data, char *uttfile, int32 sf, 
+			     int32 ef, char *uttid);
   
   /** This function decodes a block of incoming feature vectors.
  * Feature vectors have to be computed by the calling routine.
@@ -76,9 +79,10 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
                        int32 block_nfeatvec, /* No. of vecs in cepblock */
                        int32 *curfrm,        /* Utterance level index of
                                                 frames decoded so far */
-                       kb_t *kb,             /* kb structure with all model
+                       kb_t *kb             /* kb structure with all model
                                                 and decoder info */
-                       FILE *hmmdumpfp);     /* dump file */
+		       );
+
 
 #ifdef __cplusplus
 }
