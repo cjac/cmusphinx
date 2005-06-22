@@ -7,7 +7,7 @@ bin_PROGRAMS = livepretend \
 	allphone \
 	ep 
 
-livepretend_SOURCES = main_livepretend.c
+livepretend_SOURCES = main_livepretend.c 
 decode_SOURCES = decode.c
 decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
 
@@ -45,10 +45,17 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 
 INCLUDES = -I$(top_srcdir) \
 	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-	-I$(top_srcdir)/src/libutil \
-       -I$(top_srcdir)/src/libs3audio \
-       -I$(top_builddir)/include
+	-I$(top_srcdir)/src/libs3decoder/libAPI/ \
+	-I$(top_srcdir)/src/libs3decoder/libam/ \
+	-I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
+	-I$(top_srcdir)/src/libs3decoder/libcommon/ \
+	-I$(top_srcdir)/src/libs3decoder/libdict/ \
+	-I$(top_srcdir)/src/libs3decoder/libep/ \
+	-I$(top_srcdir)/src/libs3decoder/liblm/ \
+	-I$(top_srcdir)/src/libs3decoder/libsearch/ \
+	-I$(top_srcdir)/src/libutil/ \
+        -I$(top_srcdir)/src/libs3audio \
+        -I$(top_builddir)/include
 
 # add for solaris
 # -I/usr/demo/SOUND/include
