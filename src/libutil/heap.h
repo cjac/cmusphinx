@@ -34,7 +34,7 @@
  *
  */
 /*
- * heap.c -- Generic heap structure for inserting in any and popping in sorted
+ * heap.h -- Generic heap structure for inserting in any and popping in sorted
  * 		order.
  *
  * **********************************************
@@ -45,6 +45,16 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.7  2005/06/22  03:05:49  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add  keyword.
+ * 
+ * Revision 1.4  2005/06/15 04:21:46  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 23-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started.
@@ -86,19 +96,19 @@ heap_t heap_new ( void );
    * Insert a new item into the given heap.
    * Return value: 0 if successful, -1 otherwise.
    */
-int32 heap_insert (heap_t heap,	/* In: Heap into which item is to be inserted */
-		   void *data,	/* In: Application-determined data pointer */
-		   int32 val);	/* In: According to item entered in sorted heap */
-
+int32 heap_insert (heap_t heap,	/**< In: Heap into which item is to be inserted */
+		   void *data,	/**< In: Application-determined data pointer */
+		   int32 val	/**< In: According to item entered in sorted heap */
+		   );
   /**
    * Return the topmost item in the heap.
    * Return value: 1 if heap is not empty and the topmost value is returned;
    * 0 if heap is empty; -1 if some error occurred.
    */
-int32 heap_top (heap_t heap,	/* In: Heap whose topmost item is to be returned */
-		void **data,	/* Out: Data pointer associated with the topmost item */
-		int32 *val);	/* Out: Value associated with the topmost item */
-
+int32 heap_top (heap_t heap,	/**< In: Heap whose topmost item is to be returned */
+		void **data,	/**< Out: Data pointer associated with the topmost item */
+		int32 *val	/**< Out: Value associated with the topmost item */
+		);
   /**
    * Like heap_top but also pop the top item off the heap.
    */
