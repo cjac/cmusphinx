@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo "DAG TEST"
-tmpout="test-dag.out"
+echo "DAG CLASS-BASED LM TEST"
+tmpout="test-dag-clm.out"
 
 margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
@@ -13,13 +13,16 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 -logbase 1.0003 \
 -backtrace 1 "
 
-lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
+#lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dag $margs $lmargs > $tmpout 2>&1 
+clsargs="-lmctlfn @abs_top_builddir@/model/lm/an4/an4.ug.cls.lmctl \
+-ctl_lm  @abs_top_srcdir@/model/lm/an4/an4.ctl_lm" 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dag $margs $clsargs > $tmpout 2>&1 
 
 grep "BSTPTH:" $tmpout 
 grep "BSTXCT" $tmpout 
 
 if(grep "BSTPTH:" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
-then echo "DAG test PASSED" ; else \
-echo "DAG test FAILED" ; fi
+then echo "DAG CLASS-BASED LM test PASSED" ; else \
+echo "DAG CLASS-BASED LM test FAILED" ; fi

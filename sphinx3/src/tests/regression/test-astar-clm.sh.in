@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo "ASTAR TEST"
-tmpout="test-astar.out"
+echo "ASTAR CLASS-BASED LM TEST"
+tmpout="test-astar-clm.out"
 
 margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
@@ -14,11 +14,12 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 -logbase 1.0003 \
 -nbestdir .  "
 
-lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
+clsargs="-lmctlfn @abs_top_builddir@/model/lm/an4/an4.ug.cls.lmctl \
+-ctl_lm  @abs_top_srcdir@/model/lm/an4/an4.ctl_lm" 
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/astar $margs $lmargs > $tmpout 2>&1 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/astar $margs $clsargs > $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
 if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
-then echo "ASTAR PASSED"; else \
-echo "ASTAR FAILED"; fi
+then echo "ASTAR CLASS-BASED LM test PASSED"; else \
+echo "ASTAR CLASS-BASED LM test FAILED"; fi
