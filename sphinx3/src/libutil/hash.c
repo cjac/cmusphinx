@@ -44,6 +44,28 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/22  03:04:01  arthchan2003
+ * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ * 
+ * Revision 1.9  2005/05/25 06:17:53  archan
+ * Delete the test code in cmd_ln.c and fixed platform specific code of hash.c
+ *
+ * Revision 1.8  2005/05/24 01:10:54  archan
+ * Fix a bug when the value only appear in the hash but there is no chain.   Also make sure that prev was initialized to NULL. All success cases were tested, but not tested with the deletion is tested.
+ *
+ * Revision 1.6  2005/05/24 00:00:45  archan
+ * Added basic functionalities to hash_t: 1, display and 2, delete a key from a hash. \n
+ *
+ * Revision 1.5  2005/05/11 07:01:38  archan
+ * Added comments on the usage of the current implementation of hash tables.
+ *
+ * Revision 1.4  2005/05/03 04:09:11  archan
+ * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
+ *
+ * Revision 1.3  2005/03/30 01:22:48  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 05-May-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Removed hash_key2hash().  Added hash_enter_bkey() and hash_lookup_bkey(),
@@ -106,6 +128,9 @@ const int32 prime[] = {
 };
 
 
+/**
+ * This function returns a very large prime. 
+ */
 static int32 prime_size (int32 size)
 {
     int32 i;
@@ -294,6 +319,10 @@ static int32 enter (hash_table_t *h, uint32 hash, const char *key, int32 len, in
 	cur->key = key;
 	cur->len = len;
 	cur->val = val;
+
+	/* Added by ARCHAN at 20050515. This allows deletion could work. */
+	cur->next=NULL;
+	
     } else {
 	/* Key collision; create new entry and link to hashed location */
 	new = (hash_entry_t *) ckd_calloc (1, sizeof(hash_entry_t));
@@ -305,6 +334,62 @@ static int32 enter (hash_table_t *h, uint32 hash, const char *key, int32 len, in
     }
 
     return val;
+}
+
+/* 20050523 Added by ARCHAN  to delete a key from a hash table */
+static int32 delete(hash_table_t *h, uint32 hash,const char *key,int32 len)
+{
+  hash_entry_t *entry, *prev;
+
+  prev= NULL;
+  entry = &(h->table[hash]);
+  if (entry->key == NULL)
+    return HASH_OP_FAILURE;
+  
+  if (h->nocase) {
+    while (entry && ((entry->len != len) || (keycmp_nocase (entry, key) != 0))){
+      prev  = entry;
+      entry = entry->next;
+    }
+  } else {
+    while (entry && ((entry->len != len) || (keycmp_case (entry, key) != 0))){
+      prev  = entry;
+      entry = entry->next;
+    }
+  }
+
+  if (entry==NULL) 
+    return HASH_OP_FAILURE;
+  
+  /* At this point, entry will be the one required to be deleted, prev
+     will contain the previous entry
+  */
+
+  if(prev==NULL){
+    /* That is to say the entry in the hash table (not the chain) matched the key. */
+    /* We will then copy the things from the next entry to the hash table */
+    prev=entry;
+    if(entry->next){/* There is a next entry, great, copy it. */
+      entry=entry->next;
+      prev->key=entry->key;
+      prev->len=entry->len;
+      prev->val=entry->val;
+      prev->next=entry->next;
+      ckd_free(entry); 
+    }else{ /* There is not a next entry, just set the key to null*/
+      prev->key=NULL;
+      prev->len=0;
+      prev->next=NULL;
+    }
+
+  }else{ /* This case is simple */
+    prev->next=entry->next;
+    ckd_free(entry); 
+  }
+
+  /* Do wiring and free the entry */
+
+  return HASH_OP_SUCCESS;
 }
 
 
@@ -319,6 +404,17 @@ int32 hash_enter (hash_table_t *h, const char *key, int32 val)
 }
 
 
+int32 hash_delete(hash_table_t *h,const char *key)
+{
+  uint32 hash;
+  int32 len;
+
+  hash = key2hash (h, key);
+  len =strlen(key);
+
+  return(delete(h,hash,key,len));
+}
+
 int32 hash_enter_bkey (hash_table_t *h, const char *key, int32 len, int32 val)
 {
     uint32 hash;
@@ -329,6 +425,44 @@ int32 hash_enter_bkey (hash_table_t *h, const char *key, int32 len, int32 val)
     ckd_free (str);
     
     return (enter (h, hash, key, len, val));
+}
+
+void hash_display(hash_table_t *h, int32 showdisplay)
+{
+  hash_entry_t *e;
+  int i,j;
+  j=0;
+
+  E_INFOCONT("Hash with chaining representation of the hash table\n");
+
+  for (i = 0; i < h->size; i++) {
+    e = &(h->table[i]);
+    if (e->key != NULL) {
+      E_INFOCONT("|key:");
+      if(showdisplay)
+	E_INFOCONT("%s",e->key);
+
+      E_INFOCONT("|len:%d|val=%d|->",e->len,e->val);
+      if(e->next==NULL){
+	E_INFOCONT("NULL\n");
+      }
+      j++;
+
+      for (e = e->next; e; e = e->next) {
+	E_INFOCONT("|key:");
+	if(showdisplay)
+	  E_INFOCONT("%s",e->key);
+
+	E_INFOCONT("|len:%d|val=%d|->",e->len,e->val);
+	if(e->next==NULL){
+	  E_INFOCONT("NULL\n");
+	}
+	j++;
+      }
+    }
+  }
+
+  E_INFOCONT("The total number of keys =%d\n",j); 
 }
 
 
@@ -377,3 +511,4 @@ void hash_free (hash_table_t *h)
     ckd_free ((void *) h->table);
     ckd_free ((void *) h);
 }
+
