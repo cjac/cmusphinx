@@ -129,15 +129,15 @@ SOURCE=..\..\..\src\libutil\info.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libutil\pio.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libutil\linklist.c
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\src\libutil\nextword.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libutil\pio.c
 # End Source File
 # Begin Source File
 
@@ -201,6 +201,10 @@ SOURCE=..\..\..\src\libutil\info.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libutil\pio.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libutil\libutil.h
 # End Source File
 # Begin Source File
@@ -210,10 +214,6 @@ SOURCE=..\..\..\src\libutil\linklist.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libutil\nextword.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libutil\pio.h
 # End Source File
 # Begin Source File
 
