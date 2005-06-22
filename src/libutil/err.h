@@ -45,6 +45,13 @@
  * **********************************************
  *
  * 6/01/95  Paul Placeway  CMU speech group
+ * $Log$
+ * Revision 1.10  2005/06/22  03:00:23  arthchan2003
+ * 1, Add a E_INFO that produce no file names. 2, Add  keyword.
+ * 
+ * Revision 1.3  2005/06/15 04:21:46  archan
+ * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
+ *
  */
 
 
@@ -67,6 +74,7 @@ extern "C" {
 
 void _E__pr_header( char const *file, long line, char const *msg );
 void _E__pr_info_header( char const *file, long line, char const *tag );
+void _E__pr_info_header_wofn(char const *msg);
 void _E__pr_warn( char const *fmt, ... );
 void _E__pr_info( char const *fmt, ... );
 void _E__die_error( char const *fmt, ... );
@@ -114,6 +122,13 @@ void _E__fatal_sys_error( char const *fmt, ... );
    */
 
 #define E_INFOCONT	  _E__pr_info
+
+  /**
+   *
+   */
+
+#define E_INFO_NOFN _E__pr_info_header_wofn("INFO"),_E__pr_info
+
 
   /**
    *Print warning information to standard error stream
