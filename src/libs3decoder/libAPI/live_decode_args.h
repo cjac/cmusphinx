@@ -41,6 +41,19 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.5  2005/06/22  02:53:12  arthchan2003
+ * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ * 
+ * Revision 1.5  2005/06/16 00:11:46  archan
+ * Fixed path of libutil.h
+ *
+ * Revision 1.4  2005/06/15 21:48:54  archan
+ * Sphinx3 to s3.generic: Changed noinst_HEADERS to pkginclude_HEADERS.  This make all the headers to be installed.
+ *
+ * Revision 1.3  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 15-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University.
  * Created.
@@ -61,7 +74,7 @@ he library.
 #ifndef __ARGS_H
 #define __ARGS_H
 
-#include "libutil.h"
+#include <libutil.h>
 
 /** \file live_decode_args.h
     \brief The argument file for livedecode and livepretend.

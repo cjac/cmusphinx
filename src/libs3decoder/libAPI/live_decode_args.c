@@ -41,6 +41,31 @@
  * **********************************************
  * 
  * HISTORY
+ * $Log$
+ * Revision 1.13  2005/06/22  02:53:12  arthchan2003
+ * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ * 
+ * Revision 1.10  2005/06/19 19:41:20  archan
+ * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
+ *
+ * Revision 1.9  2005/06/17 23:44:39  archan
+ * Sphinx3 to s3.generic, 1, Support -lmname in decode and livepretend.  2, Wrap up the initialization of dict2lmwid to lm initialization. 3, add Dave's trick in LM switching in mode 4 of the search.
+ *
+ * Revision 1.8  2005/06/16 04:59:08  archan
+ * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
+ *
+ * Revision 1.7  2005/05/27 01:15:44  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.6  2005/05/11 06:10:38  archan
+ * Code for lattice and back track pointer table dumping is now wrapped in reg_result_dump.  The function is shared across mode 4 and mode 5.  Possibly later for mode 3 and mode 6 as well.
+ *
+ * Revision 1.5  2005/04/25 23:53:35  archan
+ * 1, Some minor modification of vithist_t, vithist_rescore can now support optional LM rescoring, vithist also has its own reporting routine. A new argument -lmrescore is also added in decode and livepretend.  This can switch on and off the rescoring procedure. 2, I am reaching the final difficulty of mode 5 implementation.  That is, to implement an algorithm which dynamically decide which tree copies should be entered.  However, stuffs like score propagation in the leave nodes and non-leaves nodes are already done. 3, As briefly mentioned in 2, implementation of rescoring , which used to happened at leave nodes are now separated. The current implementation is not the most clever one. Wish I have time to change it before check-in to the canonical.
+ *
+ * Revision 1.4  2005/03/30 01:22:47  archan
+ * Fixed mistakes in last updates. Add
+ *
  * 
  * 15-Jun-2004  Yitao Sun (yitao@cs.cmu.edu) at Carnegie Mellon University.
  * Created.
@@ -236,6 +261,14 @@ arg_t arg_def[] = {
       REQARG_STRING,
       NULL,
       "Mixture gaussian variances input file" },
+    { "-mllr",
+      ARG_STRING,
+      NULL,
+      "MLLR transfomation matrix to be applied to mixture gaussian means"},
+    { "-cb2mllr",
+      ARG_STRING,
+      ".1cls.",
+      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
     { "-varfloor",
       ARG_FLOAT32,
       "0.0001",
@@ -260,14 +293,6 @@ arg_t arg_def[] = {
       ARG_FLOAT32,
       "0.0001",
       "HMM state transition probability floor (applied to -tmat file)" },
-    { "-mllr",
-      ARG_STRING,
-      NULL,
-      "MLLR transfomation matrix to be applied to mixture gaussian means"},
-    { "-cb2mllr",
-      ARG_STRING,
-      ".1cls.",
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
     { "-Nlextree",
       ARG_INT32,
       "3",
@@ -276,6 +301,10 @@ arg_t arg_def[] = {
       ARG_INT32,
       "3",
       "Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" },
+    { "-Nstalextree",
+      ARG_INT32,
+      "25",
+      "No. of lextrees to be instantiated statically; " },
     { "-subvqbeam",
       ARG_FLOAT64,
       "3.0e-3",
@@ -339,6 +368,10 @@ arg_t arg_def[] = {
       ARG_INT32,
       "0",
       "Bigram-mode: If TRUE only one BP entry/frame; else one per LM state" },
+    { "-lmrescore",
+      ARG_INT32,
+      "1",
+      "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "},
     { "-maxhmmpf",
       ARG_INT32,
       "20000",
@@ -443,10 +476,18 @@ arg_t arg_def[] = {
       ARG_INT32,
       "1",
       "dump parital hypothesis on the screen"},
-    { "-backtrace",
+    { "-op_mode",
+      ARG_INT32,
+      "4",
+      "Operation Mode. Mode 4: TST search, Mode 5: WST search, Mode 1369: Debug "},
+    {"-bt_wsil",
       ARG_INT32,
       "1",
+     "Specified whether silence will be used to be the last word for backtracking. "},
+    {"-backtrace",
+     ARG_INT32,
+      "1",
       "Whether detailed backtrace information (word segmentation/scores) shown in log" },
-     { NULL, ARG_INT32, NULL, NULL }
+    { NULL, ARG_INT32, NULL, NULL }
 };
 
