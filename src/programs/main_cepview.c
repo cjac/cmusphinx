@@ -39,6 +39,16 @@
  * 		Created.
  *
  * For history information, please use 'cvs log'
+ * $Log$
+ * Revision 1.9  2005/06/22  05:38:45  arthchan2003
+ * Add
+ * 
+ * Revision 1.2  2005/03/30 00:43:41  archan
+ * Add $Log$
+ * Revision 1.9  2005/06/22  05:38:45  arthchan2003
+ * Add
+ *  into most of the .[ch] files. It is easy to keep track changes.
+ *
  */
 
 #include <stdio.h>
