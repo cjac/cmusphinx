@@ -45,6 +45,28 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.8  2005/06/22  02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * 
+ * Revision 1.9  2005/06/16 04:59:10  archan
+ * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
+ *
+ * Revision 1.8  2005/05/26 00:46:59  archan
+ * Added functionalities that such that <sil> will not be inserted at the end of the utterance.
+ *
+ * Revision 1.7  2005/04/25 23:53:35  archan
+ * 1, Some minor modification of vithist_t, vithist_rescore can now support optional LM rescoring, vithist also has its own reporting routine. A new argument -lmrescore is also added in decode and livepretend.  This can switch on and off the rescoring procedure. 2, I am reaching the final difficulty of mode 5 implementation.  That is, to implement an algorithm which dynamically decide which tree copies should be entered.  However, stuffs like score propagation in the leave nodes and non-leaves nodes are already done. 3, As briefly mentioned in 2, implementation of rescoring , which used to happened at leave nodes are now separated. The current implementation is not the most clever one. Wish I have time to change it before check-in to the canonical.
+ *
+ * Revision 1.6  2005/04/21 23:50:26  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.5  2005/04/20 03:46:30  archan
+ * factor dag header writer into vithist.[ch], do the corresponding change for lm_t
+ *
+ * Revision 1.4  2005/03/30 01:08:38  archan
+ * codebase-wide update. Performed an age-old trick: Adding $Log into all .c and .h files. This will make sure the commit message be preprended into a file.
+ *
  * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
  *              Added vithist_free() to free allocated memory
  * 
@@ -63,18 +85,18 @@
 #include "vithist.h"
 
 
-vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist)
+vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isreport)
 {
     vithist_t *vh;
-    lm_t *lm;
     lmset_t *lmset;
     dict_t *dict;
     wordprob_t *wp;
     int i;
-    /*    int n;*/
+    /*    int n;     lm_t *lm;*/
     int max=-1;
 
-    E_INFO("Initializing Viterbi-history module\n");
+    if(isreport) 
+      E_INFO("Initializing Viterbi-history module\n");
     
     vh = (vithist_t *) ckd_calloc (1, sizeof(vithist_t));
     
@@ -87,27 +109,23 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist)
     vh->bestvh = (int32 *) ckd_calloc (S3_MAX_FRAMES+1, sizeof(int32));
     
     vh->wbeam = wbeam;
+    vh->bLMRescore=isRescore;
+    vh->bBtwSil=isbtwsil;
     vh->bghist = bghist;
     
-    lm = kbcore_lm (kbc);
     lmset =kbcore_lmset(kbc);
     dict =kbcore_dict(kbc);
 
     wp = (wordprob_t *) ckd_calloc (dict_size(dict), sizeof(wordprob_t));    
-    if(lmset){
-      /* Don't do anything. Allow it to be done in run-time */
-
-      for(i=0;i<kbcore_nlm(kbc);i++){
-	if(lm_n_ug(lmset[i].lm)>max){
-	  max=lm_n_ug(lmset[i].lm);
-	}
+    
+    for(i=0;i<kbc->lmset->n_lm;i++){
+      if(lm_n_ug(lmset->lmarray[i])>max){
+	max=lm_n_ug(lmset->lmarray[i]);
       }
-      E_INFO("Allocation for viterbi history, finall size %d\n",max);
-      vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (max,sizeof(vh_lms2vh_t *));
-
-    }else if(lm){
-      vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (lm_n_ug(lm), sizeof(vh_lms2vh_t *));
     }
+    /*E_INFO("Allocation for viterbi history, finall size %d\n",max);*/
+    vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (max,sizeof(vh_lms2vh_t *));
+
     ckd_free ((void *) wp);
 
     vh->lwidlist = NULL;
@@ -166,7 +184,6 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     ve->ascr = 0;
     ve->lscr = 0;
     ve->score = 0;
-    ve->senscale = 0;
     ve->pred = -1;
     ve->type = 0;
     ve->valid = 1;
@@ -275,7 +292,7 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve)
 
 
 void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
-		      s3wid_t wid, int32 ef, int32 score,
+		      s3wid_t wid, int32 ef, int32 score, 
 		      int32 senscale, int32 pred, int32 type)
 {
     vithist_entry_t *pve, tve;
@@ -306,20 +323,22 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	se = vh->frame_start[pve->ef];
 	fe = vh->frame_start[pve->ef + 1];
     }
+    
     if (dict_filler_word (kbcore_dict(kbc), wid)) {
-	tve.lscr = fillpen (kbcore_fillpen(kbc), wid);
-	tve.score = score + tve.lscr;
+
+	tve.score = score ; 
+
+	if(vh->bLMRescore){
+	  tve.lscr = fillpen (kbcore_fillpen(kbc), wid);
+	  tve.score += tve.lscr;
+	}
+
 	tve.pred = pred;
 	tve.lmstate.lm3g = pve->lmstate.lm3g;
 	vithist_enter (vh, kbc, &tve);
     } else {
 
-      if(kbc->lmset)
-	lwid = kbc->lm->dict2lmwid[wid];
-      else 
-	lwid = kbcore_dict2lmwid (kbc, wid);
-
-      /*E_INFO("lwid %d, wid %d wordstr %s\n",lwid, wid, dict_wordstr(kbc->dict,wid));*/
+	lwid = kbc->lmset->cur_lm->dict2lmwid[wid];
 
 	tve.lmstate.lm3g.lwid[0] = lwid;
 	
@@ -327,13 +346,17 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	    pve = vh->entry[VITHIST_ID2BLK(i)] + VITHIST_ID2BLKOFFSET(i);
 	    
 	    if (pve->valid) {
-		tve.lscr = lm_tg_score (kbcore_lm(kbc),
+		
+		tve.score = pve->score + tve.ascr;
+
+		if(vh->bLMRescore){
+		  tve.lscr = lm_tg_score (kbcore_lm(kbc),
 					pve->lmstate.lm3g.lwid[1],
 					pve->lmstate.lm3g.lwid[0],
 					lwid,
 					wid);
-		
-		tve.score = pve->score + tve.ascr + tve.lscr;
+		  tve.score += tve.lscr;
+		}
 		
 		if ((tve.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
 		    tve.pred = i;
@@ -497,6 +520,7 @@ void vithist_frame_windup (vithist_t *vh, int32 frm, FILE *fp, kbcore_t *kbc)
     vh->bestvh[vh->n_frm] = -1;
 }
 
+
 int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 {
     int32 f, i, b, l;
@@ -506,7 +530,12 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     lm_t *lm;
     dict_t *dict;
 
+    bestscore = MAX_NEG_INT32;
+    bestvh = -1;
+
     /* Find last frame with entries in vithist table */
+    /* by ARCHAN 20050525, it is possible that the last frame will not be reached in decoding */
+
     for (f = vh->n_frm-1; f >= 0; --f) {
 	sv = vh->frame_start[f];	/* First vithist entry in frame f */
 	nsv = vh->frame_start[f+1];	/* First vithist entry in next frame (f+1) */
@@ -518,17 +547,16 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	return -1;
     
     if (f != vh->n_frm-1)
-	E_ERROR("No word exit in frame %d, using exits from frame %d\n", vh->n_frm-1, f);
+	E_WARN("No word exit in frame %d, using exits from frame %d\n", vh->n_frm-1, f);
     
     /* Terminate in a final </s> node (make this optional?) */
     lm = kbcore_lm (kbc);
-    endwid = lm_finishwid (lm);
     dict = kbcore_dict (kbc);
+
+    if(vh->bBtwSil){
+      endwid = lm_finishwid (lm);    
     
-    bestscore = MAX_NEG_INT32;
-    bestvh = -1;
-    
-    for (i = sv; i < nsv; i++) {
+      for (i = sv; i < nsv; i++) {
 	b = VITHIST_ID2BLK (i);
 	l = VITHIST_ID2BLKOFFSET (i);
 	ve = vh->entry[b] + l;
@@ -537,12 +565,13 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	scr += lm_tg_score (lm, ve->lmstate.lm3g.lwid[1], ve->lmstate.lm3g.lwid[0], endwid,dict_finishwid(dict));
 	
 	if (bestscore < scr) {
-	    bestscore = scr;
-	    bestvh = i;
-	    bestve = ve;
+	  bestscore = scr;
+	  bestvh = i;
+	  bestve = ve;
 	}
+      }
+      assert (bestvh >= 0);
     }
-    assert (bestvh >= 0);
 
     
     if (f != vh->n_frm-1) {
@@ -551,31 +580,40 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	/* Add a dummy silwid covering the remainder of the utterance */
 	assert (vh->frame_start[vh->n_frm-1] == vh->frame_start[vh->n_frm]);
 	vh->n_frm -= 1;
-	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score, 0, bestvh, -1);
+	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score,0, bestvh, -1);
 	vh->n_frm += 1;
 	vh->frame_start[vh->n_frm] = vh->n_entry;
 	
 	return vithist_utt_end (vh, kbc);
     }
     
+    /*    vithist_dump(vh,-1,kbc,stdout);*/
     /* Create an </s> entry */
-    vhid = vh->n_entry;
-    ve = vithist_entry_alloc (vh);
-    
-    ve->wid = dict_finishwid (dict);
-    ve->sf = (bestve->ef == BAD_S3FRMID) ? 0 : bestve->ef + 1;
-    ve->ef = vh->n_frm;
-    ve->ascr = 0;
-    ve->lscr = bestscore - bestve->score;
-    ve->senscale = 0;
-    ve->score = bestscore;
-    ve->pred = bestvh;
-    ve->type = 0;
-    ve->valid = 1;
-    ve->lmstate.lm3g.lwid[0] = endwid;
-    ve->lmstate.lm3g.lwid[1] = ve->lmstate.lm3g.lwid[0];
-    
+
+    if(vh->bBtwSil){
+      ve = vithist_entry_alloc (vh);
+      
+      ve->wid = dict_finishwid (dict);
+      ve->sf = (bestve->ef == BAD_S3FRMID) ? 0 : bestve->ef + 1;
+      ve->ef = vh->n_frm;
+      ve->ascr = 0;
+      ve->lscr = bestscore - bestve->score;
+      ve->senscale =0 ;
+      ve->score = bestscore;
+      ve->pred = bestvh;
+      ve->type = 0;
+      ve->valid = 1;
+      ve->lmstate.lm3g.lwid[0] = endwid;
+      ve->lmstate.lm3g.lwid[1] = ve->lmstate.lm3g.lwid[0];
+    }
+
+    vhid=vh->n_entry-1;
+
+
+    /*vithist_dump(vh,-1,kbc,stdout);*/
+
     return vhid;
+
 }
 
 
@@ -785,13 +823,14 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	h->ef = ve->ef;
 	h->ascr = ve->ascr;
 	h->lscr = ve->lscr;
-	h->senscale = ve->senscale;
+	h->senscale=ve->senscale;
 	h->type = ve->type;
 	h->vhid = id;
 	
 	hyp = glist_add_ptr (hyp, h);
-	
+
 	id = ve->pred;
+
     }
     
     return hyp;
@@ -806,6 +845,34 @@ typedef struct {
 } dagnode_t;
 
 
+/*
+ *
+ */
+void vithist_dag_write_header(FILE *fp,int32 nfr, char* str)
+{
+  getcwd (str, sizeof(str));
+  fprintf (fp, "# getcwd: %s\n", str);
+	  
+  /* Print logbase first!!  Other programs look for it early in the
+   * DAG */
+
+  fprintf (fp, "# -logbase %e\n", cmd_ln_float32 ("-logbase"));
+  
+  fprintf (fp, "# -dict %s\n", cmd_ln_str ("-dict"));
+  if (cmd_ln_str ("-fdict"))
+    fprintf (fp, "# -fdict %s\n", cmd_ln_str ("-fdict"));
+  fprintf (fp, "# -lm %s\n", cmd_ln_str ("-lm"));
+  fprintf (fp, "# -mdef %s\n", cmd_ln_str ("-mdef"));
+  fprintf (fp, "# -mean %s\n", cmd_ln_str ("-mean"));
+  fprintf (fp, "# -var %s\n", cmd_ln_str ("-var"));
+  fprintf (fp, "# -mixw %s\n", cmd_ln_str ("-mixw"));
+  fprintf (fp, "# -tmat %s\n", cmd_ln_str ("-tmat"));
+  fprintf (fp, "#\n");
+	  
+  fprintf (fp, "Frames %d\n", nfr);
+  fprintf (fp, "#\n");
+
+}
 /*
  * Header written BEFORE this function is called.
  */
@@ -989,7 +1056,35 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 void vithist_free (vithist_t *v)
 {
   if (v) {
+    if(v->entry)
+      ckd_free ((void *) v->entry);
+
+    if(v->frame_start)
+      ckd_free ((void *) v->frame_start);
+
+    if(v->bestscore)
+      ckd_free ((void *) v->bestscore);
+
+    if(v->bestvh)
+      ckd_free ((void *) v->bestvh);
+
+    if(v->lms2vh_root)
+      ckd_free ((void *) v->lms2vh_root);    
+
     ckd_free ((void *) v);
   }
 
 }
+
+void vithist_report(vithist_t *vh)
+{
+  if(vh){
+    E_INFO_NOFN("Initialization of vithist_t, report:\n");
+    E_INFO_NOFN("Word beam = %d\n",vh->wbeam);
+    E_INFO_NOFN("Bigram Mode =%d\n",vh->bghist);
+    E_INFO_NOFN("Rescore Mode =%d\n",vh->bLMRescore);
+    E_INFO_NOFN("Trace sil Mode =%d\n",vh->bBtwSil);
+    E_INFO_NOFN("\n");
+  }
+}
+
