@@ -163,6 +163,7 @@ src/tests/performance/tidigits/Makefile
 src/tests/performance/ti46/Makefile
 src/tests/performance/Communicator/Makefile
 src/tests/performance/ICSI/Makefile
+src/tests/performance/spoke3/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
 src/tests/regression/test-livepretend.sh
