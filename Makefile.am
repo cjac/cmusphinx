@@ -59,21 +59,47 @@ doxygen:
 check: test-full
 	@:
 
-test-full : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-cepview test-decode_anytopo test-mllr test-mllr-lp test-mllr-anytopo
-test-all-app : test-decode test-align test-allphone test-livepretend test-astar test-dag test-gausubvq test-ep test-wave2feat test-cepview test-mllr test-mllr-lp test-mllr-anytopo
+test-full : \
+	test-decode \
+	test-decode-clm \
+	test-decode-mllr \
+	test-align \
+	test-align-mllr \
+	test-allphone \
+	test-allphone-mllr \
+	test-livepretend \
+	test-livepretend-clm \
+	test-livepretend-mllr \
+	test-astar \
+	test-astar-clm \
+	test-dag \
+	test-dag-clm \
+	test-gausubvq \
+	test-ep \
+	test-cepview \
+	test-decode_anytopo \
+	test-decode_anytopo-mllr
+
+test-all-app : test-full test-wave2feat
 
 
 test-decode_anytopo \
+test-decode_anytopo-mllr \
 test-decode \
-test-mllr \
+test-decode-clm \
+test-decode-mllr \
 test-align \
+test-align-mllr \
 test-allphone \
+test-allphone-mllr \
 test-astar \
+test-astar-clm \
 test-cepview \
 test-dag \
+test-dag-clm \
 test-livepretend \
-test-mllr-lp \
-test-mllr-anytopo \
+test-livepretend-clm \
+test-livepretend-mllr \
 test-gausubvq \
 test-ep \
 test-wave2feat:

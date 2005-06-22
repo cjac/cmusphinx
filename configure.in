@@ -4,13 +4,17 @@ dnl try not to hurt yourself ;)
 AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(sphinx3,0.5)
 
-CFLAGS=${CFLAGS:--g -O2 -Wall}
+CFLAGS=${CFLAGS:--g -O2 -Wall  -DXML_CONTEXT_BYTES=1024}
 
 AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
 AC_C_BIGENDIAN
 AC_HEADER_STDC
+
+AC_C_CONST
+AC_TYPE_SIZE_T
+AC_CHECK_FUNCS(memmove bcopy)
 
 AC_TYPE_SIGNAL
 
@@ -110,11 +114,6 @@ dnl found instead, then use the latter.
                         ad_backend="AD_BACKEND_NONE"
                         CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
                         ;;
-		*-*-*darwin)
-                        ad_files="ad_base.lo"
-                        ad_backend="AD_BACKEND_NONE"
-                        CFLAGS="$CFLAGS -no-cpp-precomp -DAD_BACKEND_NONE"
-                        ;;
                 *)
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
@@ -143,6 +142,14 @@ src/Makefile
 src/libs3audio/Makefile
 src/libs3audio/ad_conf.h
 src/libs3decoder/Makefile
+src/libs3decoder/libAPI/Makefile
+src/libs3decoder/libam/Makefile
+src/libs3decoder/libcep_feat/Makefile
+src/libs3decoder/libcommon/Makefile
+src/libs3decoder/libdict/Makefile
+src/libs3decoder/libep/Makefile
+src/libs3decoder/liblm/Makefile
+src/libs3decoder/libsearch/Makefile
 src/libutil/Makefile
 src/programs/Makefile
 src/tests/Makefile
@@ -156,25 +163,32 @@ src/tests/performance/tidigits/Makefile
 src/tests/performance/ti46/Makefile
 src/tests/performance/Communicator/Makefile
 src/tests/performance/ICSI/Makefile
-src/tests/performance/spoke3/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
 src/tests/regression/test-livepretend.sh
+src/tests/regression/test-livepretend-clm.sh
+src/tests/regression/test-livepretend-mllr.sh
 src/tests/regression/test-align.sh
+src/tests/regression/test-align-mllr.sh
 src/tests/regression/test-allphone.sh
+src/tests/regression/test-allphone-mllr.sh
 src/tests/regression/test-astar.sh
+src/tests/regression/test-astar-clm.sh
 src/tests/regression/test-dag.sh
+src/tests/regression/test-dag-clm.sh
 src/tests/regression/test-decode_anytopo.sh
+src/tests/regression/test-decode_anytopo-mllr.sh
 src/tests/regression/test-decode.sh
+src/tests/regression/test-decode-clm.sh
+src/tests/regression/test-decode-mllr.sh
 src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
-src/tests/regression/test-mllr.sh
-src/tests/regression/test-mllr-lp.sh
-src/tests/regression/test-mllr-anytopo.sh
 src/tests/regression/test-wave2feat.sh
 src/tests/regression/test-cepview.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_case/Makefile
+src/tests/unit_tests/test_hash/Makefile
+src/tests/unit_tests/test_logs3/Makefile
 scripts/Makefile
 scripts/sphinx3-simple
 model/Makefile
@@ -185,8 +199,27 @@ model/lm/Makefile
 model/lm/an4/Makefile
 model/lm/an4/args.an4
 model/lm/an4/args.an4.test
+model/lm/an4/args.an4.test.cls
 model/lm/an4/args.an4.test.mllr
+model/lm/an4/an4.ug.cls.lmctl
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
-chmod +x src/tests/regression/*.sh
+chmod +x src/tests/regression/test-livepretend.sh
+chmod +x src/tests/regression/test-livepretend-clm.sh
+chmod +x src/tests/regression/test-livepretend-mllr.sh
+chmod +x src/tests/regression/test-align.sh
+chmod +x src/tests/regression/test-align-mllr.sh
+chmod +x src/tests/regression/test-allphone.sh
+chmod +x src/tests/regression/test-allphone-mllr.sh
+chmod +x src/tests/regression/test-astar.sh
+chmod +x src/tests/regression/test-dag.sh
+chmod +x src/tests/regression/test-decode_anytopo.sh
+chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
+chmod +x src/tests/regression/test-decode.sh
+chmod +x src/tests/regression/test-decode-clm.sh
+chmod +x src/tests/regression/test-decode-mllr.sh
+chmod +x src/tests/regression/test-ep.sh
+chmod +x src/tests/regression/test-gausubvq.sh
+chmod +x src/tests/regression/test-wave2feat.sh
+chmod +x src/tests/regression/test-cepview.sh
