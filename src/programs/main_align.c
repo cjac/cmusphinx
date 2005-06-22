@@ -34,7 +34,7 @@
  *
  */
 /*
- * align-main.c -- Main driver routine for time alignment.
+ * main_align.c -- Main driver routine for time alignment.
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -45,6 +45,69 @@
  * 
  * HISTORY
  * 
+ * $Log$
+ * Revision 1.15  2005/06/22  05:36:11  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid
+ * 
+ * Revision 1.11  2005/06/19 04:51:48  archan
+ * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
+ *
+ * Revision 1.10  2005/06/19 03:58:17  archan
+ * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
+ *
+ * Revision 1.9  2005/06/17 23:46:06  archan
+ * Sphinx3 to s3.generic 1, Remove bogus log messages in align and allphone, 2, Unified the logbase value from 1.0001 to 1.0003
+ *
+ * Revision 1.8  2005/06/03 06:45:30  archan
+ * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
+ *
+ * Revision 1.7  2005/06/03 06:12:57  archan
+ * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
+ *
+ * Revision 1.6  2005/06/03 05:46:42  archan
+ * Log. Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
+ * There are several changes I have done to refactor the code across
+ * dag/astar/decode_anyptop.  A new library called dag.c is now created
+ * to include all routines that are shared by the three applications that
+ * required graph operations.
+ * 1, dag_link is now shared between dag and decode_anytopo. Unfortunately, astar was using a slightly different version of dag_link.  At this point, I could only rename astar'dag_link to be astar_dag_link.
+ * 2, dag_update_link is shared by both dag and decode_anytopo.
+ * 3, hyp_free is now shared by misc.c, dag and decode_anytopo
+ * 4, filler_word will not exist anymore, dict_filler_word was used instead.
+ * 5, dag_param_read were shared by both dag and astar.
+ * 6, dag_destroy are now shared by dag/astar/decode_anytopo.  Though for some reasons, even the function was not called properly, it is still compiled in linux.  There must be something wrong at this point.
+ * 7, dag_bestpath and dag_backtrack are now shared by dag and decode_anytopo. One important thing to notice here is that decode_anytopo's version of the two functions actually multiply the LM score or filler penalty by the language weight.  At this point, s3_dag is always using lwf=1.
+ * 8, dag_chk_linkscr is shared by dag and decode_anytopo.
+ * 9, decode_anytopo nows supports another three options -maxedge, -maxlmop and -maxlpf.  Their usage is similar to what one could find dag.
+ *
+ * Notice that the code of the best path search in dag and that of 2-nd
+ * stage of decode_anytopo could still have some differences.  It could
+ * be the subtle difference of handling of the option -fudge.  I am yet
+ * to know what the true cause is.
+ *
+ * Some other small changes include
+ * -removal of startwid and finishwid asstatic variables in s3_dag.c.  dict.c now hide these two variables.
+ *
+ * There are functions I want to merge but I couldn't and it will be
+ * important to say the reasons.
+ * i, dag_remove_filler_nodes.  The version in dag and decode_anytopo
+ * work slightly differently. The decode_anytopo's one attached a dummy
+ * predecessor after removal of the filler nodes.
+ * ii, dag_search.(s3dag_dag_search and s3flat_fwd_dag_search)  The handling of fudge is differetn. Also, decode_anytopo's one  now depend on variable lattice.
+ * iii, dag_load, (s3dag_dag_load and s3astar_dag_load) astar and dag seems to work in a slightly different, one required removal of arcs, one required bypass the arcs.  Don't understand them yet.
+ * iv, dag_dump, it depends on the variable lattice.
+ *
+ * Revision 1.5  2005/05/27 01:15:45  archan
+ * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
+ *
+ * Revision 1.4  2005/04/21 23:50:27  archan
+ * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
+ *
+ * Revision 1.3  2005/04/20 03:50:36  archan
+ * Add comments on all mains for preparation of factoring the command-line.
+ *
+ * Revision 1.2  2005/03/30 00:43:40  archan
+ *
  * 19-Jun-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified to handle the new libfeat interface.
  * 
@@ -109,26 +172,70 @@
 
 /** \file main_align.c
    \brief Main driver routine for time alignment.
+
 */
+
+#if 0
+defn = {logs3_arg,am_arg,cep2feat_arg,dict_arg,ctl_arg,output_arg, s3_align_arg}
+
+static arg_t s3_align_arg[] = {
+    { "-compwd",
+      ARG_INT32,
+      "0",
+      "Compound words in dictionary (not supported yet)" },
+    { "-topn",
+      ARG_INT32,
+      "4",
+      "No. of top scoring densities computed in each mixture gaussian codebook" },
+    { "-insent",
+      ARG_STRING,
+      NULL,
+      "Input transcript file corresponding to control file" },
+    { "-outsent",
+      ARG_STRING,
+      NULL,
+      "Output transcript file with exact pronunciation/transcription" },
+
+    { "-stsegdir",
+      ARG_STRING,
+      NULL,
+      "Output directory for state segmentation files; optionally end with ,CTL" },
+    { "-phsegdir",
+      ARG_STRING,
+      NULL,
+      "Output directory for phone segmentation files; optionally end with ,CTL" },
+    { "-wdsegdir",
+      ARG_STRING,
+      NULL,
+      "Output directory for word segmentation files; optionally end with ,CTL" },
+    { "-s2stsegdir",
+      ARG_STRING,
+      NULL,
+      "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
+    
+    { NULL, ARG_INT32, NULL, NULL }
+};
+#endif
+
 static arg_t defn[] = {
     { "-logbase",
       ARG_FLOAT32,
       "1.0003",
       "Base in which all log values calculated" },
     { "-mdef", 
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
     { "-tmat",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Transition matrix input file" },
     { "-mean",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Mixture gaussian codebooks mean parameters input file" },
     { "-var",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Mixture gaussian codebooks variance parameters input file" },
     { "-mllr",
@@ -144,10 +251,10 @@ static arg_t defn[] = {
       ".cont.",
       "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
     { "-mixw",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Senone mixture weights parameters input file" },
-    { "-tpfloor",
+    { "-tmatfloor",
       ARG_FLOAT32,
       "0.0001",
       "Triphone state transition probability floor applied to -tmat file" },
@@ -155,7 +262,7 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "0.0001",
       "Codebook variance floor applied to -var file" },
-    { "-mwfloor",
+    { "-mixwfloor",
       ARG_FLOAT32,
       "0.0000001",
       "Codebook mixture weight floor applied to -mixw file" },
@@ -180,7 +287,7 @@ static arg_t defn[] = {
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
     { "-dict",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Main pronunciation dictionary (lexicon) input file" },
     { "-fdict",
@@ -192,7 +299,7 @@ static arg_t defn[] = {
       "0",
       "Compound words in dictionary (not supported yet)" },
     { "-ctl",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Input control file listing utterances to be decoded" },
     { "-ctloffset",
@@ -211,17 +318,14 @@ static arg_t defn[] = {
       ARG_STRING,
       ".mfc",
       "File extension appended to utterances listed in ctl file" },
-
     { "-mllrctl",
       ARG_STRING,
       NULL,
       "Input control file listing MLLR input data; parallel to ctl argument file" },
-
     { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
-
     { "-topn",
       ARG_INT32,
       "4",
@@ -231,7 +335,7 @@ static arg_t defn[] = {
       "1e-64",
       "Main pruning beam applied to triphones in forward search" },
     { "-insent",
-      ARG_STRING,
+      REQARG_STRING,
       NULL,
       "Input transcript file corresponding to control file" },
     { "-outsent",
@@ -271,8 +375,6 @@ static tmat_t *tmat;		/* HMM transition matrices */
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;	/* Speech feature data */
 
-static s3wid_t startwid, finishwid, silwid;
-
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 
 static FILE *outsentfp = NULL;
@@ -296,25 +398,14 @@ static void models_init ( void )
     char *arg;
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"));
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Dictionary */
     dict = dict_init (mdef,
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
-		      '_');	/* Compound word separator.  Default: none. */
-
-    /* HACK!! Make sure SILENCE_WORD, START_WORD and FINISH_WORD are in dictionary */
-    silwid = dict_wordid (dict, S3_SILENCE_WORD);
-    startwid = dict_wordid (dict, S3_START_WORD);
-    finishwid = dict_wordid (dict, S3_FINISH_WORD);
-    if (NOT_S3WID(silwid) || NOT_S3WID(startwid) || NOT_S3WID(finishwid)) {
-	E_FATAL("%s, %s, or %s missing from dictionary\n",
-		S3_SILENCE_WORD, S3_START_WORD, S3_FINISH_WORD);
-    }
-    if ((dict->filler_start > dict->filler_end) || (! dict_filler_word (dict, silwid)))
-	E_FATAL("%s must occur (only) in filler dictionary\n", S3_SILENCE_WORD);
-    /* No check that alternative pronunciations for filler words are in filler range!! */
+		      '_',
+		      1);	/* Compound word separator.  Default: none. */
 
     /* Codebooks */
     varfloor = *((float32 *) cmd_ln_access("-varfloor"));
@@ -335,7 +426,7 @@ static void models_init ( void )
     }
     
     /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mwfloor"));
+    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
     sen = senone_init ((char *) cmd_ln_access("-mixw"),
 		       (char *) cmd_ln_access("-senmgau"),
 		       mixwfloor);
@@ -369,8 +460,8 @@ static void models_init ( void )
 	interp = NULL;
 
     /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tpfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor);
+    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
+    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
 
     /* Verify transition matrices parameters against model definition parameters */
     if (mdef->n_tmat != tmat->n_tmat)
@@ -1168,84 +1259,65 @@ main (int32 argc, char *argv[])
   /*  kb_t kb;
       ptmr_t tm;*/
 
+  int a[10];
+  int i;
+  
+  for(i=0;i<11;i++){
+    printf("%d %d\n",i,a[i]);
+  }
+
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     
   unlimit();
+
+  if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
+      (cmd_ln_access ("-stsegdir") == NULL) &&
+      (cmd_ln_access ("-phsegdir") == NULL) &&
+      (cmd_ln_access ("-wdsegdir") == NULL) &&
+      (cmd_ln_access ("-outsent") == NULL))
+    E_FATAL("Missing output file/directory argument(s)\n");
+    
+  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
   
-  if ((cmd_ln_access("-mdef") == NULL) ||
-      (cmd_ln_access("-mean") == NULL) ||
-      (cmd_ln_access("-var") == NULL)  ||
-      (cmd_ln_access("-mixw") == NULL)  ||
-      (cmd_ln_access("-tmat") == NULL) ||
-      (cmd_ln_access("-dict") == NULL))
-    E_FATAL("Missing -mdef, -mean, -var, -mixw, -tmat, or -dict argument\n");
-    
-    if ((cmd_ln_access("-ctl") == NULL) || (cmd_ln_access("-insent") == NULL))
-	E_FATAL("Missing -ctl or -insent argument\n");
-
-    if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
-	(cmd_ln_access ("-stsegdir") == NULL) &&
-	(cmd_ln_access ("-phsegdir") == NULL) &&
-	(cmd_ln_access ("-wdsegdir") == NULL) &&
-	(cmd_ln_access ("-outsent") == NULL))
-	E_FATAL("Missing output file/directory argument(s)\n");
-    
-    /*
-     * Initialize log(S3-base).  All scores (probs...) computed in log domain to avoid
-     * underflow.  At the same time, log base = 1.0001 (1+epsilon) to allow log values
-     * to be maintained in int32 variables without significant loss of precision.
-     */
-    if (cmd_ln_access("-logbase") == NULL)
-	logs3_init (1.0001);
-    else {
-	float32 logbase;
-	logbase = *((float32 *) cmd_ln_access("-logbase"));
-	if (logbase <= 1.0)
-	    E_FATAL("Illegal log-base: %e; must be > 1.0\n", logbase);
-	if (logbase > 1.1)
-	    E_WARN("Logbase %e perhaps too large??\n", logbase);
-	logs3_init ((float64) logbase);
-    }
-
-    /*E_INFO("Log value of 3.785471 is %d\n", log_to_logs3(3.785471)); */
-    /* Initialize feaure stream type */
-    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		      (char *) cmd_ln_access ("-cmn"),
-		      (char *) cmd_ln_access ("-varnorm"),
-		      (char *) cmd_ln_access ("-agc"));
-    
+  /* Initialize feaure stream type */
+  fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		    (char *) cmd_ln_access ("-cmn"),
+		    (char *) cmd_ln_access ("-varnorm"),
+		    (char *) cmd_ln_access ("-agc"),
+		    1);
+  
     /* Read in input databases */
-    models_init ();
+  models_init ();
     
-    senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
-    
-    timers[tmr_utt].name = "U";
-    timers[tmr_gauden].name = "G";
-    timers[tmr_senone].name = "S";
-    timers[tmr_align].name = "A";
+  senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+  
+  timers[tmr_utt].name = "U";
+  timers[tmr_gauden].name = "G";
+  timers[tmr_senone].name = "S";
+  timers[tmr_align].name = "A";
 
-    /* Initialize align module */
-    align_init (mdef, tmat, dict);
+  /* Initialize align module */
+  align_init (mdef, tmat, dict);
+  printf ("\n");
+    
+  tot_nfr = 0;
+    
+  process_ctlfile ();
+
+  if (tot_nfr > 0) {
     printf ("\n");
-    
-    tot_nfr = 0;
-    
-    process_ctlfile ();
-
-    if (tot_nfr > 0) {
-	printf ("\n");
-	printf("TOTAL FRAMES:       %8d\n", tot_nfr);
-	printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
-	       tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
-	printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
-	       tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
-    }
+    printf("TOTAL FRAMES:       %8d\n", tot_nfr);
+    printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
+	   tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
+    printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
+	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
+  }
 
 #if (! WIN32)
-    system ("ps aguxwww | grep s3align");
+  system ("ps aguxwww | grep s3align");
 #endif
 
-    cmd_ln_appl_exit();
-    return 0;
+  cmd_ln_appl_exit();
+  return 0;
 }
