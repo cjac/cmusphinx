@@ -37,17 +37,10 @@
 /* srch_time_switch_tree.h
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:44:02  arthchan2003
- * Log. Time-switching tree search (aka Ravi's search or Mode 4) is a
- * wrapped up of the search we had before Sphinx 3.6.  It is not a
- * conventional way to do a lexical tree search and it provide three
- * interesting approach in solving the problem of cross-word triphone,
- * word segmentation and languag model.
- * 
- * Though, the functions are now wrapped up using either srch interface,
- * the performance of the code has not changed.  We deliberately keep
- * this search because we knew that the new search (mode 5) could be
- * risky.
+ * Revision 1.2  2005/06/22  02:45:52  arthchan2003
+ * Log. Implementation of word-switching tree. Currently only work for a
+ * very small test case and it's deliberately fend-off from users. Detail
+ * omitted.
  * 
  * Revision 1.8  2005/05/11 00:18:46  archan
  * Add comments on srch.h and srch_time_switch_tree.h and srch_debug.h on how things work. A very detail comment is added in srch.h to describe how generally srch_t is interacting with other parts of the code.
