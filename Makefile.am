@@ -38,7 +38,8 @@ CLEANFILES = chan3.mfc \
 	test.out \
 	test-*.out \
 	tmp.out \
-	pittsburgh.* 
+	pittsburgh.* \
+	tmp
 
 etags:
 	etags `find . -name "*.[ch]"`
