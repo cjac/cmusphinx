@@ -1,0 +1,15 @@
+-mdef src/tests/regression/../../../model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef 
+-fdict src/tests/regression/../../../model/lm/an4/filler.dict 
+-dict src/tests/regression/../../../model/lm/an4/an4.dict 
+-mean src/tests/regression/../../../model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means 
+-var src/tests/regression/../../../model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
+-mixw src/tests/regression/../../../model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
+-tmat src/tests/regression/../../../model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices 
+-lm src/tests/regression/../../../model/lm/an4/an4.ug.lm.DMP 
+-ctl src/tests/regression/../../../model/lm/an4/an4.ctl 
+-cepdir src/tests/regression/../../../model/lm/an4/ 
+-agc none 
+-varnorm no 
+-cmn current 
+-op_mode 5
+-Nstalextree 100
