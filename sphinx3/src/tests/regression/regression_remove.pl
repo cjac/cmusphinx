@@ -9,4 +9,5 @@ die "Usage: $0 <directory to remove>\n" if ($#ARGV < 0);
 my $topDir = shift;
 
 # Remove the temporary regression test
-rmtree($topDir, 0, 1);
+#rmtree($topDir, 0, 1);
+warn "Removing $topDir...\n";
