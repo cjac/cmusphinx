@@ -37,9 +37,9 @@ S3REGTESTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu yitao@cs.cmu.edu dhuggins@cs
 #Run test. 
 cd $PBS_O_WORKDIR
 
-if ! make perf-quick > perf-quick.log 2>&1 ;
+if ! make perf-full > perf-full.log 2>&1 ;
  then
-    ${MAILX} -s "Full Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-quick.log
+    ${MAILX} -s "Full Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-full.log
     exit
  fi
 
@@ -50,9 +50,9 @@ logdir=log.$testdate
 resultfn=allresults
 mkdir $logdir
 
-cp ./src/tests/performance/*/*.raw ./perf-std.log ./perf-quick.log ./dailySTD.sh.[oe]* $logdir
+cp ./src/tests/performance/*/*.raw ./perf-full.log ./dailySTD.sh.[oe]* $logdir
 
 #Add analysis script at here. 
 cat $logdir/*.raw > $resultfn
-${MAILX} -s "Results of S3 Standard Regression Test at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR " ${S3REGTESTLIST} < $resultfn
+${MAILX} -s "Results of S3 FULL Regression Test at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR " ${S3REGTESTLIST} < $resultfn
 rm $resultfn
