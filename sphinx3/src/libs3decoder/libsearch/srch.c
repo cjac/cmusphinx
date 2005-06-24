@@ -38,30 +38,33 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.1  2005/06/24  21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ * 
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.21  2005/06/17 21:22:59  archan
  * Added comments for future programmers.  That allow potential turn back when we need to match the score of the code in the past.
  *
@@ -244,7 +247,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_WST_DECODE){
 
-    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");
+    /*    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");*/
 
     s->srch_init=&srch_WST_init;
     s->srch_uninit=&srch_WST_uninit;
@@ -252,6 +255,8 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_utt_end=&srch_WST_end;
     s->srch_decode=&srch_WST_decode;
     s->srch_set_lm=&srch_WST_set_lm;
+    s->srch_add_lm=&srch_TST_add_lm;
+    s->srch_delete_lm=&srch_TST_delete_lm;
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;

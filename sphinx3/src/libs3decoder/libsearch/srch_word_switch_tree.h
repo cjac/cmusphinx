@@ -38,11 +38,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.1.4.1  2005/06/24  21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ * 
+ * Revision 1.1  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.9  2005/05/11 06:10:39  archan
  * Code for lattice and back track pointer table dumping is now wrapped in reg_result_dump.  The function is shared across mode 4 and mode 5.  Possibly later for mode 3 and mode 6 as well.
  *
@@ -88,7 +91,11 @@ int srch_WST_uninit(void* srch_struct);
 int srch_WST_begin(void* srch_struct);
 int srch_WST_end(void* srch_struct);
 int srch_WST_decode(void* srch_struct);
+
 int srch_WST_set_lm(void* srch_struct, const char* lmname);
+int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname);
+int srch_WST_delete_lm(void* srch, const char *lmname);
+
 int srch_WST_gmm_compute_lv2(void* srch_struct, float32 *feat, int32 time);
 int srch_WST_hmm_compute_lv1(void* srch_struct);
 int srch_WST_hmm_compute_lv2(void* srch_struct, int32 frmno);

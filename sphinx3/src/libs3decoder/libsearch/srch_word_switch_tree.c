@@ -38,11 +38,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.1.4.1  2005/06/24  21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ * 
+ * Revision 1.1  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.16  2005/06/20 22:20:18  archan
  * Fix non-conforming problems for Windows plot.
  *
@@ -277,6 +280,7 @@ int32 srch_WST_end(void *srch)
   histprune_t* hp;
   dict_t *dict;
   char* uttid;
+  int32 i;
 
   s=(srch_t*) srch;
   assert(s);
@@ -313,6 +317,18 @@ int32 srch_WST_end(void *srch)
     system ("ps aguxwww | grep /dec | grep -v grep");
   }
 #endif
+
+  lextree_utt_end(wstg->curroottree,s->kbc);
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree_utt_end (wstg->expandtree[i], s->kbc);
+  }
+  lextree_utt_end(wstg->fillertree,s->kbc);
+    
+  vithist_utt_reset (s->vithist);
+  
+  lm_cache_stats_dump (kbcore_lm(s->kbc));
+  lm_cache_reset (kbcore_lm(s->kbc));
+
   /* Wrap up the utterance reset */
   return SRCH_SUCCESS;
 }
@@ -1016,6 +1032,12 @@ int srch_WST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
+int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname)
+{
+  return SRCH_SUCCESS;
 
-
-
+}
+int srch_WST_delete_lm(void* srch, const char *lmname)
+{
+  return SRCH_SUCCESS;
+}
