@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.1  2005/06/24  21:13:52  arthchan2003
- * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ * Revision 1.1.4.2  2005/06/27  05:32:35  arthchan2003
+ * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
  * 
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
  * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
@@ -207,7 +210,39 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_FATAL("Finite state graphs search is not supported yet");
+    E_FATAL("Graph Seearch mode is not supported yet");
+
+#if 0
+    s->srch_init=&srch_FSG_init;
+    s->srch_uninit=&srch_FSG_uninit;
+    s->srch_utt_begin=&srch_FSG_begin;
+    s->srch_utt_end=&srch_FSG_end;
+    s->srch_decode=&srch_FSG_decode;
+
+    s->srch_set_lm=&srch_FSG_set_lm;
+    s->srch_add_lm=&srch_FSG_add_lm;
+    s->srch_delete_lm=&srch_FSG_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+
+    s->srch_hmm_compute_lv2=&srch_FSG_hmm_compute_lv2;
+    s->srch_propagate_graph_ph_lv2=&srch_FSG_propagate_graph_ph_lv2;
+    s->srch_propagate_graph_wd_lv2=&srch_FSG_propagate_graph_wd_lv2;
+    s->srch_rescoring=&srch_FSG_rescoring;
+
+    s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
+    s->srch_frame_windup=&srch_FSG_frame_windup;
+    s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
+#endif
 
   }else if(op_mode==OPERATION_FLAT_DECODE){
 
