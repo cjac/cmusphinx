@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.2  2005/06/27  05:37:05  arthchan2003
- * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ * Revision 1.1.4.3  2005/06/28  07:05:40  arthchan2003
+ * 1, Set lmset correctly in srch_word_switch_tree. 2, Fixed a bug hmm_hist_binsize so that histogram pruning could be used in mode 5. 3, (Most important) When number of allocated tree is smaller than number of tree required, the search dynamically allocated more tree until all memory are used up. This should probably help us to go through most scenarios below 3k vocabulary.
  * 
+ * Revision 1.1.4.2  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
  * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
  * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
  *
@@ -87,6 +90,7 @@
 				  ends and there are 10 phones for
 				  each, then 1000 is approximately
 				  double that amount */
+#define NUM_TREE_ALLOC 5
 
 
 int32 srch_WST_init(kb_t* kb, void *srch)
@@ -99,7 +103,6 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   kbc=kb->kbcore;
   s=(srch_t *)srch;
   wstg=(srch_WST_graph_t*)ckd_calloc(1,sizeof(srch_WST_graph_t));
-
   /* Only initialized one + n_static copies of trees in the initialization. */
   if(cmd_ln_int32("-epl"))
     E_WARN("-epl is omitted in WST search.\n");
@@ -130,6 +133,9 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   wstg->expandtree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
   wstg->expandfillertree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
 
+  if(kbc->lmset->n_lm>1){
+    E_FATAL("Multiple lm doesn't work for this mode yet\n");
+  }
   for(i=0;i<kbc->lmset->n_lm ; i++){
     wstg->roottree[i]=lextree_init(kbc,kbc->lmset->lmarray[i],kbc->lmset->lmarray[i]->name,
 				   wstg->isLMLA,!REPORT_SRCH_WST);
@@ -165,7 +171,7 @@ int32 srch_WST_init(kb_t* kb, void *srch)
 				   wstg->isLMLA,!REPORT_SRCH_WST);
 
     if(wstg->expandtree[i]==NULL){
-      E_INFO("Fail to allocate lexical tree for lm %d \n",i);
+      E_INFO("Fail to allocate lexical tree %d for lm %d \n",i, 0);
       return SRCH_FAILURE;
     }
 
@@ -176,7 +182,7 @@ int32 srch_WST_init(kb_t* kb, void *srch)
 
     wstg->expandfillertree[i]=fillertree_init(kbc);
     if(wstg->expandfillertree[i]==NULL){
-      E_INFO("Fail to allocate filler tree for lm %d \n",i);
+      E_INFO("Fail to allocate filler tree %d for lm %d \n",i,0);
       return SRCH_FAILURE;
     }
 
@@ -209,6 +215,8 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   /* Glue the graph structure */
   s->grh->graph_struct=wstg;
   s->grh->graph_type=GRAPH_STRUCT_WST;
+
+  wstg->lmset=kbc->lmset;
 
   return SRCH_SUCCESS;
 }
@@ -558,12 +566,12 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
 
 
-    for (i = 0; wstg->n_static_lextree; i++) {
+    for (i = 0; i< wstg->n_static_lextree; i++) {
       lextree=wstg->expandtree[i];
       lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
     }
 
-    for (i = 0; wstg->n_static_lextree; i++) {
+    for (i = 0; i< wstg->n_static_lextree; i++) {
       lextree=wstg->expandfillertree[i];
       lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
     }
@@ -905,7 +913,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
     if(hash_lookup(word_phone_hash, str,&hash_score) <0){
       hash_size++;
-      /* HACK! In general, the high scoring ones to be taken care first. */
       if(hash_size > DEFAULT_HASH_SIZE){
 	/* If another copy is not available, start to allocate a copy of tree.*/
 	E_FATAL("Hash size is larger than default hash size %d. \n",hash_size);
@@ -914,7 +921,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 	E_FATAL("hash_enter(table, %s) failed\n", str);
       }
     }else{
-      if(hash_score < score){ /* This part should be addition!*/
+      if(hash_score < score){ 
 	if(hash_enter(word_phone_hash,str,score) != hash_score ){
 	  E_FATAL("hash_enter(table, %s) failed\n", str);
 	}
@@ -973,10 +980,32 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
       wstg->no_active_word++;
 
       /* In general, the high scoring ones to be taken care first. */
-      if(wstg->no_active_word > wstg->n_static_lextree){
+      if(wstg->no_active_word == wstg->n_static_lextree){
 	/* If another copy is not available, start to allocate a copy of tree.*/
-	E_FATAL("Number of active word is more than no of tree allocated. \n");
-	E_FATAL("This bug will show up when the number of word end is too huge.\n");
+	E_INFO("Allocate another %d more tree(s)\n", NUM_TREE_ALLOC);
+
+	wstg->expandtree      =(lextree_t **) ckd_realloc(wstg->expandtree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+	wstg->expandfillertree=(lextree_t **) ckd_realloc(wstg->expandfillertree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+
+	for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+	  wstg->expandtree[i]=NULL;
+	  wstg->expandtree[i]=lextree_init(s->kbc,wstg->lmset->lmarray[0],wstg->lmset->lmarray[0]->name,
+					   wstg->isLMLA,!REPORT_SRCH_WST);
+
+	  if(wstg->expandtree[i]==NULL){
+	    E_INFO("Fail to allocate lexical tree %d for lm %d \n",i, 0);
+	    return SRCH_FAILURE;
+	  }
+
+	  wstg->expandfillertree[i]=fillertree_init(s->kbc);
+
+	  if(wstg->expandfillertree[i]==NULL){
+	    E_INFO("Fail to allocate filler tree %d for lm %d \n",i,0);
+	    return SRCH_FAILURE;
+	  }
+
+	}
+	wstg->n_static_lextree+=NUM_TREE_ALLOC;	
       }
       
       if(hash_enter(wstg->active_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),id ) != id ){
@@ -1009,7 +1038,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 		str,
 		&hash_score);
 
-    /* E_INFO("hash_score %d , score %d\n", hash_score,score);*/
+    /*     E_INFO("hash_score %d , score %d\n", hash_score,score);*/
     /* HACK! This is magical */
     /* If it was entered once, it shouldn't be enter twice. This loop is quite stupid in that sense*/
     /* and here I used a very magical way to check it. This is very wrong, I need to change it back. */
