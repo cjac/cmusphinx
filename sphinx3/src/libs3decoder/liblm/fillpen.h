@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  21:09:22  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added  keyword.
+ * Revision 1.10.4.1  2005/06/28  06:59:04  arthchan2003
+ * Add silence probability and filler probability as members of fillpen_t, add reporting functions.
  * 
+ * Revision 1.10  2005/06/21 21:09:22  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added  keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:58  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -84,6 +87,13 @@ typedef struct {
 			   langwt and inspen application) */
     float64 lw;		/** Language weight */
     float64 wip;	/** Word insertion penalty */
+
+  float64 silprob;      /** Probability of silence */
+  float64 fillerprob;      /** Probability of filler */
+
+#if 0
+  float64 pip;
+#endif
 } fillpen_t;
 
 
