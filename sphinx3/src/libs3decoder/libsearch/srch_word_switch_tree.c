@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.3  2005/06/28  07:05:40  arthchan2003
- * 1, Set lmset correctly in srch_word_switch_tree. 2, Fixed a bug hmm_hist_binsize so that histogram pruning could be used in mode 5. 3, (Most important) When number of allocated tree is smaller than number of tree required, the search dynamically allocated more tree until all memory are used up. This should probably help us to go through most scenarios below 3k vocabulary.
+ * Revision 1.1.4.4  2005/06/28  19:11:49  arthchan2003
+ * Fix Bugs. When new tree is allocated, tree indices were not inserted in the empty tree list. Now is fixed.
  * 
+ * Revision 1.1.4.3  2005/06/28 07:05:40  arthchan2003
+ * 1, Set lmset correctly in srch_word_switch_tree. 2, Fixed a bug hmm_hist_binsize so that histogram pruning could be used in mode 5. 3, (Most important) When number of allocated tree is smaller than number of tree required, the search dynamically allocated more tree until all memory are used up. This should probably help us to go through most scenarios below 3k vocabulary.
+ *
  * Revision 1.1.4.2  2005/06/27 05:37:05  arthchan2003
  * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
  *
@@ -818,18 +821,25 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
 
   i=0;
-  
+
+  /*  hash_display(wstg->active_word,1);*/
   for (key = keylist; key; key = gnode_next(key)) {
     he = (hash_entry_t *) gnode_ptr (key);
+
+    assert(glist_count(keylist)>0);
+    /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he));*/
+
     hash_lookup (wstg->active_word, (char* )hash_entry_key(he),&val);
+    /*E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active);*/
 
     i++;
-    /*    E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active);*/
+
 
     if(wstg->expandtree[val]->n_active==0){ 
       /* insert this tree back to the list*/
       wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,val);
       /* delete this entry from the hash*/
+      /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word);*/
       succ=hash_delete(wstg->active_word,wstg->expandtree[val]->prev_word);
       if(succ==HASH_OP_FAILURE){
 	E_INFO("I YELL\n");
@@ -1005,7 +1015,15 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 	  }
 
 	}
+
+	/*Also push the NUM_TREE_ALLOC to the empty list */
+
+	for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+	  wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,i);
+	}
+
 	wstg->n_static_lextree+=NUM_TREE_ALLOC;	
+
       }
       
       if(hash_enter(wstg->active_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),id ) != id ){
