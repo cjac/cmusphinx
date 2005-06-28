@@ -38,18 +38,24 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/06/27  05:27:09  arthchan2003
- * Fixed added srch_fsg.[ch] and replace it by srch_fsm.c
+ * Revision 1.1.2.2  2005/06/28  07:01:21  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  * 
+ * Revision 1.1.2.1  2005/06/27 05:27:09  arthchan2003
+ * Fixed added srch_fsg.[ch] and replace it by srch_fsm.c
+ *
  */
 
 #include <s3types.h>
 #include <lm.h>
 #include "kb.h"
+#include "word_fsg.h"
 
 int srch_FSG_init(kb_t *kb, /**< The KB */
 		  void* srch_struct /**< The pointer to a search structure */
 		  );
+
+word_fsg_t* srch_FSG_read_fsgfile(void* srch_struct,const char* fsgname);
 
 int srch_FSG_uninit(void* srch_struct);
 int srch_FSG_begin(void* srch_struct);

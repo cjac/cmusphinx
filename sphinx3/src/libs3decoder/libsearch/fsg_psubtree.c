@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/06/27  05:26:29  arthchan2003
- * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  * 
+ * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
+ * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ *
  * Revision 1.1  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -95,6 +98,18 @@
 #include <logs3.h>
 #include <hmm.h>
 #include <search.h>
+
+void search_chan_deactivate (hmm_t *hmm)
+{
+    int32 s;
+
+    /*    for (s = 0; s < NODE_CNT; s++)
+	  hmm->score[s] = WORST_SCORE;
+	  hmm->bestscore = WORST_SCORE;
+	  hmm->active = -1;
+
+    */
+}
 
 
 void fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t *ctxt)
@@ -169,9 +184,18 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   int32 i, j;
   
   dict = kb_get_word_dict();
+  lw = cmd_ln_float32("-lw");
+  pip = (int32)(logs3(cmd_ln_float32("-pip")) * lw);
+  wip = (int32)(logs3(cmd_ln_float32("-wip")) * lw);
+
+#if 0
+  /* Get search pruning parameters */
+  search_get_logbeams (&(search->beam), &(search->pbeam), &(search->wbeam));
   lw = kb_get_lw();
   pip = (int32)(logs3(kb_get_pip()) * lw);
   wip = (int32)(logs3(kb_get_wip()) * lw);
+#endif
+
   silcipid = kb_get_silence_ciphone_id();
   n_ci = phoneCiCount();
   
@@ -392,7 +416,7 @@ fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, int32 from_state,
   root = NULL;
   assert (*alloc_head == NULL);
   
-  n_ci = phoneCiCount();
+  n_ci = fsg->n_ciphone;
   if (n_ci > (FSG_PNODE_CTXT_BVSZ * 32)) {
     E_FATAL("#phones > %d; increase FSG_PNODE_CTXT_BVSZ and recompile\n",
 	    FSG_PNODE_CTXT_BVSZ * 32);

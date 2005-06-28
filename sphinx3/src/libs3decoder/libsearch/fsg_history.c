@@ -62,7 +62,7 @@
 
 
 
-fsg_history_t *fsg_history_init (word_fsg_t *fsg)
+fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone)
 {
   fsg_history_t *h;
   
@@ -70,9 +70,10 @@ fsg_history_t *fsg_history_init (word_fsg_t *fsg)
   h->fsg = fsg;
   h->entries = blkarray_list_init();
   
+  h->n_ciphone=n_ciphone;
   if (fsg) {
     h->frame_entries = (glist_t **) ckd_calloc_2d (word_fsg_n_state(fsg),
-						   phoneCiCount(),
+						   h->n_ciphone,
 						   sizeof(glist_t));
   } else {
     h->frame_entries = NULL;
@@ -97,7 +98,7 @@ void fsg_history_set_fsg (fsg_history_t *h, word_fsg_t *fsg)
   
   if (fsg) {
     h->frame_entries = (glist_t **) ckd_calloc_2d (word_fsg_n_state(fsg),
-						   phoneCiCount(),
+						   h->n_ciphone,
 						   sizeof(glist_t));
   }
 }
@@ -189,7 +190,7 @@ void fsg_history_end_frame (fsg_history_t *h)
   fsg_hist_entry_t *entry;
   
   ns = word_fsg_n_state(h->fsg);
-  np = phoneCiCount();
+  np = h->n_ciphone;
   
   for (s = 0; s < ns; s++) {
     for (lc = 0; lc < np; lc++) {
@@ -329,7 +330,7 @@ void fsg_history_utt_start (fsg_history_t *h)
   assert (h->frame_entries);
   
   ns = word_fsg_n_state(h->fsg);
-  np = phoneCiCount();
+  np = h->n_ciphone;
   
   for (s = 0; s < ns; s++) {
     for (lc = 0; lc < np; lc++) {

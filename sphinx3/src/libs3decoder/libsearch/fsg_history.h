@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/06/27  05:26:29  arthchan2003
- * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  * 
+ * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
+ * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ *
  * Revision 1.1  2004/07/16 00:57:12  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -141,6 +144,9 @@ typedef struct fsg_history_s {
   blkarray_list_t *entries;	/* A list of history table entries; the root
 				   entry is the first element of the list */
   glist_t **frame_entries;
+
+  /*Added by Arthur at 20050627*/
+  int32 n_ciphone;
 } fsg_history_t;
 
 
@@ -148,7 +154,7 @@ typedef struct fsg_history_s {
  * One-time intialization: Allocate and return an initially empty history
  * module.
  */
-fsg_history_t *fsg_history_init (word_fsg_t *fsg);
+fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone);
 
 
 void fsg_history_utt_start (fsg_history_t *);
