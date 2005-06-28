@@ -38,11 +38,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.2.4.1  2005/06/28  07:03:37  arthchan2003
+ * Set lmset correctly in srch_time_switch_tree.
+ * 
+ * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.15  2005/06/17 23:44:40  archan
  * Sphinx3 to s3.generic, 1, Support -lmname in decode and livepretend.  2, Wrap up the initialization of dict2lmwid to lm initialization. 3, add Dave's trick in LM switching in mode 4 of the search.
  *
@@ -201,6 +204,9 @@ int srch_TST_init(kb_t *kb, void *srch)
   /* Glue the graph structure */
   s->grh->graph_struct=tstg;
   s->grh->graph_type=GRAPH_STRUCT_TST;
+
+
+  tstg->lmset=kbc->lmset;
 
   return SRCH_SUCCESS;
 
