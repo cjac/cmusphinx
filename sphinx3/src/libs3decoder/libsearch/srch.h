@@ -37,30 +37,33 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.1  2005/06/28  07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ * 
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.18  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -114,9 +117,10 @@
 #include "kb.h"
 #include "srch_time_switch_tree.h"
 #include "srch_word_switch_tree.h"
+#include "srch_fsg.h"
 #include "gmm_wrap.h"
 #include "srch_debug.h"
-
+#include "word_fsg.h"
 
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
@@ -367,6 +371,10 @@ typedef struct srch_s {
 			const char *lmname  /**< The LM name */
 			);
 
+  /** Read FSG operation*/
+  word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
+			   const char* fsgname /** The fsg file name*/
+			   );
   /* The 4 operations that require switching during the approximate search process */
   /**< lv1 stands for approximate search. Currently not used. */
 
@@ -497,6 +505,7 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 
 /** delete lm */
 int32 srch_delete_lm();
+
 
 #if 0 /*Not implemented */
 int32 srch_set_am();

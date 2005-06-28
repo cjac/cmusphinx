@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.2  2005/06/27  05:32:35  arthchan2003
- * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
+ * Revision 1.1.4.3  2005/06/28  07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
  * 
+ * Revision 1.1.4.2  2005/06/27 05:32:35  arthchan2003
+ * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
+ *
  * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
  * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
  *
@@ -180,6 +183,9 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_shift_one_cache_frame=NULL;
   s->srch_select_active_gmm=NULL;
 
+  /* For convenience, clear but not check at this point */
+  s->srch_read_fsgfile=NULL;
+
 }
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces*/
@@ -212,12 +218,14 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     E_FATAL("Graph Seearch mode is not supported yet");
 
-#if 0
     s->srch_init=&srch_FSG_init;
+    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;
+#if 1
     s->srch_uninit=&srch_FSG_uninit;
     s->srch_utt_begin=&srch_FSG_begin;
     s->srch_utt_end=&srch_FSG_end;
     s->srch_decode=&srch_FSG_decode;
+
 
     s->srch_set_lm=&srch_FSG_set_lm;
     s->srch_add_lm=&srch_FSG_add_lm;
