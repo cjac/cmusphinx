@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.1  2005/06/28  06:59:04  arthchan2003
- * Add silence probability and filler probability as members of fillpen_t, add reporting functions.
+ * Revision 1.10.4.2  2005/06/28  19:09:04  arthchan2003
+ * Add declaration for fillpen_report.
  * 
+ * Revision 1.10.4.1  2005/06/28 06:59:04  arthchan2003
+ * Add silence probability and filler probability as members of fillpen_t, add reporting functions.
+ *
  * Revision 1.10  2005/06/21 21:09:22  arthchan2003
  * 1, Fixed doxygen documentation. 2, Added  keyword.
  *
@@ -124,6 +127,13 @@ fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler wo
 int32 fillpen (fillpen_t *f,		/**< In: Filler word probabilities structure */
 	       s3wid_t w		/**< In: Dictionary word-ID of filler word */
 	       );
+
+  /**
+     Report the fillpen_t structure 
+   */
+  void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities structure */
+		      );
+
 /* RAH 
    free memory allocated by fillpen_init
  */
