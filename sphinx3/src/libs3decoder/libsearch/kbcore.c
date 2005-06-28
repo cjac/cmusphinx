@@ -45,12 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  23:28:48  arthchan2003
+ * Revision 1.10.4.1  2005/06/28  19:10:06  arthchan2003
+ * Add fillpen_report in kbcore.c
+ * 
+ * Revision 1.10  2005/06/21 23:28:48  arthchan2003
  * Log. Please also see comments of kb.[ch].  Major changes you could see
  * is that the lmset interface is now used rather than several interfaces
  * for reading lm. Other than that, you could say most changes are
  * harmless internal interfaces changes.
- * 
+ *
  * Revision 1.11  2005/06/20 22:20:18  archan
  * Fix non-conforming problems for Windows plot.
  *
@@ -242,6 +245,9 @@ kbcore_t *kbcore_init (float64 logbase,
 	    E_FATAL("fillpen_init(%s) failed\n", fillpenfile);
     }
 
+    if(REPORT_KBCORE){
+      fillpen_report(kb->fillpen);
+    }
     
     if (meanfile) {
 	if ((! varfile) || (! mixwfile))
