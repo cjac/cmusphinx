@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.9  2005/06/30  13:08:45  egouvea
+ * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
  * 
+ * Revision 1.8  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.7  2005/06/21 18:26:38  arthchan2003
  * Log. fast_algo_struct.c go through major changes in the gentle
  * refactoring process. It is the location of several wrapper structures
@@ -270,8 +273,8 @@ extern "C" {
 			     int32 mode_dist_ds, /**< Input: (NOT USED) Whether distance-based down sampling is used */
 			     int32 isGS4GS, /**< Input: Whether Gaussian selection map is only used for Gaussian Selection. Not for down sampling */
 			     int32 isSVQ4SVQ, /**< Input: Whether SVQ is used in acoustic model computation. */
-			     float32 subvqbeam, /**< Input: Subvq beam */
-			     float32 cibeam,  /**< Input: CI phone beam */
+			     float64 subvqbeam, /**< Input: Subvq beam */
+			     float64 cibeam,  /**< Input: CI phone beam */
 			     float32 tighten_factor, /**< Input : A tightening factor used in down sampling */
 			     int32 max_cd,    /**< Input: Max CD senone to be computed */
 			     int32 n_ci_sen /**< Input: no. of ci senone, use to initialize  the ci_occ array*/

@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  18:26:38  arthchan2003
+ * Revision 1.6  2005/06/30  13:08:44  egouvea
+ * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
+ * 
+ * Revision 1.5  2005/06/21 18:26:38  arthchan2003
  * Log. fast_algo_struct.c go through major changes in the gentle
  * refactoring process. It is the location of several wrapper structures
  * that control fast search.  That includes beam_t for storing beams and
@@ -53,12 +56,12 @@
  * for storing structures for histogram pruning. Lastly
  * fast_algo_struct_t, for storing structures for fast GMM
  * computation.
- * 
+ *
  * Log. General Remark All of them now has consistent inteface, _init,
  * _report and _free.  They are respectively used for allocation,
  * reporting and deallocation of the routine. Doxygen documentation are
  * fixed for all structures.
- * 
+ *
  * Log. Individual changes; beam_t start to own bestscore, bestwordscore,
  * wordbestscores, wordbestexits. They were owned by kb_t. histprune_t
  * now wrapped up maxwpf, maxhmmpdf, maxhistpf and
@@ -68,7 +71,7 @@
  * between beam_t and histprune_t.  pl_t is now owning heuristic type,
  * the phoneme lookahead beam size. It also wrapped up phoneme heuristic
  * computation.
- * 
+ *
  * Revision 1.6  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -376,8 +379,8 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 			   int32 mode_dist_ds,
 			   int32 isGS4GS,
 			   int32 isSVQ4SVQ,
-			   float32 subvqbeam,
-			   float32 cipbeam,
+			   float64 subvqbeam,
+			   float64 cipbeam,
 			   float32 tighten_factor,
 			   int32 maxcd,
 			   int32 n_ci_sen)
