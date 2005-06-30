@@ -39,9 +39,18 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2005/06/29  23:48:04  egouvea
- * Revert changes: variables defined in cont_ad_base.c should not be accessible by the application
+ * Revision 1.13  2005/06/30  00:27:17  rkm
+ * Fixed silence handling in rawmode; added extra state variables
  * 
+ * 
+ * 28-Jun-2005	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
+ *		- Changed rawmode handling to simply copy data even for silence
+ * 		segments.
+ * 		- Moved definitions of CONT_AD_STATE_{SIL,SPEECH} from .c to .h.
+ * 
+ * Revision 1.12  2005/06/29 23:48:04  egouvea
+ * Revert changes: variables defined in cont_ad_base.c should not be accessible by the application
+ *
  * Revision 1.10  2005/02/13 01:29:48  rkm
  * Fixed cont_ad_read to never cross sil/speech boundary, and rawmode
  *
@@ -154,9 +163,6 @@
 #define _ABS(x) ((x) >= 0 ? (x) : -(x))
 #endif
 
-/* States of continuous listening module */
-#define CONT_AD_STATE_SIL	0
-#define CONT_AD_STATE_SPEECH	1
 
 /* Various parameters, including defaults for many cont_ad_t member variables */
 
@@ -378,60 +384,6 @@ static int32 find_thresh (cont_ad_t *r)
 
 
 /*
- * Dummy boundary detection, but in rawmode; i.e., every data frame is
- * assumed to be speech and passed through to application.
- */
-static void boundary_detect_rawmode (cont_ad_t *r, int32 frm)
-{
-    spseg_t *seg;
-    
-    assert (r->n_other == 0);
-    
-    if (r->logfp) {
-      fprintf (r->logfp, "%7.2fs %8d[%3d]f: P: %2d, N: %2d, T+: %2d, T-: %2d, #O: %2d, %s\n",
-	       (double)(r->tot_frm * r->spf)/(double)(r->sps), r->tot_frm, frm,
-	       r->frm_pow[frm],
-	       r->noise_level, r->thresh_speech, r->thresh_sil,
-	       r->n_other,
-	       (r->state == CONT_AD_STATE_SIL) ? "--" : "Sp");
-    }
-    
-    if (r->state == CONT_AD_STATE_SIL) {
-      assert (r->tot_frm == 1);		/* This must be the first frame of rawdata */
-      assert (frm == 0);
-      assert (r->spseg_head == NULL);
-      
-      /* Allocate and set up speech segment descriptor */
-      seg = malloc (sizeof(*seg));
-      
-      seg->startfrm = 0;
-      seg->nfrm = 1;
-      seg->next = NULL;
-      
-      r->spseg_head = seg;
-      r->spseg_tail = seg;
-      
-      r->state = CONT_AD_STATE_SPEECH;
-      
-      if (r->logfp) {
-	fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sil -> Sp detect (rawmode)\n",
-		 (double)(r->tot_frm * r->spf)/(double)(r->sps),
-		 r->tot_frm, frm);
-      }
-    } else {
-      /* There should be only one speech segment descriptor */
-      assert (r->spseg_head == r->spseg_tail);
-      assert (r->spseg_head != NULL);
-      
-      r->spseg_tail->nfrm++;
-    }
-    
-    if (r->logfp)
-      fflush (r->logfp);
-}
-
-
-/*
  * Main silence/speech region detection routine.  If currently in
  * SILENCE state, switch to SPEECH state if a window (r->winsize)
  * of frames is mostly non-silence.  If in SPEECH state, switch to
@@ -443,14 +395,9 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
     int32 f;
     
     assert (r->n_other >= 0);
-    
-    if (r->rawmode) {
-      boundary_detect_rawmode (r, frm);
-      return;
-    }
-    
+
     r->win_validfrm++;
-    if (r->state == CONT_AD_STATE_SIL) {
+    if (r->tail_state == CONT_AD_STATE_SIL) {
 	if (r->frm_pow[frm] >= r->thresh_speech)
 	    r->n_other++;
     } else {
@@ -465,14 +412,14 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	       r->frm_pow[frm],
 	       r->noise_level, r->thresh_speech, r->thresh_sil,
 	       r->n_other,
-	       (r->state == CONT_AD_STATE_SIL) ? "--" : "Sp");
+	       (r->tail_state == CONT_AD_STATE_SIL) ? "--" : "Sp");
     }
     
     if (r->win_validfrm < r->winsize)	/* Not reached full analysis window size */
 	return;
     assert (r->win_validfrm == r->winsize);
 
-    if (r->state == CONT_AD_STATE_SIL) {	/* Currently in SILENCE state */
+    if (r->tail_state == CONT_AD_STATE_SIL) {	/* Currently in SILENCE state */
 	if (r->n_frm >= r->winsize + r->leader) {
 	    if (r->n_other >= r->speech_onset) {
 		/* Speech detected; create speech segment description */
@@ -490,7 +437,7 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 		    r->spseg_tail->next = seg;
 		r->spseg_tail = seg;
 		
-		r->state = CONT_AD_STATE_SPEECH;
+		r->tail_state = CONT_AD_STATE_SPEECH;
 		
 		if (r->logfp) {
 		  fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sil -> Sp detect\n",
@@ -511,7 +458,7 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	    /* End of speech detected; speech->sil transition */
 	    r->spseg_tail->nfrm += r->trailer;
 	    
-	    r->state = CONT_AD_STATE_SIL;
+	    r->tail_state = CONT_AD_STATE_SIL;
 		
 	    if (r->logfp) {
 	      fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sp -> Sil detect\n",
@@ -549,7 +496,7 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
      * thresholds could have changed over the window; should preserve
      * the original speech/silence label for the frame and undo it.  Later..
      */
-    if (r->state == CONT_AD_STATE_SIL) {
+    if (r->tail_state == CONT_AD_STATE_SIL) {
 	if (r->frm_pow[r->win_startfrm] >= r->thresh_speech) {
 	  if (r->n_other > 0)
 	    r->n_other--;
@@ -602,8 +549,11 @@ static void cont_ad_read_log (cont_ad_t *r, int32 retval)
   spseg_t *seg;
   
   fprintf (r->logfp, "return from cont_ad_read() -> %d:\n", retval);
+  fprintf (r->logfp, "\tstate: %d\n", r->state);
   fprintf (r->logfp, "\tread_ts: %d (%.2fs)\n",
 	   r->read_ts, (float32)r->read_ts / (float32)r->sps);
+  fprintf (r->logfp, "\tseglen: %d (%.2fs)\n",
+	   r->seglen, (float32)r->seglen / (float32)r->sps);
   fprintf (r->logfp, "\tsiglvl: %d\n", r->siglvl);
   fprintf (r->logfp, "\theadfrm: %d\n", r->headfrm);
   fprintf (r->logfp, "\tn_frm: %d\n", r->n_frm);
@@ -614,7 +564,7 @@ static void cont_ad_read_log (cont_ad_t *r, int32 retval)
   fprintf (r->logfp, "\tthresh_sil: %d\n", r->thresh_sil);
   fprintf (r->logfp, "\tthresh_speech: %d\n", r->thresh_speech);
   fprintf (r->logfp, "\tn_other: %d\n", r->n_other);
-  fprintf (r->logfp, "\tstate: %d\n", r->state);
+  fprintf (r->logfp, "\ttail_state: %d\n", r->tail_state);
   fprintf (r->logfp, "\ttot_frm: %d\n", r->tot_frm);
   
   fprintf (r->logfp, "\tspseg:");
@@ -627,13 +577,62 @@ static void cont_ad_read_log (cont_ad_t *r, int32 retval)
 
 
 /*
+ * Copy data from r->adbuf[sf], for nf frames, into buf.
+ * All length checks must have been completed before this call; hence, this
+ * function will copy exactly the specified number of frames.
+ * 
+ * Return value: Index of frame just after the segment copied, possibly wrapped
+ * around to 0.
+ */
+static int32 buf_copy (cont_ad_t *r, int32 sf, int32 nf, int16 *buf)
+{
+  int32 f, l;
+  
+  assert ((sf >= 0) && (sf < CONT_AD_ADFRMSIZE));
+  assert (nf >= 0);
+  
+  if (sf + nf > CONT_AD_ADFRMSIZE) {
+    /* Amount to be copied wraps around adbuf; copy in two stages */
+    f = CONT_AD_ADFRMSIZE - sf;
+    l = (f * r->spf);
+    memcpy (buf, r->adbuf + (sf * r->spf), l * sizeof(int16));
+    
+    if (r->logfp) {
+      fprintf (r->logfp, "return %d speech frames [%d..%d]; %d samples\n",
+	       f, sf, sf + f - 1, l);
+    }
+    
+    buf += l;
+    sf = 0;
+    nf -= f;
+  }
+
+  if (nf > 0) {
+    l = (nf * r->spf);
+    memcpy (buf, r->adbuf + (sf * r->spf), l * sizeof(int16));
+    
+    if (r->logfp) {
+      fprintf (r->logfp, "return %d speech frames [%d..%d]; %d samples\n",
+	       nf, sf, sf + nf - 1, l);
+    }
+  }
+  
+  if ((sf+nf) >= CONT_AD_ADFRMSIZE) {
+    assert ((sf+nf) == CONT_AD_ADFRMSIZE);
+    return 0;
+  } else
+    return (sf+nf);
+}
+
+
+/*
  * Main function called by the application to filter out silence regions.
  * Maintains a linked list of speech segments pointing into r->adbuf and feeds
  * data to application from them.
  */
 int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 {
-    int32 head, tail, tailfrm, len, flen, retval;
+    int32 head, tail, tailfrm, flen, len, retval, newstate;
     int32 i, f, l;
     spseg_t *seg;
     int num_to_copy = 0, num_left = max;
@@ -754,26 +753,24 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
 	   * Since threshold has been updated, recompute r->n_other.
 	   * (RKM: Is this really necessary?  Comment out??)
 	   */
-	  if (! r->rawmode) {
-	    r->n_other = 0;
-	    if (r->state == CONT_AD_STATE_SIL) {
-	      for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
-		if (r->frm_pow[f] >= r->thresh_speech)
-		  r->n_other++;
-		
-		f++;
-		if (f >= CONT_AD_ADFRMSIZE)
-		  f = 0;
-	      }
-	    } else {
-	      for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
-		if (r->frm_pow[f] <= r->thresh_sil)
-		  r->n_other++;
-		
-		f++;
-		if (f >= CONT_AD_ADFRMSIZE)
-		  f = 0;
-	      }
+	  r->n_other = 0;
+	  if (r->tail_state == CONT_AD_STATE_SIL) {
+	    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+	      if (r->frm_pow[f] >= r->thresh_speech)
+		r->n_other++;
+	      
+	      f++;
+	      if (f >= CONT_AD_ADFRMSIZE)
+		f = 0;
+	    }
+	  } else {
+	    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+	      if (r->frm_pow[f] <= r->thresh_sil)
+		r->n_other++;
+	      
+	      f++;
+	      if (f >= CONT_AD_ADFRMSIZE)
+		f = 0;
 	    }
 	  }
 #endif
@@ -781,132 +778,118 @@ int32 cont_ad_read (cont_ad_t *r, int16 *buf, int32 max)
     }
     
     /*
-     * If eof on input data source, cleanup the final active speech segment,
-     * if any.
+     * If eof on input data source, cleanup the final segment.
      */
-    if (r->eof && (r->state == CONT_AD_STATE_SPEECH)) {
-      /*
-       * Still inside a speech segment when input data got over.  Absort any
-       * remaining frames into the final speech segment.
-       */
-      assert (r->spseg_tail != NULL);
-      
-      /* Absorb frames still in analysis window into final speech seg */
-      assert ((r->win_validfrm >= 0) && (r->win_validfrm < r->winsize));
-      r->spseg_tail->nfrm += r->win_validfrm;
+    if (r->eof) {
+      if (r->tail_state == CONT_AD_STATE_SPEECH) {
+	/*
+	 * Still inside a speech segment when input data got over.  Absort any
+	 * remaining frames into the final speech segment.
+	 */
+	assert (r->spseg_tail != NULL);
+	
+	/* Absorb frames still in analysis window into final speech seg */
+	assert ((r->win_validfrm >= 0) && (r->win_validfrm < r->winsize));
+	r->spseg_tail->nfrm += r->win_validfrm;
+	
+	r->tail_state = CONT_AD_STATE_SIL;
+      }
       
       r->win_startfrm += r->win_validfrm;
       if (r->win_startfrm >= CONT_AD_ADFRMSIZE)
 	r->win_startfrm -= CONT_AD_ADFRMSIZE;
       r->win_validfrm = 0;
       r->n_other = 0;
-      
-      r->state = CONT_AD_STATE_SIL;
     }
     
     /*
-     * At last ready to copy speech data, if any.  Raw speech data is segmented
-     * into alternating speech and silence segments. But any single call to
-     * cont_ad_read will never cross a speech/silence boundary.
+     * At last ready to copy speech data, if any, into caller's buffer.  Raw
+     * speech data is segmented into alternating speech and silence segments.
+     * But any single call to cont_ad_read will never cross a speech/silence
+     * boundary.
      */
-    seg = r->spseg_head;
+    seg = r->spseg_head;	/* first speech segment available, if any */
     
     if ((seg == NULL) || (r->headfrm != seg->startfrm)) {
         /*
-	 * Either no speech data available, or inside a silence segment.  Figure
-	 * out the length of the silence segment.
+	 * Either no speech data available, or inside a silence segment.  Find
+	 * length of silence segment.
 	 */
 	if (seg == NULL) {
-	    assert (r->state == CONT_AD_STATE_SIL);
+	    assert (r->tail_state == CONT_AD_STATE_SIL);
 	    
-	    flen = r->n_frm - (r->winsize + r->leader - 1);
+	    flen = (r->eof) ? r->n_frm : r->n_frm - (r->winsize + r->leader - 1);
+	    if (flen < 0)
+	      flen = 0;
 	} else {
 	    flen = seg->startfrm - r->headfrm;
 	    if (flen < 0)
 		flen += CONT_AD_ADFRMSIZE;
 	}
 	
-	/* Consume the silence segment, if any */
-	if (flen > 0) {	/* Can consume flen silence frames from current head of data */
-	    r->siglvl = max_siglvl (r, r->headfrm, flen);
-	    r->n_frm -= flen;
-	    r->n_sample -= (flen * r->spf);
-	    r->headfrm += flen;
-	    if (r->headfrm >= CONT_AD_ADFRMSIZE)
-		r->headfrm -= CONT_AD_ADFRMSIZE;
+	if (r->rawmode) {
+	  /* Restrict silence segment to user buffer size, integral #frames */
+	  f = max / r->spf;
+	  if (flen > f)
+	    flen = f;
 	}
-
-	len = 0;	/* #samples being copied */
+	
+	newstate = CONT_AD_STATE_SIL;
     } else {
-	/*
-	 * In a speech segment; copy integral #frames of speech data from seg.
-	 * (May be 0-length!)
-	 */
-	assert (seg->startfrm == r->headfrm);
-	
-	flen = max / r->spf;
+        flen = max / r->spf;	/* truncate read-size to integral #frames */
 	if (flen > seg->nfrm)
-	    flen = seg->nfrm;
-	len = (flen * r->spf);	/* #samples being copied */
-	r->siglvl = max_siglvl (r, seg->startfrm, flen);
+	    flen = seg->nfrm;	/* truncate further to this segment size */
 	
-	/* Copy data to buf.  If seg wrapped around adbuf break into two operations */
-	if (seg->startfrm + flen > CONT_AD_ADFRMSIZE) {
-	    f = CONT_AD_ADFRMSIZE - seg->startfrm;
-	    l = (f * r->spf);
-	    memcpy (buf, r->adbuf + (seg->startfrm * r->spf), l * sizeof(int16));
-	    
-	    if (r->logfp) {
-	      fprintf (r->logfp, "return %d speech frames [%d..%d]; %d samples\n",
-		       f, seg->startfrm, seg->startfrm + f - 1, l);
-	    }
-	    
-	    buf += l;
-	    seg->startfrm = 0;	/* Wrapped around */
-	    seg->nfrm -= f;
-	    flen -= f;
-	}
-	if (flen > 0) {
-	    l = (flen * r->spf);
-	    memcpy (buf, r->adbuf + (seg->startfrm * r->spf), l * sizeof(int16));
-	    
-	    if (r->logfp) {
-	      fprintf (r->logfp, "return %d speech frames [%d..%d]; %d samples\n",
-		       flen, seg->startfrm, seg->startfrm + flen - 1, l);
-	    }
-
-	    seg->startfrm += flen;
-	    if (seg->startfrm >= CONT_AD_ADFRMSIZE)
-		seg->startfrm -= CONT_AD_ADFRMSIZE;
-	    seg->nfrm -= flen;
-	}
-	
-	/* Update r->headfrm to seg->startfrm; fix r->n_frm, r->n_sample accordingly */
-	if ((f = (seg->startfrm - r->headfrm)) < 0)
-	    f += CONT_AD_ADFRMSIZE;
-	r->n_frm -= f;
-	r->n_sample -= (f * r->spf);
-	r->headfrm = seg->startfrm;
-	assert ((r->n_frm >= 0) && (r->n_sample >= 0));
-	
-	/* Free seg if empty and not recording into it */
-	if ((seg->nfrm == 0) && (seg->next || (r->state == CONT_AD_STATE_SIL))) {
-	    r->spseg_head = seg->next;
-	    if (! seg->next)
-		r->spseg_tail = NULL;
-	    free (seg);
-	}
+	newstate = CONT_AD_STATE_SPEECH;
     }
-
+    
+    len = flen * r->spf;	/* #samples being consumed */
+    
+    r->siglvl = max_siglvl (r, r->headfrm, flen);
+    
+    if ((newstate == CONT_AD_STATE_SIL) && (! r->rawmode)) {
+      /* Skip silence data */
+      r->headfrm += flen;
+      if (r->headfrm >= CONT_AD_ADFRMSIZE)
+	r->headfrm -= CONT_AD_ADFRMSIZE;
+      
+      retval = 0;		/* #samples being copied/returned */
+    } else {
+      /* Copy speech/silence(in rawmode) data */
+      r->headfrm = buf_copy (r, r->headfrm, flen, buf);
+      
+      retval = len;		/* #samples being copied/returned */
+    }
+    
+    r->n_frm -= flen;
+    r->n_sample -= len;
+    assert ((r->n_frm >= 0) && (r->n_sample >= 0));
     assert (r->win_validfrm <= r->n_frm);
-
+    
+    if (r->state == newstate)
+      r->seglen += len;
+    else
+      r->seglen = len;
+    r->state = newstate;
+    
+    if (newstate == CONT_AD_STATE_SPEECH) {
+      seg->startfrm = r->headfrm;
+      seg->nfrm -= flen;
+      
+      /* Free seg if empty and not recording into it */
+      if ((seg->nfrm == 0) && (seg->next || (r->tail_state == CONT_AD_STATE_SIL))) {
+	r->spseg_head = seg->next;
+	if (seg->next == NULL)
+	  r->spseg_tail = NULL;
+	free (seg);
+      }
+    }
+    
     /* Update timestamp.  Total raw A/D read - those remaining to be consumed */
     r->read_ts = (r->tot_frm - r->n_frm) * r->spf;
     
-    if (len == 0)
+    if (retval == 0)
 	retval = (r->eof && (r->spseg_head == NULL)) ? -1 : 0;
-    else
-	retval = len;
     
     if (r->logfp)
       cont_ad_read_log (r, retval);
@@ -1136,7 +1119,7 @@ int32 cont_ad_reset (cont_ad_t *r)
     r->win_validfrm = 0;
     r->n_other = 0;
 
-    r->state = CONT_AD_STATE_SIL;
+    r->tail_state = CONT_AD_STATE_SIL;
     
     return 0;
 }
@@ -1189,26 +1172,24 @@ int32 cont_set_thresh(cont_ad_t *r, int32 silence, int32 speech) {
   r->thresh_sil = silence;
   
   /* Since threshold has been updated, recompute r->n_other */
-  if (! r->rawmode) {
-    r->n_other = 0;
-    if (r->state == CONT_AD_STATE_SIL) {
-      for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
-	if (r->frm_pow[f] >= r->thresh_speech)
-	  r->n_other++;
-	
-	f++;
-	if (f >= CONT_AD_ADFRMSIZE)
-	  f = 0;
-      }
-    } else if (r->state == CONT_AD_STATE_SPEECH) {
-      for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
-	if (r->frm_pow[f] <= r->thresh_sil)
-	  r->n_other++;
-	
-	f++;
-	if (f >= CONT_AD_ADFRMSIZE)
-	  f = 0;
-      }
+  r->n_other = 0;
+  if (r->tail_state == CONT_AD_STATE_SIL) {
+    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+      if (r->frm_pow[f] >= r->thresh_speech)
+	r->n_other++;
+      
+      f++;
+      if (f >= CONT_AD_ADFRMSIZE)
+	f = 0;
+    }
+  } else if (r->tail_state == CONT_AD_STATE_SPEECH) {
+    for (i = r->win_validfrm, f = r->win_startfrm; i > 0; --i) {
+      if (r->frm_pow[f] <= r->thresh_sil)
+	r->n_other++;
+      
+      f++;
+      if (f >= CONT_AD_ADFRMSIZE)
+	f = 0;
     }
   }
   
@@ -1286,12 +1267,15 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
 	free (r);
 	return NULL;
     }
-
+    
+    r->state = CONT_AD_STATE_SIL;
     r->read_ts = 0;
+    r->seglen = 0;
+    r->siglvl = 0;
     r->prev_sample = 0;
     r->tot_frm = 0;
     r->noise_level = CONT_AD_DEFAULT_NOISE;
-
+    
     r->auto_thresh = 1;
     r->delta_sil = CONT_AD_DELTA_SIL;
     r->delta_speech = CONT_AD_DELTA_SPEECH;
@@ -1308,7 +1292,7 @@ cont_ad_t *cont_ad_init (ad_rec_t *a, int32 (*func)(ad_rec_t *, int16 *, int32))
     r->thresh_update = CONT_AD_THRESH_UPDATE;
     r->adapt_rate = CONT_AD_ADAPT_RATE;
     
-    r->state = CONT_AD_STATE_SIL;
+    r->tail_state = CONT_AD_STATE_SIL;
 
     r->spseg_head = NULL;
     r->spseg_tail = NULL;
