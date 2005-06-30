@@ -39,9 +39,16 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2005/05/31  15:54:38  rkm
- * *** empty log message ***
+ * Revision 1.13  2005/06/30  00:28:46  rkm
+ * Kept within-utterance silences in rawmode
  * 
+ * 
+ * 28-Jun-2005	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Modified to use new state variables in cont_ad_t.
+ * 
+ * Revision 1.12  2005/05/31 15:54:38  rkm
+ * *** empty log message ***
+ *
  * Revision 1.11  2005/05/24 20:56:58  rkm
  * Added min/max-noise parameters to cont_fileseg
  *
@@ -49,9 +56,12 @@
  * Changed null device to system dependent one: NUL for windows, /dev/null for everything else
  * 
  * $Log$
- * Revision 1.12  2005/05/31  15:54:38  rkm
- * *** empty log message ***
+ * Revision 1.13  2005/06/30  00:28:46  rkm
+ * Kept within-utterance silences in rawmode
  * 
+ * Revision 1.12  2005/05/31 15:54:38  rkm
+ * *** empty log message ***
+ *
  * Revision 1.11  2005/05/24 20:56:58  rkm
  * Added min/max-noise parameters to cont_fileseg
  *
@@ -155,7 +165,7 @@ int
 main (int32 argc, char **argv)
 {
     cont_ad_t *cont;
-    int32 uttid, ts, uttlen, starttime, siltime, sps, debug, writeseg, rawmode;
+    int32 uttid, uttlen, starttime, siltime, sps, debug, writeseg, rawmode;
     int16 buf[4096];
     char *infile, *copyfile, segfile[1024];
     FILE *fp;
@@ -329,6 +339,7 @@ main (int32 argc, char **argv)
       cont = cont_ad_init (&ad, file_ad_read);
     else
       cont = cont_ad_init_rawmode (&ad, file_ad_read);
+    
     printf ("Calibrating ..."); fflush (stdout);
     if (cont_ad_calib (cont) < 0)
 	printf (" failed; file too short?\n");
@@ -399,101 +410,94 @@ main (int32 argc, char **argv)
     
     if (debug)
 	cont_ad_set_logfp(cont, stdout);
-
+    
     total_speech_samples = 0;
     total_speech_sec = 0.0;
     
-    /* Read first non-silence speech */
-    while ((k = cont_ad_read (cont, buf, 4096)) == 0);
-    
-    if (k < 0) {
-	E_WARN("Input is all silence; no speech detected\n");
-	E_INFO("Total raw input speech = %d frames, %d samples, %.2f sec\n",
-	       cont->tot_frm, cont->tot_frm * cont->spf,
-	       (cont->tot_frm * cont->spf) / (float32) cont->sps);
-	E_INFO("Total speech detected = %d samples, %.2f sec\n",
-	       total_speech_samples, total_speech_sec);
-	
-	cont_ad_close (cont);
-	
-	exit(0);
-    }
-    
-    /*
-     * Start recording new utterance in next file.
-     * Hack!!  Using /dev/null to avoid writing.
-     */
     uttid = 0;
-    if (writeseg)
-      sprintf (segfile, "%08d.raw", uttid);
-    else
-      strcpy (segfile, NULL_DEVICE);
-    if ((fp = fopen(segfile, "wb")) == NULL)
-	E_FATAL("fopen(%s,wb) failed\n", segfile);
-    fwrite (buf, sizeof(int16), k, fp);
+    uttlen = 0;
+    starttime = 0;
+    fp = NULL;
     
-    /* Note start timestamp at beginning of utterance */
-    ts = cont->read_ts;
-    starttime = ts - k;
-    uttlen = k;
-    
-    /* Copy data for this utterance (until silence segment of desired duration) */
+    /* Process data */
     for (;;) {
-	/* Read more data, if any */
-	if ((k = cont_ad_read (cont, buf, 4096)) < 0) {
-	    /* End of file */
-	    break;
+        /* Get audio data from continuous listening module */
+        k = cont_ad_read (cont, buf, 4096);
+      
+        if (k < 0) {	/* End of input audio file; close any open output file and exit */
+	  if (fp != NULL) {
+	    fclose (fp);
+	    fp = NULL;
+	    
+	    printf ("Utt %08d, st= %8.2fs, et= %8.2fs, seg= %7.2fs (#samp= %10d)\n",
+		    uttid,
+		    (double)starttime/(double)sps,
+		    (double)(starttime+uttlen)/(double)sps,
+		    (double)uttlen/(double)sps,
+		    uttlen);
+	    fflush (stdout);
+	    
+	    total_speech_samples += uttlen;
+	    total_speech_sec += (double)uttlen/(double)sps;
+	    
+	    uttid++;
+	  }
+	  
+	  break;
 	}
 	
-	/*
-	 * Check timestamp to see if gap between new data and previously read
-	 * data > desired inter-utterance silence time
-	 */
-	if (k > 0) {
-	    if (cont->read_ts - k - ts > siltime) {
-		/* Data belongs to new utterance; close previous file, start new one */
-		fclose (fp);
-		printf ("Utt %08d, st= %8.2fs, et= %8.2fs, seg= %7.2fs (#samp= %10d)\n",
-			uttid,
-			(double)starttime/(double)sps,
-			(double)(starttime+uttlen)/(double)sps,
-			(double)uttlen/(double)sps,
-			uttlen);
-		fflush (stdout);
-		total_speech_samples += uttlen;
-		total_speech_sec += (double)uttlen/(double)sps;
-		
-		uttid++;
-		if (writeseg)
-		  sprintf (segfile, "%08d.raw", uttid);
-		else
-		  strcpy (segfile, NULL_DEVICE);
-		if ((fp = fopen(segfile, "wb")) == NULL)
-		    E_FATAL("fopen(%s,wb) failed\n", segfile);
-		
-		/* Update bookkeeping for new utterance */
-		starttime = cont->read_ts - k;
-		uttlen = 0;
+	if (cont->state == CONT_AD_STATE_SIL) {	/* Silence data got */
+	  if (fp != NULL) {			/* Currently in an utterance */
+	    if (cont->seglen > siltime) {	/* Long enough silence detected; end the utterance */
+	      fclose (fp);
+	      fp = NULL;
+	      
+	      printf ("Utt %08d, st= %8.2fs, et= %8.2fs, seg= %7.2fs (#samp= %10d)\n",
+		      uttid,
+		      (double)starttime/(double)sps,
+		      (double)(starttime+uttlen)/(double)sps,
+		      (double)uttlen/(double)sps,
+		      uttlen);
+	      fflush (stdout);
+	      
+	      total_speech_samples += uttlen;
+	      total_speech_sec += (double)uttlen/(double)sps;
+	      
+	      uttid++;
+	    } else {
+	      /*
+	       * Short silence within utt; write it to output.  (Some extra trailing silence
+	       * is included in the utterance, as a result.  Not to worry about it.)
+	       */
+	      if (k > 0) {
+		fwrite (buf, sizeof(int16), k, fp);
+		uttlen += k;
+	      }
 	    }
+	  }
+	} else {
+	  assert (cont->state == CONT_AD_STATE_SPEECH);
+	  
+	  if (fp == NULL) {			/* Not in an utt; open a new output file */
+	    if (writeseg)
+	      sprintf (segfile, "%08d.raw", uttid);
+	    else
+	      strcpy (segfile, NULL_DEVICE);
+	    if ((fp = fopen(segfile, "wb")) == NULL)
+	      E_FATAL("fopen(%s,wb) failed\n", segfile);
 	    
-	    /* Write utterance data and note timestamp for most recent data */
+	    starttime = cont->read_ts - k;
+	    uttlen = 0;
+	  }
+	  
+	  /* Write data obtained to output file */
+	  if (k > 0) {
 	    fwrite (buf, sizeof(int16), k, fp);
-	    ts = cont->read_ts;
 	    uttlen += k;
+	  }
 	}
     }
     
-    fclose (fp);
-    printf ("Utt %08d, st= %8.2fs, et= %8.2fs, seg= %7.2fs (#samp= %10d)\n",
-	    uttid,
-	    (double)starttime/(double)sps,
-	    (double)(starttime+uttlen)/(double)sps,
-	    (double)uttlen/(double)sps,
-	    uttlen);
-    fflush (stdout);
-    total_speech_samples += uttlen;
-    total_speech_sec += (double)uttlen/(double)sps;
-
     if (rawfp)
       fclose(rawfp);
     
