@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.4  2005/06/28  19:11:49  arthchan2003
- * Fix Bugs. When new tree is allocated, tree indices were not inserted in the empty tree list. Now is fixed.
+ * Revision 1.1.4.5  2005/07/01  04:14:09  arthchan2003
+ * Fixes of making histogram pruning working with the WST search (mode 5) 1, As in the TST search, the bins are always zeroed. 2, When the number of bins were initialized, instead of using 3 times the number of nodes, now using n_stalextree number of node.  The histogram bin array are also updated for every utterance. This will ensure when the number of active node is too large, there are invalid write.  3, the code is further safe-guarded in srch_WST_hmm_compute_lv2.  change 2 will not give us assurance if the number of active nodes are too large and spill out of the array.  The code with long comment will make sure that this condition will not happen.
  * 
+ * Revision 1.1.4.4  2005/06/28 19:11:49  arthchan2003
+ * Fix Bugs. When new tree is allocated, tree indices were not inserted in the empty tree list. Now is fixed.
+ *
  * Revision 1.1.4.3  2005/06/28 07:05:40  arthchan2003
  * 1, Set lmset correctly in srch_word_switch_tree. 2, Fixed a bug hmm_hist_binsize so that histogram pruning could be used in mode 5. 3, (Most important) When number of allocated tree is smaller than number of tree required, the search dynamically allocated more tree until all memory are used up. This should probably help us to go through most scenarios below 3k vocabulary.
  *
@@ -87,7 +90,6 @@
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_WST 1 
-#define HARDCODE_FACTOR 3
 #define DEFAULT_STR_LENGTH 100
 #define DEFAULT_HASH_SIZE 1000 /* Just a guess, if there is 50 word
 				  ends and there are 10 phones for
@@ -205,12 +207,16 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   }
 
 
+  /* Using wstg->n_static_lextree to decide the number of nodes is still not a very safe measure
+   */
   wstg->histprune=histprune_init(cmd_ln_int32("-maxhmmpf"),
 				 cmd_ln_int32("-maxhistpf"),
 				 cmd_ln_int32("-maxwpf"),
 				 cmd_ln_int32("-hmmhistbinsize"),
-				 (wstg->curroottree->n_node + wstg->curfillertree->n_node) * HARDCODE_FACTOR
+				 (wstg->curroottree->n_node + wstg->curfillertree->n_node) * wstg->n_static_lextree
 				 );
+
+  
 
 
   wstg->active_word=hash_new(wstg->n_static_lextree,1);
@@ -258,6 +264,13 @@ int32 srch_WST_begin(void *srch)
   g=kbc->mgau;
 
   stat_clear_utt(s->stat);
+
+  histprune_update_histbinsize(wstg->histprune,
+			       wstg->histprune->hmm_hist_binsize,  
+			       (wstg->curroottree->n_node + wstg->curfillertree->n_node) * wstg->n_static_lextree);
+
+  histprune_zero_histbin(wstg->histprune);
+
   /* Insert initial <s> into vithist structure */
   pred = vithist_utt_begin (s->vithist, kbc);
   assert (pred == 0);	/* Vithist entry ID for <s> */
@@ -546,8 +559,31 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     E_ERROR("***ERROR*** Fr %d, best HMM score > 0 (%d); int32 wraparound?\n",
 	    frmno, besthmmscr);
   }
-  
-  hmm_hist[frm_nhmm / histbinsize]++;
+
+  numhistbins = hp->hmm_hist_bins;
+
+
+  /* ARCHAN: 20050701
+
+     HACK!  This is not a great hack. But it is what I tried to avoid,
+     in WST search, there might be situation where
+     frm_nhmm/histbinsize is larger than hp->hmm_hist_bins and causing
+     hmm_hist[frm_nhmm/histbinsize]++ to do invalid memory write.
+     This is caused by the fact WST search will dynamic increase the
+     number of trees and that will in-turn affect the size of
+     hmm_hist. What one could do is to allow update of histogram
+     binsize within the tree allocation routine.  However, within
+     decoding of one utterance, that might cause nasty problem of
+     recomputing the value of each bins. Therefore, I tried to avoid
+     it. Instead, for that particular utterance where memory is
+     allocated, every update which is larger than hp->hmm_hist_bins
+     are now put in hp->hmm_hist_bins.  This will ensure the code to be
+     safe. 
+  */
+  if(frm_nhmm/histbinsize > hp->hmm_hist_bins-1)
+    hmm_hist[hp->hmm_hist_bins-1]++;
+  else
+    hmm_hist[frm_nhmm / histbinsize]++;
     
   /* Set pruning threshold depending on whether number of active HMMs 
    * is within limit 
@@ -1032,6 +1068,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
       /*E_INFO("A new tree is started for wid %d, word str %s\n", wid, 
 	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));*/
+
     }else{
     }
 
