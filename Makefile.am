@@ -123,8 +123,9 @@ perf-full:
 	make -C $(top_srcdir)/src/tests/performance/rm1 lp
 	make -C $(top_srcdir)/src/tests/performance/Communicator base fast
 	make -C $(top_srcdir)/src/tests/performance/wsj5k lp decode decany
-	make -C $(top_srcdir)/src/tests/performance/spoke3 decode decany
 	make -C $(top_srcdir)/src/tests/performance/icsi base
+
+#	make -C $(top_srcdir)/src/tests/performance/spoke3 decode decany
 
 perf-quick:	
 	make -C $(top_srcdir)/src/tests/performance/ti46 quick slow
