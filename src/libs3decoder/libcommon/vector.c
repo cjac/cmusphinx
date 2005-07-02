@@ -47,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.16  2005/06/21  21:02:05  arthchan2003
- * Please ignore the last log. vector.c has now fix doxygen-style documents and fixed $ keyword.
+ * Revision 1.17  2005/07/02  03:48:46  egouvea
+ * Removed condition compilation on WIN32 for included time.h. Not regression tested since this affects only Windows
  * 
+ * Revision 1.16  2005/06/21 21:02:05  arthchan2003
+ * Please ignore the last log. vector.c has now fix doxygen-style documents and fixed $ keyword.
+ *
  * Revision 1.15  2005/06/21 21:00:44  arthchan2003
  * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
  *
@@ -75,10 +78,8 @@
 #include "logs3.h"
 #include "s3types.h"
 
-#if (!WIN32) 
-/* RAH #include <random.h> */
+
 #include <time.h>		/* RAH */
-#endif
 
 float64 vector_sum_norm (float32 *vec, int32 len)
 {
