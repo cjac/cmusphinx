@@ -1,4 +1,4 @@
- /* ====================================================================
+/* ====================================================================
  * Copyright (c) 2004 Carnegie Mellon University.  All rights
  * reserved.
  *
@@ -39,9 +39,12 @@
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
  * $Log$
- * Revision 1.6  2005/06/21  21:06:47  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ * Revision 1.7  2005/07/02  04:24:45  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
  * 
+ * Revision 1.6  2005/06/21 21:06:47  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ *
  * Revision 1.3  2005/06/15 06:48:54  archan
  * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
  *
@@ -129,14 +132,15 @@ typedef struct{
 
 void majority_class(class_t* CLASSW, int *classcount, int frame_count);
 
-class_t * classw_initialize(char *mdeffile,  /* The model def file */
+class_t * classw_initialize(char *mdeffile,  /**< The model def file */
 			    char* meanfile,   /**< The mean file */
 			    char *varfile,       /**< The variance file */
 			    float64 varfloor,    /**< variance floor */
 			    char* mixwfile,         /**< The mixture weight */
 			    float64 mixwfloor,       /**< mixture weight floor */
-			    int32 precomp,       /**< pre-computation of values, 0, not to pre-compute 1, 
-						    to precompute */
+			    int32 precomp,       /**< pre-computation of values,
+						     0 not to pre-compute, 
+						     1 to precompute */
 			    char *senmgau       /**< whether it is SCHMM, ".semi." or FCHMM ".cont." */
 			    );
 
