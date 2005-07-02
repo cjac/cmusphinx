@@ -34,14 +34,20 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.16  2005/07/02  04:24:46  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
  * 
+ * Revision 1.15  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- *  into most of the .[ch] files. It is easy to keep track changes.
+ * Revision 1.16  2005/07/02  04:24:46  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ * 
+ * Add Revision 1.15  2005/06/22 05:39:56  arthchan2003
+ * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  */
 #include <stdio.h>
@@ -268,6 +274,26 @@ static arg_t arg[] = {
     ARG_FLOAT32,
     "0.0000001",
     "Senone mixture weights floor (applied to data from -mixw file)" },
+  { "-pad_before",
+    ARG_FLOAT32,
+    PAD_T_BEFORE,
+    "Pad these many seconds before speech begin" },
+  { "-pad_after",
+    ARG_FLOAT32,
+    PAD_T_AFTER,
+    "Pad these many seconds after speech end" },
+  { "-speech_start",
+    ARG_FLOAT32,
+    UTT_T_START,
+    "Declare speech after these many seconds of speech (pad not accounted)" },
+  { "-speech_end",
+    ARG_FLOAT32,
+    UTT_T_END,
+    "Declare end of speech after these many seconds of non-speech (pad not accounted)" },
+  { "-speech_cancel",
+    ARG_FLOAT32,
+    UTT_T_CANCEL,
+    "Cancel a start of speech  after these many seconds of non-speech" },
   { "-logfn",
     ARG_STRING,
     NULL,
@@ -493,7 +519,13 @@ int32 main(int32 argc, char **argv)
 			     cmd_ln_str("-var"), cmd_ln_float32("-varfloor"),
 			     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"),
 			     TRUE, ".cont.");
-  ENDPTR = endpointer_initialize(FEW->FE); 
+  ENDPTR = endpointer_initialize(FEW->FE,
+				 cmd_ln_float32("-pad_before"),
+				 cmd_ln_float32("-pad_after"),
+				 cmd_ln_float32("-speech_start"),
+				 cmd_ln_float32("-speech_end"),
+				 cmd_ln_float32("-speech_cancel"));
+ 
   spbuffer = fe_convert_files_to_spdata(FEW->P, FEW->FE, &splen, &nframes);
   
   ptmr_start(&tm_class);

@@ -41,9 +41,12 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  21:07:28  arthchan2003
- * Added  keyword.
+ * Revision 1.6  2005/07/02  04:24:45  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
  * 
+ * Revision 1.5  2005/06/21 21:07:28  arthchan2003
+ * Added  keyword.
+ *
  * Revision 1.2  2005/06/15 06:48:54  archan
  * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
  *
@@ -57,18 +60,23 @@
 
 #include "endptr.h"
 
-endpointer_t * endpointer_initialize(fe_t *FE)
+endpointer_t * endpointer_initialize(fe_t *FE,
+				     float pad_t_before,
+				     float pad_t_after,
+				     float utt_t_start,
+				     float utt_t_end,
+				     float utt_t_cancel)
 {
 
         endpointer_t *ENDPTR = (endpointer_t *) calloc(1,sizeof(endpointer_t));
 
         /* set the fixed specifications */
 
-        ENDPTR->PAD_F_BEFORE = (int)(PAD_T_BEFORE * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->PAD_F_AFTER  = (int)(PAD_T_AFTER * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_START  = (int)(UTT_T_START * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_END    = (int)(UTT_T_END * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_CANCEL = (int)(UTT_T_CANCEL * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+        ENDPTR->PAD_F_BEFORE = (int)(pad_t_before * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+        ENDPTR->PAD_F_AFTER  = (int)(pad_t_after * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+        ENDPTR->UTT_F_START  = (int)(utt_t_start * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+        ENDPTR->UTT_F_END    = (int)(utt_t_end * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+        ENDPTR->UTT_F_CANCEL = (int)(utt_t_cancel * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
 
         /* set the rest specifications */
 
