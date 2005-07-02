@@ -42,9 +42,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.10  2005/07/02  12:55:40  egouvea
+ * Changed void* with char* to fix compilation problem when compiling with gcc4.0
  * 
+ * Revision 1.9  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * Revision 1.8  2004/05/18 19:02:40  egouvea
  * Removed line including malloc.h, already defined in stdlib.h, and added initial support for macosx
  *
@@ -112,7 +115,8 @@ static int32 n_list = 0;
 void *listelem_alloc (int32 elem_size)
 {
     int32 i, j;
-    void **cpp, *cp;
+    void **cpp;
+    char *cp;
     
     for (i = 0; i < n_list; i++) {
 	if (list[i].elem_size == elem_size)
@@ -135,21 +139,21 @@ void *listelem_alloc (int32 elem_size)
 	list[n_list].n_malloc = MAX_ALLOC / elem_size;
 	i = n_list++;
     }
-    
+
     if (list[i].freelist == NULL) {
 	cpp = list[i].freelist = (void **) malloc (list[i].n_malloc * elem_size);
-	cp = (void *) cpp;
+	cp = (char *) cpp;
 	for (j = list[i].n_malloc-1; j > 0; --j) {
-	    (char*)cp += elem_size;
-	    *cpp = cp;
+	    cp += elem_size;
+	    *cpp = (void *)cp;
 	    cpp = (void **)cp;
 	}
 	*cpp = NULL;
     }
     
-    cp = list[i].freelist;
+    cp = (char *) list[i].freelist;
     list[i].freelist = *(list[i].freelist);
-    return (cp);
+    return ((void *)cp);
 }
 
 void listelem_free (void *elem, int32 elem_size)
