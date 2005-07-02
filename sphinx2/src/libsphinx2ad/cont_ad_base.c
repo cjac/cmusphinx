@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/06/30  00:27:17  rkm
- * Fixed silence handling in rawmode; added extra state variables
+ * Revision 1.14  2005/07/02  03:51:32  rkm
+ * Slowed down power histogram decay rate
  * 
+ * Revision 1.13  2005/06/30 00:27:17  rkm
+ * Fixed silence handling in rawmode; added extra state variables
+ *
  * 
  * 28-Jun-2005	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  *		- Changed rawmode handling to simply copy data even for silence
@@ -179,10 +182,12 @@
 #define CONT_AD_SPS             16000
 
 #define CONT_AD_DEFAULT_NOISE	30	/* Default background noise power level */
-#define CONT_AD_DELTA_SIL	5	/* Initial default for cont_ad_t.delta_sil */
-#define CONT_AD_DELTA_SPEECH	20	/* Initial default for cont_ad_t.delta_speech */
+#define CONT_AD_DELTA_SIL	10	/* Initial default for cont_ad_t.delta_sil */
+#define CONT_AD_DELTA_SPEECH	17	/* Initial default for cont_ad_t.delta_speech */
 #define CONT_AD_MIN_NOISE	2	/* Expected minimum background noise level */
 #define CONT_AD_MAX_NOISE	70	/* Maximum background noise level */
+
+#define CONT_AD_HIST_INERTIA	3	/* Used in decaying the power histogram */
 
 #define CONT_AD_WINSIZE		21	/* Analysis window for state transitions */
 				/* rkm had 16 */
@@ -213,14 +218,24 @@
 
 void cont_ad_powhist_dump (FILE *fp, cont_ad_t *r)
 {
-    int32 i;
+    int32 i, j;
     
     fprintf (fp, "PowHist:\n");
-    for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
-	if (r->pow_hist[i] > 0)
-	    fprintf (fp, "\t%3d %6d\n", i, r->pow_hist[i]);
+    for (i = 0, j = 0; i < CONT_AD_POWHISTSIZE; i++) {
+      if (r->pow_hist[i] > 0) {
+	fprintf (fp, "\t%3d %6d\n", i, r->pow_hist[i]);
+	j = i;
+      }
+    }
+    
+    fprintf (fp, "PH[%7.2f]:", (double)(r->tot_frm * r->spf)/(double)(r->sps));
+    for (i = 0; i <= j; i++)
+      fprintf (fp, " %2d", r->pow_hist[i]);
+    fprintf (fp, "\n");
+    
     fflush (fp);
 }
+
 
 /*
  * Compute frame power.  Interface deliberately kept low level to allow arbitrary
@@ -299,7 +314,7 @@ static void decay_hist (cont_ad_t *r)
     int32 i;
     
     for (i = 0; i < CONT_AD_POWHISTSIZE; i++)
-	r->pow_hist[i] >>= 1;
+	r->pow_hist[i] -= (r->pow_hist[i] >> CONT_AD_HIST_INERTIA);
 }
 
 
@@ -440,9 +455,18 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 		r->tail_state = CONT_AD_STATE_SPEECH;
 		
 		if (r->logfp) {
-		  fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sil -> Sp detect\n",
+		  int32 n;
+		  
+		  /* Where (in absolute time) this speech segment starts */
+		  n = frm - seg->startfrm;
+		  if (n < 0)
+		    n += CONT_AD_ADFRMSIZE;
+		  n = r->tot_frm - n - 1;
+		  
+		  fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sil -> Sp detect; seg start: %7.2fs %8d\n",
 			   (double)(r->tot_frm * r->spf)/(double)(r->sps),
-			   r->tot_frm, frm);
+			   r->tot_frm, frm,
+			   (double)(n * r->spf)/(double)(r->sps), n);
 		}
 		
 		/* Now in SPEECH state; want to look for silence from end of this window */
@@ -461,9 +485,21 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	    r->tail_state = CONT_AD_STATE_SIL;
 		
 	    if (r->logfp) {
-	      fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sp -> Sil detect\n",
+	      int32 n;
+	      
+	      /* Where (in absolute time) this speech segment ends */
+	      n = r->spseg_tail->startfrm + r->spseg_tail->nfrm - 1;
+	      if (n >= CONT_AD_ADFRMSIZE)
+		n -= CONT_AD_ADFRMSIZE;
+	      n = frm - n;
+	      if (n < 0)
+		n += CONT_AD_ADFRMSIZE;
+	      n = r->tot_frm - n;
+	      
+	      fprintf (r->logfp, "%7.2fs %8d[%3d]f: Sp -> Sil detect; seg end: %7.2fs %8d\n",
 		       (double)(r->tot_frm * r->spf)/(double)(r->sps),
-		       r->tot_frm, frm);
+		       r->tot_frm, frm,
+		       (double)(n * r->spf)/(double)(r->sps), n);
 	    }
 	    
 	    /* Now in SILENCE state; start looking for speech trailer+leader frames later */
