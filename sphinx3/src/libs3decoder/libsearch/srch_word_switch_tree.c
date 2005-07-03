@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.5  2005/07/01  04:14:09  arthchan2003
- * Fixes of making histogram pruning working with the WST search (mode 5) 1, As in the TST search, the bins are always zeroed. 2, When the number of bins were initialized, instead of using 3 times the number of nodes, now using n_stalextree number of node.  The histogram bin array are also updated for every utterance. This will ensure when the number of active node is too large, there are invalid write.  3, the code is further safe-guarded in srch_WST_hmm_compute_lv2.  change 2 will not give us assurance if the number of active nodes are too large and spill out of the array.  The code with long comment will make sure that this condition will not happen.
+ * Revision 1.1.4.6  2005/07/03  23:18:05  arthchan2003
+ * 1, correct freeing of the structure is implemented. 2, Revamp srch_WST_propagate_graph_wd_lv2 implementation. The previous implementation contains several hacks which are very hard to reconcile by further hacking.   That includes a, usage of the exact score to indicate whether a tree should be entered. (too magical) b, memory leaks in a rate of 1MB per utterance (no kidding me) c, The code unnecessarily required two pass of all the hypothesis histories. (50 unnecessary lines).  The current fix is much simpler than before.  Instead of trying to keep track of which (word, phone) pair has the highest score using the word_phone_hash hash structure.  We just let every (word, phone) pair to enter the tree and allow lextree_enter to decide whether the history should stay.   This is still not very clever in the sense that the (word, phone) max score is actually the only path it will be propagated in future.  The current implementation will thus make repeated traversal of child nodes for same (word,phone) pair.  However, this is a clean way to do things in the srch_impl layer.  Later, it will be necessary to think of a better way to keep track of max score instead.
  * 
+ * Revision 1.1.4.5  2005/07/01 04:14:09  arthchan2003
+ * Fixes of making histogram pruning working with the WST search (mode 5) 1, As in the TST search, the bins are always zeroed. 2, When the number of bins were initialized, instead of using 3 times the number of nodes, now using n_stalextree number of node.  The histogram bin array are also updated for every utterance. This will ensure when the number of active node is too large, there are invalid write.  3, the code is further safe-guarded in srch_WST_hmm_compute_lv2.  change 2 will not give us assurance if the number of active nodes are too large and spill out of the array.  The code with long comment will make sure that this condition will not happen.
+ *
  * Revision 1.1.4.4  2005/06/28 19:11:49  arthchan2003
  * Fix Bugs. When new tree is allocated, tree indices were not inserted in the empty tree list. Now is fixed.
  *
@@ -90,12 +93,8 @@
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_WST 1 
-#define DEFAULT_STR_LENGTH 100
-#define DEFAULT_HASH_SIZE 1000 /* Just a guess, if there is 50 word
-				  ends and there are 10 phones for
-				  each, then 1000 is approximately
-				  double that amount */
 #define NUM_TREE_ALLOC 5
+
 
 
 int32 srch_WST_init(kb_t* kb, void *srch)
@@ -227,6 +226,8 @@ int32 srch_WST_init(kb_t* kb, void *srch)
 
   wstg->lmset=kbc->lmset;
 
+
+  /**/
   return SRCH_SUCCESS;
 }
 
@@ -234,12 +235,30 @@ int32 srch_WST_uninit(void *srch)
 {
   srch_WST_graph_t* wstg ;
   srch_t* s;
+  int i;
   s=(srch_t *)srch;
+
   wstg=(srch_WST_graph_t*) s->grh->graph_struct;
 
   if(wstg->active_word){
     hash_free(wstg->active_word);
   }
+
+  if(wstg->histprune!=NULL){
+    histprune_free((void*) wstg->histprune);
+  }
+
+  lextree_free(wstg->curroottree);
+  lextree_free(wstg->curfillertree);
+  
+  for(i=0;i<wstg->n_static_lextree;i++){
+    lextree_free(wstg->expandtree[i]);
+    lextree_free(wstg->expandfillertree[i]);
+  }
+
+  ckd_free(wstg->expandtree);
+  ckd_free(wstg->expandfillertree);
+
   return SRCH_SUCCESS;
 }
 
@@ -760,7 +779,6 @@ int32 srch_WST_propagate_graph_wd_lv1(void *srch)
 
 
 /** The heart of WST implementation. 
-    
  */
 
 int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
@@ -769,7 +787,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   vithist_t *vh;
   histprune_t *hp;
   kbcore_t *kbcore;
-  lextree_t *lextree;
   mdef_t *mdef;
 
   srch_t* s;
@@ -777,8 +794,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   int32 maxwpf;        /* Local version of Max words per frame, don't expect it to change */
   int32 maxhistpf;     /* Local version of Max histories per frame, don't expect it to change */
   int32 maxhmmpf;      /* Local version of Max active HMMs per frame, don't expect it to change  */
-  lextree_node_t **list;
-  /*  int32 id;*/
   int32 th;
   beam_t *bm;
   int32 active_word_end;
@@ -787,24 +802,13 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   int32 vhid,le,n_ci, score;
   s3wid_t wid;
   int32 p;
-  char *str;
-  int32 str_length;
   int32 i;
-  /*  char *wdstr, *phstr;*/
-  /*
 
-  gnode_t *key;
-
-  int32 list_size;
-  */
-
-  hash_table_t *word_phone_hash;
+  /*  hash_table_t *word_phone_hash;*/
   glist_t keylist;
   gnode_t *key;
   hash_entry_t *he;
 
-  int32 hash_size;
-  int32 hash_score;
   int32 id;
   int32 succ;
   int32 val;
@@ -823,16 +827,12 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   maxhmmpf  = hp->maxhmmpf;
   active_word_end=0;
 
-  
-
   s=(srch_t*) srch;
  
   wstg=(srch_WST_graph_t*) s->grh->graph_struct;
 
   /* Look at all the word ends */
   
-  lextree=wstg->curroottree;
-  list=lextree->active;
   bm=s->beam;
 
   /*  E_INFO("Time %d\n",frmno);*/
@@ -847,29 +847,17 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   /** Collect all entries with same last phone and same words. */
   /** This is slow.*/
 
-  str=(char*) ckd_calloc(DEFAULT_STR_LENGTH,sizeof(char));
-
-  hash_size=0;
-  word_phone_hash=hash_new(DEFAULT_HASH_SIZE,HASH_CASE_NO);
-
-
   /* At here, just delete the tree with no active entries */
   keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
-
-  i=0;
 
   /*  hash_display(wstg->active_word,1);*/
   for (key = keylist; key; key = gnode_next(key)) {
     he = (hash_entry_t *) gnode_ptr (key);
-
     assert(glist_count(keylist)>0);
-    /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he));*/
 
     hash_lookup (wstg->active_word, (char* )hash_entry_key(he),&val);
+    /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he));*/
     /*E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active);*/
-
-    i++;
-
 
     if(wstg->expandtree[val]->n_active==0){ 
       /* insert this tree back to the list*/
@@ -878,117 +866,19 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
       /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word);*/
       succ=hash_delete(wstg->active_word,wstg->expandtree[val]->prev_word);
       if(succ==HASH_OP_FAILURE){
-	E_INFO("I YELL\n");
+	E_WARN("Internal error occur in hash deallocation. \n");
       }else if(succ==HASH_OP_SUCCESS){
 	/*	E_INFO("DELETE EMPTY TREE. \n");*/
       /*assert(succ==HASH_OP_SUCCESS);*/
       /* set the number of active word */
 	wstg->no_active_word--;
       }
-
       /* set the word of a lextree to be none*/
       strcpy(wstg->expandtree[val]->prev_word,"");
     }
-
-
   }
 
 
-  /*  hash_display(wstg->active_word);*/
-#if 0
-  for(i=0;i<wstg->no_active_word;i++){
-    
-    E_INFO("Tree %d, No of active word %d\n",i, wstg->expandtree[i]->n_active);
-    if(wstg->expandtree[i]->n_active==0){ 
-      /* insert this tree back to the list*/
-      wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,i);
-      /* delete this entry from the hash*/
-      succ=hash_delete(wstg->active_word,wstg->expandtree[i]->prev_word);
-      if(succ==HASH_OP_FAILURE){
-	E_INFO("I YELL\n");
-      }else if(succ==HASH_OP_SUCCESS){
-      /*assert(succ==HASH_OP_SUCCESS);*/
-      /* set the number of active word */
-	wstg->no_active_word--;
-      }
-
-      /* set the word of a lextree to be none*/
-      strcpy(wstg->expandtree[i]->prev_word,"");
-    }
-  }
-#endif
-
-  for (; vhid <= le; vhid++) {
-    ve = vithist_id2entry (vh, vhid);
-    wid = vithist_entry_wid (ve);
-    p = dict_last_phone (dict, wid);
-
-    score = vithist_entry_score (ve);
-
-    if (mdef_is_fillerphone(mdef, p))
-      p = mdef_silphone(mdef);
-
-    if (! vithist_entry_valid(ve))
-      continue;
-    
-    /* HACK, build a hash for ((word,phone),score) pair */
-    /* This is ugly. */
-    /* Create an internal represetation look likes "word::::phone".  */
-    
-    str_length=0;
-    str_length+=strlen(dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
-    str_length+=strlen(mdef_ciphone_str(mdef,p));
-    str_length+=5;
-
-    str=(char*) ckd_calloc(str_length,sizeof(char));
-  
-    /*    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
-	  wid, 
-	  dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	  p,
-	  mdef_ciphone_str(mdef,p),
-	  score);*/
-
-
-    sprintf(str,"%s%s%s",
-	    dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	    "::::",
-	    mdef_ciphone_str(mdef,p));
-
-    /*E_INFO("Composite String %s\n",str); */
-
-    if(hash_lookup(word_phone_hash, str,&hash_score) <0){
-      hash_size++;
-      if(hash_size > DEFAULT_HASH_SIZE){
-	/* If another copy is not available, start to allocate a copy of tree.*/
-	E_FATAL("Hash size is larger than default hash size %d. \n",hash_size);
-      }
-      if(hash_enter(word_phone_hash,str,score) != score ){
-	E_FATAL("hash_enter(table, %s) failed\n", str);
-      }
-    }else{
-      if(hash_score < score){ 
-	if(hash_enter(word_phone_hash,str,score) != hash_score ){
-	  E_FATAL("hash_enter(table, %s) failed\n", str);
-	}
-      }
-    }    
-  }
-
-
-#if 0
-    keylist=hash_tolist(word_phone_hash,&list_size);
-    
-  for (key = keylist; key; key = gnode_next(key)) {
-    he = (hash_entry_t *) gnode_ptr (key);
-    E_INFO("Key %s: Value %d\n", hash_entry_key(he),hash_entry_val(he));
-    /* Extract the word and phone at here */
-    wdstr=strtok(hash_entry_key(he),":");
-    E_INFO("String %s\n",wdstr);
-    phstr=strtok(NULL,":");
-    E_INFO("String %s\n",phstr);
-  }
-#endif
   /* This is a place one should do all tricks of cross-word triphones */
   /** All entries traverse to tree with word context*/
 
@@ -999,6 +889,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     ve = vithist_id2entry (vh, vhid);
     wid = vithist_entry_wid (ve);
     p = dict_last_phone (dict, wid);
+
     if (mdef_is_fillerphone(mdef, p))
       p = mdef_silphone(mdef);
     
@@ -1039,7 +930,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 					   wstg->isLMLA,!REPORT_SRCH_WST);
 
 	  if(wstg->expandtree[i]==NULL){
-	    E_INFO("Fail to allocate lexical tree %d for lm %d \n",i, 0);
+	    E_INFO("Fail to allocate lexical tree %d for lm %d  \n",i, 0);
 	    return SRCH_FAILURE;
 	  }
 
@@ -1072,51 +963,20 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     }else{
     }
 
-    str_length=0;
-    str_length+=strlen(dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
-    str_length+=strlen(mdef_ciphone_str(mdef,p));
-    str_length+=5;
-    
-    str=(char*) ckd_calloc(str_length,sizeof(char));
-    
-    sprintf(str,"%s%s%s",
-	    dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	    "::::",
-	    mdef_ciphone_str(mdef,p));
-
-    /* No matter what, a tree would be availble at this point. It is time to enter it. */
-
-    /*E_INFO("In the entry loop string: %s\n",str); */
-
-
-    hash_lookup(word_phone_hash,
-		str,
-		&hash_score);
-
-    /*     E_INFO("hash_score %d , score %d\n", hash_score,score);*/
-    /* HACK! This is magical */
-    /* If it was entered once, it shouldn't be enter twice. This loop is quite stupid in that sense*/
-    /* and here I used a very magical way to check it. This is very wrong, I need to change it back. */
-
-    if(hash_score == score){
-      /*      E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
+    /*    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
 	wid, 
 	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
 	p,
 	mdef_ciphone_str(mdef,p),
 	score);*/
 
-      lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, hash_score, vhid, th);
-      lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, vh->bestscore[frmno],
-		     vh->bestvh[frmno], th);
-
-    }
+    lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
+    lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, vh->bestscore[frmno],
+		  vh->bestvh[frmno], th);
 
   }
 
   /** obtained a link-list from the hash_table keys*/
-  ckd_free(word_phone_hash);
-  ckd_free(str);
   
   return SRCH_SUCCESS;
 
