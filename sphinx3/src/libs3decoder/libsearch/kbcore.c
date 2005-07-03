@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.1  2005/06/28  19:10:06  arthchan2003
- * Add fillpen_report in kbcore.c
+ * Revision 1.10.4.2  2005/07/03  23:02:39  arthchan2003
+ * Wrapped up feat_t freeing into feat_free.
  * 
+ * Revision 1.10.4.1  2005/06/28 19:10:06  arthchan2003
+ * Add fillpen_report in kbcore.c
+ *
  * Revision 1.10  2005/06/21 23:28:48  arthchan2003
  * Log. Please also see comments of kb.[ch].  Major changes you could see
  * is that the lmset interface is now used rather than several interfaces
@@ -386,15 +389,12 @@ void kbcore_free (kbcore_t *kbcore)
   mgau_free (kbcore->mgau);
 
   /* memory allocated in kbcore*/
-  if (fcb) {
-    ckd_free ((void *)fcb->name);
-    ckd_free ((void *)fcb->stream_len);
-    ckd_free ((void *)fcb);
+  if (kbcore->fcb) {
+    feat_free (kbcore->fcb);
   }
 
   /* Free the memory allocated by this module*/
   logs_free();  
-  feat_free (kbcore->fcb);
 
   /* Free the object */
   ckd_free ((void *) kbcore);
