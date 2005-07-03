@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  20:58:09  arthchan2003
- * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ * Revision 1.1.4.1  2005/07/03  22:56:51  arthchan2003
+ * Add stat_free.
  * 
+ * Revision 1.1  2005/06/21 20:58:09  arthchan2003
+ * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ *
  * Revision 1.6  2005/04/25 19:22:47  archan
  * Refactor out the code of rescoring from lexical tree. Potentially we want to turn off the rescoring if we need.
  *
@@ -81,6 +84,13 @@ stat_t* stat_init(){
 
   return st;
 
+}
+
+void stat_free(stat_t* st)
+{
+  if(st){
+    ckd_free((void*) st);
+  }
 }
 
 void stat_clear_utt(stat_t* st)
