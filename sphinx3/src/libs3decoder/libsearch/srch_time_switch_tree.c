@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.1  2005/06/28  07:03:37  arthchan2003
- * Set lmset correctly in srch_time_switch_tree.
+ * Revision 1.2.4.2  2005/07/03  23:19:16  arthchan2003
+ * Added free code for srch_time_switch_tree.c
  * 
+ * Revision 1.2.4.1  2005/06/28 07:03:37  arthchan2003
+ * Set lmset correctly in srch_time_switch_tree.
+ *
  * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
@@ -213,6 +216,14 @@ int srch_TST_init(kb_t *kb, void *srch)
 }
 int srch_TST_uninit(void *srch)
 {
+  srch_TST_graph_t* tstg ;
+  srch_t* s;
+  s=(srch_t *)srch;
+  tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+  if(tstg->histprune!=NULL){
+    histprune_free((void*) tstg->histprune);
+  }
+
   return SRCH_SUCCESS;
 }
 int srch_TST_begin(void *srch)
