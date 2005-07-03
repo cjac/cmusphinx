@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.3  2005/06/28  07:03:01  arthchan2003
- * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ * Revision 1.1.4.4  2005/07/03  23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
  * 
+ * Revision 1.1.4.3  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
  * Revision 1.1.4.2  2005/06/27 05:32:35  arthchan2003
  * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
  *
@@ -128,6 +131,46 @@
 #include "srch.h"
 #define COMPUTE_HEURISTIC 1
 
+
+
+int32 srchmode_str_to_index(const char* mode_str)
+{
+  if(!strcmp(mode_str,"OP_ALIGN")){
+    return OPERATION_ALIGN;
+  }
+
+  if(!strcmp(mode_str,"OP_ALLPHONE")){
+    return OPERATION_ALLPHONE;
+  }
+
+  if(!strcmp(mode_str,"OP_FSG")){
+    return OPERATION_GRAPH;
+  }
+
+  if(!strcmp(mode_str,"OP_FLATFWD")){
+    return OPERATION_FLATFWD;
+  }
+
+  if(!strcmp(mode_str,"OP_LUCKYWHEEL")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_TST_DECODE")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_WST_DECODE")){
+    return OPERATION_WST_DECODE;
+  }
+
+  E_WARN("UNKNOWN MODE NAME %s\n",mode_str);
+  return -1; 
+
+}
+
+char* srchmode_index_to_str(int32 index)
+{
+}
 
 void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_init!=NULL);
@@ -252,7 +295,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
 #endif
 
-  }else if(op_mode==OPERATION_FLAT_DECODE){
+  }else if(op_mode==OPERATION_FLATFWD){
 
     E_FATAL("Flat decoding is not supported yet");
 
@@ -479,6 +522,7 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   st->nfr += block_nfeatvec;
   
+
   
   *curfrm = frmno;
 
@@ -492,6 +536,8 @@ int32 srch_uninit(srch_t* srch){
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+  ckd_free(srch);
+
   return SRCH_SUCCESS;
 }
 

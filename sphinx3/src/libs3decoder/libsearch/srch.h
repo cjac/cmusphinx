@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.1  2005/06/28  07:03:01  arthchan2003
- * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ * Revision 1.1.4.2  2005/07/03  23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
  * 
+ * Revision 1.1.4.1  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
  * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
@@ -134,7 +137,7 @@
 #define OPERATION_ALIGN 0
 #define OPERATION_ALLPHONE 1
 #define OPERATION_GRAPH 2
-#define OPERATION_FLAT_DECODE 3
+#define OPERATION_FLATFWD 3
 #define OPERATION_TST_DECODE 4
 #define OPERATION_WST_DECODE 5
 #define OPERATION_DEBUG 1369  /** ARCHAN 20050329: 1369 has no meaning
@@ -431,6 +434,37 @@ typedef struct srch_s {
 }srch_t;
 
 
+/** 
+    Translate search mode string to mode number 
+
+    The current operation mode are 
+    Strings        Operation Mode(Mode Idx)
+    OP_ALIGN       OPERATION_ALIGN(0)
+    OP_ALLPHONE    OPERATION_ALLPHONE(1)
+    OP_FSG         OPERATION_GRAPH(2)
+    OP_FLATFWD     OPERATION_FLATFWD(3)
+    
+    There are two names for OPERATION_TST_DECODE (Mode 4)
+    OP_LUCKYWHEEL  OPERATION_TST_DECODE(4)
+    OP_TST_DECODE  OPERATION_TST_DECODE(4)
+    
+    OP_WST_DECODE  OPERATION_WST_DECODE(5)
+
+     OP_DEBUG       OPERATION_WST_DECODE(1369) 
+
+     @return the mode index if it is valid, -1 if it is not.  
+ */
+
+int32 srchmode_str_to_index(const char* mode_str);
+
+/** Translate mode string to mode index. User need to supply an initialized 
+    @return a mode string;
+    @see srchmode_str_to_index
+ */
+
+char* srchmode_index_to_str(int32 index);
+
+
 /* The following are C-style method for srch structure.  In theory,
 users could used both C-style and function pointer style to access
 functionalities of the code. However, we recommend developers to use
@@ -440,6 +474,7 @@ it is more consistent with other modules in sphinx 3.
 
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces
+    @return an initialized srch_t with operation mode op_mode. 
 */
 
 srch_t* srch_init(kb_t *kb, /**< In: knowledge base */
