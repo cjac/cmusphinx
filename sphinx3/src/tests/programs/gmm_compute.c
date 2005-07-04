@@ -70,7 +70,7 @@ extern stats_t *cur_sen_Nbest_st;
 
 int32 *cd;
 
-int intcmp(const void *v1, const void *v2){
+int intcmp_gmm_compute(const void *v1, const void *v2){
     return (cd[*(int32*) v2 ] - cd[*(int32*)v1]);
 }
 
@@ -86,7 +86,8 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
   subvq_t *svq;
   gs_t * gs;
 
-  int32 maxwpf, maxhistpf, maxhmmpf, ptranskip;
+  
+  int32 ptranskip;
   int32 s,f,t;
   int32 single_el_list[2];
   stats_t cur_ci_st;
@@ -117,9 +118,6 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 
   s3senid_t *cd2cisen;
 
-  maxwpf = kb->histprune->maxwpf;
-  maxhistpf = kb->histprune->maxwpf;
-  maxhmmpf = kb->histprune->maxhmmpf;
   ptranskip = kb->beam->ptranskip;
 
   pheurtype = kb->pl->pheurtype;
@@ -233,7 +231,7 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
     }
 
     cd=&(kb->ascr->sen[mdef->n_ci_sen]);
-    qsort(idx,mdef->n_sen-mdef->n_ci_sen,sizeof(int32),intcmp);
+    qsort(idx,mdef->n_sen-mdef->n_ci_sen,sizeof(int32),intcmp_gmm_compute);
 
     /*This loop is stupid and it is just a hack. */
     for(s=0; s<mdef->n_sen-mdef->n_ci_sen;s++){

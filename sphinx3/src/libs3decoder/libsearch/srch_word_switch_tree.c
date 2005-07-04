@@ -38,11 +38,29 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.1.4.6  2005/07/03  23:18:05  arthchan2003
+ * 1, correct freeing of the structure is implemented. 2, Revamp srch_WST_propagate_graph_wd_lv2 implementation. The previous implementation contains several hacks which are very hard to reconcile by further hacking.   That includes a, usage of the exact score to indicate whether a tree should be entered. (too magical) b, memory leaks in a rate of 1MB per utterance (no kidding me) c, The code unnecessarily required two pass of all the hypothesis histories. (50 unnecessary lines).  The current fix is much simpler than before.  Instead of trying to keep track of which (word, phone) pair has the highest score using the word_phone_hash hash structure.  We just let every (word, phone) pair to enter the tree and allow lextree_enter to decide whether the history should stay.   This is still not very clever in the sense that the (word, phone) max score is actually the only path it will be propagated in future.  The current implementation will thus make repeated traversal of child nodes for same (word,phone) pair.  However, this is a clean way to do things in the srch_impl layer.  Later, it will be necessary to think of a better way to keep track of max score instead.
+ * 
+ * Revision 1.1.4.5  2005/07/01 04:14:09  arthchan2003
+ * Fixes of making histogram pruning working with the WST search (mode 5) 1, As in the TST search, the bins are always zeroed. 2, When the number of bins were initialized, instead of using 3 times the number of nodes, now using n_stalextree number of node.  The histogram bin array are also updated for every utterance. This will ensure when the number of active node is too large, there are invalid write.  3, the code is further safe-guarded in srch_WST_hmm_compute_lv2.  change 2 will not give us assurance if the number of active nodes are too large and spill out of the array.  The code with long comment will make sure that this condition will not happen.
+ *
+ * Revision 1.1.4.4  2005/06/28 19:11:49  arthchan2003
+ * Fix Bugs. When new tree is allocated, tree indices were not inserted in the empty tree list. Now is fixed.
+ *
+ * Revision 1.1.4.3  2005/06/28 07:05:40  arthchan2003
+ * 1, Set lmset correctly in srch_word_switch_tree. 2, Fixed a bug hmm_hist_binsize so that histogram pruning could be used in mode 5. 3, (Most important) When number of allocated tree is smaller than number of tree required, the search dynamically allocated more tree until all memory are used up. This should probably help us to go through most scenarios below 3k vocabulary.
+ *
+ * Revision 1.1.4.2  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
+ * Revision 1.1  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.16  2005/06/20 22:20:18  archan
  * Fix non-conforming problems for Windows plot.
  *
@@ -75,12 +93,8 @@
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_WST 1 
-#define HARDCODE_FACTOR 3
-#define DEFAULT_STR_LENGTH 100
-#define DEFAULT_HASH_SIZE 1000 /* Just a guess, if there is 50 word
-				  ends and there are 10 phones for
-				  each, then 1000 is approximately
-				  double that amount */
+#define NUM_TREE_ALLOC 5
+
 
 
 int32 srch_WST_init(kb_t* kb, void *srch)
@@ -93,7 +107,6 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   kbc=kb->kbcore;
   s=(srch_t *)srch;
   wstg=(srch_WST_graph_t*)ckd_calloc(1,sizeof(srch_WST_graph_t));
-
   /* Only initialized one + n_static copies of trees in the initialization. */
   if(cmd_ln_int32("-epl"))
     E_WARN("-epl is omitted in WST search.\n");
@@ -122,7 +135,11 @@ int32 srch_WST_init(kb_t* kb, void *srch)
     resource switching we need to take care of.  */
 
   wstg->expandtree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
+  wstg->expandfillertree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
 
+  if(kbc->lmset->n_lm>1){
+    E_FATAL("Multiple lm doesn't work for this mode yet\n");
+  }
   for(i=0;i<kbc->lmset->n_lm ; i++){
     wstg->roottree[i]=lextree_init(kbc,kbc->lmset->lmarray[i],kbc->lmset->lmarray[i]->name,
 				   wstg->isLMLA,!REPORT_SRCH_WST);
@@ -143,13 +160,22 @@ int32 srch_WST_init(kb_t* kb, void *srch)
     to dynamically reallocated all the LM. 
   */
 
-  for(i=0;i<wstg->n_static_lextree;i++){
+  /* By default set the current root tree to the first rootree. */
+  /* The first word and filler tree */
 
+  wstg->curroottree=wstg->roottree[0];
+  wstg->curfillertree = fillertree_init(kbc);
+  if(wstg->curfillertree==NULL){
+      E_INFO("Fail to allocate filler tree for lm %d \n",i);
+  }
+
+  /* The expanded tree */
+  for(i=0;i<wstg->n_static_lextree;i++){
     wstg->expandtree[i]=lextree_init(kbc,kbc->lmset->lmarray[0],kbc->lmset->lmarray[0]->name,
 				   wstg->isLMLA,!REPORT_SRCH_WST);
 
     if(wstg->expandtree[i]==NULL){
-      E_INFO("Fail to allocate lexical tree for lm %d \n",i);
+      E_INFO("Fail to allocate lexical tree %d for lm %d \n",i, 0);
       return SRCH_FAILURE;
     }
 
@@ -158,37 +184,39 @@ int32 srch_WST_init(kb_t* kb, void *srch)
 	     i, kbc->lmset->lmarray[0]->name,lextree_n_node(wstg->expandtree[i]));
     }
 
+    wstg->expandfillertree[i]=fillertree_init(kbc);
+    if(wstg->expandfillertree[i]==NULL){
+      E_INFO("Fail to allocate filler tree %d for lm %d \n",i,0);
+      return SRCH_FAILURE;
+    }
+
   }
 
-  /* By default set the current root tree to the first rootree. */
-  wstg->curroottree=wstg->roottree[0];
 
-  if((wstg->fillertree = fillertree_init(kbc))==NULL){
-    E_INFO("Fail to allocate filler tree\n",i);
-  }
 
-  if(REPORT_SRCH_WST){
-    E_INFO("Lextrees(%d), %d nodes(filler)\n",
-	   i, 
-	   lextree_n_node(wstg->fillertree));    
-  }
     
   if (cmd_ln_int32("-lextreedump")) {
     for(i=0;i<kbc->lmset->n_lm;i++){
       fprintf (stderr, "LM %d name %s UGTREE %d\n",i,kbc->lmset->lmarray[i]->name,i);
       lextree_dump (wstg->roottree[i], kbc->dict, stderr);
     }
-    fprintf (stderr, "FILLERTREE %d\n", i);
-    lextree_dump (wstg->fillertree, kbc->dict, stderr);
+
+    /*    fprintf (stderr, "FILLERTREE %d\n", i);
+	  lextree_dump (wstg->fillertree, kbc->dict, stderr);*/
   }
 
 
+  /* Using wstg->n_static_lextree to decide the number of nodes is still not a very safe measure
+   */
   wstg->histprune=histprune_init(cmd_ln_int32("-maxhmmpf"),
 				 cmd_ln_int32("-maxhistpf"),
 				 cmd_ln_int32("-maxwpf"),
 				 cmd_ln_int32("-hmmhistbinsize"),
-				 (wstg->curroottree->n_node + wstg->fillertree->n_node) * HARDCODE_FACTOR
+				 (wstg->curroottree->n_node + wstg->curfillertree->n_node) * wstg->n_static_lextree
 				 );
+
+  
+
 
   wstg->active_word=hash_new(wstg->n_static_lextree,1);
 
@@ -196,6 +224,10 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   s->grh->graph_struct=wstg;
   s->grh->graph_type=GRAPH_STRUCT_WST;
 
+  wstg->lmset=kbc->lmset;
+
+
+  /**/
   return SRCH_SUCCESS;
 }
 
@@ -203,10 +235,30 @@ int32 srch_WST_uninit(void *srch)
 {
   srch_WST_graph_t* wstg ;
   srch_t* s;
+  int i;
   s=(srch_t *)srch;
+
   wstg=(srch_WST_graph_t*) s->grh->graph_struct;
 
-  hash_free(wstg->active_word);
+  if(wstg->active_word){
+    hash_free(wstg->active_word);
+  }
+
+  if(wstg->histprune!=NULL){
+    histprune_free((void*) wstg->histprune);
+  }
+
+  lextree_free(wstg->curroottree);
+  lextree_free(wstg->curfillertree);
+  
+  for(i=0;i<wstg->n_static_lextree;i++){
+    lextree_free(wstg->expandtree[i]);
+    lextree_free(wstg->expandfillertree[i]);
+  }
+
+  ckd_free(wstg->expandtree);
+  ckd_free(wstg->expandfillertree);
+
   return SRCH_SUCCESS;
 }
 
@@ -218,6 +270,7 @@ int32 srch_WST_begin(void *srch)
   mgau_model_t *g;
   srch_t* s;
   srch_WST_graph_t* wstg;
+  glist_t keylist;
 
   s=(srch_t*) srch;
   assert(s);
@@ -230,6 +283,13 @@ int32 srch_WST_begin(void *srch)
   g=kbc->mgau;
 
   stat_clear_utt(s->stat);
+
+  histprune_update_histbinsize(wstg->histprune,
+			       wstg->histprune->hmm_hist_binsize,  
+			       (wstg->curroottree->n_node + wstg->curfillertree->n_node) * wstg->n_static_lextree);
+
+  histprune_zero_histbin(wstg->histprune);
+
   /* Insert initial <s> into vithist structure */
   pred = vithist_utt_begin (s->vithist, kbc);
   assert (pred == 0);	/* Vithist entry ID for <s> */
@@ -247,18 +307,37 @@ int32 srch_WST_begin(void *srch)
 
   /*  E_INFO("Value of n:%d\n", lextree_n_next_active(wstg->curroottree));    */
   assert (n == 0);
-  lextree_enter (wstg->curroottree, mdef_silphone(kbc->mdef), -1, 0, pred,
-		 s->beam->hmm);
+  lextree_enter (wstg->curroottree, mdef_silphone(kbc->mdef), -1, 0, pred,s->beam->hmm);
 
   lextree_active_swap (wstg->curroottree);
 
   /*E_INFO("Value of n:%d\n", lextree_n_next_active(wstg->curroottree)); */
   /* Enter into filler lextree */
-  n = lextree_n_next_active(wstg->fillertree);
+  n = lextree_n_next_active(wstg->curfillertree);
   assert (n == 0);
-  lextree_enter (wstg->fillertree, BAD_S3CIPID, -1, 0, pred, s->beam->hmm);
-  lextree_active_swap (wstg->fillertree);
+  lextree_enter (wstg->curfillertree, BAD_S3CIPID, -1, 0, pred, s->beam->hmm);
+  lextree_active_swap (wstg->curfillertree);
 
+
+  keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
+  assert(glist_count(keylist)==0);
+
+  /*  assert(glist_count(wstg->empty_tree_idx_stack)==0);*/
+  /* Initialize the stack of empty tree index */
+  for(i=wstg->n_static_lextree-1;i>=0;i--){
+    wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,i);
+  }
+  
+  /*  void print_g(int32 i){printf("%d\n",i);}
+  glist_apply_int32(wstg->empty_tree_idx_stack,print_g);
+
+  wstg->empty_tree_idx_stack=glist_reverse(wstg->empty_tree_idx_stack);
+  glist_apply_int32(wstg->empty_tree_idx_stack,print_g);
+
+  wstg->empty_tree_idx_stack=glist_delete(wstg->empty_tree_idx_stack);
+  glist_apply_int32(wstg->empty_tree_idx_stack,print_g);*/
+
+  /*  E_FATAL ("Forced stop\n");*/
   return SRCH_SUCCESS;
 }
 
@@ -277,6 +356,12 @@ int32 srch_WST_end(void *srch)
   histprune_t* hp;
   dict_t *dict;
   char* uttid;
+  int32 i;
+  glist_t keylist;
+  gnode_t *key;
+  hash_entry_t *he;
+  int32 val;
+
 
   s=(srch_t*) srch;
   assert(s);
@@ -313,7 +398,42 @@ int32 srch_WST_end(void *srch)
     system ("ps aguxwww | grep /dec | grep -v grep");
   }
 #endif
+
+  lextree_utt_end(wstg->curroottree,s->kbc);
+  lextree_utt_end(wstg->curfillertree,s->kbc);
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree_utt_end(wstg->expandtree[i], s->kbc);
+    lextree_utt_end(wstg->expandfillertree[i],s->kbc);
+  }
+    
+  vithist_utt_reset (s->vithist);
+  
+  lm_cache_stats_dump (kbcore_lm(s->kbc));
+  lm_cache_reset (kbcore_lm(s->kbc));
+  
   /* Wrap up the utterance reset */
+
+  /* Also empty the active_word list*/
+  keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
+
+  for (key = keylist; key; key = gnode_next(key)) {
+    he = (hash_entry_t *) gnode_ptr (key);
+    hash_lookup (wstg->active_word, (char* )hash_entry_key(he),&val);
+
+    /*    printf("From hash table %s From expandtree %s\n", (char* )hash_entry_key(he), wstg->expandtree[val]->prev_word );*/
+    assert(hash_delete(wstg->active_word,(char* )hash_entry_key(he))==HASH_OP_SUCCESS);
+  }
+
+  /* Delete everything in the list */
+  /*  glist_free(wstg->empty_tree_idx_stack);*/
+
+  /*  void print_g(int32 i){printf("%d\n",i);}
+      glist_apply_int32(wstg->empty_tree_idx_stack,print_g);*/
+
+  /*FIXME! Hmm. Glist count could be larger than 1 aftre glist_free, let it be for now */
+  E_INFO("Glist count %d\n", glist_count(wstg->empty_tree_idx_stack));
+
+  
   return SRCH_SUCCESS;
 }
 
@@ -399,9 +519,26 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     besthmmscr = lextree->best;
   if (bestwordscr < lextree->wbest)
     bestwordscr = lextree->wbest;
-  
+
   st->utt_hmm_eval += lextree->n_active;
   frm_nhmm += lextree->n_active;
+
+
+  lextree = wstg->curfillertree;
+  if (s->hmmdumpfp != NULL)
+    fprintf (s->hmmdumpfp, "Fr %d Lextree %d #HMM %d\n", frmno, i, 
+	     lextree->n_active);
+
+  lextree_hmm_eval (lextree, kbcore, ascr, frmno, s->hmmdumpfp);
+  if (besthmmscr < lextree->best)
+    besthmmscr = lextree->best;
+  if (bestwordscr < lextree->wbest)
+    bestwordscr = lextree->wbest;
+
+  st->utt_hmm_eval += lextree->n_active;
+  frm_nhmm += lextree->n_active;
+
+  
 
   for (i = 0; i < wstg->n_static_lextree; i++) {
     lextree = wstg->expandtree[i];
@@ -418,12 +555,54 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     st->utt_hmm_eval += lextree->n_active;
     frm_nhmm += lextree->n_active;
   }
+
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree = wstg->expandfillertree[i];
+    if (s->hmmdumpfp != NULL)
+      fprintf (s->hmmdumpfp, "Fr %d Lextree %d #HMM %d\n", frmno, i, 
+	       lextree->n_active);
+    lextree_hmm_eval (lextree, kbcore, ascr, frmno, s->hmmdumpfp);
+    
+    if (besthmmscr < lextree->best)
+      besthmmscr = lextree->best;
+    if (bestwordscr < lextree->wbest)
+      bestwordscr = lextree->wbest;
+      
+    st->utt_hmm_eval += lextree->n_active;
+    frm_nhmm += lextree->n_active;
+  }
+
+
+
   if (besthmmscr > 0) {
     E_ERROR("***ERROR*** Fr %d, best HMM score > 0 (%d); int32 wraparound?\n",
 	    frmno, besthmmscr);
   }
-  
-  hmm_hist[frm_nhmm / histbinsize]++;
+
+  numhistbins = hp->hmm_hist_bins;
+
+
+  /* ARCHAN: 20050701
+
+     HACK!  This is not a great hack. But it is what I tried to avoid,
+     in WST search, there might be situation where
+     frm_nhmm/histbinsize is larger than hp->hmm_hist_bins and causing
+     hmm_hist[frm_nhmm/histbinsize]++ to do invalid memory write.
+     This is caused by the fact WST search will dynamic increase the
+     number of trees and that will in-turn affect the size of
+     hmm_hist. What one could do is to allow update of histogram
+     binsize within the tree allocation routine.  However, within
+     decoding of one utterance, that might cause nasty problem of
+     recomputing the value of each bins. Therefore, I tried to avoid
+     it. Instead, for that particular utterance where memory is
+     allocated, every update which is larger than hp->hmm_hist_bins
+     are now put in hp->hmm_hist_bins.  This will ensure the code to be
+     safe. 
+  */
+  if(frm_nhmm/histbinsize > hp->hmm_hist_bins-1)
+    hmm_hist[hp->hmm_hist_bins-1]++;
+  else
+    hmm_hist[frm_nhmm / histbinsize]++;
     
   /* Set pruning threshold depending on whether number of active HMMs 
    * is within limit 
@@ -441,10 +620,20 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     lextree=wstg->curroottree;
     lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
 
-    for (i = 0; wstg->n_static_lextree; i++) {
+    lextree=wstg->curfillertree;
+    lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
+
+
+    for (i = 0; i< wstg->n_static_lextree; i++) {
       lextree=wstg->expandtree[i];
       lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
     }
+
+    for (i = 0; i< wstg->n_static_lextree; i++) {
+      lextree=wstg->expandfillertree[i];
+      lextree_hmm_histbin (lextree, besthmmscr, bin, nbin, bw);
+    }
+
     
     for (i = 0, j = 0; (i < nbin) && (j < maxhmmpf); i++, j += bin[i]);
     ckd_free ((void *) bin);
@@ -504,6 +693,14 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 			s->beam->phone_thres, 
 			s->beam->word_thres,pl);
 
+  lextree=wstg->curfillertree;
+  lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
+				   s->beam->thres, 
+				   s->beam->phone_thres, 
+				   s->beam->word_thres,pl);
+
+
+
   for (i = 0; i < wstg->n_static_lextree; i++) {
     lextree = wstg->expandtree[i];
     /*    E_INFO("For expand tree\n");*/
@@ -512,6 +709,17 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 				     s->beam->phone_thres, 
 				     s->beam->word_thres,pl);
   }
+
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree = wstg->expandfillertree[i];
+    /*    E_INFO("For expand tree\n");*/
+    lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
+				     s->beam->thres, 
+				     s->beam->phone_thres, 
+				     s->beam->word_thres,pl);
+  }
+
+
 
   return SRCH_SUCCESS;
 }
@@ -543,12 +751,22 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
   lextree=wstg->curroottree;
   lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 			s->beam->word_thres,s->senscale);
+  lextree=wstg->curfillertree;
+  lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
+			s->beam->word_thres,s->senscale);
 
   for (i = 0; i < wstg->n_static_lextree; i++) {
     lextree = wstg->expandtree[i];
     lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				 s->beam->word_thres,s->senscale);
+
+    lextree = wstg->expandfillertree[i];
+    lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
+				 s->beam->word_thres,s->senscale);
+
   }
+
+
 
   return SRCH_SUCCESS;
 }
@@ -561,7 +779,6 @@ int32 srch_WST_propagate_graph_wd_lv1(void *srch)
 
 
 /** The heart of WST implementation. 
-    
  */
 
 int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
@@ -570,7 +787,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   vithist_t *vh;
   histprune_t *hp;
   kbcore_t *kbcore;
-  lextree_t *lextree;
   mdef_t *mdef;
 
   srch_t* s;
@@ -578,8 +794,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   int32 maxwpf;        /* Local version of Max words per frame, don't expect it to change */
   int32 maxhistpf;     /* Local version of Max histories per frame, don't expect it to change */
   int32 maxhmmpf;      /* Local version of Max active HMMs per frame, don't expect it to change  */
-  lextree_node_t **list;
-  /*  int32 id;*/
   int32 th;
   beam_t *bm;
   int32 active_word_end;
@@ -588,22 +802,16 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   int32 vhid,le,n_ci, score;
   s3wid_t wid;
   int32 p;
-  char *str;
-  int32 str_length;
-  /*  char *wdstr, *phstr;*/
-  /*
+  int32 i;
+
+  /*  hash_table_t *word_phone_hash;*/
   glist_t keylist;
   gnode_t *key;
   hash_entry_t *he;
-  int32 list_size;
-  */
 
-  hash_table_t *word_phone_hash;
-
-  int32 hash_size;
-  int32 hash_score;
   int32 id;
-
+  int32 succ;
+  int32 val;
 
   s=(srch_t*) srch;
   wstg=(srch_WST_graph_t*) s->grh->graph_struct;
@@ -618,7 +826,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   maxhistpf = hp->maxwpf;
   maxhmmpf  = hp->maxhmmpf;
   active_word_end=0;
-  
 
   s=(srch_t*) srch;
  
@@ -626,8 +833,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
   /* Look at all the word ends */
   
-  lextree=wstg->curroottree;
-  list=lextree->active;
   bm=s->beam;
 
   /*  E_INFO("Time %d\n",frmno);*/
@@ -642,88 +847,38 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   /** Collect all entries with same last phone and same words. */
   /** This is slow.*/
 
-  /** You can just USE ID , FOOL!!!*/
+  /* At here, just delete the tree with no active entries */
+  keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
 
-  str=(char*) ckd_calloc(DEFAULT_STR_LENGTH,sizeof(char));
-
-  hash_size=0;
-  word_phone_hash=hash_new(DEFAULT_HASH_SIZE,HASH_CASE_NO);
-
-
-  /* At here, just delete the tree with not many active entries */
-
-  for (; vhid <= le; vhid++) {
-    ve = vithist_id2entry (vh, vhid);
-    wid = vithist_entry_wid (ve);
-    p = dict_last_phone (dict, wid);
-
-    score = vithist_entry_score (ve);
-
-    if (mdef_is_fillerphone(mdef, p))
-      p = mdef_silphone(mdef);
-
-    if (! vithist_entry_valid(ve))
-      continue;
-    
-    /* HACK, build a hash for ((word,phone),score) pair */
-    /* This is ugly. */
-    /* Create an internal represetation look likes "word::::phone".  */
-    
-    str_length=0;
-    str_length+=strlen(dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
-    str_length+=strlen(mdef_ciphone_str(mdef,p));
-    str_length+=5;
-
-    str=(char*) ckd_calloc(str_length,sizeof(char));
-  
-    /*    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
-	  wid, 
-	  dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	  p,
-	  mdef_ciphone_str(mdef,p),
-	  score);*/
-
-
-    sprintf(str,"%s%s%s",
-	    dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	    "::::",
-	    mdef_ciphone_str(mdef,p));
-
-    /*E_INFO("Composite String %s\n",str); */
-
-    if(hash_lookup(word_phone_hash, str,&hash_score) <0){
-      hash_size++;
-      /* HACK! In general, the high scoring ones to be taken care first. */
-      if(hash_size > DEFAULT_HASH_SIZE){
-	/* If another copy is not available, start to allocate a copy of tree.*/
-	E_FATAL("Hash size is larger than default hash size %d. \n",hash_size);
-      }
-      if(hash_enter(word_phone_hash,str,score) != score ){
-	E_FATAL("hash_enter(table, %s) failed\n", str);
-      }
-    }else{
-      if(hash_score < score){
-	if(hash_enter(word_phone_hash,str,score) != hash_score ){
-	  E_FATAL("hash_enter(table, %s) failed\n", str);
-	}
-      }
-    }    
-  }
-
-
-#if 0
-    keylist=hash_tolist(word_phone_hash,&list_size);
-    
+  /*  hash_display(wstg->active_word,1);*/
   for (key = keylist; key; key = gnode_next(key)) {
     he = (hash_entry_t *) gnode_ptr (key);
-    E_INFO("Key %s: Value %d\n", hash_entry_key(he),hash_entry_val(he));
-    /* Extract the word and phone at here */
-    wdstr=strtok(hash_entry_key(he),":");
-    E_INFO("String %s\n",wdstr);
-    phstr=strtok(NULL,":");
-    E_INFO("String %s\n",phstr);
+    assert(glist_count(keylist)>0);
+
+    hash_lookup (wstg->active_word, (char* )hash_entry_key(he),&val);
+    /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he));*/
+    /*E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active);*/
+
+    if(wstg->expandtree[val]->n_active==0){ 
+      /* insert this tree back to the list*/
+      wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,val);
+      /* delete this entry from the hash*/
+      /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word);*/
+      succ=hash_delete(wstg->active_word,wstg->expandtree[val]->prev_word);
+      if(succ==HASH_OP_FAILURE){
+	E_WARN("Internal error occur in hash deallocation. \n");
+      }else if(succ==HASH_OP_SUCCESS){
+	/*	E_INFO("DELETE EMPTY TREE. \n");*/
+      /*assert(succ==HASH_OP_SUCCESS);*/
+      /* set the number of active word */
+	wstg->no_active_word--;
+      }
+      /* set the word of a lextree to be none*/
+      strcpy(wstg->expandtree[val]->prev_word,"");
+    }
   }
-#endif
+
+
   /* This is a place one should do all tricks of cross-word triphones */
   /** All entries traverse to tree with word context*/
 
@@ -734,6 +889,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     ve = vithist_id2entry (vh, vhid);
     wid = vithist_entry_wid (ve);
     p = dict_last_phone (dict, wid);
+
     if (mdef_is_fillerphone(mdef, p))
       p = mdef_silphone(mdef);
     
@@ -750,15 +906,51 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 		   &id) <0){
       /* If it doesn't, start to use another copy */
       /* This is also the part one should apply bigram lookahead */
-      
-      id  = wstg->no_active_word;
+
+      /* Pop one indices from the stack*/
+      id = gnode_int32(wstg->empty_tree_idx_stack);
+      wstg->empty_tree_idx_stack=glist_delete(wstg->empty_tree_idx_stack);
+
+      /*      assert(wstg->expandtree[id]->prev_word==NULL);*/
+
+      strcpy(wstg->expandtree[id]->prev_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
       wstg->no_active_word++;
 
       /* In general, the high scoring ones to be taken care first. */
-      if(wstg->no_active_word > wstg->n_static_lextree){
+      if(wstg->no_active_word == wstg->n_static_lextree){
 	/* If another copy is not available, start to allocate a copy of tree.*/
-	E_FATAL("Number of active word is more than no of tree allocated. \n");
-	E_FATAL("This bug will show up when the number of word end is too huge.\n");
+	E_INFO("Allocate another %d more tree(s)\n", NUM_TREE_ALLOC);
+
+	wstg->expandtree      =(lextree_t **) ckd_realloc(wstg->expandtree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+	wstg->expandfillertree=(lextree_t **) ckd_realloc(wstg->expandfillertree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+
+	for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+	  wstg->expandtree[i]=NULL;
+	  wstg->expandtree[i]=lextree_init(s->kbc,wstg->lmset->lmarray[0],wstg->lmset->lmarray[0]->name,
+					   wstg->isLMLA,!REPORT_SRCH_WST);
+
+	  if(wstg->expandtree[i]==NULL){
+	    E_INFO("Fail to allocate lexical tree %d for lm %d  \n",i, 0);
+	    return SRCH_FAILURE;
+	  }
+
+	  wstg->expandfillertree[i]=fillertree_init(s->kbc);
+
+	  if(wstg->expandfillertree[i]==NULL){
+	    E_INFO("Fail to allocate filler tree %d for lm %d \n",i,0);
+	    return SRCH_FAILURE;
+	  }
+
+	}
+
+	/*Also push the NUM_TREE_ALLOC to the empty list */
+
+	for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+	  wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,i);
+	}
+
+	wstg->n_static_lextree+=NUM_TREE_ALLOC;	
+
       }
       
       if(hash_enter(wstg->active_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),id ) != id ){
@@ -767,118 +959,26 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
       /*E_INFO("A new tree is started for wid %d, word str %s\n", wid, 
 	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));*/
+
     }else{
     }
 
-    str_length=0;
-    str_length+=strlen(dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
-    str_length+=strlen(mdef_ciphone_str(mdef,p));
-    str_length+=5;
-    
-    str=(char*) ckd_calloc(str_length,sizeof(char));
-    
-    sprintf(str,"%s%s%s",
-	    dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	    "::::",
-	    mdef_ciphone_str(mdef,p));
-
-    /* No matter what, a tree would be availble at this point. It is time to enter it. */
-
-    /*E_INFO("In the entry loop string: %s\n",str); */
-
-
-    hash_lookup(word_phone_hash,
-		str,
-		&hash_score);
-
-    /* E_INFO("hash_score %d , score %d\n", hash_score,score);*/
-    /* HACK! This is magical */
-    /* If it was entered once, it shouldn't be enter twice. This loop is quite stupid in that sense*/
-    /* and here I used a very magical way to check it. This is very wrong, I need to change it back. */
-
-    if(hash_score == score){
-      /*      E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
+    /*    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
 	wid, 
 	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
 	p,
 	mdef_ciphone_str(mdef,p),
 	score);*/
 
-      lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, hash_score, vhid, th);
-    }
+    lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
+    lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, vh->bestscore[frmno],
+		  vh->bestvh[frmno], th);
 
   }
-
-  /* Collect all the garbage tree if the tree is not active at all */
-  {
-    /*This part should free all trees that should be deallocated. Hmm. How? */
-  }
-
-  /* This part should handle filler word.
-   */
-  {
-    lextree_enter (wstg->fillertree, BAD_S3CIPID, frmno, vh->bestscore[frmno],
-		   vh->bestvh[frmno], th);
-
-  }
-
 
   /** obtained a link-list from the hash_table keys*/
-  ckd_free(word_phone_hash);
-  ckd_free(str);
   
   return SRCH_SUCCESS;
-
-
-
-
-
-#if 0 /* This part is useless */
-
-  keylist=hash_tolist(word_phone_hash,&list_size);
-
-  for (key = keylist; key; key = gnode_next(key)) {
-    he = (hash_entry_t *) gnode_ptr (key);
-    E_INFO("Key %s: Value %d\n", hash_entry_key(he),hash_entry_val(he));
-    /* Extract the word and phone at here */
-    wdstr=strtok(hash_entry_key(he),":");
-    E_INFO("String %s\n",wdstr);
-    phstr=strtok(NULL,":");
-    E_INFO("String %s\n",phstr);
-
-    if(hash_lookup(wstg->active_word,
-		   dict_wordstr(s->kbc->dict,
-				dict_basewid(s->kbc->dict,wid)),
-		   &id) <0){
-      id  = wstg->no_active_word;
-      wstg->no_active_word++;
-
-      /* In general, the high scoring ones to be taken care first. */
-      if(wstg->no_active_word > wstg->n_static_lextree){
-	/* If another copy is not available, start to allocate a copy of tree.*/
-	E_FATAL("Number of active word is more than no of tree allocated. \n");
-	E_FATAL("This bug will show up when the number of word end is too huge.\n");
-      }
-      if(hash_enter(wstg->active_word,wdstr,id ) != id ){
-	E_FATAL("hash_enter(local-phonetable, %s) failed\n", dict_wordstr(s->kbc->dict,wdstr);
-      }
-
-      E_INFO("A new tree is started for word str %s\n", wid, 
-	     dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));
-    }
-
-    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
-	   wid, 
-	   dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	   p,
-	   mdef_ciphone_str(mdef,p),
-	   score);
-
-    lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
-
-  }
-#endif 
-
 
 }
 
@@ -932,8 +1032,12 @@ int srch_WST_frame_windup(void *srch,int32 frmno)
   /* Swap the data for all trees in this frame. That include the curroottree and all expandtrees */
 
   lextree_active_swap(wstg->curroottree);
-  for (i = 0; i < wstg->n_static_lextree; i++) 
-    lextree_active_swap (wstg->expandtree[i]);
+  lextree_active_swap(wstg->curfillertree);
+
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree_active_swap(wstg->expandtree[i]);
+    lextree_active_swap(wstg->expandfillertree[i]);
+  }
    
   return SRCH_SUCCESS;
 }
@@ -1006,6 +1110,18 @@ int srch_WST_select_active_gmm(void *srch)
       lextree_ssid_active (lextree, ascr->ssid_active, ascr->comssid_active);
     }
 
+    lextree=wstg->curfillertree;
+    if(0) E_INFO("In the filler root tree\n");
+    lextree_ssid_active (lextree, ascr->ssid_active, ascr->comssid_active);
+
+    /*The word tree copies */
+    for(i = 0 ; i < n_ltree; i++){
+      if(0) E_INFO("In the expand filler tree %d\n",i);
+      lextree=wstg->expandfillertree[i];
+      lextree_ssid_active (lextree, ascr->ssid_active, ascr->comssid_active);
+    }
+
+
     memset (ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
     mdef_sseq2sen_active (mdef, ascr->ssid_active, ascr->sen_active);
 
@@ -1016,6 +1132,12 @@ int srch_WST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
+int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname)
+{
+  return SRCH_SUCCESS;
 
-
-
+}
+int srch_WST_delete_lm(void* srch, const char *lmname)
+{
+  return SRCH_SUCCESS;
+}
