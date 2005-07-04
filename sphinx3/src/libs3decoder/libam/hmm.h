@@ -45,9 +45,21 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/21  18:34:41  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$ keyword.
+ * Revision 1.8.4.2  2005/07/04  07:15:55  arthchan2003
+ * Removed fsg compliant stuff from hmm_t
  * 
+ * Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
+ * Added changes to make libsearch/fsg_* family of code to be compiled.
+ *
+ * Revision 1.8  2005/06/21 18:34:41  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
+ * Revision 1.8.4.2  2005/07/04  07:15:55  arthchan2003
+ * Removed fsg compliant stuff from hmm_t
+ * 
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Added changes to make libsearch/fsg_* family of code to be compiled.
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -132,6 +144,16 @@ typedef struct {
     hmm_state_t out;	/** Non-emitting exit state */
     int32 **tp;		/** State transition scores tp[from][to] (logs3 values) */
     int32 bestscore;	/** Best [emitting] state score in current frame (for pruning) */
+
+
+
+#if 0 /* ARCHAN: Commented eventually because it will cause hmm_t to be too large and blow up mode 5*/
+  int32 sseqid; /** Faked parameter that makes fsg_psubtree compiled */
+  int32 active;
+  int32* score[10]; 
+  int32 path[10];
+#endif
+  
 } hmm_t;
 
 

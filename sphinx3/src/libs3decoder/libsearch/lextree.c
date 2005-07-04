@@ -45,13 +45,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  23:32:58  arthchan2003
+ * Revision 1.9.4.1  2005/06/27  05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ * 
+ * Revision 1.9  2005/06/21 23:32:58  arthchan2003
  * Log. Introduced lextree_init and filler_init to wrap up lextree_build
  * process. Split the hmm propagation to propagation for leaves and
  * non-leaves node.  This allows an easier time for turning off the
  * rescoring stage. However, the implementation is not clever enough. One
  * should split the array to leave array and non-leave array.
- * 
+ *
  * Revision 1.11  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -194,6 +197,8 @@ lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgPro
   ckd_free ((void *) wp);
   ckd_free ((void *) lc);
   bitvec_free (lc_active);
+
+  strcpy(ltree->prev_word,"");
   return ltree;
 }
 
@@ -608,6 +613,7 @@ void lextree_utt_end (lextree_t *l, kbcore_t *kbc)
 
     l->n_active = 0;
     l->n_next_active = 0;
+    strcpy(l->prev_word,"");
 }
 
 

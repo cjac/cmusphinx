@@ -7,6 +7,7 @@ libsearch_la_LDFLAGS = -version-info 0:4:0
 libsearch_la_SOURCES = \
 	ascr.c \
 	dag.c \
+	blkarray_list.c \
 	flat_fwd.c \
 	gmm_wrap.c \
 	kb.c \
@@ -17,13 +18,13 @@ libsearch_la_SOURCES = \
 	srch_align.c \
 	srch_allphone.c \
 	srch_debug.c \
-	srch_fsm.c \
 	srch_time_switch_tree.c \
 	srch_word_switch_tree.c 
 
 pkginclude_HEADERS = \
 	ascr.h \
 	dag.h \
+	blkarray_list.h \
 	flat_fwd.h \
 	gmm_wrap.h \
 	kb.h \
@@ -50,3 +51,16 @@ INCLUDES = -I$(top_srcdir) \
 
 LIBOBJS = @LIBOBJS@
 
+#	srch_fsg.c \
+#	srch_fsg.h \
+#	fsg_history.c \
+#	fsg_lextree.c \
+#	fsg_psubtree.c \
+#	fsg_search.c \
+#	word_fsg.c \
+#	fsg.h \
+#	fsg_history.h \
+#	fsg_lextree.h \
+#	fsg_psubtree.h \
+#	fsg_search.h \
+#	word_fsg.h 

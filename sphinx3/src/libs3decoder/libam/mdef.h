@@ -45,10 +45,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2005/06/21  18:47:39  arthchan2003
- * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
- * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$ keyword.
+ * Revision 1.12.4.1  2005/07/03  22:54:09  arthchan2003
+ * move st2senmap into mdef_t, it was not properly freed before. \n
  * 
+ * Revision 1.12  2005/06/21 18:47:39  arthchan2003
+ * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$
+ * Revision 1.12.4.1  2005/07/03  22:54:09  arthchan2003
+ * move st2senmap into mdef_t, it was not properly freed before. \n
+ *  keyword.
+ *
  * Revision 1.5  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -169,6 +175,12 @@ typedef struct {
 				   <wpos,ci,lc>.  Only entries for the known triphones
 				   are created to conserve space.
 				   (NOTE: FOR INTERNAL USE ONLY.) */
+  
+  s3senid_t *st2senmap; /** A mapping from State to senone. Only used
+			    in sphinx 3.0 HACK!, In general, there is
+			    only need for either one of st2senmap or
+			    sseq. 
+			 */
 } mdef_t;
 
   /** Access macros; not meant for arbitrary use */

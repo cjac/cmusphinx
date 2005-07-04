@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  02:47:35  arthchan2003
- * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * Revision 1.8.4.1  2005/07/04  07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
  * 
+ * Revision 1.8  2005/06/22 02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ *
  * Revision 1.9  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -83,6 +86,29 @@
 
 
 #include "vithist.h"
+
+void vh_lmstate_display(vh_lmstate_t *vhl,dict_t *dict)
+{
+  /* TODO: Also translate wid to string if dict is not NULL*/
+  E_INFO("lwid[0] %d\n",vhl->lm3g.lwid[0]);
+  E_INFO("lwid[1] %d\n",vhl->lm3g.lwid[1]);
+  E_INFO("lwid[2] %d\n",vhl->lm3g.lwid[2]);
+}
+
+void vithist_entry_display(vithist_entry_t *ve, dict_t* dict)
+{
+
+  E_INFO("Word ID %d \n",ve->wid);
+  if(dict!=NULL){
+    /* Also translate the wid to string */
+  }
+  E_INFO("Sf %d Ef %d \n",ve->sf,ve->ef);
+  E_INFO("Ascr %d Lscr %d \n",ve->ascr,ve->lscr);
+  E_INFO("Score %d, senscale %d \n",ve->score,ve->senscale);
+  E_INFO("Type %d\n", ve->type);
+  E_INFO("Valid for LM rescoring? %d\n", ve->valid);
+  vh_lmstate_display(&(ve->lmstate),dict);
+}
 
 
 vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isreport)
@@ -315,6 +341,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.valid = 1;
     tve.ascr = score - pve->score;
     tve.senscale = senscale;
+    tve.lscr = 0;
 
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;

@@ -410,6 +410,15 @@ void ld_set_lm(live_decoder_t *_decoder,const char *lmname);
 void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
 
 
+/** Read a FSG
+    @param _decode Pointer to a live mode decoder
+    @param fsgname the FSG name
+*/
+void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/**
+ */
+
 #ifdef __cplusplus
 }
 #endif
@@ -448,10 +457,6 @@ void ld_update_lm(live_decoder_t *_decoder, const char *lmname);
 /** Read FSG from a file.
  */
 
-void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/**
- */
 
 void ld_set_fsg(live_decoder_t *_decoder, const char *fsgname);
 

@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/22  03:10:23  arthchan2003
- * Added  keyword.
+ * Revision 1.11.4.1  2005/06/27  05:42:21  arthchan2003
+ * Merge from the tip of the trunk
  * 
+ * Revision 1.11  2005/06/22 03:10:23  arthchan2003
+ * Added  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -87,6 +90,10 @@ typedef unsigned short	uint16;
 typedef unsigned char	uint8;
 typedef float		float32;
 typedef double		float64;
+
+#if 1 /* This is added for sphinx 2 routine tool compilation. Currently, it is only used in the fsg routine. */
+typedef unsigned char   boolean;
+#endif
 
 typedef union anytype_s {
     void *ptr;		/* User defined data types at this ptr */
