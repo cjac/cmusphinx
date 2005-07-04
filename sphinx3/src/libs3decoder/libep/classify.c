@@ -41,9 +41,18 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  21:06:47  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ * Revision 1.11  2005/07/04  20:57:53  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
  * 
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ * 
+ * Revision 1.10  2005/06/21 21:06:47  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ *
  * Revision 1.3  2005/06/15 06:48:54  archan
  * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
  *
@@ -56,6 +65,7 @@
 
 #include "classify.h"
 #include "mdef.h"
+#include "logs3.h"
 
 /********************************************************************/
 // This function reports the majority class 
@@ -110,6 +120,7 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
         mdef_t *mdef;
 
         /************ Read the means, variances, and mixture weights ****************/
+        mdef = mdef_init(mdeffile,1);
 
         /*Initialize g */
         CLASSW->g= mgau_init(meanfile,
@@ -117,9 +128,7 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
                              mixwfile, mixwfloor, 
                              precomp,
                              senmgau,
-                             FULL_FLOAT_COMP);
-
-        mdef = mdef_init(mdeffile,1);
+                             MIX_INT_FLOAT_COMP);
 
         /* Make sure we have only one emitting state */
         if (mdef_n_emit_state(mdef) != 1) {
@@ -154,8 +163,6 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
                 mdef_free(mdef);
         }
 
-        mgau_precomp_hack_log_to_float(CLASSW->g);
-
         E_INFO("Classification\n");
         E_INFO("Will use %d cepstral components\n", DIMENSIONS);
 
@@ -163,10 +170,10 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
   
         /******** Set the priors of the classes *************/
 
-        CLASSW->priors[CLASS_N] = (float32)PRIOR_N;    // N
-        CLASSW->priors[CLASS_O] = (float32)PRIOR_O;    // O
-        CLASSW->priors[CLASS_S] = (float32)PRIOR_S;    // S
-        CLASSW->priors[CLASS_SIL] = (float32)PRIOR_SIL;  // SIL
+        CLASSW->priors[CLASS_N] = logs3(PRIOR_N);    // N
+        CLASSW->priors[CLASS_O] = logs3(PRIOR_O);    // O
+        CLASSW->priors[CLASS_S] = logs3(PRIOR_S);    // S
+        CLASSW->priors[CLASS_SIL] = logs3(PRIOR_SIL);  // SIL
 
         /********* Initialize voting window parameters **********/
 
@@ -303,45 +310,53 @@ void readfeatures (char *filename, float *array[MAXFRAMES], int *numofframes)
 
 
 /******** Function to calculate the likelihood for each class given the frame ****************/
-/* Only work when mgau_precomp_hack_log_to_float is run before it */
 
 void calclikeli (float *frame,    /*Input: the frame */
                  mgau_model_t *g, /*Input: multiptle mixture models */
-                 float likeli[NUMCLASSES], /* Output the, likelihood for each class */
+                 int32 likeli[NUMCLASSES], /* Output the, likelihood for each class */
                  s3cipid_t *map) /* map between ci models and classes */
 {
         int i,j,k;
 
-        float32 a, b, pmix;     
-        float32 m, v, f;
+	float64 ls3;
         /* a is the product(k) [1/(2 * pi * varijk )^(1/2)]*/
-        /* b is the sum (k) [ -0.5 * pow ( (x[k] - meansijk), 2 )  */
+        /* b is the sum (k) [ -0.5 * pow ( (x[k] - meansijk), 2 ) * var^-1 ] */
         /* p is the likelihood given class and gaussian mixture */
   
         /* assert (g->n_mgau==NUMCLASSES); */
 
+	ls3 = log_to_logs3_factor();
         for (i = 0; i < NUMCLASSES; i++){       /* for each class*/
                 if (map[i] == BAD_S3CIPID) {
                         continue;
                 }
-                likeli[i] = 0;  
+                likeli[i] = S3_LOGPROB_ZERO;
                 for (j = 0; j < g->mgau->n_comp; j++)   {/* for each mixture in the class */
-                        a = g->mgau[map[i]].lrd[j];
-                        b = 0;  
+			float64 a, b;
+			int32 pmix;
+
+                        a = ls3 * mgau_lrd(g,i,j);
+                        b = 0.0;
+
                         /*NOTE: CHANGE HERE: ignore C_8 to C_12 */
                         for (k = 0; k  < DIMENSIONS; k++) {
-                                f=frame[k];
-                                m=g->mgau[map[i]].mean[j][k];
-                                v= g->mgau[map[i]].var[j][k];
+				float32 m, v, f;
+
+                                f = frame[k];
+                                m = g->mgau[map[i]].mean[j][k];
+                                v = g->mgau[map[i]].var[j][k];
 
                                 b += (f - m) * (f - m) * v; 
                         }       
-                        if (b > 1000) /* HACK to prevent underflows on alpha
-                                         (this number is arbitrary!) */
-                                pmix = 0.0f;
-                        else
-                                pmix = (float)(a * exp (-0.5 * b));
-                        likeli[i] += g->mgau[map[i]].mixw_f[j] * pmix; 
+
+			/* dhuggins@cs 2005-07-04: this calculation is
+			 * actually slightly wrong, because the
+			 * scaling by 0.5 has already been done in the
+			 * precomputation of the variances.  I don't
+			 * know if there is a reason for this. */
+			pmix = (int32) (a + (ls3 * (-0.5 * b)));
+                        likeli[i] = logs3_add(likeli[i],
+					      g->mgau[map[i]].mixw[j] + pmix);
                 }       
         }
 }
@@ -349,29 +364,34 @@ void calclikeli (float *frame,    /*Input: the frame */
 
 /********* Function to classify the frame *******************/ 
 
-int classify (float *frame, mgau_model_t *g, float priors[NUMCLASSES], 
+int classify (float *frame, mgau_model_t *g, int32 priors[NUMCLASSES], 
               s3cipid_t *classmap)
 {
         int i, myclass;
-        float maxpost, post;
-        float likeli[NUMCLASSES];
+        int32 maxpost, post;
+        int32 likeli[NUMCLASSES];
 
         calclikeli(frame, g, likeli, classmap);
         
         /* Second calculate the posterior       */
-        maxpost = 0;
+        maxpost = S3_LOGPROB_ZERO;
         myclass = 0;
   
         for (i = 0; i < NUMCLASSES; i++){
-                post = likeli[i] * priors[i];
+                post = likeli[i] + priors[i];
 #if 0
-                E_INFO("Posterior Probabilities %f, likelihood %f, priors %f\n",post,likeli[i],priors[i]);
+                E_INFO("class %d: posterior probability %f, likelihood %f, priors %f\n",
+		       i, logs3_to_p(post),logs3_to_p(likeli[i]),logs3_to_p(priors[i]));
 #endif
                 if (maxpost < post) {
                         myclass = i;
                         maxpost = post;
                 }
         }
+#if 0
+	E_INFO("best class %d posterior %f\n",
+	       myclass, logs3_to_p(maxpost));
+#endif
         return(myclass);
 
 }

@@ -39,9 +39,18 @@
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
  * $Log$
- * Revision 1.7  2005/07/02  04:24:45  egouvea
- * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ * Revision 1.8  2005/07/04  20:57:53  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
  * 
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ * 
+ * Revision 1.7  2005/07/02 04:24:45  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ *
  * Revision 1.6  2005/06/21 21:06:47  arthchan2003
  * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
  *
@@ -111,7 +120,7 @@ typedef struct{
   mgau_model_t *g ; 
   s3cipid_t classmap[NUMCLASSES];
 
-  float32 priors[NUMCLASSES];
+  int32 priors[NUMCLASSES];
 
   int32 window[VOTEWINDOWLEN];              // the voting window contains class numbers
   int32 postprocess;
@@ -148,7 +157,7 @@ void classw_free(class_t *CLASSW);
 
 int classify (float *frame,     /**< the frame */
 	      mgau_model_t *g,  /**< multiple mixture models */
-	      float priors[NUMCLASSES], /**< The prior of each classes */
+	      int32 priors[NUMCLASSES], /**< The prior of each classes */
 	      s3cipid_t *map  /**< Map between ci phones and classes */
 	      );
 
