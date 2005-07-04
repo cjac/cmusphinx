@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.2  2005/07/03  23:04:55  arthchan2003
- * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ * Revision 1.1.4.3  2005/07/04  07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
  * 
+ * Revision 1.1.4.2  2005/07/03 23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ *
  * Revision 1.1.4.1  2005/06/28 07:03:01  arthchan2003
  * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
  *
@@ -438,19 +441,27 @@ typedef struct srch_s {
     Translate search mode string to mode number 
 
     The current operation mode are 
+
     Strings        Operation Mode(Mode Idx)
+
     OP_ALIGN       OPERATION_ALIGN(0)
+
     OP_ALLPHONE    OPERATION_ALLPHONE(1)
+
     OP_FSG         OPERATION_GRAPH(2)
+
     OP_FLATFWD     OPERATION_FLATFWD(3)
     
     There are two names for OPERATION_TST_DECODE (Mode 4)
+
     OP_LUCKYWHEEL  OPERATION_TST_DECODE(4)
+
     OP_TST_DECODE  OPERATION_TST_DECODE(4)
+
     
     OP_WST_DECODE  OPERATION_WST_DECODE(5)
 
-     OP_DEBUG       OPERATION_WST_DECODE(1369) 
+    OP_DEBUG       OPERATION_WST_DECODE(1369) 
 
      @return the mode index if it is valid, -1 if it is not.  
  */
@@ -473,7 +484,19 @@ it is more consistent with other modules in sphinx 3.
  */
 
 /** Initialize the search routine, this will specify the type of search
-    drivers and initialized all resouces
+    drivers and initialized all resouces.  It will do the following things
+    
+    1, Set all function pointers depends on the mode number. 
+
+    2, Initialize parameters which the default search abstraction
+    mechanism required. This currently include, cache_win,
+    cache_win_start.  They control how much delay of the first level
+    and second level search. Also senscale, a parameter which store
+    the largest gmm score for each frame. 
+
+    3, Initialize search-specific data structure using srch_init
+    method of the search class.  That is s->srch_init will be called. 
+
     @return an initialized srch_t with operation mode op_mode. 
 */
 
@@ -490,14 +513,17 @@ void srch_report(srch_t* srch /**< In: a search structure */
 		 );
 
 /**
-   Begin decoding of speech for one utterance. 
+ *  Begin decoding of speech for one utterance. 
+ * 
+ * @return SRCH_SUCCESS if succeed, SRCH_FAILURE if failed.  
+ * @see srch_utt_end
  */
 
 int32 srch_utt_begin(srch_t* srch /**< In: a search structure */
 		     );
 
 /**
-   decode one block of speech. 
+   Decode one block of speech and provide the implementation of the default search abstraction
  */
 int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 			  float ***block_feat,  /**< In: a pointer of a two dimensional array */
@@ -508,10 +534,12 @@ int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 /**
    End decoding of speech for one utterance. 
  */
-int32 srch_utt_end(srch_t* srch);
+int32 srch_utt_end(srch_t* srch /**< In: a search structure */
+		   );
 
 /** Wrap up the search routine*/
-int32 srch_uninit(srch_t* srch);
+int32 srch_uninit(srch_t* srch /**< In: a search structure */
+		  );
 
 
 /** write match segment */

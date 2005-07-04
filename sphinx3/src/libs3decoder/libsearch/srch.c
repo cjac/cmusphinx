@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.4  2005/07/03  23:04:55  arthchan2003
- * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ * Revision 1.1.4.5  2005/07/04  07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
  * 
+ * Revision 1.1.4.4  2005/07/03 23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ *
  * Revision 1.1.4.3  2005/06/28 07:03:01  arthchan2003
  * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
  *
@@ -177,7 +180,6 @@ void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_uninit!=NULL);
   assert(s->srch_utt_begin!=NULL);
   assert(s->srch_utt_end!=NULL);
-  assert(s->srch_decode!=NULL);
   assert(s->srch_set_lm!=NULL);
   assert(s->srch_add_lm!=NULL);
   assert(s->srch_delete_lm!=NULL);
@@ -259,15 +261,15 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_FATAL("Graph Seearch mode is not supported yet");
 
+    E_FATAL("Graph Seearch mode is not supported yet");
+#if 0
     s->srch_init=&srch_FSG_init;
     s->srch_read_fsgfile=&srch_FSG_read_fsgfile;
-#if 1
+
     s->srch_uninit=&srch_FSG_uninit;
     s->srch_utt_begin=&srch_FSG_begin;
     s->srch_utt_end=&srch_FSG_end;
-    s->srch_decode=&srch_FSG_decode;
 
 
     s->srch_set_lm=&srch_FSG_set_lm;
@@ -305,7 +307,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_TST_uninit;
     s->srch_utt_begin=&srch_TST_begin;
     s->srch_utt_end=&srch_TST_end;
-    s->srch_decode=&srch_TST_decode;
 
     s->srch_set_lm=&srch_TST_set_lm;
     s->srch_add_lm=&srch_TST_add_lm;
@@ -339,7 +340,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_WST_uninit;
     s->srch_utt_begin=&srch_WST_begin;
     s->srch_utt_end=&srch_WST_end;
-    s->srch_decode=&srch_WST_decode;
     s->srch_set_lm=&srch_WST_set_lm;
     s->srch_add_lm=&srch_TST_add_lm;
     s->srch_delete_lm=&srch_TST_delete_lm;
@@ -371,7 +371,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_debug_uninit;
     s->srch_utt_begin=&srch_debug_begin;
     s->srch_utt_end=&srch_debug_end;
-    s->srch_decode=&srch_debug_decode;
     s->srch_set_lm=&srch_debug_set_lm;
 
     s->srch_select_active_gmm=&srch_debug_select_active_gmm;    
@@ -453,6 +452,15 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
   st = s->stat;
 
   frmno = *curfrm;
+
+  /* Overriding this implementation. Use search implementation
+     provided search abstraction routine instead of the default search
+     abstraction */
+  if(s->srch_decode!=NULL){
+    return s->srch_decode((void*)s);
+  }
+   
+  /* Else, go over the default search abstraction*/
 
   /* the effective window is the min of (s->cache_win, block_nfeatvec) */
   win_efv = s->cache_win;
