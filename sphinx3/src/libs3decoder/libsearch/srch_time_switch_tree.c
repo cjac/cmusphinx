@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.2  2005/07/03  23:19:16  arthchan2003
- * Added free code for srch_time_switch_tree.c
+ * Revision 1.2.4.3  2005/07/04  07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
  * 
+ * Revision 1.2.4.2  2005/07/03 23:19:16  arthchan2003
+ * Added free code for srch_time_switch_tree.c
+ *
  * Revision 1.2.4.1  2005/06/28 07:03:37  arthchan2003
  * Set lmset correctly in srch_time_switch_tree.
  *
@@ -106,6 +109,9 @@ int srch_TST_init(kb_t *kb, void *srch)
 
   if(cmd_ln_int32("-Nstalextree"))
     E_WARN("-Nstalextree is omitted in TST search.\n");
+
+  if(cmd_ln_int32("-lminsearch"))
+    E_WARN("-lminsearch is omitted in TST search. \n");
 
   /** STRUCTURE : allocation of the srch graphs */
   tstg=ckd_calloc(1,sizeof(srch_TST_graph_t));
@@ -218,8 +224,21 @@ int srch_TST_uninit(void *srch)
 {
   srch_TST_graph_t* tstg ;
   srch_t* s;
+  int32 i,j;
+  kbcore_t * kbc;
+  
   s=(srch_t *)srch;
+  kbc=s->kbc;
+
   tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+
+  for(i=0;i<kbc->lmset->n_lm;i++){
+    for(j=0;j< tstg->n_lextree;j++){
+      lextree_free(tstg->ugtree[i*tstg->n_lextree+j]);
+      lextree_free(tstg->fillertree[i*tstg->n_lextree+j]);
+    }
+  }
+
   if(tstg->histprune!=NULL){
     histprune_free((void*) tstg->histprune);
   }
