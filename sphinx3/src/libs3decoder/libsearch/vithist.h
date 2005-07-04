@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/22  02:47:35  arthchan2003
- * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * Revision 1.11.4.1  2005/07/04  07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
  * 
+ * Revision 1.11  2005/06/22 02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ *
  * Revision 1.10  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -129,11 +132,22 @@ typedef struct {
     vh_lmstate_t lmstate;	/**< LM state */
 } vithist_entry_t;
 
+  /** Return the word ID of an entry */
 #define vithist_entry_wid(ve)	((ve)->wid)
+
+  /** Return the starting frame of an entry */
 #define vithist_entry_sf(ve)	((ve)->sf)
+
+  /** Return the ending frame of an entry */
 #define vithist_entry_ef(ve)	((ve)->ef)
+
+  /** Return the acoustic score of an entry */
 #define vithist_entry_ascr(ve)	((ve)->ascr)
+
+  /** Return the language score of an entry */
 #define vithist_entry_lscr(ve)	((ve)->lscr)
+
+  /** Return the total score of an entry */
 #define vithist_entry_score(ve)	((ve)->score)
 #define vithist_entry_pred(ve)	((ve)->pred)
 #define vithist_entry_valid(ve)	((ve)->valid)
@@ -192,12 +206,26 @@ typedef struct {
 #define VITHIST_ID2BLKOFFSET(i)	((i) & 0x00003fff)	/* 14 LSB */
 
   /** Access macros; not meant for arbitrary use */
+
+  /** Return the number of entry in the Viterbi history */
 #define vithist_n_entry(vh)		((vh)->n_entry)
+
+  /** Return the best score of the Viterbi history */
 #define vithist_bestscore(vh)		((vh)->bestscore)
+
+  /** Return the best viterbi history entry ID of the Viterbi history */
 #define vithist_bestvh(vh)		((vh)->bestvh)
+
+  /** Return lms2vh */
 #define vithist_lms2vh_root(vh,w)	((vh)->lms2vh_root[w])
+
+  /** Return the language word ID list */
 #define vithist_lwidlist(vh)		((vh)->lwidlist)
+
+  /** Return the first entry for the frame f */
 #define vithist_first_entry(vh,f)	((vh)->frame_start[f])
+
+  /** Return the last entry for the frame f */
 #define vithist_last_entry(vh,f)	((vh)->frame_start[f+1] - 1)
 
 
@@ -209,7 +237,7 @@ typedef struct {
 
   vithist_t *vithist_init (kbcore_t *kbc,  /**< A KBcore */
 			   int32 wbeam,    /**< Word beam */
-			   int32 bghist,
+			   int32 bghist,    /**< If only bigram history is used */
 			   int32 isRescore, /**< Whether LM is used to rescore Viterbi history */
 			   int32 isbtwsil,  /**< Whether silence should be used as the final word of backtracking. */
 			   int32 isreport   /**< Whether to report the progress  */
@@ -218,7 +246,7 @@ typedef struct {
 
   /**
  * Invoked at the beginning of each utterance; vithist initialized with a root <s> entry.
- * Return value: Vithist ID of the root <s> entry.
+ * @return Vithist ID of the root <s> entry.
  */
 int32 vithist_utt_begin (vithist_t *vh, /**< In: a Viterbi history data structure*/
 			 kbcore_t *kbc  /**< In: a KBcore */
@@ -345,6 +373,22 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
   
   void vithist_report(vithist_t *vh       /**< In: a Viterbi history data structure */
 		      );
+
+  /**
+   * Display the lmstate of an entry. 
+   */
+
+  void vh_lmstate_display(vh_lmstate_t *vhl, /**< In: An lmstate data structure */
+			  dict_t *dict /**< In: If specified, the word string of lm IDs would also be translated */
+			  );
+
+  /**
+   * Display the vithist_entry structure. 
+   */
+  void vithist_entry_display(vithist_entry_t *ve, /**< In: An entry of vithist */
+			      dict_t* dict  /**< In: If specified, the word string of lm IDs would also be translated */
+			      );
+
 #ifdef __cplusplus
 }
 #endif
