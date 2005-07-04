@@ -38,30 +38,42 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.4  2005/07/03  23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ * 
+ * Revision 1.1.4.3  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
+ * Revision 1.1.4.2  2005/06/27 05:32:35  arthchan2003
+ * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
+ *
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.21  2005/06/17 21:22:59  archan
  * Added comments for future programmers.  That allow potential turn back when we need to match the score of the code in the past.
  *
@@ -120,6 +132,46 @@
 #define COMPUTE_HEURISTIC 1
 
 
+
+int32 srchmode_str_to_index(const char* mode_str)
+{
+  if(!strcmp(mode_str,"OP_ALIGN")){
+    return OPERATION_ALIGN;
+  }
+
+  if(!strcmp(mode_str,"OP_ALLPHONE")){
+    return OPERATION_ALLPHONE;
+  }
+
+  if(!strcmp(mode_str,"OP_FSG")){
+    return OPERATION_GRAPH;
+  }
+
+  if(!strcmp(mode_str,"OP_FLATFWD")){
+    return OPERATION_FLATFWD;
+  }
+
+  if(!strcmp(mode_str,"OP_LUCKYWHEEL")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_TST_DECODE")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_WST_DECODE")){
+    return OPERATION_WST_DECODE;
+  }
+
+  E_WARN("UNKNOWN MODE NAME %s\n",mode_str);
+  return -1; 
+
+}
+
+char* srchmode_index_to_str(int32 index)
+{
+}
+
 void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_init!=NULL);
   assert(s->srch_uninit!=NULL);
@@ -174,6 +226,9 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_shift_one_cache_frame=NULL;
   s->srch_select_active_gmm=NULL;
 
+  /* For convenience, clear but not check at this point */
+  s->srch_read_fsgfile=NULL;
+
 }
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces*/
@@ -204,9 +259,43 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_FATAL("Finite state graphs search is not supported yet");
+    E_FATAL("Graph Seearch mode is not supported yet");
 
-  }else if(op_mode==OPERATION_FLAT_DECODE){
+    s->srch_init=&srch_FSG_init;
+    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;
+#if 1
+    s->srch_uninit=&srch_FSG_uninit;
+    s->srch_utt_begin=&srch_FSG_begin;
+    s->srch_utt_end=&srch_FSG_end;
+    s->srch_decode=&srch_FSG_decode;
+
+
+    s->srch_set_lm=&srch_FSG_set_lm;
+    s->srch_add_lm=&srch_FSG_add_lm;
+    s->srch_delete_lm=&srch_FSG_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+
+    s->srch_hmm_compute_lv2=&srch_FSG_hmm_compute_lv2;
+    s->srch_propagate_graph_ph_lv2=&srch_FSG_propagate_graph_ph_lv2;
+    s->srch_propagate_graph_wd_lv2=&srch_FSG_propagate_graph_wd_lv2;
+    s->srch_rescoring=&srch_FSG_rescoring;
+
+    s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
+    s->srch_frame_windup=&srch_FSG_frame_windup;
+    s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
+#endif
+
+  }else if(op_mode==OPERATION_FLATFWD){
 
     E_FATAL("Flat decoding is not supported yet");
 
@@ -244,7 +333,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_WST_DECODE){
 
-    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");
+    /*    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");*/
 
     s->srch_init=&srch_WST_init;
     s->srch_uninit=&srch_WST_uninit;
@@ -252,6 +341,8 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_utt_end=&srch_WST_end;
     s->srch_decode=&srch_WST_decode;
     s->srch_set_lm=&srch_WST_set_lm;
+    s->srch_add_lm=&srch_TST_add_lm;
+    s->srch_delete_lm=&srch_TST_delete_lm;
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
@@ -431,6 +522,7 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   st->nfr += block_nfeatvec;
   
+
   
   *curfrm = frmno;
 
@@ -444,6 +536,8 @@ int32 srch_uninit(srch_t* srch){
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+  ckd_free(srch);
+
   return SRCH_SUCCESS;
 }
 

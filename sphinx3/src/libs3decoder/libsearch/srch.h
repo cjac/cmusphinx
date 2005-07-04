@@ -37,30 +37,36 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.2  2005/07/03  23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ * 
+ * Revision 1.1.4.1  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.18  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -114,9 +120,10 @@
 #include "kb.h"
 #include "srch_time_switch_tree.h"
 #include "srch_word_switch_tree.h"
+#include "srch_fsg.h"
 #include "gmm_wrap.h"
 #include "srch_debug.h"
-
+#include "word_fsg.h"
 
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
@@ -130,7 +137,7 @@
 #define OPERATION_ALIGN 0
 #define OPERATION_ALLPHONE 1
 #define OPERATION_GRAPH 2
-#define OPERATION_FLAT_DECODE 3
+#define OPERATION_FLATFWD 3
 #define OPERATION_TST_DECODE 4
 #define OPERATION_WST_DECODE 5
 #define OPERATION_DEBUG 1369  /** ARCHAN 20050329: 1369 has no meaning
@@ -367,6 +374,10 @@ typedef struct srch_s {
 			const char *lmname  /**< The LM name */
 			);
 
+  /** Read FSG operation*/
+  word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
+			   const char* fsgname /** The fsg file name*/
+			   );
   /* The 4 operations that require switching during the approximate search process */
   /**< lv1 stands for approximate search. Currently not used. */
 
@@ -423,6 +434,37 @@ typedef struct srch_s {
 }srch_t;
 
 
+/** 
+    Translate search mode string to mode number 
+
+    The current operation mode are 
+    Strings        Operation Mode(Mode Idx)
+    OP_ALIGN       OPERATION_ALIGN(0)
+    OP_ALLPHONE    OPERATION_ALLPHONE(1)
+    OP_FSG         OPERATION_GRAPH(2)
+    OP_FLATFWD     OPERATION_FLATFWD(3)
+    
+    There are two names for OPERATION_TST_DECODE (Mode 4)
+    OP_LUCKYWHEEL  OPERATION_TST_DECODE(4)
+    OP_TST_DECODE  OPERATION_TST_DECODE(4)
+    
+    OP_WST_DECODE  OPERATION_WST_DECODE(5)
+
+     OP_DEBUG       OPERATION_WST_DECODE(1369) 
+
+     @return the mode index if it is valid, -1 if it is not.  
+ */
+
+int32 srchmode_str_to_index(const char* mode_str);
+
+/** Translate mode string to mode index. User need to supply an initialized 
+    @return a mode string;
+    @see srchmode_str_to_index
+ */
+
+char* srchmode_index_to_str(int32 index);
+
+
 /* The following are C-style method for srch structure.  In theory,
 users could used both C-style and function pointer style to access
 functionalities of the code. However, we recommend developers to use
@@ -432,6 +474,7 @@ it is more consistent with other modules in sphinx 3.
 
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces
+    @return an initialized srch_t with operation mode op_mode. 
 */
 
 srch_t* srch_init(kb_t *kb, /**< In: knowledge base */
@@ -497,6 +540,7 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 
 /** delete lm */
 int32 srch_delete_lm();
+
 
 #if 0 /*Not implemented */
 int32 srch_set_am();

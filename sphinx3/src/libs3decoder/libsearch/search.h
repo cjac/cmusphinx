@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2005/06/21  23:34:39  arthchan2003
- * Remove all dag functions. Eventually I may just want to delete the whole file as well.
+ * Revision 1.4.4.1  2005/06/27  05:37:58  arthchan2003
+ * Fixes to make the search of fsg in place (NOT WORKING NOW) in Makefile.am.
  * 
+ * Revision 1.4  2005/06/21 23:34:39  arthchan2003
+ * Remove all dag functions. Eventually I may just want to delete the whole file as well.
+ *
  * Revision 1.2  2005/06/03 05:46:19  archan
  * Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
  * There are several changes I have done to refactor the code across
@@ -128,6 +131,7 @@
 /** \file search.h
    \brief The temporary header file for sphinx 3 functions. 
  */
+
 
 #ifdef __cplusplus
 extern "C" {

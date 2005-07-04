@@ -38,9 +38,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.1.4.2  2005/06/27  05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
  * 
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
+ * Revision 1.2  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.1  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
@@ -66,17 +72,27 @@
 typedef struct {
   int32 n_static_lextree;	/**< Number of static lexical tree for word switching  */
 
-  lextree_t *curroottree;        /**< The current unigram tree that used
+  lextree_t *curroottree;        /**< The first unigram tree that used
                                   in the search for this utterance. */
-
-  lextree_t *fillertree;         /**< The filler tree which is unique. (Should it be?) */
-
   lextree_t **expandtree;         /**< The expanded trees */
+
+
+  lextree_t *curfillertree;         /**< The first filler tree */
+  lextree_t **expandfillertree;         /**< The expanded fillertrees 
+					 */
+
+
+
   lextree_t **roottree;           /**< The pool of trees that stores all
                                    word trees. An array with dimension. #lm*/
 
   hash_table_t *active_word;    /**< Hash table that map word end to the index of the expandtree. */
 
+  glist_t  empty_tree_idx_stack;      /**< Store a pool of indices which
+					  indicate a tree is empty. It acts like 
+					  a stack
+				       */
+  
 
   int32 no_active_word;         /**< No of active word */
   
@@ -95,7 +111,11 @@ int srch_WST_uninit(void* srch_struct);
 int srch_WST_begin(void* srch_struct);
 int srch_WST_end(void* srch_struct);
 int srch_WST_decode(void* srch_struct);
+
 int srch_WST_set_lm(void* srch_struct, const char* lmname);
+int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname);
+int srch_WST_delete_lm(void* srch, const char *lmname);
+
 int srch_WST_gmm_compute_lv2(void* srch_struct, float32 *feat, int32 time);
 int srch_WST_hmm_compute_lv1(void* srch_struct);
 int srch_WST_hmm_compute_lv2(void* srch_struct, int32 frmno);

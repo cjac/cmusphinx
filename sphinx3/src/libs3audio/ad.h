@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  08:00:06  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.7.4.1  2005/06/27  05:21:31  arthchan2003
+ * Merged from the tip of the trunk.
  * 
+ * Revision 1.8  2005/06/22 08:00:06  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.7  2004/12/14 00:39:49  arthchan2003
  * add <s3types.h> to the code, change some comments to doxygen style
  *

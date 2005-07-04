@@ -56,9 +56,12 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2005/06/22  08:05:55  arthchan2003
- * Fixed spelling in doc
+ * Revision 1.2.4.1  2005/06/27  05:22:19  arthchan2003
+ * Merged from the HEAD.
  * 
+ * Revision 1.4  2005/06/22 08:05:55  arthchan2003
+ * Fixed spelling in doc
+ *
  * Revision 1.3  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  *

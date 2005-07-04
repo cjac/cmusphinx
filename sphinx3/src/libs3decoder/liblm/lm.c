@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14  2005/06/21  22:24:02  arthchan2003
+ * Revision 1.14.4.1  2005/07/03  22:58:56  arthchan2003
+ * tginfo and membg 's memory were not deallocated at all. This change fixed it.
+ * 
+ * Revision 1.14  2005/06/21 22:24:02  arthchan2003
  * Log. In this change, I introduced a new interface for lm ,which is
  * call lmset_t. lmset_t wraps up multiple lm, n_lm, n_alloclm into the
  * same structure and handle LM initialization (lm_init) switching,
@@ -56,14 +59,14 @@
  * check-in, not every core function of lmset is completed.
  * e.g. lmset_add_lm because that required testing of several LM reading
  * routines and could be quite time-consuming.
- * 
+ *
  * Log. Another notable change is the fact dict2lmwid map is started to
  * be part of the LM. The reason of this is clearly described inside the
  * code. Don't want to repeat here.
- * 
+ *
  * Log. The new interface has been already used broadly in both Sphinx
  * 3.0 and sphinx 3.x family of tools.
- * 
+ *
  * Revision 1.4  2005/06/18 03:22:28  archan
  * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
  *
@@ -1878,19 +1881,57 @@ s3lmwid_t lm_wid (lm_t *lm, char *word)
 void lm_free (lm_t *lm)
 {
   int i;
+  tginfo_t *tginfo;
+
+  if(lm->fp)
+    fclose(lm->fp);
+
+  ckd_free ((void *) lm->ug);  
 
   for (i=0;i<lm->n_ug;i++) 
     ckd_free ((void *) lm->wordstr[i]);	/*  */
-  ckd_free ((void *) lm->membg);
   ckd_free ((void *) lm->wordstr);
-  ckd_free ((void *) lm->tgcache);
-  ckd_free ((void *) lm->tg_segbase);
-  ckd_free ((void *) lm->tgprob);
-  ckd_free ((void *) lm->tgbowt);
-  ckd_free ((void *) lm->bgprob);
-  ckd_free ((void *) lm->tginfo);
-  ckd_free ((void *) lm->ug);  
-  ckd_free ((void *) lm);
+
+  if(lm->n_bg >0){
+    if (lm->bg)		/* Memory-based; free all bg */
+      ckd_free (lm->bg);
+    else {		/* Disk-based; free in-memory bg */
+      for (i = 0; i < lm->n_ug; i++)
+	if (lm->membg[i].bg)
+	  ckd_free (lm->membg[i].bg);
+      ckd_free (lm->membg);
+    }
+    
+    ckd_free (lm->bgprob);
+  }
+
+  if(lm->n_tg>0){
+    if(lm->tg)
+      free(lm->tg);
+
+    for(i=0;i<lm->n_ug;i++){
+      if(lm->tginfo[i]!=NULL){
+	/* Free the whole linked list of tginfo. */
+	while (lm->tginfo[i]){
+	  tginfo=lm->tginfo[i];
+	  lm->tginfo[i]=tginfo->next;
+	  ckd_free((void*) tginfo->tg);
+	  ckd_free((void*) tginfo);
+	}
+      }
+    }
+    ckd_free ((void *) lm->tginfo);
+
+    ckd_free ((void *) lm->tgcache);
+    ckd_free ((void *) lm->tg_segbase);
+    ckd_free ((void *) lm->tgprob);
+    ckd_free ((void *) lm->tgbowt);
+
+  }
+
+
+  /*  ckd_free ((void *) lm);*/
+
   
 }
 

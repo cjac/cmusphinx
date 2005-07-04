@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.7.4.1  2005/06/27  05:22:19  arthchan2003
+ * Merged from the HEAD.
  * 
+ * Revision 1.8  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.7  2005/06/21 18:26:38  arthchan2003
  * Log. fast_algo_struct.c go through major changes in the gentle
  * refactoring process. It is the location of several wrapper structures

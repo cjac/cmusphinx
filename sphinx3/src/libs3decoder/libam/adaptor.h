@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  08:00:07  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.1.4.1  2005/06/27  05:22:19  arthchan2003
+ * Merged from the HEAD.
  * 
+ * Revision 1.2  2005/06/22 08:00:07  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.1  2005/06/21 17:59:44  arthchan2003
  * Log: Implementation and Interface of adapt_am_t, a wrapper of
  * adaptation capabability of Sphinx 3.  It takes the responsibility from

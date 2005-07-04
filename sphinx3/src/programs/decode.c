@@ -942,6 +942,7 @@ int32 main (int32 argc, char *argv[])
     
     stat_report_corpus(kb.stat);
 
+    kb_free(&kb);
   cmd_ln_appl_exit();
   exit(0);
 }

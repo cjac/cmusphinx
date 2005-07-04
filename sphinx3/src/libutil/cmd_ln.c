@@ -84,6 +84,17 @@ typedef struct argval_s {
 static argval_t *argval = NULL;
 static hash_table_t *ht;	/* Hash table */
 
+/** Added at 20050701 to keep track of the memory allocated when a file
+    is used in input of the command-line. 
+*/
+
+static char **f_argv; /** The true memory reservoir for all the string
+			  pointer if the command line is read as a
+			  file. */
+
+static uint32 f_argc;
+
+
 /*variables that allow redirecting all files to a log file */
 static FILE orig_stdout, orig_stderr;
 static FILE *logfp;
@@ -281,6 +292,7 @@ void cmd_ln_appl_exit()
     *stdout = orig_stdout;
     *stderr = orig_stderr;
   }
+  cmd_ln_free();
 }
 
 static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
@@ -458,7 +470,6 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
 {
   FILE *file;
   char **tmp_argv;
-  char **argv;
   int argc;
   int argv_size;
   char str[ARG_MAX_LENGTH];
@@ -478,9 +489,9 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
    */
   argv_size = 10;
   argc = 1;
-  argv = ckd_calloc(argv_size, sizeof(char *));
-  argv[0] = ckd_calloc(1, sizeof(char *));
-  argv[0][0] = '\0';
+  f_argv = ckd_calloc(argv_size, sizeof(char *));
+  f_argv[0] = ckd_calloc(1, sizeof(char *));
+  f_argv[0][0] = '\0';
 
   do {
     ch = fgetc(file);
@@ -491,15 +502,15 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
 	  rv = 1;
 	  break;
 	}
-	memcpy(tmp_argv, argv, argv_size * sizeof(char *));
-	ckd_free(argv);
-	argv = tmp_argv;
+	memcpy(tmp_argv, f_argv, argv_size * sizeof(char *));
+	ckd_free(f_argv);
+	f_argv = tmp_argv;
 	argv_size *= 2;
       }
       /* add the string to the list of arguments */
-      argv[argc] = ckd_calloc(len + 1, sizeof(char));
-      strncpy(argv[argc], str, len);
-      argv[argc][len] = '\0';
+      f_argv[argc] = ckd_calloc(len + 1, sizeof(char));
+      strncpy(f_argv[argc], str, len);
+      f_argv[argc][len] = '\0';
       len = 0;
       argc++;
 
@@ -520,10 +531,11 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
   } while (ch != EOF);
   
   if (rv == 0) {
-    rv = cmd_ln_parse(defn, argc, argv);
+    rv = cmd_ln_parse(defn, argc, f_argv);
   }
 
-  ckd_free(argv);
+  f_argc=argc;
+  fclose(file);
 
   return rv;
 }
@@ -544,15 +556,27 @@ const void *cmd_ln_access (char *name)
     
     if (hash_lookup (ht, name, &i) < 0)
 	E_FATAL("Unknown argument: %s\n", name);
-    
     return (argval[i].ptr);
 }
 
 /* RAH, 4.17.01, free memory allocated above  */
 void cmd_ln_free ()
 {
+  int32 i;
   hash_free (ht);
   ht=NULL;
   ckd_free ((void *) argval);
   argval = NULL;
+
+
+  if(f_argv){
+    if(f_argc>1){
+      for(i=1;i<f_argc;i++){
+	ckd_free(f_argv[i]);
+      }
+    }
+    ckd_free(f_argv[0]);
+    ckd_free(f_argv);
+  }
+
 }
