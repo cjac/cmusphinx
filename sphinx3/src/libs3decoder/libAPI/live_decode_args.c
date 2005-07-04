@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13  2005/06/22  02:53:12  arthchan2003
- * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ * Revision 1.13.4.1  2005/07/04  07:14:15  arthchan2003
+ * Added -lminsearch option.
  * 
+ * Revision 1.13  2005/06/22 02:53:12  arthchan2003
+ * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ *
  * Revision 1.10  2005/06/19 19:41:20  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -372,6 +375,10 @@ arg_t arg_def[] = {
       ARG_INT32,
       "1",
       "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "},
+    { "-lminsearch",
+      ARG_INT32,
+      "0",
+      "Whether LM is used in search. Depends on the mode of the search, it could be ignored(e.g. mode LUCKY_WHEEL), or mutally exclusive to -lmrescore (e.g. mode WST)"},
     { "-maxhmmpf",
       ARG_INT32,
       "20000",
