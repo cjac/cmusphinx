@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.6  2005/07/03  23:18:05  arthchan2003
- * 1, correct freeing of the structure is implemented. 2, Revamp srch_WST_propagate_graph_wd_lv2 implementation. The previous implementation contains several hacks which are very hard to reconcile by further hacking.   That includes a, usage of the exact score to indicate whether a tree should be entered. (too magical) b, memory leaks in a rate of 1MB per utterance (no kidding me) c, The code unnecessarily required two pass of all the hypothesis histories. (50 unnecessary lines).  The current fix is much simpler than before.  Instead of trying to keep track of which (word, phone) pair has the highest score using the word_phone_hash hash structure.  We just let every (word, phone) pair to enter the tree and allow lextree_enter to decide whether the history should stay.   This is still not very clever in the sense that the (word, phone) max score is actually the only path it will be propagated in future.  The current implementation will thus make repeated traversal of child nodes for same (word,phone) pair.  However, this is a clean way to do things in the srch_impl layer.  Later, it will be necessary to think of a better way to keep track of max score instead.
+ * Revision 1.1.4.7  2005/07/04  07:23:40  arthchan2003
+ * 1, Bug fix, put score instead of vh->bestscore[frmno] when entering filler tree, 2, Do poor-man trigram rescoring when entering tree.
  * 
+ * Revision 1.1.4.6  2005/07/03 23:18:05  arthchan2003
+ * 1, correct freeing of the structure is implemented. 2, Revamp srch_WST_propagate_graph_wd_lv2 implementation. The previous implementation contains several hacks which are very hard to reconcile by further hacking.   That includes a, usage of the exact score to indicate whether a tree should be entered. (too magical) b, memory leaks in a rate of 1MB per utterance (no kidding me) c, The code unnecessarily required two pass of all the hypothesis histories. (50 unnecessary lines).  The current fix is much simpler than before.  Instead of trying to keep track of which (word, phone) pair has the highest score using the word_phone_hash hash structure.  We just let every (word, phone) pair to enter the tree and allow lextree_enter to decide whether the history should stay.   This is still not very clever in the sense that the (word, phone) max score is actually the only path it will be propagated in future.  The current implementation will thus make repeated traversal of child nodes for same (word,phone) pair.  However, this is a clean way to do things in the srch_impl layer.  Later, it will be necessary to think of a better way to keep track of max score instead.
+ *
  * Revision 1.1.4.5  2005/07/01 04:14:09  arthchan2003
  * Fixes of making histogram pruning working with the WST search (mode 5) 1, As in the TST search, the bins are always zeroed. 2, When the number of bins were initialized, instead of using 3 times the number of nodes, now using n_stalextree number of node.  The histogram bin array are also updated for every utterance. This will ensure when the number of active node is too large, there are invalid write.  3, the code is further safe-guarded in srch_WST_hmm_compute_lv2.  change 2 will not give us assurance if the number of active nodes are too large and spill out of the array.  The code with long comment will make sure that this condition will not happen.
  *
@@ -107,11 +110,16 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   kbc=kb->kbcore;
   s=(srch_t *)srch;
   wstg=(srch_WST_graph_t*)ckd_calloc(1,sizeof(srch_WST_graph_t));
+
   /* Only initialized one + n_static copies of trees in the initialization. */
   if(cmd_ln_int32("-epl"))
     E_WARN("-epl is omitted in WST search.\n");
   if(cmd_ln_int32("-Nlextree"))
     E_WARN("-Nlextree is omitted in WST search.\n");
+
+  if(cmd_ln_int32("-lminsearch") && cmd_ln_int32("-lmrescore")){
+    E_FATAL("-lminsearch and -lmrescore is mutally exclusive in WST search. \n");
+  }
 
   wstg->n_static_lextree=cmd_ln_int32("-Nstalextree");
   wstg->isLMLA=cmd_ln_int32("-treeugprob");
@@ -138,7 +146,7 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   wstg->expandfillertree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
 
   if(kbc->lmset->n_lm>1){
-    E_FATAL("Multiple lm doesn't work for this mode yet\n");
+    E_FATAL("Multiple lm doesn't work for this mode 5 yet\n");
   }
   for(i=0;i<kbc->lmset->n_lm ; i++){
     wstg->roottree[i]=lextree_init(kbc,kbc->lmset->lmarray[i],kbc->lmset->lmarray[i]->name,
@@ -779,6 +787,8 @@ int32 srch_WST_propagate_graph_wd_lv1(void *srch)
 
 
 /** The heart of WST implementation. 
+ *
+ *
  */
 
 int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
@@ -808,6 +818,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   glist_t keylist;
   gnode_t *key;
   hash_entry_t *he;
+  s3lmwid_t lwid;
 
   int32 id;
   int32 succ;
@@ -887,6 +898,8 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
   for (; vhid <= le; vhid++) {
     ve = vithist_id2entry (vh, vhid);
+
+    /*    vithist_entry_display(ve,NULL);*/
     wid = vithist_entry_wid (ve);
     p = dict_last_phone (dict, wid);
 
@@ -970,13 +983,35 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 	mdef_ciphone_str(mdef,p),
 	score);*/
 
+    /*Get the LM score */
+
+    if(cmd_ln_int32("-lminsearch")){
+
+      lwid = kbcore->lmset->cur_lm->dict2lmwid[wid];
+
+      if(dict_filler_word(kbcore_dict(kbcore),wid)){
+	ve->lscr=fillpen(kbcore_fillpen(kbcore),wid);
+      }else{
+	/* Update the score for ve */
+	ve->lscr=lm_tg_score(kbcore_lm(kbcore),
+			  ve->lmstate.lm3g.lwid[1],
+			  ve->lmstate.lm3g.lwid[0],
+			  lwid,
+			  wid);
+      }
+      
+      ve->score+= ve->lscr;
+
+      /* As well as the score itself */
+      score+=ve->lscr;
+    }
+
     lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
-    lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, vh->bestscore[frmno],
+    lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, score,
 		  vh->bestvh[frmno], th);
 
   }
 
-  /** obtained a link-list from the hash_table keys*/
   
   return SRCH_SUCCESS;
 
