@@ -839,7 +839,10 @@ static arg_t arg[] = {
       ARG_INT32,
       "1",
       "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "},
-
+    { "-lminsearch",
+      ARG_INT32,
+      "0",
+      "Whether LM is used in search. Depends on the mode of the search, it could be ignored (e.g. mode LUCKY_WHEEL), or mutally exclusive to -lmrescore (e.g. mode WST)"},
     { "-maxhmmpf",
       ARG_INT32,
       "20000",
