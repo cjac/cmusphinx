@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.2  2005/06/27  05:37:05  arthchan2003
- * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ * Revision 1.1.4.3  2005/07/04  07:24:15  arthchan2003
+ * Added some comments
  * 
+ * Revision 1.1.4.2  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
  * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
  * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
  *
@@ -68,6 +71,18 @@
 
 #include "s3types.h"
 #include "kb.h"
+
+/**
+   A note by ARCHAN at 20050703
+
+   In general, what made a LVCSR search to be unique has three major
+   factors.  They are 1) how high level knowledge source (LM, FSG) is
+   applied, 2) how the lexicon is organized, 3, how cross word
+   triphones is realized and implemented.  It is important to realize
+   the interplay between these 3 components to realize how a search
+   actually really works.
+   
+ */
 
 typedef struct {
   int32 n_static_lextree;	/**< Number of static lexical tree for word switching  */
@@ -100,8 +115,14 @@ typedef struct {
   int32 isLMLA;  /**< Is LM lookahead used?*/
 
   histprune_t *histprune; /**< Structure that wraps up parameters related to  */
-  
+
+
 } srch_WST_graph_t ;
+
+
+
+
+
 
 int srch_WST_init(kb_t *kb, /**< The KB */
 		  void* srch_struct /**< The pointer to a search structure */
@@ -125,6 +146,9 @@ int srch_WST_propagate_graph_ph_lv1(void* srch_struct);
 int srch_WST_propagate_graph_wd_lv1(void* srch_struct);
 
 int srch_WST_propagate_graph_ph_lv2(void* srch_struct, int32 frmno);
+
+/**
+ */
 int srch_WST_propagate_graph_wd_lv2(void* srch_struct, int32 frmno);
 int srch_WST_rescoring(void *srch, int32 frmno);
 
