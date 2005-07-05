@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2005/06/21  20:44:34  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * Revision 1.12.4.1  2005/07/05  06:25:40  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.12  2005/06/21 20:44:34  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ *
  * Revision 1.4  2005/06/18 20:05:23  archan
  * Sphinx3 to s3.generic: Set lm correctly in dag.c and astar.c.  Same changes should also be applied to decode_anytopo.
  *
@@ -88,11 +91,14 @@ extern "C" {
 #endif
 
   /**
- * Structure for a corpus: essentially a set of strings each associated with a
- * unique ID.  (Such as a reference sentence file, hypothesis file, and various
- * control files.)
- * NOTE: IDs are CASE-SENSITIVE.
- */
+   * \struct corpus_t
+   * \brief  Structure for a corpus: essentially a set of strings each associated with a
+   * unique ID. 
+   * Structure for a corpus: essentially a set of strings each associated with a
+   * unique ID.  (Such as a reference sentence file, hypothesis file, and various
+   * control files.)
+   * NOTE: IDs are CASE-SENSITIVE.
+   */
 typedef struct {
     hash_table_t *ht;	/**< Hash table for IDs; CASE-SENSITIVE */
     int32 n;		/**< #IDs (and corresponding argument strings) in the corpus */

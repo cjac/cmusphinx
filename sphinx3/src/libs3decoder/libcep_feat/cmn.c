@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  19:28:00  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.10.4.1  2005/07/05  06:25:08  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.10  2005/06/21 19:28:00  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -71,6 +74,7 @@
 cmn_t* cmn_init()
 {
   cmn_t *cmn;
+  cmn=NULL;
   cmn=(cmn_t*)ckd_calloc (1, sizeof (cmn_t));
   cmn->cmn_mean=NULL;
   cmn->cmn_var=NULL;
@@ -79,6 +83,7 @@ cmn_t* cmn_init()
   cmn->nframe=0;
   return cmn;
 }
+
 
 void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
 {
@@ -226,8 +231,12 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
  */
 void cmn_free (cmn_t *cmn)
 {
-  if(cmn->cmn_var)
-  ckd_free ((void *) cmn->cmn_var);
-  if(cmn->cmn_mean)
-  ckd_free ((void *) cmn->cmn_mean);
+  if(cmn!=NULL){
+    if(cmn->cmn_var)
+      ckd_free ((void *) cmn->cmn_var);
+    if(cmn->cmn_mean)
+      ckd_free ((void *) cmn->cmn_mean);
+    
+    ckd_free((void*) cmn);
+  }
 }
