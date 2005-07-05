@@ -45,14 +45,22 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.13.4.1  2005/07/05  05:47:59  arthchan2003
- * Fixed dox-doc. struct level of documentation are included.
+ * Revision 1.13.4.2  2005/07/05  06:48:54  arthchan2003
+ * Merged from HEAD.
  * 
- * Revision 1.13  2005/06/21 18:06:45  arthchan2003
- * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
- * Revision 1.13.4.1  2005/07/05  05:47:59  arthchan2003
+ * Revision 1.14  2005/07/04 20:57:53  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
+ * Revision 1.13.4.1  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
- *  keyword.
+ *
+ * Revision 1.13  2005/06/21 18:06:45  arthchan2003
  *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
@@ -298,10 +306,6 @@ int32 mgau_comp_eval (mgau_model_t *g,	/**< In: Set of mixture Gaussians */
 		      int32 m,		/**< In: Mixture being considered */
 		      float32 *x,	/**< In: Input vector being compared to the components */
 		      int32 *score);	/**< Out: Array of scores for each component */
-
-  /** 20040829 : ARCHAN: a temporary hacked function to convert the log domain value back to float domain */
-
-int32 mgau_precomp_hack_log_to_float(mgau_model_t *g);
 
   /**
    * A routine that dump all mean and variance parameters of a set of gaussian distribution.   

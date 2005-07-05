@@ -45,9 +45,33 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.17  2005/06/21  18:06:45  arthchan2003
- * Log. 1, Fixed Doxygen documentation. 2, Added $Log:$ keyword.
+ * Revision 1.17.4.1  2005/07/05  06:48:54  arthchan2003
+ * Merged from HEAD.
  * 
+ * Revision 1.18  2005/07/04 20:57:53  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
+ * Revision 1.17  2005/06/21 18:06:45  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
+ * Revision 1.17.4.1  2005/07/05  06:48:54  arthchan2003
+ * Merged from HEAD.
+ * 
+ * Log. 1, Fixed Doxygen documentation. 2, Added Revision 1.18  2005/07/04 20:57:53  dhdfu
+ * Log. 1, Fixed Doxygen documentation. 2, Added Finally remove the "temporary hack" for the endpointer, and do
+ * Log. 1, Fixed Doxygen documentation. 2, Added everything in logs3 domain.  Should make it faster and less likely to
+ * Log. 1, Fixed Doxygen documentation. 2, Added crash on Alphas.
+ * Log. 1, Fixed Doxygen documentation. 2, Added
+ * Log. 1, Fixed Doxygen documentation. 2, Added Actually it kind of duplicates the existing GMM computation functions,
+ * Log. 1, Fixed Doxygen documentation. 2, Added but it is slightly different (see the comment in classify.c).  I don't
+ * Log. 1, Fixed Doxygen documentation. 2, Added know the rationale for this.
+ * Log. 1, Fixed Doxygen documentation. 2, Added keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -631,26 +655,6 @@ static int32 mgau_precomp (mgau_model_t *g)
     }
     
     return 0;
-}
-
-/** Hack! Temporary measure to make classifier works. 
- */
-int32 mgau_precomp_hack_log_to_float(mgau_model_t *g)
-{
-    int32 m, c;
-
-    if(g->verbose)
-      E_INFO("Revert log values back to normal\n");
-
-    for (m = 0; m < mgau_n_mgau(g); m++) {
-	for (c = 0; c < mgau_n_comp(g,m); c++) {
-	  mgau_lrd(g,m,c)=exp(mgau_lrd(g,m,c));
-	  mgau_mixw_f(g,m,c)=exp(mgau_mixw_f(g,m,c));
-	}
-    }
-    
-    return 0;
-
 }
 
 /** At the moment, S3 models have the same # of means in each codebook and
