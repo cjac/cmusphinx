@@ -1,4 +1,4 @@
- /* ====================================================================
+/* ====================================================================
  * Copyright (c) 2004 Carnegie Mellon University.  All rights
  * reserved.
  *
@@ -39,9 +39,24 @@
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
  * $Log$
- * Revision 1.6  2005/06/21  21:06:47  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ * Revision 1.6.4.1  2005/07/05  06:46:23  arthchan2003
+ * 1, Merged from HEAD.  2, fixed dox-doc.
  * 
+ * Revision 1.8  2005/07/04 20:57:53  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
+ * Revision 1.7  2005/07/02 04:24:45  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ *
+ * Revision 1.6  2005/06/21 21:06:47  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
+ *
  * Revision 1.3  2005/06/15 06:48:54  archan
  * Sphinx3 to s3.generic: 1, updated the endptr and classify 's code, 2, also added
  *
@@ -100,17 +115,19 @@
 /**************************************************/
 
 /**
-   class to store the classifier parameters 
+   \struct class_t
+   \brief class to store the classifier parameters 
  */ 
+
 typedef struct{
-  char *classname[NUMCLASSES];
-  int32 windowlen;
-  mgau_model_t *g ; 
+  char *classname[NUMCLASSES];             /**< An array of class names */
+  int32 windowlen;                         /**< The window length */
+  mgau_model_t *g ;                        /**< The endpoint model */
   s3cipid_t classmap[NUMCLASSES];
 
-  float32 priors[NUMCLASSES];
+  int32 priors[NUMCLASSES];
 
-  int32 window[VOTEWINDOWLEN];              // the voting window contains class numbers
+  int32 window[VOTEWINDOWLEN];              /**< the voting window contains class numbers*/
   int32 postprocess;
   int32 classlatency;
 }class_t;
@@ -129,14 +146,15 @@ typedef struct{
 
 void majority_class(class_t* CLASSW, int *classcount, int frame_count);
 
-class_t * classw_initialize(char *mdeffile,  /* The model def file */
+class_t * classw_initialize(char *mdeffile,  /**< The model def file */
 			    char* meanfile,   /**< The mean file */
 			    char *varfile,       /**< The variance file */
 			    float64 varfloor,    /**< variance floor */
 			    char* mixwfile,         /**< The mixture weight */
 			    float64 mixwfloor,       /**< mixture weight floor */
-			    int32 precomp,       /**< pre-computation of values, 0, not to pre-compute 1, 
-						    to precompute */
+			    int32 precomp,       /**< pre-computation of values,
+						     0 not to pre-compute, 
+						     1 to precompute */
 			    char *senmgau       /**< whether it is SCHMM, ".semi." or FCHMM ".cont." */
 			    );
 
@@ -144,13 +162,15 @@ void classw_free(class_t *CLASSW);
 
 int classify (float *frame,     /**< the frame */
 	      mgau_model_t *g,  /**< multiple mixture models */
-	      float priors[NUMCLASSES], /**< The prior of each classes */
+	      int32 priors[NUMCLASSES], /**< The prior of each classes */
 	      s3cipid_t *map  /**< Map between ci phones and classes */
 	      );
 
 int postclassify (int *window, int windowlen, int *wincap, int myclass);
 
-int vote (int *window, int windowlen);
+   int vote (int *window, /**< A window of input */
+	     int windowlen /**< The window length*/
+	  );
 
 #endif /*__FRAME_CLASSIFIER__*/
 
