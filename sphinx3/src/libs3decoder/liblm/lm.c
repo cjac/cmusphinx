@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.1  2005/07/03  22:58:56  arthchan2003
- * tginfo and membg 's memory were not deallocated at all. This change fixed it.
+ * Revision 1.14.4.2  2005/07/05  21:31:25  arthchan2003
+ * Merged from HEAD.
  * 
+ * Revision 1.15  2005/07/05 13:12:37  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
+ * Revision 1.14.4.1  2005/07/03 22:58:56  arthchan2003
+ * tginfo and membg 's memory were not deallocated at all. This change fixed it.
+ *
  * Revision 1.14  2005/06/21 22:24:02  arthchan2003
  * Log. In this change, I introduced a new interface for lm ,which is
  * call lmset_t. lmset_t wraps up multiple lm, n_lm, n_alloclm into the
@@ -2385,7 +2391,7 @@ main (int32 argc, char *argv[])
     if (argc < 2)
 	E_FATAL("Usage: %s <LMdumpfile>\n", argv[0]);
 
-    logs3_init (1.0001);
+    logs3_init (1.0001, 1, 1);
     lm = lm_read (argv[1], 9.5, 0.2);
 
     if (1) {			/* Short cut this so we can test for memory leaks */
