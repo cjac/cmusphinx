@@ -3,6 +3,7 @@ INSTALL
 Makefile
 Makefile.in
 aclocal.m4
+an4.out
 autom4te.cache
 config.cache
 config.guess
@@ -19,6 +20,12 @@ ltconfig
 ltmain.sh
 missing
 mkinstalldirs
+pittsburgh.littleendian.allp
+pittsburgh.littleendian.phlat
+pittsburgh.littleendian.phseg
+pittsburgh.littleendian.wdseg
+pittsburgh.nbest
 stamp-h
 stamp-h.in
 stamp-h1
+test-*.out
