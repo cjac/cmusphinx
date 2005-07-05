@@ -45,9 +45,15 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.13  2005/06/21  18:06:45  arthchan2003
- * Log. 1, Fixed Doxygen documentation. 2, Added $Log:$ keyword.
+ * Revision 1.13.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Revision 1.13  2005/06/21 18:06:45  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
+ * Revision 1.13.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *  keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -126,7 +132,8 @@ extern "C" {
  */
 
   /**
-   * A single mixture-Gaussian model for one senone (see above comment).
+   * \struct mgau_t
+   * \brief A single mixture-Gaussian model for one senone (see above comment).
    */
 typedef struct {
   int32 n_comp;	/**< #Component Gaussians in this mixture.  NOTE: May be 0 (for the
@@ -162,8 +169,9 @@ typedef struct {
 
 
   /**
- * The set of mixture-Gaussians in an acoustic model.
- */
+   * \struct mgau_model_t
+   * \brief The set of mixture-Gaussians in an acoustic model used in Sphinx 3.X family of tool
+   */
 typedef struct {
   int32 n_mgau;	/**< #Mixture Gaussians in this model (i.e., #senones) */
   int32 max_comp;	/**< Max components in any mixture */
@@ -256,7 +264,9 @@ mgau_init (char *meanfile,	/**< In: File containing means of mixture gaussians *
    * Floor any variance vector that is non-zero (vector).
    * @return No. of variance VALUES floored.
    */
-int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor);
+  int32 mgau_var_nzvec_floor (mgau_model_t *g,  /**< In: A mixture of Gaussian components */
+			      float64 floor /**< In: The floor value */
+			    );
 
 
   /**

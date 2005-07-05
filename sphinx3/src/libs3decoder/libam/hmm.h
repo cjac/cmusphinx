@@ -45,17 +45,23 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8.4.2  2005/07/04  07:15:55  arthchan2003
- * Removed fsg compliant stuff from hmm_t
+ * Revision 1.8.4.3  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
+ * Removed fsg compliant stuff from hmm_t
+ *
  * Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
  * Added changes to make libsearch/fsg_* family of code to be compiled.
  *
  * Revision 1.8  2005/06/21 18:34:41  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
- * Revision 1.8.4.2  2005/07/04  07:15:55  arthchan2003
- * Removed fsg compliant stuff from hmm_t
+ * Revision 1.8.4.3  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Removed fsg compliant stuff from hmm_t
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add Added changes to make libsearch/fsg_* family of code to be compiled.
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add keyword.
@@ -123,27 +129,31 @@ extern "C" {
  * 3-state topologies that contain a subset of the above transitions should work as well.  */
 
 
-  /** A single state in the HMM */
+  /**  \struct hmm_state_t
+   * \brief A single state in the HMM 
+   */
 typedef struct {
-    int32 score;	/** State score (path log-likelihood) */
-    int32 history;	/** History index */
+    int32 score;	/**< State score (path log-likelihood) */
+    int32 history;	/**< History index */
 } hmm_state_t;
 
 
-  /**
- * An individual HMM among the HMM search space.  An HMM with N emitting states consists
- * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
- * For compatibility with Sphinx-II, we assume that the initial or entry state can only
- * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
- * where the extra destination dimension correponds to the final or exit state.
- */
+  /** \struct hmm_t
+   * \brief An individual HMM among the HMM search space.
+   *
+   * An individual HMM among the HMM search space.  An HMM with N emitting states consists
+   * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
+   * For compatibility with Sphinx-II, we assume that the initial or entry state can only
+   * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
+   * where the extra destination dimension correponds to the final or exit state.
+   */
 
 typedef struct {
-    hmm_state_t *state;	/** Per-state data for emitting states */
-    hmm_state_t in;	/** Non-emitting entry state */
-    hmm_state_t out;	/** Non-emitting exit state */
-    int32 **tp;		/** State transition scores tp[from][to] (logs3 values) */
-    int32 bestscore;	/** Best [emitting] state score in current frame (for pruning) */
+    hmm_state_t *state;	/**< Per-state data for emitting states */
+    hmm_state_t in;	/**< Non-emitting entry state */
+    hmm_state_t out;	/**< Non-emitting exit state */
+    int32 **tp;		/**< State transition scores tp[from][to] (logs3 values) */
+    int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning) */
 
 
 

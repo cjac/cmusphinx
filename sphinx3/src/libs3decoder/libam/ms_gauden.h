@@ -10,9 +10,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  18:55:09  arthchan2003
- * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ * Revision 1.6.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Revision 1.6  2005/06/21 18:55:09  arthchan2003
+ * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -56,26 +59,27 @@ extern "C" {
 #endif
 
   /**
- * Multivariate gaussian mixture density parameters
- */
+   * \struct gauden_t
+   * \brief Multivariate gaussian mixture density parameters
+   */
 typedef struct {
-    vector_t ***mean;	/** mean[codebook][feature][codeword] vector */
-    vector_t ***var;	/** like mean; diagonal covariance vector only */
-    float32 ***det;	/** log(determinant) for each variance vector;
+    vector_t ***mean;	/**< mean[codebook][feature][codeword] vector */
+    vector_t ***var;	/**< like mean; diagonal covariance vector only */
+    float32 ***det;	/**< log(determinant) for each variance vector;
 			   actually, log(sqrt(2*pi*det)) */
-    int32 n_mgau;	/** #codebooks */
-    int32 n_feat;	/** #feature streams in each codebook */
-    int32 n_density;	/** #gaussian densities in each codebook-feature stream */
-    int32 *featlen;	/** feature length for each feature */
+    int32 n_mgau;	/**< #codebooks */
+    int32 n_feat;	/**< #feature streams in each codebook */
+    int32 n_density;	/**< #gaussian densities in each codebook-feature stream */
+    int32 *featlen;	/**< feature length for each feature */
 } gauden_t;
 
   /**
- * Structure to store distance (density) values for a given input observation
- * wrt density values in some given codebook.
- */
+   * \struct gauden_dist_t
+   * \brief Structure to store distance (density) values for a given input observation wrt density values in some given codebook.
+   */
 typedef struct {
-    int32 id;		/** Index of codeword (gaussian density) */
-    int32 dist;		/** Density value for input observation wrt above codeword;
+    int32 id;		/**< Index of codeword (gaussian density) */
+    int32 dist;		/**< Density value for input observation wrt above codeword;
 			   NOTE: result in logs3 domain; hence int32 */
 
 } gauden_dist_t;
