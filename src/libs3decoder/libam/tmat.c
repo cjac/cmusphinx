@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  19:23:35  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.6  2005/07/05  13:12:39  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
  * 
+ * Revision 1.5  2005/06/21 19:23:35  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.5  2005/05/03 04:09:09  archan
  * Implemented the heart of word copy search. For every ci-phone, every word end, a tree will be allocated to preserve its pathscore.  This is different from 3.5 or below, only the best score for a particular ci-phone, regardless of the word-ends will be preserved at every frame.  The graph propagation will not collect unused word tree at this point. srch_WST_propagate_wd_lv2 is also as the most stupid in the century.  But well, after all, everything needs a start.  I will then really get the results from the search and see how it looks.
  *
@@ -278,7 +281,7 @@ main (int32 argc, char *argv[])
       exit (-1);
     }
 
-    logs3_init ((float64) 1.0001);
+    logs3_init ((float64) 1.0001, 1, 1);
     
     t = tmat_init (argv[1], flr);
 

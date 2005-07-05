@@ -34,15 +34,18 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.17  2005/07/04  20:57:52  dhdfu
+ * Revision 1.18  2005/07/05  13:12:36  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ * 
+ * Revision 1.17  2005/07/04 20:57:52  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
  * crash on Alphas.
- * 
+ *
  * Actually it kind of duplicates the existing GMM computation functions,
  * but it is slightly different (see the comment in classify.c).  I don't
  * know the rationale for this.
- * 
+ *
  * Revision 1.16  2005/07/02 04:24:46  egouvea
  * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
  *
@@ -51,15 +54,18 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.17  2005/07/04  20:57:52  dhdfu
- * Finally remove the "temporary hack" for the endpointer, and do
- * everything in logs3 domain.  Should make it faster and less likely to
- * crash on Alphas.
+ * Revision 1.18  2005/07/05  13:12:36  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
  * 
- * Actually it kind of duplicates the existing GMM computation functions,
- * but it is slightly different (see the comment in classify.c).  I don't
- * know the rationale for this.
- * 
+ * Add Revision 1.17  2005/07/04 20:57:52  dhdfu
+ * Add Finally remove the "temporary hack" for the endpointer, and do
+ * Add everything in logs3 domain.  Should make it faster and less likely to
+ * Add crash on Alphas.
+ * Add
+ * Add Actually it kind of duplicates the existing GMM computation functions,
+ * Add but it is slightly different (see the comment in classify.c).  I don't
+ * Add know the rationale for this.
+ * Add
  * Add Revision 1.16  2005/07/02 04:24:46  egouvea
  * Add Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
  * Add
@@ -292,6 +298,10 @@ static arg_t arg[] = {
     ARG_FLOAT32,
     "0.0000001",
     "Senone mixture weights floor (applied to data from -mixw file)" },
+  { "-log3table",
+    ARG_INT32,
+    "1",
+    "Determines whether to use the log3 table or to compute the values at run time."},
   { "-logbase",
     ARG_FLOAT32,
     "1.0003",
@@ -536,7 +546,7 @@ int32 main(int32 argc, char **argv)
   unlimit();
   ptmr_init(&tm_class);
 
-  logs3_init(cmd_ln_float32("-logbase"), 0, 0);
+  logs3_init(cmd_ln_float32("-logbase"), 1, cmd_ln_int32("-log3table"));
 
   FEW = few_initialize();
   CLASSW = classw_initialize(cmd_ln_str("-mdef"), cmd_ln_str("-mean"),

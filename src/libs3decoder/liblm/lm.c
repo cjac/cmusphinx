@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14  2005/06/21  22:24:02  arthchan2003
+ * Revision 1.15  2005/07/05  13:12:37  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ * 
+ * Revision 1.14  2005/06/21 22:24:02  arthchan2003
  * Log. In this change, I introduced a new interface for lm ,which is
  * call lmset_t. lmset_t wraps up multiple lm, n_lm, n_alloclm into the
  * same structure and handle LM initialization (lm_init) switching,
@@ -56,14 +59,14 @@
  * check-in, not every core function of lmset is completed.
  * e.g. lmset_add_lm because that required testing of several LM reading
  * routines and could be quite time-consuming.
- * 
+ *
  * Log. Another notable change is the fact dict2lmwid map is started to
  * be part of the LM. The reason of this is clearly described inside the
  * code. Don't want to repeat here.
- * 
+ *
  * Log. The new interface has been already used broadly in both Sphinx
  * 3.0 and sphinx 3.x family of tools.
- * 
+ *
  * Revision 1.4  2005/06/18 03:22:28  archan
  * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
  *
@@ -2344,7 +2347,7 @@ main (int32 argc, char *argv[])
     if (argc < 2)
 	E_FATAL("Usage: %s <LMdumpfile>\n", argv[0]);
 
-    logs3_init (1.0001);
+    logs3_init (1.0001, 1, 1);
     lm = lm_read (argv[1], 9.5, 0.2);
 
     if (1) {			/* Short cut this so we can test for memory leaks */
