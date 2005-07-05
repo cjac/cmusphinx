@@ -45,14 +45,20 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7.4.3  2005/07/05  05:47:59  arthchan2003
- * Fixed dox-doc. struct level of documentation are included.
+ * Revision 1.7.4.4  2005/07/05  21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
  * 
+ * Revision 1.7.4.3  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
  * Revision 1.7.4.2  2005/07/04 02:44:25  arthchan2003
  * Changed float32 to float64 for ci_pbeam and svqbeam. Code now compiled.
  *
  * Revision 1.7.4.1  2005/06/27 05:22:19  arthchan2003
  * Merged from the HEAD.
+ *
+ * Revision 1.9  2005/06/30 13:08:45  egouvea
+ * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
  *
  * Revision 1.8  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.

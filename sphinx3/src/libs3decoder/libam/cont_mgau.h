@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.13.4.2  2005/07/05  06:48:54  arthchan2003
- * Merged from HEAD.
+ * Revision 1.13.4.3  2005/07/05  21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
  * 
+ * Revision 1.13.4.2  2005/07/05 06:48:54  arthchan2003
+ * Merged from HEAD.
+ *
  * Revision 1.14  2005/07/04 20:57:53  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
@@ -60,7 +63,12 @@
  * Revision 1.13.4.1  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
  *
+ *
  * Revision 1.13  2005/06/21 18:06:45  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
+ * Revision 1.13.4.3  2005/07/05  21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ * 
  *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
