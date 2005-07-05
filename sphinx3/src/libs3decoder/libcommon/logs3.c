@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  20:46:54  arthchan2003
- * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ * Revision 1.7  2005/07/05  13:12:39  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
  * 
+ * Revision 1.6  2005/06/21 20:46:54  arthchan2003
+ * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ *
  * Revision 1.6  2005/06/03 06:12:56  archan
  * 1, Simplify and unify all call of logs3_init, move warning when logbase > 1.1 into logs3.h.  2, Change arguments to require arguments in align and astar.
  *
@@ -289,7 +292,7 @@ main (int argc, char *argv[])
 
     printf ("base: ");
     scanf ("%lf", &base);
-    if (logs3_init (base) < 0)
+    if (logs3_init (base, 1, 1) < 0)
 	exit (-1);
 
     for (;;) {
