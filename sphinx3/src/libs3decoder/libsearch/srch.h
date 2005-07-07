@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.3  2005/07/04  07:18:49  arthchan2003
- * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ * Revision 1.1.4.4  2005/07/07  02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
  * 
+ * Revision 1.1.4.3  2005/07/04 07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ *
  * Revision 1.1.4.2  2005/07/03 23:04:55  arthchan2003
  * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
  *
@@ -123,10 +126,15 @@
 #include "kb.h"
 #include "srch_time_switch_tree.h"
 #include "srch_word_switch_tree.h"
-#include "srch_fsg.h"
+
+#if 0
+/*#include "srch_fsg.h"*/
+/*#include "word_fsg.h"*/
+#endif
+
 #include "gmm_wrap.h"
 #include "srch_debug.h"
-#include "word_fsg.h"
+
 
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
@@ -245,7 +253,7 @@ typedef struct {
 
    At the time I wrote this, we only implement mode 4 (Ravi's
    implementation in Sphinx 3.2, I usually call it "lucky wheel"
-   implementation.  See my description in srch_time_switch_tree.h),
+   implementation.  (See my description in srch_time_switch_tree.h),
    mode 5 (My implementation using tree copies.)  and mode 1369 (A
    debug mode of the search mechanism where only a prompt will be
    displayed and show that a function is called. Why 1369? coz I am a
@@ -378,9 +386,12 @@ typedef struct srch_s {
 			);
 
   /** Read FSG operation*/
+#if 0
   word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
 			   const char* fsgname /** The fsg file name*/
+
 			   );
+#endif
   /* The 4 operations that require switching during the approximate search process */
   /**< lv1 stands for approximate search. Currently not used. */
 
@@ -454,7 +465,7 @@ typedef struct srch_s {
     
     There are two names for OPERATION_TST_DECODE (Mode 4)
 
-    OP_LUCKYWHEEL  OPERATION_TST_DECODE(4)
+    OP_MAGICWHEEL  OPERATION_TST_DECODE(4)
 
     OP_TST_DECODE  OPERATION_TST_DECODE(4)
 
@@ -466,14 +477,14 @@ typedef struct srch_s {
      @return the mode index if it is valid, -1 if it is not.  
  */
 
-int32 srchmode_str_to_index(const char* mode_str);
+int32 srch_mode_str_to_index(const char* mode_str);
 
 /** Translate mode string to mode index. User need to supply an initialized 
     @return a mode string;
     @see srchmode_str_to_index
  */
 
-char* srchmode_index_to_str(int32 index);
+char* srch_mode_index_to_str(int32 index);
 
 
 /* The following are C-style method for srch structure.  In theory,

@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.5  2005/07/04  07:18:49  arthchan2003
- * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ * Revision 1.1.4.6  2005/07/07  02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
  * 
+ * Revision 1.1.4.5  2005/07/04 07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ *
  * Revision 1.1.4.4  2005/07/03 23:04:55  arthchan2003
  * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
  *
@@ -136,7 +139,7 @@
 
 
 
-int32 srchmode_str_to_index(const char* mode_str)
+int32 srch_mode_str_to_index(const char* mode_str)
 {
   if(!strcmp(mode_str,"OP_ALIGN")){
     return OPERATION_ALIGN;
@@ -154,7 +157,7 @@ int32 srchmode_str_to_index(const char* mode_str)
     return OPERATION_FLATFWD;
   }
 
-  if(!strcmp(mode_str,"OP_LUCKYWHEEL")){
+  if(!strcmp(mode_str,"OP_MAGICWHEEL")){
     return OPERATION_TST_DECODE;
   }
 
@@ -166,13 +169,35 @@ int32 srchmode_str_to_index(const char* mode_str)
     return OPERATION_WST_DECODE;
   }
 
+  if(!strcmp(mode_str,"OP_DEBUG")){
+    return OPERATION_DEBUG;
+  }
+
   E_WARN("UNKNOWN MODE NAME %s\n",mode_str);
   return -1; 
 
 }
 
-char* srchmode_index_to_str(int32 index)
+char* srch_mode_index_to_str(int32 index)
 {
+  char* str;
+  str=NULL;
+  if(index==OPERATION_ALIGN){
+    str=ckd_salloc("OP_ALIGN");
+  }else if (index==OPERATION_ALLPHONE){
+    str=ckd_salloc("OP_ALLPHONE");
+  }else if (index==OPERATION_GRAPH){
+    str=ckd_salloc("OP_FSG");
+  }else if (index==OPERATION_FLATFWD){
+    str=ckd_salloc("OP_FLATFWD");
+  }else if (index==OPERATION_TST_DECODE){
+    str=ckd_salloc("OP_TST_DECODE");
+  }else if (index==OPERATION_WST_DECODE){
+    str=ckd_salloc("OP_WST_DECODE");
+  }else if (index==OPERATION_DEBUG){
+    str=ckd_salloc("OP_DEBUG");
+  }
+  return str;
 }
 
 void srch_assert_funcptrs(srch_t *s){
@@ -194,7 +219,6 @@ void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_eval_beams_lv2!=NULL);
   assert(s->srch_propagate_graph_ph_lv2!=NULL);
   assert(s->srch_propagate_graph_wd_lv2!=NULL);
-  assert(s->srch_rescoring!=NULL);
   assert(s->srch_frame_windup!=NULL);
   assert(s->srch_compute_heuristic!=NULL);
   assert(s->srch_shift_one_cache_frame!=NULL);
@@ -229,7 +253,7 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_select_active_gmm=NULL;
 
   /* For convenience, clear but not check at this point */
-  s->srch_read_fsgfile=NULL;
+  /*  s->srch_read_fsgfile=NULL;*/
 
 }
 /** Initialize the search routine, this will specify the type of search
@@ -290,7 +314,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_FSG_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_FSG_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_FSG_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_FSG_rescoring;
 
     s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
     s->srch_frame_windup=&srch_FSG_frame_windup;
@@ -326,7 +349,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_TST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_TST_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_TST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_TST_rescoring;
 
     s->srch_compute_heuristic=&srch_TST_compute_heuristic;
     s->srch_frame_windup=&srch_TST_frame_windup;
@@ -349,6 +371,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+    /*    s->srch_rescoring=&srch_WST_rescoring;*/
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -358,8 +381,9 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_WST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_WST_propagate_graph_ph_lv2;
 
+    /*    s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2_with_rescoring;*/
+
     s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_WST_rescoring;
 
     s->srch_compute_heuristic=&srch_WST_compute_heuristic;
     s->srch_frame_windup=&srch_WST_frame_windup;
@@ -386,7 +410,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_propagate_graph_ph_lv2=&srch_debug_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_debug_propagate_graph_wd_lv2;
 
-    s->srch_rescoring=&srch_debug_rescoring;
     s->srch_compute_heuristic=&srch_debug_compute_heuristic;
     s->srch_frame_windup=&srch_debug_frame_windup;
     s->srch_shift_one_cache_frame=&srch_debug_shift_one_cache_frame;
@@ -504,7 +527,8 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
     s->srch_propagate_graph_ph_lv2(s,frmno);
 
     /* Rescoring. Usually happened at the word end.  */
-    s->srch_rescoring(s,frmno);
+    if(s->srch_rescoring!=NULL)
+      s->srch_rescoring(s,frmno);
 
     /* Propagate the score on the word-level */
     s->srch_propagate_graph_wd_lv2(s,frmno);
@@ -530,8 +554,6 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   st->nfr += block_nfeatvec;
   
-
-  
   *curfrm = frmno;
 
   return SRCH_SUCCESS;
@@ -551,9 +573,15 @@ int32 srch_uninit(srch_t* srch){
 
 /** Wrap up the search report routine*/
 void srch_report(srch_t* srch){
+
+  char *op_str;
+  op_str=srch_mode_index_to_str(srch->op_mode);
+
   E_INFO_NOFN("Initialization of srch_t, report:\n");
-  E_INFO_NOFN("Operation Mode = %d\n",srch->op_mode);
+  E_INFO_NOFN("Operation Mode = %d, Operation Name = %s\n",srch->op_mode,op_str);
   E_INFO_NOFN("\n");
+
+  ckd_free(op_str);
 }
 
 
