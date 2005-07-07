@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.3  2005/07/04  07:20:48  arthchan2003
- * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ * Revision 1.2.4.4  2005/07/07  02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
  * 
+ * Revision 1.2.4.3  2005/07/04 07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ *
  * Revision 1.2.4.2  2005/07/03 23:19:16  arthchan2003
  * Added free code for srch_time_switch_tree.c
  *
@@ -110,8 +113,6 @@ int srch_TST_init(kb_t *kb, void *srch)
   if(cmd_ln_int32("-Nstalextree"))
     E_WARN("-Nstalextree is omitted in TST search.\n");
 
-  if(cmd_ln_int32("-lminsearch"))
-    E_WARN("-lminsearch is omitted in TST search. \n");
 
   /** STRUCTURE : allocation of the srch graphs */
   tstg=ckd_calloc(1,sizeof(srch_TST_graph_t));
@@ -816,6 +817,12 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
   mdef_t *mdef;
   srch_TST_graph_t* tstg ;
 
+
+  /* Call the rescoring routines at all word end */
+
+
+
+
   maxpscore=MAX_NEG_INT32;
   bm=s->beam;
 
@@ -917,6 +924,8 @@ int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
   s=(srch_t*) srch;
   tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+
+  srch_TST_rescoring((void *)s,frmno);    
 
   vithist_prune (vh, dict, frmno, maxwpf, maxhistpf, 
 		 s->beam->word_thres-s->beam->bestwordscore);

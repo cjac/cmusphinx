@@ -37,9 +37,12 @@
 /* srch_time_switch_tree.h
  * HISTORY
  * $Log$
- * Revision 1.2.4.1  2005/07/04  07:20:48  arthchan2003
- * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ * Revision 1.2.4.2  2005/07/07  02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
  * 
+ * Revision 1.2.4.1  2005/07/04 07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ *
  * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
@@ -257,7 +260,6 @@ int srch_TST_compute_heuristic(void *srch, int32 win_efv);
 int srch_TST_frame_windup(void *srch_struct,int32 frmno);
 int srch_TST_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_TST_select_active_gmm(void *srch);
-int srch_TST_rescoring(void *s,int32 frmno);
 
 #endif
 
