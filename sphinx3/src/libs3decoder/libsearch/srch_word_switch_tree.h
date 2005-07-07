@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.3  2005/07/04  07:24:15  arthchan2003
- * Added some comments
+ * Revision 1.1.4.4  2005/07/07  02:41:55  arthchan2003
+ * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
  * 
+ * Revision 1.1.4.3  2005/07/04 07:24:15  arthchan2003
+ * Added some comments
+ *
  * Revision 1.1.4.2  2005/06/27 05:37:05  arthchan2003
  * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
  *
@@ -149,8 +152,9 @@ int srch_WST_propagate_graph_ph_lv2(void* srch_struct, int32 frmno);
 
 /**
  */
+
 int srch_WST_propagate_graph_wd_lv2(void* srch_struct, int32 frmno);
-int srch_WST_rescoring(void *srch, int32 frmno);
+
 
 int srch_WST_compute_heuristic(void *srch, int32 win_efv);
 int srch_WST_frame_windup(void *srch_struct,int32 frmno);

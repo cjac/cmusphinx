@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.7  2005/07/04  07:23:40  arthchan2003
- * 1, Bug fix, put score instead of vh->bestscore[frmno] when entering filler tree, 2, Do poor-man trigram rescoring when entering tree.
+ * Revision 1.1.4.8  2005/07/07  02:41:55  arthchan2003
+ * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
  * 
+ * Revision 1.1.4.7  2005/07/04 07:23:40  arthchan2003
+ * 1, Bug fix, put score instead of vh->bestscore[frmno] when entering filler tree, 2, Do poor-man trigram rescoring when entering tree.
+ *
  * Revision 1.1.4.6  2005/07/03 23:18:05  arthchan2003
  * 1, correct freeing of the structure is implemented. 2, Revamp srch_WST_propagate_graph_wd_lv2 implementation. The previous implementation contains several hacks which are very hard to reconcile by further hacking.   That includes a, usage of the exact score to indicate whether a tree should be entered. (too magical) b, memory leaks in a rate of 1MB per utterance (no kidding me) c, The code unnecessarily required two pass of all the hypothesis histories. (50 unnecessary lines).  The current fix is much simpler than before.  Instead of trying to keep track of which (word, phone) pair has the highest score using the word_phone_hash hash structure.  We just let every (word, phone) pair to enter the tree and allow lextree_enter to decide whether the history should stay.   This is still not very clever in the sense that the (word, phone) max score is actually the only path it will be propagated in future.  The current implementation will thus make repeated traversal of child nodes for same (word,phone) pair.  However, this is a clean way to do things in the srch_impl layer.  Later, it will be necessary to think of a better way to keep track of max score instead.
  *
@@ -117,9 +120,6 @@ int32 srch_WST_init(kb_t* kb, void *srch)
   if(cmd_ln_int32("-Nlextree"))
     E_WARN("-Nlextree is omitted in WST search.\n");
 
-  if(cmd_ln_int32("-lminsearch") && cmd_ln_int32("-lmrescore")){
-    E_FATAL("-lminsearch and -lmrescore is mutally exclusive in WST search. \n");
-  }
 
   wstg->n_static_lextree=cmd_ln_int32("-Nstalextree");
   wstg->isLMLA=cmd_ln_int32("-treeugprob");
@@ -439,7 +439,7 @@ int32 srch_WST_end(void *srch)
       glist_apply_int32(wstg->empty_tree_idx_stack,print_g);*/
 
   /*FIXME! Hmm. Glist count could be larger than 1 aftre glist_free, let it be for now */
-  E_INFO("Glist count %d\n", glist_count(wstg->empty_tree_idx_stack));
+  /*  E_INFO("Glist count %d\n", glist_count(wstg->empty_tree_idx_stack));*/
 
   
   return SRCH_SUCCESS;
@@ -782,15 +782,260 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
 
 int32 srch_WST_propagate_graph_wd_lv1(void *srch)
 {
+
   return SRCH_SUCCESS;
 }
 
 
-/** The heart of WST implementation. 
- *
- *
- */
+int32 srch_WST_hmm_propagate_leaves (srch_t* s, lextree_t *lextree, vithist_t *vh,
+			    int32 cur_frm, int32 wth,int32 senscale)
+{
+    lextree_node_t **list, *ln;
+    hmm_t *hmm;
+    mdef_t *mdef;
+    int32 i;
+    int32 id;
+    srch_WST_graph_t* wstg;
+    vithist_entry_t *tve;
+    int32 p;
+    int32 entry;
 
+    wstg=(srch_WST_graph_t*) s->grh->graph_struct;
+
+    list = lextree->active;
+    mdef = kbcore_mdef(s->kbc);
+
+    for (i = 0; i < lextree->n_active; i++) {
+	ln = list[i];
+	hmm = &(ln->hmm);
+	
+	if (! NOT_S3WID(ln->wid)) {    /* Leaf node; word exit */
+	    if (hmm->out.score < wth)
+		continue;		/* Word exit score not good enough */
+
+	    if(hmm->out.history==-1)
+	      E_ERROR("Hmm->out.history equals to -1 with score %d and active idx %d, lextree->type\n",hmm->out.score,i,lextree->type);
+
+	    /* From now on, we are taking care of all active word ends. */
+
+	    /* This big if just takes care of logistic of allocating new trees. 
+	       1, Trees are allocated and initialized. 
+	       2, Also add these trees to the pool of empty tree indices. 
+	       3, And indicate the trees are now available in the hash table 
+	     */ 
+
+	    if(hash_lookup(wstg->active_word,
+			   dict_wordstr(s->kbc->dict,
+					dict_basewid(s->kbc->dict,ln->wid)),
+			   &id) <0){
+	      /* If it doesn't, start to use another copy */
+	      /* This is also the part one should apply bigram lookahead */
+	      
+	      /* Pop one indices from the stack*/
+	      id = gnode_int32(wstg->empty_tree_idx_stack);
+	      wstg->empty_tree_idx_stack=glist_delete(wstg->empty_tree_idx_stack);
+
+	      /*      assert(wstg->expandtree[id]->prev_word==NULL);*/
+
+	      strcpy(wstg->expandtree[id]->prev_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,ln->wid)));
+	      wstg->no_active_word++;
+
+	      /* In general, the high scoring ones to be taken care first. */
+	      if(wstg->no_active_word == wstg->n_static_lextree){
+		/* If another copy is not available, start to allocate a copy of tree.*/
+		E_INFO("Allocate another %d more tree(s)\n", NUM_TREE_ALLOC);
+		
+		wstg->expandtree      =(lextree_t **) ckd_realloc(wstg->expandtree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+		wstg->expandfillertree=(lextree_t **) ckd_realloc(wstg->expandfillertree,(wstg->n_static_lextree+NUM_TREE_ALLOC)*sizeof(lextree_t*));
+		
+		for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+		  wstg->expandtree[i]=NULL;
+		  wstg->expandtree[i]=lextree_init(s->kbc,wstg->lmset->lmarray[0],wstg->lmset->lmarray[0]->name,
+						   wstg->isLMLA,!REPORT_SRCH_WST);
+
+		  if(wstg->expandtree[i]==NULL){
+		    E_INFO("Fail to allocate lexical tree %d for lm %d  \n",i, 0);
+		    return SRCH_FAILURE;
+		  }
+
+		  wstg->expandfillertree[i]=fillertree_init(s->kbc);
+		  
+		  if(wstg->expandfillertree[i]==NULL){
+		    E_INFO("Fail to allocate filler tree %d for lm %d \n",i,0);
+		    return SRCH_FAILURE;
+		  }
+		}
+
+		/*Also push the NUM_TREE_ALLOC to the empty list */
+
+		for(i=wstg->n_static_lextree;i<(wstg->n_static_lextree+NUM_TREE_ALLOC);i++){
+		  wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,i);
+		}
+		
+		wstg->n_static_lextree+=NUM_TREE_ALLOC;	
+
+	      }
+      
+	      if(hash_enter(wstg->active_word,dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,ln->wid)),id ) != id ){
+		E_FATAL("hash_enter(local-phonetable, %s) failed\n", dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,ln->wid)));
+	      }
+
+	      /*E_INFO("A new tree is started for wid %d, word str %s\n", wid, 
+		dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));*/
+
+	    }
+	    
+	    /* So called rescore.  But it actually just compute the trigram score and insert it into the entry. */   
+	    /* If poor-man trigram is not used, then one should replace this function with something else */
+	    entry=vithist_n_entry(vh)-1;
+
+	    vithist_rescore (vh, s->kbc, ln->wid, cur_frm,
+			     hmm->out.score - ln->prob, s->senscale, 
+			     hmm->out.history, lextree->type);
+
+	    /* At this point a score is recorded in the viterbi history 
+	       That consist of the trigram score
+	     */ 
+	    /* This part start to propagate the result to another tree */
+	    /*At the end also propagate to the lexical tree as well.  */
+
+	    /* Get the latest entry, i.e. the entry just entered the Viterbi history */
+
+	    
+	    if(entry<vithist_n_entry(vh)-1){
+	      assert(vithist_n_entry(vh)-1>entry);
+	      entry=vithist_n_entry(vh)-1;
+	      
+	      tve= vh->entry[VITHIST_ID2BLK(entry)] + VITHIST_ID2BLKOFFSET(entry);
+
+	      p = dict_last_phone (kbcore_dict(s->kbc), ln->wid);
+	      /*	    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
+			    ln->wid, 
+			    dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,ln->wid)),
+			    p,
+			    mdef_ciphone_str(mdef,p),
+			    tve->score);*/
+
+
+	      if (dict_filler_word (s->kbc->dict, ln->wid)) {
+		/*E_INFO("Filler into Word\n");*/
+		/*lextree_enter(wstg->expandtree[id], BAD_S3CIPID, cur_frm, tve->score,entry , s->beam->phone_thres);*/
+		
+	      }else{
+		/*E_INFO("Word into Word\n");*/
+		lextree_enter(wstg->expandtree[id], (s3cipid_t) p, cur_frm, tve->score,entry , s->beam->phone_thres);
+	      }
+	    
+	      /*E_INFO("For Filler tree\n");*/
+	      lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, cur_frm, tve->score,entry, s->beam->phone_thres);
+	      
+	    }
+
+	}
+
+    }
+    return SRCH_SUCCESS;
+}
+
+
+
+#if 0 
+
+/* An implementation that attempts to sprawn another tree in the word end of a tree
+   WITHOUT history pruning.  It proves to be very ineffective in general */
+
+int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
+{
+
+  vithist_t *vh;
+  kbcore_t *kbcore;
+
+    /*  histprune_t *hp;
+  dict_t *dict;;
+  mdef_t *mdef;*/
+
+  srch_t* s;
+  srch_WST_graph_t* wstg;
+
+
+  glist_t keylist;
+  gnode_t *key;
+  hash_entry_t *he;
+  int32 succ;
+  int32 val;
+  int32 i;
+
+  /*  E_INFO("Frmno %d\n",frmno);*/
+  lextree_t *lextree;
+
+  s=(srch_t*) srch;
+  wstg=(srch_WST_graph_t*) s->grh->graph_struct;
+  kbcore = s->kbc;
+  vh   = s->vithist;
+
+  /* At here, just delete the tree with no active entries */
+  /* Delete the trees */
+  keylist=hash_tolist(wstg->active_word,&(wstg->no_active_word));
+
+  /*  hash_display(wstg->active_word,1);*/
+  for (key = keylist; key; key = gnode_next(key)) {
+    he = (hash_entry_t *) gnode_ptr (key);
+    assert(glist_count(keylist)>0);
+
+    hash_lookup (wstg->active_word, (char* )hash_entry_key(he),&val);
+    /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he));*/
+    /*    E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active);*/
+
+    if(wstg->expandtree[val]->n_active==0){ 
+      /* insert this tree back to the list*/
+      wstg->empty_tree_idx_stack=glist_add_int32(wstg->empty_tree_idx_stack,val);
+      /* delete this entry from the hash*/
+      /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word);*/
+      succ=hash_delete(wstg->active_word,wstg->expandtree[val]->prev_word);
+      if(succ==HASH_OP_FAILURE){
+	E_WARN("Internal error occur in hash deallocation. \n");
+      }else if(succ==HASH_OP_SUCCESS){
+	/*	E_INFO("DELETE EMPTY TREE. \n");*/
+      /*assert(succ==HASH_OP_SUCCESS);*/
+      /* set the number of active word */
+	wstg->no_active_word--;
+      }
+      /* set the word of a lextree to be none*/
+      strcpy(wstg->expandtree[val]->prev_word,"");
+    }
+  }
+
+
+
+  lextree=wstg->curroottree;
+  srch_WST_hmm_propagate_leaves(s, lextree, vh, frmno,
+			s->beam->word_thres,s->senscale);
+
+  lextree=wstg->curfillertree;
+  srch_WST_hmm_propagate_leaves(s, lextree, vh, frmno,
+  s->beam->word_thres,s->senscale);
+
+  for (i = 0; i < wstg->n_static_lextree; i++) {
+    lextree = wstg->expandtree[i];
+    srch_WST_hmm_propagate_leaves(s, lextree, vh, frmno,
+			      s->beam->word_thres,s->senscale);
+
+    lextree = wstg->expandfillertree[i];
+    srch_WST_hmm_propagate_leaves(s, lextree, vh, frmno,
+    s->beam->word_thres,s->senscale);
+
+  }
+
+
+  return SRCH_SUCCESS;
+}
+#endif
+
+/* 
+ * 1, history entry is first inserted without considering LM score
+ * 2, pruning in the history. 
+ * 3, Enter the tree based on the word. 
+ */
 int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 {
   dict_t *dict;
@@ -818,11 +1063,11 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   glist_t keylist;
   gnode_t *key;
   hash_entry_t *he;
-  s3lmwid_t lwid;
-
   int32 id;
   int32 succ;
   int32 val;
+
+  /* Call the rescoring at all word end */
 
   s=(srch_t*) srch;
   wstg=(srch_WST_graph_t*) s->grh->graph_struct;
@@ -847,6 +1092,11 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   bm=s->beam;
 
   /*  E_INFO("Time %d\n",frmno);*/
+
+  /* Rescoring at all word ends */
+  srch_WST_rescoring((void*)s, frmno);
+
+  /* Prune the history */
   vithist_prune (vh, dict, frmno, maxwpf, maxhistpf, 
 		 s->beam->word_thres-s->beam->bestwordscore); 
   
@@ -907,7 +1157,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
       p = mdef_silphone(mdef);
     
     score = vithist_entry_score (ve);
-
+    
     if (! vithist_entry_valid(ve))
       continue;
 
@@ -974,36 +1224,6 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)));*/
 
     }else{
-    }
-
-    /*    E_INFO("Entering: The word id %d word str %s, the phone %d phone str %s, the score %d\n", 
-	wid, 
-	dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid)),
-	p,
-	mdef_ciphone_str(mdef,p),
-	score);*/
-
-    /*Get the LM score */
-
-    if(cmd_ln_int32("-lminsearch")){
-
-      lwid = kbcore->lmset->cur_lm->dict2lmwid[wid];
-
-      if(dict_filler_word(kbcore_dict(kbcore),wid)){
-	ve->lscr=fillpen(kbcore_fillpen(kbcore),wid);
-      }else{
-	/* Update the score for ve */
-	ve->lscr=lm_tg_score(kbcore_lm(kbcore),
-			  ve->lmstate.lm3g.lwid[1],
-			  ve->lmstate.lm3g.lwid[0],
-			  lwid,
-			  wid);
-      }
-      
-      ve->score+= ve->lscr;
-
-      /* As well as the score itself */
-      score+=ve->lscr;
     }
 
     lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
