@@ -11,9 +11,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2005/06/21  19:00:19  arthchan2003
- * Add more detail comments  to ms_senone.h
+ * Revision 1.6.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Revision 1.6  2005/06/21 19:00:19  arthchan2003
+ * Add more detail comments  to ms_senone.h
+ *
  * Revision 1.5  2005/06/21 18:57:31  arthchan2003
  * 1, Fixed doxygen documentation. 2, Added $ keyword.
  *
@@ -69,28 +72,31 @@
 extern "C" {
 #endif
 
-typedef uint8 senprob_t;	/** Senone logs3-probs, truncated to 8 bits */
+typedef uint8 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
 
   /**
- * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
- * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
- */
+   * \struct senone_t
+   * \brief 8-bit senone PDF structure. 
+   * 
+   * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
+   * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
+   */
 typedef struct {
-    senprob_t ***pdf;		/** gaussian density mixture weights, organized two possible
+    senprob_t ***pdf;		/**< gaussian density mixture weights, organized two possible
 				   ways depending on n_gauden:
 				   if (n_gauden > 1): pdf[sen][feat][codeword].  Not an
 				       efficient representation--memory access-wise--but
 				       evaluating the many codebooks will be more costly.
 				   if (n_gauden == 1): pdf[feat][codeword][sen].  Optimized
 				       for the shared-distribution semi-continuous case. */
-    int32 n_sen;		/** #senones in this set */
-    int32 n_feat;		/** #feature streams */ 
-    int32 n_cw;			/** #codewords per codebook,stream */
-    int32 n_gauden;		/** #gaussian density codebooks referred to by senones */
-    float32 mixwfloor;		/** floor applied to each PDF entry */
-    int32 shift;		/** LSB bits truncated from original logs3 value */
-    s3mgauid_t *mgau;		/** senone-id -> mgau-id mapping for senones in this set */
-    int32* featscr;              /** The feature score for every senone, will be initialized inside senone_eval_all */
+    int32 n_sen;		/**< #senones in this set */
+    int32 n_feat;		/**< #feature streams */ 
+    int32 n_cw;			/**< #codewords per codebook,stream */
+    int32 n_gauden;		/**< #gaussian density codebooks referred to by senones */
+    float32 mixwfloor;		/**< floor applied to each PDF entry */
+    int32 shift;		/**< LSB bits truncated from original logs3 value */
+    s3mgauid_t *mgau;		/**< senone-id -> mgau-id mapping for senones in this set */
+    int32* featscr;              /**< The feature score for every senone, will be initialized inside senone_eval_all */
 } senone_t;
 
 

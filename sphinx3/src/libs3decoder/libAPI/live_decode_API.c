@@ -42,9 +42,15 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22  2005/06/22  02:49:34  arthchan2003
- * 1, changed ld_set_lm to call srch_set_lm, 2, hand the accounting tasks to stat_t, 3, added several empty functions for future use.
+ * Revision 1.22.4.2  2005/07/07  02:31:54  arthchan2003
+ * Remove -lminsearch, it proves to be useless and FSG implementation.
  * 
+ * Revision 1.22.4.1  2005/06/28 06:57:41  arthchan2003
+ * Added protype of initializing and reading FSG, still not working.
+ *
+ * Revision 1.22  2005/06/22 02:49:34  arthchan2003
+ * 1, changed ld_set_lm to call srch_set_lm, 2, hand the accounting tasks to stat_t, 3, added several empty functions for future use.
+ *
  * Revision 1.6  2005/06/15 21:13:27  archan
  * Open ld_set_lm, ld_delete_lm in live_decode_API.[ch], Not yet decided whether ld_add_lm and ld_update_lm should be added at this point.
  *
@@ -633,6 +639,19 @@ void ld_delete_lm(live_decoder_t *_decoder, const char *lmname)
   s->srch_delete_lm(s,lmname);
 }
 
+
+
+void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname)
+{
+#if 0
+  srch_t *s;
+  s=(srch_t*)_decoder->kb.srch;
+  if(s->srch_read_fsgfile!=NULL)
+    s->srch_read_fsgfile(s,fsgname);
+  else
+    E_FATAL("s->srch_read_fsgfile is not set. Wrong search mode?");
+#endif  
+}
 
 
 

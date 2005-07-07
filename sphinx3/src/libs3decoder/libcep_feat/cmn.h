@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/21  19:28:00  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.11.4.1  2005/07/05  06:25:08  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.11  2005/06/21 19:28:00  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:56  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -80,14 +83,18 @@ extern "C" {
  * must be available beforehand (batchmode).
  */
 
+  /** \struct cmn_t
+   *  \brief wrapper of operation of the cepstral mean normalization. 
+   */
+
 typedef struct {
   /*These two are used in cmn*/
-  float32 *cmn_mean;  /** Temporary variables: stored the cmn mean */
-  float32 *cmn_var;    /** Temporary variables: stored the cmn variance */
+  float32 *cmn_mean;  /**< Temporary variables: stored the cmn mean */
+  float32 *cmn_var;    /**< Temporary variables: stored the cmn variance */
   /*These three are used in cmn_prior*/
-  float32 *cur_mean;   /** Temporary variable: current means */
-  float32 *sum;        /** The sume of the cmn frames */
-  int32 nframe; /** Number of frames*/
+  float32 *cur_mean;   /**< Temporary variable: current means */
+  float32 *sum;        /**< The sume of the cmn frames */
+  int32 nframe; /**< Number of frames*/
 }cmn_t;
 
 cmn_t* cmn_init();

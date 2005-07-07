@@ -46,8 +46,9 @@ extern "C" {
 #endif
 
   /**
-     Base Struct to hold all front-end parameters 
-  */
+   *  \struct param_t
+   *  \brief  Base Struct to hold all front-end parameters for computation.
+   */
 
 typedef struct{
     float32 SAMPLING_RATE;
@@ -91,8 +92,9 @@ typedef struct{
 
 
   /**
-     Base Struct to hold all structure for MFCC computation. 
-  */
+   * \struct melfb_t
+   * \brief Base Struct to hold all structure for MFCC computation. 
+   */
 
 typedef struct{
     float32 sampling_rate;
@@ -108,7 +110,10 @@ typedef struct{
     int32 doublewide;
 }melfb_t;
 
-
+  /**
+   * \struct fe_t
+   * \brief Structure that hold information and variable for the front end. 
+   */
 typedef struct{
     float32 SAMPLING_RATE;
     int32 FRAME_RATE;
@@ -128,7 +133,10 @@ typedef struct{
     int32 FRAME_COUNTER;
 } fe_t;
 
-/* Struct to hold the front-end parameters */
+  /**
+   * \struct fewrap_t
+   * \brief Wrapper structure to hold the front-end parameters  
+   */
 typedef struct{
         param_t *P;
         fe_t *FE;
@@ -216,8 +224,12 @@ typedef struct{
 #define SWAPF(x)        SWAPL((int *) x)
 
 
-  /** Some defines for MS Wav Files 
-      The MS Wav file is a RIFF file, and has the following 44 byte header */
+  /** 
+      \struct MSWAV_hdr
+      \brief A MS Wavefile header. 
+      Some defines for MS Wav Files 
+      The MS Wav file is a RIFF file, and has the following 44 byte header 
+  */
 typedef struct RIFFHeader{
     char rifftag[4];      /* "RIFF" string */
     int32 TotalLength;      /* Total length */
@@ -284,14 +296,14 @@ typedef struct RIFFHeader{
      Process only one frame of samples
    */
 int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
-		       int16 *spch, 
+		       int16 *spch, /**< The speech samples */
 		       int32 nsamps, /**< number of samples*/
 		       float32 *fr_cep /**< One frame of cepstrum*/
 		       );
 
-int32 fe_process_utt(fe_t *FE, 
-		     int16 *spch, 
-		     int32 nsamps,
+int32 fe_process_utt(fe_t *FE,  /**< A FE structure */
+		     int16 *spch, /**< The speech samples */
+		     int32 nsamps, /**< number of samples*/
 		     float32 ***cep_block, 
 		     int32 *nframes);
 
@@ -307,7 +319,10 @@ int32 fe_convert_files(param_t *P);
 int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *nframesp);
 
 int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **outfilename);
-char *fe_copystr(char *dest_str, char *src_str);
+
+  /** Copy string from src_str to dest_str */
+  char *fe_copystr(char *dest_str, char *src_str);
+
 int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames);
 int32 fe_readspch(param_t *P, char *infile, int16 **spdata, int32 *splen);
 int32 fe_writefeat(fe_t *FE, char *outfile, int32 nframes, float32 **feat);

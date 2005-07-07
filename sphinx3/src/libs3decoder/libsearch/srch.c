@@ -38,30 +38,48 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.6  2005/07/07  02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ * 
+ * Revision 1.1.4.5  2005/07/04 07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ *
+ * Revision 1.1.4.4  2005/07/03 23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ *
+ * Revision 1.1.4.3  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
+ * Revision 1.1.4.2  2005/06/27 05:32:35  arthchan2003
+ * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
+ *
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.21  2005/06/17 21:22:59  archan
  * Added comments for future programmers.  That allow potential turn back when we need to match the score of the code in the past.
  *
@@ -120,12 +138,73 @@
 #define COMPUTE_HEURISTIC 1
 
 
+
+int32 srch_mode_str_to_index(const char* mode_str)
+{
+  if(!strcmp(mode_str,"OP_ALIGN")){
+    return OPERATION_ALIGN;
+  }
+
+  if(!strcmp(mode_str,"OP_ALLPHONE")){
+    return OPERATION_ALLPHONE;
+  }
+
+  if(!strcmp(mode_str,"OP_FSG")){
+    return OPERATION_GRAPH;
+  }
+
+  if(!strcmp(mode_str,"OP_FLATFWD")){
+    return OPERATION_FLATFWD;
+  }
+
+  if(!strcmp(mode_str,"OP_MAGICWHEEL")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_TST_DECODE")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_WST_DECODE")){
+    return OPERATION_WST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_DEBUG")){
+    return OPERATION_DEBUG;
+  }
+
+  E_WARN("UNKNOWN MODE NAME %s\n",mode_str);
+  return -1; 
+
+}
+
+char* srch_mode_index_to_str(int32 index)
+{
+  char* str;
+  str=NULL;
+  if(index==OPERATION_ALIGN){
+    str=ckd_salloc("OP_ALIGN");
+  }else if (index==OPERATION_ALLPHONE){
+    str=ckd_salloc("OP_ALLPHONE");
+  }else if (index==OPERATION_GRAPH){
+    str=ckd_salloc("OP_FSG");
+  }else if (index==OPERATION_FLATFWD){
+    str=ckd_salloc("OP_FLATFWD");
+  }else if (index==OPERATION_TST_DECODE){
+    str=ckd_salloc("OP_TST_DECODE");
+  }else if (index==OPERATION_WST_DECODE){
+    str=ckd_salloc("OP_WST_DECODE");
+  }else if (index==OPERATION_DEBUG){
+    str=ckd_salloc("OP_DEBUG");
+  }
+  return str;
+}
+
 void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_init!=NULL);
   assert(s->srch_uninit!=NULL);
   assert(s->srch_utt_begin!=NULL);
   assert(s->srch_utt_end!=NULL);
-  assert(s->srch_decode!=NULL);
   assert(s->srch_set_lm!=NULL);
   assert(s->srch_add_lm!=NULL);
   assert(s->srch_delete_lm!=NULL);
@@ -140,7 +219,6 @@ void srch_assert_funcptrs(srch_t *s){
   assert(s->srch_eval_beams_lv2!=NULL);
   assert(s->srch_propagate_graph_ph_lv2!=NULL);
   assert(s->srch_propagate_graph_wd_lv2!=NULL);
-  assert(s->srch_rescoring!=NULL);
   assert(s->srch_frame_windup!=NULL);
   assert(s->srch_compute_heuristic!=NULL);
   assert(s->srch_shift_one_cache_frame!=NULL);
@@ -174,6 +252,9 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_shift_one_cache_frame=NULL;
   s->srch_select_active_gmm=NULL;
 
+  /* For convenience, clear but not check at this point */
+  /*  s->srch_read_fsgfile=NULL;*/
+
 }
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces*/
@@ -204,9 +285,42 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_FATAL("Finite state graphs search is not supported yet");
 
-  }else if(op_mode==OPERATION_FLAT_DECODE){
+    E_FATAL("Graph Seearch mode is not supported yet");
+#if 0
+    s->srch_init=&srch_FSG_init;
+    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;
+
+    s->srch_uninit=&srch_FSG_uninit;
+    s->srch_utt_begin=&srch_FSG_begin;
+    s->srch_utt_end=&srch_FSG_end;
+
+
+    s->srch_set_lm=&srch_FSG_set_lm;
+    s->srch_add_lm=&srch_FSG_add_lm;
+    s->srch_delete_lm=&srch_FSG_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+
+    s->srch_hmm_compute_lv2=&srch_FSG_hmm_compute_lv2;
+    s->srch_propagate_graph_ph_lv2=&srch_FSG_propagate_graph_ph_lv2;
+    s->srch_propagate_graph_wd_lv2=&srch_FSG_propagate_graph_wd_lv2;
+
+    s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
+    s->srch_frame_windup=&srch_FSG_frame_windup;
+    s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
+#endif
+
+  }else if(op_mode==OPERATION_FLATFWD){
 
     E_FATAL("Flat decoding is not supported yet");
 
@@ -216,7 +330,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_TST_uninit;
     s->srch_utt_begin=&srch_TST_begin;
     s->srch_utt_end=&srch_TST_end;
-    s->srch_decode=&srch_TST_decode;
 
     s->srch_set_lm=&srch_TST_set_lm;
     s->srch_add_lm=&srch_TST_add_lm;
@@ -236,7 +349,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_TST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_TST_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_TST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_TST_rescoring;
 
     s->srch_compute_heuristic=&srch_TST_compute_heuristic;
     s->srch_frame_windup=&srch_TST_frame_windup;
@@ -244,20 +356,22 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_WST_DECODE){
 
-    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");
+    /*    E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");*/
 
     s->srch_init=&srch_WST_init;
     s->srch_uninit=&srch_WST_uninit;
     s->srch_utt_begin=&srch_WST_begin;
     s->srch_utt_end=&srch_WST_end;
-    s->srch_decode=&srch_WST_decode;
     s->srch_set_lm=&srch_WST_set_lm;
+    s->srch_add_lm=&srch_TST_add_lm;
+    s->srch_delete_lm=&srch_TST_delete_lm;
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
     s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+    /*    s->srch_rescoring=&srch_WST_rescoring;*/
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -267,8 +381,9 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_WST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_WST_propagate_graph_ph_lv2;
 
+    /*    s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2_with_rescoring;*/
+
     s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_WST_rescoring;
 
     s->srch_compute_heuristic=&srch_WST_compute_heuristic;
     s->srch_frame_windup=&srch_WST_frame_windup;
@@ -280,7 +395,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_debug_uninit;
     s->srch_utt_begin=&srch_debug_begin;
     s->srch_utt_end=&srch_debug_end;
-    s->srch_decode=&srch_debug_decode;
     s->srch_set_lm=&srch_debug_set_lm;
 
     s->srch_select_active_gmm=&srch_debug_select_active_gmm;    
@@ -296,7 +410,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_propagate_graph_ph_lv2=&srch_debug_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_debug_propagate_graph_wd_lv2;
 
-    s->srch_rescoring=&srch_debug_rescoring;
     s->srch_compute_heuristic=&srch_debug_compute_heuristic;
     s->srch_frame_windup=&srch_debug_frame_windup;
     s->srch_shift_one_cache_frame=&srch_debug_shift_one_cache_frame;
@@ -363,6 +476,15 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   frmno = *curfrm;
 
+  /* Overriding this implementation. Use search implementation
+     provided search abstraction routine instead of the default search
+     abstraction */
+  if(s->srch_decode!=NULL){
+    return s->srch_decode((void*)s);
+  }
+   
+  /* Else, go over the default search abstraction*/
+
   /* the effective window is the min of (s->cache_win, block_nfeatvec) */
   win_efv = s->cache_win;
   if(win_efv > block_nfeatvec) 
@@ -405,7 +527,8 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
     s->srch_propagate_graph_ph_lv2(s,frmno);
 
     /* Rescoring. Usually happened at the word end.  */
-    s->srch_rescoring(s,frmno);
+    if(s->srch_rescoring!=NULL)
+      s->srch_rescoring(s,frmno);
 
     /* Propagate the score on the word-level */
     s->srch_propagate_graph_wd_lv2(s,frmno);
@@ -431,7 +554,6 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   st->nfr += block_nfeatvec;
   
-  
   *curfrm = frmno;
 
   return SRCH_SUCCESS;
@@ -444,14 +566,22 @@ int32 srch_uninit(srch_t* srch){
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+  ckd_free(srch);
+
   return SRCH_SUCCESS;
 }
 
 /** Wrap up the search report routine*/
 void srch_report(srch_t* srch){
+
+  char *op_str;
+  op_str=srch_mode_index_to_str(srch->op_mode);
+
   E_INFO_NOFN("Initialization of srch_t, report:\n");
-  E_INFO_NOFN("Operation Mode = %d\n",srch->op_mode);
+  E_INFO_NOFN("Operation Mode = %d, Operation Name = %s\n",srch->op_mode,op_str);
   E_INFO_NOFN("\n");
+
+  ckd_free(op_str);
 }
 
 

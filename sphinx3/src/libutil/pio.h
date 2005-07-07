@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.3  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.2.4.1  2005/06/27  05:42:21  arthchan2003
+ * Merge from the tip of the trunk
  * 
+ * Revision 1.3  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.2  2005/06/22 03:09:52  arthchan2003
  * 1, Fixed doxygen documentation, 2, Added  keyword.
  *

@@ -839,7 +839,6 @@ static arg_t arg[] = {
       ARG_INT32,
       "1",
       "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "},
-
     { "-maxhmmpf",
       ARG_INT32,
       "20000",
@@ -942,6 +941,7 @@ int32 main (int32 argc, char *argv[])
     
     stat_report_corpus(kb.stat);
 
+    kb_free(&kb);
   cmd_ln_appl_exit();
   exit(0);
 }

@@ -34,15 +34,35 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.15.4.2  2005/07/05  21:35:00  arthchan2003
+ * Merged from HEAD.
  * 
+ * Revision 1.18  2005/07/05 13:12:36  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
+ * Revision 1.15.4.1  2005/07/05 06:49:38  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.17  2005/07/04 20:57:52  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
+ * Revision 1.16  2005/07/02 04:24:46  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ *
+ * Revision 1.15  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- *  into most of the .[ch] files. It is easy to keep track changes.
- *
+ * Revision 1.15.4.2  2005/07/05  21:35:00  arthchan2003
+ * Merged from HEAD.
+ * 
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +92,7 @@
 #include "classify.h"
 #include "endptr.h"
 #include "fe.h"
+#include "logs3.h"
 
 /* Define a null device that depends on the platform */
 #if defined(WIN32)
@@ -268,6 +289,34 @@ static arg_t arg[] = {
     ARG_FLOAT32,
     "0.0000001",
     "Senone mixture weights floor (applied to data from -mixw file)" },
+  { "-log3table",
+    ARG_INT32,
+    "1",
+    "Determines whether to use the log3 table or to compute the values at run time."},
+  { "-logbase",
+    ARG_FLOAT32,
+    "1.0003",
+    "Base in which all log-likelihoods calculated" },
+  { "-pad_before",
+    ARG_FLOAT32,
+    PAD_T_BEFORE,
+    "Pad these many seconds before speech begin" },
+  { "-pad_after",
+    ARG_FLOAT32,
+    PAD_T_AFTER,
+    "Pad these many seconds after speech end" },
+  { "-speech_start",
+    ARG_FLOAT32,
+    UTT_T_START,
+    "Declare speech after these many seconds of speech (pad not accounted)" },
+  { "-speech_end",
+    ARG_FLOAT32,
+    UTT_T_END,
+    "Declare end of speech after these many seconds of non-speech (pad not accounted)" },
+  { "-speech_cancel",
+    ARG_FLOAT32,
+    UTT_T_CANCEL,
+    "Cancel a start of speech  after these many seconds of non-speech" },
   { "-logfn",
     ARG_STRING,
     NULL,
@@ -398,7 +447,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
 	  }
 	endpointer_update_stat (ENDPTR, FEW->FE, CLASSW, postclass);		
 	
-#if 0		
+#if 0
 	switch (postclass){
 	case 0:
 	  printf(" N"); 
@@ -488,12 +537,20 @@ int32 main(int32 argc, char **argv)
   unlimit();
   ptmr_init(&tm_class);
 
+  logs3_init(cmd_ln_float32("-logbase"), 1, cmd_ln_int32("-log3table"));
+
   FEW = few_initialize();
   CLASSW = classw_initialize(cmd_ln_str("-mdef"), cmd_ln_str("-mean"),
 			     cmd_ln_str("-var"), cmd_ln_float32("-varfloor"),
 			     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"),
 			     TRUE, ".cont.");
-  ENDPTR = endpointer_initialize(FEW->FE); 
+  ENDPTR = endpointer_initialize(FEW->FE,
+				 cmd_ln_float32("-pad_before"),
+				 cmd_ln_float32("-pad_after"),
+				 cmd_ln_float32("-speech_start"),
+				 cmd_ln_float32("-speech_end"),
+				 cmd_ln_float32("-speech_cancel"));
+ 
   spbuffer = fe_convert_files_to_spdata(FEW->P, FEW->FE, &splen, &nframes);
   
   ptmr_start(&tm_class);

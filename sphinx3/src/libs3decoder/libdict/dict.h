@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  21:04:36  arthchan2003
- * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * Revision 1.9.4.1  2005/07/05  06:55:26  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.9  2005/06/21 21:04:36  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ *
  * Revision 1.5  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -85,36 +88,45 @@
 extern "C" {
 #endif
 
+  /** 
+      \struct dictword_t
+      \brief a structure for one dictionary word. 
+   */
 typedef struct {
-    char *word;		/** Ascii word string */
-    s3cipid_t *ciphone;	/** Pronunciation */
-    int32 pronlen;	/** Pronunciation length */
-    s3wid_t alt;	/** Next alternative pronunciation id, NOT_S3WID if none */
-    s3wid_t basewid;	/** Base pronunciation id */
-    int32 n_comp;	/** If this is a compound word, no. of component words; else 0.
+    char *word;		/**< Ascii word string */
+    s3cipid_t *ciphone;	/**< Pronunciation */
+    int32 pronlen;	/**< Pronunciation length */
+    s3wid_t alt;	/**< Next alternative pronunciation id, NOT_S3WID if none */
+    s3wid_t basewid;	/**< Base pronunciation id */
+    int32 n_comp;	/**< If this is a compound word, no. of component words; else 0.
 			   (Compound words are concatenations of other words, such as
 			   GOING_TO, whose pronunciation is quite different from the
 			   mere concatenation of their components.) */
-    s3wid_t *comp;	/** If n_comp > 0, its components */
+    s3wid_t *comp;	/**< If n_comp > 0, its components */
 } dictword_t;
 
+  /** 
+      \struct dict_t
+      \brief a structure for a dictionary. 
+   */
+
 typedef struct {
-    mdef_t *mdef;	/** Model definition used for phone IDs; NULL if none used */
-    hash_table_t *pht;	/** Used only if CI phones handled internally (mdef == NULL) */
-    char **ciphone_str;	/** Used only if CI phones handled internally (mdef == NULL) */
-    int32 n_ciphone;	/** Used only if CI phones handled internally (mdef == NULL) */
-    dictword_t *word;	/** Array of entries in dictionary */
-    hash_table_t *ht;	/** Hash table for mapping word strings to word ids */
-    int32 max_words;	/** #Entries allocated in dict, including empty slots */
-    int32 n_word;	/** #Occupied entries in dict; ie, excluding empty slots */
-    int32 filler_start;	/** First filler word id (read from filler dict) */
-    int32 filler_end;	/** Last filler word id (read from filler dict) */
-    s3wid_t *comp_head;	/** comp_head[w] = wid of a compound word with 1st component = w;
+    mdef_t *mdef;	/**< Model definition used for phone IDs; NULL if none used */
+    hash_table_t *pht;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    char **ciphone_str;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    int32 n_ciphone;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    dictword_t *word;	/**< Array of entries in dictionary */
+    hash_table_t *ht;	/**< Hash table for mapping word strings to word ids */
+    int32 max_words;	/**< #Entries allocated in dict, including empty slots */
+    int32 n_word;	/**< #Occupied entries in dict; ie, excluding empty slots */
+    int32 filler_start;	/**< First filler word id (read from filler dict) */
+    int32 filler_end;	/**< Last filler word id (read from filler dict) */
+    s3wid_t *comp_head;	/**< comp_head[w] = wid of a compound word with 1st component = w;
 			   comp_head[comp_head[w]] = next such compound word, and so on,
 			   until we hit BAD_S3WID.  NULL if no compound word in dict. */
-    s3wid_t startwid;	/** FOR INTERNAL-USE ONLY */
-    s3wid_t finishwid;	/** FOR INTERNAL-USE ONLY */
-    s3wid_t silwid;	/** FOR INTERNAL-USE ONLY */
+    s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */
+    s3wid_t finishwid;	/**< FOR INTERNAL-USE ONLY */
+    s3wid_t silwid;	/**< FOR INTERNAL-USE ONLY */
 } dict_t;
 
 

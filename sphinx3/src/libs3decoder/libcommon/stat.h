@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  20:58:09  arthchan2003
- * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ * Revision 1.1.4.2  2005/07/05  06:25:40  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.1.4.1  2005/07/03 22:56:51  arthchan2003
+ * Add stat_free.
+ *
+ * Revision 1.1  2005/06/21 20:58:09  arthchan2003
+ * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ *
  * Revision 1.6  2005/04/25 19:22:47  archan
  * Refactor out the code of rescoring from lexical tree. Potentially we want to turn off the rescoring if we need.
  *
@@ -76,7 +82,10 @@
 extern "C" {
 #endif
 
-  /** Structure to hold all statistics in Sphinx 3.x */
+  /** 
+      \struct stat_t
+      \brief Structure to hold all statistics in Sphinx 3.x 
+   */
   typedef struct {
     /* All structure that measure the time and stuffs we computed */
     ptmr_t tm_sen;    /**< timer for senone computation */
@@ -110,8 +119,12 @@ extern "C" {
   /** Initialized the statistics structure 
       @return a statistics data structure
    */
-
   stat_t* stat_init(); 
+  
+  /** Delete the memory of stat_init
+   */
+  void stat_free(stat_t* st /**< A statistics data structure */
+		 );
 
   /** Clear the utterance statistics */
   void stat_clear_utt(

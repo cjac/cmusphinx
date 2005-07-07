@@ -42,9 +42,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13  2005/06/22  02:53:12  arthchan2003
- * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ * Revision 1.13.4.2  2005/07/07  02:31:54  arthchan2003
+ * Remove -lminsearch, it proves to be useless and FSG implementation.
  * 
+ * Revision 1.13.4.1  2005/07/04 07:14:15  arthchan2003
+ * Added -lminsearch option.
+ *
+ * Revision 1.13  2005/06/22 02:53:12  arthchan2003
+ * Add flags \-lmrescore (for rescoring paths in the search), \-op_mode (operation mode), \-Nstalextree (number of lexical tree used in mode 5), \-bt_wsil (back track with silence)
+ *
  * Revision 1.10  2005/06/19 19:41:20  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
