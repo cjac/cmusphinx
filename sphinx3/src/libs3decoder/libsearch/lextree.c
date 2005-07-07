@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.1  2005/06/27  05:37:05  arthchan2003
- * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ * Revision 1.9.4.2  2005/07/07  02:34:36  arthchan2003
+ * Remove empty lextree_tree_copies_hmm_propagate
  * 
+ * Revision 1.9.4.1  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
  * Revision 1.9  2005/06/21 23:32:58  arthchan2003
  * Log. Introduced lextree_init and filler_init to wrap up lextree_build
  * process. Split the hmm propagation to propagation for leaves and
@@ -685,8 +688,9 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	root = lextree->root;
     } else {
 	for (i = 0; (i < lextree->n_lc) && (lextree->lcroot[i].lc != lc); i++);
+	/*	E_INFO("i=%d, lextree->n_lc %d\n",i,lextree->n_lc);*/
 	assert (i < lextree->n_lc);
-	
+
 	root = lextree->lcroot[i].root;
     }
     
@@ -974,7 +978,9 @@ void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t 
     lextree_node_t **list, *ln;
     hmm_t *hmm;
     int32 i;
+#if 0
     int32 active_word_end=0;
+#endif
 
     /* Code for heursitic score */
     list = lextree->active;
@@ -994,59 +1000,18 @@ void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t 
 	    vithist_rescore (vh, kbc, ln->wid, cf,
 			     hmm->out.score - ln->prob, senscale, 
 			     hmm->out.history, lextree->type);
+
+#if 0	   
 	    active_word_end++;
 
 	    /*	    E_INFO("What is the hmm->out.score %d wth %d\n", hmm->out.score,wth);
 		    E_INFO("\nActive word end id %d, word end %s\n", ln->wid, dict_wordstr(kbc->dict,dict_basewid(kbc->dict,ln->wid)));*/
+#endif
 	}
     }
     
     /*    E_INFO("No of active word end %d\n\n",active_word_end);*/
 
 }
-
-
-void lextree_tree_copies_hmm_propagate (lextree_t *roottree, lextree_t ** expandtrees, kbcore_t *kbc, vithist_t *vh,
-					int32 cf, int32 th, int32 pth, int32 wth,pl_t * pl)
-{
-
-#if 0 
-    mdef_t *mdef;
-    int32 nf, newscore, newHeurScore;
-    lextree_node_t **list, *ln, *ln2;
-    hmm_t *hmm, *hmm2;
-    gnode_t *gn;
-    int32 i, n;
-    int32 hth ;
-    int32 *phn_heur_list;
-    int32 heur_beam;
-    int32 heur_type;
-
-    /* Code for heursitic score */
-    kbc->maxNewHeurScore=MAX_NEG_INT32;
-    kbc->lastfrm=-1;
-	hth = 0;
-    mdef = kbcore_mdef(kbc);
-    
-    phn_heur_list=pl->phn_heur_list;
-    heur_beam=pl->pl_beam;
-    heur_type=pl->pheurtype;
-
-    /* This implicitly do topological sort */
-    /* 1, First enter the root tree from the expanded tree using the backoff weight*/
-    /* In this part, the back-off weight will be multiplied from the paths */
-
-    /* 2, Then, propagate the root tree. */
-    /* In this part, the amount of active 2nd stage tree will be computed */
-
-    /* 3, Then, propagate the expand tree (?) */
-    /* In this part, it will also decide whether new tree allocated */
-
-    /* 4, Should I rescore at here ? */
-#endif
-}
-
-
-
 
 
