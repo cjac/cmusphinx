@@ -1,7 +1,0 @@
-*.lo
-Makefile
-Makefile.in
-.deps
-.libs
-*.la
-ad_conf.h
