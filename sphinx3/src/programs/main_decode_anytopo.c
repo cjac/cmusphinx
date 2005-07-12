@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12  2005/06/22  05:39:55  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.13  2005/07/12  01:39:27  arthchan2003
+ * Make default -btwsil to be 1 again. In general, the value of -btwsil (or whether to use silence as the final word) largely depends on different databases.  In Communicator, 5% relative improvement is seen. In WSJ, there is 5% drop. So, it is largely a matter of tuning.
  * 
+ * Revision 1.12  2005/06/22 05:39:55  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.13  2005/06/19 04:51:48  archan
  * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
  *
@@ -817,7 +820,7 @@ static arg_t defn[] = {
       "Whether BPTable should be dumped to log output (for debugging)" },
     { "-bt_wsil",
       ARG_INT32,
-      "0",
+      "1",
       "Specify whether back-tracking using silences"},
     { "-maxedge",
       ARG_INT32,
