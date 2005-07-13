@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.2  2005/07/03  23:02:39  arthchan2003
- * Wrapped up feat_t freeing into feat_free.
+ * Revision 1.10.4.3  2005/07/13  01:59:35  arthchan2003
+ * Remove fcb variable in kbcore.c
  * 
+ * Revision 1.10.4.2  2005/07/03 23:02:39  arthchan2003
+ * Wrapped up feat_t freeing into feat_free.
+ *
  * Revision 1.10.4.1  2005/06/28 19:10:06  arthchan2003
  * Add fillpen_report in kbcore.c
  *
@@ -351,7 +354,6 @@ kbcore_t *kbcore_init (float64 logbase,
 /* RAH 4.19.01 free memory allocated within this module */
 void kbcore_free (kbcore_t *kbcore)
 {
-  feat_t *fcb = kbcore_fcb (kbcore); /*  */
   mdef_t *mdef = kbcore_mdef(kbcore);
   dict_t *dict = kbcore_dict (kbcore);
   dict2pid_t *dict2pid = kbcore_dict2pid (kbcore);		/*  */
