@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.6  2005/07/07  02:37:39  arthchan2003
- * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ * Revision 1.1.4.7  2005/07/13  18:42:35  arthchan2003
+ * Re-enabled function assignments for mode 3 in srch.c. Code compiled. Still has 3 major hacks and 8 minor hacks.  See message in fsg_*
  * 
+ * Revision 1.1.4.6  2005/07/07 02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ *
  * Revision 1.1.4.5  2005/07/04 07:18:49  arthchan2003
  * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
  *
@@ -287,9 +290,9 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
 
     E_FATAL("Graph Seearch mode is not supported yet");
-#if 0
+
     s->srch_init=&srch_FSG_init;
-    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;
+    /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
 
     s->srch_uninit=&srch_FSG_uninit;
     s->srch_utt_begin=&srch_FSG_begin;
@@ -318,7 +321,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
     s->srch_frame_windup=&srch_FSG_frame_windup;
     s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
-#endif
 
   }else if(op_mode==OPERATION_FLATFWD){
 
