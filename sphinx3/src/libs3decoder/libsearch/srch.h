@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.4  2005/07/07  02:37:39  arthchan2003
- * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ * Revision 1.1.4.5  2005/07/13  18:46:39  arthchan2003
+ * Re-included srch_fsg.h
  * 
+ * Revision 1.1.4.4  2005/07/07 02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ *
  * Revision 1.1.4.3  2005/07/04 07:18:49  arthchan2003
  * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
  *
@@ -126,9 +129,9 @@
 #include "kb.h"
 #include "srch_time_switch_tree.h"
 #include "srch_word_switch_tree.h"
+#include "srch_fsg.h"
 
 #if 0
-/*#include "srch_fsg.h"*/
 /*#include "word_fsg.h"*/
 #endif
 
