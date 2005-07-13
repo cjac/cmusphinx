@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.2  2005/07/05  21:31:25  arthchan2003
- * Merged from HEAD.
+ * Revision 1.14.4.3  2005/07/13  01:44:17  arthchan2003
+ * 1, Moved text formatted LM code into lm_3g.c, 2 Changed lm_read such that it will work with both TXT file format and DMP file format. 3,  Added function lm_write to handle lm writing.
  * 
+ * Revision 1.14.4.2  2005/07/05 21:31:25  arthchan2003
+ * Merged from HEAD.
+ *
  * Revision 1.15  2005/07/05 13:12:37  dhdfu
  * Add new arguments to logs3_init() in some tests, main_ep
  *
@@ -128,75 +131,19 @@
 const char *darpa_hdr = "Darpa Trigram LM";
 /*ARCHAN, 20041112: NOP, NO STATIC VARIABLES! */
 
-#define MAX_SORTED_ENTRIES	65534
-#define FIRST_BG(m,u)		((m)->ug[u].firstbg)
-#define TSEG_BASE(m,b)		((m)->tg_segbase[(b)>>LOG2_BG_SEG_SZ])
-#define FIRST_TG(m,b)		(TSEG_BASE((m),(b))+((m)->bg[b].firsttg))
+extern lm_t *lm_read_txt(const char *filename,
+			 const int lminmemory /**< Whether using in memory LM */
+			 );
 
-static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw,int32 n_lmclass_used,lmclass_t *lmclass,int32 dict_size);
+int32 lm3g_dump (char const *file,  /**< the file name */
+		 lm_t *model,       /**< the langauge model for output */
+		 char const *lmfile,  /**< the */
+		 int32 mtime  /**< LM file modification date */
+		 );
 
-/*
- * Initialize sorted list with the 0-th entry = MIN_PROB_F, which may be needed
- * to replace spurious values in the Darpa LM file.
- */
-static void init_sorted_list (sorted_list_t *l)
-{
-    l->list =
-	(sorted_entry_t *) ckd_calloc (MAX_SORTED_ENTRIES, sizeof (sorted_entry_t));
-    l->list[0].val.f = MIN_PROB_F;
-    l->list[0].lower = 0;
-    l->list[0].higher = 0;
-    l->free = 1;
-}
-
-static void free_sorted_list (sorted_list_t *l)
-{
-    free (l->list);
-}
-
-static lmlog_t *vals_in_sorted_list (sorted_list_t *l)
-{
-    lmlog_t *vals;
-    int32 i;
-    
-    vals = (lmlog_t *) ckd_calloc (l->free, sizeof (lmlog_t));
-    for (i = 0; i < l->free; i++)
-	vals[i].f = l->list[i].val.f;
-    return (vals);
-}
-
-static int32 sorted_id (sorted_list_t *l, float *val)
-{
-    int32 i = 0;
-    
-    for (;;) {
-	if (*val == l->list[i].val.f)
-	    return (i);
-	if (*val < l->list[i].val.f) {
-	    if (l->list[i].lower == 0) {
-		if (l->free >= MAX_SORTED_ENTRIES)
-		    E_INFO("sorted list overflow\n");
-		l->list[i].lower = l->free;
-		(l->free)++;
-		i = l->list[i].lower;
-		l->list[i].val.f = *val;
-		return (i);
-	    } else
-		i = l->list[i].lower;
-	} else {
-	    if (l->list[i].higher == 0) {
-		if (l->free >= MAX_SORTED_ENTRIES)
-		    E_INFO("sorted list overflow\n");
-		l->list[i].higher = l->free;
-		(l->free)++;
-		i = l->list[i].higher;
-		l->list[i].val.f = *val;
-		return (i);
-	    } else
-		i = l->list[i].higher;
-	}
-    }
-}
+int32 lm_write_arpa_text(lm_t *lmp,
+			 const char* outputfn
+			 );
 
 
 int32 lm_get_classid (lm_t *model, char *name)
@@ -402,27 +349,25 @@ static int32 isLMDmpExist(char* filename)
 
 
 
-/*
+/**
  * Read LM dump (<lmname>.DMP) file and make it the current LM.
  * Same interface as lm_read except that the filename refers to a .DMP file.
  */
-static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw,int32 n_lmclass_used, lmclass_t *lmclass,int32 dict_size)
+static lm_t *lm_read_dump (const char *file, /**< The file name*/
+			   const int lminmemory /**< Whether using in memory LM */
+			   )
 {
     lm_t *lm;
     int32 i, j, k, vn;
     char str[1024];
     char *tmp_word_str;
     s3lmwid_t startwid, endwid;
-    int32 isLM_IN_MEMORY=0;
-
-    if (cmd_ln_int32 ("-lminmemory")) 
-      isLM_IN_MEMORY = 1;    
-    else
-      isLM_IN_MEMORY = 0;
 
     lm = (lm_t *) ckd_calloc (1, sizeof(lm_t));
     
-    lm->dict_size=dict_size;
+    lm->isLM_IN_MEMORY = lminmemory;
+    lm->n_ng=1;
+
     if ((lm->fp = fopen (file, "rb")) == NULL)
 	E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file);
     
@@ -436,8 +381,9 @@ static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw
 	if ((size_t)k == strlen(darpa_hdr)+1)
 	    lm->byteswap = 1;
 	else {
-	    SWAP_INT32(&k);
-	    E_FATAL("Bad magic number: %d(%08x), not an LM dumpfile??\n", k, k);
+	  SWAP_INT32(&k);
+	  E_INFO("Bad magic number: %d(%08x), not an LM dumpfile??\n", k, k);
+	  return NULL;
 	}
     }
 
@@ -511,8 +457,14 @@ static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw
 	}
     E_INFO("%8d ug\n", lm->n_ug);
 
+    if(lm->n_bg> 0)
+      lm->n_ng=2;
+
+    if(lm->n_tg> 0)
+      lm->n_ng=3;
+
     /* RAH, 5.1.01 - Let's try reading the whole damn thing in here   */
-    if (isLM_IN_MEMORY) {
+    if (lm->isLM_IN_MEMORY) {
       lm->bg = (bg_t *) ckd_calloc (lm->n_bg+1,sizeof(bg_t));
       lm->tg = (tg_t *) ckd_calloc (lm->n_tg+1,sizeof(tg_t));
 
@@ -520,16 +472,12 @@ static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw
 	lm->bgoff = ftell (lm->fp);
 	fread (lm->bg, lm->n_bg+1,sizeof(bg_t),lm->fp);
 	E_INFO("Read %8d bigrams [in memory]\n", lm->n_bg);
-	
-	lm->membg = (membg_t *) ckd_calloc (lm->n_ug, sizeof(membg_t));
       }
       
       if (lm->n_tg > 0) {       /* Read trigrams */
 	lm->tgoff = ftell (lm->fp);
 	fread (lm->tg,lm->n_tg,sizeof(tg_t),lm->fp);
 	E_INFO("Read %8d trigrams [in memory]\n", lm->n_tg);
-	
-	lm->tginfo = (tginfo_t **) ckd_calloc (lm->n_ug, sizeof(tginfo_t *));
       }
     } else {
       lm->bg = NULL;
@@ -540,19 +488,21 @@ static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw
 	lm->bgoff = ftell (lm->fp);
 	fseek (lm->fp, (lm->n_bg+1) * sizeof(bg_t), SEEK_CUR);
 	E_INFO("%8d bigrams [on disk]\n", lm->n_bg);
-	lm->membg = (membg_t *) ckd_calloc (lm->n_ug, sizeof(membg_t));
       }
       
       /* Skip trigrams */
       if (lm->n_tg > 0) {
 	lm->tgoff = ftell (lm->fp);
 	fseek (lm->fp, lm->n_tg * sizeof(tg_t), SEEK_CUR);
-	E_INFO("%8d trigrams [on disk]\n", lm->n_tg);
-	
-	lm->tginfo = (tginfo_t **) ckd_calloc (lm->n_ug, sizeof(tginfo_t *));
+	E_INFO("%8d trigrams [on disk]\n", lm->n_tg);	
       }
     }
-    
+
+    if(lm->n_bg>0)
+      lm->membg = (membg_t *) ckd_calloc (lm->n_ug, sizeof(membg_t));
+    if(lm->n_tg>0)
+      lm->tginfo = (tginfo_t **) ckd_calloc (lm->n_ug, sizeof(tginfo_t *));
+
     if (lm->n_bg > 0) {
 	/* Bigram probs table size */
 	lm->n_bgprob = lm_fread_int32 (lm);
@@ -666,466 +616,17 @@ static lm_t *lm_read_dump (const char *file, float64 lw, float64 wip, float64 uw
 	lm->finishlwid = endwid;
     }
 
-    if(n_lmclass_used>0) {
-      lm_build_lmclass_info(lm,lw,uw,wip,n_lmclass_used,lmclass);
-    }
 
-    lm2logs3 (lm, uw);	/* Applying unigram weight; convert to logs3 values */
-    
-    /* Apply the new lw and wip values */
-    lm->lw = 1.0;	/* The initial settings for lw and wip */
-    lm->wip = 0;	/* logs3(1.0) */
-    lm_set_param (lm, lw, wip);
 
     return lm;
 }
 
-static int32 wstr2wid (lm_t *model, char *w)
-{
-    int32 val;
-    
-    if (hash_lookup (&(model->HT), w, &val) != 0)
-	return NO_WORD;
-    return ((int32) val);
-}
-
-static ug_t *NewUnigramTable (int32 n_ug)
-{
-    ug_t *table;
-    int32 i;
-
-    table = (ug_t *) ckd_calloc (n_ug, sizeof (ug_t));
-    for (i = 0; i < n_ug; i++) {
-	table[i].dictwid = NO_WORD;
-	table[i].prob.f = -99.0;
-	table[i].bowt.f = -99.0;
-    }
-    return table;
-}
-
-lm_t *
-NewModel (n_ug, n_bg, n_tg, n_dict)
-    int32 n_ug;
-    int32 n_bg;
-    int32 n_tg;
-    int32 n_dict;
-{
-    lm_t *model;
-
-    model = (lm_t *) ckd_calloc (1, sizeof (lm_t));
-
-    /*
-     * Allocate one extra unigram and bigram entry: sentinels to terminate
-     * followers (bigrams and trigrams, respectively) of previous entry.
-     */
-    model->ug	= NewUnigramTable (n_ug+1);
-    model->bg	= (bg_t *) ckd_calloc (n_bg+1, sizeof (bg_t));
-    if (n_tg > 0)
-      model->tg	= (tg_t *) ckd_calloc (n_tg, sizeof (tg_t));
-
-    /* Allocate space for mapping from dictionary word id to this LM unigram id */
-    /* This will be done outside lm initialization */
-    /* model->dictwid_map = (int32 *) ckd_calloc (n_dict, sizeof (int32)); */
-    
-    if (n_tg > 0) {
-	model->tg_segbase = (int32 *) ckd_calloc ((n_bg+1)/BG_SEG_SZ+1, sizeof (int32));
-#if 0
-	E_INFO("%8d = tseg_base entries allocated\n",
-	       (n_bg+1)/BG_SEG_SZ+1);
-#endif
-    }
-
-    /*This part will not be compiled */
-    model->max_ug = model->n_ug = n_ug;
-    model->n_bg = n_bg;
-    model->n_tg = n_tg;
-    model->dict_size = n_dict;
-    
-    
-    /*model->HT.size = 0;
-    model->HT.inuse = 0;
-    model->HT.tab = NULL;*/
-
-    return model;
-}
-
-/*
- * Read and return #unigrams, #bigrams, #trigrams as stated in input file.
- */
-static void ReadNgramCounts (FILE *fp,
-			     int32 *n_ug, int32 *n_bg, int32 *n_tg)
-{
-  char string[256];
-  int32 ngram, ngram_cnt;
-  
-  /* skip file until past the '\data\' marker */
-  do
-    fgets (string, sizeof (string), fp);
-  while ( (strcmp (string, "\\data\\\n") != 0) && (! feof (fp)) );
-  
-  if (strcmp (string, "\\data\\\n") != 0)
-    E_FATAL("No \\data\\ mark in LM file\n");
-	
-  *n_ug = *n_bg = *n_tg = 0;
-  while (fgets (string, sizeof (string), fp) != NULL) {
-    if (sscanf (string, "ngram %d=%d", &ngram, &ngram_cnt) != 2)
-      break;
-
-    switch (ngram) {
-    case 1: *n_ug = ngram_cnt;
-      break;
-    case 2: *n_bg = ngram_cnt;
-      break;
-    case 3: *n_tg = ngram_cnt;
-      break;
-    default:
-      E_FATAL("Unknown ngram (%d)\n", ngram);
-      break;
-    }
-  }
-    
-  /* Position file to just after the unigrams header '\1-grams:\' */
-  while ( (strcmp (string, "\\1-grams:\n") != 0) && (! feof (fp)) )
-    fgets (string, sizeof (string), fp);
-    
-  /* Check counts;  NOTE: #trigrams *CAN* be 0 */
-  if ((*n_ug <= 0) || (*n_bg <= 0) || (*n_tg < 0))
-    E_FATAL("Bad or missing ngram count\n");
-}
-
-/*
- * Read in the unigrams from given file into the LM structure model.  On
- * entry to this procedure, the file pointer is positioned just after the
- * header line '\1-grams:'.
- */
-static void ReadUnigrams (FILE *fp, lm_t *model)
-{
-    char string[256];
-    char name[128];
-    int32 wcnt;
-    float p1, bo_wt;
-    
-    E_INFO ("%s(%d): Reading unigrams\n", __FILE__, __LINE__);
-
-    wcnt = 0;
-    while ((fgets (string, sizeof(string), fp) != NULL) &&
-	   (strcmp (string, "\\2-grams:\n") != 0))
-    {
-	if (sscanf (string, "%f %s %f", &p1, name, &bo_wt) != 3) {
-	    if (string[0] != '\n')
-		E_WARN ("Format error; unigram ignored:%s",string);
-	    continue;
-	}
-	
-	if (wcnt >= model->n_ug)
-	    E_FATAL("Too many unigrams\n");
-
-	/* Associate name with word id */
-	/* This is again not local */
-	model->word_str[wcnt] = (char *) ckd_salloc (name);
-	hash_enter (&(model->HT), model->word_str[wcnt], wcnt);
-	model->ug[wcnt].prob.f = p1;
-	model->ug[wcnt].bowt.f = bo_wt;
-
-	model->ug[wcnt].dictwid = wcnt;
-	wcnt++;
-    }
-
-    if (model->n_ug != wcnt) {
-	E_WARN ("lm_t.n_ug(%d) != #unigrams read(%d)\n",
-		model->n_ug, wcnt);
-	model->n_ug = wcnt;
-    }
-}
-
-/*
- * Read bigrams from given file into given model structure.  File may be arpabo
- * or arpabo-id format, depending on idfmt = 0 or 1.
- */
-static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
-{
-    char string[1024], word1[256], word2[256];
-    int32 w1, w2, prev_w1, bgcount, p;
-    bg_t *bgptr;
-    float p2, bo_wt;
-    int32 n_fld, n;
-    
-    E_INFO ("%s(%d): Reading bigrams\n", __FILE__, __LINE__);
-    
-    bgcount = 0;
-    bgptr = model->bg;
-    prev_w1 = -1;
-    n_fld = (model->n_tg > 0) ? 4 : 3;
-
-    bo_wt = 0.0;
-    while (fgets (string, sizeof(string), fp) != NULL) {
-	if (! idfmt)
-	    n = sscanf (string, "%f %s %s %f", &p2, word1, word2, &bo_wt);
-	else
-	    n = sscanf (string, "%f %d %d %f", &p2, &w1, &w2, &bo_wt);
-	if (n < n_fld) {
-	    if (string[0] != '\n')
-		break;
-	    continue;
-	}
-
-	if (! idfmt) {
-	    if ((w1 = wstr2wid (model, word1)) == NO_WORD)
-		E_FATAL("Unknown word: %s\n",word1);
-	    if ((w2 = wstr2wid (model, word2)) == NO_WORD)
-		E_FATAL("Unknown word: %s\n",word2);
-	} else {
-	    if ((w1 >= model->n_ug) || (w2 >= model->n_ug) || (w1 < 0) || (w2 < 0))
-	      E_FATAL("Bad bigram: %s", string);
-	}
-	
-	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p2*10000;
-	p2 = p*0.0001;
-	p = bo_wt*10000;
-	bo_wt = p*0.0001;
-
-	if (bgcount >= model->n_bg)
-	  E_INFO("Too many bigrams\n");
-	
-	bgptr->wid = w2;
-	bgptr->probid = sorted_id (&(model->sorted_prob2), &p2);
-	if (model->n_tg > 0)
-	    bgptr->bowtid = sorted_id (&(model->sorted_bowt2), &bo_wt);
-
-	if (w1 != prev_w1) {
-	    if (w1 < prev_w1)
-	      E_INFO("Bigrams not in unigram order\n");
-	    
-	    for (prev_w1++; prev_w1 <= w1; prev_w1++)
-		model->ug[prev_w1].firstbg = bgcount;
-	    prev_w1 = w1;
-	}
-	
-	bgcount++;
-	bgptr++;
-
-	if ((bgcount & 0x0000ffff) == 0) {
-	    E_INFO (".");
-	}
-    }
-    if ((strcmp (string, "\\end\\\n") != 0) && (strcmp (string, "\\3-grams:\n") != 0))
-      E_FATAL("Bad bigram: %s\n", string);
-    
-    for (prev_w1++; prev_w1 <= model->n_ug; prev_w1++)
-	model->ug[prev_w1].firstbg = bgcount;
-}
-
-/*
- * Very similar to ReadBigrams.
- */
-static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
-{
-    char string[1024], word1[256], word2[256], word3[256];
-    int32 i, n, w1, w2, w3, prev_w1, prev_w2, tgcount, prev_bg, bg, endbg, p;
-    int32 seg, prev_seg, prev_seg_lastbg;
-    tg_t *tgptr;
-    bg_t *bgptr;
-    float p3;
-    
-    E_INFO ("Reading trigrams\n");
-    
-    tgcount = 0;
-    tgptr = model->tg;
-    prev_w1 = -1;
-    prev_w2 = -1;
-    prev_bg = -1;
-    prev_seg = -1;
-
-    while (fgets (string, sizeof(string), fp) != NULL) {
-	if (! idfmt)
-	    n = sscanf (string, "%f %s %s %s", &p3, word1, word2, word3);
-	else
-	    n = sscanf (string, "%f %d %d %d", &p3, &w1, &w2, &w3);
-	if (n != 4) {
-	    if (string[0] != '\n')
-		break;
-	    continue;
-	}
-
-	if (! idfmt) {
-	    if ((w1 = wstr2wid (model, word1)) == NO_WORD)
-		E_FATAL("Unknown word: %s\n",word1);
-	    if ((w2 = wstr2wid (model, word2)) == NO_WORD)
-		E_FATAL("Unknown word: %s\n",word2);
-	    if ((w3 = wstr2wid (model, word3)) == NO_WORD)
-		E_FATAL("Unknown word: %s\n",word3);
-	} else {
-	    if ((w1 >= model->n_ug) || (w2 >= model->n_ug) || (w3 >= model->n_ug) ||
-		    (w1 < 0) || (w2 < 0) || (w3 < 0))
-	      E_FATAL("Bad trigram: %s\n",string);
-	}
-	
-	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p3*10000;
-	p3 = p*0.0001;
-
-	if (tgcount >= model->n_tg)
-	    E_INFO("Too many trigrams\n");
-	
-	tgptr->wid = w3;
-	tgptr->probid = sorted_id (&model->sorted_prob3, &p3);
-
-	if ((w1 != prev_w1) || (w2 != prev_w2)) {
-	    /* Trigram for a new bigram; update tg info for all previous bigrams */
-	    if ((w1 < prev_w1) || ((w1 == prev_w1) && (w2 < prev_w2)))
-	      E_INFO("Trigrams not in bigram order\n");
-		      
-	    
-	    bg = (w1 != prev_w1) ? model->ug[w1].firstbg : prev_bg+1;
-	    endbg = model->ug[w1+1].firstbg;
-	    bgptr = model->bg + bg;
-	    for (; (bg < endbg) && (bgptr->wid != w2); bg++, bgptr++);
-	    if (bg >= endbg)
-	      E_FATAL("Missing bigram for trigram: %s",string);
-
-	    /* bg = bigram entry index for <w1,w2>.  Update tseg_base */
-	    seg = bg >> LOG2_BG_SEG_SZ;
-	    for (i = prev_seg+1; i <= seg; i++)
-		model->tg_segbase[i] = tgcount;
-
-	    /* Update trigrams pointers for all bigrams until bg */
-	    if (prev_seg < seg) {
-		int32 tgoff = 0;
-
-		if (prev_seg >= 0) {
-		    tgoff = tgcount - model->tg_segbase[prev_seg];
-		    if (tgoff > 65535)
-		      E_FATAL( "Offset from tseg_base > 65535\n");
-		}
-		
-		prev_seg_lastbg = ((prev_seg+1) << LOG2_BG_SEG_SZ) - 1;
-		bgptr = model->bg + prev_bg;
-		for (++prev_bg, ++bgptr; prev_bg <= prev_seg_lastbg; prev_bg++, bgptr++)
-		    bgptr->firsttg = tgoff;
-		
-		for (; prev_bg <= bg; prev_bg++, bgptr++)
-		    bgptr->firsttg = 0;
-	    } else {
-		int32 tgoff;
-
-		tgoff = tgcount - model->tg_segbase[prev_seg];
-		if (tgoff > 65535)
-		  E_FATAL("Offset from tseg_base > 65535\n");
-		
-		bgptr = model->bg + prev_bg;
-		for (++prev_bg, ++bgptr; prev_bg <= bg; prev_bg++, bgptr++)
-		    bgptr->firsttg = tgoff;
-	    }
-	    
-	    prev_w1 = w1;
-	    prev_w2 = w2;
-	    prev_bg = bg;
-	    prev_seg = seg;
-	}
-	
-	tgcount++;
-	tgptr++;
-
-	if ((tgcount & 0x0000ffff) == 0) {
-	    E_INFO (".");
-	}
-    }
-    if (strcmp (string, "\\end\\\n") != 0)
-	E_FATAL("Bad trigram: %s\n", string);
-    
-    for (prev_bg++; prev_bg <= model->n_bg; prev_bg++) {
-	if ((prev_bg & (BG_SEG_SZ-1)) == 0)
-	    model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ] = tgcount;
-	if ((tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ]) > 65535)
-	    E_FATAL("Offset from tseg_base > 65535\n");
-	model->bg[prev_bg].firsttg =
-	    tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ];
-    }
-}
 
 
-
-lm_t *lm_read_txt(const char *filename, 
-		  const char *lmname,   
-		  float64 lw,           
-		  float64 wip,          
-		  float64 uw)
-{
-  lm_t *model;
-  FILE *fp = NULL;
-  int32 usingPipe = FALSE;
-  int32 n_unigram;
-  int32 n_bigram;
-  int32 n_trigram;
-  int32 idfmt=0;
-
-  E_INFO ("Reading LM file %s (name \"%s\")\n",filename, lmname);
-					   
-
-  /*Somewhere I should check whether lmname exists in the lmset. */
-  fp=fopen_comp(filename,"w",&usingPipe);
-  
-  ReadNgramCounts (fp, &n_unigram, &n_bigram, &n_trigram);
-  E_INFO ("%s(%d): ngrams 1=%d, 2=%d, 3=%d\n",n_unigram, n_bigram, n_trigram); 
-					   
-  /* HACK! This should be something provided by the dictionary What is dict_size? */
-  model=NewModel(n_unigram,n_bigram,n_trigram,10 /*dict_size*/);
-
-  /* Have to put it somewhere in lm as a kind of buffer */
-  model->word_str = (char **) ckd_calloc (n_unigram, sizeof (char *));
-
-  /* control the lm dumping mechanism */
-  
-  ReadUnigrams (fp, model);
-  E_INFO("%8d = #unigrams created\n", model->n_ug);
-	
-  init_sorted_list (&(model->sorted_prob2));
-  if (model->n_tg > 0)
-    init_sorted_list (&(model->sorted_bowt2));
-
-  ReadBigrams (fp, model, idfmt);
-	
-  model->n_bg = FIRST_BG(model,model->n_ug);
-  model->n_bgprob = model->sorted_prob2.free;
-  model->bgprob  = vals_in_sorted_list (&(model->sorted_prob2));
-  free_sorted_list (&(model->sorted_prob2));
-
-  E_INFO("\n%8d = #bigrams created\n", model->n_bg);
-  E_INFO("%8d = #prob2 entries\n", model->n_bgprob);
-
-  if (model->n_tg > 0) {
-    /* Create trigram bo-wts array */
-    model->n_tgbowt = model->sorted_bowt2.free;
-    model->tgbowt = vals_in_sorted_list (&(model->sorted_bowt2));
-    free_sorted_list (&(model->sorted_bowt2));
-    E_INFO("%8d = #bo_wt2 entries\n", model->n_tgbowt);
-    
-    init_sorted_list (&(model->sorted_prob3));
-    
-    ReadTrigrams (fp, model, idfmt);
-    
-    model->n_tg = FIRST_TG(model,model->n_bg);
-    model->n_tgprob = model->sorted_prob3.free;
-    model->tgprob  = vals_in_sorted_list (&(model->sorted_prob3));
-    E_INFO("\n%8d = #trigrams created\n", model->n_tg);
-    E_INFO("%8d = #prob3 entries\n", model->n_tgprob);
-    
-    free_sorted_list (&model->sorted_prob3);
-  }
-
-  ckd_free(model->word_str);
-  return model;
-}
-
-
-
-
-lm_t *lm_read (const char *file, float64 lw, float64 wip, float64 uw)
+lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, float64 uw, int32 ndict, char* fmt, int32 applyWeight)
 {
     int32 i, u;
     lm_t *lm;
-    int32 isLM_IN_MEMORY=0;
       
     if (! file)
 	E_FATAL("No LM file\n");
@@ -1136,26 +637,95 @@ lm_t *lm_read (const char *file, float64 lw, float64 wip, float64 uw)
     if ((uw < 0.0) || (uw > 1.0))
 	E_FATAL("uw = %e\n", uw);
     
-    E_INFO ("LM read('%s', lw= %.2f, wip= %d, uw= %.2f)\n", file, lw, logs3(wip), uw);
-    if (cmd_ln_int32 ("-lminmemory")) 
-      isLM_IN_MEMORY = 1;    
-    else
-      isLM_IN_MEMORY = 0;
+    E_INFO ("LM read('%s', lw= %.2f, wip= %.2f, uw= %.2f)\n", file, lw, wip, uw);
+
+    /* At this part, one should check whether the LM name is being used already */
     
     /* For now, only dump files can be read; they are created offline */
-    lm = lm_read_dump (file, lw, wip, uw,0,NULL,0);
 
-    for (u = 0; u < lm->n_ug; u++)
-	lm->ug[u].dictwid = BAD_S3WID;
-    
+    /* First it will try to decide whether the file a .DMP file */
+    /* ARCHAN: We should provide function pointer implementation at here. */
+    if(fmt==NULL){ /**Automatically decide the LM format */
+      lm = lm_read_dump (file,cmd_ln_int32("-lminmemory"));
+      if(lm == NULL){
+	E_INFO("In lm_read, LM is not a DMP file. Trying reading it as a txt file\n");
+	
+	/* HACK !!! */
+	if(cmd_ln_int32("-lminmemory")==0){
+	  E_INFO("LM is not a dump file, so it is assumed to be a text file. However, disk-based LM is not working for -lminmemory at this point. Forced exit\n");
+	  return NULL;
+	}
+	lm = lm_read_txt (file,cmd_ln_int32("-lminmemory"));
+	if(lm ==NULL){
+	  E_INFO("In lm_read, LM is also not in text format.\n");
+	  return NULL;
+	}
+      }
+    }else if (!strcmp(fmt,"TXT")){
+      lm=lm_read_txt (file,cmd_ln_int32("-lminmemory"));
+      if(lm ==NULL){
+	E_INFO("In lm_read, a text format reader is called, but lm cannot be read, Diagnosis: LM is in wrong format or not enough memory.\n");
+	return NULL;
+      }
+    }else if (!strcmp(fmt,"DMP")){
+      lm=lm_read_dump (file,cmd_ln_int32("-lminmemory"));
+      if(lm ==NULL){
+	E_INFO("In lm_read, a DMP format reader is called, but lm cannot be read, Diagnosis: LM is corrupted or not enough memory.\n");
+	return NULL;
+      }
+    }else{
+      E_INFO("Unknown format (%s) is specified\n",fmt);
+      return NULL;
+    }
+
+
+    lm->name = ckd_salloc(lmname);
+
     /* Initialize the fast trigram cache, with all entries invalid */
     lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
     for (i = 0; i < LM_TGCACHE_SIZE; i++)
 	lm->tgcache[i].lwid[0] = BAD_S3LMWID;
+
+    if(applyWeight){
+      lm2logs3 (lm, uw);	/* Applying unigram weight; convert to logs3 values */
+    
+      /* Apply the new lw and wip values */
+      lm->lw = 1.0;	/* The initial settings for lw and wip */
+      lm->wip = 0;	/* logs3(1.0) */
+      lm_set_param (lm, lw, wip);
+    }
+
+
+    assert(lm);
+    /* Set the size of dictionary */
+    lm->dict_size=ndict;
+    E_INFO("lm->dict %d\n",lm->dict_size);
+    for (u = 0; u < lm->n_ug; u++)
+	lm->ug[u].dictwid = BAD_S3WID;
+    
     
     return lm;
 }
 
+
+int32 lm_write(lm_t * lmp, const char* outputfn,const char* filename,char *fmt)
+{
+  if (!strcmp(fmt,"TXT")){
+    return lm_write_arpa_text(lmp,outputfn);
+  }else if (!strcmp(fmt,"DMP")){
+
+    /* set mtime to be zero because sphinx3 has no mechanism to check
+       whether the file is generated earlier (at least for now.)*/
+
+    return lm3g_dump(outputfn,lmp,filename,0);
+
+  }else{
+    E_INFO("Unknown format (%s) is specified\n",fmt);
+    return LM_FAIL; 
+  }
+
+  
+}
 
 static void fwrite_int32 (FILE *fp, int32 val)
 {
@@ -1228,16 +798,19 @@ static char const *fmtdesc[] = {
  * Dump internal LM to file.  Format described above.
  * Remember to swap bytes if necessary.
  */
-static int32 lm3g_dump (char const *file, lm_t *model,
-			char const *lmfile, int32 mtime)
+int32 lm3g_dump (char const *file,  /**< the file name */
+		 lm_t *model,       /**< the langauge model for output */
+		 char const *lmfile,  /**< the */
+		 int32 mtime  /**< LM file modification date */
+		 )
 {
     int32 i, k;
     FILE *fp;
 
-    E_INFO ("%s(%d): Dumping LM to %s\n", __FILE__, __LINE__, file);
+    E_INFO ("Dumping LM to %s\n", file);
     if ((fp = fopen (file, "wb")) == NULL) {
-	E_ERROR ("%s(%d): Cannot create file %s\n", __FILE__, __LINE__, file);
-	return 0;
+	E_ERROR ("Cannot create file %s\n",file);
+	return LM_FAIL;
     }
 
     k = strlen(darpa_hdr)+1;
@@ -1291,13 +864,13 @@ static int32 lm3g_dump (char const *file, lm_t *model,
     
     k = 0;
     for (i = 0; i < model->n_ug; i++)
-	k += strlen(model->word_str[i])+1;
+	k += strlen(model->wordstr[i])+1;
     fwrite_int32 (fp, k);
     for (i = 0; i < model->n_ug; i++)
-	fwrite (model->word_str[i], sizeof(char), strlen(model->word_str[i])+1, fp);
+	fwrite (model->wordstr[i], sizeof(char), strlen(model->wordstr[i])+1, fp);
 
     fclose (fp);
-    return 0;
+    return LM_SUCCESS;
 }
 
 /*
@@ -1307,17 +880,11 @@ void lm_cache_reset (lm_t *lm)
 {
     int32 i, n_bgfree, n_tgfree;
     tginfo_t *tginfo, *next_tginfo, *prev_tginfo;
-    int32 isLM_IN_MEMORY=0;
 
     n_bgfree = n_tgfree = 0;
-    
-    if (cmd_ln_int32 ("-lminmemory")) 
-      isLM_IN_MEMORY = 1;    
-    else
-      isLM_IN_MEMORY = 0;
 
     /* ARCHAN: RAH only short-circult this function only */
-    if (isLM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
+    if (lm->isLM_IN_MEMORY)		/* RAH We are going to short circuit this if we are running with the lm in memory */
     return;
 
   
@@ -1464,18 +1031,13 @@ static void load_bg (lm_t *lm, s3lmwid_t lw1)
 {
     int32 i, n, b;
     bg_t *bg;
-    int32 isLM_IN_MEMORY=0;
     
     b = lm->ug[lw1].firstbg;		/* Absolute first bg index for ug lw1 */
     n = lm->ug[lw1+1].firstbg - b;	/* Not including guard/sentinel */
 
-    if (cmd_ln_int32 ("-lminmemory")) 
-      isLM_IN_MEMORY = 1;    
-    else
-      isLM_IN_MEMORY = 0;
 
     
-  if (isLM_IN_MEMORY)		/* RAH, if LM_IN_MEMORY, then we don't need to go get it. */
+  if (lm->isLM_IN_MEMORY)		/* RAH, if LM_IN_MEMORY, then we don't need to go get it. */
     bg = lm->membg[lw1].bg = &lm->bg[b];
   else {
     bg = lm->membg[lw1].bg = (bg_t *) ckd_calloc (n+1, sizeof(bg_t));
@@ -1560,7 +1122,6 @@ int32 lm_bg_wordprob (lm_t *lm, s3lmwid_t lwid, int32 th, wordprob_t *wp, int32 
     
     n = lm_bglist (lm, lwid, &bgptr, bowt);
     ugprob = lm_ug_score (lm, lwid);
-    
     /* Convert bglist to wordprob */
     for (i = 0, j = 0; i < n; i++, bgptr++) {
 	w = lm->ug[bgptr->wid].dictwid;
@@ -1641,16 +1202,10 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
     int32 i, n, b;
     int32 t = -1; /* Let's make sure that if t isn't initialized after the
 		   * "if" statement below, it makes things go bad */
-    int32 isLM_IN_MEMORY=0;
-
     bg_t *bg;
     tg_t *tg;
     tginfo_t *tginfo;
 
-    if (cmd_ln_int32 ("-lminmemory")) 
-      isLM_IN_MEMORY = 1;    
-    else
-      isLM_IN_MEMORY = 0;
     
     /* First allocate space for tg information for bg lw1,lw2 */
     tginfo = (tginfo_t *) ckd_malloc (sizeof(tginfo_t));
@@ -1663,7 +1218,8 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 
     b = lm->ug[lw1].firstbg;
     n = lm->ug[lw1+1].firstbg - b;
-    
+
+
     /* Make sure bigrams for lw1, if any, loaded into memory */
     if (n > 0) {
 	if (! lm->membg[lw1].bg)
@@ -1698,7 +1254,7 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 
     /* At this point, n = #trigrams for lw1,lw2.  Read them in */
 
-    if (isLM_IN_MEMORY) {
+    if (lm->isLM_IN_MEMORY) {
 		/* RAH, already have this in memory */
       if (n > 0){
 	assert(t != -1);
@@ -1833,9 +1389,11 @@ int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid_
     }
 
     if (! tginfo) {
+
     	load_tg (lm, lw1, lw2);
 	tginfo = lm->tginfo[lw2];
     } else if (prev_tginfo) {
+
 	prev_tginfo->next = tginfo->next;
 	tginfo->next = lm->tginfo[lw2];
 	lm->tginfo[lw2] = tginfo;
@@ -1847,6 +1405,7 @@ int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid_
     n = tginfo->n_tg;
     tg = tginfo->tg;
 
+    assert(tginfo);
     if ((i = find_tg (tg, n, lw3)) >= 0) {
 	score = lm->tgprob[tg[i].probid].l ;
 	if(lm->inclass_ugscore){ /*Only add within class prob if class information exists.
@@ -1912,8 +1471,8 @@ void lm_free (lm_t *lm)
   }
 
   if(lm->n_tg>0){
-    if(lm->tg)
-      free(lm->tg);
+    /*    if(lm->tg)
+	  ckd_free((void*)lm->tg);*/
 
     for(i=0;i<lm->n_ug;i++){
       if(lm->tginfo[i]!=NULL){
@@ -1921,8 +1480,8 @@ void lm_free (lm_t *lm)
 	while (lm->tginfo[i]){
 	  tginfo=lm->tginfo[i];
 	  lm->tginfo[i]=tginfo->next;
-	  ckd_free((void*) tginfo->tg);
-	  ckd_free((void*) tginfo);
+	  /*	  ckd_free((void*) tginfo->tg);
+		  ckd_free((void*) tginfo);*/
 	}
       }
     }
@@ -1933,6 +1492,9 @@ void lm_free (lm_t *lm)
     ckd_free ((void *) lm->tgprob);
     ckd_free ((void *) lm->tgbowt);
 
+    if(lm->HT){
+      hash_free(lm->HT);
+    }
   }
 
 
@@ -1978,13 +1540,16 @@ lmset_t* lmset_init(char* lmfile,
   if (lmfile) { /* Data structure are shared. But it is still a sore
 		   point to have two interfaces for -lm and
 		   -lmctlfile*/
-    lms=lmset_read_lm(lmfile,dict,"default",lw,wip,uw);
+    if(lmname!=NULL)
+      lms=lmset_read_lm(lmfile,dict,lmname,lw,wip,uw,lmdumpdir);
+    else
+      lms=lmset_read_lm(lmfile,dict,"default",lw,wip,uw,lmdumpdir);
     if(lms==NULL)
       E_FATAL("lmset_read_lm(%s,%e,%e,%e) failed\n:",lmctlfile,lw,wip,uw);
     
   }else if (lmctlfile) {
     E_INFO("Reading LM ctl file\n");
-    lms=lmset_read_ctl(lmctlfile,dict,lw,wip,uw,lmdumpdir,dict_size(dict));
+    lms=lmset_read_ctl(lmctlfile,dict,lw,wip,uw,lmdumpdir);
     if(lms==NULL)
       E_FATAL("lmset_read_ctl(%s,%e,%e,%e) failed\n:",lmctlfile,lw,wip,uw);
   }else{
@@ -2113,28 +1678,25 @@ void lmset_free(lmset_t *lms)
 }
 
 
-lmset_t* lmset_read_lm(const char *lmfile,dict_t *dict, const char *lmname,float64 lw, float64 wip, float64 uw)
+lmset_t* lmset_read_lm(const char *lmfile,dict_t *dict, const char *lmname,float64 lw, float64 wip, float64 uw, const char *lmdumpdir)
 {
   lmset_t *lms;
-  int i;
 
   lms=(lmset_t *) ckd_calloc(1,sizeof(lmset_t));
   lms->n_lm=1;
   lms->n_alloc_lm=1;
 
-
+  /* Only allocate one single LM.  This assumes no class definition would be defined. 
+   */
   lms->lmarray = (lm_t **) ckd_calloc(1,sizeof(lm_t*));
-  if ((lms->lmarray[0] = lm_read (lmfile, lw, wip, uw)) == NULL)
+  if ((lms->lmarray[0] = lm_read (lmfile,lmname,lw, wip, uw, dict_size(dict),NULL,1))== NULL)
     E_FATAL("lm_read(%s, %e, %e, %e) failed\n", lmfile, lw, wip, uw);
 
-  lms->lmarray[0]->name=ckd_salloc(lmfile);
-
   if(dict!=NULL) {
-    for(i=0;i<lms->n_lm;i++){
-      assert(lms->lmarray[i]);
-      if ((lms->lmarray[i]->dict2lmwid = wid_dict_lm_map (dict, lms->lmarray[i],lw)) == NULL)
-	E_FATAL("Dict/LM word-id mapping failed for LM index %d, named %s\n",i,lmset_idx_to_name(lms,i));
-    }
+    assert(lms->lmarray[0]);
+    if ((lms->lmarray[0]->dict2lmwid = wid_dict_lm_map (dict, lms->lmarray[0],lw)) == NULL)
+      E_FATAL("Dict/LM word-id mapping failed for LM index %d, named %s\n",0,lmset_idx_to_name(lms,0));
+
   }else{
     E_FATAL("Dict is specified to be NULL (dict_init is not called before lmset_read_lm?), dict2lmwid is not built inside lmset_read_lm\n");
   }
@@ -2166,7 +1728,6 @@ lmset_t* lmset_read_lm(const char *lmfile,dict_t *dict, const char *lmname,float
  * LM classes in a trigram LM, one MUST use the -lmctlfn flag.  It is not
  * possible to read in a class-based trigram LM using the -lmfn flag.)
  * 
- * ARCHAN, 
  */
 
 lmset_t* lmset_read_ctl(const char *ctlfile,
@@ -2174,13 +1735,11 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
 			float64 lw, 
 			float64 wip, 
 			float64 uw,
-			char *lmdumpdir,
-			int32 dict_size)
+			char *lmdumpdir)
 {
   FILE *ctlfp;
   FILE *tmp;
   char lmfile[4096], lmname[4096], str[4096];
-  int32 isLM_IN_MEMORY;
 
   lmclass_set_t lmclass_set;
   lmclass_t *lmclass, cl;
@@ -2190,7 +1749,6 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
   lmset_t *lms=NULL;
   tmp=NULL;
 
-  isLM_IN_MEMORY=0;
   lmclass_set = lmclass_newset();
 	    
   
@@ -2199,12 +1757,6 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
   lms->n_alloc_lm=0;
 
   E_INFO("Reading LM control file '%s'\n",ctlfile);
-
-  if (cmd_ln_int32 ("-lminmemory")) 
-    isLM_IN_MEMORY = 1;    
-  else
-    isLM_IN_MEMORY = 0;
-
 	    
   ctlfp = myfopen (ctlfile, "r");
 
@@ -2223,7 +1775,7 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
   } else
     str[0] = '\0';
 	
-#if 1
+#if 0
   tmp=myfopen("./tmp","w");
   lmclass_set_dump(lmclass_set,tmp);
   fclose(tmp);		   
@@ -2291,34 +1843,21 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
       }
     } else
       str[0] = '\0';
-		
-    if (n_lmclass_used > 0){
       
-      lm = (lm_t*) lm_read_dump (lmfile, lw, wip, uw, n_lmclass_used,lmclass,dict_size);
+    lm = (lm_t*) lm_read (lmfile, lmname, lw, wip, uw, dict_size(dict),NULL,1);
+    
 
-      /* Initialize the fast trigram cache, with all entries invalid */
-      lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
-      for (i = 0; i < LM_TGCACHE_SIZE; i++)
-	lm->tgcache[i].lwid[0] = BAD_S3LMWID;
-    }
-    else{
-
-      lm = (lm_t*) lm_read_dump (lmfile, lw, wip, uw,0,NULL,dict_size);
-
-      /* Initialize the fast trigram cache, with all entries invalid */
-      lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
-      for (i = 0; i < LM_TGCACHE_SIZE; i++)
-	lm->tgcache[i].lwid[0] = BAD_S3LMWID;
+    if(n_lmclass_used>0) {
+      E_INFO("Did I enter here?\n");
+      lm_build_lmclass_info(lm,lw,uw,wip,n_lmclass_used,lmclass);
     }
 
     if(lms->n_lm == lms->n_alloc_lm){
       lms->lmarray= (lm_t **) ckd_realloc(lms->lmarray,(lms->n_alloc_lm+LM_ALLOC_BLOCK)*sizeof(lm_t*));
       lms->n_alloc_lm+=LM_ALLOC_BLOCK;
-
     }
 
     lms->lmarray[lms->n_lm]=lm;
-    lms->lmarray[lms->n_lm]->name = ckd_salloc(lmname);
     lms->n_lm+=1;
     E_INFO("%d %d\n",lms->n_alloc_lm, lms->n_lm);
   }
@@ -2331,6 +1870,7 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
   if(dict!=NULL) {
     for(i=0;i<lms->n_lm;i++){
       assert(lms->lmarray[i]);
+      assert(dict);
       if ((lms->lmarray[i]->dict2lmwid = wid_dict_lm_map (dict, lms->lmarray[i],lw)) == NULL)
 	E_FATAL("Dict/LM word-id mapping failed for LM index %d, named %s\n",i,lmset_idx_to_name(lms,i));
     }
