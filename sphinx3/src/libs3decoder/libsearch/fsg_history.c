@@ -62,6 +62,7 @@
 
 
 
+
 fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone)
 {
   fsg_history_t *h;
@@ -78,6 +79,7 @@ fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone)
   } else {
     h->frame_entries = NULL;
   }
+  h->dict = fsg->dict;
   
   return h;
 }
@@ -248,7 +250,7 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   fl = entry->fsglink;
   
   hyp->wid = word_fsglink_wid(fl);
-  hyp->word = (hyp->wid >= 0) ? kb_get_word_str(hyp->wid) : "";
+  hyp->word = (hyp->wid >= 0) ? dict_wordstr(h->dict,hyp->wid) : "";
   hyp->ef = entry->frame;
   hyp->lscr = word_fsglink_logs2prob(fl);
   hyp->fsg_state = word_fsglink_to_state(fl);
@@ -297,7 +299,8 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
     if (fsg_history_entry_hyp_extract (h, i, &hyp) > 0) {
       nf = hyp.ef - hyp.sf + 1;
       fl = entry->fsglink;
-      
+
+#if 0      
       fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %8d %6d %4d ",
 	       i,
 	       hyp.sf, hyp.ef,
@@ -308,6 +311,18 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
 	       (hyp.wid >= 0) ? (seg_topsen_score(hyp.sf, hyp.ef) - hyp.ascr) / nf : 0,
 	       word_fsglink_to_state(fl),
 	       entry->lc);
+#endif
+      /* HACK! Don't give senone score for a while */
+      fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %6d %4d ",
+	       i,
+	       hyp.sf, hyp.ef,
+	       entry->pred,
+	       entry->score,
+	       hyp.lscr, hyp.ascr,
+	       (hyp.wid >= 0) ? hyp.ascr/nf : 0,
+	       word_fsglink_to_state(fl),
+	       entry->lc);
+
       
       for (r = FSG_PNODE_CTXT_BVSZ-1; r > 0; r--)
 	fprintf (fp, "%08x.", entry->rc.bv[r]);

@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/06/27  05:26:29  arthchan2003
- * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ * Revision 1.1.2.2  2005/07/13  18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
+ * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ *
  * Revision 1.1  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -117,6 +120,8 @@ fsg_lextree_t *fsg_lextree_init (word_fsg_t *fsg)
   }
   E_INFO("%d HMM nodes in lextree\n", lextree->n_pnode);
   
+  lextree->dict=fsg->dict;
+  lextree->mdef=fsg->mdef;
 #if __FSG_DBG__
   fsg_lextree_dump (lextree, stdout);
 #endif
@@ -131,7 +136,7 @@ void fsg_lextree_dump (fsg_lextree_t *lextree, FILE *fp)
   
   for (s = 0; s < word_fsg_n_state(lextree->fsg); s++) {
     fprintf (fp, "State %5d root %08x\n", s, (int32)lextree->root[s]);
-    fsg_psubtree_dump (lextree->alloc_head[s], fp);
+    fsg_psubtree_dump (lextree->alloc_head[s], fp,lextree->dict,lextree->mdef);
   }
   fflush (fp);
 }

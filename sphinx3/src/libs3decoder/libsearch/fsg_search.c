@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:39:48  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -164,163 +167,13 @@
 #define FSG_SEARCH_IDLE		0
 #define FSG_SEARCH_BUSY		1
 
+
+/* HACK! Temporary */
+#define HMM_LAST_STATE 10
+
 /* Turn this on for detailed debugging dump */
 #define __FSG_DBG__		0
 #define __FSG_DBG_CHAN__	0
-
-#define ARTHUR_CHANGE 1
-
-#if ARTHUR_CHANGE
-#define HYP_SZ               1024
-
-int32 phoneCiCount()
-{
-  return 0;
-}
-
-char* kb_get_word_str(int32 wid)
-{
-  return NULL;
-}
-
-int32 seg_topsen_score(int32 sf, int32 ef)
-{
-  return 0;
-}
-
-dict_t* kb_get_word_dict()
-{
-  dict_t * d;
-  d=NULL;
-  return d;
-}
-
-float32 kb_get_silence_ciphone_id()
-{
-  return 0;
-}
-
-float32 kb_get_silence_word_id()
-{
-  return 0;
-}
-
-
-int32** dict_left_context_fwd()
-{
-  return NULL;
-}
-
-int32** dict_left_context_bwd()
-{
-  return NULL;
-}
-
-int32** dict_left_context_bwd_perm()
-{
-  return NULL;
-}
-
-int32** dict_right_context_bwd()
-{
-  return NULL;
-}
-
-int32** dict_right_context_fwd()
-{
-  return NULL;
-}
-
-int32** dict_right_context_fwd_perm()
-{
-  return NULL;
-}
-
-int32 dict_phone(dict_t* d, int32 wid, int32 i)
-{
-  return 0;
-}
-
-
-int32 dict_ciphone(dict_t* d, int32 wid, int32 i)
-{
-  return 0;
-}
-
-int16 dict_mpx(dict_t* d, int32 wid)
-{
-  return 0;
-}
-
-
-char* phone_from_id(int32 i)
-{
-  return NULL;
-}
-
-char* kb_get_word_id()
-{
-  return NULL;
-}
-
-char* kb_get_lm_start_sym()
-{
-  return NULL;
-}
-
-char* kb_get_lm_end_sym()
-{
-  return NULL;
-}
-
-#define HMM_LAST_STATE 0 
-
-
-void
-chan_v_eval (hmm_t *chan)
-{
-  
-}
-
-char* query_dumplat_dir()
-{
-  return NULL;
-}
-
-int32 search_set_hyp_total_score()
-{
-  return 0 ;
-}
-
-search_hyp_t* search_get_hyp()
-{
-  return  NULL;
-}
-
-void search_hyp_to_str()
-{
-}
-
-void search_set_hyp_total_lscr()
-{
-}
-
-char* uttproc_get_uttid()
-{
-  return NULL;
-}
-
-
-int32 search_result(int32 *fr,char* result)
-{
-}
-
-
-int32 kb_get_num_words()
-{
-  return 0;
-}
-#endif
 
 
 fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
@@ -535,7 +388,7 @@ void fsg_search_hmm_eval (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
   int32 bestscore;
   int32 n;
   
@@ -557,7 +410,10 @@ void fsg_search_hmm_eval (fsg_search_t *search)
     chan_dump (hmm, search->frame, stdout);
 #endif
 #endif
+
+    /* SUPER HACK! This effectively eliminate the hmm computation 
     chan_v_eval(hmm);
+    */
 #if __FSG_DBG_CHAN__
     E_INFO("pnode(%08x) after eval @frm %5d\n",
 	   (int32)pnode, search->frame);
@@ -585,7 +441,7 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
 				    fsg_pnode_t *pnode)
 {
   fsg_pnode_t *child;
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
   
   assert (pnode);
   assert (! fsg_pnode_leaf(pnode));
@@ -608,7 +464,7 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
 static void fsg_search_pnode_exit(fsg_search_t *search,
 				  fsg_pnode_t *pnode)
 {
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
   word_fsglink_t *fl;
   dict_t *dict;
   int32 wid, endwid;
@@ -621,8 +477,8 @@ static void fsg_search_pnode_exit(fsg_search_t *search,
   fl = fsg_pnode_fsglink(pnode);
   assert (fl);
   
-  dict = kb_get_word_dict();
-  endwid = kb_get_word_id (kb_get_lm_end_sym());
+  dict = search->dict;
+  endwid = dict_basewid(dict, dict_finishwid(dict));
   
   wid = word_fsglink_wid(fl);
   assert (wid >= 0);
@@ -675,7 +531,7 @@ void fsg_search_hmm_prune_prop (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
   int32 thresh, word_thresh, phone_thresh;
   
   assert (search->pnode_active_next == NULL);
@@ -831,7 +687,7 @@ void fsg_search_frame_fwd (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
 
   search->bpidx_start = fsg_history_n_entries(search->history);
   
@@ -911,7 +767,7 @@ void fsg_search_utt_start (fsg_search_t *search)
   int32 silcipid;
   fsg_pnode_ctxt_t ctxt;
   
-  silcipid = kb_get_silence_ciphone_id();
+  silcipid = mdef_silphone(search->mdef);
   
   /* Initialize EVERYTHING to be inactive */
   assert (search->pnode_active == NULL);
@@ -960,25 +816,17 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
   search_hyp_t *hyp;
   int32 nf;
   
-#if ARTHUR_CHANGE
-  char* uttid;
-#endif
 
-  uttid =NULL;
   /* Print backtrace */
-#if 0
-  fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %6s  %s (FSG) (%s)\n",
-	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "State", "Word",
-	   uttproc_get_uttid());
-#endif
 
   fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %6s  %s (FSG) (%s)\n",
 	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "State", "Word",
-	   uttid);
+	   search->uttid);
 
   fprintf (fp, "\t-------------------------------------------------------------------------------\n");
   for (hyp = search->hyp; hyp; hyp = hyp->next) {
     nf = hyp->ef - hyp->sf + 1;
+    /* HACK
     fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6d  %s\n",
 	     hyp->sf, hyp->ef,
 	     (nf > 0) ? hyp->ascr/nf : 0,
@@ -986,21 +834,33 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
 	     ((nf > 0) && (hyp->ascr != 0)) ? (seg_topsen_score(hyp->sf, hyp->ef) - hyp->ascr) / nf : 0,
 	     hyp->fsg_state,
 	     hyp->word);
+    */
+    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %6d  %s\n",
+	     hyp->sf, hyp->ef,
+	     (nf > 0) ? hyp->ascr/nf : 0,
+	     hyp->ascr, hyp->lscr, hyp->ascr + hyp->lscr,
+	     hyp->fsg_state,
+	     hyp->word);
+
   }
   fprintf (fp, "\t-------------------------------------------------------------------------------\n");
 
 
+  /* HACK
   fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6dF %s(TOTAL)\n",
 	   0, search->frame-1,
 	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
 	   search->ascr, search->lscr, search->ascr + search->lscr,
 	   (search->frame > 0) ? (seg_topsen_score(0, search->frame-1) - search->ascr)/search->frame : 0,
 	   word_fsg_final_state (search->fsg),
-	   uttid);
-
-#if 0
-	   uttproc_get_uttid());
-#endif
+	   search->uttid);
+  */
+  fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %6dF %s(TOTAL)\n",
+	   0, search->frame-1,
+	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
+	   search->ascr, search->lscr, search->ascr + search->lscr,
+	   word_fsg_final_state (search->fsg),
+	   search->uttid);
   
   fflush (fp);
 }
@@ -1014,12 +874,12 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
   int32 startwid, finishwid;
   int32 altpron;
   dict_t *dict;
-  
-  filt_hyp = search_get_hyp();
-  startwid = kb_get_word_id (kb_get_lm_start_sym());
-  finishwid = kb_get_word_id (kb_get_lm_end_sym());
-  dict = kb_get_word_dict();
-  
+
+  dict=search->dict;
+  filt_hyp = search->filt_hyp;
+  startwid = dict_basewid(dict, dict_startwid(dict));
+  finishwid = dict_basewid(dict, dict_finishwid(dict));
+  dict = search->dict;
 altpron = search->isUsealtpron;
 
   
@@ -1054,9 +914,12 @@ static void fsg_search_set_result (fsg_search_t *search)
 {
   fsg_search_hyp_filter (search);
   /*  No need: searchSetFrame(search->frame);*/
+
+  /* HACK!, don't know what these functions are doing. 
   search_hyp_to_str();
   search_set_hyp_total_score (search->ascr + search->lscr);
   search_set_hyp_total_lscr (search->lscr);
+  */
 }
 
 
@@ -1069,9 +932,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   int32 bestscore, bestscore_finalstate, besthist_finalstate, besthist;
   int32 bpidx, score, frm, last_frm;
   search_hyp_t *hyp, *head;
-  char * uttid;
-  
-  uttid=NULL;
+
   /* Free any existing search hypothesis */
   fsg_search_hyp_free (search);
   search->ascr = 0;
@@ -1096,7 +957,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
       {
 
 	/*      E_WARN("Empty utterance: %s\n", uttproc_get_uttid());*/
-	E_WARN("Empty utterance: %s\n", uttid);
+	E_WARN("Empty utterance: %s\n", search->uttid);
       }
     
     /* Set result (empty recognition) in backward compatible format */
@@ -1190,19 +1051,19 @@ void fsg_search_utt_end (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  hmm_t *hmm;
+  fsg_hmm_t *hmm;
   int32 n_hist, nfr;
   char *result;
   FILE *latfp;
   char file[4096];
   
   /* Write history table if needed */
-  if (query_dumplat_dir()) {
-    sprintf (file, "%s/%s.hist", query_dumplat_dir(), uttproc_get_uttid());
+  if (cmd_ln_str("outlatdir")) {
+    sprintf (file, "%s/%s.hist", cmd_ln_str("outlatdir"), search->uttid);
     if ((latfp = fopen(file, "w")) == NULL)
       E_ERROR("fopen(%s,w) failed\n", file);
     else {
-      fsg_history_dump (search->history, uttproc_get_uttid(), latfp);
+      fsg_history_dump (search->history, search->uttid, latfp);
       fclose(latfp);
     }
   }
@@ -1217,9 +1078,11 @@ void fsg_search_utt_end (fsg_search_t *search)
   if (search->isBacktrace)
     fsg_search_hyp_dump (search, stdout);
   
-  search_result (&nfr, &result);
+  /* Temporarily removed. 
+    search_result (&nfr, &result);
+  */
   printf("FSGSRCH: %s (%s %d (A=%d L=%d))\n",
-	 result, uttproc_get_uttid(), search->ascr + search->lscr,
+	 result, search->uttid, search->ascr + search->lscr,
 	 search->ascr, search->lscr);
   fflush (stdout);
   
@@ -1252,7 +1115,7 @@ void fsg_search_utt_end (fsg_search_t *search)
   search->state = FSG_SEARCH_IDLE;
   
   E_INFO("Utt %s: %d frames, %d HMMs evaluated, %d history entries\n\n",
-	 uttproc_get_uttid(), search->frame, search->n_hmm_eval, n_hist);
+	 search->uttid, search->frame, search->n_hmm_eval, n_hist);
   
   /* Sanity check */
   if (search->n_hmm_eval > fsg_lextree_n_pnode(search->lextree)*search->frame) {

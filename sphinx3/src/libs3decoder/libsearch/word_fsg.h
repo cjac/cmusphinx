@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:21  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:39:48  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:21  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -124,6 +127,7 @@
 #include <s3types.h>
 #include <glist.h>
 #include <fsg.h>
+#include <dict.h>
 
 #if 0 
 #include <fbs.h>
@@ -135,7 +139,7 @@
 typedef struct word_fsglink_s {
   int32 from_state;
   int32 to_state;
-  int32 wid;		/* Word-ID; <0 if epsilon or null transition */
+  s3wid_t wid;		/* Word-ID; <0 if epsilon or null transition */
   int32 logs2prob;	/* logs2(transition probability)*lw */
 } word_fsglink_t;
 
@@ -194,6 +198,8 @@ typedef struct word_fsg_s {
 
   /**Added by Arthur at 20050627*/
   int32 n_ciphone;
+  dict_t* dict;
+  mdef_t* mdef;
 } word_fsg_t;
 
 /* Access macros */
@@ -262,7 +268,7 @@ typedef struct word_fsg_s {
 word_fsg_t *word_fsg_readfile (const char *file,
 			       boolean use_altpron, boolean use_filler,
 			       float32 silprob, float32 fillprob,
-			       float32 lw, int32 n_ciphone);
+			       float32 lw, int32 n_ciphone, dict_t *dict, mdef_t * mdef);
 
 
 /*
@@ -271,7 +277,7 @@ word_fsg_t *word_fsg_readfile (const char *file,
 word_fsg_t *word_fsg_read (FILE *fp,
 			   boolean use_altpron, boolean use_filler,
 			   float32 silprob, float32 fillprob,
-			   float32 lw, int32 n_ciphone);
+			   float32 lw, int32 n_ciphone, dict_t *dict, mdef_t * mdef);
 
 
 /*
@@ -280,7 +286,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
 word_fsg_t *word_fsg_load (s2_fsg_t *s2_fsg,
 			   boolean use_altpron, boolean use_filler,
 			   float32 silprob, float32 fillprob,
-			   float32 lw);
+			   float32 lw,dict_t *dict, mdef_t * mdef);
 
 
 /*

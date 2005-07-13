@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:39:48  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -213,7 +216,7 @@ static void word_fsg_trans_add (word_fsg_t *fsg,
     if (link->wid == wid) {
 #if 0
       E_WARN("Duplicate transition %d -> %d ('%s'); highest prob kept\n",
-	     from, to, kb_get_word_str(wid));
+	     from, to, dict_wordstr(fsg->dict,wid));
 #endif
       if (link->logs2prob < logp)
 	link->logs2prob = logp;
@@ -353,9 +356,9 @@ static int32 word_fsg_add_filler (word_fsg_t *fsg,
   
   assert (fsg);
   
-  dict = kb_get_word_dict();
-  silwid = kb_get_silence_word_id();
-  n_word = kb_get_num_words();
+  dict = fsg->dict;
+  silwid = dict_silwid(dict);
+  n_word = dict_size(dict);
 
   logsilp = (int32) (logs3(silprob) * fsg->lw);
   logfillp = (int32) (logs3(fillprob) * fsg->lw);
@@ -397,13 +400,19 @@ static void word_fsg_lc_rc (word_fsg_t *fsg)
   word_fsglink_t *l;
   int32 silcipid;
   int32 endwid;
-  dict_t *dict;
   int32 len;
+  dict_t* dict;
+  mdef_t* mdef;
   
-  dict = kb_get_word_dict();
-  endwid = kb_get_word_id (kb_get_lm_end_sym());
+  dict = fsg->dict;
+  mdef = fsg->mdef;
+
+  assert(fsg);
+  assert(dict);
+  assert(mdef);
+  endwid = dict_basewid(dict, dict_finishwid(dict));
   
-  silcipid = kb_get_silence_ciphone_id();
+  silcipid = mdef_silphone(mdef);
   assert (silcipid >= 0);
   n_ci = fsg->n_ciphone;
   if (n_ci > 127) {
@@ -437,8 +446,8 @@ static void word_fsg_lc_rc (word_fsg_t *fsg)
 	  fsg->lc[d][silcipid] = 1;
 	} else {
 	  len = dict_pronlen(dict, l->wid);
-	  fsg->rc[s][dict_ciphone(dict, l->wid, 0)] = 1;
-	  fsg->lc[d][dict_ciphone(dict, l->wid, len-1)] = 1;
+	  fsg->rc[s][dict_pron(dict, l->wid, 0)] = 1;
+	  fsg->lc[d][dict_pron(dict, l->wid, len-1)] = 1;
 	}
       }
     }
@@ -506,18 +515,18 @@ static void word_fsg_lc_rc (word_fsg_t *fsg)
 word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
 			   boolean use_altpron, boolean use_filler,
 			   float32 silprob, float32 fillprob,
-			   float32 lw)
+			   float32 lw,dict_t *dict, mdef_t * mdef)
 {
   word_fsg_t *word_fsg;
   s2_fsg_trans_t *trans;
   int32 n_trans, n_null_trans, n_alt_trans, n_filler_trans, n_unk;
-  dict_t *dict;
   int32 wid;
   int32 logp;
   glist_t nulls;
   int32 i, j;
   
   assert (fsg);
+  assert (dict);
   
   /* Some error checking */
   if (lw <= 0.0)
@@ -543,7 +552,6 @@ word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
     }
   }
   
-  dict = kb_get_word_dict();
   
   word_fsg = (word_fsg_t *) ckd_calloc (1, sizeof(word_fsg_t));
   word_fsg->name = ckd_salloc(fsg->name ? fsg->name : "");
@@ -555,6 +563,8 @@ word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
   word_fsg->lw = lw;
   word_fsg->lc = NULL;
   word_fsg->rc = NULL;
+  word_fsg->dict = dict;
+  word_fsg->mdef = mdef;
   
   /* Allocate non-epsilon transition matrix array */
   word_fsg->trans = (glist_t **) ckd_calloc_2d (word_fsg->n_state,
@@ -580,7 +590,7 @@ word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
     
     /* Check if word is in dictionary */
     if (trans->word) {
-      wid = kb_get_word_id(trans->word);
+      wid = dict_wordid(dict,trans->word);
       if (wid < 0) {
 	E_ERROR("Unknown word '%s'; ignored\n", trans->word);
 	n_unk++;
@@ -673,7 +683,7 @@ static void s2_fsg_free (s2_fsg_t *fsg)
 word_fsg_t *word_fsg_read (FILE *fp,
 			   boolean use_altpron, boolean use_filler,
 			   float32 silprob, float32 fillprob,
-			   float32 lw, int32 n_ciphone
+			   float32 lw, int32 n_ciphone,dict_t *dict, mdef_t * mdef
 			   )
 {
   s2_fsg_t *fsg;			/* "External" FSG structure */
@@ -789,7 +799,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
     fsg->trans_list = trans;
   }
   
-  cfsg = word_fsg_load (fsg, use_altpron, use_filler, silprob, fillprob, lw);
+  cfsg = word_fsg_load (fsg, use_altpron, use_filler, silprob, fillprob, lw,dict,mdef);
   cfsg->n_ciphone=n_ciphone;
   
   s2_fsg_free (fsg);
@@ -805,7 +815,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
 word_fsg_t *word_fsg_readfile (const char *file,
 			       boolean use_altpron, boolean use_filler,
 			       float32 silprob, float32 fillprob,
-			       float32 lw,int32 n_ciphone)
+			       float32 lw,int32 n_ciphone,dict_t* dict,mdef_t * mdef)
 {
   FILE *fp;
   word_fsg_t *fsg;
@@ -820,7 +830,7 @@ word_fsg_t *word_fsg_readfile (const char *file,
   
   fsg = word_fsg_read (fp,
 		       use_altpron, use_filler,
-		       silprob, fillprob, lw, n_ciphone);
+		       silprob, fillprob, lw, n_ciphone,dict,mdef);
   
   fclose (fp);
   
@@ -870,6 +880,7 @@ void word_fsg_write (word_fsg_t *fsg, FILE *fp)
   word_fsglink_t *tl;
   
   assert (fsg);
+  assert (fsg->dict);
   
   time(&tp);
   if (tp > 0)
@@ -904,7 +915,7 @@ void word_fsg_write (word_fsg_t *fsg, FILE *fp)
 		 WORD_FSG_TRANSITION_DECL,
 		 tl->from_state, tl->to_state,
 		 EXP(tl->logs2prob / fsg->lw),
-		 (tl->wid < 0) ? "" : kb_get_word_str(tl->wid));
+		 (tl->wid < 0) ? "" : dict_wordstr(fsg->dict,tl->wid));
       }
       
       /* Print null transitions */
@@ -926,12 +937,12 @@ void word_fsg_write (word_fsg_t *fsg, FILE *fp)
     for (i = 0; i < fsg->n_state; i++) {
       fprintf (fp, "%c LC[%d]:", WORD_FSG_COMMENT_CHAR, i);
       for (j = 0; fsg->lc[i][j] >= 0; j++)
-	fprintf (fp, " %s", phone_from_id(fsg->lc[i][j]));
+	fprintf (fp, " %s", mdef_ciphone_str(fsg->mdef,fsg->lc[i][j]));
       fprintf (fp, "\n");
       
       fprintf (fp, "%c RC[%d]:", WORD_FSG_COMMENT_CHAR, i);
       for (j = 0; fsg->rc[i][j] >= 0; j++)
-	fprintf (fp, " %s", phone_from_id(fsg->rc[i][j]));
+	fprintf (fp, " %s", mdef_ciphone_str(fsg->mdef,fsg->rc[i][j]));
       fprintf (fp, "\n");
     }
   }

@@ -62,6 +62,7 @@ typedef struct s2_fsg_s {
 
 /* ARCHAN: It was in fbs.h of Sphinx2 */
 typedef struct search_hyp_s {
+
     char const *word;   /* READ-ONLY */
     int32 wid;          /* For internal use of decoder */
     int32 sf, ef;       /* Start, end frames within utterance for this word */
@@ -77,5 +78,19 @@ typedef struct search_hyp_s {
                            more confusion and less certainty.  To use it for rejection,
                            cutoffs must be found independently. */
 } search_hyp_t;
+
+#include <hmm.h>
+
+/** Hack!*/
+#define NODE_CNT 10
+
+typedef struct {
+  int32 bestscore; 
+  int32 sseqid; /**< A senone sequence ID */
+  int32 active; /**< An index to show whether this frame is active */
+
+  int32  score[NODE_CNT];   /* dynamic score (prob) per state */
+  int32  path[NODE_CNT];    /* dynamic history pointer per state */
+} fsg_hmm_t ;
 
 #endif

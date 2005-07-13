@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/06/27  05:26:29  arthchan2003
- * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ * Revision 1.1.2.2  2005/07/13  18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
+ * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
+ *
  * Revision 1.1  2004/07/16 00:57:12  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -179,8 +182,9 @@ typedef struct fsg_pnode_s {
   
   /* HMM-state-level stuff here */
   /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
-  hmm_t hmm;
-  /*  CHAN_T hmm;*/
+  fsg_hmm_t hmm;
+
+
 } fsg_pnode_t;
 
 /* Access macros */
@@ -220,7 +224,9 @@ void fsg_psubtree_free (fsg_pnode_t *alloc_head);
  * Dump the list of nodes in the given lextree to the given file.  alloc_head:
  * head of linear list of allocated nodes updated by fsg_psubtree_init().
  */
-void fsg_psubtree_dump (fsg_pnode_t *alloc_head, FILE *fp);
+void fsg_psubtree_dump (fsg_pnode_t *alloc_head, FILE *fp,
+			dict_t *dict, mdef_t *mdef
+			);
 
 
 /*

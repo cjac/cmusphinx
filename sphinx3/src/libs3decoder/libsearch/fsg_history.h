@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -81,7 +84,6 @@
 #include <blkarray_list.h>
 #include <fsg_psubtree.h>
 #include <word_fsg.h>
-
 
 /*
  * The Viterbi history structure.  This is a tree, with the root at the
@@ -147,6 +149,7 @@ typedef struct fsg_history_s {
 
   /*Added by Arthur at 20050627*/
   int32 n_ciphone;
+  dict_t *dict;
 } fsg_history_t;
 
 

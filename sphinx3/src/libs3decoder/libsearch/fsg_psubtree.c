@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:20  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -99,18 +102,46 @@
 #include <hmm.h>
 #include <search.h>
 
-void search_chan_deactivate (hmm_t *hmm)
+int32** dict_left_context_fwd()
 {
-    int32 s;
-
-    /*    for (s = 0; s < NODE_CNT; s++)
-	  hmm->score[s] = WORST_SCORE;
-	  hmm->bestscore = WORST_SCORE;
-	  hmm->active = -1;
-
-    */
+  return NULL;
 }
 
+int32** dict_left_context_bwd()
+{
+  return NULL;
+}
+
+int32** dict_left_context_bwd_perm()
+{
+  return NULL;
+}
+
+int32** dict_right_context_bwd()
+{
+  return NULL;
+}
+
+int32** dict_right_context_fwd()
+{
+  return NULL;
+}
+
+int32** dict_right_context_fwd_perm()
+{
+  return NULL;
+}
+
+void deactivate_hmm(fsg_hmm_t * hmm)
+{
+  int32 s;
+
+  for (s = 0; s < NODE_CNT; s++)
+    hmm->score[s] = S3_LOGPROB_ZERO;
+  hmm->bestscore =  S3_LOGPROB_ZERO;
+  hmm->active = -1;
+
+}
 
 void fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t *ctxt)
 {
@@ -136,7 +167,6 @@ uint32 fsg_pnode_ctxt_sub (fsg_pnode_ctxt_t *src, fsg_pnode_ctxt_t *sub)
   return non_zero;
 }
 
-
 /*
  * Add the word emitted by the given transition (fsglink) to the given lextree
  * (rooted at root), and return the new lextree root.  (There may actually be
@@ -151,9 +181,11 @@ uint32 fsg_pnode_ctxt_sub (fsg_pnode_ctxt_t *src, fsg_pnode_ctxt_t *sub)
 static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 					word_fsglink_t *fsglink,
 					int8 *lclist, int8 *rclist,
-					fsg_pnode_t **alloc_head)
+					fsg_pnode_t **alloc_head,
+					dict_t *dict,
+					mdef_t *mdef
+					)
 {
-  dict_t *dict;
   int32 **lcfwd;	/* Uncompressed left cross-word context map;
 			   lcfwd[left-diphone][p] = SSID for p.left-diphone */
   int32 **lcbwd;	/* Compressed left cross-word context map;
@@ -172,7 +204,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   int32 pip;		/* Phone Insertion Penalty */
   int32 pronlen;	/* Pronunciation length */
   float32 lw;		/* Language weight */
-  int32 wid;		/* Word ID */
+  s3wid_t wid;		/* Word ID */
   int32 did;		/* Diphone ID */
   int32 ssid;		/* Senone Sequence ID */
   gnode_t *gn;
@@ -183,7 +215,6 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   fsg_pnode_t **ssid_pnode_map;	/* Temp array of ssid->pnode mapping */
   int32 i, j;
   
-  dict = kb_get_word_dict();
   lw = cmd_ln_float32("-lw");
   pip = (int32)(logs3(cmd_ln_float32("-pip")) * lw);
   wip = (int32)(logs3(cmd_ln_float32("-wip")) * lw);
@@ -196,8 +227,8 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   wip = (int32)(logs3(kb_get_wip()) * lw);
 #endif
 
-  silcipid = kb_get_silence_ciphone_id();
-  n_ci = phoneCiCount();
+  silcipid = dict_silwid(dict);
+  n_ci = mdef_n_ciphone(mdef);
   
   lcfwd     = dict_left_context_fwd();
   lcbwd     = dict_left_context_bwd();
@@ -223,8 +254,17 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   pred = NULL;
   
   if (pronlen == 1) {			/* Single-phone word */
+
+#if 0
     did = dict_phone(dict, wid, 0);	/* Diphone ID or SSID */
+#endif
+    did = dict_pron(dict, wid, 0);	/* Diphone ID or SSID */
+
+#if 0
     if (dict_mpx(dict, wid)) {		/* Only non-filler words are mpx */
+#endif
+      /* HACK! Mimic this behavior by asking whether the word is a filler */
+    if (!dict_filler_word(dict, wid)) {		/* Only non-filler words are mpx */
       /*
        * Left diphone ID for single-phone words already assumes SIL is right
        * context; only left contexts need to be handled.
@@ -251,7 +291,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	  pnode->hmm.sseqid = ssid;
 	  pnode->next.fsglink = fsglink;
 	  pnode->logs2prob = word_fsglink_logs2prob(fsglink) + wip + pip;
-	  pnode->ci_ext = (int8) dict_ciphone(dict, wid, 0);
+	  pnode->ci_ext = (int8) dict_pron(dict, wid, 0);
 	  pnode->ppos = 0;
 	  pnode->leaf = TRUE;
 	  pnode->sibling = root;	/* All root nodes linked together */
@@ -260,7 +300,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	  head = pnode;
 	  root = pnode;
 	  
-	  search_chan_deactivate(&(pnode->hmm));
+	  deactivate_hmm(&(pnode->hmm));
 	  
 	  lc_pnodelist = glist_add_ptr (lc_pnodelist, (void *)pnode);
 	}
@@ -283,17 +323,26 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
       head = pnode;
       root = pnode;
       
-      search_chan_deactivate(&(pnode->hmm));	/* Mark HMM inactive */
+      deactivate_hmm(&(pnode->hmm));	/* Mark HMM inactive */
     }
   } else {				/* Multi-phone word */
+
+#if 0
     assert (dict_mpx(dict, wid));	/* S2 HACK: pronlen>1 => mpx?? */
-    
+#endif
+	/* HACK! Mimic the behavior by checking whether it is a non-filler */
+    assert (!dict_filler_word(dict, wid));	/* S2 HACK: pronlen>1 => mpx?? */
+
     ssid_pnode_map = (fsg_pnode_t **) ckd_calloc (n_ci, sizeof(fsg_pnode_t *));
     lc_pnodelist = NULL;
     rc_pnodelist = NULL;
     
     for (p = 0; p < pronlen; p++) {
-      did = ssid = dict_phone(dict, wid, p);
+      /*HACK: So There are phone_ids and ci_phone_ids in Sphinx 2. 
+	Currently, replace both dict
+       */
+      /*      did = ssid = dict_phone(dict, wid, p);*/
+      did = ssid = dict_pron(dict, wid, p);
       
       if (p == 0) {	/* Root phone, handle required left contexts */
 	for (i = 0; lclist[i] >= 0; i++) {
@@ -307,7 +356,9 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
 	    pnode->hmm.sseqid = ssid;
 	    pnode->logs2prob = word_fsglink_logs2prob(fsglink) + wip + pip;
-	    pnode->ci_ext = (int8) dict_ciphone(dict, wid, 0);
+
+	    /*	    pnode->ci_ext = (int8) dict_ciphone(dict, wid, 0);*/
+	    pnode->ci_ext = (int8) dict_pron(dict, wid, 0);
 	    pnode->ppos = 0;
 	    pnode->leaf = FALSE;
 	    pnode->sibling = root;	/* All root nodes linked together */
@@ -315,7 +366,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    head = pnode;
 	    root = pnode;
 	    
-	    search_chan_deactivate(&(pnode->hmm));	/* Mark HMM inactive */
+	    deactivate_hmm(&(pnode->hmm));	/* Mark HMM inactive */
 	    
 	    lc_pnodelist = glist_add_ptr (lc_pnodelist, (void *)pnode);
 	    ssid_pnode_map[j] = pnode;
@@ -328,7 +379,11 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
 	pnode->hmm.sseqid = ssid;
 	pnode->logs2prob = pip;
-	pnode->ci_ext = (int8) dict_ciphone(dict, wid, p);
+	
+	/*pnode->ci_ext = (int8) dict_ciphone(dict, wid, p);*/
+
+	pnode->ci_ext = (int8) dict_pron(dict, wid, 0);
+
 	pnode->ppos = p;
 	pnode->leaf = FALSE;
 	pnode->sibling = NULL;
@@ -343,7 +398,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	pnode->alloc_next = head;
 	head = pnode;
 	
-	search_chan_deactivate(&(pnode->hmm));	/* Mark HMM inactive */
+	deactivate_hmm(&(pnode->hmm));	/* Mark HMM inactive */
 	
 	pred = pnode;
       } else {		/* Leaf phone, handle required right contexts */
@@ -360,7 +415,8 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
 	    pnode->hmm.sseqid = ssid;
 	    pnode->logs2prob = pip;
-	    pnode->ci_ext = (int8) dict_ciphone(dict, wid, p);
+	    /*	    pnode->ci_ext = (int8) dict_ciphone(dict, wid, p);*/
+	    pnode->ci_ext = (int8) dict_pron(dict, wid, p);
 	    pnode->ppos = p;
 	    pnode->leaf = TRUE;
 	    pnode->sibling = rc_pnodelist ?
@@ -369,7 +425,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    pnode->alloc_next = head;
 	    head = pnode;
 	    
-	    search_chan_deactivate(&(pnode->hmm));	/* Mark HMM inactive */
+	    deactivate_hmm(&(pnode->hmm));	/* Mark HMM inactive */
 	    
 	    rc_pnodelist = glist_add_ptr (rc_pnodelist, (void *)pnode);
 	    ssid_pnode_map[j] = pnode;
@@ -433,7 +489,10 @@ fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, int32 from_state,
       root = psubtree_add_trans (root, fsglink,
 				 word_fsg_lc(fsg, from_state),
 				 word_fsg_rc(fsg, dst),
-				 alloc_head);
+				 alloc_head,
+				 fsg->dict,
+				 fsg->mdef
+				 );
     }
   }
   
@@ -455,7 +514,7 @@ void fsg_psubtree_free (fsg_pnode_t *head)
 }
 
 
-void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp)
+void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp,dict_t *dict, mdef_t *mdef)
 {
   int32 i;
   word_fsglink_t *tl;
@@ -469,7 +528,7 @@ void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp)
     fprintf (fp, " %5d.SS", head->hmm.sseqid);
     fprintf (fp, " %10d.LP", head->logs2prob);
     fprintf (fp, " %08x.SIB", (int32)head->sibling);
-    fprintf (fp, " %s.%d", phone_from_id(head->ci_ext), head->ppos);
+    fprintf (fp, " %s.%d", mdef_ciphone_str(mdef,(head->ci_ext)), head->ppos);
     if ((head->ppos == 0) || head->leaf) {
       fprintf (fp, " [");
       for (i = 0; i < FSG_PNODE_CTXT_BVSZ; i++)
@@ -479,7 +538,7 @@ void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp)
     if (head->leaf) {
       tl = head->next.fsglink;
       fprintf (fp, " {%s[%d->%d](%d)}",
-	       kb_get_word_str(tl->wid),
+	       dict_wordstr(dict,tl->wid),
 	       tl->from_state, tl->to_state, tl->logs2prob);
     } else {
       fprintf (fp, " %08x.NXT", (int32)head->next.succ);
@@ -501,7 +560,7 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
   
   activate = FALSE;
   
-  if (pnode->hmm.score[0] < score) {
+  if (pnode->hmm.score < score) {
     if (pnode->hmm.active < frame) {
       activate = TRUE;
       pnode->hmm.active = frame;
@@ -517,5 +576,5 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
 
 void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode)
 {
-  search_chan_deactivate(&(pnode->hmm));
+  deactivate_hmm(&(pnode->hmm));
 }
