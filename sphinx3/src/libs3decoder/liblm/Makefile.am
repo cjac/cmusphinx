@@ -8,6 +8,7 @@ liblm_la_LDFLAGS = -version-info 0:4:0
 liblm_la_SOURCES = \
 	fillpen.c \
         lm.c \
+	lm_3g.c \
 	lmclass.c 
 
 
