@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.4  2005/07/07  02:38:35  arthchan2003
- * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ * Revision 1.2.4.5  2005/07/13  02:00:33  arthchan2003
+ * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
  * 
+ * Revision 1.2.4.4  2005/07/07 02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ *
  * Revision 1.2.4.3  2005/07/04 07:20:48  arthchan2003
  * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
  *
@@ -107,8 +110,10 @@ int srch_TST_init(kb_t *kb, void *srch)
   ptmr_t tm_build;
   
   kbc=kb->kbcore;
-  
   s=(srch_t *)srch;
+
+  ptmr_init(&(tm_build));
+
 
   if(cmd_ln_int32("-Nstalextree"))
     E_WARN("-Nstalextree is omitted in TST search.\n");
