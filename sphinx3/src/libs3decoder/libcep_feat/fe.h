@@ -97,10 +97,10 @@ typedef struct{
    */
 
 typedef struct{
-    float32 sampling_rate;
-    int32 num_cepstra;
-    int32 num_filters;
-    int32 fft_size;
+  float32 sampling_rate;  /**< Sampling rate  */
+  int32 num_cepstra;      /**< Number of cepstra */
+  int32 num_filters;      /**< Number of filters */
+  int32 fft_size;         /**< Size of FFT */
     float32 lower_filt_freq;
     float32 upper_filt_freq;
     float32 **filter_coeffs;
@@ -131,6 +131,7 @@ typedef struct{
     int16 PRIOR;
     float64 *HAMMING_WINDOW;
     int32 FRAME_COUNTER;
+  int32 dither;
 } fe_t;
 
   /**
@@ -231,18 +232,18 @@ typedef struct{
       The MS Wav file is a RIFF file, and has the following 44 byte header 
   */
 typedef struct RIFFHeader{
-    char rifftag[4];      /* "RIFF" string */
-    int32 TotalLength;      /* Total length */
-    char wavefmttag[8];   /* "WAVEfmt " string (note space after 't') */
-    int32 RemainingLength;  /* Remaining length */
-    int16 data_format;    /* data format tag, 1 = PCM */
-    int16 numchannels;    /* Number of channels in file */
-    int32 SamplingFreq;     /* Sampling frequency */
-    int32 BytesPerSec;      /* Average bytes/sec */
-    int16 BlockAlign;     /* Block align */
-    int16 BitsPerSample;  /* 8 or 16 bit */
-    char datatag[4];      /* "data" string */
-    int32 datalength;       /* Raw data length */
+    char rifftag[4];      /**< "RIFF" string */
+    int32 TotalLength;      /**< Total length */
+    char wavefmttag[8];   /**< "WAVEfmt " string (note space after 't') */
+    int32 RemainingLength;  /**< Remaining length */
+    int16 data_format;    /**< data format tag, 1 = PCM */
+    int16 numchannels;    /**< Number of channels in file */
+    int32 SamplingFreq;     /**< Sampling frequency */
+    int32 BytesPerSec;      /**< Average bytes/sec */
+    int16 BlockAlign;     /**< Block align */
+    int16 BitsPerSample;  /**< 8 or 16 bit */
+    char datatag[4];      /**< "data" string */
+    int32 datalength;       /**< Raw data length */
 } MSWAV_hdr;
 
 
@@ -295,45 +296,109 @@ typedef struct RIFFHeader{
   /**
      Process only one frame of samples
    */
-int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
+  int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
+			 int16 *spch, /**< The speech samples */
+			 int32 nsamps, /**< number of samples*/
+			 float32 *fr_cep /**< One frame of cepstrum*/
+			 );
+
+  int32 fe_process_utt(fe_t *FE,  /**< A FE structure */
 		       int16 *spch, /**< The speech samples */
 		       int32 nsamps, /**< number of samples*/
-		       float32 *fr_cep /**< One frame of cepstrum*/
-		       );
-
-int32 fe_process_utt(fe_t *FE,  /**< A FE structure */
-		     int16 *spch, /**< The speech samples */
-		     int32 nsamps, /**< number of samples*/
-		     float32 ***cep_block, 
-		     int32 *nframes);
+		       float32 ***cep_block, 
+		       int32 *nframes);
 
   /** 
       Functions that wrap up the front-end operations on the front-end
       wrapper operations.  
   */
+  fewrap_t * few_initialize();
 
-fewrap_t * few_initialize();
-param_t *fe_parse_options();
-void fe_init_params(param_t *P);
-int32 fe_convert_files(param_t *P);
+  /**
+   *  Free the FEW structure
+   */
+  void few_free(fewrap_t *FEW /**< the FEW structure one wants to free*/
+		);
+
+  /**
+     Function that parse the command line and put it into the param_t structure. 
+   */
+  param_t *fe_parse_options();
+  
+  /** 
+      Function that initialize give a simple param_t structure 
+   */
+  void fe_init_params(param_t *P /** An allocated param_t structure */
+		      );
+  
+  /**
+   * The master function that control conversion of batch of waveforms or a waveform to cepstrals. 
+     
+   */
+  int32 fe_convert_files(param_t *P /**An allocated param_t structure */
+			 );
 int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *nframesp);
 
-int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **outfilename);
+  /**
+     When P->is_batch :  
+     When P->is_single :
+   */
+  int32 fe_build_filenames(param_t *P,  /**<In: a parameter structure */
+			   char *fileroot,  /**< In: the file root */
+			   char **infilename, /**< In?: Infilename */
+			   char **outfilename /**< In?: Outfilename */
+			   );
 
-  /** Copy string from src_str to dest_str */
-  char *fe_copystr(char *dest_str, char *src_str);
+  /** 
+      Copy string from src_str to dest_str 
+      Notice that both strings need to be pre-allocated by users. 
+   */
+  char *fe_copystr(char *dest_str,  /**< Out: a destination string */
+		   char *src_str    /**< In: a source string */
+		   );
 
-int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames);
+  /**
+     Count number of frames for ?
+   */
+  int32 fe_count_frames(fe_t *FE,  /**<In: a front end structure */
+			int32 nsamps, 
+			int32 count_partial_frames
+			);
 int32 fe_readspch(param_t *P, char *infile, int16 **spdata, int32 *splen);
 int32 fe_writefeat(fe_t *FE, char *outfile, int32 nframes, float32 **feat);
 int32 fe_free_param(param_t *P);
-int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, 
-		   int32 *nframes, int32 *nblocks, char *outfile, int32 *fp_out);
-int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf);
+
+  int32 fe_openfiles(param_t *P,       /**<In: a parameter structure */
+		     fe_t *FE,         /**<In: a front-end parameter structure */
+		     char *infile,     /**<In: The input file string */
+		     int32 *fp_in,     /**<Out: Input file pointer.  */
+		     int32 *nsamps,    /**<Out: Number of samples.  */
+		     int32 *nframes,   /**<Out: Number of frames.  */
+		     int32 *nblocks,   /**<Out: Number of blocks. */
+		     char *outfile,    /**<In: The input file string */
+		     int32 *fp_out     /**<Out: Output file pointer */
+		     );
+
+  int32 fe_readblock_spch(param_t *P, /**< In: a parameter structure */
+			  int32 fp,  /**< In: The input file pointer*/
+			  int32 nsamps, /**< In: Number of samples */
+			  int16 *buf
+			  );
 int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
 int32 fe_closefiles(int32 fp_in, int32 fp_out);
-int32 fe_dither(int16 *buffer,int32 nsamps);
-void few_free(fewrap_t *FEW);
+
+
+  /** Initialize dither with seed */
+  void fe_init_dither(int32 seed /**< In: seed to initialize dither */
+		      );
+
+  /**
+     Apply dither on the samples of frames. 
+   */
+  int32 fe_dither(int16 *buffer, /**<In/Out: a buffer of samples */
+		  int32 nsamps   /**<In: number of samples */
+		  );
+  
 
 #ifdef __cplusplus
 }
