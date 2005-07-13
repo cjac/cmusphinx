@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22.4.2  2005/07/07  02:31:54  arthchan2003
- * Remove -lminsearch, it proves to be useless and FSG implementation.
+ * Revision 1.22.4.3  2005/07/13  02:02:52  arthchan2003
+ * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
  * 
+ * Revision 1.22.4.2  2005/07/07 02:31:54  arthchan2003
+ * Remove -lminsearch, it proves to be useless and FSG implementation.
+ *
  * Revision 1.22.4.1  2005/06/28 06:57:41  arthchan2003
  * Added protype of initializing and reading FSG, still not working.
  *
@@ -117,7 +120,6 @@ date: 2004/08/06 15:07:39;  author: yitao;  state: Exp;
 *** empty log message ***
 =============================================================================
 */
-
 #include "live_decode_API.h"
 #include "live_decode_args.h"
 #include "utt.h"
@@ -153,7 +155,8 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   assert(_decoder != NULL);
 
   unlimit();
-	
+
+  /* ARCHAN 20050708: This part should be factored with fe_parse_option*/
   /* allocate and initialize front-end */
   fe_param.SAMPLING_RATE = (float32)cmd_ln_int32 ("-samprate");
   fe_param.FRAME_RATE = cmd_ln_int32("-frate");
@@ -166,6 +169,12 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   fe_param.LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
   fe_param.UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
   fe_param.PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
+  fe_param.dither=cmd_ln_int32("-dither");
+
+  if(fe_param.dither){
+    fe_init_dither(*(int32 *)cmd_ln_access("-seed"));
+  }
+
   if ((_decoder->fe = fe_init(&fe_param)) == NULL) {
     E_WARN("Failed to initialize front-end.\n");
     rv = LD_ERROR_OUT_OF_MEMORY;
@@ -288,14 +297,9 @@ ld_begin_utt(live_decoder_t *_decoder, char *_uttid)
 
   _decoder->num_frames_decoded = 0;
   _decoder->num_frames_entered = 0;
-  _decoder->kb.stat->nfr = 0;
-  _decoder->kb.stat->utt_hmm_eval = 0;
-  _decoder->kb.stat->utt_sen_eval = 0;
-  _decoder->kb.stat->utt_gau_eval = 0;
-  _decoder->kb.stat->utt_cisen_eval = 0;
-  _decoder->kb.stat->utt_cigau_eval = 0;
-
   _decoder->ld_state = LD_STATE_DECODING;
+
+  stat_clear_utt(_decoder->kb.stat);
 
   return ld_set_uttid(_decoder, _uttid);
 }
@@ -565,6 +569,9 @@ ld_process_raw_impl(live_decoder_t *_decoder,
     for (i = 0; i < num_samples; i++) {
       SWAP_INT16(samples + i);
     }
+    if(_decoder->fe->dither){
+      fe_dither(samples,num_samples);
+    }
   }
 
   return_value = fe_process_utt(_decoder->fe, samples, num_samples, &frames, &num_frames);
@@ -607,22 +614,18 @@ ld_process_raw_impl(live_decoder_t *_decoder,
   }
 }
 
-#if 0 /* Not yet decided whether ld_read_lm should handle addition of LM or not */
 void ld_read_lm(live_decoder_t *_decoder, 
 		const char* lmpath, 
-		const char* lmname,
-		double lw,
-		double uw,
-		double wip)
+		const char* lmname)
 {
   srch_t* s;
   lm_t* lm;
   s=(srch_t*)_decoder->kb.srch;
 
-  lm=lm_read(lmpath,lw,wip,uw);
-  s->srch_add_lm(s,lm,lmname);
+  /*  lm=lm_read(lmpath,lw,wip,uw);
+      s->srch_add_lm(s,lm,lmname);*/
 }
-#endif
+
 
 
 void ld_set_lm(live_decoder_t *_decoder,const char *lmname)

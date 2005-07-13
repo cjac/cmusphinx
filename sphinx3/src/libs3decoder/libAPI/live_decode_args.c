@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13.4.2  2005/07/07  02:31:54  arthchan2003
- * Remove -lminsearch, it proves to be useless and FSG implementation.
+ * Revision 1.13.4.3  2005/07/13  02:02:53  arthchan2003
+ * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
  * 
+ * Revision 1.13.4.2  2005/07/07 02:31:54  arthchan2003
+ * Remove -lminsearch, it proves to be useless and FSG implementation.
+ *
  * Revision 1.13.4.1  2005/07/04 07:14:15  arthchan2003
  * Added -lminsearch option.
  *
@@ -458,6 +461,14 @@ arg_t arg_def[] = {
       ARG_INT32,
       "0",
       "the input data byte order, 0 is little, 1 is big endian"},
+    { "-dither",
+      ARG_INT32,
+      "0",
+      "Add 1/2-bit noise" },
+    { "-seed",
+      ARG_INT32,
+      "-1",
+      "The seed for the random generator"},
     { "-lmdumpdir",
       ARG_STRING,
       NULL,
