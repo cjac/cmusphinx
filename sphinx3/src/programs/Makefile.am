@@ -5,7 +5,8 @@ bin_PROGRAMS = livepretend \
 	astar \
 	dag \
 	allphone \
-	ep 
+	ep \
+	lm_convert
 
 livepretend_SOURCES = main_livepretend.c 
 decode_SOURCES = decode.c
@@ -19,6 +20,7 @@ gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
 wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
+lm_convert_SOURCES = main_lm_convert.c
 
 
 noinst_PROGRAMS = \
