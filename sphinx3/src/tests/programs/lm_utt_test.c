@@ -111,7 +111,12 @@ int main(int argc, char *argv[])
     metricsStart(lmLoadTimer);
     
     /* initialize the language model */
-    lm = lm_read(lm_file, lw, wip, uw);
+    /* HACK! This doesn't work for class-based LM */
+
+    lm = lm_read(lm_file, "default", lw, wip, uw, 0
+		 , NULL, /*No fmt */
+		 1   /* Set lm weights */
+		 );
 
     metricsStop(lmLoadTimer);
 
