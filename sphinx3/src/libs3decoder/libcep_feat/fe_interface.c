@@ -48,9 +48,12 @@
 /* 
  *   HISTORY
  * $Log$
- * Revision 1.21  2005/06/21  20:35:55  arthchan2003
- * Add $ keyword.
+ * Revision 1.21.4.1  2005/07/13  01:48:14  arthchan2003
+ * Set the variable dither in FE.
  * 
+ * Revision 1.21  2005/06/21 20:35:55  arthchan2003
+ * Add $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -137,6 +140,7 @@ fe_t *fe_init(param_t const *P)
 	return(NULL);
     }
 
+    FE->dither=P->dither;
     /*** Z.A.B. ***/	
     /*** Initialize the overflow buffers ***/		
     fe_start_utt(FE);
