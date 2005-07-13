@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/06/28  07:01:21  arthchan2003
- * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ * Revision 1.1.2.3  2005/07/13  18:41:01  arthchan2003
+ * minor changes of srch_fsg.c to make it conform with hacks in fsg_*
  * 
+ * Revision 1.1.2.2  2005/06/28 07:01:21  arthchan2003
+ * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
+ *
  * Revision 1.1.2.1  2005/06/27 05:27:09  arthchan2003
  * Fixed added srch_fsg.[ch] and replace it by srch_fsm.c
  *
@@ -82,7 +85,10 @@ word_fsg_t * srch_FSG_read_fsgfile(void* srch,const char* fsgfilename)
 			  s->kbc->fillpen->silprob,
 			  s->kbc->fillpen->fillerprob,
 			  s->kbc->fillpen->lw,
-			  mdef_n_ciphone(s->kbc->mdef));
+			  mdef_n_ciphone(s->kbc->mdef),
+			  s->kbc->dict,
+			  s->kbc->mdef
+			  );
 			  
   if (! fsg)
     return NULL;
