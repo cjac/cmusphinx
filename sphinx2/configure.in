@@ -41,7 +41,7 @@ AC_ARG_WITH(alsa,
             ad_backend="AD_BACKEND_ALSA",
             ad_libs="-lasound",
                    CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
-            AC_CHECK_HEADER(sys/asoundlib.h, 
+            AC_CHECK_HEADER(sys/asoundlib.h, ,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
 
