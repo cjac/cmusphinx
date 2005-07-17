@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.1  2005/07/15  07:48:32  arthchan2003
- * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ * Revision 1.1.2.2  2005/07/17  05:42:27  arthchan2003
+ * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
  * 
+ * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
+ * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ *
  *
  */
 
@@ -313,8 +316,8 @@ void build_xwdpid_map (ctxt_table_t* ct, dict_t *dict, mdef_t *mdef)
 	}
     }
 
-    /*    ckd_free (word_start_ci);
-	  ckd_free (word_end_ci);*/
+    ckd_free (word_start_ci);
+    ckd_free (word_end_ci);
     E_INFO("%d cross-word triphones mapped to CI-phones\n", ct->n_backoff_ci);
 
 #if 0
@@ -339,7 +342,7 @@ ctxt_table_t* ctxt_table_init( dict_t *dict,mdef_t *mdef)
   build_wwpid(ct, dict, mdef);
   build_xwdpid_map (ct, dict, mdef)  ;
 
-  /*  ckd_free (tmp_xwdpid);*/
+  ckd_free (tmp_xwdpid);
   return ct;
 }
 
