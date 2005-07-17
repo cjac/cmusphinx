@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/21  20:40:46  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * Revision 1.8.4.1  2005/07/17  05:19:20  arthchan2003
+ * Added SWAP_FLOAT64
  * 
+ * Revision 1.8  2005/06/21 20:40:46  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ *
  * Revision 1.5  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -71,7 +74,9 @@
 /** \file bio.h
  * \brief Cross platform binary IO to process files in sphinx3 format. 
  * 
- *
+ * Note by ARCHAN at 20050717, the following swapper may suffer from
+ * byte alignment in different machines. CMU LM Tk v2's mips.h might
+ * be a better choice. 
  */
 
 #ifdef __cplusplus
@@ -91,6 +96,15 @@ extern "C" {
 
   /** Macro to byteswap a float32 variable.  x = ptr to variable */
 #define SWAP_FLOAT32(x)	SWAP_INT32((int32 *) x)
+
+
+
+  /** HACK! using CMU LM ToolKit V1's swapper .*/
+#define SWAP_FLOAT64(x) { int *low  = (int *) (x), \
+                            *high = (int *) (x) + 1, temp;\
+                        SWAP_INT32(low);  SWAP_INT32(high);\
+                        temp = *low; *low = *high; *high = temp;}
+
 
 
 
