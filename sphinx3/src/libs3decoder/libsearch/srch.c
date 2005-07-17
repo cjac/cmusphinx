@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.7  2005/07/13  18:42:35  arthchan2003
- * Re-enabled function assignments for mode 3 in srch.c. Code compiled. Still has 3 major hacks and 8 minor hacks.  See message in fsg_*
+ * Revision 1.1.4.8  2005/07/17  05:54:55  arthchan2003
+ * replace vithist_dag_write_header with dag_write_header
  * 
+ * Revision 1.1.4.7  2005/07/13 18:42:35  arthchan2003
+ * Re-enabled function assignments for mode 3 in srch.c. Code compiled. Still has 3 major hacks and 8 minor hacks.  See message in fsg_*
+ *
  * Revision 1.1.4.6  2005/07/07 02:37:39  arthchan2003
  * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
  *
@@ -784,7 +787,7 @@ void reg_result_dump (srch_t* s, int32 id)
       
   if (cmd_ln_str ("-outlatdir")) {
     int32 ispipe;
-    char str[16384];
+    char str[2048];
     sprintf (str, "%s/%s.%s",
 	     cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
     
@@ -794,7 +797,9 @@ void reg_result_dump (srch_t* s, int32 id)
       E_ERROR("fopen_comp (%s,w) failed\n", str);
     else {
       /* Write header info */
-      vithist_dag_write_header(fp,st->nfr,str);
+      dag_write_header(fp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
+					     the code will just be stopped */
+					     
       vithist_dag_write (s->vithist, hyp, s->kbc->dict,
 			 cmd_ln_int32("-outlatoldfmt"), latfp);
       fclose_comp (latfp, ispipe);
