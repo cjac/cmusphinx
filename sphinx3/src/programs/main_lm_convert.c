@@ -48,9 +48,12 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.1.2.1  2005/07/13  01:20:40  arthchan2003
- * Added lm_convert that could inter-convert DMP and plain-text format of language model file.
+ * Revision 1.1.2.2  2005/07/17  06:00:21  arthchan2003
+ * Added default argument in main_lm_convert.c, so the code will not die when -outputfmt is specified as nothing.
  * 
+ * Revision 1.1.2.1  2005/07/13 01:20:40  arthchan2003
+ * Added lm_convert that could inter-convert DMP and plain-text format of language model file.
+ *
  *
  */
 
@@ -69,11 +72,11 @@ static arg_t arg[] = {
     "Output file, if not specified. the output format name will be used a suffix. "},
   { "-inputfmt",
     REQARG_STRING,
-    NULL,
+    "TXT",
     "Input LM format. TXT or DMP"},
   { "-outputfmt",
     ARG_STRING,
-    NULL,
+    "DMP",
     "Output LM format: TXT or DMP"},
   { "-outputdir",
     ARG_STRING,
@@ -104,6 +107,12 @@ int main(int argc, char *argv[])
   lm_t* lm;
   char separator[1];
 
+  inputfn=NULL;
+  outputfn=NULL;
+  inputfmt=NULL;
+  outputfmt=NULL;
+  outputdir=NULL;
+
   inputfn=cmd_ln_str("-input");
   outputfn=cmd_ln_str("-output");
 
@@ -116,6 +125,11 @@ int main(int argc, char *argv[])
     E_INFO("Input and Output file formats are the same (%s). Do nothing\n",inputfmt);
     return 0;
   }
+
+  if(!strcmp(inputfmt,"TXT")&&!cmd_ln_int32("-lminmemory")){
+    E_FATAL("When plain-txt LM is used as an input, only in memory mode of LM reading can be used, please set -lminmemory to be 1");
+  }
+
 
   /* Read LM */
   if((lm=lm_read(inputfn,"default",1.0,0.1,1.0,0,inputfmt,0))==NULL)
