@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8.4.3  2005/07/05  05:47:59  arthchan2003
- * Fixed dox-doc. struct level of documentation are included.
+ * Revision 1.8.4.4  2005/07/17  05:15:47  arthchan2003
+ * Totally removed the data members in hmm_t structure
  * 
+ * Revision 1.8.4.3  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
  * Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
  * Removed fsg compliant stuff from hmm_t
  *
@@ -56,9 +59,12 @@
  *
  * Revision 1.8  2005/06/21 18:34:41  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
- * Revision 1.8.4.3  2005/07/05  05:47:59  arthchan2003
- * Fixed dox-doc. struct level of documentation are included.
+ * Revision 1.8.4.4  2005/07/17  05:15:47  arthchan2003
+ * Totally removed the data members in hmm_t structure
  * 
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.3  2005/07/05 05:47:59  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Fixed dox-doc. struct level of documentation are included.
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add Removed fsg compliant stuff from hmm_t
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add
@@ -154,16 +160,6 @@ typedef struct {
     hmm_state_t out;	/**< Non-emitting exit state */
     int32 **tp;		/**< State transition scores tp[from][to] (logs3 values) */
     int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning) */
-
-
-
-#if 0 /* ARCHAN: Commented eventually because it will cause hmm_t to be too large and blow up mode 5*/
-  int32 sseqid; /** Faked parameter that makes fsg_psubtree compiled */
-  int32 active;
-  int32* score[10]; 
-  int32 path[10];
-#endif
-  
 } hmm_t;
 
 
