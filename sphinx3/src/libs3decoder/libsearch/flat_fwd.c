@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.1  2005/07/15  07:50:32  arthchan2003
- * Remove hmm computation and context building code from flat_fwd.c.
+ * Revision 1.12.4.2  2005/07/17  05:44:31  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.12.4.1  2005/07/15 07:50:32  arthchan2003
+ * Remove hmm computation and context building code from flat_fwd.c.
+ *
  * Revision 1.12  2005/06/21 22:41:32  arthchan2003
  * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
  *
@@ -280,6 +283,8 @@
 #include "flat_fwd.h"
 #include "whmm.h"
 
+#define WHMM_ALLOC_SIZE 16000
+
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 
  */
@@ -449,10 +454,10 @@ static int32 whmm_eval (int32 *senscr)
 
 	    if (h->active == cf) {
 		if (h->pos == 0) {
-		    eval_mpx_whmm (w, h, senscr,tmat,mdef,n_state);
+		    eval_mpx_whmm (h, senscr,tmat,mdef,n_state);
 		    n_mpx++;
 		} else {
-		  eval_nonmpx_whmm (w, h, senscr,tmat,mdef,n_state);
+		  eval_nonmpx_whmm (h, senscr,tmat,mdef,n_state);
 		    n_nonmpx++;
 		}
 		
@@ -576,7 +581,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 	 * the HMM if not already present.
 	 */
 	if ((! h->next) || (h->next->pos != h->pos+1)) {
-	    nexth = whmm_alloc (h->pos+1,n_state);
+	    nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
 
 	    nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
 	    
@@ -601,7 +606,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! prevh->next) || (prevh->next->rc != rc)) {
-		nexth = whmm_alloc (h->pos+1,n_state);
+		nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
 
 		nexth->rc = rc;
 		nexth->pid = &(pid[rc]);
@@ -702,7 +707,7 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	pid = ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]];
 
 	if ((! whmm[w]) || (whmm[w]->pos != 0)) {
-	    h = whmm_alloc (0,n_state);
+	    h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
 
 	    for (s = 0; s < n_state; s++)
 		h->pid[s] = pid;
@@ -727,7 +732,7 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! h) || (h->rc != rc)) {
-		h = whmm_alloc (0,n_state);
+		h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
 
 		for (s = 0; s < n_state; s++)
 		    h->pid[s] = rpid[rc];
@@ -1539,6 +1544,7 @@ static s3latid_t lat_final_entry ( void )
     
       /* Find last available lattice entry with best ending score */
       E_WARN("When %s is used as final word, %s: Search didn't end in %s\n", dict_wordstr(dict,dict->finishwid), uttid, dict_wordstr(dict,dict->finishwid));
+    }else{
     }
 
 
@@ -1923,10 +1929,9 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
     int32 i;
     dagnode_t *d, *initial, *final;
     daglink_t *l;
-    char filename[1024], str[1024];
+    char filename[2048];
     FILE *fp;
     int32 ascr, lscr;
-    float32 logbase;
     int32 ispipe;
     
     initial = dag.root;
@@ -1939,28 +1944,7 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
 	return -1;
     }
     
-    getcwd (str, sizeof(str));
-    fprintf (fp, "# getcwd: %s\n", str);
-
-    /* Print logbase first!!  Other programs look for it early in the DAG */
-    logbase = *((float32 *) cmd_ln_access("-logbase"));
-    fprintf (fp, "# -logbase %e\n", logbase);
-
-    fprintf (fp, "# -dict %s\n", (char *) cmd_ln_access ("-dict"));
-    if (cmd_ln_access ("-fdict"))
-	fprintf (fp, "# -fdict %s\n", (char *) cmd_ln_access ("-fdict"));
-    fprintf (fp, "# -lm %s\n", (char *) cmd_ln_access ("-lm"));
-    fprintf (fp, "# -mdef %s\n", (char *) cmd_ln_access ("-mdef"));
-    fprintf (fp, "# -senmgau %s\n", (char *) cmd_ln_access ("-senmgau"));
-    fprintf (fp, "# -mean %s\n", (char *) cmd_ln_access ("-mean"));
-    fprintf (fp, "# -var %s\n", (char *) cmd_ln_access ("-var"));
-    fprintf (fp, "# -mixw %s\n", (char *) cmd_ln_access ("-mixw"));
-    fprintf (fp, "# -tmat %s\n", (char *) cmd_ln_access ("-tmat"));
-    fprintf (fp, "# -min_endfr %d\n", *((int32 *) cmd_ln_access ("-min_endfr")));
-    fprintf (fp, "#\n");
-    
-    fprintf (fp, "Frames %d\n", n_frm);
-    fprintf (fp, "#\n");
+    dag_write_header(fp,n_frm,1);
     
     for (i = 0, d = dag.list; d; d = d->alloc_next, i++);
     fprintf (fp, "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n", i);

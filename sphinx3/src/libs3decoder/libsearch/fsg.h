@@ -79,18 +79,6 @@ typedef struct search_hyp_s {
                            cutoffs must be found independently. */
 } search_hyp_t;
 
-#include <hmm.h>
 
-/** Hack!*/
-#define NODE_CNT 10
-
-typedef struct {
-  int32 bestscore; 
-  int32 sseqid; /**< A senone sequence ID */
-  int32 active; /**< An index to show whether this frame is active */
-
-  int32  score[NODE_CNT];   /* dynamic score (prob) per state */
-  int32  path[NODE_CNT];    /* dynamic history pointer per state */
-} fsg_hmm_t ;
 
 #endif

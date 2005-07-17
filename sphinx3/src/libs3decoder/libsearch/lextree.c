@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.2  2005/07/07  02:34:36  arthchan2003
- * Remove empty lextree_tree_copies_hmm_propagate
+ * Revision 1.9.4.3  2005/07/17  05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.9.4.2  2005/07/07 02:34:36  arthchan2003
+ * Remove empty lextree_tree_copies_hmm_propagate
+ *
  * Revision 1.9.4.1  2005/06/27 05:37:05  arthchan2003
  * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
  *
@@ -339,7 +342,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    } else {
 		np = 0;
 		for (j = 0; j < n_lc; j++) {
-		    ssid = d2p->single_lc[ci][(int)lc[j]];
+		  ssid = d2p->single_lc[ci][(int)lc[j]]; /**< ARCHAN: This is a composite triphone */
 		    
 		    /* Check if this ssid already allocated for another lc */
 		    for (k = 0; (k < np) && (parent[k]->ssid != ssid); k++);
@@ -362,7 +365,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    
 	    /* Multi-phone word; allocate root node(s) first, if not already present */
 	    if (! lc) {
-		ssid = d2p->internal[wid][0];
+	      ssid = d2p->internal[wid][0]; /**< ARCHAN: This is a composite triphone */
 		ci = dict_pron(dict, wid, 0);
 		
 		/* Check if this ssid already allocated for another word */

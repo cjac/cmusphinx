@@ -32,7 +32,8 @@
  */
 /*
  * fsg_psubtree.h -- Phone-level FSG subtree representing all transitions
- * out of a single FSG state.
+ * out of a single FSG state. 
+ * (Note: Currently, it is actually a flat lexicon representationx
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -44,9 +45,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/07/13  18:39:47  arthchan2003
- * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ * Revision 1.1.2.3  2005/07/17  05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.1.2.2  2005/07/13 18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -95,7 +99,8 @@
 #include <s3types.h>
 #include <word_fsg.h>
 #include <fsg.h>
-#include <hmm.h>
+#include <whmm.h>
+#include <ctxt_table.h>
 /*
 #include <msd.h>
 */
@@ -113,7 +118,9 @@ typedef struct {
 } fsg_pnode_ctxt_t;
 
 
-/*
+/**
+ * \struct fsg_pnode_s 
+ * \brief an fsg node. 
  * All transitions (words) out of any given FSG state represented are by a
  * phonetic prefix lextree (except for epsilon or null transitions; they
  * are not part of the lextree).  Lextree leaf nodes represent individual
@@ -128,7 +135,7 @@ typedef struct {
  * context.
  */
 typedef struct fsg_pnode_s {
-  /*
+  /**
    * If this is not a leaf node, the first successor (child) node.  Otherwise
    * the parent FSG transition for which this is the leaf node (for figuring
    * the FSG destination state, and word emitted by the transition).  A node
@@ -182,7 +189,7 @@ typedef struct fsg_pnode_s {
   
   /* HMM-state-level stuff here */
   /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
-  fsg_hmm_t hmm;
+  whmm_t hmm;
 
 
 } fsg_pnode_t;
@@ -202,18 +209,18 @@ typedef struct fsg_pnode_s {
 #define fsg_pnode_add_ctxt(p,c)	((p)->ctxt.bv[(c)>>5] |= (1 << ((c)&0x001f)))
 
 
-/*
+/**
  * Build the phone lextree for all transitions out of state from_state.
  * Return the root node of this tree.
  * Also, return a linear linked list of all allocated fsg_pnode_t nodes in
  * *alloc_head (for memory management purposes).
  */
-fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg,
-				int32 from_state,
+fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, /**< A word fsg */
+				int32 from_state, /**< from which state to initalize*/ 
 				fsg_pnode_t **alloc_head);
 
 
-/*
+/**
  * Free the given lextree.  alloc_head: head of linear list of allocated
  * nodes updated by fsg_psubtree_init().
  */
@@ -247,7 +254,9 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
 /*
  * Mark the given pnode as inactive (for search).
  */
-void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode);
+void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode,
+				    int32 n_state_hmm
+				    );
 
 
 /* Set all flags on in the given context bitvector */

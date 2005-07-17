@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/21  22:37:47  arthchan2003
- * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ * Revision 1.1.4.1  2005/07/17  05:44:30  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.1  2005/06/21 22:37:47  arthchan2003
+ * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ *
  * Revision 1.2  2005/06/03 06:45:28  archan
  * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
  *
@@ -142,13 +145,14 @@ int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, 
 	l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
 	l->node = d;
 	l->src = pd;
-	l->bypass = byp;	/* This is a FORWARD link!! */
+	l->bypass = byp;	/* DAG-specific: This is a FORWARD link!! */
 	l->ascr = ascr;
 	l->pscr = (int32)0x80000000;
 	l->pscr_valid = 0;
 	l->history = NULL;
 	l->ef = ef;
 	l->next = pd->succlist;
+	l->is_filler_bypass = 0; /* Astar-specific */
 	pd->succlist = l;
     }
 
@@ -156,12 +160,13 @@ int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, 
     l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
     l->node = pd;
     l->src = d;
-    l->bypass = byp;		/* This is a FORWARD link!! */
+    l->bypass = byp;	    /* This is a FORWARD link!! */
     l->ascr = ascr;
     l->pscr = (int32)0x80000000;
     l->pscr_valid = 0;
     l->history = NULL;
     l->ef = ef;
+    l->is_filler_bypass = 0; /* Astar-specific */
     l->next = d->predlist;
     d->predlist = l;
 
@@ -451,3 +456,38 @@ void dag_init(dag_t* dagp){
   dagp->maxedge = cmd_ln_int32 ("-maxedge");
 
 }
+
+
+
+void dag_write_header (FILE *fp,int32 nfr,int32 printminfr)
+{
+  char str[1024];
+  getcwd (str, sizeof(str));
+  fprintf (fp, "# getcwd: %s\n", str);
+	  
+  /* Print logbase first!!  Other programs look for it early in the
+   * DAG */
+
+  fprintf (fp, "# -logbase %e\n", cmd_ln_float32 ("-logbase"));
+  
+  fprintf (fp, "# -dict %s\n", cmd_ln_str ("-dict"));
+  if (cmd_ln_str ("-fdict"))
+    fprintf (fp, "# -fdict %s\n", cmd_ln_str ("-fdict"));
+  fprintf (fp, "# -lm %s\n", cmd_ln_str ("-lm"));
+  fprintf (fp, "# -mdef %s\n", cmd_ln_str ("-mdef"));
+  fprintf (fp, "# -senmgau %s\n", cmd_ln_str ("-senmgau"));
+  fprintf (fp, "# -mean %s\n", cmd_ln_str ("-mean"));
+  fprintf (fp, "# -var %s\n", cmd_ln_str ("-var"));
+  fprintf (fp, "# -mixw %s\n", cmd_ln_str ("-mixw"));
+  fprintf (fp, "# -tmat %s\n", cmd_ln_str ("-tmat"));
+  if(printminfr){
+    fprintf (fp, "# -min_endfr %d\n", cmd_ln_int32 ("-min_endfr"));
+  }
+  fprintf (fp, "#\n");
+	  
+  fprintf (fp, "Frames %d\n", nfr);
+  fprintf (fp, "#\n");
+
+}
+
+

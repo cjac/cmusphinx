@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.3  2005/07/13  18:39:48  arthchan2003
- * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ * Revision 1.1.2.4  2005/07/17  05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.1.2.3  2005/07/13 18:39:48  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ *
  * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
  * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  *
@@ -166,10 +169,6 @@
 
 #define FSG_SEARCH_IDLE		0
 #define FSG_SEARCH_BUSY		1
-
-
-/* HACK! Temporary */
-#define HMM_LAST_STATE 10
 
 /* Turn this on for detailed debugging dump */
 #define __FSG_DBG__		0
@@ -388,7 +387,7 @@ void fsg_search_hmm_eval (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
   int32 bestscore;
   int32 n;
   
@@ -403,22 +402,10 @@ void fsg_search_hmm_eval (fsg_search_t *search)
     pnode = (fsg_pnode_t *) gnode_ptr(gn);
     hmm = fsg_pnode_hmmptr(pnode);
     assert (hmm->active == search->frame);
-    
-#if __FSG_DBG__
-    E_INFO("pnode(%08x) active @frm %5d\n", (int32)pnode, search->frame);
-#if __FSG_DBG_CHAN__
-    chan_dump (hmm, search->frame, stdout);
-#endif
-#endif
 
-    /* SUPER HACK! This effectively eliminate the hmm computation 
-    chan_v_eval(hmm);
-    */
-#if __FSG_DBG_CHAN__
-    E_INFO("pnode(%08x) after eval @frm %5d\n",
-	   (int32)pnode, search->frame);
-    chan_dump (hmm, search->frame, stdout);
-#endif
+    /*chan_v_eval(hmm);*/
+    /* HACK! */
+    eval_nonmpx_whmm (hmm, search->senscr,search->tmat, search->mdef, search->n_state_hmm);
     
     if (bestscore < hmm->bestscore)
       bestscore = hmm->bestscore;
@@ -441,7 +428,7 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
 				    fsg_pnode_t *pnode)
 {
   fsg_pnode_t *child;
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
   
   assert (pnode);
   assert (! fsg_pnode_leaf(pnode));
@@ -451,9 +438,9 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
        child;
        child = fsg_pnode_sibling(child)) {
     if (fsg_psubtree_pnode_enter (child,
-				  hmm->score[HMM_LAST_STATE],
+				  hmm->score[search->n_state_hmm-1],
 				  search->frame + 1,
-				  hmm->path[HMM_LAST_STATE])) {
+				  hmm->history[search->n_state_hmm-1])) {
       search->pnode_active_next = glist_add_ptr(search->pnode_active_next,
 						(void *) child);
     }
@@ -464,7 +451,7 @@ static void fsg_search_pnode_trans (fsg_search_t *search,
 static void fsg_search_pnode_exit(fsg_search_t *search,
 				  fsg_pnode_t *pnode)
 {
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
   word_fsglink_t *fl;
   dict_t *dict;
   int32 wid, endwid;
@@ -486,7 +473,7 @@ static void fsg_search_pnode_exit(fsg_search_t *search,
 #if __FSG_DBG__
   E_INFO("[%5d] Exit(%08x) %10d(score) %5d(pred)\n",
 	 search->frame, (int32)pnode,
-	 hmm->score[HMM_LAST_STATE], hmm->path[HMM_LAST_STATE]);
+	 hmm->score[search->n_state_hmm-1], hmm->history[search->n_state_hmm-1]);
 #endif
   
   /*
@@ -503,8 +490,8 @@ static void fsg_search_pnode_exit(fsg_search_t *search,
     fsg_history_entry_add (search->history,
 			   fl,
 			   search->frame,
-			   hmm->score[HMM_LAST_STATE],
-			   hmm->path[HMM_LAST_STATE],
+			   hmm->score[search->n_state_hmm-1],
+			   hmm->history[search->n_state_hmm-1],
 			   pnode->ci_ext,
 			   ctxt);
     
@@ -513,8 +500,8 @@ static void fsg_search_pnode_exit(fsg_search_t *search,
     fsg_history_entry_add (search->history,
 			   fl,
 			   search->frame,
-			   hmm->score[HMM_LAST_STATE],
-			   hmm->path[HMM_LAST_STATE],
+			   hmm->score[search->n_state_hmm-1],
+			   hmm->history[search->n_state_hmm-1],
 			   pnode->ci_ext,
 			   pnode->ctxt);
   }
@@ -531,7 +518,7 @@ void fsg_search_hmm_prune_prop (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
   int32 thresh, word_thresh, phone_thresh;
   
   assert (search->pnode_active_next == NULL);
@@ -555,12 +542,12 @@ void fsg_search_hmm_prune_prop (fsg_search_t *search)
       }
       
       if (! fsg_pnode_leaf(pnode)) {
-	if (hmm->score[HMM_LAST_STATE] >= phone_thresh) {
+	if (hmm->score[search->n_state_hmm-1] >= phone_thresh) {
 	  /* Transition out of this phone into its children */
 	  fsg_search_pnode_trans(search, pnode);
 	}
       } else {
-	if (hmm->score[HMM_LAST_STATE] >= word_thresh) {
+	if (hmm->score[search->n_state_hmm-1] >= word_thresh) {
 	  /* Transition out of leaf node into destination FSG state */
 	  fsg_search_pnode_exit(search, pnode);
 	}
@@ -687,7 +674,7 @@ void fsg_search_frame_fwd (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
 
   search->bpidx_start = fsg_history_n_entries(search->history);
   
@@ -727,7 +714,7 @@ void fsg_search_frame_fwd (fsg_search_t *search)
     
     if (hmm->active == search->frame) {
       /* This HMM NOT activated for the next frame; reset it */
-      fsg_psubtree_pnode_deactivate (pnode);
+      fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
     } else {
       assert (hmm->active == (search->frame + 1));
     }
@@ -1003,7 +990,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
     hist_entry = fsg_history_entry_get(search->history, bpidx);
     frm = fsg_hist_entry_frame(hist_entry);
   }
-  
+   
   if (check_fsg_final_state) {
     if (besthist_finalstate > 0) {
       /*
@@ -1051,7 +1038,7 @@ void fsg_search_utt_end (fsg_search_t *search)
 {
   gnode_t *gn;
   fsg_pnode_t *pnode;
-  fsg_hmm_t *hmm;
+  whmm_t *hmm;
   int32 n_hist, nfr;
   char *result;
   FILE *latfp;
@@ -1078,7 +1065,7 @@ void fsg_search_utt_end (fsg_search_t *search)
   if (search->isBacktrace)
     fsg_search_hyp_dump (search, stdout);
   
-  /* Temporarily removed. 
+  /* HACK: Temporarily removed. 
     search_result (&nfr, &result);
   */
   printf("FSGSRCH: %s (%s %d (A=%d L=%d))\n",
@@ -1096,13 +1083,13 @@ void fsg_search_utt_end (fsg_search_t *search)
     pnode = (fsg_pnode_t *) gnode_ptr(gn);
     hmm = fsg_pnode_hmmptr(pnode);
     
-    fsg_psubtree_pnode_deactivate (pnode);
+    fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
   }
   for (gn = search->pnode_active_next; gn; gn = gnode_next(gn)) {
     pnode = (fsg_pnode_t *) gnode_ptr(gn);
     hmm = fsg_pnode_hmmptr(pnode);
     
-    fsg_psubtree_pnode_deactivate (pnode);
+    fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
   }
   
   glist_free (search->pnode_active);

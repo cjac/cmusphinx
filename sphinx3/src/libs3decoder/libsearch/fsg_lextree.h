@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/07/13  18:39:47  arthchan2003
- * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ * Revision 1.1.2.3  2005/07/17  05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.1.2.2  2005/07/13 18:39:47  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ *
  * Revision 1.1.2.1  2005/06/27 05:26:29  arthchan2003
  * Sphinx 2 fsg mainpulation routines.  Compiled with faked functions.  Currently fended off from users.
  *
@@ -93,8 +96,10 @@ typedef struct fsg_lextree_s {
   fsg_pnode_t **alloc_head;	/* alloc_head[s] = head of linear list of all
 				   pnodes allocated for state s */
   int32 n_pnode;	/* #HMM nodes in search structure */
+
   dict_t *dict;
   mdef_t *mdef;
+  ctxt_table_t *ctxt;
 } fsg_lextree_t;
 
 /* Access macros */

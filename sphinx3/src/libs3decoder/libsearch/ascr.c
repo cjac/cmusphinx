@@ -45,14 +45,17 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4  2005/06/21  22:32:25  arthchan2003
+ * Revision 1.4.4.1  2005/07/17  05:44:30  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * 
+ * Revision 1.4  2005/06/21 22:32:25  arthchan2003
  * Log. Significant expansion of ascr_t to be the container of all types
  * of acoustic scores.  Implementations of init, report, free functions
  * are now provided. ascr_shift_one_cache_frame is used to provide a
  * wrapper for shifting one frame of cache frame in phoneme lookahead.
  * It is expected to be used later more if more complicated scheme of
  * lookahead is used.
- * 
+ *
  * Revision 1.6  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -102,12 +105,12 @@ ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, i
 void ascr_report(ascr_t *a)
 {
   E_INFO_NOFN("Initialization of ascr_t, report:\n");
-  E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
   E_INFO_NOFN("No. of CI senone =%d \n",a->n_cisen);
   E_INFO_NOFN("No. of senone = %d\n",a->n_sen);
   E_INFO_NOFN("No. of composite senone = %d\n",a->n_comsen);
   E_INFO_NOFN("No. of senone sequence = %d\n",a->n_sseq);
   E_INFO_NOFN("No. of composite senone sequence=%d \n",a->n_comsseq);
+  E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
   E_INFO_NOFN("Phoneme lookahead window = %d\n",a->pl_win);
   E_INFO_NOFN("\n");
 }
