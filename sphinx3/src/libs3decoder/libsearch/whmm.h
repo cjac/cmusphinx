@@ -48,9 +48,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.1  2005/07/15  07:48:32  arthchan2003
- * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ * Revision 1.1.2.2  2005/07/17  05:57:25  arthchan2003
+ * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
  * 
+ * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
+ * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ *
  *
  */
 
@@ -67,6 +70,7 @@
  *  \file whmm.h
  *  \brief Word hmm instance that is used by sphinx 3.0 decode_anytopo search. 
  */
+
 
 /**
  * \struct whmm_t
@@ -88,16 +92,28 @@
 
 typedef struct whmm_s {
     struct whmm_s *next;	/**< Next active whmm_t for this word */
+
     int32     *score;		/**< Per state path score */
-    s3latid_t *history;		/**< Per state predecessor lattice entry index */
-    s3pid_t   *pid;		/**< Triphone id: 1 per state if 1st phone in word,
-				   otherwise single pid for entire phone */
     int32      bestscore;	/**< Best among this whmm.score[] in current frame */
+
+    s3latid_t *history;		/**< Per state predecessor lattice entry index */
+
+    s3pid_t   *pid;		/**< Triphone id: 1 per state if 1st
+				   phone in word, (When it is
+				   multiplexed) otherwise single pid
+				   for entire phone 
+				   
+				   When use as one senone,  do pid=*(h->pid)
+				   When use as multiple phone, do pid=h->pid[0] for state 0
+				*/
     int16      pos;		/**< Word pronunciation position index */
     s3cipid_t  rc;		/**< Right context position (only for last phone in word);
 				   index into rcpid[][].pid or lrcpid[][].pid */
     int32      active;		/**< Whether active in current frame */
 } whmm_t;
+
+
+#define whmm_hmmpid(hmm,pid)  *(hmm->pid)
 
 /** Free a whmm */
 void whmm_free (whmm_t *h /**< a whmm */
@@ -106,7 +122,10 @@ void whmm_free (whmm_t *h /**< a whmm */
 /** Allocate a whmm 
  */
 whmm_t *whmm_alloc (int32 pos,  /**< position of the hmm */
-		    int32 nstate /**< number of state of the hmm*/
+		    int32 nstate, /**< number of state of the hmm*/
+		    int32 alloc_size  /**< Allocation size , alloc_size/size_of(whmm_t) will be allocated as HMMs that
+					 need a separate HMM id every state. 
+				       */
 		    );
 
 
@@ -126,7 +145,7 @@ void dump_whmm (s3wid_t w,  /**< a word id */
 /**
    Evaluate non-multiplex whmm . (In Sphinx 3.0, word-internal and the word end)
  */
-void eval_nonmpx_whmm (s3wid_t w, /**< the word ID */
+void eval_nonmpx_whmm (
 		       whmm_t *h, /**< the whmm */
 		       int32 *senscr, /**< Senone score array */
 		       tmat_t *tmat,  /**< tmat*/
@@ -138,7 +157,7 @@ void eval_nonmpx_whmm (s3wid_t w, /**< the word ID */
    Evaluate multiplex whmm . (In Sphinx 3.0, the word begin)
  */
 
-void eval_mpx_whmm (s3wid_t w, /**< the word ID */
+void eval_mpx_whmm (
 		    whmm_t *h, /**< the whmm*/
 		    int32 *senscr, /**< Senone score array */
 		    tmat_t *tmat, /**< tmat*/

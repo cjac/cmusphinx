@@ -48,9 +48,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.1  2005/07/15  07:48:32  arthchan2003
- * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ * Revision 1.1.2.2  2005/07/17  05:57:25  arthchan2003
+ * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
  * 
+ * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
+ * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
+ *
  *
  */
 
@@ -74,7 +77,7 @@ void whmm_free (whmm_t *h)
     whmm_freelist[k] = h;
 }
 
-whmm_t *whmm_alloc (int32 pos, int32 n_state)
+whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 {
     whmm_t *h;
     int32 k, i, n, s;
@@ -86,7 +89,10 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state)
     k = (pos == 0) ? 0 : 1;
 
     if (! whmm_freelist[k]) {
+#if 0
 	n = 16000/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
+#endif
+	n = alloc_size/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
 
 	whmm_freelist[k] = h = (whmm_t *) ckd_calloc (n, sizeof(whmm_t));
 	tmp_scr = (int32 *) ckd_calloc (n_state * n, sizeof(int32));
@@ -202,7 +208,7 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
  * Like the general eval_nonmpx_whmm and eval_mpx_whmm below, but hardwired for
  * the Sphinx-II 5-state Bakis topology.
  */
-void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, mdef_t *mdef, int32 n_state)
+void eval_nonmpx_whmm (whmm_t *h, int32 *senscr, tmat_t *tmat, mdef_t *mdef, int32 n_state)
 {
     register int32 s0, s1, s2, s3, s4;
     register int32 scr, newscr1, newscr2, bestscr;
@@ -459,7 +465,7 @@ void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *md
  * Evaluate non-multiplexed word HMM (ie, the entire whmm really represents one
  * phone rather than each state representing a potentially different phone.
  */
-void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef, int32 n_state)
+void eval_nonmpx_whmm (whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef, int32 n_state)
 {
     s3pid_t pid;
     s3senid_t *sen;
@@ -528,7 +534,7 @@ void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t 
 
 
 /** Like eval_nonmpx_whmm, except there's a different pid associated with each state */
-void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef,int32 n_state)
+void eval_mpx_whmm (whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef,int32 n_state)
 {
     s3pid_t pid, prevpid;
     s3senid_t *senp;
