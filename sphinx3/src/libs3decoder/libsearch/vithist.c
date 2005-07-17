@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.1  2005/07/04  07:25:22  arthchan2003
- * Added vithist_entry_display and vh_lmstate_display in vithist.
+ * Revision 1.8.4.2  2005/07/17  05:55:45  arthchan2003
+ * Removed vithist_dag_write_header
  * 
+ * Revision 1.8.4.1  2005/07/04 07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
+ *
  * Revision 1.8  2005/06/22 02:47:35  arthchan2003
  * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
  *
@@ -872,34 +875,6 @@ typedef struct {
 } dagnode_t;
 
 
-/*
- *
- */
-void vithist_dag_write_header(FILE *fp,int32 nfr, char* str)
-{
-  getcwd (str, sizeof(str));
-  fprintf (fp, "# getcwd: %s\n", str);
-	  
-  /* Print logbase first!!  Other programs look for it early in the
-   * DAG */
-
-  fprintf (fp, "# -logbase %e\n", cmd_ln_float32 ("-logbase"));
-  
-  fprintf (fp, "# -dict %s\n", cmd_ln_str ("-dict"));
-  if (cmd_ln_str ("-fdict"))
-    fprintf (fp, "# -fdict %s\n", cmd_ln_str ("-fdict"));
-  fprintf (fp, "# -lm %s\n", cmd_ln_str ("-lm"));
-  fprintf (fp, "# -mdef %s\n", cmd_ln_str ("-mdef"));
-  fprintf (fp, "# -mean %s\n", cmd_ln_str ("-mean"));
-  fprintf (fp, "# -var %s\n", cmd_ln_str ("-var"));
-  fprintf (fp, "# -mixw %s\n", cmd_ln_str ("-mixw"));
-  fprintf (fp, "# -tmat %s\n", cmd_ln_str ("-tmat"));
-  fprintf (fp, "#\n");
-	  
-  fprintf (fp, "Frames %d\n", nfr);
-  fprintf (fp, "#\n");
-
-}
 /*
  * Header written BEFORE this function is called.
  */
