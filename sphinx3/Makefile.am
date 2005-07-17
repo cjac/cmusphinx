@@ -79,7 +79,8 @@ test-full : \
 	test-ep \
 	test-cepview \
 	test-decode_anytopo \
-	test-decode_anytopo-mllr
+	test-decode_anytopo-mllr \
+	test-wave2feat 
 
 test-all-app : test-full test-wave2feat
 
