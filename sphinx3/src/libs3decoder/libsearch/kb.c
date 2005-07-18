@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyrightgot (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.1  2005/07/03  23:00:58  arthchan2003
- * Free stat_t, histprune_t and srch_t correctly.
+ * Revision 1.26.4.2  2005/07/18  19:08:55  arthchan2003
+ * Fixed Copy right statement.
  * 
+ * Revision 1.26.4.1  2005/07/03 23:00:58  arthchan2003
+ * Free stat_t, histprune_t and srch_t correctly.
+ *
  * Revision 1.26  2005/06/21 23:21:58  arthchan2003
  * Log. This is a big refactoring for kb.c and it is worthwhile to give
  * words on why and how things were done.  There were generally a problem
