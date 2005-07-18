@@ -34,6 +34,24 @@
  *
  */
 
+/*
+ * fe.c -- Feature vector description and cepstra->feature computation.
+ *
+ * **********************************************
+ * CMU ARPA Speech Project
+ *
+ * Copyright (c) 1996 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ * **********************************************
+ * 
+ * HISTORY
+ * $Log$
+ * Revision 1.9.4.3  2005/07/18  19:07:42  arthchan2003
+ * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
+ * 
+ *
+ */
+
 #include "fe.h"
 
 #include <stdio.h>
@@ -277,7 +295,6 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
 
     if (P->is_single){
                 
-      E_INFO("fileroot %s\n",fileroot);
       fe_build_filenames(P, fileroot, &infile, NULL);
       if (P->verbose) printf("%s\n", infile);
 
@@ -296,7 +313,7 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
       if (!fe_start_utt(FE)){
 	curr_block=1;
 	total_frames = frames_proc = 0;
-	//printf("Total frames %d, last_blocksize: %d\n", total_frames, last_blocksize);
+	/*printf("Total frames %d, last_blocksize: %d\n", total_frames, last_blocksize);*/
         
 	/* process last (or only) block */
 	if (spdata != NULL) free(spdata);
@@ -359,6 +376,7 @@ static void fe_validate_parameters(param_t *P /**< A parameter structure */
     }
     
     if ((P->UPPER_FILT_FREQ * 2) > P->SAMPLING_RATE) {
+      
         E_WARN("Upper frequency higher than Nyquist frequency");
     }
     
@@ -412,9 +430,10 @@ param_t *fe_parse_options()
     P->nchans = cmd_ln_int32("-nchans");
     P->whichchan = cmd_ln_int32("-whichchan");
     P->PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
-    P->SAMPLING_RATE = cmd_ln_float32("-srate");
+    P->SAMPLING_RATE = cmd_ln_float32("-samprate");
     P->WINDOW_LENGTH = cmd_ln_float32("-wlen");
     P->FRAME_RATE = cmd_ln_int32("-frate");
+
     if (!strcmp(cmd_ln_str("-feat"), "sphinx")) 
     {
         P->FB_TYPE = MEL_SCALE;
@@ -437,7 +456,8 @@ param_t *fe_parse_options()
     }
     P->blocksize = cmd_ln_int32("-blocksize");
     P->verbose = cmd_ln_int32("-verbose");
-    endian = cmd_ln_str("-mach_endian");
+
+    endian = cmd_ln_str("-machine_endian");
     if (!strcmp("big", endian)) {
         P->machine_endian = BIG;
     } else {
@@ -561,9 +581,11 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
 {
     int32 frame_start, frame_count = 0;
     
+    assert(FE->FRAME_SIZE!=0);
     for (frame_start=0;frame_start+FE->FRAME_SIZE<=nsamps;
-    frame_start+=FE->FRAME_SHIFT)
+	 frame_start+=FE->FRAME_SHIFT){
         frame_count++;
+    }
    
     if (count_partial_frames){
 	if ((frame_count-1)*FE->FRAME_SHIFT+FE->FRAME_SIZE < nsamps)

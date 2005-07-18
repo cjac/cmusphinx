@@ -33,8 +33,27 @@
  * ====================================================================
  *
  */
+/*
+ * fe.h -- Feature vector description and cepstra->feature computation.
+ *
+ * **********************************************
+ * CMU ARPA Speech Project
+ *
+ * Copyright (c) 1996 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ * **********************************************
+ * 
+ * HISTORY
+ * $Log$
+ * Revision 1.24.4.3  2005/07/18  19:07:42  arthchan2003
+ * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
+ * 
+ *
+ */
+
 #ifndef _FE_H_
 #define _FE_H_
+
 
 #include <s3types.h>
 
@@ -152,6 +171,7 @@ typedef struct{
 
 #define ON 1
 #define OFF 0
+
 
 /* Default values */
 #define DEFAULT_SAMPLING_RATE "16000.0" /**Default sampling rate */
