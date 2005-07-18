@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/06/22  05:37:45  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
+ * Revision 1.13.4.1  2005/07/18  23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
  * 
+ * Revision 1.13  2005/06/22 05:37:45  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
+ *
  * Revision 1.8  2005/06/19 04:51:48  archan
  * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
  *
@@ -108,109 +111,28 @@
 #include "s3_allphone.h"
 #include "agc.h"
 #include "cmn.h"
+#include "cmdln_macro.h"
 
 /** \file main_allphone.c
  * \brief  Main driver routine for allphone Viterbi decoding
  */
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-mdef", 
-      ARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmat",
-      ARG_STRING,
-      NULL,
-      "Transition matrix input file" },
-    { "-mean",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks mean parameters input file" },
-    { "-var",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks variance parameters input file" },
-    { "-mllr",
-      ARG_STRING,
-      NULL,
-      "MLLR transfomation matrix to be applied to mixture gaussian means"},
-    { "-cb2mllr",
-      ARG_STRING,
-      ".1cls.",
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
-    { "-senmgau",
-      ARG_STRING,
-      ".cont.",
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixw",
-      ARG_STRING,
-      NULL,
-      "Senone mixture weights parameters input file" },
+  cepstral_to_feature_command_line_macro()
+  log_table_command_line_macro()
+  acoustic_model_command_line_macro()
+  speaker_adaptation_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  hypothesis_file_handling_command_line_macro()
+  control_mllr_file_command_line_macro()
+  cepstral_input_handling_command_line_macro()
+
 #ifdef INTERP
     { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
 #endif
-    { "-tmatfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Triphone state transition probability floor applied to -tmat file" },
-    { "-varfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Codebook variance floor applied to -var file" },
-    { "-mixwfloor",
-      ARG_FLOAT32,
-      "0.0000001",
-      "Codebook mixture weight floor applied to -mixw file" },
-    { "-agc",
-      ARG_STRING,
-      "max",
-      "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-cmn",
-      ARG_STRING,
-      "current",
-      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-varnorm",
-      ARG_STRING,
-      "no",
-      "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
-      ARG_STRING,
-      "1s_c_d_dd",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-ctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      NULL,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
-    { "-cepdir",
-      ARG_STRING,
-      NULL,
-      "Directory for utterances in -ctl file (if relative paths specified)." },
-    { "-cepext",
-      ARG_STRING,
-      ".mfc",
-      "File extension appended to utterances listed in -ctl file" },
-    { "-mllrctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing MLLR input data; parallel to ctl argument file" },
     { "-topn",
       ARG_INT32,
       "4",
@@ -219,10 +141,12 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Main pruning beam applied during search" },
-    { "-phlatbeam",
-      ARG_FLOAT64,
-      "1e-20",
-      "Pruning beam for writing phone lattice" },
+    { "-wip",
+      ARG_FLOAT32,
+      "0.05",
+      "Phone insertion penalty (applied above phone transition probabilities)" },
+
+  /* allphone-specific arguments */
     { "-phonetp",
       ARG_STRING,
       NULL,
@@ -235,22 +159,18 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "3.0",
       "Weight (exponent) applied to phone transition probabilities" },
-    { "-wip",
-      ARG_FLOAT32,
-      "0.05",
-      "Phone insertion penalty (applied above phone transition probabilities)" },
     { "-phsegdir",
       ARG_STRING,
       NULL,
       "Output directory for phone segmentation files; optionally end with ,CTL" },
+    { "-phlatbeam",
+      ARG_FLOAT64,
+      "1e-20",
+      "Pruning beam for writing phone lattice" },
     { "-phlatdir",
       ARG_STRING,
       NULL,
       "Output directory for phone lattice files" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -644,7 +564,7 @@ static void process_ctlfile ( void )
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
   
-  if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
+  if ((mllrctlfile = (char *) cmd_ln_access("-ctl_mllr")) != NULL) {
     if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
   } else

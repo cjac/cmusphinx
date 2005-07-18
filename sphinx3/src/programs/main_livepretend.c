@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.14  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.14.4.1  2005/07/18  23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
  * 
+ * Revision 1.14  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.5  2005/06/15 21:41:56  archan
  * Sphinx3 to s3.generic: 1) added -ctloffset and -ctlcount support for livepretend. 2) Also allow lmname to be set correctly.  Now it is using ld_set_lm instead of kb_setlm.  That makes the code cleaner.
  *
@@ -55,16 +58,6 @@
  * Add comments on all mains for preparation of factoring the command-line.
  *
  * Revision 1.3  2005/03/30 00:43:41  archan
- * Add $Log$
- * Revision 1.14  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- * 
- * Add Revision 1.5  2005/06/15 21:41:56  archan
- * Add Sphinx3 to s3.generic: 1) added -ctloffset and -ctlcount support for livepretend. 2) Also allow lmname to be set correctly.  Now it is using ld_set_lm instead of kb_setlm.  That makes the code cleaner.
- * Add
- * Add Revision 1.4  2005/04/20 03:50:36  archan
- * Add Add comments on all mains for preparation of factoring the command-line.
- * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  */
 

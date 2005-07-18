@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15  2005/06/22  05:36:11  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid
+ * Revision 1.15.4.1  2005/07/18  23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
  * 
+ * Revision 1.15  2005/06/22 05:36:11  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid
+ *
  * Revision 1.11  2005/06/19 04:51:48  archan
  * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
  *
@@ -169,159 +172,25 @@
 #include "ms_senone.h"
 #include "interp.h"
 #include "cb2mllr_io.h"
+#include "cmdln_macro.h"
 
 /** \file main_align.c
    \brief Main driver routine for time alignment.
 
 */
 
-#if 0
-defn = {logs3_arg,am_arg,cep2feat_arg,dict_arg,ctl_arg,output_arg, s3_align_arg}
-
-static arg_t s3_align_arg[] = {
-    { "-compwd",
-      ARG_INT32,
-      "0",
-      "Compound words in dictionary (not supported yet)" },
-    { "-topn",
-      ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
-    { "-insent",
-      ARG_STRING,
-      NULL,
-      "Input transcript file corresponding to control file" },
-    { "-outsent",
-      ARG_STRING,
-      NULL,
-      "Output transcript file with exact pronunciation/transcription" },
-
-    { "-stsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for state segmentation files; optionally end with ,CTL" },
-    { "-phsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for phone segmentation files; optionally end with ,CTL" },
-    { "-wdsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for word segmentation files; optionally end with ,CTL" },
-    { "-s2stsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
-    
-    { NULL, ARG_INT32, NULL, NULL }
-};
-#endif
-
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-mdef", 
-      REQARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmat",
-      REQARG_STRING,
-      NULL,
-      "Transition matrix input file" },
-    { "-mean",
-      REQARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks mean parameters input file" },
-    { "-var",
-      REQARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks variance parameters input file" },
-    { "-mllr",
-      ARG_STRING,
-      NULL,
-      "MLLR transfomation matrix to be applied to mixture gaussian means"},
-    { "-cb2mllr",
-      ARG_STRING,
-      ".1cls.",
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
-    { "-senmgau",
-      ARG_STRING,
-      ".cont.",
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixw",
-      REQARG_STRING,
-      NULL,
-      "Senone mixture weights parameters input file" },
-    { "-tmatfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Triphone state transition probability floor applied to -tmat file" },
-    { "-varfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Codebook variance floor applied to -var file" },
-    { "-mixwfloor",
-      ARG_FLOAT32,
-      "0.0000001",
-      "Codebook mixture weight floor applied to -mixw file" },
-    { "-agc",
-      ARG_STRING,
-      "max",
-      "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-cmn",
-      ARG_STRING,
-      "current",
-      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-varnorm",
-      ARG_STRING,
-      "no",
-      "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
-      ARG_STRING,
-      "1s_c_d_dd",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-dict",
-      REQARG_STRING,
-      NULL,
-      "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdict",
-      ARG_STRING,
-      NULL,
-      "Optional filler word (noise word) pronunciation dictionary input file" },
-    { "-compwd",
-      ARG_INT32,
-      "0",
-      "Compound words in dictionary (not supported yet)" },
-    { "-ctl",
-      REQARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      0,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
-    { "-cepdir",
-      ARG_STRING,
-      NULL,
-      "Directory for utterances in -ctl file (if relative paths specified)." },
-    { "-cepext",
-      ARG_STRING,
-      ".mfc",
-      "File extension appended to utterances listed in ctl file" },
-    { "-mllrctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing MLLR input data; parallel to ctl argument file" },
+  cepstral_to_feature_command_line_macro()
+  log_table_command_line_macro()
+  acoustic_model_command_line_macro()
+  speaker_adaptation_command_line_macro()
+  dictionary_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  hypothesis_file_handling_command_line_macro()
+  control_mllr_file_command_line_macro()
+  cepstral_input_handling_command_line_macro()
+
     { "-lambda",
       ARG_STRING,
       NULL,
@@ -330,6 +199,12 @@ static arg_t defn[] = {
       ARG_INT32,
       "4",
       "No. of top scoring densities computed in each mixture gaussian codebook" },
+    { "-compwd",
+      ARG_INT32,
+      "0",
+      "Compound words in dictionary (not supported yet)" },
+
+  /* align-specific argument */
     { "-beam",
       ARG_FLOAT64,
       "1e-64",
@@ -358,10 +233,6 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -1084,7 +955,7 @@ static void process_ctlfile ( void )
     if ((ctlfp = fopen (ctlfile, "r")) == NULL)
 	E_FATAL("fopen(%s,r) failed\n", ctlfile);
     
-    if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
+    if ((mllrctlfile = (char *) cmd_ln_access("-ctl_mllr")) != NULL) {
 	if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
 	    E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
     } else
@@ -1259,12 +1130,6 @@ main (int32 argc, char *argv[])
   /*  kb_t kb;
       ptmr_t tm;*/
 
-  int a[10];
-  int i;
-  
-  for(i=0;i<11;i++){
-    printf("%d %d\n",i,a[i]);
-  }
 
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);

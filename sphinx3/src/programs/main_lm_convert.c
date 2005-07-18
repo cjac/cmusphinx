@@ -48,9 +48,12 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.1.2.2  2005/07/17  06:00:21  arthchan2003
- * Added default argument in main_lm_convert.c, so the code will not die when -outputfmt is specified as nothing.
+ * Revision 1.1.2.3  2005/07/18  23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
  * 
+ * Revision 1.1.2.2  2005/07/17 06:00:21  arthchan2003
+ * Added default argument in main_lm_convert.c, so the code will not die when -outputfmt is specified as nothing.
+ *
  * Revision 1.1.2.1  2005/07/13 01:20:40  arthchan2003
  * Added lm_convert that could inter-convert DMP and plain-text format of language model file.
  *
@@ -60,8 +63,11 @@
 #include "lm.h"
 #include "s3types.h"
 #include "cmd_ln.h"
+#include "cmdln_macro.h"
 
 static arg_t arg[] = {
+  common_application_properties_command_line_macro()
+
   { "-input",
     REQARG_STRING,
     NULL,
@@ -86,10 +92,6 @@ static arg_t arg[] = {
     ARG_INT32,
     "1",
     "Whether lm is memory-based(1) or disk-based (0)"},
-  { "-logfn",
-    ARG_STRING,
-    NULL,
-    "Log file (default stdout/stderr)" },
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
