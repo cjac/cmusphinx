@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22.4.3  2005/07/13  02:02:52  arthchan2003
- * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
+ * Revision 1.22.4.4  2005/07/18  19:00:36  arthchan2003
+ * Changed the type of machine_endian and input_endian to "little" or "big" , changed the type of sampling rate to float32.
  * 
+ * Revision 1.22.4.3  2005/07/13 02:02:52  arthchan2003
+ * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
+ *
  * Revision 1.22.4.2  2005/07/07 02:31:54  arthchan2003
  * Remove -lminsearch, it proves to be useless and FSG implementation.
  *
@@ -158,7 +161,7 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
 
   /* ARCHAN 20050708: This part should be factored with fe_parse_option*/
   /* allocate and initialize front-end */
-  fe_param.SAMPLING_RATE = (float32)cmd_ln_int32 ("-samprate");
+  fe_param.SAMPLING_RATE = cmd_ln_float32 ("-samprate");
   fe_param.FRAME_RATE = cmd_ln_int32("-frate");
   fe_param.WINDOW_LENGTH = cmd_ln_float32("-wlen");
   fe_param.FB_TYPE = strcmp("mel_scale", cmd_ln_str("-fbtype")) == 0 ?
@@ -191,7 +194,13 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   _decoder->ld_state = LD_STATE_IDLE;
   _decoder->hyp_str = NULL;
   _decoder->hyp_segs = NULL;
+
+  /*
   _decoder->swap= (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+  */
+
+  _decoder->swap= (strcmp(cmd_ln_str("-machine_endian"),cmd_ln_str("-input_endian"))!=0);
+
   _decoder->phypdump= (cmd_ln_int32("-phypdump"));
   _decoder->rawext= (cmd_ln_str("-rawext"));
 
