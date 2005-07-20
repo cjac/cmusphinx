@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.3  2005/07/13  01:59:35  arthchan2003
- * Remove fcb variable in kbcore.c
+ * Revision 1.10.4.4  2005/07/20  21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
  * 
+ * Revision 1.10.4.3  2005/07/13 01:59:35  arthchan2003
+ * Remove fcb variable in kbcore.c
+ *
  * Revision 1.10.4.2  2005/07/03 23:02:39  arthchan2003
  * Wrapped up feat_t freeing into feat_free.
  *
@@ -142,6 +145,10 @@ kbcore_t *kbcore_init (float64 logbase,
 		       char *lmfile,
 		       char *lmctlfile,
 		       char *lmdumpdir,
+
+		       char *fsgfile,
+		       char *fsgctlfile,
+
 		       char *fillpenfile,
 		       char *senmgau,
 		       float64 silprob,
@@ -231,18 +238,43 @@ kbcore_t *kbcore_init (float64 logbase,
       dict_report(kb->dict);
     }
     
-    kb->lmset=lmset_init(lmfile,
-			 lmctlfile,
-			 cmd_ln_str("-ctl_lm"), /* This two are ugly.*/
-			 cmd_ln_str("-lmname"),
-			 lmdumpdir,
-			 langwt,
-			 inspen,
-			 uw,
-			 kb->dict);
 
+    /* Two sore points here 
+       1, lmset initialization should be handed to the search itself. This will make it 
+       parrallel to the FSG code
+       2, 
+     */
+    if( (lmfile||lmctlfile) && (fsgfile||fsgctlfile)){
+      E_FATAL("Only one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile) could be specified\n");
+    }
     
-    if (fillpenfile || (lmfile && kb->dict) || (lmctlfile && kb->dict)) {
+    if(!(lmfile||lmctlfile) && !(fsgfile||fsgctlfile)){
+      E_FATAL("Please specify one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile)\n");
+    }
+
+    if(lmfile||lmctlfile){
+      kb->lmset=lmset_init(lmfile,
+			   lmctlfile,
+			   cmd_ln_str("-ctl_lm"), /* This two are ugly.*/
+			   cmd_ln_str("-lmname"),
+			   lmdumpdir,
+			   langwt,
+			   inspen,
+			   uw,
+			   kb->dict);
+      
+      /* CHECK: check whether LM has a start word and end word 
+	 Also make sure silences are unlinked. */
+      for(i=0;i<kb->lmset->n_lm;i++){
+	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
+	unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
+      }
+
+    }else if (fsgfile||fsgctlfile){
+       E_INFO("kbcore will not let the srch_fsg take care of initialization of the search. Hand it to srch_fsg.");
+    }
+    
+    if (fillpenfile ||kb->dict) {
 	if (! kb->dict)		/* Sic */
 	    E_FATAL("No dictionary for associating filler penalty file(%s)\n", fillpenfile);
 	
@@ -340,12 +372,6 @@ kbcore_t *kbcore_init (float64 logbase,
     if (NOT_S3CIPID(sil))
       E_FATAL("Silence phone '%s' not in mdef\n", S3_SILENCE_CIPHONE);
 
-    /* CHECK: check whether LM has a start word and end word 
-       Also make sure silences are unlinked. */
-    for(i=0;i<kb->lmset->n_lm;i++){
-      checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
-      unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
-    }
 
     E_INFO("End of Initialization of Core Models:\n");
     return kb;

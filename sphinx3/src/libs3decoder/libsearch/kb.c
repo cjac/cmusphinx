@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.2  2005/07/18  19:08:55  arthchan2003
- * Fixed Copy right statement.
+ * Revision 1.26.4.3  2005/07/20  21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
  * 
+ * Revision 1.26.4.2  2005/07/18 19:08:55  arthchan2003
+ * Fixed Copy right statement.
+ *
  * Revision 1.26.4.1  2005/07/03 23:00:58  arthchan2003
  * Free stat_t, histprune_t and srch_t correctly.
  *
@@ -169,6 +172,11 @@ void kb_init (kb_t *kb)
 			      cmd_ln_str("-lm"),
 			      cmd_ln_str("-lmctlfn"),
 			      cmd_ln_str("-lmdumpdir"),
+			      cmd_ln_str("-fsg"),
+#if 0
+			      cmd_ln_str("-fsgctlfn"),
+#endif
+			      NULL, /*Currently, not try to handle the -fsgctlfn */
 			      cmd_ln_str("-fillpen"),
 			      cmd_ln_str("-senmgau"),
 			      cmd_ln_float32("-silprob"),
@@ -249,16 +257,18 @@ void kb_init (kb_t *kb)
 
     if(REPORT_KB)
       ascr_report(kb->ascr);
-    
-    /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
-    kb->vithist = vithist_init(kbcore, kb->beam->word,
-			       cmd_ln_int32("-bghist"),
-			       cmd_ln_int32("-lmrescore"),
-			       cmd_ln_int32("-bt_wsil"),
-			       REPORT_KB);
 
-    if(REPORT_KB)
-      vithist_report(kb->vithist);
+    if(kbcore->lmset&&(cmd_ln_str("-lm")||cmd_ln_str("-lmctlfn"))){
+      /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+      kb->vithist = vithist_init(kbcore, kb->beam->word,
+				 cmd_ln_int32("-bghist"),
+				 cmd_ln_int32("-lmrescore"),
+				 cmd_ln_int32("-bt_wsil"),
+				 REPORT_KB);
+      
+      if(REPORT_KB)
+	vithist_report(kb->vithist);
+    }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)

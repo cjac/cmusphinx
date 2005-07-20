@@ -45,12 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/21  23:28:48  arthchan2003
+ * Revision 1.11.4.1  2005/07/20  21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
+ * 
+ * Revision 1.11  2005/06/21 23:28:48  arthchan2003
  * Log. Please also see comments of kb.[ch].  Major changes you could see
  * is that the lmset interface is now used rather than several interfaces
  * for reading lm. Other than that, you could say most changes are
  * harmless internal interfaces changes.
- * 
+ *
  * Revision 1.5  2005/06/18 03:22:29  archan
  * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
  *
@@ -152,6 +155,10 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 		       char *lmfile,            /**< LM file */
 		       char *lmctlfile,         /**< LM control file, mutually exclusive with lmfile */
 		       char *lmdumpdir,         /**< Dump LM  */
+
+		       char *fsgfile,           /**< FSG file */
+		       char *fsgctlfile,        /**< FSG control file, mutually exclusive with fsgfile (Not handled yet)*/
+
 		       char *fillpenfile,       /**< Filler penality file,*/
 		       char *senmgau,           /**< NOT USED */
 		       float64 silprob,		/**< Silence probablity Must be valid if lmfile/fillpenfile is
