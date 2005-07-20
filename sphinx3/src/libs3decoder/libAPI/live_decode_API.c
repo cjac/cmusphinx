@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22.4.4  2005/07/18  19:00:36  arthchan2003
- * Changed the type of machine_endian and input_endian to "little" or "big" , changed the type of sampling rate to float32.
+ * Revision 1.22.4.5  2005/07/20  19:42:30  arthchan2003
+ * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
  * 
+ * Revision 1.22.4.4  2005/07/18 19:00:36  arthchan2003
+ * Changed the type of machine_endian and input_endian to "little" or "big" , changed the type of sampling rate to float32.
+ *
  * Revision 1.22.4.3  2005/07/13 02:02:52  arthchan2003
  * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
  *
@@ -629,10 +632,20 @@ void ld_read_lm(live_decoder_t *_decoder,
 {
   srch_t* s;
   lm_t* lm;
+  int32 ndict;
   s=(srch_t*)_decoder->kb.srch;
 
-  /*  lm=lm_read(lmpath,lw,wip,uw);
-      s->srch_add_lm(s,lm,lmname);*/
+  ndict=dict_size(_decoder->kb.kbcore->dict);
+
+
+  lm=lm_read(lmpath,lmname,
+	     cmd_ln_float32("-lw"),
+	     cmd_ln_float32("-wip"),
+	     cmd_ln_float32("-uw"),
+	     ndict,NULL,1 /* Weight apply */
+	     );
+
+  s->srch_add_lm(s,lm,lmname);
 }
 
 

@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13.4.4  2005/07/18  19:02:13  arthchan2003
- * Tied almost every command line arguments with decode, wave2feat and ep. (except -rawext and -machine_endian) using macro in cmdln_macro.h
+ * Revision 1.13.4.5  2005/07/20  19:42:30  arthchan2003
+ * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
  * 
+ * Revision 1.13.4.4  2005/07/18 19:02:13  arthchan2003
+ * Tied almost every command line arguments with decode, wave2feat and ep. (except -rawext and -machine_endian) using macro in cmdln_macro.h
+ *
  * Revision 1.13.4.3  2005/07/13 02:02:53  arthchan2003
  * Added -dither and -seed in the option.  Dithering is also support in livepretend. The behavior will be conformed s3.x's wave2feat, start to re-incorproate lm_read. Not completed yet.
  *
@@ -130,6 +133,8 @@ arg_t arg_def[] = {
   search_modeWST_specific_command_line_macro()
   partial_hypothesis_command_line_macro()
   control_lm_mllr_file_command_line_macro()
+  finite_state_grammar_command_line_macro()
+  phone_insertion_penalty_command_line_macro()
 
   { "-machine_endian",
     ARG_STRING,
