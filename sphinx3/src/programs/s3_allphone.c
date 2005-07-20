@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6.4.1  2005/07/17  06:06:04  arthchan2003
- * Removed chk_tp_uppertri and used in tmat_chk_uppertri.
+ * Revision 1.6.4.2  2005/07/20  21:26:55  arthchan2003
+ * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
  * 
+ * Revision 1.6.4.1  2005/07/17 06:06:04  arthchan2003
+ * Removed chk_tp_uppertri and used in tmat_chk_uppertri.
+ *
  * Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -57,9 +60,12 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.6.4.1  2005/07/17  06:06:04  arthchan2003
- * Removed chk_tp_uppertri and used in tmat_chk_uppertri.
+ * Revision 1.6.4.2  2005/07/20  21:26:55  arthchan2003
+ * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
  * 
+ * Add Revision 1.6.4.1  2005/07/17 06:06:04  arthchan2003
+ * Add Removed chk_tp_uppertri and used in tmat_chk_uppertri.
+ * Add
  * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  * Add
@@ -836,8 +842,7 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
     wt = *((float32 *) cmd_ln_access ("-phonetpwt"));
     phone_tp_init (file, tpfloor, wt, ip);
     
-    f64arg = (float64 *) cmd_ln_access ("-beam");
-    beam = logs3 (*f64arg);
+    beam = logs3 (cmd_ln_float64("-beam"));
     E_INFO ("logs3(beam)= %d\n", beam);
 
     frm_hist = (history_t **) ckd_calloc (S3_MAX_FRAMES, sizeof(history_t *));
