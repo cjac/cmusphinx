@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/18  18:56:20  arthchan2003
- * A centralized macro definition file that contains command-line information that shared by different applications.
+ * Revision 1.1.2.2  2005/07/20  19:43:44  arthchan2003
+ * Add command line arguments for fsg routines.
  * 
+ * Revision 1.1.2.1  2005/07/18 18:56:20  arthchan2003
+ * A centralized macro definition file that contains command-line information that shared by different applications.
+ *
  *
  *
  */
@@ -135,6 +138,26 @@
       ARG_STRING, \
       NULL, \
       "Name of language model in -lmctlfn to use for all utterances" }, 
+
+#define finite_state_grammar_command_line_macro()  \
+    { "-fsg", \
+      ARG_STRING, \
+      NULL, \
+      "Finite state grammar"}, \
+    { "-fsgctlfn", \
+      ARG_STRING, \
+      NULL, \
+      "A finite state grammar control file" }, \
+    { "-fsgusealtpron", \
+      ARG_INT32, \
+      "1", \
+      "Use alternative pronunciations for FSG"}, \
+    { "-fsgusefiller", \
+      ARG_INT32, \
+      "1", \
+      "Insert filler words at each state."}, 
+
+
 
 #define log_table_command_line_macro() \
     { "-logbase", \
@@ -372,6 +395,15 @@
       ARG_FLOAT32, \
       "0.7", \
       "Unigram weight" }, 
+
+	/* Follow sphinx 3.0, this should be implemented in nearly
+	   every tool */
+#define phone_insertion_penalty_command_line_macro() \
+    { "-phonepen", \
+      ARG_FLOAT32, \
+      "1.0", \
+      "Word insertion penalty" }, 
+
 
 #define common_s3x_beam_properties_command_line_macro() \
     { "-beam", \
