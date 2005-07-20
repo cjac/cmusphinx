@@ -76,10 +76,11 @@ fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone)
     h->frame_entries = (glist_t **) ckd_calloc_2d (word_fsg_n_state(fsg),
 						   h->n_ciphone,
 						   sizeof(glist_t));
+    h->dict = fsg->dict;
   } else {
     h->frame_entries = NULL;
+    h->dict = NULL;
   }
-  h->dict = fsg->dict;
   
   return h;
 }

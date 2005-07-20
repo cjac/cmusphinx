@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.5  2005/07/17  05:49:37  arthchan2003
- * Mistakes in last update therefore made small changes to give comment.  Implemented 2 major hacks: hack 1 replaced fsg_hmm_t with whmm_t (was used in decode_anytopo in sphinx 3.0,  hack 2, use the arrays in ctxt_table_t to implement psubtree_add_trans.
+ * Revision 1.1.2.6  2005/07/20  21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
  * 
+ * Revision 1.1.2.5  2005/07/17 05:49:37  arthchan2003
+ * Mistakes in last update therefore made small changes to give comment.  Implemented 2 major hacks: hack 1 replaced fsg_hmm_t with whmm_t (was used in decode_anytopo in sphinx 3.0,  hack 2, use the arrays in ctxt_table_t to implement psubtree_add_trans.
+ *
  * Revision 1.1.2.4  2005/07/17 05:44:32  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -174,7 +177,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   s3cipid_t silcipid;	/* Silence CI phone ID */
   s3wid_t wid;		/* Word ID */
   s3cipid_t bid, lc, rc;		/* The base phone ID */
-  s3ssid_t ssid;        /* Senone Sequence ID */
+  s3ssid_t *ssid;        /* Senone Sequence ID Pointer*/
 
   gnode_t *gn;
   fsg_pnode_t *pnode, *pred, *head;
@@ -186,7 +189,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   int32 i;
   
   lw = cmd_ln_float32("-lw");
-  pip = (int32)(logs3(cmd_ln_float32("-pip")) * lw);
+  pip = (int32)(logs3(cmd_ln_float32("-phonepen")) * lw);
   wip = (int32)(logs3(cmd_ln_float32("-wip")) * lw);
 
   silcipid = mdef->sil;
@@ -210,7 +213,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
   
   if (pronlen == 1) {			/* Single-phone word */
 
-    bid = dict_pron(dict, wid, 0);	/* Diphone ID or SSID */
+    bid = dict_pron(dict, wid, 0);	
 
     /* HACK! Mimic this behavior of Sphinx 2 by asking whether the word is a filler 
        Sphinx 2 will actually ask whether a word is multiplexed.  That is to say whether
@@ -234,7 +237,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 #endif
 	
 	/* HACK! Is this correct?*/
-	ssid = ctxt_tab->lrcpid[bid][lc].pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]];	
+	ssid = &(ctxt_tab->lrcpid[bid][lc].pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]]);
 
 	                         /* Always use silence as the right context 
 				   
@@ -246,7 +249,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	for (gn = lc_pnodelist; gn; gn = gnode_next(gn)) {
 	  pnode = (fsg_pnode_t *) gnode_ptr(gn);
 	  
-	  if (*(pnode->hmm.pid) == ssid) {
+	  if (*(pnode->hmm.pid) == *(ssid)) {
 	    /* already allocated; share it for this context phone */
 	    fsg_pnode_add_ctxt(pnode, lc);
 	    break;
@@ -255,7 +258,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	
 	if (! gn) {	/* ssid not already allocated */
 	  pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
-	  *(pnode->hmm.pid) = ssid;
+	  pnode->hmm.pid = ssid;
 
 	  pnode->next.fsglink = fsglink;
 	  pnode->logs2prob = word_fsglink_logs2prob(fsglink) + wip + pip;
@@ -279,10 +282,11 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 #if 0
       ssid = did;	/* dict_phone() already has the right CIphone ssid */
 #endif
-      ssid = bid;	/*HACK! Should I use the lookup table instead? */
+      /* HACK! Alright, this is not pointed correctly. Should not used pointer. */
+      ssid = &bid;	/*HACK! Should I use the lookup table instead? */
       
       pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
-      *(pnode->hmm.pid) = bid; /** What is the senone sequence ID for a silence word ?*/
+      pnode->hmm.pid = ssid; /** What is the senone sequence ID for a silence word ?*/
 
       pnode->next.fsglink = fsglink;
       pnode->logs2prob = word_fsglink_logs2prob(fsglink) + wip + pip;
@@ -340,13 +344,13 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	
 	  lc = lclist[i];
 	  rc= dict_pron(dict,wid,p+1);
-	  ssid=ctxt_table_left_ctxt_ssid(ctxt_tab,lc,bid,rc);
+	  ssid=&(ctxt_table_left_ctxt_ssid(ctxt_tab,lc,bid,rc));
 	  
 	  pnode = ssid_pnode_map[lc];
 	  
 	  if (! pnode) {	/* Allocate pnode for this new ssid */
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
-	    *(pnode->hmm.pid) = ssid;
+	    pnode->hmm.pid = ssid;
 	    
 	    /* Also add word insertion penalty and phone insertion penalty*/
 	    pnode->logs2prob = word_fsglink_logs2prob(fsglink) + wip + pip;
@@ -364,7 +368,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    lc_pnodelist = glist_add_ptr (lc_pnodelist, (void *)pnode);
 	    ssid_pnode_map[lc] = pnode;
 	  } else {	
-	    assert (*(pnode->hmm.pid) == ssid);
+	    assert (*(pnode->hmm.pid) == *(ssid));
 	  }
 	  fsg_pnode_add_ctxt(pnode, lc);
 	}
@@ -378,10 +382,10 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 					   
 					   lc <- b -> rc
 					 */
-	ssid=ctxt_table_word_int_ssid(ctxt_tab,wid,p);
+	ssid=&(ctxt_table_word_int_ssid(ctxt_tab,wid,p));
 
 	pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
-	*(pnode->hmm.pid) = ssid;
+	pnode->hmm.pid = ssid;
 	pnode->logs2prob = pip;
 	
 	pnode->ci_ext = (int8) dict_pron(dict, wid, p);
@@ -424,7 +428,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	     Am I correct?
 	   */
 	  lc = dict_pron(dict,wid,p-1);
-	  ssid=ctxt_tab->rcpid[bid][rc].pid[ctxt_tab->rcpid[bid][lc].cimap[rc]];
+	  ssid=&(ctxt_tab->rcpid[bid][rc].pid[ctxt_tab->rcpid[bid][lc].cimap[rc]]);
 	  pnode = ssid_pnode_map[lc];
 
 	  /*
@@ -435,7 +439,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	  
 	  if (! pnode) {	/* Allocate pnode for this new ssid */
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
-	    *(pnode->hmm.pid) = ssid;
+	    pnode->hmm.pid = ssid;
 	    pnode->logs2prob = pip;
 	    /*	    pnode->ci_ext = (int8) dict_ciphone(dict, wid, p);*/
 	    pnode->ci_ext = (int8) dict_pron(dict, wid, p);
@@ -452,7 +456,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	    rc_pnodelist = glist_add_ptr (rc_pnodelist, (void *)pnode);
 	    ssid_pnode_map[lc] = pnode;
 	  } else {	
-	    assert (*(pnode->hmm.pid) == ssid);
+	    assert (*(pnode->hmm.pid) == *ssid);
 	  }
 	  fsg_pnode_add_ctxt(pnode, rc);
 	}

@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.4  2005/07/17  05:44:32  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.1.2.5  2005/07/20  21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
  * 
+ * Revision 1.1.2.4  2005/07/17 05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.1.2.3  2005/07/13 18:39:48  arthchan2003
  * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  *
@@ -195,7 +198,7 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
     search->fsglist = NULL;
     search->lextree = NULL;
   }
-  
+
   search->n_ci_phone=mdef_n_ciphone(s->kbc->mdef);
 
   /* Intialize the search history object */
@@ -219,12 +222,9 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
   search->isBacktrace=cmd_ln_int32("-backtrace");
     
   lw= s->kbc->fillpen->lw;
-  pip = (int32)(logs3(cmd_ln_float32("-pip")) * lw);
+  pip = (int32)(logs3(cmd_ln_float32("-phonepen")) * lw); 
   wip =  s->kbc->fillpen->wip;
 
-  /*
-  isReportAltProng=??
-  */
 #if 0
   /* Get search pruning parameters */
   search_get_logbeams (&(search->beam), &(search->pbeam), &(search->wbeam));
@@ -259,6 +259,7 @@ boolean fsg_search_add_fsg (fsg_search_t *search, word_fsg_t *fsg)
 {
   word_fsg_t *oldfsg;
   
+  assert(search);
   /* Check to make sure search is in a quiescent state */
   if (search->state != FSG_SEARCH_IDLE) {
     E_ERROR("Attempt to switch FSG inside an utterance\n");
@@ -867,7 +868,7 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
   startwid = dict_basewid(dict, dict_startwid(dict));
   finishwid = dict_basewid(dict, dict_finishwid(dict));
   dict = search->dict;
-altpron = search->isUsealtpron;
+  altpron = search->isUsealtpron;
 
   
   i = 0;

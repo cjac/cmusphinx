@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.3  2005/07/13  18:41:01  arthchan2003
- * minor changes of srch_fsg.c to make it conform with hacks in fsg_*
+ * Revision 1.1.2.4  2005/07/20  21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
  * 
+ * Revision 1.1.2.3  2005/07/13 18:41:01  arthchan2003
+ * minor changes of srch_fsg.c to make it conform with hacks in fsg_*
+ *
  * Revision 1.1.2.2  2005/06/28 07:01:21  arthchan2003
  * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  *
@@ -53,7 +56,6 @@
 #include "srch_fsg.h"
 #include "kb.h"
 #include "kbcore.h"
-#include "fsg_search.h"
 
 int srch_FSG_init(kb_t *kb, /**< The KB */
 		  void* srch /**< The pointer to a search structure */
@@ -62,11 +64,20 @@ int srch_FSG_init(kb_t *kb, /**< The KB */
   srch_t* s;
   s=(srch_t *) srch;
   fsg_search_t* fsgsrch;
+  word_fsg_t* wordfsg;
 
-  fsgsrch=(fsg_search_t*) fsg_search_init(NULL,s);
+  fsgsrch=fsg_search_init(NULL,s);
 
   s->grh->graph_struct=fsgsrch;
   s->grh->graph_type=GRAPH_STRUCT_GENGRAPH;
+  
+  if((wordfsg=srch_FSG_read_fsgfile(s,cmd_ln_str("-fsg")))==NULL){
+    return SRCH_FAILURE;
+  }
+  assert(wordfsg);
+  fsgsrch=fsg_search_init(wordfsg,s);
+
+
   return SRCH_SUCCESS;
 }
 
@@ -77,21 +88,21 @@ word_fsg_t * srch_FSG_read_fsgfile(void* srch,const char* fsgfilename)
   fsg_search_t* fsgsrch;
   s=(srch_t *)srch;
   fsgsrch=(fsg_search_t*) s->grh->graph_struct;
-
-   
+  
   fsg = word_fsg_readfile(fsgfilename, 
 			  cmd_ln_int32("-fsgusealtpron"),
 			  cmd_ln_int32("-fsgusefiller"),
 			  s->kbc->fillpen->silprob,
 			  s->kbc->fillpen->fillerprob,
 			  s->kbc->fillpen->lw,
-			  mdef_n_ciphone(s->kbc->mdef),
 			  s->kbc->dict,
 			  s->kbc->mdef
 			  );
 			  
-  if (! fsg)
+  if (! fsg){
+    E_INFO("Fail to read fsg from file name %s\n",fsgfilename);
     return NULL;
+  }
   
   if (! fsg_search_add_fsg (fsgsrch, fsg)) {
     E_ERROR("Failed to add FSG '%s' to system\n", word_fsg_name(fsg));
@@ -101,7 +112,6 @@ word_fsg_t * srch_FSG_read_fsgfile(void* srch,const char* fsgfilename)
   return fsg;
 
 }
-
 int srch_FSG_uninit(void* srch_struct)
 {
   return SRCH_SUCCESS;
