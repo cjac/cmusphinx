@@ -66,114 +66,6 @@
 #include "cmdln_macro.h"
 
 
-#if 0
-
-    { "-lambda",
-      ARG_STRING,
-      NULL,
-      "Interpolation weights (CD/CI senone) parameters input file" },
-
-arg_t s33_decode_arg[] ={
-#if 0
-    /* Commented out; not supported */
-    { "-compsep",
-      ARG_STRING,
-      "",	/* Default: No compound word (NULL separator char) */
-      "Separator character between components of a compound word (NULL if none)" },
-#endif
-    { "-Nlextree",
-      ARG_INT32,
-      "3",
-      "No. of lextrees to be instantiated; entries into them staggered in time" },
-    { "-epl",
-      ARG_INT32,
-      "3",
-      "Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" },
-    { "-bptbldir",
-      ARG_STRING,
-      NULL,
-      "Directory in which to dump word Viterbi back pointer table (for debugging)" },
-    { "-hmmdump",
-      ARG_INT32,
-      "0",
-      "Whether to dump active HMM details to stderr (for debugging)" },
-    { "-bghist",
-      ARG_INT32,
-      "0",
-      "Bigram-mode: If TRUE only one BP entry/frame; else one per LM state" },
-    { "-ptranskip",
-      ARG_INT32,
-      "0",
-      "Use wbeam for phone transitions every so many frames (if >= 1)" },
-    { "-treeugprob",
-      ARG_INT32,
-      "1",
-      "If TRUE (non-0), Use unigram probs in lextree" },
-};
-
-arg_t s36_decode_arg[] ={
-    { "-Nstalextree",
-      ARG_INT32,
-      "25",
-      "No. of lextrees to be instantiated statically; " },
-};
-
-arg_t s3lp_arg[] = {
-    { "-maxhyplen",
-      ARG_INT32,
-      "1000",
-      "Maximum number of words in a partial hypothesis (for block decoding)" },
-    { "-phypdump",
-      ARG_INT32,
-      "1",
-      "dump parital hypothesis on the screen"},
-};
-
-arg_t output_arg[] = {
-    { "-hyp",
-      ARG_STRING,
-      NULL,
-      "Recognition result file, with only words" },
-    { "-hypseg",
-      ARG_STRING,
-      NULL,
-      "Recognition result file, with word segmentations and scores" },
-
-}
-
-arg_t search_arg[] = {
-    { "-op_mode",
-      ARG_INT32,
-      "4",
-      "Operation Mode. Mode 4: TST search, Mode 5: WST search, Mode 1369: Debug "},
-};
-
-arg_t ctl_arg[]=
-{
-    { "-rawdir",
-      ARG_STRING,
-      NULL,
-      "Input raw files directory (prefixed to filespecs in control file)" },
-    { "-rawext",
-      ARG_STRING,
-      ".raw",
-      "Input raw files extension (prefixed to filespecs in control file)"},
-    { "-ctl_lm",
-      ARG_STRING,
-      NULL,
-      "Control file that list the corresponding LM for an utterance" },
-    { "-mllrctl",
-      ARG_STRING,
-      NULL,
-      "Control file that list the corresponding MLLR matrix for an utterance"},
-    { "-utt",
-      ARG_STRING,
-      NULL,
-      "Utterance file to be processed (-ctlcount argument times)" },
-}
-
-
-#endif
  
 static arg_t arg[] = {
   log_table_command_line_macro()
@@ -197,10 +89,14 @@ static arg_t arg[] = {
   search_specific_command_line_macro()
   search_modeTST_specific_command_line_macro()
   search_modeWST_specific_command_line_macro()
-  partial_hypothesis_command_line_macro()
 
   control_lm_mllr_file_command_line_macro()
+  finite_state_grammar_command_line_macro()
+  phone_insertion_penalty_command_line_macro()
 
+  partial_hypothesis_command_line_macro()
+
+  /* Things are yet to refactored */
 #if 0
     /* Commented out; not supported */
      { "-compsep",
