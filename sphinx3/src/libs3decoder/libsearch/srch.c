@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.8  2005/07/17  05:54:55  arthchan2003
- * replace vithist_dag_write_header with dag_write_header
+ * Revision 1.1.4.9  2005/07/20  21:21:59  arthchan2003
+ * Removed graph search fend-off.
  * 
+ * Revision 1.1.4.8  2005/07/17 05:54:55  arthchan2003
+ * replace vithist_dag_write_header with dag_write_header
+ *
  * Revision 1.1.4.7  2005/07/13 18:42:35  arthchan2003
  * Re-enabled function assignments for mode 3 in srch.c. Code compiled. Still has 3 major hacks and 8 minor hacks.  See message in fsg_*
  *
@@ -268,6 +271,7 @@ void srch_clear_funcptrs(srch_t *s){
 srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   srch_t *s;
+  char *str;
   s=(srch_t*) ckd_calloc(1, sizeof(srch_t));
 
   E_INFO("Search Initialization. \n");
@@ -291,8 +295,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-
-    E_FATAL("Graph Seearch mode is not supported yet");
 
     s->srch_init=&srch_FSG_init;
     /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
@@ -440,14 +442,37 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
 
 
+  str=srch_mode_index_to_str(op_mode);
+
+  /* Do search-specific checking here */
+  if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
+    if(s->kbc->lmset==NULL||s->vithist==NULL){      
+      E_INFO("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n");
+      goto check_error;
+    }
+  }
+
+  if(op_mode==OPERATION_GRAPH){
+    if(!cmd_ln_str("-fsg")&&!cmd_ln_str("-fsgfile")){
+      E_INFO("-fsg and -fsgfile are not specified in op_mode %s, wrong operation mode?\n");
+      goto check_error;
+    }
+
+  }
   /* Do search-specific initialization here. */ 
 
   if(s->srch_init(kb,s)==SRCH_FAILURE){
     E_INFO("search initialization failed for op-mode %d\n",op_mode);
-    return NULL;
+    goto check_error;
   }
-  
+
+  ckd_free(str);
   return s;
+
+check_error:
+  ckd_free(str);
+  return NULL;
+
 }
 
 int32 srch_utt_begin(srch_t* srch){
@@ -463,6 +488,8 @@ int32 srch_utt_begin(srch_t* srch){
 int32 srch_utt_end(srch_t* srch){
 
   if(srch->srch_utt_end==NULL){
+
+
     E_INFO("srch->srch_utt_end is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
