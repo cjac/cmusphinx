@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.3  2005/07/13  18:39:48  arthchan2003
- * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ * Revision 1.1.2.4  2005/07/20  21:15:56  arthchan2003
+ * A FSG in Sphinx 2 can be read by word_fsg.c but there is memory leaks using word_fsg_readfile.  Sounds like related to str2word.
  * 
+ * Revision 1.1.2.3  2005/07/13 18:39:48  arthchan2003
+ * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
+ *
  * Revision 1.1.2.2  2005/06/28 07:01:20  arthchan2003
  * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  *
@@ -146,7 +149,8 @@
 #define __FSG_DBG__		0
 
 
-#define WORD_FSG_MAX_WORDPTR	4096
+#define WORD_FSG_MAX_WORDPTR	128
+#define WORD_FSG_WORD_LENGTH    256
 
 #define WORD_FSG_BEGIN_DECL		"FSG_BEGIN"
 #define WORD_FST_BEGIN_DECL		"FST_BEGIN"
@@ -183,7 +187,8 @@ static int32 nextline_str2words (FILE *fp, int32 *lineno,
       return -1;
     
     (*lineno)++;
-    
+    E_INFO("line %s",line);
+
     if (line[0] != WORD_FSG_COMMENT_CHAR) {	/* Skip comment lines */
       if ((n = str2words(line, wordptr, max_ptr)) < 0)
 	E_FATAL("Line[%d] too long\n", *lineno);
@@ -414,7 +419,9 @@ static void word_fsg_lc_rc (word_fsg_t *fsg)
   
   silcipid = mdef_silphone(mdef);
   assert (silcipid >= 0);
+  E_INFO("Value of silcipid %d\n",silcipid);
   n_ci = fsg->n_ciphone;
+  E_INFO("No of CI phones %d\n", n_ci);
   if (n_ci > 127) {
     E_FATAL("#phones(%d) > 127; cannot use int8** for word_fsg_t.{lc,rc}\n",
 	    n_ci);
@@ -527,6 +534,8 @@ word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
   
   assert (fsg);
   assert (dict);
+  assert (mdef);
+
   
   /* Some error checking */
   if (lw <= 0.0)
@@ -565,6 +574,8 @@ word_fsg_t *word_fsg_load (s2_fsg_t *fsg,
   word_fsg->rc = NULL;
   word_fsg->dict = dict;
   word_fsg->mdef = mdef;
+  word_fsg->n_ciphone=mdef_n_ciphone(mdef);
+
   
   /* Allocate non-epsilon transition matrix array */
   word_fsg->trans = (glist_t **) ckd_calloc_2d (word_fsg->n_state,
@@ -683,7 +694,7 @@ static void s2_fsg_free (s2_fsg_t *fsg)
 word_fsg_t *word_fsg_read (FILE *fp,
 			   boolean use_altpron, boolean use_filler,
 			   float32 silprob, float32 fillprob,
-			   float32 lw, int32 n_ciphone,dict_t *dict, mdef_t * mdef
+			   float32 lw, dict_t *dict, mdef_t * mdef
 			   )
 {
   s2_fsg_t *fsg;			/* "External" FSG structure */
@@ -703,7 +714,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
       E_ERROR("%s declaration missing\n", WORD_FSG_BEGIN_DECL);
       return NULL;
     }
-    
+
     if ((strcmp (wordptr[0], WORD_FSG_BEGIN_DECL) == 0)
 	|| (strcmp (wordptr[0], WORD_FST_BEGIN_DECL) == 0)) {
       if (n > 2) {
@@ -729,6 +740,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
       || (fsg->n_state <= 0)) {
     E_ERROR("Line[%d]: #states declaration line missing or malformed\n",
 	    lineno);
+
     goto parse_error;
   }
 
@@ -755,6 +767,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
       || (fsg->final_state >= fsg->n_state)) {
     E_ERROR("Line[%d]: final state declaration line missing or malformed\n",
 	    lineno);
+
     goto parse_error;
   }
   
@@ -800,7 +813,6 @@ word_fsg_t *word_fsg_read (FILE *fp,
   }
   
   cfsg = word_fsg_load (fsg, use_altpron, use_filler, silprob, fillprob, lw,dict,mdef);
-  cfsg->n_ciphone=n_ciphone;
   
   s2_fsg_free (fsg);
   
@@ -815,7 +827,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
 word_fsg_t *word_fsg_readfile (const char *file,
 			       boolean use_altpron, boolean use_filler,
 			       float32 silprob, float32 fillprob,
-			       float32 lw,int32 n_ciphone,dict_t* dict,mdef_t * mdef)
+			       float32 lw,dict_t* dict,mdef_t * mdef)
 {
   FILE *fp;
   word_fsg_t *fsg;
@@ -830,7 +842,7 @@ word_fsg_t *word_fsg_readfile (const char *file,
   
   fsg = word_fsg_read (fp,
 		       use_altpron, use_filler,
-		       silprob, fillprob, lw, n_ciphone,dict,mdef);
+		       silprob, fillprob, lw, dict,mdef);
   
   fclose (fp);
   
