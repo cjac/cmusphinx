@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.2  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.12.4.3  2005/07/20  21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
  * 
+ * Revision 1.12.4.2  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.12.4.1  2005/07/13 01:19:44  arthchan2003
  * Changed back the default of -btwsil to 1, this conform to the tip of the trunk.
  *
@@ -306,34 +309,36 @@
 
 #include "flat_fwd.h"
 #include "ms_mllr.h"
+#include "ms_mgau.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
-#include "interp.h"
 #include "s3_dag.h"
 #include "dag.h"
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
 
-
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-static interp_t *interp;	/* CD/CI interpolation */
+static mdef_t *mdef;		/* Model definition */
+static ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
 static tmat_t *tmat;		/* HMM transition matrices */
 
 static feat_t *fcb;           /* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;        /* Speech feature data */
-static mdef_t *mdef;		/* Model definition */
-
-#if 0
-extern lm_t* lm;
-extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm ones.  
-				   They may not be the same! */
-#endif
 
 extern lmset_t *lmset;          /* The LM set */
 extern dict_t* dict;
 extern fillpen_t* fpen;
 extern dag_t dag;
+
+#if 0
+static gauden_t *g;		/* Gaussian density codebooks */
+static senone_t *sen;		/* Senones */
+static interp_t *interp;	/* CD/CI interpolation */
+
+extern lm_t* lm;
+extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm ones.  
+				   They may not be the same! */
+#endif
+
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 static int32 *bestscr;		/* Best statescore in each frame */
@@ -349,7 +354,6 @@ pctr_t ctr_nsen;
 
 
 static int32 tot_nfr;
-
 static char *inlatdir;
 static char *outlatdir;
 static int32 outlat_onlynodes;
@@ -375,7 +379,9 @@ static arg_t defn[] = {
   dag_handling_command_line_macro()
   search_specific_command_line_macro()
   control_mllr_file_command_line_macro()
+  phone_insertion_penalty_command_line_macro()
 
+  /* Things which are not yet synchronized with decode/dag/astar */
     { "-lambda",
       ARG_STRING,
       NULL,
@@ -413,10 +419,6 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-27",
       "Pruning beam applied in forward search upon word exit" },
-    { "-phonepen",
-      ARG_FLOAT32,
-      "1.0",
-      "Penalty applied for each phone transition" },
     { "-tracewhmm",
       ARG_STRING,
       NULL,
@@ -460,12 +462,26 @@ static arg_t defn[] = {
  */
 static void models_init ( void )
 {
-    float32 varfloor, mixwfloor, tpfloor;
     int32 i;
-    char *arg;
+    gauden_t* g;
+    senone_t* sen;
+    float32 tpfloor;
+
+    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
+
+    /* Initialize feature stream type */
+    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		      (char *) cmd_ln_access ("-cmn"),
+		      (char *) cmd_ln_access ("-varnorm"),
+		      (char *) cmd_ln_access ("-agc"),
+		      1);
+
     
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),
+		      1);
+
+    
 
     /* Dictionary */
     dict = dict_init (mdef,
@@ -474,57 +490,41 @@ static void models_init ( void )
 		      0,
 		      1);
 
-    /* Codebooks */
-    varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-mean"),
-		     (char *) cmd_ln_access("-var"),
-		     varfloor);
+    /* Multiple stream Gaussian mixture Initialization*/
+    msg=ms_mgau_init(cmd_ln_str("-mean"),
+		     cmd_ln_str("-var"),
+		     cmd_ln_float32("-varfloor"),
+		     cmd_ln_str("-mixw"),
+		     cmd_ln_float32("-mixwfloor"),
+		     cmd_ln_str("-senmgau"),
+		     cmd_ln_str("-lambda"),
+		     cmd_ln_int32("-topn")
+		     );
+
+    assert(msg);    
+    assert(msg->g);    
+    assert(msg->s);
+
+    g=ms_mgau_gauden(msg);
+    sen=ms_mgau_senone(msg);
 
     /* Verify codebook feature dimensions against libfeat */
-     if (feat_n_stream(fcb) != g->n_feat) {
-       E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-               feat_n_stream(fcb), g->n_feat);
-     }
-     for (i = 0; i < feat_n_stream(fcb); i++) {
-       if (feat_stream_len(fcb,i) != g->featlen[i]) {
-           E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-                   feat_stream_len(fcb, i), g->featlen[i]);
-       }
-     }
-
-    /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixw"),
-		       (char *) cmd_ln_access("-senmgau"),
-		       mixwfloor);
-    
-    /* Verify senone parameters against gauden parameters */
-    if (sen->n_feat != g->n_feat)
-	E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, sen->n_feat);
-    if (sen->n_cw != g->n_density)
-	E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, sen->n_cw);
-    if (sen->n_gauden > g->n_mgau)
-	E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
-    if (sen->n_gauden < g->n_mgau)
-	E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
+    if (feat_n_stream(fcb) != g->n_feat) {
+      E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
+	      feat_n_stream(fcb), g->n_feat);
+    }
+    for (i = 0; i < feat_n_stream(fcb); i++) {
+      if (feat_stream_len(fcb,i) != g->featlen[i]) {
+	E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
+		feat_stream_len(fcb, i), g->featlen[i]);
+      }
+    }
 
     /* Verify senone parameters against model definition parameters */
     if (mdef->n_sen != sen->n_sen)
 	E_FATAL("Model definition has %d senones; but #senone= %d\n",
 		mdef->n_sen, sen->n_sen);
 
-    /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
-	interp = interp_init (arg);
-
-	/* Verify interpolation weights size with senones */
-	if (interp->n_sen != sen->n_sen)
-	    E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
-		    interp->n_sen, sen->n_sen);
-    } else
-	interp = NULL;
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
@@ -538,8 +538,6 @@ static void models_init ( void )
 	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
 		mdef->n_emit_state, tmat->n_state);
 
-    /* LM */
-
     /*At 20050618, Currently, decode_anytopo doesn't allow the use of
      class-based LM (-lmctlfn).  It also doesn't support -ctl_lm,
      -lmname.  That's why we set all three to NULL at this point. 
@@ -547,14 +545,14 @@ static void models_init ( void )
     */
 
     lmset=lmset_init(cmd_ln_str("-lm"),
-			 NULL,
-			 NULL,
-			 NULL,
-			 NULL,
-			 cmd_ln_float32("-lw"),
-			 cmd_ln_float32("-wip"),
-			 cmd_ln_float32("-uw"),
-			 dict);
+		     NULL,
+		     NULL,
+		     NULL,
+		     NULL,
+		     cmd_ln_float32("-lw"),
+		     cmd_ln_float32("-wip"),
+		     cmd_ln_float32("-uw"),
+		     dict);
       
     fpen = fillpen_init (dict, 
 			 (char *) cmd_ln_access("-fillpen"),
@@ -718,47 +716,42 @@ write_error:
 
 #define GAUDEN_EVAL_WINDOW	8
 
-/* Lists of senones sharing each mixture Gaussian codebook */
-typedef struct mgau2sen_s {
-    s3senid_t sen;		/* Senone shared by this mixture Gaussian */
-    struct mgau2sen_s *next;	/* Next entry in list for this mixture Gaussian */
-} mgau2sen_t;
 
 /*
  * Forward Viterbi decode.
  * Return value: recognition hypothesis with detailed segmentation and score info.
  */
 static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
-		      int32 nfr,	/* In: #frames of input */
-		      char *uttid)	/* In: Utterance id, for logging and other use */
+			   int32 nfr,	/**< In: #frames of input */
+			   char *uttid	/**< In: Utterance id, for logging and other use */
+			   )
 {
-    static int32 w;
-    static int32 topn;
-    static int32 **senscr;		/* Senone scores for window of frames */
+
     static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
+    static int32 **senscr;		/* Senone scores for window of frames */
     static int8 *sen_active;		/* [s] TRUE iff s active in current frame */
     static int8 *mgau_active;		/* [m] TRUE iff m active in current frame */
-    static mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
 
     int32 i, j, k, s, gid, n_sen_active, best;
     srch_hyp_t *hyp;
-    mgau2sen_t *m2s;
     float32 **fv;
-
+    gauden_t *g;
+    senone_t *sen;
+    mgau2sen_t **mgau2sen, *m2s;	
+    interp_t *interp;
+    int32 topn;
+    int32 w;
 
     i=0;
-    
+    g=ms_mgau_gauden(msg);
+    sen=ms_mgau_senone(msg);
+    mgau2sen=ms_mgau_mgau2sen(msg);
+    interp=ms_mgau_interp(msg);
+    topn=ms_mgau_topn(msg);
+    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+				   frame to compute one feature vector */
     if (! senscr) {
 
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
-					   frame to compute one feature vector */
-	topn = *((int32 *) cmd_ln_access("-topn"));
-	E_INFO("The value of topn: %d\n",topn);
-	if (topn > g->n_density) {
-	    E_WARN("-topn argument (%d) > #density codewords (%d); set to latter\n",
-		   topn, g->n_density);
-	    topn = g->n_density;
-	}
 	dist = (gauden_dist_t **) ckd_calloc_2d (g->n_feat, topn, sizeof(gauden_dist_t));
 
 	/*
@@ -783,14 +776,6 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 					       sizeof(int32));
 	}
 	
-	/* Initialize mapping from mixture Gaussian to senones */
-	mgau2sen = (mgau2sen_t **) ckd_calloc (g->n_mgau, sizeof(mgau2sen_t *));
-	for (s = 0; s < sen->n_sen; s++) {
-	    m2s = (mgau2sen_t *) listelem_alloc (sizeof(mgau2sen_t));
-	    m2s->sen = s;
-	    m2s->next = mgau2sen[sen->mgau[s]];
-	    mgau2sen[sen->mgau[s]] = m2s;
-	}
     }
     
     if (nfr <= (w<<1)) {
@@ -1107,66 +1092,6 @@ static void decode_utt (int32 nfr, char *uttid)
     tot_nfr += nfr;
 }
 
-static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
-{
-    float32 ****A, ***B;
-    int32 *cb2mllr;
-    int32 gid, sid, nclass;
-    uint8 *mgau_xform;
-		
-    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
-		
-    if (ms_mllr_read_regmat (mllrfile, &A, &B,
-			     fcb->stream_len, feat_n_stream(fcb),
-			     &nclass) < 0)
-	E_FATAL("ms_mllr_read_regmat failed\n");
-
-    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
-
-	cb2mllr_read(cb2mllrfile,
-		     &cb2mllr,
-		     &ncb, &nmllr);
-	if (nmllr != nclass)
-	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		    ncb, nclass);
-	if (ncb != sen->n_sen)
-	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		    ncb, sen->n_sen);
-    }
-    else
-	cb2mllr = NULL;
-
-		
-    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
-
-    /* Transform each non-CI mixture Gaussian */
-    for (sid = 0; sid < sen->n_sen; sid++) {
-	int32 class = 0;
-
-	if (cb2mllr)
-	    class = cb2mllr[sid];
-	if (class == -1)
-	    continue;
-
-	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-	    gid = sen->mgau[sid];
-	    if (! mgau_xform[gid]) {
-		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-				   fcb->stream_len, feat_n_stream(fcb),
-				   class);
-		mgau_xform[gid] = 1;
-	    }
-	}
-    }
-
-    ckd_free (mgau_xform);
-		
-    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
-    ckd_free(cb2mllr);
-
-    return S3_SUCCESS;
-}
 
 /* Process utterances in the control file (-ctl argument) */
 static int32 process_ctlfile ( void )
@@ -1196,7 +1121,7 @@ static int32 process_ctlfile ( void )
     prevmllr[0] = '\0';
 
     if (cmd_ln_access("-mllr") != NULL) {
-	model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
+	model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
 	strcpy(prevmllr, cmd_ln_access("-mllr"));
     }
     
@@ -1296,7 +1221,7 @@ static int32 process_ctlfile ( void )
 		strcpy(cb2mllrfile, ".1cls.");
 	    
 	    if (strcmp (prevmllr, mllrfile) != 0) {
-		model_set_mllr(mllrfile, cb2mllrfile);
+		model_set_mllr(msg,mllrfile, cb2mllrfile,fcb,mdef);
 		strcpy (prevmllr, mllrfile);
 	    }
 	}
@@ -1367,14 +1292,6 @@ int main (int32 argc, char *argv[])
     if (inlatdir && outlatdir && (strcmp (inlatdir, outlatdir) == 0))
 	E_FATAL("Input and output lattice directories are the same\n");
 
-    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
-
-    /* Initialize feature stream type */
-    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		      (char *) cmd_ln_access ("-cmn"),
-		      (char *) cmd_ln_access ("-varnorm"),
-		      (char *) cmd_ln_access ("-agc"),
-		      1);
     
     /* Read in input databases */
     models_init ();

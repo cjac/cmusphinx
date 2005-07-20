@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.15.4.2  2005/07/20  21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
  * 
+ * Revision 1.15.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.15  2005/06/22 05:36:11  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid
  *
@@ -167,6 +170,7 @@
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"
+#include "ms_mgau.h"
 #include "ms_mllr.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
@@ -238,9 +242,14 @@ static arg_t defn[] = {
 };
 
 static mdef_t *mdef;		/* Model definition */
+static ms_mgau_model_t* msg;
+
+#if 0
 static gauden_t *g;		/* Gaussian density codebooks */
 static senone_t *sen;		/* Senones */
+
 static interp_t *interp;	/* CD/CI interpolation */
+#endif
 static tmat_t *tmat;		/* HMM transition matrices */
 
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
@@ -264,10 +273,22 @@ static dict_t *dict;
 
 static void models_init ( void )
 {
-    float32 varfloor, mixwfloor, tpfloor;
+    float32  tpfloor;
     int32 i;
-    char *arg;
+    gauden_t *g;		/* Gaussian density codebooks */
+    senone_t *sen;		/* Senones */
+    interp_t *interp;
+
     
+    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
+  
+    /* Initialize feaure stream type */
+    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		    (char *) cmd_ln_access ("-cmn"),
+		    (char *) cmd_ln_access ("-varnorm"),
+		    (char *) cmd_ln_access ("-agc"),
+		    1);
+
     /* HMM model definition */
     mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
@@ -278,11 +299,25 @@ static void models_init ( void )
 		      '_',
 		      1);	/* Compound word separator.  Default: none. */
 
-    /* Codebooks */
-    varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-mean"),
-		     (char *) cmd_ln_access("-var"),
-		     varfloor);
+
+    /* Multiple stream Gaussian mixture Initialization*/
+    msg=ms_mgau_init(cmd_ln_str("-mean"),
+		     cmd_ln_str("-var"),
+		     cmd_ln_float32("-varfloor"),
+		     cmd_ln_str("-mixw"),
+		     cmd_ln_float32("-mixwfloor"),
+		     cmd_ln_str("-senmgau"),
+		     cmd_ln_str("-lambda"),
+		     cmd_ln_int32("-topn")
+		     );
+
+    assert(msg);    
+    assert(msg->g);    
+    assert(msg->s);
+
+    g=ms_mgau_gauden(msg);
+    sen=ms_mgau_senone(msg);
+    interp=ms_mgau_interp(msg);
 
     /* Verify codebook feature dimensions against libfeat */
     if (feat_n_stream(fcb) != g->n_feat) {
@@ -295,40 +330,12 @@ static void models_init ( void )
 		    feat_stream_len(fcb, i), g->featlen[i]);
 	}
     }
-    
-    /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixw"),
-		       (char *) cmd_ln_access("-senmgau"),
-		       mixwfloor);
-    
-    /* Verify senone parameters against gauden parameters */
-    if (sen->n_feat != g->n_feat)
-	E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, sen->n_feat);
-    if (sen->n_cw != g->n_density)
-	E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, sen->n_cw);
-    if (sen->n_gauden > g->n_mgau)
-	E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
-    if (sen->n_gauden < g->n_mgau)
-	E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
 
     /* Verify senone parameters against model definition parameters */
     if (mdef->n_sen != sen->n_sen)
 	E_FATAL("Model definition has %d senones; but #senone= %d\n",
 		mdef->n_sen, sen->n_sen);
 
-    /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
-	interp = interp_init (arg);
-
-	/* Verify interpolation weights size with senones */
-	if (interp->n_sen != sen->n_sen)
-	    E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
-		    interp->n_sen, sen->n_sen);
-    } else
-	interp = NULL;
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
@@ -342,12 +349,6 @@ static void models_init ( void )
 	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
 		mdef->n_emit_state, tmat->n_state);
 
-    arg = (char *) cmd_ln_access ("-agc");
-    if ((strcmp (arg, "max") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -agc argument: %s\n", arg);
-    arg = (char *) cmd_ln_access ("-cmn");
-    if ((strcmp (arg, "current") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -cmn argument: %s\n", arg);
 }
 
 
@@ -680,8 +681,6 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 		       char *ctlspec,	/* In: Utt specifiction from control file */
 		       char *uttid)	/* In: Utterance id, for logging and other use */
 {
-    static int32 w;
-    static int32 topn;
     static gauden_dist_t ***dist;
     static int32 *senscr = NULL;
     static s3senid_t *sen_active;
@@ -697,19 +696,24 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     align_phseg_t *phseg;
     align_wdseg_t *wdseg;
     float32 **fv;
-    
+    int32 w;
+    int32 topn;
+    gauden_t *g;		/* Gaussian density codebooks */
+    senone_t *sen;		/* Senones */
+    interp_t *interp;
+
+
+    g=ms_mgau_gauden(msg);
+    sen=ms_mgau_senone(msg);
+    interp=ms_mgau_interp(msg);
+
+    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+				   frame to compute one feature vector */
+    topn  = ms_mgau_topn(msg);
+
     if (! senscr) {
 	/* One-time allocation of necessary intermediate variables */
 
-	/* Allocate space for top-N codeword density values in a codebook */
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
-					   frame to compute one feature vector */
-	topn = *((int32 *) cmd_ln_access("-topn"));
-	if (topn > g->n_density) {
-	    E_ERROR("-topn argument (%d) > #density codewords (%d); set to latter\n",
-		   topn, g->n_density);
-	    topn = g->n_density;
-	}
 	dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, topn,
 						  sizeof(gauden_dist_t));
 	
@@ -808,8 +812,10 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 
 	if (interp) {
 	    for (s = 0; s < n_sen_active; s++) {
-		if ((sid = sen_active[s]) >= mdef->n_ci_sen)
+	      if ((sid = sen_active[s]) >= mdef->n_ci_sen){
+		E_INFO("I am interpolating\n");
 		    interp_cd_ci (interp, senscr, sid, mdef->cd2cisen[sid]);
+	      }
 	    }
 	}
 
@@ -879,67 +885,6 @@ static int32 id_cmp (char *str1, char *str2)
     }
 }
 
-static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
-{
-    float32 ****A, ***B;
-    int32 *cb2mllr;
-    int32 gid, sid, nclass;
-    uint8 *mgau_xform;
-		
-    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
-		
-    if (ms_mllr_read_regmat (mllrfile, &A, &B,
-			     fcb->stream_len, feat_n_stream(fcb),
-			     &nclass) < 0)
-	E_FATAL("ms_mllr_read_regmat failed\n");
-
-    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
-
-	cb2mllr_read(cb2mllrfile,
-		     &cb2mllr,
-		     &ncb, &nmllr);
-	if (nmllr != nclass)
-	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		    ncb, nclass);
-	if (ncb != sen->n_sen)
-	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		    ncb, sen->n_sen);
-    }
-    else
-	cb2mllr = NULL;
-
-		
-    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
-
-    /* Transform each non-CI mixture Gaussian */
-    for (sid = 0; sid < sen->n_sen; sid++) {
-	int32 class = 0;
-
-	if (cb2mllr)
-	    class = cb2mllr[sid];
-	if (class == -1)
-	    continue;
-
-	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-	    gid = sen->mgau[sid];
-	    if (! mgau_xform[gid]) {
-		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-				   fcb->stream_len, feat_n_stream(fcb),
-				   class);
-		mgau_xform[gid] = 1;
-	    }
-	}
-    }
-
-    ckd_free (mgau_xform);
-		
-    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
-    ckd_free(cb2mllr);
-
-    return S3_SUCCESS;
-}
-
 /* Process utterances in the control file (ctl argument) */
 static void process_ctlfile ( void )
 {
@@ -963,7 +908,7 @@ static void process_ctlfile ( void )
     prevmllr[0] = '\0';
     
     if (cmd_ln_access("-mllr") != NULL) {
-	model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
+	model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
 	strcpy(prevmllr, cmd_ln_access("-mllr"));
     }
 
@@ -1053,7 +998,7 @@ static void process_ctlfile ( void )
 		strcpy(cb2mllrfile, ".1cls.");
 	    
 	    if (strcmp (prevmllr, mllrfile) != 0) {
-		model_set_mllr(mllrfile, cb2mllrfile);
+		model_set_mllr(msg, mllrfile, cb2mllrfile,fcb,mdef);
 		strcpy (prevmllr, mllrfile);
 	    }
 	}
@@ -1127,10 +1072,6 @@ static void process_ctlfile ( void )
 int
 main (int32 argc, char *argv[])
 {
-  /*  kb_t kb;
-      ptmr_t tm;*/
-
-
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     
@@ -1143,14 +1084,6 @@ main (int32 argc, char *argv[])
       (cmd_ln_access ("-outsent") == NULL))
     E_FATAL("Missing output file/directory argument(s)\n");
     
-  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
-  
-  /* Initialize feaure stream type */
-  fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		    (char *) cmd_ln_access ("-cmn"),
-		    (char *) cmd_ln_access ("-varnorm"),
-		    (char *) cmd_ln_access ("-agc"),
-		    1);
   
     /* Read in input databases */
   models_init ();
