@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.2  2005/07/17  05:44:31  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.12.4.3  2005/07/20  21:13:16  arthchan2003
+ * Some small clean-up of the code. Use cmd_ln_* instead of cmd_ln_access
  * 
+ * Revision 1.12.4.2  2005/07/17 05:44:31  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.12.4.1  2005/07/15 07:50:32  arthchan2003
  * Remove hmm computation and context building code from flat_fwd.c.
  *
@@ -363,11 +366,6 @@ lmset_t *lmset;         /** The language model set */
 lm_t *lm;               /** NOT NICE: This is a pointer for current lm */
 mdef_t *mdef;
 dag_t dag;              /** The dag used by decode_anytopo.c */
-
-#if 0
-lm_t   *lm;		/** The currently active language model */
-s3lmwid_t *dict2lmwid;	/** Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
 
 extern int32 *st_sen_scr;
 
@@ -1046,8 +1044,6 @@ static void word_trans (int32 thresh)
 
 void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 {
-    float64 *f64arg;
-    float32 *f32arg;
     char *tmpstr;
 
     E_INFO ("Forward Viterbi Initialization\n");
@@ -1066,16 +1062,11 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     /* Variables for speeding up whmm evaluation */
     st_sen_scr = (int32 *) ckd_calloc (n_state-1, sizeof(int32));
 
-
     /* Beam widths and penalties */
-    f64arg = (float64 *) cmd_ln_access ("-beam");
-    beam = logs3 (*f64arg);
 
-    f64arg = (float64 *) cmd_ln_access ("-wbeam");
-    wordbeam = logs3 (*f64arg);
-
-    f32arg = (float32 *) cmd_ln_access ("-phonepen");
-    phone_penalty = logs3 (*f32arg);
+    beam = logs3 (cmd_ln_float64("-beam"));
+    wordbeam = logs3 (cmd_ln_float64("-wbeam"));
+    phone_penalty = logs3 (cmd_ln_float32("-phonepen"));
 
     E_INFO ("logs3(beam)= %d, logs3(nwbeam)= %d\n", beam, wordbeam);
     
