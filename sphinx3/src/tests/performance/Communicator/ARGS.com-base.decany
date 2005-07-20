@@ -12,5 +12,6 @@
 -lm /net/wilma/usr1/archan/Communicator/lists/training.trans.proc.arpa.DMP 
 -agc none 
 -varnorm no 
+-logbase 1.0001
 
 
