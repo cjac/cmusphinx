@@ -1,0 +1,211 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
+/*
+ * ms_mgau.c -- Essentially a wrapper that wrap up gauden and
+ * senone. It supports multi-stream. 
+ *
+ *
+ * **********************************************
+ * CMU ARPA Speech Project
+ *
+ * Copyright (c) 1997 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ * **********************************************
+ * HISTORY
+ * $Log$
+ * Revision 1.1.2.1  2005/07/20  19:37:09  arthchan2003
+ * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
+ * 
+ *
+ *
+ */
+
+#include <ms_mgau.h>
+#include <ms_mllr.h>
+#include <cb2mllr_io.h>
+
+/* Wrong place to put it */
+int32 model_set_mllr(ms_mgau_model_t* msg, const char *mllrfile, const char *cb2mllrfile, feat_t* fcb, mdef_t *mdef)
+{
+    float32 ****A, ***B;
+    int32 *cb2mllr;
+    int32 gid, sid, nclass;
+    uint8 *mgau_xform;
+		
+    gauden_mean_reload (msg->g, (char *) cmd_ln_access("-mean"));
+		
+    if (ms_mllr_read_regmat (mllrfile, &A, &B,
+			     fcb->stream_len, feat_n_stream(fcb),
+			     &nclass) < 0)
+	E_FATAL("ms_mllr_read_regmat failed\n");
+
+    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
+	int32 ncb, nmllr;
+
+	cb2mllr_read(cb2mllrfile,
+		     &cb2mllr,
+		     &ncb, &nmllr);
+	if (nmllr != nclass)
+	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+		    ncb, nclass);
+	if (ncb != msg->s->n_sen)
+	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+		    ncb, msg->s->n_sen);
+    }
+    else
+	cb2mllr = NULL;
+
+		
+    mgau_xform = (uint8 *) ckd_calloc (msg->g->n_mgau, sizeof(uint8));
+
+    /* Transform each non-CI mixture Gaussian */
+    for (sid = 0; sid < msg->s->n_sen; sid++) {
+	int32 class = 0;
+
+	if (cb2mllr)
+	    class = cb2mllr[sid];
+	if (class == -1)
+	    continue;
+
+	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
+	    gid = msg->s->mgau[sid];
+	    if (! mgau_xform[gid]) {
+		ms_mllr_norm_mgau (msg->g->mean[gid], msg->g->n_density, A, B,
+				   fcb->stream_len, feat_n_stream(fcb),
+				   class);
+		mgau_xform[gid] = 1;
+	    }
+	}
+    }
+
+    ckd_free (mgau_xform);
+		
+    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
+    ckd_free(cb2mllr);
+
+    return S3_SUCCESS;
+}
+
+ms_mgau_model_t* ms_mgau_init (char* meanfile,
+			       char* varfile,
+			       float64 varfloor,
+			       char* mixwfile,
+			       float64 mixwfloor,
+			       char *senmgau,
+			       char* lambdafile,
+			       int32 _topn
+			       )
+{
+    /* Codebooks */
+  int32 i;
+  ms_mgau_model_t* msg;
+  gauden_t *g;
+  senone_t *s;
+  mgau2sen_t *m2s;
+  
+  msg= (ms_mgau_model_t *) ckd_calloc(1,sizeof(ms_mgau_model_t));
+
+
+  msg->g =NULL;
+  msg->s =NULL;
+  msg->i =NULL;
+
+  msg->g = gauden_init (meanfile,
+			varfile,
+			varfloor);
+
+  msg->s = senone_init (mixwfile,
+			senmgau,
+			mixwfloor
+			);
+
+  g=ms_mgau_gauden(msg);
+  s=ms_mgau_senone(msg);
+
+  /* Verify senone parameters against gauden parameters */
+  if (s->n_feat != g->n_feat)
+    E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, s->n_feat);
+  if (s->n_cw != g->n_density)
+    E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, s->n_cw);
+  if (s->n_gauden > g->n_mgau)
+    E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
+	    s->n_gauden, g->n_mgau);
+  if (s->n_gauden < g->n_mgau)
+    E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
+	    s->n_gauden, g->n_mgau);
+  /* Initialize mapping from mixture Gaussian to senones */
+  msg->mgau2sen = (mgau2sen_t **) ckd_calloc (g->n_mgau, sizeof(mgau2sen_t *));
+  for (i = 0; i < s->n_sen; i++) {
+    m2s = (mgau2sen_t *) listelem_alloc (sizeof(mgau2sen_t));
+    m2s->sen = i;
+    m2s->next = msg->mgau2sen[s->mgau[i]];
+    msg->mgau2sen[s->mgau[i]] = m2s;
+  }
+
+  /* CD/CI senone interpolation weights file, if present */
+  if (lambdafile != NULL) {
+    msg->i = interp_init (lambdafile);
+    /* Verify interpolation weights size with senones */
+    if (msg->i->n_sen != s->n_sen)
+      E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
+	      msg->i->n_sen, s->n_sen);
+  } else
+    msg->i = NULL;
+
+
+  msg->topn=_topn;
+  E_INFO("The value of topn: %d\n",msg->topn);
+  if (msg->topn > msg->g->n_density) {
+    E_WARN("-topn argument (%d) > #density codewords (%d); set to latter\n",
+	   msg->topn, msg->g->n_density);
+    msg->topn = msg->g->n_density;
+  }
+
+  return msg;
+}
+
+#if 0	/* Not implemented yet*/		      
+void ms_mgau_free(ms_mgau_model_t* msg)
+{
+  if(msg!=NULL){
+    if(msg->g!=NULL)
+
+    
+    if(msg->s!=NULL)
+      seno
+  }
+}
+#endif
