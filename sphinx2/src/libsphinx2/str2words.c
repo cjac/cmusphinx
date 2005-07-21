@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/12/10  16:48:57  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.8  2005/07/21  22:07:58  egouvea
+ * Fixed bug 1236322, casting the argument to isspace from char to unsigned char
  * 
+ * Revision 1.7  2004/12/10 16:48:57  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 21-Oct-95	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
  * 		Created.
@@ -68,7 +71,7 @@ int32 str2words (char *line, char **ptr, int32 max_ptr)
     i = 0;	/* For scanning through the input string */
     for (;;) {
 	/* Skip whitespace before next word */
-	for (; line[i] && (isspace(line[i])); i++);
+      for (; line[i] && (isspace((unsigned char)line[i])); i++);
 	if (! line[i])
 	    break;
 	
