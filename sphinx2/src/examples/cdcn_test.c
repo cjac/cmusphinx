@@ -117,7 +117,7 @@ int main (int32 argc, char *argv[])
 	    nf += k;
 	    /* WARNING!! No check for mfcbuf overflow */
 	}
-	fe_end_utt(fe, mfcbuf + nf);
+	fe_end_utt(fe, mfcbuf[nf]);
 	fe_close(fe);
 	uttfile_close ();
 	
