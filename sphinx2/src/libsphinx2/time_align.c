@@ -55,9 +55,15 @@
  * Revision History
  * 
  * $Log$
- * Revision 1.16  2004/12/10  16:48:57  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.17  2005/07/21  20:05:52  egouvea
+ * Fixed handling of compound word in the time aligner. Before the fix,
+ * the code expected alternate pronunciations to be indicated by a single
+ * digit. Changed it so the alternate marker could be anything
+ * (e.g. A(MANUAL) instead of A(2)).
  * 
+ * Revision 1.16  2004/12/10 16:48:57  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Modified to use senscr module for senone score evaluation.
@@ -452,7 +458,7 @@ mk_compound_word_list(int *out_cnt)
 		E_INFO("\tadding c. %s to list\n", word);
 	    }
 	    else {
-		if (isdigit(alt_marker[1]) && (alt_marker[2] == ')')) {
+	        if (alt_marker[strlen(alt_marker) - 1] == ')') {
 		    E_INFO("skipping c. alt pron %s\n", word);
 		}
 		else {
