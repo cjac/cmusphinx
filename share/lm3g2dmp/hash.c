@@ -68,6 +68,7 @@
 
 #include "hash.h"
 #include "err.h"
+#include "strcasecmp.h"
 
 #define ERR_ARG		1
 #define ERR_MALLOC	2
@@ -181,7 +182,7 @@ hash_lookup (hash_t *ht, char const *sym, caddr_t *val)
 {
     static char const *rname = "hash_lookup";
     register char const *cp;
-    register char c;
+    register unsigned char c;
     register int32    key;
     register int32    i;
 

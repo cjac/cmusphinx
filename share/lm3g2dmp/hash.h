@@ -38,5 +38,7 @@ typedef struct {
 } hash_t;
 
 extern list_t *hash_to_list();
+extern int32 hash_add (hash_t *ht, char const *sym, caddr_t val);
+extern int32 hash_lookup (hash_t *ht, char const *sym, caddr_t *val);
 
 #endif  /* _HASH_H_ */
