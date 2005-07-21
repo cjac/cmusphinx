@@ -43,10 +43,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 
-#ifdef WIN32
-#include <posixwin32.h>
-#endif
-
 #include <sys/types.h>
 
 #include "primtype.h"

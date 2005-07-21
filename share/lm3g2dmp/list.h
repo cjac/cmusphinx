@@ -19,9 +19,6 @@
 #define _LIST_H_
 
 #include <sys/types.h>
-#if (WIN32)
-#include <posixwin32.h>
-#endif
 
 #include "primtype.h"
 
@@ -35,5 +32,6 @@ typedef struct {
 
 extern list_t *new_list();
 
+extern void list_insert (list_t *list, caddr_t sym);
 
 #endif  /* _LIST_H_ */

@@ -26,5 +26,8 @@ typedef unsigned int	u_int32;
 typedef float		float32;
 typedef double		float64;
 
+#if defined(WIN32) && !defined(__CYGWIN__)
+typedef char *  caddr_t;
+#endif
 
 #endif

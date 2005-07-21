@@ -44,9 +44,13 @@
  * 		Added backslash option in building filenames (for PC compatibility).
  * 
  * $Log$
- * Revision 1.1  2002/11/11  17:42:40  egouvea
- * Initial import of lm3g2dmp from Ravi's files.
+ * Revision 1.2  2005/07/21  19:42:47  egouvea
+ * Cleaned up code so it compiles with MS Visual C++. Added MS VC++
+ * support files (.dsp and .dsw).
  * 
+ * Revision 1.1  2002/11/11 17:42:40  egouvea
+ * Initial import of lm3g2dmp from Ravi's files.
+ *
  * Revision 1.1.1.1  2000/02/28 18:34:43  rkm
  * Imported Sources
  *
@@ -127,6 +131,7 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -368,7 +373,7 @@ static void ReadNgramCounts (fp, n_ug, n_bg, n_tg)
     FILE *fp;
     int32 *n_ug, *n_bg, *n_tg;		/* return the info here */
 {
-    char string[256], c;
+    char string[256];
     int32 ngram, ngram_cnt;
     
     /* skip file until past the '\data\' marker */
@@ -438,7 +443,7 @@ static void ReadUnigrams (fp, model)
 
 	/* Associate name with word id */
 	word_str[wcnt] = (char *) salloc (name);
-	hash_add (&(model->HT), word_str[wcnt], wcnt);
+	hash_add (&(model->HT), word_str[wcnt], (caddr_t) wcnt);
 	model->unigrams[wcnt].prob1.f = p1;
 	model->unigrams[wcnt].bo_wt1.f = bo_wt;
 
@@ -496,10 +501,10 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p2*10000;
-	p2 = p*0.0001;
-	p = bo_wt*10000;
-	bo_wt = p*0.0001;
+	p = (int) (p2*10000);
+	p2 = (float) (p*0.0001);
+	p = (int) (bo_wt*10000);
+	bo_wt = (float) (p*0.0001);
 
 	if (bgcount >= model->bcount)
 	    E_FATAL("Too many bigrams\n");
@@ -581,8 +586,8 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p3*10000;
-	p3 = p*0.0001;
+	p = (int) (p3*10000);
+	p3 = (float) (p*0.0001);
 
 	if (tgcount >= model->tcount)
 	    E_FATAL("Too many trigrams\n");
@@ -695,8 +700,7 @@ int32 lm_read (char *filename, char *lmname)
     int32 n_bigram;
     int32 n_trigram;
     int32 dict_size;
-    int32 file_pos;
-    int32 i, j, k, last_bg, last_tg;
+    int32 i, k;
     char dumpfile[4096];
     struct stat statbuf;
     int32 idfmt;
@@ -902,7 +906,6 @@ static int32 lm3g_dump (file, model, lmfile, mtime)
 {
     int32 i, k;
     FILE *fp;
-    char *str;
 
     E_INFO("Dumping LM to %s\n", file);
     if ((fp = fopen (file, "wb")) == NULL) {
