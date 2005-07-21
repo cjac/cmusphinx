@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.21  2005/05/24  20:55:24  rkm
- * Added -fsgbfs flag
+ * Revision 1.22  2005/07/21  22:20:49  egouvea
+ * Fixed bug 1236322, casting the argument to isspace from char to unsigned char, in remaining files that use isspace()
  * 
+ * Revision 1.21  2005/05/24 20:55:24  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.20  2005/01/26 17:54:52  rkm
  * Added -maxhmmpf absolute pruning parameter in FSG mode
  *
@@ -926,7 +929,7 @@ static int32 nextarg(char *line, int32 *start, int32 *len, int32 *next)
     lineLen = strlen(line);
 
     /* Find first non-space character */
-    for (i = 0; isspace(line[i]) && i < lineLen; i++);
+    for (i = 0; isspace((unsigned char)line[i]) && i < lineLen; i++);
 
     if (i == lineLen)
 	return 1;
@@ -941,7 +944,7 @@ static int32 nextarg(char *line, int32 *start, int32 *len, int32 *next)
 	*next = i+1;
 	return 0;
     } else {
-	for (*start = i; !isspace(line[i]) && i < lineLen; i++);
+      for (*start = i; !isspace((unsigned char)line[i]) && i < lineLen; i++);
 	*len = i - *start;
 	*next = i;
 	return 0;

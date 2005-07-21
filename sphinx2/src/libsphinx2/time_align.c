@@ -55,12 +55,15 @@
  * Revision History
  * 
  * $Log$
- * Revision 1.17  2005/07/21  20:05:52  egouvea
+ * Revision 1.18  2005/07/21  22:20:49  egouvea
+ * Fixed bug 1236322, casting the argument to isspace from char to unsigned char, in remaining files that use isspace()
+ * 
+ * Revision 1.17  2005/07/21 20:05:52  egouvea
  * Fixed handling of compound word in the time aligner. Before the fix,
  * the code expected alternate pronunciations to be indicated by a single
  * digit. Changed it so the alternate marker could be anything
  * (e.g. A(MANUAL) instead of A(2)).
- * 
+ *
  * Revision 1.16  2004/12/10 16:48:57  rkm
  * Added continuous density acoustic model handling
  *
@@ -1227,8 +1230,8 @@ char *next_transcript_word(char **out_rem_word_seq)
 
     sp = strchr(rem_word_seq, ' ');
     if (sp) {
-	fchar = *(sp+1); /* should be the first character of the next word */
-	if (isspace(fchar) || (fchar == '\0')) {
+      fchar = *(sp+1); /* should be the first character of the next word */
+      if (isspace((unsigned)fchar) || (fchar == '\0')) {
 	    E_FATAL("Please remove the extra spaces in:\n|%s|\n", rem_word_seq);
 	}
 

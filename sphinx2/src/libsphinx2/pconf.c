@@ -214,7 +214,7 @@ env_scan(char const *str)
 		continue;
 	    }
 	    val = var;
-	    while (isalnum(*str) || *str == '_')
+	    while (isalnum((unsigned char) *str) || *str == '_')
 		*val++ = *str++;
 	    *p = '\0';
 	    val = (val == var) ? "$" : getenv(var);

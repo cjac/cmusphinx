@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/07/21  22:07:58  egouvea
- * Fixed bug 1236322, casting the argument to isspace from char to unsigned char
+ * Revision 1.9  2005/07/21  22:20:49  egouvea
+ * Fixed bug 1236322, casting the argument to isspace from char to unsigned char, in remaining files that use isspace()
  * 
+ * Revision 1.8  2005/07/21 22:07:58  egouvea
+ * Fixed bug 1236322, casting the argument to isspace from char to unsigned char
+ *
  * Revision 1.7  2004/12/10 16:48:57  rkm
  * Added continuous density acoustic model handling
  *
@@ -89,7 +92,7 @@ int32 str2words (char *line, char **ptr, int32 max_ptr)
 	
 	/* Scan to end of word */
 	ptr[n++] = line+i;
-	for (; line[i] && (! isspace(line[i])); i++);
+	for (; line[i] && (! isspace((unsigned char)line[i])); i++);
 	if (! line[i])
 	    break;
 	line[i++] = '\0';
