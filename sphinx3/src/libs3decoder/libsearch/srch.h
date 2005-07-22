@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.6  2005/07/17  05:54:55  arthchan2003
- * replace vithist_dag_write_header with dag_write_header
+ * Revision 1.1.4.7  2005/07/22  03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
  * 
+ * Revision 1.1.4.6  2005/07/17 05:54:55  arthchan2003
+ * replace vithist_dag_write_header with dag_write_header
+ *
  * Revision 1.1.4.5  2005/07/13 18:46:39  arthchan2003
  * Re-included srch_fsg.h
  *
@@ -130,9 +133,21 @@
 #include "vithist.h"
 #include "kbcore.h"
 #include "kb.h"
-#include "srch_time_switch_tree.h"
-#include "srch_word_switch_tree.h"
+
+
+/* Mode 2 */
 #include "srch_fsg.h"
+
+/* Mode 3 */
+#include "srch_flat_fwd.h"
+
+/* Mode 4 */
+#include "srch_time_switch_tree.h"
+
+/* Mode 5 */
+#include "srch_word_switch_tree.h"
+
+
 #include "dag.h"
 
 
@@ -623,4 +638,28 @@ int32 srch_delete_lamdafn();
 
 /** add new words into the dictionary */
 int32 srch_add_words_to_dict();
+
+
+/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
+    When hyp_t, srch_hyp_t are united, we could tie it with match_write
+ */
+void log_hypstr (FILE *fp,  /**< A file pointer */
+		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		 char *uttid,   /**< An utterance ID */
+		 int32 exact,   /**< Whether to dump an exact */
+		 int32 scr,      /**< The score */
+		 dict_t *dict    /**< A dictionary to look up wid */
+		 );
+
+void log_hyp_detailed (FILE *fp, /**< A file poointer */
+		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		       char *uttid,         /**< An utternace ID */
+		       char *LBL,           /**< A header in cap */
+		       char *lbl,           /**< A header in small */
+		       int32* senscale      /**< Senone scale vector, 
+					       if specified, normalized score would be displayed, 
+					       if not, the unormalized score would be displayed. 
+					     */
+		       )
+
 #endif

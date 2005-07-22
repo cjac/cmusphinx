@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.9  2005/07/20  21:21:59  arthchan2003
- * Removed graph search fend-off.
+ * Revision 1.1.4.10  2005/07/22  03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
  * 
+ * Revision 1.1.4.9  2005/07/20 21:21:59  arthchan2003
+ * Removed graph search fend-off.
+ *
  * Revision 1.1.4.8  2005/07/17 05:54:55  arthchan2003
  * replace vithist_dag_write_header with dag_write_header
  *
@@ -330,6 +333,37 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   }else if(op_mode==OPERATION_FLATFWD){
 
     E_FATAL("Flat decoding is not supported yet");
+
+    s->srch_init=&srch_FLAT_FWD_init;
+    /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
+
+    s->srch_uninit=&srch_FLAT_FWD_uninit;
+    s->srch_utt_begin=&srch_FLAT_FWD_begin;
+    s->srch_utt_end=&srch_FLAT_FWD_end;
+
+
+    s->srch_set_lm=&srch_FLAT_FWD_set_lm;
+    s->srch_add_lm=&srch_FLAT_FWD_add_lm;
+    s->srch_delete_lm=&srch_FLAT_FWD_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FLAT_FWD_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+
+    s->srch_hmm_compute_lv2=&srch_FLAT_FWD_hmm_compute_lv2;
+    s->srch_propagate_graph_ph_lv2=&srch_FLAT_FWD_propagate_graph_ph_lv2;
+    s->srch_propagate_graph_wd_lv2=&srch_FLAT_FWD_propagate_graph_wd_lv2;
+
+    s->srch_compute_heuristic=&srch_FLAT_FWD_compute_heuristic;
+    s->srch_frame_windup=&srch_FLAT_FWD_frame_windup;
+    s->srch_shift_one_cache_frame=&srch_FLAT_FWD_shift_one_cache_frame;
 
   }else if(op_mode==OPERATION_TST_DECODE){
 
@@ -840,4 +874,78 @@ void reg_result_dump (srch_t* s, int32 id)
   glist_free(hyp);
 
 }
+
+/* CODE DUPLICATION! Sphinx 3.0 family of logging hyp and hyp segments */
+/* Write hypothesis in old (pre-Nov95) NIST format */
+void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 exact, int32 scr,dict_t *dict)
+{
+    srch_hyp_t *h;
+    s3wid_t w;
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, "(null)");
+    
+    for (h = hypptr; h; h = h->next) {
+	w = h->wid;
+	if (! exact) {
+	    w = dict_basewid (dict,w);
+	    if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))
+		fprintf (fp, "%s ", dict_wordstr(dict,w));
+	} else
+	    fprintf (fp, "%s ", dict_wordstr(dict,w));
+    }
+    if (scr != 0)
+	fprintf (fp, " (%s %d)\n", uttid, scr);
+    else
+	fprintf (fp, " (%s)\n", uttid);
+    fflush (fp);
+}
+
+/* Log hypothesis in detail with word segmentations, acoustic and LM scores  */
+void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl, int32* senscale)
+{
+    srch_hyp_t *h;
+    int32 f, scale, ascr, lscr;
+
+    ascr = 0;
+    lscr = 0;
+
+    if(senscale){
+      fprintf (fp, "%s:%s> %20s %5s %5s %11s %10s\n", LBL, uttid,
+	     "WORD", "SFrm", "EFrm", "AScr", "LMScore");
+    }else{
+      fprintf (fp, "%s:%s> %20s %5s %5s %11s %10s\n", LBL, uttid,
+	     "WORD", "SFrm", "EFrm", "AScr(Norm)", "LMScore");
+    }
+    
+    for (h = hypptr; h; h = h->next) {
+	scale = 0;
+	
+	if(senscale){
+	  for (f = h->sf; f <= h->ef; f++)
+	    scale += senscale[f];
+	}
+
+	if(senscale){
+	  fprintf (fp, "%s:%s> %20s %5d %5d %11d %10d\n", lbl, uttid,
+		 h->word, h->sf, h->ef, h->ascr + scale, h->lscr);
+	}else{
+	  fprintf (fp, "%s:%s> %20s %5d %5d %11d %10d\n", lbl, uttid,
+		 h->word, h->sf, h->ef, h->ascr, h->lscr);
+	}
+
+	ascr += h->ascr ;
+
+	if(senscale)
+	  ascr += scale;
+
+	lscr += h->lscr;
+    }
+
+    fprintf (fp, "%s:%s> %20s %5s %5s %11d %10d\n", LBL, uttid,
+	     "TOTAL", "", "", ascr, lscr);
+}
+
+
+
 
