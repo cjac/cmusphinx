@@ -23,6 +23,7 @@ libsearch_la_SOURCES = \
 	srch_time_switch_tree.c \
 	srch_word_switch_tree.c \
 	srch_fsg.c \
+	srch_flat_fwd.c \
 	word_fsg.c \
 	fsg_history.c \
 	fsg_psubtree.c \
@@ -49,6 +50,7 @@ pkginclude_HEADERS = \
 	srch_time_switch_tree.h \
 	srch_word_switch_tree.h \
 	srch_fsg.h \
+	srch_flat_fwd.h \
 	word_fsg.h \
 	fsg_history.h \
 	fsg_psubtree.h \
