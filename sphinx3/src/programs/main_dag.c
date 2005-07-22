@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.10.4.2  2005/07/22  03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.10.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.10  2005/06/22 05:39:13  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -186,16 +189,11 @@
 #include "search.h"
 #include "wid.h"
 #include <cmdln_macro.h>
-
+#define EXACT 1
+#define NOTEXACT 0
 
 static mdef_t *mdef;		/* Model definition */
 extern dict_t *dict;            /* The dictionary */
-
-
-#if 0
-extern lm_t *lm ;               /* The lm */
-extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm  */
-#endif
 
 extern fillpen_t *fpen;         /* The filler penalty structure */
 extern dag_t dag;
@@ -324,55 +322,6 @@ static void log_hypseg (char *uttid,
 }
 
 
-/* Write hypothesis in old (pre-Nov95) NIST format */
-static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 scr)
-{
-    srch_hyp_t *h;
-    s3wid_t w;
-
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, "(null)");
-    
-    for (h = hypptr; h; h = h->next) {
-	w = dict_basewid (dict,h->wid);
-	if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))
-	    fprintf (fp, "%s ", dict_wordstr(dict,w));
-    }
-
-    if (scr != 0)
-	fprintf (fp, " (%s %d)\n", uttid, scr);
-    else
-	fprintf (fp, " (%s)\n", uttid);
-
-    fflush (fp);
-}
-
-
-/* Log hypothesis in detail with word segmentations, acoustic and LM scores  */
-static void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl)
-{
-    srch_hyp_t *h;
-    int32 ascr_norm, lscr;
-
-    ascr_norm = 0;
-    lscr = 0;
-    
-    fprintf (fp, "%s:%s> %20s %5s %5s %11s %10s\n", LBL, uttid,
-	     "WORD", "SFrm", "EFrm", "AScr(Norm)", "LMScore");
-    
-    for (h = hypptr; h; h = h->next) {
-	fprintf (fp, "%s:%s> %20s %5d %5d %11d %10d\n", lbl, uttid,
-		 h->word, h->sf, h->ef, h->ascr, h->lscr);
-
-	ascr_norm += h->ascr;
-	lscr += h->lscr;
-    }
-
-    fprintf (fp, "%s:%s> %20s %5s %5s %11d %10d\n", LBL, uttid,
-	     "TOTAL", "", "", ascr_norm, lscr);
-}
-
-
 /* Decode the given mfc file and write result to matchfp and matchsegfp */
 static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 {
@@ -398,7 +347,7 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 	hyp = s3dag_dag_search (uttid);
 	if(hyp!=NULL){
 	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
-	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp");
+	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
 	  
 	  /* Total scaled acoustic score and LM score */
 	  ascr = lscr = 0;
@@ -407,8 +356,10 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 	    lscr += h->lscr;
 	  }
 	  
+
+
 	  printf ("BSTPTH: ");
-	  log_hypstr (stdout, hyp, uttid, ascr+lscr);
+	  log_hypstr (stdout, hyp, uttid, NOTEXACT, ascr+lscr, dict);
 	  
 	  printf ("BSTXCT: ");
 	  log_hypseg (uttid, stdout, hyp, nfrm);
@@ -427,7 +378,7 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
     
     /* Log recognition output to the standard match and matchseg files */
     if (matchfp)
-	log_hypstr (matchfp, hyp, uttid, 0);
+	log_hypstr (matchfp, hyp, uttid, NOTEXACT, 0, dict);
     if (matchsegfp)
 	log_hypseg (uttid, matchsegfp, hyp, nfrm);
     
@@ -538,7 +489,6 @@ static void process_ctlfile ( void )
 	    fgets(line, sizeof(line), ctllmfp);
 	    if (sscanf(line, "%s", lmname) > 0)
 	      lmset_set_curlm_wname(lmset,lmname);
-	    /*		s3dag_set_lm(lmname);*/
 	}
 
 	decode_utt (uttid, matchfp, matchsegfp);

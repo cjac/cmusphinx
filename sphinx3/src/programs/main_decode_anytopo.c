@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.3  2005/07/20  21:25:42  arthchan2003
- * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ * Revision 1.12.4.4  2005/07/22  03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.12.4.3  2005/07/20 21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ *
  * Revision 1.12.4.2  2005/07/18 23:21:23  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -317,6 +320,8 @@
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
 
+#include "srch.h"
+
 static mdef_t *mdef;		/* Model definition */
 static ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
 static tmat_t *tmat;		/* HMM transition matrices */
@@ -328,17 +333,6 @@ extern lmset_t *lmset;          /* The LM set */
 extern dict_t* dict;
 extern fillpen_t* fpen;
 extern dag_t dag;
-
-#if 0
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-static interp_t *interp;	/* CD/CI interpolation */
-
-extern lm_t* lm;
-extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm ones.  
-				   They may not be the same! */
-#endif
-
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 static int32 *bestscr;		/* Best statescore in each frame */
@@ -614,61 +608,6 @@ static void log_hypseg (char *uttid,
 }
 
 
-/* Write hypothesis in old (pre-Nov95) NIST format */
-static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 exact, int32 scr)
-{
-    srch_hyp_t *h;
-    s3wid_t w;
-    
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, "(null)");
-    
-    for (h = hypptr; h; h = h->next) {
-	w = h->wid;
-	if (! exact) {
-	    w = dict_basewid (dict,w);
-	    if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))
-		fprintf (fp, "%s ", dict_wordstr(dict,w));
-	} else
-	    fprintf (fp, "%s ", dict_wordstr(dict,w));
-    }
-    if (scr != 0)
-	fprintf (fp, " (%s %d)\n", uttid, scr);
-    else
-	fprintf (fp, " (%s)\n", uttid);
-    fflush (fp);
-}
-
-
-/* Log hypothesis in detail with word segmentations, acoustic and LM scores  */
-static void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl)
-{
-    srch_hyp_t *h;
-    int32 f, scale, ascr, lscr;
-
-    ascr = 0;
-    lscr = 0;
-    
-    fprintf (fp, "%s:%s> %20s %5s %5s %11s %10s\n", LBL, uttid,
-	     "WORD", "SFrm", "EFrm", "AScr", "LMScore");
-    
-    for (h = hypptr; h; h = h->next) {
-	scale = 0;
-	for (f = h->sf; f <= h->ef; f++)
-	    scale += senscale[f];
-	
-	fprintf (fp, "%s:%s> %20s %5d %5d %11d %10d\n", lbl, uttid,
-		 h->word, h->sf, h->ef, h->ascr + scale, h->lscr);
-
-	ascr += h->ascr + scale;
-	lscr += h->lscr;
-    }
-
-    fprintf (fp, "%s:%s> %20s %5s %5s %11d %10d\n", LBL, uttid,
-	     "TOTAL", "", "", ascr, lscr);
-}
-
-
 
 static void write_bestscore (char *dir, char *uttid, int32 *score, int32 nfr)
 {
@@ -734,7 +673,6 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
     int32 i, j, k, s, gid, n_sen_active, best;
     srch_hyp_t *hyp;
-    float32 **fv;
     gauden_t *g;
     senone_t *sen;
     mgau2sen_t **mgau2sen, *m2s;	
@@ -798,7 +736,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     if (sen_active) {
 	for (i = 0; i < nfr; i++) {
 	    ptmr_start (&tmr_gausen);
-	    fv=feat[i];
+
 	    /* Compute feature vector for current frame from input speech cepstra */
 
 	    /* Obtain list of active senones */
@@ -832,7 +770,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 	    best = (int32) 0x80000000;
 	    for (gid = 0; gid < g->n_mgau; gid++) {
 		if (mgau_active[gid]) {
-		    gauden_dist (g, gid, topn, fv, dist);
+		    gauden_dist (g, gid, topn, feat[i], dist);
 		    for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
 			s = m2s->sen;
 			if (sen_active[s]) {
@@ -882,23 +820,20 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
 	    for (gid = 0; gid < g->n_mgau; gid++) {
 	      for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		    /* Compute feature vector for current frame from input speech cepstra */
-		assert(feat[i]);
-		fv=feat[i];
 
 		    /* Evaluate mixture Gaussian densities */
-		    gauden_dist (g, gid, topn, fv, dist);
+		   gauden_dist (g, gid, topn, feat[i], dist);
 
 		    /* Compute senone scores */
-		    if (g->n_mgau > 1) {
-			for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-			    s = m2s->sen;
-			    senscr[k][s] = senone_eval (sen, s, dist, topn);
-			}
-		    } else {
-			/* Semi-continuous special case; single shared codebook */
-			senone_eval_all (sen, dist, topn, senscr[k]);
-		    }
+		   if (g->n_mgau > 1) {
+		     for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
+		       s = m2s->sen;
+		       senscr[k][s] = senone_eval (sen, s, dist, topn);
+		     }
+		   } else{
+		     /* Semi-continuous special case; single shared codebook */
+		     senone_eval_all (sen, dist, topn, senscr[k]);
+		   }
 		}
 	    }
 
@@ -995,7 +930,7 @@ static void decode_utt (int32 nfr, char *uttid)
 
 	/* Print sanitized recognition */
 	printf ("FWDVIT: ");
-	log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr);
+	log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr,dict);
 
 	printf ("FWDXCT: ");
 	log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
@@ -1037,7 +972,7 @@ static void decode_utt (int32 nfr, char *uttid)
 		}
 		
 		printf ("BSTPTH: ");
-		log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr);
+		log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr,dict);
 		
 		printf ("BSTXCT: ");
 		log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);

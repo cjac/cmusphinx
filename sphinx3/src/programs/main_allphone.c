@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.2  2005/07/20  21:25:42  arthchan2003
- * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ * Revision 1.13.4.3  2005/07/22  03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.13.4.2  2005/07/20 21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ *
  * Revision 1.13.4.1  2005/07/18 23:21:23  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -183,14 +186,6 @@ static arg_t defn[] = {
 mdef_t *mdef;
 tmat_t *tmat;
 static ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
-
-#if 0
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-static interp_t *interp;	/* CD/CI interpolation */
-#endif 
-
-
 
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;	/* Speech feature data */

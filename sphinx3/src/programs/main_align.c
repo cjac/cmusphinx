@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.2  2005/07/20  21:25:42  arthchan2003
- * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ * Revision 1.15.4.3  2005/07/22  03:46:53  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.15.4.2  2005/07/20 21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ *
  * Revision 1.15.4.1  2005/07/18 23:21:23  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -241,16 +244,12 @@ static arg_t defn[] = {
     { NULL, ARG_INT32, NULL, NULL }
 };
 
+
+/** These are the definition of HMMs */
 static mdef_t *mdef;		/* Model definition */
 static ms_mgau_model_t* msg;
-
-#if 0
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-
-static interp_t *interp;	/* CD/CI interpolation */
-#endif
 static tmat_t *tmat;		/* HMM transition matrices */
+
 
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;	/* Speech feature data */
@@ -292,13 +291,6 @@ static void models_init ( void )
     /* HMM model definition */
     mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
-    /* Dictionary */
-    dict = dict_init (mdef,
-		      (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"),
-		      '_',
-		      1);	/* Compound word separator.  Default: none. */
-
 
     /* Multiple stream Gaussian mixture Initialization*/
     msg=ms_mgau_init(cmd_ln_str("-mean"),
@@ -319,23 +311,10 @@ static void models_init ( void )
     sen=ms_mgau_senone(msg);
     interp=ms_mgau_interp(msg);
 
-    /* Verify codebook feature dimensions against libfeat */
-    if (feat_n_stream(fcb) != g->n_feat) {
-	E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-		feat_n_stream(fcb), g->n_feat);
-    }
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-	if (feat_stream_len(fcb,i) != g->featlen[i]) {
-	    E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-		    feat_stream_len(fcb, i), g->featlen[i]);
-	}
-    }
-
     /* Verify senone parameters against model definition parameters */
     if (mdef->n_sen != sen->n_sen)
 	E_FATAL("Model definition has %d senones; but #senone= %d\n",
 		mdef->n_sen, sen->n_sen);
-
 
     /* Transition matrices */
     tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
@@ -348,6 +327,26 @@ static void models_init ( void )
     if (mdef->n_emit_state != tmat->n_state)
 	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
 		mdef->n_emit_state, tmat->n_state);
+
+    /* Verify codebook feature dimensions against libfeat */
+    if (feat_n_stream(fcb) != g->n_feat) {
+	E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
+		feat_n_stream(fcb), g->n_feat);
+    }
+    for (i = 0; i < feat_n_stream(fcb); i++) {
+	if (feat_stream_len(fcb,i) != g->featlen[i]) {
+	    E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
+		    feat_stream_len(fcb, i), g->featlen[i]);
+	}
+    }
+
+
+    /* Dictionary */
+    dict = dict_init (mdef,
+		      (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"),
+		      '_',
+		      1);	/* Compound word separator.  Default: none. */
 
 }
 
@@ -695,7 +694,6 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     align_stseg_t *stseg;
     align_phseg_t *phseg;
     align_wdseg_t *wdseg;
-    float32 **fv;
     int32 w;
     int32 topn;
     gauden_t *g;		/* Gaussian density codebooks */
@@ -762,7 +760,6 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     
     for (i = 0; i < nfr; i++) {
 	ptmr_start (timers+tmr_utt);
-	fv = feat[i];
 	
 	/*
 	 * Evaluate gaussian density codebooks and senone scores for input codeword.
@@ -797,7 +794,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	/* Compute topn gaussian density values (for active codebooks) */
 	for (gid = 0; gid < g->n_mgau; gid++)
 	    if (mgau_active[gid])
-		gauden_dist (g, gid, topn, fv, dist[gid]);
+		gauden_dist (g, gid, topn, feat[i], dist[gid]);
 	ptmr_start (timers+tmr_gauden);
 	
 	/* Evaluate active senones */
