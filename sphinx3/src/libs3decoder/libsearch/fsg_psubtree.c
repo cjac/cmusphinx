@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.6  2005/07/20  21:18:30  arthchan2003
- * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ * Revision 1.1.2.7  2005/07/22  03:37:49  arthchan2003
+ * Removal of word_fsg's context table initialization initialization.
  * 
+ * Revision 1.1.2.6  2005/07/20 21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ *
  * Revision 1.1.2.5  2005/07/17 05:49:37  arthchan2003
  * Mistakes in last update therefore made small changes to give comment.  Implemented 2 major hacks: hack 1 replaced fsg_hmm_t with whmm_t (was used in decode_anytopo in sphinx 3.0,  hack 2, use the arrays in ctxt_table_t to implement psubtree_add_trans.
  *
@@ -510,7 +513,6 @@ fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, int32 from_state,
 	    FSG_PNODE_CTXT_BVSZ * 32);
   }
 
-  fsg->ctxt=ctxt_table_init(fsg->dict,fsg->mdef);
 
   for (dst = 0; dst < word_fsg_n_state(fsg); dst++) {
     /* Add all links from from_state to dst */
