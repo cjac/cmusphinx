@@ -76,10 +76,8 @@ fsg_history_t *fsg_history_init (word_fsg_t *fsg,int32 n_ciphone)
     h->frame_entries = (glist_t **) ckd_calloc_2d (word_fsg_n_state(fsg),
 						   h->n_ciphone,
 						   sizeof(glist_t));
-    h->dict = fsg->dict;
   } else {
     h->frame_entries = NULL;
-    h->dict = NULL;
   }
   
   return h;
@@ -93,8 +91,9 @@ void fsg_history_set_fsg (fsg_history_t *h, word_fsg_t *fsg)
     blkarray_list_reset (h->entries);
   }
   
-  if (h->frame_entries)
+  if (h->frame_entries){
     ckd_free_2d ((void **) h->frame_entries);
+  }
   h->frame_entries = NULL;
   
   h->fsg = fsg;
@@ -239,7 +238,7 @@ int32 fsg_history_n_entries (fsg_history_t *h)
 
 
 int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
-				     search_hyp_t *hyp)
+				     search_hyp_t *hyp,dict_t *dict)
 {
   fsg_hist_entry_t *entry, *pred_entry;
   word_fsglink_t *fl;
@@ -249,15 +248,19 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   
   entry = fsg_history_entry_get(h, id);
   fl = entry->fsglink;
-  
+
+  assert(dict);
   hyp->wid = word_fsglink_wid(fl);
-  hyp->word = (hyp->wid >= 0) ? dict_wordstr(h->dict,hyp->wid) : "";
+#if 0
+  E_INFO("%d\n",hyp->wid);
+  if(hyp->wid>=0){
+    E_INFO("WORD STRING: %s\n", dict_wordstr(dict,hyp->wid));
+  }
+#endif
+  hyp->word = (hyp->wid >= 0) ? dict_wordstr(dict,hyp->wid) : "";
   hyp->ef = entry->frame;
   hyp->lscr = word_fsglink_logs2prob(fl);
   hyp->fsg_state = word_fsglink_to_state(fl);
-  hyp->conf = 0.0;		/* Not known */
-  hyp->latden = 0;		/* Not known */
-  hyp->phone_perp = 0.0;	/* Not known */
   
   /* hyp->sf and hyp->ascr depends on the predecessor entry */
   if (hyp->wid < 0) {		/* NULL transition */
@@ -280,7 +283,7 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
 }
 
 
-void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
+void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp,dict_t *dict)
 {
   int32 i, r, nf;
   fsg_hist_entry_t *entry;
@@ -297,7 +300,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
   for (i = 1; i < fsg_history_n_entries(h); i++) {
     entry = fsg_history_entry_get (h, i);
     
-    if (fsg_history_entry_hyp_extract (h, i, &hyp) > 0) {
+    if (fsg_history_entry_hyp_extract (h, i, &hyp,dict) > 0) {
       nf = hyp.ef - hyp.sf + 1;
       fl = entry->fsglink;
 

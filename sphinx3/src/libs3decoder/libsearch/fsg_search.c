@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.5  2005/07/20  21:18:30  arthchan2003
- * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ * Revision 1.1.2.6  2005/07/24  01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  * 
+ * Revision 1.1.2.5  2005/07/20 21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ *
  * Revision 1.1.2.4  2005/07/17 05:44:32  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -169,6 +172,7 @@
 #include <logs3.h>
 
 #include <srch.h>
+#include <ascr.h>
 
 #define FSG_SEARCH_IDLE		0
 #define FSG_SEARCH_BUSY		1
@@ -178,6 +182,9 @@
 #define __FSG_DBG_CHAN__	0
 
 
+extern int32* st_sen_scr; /* In whmm.c For temporary storage but global storage. */
+
+
 fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
 {
   fsg_search_t *search;
@@ -185,19 +192,31 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
   int32 pip, wip;
   srch_t *s ;
 
+
+  /* Now we do the dance for initializing search */
+
   s=(srch_t *)srch;
   
   search = (fsg_search_t *) ckd_calloc (1, sizeof(fsg_search_t));
   
   search->fsg = fsg;
+  search->n_state_hmm=mdef_n_emit_state(s->kbc->mdef);
   
   if (fsg) {
     search->fsglist = glist_add_ptr (NULL, (void *) fsg);
-    search->lextree = fsg_lextree_init (fsg);
+    search->lextree = fsg_lextree_init (fsg,mdef_n_emit_state(s->kbc->mdef));
   } else {
     search->fsglist = NULL;
     search->lextree = NULL;
   }
+
+  assert(s->kbc->mdef);
+
+  /* Transfer all member variables */
+  search->mdef=s->kbc->mdef;
+  search->dict=s->kbc->dict;
+  search->tmat=s->kbc->tmat;
+  search->am_score_pool=s->ascr;
 
   search->n_ci_phone=mdef_n_ciphone(s->kbc->mdef);
 
@@ -220,21 +239,24 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
   search->isUsealtpron=cmd_ln_int32("-fsgusealtpron");
   search->isUseFiller=cmd_ln_int32("-fsgusefiller");
   search->isBacktrace=cmd_ln_int32("-backtrace");
-    
+  
+
+  E_INFO("Number of state %d\n",search->n_state_hmm);
+
   lw= s->kbc->fillpen->lw;
   pip = (int32)(logs3(cmd_ln_float32("-phonepen")) * lw); 
   wip =  s->kbc->fillpen->wip;
-
-#if 0
-  /* Get search pruning parameters */
-  search_get_logbeams (&(search->beam), &(search->pbeam), &(search->wbeam));
-  lw = kb_get_lw();
-  pip = (int32)(logs3(kb_get_pip()) * lw);
-  wip = (int32)(logs3(kb_get_wip()) * lw);
-#endif
   
   E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
 	 search->beam, search->pbeam, search->wbeam, wip, pip);
+
+  /* This initializes the temporarily array but global for whmm_t computation.  
+     It sounds like we put it too high up in the function call chain. 
+  */
+
+  st_sen_scr = (int32 *) ckd_calloc (search->n_state_hmm-1, sizeof(int32));
+
+
   
   return search;
 }
@@ -259,7 +281,6 @@ boolean fsg_search_add_fsg (fsg_search_t *search, word_fsg_t *fsg)
 {
   word_fsg_t *oldfsg;
   
-  assert(search);
   /* Check to make sure search is in a quiescent state */
   if (search->state != FSG_SEARCH_IDLE) {
     E_ERROR("Attempt to switch FSG inside an utterance\n");
@@ -363,21 +384,60 @@ boolean fsg_search_set_current_fsg (fsg_search_t *search, char *name)
     fsg_lextree_free (search->lextree);
   
   /* Allocate new lextree for the given FSG */
-  search->lextree = fsg_lextree_init (fsg);
+  search->lextree = fsg_lextree_init (fsg,search->n_state_hmm);
   
   /* Inform the history module of the new fsg */
   fsg_history_set_fsg (search->history, fsg);
   
   search->fsg = fsg;
-  
   return TRUE;
 }
 
 
 void fsg_search_free (fsg_search_t *search)
 {
-  E_FATAL("NOT IMPLEMENTED\n");
+  free(st_sen_scr);
+
+  /*  E_FATAL("NOT IMPLEMENTED\n");*/
 }
+
+
+static void hmm_sen_active(whmm_t *hmm, ascr_t *a, int32 n_state_hmm,mdef_t *m)
+{
+  int32 i;
+  s3senid_t *senp;
+  s3ssid_t ssid;
+  senp=NULL;
+
+  if(hmm->active>0){
+    ssid=*(hmm->pid);
+    senp=m->phone[ssid].state;
+
+    for(i=0;i<n_state_hmm;i++){
+      /*Get the senone sequence id*/
+      a->sen_active[senp[i]]=1;
+    }
+  }
+}
+
+void fsg_search_sen_active (fsg_search_t *search)
+{
+  gnode_t *gn;
+  fsg_pnode_t *pnode;
+  whmm_t *hmm;
+  
+  assert(search->am_score_pool);
+  ascr_clear_sen_active(search->am_score_pool);
+  
+  for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
+    pnode = (fsg_pnode_t *) gnode_ptr(gn);
+    hmm = fsg_pnode_hmmptr(pnode);
+    assert (hmm->active == search->frame);
+    
+    hmm_sen_active(hmm,search->am_score_pool,search->n_state_hmm,search->mdef); 
+  }
+}
+
 
 
 /*
@@ -405,8 +465,8 @@ void fsg_search_hmm_eval (fsg_search_t *search)
     assert (hmm->active == search->frame);
 
     /*chan_v_eval(hmm);*/
-    /* HACK! */
-    eval_nonmpx_whmm (hmm, search->senscr,search->tmat, search->mdef, search->n_state_hmm);
+    /* HACK! Still don't know whether it works. */
+    eval_nonmpx_whmm (hmm, search->am_score_pool->sen,search->tmat, search->mdef, search->n_state_hmm);
     
     if (bestscore < hmm->bestscore)
       bestscore = hmm->bestscore;
@@ -754,7 +814,8 @@ void fsg_search_utt_start (fsg_search_t *search)
 {
   int32 silcipid;
   fsg_pnode_ctxt_t ctxt;
-  
+
+  assert(search->mdef);
   silcipid = mdef_silphone(search->mdef);
   
   /* Initialize EVERYTHING to be inactive */
@@ -900,10 +961,11 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
  */
 static void fsg_search_set_result (fsg_search_t *search)
 {
-  fsg_search_hyp_filter (search);
   /*  No need: searchSetFrame(search->frame);*/
 
+
   /* HACK!, don't know what these functions are doing. 
+  fsg_search_hyp_filter (search);
   search_hyp_to_str();
   search_set_hyp_total_score (search->ascr + search->lscr);
   search_set_hyp_total_lscr (search->lscr);
@@ -1015,7 +1077,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
     
     hyp = (search_hyp_t *) ckd_calloc (1, sizeof(search_hyp_t));
     
-    if (fsg_history_entry_hyp_extract (search->history, bpidx, hyp) <= 0)
+    if (fsg_history_entry_hyp_extract (search->history, bpidx, hyp,search->dict) <= 0)
       E_FATAL("fsg_history_entry_hyp_extract() returned <= 0\n");
     hyp->next = head;
     head = hyp;
@@ -1040,18 +1102,18 @@ void fsg_search_utt_end (fsg_search_t *search)
   gnode_t *gn;
   fsg_pnode_t *pnode;
   whmm_t *hmm;
-  int32 n_hist, nfr;
+  int32 n_hist;
   char *result;
   FILE *latfp;
   char file[4096];
   
   /* Write history table if needed */
-  if (cmd_ln_str("outlatdir")) {
-    sprintf (file, "%s/%s.hist", cmd_ln_str("outlatdir"), search->uttid);
+  if (cmd_ln_str("-outlatdir")) {
+    sprintf (file, "%s/%s.hist", cmd_ln_str("-outlatdir"), search->uttid);
     if ((latfp = fopen(file, "w")) == NULL)
       E_ERROR("fopen(%s,w) failed\n", file);
     else {
-      fsg_history_dump (search->history, search->uttid, latfp);
+      fsg_history_dump (search->history, search->uttid, latfp,search->dict);
       fclose(latfp);
     }
   }

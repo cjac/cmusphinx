@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.5  2005/07/22  03:42:57  arthchan2003
- * Initialize the context table in the word_fsg. It is likely to change later.
+ * Revision 1.1.2.6  2005/07/24  01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  * 
+ * Revision 1.1.2.5  2005/07/22 03:42:57  arthchan2003
+ * Initialize the context table in the word_fsg. It is likely to change later.
+ *
  * Revision 1.1.2.4  2005/07/20 21:15:56  arthchan2003
  * A FSG in Sphinx 2 can be read by word_fsg.c but there is memory leaks using word_fsg_readfile.  Sounds like related to str2word.
  *
@@ -190,7 +193,6 @@ static int32 nextline_str2words (FILE *fp, int32 *lineno,
       return -1;
     
     (*lineno)++;
-    E_INFO("line %s",line);
 
     if (line[0] != WORD_FSG_COMMENT_CHAR) {	/* Skip comment lines */
       if ((n = str2words(line, wordptr, max_ptr)) < 0)

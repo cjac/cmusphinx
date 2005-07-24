@@ -45,9 +45,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.4  2005/07/20  21:18:30  arthchan2003
- * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ * Revision 1.1.2.5  2005/07/24  01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  * 
+ * Revision 1.1.2.4  2005/07/20 21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ *
  * Revision 1.1.2.3  2005/07/17 05:44:32  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -192,7 +195,7 @@ typedef struct fsg_pnode_s {
   
   /* HMM-state-level stuff here */
   /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
-  whmm_t hmm;
+  whmm_t* hmm;
 
 } fsg_pnode_t;
 
@@ -202,7 +205,7 @@ typedef struct fsg_pnode_s {
 #define fsg_pnode_succ(p)	((p)->next.succ)
 #define fsg_pnode_fsglink(p)	((p)->next.fsglink)
 #define fsg_pnode_sibling(p)	((p)->sibling)
-#define fsg_pnode_hmmptr(p)	(&((p)->hmm))
+#define fsg_pnode_hmmptr(p)	((p)->hmm)
 #define fsg_pnode_ci_ext(p)	((p)->ci_ext)
 #define fsg_pnode_ppos(p)	((p)->ppos)
 #define fsg_pnode_leaf(p)	((p)->leaf)
@@ -219,7 +222,10 @@ typedef struct fsg_pnode_s {
  */
 fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, /**< A word fsg */
 				int32 from_state, /**< from which state to initalize*/ 
-				fsg_pnode_t **alloc_head);
+				fsg_pnode_t **alloc_head,
+				int32 n_state_hmm /**< Number of state of the hmm*/
+
+				);
 
 
 /**

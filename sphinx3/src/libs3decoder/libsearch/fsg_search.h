@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.4  2005/07/17  05:44:32  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.1.2.5  2005/07/24  01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  * 
+ * Revision 1.1.2.4  2005/07/17 05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.1.2.3  2005/07/13 18:39:48  arthchan2003
  * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  *
@@ -116,6 +119,7 @@
 #include <whmm.h>
 #include <fsg_lextree.h>
 #include <fsg_history.h>
+#include <ascr.h>
 
 typedef struct fsg_search_s {
   glist_t fsglist;		/* List of all FSGs loaded */
@@ -160,7 +164,10 @@ typedef struct fsg_search_s {
   dict_t *dict;
   mdef_t *mdef;
   tmat_t *tmat; 
+  ascr_t *am_score_pool;
+#if 0
   int32 *senscr; /** The senone score */
+#endif
   char* uttid; /* HACK! add uttid in fsg_search, remember to set it */
   search_hyp_t *filt_hyp;
 } fsg_search_t;
@@ -271,5 +278,7 @@ int32 fsg_search_get_final_state (fsg_search_t *);
 int32 fsg_search_set_start_state (fsg_search_t *, int32 state);
 int32 fsg_search_set_final_state (fsg_search_t *, int32 state);
 
+
+void fsg_search_sen_active (fsg_search_t *search);
 
 #endif
