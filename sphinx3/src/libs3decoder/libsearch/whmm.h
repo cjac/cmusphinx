@@ -48,9 +48,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.2  2005/07/17  05:57:25  arthchan2003
- * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
+ * Revision 1.1.2.3  2005/07/24  01:42:58  arthchan2003
+ * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
  * 
+ * Revision 1.1.2.2  2005/07/17 05:57:25  arthchan2003
+ * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
+ *
  * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
  * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
  *
@@ -106,6 +109,8 @@ typedef struct whmm_s {
 				   When use as one senone,  do pid=*(h->pid)
 				   When use as multiple phone, do pid=h->pid[0] for state 0
 				*/
+
+    
     int16      pos;		/**< Word pronunciation position index */
     s3cipid_t  rc;		/**< Right context position (only for last phone in word);
 				   index into rcpid[][].pid or lrcpid[][].pid */
@@ -127,6 +132,15 @@ whmm_t *whmm_alloc (int32 pos,  /**< position of the hmm */
 					 need a separate HMM id every state. 
 				       */
 		    );
+
+/** 
+    A lesser version of whmm_alloc, whmm_allloc_scores is only
+    responsible to allocate memory in score and history.  It also
+    won't use the internal structure of whmm to handle multiplexed and
+    non-multiplexed triphone. 
+ */
+whmm_t* whmm_alloc_light(int32 nstate /**< number of state of the hmm*/
+			 );
 
 
 /** Dump one hmm

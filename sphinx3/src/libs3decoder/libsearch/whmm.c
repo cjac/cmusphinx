@@ -48,9 +48,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.2  2005/07/17  05:57:25  arthchan2003
- * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
+ * Revision 1.1.2.3  2005/07/24  01:42:58  arthchan2003
+ * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
  * 
+ * Revision 1.1.2.2  2005/07/17 05:57:25  arthchan2003
+ * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
+ *
  * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
  * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
  *
@@ -77,6 +80,18 @@ void whmm_free (whmm_t *h)
     whmm_freelist[k] = h;
 }
 
+
+whmm_t *whmm_alloc_light (int32 n_state)
+{
+  whmm_t *h;
+  h=(whmm_t*) ckd_calloc(1,sizeof(whmm_t));
+  
+  h->history=(s3latid_t *)ckd_calloc(n_state,sizeof(s3latid_t));
+  h->score=(int32* )ckd_calloc(n_state,sizeof(int32));
+  return h;
+}
+
+
 whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 {
     whmm_t *h;
@@ -92,7 +107,7 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 #if 0
 	n = 16000/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
 #endif
-	n = alloc_size/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
+	n = alloc_size/sizeof(whmm_t);	
 
 	whmm_freelist[k] = h = (whmm_t *) ckd_calloc (n, sizeof(whmm_t));
 	tmp_scr = (int32 *) ckd_calloc (n_state * n, sizeof(int32));
@@ -542,7 +557,6 @@ void eval_mpx_whmm (whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef,int32 n_
     int32 to, from, bestfrom;
     int32 newscr, scr, bestscr;
     int32 final_state;
-
 
     final_state = n_state - 1;
     
