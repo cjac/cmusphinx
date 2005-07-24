@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.2  2005/07/20  19:43:44  arthchan2003
- * Add command line arguments for fsg routines.
+ * Revision 1.1.2.3  2005/07/24  01:43:59  arthchan2003
+ * Temporarily not support -fsgctlfn
  * 
+ * Revision 1.1.2.2  2005/07/20 19:43:44  arthchan2003
+ * Add command line arguments for fsg routines.
+ *
  * Revision 1.1.2.1  2005/07/18 18:56:20  arthchan2003
  * A centralized macro definition file that contains command-line information that shared by different applications.
  *
@@ -139,15 +142,19 @@
       NULL, \
       "Name of language model in -lmctlfn to use for all utterances" }, 
 
+#if 0 
+	/* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */
+    { "-fsgctlfn", 
+      ARG_STRING, 
+      NULL, 
+      "A finite state grammar control file" }, 
+#endif
+
 #define finite_state_grammar_command_line_macro()  \
     { "-fsg", \
       ARG_STRING, \
       NULL, \
       "Finite state grammar"}, \
-    { "-fsgctlfn", \
-      ARG_STRING, \
-      NULL, \
-      "A finite state grammar control file" }, \
     { "-fsgusealtpron", \
       ARG_INT32, \
       "1", \
