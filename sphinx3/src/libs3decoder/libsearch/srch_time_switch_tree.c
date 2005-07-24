@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.5  2005/07/13  02:00:33  arthchan2003
- * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
+ * Revision 1.2.4.6  2005/07/24  01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
  * 
+ * Revision 1.2.4.5  2005/07/13 02:00:33  arthchan2003
+ * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
+ *
  * Revision 1.2.4.4  2005/07/07 02:38:35  arthchan2003
  * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
  *
@@ -369,11 +372,6 @@ int srch_TST_end(void *srch)
   lm_cache_stats_dump (kbcore_lm(s->kbc));
   lm_cache_reset (kbcore_lm(s->kbc));
   
-  return SRCH_SUCCESS;
-}
-
-int srch_TST_decode(void *srch)
-{
   return SRCH_SUCCESS;
 }
 
@@ -1013,8 +1011,11 @@ int srch_TST_select_active_gmm(void *srch)
   if (ascr->sen_active) {
     /*    E_INFO("Decide whether senone is active\n");*/
 
-    memset (ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
-    memset (ascr->comssid_active, 0, dict2pid_n_comsseq(d2p) * sizeof(int32));
+
+    ascr_clear_ssid_active(ascr);
+    ascr_clear_comssid_active(ascr);
+
+
     /* Find active senone-sequence IDs (including composite ones) */
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] :
@@ -1023,7 +1024,10 @@ int srch_TST_select_active_gmm(void *srch)
     }
     
     /* Find active senones from active senone-sequences */
-    memset (ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
+
+    ascr_clear_sen_active(ascr);
+
+
     mdef_sseq2sen_active (mdef, ascr->ssid_active, ascr->sen_active);
     
     /* Add in senones needed for active composite senone-sequences */

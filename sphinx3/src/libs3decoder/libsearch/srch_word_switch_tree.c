@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.8  2005/07/07  02:41:55  arthchan2003
- * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
+ * Revision 1.1.4.9  2005/07/24  01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
  * 
+ * Revision 1.1.4.8  2005/07/07 02:41:55  arthchan2003
+ * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
+ *
  * Revision 1.1.4.7  2005/07/04 07:23:40  arthchan2003
  * 1, Bug fix, put score instead of vh->bestscore[frmno] when entering filler tree, 2, Do poor-man trigram rescoring when entering tree.
  *
@@ -442,11 +445,6 @@ int32 srch_WST_end(void *srch)
   /*  E_INFO("Glist count %d\n", glist_count(wstg->empty_tree_idx_stack));*/
 
   
-  return SRCH_SUCCESS;
-}
-
-int32 srch_WST_decode(void *srch)
-{
   return SRCH_SUCCESS;
 }
 
@@ -1349,9 +1347,14 @@ int srch_WST_select_active_gmm(void *srch)
 
   if(ascr->sen_active){
     /*    E_INFO("Decide whether senone is active\n");*/
-    /* This part is not completed. */
+
+
+    ascr_clear_ssid_active(ascr);
+    ascr_clear_comssid_active(ascr);
+#if 0
     memset (ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
     memset (ascr->comssid_active, 0, dict2pid_n_comsseq(d2p) * sizeof(int32));
+#endif
 
     /*The root tree */
     lextree=wstg->curroottree;
@@ -1376,8 +1379,10 @@ int srch_WST_select_active_gmm(void *srch)
       lextree_ssid_active (lextree, ascr->ssid_active, ascr->comssid_active);
     }
 
-
+    ascr_clear_sen_active(ascr);
+#if 0
     memset (ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
+#endif
     mdef_sseq2sen_active (mdef, ascr->ssid_active, ascr->sen_active);
 
     /* Add in senones needed for active composite senone-sequences */
