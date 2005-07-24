@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.4  2005/07/22  03:46:55  arthchan2003
- * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ * Revision 1.12.4.5  2005/07/24  19:37:19  arthchan2003
+ * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
  * 
+ * Revision 1.12.4.4  2005/07/22 03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
  * Revision 1.12.4.3  2005/07/20 21:25:42  arthchan2003
  * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
  *
@@ -651,9 +654,6 @@ write_error:
     E_ERROR("fwrite(%s) failed\n", filename);
     fclose (fp);
 }
-
-
-#define GAUDEN_EVAL_WINDOW	8
 
 
 /*

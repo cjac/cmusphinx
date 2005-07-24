@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.3  2005/07/22  03:46:55  arthchan2003
- * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ * Revision 1.13.4.4  2005/07/24  19:37:19  arthchan2003
+ * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
  * 
+ * Revision 1.13.4.3  2005/07/22 03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
  * Revision 1.13.4.2  2005/07/20 21:25:42  arthchan2003
  * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
  *
@@ -107,7 +110,7 @@
 #include "ms_senone.h"
 #include "ms_mgau.h"
 #include "cb2mllr_io.h"
-
+#include "srch.h"
 
 #ifdef INTERP
 #include "interp.h"
@@ -331,9 +334,6 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
 	fflush(fp);
     }
 }
-
-#define GAUDEN_EVAL_WINDOW	8
-
 
 /*
  * Find Viterbi allphone decoding.
