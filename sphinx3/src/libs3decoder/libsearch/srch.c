@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.10  2005/07/22  03:41:05  arthchan2003
- * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ * Revision 1.1.4.11  2005/07/24  01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
  * 
+ * Revision 1.1.4.10  2005/07/22 03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ *
  * Revision 1.1.4.9  2005/07/20 21:21:59  arthchan2003
  * Removed graph search fend-off.
  *
@@ -213,28 +216,67 @@ char* srch_mode_index_to_str(int32 index)
 }
 
 void srch_assert_funcptrs(srch_t *s){
-  assert(s->srch_init!=NULL);
-  assert(s->srch_uninit!=NULL);
-  assert(s->srch_utt_begin!=NULL);
-  assert(s->srch_utt_end!=NULL);
-  assert(s->srch_set_lm!=NULL);
-  assert(s->srch_add_lm!=NULL);
-  assert(s->srch_delete_lm!=NULL);
-  assert(s->srch_compute_heuristic!=NULL);
-  assert(s->srch_gmm_compute_lv1!=NULL);
-  assert(s->srch_hmm_compute_lv1!=NULL);
-  assert(s->srch_eval_beams_lv1!=NULL);
-  assert(s->srch_propagate_graph_ph_lv1!=NULL);
-  assert(s->srch_propagate_graph_wd_lv1!=NULL);
-  assert(s->srch_gmm_compute_lv2!=NULL);
-  assert(s->srch_hmm_compute_lv2!=NULL);
-  assert(s->srch_eval_beams_lv2!=NULL);
-  assert(s->srch_propagate_graph_ph_lv2!=NULL);
-  assert(s->srch_propagate_graph_wd_lv2!=NULL);
-  assert(s->srch_frame_windup!=NULL);
-  assert(s->srch_compute_heuristic!=NULL);
-  assert(s->srch_shift_one_cache_frame!=NULL);
-  assert(s->srch_select_active_gmm!=NULL);
+
+  if(s->srch_decode!=NULL){    /* Provide that the implementation does
+				  not override the search abstraction
+				  assert every implementation pointers
+			       */
+
+    assert(s->srch_init!=NULL);
+    assert(s->srch_uninit!=NULL);
+    assert(s->srch_utt_begin!=NULL);
+    assert(s->srch_utt_end!=NULL);
+    assert(s->srch_set_lm!=NULL);
+    assert(s->srch_add_lm!=NULL);
+    assert(s->srch_delete_lm!=NULL);
+    assert(s->srch_compute_heuristic!=NULL);
+    
+    assert(s->srch_gmm_compute_lv1!=NULL);
+
+    if(s->srch_one_srch_frame_lv1!=NULL){ /* If implementation
+					     provide only 
+					     how to search one frame after 
+					     GMM computation*/
+      assert(s->srch_hmm_compute_lv1!=NULL);
+      assert(s->srch_eval_beams_lv1!=NULL);
+      assert(s->srch_propagate_graph_ph_lv1!=NULL);
+      assert(s->srch_propagate_graph_wd_lv1!=NULL);
+    }else{
+      if(s->srch_hmm_compute_lv1!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_hmm_compute_lv1 will not be used\n");
+      if(s->srch_eval_beams_lv1!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_eval_beams_lv1 will not be used\n");
+      if(s->srch_propagate_graph_ph_lv1!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_propagate_graph_ph_lv1 will not be used\n");
+      if(s->srch_propagate_graph_wd_lv1!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_propagate_graph_wd_lv1 will not be used\n");
+    }
+
+    assert(s->srch_gmm_compute_lv2!=NULL);
+    if(s->srch_one_srch_frame_lv2!=NULL){ /* If implementation
+					     provide only 
+					     how to search one frame after 
+					     GMM computation*/
+
+      assert(s->srch_hmm_compute_lv2!=NULL);
+      assert(s->srch_eval_beams_lv2!=NULL);
+      assert(s->srch_propagate_graph_ph_lv2!=NULL);
+      assert(s->srch_propagate_graph_wd_lv2!=NULL);
+    }else{
+      if(s->srch_hmm_compute_lv2!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_hmm_compute_lv2 will not be used\n");
+      if(s->srch_eval_beams_lv2!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_eval_beams_lv2 will not be used\n");
+      if(s->srch_propagate_graph_ph_lv2!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_propagate_graph_ph_lv2 will not be used\n");
+      if(s->srch_propagate_graph_wd_lv2!=NULL)
+	E_WARN("Search one frame implementation is specified. srch_propagate_graph_wd_lv2 will not be used\n");
+    }
+    assert(s->srch_frame_windup!=NULL);
+    assert(s->srch_compute_heuristic!=NULL);
+    assert(s->srch_shift_one_cache_frame!=NULL);
+    assert(s->srch_select_active_gmm!=NULL);
+  }
 
 }
 
@@ -253,6 +295,7 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_eval_beams_lv1=NULL;
   s->srch_propagate_graph_ph_lv1=NULL;
   s->srch_propagate_graph_wd_lv1=NULL;
+  s->srch_one_srch_frame_lv2=NULL;
   s->srch_gmm_compute_lv2=NULL;
   s->srch_hmm_compute_lv2=NULL;
   s->srch_eval_beams_lv2=NULL;
@@ -306,28 +349,22 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_utt_begin=&srch_FSG_begin;
     s->srch_utt_end=&srch_FSG_end;
 
-
     s->srch_set_lm=&srch_FSG_set_lm;
     s->srch_add_lm=&srch_FSG_add_lm;
     s->srch_delete_lm=&srch_FSG_delete_lm;
 
     s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
     s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
     s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
 
-    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+    s->srch_one_srch_frame_lv2=&srch_FSG_srch_one_frame_lv2;
 
-    s->srch_hmm_compute_lv2=&srch_FSG_hmm_compute_lv2;
-    s->srch_propagate_graph_ph_lv2=&srch_FSG_propagate_graph_ph_lv2;
-    s->srch_propagate_graph_wd_lv2=&srch_FSG_propagate_graph_wd_lv2;
-
-    s->srch_compute_heuristic=&srch_FSG_compute_heuristic;
-    s->srch_frame_windup=&srch_FSG_frame_windup;
+    s->srch_frame_windup=&srch_FSG_windup;
     s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
 
   }else if(op_mode==OPERATION_FLATFWD){
@@ -348,7 +385,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_FLAT_FWD_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -378,7 +415,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_TST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen_comp;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -409,7 +446,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen_comp;
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
     /*    s->srch_rescoring=&srch_WST_rescoring;*/
@@ -481,14 +518,14 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   /* Do search-specific checking here */
   if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
     if(s->kbc->lmset==NULL||s->vithist==NULL){      
-      E_INFO("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n");
+      E_INFO("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n",str);
       goto check_error;
     }
   }
 
   if(op_mode==OPERATION_GRAPH){
     if(!cmd_ln_str("-fsg")&&!cmd_ln_str("-fsgfile")){
-      E_INFO("-fsg and -fsgfile are not specified in op_mode %s, wrong operation mode?\n");
+      E_INFO("-fsg and -fsgfile are not specified in op_mode %s, wrong operation mode?\n",str);
       goto check_error;
     }
 
@@ -522,8 +559,6 @@ int32 srch_utt_begin(srch_t* srch){
 int32 srch_utt_end(srch_t* srch){
 
   if(srch->srch_utt_end==NULL){
-
-
     E_INFO("srch->srch_utt_end is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
@@ -577,27 +612,38 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
     s->srch_gmm_compute_lv2(s,block_feat[t][0],t);
     ptmr_stop (&(st->tm_sen));
 
+    
     /* Propagate graph at phoneme (hmm) level */
     ptmr_start (&(st->tm_srch));
-    
-    /* Determine which set of phonemes should be active in next stage
-       using the lookahead information*/
-    /* This should be part of hmm_compute_lv1 */
-    if(COMPUTE_HEURISTIC) s->srch_compute_heuristic(s,win_efv);
-    /* HMM compute Lv 2, currently, this routine compute hmm for the
-     *  data structure and compute the beam. */
-    s->srch_hmm_compute_lv2(s,frmno);
 
-    /* After the HMM scores are computed, tokens are propagate in the
-     * phone-level.  */
-    s->srch_propagate_graph_ph_lv2(s,frmno);
 
-    /* Rescoring. Usually happened at the word end.  */
-    if(s->srch_rescoring!=NULL)
-      s->srch_rescoring(s,frmno);
-
-    /* Propagate the score on the word-level */
-    s->srch_propagate_graph_wd_lv2(s,frmno);
+    if(s->srch_one_srch_frame_lv2!=NULL){ /* If user provided only how
+					     to search for one frame, then
+					     use it instead of going through
+					     the standard abstraction. 
+					  */
+      s->srch_one_srch_frame_lv2(s);
+      
+    }else{
+      /* Determine which set of phonemes should be active in next stage
+	 using the lookahead information*/
+      /* This should be part of hmm_compute_lv1 */
+      if(COMPUTE_HEURISTIC) s->srch_compute_heuristic(s,win_efv);
+      /* HMM compute Lv 2, currently, this routine compute hmm for the
+       *  data structure and compute the beam. */
+      s->srch_hmm_compute_lv2(s,frmno);
+      
+      /* After the HMM scores are computed, tokens are propagate in the
+       * phone-level.  */
+      s->srch_propagate_graph_ph_lv2(s,frmno);
+      
+      /* Rescoring. Usually happened at the word end.  */
+      if(s->srch_rescoring!=NULL)
+	s->srch_rescoring(s,frmno);
+      
+      /* Propagate the score on the word-level */
+      s->srch_propagate_graph_wd_lv2(s,frmno);
+    }
     ptmr_stop (&(st->tm_srch));
 
     ptmr_start (&(st->tm_sen));

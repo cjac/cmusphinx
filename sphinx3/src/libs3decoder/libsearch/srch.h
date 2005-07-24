@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.7  2005/07/22  03:41:05  arthchan2003
- * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ * Revision 1.1.4.8  2005/07/24  01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
  * 
+ * Revision 1.1.4.7  2005/07/22 03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ *
  * Revision 1.1.4.6  2005/07/17 05:54:55  arthchan2003
  * replace vithist_dag_write_header with dag_write_header
  *
@@ -425,6 +428,13 @@ typedef struct srch_s {
 			      int32 frmno_lp2     /**< The frame for the windows */
 			      );
 
+
+  /* The level 1 search functions are not yet fully used. When fast match is needed. We will
+     need them more. 
+   */
+  int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
+				 );
+
   int (*srch_hmm_compute_lv1)(void* srch_struct);
   int (*srch_eval_beams_lv1)(void* srch_struct);
   int (*srch_propagate_graph_ph_lv1)(void* srch_struct);
@@ -433,11 +443,21 @@ typedef struct srch_s {
   /* The 4 operations that require switching during the detail search process */
   /** lv2 stands for detail search. */
 
+
   /** Compute detail (CD) GMM scores or lv2*/
   int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
 			      float32 *feat,      /**< A feature vector */
 			      int32 time          /**< The frame we want to compute detail score */
 			      );
+
+
+  /** A short-cut function that allows implementer could just
+      implement searching for one frame without implement the
+      following 4 fuctions.
+   */
+  int (*srch_one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
+				 );
+
 
   /** Compute detail (CD) HMM scores or lv2*/
   int (*srch_hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
