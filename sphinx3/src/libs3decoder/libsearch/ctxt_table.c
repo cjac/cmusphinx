@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.2  2005/07/17  05:42:27  arthchan2003
- * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
+ * Revision 1.1.2.3  2005/07/24  01:32:54  arthchan2003
+ * Flush the output of the cross word triphone in ctxt_table.c
  * 
+ * Revision 1.1.2.2  2005/07/17 05:42:27  arthchan2003
+ * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
+ *
  * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
  * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
  *
@@ -85,6 +88,7 @@ void dump_xwdpidmap (xwdpid_t **x, mdef_t *mdef)
 	    }
 	}
     }
+    fflush(stdout);
 }
 
 
