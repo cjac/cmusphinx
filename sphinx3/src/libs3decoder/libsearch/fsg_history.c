@@ -238,7 +238,7 @@ int32 fsg_history_n_entries (fsg_history_t *h)
 
 
 int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
-				     search_hyp_t *hyp,dict_t *dict)
+				     srch_hyp_t *hyp,dict_t *dict)
 {
   fsg_hist_entry_t *entry, *pred_entry;
   word_fsglink_t *fl;
@@ -288,7 +288,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp,dict_t *dic
   int32 i, r, nf;
   fsg_hist_entry_t *entry;
   word_fsglink_t *fl;
-  search_hyp_t hyp;
+  srch_hyp_t hyp;
   
   fprintf (fp, "# Hist-Begin %s\n", uttid ? uttid : "");
   fprintf (fp, "# Dummy root entry ID = 0\n");

@@ -35,6 +35,7 @@
 #ifndef __S2_FSG_H__
 #define __S2_FSG_H__
 
+#include <search.h>
 /*
  * Structures through which an application may load an FSG into the decoder.
  * There's essentially a 1-to-1 correspondence between the FSG file format
@@ -60,6 +61,7 @@ typedef struct s2_fsg_s {
 } s2_fsg_t;
 
 
+#if 0
 /* ARCHAN: It was in fbs.h of Sphinx2 . Oh man, we have o
  */
 typedef struct search_hyp_s {
@@ -73,6 +75,7 @@ typedef struct search_hyp_s {
     struct search_hyp_s *next;  /* Next word segment in the hypothesis; NULL if none */
 
 } search_hyp_t;
+#endif
 
 
 #if 0 /* Only in Sphinx 2 */

@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.8  2005/07/24  01:34:54  arthchan2003
- * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ * Revision 1.1.2.9  2005/07/24  19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
  * 
+ * Revision 1.1.2.8  2005/07/24 01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ *
  * Revision 1.1.2.7  2005/07/22 03:37:49  arthchan2003
  * Removal of word_fsg's context table initialization initialization.
  *
@@ -362,7 +365,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 	  
 	  pnode = ssid_pnode_map[lc];
 
-	  E_INFO("wstr %s, lc %d %s, bid %d %s rc %d %s ssid %d\n",dict_wordstr(dict,wid),lc,mdef_ciphone_str(mdef,lc),bid, mdef_ciphone_str(mdef,bid), rc,mdef_ciphone_str(mdef,rc), *ssid);	  	  
+	  /*	  E_INFO("wstr %s, lc %d %s, bid %d %s rc %d %s ssid %d\n",dict_wordstr(dict,wid),lc,mdef_ciphone_str(mdef,lc),bid, mdef_ciphone_str(mdef,bid), rc,mdef_ciphone_str(mdef,rc), *ssid);	  	  */
 	  if (! pnode) {	/* Allocate pnode for this new ssid */
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
 	    pnode->hmm=whmm_alloc_light(n_state_hmm);
@@ -453,7 +456,7 @@ static fsg_pnode_t *psubtree_add_trans (fsg_pnode_t *root,
 
 	  pnode = ssid_pnode_map[rc];
 
-	  E_INFO("wstr %s lc %d %s, bid %d %s rc %d %s ssid %d\n",dict_wordstr(dict,wid),lc,mdef_ciphone_str(mdef,lc),bid, mdef_ciphone_str(mdef,bid), rc,mdef_ciphone_str(mdef,rc), *ssid);	  	  
+	  /*E_INFO("wstr %s lc %d %s, bid %d %s rc %d %s ssid %d\n",dict_wordstr(dict,wid),lc,mdef_ciphone_str(mdef,lc),bid, mdef_ciphone_str(mdef,bid), rc,mdef_ciphone_str(mdef,rc), *ssid);	  	  */
 	  if (! pnode) {	/* Allocate pnode for this new ssid */
 	    pnode = (fsg_pnode_t *) ckd_calloc (1, sizeof(fsg_pnode_t));
 	    pnode->hmm=whmm_alloc_light(n_state_hmm);

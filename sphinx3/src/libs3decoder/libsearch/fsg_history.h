@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.4  2005/07/24  01:34:54  arthchan2003
- * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ * Revision 1.1.2.5  2005/07/24  19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
  * 
+ * Revision 1.1.2.4  2005/07/24 01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ *
  * Revision 1.1.2.3  2005/07/13 18:39:47  arthchan2003
  * (For Fun) Remove the hmm_t hack. Consider each s2 global functions one-by-one and replace them by sphinx 3's macro.  There are 8 minor HACKs where functions need to be removed temporarily.  Also, there are three major hacks. 1,  there are no concept of "phone" in sphinx3 dict_t, there is only ciphone. That is to say we need to build it ourselves. 2, sphinx2 dict_t will be a bunch of left and right context tables.  This is currently bypass. 3, the fsg routine is using fsg_hmm_t which is just a duplication of CHAN_T in sphinx2, I will guess using hmm_evaluate should be a good replacement.  But I haven't figure it out yet.
  *
@@ -243,7 +246,7 @@ void fsg_history_free (fsg_history_t *h);
  * the return value is +ve if it is a valid, real (non-dummy) entry.
  */
 int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 index,
-				     search_hyp_t *hyp,dict_t *dict);
+				     srch_hyp_t *hyp,dict_t *dict);
 
 				     
 #endif

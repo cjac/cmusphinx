@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.5  2005/07/24  01:34:54  arthchan2003
- * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ * Revision 1.1.2.6  2005/07/24  19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
  * 
+ * Revision 1.1.2.5  2005/07/24 01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ *
  * Revision 1.1.2.4  2005/07/17 05:44:32  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -143,7 +146,7 @@ typedef struct fsg_search_s {
   int32 bestscore;		/* For beam pruning */
   int32 bpidx_start;		/* First history entry index this frame */
   
-  search_hyp_t *hyp;		/* Search hypothesis */
+  srch_hyp_t *hyp;		/* Search hypothesis */
   int32 ascr, lscr;		/* Total acoustic and lm score for utt */
   
   int32 n_hmm_eval;		/* Total HMMs evaluated this utt */
@@ -169,7 +172,7 @@ typedef struct fsg_search_s {
   int32 *senscr; /** The senone score */
 #endif
   char* uttid; /* HACK! add uttid in fsg_search, remember to set it */
-  search_hyp_t *filt_hyp;
+  srch_hyp_t *filt_hyp;
 } fsg_search_t;
 
 

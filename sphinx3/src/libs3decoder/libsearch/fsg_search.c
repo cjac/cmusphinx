@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.6  2005/07/24  01:34:54  arthchan2003
- * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ * Revision 1.1.2.7  2005/07/24  19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
  * 
+ * Revision 1.1.2.6  2005/07/24 01:34:54  arthchan2003
+ * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
+ *
  * Revision 1.1.2.5  2005/07/20 21:18:30  arthchan2003
  * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
  *
@@ -795,7 +798,7 @@ void fsg_search_frame_fwd (fsg_search_t *search)
 
 static void fsg_search_hyp_free (fsg_search_t *search)
 {
-  search_hyp_t *hyp, *nexthyp;
+  srch_hyp_t *hyp, *nexthyp;
   
   for (hyp = search->hyp; hyp; hyp = nexthyp) {
     nexthyp = hyp->next;
@@ -862,7 +865,7 @@ void fsg_search_utt_start (fsg_search_t *search)
 
 static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
 {
-  search_hyp_t *hyp;
+  srch_hyp_t *hyp;
   int32 nf;
   
 
@@ -918,7 +921,7 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
 /* Fill in hyp_str in search.c; filtering out fillers and null trans */
 static void fsg_search_hyp_filter(fsg_search_t *search)
 {
-  search_hyp_t *hyp, *filt_hyp;
+  srch_hyp_t *hyp, *filt_hyp;
   int32 i;
   int32 startwid, finishwid;
   int32 altpron;
@@ -981,7 +984,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   word_fsglink_t *fl;
   int32 bestscore, bestscore_finalstate, besthist_finalstate, besthist;
   int32 bpidx, score, frm, last_frm;
-  search_hyp_t *hyp, *head;
+  srch_hyp_t *hyp, *head;
 
   /* Free any existing search hypothesis */
   fsg_search_hyp_free (search);
@@ -1075,7 +1078,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   for (bpidx = besthist; bpidx > 0; ) {
     hist_entry = fsg_history_entry_get(search->history, bpidx);
     
-    hyp = (search_hyp_t *) ckd_calloc (1, sizeof(search_hyp_t));
+    hyp = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
     
     if (fsg_history_entry_hyp_extract (search->history, bpidx, hyp,search->dict) <= 0)
       E_FATAL("fsg_history_entry_hyp_extract() returned <= 0\n");
