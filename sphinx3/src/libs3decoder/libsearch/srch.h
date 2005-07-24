@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.8  2005/07/24  01:39:26  arthchan2003
- * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ * Revision 1.1.4.9  2005/07/24  19:35:59  arthchan2003
+ * Added GAUDEN_EVAL_WINDOW in srch.h. Assuming this is property of a search.
  * 
+ * Revision 1.1.4.8  2005/07/24 01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ *
  * Revision 1.1.4.7  2005/07/22 03:41:05  arthchan2003
  * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
  *
@@ -188,6 +191,12 @@
 #define GMM_STRUCT_CDHMM 0
 #define GMM_STRUCT_SCHMM 1
 
+
+
+
+#define GAUDEN_EVAL_WINDOW 8 /*Moving window length when frames are
+			       considered as blocks, currently used in
+			       3.0 family of tools. */
 
 typedef struct {
   void *graph_struct; /**< The graph structure */
