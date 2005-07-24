@@ -37,9 +37,12 @@
 /* gmm_wrap.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.1  2005/06/27  05:30:25  arthchan2003
- * Merge from the tip of the trunk
+ * Revision 1.1.4.2  2005/07/24  01:35:41  arthchan2003
+ * Add a wrapper for computing senone score without computing composite senone score. Mainly used in mode FSG now
  * 
+ * Revision 1.1.4.1  2005/06/27 05:30:25  arthchan2003
+ * Merge from the tip of the trunk
+ *
  * Revision 1.2  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  *
@@ -66,8 +69,23 @@ int32 approx_ci_gmm_compute(void *srch,  /**< a pointer to a srch_t */
 			    int32 wav_idx    /**< wave index */
 			    );
 
+/**
+   This wrapper calls the approximate GMM computation routine which
+   compute both senone.  Then the composite senone will also be
+   computed. 
+ */
+int32 approx_cd_gmm_compute_sen_comp(
+				     void *srch, /**< a pointer to a srch_t */
+				     float32 *feat, /**< feature vector */
+				     int32 wav_idx  /**< wave index */
+				     );
 
-int32 approx_cd_gmm_compute(void *srch, /**< a pointer to a srch_t */
-			    float32 *feat, /**< feature vector */
-			    int32 wav_idx  /**< wave index */
-			    );
+/**
+   This wrapper that calls the approximate GMM computation routine which 
+   compute only normal senone. 
+ */
+int32 approx_cd_gmm_compute_sen(
+				void *srch, /**< a pointer to a srch_t */
+				float32 *feat, /**< feature vector */
+				int32 wav_idx  /**< wave index */
+				);

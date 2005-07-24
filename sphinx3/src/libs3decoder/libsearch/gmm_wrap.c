@@ -37,9 +37,12 @@
 /* gmm_wrap.c
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  22:48:14  arthchan2003
- * A wrapper that provide the function pointer interface of approx_cont_mgau_ci_eval  and approx_cont_mgau_frame_eval.  They are used in srch_gmm_compute_lv1  and srch_gmm_compute_lv2 respectively.  This will also be the home of other gmm computation routine. (Say the s3.0 version of GMM computation)
+ * Revision 1.1.4.1  2005/07/24  01:35:41  arthchan2003
+ * Add a wrapper for computing senone score without computing composite senone score. Mainly used in mode FSG now
  * 
+ * Revision 1.1  2005/06/21 22:48:14  arthchan2003
+ * A wrapper that provide the function pointer interface of approx_cont_mgau_ci_eval  and approx_cont_mgau_frame_eval.  They are used in srch_gmm_compute_lv1  and srch_gmm_compute_lv2 respectively.  This will also be the home of other gmm computation routine. (Say the s3.0 version of GMM computation)
+ *
  * Revision 1.3  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -85,7 +88,30 @@ int32 approx_ci_gmm_compute(void *srch, float32 *feat, int32 cache_idx, int32 wa
   return SRCH_SUCCESS;
 }
 
-int32 approx_cd_gmm_compute(void *srch, float32 *feat, int32 wav_idx)
+
+int32 approx_cd_gmm_compute_sen_comp(void *srch, float32 *feat, int32 wav_idx)
+{
+  int32 flag;
+  srch_t* s;
+  ascr_t *ascr;
+  kbcore_t *kbcore;
+
+  s=(srch_t*) srch;
+  kbcore = s->kbc;
+  ascr=s->ascr;
+
+  flag=approx_cd_gmm_compute_sen(srch, feat,wav_idx);
+
+  if(flag!=SRCH_SUCCESS){
+    E_INFO("Computation of senone failed\n");
+    return flag;
+  }
+  /* Evaluate composite senone scores from senone scores */
+  dict2pid_comsenscr (kbcore_dict2pid(kbcore), ascr->sen, ascr->comsen);
+  return SRCH_SUCCESS;
+
+}
+int32 approx_cd_gmm_compute_sen(void *srch, float32 *feat, int32 wav_idx)
 {
   srch_t* s;
   mdef_t *mdef;
@@ -116,8 +142,6 @@ int32 approx_cd_gmm_compute(void *srch, float32 *feat, int32 wav_idx)
   st->utt_sen_eval += mgau_frm_sen_eval(mgau);
   st->utt_gau_eval += mgau_frm_gau_eval(mgau);
   
-  /* Evaluate composite senone scores from senone scores */
-  dict2pid_comsenscr (kbcore_dict2pid(kbcore), ascr->sen, ascr->comsen);
 
   return SRCH_SUCCESS;
 }
