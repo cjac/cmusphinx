@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4.4.1  2005/07/17  05:44:30  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.4.4.2  2005/07/24  01:31:03  arthchan2003
+ * add interface to set temporary active array correctly.
  * 
+ * Revision 1.4.4.1  2005/07/17 05:44:30  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.4  2005/06/21 22:32:25  arthchan2003
  * Log. Significant expansion of ascr_t to be the container of all types
  * of acoustic scores.  Implementations of init, report, free functions
@@ -146,4 +149,26 @@ void ascr_free(ascr_t *a)
     ckd_free(a);
   }
 
+}
+
+void ascr_clear_sen_active(ascr_t *a)
+{
+  assert(a);
+  assert(a->sen_active);
+  memset (a->sen_active, 0, a->n_sen * sizeof(int32));
+}
+
+
+void ascr_clear_ssid_active(ascr_t *a)
+{
+  assert(a);
+  assert(a->ssid_active);
+  memset (a->ssid_active, 0, a->n_sseq * sizeof(int32));
+}
+
+void ascr_clear_comssid_active(ascr_t *a)
+{
+  assert(a);
+  assert(a->comssid_active);
+  memset (a->comssid_active, 0, a->n_comsseq * sizeof(int32));
 }
