@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.3  2005/07/20  21:18:30  arthchan2003
- * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ * Revision 1.1.2.4  2005/07/24  01:41:18  arthchan2003
+ * Filled in all function pointers for mode 2
  * 
+ * Revision 1.1.2.3  2005/07/20 21:18:30  arthchan2003
+ * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
+ *
  * Revision 1.1.2.2  2005/06/28 07:01:21  arthchan2003
  * General fix of fsg routines to make a prototype of fsg_init and fsg_read. Not completed.  The number of empty functions in fsg_search is now decreased from 35 to 30.
  *
@@ -50,7 +53,7 @@
  */
 
 #include <s3types.h>
-#include <lm.h>
+
 #include "kb.h"
 #include "word_fsg.h"
 #include "fsg_search.h"
@@ -66,25 +69,20 @@ word_fsg_t* srch_FSG_read_fsgfile(void* srch_struct,const char* fsgname);
 int srch_FSG_uninit(void* srch_struct);
 int srch_FSG_begin(void* srch_struct);
 int srch_FSG_end(void* srch_struct);
-int srch_FSG_decode(void* srch_struct);
 
 int srch_FSG_set_lm(void* srch_struct, const char* lmname);
 int srch_FSG_add_lm(void* srch, lm_t *lm, const char *lmname);
 int srch_FSG_delete_lm(void* srch, const char *lmname);
 
-int srch_FSG_gmm_compute_lv2(void* srch_struct, float32 *feat, int32 time);
+int srch_FSG_srch_one_frame_lv2(void* srch_struct);
+
 int srch_FSG_hmm_compute_lv1(void* srch_struct);
-int srch_FSG_hmm_compute_lv2(void* srch_struct, int32 frmno);
 int srch_FSG_eval_beams_lv1 (void* srch_struct);
-int srch_FSG_eval_beams_lv2 (void* srch_struct);
 int srch_FSG_propagate_graph_ph_lv1(void* srch_struct);
 int srch_FSG_propagate_graph_wd_lv1(void* srch_struct);
 
-int srch_FSG_propagate_graph_ph_lv2(void* srch_struct, int32 frmno);
-int srch_FSG_propagate_graph_wd_lv2(void* srch_struct, int32 frmno);
-int srch_FSG_rescoring(void *srch, int32 frmno);
+int srch_FSG_shift_one_cache_frame(void *srch_struct,int32 win_efv);
+int srch_FSG_select_active_gmm(void *srch_struct);
 
-int srch_FSG_compute_heuristic(void *srch, int32 win_efv);
-int srch_FSG_frame_windup(void *srch_struct,int32 frmno);
-int srch_FSG_shift_one_cache_frame(void *srch,int32 win_efv);
-int srch_FSG_select_active_gmm(void *srch);
+int srch_FSG_windup(void* srch_struct);
+
