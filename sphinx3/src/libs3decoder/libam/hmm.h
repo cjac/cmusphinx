@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8.4.4  2005/07/17  05:15:47  arthchan2003
- * Totally removed the data members in hmm_t structure
+ * Revision 1.8.4.5  2005/07/26  02:17:44  arthchan2003
+ * Fixed  keyword problem.
  * 
+ * Revision 1.8.4.4  2005/07/17 05:15:47  arthchan2003
+ * Totally removed the data members in hmm_t structure
+ *
  * Revision 1.8.4.3  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
  *
@@ -59,18 +62,9 @@
  *
  * Revision 1.8  2005/06/21 18:34:41  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
- * Revision 1.8.4.4  2005/07/17  05:15:47  arthchan2003
- * Totally removed the data members in hmm_t structure
- * 
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.3  2005/07/05 05:47:59  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Fixed dox-doc. struct level of documentation are included.
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Removed fsg compliant stuff from hmm_t
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add Added changes to make libsearch/fsg_* family of code to be compiled.
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add keyword.
+ * Revision 1.8.4.5  2005/07/26  02:17:44  arthchan2003
+ * Fixed  keyword problem.
+ *  keyword
  *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
