@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.1  2005/07/22  03:38:37  arthchan2003
- * Change the code a little bit so it starts to really look like srch_hyp_t .
+ * Revision 1.9.4.2  2005/07/26  02:19:20  arthchan2003
+ * Comment out hyp_t, change name of wid in srch_hyp_t to id.
  * 
+ * Revision 1.9.4.1  2005/07/22 03:38:37  arthchan2003
+ * Change the code a little bit so it starts to really look like srch_hyp_t .
+ *
  * Revision 1.9  2005/06/21 22:49:03  arthchan2003
  * Add  keyword.
  *
@@ -76,6 +79,7 @@
 extern "C" {
 #endif
 
+#if 0
   /**
    * Structure to store hypothesis. 
    */
@@ -89,6 +93,7 @@ typedef struct {
     int32 senscale;	/* Segment acoustic score scaling factor */
     int32 type;		/* Uninterpreted data; see vithist_entry_t in vithist.h */
 } hyp_t;
+#endif
 
 #ifdef __cplusplus
 }

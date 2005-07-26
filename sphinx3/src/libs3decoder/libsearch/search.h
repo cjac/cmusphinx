@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4.4.2  2005/07/24  19:34:46  arthchan2003
- * Removed search_hyp_t, used srch_hyp_t instead
+ * Revision 1.4.4.3  2005/07/26  02:19:20  arthchan2003
+ * Comment out hyp_t, change name of wid in srch_hyp_t to id.
  * 
+ * Revision 1.4.4.2  2005/07/24 19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
+ *
  * Revision 1.4.4.1  2005/06/27 05:37:58  arthchan2003
  * Fixes to make the search of fsg in place (NOT WORKING NOW) in Makefile.am.
  *
@@ -145,12 +148,24 @@ extern "C" {
    */
 typedef struct srch_hyp_s {
     const char     *word;    /**< A pointer to the word string*/
-    s3wid_t   wid;        /**< The word ID */
+
+    int32   id;        /**< Token ID; could be s3wid_t, s3cipid_t...
+			  Interpreted by client. */
+
+
+    int32 vhid;         /**< Viterbi history (lattice) ID from which
+			   this entry created Specific to Sphinx 3.x
+			   mode 4 and mode 5*/
+
+    int32 senscale;	/**< Segment acoustic score scaling factor */
+    int32 type;		/**< Uninterpreted data; see vithist_entry_t in vithist.h */
+
     s3frmid_t sf;         /**< Starting frame */
     s3frmid_t ef;         /**< Ending frame */
     int32     ascr;       /**< AM score */
     int32     lscr;       /**< LM score */
-    int32     pscr;       /**< score for heuristic search */
+    int32     pscr;       /**< score for heuristic search (Only used in dag and astar)*/
+
     int32  fsg_state;     /**< At which this entry terminates (FSG mode only) */
   struct srch_hyp_s *next;  /**< a pointer to next structure, a convenient device such 
 			       that a programmer could choose to use it instead of using
@@ -158,6 +173,17 @@ typedef struct srch_hyp_s {
 			    */
 } srch_hyp_t;
 
+
+#if 0 /* Only in Sphinx 2 */
+    float conf;         /* Confidence measure (roughly prob(correct)) for this word;
+                           NOT FILLED IN BY THE RECOGNIZER at the moment!! */
+    int32 latden;       /* Average lattice density in segment.  Larger values imply
+                           more confusion and less certainty about the result.  To use
+                           it for rejection, cutoffs must be found independently */
+    double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
+                           more confusion and less certainty.  To use it for rejection,
+                           cutoffs must be found independently. */
+#endif
 
 
 #ifdef __cplusplus
