@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12.4.1  2005/07/05  06:25:40  arthchan2003
- * Fixed dox-doc.
+ * Revision 1.12.4.2  2005/07/26  03:14:17  arthchan2003
+ * Removed ctl_process_dyn_lm. One of my sin.
  * 
+ * Revision 1.12.4.1  2005/07/05 06:25:40  arthchan2003
+ * Fixed dox-doc.
+ *
  * Revision 1.12  2005/06/21 20:44:34  arthchan2003
  * 1, Fixed doxygen documentation, 2, Add the $ keyword.
  *
@@ -170,6 +173,7 @@ char *corpus_lookup (corpus_t *corp, char *id);
 					   if omitted) */
 		      );
 
+#if 0
   /**
  * Process the given control file (or stdin if NULL):  Skip the first nskip entries, and
  * process the next count entries by calling the given function (*func) for each entry.
@@ -186,13 +190,21 @@ ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if N
 		    void *kb		/**< In: A catch-all data pointer to be passed as
 					   the first argument to func above */
 		    );
+#endif
 
   /**
- * A small modification of ctl_process.  It changes the LM dynamically according to the utterances. User can use option -ctl_lm to specify which LM should be used in each utterance.   
+ * Process the given control file (or stdin if NULL): Skip the first
+ * nskip entries, and process the next count entries by calling the
+ * given function (*func) for each entry.  Any error in reading the
+ * control file is FATAL.  ctllmfile and ctlmllrfile can be specified
+ * optionally. If they are not specified, then NULL could be used.
+ *
+ * Return value: ptmr_t structure containing cpu/elapsed time stats for the run.
  */
-ptmr_t ctl_process_dyn_lm (char *ctlfile,	/**< In: Control file to read; use stdin if NULL */
-			   char *ctllmfile,     /**< In: Control file that specify the lm used for the corresponding utterance */
-			   char *ctlmllrfile,   /**< In: Contorl file that specify the mllr used for the corresponding utterance */
+
+ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if NULL */
+		    char *ctllmfile,     /**< In: Control file that specify the lm used for the corresponding utterance */
+		    char *ctlmllrfile,   /**< In: Contorl file that specify the mllr used for the corresponding utterance */
 		    int32 nskip,	/**< In: No. of entries to skip at the head */
 		    int32 count,	/**< In: No. of entries to process after nskip */
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),

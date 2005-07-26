@@ -24,7 +24,7 @@
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2005/06/21  20:44:34  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ * Revision 1.11.4.1  2005/07/26  03:14:17  arthchan2003
+ * Removed ctl_process_dyn_lm. One of my sin.
  * 
+ * Revision 1.11  2005/06/21 20:44:34  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add the $ keyword.
+ *
  *
  * 09-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added ctl_process_utt ().
@@ -341,7 +344,7 @@ int32 ctl_read_entry (FILE *fp, char *uttfile, int32 *sf, int32 *ef, char *uttid
     return 0;
 }
 
-
+#if 0
 ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 		    void *kb)
@@ -426,8 +429,9 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
   
   return tm;
 }
+#endif
 
-ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nskip, int32 count,
+ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nskip, int32 count,
 		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
 		    void *kb)
 {
@@ -447,6 +451,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
   ctllmfp=NULL;
   ctlmllrfp=NULL;
   E_INFO("Batch mode recognition with dynamic LM\n");
+
   if (ctlfile) {
     if ((fp = fopen(ctlfile, "r")) == NULL)
       E_FATAL_SYSTEM("fopen(%s,r) failed\n", ctlfile);
@@ -476,17 +481,19 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
       }
 
       /*This checks the size of the control file of the lm in batch mode*/
-      if (ctl_read_entry (ctllmfp, lmname, &sf, &ef, tmp) < 0) {
-	fclose (ctllmfp);
-	E_ERROR("LM cannot be read when skipping the %d-th sentence\n",nskip);
-	return tm;
+      if(ctllmfile){
+	if (ctl_read_entry (ctllmfp, lmname, &sf, &ef, tmp) < 0) {
+	  fclose (ctllmfp);
+	  E_ERROR("An LM control file is specified but LM cannot be read when skipping the %d-th sentence\n",nskip);
+	  return tm;
+	}
       }
 
       /*This checks the size of the control file of the mllr in batch mode */
       if(ctlmllrfile){
 	if (ctl_read_entry (ctlmllrfp, regmatname, &sf, &ef, tmp) < 0) {
 	  fclose (ctlmllrfp);
-	  E_ERROR("MLLR cannot be read when skipping the %d-th sentence\n",nskip);
+	  E_ERROR("A MLLR control file is specified but MLLR cannot be read when skipping the %d-th sentence\n",nskip);
 	  return tm;
 	}
       }
@@ -501,15 +508,17 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
       break;
 
     /*This checks the size of the control file in batch mode*/
-    if (ctl_read_entry (ctllmfp, lmname, &tmp1, &tmp2, tmp) < 0) {
-      fclose (ctllmfp);
-      E_ERROR("LM cannot be read when counting the %d-th sentence\n",count);
-      return tm;
+    if(ctllmfile){
+      if (ctl_read_entry (ctllmfp, lmname, &tmp1, &tmp2, tmp) < 0) {
+	fclose (ctllmfp);
+	E_ERROR("LM control file is specified but LM cannot be read when counting the %d-th sentence\n",count);
+	break;
+      }
     }
 
     if(ctlmllrfile){
       if (ctl_read_entry (ctlmllrfp, regmatname, &tmp1, &tmp2, cb2mllrname) < 0){
-	E_ERROR("MLLR cannot be read when counting the %d-th sentence\n",count);
+	E_ERROR("MLLR control file is specified but MLLR cannot be read when counting the %d-th sentence\n",count);
 	break;
       }
       if (tmp2 == -1)
@@ -521,7 +530,7 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     ptmr_start (&tm);
     E_INFO("filename %s, lmname %s\n",uttfile,lmname);
     if (func){
-      srch_set_lm((srch_t*)k->srch,lmname);
+      if(ctllmfile) srch_set_lm((srch_t*)k->srch,lmname);
       if(ctlmllrfile) kb_setmllr(regmatname,cb2mllrname,kb);
       (*func)(kb, uttfile, sf, ef, uttid);
     }
@@ -534,13 +543,9 @@ ptmr_t ctl_process_dyn_lm (char *ctlfile, char *ctllmfile, char* ctlmllrfile, in
     ptmr_reset (&tm);
   }
 
-  if(fp)
-    fclose (fp);
-  if(ctllmfp)
-    fclose (ctllmfp);
-
-  if(ctlmllrfp)
-    fclose (ctlmllrfp);
+  if(fp)    fclose (fp);
+  if(ctllmfp) fclose (ctllmfp);
+  if(ctlmllrfp)  fclose (ctlmllrfp);
   
   return tm;
 }
