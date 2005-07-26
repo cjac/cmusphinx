@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.5  2005/07/24  01:41:18  arthchan2003
- * Filled in all function pointers for mode 2
+ * Revision 1.1.2.6  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.1.2.5  2005/07/24 01:41:18  arthchan2003
+ * Filled in all function pointers for mode 2
+ *
  * Revision 1.1.2.4  2005/07/20 21:18:30  arthchan2003
  * FSG can now be read, srch_fsg_init can now be initialized, psubtree can be built. Sounds like it is time to plug in other function pointers.
  *
@@ -235,7 +238,7 @@ int srch_FSG_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
-int srch_FSG_windup(void* srch)
+int srch_FSG_windup(void* srch, int32 frmno)
 {
   return SRCH_SUCCESS;
 }

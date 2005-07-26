@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.1  2005/07/04  07:25:22  arthchan2003
- * Added vithist_entry_display and vh_lmstate_display in vithist.
+ * Revision 1.11.4.2  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.11.4.1  2005/07/04 07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
+ *
  * Revision 1.11  2005/06/22 02:47:35  arthchan2003
  * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
  *
@@ -92,7 +95,7 @@
 
 #include <s3types.h>
 #include "kbcore.h"
-#include "hyp.h"
+#include "search.h"
 #include "dict.h"
 #include "wid.h"
 

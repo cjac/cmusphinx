@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.7  2005/07/24  19:34:46  arthchan2003
- * Removed search_hyp_t, used srch_hyp_t instead
+ * Revision 1.1.2.8  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.1.2.7  2005/07/24 19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
+ *
  * Revision 1.1.2.6  2005/07/24 01:34:54  arthchan2003
  * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  *
@@ -937,9 +940,9 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
   
   i = 0;
   for (hyp = search->hyp; hyp; hyp = hyp->next) {
-    if ((hyp->wid < 0) ||
-	(hyp->wid == startwid) ||
-	(hyp->wid >= finishwid))
+    if ((hyp->id < 0) ||
+	(hyp->id == startwid) ||
+	(hyp->id >= finishwid))
       continue;
     
     /* Copy this hyp entry to filtered result */
@@ -947,14 +950,14 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
     
     /* Replace specific word pronunciation ID with base ID */
     if (! altpron)
-      filt_hyp[i].wid = dict_basewid(dict, filt_hyp[i].wid);
+      filt_hyp[i].id = dict_basewid(dict, filt_hyp[i].id);
     
     i++;
     if ((i+1) >= HYP_SZ)
       E_FATAL("Hyp array overflow; increase HYP_SZ in search.h\n");
   }
   
-  filt_hyp[i].wid = -1;	/* Sentinel */
+  filt_hyp[i].id = -1;	/* Sentinel */
 }
 
 

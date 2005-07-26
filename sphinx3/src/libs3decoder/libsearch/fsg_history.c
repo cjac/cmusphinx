@@ -250,20 +250,20 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   fl = entry->fsglink;
 
   assert(dict);
-  hyp->wid = word_fsglink_wid(fl);
+  hyp->id = word_fsglink_wid(fl);
 #if 0
-  E_INFO("%d\n",hyp->wid);
-  if(hyp->wid>=0){
-    E_INFO("WORD STRING: %s\n", dict_wordstr(dict,hyp->wid));
+  E_INFO("%d\n",hyp->id);
+  if(hyp->id>=0){
+    E_INFO("WORD STRING: %s\n", dict_wordstr(dict,hyp->id));
   }
 #endif
-  hyp->word = (hyp->wid >= 0) ? dict_wordstr(dict,hyp->wid) : "";
+  hyp->word = (hyp->id >= 0) ? dict_wordstr(dict,hyp->id) : "";
   hyp->ef = entry->frame;
   hyp->lscr = word_fsglink_logs2prob(fl);
   hyp->fsg_state = word_fsglink_to_state(fl);
   
   /* hyp->sf and hyp->ascr depends on the predecessor entry */
-  if (hyp->wid < 0) {		/* NULL transition */
+  if (hyp->id < 0) {		/* NULL transition */
     hyp->sf = hyp->ef;
     hyp->ascr = 0;
   } else {			/* Non-NULL transition */
@@ -323,7 +323,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp,dict_t *dic
 	       entry->pred,
 	       entry->score,
 	       hyp.lscr, hyp.ascr,
-	       (hyp.wid >= 0) ? hyp.ascr/nf : 0,
+	       (hyp.id >= 0) ? hyp.ascr/nf : 0,
 	       word_fsglink_to_state(fl),
 	       entry->lc);
 

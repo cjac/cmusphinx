@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.11  2005/07/24  01:39:26  arthchan2003
- * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ * Revision 1.1.4.12  2005/07/26  02:21:14  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.1.4.11  2005/07/24 01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ *
  * Revision 1.1.4.10  2005/07/22 03:41:05  arthchan2003
  * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
  *
@@ -151,8 +154,6 @@
 
 #include "srch.h"
 #define COMPUTE_HEURISTIC 1
-
-
 
 int32 srch_mode_str_to_index(const char* mode_str)
 {
@@ -769,7 +770,7 @@ int32 srch_set_lamdafn(srch_t* srch){
 void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
 {
     gnode_t *gn;
-    hyp_t *h;
+    srch_hyp_t *h;
     int32 ascr, lscr, scl;
     dict_t *dict;
 
@@ -778,7 +779,7 @@ void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
     scl =0;
     
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
+	h = (srch_hyp_t *) gnode_ptr (gn);
 	ascr += h->ascr;
 	lscr += h->lscr;
 	scl += h->senscale;
@@ -790,7 +791,7 @@ void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
 	     scl, ascr+lscr, ascr, lscr);
     
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
+	h = (srch_hyp_t *) gnode_ptr (gn);
 	fprintf (fp, " %d %d %d %s", h->sf, h->ascr, h->lscr,
 		 dict_wordstr(dict, h->id));
     }
@@ -801,7 +802,7 @@ void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
 void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
 {
     gnode_t *gn;
-    hyp_t *h;
+    srch_hyp_t *h;
     dict_t *dict;
     int counter=0;
 
@@ -810,7 +811,7 @@ void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
     fprintf (fp, "%s ", (hdr ? hdr : ""));
 
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-      h = (hyp_t *) gnode_ptr (gn);
+      h = (srch_hyp_t *) gnode_ptr (gn);
       if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)))
 	fprintf(fp,"%s ",dict_wordstr(dict, dict_basewid(dict,h->id)));
       counter++;
@@ -828,7 +829,7 @@ void reg_result_dump (srch_t* s, int32 id)
   glist_t hyp;
   stat_t* st; 
   gnode_t *gn;
-  hyp_t *h;
+  srch_hyp_t *h;
 
   st= s->stat;
 
@@ -860,7 +861,7 @@ void reg_result_dump (srch_t* s, int32 id)
     lscr = 0;
     
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-      h = (hyp_t *) gnode_ptr (gn);
+      h = (srch_hyp_t *) gnode_ptr (gn);
       fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
 	       h->vhid, h->sf, h->ef, h->ascr + h->senscale, h->lscr, h->type,
 	       dict_wordstr(s->kbc->dict, h->id));
@@ -932,7 +933,7 @@ void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 exact, int32 s
 	fprintf (fp, "(null)");
     
     for (h = hypptr; h; h = h->next) {
-	w = h->wid;
+	w = h->id;
 	if (! exact) {
 	    w = dict_basewid (dict,w);
 	    if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))

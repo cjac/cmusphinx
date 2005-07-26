@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.3  2005/07/20  21:13:16  arthchan2003
- * Some small clean-up of the code. Use cmd_ln_* instead of cmd_ln_access
+ * Revision 1.12.4.4  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.12.4.3  2005/07/20 21:13:16  arthchan2003
+ * Some small clean-up of the code. Use cmd_ln_* instead of cmd_ln_access
+ *
  * Revision 1.12.4.2  2005/07/17 05:44:31  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -1499,8 +1502,8 @@ static srch_hyp_t *lattice_backtrace (s3latid_t l, s3wid_t w_rc)
 	    prevh->next = h;
 	h->next = NULL;
 	
-	h->wid = lattice[l].wid;
-	h->word = dict_wordstr(dict,h->wid);
+	h->id = lattice[l].wid;
+	h->word = dict_wordstr(dict,h->id);
 	h->sf = prevh ? prevh->ef+1 : 0;
 	h->ef = lattice[l].frm;
 	h->pscr = lattice[l].score;

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.2  2005/07/17  05:55:45  arthchan2003
- * Removed vithist_dag_write_header
+ * Revision 1.8.4.3  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.8.4.2  2005/07/17 05:55:45  arthchan2003
+ * Removed vithist_dag_write_header
+ *
  * Revision 1.8.4.1  2005/07/04 07:25:22  arthchan2003
  * Added vithist_entry_display and vh_lmstate_display in vithist.
  *
@@ -838,7 +841,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
     vithist_entry_t *ve;
     int32 b, l;
     glist_t hyp;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     hyp = NULL;
     
@@ -847,7 +850,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	l = VITHIST_ID2BLKOFFSET(id);
 	ve = vh->entry[b] + l;
 	
-	h = (hyp_t *) ckd_calloc (1, sizeof(hyp_t));
+	h = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
 	h->id = ve->wid;
 	h->sf = ve->sf;
 	h->ef = ve->ef;
@@ -886,7 +889,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
     dagnode_t *dn, *dn2;
     int32 sf, ef, n_node;
     int32 f, i;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     sfwid = (glist_t *) ckd_calloc (vh->n_frm+1, sizeof(glist_t));
     
@@ -953,7 +956,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
      * But keep segments in the original hypothesis, regardless; mark them first.
      */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
+	h = (srch_hyp_t *) gnode_ptr (gn);
 	for (gn2 = sfwid[h->sf]; gn2; gn2 = gnode_next(gn2)) {
 	    dn = (dagnode_t *) gnode_ptr (gn2);
 	    if (h->id == dn->wid)
@@ -1080,13 +1083,15 @@ void vithist_free (vithist_t *v)
 
 void vithist_report(vithist_t *vh)
 {
+  E_INFO_NOFN("Initialization of vithist_t, report:\n");
   if(vh){
-    E_INFO_NOFN("Initialization of vithist_t, report:\n");
     E_INFO_NOFN("Word beam = %d\n",vh->wbeam);
     E_INFO_NOFN("Bigram Mode =%d\n",vh->bghist);
     E_INFO_NOFN("Rescore Mode =%d\n",vh->bLMRescore);
     E_INFO_NOFN("Trace sil Mode =%d\n",vh->bBtwSil);
     E_INFO_NOFN("\n");
+  }else{
+    E_INFO_NOFN("Viterbi history is (null)\n");
   }
 }
 

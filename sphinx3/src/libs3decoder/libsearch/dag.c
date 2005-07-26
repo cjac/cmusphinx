@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.1  2005/07/17  05:44:30  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.1.4.2  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.1.4.1  2005/07/17 05:44:30  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.1  2005/06/21 22:37:47  arthchan2003
  * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
  *
@@ -390,8 +393,8 @@ srch_hyp_t *dag_backtrace (srch_hyp_t * hyp, daglink_t *l, float64 lwf, dict_t* 
 	if (! l->bypass) {
 	    /* Link did not bypass any filler node */
 	    h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
-	    h->wid = l->node->wid;
-	    h->word = dict_wordstr (dict,h->wid);
+	    h->id = l->node->wid;
+	    h->word = dict_wordstr (dict,h->id);
 	    h->sf = l->node->sf;
 	    h->ef = l->ef;
 	    h->ascr = l->ascr;
@@ -405,8 +408,8 @@ srch_hyp_t *dag_backtrace (srch_hyp_t * hyp, daglink_t *l, float64 lwf, dict_t* 
 	    src = l->node;	/* Note that l is a PREDECESSOR link */
 	    for (; l; l = l->bypass) {
 		h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
-		h->wid = src->wid;
-		h->word = dict_wordstr (dict,h->wid);
+		h->id = src->wid;
+		h->word = dict_wordstr (dict,h->id);
 		h->sf = src->sf;
 
 		if (hhead)
