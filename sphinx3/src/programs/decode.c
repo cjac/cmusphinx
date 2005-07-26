@@ -61,11 +61,8 @@
  */
 #include "utt.h"
 #include "kb.h"
-#include "logs3.h"		/* RAH, added to resolve log3_free */
 #include "corpus.h"
 #include "cmdln_macro.h"
-
-
  
 static arg_t arg[] = {
   log_table_command_line_macro()
@@ -122,8 +119,6 @@ int32 main (int32 argc, char *argv[])
 {
     kb_t kb;
     stat_t* st;
-
-
     
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc,argv,"default.arg",arg);
@@ -135,26 +130,16 @@ int32 main (int32 argc, char *argv[])
     fprintf (stdout, "\n");
 
     if (cmd_ln_str ("-ctl")) {
-      if(cmd_ln_str("-ctl_lm")&&cmd_ln_str("-lmctlfn")) {
-	st->tm = ctl_process_dyn_lm (cmd_ln_str("-ctl"),
-				 cmd_ln_str("-ctl_lm"),
-				 cmd_ln_str("-ctl_mllr"),
-			  cmd_ln_int32("-ctloffset"),
-			  cmd_ln_int32("-ctlcount"),
-			  utt_decode, &kb);
-      }else{
-	if(cmd_ln_str("-ctl_lm")){
-	  E_WARN("Ignoring argument from option -ctl_lm\n");
-	}
+      /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and -ctl_mllr to get
+	 the corresponding LM and MLLR for the utterance */
 	st->tm = ctl_process (cmd_ln_str("-ctl"),
-			  cmd_ln_str("-ctl_mllr"),
-			  cmd_ln_int32("-ctloffset"),
-			  cmd_ln_int32("-ctlcount"),
-			  utt_decode, &kb);
-      }
+			      cmd_ln_str("-ctl_lm"),
+			      cmd_ln_str("-ctl_mllr"),
+			      cmd_ln_int32("-ctloffset"),
+			      cmd_ln_int32("-ctlcount"),
+			      utt_decode, &kb);
     } else if (cmd_ln_str ("-utt")) {
-      /* Defunct at this moment, LM and MLLR is not correctly loaded in in this mode. */
-      E_FATAL("-utt is disabled  at this moment, LM and MLLR is not correctly loaded in in this mode.");
+      /* When -utt is specified, corpus.c will wait for the utterance to change */
 	st->tm = ctl_process_utt (cmd_ln_str("-utt"), 
 			      cmd_ln_int32("-ctlcount"), 
 			      utt_decode, &kb);
