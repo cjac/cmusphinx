@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.2  2005/07/22  03:46:55  arthchan2003
- * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ * Revision 1.10.4.3  2005/07/26  02:22:27  arthchan2003
+ * Merged srch_hyp_t and hyp_t
  * 
+ * Revision 1.10.4.2  2005/07/22 03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
  * Revision 1.10.4.1  2005/07/18 23:21:23  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -298,7 +301,7 @@ static void log_hypseg (char *uttid,
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
 	ascr += h->ascr;
-	if (dict_basewid(dict,h->wid) != dict->startwid) {
+	if (dict_basewid(dict,h->id) != dict->startwid) {
 	    lscr += lm_rawscore (lmset->cur_lm,h->lscr, 1.0);
 	} else {
 	    assert (h->lscr == 0);
@@ -312,8 +315,8 @@ static void log_hypseg (char *uttid,
 	fprintf (fp, " (null)\n");
     else {
 	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->wid) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr, 1.0) : 0;
-	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->wid));
+	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr, 1.0) : 0;
+	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->id));
 	}
 	fprintf (fp, " %d\n", nfrm);
     }
