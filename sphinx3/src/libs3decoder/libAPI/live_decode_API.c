@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22.4.5  2005/07/20  19:42:30  arthchan2003
- * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
+ * Revision 1.22.4.6  2005/07/26  02:16:42  arthchan2003
+ * Merged hyp_t with srch_hyp_t
  * 
+ * Revision 1.22.4.5  2005/07/20 19:42:30  arthchan2003
+ * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
+ *
  * Revision 1.22.4.4  2005/07/18 19:00:36  arthchan2003
  * Changed the type of machine_endian and input_endian to "little" or "big" , changed the type of sampling rate to float32.
  *
@@ -364,7 +367,7 @@ ld_process_ceps(live_decoder_t *_decoder,
 
 int
 ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
-		 hyp_t ***_hyp_segs)
+		 srch_hyp_t ***_hyp_segs)
 {
   int rv = LD_SUCCESS;
 
@@ -441,10 +444,10 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   int32	i = 0;
   glist_t hyp_list;
   gnode_t *node;
-  hyp_t *hyp;
+  srch_hyp_t *hyp;
   char *hyp_strptr = 0;
   char *hyp_str = 0;
-  hyp_t **hyp_segs = 0;
+  srch_hyp_t **hyp_segs = 0;
   int hyp_seglen = 0;
   int hyp_strlen = 0;
   int finish_wid = 0;
@@ -470,7 +473,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   hyp_list = vithist_backtrace(kb->vithist, id);
   finish_wid = dict_finishwid(dict);
   for (node = hyp_list; node != NULL; node = gnode_next(node)) {
-    hyp = (hyp_t *)gnode_ptr(node);
+    hyp = (srch_hyp_t *)gnode_ptr(node);
     hyp_seglen++;
     if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
       hyp_strlen +=
@@ -484,7 +487,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
 
   /** allocate array to hold the segments and/or decoded string */
   hyp_str = (char *)ckd_calloc(hyp_strlen, sizeof(char));
-  hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
+  hyp_segs = (srch_hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(srch_hyp_t *));
   if (hyp_segs == NULL || hyp_str == NULL) {
     E_WARN("Failed to allocate storage for hypothesis.\n");
     rv = LD_ERROR_OUT_OF_MEMORY;
@@ -495,7 +498,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   i = 0;
   hyp_strptr = hyp_str;
   for (node = hyp_list; node != NULL; node = gnode_next(node), i++) {
-    hyp = (hyp_t *)gnode_ptr(node);
+    hyp = (srch_hyp_t *)gnode_ptr(node);
     hyp_segs[i] = hyp;
     
     if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
@@ -524,7 +527,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   }
   if (hyp_list != NULL) {
     for (node = hyp_list; node != NULL; node = gnode_next(node)) {
-      if ((hyp = (hyp_t *)gnode_ptr(node)) != NULL) {
+      if ((hyp = (srch_hyp_t *)gnode_ptr(node)) != NULL) {
 	ckd_free(hyp);
       }
     }
@@ -536,7 +539,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
 void
 ld_free_hyps(live_decoder_t *_decoder)
 {
-  hyp_t **h;
+  srch_hyp_t **h;
 
   /** set the reference frame number to something invalid */
   _decoder->hyp_frame_num = -1;

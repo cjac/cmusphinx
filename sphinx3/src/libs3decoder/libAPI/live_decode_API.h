@@ -195,7 +195,7 @@ typedef struct
    * Hypothesis word segments.  Result (or partial result) of the recognition
    * is stored as word segments.  Null-terminated array.
    */
-  hyp_t **hyp_segs;
+  srch_hyp_t **hyp_segs;
 
   /**
    * Boolean indicator whether we've internally allocated space for the
@@ -360,7 +360,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     <PRE>
     live_decoder_t d;
     char *str;
-    hyp_t **segs;
+    srch_hyp_t **segs;
 
     ...
 
@@ -379,7 +379,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     @return 0 for success.  -1 for failure.
 */
 int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
-		     hyp_t ***_hyp_segs);
+		     srch_hyp_t ***_hyp_segs);
 
 /** Abort the current decoding process immediately.  As opposed to
     <I>{@link ld_end_utt ld_end_utt()}</I>.  Retrieving the hypothesis after an
