@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.11.4.2  2005/07/27  23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  * 
+ * Revision 1.11.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.11  2005/06/22 05:38:26  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset
  *
@@ -209,6 +212,7 @@
 #include <wid.h>
 #include <dag.h>
 #include <cmdln_macro.h>
+#include "corpus.h"
 
 static mdef_t *mdef;		/* Model definition */
 
@@ -217,12 +221,10 @@ static ptmr_t tm_utt;		/* Entire utterance */
 extern dict_t *dict;		/* The dictionary	*/
 extern fillpen_t *fpen;		/* The filler penalty structure. */
 
-#if 0
-extern s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
-
 extern dag_t dag;
 extern lmset_t *lmset;		/* The lmset.		*/
+
+char *nbestdir;
 
 void nbest_search (char *filename, char *uttid);
 int32 s3astar_dag_load (char *file);
@@ -376,105 +378,10 @@ static void decode_utt (char *uttid, char *nbestdir)
     fflush (stdout);
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_astar(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *ctllmfp;
-    char *ctlfile, *ctllmfile, *nbestdir;
-    char line[1024], ctlspec[1024], uttid[1024], lmname[1024];
-    int32 ctloffset, ctlcount;
-    int32 i, k, sf, ef;
-    
-    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
-	E_FATAL("No -ctl argument\n");
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-
-    ctllmfile = (char *) cmd_ln_access("-ctl_lm");
-    if (ctllmfile) {
-	if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", ctllmfile);
-    }
-    else
-	ctllmfp = NULL;
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	return;
-    }
-    
-    nbestdir = (char *) cmd_ln_access ("-nbestdir");
-
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0)
-	    --ctloffset;
-	if (fgets(line, sizeof(line), ctllmfp) == NULL)
-	    E_FATAL("File size mismatch between %s and %s\n",
-		    ctlfile, ctllmfile);
-    }
-    
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	    E_ERROR("Error in ctlfile spec; skipped\n");
-	    /* What happens to ctlcount??? */
-	    continue;
-	}
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (ctllmfp) {
-	    fgets(line, sizeof(line), ctllmfp);
-	    if (sscanf(line, "%s", lmname) > 0)
-	      lmset_set_curlm_wname(lmset,lmname);
-
-	    /*s3astar_set_lm(lmsetlmname);*/
-	}
-
-	decode_utt (uttid, nbestdir);
-#if 0
-	linklist_stats ();
-#endif
-	--ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    fclose (ctlfp);
-    if (ctllmfp)
-	fclose (ctllmfp);
+  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
+  decode_utt (uttid, nbestdir);
 }
 
 int
@@ -497,8 +404,23 @@ main (int32 argc, char *argv[])
   printf ("\n");
 
   ptmr_init (&tm_utt);
+
+  nbestdir = cmd_ln_str ("-nbestdir");
     
-  process_ctlfile ();
+  if(cmd_ln_str("-ctl")){
+    ctl_process(cmd_ln_str("-ctl"),
+		cmd_ln_str("-ctl_lm"),
+		NULL,
+		cmd_ln_int32("-ctloffset"),
+		cmd_ln_int32("-ctlcount"),
+		utt_astar, 
+		NULL);
+
+  }else{
+    E_FATAL("-ctl is not specified\n");
+  }
+  
+
 
 #if (! WIN32)
   system ("ps aguxwww | grep s3astar");

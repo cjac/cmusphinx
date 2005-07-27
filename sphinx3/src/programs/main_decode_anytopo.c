@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.6  2005/07/26  02:22:27  arthchan2003
- * Merged srch_hyp_t and hyp_t
+ * Revision 1.12.4.7  2005/07/27  23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  * 
+ * Revision 1.12.4.6  2005/07/26 02:22:27  arthchan2003
+ * Merged srch_hyp_t and hyp_t
+ *
  * Revision 1.12.4.5  2005/07/24 19:37:19  arthchan2003
  * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
  *
@@ -325,6 +328,7 @@
 #include "dag.h"
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
+#include "corpus.h"
 
 #include "srch.h"
 
@@ -342,7 +346,6 @@ extern dag_t dag;
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 static int32 *bestscr;		/* Best statescore in each frame */
-
 ptmr_t tmr_utt;
 ptmr_t tmr_fwdvit;
 ptmr_t tmr_bstpth;
@@ -352,11 +355,11 @@ ptmr_t tmr_fwdsrch;
 pctr_t ctr_nfrm;
 pctr_t ctr_nsen;
 
-
 static int32 tot_nfr;
 static char *inlatdir;
 static char *outlatdir;
 static int32 outlat_onlynodes;
+static char *matchfile, *matchsegfile;
 static FILE *matchfp, *matchsegfp;
 static int32 matchexact;
 
@@ -1030,185 +1033,37 @@ static void decode_utt (int32 nfr, char *uttid)
     tot_nfr += nfr;
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static int32 process_ctlfile ( void )
+static void utt_decode_anytopo(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *mllrctlfp;
-    char *ctlfile, *cepdir, *cepext, *mllrctlfile;
-    char *matchfile, *matchsegfile;
-    char line[1024], ctlspec[1024], cepfile[1024], uttid[1024];
-    char mllrfile[1024], cb2mllrfile[1024], prevmllr[1024];
-/* CHANGE BY BHIKSHA: ADDED veclen AS A VARIABLE, 6 JAN 98 */
-    int32 ctloffset, ctlcount, veclen, sf, ef, nfr;
-/* END OF CHANGES BY BHIKSHA */
-    int32 err_status;
-    int32 i, k;
-    
-    err_status = 0;
-    
-    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
-	E_FATAL("No -ctl argument\n");
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    if ((mllrctlfile = (char *) cmd_ln_access("-ctl_mllr")) != NULL) {
-	if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
-    } else
-	mllrctlfp = NULL;
-    prevmllr[0] = '\0';
+  int32 nfr;
+  char *cepdir, *cepext;
+  
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
 
-    if (cmd_ln_access("-mllr") != NULL) {
-	model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
-	strcpy(prevmllr, cmd_ln_access("-mllr"));
-    }
-    
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-    
-    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-	matchfp = NULL;
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
+
+  if(ur->regmatname) model_set_mllr(msg,ur->regmatname, ur->cb2mllrname,fcb,mdef);
+  
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
     } else {
-	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
-	k = strlen (matchfile);
-	if ((k > 6) && (strcmp (matchfile+(k-6), ",EXACT") == 0)) {
-	    matchexact = 1;
-	    matchfile[k-6] = '\0';
-	} else
-	    matchexact = 0;
-
-	if ((matchfp = fopen (matchfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchfile);
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
     }
-    
-    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
-	E_WARN("No -hypseg argument\n");
-	matchsegfp = NULL;
-    } else {
-	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-    }
-    
-    cepdir = (char *) cmd_ln_access("-cepdir");
-    cepext = (char *) cmd_ln_access("-cepext");
-    assert (cepext != NULL);
+  }
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    decode_utt (nfr, uttid);
+  }
 
-/* BHIKSHA: ADDING VECLEN TO ALLOW VECTORS OF DIFFERENT SIZES */
-    veclen = *((int32 *) cmd_ln_access("-ceplen"));
-/* END CHANGES, 6 JAN 1998, BHIKSHA */
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	return err_status;
-    }
-    
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    if (mllrctlfp) {
-		int32 tmp1, tmp2;
-		if (fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			    &tmp1, &tmp2, cb2mllrfile) <= 0)
-		    E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    }
-	    --ctloffset;
-	}
-    }
-    
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	    E_ERROR("Error in ctlfile spec; skipped\n");
-	    /* What happens to ctlcount??? */
-	    continue;
-	}
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (mllrctlfp) {
-	    int32 tmp1, tmp2;
-
-	    if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			     &tmp1, &tmp2, cb2mllrfile)) <= 0)
-		E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    if (!(k == 1) || (k == 4))
-		E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
-			 mllrctlfile);
-	    if (k == 1)
-		strcpy(cb2mllrfile, ".1cls.");
-	    
-	    if (strcmp (prevmllr, mllrfile) != 0) {
-		model_set_mllr(msg,mllrfile, cb2mllrfile,fcb,mdef);
-		strcpy (prevmllr, mllrfile);
-	    }
-	}
-
-	if (! feat)
-	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-	
-	/* Read and process mfc/feature speech input file */
-	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext,sf, ef, feat, S3_MAX_FRAMES);
-	assert(feat);
-
-	if (nfr <= 0)
-	    E_ERROR("Utt %s: Input file read (%s) failed\n", uttid, cepfile);
-	else {
-
-	  E_INFO ("%s: %d mfc frames\n", uttid, nfr);
-	  assert(feat);
-	  decode_utt (nfr, uttid);
-	}
-#if 0
-	linklist_stats ();
-#endif
-	--ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-    
-    if (matchfp)
-	fclose (matchfp);
-    if (matchsegfp)
-	fclose (matchsegfp);
-
-    fclose (ctlfp);
-    if (mllrctlfp)
-	fclose (mllrctlfp);
-    
-    return (err_status);
 }
-
 
 int main (int32 argc, char *argv[])
 {
     int32 err_status;
+    int32 k;
 
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc,argv,"default.arg",defn);
@@ -1239,6 +1094,9 @@ int main (int32 argc, char *argv[])
 
     /* Best statescore in each frame */
     bestscr = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+
+    if (! feat)
+      feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
     
     /* Allocate profiling timers and counters */
     ptmr_init(&tmr_utt);
@@ -1255,9 +1113,53 @@ int main (int32 argc, char *argv[])
     printf ("\n");
     
     tot_nfr = 0;
-    
-    err_status = process_ctlfile ();
 
+    /* Decode_anytopo-specific, a search for suffix ",EXACT " and create exact log hypothesis */
+    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
+	matchfp = NULL;
+    } else {
+	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
+	k = strlen (matchfile);
+	if ((k > 6) && (strcmp (matchfile+(k-6), ",EXACT") == 0)) {
+	    matchexact = 1;
+	    matchfile[k-6] = '\0';
+	} else
+	    matchexact = 0;
+
+	if ((matchfp = fopen (matchfile, "w")) == NULL)
+	    E_ERROR("fopen(%s,w) failed\n", matchfile);
+    }
+    
+    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
+	E_WARN("No -hypseg argument\n");
+	matchsegfp = NULL;
+    } else {
+	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+    }
+
+    
+    if (cmd_ln_str ("-ctl")) {
+      /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+	 the corresponding  MLLR for the utterance */
+      ctl_process (cmd_ln_str("-ctl"),
+		   NULL,
+		   cmd_ln_str("-ctl_mllr"),
+		   cmd_ln_int32("-ctloffset"),
+		   cmd_ln_int32("-ctlcount"),
+		   utt_decode_anytopo, 
+		   NULL);
+    } else {
+      /* Is error checking good enough?" */
+      E_FATAL(" -ctl are not specified.\n");
+    }
+
+    if (matchfp)
+	fclose (matchfp);
+    if (matchsegfp)
+	fclose (matchsegfp);
+
+    
     if (tot_nfr > 0) {
 	printf ("\n");
 	printf("TOTAL FRAMES:       %8d\n", tot_nfr);

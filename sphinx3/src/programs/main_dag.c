@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.3  2005/07/26  02:22:27  arthchan2003
- * Merged srch_hyp_t and hyp_t
+ * Revision 1.10.4.4  2005/07/27  23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  * 
+ * Revision 1.10.4.3  2005/07/26 02:22:27  arthchan2003
+ * Merged srch_hyp_t and hyp_t
+ *
  * Revision 1.10.4.2  2005/07/22 03:46:55  arthchan2003
  * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  *
@@ -192,6 +195,7 @@
 #include "search.h"
 #include "wid.h"
 #include <cmdln_macro.h>
+#include "corpus.h"
 #define EXACT 1
 #define NOTEXACT 0
 
@@ -204,7 +208,8 @@ extern lmset_t *lmset;          /* The lmset. Replace lm */
 
 static ptmr_t tm_utt;
 static int32 tot_nfr;
-
+static char *matchfile, *matchsegfile;
+static FILE *matchfp, *matchsegfp;
 
 /*
  * Command line arguments.
@@ -326,7 +331,7 @@ static void log_hypseg (char *uttid,
 
 
 /* Decode the given mfc file and write result to matchfp and matchsegfp */
-static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
+static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 {
     char dagfile[1024];
     srch_hyp_t *h, *hyp;
@@ -380,10 +385,10 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 
     
     /* Log recognition output to the standard match and matchseg files */
-    if (matchfp)
-	log_hypstr (matchfp, hyp, uttid, NOTEXACT, 0, dict);
-    if (matchsegfp)
-	log_hypseg (uttid, matchsegfp, hyp, nfrm);
+    if (_matchfp)
+	log_hypstr (_matchfp, hyp, uttid, NOTEXACT, 0, dict);
+    if (_matchsegfp)
+	log_hypseg (uttid, _matchsegfp, hyp, nfrm);
     
     dag_destroy (&dag);
 
@@ -400,116 +405,11 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
     tot_nfr += nfrm;
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_dag(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *ctllmfp, *matchfp, *matchsegfp;
-    char *ctlfile, *ctllmfile;
-    char *matchfile, *matchsegfile;
-    char line[1024], ctlspec[1024], uttid[1024], lmname[1024];
-    int32 ctloffset, ctlcount;
-    int32 i, k, sf, ef;
-    
-    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
-	E_FATAL("No -ctl argument\n");
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-    
-    ctllmfile = (char *) cmd_ln_access("-ctl_lm");
-    if (ctllmfile) {
-	if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", ctllmfile);
-    }
-    else
-	ctllmfp = NULL;
 
-    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-	E_WARN("No -hyp argument\n");
-	matchfp = NULL;
-    } else {
-	if ((matchfp = fopen (matchfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchfile);
-    }
-    
-    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
-	E_WARN("No -hypseg argument\n");
-	matchsegfp = NULL;
-    } else {
-	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-    }
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	return;
-    }
-
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0)
-	    --ctloffset;
-	if (fgets(line, sizeof(line), ctllmfp) == NULL)
-	    E_FATAL("File size mismatch between %s and %s\n",
-		    ctlfile, ctllmfile);
-    }
-    
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	    E_ERROR("Error in ctlfile spec; skipped\n");
-	    /* What happens to ctlcount??? */
-	    continue;
-	}
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (ctllmfp) {
-	    fgets(line, sizeof(line), ctllmfp);
-	    if (sscanf(line, "%s", lmname) > 0)
-	      lmset_set_curlm_wname(lmset,lmname);
-	}
-
-	decode_utt (uttid, matchfp, matchsegfp);
-
-	--ctlcount;
-    }
-    printf ("\n");
-
-    if (fscanf (ctlfp, "%s", line) == 1)
-	E_INFO("Skipping rest of control file beginning with:\n\t%s\n", line);
-
-    if (matchfp)
-	fclose (matchfp);
-    if (matchsegfp)
-	fclose (matchsegfp);
-    if (ctllmfp)
-	fclose (ctllmfp);
-    fclose (ctlfp);
+  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
+  decode_utt(uttid,matchfp,matchsegfp);
 }
 
 int main (int32 argc, char *argv[])
@@ -534,8 +434,47 @@ int main (int32 argc, char *argv[])
   /* Initialize forward Viterbi search module */
   s3_dag_init (dict);
   printf ("\n");
+
+  matchfile=NULL;
+  matchfile=cmd_ln_str("-hyp");
+
+  if(matchfile==NULL){
+    E_WARN("No -hyp argument\n");
+    matchfp=NULL;
+  }else{
+    if ((matchfp = fopen (matchfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchfile);
+  }
   
-  process_ctlfile ();
+
+  matchsegfile=NULL;
+  matchsegfile=cmd_ln_str("-hypseg");
+  if(matchsegfile==NULL){
+    E_WARN("No -hypseg argument\n");
+    matchsegfp=NULL;
+  }else{
+    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+  }
+
+  if(cmd_ln_str("-ctl")){
+    ctl_process(cmd_ln_str("-ctl"),
+		cmd_ln_str("-ctl_lm"),
+		NULL,
+		cmd_ln_int32("-ctloffset"),
+		cmd_ln_int32("-ctlcount"),
+		utt_dag, 
+		NULL);
+
+  }else{
+    E_FATAL("-ctl is not specified\n");
+  }
+  
+  if(matchfp)
+    fclose(matchfp);
+
+  if(matchsegfp)
+    fclose(matchsegfp);
 
   printf ("\n");
   printf("TOTAL FRAMES:       %8d\n", tot_nfr);

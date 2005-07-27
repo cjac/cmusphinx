@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.3  2005/07/22  03:46:53  arthchan2003
- * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ * Revision 1.15.4.4  2005/07/27  23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  * 
+ * Revision 1.15.4.3  2005/07/22 03:46:53  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
  * Revision 1.15.4.2  2005/07/20 21:25:42  arthchan2003
  * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
  *
@@ -810,7 +813,6 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	if (interp) {
 	    for (s = 0; s < n_sen_active; s++) {
 	      if ((sid = sen_active[s]) >= mdef->n_ci_sen){
-		E_INFO("I am interpolating\n");
 		    interp_cd_ci (interp, senscr, sid, mdef->cd2cisen[sid]);
 	      }
 	    }
@@ -1043,6 +1045,7 @@ static void process_ctlfile ( void )
 	  }
 	}
 	else {
+
 	    E_INFO ("%s: %d input frames\n", uttid, nfr);
 	    align_utt (sent, nfr, ctlspec, uttid);
 	}

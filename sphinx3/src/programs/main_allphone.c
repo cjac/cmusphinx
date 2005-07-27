@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.4  2005/07/24  19:37:19  arthchan2003
- * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
+ * Revision 1.13.4.5  2005/07/27  23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  * 
+ * Revision 1.13.4.4  2005/07/24 19:37:19  arthchan2003
+ * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
+ *
  * Revision 1.13.4.3  2005/07/22 03:46:55  arthchan2003
  * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  *
@@ -111,6 +114,7 @@
 #include "ms_mgau.h"
 #include "cb2mllr_io.h"
 #include "srch.h"
+#include "corpus.h"
 
 #ifdef INTERP
 #include "interp.h"
@@ -457,137 +461,31 @@ static void allphone_utt (int32 nfr, char *uttid)
   fflush (stdout);
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-  FILE *ctlfp, *mllrctlfp;
-  char *ctlfile, *cepdir, *cepext, *mllrctlfile;
-  char line[1024], ctlspec[1024];
-  int32 ctloffset, ctlcount, sf, ef, nfr;
-
-  char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096]; 
-  char uttid[1024];
-  int32 k,i;
+  int32 nfr;
+  char *cepdir, *cepext;
   
-  ctlfile = (char *) cmd_ln_access("-ctl");
-  if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-      E_FATAL("fopen(%s,r) failed\n", ctlfile);
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
+
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
+
+  if(ur->regmatname) model_set_mllr(msg,ur->regmatname, ur->cb2mllrname,fcb,mdef);
   
-  if ((mllrctlfile = (char *) cmd_ln_access("-ctl_mllr")) != NULL) {
-    if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
-      E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
-  } else
-    mllrctlfp = NULL;
-  prevmllr[0] = '\0';
-  
-  if (cmd_ln_access("-mllr") != NULL) {
-    model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
-    strcpy(prevmllr, cmd_ln_access("-mllr"));
-  }
-
-  E_INFO("Processing ctl file %s\n", ctlfile);
-  
-  cepdir = (char *) cmd_ln_access("-cepdir");
-  cepext = (char *) cmd_ln_access("-cepext");
-  assert (cepext != NULL);
-  
-  ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-  if (! cmd_ln_access("-ctlcount"))
-      ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-  else
-      ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-  if (ctlcount == 0) {
-      E_INFO("-ctlcount argument = 0!!\n");
-      fclose (ctlfp);
-      return;
-  }
-  
-  /* Skipping initial offset */
-  if (ctloffset > 0)
-      E_INFO("Skipping %d utterances in the beginning of control file\n",
-	     ctloffset);
-  while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-      if (sscanf (line, "%s", ctlspec) > 0)
-	  --ctloffset;
-  }
-
-  /* Process the specified number of utterance or until end of control file */
-  while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-      printf ("\n");
-      E_INFO("Utterance: %s", line);
-      
-      sf = 0;
-      ef = (int32)0x7ffffff0;
-      if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	  continue;	    /* Empty line */
-
-      if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	  E_ERROR("Error in ctlfile spec; skipped\n");
-	  /* What happens to ctlcount??? */
-	  continue;
-      }
-
-      if (k < 4) {
-	/* Create utt-id from mfc-filename (and sf/ef if specified) */
-	for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	if (k == 3)
-	  sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	else
-	  strcpy (uttid, ctlspec+i+1);
-      }
-
-      if (mllrctlfp) {
-	int32 tmp1, tmp2;
-	
-	if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			 &tmp1, &tmp2, cb2mllrfile)) <= 0)
-	  E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	if (!(k == 1) || (k == 4))
-	  E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
-		   mllrctlfile);
-	if (k == 1)
-	  strcpy(cb2mllrfile, ".1cls.");
-	
-	if (strcmp (prevmllr, mllrfile) != 0) {
-	  model_set_mllr(msg,mllrfile, cb2mllrfile,fcb,mdef);
-	  strcpy (prevmllr, mllrfile);
-	}
-      }
-
-      if (! feat) 
-	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-
-      nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
-
-      if (nfr <= 0){
-	if (cepdir != NULL) {
-	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
-		  uttid, ctlspec, cepdir, cepext);
-	} else {
-	  E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ctlspec, cepext);
-	}
-      }
-      else {
-	  E_INFO ("%s: %d input frames\n", uttid, nfr);
-	  allphone_utt (nfr, uttid);
-      }
-	
-      --ctlcount;
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
+    } else {
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
     }
-    printf ("\n");
+  }
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    allphone_utt (nfr, uttid);
+  }
 
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    fclose (ctlfp);
-
-    if (mllrctlfp)
-	fclose (mllrctlfp);
 }
 
 int
@@ -602,14 +500,32 @@ main (int32 argc, char *argv[])
   
   /* Senone scaling factor in each frame */
   senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
     
   /* Initialize allphone decoder module */
   allphone_init (mdef, tmat);
   printf ("\n");
   
+  if (cmd_ln_access("-mllr") != NULL) 
+    model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
+
   tot_nfr = 0;
-    
-  process_ctlfile ();
+
+  if (cmd_ln_str ("-ctl")) {
+    /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+       the corresponding  MLLR for the utterance */
+    ctl_process (cmd_ln_str("-ctl"),
+		 NULL,
+		 cmd_ln_str("-ctl_mllr"),
+		 cmd_ln_int32("-ctloffset"),
+		 cmd_ln_int32("-ctlcount"),
+		 utt_allphone, 
+		 NULL);
+  } else {
+      /* Is error checking good enough?" */
+      E_FATAL(" -ctl are not specified.\n");
+      
+  }
   
   if (tot_nfr > 0) {
     printf ("\n");
