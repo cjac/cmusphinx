@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.6  2005/07/24  01:41:52  arthchan2003
- * Use ascr provided clearing function instead of directly clearing the array.
+ * Revision 1.2.4.7  2005/07/27  23:19:59  arthchan2003
+ * Added assert for make sure lmname is valid.
  * 
+ * Revision 1.2.4.6  2005/07/24 01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
+ *
  * Revision 1.2.4.5  2005/07/13 02:00:33  arthchan2003
  * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
  *
@@ -487,6 +490,7 @@ int srch_TST_set_lm(void *srch, const char* lmname)
 
   assert(lms!=NULL);
   assert(lms->lmarray!=NULL);
+  assert(lmname!=NULL);
 
   idx=lmset_name_to_idx(lms,lmname);
 
