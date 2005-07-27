@@ -75,7 +75,7 @@ int intcmp_gmm_compute(const void *v1, const void *v2){
 }
 
 
-void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
+void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
   kb_t *kb;
   kbcore_t *kbcore;
@@ -127,7 +127,7 @@ void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
  
 
   /* Read mfc file and build feature vectors for entire utterance */
-  kb->stat->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, cmd_ln_str("-cepdir"),".mfc",
+  kb->stat->nfr = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, cmd_ln_str("-cepdir"),".mfc",
 			    sf, ef, kb->feat, S3_MAX_FRAMES);
 
   cd2cisen=mdef_cd2cisen(mdef);
