@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12.4.2  2005/07/26  03:14:17  arthchan2003
- * Removed ctl_process_dyn_lm. One of my sin.
+ * Revision 1.12.4.3  2005/07/27  23:19:11  arthchan2003
+ * 1, Added utt_res_t structure and its methods. 2, Changed the function pointer prototype. 3, Removed the lm and mllr set process out of ctl_process
  * 
+ * Revision 1.12.4.2  2005/07/26 03:14:17  arthchan2003
+ * Removed ctl_process_dyn_lm. One of my sin.
+ *
  * Revision 1.12.4.1  2005/07/05 06:25:40  arthchan2003
  * Fixed dox-doc.
  *
@@ -86,12 +89,52 @@
 
 #include <s3types.h>
 
+
+
 /** \file corpus.h
  *  \brief Operations on corpus 
  */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  /** \struct utt_res_t
+      \brief A structure to store utterance-based resource
+     Assume that most resource are string pointers, the string itself
+     is pre-allocated somewhere.
+   */
+typedef struct 
+{
+  char* uttfile; /**< Utterance file name */
+  char* lmname;  /**< LM file name for this utterance */
+
+  char* fsgname;  /**< FSG file name for this utterance. For one
+		     utterance, one could only use either LM or fsg */
+
+  char* regmatname; /**< The regression matrix file name for this utterance */
+
+  char* cb2mllrname; /**< The code book to regression matrix file name for this utterance 
+		      */
+} utt_res_t;
+
+#define utt_res_set_uttfile(ur,name) ur->uttfile=name
+#define utt_res_set_lmname(ur,name)  ur->lmname=name
+#define utt_res_set_fsgname(ur,name) ur->fsgname=name
+#define utt_res_set_regmatname(ur,name) ur->regmatname=name
+#define utt_res_set_cb2mllrname(ur,name) ur->cb2mllrname=name
+
+  /** This just return a new utter_res_t */
+  utt_res_t* new_utt_res();
+
+  /** Free utt_res_t */
+  void free_utt_res(
+		    utt_res_t* ur /**< an utt_res_t */
+		    );
+
+  /** Report what's inside utt_res_t */
+  void report_utt_res(
+		      utt_res_t *ur /**< an utt_res_t */
+		      );
 
   /**
    * \struct corpus_t
@@ -207,12 +250,12 @@ ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if N
 		    char *ctlmllrfile,   /**< In: Contorl file that specify the mllr used for the corresponding utterance */
 		    int32 nskip,	/**< In: No. of entries to skip at the head */
 		    int32 count,	/**< In: No. of entries to process after nskip */
-		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+		    void (*func) (void *kb, utt_res_t *ur, int32 sf, int32 ef, char *uttid),
 			   /**< In: Function to be invoked for each of the
 					   count entries processed. */
 		    void *kb		/**< In: A catch-all data pointer to be passed as
 					   the first argument to func above */
-			   );
+		    );
 
 
   /**
@@ -225,7 +268,8 @@ ptmr_t ctl_process (char *ctlfile,	/**< In: Control file to read; use stdin if N
  */
 ptmr_t ctl_process_utt (char *uttfile,	/**< In: Filename to be process (in its entirety) */
 			int32 count,	/**< In: No. of iterations to process uttfile */
-			void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),/**< A function pointer that do the actual processing */
+			void (*func) (void *kb, utt_res_t *ur, int32 sf, int32 ef, char *uttid),/**< A function pointer that do the actual processing */
+
 			void *kb);
 
   /**

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.1  2005/07/26  03:14:17  arthchan2003
- * Removed ctl_process_dyn_lm. One of my sin.
+ * Revision 1.11.4.2  2005/07/27  23:19:11  arthchan2003
+ * 1, Added utt_res_t structure and its methods. 2, Changed the function pointer prototype. 3, Removed the lm and mllr set process out of ctl_process
  * 
+ * Revision 1.11.4.1  2005/07/26 03:14:17  arthchan2003
+ * Removed ctl_process_dyn_lm. One of my sin.
+ *
  * Revision 1.11  2005/06/21 20:44:34  arthchan2003
  * 1, Fixed doxygen documentation, 2, Add the $ keyword.
  *
@@ -76,6 +79,41 @@
 #include "corpus.h"
 #include "kb.h"
 #include "srch.h"
+
+utt_res_t* new_utt_res()
+{
+  utt_res_t* ur;
+  ur=ckd_calloc(1,sizeof(utt_res_t));
+  utt_res_set_uttfile(ur,NULL);
+  utt_res_set_lmname(ur,NULL);
+  utt_res_set_fsgname(ur,NULL);
+  utt_res_set_regmatname(ur,NULL);
+  utt_res_set_cb2mllrname(ur,NULL);
+
+  return ur;
+}
+
+void free_utt_res(utt_res_t* ur)
+{
+  ckd_free(ur);
+}
+
+void report_utt_res(utt_res_t *ur)
+{
+  E_INFO_NOFN("Utt res, report:\n");
+  if(ur->uttfile!=NULL)
+    E_INFO_NOFN("uttfile %s\n",ur->uttfile);
+  if(ur->lmname!=NULL)
+    E_INFO_NOFN("lmname %s\n",ur->lmname);
+  if(ur->fsgname!=NULL)
+    E_INFO_NOFN("fsgname %s\n",ur->fsgname);
+  if(ur->regmatname!=NULL)
+    E_INFO_NOFN("regmatname %s\n",ur->regmatname);
+  if(ur->cb2mllrname!=NULL)
+    E_INFO_NOFN("cb2mllrname %s\n",ur->cb2mllrname);
+
+
+}
 
 corpus_t *corpus_load_headid (char *file,
 			      int32 (*validate)(char *str),
@@ -432,7 +470,7 @@ ptmr_t ctl_process (char *ctlfile, char* ctlmllrfile, int32 nskip, int32 count,
 #endif
 
 ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nskip, int32 count,
-		    void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+		    void (*func) (void *kb, utt_res_t * ur, int32 sf, int32 ef, char *uttid),
 		    void *kb)
 {
   FILE *fp;
@@ -443,6 +481,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
   char regmatname[4096], cb2mllrname[4096];
   char tmp[4096];
   int32 sf, ef;
+  utt_res_t* ur;
   ptmr_t tm;
   kb_t* k;
 
@@ -450,7 +489,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
   
   ctllmfp=NULL;
   ctlmllrfp=NULL;
-  E_INFO("Batch mode recognition with dynamic LM\n");
+  ur=new_utt_res();
 
   if (ctlfile) {
     if ((fp = fopen(ctlfile, "r")) == NULL)
@@ -459,6 +498,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
     fp = stdin;
 
   if(ctllmfile){
+    E_INFO("LM is used in this session\n");
     if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
       E_FATAL_SYSTEM("fopen(%s,r) failed\n", ctllmfile);
   }
@@ -471,6 +511,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
 
   ptmr_init (&tm);
   
+
   if (nskip > 0) {
     E_INFO("Skipping %d entries at the beginning of %s\n", nskip, ctlfile);
     
@@ -501,8 +542,10 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
     }
   }
   
+
   for (; count > 0; --count) {
     int32 tmp1, tmp2;
+
 
     if (ctl_read_entry (fp, uttfile, &sf, &ef, uttid) < 0)
       break;
@@ -530,9 +573,13 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
     ptmr_start (&tm);
     E_INFO("filename %s, lmname %s\n",uttfile,lmname);
     if (func){
-      if(ctllmfile) srch_set_lm((srch_t*)k->srch,lmname);
-      if(ctlmllrfile) kb_setmllr(regmatname,cb2mllrname,kb);
-      (*func)(kb, uttfile, sf, ef, uttid);
+      utt_res_set_uttfile(ur,uttfile);
+      if(ctllmfile) utt_res_set_lmname(ur,lmname);
+      if(ctlmllrfile) {
+	utt_res_set_regmatname(ur,regmatname);
+	utt_res_set_cb2mllrname(ur,cb2mllrname);
+      }
+      (*func)(kb, ur, sf, ef, uttid);
     }
     ptmr_stop (&tm);
     
@@ -546,6 +593,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
   if(fp)    fclose (fp);
   if(ctllmfp) fclose (ctllmfp);
   if(ctlmllrfp)  fclose (ctlmllrfp);
+  if(ur) ckd_free(ur);
   
   return tm;
 }
@@ -553,7 +601,7 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
 
 
 ptmr_t ctl_process_utt (char *uttfile, int32 count,
-			void (*func) (void *kb, char *uttfile, int32 sf, int32 ef, char *uttid),
+			void (*func) (void *kb, utt_res_t *ur, int32 sf, int32 ef, char *uttid),
 			void *kb)
 {
     char uttid[4096];
@@ -561,8 +609,11 @@ ptmr_t ctl_process_utt (char *uttfile, int32 count,
     int32 i, c;
     int32 ts, newts;
     ptmr_t tm;
+    utt_res_t* ur;
+    
     
     ptmr_init (&tm);
+    ur=new_utt_res();
     path2basename (uttfile, base);
     /* strip_fileext() copies base to uttid. So, copying uttid to base
      *  is redundant if strip_fileext() is not called.
@@ -591,8 +642,11 @@ ptmr_t ctl_process_utt (char *uttfile, int32 count,
 	
 	/* Process this utterance */
 	ptmr_start (&tm);
-	if (func)
-	    (*func)(kb, uttfile, 0, -1, uttid);
+	if (func){
+	  utt_res_set_uttfile(ur,uttfile);
+
+	  (*func)(kb, ur, 0, -1, uttid);
+	}
 	ptmr_stop (&tm);
 	
 	E_INFO("%s: %6.1f sec CPU, %6.1f sec Clk;  TOT: %8.1f sec CPU, %8.1f sec Clk\n\n",
@@ -600,7 +654,8 @@ ptmr_t ctl_process_utt (char *uttfile, int32 count,
 	
 	ptmr_reset (&tm);
     }
-    
+
+    if(ur) free_utt_res(ur);
     return tm;
 }
 
