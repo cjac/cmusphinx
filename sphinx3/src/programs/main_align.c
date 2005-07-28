@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.4  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.15.4.5  2005/07/28  03:11:17  arthchan2003
+ * Removed process_ctl in main_align.c, slightly ugly b ut the evil of duplicating ctl_process is larger.
  * 
+ * Revision 1.15.4.4  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.15.4.3  2005/07/22 03:46:53  arthchan2003
  * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  *
@@ -183,6 +186,7 @@
 #include "interp.h"
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
+#include "corpus.h"
 
 /** \file main_align.c
    \brief Main driver routine for time alignment.
@@ -259,7 +263,13 @@ static float32 ***feat = NULL;	/* Speech feature data */
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 
+static int32 ctloffset; 
+
+static char *outsentfile;
 static FILE *outsentfp = NULL;
+
+static char *sentfile;
+static FILE *sentfp = NULL;
 
 /* For profiling/timing */
 enum { tmr_utt, tmr_gauden, tmr_senone, tmr_align };
@@ -884,198 +894,100 @@ static int32 id_cmp (char *str1, char *str2)
     }
 }
 
-/* Process utterances in the control file (ctl argument) */
-static void process_ctlfile ( void )
+static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *sentfp, *mllrctlfp;
-    char *ctlfile, *cepdir, *cepext, *sentfile, *outsentfile, *mllrctlfile;
-    char line[1024], ctlspec[1024];
-    int32 ctloffset, ctlcount, sf, ef, nfr;
-    char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096], sent[16384];
-    char uttid[1024];
-    int32 i, k;
-    
-    ctlfile = (char *) cmd_ln_access("-ctl");
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-    
-    if ((mllrctlfile = (char *) cmd_ln_access("-ctl_mllr")) != NULL) {
-	if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
-    } else
-	mllrctlfp = NULL;
-    prevmllr[0] = '\0';
-    
-    if (cmd_ln_access("-mllr") != NULL) {
-	model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
-	strcpy(prevmllr, cmd_ln_access("-mllr"));
+  int32 nfr;
+  int k,i;
+  char *cepdir, *cepext;
+  char sent[16384]  ;
+
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
+
+
+  /* UGLY! */
+  /* Read utterance transcript and match it with the control file. */
+  if (fgets (sent, sizeof(sent), sentfp) == NULL) {
+    E_FATAL("EOF(%s) of the transcription\n", sentfile);
+  }
+  /* Strip utterance id from the end of the transcript */
+  for (k = strlen(sent) - 1;
+       (k > 0) && ((sent[k] == '\n') || (sent[k] == '\t') || (sent[k] == ' '));
+       --k);
+  if ((k > 0) && (sent[k] == ')')) {
+    for (--k; (k >= 0) && (sent[k] != '('); --k);
+    if ((k >= 0) && (sent[k] == '(')) {
+      sent[k] = '\0';
+      
+      /* Check that uttid in transcript and control file match */
+      for (i = ++k;
+	   sent[i] && (sent[i] != ')') &&
+	     (sent[i] != '\n') && (sent[i] != '\t') && (sent[i] != ' ');
+	   i++);
+      sent[i] = '\0';
+      if (id_cmp (sent+k, uttid) != 0)
+	E_ERROR("Uttid mismatch: ctlfile = \"%s\"; transcript = \"%s\"\n",
+		uttid, sent+k);
     }
+  }
 
-    sentfile = (char *) cmd_ln_access("-insent");
-    if ((sentfp = fopen (sentfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", sentfile);
 
-    if ((outsentfile = (char *) cmd_ln_access("-outsent")) != NULL) {
-	if ((outsentfp = fopen (outsentfile, "w")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", outsentfile);
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
+
+  if(ur->regmatname) model_set_mllr(msg,ur->regmatname, ur->cb2mllrname,fcb,mdef);
+
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
+    } else {
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
     }
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    cepdir = (char *) cmd_ln_access("-cepdir");
-    cepext = (char *) cmd_ln_access("-cepext");
-    assert (cepext != NULL);
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	fclose (sentfp);
-	if (outsentfp)
-	    fclose (outsentfp);
-	
-	return;
-    }
-    
-    /* Skipping initial offset */
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    if (fgets (sent, sizeof(sent), sentfp) == NULL) {
-		E_ERROR("EOF(%s)\n", sentfile);
-		ctlcount = 0;
-		break;
-	    }
-	    if (mllrctlfp) {
-		int32 tmp1, tmp2;
-		if (fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			    &tmp1, &tmp2, cb2mllrfile) <= 0)
-		    E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    }
-	    --ctloffset;
-	}
-    }
+  }
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    align_utt (sent,nfr,ur->uttfile, uttid);
+  }
 
-    /* Process the specified number of utterance or until end of control file */
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-	
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) )
-	    E_FATAL("Bad ctlfile line: %s\n", line);
-
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (mllrctlfp) {
-	    int32 tmp1, tmp2;
-
-	    if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			     &tmp1, &tmp2, cb2mllrfile)) <= 0)
-		E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    if (!(k == 1) || (k == 4))
-		E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
-			 mllrctlfile);
-	    if (k == 1)
-		strcpy(cb2mllrfile, ".1cls.");
-	    
-	    if (strcmp (prevmllr, mllrfile) != 0) {
-		model_set_mllr(msg, mllrfile, cb2mllrfile,fcb,mdef);
-		strcpy (prevmllr, mllrfile);
-	    }
-	}
-
-
-	/* Read utterance transcript */
-	if (fgets (sent, sizeof(sent), sentfp) == NULL) {
-	    E_ERROR("EOF(%s)\n", sentfile);
-	    break;
-	}
-	/* Strip utterance id from the end of the transcript */
-	for (k = strlen(sent) - 1;
-	     (k > 0) && ((sent[k] == '\n') || (sent[k] == '\t') || (sent[k] == ' '));
-	     --k);
-	if ((k > 0) && (sent[k] == ')')) {
-	    for (--k; (k >= 0) && (sent[k] != '('); --k);
-	    if ((k >= 0) && (sent[k] == '(')) {
-		sent[k] = '\0';
-
-		/* Check that uttid in transcript and control file match */
-		for (i = ++k;
-		     sent[i] && (sent[i] != ')') &&
-			 (sent[i] != '\n') && (sent[i] != '\t') && (sent[i] != ' ');
-		     i++);
-		sent[i] = '\0';
-		if (id_cmp (sent+k, uttid) != 0)
-		    E_ERROR("Uttid mismatch: ctlfile = \"%s\"; transcript = \"%s\"\n",
-			   uttid, sent+k);
-	    }
-	}
-	
-	if (! feat)
-	    feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-	
-	/* Read and process mfc/feature speech input file */
-	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
-	
-	if (nfr <= 0){
-	  if (cepdir != NULL) {
-	    E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
-		    uttid, ctlspec, cepdir, cepext);
-	  } else {
-	    E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", 
-		    uttid, ctlspec, cepext);
-	  }
-	}
-	else {
-
-	    E_INFO ("%s: %d input frames\n", uttid, nfr);
-	    align_utt (sent, nfr, ctlspec, uttid);
-	}
-	
-	--ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    fclose (ctlfp);
-    fclose (sentfp);
-    if (outsentfp)
-	fclose (outsentfp);
-    if (mllrctlfp)
-	fclose (mllrctlfp);
 }
-
 int
 main (int32 argc, char *argv[])
 {
+  char sent[16384]  ;
+
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     
   unlimit();
+
+  ctloffset=cmd_ln_int32("-ctloffset");
+  sentfile = cmd_ln_str("-insent");
+
+  if ((sentfp = fopen (sentfile, "r")) == NULL)
+    E_FATAL("fopen(%s,r) failed\n", sentfile);
+
+  /* HACK! Pre-read insent without checking whether ctl could also 
+     be read.  In general, this is caused by the fact that we used
+     multiple files to specify resource in sphinx III.  This is easy
+     to solve but currently I just to remove process_ctl because it
+     duplicates badly with ctl_process.  
+
+     The call back function will take care of matching the uttfile
+     names. We don't need to worry too much about inconsistency. 
+   */
+
+  while (ctloffset > 0) {
+    if (fgets (sent, sizeof(sent), sentfp) == NULL) {
+      E_ERROR("EOF(%s)\n", sentfile);
+      break;
+    }
+    --ctloffset;
+  }
+
+  if ((outsentfile = cmd_ln_str("-outsent")) != NULL) {
+    if ((outsentfp = fopen (outsentfile, "w")) == NULL)
+      E_FATAL("fopen(%s,r) failed\n", outsentfile);
+  }
 
   if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
       (cmd_ln_access ("-stsegdir") == NULL) &&
@@ -1083,12 +995,14 @@ main (int32 argc, char *argv[])
       (cmd_ln_access ("-wdsegdir") == NULL) &&
       (cmd_ln_access ("-outsent") == NULL))
     E_FATAL("Missing output file/directory argument(s)\n");
-    
   
     /* Read in input databases */
   models_init ();
-    
+  
   senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+
+  if (! feat)
+    feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
   
   timers[tmr_utt].name = "U";
   timers[tmr_gauden].name = "G";
@@ -1098,10 +1012,29 @@ main (int32 argc, char *argv[])
   /* Initialize align module */
   align_init (mdef, tmat, dict);
   printf ("\n");
+
+  if (cmd_ln_access("-mllr") != NULL) 
+    model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
     
   tot_nfr = 0;
     
-  process_ctlfile ();
+  /*  process_ctlfile ();*/
+
+  if (cmd_ln_str ("-ctl")) {
+    /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+       the corresponding  MLLR for the utterance */
+    ctl_process (cmd_ln_str("-ctl"),
+		 NULL,
+		 cmd_ln_str("-ctl_mllr"),
+		 cmd_ln_int32("-ctloffset"),
+		 cmd_ln_int32("-ctlcount"),
+		 utt_align, 
+		 NULL);
+  } else {
+      /* Is error checking good enough?" */
+      E_FATAL(" -ctl are not specified.\n");
+      
+  }
 
   if (tot_nfr > 0) {
     printf ("\n");
@@ -1111,6 +1044,11 @@ main (int32 argc, char *argv[])
     printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
 	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
   }
+
+  if (outsentfp)
+    fclose(outsentfp);
+  if(sentfp)
+    fclose(sentfp);
 
 #if (! WIN32)
   system ("ps aguxwww | grep s3align");
