@@ -6,6 +6,7 @@ bin_PROGRAMS = adpow \
 	lm_fsg_test \
 	lm_fsg_test2 \
         lm3g2dmp \
+	pdf32to8b \
 	raw2cep \
 	sphinx2-allphone \
 	sphinx2-batch \
@@ -36,6 +37,8 @@ lm_fsg_test2_SOURCES = lm_fsg_test2.c
 lm3g2dmp_SOURCES = lm3g2dmp.c
 
 raw2cep_SOURCES = raw2cep.c
+
+pdf32to8b_SOURCES = pdf32to8b.c
 
 sphinx2_allphone_SOURCES = allphone-test.c
 

@@ -5,9 +5,13 @@ Makefile
 Makefile.in
 adpow
 adrec
+cdcn_test
 cont_adseg
 cont_fileseg
 lm3g2dmp
+lm_fsg_test
+lm_fsg_test2
+pdf32to8b
 raw2cep
 sphinx2-allphone
 sphinx2-batch

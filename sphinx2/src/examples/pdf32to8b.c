@@ -40,6 +40,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include <stdlib.h>
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -55,9 +57,10 @@ struct cluster_range_s {
 } cluster_range[256];
 unsigned char *clid;
 
-dump_cluster ()
+void
+dump_cluster (void)
 {
-    double t, v1, v2, sqrt(), err1, err2, max_err, tot_err;
+    double v1, v2, err1, err2, max_err, tot_err;
     int i, cg;
     
     max_err = tot_err = 0.0;
@@ -86,13 +89,11 @@ dump_cluster ()
 }
 
 /* linearly search for maximal clusters fitting within error_limit */
-cluster (from, to, error_limit, final)
-    int from, to;
-    double error_limit;
-    int final;
+double
+cluster (int from, int to, double error_limit, int final)
 {
     int i, s, start, cl, cg;
-    double t, v1, v2, sqrt(), err1, err2, max_err, tot_err;
+    double t, v1, v2;
     
     start = to;
     cl = 0;
@@ -129,15 +130,16 @@ cluster (from, to, error_limit, final)
     return (cl);
 }
 
-map_orig_val_to_clid (n)
-    int n;
+void
+map_orig_val_to_clid (int n)
 {
     int i, j;
     
     for (i = 0; i < n; i++) {
 	for (j = 0; (j < 256) && (orig_val[i] > cluster_range[j].to); j++);
 	if ((j >= 256) || (orig_val[i] < cluster_range[j].from))
-	    QUIT((errfp, "%s(%d): orig_val[%d] (%d) not in any cluster\n", __FILE__, __LINE__, i, orig_val[i]));
+	    QUIT((errfp, "%s(%d): orig_val[%d] (%d) not in any cluster\n",
+		  __FILE__, __LINE__, i, orig_val[i]));
 	clid[i] = j;
     }
 }
@@ -151,10 +153,8 @@ map_orig_val_to_clid (n)
 #define SWAPL(x)
 #endif
 
-static int fread_int32(fp, min, max, name)
-    FILE *fp;
-    int min, max;
-    char *name;
+static int
+fread_int32(FILE *fp, int min, int max, char *name)
 {
     int k;
     
@@ -166,18 +166,17 @@ static int fread_int32(fp, min, max, name)
     return (k);
 }
 
-static fwrite_int32 (fp, val)
-    FILE *fp;
-    int val;
+static void
+fwrite_int32 (FILE *fp, int val)
 {
     SWAPL(val);
     fwrite (&val, sizeof(int), 1, fp);
 }
 
-cmp_pdfval(x, y)
-    int *x, *y;
+int
+cmp_pdfval(const void *x, const void *y)
 {
-    return (*x - *y);
+    return (*(const int *)x - *(const int *)y);
 }
 
 char *fmtdesc[] = {
@@ -196,14 +195,13 @@ char *fmtdesc[] = {
     NULL,
 };
 
-main (argc, argv)
-    int argc;
-    char *argv[];
+int
+main (int argc, char *argv[])
 {
     int i, c, n, n_cdwd, n_pdf;
     double err, lower_err, upper_err;
     FILE *fp, *fpout;
-    char line[4096], *cltitle;
+    char line[4096];
 
     if (argc < 3)
 	QUIT((stderr, "Usage: %s [<input dumpfile> | - ] [<output dumpfile> | - ]\n", argv[0]));
@@ -292,4 +290,5 @@ main (argc, argv)
     }
 
     fclose (fpout);
+    return 0;
 }
