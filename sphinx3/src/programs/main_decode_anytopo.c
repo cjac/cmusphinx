@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.7  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.12.4.8  2005/07/28  03:12:03  arthchan2003
+ * Initialized mllr correctly in decode_anytopo.
  * 
+ * Revision 1.12.4.7  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.12.4.6  2005/07/26 02:22:27  arthchan2003
  * Merged srch_hyp_t and hyp_t
  *
@@ -1111,7 +1114,11 @@ int main (int32 argc, char *argv[])
     /* Initialize forward Viterbi search module */
     fwd_init (mdef,tmat,dict,lmset->cur_lm);
     printf ("\n");
-    
+
+    /* Remember to set lm here */    
+    if (cmd_ln_access("-mllr") != NULL) 
+      model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
+
     tot_nfr = 0;
 
     /* Decode_anytopo-specific, a search for suffix ",EXACT " and create exact log hypothesis */
