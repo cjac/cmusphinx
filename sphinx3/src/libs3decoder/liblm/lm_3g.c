@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/13  01:39:55  arthchan2003
- * Added lm_3g.c, which take cares of reading and writing of LM into the lm_t (3-gram specific lm structure.)
+ * Revision 1.1.2.2  2005/07/28  20:04:20  dhdfu
+ * Make LM writing not crash for bigram LM
  * 
+ * Revision 1.1.2.1  2005/07/13 01:39:55  arthchan2003
+ * Added lm_3g.c, which take cares of reading and writing of LM into the lm_t (3-gram specific lm structure.)
+ *
  */
 
 #include "lm.h"
@@ -726,7 +729,12 @@ static void lm_write_arpa_bigram(lm_t *lmp,FILE* fp)
       probid=lmp->bg[j].probid;
       bowtid=lmp->bg[j].bowtid;
       
-      fprintf(fp,"%4f %s %s %4f\n",lmp->bgprob[probid].f,lmp->wordstr[w1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
+      if (lmp->tgbowt)
+	fprintf(fp,"%4f %s %s %4f\n",lmp->bgprob[probid].f,
+		lmp->wordstr[w1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
+      else
+	fprintf(fp,"%4f %s %s\n",lmp->bgprob[probid].f,
+		lmp->wordstr[w1],lmp->wordstr[lw2]);
     }
   }
 
