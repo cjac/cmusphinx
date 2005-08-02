@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4.4.2  2005/07/24  01:31:03  arthchan2003
- * add interface to set temporary active array correctly.
+ * Revision 1.4.4.3  2005/08/02  21:11:33  arthchan2003
+ * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
  * 
+ * Revision 1.4.4.2  2005/07/24 01:31:03  arthchan2003
+ * add interface to set temporary active array correctly.
+ *
  * Revision 1.4.4.1  2005/07/17 05:44:30  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -82,8 +85,8 @@ ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, i
     ascr_t *ascr;
     
     ascr = (ascr_t *) ckd_calloc (1, sizeof(ascr_t));
-    ascr->sen = (int32 *) ckd_calloc (n_sen + n_comsen, sizeof(int32));
-    ascr->comsen = ascr->sen + n_sen;
+    ascr->senscr = (int32 *) ckd_calloc (n_sen + n_comsen, sizeof(int32));
+    ascr->comsen = ascr->senscr + n_sen;
 
 
     /* MEMORY ALLOCATION : Active senones */

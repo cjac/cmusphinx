@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.1  2005/07/24  01:31:03  arthchan2003
- * add interface to set temporary active array correctly.
+ * Revision 1.9.4.2  2005/08/02  21:11:33  arthchan2003
+ * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
  * 
+ * Revision 1.9.4.1  2005/07/24 01:31:03  arthchan2003
+ * add interface to set temporary active array correctly.
+ *
  * Revision 1.9  2005/06/21 22:32:25  arthchan2003
  * Log. Significant expansion of ascr_t to be the container of all types
  * of acoustic scores.  Implementations of init, report, free functions
@@ -84,7 +87,7 @@ extern "C" {
    */
 
 typedef struct {
-  int32 *sen;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
+  int32 *senscr;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
   int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
 
   int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
