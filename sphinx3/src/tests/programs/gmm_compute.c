@@ -171,7 +171,7 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 
       /*2, Compute the exact scores and sort them and get the ranking. */
 
-      kb->ascr->sen[s]=mgau_eval(mgau,s,NULL,kb->feat[f][0],f,1);      
+      kb->ascr->senscr[s]=mgau_eval(mgau,s,NULL,kb->feat[f][0],f,1);      
 
       /*3, Compute the approximate scores with the current best index */
       if(mgau->mgau[s].bstidx!=NO_BSTIDX){
@@ -194,18 +194,18 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 	stptr=&cur_ci_st;
 
       increment_stat(stptr,
-		     abs(last_scr[s]-kb->ascr->sen[s]),
-		     abs(cur_scr[s]-kb->ascr->sen[s]),
-		     abs(kb->ascr->sen[cd2cisen[s]]-kb->ascr->sen[s]),
+		     abs(last_scr[s]-kb->ascr->senscr[s]),
+		     abs(cur_scr[s]-kb->ascr->senscr[s]),
+		     abs(kb->ascr->senscr[cd2cisen[s]]-kb->ascr->senscr[s]),
 		     (cur_bstidx[s]==last_bstidx[s]));
 
 
       if(!mdef_is_cisenone(mdef,s)){
 	stptr=&cur_sen_st[cd2cisen[s]];
 	increment_stat(stptr,
-		       abs(last_scr[s]-kb->ascr->sen[s]),
-		       abs(cur_scr[s]-kb->ascr->sen[s]),
-		       abs(kb->ascr->sen[cd2cisen[s]]-kb->ascr->sen[s]),
+		       abs(last_scr[s]-kb->ascr->senscr[s]),
+		       abs(cur_scr[s]-kb->ascr->senscr[s]),
+		       abs(kb->ascr->senscr[cd2cisen[s]]-kb->ascr->senscr[s]),
 		       (cur_bstidx[s]==last_bstidx[s]));
 
 	stptr->total_senone+=1;
@@ -230,7 +230,7 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
       idx[s]= s;
     }
 
-    cd=&(kb->ascr->sen[mdef->n_ci_sen]);
+    cd=&(kb->ascr->senscr[mdef->n_ci_sen]);
     qsort(idx,mdef->n_sen-mdef->n_ci_sen,sizeof(int32),intcmp_gmm_compute);
 
     /*This loop is stupid and it is just a hack. */
@@ -242,9 +242,9 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 	if( s < t * NBEST_STEP){
 	  
 	  increment_stat(&cur_sen_Nbest_st[t],
-			 abs(last_scr[tmpint]-kb->ascr->sen[tmpint]),
-			 abs(cur_scr[tmpint]-kb->ascr->sen[tmpint]),
-			 abs(kb->ascr->sen[cd2cisen[tmpint]]-kb->ascr->sen[tmpint]),
+			 abs(last_scr[tmpint]-kb->ascr->senscr[tmpint]),
+			 abs(cur_scr[tmpint]-kb->ascr->senscr[tmpint]),
+			 abs(kb->ascr->senscr[cd2cisen[tmpint]]-kb->ascr->senscr[tmpint]),
 			 (cur_bstidx[tmpint]==last_bstidx[tmpint]));
 	  
 	  cur_sen_Nbest_st[t].total_senone+=1;
