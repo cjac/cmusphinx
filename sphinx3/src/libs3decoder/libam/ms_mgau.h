@@ -46,9 +46,12 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/20  19:37:09  arthchan2003
- * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
+ * Revision 1.1.2.2  2005/08/02  21:05:38  arthchan2003
+ * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
  * 
+ * Revision 1.1.2.1  2005/07/20 19:37:09  arthchan2003
+ * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
+ *
  *
  *
  */
@@ -83,6 +86,7 @@
 #include <linklist.h>
 #include <feat.h>
 #include <mdef.h>
+#include <ascr.h>
 
 
 /* Lists of senones sharing each mixture Gaussian codebook */
@@ -104,6 +108,11 @@ typedef struct {
   mgau2sen_t **mgau2sen; /**< Senones sharing mixture Gaussian codebooks */
   interp_t* i;   /**< The interplotion weight file */
   int32 topn;    /**< Top-n gaussian will be computed */
+
+  /**< Intermediate used in computation */
+  gauden_dist_t ***dist; 
+  int8 *mgau_active;
+
 } ms_mgau_model_t;  
 
 #define ms_mgau_gauden(msg) (msg->g)
@@ -123,12 +132,18 @@ ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of
 			       int32 topn        /**< In: Top-n gaussian will be computed */
 			       );
 
+int32 ms_cont_mgau_frame_eval (ascr_t *ascr,  
+			       ms_mgau_model_t *msg,
+			       mdef_t *mdef,
+			       float32** feat
+			       );
 
-int32 model_set_mllr(ms_mgau_model_t* msg,
-		     const char *mllrfile, 
-		     const char *cb2mllrfile,
-		     feat_t* fcb,
-		     mdef_t *mdef
+
+int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
+		     const char *mllrfile, /**< The MLLR file name */
+		     const char *cb2mllrfile, /** The codebook to MLLR file name */
+		     feat_t* fcb,            /**< FCB object */
+		     mdef_t *mdef            /** A model definition */
 		     );
 
 

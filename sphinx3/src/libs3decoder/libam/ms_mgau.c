@@ -46,9 +46,12 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/20  19:37:09  arthchan2003
- * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
+ * Revision 1.1.2.2  2005/08/02  21:05:38  arthchan2003
+ * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
  * 
+ * Revision 1.1.2.1  2005/07/20 19:37:09  arthchan2003
+ * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
+ *
  *
  *
  */
@@ -209,3 +212,80 @@ void ms_mgau_free(ms_mgau_model_t* msg)
   }
 }
 #endif
+
+
+int32 ms_cont_mgau_frame_eval (ascr_t *ascr,
+			       ms_mgau_model_t *msg,
+			       mdef_t *mdef,
+			       float32** feat
+			       )
+{
+  int32 gid;
+  int32 s;
+  int32 topn;
+  int32 best;
+  gauden_t *g;		
+  senone_t *sen;	
+  interp_t *interp;
+  
+  topn  = ms_mgau_topn(msg);
+  g=ms_mgau_gauden(msg);
+  sen=ms_mgau_senone(msg);
+  interp=ms_mgau_interp(msg);
+
+  /*
+   * Evaluate gaussian density codebooks and senone scores for input codeword.
+   * Evaluate only active codebooks and senones.
+   */
+
+  if (interp) {
+    for (s = 0; s < mdef->n_ci_sen; s++)
+      ascr->sen_active[s] = 1;
+  }
+	
+  /* Flag all active mixture-gaussian codebooks */
+
+  for (gid = 0; gid < g->n_mgau; gid++)
+    msg->mgau_active[gid] = 0;
+  
+  for (s = 0; s < ascr->n_sen; s++) {
+    if(ascr->sen_active[s]){
+      msg->mgau_active[sen->mgau[s]] = 1;
+    }
+  }
+	
+  /* Compute topn gaussian density values (for active codebooks) */
+  for (gid = 0; gid < g->n_mgau; gid++){
+    if (msg->mgau_active[gid])
+      gauden_dist (g, gid, topn, feat, msg->dist[gid]);
+  }
+
+  if (interp) {
+    for (s = 0; s < ascr->n_sen; s++) {
+      if(ascr->sen_active[s]){
+	if(s >= mdef->n_ci_sen){
+	  interp_cd_ci (interp, ascr->senscr, s, mdef->cd2cisen[s]);
+	}
+      }
+    }
+  }
+
+  best = (int32) 0x80000000;
+  for (s = 0; s < ascr->n_sen; s++) {
+    if(ascr->sen_active[s]){
+      ascr->senscr[s] = senone_eval (sen, s, msg->dist[sen->mgau[s]], topn);
+      if (best < ascr->senscr[s])
+	best = ascr->senscr[s];
+    }
+  }
+
+
+	/* Normalize senone scores (interpolation above can only lower best score) */
+  for (s = 0; s < ascr->n_sen; s++) {
+    if(ascr->sen_active[s])
+      ascr->senscr[s] -= best;
+  }
+
+  return best;
+}
+
