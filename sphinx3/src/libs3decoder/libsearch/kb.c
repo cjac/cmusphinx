@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.3  2005/07/20  21:19:52  arthchan2003
- * Added options such that finite state grammar option is now accepted.
+ * Revision 1.26.4.4  2005/08/02  21:32:30  arthchan2003
+ * added -s3hmmdir option.
  * 
+ * Revision 1.26.4.3  2005/07/20 21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
+ *
  * Revision 1.26.4.2  2005/07/18 19:08:55  arthchan2003
  * Fixed Copy right statement.
  *
@@ -184,6 +187,7 @@ void kb_init (kb_t *kb)
 			      cmd_ln_float32("-lw"),
 			      cmd_ln_float32("-wip"),
 			      cmd_ln_float32("-uw"),
+			      cmd_ln_str("-s3hmmdir"),
 			      cmd_ln_str("-mean"),
 			      cmd_ln_str("-var"),
 			      cmd_ln_float32("-varfloor"),
