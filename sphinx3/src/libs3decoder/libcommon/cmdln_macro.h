@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.3  2005/07/24  01:43:59  arthchan2003
- * Temporarily not support -fsgctlfn
+ * Revision 1.1.2.4  2005/08/02  21:08:32  arthchan2003
+ * 1, Changed -mean, -var, -tmat, -mixw -mdef to make them not required arguments. 2, Added -s3hmmdir so that user can just specified a directory name, in which all components of a set of HMM could be found.
  * 
+ * Revision 1.1.2.3  2005/07/24 01:43:59  arthchan2003
+ * Temporarily not support -fsgctlfn
+ *
  * Revision 1.1.2.2  2005/07/20 19:43:44  arthchan2003
  * Add command line arguments for fsg routines.
  *
@@ -80,11 +83,11 @@
 
 #define gmm_command_line_macro() \
     { "-mean",\
-      REQARG_STRING,\
+      ARG_STRING,\
       NULL,\
       "Mixture gaussian means input file" },\
     { "-var",\
-      REQARG_STRING,\
+      ARG_STRING,\
       NULL,\
       "Mixture gaussian variances input file" },\
     { "-varfloor",\
@@ -92,7 +95,7 @@
       "0.0001",\
       "Mixture gaussian variance floor (applied to data from -var file)" },\
     { "-mixw",\
-      REQARG_STRING,\
+      ARG_STRING,\
       NULL,\
       "Senone mixture weights input file" },\
     { "-mixwfloor",\
@@ -103,12 +106,16 @@
 
 #define acoustic_model_command_line_macro() \
     gmm_command_line_macro() \
+    { "-s3hmmdir", \
+      ARG_STRING, \
+      NULL, \
+      "Directory for specifying Sphinx 3's hmm, the following file is assummed to be present, mdef, mean, var, mixw, tmat. If both are specified, the later will override the s3hmmdir "}, \
     { "-mdef", \
-      REQARG_STRING,\
+      ARG_STRING,\
       NULL,\
       "Model definition input file" },\
     { "-tmat",\
-      REQARG_STRING,\
+      ARG_STRING,\
       NULL,\
       "HMM state transition matrix input file" },\
     { "-tmatfloor",\
