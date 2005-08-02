@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.8  2005/07/26  02:20:39  arthchan2003
- * merged hyp_t with srch_hyp_t.
+ * Revision 1.1.2.9  2005/08/02  21:14:34  arthchan2003
+ * Removed comments and change sen to senscr.
  * 
+ * Revision 1.1.2.8  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
  * Revision 1.1.2.7  2005/07/24 19:34:46  arthchan2003
  * Removed search_hyp_t, used srch_hyp_t instead
  *
@@ -470,9 +473,7 @@ void fsg_search_hmm_eval (fsg_search_t *search)
     hmm = fsg_pnode_hmmptr(pnode);
     assert (hmm->active == search->frame);
 
-    /*chan_v_eval(hmm);*/
-    /* HACK! Still don't know whether it works. */
-    eval_nonmpx_whmm (hmm, search->am_score_pool->sen,search->tmat, search->mdef, search->n_state_hmm);
+    eval_nonmpx_whmm (hmm, search->am_score_pool->senscr,search->tmat, search->mdef, search->n_state_hmm);
     
     if (bestscore < hmm->bestscore)
       bestscore = hmm->bestscore;
