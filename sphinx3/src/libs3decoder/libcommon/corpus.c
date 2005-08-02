@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.2  2005/07/27  23:19:11  arthchan2003
- * 1, Added utt_res_t structure and its methods. 2, Changed the function pointer prototype. 3, Removed the lm and mllr set process out of ctl_process
+ * Revision 1.11.4.3  2005/08/02  21:09:07  arthchan2003
+ * Removed error message
  * 
+ * Revision 1.11.4.2  2005/07/27 23:19:11  arthchan2003
+ * 1, Added utt_res_t structure and its methods. 2, Changed the function pointer prototype. 3, Removed the lm and mllr set process out of ctl_process
+ *
  * Revision 1.11.4.1  2005/07/26 03:14:17  arthchan2003
  * Removed ctl_process_dyn_lm. One of my sin.
  *
@@ -571,7 +574,6 @@ ptmr_t ctl_process (char *ctlfile, char *ctllmfile, char* ctlmllrfile, int32 nsk
 
     /* Process this utterance */
     ptmr_start (&tm);
-    E_INFO("filename %s, lmname %s\n",uttfile,lmname);
     if (func){
       utt_res_set_uttfile(ur,uttfile);
       if(ctllmfile) utt_res_set_lmname(ur,lmname);
