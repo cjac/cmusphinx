@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.3  2005/07/17  05:44:32  arthchan2003
- * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ * Revision 1.9.4.4  2005/08/02  21:35:05  arthchan2003
+ * Change sen to senscr.
  * 
+ * Revision 1.9.4.3  2005/07/17 05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
  * Revision 1.9.4.2  2005/07/07 02:34:36  arthchan2003
  * Remove empty lextree_tree_copies_hmm_propagate
  *
@@ -756,7 +759,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 	    
 	    if (! ln->composite)
 		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
-				       mdef->sseq[ln->ssid], ascr->sen, fp);
+				       mdef->sseq[ln->ssid], ascr->senscr, fp);
 	    else
 		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
 				       d2p->comsseq[ln->ssid], ascr->comsen, fp);
@@ -778,7 +781,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		if (! ln->composite)
 		  {
 
-		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		  }
 		else
 		  {
@@ -799,7 +802,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		assert (ln->frame == frm);
 		
 		if (! ln->composite)
-		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		else
 		    k = hmm_vit_eval_5st (&(ln->hmm), d2p->comsseq[ln->ssid], ascr->comsen);
 		
