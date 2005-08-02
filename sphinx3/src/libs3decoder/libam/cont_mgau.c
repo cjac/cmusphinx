@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.17.4.3  2005/07/20  19:39:43  arthchan2003
- * Fix comments in cont_mgau.c
+ * Revision 1.17.4.4  2005/08/02  21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
  * 
+ * Revision 1.17.4.3  2005/07/20 19:39:43  arthchan2003
+ * Fix comments in cont_mgau.c
+ *
  * Revision 1.17.4.2  2005/07/05 21:28:57  arthchan2003
  * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
  *
@@ -65,9 +68,12 @@
  *
  * Revision 1.17  2005/06/21 18:06:45  arthchan2003
  * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
- * Revision 1.17.4.3  2005/07/20  19:39:43  arthchan2003
- * Fix comments in cont_mgau.c
+ * Revision 1.17.4.4  2005/08/02  21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
  * 
+ * Log. 1, Fixed Doxygen documentation. 2, Added Revision 1.17.4.3  2005/07/20 19:39:43  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added Fix comments in cont_mgau.c
+ * Log. 1, Fixed Doxygen documentation. 2, Added
  *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
@@ -921,3 +927,4 @@ void mgau_free (mgau_model_t *g)
     ckd_free ((void *) g);
   }
 }
+

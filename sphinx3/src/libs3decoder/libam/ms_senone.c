@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5.4.1  2005/07/20  19:39:01  arthchan2003
- * Added licences in ms_* series of code.
+ * Revision 1.5.4.2  2005/08/02  21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
  * 
+ * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
  * Revision 1.5  2005/06/21 18:57:31  arthchan2003
  * 1, Fixed doxygen documentation. 2, Added $ keyword.
  *
@@ -315,7 +318,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 
     if (strcmp (sen2mgau_map_file, ".semi.") == 0)
 	s->n_gauden = 1;
-    else if (strcmp (sen2mgau_map_file, ".cont.") == 0)
+    else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0)
 	s->n_gauden = 2;	/* HACK!! Dummy value >1 for the moment; fixed below */
     else {
 	senone_mgau_map_read (s, sen2mgau_map_file);
@@ -327,7 +330,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
     if (strcmp (sen2mgau_map_file, ".semi.") == 0) {
 	/* All-to-1 senones-codebook mapping */
 	s->mgau = (s3mgauid_t *) ckd_calloc (s->n_sen, sizeof(s3mgauid_t));
-    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0) {
+    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0) {
 	/* 1-to-1 senone-codebook mapping */
 	if (s->n_sen <= 1)
 	    E_FATAL("#senone=%d; must be >1\n", s->n_sen);
