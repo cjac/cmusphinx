@@ -47,9 +47,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.1  2005/07/15  07:50:33  arthchan2003
- * Remove hmm computation and context building code from flat_fwd.c.
+ * Revision 1.10.4.2  2005/08/02  21:12:45  arthchan2003
+ * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
  * 
+ * Revision 1.10.4.1  2005/07/15 07:50:33  arthchan2003
+ * Remove hmm computation and context building code from flat_fwd.c.
+ *
  *
  */
 
@@ -97,7 +100,7 @@ int32 fwd_frame (int32 *senscr /**< An array of senone score */
 /**
  * Find the active senone list. 
  */
-void fwd_sen_active (int8 *senlist, int32 n_sen);
+void fwd_sen_active (int32 *senlist, int32 n_sen);
 
 /**
  * End of flat foward search 

@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.4  2005/07/26  02:20:39  arthchan2003
- * merged hyp_t with srch_hyp_t.
+ * Revision 1.12.4.5  2005/08/02  21:12:45  arthchan2003
+ * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
  * 
+ * Revision 1.12.4.4  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
  * Revision 1.12.4.3  2005/07/20 21:13:16  arthchan2003
  * Some small clean-up of the code. Use cmd_ln_* instead of cmd_ln_access
  *
@@ -1315,7 +1318,7 @@ void fwd_start_utt (char *id)
 }
 
 
-void fwd_sen_active (int8 *senlist, int32 n_sen)
+void fwd_sen_active (int32 *senlist, int32 n_sen)
 {
     s3wid_t w;
     whmm_t *h;
