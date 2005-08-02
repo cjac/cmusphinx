@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.9  2005/07/24  19:35:59  arthchan2003
- * Added GAUDEN_EVAL_WINDOW in srch.h. Assuming this is property of a search.
+ * Revision 1.1.4.10  2005/08/02  21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
  * 
+ * Revision 1.1.4.9  2005/07/24 19:35:59  arthchan2003
+ * Added GAUDEN_EVAL_WINDOW in srch.h. Assuming this is property of a search.
+ *
  * Revision 1.1.4.8  2005/07/24 01:39:26  arthchan2003
  * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
  *
@@ -455,7 +458,7 @@ typedef struct srch_s {
 
   /** Compute detail (CD) GMM scores or lv2*/
   int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-			      float32 *feat,      /**< A feature vector */
+			      float32 **feat,      /**< A feature vector */
 			      int32 time          /**< The frame we want to compute detail score */
 			      );
 
@@ -689,6 +692,6 @@ void log_hyp_detailed (FILE *fp, /**< A file poointer */
 					       if specified, normalized score would be displayed, 
 					       if not, the unormalized score would be displayed. 
 					     */
-		       )
+		       );
 
 #endif

@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.12  2005/07/26  02:21:14  arthchan2003
- * merged hyp_t with srch_hyp_t.
+ * Revision 1.1.4.13  2005/08/02  21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
  * 
+ * Revision 1.1.4.12  2005/07/26 02:21:14  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
  * Revision 1.1.4.11  2005/07/24 01:39:26  arthchan2003
  * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
  *
@@ -356,7 +359,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -386,7 +389,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_FLAT_FWD_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -416,7 +419,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_TST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen_comp;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen_comp;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -447,7 +450,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute_sen_comp;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen_comp;
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
     /*    s->srch_rescoring=&srch_WST_rescoring;*/
@@ -610,7 +613,8 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(st->tm_sen));
     s->srch_select_active_gmm(s);
-    s->srch_gmm_compute_lv2(s,block_feat[t][0],t);
+    s->srch_gmm_compute_lv2(s,block_feat[t],t);
+
     ptmr_stop (&(st->tm_sen));
 
     
