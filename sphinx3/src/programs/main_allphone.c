@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.5  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.13.4.6  2005/08/02  21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  * 
+ * Revision 1.13.4.5  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.13.4.4  2005/07/24 19:37:19  arthchan2003
  * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
  *
@@ -190,10 +193,8 @@ static arg_t defn[] = {
 /*  The definition of mdef and tmat can be found in s3_allphone.c
 */
 
-mdef_t *mdef;
-tmat_t *tmat;
-static ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
-
+static kbcore_t *kbc;   /* a kbcore */
+static ascr_t *ascr;    /* An acoustic score structure.  */
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;	/* Speech feature data */
 
@@ -211,11 +212,12 @@ static ptmr_t tm_allphone;
  */
 static void models_init ( void )
 {
-    float32 tpfloor;
     int32 i;
     gauden_t* g;
     senone_t* sen;
-    
+    ms_mgau_model_t *msg;
+    char str[10];
+    int32 cisencnt;
 
     logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
@@ -226,27 +228,43 @@ static void models_init ( void )
 		      (char *) cmd_ln_access ("-agc"),
 		      1);
 
-    /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    kbc=New_kbcore();
 
-    /* Multiple stream Gaussian mixture Initialization*/
-    msg=ms_mgau_init(cmd_ln_str("-mean"),
-		     cmd_ln_str("-var"),
-		     cmd_ln_float32("-varfloor"),
-		     cmd_ln_str("-mixw"),
-		     cmd_ln_float32("-mixwfloor"),
-		     cmd_ln_str("-senmgau"),
-		     cmd_ln_str("-lambda"),
-		     cmd_ln_int32("-topn")
-		     );
+    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
+	Then no need for changing the default command-line. 
+     */
 
+    if(strcmp(cmd_ln_str("-senmgau"),".cont.")==0){
+      strcpy(str,".s3cont.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".semi.")==0){
+      strcpy(str,".semi.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".s3cont.")==0){
+      strcpy(str,".s3cont.");
+    }
+
+    s3_am_init(kbc,
+	       cmd_ln_str("-s3hmmdir"),
+	       cmd_ln_str("-mdef"),
+	       cmd_ln_str("-mean"),
+	       cmd_ln_str("-var"),
+	       cmd_ln_float32("-varfloor"),
+	       cmd_ln_str("-mixw"),
+	       cmd_ln_float32("-mixwfloor"),
+	       cmd_ln_str("-tmat"),
+	       cmd_ln_float32("-tmatfloor"),
+	       str, 
+	       cmd_ln_str("-lambda"),
+	       cmd_ln_int32("-topn")
+	       );
+
+
+    msg=kbcore_ms_mgau(kbc);
     assert(msg);    
     assert(msg->g);    
     assert(msg->s);
 
     g=ms_mgau_gauden(msg);
     sen=ms_mgau_senone(msg);
-
 
     /* Verify codebook feature dimensions against libfeat */
     if (feat_n_stream(fcb) != g->n_feat) {
@@ -260,22 +278,20 @@ static void models_init ( void )
 	}
     }
 
-    /* Verify senone parameters against model definition parameters */
-    if (mdef->n_sen != sen->n_sen)
-	E_FATAL("Model definition has %d senones; but #senone= %d\n",
-		mdef->n_sen, sen->n_sen);
+    for(cisencnt=0;cisencnt==kbc->mdef->cd2cisen[cisencnt];cisencnt++) ;
 
-    /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
+    ascr=ascr_init(kbc->mdef->n_sen,
+		   0, /* No composite senone */
+		   mdef_n_sseq(kbc->mdef),
+		   0, /* No composite senone sequence */
+		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead and CIGMMS at this moment */
+		   cisencnt);
 
-    /* Verify transition matrices parameters against model definition parameters */
-    if (mdef->n_tmat != tmat->n_tmat)
-	E_FATAL("Model definition has %d tmat; but #tmat= %d\n",
-		mdef->n_tmat, tmat->n_tmat);
-    if (mdef->n_emit_state != tmat->n_state)
-	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
-		mdef->n_emit_state, tmat->n_state);
+    msg->dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, cmd_ln_int32("-topn"),
+					      sizeof(gauden_dist_t));
+
+    msg->mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
+
 }
 
 
@@ -320,7 +336,7 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
 	}
 	fprintf (fp, "\t%5d %5d %9d %s\n",
 		 phseg->sf, phseg->ef, phseg->score + scale,
-		 mdef_ciphone_str (mdef, phseg->ci));
+		 mdef_ciphone_str (kbc->mdef, phseg->ci));
 	fflush(fp);
 	uttscr += (phseg->score + scale);
     }
@@ -339,42 +355,30 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
     }
 }
 
+/* FIX ME! Should only consider active senone from every frame in the search */
+static void allphone_sen_active (int32 *senlist, int32 n_sen)
+{
+  int32 sen;
+    
+  for (sen = 0; sen < n_sen; sen++)
+    senlist[sen] = 1;
+}
+
 /*
  * Find Viterbi allphone decoding.
  */
 static void allphone_utt (int32 nfr, char *uttid)
 {
-    static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
-    static int32 **senscr = NULL;	/* Senone scores for window of frames */
-
-    int32 i, j, k, s, gid, best;
+    int32 i;
     phseg_t *phseg;
-    mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
-    mgau2sen_t *m2s;
-    float32 **fv;
-    gauden_t* g;
-    senone_t* sen;
-    interp_t *interp;
     int32 topn;
     int32 w;
+    ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
 
-    g=ms_mgau_gauden(msg);
-    sen=ms_mgau_senone(msg);
-    mgau2sen=ms_mgau_mgau2sen(msg);
-    interp=ms_mgau_interp(msg);
+    msg=kbcore_ms_mgau(kbc);
     topn=ms_mgau_topn(msg);
     w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
 				   frame to compute one feature vector */
-
-    if (! senscr) {
-	/* One-time allocation of necessary intermediate variables */
-	
-	/* Allocate space for top-N codeword density values in a codebook */
-	dist = (gauden_dist_t **) ckd_calloc_2d (g->n_feat, topn, sizeof(gauden_dist_t));
-	
-	/* Space for one frame of senone scores, and per frame active flags */
-	senscr = (int32 **) ckd_calloc_2d (GAUDEN_EVAL_WINDOW, sen->n_sen, sizeof(int32));
-    }
 
     ptmr_reset (&tm_utt);
     ptmr_reset (&tm_gausen);
@@ -388,60 +392,32 @@ static void allphone_utt (int32 nfr, char *uttid)
 
     allphone_start_utt (uttid);
 
-    for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
-	/* Compute Gaussian densities and senone scores for window of frames */
-	ptmr_start (&tm_gausen);
-	for (gid = 0; gid < g->n_mgau; gid++) {
-	    for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		fv = feat[i];
-		
-		/* Evaluate mixture Gaussian densities */
-		gauden_dist (g, gid, topn, fv, dist);
-		
-		/* Compute senone scores */
-		if (g->n_mgau > 1) {
-		    for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-			s = m2s->sen;
-			senscr[k][s] = senone_eval (sen, s, dist, topn);
-		    }
-		} else {
-		    /* Semi-continuous special case; single shared codebook */
-		    senone_eval_all (sen, dist, topn, senscr[k]);
-		}
-	    }
-	}
-	
-	/* Find best phone scores for each frame in window */
-	for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-
-	  /* Interpolate senones for each frame in window */
 #if 0
-	  if (interp)
-	      interp_all (interp, senscr[k], mdef->cd2cisen, mdef->n_ci_sen);
+    /* Also see the old implementation at the bottom of the file */
 #endif
 
-	  /* Normalize senone scores */
-	  best = (int32)0x80000000;
-	  for (s = 0; s < sen->n_sen; s++)
-	      if (best < senscr[k][s])
-		  best = senscr[k][s];
-	  for (s = 0; s < sen->n_sen; s++)
-	      senscr[k][s] -= best;
-	  senscale[i] = best;
-	}
+#if 1
+    for(i = 0 ; i < nfr ; i++){
+      ptmr_start(&tm_gausen);
+      allphone_sen_active(ascr->sen_active,ascr->n_sen);
+      senscale[i]=ms_cont_mgau_frame_eval(ascr,
+					  msg,
+					  kbc->mdef,
+					  feat[i]);
       ptmr_stop (&tm_gausen);
 
-      /* Step search one frame forward */
       ptmr_start (&tm_allphone);
-      for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-	  allphone_frame (senscr[k]);
-	  if ((i%10) == 9) {
-	      printf ("."); fflush (stdout);
-	  }
+      allphone_frame (ascr->senscr);
+      if ((i%10) == 9) {
+	printf ("."); fflush (stdout);
       }
       ptmr_stop (&tm_allphone);
-  }
-  printf ("\n");
+
+    }
+
+    printf ("\n");
+#endif
+
   
   phseg = allphone_end_utt (uttid);
   write_phseg ((char *) cmd_ln_access ("-phsegdir"), uttid, phseg);
@@ -471,7 +447,8 @@ static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *ut
 
   nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
-  if(ur->regmatname) model_set_mllr(msg,ur->regmatname, ur->cb2mllrname,fcb,mdef);
+  assert(kbc->ms_mgau);
+  if(ur->regmatname) model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
   
   if (nfr <= 0){
     if (cepdir != NULL) {
@@ -503,11 +480,12 @@ main (int32 argc, char *argv[])
   feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
     
   /* Initialize allphone decoder module */
-  allphone_init (mdef, tmat);
+  allphone_init (kbc->mdef, kbc->tmat);
   printf ("\n");
   
+  assert(kbc->ms_mgau);
   if (cmd_ln_access("-mllr") != NULL) 
-    model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
+    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
 
   tot_nfr = 0;
 
@@ -526,6 +504,7 @@ main (int32 argc, char *argv[])
       E_FATAL(" -ctl are not specified.\n");
       
   }
+
   
   if (tot_nfr > 0) {
     printf ("\n");
@@ -535,6 +514,19 @@ main (int32 argc, char *argv[])
     printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
 	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
   }
+
+  if(kbc->ms_mgau->dist){
+    ckd_free_3d((void*)(kbc->ms_mgau->dist));
+  }
+
+  if(kbc->ms_mgau->mgau_active){
+    ckd_free(kbc->ms_mgau->mgau_active);
+  }
+
+  if(ascr){
+    ascr_free(ascr);
+  }
+
   
 #if (! WIN32)
   system ("ps aguxwww | grep s3allphone");
@@ -544,3 +536,61 @@ main (int32 argc, char *argv[])
     
   return 0;
 }
+
+
+#if 0 /* Commented but it is still a nice way to do GMM computation.  Also
+       see archive_s3/s3.0 for the original implementation
+      */
+    for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
+	/* Compute Gaussian densities and senone scores for window of frames */
+	ptmr_start (&tm_gausen);
+
+	for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
+
+	  fv = feat[i];
+
+	  for (gid = 0; gid < g->n_mgau; gid++) {
+	    /* Evaluate mixture Gaussian densities */
+	    gauden_dist (g, gid, topn, fv, dist);
+	    
+	    /* Compute senone scores */
+	    if (g->n_mgau > 1) {
+	      for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
+		s = m2s->sen;
+		senscr[k][s] = senone_eval (sen, s, dist, topn);
+	      }
+	    } else {
+	      /* Semi-continuous special case; single shared codebook */
+	      senone_eval_all (sen, dist, topn, senscr[k]);
+	    }
+	  }
+	
+	/* Find best phone scores for each frame in window */
+
+	  /* Interpolate senones for each frame in window */
+#if 0
+	  if (interp)
+	      interp_all (interp, senscr[k], mdef->cd2cisen, mdef->n_ci_sen);
+#endif
+
+	  /* Normalize senone scores */
+	  best = (int32)0x80000000;
+	  for (s = 0; s < sen->n_sen; s++)
+	      if (best < senscr[k][s])
+		  best = senscr[k][s];
+	  for (s = 0; s < sen->n_sen; s++)
+	      senscr[k][s] -= best;
+	  senscale[i] = best;
+
+	  ptmr_stop (&tm_gausen);
+
+	  /* Step search one frame forward */
+	  ptmr_start (&tm_allphone);
+	  allphone_frame (senscr[k]);
+	  if ((i%10) == 9) {
+	      printf ("."); fflush (stdout);
+	  }
+	}
+	ptmr_stop (&tm_allphone);
+    }
+#endif

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6.4.2  2005/07/20  21:26:55  arthchan2003
- * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
+ * Revision 1.6.4.3  2005/08/02  21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  * 
+ * Revision 1.6.4.2  2005/07/20 21:26:55  arthchan2003
+ * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
+ *
  * Revision 1.6.4.1  2005/07/17 06:06:04  arthchan2003
  * Removed chk_tp_uppertri and used in tmat_chk_uppertri.
  *
@@ -60,18 +63,9 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.6.4.2  2005/07/20  21:26:55  arthchan2003
- * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
+ * Revision 1.6.4.3  2005/08/02  21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  * 
- * Add Revision 1.6.4.1  2005/07/17 06:06:04  arthchan2003
- * Add Removed chk_tp_uppertri and used in tmat_chk_uppertri.
- * Add
- * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
- * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- * Add
- * Add Revision 1.3  2005/04/20 03:50:36  archan
- * Add Add comments on all mains for preparation of factoring the command-line.
- * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  * 02-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added allphone lattice output.
@@ -150,8 +144,8 @@ typedef struct history_s {
 } history_t;
 static history_t **frm_hist;	/** List of history nodes allocated in each frame */
 
-extern mdef_t *mdef;		/** Model definition */
-extern tmat_t *tmat;		/** Transition probability matrices */
+static mdef_t *mdef;		/** Model definition */
+static tmat_t *tmat;		/** Transition probability matrices */
 
 static int32 lrc_size = 0;
 static int32 curfrm;		/* Current frame */
@@ -825,12 +819,14 @@ static void phone_tp_init (char *file, float64 floor, float64 wt, float64 ip)
 }
 
 
-int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
+int32 allphone_init ( mdef_t *_mdef, tmat_t *_tmat )
 {
-    float64 *f64arg;
     char *file;
     float64 tpfloor, ip, wt;
-    
+
+    mdef = _mdef;
+    tmat = _tmat;
+
     tmat_chk_uppertri(tmat);
     
     phmm_build ();

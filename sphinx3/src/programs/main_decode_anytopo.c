@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.8  2005/07/28  03:12:03  arthchan2003
- * Initialized mllr correctly in decode_anytopo.
+ * Revision 1.12.4.9  2005/08/02  21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  * 
+ * Revision 1.12.4.8  2005/07/28 03:12:03  arthchan2003
+ * Initialized mllr correctly in decode_anytopo.
+ *
  * Revision 1.12.4.7  2005/07/27 23:23:39  arthchan2003
  * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  *
@@ -332,14 +335,14 @@
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
 #include "corpus.h"
+#include "kbcore.h"
 
 #include "srch.h"
 
-static mdef_t *mdef;		/* Model definition */
-static ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
-static tmat_t *tmat;		/* HMM transition matrices */
+static kbcore_t *kbc;   /* A kbcore structure */
 
 static feat_t *fcb;           /* Feature type descriptor (Feature Control Block) */
+static ascr_t *ascr_pool;     /* Acoustic score pool */
 static float32 ***feat = NULL;        /* Speech feature data */
 
 extern lmset_t *lmset;          /* The LM set */
@@ -470,8 +473,9 @@ static void models_init ( void )
 {
     int32 i;
     gauden_t* g;
-    senone_t* sen;
-    float32 tpfloor;
+    ms_mgau_model_t *msg;
+    char str[10];
+    int32 cisencnt;
 
     logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
@@ -482,37 +486,49 @@ static void models_init ( void )
 		      (char *) cmd_ln_access ("-agc"),
 		      1);
 
-    
-    /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),
-		      1);
+    kbc = New_kbcore();
 
-    
+    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
+	Then no need for changing the default command-line. 
+     */
+
+    if(strcmp(cmd_ln_str("-senmgau"),".cont.")==0){
+      strcpy(str,".s3cont.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".semi.")==0){
+      strcpy(str,".semi.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".s3cont.")==0){
+      strcpy(str,".s3cont.");
+    }
+
+    assert(kbc);
+    s3_am_init(kbc,
+	       cmd_ln_str("-s3hmmdir"),
+	       cmd_ln_str("-mdef"),
+	       cmd_ln_str("-mean"),
+	       cmd_ln_str("-var"),
+	       cmd_ln_float32("-varfloor"),
+	       cmd_ln_str("-mixw"),
+	       cmd_ln_float32("-mixwfloor"),
+	       cmd_ln_str("-tmat"),
+	       cmd_ln_float32("-tmatfloor"),
+	       str, 
+	       cmd_ln_str("-lambda"),
+	       cmd_ln_int32("-topn")
+	       );
 
     /* Dictionary */
-    dict = dict_init (mdef,
+    dict = dict_init (kbc->mdef,
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      0,
 		      1);
 
-    /* Multiple stream Gaussian mixture Initialization*/
-    msg=ms_mgau_init(cmd_ln_str("-mean"),
-		     cmd_ln_str("-var"),
-		     cmd_ln_float32("-varfloor"),
-		     cmd_ln_str("-mixw"),
-		     cmd_ln_float32("-mixwfloor"),
-		     cmd_ln_str("-senmgau"),
-		     cmd_ln_str("-lambda"),
-		     cmd_ln_int32("-topn")
-		     );
-
+    msg=kbc->ms_mgau;
     assert(msg);    
     assert(msg->g);    
     assert(msg->s);
 
     g=ms_mgau_gauden(msg);
-    sen=ms_mgau_senone(msg);
 
     /* Verify codebook feature dimensions against libfeat */
     if (feat_n_stream(fcb) != g->n_feat) {
@@ -525,24 +541,6 @@ static void models_init ( void )
 		feat_stream_len(fcb, i), g->featlen[i]);
       }
     }
-
-    /* Verify senone parameters against model definition parameters */
-    if (mdef->n_sen != sen->n_sen)
-	E_FATAL("Model definition has %d senones; but #senone= %d\n",
-		mdef->n_sen, sen->n_sen);
-
-
-    /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
-
-    /* Verify transition matrices parameters against model definition parameters */
-    if (mdef->n_tmat != tmat->n_tmat)
-	E_FATAL("Model definition has %d tmat; but #tmat= %d\n",
-		mdef->n_tmat, tmat->n_tmat);
-    if (mdef->n_emit_state != tmat->n_state)
-	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
-		mdef->n_emit_state, tmat->n_state);
 
     /*At 20050618, Currently, decode_anytopo doesn't allow the use of
      class-based LM (-lmctlfn).  It also doesn't support -ctl_lm,
@@ -561,11 +559,26 @@ static void models_init ( void )
 		     dict);
       
     fpen = fillpen_init (dict, 
-			 (char *) cmd_ln_access("-fillpen"),
-			 *(float32 *)cmd_ln_access("-silprob"),
-			 *(float32 *)cmd_ln_access("-fillprob"),
-			 *(float32 *)cmd_ln_access("-lw"),
-			 *(float32 *)cmd_ln_access("-wip"));
+			 cmd_ln_str("-fillpen"),
+			 cmd_ln_float32("-silprob"),
+			 cmd_ln_float32("-fillprob"),
+			 cmd_ln_float32("-lw"),
+			 cmd_ln_float32("-wip"));
+
+    
+    for(cisencnt=0;cisencnt==kbc->mdef->cd2cisen[cisencnt];cisencnt++) ;
+
+    ascr_pool=ascr_init(kbc->mdef->n_sen,
+			0, /* No composite senone */
+			mdef_n_sseq(kbc->mdef),
+			0, /* No composite senone sequence */
+			1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead at this moment */
+			cisencnt);
+
+    msg->dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, cmd_ln_int32("-topn"),
+					      sizeof(gauden_dist_t));
+
+    msg->mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
 
 }
 
@@ -664,7 +677,401 @@ write_error:
     fclose (fp);
 }
 
+/*
+ * Forward Viterbi decode.
+ * Return value: recognition hypothesis with detailed segmentation and score info.
+ */
+static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
+			   int32 nfr,	/**< In: #frames of input */
+			   char *uttid	/**< In: Utterance id, for logging and other use */
+			   )
+{
 
+    int32 i, j, k;
+    srch_hyp_t *hyp;
+    ms_mgau_model_t *msg;
+    int32 topn;
+    int32 w;
+
+    i=0;
+    msg=kbc->ms_mgau;
+    topn=ms_mgau_topn(msg);
+    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+				   frame to compute one feature vector */
+    
+    if (nfr <= (w<<1)) {
+	E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid, (w<<1)+1, nfr);
+	return NULL;
+    }
+    
+    ptmr_reset (&tmr_gausen);
+    ptmr_reset (&tmr_fwdsrch);
+    
+    fwd_start_utt (uttid);
+
+    /*
+     * A feature vector for frame f depends on input MFC vectors [f-w..f+w].  Hence
+     * the feature vector corresponding to the first w and last w input frames is
+     * undefined.  We define them by simply replicating the first and last true
+     * feature vectors (presumably silence regions).
+     */
+    
+    for (i = 0; i < nfr; i++) {
+      ptmr_start (&tmr_gausen);
+      
+
+      if(inlatdir){
+	/* Obtain list of active senones */
+	fwd_sen_active (ascr_pool->sen_active, msg->s->n_sen);
+      }else{
+	for(j=0;j<msg->s->n_sen;j++) 
+	  ascr_pool->sen_active[j]=1;
+      }
+
+      senscale[i] = ms_cont_mgau_frame_eval(ascr_pool,
+					    msg,
+					    kbc->mdef,
+					    feat[i]);
+      ptmr_stop (&tmr_gausen);
+      
+      /* Step HMMs one frame forward */
+      ptmr_start (&tmr_fwdsrch);
+      bestscr[i] = fwd_frame (ascr_pool->senscr);
+      ptmr_stop (&tmr_fwdsrch);
+      
+      if ((i%10) == 9) {
+	printf ("."); fflush (stdout);
+      }
+    }
+    printf ("\n");
+
+    hyp = fwd_end_utt ();
+
+    /* Add in senscale into bestscr, turning them into absolute scores */
+    k = 0;
+    for (i = 0; i < nfr; i++) {
+	k += senscale[i];
+	bestscr[i] += k;
+    }
+
+    pctr_increment (ctr_nfrm, nfr);
+
+    return hyp;
+}
+
+
+
+/* Decode the given mfc file and write result to matchfp and matchsegfp */
+static void decode_utt (int32 nfr, char *uttid)
+{
+    char *bscrdir;
+    srch_hyp_t *hyp, *h;
+    int32 i, bp, ascr, lscr, scl;
+    float32 *f32arg;
+    float64 lwf;
+
+
+    ptmr_reset (&tmr_utt);
+    ptmr_reset (&tmr_fwdvit);
+    ptmr_reset (&tmr_bstpth);
+    ptmr_start (&tmr_utt);
+    ptmr_start (&tmr_fwdvit);
+
+    pctr_reset(ctr_nfrm);
+    pctr_reset(ctr_nsen);
+
+    hyp = fwdvit (nfr, uttid);
+    ptmr_stop (&tmr_fwdvit);
+    bp = *((int32 *) cmd_ln_access("-bestpath"));
+    scl = 0;
+    lwf = 1.0;
+    if (hyp != NULL) {
+	if ( *((int32 *) cmd_ln_access("-backtrace")) )
+	    log_hyp_detailed(stdout, hyp, uttid, "FV", "fv", senscale);
+
+	/* Total acoustic score scaling */
+	for (i = 0; i < nfr; i++)
+	    scl += senscale[i];
+
+	/* Total scaled acoustic score and LM score */
+	ascr = lscr = 0;
+	for (h = hyp; h; h = h->next) {
+	    ascr += h->ascr;
+	    lscr += h->lscr;
+	}
+
+	/* Print sanitized recognition */
+	printf ("FWDVIT: ");
+	log_hypstr(stdout, hyp, uttid, matchexact, ascr + lscr,dict);
+
+	printf ("FWDXCT: ");
+	log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
+	lm_cache_stats_dump (lmset->cur_lm);
+
+	/* Check if need to dump bestscore/frame */
+	if ((bscrdir = (char *) cmd_ln_access ("-bestscoredir")) != NULL)
+	    write_bestscore (bscrdir, uttid, bestscr, nfr);
+
+	/* Check if need to dump or search DAG */
+	if ((outlatdir || bp) && (dag_build () == 0)) {
+	    if (outlatdir)
+		dag_dump (outlatdir, outlat_onlynodes, uttid);
+	    
+	    /* Perform bestpath DAG search if specified */
+	    if (bp) {
+		ptmr_start (&tmr_bstpth);
+		h = s3flat_fwd_dag_search (uttid);
+		ptmr_stop (&tmr_bstpth);
+		
+		if (h) {
+		    hyp = h;
+
+		    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+		    lwf = f32arg ?
+			((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) :
+			1.0;
+		} else
+		    E_ERROR("%s: Bestpath search failed; using Viterbi result\n", uttid);
+		
+		if ( *((int32 *) cmd_ln_access("-backtrace")) )
+		    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp", senscale);
+		
+		/* Total scaled acoustic score and LM score */
+		ascr = lscr = 0;
+		for (h = hyp; h; h = h->next) {
+		    ascr += h->ascr;
+		    lscr += h->lscr;
+		}
+		
+		printf ("BSTPTH: ");
+		log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr,dict);
+		
+		printf ("BSTXCT: ");
+		log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
+	    }
+	    
+	    dag_destroy (&dag);
+	}
+	
+	lm_cache_stats_dump (lmset->cur_lm);
+	lm_cache_reset (lmset->cur_lm);
+    } else {
+	E_ERROR ("%s: Viterbi search failed\n", uttid);
+	hyp = NULL;
+    }
+    
+    /* Log recognition output to the standard match and matchseg files */
+    if (matchfp)
+	log_hypstr (matchfp, hyp, uttid, matchexact, 0,dict);
+    if (matchsegfp)
+	log_hypseg (uttid, matchsegfp, hyp, nfr, scl, lwf);
+
+    ptmr_stop (&tmr_utt);
+    
+    printf ("%s: ", uttid);
+
+    pctr_print(stderr,ctr_nfrm);
+    pctr_print(stderr,ctr_nsen);
+
+    printf ("%s: TMR: %5d Frm", uttid, nfr);
+    if (nfr > 0) {
+	printf (" %6.2f xEl", tmr_utt.t_elapsed * 100.0 / nfr);
+	printf (" %6.2f xCPU", tmr_utt.t_cpu * 100.0 / nfr);
+
+	if (tmr_utt.t_cpu > 0.0) {
+	    printf (" [fwd %6.2fx %3d%%]", tmr_fwdvit.t_cpu * 100.0 / nfr,
+		    (int32) ((tmr_fwdvit.t_cpu * 100.0) / tmr_utt.t_cpu));
+	    printf ("[gau+sen %6.2fx %2d%%]", tmr_gausen.t_cpu * 100.0 / nfr,
+		    (int32) ((tmr_gausen.t_cpu * 100.0) / tmr_utt.t_cpu));
+	    printf ("[srch %6.2fx %2d%%]", tmr_fwdsrch.t_cpu * 100.0 / nfr,
+		    (int32) ((tmr_fwdsrch.t_cpu * 100.0) / tmr_utt.t_cpu));
+	    
+	    fwd_timing_dump (tmr_utt.t_cpu);
+	    
+	    if (bp)
+		printf ("[bp %6.2fx %2d%%]", tmr_bstpth.t_cpu * 100.0 / nfr,
+			(int32) ((tmr_bstpth.t_cpu * 100.0) / tmr_utt.t_cpu));
+	}
+    }
+    printf ("\n");
+    fflush (stdout);
+    
+    tot_nfr += nfr;
+}
+
+static void utt_decode_anytopo(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
+{
+  int32 nfr;
+  char *cepdir, *cepext;
+  
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
+
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
+
+  assert(kbc->ms_mgau);
+  if(ur->regmatname) model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
+  
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
+    } else {
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
+    }
+  }
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    decode_utt (nfr, uttid);
+  }
+
+}
+
+int main (int32 argc, char *argv[])
+{
+    int32 k;
+
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc,argv,"default.arg",defn);
+    unlimit ();
+    
+    inlatdir = (char *) cmd_ln_access ("-inlatdir");
+    outlatdir = (char *) cmd_ln_access ("-outlatdir");
+    if (outlatdir) {
+	int32 k;
+	
+	k = strlen(outlatdir);
+	if ((k > 6) && (strcmp (outlatdir+(k-6), ",NODES") == 0)) {
+	    outlat_onlynodes = 1;
+	    outlatdir[k-6] = '\0';
+	} else
+	    outlat_onlynodes = 0;
+    }
+
+    if (inlatdir && outlatdir && (strcmp (inlatdir, outlatdir) == 0))
+	E_FATAL("Input and output lattice directories are the same\n");
+
+    
+    /* Read in input databases */
+    models_init ();
+    
+    /* Senone scaling factor in each frame */
+    senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+
+    /* Best statescore in each frame */
+    bestscr = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+
+    if (! feat)
+      feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
+    
+    /* Allocate profiling timers and counters */
+    ptmr_init(&tmr_utt);
+    ptmr_init(&tmr_fwdvit);
+    ptmr_init(&tmr_bstpth);
+    ptmr_init(&tmr_gausen);
+    ptmr_init(&tmr_fwdsrch);
+    
+    pctr_new(ctr_nfrm,"frm");
+    pctr_new(ctr_nsen,"sen");
+
+    /* Initialize forward Viterbi search module */
+    fwd_init (kbc->mdef,kbc->tmat,dict,lmset->cur_lm);
+    printf ("\n");
+
+    /* Remember to set lm here */    
+    assert(kbc->ms_mgau);
+    if (cmd_ln_access("-mllr") != NULL) 
+      model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
+
+    tot_nfr = 0;
+
+    /* Decode_anytopo-specific, a search for suffix ",EXACT " and create exact log hypothesis */
+    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
+	matchfp = NULL;
+    } else {
+	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
+	k = strlen (matchfile);
+	if ((k > 6) && (strcmp (matchfile+(k-6), ",EXACT") == 0)) {
+	    matchexact = 1;
+	    matchfile[k-6] = '\0';
+	} else
+	    matchexact = 0;
+
+	if ((matchfp = fopen (matchfile, "w")) == NULL)
+	    E_ERROR("fopen(%s,w) failed\n", matchfile);
+    }
+    
+    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
+	E_WARN("No -hypseg argument\n");
+	matchsegfp = NULL;
+    } else {
+	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+    }
+
+    
+    if (cmd_ln_str ("-ctl")) {
+      /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+	 the corresponding  MLLR for the utterance */
+      ctl_process (cmd_ln_str("-ctl"),
+		   NULL,
+		   cmd_ln_str("-ctl_mllr"),
+		   cmd_ln_int32("-ctloffset"),
+		   cmd_ln_int32("-ctlcount"),
+		   utt_decode_anytopo, 
+		   NULL);
+    } else {
+      /* Is error checking good enough?" */
+      E_FATAL(" -ctl are not specified.\n");
+    }
+
+    if (matchfp)
+	fclose (matchfp);
+    if (matchsegfp)
+	fclose (matchsegfp);
+
+    
+    if (tot_nfr > 0) {
+	printf ("\n");
+	printf("TOTAL FRAMES:       %8d\n", tot_nfr);
+	printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
+	       tmr_utt.t_tot_cpu, tmr_utt.t_tot_cpu/(tot_nfr*0.01));
+	printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
+	       tmr_utt.t_tot_elapsed, tmr_utt.t_tot_elapsed/(tot_nfr*0.01));
+	fflush (stdout);
+    }
+
+
+    if(kbc)
+      ckd_free(kbc);
+
+  if(kbc->ms_mgau->dist){
+    ckd_free_3d((void*)(kbc->ms_mgau->dist));
+  }
+
+  if(kbc->ms_mgau->mgau_active){
+    ckd_free(kbc->ms_mgau->mgau_active);
+  }
+
+
+  if(ascr_pool){
+    ascr_free(ascr_pool);
+  }
+#if (! WIN32)
+#if defined(_SUN4)
+    system("ps -el | grep s3decode");
+#else
+    system ("ps aguxwww | grep s3decode");
+#endif
+#endif
+
+
+    cmd_ln_appl_exit();
+
+    return 0 ;
+}
+
+#if 0
 /*
  * Forward Viterbi decode.
  * Return value: recognition hypothesis with detailed segmentation and score info.
@@ -682,6 +1089,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
     int32 i, j, k, s, gid, n_sen_active, best;
     srch_hyp_t *hyp;
+    ms_mgau_model_t *msg;
     gauden_t *g;
     senone_t *sen;
     mgau2sen_t **mgau2sen, *m2s;	
@@ -689,7 +1097,9 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     int32 topn;
     int32 w;
 
+
     i=0;
+    msg=kbc->ms_mgau;
     g=ms_mgau_gauden(msg);
     sen=ms_mgau_senone(msg);
     mgau2sen=ms_mgau_mgau2sen(msg);
@@ -755,6 +1165,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 	    for (gid = 0; gid < g->n_mgau; gid++)
 		mgau_active[gid] = 0;
 	    n_sen_active = 0;
+
 	    for (s = 0; s < sen->n_sen; s++) {
 		if (sen_active[s]) {
 		    mgau_active[sen->mgau[s]] = 1;
@@ -764,7 +1175,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
 	    /* Add in CI senones and codebooks if interpolating with CI */
 	    if (interp) {
-		for (s = 0; s < mdef->n_ci_sen; s++) {
+		for (s = 0; s < kbc->mdef->n_ci_sen; s++) {
 		    mgau_active[s] = 1;
 		    if (! sen_active[s]) {
 			sen_active[s] = 1;
@@ -793,9 +1204,9 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
 	    /* Interpolate CI and CD senones if indicated */
 	    if (interp) {
-		for (s = mdef->n_ci_sen; s < sen->n_sen; s++) {
+		for (s = kbc->mdef->n_ci_sen; s < sen->n_sen; s++) {
 		    if (sen_active[s])
-			interp_cd_ci (interp, senscr[0], s, mdef->cd2cisen[s]);
+			interp_cd_ci (interp, senscr[0], s, kbc->mdef->cd2cisen[s]);
 		}
 	    }
 
@@ -851,7 +1262,7 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 		pctr_increment (ctr_nsen, sen->n_sen);
 
 		if (interp)
-		    interp_all (interp, senscr[k], mdef->cd2cisen, mdef->n_ci_sen);
+		    interp_all (interp, senscr[k], kbc->mdef->cd2cisen, kbc->mdef->n_ci_sen);
 
 		/* Normalize senone scores */
 		best = (int32)0x80000000;
@@ -896,298 +1307,4 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 
     return hyp;
 }
-
-
-/* Decode the given mfc file and write result to matchfp and matchsegfp */
-static void decode_utt (int32 nfr, char *uttid)
-{
-    char *bscrdir;
-    srch_hyp_t *hyp, *h;
-    int32 i, bp, ascr, lscr, scl;
-    float32 *f32arg;
-    float64 lwf;
-
-
-    ptmr_reset (&tmr_utt);
-    ptmr_reset (&tmr_fwdvit);
-    ptmr_reset (&tmr_bstpth);
-    ptmr_start (&tmr_utt);
-    ptmr_start (&tmr_fwdvit);
-
-    pctr_reset(ctr_nfrm);
-    pctr_reset(ctr_nsen);
-
-    hyp = fwdvit (nfr, uttid);
-    ptmr_stop (&tmr_fwdvit);
-    bp = *((int32 *) cmd_ln_access("-bestpath"));
-    scl = 0;
-    lwf = 1.0;
-    if (hyp != NULL) {
-	if ( *((int32 *) cmd_ln_access("-backtrace")) )
-	    log_hyp_detailed (stdout, hyp, uttid, "FV", "fv");
-
-	/* Total acoustic score scaling */
-	for (i = 0; i < nfr; i++)
-	    scl += senscale[i];
-
-	/* Total scaled acoustic score and LM score */
-	ascr = lscr = 0;
-	for (h = hyp; h; h = h->next) {
-	    ascr += h->ascr;
-	    lscr += h->lscr;
-	}
-
-	/* Print sanitized recognition */
-	printf ("FWDVIT: ");
-	log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr,dict);
-
-	printf ("FWDXCT: ");
-	log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
-	lm_cache_stats_dump (lmset->cur_lm);
-
-	/* Check if need to dump bestscore/frame */
-	if ((bscrdir = (char *) cmd_ln_access ("-bestscoredir")) != NULL)
-	    write_bestscore (bscrdir, uttid, bestscr, nfr);
-
-	/* Check if need to dump or search DAG */
-	if ((outlatdir || bp) && (dag_build () == 0)) {
-	    if (outlatdir)
-		dag_dump (outlatdir, outlat_onlynodes, uttid);
-	    
-	    /* Perform bestpath DAG search if specified */
-	    if (bp) {
-		ptmr_start (&tmr_bstpth);
-		h = s3flat_fwd_dag_search (uttid);
-		ptmr_stop (&tmr_bstpth);
-		
-		if (h) {
-		    hyp = h;
-
-		    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
-		    lwf = f32arg ?
-			((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) :
-			1.0;
-		} else
-		    E_ERROR("%s: Bestpath search failed; using Viterbi result\n", uttid);
-		
-		if ( *((int32 *) cmd_ln_access("-backtrace")) )
-		    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp");
-		
-		/* Total scaled acoustic score and LM score */
-		ascr = lscr = 0;
-		for (h = hyp; h; h = h->next) {
-		    ascr += h->ascr;
-		    lscr += h->lscr;
-		}
-		
-		printf ("BSTPTH: ");
-		log_hypstr (stdout, hyp, uttid, matchexact, ascr + lscr,dict);
-		
-		printf ("BSTXCT: ");
-		log_hypseg (uttid, stdout, hyp, nfr, scl, lwf);
-	    }
-	    
-	    dag_destroy (&dag);
-	}
-	
-	lm_cache_stats_dump (lmset->cur_lm);
-	lm_cache_reset (lmset->cur_lm);
-    } else {
-	E_ERROR ("%s: Viterbi search failed\n", uttid);
-	hyp = NULL;
-    }
-    
-    /* Log recognition output to the standard match and matchseg files */
-    if (matchfp)
-	log_hypstr (matchfp, hyp, uttid, matchexact, 0);
-    if (matchsegfp)
-	log_hypseg (uttid, matchsegfp, hyp, nfr, scl, lwf);
-
-    ptmr_stop (&tmr_utt);
-    
-    printf ("%s: ", uttid);
-
-    pctr_print(stderr,ctr_nfrm);
-    pctr_print(stderr,ctr_nsen);
-
-    printf ("%s: TMR: %5d Frm", uttid, nfr);
-    if (nfr > 0) {
-	printf (" %6.2f xEl", tmr_utt.t_elapsed * 100.0 / nfr);
-	printf (" %6.2f xCPU", tmr_utt.t_cpu * 100.0 / nfr);
-
-	if (tmr_utt.t_cpu > 0.0) {
-	    printf (" [fwd %6.2fx %3d%%]", tmr_fwdvit.t_cpu * 100.0 / nfr,
-		    (int32) ((tmr_fwdvit.t_cpu * 100.0) / tmr_utt.t_cpu));
-	    printf ("[gau+sen %6.2fx %2d%%]", tmr_gausen.t_cpu * 100.0 / nfr,
-		    (int32) ((tmr_gausen.t_cpu * 100.0) / tmr_utt.t_cpu));
-	    printf ("[srch %6.2fx %2d%%]", tmr_fwdsrch.t_cpu * 100.0 / nfr,
-		    (int32) ((tmr_fwdsrch.t_cpu * 100.0) / tmr_utt.t_cpu));
-	    
-	    fwd_timing_dump (tmr_utt.t_cpu);
-	    
-	    if (bp)
-		printf ("[bp %6.2fx %2d%%]", tmr_bstpth.t_cpu * 100.0 / nfr,
-			(int32) ((tmr_bstpth.t_cpu * 100.0) / tmr_utt.t_cpu));
-	}
-    }
-    printf ("\n");
-    fflush (stdout);
-    
-    tot_nfr += nfr;
-}
-
-static void utt_decode_anytopo(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
-{
-  int32 nfr;
-  char *cepdir, *cepext;
-  
-  cepdir=cmd_ln_str("-cepdir");
-  cepext=cmd_ln_str("-cepext");
-
-  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
-
-  if(ur->regmatname) model_set_mllr(msg,ur->regmatname, ur->cb2mllrname,fcb,mdef);
-  
-  if (nfr <= 0){
-    if (cepdir != NULL) {
-      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
-	      uttid, ur->uttfile, cepdir, cepext);
-    } else {
-      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
-    }
-  }
-  else {
-    E_INFO ("%s: %d input frames\n", uttid, nfr);
-    decode_utt (nfr, uttid);
-  }
-
-}
-
-int main (int32 argc, char *argv[])
-{
-    int32 err_status;
-    int32 k;
-
-    print_appl_info(argv[0]);
-    cmd_ln_appl_enter(argc,argv,"default.arg",defn);
-    unlimit ();
-    
-    inlatdir = (char *) cmd_ln_access ("-inlatdir");
-    outlatdir = (char *) cmd_ln_access ("-outlatdir");
-    if (outlatdir) {
-	int32 k;
-	
-	k = strlen(outlatdir);
-	if ((k > 6) && (strcmp (outlatdir+(k-6), ",NODES") == 0)) {
-	    outlat_onlynodes = 1;
-	    outlatdir[k-6] = '\0';
-	} else
-	    outlat_onlynodes = 0;
-    }
-
-    if (inlatdir && outlatdir && (strcmp (inlatdir, outlatdir) == 0))
-	E_FATAL("Input and output lattice directories are the same\n");
-
-    
-    /* Read in input databases */
-    models_init ();
-    
-    /* Senone scaling factor in each frame */
-    senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
-
-    /* Best statescore in each frame */
-    bestscr = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
-
-    if (! feat)
-      feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-    
-    /* Allocate profiling timers and counters */
-    ptmr_init(&tmr_utt);
-    ptmr_init(&tmr_fwdvit);
-    ptmr_init(&tmr_bstpth);
-    ptmr_init(&tmr_gausen);
-    ptmr_init(&tmr_fwdsrch);
-    
-    pctr_new(ctr_nfrm,"frm");
-    pctr_new(ctr_nsen,"sen");
-
-    /* Initialize forward Viterbi search module */
-    fwd_init (mdef,tmat,dict,lmset->cur_lm);
-    printf ("\n");
-
-    /* Remember to set lm here */    
-    if (cmd_ln_access("-mllr") != NULL) 
-      model_set_mllr(msg,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,mdef);
-
-    tot_nfr = 0;
-
-    /* Decode_anytopo-specific, a search for suffix ",EXACT " and create exact log hypothesis */
-    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-	matchfp = NULL;
-    } else {
-	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
-	k = strlen (matchfile);
-	if ((k > 6) && (strcmp (matchfile+(k-6), ",EXACT") == 0)) {
-	    matchexact = 1;
-	    matchfile[k-6] = '\0';
-	} else
-	    matchexact = 0;
-
-	if ((matchfp = fopen (matchfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchfile);
-    }
-    
-    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
-	E_WARN("No -hypseg argument\n");
-	matchsegfp = NULL;
-    } else {
-	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-    }
-
-    
-    if (cmd_ln_str ("-ctl")) {
-      /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
-	 the corresponding  MLLR for the utterance */
-      ctl_process (cmd_ln_str("-ctl"),
-		   NULL,
-		   cmd_ln_str("-ctl_mllr"),
-		   cmd_ln_int32("-ctloffset"),
-		   cmd_ln_int32("-ctlcount"),
-		   utt_decode_anytopo, 
-		   NULL);
-    } else {
-      /* Is error checking good enough?" */
-      E_FATAL(" -ctl are not specified.\n");
-    }
-
-    if (matchfp)
-	fclose (matchfp);
-    if (matchsegfp)
-	fclose (matchsegfp);
-
-    
-    if (tot_nfr > 0) {
-	printf ("\n");
-	printf("TOTAL FRAMES:       %8d\n", tot_nfr);
-	printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
-	       tmr_utt.t_tot_cpu, tmr_utt.t_tot_cpu/(tot_nfr*0.01));
-	printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
-	       tmr_utt.t_tot_elapsed, tmr_utt.t_tot_elapsed/(tot_nfr*0.01));
-	fflush (stdout);
-    }
-
-#if (! WIN32)
-#if defined(_SUN4)
-    system("ps -el | grep s3decode");
-#else
-    system ("ps aguxwww | grep s3decode");
 #endif
-#endif
-
-
-    cmd_ln_appl_exit();
-
-    exit(err_status);
-    return 0 ;
-}

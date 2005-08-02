@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5.4.1  2005/07/22  03:46:56  arthchan2003
- * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ * Revision 1.5.4.2  2005/08/02  21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  * 
+ * Revision 1.5.4.1  2005/07/22 03:46:56  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
  * Revision 1.5  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -140,7 +143,7 @@ int32 align_start_utt (char *uttid);
  * Called at the beginning of a frame to flag the active senones (any senone used
  * by active HMMs) in that frame.
  */
-void align_sen_active (s3senid_t *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
+void align_sen_active (int32 *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
 		       int32 n_sen		/**< In: Size of senlist[] array */
 		       );
 
