@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.4  2005/07/17  05:24:23  arthchan2003
- * (Incomplete) Added lm_arbitrary.[ch], an arbitrary n-gram data structure.  Far from completed. Don't expect too much.
+ * Revision 1.14.4.5  2005/08/02  21:10:18  arthchan2003
+ * Added function declaration for lm_read_dump.
  * 
+ * Revision 1.14.4.4  2005/07/17 05:24:23  arthchan2003
+ * (Incomplete) Added lm_arbitrary.[ch], an arbitrary n-gram data structure.  Far from completed. Don't expect too much.
+ *
  * Revision 1.14.4.3  2005/07/13 01:44:17  arthchan2003
  * 1, Moved text formatted LM code into lm_3g.c, 2 Changed lm_read such that it will work with both TXT file format and DMP file format. 3,  Added function lm_write to handle lm writing.
  *
@@ -136,6 +139,11 @@
 extern lm_t *lm_read_txt(const char *filename,
 			 const int lminmemory /**< Whether using in memory LM */
 			 );
+
+extern lm_t *lm_read_dump (const char *file, /**< The file name*/
+			   int lminmemory /**< Whether using in memory LM */
+			   );
+
 
 int32 lm3g_dump (char const *file,  /**< the file name */
 		 lm_t *model,       /**< the langauge model for output */
@@ -332,7 +340,7 @@ lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, fl
     /* First it will try to decide whether the file a .DMP file */
     /* ARCHAN: We should provide function pointer implementation at here. */
     if(fmt==NULL){ /**Automatically decide the LM format */
-      lm = lm_read_dump (file,cmd_ln_int32("-lminmemory"));
+      lm = lm_read_dump (file,(int32) cmd_ln_int32("-lminmemory"));
       if(lm == NULL){
 	E_INFO("In lm_read, LM is not a DMP file. Trying reading it as a txt file\n");
 	
