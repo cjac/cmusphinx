@@ -109,8 +109,8 @@ test-wave2feat:
 
 
 perf-std : 
-	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode 
-	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode 
+	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode ti46-decany
+	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode  
 	make -C $(top_srcdir)/src/tests/performance/Communicator com-fast-lp com-fast-decode
 
 perf-std-s3 : 
