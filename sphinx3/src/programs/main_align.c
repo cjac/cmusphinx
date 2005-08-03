@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.7  2005/08/03  18:55:04  dhdfu
- * Remove bogus initialization of ms_mgau's internals from here
+ * Revision 1.15.4.8  2005/08/03  20:01:32  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
  * 
+ * Revision 1.15.4.7  2005/08/03 18:55:04  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
+ *
  * Revision 1.15.4.6  2005/08/02 21:42:33  arthchan2003
  * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  *
@@ -216,10 +219,6 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
-    { "-topn",
-      ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
     { "-compwd",
       ARG_INT32,
       "0",

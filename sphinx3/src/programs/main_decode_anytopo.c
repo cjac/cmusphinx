@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.10  2005/08/03  18:55:03  dhdfu
- * Remove bogus initialization of ms_mgau's internals from here
+ * Revision 1.12.4.11  2005/08/03  20:01:33  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
  * 
+ * Revision 1.12.4.10  2005/08/03 18:55:03  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
+ *
  * Revision 1.12.4.9  2005/08/02 21:42:33  arthchan2003
  * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  *
@@ -419,10 +422,6 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       NULL,
       "Language weight for bestpath DAG search (default: same as -lw)" },
-    { "-topn",
-      ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
     { "-beam",
       ARG_FLOAT64,
       "1e-64",
