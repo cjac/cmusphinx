@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.4  2005/08/02  21:08:32  arthchan2003
- * 1, Changed -mean, -var, -tmat, -mixw -mdef to make them not required arguments. 2, Added -s3hmmdir so that user can just specified a directory name, in which all components of a set of HMM could be found.
+ * Revision 1.1.2.5  2005/08/03  18:53:59  dhdfu
+ * Add -topn for SCHMM models
  * 
+ * Revision 1.1.2.4  2005/08/02 21:08:32  arthchan2003
+ * 1, Changed -mean, -var, -tmat, -mixw -mdef to make them not required arguments. 2, Added -s3hmmdir so that user can just specified a directory name, in which all components of a set of HMM could be found.
+ *
  * Revision 1.1.2.3  2005/07/24 01:43:59  arthchan2003
  * Temporarily not support -fsgctlfn
  *
@@ -274,7 +277,11 @@
     { "-vqeval", \
       ARG_INT32, \
       "3", \
-      "A value added which  used only part of the cepstral vector to do the estimation"}, 
+      "A value added which  used only part of the cepstral vector to do the estimation"}, \
+    { "-topn", \
+      ARG_INT32, \
+      "4", \
+      "No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" },
 
 
 #if 0
