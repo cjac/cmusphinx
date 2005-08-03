@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.6  2005/08/02  21:42:33  arthchan2003
- * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ * Revision 1.13.4.7  2005/08/03  18:55:03  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
  * 
+ * Revision 1.13.4.6  2005/08/02 21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
  * Revision 1.13.4.5  2005/07/27 23:23:39  arthchan2003
  * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  *
@@ -286,12 +289,6 @@ static void models_init ( void )
 		   0, /* No composite senone sequence */
 		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead and CIGMMS at this moment */
 		   cisencnt);
-
-    msg->dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, cmd_ln_int32("-topn"),
-					      sizeof(gauden_dist_t));
-
-    msg->mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
-
 }
 
 
@@ -513,14 +510,6 @@ main (int32 argc, char *argv[])
 	   tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
     printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
 	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
-  }
-
-  if(kbc->ms_mgau->dist){
-    ckd_free_3d((void*)(kbc->ms_mgau->dist));
-  }
-
-  if(kbc->ms_mgau->mgau_active){
-    ckd_free(kbc->ms_mgau->mgau_active);
   }
 
   if(ascr){

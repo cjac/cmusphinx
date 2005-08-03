@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.6  2005/08/02  21:42:33  arthchan2003
- * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ * Revision 1.15.4.7  2005/08/03  18:55:04  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
  * 
+ * Revision 1.15.4.6  2005/08/02 21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
  * Revision 1.15.4.5  2005/07/28 03:11:17  arthchan2003
  * Removed process_ctl in main_align.c, slightly ugly b ut the evil of duplicating ctl_process is larger.
  *
@@ -382,12 +385,6 @@ static void models_init ( void )
 		   0, /* No composite senone sequence */
 		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead at this moment */
 		   cisencnt);
-
-    msg->dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, cmd_ln_int32("-topn"),
-					      sizeof(gauden_dist_t));
-
-    msg->mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
-
 }
 
 
@@ -1001,14 +998,6 @@ main (int32 argc, char *argv[])
   ckd_free(stsegdir);
   ckd_free(phsegdir);
   ckd_free(wdsegdir);
-
-  if(kbc->ms_mgau->dist){
-    ckd_free_3d((void*)(kbc->ms_mgau->dist));
-  }
-
-  if(kbc->ms_mgau->mgau_active){
-    ckd_free(kbc->ms_mgau->mgau_active);
-  }
 
   if(ascr){
     ascr_free(ascr);
