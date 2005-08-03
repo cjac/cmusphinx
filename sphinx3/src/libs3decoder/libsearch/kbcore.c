@@ -45,10 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.6  2005/08/03  18:54:32  dhdfu
+ * Revision 1.10.4.7  2005/08/03  19:59:07  arthchan2003
+ * Added a message to tell user which GMM computation are being used.
+ * 
+ * Revision 1.10.4.6  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.10.4.5  2005/08/02 21:33:47  arthchan2003
  * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
  *
@@ -249,6 +252,7 @@ void s3_am_init(kbcore_t *kbc,
 
   if(strcmp(senmgau,".cont.") == 0) {
     /* Single stream optmized GMM computation Initialization */
+    E_INFO("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
     kbc->mgau = mgau_init (meanstr, 
 			 varstr, varfloor, 
 			 mixwstr, mixwfloor, 
@@ -266,6 +270,7 @@ void s3_am_init(kbcore_t *kbc,
   }else if(strcmp(senmgau,".semi.") == 0 || strcmp(senmgau,".s3cont.") == 0){
 
     /* Multiple stream Gaussian mixture Initialization*/
+    E_INFO("Using multi-stream GMM computation\n");
     senone_t* sen;
     kbc->ms_mgau=ms_mgau_init(meanstr,
 			      varstr,varfloor,
