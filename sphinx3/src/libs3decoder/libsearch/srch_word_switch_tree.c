@@ -38,9 +38,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.9  2005/07/24  01:41:52  arthchan2003
- * Use ascr provided clearing function instead of directly clearing the array.
+ * Revision 1.1.4.10  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.1.4.9  2005/07/24 01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
+ *
  * Revision 1.1.4.8  2005/07/07 02:41:55  arthchan2003
  * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
  *
@@ -306,9 +310,11 @@ int32 srch_WST_begin(void *srch)
   assert (pred == 0);	/* Vithist entry ID for <s> */
   
   /* This reinitialize the cont_mgau routine in a GMM.  */
-  for(i=0;i<g->n_mgau;i++){
-    g->mgau[i].bstidx=NO_BSTIDX;
-    g->mgau[i].updatetime=NOT_UPDATED;
+  if (g){
+    for(i=0;i<g->n_mgau;i++){
+      g->mgau[i].bstidx=NO_BSTIDX;
+      g->mgau[i].updatetime=NOT_UPDATED;
+    }
   }
 
   n = lextree_n_next_active(wstg->curroottree);

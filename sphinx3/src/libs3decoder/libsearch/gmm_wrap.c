@@ -37,9 +37,13 @@
 /* gmm_wrap.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.2  2005/08/02  21:31:21  arthchan2003
- * Added interface for 1, doing multi stream gmm computation with/without composite senone. 2, doing gmm computation (ms or ss optimized) with/wihout composite senone.  Haven't tested on the SCHMM on s3.x yet.  I think it will work though.
+ * Revision 1.1.4.3  2005/08/03  18:54:33  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.1.4.2  2005/08/02 21:31:21  arthchan2003
+ * Added interface for 1, doing multi stream gmm computation with/without composite senone. 2, doing gmm computation (ms or ss optimized) with/wihout composite senone.  Haven't tested on the SCHMM on s3.x yet.  I think it will work though.
+ *
  * Revision 1.1.4.1  2005/07/24 01:35:41  arthchan2003
  * Add a wrapper for computing senone score without computing composite senone score. Mainly used in mode FSG now
  *
@@ -70,8 +74,10 @@ int32 s3_cd_gmm_compute_sen_comp(void *srch, float32 **feat, int32 wav_idx)
   kbcore = s->kbc;
   ascr=s->ascr;
 
-  assert(kbcore->mgau);
-  assert(!kbcore->ms_mgau);
+  assert (kbcore->ms_mgau || kbcore->mgau);
+  assert (!(kbcore->ms_mgau && kbcore->mgau));
+  if (kbcore->ms_mgau)
+    return ms_cd_gmm_compute_sen_comp(srch, feat, wav_idx);
 
   flag=s3_cd_gmm_compute_sen(srch, feat,wav_idx);
 
@@ -147,8 +153,8 @@ int32 ms_cd_gmm_compute_sen_comp(void *srch, float32 **feat, int32 wav_idx)
   kbcore = s->kbc;
   ascr=s->ascr;
 
-  assert(kbcore->mgau);
-  assert(!kbcore->ms_mgau);
+  assert(kbcore->ms_mgau);
+  assert(!kbcore->mgau);
 
   flag=ms_cd_gmm_compute_sen(srch, feat,wav_idx);
 
@@ -203,6 +209,7 @@ int32 approx_ci_gmm_compute(void *srch, float32 *feat, int32 cache_idx, int32 wa
   kbcore_t *kbcore;
   ascr_t *ascr;
 
+
   s=(srch_t*) srch;
 
   kbcore = s->kbc;
@@ -211,6 +218,12 @@ int32 approx_ci_gmm_compute(void *srch, float32 *feat, int32 cache_idx, int32 wa
   fgmm = s->fastgmm;
   st = s->stat;
   ascr=s->ascr;
+
+  /* No CI-GMM done for multistream models (for now) */
+  if (mgau == NULL) {
+    assert(kbcore_ms_mgau(kbcore));
+    return SRCH_SUCCESS;
+  }
 
   approx_cont_mgau_ci_eval(kbcore,
 			   fgmm,

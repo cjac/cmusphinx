@@ -42,9 +42,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.4  2005/08/02  21:32:30  arthchan2003
- * added -s3hmmdir option.
+ * Revision 1.26.4.5  2005/08/03  18:54:33  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.26.4.4  2005/08/02 21:32:30  arthchan2003
+ * added -s3hmmdir option.
+ *
  * Revision 1.26.4.3  2005/07/20 21:19:52  arthchan2003
  * Added options such that finite state grammar option is now accepted.
  *
@@ -251,7 +255,7 @@ void kb_init (kb_t *kb)
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
     for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
-    kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
+    kb->ascr = ascr_init (kbcore_n_mgau(kbcore),
 			  kb->kbcore->dict2pid->n_comstate,
 			  mdef_n_sseq(mdef),
 			  dict2pid_n_comsseq(d2p),

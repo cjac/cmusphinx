@@ -45,9 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.5  2005/08/02  21:33:47  arthchan2003
- * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
+ * Revision 1.10.4.6  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.10.4.5  2005/08/02 21:33:47  arthchan2003
+ * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
+ *
  * Revision 1.10.4.4  2005/07/20 21:19:52  arthchan2003
  * Added options such that finite state grammar option is now accepted.
  *
@@ -401,7 +405,7 @@ kbcore_t *kbcore_init (float64 logbase,
 	       tmatfloor,
 	       senmgau,
 	       NULL,
-	       0
+	       cmd_ln_int32("-topn") /* ARRRGH!! */
 	       );
     
     if (dictfile) {
@@ -570,6 +574,9 @@ void kbcore_free (kbcore_t *kbcore)
 
   if(kbcore->mgau)
     mgau_free (kbcore->mgau);
+
+  if(kbcore->ms_mgau)
+    ms_mgau_free (kbcore->ms_mgau);
 
   /* memory allocated in kbcore*/
   if (kbcore->fcb) {

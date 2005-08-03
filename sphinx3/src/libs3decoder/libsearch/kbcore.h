@@ -45,9 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.2  2005/08/02  21:33:47  arthchan2003
- * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
+ * Revision 1.11.4.3  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.11.4.2  2005/08/02 21:33:47  arthchan2003
+ * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
+ *
  * Revision 1.11.4.1  2005/07/20 21:19:52  arthchan2003
  * Added options such that finite state grammar option is now accepted.
  *
@@ -226,6 +230,7 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
+#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
 
 #ifdef __cplusplus
 }

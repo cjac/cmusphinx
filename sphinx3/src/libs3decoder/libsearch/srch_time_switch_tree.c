@@ -38,9 +38,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.7  2005/07/27  23:19:59  arthchan2003
- * Added assert for make sure lmname is valid.
+ * Revision 1.2.4.8  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
  * 
+ * Revision 1.2.4.7  2005/07/27 23:19:59  arthchan2003
+ * Added assert for make sure lmname is valid.
+ *
  * Revision 1.2.4.6  2005/07/24 01:41:52  arthchan2003
  * Use ascr provided clearing function instead of directly clearing the array.
  *
@@ -284,9 +288,11 @@ int srch_TST_begin(void *srch)
   assert (pred == 0);	/* Vithist entry ID for <s> */
   
   /* This reinitialize the cont_mgau routine in a GMM.  */
-  for(i=0;i<g->n_mgau;i++){
-    g->mgau[i].bstidx=NO_BSTIDX;
-    g->mgau[i].updatetime=NOT_UPDATED;
+  if (g) {
+	  for(i=0;i<g->n_mgau;i++){
+		  g->mgau[i].bstidx=NO_BSTIDX;
+		  g->mgau[i].updatetime=NOT_UPDATED;
+	  }
   }
 
   /* Enter into unigram lextree[0] */
