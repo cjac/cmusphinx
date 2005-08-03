@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5.4.2  2005/08/02  21:06:33  arthchan2003
- * Change options such that .s3cont. works as well.
+ * Revision 1.5.4.3  2005/08/03  18:53:43  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.5.4.2  2005/08/02 21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
+ *
  * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
  * Added licences in ms_* series of code.
  *
@@ -348,6 +353,19 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 
     s->featscr=NULL;
     return s;
+}
+
+void senone_free(senone_t *s)
+{
+    if (s == NULL)
+	return;
+    if (s->pdf)
+	ckd_free_3d((void *)s->pdf);
+    if (s->mgau)
+	ckd_free(s->mgau);
+    if (s->featscr)
+	ckd_free(s->featscr);
+    ckd_free(s);
 }
 
 

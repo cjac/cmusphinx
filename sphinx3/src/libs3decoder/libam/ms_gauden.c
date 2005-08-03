@@ -45,9 +45,14 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.1  2005/07/20  19:39:01  arthchan2003
- * Added licences in ms_* series of code.
+ * Revision 1.5.4.2  2005/08/03  18:53:44  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
  * Revision 1.5  2005/06/21 18:55:09  arthchan2003
  * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
  *
@@ -259,6 +264,12 @@ static int32 gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_p
     return 0;
 }
 
+static void gauden_param_free(vector_t ***p)
+{
+    ckd_free(p[0][0][0]);
+    ckd_free_3d((void ***)p);
+}
+
 
 /*
  * Some of the gaussian density computation can be carried out in advance:
@@ -340,6 +351,20 @@ gauden_t *gauden_init (char *meanfile, char *varfile, float32 varfloor)
     return g;
 }
 
+void gauden_free(gauden_t *g)
+{
+    if (g == NULL)
+	return;
+    if (g->mean)
+	gauden_param_free(g->mean);
+    if (g->var)
+	gauden_param_free(g->var);
+    if (g->det)
+	ckd_free_3d((void *)g->det);
+    if (g->featlen)
+	ckd_free(g->featlen);
+    ckd_free(g);
+}
 
 int32 gauden_mean_reload (gauden_t *g, char *meanfile)
 {

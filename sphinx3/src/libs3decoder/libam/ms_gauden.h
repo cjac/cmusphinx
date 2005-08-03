@@ -45,9 +45,14 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6.4.2  2005/07/20  19:39:01  arthchan2003
- * Added licences in ms_* series of code.
+ * Revision 1.6.4.3  2005/08/03  18:53:44  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.6.4.2  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
  * Revision 1.6.4.1  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
  *
@@ -134,6 +139,9 @@ gauden_init (char *meanfile,	/**< Input: File containing means of mixture gaussi
 	     char *varfile,	/**< Input: File containing variances of mixture gaussians */
 	     float32 varfloor	/**< Input: Floor value to be applied to variances */
 	     );
+
+/** Release memory allocated by gauden_init. */
+void gauden_free(gauden_t *g); /**< In: The gauden_t to free */
 
   /**
  * Reload mixture Gaussian means from the given file.  The means must have already

@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6.4.2  2005/07/20  19:39:01  arthchan2003
- * Added licences in ms_* series of code.
+ * Revision 1.6.4.3  2005/08/03  18:53:43  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.6.4.2  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
  * Revision 1.6.4.1  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
  *
@@ -150,6 +155,9 @@ senone_t *senone_init (char *mixwfile,		/**< In: mixing weights file */
 						   If NULL all senones map to codebook 0 */
 		       float32 mixwfloor	/**< In: Floor value for senone weights */
 		       );
+
+/** Release memory allocated by senone_init. */
+void senone_free(senone_t *s); /**< In: The senone_t to free */
 
   /**
  * Evaluate the score for the given senone wrt to the given top N gaussian codewords.

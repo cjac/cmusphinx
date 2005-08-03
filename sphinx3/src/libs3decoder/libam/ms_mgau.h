@@ -46,9 +46,14 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.1.2.2  2005/08/02  21:05:38  arthchan2003
- * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
+ * Revision 1.1.2.3  2005/08/03  18:53:44  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.1.2.2  2005/08/02 21:05:38  arthchan2003
+ * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
+ *
  * Revision 1.1.2.1  2005/07/20 19:37:09  arthchan2003
  * Added a multi-stream cont_mgau (ms_mgau) which is a wrapper of both gauden and senone.  Add ms_mgau_init and model_set_mllr.  This allow eliminating 600 lines of code in decode_anytopo/align/allphone.
  *
@@ -131,6 +136,10 @@ ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of
 			       char* lambdafile, /**< In: Interplation file */
 			       int32 topn        /**< In: Top-n gaussian will be computed */
 			       );
+
+/** Free memory allocated by ms_mgau_init */
+void ms_mgau_free(ms_mgau_model_t *g /**< In: A set of models to free */
+	);
 
 int32 ms_cont_mgau_frame_eval (ascr_t *ascr,  
 			       ms_mgau_model_t *msg,
