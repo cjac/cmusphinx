@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.5  2005/08/03  18:53:59  dhdfu
- * Add -topn for SCHMM models
+ * Revision 1.1.2.6  2005/08/03  19:58:11  arthchan2003
+ * Change -topn from fast_GMM macro to acoustic model command line
  * 
+ * Revision 1.1.2.5  2005/08/03 18:53:59  dhdfu
+ * Add -topn for SCHMM models
+ *
  * Revision 1.1.2.4  2005/08/02 21:08:32  arthchan2003
  * 1, Changed -mean, -var, -tmat, -mixw -mdef to make them not required arguments. 2, Added -s3hmmdir so that user can just specified a directory name, in which all components of a set of HMM could be found.
  *
@@ -128,7 +131,11 @@
     { "-senmgau",\
       ARG_STRING,\
       ".cont.",\
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" }, 
+      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" }, \
+    { "-topn", \
+      ARG_INT32, \
+      "4", \
+      "No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
 
 #define language_model_command_line_macro() \
     { "-lminmemory", \
@@ -278,10 +285,6 @@
       ARG_INT32, \
       "3", \
       "A value added which  used only part of the cepstral vector to do the estimation"}, \
-    { "-topn", \
-      ARG_INT32, \
-      "4", \
-      "No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" },
 
 
 #if 0
