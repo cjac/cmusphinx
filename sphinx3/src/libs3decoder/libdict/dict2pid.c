@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  21:03:49  arthchan2003
- * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * Revision 1.6.4.1  2005/07/17  05:21:28  arthchan2003
+ * Add panic signal to the code, also commentted ldiph_comsseq.
  * 
+ * Revision 1.6  2005/06/21 21:03:49  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ *
  * Revision 1.4  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -76,7 +79,10 @@
  * begin position.  If no triphone found in mdef, include the ssid for basephone b.
  * Return the generated glist.
  */
-static glist_t ldiph_comsseq (mdef_t *mdef, int32 b, int32 r)
+static glist_t ldiph_comsseq (mdef_t *mdef, /**< a model definition*/
+			      int32 b,  /**< base phone */
+			      int32 r   /**< right context */
+			      )
 {
     int32 l, p, ssid;
     glist_t g;
@@ -313,6 +319,11 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict)
 	pronlen = dict_pronlen(dict,w);
 	
 	if (pronlen >= 2) {
+
+	  /** This segments of code take care of the intiialization of 
+	      internal[0] and ldiph[b][r][l]
+	      
+	   */
 	    b = dict_pron(dict, w, 0);
 	    r = dict_pron(dict, w, 1);
 	    if (NOT_S3SSID(ldiph[b][r])) {
@@ -358,6 +369,8 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict)
 		}
 	    }
 	    internal[0] = single[b];
+	}else{
+	  E_FATAL("panic: pronlen=0, what's going on?\n");
 	}
 	
 	internal += pronlen;

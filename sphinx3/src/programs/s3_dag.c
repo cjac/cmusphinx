@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.7.4.1  2005/07/22  03:46:57  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.7  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.7  2005/06/20 22:20:19  archan
  * Fix non-conforming problems for Windows plot.
  *
@@ -143,20 +146,11 @@
 #include "logs3.h"
 #include "dag.h"
 
-
 dag_t dag;
 /* Global variables : Hack! */
 dict_t *dict;		/* The dictionary */
 fillpen_t *fpen;         /* The fillpenalty data structure */
-
-#if 0
-lm_t *lm;                /* Global variables */
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
-
 lmset_t *lmset;
-
-
 
 static srch_hyp_t *hyp = NULL;	/* The final recognition result */
 
@@ -227,6 +221,7 @@ static int32 dag_remove_filler_nodes ( void )
  */
 int32 s3dag_dag_load (char *file)
 {
+
     FILE *fp;
     char line[16384], wd[1024];
     int32 nfrm, nnode, sf, fef, lef, ef, lineno;
@@ -463,7 +458,7 @@ int32 s3dag_dag_load (char *file)
 	E_ERROR("Terminating 'End' missing\n");
 	goto load_error;
     }
-    
+
 #if 0
     /* Build edges from lattice end-frame scores if no edges input */
     if (k == 0) {
@@ -487,7 +482,6 @@ int32 s3dag_dag_load (char *file)
 	}
     }
 #endif
-
 
     fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
     if (fudge > 0) {
@@ -558,6 +552,7 @@ load_error:
     if (frm2lat)
 	ckd_free (frm2lat);
     return -1;
+
 }
 
 
@@ -586,12 +581,14 @@ srch_hyp_t *s3dag_dag_search (char *utt)
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag.maxlmop = *((int32 *) cmd_ln_access ("-maxlmop"));
-    k = *((int32 *) cmd_ln_access ("-maxlpf"));
+    dag.maxlmop = cmd_ln_int32 ("-maxlmop");
+    k = cmd_ln_int32 ("-maxlpf");
+    
     k *= dag.nfrm;
     if (dag.maxlmop > k)
 	dag.maxlmop = k;
     dag.lmop = 0;
+
 
     /* Find the backward link from the final DAG node that has the best path to root */
     final = dag.exit.node;

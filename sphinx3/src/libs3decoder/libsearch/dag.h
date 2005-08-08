@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/21  22:37:47  arthchan2003
- * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ * Revision 1.1.4.1  2005/07/17  05:44:31  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  * 
+ * Revision 1.1  2005/06/21 22:37:47  arthchan2003
+ * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ *
  * Revision 1.2  2005/06/03 06:45:28  archan
  * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
  *
@@ -95,6 +98,7 @@
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
+#include "logs3.h"
 
 /** \file dag.h
     \brief data structure for dag. Adapted from s3_dag.h in s3.5
@@ -116,15 +120,22 @@ typedef struct dagnode_s {
 
 } dagnode_t;
 
-/** A DAG node can have several successor or predecessor nodes, each represented by a link */
+/** 
+    A DAG node can have several successor or predecessor nodes, each represented by a link 
+    Multiple-purpose, so some fields may not be used some time. 
+*/
 typedef struct daglink_s {
     dagnode_t *node;		/**< Target of link (source determined by dagnode_t.succlist
 				   or dagnode_t.predlist) */
     dagnode_t *src;		/**< Source node of link */
     struct daglink_s *next;	/**< Next in same dagnode_t.succlist or dagnode_t.predlist */
     struct daglink_s *history;	/**< Previous link along best path (for traceback) */
-    struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
+
+  struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
 				   bypass is ptr to fillnode->B */
+
+  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
+
 
     int32 ascr;			/**< Acoustic score for segment of source node ending just
 
@@ -140,12 +151,13 @@ typedef struct daglink_s {
 				   links), but gets corrupted because of filler deletion */
     uint8 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
 
-  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
   int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
 
 } daglink_t;
 
-/** Summary of DAG structure information */
+/** Summary of DAG structure information 
+    Multiple-purpose, so some fields may not be used some time. 
+ */
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
     dagnode_t *root;            /**< Corresponding to (<s>,0) */
@@ -157,7 +169,7 @@ typedef struct {
     int32 nfrm;
     int32 nlink;
     int32 nbypass;
-    int32 maxedge;              /**< (New in S3.6) Used in both dag and flat foward, this decides whether
+    int32 maxedge;              /**< (New in S3.6) Used in dag/astar/decode_anytopo, this decides whether
 				     parts of the dag code will exceed the maximum no of edge 
 				 */
 
@@ -252,5 +264,30 @@ srch_hyp_t *dag_backtrace (srch_hyp_t *hyp, /**< A pointer to the hypothesis*/
 			   fillpen_t* fpen /**< The filler penalty structure */
 			   );
 
+/**
+ * writing the header of dag in Sphinx 3's format
+ */
+
+void dag_write_header (FILE *fp, /**< A file pointer */
+		       int32 nfr, /**< number of frame */
+		       int32 printminfr /**< Print minfr information,
+					   sphinx 3.0 should use 1,
+					   sphinx 3.x should use 0*/
+		       
+		       );
+
+
+#if 0 /* Give up at the end, too much application dependencies. */
+/**
+ * reading a dag from a file 
+ */
+int32 dag_read (char *file, /**< the input file name */
+	       dag_t *dag,  /**< a pointer of dag */
+	       dict_t *dict,  /**< a pointer of the dictionary*/
+	       float32 logbase,  /**< logbase*/
+	       int32 maxedge,    /**< max no of edges */
+	       int32 min_ef_range /**< Min. endframes value that a node must persist for it to be not ignored  */
+	       );
+#endif
 
 #endif

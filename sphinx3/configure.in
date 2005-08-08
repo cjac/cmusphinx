@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx-3 automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx3,0.5)
+AM_INIT_AUTOMAKE(sphinx3,0.6)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall  -DXML_CONTEXT_BYTES=1024}
 
@@ -46,7 +46,7 @@ AC_ARG_WITH(alsa,
             ad_backend="AD_BACKEND_ALSA",
             ad_libs="-lasound",
                    CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
-            AC_CHECK_HEADER(sys/asoundlib.h, 
+            AC_CHECK_HEADER(sys/asoundlib.h,,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
 

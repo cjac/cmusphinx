@@ -34,7 +34,7 @@
  *
  */
 /*
- * fwd.c -- Forward Viterbi beam search
+ * flat_fwd.c -- Forward Viterbi beam search
  *
  * **********************************************
  * CMU ARPA Speech Project
@@ -49,9 +49,24 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12  2005/06/21  22:41:32  arthchan2003
- * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
+ * Revision 1.12.4.5  2005/08/02  21:12:45  arthchan2003
+ * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
  * 
+ * Revision 1.12.4.4  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
+ * Revision 1.12.4.3  2005/07/20 21:13:16  arthchan2003
+ * Some small clean-up of the code. Use cmd_ln_* instead of cmd_ln_access
+ *
+ * Revision 1.12.4.2  2005/07/17 05:44:31  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
+ * Revision 1.12.4.1  2005/07/15 07:50:32  arthchan2003
+ * Remove hmm computation and context building code from flat_fwd.c.
+ *
+ * Revision 1.12  2005/06/21 22:41:32  arthchan2003
+ * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
+ *
  * Revision 1.6  2005/06/19 03:58:16  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -261,7 +276,6 @@
 #include <string.h>
 #include <assert.h>
 
-
 #include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"
@@ -270,54 +284,21 @@
 #include "fillpen.h"
 #include "logs3.h"
 #include "search.h"
+#include "ctxt_table.h"
 
 #include "programs/s3_dag.h"
 
 #include "dag.h"
 #include "flat_fwd.h"
+#include "whmm.h"
 
+#define WHMM_ALLOC_SIZE 16000
 
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 
  */
 
-/**
- * Left context mapping (for multiphone words): given the 1st base phone, b, of a word
- * and its right context, r, the triphone for any left context l =
- *     lcpid[b][r].pid[lcpid[b][r].cimap[l]].
- * 
- * Similarly, right context mapping (for multiphone words): given b and left context l,
- * the triphone for any right context r =
- *     rcpid[b][l].pid[lcpid[b][l].cimap[r]].
- * 
- * A single phone word is a combination of the above, where both l and r are unknown.
- * Triphone, given any l and r context ciphones:
- *     lrcpid[b][l].pid[lcpid[b][l].cimap[r]].
- * For simplicity, all cimap[] vectors (for all l) must be identical.  For now, this is
- * attained by avoiding any compression and letting cimap be the identity map.
- * 
- * Reason for compressing pid[] and indirect access: senone sequences for triphones not
- * distinct.  Hence, cross-word modelling fanout at word exits can be limited by fanning
- * out to only distinct ones and sharing the results among all ciphones.
- */
-static xwdpid_t **lcpid;
-static xwdpid_t **rcpid;
-static xwdpid_t **lrcpid;
-
-static int32 n_backoff_ci;	/* #Triphone instances backed off to ciphones */
-static int8 *word_start_ci;
-static int8 *word_end_ci;
 static whmm_t **whmm;
-
-
-/**
- * First, the within word triphone models.  wwpid[w] = list of triphone pronunciations
- * for word w.
- * Since left and right extremes require cross-word modelling (see below), wwpid[w][0]
- * and wwpid[w][pronlen-1] contain no information and shouldn't be touched.
- */
-static s3pid_t **wwpid;
-
     
 /**
  * Word lattice for recording decoded hypotheses.
@@ -335,6 +316,7 @@ typedef struct lattice_s {
     int32    *rcscore;	/**< Individual path scores for different right context ciphones */
     dagnode_t *dagnode;	/**< DAG node representing this entry */
 } lattice_t;
+
 static lattice_t *lattice;
 static int32 lat_alloc;		/** #lattice entries allocated */
 static int32 n_lat_entry;	/** #lattice entries used at any point */
@@ -374,32 +356,24 @@ static word_cand_t **word_cand;	/** Word candidates for each frame.  (NOTE!! Ano
 static int32 n_word_cand;	/** #candidate entries in word_cand for current utterance.
 				   If <= 0; full search performed for current utterance */
 
-
 /** Various search-related parameters */
 static int32 beam;		/** General beamwidth */
 static int32 wordbeam;		/** Beam for exiting a word */
-
 static int32 phone_penalty;	/** Applied for each phone transition */
 
 static int32 n_state = 0;
 static int32 final_state;
 
 tmat_t *tmat;		/** HMM transition probabilities matrices */
-
 dict_t *dict;		/** The dictionary */
 fillpen_t *fpen;        /** Filler penalty */
+ctxt_table_t *ct_table;  /** Context table */
 lmset_t *lmset;         /** The language model set */
 lm_t *lm;               /** NOT NICE: This is a pointer for current lm */
 mdef_t *mdef;
-
-
 dag_t dag;              /** The dag used by decode_anytopo.c */
 
-#if 0
-lm_t   *lm;		/** The currently active language model */
-s3lmwid_t *dict2lmwid;	/** Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
-
+extern int32 *st_sen_scr;
 
 static char *uttid = NULL;	/** Utterance id; for error reporting */
 static int32 n_frm;		/** Current frame being searched within utt */
@@ -419,484 +393,9 @@ pctr_t ctr_mpx_whmm;
 pctr_t ctr_nonmpx_whmm;
 pctr_t ctr_latentry;
 
-
 static ptmr_t tm_hmmeval;
 static ptmr_t tm_hmmtrans;
 static ptmr_t tm_wdtrans;
-
-
-
-
-#if 0
-static void dump_xwdpidmap (xwdpid_t **x)
-{
-    s3cipid_t b, c1, c2;
-    s3pid_t p;
-
-    for (b = 0; b < mdef->n_ciphone; b++) {
-	if (! x[b])
-	    continue;
-	
-	for (c1 = 0; c1 < mdef->n_ciphone; c1++) {
-	    if (! x[b][c1].cimap)
-		continue;
-	    
-	    printf ("n_pid(%s, %s) = %d\n",
-		    mdef_ciphone_str(mdef, b), mdef_ciphone_str(mdef, c1),
-		    x[b][c1].n_pid);
-
-	    for (c2 = 0; c2 < mdef->n_ciphone; c2++) {
-		p = x[b][c1].pid[x[b][c1].cimap[c2]];
-		printf ("  %10s %5d\n", mdef_ciphone_str(mdef, c2), p);
-	    }
-	}
-    }
-}
-#endif
-
-
-
-/**
- * Utility function for building cross-word pid maps.  Compresses cross-word pid list
- * to unique ones.
- */
-static int32 xwdpid_compress (s3pid_t p, s3pid_t *pid, s3cipid_t *map, s3cipid_t ctx,
-			      int32 n)
-{
-    s3senid_t *senmap, *prevsenmap;
-    int32 s;
-    s3cipid_t i;
-
-    senmap = mdef->phone[p].state;
-    
-    for (i = 0; i < n; i++) {
-	if (mdef->phone[p].tmat != mdef->phone[pid[i]].tmat)
-	    continue;
-
-	prevsenmap = mdef->phone[pid[i]].state;
-	for (s = 0; (s < n_state-1) && (senmap[s] == prevsenmap[s]); s++);
-	
-
-	if (s == n_state-1) {
-	    /* This state sequence same as a previous ones; just map to it */
-	    map[ctx] = i;
-	    return n;
-	}
-    }
-
-    /* This state sequence different from all previous ones; allocate new entry */
-    map[ctx] = n;
-    pid[n] = p;
-    
-    return (n+1);
-}
-
-
-/** Temporary array used during the creation of lexical triphones lists */
-static s3pid_t *tmp_xwdpid = NULL;
-
-
-/**
- * Given base b, and right context rc, build left context cross-word triphones map
- * for all left context ciphones.  Compress map to unique list.
- */
-static void build_lcpid (s3cipid_t b, s3cipid_t rc)
-{
-    s3cipid_t lc, *map;
-    s3pid_t p;
-    int32 n;
-    
-    map = (s3cipid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
-    
-    n = 0;
-    for (lc = 0; lc < mdef->n_ciphone; lc++) {
-	p = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_BEGIN);
-	if ((! mdef->ciphone[b].filler) && word_end_ci[lc] &&
-	    mdef_is_ciphone(mdef, p))
-	    n_backoff_ci++;
-	
-	n = xwdpid_compress (p, tmp_xwdpid, map, lc, n);
-    }
-
-    /* Copy/Move to lcpid */
-    lcpid[b][rc].cimap = map;
-    lcpid[b][rc].n_pid = n;
-    lcpid[b][rc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
-    memcpy (lcpid[b][rc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
-}
-
-
-
-/**
- * Given base b, and left context lc, build right context cross-word triphones map
- * for all right context ciphones.  Compress map to unique list.
- */
-static void build_rcpid (s3cipid_t b, s3cipid_t lc)
-{
-    s3cipid_t rc, *map;
-    s3pid_t p;
-    int32 n;
-    
-    map = (s3cipid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3cipid_t));
-    
-    n = 0;
-    for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	p = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_END);
-	if ((! mdef->ciphone[b].filler) && word_start_ci[rc] &&
-	    mdef_is_ciphone(mdef, p))
-	    n_backoff_ci++;
-
-	n = xwdpid_compress (p, tmp_xwdpid, map, rc, n);
-    }
-
-    /* Copy/Move to rcpid */
-    rcpid[b][lc].cimap = map;
-    rcpid[b][lc].n_pid = n;
-    rcpid[b][lc].pid = (s3pid_t *) ckd_calloc (n, sizeof(s3pid_t));
-    memcpy (rcpid[b][lc].pid, tmp_xwdpid, n*sizeof(s3pid_t));
-}
-
-
-
-/**
- * Given base b for a single-phone word, build context cross-word triphones map
- * for all left and right context ciphones.
- */
-static void build_lrcpid (s3cipid_t b)
-{
-    s3cipid_t rc, lc;
-    
-    for (lc = 0; lc < mdef->n_ciphone; lc++) {
-	lrcpid[b][lc].pid = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3pid_t));
-	lrcpid[b][lc].cimap = (s3cipid_t *) ckd_calloc (mdef->n_ciphone,sizeof(s3cipid_t));
-							
-	
-	for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	    lrcpid[b][lc].cimap[rc] = rc;
-	    lrcpid[b][lc].pid[rc] = mdef_phone_id_nearest (mdef, b, lc, rc,
-							   WORD_POSN_SINGLE);
-	    if ((! mdef->ciphone[b].filler) &&
-		word_start_ci[rc] && word_end_ci[lc] &&
-		mdef_is_ciphone(mdef, lrcpid[b][lc].pid[rc]))
-		n_backoff_ci++;
-	}
-	lrcpid[b][lc].n_pid = mdef->n_ciphone;
-    }
-}
-
-
-
-/**
- * Build within-word triphones sequence for each word.  The extreme ends are not needed
- * since cross-word modelling is used for those.  (See lcpid, rcpid, lrcpid.)
- */
-
-static void build_wwpid ( void )
-{
-    s3wid_t w;
-    int32 pronlen, l;
-    s3cipid_t b, lc, rc;
-    
-    E_INFO ("Building within-word triphones\n");
-    
-    wwpid = (s3pid_t **) ckd_calloc (dict->n_word, sizeof(s3pid_t *));
-    for (w = 0; w < dict->n_word; w++) {
-	pronlen = dict->word[w].pronlen;
-	if (pronlen >= 3)
-	    wwpid[w] = (s3pid_t *) ckd_calloc (pronlen-1, sizeof(s3pid_t));
-	else
-	    continue;
-	
-	lc = dict->word[w].ciphone[0];
-	b = dict->word[w].ciphone[1];
-	for (l = 1; l < pronlen-1; l++) {
-	    rc = dict->word[w].ciphone[l+1];
-	    wwpid[w][l] = mdef_phone_id_nearest (mdef, b, lc, rc, WORD_POSN_INTERNAL);
-	    if ((! mdef->ciphone[b].filler) && mdef_is_ciphone(mdef, wwpid[w][l]))
-		n_backoff_ci++;
-	    
-	    lc = b;
-	    b = rc;
-	}
-#if 0
-	printf ("%-25s ", dict->word[w].word);
-	for (l = 1; l < pronlen-1; l++)
-	    printf (" %5d", wwpid[w][l]);
-	printf ("\n");
-#endif
-    }
-}
-
-
-/**
- * Build cross-word triphones map for the entire dictionary.
- */
-static void build_xwdpid_map ( void )
-{
-    s3wid_t w;
-    int32 pronlen;
-    s3cipid_t b, lc, rc;
-    
-    E_INFO ("Building cross-word triphones\n");
-    
-    word_start_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
-    word_end_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
-
-    /* Mark word beginning and ending ciphones that occur in given dictionary */
-    for (w = 0; w < dict->n_word; w++) {
-	word_start_ci[dict->word[w].ciphone[0]] = 1;
-	word_end_ci[dict->word[w].ciphone[dict->word[w].pronlen-1]] = 1;
-    }
-    lcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
-    rcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
-    lrcpid = (xwdpid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t *));
-
-    for (w = 0; w < dict->n_word; w++) {
-	pronlen = dict->word[w].pronlen;
-	if (pronlen > 1) {
-	    /* Multi-phone word; build rcmap and lcmap if not already present */
-
-	    b = dict->word[w].ciphone[pronlen-1];
-	    lc = dict->word[w].ciphone[pronlen-2];
-	    if (! rcpid[b])
-		rcpid[b] = (xwdpid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t));
-	    if (! rcpid[b][lc].cimap)
-		build_rcpid (b, lc);
-	    b = dict->word[w].ciphone[0];
-	    rc = dict->word[w].ciphone[1];
-	    if (! lcpid[b])
-		lcpid[b] = (xwdpid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t));
-	    if (! lcpid[b][rc].cimap)
-		build_lcpid (b, rc);
-
-	} else {
-	    /* Single-phone word; build lrcmap if not already present */
-	    b = dict->word[w].ciphone[0];
-	    if (! lrcpid[b]) {
-		lrcpid[b] = (xwdpid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdpid_t));
-		build_lrcpid (b);
-	    }
-	}
-    }
-    ckd_free (word_start_ci);
-    ckd_free (word_end_ci);
-
-#if 0
-    E_INFO ("LCXWDPID\n");
-    dump_xwdpidmap (lcpid);
-    
-    E_INFO ("RCXWDPID\n");
-    dump_xwdpidmap (rcpid);
-
-    E_INFO ("LRCXWDPID\n");
-    dump_xwdpidmap (lrcpid);
-#endif
-}
-
-
-static s3cipid_t *get_rc_cimap (s3wid_t w)
-{
-    int32 pronlen;
-    s3cipid_t b, lc;
-    
-    pronlen = dict->word[w].pronlen;
-    b = dict->word[w].ciphone[pronlen-1];
-    if (pronlen == 1) {
-	/* No known left context.  But all cimaps (for any l) are identical; pick one */
-	return (lrcpid[b][0].cimap);
-    } else {
-	lc = dict->word[w].ciphone[pronlen-2];
-	return (rcpid[b][lc].cimap);
-    }
-}
-
-
-static void get_rcpid (s3wid_t w, s3pid_t **pid, int32 *npid)
-{
-    int32 pronlen;
-    s3cipid_t b, lc;
-    
-    pronlen = dict->word[w].pronlen;
-    assert (pronlen > 1);
-    
-    b = dict->word[w].ciphone[pronlen-1];
-    lc = dict->word[w].ciphone[pronlen-2];
-    
-    *pid = rcpid[b][lc].pid;
-    *npid = rcpid[b][lc].n_pid;
-}
-
-
-static int32 get_rc_npid (s3wid_t w)
-{
-    int32 pronlen;
-    s3cipid_t b, lc;
-    
-    pronlen = dict->word[w].pronlen;
-    b = dict->word[w].ciphone[pronlen-1];
-    if (pronlen == 1) {
-	/* No known left context.  But all cimaps (for any l) are identical; pick one */
-	return (lrcpid[b][0].n_pid);
-    } else {
-	lc = dict->word[w].ciphone[pronlen-2];
-	return (rcpid[b][lc].n_pid);
-    }
-}
-
-
-static void lattice_dump (FILE *fp)
-{
-    int32 i;
-    
-    for (i = 0; i < n_lat_entry; i++) {
-	fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
-		 lattice[i].frm, lattice[i].history, lattice[i].score,
-		 dict_wordstr (dict,lattice[i].wid));
-    }
-    fflush (fp);
-}
-
-
-/**
- * There are two sets of whmm freelists.  whmm_freelist[0] for word-initial HMMs
- * that need a separate HMM id every state, and whmm_freelist[1] for non-word-initial
- * HMMs that don't need that.
- */
-static whmm_t *whmm_freelist[2] = {NULL, NULL};
-
-
-static void whmm_free (whmm_t *h)
-{
-    int32 k;
-    
-    k = (h->pos == 0) ? 0 : 1;
-    
-    h->next = whmm_freelist[k];
-    whmm_freelist[k] = h;
-}
-
-
-static whmm_t *whmm_alloc (int32 pos)
-{
-    whmm_t *h;
-    int32 k, i, n, s;
-    int32 *tmp_scr;
-    s3latid_t *tmp_latid;
-    s3pid_t *tmp_pid;
-    tmp_pid=NULL;
-    
-    k = (pos == 0) ? 0 : 1;
-
-    if (! whmm_freelist[k]) {
-	n = 16000/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
-
-	whmm_freelist[k] = h = (whmm_t *) ckd_calloc (n, sizeof(whmm_t));
-	tmp_scr = (int32 *) ckd_calloc (n_state * n, sizeof(int32));
-	tmp_latid = (s3latid_t *) ckd_calloc (n_state * n, sizeof(s3latid_t));
-	if (pos == 0)
-	    tmp_pid = (s3pid_t *) ckd_calloc (n_state * n, sizeof(s3pid_t));
-
-	for (i = 0; i < n; i++) {
-	    h[i].next = &(h[i+1]);
-
-	    h[i].score = tmp_scr;
-	    tmp_scr += n_state;
-	    
-	    h[i].history = tmp_latid;
-	    tmp_latid += n_state;
-
-	    /* Allocate pid iff first phone position (for multiplexed left contexts) */
-	    if (pos == 0) {
-		h[i].pid = tmp_pid;
-		tmp_pid += n_state;
-	    }
-	}
-	h[n-1].next = NULL;
-    }
-    
-    h = whmm_freelist[k];
-    whmm_freelist[k] = h->next;
-    
-    for (s = 0; s < n_state; s++) {
-	h->score[s] = S3_LOGPROB_ZERO;
-	h->history[s] = BAD_S3LATID;
-    }
-    h->pos = pos;
-    
-    return (h);
-}
-
-
-static void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
-{
-    int32 s;
-    s3pid_t p;
-    
-    printf ("[%4d]", n_frm);
-    printf (" [%s]", dict->word[w].word);
-
-    printf (" pos= %d, rc= %d, bestscore= %d\n",
-	    h->pos, h->rc, h->bestscore);
-    
-    printf ("\tscore: ");
-    for (s = 0; s < n_state; s++)
-	printf (" %12d", h->score[s]);
-    printf ("\n");
-    
-    printf ("\thist:  ");
-    for (s = 0; s < n_state; s++)
-	printf (" %12d", h->history[s]);
-    printf ("\n");
-    
-    printf ("\tsenscr:");
-    for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
-	if (NOT_S3PID(p))
-	    printf (" %12s", "--");
-	else
-	    printf (" %12d", senscr[mdef->phone[p].state[s]]);
-    }
-    printf ("\n");
-    
-    printf ("\ttpself:");
-    for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
-	if (NOT_S3PID(p))
-	    printf (" %12s", "--");
-	else
-	    printf (" %12d", tmat->tp[mdef->phone[p].tmat][s][s]);
-    }
-    printf ("\n");
-    
-    printf ("\ttpnext:");
-    for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
-	if (NOT_S3PID(p))
-	    printf (" %12s", "--");
-	else
-	    printf (" %12d", tmat->tp[mdef->phone[p].tmat][s][s+1]);
-    }
-    printf ("\n");
-    
-    printf ("\ttpskip:");
-    for (s = 0; s < n_state-2; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
-	if (NOT_S3PID(p))
-	    printf (" %12s", "--");
-	else
-	    printf (" %12d", tmat->tp[mdef->phone[p].tmat][s][s+2]);
-    }
-    printf ("\n");
-    
-    
-    if (h->pos == 0) {
-	printf ("\tpid:   ");
-	for (s = 0; s < n_state-1; s++)
-	    printf (" %12d", h->pid[s]);
-	printf ("\n");
-    }
-}
-
 
 static void dump_all_whmm (int32 *senscr)
 {
@@ -906,13 +405,12 @@ static void dump_all_whmm (int32 *senscr)
     for (w = 0; w < dict->n_word; w++) {
 	if (whmm[w]) {
 	    for (h = whmm[w]; h; h = h->next)
-		dump_whmm (w, h, senscr);
+		dump_whmm (w, h, senscr, tmat, n_frm, n_state, dict, mdef);
 	}
     }
 }
 
-
-static void dump_all_word ( void )
+static void dump_all_word ()
 {
     s3wid_t w;
     whmm_t *h;
@@ -941,443 +439,6 @@ static void dump_all_word ( void )
 }
 
 
-/**
- * Check model tprob matrices that they conform to upper-diagonal assumption.
- */
-static void chk_tp_uppertri ( void )
-{
-    int32 i, from, to;
-    
-    assert (n_state > 0);
-    
-    /* Check that each tmat is upper-triangular */
-    for (i = 0; i < tmat->n_tmat; i++) {
-	for (to = 0; to < n_state-1; to++)
-	    for (from = to+1; from < n_state-1; from++)
-		if (tmat->tp[i][from][to] > S3_LOGPROB_ZERO)
-		    E_FATAL("HMM transition matrix not upper triangular\n");
-    }
-}
-
-
-/** For partial evaluation of incoming state score (prev state score + senone score) */
-static int32 *st_sen_scr;
-
-#define ANYHMMTOPO 1
-#if (! ANYHMMTOPO)
-/**
- * Like the general eval_nonmpx_whmm and eval_mpx_whmm below, but hardwired for
- * the Sphinx-II 5-state Bakis topology.
- */
-static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
-{
-    register int32 s0, s1, s2, s3, s4;
-    register int32 scr, newscr1, newscr2, bestscr;
-    register int32 *tp;
-    s3pid_t p;
-    s3senid_t *senp;
-
-    p = *(h->pid);
-    senp = mdef->phone[p].state;
-    tp = tmat->tp[mdef->phone[p].tmat][0];	/* HACK!! Assumes tp 2-D data allocated
-						   contiguously */
-    
-    if ((s0 = h->score[0] + senscr[senp[0]]) < S3_LOGPROB_ZERO)
-	s0 = S3_LOGPROB_ZERO;
-    if ((s1 = h->score[1] + senscr[senp[1]]) < S3_LOGPROB_ZERO)
-	s1 = S3_LOGPROB_ZERO;
-    if ((s2 = h->score[2] + senscr[senp[2]]) < S3_LOGPROB_ZERO)
-	s2 = S3_LOGPROB_ZERO;
-    if ((s3 = h->score[3] + senscr[senp[3]]) < S3_LOGPROB_ZERO)
-	s3 = S3_LOGPROB_ZERO;
-    if ((s4 = h->score[4] + senscr[senp[4]]) < S3_LOGPROB_ZERO)
-	s4 = S3_LOGPROB_ZERO;
-    
-    newscr1 = s4 + tp[29]; /* [4][5] */
-    newscr2 = s3 + tp[23]; /* [3][5] */
-    if (newscr1 > newscr2) {
-	h->score[5] = bestscr = newscr1;
-	h->history[5] = h->history[4];
-    } else {
-	h->score[5] = bestscr = newscr2;
-	h->history[5] = h->history[3];
-    }
-
-    scr     = s4 + tp[28]; /* [4][4] */
-    newscr1 = s3 + tp[22]; /* [3][4] */
-    newscr2 = s2 + tp[16]; /* [2][4] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[4] = newscr2;
-	    h->history[4] = h->history[2];
-	} else
-	    h->score[4] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[4] = newscr1;
-	    h->history[4] = h->history[3];
-	} else
-	    h->score[4] = scr;
-    }
-    if (bestscr < h->score[4])
-	bestscr = h->score[4];
-    
-    scr     = s3 + tp[21]; /* [3][3] */
-    newscr1 = s2 + tp[15]; /* [2][3] */
-    newscr2 = s1 + tp[9];  /* [1][3] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[3] = newscr2;
-	    h->history[3] = h->history[1];
-	} else
-	    h->score[3] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[3] = newscr1;
-	    h->history[3] = h->history[2];
-	} else
-	    h->score[3] = scr;
-    }
-    if (bestscr < h->score[3])
-	bestscr = h->score[3];
-    
-    scr     = s2 + tp[14]; /* [2][2] */
-    newscr1 = s1 + tp[8];  /* [1][2] */
-    newscr2 = s0 + tp[2];  /* [0][2] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[2] = newscr2;
-	    h->history[2] = h->history[0];
-	} else
-	    h->score[2] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[2] = newscr1;
-	    h->history[2] = h->history[1];
-	} else
-	    h->score[2] = scr;
-    }
-    if (bestscr < h->score[2])
-	bestscr = h->score[2];
-    
-    scr     = s1 + tp[7]; /* [1][1] */
-    newscr1 = s0 + tp[1]; /* [0][1] */
-    if (newscr1 > scr) {
-	h->score[1] = newscr1;
-	h->history[1] = h->history[0];
-    } else
-	h->score[1] = scr;
-    if (bestscr < h->score[1])
-	bestscr = h->score[1];
-    
-    h->score[0] = scr = s0 + tp[0];	/* [0][0] */
-    if (bestscr < scr)
-	bestscr = scr;
-    
-    h->bestscore = bestscr;
-}
-
-
-static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
-{
-    register int32 s0, s1, s2, s3, s4;
-    register int32 *tp0, *tp1, *tp2, *tp3, *tp4;
-    register int32 scr, newscr1, newscr2, bestscr;
-    s3senid_t *senp;
-    s3pid_t p0, p1, p2, p3, p4;
-
-    p0 = h->pid[0];
-    p1 = h->pid[1];
-    p2 = h->pid[2];
-    p3 = h->pid[3];
-    p4 = h->pid[4];
-
-    senp = mdef->phone[p0].state;
-    if ((s0 = h->score[0] + senscr[senp[0]]) < S3_LOGPROB_ZERO)
-	s0 = S3_LOGPROB_ZERO;
-    tp0 = tmat->tp[mdef->phone[p0].tmat][0];	/* HACK!! See eval_nonmpx_whmm */
-
-    if (p1 != p0) {
-	senp = mdef->phone[p1].state;
-	tp1 = tmat->tp[mdef->phone[p1].tmat][0];/* HACK!! See eval_nonmpx_whmm */
-    } else
-	tp1 = tp0;
-    if ((s1 = h->score[1] + senscr[senp[1]]) < S3_LOGPROB_ZERO)
-	s1 = S3_LOGPROB_ZERO;
-
-    if (p2 != p1) {
-	senp = mdef->phone[p2].state;
-	tp2 = tmat->tp[mdef->phone[p2].tmat][0];/* HACK!! See eval_nonmpx_whmm */
-    } else
-	tp2 = tp1;
-    if ((s2 = h->score[2] + senscr[senp[2]]) < S3_LOGPROB_ZERO)
-	s2 = S3_LOGPROB_ZERO;
-
-    if (p3 != p2) {
-	senp = mdef->phone[p3].state;
-	tp3 = tmat->tp[mdef->phone[p3].tmat][0];/* HACK!! See eval_nonmpx_whmm */
-    } else
-	tp3 = tp2;
-    if ((s3 = h->score[3] + senscr[senp[3]]) < S3_LOGPROB_ZERO)
-	s3 = S3_LOGPROB_ZERO;
-
-    if (p4 != p3) {
-	senp = mdef->phone[p4].state;
-	tp4 = tmat->tp[mdef->phone[p4].tmat][0];/* HACK!! See eval_nonmpx_whmm */
-    } else
-	tp4 = tp3;
-    if ((s4 = h->score[4] + senscr[senp[4]]) < S3_LOGPROB_ZERO)
-	s4 = S3_LOGPROB_ZERO;
-    
-    newscr1 = s4 + tp4[29]; /* [4][5] */
-    newscr2 = s3 + tp3[23]; /* [3][5] */
-    if (newscr1 > newscr2) {
-	h->score[5] = bestscr = newscr1;
-	h->history[5] = h->history[4];
-    } else {
-	h->score[5] = bestscr = newscr2;
-	h->history[5] = h->history[3];
-    }
-
-    scr     = s4 + tp4[28]; /* [4][4] */
-    newscr1 = s3 + tp3[22]; /* [3][4] */
-    newscr2 = s2 + tp2[16]; /* [2][4] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[4] = newscr2;
-	    h->history[4] = h->history[2];
-	    h->pid[4] = h->pid[2];
-	} else
-	    h->score[4] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[4] = newscr1;
-	    h->history[4] = h->history[3];
-	    h->pid[4] = h->pid[3];
-	} else
-	    h->score[4] = scr;
-    }
-    if (bestscr < h->score[4])
-	bestscr = h->score[4];
-    
-    scr     = s3 + tp3[21]; /* [3][3] */
-    newscr1 = s2 + tp2[15]; /* [2][3] */
-    newscr2 = s1 + tp1[9];  /* [1][3] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[3] = newscr2;
-	    h->history[3] = h->history[1];
-	    h->pid[3] = h->pid[1];
-	} else
-	    h->score[3] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[3] = newscr1;
-	    h->history[3] = h->history[2];
-	    h->pid[3] = h->pid[2];
-	} else
-	    h->score[3] = scr;
-    }
-    if (bestscr < h->score[3])
-	bestscr = h->score[3];
-    
-    scr     = s2 + tp2[14]; /* [2][2] */
-    newscr1 = s1 + tp1[8];  /* [1][2] */
-    newscr2 = s0 + tp0[2];  /* [0][2] */
-    if (newscr2 > newscr1) {
-	if (newscr2 > scr) {
-	    h->score[2] = newscr2;
-	    h->history[2] = h->history[0];
-	    h->pid[2] = h->pid[0];
-	} else
-	    h->score[2] = scr;
-    } else {
-	if (newscr1 > scr) {
-	    h->score[2] = newscr1;
-	    h->history[2] = h->history[1];
-	    h->pid[2] = h->pid[1];
-	} else
-	    h->score[2] = scr;
-    }
-    if (bestscr < h->score[2])
-	bestscr = h->score[2];
-    
-    scr     = s1 + tp1[7]; /* [1][1] */
-    newscr1 = s0 + tp0[1]; /* [0][1] */
-    if (newscr1 > scr) {
-	h->score[1] = newscr1;
-	h->history[1] = h->history[0];
-	h->pid[1] = h->pid[0];
-    } else
-	h->score[1] = scr;
-    if (bestscr < h->score[1])
-	bestscr = h->score[1];
-    
-    h->score[0] = scr = s0 + tp0[0]; /* [0][0] */
-    if (bestscr < scr)
-	bestscr = scr;
-    
-    h->bestscore = bestscr;
-}
-
-#else
-
-/**
- * Evaluate non-multiplexed word HMM (ie, the entire whmm really represents one
- * phone rather than each state representing a potentially different phone.
- */
-static void eval_nonmpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
-{
-    s3pid_t pid;
-    s3senid_t *sen;
-    int32 **tp;
-    int32 to, from, bestfrom;
-    int32 newscr, scr, bestscr;
-
-    pid = *(h->pid);
-    
-    sen = mdef->phone[pid].state;
-    tp = tmat->tp[mdef->phone[pid].tmat];
-
-    /* Compute previous state-score + observation output prob for each state */
-    for (from = n_state-2; from >= 0; --from) {
-	if ((st_sen_scr[from] = h->score[from] + senscr[sen[from]]) < S3_LOGPROB_ZERO)
-	    st_sen_scr[from] = S3_LOGPROB_ZERO;
-    }
-    
-    /* Evaluate final-state first, which does not have a self-transition */
-    to = final_state;
-    scr = S3_LOGPROB_ZERO;
-    bestfrom = -1;
-    for (from = to-1; from >= 0; --from) {
-	if ((tp[from][to] > S3_LOGPROB_ZERO) &&
-	    ((newscr = st_sen_scr[from] + tp[from][to]) > scr)) {
-	    scr = newscr;
-	    bestfrom = from;
-	}
-    }
-    h->score[to] = scr;
-    if (bestfrom >= 0)
-	h->history[to] = h->history[bestfrom];
-
-    bestscr = scr;
-
-    /* Evaluate all other states, which might have self-transitions */
-    for (to = final_state-1; to >= 0; --to) {
-	/* Score from self-transition, if any */
-	scr = (tp[to][to] > S3_LOGPROB_ZERO) ? st_sen_scr[to] + tp[to][to] : S3_LOGPROB_ZERO;
-
-	/* Scores from transitions from other states */
-	bestfrom = -1;
-	for (from = to-1; from >= 0; --from) {
-	    if ((tp[from][to] > S3_LOGPROB_ZERO) &&
-		((newscr = st_sen_scr[from] + tp[from][to]) > scr)) {
-		scr = newscr;
-		bestfrom = from;
-	    }
-	}
-
-	/* Update new result for state to */
-	h->score[to] = scr;
-	if (bestfrom >= 0)
-	    h->history[to] = h->history[bestfrom];
-
-	if (bestscr < scr)
-	    bestscr = scr;
-    }
-
-    h->bestscore = bestscr;
-}
-
-
-/** Like eval_nonmpx_whmm, except there's a different pid associated with each state */
-static void eval_mpx_whmm (s3wid_t w, whmm_t *h, int32 *senscr)
-{
-    s3pid_t pid, prevpid;
-    s3senid_t *senp;
-    int32 **tp;
-    int32 to, from, bestfrom;
-    int32 newscr, scr, bestscr;
-    
-    senp=NULL;
-    tp=NULL;
-    /* Compute previous state-score + observation output prob for each state */
-    prevpid = BAD_S3PID;
-    for (from = n_state-2; from >= 0; --from) {
-	if ((pid = h->pid[from]) != prevpid) {
-	    senp = mdef->phone[pid].state;
-	    prevpid = pid;
-	}
-
-	if ((st_sen_scr[from] = h->score[from] + senscr[senp[from]]) < S3_LOGPROB_ZERO)
-	    st_sen_scr[from] = S3_LOGPROB_ZERO;
-    }
-
-    /* Evaluate final-state first, which does not have a self-transition */
-    to = final_state;
-    scr = S3_LOGPROB_ZERO;
-    bestfrom = -1;
-    prevpid = BAD_S3PID;
-    for (from = to-1; from >= 0; --from) {
-	if ((pid = h->pid[from]) != prevpid) {
-	    tp = tmat->tp[mdef->phone[pid].tmat];
-	    prevpid = pid;
-	}
-
-	if ((tp[from][to] > S3_LOGPROB_ZERO) &&
-	    ((newscr = st_sen_scr[from] + tp[from][to]) > scr)) {
-	    scr = newscr;
-	    bestfrom = from;
-	}
-    }
-    h->score[to] = scr;
-    if (bestfrom >= 0) {
-	h->history[to] = h->history[bestfrom];
-	h->pid[to] = h->pid[bestfrom];
-    }
-    
-    bestscr = scr;
-
-    /* Evaluate all other states, which might have self-transitions */
-    for (to = final_state-1; to >= 0; --to) {
-	/* Score from self-transition, if any */
-	if ((pid = h->pid[to]) != prevpid) {
-	    tp = tmat->tp[mdef->phone[pid].tmat];
-	    prevpid = pid;
-	}
-	scr = (tp[to][to] > S3_LOGPROB_ZERO) ? st_sen_scr[to] + tp[to][to] : S3_LOGPROB_ZERO;
-
-	/* Scores from transitions from other states */
-	bestfrom = -1;
-	for (from = to-1; from >= 0; --from) {
-	    if ((pid = h->pid[from]) != prevpid) {
-		tp = tmat->tp[mdef->phone[pid].tmat];
-		prevpid = pid;
-	    }
-	    
-	    if ((tp[from][to] > S3_LOGPROB_ZERO) &&
-		((newscr = st_sen_scr[from] + tp[from][to]) > scr)) {
-		scr = newscr;
-		bestfrom = from;
-	    }
-	}
-
-	/* Update new result for state to */
-	h->score[to] = scr;
-	if (bestfrom >= 0) {
-	    h->history[to] = h->history[bestfrom];
-	    h->pid[to] = h->pid[bestfrom];
-	}
-	
-	if (bestscr < scr)
-	    bestscr = scr;
-    }
-
-    h->bestscore = bestscr;
-}
-#endif
-
-
 static int32 whmm_eval (int32 *senscr)
 {
     int32 best, cf;
@@ -1397,10 +458,10 @@ static int32 whmm_eval (int32 *senscr)
 
 	    if (h->active == cf) {
 		if (h->pos == 0) {
-		    eval_mpx_whmm (w, h, senscr);
+		    eval_mpx_whmm (h, senscr,tmat,mdef,n_state);
 		    n_mpx++;
 		} else {
-		    eval_nonmpx_whmm (w, h, senscr);
+		  eval_nonmpx_whmm (h, senscr,tmat,mdef,n_state);
 		    n_nonmpx++;
 		}
 		
@@ -1426,11 +487,26 @@ static int32 whmm_eval (int32 *senscr)
 }
 
 
+static void lattice_dump (FILE *fp)
+{
+    int32 i;
+    
+    for (i = 0; i < n_lat_entry; i++) {
+	fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
+		 lattice[i].frm, lattice[i].history, lattice[i].score,
+		 dict_wordstr (dict,lattice[i].wid));
+    }
+    fflush (fp);
+}
+
+
 /**
  * Record a word exit in word lattice.
  * NOTE: All exits from a single word in a given frame (for different right context
  * ciphones) must occur contiguously.
  */
+
+
 static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 {
     s3cipid_t rc, npid;
@@ -1452,7 +528,7 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 	lattice[n_lat_entry].history = h->history[final_state];
 
 	/* Allocate space for different right context scores */
-	npid = get_rc_npid (w);
+	npid = get_rc_npid (ct_table,w,dict );
 	assert (npid > 0);
 
 	lattice[n_lat_entry].rcscore = (int32 *) ckd_calloc (npid, sizeof(int32));
@@ -1468,6 +544,21 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 	lattice[n_lat_entry-1].history = h->history[final_state];
     }
     lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
+}
+
+
+static void whmm_renorm (int32 bestscr)
+{
+    s3wid_t w;
+    whmm_t *h;
+    int32 st;
+    
+    renormalized = 1;
+    
+    for (w = 0; w < dict->n_word; w++)
+	for (h = whmm[w]; h; h = h->next)
+	    for (st = n_state-2; st >= 0; --st)
+		h->score[st] -= bestscr;
 }
 
 
@@ -1494,9 +585,9 @@ static void whmm_transition (int32 w, whmm_t *h)
 	 * the HMM if not already present.
 	 */
 	if ((! h->next) || (h->next->pos != h->pos+1)) {
-	    nexth = whmm_alloc (h->pos+1);
+	    nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
 
-	    nexth->pid = &(wwpid[w][nexth->pos]);
+	    nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
 	    
 	    nexth->next = h->next;
 	    h->next = nexth;
@@ -1515,11 +606,11 @@ static void whmm_transition (int32 w, whmm_t *h)
 	 * all final triphone HMM instances first.
 	 */
 	prevh = h;
-	get_rcpid (w, &pid, &npid);
+	get_rcpid (ct_table, w, &pid, &npid, dict);
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! prevh->next) || (prevh->next->rc != rc)) {
-		nexth = whmm_alloc (h->pos+1);
+		nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
 
 		nexth->rc = rc;
 		nexth->pid = &(pid[rc]);
@@ -1580,18 +671,18 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
     l0=0;
     
     for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lattice[l1].history);
-
-/* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
-if (l1 != -1) 
-    for (l0 = lattice[l1].history; 
-         (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
-	 l0 = lattice[l0].history);
-
-/* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
-if (l1 == -1) *w1 = 0; else
-    *w1 = dict_basewid(dict, lattice[l1].wid);
-if (l1 == -1) *w0 = BAD_S3WID; else
-    *w0 = (NOT_S3LATID(l0)) ? BAD_S3WID : dict_basewid(dict,lattice[l0].wid);
+    
+    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+    if (l1 != -1) 
+      for (l0 = lattice[l1].history; 
+	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
+	   l0 = lattice[l0].history);
+    
+    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+    if (l1 == -1) *w1 = 0; else
+      *w1 = dict_basewid(dict, lattice[l1].wid);
+    if (l1 == -1) *w0 = BAD_S3WID; else
+      *w0 = (NOT_S3LATID(l0)) ? BAD_S3WID : dict_basewid(dict,lattice[l0].wid);
 }
 
 
@@ -1617,10 +708,10 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 
     if (dict->word[w].pronlen > 1) {	/* Multi-phone word; no right context problem */
 	rc = dict->word[w].ciphone[1];
-	pid = lcpid[b][rc].pid[lcpid[b][rc].cimap[lc]];
+	pid = ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]];
 
 	if ((! whmm[w]) || (whmm[w]->pos != 0)) {
-	    h = whmm_alloc (0);
+	    h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
 
 	    for (s = 0; s < n_state; s++)
 		h->pid[s] = pid;
@@ -1640,12 +731,12 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	/* Do all right contexts; first make sure all are allocated */
 	prevh = NULL;
 	h = whmm[w];
-	npid = get_rc_npid (w);
-	rpid = lrcpid[b][lc].pid;
+	npid = get_rc_npid (ct_table,w,dict);
+	rpid = ct_table->lrcpid[b][lc].pid;
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! h) || (h->rc != rc)) {
-		h = whmm_alloc (0);
+		h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
 
 		for (s = 0; s < n_state; s++)
 		    h->pid[s] = rpid[rc];
@@ -1677,17 +768,15 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
     }
 }
 
-
-
 /**
  * Backoff node when backing off all the way to unigrams.  Since each word exits with
  * #ciphones different scores (for so many different right contexts), a separate node
  * exists for each context.
  */
 typedef struct {
-    s3latid_t latid;	/** History entry */
-    int32 score;	/** Acoustic + backed off LM score */
-    s3cipid_t lc;	/** Last ciphone of history entry, to be used as left context upon
+    s3latid_t latid;	/**< History entry */
+    int32 score;	/**< Acoustic + backed off LM score */
+    s3cipid_t lc;	/**< Last ciphone of history entry, to be used as left context upon
 			   entering a new word. */
 } backoff_t;
 static backoff_t *ug_backoff, *filler_backoff;
@@ -1785,7 +874,7 @@ static void word_trans (int32 thresh)
 	lc = dict->word[w].ciphone[dict->word[w].pronlen-1];
 	
 	/* Uncompact path scores for all right context ciphones for word just finished */
-	rcmap = get_rc_cimap (w);
+	rcmap = get_rc_cimap (ct_table,w,dict );
 	for (rc = 0; rc < mdef->n_ciphone; rc++)
 	  rcscore[rc] = lattice[l].rcscore[rcmap[rc]];
 
@@ -1961,8 +1050,6 @@ static void word_trans (int32 thresh)
 
 void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 {
-    float64 *f64arg;
-    float32 *f32arg;
     char *tmpstr;
 
     E_INFO ("Forward Viterbi Initialization\n");
@@ -1970,7 +1057,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     mdef = _mdef;
     tmat = _tmat;
     dict = _dict;
-    lm   = _lm;
+     lm   = _lm;
     
     assert (mdef && tmat && dict && lm);
 
@@ -1981,16 +1068,11 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     /* Variables for speeding up whmm evaluation */
     st_sen_scr = (int32 *) ckd_calloc (n_state-1, sizeof(int32));
 
-
     /* Beam widths and penalties */
-    f64arg = (float64 *) cmd_ln_access ("-beam");
-    beam = logs3 (*f64arg);
 
-    f64arg = (float64 *) cmd_ln_access ("-wbeam");
-    wordbeam = logs3 (*f64arg);
-
-    f32arg = (float32 *) cmd_ln_access ("-phonepen");
-    phone_penalty = logs3 (*f32arg);
+    beam = logs3 (cmd_ln_float64("-beam"));
+    wordbeam = logs3 (cmd_ln_float64("-wbeam"));
+    phone_penalty = logs3 (cmd_ln_float32("-phonepen"));
 
     E_INFO ("logs3(beam)= %d, logs3(nwbeam)= %d\n", beam, wordbeam);
     
@@ -2002,18 +1084,9 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     lattice = (lattice_t *) ckd_calloc (lat_alloc, sizeof(lattice_t));
     n_lat_entry = 0;
     
-    /* Build cross-word triphone models */
-    tmp_xwdpid = (s3pid_t *) ckd_calloc (mdef->n_ciphone, sizeof(s3pid_t));
 
-    n_backoff_ci = 0;
-    build_wwpid ();
-    E_INFO("%d within-word triphone instances mapped to CI-phones\n", n_backoff_ci);
-
-    n_backoff_ci = 0;
-    build_xwdpid_map ();
-    E_INFO("%d cross-word triphones mapped to CI-phones\n", n_backoff_ci);
-
-    ckd_free (tmp_xwdpid);
+    /** Initialize the context table */
+    ct_table=ctxt_table_init(dict,mdef);
 
     /* Data structures needed during word transition */
     rcscore = (int32 *) ckd_calloc (mdef->n_ciphone, sizeof(int32));
@@ -2022,7 +1095,7 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     tg_trans_done = (uint8 *) ckd_calloc (dict->n_word, sizeof(uint8));
     
     /* Check transition matrices for upper-triangularity */
-    chk_tp_uppertri ();
+    tmat_chk_uppertri(tmat);
 
     /* Input candidate-word lattices information to restrict search; if any */
     word_cand_dir = (char *) cmd_ln_access ("-inlatdir");
@@ -2245,7 +1318,7 @@ void fwd_start_utt (char *id)
 }
 
 
-void fwd_sen_active (int8 *senlist, int32 n_sen)
+void fwd_sen_active (int32 *senlist, int32 n_sen)
 {
     s3wid_t w;
     whmm_t *h;
@@ -2275,20 +1348,6 @@ void fwd_sen_active (int8 *senlist, int32 n_sen)
     }
 }
 
-
-static void whmm_renorm (int32 bestscr)
-{
-    s3wid_t w;
-    whmm_t *h;
-    int32 st;
-    
-    renormalized = 1;
-    
-    for (w = 0; w < dict->n_word; w++)
-	for (h = whmm[w]; h; h = h->next)
-	    for (st = n_state-2; st >= 0; --st)
-		h->score[st] -= bestscr;
-}
 
 
 /** Do forward search for one frame.
@@ -2323,7 +1382,7 @@ int32 fwd_frame (int32 *senscr)
     /* Trace active HMMs for specified word, if any */
     if (IS_S3WID(trace_wid)) {
 	for (h = whmm[trace_wid]; h; h = h->next)
-	    dump_whmm (trace_wid, h, senscr);
+	    dump_whmm (trace_wid, h, senscr, tmat, n_frm, n_state, dict,mdef);
     }
 
     ptmr_start (&tm_hmmtrans);
@@ -2358,7 +1417,7 @@ static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
     if ((NOT_S3WID(w_rc)) || (! lattice[l].rcscore))
 	return lattice[l].score;
     
-    rcmap = get_rc_cimap (lattice[l].wid);
+    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
     rc = dict->word[w_rc].ciphone[0];
     return (lattice[l].rcscore[rcmap[rc]]);
 }
@@ -2446,8 +1505,8 @@ static srch_hyp_t *lattice_backtrace (s3latid_t l, s3wid_t w_rc)
 	    prevh->next = h;
 	h->next = NULL;
 	
-	h->wid = lattice[l].wid;
-	h->word = dict_wordstr(dict,h->wid);
+	h->id = lattice[l].wid;
+	h->word = dict_wordstr(dict,h->id);
 	h->sf = prevh ? prevh->ef+1 : 0;
 	h->ef = lattice[l].frm;
 	h->pscr = lattice[l].score;
@@ -2482,6 +1541,7 @@ static s3latid_t lat_final_entry ( void )
     
       /* Find last available lattice entry with best ending score */
       E_WARN("When %s is used as final word, %s: Search didn't end in %s\n", dict_wordstr(dict,dict->finishwid), uttid, dict_wordstr(dict,dict->finishwid));
+    }else{
     }
 
 
@@ -2628,7 +1688,7 @@ int32 dag_build ( void )
 	    continue;
 	
 	if (d->sf == 0) 
-{}
+	  {}
 /*
 	    assert (d->wid == dict->startwid);	*/ /* No predecessors to this */
 	else {
@@ -2866,10 +1926,9 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
     int32 i;
     dagnode_t *d, *initial, *final;
     daglink_t *l;
-    char filename[1024], str[1024];
+    char filename[2048];
     FILE *fp;
     int32 ascr, lscr;
-    float32 logbase;
     int32 ispipe;
     
     initial = dag.root;
@@ -2882,28 +1941,7 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
 	return -1;
     }
     
-    getcwd (str, sizeof(str));
-    fprintf (fp, "# getcwd: %s\n", str);
-
-    /* Print logbase first!!  Other programs look for it early in the DAG */
-    logbase = *((float32 *) cmd_ln_access("-logbase"));
-    fprintf (fp, "# -logbase %e\n", logbase);
-
-    fprintf (fp, "# -dict %s\n", (char *) cmd_ln_access ("-dict"));
-    if (cmd_ln_access ("-fdict"))
-	fprintf (fp, "# -fdict %s\n", (char *) cmd_ln_access ("-fdict"));
-    fprintf (fp, "# -lm %s\n", (char *) cmd_ln_access ("-lm"));
-    fprintf (fp, "# -mdef %s\n", (char *) cmd_ln_access ("-mdef"));
-    fprintf (fp, "# -senmgau %s\n", (char *) cmd_ln_access ("-senmgau"));
-    fprintf (fp, "# -mean %s\n", (char *) cmd_ln_access ("-mean"));
-    fprintf (fp, "# -var %s\n", (char *) cmd_ln_access ("-var"));
-    fprintf (fp, "# -mixw %s\n", (char *) cmd_ln_access ("-mixw"));
-    fprintf (fp, "# -tmat %s\n", (char *) cmd_ln_access ("-tmat"));
-    fprintf (fp, "# -min_endfr %d\n", *((int32 *) cmd_ln_access ("-min_endfr")));
-    fprintf (fp, "#\n");
-    
-    fprintf (fp, "Frames %d\n", n_frm);
-    fprintf (fp, "#\n");
+    dag_write_header(fp,n_frm,1);
     
     for (i = 0, d = dag.list; d; d = d->alloc_next, i++);
     fprintf (fp, "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n", i);

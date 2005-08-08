@@ -47,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2005/06/22  08:00:10  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.6.4.1  2005/06/27  05:42:56  arthchan2003
+ * Merge tip from the trunk.
  * 
+ * Revision 1.7  2005/06/22 08:00:10  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *

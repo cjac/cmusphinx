@@ -38,11 +38,36 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.2.4.8  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
+ * 
+ * Revision 1.2.4.7  2005/07/27 23:19:59  arthchan2003
+ * Added assert for make sure lmname is valid.
+ *
+ * Revision 1.2.4.6  2005/07/24 01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
+ *
+ * Revision 1.2.4.5  2005/07/13 02:00:33  arthchan2003
+ * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
+ *
+ * Revision 1.2.4.4  2005/07/07 02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ *
+ * Revision 1.2.4.3  2005/07/04 07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ *
+ * Revision 1.2.4.2  2005/07/03 23:19:16  arthchan2003
+ * Added free code for srch_time_switch_tree.c
+ *
+ * Revision 1.2.4.1  2005/06/28 07:03:37  arthchan2003
+ * Set lmset correctly in srch_time_switch_tree.
+ *
+ * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.15  2005/06/17 23:44:40  archan
  * Sphinx3 to s3.generic, 1, Support -lmname in decode and livepretend.  2, Wrap up the initialization of dict2lmwid to lm initialization. 3, add Dave's trick in LM switching in mode 4 of the search.
  *
@@ -95,11 +120,14 @@ int srch_TST_init(kb_t *kb, void *srch)
   ptmr_t tm_build;
   
   kbc=kb->kbcore;
-  
   s=(srch_t *)srch;
+
+  ptmr_init(&(tm_build));
+
 
   if(cmd_ln_int32("-Nstalextree"))
     E_WARN("-Nstalextree is omitted in TST search.\n");
+
 
   /** STRUCTURE : allocation of the srch graphs */
   tstg=ckd_calloc(1,sizeof(srch_TST_graph_t));
@@ -202,11 +230,35 @@ int srch_TST_init(kb_t *kb, void *srch)
   s->grh->graph_struct=tstg;
   s->grh->graph_type=GRAPH_STRUCT_TST;
 
+
+  tstg->lmset=kbc->lmset;
+
   return SRCH_SUCCESS;
 
 }
 int srch_TST_uninit(void *srch)
 {
+  srch_TST_graph_t* tstg ;
+  srch_t* s;
+  int32 i,j;
+  kbcore_t * kbc;
+  
+  s=(srch_t *)srch;
+  kbc=s->kbc;
+
+  tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+
+  for(i=0;i<kbc->lmset->n_lm;i++){
+    for(j=0;j< tstg->n_lextree;j++){
+      lextree_free(tstg->ugtree[i*tstg->n_lextree+j]);
+      lextree_free(tstg->fillertree[i*tstg->n_lextree+j]);
+    }
+  }
+
+  if(tstg->histprune!=NULL){
+    histprune_free((void*) tstg->histprune);
+  }
+
   return SRCH_SUCCESS;
 }
 int srch_TST_begin(void *srch)
@@ -236,9 +288,11 @@ int srch_TST_begin(void *srch)
   assert (pred == 0);	/* Vithist entry ID for <s> */
   
   /* This reinitialize the cont_mgau routine in a GMM.  */
-  for(i=0;i<g->n_mgau;i++){
-    g->mgau[i].bstidx=NO_BSTIDX;
-    g->mgau[i].updatetime=NOT_UPDATED;
+  if (g) {
+	  for(i=0;i<g->n_mgau;i++){
+		  g->mgau[i].bstidx=NO_BSTIDX;
+		  g->mgau[i].updatetime=NOT_UPDATED;
+	  }
   }
 
   /* Enter into unigram lextree[0] */
@@ -327,11 +381,6 @@ int srch_TST_end(void *srch)
   lm_cache_stats_dump (kbcore_lm(s->kbc));
   lm_cache_reset (kbcore_lm(s->kbc));
   
-  return SRCH_SUCCESS;
-}
-
-int srch_TST_decode(void *srch)
-{
   return SRCH_SUCCESS;
 }
 
@@ -447,6 +496,7 @@ int srch_TST_set_lm(void *srch, const char* lmname)
 
   assert(lms!=NULL);
   assert(lms->lmarray!=NULL);
+  assert(lmname!=NULL);
 
   idx=lmset_name_to_idx(lms,lmname);
 
@@ -780,6 +830,12 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
   mdef_t *mdef;
   srch_TST_graph_t* tstg ;
 
+
+  /* Call the rescoring routines at all word end */
+
+
+
+
   maxpscore=MAX_NEG_INT32;
   bm=s->beam;
 
@@ -882,6 +938,8 @@ int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   s=(srch_t*) srch;
   tstg=(srch_TST_graph_t*) s->grh->graph_struct;
 
+  srch_TST_rescoring((void *)s,frmno);    
+
   vithist_prune (vh, dict, frmno, maxwpf, maxhistpf, 
 		 s->beam->word_thres-s->beam->bestwordscore);
 
@@ -963,8 +1021,11 @@ int srch_TST_select_active_gmm(void *srch)
   if (ascr->sen_active) {
     /*    E_INFO("Decide whether senone is active\n");*/
 
-    memset (ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
-    memset (ascr->comssid_active, 0, dict2pid_n_comsseq(d2p) * sizeof(int32));
+
+    ascr_clear_ssid_active(ascr);
+    ascr_clear_comssid_active(ascr);
+
+
     /* Find active senone-sequence IDs (including composite ones) */
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] :
@@ -973,7 +1034,10 @@ int srch_TST_select_active_gmm(void *srch)
     }
     
     /* Find active senones from active senone-sequences */
-    memset (ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
+
+    ascr_clear_sen_active(ascr);
+
+
     mdef_sseq2sen_active (mdef, ascr->ssid_active, ascr->sen_active);
     
     /* Add in senones needed for active composite senone-sequences */

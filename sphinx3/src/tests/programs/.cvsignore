@@ -1,6 +1,10 @@
+
 *.o
-Makefile
-Makefile.in
 .deps
 .libs
-
+Makefile
+Makefile.in
+analysis
+dumpfrontend
+lm_test
+lm_utt_test

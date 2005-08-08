@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyrightgot (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,23 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26  2005/06/21  23:21:58  arthchan2003
+ * Revision 1.26.4.5  2005/08/03  18:54:33  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
+ * 
+ * Revision 1.26.4.4  2005/08/02 21:32:30  arthchan2003
+ * added -s3hmmdir option.
+ *
+ * Revision 1.26.4.3  2005/07/20 21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
+ *
+ * Revision 1.26.4.2  2005/07/18 19:08:55  arthchan2003
+ * Fixed Copy right statement.
+ *
+ * Revision 1.26.4.1  2005/07/03 23:00:58  arthchan2003
+ * Free stat_t, histprune_t and srch_t correctly.
+ *
+ * Revision 1.26  2005/06/21 23:21:58  arthchan2003
  * Log. This is a big refactoring for kb.c and it is worthwhile to give
  * words on why and how things were done.  There were generally a problem
  * that the kb structure itself is too flat.  That makes it has to
@@ -51,23 +67,23 @@
  * well be put into the same structure to increase readability and
  * modularity. One can explain why histprune_t, pl_t, stat_t and
  * adapt_am_t were introduced with that line of reasoning.
- * 
+ *
  * In srch_t, polymorphism of implementation is also one important
  * element in separting all graph related members from kb_t to srch_t.
  * One could probably implement the polymorphism as an interface of kb
  * but it is not trivial from the semantic meaning of kb.  That is
  * probably why srch_t is introduced as the gateway of search interfaces.
- * 
+ *
  * Another phenonemon one could see in the code was bad interaction
  * between modules. This is quite serious in two areas: logging and
  * checking. The current policy is unless something required cross
  * checking two structures, they would be done internally inside a module
  * initialization.
- * 
+ *
  * Finally, kb_setlm is now removed and is replaced by ld_set_lm (by
  * users) or srch_set_lm (by developers). I think this is quite
  * reasonable.
- * 
+ *
  * Revision 1.14  2005/06/19 19:41:23  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -163,6 +179,11 @@ void kb_init (kb_t *kb)
 			      cmd_ln_str("-lm"),
 			      cmd_ln_str("-lmctlfn"),
 			      cmd_ln_str("-lmdumpdir"),
+			      cmd_ln_str("-fsg"),
+#if 0
+			      cmd_ln_str("-fsgctlfn"),
+#endif
+			      NULL, /*Currently, not try to handle the -fsgctlfn */
 			      cmd_ln_str("-fillpen"),
 			      cmd_ln_str("-senmgau"),
 			      cmd_ln_float32("-silprob"),
@@ -170,6 +191,7 @@ void kb_init (kb_t *kb)
 			      cmd_ln_float32("-lw"),
 			      cmd_ln_float32("-wip"),
 			      cmd_ln_float32("-uw"),
+			      cmd_ln_str("-s3hmmdir"),
 			      cmd_ln_str("-mean"),
 			      cmd_ln_str("-var"),
 			      cmd_ln_float32("-varfloor"),
@@ -233,7 +255,7 @@ void kb_init (kb_t *kb)
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
     for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
-    kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
+    kb->ascr = ascr_init (kbcore_n_mgau(kbcore),
 			  kb->kbcore->dict2pid->n_comstate,
 			  mdef_n_sseq(mdef),
 			  dict2pid_n_comsseq(d2p),
@@ -243,16 +265,18 @@ void kb_init (kb_t *kb)
 
     if(REPORT_KB)
       ascr_report(kb->ascr);
-    
-    /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
-    kb->vithist = vithist_init(kbcore, kb->beam->word,
-			       cmd_ln_int32("-bghist"),
-			       cmd_ln_int32("-lmrescore"),
-			       cmd_ln_int32("-bt_wsil"),
-			       REPORT_KB);
 
-    if(REPORT_KB)
-      vithist_report(kb->vithist);
+    if(kbcore->lmset&&(cmd_ln_str("-lm")||cmd_ln_str("-lmctlfn"))){
+      /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+      kb->vithist = vithist_init(kbcore, kb->beam->word,
+				 cmd_ln_int32("-bghist"),
+				 cmd_ln_int32("-lmrescore"),
+				 cmd_ln_int32("-bt_wsil"),
+				 REPORT_KB);
+      
+      if(REPORT_KB)
+	vithist_report(kb->vithist);
+    }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
@@ -379,9 +403,13 @@ void kb_free (kb_t *kb)
 {
 
   if(kb->srch){
+    srch_uninit(kb->srch);
     /** Add search free code */
   }
 
+  if(kb->stat){
+    stat_free((void*) kb->stat);
+  }
   /* vithist */
   if (kb->vithist) 
     vithist_free((void*) kb->vithist);
@@ -395,13 +423,11 @@ void kb_free (kb_t *kb)
   if(kb->beam)
     beam_free((void*) kb->beam);
 
-  if(kb->histprune)
-    histprune_free((void*) kb->histprune);
   
   if(kb->pl)
     pl_free((void*)kb->pl);
 
-  if(kb->kbcore)
+  if(kb->kbcore!=NULL)
     kbcore_free (kb->kbcore);
 
   /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 

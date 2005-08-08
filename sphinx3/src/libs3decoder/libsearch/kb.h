@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.17  2005/06/21  23:21:58  arthchan2003
+ * Revision 1.17.4.1  2005/07/03  23:00:58  arthchan2003
+ * Free stat_t, histprune_t and srch_t correctly.
+ * 
+ * Revision 1.17  2005/06/21 23:21:58  arthchan2003
  * Log. This is a big refactoring for kb.c and it is worthwhile to give
  * words on why and how things were done.  There were generally a problem
  * that the kb structure itself is too flat.  That makes it has to
@@ -54,23 +57,23 @@
  * well be put into the same structure to increase readability and
  * modularity. One can explain why histprune_t, pl_t, stat_t and
  * adapt_am_t were introduced with that line of reasoning.
- * 
+ *
  * In srch_t, polymorphism of implementation is also one important
  * element in separting all graph related members from kb_t to srch_t.
  * One could probably implement the polymorphism as an interface of kb
  * but it is not trivial from the semantic meaning of kb.  That is
  * probably why srch_t is introduced as the gateway of search interfaces.
- * 
+ *
  * Another phenonemon one could see in the code was bad interaction
  * between modules. This is quite serious in two areas: logging and
  * checking. The current policy is unless something required cross
  * checking two structures, they would be done internally inside a module
  * initialization.
- * 
+ *
  * Finally, kb_setlm is now removed and is replaced by ld_set_lm (by
  * users) or srch_set_lm (by developers). I think this is quite
  * reasonable.
- * 
+ *
  * Revision 1.10  2005/06/19 19:41:23  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -151,7 +154,6 @@ typedef struct {
   /** Structures of storing parameters for different techniques. */
   ascr_t *ascr;		  /**< Senone and composite senone scores for one frame. */
   beam_t *beam;		  /**< Structure that wraps up parameters related to beam pruning. */
-  histprune_t *histprune; /**< Structure that wraps up parameters related to histogram pruning. */
   fast_gmm_t *fastgmm;    /**< Structure that wraps up parameters for fast GMM computation. */
   pl_t *pl;               /**< Structure that wraps up parameters for phoneme look-ahead. */
 

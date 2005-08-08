@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.8.4.1  2005/07/22  03:46:56  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  * 
+ * Revision 1.8  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.8  2005/06/19 03:58:17  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -147,28 +150,12 @@
 #include <logs3.h>
 #include <dag.h>
 
-
-
-
-/****************************************
- * Globals!   This is a hack!		*
- ****************************************/
-
+lmset_t* lmset;           /* The language model set */
+fillpen_t *fpen;	/* The filler penalty structure. */
+dag_t dag;              /* The dag used by main_astar.c */
 dict_t *dict;		/* The dictionary */
 
-#if 0
-lm_t *lm;		/* The Language model */
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
-
 static int32 beam;
-
-lmset_t* lmset;           /* The language model set */
-
-fillpen_t *fpen;	/* The filler penalty structure. */
-
-dag_t dag;              /* The dag used by main_astar.c */
-
 static int32 maxlmop;		/* Max LM ops allowed before utterance aborted */
 static int32 lmop;		/* #LM ops actually made */
 static int32 maxedge;		/* Max #edges in DAG allowed before utterance aborted */
@@ -814,25 +801,7 @@ static aheap_t *heap_root;
 static ppath_t **hash_list;	/* A separate list for each hashmod value (see above) */
 
 
-#if 0
-static void heap_dump (aheap_t *top, int32 level)
-{
-    int32 i;
-    
-    if (! top)
-	return;
-    
-    for (i = 0; i < level; i++)
-	printf ("  ");
-    
-    printf ("%s %d %d %d %d\n", dict_wordstr(dict, top->nb->dagnode->wid),
-	    top->nb->dagnode->sf, top->nb->dagnode->fef, top->nb->dagnode->lef,
-	    top->nb->score);
-    heap_dump (top->left, level+1);
-    heap_dump (top->right, level+1);
-}
-#endif
-
+/* It is reasonable to replace the implementation with heap_t */
 
 /**
  * Insert the given new ppath node in sorted (sub)heap rooted at the given heap node

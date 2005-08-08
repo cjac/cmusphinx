@@ -34,15 +34,41 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.15.4.3  2005/07/18  23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
  * 
+ * Revision 1.15.4.2  2005/07/05 21:35:00  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.18  2005/07/05 13:12:36  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
+ * Revision 1.15.4.1  2005/07/05 06:49:38  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.17  2005/07/04 20:57:52  dhdfu
+ * Finally remove the "temporary hack" for the endpointer, and do
+ * everything in logs3 domain.  Should make it faster and less likely to
+ * crash on Alphas.
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
+ * Revision 1.16  2005/07/02 04:24:46  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ *
+ * Revision 1.15  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.15  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- *  into most of the .[ch] files. It is easy to keep track changes.
- *
+ * Revision 1.15.4.3  2005/07/18  23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
+ * 
+ * Add Revision 1.15.4.2  2005/07/05 21:35:00  arthchan2003
+ * Add Merged from HEAD.
+ * Add
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -72,6 +98,8 @@
 #include "classify.h"
 #include "endptr.h"
 #include "fe.h"
+#include "logs3.h"
+#include "cmdln_macro.h"
 
 /* Define a null device that depends on the platform */
 #if defined(WIN32)
@@ -110,7 +138,6 @@ ep -i  input.raw \n						\
         -upperf    6800 \n						\
         -nfilt     40 \n						\
         -nfft      512";
-
 static arg_t arg[] = {
 
 #if 0 /* ARCHAN: temporarily removed in 3.5 release */
@@ -123,6 +150,20 @@ static arg_t arg[] = {
     "0",
     "Shows example of how to use the tool"},
 #endif
+  waveform_to_cepstral_command_line_macro()
+  log_table_command_line_macro()
+  common_application_properties_command_line_macro()
+  gmm_command_line_macro() 
+
+  { "-machine_endian",
+    ARG_STRING,
+#ifdef WORDS_BIGENDIAN
+    "big",
+#else
+    "little",
+#endif
+    "Endianness of machine, big or little" },
+
 
   { "-i",
     ARG_STRING,
@@ -164,10 +205,6 @@ static arg_t arg[] = {
     ARG_INT32,
     "0",
     "Defines input format as Microsoft Wav (RIFF)" },
-  { "-input_endian",
-    ARG_STRING,
-    "little",
-    "Endianness of input data, big or little, ignored if NIST or MS Wav" },
   { "-nchans",
     ARG_INT32,
     ONE_CHAN,
@@ -184,62 +221,6 @@ static arg_t arg[] = {
     ARG_STRING,
     "sphinx",
     "SPHINX format - big endian" },
-  { "-mach_endian",
-    ARG_STRING,
-#ifdef WORDS_BIGENDIAN
-    "big",
-#else
-    "little",
-#endif
-    "Endianness of machine, big or little" },
-  { "-alpha",
-    ARG_FLOAT32,
-    DEFAULT_PRE_EMPHASIS_ALPHA,
-    "Preemphasis parameter" },
-  { "-srate",
-    ARG_FLOAT32,
-    DEFAULT_SAMPLING_RATE,
-    "Sampling rate" },
-  { "-frate",
-    ARG_INT32,
-    DEFAULT_FRAME_RATE,
-    "Frame rate" },
-  { "-wlen",
-    ARG_FLOAT32,
-    DEFAULT_WINDOW_LENGTH,
-    "Hamming window length" },
-  { "-nfft",
-    ARG_INT32,
-    DEFAULT_FFT_SIZE,
-    "Size of FFT" },
-  { "-nfilt",
-    ARG_INT32,
-    DEFAULT_NUM_FILTERS,
-    "Number of filter banks" },
-  { "-lowerf",
-    ARG_FLOAT32,
-    DEFAULT_LOWER_FILT_FREQ,
-    "Lower edge of filters" },
-  { "-upperf",
-    ARG_FLOAT32,
-    DEFAULT_UPPER_FILT_FREQ,
-    "Upper edge of filters" },
-  { "-ncep",
-    ARG_INT32,
-    DEFAULT_NUM_CEPSTRA,
-    "Number of cep coefficients" },
-  { "-doublebw",
-    ARG_INT32,
-    "0",
-    "Use double bandwidth filters (same center freq)" },
-  { "-blocksize",
-    ARG_INT32,
-    DEFAULT_BLOCKSIZE,
-    "Block size, used to limit the number of samples used at a time when reading very large audio files" },
-  { "-dither",
-    ARG_INT32,
-    "0",
-    "Add 1/2-bit noise" },
   { "-verbose",
     ARG_INT32,
     "0",
@@ -248,30 +229,26 @@ static arg_t arg[] = {
     ARG_STRING,
     NULL,
     "The model definition file" },
-  { "-mean",
-    ARG_STRING,
-    NULL,
-    "The mean file" },
-  { "-var",
-    ARG_STRING,
-    NULL,
-    "The var file" },
-  { "-varfloor",
+  { "-pad_before",
     ARG_FLOAT32,
-    "0.0001",
-    "Mixture gaussian variance floor (applied to data from -var file)" },
-  { "-mixw",
-    ARG_STRING,
-    NULL,
-    "The mixture weight file" },
-  { "-mixwfloor",
+    PAD_T_BEFORE,
+    "Pad these many seconds before speech begin" },
+  { "-pad_after",
     ARG_FLOAT32,
-    "0.0000001",
-    "Senone mixture weights floor (applied to data from -mixw file)" },
-  { "-logfn",
-    ARG_STRING,
-    NULL,
-    "Log file (default stdout/stderr)" },
+    PAD_T_AFTER,
+    "Pad these many seconds after speech end" },
+  { "-speech_start",
+    ARG_FLOAT32,
+    UTT_T_START,
+    "Declare speech after these many seconds of speech (pad not accounted)" },
+  { "-speech_end",
+    ARG_FLOAT32,
+    UTT_T_END,
+    "Declare end of speech after these many seconds of non-speech (pad not accounted)" },
+  { "-speech_cancel",
+    ARG_FLOAT32,
+    UTT_T_CANCEL,
+    "Cancel a start of speech  after these many seconds of non-speech" },
 
   { NULL, ARG_INT32,  NULL, NULL }
 };
@@ -398,7 +375,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
 	  }
 	endpointer_update_stat (ENDPTR, FEW->FE, CLASSW, postclass);		
 	
-#if 0		
+#if 0
 	switch (postclass){
 	case 0:
 	  printf(" N"); 
@@ -488,12 +465,20 @@ int32 main(int32 argc, char **argv)
   unlimit();
   ptmr_init(&tm_class);
 
+  logs3_init(cmd_ln_float32("-logbase"), 1, cmd_ln_int32("-log3table"));
+
   FEW = few_initialize();
   CLASSW = classw_initialize(cmd_ln_str("-mdef"), cmd_ln_str("-mean"),
 			     cmd_ln_str("-var"), cmd_ln_float32("-varfloor"),
 			     cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"),
 			     TRUE, ".cont.");
-  ENDPTR = endpointer_initialize(FEW->FE); 
+  ENDPTR = endpointer_initialize(FEW->FE,
+				 cmd_ln_float32("-pad_before"),
+				 cmd_ln_float32("-pad_after"),
+				 cmd_ln_float32("-speech_start"),
+				 cmd_ln_float32("-speech_end"),
+				 cmd_ln_float32("-speech_cancel"));
+ 
   spbuffer = fe_convert_files_to_spdata(FEW->P, FEW->FE, &splen, &nframes);
   
   ptmr_start(&tm_class);

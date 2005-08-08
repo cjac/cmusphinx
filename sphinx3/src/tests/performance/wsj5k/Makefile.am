@@ -47,6 +47,7 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
 
+WSJ5KPATH=/lab/speech/sphinx4/data/wsj0/wsj0/si_et_05_cepstra/
 WSJ5KBATCH=/lab/speech/sphinx4/data/wsj0/wsj0/wsj5k.batch
 WSJ5KNVPBATCH=/lab/speech/sphinx4/data/wsj0/wsj0/wsj5k.e.batch
 PROGRAMDIR = ${top_builddir}/src/programs
@@ -79,7 +80,7 @@ wsj5k_bigram-lp wsj5k_trigram-lp :
 	cat ARGS ARGS.live ARGS.$(subst -lp,,$@) > ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed "s/\.wav\.raw//" > $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed "s/\.wav\.raw//" |sed "s/\.raw//" > $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 wsj5k_bigram_nvp-lp wsj5k_trigram_nvp-lp:
@@ -88,7 +89,7 @@ wsj5k_bigram_nvp-lp wsj5k_trigram_nvp-lp:
 	cat ARGS ARGS.live ARGS.$(subst _nvp-lp,,$@) > ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) ./$@.ctl / ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed "s/\.wav\.raw//" > $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed "s/\.wav\.raw//" |sed "s/\.raw//" > $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 wsj5k_bigram-decode wsj5k_trigram-decode :
@@ -98,7 +99,7 @@ wsj5k_bigram-decode wsj5k_trigram-decode :
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" |sed -e "s/\.raw//" -e "s:$(WSJ5KPATH)::"> $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 wsj5k_bigram_nvp-decode wsj5k_trigram_nvp-decode:
@@ -108,7 +109,7 @@ wsj5k_bigram_nvp-decode wsj5k_trigram_nvp-decode:
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/"> $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/"  |sed -e "s/\.raw//" -e "s:$(WSJ5KPATH)::"> $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
@@ -119,7 +120,7 @@ wsj5k_bigram-decany wsj5k_trigram-decany :
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" > $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" |sed -e "s/\.raw//" -e "s:$(WSJ5KPATH)::" >  $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 wsj5k_bigram_nvp-decany wsj5k_trigram_nvp-decany:
@@ -129,5 +130,5 @@ wsj5k_bigram_nvp-decany wsj5k_trigram_nvp-decany:
 	echo "-ctl $@.ctl" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results  2>&1 
-	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/"> $@.sent
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(WSJ5KNVPBATCH) | sed -e "s/\.wav\.raw//" -e "s/_raw/_cepstra/" |sed -e "s/\.raw//" -e "s:$(WSJ5KPATH)::"> $@.sent
 	$(ALIGNBIN) -r $@.sent -h $@.match

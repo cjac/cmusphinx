@@ -46,9 +46,18 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  02:47:35  arthchan2003
- * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * Revision 1.8.4.3  2005/07/26  02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
  * 
+ * Revision 1.8.4.2  2005/07/17 05:55:45  arthchan2003
+ * Removed vithist_dag_write_header
+ *
+ * Revision 1.8.4.1  2005/07/04 07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
+ *
+ * Revision 1.8  2005/06/22 02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ *
  * Revision 1.9  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -83,6 +92,29 @@
 
 
 #include "vithist.h"
+
+void vh_lmstate_display(vh_lmstate_t *vhl,dict_t *dict)
+{
+  /* TODO: Also translate wid to string if dict is not NULL*/
+  E_INFO("lwid[0] %d\n",vhl->lm3g.lwid[0]);
+  E_INFO("lwid[1] %d\n",vhl->lm3g.lwid[1]);
+  E_INFO("lwid[2] %d\n",vhl->lm3g.lwid[2]);
+}
+
+void vithist_entry_display(vithist_entry_t *ve, dict_t* dict)
+{
+
+  E_INFO("Word ID %d \n",ve->wid);
+  if(dict!=NULL){
+    /* Also translate the wid to string */
+  }
+  E_INFO("Sf %d Ef %d \n",ve->sf,ve->ef);
+  E_INFO("Ascr %d Lscr %d \n",ve->ascr,ve->lscr);
+  E_INFO("Score %d, senscale %d \n",ve->score,ve->senscale);
+  E_INFO("Type %d\n", ve->type);
+  E_INFO("Valid for LM rescoring? %d\n", ve->valid);
+  vh_lmstate_display(&(ve->lmstate),dict);
+}
 
 
 vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isreport)
@@ -315,6 +347,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.valid = 1;
     tve.ascr = score - pve->score;
     tve.senscale = senscale;
+    tve.lscr = 0;
 
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;
@@ -808,7 +841,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
     vithist_entry_t *ve;
     int32 b, l;
     glist_t hyp;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     hyp = NULL;
     
@@ -817,7 +850,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	l = VITHIST_ID2BLKOFFSET(id);
 	ve = vh->entry[b] + l;
 	
-	h = (hyp_t *) ckd_calloc (1, sizeof(hyp_t));
+	h = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
 	h->id = ve->wid;
 	h->sf = ve->sf;
 	h->ef = ve->ef;
@@ -846,34 +879,6 @@ typedef struct {
 
 
 /*
- *
- */
-void vithist_dag_write_header(FILE *fp,int32 nfr, char* str)
-{
-  getcwd (str, sizeof(str));
-  fprintf (fp, "# getcwd: %s\n", str);
-	  
-  /* Print logbase first!!  Other programs look for it early in the
-   * DAG */
-
-  fprintf (fp, "# -logbase %e\n", cmd_ln_float32 ("-logbase"));
-  
-  fprintf (fp, "# -dict %s\n", cmd_ln_str ("-dict"));
-  if (cmd_ln_str ("-fdict"))
-    fprintf (fp, "# -fdict %s\n", cmd_ln_str ("-fdict"));
-  fprintf (fp, "# -lm %s\n", cmd_ln_str ("-lm"));
-  fprintf (fp, "# -mdef %s\n", cmd_ln_str ("-mdef"));
-  fprintf (fp, "# -mean %s\n", cmd_ln_str ("-mean"));
-  fprintf (fp, "# -var %s\n", cmd_ln_str ("-var"));
-  fprintf (fp, "# -mixw %s\n", cmd_ln_str ("-mixw"));
-  fprintf (fp, "# -tmat %s\n", cmd_ln_str ("-tmat"));
-  fprintf (fp, "#\n");
-	  
-  fprintf (fp, "Frames %d\n", nfr);
-  fprintf (fp, "#\n");
-
-}
-/*
  * Header written BEFORE this function is called.
  */
 void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, FILE *fp)
@@ -884,7 +889,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
     dagnode_t *dn, *dn2;
     int32 sf, ef, n_node;
     int32 f, i;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     sfwid = (glist_t *) ckd_calloc (vh->n_frm+1, sizeof(glist_t));
     
@@ -951,7 +956,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
      * But keep segments in the original hypothesis, regardless; mark them first.
      */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
+	h = (srch_hyp_t *) gnode_ptr (gn);
 	for (gn2 = sfwid[h->sf]; gn2; gn2 = gnode_next(gn2)) {
 	    dn = (dagnode_t *) gnode_ptr (gn2);
 	    if (h->id == dn->wid)
@@ -1078,13 +1083,15 @@ void vithist_free (vithist_t *v)
 
 void vithist_report(vithist_t *vh)
 {
+  E_INFO_NOFN("Initialization of vithist_t, report:\n");
   if(vh){
-    E_INFO_NOFN("Initialization of vithist_t, report:\n");
     E_INFO_NOFN("Word beam = %d\n",vh->wbeam);
     E_INFO_NOFN("Bigram Mode =%d\n",vh->bghist);
     E_INFO_NOFN("Rescore Mode =%d\n",vh->bLMRescore);
     E_INFO_NOFN("Trace sil Mode =%d\n",vh->bBtwSil);
     E_INFO_NOFN("\n");
+  }else{
+    E_INFO_NOFN("Viterbi history is (null)\n");
   }
 }
 
