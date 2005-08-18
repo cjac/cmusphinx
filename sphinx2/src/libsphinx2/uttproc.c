@@ -39,9 +39,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.21  2005/05/24  20:55:24  rkm
- * Added -fsgbfs flag
+ * Revision 1.22  2005/08/18  22:56:05  egouvea
+ * Fixed a bug in which the last frame, when running in live mode, was
+ * ignored by uttproc_end_utt.
  * 
+ * Revision 1.21  2005/05/24 20:55:24  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.20  2005/01/20 00:09:43  egouvea
  * Replace subtraction of elements in FILETIME structure with a subtraction of 64 bit integers, and removed some warnings about type casting
  *
@@ -49,11 +53,11 @@
  * Added continuous density acoustic model handling
  *
  * 
- * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon Univ.
- * 		Modified to use senscr module for senone score computation.
+ * 22-Nov-2004  M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon Univ.
+ *              Modified to use senscr module for senone score computation.
  * 
- * 18-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon Univ.
- * 		uttproc_feat2rawfr() is buggy; set it to ignore comp2rawfr[].
+ * 18-Nov-2004  M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon Univ.
+ *              uttproc_feat2rawfr() is buggy; set it to ignore comp2rawfr[].
  * 
  * Revision 1.18  2004/11/13 00:38:44  egouvea
  * Replaced most printf with E_INFO (or E_WARN or...). Changed the output
@@ -188,74 +192,74 @@
  * 09-Jan-00    Kevin Lenzo <lenzo@cs.cmu.edu> at Carnegie Mellon
  *              Altered to accomodate new fe lib.
  * 
- * 30-Oct-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Changed rawlogfile mode to READONLY (WIN32).
+ * 30-Oct-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Changed rawlogfile mode to READONLY (WIN32).
  * 
- * 10-Sep-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Reset uttno to 0 whenever uttproc_set_auto_uttid_prefix() is called.
+ * 10-Sep-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Reset uttno to 0 whenever uttproc_set_auto_uttid_prefix() is called.
  * 
- * 10-Sep-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added uttproc_allphone_cepfile(), and minor modifications to support it.
+ * 10-Sep-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added uttproc_allphone_cepfile(), and minor modifications to support it.
  * 
- * 20-Aug-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Bugfix: 
- * 		Added call to agc_emax_update() inside uttproc_end_utt().  Added call
- * 		to initialize AGC with a reasonable value.
+ * 20-Aug-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Bugfix: 
+ *              Added call to agc_emax_update() inside uttproc_end_utt().  Added call
+ *              to initialize AGC with a reasonable value.
  * 
- * 20-Apr-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added uttproc_set_auto_uttid_prefix().
+ * 20-Apr-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added uttproc_set_auto_uttid_prefix().
  * 
- * 11-Apr-98	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added AGC_NONE test to determining livemode in uttproc_begin_utt().
- * 		Added memcpy to mfc2feat_live if AGC_NONE (bugfix).
+ * 11-Apr-98    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added AGC_NONE test to determining livemode in uttproc_begin_utt().
+ *              Added memcpy to mfc2feat_live if AGC_NONE (bugfix).
  * 
- * 22-Jul-97	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added sampling rate spec in call to fe_init.
+ * 22-Jul-97    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added sampling rate spec in call to fe_init.
  * 
- * 27-May-97	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added uttprocSetcomp2rawfr() and uttprocGetcomp2rawfr() functions
- * 		implemented by Bob Brennan for maintaining multiple lattices.
+ * 27-May-97    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added uttprocSetcomp2rawfr() and uttprocGetcomp2rawfr() functions
+ *              implemented by Bob Brennan for maintaining multiple lattices.
  * 
- * 04-Apr-97	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added dictwd_in_lm() check in uttproc_set_context.
+ * 04-Apr-97    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added dictwd_in_lm() check in uttproc_set_context.
  * 
- * 30-Oct-96	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Commented out call to search_dump_lattice_ascii.
- * 		Added feature vector padding in mfc2feat_batch ().
+ * 30-Oct-96    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Commented out call to search_dump_lattice_ascii.
+ *              Added feature vector padding in mfc2feat_batch ().
  * 
- * 17-Jun-96	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added uttproc_set_context().
+ * 17-Jun-96    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added uttproc_set_context().
  * 
- * 04-Jun-96	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added BLOCKING option to uttproc_rawdata, uttproc_cepdata, uttproc_result.
+ * 04-Jun-96    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added BLOCKING option to uttproc_rawdata, uttproc_cepdata, uttproc_result.
  * 
- * 24-May-96	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Substantially modified to be driven with externally provided data, rather
- * 			than explicitly reading an A/D source.
- * 		Added uttproc_abort_utt() and uttproc_partial_result().
- * 		Added raw and mfc logging function.
+ * 24-May-96    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Substantially modified to be driven with externally provided data, rather
+ *                      than explicitly reading an A/D source.
+ *              Added uttproc_abort_utt() and uttproc_partial_result().
+ *              Added raw and mfc logging function.
  * 
- * 17-Nov-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added function uttproc_lmupdate().
+ * 17-Nov-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added function uttproc_lmupdate().
  * 
- * 17-Nov-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Fixed bug in uttproc_feat2rawfr that could return feat2rawfr[-1].
+ * 17-Nov-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Fixed bug in uttproc_feat2rawfr that could return feat2rawfr[-1].
  * 
- * 29-Sep-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added -matchsegfn argument and processing.
+ * 29-Sep-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added -matchsegfn argument and processing.
  * 
- * 17-Sep-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added autonumbering of utterances (typically used in live mode).
+ * 17-Sep-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added autonumbering of utterances (typically used in live mode).
  * 
- * 02-Jul-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Added allphone handling.
+ * 02-Jul-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added allphone handling.
  * 
- * 13-Jun-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- * 		Simplified the uttproc interface by combining functions and redefining
- * 		others.
+ * 13-Jun-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Simplified the uttproc interface by combining functions and redefining
+ *              others.
  * 
- * 01-Jun-95	M K Ravishankar (rkm@cs) at Carnegie Mellon University
- *		Added uttproc_set_lm() and uttproc_set_startword().
+ * 01-Jun-95    M K Ravishankar (rkm@cs) at Carnegie Mellon University
+ *              Added uttproc_set_lm() and uttproc_set_startword().
  */
 
 /*
@@ -305,35 +309,35 @@
 #include <fsg_search.h>
 
 
-#define MAX_UTT_LEN	6000	/* #frames */
-#define MAX_CEP_LEN	(MAX_UTT_LEN*CEP_SIZE)
-#define MAX_POW_LEN	(MAX_UTT_LEN*POW_SIZE)
+#define MAX_UTT_LEN     6000    /* #frames */
+#define MAX_CEP_LEN     (MAX_UTT_LEN*CEP_SIZE)
+#define MAX_POW_LEN     (MAX_UTT_LEN*POW_SIZE)
 
 static int32 frame_spacing;
 
 typedef enum {UTTSTATE_UNDEF=-1,
-	      UTTSTATE_IDLE=0,
-	      UTTSTATE_BEGUN=1,
-	      UTTSTATE_ENDED=2,
-	      UTTSTATE_STOPPED=3
+              UTTSTATE_IDLE=0,
+              UTTSTATE_BEGUN=1,
+              UTTSTATE_ENDED=2,
+              UTTSTATE_STOPPED=3
 } uttstate_t;
 static uttstate_t uttstate = UTTSTATE_UNDEF;
 
 static int32 inputtype;
-#define INPUT_UNKNOWN	0
-#define INPUT_RAW	1
-#define INPUT_MFC	2
+#define INPUT_UNKNOWN   0
+#define INPUT_RAW       1
+#define INPUT_MFC       2
 
-static int32 livemode;		/* Iff TRUE, search while input being supplied.  In this
-				   case, CMN, AGC and silence compression cannot be
-				   utterance based */
-static int32 utt_ofl;		/* TRUE iff buffer limits overflowed in current utt */
+static int32 livemode;          /* Iff TRUE, search while input being supplied.  In this
+                                   case, CMN, AGC and silence compression cannot be
+                                   utterance based */
+static int32 utt_ofl;           /* TRUE iff buffer limits overflowed in current utt */
 static int32 nosearch = 0;
-static int32 fsg_search_mode = FALSE;	/* Using FSM search structure */
+static int32 fsg_search_mode = FALSE;   /* Using FSM search structure */
 
 /* MFC vectors for entire utt */
 static float **mfcbuf;
-static int32 n_rawfr;		/* #raw frames before compression or feature computation */
+static int32 n_rawfr;           /* #raw frames before compression or feature computation */
 
 /* Feature vectors for entire utt */
 static float *cep_buf = NULL;
@@ -341,13 +345,13 @@ static float *dcep_buf;
 static float *dcep_80ms_buf;
 static float *pcep_buf;
 static float *ddcep_buf;
-static int32 n_featfr;		/* #features frames */
-static int32 n_compfr;		/* #compressed frames */
+static int32 n_featfr;          /* #features frames */
+static int32 n_compfr;          /* #compressed frames */
 static int32 n_searchfr;
-static int16 *comp2rawfr;	/* Compressed frame no. to original raw frame no. */
+static int16 *comp2rawfr;       /* Compressed frame no. to original raw frame no. */
 
-static int32 pow_i, cep_i;	/* #feature frames total in current utt so far */
-static int32 search_cep_i, search_pow_i;	/* #frames already searched */
+static int32 pow_i, cep_i;      /* #feature frames total in current utt so far */
+static int32 search_cep_i, search_pow_i;        /* #frames already searched */
 
 /* CMN, AGC, silence compression; default values */
 static scvq_norm_t cmn = NORM_UTT;
@@ -363,14 +367,14 @@ static FILE *rawfp = NULL;
 static FILE *mfcfp = NULL;
 static char rawfilename[4096];
 
-static int32 samp_hist[5];	/* #Samples in 0-4K, 4K-8K, 8K-16K, 16K-24K, 24K-32K */
+static int32 samp_hist[5];      /* #Samples in 0-4K, 4K-8K, 8K-16K, 16K-24K, 24K-32K */
 static int32 max_samp;
 
 static char *uttid;
 static char *uttid_prefix = NULL;
-#define UTTIDSIZE	4096
-static int32 uttno;	/* A running sequence number assigned to every utterance.  Used as
-			   an id for an utterance if uttid is undefined. */
+#define UTTIDSIZE       4096
+static int32 uttno;     /* A running sequence number assigned to every utterance.  Used as
+                           an id for an utterance if uttid is undefined. */
 
 static search_hyp_t *utt_seghyp = NULL;
 
@@ -411,16 +415,16 @@ void norm_mean (float *vec, int32 nvec, int32 veclen);
 
 /* r_agc_noise.c */
 extern int32 delete_background (float *cep, int32 fcnt,
-				int32 cf_cnt, double thresh);
+                                int32 cf_cnt, double thresh);
 extern float histo_noise_level (float *cep, int32 fcnt, int32 cf_cnt);
 extern int32 histo_add_c0 (float c0);
 void compute_noise_level (void);
 void real_agc_noise(float *cep,
-		    register int32 fcnt,
-		    register int32 cf_cnt);
+                    register int32 fcnt,
+                    register int32 cf_cnt);
 void agc_max(float *cep,
-	     register int32 fcnt,
-	     register int32 cf_cnt);
+             register int32 fcnt,
+             register int32 cf_cnt);
 
 /* searchlat.c */
 void searchlat_set_rescore_lm (char const *lmname);
@@ -497,7 +501,7 @@ static void timing_start ( void )
 static void timing_stop (int32 nfr)
 {
     if (nfr <= 0)
-	return;
+        return;
     
     E_INFO(" %5.2f SoS", searchFrame()*0.01);
     TotalSpeechTime += searchFrame()*0.01f;
@@ -527,7 +531,7 @@ static void timing_stop (int32 nfr)
 #ifndef _HPUX_SOURCE
     E_INFOCONT(", %6.2f sec CPU", MakeSeconds (&start.ru_utime, &stop.ru_utime));
     E_INFOCONT(", %5.2f xRT",
-	    MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
+            MakeSeconds (&start.ru_utime, &stop.ru_utime)/(searchFrame()*0.01));
 #endif
     
     TotalCPUTime += MakeSeconds (&start.ru_utime, &stop.ru_utime);
@@ -551,11 +555,11 @@ static void timing_end ( void )
     E_INFO("TOTAL Speech %.2f seconds\n", TotalSpeechTime);
 
     if (TotalSpeechTime > 0.0) {
-	E_INFO("AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
+        E_INFO("AVERAGE %.2f xRT(Elapsed)", TotalElapsedTime/TotalSpeechTime);
 #ifndef _HPUX_SOURCE
-	E_INFOCONT(", %.2f xRT(CPU)", TotalCPUTime/TotalSpeechTime);
+        E_INFOCONT(", %.2f xRT(CPU)", TotalCPUTime/TotalSpeechTime);
 #endif
-	E_INFOCONT("\n");
+        E_INFOCONT("\n");
     }
 }
 
@@ -564,27 +568,27 @@ static void feat_alloc ( void )
     int32 k;
     
     if (! cep_buf) {
-	cep_buf       = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
-	dcep_buf      = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
-	dcep_80ms_buf = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
-	pcep_buf      = (float *) CM_calloc (MAX_POW_LEN, sizeof(float));
-	ddcep_buf     = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
+        cep_buf       = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
+        dcep_buf      = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
+        dcep_80ms_buf = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
+        pcep_buf      = (float *) CM_calloc (MAX_POW_LEN, sizeof(float));
+        ddcep_buf     = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
 
-	mfcbuf = (float **) CM_calloc (MAX_UTT_LEN+10, sizeof(float *));
-	mfcbuf[0] = (float *) CM_calloc ((MAX_UTT_LEN+10)*CEP_SIZE, sizeof(float));
-	for (k = 1; k < MAX_UTT_LEN+10; k++)
-	    mfcbuf[k] = mfcbuf[k-1] + CEP_SIZE;
+        mfcbuf = (float **) CM_calloc (MAX_UTT_LEN+10, sizeof(float *));
+        mfcbuf[0] = (float *) CM_calloc ((MAX_UTT_LEN+10)*CEP_SIZE, sizeof(float));
+        for (k = 1; k < MAX_UTT_LEN+10; k++)
+            mfcbuf[k] = mfcbuf[k-1] + CEP_SIZE;
     }
 }
 
 int32 uttproc_get_featbuf (float **cep, float **dcep, float **dcep_80ms, float **pcep,
 float **ddcep)
 {
-    *cep	= cep_buf;
-    *dcep	= dcep_buf;
-    *dcep_80ms	= dcep_80ms_buf;
-    *pcep	= pcep_buf;
-    *ddcep	= ddcep_buf;
+    *cep        = cep_buf;
+    *dcep       = dcep_buf;
+    *dcep_80ms  = dcep_80ms_buf;
+    *pcep       = pcep_buf;
+    *ddcep      = ddcep_buf;
 
     return n_featfr;
 }
@@ -598,11 +602,11 @@ float **ddcep)
  * Return 1 if a valid feature is computed for this input frame, 0 otherwise.
  */
 static int32 compute_features(float *cep_o,
-			      float *dcep_o,
-			      float *dcep_80ms_o,
-			      float *pcep_o,
-			      float *ddcep_o,
-			      float *mfcc)
+                              float *dcep_o,
+                              float *dcep_80ms_o,
+                              float *pcep_o,
+                              float *ddcep_o,
+                              float *mfcc)
 {
     float *cep_in;
     float *dcep_in;
@@ -618,47 +622,47 @@ static int32 compute_features(float *cep_o,
         memcpy(ddcep_o,     ddcep_in,     sizeof(float) * CEP_SIZE);
 
 #if 0
-	{
-	  int32 d;
-	  
-	  printf ("C: ");
-	  for (d = 0; d < CEP_SIZE; d++)
-	    printf (" %7.3f", cep_o[d]);
-	  printf ("\n");
+        {
+          int32 d;
+          
+          printf ("C: ");
+          for (d = 0; d < CEP_SIZE; d++)
+            printf (" %7.3f", cep_o[d]);
+          printf ("\n");
 
-	  printf ("D: ");
-	  for (d = 0; d < CEP_SIZE; d++)
-	    printf (" %7.3f", dcep_o[d]);
-	  printf ("\n");
+          printf ("D: ");
+          for (d = 0; d < CEP_SIZE; d++)
+            printf (" %7.3f", dcep_o[d]);
+          printf ("\n");
 
-	  printf ("L: ");
-	  for (d = 0; d < CEP_SIZE; d++)
-	    printf (" %7.3f", dcep_80ms_o[d]);
-	  printf ("\n");
+          printf ("L: ");
+          for (d = 0; d < CEP_SIZE; d++)
+            printf (" %7.3f", dcep_80ms_o[d]);
+          printf ("\n");
 
-	  printf ("P: ");
-	  for (d = 0; d < POW_SIZE; d++)
-	    printf (" %7.3f", pcep_o[d]);
-	  printf ("\n");
-	  
-	  printf ("2: ");
-	  for (d = 0; d < CEP_SIZE; d++)
-	    printf (" %7.3f", ddcep_o[d]);
-	  printf ("\n");
+          printf ("P: ");
+          for (d = 0; d < POW_SIZE; d++)
+            printf (" %7.3f", pcep_o[d]);
+          printf ("\n");
+          
+          printf ("2: ");
+          for (d = 0; d < CEP_SIZE; d++)
+            printf (" %7.3f", ddcep_o[d]);
+          printf ("\n");
 
-	  printf ("\n");
-	}
+          printf ("\n");
+        }
 #endif
 
         return 1;
     } else
-	return 0;
+        return 0;
 }
 
 static void warn_notidle (char const *func)
 {
     if (uttstate != UTTSTATE_IDLE)
-	E_WARN("%s called when not in IDLE state\n", func);
+        E_WARN("%s called when not in IDLE state\n", func);
 }
 
 static void mfc2feat_live_frame (float *incep, int32 rawfr)
@@ -666,28 +670,28 @@ static void mfc2feat_live_frame (float *incep, int32 rawfr)
     float cep[CEP_SIZE];
     
     if (cmn == NORM_PRIOR)
-	mean_norm_acc_sub (incep);
+        mean_norm_acc_sub (incep);
 
     if (agc == AGC_EMAX)
-	agc_emax_proc(cep, incep, CEP_SIZE);
+        agc_emax_proc(cep, incep, CEP_SIZE);
     else {
         memcpy (cep, incep, CEP_SIZE*sizeof(float));
     }
 
     if ((! silcomp) || histo_add_c0 (cep[0])) {
-	comp2rawfr[n_compfr++] = rawfr;
-	
-	if (compute_features(cep_buf + cep_i,
-			     dcep_buf + cep_i,
-			     dcep_80ms_buf + cep_i,
-			     pcep_buf + pow_i,
-			     ddcep_buf + cep_i,
-			     cep)) {
-	    cep_i += CEP_SIZE;
-	    pow_i += POW_SIZE;
+        comp2rawfr[n_compfr++] = rawfr;
+        
+        if (compute_features(cep_buf + cep_i,
+                             dcep_buf + cep_i,
+                             dcep_80ms_buf + cep_i,
+                             pcep_buf + pow_i,
+                             ddcep_buf + cep_i,
+                             cep)) {
+            cep_i += CEP_SIZE;
+            pow_i += POW_SIZE;
 
-	    n_featfr++;
-	}
+            n_featfr++;
+        }
     }
 }
 
@@ -697,7 +701,7 @@ static int32 mfc2feat_live (float **mfc, int32 nfr)
     int32 i;
     
     for (i = 0; i < nfr; i++, n_rawfr++)
-	mfc2feat_live_frame (mfc[i], n_rawfr);
+        mfc2feat_live_frame (mfc[i], n_rawfr);
 
     return 0;
 }
@@ -707,10 +711,10 @@ static int32 cmn_batch (float **mfc, int32 nfr)
     int32 i;
     
     if (cmn == NORM_UTT)
-	norm_mean (mfc[0], nfr, CEP_SIZE);
+        norm_mean (mfc[0], nfr, CEP_SIZE);
     else if (cmn == NORM_PRIOR) {
-	for (i = 0; i < nfr; i++)
-	    mean_norm_acc_sub (mfc[i]);
+        for (i = 0; i < nfr; i++)
+            mean_norm_acc_sub (mfc[i]);
     }
 
     return 0;
@@ -722,16 +726,16 @@ static int32 agc_batch (float **mfc, int32 nfr)
     float agc_out[CEP_SIZE];
     
     if (agc == AGC_NOISE) {
-	real_agc_noise (mfc[0], nfr, CEP_SIZE);
+        real_agc_noise (mfc[0], nfr, CEP_SIZE);
     } else if (agc == AGC_MAX) {
-	agc_max (mfc[0], nfr, CEP_SIZE);
+        agc_max (mfc[0], nfr, CEP_SIZE);
     } else if (agc == AGC_EMAX) {
-	for (i = 0; i < nfr; i++) {
-	    agc_emax_proc (agc_out, mfc[i], CEP_SIZE);
-	    memcpy (mfc[i], agc_out, CEP_SIZE * sizeof(float));
-	}
+        for (i = 0; i < nfr; i++) {
+            agc_emax_proc (agc_out, mfc[i], CEP_SIZE);
+            memcpy (mfc[i], agc_out, CEP_SIZE * sizeof(float));
+        }
     } else
-	E_WARN("NO AGC\n");
+        E_WARN("NO AGC\n");
 
     return 0;
 }
@@ -742,25 +746,25 @@ static int32 silcomp_batch (float **mfc, int32 nfr)
     float noiselevel;
 
     if (silcomp == COMPRESS_PRIOR) {
-	j = 0;
-	for (i = 0; i < nfr; i++) {
-	    if (histo_add_c0 (mfc[i][0])) {
-		if (i != j)
-		    memcpy (mfc[j], mfc[i], sizeof(float)*CEP_SIZE);
+        j = 0;
+        for (i = 0; i < nfr; i++) {
+            if (histo_add_c0 (mfc[i][0])) {
+                if (i != j)
+                    memcpy (mfc[j], mfc[i], sizeof(float)*CEP_SIZE);
 
-		comp2rawfr[j++] = i;
-	    }
-	    /* Else skip the frame, don't copy across */
-	}
-	nfr = j;
+                comp2rawfr[j++] = i;
+            }
+            /* Else skip the frame, don't copy across */
+        }
+        nfr = j;
     } else {
-	for (i = 0; i < nfr; i++)
-	    comp2rawfr[i] = i;		/* HACK!! */
+        for (i = 0; i < nfr; i++)
+            comp2rawfr[i] = i;          /* HACK!! */
 
-	if (silcomp == COMPRESS_UTT) {
-	    noiselevel = histo_noise_level (mfc[0], nfr, CEP_SIZE);
-	    nfr = delete_background (mfc[0], nfr, CEP_SIZE, noiselevel);
-	}
+        if (silcomp == COMPRESS_UTT) {
+            noiselevel = histo_noise_level (mfc[0], nfr, CEP_SIZE);
+            nfr = delete_background (mfc[0], nfr, CEP_SIZE, noiselevel);
+        }
     }
     
     return nfr;
@@ -783,42 +787,42 @@ static int32 mfc2feat_batch (float **mfc, int32 nfr)
     cep_i = (CEP_SIZE << 2);
     pow_i = (POW_SIZE << 2);
     for (i = 0; i < nfr; i++) {
-	if (compute_features(cep_buf + cep_i,
-			     dcep_buf + cep_i,
-			     dcep_80ms_buf + cep_i,
-			     pcep_buf + pow_i,
-			     ddcep_buf + cep_i,
-			     mfc[i])) {
-	    cep_i += CEP_SIZE;
-	    pow_i += POW_SIZE;
+        if (compute_features(cep_buf + cep_i,
+                             dcep_buf + cep_i,
+                             dcep_80ms_buf + cep_i,
+                             pcep_buf + pow_i,
+                             ddcep_buf + cep_i,
+                             mfc[i])) {
+            cep_i += CEP_SIZE;
+            pow_i += POW_SIZE;
 
-	    n_featfr++;
-	}
+            n_featfr++;
+        }
     }
 
     /* Copy frame[4] into frame[0]..[3] */
     for (i = 0, j = 0, k = 0; i < 4; i++, j += CEP_SIZE, k += POW_SIZE) {
-	memcpy (cep_buf+j, cep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
-	memcpy (dcep_buf+j, dcep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
-	memcpy (dcep_80ms_buf+j, dcep_80ms_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
-	memcpy (ddcep_buf+j, ddcep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
-	memcpy (pcep_buf+k, pcep_buf + (POW_SIZE<<2), POW_SIZE * sizeof(float));
-	
-	n_featfr++;
+        memcpy (cep_buf+j, cep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
+        memcpy (dcep_buf+j, dcep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
+        memcpy (dcep_80ms_buf+j, dcep_80ms_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
+        memcpy (ddcep_buf+j, ddcep_buf + (CEP_SIZE<<2), CEP_SIZE * sizeof(float));
+        memcpy (pcep_buf+k, pcep_buf + (POW_SIZE<<2), POW_SIZE * sizeof(float));
+        
+        n_featfr++;
     }
     /* Similarly fill in the last 4 frames */
     for (i = 0; i < 4; i++) {
-	memcpy (cep_buf + cep_i, cep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
-	memcpy (dcep_buf + cep_i, dcep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
-	memcpy (dcep_80ms_buf + cep_i, dcep_80ms_buf + (cep_i - CEP_SIZE),
-		CEP_SIZE*sizeof(float));
-	memcpy (ddcep_buf + cep_i, ddcep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
-	memcpy (pcep_buf + pow_i, pcep_buf + (pow_i - POW_SIZE), POW_SIZE*sizeof(float));
-	
-	cep_i += CEP_SIZE;
-	pow_i += POW_SIZE;
-	
-	n_featfr++;
+        memcpy (cep_buf + cep_i, cep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
+        memcpy (dcep_buf + cep_i, dcep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
+        memcpy (dcep_80ms_buf + cep_i, dcep_80ms_buf + (cep_i - CEP_SIZE),
+                CEP_SIZE*sizeof(float));
+        memcpy (ddcep_buf + cep_i, ddcep_buf + (cep_i - CEP_SIZE), CEP_SIZE*sizeof(float));
+        memcpy (pcep_buf + pow_i, pcep_buf + (pow_i - POW_SIZE), POW_SIZE*sizeof(float));
+        
+        cep_i += CEP_SIZE;
+        pow_i += POW_SIZE;
+        
+        n_featfr++;
     }
     
     return 0;
@@ -844,26 +848,26 @@ static void uttproc_fsg_search_fwd ( void )
   }
 #endif
 
-  senscore = search_get_dist_scores();	/* senone scores array */
+  senscore = search_get_dist_scores();  /* senone scores array */
   
   if (query_compute_all_senones()) {
     best = senscr_all(senscore,
-		      cep_buf + search_cep_i,
-		      dcep_buf + search_cep_i,
-		      dcep_80ms_buf + search_cep_i,
-		      pcep_buf + search_pow_i,
-		      ddcep_buf + search_cep_i);
+                      cep_buf + search_cep_i,
+                      dcep_buf + search_cep_i,
+                      dcep_80ms_buf + search_cep_i,
+                      pcep_buf + search_pow_i,
+                      ddcep_buf + search_cep_i);
     
     search_bestpscr2uttpscr (fsg_search->frame);
   } else {
     fsg_search_sen_active(fsg_search);
     
     best = senscr_active(senscore,
-			 cep_buf + search_cep_i,
-			 dcep_buf + search_cep_i,
-			 dcep_80ms_buf + search_cep_i,
-			 pcep_buf + search_pow_i,
-			 ddcep_buf + search_cep_i);
+                         cep_buf + search_cep_i,
+                         dcep_buf + search_cep_i,
+                         dcep_80ms_buf + search_cep_i,
+                         pcep_buf + search_pow_i,
+                         ddcep_buf + search_cep_i);
   }
   
   /* Note the best senone score for this frame */
@@ -885,16 +889,16 @@ static int32 uttproc_frame ( void )
     uttproc_fsg_search_fwd();
   else if (query_fwdtree_flag())
     search_fwd (cep_buf + search_cep_i,
-		dcep_buf + search_cep_i,
-		dcep_80ms_buf + search_cep_i,
-		pcep_buf + search_pow_i,
-		ddcep_buf + search_cep_i);
+                dcep_buf + search_cep_i,
+                dcep_80ms_buf + search_cep_i,
+                pcep_buf + search_pow_i,
+                ddcep_buf + search_cep_i);
   else
     search_fwdflat_frame (cep_buf + search_cep_i,
-			  dcep_buf + search_cep_i,
-			  dcep_80ms_buf + search_cep_i,
-			  pcep_buf + search_pow_i,
-			  ddcep_buf + search_cep_i);
+                          dcep_buf + search_cep_i,
+                          dcep_80ms_buf + search_cep_i,
+                          pcep_buf + search_pow_i,
+                          ddcep_buf + search_cep_i);
   search_cep_i += CEP_SIZE;
   search_pow_i += POW_SIZE;
   
@@ -929,44 +933,44 @@ static void fwdflat_search (int32 n_frames)
     search_fwdflat_start ();
 
     for (i = 0, j = 0, k = 0; i < n_frames; i++, j += CEP_SIZE, k += POW_SIZE)
-	search_fwdflat_frame (cep_buf+j, dcep_buf+j, dcep_80ms_buf+j, pcep_buf+k, ddcep_buf+j);
+        search_fwdflat_frame (cep_buf+j, dcep_buf+j, dcep_80ms_buf+j, pcep_buf+k, ddcep_buf+j);
 
     search_fwdflat_finish ();
 }
 
 static void write_results (char const *hyp, int32 aborted)
 {
-    search_hyp_t *seghyp;	/* Hyp with word segmentation information */
+    search_hyp_t *seghyp;       /* Hyp with word segmentation information */
     int32 i;
     
     /* Check if need to autonumber utterances */
     if (matchfp) {
-	fprintf (matchfp, "%s (%s %s %d)\n",
-		 hyp, uttid, aborted ? "[ABORTED]" : "", search_get_score());
-	fflush (matchfp);
+        fprintf (matchfp, "%s (%s %s %d)\n",
+                 hyp, uttid, aborted ? "[ABORTED]" : "", search_get_score());
+        fflush (matchfp);
     }
     
     if (matchsegfp) {
-	fprintf (matchsegfp, "%s ", uttid);
-	seghyp = search_get_hyp ();
-	for (i = 0; seghyp[i].wid >= 0; i++) {
-	    fprintf (matchsegfp, " %d %d %s",
-		     seghyp[i].sf,
-		     (seghyp[i].ef-seghyp[i].sf+1),
-		     kb_get_word_str(seghyp[i].wid));
-	}
-	fprintf (matchsegfp, "\n");
-	fflush (matchsegfp);
+        fprintf (matchsegfp, "%s ", uttid);
+        seghyp = search_get_hyp ();
+        for (i = 0; seghyp[i].wid >= 0; i++) {
+            fprintf (matchsegfp, " %d %d %s",
+                     seghyp[i].sf,
+                     (seghyp[i].ef-seghyp[i].sf+1),
+                     kb_get_word_str(seghyp[i].wid));
+        }
+        fprintf (matchsegfp, "\n");
+        fflush (matchsegfp);
     }
     
 #if 0
     {
-	char const *dumplatdir;
-	if ((dumplatdir = query_dumplat_dir()) != NULL) {
-	    char fplatfile[1024];
-	
-	    sprintf (fplatfile, "%s/%s.fplat", dumplatdir, uttid);
-	    search_dump_lattice_ascii (fplatfile);
+        char const *dumplatdir;
+        if ((dumplatdir = query_dumplat_dir()) != NULL) {
+            char fplatfile[1024];
+        
+            sprintf (fplatfile, "%s/%s.fplat", dumplatdir, uttid);
+            search_dump_lattice_ascii (fplatfile);
     }
 #endif /* 0 */
 }
@@ -982,16 +986,16 @@ static void uttproc_windup (int32 *fr, char **hyp)
     fsg_search_utt_end(fsg_search);
   else {
     if (query_fwdtree_flag()) {
-	search_finish_fwd ();
-	
-	if (query_fwdflat_flag() && (searchFrame() > 0))
-	    fwdflat_search (n_featfr);
+        search_finish_fwd ();
+        
+        if (query_fwdflat_flag() && (searchFrame() > 0))
+            fwdflat_search (n_featfr);
     } else
-	search_fwdflat_finish ();
+        search_fwdflat_finish ();
 
     /* Run bestpath pass if specified */
     if ((searchFrame() > 0) && query_bestpath_flag())
-	bestpath_search ();
+        bestpath_search ();
   }
   
   /* Moved out of the above else clause (rkm:2005/03/08) */
@@ -1043,14 +1047,14 @@ int32 uttproc_init ( void )
     fe_param = CM_calloc(1, sizeof(param_t));
 
     if (uttstate != UTTSTATE_UNDEF) {
-	E_ERROR("uttproc_init called when not in UNDEF state\n");
-	return -1;
+        E_ERROR("uttproc_init called when not in UNDEF state\n");
+        return -1;
     }
     
     sps = query_sampling_rate ();
 
     if ((sps != 16000) && (sps != 8000))
-	E_FATAL("Sampling rate must be 8000 or 16000, is %d\n", sps);
+        E_FATAL("Sampling rate must be 8000 or 16000, is %d\n", sps);
     
 
     frame_spacing = sps/100;
@@ -1079,17 +1083,17 @@ int32 uttproc_init ( void )
     uttid = (char *) CM_calloc (UTTIDSIZE, 1);
 
     if ((fn = query_match_file_name()) != NULL) {
-	if ((matchfp = fopen (fn, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", fn);
+        if ((matchfp = fopen (fn, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", fn);
     }
     if ((fn = query_matchseg_file_name()) != NULL) {
-	if ((matchsegfp = fopen (fn, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", fn);
+        if ((matchsegfp = fopen (fn, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", fn);
     }
     
     if ((fn = query_cdcn_file()) != NULL) {
-	E_INFO("Initializing CDCN module from %s\n", fn);
-	cdcn_init (fn, &cdcn);
+        E_INFO("Initializing CDCN module from %s\n", fn);
+        cdcn_init (fn, &cdcn);
     }
     
     timing_init ();
@@ -1115,38 +1119,38 @@ int32 uttproc_init ( void )
       fsg_search_mode = (fsgfile != NULL);
       
       if (fsg_search_mode) {
-	fsgname = uttproc_load_fsgfile(fsgfile);
-	if (! fsgname)
-	  E_FATAL("Error loading FSG file '%s'\n", fsgfile);
-	
-	/* Make this FSG the currently active one */
-	if (uttproc_set_fsg (fsgname) < 0)
-	  E_FATAL("Error setting current FSG to '%s'\n", fsgname);
-	
-	E_INFO("FSG Mode; lextree, flat, bestpath searches disabled\n");
+        fsgname = uttproc_load_fsgfile(fsgfile);
+        if (! fsgname)
+          E_FATAL("Error loading FSG file '%s'\n", fsgfile);
+        
+        /* Make this FSG the currently active one */
+        if (uttproc_set_fsg (fsgname) < 0)
+          E_FATAL("Error setting current FSG to '%s'\n", fsgname);
+        
+        E_INFO("FSG Mode; lextree, flat, bestpath searches disabled\n");
       }
       
       fsgctlfile = kb_get_fsg_ctlfile_name();
       if (fsgctlfile) {
-	if ((ctlfp = fopen(fsgctlfile, "r")) == NULL) {
-	  /* Should this be E_ERROR?? */
-	  E_FATAL("fopen(%s,r) failed\n", fsgctlfile);
-	}
-	
-	while (fgets (line, sizeof(line), ctlfp) != NULL) {
-	  if ((line[0] == '#')				/* Commented out */
-	      || (sscanf (line, "%s", word) != 1))	/* Blank line */
-	    continue;
-	  
-	  fsgfile = word;
-	  fsgname = uttproc_load_fsgfile(fsgfile);
-	  if (! fsgname) {
-	    /* Should this be E_ERROR?? */
-	    E_FATAL("Error loading FSG file '%s'\n", fsgfile);
-	  }
-	}
-	
-	fclose (ctlfp);
+        if ((ctlfp = fopen(fsgctlfile, "r")) == NULL) {
+          /* Should this be E_ERROR?? */
+          E_FATAL("fopen(%s,r) failed\n", fsgctlfile);
+        }
+        
+        while (fgets (line, sizeof(line), ctlfp) != NULL) {
+          if ((line[0] == '#')                          /* Commented out */
+              || (sscanf (line, "%s", word) != 1))      /* Blank line */
+            continue;
+          
+          fsgfile = word;
+          fsgname = uttproc_load_fsgfile(fsgfile);
+          if (! fsgname) {
+            /* Should this be E_ERROR?? */
+            E_FATAL("Error loading FSG file '%s'\n", fsgfile);
+          }
+        }
+        
+        fclose (ctlfp);
       }
     }
     
@@ -1164,14 +1168,14 @@ CDCN_type *uttproc_get_cdcn_ptr ( void )
 int32 uttproc_end ( void )
 {
     if (uttstate != UTTSTATE_IDLE) {
-	E_ERROR("uttproc_end called when not in IDLE state\n");
-	return -1;
+        E_ERROR("uttproc_end called when not in IDLE state\n");
+        return -1;
     }
     
     if (matchfp)
-	fclose (matchfp);
+        fclose (matchfp);
     if (matchsegfp)
-	fclose (matchsegfp);
+        fclose (matchsegfp);
     
     timing_end ();
 
@@ -1184,23 +1188,23 @@ int32 uttproc_begin_utt (char const *id)
     int32 i;
     
     for (i = 0; i < 5; i++)
-	samp_hist[i] = 0;
+        samp_hist[i] = 0;
     max_samp = 0;
     
     if (uttstate != UTTSTATE_IDLE) {
-	E_ERROR("uttproc_begin_utt called when not in IDLE state\n");
-	return -1;
+        E_ERROR("uttproc_begin_utt called when not in IDLE state\n");
+        return -1;
     }
 
     if (fe_start_utt(fe) < 0)
-	return -1;
+        return -1;
     
     inputtype = INPUT_UNKNOWN;
 
     livemode = (nosearch ||
-		(cmn == NORM_UTT) ||
-		((agc != AGC_EMAX) && (agc != AGC_NONE)) ||
-		(silcomp == COMPRESS_UTT)) ? 0 : 1;
+                (cmn == NORM_UTT) ||
+                ((agc != AGC_EMAX) && (agc != AGC_NONE)) ||
+                (silcomp == COMPRESS_UTT)) ? 0 : 1;
     E_INFO("%s\n", livemode ? "Livemode" : "Batchmode");
     
     /*
@@ -1208,10 +1212,10 @@ int32 uttproc_begin_utt (char const *id)
      * uttproc_init because type of cmn/agc not known until now.
      */
     if ((uttno == 0) && (agc == AGC_EMAX)) {
-	if (cmn == NORM_PRIOR)
-	    uttproc_agcemax_set (5.0);	/* Hack!! Hardwired max(C0) of 5.0 with CMN */
-	else
-	    uttproc_agcemax_set (10.0);	/* Hack!! Hardwired max(C0) of 10.0 without CMN */
+        if (cmn == NORM_PRIOR)
+            uttproc_agcemax_set (5.0);  /* Hack!! Hardwired max(C0) of 5.0 with CMN */
+        else
+            uttproc_agcemax_set (10.0); /* Hack!! Hardwired max(C0) of 10.0 without CMN */
     }
     
     pow_i = cep_i = 0;
@@ -1221,27 +1225,27 @@ int32 uttproc_begin_utt (char const *id)
     
     uttno++;
     if (! id)
-	sprintf (uttid, "%s%08d", uttid_prefix ? uttid_prefix : "", uttno);
+        sprintf (uttid, "%s%08d", uttid_prefix ? uttid_prefix : "", uttno);
     else
-	strcpy (uttid, id);
+        strcpy (uttid, id);
     
     if (rawlogdir) {
-	sprintf (filename, "%s/%s.raw", rawlogdir, uttid);
-	if ((rawfp = fopen(filename, "wb")) == NULL)
-	    E_ERROR("fopen(%s,wb) failed\n", filename);
-	else {
-	    strcpy (rawfilename, filename);
-	    E_INFO("Rawfile: %s\n", filename);
-	}
+        sprintf (filename, "%s/%s.raw", rawlogdir, uttid);
+        if ((rawfp = fopen(filename, "wb")) == NULL)
+            E_ERROR("fopen(%s,wb) failed\n", filename);
+        else {
+            strcpy (rawfilename, filename);
+            E_INFO("Rawfile: %s\n", filename);
+        }
     }
     if (mfclogdir) {
-	int32 k = 0;
+        int32 k = 0;
 
-	sprintf (filename, "%s/%s.mfc", mfclogdir, uttid);
-	if ((mfcfp = fopen(filename, "wb")) == NULL)
-	    E_ERROR("fopen(%s,wb) failed\n", filename);
-	else
-	    fwrite (&k, sizeof(int32), 1, mfcfp);
+        sprintf (filename, "%s/%s.mfc", mfclogdir, uttid);
+        if ((mfcfp = fopen(filename, "wb")) == NULL)
+            E_ERROR("fopen(%s,wb) failed\n", filename);
+        else
+            fwrite (&k, sizeof(int32), 1, mfcfp);
     }
     
     timing_start ();
@@ -1250,11 +1254,11 @@ int32 uttproc_begin_utt (char const *id)
     
     if (! nosearch) {
       if (fsg_search_mode)
-	fsg_search_utt_start (fsg_search);
+        fsg_search_utt_start (fsg_search);
       else if (query_fwdtree_flag())
-	search_start_fwd ();
+        search_start_fwd ();
       else
-	search_fwdflat_start ();
+        search_fwdflat_start ();
     }
     
     search_uttpscr_reset ();
@@ -1269,69 +1273,69 @@ int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
     int32 i, k, v;
     
     for (i = 0; i < len; i++) {
-	v = raw[i];
-	if (v < 0)
-	    v = -v;
-	if (v > max_samp)
-	    max_samp = v;
-	
-	if (v < 4096)
-	    samp_hist[0]++;
-	else if (v < 8192)
-	    samp_hist[1]++;
-	else if (v < 16384)
-	    samp_hist[2]++;
-	else if (v < 30720)
-	    samp_hist[3]++;
-	else
-	    samp_hist[4]++;
+        v = raw[i];
+        if (v < 0)
+            v = -v;
+        if (v > max_samp)
+            max_samp = v;
+        
+        if (v < 4096)
+            samp_hist[0]++;
+        else if (v < 8192)
+            samp_hist[1]++;
+        else if (v < 16384)
+            samp_hist[2]++;
+        else if (v < 30720)
+            samp_hist[3]++;
+        else
+            samp_hist[4]++;
     }
     
     if (uttstate != UTTSTATE_BEGUN) {
-	E_ERROR("uttproc_rawdata called when utterance not begun\n");
-	return -1;
+        E_ERROR("uttproc_rawdata called when utterance not begun\n");
+        return -1;
     }
     if (inputtype == INPUT_MFC) {
-	E_ERROR("uttproc_rawdata mixed with uttproc_cepdata in same utterance??\n");
-	return -1;
+        E_ERROR("uttproc_rawdata mixed with uttproc_cepdata in same utterance??\n");
+        return -1;
     }
     inputtype = INPUT_RAW;
     
     if (utt_ofl)
-	return -1;
+        return -1;
     
     k = (MAX_UTT_LEN - n_rawfr) * frame_spacing;
     if (len > k) {
-	len = k;
-	utt_ofl = 1;
-	E_ERROR("Utterance too long; truncating to about %d frames\n", MAX_UTT_LEN);
+        len = k;
+        utt_ofl = 1;
+        E_ERROR("Utterance too long; truncating to about %d frames\n", MAX_UTT_LEN);
     }
 
     if (rawfp && (len > 0))
-	fwrite (raw, sizeof(int16), len, rawfp);
+        fwrite (raw, sizeof(int16), len, rawfp);
     
     /*    
-	  if ((k = fe_raw2cep (raw, len, mfcbuf + n_rawfr)) < 0)
-	  return -1;
+          if ((k = fe_raw2cep (raw, len, mfcbuf + n_rawfr)) < 0)
+          return -1;
     */
     if ((k = fe_process_utt (fe, raw, len, mfcbuf + n_rawfr)) < 0)
-	return -1;
+        return -1;
 
     if (mfcfp && (k > 0))
-	fwrite (mfcbuf[n_rawfr], sizeof(float), k * CEP_SIZE, mfcfp);
+        fwrite (mfcbuf[n_rawfr], sizeof(float), k * CEP_SIZE, mfcfp);
 
     if (livemode) {
-	mfc2feat_live (mfcbuf+n_rawfr, k);
+        mfc2feat_live (mfcbuf+n_rawfr, k);
 
-	if (search_cep_i < cep_i)
-	    uttproc_frame ();
+        if (search_cep_i < cep_i)
+            uttproc_frame ();
 
-	if (block) {
-	    while (search_cep_i < cep_i)
-		uttproc_frame ();
-	}
+        if (block) {
+            while (search_cep_i < cep_i)
+                uttproc_frame ();
+        }
     } else
-	n_rawfr += k;
+        n_rawfr += k;
 
     return (n_featfr - n_searchfr);
 }
@@ -1341,43 +1345,43 @@ int32 uttproc_cepdata (float **cep, int32 nfr, int32 block)
     int32 i, k;
     
     if (uttstate != UTTSTATE_BEGUN) {
-	E_ERROR("uttproc_cepdata called when utterance not begun\n");
-	return -1;
+        E_ERROR("uttproc_cepdata called when utterance not begun\n");
+        return -1;
     }
     if (inputtype == INPUT_RAW) {
-	E_ERROR("uttproc_cepdata mixed with uttproc_rawdata in same utterance??\n");
-	return -1;
+        E_ERROR("uttproc_cepdata mixed with uttproc_rawdata in same utterance??\n");
+        return -1;
     }
     inputtype = INPUT_MFC;
     
     if (utt_ofl)
-	return -1;
+        return -1;
     
     k = MAX_UTT_LEN - n_rawfr;
     if (nfr > k) {
-	nfr = k;
-	utt_ofl = 1;
-	E_ERROR("Utterance too long; truncating to about %d frames\n", MAX_UTT_LEN);
+        nfr = k;
+        utt_ofl = 1;
+        E_ERROR("Utterance too long; truncating to about %d frames\n", MAX_UTT_LEN);
     }
     
     for (i = 0; i < nfr; i++)
-	memcpy (mfcbuf[i+n_rawfr], cep[i], CEP_SIZE*sizeof(float));
+        memcpy (mfcbuf[i+n_rawfr], cep[i], CEP_SIZE*sizeof(float));
 
     if (mfcfp && (nfr > 0))
-	fwrite (mfcbuf[n_rawfr], sizeof(float), nfr * CEP_SIZE, mfcfp);
+        fwrite (mfcbuf[n_rawfr], sizeof(float), nfr * CEP_SIZE, mfcfp);
 
     if (livemode) {
-	mfc2feat_live (mfcbuf+n_rawfr, nfr);
+        mfc2feat_live (mfcbuf+n_rawfr, nfr);
 
-	if (search_cep_i < cep_i)
-	    uttproc_frame ();
+        if (search_cep_i < cep_i)
+            uttproc_frame ();
 
-	if (block) {
-	    while (search_cep_i < cep_i)
-		uttproc_frame ();
-	}
+        if (block) {
+            while (search_cep_i < cep_i)
+                uttproc_frame ();
+        }
     } else
-	n_rawfr += nfr;
+        n_rawfr += nfr;
 
     return (n_featfr - n_searchfr);
 }
@@ -1387,6 +1391,7 @@ int32 uttproc_end_utt ( void )
     int32 i, k;
     float cep[13], c0;
     float *leftover_cep;
+    int live_nframe;
 
     /* kal */
     leftover_cep       = (float *) CM_calloc (MAX_CEP_LEN, sizeof(float));
@@ -1394,67 +1399,75 @@ int32 uttproc_end_utt ( void )
     /* Dump samples histogram */
     k = 0;
     for (i = 0; i < 5; i++)
-	k += samp_hist[i];
+        k += samp_hist[i];
     if (k > 0) {
-	E_INFO("Samples histogram (%s) (4/8/16/30/32K):", uttproc_get_uttid());
-	for (i = 0; i < 5; i++)
-	    E_INFOCONT(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
-	E_INFOCONT("; max: %d\n", max_samp);
+        E_INFO("Samples histogram (%s) (4/8/16/30/32K):", uttproc_get_uttid());
+        for (i = 0; i < 5; i++)
+            E_INFOCONT(" %.1f%%(%d)", samp_hist[i]*100.0/k, samp_hist[i]);
+        E_INFOCONT("; max: %d\n", max_samp);
     }
     
     if (uttstate != UTTSTATE_BEGUN) {
-	E_ERROR("uttproc_end_utt called when utterance not begun\n");
-	return -1;
+        E_ERROR("uttproc_end_utt called when utterance not begun\n");
+        return -1;
     }
 
-    if (! livemode)
-	mfc2feat_batch (mfcbuf, n_rawfr);
+    if (livemode) {
+        live_nframe = fe_end_utt(fe, leftover_cep);
+        mfc2feat_live_frame (leftover_cep, live_nframe);
+    } else {
+        mfc2feat_batch (mfcbuf, n_rawfr);
+        /* 
+         * fe_end_utt, in this case, should be a no-op. But, just in
+         * case the code changes, we can fe_end_utt here for front end
+         * cleanups.
+         */
+        fe_end_utt(fe, leftover_cep);
+    }
 
     uttstate = nosearch ? UTTSTATE_IDLE : UTTSTATE_ENDED;
-
-    fe_end_utt(fe, leftover_cep);
 
     SCVQEndUtt();
     
     /* Update estimated CMN vector */ 
     if (cmn == NORM_PRIOR) {
-	uttproc_cepmean_get (cep);
-	c0 = cep[0];
-	mean_norm_update ();
-	uttproc_cepmean_get (cep);
+        uttproc_cepmean_get (cep);
+        c0 = cep[0];
+        mean_norm_update ();
+        uttproc_cepmean_get (cep);
 
-	/* Update estimated AGC Max (C0) */ 
-	if (agc == AGC_EMAX) {
-	    agc_emax_update ();
-	}
+        /* Update estimated AGC Max (C0) */ 
+        if (agc == AGC_EMAX) {
+            agc_emax_update ();
+        }
     } else {
-	/* Update estimated AGC Max (C0) */ 
-	if (agc == AGC_EMAX) {
-	    agc_emax_update ();
-	}
+        /* Update estimated AGC Max (C0) */ 
+        if (agc == AGC_EMAX) {
+            agc_emax_update ();
+        }
     }
     
     if (silcomp == COMPRESS_PRIOR)
-	compute_noise_level ();
+        compute_noise_level ();
     
     if (rawfp) {
-	fclose (rawfp);
-	rawfp = NULL;
+        fclose (rawfp);
+        rawfp = NULL;
 #ifdef WIN32
-	if (_chmod(rawfilename, _S_IREAD ) < 0)
-	    E_ERROR("chmod(%s,READONLY) failed\n", rawfilename);
+        if (_chmod(rawfilename, _S_IREAD ) < 0)
+            E_ERROR("chmod(%s,READONLY) failed\n", rawfilename);
 #endif
     }
     if (mfcfp) {
-	int32 k;
-	
-	fflush (mfcfp);
-	fseek (mfcfp, 0, SEEK_SET);
-	k = n_rawfr * CEP_SIZE;
-	fwrite (&k, sizeof(int32), 1, mfcfp);
+        int32 k;
+        
+        fflush (mfcfp);
+        fseek (mfcfp, 0, SEEK_SET);
+        k = n_rawfr * CEP_SIZE;
+        fwrite (&k, sizeof(int32), 1, mfcfp);
 
-	fclose (mfcfp);
-	mfcfp = NULL;
+        fclose (mfcfp);
+        mfcfp = NULL;
     }
 
     free(leftover_cep);
@@ -1468,7 +1481,7 @@ int32 uttproc_abort_utt ( void )
     char *hyp;
     
     if (uttproc_end_utt () < 0)
-	return -1;
+        return -1;
 
     /* Truncate utterance to the portion already processed */
     cep_i = search_cep_i;
@@ -1478,16 +1491,16 @@ int32 uttproc_abort_utt ( void )
 
     if (! nosearch) {
       if (fsg_search_mode)
-	fsg_search_utt_end(fsg_search);
+        fsg_search_utt_end(fsg_search);
       else {
-	if (query_fwdtree_flag())
-	    search_finish_fwd ();
-	else
-	    search_fwdflat_finish ();
-	
-	search_result (&fr, &hyp);
-	
-	write_results (hyp, 1);
+        if (query_fwdtree_flag())
+            search_finish_fwd ();
+        else
+            search_fwdflat_finish ();
+        
+        search_result (&fr, &hyp);
+        
+        write_results (hyp, 1);
       }
       timing_stop (fr);
     }
@@ -1498,20 +1511,20 @@ int32 uttproc_abort_utt ( void )
 int32 uttproc_stop_utt ( void )
 {
     if (uttstate != UTTSTATE_BEGUN) {
-	E_ERROR("uttproc_stop_utt called when utterance not begun\n");
-	return -1;
+        E_ERROR("uttproc_stop_utt called when utterance not begun\n");
+        return -1;
     }
 
     uttstate = UTTSTATE_STOPPED;
     
     if (! nosearch) {
       if (fsg_search_mode)
-	fsg_search_utt_end(fsg_search);
+        fsg_search_utt_end(fsg_search);
       else {
-	if (query_fwdtree_flag())
-	    search_finish_fwd ();
-	else
-	  search_fwdflat_finish ();
+        if (query_fwdtree_flag())
+            search_finish_fwd ();
+        else
+          search_fwdflat_finish ();
       }
     }
     
@@ -1521,19 +1534,19 @@ int32 uttproc_stop_utt ( void )
 int32 uttproc_restart_utt ( void )
 {
     if (uttstate != UTTSTATE_STOPPED) {
-	E_ERROR("uttproc_restart_utt called when decoding not stopped\n");
-	return -1;
+        E_ERROR("uttproc_restart_utt called when decoding not stopped\n");
+        return -1;
     }
 
     uttstate = UTTSTATE_BEGUN;
     
     if (! nosearch) {
       if (fsg_search_mode)
-	fsg_search_utt_start (fsg_search);
+        fsg_search_utt_start (fsg_search);
       else if (query_fwdtree_flag())
-	search_start_fwd ();
+        search_start_fwd ();
       else
-	search_fwdflat_start ();
+        search_fwdflat_start ();
       
       search_cep_i = 0;
       search_pow_i = 0;
@@ -1546,10 +1559,10 @@ int32 uttproc_restart_utt ( void )
 int32 uttproc_partial_result (int32 *fr, char **hyp)
 {
     if ((uttstate != UTTSTATE_BEGUN) && (uttstate != UTTSTATE_ENDED)) {
-	E_ERROR("uttproc_partial_result called outside utterance\n");
-	*fr = -1;
-	*hyp = NULL;
-	return -1;
+        E_ERROR("uttproc_partial_result called outside utterance\n");
+        *fr = -1;
+        *hyp = NULL;
+        return -1;
     }
 
     if (fsg_search_mode) {
@@ -1564,23 +1577,23 @@ int32 uttproc_partial_result (int32 *fr, char **hyp)
 int32 uttproc_result (int32 *fr, char **hyp, int32 block)
 {
     if (uttstate != UTTSTATE_ENDED) {
-	E_ERROR("uttproc_result called when utterance not ended\n");
-	*hyp = NULL;
-	*fr = -1;
+        E_ERROR("uttproc_result called when utterance not ended\n");
+        *hyp = NULL;
+        *fr = -1;
 
-	return -1;
+        return -1;
     }
     
     if (search_cep_i < cep_i)
-	uttproc_frame ();
+        uttproc_frame ();
 
     if (block) {
-	while (search_cep_i < cep_i)
-	    uttproc_frame ();
+        while (search_cep_i < cep_i)
+            uttproc_frame ();
     }
     
     if (search_cep_i < cep_i)
-	return (n_featfr - n_searchfr);
+        return (n_featfr - n_searchfr);
 
     uttproc_windup (fr, hyp);
     
@@ -1597,9 +1610,9 @@ void utt_seghyp_free (search_hyp_t *h)
     search_hyp_t *tmp;
 
     while (h) {
-	tmp = h->next;
-	listelem_free (h, sizeof(search_hyp_t));
-	h = tmp;
+        tmp = h->next;
+        listelem_free (h, sizeof(search_hyp_t));
+        h = tmp;
     }
 }
 
@@ -1614,19 +1627,19 @@ static void build_utt_seghyp ( void )
     /* Fill in missing details and build segmentation linked list */
     last = NULL;
     for (i = 0; seghyp[i].wid >= 0; i++) {
-	new = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
-	new->wid = seghyp[i].wid;
-	new->word = kb_get_word_str (new->wid);
-	new->sf = seghyp[i].sf;
-	new->ef = seghyp[i].ef;
-	new->latden = seghyp[i].latden;
-	new->next = NULL;
+        new = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
+        new->wid = seghyp[i].wid;
+        new->word = kb_get_word_str (new->wid);
+        new->sf = seghyp[i].sf;
+        new->ef = seghyp[i].ef;
+        new->latden = seghyp[i].latden;
+        new->next = NULL;
 
-	if (! last)
-	    utt_seghyp = new;
-	else
-	    last->next = new;
-	last = new;
+        if (! last)
+            utt_seghyp = new;
+        else
+            last->next = new;
+        last = new;
     }
 }
 
@@ -1639,17 +1652,17 @@ int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
     utt_seghyp = NULL;
     
     if ((uttstate != UTTSTATE_BEGUN) && (uttstate != UTTSTATE_ENDED)) {
-	E_ERROR("uttproc_partial_result called outside utterance\n");
-	*fr = -1;
-	*hyp = NULL;
-	return -1;
+        E_ERROR("uttproc_partial_result called outside utterance\n");
+        *fr = -1;
+        *hyp = NULL;
+        return -1;
     }
 
     if (fsg_search_mode) {
       fsg_search_history_backtrace(fsg_search, FALSE);
       search_result (fr, &str);
     } else
-      search_partial_result (fr, &str);	/* Internally makes partial result */
+      search_partial_result (fr, &str); /* Internally makes partial result */
     
     build_utt_seghyp();
     *hyp = utt_seghyp;
@@ -1667,7 +1680,7 @@ int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyp, int32 block)
     utt_seghyp = NULL;
     
     if ((res = uttproc_result (fr, &str, block)) != 0)
-	return res;	/* Not done yet; or ERROR */
+        return res;     /* Not done yet; or ERROR */
 
     build_utt_seghyp();
     *hyp = utt_seghyp;
@@ -1682,11 +1695,11 @@ int32 uttproc_lmupdate (char const *lmname)
     warn_notidle ("uttproc_lmupdate");
     
     if ((lm = lm_name2lm (lmname)) == NULL)
-	return -1;
+        return -1;
     
     cur_lm = lm_get_current ();
     if (lm == cur_lm)
-	search_set_current_lm ();
+        search_set_current_lm ();
 
     return 0;
 }
@@ -1698,36 +1711,36 @@ int32 uttproc_set_context (char const *wd1, char const *wd2)
     warn_notidle ("uttproc_set_context");
     
     if (wd1) {
-	w1 = kb_get_word_id (wd1);
-	if ((w1 < 0) || (! dictwd_in_lm (w1))) {
-	    E_ERROR("Unknown word: %s\n", wd1);
-	    search_set_context (-1, -1);
+        w1 = kb_get_word_id (wd1);
+        if ((w1 < 0) || (! dictwd_in_lm (w1))) {
+            E_ERROR("Unknown word: %s\n", wd1);
+            search_set_context (-1, -1);
 
-	    return -1;
-	}
+            return -1;
+        }
     } else
-	w1 = -1;
+        w1 = -1;
 
     if (wd2) {
-	w2 = kb_get_word_id (wd2);
-	if ((w2 < 0) || (! dictwd_in_lm (w2))) {
-	    E_ERROR("Unknown word: %s\n", wd2);
-	    search_set_context (-1, -1);
-	    
-	    return -1;
-	}
+        w2 = kb_get_word_id (wd2);
+        if ((w2 < 0) || (! dictwd_in_lm (w2))) {
+            E_ERROR("Unknown word: %s\n", wd2);
+            search_set_context (-1, -1);
+            
+            return -1;
+        }
     } else
-	w2 = -1;
+        w2 = -1;
     
     if (w2 < 0) {
-	search_set_context (-1, -1);
-	return ((w1 >= 0) ? -1 : 0);
+        search_set_context (-1, -1);
+        return ((w1 >= 0) ? -1 : 0);
     } else {
-	/* Because of the perverse way search_set_context was defined... */
-	if (w1 < 0)
-	    search_set_context (w2, -1);
-	else
-	    search_set_context (w1, w2);
+        /* Because of the perverse way search_set_context was defined... */
+        if (w1 < 0)
+            search_set_context (w2, -1);
+        else
+            search_set_context (w1, w2);
     }
     
     return 0;
@@ -1738,12 +1751,12 @@ int32 uttproc_set_lm (char const *lmname)
     warn_notidle ("uttproc_set_lm");
     
     if (lmname == NULL) {
-	E_ERROR("uttproc_set_lm called with NULL argument\n");
-	return -1;
+        E_ERROR("uttproc_set_lm called with NULL argument\n");
+        return -1;
     }
     
     if (lm_set_current (lmname) < 0)
-	return -1;
+        return -1;
     
     fsg_search_mode = FALSE;
     
@@ -1756,11 +1769,11 @@ int32 uttproc_set_lm (char const *lmname)
 
 
 int32 uttproc_load_fsg (s2_fsg_t *fsg,
-			int32 use_altpron,
-			int32 use_filler,
-			float32 silprob,
-			float32 fillprob,
-			float32 lw)
+                        int32 use_altpron,
+                        int32 use_filler,
+                        float32 silprob,
+                        float32 fillprob,
+                        float32 lw)
 {
   word_fsg_t *word_fsg;
   
@@ -1784,11 +1797,11 @@ char *uttproc_load_fsgfile (char *fsgfile)
   word_fsg_t *fsg;
   
   fsg = word_fsg_readfile(fsgfile, 
-			  query_fsg_use_altpron(),
-			  query_fsg_use_filler(),
-			  kb_get_silpen(),
-			  kb_get_fillpen(),
-			  kb_get_lw());
+                          query_fsg_use_altpron(),
+                          query_fsg_use_filler(),
+                          kb_get_silpen(),
+                          kb_get_fillpen(),
+                          kb_get_lw());
   if (! fsg)
     return NULL;
   
@@ -1807,12 +1820,12 @@ int32 uttproc_del_fsg (char *fsgname)
     warn_notidle ("uttproc_del_fsg");
     
     if (fsgname == NULL) {
-	E_ERROR("uttproc_del_fsg called with NULL argument\n");
-	return -1;
+        E_ERROR("uttproc_del_fsg called with NULL argument\n");
+        return -1;
     }
     
     if (! fsg_search_del_fsg_byname(fsg_search, fsgname))
-	return -1;
+        return -1;
     
     return 0;
 }
@@ -1823,12 +1836,12 @@ int32 uttproc_set_fsg (char *fsgname)
     warn_notidle ("uttproc_set_fsg");
     
     if (fsgname == NULL) {
-	E_ERROR("uttproc_set_fsg called with NULL argument\n");
-	return -1;
+        E_ERROR("uttproc_set_fsg called with NULL argument\n");
+        return -1;
     }
     
     if (! fsg_search_set_current_fsg (fsg_search, fsgname))
-	return -1;
+        return -1;
     
     fsg_search_mode = TRUE;
     
@@ -1928,7 +1941,7 @@ int32 uttproc_set_silcmp (scvq_compress_t c)
     warn_notidle ("uttproc_set_silcmp");
 
     if (c != COMPRESS_NONE)
-	E_WARN("Silence compression doesn't work well; use the cont_ad module instead\n");
+        E_WARN("Silence compression doesn't work well; use the cont_ad module instead\n");
     
     silcomp = c;
     return 0;
@@ -1954,36 +1967,36 @@ char const *uttproc_get_uttid ( void )
 int32 uttproc_set_auto_uttid_prefix (char const *prefix)
 {
     if (uttid_prefix)
-	free (uttid_prefix);
+        free (uttid_prefix);
     uttid_prefix = salloc(prefix);
     uttno = 0;
     
     return 0;
 }
 
-int32	uttprocGetcomp2rawfr(int16 **ptr)
+int32   uttprocGetcomp2rawfr(int16 **ptr)
 {
     *ptr = comp2rawfr;
     return n_featfr;
 }
 
-void	uttprocSetcomp2rawfr(int32 num, int32 const *ptr)
+void    uttprocSetcomp2rawfr(int32 num, int32 const *ptr)
 {
-    int32		i;
+    int32               i;
     
     n_featfr = num;
     for (i = 0; i < num; i++)
-	comp2rawfr[i] = ptr[i];
+        comp2rawfr[i] = ptr[i];
 }
 
 int32 uttproc_feat2rawfr (int32 fr)
 {
-    return fr;	/* comp2rawfr[] is buggy :(  ignore it for now (rkm) */
+    return fr;  /* comp2rawfr[] is buggy :(  ignore it for now (rkm) */
     
     if (fr >= n_featfr)
-	fr = n_featfr-1;
+        fr = n_featfr-1;
     if (fr < 0)
-	fr = 0;
+        fr = 0;
 
     return comp2rawfr[fr+8]-4;
 }
@@ -2039,13 +2052,13 @@ int32 uttproc_set_rawlogdir (char const *dir)
     warn_notidle ("uttproc_set_rawlogdir");
 
     if (! rawlogdir) {
-	if ((rawlogdir = calloc (1024,1)) == NULL) {
-	    E_ERROR("calloc(1024,1) failed\n");
-	    return -1;
-	}
+        if ((rawlogdir = calloc (1024,1)) == NULL) {
+            E_ERROR("calloc(1024,1) failed\n");
+            return -1;
+        }
     }
     if (rawlogdir)
-	strcpy (rawlogdir, dir);
+        strcpy (rawlogdir, dir);
 
     return 0;
 }
@@ -2055,13 +2068,13 @@ int32 uttproc_set_mfclogdir (char const *dir)
     warn_notidle ("uttproc_set_mfclogdir");
 
     if (! mfclogdir) {
-	if ((mfclogdir = calloc (1024,1)) == NULL) {
-	    E_ERROR("calloc(1024,1) failed\n");
-	    return -1;
-	}
+        if ((mfclogdir = calloc (1024,1)) == NULL) {
+            E_ERROR("calloc(1024,1) failed\n");
+            return -1;
+        }
     }
     if (mfclogdir)
-	strcpy (mfclogdir, dir);
+        strcpy (mfclogdir, dir);
 
     return 0;
 }
@@ -2071,29 +2084,29 @@ search_hyp_t *uttproc_allphone_file (char const *utt)
     int32 nfr;
     extern search_hyp_t *allphone_utt();
     extern char *build_uttid (const char *utt); /* in fbs_main.c */
-    extern int32 utt_file2feat();	/* in fbs_main.c */
+    extern int32 utt_file2feat();       /* in fbs_main.c */
     search_hyp_t *hyplist, *h;
     
     build_uttid (utt);
 
     if ((nfr = utt_file2feat (utt, 1)) < 0)
-	return NULL;
+        return NULL;
     
     hyplist = allphone_utt (nfr, cep_buf, dcep_buf, dcep_80ms_buf, pcep_buf, ddcep_buf);
 
     /* Write match and matchseg files if needed */
     if (matchfp) {
-	for (h = hyplist; h; h = h->next)
-	    fprintf (matchfp, "%s ", h->word);
-	fprintf (matchfp, "(%s)\n", uttid);
-	fflush (matchfp);
+        for (h = hyplist; h; h = h->next)
+            fprintf (matchfp, "%s ", h->word);
+        fprintf (matchfp, "(%s)\n", uttid);
+        fflush (matchfp);
     }
     if (matchsegfp) {
-	fprintf (matchsegfp, "%s ", uttid);
-	for (h = hyplist; h; h = h->next)
-	    fprintf (matchsegfp, " %d %d %s", h->sf, h->ef, h->word);
-	fprintf (matchsegfp, "\n");
-	fflush (matchsegfp);
+        fprintf (matchsegfp, "%s ", uttid);
+        for (h = hyplist; h; h = h->next)
+            fprintf (matchsegfp, " %d %d %s", h->sf, h->ef, h->word);
+        fprintf (matchsegfp, "\n");
+        fflush (matchsegfp);
     }
 
     return hyplist;
