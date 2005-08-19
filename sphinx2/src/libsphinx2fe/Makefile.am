@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES = libsphinx2fe.la
 
-libsphinx2fe_la_LDFLAGS = -version-info 0:5:0
+libsphinx2fe_la_LDFLAGS = -version-info 0:6:0
 
 libsphinx2fe_la_SOURCES = \
 	fe_interface.c \
