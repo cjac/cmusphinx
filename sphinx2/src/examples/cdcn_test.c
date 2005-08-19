@@ -71,7 +71,6 @@ int main (int32 argc, char *argv[])
     int16 adbuf[4096];
     int32 i, k;
     float32 **mfcbuf;
-    FILE *fp;
     CDCN_type *cdcn;
     param_t param;
     fe_t *fe = NULL;
@@ -150,4 +149,5 @@ int main (int32 argc, char *argv[])
     ckd_free_2d(mfcbuf);
     
     fbs_end ();
+    return 0;
 }
