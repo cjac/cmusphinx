@@ -31,6 +31,7 @@ libsphinx2_la_SOURCES = \
 	cdcn_init.c \
 	cdcn_norm.c \
 	cdcn_update.c \
+	cdcn_utils.c \
 	cep_rw.c \
 	ckd_alloc.c \
 	cont_mgau.c \

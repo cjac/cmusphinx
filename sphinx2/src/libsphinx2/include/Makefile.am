@@ -7,6 +7,7 @@ noinst_HEADERS = \
 	c.h \
 	cache_lm.h \
 	case.h \
+	cdcn_internal.h \
 	cepio.h \
 	cont_mgau.h \
 	cviterbi4.h \

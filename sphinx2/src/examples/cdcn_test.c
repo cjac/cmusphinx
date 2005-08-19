@@ -52,7 +52,7 @@
 #include "fe.h"
 #include "cdcn.h"
 
-#include "CM_macros.h"
+#include "ckd_alloc.h"
 #include "err.h"
 
 extern char *build_uttid (const char *utt);  
@@ -93,7 +93,7 @@ int main (int32 argc, char *argv[])
         E_ERROR("fe_init() failed to initialize\n");
         exit (-1);
     }
-    mfcbuf = (float32 **) CM_2dcalloc (8192, 13, sizeof(float32));
+    mfcbuf = (float32 **) ckd_calloc_2d (8192, 13, sizeof(float32));
     
     /* Process "control file" input through stdin */
     while (fgets (line, sizeof(line), stdin) != NULL) {
@@ -127,6 +127,13 @@ int main (int32 argc, char *argv[])
 	} else
 	    E_INFO("%d frames\n", nf);
 	
+	/* Update CDCN module */
+	cdcn_converged_update (mfcbuf, /* cepstra buffer */
+			       nf, /* Number of frames */
+			       cdcn, /* The CDCN wrapper */
+			       1 /* One iteration */
+			       );
+
 	/* CDCN */
 	for (i = 0; i < nf; i++)
 	    cdcn_norm (mfcbuf[i], cdcn);
@@ -138,9 +145,9 @@ int main (int32 argc, char *argv[])
 	printf ("\n");
 	fflush (stdout);
 
-	/* Update CDCN module */
-	cdcn_update (mfcbuf[0], nf, cdcn);
     }
+
+    ckd_free_2d(mfcbuf);
     
     fbs_end ();
 }
