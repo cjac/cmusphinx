@@ -146,7 +146,7 @@ int main (int32 argc, char *argv[])
 
     }
 
-    ckd_free_2d(mfcbuf);
+    ckd_free_2d((void **)mfcbuf);
     
     fbs_end ();
     return 0;
