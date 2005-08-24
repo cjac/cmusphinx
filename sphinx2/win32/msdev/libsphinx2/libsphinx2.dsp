@@ -177,6 +177,10 @@ SOURCE=..\..\..\src\libsphinx2\cdcn_update.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libsphinx2\cdcn_utils.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libsphinx2\cep_rw.c
 # End Source File
 # Begin Source File
