@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.8  2005/08/27  20:52:29  dhdfu
+ * Variance for POW_FEAT[0] was being mistakenly set to zero.  This was causing a 20% degradation in accuracy on RM1...
  * 
+ * Revision 1.7  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 19-Nov-97  M K Ravishankar (rkm@cs) at Carnegie-Mellon University
  * 	Added ability to read power variance file if it exists.
@@ -151,7 +154,15 @@ int32 readVarCBFile(feat_t feat, int32 *det, float **CB, char *VarCBFile)
     if (feat != DCEP_FEAT) {
 	for (i = 0; i < NUM_ALPHABET; i++) {
 	    d = 0;
-	    for (j = 1, *CBP++ = 0; j < vecLen; j++, CBP++) {
+	    /* Discard C0, but don't discard POW_FEAT[0]!
+	       dhuggins@cs.cmu.edu, 2005-08-27 */
+	    if (feat == POW_FEAT)
+	      j = 0;
+	    else {
+	      j = 1;
+	      *CBP++ = 0;
+	    }
+	    for (; j < vecLen; j++, CBP++) {
 		if (*CBP < vFloor) *CBP = vFloor;
 		d += LOG (1 / sqrt(*CBP * two_pi));
 		*CBP = (1.0 / (2.0 * *CBP * LOG_BASE));
