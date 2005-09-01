@@ -48,6 +48,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #endif
+#include "s2types.h"
 #include "byteorder.h"
 
 int
@@ -73,8 +74,8 @@ f2write (char *file, float *data1, float *data2, int length)
   SWAP_BE_32(&length);
 
   for(offset = 0; offset < length; offset++) {
-    SWAPF(data1 + offset);
-    SWAPF(data2 + offset);
+    SWAP_BE_32((int32 *)data1 + offset);
+    SWAP_BE_32((int32 *)data2 + offset);
   }
 
   size = length * sizeof (float);
@@ -94,8 +95,8 @@ f2write (char *file, float *data1, float *data2, int length)
   }
 
   for(offset = 0; offset < length; offset++) {
-    SWAPF(data1 + offset);
-    SWAPF(data2 + offset);
+    SWAP_BE_32((int32 *)data1 + offset);
+    SWAP_BE_32((int32 *)data2 + offset);
   }
 
   printf ("Wrote %d * 2 floats in %s.\n", length, file);

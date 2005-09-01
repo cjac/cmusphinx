@@ -48,6 +48,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #endif
+#include "s2types.h"
 #include "byteorder.h"
 
 int
@@ -109,8 +110,8 @@ f2read (char *file, float **data1_ref, float **data2_ref, int *length_ref)
   *data1_ref = (float *) data1;
   *data2_ref = (float *) data2;
   for(offset = 0; offset < length; offset++) {
-    SWAPF(*data1_ref + offset);
-    SWAPF(*data2_ref + offset);
+    SWAP_BE_32((int32 *)*data1_ref + offset);
+    SWAP_BE_32((int32 *)*data2_ref + offset);
   }
   *length_ref = length;
   return length;

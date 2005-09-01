@@ -48,6 +48,7 @@
 #include <sys/file.h>
 #include <unistd.h>
 #endif
+#include "s2types.h"
 #include "byteorder.h"
 
 int
