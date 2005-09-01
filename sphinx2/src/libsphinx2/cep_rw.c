@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.12  2005/09/01  21:10:32  dhdfu
+ * Make codebook and mixture weight files byteorder-independent
  * 
+ * Revision 1.11  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 12-Mar-92  Eric Thayer (eht) at Carnegie-Mellon University
  *	Fixed byte reversal check.
@@ -91,6 +94,7 @@
 #include <sys/stat.h>
 
 #include "s2types.h"
+#include "byteorder.h"
 #include "strfuncs.h"
 #include "cepio.h"
 #include "err.h"
@@ -99,13 +103,11 @@
 #define ESUCCESS 0
 #endif
 
-#define SWABL(x) (((x << 24) & 0xFF000000) | ((x <<  8) & 0x00FF0000) | \
-	          ((x >>  8) & 0x0000FF00) | ((x >> 24) & 0x000000FF))
-
 int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
 {
   int32 fd, floatCount, floatBytes, readBytes;
   int32 byteReverse = FALSE;
+  int32 i, cnt;
   struct stat st_buf;
 
 #ifdef WIN32
@@ -137,15 +139,20 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
       ((floatCount * sizeof(float32) + 4) != st_buf.st_size)) {
 	E_INFO("Byte reversing %s\n", file);
 	byteReverse = TRUE;
-	floatCount = SWABL (floatCount);
+	SWAP_INT32(&floatCount);
   }
 
-  if (floatCount == (st_buf.st_size - 4)) {
+  if (floatCount + 4 == st_buf.st_size) {
 	floatBytes = floatCount;
 	floatCount /= sizeof (float32);
   }
-  else 
+  else if (floatCount * sizeof(float32) + 4 == st_buf.st_size)
 	floatBytes = floatCount * sizeof(float32);
+  else {
+      E_ERROR("Header count %d does not match file size %d\n",
+	      floatCount, st_buf.st_size);
+      return -1;
+  }
 
   /* malloc size to account for possibility of being a float count file */
   if ((*buf = (float32 *)malloc(floatBytes)) == NULL)
@@ -160,11 +167,11 @@ int32 cep_read_bin (float32 **buf, int32 *len, char const *file)
   /*
    * Reorder the bytes if needed
    */
+  cnt = readBytes >> 2;
   if (byteReverse) {
 	uint32 *ptr = (uint32 *) *buf;
-	int32 i, cnt = readBytes >> 2;
 	for (i = 0; i < cnt; i++)
-	    ptr[i] = SWABL(ptr[i]);
+	    SWAP_INT32(&ptr[i]);
   }
   if (close(fd) != ESUCCESS) return errno;
   return ESUCCESS;
@@ -185,9 +192,9 @@ int32 cep_write_bin(char const *file, float32 *buf, int32 len)
     return errno;
   }
   len *= sizeof(float32);
-  if (write(fd, (char *)&len, sizeof(int32)) != sizeof(int32)) return errno;
-  if (write(fd, (char *)buf, len) != len) return errno;
-  if (close(fd) != ESUCCESS) return errno;
+  if (write(fd, (char *)&len, sizeof(int32)) != sizeof(int32)) return -1;
+  if (write(fd, (char *)buf, len) != len) return -1;
+  if (close(fd) != ESUCCESS) return -1;
 
   return ESUCCESS;
 }  

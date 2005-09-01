@@ -40,15 +40,22 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #ifdef WIN32
 #include <io.h>
+#include <fcntl.h>
 #else
 #include <sys/file.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 #endif
 #include "byteorder.h"
+#include "bio.h"
+#include "err.h"
 
 int
 areadint (char *file, int **data_ref, int *length_ref)
@@ -58,6 +65,8 @@ areadint (char *file, int **data_ref, int *length_ref)
   int             size, k;
   int             offset;
   char           *data;
+  struct stat     st_buf;
+  int             swap = 0;
 
 #if (! WIN32)
   fd = open(file, O_RDONLY, 0644);
@@ -67,16 +76,34 @@ areadint (char *file, int **data_ref, int *length_ref)
 
   if (fd < 0)
   {
-    fprintf (stderr, "areadint: %s: can't open\n", file);
-    return -1;
+    fprintf (stderr, "areadint: %s: can't open: %s\n", file, strerror(errno));
+    return errno;
   }
   if (read (fd, (char *) &length, 4) != 4)
   {
-    fprintf (stderr, "areadint: %s: can't read length (empty file?)\n", file);
+    fprintf (stderr, "areadint: %s: can't read length: %s\n", file, strerror(errno));
     close (fd);
+    return errno;
+  }
+  if (fstat (fd, &st_buf) < 0)
+  {
+    fprintf (stderr, "areadint: %s: can't get stat: %s\n", file, strerror(errno));
+    close(fd);
+    return errno;
+  }
+
+  if (length * sizeof(int) != st_buf.st_size) {
+    E_INFO("Byte reversing %s\n", file);
+    swap = 1;
+    SWAP_INT32(&swap);
+  }
+
+  if (length * sizeof(int) != st_buf.st_size) {
+    E_ERROR("Header count %d = %d bytes does not match file size %d\n",
+	    length, length*sizeof(int), st_buf.st_size);
     return -1;
   }
-  SWAPL(&length);
+
   size = length * sizeof (int);
   if (!(data = malloc ((unsigned) size)))
   {
@@ -94,8 +121,11 @@ areadint (char *file, int **data_ref, int *length_ref)
   }
   close (fd);
   *data_ref = (int *) data;
-  for(offset = 0; offset < length; offset++)
-    SWAPL(*data_ref + offset);
+
+  if (swap)
+    for(offset = 0; offset < length; offset++)
+      SWAP_INT32(*data_ref + offset);
+
   *length_ref = length;
   return length;
 }
