@@ -3,7 +3,6 @@ dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(sphinx2,0.6)
-AM_CONFIG_HEADER(config.h)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall}
 
@@ -11,7 +10,7 @@ AC_ISC_POSIX
 AC_PROG_CC
 AM_PROG_CC_STDC
 AC_HEADER_STDC
-
+AC_WORDS_BIGENDIAN
 AC_TYPE_SIGNAL
 
 hmmdata=`ls -1 $srcdir/model/hmm/6k | egrep -v '(Makefile|CVS)'`
@@ -33,15 +32,35 @@ dnl
 ad_files=""
 ad_libs=""
 
+dnl
+dnl Allow compilation for fixed or floating-point MFCC and GMM computation
+dnl
+AC_ARG_ENABLE(fixed,
+	AC_HELP_STRING([--enable-fixed],
+		       [Use fixed-point for MFCC and GMM computation]),[
+if test x$enableval = xyes; then
+   AC_DEFINE(FIXED_POINT)
+fi])
+
+dnl
+dnl Optional log-domain power spectrum for fixed-point - more accurate but slower
+dnl
+AC_ARG_ENABLE(fixed,
+	AC_HELP_STRING([--enable-logpower],
+		       [Calculate power spectrum in log domain (slower but more accurate)]),[
+if test x$enableval = xyes; then
+   AC_DEFINE(LOG_SPEC)
+fi])
+
 dnl Added from suggestion by 
 dnl Jasper van Veghel <jvveghel@vanboxtelsoftware.nl>, 02/03/2003:
 AC_ARG_WITH(alsa,
            AC_HELP_STRING([--with-alsa], [Use ALSA library for sound I/O]),
-           [ad_files="ad_alsa.lo",
-            ad_backend="AD_BACKEND_ALSA",
-            ad_libs="-lasound",
-                   CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
-            AC_CHECK_HEADER(sys/asoundlib.h, ,
+           [ad_files="ad_alsa.lo"
+            ad_backend="AD_BACKEND_ALSA"
+            ad_libs="-lasound"
+	    AC_DEFINE(AD_BACKEND_ALSA)
+            AC_CHECK_HEADER(sys/asoundlib.h,,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
 
@@ -50,60 +69,54 @@ if test "x$ad_files" = "x"; then
                 *-*-linux*)
                         ad_files="ad_oss.lo"
                         ad_backend="AD_BACKEND_OSS"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSS"
+			AC_DEFINE(AD_BACKEND_OSS)
                         ;;
                 # FIXME: isn't this the same OSS as on Linux?
                 *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
                         ad_files="ad_oss_bsd.lo mulaw_base.lo"
                         ad_libs="-lossaudio"
                         ad_backend="AD_BACKEND_OSS_BSD"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
+			AC_DEFINE(AD_BACKEND_OSS_BSD)
                         ;;
                 *-*-osf*)
                         ad_files="ad_osf.lo mulaw_base.lo"
                         ad_backend="AD_BACKEND_OSF"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSF"
+			AC_DEFINE(AD_BACKEND_OSF)
                         ;;
                 *-*-irix*)
                         ad_files="ad_irix.lo mulaw_base.lo"
                         ad_libs="-laudio"
                         ad_backend="AD_BACKEND_IRIX"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_IRIX"
+			AC_DEFINE(AD_BACKEND_IRIX)
                         ;;
                 *-*-sunos4*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DSUN4 -DAD_BACKEND_SUNOS"
-                        ;;
-                *86*-*-solaris*)
-                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
-                        ad_libs="-lm -lnsl -lsocket -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__LITTLE_ENDIAN__ -DAD_BACKEND_SUNOS"
+			AC_DEFINE(AD_BACKEND_SUNOS)
                         ;;
                 *-*-solaris*)
                         ad_files="ad_sunos.lo audio_utils_sunos.lo"
                         ad_libs="-lm -lnsl -lsocket -ldl"
                         ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_SUNOS"
+			AC_DEFINE(AD_BACKEND_SUNOS)
                         ;;
                 *-*-*cygwin*)
                         ad_files="play_win32.lo rec_win32.lo"
                         ad_libs="-lwinmm"
                         ad_backend="AD_BACKEND_WIN32"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_WIN32"
+			AC_DEFINE(AD_BACKEND_WIN32)
                         ;;
                 *-*apple*-*)
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
-                        CFLAGS="$CFLAGS -D__BIG_ENDIAN__ -DAD_BACKEND_NONE"
+			AC_DEFINE(AD_BACKEND_NONE)
                         ;;
                 *)
                         ad_files="ad_base.lo"
                         ad_backend="AD_BACKEND_NONE"
                         AC_MSG_RESULT([No audio interface for host type $host.])
-                        CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
+			AC_DEFINE(AD_BACKEND_NONE)
                         ;;
         esac
 fi
