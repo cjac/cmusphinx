@@ -40,11 +40,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#ifdef WIN32
 #include <fcntl.h>
+#ifdef WIN32
+#include <io.h>
 #else
 #include <sys/file.h>
-#include <sys/fcntl.h>
 #include <unistd.h>
 #endif
 #include "byteorder.h"

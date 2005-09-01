@@ -43,14 +43,13 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifdef WIN32
 #include <io.h>
-#include <fcntl.h>
 #else
 #include <sys/file.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 #endif
 #include "byteorder.h"
