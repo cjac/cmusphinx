@@ -63,17 +63,17 @@ awritedouble (char *file, double *data, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awritedouble: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   for(offset = 0; offset < length; offset++)
-    SWAPD(data + offset);
+    SWAP_BE_64(data + offset);
   size = length * sizeof (double);
   if (write (fd, (char *) data, size) != size)
   {
@@ -82,7 +82,7 @@ awritedouble (char *file, double *data, int length)
     return (-1);
   }
   for(offset = 0; offset < length; offset++)
-    SWAPD(data + offset);
+    SWAP_BE_64(data + offset);
 
   printf ("Wrote %d doubles in %s.\n", length, file);
   close (fd);

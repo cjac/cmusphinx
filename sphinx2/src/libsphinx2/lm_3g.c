@@ -41,9 +41,17 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.14  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
+ * Revision 1.13  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * Revision 1.12  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -1345,7 +1353,7 @@ static int32 fread_int32(FILE *fp, int32 min, int32 max,
     
     if (fread (&k, sizeof (int32), 1, fp) != 1)
 	E_FATAL("fread(%s) failed\n", name);
-    SWAP_L(k);
+    SWAP_LE_32(&k);
     if ((min > k) || (max < k))
 	E_FATAL("%s outside range [%d,%d]\n", name, min, max);
     
@@ -1354,7 +1362,7 @@ static int32 fread_int32(FILE *fp, int32 min, int32 max,
 
 static void fwrite_int32 (FILE *fp, int32 val)
 {
-    SWAP_L(val);
+    SWAP_LE_32(&val);
     fwrite (&val, sizeof(int32), 1, fp);
 }
 
@@ -1362,10 +1370,10 @@ static void fwrite_ug (FILE *fp, unigram_t *ug)
 {
     unigram_t tmp_ug = *ug;
     
-    SWAP_L(tmp_ug.mapid);
-    SWAP_L(tmp_ug.prob1.l);
-    SWAP_L(tmp_ug.bo_wt1.l);
-    SWAP_L(tmp_ug.bigrams);
+    SWAP_LE_32(&tmp_ug.mapid);
+    SWAP_LE_32(&tmp_ug.prob1.l);
+    SWAP_LE_32(&tmp_ug.bo_wt1.l);
+    SWAP_LE_32(&tmp_ug.bigrams);
     fwrite (&tmp_ug, sizeof(unigram_t), 1, fp);
 }
 
@@ -1373,10 +1381,10 @@ static void fwrite_bg (FILE *fp, bigram_t *bg)
 {
     bigram_t tmp_bg = *bg;
     
-    SWAP_W(tmp_bg.wid);
-    SWAP_W(tmp_bg.prob2);
-    SWAP_W(tmp_bg.bo_wt2);
-    SWAP_W(tmp_bg.trigrams);
+    SWAP_LE_16(&tmp_bg.wid);
+    SWAP_LE_16(&tmp_bg.prob2);
+    SWAP_LE_16(&tmp_bg.bo_wt2);
+    SWAP_LE_16(&tmp_bg.trigrams);
     fwrite (&tmp_bg, sizeof(bigram_t), 1, fp);
 }
 
@@ -1384,8 +1392,8 @@ static void fwrite_tg (FILE *fp, trigram_t *tg)
 {
     trigram_t tmp_tg = *tg;
     
-    SWAP_W(tmp_tg.wid);
-    SWAP_W(tmp_tg.prob3);
+    SWAP_LE_16(&tmp_tg.wid);
+    SWAP_LE_16(&tmp_tg.prob3);
     fwrite (&tmp_tg, sizeof(trigram_t), 1, fp);
 }
 
@@ -1465,10 +1473,10 @@ static int32 lm3g_load (char const *file, lm_t *model,
       E_FATAL("fread(unigrams) failed\n");
     
     for (i = 0, ugptr = model->unigrams; i <= model->ucount; i++, ugptr++) {
-	SWAP_L(ugptr->mapid);
-	SWAP_L(ugptr->prob1.l);
-	SWAP_L(ugptr->bo_wt1.l);
-	SWAP_L(ugptr->bigrams);
+	SWAP_LE_32(&ugptr->mapid);
+	SWAP_LE_32(&ugptr->prob1.l);
+	SWAP_LE_32(&ugptr->bo_wt1.l);
+	SWAP_LE_32(&ugptr->bigrams);
     }
     for (i = 0, ugptr = model->unigrams; i < model->ucount; i++, ugptr++) {
 	if (ugptr->mapid != i)
@@ -1485,10 +1493,10 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	!= (size_t) model->bcount+1)
 	E_FATAL("fread(bigrams) failed\n");
     for (i = 0, bgptr = model->bigrams; i <= model->bcount; i++, bgptr++) {
-	SWAP_W(bgptr->wid);
-	SWAP_W(bgptr->prob2);
-	SWAP_W(bgptr->bo_wt2);
-	SWAP_W(bgptr->trigrams);
+	SWAP_LE_16(&bgptr->wid);
+	SWAP_LE_16(&bgptr->prob2);
+	SWAP_LE_16(&bgptr->bo_wt2);
+	SWAP_LE_16(&bgptr->trigrams);
     }
     E_INFO("%8d = LM.bigrams(+trailer) read\n", model->bcount);
     
@@ -1498,8 +1506,8 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	    != (size_t) model->tcount)
 	    E_FATAL("fread(trigrams) failed\n");
 	for (i = 0, tgptr = model->trigrams; i < model->tcount; i++, tgptr++) {
-	    SWAP_W(tgptr->wid);
-	    SWAP_W(tgptr->prob3);
+	    SWAP_LE_16(&tgptr->wid);
+	    SWAP_LE_16(&tgptr->prob3);
 	}
 	E_INFO("%8d = LM.trigrams read\n", model->tcount);
     }
@@ -1510,7 +1518,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
     if (fread (model->prob2, sizeof (log_t), k, fp) != (size_t) k)
 	E_FATAL("fread(prob2) failed\n");
     for (i = 0; i < k; i++)
-	SWAP_L(model->prob2[i].l);
+	SWAP_LE_32(&model->prob2[i].l);
     E_INFO("%8d = LM.prob2 entries read\n", k);
 
     /* read n_bo_wt2 and bo_wt2 array */
@@ -1521,7 +1529,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->bo_wt2, sizeof (log_t), k, fp) != (size_t) k)
 	    E_FATAL("fread(bo_wt2) failed\n");
 	for (i = 0; i < k; i++)
-	    SWAP_L(model->bo_wt2[i].l);
+	    SWAP_LE_32(&model->bo_wt2[i].l);
 	E_INFO("%8d = LM.bo_wt2 entries read\n", k);
     }
 	
@@ -1533,7 +1541,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->prob3, sizeof (log_t), k, fp) != (size_t) k)
 	    E_FATAL("fread(prob3) failed\n");
 	for (i = 0; i < k; i++)
-	    SWAP_L(model->prob3[i].l);
+	    SWAP_LE_32(&model->prob3[i].l);
 	E_INFO("%8d = LM.prob3 entries read\n", k);
     }
     
@@ -1544,7 +1552,7 @@ static int32 lm3g_load (char const *file, lm_t *model,
 	if (fread (model->tseg_base, sizeof(int32), k, fp) != (size_t) k)
 	  E_FATAL("fread(tseg_base) failed\n");
 	for (i = 0; i < k; i++)
-	  SWAP_L(model->tseg_base[i]);
+	  SWAP_LE_32(&model->tseg_base[i]);
 	E_INFO("%8d = LM.tseg_base entries read\n", k);
     }
 

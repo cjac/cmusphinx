@@ -63,14 +63,14 @@ f2write (char *file, float *data1, float *data2, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "f2write: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   for(offset = 0; offset < length; offset++) {
     SWAPF(data1 + offset);

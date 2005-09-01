@@ -63,14 +63,14 @@ awritechar (char *file, char *data, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awritechar: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   size = length * sizeof (char);
   if (write (fd, data, size) != size)

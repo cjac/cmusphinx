@@ -42,9 +42,17 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.14  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.15  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
+ * Revision 1.14  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 23-Jan-01    H J Fox (hjf@cs.brown.edu) at Brown University
  *              Hacked to run under Solaris 8 - flipped the byte swap
@@ -189,10 +197,6 @@ static void insert_floor (register int32 *out, int32 min,
 static int hmmArcNormalize (SMD *smd, SMD_R *smd_r,
 			    double transSmooth, double arcWeight);
 
-/* FIXME: Yes, this one swaps unconditionally, and it's a
-   function... !@#$%@!#$ (from util.c) */
-extern void swapLong(int32 *intp);
-
 /* FIXME: needs a header file */
 extern int areadint (char *file, int **data_ref, int *length_ref);
 
@@ -202,7 +206,7 @@ static int fread_int32(FILE *fp, int min, int max, char const *name)
     
     if (fread (&k, sizeof (int), 1, fp) != 1)
 	E_FATAL("fread(%s) failed\n", name);
-    SWAP_L(k);
+    SWAP_LE_32(&k);
     if ((min > k) || (max < k))
 	E_FATAL("%s outside range [%d,%d]\n", name, min, max);
     return (k);
@@ -210,7 +214,7 @@ static int fread_int32(FILE *fp, int min, int max, char const *name)
 
 static size_t fwrite_int32 (FILE *fp, int val)
 {
-    SWAP_L(val);
+    SWAP_LE_32(&val);
     return fwrite (&val, sizeof(int), 1, fp);
 }
 
@@ -281,11 +285,11 @@ load_senone_dists_8bits(OPDF_8BIT_T p[],	/* Output probs, clustered */
 	for (i = 0; i < r; i++) {
 	    if (fread (p[n].prob[i], sizeof(int32), 256, fp) != 256)
 		E_FATAL("fread failed\n");
-#if (__BIG_ENDIAN__)
+#ifdef WORDS_BIGENDIAN
 	    {
 		int j;
 		for (j = 0; j < 256; j++) {
-		    SWAP_L(p[n].prob[i][j]);
+		    SWAP_INT32(&p[n].prob[i][j]);
 		}
 	    }
 #endif
@@ -672,7 +676,7 @@ hmm_tied_read_bin (char const *dir_list,   /* directory search list */
     CM_fread (&magic, sizeof (int32), 1, fp);
 
     if (magic != TIED_DIST) {
-	swapLong (&magic);
+	SWAP_INT32 (&magic);
 	if (magic != TIED_DIST) {
 	    E_FATAL ("in %s, magic = %d expected %d\n",
 		  file, magic, TIED_DIST);
@@ -725,7 +729,7 @@ hmm_tied_read_big_bin (char const *dir_list,/* directory search list */
   	parsed++;
 
 	if (magic != BIG_HMM) {
-	    swapLong (&magic);
+	    SWAP_INT32 (&magic);
 	    if (magic != BIG_HMM) {
 	        char str[256];
 	        /*
@@ -825,7 +829,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     CM_fread ((char *) &numAlphabet, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&numAlphabet);
+	SWAP_INT32 (&numAlphabet);
 
     if (numAlphabet != numAlphaExpected) {
       E_FATAL ("In %s, VQ size != %d\n", hmmName, numAlphaExpected);
@@ -833,11 +837,11 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     CM_fread (&numOMatrix, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&numOMatrix);
+	SWAP_INT32 (&numOMatrix);
 
     CM_fread (&smd_r->stateCnt, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&smd_r->stateCnt);
+	SWAP_INT32 (&smd_r->stateCnt);
 
     if (smd_r->stateCnt != (HMM_LAST_STATE+1)) {
 	E_FATAL ("Unexpected state count = %d, in %s\n",
@@ -846,7 +850,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     CM_fread (&numInitial, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&numInitial);
+	SWAP_INT32 (&numInitial);
 
     if (numInitial != 1) {
 	E_FATAL ("Unexpected num. initial states = %d, in %s\n",
@@ -858,7 +862,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
 	CM_fread (&state, sizeof (int32), 1, fp);
 	if (doByteSwap)
-	    swapLong (&state);
+	    SWAP_INT32 (&state);
 
 	if (state != 0) {
 	    E_FATAL ("Unexpected initial state = %d, in %s\n",
@@ -868,7 +872,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     CM_fread (&numFinal, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&numFinal);
+	SWAP_INT32 (&numFinal);
 
     if (numFinal != 1) {
 	E_FATAL ("Unexpected num. final states = %d, in %s\n",
@@ -880,7 +884,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
 	CM_fread (&state, sizeof (int32), 1, fp);
 	if (doByteSwap)
-	    swapLong (&state);
+	    SWAP_INT32 (&state);
 
 	if (state != HMM_LAST_STATE) {
 	    E_FATAL ("Unexpected final state = %d, in %s\n",
@@ -890,7 +894,7 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 
     CM_fread (&numArcs, sizeof (int32), 1, fp);
     if (doByteSwap)
-	swapLong (&numArcs);
+	SWAP_INT32 (&numArcs);
 
     if (numArcs != TRANS_CNT) {
 	E_FATAL ("Unexpected number of arcs = %d, in %s\n",
@@ -905,10 +909,10 @@ hmm_tied_bin_parse (FILE     *fp,		   /* file pointer, to next hmm */
 	CM_fread (&prob, sizeof (int32), 1, fp);
 	CM_fread (&dist, sizeof (int32), 1, fp);
 	if (doByteSwap) {
-	    swapLong (&from);
-	    swapLong (&to);
-	    swapLong (&prob);
-	    swapLong (&dist);
+	    SWAP_INT32 (&from);
+	    SWAP_INT32 (&to);
+	    SWAP_INT32 (&prob);
+	    SWAP_INT32 (&dist);
 	}
 
 	/*

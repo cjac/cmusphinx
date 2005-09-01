@@ -63,17 +63,17 @@ awritefloat (char *file, float *data, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awritefloat: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   for(offset = 0; offset < length; offset++)
-    SWAPF(data + offset);
+    SWAP_BE_32((int32 *)data + offset);
   size = length * sizeof (float);
   if (write (fd, (char *) data, size) != size)
   {
@@ -82,7 +82,7 @@ awritefloat (char *file, float *data, int length)
     return (-1);
   }
   for(offset = 0; offset < length; offset++)
-    SWAPF(data + offset);
+    SWAP_BE_32((int32 *)data + offset);
 
   printf ("Wrote %d floats in %s.\n", length, file);
   close (fd);

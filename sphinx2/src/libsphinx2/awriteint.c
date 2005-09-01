@@ -63,17 +63,17 @@ awriteint(char *file, int *data, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awriteint: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   for(offset = 0; offset < length; offset++)
-    SWAPL(data + offset);
+    SWAP_BE_32(data + offset);
   size = length * sizeof (int);
   if (write (fd, (char *) data, size) != size)
   {
@@ -82,7 +82,7 @@ awriteint(char *file, int *data, int length)
     return (-1);
   }
   for(offset = 0; offset < length; offset++)
-    SWAPL(data + offset);
+    SWAP_BE_32(data + offset);
 
   printf ("Wrote %d ints in %s.\n", length, file);
   close (fd);

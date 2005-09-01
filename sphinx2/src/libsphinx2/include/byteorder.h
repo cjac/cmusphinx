@@ -47,54 +47,53 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2004/12/10  16:48:58  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.8  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
- * 
- * 16-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Created from Fil Alleva's original.
  */
-
-/* in place byte order conversion
-   nothing is promised to be returned
-   currently only works for suns and Vax MIPS machines
- */
-
 
 #ifndef __S2_BYTEORDER_H__
 #define __S2_BYTEORDER_H__	1
 
+/* Macro to byteswap an int16 variable.  x = ptr to variable */
+#define SWAP_INT16(x)	*(x) = ((0x00ff & (*(x))>>8) | (0xff00 & (*(x))<<8))
 
-#if defined(mips) || defined(__alpha) || defined(WIN32) || (! __BIG_ENDIAN__)
-#define SWAPBYTES
+/* Macro to byteswap an int32 variable.  x = ptr to variable */
+#define SWAP_INT32(x)	*(x) = ((0x000000ff & (*(x))>>24) | \
+				(0x0000ff00 & (*(x))>>8) | \
+				(0x00ff0000 & (*(x))<<8) | \
+				(0xff000000 & (*(x))<<24))
 
-#define SWAPW(x)	*(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
-#define SWAPL(x)	*(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
-			(0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
-#define SWAPF(x)	SWAPL((int *) x)
-#define SWAPP(x)	SWAPL((int *) x)
-#define SWAPD(x)	{ int *low = (int *) (x), *high = (int *) (x) + 1,\
+/* Macro to byteswap a float32 variable.  x = ptr to variable */
+#define SWAP_FLOAT32(x)	SWAP_INT32((int32 *) x)
+
+/* Macro to byteswap a float64 variable.  x = ptr to variable */
+#define SWAP_FLOAT64(x)	{ int *low = (int *) (x), *high = (int *) (x) + 1,\
 			      temp;\
-			  SWAPL(low);  SWAPL(high);\
+			  SWAP_INT32(low);  SWAP_INT32(high);\
 			  temp = *low; *low = *high; *high = temp;}
 
-/* yes, these "reversed senses" are confusing. FIXME. */
-#define SWAP_W(x)
-#define SWAP_L(x)
-
-#else	/* don't need byte order conversion, do nothing */
-
-#define SWAPW(x)
-#define SWAPL(x)
-#define SWAPF(x)
-#define SWAPP(x)
-#define SWAPD(x)
-
-/* "reversed senses". FIXME. */
-#define SWAP_W(x)  x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
-#define SWAP_L(x)  x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
-                         (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
-
+/* Rather confusing backwards compatibility macros for dealing with
+ * explicitly big or little-endian data. */
+#ifdef WORDS_BIGENDIAN
+#define SWAP_BE_64(x)
+#define SWAP_BE_32(x)
+#define SWAP_BE_16(x)
+#define SWAP_LE_64(x) SWAP_FLOAT64(x)
+#define SWAP_LE_32(x) SWAP_INT32(x)
+#define SWAP_LE_16(x) SWAP_INT16(x)
+#else
+#define SWAP_LE_64(x)
+#define SWAP_LE_32(x)
+#define SWAP_LE_16(x)
+#define SWAP_BE_64(x) SWAP_FLOAT64(x)
+#define SWAP_BE_32(x) SWAP_INT32(x)
+#define SWAP_BE_16(x) SWAP_INT16(x)
 #endif
 
 #endif

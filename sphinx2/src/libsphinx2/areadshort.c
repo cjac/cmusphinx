@@ -70,7 +70,7 @@ areadshort (char *file, short **data_ref, int *length_ref)
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   size = length * sizeof (short);
   if (!(data = malloc ((unsigned) size)))
   {
@@ -88,7 +88,7 @@ areadshort (char *file, short **data_ref, int *length_ref)
   close (fd);
   *data_ref = (short *) data;
   for(offset = 0; offset < length; offset++)
-    SWAPW(*data_ref + offset);
+    SWAP_BE_16(*data_ref + offset);
   *length_ref = length;
   return length;
 }

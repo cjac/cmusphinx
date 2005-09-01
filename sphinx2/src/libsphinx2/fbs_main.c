@@ -46,8 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.22  2005/07/21  22:20:49  egouvea
- * Fixed bug 1236322, casting the argument to isspace from char to unsigned char, in remaining files that use isspace()
+ * Revision 1.23  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
  * Revision 1.21  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
@@ -339,7 +344,7 @@
 #include "fbs.h"
 #include "search.h"
 #include "cepio.h"
-
+#include "byteorder.h"
 #include "s2params.h"
 
 /*
@@ -1056,11 +1061,9 @@ static void init_norm_agc_cmp ( void )
 }
 
 static FILE *uttfp = NULL;
-static float *coeff;
+static float32 *coeff;
 static int32 ncoeff;
 static int32 ncoeff_read;
-
-#define SWAP_UINT16(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
 
 /*
  * Code for reading utterance data (A/D data) from a file, as per interface in ad.h.
@@ -1078,15 +1081,15 @@ int32 adc_file_read (int16 *buf, int32 max)
 	return -1;
 
     /* Byte swap if necessary */
-#if (__BIG_ENDIAN__)
+#ifdef WORDS_BIGENDIAN
     if (adc_endian == 1) {	/* Little endian adc file */
 	for (i = 0; i < n; i++)
-	    SWAP_UINT16(buf[i]);
+	    SWAP_INT16(&buf[i]);
     }
 #else
     if (adc_endian == 0) {	/* Big endian adc file */
 	for (i = 0; i < n; i++)
-	    SWAP_UINT16(buf[i]);
+	    SWAP_INT16(&buf[i]);
     }
 #endif
 
@@ -1098,12 +1101,12 @@ int32 adc_file_read (int16 *buf, int32 max)
  * to the decoder in batch mode.
  * This function is passed to uttproc for batch-mode processing of cep data from files.
  */
-static int32 cep_buf_read (float *cepbuf)
+static int32 cep_buf_read (float32 *cepbuf)
 {
     if (ncoeff_read >= ncoeff)
 	return -1;
 
-    memcpy (cepbuf, coeff+ncoeff_read, CEP_VECLEN*sizeof(float));
+    memcpy (cepbuf, coeff+ncoeff_read, CEP_VECLEN*sizeof(float32));
     ncoeff_read += CEP_VECLEN;
 
     return 1;
@@ -1586,7 +1589,7 @@ int32 uttfile_open (char const *utt)
 		return -1;
 	    }
 	}
-#if (__BIG_ENDIAN__)
+#ifdef WORDS_BIGENDIAN
 	if (adc_endian == 1)	/* Little endian adc file */
 	    E_INFO("Byte-reversing %s\n", inputfile);
 #else
@@ -1599,7 +1602,7 @@ int32 uttfile_open (char const *utt)
 	    ncoeff = 0;
 	    return -1;
 	}
-	ncoeff /= sizeof(float);
+	ncoeff /= sizeof(float32);
 	ncoeff_read = 0;
     }
     
@@ -1620,7 +1623,7 @@ void uttfile_close ( void )
 int32 utt_file2feat (char *utt, int32 nosearch)
 {
     static int16 *adbuf = NULL;
-    static float *mfcbuf = NULL;
+    static float32 *mfcbuf = NULL;
     int32 k;
     
     if (uttfile_open (utt) < 0)
@@ -1641,7 +1644,7 @@ int32 utt_file2feat (char *utt, int32 nosearch)
 		return -1;
     } else {
 	if (! mfcbuf)
-	    mfcbuf = (float *) CM_calloc (CEP_VECLEN, sizeof(float));
+	    mfcbuf = (float32 *) CM_calloc (CEP_VECLEN, sizeof(float32));
 
 	while (cep_buf_read (mfcbuf) >= 0)
 	    if (uttproc_cepdata (&mfcbuf, 1, 1) < 0)
@@ -1771,12 +1774,6 @@ run_time_align_ctl_file (char const *utt_ctl_file_name,
     fclose (utt_ctl_fs);
     fclose (pe_ctl_fs);
 }
-
-/* Macro to byteswap an int32 variable.  x = ptr to variable */
-#define SWAP_INT32(x)   *(x) = ((0x000000ff & (*(x))>>24) | \
-                                (0x0000ff00 & (*(x))>>8) | \
-                                (0x00ff0000 & (*(x))<<8) | \
-                                (0xff000000 & (*(x))<<24))
 
 /*
  * Read specified segment [sf..ef] of Sphinx-II format mfc file and write to

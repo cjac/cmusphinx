@@ -42,6 +42,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
+#include "byteorder.h"
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
@@ -144,15 +145,6 @@ map_orig_val_to_clid (int n)
     }
 }
 
-#if defined(_HPUX_SOURCE)
-#define SWAPW(x)	x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
-#define SWAPL(x)	x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
-    			      (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )
-#else
-#define SWAPW(x)
-#define SWAPL(x)
-#endif
-
 static int
 fread_int32(FILE *fp, int min, int max, char *name)
 {
@@ -160,7 +152,7 @@ fread_int32(FILE *fp, int min, int max, char *name)
     
     if (fread (&k, sizeof (int), 1, fp) != 1)
 	QUIT((errfp, "%s(%d): fread(%s) failed\n", __FILE__, __LINE__, name));
-    SWAPL(k);
+    SWAP_LE_32(&k);
     if ((min > k) || (max < k))
 	QUIT((errfp, "%s(%d): %s outside range [%d,%d]\n", __FILE__, __LINE__, name, min, max));
     return (k);
@@ -169,7 +161,7 @@ fread_int32(FILE *fp, int min, int max, char *name)
 static void
 fwrite_int32 (FILE *fp, int val)
 {
-    SWAPL(val);
+    SWAP_LE_32(&val);
     fwrite (&val, sizeof(int), 1, fp);
 }
 

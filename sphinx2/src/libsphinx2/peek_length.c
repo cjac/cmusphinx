@@ -70,7 +70,7 @@ peek_length (char const *file)
     close (fd);
     return -1;
   }
-  SWAPL(&buff);
+  SWAP_BE_32(&buff);
   close(fd);
 /*  len = buff[0] << 24 | buff[1] << 16 | buff[2] << 8 | buff[3]; */
   len = buff;

@@ -71,7 +71,7 @@ int32 areadchar (char *file, char **data_ref, int32 *length_ref)
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (!(data = malloc ((unsigned) length)))
   {
     fprintf (stderr, "areadchar: %s: can't alloc data\n", file);

@@ -70,7 +70,7 @@ f2read (char *file, float **data1_ref, float **data2_ref, int *length_ref)
     fprintf (stderr, "f2read: %s: can't read length (empty file?)\n", file);
     return (-1);
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   size = length * sizeof (float);
 
   if (!(data1 = malloc ((unsigned) size)))

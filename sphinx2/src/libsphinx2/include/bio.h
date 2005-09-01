@@ -47,9 +47,17 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/12/10  16:48:58  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.2  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
+ * Revision 1.1  2004/12/10 16:48:58  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Imported from s3.2, for supporting s3 format continuous
@@ -68,19 +76,6 @@
 
 
 #define BYTE_ORDER_MAGIC	(0x11223344)
-
-/* Macro to byteswap an int16 variable.  x = ptr to variable */
-#define SWAP_INT16(x)	*(x) = ((0x00ff & (*(x))>>8) | (0xff00 & (*(x))<<8))
-
-/* Macro to byteswap an int32 variable.  x = ptr to variable */
-#define SWAP_INT32(x)	*(x) = ((0x000000ff & (*(x))>>24) | \
-				(0x0000ff00 & (*(x))>>8) | \
-				(0x00ff0000 & (*(x))<<8) | \
-				(0xff000000 & (*(x))<<24))
-
-/* Macro to byteswap a float32 variable.  x = ptr to variable */
-#define SWAP_FLOAT32(x)	SWAP_INT32((int32 *) x)
-
 
 /*
  * Read binary file format header: has the following format

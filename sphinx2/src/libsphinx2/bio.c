@@ -47,9 +47,17 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.2  2005/09/01  21:09:54  dhdfu
+ * Really, actually, truly consolidate byteswapping operations into
+ * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
+ * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
+ * autoconf controls the functioning of the conditional swap macros
+ * (SWAP_?[LW]) whose names and semantics have been regularized.
+ * Private, adhoc macros have been removed.
  * 
+ * Revision 1.1  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 22-Nov-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Imported from s3.2, for supporting s3 format continuous
@@ -70,6 +78,7 @@
 #include "s2types.h"
 #include "err.h"
 #include "ckd_alloc.h"
+#include "byteorder.h"
 #include "bio.h"
 
 

@@ -63,18 +63,18 @@ awriteshort (char const *file, short *data, int length)
     return -1;
   }
 
-  SWAPL(&length);
+  SWAP_BE_32(&length);
   if (write (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "awriteshort: %s: can't write length\n", file);
     close (fd);
     return -1;
   }
-  SWAPL(&length);
+  SWAP_BE_32(&length);
 
   /* FIXME: gack.  shouldn't modify data! */
   for(offset = 0; offset < length; offset++)
-    SWAPW(data + offset);
+    SWAP_BE_16(data + offset);
   size = length * sizeof (short);
   if (write (fd, (char *) data, size) != size)
   {
@@ -83,7 +83,7 @@ awriteshort (char const *file, short *data, int length)
     return (-1);
   }
   for(offset = 0; offset < length; offset++)
-    SWAPW(data + offset);
+    SWAP_BE_16(data + offset);
 
   printf ("Wrote %d shorts in %s.\n", length, file);
   close (fd);
