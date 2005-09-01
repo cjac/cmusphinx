@@ -12,6 +12,7 @@ config.log
 config.status
 config.sub
 configure
+depcomp
 gmon.out
 install-sh
 libtool

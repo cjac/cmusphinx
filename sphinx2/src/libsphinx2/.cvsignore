@@ -1,8 +1,6 @@
 *.lo
-Makefile
-Makefile.in
 .deps
 .libs
+Makefile
+Makefile.in
 libsphinx2.la
-.cvsignore
-
