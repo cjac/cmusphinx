@@ -14,4 +14,9 @@ EXTRA_DIST =  \
 	sphinx2-phone.in \
 	sphinx2-example.arg \
         stress2sphinx.in \
-	sphinx2-align.in
+	sphinx2-align.in \
+	s2decode.pl \
+	setup_sphinx2.pl \
+	setup_tutorial.pl \
+	slave.pl \
+	sphinx2.cfg
