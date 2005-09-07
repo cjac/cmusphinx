@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.6  2005/08/03  19:58:11  arthchan2003
- * Change -topn from fast_GMM macro to acoustic model command line
+ * Revision 1.1.2.7  2005/09/07  23:27:21  arthchan2003
+ * Added an option in gmm_command_line_macro() to allow multiple behavior of Gaussian flooring.
  * 
+ * Revision 1.1.2.6  2005/08/03 19:58:11  arthchan2003
+ * Change -topn from fast_GMM macro to acoustic model command line
+ *
  * Revision 1.1.2.5  2005/08/03 18:53:59  dhdfu
  * Add -topn for SCHMM models
  *
@@ -100,6 +103,10 @@
       ARG_FLOAT32,\
       "0.0001",\
       "Mixture gaussian variance floor (applied to data from -var file)" },\
+    { "-remove_zero_var_gau", \
+      ARG_INT32, \
+      "0" , \
+      "If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
     { "-mixw",\
       ARG_STRING,\
       NULL,\
