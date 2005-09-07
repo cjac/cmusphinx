@@ -40,20 +40,19 @@
  *
  * For history information, please use 'cvs log'
  * $Log$
- * Revision 1.9.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.9.4.2  2005/09/07  23:51:05  arthchan2003
+ * Fixed keyword expansion problem
  * 
+ * Revision 1.9.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.10  2005/08/18 21:18:09  egouvea
+ * Added E_INFO displaying information about how many columns are being printed, and how many frames
+ *
  * Revision 1.9  2005/06/22 05:38:45  arthchan2003
  * Add
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
- * Add $Log$
- * Revision 1.9.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
- * 
- * Add Revision 1.9  2005/06/22 05:38:45  arthchan2003
- * Add Add
- * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  */
 
@@ -157,12 +156,14 @@ int main(int argc, char *argv[])
   column = (vsize > dsize) ? dsize : vsize;
   frm_end = (frm_end> noframe) ? noframe : frm_end;
 
+  E_INFO("Displaying %d out of %d columns per frame\n", column, vsize);
+  E_INFO("Total %d frames\n\n", noframe);
+
   /* This part should be moved to a special library if this file is
      longer than 300 lines. */
 
   if (is_header) {
     if (is_describe) {
-      printf("%d frames\n", noframe);
       printf("\n%6s", "frame#:");
     }
       
