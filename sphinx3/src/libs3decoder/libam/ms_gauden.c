@@ -45,11 +45,14 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.2  2005/08/03  18:53:44  dhdfu
+ * Revision 1.5.4.3  2005/09/07  23:25:10  arthchan2003
+ * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
+ * 
+ * Revision 1.5.4.2  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
  * Added licences in ms_* series of code.
  *
@@ -255,11 +258,12 @@ static int32 gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_p
 
     *out_param = out;
     
-    E_INFO("%d codebook, %d feature, size",
+    E_INFO("%d codebook, %d feature, size\n",
 	   n_mgau, n_feat);
     for (i = 0; i < n_feat; i++)
 	printf (" %dx%d", n_density, veclen[i]);
     printf ("\n");
+    fflush(stdout);
 
     return 0;
 }
@@ -281,7 +285,9 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 {
     int32 i, m, f, d, flen;
     float32 *varp, *detp;
+    int32 n;
 
+    n=0;
     /* Allocate space for determinants */
     g->det = (float32 ***) ckd_calloc_3d (g->n_mgau, g->n_feat, g->n_density,
 					  sizeof(float32));
@@ -295,8 +301,14 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 		*detp = (float32) 0.0;
 
 		for (i = 0, varp = g->var[m][f][d]; i < flen; i++, varp++) {
-		    if (*varp < varfloor)
-			*varp = varfloor;
+		  if (*varp < varfloor){
+
+#if 0
+		    E_INFO("varp %f , floor %f n=%d, m %d, f %d c %d, i %d\n",*varp,varfloor,n,m,f,d,i);
+#endif
+		      *varp = varfloor;
+		    n++;
+		  }
 
 		    *detp += (float32) (log(*varp));
 		    
@@ -312,6 +324,9 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 	    }
 	}
     }
+
+    if(1)
+      E_INFO("%d variance values floored\n", n);
 
     return 0;
 }
