@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.5  2005/08/02  21:10:18  arthchan2003
- * Added function declaration for lm_read_dump.
+ * Revision 1.14.4.6  2005/09/07  23:30:26  arthchan2003
+ * Changed error message for LM dump.
  * 
+ * Revision 1.14.4.5  2005/08/02 21:10:18  arthchan2003
+ * Added function declaration for lm_read_dump.
+ *
  * Revision 1.14.4.4  2005/07/17 05:24:23  arthchan2003
  * (Incomplete) Added lm_arbitrary.[ch], an arbitrary n-gram data structure.  Far from completed. Don't expect too much.
  *
@@ -346,7 +349,7 @@ lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, fl
 	
 	/* HACK !!! */
 	if(cmd_ln_int32("-lminmemory")==0){
-	  E_INFO("LM is not a dump file, so it is assumed to be a text file. However, disk-based LM is not working for -lminmemory at this point. Forced exit\n");
+	  E_INFO("LM is not a dump file, so it is assumed to be a text file. However, disk-based LM is not working for -lminmemory=0 at this point (i.e. LM has to be loaded into the memory). Forced exit.\n");
 	  return NULL;
 	}
 	lm = lm_read_txt (file,cmd_ln_int32("-lminmemory"));
