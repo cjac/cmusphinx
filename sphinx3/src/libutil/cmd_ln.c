@@ -174,7 +174,7 @@ static int32 *arg_sort (arg_t *defn, int32 n)
     return pos;
 }
 
-
+/** HACK! The boolean logic is still not well defined */
 static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 {
     if (! str)
@@ -198,6 +198,12 @@ static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 	  if (sscanf (str, "%lf", &(v->val.fl_64)) != 1)
 	    return -1;
 	  v->ptr = (void *) &(v->val.fl_64);
+	    break;
+	case ARG_BOOLEAN:
+	case REQARG_BOOLEAN:
+	  if (sscanf (str, "%c", &(v->val.b)) != 1)
+	    return -1;
+	  v->ptr = (void *) &(v->val.b);
 	    break;
 	case ARG_STRING:
 	case REQARG_STRING:
@@ -362,6 +368,10 @@ static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
 		case REQARG_STRING:
 		    fprintf (fp, "%s", (char *)vp);
 		    break;
+		case ARG_BOOLEAN:
+		case REQARG_BOOLEAN:
+		    fprintf (fp, "%c", *((boolean *)vp));
+		    break;
 		default: E_FATAL("Unknown argument type: %d\n", defn[j].type);
 		}
 	    }
@@ -479,6 +489,7 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
   int rv = 0;
 
   if ((file = fopen(filename, "r")) == NULL) {
+    E_INFO("Cannot open configuration file %s for reading\n",filename);
     return -1;
   }
 
