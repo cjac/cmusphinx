@@ -48,9 +48,25 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.3  2005/07/24  01:42:58  arthchan2003
- * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
+ * Revision 1.1.2.4  2005/09/07  23:40:06  arthchan2003
+ * Several Bug Fixes and Enhancements to the flat-lexicon
+ * 1, Fixed Dox-doc.
+ * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
+ * -hmmdumpsf. Usage is trivial. a structure called fwd_dbg_t now wrapped
+ * up all these loose parameters.  Methods of fwd_dbg are implemented.
+ * 3, word_ugprob is now initialized by init_word_ugprob
+ * 4, Full-triphone expansion is implemented. User can change this
+ * behavior by specifying -multiplex_multi and -multiplex_single. The
+ * former turn on multiplex triphone for word-begin for multi-phone word.
+ * The latter do that for single-phone word. Turning off both could
+ * tremendously increase computation.
+ * 5, Word expansions of possible right contexts now records independent
+ * history.  The behavior in the past was to use only one history for a
+ * word.
  * 
+ * Revision 1.1.2.3  2005/07/24 01:42:58  arthchan2003
+ * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
+ *
  * Revision 1.1.2.2  2005/07/17 05:57:25  arthchan2003
  * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
  *
@@ -74,8 +90,8 @@ void whmm_free (whmm_t *h)
 {
     int32 k;
     
-    k = (h->pos == 0) ? 0 : 1;
-    
+    /*    k = (h->pos == 0 && multiplex) ? 0 : 1;*/
+    k = h->type;
     h->next = whmm_freelist[k];
     whmm_freelist[k] = h;
 }
@@ -92,7 +108,7 @@ whmm_t *whmm_alloc_light (int32 n_state)
 }
 
 
-whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
+whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size, int32 multiplex)
 {
     whmm_t *h;
     int32 k, i, n, s;
@@ -101,8 +117,8 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
     s3pid_t *tmp_pid;
     tmp_pid=NULL;
     
-    k = (pos == 0) ? 0 : 1;
-
+    k = (IS_MULTIPLEX(pos,multiplex)) ? MULTIPLEX_TYPE : NONMULTIPLEX_TYPE;
+    
     if (! whmm_freelist[k]) {
 #if 0
 	n = 16000/sizeof(whmm_t);	/* HACK!!  Hardwired allocation size */
@@ -110,10 +126,12 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 	n = alloc_size/sizeof(whmm_t);	
 
 	whmm_freelist[k] = h = (whmm_t *) ckd_calloc (n, sizeof(whmm_t));
+	h->next=NULL;
 	tmp_scr = (int32 *) ckd_calloc (n_state * n, sizeof(int32));
 	tmp_latid = (s3latid_t *) ckd_calloc (n_state * n, sizeof(s3latid_t));
-	if (pos == 0)
-	    tmp_pid = (s3pid_t *) ckd_calloc (n_state * n, sizeof(s3pid_t));
+
+	if (IS_MULTIPLEX(pos,multiplex))
+	  tmp_pid = (s3pid_t *) ckd_calloc (n_state * n, sizeof(s3pid_t));
 
 	for (i = 0; i < n; i++) {
 	    h[i].next = &(h[i+1]);
@@ -125,7 +143,7 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 	    tmp_latid += n_state;
 
 	    /* Allocate pid iff first phone position (for multiplexed left contexts) */
-	    if (pos == 0) {
+	    if (IS_MULTIPLEX(pos,multiplex)) {
 		h[i].pid = tmp_pid;
 		tmp_pid += n_state;
 	    }
@@ -141,7 +159,9 @@ whmm_t *whmm_alloc (int32 pos, int32 n_state, int32 alloc_size)
 	h->history[s] = BAD_S3LATID;
     }
     h->pos = pos;
-    
+    h->type = k;
+
+    assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex));
     return (h);
 }
 
@@ -153,8 +173,8 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
     printf ("[%4d]", n_frame);
     printf (" [%s]", dict->word[w].word);
 
-    printf (" pos= %d, rc= %d, bestscore= %d\n",
-	    h->pos, h->rc, h->bestscore);
+    printf (" pos= %d, lc=%d, rc= %d, bestscore= %d multiplex %s\n",
+	    h->pos, h->lc, h->rc, h->bestscore, h->type==MULTIPLEX_TYPE ? "yes" : "no");
     
     printf ("\tscore: ");
     for (s = 0; s < n_state; s++)
@@ -165,20 +185,23 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
     for (s = 0; s < n_state; s++)
 	printf (" %12d", h->history[s]);
     printf ("\n");
-    
-    printf ("\tsenscr:");
-    for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
+    fflush(stdout);
+
+    if(senscr){
+      printf ("\tsenscr:");
+      for (s = 0; s < n_state-1; s++) {
+	p = (h->type==MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid) ;
 	if (NOT_S3PID(p))
-	    printf (" %12s", "--");
+	  printf (" %12s", "--");
 	else
-	    printf (" %12d", senscr[mdef->phone[p].state[s]]);
+	  printf (" %12d", senscr[mdef->phone[p].state[s]]);
+      }
+      printf ("\n");
     }
-    printf ("\n");
     
     printf ("\ttpself:");
     for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
+	p = (h->type==MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid)  ;
 	if (NOT_S3PID(p))
 	    printf (" %12s", "--");
 	else
@@ -188,7 +211,7 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
     
     printf ("\ttpnext:");
     for (s = 0; s < n_state-1; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
+	p = (h->type==MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid) ;
 	if (NOT_S3PID(p))
 	    printf (" %12s", "--");
 	else
@@ -198,7 +221,7 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
     
     printf ("\ttpskip:");
     for (s = 0; s < n_state-2; s++) {
-	p = (h->pos > 0) ? *(h->pid) : h->pid[s];
+      p = (h->type==MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid);
 	if (NOT_S3PID(p))
 	    printf (" %12s", "--");
 	else
@@ -207,7 +230,7 @@ void dump_whmm (s3wid_t w, whmm_t *h, int32 *senscr, tmat_t *tmat, int32 n_frame
     printf ("\n");
     
     
-    if (h->pos == 0) {
+    if (h->type==MULTIPLEX_TYPE) {
 	printf ("\tpid:   ");
 	for (s = 0; s < n_state-1; s++)
 	    printf (" %12d", h->pid[s]);
@@ -494,7 +517,7 @@ void eval_nonmpx_whmm (whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef, int3
 
     pid = *(h->pid);
     
-    sen = mdef->phone[pid].state;
+    sen = mdef->phone[pid].state; /*This gives a state-to-senone mapping*/
     tp = tmat->tp[mdef->phone[pid].tmat];
 
     /* Compute previous state-score + observation output prob for each state */
@@ -566,7 +589,7 @@ void eval_mpx_whmm (whmm_t *h, int32 *senscr,tmat_t *tmat, mdef_t *mdef,int32 n_
     prevpid = BAD_S3PID;
     for (from = n_state-2; from >= 0; --from) {
 	if ((pid = h->pid[from]) != prevpid) {
-	    senp = mdef->phone[pid].state;
+	    senp = mdef->phone[pid].state; /*This gives a state-to-senone mapping*/
 	    prevpid = pid;
 	}
 

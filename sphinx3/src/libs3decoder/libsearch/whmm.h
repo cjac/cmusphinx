@@ -48,9 +48,25 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.3  2005/07/24  01:42:58  arthchan2003
- * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
+ * Revision 1.1.2.4  2005/09/07  23:40:06  arthchan2003
+ * Several Bug Fixes and Enhancements to the flat-lexicon
+ * 1, Fixed Dox-doc.
+ * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
+ * -hmmdumpsf. Usage is trivial. a structure called fwd_dbg_t now wrapped
+ * up all these loose parameters.  Methods of fwd_dbg are implemented.
+ * 3, word_ugprob is now initialized by init_word_ugprob
+ * 4, Full-triphone expansion is implemented. User can change this
+ * behavior by specifying -multiplex_multi and -multiplex_single. The
+ * former turn on multiplex triphone for word-begin for multi-phone word.
+ * The latter do that for single-phone word. Turning off both could
+ * tremendously increase computation.
+ * 5, Word expansions of possible right contexts now records independent
+ * history.  The behavior in the past was to use only one history for a
+ * word.
  * 
+ * Revision 1.1.2.3  2005/07/24 01:42:58  arthchan2003
+ * Added whmm_alloc_light, that will by-pass and not use any internal list inside whmm.c
+ *
  * Revision 1.1.2.2  2005/07/17 05:57:25  arthchan2003
  * 1, Removed wid from the argument list of eval_*_whmm, 2, Allow  allocation of whmm_alloc to be more flexible.
  *
@@ -84,19 +100,54 @@
  * 	List ordered by pronunciation position within word.
  * 	If last phone is active, right context instances ordered as in rcpid or lrcpid
  * 
- * The triphone modelled by a given whmm_t is normally obtained by looking up wwpid or
- * rcpid above, using whmm_t.pos and whmm_t.rc.  However, left context modelling, unlike
- * right context, is done not by explicit fanout but by multiplexing a single whmm_t
- * structure among all possible instantiations (for all possible left context ciphones).
- * Each state can be from a different triphone instantiation.  whmm_t.pid[] used for
- * these triphone ids.
+ * The triphone modelled by a given whmm_t is normally obtained by
+ * looking up wwpid or rcpid above, using whmm_t.pos and whmm_t.rc.
+ * However, left context modelling, unlike right context, is done not
+ * by explicit fanout but by multiplexing a single whmm_t structure
+ * among all possible instantiations (for all possible left context
+ * ciphones).  Each state can be from a different triphone
+ * instantiation.  whmm_t.pid[] used for these triphone ids.  
  * (This is probably worse than no explanation.)
+ *
+ * ARCHAN : Augmented at 20050824
+ * 
+ * This is how this data structure works and admittedly it is fairly
+ * tricky.  When whmm_t is used for normal triphones. (i.e. When we
+ * try to model word-internal triphones or any triphone which is
+ * full-blown), then one whmm_t will be one such triphone.  In that
+ * case, the pointer pid will *point to* (not equal to) one single
+ * triphone ID. There is nothing tricky about that. 
+ *
+ * However, when a multiplexed triphone is used, then the situation
+ * will be tricky.  So what is multiplexing in the first place?
+ * 
+ * It is a technique mainly for **initial phone** and we are
+ * considering all **left contexts**.  So just imagine, we are
+ * entering a phone from multiple active word-ends. Now, if the
+ * triphone is implemented in full, then for each word-end, one will
+ * need to allocate one whmm_t to store the context for the word-end.
+ *
+ * Multiplex triphones though, doesn't require that, when multiple
+ * word-ends are entered, only the best pid will be stored in the
+ * **first state**.  Another interesting thing is that the best pid
+ * will be propagated through the HMM, just like state backtracker or
+ * the score. 
+ *
+ * Notice the state-based pid is, as it's named, state-based.
+ * Therefore, when an hmm is in the multiplexed mode, pid will be used
+ * as an **array of pid** instead of a **pointer of pid**.  That is
+ * why they were handled pretty differently in general in the code
+ * (such as flat_fwd.c and ctxt_table.c)
+ *
+ * Some historical note, at the beginning, this structure only
+ * considered right-context, I have changed it to handle left-context
+ * as well. However, as I have started to use the flag -multiplex to
+ * control the behavior of the search.  I still keep the convention of
+ * above.  I will say that is more a pragmatic measure rather a
+ * correct measure. 
  */
-
 typedef struct whmm_s {
-    struct whmm_s *next;	/**< Next active whmm_t for this word */
-
-    int32     *score;		/**< Per state path score */
+  int32     *score;		/**< Per state path score */
     int32      bestscore;	/**< Best among this whmm.score[] in current frame */
 
     s3latid_t *history;		/**< Per state predecessor lattice entry index */
@@ -112,25 +163,46 @@ typedef struct whmm_s {
 
     
     int16      pos;		/**< Word pronunciation position index */
+
     s3cipid_t  rc;		/**< Right context position (only for last phone in word);
 				   index into rcpid[][].pid or lrcpid[][].pid */
+
+    s3cipid_t  lc;		/**< Left context position (only for first phone in word);
+				     index into lcpid[][].pid or lrcpid[][].pid */
+
     int32      active;		/**< Whether active in current frame */
+
+  int32 type;  /**< 0 <- multiplex, 1 <- non-multiplex*/
+    struct whmm_s *next;	/**< Next active whmm_t for this word */
 } whmm_t;
 
 
 #define whmm_hmmpid(hmm,pid)  *(hmm->pid)
+
+/* Macro for multiplex list or value, notice that, legacy causes the
+   answer of IS_MULTIPLEX and the type to be different. 
+   Of course, (h->type==MULTPLEX_TYPE) should always be equal to 
+   IS_MULTIPLEX(h->pos,mul);  That is a would be a good sanity check. 
+  */
+#define IS_MULTIPLEX(pos,mul) (pos==0&&mul)
+#define MULTIPLEX_TYPE 0
+#define NONMULTIPLEX_TYPE 1 
+
 
 /** Free a whmm */
 void whmm_free (whmm_t *h /**< a whmm */
 		);
 
 /** Allocate a whmm 
+    If pos =0 and multiplex=1, then a list of pid will also be allocated for each state. 
+    else pid will just be a pointer of pid. 
  */
 whmm_t *whmm_alloc (int32 pos,  /**< position of the hmm */
 		    int32 nstate, /**< number of state of the hmm*/
-		    int32 alloc_size  /**< Allocation size , alloc_size/size_of(whmm_t) will be allocated as HMMs that
+		    int32 alloc_size,  /**< Allocation size , alloc_size/size_of(whmm_t) will be allocated as HMMs that
 					 need a separate HMM id every state. 
 				       */
+		    int32 multiplex   /**< Is it multiplexed?*/
 		    );
 
 /** 

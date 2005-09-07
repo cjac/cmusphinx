@@ -49,9 +49,25 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.5  2005/08/02  21:12:45  arthchan2003
- * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
+ * Revision 1.12.4.6  2005/09/07  23:40:06  arthchan2003
+ * Several Bug Fixes and Enhancements to the flat-lexicon
+ * 1, Fixed Dox-doc.
+ * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
+ * -hmmdumpsf. Usage is trivial. a structure called fwd_dbg_t now wrapped
+ * up all these loose parameters.  Methods of fwd_dbg are implemented.
+ * 3, word_ugprob is now initialized by init_word_ugprob
+ * 4, Full-triphone expansion is implemented. User can change this
+ * behavior by specifying -multiplex_multi and -multiplex_single. The
+ * former turn on multiplex triphone for word-begin for multi-phone word.
+ * The latter do that for single-phone word. Turning off both could
+ * tremendously increase computation.
+ * 5, Word expansions of possible right contexts now records independent
+ * history.  The behavior in the past was to use only one history for a
+ * word.
  * 
+ * Revision 1.12.4.5  2005/08/02 21:12:45  arthchan2003
+ * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
+ *
  * Revision 1.12.4.4  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -292,7 +308,7 @@
 #include "flat_fwd.h"
 #include "whmm.h"
 
-#define WHMM_ALLOC_SIZE 16000
+#define WHMM_ALLOC_SIZE 32000
 
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 
@@ -312,6 +328,7 @@ typedef struct lattice_s {
     s3wid_t   wid;	/**< Decoded word */
     s3frmid_t frm;	/**< End frame for this entry */
     s3latid_t history;	/**< Index of predecessor lattice_t entry */
+    s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
     int32     score;	/**< Best path score upto the end of this entry */
     int32    *rcscore;	/**< Individual path scores for different right context ciphones */
     dagnode_t *dagnode;	/**< DAG node representing this entry */
@@ -340,62 +357,208 @@ static int32 n_lat_entry;	/** #lattice entries used at any point */
  * line may contain other info following these two fields; these are ignored.  Empty lines
  * and lines beginning with a # char in the first column (ie, comment lines) are ignored.
  */
-static char *word_cand_dir;	/** Directory containing candidate words files.  If NULL,
+static char *word_cand_dir;	/**< Directory containing candidate words files.  If NULL,
 				   full search performed for entire run */
-static char *latfile_ext;	/** Complete word candidate filename for an utterance formed
+static char *latfile_ext;	/**< Complete word candidate filename for an utterance formed
 				   by word_cand_dir/<uttid>.latfile_ext */
-static int32 word_cand_win;	/** In frame f, candidate words in input lattice from frames
+static int32 word_cand_win;	/**< In frame f, candidate words in input lattice from frames
 				   [(f - word_cand_win) .. (f + word_cand_win)] will be
 				   the actual candidates to be started(entered) */
-typedef struct word_cand_s {
-    s3wid_t wid;		/** A particular candidate word starting in a given frame */
-    struct word_cand_s *next;	/** Next candidate starting in same frame; NULL if none */
-} word_cand_t;
-static word_cand_t **word_cand;	/** Word candidates for each frame.  (NOTE!! Another array
+static word_cand_t **word_cand;	/**< Word candidates for each frame.  (NOTE!! Another array
 				   with a hard limit on its size.) */
-static int32 n_word_cand;	/** #candidate entries in word_cand for current utterance.
+static int32 n_word_cand;	/**< #candidate entries in word_cand for current utterance.
 				   If <= 0; full search performed for current utterance */
-
+ 
 /** Various search-related parameters */
-static int32 beam;		/** General beamwidth */
-static int32 wordbeam;		/** Beam for exiting a word */
-static int32 phone_penalty;	/** Applied for each phone transition */
+static int32 beam;		/**< General beamwidth */
+static int32 wordbeam;		/**< Beam for exiting a word */
+static int32 phone_penalty;	/**< Applied for each phone transition */
 
 static int32 n_state = 0;
 static int32 final_state;
 
-tmat_t *tmat;		/** HMM transition probabilities matrices */
-dict_t *dict;		/** The dictionary */
-fillpen_t *fpen;        /** Filler penalty */
-ctxt_table_t *ct_table;  /** Context table */
-lmset_t *lmset;         /** The language model set */
-lm_t *lm;               /** NOT NICE: This is a pointer for current lm */
+/** Auxillary structure to help the trigram search */
+static backoff_t *ug_backoff, *filler_backoff;
+static uint8 *tg_trans_done;	/**< If tg_trans_done[w] TRUE, trigram transition to w
+				   occurred for a given history, and backoff bigram
+				   transition from same history should be avoided */
+static int32 *rcscore = NULL;	/**< rc scores uncompacted; one entry/rc-ciphone */
+
+static s3wid_t *word_cand_cf;	/**< BAD_S3WID terminated array of candidate words for word
+				   transition in current frame (if using input word
+				   lattices to restrict search). */
+static word_ugprob_t **word_ugprob;
+static fwd_dbg_t *fwdDBG;
+
+tmat_t *tmat;		/**< HMM transition probabilities matrices */
+dict_t *dict;		/**< The dictionary */
+fillpen_t *fpen;        /**< Filler penalty */
+ctxt_table_t *ct_table;  /**< Context table */
+lmset_t *lmset;         /**< The language model set */
+lm_t *lm;               /**< NOT NICE: This is a pointer for current lm */
 mdef_t *mdef;
-dag_t dag;              /** The dag used by decode_anytopo.c */
+dag_t dag;              /**< The dag used by decode_anytopo.c */
 
 extern int32 *st_sen_scr;
 
-static char *uttid = NULL;	/** Utterance id; for error reporting */
-static int32 n_frm;		/** Current frame being searched within utt */
-static s3latid_t *frm_latstart;	/** frm_latstart[f] = first lattice entry in frame f */
+static char *uttid = NULL;	/**< Utterance id; for error reporting */
+static int32 n_frm;		/**< Current frame being searched within utt */
+static s3latid_t *frm_latstart;	/**< frm_latstart[f] = first lattice entry in frame f */
 
-static srch_hyp_t *hyp = NULL;	/** The final recognition result */
-static int32 renormalized;	/** Whether scores had to be renormalized in current utt */
+static srch_hyp_t *hyp = NULL;	/**< The final recognition result */
+static int32 renormalized;	/**< Whether scores had to be renormalized in current utt */
 
-/* Debugging */
-static s3wid_t trace_wid;	/** Word to be traced; for debugging */
-static int32 word_dump_sf;	/** Start frame for words to be dumped for debugging */
-static int32 hmm_dump_sf;	/** Start frame for HMMs to be dumped for debugging */
+/* Triphones control */
+static int32 multiplex;       /**< Whether we will use multiplexed triphones */
+static int32 multiplex_singleph;       /**< Whether we will use multiplexed triphones */
 
 /* Event count statistics */
-
-pctr_t ctr_mpx_whmm;
-pctr_t ctr_nonmpx_whmm;
-pctr_t ctr_latentry;
+pctr_t* ctr_mpx_whmm;
+pctr_t* ctr_nonmpx_whmm;
+pctr_t* ctr_latentry;
 
 static ptmr_t tm_hmmeval;
 static ptmr_t tm_hmmtrans;
 static ptmr_t tm_wdtrans;
+
+static void dump_all_whmm (int32 *senscr);
+static void dump_all_word ();
+
+fwd_dbg_t* init_fwd_dbg()
+{
+    char *tmpstr;
+    fwd_dbg_t *fd;
+
+    fd=(fwd_dbg_t*) ckd_calloc(1,sizeof(fwd_dbg_t));
+
+    assert(fd);
+    /* Word to be traced in detail */
+    if ((tmpstr = (char *) cmd_ln_access ("-tracewhmm")) != NULL) {
+	fd->trace_wid = dict_wordid (dict,tmpstr);
+	if (NOT_S3WID(fd->trace_wid))
+	    E_ERROR("%s not in dictionary; cannot be traced\n", tmpstr);
+    } else
+	fd->trace_wid = BAD_S3WID;
+
+    /* Active words to be dumped for debugging after and before the given frame nos, if any */
+    fd->word_dump_sf=(int32) 0x7ffffff0;
+    if(cmd_ln_int32("-worddumpsf"))
+      fd->word_dump_sf=cmd_ln_int32("-worddumpsf");
+
+    fd->word_dump_ef=(int32) 0x7ffffff0;
+    if(cmd_ln_int32("-worddumpef"))
+      fd->word_dump_ef=cmd_ln_int32("-worddumpef");
+
+    /* Active HMMs to be dumped for debugging after and before the given frame nos, if any */
+    fd->hmm_dump_sf=(int32) 0x7ffffff0;
+    if(cmd_ln_int32("-hmmdumpsf"))
+      fd->hmm_dump_sf=cmd_ln_int32("-hmmdumpsf");
+
+    fd->hmm_dump_ef=(int32) 0x7ffffff0;
+    if(cmd_ln_int32("-hmmdumpef"))
+      fd->hmm_dump_ef=cmd_ln_int32("-hmmdumpef");
+
+    return fd;
+}
+
+/** ARCHAN: Dangerous! Mixing global and local */
+static void dump_fwd_dbg_info(fwd_dbg_t *fd, int32 bestscr, int32 whmm_thresh, int32 word_thresh,int32* senscr)
+{
+  whmm_t *h;
+
+  /* Dump bestscore and pruning thresholds if any detailed tracing specified */
+  if (((fd->hmm_dump_sf  < n_frm) && (n_frm <  fd->hmm_dump_ef)) || 
+      ((fd->word_dump_sf < n_frm) && (n_frm < fd->word_dump_ef)) ||
+      (IS_S3WID(fd->trace_wid) && whmm[fd->trace_wid])) {
+    printf ("[%4d]: >>>> bestscore= %11d, whmm-thresh= %11d, word-thresh= %11d\n",
+	    n_frm, bestscr, whmm_thresh, word_thresh);
+  }
+    
+  /* Dump all active HMMs or words, if indicated */
+  if (fd->hmm_dump_sf < n_frm && n_frm < fd->hmm_dump_ef)
+    dump_all_whmm (senscr);
+  else if (fd->word_dump_sf < n_frm && n_frm < fd->word_dump_ef)
+    dump_all_word ();
+  
+  /* Trace active HMMs for specified word, if any */
+  if (IS_S3WID(fd->trace_wid)) {
+    for (h = whmm[fd->trace_wid]; h; h = h->next)
+      dump_whmm (fd->trace_wid, h, senscr, tmat, n_frm, n_state, dict,mdef);
+  }
+
+}
+
+
+static word_ugprob_t**  init_word_ugprob(mdef_t *_mdef, lm_t *_lm, dict_t *_dict)
+{
+  /* WARNING! _dict and dict are two variables.*/
+
+  s3wid_t w;
+  s3cipid_t ci;
+  int32 n_ug, ugprob;
+  ug_t *ugptr;
+  word_ugprob_t *wp, *prevwp;
+  word_ugprob_t** wugp;
+
+  wugp = (word_ugprob_t **) ckd_calloc (_mdef->n_ciphone,
+					sizeof(word_ugprob_t *));
+  n_ug = lm_uglist (_lm,&ugptr);
+  for (; n_ug > 0; --n_ug, ugptr++) {
+    if ((w = ugptr->dictwid) == _dict->startwid)
+      continue;
+
+    ugprob = LM_UGPROB(_lm, ugptr);
+
+    for (; IS_S3WID(w); w = _dict->word[w].alt) {
+      ci = _dict->word[w].ciphone[0];
+      prevwp = NULL;
+      for (wp = wugp[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
+	prevwp = wp;
+      wp = (word_ugprob_t *) listelem_alloc (sizeof(word_ugprob_t));
+      wp->wid = w;
+      wp->ugprob = ugprob;
+      if (prevwp) {
+	wp->next = prevwp->next;
+	prevwp->next = wp;
+      } else {
+	wp->next = wugp[ci];
+	wugp[ci] = wp;
+      }
+    }
+  }
+  return wugp;
+}
+
+static int32 exist_left_context(s3wid_t w,s3cipid_t lc)
+{
+  whmm_t *h;
+  if (whmm[w]) {
+    for (h = whmm[w]; h; h = h->next){
+      /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w);*/
+      if(h->lc==lc)
+	return 1;
+    }
+    return 0;
+  }else{
+    return 0;
+  }
+}
+
+static int32 exist_left_right_context(s3wid_t w,s3cipid_t lc, s3cipid_t rc)
+{
+  whmm_t *h;
+  if (whmm[w]) {
+    for (h = whmm[w]; h; h = h->next){
+      /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w);*/
+      if(h->lc==lc && h->rc==rc)
+	return 1;
+    }
+    return 0;
+  }else{
+    return 0;
+  }
+}
+
 
 static void dump_all_whmm (int32 *senscr)
 {
@@ -404,8 +567,15 @@ static void dump_all_whmm (int32 *senscr)
     
     for (w = 0; w < dict->n_word; w++) {
 	if (whmm[w]) {
-	    for (h = whmm[w]; h; h = h->next)
-		dump_whmm (w, h, senscr, tmat, n_frm, n_state, dict, mdef);
+	  for (h = whmm[w]; h; h = h->next){
+
+	    if(dict->word[w].pronlen == 1)
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex_singleph));
+	    else
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex));
+
+	    dump_whmm(w,h,senscr,tmat,n_frm,n_state,dict,mdef);
+	  }
 	}
     }
 }
@@ -456,26 +626,33 @@ static int32 whmm_eval (int32 *senscr)
 	for (h = whmm[w]; h; h = nexth) {
 	    nexth = h->next;
 
-	    if (h->active == cf) {
-		if (h->pos == 0) {
-		    eval_mpx_whmm (h, senscr,tmat,mdef,n_state);
-		    n_mpx++;
-		} else {
-		  eval_nonmpx_whmm (h, senscr,tmat,mdef,n_state);
-		    n_nonmpx++;
-		}
-		
-		if (best < h->bestscore)
-		    best = h->bestscore;
+	    if(dict->word[w].pronlen == 1)
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex_singleph));
+	    else
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex));
 
-		prevh = h;
+	    if (h->active == cf) {
+
+	      if(h->type==MULTIPLEX_TYPE){
+		  eval_mpx_whmm(h,senscr,tmat,mdef,n_state);
+		  n_mpx++;
+	      }else{
+		  eval_nonmpx_whmm(h,senscr,tmat,mdef,n_state);
+		  n_nonmpx++;
+	      }
+		
+	      if (best < h->bestscore)
+		best = h->bestscore;
+
+	      prevh = h;
+
 	    } else {
 		if (prevh)
 		    prevh->next = nexth;
 		else
 		    whmm[w] = nexth;
 		
-		whmm_free (h);
+		whmm_free(h);
 	    }
 	}
     }
@@ -490,11 +667,20 @@ static int32 whmm_eval (int32 *senscr)
 static void lattice_dump (FILE *fp)
 {
     int32 i;
-    
+    s3cipid_t npid;
+    s3cipid_t rc;
+
     for (i = 0; i < n_lat_entry; i++) {
-	fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
-		 lattice[i].frm, lattice[i].history, lattice[i].score,
-		 dict_wordstr (dict,lattice[i].wid));
+      fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
+	       lattice[i].frm, lattice[i].history, lattice[i].score,
+	       dict_wordstr (dict,lattice[i].wid));
+
+
+      if(lattice[i].rcscore && 1){
+	npid = get_rc_npid (ct_table,lattice[i].wid,dict );
+	for (rc = 0; rc < npid; rc++)
+	  fprintf(fp,"rc(Compacted) %d, rcscore %5d rchistory %6d\n",rc, lattice[i].rcscore[rc],lattice[i].rchistory[rc]);
+      }
     }
     fflush (fp);
 }
@@ -505,7 +691,6 @@ static void lattice_dump (FILE *fp)
  * NOTE: All exits from a single word in a given frame (for different right context
  * ciphones) must occur contiguously.
  */
-
 
 static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 {
@@ -535,15 +720,30 @@ static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
 	for (rc = 0; rc < npid; rc++)
 	    lattice[n_lat_entry].rcscore[rc] = S3_LOGPROB_ZERO;
 
+	/* ARCHAN: set up individual history for each right context */
+	lattice[n_lat_entry].rchistory = (s3latid_t *) ckd_calloc (npid, sizeof(s3latid_t));
+	for (rc = 0; rc < npid; rc++)
+	  lattice[n_lat_entry].rchistory[rc] = BAD_S3LATID;
+
 	n_lat_entry++;
     }
 
-    /* Slight BUG here: each rc can have its own history, but only the best retained!! */
     if (lattice[n_lat_entry-1].score < h->score[final_state]) {
 	lattice[n_lat_entry-1].score = h->score[final_state];
 	lattice[n_lat_entry-1].history = h->history[final_state];
     }
+
+#if 0
     lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
+#else
+
+    /* ARCHAN, fix the bug where right context doesn't maintain its own history*/
+    if(lattice[n_lat_entry-1].rcscore[h->rc] < h->score[final_state]){
+       lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
+       lattice[n_lat_entry-1].rchistory[h->rc] = h->history[final_state];
+    }
+#endif
+
 }
 
 
@@ -585,7 +785,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 	 * the HMM if not already present.
 	 */
 	if ((! h->next) || (h->next->pos != h->pos+1)) {
-	    nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
+	    nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE,0);
 
 	    nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
 	    
@@ -610,7 +810,7 @@ static void whmm_transition (int32 w, whmm_t *h)
 	
 	for (rc = 0; rc < npid; rc++) {
 	    if ((! prevh->next) || (prevh->next->rc != rc)) {
-		nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE);
+		nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE,0);
 
 		nexth->rc = rc;
 		nexth->pid = &(pid[rc]);
@@ -660,16 +860,60 @@ static void whmm_exit (int32 thresh, int32 wordthresh)
     }
 }
 
+#define SINGLE_RC_HISTORY 0
+
+/**
+ * Find path score for lattice entry l for the given right context word.
+ * If context word is BAD_S3WID it's a wild card; return the best path score.
+ */
+static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
+{
+    s3cipid_t *rcmap, rc;
+    
+    if ( (NOT_S3WID(w_rc)) || (! lattice[l].rcscore)  )
+	return lattice[l].score;
+    
+    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
+    rc = dict->word[w_rc].ciphone[0];
+    return (lattice[l].rcscore[rcmap[rc]]);
+}
+
+/**
+ * Find the path history for lattice entry l for the given right
+ * context word.  If context word is BAD_S3WID it's a wild card;
+ * return the history. 
+ */
+
+static s3latid_t lat_pscr_rc_history (s3latid_t l, s3wid_t w_rc)
+{
+    s3cipid_t *rcmap, rc;
+    
+    if ( (NOT_S3WID(w_rc)) || (! lattice[l].rchistory)  )
+	return lattice[l].history;
+    
+    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
+    rc = dict->word[w_rc].ciphone[0];
+    return (lattice[l].rchistory[rcmap[rc]]);
+}
+
+
+
+
 
 /**
  * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
  * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
  */
+#if SINGLE_RC_HISTORY
 static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
+#else
+static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1, s3wid_t w_rc)
+#endif
 {
     s3latid_t l0, l1;
     l0=0;
-    
+
+#if SINGLE_RC_HISTORY    
     for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lattice[l1].history);
     
     /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
@@ -677,6 +921,14 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
       for (l0 = lattice[l1].history; 
 	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
 	   l0 = lattice[l0].history);
+#else
+    for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lat_pscr_rc_history(l1,w_rc));
+
+    if (l1 != -1) 
+      for (l0 = lat_pscr_rc_history(l1,w_rc); 
+	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
+	   l0 = lat_pscr_rc_history(l0,lattice[l1].wid));
+#endif
     
     /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
     if (l1 == -1) *w1 = 0; else
@@ -686,6 +938,18 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
 }
 
 
+
+/* ARCHAN: Ah. this is the part where the magical multiplex-triphone
+   is implemented.  This how it works.  When a word is being entered,
+   the first phone will be entered, if the score is high enough, then
+   pid[0] will be replaced by the best PID.  Now, when we go back
+   whmm_eval, the first phone will always be computed as multiplexed.
+   Then, the pid will then start to propagate just like the score.
+   
+   You could just treat pid as something like backtracing
+   pointer. Then it should be pretty to understand. 
+*/
+
 /**
  * Transition into a word w.  Since we transition into the first phone position, the
  * triphone model must be derived from the incoming left context ciphone.  The first
@@ -693,6 +957,8 @@ static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
  * the score.
  * If the first phone is also the last (single-phone word), we must also model all
  * possible right context ciphones, by instantiating separate whmm models for each rc.
+ *
+ *
  */
 
 static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
@@ -700,6 +966,7 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
     whmm_t *h, *prevh;
     s3cipid_t b, rc;
     s3pid_t pid, *rpid;
+    s3pid_t *pidp;
     int32 s, npid, nf;
     
     nf = n_frm+1;
@@ -707,26 +974,46 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
     b = dict->word[w].ciphone[0];
 
     if (dict->word[w].pronlen > 1) {	/* Multi-phone word; no right context problem */
-	rc = dict->word[w].ciphone[1];
-	pid = ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]];
 
-	if ((! whmm[w]) || (whmm[w]->pos != 0)) {
-	    h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
+      rc = dict->word[w].ciphone[1];
 
-	    for (s = 0; s < n_state; s++)
-		h->pid[s] = pid;
-	    
-	    h->next = whmm[w];
-	    whmm[w] = h;
+      pidp = &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]);
+      pid=*(pidp);
+      
+      if(multiplex){
+	if ((! whmm[w]) || (whmm[w]->pos != 0)) { /* If whmm is not allocated or it is not the first phone */
+	  h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,1);
+	  for (s = 0; s < n_state; s++)
+	    h->pid[s] = pid;
+	  
+	  h->next = whmm[w];
+	  whmm[w] = h;
 	}
+      }else{
+	if ((! whmm[w]) || (whmm[w]->pos != 0)|| !exist_left_context(w,lc)) {
 
-	h = whmm[w];
-	if (score > h->score[0]) {
-	    h->score[0] = score;
-	    h->history[0] = l;
-	    h->pid[0] = pid;
-	    h->active = nf;
+	  h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
+	  h->pid=pidp;
+	  h->next = whmm[w];
+	  whmm[w] = h;
 	}
+      }
+      
+      h = whmm[w];
+      
+      if (score > h->score[0]) {  
+	h->score[0] = score;
+	h->history[0] = l;
+	h->active = nf;
+	
+	if(multiplex){
+	  h->pid[0] = pid;
+	}else{
+	  h->lc=lc;
+	  h->pid=pidp;
+	}
+      }
+
     } else {
 	/* Do all right contexts; first make sure all are allocated */
 	prevh = NULL;
@@ -735,70 +1022,74 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 	rpid = ct_table->lrcpid[b][lc].pid;
 	
 	for (rc = 0; rc < npid; rc++) {
+
+	  pidp=&(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+	  pid=*(pidp);
+
+	  if(multiplex_singleph){
 	    if ((! h) || (h->rc != rc)) {
-		h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE);
+	      h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,1);
+	      for (s = 0; s < n_state; s++){
+		h->pid[s] = rpid[rc];
+	      }
+	      
+	      h->rc = rc;
 
-		for (s = 0; s < n_state; s++)
-		    h->pid[s] = rpid[rc];
-		h->rc = rc;
-
-		if (prevh) {
-		    h->next = prevh->next;
-		    prevh->next = h;
-		} else {
-		    h->next = whmm[w];
-		    whmm[w] = h;
-		}
+	      if (prevh) {
+		h->next = prevh->next;
+		prevh->next = h;
+	      } else {
+		h->next = whmm[w];
+		whmm[w] = h;
+	      }
 	    }
-	    prevh = h;
-	    h = h->next;
+	  }else {
+	    if ((! h) || !exist_left_right_context(w,lc,rc)) {
+	      h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
+	      h->pid=pidp;
+	      
+	      h->rc = rc;
+	      
+	      if (prevh) {
+		h->next = prevh->next;
+		prevh->next = h;
+	      } else {
+		h->next = whmm[w];
+		whmm[w] = h;
+	      }
+	    }
+	  }
+	  prevh = h;
+	  h = h->next;
+
 	}
-	assert (! h);
+
+	if(multiplex_singleph)
+	  assert (! h);
 	
 	/* Transition to the allocated HMMs */
 	b = dict->word[w].ciphone[0];
 	for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
+
+	  pidp=&(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+	  pid=*(pidp);
+
 	    if (score > h->score[0]) {
 		h->score[0] = score;
 		h->history[0] = l;
-		h->pid[0] = rpid[rc];
+
+		if(multiplex_singleph)
+		  h->pid[0] = rpid[rc];
+		else{
+		  h->pid=pidp;
+		  h->lc = lc;
+		}
+
 		h->active = nf;
 	    }
 	}
     }
 }
-
-/**
- * Backoff node when backing off all the way to unigrams.  Since each word exits with
- * #ciphones different scores (for so many different right contexts), a separate node
- * exists for each context.
- */
-typedef struct {
-    s3latid_t latid;	/**< History entry */
-    int32 score;	/**< Acoustic + backed off LM score */
-    s3cipid_t lc;	/**< Last ciphone of history entry, to be used as left context upon
-			   entering a new word. */
-} backoff_t;
-static backoff_t *ug_backoff, *filler_backoff;
-static uint8 *tg_trans_done;	/** If tg_trans_done[w] TRUE, trigram transition to w
-				   occurred for a given history, and backoff bigram
-				   transition from same history should be avoided */
-static int32 *rcscore = NULL;	/** rc scores uncompacted; one entry/rc-ciphone */
-static s3wid_t *word_cand_cf;	/** BAD_S3WID terminated array of candidate words for word
-				   transition in current frame (if using input word
-				   lattices to restrict search). */
-
-/**
- * Unigrams re-organized for faster unigram word transitions.  Words partitioned by
- * their first CI phone and ordered in descending unigram probability within each
- * partition.
- */
-typedef struct word_ugprob_s {
-    s3wid_t wid;
-    int32 ugprob;
-    struct word_ugprob_s *next;
-} word_ugprob_t;
-static word_ugprob_t **word_ugprob;
 
 
 /**
@@ -837,13 +1128,23 @@ static void build_word_cand_cf (int32 cf)
     word_cand_cf[n] = BAD_S3WID;
 }
 
-/** Transition for one word. 
+/** 
+ * Transition for one word. 
+ *
+ * ARCHAN: This is the heart of the flat forward search.  When a word
+ * is exited, n_lat_entry will be increased by 1, this will implicitly
+ * trigger fwd_frame() to start word_trans (this function).  Word
+ * trans will consider all word ends.  They should be now all entries
+ * in lattice_t (which is very similar to vithist_entry_t if you look
+ * at them closely).
+ *
  */
 static void word_trans (int32 thresh)
 {
     s3latid_t l;	/* lattice entry index */
     s3cipid_t *rcmap, rc, lc;
     s3wid_t w, bw0, bw1, nextwid;
+    s3lmwid_t lw0;
     tg_t *tgptr;
     bg_t *bgptr;
     int32 bowt, acc_bowt, newscore;
@@ -863,7 +1164,7 @@ static void word_trans (int32 thresh)
     if (n_word_cand > 0)
 	build_word_cand_cf (n_frm);
     
-    /* Trigram/Bigram word transitions from words just exited */
+    /* Trigram/Bigram word transitions from words just exited in whmm_exit*/
     for (l = lat_start; l < n_lat_entry; l++) {
 	w = lattice[l].wid;
 	
@@ -879,7 +1180,12 @@ static void word_trans (int32 thresh)
 	  rcscore[rc] = lattice[l].rcscore[rcmap[rc]];
 
 	/* Find the last real (non-filler, non-silence) two-word history */
+
+#if SINGLE_RC_HISTORY
 	two_word_history (l, &bw0, &bw1);
+#else
+	two_word_history (l, &bw0, &bw1,BAD_S3WID);
+#endif
 
 	if (n_word_cand <= 0) {
 	    /* Transition to all words in vocab */
@@ -952,11 +1258,14 @@ static void word_trans (int32 thresh)
 	    }
 	} else {
 	    /* Transition to words in word_cand_cf */
+	  
 	    for (cand = 0; IS_S3WID(word_cand_cf[cand]); cand++) {
 		nextwid = word_cand_cf[cand];
-		
+
+		lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
+		  
 		lscr = lm_tg_score (lm,
-				    lm->dict2lmwid[dict_basewid(dict,bw0)],
+				    lw0,
 				    lm->dict2lmwid[dict_basewid(dict,bw1)],
 				    lm->dict2lmwid[nextwid],
 				    nextwid);
@@ -1045,13 +1354,42 @@ static void word_trans (int32 thresh)
 }
 
 
+void fwd_free ()
+{
+  if(st_sen_scr)
+    ckd_free(st_sen_scr);
+
+  if(rcscore)
+    ckd_free(rcscore);
+
+  if(ug_backoff)
+    ckd_free(ug_backoff);
+
+  if(filler_backoff)
+    ckd_free(filler_backoff);
+
+  if(tg_trans_done)
+    ckd_free(tg_trans_done);
+    
+  if(word_cand_cf)
+    ckd_free(word_cand_cf);
+
+  if(frm_latstart)
+    ckd_free(frm_latstart);
+
+  
+  pctr_free(ctr_mpx_whmm);
+  pctr_free(ctr_nonmpx_whmm);
+  pctr_free(ctr_latentry);
+
+}
+
+
 /** Initialize the forward search.
  */
 
 void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 {
-    char *tmpstr;
-
     E_INFO ("Forward Viterbi Initialization\n");
     
     mdef = _mdef;
@@ -1083,10 +1421,19 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     lat_alloc = *((int32 *) cmd_ln_access ("-bptblsize"));
     lattice = (lattice_t *) ckd_calloc (lat_alloc, sizeof(lattice_t));
     n_lat_entry = 0;
-    
 
     /** Initialize the context table */
     ct_table=ctxt_table_init(dict,mdef);
+    multiplex=cmd_ln_int32("-multiplex_multi");
+    multiplex_singleph=cmd_ln_int32("-multiplex_single");
+
+    /* ARCHAN : BUG, though allowing both options of multiple_multi
+       and multiplex_single, currently !multiplex &&
+       multiplex_singleph is not taken care correctly. */
+
+    if(multiplex && !multiplex_singleph){
+      E_FATAL("Forced exit: Disallow de-multiplex a single phone word without de-multiplexing multi phone word");
+    }
 
     /* Data structures needed during word transition */
     rcscore = (int32 *) ckd_calloc (mdef->n_ciphone, sizeof(int32));
@@ -1116,60 +1463,14 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 
     /* Allocate timers and counters for statistics gathering */
     
-    pctr_new(ctr_mpx_whmm,"mpx");
-    pctr_new(ctr_nonmpx_whmm,"~mpx");
-    pctr_new(ctr_latentry,"lat");
+    ctr_mpx_whmm=pctr_new("mpx");
+    ctr_nonmpx_whmm=pctr_new("~mpx");
+    ctr_latentry=pctr_new("lat");
 
-    /* Word to be traced in detail */
-    if ((tmpstr = (char *) cmd_ln_access ("-tracewhmm")) != NULL) {
-	trace_wid = dict_wordid (dict,tmpstr);
-	if (NOT_S3WID(trace_wid))
-	    E_ERROR("%s not in dictionary; cannot be traced\n", tmpstr);
-    } else
-	trace_wid = BAD_S3WID;
+    fwdDBG=init_fwd_dbg();
 
-    /* Active words to be dumped for debugging after the given frame no, if any */
-    tmpstr = (char *) cmd_ln_access ("-worddumpsf");
-    word_dump_sf = tmpstr ? *((int32 *) tmpstr) : (int32) 0x7ffffff0;
-    /* Active HMMs to be dumped for debugging after the given frame no, if any */
-    tmpstr = (char *) cmd_ln_access ("-hmmdumpsf");
-    hmm_dump_sf = tmpstr ? *((int32 *) tmpstr) : (int32) 0x7ffffff0;
-
-    /* Initialize word_ugprob (assuming there is only one LM) */
-    {
-	s3wid_t w;
-	s3cipid_t ci;
-	int32 n_ug, ugprob;
-	ug_t *ugptr;
-	word_ugprob_t *wp, *prevwp;
-
-	word_ugprob = (word_ugprob_t **) ckd_calloc (mdef->n_ciphone,
-						     sizeof(word_ugprob_t *));
-	n_ug = lm_uglist (lm,&ugptr);
-	for (; n_ug > 0; --n_ug, ugptr++) {
-	    if ((w = ugptr->dictwid) == dict->startwid)
-		continue;
-
-	    ugprob = LM_UGPROB(lm, ugptr);
-
-	    for (; IS_S3WID(w); w = dict->word[w].alt) {
-		ci = dict->word[w].ciphone[0];
-		prevwp = NULL;
-		for (wp = word_ugprob[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
-		    prevwp = wp;
-		wp = (word_ugprob_t *) listelem_alloc (sizeof(word_ugprob_t));
-		wp->wid = w;
-		wp->ugprob = ugprob;
-		if (prevwp) {
-		    wp->next = prevwp->next;
-		    prevwp->next = wp;
-		} else {
-		    wp->next = word_ugprob[ci];
-		    word_ugprob[ci] = wp;
-		}
-	    }
-	}
-    }
+    /* Initialize the unigram word probability */
+    word_ugprob = init_word_ugprob(mdef,lm,dict);
 
     /* Initialize bestpath search related */
     dag_init(&dag);
@@ -1259,7 +1560,6 @@ static void word_cand_free ( void )
     n_word_cand = 0;
 }
 
-
 /*
  * Begin forward Viterbi search of one utterance
  */
@@ -1285,6 +1585,10 @@ void fwd_start_utt (char *id)
 	if (lattice[l].rcscore) {
 	    ckd_free (lattice[l].rcscore);
 	    lattice[l].rcscore = NULL;
+	}
+	if(lattice[l].rchistory) {
+	    ckd_free (lattice[l].rchistory);
+	    lattice[l].rchistory = NULL;
 	}
     }
     n_lat_entry = 0;
@@ -1332,18 +1636,26 @@ void fwd_sen_active (int32 *senlist, int32 n_sen)
     /* Flag active senones */
     for (w = 0; w < dict->n_word; w++) {
 	for (h = whmm[w]; h; h = h->next) {
-	    if (h->pos == 0) {
-		for (st = n_state-2; st >= 0; --st) {
-		    p = h->pid[st];
-		    senp = mdef->phone[p].state;
-		    senlist[senp[st]] = 1;
-		}
-	    } else {
-		p = *(h->pid);
-		senp = mdef->phone[p].state;
-		for (st = n_state-2; st >= 0; --st)
-		    senlist[senp[st]] = 1;
+
+	  if(dict->word[w].pronlen == 1)
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex_singleph));
+	  else
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex));
+	  
+	  if(h->type==MULTIPLEX_TYPE){
+	    for (st = n_state-2; st >= 0; --st) {
+	      p = h->pid[st];
+	      senp = mdef->phone[p].state;
+	      senlist[senp[st]] = 1;
 	    }
+	  }else{
+	    p = *(h->pid);
+	    senp = mdef->phone[p].state;
+	    for (st = n_state-2; st >= 0; --st)
+	      senlist[senp[st]] = 1;
+
+	  }
+
 	}
     }
 }
@@ -1357,7 +1669,7 @@ int32 fwd_frame (int32 *senscr)
     int32 bestscr;	/* Best state score for any whmm evaluated in this frame */
     int32 whmm_thresh;	/* Threshold for any whmm to stay alive in search */
     int32 word_thresh;	/* Threshold for a word-final whmm to succeed */
-    whmm_t *h;
+    
     
     ptmr_start (&tm_hmmeval);
     bestscr = whmm_eval (senscr);
@@ -1365,35 +1677,25 @@ int32 fwd_frame (int32 *senscr)
 
     whmm_thresh = bestscr + beam;
     word_thresh = bestscr + wordbeam;
-    
-    /* Dump bestscore and pruning thresholds if any detailed tracing specified */
-    if ((hmm_dump_sf < n_frm) || (word_dump_sf < n_frm) ||
-	(IS_S3WID(trace_wid) && whmm[trace_wid])) {
-	printf ("[%4d]: >>>> bestscore= %11d, whmm-thresh= %11d, word-thresh= %11d\n",
-		n_frm, bestscr, whmm_thresh, word_thresh);
-    }
-    
-    /* Dump all active HMMs or words, if indicated */
-    if (hmm_dump_sf < n_frm)
-	dump_all_whmm (senscr);
-    else if (word_dump_sf < n_frm)
-	dump_all_word ();
-    
-    /* Trace active HMMs for specified word, if any */
-    if (IS_S3WID(trace_wid)) {
-	for (h = whmm[trace_wid]; h; h = h->next)
-	    dump_whmm (trace_wid, h, senscr, tmat, n_frm, n_state, dict,mdef);
-    }
 
-    ptmr_start (&tm_hmmtrans);
-    frm_latstart[n_frm] = n_lat_entry;
-    whmm_exit (whmm_thresh, word_thresh);
-    ptmr_stop (&tm_hmmtrans);
+    dump_fwd_dbg_info(fwdDBG, bestscr, whmm_thresh, word_thresh,senscr);
 
-    ptmr_start (&tm_wdtrans);
-    if (frm_latstart[n_frm] < n_lat_entry)
+    {
+      ptmr_start (&tm_hmmtrans);
+      frm_latstart[n_frm] = n_lat_entry;
+      whmm_exit (whmm_thresh, word_thresh);
+      ptmr_stop (&tm_hmmtrans);
+      
+      /* Please read, the In whmm_exit, if word ends are reach,
+	 n_lat_entry will increase, see whmm_exit(). Then word_trans
+	 will be triggered.
+      */
+
+      ptmr_start (&tm_wdtrans);
+      if (frm_latstart[n_frm] < n_lat_entry) 
 	word_trans (whmm_thresh);
-    ptmr_stop (&tm_wdtrans);
+      ptmr_stop (&tm_wdtrans);
+    }
     
     if (bestscr < RENORM_THRESH) {
 	E_INFO("Frame %d: bestscore= %d; renormalizing\n", n_frm, bestscr);
@@ -1407,28 +1709,16 @@ int32 fwd_frame (int32 *senscr)
 
 
 /**
- * Find path score for lattice entry l for the given right context word.
- * If context word is BAD_S3WID it's a wild card; return the best path score.
- */
-static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
-{
-    s3cipid_t *rcmap, rc;
-    
-    if ((NOT_S3WID(w_rc)) || (! lattice[l].rcscore))
-	return lattice[l].score;
-    
-    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
-    rc = dict->word[w_rc].ciphone[0];
-    return (lattice[l].rcscore[rcmap[rc]]);
-}
-
-
-/**
  * Find LM score for transition into lattice entry l.
  */
+#if SINGLE_RC_HISTORY
 static int32 lat_seg_lscr (s3latid_t l)
+#else
+static int32 lat_seg_lscr (s3latid_t l,s3wid_t w_rc)
+#endif
 {
     s3wid_t bw0, bw1, bw2;
+    s3lmwid_t lw0;
     int32 lscr, bowt, bo_lscr;
     tg_t *tgptr;
     bg_t *bgptr;
@@ -1437,15 +1727,27 @@ static int32 lat_seg_lscr (s3latid_t l)
 
     if (dict_filler_word (dict,bw2))
 	return (fillpen(fpen,bw2));
-    
+
+#if SINGLE_RC_HISTORY    
     if (NOT_S3LATID(lattice[l].history)) {
 	assert (bw2 == dict->startwid);
 	return 0;
     }
     
     two_word_history (lattice[l].history, &bw0, &bw1);
+#else
+    if (NOT_S3LATID(lat_pscr_rc_history(l,w_rc))) {
+	assert (bw2 == dict->startwid);
+	return 0;
+    }
+    
+    two_word_history (lat_pscr_rc_history(l,w_rc), &bw0, &bw1,w_rc);
+#endif
+
+    /*    E_INFO("lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lattice[l].history,bw0,bw1,bw2);*/
+    lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
     lscr = lm_tg_score (lm, 
-			lm->dict2lmwid[dict_basewid(dict,bw0)], 
+			lw0, 
 			lm->dict2lmwid[dict_basewid(dict,bw1)], 
 			lm->dict2lmwid[bw2],
 			bw2);
@@ -1482,12 +1784,24 @@ static void lat_seg_ascr_lscr (s3latid_t l, s3wid_t w_rc, int32 *ascr, int32 *ls
     }
     
     /* Score with which l was begun */
+#if SINGLE_RC_HISTORY
     start_score = IS_S3LATID(lattice[l].history) ?
 	lat_pscr_rc (lattice[l].history, lattice[l].wid) : 0;
 
     /* LM score for the transition into l */
     *lscr = lat_seg_lscr (l);
     *ascr = end_score - start_score - *lscr;
+#else
+    start_score = IS_S3LATID(lat_pscr_rc_history(l,w_rc)) ?
+	lat_pscr_rc (lat_pscr_rc_history(l,w_rc), lattice[l].wid) : 0;
+
+    /* LM score for the transition into l */
+    *lscr = lat_seg_lscr (l,w_rc);
+    *ascr = end_score - start_score - *lscr;
+
+#endif
+
+
 }
 
 
@@ -1496,8 +1810,13 @@ static srch_hyp_t *lattice_backtrace (s3latid_t l, s3wid_t w_rc)
     srch_hyp_t *h, *prevh;
 
     if (IS_S3LATID(l)) {
+      
+#if SINGLE_RC_HISTORY
 	prevh = lattice_backtrace (lattice[l].history, lattice[l].wid);
-	
+#else
+	prevh = lattice_backtrace (lat_pscr_rc_history(l,w_rc), lattice[l].wid);
+#endif
+
 	h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
 	if (! prevh)
 	    hyp = h;
@@ -1571,6 +1890,12 @@ srch_hyp_t *fwd_end_utt ( void )
     for (w = 0; w < dict->n_word; w++) {
 	for (h = whmm[w]; h; h = nexth) {
 	    nexth = h->next;
+
+	    if(dict->word[w].pronlen == 1)
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex_singleph));
+	    else
+	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,multiplex));
+
 	    whmm_free (h);
 	}
 	whmm[w] = NULL;
@@ -1648,6 +1973,9 @@ int32 dag_build ( void )
     /* Build DAG nodes list from the lattice */
     for (l = 0; l < n_lat_entry; l++) {
 	w = lattice[l].wid;
+
+	/* ARCHAN SLIGHT BUG: Even though right context has their
+	   separate histories now. It is not accounted at here. */
 	sf = LATID2SF(l);
 	
 	/* Check if node <w,sf> already created */
@@ -1978,3 +2306,4 @@ int32 dag_dump (char *dir, int32 onlynodes, char *id)
 
     return 0;
 }
+

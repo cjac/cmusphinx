@@ -47,9 +47,25 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.2  2005/08/02  21:12:45  arthchan2003
- * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
+ * Revision 1.10.4.3  2005/09/07  23:40:06  arthchan2003
+ * Several Bug Fixes and Enhancements to the flat-lexicon
+ * 1, Fixed Dox-doc.
+ * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
+ * -hmmdumpsf. Usage is trivial. a structure called fwd_dbg_t now wrapped
+ * up all these loose parameters.  Methods of fwd_dbg are implemented.
+ * 3, word_ugprob is now initialized by init_word_ugprob
+ * 4, Full-triphone expansion is implemented. User can change this
+ * behavior by specifying -multiplex_multi and -multiplex_single. The
+ * former turn on multiplex triphone for word-begin for multi-phone word.
+ * The latter do that for single-phone word. Turning off both could
+ * tremendously increase computation.
+ * 5, Word expansions of possible right contexts now records independent
+ * history.  The behavior in the past was to use only one history for a
+ * word.
  * 
+ * Revision 1.10.4.2  2005/08/02 21:12:45  arthchan2003
+ * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
+ *
  * Revision 1.10.4.1  2005/07/15 07:50:33  arthchan2003
  * Remove hmm computation and context building code from flat_fwd.c.
  *
@@ -75,6 +91,63 @@
  */
 
 
+/** 
+ * \struct backoff_t
+ *
+ * Backoff node when backing off all the way to unigrams.  Since each
+ * word exits with #ciphones different scores (for so many different
+ * right contexts), a separate node exists for each context.
+ */
+typedef struct {
+    s3latid_t latid;	/**< History entry */
+    int32 score;	/**< Acoustic + backed off LM score */
+    s3cipid_t lc;	/**< Last ciphone of history entry, to be used as left context upon
+			   entering a new word. */
+} backoff_t;
+
+
+/**
+ * \struct word_ugprob_t
+ *
+ * Unigrams re-organized for faster unigram word transitions.  Words
+ * partitioned by their first CI phone and ordered in descending
+ * unigram probability within each partition.
+ */
+typedef struct word_ugprob_s {
+  s3wid_t wid;        /**< Word ID */
+  int32 ugprob;     /**< Unigram probability */
+  struct word_ugprob_s *next;   /**< Nex unigram probability*/
+} word_ugprob_t;
+
+/**
+ * \struct fwd_dbg_t 
+ *
+ * Structure for debugging flat forward search. 
+ */
+
+/* Debugging */
+typedef struct {
+  s3wid_t trace_wid;	/**< Word to be traced; for debugging */
+  int32 word_dump_sf;	/**< Start frame for words to be dumped for debugging */
+  int32 word_dump_ef;	/**< End frame for words to be dumped for debugging */
+  int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
+  int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
+} fwd_dbg_t ;
+
+
+
+
+/**
+ * \struct word_cand_t
+ *
+ * Word cand structure used in word lattice structure search
+ */
+typedef struct word_cand_s {
+    s3wid_t wid;		/**< A particular candidate word starting in a given frame */
+    struct word_cand_s *next;	/**< Next candidate starting in same frame; NULL if none */
+} word_cand_t;
+
+
 /**
  * Initialization of flat forward search 
  */
@@ -83,6 +156,11 @@ void fwd_init (mdef_t* _mdef,  /**< A model definition */
 	       dict_t* _dict,  /**< A dictionary */
 	       lm_t *_lm       /**< An LM */
 	       );
+
+/**
+ * Initialization of flat forward search 
+ */
+void fwd_free();
 
 /**
  * Start of flat foward search 
