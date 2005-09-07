@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.2  2005/07/17  05:42:27  arthchan2003
- * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
+ * Revision 1.1.2.3  2005/09/07  23:32:03  arthchan2003
+ * 1, Added get_lcpid in parrallel with get_rcpid. 2, Also fixed small mistakes in the macro.
  * 
+ * Revision 1.1.2.2  2005/07/17 05:42:27  arthchan2003
+ * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
+ *
  * Revision 1.1.2.1  2005/07/15 07:48:32  arthchan2003
  * split the hmm (whmm_t) and context building process (ctxt_table_t) from the the flat_fwd.c
  *
@@ -95,8 +98,8 @@ typedef struct {
 
 /* HACK! are these two correct? */
 
-#define ctxt_table_right_ctxt_ssid(ct,l,b,r)  ct->rcpid[b][r].pid[ct->rcpid[b][l].cimap[r]]
-#define ctxt_table_single_phone_ssid(ct,l,b,r)  ct->lrcpid[b][r].pid[ct->lrcpid[b][l].cimap[r]]
+#define ctxt_table_right_ctxt_ssid(ct,l,b,r)  ct->rcpid[b][l].pid[ct->rcpid[b][l].cimap[r]]
+#define ctxt_table_single_phone_ssid(ct,l,b,r)  ct->lrcpid[b][l].pid[ct->lrcpid[b][l].cimap[r]]
 
 /**
  * \struct ctxt_table_t 
@@ -372,6 +375,17 @@ void get_rcpid (ctxt_table_t *ct,  /**< A context table */
 		int32 *npid,        /**< Out: Number of phone ID */
 		dict_t *dict        /**< In: a dictionary */
 		);
+
+/**
+ * Get the array of left context phone ID for the first phone.
+ */
+void get_lcpid (ctxt_table_t *ct,  /**< A context table */
+		s3wid_t w,         /**< A word for query */
+		s3pid_t **pid,     /**< Out: An array of right context phone ID */
+		int32 *npid,        /**< Out: Number of phone ID */
+		dict_t *dict        /**< In: a dictionary */
+		);
+
 
 /**
  * Get the context-independent phone map for the last phone of a

@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.3  2005/07/24  01:32:54  arthchan2003
- * Flush the output of the cross word triphone in ctxt_table.c
+ * Revision 1.1.2.4  2005/09/07  23:32:03  arthchan2003
+ * 1, Added get_lcpid in parrallel with get_rcpid. 2, Also fixed small mistakes in the macro.
  * 
+ * Revision 1.1.2.3  2005/07/24 01:32:54  arthchan2003
+ * Flush the output of the cross word triphone in ctxt_table.c
+ *
  * Revision 1.1.2.2  2005/07/17 05:42:27  arthchan2003
  * Added super-detailed comments ctxt_table.h. Also added dimension to the arrays that stores all context tables.
  *
@@ -380,6 +383,21 @@ void get_rcpid (ctxt_table_t *ct, s3wid_t w, s3pid_t **pid, int32 *npid,dict_t *
     
     *pid = ct->rcpid[b][lc].pid;
     *npid = ct->rcpid[b][lc].n_pid;
+}
+
+void get_lcpid (ctxt_table_t *ct, s3wid_t w, s3pid_t **pid, int32 *npid,dict_t *dict)
+{
+    int32 pronlen;
+    s3cipid_t b, rc;
+    
+    pronlen = dict->word[w].pronlen;
+    assert (pronlen > 1);
+    
+    b = dict->word[w].ciphone[0];
+    rc = dict->word[w].ciphone[1];
+    
+    *pid = ct->lcpid[b][rc].pid;
+    *npid = ct->lcpid[b][rc].n_pid;
 }
 
 
