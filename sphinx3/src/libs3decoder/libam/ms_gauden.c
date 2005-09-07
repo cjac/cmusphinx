@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.3  2005/09/07  23:25:10  arthchan2003
- * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
+ * Revision 1.5.4.4  2005/09/07  23:29:07  arthchan2003
+ * Added FIXME warning.
  * 
+ * Revision 1.5.4.3  2005/09/07 23:25:10  arthchan2003
+ * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
+ *
  * Revision 1.5.4.2  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
@@ -292,6 +295,9 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
     g->det = (float32 ***) ckd_calloc_3d (g->n_mgau, g->n_feat, g->n_density,
 					  sizeof(float32));
 
+    /** FIX ME!, There is no removal of Gaussian in ms_mgau. This is
+	not yet synchronized with cont_mgau's behavior. */
+
     for (m = 0; m < g->n_mgau; m++) {
 	for (f = 0; f < g->n_feat; f++) {
 	    flen = g->featlen[f];
@@ -302,7 +308,7 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 
 		for (i = 0, varp = g->var[m][f][d]; i < flen; i++, varp++) {
 		  if (*varp < varfloor){
-
+		    
 #if 0
 		    E_INFO("varp %f , floor %f n=%d, m %d, f %d c %d, i %d\n",*varp,varfloor,n,m,f,d,i);
 #endif
