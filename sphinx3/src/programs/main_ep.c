@@ -34,9 +34,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15.4.3  2005/07/18  23:21:24  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.15.4.4  2005/09/07  23:48:58  arthchan2003
+ * Remove .
  * 
+ * Revision 1.15.4.3  2005/07/18 23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.15.4.2  2005/07/05 21:35:00  arthchan2003
  * Merged from HEAD.
  *
@@ -62,13 +65,6 @@
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
- * Add $Log$
- * Revision 1.15.4.3  2005/07/18  23:21:24  arthchan2003
- * Tied command-line arguments with marcos
- * 
- * Add Revision 1.15.4.2  2005/07/05 21:35:00  arthchan2003
- * Add Merged from HEAD.
- * Add
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -247,8 +243,8 @@ static arg_t arg[] = {
     "Declare end of speech after these many seconds of non-speech (pad not accounted)" },
   { "-speech_cancel",
     ARG_FLOAT32,
-    UTT_T_CANCEL,
-    "Cancel a start of speech  after these many seconds of non-speech" },
+    "0.0000001",
+    "Senone mixture weights floor (applied to data from -mixw file)" },
 
   { NULL, ARG_INT32,  NULL, NULL }
 };
