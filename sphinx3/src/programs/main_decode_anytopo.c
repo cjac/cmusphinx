@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.11  2005/08/03  20:01:33  arthchan2003
- * Added the -topn argument into acoustic_model_command_line_macro
+ * Revision 1.12.4.12  2005/09/07  23:48:09  arthchan2003
+ * 1, Removed old recognition loop. 2, Start to only compute active senones indicated by the search routine. 3, Fixed counters.
  * 
+ * Revision 1.12.4.11  2005/08/03 20:01:33  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
+ *
  * Revision 1.12.4.10  2005/08/03 18:55:03  dhdfu
  * Remove bogus initialization of ms_mgau's internals from here
  *
@@ -364,8 +367,8 @@ ptmr_t tmr_bstpth;
 ptmr_t tmr_gausen;
 ptmr_t tmr_fwdsrch;
 
-pctr_t ctr_nfrm;
-pctr_t ctr_nsen;
+pctr_t* ctr_nfrm;
+pctr_t* ctr_nsen;
 
 static int32 tot_nfr;
 static char *inlatdir;
@@ -379,10 +382,11 @@ static int32 matchexact;
  * Command line arguments.
  */
 static arg_t defn[] = {
+  log_table_command_line_macro()
   cepstral_to_feature_command_line_macro()
   acoustic_model_command_line_macro()
   speaker_adaptation_command_line_macro()
-  log_table_command_line_macro()
+  language_model_command_line_macro()
   dictionary_command_line_macro()
   common_filler_properties_command_line_macro()
   common_application_properties_command_line_macro()
@@ -393,8 +397,9 @@ static arg_t defn[] = {
   output_lattice_handling_command_line_macro()
   dag_handling_command_line_macro()
   search_specific_command_line_macro()
-  control_mllr_file_command_line_macro()
+  control_lm_mllr_file_command_line_macro()
   phone_insertion_penalty_command_line_macro()
+
 
   /* Things which are not yet synchronized with decode/dag/astar */
     { "-lambda",
@@ -402,18 +407,10 @@ static arg_t defn[] = {
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
 /* ADDED BY BHIKSHA: 6 JAN 98 */
-    { "-lminmemory",
-      ARG_INT32,
-      "0",
-      "Load language model into memory (default: use disk cache for lm"},
     { "-ceplen",
       ARG_INT32,
       "13",
       "Length of input feature vector" },
-    { "-lm",
-      ARG_STRING,
-      NULL,
-      "Language model input file (precompiled .DMP file)" },
     { "-bestpath",
       ARG_INT32,
       "0",
@@ -434,13 +431,21 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Word whose active HMMs are to be traced (for debugging/diagnosis/analysis)" },
+    { "-hmmdumpef",
+      ARG_INT32,
+      "200000000",
+      "Ending frame for dumping all active HMMs (for debugging/diagnosis/analysis)" },
     { "-hmmdumpsf",
       ARG_INT32,
-      NULL,
+      "200000000",
       "Starting frame for dumping all active HMMs (for debugging/diagnosis/analysis)" },
+    { "-worddumpef",
+      ARG_INT32,
+      "200000000",
+      "Ending frame for dumping all active words (for debugging/diagnosis/analysis)" },
     { "-worddumpsf",
       ARG_INT32,
-      NULL,
+      "200000000",
       "Starting frame for dumping all active words (for debugging/diagnosis/analysis)" },
     { "-inlatdir",
       ARG_STRING,
@@ -462,6 +467,14 @@ static arg_t defn[] = {
       ARG_INT32,
       "0",
       "Whether BPTable should be dumped to log output (for debugging)" },
+    { "-multiplex_multi",
+      ARG_INT32,
+      "1"
+      "Whether multiplexed triphones for multi-phone word. If not, full triphone expansion will be carried out in the word begin." },
+    { "-multiplex_single",
+      ARG_INT32,
+      "1"
+      "Whether to multiplexed triphones for single-phone. If not, full triphone expansion will be carried out in the word begin. Notice that this will consume large amount of memory space." },
 
     { NULL, ARG_INT32,  NULL, NULL }
 
@@ -551,10 +564,10 @@ static void models_init ( void )
     */
 
     lmset=lmset_init(cmd_ln_str("-lm"),
-		     NULL,
-		     NULL,
-		     NULL,
-		     NULL,
+		     cmd_ln_str("-lmctlfn"),
+		     cmd_ln_str("-ctl_lm"),
+		     cmd_ln_str("-lmname"),
+		     cmd_ln_str("-lmdumpdir"),
 		     cmd_ln_float32("-lw"),
 		     cmd_ln_float32("-wip"),
 		     cmd_ln_float32("-uw"),
@@ -688,8 +701,10 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     ms_mgau_model_t *msg;
     int32 topn;
     int32 w;
+    int32 n_sen_active;
 
     i=0;
+    n_sen_active=0;
     msg=kbc->ms_mgau;
     topn=ms_mgau_topn(msg);
     w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
@@ -716,12 +731,24 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
       ptmr_start (&tmr_gausen);
       
 
+#if 0
       if(inlatdir){
 	/* Obtain list of active senones */
 	fwd_sen_active (ascr_pool->sen_active, msg->s->n_sen);
+
       }else{
-	for(j=0;j<msg->s->n_sen;j++) 
+	for(j=0;j<msg->s->n_sen;j++) {
 	  ascr_pool->sen_active[j]=1;
+	}
+      }
+#else
+      fwd_sen_active (ascr_pool->sen_active, msg->s->n_sen);
+#endif
+      n_sen_active=0;
+
+      for(j=0;j<msg->s->n_sen;j++){
+	if(ascr_pool->sen_active[j])
+	  n_sen_active++;
       }
 
       senscale[i] = ms_cont_mgau_frame_eval(ascr_pool,
@@ -751,6 +778,8 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     }
 
     pctr_increment (ctr_nfrm, nfr);
+    E_INFO("%d\n",n_sen_active);
+    pctr_increment (ctr_nsen, n_sen_active);
 
     return hyp;
 }
@@ -866,8 +895,10 @@ static void decode_utt (int32 nfr, char *uttid)
     
     printf ("%s: ", uttid);
 
-    pctr_print(stderr,ctr_nfrm);
-    pctr_print(stderr,ctr_nsen);
+    pctr_print(stdout,ctr_nfrm);
+    printf(" ");
+    pctr_print(stdout,ctr_nsen);
+    printf("\n");
 
     printf ("%s: TMR: %5d Frm", uttid, nfr);
     if (nfr > 0) {
@@ -967,8 +998,10 @@ int main (int32 argc, char *argv[])
     ptmr_init(&tmr_gausen);
     ptmr_init(&tmr_fwdsrch);
     
-    pctr_new(ctr_nfrm,"frm");
-    pctr_new(ctr_nsen,"sen");
+    ctr_nfrm=pctr_new("frm");
+    printf("\n");
+    ctr_nsen=pctr_new("sen");
+    printf("\n");
 
     /* Initialize forward Viterbi search module */
     fwd_init (kbc->mdef,kbc->tmat,dict,lmset->cur_lm);
@@ -1010,7 +1043,7 @@ int main (int32 argc, char *argv[])
       /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
 	 the corresponding  MLLR for the utterance */
       ctl_process (cmd_ln_str("-ctl"),
-		   NULL,
+		   cmd_ln_str("-ctl_lm"),
 		   cmd_ln_str("-ctl_mllr"),
 		   cmd_ln_int32("-ctloffset"),
 		   cmd_ln_int32("-ctlcount"),
@@ -1041,9 +1074,14 @@ int main (int32 argc, char *argv[])
     if(kbc)
       ckd_free(kbc);
 
-  if(ascr_pool){
-    ascr_free(ascr_pool);
-  }
+    if(ascr_pool)
+      ascr_free(ascr_pool);
+
+    fwd_free();
+
+    pctr_free(ctr_nfrm);
+    pctr_free(ctr_nsen);
+
 #if (! WIN32)
 #if defined(_SUN4)
     system("ps -el | grep s3decode");
@@ -1058,240 +1096,3 @@ int main (int32 argc, char *argv[])
     return 0 ;
 }
 
-#if 0
-/*
- * Forward Viterbi decode.
- * Return value: recognition hypothesis with detailed segmentation and score info.
- */
-static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
-			   int32 nfr,	/**< In: #frames of input */
-			   char *uttid	/**< In: Utterance id, for logging and other use */
-			   )
-{
-
-    static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
-    static int32 **senscr;		/* Senone scores for window of frames */
-    static int8 *sen_active;		/* [s] TRUE iff s active in current frame */
-    static int8 *mgau_active;		/* [m] TRUE iff m active in current frame */
-
-    int32 i, j, k, s, gid, n_sen_active, best;
-    srch_hyp_t *hyp;
-    ms_mgau_model_t *msg;
-    gauden_t *g;
-    senone_t *sen;
-    mgau2sen_t **mgau2sen, *m2s;	
-    interp_t *interp;
-    int32 topn;
-    int32 w;
-
-
-    i=0;
-    msg=kbc->ms_mgau;
-    g=ms_mgau_gauden(msg);
-    sen=ms_mgau_senone(msg);
-    mgau2sen=ms_mgau_mgau2sen(msg);
-    interp=ms_mgau_interp(msg);
-    topn=ms_mgau_topn(msg);
-    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
-				   frame to compute one feature vector */
-    if (! senscr) {
-
-	dist = (gauden_dist_t **) ckd_calloc_2d (g->n_feat, topn, sizeof(gauden_dist_t));
-
-	/*
-	 * If search limited to given word lattice, or if many codebooks, only active
-	 * senones computed in each frame.   Allocate space for list of active senones,
-	 * and active codebook flags.
-	 */
-	if (inlatdir) {
-	    E_INFO("Computing only active codebooks and senones each frame\n");
-	    sen_active = (int8 *) ckd_calloc (sen->n_sen, sizeof(int8));
-	    mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
-	
-	    /* Space for senone scores (one frame) */
-	    senscr = (int32 **) ckd_calloc_2d (1, sen->n_sen, sizeof(int32));
-	} else {
-	    E_INFO("Computing all codebooks and senones each frame\n");
-	    sen_active = NULL;
-	    mgau_active = NULL;
-	
-	    /* Space for senone scores (window of frames) */
-	    senscr = (int32 **) ckd_calloc_2d (GAUDEN_EVAL_WINDOW, sen->n_sen,
-					       sizeof(int32));
-	}
-	
-    }
-    
-    if (nfr <= (w<<1)) {
-	E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid, (w<<1)+1, nfr);
-	return NULL;
-    }
-    
-    ptmr_reset (&tmr_gausen);
-    ptmr_reset (&tmr_fwdsrch);
-
-    
-    fwd_start_utt (uttid);
-
-    /*
-     * A feature vector for frame f depends on input MFC vectors [f-w..f+w].  Hence
-     * the feature vector corresponding to the first w and last w input frames is
-     * undefined.  We define them by simply replicating the first and last true
-     * feature vectors (presumably silence regions).
-     */
-    if (sen_active) {
-	for (i = 0; i < nfr; i++) {
-	    ptmr_start (&tmr_gausen);
-
-	    /* Compute feature vector for current frame from input speech cepstra */
-
-	    /* Obtain list of active senones */
-	    fwd_sen_active (sen_active, sen->n_sen);
-	    
-	    /* Flag all active mixture-gaussian codebooks */
-	    for (gid = 0; gid < g->n_mgau; gid++)
-		mgau_active[gid] = 0;
-	    n_sen_active = 0;
-
-	    for (s = 0; s < sen->n_sen; s++) {
-		if (sen_active[s]) {
-		    mgau_active[sen->mgau[s]] = 1;
-		    n_sen_active++;
-		}
-	    }
-
-	    /* Add in CI senones and codebooks if interpolating with CI */
-	    if (interp) {
-		for (s = 0; s < kbc->mdef->n_ci_sen; s++) {
-		    mgau_active[s] = 1;
-		    if (! sen_active[s]) {
-			sen_active[s] = 1;
-			n_sen_active++;
-		    }
-		}
-	    }
-
-	    pctr_increment (ctr_nsen, n_sen_active);
-	    
-	    /* Compute topn gaussian density and senones values (for active codebooks) */
-	    best = (int32) 0x80000000;
-	    for (gid = 0; gid < g->n_mgau; gid++) {
-		if (mgau_active[gid]) {
-		    gauden_dist (g, gid, topn, feat[i], dist);
-		    for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-			s = m2s->sen;
-			if (sen_active[s]) {
-			    senscr[0][s] = senone_eval (sen, s, dist, topn);
-			    if (best < senscr[0][s])
-				best = senscr[0][s];
-			}
-		    }
-		}
-	    }
-
-	    /* Interpolate CI and CD senones if indicated */
-	    if (interp) {
-		for (s = kbc->mdef->n_ci_sen; s < sen->n_sen; s++) {
-		    if (sen_active[s])
-			interp_cd_ci (interp, senscr[0], s, kbc->mdef->cd2cisen[s]);
-		}
-	    }
-
-	    /* Normalize senone scores (interpolation above can only lower best score) */
-	    for (s = 0; s < sen->n_sen; s++) {
-		if (sen_active[s])
-		    senscr[0][s] -= best;
-
-		E_INFO("The senone scores %d\n",senscr[0][s]);
-	    }
-
-
-	    senscale[i] = best;
-	    ptmr_stop (&tmr_gausen);
-
-	    /* Step HMMs one frame forward */
-	    ptmr_start (&tmr_fwdsrch);
-	    bestscr[i] = fwd_frame (senscr[0]);
-	    ptmr_stop (&tmr_fwdsrch);
-	    
-	    if ((i%10) == 9) {
-		printf ("."); fflush (stdout);
-	    }
-	}
-    } else {
-	/* Work in groups of GAUDEN_EVAL_WINDOW frames (blocking to improve cache perf) */
-      assert(feat);
-	for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
-	    /* Compute Gaussian densities and senone scores for window of frames */
-	    ptmr_start (&tmr_gausen);
-
-	    for (gid = 0; gid < g->n_mgau; gid++) {
-	      for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-
-		    /* Evaluate mixture Gaussian densities */
-		   gauden_dist (g, gid, topn, feat[i], dist);
-
-		    /* Compute senone scores */
-		   if (g->n_mgau > 1) {
-		     for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-		       s = m2s->sen;
-		       senscr[k][s] = senone_eval (sen, s, dist, topn);
-		     }
-		   } else{
-		     /* Semi-continuous special case; single shared codebook */
-		     senone_eval_all (sen, dist, topn, senscr[k]);
-		   }
-		}
-	    }
-
-	    /* Interpolate senones and normalize */
-	    for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		pctr_increment (ctr_nsen, sen->n_sen);
-
-		if (interp)
-		    interp_all (interp, senscr[k], kbc->mdef->cd2cisen, kbc->mdef->n_ci_sen);
-
-		/* Normalize senone scores */
-		best = (int32)0x80000000;
-		for (s = 0; s < sen->n_sen; s++){
-		    if (best < senscr[k][s])
-			best = senscr[k][s];
-
-		}
-		for (s = 0; s < sen->n_sen; s++)
-		    senscr[k][s] -= best;
-		senscale[i] = best;
-	    }
-
-	    ptmr_stop (&tmr_gausen);
-		
-	    /* Step HMMs one frame forward */
-	    ptmr_start (&tmr_fwdsrch);
-	    for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		bestscr[i] = fwd_frame (senscr[k]);
-		if ((i%10) == 9) {
-		    printf ("."); fflush (stdout);
-		}
-	    }
-
-
-	    ptmr_stop (&tmr_fwdsrch);
-
-	}
-    }
-    printf ("\n");
-
-    hyp = fwd_end_utt ();
-
-    /* Add in senscale into bestscr, turning them into absolute scores */
-    k = 0;
-    for (i = 0; i < nfr; i++) {
-	k += senscale[i];
-	bestscr[i] += k;
-    }
-
-    pctr_increment (ctr_nfrm, nfr);
-
-    return hyp;
-}
-#endif
