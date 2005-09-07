@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.1  2005/06/27  05:42:21  arthchan2003
- * Merge from the tip of the trunk
+ * Revision 1.11.4.2  2005/09/07  23:43:50  arthchan2003
+ * Add boolean in the prim_type. Not yet fully implemented.
  * 
+ * Revision 1.11.4.1  2005/06/27 05:42:21  arthchan2003
+ * Merge from the tip of the trunk
+ *
  * Revision 1.11  2005/06/22 03:10:23  arthchan2003
  * Added  keyword.
  *
@@ -101,6 +104,7 @@ typedef union anytype_s {
     uint32 ui_32;
     float32 fl_32;
     float64 fl_64;
+    boolean b;
 } anytype_t;
 
 
