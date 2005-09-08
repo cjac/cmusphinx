@@ -34,9 +34,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15.4.4  2005/09/07  23:48:58  arthchan2003
- * Remove .
+ * Revision 1.15.4.5  2005/09/08  02:24:53  arthchan2003
+ * Fix the mistake in last check-in.
  * 
+ * Revision 1.15.4.4  2005/09/07 23:48:58  arthchan2003
+ * Remove .
+ *
  * Revision 1.15.4.3  2005/07/18 23:21:24  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -243,9 +246,8 @@ static arg_t arg[] = {
     "Declare end of speech after these many seconds of non-speech (pad not accounted)" },
   { "-speech_cancel",
     ARG_FLOAT32,
-    "0.0000001",
-    "Senone mixture weights floor (applied to data from -mixw file)" },
-
+    UTT_T_CANCEL,
+    "Cancel a start of speech  after these many seconds of non-speech" },
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
