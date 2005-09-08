@@ -76,19 +76,19 @@ areadint (char *file, int **data_ref, int *length_ref)
   if (fd < 0)
   {
     fprintf (stderr, "areadint: %s: can't open: %s\n", file, strerror(errno));
-    return errno;
+    return -1;
   }
   if (read (fd, (char *) &length, 4) != 4)
   {
     fprintf (stderr, "areadint: %s: can't read length: %s\n", file, strerror(errno));
     close (fd);
-    return errno;
+    return -1;
   }
   if (fstat (fd, &st_buf) < 0)
   {
     fprintf (stderr, "areadint: %s: can't get stat: %s\n", file, strerror(errno));
     close(fd);
-    return errno;
+    return -1;
   }
 
   if (length * sizeof(int) + 4 != st_buf.st_size) {
