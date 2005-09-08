@@ -42,14 +42,17 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.15  2005/09/01  21:09:54  dhdfu
+ * Revision 1.16  2005/09/08  15:24:12  dhdfu
+ * Check the return values of areadint() to avoid misleading "size problem" errors
+ * 
+ * Revision 1.15  2005/09/01 21:09:54  dhdfu
  * Really, actually, truly consolidate byteswapping operations into
  * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
  * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
  * autoconf controls the functioning of the conditional swap macros
  * (SWAP_?[LW]) whose names and semantics have been regularized.
  * Private, adhoc macros have been removed.
- * 
+ *
  * Revision 1.14  2004/12/10 16:48:56  rkm
  * Added continuous density acoustic model handling
  *
@@ -1380,7 +1383,9 @@ static void dist_read (
 
     sprintf (filename, "%s.%s", file, Code_Ext1);
     /* FIXME: areadint() and friends need to be prototyped somewhere */
-    areadint (filename, &iptr, &numints);
+    if (areadint (filename, &iptr, &numints) != 0)
+	E_FATAL("Failed to read %s\n", filename);
+
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
@@ -1398,7 +1403,8 @@ static void dist_read (
     free (iptr);
 
     sprintf (filename, "%s.%s", file, Code_Ext2);
-    areadint (filename, &iptr, &numints);
+    if (areadint (filename, &iptr, &numints) != 0)
+	E_FATAL("Failed to read %s\n", filename);
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
@@ -1416,7 +1422,8 @@ static void dist_read (
     free (iptr);
 
     sprintf (filename, "%s.%s", file, Code_Ext3);
-    areadint (filename, &iptr, &numints);
+    if (areadint (filename, &iptr, &numints) != 0)
+	E_FATAL("Failed to read %s\n", filename);
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
@@ -1434,7 +1441,8 @@ static void dist_read (
     free (iptr);
 
     sprintf (filename, "%s.%s", file, Code_Ext4);
-    areadint (filename, &iptr, &numints);
+    if (areadint (filename, &iptr, &numints) != 0)
+	E_FATAL("Failed to read %s\n", filename);
     if (((numints != expected) && (! useCiDistsOnly))    ||
 	((numints < (NUMDISTRTYPES * MAX_ALPHABET)) && useCiDistsOnly))
     {
