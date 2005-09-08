@@ -91,15 +91,15 @@ areadint (char *file, int **data_ref, int *length_ref)
     return errno;
   }
 
-  if (length * sizeof(int) != st_buf.st_size) {
+  if (length * sizeof(int) + 4 != st_buf.st_size) {
     E_INFO("Byte reversing %s\n", file);
     swap = 1;
     SWAP_INT32(&length);
   }
 
-  if (length * sizeof(int) != st_buf.st_size) {
+  if (length * sizeof(int) + 4 != st_buf.st_size) {
     E_ERROR("Header count %d = %d bytes does not match file size %d\n",
-	    length, length*sizeof(int), st_buf.st_size);
+	    length, length*sizeof(int) + 4, st_buf.st_size);
     return -1;
   }
 
