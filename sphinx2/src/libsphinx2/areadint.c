@@ -94,7 +94,7 @@ areadint (char *file, int **data_ref, int *length_ref)
   if (length * sizeof(int) != st_buf.st_size) {
     E_INFO("Byte reversing %s\n", file);
     swap = 1;
-    SWAP_INT32(&swap);
+    SWAP_INT32(&length);
   }
 
   if (length * sizeof(int) != st_buf.st_size) {
