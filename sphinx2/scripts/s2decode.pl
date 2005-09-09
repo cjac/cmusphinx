@@ -100,7 +100,7 @@ if ($statepdeffn ne ".semi.") {
 $hmm_dir = "$DEC_CFG_BASE_DIR/model_parameters/$modelname";
 
 $hmm_dir_list = "$hmm_dir";
-$cbdir = "$hmm_dir";
+$cb_dir = "$hmm_dir";
 $mapfn = "$hmm_dir/map";
 $phonefn = "$hmm_dir/phone";
 $sendumpfn = "$hmm_dir/sendump";
@@ -136,10 +136,10 @@ copy "$DEC_CFG_GIF_DIR/green-ball.gif", "$DEC_CFG_BASE_DIR/.decode.$part.state.g
 open LOG,">$logfile";
 
 ### now actually start  (this will clobber the previous logfile)
-$DECODER = "$DEC_CFG_BIN_DIR/decode";
+$DECODER = "$DEC_CFG_BIN_DIR/sphinx2-batch";
 
 if (open PIPE, "\"$DECODER\" " .
-    "-hmmdir \"$hmmdir\" " .
+    "-hmmdir \"$hmm_dir\" " .
     "-hmmdirlist \"$hmm_dir_list\" " .
     "-cbdir \"$cb_dir\" " .
     "-mapfn \"$mapfn\" " .
@@ -152,11 +152,12 @@ if (open PIPE, "\"$DECODER\" " .
     "-dictfn \"$DEC_CFG_DICTIONARY\" " .
     "-fdictfn \"$DEC_CFG_FILLERDICT\" " .
     "-lmfn \"$DEC_CFG_LANGUAGEMODEL\" " .
+    "-kbdumpdir \"$DEC_CFG_LANGUAGEMODEL_DIR\" " .
     "-inspen 0.2 " .
-    "-ctl \"$DEC_CFG_LISTOFFILES\" " .
+    "-ctlfn \"$DEC_CFG_LISTOFFILES\" " .
     "-ctloffset $ctloffset " .
     "-ctlcount $ctlcount " .
-    "-cepdir \"$DEC_CFG_FEATFILES_DIR\" " .
+    "-datadir \"$DEC_CFG_FEATFILES_DIR\" " .
     "-cepext $DEC_CFG_FEATFILE_EXTENSION " .
 #    "-matchsegfn $matchfile " .
     "-matchfn $matchfile " .
@@ -179,7 +180,7 @@ if (open PIPE, "\"$DECODER\" " .
 	}
 	print LOG "$_";
 	# Keep track of progress being made.
-	$processed_counter++  if (/.*\(total\)\s*$/i);
+	$processed_counter++  if (/^\s*SFrm\s+Efrm\s+.*Bestpath.*$/i);
 	$percentage = int (($processed_counter / $ctlcount) * 100);
 	if (!($percentage % 10)) {
 	    &DEC_Log ("${percentage}% ") unless $printed;

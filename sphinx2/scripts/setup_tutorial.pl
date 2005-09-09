@@ -54,15 +54,15 @@ my ($langmodel, $langweight, $beam, $wbeam);
 my $align = "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin/sclite";
 
 if (lc($task) eq "an4") {
-  $langmodel = " an4.ug.lm.DMP";
-  $langweight = 23;
-  $beam = 1e-120;
-  $wbeam = 1e-80;
+  $langmodel = " an4.ug.lm";
+  $langweight = 10;
+  $beam = 1e-10;
+  $wbeam = 1e-6;
 } elsif (lc($task) eq "rm1") {
-  $langmodel = " rm1.bigram.arpabo.DMP";
-  $langweight = 13;
-  $beam = 1e-120;
-  $wbeam = 1e-100;
+  $langmodel = " rm1.bigram.arpabo";
+  $langweight = 10;
+  $beam = 1e-10;
+  $wbeam = 1e-6;
 } else {
   die "Task not previously defined. User has to provide language model and supporting variables\n";
 }
@@ -89,7 +89,7 @@ print "\n\nNow, please do:\n";
 print "\tcd $task_dir\n";
 print "And then, in Unix/Linux:\n";
 print "\tperl scripts_pl/make_feats.pl -ctl etc/${task}_test.fileids (if needed)\n";
-print "\tperl scripts_pl/RunAll.pl\n";
+print "\tperl scripts_pl/slave.pl\n";
 print "Or in Windows:\n";
 print "\tperl scripts_pl\\make_feats.pl -ctl etc\\${task}_test.fileids (if needed)\n";
-print "\tperl scripts_pl\\RunAll.pl\n";
+print "\tperl scripts_pl\\slave.pl\n";

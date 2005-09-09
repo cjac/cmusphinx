@@ -88,7 +88,12 @@ sub concat_hyp {
 
     open (HYP, "< $hypfile") or ((warn "Can't open $hypfile\n" and next));
     while (<HYP>) {
-      print MATCH "$_";
+      chomp();
+      # Match file is like "GO  (an409-fcaw-b  -14469549)"
+      # We extract everything up to the score: "GO  (an409-fcaw-b" ....
+      m/^(.*\S)\s+[^\(]+\)\s*$/;
+      # ... and the print that followed by ")"
+      print MATCH "$1)\n";
     }
     close(HYP);
   }
