@@ -52,9 +52,18 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.5  2005/09/11  02:54:19  arthchan2003
- * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ * Revision 1.10.4.6  2005/09/11  03:04:34  arthchan2003
+ * Change for Comments for last commit. Last commit involves an important
+ * bug fix for dag.  In the past, dag was using a set of bestpath search
+ * where the language model weight is **not** accounted for.  This is
+ * quite subtle because it was missed in more than 3 functions and the
+ * effect was not obvious. Now, -lw will be directly applied to the
+ * score.  This is discovered during merging the code of 2-nd stage of
+ * decode_anytopo and dag.
  * 
+ * Revision 1.10.4.5  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
  * Revision 1.10.4.4  2005/07/27 23:23:39  arthchan2003
  * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  *
@@ -178,6 +187,7 @@
 /** \file main_dag.c
  * \brief main driver for DAG and find the best path. 
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
