@@ -46,12 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.2  2005/09/11  02:56:47  arthchan2003
+ * Revision 1.1.4.3  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * 
+ * Revision 1.1.4.2  2005/09/11 02:56:47  arthchan2003
  * Log. Incorporated all dag related functions from s3_dag.c and
  * flat_fwd.c.  dag_search, dag_add_fudge, dag_remove_filler is now
  * shared by dag and decode_anytopo. (Hurray!). s3_astar.c still has
  * special functions and it probably unavoidable.
- * 
+ *
  * Revision 1.1.4.1  2005/07/17 05:44:31  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -407,5 +410,15 @@ dag_t* dag_load (
 		fillpen_t *fpen    /**< Filler penalty structure */
 		);
 
+/**
+   A version of dag load that is used in main_dag and srch.c 
+   @return number of frame read
+ */
+int32 s3dag_dag_load (dag_t **dagpp,  /**< Output: pointer of pointer of DAG */
+		      float32 lwf,     /**<Input, language weight */
+		      char *file,      /**< The file name */
+		      dict_t *dict, 
+		      fillpen_t *fpen
+		      );
 
 #endif

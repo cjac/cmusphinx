@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.10  2005/08/02  21:37:28  arthchan2003
- * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ * Revision 1.1.4.11  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  * 
+ * Revision 1.1.4.10  2005/08/02 21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ *
  * Revision 1.1.4.9  2005/07/24 19:35:59  arthchan2003
  * Added GAUDEN_EVAL_WINDOW in srch.h. Assuming this is property of a search.
  *
@@ -636,6 +639,29 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 int32 srch_delete_lm();
 
 
+/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
+    When hyp_t, srch_hyp_t are united, we could tie it with match_write
+ */
+void log_hypstr (FILE *fp,  /**< A file pointer */
+		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		 char *uttid,   /**< An utterance ID */
+		 int32 exact,   /**< Whether to dump an exact */
+		 int32 scr,      /**< The score */
+		 dict_t *dict    /**< A dictionary to look up wid */
+		 );
+
+void log_hyp_detailed (FILE *fp, /**< A file poointer */
+		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		       char *uttid,         /**< An utternace ID */
+		       char *LBL,           /**< A header in cap */
+		       char *lbl,           /**< A header in small */
+		       int32* senscale      /**< Senone scale vector, 
+					       if specified, normalized score would be displayed, 
+					       if not, the unormalized score would be displayed. 
+					     */
+		       );
+
+
 #if 0 /*Not implemented */
 int32 srch_set_am();
 
@@ -672,26 +698,5 @@ int32 srch_delete_lamdafn();
 int32 srch_add_words_to_dict();
 
 
-/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
-    When hyp_t, srch_hyp_t are united, we could tie it with match_write
- */
-void log_hypstr (FILE *fp,  /**< A file pointer */
-		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
-		 char *uttid,   /**< An utterance ID */
-		 int32 exact,   /**< Whether to dump an exact */
-		 int32 scr,      /**< The score */
-		 dict_t *dict    /**< A dictionary to look up wid */
-		 );
-
-void log_hyp_detailed (FILE *fp, /**< A file poointer */
-		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
-		       char *uttid,         /**< An utternace ID */
-		       char *LBL,           /**< A header in cap */
-		       char *lbl,           /**< A header in small */
-		       int32* senscale      /**< Senone scale vector, 
-					       if specified, normalized score would be displayed, 
-					       if not, the unormalized score would be displayed. 
-					     */
-		       );
 
 #endif

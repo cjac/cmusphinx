@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.13  2005/08/02  21:37:28  arthchan2003
- * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ * Revision 1.1.4.14  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  * 
+ * Revision 1.1.4.13  2005/08/02 21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ *
  * Revision 1.1.4.12  2005/07/26 02:21:14  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -826,6 +829,7 @@ void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
 }
 
 
+
 void reg_result_dump (srch_t* s, int32 id)
 {
   FILE *fp, *latfp, *bptfp;
@@ -834,10 +838,16 @@ void reg_result_dump (srch_t* s, int32 id)
   stat_t* st; 
   gnode_t *gn;
   srch_hyp_t *h;
+  srch_hyp_t *bph;
+  int32 bp;
+  float32 *f32arg;
+  float64 lwf;
+  dag_t *dag;
+  int32 nfrm;
 
   st= s->stat;
-
   fp = stderr;
+  dag=NULL;
 
   if (cmd_ln_str("-bptbldir")) {
     char file[8192];
@@ -872,7 +882,7 @@ void reg_result_dump (srch_t* s, int32 id)
 
 #if 1      
       ascr += h->ascr + h->senscale;
-#else /* ARCHAN: If you want the score of without scaling. This behavior appeas in 3.1 to 3.5
+#else /* ARCHAN: If you want the score of without scaling. This behavior appears in 3.1 to 3.5
 	 During the time of CALO, we found that it is not in-sync with s3.0 family of tools. So,
 	 we decided to change it back. I leave this line for the future purpose of debugging. 
        */
@@ -896,8 +906,15 @@ void reg_result_dump (srch_t* s, int32 id)
   matchseg_write (fp, s, hyp, "FWDXCT: ");
   fprintf (fp, "\n");
   
+
+  /* Temporary measure, this is mainly caused by duplication of vithist
+     table in FSG search, N-gram searches */
+
+  if(s->op_mode==OPERATION_GRAPH)
+    E_ERROR("lattice generation is not supported in mode %d\n",s->op_mode);
       
-  if (cmd_ln_str ("-outlatdir")) {
+  if (cmd_ln_str ("-outlatdir") && s->op_mode!=OPERATION_GRAPH) {
+
     int32 ispipe;
     char str[2048];
     sprintf (str, "%s/%s.%s",
@@ -909,15 +926,68 @@ void reg_result_dump (srch_t* s, int32 id)
       E_ERROR("fopen_comp (%s,w) failed\n", str);
     else {
       /* Write header info */
-      dag_write_header(fp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
+      dag_write_header(latfp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
 					     the code will just be stopped */
 					     
       vithist_dag_write (s->vithist, hyp, s->kbc->dict,
 			 cmd_ln_int32("-outlatoldfmt"), latfp);
       fclose_comp (latfp, ispipe);
+
+      /* This should be moved out from the functions and allow polymorphism*/
+      /* Reread the lattice and create rescore it */
+      bp=cmd_ln_int32("-bestpath");
+
+      if(bp){
+	f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+	lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+	if(( nfrm= s3dag_dag_load(&dag,lwf,
+				  str,
+				  kbcore_dict(s->kbc),
+				  kbcore_fillpen(s->kbc)))
+	    >=0 ){
+
+	  E_INFO("hihi\n");
+	  bph=dag_search (dag,s->uttid, 
+			  lwf,
+			  dag->final.node,
+			  kbcore_dict(s->kbc),
+			  s->kbc->lmset->cur_lm,
+			  s->kbc->fillpen
+			  );
+	  if(bph!=NULL){
+
+	    if ( cmd_ln_int32("-backtrace") )
+	      log_hyp_detailed (stdout, bph, s->uttid, "BP", "bp",NULL);
+	    
+	    /* Total scaled acoustic score and LM score */
+	    ascr = lscr = 0;
+	    for (h = bph; h; h = h->next) {
+	      ascr += h->ascr;
+	      lscr += h->lscr;
+	    }
+
+	    printf ("BSTPTH: ");
+	    log_hypstr (stdout, bph, s->uttid, 0, ascr+lscr, kbcore_dict(s->kbc));
+	  	  
+	    lm_cache_stats_dump (kbcore_lm(s->kbc));
+	    lm_cache_reset (kbcore_lm(s->kbc));
+	  }else{
+	    E_ERROR("DAG search (%s) failed\n", s->uttid);
+	    bph = NULL;
+	  }
+	}else{
+	  E_ERROR("DAG search (%s) failed\n",s->uttid);
+	  bph=NULL;
+	}
+      }
     }
   }
       
+  if(dag){
+    dag_destroy (dag);
+  }
+
   /** free the list containing hyps */
   for (gn = hyp; gn; gn = gnode_next(gn)) {
     ckd_free(gnode_ptr(gn));

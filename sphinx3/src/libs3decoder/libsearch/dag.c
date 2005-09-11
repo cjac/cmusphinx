@@ -46,12 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.3  2005/09/11  02:56:47  arthchan2003
+ * Revision 1.1.4.4  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * 
+ * Revision 1.1.4.3  2005/09/11 02:56:47  arthchan2003
  * Log. Incorporated all dag related functions from s3_dag.c and
  * flat_fwd.c.  dag_search, dag_add_fudge, dag_remove_filler is now
  * shared by dag and decode_anytopo. (Hurray!). s3_astar.c still has
  * special functions and it probably unavoidable.
- * 
+ *
  * Revision 1.1.4.2  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -310,6 +313,12 @@ int32 dag_bestpath (
 		return -1;
 	
 	/* Accumulated path score along pl->l */
+	/*	E_INFO("lwid1 %d, wid1 %d, lwid2 %d, wid2 %d\n",
+	       dict2lmwid[dict_basewid(dict,d->wid)],
+	       d->wid,
+	       dict2lmwid[dict_basewid(dict,src->wid)],
+	       src->wid);*/
+
 	if (pl->pscr > (int32)0x80000000) {
 	    score = pl->pscr + l->ascr;
 	    if (score > l->pscr) {	/* rkm: Added 20-Nov-1996 */
@@ -341,9 +350,10 @@ int32 dag_bestpath (
     
 #if 0
     printf ("%s,%d -> %s,%d = %d\n",
-	    dict_wordstr (dict,d->wid), d->sf,
-	    dict_wordstr (dict,src->wid), src->sf,
+	    dict_wordstr (dict,dict_basewid(dict,d->wid)), d->sf,
+	    dict_wordstr (dict,dict_basewid(dict,src->wid)), src->sf,
 	    l->pscr);
+    fflush(stdout);
 #endif
 
     l->pscr_valid = 1;
@@ -552,6 +562,10 @@ srch_hyp_t *dag_search (dag_t *dagp, char *utt, float64 lwf, dagnode_t *final, d
 
     assert(final);
     assert(final->predlist);
+    assert(dict);
+    assert(lm);
+    assert(fpen);
+    assert(dagp);
 
     for (l = final->predlist; l; l = l->next) {
 	d = l->node;
@@ -702,7 +716,6 @@ dag_t* dag_load (
     int32 ispipe;
     dag_t* dag;
     latticehist_t *lathist;
-
 
     dag=ckd_calloc(1,sizeof(dag_t));
     s3wid_t finishwid;
@@ -975,6 +988,57 @@ load_error:
       latticehist_free(lathist);
     return NULL;
 
+}
+
+int32 s3dag_dag_load (dag_t **dagpp, float32 lwf, char *file, dict_t* dict, fillpen_t *fpen)
+{
+
+    int32 k;
+
+    *dagpp=dag_load(file,
+		 cmd_ln_int32("-maxedge"),
+		 cmd_ln_float32("-logbase"),
+		 cmd_ln_int32("-dagfudge"),
+		 dict,
+		 fpen);
+    
+    assert(*dagpp);
+    /*
+     * HACK!! Change dag.final.node wid to finishwid if some other filler word,
+     * to avoid complications with LM scores at this point.
+     */
+    (*dagpp)->orig_exitwid = (*dagpp)->final.node->wid;
+    if (dict_filler_word(dict, (*dagpp)->final.node->wid))
+	(*dagpp)->final.node->wid = dict->finishwid;
+    
+
+    /* Add links bypassing filler nodes */
+    if (dag_remove_filler_nodes ((*dagpp),
+				 lwf,
+				 dict, fpen) < 0) {
+	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, (*dagpp)->maxedge);
+	return -1;
+    }else
+      (*dagpp)->filler_removed=1;
+
+    /* Attach a dummy predecessor link from <<s>,0> to nowhere */
+    dag_link ((*dagpp),NULL, (*dagpp)->entry.node, 0, -1, NULL);
+    
+    E_INFO("%5d frames, %6d nodes, %8d edges\n", (*dagpp)->nfrm, (*dagpp)->nnode, (*dagpp)->nlink);
+    
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    (*dagpp)->maxlmop = cmd_ln_int32 ("-maxlmop");
+    k = cmd_ln_int32 ("-maxlpf");
+    
+    k *= (*dagpp)->nfrm;
+    if ((*dagpp)->maxlmop > k)
+	(*dagpp)->maxlmop = k;
+    (*dagpp)->lmop = 0;
+    
+    return (*dagpp)->nfrm;
 }
 
 

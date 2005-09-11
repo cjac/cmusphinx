@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.7  2005/08/03  19:59:07  arthchan2003
- * Added a message to tell user which GMM computation are being used.
+ * Revision 1.10.4.8  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  * 
+ * Revision 1.10.4.7  2005/08/03 19:59:07  arthchan2003
+ * Added a message to tell user which GMM computation are being used.
+ *
  * Revision 1.10.4.6  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
@@ -475,7 +478,11 @@ kbcore_t *kbcore_init (float64 logbase,
 	 Also make sure silences are unlinked. */
       for(i=0;i<kb->lmset->n_lm;i++){
 	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
-	unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
+
+	/* HACK! This will allow rescoring works but will definitely
+	   change the answer for the first stage. */
+	if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
+	   unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
       }
 
     }else if (fsgfile||fsgctlfile){
