@@ -52,7 +52,10 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.6  2005/09/11  03:04:34  arthchan2003
+ * Revision 1.10.4.7  2005/09/11  23:08:47  arthchan2003
+ * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
+ * 
+ * Revision 1.10.4.6  2005/09/11 03:04:34  arthchan2003
  * Change for Comments for last commit. Last commit involves an important
  * bug fix for dag.  In the past, dag was using a set of bestpath search
  * where the language model weight is **not** accounted for.  This is
@@ -60,7 +63,7 @@
  * effect was not obvious. Now, -lw will be directly applied to the
  * score.  This is discovered during merging the code of 2-nd stage of
  * decode_anytopo and dag.
- * 
+ *
  * Revision 1.10.4.5  2005/09/11 02:54:19  arthchan2003
  * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  *
@@ -197,7 +200,7 @@
 #include <assert.h>
 
 #include <s3types.h>
-/*#include "s3_dag.h"*/
+
 #include "dag.h"
 #include "logs3.h"
 #include "tmat.h"
@@ -209,6 +212,7 @@
 #include "wid.h"
 #include <cmdln_macro.h>
 #include "corpus.h"
+#include "srch.h"
 #define EXACT 1
 #define NOTEXACT 0
 
@@ -261,56 +265,6 @@ static arg_t defn[] = {
 };
 
 
-int32 s3dag_dag_load (char *file)
-{
-
-    int32 k;
-
-    dag=dag_load(file,
-		 cmd_ln_int32("-maxedge"),
-		 cmd_ln_float32("-logbase"),
-		 cmd_ln_int32("-dagfudge"),
-		 dict,
-		 fpen);
-    
-    assert(dag);
-    /*
-     * HACK!! Change dag.final.node wid to finishwid if some other filler word,
-     * to avoid complications with LM scores at this point.
-     */
-    dag->orig_exitwid = dag->final.node->wid;
-    if (dict_filler_word(dict, dag->final.node->wid))
-	dag->final.node->wid = dict->finishwid;
-    
-
-    /* Add links bypassing filler nodes */
-    if (dag_remove_filler_nodes (dag,
-				 cmd_ln_float32("-lw"),
-				 dict, fpen) < 0) {
-	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag->maxedge);
-	return -1;
-    }else
-      dag->filler_removed=1;
-
-    /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link (dag,NULL, dag->entry.node, 0, -1, NULL);
-    
-    E_INFO("%5d frames, %6d nodes, %8d edges\n", dag->nfrm, dag->nnode, dag->nlink);
-    
-    /*
-     * Set limit on max LM ops allowed after which utterance is aborted.
-     * Limit is lesser of absolute max and per frame max.
-     */
-    dag->maxlmop = cmd_ln_int32 ("-maxlmop");
-    k = cmd_ln_int32 ("-maxlpf");
-    
-    k *= dag->nfrm;
-    if (dag->maxlmop > k)
-	dag->maxlmop = k;
-    dag->lmop = 0;
-    
-    return dag->nfrm;
-}
 
 
 /*
@@ -417,7 +371,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	sprintf (dagfile, "%s.%s", uttid, latext);
 
     
-    if ((nfrm = s3dag_dag_load (dagfile)) >= 0) {
+    if ((nfrm = s3dag_dag_load (&dag,cmd_ln_float32("-lw"),dagfile,dict,fpen)) >= 0) {
 	hyp = dag_search (dag,uttid, cmd_ln_float32("-lw"),
 			  dag->final.node,
 			  dict,lmset->cur_lm,fpen

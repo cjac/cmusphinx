@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.13  2005/09/11  02:54:19  arthchan2003
- * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ * Revision 1.12.4.14  2005/09/11  23:08:47  arthchan2003
+ * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
  * 
+ * Revision 1.12.4.13  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
  * Revision 1.12.4.12  2005/09/07 23:48:09  arthchan2003
  * 1, Removed old recognition loop. 2, Start to only compute active senones indicated by the search routine. 3, Fixed counters.
  *
@@ -812,7 +815,7 @@ static void decode_utt (int32 nfr, char *uttid)
 
     hyp = fwdvit (nfr, uttid);
     ptmr_stop (&tmr_fwdvit);
-    bp = *((int32 *) cmd_ln_access("-bestpath"));
+    bp = cmd_ln_int32("-bestpath");
     scl = 0;
     lwf = 1.0;
     if (hyp != NULL) {

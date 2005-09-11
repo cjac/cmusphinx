@@ -80,6 +80,7 @@ static arg_t arg[] = {
   control_file_handling_command_line_macro()
   hypothesis_file_handling_command_line_macro() 
   output_lattice_handling_command_line_macro()
+  dag_handling_command_line_macro()
 
   cepstral_input_handling_command_line_macro()
   decode_specific_command_line_macro()
@@ -105,6 +106,16 @@ static arg_t arg[] = {
   /** ARCHAN 20050717: The only argument which I didn't refactor,
       reason is it makes sense to make every s3.0 family of tool to
       accept -utt */
+
+
+    { "-bestpath",
+      ARG_INT32,
+      "0",
+      "Whether to run bestpath DAG search after forward Viterbi pass" },
+    { "-bestpathlw",
+      ARG_FLOAT32,
+      NULL,
+      "Language weight for bestpath DAG search (default: same as -lw)" },
 
     { "-utt",
       ARG_STRING,
