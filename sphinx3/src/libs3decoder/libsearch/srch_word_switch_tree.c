@@ -38,10 +38,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.10  2005/08/03  18:54:32  dhdfu
+ * Revision 1.1.4.11  2005/09/11  03:01:01  arthchan2003
+ * Bug fix on the size of hmmpf and histpf
+ * 
+ * Revision 1.1.4.10  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.1.4.9  2005/07/24 01:41:52  arthchan2003
  * Use ascr provided clearing function instead of directly clearing the array.
  *
@@ -508,7 +511,7 @@ int32 srch_WST_hmm_compute_lv2(void *srch, int32 frmno)
     
 
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
   histbinsize = hp->hmm_hist_binsize;
   numhistbins = hp->hmm_hist_bins;
@@ -1083,7 +1086,7 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   mdef = kbcore_mdef(s->kbc);
   n_ci = mdef_n_ciphone(mdef);
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
   active_word_end=0;
 

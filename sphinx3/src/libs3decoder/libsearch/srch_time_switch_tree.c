@@ -38,10 +38,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.8  2005/08/03  18:54:32  dhdfu
+ * Revision 1.2.4.9  2005/09/11  03:01:01  arthchan2003
+ * Bug fix on the size of hmmpf and histpf
+ * 
+ * Revision 1.2.4.8  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.2.4.7  2005/07/27 23:19:59  arthchan2003
  * Added assert for make sure lmname is valid.
  *
@@ -623,7 +626,7 @@ int srch_TST_hmm_compute_lv2(void *srch, int32 frmno)
     
 
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
   histbinsize = hp->hmm_hist_binsize;
   numhistbins = hp->hmm_hist_bins;
@@ -931,7 +934,7 @@ int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   dict = kbcore_dict (kbcore);
 
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
 
 
