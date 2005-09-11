@@ -47,7 +47,10 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.3  2005/09/07  23:40:06  arthchan2003
+ * Revision 1.10.4.4  2005/09/11  02:58:10  arthchan2003
+ * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
+ * 
+ * Revision 1.10.4.3  2005/09/07 23:40:06  arthchan2003
  * Several Bug Fixes and Enhancements to the flat-lexicon
  * 1, Fixed Dox-doc.
  * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
@@ -62,7 +65,7 @@
  * 5, Word expansions of possible right contexts now records independent
  * history.  The behavior in the past was to use only one history for a
  * word.
- * 
+ *
  * Revision 1.10.4.2  2005/08/02 21:12:45  arthchan2003
  * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
  *
@@ -134,18 +137,6 @@ typedef struct {
   int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
 } fwd_dbg_t ;
 
-
-
-
-/**
- * \struct word_cand_t
- *
- * Word cand structure used in word lattice structure search
- */
-typedef struct word_cand_s {
-    s3wid_t wid;		/**< A particular candidate word starting in a given frame */
-    struct word_cand_s *next;	/**< Next candidate starting in same frame; NULL if none */
-} word_cand_t;
 
 
 /**
@@ -220,10 +211,10 @@ int32 dag_build ( void );
 /** Dump dag in s3.0 format
  * A function that can dump a dag given a lattice_t structure. 
  */
-int32 dag_dump (char *dir,  /**< The output directory */
-		int32 onlynodes, /**< Dump only nodes of the DAG*/
-		char *id    /**< Sentence ID*/
-		);
+void s3flat_fwd_dag_dump (char *dir,  /**< The output directory */
+			   int32 onlynodes, /**< Dump only nodes of the DAG*/
+			   char *id    /**< Sentence ID*/
+			   );
 
 #endif
 

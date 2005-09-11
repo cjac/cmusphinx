@@ -49,7 +49,10 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.6  2005/09/07  23:40:06  arthchan2003
+ * Revision 1.12.4.7  2005/09/11  02:58:10  arthchan2003
+ * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
+ * 
+ * Revision 1.12.4.6  2005/09/07 23:40:06  arthchan2003
  * Several Bug Fixes and Enhancements to the flat-lexicon
  * 1, Fixed Dox-doc.
  * 2, Add -worddumpef and -hmmdumpef in parrallel to -worddumpsf and
@@ -64,7 +67,7 @@
  * 5, Word expansions of possible right contexts now records independent
  * history.  The behavior in the past was to use only one history for a
  * word.
- * 
+ *
  * Revision 1.12.4.5  2005/08/02 21:12:45  arthchan2003
  * Changed senlist from 8-bit to 32-bit. It will be compatible to the setting of ascr's sen_active.
  *
@@ -301,8 +304,9 @@
 #include "logs3.h"
 #include "search.h"
 #include "ctxt_table.h"
+#include "vithist.h"
 
-#include "programs/s3_dag.h"
+/*#include "programs/s3_dag.h"*/
 
 #include "dag.h"
 #include "flat_fwd.h"
@@ -315,32 +319,8 @@
  */
 
 static whmm_t **whmm;
-    
-/**
- * Word lattice for recording decoded hypotheses.
- * 
- * lattice[i] = entry for a word ending at a particular frame.  There can be at most one
- * entry for a word in a given frame.
- * NOTE: lattice array allocated statically.  Need a more graceful way to grow without
- * such an arbitrary internal limit.
- */
-typedef struct lattice_s {
-    s3wid_t   wid;	/**< Decoded word */
-    s3frmid_t frm;	/**< End frame for this entry */
-    s3latid_t history;	/**< Index of predecessor lattice_t entry */
-    s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
-    int32     score;	/**< Best path score upto the end of this entry */
-    int32    *rcscore;	/**< Individual path scores for different right context ciphones */
-    dagnode_t *dagnode;	/**< DAG node representing this entry */
-} lattice_t;
 
-static lattice_t *lattice;
-static int32 lat_alloc;		/** #lattice entries allocated */
-static int32 n_lat_entry;	/** #lattice entries used at any point */
-#define LAT_ALLOC_INCR		32768
-
-#define LATID2SF(l)	(IS_S3LATID(lattice[l].history) ? \
-			 lattice[lattice[l].history].frm + 1 : 0)
+latticehist_t *lathist;
 
 /**
  * Structures for decoding utterances subject to given input word lattices; ie, restricting
@@ -403,7 +383,6 @@ extern int32 *st_sen_scr;
 
 static char *uttid = NULL;	/**< Utterance id; for error reporting */
 static int32 n_frm;		/**< Current frame being searched within utt */
-static s3latid_t *frm_latstart;	/**< frm_latstart[f] = first lattice entry in frame f */
 
 static srch_hyp_t *hyp = NULL;	/**< The final recognition result */
 static int32 renormalized;	/**< Whether scores had to be renormalized in current utt */
@@ -664,87 +643,8 @@ static int32 whmm_eval (int32 *senscr)
 }
 
 
-static void lattice_dump (FILE *fp)
-{
-    int32 i;
-    s3cipid_t npid;
-    s3cipid_t rc;
-
-    for (i = 0; i < n_lat_entry; i++) {
-      fprintf (fp, "%6d: %5d %6d %11d %s\n", i,
-	       lattice[i].frm, lattice[i].history, lattice[i].score,
-	       dict_wordstr (dict,lattice[i].wid));
 
 
-      if(lattice[i].rcscore && 1){
-	npid = get_rc_npid (ct_table,lattice[i].wid,dict );
-	for (rc = 0; rc < npid; rc++)
-	  fprintf(fp,"rc(Compacted) %d, rcscore %5d rchistory %6d\n",rc, lattice[i].rcscore[rc],lattice[i].rchistory[rc]);
-      }
-    }
-    fflush (fp);
-}
-
-
-/**
- * Record a word exit in word lattice.
- * NOTE: All exits from a single word in a given frame (for different right context
- * ciphones) must occur contiguously.
- */
-
-static void lattice_entry (s3wid_t w, int32 f, whmm_t *h)
-{
-    s3cipid_t rc, npid;
-    
-    if ((n_lat_entry <= 0) ||
-	(lattice[n_lat_entry-1].wid != w) || (lattice[n_lat_entry-1].frm != f)) {
-	/* New lattice entry */
-	if (n_lat_entry >= lat_alloc) {
-	    printf ("\n");
-	    E_INFO("Lattice size(%d) exceeded; increasing to %d\n",
-		   lat_alloc, lat_alloc+LAT_ALLOC_INCR);
-	    lat_alloc += LAT_ALLOC_INCR;
-	    lattice = ckd_realloc (lattice, lat_alloc * sizeof(lattice_t));
-	}
-	
-	lattice[n_lat_entry].wid = w;
-	lattice[n_lat_entry].frm = (s3frmid_t) f;
-	lattice[n_lat_entry].score = h->score[final_state];
-	lattice[n_lat_entry].history = h->history[final_state];
-
-	/* Allocate space for different right context scores */
-	npid = get_rc_npid (ct_table,w,dict );
-	assert (npid > 0);
-
-	lattice[n_lat_entry].rcscore = (int32 *) ckd_calloc (npid, sizeof(int32));
-	for (rc = 0; rc < npid; rc++)
-	    lattice[n_lat_entry].rcscore[rc] = S3_LOGPROB_ZERO;
-
-	/* ARCHAN: set up individual history for each right context */
-	lattice[n_lat_entry].rchistory = (s3latid_t *) ckd_calloc (npid, sizeof(s3latid_t));
-	for (rc = 0; rc < npid; rc++)
-	  lattice[n_lat_entry].rchistory[rc] = BAD_S3LATID;
-
-	n_lat_entry++;
-    }
-
-    if (lattice[n_lat_entry-1].score < h->score[final_state]) {
-	lattice[n_lat_entry-1].score = h->score[final_state];
-	lattice[n_lat_entry-1].history = h->history[final_state];
-    }
-
-#if 0
-    lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
-#else
-
-    /* ARCHAN, fix the bug where right context doesn't maintain its own history*/
-    if(lattice[n_lat_entry-1].rcscore[h->rc] < h->score[final_state]){
-       lattice[n_lat_entry-1].rcscore[h->rc] = h->score[final_state];
-       lattice[n_lat_entry-1].rchistory[h->rc] = h->history[final_state];
-    }
-#endif
-
-}
 
 
 static void whmm_renorm (int32 bestscr)
@@ -847,8 +747,14 @@ static void whmm_exit (int32 thresh, int32 wordthresh)
 	for (h = whmm[w]; h; h = h->next) {
 	    if (h->bestscore >= thresh) {
 		if (h->pos == pronlen-1) {
-		    if (h->score[final_state] >= wordthresh)
-			lattice_entry (w, n_frm, h);
+		  if (h->score[final_state] >= wordthresh){
+		    lattice_entry (lathist, w, n_frm, 
+				   h->score[final_state],
+				   h->history[final_state],
+				   h->rc,
+				   ct_table,
+				   dict);
+		  }
 		} else {
 		    if (h->score[final_state]+phone_penalty >= thresh)
 			whmm_transition (w, h);
@@ -859,84 +765,6 @@ static void whmm_exit (int32 thresh, int32 wordthresh)
 	}
     }
 }
-
-#define SINGLE_RC_HISTORY 0
-
-/**
- * Find path score for lattice entry l for the given right context word.
- * If context word is BAD_S3WID it's a wild card; return the best path score.
- */
-static int32 lat_pscr_rc (s3latid_t l, s3wid_t w_rc)
-{
-    s3cipid_t *rcmap, rc;
-    
-    if ( (NOT_S3WID(w_rc)) || (! lattice[l].rcscore)  )
-	return lattice[l].score;
-    
-    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
-    rc = dict->word[w_rc].ciphone[0];
-    return (lattice[l].rcscore[rcmap[rc]]);
-}
-
-/**
- * Find the path history for lattice entry l for the given right
- * context word.  If context word is BAD_S3WID it's a wild card;
- * return the history. 
- */
-
-static s3latid_t lat_pscr_rc_history (s3latid_t l, s3wid_t w_rc)
-{
-    s3cipid_t *rcmap, rc;
-    
-    if ( (NOT_S3WID(w_rc)) || (! lattice[l].rchistory)  )
-	return lattice[l].history;
-    
-    rcmap = get_rc_cimap (ct_table,lattice[l].wid,dict);
-    rc = dict->word[w_rc].ciphone[0];
-    return (lattice[l].rchistory[rcmap[rc]]);
-}
-
-
-
-
-
-/**
- * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
- * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
- */
-#if SINGLE_RC_HISTORY
-static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1)
-#else
-static void two_word_history (s3latid_t l, s3wid_t *w0, s3wid_t *w1, s3wid_t w_rc)
-#endif
-{
-    s3latid_t l0, l1;
-    l0=0;
-
-#if SINGLE_RC_HISTORY    
-    for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lattice[l1].history);
-    
-    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
-    if (l1 != -1) 
-      for (l0 = lattice[l1].history; 
-	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
-	   l0 = lattice[l0].history);
-#else
-    for (l1 = l; dict_filler_word(dict, lattice[l1].wid); l1 = lat_pscr_rc_history(l1,w_rc));
-
-    if (l1 != -1) 
-      for (l0 = lat_pscr_rc_history(l1,w_rc); 
-	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lattice[l0].wid));
-	   l0 = lat_pscr_rc_history(l0,lattice[l1].wid));
-#endif
-    
-    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
-    if (l1 == -1) *w1 = 0; else
-      *w1 = dict_basewid(dict, lattice[l1].wid);
-    if (l1 == -1) *w0 = BAD_S3WID; else
-      *w0 = (NOT_S3LATID(l0)) ? BAD_S3WID : dict_basewid(dict,lattice[l0].wid);
-}
-
 
 
 /* ARCHAN: Ah. this is the part where the magical multiplex-triphone
@@ -1092,41 +920,6 @@ static void word_enter (s3wid_t w, int32 score, s3latid_t l, s3cipid_t lc)
 }
 
 
-/**
- * Build array of candidate words that start around the current frame (cf).
- * Note: filler words are not in this list since they are always searched (see
- * word_trans).
- */
-static void build_word_cand_cf (int32 cf)
-{
-    int32 f, sf, ef;
-    s3wid_t w, n;
-    word_cand_t *candp;
-    
-    for (w = 0; w < dict->n_word; w++)
-	word_cand_cf[w] = 0;
-    
-    if ((sf = cf - word_cand_win) < 0)
-	sf = 0;
-    if ((ef = cf + word_cand_win) >= S3_MAX_FRAMES)
-	ef = S3_MAX_FRAMES-1;
-    
-    for (f = sf; f <= ef; f++) {
-	for (candp = word_cand[f]; candp; candp = candp->next)
-	    word_cand_cf[candp->wid] = 1;
-    }
-
-    word_cand_cf[dict->startwid] = 0;	/* Never hypothesized (except at beginning) */
-    for (w = dict->filler_start; w <= dict->filler_end; w++)
-	word_cand_cf[w] = 0;	/* Handled separately */
-    word_cand_cf[dict->finishwid] = 1;	/* Always a candidate */
-
-    n = 0;
-    for (w = 0; w < dict->n_word; w++)
-	if (word_cand_cf[w])
-	    word_cand_cf[n++] = w;
-    word_cand_cf[n] = BAD_S3WID;
-}
 
 /** 
  * Transition for one word. 
@@ -1154,7 +947,7 @@ static void word_trans (int32 thresh)
     
     /*    int32 tempi, temp_j;*/
 
-    lat_start = frm_latstart[n_frm];
+    lat_start = lathist->frm_latstart[n_frm];
     
     for (rc = 0; rc < mdef->n_ciphone; rc++) {
 	ug_backoff[rc].score = S3_LOGPROB_ZERO;
@@ -1162,11 +955,11 @@ static void word_trans (int32 thresh)
     }
     
     if (n_word_cand > 0)
-	build_word_cand_cf (n_frm);
+	build_word_cand_cf (n_frm,dict,word_cand_cf,word_cand_win, word_cand);
     
     /* Trigram/Bigram word transitions from words just exited in whmm_exit*/
-    for (l = lat_start; l < n_lat_entry; l++) {
-	w = lattice[l].wid;
+    for (l = lat_start; l < lathist->n_lat_entry; l++) {
+	w = lathist->lattice[l].wid;
 	
 	if (w == dict->finishwid)
 	    continue;
@@ -1177,14 +970,14 @@ static void word_trans (int32 thresh)
 	/* Uncompact path scores for all right context ciphones for word just finished */
 	rcmap = get_rc_cimap (ct_table,w,dict );
 	for (rc = 0; rc < mdef->n_ciphone; rc++)
-	  rcscore[rc] = lattice[l].rcscore[rcmap[rc]];
+	  rcscore[rc] = lathist->lattice[l].rcscore[rcmap[rc]];
 
 	/* Find the last real (non-filler, non-silence) two-word history */
 
 #if SINGLE_RC_HISTORY
-	two_word_history (l, &bw0, &bw1);
+	two_word_history (lathist,l, &bw0, &bw1,dict);
 #else
-	two_word_history (l, &bw0, &bw1,BAD_S3WID);
+	two_word_history (lathist,l, &bw0, &bw1,BAD_S3WID,dict,ct_table);
 #endif
 
 	if (n_word_cand <= 0) {
@@ -1374,9 +1167,8 @@ void fwd_free ()
   if(word_cand_cf)
     ckd_free(word_cand_cf);
 
-  if(frm_latstart)
-    ckd_free(frm_latstart);
-
+  if(lathist)
+    latticehist_free(lathist);
   
   pctr_free(ctr_mpx_whmm);
   pctr_free(ctr_nonmpx_whmm);
@@ -1417,11 +1209,6 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     /* Allocate whmm structure */
     whmm = (whmm_t **) ckd_calloc (dict->n_word, sizeof(whmm_t *));
 
-    /* Allocate output word lattice structure */
-    lat_alloc = *((int32 *) cmd_ln_access ("-bptblsize"));
-    lattice = (lattice_t *) ckd_calloc (lat_alloc, sizeof(lattice_t));
-    n_lat_entry = 0;
-
     /** Initialize the context table */
     ct_table=ctxt_table_init(dict,mdef);
     multiplex=cmd_ln_int32("-multiplex_multi");
@@ -1434,6 +1221,8 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
     if(multiplex && !multiplex_singleph){
       E_FATAL("Forced exit: Disallow de-multiplex a single phone word without de-multiplexing multi phone word");
     }
+
+    lathist=latticehist_init(cmd_ln_int32("-bptblsize"),S3_MAX_FRAMES+1);
 
     /* Data structures needed during word transition */
     rcscore = (int32 *) ckd_calloc (mdef->n_ciphone, sizeof(int32));
@@ -1458,14 +1247,15 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 	word_cand_cf = (s3wid_t *) ckd_calloc (dict->n_word+1, sizeof(s3wid_t));
     }
 
-    /* Space for first lattice entry in each frame (+ terminating sentinel) */
-    frm_latstart = (s3latid_t *) ckd_calloc (S3_MAX_FRAMES+1, sizeof(s3latid_t));
 
     /* Allocate timers and counters for statistics gathering */
     
     ctr_mpx_whmm=pctr_new("mpx");
     ctr_nonmpx_whmm=pctr_new("~mpx");
     ctr_latentry=pctr_new("lat");
+
+    /* Initializing debugging information such as trace_wid,
+       word_dump_sf, word_dump_ef, hmm_dump_sf and hmm_dump_ef */
 
     fwdDBG=init_fwd_dbg();
 
@@ -1477,95 +1267,14 @@ void fwd_init (mdef_t* _mdef, tmat_t* _tmat, dict_t* _dict,lm_t *_lm)
 }
 
 
-static int32 word_cand_load (FILE *fp)
-{
-    char line[1024], word[1024];
-    int32 i, k, n, nn, sf, seqno, lineno;
-    s3wid_t w;
-    word_cand_t *candp;
-    
-    /* Skip past Nodes parameter */
-    lineno = 0;
-    nn = 0;
-    word[0] = '\0';
-    while (fgets (line, sizeof(line), fp) != NULL) {
-	lineno++;
-	if ((sscanf (line, "%s %d", word, &nn) == 2) && (strcmp (word, "Nodes") == 0))
-	    break;
-    }
-    if ((strcmp (word, "Nodes") != 0) || (nn <= 0)) {
-	E_ERROR("%s: Nodes parameter missing from input lattice\n", uttid);
-	return -1;
-    }
 
-    n = 0;
-    for (i = 0; i < nn; i++) {
-	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR("%s: Incomplete input lattice\n", uttid);
-	    return -1;
-	}
-	lineno++;
-
-	if ((k = sscanf (line, "%d %s %d", &seqno, word, &sf)) != 3) {
-	    E_ERROR("%s: Error in lattice, line %d: %s\n", uttid, lineno, line);
-	    return -1;
-	}
-	if (seqno != i) {
-	    E_ERROR("%s: Seq# error in lattice, line %d: %s\n", uttid, lineno, line);
-	    return -1;
-	}
-	if ((sf < 0) || (sf >= S3_MAX_FRAMES)) {
-	    E_ERROR("%s: Startframe error in lattice, line %d: %s\n", uttid, lineno, line);
-	    return -1;
-	}
-	
-	w = dict_wordid (dict,word);
-	if (NOT_S3WID(w)) {
-	    E_ERROR("%s: Unknown word in lattice: %s; ignored\n", uttid, word);
-	    continue;
-	}
-	w = dict_basewid(dict,w);
-	
-	/* Check node not already present; avoid duplicates */
-	for (candp = word_cand[sf]; candp && (candp->wid != w); candp = candp->next);
-	if (candp)
-	    continue;
-	
-	candp = (word_cand_t *) listelem_alloc (sizeof(word_cand_t));
-	candp->wid = w;
-	candp->next = word_cand[sf];
-	word_cand[sf] = candp;
-
-	n++;
-    }
-    
-    return n;
-}
-
-
-static void word_cand_free ( void )
-{
-    word_cand_t *candp, *next;
-    int32 f;
-    
-    for (f = 0; f < S3_MAX_FRAMES; f++) {
-	for (candp = word_cand[f]; candp; candp = next) {
-	    next = candp->next;
-	    listelem_free ((char *)candp, sizeof(word_cand_t));
-	}
-
-	word_cand[f] = NULL;
-    }
-
-    n_word_cand = 0;
-}
 
 /*
  * Begin forward Viterbi search of one utterance
  */
 void fwd_start_utt (char *id)
 {
-    int32 w, l, ispipe;
+    int32 w, ispipe;
     char str[1024];
     FILE *fp;
 
@@ -1574,24 +1283,12 @@ void fwd_start_utt (char *id)
     ptmr_reset (&tm_hmmtrans);
     ptmr_reset (&tm_wdtrans);
    
-
     
     if (uttid)
 	ckd_free (uttid);
     uttid = ckd_salloc (id);
-    
-    /* Free rcscores for each lattice entry */
-    for (l = 0; l < n_lat_entry; l++) {
-	if (lattice[l].rcscore) {
-	    ckd_free (lattice[l].rcscore);
-	    lattice[l].rcscore = NULL;
-	}
-	if(lattice[l].rchistory) {
-	    ckd_free (lattice[l].rchistory);
-	    lattice[l].rchistory = NULL;
-	}
-    }
-    n_lat_entry = 0;
+
+    latticehist_reset(lathist);
 
     /* If input lattice file containing word candidates to be searched specified; use it */
     if (word_cand_dir) {
@@ -1601,14 +1298,20 @@ void fwd_start_utt (char *id)
 	if ((fp = fopen_compchk (str, &ispipe)) == NULL)
 	    E_ERROR("fopen_compchk(%s) failed; running full search\n", str);
 	else {
-	    if ((n_word_cand = word_cand_load (fp)) <= 0) {
+	    if ((n_word_cand = word_cand_load (fp,word_cand,dict, uttid)) <= 0) {
 		E_ERROR("Bad or empty lattice file: %s; ignored\n", str);
-		word_cand_free ();
+		word_cand_free (word_cand);
+		n_word_cand=0;
+		
 	    } else
 		E_INFO("%d lattice entries read\n", n_word_cand);
 
 	    fclose_comp (fp, ispipe);
 	}
+    }
+
+    if(n_word_cand>0){
+      latticehist_n_cand(lathist)=n_word_cand;
     }
     
     /* Enter all pronunciations of startwid (begin silence) */
@@ -1682,7 +1385,7 @@ int32 fwd_frame (int32 *senscr)
 
     {
       ptmr_start (&tm_hmmtrans);
-      frm_latstart[n_frm] = n_lat_entry;
+      lathist->frm_latstart[n_frm] = lathist->n_lat_entry;
       whmm_exit (whmm_thresh, word_thresh);
       ptmr_stop (&tm_hmmtrans);
       
@@ -1692,7 +1395,7 @@ int32 fwd_frame (int32 *senscr)
       */
 
       ptmr_start (&tm_wdtrans);
-      if (frm_latstart[n_frm] < n_lat_entry) 
+      if (lathist->frm_latstart[n_frm] < lathist->n_lat_entry) 
 	word_trans (whmm_thresh);
       ptmr_stop (&tm_wdtrans);
     }
@@ -1708,174 +1411,6 @@ int32 fwd_frame (int32 *senscr)
 }
 
 
-/**
- * Find LM score for transition into lattice entry l.
- */
-#if SINGLE_RC_HISTORY
-static int32 lat_seg_lscr (s3latid_t l)
-#else
-static int32 lat_seg_lscr (s3latid_t l,s3wid_t w_rc)
-#endif
-{
-    s3wid_t bw0, bw1, bw2;
-    s3lmwid_t lw0;
-    int32 lscr, bowt, bo_lscr;
-    tg_t *tgptr;
-    bg_t *bgptr;
-    
-    bw2 = dict_basewid (dict,lattice[l].wid);
-
-    if (dict_filler_word (dict,bw2))
-	return (fillpen(fpen,bw2));
-
-#if SINGLE_RC_HISTORY    
-    if (NOT_S3LATID(lattice[l].history)) {
-	assert (bw2 == dict->startwid);
-	return 0;
-    }
-    
-    two_word_history (lattice[l].history, &bw0, &bw1);
-#else
-    if (NOT_S3LATID(lat_pscr_rc_history(l,w_rc))) {
-	assert (bw2 == dict->startwid);
-	return 0;
-    }
-    
-    two_word_history (lat_pscr_rc_history(l,w_rc), &bw0, &bw1,w_rc);
-#endif
-
-    /*    E_INFO("lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lattice[l].history,bw0,bw1,bw2);*/
-    lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
-    lscr = lm_tg_score (lm, 
-			lw0, 
-			lm->dict2lmwid[dict_basewid(dict,bw1)], 
-			lm->dict2lmwid[bw2],
-			bw2);
-    if (n_word_cand > 0)
-	return lscr;
-
-    /* Correction for backoff cpase if that scores better (see word_trans) */
-    bo_lscr = 0;
-    if ((IS_S3WID(bw0)) && (lm_tglist (lm,
-				       lm->dict2lmwid[dict_basewid(dict,bw0)], 
-				       lm->dict2lmwid[dict_basewid(dict,bw1)],
-				       &tgptr, &bowt) > 0))
-	bo_lscr = bowt;
-    if (lm_bglist (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
-	bo_lscr += bowt;
-    bo_lscr += lm_ug_score (lm,lm->dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
-
-    return ((lscr > bo_lscr) ? lscr : bo_lscr);
-}
-
-
-/**
- * Find acoustic and LM score for segmentation corresponding to lattice entry l with
- * the given right context word.
- */
-static void lat_seg_ascr_lscr (s3latid_t l, s3wid_t w_rc, int32 *ascr, int32 *lscr)
-{
-    int32 start_score, end_score;
-
-    /* Score with which l ended with right context = w_rc */
-    if ((end_score = lat_pscr_rc (l, w_rc)) <= S3_LOGPROB_ZERO) {
-	*ascr = *lscr = S3_LOGPROB_ZERO;
-	return;
-    }
-    
-    /* Score with which l was begun */
-#if SINGLE_RC_HISTORY
-    start_score = IS_S3LATID(lattice[l].history) ?
-	lat_pscr_rc (lattice[l].history, lattice[l].wid) : 0;
-
-    /* LM score for the transition into l */
-    *lscr = lat_seg_lscr (l);
-    *ascr = end_score - start_score - *lscr;
-#else
-    start_score = IS_S3LATID(lat_pscr_rc_history(l,w_rc)) ?
-	lat_pscr_rc (lat_pscr_rc_history(l,w_rc), lattice[l].wid) : 0;
-
-    /* LM score for the transition into l */
-    *lscr = lat_seg_lscr (l,w_rc);
-    *ascr = end_score - start_score - *lscr;
-
-#endif
-
-
-}
-
-
-static srch_hyp_t *lattice_backtrace (s3latid_t l, s3wid_t w_rc)
-{
-    srch_hyp_t *h, *prevh;
-
-    if (IS_S3LATID(l)) {
-      
-#if SINGLE_RC_HISTORY
-	prevh = lattice_backtrace (lattice[l].history, lattice[l].wid);
-#else
-	prevh = lattice_backtrace (lat_pscr_rc_history(l,w_rc), lattice[l].wid);
-#endif
-
-	h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
-	if (! prevh)
-	    hyp = h;
-	else
-	    prevh->next = h;
-	h->next = NULL;
-	
-	h->id = lattice[l].wid;
-	h->word = dict_wordstr(dict,h->id);
-	h->sf = prevh ? prevh->ef+1 : 0;
-	h->ef = lattice[l].frm;
-	h->pscr = lattice[l].score;
-	lat_seg_ascr_lscr (l, w_rc, &(h->ascr), &(h->lscr));
-
-	return h;
-    } else {
-	return NULL;
-    }
-}
-
-
-static s3latid_t lat_final_entry ( void )
-{
-    s3latid_t l, bestl;
-    int32 f, bestscore;
-    
-    bestl=BAD_S3LATID;
-
-    if(cmd_ln_int32("-bt_wsil")){
-
-      /* Find lattice entry in last frame for FINISH_WORD */
-      for (l = frm_latstart[n_frm-1]; l < n_lat_entry; l++){
-	if (dict_basewid(dict,lattice[l].wid) == dict->finishwid)
-	  break;
-      }
-      
-      if (l < n_lat_entry) {
-	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
-	return (l);
-      }
-    
-      /* Find last available lattice entry with best ending score */
-      E_WARN("When %s is used as final word, %s: Search didn't end in %s\n", dict_wordstr(dict,dict->finishwid), uttid, dict_wordstr(dict,dict->finishwid));
-    }else{
-    }
-
-
-    bestscore = S3_LOGPROB_ZERO;
-    for (f = n_frm-1; (f >= 0) && (bestscore <= S3_LOGPROB_ZERO); --f) {
-	for (l = frm_latstart[f]; l < frm_latstart[f+1]; l++) {
-	    if ((lattice[l].wid != dict->startwid) && (bestscore < lattice[l].score)) {
-		bestscore = lattice[l].score;
-		bestl = l;
-	    }
-	}
-    }
-    assert(! NOT_S3LATID(l));
-    return ((f >= 0) ? bestl : BAD_S3LATID);
-}
 
 
 srch_hyp_t *fwd_end_utt ( void )
@@ -1883,8 +1418,9 @@ srch_hyp_t *fwd_end_utt ( void )
     whmm_t *h, *nexth;
     s3wid_t w;
     s3latid_t l;
-    frm_latstart[n_frm] = n_lat_entry;	/* Add sentinel */
-    pctr_increment (ctr_latentry, n_lat_entry);
+    FILE *bptfp;
+    lathist->frm_latstart[n_frm] = lathist->n_lat_entry;	/* Add sentinel */
+    pctr_increment (ctr_latentry, lathist->n_lat_entry);
     
     /* Free whmm search structures */
     for (w = 0; w < dict->n_word; w++) {
@@ -1902,30 +1438,45 @@ srch_hyp_t *fwd_end_utt ( void )
     }
 
     /* Free word candidates */
-    if (n_word_cand > 0)
-	word_cand_free ();
+    if (n_word_cand > 0){
+	word_cand_free (word_cand);
+	n_word_cand=0;
+    }
 
     /* Get rid of old hyp, if any */
     hyp_free (hyp);
     
     /* Check if bptable should be dumped (for debugging) */
-    if (cmd_ln_int32 ("-bptbldump")){
-      E_INFO("Dumping the whole lattice\n");
-      lattice_dump (stdout);
+
+    if (cmd_ln_str("-bptbldir")) {
+      char file[8192];
+      sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , uttid);
+      if ((bptfp = fopen (file, "w")) == NULL) {
+	E_ERROR("fopen(%s,w) failed; using stdout\n", file);
+	bptfp = stdout;
+      }
+      
+      latticehist_dump (lathist, bptfp, dict, ct_table, 0);
+      
+      if (bptfp != stdout)
+	fclose (bptfp);
     }
 
     /* Backtrack through lattice for Viterbi result */
-    l = lat_final_entry ();
+    l = lat_final_entry (lathist, dict, n_frm, uttid);
     if (NOT_S3LATID(l)){
       E_INFO("lattice ID: %d\n",l);
       E_ERROR("%s: NO RECOGNITION\n", uttid);
     }
-    else
-	lattice_backtrace (l, BAD_S3WID);	/* BAD_S3WID => Any right context */
+    else{
+      /* BAD_S3WID => Any right context */
+	lattice_backtrace (lathist, l, BAD_S3WID, &hyp, lm, dict, ct_table, fpen);
+    }
 
     /* Note final lattice entry in DAG structure */
     dag.latfinal = l;
 
+    assert(hyp);
     return hyp;
 }
 
@@ -1939,6 +1490,8 @@ void fwd_timing_dump (float64 tot)
     printf ("[XW %6.2fx %2d%%]",
 	    tm_wdtrans.t_cpu * 100.0 / n_frm, (int32)(tm_wdtrans.t_cpu * 100.0 / tot));
 }
+
+static void flat_fwd_dag_remove_filler_nodes (float64 lwf);
 
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
@@ -1961,6 +1514,9 @@ int32 dag_build ( void )
     int32 ascr, lscr;
     s3latid_t latfinal;
     int32 min_ef_range;
+    float32 *f32arg;
+    float64 lwf;
+    int32 k;
     
     dag.list = NULL;
     latfinal = dag.latfinal;
@@ -1971,12 +1527,12 @@ int32 dag_build ( void )
     min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
     
     /* Build DAG nodes list from the lattice */
-    for (l = 0; l < n_lat_entry; l++) {
-	w = lattice[l].wid;
+    for (l = 0; l < lathist->n_lat_entry; l++) {
+	w = lathist->lattice[l].wid;
 
 	/* ARCHAN SLIGHT BUG: Even though right context has their
 	   separate histories now. It is not accounted at here. */
-	sf = LATID2SF(l);
+	sf = LATID2SF(lathist, l);
 	
 	/* Check if node <w,sf> already created */
 	for (d = dag.list; d; d = d->alloc_next) {
@@ -1989,16 +1545,16 @@ int32 dag_build ( void )
 
 	    d->wid = w;
 	    d->sf = sf;
-	    d->fef = lattice[l].frm;
+	    d->fef = lathist->lattice[l].frm;
 	    d->succlist = NULL;
 	    d->predlist = NULL;
 
 	    d->alloc_next = dag.list;
 	    dag.list = d;
 	}
-	d->lef = lattice[l].frm;
+	d->lef = lathist->lattice[l].frm;
 
-	lattice[l].dagnode = d;
+	lathist->lattice[l].dagnode = d;
     }
     
     /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
@@ -2012,7 +1568,7 @@ int32 dag_build ( void )
     /* Build DAG edges: between nodes satisfying time adjacency */
     for (d = dag.list; d; d = d->alloc_next) {
 	/* Skip links to this node if too short lived */
-	if ((d != lattice[latfinal].dagnode) && (d->lef - d->fef < min_ef_range-1))
+	if ((d != lathist->lattice[latfinal].dagnode) && (d->lef - d->fef < min_ef_range-1))
 	    continue;
 	
 	if (d->sf == 0) 
@@ -2021,8 +1577,8 @@ int32 dag_build ( void )
 	    assert (d->wid == dict->startwid);	*/ /* No predecessors to this */
 	else {
 	    /* Link from all end points == d->sf-1 to d */
-	    for (l = frm_latstart[d->sf-1]; l < frm_latstart[d->sf]; l++) {
-		pd = lattice[l].dagnode;	/* Predecessor DAG node */
+	    for (l = lathist->frm_latstart[d->sf-1]; l < lathist->frm_latstart[d->sf]; l++) {
+		pd = lathist->lattice[l].dagnode;	/* Predecessor DAG node */
 		
 		/* Skip predecessor node under following conditions */
 		if (pd->wid == dict->finishwid)	/* BUG: alternative prons for </s>?? */
@@ -2031,10 +1587,11 @@ int32 dag_build ( void )
 		    continue;
 		
 		/*
-		 * Find acoustic score for link from pd to d (for lattice entry l
+ 		 * Find acoustic score for link from pd to d (for lattice entry l
 		 * with pd as right context).
 		 */
-		lat_seg_ascr_lscr (l, d->wid, &ascr, &lscr);
+		lat_seg_ascr_lscr (lathist, l, d->wid, &ascr, &lscr,lm,dict,ct_table,fpen);
+		lathist->lattice[l].ascr=ascr;
 		if (ascr > S3_LOGPROB_ZERO)
 		    dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
 	    }
@@ -2043,267 +1600,87 @@ int32 dag_build ( void )
     
     dag.filler_removed = 0;
     dag.fudged = 0;
+    dag.nfrm=n_frm;
+
+    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+    dag_add_fudge_edges (&dag, 
+			 cmd_ln_int32("-dagfudge"), 
+			 min_ef_range, 
+			 (void*) lathist, dict);
+
+
+
+    /* Bypass filler nodes */
+    if (! dag.filler_removed) {
+	flat_fwd_dag_remove_filler_nodes (lwf);
+	dag.filler_removed = 1;
+    }
+
+
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    dag.maxlmop = cmd_ln_int32("-maxlmop");
+    k = cmd_ln_int32 ("-maxlpf");
+
+    k *= dag.nfrm;
+    if (dag.maxlmop > k)
+	dag.maxlmop = k;
+    dag.lmop = 0;
 
     return 0;
 }
-
-
-/**
- * Add "fudge" edges: from node P to another Q if Q starts IN THE SAME FRAME or ONE
- * FRAME EARLIER THAN the first end frame for P.
- */
-static void dag_add_fudge_edges (int32 fudge, int32 min_ef_range)
-{
-    dagnode_t *d, *pd;
-    int32 l, ascr, lscr;
-    
-    assert (fudge > 0);
-    
-    /* Add "illegal" links that are near misses */
-    for (d = dag.list; d; d = d->alloc_next) {
-	if (d->lef - d->fef < min_ef_range-1)
-	    continue;
-	
-	/* Links to d from nodes that first ended just when d started */
-	for (l = frm_latstart[d->sf]; l < frm_latstart[d->sf+1]; l++) {
-	    pd = lattice[l].dagnode;		/* Predecessor DAG node */
-
-	    if ((pd->wid != dict->finishwid) &&
-		(pd->fef == d->sf) &&
-		(pd->lef - pd->fef >= min_ef_range-1)) {
-		lat_seg_ascr_lscr (l, BAD_S3WID, &ascr, &lscr);
-		dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
-	    }
-	}
-	
-	if (fudge < 2)
-	    continue;
-	
-	/* Links to d from nodes that first ended just BEYOND when d started */
-	for (l = frm_latstart[d->sf+1]; l < frm_latstart[d->sf+2]; l++) {
-	    pd = lattice[l].dagnode;		/* Predecessor DAG node */
-
-	    if ((pd->wid != dict->finishwid) &&
-		(pd->fef == d->sf+1) &&
-		(pd->lef - pd->fef >= min_ef_range-1)) {
-		lat_seg_ascr_lscr (l, BAD_S3WID, &ascr, &lscr);
-		dag_link (&dag, pd, d, ascr, d->sf-1, NULL);
-	    }
-	}
-    }
-}
-
 
 /**
  * Remove filler nodes from DAG by replacing each link TO a filler with links
  * to its successors.
  * lwf = language weight factor to be applied to LM scores.
  */
-static void dag_remove_filler_nodes (float64 lwf)
+static void flat_fwd_dag_remove_filler_nodes (float64 lwf)
 {
     s3latid_t latfinal;
-    dagnode_t *d, *pnode, *snode;
-    daglink_t *plink, *slink;
-    int32 ascr, lscr;
+    daglink_t *plink;
+    int32 lscr;
     
     latfinal = dag.latfinal;
     
     /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
-    if (dict_filler_word (dict,lattice[latfinal].wid))
-	lattice[latfinal].dagnode->wid = dict->finishwid;
+    if (dict_filler_word (dict,lathist->lattice[latfinal].wid))
+	lathist->lattice[latfinal].dagnode->wid = dict->finishwid;
 
-    /*
-     * Remove filler nodes.  In principle, successors can be fillers and the process
-     * must be repeated.  But removing fillers in the order in which they appear in
-     * dag.list ensures that succeeding fillers have already been eliminated.
-     */
-    for (d = dag.list; d; d = d->alloc_next) {
-	if (! dict_filler_word (dict,d->wid))
-	    continue;
-	
-	/* Replace each link TO d with links to d's successors */
-	for (plink = d->predlist; plink; plink = plink->next) {
-	    pnode = plink->node;
-	    ascr = plink->ascr;
-	    ascr += lwf * fillpen(fpen,dict_basewid (dict,d->wid));
-	    
-	    /* Link this predecessor of d to successors of d */
-	    for (slink = d->succlist; slink; slink = slink->next) {
-		snode = slink->node;
-
-		/* Link only to non-filler successors; fillers have been eliminated */
-		if (! dict_filler_word (dict,snode->wid)) {
-		    /* Update because a link may already exist */
-		    dag_update_link (&dag, pnode, snode, ascr + slink->ascr, plink->ef, slink);
-		}
-	    }
-	}
-    }
+    if (dag_remove_filler_nodes (&dag, lwf, dict, fpen) < 0) {
+	E_ERROR ("maxedge limit (%d) exceeded\n", dag.maxedge);
+    }else
+      dag.filler_removed=1;
 
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
     dag_link (&dag,NULL, dag.root, 0, -1, NULL);
     
     /* Attach a dummy predecessor link from nowhere into final DAG node */
     plink = &(dag.final);
-    plink->node = lattice[latfinal].dagnode;
+    plink->node = lathist->lattice[latfinal].dagnode;
     plink->src = NULL;
-    lat_seg_ascr_lscr (latfinal, BAD_S3WID, &(plink->ascr), &lscr);
+    lat_seg_ascr_lscr (lathist, latfinal, BAD_S3WID, &(plink->ascr), &lscr, lm,dict,ct_table,fpen);
     plink->pscr = (int32)0x80000000;
     plink->lscr = 0;
     plink->bypass = NULL;
     plink->history = NULL;
-    plink->ef = lattice[latfinal].frm;
+    plink->ef = lathist->lattice[latfinal].frm;
     plink->next = NULL;
 }
 
 
-/**
- * Final global best path through DAG constructed from the word lattice.
- * Assumes that the DAG has already been constructed and is consistent with the word
- * lattice.
- * The search uses a recursive algorithm to find the best (reverse) path from the final
- * DAG node to the root:  The best path from any node (beginning with a particular link L)
- * depends on a similar best path for all links leaving the endpoint of L.  (This is
- * sufficient to handle trigram LMs.)
- */
-srch_hyp_t *s3flat_fwd_dag_search (char *utt)
+void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id)
 {
-    daglink_t *l, *bestl;
-    dagnode_t *d, *final;
-    int32 bestscore;
-    float32 *f32arg;
-    float64 lwf;
-    int32 fudge, min_ef_range;
-    int32 k;
-
-    if (renormalized) {
-	E_ERROR("Scores renormalized during forward Viterbi; cannot run bestpath\n");
-	return NULL;
-    }
-    
-    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
-    
-    /* Add fudge edges to DAG if specified */
-    if (! dag.fudged) {
-	fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
-	if (fudge > 0) {
-	    min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
-	    dag_add_fudge_edges (fudge, min_ef_range);
-	}
-	dag.fudged = 1;
-    }
-    
-    /* Bypass filler nodes */
-    if (! dag.filler_removed) {
-	dag_remove_filler_nodes (lwf);
-	dag.filler_removed = 1;
-    }
-    
-    dag.maxlmop = *((int32 *) cmd_ln_access ("-maxlmop"));
-    k = *((int32 *) cmd_ln_access ("-maxlpf"));
-    k *= dag.nfrm;
-    if (dag.maxlmop > k)
-	dag.maxlmop = k;
-    dag.lmop = 0;
-
-    /* Find the backward link from the final DAG node that has the best path to root */
-    final = lattice[dag.latfinal].dagnode;
-    bestscore = (int32) 0x80000000;
-    bestl = NULL;
-
-    /* Check that all edge scores are -ve; error if not so. */
-    if (dag_chk_linkscr (&dag) < 0){
-      E_ERROR("Some edges are not negative\n");
-      return NULL;
-    }
-    
-    for (l = final->predlist; l; l = l->next) {
-	d = l->node;
-	if (! dict_filler_word (dict,d->wid)) {	/* Ignore filler node */
-	    dag_bestpath (&dag,l, final, lwf,dict,lm,lm->dict2lmwid);	/* Best path to root beginning with l */
-
-	    if (l->pscr > bestscore) {
-		bestscore = l->pscr;
-		bestl = l;
-	    }
-	}
-    }
-
-    if (! bestl)
-	return NULL;
-    
-    /*
-     * At this point bestl is the best (reverse) link/path leaving the final node.  But
-     * this does not include the acoustic score for the final node itself.  Add it.
-     */
-    l = &(dag.final);
-    l->history = bestl;
-    l->pscr = bestl->pscr + l->ascr;
-    
-    /* Backtrack through DAG for best path; but first free any old hypothesis */
-    hyp_free (hyp);
-    hyp = dag_backtrace (hyp, l, lwf, dict, fpen);
-    
-    return (hyp);
+  latticehist_dag_write(lathist,
+			dir,
+			onlynodes,
+			id,
+			latfile_ext,
+			n_frm,
+			&dag,
+			lm,dict,ct_table,fpen);
 }
-
-
-int32 dag_dump (char *dir, int32 onlynodes, char *id)
-{
-    int32 i;
-    dagnode_t *d, *initial, *final;
-    daglink_t *l;
-    char filename[2048];
-    FILE *fp;
-    int32 ascr, lscr;
-    int32 ispipe;
-    
-    initial = dag.root;
-    final = lattice[dag.latfinal].dagnode;
-
-    sprintf (filename, "%s/%s.%s", dir, id, latfile_ext);
-    E_INFO("Writing lattice file: %s\n", filename);
-    if ((fp = fopen_comp (filename, "w", &ispipe)) == NULL) {
-	E_ERROR("fopen_comp (%s,w) failed\n", filename);
-	return -1;
-    }
-    
-    dag_write_header(fp,n_frm,1);
-    
-    for (i = 0, d = dag.list; d; d = d->alloc_next, i++);
-    fprintf (fp, "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n", i);
-    for (i = 0, d = dag.list; d; d = d->alloc_next, i++) {
-	d->seqid = i;
-	fprintf (fp, "%d %s %d %d %d\n", i, dict_wordstr(dict,d->wid), d->sf, d->fef, d->lef);
-    }
-    fprintf (fp, "#\n");
-
-    fprintf (fp, "Initial %d\nFinal %d\n", initial->seqid, final->seqid);
-    fprintf (fp, "#\n");
-    
-    /* Best score (i.e., regardless of Right Context) for word segments in word lattice */
-    fprintf (fp, "BestSegAscr %d (NODEID ENDFRAME ASCORE)\n", n_lat_entry);
-    if (! onlynodes) {
-	for (i = 0; i < n_lat_entry; i++) {
-	    lat_seg_ascr_lscr (i, BAD_S3WID, &ascr, &lscr);
-	    fprintf (fp, "%d %d %d\n",
-		     (lattice[i].dagnode)->seqid, lattice[i].frm, ascr);
-	}
-    }
-    fprintf (fp, "#\n");
-    
-    fprintf (fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
-    if (! onlynodes) {
-	for (d = dag.list; d; d = d->alloc_next) {
-	    for (l = d->succlist; l; l = l->next)
-		fprintf (fp, "%d %d %d\n", d->seqid, l->node->seqid, l->ascr);
-	}
-    }
-    fprintf (fp, "End\n");
-
-    fclose_comp (fp, ispipe);
-
-    return 0;
-}
-
