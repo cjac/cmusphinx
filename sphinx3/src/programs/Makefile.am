@@ -14,10 +14,10 @@ bin_PROGRAMS = livepretend \
 
 livepretend_SOURCES = main_livepretend.c 
 decode_SOURCES = decode.c
-decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
+decode_anytopo_SOURCES = main_decode_anytopo.c 
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
-dag_SOURCES = main_dag.c s3_dag.c 
+dag_SOURCES = main_dag.c 
 allphone_SOURCES = main_allphone.c s3_allphone.c 
 gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
@@ -31,8 +31,7 @@ lm_convert_SOURCES = main_lm_convert.c
 noinst_HEADERS = \
 	main_ep.h \
 	s3_align.h \
-	s3_allphone.h \
-	s3_dag.h
+	s3_allphone.h 
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \

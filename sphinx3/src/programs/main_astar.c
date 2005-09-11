@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.2  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.11.4.3  2005/09/11  02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  * 
+ * Revision 1.11.4.2  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.11.4.1  2005/07/18 23:21:23  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -221,7 +224,7 @@ static ptmr_t tm_utt;		/* Entire utterance */
 extern dict_t *dict;		/* The dictionary	*/
 extern fillpen_t *fpen;		/* The filler penalty structure. */
 
-extern dag_t dag;
+extern dag_t* dag;
 extern lmset_t *lmset;		/* The lmset.		*/
 
 char *nbestdir;
@@ -365,7 +368,7 @@ static void decode_utt (char *uttid, char *nbestdir)
 	lm_cache_reset (lmset->cur_lm);
     } else
 	E_ERROR("Dag load (%s) failed\n", uttid);
-    dag_destroy (&dag);
+    dag_destroy (dag);
 
     ptmr_stop (&tm_utt);
     

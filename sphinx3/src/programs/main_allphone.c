@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.8  2005/08/03  20:01:32  arthchan2003
- * Added the -topn argument into acoustic_model_command_line_macro
+ * Revision 1.13.4.9  2005/09/11  02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  * 
+ * Revision 1.13.4.8  2005/08/03 20:01:32  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
+ *
  * Revision 1.13.4.7  2005/08/03 18:55:03  dhdfu
  * Remove bogus initialization of ms_mgau's internals from here
  *
@@ -525,60 +528,3 @@ main (int32 argc, char *argv[])
   return 0;
 }
 
-
-#if 0 /* Commented but it is still a nice way to do GMM computation.  Also
-       see archive_s3/s3.0 for the original implementation
-      */
-    for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
-	/* Compute Gaussian densities and senone scores for window of frames */
-	ptmr_start (&tm_gausen);
-
-	for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-
-	  fv = feat[i];
-
-	  for (gid = 0; gid < g->n_mgau; gid++) {
-	    /* Evaluate mixture Gaussian densities */
-	    gauden_dist (g, gid, topn, fv, dist);
-	    
-	    /* Compute senone scores */
-	    if (g->n_mgau > 1) {
-	      for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-		s = m2s->sen;
-		senscr[k][s] = senone_eval (sen, s, dist, topn);
-	      }
-	    } else {
-	      /* Semi-continuous special case; single shared codebook */
-	      senone_eval_all (sen, dist, topn, senscr[k]);
-	    }
-	  }
-	
-	/* Find best phone scores for each frame in window */
-
-	  /* Interpolate senones for each frame in window */
-#if 0
-	  if (interp)
-	      interp_all (interp, senscr[k], mdef->cd2cisen, mdef->n_ci_sen);
-#endif
-
-	  /* Normalize senone scores */
-	  best = (int32)0x80000000;
-	  for (s = 0; s < sen->n_sen; s++)
-	      if (best < senscr[k][s])
-		  best = senscr[k][s];
-	  for (s = 0; s < sen->n_sen; s++)
-	      senscr[k][s] -= best;
-	  senscale[i] = best;
-
-	  ptmr_stop (&tm_gausen);
-
-	  /* Step search one frame forward */
-	  ptmr_start (&tm_allphone);
-	  allphone_frame (senscr[k]);
-	  if ((i%10) == 9) {
-	      printf ("."); fflush (stdout);
-	  }
-	}
-	ptmr_stop (&tm_allphone);
-    }
-#endif

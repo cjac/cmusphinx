@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.4  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.10.4.5  2005/09/11  02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  * 
+ * Revision 1.10.4.4  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.10.4.3  2005/07/26 02:22:27  arthchan2003
  * Merged srch_hyp_t and hyp_t
  *
@@ -184,7 +187,7 @@
 #include <assert.h>
 
 #include <s3types.h>
-#include "s3_dag.h"
+/*#include "s3_dag.h"*/
 #include "dag.h"
 #include "logs3.h"
 #include "tmat.h"
@@ -200,11 +203,11 @@
 #define NOTEXACT 0
 
 static mdef_t *mdef;		/* Model definition */
-extern dict_t *dict;            /* The dictionary */
+static dict_t *dict;            /* The dictionary */
 
-extern fillpen_t *fpen;         /* The filler penalty structure */
-extern dag_t dag;
-extern lmset_t *lmset;          /* The lmset. Replace lm */
+static fillpen_t *fpen;         /* The filler penalty structure */
+static dag_t* dag;
+static lmset_t *lmset;          /* The lmset. Replace lm */
 
 static ptmr_t tm_utt;
 static int32 tot_nfr;
@@ -246,6 +249,59 @@ static arg_t defn[] = {
     
     { NULL, ARG_INT32,  NULL, NULL }
 };
+
+
+int32 s3dag_dag_load (char *file)
+{
+
+    int32 k;
+
+    dag=dag_load(file,
+		 cmd_ln_int32("-maxedge"),
+		 cmd_ln_float32("-logbase"),
+		 cmd_ln_int32("-dagfudge"),
+		 dict,
+		 fpen);
+    
+    assert(dag);
+    /*
+     * HACK!! Change dag.final.node wid to finishwid if some other filler word,
+     * to avoid complications with LM scores at this point.
+     */
+    dag->orig_exitwid = dag->final.node->wid;
+    if (dict_filler_word(dict, dag->final.node->wid))
+	dag->final.node->wid = dict->finishwid;
+    
+
+    /* Add links bypassing filler nodes */
+    if (dag_remove_filler_nodes (dag,
+				 cmd_ln_float32("-lw"),
+				 dict, fpen) < 0) {
+	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag->maxedge);
+	return -1;
+    }else
+      dag->filler_removed=1;
+
+    /* Attach a dummy predecessor link from <<s>,0> to nowhere */
+    dag_link (dag,NULL, dag->entry.node, 0, -1, NULL);
+    
+    E_INFO("%5d frames, %6d nodes, %8d edges\n", dag->nfrm, dag->nnode, dag->nlink);
+    
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    dag->maxlmop = cmd_ln_int32 ("-maxlmop");
+    k = cmd_ln_int32 ("-maxlpf");
+    
+    k *= dag->nfrm;
+    if (dag->maxlmop > k)
+	dag->maxlmop = k;
+    dag->lmop = 0;
+    
+    return dag->nfrm;
+}
+
 
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
@@ -352,7 +408,10 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 
     
     if ((nfrm = s3dag_dag_load (dagfile)) >= 0) {
-	hyp = s3dag_dag_search (uttid);
+	hyp = dag_search (dag,uttid, cmd_ln_float32("-lw"),
+			  dag->final.node,
+			  dict,lmset->cur_lm,fpen
+			  );
 	if(hyp!=NULL){
 	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
 	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
@@ -363,8 +422,6 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	    ascr += h->ascr;
 	    lscr += h->lscr;
 	  }
-	  
-
 
 	  printf ("BSTPTH: ");
 	  log_hypstr (stdout, hyp, uttid, NOTEXACT, ascr+lscr, dict);
@@ -390,7 +447,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     if (_matchsegfp)
 	log_hypseg (uttid, _matchsegfp, hyp, nfrm);
     
-    dag_destroy (&dag);
+    dag_destroy (dag);
 
     ptmr_stop (&tm_utt);
     
@@ -414,9 +471,6 @@ static void utt_dag(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 
 int main (int32 argc, char *argv[])
 {
-  /*  kb_t kb;
-      ptmr_t tm;*/
-
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
 
@@ -431,8 +485,6 @@ int main (int32 argc, char *argv[])
   ptmr_init(&tm_utt);
   tot_nfr = 0;
     
-  /* Initialize forward Viterbi search module */
-  s3_dag_init (dict);
   printf ("\n");
 
   matchfile=NULL;

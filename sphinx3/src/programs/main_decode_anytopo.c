@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.12  2005/09/07  23:48:09  arthchan2003
- * 1, Removed old recognition loop. 2, Start to only compute active senones indicated by the search routine. 3, Fixed counters.
+ * Revision 1.12.4.13  2005/09/11  02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  * 
+ * Revision 1.12.4.12  2005/09/07 23:48:09  arthchan2003
+ * 1, Removed old recognition loop. 2, Start to only compute active senones indicated by the search routine. 3, Fixed counters.
+ *
  * Revision 1.12.4.11  2005/08/03 20:01:33  arthchan2003
  * Added the -topn argument into acoustic_model_command_line_macro
  *
@@ -339,7 +342,7 @@
 #include "ms_mgau.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
-#include "s3_dag.h"
+/*#include "s3_dag.h" */
 #include "dag.h"
 #include "cb2mllr_io.h"
 #include "cmdln_macro.h"
@@ -358,6 +361,7 @@ extern lmset_t *lmset;          /* The LM set */
 extern dict_t* dict;
 extern fillpen_t* fpen;
 extern dag_t dag;
+extern latticehist_t* lathist;
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 static int32 *bestscr;		/* Best statescore in each frame */
@@ -463,10 +467,12 @@ static arg_t defn[] = {
       ARG_INT32,
       "32767",
       "Number of BPtable entries to allocate initially (grown as necessary)" },
-    { "-bptbldump",
-      ARG_INT32,
-      "0",
-      "Whether BPTable should be dumped to log output (for debugging)" },
+
+    { "-bptbldir",    /** This should be merged with decode_specific_command_line_macro() */
+      ARG_STRING, 
+      NULL, 
+      "Directory in which to dump word Viterbi back pointer table (for debugging)" }, 
+
     { "-multiplex_multi",
       ARG_INT32,
       "1"
@@ -778,7 +784,6 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     }
 
     pctr_increment (ctr_nfrm, nfr);
-    E_INFO("%d\n",n_sen_active);
     pctr_increment (ctr_nsen, n_sen_active);
 
     return hyp;
@@ -840,22 +845,22 @@ static void decode_utt (int32 nfr, char *uttid)
 	/* Check if need to dump or search DAG */
 	if ((outlatdir || bp) && (dag_build () == 0)) {
 	    if (outlatdir)
-		dag_dump (outlatdir, outlat_onlynodes, uttid);
-	    
+		s3flat_fwd_dag_dump (outlatdir, outlat_onlynodes, uttid);
+
+
 	    /* Perform bestpath DAG search if specified */
 	    if (bp) {
-		ptmr_start (&tmr_bstpth);
-		h = s3flat_fwd_dag_search (uttid);
-		ptmr_stop (&tmr_bstpth);
-		
-		if (h) {
-		    hyp = h;
 
-		    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
-		    lwf = f32arg ?
-			((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) :
-			1.0;
-		} else
+	      f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+	      lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+	      ptmr_start (&tmr_bstpth);
+	      h = dag_search (&dag,uttid,lwf, lathist->lattice[dag.latfinal].dagnode,dict,lmset->cur_lm,fpen);
+	      ptmr_stop (&tmr_bstpth);
+		
+		if (h) 
+		    hyp = h;
+		else
 		    E_ERROR("%s: Bestpath search failed; using Viterbi result\n", uttid);
 		
 		if ( *((int32 *) cmd_ln_access("-backtrace")) )

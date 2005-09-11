@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6.4.2  2005/08/02  21:42:34  arthchan2003
- * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ * Revision 1.6.4.3  2005/09/11  02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  * 
+ * Revision 1.6.4.2  2005/08/02 21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
  * Revision 1.6.4.1  2005/07/20 21:26:55  arthchan2003
  * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
  *
@@ -59,19 +62,7 @@
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
- * Add $Log$
- * Revision 1.6.4.2  2005/08/02  21:42:34  arthchan2003
- * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
- * 
- * Add Revision 1.6.4.1  2005/07/20 21:26:55  arthchan2003
- * Add Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
- * Add
- * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
- * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- * Add
- * Add Revision 1.3  2005/06/19 03:58:17  archan
- * Add 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
- * Add into most of the .[ch] files. It is easy to keep track changes.
+ * 1, Add $Log
  *
  *
  * 13-Sep-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
