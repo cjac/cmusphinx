@@ -86,12 +86,12 @@ typedef struct
 {
   char *uttid;
   char *hyp_str;
-  hyp_t **hyp_segs;
+  srch_hyp_t **hyp_segs;
 } result_t;
 
 static control_t* create_control(remote_decoder_t *, int32, int32, void *);
 static void free_control(control *);
-static result_t* create_result(remote_decoder_t *, char *, char *, hyp_t **);
+static result_t* create_result(remote_decoder_t *, char *, char *, srch_hyp_t **);
 static int free_result(result *);
 static int rd_control_impl(remote_decoder_t *, int32, int32, void *);
 static int rd_init_impl(remote_decoder_t *, int32);
@@ -275,7 +275,7 @@ rd_interrupt(remote_decoder_t *_decoder)
 
 int
 rd_retrieve_hyps(remote_decoder_t *_decoder, char **_uttid, char **_hyp_str, 
-		 hyp_t ***_hyp_segs)
+		 srch_hyp_t ***_hyp_segs)
 {
   result_t *rv = null;
 
@@ -311,7 +311,7 @@ rd_retrieve_hyps(remote_decoder_t *_decoder, char **_uttid, char **_hyp_str,
 }
 
 int
-rd_free_hyps(char *uttid, char *hyp_str, hyp_t **hyp_segs)
+rd_free_hyps(char *uttid, char *hyp_str, srch_hyp_t **hyp_segs)
 {
   if (uttid) {
     ckd_free(uttid);
@@ -339,7 +339,7 @@ rd_run(remote_decoder_t *_decoder)
 
   char *uttid;
   char *hyp_str;
-  hyp_t **hyp_segs;
+  srch_hyp_t **hyp_segs;
 
   while (1) {
     if (list_remove_head(_decoder->control_queue, &ctrl) != 0) {
@@ -514,15 +514,15 @@ free_control(control_t _ctrl)
 }
 
 result_block*
-create_result(char *_uttid, char *_hyp_str, hyp_t **_hyp_segs)
+create_result(char *_uttid, char *_hyp_str, srch_hyp_t **_hyp_segs)
 {
   result_t *result;
   char *uttid = null;
   char *hyp_str = null;
-  hyp_t **hyp_segs = null;
-  hyp_t *hyp_seg_buffer = null;
+  srch_hyp_t **hyp_segs = null;
+  srch_hyp_t *hyp_seg_buffer = null;
   int hyp_seglen;
-  hyp_t *hyp_ptr;
+  srch_hyp_t *hyp_ptr;
 
   /******************************** execution *******************************/
   if ((result = (result_t *)ckd_malloc(sizeof(result_t))) == null) {
@@ -549,13 +549,13 @@ create_result(char *_uttid, char *_hyp_str, hyp_t **_hyp_segs)
   for (hyp_seglen = 0, hyp_ptr = *_hyp_segs; hyp_ptr != null;
        hyp_ptr++, hyp_seglen++);
   if (hyp_seglen > 0) {
-    hyp_seg_buffer = (hyp_t *)ckd_calloc(hyp_seglen, sizeof(hyp_t));
+    hyp_seg_buffer = (srch_hyp_t *)ckd_calloc(hyp_seglen, sizeof(srch_hyp_t));
     if (hyp_seg_buffer == null) {
       goto create_result_cleanup;
     }
 
     /** allocate extra spot for null-termination */
-    hyp_segs = (hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(hyp_t *));
+    hyp_segs = (srch_hyp_t **)ckd_calloc(hyp_seglen + 1, sizeof(srch_hyp_t *));
     if (hyp_segs == null) {
       goto create_result_cleanup;
     }
@@ -563,7 +563,7 @@ create_result(char *_uttid, char *_hyp_str, hyp_t **_hyp_segs)
     hyp_segs[hyp_seglen--] = null;
     for (; hyp_seglen >= 0; hyp_seglen--) {
       hyp_segs[hyp_seglen] = &hyp_seg_buffer[hyp_seglen];
-      memcpy(hyp_segs[hyp_seglen], _hyp_segs[hyp_seglen], sizeof(hyp_t));
+      memcpy(hyp_segs[hyp_seglen], _hyp_segs[hyp_seglen], sizeof(srch_hyp_t));
     }
   }
 

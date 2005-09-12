@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13  2005/06/21  19:01:33  arthchan2003
- * Added $ keyword.
+ * Revision 1.13.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
  * 
+ * Revision 1.13  2005/06/21 19:01:33  arthchan2003
+ * Added $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:47  archan
  * Fixed mistakes in last updates. Add
  *
@@ -91,7 +94,8 @@
 extern "C" {
 #endif
 
-  /** Wrapper structures of sub-vector quantization
+  /** \struct subvq_t
+   * \brief Wrapper structures of sub-vector quantization
    */
 typedef struct {
     arraysize_t origsize;	/**< origsize.r = #codebooks (or states) in original model;
@@ -159,7 +163,8 @@ subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
 
 
   /** Deallocate sub-vector quantization */
-void subvq_free (subvq_t *vq);
+  void subvq_free (subvq_t *vq /**In: A sub-vector model */
+		 );
 
 
   /**
@@ -169,7 +174,7 @@ void subvq_free (subvq_t *vq);
  * using all Gaussian densities.  Finally, scale senone scores by subtracting the best.
  * @return The normalization factor (best senone absolute score).
  */
-int32 subvq_frame_eval (subvq_t *vq,	/**< In: Sub-vector model */
+int32 subvq_frame_eval (subvq_t *vq,	/**< In: A sub-vector model */
 			mgau_model_t *g,/**< In: Exact mixture Gaussian model */
 			int32 beam,	/**< In: (Logs3) threshold for selecting shortlist;
 					   range = [-infinity(widest beam), 0(narrowest)] */

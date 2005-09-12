@@ -5,7 +5,7 @@ tmpout="test-ep.out"
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ep \
 -i @abs_top_srcdir@/model/ep/chan3.raw  \
--srate 11025 \
+-samprate 11025 \
 -frate 105 \
 -wlen 0.024 \
 -alpha 0.97 \

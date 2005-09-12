@@ -45,12 +45,22 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/21  23:28:48  arthchan2003
+ * Revision 1.11.4.3  2005/08/03  18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
+ * 
+ * Revision 1.11.4.2  2005/08/02 21:33:47  arthchan2003
+ * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
+ *
+ * Revision 1.11.4.1  2005/07/20 21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
+ *
+ * Revision 1.11  2005/06/21 23:28:48  arthchan2003
  * Log. Please also see comments of kb.[ch].  Major changes you could see
  * is that the lmset interface is now used rather than several interfaces
  * for reading lm. Other than that, you could say most changes are
  * harmless internal interfaces changes.
- * 
+ *
  * Revision 1.5  2005/06/18 03:22:29  archan
  * Add lmset_init. A wrapper function of various LM initialization and initialize an lmset It is now used in decode, livepretend, dag and astar.
  *
@@ -78,6 +88,7 @@
 #include <s3types.h>
 #include "feat.h"
 #include "cont_mgau.h"
+#include "ms_mgau.h"
 #include "mdef.h"
 #include "dict.h"
 #include "dict2pid.h"
@@ -102,32 +113,51 @@ typedef struct {
   mdef_t *mdef; /**< Model definition  */
   dict_t *dict; /**< Dictionary structure */
   dict2pid_t *dict2pid; /**< Conversion of dictionary to Phoneme ID */
-  
-
 
   lmset_t *lmset; /**< LM Set. ARCHAN, since sphinx 3.6, it is used whenever an lm is allocated. 
 		      This unified the internal data structure. */
 
-  mgau_model_t *mgau; /**< Acoustic Model */
+  /*Specified either one of them when using kbcore.h.  It is not yet very nice now. */
+  mgau_model_t *mgau; /**< Acoustic Model for single stream */
+  ms_mgau_model_t *ms_mgau; /**< Acoustic Model for multipel stream */
 
   fillpen_t *fillpen; /**< Filler penalty */
   subvq_t *svq; /**< SVQ */
   gs_t *gs; /**< Gaussian Selector */
   tmat_t *tmat; /**< Transition Matrix. */
 
-#if 0
-  lm_t *lm;    /**< The current lm used in the search for this
-                   utternace. In the case when using -lm in batch
-                   mode, it always points to lmset[0] */
-
-  int32 n_lm; /**< number of language model */
-  int32 n_alloclm; /**< Number of allocated language model */
-#endif
-
   int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
   int32 lastfrm; /**, Temporary variables, should be removed */
 
 } kbcore_t;
+
+  
+  /**
+     Create a new kbcore 
+   */
+  kbcore_t *New_kbcore();
+
+  /**
+     Initialize just the acoustic model for kbcore
+   */
+  void s3_am_init(kbcore_t *kbc, /**< kbcore to be initialized*/
+		  char *s3hmmdir,  /**< an s3 hmmdir */
+		  char *mdeffile,  /**< a model definition file */
+		  char *meanfile,  /**< a mean file */
+		  char *varfile,   /**< a variance file */
+		  float64 varfloor, /**< variance floor */
+		  char *mixwfile,   /**< a mixture weight file */
+		  float64 mixwfloor, /**< mixture weight floor */
+		  char *tmatfile,   /**< transition matrices file*/
+		  float64 tmatfloor,  /**< transition floor */
+		  char *senmgau,     /**< .cont. for CDHMM, .semi. for SCHMM , due to the potential
+				       inconsistency between s3.0 and s3.x GMM computation routine, I also
+				       add .s3cont. to represent Gaussian computation using gauden and senone.
+				       It is hidden in command-line deliberately. 
+				     */
+		  char *lambdafile,  /**< (specific to 3.0 GMM computation) an interpolation file */
+		  int32 topn         /**< (specific to 3.0 GMM computation) number of Gaussian to compute */
+		  );
 
 
 
@@ -152,6 +182,10 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 		       char *lmfile,            /**< LM file */
 		       char *lmctlfile,         /**< LM control file, mutually exclusive with lmfile */
 		       char *lmdumpdir,         /**< Dump LM  */
+
+		       char *fsgfile,           /**< FSG file */
+		       char *fsgctlfile,        /**< FSG control file, mutually exclusive with fsgfile (Not handled yet)*/
+
 		       char *fillpenfile,       /**< Filler penality file,*/
 		       char *senmgau,           /**< NOT USED */
 		       float64 silprob,		/**< Silence probablity Must be valid if lmfile/fillpenfile is
@@ -164,6 +198,7 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 						   specified. */
 		       float64 uw,		/**< Unigram weight Must be valid if lmfile/fillpenfile is
 						   specified. */
+		       char *s3hmmdir,          /**< s3 hmm directory, if it is specified, "means", "variances", "mixture_weights", "transition_matrices", "mdef" will be used. meanfile, varfile, tmatfile,mdefile, mixwfile will overide this decision.*/
 		       char *meanfile,		/**< Means Acoustic model... */
 		       char *varfile,		/**< Variance file, must be specified if meanfile specified */
 		       float64 varfloor,	/**< Variance floowr, must be valid if varfile specified */
@@ -190,10 +225,12 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_fillpen(k)	((k)->fillpen)
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
+#define kbcore_ms_mgau(k)	((k)->ms_mgau)
 #define kbcore_svq(k)		((k)->svq)
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
+#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
 
 #ifdef __cplusplus
 }

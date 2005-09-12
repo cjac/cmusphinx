@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * senone.c -- Mixture density weights associated with each tied state.
  *
@@ -11,9 +46,20 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2005/06/21  18:57:31  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.5.4.3  2005/08/03  18:53:43  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
  * 
+ * Revision 1.5.4.2  2005/08/02 21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
+ *
+ * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
+ * Revision 1.5  2005/06/21 18:57:31  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.1.1.1  2005/03/24 15:24:00  archan
  * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
  *
@@ -277,7 +323,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 
     if (strcmp (sen2mgau_map_file, ".semi.") == 0)
 	s->n_gauden = 1;
-    else if (strcmp (sen2mgau_map_file, ".cont.") == 0)
+    else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0)
 	s->n_gauden = 2;	/* HACK!! Dummy value >1 for the moment; fixed below */
     else {
 	senone_mgau_map_read (s, sen2mgau_map_file);
@@ -289,7 +335,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
     if (strcmp (sen2mgau_map_file, ".semi.") == 0) {
 	/* All-to-1 senones-codebook mapping */
 	s->mgau = (s3mgauid_t *) ckd_calloc (s->n_sen, sizeof(s3mgauid_t));
-    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0) {
+    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0) {
 	/* 1-to-1 senone-codebook mapping */
 	if (s->n_sen <= 1)
 	    E_FATAL("#senone=%d; must be >1\n", s->n_sen);
@@ -307,6 +353,19 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 
     s->featscr=NULL;
     return s;
+}
+
+void senone_free(senone_t *s)
+{
+    if (s == NULL)
+	return;
+    if (s->pdf)
+	ckd_free_3d((void *)s->pdf);
+    if (s->mgau)
+	ckd_free(s->mgau);
+    if (s->featscr)
+	ckd_free(s->featscr);
+    ckd_free(s);
 }
 
 

@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.16  2005/06/22  03:29:35  arthchan2003
- * Makefile.am s  for all subdirectory of libs3decoder/
+ * Revision 1.16.4.1  2005/07/05  06:25:08  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.16  2005/06/22 03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
+ *
  * Revision 1.5  2005/06/13 04:02:56  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -85,9 +88,11 @@ extern "C" {
 
 
   /**
- * Structure for describing a speech feature type (no. of streams and stream widths),
- * as well as the computation for converting the input speech (e.g., Sphinx-II format
- * MFC cepstra) into this type of feature vectors.
+   * \struct feat_t
+   * \brief Structure for describing a speech feature type
+   * Structure for describing a speech feature type (no. of streams and stream widths),
+   * as well as the computation for converting the input speech (e.g., Sphinx-II format
+   * MFC cepstra) into this type of feature vectors.
  */
 typedef struct feat_s {
     char *name;		/** Printable name for this feature type */

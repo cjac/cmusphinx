@@ -8,13 +8,18 @@ liblm_la_LDFLAGS = -version-info 0:4:0
 liblm_la_SOURCES = \
 	fillpen.c \
         lm.c \
-	lmclass.c 
+	lm_3g.c \
+	lm_3g_dmp.c \
+	lmclass.c \
+	lmset.c \
+	lm_arbitrary.c 
 
 
 pkginclude_HEADERS = \
 	fillpen.h \
         lm.h \
-	lmclass.h 
+	lmclass.h \
+	lm_arbitrary.h 
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \

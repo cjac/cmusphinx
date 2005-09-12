@@ -46,11 +46,14 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/21  18:05:12  arthchan2003
+ * Revision 1.15.4.1  2005/08/02  21:03:02  arthchan2003
+ * Changes sen to senscr, it confuses some applications.
+ * 
+ * Revision 1.15  2005/06/21 18:05:12  arthchan2003
  * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
  * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
  * taking care of maxing ci senone score for a frame.
- * 
+ *
  * Revision 1.5  2005/04/20 03:30:57  archan
  * Part of refactoring: move best scores inside approx_cont_mgau.h
  *
@@ -457,7 +460,7 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 
   sen_active=a->sen_active;
   rec_sen_active=a->rec_sen_active;
-  senscr=a->sen;
+  senscr=a->senscr;
 
   ptmr_start(tm_ovrhd);
   if(gs)  best_cid=gc_compute_closest_cw(gs,feat);

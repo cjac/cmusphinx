@@ -2,7 +2,7 @@
 
 echo "WAVE2FEAT TEST"
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/wave2feat \
--srate 11025 \
+-samprate 11025 \
 -frate 105 \
 -wlen 0.024 \
 -alpha 0.97 \

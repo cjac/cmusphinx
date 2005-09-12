@@ -37,30 +37,63 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.1.4.11  2005/09/11  23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * 
+ * Revision 1.1.4.10  2005/08/02 21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ *
+ * Revision 1.1.4.9  2005/07/24 19:35:59  arthchan2003
+ * Added GAUDEN_EVAL_WINDOW in srch.h. Assuming this is property of a search.
+ *
+ * Revision 1.1.4.8  2005/07/24 01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ *
+ * Revision 1.1.4.7  2005/07/22 03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ *
+ * Revision 1.1.4.6  2005/07/17 05:54:55  arthchan2003
+ * replace vithist_dag_write_header with dag_write_header
+ *
+ * Revision 1.1.4.5  2005/07/13 18:46:39  arthchan2003
+ * Re-included srch_fsg.h
+ *
+ * Revision 1.1.4.4  2005/07/07 02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ *
+ * Revision 1.1.4.3  2005/07/04 07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ *
+ * Revision 1.1.4.2  2005/07/03 23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ *
+ * Revision 1.1.4.1  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.18  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -112,8 +145,28 @@
 #include "vithist.h"
 #include "kbcore.h"
 #include "kb.h"
+
+
+/* Mode 2 */
+#include "srch_fsg.h"
+
+/* Mode 3 */
+#include "srch_flat_fwd.h"
+
+/* Mode 4 */
 #include "srch_time_switch_tree.h"
+
+/* Mode 5 */
 #include "srch_word_switch_tree.h"
+
+
+#include "dag.h"
+
+
+#if 0
+/*#include "word_fsg.h"*/
+#endif
+
 #include "gmm_wrap.h"
 #include "srch_debug.h"
 
@@ -130,7 +183,7 @@
 #define OPERATION_ALIGN 0
 #define OPERATION_ALLPHONE 1
 #define OPERATION_GRAPH 2
-#define OPERATION_FLAT_DECODE 3
+#define OPERATION_FLATFWD 3
 #define OPERATION_TST_DECODE 4
 #define OPERATION_WST_DECODE 5
 #define OPERATION_DEBUG 1369  /** ARCHAN 20050329: 1369 has no meaning
@@ -144,6 +197,12 @@
 #define GMM_STRUCT_CDHMM 0
 #define GMM_STRUCT_SCHMM 1
 
+
+
+
+#define GAUDEN_EVAL_WINDOW 8 /*Moving window length when frames are
+			       considered as blocks, currently used in
+			       3.0 family of tools. */
 
 typedef struct {
   void *graph_struct; /**< The graph structure */
@@ -235,7 +294,7 @@ typedef struct {
 
    At the time I wrote this, we only implement mode 4 (Ravi's
    implementation in Sphinx 3.2, I usually call it "lucky wheel"
-   implementation.  See my description in srch_time_switch_tree.h),
+   implementation.  (See my description in srch_time_switch_tree.h),
    mode 5 (My implementation using tree copies.)  and mode 1369 (A
    debug mode of the search mechanism where only a prompt will be
    displayed and show that a function is called. Why 1369? coz I am a
@@ -367,6 +426,13 @@ typedef struct srch_s {
 			const char *lmname  /**< The LM name */
 			);
 
+  /** Read FSG operation*/
+#if 0
+  word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
+			   const char* fsgname /** The fsg file name*/
+
+			   );
+#endif
   /* The 4 operations that require switching during the approximate search process */
   /**< lv1 stands for approximate search. Currently not used. */
 
@@ -377,6 +443,13 @@ typedef struct srch_s {
 			      int32 frmno_lp2     /**< The frame for the windows */
 			      );
 
+
+  /* The level 1 search functions are not yet fully used. When fast match is needed. We will
+     need them more. 
+   */
+  int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
+				 );
+
   int (*srch_hmm_compute_lv1)(void* srch_struct);
   int (*srch_eval_beams_lv1)(void* srch_struct);
   int (*srch_propagate_graph_ph_lv1)(void* srch_struct);
@@ -385,11 +458,21 @@ typedef struct srch_s {
   /* The 4 operations that require switching during the detail search process */
   /** lv2 stands for detail search. */
 
+
   /** Compute detail (CD) GMM scores or lv2*/
   int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-			      float32 *feat,      /**< A feature vector */
+			      float32 **feat,      /**< A feature vector */
 			      int32 time          /**< The frame we want to compute detail score */
 			      );
+
+
+  /** A short-cut function that allows implementer could just
+      implement searching for one frame without implement the
+      following 4 fuctions.
+   */
+  int (*srch_one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
+				 );
+
 
   /** Compute detail (CD) HMM scores or lv2*/
   int (*srch_hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
@@ -423,6 +506,45 @@ typedef struct srch_s {
 }srch_t;
 
 
+/** 
+    Translate search mode string to mode number 
+
+    The current operation mode are 
+
+    Strings        Operation Mode(Mode Idx)
+
+    OP_ALIGN       OPERATION_ALIGN(0)
+
+    OP_ALLPHONE    OPERATION_ALLPHONE(1)
+
+    OP_FSG         OPERATION_GRAPH(2)
+
+    OP_FLATFWD     OPERATION_FLATFWD(3)
+    
+    There are two names for OPERATION_TST_DECODE (Mode 4)
+
+    OP_MAGICWHEEL  OPERATION_TST_DECODE(4)
+
+    OP_TST_DECODE  OPERATION_TST_DECODE(4)
+
+    
+    OP_WST_DECODE  OPERATION_WST_DECODE(5)
+
+    OP_DEBUG       OPERATION_WST_DECODE(1369) 
+
+     @return the mode index if it is valid, -1 if it is not.  
+ */
+
+int32 srch_mode_str_to_index(const char* mode_str);
+
+/** Translate mode string to mode index. User need to supply an initialized 
+    @return a mode string;
+    @see srchmode_str_to_index
+ */
+
+char* srch_mode_index_to_str(int32 index);
+
+
 /* The following are C-style method for srch structure.  In theory,
 users could used both C-style and function pointer style to access
 functionalities of the code. However, we recommend developers to use
@@ -431,7 +553,20 @@ it is more consistent with other modules in sphinx 3.
  */
 
 /** Initialize the search routine, this will specify the type of search
-    drivers and initialized all resouces
+    drivers and initialized all resouces.  It will do the following things
+    
+    1, Set all function pointers depends on the mode number. 
+
+    2, Initialize parameters which the default search abstraction
+    mechanism required. This currently include, cache_win,
+    cache_win_start.  They control how much delay of the first level
+    and second level search. Also senscale, a parameter which store
+    the largest gmm score for each frame. 
+
+    3, Initialize search-specific data structure using srch_init
+    method of the search class.  That is s->srch_init will be called. 
+
+    @return an initialized srch_t with operation mode op_mode. 
 */
 
 srch_t* srch_init(kb_t *kb, /**< In: knowledge base */
@@ -447,14 +582,17 @@ void srch_report(srch_t* srch /**< In: a search structure */
 		 );
 
 /**
-   Begin decoding of speech for one utterance. 
+ *  Begin decoding of speech for one utterance. 
+ * 
+ * @return SRCH_SUCCESS if succeed, SRCH_FAILURE if failed.  
+ * @see srch_utt_end
  */
 
 int32 srch_utt_begin(srch_t* srch /**< In: a search structure */
 		     );
 
 /**
-   decode one block of speech. 
+   Decode one block of speech and provide the implementation of the default search abstraction
  */
 int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 			  float ***block_feat,  /**< In: a pointer of a two dimensional array */
@@ -465,10 +603,12 @@ int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 /**
    End decoding of speech for one utterance. 
  */
-int32 srch_utt_end(srch_t* srch);
+int32 srch_utt_end(srch_t* srch /**< In: a search structure */
+		   );
 
 /** Wrap up the search routine*/
-int32 srch_uninit(srch_t* srch);
+int32 srch_uninit(srch_t* srch /**< In: a search structure */
+		  );
 
 
 /** write match segment */
@@ -497,6 +637,30 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 
 /** delete lm */
 int32 srch_delete_lm();
+
+
+/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
+    When hyp_t, srch_hyp_t are united, we could tie it with match_write
+ */
+void log_hypstr (FILE *fp,  /**< A file pointer */
+		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		 char *uttid,   /**< An utterance ID */
+		 int32 exact,   /**< Whether to dump an exact */
+		 int32 scr,      /**< The score */
+		 dict_t *dict    /**< A dictionary to look up wid */
+		 );
+
+void log_hyp_detailed (FILE *fp, /**< A file poointer */
+		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
+		       char *uttid,         /**< An utternace ID */
+		       char *LBL,           /**< A header in cap */
+		       char *lbl,           /**< A header in small */
+		       int32* senscale      /**< Senone scale vector, 
+					       if specified, normalized score would be displayed, 
+					       if not, the unormalized score would be displayed. 
+					     */
+		       );
+
 
 #if 0 /*Not implemented */
 int32 srch_set_am();
@@ -532,4 +696,7 @@ int32 srch_delete_lamdafn();
 
 /** add new words into the dictionary */
 int32 srch_add_words_to_dict();
+
+
+
 #endif

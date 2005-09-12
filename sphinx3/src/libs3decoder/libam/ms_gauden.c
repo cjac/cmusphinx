@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * gauden.c -- gaussian density module.
  *
@@ -10,9 +45,23 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  18:55:09  arthchan2003
- * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ * Revision 1.5.4.4  2005/09/07  23:29:07  arthchan2003
+ * Added FIXME warning.
  * 
+ * Revision 1.5.4.3  2005/09/07 23:25:10  arthchan2003
+ * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
+ *
+ * Revision 1.5.4.2  2005/08/03 18:53:44  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
+ *
+ * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
+ * Revision 1.5  2005/06/21 18:55:09  arthchan2003
+ * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:47  archan
  * Fixed mistakes in last updates. Add
  *
@@ -212,13 +261,20 @@ static int32 gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_p
 
     *out_param = out;
     
-    E_INFO("%d codebook, %d feature, size",
+    E_INFO("%d codebook, %d feature, size\n",
 	   n_mgau, n_feat);
     for (i = 0; i < n_feat; i++)
 	printf (" %dx%d", n_density, veclen[i]);
     printf ("\n");
+    fflush(stdout);
 
     return 0;
+}
+
+static void gauden_param_free(vector_t ***p)
+{
+    ckd_free(p[0][0][0]);
+    ckd_free_3d((void ***)p);
 }
 
 
@@ -232,10 +288,15 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 {
     int32 i, m, f, d, flen;
     float32 *varp, *detp;
+    int32 n;
 
+    n=0;
     /* Allocate space for determinants */
     g->det = (float32 ***) ckd_calloc_3d (g->n_mgau, g->n_feat, g->n_density,
 					  sizeof(float32));
+
+    /** FIX ME!, There is no removal of Gaussian in ms_mgau. This is
+	not yet synchronized with cont_mgau's behavior. */
 
     for (m = 0; m < g->n_mgau; m++) {
 	for (f = 0; f < g->n_feat; f++) {
@@ -246,8 +307,14 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 		*detp = (float32) 0.0;
 
 		for (i = 0, varp = g->var[m][f][d]; i < flen; i++, varp++) {
-		    if (*varp < varfloor)
-			*varp = varfloor;
+		  if (*varp < varfloor){
+		    
+#if 0
+		    E_INFO("varp %f , floor %f n=%d, m %d, f %d c %d, i %d\n",*varp,varfloor,n,m,f,d,i);
+#endif
+		      *varp = varfloor;
+		    n++;
+		  }
 
 		    *detp += (float32) (log(*varp));
 		    
@@ -263,6 +330,9 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 	    }
 	}
     }
+
+    if(1)
+      E_INFO("%d variance values floored\n", n);
 
     return 0;
 }
@@ -302,6 +372,20 @@ gauden_t *gauden_init (char *meanfile, char *varfile, float32 varfloor)
     return g;
 }
 
+void gauden_free(gauden_t *g)
+{
+    if (g == NULL)
+	return;
+    if (g->mean)
+	gauden_param_free(g->mean);
+    if (g->var)
+	gauden_param_free(g->var);
+    if (g->det)
+	ckd_free_3d((void *)g->det);
+    if (g->featlen)
+	ckd_free(g->featlen);
+    ckd_free(g);
+}
 
 int32 gauden_mean_reload (gauden_t *g, char *meanfile)
 {

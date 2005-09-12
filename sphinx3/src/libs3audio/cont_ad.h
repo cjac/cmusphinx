@@ -106,17 +106,20 @@
 #include <stdio.h>
 
 /**
- * Data structure for maintaining speech (non-silence) segments not yet consumed by the
- * application.  FOR THE INTERNAL USE OF THIS MODULE.
+ * \struct spseg_t
+ * \brief  (FOR INTERNAL USE ) Data structure for maintaining speech (non-silence) segments not yet consumed by the
+ * application.  
  */
 typedef struct spseg_s {
-    int32 startfrm;	/* Frame-id in adbuf (see below) of start of this segment */ 
-    int32 nfrm;		/* #frames in segment (may wrap around adbuf) */
-    struct spseg_s *next;	/* Next speech segment (with some intervening silence) */
+    int32 startfrm;	/**< Frame-id in adbuf (see below) of start of this segment */ 
+    int32 nfrm;		/**< #frames in segment (may wrap around adbuf) */
+    struct spseg_s *next;	/**< Next speech segment (with some intervening silence) */
 } spseg_t;
 
 
 /**
+ * \struct cont_ad_t
+ * \brief Continuous listening module or object
  * Continuous listening module or object.  An application can open and maintain several
  * such objects, if necessary.
  * FYI: Module always in one of two states: SILENCE or SPEECH.  Transitions between the
@@ -126,56 +129,56 @@ typedef struct spseg_s {
 typedef struct {
     /* Function to be called for obtaining A/D data (see prototype for ad_read in ad.h) */
     int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max);
-    ad_rec_t *ad;	/* A/D device argument for adfunc.  Also, ad->sps used to
+    ad_rec_t *ad;	/**< A/D device argument for adfunc.  Also, ad->sps used to
 			   determine frame size (spf, see below) */
-    int16 *adbuf;	/* Circular buffer for maintaining A/D data read until consumed */
-    int32 read_ts;	/* Timestamp (total no. of raw A/D samples read, silence+speech)
+    int16 *adbuf;	/**< Circular buffer for maintaining A/D data read until consumed */
+    int32 read_ts;	/**< Timestamp (total no. of raw A/D samples read, silence+speech)
 			   at the end of the most recent cont_ad_read call */
-    int32 siglvl;	/* Max signal level for most recently read data (0-16; #bits) */
+    int32 siglvl;	/**< Max signal level for most recently read data (0-16; #bits) */
 
-    int32 sps;		/* Samples/sec; moved from ad->sps to break dependence on
+    int32 sps;		/**< Samples/sec; moved from ad->sps to break dependence on
 			   ad by N. Roy.*/
 
-    int32 spf;		/* Samples/frame; audio level is analyzed within frames */
-    int32 adbufsize;	/* Buffer size (#samples) */
-    int32 prev_sample;	/* For pre-emphasis filter */
-    int32 headfrm;	/* Frame # in adbuf with unconsumed A/D data */
-    int32 n_frm;	/* #Complete frames of unconsumed A/D data in adbuf */
-    int32 n_sample;	/* #Samples of unconsumed data in adbuf */
-    int32 tot_frm;	/* Total #frames of A/D data read, including consumed ones */
-    int32 noise_level;	/* PWP: what we claim as the "current" noise level */
+    int32 spf;		/**< Samples/frame; audio level is analyzed within frames */
+    int32 adbufsize;	/**< Buffer size (#samples) */
+    int32 prev_sample;	/**< For pre-emphasis filter */
+    int32 headfrm;	/**< Frame # in adbuf with unconsumed A/D data */
+    int32 n_frm;	/**< #Complete frames of unconsumed A/D data in adbuf */
+    int32 n_sample;	/**< #Samples of unconsumed data in adbuf */
+    int32 tot_frm;	/**< Total #frames of A/D data read, including consumed ones */
+    int32 noise_level;	/**< PWP: what we claim as the "current" noise level */
     
-    int32 *pow_hist;	/* Histogram of frame power, moving window, decayed */
-    char *frm_pow;	/* Frame power */
+    int32 *pow_hist;	/**< Histogram of frame power, moving window, decayed */
+    char *frm_pow;	/**< Frame power */
 
-    int32 auto_thresh;  /* Do automatic threshold adjustment or not */
-    int32 delta_sil;	/* Max silence power/frame ABOVE noise level */
-    int32 delta_speech;	/* Min speech power/frame ABOVE noise level */
-    int32 min_noise;	/* noise lower than this we ignore */
-    int32 max_noise;	/* noise higher than this signals an error */
-    int32 winsize;	/* how many frames to look at for speech det */
-    int32 speech_onset;	/* start speech on >= these many frames out of winsize, of >= delta_speech */
-    int32 sil_onset;	/* end speech on >= these many frames out of winsize, of <= delta_sil */
-    int32 leader;	/* pad beggining of speech with this many extra frms */
-    int32 trailer;	/* pad end of speech with this many extra frms */
+    int32 auto_thresh;  /**< Do automatic threshold adjustment or not */
+    int32 delta_sil;	/**< Max silence power/frame ABOVE noise level */
+    int32 delta_speech;	/**< Min speech power/frame ABOVE noise level */
+    int32 min_noise;	/**< noise lower than this we ignore */
+    int32 max_noise;	/**< noise higher than this signals an error */
+    int32 winsize;	/**< how many frames to look at for speech det */
+    int32 speech_onset;	/**< start speech on >= these many frames out of winsize, of >= delta_speech */
+    int32 sil_onset;	/**< end speech on >= these many frames out of winsize, of <= delta_sil */
+    int32 leader;	/**< pad beggining of speech with this many extra frms */
+    int32 trailer;	/**< pad end of speech with this many extra frms */
 
-    int32 thresh_speech;/* Frame considered to be speech if power >= thresh_speech
+    int32 thresh_speech;/**< Frame considered to be speech if power >= thresh_speech
 			   (for transitioning from SILENCE to SPEECH state) */
-    int32 thresh_sil;	/* Frame considered to be silence if power <= thresh_sil
+    int32 thresh_sil;	/**< Frame considered to be silence if power <= thresh_sil
 			   (for transitioning from SPEECH to SILENCE state) */
-    int32 thresh_update;/* #Frames before next update to pow_hist/thresholds */
-    float32 adapt_rate;	/* Linear interpolation constant for rate at which noise level adapted
+    int32 thresh_update;/**< #Frames before next update to pow_hist/thresholds */
+    float32 adapt_rate;	/**< Linear interpolation constant for rate at which noise level adapted
 			   to each estimate;
 			   range: 0-1; 0=> no adaptation, 1=> instant adaptation */
     
-    int32 state;	/* Current state, SILENCE or SPEECH */
-    int32 win_startfrm;	/* Where next analysis window begins */
-    int32 win_validfrm;	/* #Frames currently available from win_startfrm for analysis */
-    int32 n_other;	/* If in SILENCE state, #frames in analysis window considered to
+    int32 state;	/**< Current state, SILENCE or SPEECH */
+    int32 win_startfrm;	/**< Where next analysis window begins */
+    int32 win_validfrm;	/**< #Frames currently available from win_startfrm for analysis */
+    int32 n_other;	/**< If in SILENCE state, #frames in analysis window considered to
 			   be speech; otherwise #frames considered to be silence */
-    int32 n_in_a_row;	/* number of frames sequentially other side of thresh */
-    spseg_t *spseg_head;/* First of unconsumed speech segments */
-    spseg_t *spseg_tail;/* Last of unconsumed speech segments */
+    int32 n_in_a_row;	/**< number of frames sequentially other side of thresh */
+    spseg_t *spseg_head;/**< First of unconsumed speech segments */
+    spseg_t *spseg_tail;/**< Last of unconsumed speech segments */
 } cont_ad_t;
 
 
@@ -184,11 +187,12 @@ typedef struct {
  * Return value: pointer to a READ-ONLY structure used in other calls to the object.
  * If any error occurs, the return value is NULL.
  */
-cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filtered */
-			 int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max));
-					/* In: adfunc = source function to be invoked
+cont_ad_t *cont_ad_init (ad_rec_t *ad,	/**< In: The A/D source object to be filtered */
+			 int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max)
+			 /**< In: adfunc = source function to be invoked
 					   to obtain raw A/D data.  See ad.h for the
 					   required prototype definition. */
+			 );
 
 
 /**
@@ -201,7 +205,8 @@ cont_ad_t *cont_ad_init (ad_rec_t *ad,	/* In: The A/D source object to be filter
  * before the calibration.
  * Return value: 0 if successful, <0 otherwise.
  */
-int32 cont_ad_calib (cont_ad_t *cont);	/* In: object pointer returned by cont_ad_init */
+int32 cont_ad_calib (cont_ad_t *cont	/**< In: object pointer returned by cont_ad_init */
+		     );
 
 /**
  * If the application has not passed an audio device into the silence filter
@@ -219,11 +224,12 @@ int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max);
  * Return value: #samples actually read, possibly 0; <0 if EOF on A/D source.
  * The function also updates r->read_ts and r->siglvl (see above).
  */
-int32 cont_ad_read (cont_ad_t *r,	/* In: Object pointer returned by cont_ad_init */
-		    int16 *buf,		/* Out: On return, buf contains A/D data returned
+int32 cont_ad_read (cont_ad_t *r,	/**< In: Object pointer returned by cont_ad_init */
+		    int16 *buf,		/**< Out: On return, buf contains A/D data returned
 					   by this function, if any.
 					   NOTE: buf must be at least 256 samples long */
-		    int32 max);		/* In: Max #samples to be filled into buf */
+		    int32 max		/**< In: Max #samples to be filled into buf */
+		    );
 
 
 /**
@@ -234,11 +240,12 @@ int32 cont_ad_read (cont_ad_t *r,	/* In: Object pointer returned by cont_ad_init
  * Increasing the thresholds (say, from the default value of 2 to 3 or 4) reduces the
  * sensitivity to background noise, but may also increase the chances of clipping actual
  * speech.
- * Return value: 0 if successful, <0 otherwise.
+ * @return: 0 if successful, <0 otherwise.
  */
-int32 cont_ad_set_thresh (cont_ad_t *cont,	/* In: Object ptr from cont_ad_init */
-			  int32 sil,	/* In: silence threshold (default 2) */
-			  int32 sp);	/* In: speech threshold (default 2) */
+int32 cont_ad_set_thresh (cont_ad_t *cont,	/**< In: Object ptr from cont_ad_init */
+			  int32 sil,	/**< In: silence threshold (default 2) */
+			  int32 sp	/**< In: speech threshold (default 2) */
+			  );
 
 
 /**

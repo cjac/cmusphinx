@@ -46,9 +46,21 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  02:47:35  arthchan2003
- * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * Revision 1.8.4.4  2005/09/11  03:00:15  arthchan2003
+ * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
  * 
+ * Revision 1.8.4.3  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
+ * Revision 1.8.4.2  2005/07/17 05:55:45  arthchan2003
+ * Removed vithist_dag_write_header
+ *
+ * Revision 1.8.4.1  2005/07/04 07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
+ *
+ * Revision 1.8  2005/06/22 02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ *
  * Revision 1.9  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -83,6 +95,29 @@
 
 
 #include "vithist.h"
+
+void vh_lmstate_display(vh_lmstate_t *vhl,dict_t *dict)
+{
+  /* TODO: Also translate wid to string if dict is not NULL*/
+  E_INFO("lwid[0] %d\n",vhl->lm3g.lwid[0]);
+  E_INFO("lwid[1] %d\n",vhl->lm3g.lwid[1]);
+  E_INFO("lwid[2] %d\n",vhl->lm3g.lwid[2]);
+}
+
+void vithist_entry_display(vithist_entry_t *ve, dict_t* dict)
+{
+
+  E_INFO("Word ID %d \n",ve->wid);
+  if(dict!=NULL){
+    /* Also translate the wid to string */
+  }
+  E_INFO("Sf %d Ef %d \n",ve->sf,ve->ef);
+  E_INFO("Ascr %d Lscr %d \n",ve->ascr,ve->lscr);
+  E_INFO("Score %d, senscale %d \n",ve->score,ve->senscale);
+  E_INFO("Type %d\n", ve->type);
+  E_INFO("Valid for LM rescoring? %d\n", ve->valid);
+  vh_lmstate_display(&(ve->lmstate),dict);
+}
 
 
 vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isreport)
@@ -315,6 +350,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.valid = 1;
     tve.ascr = score - pve->score;
     tve.senscale = senscale;
+    tve.lscr = 0;
 
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;
@@ -808,7 +844,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
     vithist_entry_t *ve;
     int32 b, l;
     glist_t hyp;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     hyp = NULL;
     
@@ -817,7 +853,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	l = VITHIST_ID2BLKOFFSET(id);
 	ve = vh->entry[b] + l;
 	
-	h = (hyp_t *) ckd_calloc (1, sizeof(hyp_t));
+	h = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
 	h->id = ve->wid;
 	h->sf = ve->sf;
 	h->ef = ve->ef;
@@ -842,49 +878,23 @@ typedef struct {
     int32 fef, lef;
     int32 seqid;	/* Node sequence no. */
     glist_t velist;	/* Vithist entries for this dagnode */
-} dagnode_t;
+} vithist_dagnode_t;
 
 
-/*
- *
- */
-void vithist_dag_write_header(FILE *fp,int32 nfr, char* str)
-{
-  getcwd (str, sizeof(str));
-  fprintf (fp, "# getcwd: %s\n", str);
-	  
-  /* Print logbase first!!  Other programs look for it early in the
-   * DAG */
-
-  fprintf (fp, "# -logbase %e\n", cmd_ln_float32 ("-logbase"));
-  
-  fprintf (fp, "# -dict %s\n", cmd_ln_str ("-dict"));
-  if (cmd_ln_str ("-fdict"))
-    fprintf (fp, "# -fdict %s\n", cmd_ln_str ("-fdict"));
-  fprintf (fp, "# -lm %s\n", cmd_ln_str ("-lm"));
-  fprintf (fp, "# -mdef %s\n", cmd_ln_str ("-mdef"));
-  fprintf (fp, "# -mean %s\n", cmd_ln_str ("-mean"));
-  fprintf (fp, "# -var %s\n", cmd_ln_str ("-var"));
-  fprintf (fp, "# -mixw %s\n", cmd_ln_str ("-mixw"));
-  fprintf (fp, "# -tmat %s\n", cmd_ln_str ("-tmat"));
-  fprintf (fp, "#\n");
-	  
-  fprintf (fp, "Frames %d\n", nfr);
-  fprintf (fp, "#\n");
-
-}
 /*
  * Header written BEFORE this function is called.
  */
 void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, FILE *fp)
 {
+
+  /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
     glist_t *sfwid;		/* To maintain <start-frame, word-id> pair dagnodes */
     vithist_entry_t *ve, *ve2;
     gnode_t *gn, *gn2, *gn3;
-    dagnode_t *dn, *dn2;
+    vithist_dagnode_t *dn, *dn2;
     int32 sf, ef, n_node;
     int32 f, i;
-    hyp_t *h;
+    srch_hyp_t *h;
     
     sfwid = (glist_t *) ckd_calloc (vh->n_frm+1, sizeof(glist_t));
     
@@ -912,12 +922,12 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 	}
 	
 	for (gn = sfwid[sf]; gn; gn = gnode_next(gn)) {
-	    dn = (dagnode_t *) gnode_ptr(gn);
+	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    if (dn->wid == ve->wid)
 		break;
 	}
 	if (! gn) {
-	    dn = (dagnode_t *) ckd_calloc (1, sizeof(dagnode_t));
+	    dn = (vithist_dagnode_t *) ckd_calloc (1, sizeof(vithist_dagnode_t));
 	    dn->wid = ve->wid;
 	    dn->fef = ef;
 	    dn->lef = ef;
@@ -951,19 +961,19 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
      * But keep segments in the original hypothesis, regardless; mark them first.
      */
     for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
+	h = (srch_hyp_t *) gnode_ptr (gn);
 	for (gn2 = sfwid[h->sf]; gn2; gn2 = gnode_next(gn2)) {
-	    dn = (dagnode_t *) gnode_ptr (gn2);
+	    dn = (vithist_dagnode_t *) gnode_ptr (gn2);
 	    if (h->id == dn->wid)
 		dn->seqid = 0;	/* Do not discard (prune) this dagnode */
 	}
     }
     
     /* Validate startwid and finishwid nodes */
-    dn = (dagnode_t *) gnode_ptr(sfwid[0]);
+    dn = (vithist_dagnode_t *) gnode_ptr(sfwid[0]);
     assert (dn->wid == dict_startwid(dict));
     dn->seqid = 0;
-    dn = (dagnode_t *) gnode_ptr(sfwid[vh->n_frm]);
+    dn = (vithist_dagnode_t *) gnode_ptr(sfwid[vh->n_frm]);
     assert (dn->wid == dict_finishwid(dict));
     dn->seqid = 0;
     
@@ -971,7 +981,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
     i = 0;
     for (f = vh->n_frm; f >= 0; --f) {
 	for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
-	    dn = (dagnode_t *) gnode_ptr(gn);
+	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    if ((dn->lef > dn->fef) || (dn->seqid >= 0))
 		dn->seqid = i++;
 	    else
@@ -984,7 +994,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
     fprintf (fp, "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n", n_node);
     for (f = vh->n_frm; f >= 0; --f) {
 	for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
-	    dn = (dagnode_t *) gnode_ptr(gn);
+	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    if (dn->seqid >= 0) {
 		fprintf (fp, "%d %s %d %d %d\n",
 			 dn->seqid, dict_wordstr(dict, dn->wid), f, dn->fef, dn->lef);
@@ -1006,7 +1016,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 	fprintf (fp, "Edges (FROM-NODEID ENDFRAME ASCORE)\n");
     for (f = vh->n_frm-1; f >= 0; --f) {
 	for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
-	    dn = (dagnode_t *) gnode_ptr(gn);
+	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    /* Look for transitions from this dagnode to later ones, if not discarded */
 	    if (dn->seqid < 0)
 		continue;
@@ -1018,13 +1028,13 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 		
 		if (oldfmt) {
 		    for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
-			dn2 = (dagnode_t *) gnode_ptr(gn3);
+			dn2 = (vithist_dagnode_t *) gnode_ptr(gn3);
 			if (dn2->seqid >= 0)
 			    fprintf (fp, "%d %d %d\n", dn->seqid, dn2->seqid, ve->ascr);
 		    }
 		} else {
 		    for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
-			dn2 = (dagnode_t *) gnode_ptr(gn3);
+			dn2 = (vithist_dagnode_t *) gnode_ptr(gn3);
 			if (dn2->seqid >= 0) {
 			    fprintf (fp, "%d %d %d\n", dn->seqid, sf-1, ve->ascr);
 			    break;
@@ -1039,7 +1049,7 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
     /* Free dagnodes structure */
     for (f = 0; f <= vh->n_frm; f++) {
 	for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
-	    dn = (dagnode_t *) gnode_ptr(gn);
+	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    
 	    glist_free (dn->velist);
 	    ckd_free ((void *) dn);
@@ -1078,13 +1088,497 @@ void vithist_free (vithist_t *v)
 
 void vithist_report(vithist_t *vh)
 {
+  E_INFO_NOFN("Initialization of vithist_t, report:\n");
   if(vh){
-    E_INFO_NOFN("Initialization of vithist_t, report:\n");
     E_INFO_NOFN("Word beam = %d\n",vh->wbeam);
     E_INFO_NOFN("Bigram Mode =%d\n",vh->bghist);
     E_INFO_NOFN("Rescore Mode =%d\n",vh->bLMRescore);
     E_INFO_NOFN("Trace sil Mode =%d\n",vh->bBtwSil);
     E_INFO_NOFN("\n");
+  }else{
+    E_INFO_NOFN("Viterbi history is (null)\n");
   }
 }
 
+latticehist_t* latticehist_init(int32 init_alloc_size,
+				int32 num_frames
+				)
+{
+  latticehist_t *lat;
+  lat=ckd_calloc(1, sizeof(latticehist_t));
+    /* Allocate output word lattice structure */
+  lat->lat_alloc = init_alloc_size;
+  lat->lattice = (lattice_t *) ckd_calloc (lat->lat_alloc, sizeof(lattice_t));
+  lat->n_lat_entry = 0;
+  lat->n_cand=0; /*By default, we don't load in word candidate. */
+
+  /* Space for first lattice entry in each frame (+ terminating sentinel) */
+  lat->frm_latstart = (s3latid_t *) ckd_calloc (num_frames, sizeof(s3latid_t));
+
+  return lat;
+}
+
+void latticehist_reset(latticehist_t *lathist)
+{
+  int32 l;
+    /* Free rcscores for each lattice entry */
+  for (l = 0; l < lathist->n_lat_entry; l++) {
+    if (lathist->lattice[l].rcscore) {
+      ckd_free (lathist->lattice[l].rcscore);
+      lathist->lattice[l].rcscore = NULL;
+    }
+    if(lathist->lattice[l].rchistory) {
+      ckd_free (lathist->lattice[l].rchistory);
+      lathist->lattice[l].rchistory = NULL;
+    }
+  }
+  lathist->n_lat_entry = 0;
+
+}
+
+void latticehist_free(latticehist_t *lathist)
+{
+  if(lathist){
+    if(lathist->lattice)
+      ckd_free(lathist->lattice);
+    
+    if(lathist->frm_latstart)
+      ckd_free(lathist->frm_latstart);
+
+    ckd_free(lathist);
+  }
+}
+
+void latticehist_dump (latticehist_t *lathist, FILE *fp, dict_t *dict,ctxt_table_t *ct,int32 dumpRC)
+{
+    int32 i;
+    s3cipid_t npid;
+    s3cipid_t rc;
+    lattice_t *lat;
+
+    lat=lathist->lattice;
+
+    for (i = 0; i < lathist->n_lat_entry; i++) {
+      fprintf (fp, "%6d: %5d %6d %11d %s\n", 
+	       i,
+	       lat[i].frm, 
+	       lat[i].history, 
+	       lat[i].score,
+	       dict_wordstr (dict,lat[i].wid));
+
+
+      if(lat[i].rcscore && dumpRC){
+	npid = get_rc_npid (ct,lat[i].wid,dict );
+	for (rc = 0; rc < npid; rc++){
+	  fprintf(fp,
+		  "rc(Compacted) %d, rcscore %5d rchistory %6d\n",
+		  rc, 
+		  lat[i].rcscore[rc],
+		  lat[i].rchistory[rc]);
+	}
+      }
+    }
+    fflush (fp);
+}
+
+
+
+
+/**
+ * Record a word exit in word lattice.
+ * NOTE: All exits from a single word in a given frame (for different right context
+ * ciphones) must occur contiguously.
+ */
+
+void lattice_entry (latticehist_t *lathist, s3wid_t w, int32 f, int32 score, s3latid_t history, int32 rc, ctxt_table_t *ct, dict_t* dict)
+{
+    s3cipid_t rc_ind, npid;
+    lattice_t *lat;
+    
+    lat=lathist->lattice;
+    if ((lathist->n_lat_entry <= 0) ||
+	(lat[lathist->n_lat_entry-1].wid != w) || (lat[lathist->n_lat_entry-1].frm != f)) {
+	/* New lattice entry */
+	if (lathist->n_lat_entry >= lathist->lat_alloc) {
+	    printf ("\n");
+	    E_INFO("Lattice size(%d) exceeded; increasing to %d\n",
+		   lathist->lat_alloc,lathist->lat_alloc+LAT_ALLOC_INCR);
+	    lathist->lat_alloc += LAT_ALLOC_INCR;
+	    lat = ckd_realloc (lat, lathist->lat_alloc * sizeof(lattice_t));
+	}
+	
+	lat[lathist->n_lat_entry].wid = w;
+	lat[lathist->n_lat_entry].frm = (s3frmid_t) f;
+	lat[lathist->n_lat_entry].score = score;
+	lat[lathist->n_lat_entry].history = history;
+
+	/* Allocate space for different right context scores */
+	npid = get_rc_npid (ct, w,dict );
+	assert (npid > 0);
+
+	lat[lathist->n_lat_entry].rcscore = (int32 *) ckd_calloc (npid, sizeof(int32));
+	for (rc_ind = 0; rc_ind < npid; rc_ind++)
+	    lat[lathist->n_lat_entry].rcscore[rc_ind] = S3_LOGPROB_ZERO;
+
+	/* ARCHAN: set up individual history for each right context */
+	lat[lathist->n_lat_entry].rchistory = (s3latid_t *) ckd_calloc (npid, sizeof(s3latid_t));
+	for (rc_ind = 0; rc_ind < npid; rc_ind++)
+	  lat[lathist->n_lat_entry].rchistory[rc_ind] = BAD_S3LATID;
+
+	lathist->n_lat_entry++;
+    }
+
+    if (lat[lathist->n_lat_entry-1].score < score) {
+	lat[lathist->n_lat_entry-1].score = score;
+	lat[lathist->n_lat_entry-1].history = history;
+    }
+
+#if 0
+    lat[lathist->n_lat_entry-1].rcscore[rc] = score;
+#else
+
+    /* ARCHAN, fix the bug where right context doesn't maintain its own history*/
+    if(lat[lathist->n_lat_entry-1].rcscore[rc] < score){
+       lat[lathist->n_lat_entry-1].rcscore[rc] = score;
+       lat[lathist->n_lat_entry-1].rchistory[rc] = history;
+    }
+#endif
+
+}
+
+int32 lat_pscr_rc (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, ctxt_table_t *ct, dict_t *dict)
+{
+    s3cipid_t *rcmap, rc;
+    
+    if ( (NOT_S3WID(w_rc)) || (! lathist->lattice[l].rcscore)  )
+	return lathist->lattice[l].score;
+    
+    rcmap = get_rc_cimap (ct,lathist->lattice[l].wid,dict);
+    rc = dict->word[w_rc].ciphone[0];
+    return (lathist->lattice[l].rcscore[rcmap[rc]]);
+}
+
+/**
+ * Find the path history for lattice entry l for the given right
+ * context word.  If context word is BAD_S3WID it's a wild card;
+ * return the history. 
+ */
+
+s3latid_t lat_pscr_rc_history (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, ctxt_table_t *ct, dict_t *dict)
+{
+    s3cipid_t *rcmap, rc;
+    
+    if ( (NOT_S3WID(w_rc)) || (! lathist->lattice[l].rchistory)  )
+	return lathist->lattice[l].history;
+    
+    rcmap = get_rc_cimap (ct,lathist->lattice[l].wid,dict);
+    rc = dict->word[w_rc].ciphone[0];
+    return (lathist->lattice[l].rchistory[rcmap[rc]]);
+}
+
+
+/**
+ * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
+ * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
+ */
+#if SINGLE_RC_HISTORY
+void two_word_history (latticehist_t *lathist, s3latid_t l, s3wid_t *w0, s3wid_t *w1, dict_t *dict)
+#else
+void two_word_history (latticehist_t *lathist, s3latid_t l, s3wid_t *w0, s3wid_t *w1, s3wid_t w_rc, dict_t *dict, ctxt_table_t *ct)
+#endif
+{
+    s3latid_t l0, l1;
+    l0=0;
+
+#if SINGLE_RC_HISTORY    
+    for (l1 = l; dict_filler_word(dict, lathist->lattice[l1].wid); l1 = lathist->lattice[l1].history);
+    
+    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+    if (l1 != -1) 
+      for (l0 = lathist->lattice[l1].history; 
+	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lathist->lattice[l0].wid));
+	   l0 = lathist->lattice[l0].history);
+#else
+    for (l1 = l; dict_filler_word(dict, lathist->lattice[l1].wid); l1 = lat_pscr_rc_history(lathist,l1,w_rc,ct,dict));
+
+    if (l1 != -1) 
+      for (l0 = lat_pscr_rc_history(lathist,l1,w_rc,ct,dict); 
+	   (IS_S3LATID(l0)) && (dict_filler_word(dict,lathist->lattice[l0].wid));
+	   l0 = lat_pscr_rc_history(lathist,l0,lathist->lattice[l1].wid,ct,dict));
+#endif
+    
+    /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
+    if (l1 == -1) *w1 = 0; else
+      *w1 = dict_basewid(dict, lathist->lattice[l1].wid);
+    if (l1 == -1) *w0 = BAD_S3WID; else
+      *w0 = (NOT_S3LATID(l0)) ? BAD_S3WID : dict_basewid(dict,lathist->lattice[l0].wid);
+}
+
+
+/**
+ * Find LM score for transition into lattice entry l.
+ */
+#if SINGLE_RC_HISTORY
+int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, lm_t *lm, dict_t *dict, ctxt_table_t *ct, fillpen_t *fpen, int32 isCand)
+#else
+int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm, dict_t *dict, ctxt_table_t *ct, fillpen_t *fpen, int32 isCand)
+#endif
+{
+    s3wid_t bw0, bw1, bw2;
+    s3lmwid_t lw0;
+    int32 lscr, bowt, bo_lscr;
+    tg_t *tgptr;
+    bg_t *bgptr;
+    
+    bw2 = dict_basewid (dict,lathist->lattice[l].wid);
+
+    if (dict_filler_word (dict,bw2))
+	return (fillpen(fpen,bw2));
+
+#if SINGLE_RC_HISTORY    
+    if (NOT_S3LATID(lathist->lattice[l].history)) {
+	assert (bw2 == dict->startwid);
+	return 0;
+    }
+    
+    two_word_history (lathist->lattice[l].history, &bw0, &bw1);
+#else
+    if (NOT_S3LATID(lat_pscr_rc_history(lathist,l,w_rc,ct,dict))) {
+	assert (bw2 == dict->startwid);
+	return 0;
+    }
+    
+    two_word_history (lathist,
+		      lat_pscr_rc_history(lathist,l,w_rc,ct,dict),
+		      &bw0, &bw1,w_rc,dict,ct
+		      );
+#endif
+
+    /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);*/
+    lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
+    lscr = lm_tg_score (lm, 
+			lw0, 
+			lm->dict2lmwid[dict_basewid(dict,bw1)], 
+			lm->dict2lmwid[bw2],
+			bw2);
+    if (isCand)
+	return lscr;
+
+    /* Correction for backoff cpase if that scores better (see word_trans) */
+    bo_lscr = 0;
+    if ((IS_S3WID(bw0)) && (lm_tglist (lm,
+				       lm->dict2lmwid[dict_basewid(dict,bw0)], 
+				       lm->dict2lmwid[dict_basewid(dict,bw1)],
+				       &tgptr, &bowt) > 0))
+	bo_lscr = bowt;
+    if (lm_bglist (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
+	bo_lscr += bowt;
+    bo_lscr += lm_ug_score (lm,lm->dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
+
+    return ((lscr > bo_lscr) ? lscr : bo_lscr);
+}
+
+
+
+/**
+ * Find acoustic and LM score for segmentation corresponding to lattice entry l with
+ * the given right context word.
+ */
+void lat_seg_ascr_lscr (latticehist_t *lathist, 
+			s3latid_t l, 
+			s3wid_t w_rc, 
+			int32 *ascr, 
+			int32 *lscr, 
+			lm_t *lm, 
+			dict_t *dict, 
+			ctxt_table_t *ct, 
+			fillpen_t *fillpen)
+{
+    int32 start_score, end_score;
+
+    /* Score with which l ended with right context = w_rc */
+    if ((end_score = lat_pscr_rc (lathist,l, w_rc,ct,dict)) <= S3_LOGPROB_ZERO) {
+	*ascr = *lscr = S3_LOGPROB_ZERO;
+	return;
+    }
+    
+    /* Score with which l was begun */
+#if SINGLE_RC_HISTORY
+    start_score = IS_S3LATID(lathist->lattice[l].history) ?
+	lat_pscr_rc (lathist, lathist->lattice[l].history, lathist->lattice[l].wid, ct, dict) : 0;
+
+    /* LM score for the transition into l */
+    *lscr = lat_seg_lscr (lathist,l, lm,dict, ct, fillpen,(lathist->n_cand>0));
+    *ascr = end_score - start_score - *lscr;
+#else
+    start_score = IS_S3LATID(lat_pscr_rc_history(lathist,l,w_rc,ct,dict)) ?
+	lat_pscr_rc (lathist,
+		     lat_pscr_rc_history(lathist,l,w_rc,ct,dict), 
+		     lathist->lattice[l].wid,ct,dict) : 0;
+
+    /* LM score for the transition into l */
+    *lscr = lat_seg_lscr (lathist,l,w_rc, lm,dict,ct,fillpen, (lathist->n_cand>0));
+    *ascr = end_score - start_score - *lscr;
+
+#endif
+
+
+}
+
+
+s3latid_t lat_final_entry (latticehist_t* lathist,dict_t* dict,int32 curfrm, char* uttid)
+{
+    s3latid_t l, bestl;
+    int32 f, bestscore;
+    
+    bestl=BAD_S3LATID;
+
+    if(cmd_ln_int32("-bt_wsil")){
+
+      /* Find lattice entry in last frame for FINISH_WORD */
+      for (l = lathist->frm_latstart[curfrm-1]; l < lathist->n_lat_entry; l++){
+	if (dict_basewid(dict,lathist->lattice[l].wid) == dict->finishwid)
+	  break;
+      }
+      
+      if (l < lathist->n_lat_entry) {
+	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
+	return (l);
+      }
+    
+      /* Find last available lattice entry with best ending score */
+      E_WARN("When %s is used as final word, %s: Search didn't end in %s\n", dict_wordstr(dict,dict->finishwid), uttid, dict_wordstr(dict,dict->finishwid));
+    }else{
+    }
+
+
+    bestscore = S3_LOGPROB_ZERO;
+    for (f = curfrm-1; (f >= 0) && (bestscore <= S3_LOGPROB_ZERO); --f) {
+	for (l = lathist->frm_latstart[f]; l < lathist->frm_latstart[f+1]; l++) {
+	    if ((lathist->lattice[l].wid != dict->startwid) && (bestscore < lathist->lattice[l].score)) {
+		bestscore = lathist->lattice[l].score;
+		bestl = l;
+	    }
+	}
+    }
+    assert(! NOT_S3LATID(l));
+    return ((f >= 0) ? bestl : BAD_S3LATID);
+}
+
+
+
+srch_hyp_t *lattice_backtrace (latticehist_t* lathist,
+			       s3latid_t l, 
+			       s3wid_t w_rc,
+			       srch_hyp_t **hyp,
+			       lm_t *lm, 
+			       dict_t *dict, 
+			       ctxt_table_t *ct, 
+			       fillpen_t *fillpen)
+{
+    srch_hyp_t *h, *prevh;
+
+    if (IS_S3LATID(l)) {
+#if SINGLE_RC_HISTORY
+      prevh = lattice_backtrace (lathist, lathist->lattice[l].history, lathist->lattice[l].wid, hyp,
+				 lm,dict,ct,fillpen);
+#else
+      prevh = lattice_backtrace (lathist, lat_pscr_rc_history(lathist,l,w_rc,ct,dict), lathist->lattice[l].wid, hyp,
+				 lm,dict,ct,fillpen);
+#endif
+
+	h = (srch_hyp_t *) listelem_alloc (sizeof(srch_hyp_t));
+	if (! prevh)
+	    *hyp = h;
+	else
+	    prevh->next = h;
+	h->next = NULL;
+	
+	h->id = lathist->lattice[l].wid;
+	h->word = dict_wordstr(dict,h->id);
+	h->sf = prevh ? prevh->ef+1 : 0;
+	h->ef = lathist->lattice[l].frm;
+	h->pscr = lathist->lattice[l].score;
+	lat_seg_ascr_lscr (lathist, l, w_rc, &(h->ascr), &(h->lscr), 
+			   lm,dict,ct,fillpen);
+
+	return h;
+    } else {
+	return NULL;
+    }
+}
+
+
+
+int32 latticehist_dag_write (latticehist_t *lathist, 
+			     char *dir, 
+			     int32 onlynodes, 
+			     char *id, 
+			     char* latfile_ext, 
+			     int32 totfrm, 
+			     dag_t *dag,
+			     lm_t *lm, 
+			     dict_t *dict, 
+			     ctxt_table_t *ct, 
+			     fillpen_t *fillpen)
+
+{
+
+  /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
+    int32 i;
+    dagnode_t *d, *initial, *final;
+    daglink_t *l;
+    char filename[2048];
+    FILE *fp;
+    int32 ascr, lscr;
+    int32 ispipe;
+    
+    initial = dag->root;
+    final = lathist->lattice[dag->latfinal].dagnode;
+
+    sprintf (filename, "%s/%s.%s", dir, id, latfile_ext);
+    E_INFO("Writing lattice file: %s\n", filename);
+    if ((fp = fopen_comp (filename, "w", &ispipe)) == NULL) {
+	E_ERROR("fopen_comp (%s,w) failed\n", filename);
+	return -1;
+    }
+    
+    dag_write_header(fp,totfrm,1);
+    
+    for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
+    fprintf (fp, "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n", i);
+    for (i = 0, d = dag->list; d; d = d->alloc_next, i++) {
+	d->seqid = i;
+	fprintf (fp, "%d %s %d %d %d\n", i, dict_wordstr(dict,d->wid), d->sf, d->fef, d->lef);
+    }
+
+
+    fprintf (fp, "#\n");
+
+    fprintf (fp, "Initial %d\nFinal %d\n", initial->seqid, final->seqid);
+    
+    /* Best score (i.e., regardless of Right Context) for word segments in word lattice */
+    fprintf (fp, "BestSegAscr %d (NODEID ENDFRAME ASCORE)\n", lathist->n_lat_entry);
+    
+    if (! onlynodes) {
+	for (i = 0; i < lathist->n_lat_entry; i++) {
+	    lat_seg_ascr_lscr (lathist, i, BAD_S3WID, &ascr, &lscr, lm,dict,ct,fillpen);
+	    fprintf (fp, "%d %d %d\n",
+		     (lathist->lattice[i].dagnode)->seqid, lathist->lattice[i].frm, ascr);
+	}
+    }
+    fprintf (fp, "#\n");
+    
+    fprintf (fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
+    if (! onlynodes) {
+	for (d = dag->list; d; d = d->alloc_next) {
+	    for (l = d->succlist; l; l = l->next)
+		fprintf (fp, "%d %d %d\n", d->seqid, l->node->seqid, l->ascr);
+	}
+    }
+    fprintf (fp, "End\n");
+
+    fclose_comp (fp, ispipe);
+
+    return 0;
+}

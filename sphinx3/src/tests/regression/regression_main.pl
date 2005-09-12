@@ -6,7 +6,7 @@ use strict;
 use File::Path;
 use Cwd;
 
-die "Usage: $0 <test name> <test type>\n" if ($#ARGV < 1);
+die "Usage: $0 \\\n\t<test name (e.g. dailytestMON)> \\\n\t<test type (accuracy|speed)>\n" if ($#ARGV < 1);
 
 my $test_name = shift;
 my $test_type = shift;
@@ -28,18 +28,20 @@ chdir $top_dir or warn "Failed to cd $top_dir\n";
 
 # Retrieve the code. 'scvs' is user dependent. An example is located in this
 # directory, but the script should be located in your path
+my $result = "";
 if (system("scvs co sphinx3")) {
   chdir "sphinx3/src/tests/regression";
 
   # Run it
-  my $result = `perl regression_launch.pl $test_name $test_type`;
+  $result = `perl regression_launch.pl $test_name $test_type`;
+warn "$result\n";
   $result =~ s/\..*$//;
 }
 
 # Move back to where we started
 chdir $current_dir;
 
-$remove_script = "remove.sh";
+my $remove_script = "remove.sh";
 if (open (REMOVE, ">$remove_script")) {
   print REMOVE "#\n";
   print REMOVE "cd $current_dir\n";
