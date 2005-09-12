@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.2  2005/09/11  02:54:19  arthchan2003
- * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ * Revision 1.8.4.3  2005/09/12  18:07:22  arthchan2003
+ * dag is now a pointer, the bug initializ a pointer of it before it is allocated.
  * 
+ * Revision 1.8.4.2  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
  * Revision 1.8.4.1  2005/07/22 03:46:56  arthchan2003
  * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
  *
@@ -878,8 +881,6 @@ void nbest_init ( void )
     beam = logs3 (*f64arg);
     E_INFO("beam= %d\n", beam);
     
-    /* Initialize DAG and nbest search structures */
-    dag->list = NULL;
 
     heap_root = NULL;
     ppath_list = NULL;
