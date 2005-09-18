@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.1  2005/07/05  06:55:26  arthchan2003
- * Fixed dox-doc.
+ * Revision 1.9.4.2  2005/09/18  01:15:45  arthchan2003
+ * Add one doxy-doc in dict.h
  * 
+ * Revision 1.9.4.1  2005/07/05 06:55:26  arthchan2003
+ * Fixed dox-doc.
+ *
  * Revision 1.9  2005/06/21 21:04:36  arthchan2003
  * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
  *
@@ -187,8 +190,8 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 #define dict_basewid(d,w)	((d)->word[w].basewid)
 #define dict_wordstr(d,w)	((d)->word[w].word)
 #define dict_nextalt(d,w)	((d)->word[w].alt)
-#define dict_pronlen(d,w)	((d)->word[w].pronlen)
-#define dict_pron(d,w,p)	((d)->word[w].ciphone[p])
+#define dict_pronlen(d,w)	((d)->word[w].pronlen) 
+#define dict_pron(d,w,p)	((d)->word[w].ciphone[p]) /**< The CI phones of the word w at position p */
 #define dict_filler_start(d)	((d)->filler_start)
 #define dict_filler_end(d)	((d)->filler_end)
 #define dict_startwid(d)	((d)->startwid)
