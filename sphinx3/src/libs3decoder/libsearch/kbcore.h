@@ -45,10 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.3  2005/08/03  18:54:32  dhdfu
+ * Revision 1.11.4.4  2005/09/18  01:29:37  arthchan2003
+ * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
+ * 
+ * Revision 1.11.4.3  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.11.4.2  2005/08/02 21:33:47  arthchan2003
  * Factored the code of initializing one hmm into s3_am_init. That is to say initialization of mdef, mgau, var, mixw and tmat could all be found one function.
  *
@@ -215,6 +218,7 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
   void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
 		    );
 
+  void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
   /** Access macros; not meant for arbitrary use */
 #define kbcore_fcb(k)		((k)->fcb)

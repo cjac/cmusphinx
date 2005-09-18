@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.8  2005/09/11  23:07:28  arthchan2003
- * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * Revision 1.10.4.9  2005/09/18  01:29:37  arthchan2003
+ * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
  * 
+ * Revision 1.10.4.8  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
  * Revision 1.10.4.7  2005/08/03 19:59:07  arthchan2003
  * Added a message to tell user which GMM computation are being used.
  *
@@ -385,14 +388,18 @@ kbcore_t *kbcore_init (float64 logbase,
 	if ((kb->fcb = feat_init (feattype, cmn, varnorm, agc, REPORT_KBCORE)) == NULL)
 	    E_FATAL("feat_init(%s) failed\n", feattype);
 	
+	E_INFO("%s\n",senmgau);
 	if(strcmp(senmgau,".cont.") == 0) {
 	  if (feat_n_stream(kb->fcb) != 1)
 	    E_FATAL("#Feature streams(%d) in the feature for continuous HMM!= 1\n", feat_n_stream(kb->fcb));
 	}else if(strcmp(senmgau,".semi.") == 0){
 	  if (feat_n_stream(kb->fcb) != 4)
 	    E_FATAL("#Feature streams(%d) in the feature for semi-continuous HMM!= 4\n", feat_n_stream(kb->fcb));
+	}else if(strcmp(senmgau,".s3cont.")==0){
+
+	  E_WARN("Secret Mode .s3cont. is used!!\n");
 	}else{
-	  E_FATAL("Feature should be either .semi. or .cont.");
+	  E_FATAL("Feature should be either .semi. or .cont.\n");
 	}
     }
     
@@ -479,10 +486,14 @@ kbcore_t *kbcore_init (float64 logbase,
       for(i=0;i<kb->lmset->n_lm;i++){
 	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
 
+
+	#if 0
 	/* HACK! This will allow rescoring works but will definitely
 	   change the answer for the first stage. */
+
 	if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
-	   unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
+	  unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
+	#endif
       }
 
     }else if (fsgfile||fsgctlfile){
