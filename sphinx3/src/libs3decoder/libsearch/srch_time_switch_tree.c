@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.9  2005/09/11  03:01:01  arthchan2003
- * Bug fix on the size of hmmpf and histpf
+ * Revision 1.2.4.10  2005/09/18  01:46:20  arthchan2003
+ * Moved unlinkSilences to mode 4 and mode 5 search-specific implementation.
  * 
+ * Revision 1.2.4.9  2005/09/11 03:01:01  arthchan2003
+ * Bug fix on the size of hmmpf and histpf
+ *
  * Revision 1.2.4.8  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
@@ -148,6 +151,14 @@ int srch_TST_init(kb_t *kb, void *srch)
 
   n_ltree=tstg->n_lextree;
 
+
+  for(i=0;i<kbc->lmset->n_lm;i++){
+    /* HACK! This will allow rescoring works but will definitely
+       change the answer for the first stage. Still not the best way*/
+    
+    if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
+      unlinksilences(kbc->lmset->lmarray[i],kbc,kbc->dict);
+  }
 
   /* STRUCTURE and REPORT: Initialize lexical tree. Filler tree's
      initialization is followed.  */
