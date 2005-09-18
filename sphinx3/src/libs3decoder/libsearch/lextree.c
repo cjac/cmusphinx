@@ -45,13 +45,28 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  23:32:58  arthchan2003
+ * Revision 1.9.4.5  2005/09/18  01:36:47  arthchan2003
+ * Add implementation for lextree_report.
+ * 
+ * Revision 1.9.4.4  2005/08/02 21:35:05  arthchan2003
+ * Change sen to senscr.
+ *
+ * Revision 1.9.4.3  2005/07/17 05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
+ * Revision 1.9.4.2  2005/07/07 02:34:36  arthchan2003
+ * Remove empty lextree_tree_copies_hmm_propagate
+ *
+ * Revision 1.9.4.1  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
+ * Revision 1.9  2005/06/21 23:32:58  arthchan2003
  * Log. Introduced lextree_init and filler_init to wrap up lextree_build
  * process. Split the hmm propagation to propagation for leaves and
  * non-leaves node.  This allows an easier time for turning off the
  * rescoring stage. However, the implementation is not clever enough. One
  * should split the array to leave array and non-leave array.
- * 
+ *
  * Revision 1.11  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -194,6 +209,8 @@ lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgPro
   ckd_free ((void *) wp);
   ckd_free ((void *) lc);
   bitvec_free (lc_active);
+
+  strcpy(ltree->prev_word,"");
   return ltree;
 }
 
@@ -230,6 +247,18 @@ lextree_t* fillertree_init(kbcore_t* kbc)
 void lextree_report(lextree_t *ltree)
 {
   /*EMPTY, because it is quite hard to report a set of lexical trees at this point. */
+  
+  E_INFO_NOFN("lextree_t, report:\n");
+  E_INFO_NOFN("Parameters of the lexical tree. \n");
+  E_INFO_NOFN("Parameters of the lexical tree. \n");
+  E_INFO_NOFN("Type of the tree %d (0:unigram, 1: 2g, 2: 3g etc.\n",ltree->type);
+  E_INFO_NOFN("Number of left contexts %d \n",ltree->n_lc);
+  E_INFO_NOFN("Number of node %d \n",ltree->n_lc);
+  E_INFO_NOFN("Number of active node in this frame %d \n",ltree->n_active);
+  E_INFO_NOFN("Number of active node in next frame %d \n",ltree->n_next_active);
+  E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
+  E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
+  E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
 }
 
 
@@ -331,12 +360,12 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    } else {
 		np = 0;
 		for (j = 0; j < n_lc; j++) {
-		    ssid = d2p->single_lc[ci][(int)lc[j]];
+		  ssid = d2p->single_lc[ci][(int)lc[j]]; 
 		    
 		    /* Check if this ssid already allocated for another lc */
 		    for (k = 0; (k < np) && (parent[k]->ssid != ssid); k++);
 		    if (k >= np) {	/* Not found; allocate new node */
-			ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci);
+			ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci); /**< ARCHAN: This is a composite triphone */
 			ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 			
 			lextree->root = glist_add_ptr (lextree->root, (void *) ln);
@@ -354,7 +383,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    
 	    /* Multi-phone word; allocate root node(s) first, if not already present */
 	    if (! lc) {
-		ssid = d2p->internal[wid][0];
+	      ssid = d2p->internal[wid][0]; 
 		ci = dict_pron(dict, wid, 0);
 		
 		/* Check if this ssid already allocated for another word */
@@ -608,6 +637,7 @@ void lextree_utt_end (lextree_t *l, kbcore_t *kbc)
 
     l->n_active = 0;
     l->n_next_active = 0;
+    strcpy(l->prev_word,"");
 }
 
 
@@ -679,8 +709,9 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	root = lextree->root;
     } else {
 	for (i = 0; (i < lextree->n_lc) && (lextree->lcroot[i].lc != lc); i++);
+	/*	E_INFO("i=%d, lextree->n_lc %d\n",i,lextree->n_lc);*/
 	assert (i < lextree->n_lc);
-	
+
 	root = lextree->lcroot[i].root;
     }
     
@@ -743,7 +774,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 	    
 	    if (! ln->composite)
 		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
-				       mdef->sseq[ln->ssid], ascr->sen, fp);
+				       mdef->sseq[ln->ssid], ascr->senscr, fp);
 	    else
 		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
 				       d2p->comsseq[ln->ssid], ascr->comsen, fp);
@@ -765,7 +796,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		if (! ln->composite)
 		  {
 
-		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		  }
 		else
 		  {
@@ -786,7 +817,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		assert (ln->frame == frm);
 		
 		if (! ln->composite)
-		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		else
 		    k = hmm_vit_eval_5st (&(ln->hmm), d2p->comsseq[ln->ssid], ascr->comsen);
 		
@@ -968,7 +999,9 @@ void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t 
     lextree_node_t **list, *ln;
     hmm_t *hmm;
     int32 i;
+#if 0
     int32 active_word_end=0;
+#endif
 
     /* Code for heursitic score */
     list = lextree->active;
@@ -988,59 +1021,18 @@ void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t 
 	    vithist_rescore (vh, kbc, ln->wid, cf,
 			     hmm->out.score - ln->prob, senscale, 
 			     hmm->out.history, lextree->type);
+
+#if 0	   
 	    active_word_end++;
 
 	    /*	    E_INFO("What is the hmm->out.score %d wth %d\n", hmm->out.score,wth);
 		    E_INFO("\nActive word end id %d, word end %s\n", ln->wid, dict_wordstr(kbc->dict,dict_basewid(kbc->dict,ln->wid)));*/
+#endif
 	}
     }
     
     /*    E_INFO("No of active word end %d\n\n",active_word_end);*/
 
 }
-
-
-void lextree_tree_copies_hmm_propagate (lextree_t *roottree, lextree_t ** expandtrees, kbcore_t *kbc, vithist_t *vh,
-					int32 cf, int32 th, int32 pth, int32 wth,pl_t * pl)
-{
-
-#if 0 
-    mdef_t *mdef;
-    int32 nf, newscore, newHeurScore;
-    lextree_node_t **list, *ln, *ln2;
-    hmm_t *hmm, *hmm2;
-    gnode_t *gn;
-    int32 i, n;
-    int32 hth ;
-    int32 *phn_heur_list;
-    int32 heur_beam;
-    int32 heur_type;
-
-    /* Code for heursitic score */
-    kbc->maxNewHeurScore=MAX_NEG_INT32;
-    kbc->lastfrm=-1;
-	hth = 0;
-    mdef = kbcore_mdef(kbc);
-    
-    phn_heur_list=pl->phn_heur_list;
-    heur_beam=pl->pl_beam;
-    heur_type=pl->pheurtype;
-
-    /* This implicitly do topological sort */
-    /* 1, First enter the root tree from the expanded tree using the backoff weight*/
-    /* In this part, the back-off weight will be multiplied from the paths */
-
-    /* 2, Then, propagate the root tree. */
-    /* In this part, the amount of active 2nd stage tree will be computed */
-
-    /* 3, Then, propagate the expand tree (?) */
-    /* In this part, it will also decide whether new tree allocated */
-
-    /* 4, Should I rescore at here ? */
-#endif
-}
-
-
-
 
 

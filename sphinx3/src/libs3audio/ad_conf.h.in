@@ -37,6 +37,10 @@
 #ifndef _AD_CONF_H_
 #define _AD_CONF_H_
 
+/** \file ad_conf.h
+    \brief OS dependent part of ad.h, configured by configure.in
+  */	
+
 /* OS dependent part of ad.h, properly set by configure
  */
 #if !defined(@ad_backend@)

@@ -1,0 +1,16 @@
+-mdef	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.500.mdef
+-dict	/lab/speech/sphinx4/data/tidigits_model/dictionary
+-fdict	/lab/speech/sphinx4/data/tidigits_model/fillerdict
+-fsg    ./test.digits.fsg
+-mean	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/means.LittleEndian
+-var	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian
+-mixw	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian
+-tmat	/lab/speech/sphinx4/data/tidigits_model/wd_dependent_phone.cd_continuous_8gau/transition_matrices.LittleEndian
+-agc	none
+-varnorm	no
+-cmn	current
+-lw	9.5
+-ctl tidigits-quick-decode.ctl
+-cepdir /lab/speech/sphinx4/data/tidigits/test//cepstra 
+-hyp tidigits-quick-decode.match
+-op_mode 2

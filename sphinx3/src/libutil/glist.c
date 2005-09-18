@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/22  03:02:51  arthchan2003
- * 1, Fixed doxygen documentation, 2, add  keyword.
+ * Revision 1.8.4.1  2005/06/27  05:41:46  arthchan2003
+ * Added glist_delete in glist.h.  glist_delete only delete one node after a specified node. glist_delete and glist_add thus from a simple operation that allow the glist to act like a stack.
  * 
+ * Revision 1.8  2005/06/22 03:02:51  arthchan2003
+ * 1, Fixed doxygen documentation, 2, add  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -326,6 +329,7 @@ gnode_t *glist_insert_uint32 (gnode_t *gn, uint32 val)
     newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
     newgn->data.ui_32 = val;
     newgn->next = gn->next;
+
     gn->next = newgn;
     
     return newgn;
@@ -357,6 +361,31 @@ gnode_t *glist_insert_float64 (gnode_t *gn, float64 val)
     return newgn;
 }
 
+gnode_t *glist_delete (gnode_t *gn)
+{
+  gnode_t *newgn;
+  newgn=gn->next;
+  if(newgn){
+    myfree((char*)gn,sizeof(gnode_t));
+    return newgn;
+  }else{
+    return gn;
+  }
+}
 
 
-
+gnode_t *gnode_free (gnode_t *gn, gnode_t *pred)
+{
+  gnode_t *next;
+  
+  next = gn->next;
+  if (pred) {
+    assert (pred->next == gn);
+    
+    pred->next = next;
+  }
+  
+  myfree((char *)gn, sizeof(gnode_t));
+  
+  return next;
+}
