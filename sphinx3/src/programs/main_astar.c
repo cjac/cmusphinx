@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.3  2005/09/11  02:54:19  arthchan2003
- * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ * Revision 1.11.4.4  2005/09/18  01:52:27  arthchan2003
+ * Tied dag handling command line argument.
  * 
+ * Revision 1.11.4.3  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
  * Revision 1.11.4.2  2005/07/27 23:23:39  arthchan2003
  * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
  *
@@ -244,6 +247,7 @@ static arg_t defn[] = {
   common_application_properties_command_line_macro()
   control_file_handling_command_line_macro()
   control_lm_file_command_line_macro()
+  dag_handling_command_line_macro()
 
     { "-mdef",
       ARG_STRING,
@@ -257,18 +261,6 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Partial path pruned if below beam * score of best partial ppath so far" },
-    { "-maxlpf",
-      ARG_INT32,
-      "40000",
-      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" },
-    { "-maxlmop",
-      ARG_INT32,
-      "100000000",
-      "Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)" },
-    { "-maxedge",
-      ARG_INT32,
-      "2000000",
-      "Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage" },
     { "-maxppath",
       ARG_INT32,
       "1000000",
@@ -293,14 +285,6 @@ static arg_t defn[] = {
       ARG_INT32,
       "200",
       "Max. n-best hypotheses to generate per utterance" },
-    { "-min_endfr",
-      ARG_INT32,
-      "3",
-      "Nodes ignored during search if they persist for fewer than so many end frames" },
-    { "-dagfudge",
-      ARG_INT32,
-      "2",
-      "Adjacency fudge (#frames) between nodes in DAG (0..2)" },
     { "-ppathdebug",
       ARG_INT32,
       "0",
