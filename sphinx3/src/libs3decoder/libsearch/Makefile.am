@@ -25,6 +25,7 @@ libsearch_la_SOURCES = \
 	srch_fsg.c \
 	srch_flat_fwd.c \
 	word_fsg.c \
+	word_ugprob.c \
 	fsg_history.c \
 	fsg_psubtree.c \
 	fsg_search.c \
@@ -35,7 +36,6 @@ pkginclude_HEADERS = \
 	ascr.h \
 	dag.h \
 	blkarray_list.h \
-	flat_fwd.h \
 	ctxt_table.h \
 	whmm.h \
 	gmm_wrap.h \
@@ -52,6 +52,7 @@ pkginclude_HEADERS = \
 	srch_fsg.h \
 	srch_flat_fwd.h \
 	word_fsg.h \
+	word_ugprob.h \
 	fsg_history.h \
 	fsg_psubtree.h \
 	fsg_lextree.h \
