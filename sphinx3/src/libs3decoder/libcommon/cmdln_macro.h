@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.7  2005/09/07  23:27:21  arthchan2003
- * Added an option in gmm_command_line_macro() to allow multiple behavior of Gaussian flooring.
+ * Revision 1.1.2.8  2005/09/18  01:14:58  arthchan2003
+ * Tie Viterbi history, DAG, debugging command line together.  Inspect all possible commands and specify whether they are mode-specific.
  * 
+ * Revision 1.1.2.7  2005/09/07 23:27:21  arthchan2003
+ * Added an option in gmm_command_line_macro() to allow multiple behavior of Gaussian flooring.
+ *
  * Revision 1.1.2.6  2005/08/03 19:58:11  arthchan2003
  * Change -topn from fast_GMM macro to acoustic model command line
  *
@@ -106,7 +109,7 @@
     { "-remove_zero_var_gau", \
       ARG_INT32, \
       "0" , \
-      "If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
+      "(Fast GMMM Computation only) If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
     { "-mixw",\
       ARG_STRING,\
       NULL,\
@@ -142,7 +145,7 @@
     { "-topn", \
       ARG_INT32, \
       "4", \
-      "No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
+      "(S3.0 GMM Computation only) No. of top scoring densities computed in each mixture gaussian codebook (semi-continuous models only)" }, \
 
 #define language_model_command_line_macro() \
     { "-lminmemory", \
@@ -178,15 +181,15 @@
     { "-fsg", \
       ARG_STRING, \
       NULL, \
-      "Finite state grammar"}, \
+      "(FSG Mode (Mode 2) only) Finite state grammar"}, \
     { "-fsgusealtpron", \
       ARG_INT32, \
       "1", \
-      "Use alternative pronunciations for FSG"}, \
+      "(FSG Mode (Mode 2) only) Use alternative pronunciations for FSG"}, \
     { "-fsgusefiller", \
       ARG_INT32, \
       "1", \
-      "Insert filler words at each state."}, 
+      "(FSG Mode (Mode 2) only) Insert filler words at each state."}, 
 
 
 
@@ -218,19 +221,19 @@
     { "-maxwpf", \
       ARG_INT32, \
       "20", \
-      "Max no. of distinct word exits to maintain at each frame" }, \
+      "(Only used in Mode 4 and 5) Max no. of distinct word exits to maintain at each frame" }, \
     { "-maxhistpf", \
       ARG_INT32, \
       "100", \
-      "Max no. of histories to maintain at each frame" }, \
+      "(Only used in Mode 4 and 5) Max no. of histories to maintain at each frame" }, \
     { "-hmmhistbinsize", \
       ARG_INT32, \
       "5000", \
-      "Performance histogram: #frames vs #HMMs active; #HMMs/bin in this histogram" }, \
+      "(Only used in Mode 4 and 5) Performance histogram: #frames vs #HMMs active; #HMMs/bin in this histogram" }, \
     { "-maxhmmpf", \
       ARG_INT32, \
       "20000", \
-      "Max no. of active HMMs to maintain at each frame; approx." }, 
+      "(Only used in Mode 4 and 5) Max no. of active HMMs to maintain at each frame; approx." }, 
 
 #define dictionary_command_line_macro() \
     { "-dict", \
@@ -433,7 +436,7 @@
     { "-phonepen", \
       ARG_FLOAT32, \
       "1.0", \
-      "Word insertion penalty" }, 
+      "(Mode 2 and 3 only) Word insertion penalty" }, 
 
 
 #define common_s3x_beam_properties_command_line_macro() \
@@ -456,7 +459,7 @@
     { "-ptranskip", \
       ARG_INT32, \
       "0", \
-      "Use wbeam for phone transitions every so many frames (if >= 1)" }, 
+      "(Not used in Mode 3) Use wbeam for phone transitions every so many frames (if >= 1)" }, 
 
 #define common_application_properties_command_line_macro() \
     { "-logfn", \
@@ -513,6 +516,16 @@
       "Filename extension for lattice files (gzip compressed, by default)" }, 
 
 
+#define history_table_command_line_macro() \
+    { "-bptbldir", \
+      ARG_STRING, \
+      NULL, \
+      "Directory in which to dump word Viterbi back pointer table (for debugging)" }, \
+    { "-bptblsize", \
+      ARG_INT32, \
+      "32767", \
+      "Number of BPtable entries to allocate initially (grown as necessary)" },
+
 /* decode-specific, that includes mode 4 and mode 5'
 						   share between decode/livepretend/livedecode
 						 */
@@ -521,10 +534,6 @@
       ARG_INT32, \
       "4", \
       "Operation Mode. Mode 4: TST search, Mode 5: WST search, Mode 1369: Debug "}, \
-    { "-bptbldir", \
-      ARG_STRING, \
-      NULL, \
-      "Directory in which to dump word Viterbi back pointer table (for debugging)" }, \
     { "-hmmdump", \
       ARG_INT32, \
       "0", \
@@ -568,6 +577,59 @@
       "40000", \
       "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" }, 
 
+#define second_stage_dag_handling_command_line_macro() \
+    { "-bestpath", \
+      ARG_INT32, \
+      "0", \
+      "Whether to run bestpath DAG search after forward Viterbi pass" }, \
+    { "-bestpathlw", \
+      ARG_FLOAT32, \
+      NULL, \
+      "Language weight for bestpath DAG search (default: same as -lw)" },
+
+#define input_lattice_handling_command_line_macro() \
+    { "-inlatdir", \
+      ARG_STRING, \
+      NULL, \
+      "Input word-lattice directory with per-utt files for restricting words searched" }, \
+    { "-inlatwin", \
+      ARG_INT32, \
+      "50", \
+      "Input word-lattice words starting within +/- <this argument> of current frame considered during search" },
+
+#define flat_fwd_multiplex_treatment_command_line_macro() \
+    { "-multiplex_multi", \
+      ARG_INT32, \
+      "1" \
+      "(Mode 3 only) Whether multiplexed triphones for multi-phone word. If not, full triphone expansion will be carried out in the word begin." }, \
+    { "-multiplex_single", \
+      ARG_INT32, \
+      "1" \
+      "(Mode 3 only) Whether to multiplexed triphones for single-phone. If not, full triphone expansion will be carried out in the word begin. Notice that this will consume large amount of memory space." },
+
+#define flat_fwd_debugging_command_line_macro() \
+    { "-tracewhmm", \
+      ARG_STRING, \
+      NULL, \
+      "(Mode 3 only) Word whose active HMMs are to be traced (for debugging/diagnosis/analysis)" }, \
+    { "-hmmdumpef", \
+      ARG_INT32, \
+      "200000000", \
+      "(Mode 3 only) Ending frame for dumping all active HMMs (for debugging/diagnosis/analysis)" }, \
+    { "-hmmdumpsf", \
+      ARG_INT32, \
+      "200000000", \
+      "(Mode 3 only) Starting frame for dumping all active HMMs (for debugging/diagnosis/analysis)" }, \
+    { "-worddumpef", \
+      ARG_INT32, \
+      "200000000", \
+      "(Mode 3 only) Ending frame for dumping all active words (for debugging/diagnosis/analysis)" }, \
+    { "-worddumpsf", \
+      ARG_INT32, \
+      "200000000", \
+      "(Mode 3 only) Starting frame for dumping all active words (for debugging/diagnosis/analysis)" },
+
+
 #define search_specific_command_line_macro() \
     {"-bt_wsil", \
       ARG_INT32, \
@@ -583,34 +645,34 @@
     { "-Nlextree", \
       ARG_INT32, \
       "3", \
-      "No. of lextrees to be instantiated; entries into them staggered in time" }, \
+      "(Mode 4 only) No. of lextrees to be instantiated; entries into them staggered in time" }, \
     { "-epl", \
       ARG_INT32, \
       "3", \
-      "Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" }, 
+      "(Mode 4 only) Entries Per Lextree; #successive entries into one lextree before lextree-entries shifted to the next" }, 
 
 /* mode WST or mode 5*/
 #define search_modeWST_specific_command_line_macro() \
     { "-Nstalextree", \
       ARG_INT32, \
       "25", \
-      "No. of lextrees to be instantiated statically; " }, 
+      "(Mode 5 only) No. of lextrees to be instantiated statically; " }, 
 
 #define partial_hypothesis_command_line_macro() \
     { "-maxhyplen", \
       ARG_INT32, \
       "1000", \
-      "Maximum number of words in a partial hypothesis (for block decoding)" }, \
+      "(Live-decoder only) Maximum number of words in a partial hypothesis (for block decoding)" }, \
     { "-phypdump", \
       ARG_INT32, \
       "1", \
-      "dump parital hypothesis on the screen"},
+      "(Live-decoder only) dump parital hypothesis on the screen"},
 
 #define control_lm_file_command_line_macro() \
     { "-ctl_lm", \
       ARG_STRING, \
       NULL, \
-      "Control file that list the corresponding LMs" },
+      "(Not used in mode 2 and 3) Control file that list the corresponding LMs" },
 
 #define control_mllr_file_command_line_macro() \
     { "-ctl_mllr", \
