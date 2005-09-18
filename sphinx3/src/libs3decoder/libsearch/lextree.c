@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.4  2005/08/02  21:35:05  arthchan2003
- * Change sen to senscr.
+ * Revision 1.9.4.5  2005/09/18  01:36:47  arthchan2003
+ * Add implementation for lextree_report.
  * 
+ * Revision 1.9.4.4  2005/08/02 21:35:05  arthchan2003
+ * Change sen to senscr.
+ *
  * Revision 1.9.4.3  2005/07/17 05:44:32  arthchan2003
  * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
  *
@@ -244,6 +247,18 @@ lextree_t* fillertree_init(kbcore_t* kbc)
 void lextree_report(lextree_t *ltree)
 {
   /*EMPTY, because it is quite hard to report a set of lexical trees at this point. */
+  
+  E_INFO_NOFN("lextree_t, report:\n");
+  E_INFO_NOFN("Parameters of the lexical tree. \n");
+  E_INFO_NOFN("Parameters of the lexical tree. \n");
+  E_INFO_NOFN("Type of the tree %d (0:unigram, 1: 2g, 2: 3g etc.\n",ltree->type);
+  E_INFO_NOFN("Number of left contexts %d \n",ltree->n_lc);
+  E_INFO_NOFN("Number of node %d \n",ltree->n_lc);
+  E_INFO_NOFN("Number of active node in this frame %d \n",ltree->n_active);
+  E_INFO_NOFN("Number of active node in next frame %d \n",ltree->n_next_active);
+  E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
+  E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
+  E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
 }
 
 
@@ -345,12 +360,12 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    } else {
 		np = 0;
 		for (j = 0; j < n_lc; j++) {
-		  ssid = d2p->single_lc[ci][(int)lc[j]]; /**< ARCHAN: This is a composite triphone */
+		  ssid = d2p->single_lc[ci][(int)lc[j]]; 
 		    
 		    /* Check if this ssid already allocated for another lc */
 		    for (k = 0; (k < np) && (parent[k]->ssid != ssid); k++);
 		    if (k >= np) {	/* Not found; allocate new node */
-			ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci);
+			ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci); /**< ARCHAN: This is a composite triphone */
 			ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 			
 			lextree->root = glist_add_ptr (lextree->root, (void *) ln);
@@ -368,7 +383,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    
 	    /* Multi-phone word; allocate root node(s) first, if not already present */
 	    if (! lc) {
-	      ssid = d2p->internal[wid][0]; /**< ARCHAN: This is a composite triphone */
+	      ssid = d2p->internal[wid][0]; 
 		ci = dict_pron(dict, wid, 0);
 		
 		/* Check if this ssid already allocated for another word */
