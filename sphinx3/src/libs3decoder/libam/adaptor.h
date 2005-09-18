@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.4.2  2005/07/05  05:47:59  arthchan2003
- * Fixed dox-doc. struct level of documentation are included.
+ * Revision 1.1.4.3  2005/09/18  01:12:31  arthchan2003
+ * Add adapt_set_mllr which is responsible for single stream MLLR switching.
  * 
+ * Revision 1.1.4.2  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
  * Revision 1.1.4.1  2005/06/27 05:22:19  arthchan2003
  * Merged from the HEAD.
  *
@@ -80,6 +83,11 @@
 #define _ADAPT_H_
 
 #include <s3types.h>
+#include <cont_mgau.h>
+#include <mdef.h>
+#include <mllr.h>
+#include <cb2mllr_io.h>
+
 
 #define ADAPTATION_MLLR 0
 
@@ -115,7 +123,16 @@ typedef struct {
   
   /** free adaptor structure */
   void adapt_am_free(adapt_am_t *ad);
+
+  void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
+		      mgau_model_t *g,  /**< Gaussian model object */
+		      const char *mllrfile,  /**< MLLR file name */
+		      const char* cbs2mllr,  /**< CB2MLLR */
+		      mdef_t *mdef /**< MDEF */
+		      );
 #ifdef __cplusplus
+
+
 }
 #endif
 
