@@ -47,9 +47,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.4  2005/09/11  02:58:10  arthchan2003
- * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
+ * Revision 1.10.4.5  2005/09/18  01:18:24  arthchan2003
+ * Only retain processing of the array whmm_t in flat_fwd.[ch]
  * 
+ * Revision 1.10.4.4  2005/09/11 02:58:10  arthchan2003
+ * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
+ *
  * Revision 1.10.4.3  2005/09/07 23:40:06  arthchan2003
  * Several Bug Fixes and Enhancements to the flat-lexicon
  * 1, Fixed Dox-doc.
@@ -94,89 +97,6 @@
  */
 
 
-/** 
- * \struct backoff_t
- *
- * Backoff node when backing off all the way to unigrams.  Since each
- * word exits with #ciphones different scores (for so many different
- * right contexts), a separate node exists for each context.
- */
-typedef struct {
-    s3latid_t latid;	/**< History entry */
-    int32 score;	/**< Acoustic + backed off LM score */
-    s3cipid_t lc;	/**< Last ciphone of history entry, to be used as left context upon
-			   entering a new word. */
-} backoff_t;
-
-
-/**
- * \struct word_ugprob_t
- *
- * Unigrams re-organized for faster unigram word transitions.  Words
- * partitioned by their first CI phone and ordered in descending
- * unigram probability within each partition.
- */
-typedef struct word_ugprob_s {
-  s3wid_t wid;        /**< Word ID */
-  int32 ugprob;     /**< Unigram probability */
-  struct word_ugprob_s *next;   /**< Nex unigram probability*/
-} word_ugprob_t;
-
-/**
- * \struct fwd_dbg_t 
- *
- * Structure for debugging flat forward search. 
- */
-
-/* Debugging */
-typedef struct {
-  s3wid_t trace_wid;	/**< Word to be traced; for debugging */
-  int32 word_dump_sf;	/**< Start frame for words to be dumped for debugging */
-  int32 word_dump_ef;	/**< End frame for words to be dumped for debugging */
-  int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
-  int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
-} fwd_dbg_t ;
-
-
-
-/**
- * Initialization of flat forward search 
- */
-void fwd_init (mdef_t* _mdef,  /**< A model definition */
-	       tmat_t* _tmat,  /**< A transition matrix */
-	       dict_t* _dict,  /**< A dictionary */
-	       lm_t *_lm       /**< An LM */
-	       );
-
-/**
- * Initialization of flat forward search 
- */
-void fwd_free();
-
-/**
- * Start of flat foward search 
- */ 
-void fwd_start_utt (char *id /**< ID of an utterance */
-		    );
-
-/** 
- * Make the search to go forward for one frame. 
- * @return best score of this frame. 
- */
-int32 fwd_frame (int32 *senscr /**< An array of senone score */
-		 ); 
-
-/**
- * Find the active senone list. 
- */
-void fwd_sen_active (int32 *senlist, int32 n_sen);
-
-/**
- * End of flat foward search 
- * @return searching hypothesis. 
- */ 
-
-srch_hyp_t *fwd_end_utt ( void );
 
 /**
    Dump timing. 
