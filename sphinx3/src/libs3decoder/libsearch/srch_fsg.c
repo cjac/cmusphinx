@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.6  2005/07/26  02:20:39  arthchan2003
- * merged hyp_t with srch_hyp_t.
+ * Revision 1.1.2.7  2005/09/18  01:45:43  arthchan2003
+ * Clean up the interfaces for srch_fsg.[ch]
  * 
+ * Revision 1.1.2.6  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
  * Revision 1.1.2.5  2005/07/24 01:41:18  arthchan2003
  * Filled in all function pointers for mode 2
  *
@@ -188,30 +191,6 @@ int srch_FSG_delete_lm(void* srch, const char *lmname)
 
 }
 
-int srch_FSG_gmm_compute_lv2(void* srch, float32 *feat, int32 time)
-{
-  return SRCH_SUCCESS;
-
-}
-int srch_FSG_hmm_compute_lv1(void* srch)
-{  return SRCH_SUCCESS;
-
-}
-int srch_FSG_eval_beams_lv1 (void* srch)
-{
-  return SRCH_SUCCESS;
-
-}
-int srch_FSG_propagate_graph_ph_lv1(void* srch)
-{
-  return SRCH_SUCCESS;
-
-}
-int srch_FSG_propagate_graph_wd_lv1(void* srch)
-{
-  return SRCH_SUCCESS;
-
-}
 
 int srch_FSG_shift_one_cache_frame(void *srch,int32 win_efv)
 {
