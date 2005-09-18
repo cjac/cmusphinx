@@ -42,10 +42,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.5  2005/08/03  18:54:33  dhdfu
+ * Revision 1.26.4.6  2005/09/18  01:21:18  arthchan2003
+ * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
+ * 
+ * Revision 1.26.4.5  2005/08/03 18:54:33  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.26.4.4  2005/08/02 21:32:30  arthchan2003
  * added -s3hmmdir option.
  *
@@ -150,6 +153,31 @@ FILE* file_open(char* filepath)
       E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", filepath);
   }
   return fp;
+}
+
+/*
+ * EW! This is search mode and in general it shouldn't. I do it because
+ * I expect vithist_t and lattice_hist_t will soon be merged 
+ */
+void temp_init_vithistory(kb_t* kb, int32 op_mode)
+{
+  kb->vithist=NULL;
+  kb->lathist=NULL;
+  if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
+     kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
+				 cmd_ln_int32("-bghist"),
+				 cmd_ln_int32("-lmrescore"),
+				 cmd_ln_int32("-bt_wsil"),
+				 REPORT_KB);
+      
+     if(REPORT_KB)
+       vithist_report(kb->vithist);
+  }
+
+  if(op_mode==OPERATION_FLATFWD){
+    kb->lathist=latticehist_init(cmd_ln_int32("-bptblsize"),
+				 S3_MAX_FRAMES+1);
+  }
 }
 
 
@@ -268,6 +296,8 @@ void kb_init (kb_t *kb)
 
     if(kbcore->lmset&&(cmd_ln_str("-lm")||cmd_ln_str("-lmctlfn"))){
       /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+
+#if 0
       kb->vithist = vithist_init(kbcore, kb->beam->word,
 				 cmd_ln_int32("-bghist"),
 				 cmd_ln_int32("-lmrescore"),
@@ -276,6 +306,9 @@ void kb_init (kb_t *kb)
       
       if(REPORT_KB)
 	vithist_report(kb->vithist);
+#endif
+      /* HACK! */
+      temp_init_vithistory(kb,cmd_ln_int32("-op_mode"));
     }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
@@ -336,60 +369,24 @@ void kb_setmllr(char* mllrname,
 		kb_t* kb)
 {
 /*  int32 veclen;*/
-  int32 *cb2mllr;
+
+  kbcore_t *kbc;
+  
   E_INFO("Using MLLR matrix %s\n", mllrname);
+  kbc=kb->kbcore;
   
   if(strcmp(kb->adapt_am->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
-    /* Reread the gaussian mean from the file again */
-    E_INFO("Reloading mean\n");
-    mgau_mean_reload(kbcore_mgau(kb->kbcore),cmd_ln_str("-mean"));
 
-    /* Read in the mllr matrix */
-
-#if MLLR_DEBUG
-    /*This generates huge amount of information */
-    /*    mgau_dump(kbcore_mgau(kb->kbcore),1);*/
-#endif
-
-    mllr_read_regmat(mllrname,
-		     &(kb->adapt_am->regA),
-		     &(kb->adapt_am->regB),
-		     &(kb->adapt_am->mllr_nclass),
-		     mgau_veclen(kbcore_mgau(kb->kbcore)));
-
-    if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
-      int32 ncb, nmllr;
-
-      cb2mllr_read(cb2mllrname,
-		   &cb2mllr,
-		   &ncb, &nmllr);
-      if (nmllr != kb->adapt_am->mllr_nclass)
-	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		ncb, kb->adapt_am->mllr_nclass);
-      if (ncb != kbcore_mdef(kb->kbcore)->n_sen)
-	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		ncb, kbcore_mdef(kb->kbcore)->n_sen);
-    }
+    if(kbc->mgau)
+      adapt_set_mllr(kb->adapt_am,kbc->mgau,mllrname,cb2mllrname,kbc->mdef);
+    else if(kbc->ms_mgau)
+      model_set_mllr(kbc->ms_mgau,mllrname, cb2mllrname, kbc->fcb, kbc->mdef);
     else
-      cb2mllr = NULL;
-
-    /* Transform all the mean vectors */
-
-    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->adapt_am->regA,kb->adapt_am->regB,kb->adapt_am->mllr_nclass,cb2mllr);
-    ckd_free(cb2mllr);
-
-#if MLLR_DEBUG
-    /*#if 1*/
-    mllr_dump(kb->adapt_am->regA,kb->adapt_am->regB,mgau_veclen(kbcore_mgau(kb->kbcore)),kb-adapt_am->mllr_class,cb2mllr);
-    /*This generates huge amount of information */
-    /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
-#endif 
-
+      E_FATAL("Panic, kb has not Gaussian\n");
 
     /* allocate memory for the prevmllrfn if it is too short*/
-    if(strlen(mllrname)*sizeof(char) > 1024){
+    if(strlen(mllrname)*sizeof(char) > 1024)
       kb->adapt_am->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
-    }
 
     strcpy(kb->adapt_am->prevmllrfn,mllrname);
   }else{

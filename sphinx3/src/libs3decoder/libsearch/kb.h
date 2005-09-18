@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.17.4.1  2005/07/03  23:00:58  arthchan2003
- * Free stat_t, histprune_t and srch_t correctly.
+ * Revision 1.17.4.2  2005/09/18  01:21:18  arthchan2003
+ * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
  * 
+ * Revision 1.17.4.1  2005/07/03 23:00:58  arthchan2003
+ * Free stat_t, histprune_t and srch_t correctly.
+ *
  * Revision 1.17  2005/06/21 23:21:58  arthchan2003
  * Log. This is a big refactoring for kb.c and it is worthwhile to give
  * words on why and how things were done.  There were generally a problem
@@ -161,7 +164,15 @@ typedef struct {
   adapt_am_t * adapt_am;  /**< Structure that wraps up parameters for adaptation such as MLLR. */
 
   /** Structure that records the search. */
-  vithist_t *vithist;	  /**< Structure that stores the viterbi history, built during search. */
+  vithist_t *vithist;	  /**< Structure that stores the viterbi
+			     history, built during search. Used only
+			     in mode 4 and 5 */
+
+  latticehist_t *lathist;     /**< Structure that stores the viterbi
+			     history, appear here because of legacy,
+			     built during search. Used only in mode 3
+			  */
+
   stat_t *stat;           /**< Structure of statistics including timers and counters. */
 
   /** FILE handle that handles output. */
