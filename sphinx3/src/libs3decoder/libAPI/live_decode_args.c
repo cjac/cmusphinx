@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13.4.5  2005/07/20  19:42:30  arthchan2003
- * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
+ * Revision 1.13.4.6  2005/09/18  01:11:17  arthchan2003
+ * Add command line for flat-lexicon decoding in livepretend.
  * 
+ * Revision 1.13.4.5  2005/07/20 19:42:30  arthchan2003
+ * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
+ *
  * Revision 1.13.4.4  2005/07/18 19:02:13  arthchan2003
  * Tied almost every command line arguments with decode, wave2feat and ep. (except -rawext and -machine_endian) using macro in cmdln_macro.h
  *
@@ -126,15 +129,28 @@ arg_t arg_def[] = {
   control_file_handling_command_line_macro()
   hypothesis_file_handling_command_line_macro()
   output_lattice_handling_command_line_macro()
+  dag_handling_command_line_macro()
+  second_stage_dag_handling_command_line_macro()
+  input_lattice_handling_command_line_macro() 
+  flat_fwd_multiplex_treatment_command_line_macro() 
+  flat_fwd_debugging_command_line_macro() 
+  history_table_command_line_macro()
 
   decode_specific_command_line_macro()
   search_specific_command_line_macro()
   search_modeTST_specific_command_line_macro()
   search_modeWST_specific_command_line_macro()
-  partial_hypothesis_command_line_macro()
   control_lm_mllr_file_command_line_macro()
   finite_state_grammar_command_line_macro()
   phone_insertion_penalty_command_line_macro()
+
+  partial_hypothesis_command_line_macro()
+
+
+  { "-bestscoredir",
+    ARG_STRING,
+    NULL,
+    "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
 
   { "-machine_endian",
     ARG_STRING,
