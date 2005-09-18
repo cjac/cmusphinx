@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.14  2005/09/11  23:07:28  arthchan2003
- * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * Revision 1.1.4.15  2005/09/18  01:44:12  arthchan2003
+ * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
  * 
+ * Revision 1.1.4.14  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
  * Revision 1.1.4.13  2005/08/02 21:37:28  arthchan2003
  * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
  *
@@ -376,15 +379,10 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_FLATFWD){
 
-    E_FATAL("Flat decoding is not supported yet");
-
     s->srch_init=&srch_FLAT_FWD_init;
-    /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
-
     s->srch_uninit=&srch_FLAT_FWD_uninit;
     s->srch_utt_begin=&srch_FLAT_FWD_begin;
     s->srch_utt_end=&srch_FLAT_FWD_end;
-
 
     s->srch_set_lm=&srch_FLAT_FWD_set_lm;
     s->srch_add_lm=&srch_FLAT_FWD_add_lm;
@@ -401,11 +399,8 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
 
-    s->srch_hmm_compute_lv2=&srch_FLAT_FWD_hmm_compute_lv2;
-    s->srch_propagate_graph_ph_lv2=&srch_FLAT_FWD_propagate_graph_ph_lv2;
-    s->srch_propagate_graph_wd_lv2=&srch_FLAT_FWD_propagate_graph_wd_lv2;
 
-    s->srch_compute_heuristic=&srch_FLAT_FWD_compute_heuristic;
+    s->srch_one_srch_frame_lv2=&srch_FLAT_FWD_srch_one_frame_lv2;
     s->srch_frame_windup=&srch_FLAT_FWD_frame_windup;
     s->srch_shift_one_cache_frame=&srch_FLAT_FWD_shift_one_cache_frame;
 
@@ -508,6 +503,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   s->stat=kb->stat;
   s->ascr=kb->ascr;
   s->vithist=kb->vithist;
+  s->lathist=kb->lathist;
   s->beam=kb->beam;
   s->fastgmm=kb->fastgmm;
   s->pl=kb->pl;
@@ -522,10 +518,19 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   str=srch_mode_index_to_str(op_mode);
 
-  /* Do search-specific checking here */
+  /* FIXME! Do search-specific checking here. In a true OO
+     programming, this should not happen. This happens because we have
+     duplicated code. */
   if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
     if(s->kbc->lmset==NULL||s->vithist==NULL){      
       E_INFO("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n",str);
+      goto check_error;
+    }
+  }
+
+  if(op_mode==OPERATION_FLATFWD){
+    if(s->kbc->lmset==NULL||s->lathist==NULL){      
+      E_INFO("lmset is NULL and lathist is NULL in op_mode %s, wrong operation mode?\n",str);
       goto check_error;
     }
   }
@@ -727,8 +732,6 @@ int32 srch_add_lm(srch_t* srch, lm_t* lm, const char *lmname)
   srch->srch_add_lm(srch,lm,lmname);
   return SRCH_SUCCESS;
 }
-
-
 int32 srch_delete_lm(srch_t *srch, const char* lmname)
 {
   if(srch->srch_delete_lm==NULL){
@@ -830,25 +833,33 @@ void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
 
 
 
-void reg_result_dump (srch_t* s, int32 id)
+void reg_result_dump (srch_t* s, int32 id )
 {
   FILE *fp, *latfp, *bptfp;
   int32 ascr, lscr;
   glist_t hyp;
   stat_t* st; 
   gnode_t *gn;
-  srch_hyp_t *h;
+  srch_hyp_t *h, *tmph;
   srch_hyp_t *bph;
+  srch_hyp_t *srch_hyp;
   int32 bp;
   float32 *f32arg;
   float64 lwf;
   dag_t *dag;
   int32 nfrm;
-
+  s3latid_t l;
+  
   st= s->stat;
   fp = stderr;
   dag=NULL;
 
+
+  /* The if (s->vithst) and (s->lathist) are temporary, once the two
+     are merged. This ugly form of polymorphism should disappear. 
+  */
+
+  assert(!(s->vithist&&s->lathist));
   if (cmd_ln_str("-bptbldir")) {
     char file[8192];
     sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , s->uttid);
@@ -856,15 +867,19 @@ void reg_result_dump (srch_t* s, int32 id)
       E_ERROR("fopen(%s,w) failed; using stdout\n", file);
       bptfp = stdout;
     }
-    
-    vithist_dump (s->vithist, -1, s->kbc, bptfp);
+
+    if(s->vithist)
+     vithist_dump (s->vithist, -1, s->kbc, bptfp);
     
     if (bptfp != stdout)
 	fclose (bptfp);
   }
   
-  hyp = vithist_backtrace (s->vithist, id);
-  
+  if(s->vithist){
+    assert(id>=0);
+    hyp = vithist_backtrace (s->vithist, id);
+  }
+
   /* Detailed backtrace */
   if (cmd_ln_int32("-backtrace")) {
     fprintf (fp, "\nBacktrace(%s)\n", s->uttid);
@@ -995,6 +1010,60 @@ void reg_result_dump (srch_t* s, int32 id)
   glist_free(hyp);
 
 }
+
+/*
+ * Write exact hypothesis.  Format
+ *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
+ * where:
+ *   scl = acoustic score scaling for entire utterance
+ *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
+ *   ascr = scaled acoustic score for entire utterance
+ *   lscr = LM score (without lw or wip) for entire utterance
+ *   sf = start frame for word
+ *   wascr = scaled acoustic score for word
+ *   wlscr = LM score (without lw or wip) for word
+ *   ef = end frame for utterance.
+ */
+void log_hypseg (char *uttid,
+		 FILE *fp,	/* Out: output file */
+		 srch_hyp_t *hypptr,	/* In: Hypothesis */
+		 int32 nfrm,	/* In: #frames in utterance */
+		 int32 scl,	/* In: Acoustic scaling for entire utt */
+		 float64 lwf,	/* In: LM score scale-factor (in dagsearch) */
+		 dict_t* dict,  /* In: dictionary */
+		 lm_t *lm
+		 )
+{
+    srch_hyp_t *h;
+    int32 ascr, lscr, tscr;
+    
+    ascr = lscr = tscr = 0;
+    for (h = hypptr; h; h = h->next) {
+	ascr += h->ascr;
+	if (dict_basewid(dict,h->id) != dict->startwid) {
+	    lscr += lm_rawscore (lm,h->lscr, lwf);
+	} else {
+	    assert (h->lscr == 0);
+	}
+	tscr += h->ascr + h->lscr;
+    }
+
+    fprintf (fp, "%s S %d T %d A %d L %d", uttid, scl, tscr, ascr, lscr);
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, " (null)\n");
+    else {
+	for (h = hypptr; h; h = h->next) {
+	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lm,h->lscr, lwf) : 0;
+	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->id));
+	}
+	fprintf (fp, " %d\n", nfrm);
+    }
+    
+    fflush (fp);
+}
+
+
 
 /* CODE DUPLICATION! Sphinx 3.0 family of logging hyp and hyp segments */
 /* Write hypothesis in old (pre-Nov95) NIST format */

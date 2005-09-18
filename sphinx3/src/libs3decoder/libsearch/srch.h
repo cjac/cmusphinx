@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.11  2005/09/11  23:07:28  arthchan2003
- * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * Revision 1.1.4.12  2005/09/18  01:44:12  arthchan2003
+ * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
  * 
+ * Revision 1.1.4.11  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
  * Revision 1.1.4.10  2005/08/02 21:37:28  arthchan2003
  * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
  *
@@ -373,6 +376,7 @@ typedef struct srch_s {
 
 
   vithist_t *vithist;     /**< Viterbi history, built during search */
+  latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
 
   /* ARCHAN: Various pruning beams, put them together such that it looks more logical. */
   ascr_t *ascr;		  /**< Pointer to Senone and composite senone scores for one frame */
@@ -381,6 +385,8 @@ typedef struct srch_s {
   pl_t *pl;              /**< Pointer to Structure that wraps up parameter for phoneme look-ahead */
   adapt_am_t * adapt_am; /** Pointer to AM adaptation structure */
   kbcore_t *kbc;      /**< Pointer to the kbcore */
+
+
   FILE *matchfp;          /**< Copy of File handle for the match file */
   FILE *matchsegfp;       /**< Copy of File handle for the match segmentation file */
   FILE *hmmdumpfp;        /**< Copy of File handle for dumping hmms for debugging */
@@ -524,9 +530,7 @@ typedef struct srch_s {
     There are two names for OPERATION_TST_DECODE (Mode 4)
 
     OP_MAGICWHEEL  OPERATION_TST_DECODE(4)
-
     OP_TST_DECODE  OPERATION_TST_DECODE(4)
-
     
     OP_WST_DECODE  OPERATION_WST_DECODE(5)
 
@@ -627,7 +631,7 @@ void match_write (FILE *fp,  /**< The file pointer */
 
 /** Dump recognition result */
 void reg_result_dump (srch_t* s, /**< A search structure */
-		      int32 id   /**< Utterance ID */
+		      int32 id  /**< Utterance ID */
 		      );
 
 /** using file name of the LM or defined lmctlfn mechanism */
@@ -660,6 +664,17 @@ void log_hyp_detailed (FILE *fp, /**< A file poointer */
 					       if not, the unormalized score would be displayed. 
 					     */
 		       );
+
+
+void log_hypseg (char *uttid,
+		 FILE *fp,	/* Out: output file */
+		 srch_hyp_t *hypptr,	/* In: Hypothesis */
+		 int32 nfrm,	/* In: #frames in utterance */
+		 int32 scl,	/* In: Acoustic scaling for entire utt */
+		 float64 lwf,	/* In: LM score scale-factor (in dagsearch) */
+		 dict_t* dict,  /* In: dictionary */
+		 lm_t *lm
+		 );
 
 
 #if 0 /*Not implemented */
