@@ -81,18 +81,20 @@ static arg_t arg[] = {
   hypothesis_file_handling_command_line_macro() 
   output_lattice_handling_command_line_macro()
   dag_handling_command_line_macro()
+  second_stage_dag_handling_command_line_macro()
+  input_lattice_handling_command_line_macro() 
+  flat_fwd_multiplex_treatment_command_line_macro() 
+  flat_fwd_debugging_command_line_macro() 
+  history_table_command_line_macro()
 
   cepstral_input_handling_command_line_macro()
   decode_specific_command_line_macro()
   search_specific_command_line_macro()
   search_modeTST_specific_command_line_macro()
   search_modeWST_specific_command_line_macro()
-
   control_lm_mllr_file_command_line_macro()
   finite_state_grammar_command_line_macro()
   phone_insertion_penalty_command_line_macro()
-
-  partial_hypothesis_command_line_macro()
 
   /* Things are yet to refactored */
 #if 0
@@ -107,15 +109,10 @@ static arg_t arg[] = {
       reason is it makes sense to make every s3.0 family of tool to
       accept -utt */
 
-
-    { "-bestpath",
-      ARG_INT32,
-      "0",
-      "Whether to run bestpath DAG search after forward Viterbi pass" },
-    { "-bestpathlw",
-      ARG_FLOAT32,
+    { "-bestscoredir",
+      ARG_STRING,
       NULL,
-      "Language weight for bestpath DAG search (default: same as -lw)" },
+      "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
 
     { "-utt",
       ARG_STRING,
@@ -169,6 +166,15 @@ int32 main (int32 argc, char *argv[])
     stat_report_corpus(kb.stat);
 
     kb_free(&kb);
+
+#if (! WIN32)
+#if defined(_SUN4)
+    system("ps -el | grep decode_anytopo");
+#else
+    system ("ps aguxwww | grep decode_anytopo");
+#endif
+#endif
+
   cmd_ln_appl_exit();
   exit(0);
 }
