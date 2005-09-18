@@ -48,9 +48,12 @@
 /* 
  *   HISTORY
  * $Log$
- * Revision 1.21.4.1  2005/07/13  01:48:14  arthchan2003
- * Set the variable dither in FE.
+ * Revision 1.21.4.2  2005/09/18  01:13:33  arthchan2003
+ * Remove unnecessary info.
  * 
+ * Revision 1.21.4.1  2005/07/13 01:48:14  arthchan2003
+ * Set the variable dither in FE.
+ *
  * Revision 1.21  2005/06/21 20:35:55  arthchan2003
  * Add $ keyword.
  *
@@ -372,7 +375,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
   
-  E_INFO("%d\n",FE->NUM_OVERFLOW_SAMPS);
+  /*  E_INFO("%d\n",FE->NUM_OVERFLOW_SAMPS);*/
   if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
     pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
     memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS),0,pad_len*sizeof(int16));
