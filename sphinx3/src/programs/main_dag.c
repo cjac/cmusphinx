@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.7  2005/09/11  23:08:47  arthchan2003
- * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
+ * Revision 1.10.4.8  2005/09/18  01:52:05  arthchan2003
+ * Changed name of log_hypseg to s3dag_log_hypseg to avoid confusion.
  * 
+ * Revision 1.10.4.7  2005/09/11 23:08:47  arthchan2003
+ * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
+ *
  * Revision 1.10.4.6  2005/09/11 03:04:34  arthchan2003
  * Change for Comments for last commit. Last commit involves an important
  * bug fix for dag.  In the past, dag was using a set of bestpath search
@@ -315,7 +318,7 @@ static void models_init ( void )
  *   wlscr = LM score (without lw or wip) for word
  *   ef = end frame for utterance.
  */
-static void log_hypseg (char *uttid,
+static void s3dag_log_hypseg (char *uttid,
 			FILE *fp,	/* Out: output file */
 			srch_hyp_t *hypptr,	/* In: Hypothesis */
 			int32 nfrm)	/* In: #frames in utterance */
@@ -391,7 +394,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	  log_hypstr (stdout, hyp, uttid, NOTEXACT, ascr+lscr, dict);
 	  
 	  printf ("BSTXCT: ");
-	  log_hypseg (uttid, stdout, hyp, nfrm);
+	  s3dag_log_hypseg (uttid, stdout, hyp, nfrm);
 	  
 	  lm_cache_stats_dump (lmset->cur_lm);
 	  lm_cache_reset (lmset->cur_lm);
@@ -409,7 +412,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     if (_matchfp)
 	log_hypstr (_matchfp, hyp, uttid, NOTEXACT, 0, dict);
     if (_matchsegfp)
-	log_hypseg (uttid, _matchsegfp, hyp, nfrm);
+	s3dag_log_hypseg (uttid, _matchsegfp, hyp, nfrm);
     
     dag_destroy (dag);
 
