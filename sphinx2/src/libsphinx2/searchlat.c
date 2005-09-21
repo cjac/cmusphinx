@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2004/12/10  16:48:57  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.13  2005/09/21  02:18:06  rkm
+ * Fixed altpron bug in nbest
  * 
+ * Revision 1.12  2004/12/10 16:48:57  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 12-Aug-2004	M K Ravishankar (rkm@cs) at Carnegie Mellon University
  * 		Bugfix: Obtained current start_wid at the start of lattice_rescore().
@@ -1069,6 +1072,7 @@ static int32 best_rem_score (latnode_t *from)
 {
     latlink_t *link;
     int32 bestscore, score;
+    int32 bw1, bw2;
     
     if (from->info.rem_score <= 0)
 	return (from->info.rem_score);
@@ -1078,7 +1082,16 @@ static int32 best_rem_score (latnode_t *from)
     for (link = from->links; link; link = link->next) {
 	score = best_rem_score (link->to);
 	score += link->link_scr;
-	score += (lm_bg_score (from->wid, link->to->wid) * lw_factor);
+	
+	if (altpron) {
+	  bw1 = dict->dict_list[from->wid]->fwid;
+	  bw2 = dict->dict_list[link->to->wid]->fwid;
+	  
+	  score += (lm_bg_score (bw1, bw2) * lw_factor);
+	} else {
+	  score += (lm_bg_score (from->wid, link->to->wid) * lw_factor);
+	}
+	
 	if (score > bestscore)
 	    bestscore = score;
     }
@@ -1140,6 +1153,7 @@ static void  path_extend (latpath_t *path)
     latlink_t *link;
     latpath_t *newpath;
     int32 total_score, tail_score;
+    int32 bw0, bw1, bw2;
     
     /* Consider all successors of path->node */
     for (link = path->node->links; link; link = link->next) {
@@ -1152,13 +1166,30 @@ static void  path_extend (latpath_t *path)
 	newpath->node = link->to;
 	newpath->parent = path;
 	newpath->score = path->score + link->link_scr;
-	if (path->parent)
+	if (path->parent) {
+	  if (altpron) {
+	    bw0 = dict->dict_list[path->parent->node->wid]->fwid;
+	    bw1 = dict->dict_list[path->node->wid]->fwid;
+	    bw2 = dict->dict_list[newpath->node->wid]->fwid;
+	    
+	    newpath->score += (lm_tg_score (bw0, bw1, bw2) * lw_factor);
+	  } else {
 	    newpath->score += (lm_tg_score (path->parent->node->wid,
-					   path->node->wid,
-					   newpath->node->wid) * lw_factor);
-	else
-	    newpath->score += (lm_bg_score (path->node->wid, newpath->node->wid) *
-			       lw_factor);
+					    path->node->wid,
+					    newpath->node->wid)
+			       * lw_factor);
+	  }
+	} else {
+	  if (altpron) {
+	    bw1 = dict->dict_list[path->node->wid]->fwid;
+	    bw2 = dict->dict_list[newpath->node->wid]->fwid;
+	    
+	    newpath->score += (lm_bg_score (bw1, bw2) * lw_factor);
+	  } else {
+	    newpath->score += (lm_bg_score (path->node->wid, newpath->node->wid)
+			       * lw_factor);
+	  }
+	}
 	
 	/* Insert new partial path hypothesis into sorted path_list */
 	n_hyp_tried++;
@@ -1212,7 +1243,7 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 {
     latnode_t *node;
     latpath_t *path, *top;
-    int32 i, j, scr, n_alt;
+    int32 i, j, scr, n_alt, bwid;
     static search_hyp_t **alt = NULL;
     static int32 max_alt_hyp = 0;
     char remLMName[128];
@@ -1273,7 +1304,15 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 	    path = (latpath_t *) listelem_alloc (sizeof(latpath_t));
 	    path->node = node;
 	    path->parent = NULL;
-	    scr = (w1 < 0) ? lm_bg_score(w2, node->wid) : lm_tg_score(w1, w2, node->wid);
+	    
+	    bwid = (altpron) ? dict->dict_list[node->wid]->fwid : node->wid;
+	    
+	    if (w1 < 0) {
+	      scr = lm_bg_score(w2, bwid);
+	    } else {
+	      scr = lm_tg_score(w1, w2, bwid);
+	    }
+	    
 	    path->score = scr;
 	    
 	    path_insert (path, scr + node->info.rem_score);
