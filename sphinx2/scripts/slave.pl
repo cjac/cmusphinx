@@ -141,16 +141,35 @@ sub align_hyp {
   my $ref = shift;
   my $hyp = shift;
   my $align = $DEC_CFG_ALIGN;
+  my $rline;
+  my $hline;
+  my $result;
 
   if ($align eq 'builtin') {
     my $count = 0;
     my $error = 0;
     open (REF, "<$ref") or die "Can't open $ref\n";
     open (HYP, "<$hyp") or die "Can't open $hyp\n";
+    my $outfile = "$DEC_CFG_BASE_DIR/result/${DEC_CFG_EXPTNAME}.align";
+    open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
     while (my $refline = <REF>) {
       $count++;
       my $hypline = <HYP>;
-      $error++ if ($refline ne $hypline);
+      chomp($refline);
+      chomp(hypline);
+      if ($refline ne $hypline) {
+	$rline = uc(refline);
+	$hline = uc(hypline);
+	$result = "ERROR";
+	$error++;
+      } else {
+	$rline = lc(refline);
+	$hline = lc(hypline);
+	$result = "CORRECT";
+      }
+      print OUT "Sentence $count : $result\n";
+      print OUT "\t$rline\n";
+      print OUT "\t$hline\n\n";
     }
     close(REF);
     close(HYP);
@@ -162,6 +181,9 @@ sub align_hyp {
     }
     &DEC_Log("SENTENCE ERROR: " . (sprintf "%.3f%", $pct) . 
 	    (sprintf " (%d/%d)\n", $error, $count));
+    print OUT "\n\nSENTENCE ERROR: " . (sprintf "%.3f%", $pct) . 
+	    (sprintf " (%d/%d)\n", $error, $count);
+    close(OUT);
   } elsif ($align =~ m/sclite/i) {
     my $outfile = "$DEC_CFG_BASE_DIR/result/${DEC_CFG_EXPTNAME}.align";
     my ($word_total, $word_err, $sent_total, $sent_err);
