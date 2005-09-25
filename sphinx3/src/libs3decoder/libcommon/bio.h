@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8.4.1  2005/07/17  05:19:20  arthchan2003
- * Added SWAP_FLOAT64
+ * Revision 1.8.4.2  2005/09/25  19:00:05  arthchan2003
+ * Added all swap functions from fe.h
  * 
+ * Revision 1.8.4.1  2005/07/17 05:19:20  arthchan2003
+ * Added SWAP_FLOAT64
+ *
  * Revision 1.8  2005/06/21 20:40:46  arthchan2003
  * 1, Fixed doxygen documentation, 2, Add the $ keyword.
  *
@@ -105,8 +108,12 @@ extern "C" {
                         SWAP_INT32(low);  SWAP_INT32(high);\
                         temp = *low; *low = *high; *high = temp;}
 
+  /* ARCHAN: Old my! another set of swapping function. From the route fe.h!! */
 
-
+#define SWAPW(x)        *(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
+#define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
+                        (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
+#define SWAPF(x)        SWAPL((int *) x)
 
   /** "reversed senses" SWAP, ARCHAN: This is still incorporated in
    Sphinx 3 because lm3g2dmp used it.  Don't think that I am very
