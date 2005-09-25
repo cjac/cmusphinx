@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.8  2005/09/18  01:18:24  arthchan2003
- * Only retain processing of the array whmm_t in flat_fwd.[ch]
+ * Revision 1.12.4.9  2005/09/25  19:22:07  arthchan2003
+ * Instead of using the real left context, use the compressed ID for left context in expansion.  This effective saves 25%-50% from the dumb implementation. Not tested yet.
  * 
+ * Revision 1.12.4.8  2005/09/18 01:18:24  arthchan2003
+ * Only retain processing of the array whmm_t in flat_fwd.[ch]
+ *
  * Revision 1.12.4.7  2005/09/11 02:58:10  arthchan2003
  * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
  *
@@ -672,6 +675,8 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
     tmat_t* tmat;
     dict_t* dict;
     ctxt_table_t* ct_table;
+    s3senid_t *lcmap;
+
     whmm_t **whmm;
 
     kbc=fwg->kbcore;
@@ -688,6 +693,16 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
     nf = fwg->n_frm+1;
     
     b = dict->word[w].ciphone[0];
+    lcmap=get_lc_cimap(ct_table, w, dict);
+    /*
+      ARCHAN: Though the term rc and lc is used at here.  Be very
+      careful that, when they were used in CI-phone, the corresponding
+      SSID may not be unique.  While, using what one could find in the
+      context of lc_cimap. Things are always unique. The contents in
+      the hmm should always be stored using the compressed ID. This
+      will make computation be more efficient. 
+     */
+
     /*    E_INFO("word enter\n");*/
     if (dict->word[w].pronlen > 1) {	/* Multi-phone word; no right context problem */
 
@@ -706,7 +721,7 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
 	  whmm[w] = h;
 	}
       }else{
-	if ((! whmm[w]) || (whmm[w]->pos != 0)|| !exist_left_context(whmm, w,lc)) {
+	if ((! whmm[w]) || (whmm[w]->pos != 0)|| !exist_left_context(whmm, w, lcmap[lc])) {
 
 	  h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
 	  h->pid=pidp;
@@ -725,7 +740,7 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
 	if(fwg->multiplex){
 	  h->pid[0] = pid;
 	}else{
-	  h->lc=lc;
+	  h->lc=lcmap[lc];
 	  h->pid=pidp;
 	}
       }
@@ -760,7 +775,7 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
 	      }
 	    }
 	  }else {
-	    if ((! h) || !exist_left_right_context(whmm, w,lc,rc)) {
+	    if ((! h) || !exist_left_right_context(whmm, w,lcmap[lc],rc)) {
 	      h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
 	      h->pid=pidp;
 	      
@@ -798,7 +813,7 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
 		  h->pid[0] = rpid[rc];
 		else{
 		  h->pid=pidp;
-		  h->lc = lc;
+		  h->lc = lcmap[lc];
 		}
 
 		h->active = nf;
