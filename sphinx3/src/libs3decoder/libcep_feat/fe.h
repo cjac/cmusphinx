@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.24.4.3  2005/07/18  19:07:42  arthchan2003
- * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
+ * Revision 1.24.4.4  2005/09/25  18:58:18  arthchan2003
+ * Remove things like SWAPbla from fe.h, now put all to bio.h
  * 
+ * Revision 1.24.4.3  2005/07/18 19:07:42  arthchan2003
+ * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
+ *
  *
  */
 
@@ -56,6 +59,7 @@
 
 
 #include <s3types.h>
+#include <bio.h>
 
 /** \file fe.h
     \brief High level function for converting waveforms to cepstral
@@ -239,10 +243,6 @@ typedef struct{
   #if defined(ALPHA) || defined(ALPHA_OSF1) || defined(alpha_osf1) || defined(__alpha) || defined(mips) 
 */
 /*#define SWAPBYTES*/
-#define SWAPW(x)        *(x) = ((0xff & (*(x))>>8) | (0xff00 & (*(x))<<8))
-#define SWAPL(x)        *(x) = ((0xff & (*(x))>>24) | (0xff00 & (*(x))>>8) |\
-                        (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
-#define SWAPF(x)        SWAPL((int *) x)
 
 
   /** 
