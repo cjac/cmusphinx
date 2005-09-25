@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5.4.2  2005/07/24  01:29:54  arthchan2003
- * Set #ci phone.
+ * Revision 1.5.4.3  2005/09/25  19:35:26  arthchan2003
+ * Change realloc to calloc. Could be permanent if we found that there is no need to reallocate the array.
  * 
+ * Revision 1.5.4.2  2005/07/24 01:29:54  arthchan2003
+ * Set #ci phone.
+ *
  * Revision 1.5.4.1  2005/07/03 22:53:15  arthchan2003
  * 1, Changed free to ckd_free, 2, Join from HEAD, using float64 instead of float32.
  *
@@ -304,7 +307,7 @@ histprune_t *histprune_init (int32 maxhmm,int32 maxhist, int32 maxword, int32 hm
 
   h->hmm_hist_bins= n+1;
 
-  h->hmm_hist = (int32 *) ckd_realloc (h->hmm_hist, h->hmm_hist_bins * sizeof(int32));	
+  h->hmm_hist = (int32 *) ckd_calloc (h->hmm_hist_bins,sizeof(int32));
     
 
   return h;
