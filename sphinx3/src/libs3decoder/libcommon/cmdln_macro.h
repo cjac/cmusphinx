@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.8  2005/09/18  01:14:58  arthchan2003
- * Tie Viterbi history, DAG, debugging command line together.  Inspect all possible commands and specify whether they are mode-specific.
+ * Revision 1.1.2.9  2005/09/25  19:04:23  arthchan2003
+ * Added macros for 1, tie routines which used vq_gen, 2, add support for using LTS rules to generate OOV. 3, enable and disable composite triphone support.
  * 
+ * Revision 1.1.2.8  2005/09/18 01:14:58  arthchan2003
+ * Tie Viterbi history, DAG, debugging command line together.  Inspect all possible commands and specify whether they are mode-specific.
+ *
  * Revision 1.1.2.7  2005/09/07 23:27:21  arthchan2003
  * Added an option in gmm_command_line_macro() to allow multiple behavior of Gaussian flooring.
  *
@@ -92,6 +95,20 @@
    us a better architecture. 
 
  */
+
+#define vq_cluster_command_line_macro() \
+    { "-stdev", \
+      ARG_INT32, \
+      "0", \
+      "Use std.dev. (rather than var) in computing vector distances during clustering" }, \
+    { "-eps", \
+      ARG_FLOAT64, \
+      "0.0001", \
+      "Stopping criterion: stop iterations if relative decrease in sq(error) < eps" }, \
+    { "-iter", \
+      ARG_INT32, \
+      "100", \
+      "Max no. of k-means iterations for clustering" },
 
 #define gmm_command_line_macro() \
     { "-mean",\
@@ -243,7 +260,17 @@
     { "-fdict", \
       ARG_STRING, \
       NULL, \
-      "Silence and filler (noise) word pronunciation dictionary input file" },
+      "Silence and filler (noise) word pronunciation dictionary input file" }, \
+    { "-ltsoov", \
+      ARG_INT32, \
+      "0", \
+      "Use CMUDict letter-to-sound rules to generate pronunciations for out of vocabulary words. Use it with care. It implicity implies that the phone set in the mdef and dict are the same as the LTS rule. "},
+
+#define gaussian_selection_command_line_macro() \
+    { "-gs", \
+      ARG_STRING, \
+      NULL, \
+      "Gaussian Selection Mapping." }, 
 
 #define fast_GMM_computation_command_line_macro() \
     { "-subvq", \
@@ -254,10 +281,7 @@
       ARG_FLOAT64, \
       "3.0e-3", \
       "Beam selecting best components within each mixture Gaussian [0(widest)..1(narrowest)]" }, \
-    { "-gs", \
-      ARG_STRING, \
-      NULL, \
-      "Gaussian Selection Mapping." }, \
+    gaussian_selection_command_line_macro() \
     { "-ds", \
       ARG_INT32, \
       "1", \
@@ -541,7 +565,7 @@
     { "-lextreedump", \
       ARG_INT32, \
       "0", \
-      "Whether to dump the lextree structure to stderr (for debugging)" }, \
+      "Whether to dump the lextree structure to stderr (for debugging), 1 for Ravi's format, 2 for Dot format, Larger than 2 will be treated as Ravi's format" }, \
     { "-bghist", \
       ARG_INT32, \
       "0", \
@@ -553,7 +577,11 @@
     { "-treeugprob", \
       ARG_INT32, \
       "1", \
-      "If TRUE (non-0), Use unigram probs in lextree" }, 
+      "If TRUE (non-0), Use unigram probs in lextree" }, \
+    { "-composite", \
+      ARG_INT32, \
+      "1", \
+      "If TRUE (non-0), then composite triphone approximation is used." }, \
 
 #define dag_handling_command_line_macro() \
     { "-min_endfr", \
