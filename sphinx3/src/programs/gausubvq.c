@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9.4.1  2005/07/18  23:21:23  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.9.4.2  2005/09/25  20:07:53  arthchan2003
+ * Tied clustering arguments of gausubvq and gauvq.
  * 
+ * Revision 1.9.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.9  2005/06/22 05:34:46  arthchan2003
  * Change gausubvq to use a new mdef_init interface. Add  keyword.
  *
@@ -178,13 +181,16 @@ static arg_t arg[] = {
   log_table_command_line_macro()
   common_application_properties_command_line_macro()
   gmm_command_line_macro() /* At here, mixw is involved, even though it is not used in the computation*/
+  vq_cluster_command_line_macro()
 
   /** gausubvq-specific argument. */
 
-    { "-stdev",
+
+    { "-seed",
       ARG_INT32,
-      "0",
-      "Use std.dev. (rather than var) in computing vector distances during clustering" },
+      "-1",
+      "User defined seed to seed the random generator of the K-mean algorithm, if it is a value smaller than 0, internal mechanism will be used."
+    },
     { "-svspec",
       REQARG_STRING,
       NULL,
@@ -193,23 +199,10 @@ static arg_t arg[] = {
       ARG_INT32,
       "4096",
       "No. of codewords in output subvector codebooks" },
-    { "-iter",
-      ARG_INT32,
-      "100",
-      "Max no. of k-means iterations for clustering" },
-    { "-eps",
-      ARG_FLOAT64,
-      "0.0001",
-      "Stopping criterion: stop iterations if relative decrease in sq(error) < eps" },
     { "-subvq", 
       ARG_STRING,
       NULL,
       "Output subvq file (stdout if not specified)" },
-    { "-seed",
-      ARG_INT32,
-      "-1",
-      "User defined seed to seed the random generator of the K-mean algorithm, if it is a value smaller than 0, internal mechanism will be used."
-    },
 
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -226,8 +219,10 @@ int32 main (int32 argc, char *argv[])
     float64 sqerr;
     int32 stdev;
     int32 i, j, v, m, c;
-    
-    cmd_ln_parse (arg, argc, argv);
+
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+    unlimit ();
     
     logs3_init (cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table")); /*Report Progress, use log table */
     
@@ -372,4 +367,8 @@ int32 main (int32 argc, char *argv[])
     fclose (fpout);
     
     exit(0);
+
+  cmd_ln_appl_exit();
+  exit(0);
+
 }
