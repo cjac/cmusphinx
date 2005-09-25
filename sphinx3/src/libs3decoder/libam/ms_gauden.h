@@ -45,11 +45,14 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6.4.3  2005/08/03  18:53:44  dhdfu
+ * Revision 1.6.4.4  2005/09/25  18:54:20  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ * 
+ * Revision 1.6.4.3  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.6.4.2  2005/07/20 19:39:01  arthchan2003
  * Added licences in ms_* series of code.
  *
@@ -137,7 +140,8 @@ typedef struct {
 gauden_t *
 gauden_init (char *meanfile,	/**< Input: File containing means of mixture gaussians */
 	     char *varfile,	/**< Input: File containing variances of mixture gaussians */
-	     float32 varfloor	/**< Input: Floor value to be applied to variances */
+	     float32 varfloor,	/**< Input: Floor value to be applied to variances */
+	     int32 precompute   /**< Input: Whether we should precompute */  
 	     );
 
 /** Release memory allocated by gauden_init. */

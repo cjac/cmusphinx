@@ -46,11 +46,14 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.1.2.3  2005/08/03  18:53:44  dhdfu
+ * Revision 1.1.2.4  2005/09/25  18:55:19  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ * 
+ * Revision 1.1.2.3  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.1.2.2  2005/08/02 21:05:38  arthchan2003
  * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
  *
@@ -128,10 +131,9 @@ int32 model_set_mllr(ms_mgau_model_t* msg, const char *mllrfile, const char *cb2
 }
 
 ms_mgau_model_t* ms_mgau_init (char* meanfile,
-			       char* varfile,
-			       float64 varfloor,
-			       char* mixwfile,
-			       float64 mixwfloor,
+			       char* varfile, float64 varfloor,
+			       char* mixwfile, float64 mixwfloor,
+			       int32 precomp,
 			       char *senmgau,
 			       char* lambdafile,
 			       int32 _topn
@@ -153,7 +155,8 @@ ms_mgau_model_t* ms_mgau_init (char* meanfile,
 
   msg->g = gauden_init (meanfile,
 			varfile,
-			varfloor);
+			varfloor,
+			precomp);
 
   msg->s = senone_init (mixwfile,
 			senmgau,

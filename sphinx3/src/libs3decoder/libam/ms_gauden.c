@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.4  2005/09/07  23:29:07  arthchan2003
- * Added FIXME warning.
+ * Revision 1.5.4.5  2005/09/25  18:54:20  arthchan2003
+ * Added a flag to turn on and off precomputation.
  * 
+ * Revision 1.5.4.4  2005/09/07 23:29:07  arthchan2003
+ * Added FIXME warning.
+ *
  * Revision 1.5.4.3  2005/09/07 23:25:10  arthchan2003
  * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
  *
@@ -338,7 +341,7 @@ static int32 gauden_dist_precompute (gauden_t *g, float32 varfloor)
 }
 
 
-gauden_t *gauden_init (char *meanfile, char *varfile, float32 varfloor)
+gauden_t *gauden_init (char *meanfile, char *varfile, float32 varfloor, int32 precompute)
 {
     int32 i, m, f, d, *flen;
     gauden_t *g;
@@ -364,7 +367,8 @@ gauden_t *gauden_init (char *meanfile, char *varfile, float32 varfloor)
     ckd_free (flen);
 
     /* Floor variances and precompute variance determinants */
-    gauden_dist_precompute (g, varfloor);
+    if(precompute)
+      gauden_dist_precompute (g, varfloor);
 
     /* Floor for density values */
     min_density = logs3_to_log (S3_LOGPROB_ZERO);

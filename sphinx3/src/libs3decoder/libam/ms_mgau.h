@@ -46,11 +46,14 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.1.2.3  2005/08/03  18:53:44  dhdfu
+ * Revision 1.1.2.4  2005/09/25  18:55:19  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ * 
+ * Revision 1.1.2.3  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.1.2.2  2005/08/02 21:05:38  arthchan2003
  * 1, Added dist and mgau_active as intermediate variable for computation. 2, Added ms_cont_mgau_frame_eval, which is a multi stream version of GMM computation mainly s3.0 family of tools. 3, Fixed dox-doc.
  *
@@ -131,6 +134,7 @@ ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of
 			       float64 varfloor,	/**< In: Floor value applied to variances; e.g., 0.0001 */
 			       char *mixwfile,	/**< In: File containing mixture weights */
 			       float64 mixwfloor,	/**< In: Floor value for mixture weights; e.g., 0.0000001 */
+			       int32 precomp,
 			       char* senmgau,	/**< In: type of the gaussians distribution, .cont. or .semi. FIX 
 						   me! This is confusing!*/
 			       char* lambdafile, /**< In: Interplation file */
