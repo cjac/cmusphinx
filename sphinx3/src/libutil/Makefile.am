@@ -20,6 +20,7 @@ libutil_la_SOURCES = \
 	linklist.c \
 	nextword.c \
         profile.c \
+	sort.c \
         str2words.c \
         unlimit.c
 
@@ -41,6 +42,7 @@ pkginclude_HEADERS = \
 	nextword.h \
         prim_type.h \
         profile.h \
+	sort.h \
         str2words.h \
         unlimit.h
 
