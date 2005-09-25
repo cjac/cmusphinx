@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.4  2005/09/11  23:07:28  arthchan2003
- * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * Revision 1.1.4.5  2005/09/25  19:20:43  arthchan2003
+ * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
  * 
+ * Revision 1.1.4.4  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
  * Revision 1.1.4.3  2005/09/11 02:56:47  arthchan2003
  * Log. Incorporated all dag related functions from s3_dag.c and
  * flat_fwd.c.  dag_search, dag_add_fudge, dag_remove_filler is now
@@ -174,6 +177,7 @@ int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, 
 	/* Effect caused by aggregating different stuctures */
 	l->bypass = byp;	/* DAG-specific: This is a FORWARD link!! */
 	l->is_filler_bypass = 0; /* Astar-specific */
+	l->hook=NULL; /* Hopefully, this is the last argument we put into the dag_link structure */
 
 	pd->succlist = l;
     }
@@ -190,6 +194,8 @@ int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, 
 
     l->bypass = byp;	     /* DAG-specific: This is a FORWARD link!! */
     l->is_filler_bypass = 0; /* Astar-specific */
+
+    l->hook=NULL; /* Hopefully, this is the last argument we put into the dag_link structure */
 
     l->next = d->predlist;
     d->predlist = l;
@@ -498,6 +504,7 @@ void dag_init(dag_t* dagp){
 
   dagp->filler_removed=0;
   dagp->fudged=0;
+  dagp->hook=NULL;
 }
 
 
@@ -964,6 +971,7 @@ dag_t* dag_load (
 	}
     }
 #endif
+    dag->hook=NULL;
 
     dag_add_fudge_edges (dag, 
 			 fudge,

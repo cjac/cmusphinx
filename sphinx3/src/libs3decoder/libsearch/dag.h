@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.3  2005/09/11  23:07:28  arthchan2003
- * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ * Revision 1.1.4.4  2005/09/25  19:20:43  arthchan2003
+ * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
  * 
+ * Revision 1.1.4.3  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
  * Revision 1.1.4.2  2005/09/11 02:56:47  arthchan2003
  * Log. Incorporated all dag related functions from s3_dag.c and
  * flat_fwd.c.  dag_search, dag_add_fudge, dag_remove_filler is now
@@ -174,6 +177,8 @@ typedef struct dagnode_s {
     struct daglink_s *predlist;		/**< List of preceding nodes (adjacent in time) */
 
   uint8 reachable;                      /**< astar specific: Whether final node reachable from here */
+  
+  void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
 
 } dagnode_t;
 
@@ -187,17 +192,12 @@ typedef struct daglink_s {
     dagnode_t *src;		/**< Source node of link */
     struct daglink_s *next;	/**< Next in same dagnode_t.succlist or dagnode_t.predlist */
     struct daglink_s *history;	/**< Previous link along best path (for traceback) */
-
-  struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
+    struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
 				   bypass is ptr to fillnode->B */
-
-  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
 
 
     int32 ascr;			/**< Acoustic score for segment of source node ending just
-
 				   before the end point of this link.  (Actually this gets
-
 				   corrupted because of filler node deletion.) */
     int32 lscr;			/**< LM score to the SUCCESSOR node */
     int32 pscr;			/**< Best path score to root beginning with this link */
@@ -209,6 +209,9 @@ typedef struct daglink_s {
     uint8 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
 
   int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
+  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
+
+  void *hook;                           /**< A hook that could allow arbitrary data structure to use daglink_t */
 
 } daglink_t;
 
@@ -220,16 +223,18 @@ typedef struct daglink_s {
  */
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
-    dagnode_t *root;            /**< Corresponding to (<s>,0) */
-    daglink_t final;            /**< Exit link from final DAG node */
+    dagnode_t *root;            /**< Corresponding to the node of (<s>,0)  */
+
     daglink_t entry;		/**< Entering (<s>,0) */
+    daglink_t final;            /**< Exit link from final DAG node */
 
     s3wid_t orig_exitwid;	/**< If original exit node is not a filler word */
 
-    int32 nfrm;
-    int32 nlink;
-    int32 nnode;
-    int32 nbypass;
+    int32 nfrm;                 /**< Number of frames */
+    int32 nlink;                /**< Number of links */
+    int32 nnode;                /**< Number of nodes */
+    int32 nbypass;              /**< The number of linke which are by-passed */
+
     int32 maxedge;              /**< (New in S3.6) Used in dag/astar/decode_anytopo, this decides whether
 				     parts of the dag code will exceed the maximum no of edge 
 				 */
@@ -242,6 +247,7 @@ typedef struct {
     int32 fudged;               /**< Whether fudge edges have been added */
 
     s3latid_t latfinal;         /**< Lattice entry determined to be final end point */
+  void *hook;                   /**< A hook for general purpose */
 
 } dag_t;
 
