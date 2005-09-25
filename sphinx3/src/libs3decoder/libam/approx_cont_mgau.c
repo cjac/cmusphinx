@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.15.4.1  2005/08/02  21:03:02  arthchan2003
- * Changes sen to senscr, it confuses some applications.
+ * Revision 1.15.4.2  2005/09/25  18:51:50  arthchan2003
+ * Add a FIXME in approx_cont_mgau.c. Yes, sorting is too slow.
  * 
+ * Revision 1.15.4.1  2005/08/02 21:03:02  arthchan2003
+ * Changes sen to senscr, it confuses some applications.
+ *
  * Revision 1.15  2005/06/21 18:05:12  arthchan2003
  * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
  * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
@@ -316,6 +319,7 @@ int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef, /**< In: model definition */
      for sorting. How about Chinese then? Hmm. We'll think about that
      later...... */
 
+  /* FIXME : sorting is too slow */
   qsort(idx,mdef->n_ci_sen,sizeof(int32), intcmp);
 
   total=0;
