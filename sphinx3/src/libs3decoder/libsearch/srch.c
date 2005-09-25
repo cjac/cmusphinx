@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.16  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.1.4.17  2005/09/25  19:30:21  arthchan2003
+ * (Change for comments) Track error messages from propagate_leave and propagate_non_leave, this allow us to return error when bugs occur in internal of search.
  * 
+ * Revision 1.1.4.16  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.1.4.15  2005/09/18 01:44:12  arthchan2003
  * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
  *
@@ -166,6 +169,7 @@
 
 #include "srch.h"
 #define COMPUTE_HEURISTIC 1
+
 
 int32 srch_mode_str_to_index(const char* mode_str)
 {
