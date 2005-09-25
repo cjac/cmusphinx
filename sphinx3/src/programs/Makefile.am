@@ -9,7 +9,11 @@ bin_PROGRAMS = livepretend \
 	ep \
 	lm_convert \
 	cepview \
-	wave2feat 
+	wave2feat \
+	gauvq_read \
+	gauvq
+
+
 
 
 livepretend_SOURCES = main_livepretend.c 
@@ -24,6 +28,8 @@ ep_SOURCES = main_ep.c
 wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
 lm_convert_SOURCES = main_lm_convert.c
+gauvq_read_SOURCES = main_gauvq_read.c 
+gauvq_SOURCES = main_gauvq.c 
 
 
 #noinst_PROGRAMS = 

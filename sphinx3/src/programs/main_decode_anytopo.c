@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.15  2005/09/18  01:51:09  arthchan2003
- * put decode_anytopo as a permanent interface for flat lexicon decoding. However, it starts to used the standard utt.c interface.
+ * Revision 1.12.4.16  2005/09/25  20:14:07  arthchan2003
+ * Added bogus argument for decode_anytopo. Fixed compilation rules.
  * 
+ * Revision 1.12.4.15  2005/09/18 01:51:09  arthchan2003
+ * put decode_anytopo as a permanent interface for flat lexicon decoding. However, it starts to used the standard utt.c interface.
+ *
  * Revision 1.12.4.14  2005/09/11 23:08:47  arthchan2003
  * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
  *
@@ -412,10 +415,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
-    { "-hmmdump", \
-      ARG_INT32, \
-      "0", \
-      "Not used in this interface. " }, \
+    { "-hmmdump", 
+      ARG_INT32, 
+      "0",
+      "Not used in this interface. " }, 
+    {"-composite", 
+      ARG_INT32, 
+     "1",
+     "Not used in this interface, exit if set to 0"},
   {"-fsg",
    ARG_STRING,
    NULL,
@@ -428,7 +435,6 @@ static arg_t defn[] = {
 
 int main (int32 argc, char *argv[])
 {
-    int32 k;
     kb_t kb;
     stat_t* st;
 
