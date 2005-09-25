@@ -156,7 +156,7 @@ int32 live_get_partialhyp(int32 endutt)
         id = vithist_partialutt_end(kb->vithist, kb->kbcore);
 
     if (id > 0) {
-        hyp = vithist_backtrace(kb->vithist,id);
+        hyp = vithist_backtrace(kb->vithist,id,dict);
 
         for (gn = hyp,nwds=0; gn; gn = gnode_next(gn),nwds++) {
             h = (srch_hyp_t *) gnode_ptr (gn);
