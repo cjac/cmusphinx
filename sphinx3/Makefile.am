@@ -65,6 +65,13 @@ test-full : \
 	test-decode-clm \
 	test-decode-mllr \
 	test-decode-s3cont \
+	test-decode-lts \
+	test-decode-noncomp \
+	test-decode-mode3 \
+	test-decode-mode3-mulmpx \
+	test-decode-mode3-mpx \
+	test-decode-mode5 \
+	test-decode-mode5-noncomp \
 	test-align \
 	test-align-mllr \
 	test-allphone \
@@ -90,6 +97,13 @@ test-decode_anytopo \
 test-decode_anytopo-2ndstage \
 test-decode_anytopo-mllr \
 test-decode \
+test-decode-noncomp \
+test-decode-lts \
+test-decode-mode3 \
+test-decode-mode3-mulmpx \
+test-decode-mode3-mpx \
+test-decode-mode5 \
+test-decode-mode5-noncomp \
 test-decode-s3cont \
 test-decode-2ndstage \
 test-decode-clm \
