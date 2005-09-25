@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.2  2005/09/18  01:15:45  arthchan2003
- * Add one doxy-doc in dict.h
+ * Revision 1.9.4.3  2005/09/25  19:12:09  arthchan2003
+ * Added optional LTS support for the dictionary.
  * 
+ * Revision 1.9.4.2  2005/09/18 01:15:45  arthchan2003
+ * Add one doxy-doc in dict.h
+ *
  * Revision 1.9.4.1  2005/07/05 06:55:26  arthchan2003
  * Fixed dox-doc.
  *
@@ -86,6 +89,7 @@
  */
 #include <s3types.h>
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
+#include "lts.h" 
 
 #ifdef __cplusplus
 extern "C" {
@@ -130,6 +134,8 @@ typedef struct {
     s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t finishwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t silwid;	/**< FOR INTERNAL-USE ONLY */
+  
+  lts_t *lts_rules;     /**< The LTS rules */
 } dict_t;
 
 
@@ -144,6 +150,7 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 		   char *fillerfile,	/**< Filler dictionary file */
 		   char comp_sep,	/**< Compound word separator character, or 0 if
 					   no compound words */
+		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
 		   );
 
