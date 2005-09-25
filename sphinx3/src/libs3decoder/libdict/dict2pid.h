@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8.4.1  2005/07/17  05:20:30  arthchan2003
- * Fixed dox-doc.
+ * Revision 1.8.4.2  2005/09/25  19:13:31  arthchan2003
+ * Added optional full triphone expansion support when building context phone mapping.
  * 
+ * Revision 1.8.4.1  2005/07/17 05:20:30  arthchan2003
+ * Fixed dox-doc.
+ *
  * Revision 1.8  2005/06/21 21:03:49  arthchan2003
  * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
  *
@@ -71,6 +74,7 @@
 
 #ifndef _S3_DICT2PID_H_
 #define _S3_DICT2PID_H_
+
 
 #include "dict.h"
 
@@ -122,6 +126,10 @@
    * rather than COMPOSITE PHONES.  The former are compressed forms of
    * the latter, by virtue of state sharing among phones.  (See
    * mdef.h.)
+   * 
+   * In 3.6, the composite triphone will only be build when -composite
+   * 1 (default) is specified.  Other than that, full triphone
+   * expansion will be carried out in run-time
    */
 
 #ifdef __cplusplus
@@ -136,9 +144,29 @@ extern "C" {
 typedef struct {
     s3ssid_t **internal;	/**< For internal phone positions (not first, not last), the
 				   ssid; for first and last positions, the composite ssid.
-				   ([word][phone-position]) */
+				   ([word][phone-position]) 
+				   if -composite is 0, then internal[0] and internal[pronlen-1] will
+				   equal to BAD_SSID;
+				*/
+  /*Notice the order of the arguments */
+
     s3ssid_t ***ldiph_lc;	/**< For multi-phone words, [base][rc][lc] -> ssid; filled out for
 				   word-initial base x rc combinations in current vocabulary */
+
+    s3ssid_t ***rdiph_rc;	/**< For multi-phone words, [base][lc][rc] -> ssid; filled out for
+				   word-initial base x lc combinations in current vocabulary */
+
+    s3ssid_t ***lrdiph_rc;      /**< For single-phone words, [base][lc][rc] -> ssid; filled out for
+				   word-initial base x lc combinations in current vocabulary */
+
+
+
+    int32 is_composite;         /**< Whether we will build composite triphone. If yes, the 
+				   structure will be in composite triphone mode, single_lc, 
+				   comstate, comsseq and comwt will be initialized. Otherwise, the code
+				   will be in normal triphone mode.  The parameters will be left NULL. 
+				 */
+
     s3ssid_t **single_lc;	/**< For single phone words, [base][lc] -> composite ssid; filled
 				   out for single phone words in current vocabulary */
     
@@ -150,18 +178,28 @@ typedef struct {
 				   Final composite state score weighted by this amount */
     int32 n_comstate;		/**< #Composite states */
     int32 n_comsseq;		/**< #Composite senone sequences */
+
 } dict2pid_t;
 
   /** Access macros; not designed for arbitrary use */
-#define dict2pid_internal(d,w,p)	((d)->internal[w][p])
-#define dict2pid_n_comstate(d)		((d)->n_comstate)
-#define dict2pid_n_comsseq(d)		((d)->n_comsseq)
+#define dict2pid_internal(d,w,p)	((d)->internal[w][p]) /**< return internal dict2pid*/
+#define dict2pid_n_comstate(d)		((d)->n_comstate)     /**< return number of composite state*/
+#define dict2pid_n_comsseq(d)		((d)->n_comsseq)      /**< return number of composite state sequence*/
+#define dict2pid_is_composite(d)	((d)->is_composite)      /**< return whether dict2pid is in composite triphone mode or not*/
 
+#define IS_COMPOSITE 1
+#define NOT_COMPOSITE 0
 
   /** Build the dict2pid structure for the given model/dictionary */
-dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict);
+  dict2pid_t *dict2pid_build (mdef_t *mdef,  /**< A  model definition*/
+			      dict_t *dict,   /**< An initialized dictionary */
+			      int32 is_composite /**< Whether composite triphones will be built */
+			      );
 
-
+  
+  /** Free the memory dict2pid structure */
+  void dict2pid_free(dict2pid_t *d2p /**< In: the d2p */
+		);
   /**
  * Compute composite senone scores from ordinary senone scores (max of component senones)
  */
