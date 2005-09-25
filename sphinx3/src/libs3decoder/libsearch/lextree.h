@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.2  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.10.4.3  2005/09/25  19:28:25  arthchan2003
+ * (Change for Comment) 1, Fixed dox-doc, 2, Remove ssid_lc which was not used at all.
  * 
+ * Revision 1.10.4.2  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.10.4.1  2005/06/27 05:37:05  arthchan2003
  * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
  *
@@ -112,6 +115,7 @@ extern "C" {
 #define LEXTREE_TYPE_QUADGRAM 3
 #define LEXTREE_TYPE_QUINGRAM 4
 #endif
+
 
   /** \file lextree.h
    * \brief Data structure of lexical tree. 
