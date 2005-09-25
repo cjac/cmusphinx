@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.27.4.1  2005/07/27  23:16:26  arthchan2003
- * 1, Fixed dox-doc, 2, Move set_lm and setmllr to utt_decode.
+ * Revision 1.27.4.2  2005/09/25  18:57:15  arthchan2003
+ * Changed srch_utt_decode_blk from a FATAL to an ERROR. This corresponds to the problem of putting history pointer to the vithistory routine.
  * 
+ * Revision 1.27.4.1  2005/07/27 23:16:26  arthchan2003
+ * 1, Fixed dox-doc, 2, Move set_lm and setmllr to utt_decode.
+ *
  * Revision 1.27  2005/06/22 02:54:55  arthchan2003
  * Log. hand the implementation of utt_begin, utt_decode and utt_end to
  * srch, utt.c now only maintain a wrapper for search operation. In
@@ -169,8 +172,7 @@ void utt_decode_block (float ***block_feat,  /* Incoming block of featurevecs */
   s->uttid = kb->uttid;
 
   if(srch_utt_decode_blk(s,block_feat,no_frm,curfrm)==SRCH_FAILURE){
-    E_FATAL("srch_utt_decode_blk failed\n");
+    E_ERROR("srch_utt_decode_blk failed. \n");
   }
-
 }
 
