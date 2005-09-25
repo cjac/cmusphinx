@@ -8,7 +8,6 @@ libsearch_la_SOURCES = \
 	ascr.c \
 	dag.c \
 	blkarray_list.c \
-	ctxt_table.c \
 	whmm.c \
 	flat_fwd.c \
 	gmm_wrap.c \
@@ -36,7 +35,6 @@ pkginclude_HEADERS = \
 	ascr.h \
 	dag.h \
 	blkarray_list.h \
-	ctxt_table.h \
 	whmm.h \
 	gmm_wrap.h \
 	kb.h \
