@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.5  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.8.4.6  2005/09/25  19:33:40  arthchan2003
+ * (Change for comments) Added support for Viterbi history.
  * 
+ * Revision 1.8.4.5  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.8.4.4  2005/09/11 03:00:15  arthchan2003
  * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
  *
@@ -99,6 +102,7 @@
 
 #include "vithist.h"
 #include "lextree.h"
+
 
 void vh_lmstate_display(vh_lmstate_t *vhl,dict_t *dict)
 {
