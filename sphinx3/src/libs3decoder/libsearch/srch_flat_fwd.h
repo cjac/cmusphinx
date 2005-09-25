@@ -37,9 +37,12 @@
  /*
   * HISTORY
  * $Log$
- * Revision 1.1.2.2  2005/09/18  01:45:19  arthchan2003
- * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
+ * Revision 1.1.2.3  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.1.2.2  2005/09/18 01:45:19  arthchan2003
+ * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
+ *
  * Revision 1.1.2.1  2005/07/24 01:40:37  arthchan2003
  * (Incomplete) The implementation of flat-lexicon decoding.
  *
@@ -65,13 +68,12 @@
 
 #ifndef SRCH_FLT_FWD
 #define SRCH_FLT_FWD
+
 /**
  * \struct fwd_dbg_t 
  *
- * Structure for debugging flat forward search. 
+ * Structure for debugging  search. 
  */
-
-/* Debugging */
 typedef struct {
   s3wid_t trace_wid;	/**< Word to be traced; for debugging */
   int32 word_dump_sf;	/**< Start frame for words to be dumped for debugging */
@@ -79,6 +81,7 @@ typedef struct {
   int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
   int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
 } fwd_dbg_t ;
+
 
 /** 
  * \struct backoff_t

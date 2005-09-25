@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.4  2005/09/11  03:00:15  arthchan2003
- * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
+ * Revision 1.8.4.5  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.8.4.4  2005/09/11 03:00:15  arthchan2003
+ * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
+ *
  * Revision 1.8.4.3  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -95,6 +98,7 @@
 
 
 #include "vithist.h"
+#include "lextree.h"
 
 void vh_lmstate_display(vh_lmstate_t *vhl,dict_t *dict)
 {
@@ -136,6 +140,7 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isResco
     vh = (vithist_t *) ckd_calloc (1, sizeof(vithist_t));
     
     vh->entry = (vithist_entry_t **) ckd_calloc (VITHIST_MAXBLKS, sizeof(vithist_entry_t *));
+
     vh->n_entry = 0;
     
     vh->frame_start = (int32 *) ckd_calloc (S3_MAX_FRAMES+1, sizeof(int32));
@@ -187,6 +192,7 @@ static vithist_entry_t *vithist_entry_alloc (vithist_t *vh)
 	assert (vh->entry[b] == NULL);
 	
 	ve = (vithist_entry_t *) ckd_calloc (VITHIST_BLKSIZE, sizeof(vithist_entry_t));
+	ve->rc_info  = NULL;
 	vh->entry[b] = ve;
     } else
 	ve = vh->entry[b] + l;
@@ -297,25 +303,63 @@ vithist_entry_t *vithist_id2entry (vithist_t *vh, int32 id)
     return ve;
 }
 
-
-static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve)
+/* Rclist is separate from tve because C structure copying is used in *ve = *tve 
+ */
+static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, glist_t rclist)
 {
     vithist_entry_t *ve;
     int32 vhid;
+    int32 n_ci,i;
+    lextree_node_t *ln;
+    gnode_t *gn; /** for the rclist */
     
     /* Check if an entry with this LM state already exists in current frame */
     vhid = vh_lmstate_find (vh, &(tve->lmstate));
     if (vhid < 0) {	/* Not found; allocate new entry */
 	vhid = vh->n_entry;
 	ve = vithist_entry_alloc (vh);
+
 	
 	*ve = *tve;
+	ve->rc_info=NULL;
+
+
 	vithist_lmstate_enter (vh, vhid, ve);	/* Enter new vithist info into LM state tree */
+	
+
+#if 1
+	if(rclist!=NULL){
+	  n_ci=mdef_n_ciphone(kbc->mdef);
+	    E_INFO("HIHI\n");
+	  ve->rc_info=ckd_calloc(n_ci,sizeof(scr_hist_pair));
+	  for(i=0;i<n_ci;i++){
+	    E_INFO("HIHI\n");
+	    ve->rc_info[i].score=-1;
+	    ve->rc_info[i].pred=-1;
+	  }
+	}
+	assert(ve->rc_info==NULL);
+#endif
+
     } else {
 	ve = vh->entry[VITHIST_ID2BLK(vhid)] + VITHIST_ID2BLKOFFSET(vhid);
 	
 	if (ve->score < tve->score)
 	    *ve = *tve;
+
+#if 1	
+	for(gn= rclist; gn ; gn= gnode_next(gn)){
+	  ln=gnode_ptr(gn);
+
+
+	  if(rclist!=NULL){
+	    if(ve->rc_info[ln->rc].score < ln->hmm.out.score){
+	      ve->rc_info[ln->rc].score = ln->hmm.out.score;
+	      ve->rc_info[ln->rc].pred = ln->hmm.out.history;
+	    }
+	  }
+	}
+#endif
     }
     
     /* Update best exit score in this frame */
@@ -328,7 +372,7 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve)
 
 void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		      s3wid_t wid, int32 ef, int32 score, 
-		      int32 senscale, int32 pred, int32 type)
+		      int32 senscale, int32 pred, int32 type, glist_t rclist)
 {
     vithist_entry_t *pve, tve;
     s3lmwid_t lwid;
@@ -340,7 +384,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
       E_WARN("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
       /*      exit(-1);*/
     }
- 
+
+
     pve = vh->entry[VITHIST_ID2BLK(pred)] + VITHIST_ID2BLKOFFSET(pred);
     /* Create a temporary entry with all the info currently available */
     tve.wid = wid;
@@ -351,6 +396,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.ascr = score - pve->score;
     tve.senscale = senscale;
     tve.lscr = 0;
+    tve.rc_info=NULL;
 
     if (pred == 0) {	/* Special case for the initial <s> entry */
 	se = 0;
@@ -371,7 +417,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 
 	tve.pred = pred;
 	tve.lmstate.lm3g = pve->lmstate.lm3g;
-	vithist_enter (vh, kbc, &tve);
+	assert(rclist==NULL);
+	vithist_enter (vh, kbc, &tve,rclist);
     } else {
 
 	lwid = kbc->lmset->cur_lm->dict2lmwid[wid];
@@ -394,11 +441,12 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		  tve.score += tve.lscr;
 		}
 		
+		/* Something feels wrong here when right context is there */
 		if ((tve.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
 		    tve.pred = i;
 		    tve.lmstate.lm3g.lwid[1] = pve->lmstate.lm3g.lwid[0];
 		    
-		    vithist_enter (vh, kbc, &tve);
+		    vithist_enter (vh, kbc, &tve,rclist);
 		}
 	    }
 	}
@@ -616,7 +664,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 	/* Add a dummy silwid covering the remainder of the utterance */
 	assert (vh->frame_start[vh->n_frm-1] == vh->frame_start[vh->n_frm]);
 	vh->n_frm -= 1;
-	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score,0, bestvh, -1);
+	vithist_rescore (vh, kbc, dict_silwid (dict), vh->n_frm, bestve->score,0, bestvh, -1,NULL);
 	vh->n_frm += 1;
 	vh->frame_start[vh->n_frm] = vh->n_entry;
 	
@@ -647,7 +695,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 
 
     /*vithist_dump(vh,-1,kbc,stdout);*/
-
+    /*    E_INFO("vhid %d\n",vhid);*/
     return vhid;
 
 }
@@ -839,19 +887,34 @@ void vithist_dump (vithist_t *vh, int32 frm, kbcore_t *kbc, FILE *fp)
     fflush (fp);
 }
 
-glist_t vithist_backtrace (vithist_t *vh, int32 id)
+glist_t vithist_backtrace (vithist_t *vh, int32 id, dict_t *dict)
 {
     vithist_entry_t *ve;
     int32 b, l;
     glist_t hyp;
     srch_hyp_t *h;
+    s3cipid_t ci;
     
     hyp = NULL;
-    
+    ci = BAD_S3CIPID;
+    /*    E_INFO("id %d\n",id);*/
     while (id > 0) {
+
+      E_INFO("id %d\n",id);
 	b = VITHIST_ID2BLK(id);
 	l = VITHIST_ID2BLKOFFSET(id);
+
 	ve = vh->entry[b] + l;
+
+	assert(ve);
+#if 1
+	if(ve->rc_info!=NULL){
+	  ci = dict_pron(dict,h->id,0); /* FIX ME. In this case, one will need to know the right context of 
+					 the previous word . I also need to first word ID in this case
+					 and that could determine the first phone id. 
+				      */
+	}
+#endif
 	
 	h = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
 	h->id = ve->wid;
@@ -865,8 +928,20 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id)
 	
 	hyp = glist_add_ptr (hyp, h);
 
+#if 0
 	id = ve->pred;
+#else	
+	id = ve->pred;
+#if 0 /* HACK, not using right context history. */
+	if(ve->rc_info==NULL) /* No right context information, Just get it from pred*/
+	  id = ve->pred;
+	else{ /* That is the case, where rc_info existed, we assume
+		 full triphone expansion happend in the upper level */
+	  id = ve->rc_info[ci].pred; 
+	}
+#endif
 
+#endif
     }
     
     return hyp;

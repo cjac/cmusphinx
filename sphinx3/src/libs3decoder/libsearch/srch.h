@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.12  2005/09/18  01:44:12  arthchan2003
- * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
+ * Revision 1.1.4.13  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.1.4.12  2005/09/18 01:44:12  arthchan2003
+ * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
+ *
  * Revision 1.1.4.11  2005/09/11 23:07:28  arthchan2003
  * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  *
@@ -207,10 +210,13 @@
 			       considered as blocks, currently used in
 			       3.0 family of tools. */
 
+/* \struct grp_str_t 
+ */
 typedef struct {
   void *graph_struct; /**< The graph structure */
   int32 graph_type;   /**< The graph type */
 }grp_str_t;
+
 
 
 /** 
@@ -389,8 +395,12 @@ typedef struct srch_s {
 
   FILE *matchfp;          /**< Copy of File handle for the match file */
   FILE *matchsegfp;       /**< Copy of File handle for the match segmentation file */
+  
   FILE *hmmdumpfp;        /**< Copy of File handle for dumping hmms for debugging */
 
+  /* FIXME, duplicated with fwd_dbg_t */
+  int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
+  int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
 
   /** Initialization of the search, coz the graph type can be different */
   int (*srch_init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */

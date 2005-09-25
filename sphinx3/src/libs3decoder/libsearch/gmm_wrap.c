@@ -37,10 +37,13 @@
 /* gmm_wrap.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.3  2005/08/03  18:54:33  dhdfu
+ * Revision 1.1.4.4  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * 
+ * Revision 1.1.4.3  2005/08/03 18:54:33  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
- * 
+ *
  * Revision 1.1.4.2  2005/08/02 21:31:21  arthchan2003
  * Added interface for 1, doing multi stream gmm computation with/without composite senone. 2, doing gmm computation (ms or ss optimized) with/wihout composite senone.  Haven't tested on the SCHMM on s3.x yet.  I think it will work though.
  *
@@ -131,7 +134,6 @@ int32 s3_cd_gmm_compute_sen(void *srch, float32 **feat, int32 wav_idx)
 			      &(st->tm_ovrhd));
     st->utt_sen_eval += mgau_frm_sen_eval(mgau);
     st->utt_gau_eval += mgau_frm_gau_eval(mgau);
-
   }
   else
     E_FATAL("Panic, someone delete the assertion before this block\n");

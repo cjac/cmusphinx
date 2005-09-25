@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.3  2005/09/11  03:00:15  arthchan2003
- * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
+ * Revision 1.11.4.4  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.11.4.3  2005/09/11 03:00:15  arthchan2003
+ * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
+ *
  * Revision 1.11.4.2  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -104,6 +107,7 @@
 
 #include "dag.h"  
 #include "ctxt_table.h"
+#include "glist.h"
 
 /** \file vithist.h 
 
@@ -129,6 +133,11 @@ typedef union {
 } vh_lmstate_t;
 
 
+  typedef struct {
+    int32 score;
+    int32 pred;
+  } scr_hist_pair;
+
   /**
  * Viterbi history entry.
  */
@@ -137,12 +146,20 @@ typedef struct {
     s3frmid_t sf, ef;		/**< Start and end frames for this entry */
     int32 ascr;			/**< Acoustic score for this node */
     int32 lscr;			/**< LM score for this node, given its Viterbi history */
+
     int32 score;		/**< Total path score ending here */
     int32 senscale;             /**< Scaling factor attached to the score */
     int32 pred;			/**< Immediate predecessor */
     int32 type;			/**< >=0: regular n-gram word; <0: filler word entry */
     int32 valid;		/**< Whether it should be a valid history for LM rescoring */
     vh_lmstate_t lmstate;	/**< LM state */
+
+    scr_hist_pair *rc_info;             /**< Right context information pair (score, pred), I don't want to look up, so I used*/ 
+#if 0
+    int32 *rcpred;              /**< Correspond to predecesoor of each right contexts */
+    int32 *rcscore;             /**< Correspond to the score for each right contexts */
+#endif
+
 } vithist_entry_t;
 
   /** Return the word ID of an entry */
@@ -296,7 +313,8 @@ void vithist_utt_reset (vithist_t *vh  /**< In: a Viterbi history data structure
  * segments.  Caller responsible for freeing the list.
  */
 glist_t vithist_backtrace (vithist_t *vh,       /**< In: a Viterbi history data structure*/
-			   int32 id		/**< ID from which to begin backtrace */
+			   int32 id,		/**< ID from which to begin backtrace */
+			   dict_t *dict         /**< a dictionary for look up the ci phone of a word*/
 			   );
 
   /**
@@ -319,7 +337,8 @@ void vithist_rescore (vithist_t *vh,    /**< In: a Viterbi history data structur
 		      int32 score,	/**< In: Does not include LM score for this entry */
 		      int32 senscale,   /**< In: The senscale */
 		      int32 pred,	/**< In: Tentative predecessor */
-		      int32 type       /**< In: Type of lexical tree */
+		      int32 type,       /**< In: Type of lexical tree */
+		      glist_t rclist  /**< In: The list of all right contexts */
 		      );
 
 
@@ -419,8 +438,9 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
     s3frmid_t frm;	/**< End frame for this entry */
     s3latid_t history;	/**< Index of predecessor lattice_t entry */
 
-    int32 ascr;          
-    int32 ef;
+    /*Augmented in 3.6 */
+    int32 ascr;         /**< Acoustic score for this node */
+    int32 ef;           /**< Ending frame */
 
     s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
     int32     score;	/**< Best path score upto the end of this entry */

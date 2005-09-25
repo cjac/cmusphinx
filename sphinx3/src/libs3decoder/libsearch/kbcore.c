@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.9  2005/09/18  01:29:37  arthchan2003
- * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
+ * Revision 1.10.4.10  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.10.4.9  2005/09/18 01:29:37  arthchan2003
+ * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
+ *
  * Revision 1.10.4.8  2005/09/11 23:07:28  arthchan2003
  * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  *
@@ -176,6 +179,10 @@ void s3_am_init(kbcore_t *kbc,
   char tmatstr[2048];
 
   assert(kbc);
+
+  kbc->mgau=NULL;
+  kbc->ms_mgau=NULL;
+
   if(s3hmmdir && (mdeffile||meanfile||varfile||mixwfile||tmatfile)){
     E_WARN("-s3hmmdir is specified together with (-mdef||-mean||-var||-mix||-tmat). Assume the later overide what -s3hmmdir specified.");
   }
@@ -281,6 +288,7 @@ void s3_am_init(kbcore_t *kbc,
     kbc->ms_mgau=ms_mgau_init(meanstr,
 			      varstr,varfloor,
 			      mixwstr,mixwfloor, 
+			      TRUE, /*Do precomputation */
 			      senmgau,
 			      lambdafile, /* lambda is not a standard option, so user need to specify it*/
 			      topn
@@ -430,7 +438,7 @@ kbcore_t *kbcore_init (float64 logbase,
 	    E_FATAL("Compound word separator(%s) must be empty or single character string\n",
 		    compsep);
 	}
-	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],REPORT_KBCORE)) == NULL)
+	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],cmd_ln_int32("-ltsoov"),REPORT_KBCORE)) == NULL)
 	    E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
 		    fdictfile ? fdictfile : "", compsep);
     }
@@ -486,14 +494,9 @@ kbcore_t *kbcore_init (float64 logbase,
       for(i=0;i<kb->lmset->n_lm;i++){
 	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
 
-
-	#if 0
-	/* HACK! This will allow rescoring works but will definitely
-	   change the answer for the first stage. */
-
-	if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
+#if 0 /* This is now put in search-specific initialization */
 	  unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
-	#endif
+#endif
       }
 
     }else if (fsgfile||fsgctlfile){
@@ -519,7 +522,7 @@ kbcore_t *kbcore_init (float64 logbase,
     
     /* This should be removed and put into the search */
     if (kb->mdef && kb->dict) {	/* Initialize dict2pid */
-	kb->dict2pid = dict2pid_build (kb->mdef, kb->dict);
+	kb->dict2pid = dict2pid_build (kb->mdef, kb->dict,cmd_ln_int32("-composite"));
     }
     
     if(REPORT_KBCORE){
@@ -554,56 +557,58 @@ kbcore_t *kbcore_init (float64 logbase,
 /* RAH 4.19.01 free memory allocated within this module */
 void kbcore_free (kbcore_t *kbcore)
 {
-  mdef_t *mdef = kbcore_mdef(kbcore);
-  dict_t *dict = kbcore_dict (kbcore);
-  dict2pid_t *dict2pid = kbcore_dict2pid (kbcore);		/*  */
-  lmset_t *lms = kbcore_lmset(kbcore);
-
-  if(lms)
-    lmset_free(lms);
-  
-  /* Clean up the dictionary stuff*/
-  if(dict)
-    dict_free (dict);
-
-  /* dict2pid */
-  if(dict2pid){
-    ckd_free ((void *) dict2pid->comwt );
-    ckd_free ((void *) dict2pid->comsseq );
-    ckd_free ((void *) dict2pid->comstate );
-    ckd_free_2d ((void *) dict2pid->single_lc );
-    ckd_free_3d ((void ***) dict2pid->ldiph_lc );
-  /* RAH, this bombs    
-     for (i=0;i<dict_size(dict);i++) 
-     ckd_free ((void *) dict2pid->internal[i]); 
-  */
-    ckd_free ((void *) dict2pid->internal);
-
+  if(kbcore->lmset){
+    lmset_free(kbcore->lmset);
+    kbcore->lmset=NULL;
   }
   
+  /* Clean up the dictionary stuff*/
+  if(kbcore->dict){
+    dict_free (kbcore->dict);
+    kbcore->dict=NULL;
+  }
+
+  /* dict2pid */
+  if(kbcore->dict2pid){
+    dict2pid_free(kbcore->dict2pid);
+    kbcore->dict2pid=NULL;
+  }
 
   /* Clean up the mdef stuff */  
-  if(mdef)
-    mdef_free (mdef);
+  if(kbcore->mdef){
+    mdef_free (kbcore->mdef);
+    kbcore->mdef=NULL;
+  }
 
-  if(kbcore->fillpen)
+  if(kbcore->fillpen){
     fillpen_free (kbcore->fillpen);
+    kbcore->fillpen=NULL;
+  }
 
-  if(kbcore->tmat)
+  if(kbcore->tmat){
     tmat_free (kbcore->tmat);
+    kbcore->tmat=NULL;
+  }
 
-  if(kbcore->svq)
+  if(kbcore->svq){
     subvq_free (kbcore->svq);
+    kbcore->svq=NULL;
+  }
 
-  if(kbcore->mgau)
+  if(kbcore->mgau){
     mgau_free (kbcore->mgau);
+    kbcore->mgau=NULL;
+  }
 
-  if(kbcore->ms_mgau)
+  if(kbcore->ms_mgau){
     ms_mgau_free (kbcore->ms_mgau);
+    kbcore->ms_mgau=NULL;
+  }
 
   /* memory allocated in kbcore*/
-  if (kbcore->fcb) {
+  if (kbcore->fcb){
     feat_free (kbcore->fcb);
+    kbcore->fcb=NULL;
   }
 
   /* Free the memory allocated by this module*/

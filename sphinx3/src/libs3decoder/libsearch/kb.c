@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.6  2005/09/18  01:21:18  arthchan2003
- * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
+ * Revision 1.26.4.7  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.26.4.6  2005/09/18 01:21:18  arthchan2003
+ * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
+ *
  * Revision 1.26.4.5  2005/08/03 18:54:33  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
@@ -334,6 +337,7 @@ void kb_init (kb_t *kb)
     kb->matchsegfp = kb->matchfp = NULL; 
     kb->matchsegfp=file_open(cmd_ln_str("-hypseg"));
     kb->matchfp=file_open(cmd_ln_str("-hyp"));
+
     kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
     
     /* STRUCTURE INITIALIZATION : The search data structure, done only

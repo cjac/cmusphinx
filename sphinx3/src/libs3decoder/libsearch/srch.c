@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.15  2005/09/18  01:44:12  arthchan2003
- * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
+ * Revision 1.1.4.16  2005/09/25  19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  * 
+ * Revision 1.1.4.15  2005/09/18 01:44:12  arthchan2003
+ * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
+ *
  * Revision 1.1.4.14  2005/09/11 23:07:28  arthchan2003
  * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  *
@@ -560,7 +563,7 @@ check_error:
 
 int32 srch_utt_begin(srch_t* srch){
   if(srch->srch_utt_begin==NULL){
-    E_INFO("srch->srch_utt_begin is NULL. Please make sure it is set.\n");
+    E_ERROR("srch->srch_utt_begin is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
 
@@ -571,12 +574,11 @@ int32 srch_utt_begin(srch_t* srch){
 int32 srch_utt_end(srch_t* srch){
 
   if(srch->srch_utt_end==NULL){
-    E_INFO("srch->srch_utt_end is NULL. Please make sure it is set.\n");
+    E_ERROR("srch->srch_utt_end is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
-
-  srch->srch_utt_end(srch);
-  return SRCH_SUCCESS;
+  
+  return srch->srch_utt_end(srch);;
 }
 
 int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, int32 *curfrm)
@@ -648,14 +650,20 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
       
       /* After the HMM scores are computed, tokens are propagate in the
        * phone-level.  */
-      s->srch_propagate_graph_ph_lv2(s,frmno);
+      if(s->srch_propagate_graph_ph_lv2(s,frmno)!=SRCH_SUCCESS){
+	E_ERROR("Code failed in srch_propagate_graph_ph_lv2\n");
+	return SRCH_FAILURE;
+      }
       
       /* Rescoring. Usually happened at the word end.  */
       if(s->srch_rescoring!=NULL)
 	s->srch_rescoring(s,frmno);
       
       /* Propagate the score on the word-level */
-      s->srch_propagate_graph_wd_lv2(s,frmno);
+      if(s->srch_propagate_graph_wd_lv2(s,frmno)!=SRCH_SUCCESS){
+	E_ERROR("Code failed in srch_propagate_graph_wd_lv2\n");
+	return SRCH_FAILURE;
+      }
     }
     ptmr_stop (&(st->tm_srch));
 
@@ -688,6 +696,7 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 /** Wrap up the search routine*/
 int32 srch_uninit(srch_t* srch){
   if(srch->srch_uninit==NULL){
+    E_ERROR("Search un-initialization failed\n");
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
@@ -840,15 +849,14 @@ void reg_result_dump (srch_t* s, int32 id )
   glist_t hyp;
   stat_t* st; 
   gnode_t *gn;
-  srch_hyp_t *h, *tmph;
+  srch_hyp_t *h;
   srch_hyp_t *bph;
-  srch_hyp_t *srch_hyp;
   int32 bp;
   float32 *f32arg;
   float64 lwf;
   dag_t *dag;
   int32 nfrm;
-  s3latid_t l;
+  dict_t *dict;
   
   st= s->stat;
   fp = stderr;
@@ -858,7 +866,9 @@ void reg_result_dump (srch_t* s, int32 id )
   /* The if (s->vithst) and (s->lathist) are temporary, once the two
      are merged. This ugly form of polymorphism should disappear. 
   */
+  dict=s->kbc->dict;
 
+  hyp=NULL;
   assert(!(s->vithist&&s->lathist));
   if (cmd_ln_str("-bptbldir")) {
     char file[8192];
@@ -877,7 +887,8 @@ void reg_result_dump (srch_t* s, int32 id )
   
   if(s->vithist){
     assert(id>=0);
-    hyp = vithist_backtrace (s->vithist, id);
+    /*    E_INFO("id %d\n",id);*/
+    hyp = vithist_backtrace (s->vithist, id, dict);
   }
 
   /* Detailed backtrace */
@@ -893,7 +904,7 @@ void reg_result_dump (srch_t* s, int32 id )
       h = (srch_hyp_t *) gnode_ptr (gn);
       fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
 	       h->vhid, h->sf, h->ef, h->ascr + h->senscale, h->lscr, h->type,
-	       dict_wordstr(s->kbc->dict, h->id));
+	       dict_wordstr(dict, h->id));
 
 #if 1      
       ascr += h->ascr + h->senscale;
@@ -944,7 +955,7 @@ void reg_result_dump (srch_t* s, int32 id )
       dag_write_header(latfp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
 					     the code will just be stopped */
 					     
-      vithist_dag_write (s->vithist, hyp, s->kbc->dict,
+      vithist_dag_write (s->vithist, hyp, dict,
 			 cmd_ln_int32("-outlatoldfmt"), latfp);
       fclose_comp (latfp, ispipe);
 
@@ -958,7 +969,7 @@ void reg_result_dump (srch_t* s, int32 id )
 
 	if(( nfrm= s3dag_dag_load(&dag,lwf,
 				  str,
-				  kbcore_dict(s->kbc),
+				  dict,
 				  kbcore_fillpen(s->kbc)))
 	    >=0 ){
 
@@ -966,7 +977,7 @@ void reg_result_dump (srch_t* s, int32 id )
 	  bph=dag_search (dag,s->uttid, 
 			  lwf,
 			  dag->final.node,
-			  kbcore_dict(s->kbc),
+			  dict,
 			  s->kbc->lmset->cur_lm,
 			  s->kbc->fillpen
 			  );
@@ -983,7 +994,7 @@ void reg_result_dump (srch_t* s, int32 id )
 	    }
 
 	    printf ("BSTPTH: ");
-	    log_hypstr (stdout, bph, s->uttid, 0, ascr+lscr, kbcore_dict(s->kbc));
+	    log_hypstr (stdout, bph, s->uttid, 0, ascr+lscr, dict);
 	  	  
 	    lm_cache_stats_dump (kbcore_lm(s->kbc));
 	    lm_cache_reset (kbcore_lm(s->kbc));
