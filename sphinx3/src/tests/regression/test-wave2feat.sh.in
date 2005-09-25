@@ -1,8 +1,10 @@
 #!/bin/sh
 
+tmpout="test-wave2feat.out"
+
 echo "WAVE2FEAT TEST"
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/wave2feat \
--srate 11025 \
+-samprate 11025 \
 -frate 105 \
 -wlen 0.024 \
 -alpha 0.97 \
@@ -14,8 +16,15 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/wav
 -blocksize 262500 \
 -i @abs_top_srcdir@/model/ep/chan3.raw \
 -o test-wave2feat.mfc  \
--raw 1
-if(cmp test-wave2feat.mfc @abs_top_srcdir@/model/ep/chan3.mfc > /dev/null 2>&1) ; \
-then echo "WAVE2FEAT test PASSED"; else \
+-raw 1 > $tmpout 2>&1 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cepview \
+-i 13 \
+-d 13 \
+-f test-wave2feat.mfc \
+> test-wave2feat.cepview
+
+if(cmp test-wave2feat.cepview @abs_top_srcdir@/model/ep/chan3.cepview > /dev/null 2>&1) ; \
+then echo "WAVE2FEAT test PASSED"; else \n
 echo "WAVE2FEAT test FAILED"; fi
 

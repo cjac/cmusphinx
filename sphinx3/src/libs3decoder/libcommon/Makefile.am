@@ -19,7 +19,8 @@ pkginclude_HEADERS = \
 	misc.h \
 	stat.h \
 	vector.h \
-	s3types.h 
+	s3types.h \
+	cmdln_macro.h
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \

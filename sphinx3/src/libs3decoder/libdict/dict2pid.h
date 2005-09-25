@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/21  21:03:49  arthchan2003
- * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * Revision 1.8.4.2  2005/09/25  19:13:31  arthchan2003
+ * Added optional full triphone expansion support when building context phone mapping.
  * 
+ * Revision 1.8.4.1  2005/07/17 05:20:30  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.8  2005/06/21 21:03:49  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ *
  * Revision 1.5  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -69,6 +75,7 @@
 #ifndef _S3_DICT2PID_H_
 #define _S3_DICT2PID_H_
 
+
 #include "dict.h"
 
 
@@ -77,26 +84,31 @@
    *
    * This is one of the more complicated parts of a cross-word
    * triphone model decoder.  The first and last phones of each word
-   * get their left and right contexts, respectively, from other *
+   * get their left and right contexts, respectively, from other
    * words.  For single-phone words, both its contexts are from other
-   * words, simultaneously.  As * these words are not known
-   * beforehand, life gets complicated.  In this implementation, when
-   * * we do not wish to distinguish between distinct contexts, we use
-   * a COMPOSITE triphone (a bit * like BBN's fast-match
-   * implementation), by clubbing together all possible contexts.
+   * words, simultaneously.  As these words are not known beforehand,
+   * life gets complicated.  In this implementation, when we do not
+   * wish to distinguish between distinct contexts, we use a COMPOSITE
+   * triphone (a bit like BBN's fast-match implementation), by
+   * clubbing together all possible contexts.
    * 
    * There are 3 cases:
-   *   1. Internal phones, and boundary phones without any specific context, in each word.  The
-   * 	boundary phones are modelled using composite phones, internal ones using ordinary phones.
-   *   2. The first phone of a multi-phone word, for a specific history (i.e., in a 2g/3g/4g...
-   *	tree) has known left and right contexts.  The possible left contexts are limited to the
-   *	possible last phones of the history.  So it can be modelled separately, efficiently, as
-   *	an ordinary triphone.
-   *   3. The one phone in a single-phone word, for a specific history (i.e., in a 2g/3g/4g...
-   * 	tree) has a known left context, but unknown right context.  It is modelled using a
-   * 	composite triphone.
-   * (Note that right contexts are always composite, left contexts are composite only in the
-   * unigram tree.)
+   *
+   *   1. Internal phones, and boundary phones without any specific
+   * context, in each word.  The boundary phones are modelled using
+   * composite phones, internal ones using ordinary phones.
+   *
+   *   2. The first phone of a multi-phone word, for a specific
+   *history (i.e., in a 2g/3g/4g...  tree) has known left and right
+   *contexts.  The possible left contexts are limited to the possible
+   *last phones of the history.  So it can be modelled separately,
+   *efficiently, as an ordinary triphone.
+   *
+   *   3. The one phone in a single-phone word, for a specific history
+   * (i.e., in a 2g/3g/4g...  tree) has a known left context, but
+   * unknown right context.  It is modelled using a composite
+   * triphone.  (Note that right contexts are always composite, left
+   * contexts are composite only in the unigram tree.)
    * 
    * A composite triphone is formed as follows.  (NOTE: this assumes
    * that all CIphones/triphones have the same HMM topology,
@@ -110,46 +122,84 @@
    * the HMM state topology) is the set of states (senones) at that
    * position derived from S.
    * 
-   * Actually, we generally deal with COMPOSITE SENONE-SEQUENCES rather than COMPOSITE PHONES.
-   * The former are compressed forms of the latter, by virtue of state sharing among phones.
-   * (See mdef.h.)  
+   * Actually, we generally deal with COMPOSITE SENONE-SEQUENCES
+   * rather than COMPOSITE PHONES.  The former are compressed forms of
+   * the latter, by virtue of state sharing among phones.  (See
+   * mdef.h.)
+   * 
+   * In 3.6, the composite triphone will only be build when -composite
+   * 1 (default) is specified.  Other than that, full triphone
+   * expansion will be carried out in run-time
    */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+  /**
+     \struct dict2pid_t
+     \brief Building composite triphone (as well as word internal triphones) with the dictionary. 
+   */
 
 typedef struct {
-    s3ssid_t **internal;	/** For internal phone positions (not first, not last), the
+    s3ssid_t **internal;	/**< For internal phone positions (not first, not last), the
 				   ssid; for first and last positions, the composite ssid.
-				   ([word][phone-position]) */
-    s3ssid_t ***ldiph_lc;	/** For multi-phone words, [base][rc][lc] -> ssid; filled out for
+				   ([word][phone-position]) 
+				   if -composite is 0, then internal[0] and internal[pronlen-1] will
+				   equal to BAD_SSID;
+				*/
+  /*Notice the order of the arguments */
+
+    s3ssid_t ***ldiph_lc;	/**< For multi-phone words, [base][rc][lc] -> ssid; filled out for
 				   word-initial base x rc combinations in current vocabulary */
-    s3ssid_t **single_lc;	/** For single phone words, [base][lc] -> composite ssid; filled
+
+    s3ssid_t ***rdiph_rc;	/**< For multi-phone words, [base][lc][rc] -> ssid; filled out for
+				   word-initial base x lc combinations in current vocabulary */
+
+    s3ssid_t ***lrdiph_rc;      /**< For single-phone words, [base][lc][rc] -> ssid; filled out for
+				   word-initial base x lc combinations in current vocabulary */
+
+
+
+    int32 is_composite;         /**< Whether we will build composite triphone. If yes, the 
+				   structure will be in composite triphone mode, single_lc, 
+				   comstate, comsseq and comwt will be initialized. Otherwise, the code
+				   will be in normal triphone mode.  The parameters will be left NULL. 
+				 */
+
+    s3ssid_t **single_lc;	/**< For single phone words, [base][lc] -> composite ssid; filled
 				   out for single phone words in current vocabulary */
     
-    s3senid_t **comstate;	/** comstate[i] = BAD_S3SENID terminated set of senone IDs in
+    s3senid_t **comstate;	/**< comstate[i] = BAD_S3SENID terminated set of senone IDs in
 				   the i-th composite state */
-    s3senid_t **comsseq;	/** comsseq[i] = sequence of composite state IDs in i-th
+    s3senid_t **comsseq;	/**< comsseq[i] = sequence of composite state IDs in i-th
 				   composite phone (composite sseq). */
-    int32 *comwt;		/** Weight associated with each composite state (logs3 value).
+    int32 *comwt;		/**< Weight associated with each composite state (logs3 value).
 				   Final composite state score weighted by this amount */
-    int32 n_comstate;		/** #Composite states */
-    int32 n_comsseq;		/** #Composite senone sequences */
+    int32 n_comstate;		/**< #Composite states */
+    int32 n_comsseq;		/**< #Composite senone sequences */
+
 } dict2pid_t;
 
   /** Access macros; not designed for arbitrary use */
-#define dict2pid_internal(d,w,p)	((d)->internal[w][p])
-#define dict2pid_n_comstate(d)		((d)->n_comstate)
-#define dict2pid_n_comsseq(d)		((d)->n_comsseq)
+#define dict2pid_internal(d,w,p)	((d)->internal[w][p]) /**< return internal dict2pid*/
+#define dict2pid_n_comstate(d)		((d)->n_comstate)     /**< return number of composite state*/
+#define dict2pid_n_comsseq(d)		((d)->n_comsseq)      /**< return number of composite state sequence*/
+#define dict2pid_is_composite(d)	((d)->is_composite)      /**< return whether dict2pid is in composite triphone mode or not*/
 
+#define IS_COMPOSITE 1
+#define NOT_COMPOSITE 0
 
   /** Build the dict2pid structure for the given model/dictionary */
-dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict);
+  dict2pid_t *dict2pid_build (mdef_t *mdef,  /**< A  model definition*/
+			      dict_t *dict,   /**< An initialized dictionary */
+			      int32 is_composite /**< Whether composite triphones will be built */
+			      );
 
-
+  
+  /** Free the memory dict2pid structure */
+  void dict2pid_free(dict2pid_t *d2p /**< In: the d2p */
+		);
   /**
  * Compute composite senone scores from ordinary senone scores (max of component senones)
  */

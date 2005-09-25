@@ -45,9 +45,15 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  18:34:41  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$ keyword.
+ * Revision 1.5.4.1  2005/09/25  18:53:36  arthchan2003
+ * Added hmm_vit_eval, in lextree.c, hmm_dump and hmm_vit_eval is now separated.
  * 
+ * Revision 1.5  2005/06/21 18:34:41  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
+ * Revision 1.5.4.1  2005/09/25  18:53:36  arthchan2003
+ * Added hmm_vit_eval, in lextree.c, hmm_dump and hmm_vit_eval is now separated.
+ *  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -295,7 +301,7 @@ int32 hmm_vit_eval_3st (hmm_t *hmm, s3senid_t *senid, int32 *senscr)
 #ifdef _CHECKUNDERFLOW_
     /*    int32 st0, st1, st2, sen0, sen1, sen2;*/
 #endif
-    
+
     tp = hmm->tp[0];	/* Hack!! We know the 2-D tp is a contiguous block */
     
     /* 2 = max(0,1,2); */
@@ -418,6 +424,41 @@ int32 hmm_vit_eval_3st (hmm_t *hmm, s3senid_t *senid, int32 *senscr)
     return best;
 }
 
+#if 0 /* Not completed, don't used */
+int32 hmm_vit_eval_Nst (hmm_t *hmm, s3senid_t *senid, int32 *senscr)
+{
+
+
+  s0 = NO_UFLOW_ADD(hmm->state[0].score,tp[0]);
+
+  if (s[0] < hmm->in.score) {
+    s[0] = hmm->in.score;
+    hmm->state[0].history = hmm->in.history;
+  }
+
+  hmm->state[0].score = s[0];
+
+  if (best < s[0])
+    best = s[0];
+
+  hmm->in.score = S3_LOGPROB_ZERO;	/* Consumed */
+  hmm->bestscore = best
+  return best
+}
+#endif
+
+
+int32 hmm_vit_eval (hmm_t *hmm, int32 n_state, s3senid_t *senid, int32 *senscr)
+{
+  int32 bs=0;
+  if (n_state == 5)
+    bs = hmm_vit_eval_5st (hmm, senid, senscr);
+  else if (n_state == 3)
+    bs = hmm_vit_eval_3st (hmm, senid, senscr);
+  else
+    E_FATAL("#States= %d unsupported\n", n_state);
+  return bs;
+}
 
 int32 hmm_dump_vit_eval (hmm_t *hmm, int32 n_state, s3senid_t *senid, int32 *senscr, FILE *fp)
 {
@@ -432,9 +473,11 @@ int32 hmm_dump_vit_eval (hmm_t *hmm, int32 n_state, s3senid_t *senid, int32 *sen
 	bs = hmm_vit_eval_3st (hmm, senid, senscr);
     else
 	E_FATAL("#States= %d unsupported\n", n_state);
-    
+
+    /*    
     if (fp)
 	hmm_dump (hmm, n_state, senid, senscr, fp);
+    */
     
     return bs;
 }

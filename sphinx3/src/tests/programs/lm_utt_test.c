@@ -58,7 +58,7 @@
 #define MAX_WORDS_PER_NGRAM 3
 
 int read_ngrams(FILE* fp, char **ngrams, 
-                s3lmwid_t wid[][], int32 nwords[], int max_lines, lm_t *lm);
+                s3lmwid_t wid[MAX_NGRAMS][MAX_WORDS_PER_NGRAM], int32 nwords[], int max_lines, lm_t *lm);
 int ngram2wid(char *word, int length, s3lmwid_t *w, lm_t *lm);
 int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
 int has_more_utterances(FILE* fp);
@@ -111,7 +111,12 @@ int main(int argc, char *argv[])
     metricsStart(lmLoadTimer);
     
     /* initialize the language model */
-    lm = lm_read(lm_file, lw, wip, uw);
+    /* HACK! This doesn't work for class-based LM */
+
+    lm = lm_read(lm_file, "default", lw, wip, uw, 0
+		 , NULL, /*No fmt */
+		 1   /* Set lm weights */
+		 );
 
     metricsStop(lmLoadTimer);
 

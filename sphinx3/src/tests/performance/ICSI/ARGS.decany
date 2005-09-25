@@ -13,3 +13,4 @@
 -varnorm no 
 -lw 10.5 
 -wip 0.02 
+-logbase 1.0001
