@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.11  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.2.4.12  2005/09/25  19:32:11  arthchan2003
+ * (Change for comments) Allow lexical tree to be dumped optionally.
  * 
+ * Revision 1.2.4.11  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.2.4.10  2005/09/18 01:46:20  arthchan2003
  * Moved unlinkSilences to mode 4 and mode 5 search-specific implementation.
  *
@@ -117,6 +120,7 @@
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_TST 1 
+
 
 int srch_TST_init(kb_t *kb, void *srch)
 {
