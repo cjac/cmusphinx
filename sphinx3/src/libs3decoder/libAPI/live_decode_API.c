@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.22.4.6  2005/07/26  02:16:42  arthchan2003
- * Merged hyp_t with srch_hyp_t
+ * Revision 1.22.4.7  2005/09/25  18:56:11  arthchan2003
+ * Added dict argument into vithist_backtrace.
  * 
+ * Revision 1.22.4.6  2005/07/26 02:16:42  arthchan2003
+ * Merged hyp_t with srch_hyp_t
+ *
  * Revision 1.22.4.5  2005/07/20 19:42:30  arthchan2003
  * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
  *
@@ -470,7 +473,7 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   }
 
   /** record the segment length and the overall string length */
-  hyp_list = vithist_backtrace(kb->vithist, id);
+  hyp_list = vithist_backtrace(kb->vithist, id, dict);
   finish_wid = dict_finishwid(dict);
   for (node = hyp_list; node != NULL; node = gnode_next(node)) {
     hyp = (srch_hyp_t *)gnode_ptr(node);
