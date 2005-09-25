@@ -39,8 +39,8 @@ grep "FWDXCT" $tmpout
 #S B U R G H in this case. Just try to run through it now. 
 
 if(grep "FWDVIT" $tmpout |grep "P I T G S B U R G H" > /dev/null 2>&1); \
-then echo "DECODE test PASSED" ; else \
-echo "DECODE test FAILED" ; fi
+then echo "DECODE S3CONT test PASSED" ; else \
+echo "DECODE S3CONT test FAILED" ; fi
 
 
 
