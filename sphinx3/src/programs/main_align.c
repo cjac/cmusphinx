@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.8  2005/08/03  20:01:32  arthchan2003
- * Added the -topn argument into acoustic_model_command_line_macro
+ * Revision 1.15.4.9  2005/09/25  20:09:47  arthchan2003
+ * Added support for LTS.
  * 
+ * Revision 1.15.4.8  2005/08/03 20:01:32  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
+ *
  * Revision 1.15.4.7  2005/08/03 18:55:04  dhdfu
  * Remove bogus initialization of ms_mgau's internals from here
  *
@@ -371,6 +374,7 @@ static void models_init ( void )
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      '_',
+		      cmd_ln_int32("-ltsoov"),
 		      1);	/* Compound word separator.  Default: none. */
     
 

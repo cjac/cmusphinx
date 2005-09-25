@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.8  2005/09/18  01:52:05  arthchan2003
- * Changed name of log_hypseg to s3dag_log_hypseg to avoid confusion.
+ * Revision 1.10.4.9  2005/09/25  20:09:47  arthchan2003
+ * Added support for LTS.
  * 
+ * Revision 1.10.4.8  2005/09/18 01:52:05  arthchan2003
+ * Changed name of log_hypseg to s3dag_log_hypseg to avoid confusion.
+ *
  * Revision 1.10.4.7  2005/09/11 23:08:47  arthchan2003
  * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
  *
@@ -283,6 +286,7 @@ static void models_init ( void )
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      0,
+		      cmd_ln_int32("-ltsoov"),
 		      1);
 
     /* LM Set */

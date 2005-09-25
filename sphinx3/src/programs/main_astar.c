@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.4  2005/09/18  01:52:27  arthchan2003
- * Tied dag handling command line argument.
+ * Revision 1.11.4.5  2005/09/25  20:09:47  arthchan2003
+ * Added support for LTS.
  * 
+ * Revision 1.11.4.4  2005/09/18 01:52:27  arthchan2003
+ * Tied dag handling command line argument.
+ *
  * Revision 1.11.4.3  2005/09/11 02:54:19  arthchan2003
  * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  *
@@ -304,6 +307,7 @@ static void models_init ( void )
     /* Dictionary */
     dict = dict_init (mdef, (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"), 0, 
+		      cmd_ln_int32("-ltsoov"),
 		      1);
 
     lmset=lmset_init(cmd_ln_str("-lm"),
