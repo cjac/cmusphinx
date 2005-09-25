@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8.4.5  2005/07/26  02:17:44  arthchan2003
- * Fixed  keyword problem.
+ * Revision 1.8.4.6  2005/09/25  18:53:36  arthchan2003
+ * Added hmm_vit_eval, in lextree.c, hmm_dump and hmm_vit_eval is now separated.
  * 
+ * Revision 1.8.4.5  2005/07/26 02:17:44  arthchan2003
+ * Fixed  keyword problem.
+ *
  * Revision 1.8.4.4  2005/07/17 05:15:47  arthchan2003
  * Totally removed the data members in hmm_t structure
  *
@@ -62,9 +65,12 @@
  *
  * Revision 1.8  2005/06/21 18:34:41  arthchan2003
  * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
- * Revision 1.8.4.5  2005/07/26  02:17:44  arthchan2003
- * Fixed  keyword problem.
- *  keyword
+ * Revision 1.8.4.6  2005/09/25  18:53:36  arthchan2003
+ * Added hmm_vit_eval, in lextree.c, hmm_dump and hmm_vit_eval is now separated.
+ * 
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Revision 1.8.4.5  2005/07/26 02:17:44  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add Fixed  keyword problem.
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add keyword
  *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
@@ -189,6 +195,23 @@ int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
 			s3senid_t *senid,	/**< In: Senone ID for each HMM state */
 			int32 *senscore	/**< In: Senone scores, for all senones */
 			);
+
+
+  /**
+     A wrapper of both hmm_vit_eval_5st and hmm_vit_eval_3st.  Only carry out evaluation but assume
+     writing be the job of hmm_dump
+     @see hmm_vit_eval_3st
+     @see hmm_vit_eval_5st
+     @see hmm_dump_vit_eval
+     @see hmm_dump
+   */
+  int32 hmm_vit_eval (hmm_t *hmm, /**< In/Out: HMM being updated */
+		      int32 n_state, /**< In number of state */
+		      s3senid_t *senid, /**< an array of senone ID */
+		      int32 *senscr     /**< an array of senone score */
+		      );
+
+  
 
   /** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging 
       @see hmm_vit_eval_3st
