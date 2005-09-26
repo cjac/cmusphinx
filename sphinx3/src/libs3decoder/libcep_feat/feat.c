@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.21.4.1  2005/07/03  22:55:50  arthchan2003
- * More correct deallocation in feat.c. The cmn deallocation is still not correct at this point.
+ * Revision 1.21.4.2  2005/09/26  02:19:57  arthchan2003
+ * Add message to show the directory which the feature is searched for.
  * 
+ * Revision 1.21.4.1  2005/07/03 22:55:50  arthchan2003
+ * More correct deallocation in feat.c. The cmn deallocation is still not correct at this point.
+ *
  * Revision 1.21  2005/06/22 03:29:35  arthchan2003
  * Makefile.am s  for all subdirectory of libs3decoder/
  *
@@ -833,6 +836,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 	return -1;
     }
     
+
     /* 
      * Create mfc filename, combining file, dir and extension if
      * necessary
@@ -845,8 +849,10 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 
     if (dir != NULL) {
       sprintf (path, "%s/%s", dir, file);
+      E_INFO("At directory %s\n",dir);
     } else {
       strcpy (path, file);
+      E_INFO("At directory . (current directory)\n",dir);
     }
 
     /*
