@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.10  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.10.4.11  2005/09/26  02:27:22  arthchan2003
+ * Fixed bugs when using of -hmm, also fixed a bug when the dictionary is not specified.  Now, it is safe-guard. Notice, this is a case we cannot use RARG in cmd_ln
  * 
+ * Revision 1.10.4.10  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.10.4.9  2005/09/18 01:29:37  arthchan2003
  * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
  *
@@ -184,7 +187,7 @@ void s3_am_init(kbcore_t *kbc,
   kbc->ms_mgau=NULL;
 
   if(s3hmmdir && (mdeffile||meanfile||varfile||mixwfile||tmatfile)){
-    E_WARN("-s3hmmdir is specified together with (-mdef||-mean||-var||-mix||-tmat). Assume the later overide what -s3hmmdir specified.");
+    E_WARN("-s3hmmdir is specified together with (-mdef||-mean||-var||-mix||-tmat). Assume the later overide what -s3hmmdir specified.\n");
   }
 
   /** Determine the location of the resources. 
@@ -230,21 +233,35 @@ void s3_am_init(kbcore_t *kbc,
       sprintf(tmatstr,"%s",tmatfile);
   }else{
 
-    if(mdeffile) E_WARN("-mdef overrides <-s3hmmdir>/mdef");
+    if(mdeffile) {
+      E_WARN("-mdef overrides <-s3hmmdir>/mdef");
+      sprintf(mdefstr,"%s",mdeffile);
+    }
     else sprintf(mdefstr,"%s/mdef",s3hmmdir);
     
-    if(meanfile) E_WARN("-mean overrides <-s3hmmdir>/means");
+    if(meanfile) {
+      E_WARN("-mean overrides <-s3hmmdir>/means");
+      sprintf(meanstr,"%s",meanfile);
+    }
     else sprintf(meanstr,"%s/means",s3hmmdir);
     
-    if(varfile)  E_WARN("-var overrides <-s3hmmdir>/variances");
+    if(varfile)  {
+      E_WARN("-var overrides <-s3hmmdir>/variances");
+      sprintf(meanstr,"%s",varfile);
+    }
     else sprintf(varstr,"%s/variances",s3hmmdir);
     
-    if(mixwfile)  E_WARN("-mixw overrides <-s3hmmdir>/mixture_weights");
+    if(mixwfile)  {
+      E_WARN("-mixw overrides <-s3hmmdir>/mixture_weights");
+      sprintf(mixwstr,"%s",mixwfile);
+    }
     else sprintf(mixwstr,"%s/mixture_weights",s3hmmdir);
     
-    if(tmatfile)  E_WARN("-tmat overrides <-s3hmmdir>/transition_matrics");
+    if(tmatfile)  {
+      E_WARN("-tmat overrides <-s3hmmdir>/transition_matrics");
+      sprintf(tmatstr,"%s",tmatfile);
+    }
     else sprintf(tmatstr,"%s/transition_matrices",s3hmmdir);
-
   }
 
 
@@ -431,6 +448,8 @@ kbcore_t *kbcore_init (float64 logbase,
 	       cmd_ln_int32("-topn") /* ARRRGH!! */
 	       );
     
+    assert(kb->mdef!=NULL);
+
     if (dictfile) {
 	if (! compsep)
 	    compsep = "";
@@ -441,13 +460,16 @@ kbcore_t *kbcore_init (float64 logbase,
 	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],cmd_ln_int32("-ltsoov"),REPORT_KBCORE)) == NULL)
 	    E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
 		    fdictfile ? fdictfile : "", compsep);
+    }else{
+      E_FATAL("Dictionary file is not specified. \n");
     }
-   
+
+    assert(kb->dict!=NULL);
     if(REPORT_KBCORE) {
       dict_report(kb->dict);
     }
     
-    if (meanfile){
+    if (kb->mgau){
       if(subvqfile && gsfile){
 	E_FATAL("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
       }
@@ -463,12 +485,13 @@ kbcore_t *kbcore_init (float64 logbase,
 	E_INFO("After reading the number of senones: %d\n",kb->gs->n_mgau);
       }  
       /* SVQ and GS-specific checking should be done */
+    }else{
+      E_INFO("Slow GMM computation is used, SVQ and GS will not be used\n");
     }
 
     /* Two sore points here 
        1, lmset initialization should be handed to the search itself. This will make it 
        parrallel to the FSG code
-       2, 
      */
     if( (lmfile||lmctlfile) && (fsgfile||fsgctlfile)){
       E_FATAL("Only one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile) could be specified\n");
@@ -478,6 +501,7 @@ kbcore_t *kbcore_init (float64 logbase,
       E_FATAL("Please specify one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile)\n");
     }
 
+    assert(kb->dict);
     if(lmfile||lmctlfile){
       kb->lmset=lmset_init(lmfile,
 			   lmctlfile,
@@ -515,7 +539,8 @@ kbcore_t *kbcore_init (float64 logbase,
     if(REPORT_KBCORE){
       fillpen_report(kb->fillpen);
     }
-    
+
+    assert(kb->tmat);
     /* CHECK: that HMM topology restrictions are not violated */
     if (tmat_chk_1skip (kb->tmat) < 0)
 	E_FATAL("Transition matrices contain arcs skipping more than 1 state, not supported in s3.x's decode\n");
