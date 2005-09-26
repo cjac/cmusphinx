@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.10  2005/09/26  02:21:57  arthchan2003
- * Changed the option -s3hmmdir to -hmm. This seems to be more generic and cause fewer restraints in future.
+ * Revision 1.1.2.11  2005/09/26  02:32:34  arthchan2003
+ * (Change for comments) Also set agc default to none instead of max. The reason is that all 8 tests we have in the performance do not use -agc max. Also in practice, AGC usually hurt the performance.
  * 
+ * Revision 1.1.2.10  2005/09/26 02:21:57  arthchan2003
+ * Changed the option -s3hmmdir to -hmm. This seems to be more generic and cause fewer restraints in future.
+ *
  * Revision 1.1.2.9  2005/09/25 19:04:23  arthchan2003
  * Added macros for 1, tie routines which used vq_gen, 2, add support for using LTS rules to generate OOV. 3, enable and disable composite triphone support.
  *
@@ -138,7 +141,6 @@
       ARG_FLOAT32,\
       "0.0000001",\
       "Senone mixture weights floor (applied to data from -mixw file)" },
-
 
 #define acoustic_model_command_line_macro() \
     gmm_command_line_macro() \
