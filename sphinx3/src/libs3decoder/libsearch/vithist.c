@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.6  2005/09/25  19:33:40  arthchan2003
- * (Change for comments) Added support for Viterbi history.
+ * Revision 1.8.4.7  2005/09/26  02:28:00  arthchan2003
+ * Remove a E_INFO in vithist.c
  * 
+ * Revision 1.8.4.6  2005/09/25 19:33:40  arthchan2003
+ * (Change for comments) Added support for Viterbi history.
+ *
  * Revision 1.8.4.5  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -904,7 +907,7 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id, dict_t *dict)
     /*    E_INFO("id %d\n",id);*/
     while (id > 0) {
 
-      E_INFO("id %d\n",id);
+      /*      E_INFO("id %d\n",id);*/
 	b = VITHIST_ID2BLK(id);
 	l = VITHIST_ID2BLKOFFSET(id);
 
