@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.7  2005/09/26  02:28:00  arthchan2003
- * Remove a E_INFO in vithist.c
+ * Revision 1.8.4.8  2005/09/26  07:23:06  arthchan2003
+ * Also fixed a bug such SINGLE_RC_HISTORY=0 compiled.
  * 
+ * Revision 1.8.4.7  2005/09/26 02:28:00  arthchan2003
+ * Remove a E_INFO in vithist.c
+ *
  * Revision 1.8.4.6  2005/09/25 19:33:40  arthchan2003
  * (Change for comments) Added support for Viterbi history.
  *
@@ -319,7 +322,10 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, g
     int32 n_ci,i;
     lextree_node_t *ln;
     gnode_t *gn; /** for the rclist */
-    
+    s3cipid_t *rcmap;
+
+
+
     /* Check if an entry with this LM state already exists in current frame */
     vhid = vh_lmstate_find (vh, &(tve->lmstate));
     if (vhid < 0) {	/* Not found; allocate new entry */
@@ -334,9 +340,9 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, g
 	vithist_lmstate_enter (vh, vhid, ve);	/* Enter new vithist info into LM state tree */
 	
 
-#if 1
+#if 0 /*THIS IS TOTALLY WRONG! */
 	if(rclist!=NULL){
-	  n_ci=mdef_n_ciphone(kbc->mdef);
+	  n_ci=get_rc_cimap(kbc->dict2pid->ct,ve->wid, kbc->dict);
 	    E_INFO("HIHI\n");
 	  ve->rc_info=ckd_calloc(n_ci,sizeof(scr_hist_pair));
 	  for(i=0;i<n_ci;i++){
@@ -349,23 +355,28 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, g
 #endif
 
     } else {
+
+
+
 	ve = vh->entry[VITHIST_ID2BLK(vhid)] + VITHIST_ID2BLKOFFSET(vhid);
-	
+
+	rcmap=get_rc_cimap(kbc->dict2pid->ct,ve->wid,kbc->dict);	
+
 	if (ve->score < tve->score)
 	    *ve = *tve;
 
-#if 1	
-	for(gn= rclist; gn ; gn= gnode_next(gn)){
-	  ln=gnode_ptr(gn);
-
-
-	  if(rclist!=NULL){
-	    if(ve->rc_info[ln->rc].score < ln->hmm.out.score){
-	      ve->rc_info[ln->rc].score = ln->hmm.out.score;
-	      ve->rc_info[ln->rc].pred = ln->hmm.out.history;
+#if 0	
+	if(rclist!=NULL){
+	  for(i=0;i<n_ci;i++){
+	    /** Look up the map of get_rc_cimap */
+	    /** Update the score for rc_info */
+	    if(ve->rc_info[i].score < ln->hmm.out.score){
+	      ve->rc_info[i].score = ln->hmm.out.score;
+	      ve->rc_info[i].pred = ln->hmm.out.history;
 	    }
 	  }
 	}
+
 #endif
     }
     
@@ -379,7 +390,7 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, g
 
 void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		      s3wid_t wid, int32 ef, int32 score, 
-		      int32 senscale, int32 pred, int32 type, glist_t rclist)
+		      int32 senscale, int32 pred, int32 type, glist_t compressed_rclist)
 {
     vithist_entry_t *pve, tve;
     s3lmwid_t lwid;
@@ -392,8 +403,10 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
       /*      exit(-1);*/
     }
 
+    /* pve is the previous entry, se an fe is the first to the last entry before pve.  */
 
     pve = vh->entry[VITHIST_ID2BLK(pred)] + VITHIST_ID2BLKOFFSET(pred);
+
     /* Create a temporary entry with all the info currently available */
     tve.wid = wid;
     tve.sf = pve->ef + 1;
@@ -424,8 +437,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 
 	tve.pred = pred;
 	tve.lmstate.lm3g = pve->lmstate.lm3g;
-	assert(rclist==NULL);
-	vithist_enter (vh, kbc, &tve,rclist);
+	assert(compressed_rclist==NULL);
+	vithist_enter (vh, kbc, &tve,compressed_rclist);
     } else {
 
 	lwid = kbc->lmset->cur_lm->dict2lmwid[wid];
@@ -453,7 +466,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		    tve.pred = i;
 		    tve.lmstate.lm3g.lwid[1] = pve->lmstate.lm3g.lwid[0];
 		    
-		    vithist_enter (vh, kbc, &tve,rclist);
+		    vithist_enter (vh, kbc, &tve,compressed_rclist);
 		}
 	    }
 	}
@@ -1423,7 +1436,7 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 	return 0;
     }
     
-    two_word_history (lathist->lattice[l].history, &bw0, &bw1);
+    two_word_history (lathist, lathist->lattice[l].history, &bw0, &bw1);
 #else
     if (NOT_S3LATID(lat_pscr_rc_history(lathist,l,w_rc,ct,dict))) {
 	assert (bw2 == dict->startwid);
