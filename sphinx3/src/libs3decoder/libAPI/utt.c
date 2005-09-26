@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.27.4.2  2005/09/25  18:57:15  arthchan2003
- * Changed srch_utt_decode_blk from a FATAL to an ERROR. This corresponds to the problem of putting history pointer to the vithistory routine.
+ * Revision 1.27.4.3  2005/09/26  02:19:06  arthchan2003
+ * 1, Forced exit when the decoder cannot find a file, 2, fixed dox-doc.
  * 
+ * Revision 1.27.4.2  2005/09/25 18:57:15  arthchan2003
+ * Changed srch_utt_decode_blk from a FATAL to an ERROR. This corresponds to the problem of putting history pointer to the vithistory routine.
+ *
  * Revision 1.27.4.1  2005/07/27 23:16:26  arthchan2003
  * 1, Fixed dox-doc, 2, Move set_lm and setmllr to utt_decode.
  *
@@ -130,12 +133,13 @@ void utt_decode (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 
   
   /* Read mfc file and build feature vectors for entire utterance */
-  total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, 
-				cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
-				sf, ef, kb->feat, S3_MAX_FRAMES);
+  if((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, 
+				    cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
+				    sf, ef, kb->feat, S3_MAX_FRAMES)) == -1)
+    {
+      E_FATAL("Cannot read file %s. Forced exit\n",ur->uttfile);
+    }
 
-
-  /*report_utt_res(ur);*/
   /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
      could be provided inside the following function. 
    */

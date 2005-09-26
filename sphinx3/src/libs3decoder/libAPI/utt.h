@@ -54,12 +54,12 @@ extern "C" {
 
 
   /** Begin utterance */
-void utt_begin (kb_t *kb
+  void utt_begin (kb_t *kb /**< A kb */
 		);
 
     /** End utterance */
-void utt_end (kb_t *kb
-	      );
+  void utt_end (kb_t *kb     /**< A kb */
+		);
 
    /** Decoding the whole utterance */
   void utt_decode (void *data,  /**< A kb */
