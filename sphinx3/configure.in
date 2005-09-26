@@ -181,6 +181,7 @@ src/tests/regression/test-decode_anytopo.sh
 src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode_anytopo-mllr.sh
 src/tests/regression/test-decode.sh
+src/tests/regression/test-decode-simple.sh
 src/tests/regression/test-decode-noncomp.sh
 src/tests/regression/test-decode-lts.sh
 src/tests/regression/test-decode-mode3.sh
@@ -229,6 +230,7 @@ chmod +x src/tests/regression/test-decode_anytopo.sh
 chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
 chmod +x src/tests/regression/test-decode.sh
+chmod +x src/tests/regression/test-decode-simple.sh
 chmod +x src/tests/regression/test-decode-noncomp.sh
 chmod +x src/tests/regression/test-decode-lts.sh
 chmod +x src/tests/regression/test-decode-mode3.sh

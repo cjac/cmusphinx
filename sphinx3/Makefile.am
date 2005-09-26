@@ -61,6 +61,7 @@ check: test-full
 	@:
 
 test-full : \
+	test-decode-simple \
 	test-decode \
 	test-decode-clm \
 	test-decode-mllr \
@@ -97,6 +98,7 @@ test-decode_anytopo \
 test-decode_anytopo-2ndstage \
 test-decode_anytopo-mllr \
 test-decode \
+test-decode-simple \
 test-decode-noncomp \
 test-decode-lts \
 test-decode-mode3 \
