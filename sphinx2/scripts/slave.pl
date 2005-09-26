@@ -168,8 +168,8 @@ sub align_hyp {
 	$result = "CORRECT";
       }
       print OUT "Sentence $count : $result\n";
-      print OUT "\t$rline\n";
-      print OUT "\t$hline\n\n";
+      print OUT "\tREF: $rline\n";
+      print OUT "\tHYP: $hline\n\n";
     }
     close(REF);
     close(HYP);
