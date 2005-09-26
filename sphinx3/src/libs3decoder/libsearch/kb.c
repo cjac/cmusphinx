@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.7  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.26.4.8  2005/09/26  02:26:08  arthchan2003
+ * Change -s3hmmdir to -hmm
  * 
+ * Revision 1.26.4.7  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.26.4.6  2005/09/18 01:21:18  arthchan2003
  * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
  *
@@ -222,7 +225,7 @@ void kb_init (kb_t *kb)
 			      cmd_ln_float32("-lw"),
 			      cmd_ln_float32("-wip"),
 			      cmd_ln_float32("-uw"),
-			      cmd_ln_str("-s3hmmdir"),
+			      cmd_ln_str("-hmm"),
 			      cmd_ln_str("-mean"),
 			      cmd_ln_str("-var"),
 			      cmd_ln_float32("-varfloor"),
