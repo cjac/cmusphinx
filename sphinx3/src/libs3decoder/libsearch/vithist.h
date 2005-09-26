@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.4  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.11.4.5  2005/09/26  06:37:33  arthchan2003
+ * Before anyone get hurt, quickly change back to using SINGLE_RC_HISTORY.
  * 
+ * Revision 1.11.4.4  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.11.4.3  2005/09/11 03:00:15  arthchan2003
  * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
  *
@@ -454,7 +457,7 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 #define LATID2SF(hist,l)	(IS_S3LATID(hist->lattice[l].history) ? \
 			 hist->lattice[hist->lattice[l].history].frm + 1 : 0)
 
-#define SINGLE_RC_HISTORY 0
+#define SINGLE_RC_HISTORY 1
 
   /** 
    * \struct latticehist_t 
