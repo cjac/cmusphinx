@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13.4.9  2005/09/11  02:54:19  arthchan2003
- * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ * Revision 1.13.4.10  2005/09/26  02:28:26  arthchan2003
+ * Changed -s3hmmdir to -hmm
  * 
+ * Revision 1.13.4.9  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
  * Revision 1.13.4.8  2005/08/03 20:01:32  arthchan2003
  * Added the -topn argument into acoustic_model_command_line_macro
  *
@@ -248,7 +251,7 @@ static void models_init ( void )
     }
 
     s3_am_init(kbc,
-	       cmd_ln_str("-s3hmmdir"),
+	       cmd_ln_str("-hmm"),
 	       cmd_ln_str("-mdef"),
 	       cmd_ln_str("-mean"),
 	       cmd_ln_str("-var"),

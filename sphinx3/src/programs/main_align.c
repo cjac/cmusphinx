@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.9  2005/09/25  20:09:47  arthchan2003
- * Added support for LTS.
+ * Revision 1.15.4.10  2005/09/26  02:28:26  arthchan2003
+ * Changed -s3hmmdir to -hmm
  * 
+ * Revision 1.15.4.9  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
  * Revision 1.15.4.8  2005/08/03 20:01:32  arthchan2003
  * Added the -topn argument into acoustic_model_command_line_macro
  *
@@ -331,7 +334,7 @@ static void models_init ( void )
     }
 
     s3_am_init(kbc,
-	       cmd_ln_str("-s3hmmdir"),
+	       cmd_ln_str("-hmm"),
 	       cmd_ln_str("-mdef"),
 	       cmd_ln_str("-mean"),
 	       cmd_ln_str("-var"),
@@ -847,6 +850,7 @@ static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid
   if (fgets (sent, sizeof(sent), sentfp) == NULL) {
     E_FATAL("EOF(%s) of the transcription\n", sentfile);
   }
+  /*  E_INFO("SENT %s\n",sent);*/
   /* Strip utterance id from the end of the transcript */
   for (k = strlen(sent) - 1;
        (k > 0) && ((sent[k] == '\n') || (sent[k] == '\t') || (sent[k] == ' '));
