@@ -14,6 +14,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ali
 -tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 -mllr @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mllr_matrices \
 -feat 1s_c_d_dd \
+-agc max \
 -topn 1000 \
 -beam 1e-80 \
 -senmgau .cont. \
