@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.9  2005/09/25  19:04:23  arthchan2003
- * Added macros for 1, tie routines which used vq_gen, 2, add support for using LTS rules to generate OOV. 3, enable and disable composite triphone support.
+ * Revision 1.1.2.10  2005/09/26  02:21:57  arthchan2003
+ * Changed the option -s3hmmdir to -hmm. This seems to be more generic and cause fewer restraints in future.
  * 
+ * Revision 1.1.2.9  2005/09/25 19:04:23  arthchan2003
+ * Added macros for 1, tie routines which used vq_gen, 2, add support for using LTS rules to generate OOV. 3, enable and disable composite triphone support.
+ *
  * Revision 1.1.2.8  2005/09/18 01:14:58  arthchan2003
  * Tie Viterbi history, DAG, debugging command line together.  Inspect all possible commands and specify whether they are mode-specific.
  *
@@ -139,10 +142,10 @@
 
 #define acoustic_model_command_line_macro() \
     gmm_command_line_macro() \
-    { "-s3hmmdir", \
+    { "-hmm", \
       ARG_STRING, \
       NULL, \
-      "Directory for specifying Sphinx 3's hmm, the following file is assummed to be present, mdef, mean, var, mixw, tmat. If both are specified, the later will override the s3hmmdir "}, \
+      "Directory for specifying Sphinx 3's hmm, the following files are assummed to be present, mdef, mean, var, mixw, tmat. If -mdef, -mean, -var, -mixw or -tmat are specified, they will override the s3hmmdir "}, \
     { "-mdef", \
       ARG_STRING,\
       NULL,\
@@ -207,7 +210,6 @@
       ARG_INT32, \
       "1", \
       "(FSG Mode (Mode 2) only) Insert filler words at each state."}, 
-
 
 
 #define log_table_command_line_macro() \
@@ -348,7 +350,7 @@
       "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" }, \
     { "-agc", \
       ARG_STRING, \
-      "max", \
+      "none", \
       "Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))" }, 
 
 #define waveform_to_cepstral_command_line_macro() \
