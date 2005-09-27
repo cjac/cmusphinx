@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.1  2005/09/25  19:08:25  arthchan2003
- * Move context table from search to here.
+ * Revision 1.1.2.2  2005/09/27  07:39:17  arthchan2003
+ * Added ctxt_table_free.
  * 
+ * Revision 1.1.2.1  2005/09/25 19:08:25  arthchan2003
+ * Move context table from search to here.
+ *
  * Revision 1.1.2.4  2005/09/07 23:32:03  arthchan2003
  * 1, Added get_lcpid in parrallel with get_rcpid. 2, Also fixed small mistakes in the macro.
  *
@@ -354,6 +357,22 @@ ctxt_table_t* ctxt_table_init( dict_t *dict,mdef_t *mdef)
 
   ckd_free (tmp_xwdpid);
   return ct;
+}
+
+void ctxt_table_free(ctxt_table_t *ct)
+{
+  if(ct->lcpid)
+    ckd_free(ct->lcpid);
+  
+  if(ct->rcpid)
+    ckd_free(ct->rcpid);
+
+  if(ct->lrcpid)
+    ckd_free(ct->lrcpid);
+
+  if(ct->wwpid)
+    ckd_free(ct->wwpid);
+
 }
 
 s3cipid_t *get_rc_cimap (ctxt_table_t *ct, s3wid_t w,dict_t *dict)

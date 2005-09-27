@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.1  2005/09/25  19:08:25  arthchan2003
- * Move context table from search to here.
+ * Revision 1.1.2.2  2005/09/27  07:39:17  arthchan2003
+ * Added ctxt_table_free.
  * 
+ * Revision 1.1.2.1  2005/09/25 19:08:25  arthchan2003
+ * Move context table from search to here.
+ *
  * Revision 1.1.2.3  2005/09/07 23:32:03  arthchan2003
  * 1, Added get_lcpid in parrallel with get_rcpid. 2, Also fixed small mistakes in the macro.
  *
@@ -369,6 +372,14 @@ typedef struct {
 ctxt_table_t *ctxt_table_init(dict_t *dict,  /**< A dictionary*/
 			      mdef_t *mdef   /**< A model definition*/
 			      );
+
+/**
+ * Uninitialize a context table
+ */
+
+void ctxt_table_free(ctxt_table_t *ct /**< Context Table */
+		     );
+
 /**
  * Get the array of right context phone ID for the last phone. 
  */
