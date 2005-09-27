@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.2  2005/09/18  01:45:19  arthchan2003
- * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
+ * Revision 1.1.2.3  2005/09/27  07:41:40  arthchan2003
+ * Not trying to free hyp. But correctly free the context table.
  * 
+ * Revision 1.1.2.2  2005/09/18 01:45:19  arthchan2003
+ * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
+ *
  * Revision 1.1.2.1  2005/07/24 01:40:37  arthchan2003
  * (Incomplete) The implementation of flat-lexicon decoding.
  *
@@ -340,6 +343,9 @@ int srch_FLAT_FWD_uninit(void* srch)
       ckd_free(fwg->word_cand_cf);
   }
 
+  if (fwg->ctxt)
+    ctxt_table_free(fwg->ctxt);
+
   pctr_free(fwg->ctr_mpx_whmm);
   pctr_free(fwg->ctr_nonmpx_whmm);
   pctr_free(fwg->ctr_latentry);
@@ -479,10 +485,6 @@ int srch_FLAT_FWD_end(void* srch)
     if (bptfp != stdout)
       fclose (bptfp);
   }
-  /* Get rid of old hyp, if any */
-  hyp_free (hyp);
-
-  
   /* Backtrack through lattice for Viterbi result */
   l = lat_final_entry (s->lathist, dict, fwg->n_frm, s->uttid);
   if (NOT_S3LATID(l)){
