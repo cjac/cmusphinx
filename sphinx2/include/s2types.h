@@ -44,9 +44,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.7  2005/10/04  23:56:30  dhdfu
+ * Explicitly define int8 as signed, otherwise it will be unsigned on ARM
+ * and PowerPC, and Sphinx3 model definition files won't work.
  * 
+ * Revision 1.6  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 12-Mar-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon
  * 		Added some useful constant definitions.
@@ -87,7 +91,7 @@
 
 typedef int		int32;
 typedef short		int16;
-typedef char		int8;
+typedef signed char	int8;
 typedef unsigned int	uint32;
 typedef unsigned short	uint16;
 typedef unsigned char	uint8;
