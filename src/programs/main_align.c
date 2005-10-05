@@ -46,9 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15  2005/06/22  05:36:11  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid
+ * Revision 1.16  2005/10/05  00:31:14  dhdfu
+ * Make int8 be explicitly signed (signedness of 'char' is
+ * architecture-dependent).  Then make a bunch of things use uint8 where
+ * signedness is unimportant, because on the architecture where 'char' is
+ * unsigned, it is that way for a reason (signed chars are slower).
  * 
+ * Revision 1.15  2005/06/22 05:36:11  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid
+ *
  * Revision 1.11  2005/06/19 04:51:48  archan
  * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
  *
@@ -814,7 +820,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     static gauden_dist_t ***dist;
     static int32 *senscr = NULL;
     static s3senid_t *sen_active;
-    static int8 *mgau_active;
+    static uint8 *mgau_active;
     static char *s2stsegdir;
     static char *stsegdir;
     static char *phsegdir;
@@ -845,7 +851,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	/* Space for one frame of senone scores, and per frame active flags */
 	senscr = (int32 *) ckd_calloc (sen->n_sen, sizeof(int32));
 	sen_active = (s3senid_t *) ckd_calloc (sen->n_sen, sizeof(s3senid_t));
-	mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
+	mgau_active = (uint8 *) ckd_calloc (g->n_mgau, sizeof(int8));
 
 	/* Note various output directories */
 	s2stsegdir = NULL;

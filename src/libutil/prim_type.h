@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/22  03:10:23  arthchan2003
- * Added  keyword.
+ * Revision 1.12  2005/10/05  00:31:14  dhdfu
+ * Make int8 be explicitly signed (signedness of 'char' is
+ * architecture-dependent).  Then make a bunch of things use uint8 where
+ * signedness is unimportant, because on the architecture where 'char' is
+ * unsigned, it is that way for a reason (signed chars are slower).
  * 
+ * Revision 1.11  2005/06/22 03:10:23  arthchan2003
+ * Added  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -81,7 +87,7 @@ extern "C" {
 
 typedef int		int32;
 typedef short		int16;
-typedef char		int8;
+typedef signed char	int8;
 typedef unsigned int	uint32;
 typedef unsigned short	uint16;
 typedef unsigned char	uint8;

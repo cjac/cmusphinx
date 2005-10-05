@@ -49,9 +49,15 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.13  2005/07/12  01:39:27  arthchan2003
- * Make default -btwsil to be 1 again. In general, the value of -btwsil (or whether to use silence as the final word) largely depends on different databases.  In Communicator, 5% relative improvement is seen. In WSJ, there is 5% drop. So, it is largely a matter of tuning.
+ * Revision 1.14  2005/10/05  00:31:14  dhdfu
+ * Make int8 be explicitly signed (signedness of 'char' is
+ * architecture-dependent).  Then make a bunch of things use uint8 where
+ * signedness is unimportant, because on the architecture where 'char' is
+ * unsigned, it is that way for a reason (signed chars are slower).
  * 
+ * Revision 1.13  2005/07/12 01:39:27  arthchan2003
+ * Make default -btwsil to be 1 again. In general, the value of -btwsil (or whether to use silence as the final word) largely depends on different databases.  In Communicator, 5% relative improvement is seen. In WSJ, there is 5% drop. So, it is largely a matter of tuning.
+ *
  * Revision 1.12  2005/06/22 05:39:55  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -1120,8 +1126,8 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
     static int32 topn;
     static int32 **senscr;		/* Senone scores for window of frames */
     static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
-    static int8 *sen_active;		/* [s] TRUE iff s active in current frame */
-    static int8 *mgau_active;		/* [m] TRUE iff m active in current frame */
+    static uint8 *sen_active;		/* [s] TRUE iff s active in current frame */
+    static uint8 *mgau_active;		/* [m] TRUE iff m active in current frame */
     static mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
 
     int32 i, j, k, s, gid, n_sen_active, best;
@@ -1152,8 +1158,8 @@ static srch_hyp_t *fwdvit (	/* In: MFC cepstra for input utterance */
 	 */
 	if (inlatdir) {
 	    E_INFO("Computing only active codebooks and senones each frame\n");
-	    sen_active = (int8 *) ckd_calloc (sen->n_sen, sizeof(int8));
-	    mgau_active = (int8 *) ckd_calloc (g->n_mgau, sizeof(int8));
+	    sen_active = (uint8 *) ckd_calloc (sen->n_sen, sizeof(int8));
+	    mgau_active = (uint8 *) ckd_calloc (g->n_mgau, sizeof(int8));
 	
 	    /* Space for senone scores (one frame) */
 	    senscr = (int32 **) ckd_calloc_2d (1, sen->n_sen, sizeof(int32));
@@ -1506,7 +1512,7 @@ static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
 	E_FATAL("ms_mllr_read_regmat failed\n");
 
     if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
+        uint32 ncb, nmllr;
 
 	cb2mllr_read(cb2mllrfile,
 		     &cb2mllr,

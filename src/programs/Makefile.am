@@ -1,4 +1,5 @@
 bin_PROGRAMS = livepretend \
+	livedecode \
 	decode \
 	gausubvq \
 	align \
@@ -19,6 +20,7 @@ gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
 wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
+livedecode_SOURCES = main_livedecode.c
 
 
 noinst_PROGRAMS = \
