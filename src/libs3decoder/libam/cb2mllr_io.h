@@ -46,8 +46,8 @@
 int
 cb2mllr_read(const char *fn,
 	     int32 **out_cb2mllr,
-	     uint32 *out_n_cb,
-	     uint32 *out_n_mllr);
+	     int32 *out_n_cb,
+	     int32 *out_n_mllr);
 
 #endif /* S3CB2MLLR_IO_H */ 
 
@@ -56,9 +56,12 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2005/06/22  08:05:55  arthchan2003
- * Fixed spelling in doc
+ * Revision 1.5  2005/10/05  00:29:44  dhdfu
+ * Silence some largely unimportant signedness warnings.
  * 
+ * Revision 1.4  2005/06/22 08:05:55  arthchan2003
+ * Fixed spelling in doc
+ *
  * Revision 1.3  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  *

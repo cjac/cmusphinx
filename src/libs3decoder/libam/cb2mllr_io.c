@@ -55,8 +55,8 @@
 static int
 s3map_read(const char *fn,
 	   void **out_map,
-	   uint32 *out_n_dom,
-	   uint32 *out_n_rng,
+	   int32 *out_n_dom,
+	   int32 *out_n_rng,
 	   size_t map_elem_size)
 {
     uint32 rd_chksum = 0;
@@ -65,7 +65,7 @@ s3map_read(const char *fn,
     char *ver;
     char *do_chk;
     FILE *fp;
-    uint32 swap;
+    int32 swap;
     char **argname, **argval;
     int i;
 
@@ -136,8 +136,8 @@ s3map_read(const char *fn,
 int
 cb2mllr_read(const char *fn,
 	     int32 **out_cb2mllr,
-	     uint32 *out_n_cb,
-	     uint32 *out_n_mllr)
+	     int32 *out_n_cb,
+	     int32 *out_n_mllr)
 {
     int ret, i, n_d, n_r;
     int *did_map;
@@ -194,9 +194,12 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.2  2005/06/22  03:29:35  arthchan2003
- * Makefile.am s  for all subdirectory of libs3decoder/
+ * Revision 1.3  2005/10/05  00:29:44  dhdfu
+ * Silence some largely unimportant signedness warnings.
  * 
+ * Revision 1.2  2005/06/22 03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
+ *
  * Revision 1.1  2005/06/15 19:41:02  archan
  * Added cb2mllr_io into libam
  *
