@@ -49,9 +49,15 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12  2005/06/21  22:41:32  arthchan2003
- * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
+ * Revision 1.13  2005/10/05  00:31:14  dhdfu
+ * Make int8 be explicitly signed (signedness of 'char' is
+ * architecture-dependent).  Then make a bunch of things use uint8 where
+ * signedness is unimportant, because on the architecture where 'char' is
+ * unsigned, it is that way for a reason (signed chars are slower).
  * 
+ * Revision 1.12  2005/06/21 22:41:32  arthchan2003
+ * Log. 1, Removal of several functions of dag_t, 2, removal of static variable stardwid, finishwid and silwid. They are now all handled by dict.  3, Use the lmset interface (lmset_init). Currently it still doesn't support class-based LM.
+ *
  * Revision 1.6  2005/06/19 03:58:16  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -305,8 +311,8 @@ static xwdpid_t **rcpid;
 static xwdpid_t **lrcpid;
 
 static int32 n_backoff_ci;	/* #Triphone instances backed off to ciphones */
-static int8 *word_start_ci;
-static int8 *word_end_ci;
+static uint8 *word_start_ci;
+static uint8 *word_end_ci;
 static whmm_t **whmm;
 
 
@@ -639,8 +645,8 @@ static void build_xwdpid_map ( void )
     
     E_INFO ("Building cross-word triphones\n");
     
-    word_start_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
-    word_end_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
+    word_start_ci = (uint8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
+    word_end_ci = (uint8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
 
     /* Mark word beginning and ending ciphones that occur in given dictionary */
     for (w = 0; w < dict->n_word; w++) {
@@ -2245,7 +2251,7 @@ void fwd_start_utt (char *id)
 }
 
 
-void fwd_sen_active (int8 *senlist, int32 n_sen)
+void fwd_sen_active (uint8 *senlist, int32 n_sen)
 {
     s3wid_t w;
     whmm_t *h;

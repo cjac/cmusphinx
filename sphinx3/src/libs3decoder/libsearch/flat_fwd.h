@@ -143,7 +143,7 @@ int32 fwd_frame (int32 *senscr /**< An array of senone score */
 /**
  * Find the active senone list. 
  */
-void fwd_sen_active (int8 *senlist, int32 n_sen);
+void fwd_sen_active (uint8 *senlist, int32 n_sen);
 
 /**
  * End of flat foward search 

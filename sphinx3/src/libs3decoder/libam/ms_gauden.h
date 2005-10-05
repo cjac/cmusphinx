@@ -10,9 +10,15 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  18:55:09  arthchan2003
- * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ * Revision 1.7  2005/10/05  00:31:14  dhdfu
+ * Make int8 be explicitly signed (signedness of 'char' is
+ * architecture-dependent).  Then make a bunch of things use uint8 where
+ * signedness is unimportant, because on the architecture where 'char' is
+ * unsigned, it is that way for a reason (signed chars are slower).
  * 
+ * Revision 1.6  2005/06/21 18:55:09  arthchan2003
+ * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -136,7 +142,7 @@ gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks *
 		  gauden_dist_t ***dist,/**< In/Out: n_top density indices and values for
 					   each feature.  On return, density values are
 					   normalized. */
-		  int8 *active	/**< In: active[gid] is non-0 iff codebook gid is
+		  uint8 *active	/**< In: active[gid] is non-0 iff codebook gid is
 					   active.  If NULL, all codebooks active */
 		  );
 
