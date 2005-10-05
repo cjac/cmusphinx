@@ -156,15 +156,15 @@ sub align_hyp {
       $count++;
       my $hypline = <HYP>;
       chomp($refline);
-      chomp(hypline);
+      chomp($hypline);
       if ($refline ne $hypline) {
-	$rline = uc(refline);
-	$hline = uc(hypline);
+	$rline = uc($refline);
+	$hline = uc($hypline);
 	$result = "ERROR";
 	$error++;
       } else {
-	$rline = lc(refline);
-	$hline = lc(hypline);
+	$rline = lc($refline);
+	$hline = lc($hypline);
 	$result = "CORRECT";
       }
       print OUT "Sentence $count : $result\n";
