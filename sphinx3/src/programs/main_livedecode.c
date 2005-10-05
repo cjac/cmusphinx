@@ -45,22 +45,16 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.11  2005/10/05  00:31:14  dhdfu
- * Make int8 be explicitly signed (signedness of 'char' is
- * architecture-dependent).  Then make a bunch of things use uint8 where
- * signedness is unimportant, because on the architecture where 'char' is
- * unsigned, it is that way for a reason (signed chars are slower).
+ * Revision 1.12  2005/10/05  15:42:52  dhdfu
+ * Accidentally checked-in a different version, reverting...
  * 
  * Revision 1.10  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.11  2005/10/05  00:31:14  dhdfu
- * Make int8 be explicitly signed (signedness of 'char' is
- * architecture-dependent).  Then make a bunch of things use uint8 where
- * signedness is unimportant, because on the architecture where 'char' is
- * unsigned, it is that way for a reason (signed chars are slower).
+ * Revision 1.12  2005/10/05  15:42:52  dhdfu
+ * Accidentally checked-in a different version, reverting...
  * 
  * Add Revision 1.10  2005/06/22 05:39:56  arthchan2003
  * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
@@ -79,6 +73,9 @@
  *  threads) on the /dev/tty* device to remove Win32 dependency.
  */
 
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <live_decode_API.h>
 #include <live_decode_args.h>
 #include <ad.h>
@@ -86,16 +83,50 @@
 
 #define BUFSIZE 4096
 
-int
-main(int argc, char **argv)
+HANDLE startEvent;
+HANDLE finishEvent;
+live_decoder_t decoder;
+
+FILE *dump = 0;
+
+DWORD WINAPI
+process_thread(LPVOID aParam)
 {
-  char *hypstr;
-  int rv;
   ad_rec_t *in_ad = 0;
   int16 samples[BUFSIZE];
   int32 num_samples;
-  live_decoder_t decoder;
-  FILE *dump = 0;
+
+  WaitForSingleObject(startEvent, INFINITE);
+
+  in_ad = ad_open_sps(cmd_ln_int32 ("-samprate"));
+  ad_start_rec(in_ad);
+
+  while (WaitForSingleObject(finishEvent, 0) == WAIT_TIMEOUT) {
+    num_samples = ad_read(in_ad, samples, BUFSIZE);
+    if (num_samples > 0) {
+      /** dump the recorded audio to disk */
+      if (fwrite(samples, sizeof(int16), num_samples, dump) < num_samples) {
+	printf("Error writing audio to dump file.\n");
+      }
+
+      ld_process_raw(&decoder, samples, num_samples);
+    }
+  }
+
+  ad_stop_rec(in_ad);
+  ad_close(in_ad);
+
+  ld_end_utt(&decoder);
+
+  return 0;
+}
+
+int
+main(int argc, char **argv)
+{
+  HANDLE thread;
+  char buffer[1024];
+  char *hypstr;
 
   /*
    * Initializing
@@ -126,22 +157,30 @@ main(int argc, char **argv)
     return -1;
   }
 
-  in_ad = ad_open_sps(cmd_ln_int32 ("-samprate"));
-  ad_start_rec(in_ad);
-  while (1) {
-      num_samples = ad_read(in_ad, samples, BUFSIZE);
-      printf("read %d samples\n", num_samples);
-      if (num_samples > 0) {
-	/** dump the recorded audio to disk */
-	if (fwrite(samples, sizeof(int16), num_samples, dump) < num_samples) {
-	  printf("Error writing audio to dump file.\n");
-	}
-	ld_process_raw(&decoder, samples, num_samples);
-      }
-  }
-  ad_stop_rec(in_ad);
-  ad_close(in_ad);
-  ld_end_utt(&decoder);
+  startEvent = CreateEvent(NULL, TRUE, FALSE, "StartEvent");
+  finishEvent = CreateEvent(NULL, TRUE, FALSE, "FinishEvent");
+  thread = CreateThread(NULL, 0, process_thread, NULL, 0, NULL);
+
+  /*
+   * Wait for some user input, then signal the processing thread to start
+   * recording/decoding
+   */
+  printf("press ENTER to start recording\n");
+  fgets(buffer, 1024, stdin);
+  SetEvent(startEvent);
+
+  /*
+   *  Wait for some user input again, then signal the processing thread to end
+   *  recording/decoding
+   */
+  printf("press ENTER to finish recording\n");
+  fgets(buffer, 1024, stdin);
+  SetEvent(finishEvent);
+
+  /*
+   *  Wait for the working thread to join
+   */
+  WaitForSingleObject(thread, INFINITE);
 
   /*
    *  Print the decoding output
