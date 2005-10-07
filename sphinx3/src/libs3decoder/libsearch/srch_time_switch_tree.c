@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.12  2005/09/25  19:32:11  arthchan2003
- * (Change for comments) Allow lexical tree to be dumped optionally.
+ * Revision 1.2.4.13  2005/10/07  20:04:50  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  * 
+ * Revision 1.2.4.12  2005/09/25 19:32:11  arthchan2003
+ * (Change for comments) Allow lexical tree to be dumped optionally.
+ *
  * Revision 1.2.4.11  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -324,12 +327,12 @@ int srch_TST_begin(void *srch)
   n = lextree_n_next_active(tstg->curugtree[0]);
   assert (n == 0);
   lextree_enter (tstg->curugtree[0], mdef_silphone(kbc->mdef), -1, 0, pred,
-		 s->beam->hmm);
+		 s->beam->hmm,s->kbc);
     
   /* Enter into filler lextree */
   n = lextree_n_next_active(tstg->fillertree[0]);
   assert (n == 0);
-  lextree_enter (tstg->fillertree[0], BAD_S3CIPID, -1, 0, pred, s->beam->hmm);
+  lextree_enter (tstg->fillertree[0], BAD_S3CIPID, -1, 0, pred, s->beam->hmm,s->kbc);
     
   tstg->n_lextrans = 1;
 
@@ -782,6 +785,7 @@ int srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 					  s->beam->phone_thres, 
 					  s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
 	E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	lextree_utt_end(lextree,kbcore);
 	return SRCH_FAILURE;
       }
 
@@ -796,6 +800,7 @@ int srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 					    s->beam->phone_thres, 
 					    s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
 	  return SRCH_FAILURE;
 	}
 
@@ -807,6 +812,7 @@ int srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 					    s->beam->word_thres, 
 					    s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
 	  return SRCH_FAILURE;
 	}
       }
@@ -841,6 +847,7 @@ int srch_TST_rescoring(void *srch,int32 frmno)
       if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				      s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
 	E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	lextree_utt_end(lextree,kbcore);
 	return SRCH_FAILURE;
       }
 
@@ -853,6 +860,7 @@ int srch_TST_rescoring(void *srch,int32 frmno)
 	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 					s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
 	  return SRCH_FAILURE;
 	}
 
@@ -861,6 +869,8 @@ int srch_TST_rescoring(void *srch,int32 frmno)
   	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 					s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	  	lextree_utt_end(lextree,kbcore);
+	  lextree_utt_end(lextree,kbcore);
 	  return SRCH_FAILURE;
 	}
       }
@@ -953,7 +963,7 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
       if (s->beam->wordend==0 || bs[p]> s->beam->wordend + maxpscore)
 	{
 	  /* RAH, typecast p to (s3cipid_t) to make compiler happy */
-	  lextree_enter (tstg->curugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); 
+	  lextree_enter (tstg->curugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th, s->kbc); 
 	}
     }
 
@@ -961,7 +971,7 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
   
   /* Transition to filler lextrees */
   lextree_enter (tstg->fillertree[k], BAD_S3CIPID, cf, vh->bestscore[cf],
-		 vh->bestvh[cf], th);
+		 vh->bestvh[cf], th, s->kbc);
 }
 
 int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)

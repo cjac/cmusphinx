@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.5  2005/09/26  06:37:33  arthchan2003
- * Before anyone get hurt, quickly change back to using SINGLE_RC_HISTORY.
+ * Revision 1.11.4.6  2005/10/07  20:05:05  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  * 
+ * Revision 1.11.4.5  2005/09/26 06:37:33  arthchan2003
+ * Before anyone get hurt, quickly change back to using SINGLE_RC_HISTORY.
+ *
  * Revision 1.11.4.4  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -332,6 +335,8 @@ vithist_entry_t *vithist_id2entry (vithist_t *vh,  /**< In: a Viterbi history da
  * Like vithist_enter, but LM-rescore this word exit wrt all histories that ended at the
  * same time as the given, tentative pred.  Create a new vithist entry for each predecessor
  * (but, of course, only the best for each distinct LM state will be retained; see above).
+ * 
+ * ARCHAN: Precisely speaking, it is a full trigram rescoring. 
  */
 void vithist_rescore (vithist_t *vh,    /**< In: a Viterbi history data structure*/
 		      kbcore_t *kbc,    /**< In: a kb core. */
@@ -341,7 +346,7 @@ void vithist_rescore (vithist_t *vh,    /**< In: a Viterbi history data structur
 		      int32 senscale,   /**< In: The senscale */
 		      int32 pred,	/**< In: Tentative predecessor */
 		      int32 type,       /**< In: Type of lexical tree */
-		      glist_t rclist  /**< In: The list of all right contexts */
+		      int32 rc  /**< In: The compressed rc */
 		      );
 
 
@@ -457,7 +462,11 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 #define LATID2SF(hist,l)	(IS_S3LATID(hist->lattice[l].history) ? \
 			 hist->lattice[hist->lattice[l].history].frm + 1 : 0)
 
-#define SINGLE_RC_HISTORY 1
+#define SINGLE_RC_HISTORY 1  /* The logic of using multiple RC history
+				is actually available. However,
+				testing show that it doesn't work very
+				well. Therefore I disabled it at this
+				point */
 
   /** 
    * \struct latticehist_t 

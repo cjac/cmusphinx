@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.13  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.1.4.14  2005/10/07  20:04:50  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  * 
+ * Revision 1.1.4.13  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.1.4.12  2005/09/18 01:46:20  arthchan2003
  * Moved unlinkSilences to mode 4 and mode 5 search-specific implementation.
  *
@@ -343,7 +346,7 @@ int32 srch_WST_begin(void *srch)
 
   /*  E_INFO("Value of n:%d\n", lextree_n_next_active(wstg->curroottree));    */
   assert (n == 0);
-  lextree_enter (wstg->curroottree, mdef_silphone(kbc->mdef), -1, 0, pred,s->beam->hmm);
+  lextree_enter (wstg->curroottree, mdef_silphone(kbc->mdef), -1, 0, pred,s->beam->hmm,s->kbc);
 
   lextree_active_swap (wstg->curroottree);
 
@@ -351,7 +354,7 @@ int32 srch_WST_begin(void *srch)
   /* Enter into filler lextree */
   n = lextree_n_next_active(wstg->curfillertree);
   assert (n == 0);
-  lextree_enter (wstg->curfillertree, BAD_S3CIPID, -1, 0, pred, s->beam->hmm);
+  lextree_enter (wstg->curfillertree, BAD_S3CIPID, -1, 0, pred, s->beam->hmm, s->kbc);
   lextree_active_swap (wstg->curfillertree);
 
 
@@ -710,6 +713,7 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 				      s->beam->phone_thres, 
 				      s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
     E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at the root tree \n");
+    lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
 
@@ -719,6 +723,7 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 				      s->beam->phone_thres, 
 				      s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
     E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at the root filler tree \n");
+    lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
 
@@ -732,6 +737,7 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 					s->beam->phone_thres, 
 					s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
       E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at the lexical tree %d\n",i);
+      lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
   }
@@ -745,6 +751,7 @@ int32 srch_WST_propagate_graph_ph_lv2(void *srch, int32 frmno)
 					s->beam->phone_thres, 
 					s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
       E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at the filler tree %d\n",i);
+      lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
   }
@@ -781,11 +788,13 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
   lextree=wstg->curroottree;
   if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				  s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+    lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
   lextree=wstg->curfillertree;
   if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				  s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+    lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
 
@@ -793,12 +802,14 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
     lextree = wstg->expandtree[i];
     if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				    s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+      lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
 
     lextree = wstg->expandfillertree[i];
     if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
 				    s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+      lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
 
@@ -920,7 +931,7 @@ int32 srch_WST_hmm_propagate_leaves (srch_t* s, lextree_t *lextree, vithist_t *v
 
 	    vithist_rescore (vh, s->kbc, ln->wid, cur_frm,
 			     hmm->out.score - ln->prob, s->senscale, 
-			     hmm->out.history, lextree->type,ln->children);
+			     hmm->out.history, lextree->type,ln->rc);
 
 	    /* At this point a score is recorded in the viterbi history 
 	       That consist of the trigram score
@@ -952,11 +963,11 @@ int32 srch_WST_hmm_propagate_leaves (srch_t* s, lextree_t *lextree, vithist_t *v
 		
 	      }else{
 		/*E_INFO("Word into Word\n");*/
-		lextree_enter(wstg->expandtree[id], (s3cipid_t) p, cur_frm, tve->score,entry , s->beam->phone_thres);
+		lextree_enter(wstg->expandtree[id], (s3cipid_t) p, cur_frm, tve->score,entry , s->beam->phone_thres,s->kbc);
 	      }
 	    
 	      /*E_INFO("For Filler tree\n");*/
-	      lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, cur_frm, tve->score,entry, s->beam->phone_thres);
+	      lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, cur_frm, tve->score,entry, s->beam->phone_thres,s->kbc);
 	      
 	    }
 
@@ -1030,6 +1041,12 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   /*  E_INFO("Time %d\n",frmno);*/
 
   /* Rescoring at all word ends */
+  /* This is confusing. Why do we want to rescore all word end to have trigram rescoring? 
+     They just need to enter the node and there is no need to rescore. 
+     
+     Or better, if we still want to rescore. The new score shouldn't
+     be apply to the Viterbi history. 
+   */
   srch_WST_rescoring((void*)s, frmno);
 
   /* Prune the history */
@@ -1162,9 +1179,9 @@ int32 srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     }else{
     }
 
-    lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th);
+    lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score, vhid, th,s->kbc);
     lextree_enter(wstg->expandfillertree[id], BAD_S3CIPID, frmno, score,
-		  vh->bestvh[frmno], th);
+		  vh->bestvh[frmno], th,s->kbc);
 
   }
 
