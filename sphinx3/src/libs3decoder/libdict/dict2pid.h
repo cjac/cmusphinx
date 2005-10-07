@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8.4.2  2005/09/25  19:13:31  arthchan2003
- * Added optional full triphone expansion support when building context phone mapping.
+ * Revision 1.8.4.3  2005/10/07  19:03:38  arthchan2003
+ * Added xwdssid_t structure.  Also added compression routines.
  * 
+ * Revision 1.8.4.2  2005/09/25 19:13:31  arthchan2003
+ * Added optional full triphone expansion support when building context phone mapping.
+ *
  * Revision 1.8.4.1  2005/07/17 05:20:30  arthchan2003
  * Fixed dox-doc.
  *
@@ -77,7 +80,16 @@
 
 
 #include "dict.h"
+#include "ctxt_table.h"
 
+/* \struct xwdssid_t
+   Something similar to xwdpid_t in ctxt_table but it stores ssid directly. 
+ */
+typedef struct {
+    s3ssid_t   *ssid;	/**< ssid list for all context ciphones; compressed, unique */
+    s3cipid_t *cimap;	/**< Index into ssid[] above for each ci phone */
+  int32    n_ssid;	/**< #Unique ssid in above*/
+} xwdssid_t;
 
   /** \file dict2pid.h
    * \brief Building triphones for a dictionary. 
@@ -148,17 +160,30 @@ typedef struct {
 				   if -composite is 0, then internal[0] and internal[pronlen-1] will
 				   equal to BAD_SSID;
 				*/
+
   /*Notice the order of the arguments */
 
     s3ssid_t ***ldiph_lc;	/**< For multi-phone words, [base][rc][lc] -> ssid; filled out for
 				   word-initial base x rc combinations in current vocabulary */
 
+
     s3ssid_t ***rdiph_rc;	/**< For multi-phone words, [base][lc][rc] -> ssid; filled out for
 				   word-initial base x lc combinations in current vocabulary */
+
+    xwdssid_t **rssid;          /**< Right context state sequence id table 
+				   First dimension: base phone,
+				   Second dimension: left context. 
+				 */
+
 
     s3ssid_t ***lrdiph_rc;      /**< For single-phone words, [base][lc][rc] -> ssid; filled out for
 				   word-initial base x lc combinations in current vocabulary */
 
+    xwdssid_t **lrssid;          /**< Left-Right context state sequence id table 
+				    First dimension: base phone,
+				    Second dimension: left context. 
+
+				 */
 
 
     int32 is_composite;         /**< Whether we will build composite triphone. If yes, the 
@@ -178,6 +203,7 @@ typedef struct {
 				   Final composite state score weighted by this amount */
     int32 n_comstate;		/**< #Composite states */
     int32 n_comsseq;		/**< #Composite senone sequences */
+  int32 n_ci;   /**< Number of CI phone in */
 
 } dict2pid_t;
 

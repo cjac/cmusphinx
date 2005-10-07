@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6.4.2  2005/09/25  19:13:31  arthchan2003
- * Added optional full triphone expansion support when building context phone mapping.
+ * Revision 1.6.4.3  2005/10/07  19:03:38  arthchan2003
+ * Added xwdssid_t structure.  Also added compression routines.
  * 
+ * Revision 1.6.4.2  2005/09/25 19:13:31  arthchan2003
+ * Added optional full triphone expansion support when building context phone mapping.
+ *
  * Revision 1.6.4.1  2005/07/17 05:21:28  arthchan2003
  * Add panic signal to the code, also commentted ldiph_comsseq.
  *
@@ -294,6 +297,148 @@ static s3ssid_t ssidlist2comsseq (glist_t g, mdef_t *mdef, dict2pid_t *dict2pid,
     return ((s3ssid_t)j);
 }
 
+void compress_table(s3ssid_t* uncomp_tab, s3ssid_t *com_tab, s3cipid_t *ci_map, int32 n_ci)
+{
+  int32 found;
+  int32 r;
+  int32 tmp_r;
+
+  for(r=0;r<n_ci;r++){
+    com_tab[r]=BAD_S3SSID;
+    ci_map[r]=BAD_S3CIPID;
+  }
+  /** Compress this map */
+  for(r=0;r<n_ci;r++){
+    
+    found=0;
+    for(tmp_r=0;tmp_r<r && com_tab[tmp_r]!=BAD_S3SSID;tmp_r++){ /* If it appears before, just filled in cimap;*/
+      if(uncomp_tab[r]==com_tab[tmp_r]){
+	found=1;
+	ci_map[r]=tmp_r;
+	break;
+      }
+    } 
+    
+    if(found==0){
+      com_tab[tmp_r]=uncomp_tab[r];
+      ci_map[r]=tmp_r;
+    }
+  }
+}
+
+
+static void compress_right_context_tree(mdef_t *mdef,dict2pid_t *d2p)
+{
+  int32 n_ci;
+  int32 b,l,r;
+  int32 *rmap;
+  s3ssid_t *tmpssid;
+  s3cipid_t *tmpcimap;
+
+  n_ci=mdef->n_ciphone;
+
+  tmpssid=ckd_calloc(n_ci,sizeof(s3ssid_t));
+  tmpcimap=ckd_calloc(n_ci,sizeof(s3cipid_t));
+
+  assert(d2p->rdiph_rc);
+  d2p->rssid = (xwdssid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdssid_t*));
+
+  for(b=0;b<n_ci;b++){
+
+    d2p->rssid[b] = (xwdssid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdssid_t));
+
+    for(l=0;l<n_ci;l++){
+
+      rmap=d2p->rdiph_rc[b][l];
+
+      compress_table(rmap, tmpssid, tmpcimap, mdef->n_ciphone);
+
+      for(r=0;r<mdef->n_ciphone&& tmpssid[r]!=BAD_S3SSID;r++) ;
+	  
+      if(tmpssid[0]!=BAD_S3SSID){
+	d2p->rssid[b][l].ssid = ckd_calloc(r,sizeof(s3ssid_t));
+	memcpy(d2p->rssid[b][l].ssid,tmpssid,r*sizeof(s3ssid_t));
+	d2p->rssid[b][l].cimap= ckd_calloc(mdef->n_ciphone,sizeof(s3cipid_t));
+	memcpy(d2p->rssid[b][l].cimap,tmpcimap,(mdef->n_ciphone)*sizeof(s3cipid_t));
+	d2p->rssid[b][l].n_ssid = r;
+      }else{
+	d2p->rssid[b][l].ssid= NULL;
+	d2p->rssid[b][l].cimap= NULL;
+	d2p->rssid[b][l].n_ssid= 0;
+      }
+      
+    }
+  }
+
+  /* Try to compress lrdiph_rc into lrdiph_rc_compressed*/
+  ckd_free(tmpssid);
+  ckd_free(tmpcimap);
+
+
+}
+
+static void compress_left_right_context_tree(mdef_t *mdef,dict2pid_t *d2p)
+{
+  int32 n_ci;
+  int32 b,l,r;
+  int32 *rmap;
+  s3ssid_t *tmpssid;
+  s3cipid_t *tmpcimap;
+
+  n_ci=mdef->n_ciphone;
+
+  tmpssid=ckd_calloc(n_ci,sizeof(s3ssid_t));
+  tmpcimap=ckd_calloc(n_ci,sizeof(s3cipid_t));
+
+  assert(d2p->lrdiph_rc);
+
+  d2p->lrssid = (xwdssid_t **) ckd_calloc (mdef->n_ciphone, sizeof(xwdssid_t*));
+
+  for(b=0;b<n_ci;b++){
+
+    d2p->lrssid[b] = (xwdssid_t *) ckd_calloc (mdef->n_ciphone, sizeof(xwdssid_t));
+
+    for(l=0;l<n_ci;l++){
+      rmap=d2p->lrdiph_rc[b][l];
+
+      compress_table(rmap, tmpssid, tmpcimap, mdef->n_ciphone);
+
+      for(r=0;r<mdef->n_ciphone&& tmpssid[r]!=BAD_S3SSID;r++) ;
+	  
+      if(tmpssid[0]!=BAD_S3SSID){
+	d2p->lrssid[b][l].ssid = ckd_calloc(r,sizeof(s3ssid_t));
+	memcpy(d2p->lrssid[b][l].ssid,tmpssid,r*sizeof(s3ssid_t));
+	d2p->lrssid[b][l].cimap= ckd_calloc(mdef->n_ciphone,sizeof(s3cipid_t));
+	memcpy(d2p->lrssid[b][l].cimap,tmpcimap,(mdef->n_ciphone)*sizeof(s3cipid_t));
+	d2p->lrssid[b][l].n_ssid = r;
+      }else{
+	d2p->lrssid[b][l].ssid= NULL;
+	d2p->lrssid[b][l].cimap= NULL;
+	d2p->lrssid[b][l].n_ssid= 0;
+      }
+    }
+  }
+
+  /* Try to compress lrdiph_rc into lrdiph_rc_compressed*/
+  ckd_free(tmpssid);
+  ckd_free(tmpcimap);
+
+
+}
+
+static void free_compress_map(xwdssid_t **tree, int32 n_ci)
+{
+  int32 b,l;
+  for(b=0;b<n_ci;b++){
+    for(l=0;l<n_ci;l++){
+      ckd_free(tree[b][l].ssid);
+      ckd_free(tree[b][l].cimap);
+    }
+    ckd_free(tree[b]);
+  }
+  ckd_free(tree);
+}
+
 
 /* RAH 4.16.01 This code has several leaks that must be fixed */
 dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
@@ -325,11 +470,14 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
 						       sizeof(s3ssid_t));
     dict2pid->is_composite=is_composite;
 
+    dict2pid->n_ci=mdef->n_ciphone;
     if(dict2pid->is_composite){
       dict2pid->single_lc = (s3ssid_t **) ckd_calloc_2d (mdef->n_ciphone,
 							 mdef->n_ciphone,
 							 sizeof(s3ssid_t));
       dict2pid->lrdiph_rc=NULL;
+      dict2pid->rssid=NULL;
+      dict2pid->lrssid=NULL;
 
     }else{
 
@@ -338,6 +486,7 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
 							  mdef->n_ciphone,
 							  sizeof(s3ssid_t));
       dict2pid->single_lc=NULL;
+
 
     }
 
@@ -578,12 +727,19 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
       assert(dict2pid->single_lc==NULL);
       assert(dict2pid->n_comstate==0);
       assert(dict2pid->n_comsseq==0);
+
+      /* Try to compress rdiph_rc into rdiph_rc_compressed
+	 This should be moved to a function.
+       */
+
+      compress_right_context_tree(mdef,dict2pid);
+      compress_left_right_context_tree(mdef,dict2pid);
+
     }else{
-      assert(dict2pid->lrdiph_rc==NULL);
+      assert(dict2pid->rssid==NULL);
+      assert(dict2pid->lrssid==NULL);
     }
-      
-    
-    
+
     return dict2pid;
 }
 
@@ -610,7 +766,13 @@ void dict2pid_free(dict2pid_t *d2p)
     
     if(d2p->internal)
       ckd_free ((void *) d2p->internal);
-    
+
+    if(d2p->rssid)
+      free_compress_map(d2p->rssid,d2p->n_ci);
+
+    if(d2p->lrssid)
+      free_compress_map(d2p->lrssid, d2p->n_ci);
+
     ckd_free(d2p);
   }
 
@@ -750,3 +912,38 @@ void dict2pid_dump (FILE *fp, dict2pid_t *d2p, mdef_t *mdef, dict_t *dict)
     
     fflush (fp);
 }
+
+
+#if 0
+	  for(r=0;r<mdef->n_ciphone;r++){
+	    printf("%d ",rmap[r]);
+	  }
+	  printf("\n");
+	  fflush(stdout);
+
+	  for(r=0;r<mdef->n_ciphone;r++){
+	    printf("%d ",tmpssid[r]);
+	  }
+	  printf("\n");
+	  fflush(stdout);
+	  for(r=0;r<mdef->n_ciphone;r++){
+	    printf("%d ",tmpcimap[r]);
+	  }
+	  printf("\n");
+	  fflush(stdout);
+
+	  for(r=0;r<dict2pid->rssid[b][l].n_ssid;r++){
+	    printf("%d ",dict2pid->rssid[b][l].ssid[r]);
+	  }
+	  printf("\n");
+	  fflush(stdout);
+
+	  if(dict2pid->rssid[b][l].n_ssid>0){
+	    for(r=0;r<mdef->n_ciphone;r++){
+	      printf("%d ",dict2pid->rssid[b][l].cimap[r]);
+	    }
+	  }
+	  printf("\n");
+
+	  fflush(stdout);
+#endif
