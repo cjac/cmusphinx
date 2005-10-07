@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.11  2005/09/26  02:32:34  arthchan2003
- * (Change for comments) Also set agc default to none instead of max. The reason is that all 8 tests we have in the performance do not use -agc max. Also in practice, AGC usually hurt the performance.
+ * Revision 1.1.2.12  2005/10/07  18:55:10  arthchan2003
+ * Fixed the display problem.
  * 
+ * Revision 1.1.2.11  2005/09/26 02:32:34  arthchan2003
+ * (Change for comments) Also set agc default to none instead of max. The reason is that all 8 tests we have in the performance do not use -agc max. Also in practice, AGC usually hurt the performance.
+ *
  * Revision 1.1.2.10  2005/09/26 02:21:57  arthchan2003
  * Changed the option -s3hmmdir to -hmm. This seems to be more generic and cause fewer restraints in future.
  *
@@ -132,7 +135,7 @@
     { "-remove_zero_var_gau", \
       ARG_INT32, \
       "0" , \
-      "(Fast GMMM Computation only) If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
+      "(Fast GMM Computation only) If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
     { "-mixw",\
       ARG_STRING,\
       NULL,\
@@ -632,11 +635,11 @@
 #define flat_fwd_multiplex_treatment_command_line_macro() \
     { "-multiplex_multi", \
       ARG_INT32, \
-      "1" \
+      "1", \
       "(Mode 3 only) Whether multiplexed triphones for multi-phone word. If not, full triphone expansion will be carried out in the word begin." }, \
     { "-multiplex_single", \
       ARG_INT32, \
-      "1" \
+      "1", \
       "(Mode 3 only) Whether to multiplexed triphones for single-phone. If not, full triphone expansion will be carried out in the word begin. Notice that this will consume large amount of memory space." },
 
 #define flat_fwd_debugging_command_line_macro() \
