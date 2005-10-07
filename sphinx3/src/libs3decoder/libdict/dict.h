@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.3  2005/09/25  19:12:09  arthchan2003
- * Added optional LTS support for the dictionary.
+ * Revision 1.9.4.4  2005/10/07  18:58:04  arthchan2003
+ * Added macro for getting second last phone for a word.
  * 
+ * Revision 1.9.4.3  2005/09/25 19:12:09  arthchan2003
+ * Added optional LTS support for the dictionary.
+ *
  * Revision 1.9.4.2  2005/09/18 01:15:45  arthchan2003
  * Add one doxy-doc in dict.h
  *
@@ -205,6 +208,7 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 #define dict_finishwid(d)	((d)->finishwid)
 #define dict_silwid(d)		((d)->silwid)
 #define dict_first_phone(d,w)	((d)->word[w].ciphone[0])
+#define dict_second_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 2])
 #define dict_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 1])
 
 
