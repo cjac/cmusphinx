@@ -45,8 +45,8 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.3  2005/09/25  19:28:25  arthchan2003
- * (Change for Comment) 1, Fixed dox-doc, 2, Remove ssid_lc which was not used at all.
+ * Revision 1.10.4.4  2005/10/07  19:34:31  arthchan2003
+ * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
  * 
  * Revision 1.10.4.2  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
@@ -171,7 +171,8 @@ typedef struct {
     int32 wid;		/**< Dictionary word-ID if a leaf node; BAD_S3WID otherwise */
     int32 prob;		/**< LM probability of this node (of all words leading from this node) */
     int32 ssid;		/**< Senone-sequence ID (or composite state-seq ID if composite) */
-    s3cipid_t rc;        /**< The right context for this node */
+    s3cipid_t rc;        /**< The (compressed) right context for this node. Preferably compressed.
+			  */
 #if 0
     s3ssid_t *ssid_lc;	/**< Array of ssid's (composite or not) for each left context CIphone;
 			   READ-ONLY structure */
@@ -300,8 +301,9 @@ void lextree_enter (lextree_t *lextree,	/**< In/Out: Lextree being entered */
 		    int32 frame,	/**< In: Frame from which being activated (for the next) */
 		    int32 inscore,	/**< In: Incoming score */
 		    int32 inhist,	/**< In: Incoming history */
-		    int32 thresh	/**< In: Pruning threshold; incoming scores below this
+		    int32 thresh,	/**< In: Pruning threshold; incoming scores below this
 					   threshold will not enter successfully */
+		    kbcore_t *kbc       /**< In: a kbcore, that provided stuffs such as dict and dict2pid */
 		    );
 
   /**
@@ -381,7 +383,7 @@ int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree,	/**< In/Out: Propaga
 				       int32 pth,		/**< In: Phone transition pruning threshold */
 				       int32 wth,		/**< In: Word exit pruning threshold */
 				       pl_t* pl            /**< In: Phoneme lookahead struct*/
-				       ); 
+					); 
 
 
   /**
