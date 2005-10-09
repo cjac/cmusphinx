@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.14  2005/10/07  20:04:50  arthchan2003
- * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ * Revision 1.1.4.15  2005/10/09  20:00:45  arthchan2003
+ * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
  * 
+ * Revision 1.1.4.14  2005/10/07 20:04:50  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
  * Revision 1.1.4.13  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -461,10 +464,23 @@ int32 srch_WST_end(void *srch)
     return SRCH_FAILURE;
 }
 
-int32 srch_WST_set_lm(void *srch, const char* lmname)
+int srch_WST_set_lm(void* srch_struct, const char* lmname)
 {
-  return SRCH_SUCCESS;
+  E_INFO("In Mode 5, currently the function set LM is not supported\n");
+  return SRCH_FAILURE;
 }
+int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname)
+{
+  E_INFO("In Mode 5, currently the function add LM is not supported\n");
+  return SRCH_FAILURE;
+
+}
+int srch_WST_delete_lm(void* srch, const char *lmname)
+{  
+  E_INFO("In Mode 5, currently the function delete LM is not supported\n");
+  return SRCH_FAILURE;
+}
+
 
 int32 srch_WST_hmm_compute_lv1(void *srch)
 {
@@ -1347,12 +1363,3 @@ int srch_WST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
-int srch_WST_add_lm(void* srch, lm_t *lm, const char *lmname)
-{
-  return SRCH_SUCCESS;
-
-}
-int srch_WST_delete_lm(void* srch, const char *lmname)
-{
-  return SRCH_SUCCESS;
-}

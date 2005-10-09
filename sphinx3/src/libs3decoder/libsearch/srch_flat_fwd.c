@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.3  2005/09/27  07:41:40  arthchan2003
- * Not trying to free hyp. But correctly free the context table.
+ * Revision 1.1.2.4  2005/10/09  20:00:45  arthchan2003
+ * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
  * 
+ * Revision 1.1.2.3  2005/09/27 07:41:40  arthchan2003
+ * Not trying to free hyp. But correctly free the context table.
+ *
  * Revision 1.1.2.2  2005/09/18 01:45:19  arthchan2003
  * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
  *
@@ -511,6 +514,9 @@ int srch_FLAT_FWD_end(void* srch)
   /* Print sanitized recognition */
   printf ("FWDVIT: ");
   log_hypstr(stdout, hyp, s->uttid, 0, ascr + lscr,dict);
+  if(s->matchfp)
+    log_hypstr(s->matchfp,hyp,s->uttid,0, 0.0, dict);
+    
   lm_cache_stats_dump (lm);
 
 
@@ -571,8 +577,12 @@ int srch_FLAT_FWD_end(void* srch)
 /* Log recognition output to the standard match and matchseg files */
 
   printf ("FWDXCT: ");
-  /* FIXME */
-  log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, 0.0, 1.0,s->kbc->dict,lm);
+  /* FIXME, scale is not implemented correctly */
+  log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, 0.0, lm->lw ,s->kbc->dict,lm);
+  if(s->matchsegfp){
+    log_hypseg (s->uttid, s->matchsegfp, hyp, fwg->n_frm, 0.0, lm->lw ,s->kbc->dict,lm);
+  }
+
   lm_cache_stats_dump (lm);
 
 
@@ -603,20 +613,20 @@ int srch_FLAT_FWD_end(void* srch)
 
 int srch_FLAT_FWD_set_lm(void* srch_struct, const char* lmname)
 {
-  return SRCH_SUCCESS;
-
+  E_INFO("In Mode 3, currently the function set LM is not supported\n");
+  return SRCH_FAILURE;
 }
 int srch_FLAT_FWD_add_lm(void* srch, lm_t *lm, const char *lmname)
 {
-  return SRCH_SUCCESS;
+  E_INFO("In Mode 3, currently the function add LM is not supported\n");
+  return SRCH_FAILURE;
 
 }
 int srch_FLAT_FWD_delete_lm(void* srch, const char *lmname)
 {  
-  return SRCH_SUCCESS;
+  E_INFO("In Mode 3, currently the function delete LM is not supported\n");
+  return SRCH_FAILURE;
 }
-
-
 
 int srch_FLAT_FWD_srch_one_frame_lv2(void* srch)
 {
