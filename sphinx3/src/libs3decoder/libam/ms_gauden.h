@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6.4.4  2005/09/25  18:54:20  arthchan2003
- * Added a flag to turn on and off precomputation.
+ * Revision 1.6.4.5  2005/10/09  19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
  * 
+ * Revision 1.6.4.4  2005/09/25 18:54:20  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ *
  * Revision 1.6.4.3  2005/08/03 18:53:44  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
@@ -190,7 +193,7 @@ gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks *
 		  gauden_dist_t ***dist,/**< In/Out: n_top density indices and values for
 					   each feature.  On return, density values are
 					   normalized. */
-		  int8 *active	/**< In: active[gid] is non-0 iff codebook gid is
+		  uint8 *active	/**< In: active[gid] is non-0 iff codebook gid is
 					   active.  If NULL, all codebooks active */
 		  );
 

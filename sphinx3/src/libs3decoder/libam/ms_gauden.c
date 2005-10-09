@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.5  2005/09/25  18:54:20  arthchan2003
- * Added a flag to turn on and off precomputation.
+ * Revision 1.5.4.6  2005/10/09  19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
  * 
+ * Revision 1.5.4.5  2005/09/25 18:54:20  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ *
  * Revision 1.5.4.4  2005/09/07 23:29:07  arthchan2003
  * Added FIXME warning.
  *
@@ -584,7 +587,7 @@ int32 gauden_dist (gauden_t *g,
  * Normalize density values, but globally.
  */
 static int32 gauden_dist_norm_global (gauden_t *g,
-				      int32 n_top, gauden_dist_t ***dist, int8 *active)
+				      int32 n_top, gauden_dist_t ***dist, uint8 *active)
 {
     int32 gid, f, t;
     int32 best;
@@ -617,7 +620,7 @@ static int32 gauden_dist_norm_global (gauden_t *g,
 /*
  * Normalize density values.
  */
-int32 gauden_dist_norm (gauden_t *g, int32 n_top, gauden_dist_t ***dist, int8 *active)
+int32 gauden_dist_norm (gauden_t *g, int32 n_top, gauden_dist_t ***dist, uint8 *active)
 {
     int32 gid, f, t;
     int32 sum, scale;
