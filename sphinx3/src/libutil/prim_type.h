@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.2  2005/09/07  23:43:50  arthchan2003
- * Add boolean in the prim_type. Not yet fully implemented.
+ * Revision 1.11.4.3  2005/10/09  20:02:13  arthchan2003
+ * Explicitly make int8 to be signed. This will make the code works well in some architecture.
  * 
+ * Revision 1.11.4.2  2005/09/07 23:43:50  arthchan2003
+ * Add boolean in the prim_type. Not yet fully implemented.
+ *
  * Revision 1.11.4.1  2005/06/27 05:42:21  arthchan2003
  * Merge from the tip of the trunk
  *
@@ -87,7 +90,7 @@ extern "C" {
 
 typedef int		int32;
 typedef short		int16;
-typedef char		int8;
+typedef signed char	int8;
 typedef unsigned int	uint32;
 typedef unsigned short	uint16;
 typedef unsigned char	uint8;
@@ -97,6 +100,11 @@ typedef double		float64;
 #if 1 /* This is added for sphinx 2 routine tool compilation. Currently, it is only used in the fsg routine. */
 typedef unsigned char   boolean;
 #endif
+
+typedef union any4byte_type_s {
+    int32 i_32;
+    uint32 ui_32;
+} any4byte_type_t;
 
 typedef union anytype_s {
     void *ptr;		/* User defined data types at this ptr */
