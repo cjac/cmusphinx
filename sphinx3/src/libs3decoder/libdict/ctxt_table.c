@@ -46,9 +46,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.1.2.2  2005/09/27  07:39:17  arthchan2003
- * Added ctxt_table_free.
+ * Revision 1.1.2.3  2005/10/09  19:55:33  arthchan2003
+ * Changed int8 to uint8. This follows Dave's change in the trunk.
  * 
+ * Revision 1.1.2.2  2005/09/27 07:39:17  arthchan2003
+ * Added ctxt_table_free.
+ *
  * Revision 1.1.2.1  2005/09/25 19:08:25  arthchan2003
  * Move context table from search to here.
  *
@@ -71,8 +74,8 @@
 #include <ckd_alloc.h>
 
 static s3pid_t *tmp_xwdpid ;  /**< Temporary array used during the creation of lexical triphones lists */
-static int8 *word_start_ci; 
-static int8 *word_end_ci;   
+static uint8 *word_start_ci; 
+static uint8 *word_end_ci;   
 
 void dump_xwdpidmap (xwdpid_t **x, mdef_t *mdef)
 {
@@ -289,8 +292,8 @@ void build_xwdpid_map (ctxt_table_t* ct, dict_t *dict, mdef_t *mdef)
     /* Build cross-word triphone models */
     E_INFO ("Building cross-word triphones\n");
     
-    word_start_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
-    word_end_ci = (int8 *) ckd_calloc (mdef->n_ciphone, sizeof(int8));
+    word_start_ci = (uint8 *) ckd_calloc (mdef->n_ciphone, sizeof(uint8));
+    word_end_ci = (uint8 *) ckd_calloc (mdef->n_ciphone, sizeof(uint8));
 
     /* Mark word beginning and ending ciphones that occur in given dictionary */
     for (w = 0; w < dict->n_word; w++) {
