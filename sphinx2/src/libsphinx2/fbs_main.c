@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.24  2005/10/11  13:08:40  dhdfu
- * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ * Revision 1.25  2005/10/11  16:14:03  dhdfu
+ * Oops!  Don't get rid of doublebw.  Also use -1 as the default value
+ * for lower filter frequency in case someone thinks that 0Hz is a good
+ * idea.
  * 
+ * Revision 1.24  2005/10/11 13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ *
  * Revision 1.23  2005/09/01 21:09:54  dhdfu
  * Really, actually, truly consolidate byteswapping operations into
  * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
@@ -519,7 +524,7 @@ static int32 sampling_rate = 16000;
 /* Let all these be uninitialized (to zero) because we may determine
  * them based on sampling_rate if the user has not specified them. */
 static int32 n_mel_filt;
-static float lower_filt = 0.0f;
+static float lower_filt = -1.0f; /* Someone might want this to be zero. */
 static float upper_filt = 0.0f;
 static float pre_emphasis_alpha = 0.0f;
 static int32 frame_rate;
@@ -2284,6 +2289,12 @@ void query_fe_params(param_t *param)
 	 * using 512 points.  So we will use DEFAULT_FFT_SIZE (512)
 	 * everywhere. */
 	param->FFT_SIZE = DEFAULT_FFT_SIZE;
+	param->doublebw = doublebw;
+	if (param->doublebw) {
+		E_INFO("Will use double bandwidth in mel filter\n");
+	} else {
+		E_INFO("Will not use double bandwidth in mel filter\n");
+	}
 
 	/* Provide some defaults based on sampling rate if the user
 	 * hasn't. */
@@ -2311,7 +2322,7 @@ void query_fe_params(param_t *param)
 
 	if (n_mel_filt != 0)
 		param->NUM_FILTERS = n_mel_filt;
-	if (lower_filt != 0.0)
+	if (lower_filt != -1.0)
 		param->LOWER_FILT_FREQ = lower_filt;
 	if (upper_filt != 0.0)
 		param->UPPER_FILT_FREQ = upper_filt;
