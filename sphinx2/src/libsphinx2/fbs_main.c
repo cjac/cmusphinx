@@ -46,14 +46,17 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.23  2005/09/01  21:09:54  dhdfu
+ * Revision 1.24  2005/10/11  13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ * 
+ * Revision 1.23  2005/09/01 21:09:54  dhdfu
  * Really, actually, truly consolidate byteswapping operations into
  * byteorder.h.  Where unconditional byteswapping is needed, SWAP_INT32()
  * and SWAP_INT16() are to be used.  The WORDS_BIGENDIAN macro from
  * autoconf controls the functioning of the conditional swap macros
  * (SWAP_?[LW]) whose names and semantics have been regularized.
  * Private, adhoc macros have been removed.
- * 
+ *
  * Revision 1.21  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
  *
@@ -346,6 +349,8 @@
 #include "cepio.h"
 #include "byteorder.h"
 #include "s2params.h"
+/* just for some params */
+#include "fe.h"
 
 /*
  * #define QUIT(x)		{fprintf x; exit(-1);}
@@ -511,6 +516,16 @@ static char *rawlogdir = NULL;
 static char *mfclogdir = NULL;
 
 static int32 sampling_rate = 16000;
+/* Let all these be uninitialized (to zero) because we may determine
+ * them based on sampling_rate if the user has not specified them. */
+static int32 n_mel_filt;
+static float lower_filt = 0.0f;
+static float upper_filt = 0.0f;
+static float pre_emphasis_alpha = 0.0f;
+static int32 frame_rate;
+static int32 n_fft;
+static float window_length = 0.0f;
+
 static int32 adc_input = FALSE;	/* TRUE <=> input utterances are raw A/D data */
 static char const *adc_ext = "raw";	/* Default format: raw */
 static int32 adc_endian = 1;	/* Default endian: little */
@@ -858,6 +873,27 @@ config_t param[] = {
 
 	{ "SamplingRate", "Sampling rate", "-samp",
 		INT, (caddr_t) &sampling_rate }, 
+
+	{ "NumMelFilters", "Number of mel filters", "-nfilt",
+	  INT, (caddr_t) &n_mel_filt },
+	
+	{ "LowerMelFilter", "Lower edge of mel filters", "-lowerf",
+	  FLOAT, (caddr_t) &lower_filt },
+
+	{ "UpperMelFilter", "Upper edge of mel filters", "-upperf",
+	  FLOAT, (caddr_t) &upper_filt },
+
+	{ "PreEmphasisAlpha", "Alpha coefficient for pre-emphasis", "-alpha",
+	  FLOAT, (caddr_t) &pre_emphasis_alpha },
+
+	{ "FrameRate", "Frame rate (number of frames per second)", "-frate",
+	  INT, (caddr_t) &frame_rate },
+
+	{ "NFFT", "Number of points for FFT", "-nfft",
+	  INT, (caddr_t) &n_fft },
+
+	{ "WindowLength", "Window length (in seconds) for FFT", "-wlen",
+	  FLOAT, (caddr_t) &window_length },
 
 	{ "UseADCInput", "Use raw ADC input", "-adcin",
 		BOOL, (caddr_t) &adc_input }, 
@@ -2236,6 +2272,57 @@ int32 set_adc_input (int32 value)
 char const *query_cdcn_file ( void )
 {
     return cdcn_file;
+}
+
+void query_fe_params(param_t *param)
+{
+	param->SAMPLING_RATE = sampling_rate;
+	param->PRE_EMPHASIS_ALPHA = DEFAULT_PRE_EMPHASIS_ALPHA;
+	param->WINDOW_LENGTH = DEFAULT_WINDOW_LENGTH;
+	/* NOTE! This could be 256 for 8000Hz, but that requires that
+	 * the acoustic models be retrained, and most 8k models are
+	 * using 512 points.  So we will use DEFAULT_FFT_SIZE (512)
+	 * everywhere. */
+	param->FFT_SIZE = DEFAULT_FFT_SIZE;
+
+	/* Provide some defaults based on sampling rate if the user
+	 * hasn't. */
+	switch (sampling_rate) {
+	case 16000:
+		param->FRAME_RATE = 100;
+		param->NUM_FILTERS = DEFAULT_BB_NUM_FILTERS;
+		param->LOWER_FILT_FREQ = DEFAULT_BB_LOWER_FILT_FREQ;
+		param->UPPER_FILT_FREQ = DEFAULT_BB_UPPER_FILT_FREQ;
+		break;
+	case 11025:
+		/* Numbers from CALO project meeting data. */
+		param->FRAME_RATE = 105;
+		param->NUM_FILTERS = 36;
+		param->LOWER_FILT_FREQ = 130;
+		param->UPPER_FILT_FREQ = 5400;
+		break;
+	case 8000:
+		param->FRAME_RATE = 100;
+		param->NUM_FILTERS = DEFAULT_NB_NUM_FILTERS;
+		param->LOWER_FILT_FREQ = DEFAULT_NB_LOWER_FILT_FREQ;
+		param->UPPER_FILT_FREQ = DEFAULT_NB_UPPER_FILT_FREQ;
+		break;
+	}
+
+	if (n_mel_filt != 0)
+		param->NUM_FILTERS = n_mel_filt;
+	if (lower_filt != 0.0)
+		param->LOWER_FILT_FREQ = lower_filt;
+	if (upper_filt != 0.0)
+		param->UPPER_FILT_FREQ = upper_filt;
+	if (pre_emphasis_alpha != 0.0)
+		param->PRE_EMPHASIS_ALPHA = pre_emphasis_alpha;
+	if (window_length != 0.0)
+		param->WINDOW_LENGTH = window_length;
+	if (frame_rate != 0)
+		param->FRAME_RATE = frame_rate;
+	if (n_fft != 0)
+		param->FFT_SIZE = n_fft;
 }
 
 int32 query_sampling_rate ( void )

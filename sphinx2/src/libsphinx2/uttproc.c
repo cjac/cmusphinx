@@ -39,10 +39,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.22  2005/08/18  22:56:05  egouvea
+ * Revision 1.23  2005/10/11  13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ * 
+ * Revision 1.22  2005/08/18 22:56:05  egouvea
  * Fixed a bug in which the last frame, when running in live mode, was
  * ignored by uttproc_end_utt.
- * 
+ *
  * Revision 1.21  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
  *
@@ -312,8 +315,6 @@
 #define MAX_UTT_LEN     6000    /* #frames */
 #define MAX_CEP_LEN     (MAX_UTT_LEN*CEP_SIZE)
 #define MAX_POW_LEN     (MAX_UTT_LEN*POW_SIZE)
-
-static int32 frame_spacing;
 
 typedef enum {UTTSTATE_UNDEF=-1,
               UTTSTATE_IDLE=0,
@@ -1036,41 +1037,20 @@ static void uttproc_windup (int32 *fr, char **hyp)
  * One time initialization
  */
 
-fe_t    *fe;
+static fe_t    *fe;
+static param_t fe_param;
 
 int32 uttproc_init ( void )
 {
     char const *fn;
-    int32 sps;
-
-    param_t *fe_param;
-    fe_param = CM_calloc(1, sizeof(param_t));
 
     if (uttstate != UTTSTATE_UNDEF) {
         E_ERROR("uttproc_init called when not in UNDEF state\n");
         return -1;
     }
     
-    sps = query_sampling_rate ();
-
-    if ((sps != 16000) && (sps != 8000))
-        E_FATAL("Sampling rate must be 8000 or 16000, is %d\n", sps);
-    
-
-    frame_spacing = sps/100;
-
-    fe_param->SAMPLING_RATE = (float)sps;
-  /*    fe_param->FRAME_RATE    = frame_spacing; */  /* removed; KAL */
-    fe_param->FRAME_RATE    = 100;
-    fe_param->PRE_EMPHASIS_ALPHA = 0.97f;
-    
-    if ((fe_param->doublebw = query_doublebw()) == TRUE) {
-        E_INFO("Will use double bandwidth in mel filter\n");
-    } else {
-        E_INFO("Will not use double bandwidth in mel filter\n");
-    }
-
-    fe = fe_init(fe_param);
+    query_fe_params(&fe_param);
+    fe = fe_init(&fe_param);
 
     if (!fe) 
       return -1;
@@ -1102,8 +1082,6 @@ int32 uttproc_init ( void )
     utt_ofl = 0;
     uttno = 0;
 
-    free(fe_param);
-    
     /* Initialize the FSG search module */
     {
       char *fsgfile;
@@ -1304,7 +1282,7 @@ int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
     if (utt_ofl)
         return -1;
     
-    k = (MAX_UTT_LEN - n_rawfr) * frame_spacing;
+    k = (MAX_UTT_LEN - n_rawfr) * fe_param.FRAME_RATE;
     if (len > k) {
         len = k;
         utt_ofl = 1;

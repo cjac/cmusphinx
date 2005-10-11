@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2005/05/24  20:55:24  rkm
- * Added -fsgbfs flag
+ * Revision 1.12  2005/10/11  13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  * 
+ * Revision 1.11  2005/05/24 20:55:24  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.10  2005/01/26 17:54:51  rkm
  * Added -maxhmmpf absolute pruning parameter in FSG mode
  *
@@ -186,6 +189,7 @@
 #define _FBS_H_
 
 #include "s2types.h"
+#include "fe.h"
 
 /*
  * The decoder is set up to process one finite-duration utterance at a time.  The
@@ -620,6 +624,9 @@ int32 uttproc_set_auto_uttid_prefix (char const *prefix);
 
 
 /*************************** Config queries ***************************/
+
+/* Set up front-end parameters. */
+void query_fe_params(param_t *param);
 
 /* Control file listing files to be processed, one file per utterance */
 char const *query_ctlfile_name ( void );

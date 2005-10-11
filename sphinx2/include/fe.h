@@ -38,9 +38,12 @@
  * fe.h
  * 
  * $Log$
- * Revision 1.11  2005/02/05  02:15:02  egouvea
- * Removed fe_process(), never used
+ * Revision 1.12  2005/10/11  13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  * 
+ * Revision 1.11  2005/02/05 02:15:02  egouvea
+ * Removed fe_process(), never used
+ *
  * Revision 1.10  2004/12/10 16:48:55  rkm
  * Added continuous density acoustic model handling
  *
@@ -156,7 +159,10 @@ typedef struct{
 #define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
 
 #define NB_SAMPLING_RATE 8000
-#define DEFAULT_NB_FFT_SIZE 256 /*512*/
+#define DEFAULT_NB_FFT_SIZE 256 /* NOTE!  In actual fact we will
+				   default to 512, because this is
+				   what SphinxTrain will do.  See
+				   fbs_main.c:query_fe_params() */
 #define DEFAULT_NB_FRAME_SHIFT 80
 #define DEFAULT_NB_NUM_FILTERS 31
 #define DEFAULT_NB_LOWER_FILT_FREQ 200
