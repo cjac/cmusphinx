@@ -46,11 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.25  2005/10/11  16:14:03  dhdfu
+ * Revision 1.26  2005/10/11  16:59:50  dhdfu
+ * Be correct when comparing floating-point literals.
+ * 
+ * Revision 1.25  2005/10/11 16:14:03  dhdfu
  * Oops!  Don't get rid of doublebw.  Also use -1 as the default value
  * for lower filter frequency in case someone thinks that 0Hz is a good
  * idea.
- * 
+ *
  * Revision 1.24  2005/10/11 13:08:40  dhdfu
  * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  *
@@ -2322,13 +2325,13 @@ void query_fe_params(param_t *param)
 
 	if (n_mel_filt != 0)
 		param->NUM_FILTERS = n_mel_filt;
-	if (lower_filt != -1.0)
+	if (lower_filt != -1.0f)
 		param->LOWER_FILT_FREQ = lower_filt;
-	if (upper_filt != 0.0)
+	if (upper_filt != 0.0f)
 		param->UPPER_FILT_FREQ = upper_filt;
-	if (pre_emphasis_alpha != 0.0)
+	if (pre_emphasis_alpha != 0.0f)
 		param->PRE_EMPHASIS_ALPHA = pre_emphasis_alpha;
-	if (window_length != 0.0)
+	if (window_length != 0.0f)
 		param->WINDOW_LENGTH = window_length;
 	if (frame_rate != 0)
 		param->FRAME_RATE = frame_rate;
