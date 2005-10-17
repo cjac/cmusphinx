@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.4  2005/10/07  19:34:31  arthchan2003
- * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
+ * Revision 1.10.4.5  2005/10/17  04:53:44  arthchan2003
+ * Shrub the trees so that the run-time memory could be controlled.
  * 
+ * Revision 1.10.4.4  2005/10/07 19:34:31  arthchan2003
+ * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
+ *
  * Revision 1.10.4.2  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -98,7 +101,6 @@
 #include "vithist.h"
 #include "ascr.h"
 #include "fast_algo_struct.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -156,7 +158,7 @@ typedef struct {
 
     glist_t children;	/**< Its data.ptr are children (lextree_node_t *)
 
-			If non-leaf node, this is the list of
+			   If non-leaf node, this is the list of
 			   successor nodes.  
 
 			   If leaf node, if we are in normal mode and

@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.8  2005/10/07  19:34:29  arthchan2003
- * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
+ * Revision 1.9.4.9  2005/10/17  04:53:44  arthchan2003
+ * Shrub the trees so that the run-time memory could be controlled.
  * 
+ * Revision 1.9.4.8  2005/10/07 19:34:29  arthchan2003
+ * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
+ *
  * Revision 1.9.4.7  2005/09/25 19:27:04  arthchan2003
  * (Change for Comment) 1, Added lexical tree reporting. 2, Added a function for getting the number of links. 3, Added support for doing full triphone expansion. 4, In lextree_dump separate hmm evaluation and hmm dumping.
  *
@@ -130,7 +133,9 @@ static lextree_node_t *lextree_node_alloc (int32 wid, int32 prob,
 {
     lextree_node_t *ln;
     
-    ln = (lextree_node_t *) mymalloc (sizeof(lextree_node_t));
+    /*    ln = (lextree_node_t *) mymalloc (sizeof(lextree_node_t));*/
+
+    ln = (lextree_node_t *) ckd_calloc (1,sizeof(lextree_node_t));
     ln->children = NULL;
     ln->wid = wid;
     ln->prob = prob;
@@ -144,6 +149,14 @@ static lextree_node_t *lextree_node_alloc (int32 wid, int32 prob,
     hmm_clear (&(ln->hmm), n_state);
     
     return ln;
+}
+
+static void lextree_node_free(lextree_node_t *ln)
+{
+  if(ln){
+    if(ln->hmm.state) ckd_free(ln->hmm.state);
+    ckd_free(ln);
+  }
 }
 
 lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgProb, int32 bReport, int32 type)
@@ -252,6 +265,8 @@ lextree_t* fillertree_init(kbcore_t* kbc)
 
   ltree=lextree_build (kbc, wp, n, NULL);
   lextree_type(ltree)=LEXTREE_TYPE_FILLER;
+
+  ckd_free(wp);
   return ltree;
 }
 
@@ -265,10 +280,12 @@ void lextree_report(lextree_t *ltree)
   E_INFO_NOFN("Number of left contexts %d \n",ltree->n_lc);
   E_INFO_NOFN("Number of node %d \n",ltree->n_node);
   E_INFO_NOFN("Number of links in the tree %d\n",num_lextree_links(ltree));
-  E_INFO_NOFN("Number of active node in this frame %d \n",ltree->n_active);
-  E_INFO_NOFN("Number of active node in next frame %d \n",ltree->n_next_active);
-  E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
-  E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
+  /*
+    E_INFO_NOFN("Number of active node in this frame %d \n",ltree->n_active);
+    E_INFO_NOFN("Number of active node in next frame %d \n",ltree->n_next_active);
+    E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
+    E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
+  */
   E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
   E_INFO_NOFN("The size of a node of the lexical tree %d \n",sizeof(lextree_node_t));
   E_INFO_NOFN("The size of a gnode_t %d \n",sizeof(gnode_t));
@@ -415,7 +432,6 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 		    ssid = d2p->single_lc[ci][(int)lc[j]];  /* This is a composite triphone */
 		  }else{ /* Use approximation to get the SSID */
 		    ssid= d2p->lrdiph_rc[ci][(int)lc[j]][mdef_ciphone_id(mdef,"sil")]; /* HACK, always assume right context is silence */
-		    /*		    E_INFO("ssid %d\n",ssid);*/
 		  }
 
 		    /* Check if this ssid already allocated for another lc */
@@ -605,13 +621,105 @@ static int32 lextree_subtree_free (lextree_node_t *ln, int32 level)
     
     /* Free this node, but for level-1 nodes only if reference count drops to 0 */
     if ((level != 1) || (--ln->ssid == 0)) {
-	myfree ((void *) ln, sizeof(lextree_node_t));
-	k++;
+      /*	myfree ((void *) ln, sizeof(lextree_node_t));*/
+
+      lextree_node_free ((void *) ln);
+      k++;
     }
     
     return k;
 }
 
+static int32 lextree_shrub_subtree_cw_leaves(lextree_node_t *ln, int32 level)
+{
+  gnode_t *gn;
+  lextree_node_t *ln2;
+  int32 k;
+  k=0;
+
+  /* If it is a leave and it is a WID and it has not SSID, then, it is
+     a mother of the list of cross-word triphones.
+   */
+
+  if(IS_S3WID(ln->wid)&& ! IS_S3SSID(ln->ssid)){ 
+
+    /* If it is a node with WID and have bad senone sequence */
+
+    if(ln->children != NULL){      
+
+#if 0
+      E_INFO("Free Cross word is carried out  for wid %d, ln->children %d\n", ln->wid, ln->children);
+#endif
+
+      for (gn = ln->children; gn; gn = gnode_next(gn)) {
+	ln2 = (lextree_node_t *) gnode_ptr (gn);
+	/*	E_INFO("I am freeing something! WID, %d, rc %d\n",ln->wid,ln2->rc);*/
+
+	/* Free this node, but for level-1 nodes only if reference count drops to 0 */
+
+	lextree_node_free(ln2);
+	k++;
+      }
+      glist_free (ln->children);
+      ln->children = NULL; 
+    }
+
+  }else{
+    /* Free subtrees below this node */
+    for (gn = ln->children; gn; gn = gnode_next(gn)) {
+      ln2 = (lextree_node_t *) gnode_ptr (gn);
+      k += lextree_shrub_subtree_cw_leaves (ln2, level+1);
+    }
+  }
+
+    
+  return k;
+    
+}
+
+void lextree_shrub_cw_leaves(lextree_t *lextree)
+{
+  gnode_t *gn, *cwgn;
+  glist_t root;
+  lextree_node_t *ln;
+  lextree_node_t *cwln;
+  int32 k,i;
+
+  /* Free lextree */
+  k = 0;
+
+  if (lextree->n_lc > 0) {
+    for(i=0; i< lextree->n_lc ;i++){
+      root = lextree->lcroot[i].root;
+
+      if(root!=NULL){
+	for(gn = root ; gn ; gn = gnode_next(gn)){
+
+	  ln = (lextree_node_t*) gnode_ptr(gn);
+
+	  if(IS_S3WID(ln->wid)&& ln->children!=NULL){
+
+#if 0
+	    E_INFO("Tree %d, lc %d, Free Cross word is carried out  for wid %d, ln->children %d\n", lextree, lextree->lcroot[i].lc, ln->wid, ln->children);
+#endif
+	    for(cwgn = ln->children ; cwgn ; cwgn = gnode_next(cwgn)){
+	      cwln = (lextree_node_t *) gnode_ptr(cwgn);
+	      lextree_node_free(cwln);
+	    }
+	    glist_free(ln->children);
+	    ln->children=NULL;
+	  }
+	}
+      }
+    }
+  }
+
+  for (gn = lextree->root; gn; gn = gnode_next(gn)) {
+    ln = (lextree_node_t *) gnode_ptr (gn);
+    k += lextree_shrub_subtree_cw_leaves (ln,0);
+  }
+  lextree_n_node(lextree) -= k;
+}
 
 /*
  * This is a bit tricky because of the replication of root nodes for different left-contexts.
@@ -625,8 +733,10 @@ void lextree_free (lextree_t *lextree)
     int32 i, k;
     
     if (lextree->n_lc > 0) {
-	for (i = 0; i < lextree->n_lc; i++)
-	    glist_free (lextree->lcroot[i].root);
+        for (i = 0; i < lextree->n_lc; i++){
+	  glist_free (lextree->lcroot[i].root);
+	  lextree->lcroot[i].root=NULL;
+	}
 	
 	ckd_free (lextree->lcroot);
     }
@@ -688,11 +798,11 @@ void lextree_ssid_active (lextree_t *lextree, int32 *ssid, int32 *comssid)
 	ln = list[i];
 
 
-	if(IS_S3WID(ln->wid)){
-	  /*	  E_INFO("Is WID %d,  ln->ssid %d, Do I have children %d?\n",ln ->wid, ln->ssid, (ln->children!=NULL));*/
+	/*	if(IS_S3WID(ln->wid)){
+		E_INFO("Is WID %d,  ln->ssid %d, Do I have children %d?\n",ln ->wid, ln->ssid, (ln->children!=NULL));
 	  
 	  assert(ln->ssid!=BAD_S3SSID);
-	}
+	}*/
 
 	if (ln->composite)
 	    comssid[ln->ssid] = 1;
@@ -712,10 +822,6 @@ void lextree_utt_end (lextree_t *l, kbcore_t *kbc)
     
     for (i = 0; i < l->n_active; i++) {	/* The inactive ones should already be reset */
 	ln = l->active[i];
-	
-	/*	if(IS_S3WID(ln->wid)){
-	  E_INFO("Is WID\n");
-	  }*/
 
 	ln->frame = -1;
 	hmm_clear (&(ln->hmm), mdef_n_emit_state(mdef));
@@ -725,6 +831,16 @@ void lextree_utt_end (lextree_t *l, kbcore_t *kbc)
     l->n_next_active = 0;
 
     strcpy(l->prev_word,"");
+
+    /* If the tree has crossword triphone, shrub them off at the end
+       of the utterance */
+
+    
+    if(! dict2pid_is_composite(kbc->dict2pid)){
+      lextree_shrub_cw_leaves(l);
+    }
+    
+
 }
 
 
@@ -851,7 +967,7 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
     n_ci = mdef_n_ciphone(kbc->mdef);
     n_st = mdef_n_emit_state (kbc->mdef);
     tmat = kbc->tmat;
-
+    rc =0;
     
     assert(lextree);
     /* Locate root nodes list */
@@ -874,6 +990,7 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
         ln = (lextree_node_t *) gnode_ptr (gn);
 	
 	hmm = &(ln->hmm);
+
 	if(NOT_S3WID(ln->wid)|| /* If the first node we see it a non leave */
 	   (IS_S3WID(ln->wid)&&dict2pid_is_composite(kbc->dict2pid)) /* Or it is a leave but we are using composite triphone */
 	   ){
@@ -891,27 +1008,23 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	  
 	  /* FIX ME! To allow extra flexibility, one should allow 
 	     optionally composite single phone */
-	  if(!ln->children){
 
-	    /* This part should be moved to a function */
+	  assert(IS_S3WID(ln->wid));
+	  if(ln->children==NULL){
+#if 0
+	    E_INFO("Tree %d, lc %d, Cross word expansion is carried out at cf %d for wid %d, wstr %s, ln->children %d\n", lextree, lc, cf,ln->wid, dict_wordstr(kbc->dict,ln->wid), ln->children);
+#endif
 
 	    n_ci=mdef_n_ciphone(kbc->mdef);
 	    /* HACK, assuming the left context is sil */
 
-#if 0
-	    rmap=kbc->dict2pid->lrdiph_rc[ln->ci][kbc->mdef->sil];
-#endif
 	    rmap=kbc->dict2pid->lrssid[ln->ci][kbc->mdef->sil].ssid;
 	    n_rc = kbc->dict2pid->lrssid[ln->ci][kbc->mdef->sil].n_ssid;
-	    
+
 	    if(!dict_filler_word(kbc->dict,ln->wid)){
 
 	      for(rc=0;rc< n_rc;rc++){
-		/*		E_INFO("Cross word expansion is carried out at ssid %d cf %d, compressed rc %d for wid %d, wstr %s\n",rmap[rc], cf,rc,ln->wid, dict_wordstr(kbc->dict,ln->wid));*/
-		
 		cwln=lextree_node_alloc(ln->wid,ln->prob,NOT_COMPOSITE,rmap[rc],n_st,ln->ci, rc);
-		lextree_n_node(lextree) +=1;
-		  
 		cwln->hmm.tp= tmat->tp[mdef_pid2tmatid(kbc->mdef,ln->ci)];
 		ln->children=glist_add_ptr(ln->children,(void *) cwln);
 	      }
@@ -919,11 +1032,10 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	    }else{
 	      /* Assume there is no context when filler. Still expands to keep the program
 		 consistency. */
-	      /* Does it work if n_rc = 0 */
-	      /*	      E_INFO("n_rc %d, ln->wid %d\n",n_rc, ln->wid);*/
-	      cwln=lextree_node_alloc(ln->wid,ln->prob,NOT_COMPOSITE,rmap[0],n_st,ln->ci, rc);
+
+	      cwln=lextree_node_alloc(ln->wid,ln->prob,NOT_COMPOSITE,rmap[0],n_st,ln->ci, 0);
 	      lextree_n_node(lextree) +=1;
-		
+
 	      cwln->hmm.tp= tmat->tp[mdef_pid2tmatid(kbc->mdef,ln->ci)];
 	      ln->children=glist_add_ptr(ln->children,(void *) cwln);
 	    }
@@ -1270,21 +1382,22 @@ int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 		assert(!dict2pid_is_composite(d2p));
 
 		/* If the node doens't has children */ 
-		if(!ln2->children){ /*Is children not allocated, then allocate it first. */
+		if(ln2->children==NULL){ /*Is children not allocated, then allocate it first. */
 		  assert(dict_pronlen(dict,ln2->wid) > 1); /* Because word enter should have already taken care 
 								expansion of single word case. 
 							     */
 		  assert(ln2->ssid == BAD_S3SSID); /*First timer of being expanded */
 		  n_ci = mdef_n_ciphone(mdef);
-		  
-#if 0
-		  rmap=kbc->dict2pid->rdiph_rc[ln2->ci][ln->ci];
+
+
+#if 0		  
+		  E_INFO("Tree %d, Cross word expansion is carried out at cf %d for wid %d, wstr %s, ln->children %d\n", lextree, cf,ln2->wid, dict_wordstr(kbc->dict,ln2->wid), ln2->children);
 #endif
+
 		  rmap=kbc->dict2pid->rssid[ln2->ci][ln->ci].ssid;
 		  n_rc = kbc->dict2pid->rssid[ln2->ci][ln->ci].n_ssid;
 
 		  for(rc=0;rc< n_rc;rc++){
-		    /*		    E_INFO("Cross word expansion is carried out at ssid %d cf %d, compressed rc %d for wid %d, wstr %s\n",ssid, cf,rc,ln2->wid, dict_wordstr(dict,ln2->wid));*/
 		    
 		    cwln=lextree_node_alloc(ln2->wid,ln2->prob,NOT_COMPOSITE,rmap[rc],n_st,ln2->ci, rc);
 		    lextree_n_node(lextree) +=1;
