@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.17  2005/09/25  19:30:21  arthchan2003
- * (Change for comments) Track error messages from propagate_leave and propagate_non_leave, this allow us to return error when bugs occur in internal of search.
+ * Revision 1.1.4.18  2005/10/17  04:54:20  arthchan2003
+ * Freed graph correctly.
  * 
+ * Revision 1.1.4.17  2005/09/25 19:30:21  arthchan2003
+ * (Change for comments) Track error messages from propagate_leave and propagate_non_leave, this allow us to return error when bugs occur in internal of search.
+ *
  * Revision 1.1.4.16  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -704,6 +707,7 @@ int32 srch_uninit(srch_t* srch){
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+  ckd_free(srch->grh);
   ckd_free(srch);
 
   return SRCH_SUCCESS;
