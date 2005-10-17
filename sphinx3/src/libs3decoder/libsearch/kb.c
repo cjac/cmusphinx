@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.8  2005/09/26  02:26:08  arthchan2003
- * Change -s3hmmdir to -hmm
+ * Revision 1.26.4.9  2005/10/17  04:52:02  arthchan2003
+ * Free fast_gmm_t.
  * 
+ * Revision 1.26.4.8  2005/09/26 02:26:08  arthchan2003
+ * Change -s3hmmdir to -hmm
+ *
  * Revision 1.26.4.7  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -174,6 +177,7 @@ void temp_init_vithistory(kb_t* kb, int32 op_mode)
 				 cmd_ln_int32("-bghist"),
 				 cmd_ln_int32("-lmrescore"),
 				 cmd_ln_int32("-bt_wsil"),
+  				 !cmd_ln_int32("-composite"),
 				 REPORT_KB);
       
      if(REPORT_KB)
@@ -422,7 +426,7 @@ void kb_free (kb_t *kb)
     ascr_free((void*) kb->ascr);
 
   if(kb->fastgmm)
-    ckd_free((void *) kb->fastgmm);
+    fast_gmm_free((void *) kb->fastgmm);
 
   if(kb->beam)
     beam_free((void*) kb->beam);
