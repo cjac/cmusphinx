@@ -96,7 +96,6 @@ extern "C" {
 #define ARG_STRING	8
 #define ARG_BOOLEAN	16
 
-
 #define ARG_MAX_LENGTH 256
 
   /** Arguments of these types are REQUIRED */
