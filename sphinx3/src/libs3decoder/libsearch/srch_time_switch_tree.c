@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.13  2005/10/07  20:04:50  arthchan2003
- * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ * Revision 1.2.4.14  2005/10/17  04:54:49  arthchan2003
+ * Freed the tree set correctly.
  * 
+ * Revision 1.2.4.13  2005/10/07 20:04:50  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
  * Revision 1.2.4.12  2005/09/25 19:32:11  arthchan2003
  * (Change for comments) Allow lexical tree to be dumped optionally.
  *
@@ -187,6 +190,7 @@ int srch_TST_init(kb_t *kb, void *srch)
     for (j = 0; j < n_ltree; j++) {
       /*     ptmr_reset(&(tm_build));*/
       ptmr_start(&tm_build);
+
       tstg->ugtree[i*n_ltree+j]=lextree_init(kbc,kbc->lmset->lmarray[i],lmset_idx_to_name(kbc->lmset,i),
 					     tstg->isLMLA,REPORT_SRCH_TST,LEXTREE_TYPE_UNIGRAM);
 
@@ -283,9 +287,15 @@ int srch_TST_uninit(void *srch)
     }
   }
 
+  ckd_free(tstg->ugtree);
+  ckd_free(tstg->curugtree);
+  ckd_free(tstg->fillertree);
+
   if(tstg->histprune!=NULL){
     histprune_free((void*) tstg->histprune);
   }
+
+  ckd_free(tstg);
 
   return SRCH_SUCCESS;
 }
@@ -348,10 +358,6 @@ int srch_TST_begin(void *srch)
 int srch_TST_end(void *srch)
 {
   int32 id;
-  /*int32 ascr, lscr;*/
-  /*glist_t hyp;*/
-  /*gnode_t *gn;*/
-  /*hyp_t *h;*/
   int32 i;
   FILE *fp;
   /**latfp, *bptfp;*/
@@ -378,7 +384,7 @@ int srch_TST_end(void *srch)
   uttid = s->uttid;
     
   if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
-    E_INFO("ID %d\n",id);
+    /*    E_INFO("ID %d\n",id);*/
     reg_result_dump(s,id);
   } else
     E_ERROR("%s: No recognition\n\n", uttid);
