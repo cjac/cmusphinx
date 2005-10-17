@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4.4.3  2005/08/02  21:11:33  arthchan2003
- * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
+ * Revision 1.4.4.4  2005/10/17  04:51:03  arthchan2003
+ * Fixed resource in ascr correctly.
  * 
+ * Revision 1.4.4.3  2005/08/02 21:11:33  arthchan2003
+ * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
+ *
  * Revision 1.4.4.2  2005/07/24 01:31:03  arthchan2003
  * add interface to set temporary active array correctly.
  *
@@ -93,7 +96,8 @@ ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, i
     ascr->sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
     ascr->rec_sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
     ascr->ssid_active = (int32 *) ckd_calloc (n_sseq, sizeof(int32));
-    ascr->comssid_active = (int32 *) ckd_calloc (n_comsseq, sizeof(int32));
+    if(n_comsseq>0)
+      ascr->comssid_active = (int32 *) ckd_calloc (n_comsseq, sizeof(int32));
 
     /* MEMORY ALLOCATION : CI senones */
     ascr->cache_ci_senscr=(int32**)ckd_calloc_2d(pl_win,n_cisen,sizeof(int32));
@@ -138,12 +142,21 @@ void ascr_shift_one_cache_frame(ascr_t *a, int32 win_efv)
 void ascr_free(ascr_t *a)
 {
   if(a){
+    if(a->senscr)
+      ckd_free(a->senscr);
+
     if (a->sen_active)
       ckd_free ((void *)a->sen_active);
+
+    if (a->rec_sen_active)
+      ckd_free ((void *)a->rec_sen_active);
+
     if (a->ssid_active) 
       ckd_free ((void *)a->ssid_active);
+
     if (a->comssid_active)
       ckd_free ((void *)a->comssid_active);
+
     if (a->cache_ci_senscr) 
       ckd_free_2d ((void **)a->cache_ci_senscr);
     if(a->cache_best_list) 
@@ -172,6 +185,8 @@ void ascr_clear_ssid_active(ascr_t *a)
 void ascr_clear_comssid_active(ascr_t *a)
 {
   assert(a);
-  assert(a->comssid_active);
-  memset (a->comssid_active, 0, a->n_comsseq * sizeof(int32));
+  if(a->n_comsseq>0){
+    assert(a->comssid_active);
+    memset (a->comssid_active, 0, a->n_comsseq * sizeof(int32));
+  }
 }
