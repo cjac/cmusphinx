@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.6  2005/09/07  23:30:26  arthchan2003
- * Changed error message for LM dump.
+ * Revision 1.14.4.7  2005/10/17  04:49:13  arthchan2003
+ * Free resource of lm_t and lmset_t correctly.
  * 
+ * Revision 1.14.4.6  2005/09/07 23:30:26  arthchan2003
+ * Changed error message for LM dump.
+ *
  * Revision 1.14.4.5  2005/08/02 21:10:18  arthchan2003
  * Added function declaration for lm_read_dump.
  *
@@ -562,7 +565,7 @@ int32 lm_ug_wordprob (lm_t *lm, dict_t *dict,int32 th, wordprob_t *wp)
 		  j++;
 		}
 	      }else{
-		E_INFO("Word %s cannot be found \n", lmclass_getword(lm_cw));
+		  E_INFO("Word %s cannot be found \n", lmclass_getword(lm_cw));
 	      }
 
 	      lm_cw= lmclass_nextword (lmclass,lm_cw);
@@ -1010,8 +1013,12 @@ void lm_free (lm_t *lm)
   ckd_free ((void *) lm->wordstr);
 
   if(lm->n_bg >0){
-    if (lm->bg)		/* Memory-based; free all bg */
+    if (lm->bg){		/* Memory-based; free all bg */
       ckd_free (lm->bg);
+      if(lm->membg){
+	ckd_free(lm->membg);
+      }
+    }
     else {		/* Disk-based; free in-memory bg */
       for (i = 0; i < lm->n_ug; i++)
 	if (lm->membg[i].bg)
@@ -1023,8 +1030,8 @@ void lm_free (lm_t *lm)
   }
 
   if(lm->n_tg>0){
-    /*    if(lm->tg)
-	  ckd_free((void*)lm->tg);*/
+    if(lm->tg)
+      ckd_free((void*)lm->tg);
 
     for(i=0;i<lm->n_ug;i++){
       if(lm->tginfo[i]!=NULL){
@@ -1032,8 +1039,7 @@ void lm_free (lm_t *lm)
 	while (lm->tginfo[i]){
 	  tginfo=lm->tginfo[i];
 	  lm->tginfo[i]=tginfo->next;
-	  /*	  ckd_free((void*) tginfo->tg);
-		  ckd_free((void*) tginfo);*/
+	  ckd_free((void*) tginfo);
 	}
       }
     }
@@ -1044,13 +1050,17 @@ void lm_free (lm_t *lm)
     ckd_free ((void *) lm->tgprob);
     ckd_free ((void *) lm->tgbowt);
 
+    if(lm->dict2lmwid){
+      ckd_free(lm->dict2lmwid);
+    }
+    
     if(lm->HT){
       hash_free(lm->HT);
     }
   }
 
 
-  /*  ckd_free ((void *) lm);*/
+  ckd_free ((void *) lm);
 
   
 }

@@ -11,15 +11,14 @@ liblm_la_SOURCES = \
 	lm_3g.c \
 	lm_3g_dmp.c \
 	lmclass.c \
-	lmset.c \
-	lm_arbitrary.c 
+	lmset.c
+
 
 
 pkginclude_HEADERS = \
 	fillpen.h \
         lm.h \
-	lmclass.h \
-	lm_arbitrary.h 
+	lmclass.h 
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \

@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/17  05:23:25  arthchan2003
- * added lm_3g_dmp.c and lmset.c, split it out from lm.c to avoid overcrowding situation in it.
+ * Revision 1.1.2.2  2005/10/17  04:49:13  arthchan2003
+ * Free resource of lm_t and lmset_t correctly.
  * 
+ * Revision 1.1.2.1  2005/07/17 05:23:25  arthchan2003
+ * added lm_3g_dmp.c and lmset.c, split it out from lm.c to avoid overcrowding situation in it.
+ *
  *
  */
 
@@ -230,6 +233,7 @@ void lmset_free(lmset_t *lms)
     ckd_free((void*) lms->lmarray[i]->name);
     lm_free(lms->lmarray[i]);
   }
+  ckd_free(lms->lmarray);
   ckd_free((void*) lms);
 
 }
