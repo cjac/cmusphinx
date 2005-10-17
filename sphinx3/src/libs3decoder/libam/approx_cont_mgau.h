@@ -45,11 +45,14 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  18:05:12  arthchan2003
+ * Revision 1.10.4.1  2005/07/05  05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ * 
+ * Revision 1.10  2005/06/21 18:05:12  arthchan2003
  * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
  * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
  * taking care of maxing ci senone score for a frame.
- * 
+ *
  * Revision 1.6  2005/06/09 20:55:29  archan
  * Add comments for approx_cont_mgau.h.
  *
@@ -195,6 +198,7 @@ extern "C" {
    the code to be longer than 500 lines. 
 
    Imperfection
+
    ^^^^^^^^^^^^
 
    Imperfections of the code can be easily seen by experts so I want

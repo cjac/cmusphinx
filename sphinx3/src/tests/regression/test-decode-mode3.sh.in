@@ -1,0 +1,47 @@
+#!/bin/sh
+
+tmpout="test-decode-mode3.out"
+
+echo "DECODE MODE 3 TEST"
+echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+-var @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+-mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+-tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
+-cepdir @abs_top_srcdir@/model/lm/an4/ \
+-agc none \
+-varnorm no \
+-cmn current \
+-op_mode 3 \
+-subvqbeam 1e-02 \
+-epl 4 \
+-fillprob 0.02 \
+-feat 1s_c_d_dd \
+-lw 9.5 \
+-beam 1e-40 \
+-wbeam 1e-20 \
+-wend_beam 1e-1 \
+-ci_pbeam 1e-5 \
+-ds 2 \
+-tighten_factor 0.4"
+
+lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
+
+clsargs="-lmctlfn @abs_top_srcdir@/model/lm/an4/an4.ug.cls.lmctl \
+-ctl_lm  @abs_top_srcdir@/model/lm/an4/an4.ctl_lm" 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode $margs $lmargs > $tmpout 2>&1
+grep "FWDVIT" $tmpout
+grep "FWDXCT" $tmpout
+
+if(grep "FWDVIT" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
+then echo "DECODE MODE 3 test PASSED" ; else \
+echo "DECODE MODE 3 test FAILED" ; fi
+
+
+

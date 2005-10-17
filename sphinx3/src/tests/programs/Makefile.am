@@ -54,6 +54,7 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm @ad_libs@ 
+#	-lm -ldmalloc @ad_libs@ 
 
 
 

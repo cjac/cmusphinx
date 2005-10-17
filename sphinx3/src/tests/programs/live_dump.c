@@ -146,7 +146,7 @@ int32 live_get_partialhyp(int32 endutt)
     int32 id, nwds;
     glist_t   hyp;
     gnode_t   *gn;
-    hyp_t     *h;
+    srch_hyp_t     *h;
     dict_t    *dict;
 
     dict = kbcore_dict (kb->kbcore);
@@ -156,10 +156,10 @@ int32 live_get_partialhyp(int32 endutt)
         id = vithist_partialutt_end(kb->vithist, kb->kbcore);
 
     if (id > 0) {
-        hyp = vithist_backtrace(kb->vithist,id);
+        hyp = vithist_backtrace(kb->vithist,id,dict);
 
         for (gn = hyp,nwds=0; gn; gn = gnode_next(gn),nwds++) {
-            h = (hyp_t *) gnode_ptr (gn);
+            h = (srch_hyp_t *) gnode_ptr (gn);
             if (parthyp[nwds].word != NULL) {
                 ckd_free(parthyp[nwds].word);
                 parthyp[nwds].word = NULL;
@@ -176,7 +176,7 @@ int32 live_get_partialhyp(int32 endutt)
         }
         /* Free hyplist */
         for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-            h = (hyp_t *) gnode_ptr (gn);
+            h = (srch_hyp_t *) gnode_ptr (gn);
             ckd_free ((void *) h);
         }
         glist_free (hyp);

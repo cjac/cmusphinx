@@ -43,11 +43,15 @@
 
 #include "s3types.h"
 
+/*
+  Read codeword to MLLR class mapping file
+ */
 int
-cb2mllr_read(const char *fn,
-	     int32 **out_cb2mllr,
-	     uint32 *out_n_cb,
-	     uint32 *out_n_mllr);
+cb2mllr_read(const char *fn, /**< MLLR class mapping file.*/
+	     int32 **out_cb2mllr,  /**< Output CB 2 MLLR */
+	     int32 *out_n_cb,      /**< Number of codebook */
+	     int32 *out_n_mllr     /**< Number of MLLR class */
+	     );
 
 #endif /* S3CB2MLLR_IO_H */ 
 
@@ -56,9 +60,15 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.4  2005/06/22  08:05:55  arthchan2003
- * Fixed spelling in doc
+ * Revision 1.2.4.2  2005/10/09  19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
  * 
+ * Revision 1.2.4.1  2005/06/27 05:22:19  arthchan2003
+ * Merged from the HEAD.
+ *
+ * Revision 1.4  2005/06/22 08:05:55  arthchan2003
+ * Fixed spelling in doc
+ *
  * Revision 1.3  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  *

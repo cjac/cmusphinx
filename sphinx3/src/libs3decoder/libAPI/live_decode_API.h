@@ -195,7 +195,7 @@ typedef struct
    * Hypothesis word segments.  Result (or partial result) of the recognition
    * is stored as word segments.  Null-terminated array.
    */
-  hyp_t **hyp_segs;
+  srch_hyp_t **hyp_segs;
 
   /**
    * Boolean indicator whether we've internally allocated space for the
@@ -360,7 +360,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     <PRE>
     live_decoder_t d;
     char *str;
-    hyp_t **segs;
+    srch_hyp_t **segs;
 
     ...
 
@@ -379,7 +379,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     @return 0 for success.  -1 for failure.
 */
 int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
-		     hyp_t ***_hyp_segs);
+		     srch_hyp_t ***_hyp_segs);
 
 /** Abort the current decoding process immediately.  As opposed to
     <I>{@link ld_end_utt ld_end_utt()}</I>.  Retrieving the hypothesis after an
@@ -410,6 +410,27 @@ void ld_set_lm(live_decoder_t *_decoder,const char *lmname);
 void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
 
 
+/** Read LM from a file. 
+    @param _decoder Pointer to the decoder. 
+    @param lmfile LM file name. 
+    @param lmname LM name associated with this file. 
+    @see ld_set_lm
+ */
+
+void ld_read_lm(live_decoder_t *_decoder, 
+		const char *lmfile, 
+		const char *lmname
+		);
+
+/** Read a FSG
+    @param _decode Pointer to a live mode decoder
+    @param fsgname the FSG name
+*/
+void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
+
+/**
+ */
+
 #ifdef __cplusplus
 }
 #endif
@@ -420,23 +441,6 @@ void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
 
 
 #if 0 /* Do not support the following function at this point */
-/** Read LM from a file. 
-    @param _decoder Pointer to the decoder. 
-    @param lmfile LM file name. 
-    @param lmname LM name associated with this file. 
-    @param lw     Language weight; typically 6.5-9.5
-    @param uw     Unigram weight; typically 0.5 
-    @param wip    Word insertion penalty; typically 0.65 
-    @see ld_set_lm
- */
-
-void ld_read_lm(live_decoder_t *_decoder, 
-		const char *lmfile, 
-		const char *lmname,
-		double lw,
-		double uw,
-		double wip
-		);
 
 
 
@@ -448,10 +452,6 @@ void ld_update_lm(live_decoder_t *_decoder, const char *lmname);
 /** Read FSG from a file.
  */
 
-void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/**
- */
 
 void ld_set_fsg(live_decoder_t *_decoder, const char *fsgname);
 

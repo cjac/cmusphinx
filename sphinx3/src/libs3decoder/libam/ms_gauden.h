@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * gauden.h -- gaussian density module.
  *
@@ -10,9 +45,26 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  18:55:09  arthchan2003
- * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ * Revision 1.6.4.5  2005/10/09  19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
  * 
+ * Revision 1.6.4.4  2005/09/25 18:54:20  arthchan2003
+ * Added a flag to turn on and off precomputation.
+ *
+ * Revision 1.6.4.3  2005/08/03 18:53:44  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
+ *
+ * Revision 1.6.4.2  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
+ * Revision 1.6.4.1  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.6  2005/06/21 18:55:09  arthchan2003
+ * 1, Add comments to describe this modules, 2, Fixed doxygen documentation. 3, Added $ keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -56,26 +108,27 @@ extern "C" {
 #endif
 
   /**
- * Multivariate gaussian mixture density parameters
- */
+   * \struct gauden_t
+   * \brief Multivariate gaussian mixture density parameters
+   */
 typedef struct {
-    vector_t ***mean;	/** mean[codebook][feature][codeword] vector */
-    vector_t ***var;	/** like mean; diagonal covariance vector only */
-    float32 ***det;	/** log(determinant) for each variance vector;
+    vector_t ***mean;	/**< mean[codebook][feature][codeword] vector */
+    vector_t ***var;	/**< like mean; diagonal covariance vector only */
+    float32 ***det;	/**< log(determinant) for each variance vector;
 			   actually, log(sqrt(2*pi*det)) */
-    int32 n_mgau;	/** #codebooks */
-    int32 n_feat;	/** #feature streams in each codebook */
-    int32 n_density;	/** #gaussian densities in each codebook-feature stream */
-    int32 *featlen;	/** feature length for each feature */
+    int32 n_mgau;	/**< #codebooks */
+    int32 n_feat;	/**< #feature streams in each codebook */
+    int32 n_density;	/**< #gaussian densities in each codebook-feature stream */
+    int32 *featlen;	/**< feature length for each feature */
 } gauden_t;
 
   /**
- * Structure to store distance (density) values for a given input observation
- * wrt density values in some given codebook.
- */
+   * \struct gauden_dist_t
+   * \brief Structure to store distance (density) values for a given input observation wrt density values in some given codebook.
+   */
 typedef struct {
-    int32 id;		/** Index of codeword (gaussian density) */
-    int32 dist;		/** Density value for input observation wrt above codeword;
+    int32 id;		/**< Index of codeword (gaussian density) */
+    int32 dist;		/**< Density value for input observation wrt above codeword;
 			   NOTE: result in logs3 domain; hence int32 */
 
 } gauden_dist_t;
@@ -90,8 +143,12 @@ typedef struct {
 gauden_t *
 gauden_init (char *meanfile,	/**< Input: File containing means of mixture gaussians */
 	     char *varfile,	/**< Input: File containing variances of mixture gaussians */
-	     float32 varfloor	/**< Input: Floor value to be applied to variances */
+	     float32 varfloor,	/**< Input: Floor value to be applied to variances */
+	     int32 precompute   /**< Input: Whether we should precompute */  
 	     );
+
+/** Release memory allocated by gauden_init. */
+void gauden_free(gauden_t *g); /**< In: The gauden_t to free */
 
   /**
  * Reload mixture Gaussian means from the given file.  The means must have already
@@ -136,7 +193,7 @@ gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks *
 		  gauden_dist_t ***dist,/**< In/Out: n_top density indices and values for
 					   each feature.  On return, density values are
 					   normalized. */
-		  int8 *active	/**< In: active[gid] is non-0 iff codebook gid is
+		  uint8 *active	/**< In: active[gid] is non-0 iff codebook gid is
 					   active.  If NULL, all codebooks active */
 		  );
 

@@ -194,6 +194,11 @@ static int32 wavein_close (ad_rec_t *r)
 
     /* Unprepare all buffers; multiple unprepares of the same buffer are benign */
     for (i = 0; i < r->n_buf; i++) {
+	/* Unpreparing an unprepared buffer, on the other hand, fails
+	   on Win98/WinME, though this is not documented - dhuggins@cs,
+	   2004-07-14 */
+	if (!(r->wi_buf[i].p_whdr->dwFlags & WHDR_PREPARED))
+	    continue;
 	st = waveInUnprepareHeader(r->h_wavein, r->wi_buf[i].p_whdr, sizeof(WAVEHDR));
 	if (st != 0) {
 	    wavein_error("waveInUnprepareHeader", st);

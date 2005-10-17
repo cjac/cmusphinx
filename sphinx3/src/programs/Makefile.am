@@ -1,45 +1,51 @@
 bin_PROGRAMS = livepretend \
 	decode \
+	decode_anytopo \
 	gausubvq \
 	align \
 	astar \
 	dag \
 	allphone \
-	ep 
+	ep \
+	lm_convert \
+	cepview \
+	wave2feat \
+	gauvq_read \
+	gauvq
+
+
+
 
 livepretend_SOURCES = main_livepretend.c 
 decode_SOURCES = decode.c
-decode_anytopo_SOURCES = main_decode_anytopo.c s3_dag.c
-
+decode_anytopo_SOURCES = main_decode_anytopo.c 
 align_SOURCES = main_align.c s3_align.c
 astar_SOURCES = main_astar.c s3_astar.c
-dag_SOURCES = main_dag.c s3_dag.c 
+dag_SOURCES = main_dag.c 
 allphone_SOURCES = main_allphone.c s3_allphone.c 
 gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
 wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
+lm_convert_SOURCES = main_lm_convert.c
+gauvq_read_SOURCES = main_gauvq_read.c 
+gauvq_SOURCES = main_gauvq.c 
 
 
-noinst_PROGRAMS = \
-	wave2feat \
-	cepview \
-	decode_anytopo
+#noinst_PROGRAMS = 
 
 noinst_HEADERS = \
 	main_ep.h \
 	s3_align.h \
-	s3_allphone.h \
-	s3_dag.h
-
-# 20041205 : recent bug makes me remove this from standard compilation for a while. 
-#	decode_anytopo 
-
+	s3_allphone.h 
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
 	$(top_builddir)/src/libutil/libutil.la \
-	-lm @ad_libs@ 
+	-lm @ad_libs@
+
+#	-lm -ldmalloc @ad_libs@ 
+#	-lm  @ad_libs@ 
 # add these for solaris
 # -L/usr/demo/SOUND/lib/ -laudio -lnsl -lsocket
 
