@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.9  2005/10/07  20:05:05  arthchan2003
- * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ * Revision 1.8.4.10  2005/10/17  04:58:30  arthchan2003
+ * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
  * 
+ * Revision 1.8.4.9  2005/10/07 20:05:05  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
  * Revision 1.8.4.8  2005/09/26 07:23:06  arthchan2003
  * Also fixed a bug such SINGLE_RC_HISTORY=0 compiled.
  *
@@ -125,9 +128,6 @@ void vithist_entry_display(vithist_entry_t *ve, dict_t* dict)
 {
 
   E_INFO("Word ID %d \n",ve->wid);
-  if(dict!=NULL){
-    /* Also translate the wid to string */
-  }
   E_INFO("Sf %d Ef %d \n",ve->sf,ve->ef);
   E_INFO("Ascr %d Lscr %d \n",ve->ascr,ve->lscr);
   E_INFO("Score %d, senscale %d \n",ve->score,ve->senscale);
@@ -137,14 +137,14 @@ void vithist_entry_display(vithist_entry_t *ve, dict_t* dict)
 }
 
 
-vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isreport)
+vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isRescore, int32 isbtwsil, int32 isFullExpand, int32 isreport)
 {
     vithist_t *vh;
     lmset_t *lmset;
     dict_t *dict;
     wordprob_t *wp;
     int i;
-    /*    int n;     lm_t *lm;*/
+ 
     int max=-1;
 
     if(isreport) 
@@ -165,6 +165,7 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isResco
     vh->bLMRescore=isRescore;
     vh->bBtwSil=isbtwsil;
     vh->bghist = bghist;
+    vh->bFullExpand = isFullExpand;
     
     lmset =kbcore_lmset(kbc);
     dict =kbcore_dict(kbc);
@@ -178,6 +179,7 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isResco
     }
     /*E_INFO("Allocation for viterbi history, finall size %d\n",max);*/
     vh->lms2vh_root = (vh_lms2vh_t **) ckd_calloc (max,sizeof(vh_lms2vh_t *));
+    vh->n_ci = mdef_n_ciphone(kbc->mdef);
 
     ckd_free ((void *) wp);
 
@@ -186,14 +188,86 @@ vithist_t *vithist_init (kbcore_t *kbc, int32 wbeam, int32 bghist, int32 isResco
     return vh;
 }
 
+/**
+   This function cleans up rc_info
+ */
+static void clean_up_rc_info(scr_hist_pair *rc_info, int32 n_ci)
+{
+  int32 i;
+  for(i=0;i<n_ci;i++){
+    rc_info[i].score=S3_LOGPROB_ZERO;
+    rc_info[i].pred=-1;
+  }
+}
+
+/**
+   Copy vithist entry from the source vb to to destination va without
+   copying rc_info. This is a specific function and please don't use
+   it for copying if you haven't traced it.
+ */
+static void vithist_entry_dirty_cp (vithist_entry_t *va,  vithist_entry_t *vb )
+{
+  scr_hist_pair *tmpshp;
+  assert (vb->rc_info==NULL);
+  
+  tmpshp=va->rc_info;
+  /* Do a direct copy */
+  *va = *vb;
+  va->rc_info=tmpshp;
+
+#if 0
+  va->wid = vb->wid;
+  va->sf = vb->sf;
+  va->ef = vb->ef;
+  va->ascr = vb->ascr;
+  va->lscr = vb->lscr;
+  va->score = vb->score;
+  va->senscale = vb->senscale;
+  va->pred = vb->pred;
+  va->type = vb->type;
+  va->valid = vb->valid;
+  va->lmstate.lm3g.lwid[0] = vb->lmstate.lm3g.lwid[0];
+  va->lmstate.lm3g.lwid[1] = vb->lmstate.lm3g.lwid[1];
+#endif
+
+}
+
+/**
+   Whole thing copying. 
+ */
+
+static void vithist_entry_cp (vithist_entry_t *va,  vithist_entry_t *vb, int32 n_ci)
+{
+  int i;
+  /* Do a direct copy */
+  va->wid = vb->wid;
+  va->sf = vb->sf;
+  va->ef = vb->ef;
+  va->ascr = vb->ascr;
+  va->lscr = vb->lscr;
+  va->score = vb->score;
+  va->senscale = vb->senscale;
+  va->pred = vb->pred;
+  va->type = vb->type;
+  va->valid = vb->valid;
+  va->lmstate.lm3g.lwid[0] = vb->lmstate.lm3g.lwid[0];
+  va->lmstate.lm3g.lwid[1] = vb->lmstate.lm3g.lwid[1];
+
+  if(va->rc_info){
+    for(i=0;i<n_ci;i++)
+      va->rc_info[i]=vb->rc_info[i];
+  }
+}
+
 
 /*
  * Allocate a new entry at vh->n_entry if one doesn't exist and return ptr to it.
  */
 static vithist_entry_t *vithist_entry_alloc (vithist_t *vh)
 {
-    int32 b, l;
+    int32 b, l, i;
     vithist_entry_t *ve;
+    vithist_entry_t *tmpve;
     
     b = VITHIST_ID2BLK(vh->n_entry);
     l = VITHIST_ID2BLKOFFSET (vh->n_entry);
@@ -205,13 +279,24 @@ static vithist_entry_t *vithist_entry_alloc (vithist_t *vh)
 	assert (vh->entry[b] == NULL);
 	
 	ve = (vithist_entry_t *) ckd_calloc (VITHIST_BLKSIZE, sizeof(vithist_entry_t));
-	ve->rc_info  = NULL;
+
 	vh->entry[b] = ve;
+
+	if(vh->bFullExpand){
+	  for(i=0;i<VITHIST_BLKSIZE;i++){
+	    tmpve=vh->entry[b]+i;
+	    tmpve->rc_info=NULL;
+	  }
+	}
+
     } else
 	ve = vh->entry[b] + l;
-    
+
+
+    if(vh->bFullExpand&&ve->rc_info!=NULL)
+      clean_up_rc_info(ve->rc_info,vh->n_ci);
+
     vh->n_entry++;
-    
     return ve;
 }
 
@@ -221,6 +306,7 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     vithist_entry_t *ve;
     lm_t *lm;
     dict_t *dict;
+    int32 i;
     
     lm = kbcore_lm(kbc);
     dict = kbcore_dict(kbc);
@@ -243,6 +329,16 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     ve->valid = 1;
     ve->lmstate.lm3g.lwid[0] = lm_startwid(lm);
     ve->lmstate.lm3g.lwid[1] = BAD_S3LMWID;
+
+    if(vh->bFullExpand){
+      if(ve->rc_info==NULL){
+	ve->rc_info=ckd_calloc(vh->n_ci,sizeof(scr_hist_pair));
+      }
+      for(i=0;i<vh->n_ci;i++){
+	ve->rc_info[i].score=0;
+	ve->rc_info[i].pred=-1;
+      }
+    }
     
     vh->n_frm = 0;
     vh->frame_start[0] = 1;
@@ -267,7 +363,7 @@ static int32 vh_lmstate_find (vithist_t *vh, vh_lmstate_t *lms)
     
     lwid = lms->lm3g.lwid[1];
     for (gn = lms2vh->children; gn; gn = gnode_next(gn)) {
-	lms2vh = (vh_lms2vh_t *) gnode_ptr (gn);
+      lms2vh = (vh_lms2vh_t *) gnode_ptr (gn);
 	if (lms2vh->state == lwid)
 	    return lms2vh->vhid;
     }
@@ -326,33 +422,35 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, i
     s3cipid_t *rcmap;
     dict_t* d;
 
-    /*    E_INFO("rc %d\n",rc);*/
-    n_ci=0;
     d=kbc->dict;
+    n_ci=vh->n_ci;
     /* Check if an entry with this LM state already exists in current frame */
     vhid = vh_lmstate_find (vh, &(tve->lmstate));
     if (vhid < 0) {	/* Not found; allocate new entry */
 	vhid = vh->n_entry;
-	ve = vithist_entry_alloc (vh);
-	*ve = *tve;
-	vithist_lmstate_enter (vh, vhid, ve);	/* Enter new vithist info into LM state tree */
 
+	ve = vithist_entry_alloc (vh);
+	vithist_entry_dirty_cp(ve,tve);
+	vithist_lmstate_enter (vh, vhid, ve);	/* Enter new vithist info into LM state tree */
+	if(ve->rc_info!=NULL){
+	  clean_up_rc_info(ve->rc_info,vh->n_ci);
+	}
     } else {
 	ve = vh->entry[VITHIST_ID2BLK(vhid)] + VITHIST_ID2BLKOFFSET(vhid);
 
-	if (ve->score < tve->score)
-	    *ve = *tve;
+	if (ve->score < tve->score){
+	  vithist_entry_dirty_cp(ve,tve);
+	}
     }
 
-    if(rc!=-1){ /* Case where cross word expansion is required */
+    if(rc!=-1){ /* Case where cross word expansion is required 
+		   In this case, also update, crossword RC score and pred
+		 */
       if(ve->rc_info==NULL){
-	n_ci=mdef_n_ciphone(kbc->mdef);
-	ve->rc_info=ckd_calloc(n_ci,sizeof(scr_hist_pair));
-	for(i=0;i<n_ci;i++){
-	  ve->rc_info[i].score=S3_LOGPROB_ZERO;
-	  ve->rc_info[i].pred=-1;
-	}
+	ve->rc_info=ckd_calloc(vh->n_ci,sizeof(scr_hist_pair));
+	clean_up_rc_info(ve->rc_info,vh->n_ci);
       }
+
       if(dict_pronlen(d,ve->wid)>1)
 	rcmap=kbc->dict2pid->rssid[dict_last_phone(d,ve->wid)][dict_second_last_phone(d,ve->wid)].cimap;
       else
@@ -360,7 +458,6 @@ static void vithist_enter (vithist_t *vh, kbcore_t *kbc, vithist_entry_t *tve, i
 
       if(rcmap!=NULL&&rcmap[0]!=BAD_S3SSID){ /* So if there is nothing in the map. I just don't bother */
 	for(i=0;i<n_ci;i++){
-	  /*	      E_INFO("i %d rcmap[i] %d\n",i, rcmap[i]);*/
 	  if(rcmap[i]==rc){
 	    if(ve->rc_info[i].score < tve->score){
 	      ve->rc_info[i].score = tve->score;
@@ -392,8 +489,8 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     
     assert (vh->n_frm == ef);
     if(pred == -1) { 
-      E_WARN("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
-      /*      exit(-1);*/
+      /* Always do E_FATAL assuming upper level function take care of error checking. */
+      E_FATAL("Hmm->out.history equals to -1 with score %d, some active phone was not computed?\n",score);
     }
 
     /* pve is the previous entry before word with wid or, se an fe is the
@@ -408,14 +505,24 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
     tve.type = type;
     tve.valid = 1;
 
-    if(pve->rc_info==NULL || dict_filler_word(kbcore_dict(kbc),wid))
+    /* || dict_filler_word(kbcore_dict(kbc),wid))*/
+
+    if(!vh->bFullExpand)
       tve.ascr = score - pve->score; 
     else {
       ci=dict_first_phone(kbc->dict,tve.wid); 
-      if(pve->rc_info[ci].score> S3_LOGPROB_ZERO){
-	tve.ascr = score- pve->rc_info[ci].score;
-      }else
+
+      /*      E_INFO("ci %d, wid %d, pve->rc_info[ci].score %d\n",ci, tve.wid, pve->rc_info[ci].score);*/
+
+      /*      tve.ascr = score - pve->rc_info[ci].score;*/
+      tve.ascr = score - pve->score; 
+
+#if 0 /*FIX ME, should use the context-specific score instead. */
+      if(pve->rc_info[ci].score> S3_LOGPROB_ZERO)
+	tve.ascr = score - pve->rc_info[ci].score;
+      else
 	tve.ascr = score - pve->score; 
+#endif
     }
 
     tve.senscale = senscale;
@@ -457,15 +564,25 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	    
 	    if (pve->valid) {
 		
-	      if(pve->rc_info==NULL)
+	      if(!vh->bFullExpand)
 		tve.score = pve->score; 
 	      else {
 		/* Remember to use context as well */
 		ci=dict_first_phone(kbc->dict,tve.wid); 
+
+
+		tve.score = pve->score;
+		/*
+		  tve.score = pve->rc_info[ci].score;*/
+
+#if 0  /*FIX ME, should use the context-specific score instead. */
 		if(pve->rc_info[ci].score > S3_LOGPROB_ZERO)
 		  tve.score = pve->rc_info[ci].score;
 		else
 		  tve.score = pve->score;
+#endif
+
+
 	      }
 
 	      tve.score += tve.ascr;
@@ -498,6 +615,7 @@ static void vithist_frame_gc (vithist_t *vh, int32 frm)
     vithist_entry_t *ve, *tve;
     int32 se, fe, te, bs, bv;
     int32 i, j;
+    int32 l;
     
     se = vh->frame_start[frm];
     fe = vh->n_entry - 1;
@@ -510,7 +628,8 @@ static void vithist_frame_gc (vithist_t *vh, int32 frm)
 	if (ve->valid) {
 	    if (i != te) {	/* Move i to te */
 		tve = vh->entry[VITHIST_ID2BLK(te)] + VITHIST_ID2BLKOFFSET(te);
-		*tve = *ve;
+		/**tve = *ve;*/
+		vithist_entry_cp(tve,ve,vh->n_ci);
 	    }
 	    
 	    if (ve->score > bs) {
@@ -529,8 +648,17 @@ static void vithist_frame_gc (vithist_t *vh, int32 frm)
     i = VITHIST_ID2BLK(vh->n_entry - 1);
     j = VITHIST_ID2BLK(te - 1);
     for (; i > j; --i) {
-	ckd_free ((void *) vh->entry[i]);
-	vh->entry[i] = NULL;
+
+      for(l=0 ; l < VITHIST_BLKSIZE; l++){
+	ve=vh->entry[i]+l;
+	if(ve->rc_info!=NULL){
+	  ckd_free(ve->rc_info);
+	  ve->rc_info=NULL;
+	}
+      }
+
+      ckd_free ((void *) vh->entry[i]);
+      vh->entry[i] = NULL;
     }
     vh->n_entry = te;
 }
@@ -731,7 +859,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
 
 
     /*vithist_dump(vh,-1,kbc,stdout);*/
-    /*    E_INFO("vhid %d\n",vhid);*/
+
     return vhid;
 
 }
@@ -791,13 +919,34 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
 
 void vithist_utt_reset (vithist_t *vh)
 {
-    int32 b;
+    int32 b,l;
+    int32 ent;
+    vithist_entry_t *ve;
     
     vithist_lmstate_reset (vh);
     
     for (b = VITHIST_ID2BLK(vh->n_entry-1); b >= 0; --b) {
-	ckd_free ((void *) vh->entry[b]);
-	vh->entry[b] = NULL;
+
+      /* If rc_info is used, then free them */
+      if(b!=0)
+	ent=VITHIST_BLKSIZE-1;
+      else
+	ent=vh->n_entry-1;
+
+      if(vh->bFullExpand){
+	/* This is bad, could it be just a kind of clean up? */
+	for(l =0 ;l < VITHIST_BLKSIZE ; l++){
+	  ve =vh->entry[b]+l;
+	  /*	  E_INFO("Freeing, entry %d, b %d\n",l,b);*/
+	  if(ve->rc_info!=NULL){
+	    ckd_free(ve->rc_info);
+	    ve->rc_info=NULL;
+	  }
+	}
+      }
+
+      ckd_free ((void *) vh->entry[b]);
+      vh->entry[b] = NULL;
     }
     vh->n_entry = 0;
     
@@ -933,10 +1082,10 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id, dict_t *dict)
     
     hyp = NULL;
     ci = BAD_S3CIPID;
-    /*    E_INFO("id %d\n",id);*/
     while (id > 0) {
 
       /*      E_INFO("id %d\n",id);*/
+
 	b = VITHIST_ID2BLK(id);
 	l = VITHIST_ID2BLKOFFSET(id);
 
@@ -944,8 +1093,8 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id, dict_t *dict)
 
 	assert(ve);
 #if 1
-	if(ve->rc_info!=NULL){
-	  ci = dict_pron(dict,h->id,0); /* FIX ME. In this case, one will need to know the right context of 
+	if(vh->bFullExpand){
+	  ci = dict_pron(dict,h->id,0); /* In this case, one will need to know the right context of 
 					 the previous word . I also need to first word ID in this case
 					 and that could determine the first phone id. 
 				      */
@@ -964,20 +1113,15 @@ glist_t vithist_backtrace (vithist_t *vh, int32 id, dict_t *dict)
 	
 	hyp = glist_add_ptr (hyp, h);
 
+	id = ve->pred;
 #if 0
-	id = ve->pred;
-#else	
-	id = ve->pred;
-#if 0 /* HACK, not using right context history. */
-	if(ve->rc_info==NULL) /* No right context information, Just get it from pred*/
+	if(vh->bFullExpand) /* No right context information, Just get it from pred*/
+	  id= ve->rc_info[ci].pred;
+	else
 	  id = ve->pred;
-	else{ /* That is the case, where rc_info existed, we assume
-		 full triphone expansion happend in the upper level */
-	  id = ve->rc_info[ci].pred; 
-	}
 #endif
+	
 
-#endif
     }
     
     return hyp;
@@ -1176,9 +1320,11 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
  */
 void vithist_free (vithist_t *v)
 {
+
   if (v) {
-    if(v->entry)
+    if(v->entry){
       ckd_free ((void *) v->entry);
+    }
 
     if(v->frame_start)
       ckd_free ((void *) v->frame_start);

@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.6  2005/10/07  20:05:05  arthchan2003
- * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ * Revision 1.11.4.7  2005/10/17  04:58:30  arthchan2003
+ * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
  * 
+ * Revision 1.11.4.6  2005/10/07 20:05:05  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
  * Revision 1.11.4.5  2005/09/26 06:37:33  arthchan2003
  * Before anyone get hurt, quickly change back to using SINGLE_RC_HISTORY.
  *
@@ -219,10 +222,10 @@ typedef struct {		/**< Mapping from LM state to vithist entry */
 typedef struct {
     vithist_entry_t **entry;	/**< entry[i][j]= j-th entry in the i-th block allocated */
     int32 *frame_start;		/**< For each frame, the first vithist ID in that frame; (the
-				   last is just before the first of the next frame) */
+ 				   last is just before the first of the next frame) */
     int32 n_entry;		/**< Total #entries used (generates global seq no. or ID) */
     int32 n_frm;		/**< No. of frames processed so far in this utterance */
-    
+    int32 n_ci;                   /**< No. of CI phones */
     int32 bghist;		/**< If TRUE (bigram-mode) only one entry/word/frame; otherwise
 				   multiple entries allowed, one per distinct LM state */
     
@@ -235,6 +238,8 @@ typedef struct {
     glist_t lwidlist;		/**< List of LM word IDs with entries in lms2vh_root */
     int32 bLMRescore;           /**< Whether LM should be used to rescore */
     int32 bBtwSil;              /**< Whether backtracking should be done using silence as the final word*/
+  int32 bFullExpand;          /**< Whether full expansion is done */
+
 } vithist_t;
 
 
@@ -278,6 +283,7 @@ typedef struct {
 			   int32 bghist,    /**< If only bigram history is used */
 			   int32 isRescore, /**< Whether LM is used to rescore Viterbi history */
 			   int32 isbtwsil,  /**< Whether silence should be used as the final word of backtracking. */
+			   int32 isFullExpand, /**<Whether we are using full cross word triphone expansion */
 			   int32 isreport   /**< Whether to report the progress  */
 			   );
 
