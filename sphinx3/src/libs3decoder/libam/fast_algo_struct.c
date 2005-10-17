@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5.4.3  2005/09/25  19:35:26  arthchan2003
- * Change realloc to calloc. Could be permanent if we found that there is no need to reallocate the array.
+ * Revision 1.5.4.4  2005/10/17  04:43:57  arthchan2003
+ * Free fast_gmm_t.
  * 
+ * Revision 1.5.4.3  2005/09/25 19:35:26  arthchan2003
+ * Change realloc to calloc. Could be permanent if we found that there is no need to reallocate the array.
+ *
  * Revision 1.5.4.2  2005/07/24 01:29:54  arthchan2003
  * Set #ci phone.
  *
@@ -432,6 +435,28 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 
   return fg;
 }
+
+void fast_gmm_free (fast_gmm_t *fg)
+{
+  if(fg){
+    if(fg->gmms->ci_occu)
+      ckd_free(fg->gmms->ci_occu);
+    if(fg->gmms->idx)
+      ckd_free(fg->gmms->idx);
+
+    if(fg->gmms)
+      ckd_free(fg->gmms);
+
+    if(fg->gaus)
+      ckd_free(fg->gaus);
+    
+    if(fg->downs)
+      ckd_free(fg->downs);
+    
+  ckd_free(fg);
+  }
+}
+
 
 void fast_gmm_report(fast_gmm_t *f)
 {
