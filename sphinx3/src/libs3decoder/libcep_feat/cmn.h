@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.1  2005/07/05  06:25:08  arthchan2003
- * Fixed dox-doc.
+ * Revision 1.11.4.2  2005/10/17  04:45:57  arthchan2003
+ * Free stuffs in cmn and feat corectly.
  * 
+ * Revision 1.11.4.1  2005/07/05 06:25:08  arthchan2003
+ * Fixed dox-doc.
+ *
  * Revision 1.11  2005/06/21 19:28:00  arthchan2003
  * 1, Fixed doxygen documentation. 2, Added $ keyword.
  *
@@ -93,7 +96,7 @@ typedef struct {
   float32 *cmn_var;    /**< Temporary variables: stored the cmn variance */
   /*These three are used in cmn_prior*/
   float32 *cur_mean;   /**< Temporary variable: current means */
-  float32 *sum;        /**< The sume of the cmn frames */
+  float32 *sum;        /**< The sum of the cmn frames */
   int32 nframe; /**< Number of frames*/
 }cmn_t;
 

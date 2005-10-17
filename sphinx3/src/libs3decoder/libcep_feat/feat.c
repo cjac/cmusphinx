@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.21.4.2  2005/09/26  02:19:57  arthchan2003
- * Add message to show the directory which the feature is searched for.
+ * Revision 1.21.4.3  2005/10/17  04:45:57  arthchan2003
+ * Free stuffs in cmn and feat corectly.
  * 
+ * Revision 1.21.4.2  2005/09/26 02:19:57  arthchan2003
+ * Add message to show the directory which the feature is searched for.
+ *
  * Revision 1.21.4.1  2005/07/03 22:55:50  arthchan2003
  * More correct deallocation in feat.c. The cmn deallocation is still not correct at this point.
  *
@@ -1099,6 +1102,9 @@ void feat_free (feat_t *f)
       ckd_free ((void *)f->name);
     }
     ckd_free ((void *)f->stream_len);
+
+    cmn_free(f->cmn_struct);
+      
     ckd_free ((void *)f);
 
   }
@@ -1291,4 +1297,3 @@ void feat_report(feat_t *f)
 
     return(nfeatvec);
 #endif
-
