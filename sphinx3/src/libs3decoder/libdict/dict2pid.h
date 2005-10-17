@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8.4.3  2005/10/07  19:03:38  arthchan2003
- * Added xwdssid_t structure.  Also added compression routines.
+ * Revision 1.8.4.4  2005/10/17  04:48:45  arthchan2003
+ * Free resource correctly in dict2pid.
  * 
+ * Revision 1.8.4.3  2005/10/07 19:03:38  arthchan2003
+ * Added xwdssid_t structure.  Also added compression routines.
+ *
  * Revision 1.8.4.2  2005/09/25 19:13:31  arthchan2003
  * Added optional full triphone expansion support when building context phone mapping.
  *
@@ -204,6 +207,7 @@ typedef struct {
     int32 n_comstate;		/**< #Composite states */
     int32 n_comsseq;		/**< #Composite senone sequences */
   int32 n_ci;   /**< Number of CI phone in */
+  int32 n_dictsize; /**< Dictionary size */
 
 } dict2pid_t;
 

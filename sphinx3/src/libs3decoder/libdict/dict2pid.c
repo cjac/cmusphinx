@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6.4.3  2005/10/07  19:03:38  arthchan2003
- * Added xwdssid_t structure.  Also added compression routines.
+ * Revision 1.6.4.4  2005/10/17  04:48:45  arthchan2003
+ * Free resource correctly in dict2pid.
  * 
+ * Revision 1.6.4.3  2005/10/07 19:03:38  arthchan2003
+ * Added xwdssid_t structure.  Also added compression routines.
+ *
  * Revision 1.6.4.2  2005/09/25 19:13:31  arthchan2003
  * Added optional full triphone expansion support when building context phone mapping.
  *
@@ -458,7 +461,10 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
     assert(mdef);
     assert(dict);
 
+
     dict2pid = (dict2pid_t *) ckd_calloc (1, sizeof(dict2pid_t));
+
+    dict2pid->n_dictsize = dict_size(dict);
     dict2pid->internal = (s3ssid_t **) ckd_calloc (dict_size(dict), sizeof(s3ssid_t *));
     dict2pid->ldiph_lc = (s3ssid_t ***) ckd_calloc_3d (mdef->n_ciphone,
 						       mdef->n_ciphone,
@@ -651,7 +657,6 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
     ckd_free_2d ((void **) rdiph);
     ckd_free ((void *) single);
 
-
     if(dict2pid->is_composite){
       /* Allocate space for composite state table */
       cslen = (int32 *) ckd_calloc (dict2pid->n_comstate, sizeof(int32));
@@ -685,13 +690,18 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
 	assert (sen[j-1] == BAD_S3SENID);
 	
 	ckd_free ((void *)sen);
+	sen=NULL;
       }
       ckd_free (cslen);
       glist_free (g);
-      hash_free (hs);
       
       /* Allocate space for composite sseq table */
       dict2pid->comsseq = (s3senid_t **) ckd_calloc (dict2pid->n_comsseq, sizeof(s3senid_t *));
+
+      for(i=0;i< dict2pid->n_comsseq;i++){
+	dict2pid->comsseq[i]=NULL;
+      }
+
       g = hash_tolist (hp, &n);
       assert (n == dict2pid->n_comsseq);
       
@@ -702,7 +712,6 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
 	dict2pid->comsseq[i] = (s3senid_t *) hash_entry_key(he);
       }
       glist_free (g);
-      hash_free (hp);
     
       /* Weight for each composite state */
       dict2pid->comwt = (int32 *) ckd_calloc (dict2pid->n_comstate, sizeof(int32));
@@ -740,19 +749,33 @@ dict2pid_t *dict2pid_build (mdef_t *mdef, dict_t *dict, int32 is_composite)
       assert(dict2pid->lrssid==NULL);
     }
 
+    hash_free (hs);
+    hash_free (hp);
+
     return dict2pid;
 }
 
 void dict2pid_free(dict2pid_t *d2p)
 {
+  int32 i;
+
   if(d2p){
     if(d2p->comwt)
       ckd_free ((void *) d2p->comwt );
-    if(d2p->comsseq)
+    if(d2p->comsseq){
+
+      for(i=0;i< d2p->n_comsseq;i++){
+	if(d2p->comsseq[i]!=NULL){
+	  ckd_free((void*) d2p->comsseq[i]);
+	}
+      }
       ckd_free ((void *) d2p->comsseq );
+    }
     
-    if(d2p->comstate)
-      ckd_free ((void *) d2p->comstate );
+    if(d2p->comstate){
+      ckd_free ((void**) d2p->comstate[0] );
+      ckd_free ((void**) d2p->comstate );
+    }
 
     if(d2p->single_lc)
       ckd_free_2d ((void *) d2p->single_lc );
@@ -763,9 +786,14 @@ void dict2pid_free(dict2pid_t *d2p)
     
     if(d2p->rdiph_rc)
       ckd_free_3d ((void ***) d2p->rdiph_rc );
+
+    if(d2p->lrdiph_rc)
+      ckd_free_3d ((void ***) d2p->lrdiph_rc );
     
-    if(d2p->internal)
-      ckd_free ((void *) d2p->internal);
+    if(d2p->internal){
+      ckd_free ((void*) d2p->internal[0]);
+      ckd_free ((void **) d2p->internal);
+    }
 
     if(d2p->rssid)
       free_compress_map(d2p->rssid,d2p->n_ci);
