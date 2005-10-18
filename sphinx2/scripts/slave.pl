@@ -190,7 +190,7 @@ sub align_hyp {
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
     if (open (PIPE, "\"$align\" " .
 	  "-i rm " .
-	  "-o rsum stdout " .
+	  "-o rsum pralign dtl stdout " .
 	  "-f 0 " .
 	  "-r \"$ref\" " .
 	  "-h \"$hyp\" 2>&1 |")) {
