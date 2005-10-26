@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.4  2005/10/09  20:00:45  arthchan2003
- * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
+ * Revision 1.1.2.5  2005/10/26  03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
  * 
+ * Revision 1.1.2.4  2005/10/09 20:00:45  arthchan2003
+ * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
+ *
  * Revision 1.1.2.3  2005/09/27 07:41:40  arthchan2003
  * Not trying to free hyp. But correctly free the context table.
  *
@@ -536,6 +539,18 @@ int srch_FLAT_FWD_end(void* srch)
       f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
       lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
       
+      dag_add_fudge_edges (dag, 
+			   cmd_ln_int32("-dagfudge"), 
+			   cmd_ln_int32("-min_endfr"), 
+			   (void*) s->lathist, s->kbc->dict);
+
+
+      /* Bypass filler nodes */
+      if (! dag->filler_removed) {
+	flat_fwd_dag_remove_filler_nodes (dag, s->lathist, lwf,lm,s->kbc->dict,fwg->ctxt,s->kbc->fillpen);
+	dag->filler_removed = 1;
+      }
+
       tmph = dag_search (dag,s->uttid,lwf, s->lathist->lattice[dag->latfinal].dagnode,
 		      s->kbc->dict,lm,s->kbc->fillpen);
 

@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.9  2005/09/25  19:22:07  arthchan2003
- * Instead of using the real left context, use the compressed ID for left context in expansion.  This effective saves 25%-50% from the dumb implementation. Not tested yet.
+ * Revision 1.12.4.10  2005/10/26  03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
  * 
+ * Revision 1.12.4.9  2005/09/25 19:22:07  arthchan2003
+ * Instead of using the real left context, use the compressed ID for left context in expansion.  This effective saves 25%-50% from the dumb implementation. Not tested yet.
+ *
  * Revision 1.12.4.8  2005/09/18 01:18:24  arthchan2003
  * Only retain processing of the array whmm_t in flat_fwd.[ch]
  *
@@ -1093,7 +1096,7 @@ static void fwd_timing_dump (float64 tot)
 #endif
 
 
-static void flat_fwd_dag_remove_filler_nodes (dag_t* dag, latticehist_t *lathist, float64 lwf, lm_t *lm, dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen);
+
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
@@ -1115,8 +1118,6 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
     int32 ascr, lscr;
     s3latid_t latfinal;
     int32 min_ef_range;
-    float32 *f32arg;
-    float64 lwf;
     int32 k;
     dag_t *dag;
     
@@ -1134,7 +1135,7 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
    }
     
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
+    min_ef_range = cmd_ln_int32 ("-min_endfr");
     
     /* Build DAG nodes list from the lattice */
     for (l = 0; l < lathist->n_lat_entry; l++) {
@@ -1212,21 +1213,6 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
     dag->fudged = 0;
     dag->nfrm=fwg->n_frm;
 
-    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
-
-    dag_add_fudge_edges (dag, 
-			 cmd_ln_int32("-dagfudge"), 
-			 min_ef_range, 
-			 (void*) lathist, dict);
-
-
-    /* Bypass filler nodes */
-    if (! dag->filler_removed) {
-	flat_fwd_dag_remove_filler_nodes (dag, lathist, lwf,lm,dict,ctxt,fpen);
-	dag->filler_removed = 1;
-    }
-
 
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
@@ -1248,7 +1234,7 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
  * to its successors.
  * lwf = language weight factor to be applied to LM scores.
  */
-static void flat_fwd_dag_remove_filler_nodes (dag_t* dag, latticehist_t *lathist, float64 lwf, lm_t *lm, dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen)
+void flat_fwd_dag_remove_filler_nodes (dag_t* dag, latticehist_t *lathist, float64 lwf, lm_t *lm, dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen)
 {
     s3latid_t latfinal;
     daglink_t *plink;

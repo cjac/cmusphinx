@@ -47,9 +47,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.5  2005/09/18  01:18:24  arthchan2003
- * Only retain processing of the array whmm_t in flat_fwd.[ch]
+ * Revision 1.10.4.6  2005/10/26  03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
  * 
+ * Revision 1.10.4.5  2005/09/18 01:18:24  arthchan2003
+ * Only retain processing of the array whmm_t in flat_fwd.[ch]
+ *
  * Revision 1.10.4.4  2005/09/11 02:58:10  arthchan2003
  * remove most dag-related functions except dag_build. Use latticehist_t insteads of loosed arrays.
  *
@@ -136,5 +139,10 @@ void s3flat_fwd_dag_dump (char *dir,  /**< The output directory */
 			   char *id    /**< Sentence ID*/
 			   );
 
+void flat_fwd_dag_remove_filler_nodes (dag_t* dag, 
+				       latticehist_t *lathist, 
+				       float64 lwf, 
+				       lm_t *lm, 
+				       dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen);
 #endif
 
