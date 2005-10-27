@@ -223,7 +223,7 @@ sub align_hyp {
     &DEC_HTML_Print ("\t" . &DEC_ImgSrc("$DEC_CFG_BASE_DIR/.align.state.gif") . " ");   
     &DEC_Log("SENTENCE ERROR: " . (sprintf "%.3f%", $ser) . 
 	    (sprintf " (%d/%d)", $sent_err, $sent_total) .
-	    "   WORD_ACCURACY: " . (sprintf "%.3f%", $wer) . 
+	    "   WORD ERROR RATE: " . (sprintf "%.3f%", $wer) . 
 	    (sprintf " (%d/%d) ", $word_err, $word_total));
     &DEC_HTML_Print (&DEC_FormatURL("$outfile", "Log File"));
     &DEC_Log("\n");
