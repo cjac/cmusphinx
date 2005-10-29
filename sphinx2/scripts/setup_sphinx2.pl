@@ -262,7 +262,7 @@ Create the new directory (e.g., mkdir RM1)
 
 Go to the new directory (e.g., cd RM1)
 
-Run this script (e.g., perl ../sphinx2/scripts/setup_sphinx2.pl RM1)
+Run this script (e.g., perl ../sphinx2/scripts/setup_sphinx2.pl -task RM1)
 
 =item ./scripts/setup_sphinx2.pl -help
 

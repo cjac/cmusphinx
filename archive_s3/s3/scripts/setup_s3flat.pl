@@ -255,7 +255,7 @@ Create the new directory (e.g., mkdir RM1)
 
 Go to the new directory (e.g., cd RM1)
 
-Run this script (e.g., perl ../sphinx3/scripts/setup_s3flat.pl RM1)
+Run this script (e.g., perl ../sphinx3/scripts/setup_s3flat.pl -task RM1)
 
 =item ./scripts/setup_s3flat.pl -help
 
