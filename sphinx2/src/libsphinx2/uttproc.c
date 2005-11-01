@@ -39,9 +39,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.23  2005/10/11  13:08:40  dhdfu
- * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ * Revision 1.24  2005/11/01  23:30:53  egouvea
+ * Replaced explicit assignments with memcpy
  * 
+ * Revision 1.23  2005/10/11 13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ *
  * Revision 1.22  2005/08/18 22:56:05  egouvea
  * Fixed a bug in which the last frame, when running in live mode, was
  * ignored by uttproc_end_utt.
@@ -1606,11 +1609,7 @@ static void build_utt_seghyp ( void )
     last = NULL;
     for (i = 0; seghyp[i].wid >= 0; i++) {
         new = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
-        new->wid = seghyp[i].wid;
-        new->word = kb_get_word_str (new->wid);
-        new->sf = seghyp[i].sf;
-        new->ef = seghyp[i].ef;
-        new->latden = seghyp[i].latden;
+	memcpy(new, &(seghyp[i]), sizeof(search_hyp_t));
         new->next = NULL;
 
         if (! last)
