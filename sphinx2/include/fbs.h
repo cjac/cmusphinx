@@ -43,9 +43,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2005/10/11  13:08:40  dhdfu
- * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ * Revision 1.13  2005/11/03  21:26:09  egouvea
+ * Added state-to and state-from to search_hyp_t, and report both in the
+ * log output.
  * 
+ * Revision 1.12  2005/10/11 13:08:40  dhdfu
+ * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
+ *
  * Revision 1.11  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
  *
@@ -208,7 +212,8 @@ typedef struct search_hyp_s {
     int32 wid;		/* For internal use of decoder */
     int32 sf, ef;	/* Start, end frames within utterance for this word */
     int32 ascr, lscr;	/* Acoustic, LM scores (not always used!) */
-    int32 fsg_state;	/* At which this entry terminates (FSG mode only) */
+    int32 fsg_state_from;	/* At which this entry starts (FSG mode only) */
+    int32 fsg_state_to;	/* At which this entry terminates (FSG mode only) */
     float conf;		/* Confidence measure (roughly prob(correct)) for this word;
 			   NOT FILLED IN BY THE RECOGNIZER at the moment!! */
     struct search_hyp_s *next;	/* Next word segment in the hypothesis; NULL if none */

@@ -44,9 +44,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.4  2005/11/03  21:26:09  egouvea
+ * Added state-to and state-from to search_hyp_t, and report both in the
+ * log output.
  * 
+ * Revision 1.3  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 25-Feb-2004	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Started..
@@ -254,7 +258,8 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   hyp->word = (hyp->wid >= 0) ? kb_get_word_str(hyp->wid) : "";
   hyp->ef = entry->frame;
   hyp->lscr = word_fsglink_logs2prob(fl);
-  hyp->fsg_state = word_fsglink_to_state(fl);
+  hyp->fsg_state_from = word_fsglink_from_state(fl);
+  hyp->fsg_state_to = word_fsglink_to_state(fl);
   hyp->conf = 0.0;		/* Not known */
   hyp->latden = 0;		/* Not known */
   hyp->phone_perp = 0.0;	/* Not known */

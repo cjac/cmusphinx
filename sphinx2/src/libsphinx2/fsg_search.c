@@ -44,9 +44,13 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.5  2005/05/24  20:55:24  rkm
- * Added -fsgbfs flag
+ * Revision 1.6  2005/11/03  21:26:09  egouvea
+ * Added state-to and state-from to search_hyp_t, and report both in the
+ * log output.
  * 
+ * Revision 1.5  2005/05/24 20:55:24  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.4  2005/01/26 17:54:52  rkm
  * Added -maxhmmpf absolute pruning parameter in FSG mode
  *
@@ -875,21 +879,21 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
   int32 nf;
   
   /* Print backtrace */
-  fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %6s  %s (FSG) (%s)\n",
-	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "State", "Word",
+  fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %7s %7s  %s (FSG) (%s)\n",
+	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "SState", "EState", "Word",
 	   uttproc_get_uttid());
-  fprintf (fp, "\t-------------------------------------------------------------------------------\n");
+  fprintf (fp, "\t----------------------------------------------------------------------------------------\n");
   for (hyp = search->hyp; hyp; hyp = hyp->next) {
     nf = hyp->ef - hyp->sf + 1;
-    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6d  %s\n",
+    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %7d %7d  %s\n",
 	     hyp->sf, hyp->ef,
 	     (nf > 0) ? hyp->ascr/nf : 0,
 	     hyp->ascr, hyp->lscr, hyp->ascr + hyp->lscr,
 	     ((nf > 0) && (hyp->ascr != 0)) ? (seg_topsen_score(hyp->sf, hyp->ef) - hyp->ascr) / nf : 0,
-	     hyp->fsg_state,
+	     hyp->fsg_state_from, hyp->fsg_state_to,
 	     hyp->word);
   }
-  fprintf (fp, "\t-------------------------------------------------------------------------------\n");
+  fprintf (fp, "\t----------------------------------------------------------------------------------------\n");
   fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6dF %s(TOTAL)\n",
 	   0, search->frame-1,
 	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
