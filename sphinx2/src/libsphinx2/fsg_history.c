@@ -44,10 +44,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2005/11/03  21:26:09  egouvea
+ * Revision 1.5  2005/11/04  18:27:02  egouvea
+ * Added state-from and state-to to fsg_history_dump()
+ * 
+ * Revision 1.4  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
- * 
+ *
  * Revision 1.3  2004/12/10 16:48:56  rkm
  * Added continuous density acoustic model handling
  *
@@ -295,9 +298,9 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
   fprintf (fp, "# Hist-Begin %s\n", uttid ? uttid : "");
   fprintf (fp, "# Dummy root entry ID = 0\n");
   
-  fprintf (fp, "# %5s %5s %5s %7s %11s %10s %11s %8s %8s %6s %4s %8s\n",
+  fprintf (fp, "# %5s %5s %5s %7s %11s %10s %11s %8s %8s %7s %7s %4s %8s\n",
 	   "Index", "SFrm", "EFrm", "Pred", "PathScr", "Lscr", "Ascr", "Ascr/Frm", "A-BS/Frm",
-	   "FsgSt", "LC", "RC-set");
+	   "FsgSSt", "FsgESt", "LC", "RC-set");
   
   for (i = 1; i < fsg_history_n_entries(h); i++) {
     entry = fsg_history_entry_get (h, i);
@@ -306,7 +309,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
       nf = hyp.ef - hyp.sf + 1;
       fl = entry->fsglink;
       
-      fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %8d %6d %4d ",
+      fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %8d %7d %7s %4d ",
 	       i,
 	       hyp.sf, hyp.ef,
 	       entry->pred,
@@ -314,6 +317,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
 	       hyp.lscr, hyp.ascr,
 	       (hyp.wid >= 0) ? hyp.ascr/nf : 0,
 	       (hyp.wid >= 0) ? (seg_topsen_score(hyp.sf, hyp.ef) - hyp.ascr) / nf : 0,
+	       word_fsglink_from_state(fl),
 	       word_fsglink_to_state(fl),
 	       entry->lc);
       
