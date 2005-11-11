@@ -57,15 +57,187 @@
 #define MAX_STRLEN 100
 #define MAX_WORDS_PER_NGRAM 3
 
-int read_ngrams(FILE* fp, char **ngrams, 
-                s3lmwid_t wid[][], int32 nwords[], int max_lines, lm_t *lm);
-int ngram2wid(char *word, int length, s3lmwid_t *w, lm_t *lm);
-int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
-int has_more_utterances(FILE* fp);
+/**
+ * Compares the two given strings for equality. Unlike the strcmp()
+ * function in the standard libraries, this method returns immediately
+ * if any characters don't match up.
+ *
+ * args:
+ * s1 - the first string
+ * s2 - the second string
+ *
+ * return:
+ * 0 if the two strings are completely equal
+ * -1 otherwise
+ */
+int str_cmp(char *s1, char *s2)
+{
+  while (*s1 != '\0' && *s2 != '\0') {
+    if (*s1++ != *s2++) {
+      return -1;
+    }
+  }
+  if (*s1 == '\0' && *s2 == '\0') {
+    return 0;
+  } else {
+    return -1;
+  }
+}
 
 
-/* FIX ME!, why do we use this function instead of strcmp? */
-int str_cmp(char *s1, char *s2);
+/**
+ * Returns true if the given file has more utterances in it.
+ *
+ * args:
+ * fp - the file pointer
+ *
+ * returns: 0 if there are more utterances, 1 if there are no more
+ */
+int has_more_utterances(FILE* fp)
+{
+    int i;
+    char line_read[MAX_STRLEN];
+    if (fgets(line_read, MAX_STRLEN, fp) != NULL) {
+
+        if (str_cmp("<START_UTT>\n", line_read) != 0) {
+
+            /* if not <START_UTT>, we want to push the line back */
+            for (i = strlen(line_read) - 1; i >= 0; i--) {
+                ungetc(line_read[i], fp);
+            }
+        }
+        return 1;
+    }
+    return 0;
+}
+
+
+/**
+ * Map the given ngram string to an array of word IDs of the individual
+ * words in the ngram.
+ *
+ * args:
+ * ngram - the ngram string to map
+ * length - the length of the ngram string
+ * w - the word ID array
+ * lm - the language model to use
+ *
+ * returns:
+ * the number of words in the ngram string, or 0 if the string contains an
+ * unknown word
+ */
+int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
+{
+    char word[1024];
+    int nwd;
+    int i;
+
+    i = 0, nwd = 0;
+
+    while (1) {
+      if (*ngram == ' ' || *ngram == '\0') {
+	word[i++] = '\0';
+	w[nwd] = lm_wid(lm, word);
+
+	if (NOT_S3LMWID(w[nwd])) {
+	  E_ERROR("Unknown word: %s\n", word[nwd]);
+	  return 0;
+	}
+	nwd++;
+	if (*ngram == '\0') {
+	  break;
+	}
+	i = 0;
+      } else {
+	word[i++] = *ngram;
+      }
+      ngram++;
+    }
+
+    return nwd;
+}
+
+
+/**
+ * Reads all the N-grams in the given N-gram file into the array of strings.
+ *
+ * args:
+ * ngrams_file - the N-gram file to read N-grams from
+ * ngrams - the array of string to read N-grams into
+ *
+ * returns: the number of ngrams read
+ */
+int read_ngrams(FILE *fp,
+                char **ngrams, 
+                s3lmwid_t wid[][MAX_WORDS_PER_NGRAM], 
+                int32 nwords[],
+                int max_lines, 
+                lm_t *lm)
+{
+    char line_read[MAX_STRLEN];
+    int n, length;
+    
+    n = 0;
+
+    /* read each line in the file into the ngrams array */
+    while (fgets(line_read, MAX_STRLEN, fp) != NULL) {
+      if (str_cmp("<END_UTT>\n", line_read) == 0) {
+	break;
+      }
+      if (n < max_lines) {
+	length = strlen(line_read);
+	line_read[length-1] = '\0';
+
+	ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
+	strncpy(ngrams[n], line_read, length-1);
+
+	nwords[n] = ngram2wid(line_read, length, wid[n], lm);
+	n++;
+      } else {
+	break;
+      }
+    }
+
+    return n;
+}
+
+
+/**
+ * Scores the given N-gram using the given language model.
+ *
+ * args:
+ * wid - the IDs of the sequence of words in the n-gram
+ * nwd - the number of words in the n-gram
+ * lm - the language model to use
+ *
+ * return: the language model score of the given sequence of words
+ */
+int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
+{
+    int32 score;
+    
+    score = 0;
+    if (nwd == 3) {
+      /* The last argument is a hack: the information there - the dict
+       * ID - is never used if LM classes are not used, and classes
+       * are not used in this code. Therefore, the last argument here
+       * is a nop.
+       */
+      score = lm_tg_score(lm, wid[0], wid[1], wid[2], 0);
+    } else if (nwd == 2) {
+      /* Ditto.
+       */
+      score = lm_bg_score(lm, wid[0], wid[1], 0);
+    } else if (nwd == 1) {
+      /* Ditto.
+       */
+      score = lm_ug_score(lm, wid[0], 0);
+    } else {
+        printf("%d grams not supported\n", nwd);
+    }
+    
+    return score;
+}
 
 int main(int argc, char *argv[])
 {
@@ -155,184 +327,3 @@ int main(int argc, char *argv[])
 }
 
 
-/**
- * Returns true if the given file has more utterances in it.
- *
- * args:
- * fp - the file pointer
- *
- * returns: 0 if there are more utterances, 1 if there are no more
- */
-int has_more_utterances(FILE* fp)
-{
-    int i;
-    char line_read[MAX_STRLEN];
-    if (fgets(line_read, MAX_STRLEN, fp) != NULL) {
-
-        if (str_cmp("<START_UTT>\n", line_read) != 0) {
-
-            /* if not <START_UTT>, we want to push the line back */
-            for (i = strlen(line_read) - 1; i >= 0; i--) {
-                ungetc(line_read[i], fp);
-            }
-        }
-        return 1;
-    }
-    return 0;
-}
-
-
-/**
- * Reads all the N-grams in the given N-gram file into the array of strings.
- *
- * args:
- * ngrams_file - the N-gram file to read N-grams from
- * ngrams - the array of string to read N-grams into
- *
- * returns: the number of ngrams read
- */
-int read_ngrams(FILE *fp,
-                char **ngrams, 
-                s3lmwid_t wid[][MAX_WORDS_PER_NGRAM], 
-                int32 nwords[],
-                int max_lines, 
-                lm_t *lm)
-{
-    char line_read[MAX_STRLEN];
-    int n, length;
-    
-    n = 0;
-
-    /* read each line in the file into the ngrams array */
-    while (fgets(line_read, MAX_STRLEN, fp) != NULL) {
-      if (str_cmp("<END_UTT>\n", line_read) == 0) {
-	break;
-      }
-      if (n < max_lines) {
-	length = strlen(line_read);
-	line_read[length-1] = '\0';
-
-	ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
-	strncpy(ngrams[n], line_read, length-1);
-
-	nwords[n] = ngram2wid(line_read, length, wid[n], lm);
-	n++;
-      } else {
-	break;
-      }
-    }
-
-    return n;
-}
-
-
-/**
- * Compares the two given strings for equality. Unlike the strcmp()
- * function in the standard libraries, this method returns immediately
- * if any characters don't match up.
- *
- * args:
- * s1 - the first string
- * s2 - the second string
- *
- * return:
- * 0 if the two strings are completely equal
- * -1 otherwise
- */
-int str_cmp(char *s1, char *s2)
-{
-  while (*s1 != '\0' && *s2 != '\0') {
-    if (*s1++ != *s2++) {
-      return -1;
-    }
-  }
-  if (*s1 == '\0' && *s2 == '\0') {
-    return 0;
-  } else {
-    return -1;
-  }
-}
-
-
-/**
- * Map the given ngram string to an array of word IDs of the individual
- * words in the ngram.
- *
- * args:
- * ngram - the ngram string to map
- * length - the length of the ngram string
- * w - the word ID array
- * lm - the language model to use
- *
- * returns:
- * the number of words in the ngram string, or 0 if the string contains an
- * unknown word
- */
-int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
-{
-    char word[1024];
-    int nwd;
-    int i;
-
-    i = 0, nwd = 0;
-
-    while (1) {
-      if (*ngram == ' ' || *ngram == '\0') {
-	word[i++] = '\0';
-	w[nwd] = lm_wid(lm, word);
-
-	if (NOT_S3LMWID(w[nwd])) {
-	  E_ERROR("Unknown word: %s\n", word[nwd]);
-	  return 0;
-	}
-	nwd++;
-	if (*ngram == '\0') {
-	  break;
-	}
-	i = 0;
-      } else {
-	word[i++] = *ngram;
-      }
-      ngram++;
-    }
-
-    return nwd;
-}
-
-
-/**
- * Scores the given N-gram using the given language model.
- *
- * args:
- * wid - the IDs of the sequence of words in the n-gram
- * nwd - the number of words in the n-gram
- * lm - the language model to use
- *
- * return: the language model score of the given sequence of words
- */
-int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
-{
-    int32 score;
-    
-    score = 0;
-    if (nwd == 3) {
-      /* The last argument is a hack: the information there - the dict
-       * ID - is never used if LM classes are not used, and classes
-       * are not used in this code. Therefore, the last argument here
-       * is a nop.
-       */
-      score = lm_tg_score(lm, wid[0], wid[1], wid[2], 0);
-    } else if (nwd == 2) {
-      /* Ditto.
-       */
-      score = lm_bg_score(lm, wid[0], wid[1], 0);
-    } else if (nwd == 1) {
-      /* Ditto.
-       */
-      score = lm_ug_score(lm, wid[0], 0);
-    } else {
-        printf("%d grams not supported\n", nwd);
-    }
-    
-    return score;
-}
