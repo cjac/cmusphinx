@@ -40,9 +40,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/09/21  02:18:06  rkm
- * Fixed altpron bug in nbest
+ * Revision 1.14  2005/11/14  15:28:39  rkm
+ * Bugfixes: using SIL when context is filler; pruning WORST_SCORE links from dag
  * 
+ * Revision 1.13  2005/09/21 02:18:06  rkm
+ * Fixed altpron bug in nbest
+ *
  * Revision 1.12  2004/12/10 16:48:57  rkm
  * Added continuous density acoustic model handling
  *
@@ -461,7 +464,7 @@ static int32 build_lattice (int32 bptbl_sz)
 		break;
 	}
 
-	/* For the moment, store bptbl indices in node.{fef,lef} */
+	/* For the moment, store bptbl indices in node.{fef,lef}; an atrocious piece of code (rkm) */
 	if (node)
 	    node->lef = i;
 	else {
@@ -520,7 +523,10 @@ static int32 build_lattice (int32 bptbl_sz)
 	if (! to->reachable)
 	    continue;
 	
-	/* Find predecessors of to : from->fef+1 <= to->sf <= from->lef+1 */
+	/*
+	 * Find predecessors of to : from->fef+1 <= to->sf <= from->lef+1.
+	 * Note that fef,lef are really bptable indices at this time.
+	 */
 	for (from = to->next; from; from = from->next) {
 	    ef = bptbl[from->fef].frame;
 	    lef = bptbl[from->lef].frame;
@@ -546,8 +552,12 @@ static int32 build_lattice (int32 bptbl_sz)
 		bss_offset = rc_fwdperm[bp_ptr->r_diph][dict->dict_list[to->wid]->ci_phone_ids[0]];
 	    else
 		bss_offset = 0;
-	    score = (BScoreStack[bp_ptr->s_idx + bss_offset] - bp_ptr->score) + bp_ptr->ascr;
+	    
+	    score = BScoreStack[bp_ptr->s_idx + bss_offset];
 	    if (score > WORST_SCORE) {
+		/* Adjust ascr for the appropriate right context */
+		score = bp_ptr->ascr + (score - bp_ptr->score);
+		
 		link_latnodes (from, to, score, bp_ptr->frame);
 		from->reachable = TRUE;
 	    }

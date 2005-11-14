@@ -40,11 +40,14 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.17  2005/06/07  02:36:02  dhdfu
+ * Revision 1.18  2005/11/14  15:28:39  rkm
+ * Bugfixes: using SIL when context is filler; pruning WORST_SCORE links from dag
+ * 
+ * Revision 1.17  2005/06/07 02:36:02  dhdfu
  * Forward-declaring functions inside functions apparently no longer
  * works in recent GCC versions (this code breaks on 3.3, 4.0).  No good
  * reason for it anyway...
- * 
+ *
  * Revision 1.16  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
  *
@@ -3172,20 +3175,24 @@ search_dump_lattice (char const *file)
 void
 search_dump_lattice_ascii (char const *file)
 {
-    int32 i, sf;
+    int32 i, j, sf;
     FILE *fp;
+    dict_entry_t *de;
+    int32 rcsize;
+    BPTBL_T *bpe;
     
     if ((fp = fopen (file, "w")) == NULL) {
 	E_ERROR("fopen(%s,w) failed\n", file);
 	return;
     }
     
-    fprintf (fp, "%6s %4s %4s %11s %9s %9s %8s %6s %5s %s\n\n",
-	     "ID", "SF", "EF", "TOTSCR", "ASCR", "TOPSENSCR", "LSCR", "BPID", "WID", "WORD");
+    fprintf (fp, "%2s %6s %4s %4s %11s %9s %9s %8s %6s %5s %s\n\n",
+	     "OK", "ID", "SF", "EF", "TOTSCR", "ASCR", "TOPSENSCR", "LSCR", "BPID", "WID", "WORD");
     for (i = 0; i < BPIdx; i++) {
 	sf = (BPTable[i].bp >= 0) ? BPTable[BPTable[i].bp].frame+1 : 0;
 	
-	fprintf (fp, "%6d %4d %4d %11d %9d %9d %8d %6d %5d %s\n",
+	fprintf (fp, "%2d %6d %4d %4d %11d %9d %9d %8d %6d %5d %s\n",
+		 BPTable[i].valid,
 		 i, sf,
 		 BPTable[i].frame,
 		 BPTable[i].score,
@@ -3195,6 +3202,17 @@ search_dump_lattice_ascii (char const *file)
 		 BPTable[i].bp,
 		 BPTable[i].wid,
 		 WordDict->dict_list[BPTable[i].wid]->word);
+	
+	/* Dump the individual right context scores */
+	de = WordDict->dict_list[BPTable[i].wid];
+	bpe = &(BPTable[i]);
+	rcsize = ((de->len != 1) && (de->mpx)) ? RightContextFwdSize[bpe->r_diph] : 1;
+	for (j = bpe->s_idx; j < bpe->s_idx+rcsize; j++) {
+	  fprintf (fp, "\t\t\t\t\t\t\t\t\t\t%10d", BScoreStack[j]);
+	  if ((BScoreStack[j] < -400000000) && (BScoreStack[j] > WORST_SCORE))
+	    fprintf (fp, " ********");
+	  fprintf (fp, "\n");
+	}
     }
 
     fclose (fp);
@@ -3736,7 +3754,6 @@ compute_seg_scores (double lwf)
     dict_entry_t *de;
     
     for (bp = 0; bp < BPIdx; bp++) {
-	
 	bpe = &(BPTable[bp]);
 	
         if (bpe->bp == NO_BP) {
@@ -3749,7 +3766,10 @@ compute_seg_scores (double lwf)
 	p_bpe = &(BPTable[bpe->bp]);
 	rcpermtab = (p_bpe->r_diph >= 0) ?
 	    RightContextFwdPerm[p_bpe->r_diph] : zeroPermTab;
-	start_score = BScoreStack[p_bpe->s_idx + rcpermtab[de->ci_phone_ids[0]]];
+	if (ISA_FILLER_WORD(bpe->wid))
+	  start_score = BScoreStack[p_bpe->s_idx + rcpermtab[SilencePhoneId]];
+	else
+	  start_score = BScoreStack[p_bpe->s_idx + rcpermtab[de->ci_phone_ids[0]]];
 	
 	if (bpe->wid == SilenceWordId) {
 	    bpe->lscr = SilenceWordPenalty;
@@ -3760,6 +3780,9 @@ compute_seg_scores (double lwf)
 	    bpe->lscr *= lwf;
 	}
 	bpe->ascr = bpe->score - start_score - bpe->lscr;
+	
+	if (bpe->ascr >= 0)
+	  E_WARN("Segment acoustic score = %d; should be < 0\n", bpe->ascr);
     }
 }
 

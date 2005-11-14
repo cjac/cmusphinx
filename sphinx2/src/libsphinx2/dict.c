@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.14  2004/12/10  16:48:56  rkm
- * Added continuous density acoustic model handling
+ * Revision 1.15  2005/11/14  15:28:39  rkm
+ * Bugfixes: using SIL when context is filler; pruning WORST_SCORE links from dag
  * 
+ * Revision 1.14  2004/12/10 16:48:56  rkm
+ * Added continuous density acoustic model handling
+ *
  * 
  * 05-Nov-98  M K Ravishankar (rkm@cs.cmu.edu) at Carnegie-Mellon University
  * 		dict_load now terminates program if input dictionary 
@@ -459,26 +462,51 @@ dict_load (dictT *dict, char *filename, int32 *word_id,
 	   int32 use_context, int32 isa_phrase_dict)
 {
     static char const *rname = "dict_load";
-    char         dict_str[1024];
-    char         pronoun_str[1024];
+    char	line[4096];
+    char	dict_str[1024];
+    char	*pronoun_str;
     dict_entry_t *entry;
     FILE 	*fs;
     int32	start_wid = *word_id;
     int32 err = 0;
+    int32 k, n;
     
     fs = CM_fopen (filename, "r");
 
-    fscanf (fs, "%s\n", dict_str);
-    if (strcmp(dict_str, "!") != 0) {
-	E_INFO("%s: first line of %s was %s, expecting '!'\n",
-		 rname, filename, dict_str);
-	E_INFO("%s: will assume first line contains a word\n",
-		 rname);
+    /* rkm(2005/10/31): No idea what this is supposed to do */
+    if (fgets (line, sizeof(line), fs) == NULL) {
+      E_ERROR("'%s': Empty dictionary'\n");
+      k = 0;
+    } else
+      k = sscanf (line, "%s", dict_str);
+    if ((k == 0) || (strcmp(dict_str, "!") != 0)) {
+	E_INFO("First line of %s was not '!'; will assume no header present\n",
+	       filename);
 	rewind (fs);
     }
-
-    pronoun_str[0] = '\0';
-    while (EOF != fscanf (fs, "%s%[^\n]\n", dict_str, pronoun_str)) {
+    
+    while (fgets(line, sizeof(line), fs) != NULL) {
+        /* Get word string */
+        k = sscanf (line, "%s%n", dict_str, &n);
+	if (k == 0)	/* Empty line */
+	  continue;
+      
+	/* Get pronunciation string */
+	for (k = n;
+	     (line[k] == ' ') || (line[k] == '\t') || (line[k] == '\r');
+	     k++);
+	if ((line[k] == '\0') || (line[k] == '\n')) {
+	  E_ERROR("'%s': No pronunciation for word '%s'; skipped\n",
+		  filename, dict_str);
+	  continue;
+	}
+	pronoun_str = line+k;
+	/* Strip trailing white space */
+	for (k = strlen(pronoun_str)-1;
+	     (pronoun_str[k] == '\n') || (pronoun_str[k] == '\r')
+	       || (pronoun_str[k] == ' ') || (pronoun_str[k] == '\t');
+	     --k);
+	pronoun_str[k+1] = '\0';
 #if 0
 	chk_compound_word (dict_str);
 #endif
