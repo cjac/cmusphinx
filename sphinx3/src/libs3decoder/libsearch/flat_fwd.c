@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.10  2005/10/26  03:53:12  arthchan2003
- * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ * Revision 1.12.4.11  2005/11/17  06:27:48  arthchan2003
+ * 1, Clean up. 2, removed fwg in dag_build.
  * 
+ * Revision 1.12.4.10  2005/10/26 03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ *
  * Revision 1.12.4.9  2005/09/25 19:22:07  arthchan2003
  * Instead of using the real left context, use the compressed ID for left context in expansion.  This effective saves 25%-50% from the dumb implementation. Not tested yet.
  *
@@ -324,17 +327,6 @@
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 
  */
-
-#if 0 
-/** Various search-related parameters */
-static int32 beam;		/**< General beamwidth */
-static int32 wordbeam;		/**< Beam for exiting a word */
-static int32 phone_penalty;	/**< Applied for each phone transition */
-static srch_hyp_t *hyp = NULL;	/**< The final recognition result */
-static int32 n_frm;		/**< Current frame being searched within utt */
-#endif
-
-
 
 static int32 exist_left_context(whmm_t **whmm, s3wid_t w,s3cipid_t lc)
 {
@@ -1082,19 +1074,6 @@ void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id, char* latfile_ext
 			lm,dict,ctxt,fpen);
 }
 
-#if 0
-static void fwd_timing_dump (float64 tot)
-{
-    printf ("[H %6.2fx %2d%%]",
-	    tm_hmmeval.t_cpu * 100.0 / fwg->n_frm, (int32)(tm_hmmeval.t_cpu * 100.0 / tot));
-    printf ("[XH %6.2fx %2d%%]",
-	    tm_hmmtrans.t_cpu * 100.0 / fwg->n_frm, (int32)(tm_hmmtrans.t_cpu * 100.0 / tot));
-    printf ("[XW %6.2fx %2d%%]",
-	    tm_wdtrans.t_cpu * 100.0 / fwg->n_frm, (int32)(tm_wdtrans.t_cpu * 100.0 / tot));
-}
-
-#endif
-
 
 
 /**
@@ -1109,7 +1088,7 @@ static void fwd_timing_dump (float64 tot)
  * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
  * absurdum.
  */
-dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen)
+dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen, int32 _nfrm)
 {
     int32 l;
     s3wid_t w;
@@ -1203,17 +1182,19 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
 		 */
 		lat_seg_ascr_lscr (lathist, l, d->wid, &ascr, &lscr,lm,dict,ctxt,fpen);
 		lathist->lattice[l].ascr=ascr;
+		lathist->lattice[l].lscr=lscr;
 		if (ascr > S3_LOGPROB_ZERO)
-		    dag_link (dag, pd, d, ascr, d->sf-1, NULL);
+		  dag_link_w_lscr (dag, pd, d, ascr,lscr, d->sf-1, NULL);
 	    }
 	}
     }
     
     dag->filler_removed = 0;
     dag->fudged = 0;
-    dag->nfrm=fwg->n_frm;
+    dag->nfrm=_nfrm;
 
 
+    dag->maxedge = cmd_ln_int32("-maxedge");
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
@@ -1228,6 +1209,9 @@ dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * l
 
     return dag;
 }
+
+
+
 
 /**
  * Remove filler nodes from DAG by replacing each link TO a filler with links

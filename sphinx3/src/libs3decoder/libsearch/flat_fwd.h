@@ -47,9 +47,12 @@
  *              First created it. 
  *
  * $Log$
- * Revision 1.10.4.6  2005/10/26  03:53:12  arthchan2003
- * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ * Revision 1.10.4.7  2005/11/17  06:27:48  arthchan2003
+ * 1, Clean up. 2, removed fwg in dag_build.
  * 
+ * Revision 1.10.4.6  2005/10/26 03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ *
  * Revision 1.10.4.5  2005/09/18 01:18:24  arthchan2003
  * Only retain processing of the array whmm_t in flat_fwd.[ch]
  *
@@ -87,7 +90,8 @@
 /* Added by BHIKSHA; Fix for 3 state hmms? 
 #define ANYHMMTOPO	1
  End modification by BHIKSHA */
-
+#include "dag.h"
+#include "vithist.h"
 
 /** \file flat_fwd.h
    \brief (Currently not opened to public) Header for forward search for flat lexicon
@@ -98,15 +102,6 @@
  *   - Final state is a non-emitting state with no arcs out of it.
  *   - Some form of Bakis topology (ie, no cycles, except for self-transitions).
  */
-
-
-
-/**
-   Dump timing. 
- */
-
-void fwd_timing_dump (float64 tot /**< Total */
-		      );
 
 /**
  * The flat forward search version of DAG search. Very similar to what
@@ -129,20 +124,14 @@ srch_hyp_t *s3flat_fwd_dag_search (char *utt /**< utterance id */
  * absurdum.
  */
 
-int32 dag_build ( void );
+dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen, int32 n_frm);
 
-/** Dump dag in s3.0 format
- * A function that can dump a dag given a lattice_t structure. 
- */
-void s3flat_fwd_dag_dump (char *dir,  /**< The output directory */
-			   int32 onlynodes, /**< Dump only nodes of the DAG*/
-			   char *id    /**< Sentence ID*/
-			   );
+
 
 void flat_fwd_dag_remove_filler_nodes (dag_t* dag, 
 				       latticehist_t *lathist, 
 				       float64 lwf, 
 				       lm_t *lm, 
 				       dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen);
-#endif
+#endif /* _LIBFBS_FWD_H_*/
 
