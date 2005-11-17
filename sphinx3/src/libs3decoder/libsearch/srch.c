@@ -34,13 +34,15 @@
  *
  */
 
-
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.19  2005/11/17  06:36:36  arthchan2003
- * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
+ * Revision 1.1.4.20  2005/11/17  06:38:43  arthchan2003
+ * change for comment, srch.c also now support conversion from s3 lattice to IBM lattice format.
  * 
+ * Revision 1.1.4.19  2005/11/17 06:36:36  arthchan2003
+ * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
+ *
  * Revision 1.1.4.18  2005/10/17 04:54:20  arthchan2003
  * Freed graph correctly.
  *
