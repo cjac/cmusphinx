@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.4  2005/09/25  19:20:43  arthchan2003
- * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
+ * Revision 1.1.4.5  2005/11/17  06:25:04  arthchan2003
+ * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
  * 
+ * Revision 1.1.4.4  2005/09/25 19:20:43  arthchan2003
+ * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
+ *
  * Revision 1.1.4.3  2005/09/11 23:07:28  arthchan2003
  * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  *
@@ -111,6 +114,9 @@
 #include "lm.h"
 #include "fillpen.h"
 #include "logs3.h"
+
+#define SPHINX_LATTICE_FORMAT 0
+#define IBM_LATTICE_FORMAT 1 
 
 
 /** \file dag.h
@@ -176,13 +182,19 @@ typedef struct dagnode_s {
     struct daglink_s *succlist;		/**< List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/**< List of preceding nodes (adjacent in time) */
 
-  uint8 reachable;                      /**< astar specific: Whether final node reachable from here */
-  
+  uint8 reachable;                      /**< In astar: Whether final node reachable from here 
+					     In flat_fwd's dag_to_wordgraph: A marker for whether 
+					     a node is already marked. 
+					     
+					 */
+  int32 node_ascr;                      /**< Node acoustic score */
+  int32 node_lscr;                      /**< Node langauge score */
   void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
 
 } dagnode_t;
 
 /** 
+    \struct daglink_t
     A DAG node can have several successor or predecessor nodes, each represented by a link 
     Multiple-purpose, so some fields may not be used some time. 
 */
@@ -215,7 +227,9 @@ typedef struct daglink_s {
 
 } daglink_t;
 
-/** Summary of DAG structure information 
+/** 
+    \struct dag_t 
+    Summary of DAG structure information 
     Multiple-purpose, so some fields may not be used some time. 
 
     FIXE, latfinal and exit are very very similar things, they just
@@ -251,6 +265,10 @@ typedef struct {
 
 } dag_t;
 
+
+
+
+
 /** Clean up the hypothesis list */
 
 void hyp_free (srch_hyp_t *list);
@@ -269,6 +287,18 @@ int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
 		int32 ef,       /**< The ending frame */
 		daglink_t *byp  
 		);
+
+/** Link two DAG nodes with the given arguments
+ * @return 0 if successful, -1 if maxedge limit exceeded.
+ */
+int32 dag_link_w_lscr (dag_t * dagp,    /**< A pointer to a DAG */
+		       dagnode_t *pd,  
+		       dagnode_t *d,   
+		       int32 ascr,     /**< The acoustic scores */
+		       int32 lscr,     /**< The language scores */
+		       int32 ef,       /**< The ending frame */
+		       daglink_t *byp  
+		       );
 
 
 daglink_t *find_succlink (dagnode_t *src, dagnode_t *dst);

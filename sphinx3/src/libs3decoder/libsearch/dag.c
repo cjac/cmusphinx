@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.5  2005/09/25  19:20:43  arthchan2003
- * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
+ * Revision 1.1.4.6  2005/11/17  06:25:04  arthchan2003
+ * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
  * 
+ * Revision 1.1.4.5  2005/09/25 19:20:43  arthchan2003
+ * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
+ *
  * Revision 1.1.4.4  2005/09/11 23:07:28  arthchan2003
  * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
  *
@@ -152,11 +155,10 @@ void hyp_free (srch_hyp_t *list)
  * Link two DAG nodes with the given arguments
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
  *
- * ARCHAN Comment: dag_link is essentially doing three things that
- * were done by three functions in decode_anytopo, dag and astar.  So,
- * it is obvious that information has been duplicated. l->bypass and
- * l->is_filler_bypass is one of this example. Likely only one of them
- * need to be there. 
+ * ARCHAN Comment: dag_link were used in decode_anytopo, dag and
+ * astar. Therefore, the information is unfortunately duplicated.
+ * l->bypass and l->is_filler_bypass is one of this example. Likely
+ * only one of them need to be there.
  */
 int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, daglink_t *byp)
 {
@@ -204,6 +206,60 @@ int32 dag_link (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 ef, 
 
     return (dagp->nlink > dagp->maxedge) ? -1 : 0;
 }
+
+
+/*
+  Badly duplicate with dag_link; It also update the language score. 
+ */
+int32 dag_link_w_lscr (dag_t* dagp, dagnode_t *pd, dagnode_t *d, int32 ascr, int32 lscr, int32 ef, daglink_t *byp)
+{
+    daglink_t *l;
+    
+    /* Link d into successor list for pd */
+    if (pd) {	/* Special condition for root node which doesn't have a predecessor */
+	l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
+	l->node = d;
+	l->src = pd;
+	l->ascr = ascr;
+	l->lscr = lscr;
+	l->pscr = (int32)0x80000000;
+	l->pscr_valid = 0;
+	l->history = NULL;
+	l->ef = ef;
+	l->next = pd->succlist;
+
+	/* Effect caused by aggregating different stuctures */
+	l->bypass = byp;	/* DAG-specific: This is a FORWARD link!! */
+	l->is_filler_bypass = 0; /* Astar-specific */
+	l->hook=NULL; /* Hopefully, this is the last argument we put into the dag_link structure */
+
+	pd->succlist = l;
+    }
+
+    /* Link pd into predecessor list for d */
+    l = (daglink_t *) listelem_alloc (sizeof(daglink_t));
+    l->node = pd;
+    l->src = d;
+    l->ascr = ascr;
+    l->lscr = lscr;
+    l->pscr = (int32)0x80000000;
+    l->pscr_valid = 0;
+    l->history = NULL;
+    l->ef = ef;
+
+    l->bypass = byp;	     /* DAG-specific: This is a FORWARD link!! */
+    l->is_filler_bypass = 0; /* Astar-specific */
+
+    l->hook=NULL; /* Hopefully, this is the last argument we put into the dag_link structure */
+
+    l->next = d->predlist;
+    d->predlist = l;
+
+    dagp->nlink++;
+
+    return (dagp->nlink > dagp->maxedge) ? -1 : 0;
+}
+
 
 #if 0
 static void daglinks_dump (dagnode_t *d)
@@ -634,7 +690,7 @@ void dag_add_fudge_edges (dag_t *dagp, int32 fudge, int32 min_ef_range, void *hi
 	    if ((pd->wid != dict->finishwid) &&
 		(pd->fef == d->sf) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
-		dag_link (dagp, pd, d, lathist->lattice[l].ascr, d->sf-1, NULL);
+		dag_link_w_lscr (dagp, pd, d, lathist->lattice[l].ascr, lathist->lattice[l].lscr, d->sf-1, NULL);
 	    }
 	}
 	
@@ -648,7 +704,7 @@ void dag_add_fudge_edges (dag_t *dagp, int32 fudge, int32 min_ef_range, void *hi
 	    if ((pd->wid != dict->finishwid) &&
 		(pd->fef == d->sf+1) &&
 		(pd->lef - pd->fef >= min_ef_range-1)) {
-		dag_link (dagp, pd, d, lathist->lattice[l].ascr, d->sf-1, NULL);
+		dag_link_w_lscr (dagp, pd, d, lathist->lattice[l].ascr, lathist->lattice[l].lscr, d->sf-1, NULL);
 	    }
 	}
       }
@@ -716,6 +772,7 @@ dag_t* dag_load (
     char line[16384], wd[1024];
     int32  sf, fef, lef, ef, lineno;
     int32 i, j, k, final, seqid, from, to, ascr;
+    int32 node_ascr, node_lscr;
     int32  min_ef_range;
     dagnode_t *d, *pd, *tail, **darray;
     s3wid_t w;
@@ -723,13 +780,16 @@ dag_t* dag_load (
     int32 ispipe;
     dag_t* dag;
     latticehist_t *lathist;
-
-    dag=ckd_calloc(1,sizeof(dag_t));
     s3wid_t finishwid;
+    int32 report;
+    
+    report=0;
+    lathist=NULL;
+    dag=ckd_calloc(1,sizeof(dag_t));
 
     finishwid = dict_wordid (dict,S3_FINISH_WORD);
 
-    dag->maxedge = cmd_ln_int32 ("-maxedge");
+    dag->maxedge = maxedge;
     dag->list = NULL;
     dag->nlink = 0;
     dag->nbypass =0;
@@ -813,9 +873,10 @@ dag_t* dag_load (
 	lineno++;
 	
 	if ((k = sscanf (line, "%d %s %d %d %d", &seqid, wd, &sf, &fef, &lef)) != 5) {
-	    E_ERROR("Cannot parse line: %s\n", line);
+	    E_ERROR("Cannot parse line: %s, value of count %d\n", line,k);
 	    goto load_error;
 	}
+
 
 	w = dict_wordid (dict, wd);
 	if (NOT_S3WID(w)) {
@@ -840,6 +901,15 @@ dag_t* dag_load (
 	d->succlist = NULL;
 	d->predlist = NULL;
 	d->alloc_next = NULL;
+
+	if ((k = sscanf (line,  "%d %s %d %d %d %d %d", &seqid, wd, &sf, &fef, &lef, &node_ascr, &node_lscr)) == 7){
+	  if(!report)
+	    E_WARN("Acoustic score provided is provided in a word node, Only conversion to IBM lattice will show this behavior\n");
+
+	  d->node_ascr=node_ascr;
+	  d->node_lscr=node_lscr;
+	  report=0;
+	}
 	
 	if (! dag->list)
 	    dag->list = d;
@@ -972,6 +1042,15 @@ dag_t* dag_load (
     }
 #endif
     dag->hook=NULL;
+
+    /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
+    for (d = dag->list; d; d = d->alloc_next) {
+	if ((dict_basewid(dict,d->wid) == dict->startwid) && (d->sf == 0))
+	    break;
+    }
+    assert (d);
+    dag->root = d;
+
 
     dag_add_fudge_edges (dag, 
 			 fudge,
