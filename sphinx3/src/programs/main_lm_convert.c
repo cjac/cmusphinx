@@ -48,9 +48,12 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.1.2.3  2005/07/18  23:21:24  arthchan2003
- * Tied command-line arguments with marcos
+ * Revision 1.1.2.4  2005/11/17  06:48:58  arthchan2003
+ * Support simple encoding conversion in lm_convert.
  * 
+ * Revision 1.1.2.3  2005/07/18 23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.1.2.2  2005/07/17 06:00:21  arthchan2003
  * Added default argument in main_lm_convert.c, so the code will not die when -outputfmt is specified as nothing.
  *
@@ -64,6 +67,7 @@
 #include "s3types.h"
 #include "cmd_ln.h"
 #include "cmdln_macro.h"
+#include "encoding.h"
 
 static arg_t arg[] = {
   common_application_properties_command_line_macro()
@@ -84,6 +88,14 @@ static arg_t arg[] = {
     ARG_STRING,
     "DMP",
     "Output LM format: TXT or DMP"},
+  { "-inputenc",
+    ARG_STRING,
+    "iso8859-1",
+    "Input encoding (pls. make sure this match with -outputenc), input could be: iso8859-1 (superset of ascii), gb2312-hex (hex code of gb2312)"},
+  { "-outputenc",
+    ARG_STRING,
+    "iso8859-1",
+    "Output encoding (pls. make sure this match with -inputenc), output could be iso8859-1 (superset of ascii), gb2312"},
   { "-outputdir",
     ARG_STRING,
     ".",
@@ -104,8 +116,10 @@ int main(int argc, char *argv[])
 
   char *inputfn, *outputfn;
   char *inputfmt, *outputfmt;
+  char *inputenc, *outputenc;
   char *outputdir;
   char *outputpath;
+
   lm_t* lm;
   char separator[1];
 
@@ -121,16 +135,19 @@ int main(int argc, char *argv[])
   inputfmt=cmd_ln_str("-inputfmt");
   outputfmt=cmd_ln_str("-outputfmt");
 
+  inputenc=cmd_ln_str("-inputenc");
+  outputenc=cmd_ln_str("-outputenc");
+
   outputdir=cmd_ln_str("-outputdir");
 
-  if(!strcmp(inputfmt,outputfmt)){
-    E_INFO("Input and Output file formats are the same (%s). Do nothing\n",inputfmt);
-    return 0;
-  }
+  if(!strcmp(inputfmt,outputfmt)&&!strcmp(inputenc,outputenc))
+    E_FATAL("Input and Output file formats and encodings are the same (%s, %s). Do nothing\n",inputfmt,inputenc);
 
-  if(!strcmp(inputfmt,"TXT")&&!cmd_ln_int32("-lminmemory")){
+  if(!strcmp(inputfmt,"TXT")&&!cmd_ln_int32("-lminmemory"))
     E_FATAL("When plain-txt LM is used as an input, only in memory mode of LM reading can be used, please set -lminmemory to be 1");
-  }
+  
+  if(!encoding_resolve(cmd_ln_str("-inputenc"), cmd_ln_str("-outputenc")))
+    E_FATAL("Input and output encoding types is either not compatible or the conversion is not supported. Forced exit\n");
 
 
   /* Read LM */
