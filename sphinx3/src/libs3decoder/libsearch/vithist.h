@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.7  2005/10/17  04:58:30  arthchan2003
- * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
+ * Revision 1.11.4.8  2005/11/17  06:46:02  arthchan2003
+ * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
  * 
+ * Revision 1.11.4.7  2005/10/17 04:58:30  arthchan2003
+ * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
+ *
  * Revision 1.11.4.6  2005/10/07 20:05:05  arthchan2003
  * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  *
@@ -157,13 +160,14 @@ typedef struct {
     int32 lscr;			/**< LM score for this node, given its Viterbi history */
 
     int32 score;		/**< Total path score ending here */
-    int32 senscale;             /**< Scaling factor attached to the score */
     int32 pred;			/**< Immediate predecessor */
     int32 type;			/**< >=0: regular n-gram word; <0: filler word entry */
     int32 valid;		/**< Whether it should be a valid history for LM rescoring */
     vh_lmstate_t lmstate;	/**< LM state */
 
     scr_hist_pair *rc_info;             /**< Right context information pair (score, pred), I don't want to look up, so I used*/ 
+    int32 n_rc_info;            /**< Number of rc_info */
+
 #if 0
     int32 *rcpred;              /**< Correspond to predecesoor of each right contexts */
     int32 *rcscore;             /**< Correspond to the score for each right contexts */
@@ -349,10 +353,9 @@ void vithist_rescore (vithist_t *vh,    /**< In: a Viterbi history data structur
 		      s3wid_t wid,      /**< In: a word ID */
 		      int32 ef,		/**< In: End frame for this word instance */
 		      int32 score,	/**< In: Does not include LM score for this entry */
-		      int32 senscale,   /**< In: The senscale */
 		      int32 pred,	/**< In: Tentative predecessor */
 		      int32 type,       /**< In: Type of lexical tree */
-		      int32 rc  /**< In: The compressed rc */
+		      int32 rc          /**< In: The compressed rc. So if you use the actual rc, it doesn't work.  */
 		      );
 
 
@@ -454,6 +457,7 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 
     /*Augmented in 3.6 */
     int32 ascr;         /**< Acoustic score for this node */
+    int32 lscr;         /**< Language score for this node */
     int32 ef;           /**< Ending frame */
 
     s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
