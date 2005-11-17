@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.9  2005/09/25  20:09:47  arthchan2003
- * Added support for LTS.
+ * Revision 1.10.4.10  2005/11/17  06:48:24  arthchan2003
+ * Changed a misleading comment in main_dag.c
  * 
+ * Revision 1.10.4.9  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
  * Revision 1.10.4.8  2005/09/18 01:52:05  arthchan2003
  * Changed name of log_hypseg to s3dag_log_hypseg to avoid confusion.
  *
@@ -357,7 +360,7 @@ static void s3dag_log_hypseg (char *uttid,
 }
 
 
-/* Decode the given mfc file and write result to matchfp and matchsegfp */
+/* Find the best path in the lattice file and write result to matchfp and matchsegfp */
 static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 {
     char dagfile[1024];
@@ -386,7 +389,8 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	if(hyp!=NULL){
 	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
 	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
-	  
+
+#if 1
 	  /* Total scaled acoustic score and LM score */
 	  ascr = lscr = 0;
 	  for (h = hyp; h; h = h->next) {
@@ -396,6 +400,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 
 	  printf ("BSTPTH: ");
 	  log_hypstr (stdout, hyp, uttid, NOTEXACT, ascr+lscr, dict);
+#endif
 	  
 	  printf ("BSTXCT: ");
 	  s3dag_log_hypseg (uttid, stdout, hyp, nfrm);
