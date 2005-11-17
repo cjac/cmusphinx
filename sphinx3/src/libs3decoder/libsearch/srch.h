@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.13  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.1.4.14  2005/11/17  06:36:36  arthchan2003
+ * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
  * 
+ * Revision 1.1.4.13  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.1.4.12  2005/09/18 01:44:12  arthchan2003
  * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
  *
@@ -169,10 +172,6 @@
 #include "dag.h"
 
 
-#if 0
-/*#include "word_fsg.h"*/
-#endif
-
 #include "gmm_wrap.h"
 #include "srch_debug.h"
 
@@ -209,6 +208,9 @@
 #define GAUDEN_EVAL_WINDOW 8 /*Moving window length when frames are
 			       considered as blocks, currently used in
 			       3.0 family of tools. */
+
+#define DFLT_UTT_SIZE 5000 /**< The default number of frames of an utterance */
+#define DFLT_NUM_SEGS 200  /**< The default number of segments of an utterance */
 
 /* \struct grp_str_t 
  */
@@ -376,10 +378,33 @@ typedef struct srch_s {
   stat_t *stat;       /**< Pointer to the statistics structure */
   char *uttid;        /**< Copy of UttID */
 
+  /*
+    These variables control the logistic of a search operation.  The
+    are global to all different search modes. 
+   */
   int32 cache_win;    /**< The windows lengths of the cache for approximate search */
   int32 cache_win_strt;    /**< The start index of the window near the end of a block */
+
   int32 senscale;     /**< TEMPORARY VARIABLE: Senone scale */
 
+  int32 *ascale;   /**< Same as senscale but it records the senscale for the whole sentence. 
+			  The default size is 3000 frames. 
+		   */
+  int32 ascale_sz;       /**< Size of the ascr_scale*/
+  int32 num_frm;        /**< Number of frames processed */
+
+  int32 *segsz;   /**< Size of segments for each call */
+  int32 segsz_sz;      /**< Size of segments size*/
+
+  int32 num_segs;     /**< In one search, (i.e. between one srch_utt_begin and one srch_utt_end)
+			 The number of segments the search has decoded. 
+			 That also means the number of times srch_utt_decode_blk is called. 
+			*/
+
+
+  /* 
+     Auxillary Structures for the search. 
+   */
 
   vithist_t *vithist;     /**< Viterbi history, built during search */
   latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
@@ -401,6 +426,12 @@ typedef struct srch_s {
   /* FIXME, duplicated with fwd_dbg_t */
   int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
   int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
+
+
+  /*
+    Function pointers that perform the operations.  Every mode will
+    set these pointers at the beginning of the search.
+   */
 
   /** Initialization of the search, coz the graph type can be different */
   int (*srch_init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */
@@ -625,14 +656,35 @@ int32 srch_uninit(srch_t* srch /**< In: a search structure */
 		  );
 
 
+#define SEG_FMT_SPHINX3 0
+#define SEG_FMT_SPHINX2 1
+#define SEG_FMT_CTM 2
+#define CTM_CHANNEL_MARKER "A"
+#define CTM_CONFIDENCE_SCORE_STUB 0.7
+
 /** write match segment */
 void matchseg_write (FILE *fp,  /**< The file pointer */
 		     srch_t *s, /**< The search structure */
 		     glist_t hyp, /**< A link-list that contains the hypotheesis*/
-		     char *hdr /**< The header */
+		     char *hdr, /**< The header */
+		     int32 fmt /**< The format of segmentation file 
+				  SEG_FMT_SPHINX3 : Sphinx 3 segmentation format. 
+				  SEG_FMT_SPHINX2 : Sphinx 2 segmentation format. 
+				  CTM : CTM format used by NIST sctk rescoring kit. 
+				*/
 		     );
 
-/** write a match file */
+/** write a match file 
+
+  NOTE: Current match_write has four features which is different with log_hypstr. 
+  1, match_write allows the use of hdr. 
+  2, log_hypstr allows matchexact in output. 
+  3, log_hypstr allows output the score after the match file name. 
+  4, log_hypstr will dump the pronounciation variation to the code. 
+
+  I don't think they are very important in processing so I removed them. 
+
+*/
 void match_write (FILE *fp,  /**< The file pointer */
 		  srch_t* s, /**< The search structure */
 		  glist_t hyp, /**< A link-list that contains the hypothesis */
@@ -655,6 +707,8 @@ int32 srch_delete_lm();
 
 /** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
     When hyp_t, srch_hyp_t are united, we could tie it with match_write
+    (20051109) ARCHAN: The only consumer of log_hypstr now is main_dag.c
+
  */
 void log_hypstr (FILE *fp,  /**< A file pointer */
 		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
@@ -663,6 +717,7 @@ void log_hypstr (FILE *fp,  /**< A file pointer */
 		 int32 scr,      /**< The score */
 		 dict_t *dict    /**< A dictionary to look up wid */
 		 );
+
 
 void log_hyp_detailed (FILE *fp, /**< A file poointer */
 		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
@@ -675,6 +730,10 @@ void log_hyp_detailed (FILE *fp, /**< A file poointer */
 					     */
 		       );
 
+/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
+    When hyp_t, srch_hyp_t are united, we could tie it with match_write
+    (20051109) ARCHAN: The only consumer of log_hypseg now is main_dag.c
+ */
 
 void log_hypseg (char *uttid,
 		 FILE *fp,	/* Out: output file */

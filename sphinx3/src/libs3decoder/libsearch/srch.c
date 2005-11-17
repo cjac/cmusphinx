@@ -38,9 +38,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1.4.18  2005/10/17  04:54:20  arthchan2003
- * Freed graph correctly.
+ * Revision 1.1.4.19  2005/11/17  06:36:36  arthchan2003
+ * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
  * 
+ * Revision 1.1.4.18  2005/10/17 04:54:20  arthchan2003
+ * Freed graph correctly.
+ *
  * Revision 1.1.4.17  2005/09/25 19:30:21  arthchan2003
  * (Change for comments) Track error messages from propagate_leave and propagate_non_leave, this allow us to return error when bugs occur in internal of search.
  *
@@ -347,6 +350,11 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   s->cache_win_strt=0 ; 
   s->senscale=0;
 
+  s->ascale= (int32 *) ckd_calloc(DFLT_UTT_SIZE,sizeof(int32));
+  s->ascale_sz = DFLT_UTT_SIZE;
+  s->segsz= (int32 *) ckd_calloc(DFLT_NUM_SEGS,sizeof(int32));
+  s->segsz_sz = DFLT_NUM_SEGS;
+
   srch_clear_funcptrs(s);
 
 
@@ -569,12 +577,24 @@ check_error:
 }
 
 int32 srch_utt_begin(srch_t* srch){
+
+  int32 i;
   if(srch->srch_utt_begin==NULL){
     E_ERROR("srch->srch_utt_begin is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
 
+  srch->num_frm=0;
+  srch->num_segs=0;
+  for(i=0;i<srch->ascale_sz;i++)
+    srch->ascale[i]=0;
+
+  for(i=0;i<srch->segsz_sz;i++)
+    srch->segsz[i]=0;
+
   srch->srch_utt_begin(srch);
+
+  
   return SRCH_SUCCESS;
 }
 
@@ -612,6 +632,20 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
   if(win_efv > block_nfeatvec) 
     win_efv = block_nfeatvec;
 
+  s->num_frm =frmno;  /* Make a copy to the structure */
+  s->segsz[s->num_segs] = win_efv; 
+  s->num_segs++;
+
+  if(frmno+win_efv > s->ascale_sz){
+    s->ascale= (int32 *) ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE));
+    s->ascale_sz+=DFLT_UTT_SIZE;
+  }
+
+  if(s->num_segs==s->segsz_sz){
+    s->segsz= (int32* ) ckd_realloc(s->segsz,(s->segsz_sz+DFLT_NUM_SEGS));
+    s->segsz_sz+=DFLT_NUM_SEGS;
+  }
+
   s->cache_win_strt=0;
 
   /*Compute the CI senone score at here */
@@ -626,11 +660,13 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
   ptmr_stop (&(st->tm_sen));
 
   for (t = 0; t < block_nfeatvec; t++,frmno++) {
-    /*    E_INFO("Time: %d\n",t);*/
+
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(st->tm_sen));
     s->srch_select_active_gmm(s);
     s->srch_gmm_compute_lv2(s,block_feat[t],t);
+    s->ascale[s->num_frm+t]=s->senscale;
+
 
     ptmr_stop (&(st->tm_sen));
 
@@ -707,6 +743,9 @@ int32 srch_uninit(srch_t* srch){
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+
+  ckd_free(srch->segsz);
+  ckd_free(srch->ascale);
   ckd_free(srch->grh);
   ckd_free(srch);
 
@@ -794,38 +833,89 @@ int32 srch_set_lamdafn(srch_t* srch){
 #endif
 
 
-void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
+void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr, int32 fmt)
 {
     gnode_t *gn;
     srch_hyp_t *h;
     int32 ascr, lscr, scl;
     dict_t *dict;
+    lm_t *lm;
+    int32 i;
 
     ascr = 0;
     lscr = 0;
     scl =0;
     
+    lm=kbcore_lm(s->kbc);
     for (gn = hyp; gn; gn = gnode_next(gn)) {
 	h = (srch_hyp_t *) gnode_ptr (gn);
 	ascr += h->ascr;
-	lscr += h->lscr;
-	scl += h->senscale;
+	lscr += lm_rawscore(lm,lscr,lm->lw);
     }
+
+    for(i=0;i<s->num_frm;i++)
+      scl+=s->ascale[i];
     
     dict = kbcore_dict(s->kbc);
-    
-    fprintf (fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), s->uttid,
-	     scl, ascr+lscr, ascr, lscr);
-    
-    for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-	h = (srch_hyp_t *) gnode_ptr (gn);
-	fprintf (fp, " %d %d %d %s", h->sf, h->ascr, h->lscr,
-		 dict_wordstr(dict, h->id));
+
+    if(fmt>SEG_FMT_CTM || fmt <0) {
+      E_ERROR("Unknown file format %d, backoff to the default fmt\n");
+      fmt=SEG_FMT_SPHINX3;
     }
-    fprintf (fp, " %d\n", s->stat->nfr);
+
+    if(fmt==SEG_FMT_SPHINX3){
+      fprintf (fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), s->uttid,
+	       scl, ascr+lscr, ascr, lscr);
+      
+      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
+	h = (srch_hyp_t *) gnode_ptr (gn);
+	
+
+	fprintf (fp, " %d %d %d %s", h->sf, h->ascr , lm_rawscore(lm, h->lscr,lm->lw),
+		 dict_wordstr(dict, h->id));
+      }
+      fprintf (fp, " %d\n", s->num_frm);
+    }else if(fmt==SEG_FMT_SPHINX2){
+      fprintf (fp, "%s%s   ",(hdr ? hdr : ""),s->uttid);
+      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
+	h = (srch_hyp_t *) gnode_ptr (gn);
+	/*FIXME!, what is the second output of the matchseg file?*/
+	fprintf (fp, "%s 0 %d %d %d %d ", dict_wordstr(dict, h->id), h->sf, h->ef, h->ascr, lm_rawscore(lm, h->lscr,lm->lw));
+      }
+      fprintf (fp, "(S= %d (A= %d L= %d))\n", ascr+lscr, ascr, lscr);
+    }else if(fmt==SEG_FMT_CTM){
+
+      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
+	h = (srch_hyp_t *) gnode_ptr (gn);
+	/*FIXME!, what is the second output of the matchseg file?*/
+
+	fprintf (fp, "%s%s %s %f %f %s %f\n",
+		 (hdr ? hdr : ""),
+		 s->uttid,
+		 CTM_CHANNEL_MARKER, 
+		 (float32)(h->sf)/100.0,
+		 (float32)(h->ef)/100.0,
+		 dict_wordstr(dict, h->id),
+		 CTM_CONFIDENCE_SCORE_STUB);
+      }
+      
+    }
+
+
     fflush (fp);
+
 }
 
+/*
+  READ ME.
+  Current match_write has four features which is different with log_hypstr. 
+  1, match_write allows the use of hdr. 
+  2, log_hypstr allows matchexact in output. 
+  3, log_hypstr allows output the score after the match file name. 
+  4, log_hypstr will dump the pronounciation variation to the code. 
+
+  I don't think they are very important in processing so I removed them.
+ */
 void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
 {
     gnode_t *gn;
@@ -835,11 +925,14 @@ void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
 
     dict = kbcore_dict(s->kbc);
 
-    fprintf (fp, "%s ", (hdr ? hdr : ""));
+    if (hyp ==NULL)	/* Following s3.0 convention */
+	fprintf (fp, "(null)");
+
+    fprintf (fp, "%s", (hdr ? hdr : ""));
 
     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
       h = (srch_hyp_t *) gnode_ptr (gn);
-      if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)))
+      if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)) && (h->id!=dict_startwid(dict)))
 	fprintf(fp,"%s ",dict_wordstr(dict, dict_basewid(dict,h->id)));
       counter++;
     }
@@ -855,16 +948,19 @@ void reg_result_dump (srch_t* s, int32 id )
   FILE *fp, *latfp, *bptfp;
   int32 ascr, lscr;
   glist_t hyp;
+  glist_t ghyp,rhyp;
   stat_t* st; 
   gnode_t *gn;
   srch_hyp_t *h;
-  srch_hyp_t *bph;
+  srch_hyp_t *bph, *tmph;
   int32 bp;
   float32 *f32arg;
   float64 lwf;
   dag_t *dag;
   int32 nfrm;
   dict_t *dict;
+  int32 i;
+  int32 scl;
   
   st= s->stat;
   fp = stderr;
@@ -903,19 +999,25 @@ void reg_result_dump (srch_t* s, int32 id )
   if (cmd_ln_int32("-backtrace")) {
     fprintf (fp, "\nBacktrace(%s)\n", s->uttid);
     fprintf (fp, "%6s %5s %5s %11s %8s %4s\n",
-	     "LatID", "SFrm", "EFrm", "AScr", "LScr", "Type");
+	     "LatID", "SFrm", "EFrm", "AScr(Norm)", "LScr", "Type"); 
       
     ascr = 0;
     lscr = 0;
     
     for (gn = hyp; gn; gn = gnode_next(gn)) {
       h = (srch_hyp_t *) gnode_ptr (gn);
+
+      scl=0;
+      for(i=h->sf;i<h->ef;i++){
+	scl+=s->ascale[i];
+      }
+
       fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
-	       h->vhid, h->sf, h->ef, h->ascr + h->senscale, h->lscr, h->type,
+	       h->vhid, h->sf, h->ef, h->ascr+scl, h->lscr, h->type,
 	       dict_wordstr(dict, h->id));
 
 #if 1      
-      ascr += h->ascr + h->senscale;
+      ascr += h->ascr + scl;
 #else /* ARCHAN: If you want the score of without scaling. This behavior appears in 3.1 to 3.5
 	 During the time of CALO, we found that it is not in-sync with s3.0 family of tools. So,
 	 we decided to change it back. I leave this line for the future purpose of debugging. 
@@ -936,15 +1038,13 @@ void reg_result_dump (srch_t* s, int32 id )
   
   /* Matchseg */
   if (s->matchsegfp)
-    matchseg_write (s->matchsegfp, s, hyp, NULL);
-  matchseg_write (fp, s, hyp, "FWDXCT: ");
+    matchseg_write (s->matchsegfp, s, hyp, NULL,cmd_ln_int32("-hypsegfmt"));
+  matchseg_write (fp, s, hyp, "FWDXCT: ",cmd_ln_int32("-hypsegfmt"));
   fprintf (fp, "\n");
   
 
-  /* Temporary measure, this is mainly caused by duplication of vithist
-     table in FSG search, N-gram searches */
 
-  if(s->op_mode==OPERATION_GRAPH)
+  if(cmd_ln_str("-outlatdir") && s->op_mode==OPERATION_GRAPH)
     E_ERROR("lattice generation is not supported in mode %d\n",s->op_mode);
       
   if (cmd_ln_str ("-outlatdir") && s->op_mode!=OPERATION_GRAPH) {
@@ -959,6 +1059,18 @@ void reg_result_dump (srch_t* s, int32 id )
     if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL)
       E_ERROR("fopen_comp (%s,w) failed\n", str);
     else {
+
+      /* FIXME! Temporary measure, The code now actually temporarily
+	 write the dag file onto harddisc and all subsequent operation
+	 will need to require reading the dag back.  Currently that
+	 includes the -bestpath operation and -outlatfmt operation.
+	 They are now separated with different ifs. 
+
+	 A good way to solve is to work on the dag structure which
+	 unfortunately was not supported by vithist.c from 3.x (x<6).
+	 We will change this later on. 
+      */
+
       /* Write header info */
       dag_write_header(latfp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
 					     the code will just be stopped */
@@ -981,13 +1093,14 @@ void reg_result_dump (srch_t* s, int32 id )
 				  kbcore_fillpen(s->kbc)))
 	    >=0 ){
 
-	  E_INFO("hihi\n");
+	  /* No fudged was added. */
+
 	  bph=dag_search (dag,s->uttid, 
 			  lwf,
 			  dag->final.node,
 			  dict,
-			  s->kbc->lmset->cur_lm,
-			  s->kbc->fillpen
+			  kbcore_lm(s->kbc),
+			  kbcore_fillpen(s->kbc)
 			  );
 	  if(bph!=NULL){
 
@@ -1001,8 +1114,25 @@ void reg_result_dump (srch_t* s, int32 id )
 	      lscr += h->lscr;
 	    }
 
+	    ghyp=NULL;
+	    for(tmph= bph ; tmph ; tmph = tmph->next){
+	      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    }
+	    
+	    rhyp=glist_reverse(ghyp);
+
+	    match_write(stdout,s, rhyp, "\nBSTPTH: ");
+	    glist_free(rhyp);
+#if 0
+	    matchseg_write(stdout,s, rhyp, "\nBSTXCT: ",cmd_ln_int32("-hypsegfmt"));
+#endif
+
+
+	    
+#if 0
 	    printf ("BSTPTH: ");
 	    log_hypstr (stdout, bph, s->uttid, 0, ascr+lscr, dict);
+#endif
 	  	  
 	    lm_cache_stats_dump (kbcore_lm(s->kbc));
 	    lm_cache_reset (kbcore_lm(s->kbc));
@@ -1014,13 +1144,38 @@ void reg_result_dump (srch_t* s, int32 id )
 	  E_ERROR("DAG search (%s) failed\n",s->uttid);
 	  bph=NULL;
 	}
+
+	if(dag){
+	  dag_destroy (dag);
+	}
+
+      }
+
+      /* If IBM format is required to dumped */
+      if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM){
+	dag=dag_load(str,
+		     cmd_ln_int32("-maxedge"),
+		     cmd_ln_float32("-logbase"),
+		     0,  /** No fudge added */
+		     dict,
+		     kbcore_fillpen(s->kbc));
+		
+	if(dag!=NULL){
+
+	  word_graph_dump(cmd_ln_str("-outlatdir"),s->uttid,cmd_ln_str("-latext"),
+			  dag, dict, kbcore_lm(s->kbc), s->ascale);
+	  
+	}else{
+	  E_ERROR("DAG conversion (%s) failed\n",s->uttid);
+	}
+
+	if(dag){
+	  dag_destroy (dag);
+	}
       }
     }
   }
       
-  if(dag){
-    dag_destroy (dag);
-  }
 
   /** free the list containing hyps */
   for (gn = hyp; gn; gn = gnode_next(gn)) {
@@ -1156,5 +1311,236 @@ void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, cha
 }
 
 
+#if 0 /*Code we need to incorporate into 3.6, a seg reader */
+/*****************************************************************************/
 
 
+/*
+  %s     S 0 T    %d      A    %d    L   %d    %d    %d    %d    %s         %d
+uttid          ascr+lscr      ascr      lscr   sf   ascr  lscr  word        nfr
+*/
+
+int read_seg_hyp_line(char *line, seg_hyp_line_t *seg_hyp_line)
+{
+  char *p, str[128];
+  hyp_word_t *hyp_word, *tail, *g, *h;
+  int iscompound, sum, t, i;
+  lm_t *lm;
+  filler_word_t *filler_list;
+  
+  lm = get_lm();
+  filler_list = get_filler_list();
+  
+  p = line;
+  if (!get_word(&p, str)) {
+    printf("failed to read sequence number in the line: %s\n", line);
+    return -1;
+  }
+  strcpy(seg_hyp_line->seq, str);
+  
+  if (!get_word(&p, str)) {
+    printf("failed to read S in the line: %s\n", line);
+    return -1;
+  }
+  if (strcmp(str, "S")) {
+    printf("unable to find S in the line: %s\n", line);
+    return -1;
+  }
+
+  if (!get_word(&p, str)) {
+    printf("failed to read scale in the line: %s\n", line);
+    return -1;
+  }
+  if (strcmp(str, "0")) {
+    printf("unable to find 0 in the line: %s\n", line);
+    return -1;
+  }
+
+  if (!get_word(&p, str)) {
+    printf("failed to read T in the line: %s\n", line);
+    return -1;
+  }
+  if (strcmp(str, "T")) {
+    printf("unable to find T in the line: %s\n", line);
+    return -1;
+  }
+
+  if (!get_word(&p, str)) {
+    printf("failed to read ascr+lscr in the line: %s\n", line);
+    return -1;
+  }
+  sum = atoi(str);
+
+  if (!get_word(&p, str)) {
+    printf("failed to read A in the line: %s\n", line);
+    return -1;
+  }
+  if (strcmp(str, "A")) {
+    printf("unable to find A in the line: %s\n", line);
+    return -1;
+  }
+
+  if (!get_word(&p, str)) {
+    printf("failed to read ascr in the line: %s\n", line);
+    return -1;
+  }
+  seg_hyp_line->ascr = atoi(str);
+
+  if (!get_word(&p, str)) {
+    printf("failed to read L in the line: %s\n", line);
+    return -1;
+  }
+  if (strcmp(str, "L")) {
+    printf("unable to find L in the line: %s\n", line);
+    return -1;
+  }
+
+  if (!get_word(&p, str)) {
+    printf("failed to read lscr in the line: %s\n", line);
+    return -1;
+  }
+  seg_hyp_line->lscr = atoi(str);
+
+  if (seg_hyp_line->ascr + seg_hyp_line->lscr != sum) {
+    printf("the sum of ascr and lscr %d is wrong (%d): %s\n",
+	   seg_hyp_line->ascr + seg_hyp_line->lscr, sum, line);
+    return -1;
+  }
+  
+  seg_hyp_line->wordlist = NULL;
+  seg_hyp_line->wordno = 0;
+  seg_hyp_line->nfr = 0;
+  seg_hyp_line->cscore = WORST_SCORE;
+  tail = NULL;
+
+  while (1) {
+    if (!get_word(&p, str)) {
+      printf("failed to read sf or nfr in the line: %s\n", line);
+      return -1;
+    }
+    t = atoi(str);
+
+    if (!get_word(&p, str)) {
+      seg_hyp_line->nfr = t;
+      break;
+    }
+
+    hyp_word = (hyp_word_t *)malloc(sizeof(hyp_word_t));
+    if (hyp_word == NULL) {
+      printf("unable alloc memoery\n");
+      exit (1);
+    }
+    hyp_word->sf = t;
+    hyp_word->ascr = atoi(str);
+    hyp_word->next = NULL;
+
+    if (!get_word(&p, str)) {
+      printf("failed to read lscr in the line: %s\n", line);
+      return -1;
+    }
+    hyp_word->lscr = atoi(str);
+
+    if (!get_word(&p, str)) {
+      printf("failed to read word in the line: %s\n", line);
+      return -1;
+    }
+    strcpy(hyp_word->word, str);
+    for (i = strlen(str) - 1; i >= 0; i--)
+      if (str[i] == '(')
+	break;
+    if (i >= 0)
+      str[i] = '\0';
+
+    if (filler_list) {
+      hyp_word->wid = is_filler_word(str, filler_list);
+      if (hyp_word->wid >= 0) {
+	hyp_word->wid = is_in_dictionary(str, lm);
+	if (hyp_word->wid < 0) {
+	  printf("unknown word %s in the line: %s\n", hyp_word->word, line);
+	  return -1;
+	}
+      }
+    }
+    
+    hyp_word->compound = 0;
+    hyp_word->matchtype = 0;
+    
+    seg_hyp_line->wordno++;
+    if (seg_hyp_line->wordlist == NULL)
+      seg_hyp_line->wordlist = hyp_word;
+    else
+      tail->next = hyp_word;
+    tail = hyp_word;
+  }
+
+
+  if (seg_hyp_line->wordlist == NULL) {
+    printf("word list is NULL\n");
+    return -1;
+  }
+
+  g = seg_hyp_line->wordlist;
+  for (h = g->next; h; h = h->next) {
+    g->ef = h->sf - 1;
+    g = h;
+  }
+  g->ef = seg_hyp_line->nfr - 1;
+
+  sum = 0;
+  for (h = seg_hyp_line->wordlist; h; h = h->next)
+    sum += h->ascr;
+  if (sum != seg_hyp_line->ascr) {
+    printf("the ascr of words is not equal to the ascr of utt: %s\n", line);
+    return -1;
+  }
+  sum = 0;
+  for (h = seg_hyp_line->wordlist; h; h = h->next)
+    sum += h->lscr;
+  if (sum != seg_hyp_line->lscr) {
+    printf("the lscr of words is not equal to the lscr of utt: %s %d %d\n", seg_hyp_line->seq, sum, seg_hyp_line->lscr);
+    //    return -1;
+  }
+  for (h = seg_hyp_line->wordlist; h; h = h->next)
+    if (h->ef <= h->sf) {
+      printf("word %s ef <= sf in the line: %s\n", h->word, line);
+      return -1;
+    }
+
+  return 0;
+}
+
+
+int free_seg_hyp_line(seg_hyp_line_t *seg_hyp_line)
+{
+  hyp_word_t *w, *nw;
+
+  for (w = seg_hyp_line->wordlist; w; w = nw) {
+    nw = w->next;
+    free(w);
+  }
+  return 0;
+}
+#endif
+
+
+
+#if 0 /* Insert this part of the code when score is needed to be dumped */
+    /* This should be written as a small function*/
+    int32 ind;
+
+    ms_mgau_model_t *mg;
+    gauden_t *g;
+    mg=kbcore_ms_mgau(s->kbc);
+    g=mg->g;
+    E_INFO("Time %d, Accum. Time %d, Segments %d Senscale %d. \n", t, s->num_frm+t, s->num_segs-1, s->senscale);
+    for(ind=0;ind<g->n_mgau;ind++){
+      if(s->ascr->sen_active[ind]){
+	E_INFO("Time %d Ind %d Active %d Senscr %d %f actual %f (Unnorm) %d %f actual %f \n", t, ind, s->ascr->sen_active[ind],
+	       s->ascr->senscr[ind], logs3_to_log(s->ascr->senscr[ind]), 
+	       exp(logs3_to_log(s->ascr->senscr[ind])),
+	       s->ascr->senscr[ind] + s->senscale, logs3_to_log(s->ascr->senscr[ind] + s->senscale),
+	       exp(logs3_to_log(s->ascr->senscr[ind] + s->senscale))
+	       );
+      }
+    }
+#endif
