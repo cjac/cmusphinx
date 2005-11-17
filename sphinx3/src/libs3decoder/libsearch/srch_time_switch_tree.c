@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.14  2005/10/17  04:54:49  arthchan2003
- * Freed the tree set correctly.
+ * Revision 1.2.4.15  2005/11/17  06:43:25  arthchan2003
+ * Removed senone scale in lextree_hmm_propagate.
  * 
+ * Revision 1.2.4.14  2005/10/17 04:54:49  arthchan2003
+ * Freed the tree set correctly.
+ *
  * Revision 1.2.4.13  2005/10/07 20:04:50  arthchan2003
  * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  *
@@ -851,7 +854,7 @@ int srch_TST_rescoring(void *srch,int32 frmno)
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] : tstg->fillertree[i - tstg->n_lextree];
       if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				      s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+				      s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
 	E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
 	lextree_utt_end(lextree,kbcore);
 	return SRCH_FAILURE;
@@ -864,7 +867,7 @@ int srch_TST_rescoring(void *srch,int32 frmno)
       
       if ((frmno % ptranskip) != 0){
 	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-					s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+					s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
 	  lextree_utt_end(lextree,kbcore);
 	  return SRCH_FAILURE;
@@ -873,7 +876,7 @@ int srch_TST_rescoring(void *srch,int32 frmno)
       }
       else{
   	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-					s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+					s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
 	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
 	  	lextree_utt_end(lextree,kbcore);
 	  lextree_utt_end(lextree,kbcore);

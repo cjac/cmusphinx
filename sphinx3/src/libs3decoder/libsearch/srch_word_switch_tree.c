@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.15  2005/10/09  20:00:45  arthchan2003
- * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
+ * Revision 1.1.4.16  2005/11/17  06:43:25  arthchan2003
+ * Removed senone scale in lextree_hmm_propagate.
  * 
+ * Revision 1.1.4.15  2005/10/09 20:00:45  arthchan2003
+ * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
+ *
  * Revision 1.1.4.14  2005/10/07 20:04:50  arthchan2003
  * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
  *
@@ -803,13 +806,13 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
 
   lextree=wstg->curroottree;
   if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				  s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+				  s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
     lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
   lextree=wstg->curfillertree;
   if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				  s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+				  s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
     lextree_utt_end(lextree,kbcore);
     return SRCH_FAILURE;
   }
@@ -817,14 +820,14 @@ int32 srch_WST_rescoring(void *srch, int32 frmno)
   for (i = 0; i < wstg->n_static_lextree; i++) {
     lextree = wstg->expandtree[i];
     if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				    s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+				    s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
       lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
 
     lextree = wstg->expandfillertree[i];
     if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				    s->beam->word_thres,s->senscale)!=LEXTREE_OPERATION_SUCCESS){
+				    s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
       lextree_utt_end(lextree,kbcore);
       return SRCH_FAILURE;
     }
@@ -845,7 +848,7 @@ int32 srch_WST_propagate_graph_wd_lv1(void *srch)
 
 /* This function is not used because it could be very slow with history pruning. */
 int32 srch_WST_hmm_propagate_leaves (srch_t* s, lextree_t *lextree, vithist_t *vh,
-			    int32 cur_frm, int32 wth,int32 senscale)
+			    int32 cur_frm, int32 wth)
 {
     lextree_node_t **list, *ln;
     hmm_t *hmm;
@@ -946,7 +949,7 @@ int32 srch_WST_hmm_propagate_leaves (srch_t* s, lextree_t *lextree, vithist_t *v
 	    entry=vithist_n_entry(vh)-1;
 
 	    vithist_rescore (vh, s->kbc, ln->wid, cur_frm,
-			     hmm->out.score - ln->prob, s->senscale, 
+			     hmm->out.score - ln->prob, 
 			     hmm->out.history, lextree->type,ln->rc);
 
 	    /* At this point a score is recorded in the viterbi history 
