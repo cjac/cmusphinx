@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6.4.4  2005/10/17  04:48:45  arthchan2003
- * Free resource correctly in dict2pid.
+ * Revision 1.6.4.5  2005/11/17  06:13:49  arthchan2003
+ * Use compressed right context in expansion in triphones.
  * 
+ * Revision 1.6.4.4  2005/10/17 04:48:45  arthchan2003
+ * Free resource correctly in dict2pid.
+ *
  * Revision 1.6.4.3  2005/10/07 19:03:38  arthchan2003
  * Added xwdssid_t structure.  Also added compression routines.
  *
@@ -428,6 +431,57 @@ static void compress_left_right_context_tree(mdef_t *mdef,dict2pid_t *d2p)
 
 
 }
+
+/**
+   ARCHAN, A duplicate of get_rc_npid in ctxt_table.h.  I doubt whether it is correct
+   because the compressed map has not been checked. 
+ */
+int32 get_rc_nssid(dict2pid_t *d2p, s3wid_t w,dict_t *dict)
+{
+  int32 pronlen;
+  s3cipid_t b, lc;
+
+  pronlen = dict->word[w].pronlen;
+  b = dict->word[w].ciphone[pronlen-1];
+
+  if (pronlen == 1) {
+    /* Is this true ?
+       No known left context.  But all cimaps (for any l) are identical; pick one 
+     */
+    /*E_INFO("Single phone word\n");*/
+    return (d2p->lrssid[b][0].n_ssid);
+  } else {
+    /*    E_INFO("Multiple phone word\n");*/
+    lc = dict->word[w].ciphone[pronlen-2];
+    return (d2p->rssid[b][lc].n_ssid);
+  }
+
+}
+
+s3cipid_t* dict2pid_get_rcmap(dict2pid_t *d2p, s3wid_t w, dict_t *dict)
+{
+  int32 pronlen;
+  s3cipid_t b, lc;
+
+  pronlen = dict->word[w].pronlen;
+  b = dict->word[w].ciphone[pronlen-1];
+
+  if (pronlen == 1) {
+    /* Is this true ?
+       No known left context.  But all cimaps (for any l) are identical; pick one 
+     */
+    /*E_INFO("Single phone word\n");*/
+    return (d2p->lrssid[b][0].cimap);
+  } else {
+    /*    E_INFO("Multiple phone word\n");*/
+    lc = dict->word[w].ciphone[pronlen-2];
+    return (d2p->rssid[b][lc].cimap);
+  }
+
+}
+
+
+
 
 static void free_compress_map(xwdssid_t **tree, int32 n_ci)
 {

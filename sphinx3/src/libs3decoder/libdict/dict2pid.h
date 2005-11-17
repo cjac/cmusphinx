@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8.4.4  2005/10/17  04:48:45  arthchan2003
- * Free resource correctly in dict2pid.
+ * Revision 1.8.4.5  2005/11/17  06:13:49  arthchan2003
+ * Use compressed right context in expansion in triphones.
  * 
+ * Revision 1.8.4.4  2005/10/17 04:48:45  arthchan2003
+ * Free resource correctly in dict2pid.
+ *
  * Revision 1.8.4.3  2005/10/07 19:03:38  arthchan2003
  * Added xwdssid_t structure.  Also added compression routines.
  *
@@ -258,6 +261,22 @@ void dict2pid_comsseq2sen_active (dict2pid_t *d2p,      /**< In: a dict2pid_t st
   /** Report a dict2pid data structure */
   void dict2pid_report(dict2pid_t *d2p /**< In: a dict2pid_t structure */
 		       );
+
+  /**
+     Get number of rc 
+   */
+  int32 get_rc_nssid(dict2pid_t *d2p,  /**< In: a dict2pid */
+			     s3wid_t w,        /**< In: a wid */
+			     dict_t *dict      /**< In: a dictionary */
+			     );
+
+  /**
+     Get RC map 
+   */
+  s3cipid_t* dict2pid_get_rcmap(dict2pid_t *d2p,  /**< In: a dict2pid */
+				s3wid_t w,        /**< In: a wid */
+				dict_t *dict      /**< In: a dictionary */
+				);
 
 #ifdef __cplusplus
 }
