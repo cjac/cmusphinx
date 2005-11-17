@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.12.4.1  2005/07/13  01:46:22  arthchan2003
- * 1, Fixed dox-doc, 2, Added more documentation for major functions such as lm_read and lm_write.
+ * Revision 1.12.4.2  2005/11/17  06:15:22  arthchan2003
+ * Added input-encoding and output-encoding into the lm structure.
  * 
+ * Revision 1.12.4.1  2005/07/13 01:46:22  arthchan2003
+ * 1, Fixed dox-doc, 2, Added more documentation for major functions such as lm_read and lm_write.
+ *
  * Revision 1.12  2005/06/21 22:24:02  arthchan2003
  * Log. In this change, I introduced a new interface for lm ,which is
  * call lmset_t. lmset_t wraps up multiple lm, n_lm, n_alloclm into the
@@ -131,6 +134,7 @@ extern "C" {
 #include "s3types.h"
 #include "lmclass.h"
 #include "dict.h"
+#include "encoding.h"
 
   /*
    * ARCHAN 20050503: comment copied from Sphinx 2
@@ -402,6 +406,8 @@ typedef struct lm_s {
   sorted_list_t sorted_bowt2; /**< Temporary Variable: Sorted list */
   sorted_list_t sorted_prob3; /**< Temporary Variable: Sorted list */
 
+  int32 inputenc ; /**< Input encoding method */
+  int32 outputenc ; /**< Output encoding method */
 } lm_t;
 
 
@@ -772,11 +778,29 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 					   applied to the lm or not */
 		 );
 
+  /**
+     Simple writing of an LM file, the input and output encoding will
+     assume to be iso8859-1. Call lm_write. To convert encoding, please use
+     lm_write_impl.
+   */
   int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 		const char *outputfile, /**< In: the output file name */
 		const char *filename, /**< In: the LM file name  */
 		char *fmt   /**< In: LM file format, it is now either "TXT" or "DMP" */
 		);
+  
+  /*
+     Writing of an LM file with advanced options such as encoding support. 
+     Called by lm_write. 
+   */
+
+  int32 lm_write_advance(lm_t *model, /** In: the pointer LM we want to output */
+		      const char *outputfile, /**< In: the output file name */
+		      const char *filename, /**< In: the LM file name  */
+		      char *fmt,   /**< In: LM file format, it is now either "TXT" or "DMP" */
+		      char* inputenc, /**< In: Input encoding type */
+		      char* outputenc /**< Out: Output encoding type */
+		      );
 
   /* RAH, added code for freeing allocated memory */
   void lm_free (lm_t *lm /**< In: a LM structure */
