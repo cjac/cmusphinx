@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7.4.4  2005/07/05  21:28:57  arthchan2003
- * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ * Revision 1.7.4.5  2005/11/17  06:07:07  arthchan2003
+ * Added fast_gmm_free in the header.
  * 
+ * Revision 1.7.4.4  2005/07/05 21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ *
  * Revision 1.7.4.3  2005/07/05 05:47:59  arthchan2003
  * Fixed dox-doc. struct level of documentation are included.
  *
@@ -327,6 +330,11 @@ extern "C" {
   /** report the content of the fast_gmm_t data structure*/
   void fast_gmm_report(fast_gmm_t* f  /**< Input: the fast GMM computation structure */
 		       );
+
+  /** Free the fast_gmm_t structure */
+  void fast_gmm_free (fast_gmm_t *fg /**< Input: structure to free*/
+		      );
+  
 
   /**
    * Create and initialize the pl_t data structure 
