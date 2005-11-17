@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.7  2005/10/17  04:49:13  arthchan2003
- * Free resource of lm_t and lmset_t correctly.
+ * Revision 1.14.4.8  2005/11/17  06:18:49  arthchan2003
+ * Added a string encoding conversion routine in lm.c. Currently it only works for converting hex to its value.
  * 
+ * Revision 1.14.4.7  2005/10/17 04:49:13  arthchan2003
+ * Free resource of lm_t and lmset_t correctly.
+ *
  * Revision 1.14.4.6  2005/09/07 23:30:26  arthchan2003
  * Changed error message for LM dump.
  *
@@ -158,7 +161,9 @@ int32 lm3g_dump (char const *file,  /**< the file name */
 		 );
 
 int32 lm_write_arpa_text(lm_t *lmp,
-			 const char* outputfn
+			 const char* outputfn,
+			 const char* inputenc,
+			 const char* outputenc
 			 );
 
 
@@ -380,6 +385,8 @@ lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, fl
 
 
     lm->name = ckd_salloc(lmname);
+    lm->inputenc = IND_BADENCODING;
+    lm->outputenc = IND_BADENCODING;
 
     /* Initialize the fast trigram cache, with all entries invalid */
     lm->tgcache = (lm_tgcache_entry_t *) ckd_calloc(LM_TGCACHE_SIZE, sizeof(lm_tgcache_entry_t));
@@ -407,24 +414,61 @@ lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, fl
     return lm;
 }
 
+/*
+  This convert every string in the lm from lmp->inputenc to
+  lm->outputenc.  This function assumes the caller has checked the
+  encoding schemes appropriateness. 
 
-int32 lm_write(lm_t * lmp, const char* outputfn,const char* filename,char *fmt)
+  (Caution!) At 20051115, the method is specific and only support hex
+  to value conversion.  The code also hasn't considered that output
+  encoding requires a longer length of string than the input encoding.
+ */
+static void lm_convert_encoding(lm_t *lmp)
 {
-  if (!strcmp(fmt,"TXT")){
-    return lm_write_arpa_text(lmp,outputfn);
-  }else if (!strcmp(fmt,"DMP")){
+  int i;
 
+  E_INFO("Encoding Conversion\n");
+  for(i=0;i<lmp->n_ug;i++){
+#if 0
+    E_INFO("%s\n",lmp->wordstr[i]);
+#endif
+
+    if(ishex(lmp->wordstr[i])){
+       hextocode(lmp->wordstr[i]);
+    }
+
+#if 0
+    E_INFO("%s\n",lmp->wordstr[i]);
+#endif
+  }
+}
+
+int32 lm_write_advance(lm_t * lmp, const char* outputfn,const char* filename,char *fmt, char* inputenc, char* outputenc)
+{
+  /* This might be duplicated with the caller checking but was done for extra safety. */
+
+  assert(encoding_resolve(inputenc,outputenc));
+
+  lmp->inputenc=encoding_str2ind(inputenc);
+  lmp->outputenc=encoding_str2ind(outputenc);
+
+  lm_convert_encoding(lmp);
+
+  if (!strcmp(fmt,"TXT")){
+    return lm_write_arpa_text(lmp,outputfn,inputenc,outputenc);
+  }else if (!strcmp(fmt,"DMP")){
     /* set mtime to be zero because sphinx3 has no mechanism to check
        whether the file is generated earlier (at least for now.)*/
-
     return lm3g_dump(outputfn,lmp,filename,0);
-
   }else{
     E_INFO("Unknown format (%s) is specified\n",fmt);
     return LM_FAIL; 
   }
+}
 
-  
+int32 lm_write(lm_t * lmp, const char* outputfn,const char* filename,char *fmt)
+{
+  return lm_write_advance(lmp,outputfn,filename,fmt,"iso8859-1","iso8859-1");
 }
 
 
@@ -1076,7 +1120,6 @@ int32 lm_rawscore (lm_t *lm, int32 score, float64 lwf)
     
     return score;
 }
-
 
 
 
