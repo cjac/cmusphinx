@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.2  2005/07/28  20:04:20  dhdfu
- * Make LM writing not crash for bigram LM
+ * Revision 1.1.2.3  2005/11/17  06:21:05  arthchan2003
+ * 1, Change all lm_write_arpa_* functions' s3wid_t to s3lmwid_t.  2, Make the writing code to be changed more easily.
  * 
+ * Revision 1.1.2.2  2005/07/28 20:04:20  dhdfu
+ * Make LM writing not crash for bigram LM
+ *
  * Revision 1.1.2.1  2005/07/13 01:39:55  arthchan2003
  * Added lm_3g.c, which take cares of reading and writing of LM into the lm_t (3-gram specific lm structure.)
  *
@@ -380,7 +383,7 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 	bgptr++;
 
 	if ((bgcount & 0x0000ffff) == 0) {
-	    E_INFO (".");
+	    E_INFO_NOFN ("Processing bigram .\n");
 	}
     }
     if ((strcmp (string, "\\end\\\n") != 0) && (strcmp (string, "\\3-grams:\n") != 0))
@@ -502,7 +505,7 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	tgptr++;
 
 	if ((tgcount & 0x0000ffff) == 0) {
-	    E_INFO (".\n");
+	    E_INFO_NOFN ("Processing trigram .\n");
 	}
     }
     if (strcmp (string, "\\end\\\n") != 0)
@@ -698,7 +701,10 @@ static void lm_write_arpa_unigram(lm_t *lmp, /**< The LM pointer */
   int32 i;
   fprintf(fp,"\\1-grams:\n");
   for(i=0;i<lmp->n_ug;i++){
-    fprintf(fp,"%4f %s %4f\n",lmp->ug[i].prob.f,lmp->wordstr[i],lmp->ug[i].bowt.f);
+    fprintf(fp,"%4f ",lmp->ug[i].prob.f);
+    fprintf(fp,"%s",lmp->wordstr[i]);
+    fprintf(fp," ");
+    fprintf(fp,"%4f\n",lmp->ug[i].bowt.f);
   }
   fprintf(fp,"\n");
 }
@@ -707,34 +713,49 @@ static void lm_write_arpa_unigram(lm_t *lmp, /**< The LM pointer */
    Write bigram in arpa format
  */
 
-static void lm_write_arpa_bigram(lm_t *lmp,FILE* fp)
+static void lm_write_arpa_bigram(lm_t *lmp,
+				 FILE* fp
+				 )
 {
   int32 i,j;
   int32 n,b;
-  s3lmwid_t lw2;
+  s3lmwid_t lw1, lw2;
   
-  s3wid_t w1;
+  /*  s3wid_t w1;*/
   uint16 probid;
   uint16 bowtid;
   fprintf(fp,"\\2-grams:\n");
-
 
   for(i=0;i<=lmp->n_ug-1;i++){
     b=lmp->ug[i].firstbg;
     n=lmp->ug[i+1].firstbg;
     
     for(j=b;j<n;j++){
-      w1=i;
+      lw1=i;
       lw2=lmp->bg[j].wid;
       probid=lmp->bg[j].probid;
       bowtid=lmp->bg[j].bowtid;
-      
-      if (lmp->tgbowt)
-	fprintf(fp,"%4f %s %s %4f\n",lmp->bgprob[probid].f,
-		lmp->wordstr[w1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
+
+      fprintf(fp,"%4f ",lmp->bgprob[probid].f);
+      fprintf(fp,"%s",lmp->wordstr[lw1]);
+      fprintf(fp," ");
+      fprintf(fp,"%s",lmp->wordstr[lw2]);
+
+      if (lmp->tgbowt){
+	fprintf(fp," ");
+	fprintf(fp,"%4f\n",lmp->tgbowt[bowtid].f);
+      }
       else
+	fprintf(fp,"\n");
+
+      /*
+	if (lmp->tgbowt)
+	fprintf(fp,"%4f %s %s %4f\n",lmp->bgprob[probid].f,
+	lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
+	else
 	fprintf(fp,"%4f %s %s\n",lmp->bgprob[probid].f,
-		lmp->wordstr[w1],lmp->wordstr[lw2]);
+		lmp->wordstr[lw1],lmp->wordstr[lw2]);
+      */
     }
   }
 
@@ -752,8 +773,7 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
   int32 i,j,k;
   int32 b_bg,n_bg;
   int32 b_tg,n_tg;
-  s3lmwid_t lw2,lw3;
-  s3wid_t w1;
+  s3lmwid_t lw1,lw2,lw3;
   uint32 probid;
 
   fprintf(fp,"\\3-grams:\n");
@@ -767,11 +787,21 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
       n_tg=lmp->tg_segbase[(j+1) >> lmp->log_bg_seg_sz] + lmp->bg[j+1].firsttg;
 
       for(k=b_tg;k<n_tg;k++){
-	w1=i;
+	lw1=i;
 	lw2=lmp->bg[j].wid;
 	lw3=lmp->tg[k].wid;
 	probid=lmp->tg[k].probid;
-	fprintf(fp,"%4f %s %s %s\n",lmp->tgprob[probid].f,lmp->wordstr[w1],lmp->wordstr[lw2],lmp->wordstr[lw3]);
+	fprintf(fp,"%4f ",lmp->tgprob[probid].f);
+	fprintf(fp,"%s",lmp->wordstr[lw1]);
+	fprintf(fp," ");
+	fprintf(fp,"%s",lmp->wordstr[lw2]);
+	fprintf(fp," ");
+	fprintf(fp,"%s",lmp->wordstr[lw3]);
+	fprintf(fp,"\n");
+
+	/*
+	  fprintf(fp,"%4f %s %s %s\n",lmp->tgprob[probid].f,lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->wordstr[lw3]);
+	*/
       }
     }
   }
@@ -792,8 +822,8 @@ static void lm_write_arpa_end(lm_t *lmp, /**< The LM pointer */
  * Write an LM with ARPA file format 
  */
 int32 lm_write_arpa_text(lm_t *lmp,
-				const char* outputfn
-				)
+			 const char* outputfn
+			 )
 {
   FILE *fp;
 
