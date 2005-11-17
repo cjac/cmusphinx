@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.5  2005/10/26  03:53:12  arthchan2003
- * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ * Revision 1.1.2.6  2005/11/17  06:42:15  arthchan2003
+ * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
  * 
+ * Revision 1.1.2.5  2005/10/26 03:53:12  arthchan2003
+ * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
+ *
  * Revision 1.1.2.4  2005/10/09 20:00:45  arthchan2003
  * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
  *
@@ -61,7 +64,6 @@
 #include "srch.h"
 #include "whmm.h"
 
-/** FIXME! I am ugly */
 extern int32 *st_sen_scr;
 
 
@@ -95,11 +97,22 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg,
 		 int32 phone_penalty);
 
 
-dag_t* dag_build (srch_FLAT_FWD_graph_t* fwg, s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen);
+
+
 
 void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id, char* latfile_ext, latticehist_t *lathist, int32 n_frm, dag_t *dag, 
 			 lm_t *lm, dict_t *dict, ctxt_table_t *ctxt, fillpen_t *fpen
 			 );
+
+static void fwd_timing_dump (srch_FLAT_FWD_graph_t* fwg)
+{
+    E_INFO("[H %6.2fx ]",
+	    fwg->tm_hmmeval.t_cpu * 100.0 / fwg->n_frm);
+    E_INFOCONT ("[XH %6.2fx]",
+	    fwg->tm_hmmtrans.t_cpu * 100.0 / fwg->n_frm);
+    E_INFOCONT ("[XW %6.2fx]\n",
+	    fwg->tm_wdtrans.t_cpu * 100.0 / fwg->n_frm);
+}
 
 
 static fwd_dbg_t* init_fwd_dbg(srch_FLAT_FWD_graph_t *fwg)
@@ -431,12 +444,14 @@ int srch_FLAT_FWD_end(void* srch)
   srch_t* s;  
   kbcore_t* kbc;
   dict_t *dict;
-  srch_hyp_t *hyp, *tmph;
-  int32 ascr, lscr, scl;
-  int32 i;
+  srch_hyp_t *hyp, *tmph, *btmph;
+  glist_t ghyp, rhyp;
+  glist_t bghyp, brhyp;
+
   char *bscrdir;
   stat_t* st;
   dag_t *dag;
+
   float32 *f32arg;
   float64 lwf;
   whmm_t *h, *nexth;
@@ -444,6 +459,7 @@ int srch_FLAT_FWD_end(void* srch)
   lm_t *lm;
   s3latid_t l;
   FILE *bptfp;
+
 
   s=(srch_t *)srch;
   fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
@@ -486,7 +502,7 @@ int srch_FLAT_FWD_end(void* srch)
       bptfp = stdout;
     }
     
-    latticehist_dump (s->lathist, bptfp, s->kbc->dict, fwg->ctxt, 0);
+    latticehist_dump (s->lathist, bptfp, dict, fwg->ctxt, 0);
     
     if (bptfp != stdout)
       fclose (bptfp);
@@ -499,40 +515,93 @@ int srch_FLAT_FWD_end(void* srch)
   }
   else{
     /* BAD_S3WID => Any right context */
-    lattice_backtrace (s->lathist, l, BAD_S3WID, &hyp, lm, s->kbc->dict, fwg->ctxt, s->kbc->fillpen);
+    lattice_backtrace (s->lathist, l, BAD_S3WID, &hyp, lm, dict, fwg->ctxt, s->kbc->fillpen);
   }
 
-  /* FIXME */
   if ( cmd_ln_int32("-backtrace") )
-    log_hyp_detailed(stdout, hyp, s->uttid, "FV", "fv", NULL);
+    log_hyp_detailed(stdout, hyp, s->uttid, "FV", "fv", s->ascale);
 
+  
+  ghyp=NULL;
+  for(tmph= hyp ; tmph ; tmph = tmph->next){
+    ghyp=glist_add_ptr(ghyp,(void*)tmph);
+  }
+
+  rhyp= glist_reverse(ghyp);
+
+  if(s->matchfp)
+    match_write(s->matchfp,s,rhyp, NULL);
+  match_write(stdout,s,rhyp,"\nFWDVIT: ");
+
+
+  if(s->matchsegfp)
+    matchseg_write(s->matchsegfp,s, rhyp,NULL, cmd_ln_int32("-hypsegfmt"));
+  matchseg_write(stdout,s, rhyp,"FWDXCT: ", cmd_ln_int32("-hypsegfmt"));
+
+  glist_free(ghyp);
+
+  lm_cache_stats_dump (lm);
+  lm_cache_reset (lm);
+
+#if 0  /* Old routines for dumping the code using log_hypstr family of functions*/
   /* Total scaled acoustic score and LM score */
-  ascr = lscr = 0;
+  ascr = lscr = scl = 0;
+  /* This part is wrong */
   for (tmph = hyp; tmph; tmph = tmph->next) {
     ascr += tmph->ascr;
     lscr += tmph->lscr;
+    for(i=tmph->sf;i<tmph->ef; i++){
+      scl += s->ascale[i];
+    }
   }
-
-
+  
   /* Print sanitized recognition */
   printf ("FWDVIT: ");
   log_hypstr(stdout, hyp, s->uttid, 0, ascr + lscr,dict);
   if(s->matchfp)
     log_hypstr(s->matchfp,hyp,s->uttid,0, 0.0, dict);
-    
+
+  printf ("FWDXCT: ");
+
+  log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, scl, lm->lw ,s->kbc->dict,lm);
+  if(s->matchsegfp){
+    log_hypseg (s->uttid, s->matchsegfp, hyp, fwg->n_frm, scl, lm->lw ,s->kbc->dict,lm);
+  }
+
   lm_cache_stats_dump (lm);
+
+#endif
+    
 
 
   if(cmd_ln_str("-outlatdir")||cmd_ln_int32("-bestpath")){
-    dag=dag_build(fwg,l,s->lathist,s->kbc->dict,lm,fwg->ctxt,s->kbc->fillpen);
-    
-    if (cmd_ln_str("-outlatdir"))
+    dag=dag_build(l,s->lathist,dict,lm,fwg->ctxt,s->kbc->fillpen,fwg->n_frm);
 
-      /*FIXME, 2nd argument*/
-      s3flat_fwd_dag_dump(cmd_ln_str("-outlatdir"), 0, s->uttid, cmd_ln_str("-latext"), 
-			  s->lathist, fwg->n_frm, dag, 
-			  lm,s->kbc->dict,fwg->ctxt,s->kbc->fillpen);
 
+    if (cmd_ln_str("-outlatdir")){
+      if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_SPHINX3 ){
+	s3flat_fwd_dag_dump(cmd_ln_str("-outlatdir"), 0, s->uttid, cmd_ln_str("-latext"), 
+			    s->lathist, fwg->n_frm, dag, 
+			    lm,dict,fwg->ctxt,s->kbc->fillpen);
+      }else if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM){
+
+	E_WARN("Currently disabled. Please use s3.x routines instead\n");
+
+#if 0
+	/* Add fudge before dump the graph */
+	dag_add_fudge_edges (dag, 
+			     cmd_ln_int32("-dagfudge"), 
+			     cmd_ln_int32("-min_endfr"), 
+			     s->lathist, s->kbc->dict);
+
+
+	word_graph_dump(cmd_ln_str("-outlatdir"),s->uttid, cmd_ln_str("-latext"),
+				   dag,dict,lm,s->ascale);
+#endif
+      }else{
+	E_ERROR("Unknown file format, fmt = %d\n",cmd_ln_int32("-outlatfmt"));
+      }
+    }
 
     if(cmd_ln_int32("-bestpath")){
 
@@ -551,6 +620,7 @@ int srch_FLAT_FWD_end(void* srch)
 	dag->filler_removed = 1;
       }
 
+
       tmph = dag_search (dag,s->uttid,lwf, s->lathist->lattice[dag->latfinal].dagnode,
 		      s->kbc->dict,lm,s->kbc->fillpen);
 
@@ -560,28 +630,35 @@ int srch_FLAT_FWD_end(void* srch)
 	E_ERROR("%s: Bestpath search failed; using Viterbi result\n", s->uttid);
 
       if (cmd_ln_int32("-backtrace")) {
-	/* FIXME */
-	log_hyp_detailed (stdout, hyp, s->uttid, "BP", "bp", NULL);
+	log_hyp_detailed (stdout, hyp, s->uttid, "BP", "bp", s->ascale);
       }
-      
-      /* Total scaled acoustic score and LM score */
-      ascr = lscr = 0;
-      for (tmph = hyp; tmph; tmph = tmph->next) {
-	ascr += tmph->ascr;
-	lscr += tmph->lscr;
+
+#if 1
+      bghyp=NULL;
+      for(btmph= hyp ; btmph ; btmph = btmph->next){
+	bghyp=glist_add_ptr(bghyp,(void*)btmph);
       }
-      
+
+      brhyp=glist_reverse(bghyp);
+      match_write(stdout,s, brhyp, "\nBSTPTH: ");
+      glist_free(bghyp);
+#endif
+
+
+#if 0 /* The old routines which used  */
       printf ("BSTPTH: ");
       /* FIXME */
       log_hypstr (stdout, hyp, s->uttid, 1, ascr + lscr,s->kbc->dict);
-      
       printf ("BSTXCT: ");
-      /* FIXME */
 
-      log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, 0.0, lwf,s->kbc->dict,lm);
+      log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, scl, lwf,s->kbc->dict,lm);
+
+#endif
+      
 
     }
-    dag_destroy(dag);
+    if(dag)
+      dag_destroy(dag);
 
     lm_cache_stats_dump (lm);
     lm_cache_reset (lm);
@@ -591,14 +668,6 @@ int srch_FLAT_FWD_end(void* srch)
 
 /* Log recognition output to the standard match and matchseg files */
 
-  printf ("FWDXCT: ");
-  /* FIXME, scale is not implemented correctly */
-  log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, 0.0, lm->lw ,s->kbc->dict,lm);
-  if(s->matchsegfp){
-    log_hypseg (s->uttid, s->matchsegfp, hyp, fwg->n_frm, 0.0, lm->lw ,s->kbc->dict,lm);
-  }
-
-  lm_cache_stats_dump (lm);
 
 
 #if 0
@@ -606,6 +675,7 @@ int srch_FLAT_FWD_end(void* srch)
     write_bestscore (bscrdir, s->uttid, bestscr, nfr);
 #endif
 
+  fwd_timing_dump(fwg);
   stat_report_utt(st,s->uttid);
   stat_update_corpus(st);
 
@@ -642,6 +712,7 @@ int srch_FLAT_FWD_delete_lm(void* srch, const char *lmname)
   E_INFO("In Mode 3, currently the function delete LM is not supported\n");
   return SRCH_FAILURE;
 }
+
 
 int srch_FLAT_FWD_srch_one_frame_lv2(void* srch)
 {

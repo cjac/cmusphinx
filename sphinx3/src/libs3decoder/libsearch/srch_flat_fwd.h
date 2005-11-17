@@ -37,9 +37,12 @@
  /*
   * HISTORY
  * $Log$
- * Revision 1.1.2.3  2005/09/25  19:23:55  arthchan2003
- * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ * Revision 1.1.2.4  2005/11/17  06:42:15  arthchan2003
+ * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
  * 
+ * Revision 1.1.2.3  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
  * Revision 1.1.2.2  2005/09/18 01:45:19  arthchan2003
  * Filled in all implementation in srch_flat_fwd.[ch], like the FSG mode, it takes care of reporting itselft.
  *
@@ -49,6 +52,8 @@
  *
  *
  */
+
+#include "flat_fwd.h"
 
 /* \file srch_flat_fwd.h
  * 
@@ -64,6 +69,7 @@
 #include <lm.h>
 #include <kb.h>
 #include <word_ugprob.h>
+#include <word_graph.h>
 #include <whmm.h>
 
 #ifndef SRCH_FLT_FWD
