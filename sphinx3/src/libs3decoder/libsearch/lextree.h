@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.5  2005/10/17  04:53:44  arthchan2003
- * Shrub the trees so that the run-time memory could be controlled.
+ * Revision 1.10.4.6  2005/11/17  06:28:50  arthchan2003
+ * Changed the code to used compressed triphones. Not yet correct at this point
  * 
+ * Revision 1.10.4.5  2005/10/17 04:53:44  arthchan2003
+ * Shrub the trees so that the run-time memory could be controlled.
+ *
  * Revision 1.10.4.4  2005/10/07 19:34:31  arthchan2003
  * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
  *
@@ -404,8 +407,7 @@ int32 lextree_hmm_propagate_leaves (lextree_t *lextree,	/**< In/Out: Propagate s
 				   vithist_t *vh,	/**< In/Out: Viterbi history structure to be
 							   updated with word exits */
 				   int32 cf,            /**< In: Current frame index */
-				   int32 wth,		/**< In: Word exit pruning threshold */
-				   int32 senscale       /**< In: The senscale for this frame */
+				   int32 wth		/**< In: Word exit pruning threshold */
 				   ); 
 
 

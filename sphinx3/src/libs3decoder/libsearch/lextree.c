@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9.4.9  2005/10/17  04:53:44  arthchan2003
- * Shrub the trees so that the run-time memory could be controlled.
+ * Revision 1.9.4.10  2005/11/17  06:28:50  arthchan2003
+ * Changed the code to used compressed triphones. Not yet correct at this point
  * 
+ * Revision 1.9.4.9  2005/10/17 04:53:44  arthchan2003
+ * Shrub the trees so that the run-time memory could be controlled.
+ *
  * Revision 1.9.4.8  2005/10/07 19:34:29  arthchan2003
  * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
  *
@@ -959,6 +962,7 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
     hmm_t *hmm, *cwhmm;
     int32 rc;
     int32 n_ci, n_st, n_rc;
+    int32 tmp_lc;
     tmat_t *tmat;
     s3ssid_t *rmap;
     
@@ -1018,8 +1022,21 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	    n_ci=mdef_n_ciphone(kbc->mdef);
 	    /* HACK, assuming the left context is sil */
 
-	    rmap=kbc->dict2pid->lrssid[ln->ci][kbc->mdef->sil].ssid;
-	    n_rc = kbc->dict2pid->lrssid[ln->ci][kbc->mdef->sil].n_ssid;
+	    /*	    if(lc==-1)
+	      tmp_lc=0;
+	    else
+	    tmp_lc=lc;*/
+
+	    rmap=kbc->dict2pid->lrssid[ln->ci][0].ssid;
+	    n_rc = get_rc_nssid(kbc->dict2pid,ln->wid,kbc->dict);
+
+	    /*	    n_rc = kbc->dict2pid->lrssid[ln->ci][tmp_lc].n_ssid;*/
+
+	    /*	    E_INFO("I am here\n");
+	    E_INFO("lrssid n_rc %d, get_nssid %d\n", n_rc, get_rc_nssid(kbc->dict2pid,ln->wid,kbc->dict));
+	    */
+
+
 
 	    if(!dict_filler_word(kbc->dict,ln->wid)){
 
@@ -1396,6 +1413,8 @@ int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 
 		  rmap=kbc->dict2pid->rssid[ln2->ci][ln->ci].ssid;
 		  n_rc = kbc->dict2pid->rssid[ln2->ci][ln->ci].n_ssid;
+		  
+		  assert (n_rc == get_rc_nssid(kbc->dict2pid,ln2->wid,kbc->dict));
 
 		  for(rc=0;rc< n_rc;rc++){
 		    
@@ -1461,7 +1480,7 @@ int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 }
 
 int32 lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
-				    int32 cf, int32 wth,int32 senscale)
+				    int32 cf, int32 wth)
 {
 
     lextree_node_t **list, *ln;
@@ -1496,7 +1515,7 @@ int32 lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t
 	    
 	    if(dict2pid_is_composite(kbc->dict2pid)){
 	      vithist_rescore (vh, kbc, ln->wid, cf,
-			       hmm->out.score - ln->prob, senscale, 
+			       hmm->out.score - ln->prob, 
 			       hmm->out.history, lextree->type, -1);
 	    }else{ 
 	      /*	      lextree_node_print(ln,kbc->dict,stdout);*/
@@ -1504,7 +1523,7 @@ int32 lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t
 	      assert(ln->rc!=BAD_S3CIPID); 
 
 	      vithist_rescore (vh, kbc, ln->wid, cf,
-			       hmm->out.score - ln->prob, senscale, 
+			       hmm->out.score - ln->prob, 
 			       hmm->out.history, lextree->type, ln->rc);
 
 	    }
