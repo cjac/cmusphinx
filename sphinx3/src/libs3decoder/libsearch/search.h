@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4.4.3  2005/07/26  02:19:20  arthchan2003
- * Comment out hyp_t, change name of wid in srch_hyp_t to id.
+ * Revision 1.4.4.4  2005/11/17  06:30:37  arthchan2003
+ * Remove senscale from srch_hyp_t (Also see changes in vithist.[ch]). Added some preliminary structure for confidence score estimation.
  * 
+ * Revision 1.4.4.3  2005/07/26 02:19:20  arthchan2003
+ * Comment out hyp_t, change name of wid in srch_hyp_t to id.
+ *
  * Revision 1.4.4.2  2005/07/24 19:34:46  arthchan2003
  * Removed search_hyp_t, used srch_hyp_t instead
  *
@@ -157,7 +160,6 @@ typedef struct srch_hyp_s {
 			   this entry created Specific to Sphinx 3.x
 			   mode 4 and mode 5*/
 
-    int32 senscale;	/**< Segment acoustic score scaling factor */
     int32 type;		/**< Uninterpreted data; see vithist_entry_t in vithist.h */
 
     s3frmid_t sf;         /**< Starting frame */
@@ -167,11 +169,42 @@ typedef struct srch_hyp_s {
     int32     pscr;       /**< score for heuristic search (Only used in dag and astar)*/
 
     int32  fsg_state;     /**< At which this entry terminates (FSG mode only) */
+
   struct srch_hyp_s *next;  /**< a pointer to next structure, a convenient device such 
 			       that a programmer could choose to use it instead of using
 			       a link list.  Of course one could also use glist
 			    */
 } srch_hyp_t;
+
+  /** \struct conf_srch_hyp_t
+      \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
+   */
+
+typedef struct conf_srch_hyp {
+  srch_hyp_t h;
+  int cscore; /**< Confidence score */
+  float lmtype; /**< Language model type */
+  float l1, l2, l3; 
+  int matchtype; /**< Match type: INSERTION, SUBSTITUTION, CORRECT */
+  struct conf_srch_hyp_t *next; /**< a pointer to the next structure */
+} conf_srch_hyp_t;
+
+
+  /** \struct seg_hyp_line_t
+      \brief a strurcture that stores one line of hypothesis. Mainly used in confidence.c
+   */
+
+typedef struct seg_hyp_line {
+  char seq[1024]; /**< The file name */
+  int sent_end_cscore;  /**< The confidenece score at the end of the utterance */
+  float lmtype;   /**<  LM type, depends on the backoff_modes */
+  int wordno;     /**< The number of word in a sentence */
+  int nfr;        /**< The number of frame in a sentence */
+  int ascr;       /**< The sentence acoustic model score */
+  int lscr;       /**< The sentence language model score */
+  conf_srch_hyp_t *wordlist; /**< The list of words */
+} seg_hyp_line_t;
+
 
 
 #if 0 /* Only in Sphinx 2 */
