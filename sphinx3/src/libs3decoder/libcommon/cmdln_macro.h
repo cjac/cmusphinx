@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.12  2005/10/07  18:55:10  arthchan2003
- * Fixed the display problem.
+ * Revision 1.1.2.13  2005/11/17  06:11:15  arthchan2003
+ * 1, Added -hypsegfmt which allows output of hyp(match)seg to s3, s2 and ctm segment format. 2, Added -outlatfmt, which allows conversion of sphinx 3 lattice to IBM lattice. 3, -latcompress, create an uncompressed(in terms of no. of links) version of dag.
  * 
+ * Revision 1.1.2.12  2005/10/07 18:55:10  arthchan2003
+ * Fixed the display problem.
+ *
  * Revision 1.1.2.11  2005/09/26 02:32:34  arthchan2003
  * (Change for comments) Also set agc default to none instead of max. The reason is that all 8 tests we have in the performance do not use -agc max. Also in practice, AGC usually hurt the performance.
  *
@@ -520,7 +523,12 @@
     { "-hypseg", \
       ARG_STRING, \
       NULL, \
-      "Recognition result file, with word segmentations and scores" },
+      "Recognition result file, with word segmentations and scores" }, \
+    { "-hypsegfmt", \
+      ARG_INT32, \
+      "0", \
+      "Hypothesis segmentation format, 0: Sphinx 3 format, 1: Sphinx 2 format, 2: NIST CTM format"},
+
 
 #define cepstral_input_handling_command_line_macro() \
     { "-cepdir", \
@@ -540,11 +548,16 @@
     { "-outlatoldfmt", \
       ARG_INT32, \
       "1", \
-      "Whether to dump lattices in old format" }, \
+      "Whether to dump lattices in old format when Sphinx file format is used. " }, \
+    { "-outlatfmt", \
+      ARG_INT32, \
+      "0", \
+      "output lattice format, 0: Sphinx format of dag (node-based), 1: IBM format (link-based)."}, \
     { "-latext", \
       ARG_STRING, \
       "lat.gz", \
       "Filename extension for lattice files (gzip compressed, by default)" }, 
+
 
 
 #define history_table_command_line_macro() \
@@ -610,7 +623,12 @@
     { "-maxlpf", \
       ARG_INT32, \
       "40000", \
-      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" }, 
+      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" }, \
+    {"-latcompress", \
+      ARG_INT32, \
+      "1", \
+      "Whether lattice is compressed."},
+
 
 #define second_stage_dag_handling_command_line_macro() \
     { "-bestpath", \
