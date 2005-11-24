@@ -38,30 +38,33 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/22  02:24:42  arthchan2003
+ * Revision 1.2  2005/11/24  07:34:04  arthchan2003
+ * Fixed a typo in the code which caused the header of the lattice wasn't dumped correctly.
+ * 
+ * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
  * major reason of separating with the search implementation routine
  * (srch_*.[ch]) is that search is something that people could come up
  * with thousands of ways to implement.
- * 
+ *
  * Such a design shows a certain sense of defiance of conventional ways
  * of designing speech recognition. Namely, **always** using generic
  * graph as the grandfather ancester of every search lattice.  This could
  * 1) break a lot of legacy optimization code. 2) could be slow depends
  * on the implementation.
- * 
+ *
  * The current design only specify the operations that are supposed to be
  * generic in every search (or atomic search operations (ASOs)).
  * Ideally, users only need to implement the interface to make the code
  * work for another search.
- * 
+ *
  * From this point of view, the current check-in still have some
  * fundamental flaws.  For example, the communication mechanism between
  * different atomic search operations are not clearly defined. Scores are
  * now computed and put into structures of ascr. (ascr has no clear
  * interface to outside world). This is something we need to improve.
- * 
+ *
  * Revision 1.21  2005/06/17 21:22:59  archan
  * Added comments for future programmers.  That allow potential turn back when we need to match the score of the code in the past.
  *
@@ -662,7 +665,7 @@ void reg_result_dump (srch_t* s, int32 id)
       E_ERROR("fopen_comp (%s,w) failed\n", str);
     else {
       /* Write header info */
-      vithist_dag_write_header(fp,st->nfr,str);
+      vithist_dag_write_header(latfp,st->nfr,str);
       vithist_dag_write (s->vithist, hyp, s->kbc->dict,
 			 cmd_ln_int32("-outlatoldfmt"), latfp);
       fclose_comp (latfp, ispipe);
