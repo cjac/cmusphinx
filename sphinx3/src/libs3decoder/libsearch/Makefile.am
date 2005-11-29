@@ -19,12 +19,14 @@ libsearch_la_SOURCES = \
 	srch_align.c \
 	srch_allphone.c \
 	srch_debug.c \
+	srch_output.c \
 	srch_time_switch_tree.c \
 	srch_word_switch_tree.c \
 	srch_fsg.c \
 	srch_flat_fwd.c \
 	word_fsg.c \
 	word_ugprob.c \
+	word_graph.c \
 	fsg_history.c \
 	fsg_psubtree.c \
 	fsg_search.c \
@@ -45,12 +47,15 @@ pkginclude_HEADERS = \
 	srch.h \
 	search.h \
 	srch_debug.h \
+	srch_output.h \
 	srch_time_switch_tree.h \
 	srch_word_switch_tree.h \
 	srch_fsg.h \
 	srch_flat_fwd.h \
+	flat_fwd.h \
 	word_fsg.h \
 	word_ugprob.h \
+	word_graph.h \
 	fsg_history.h \
 	fsg_psubtree.h \
 	fsg_lextree.h \
