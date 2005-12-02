@@ -141,6 +141,14 @@ void fe_create_hamming(float64 *in, int32 in_len);
 	       int32 invert       /**< invert=-1, IFFT, invert=1, FFT*/
 	       );
 
+  /** FFT Implementation of fast Fourier transform (FFT) only,
+      optimized for real-valued input
+  */
+  int32 fe_fft_real(float64 *x, /**< Input/Output: The input vector in real numbers */
+		    int n,           /**< The size of the FFT */
+		    int m           /**< The order (log2(size)) of the FFT */
+	  );
+
   /** Convert short to double
    */
   void fe_short_to_double(int16 const *in, /**< Input: vector in short */
