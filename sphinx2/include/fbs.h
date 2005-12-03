@@ -43,10 +43,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/11/03  21:26:09  egouvea
+ * Revision 1.14  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * 
+ * Revision 1.13  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
- * 
+ *
  * Revision 1.12  2005/10/11 13:08:40  dhdfu
  * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  *
@@ -204,25 +207,29 @@
 
 /*
  * Recognition result (hypothesis) with word segmentation information.
- *
- * FIXME: should this be in search.h?
+ * NOTE: Not all these entries may be filled or available all the time.
  */
 typedef struct search_hyp_s {
-    char const *word;	/* READ-ONLY */
+    char const *word;	/* READ-ONLY! Modifying this string will break the decoder! */
     int32 wid;		/* For internal use of decoder */
     int32 sf, ef;	/* Start, end frames within utterance for this word */
-    int32 ascr, lscr;	/* Acoustic, LM scores (not always used!) */
+    int32 ascr;		/* Acoustic score for this word segment */
+    int32 lscr;		/* LM score for this word */
+    int32 scr;		/* Total path score */
     int32 fsg_state_from;	/* At which this entry starts (FSG mode only) */
     int32 fsg_state_to;	/* At which this entry terminates (FSG mode only) */
-    float conf;		/* Confidence measure (roughly prob(correct)) for this word;
-			   NOT FILLED IN BY THE RECOGNIZER at the moment!! */
-    struct search_hyp_s *next;	/* Next word segment in the hypothesis; NULL if none */
+    int32 bsdiff;	/* Diff between best path score for any word at this end frame,
+			   and path score for this word at this end frame */
+    int32 tsdiff;	/* Diff between ascr and topsen score, per frame of the segment */
+    float32 conf;	/* Confidence measure (roughly prob(correct)) for this word */
     int32 latden;	/* Average lattice density in segment.  Larger values imply
 			   more confusion and less certainty about the result.  To use
 			   it for rejection, cutoffs must be found independently */
     double phone_perp;	/* Average phone perplexity in segment.  Larger values imply
 			   more confusion and less certainty.  To use it for rejection,
 			   cutoffs must be found independently. */
+    
+    struct search_hyp_s *next;	/* Next word segment in the hypothesis; NULL if none */
 } search_hyp_t;
 
 

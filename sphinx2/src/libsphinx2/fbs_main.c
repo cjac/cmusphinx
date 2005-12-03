@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.26  2005/10/11  16:59:50  dhdfu
- * Be correct when comparing floating-point literals.
+ * Revision 1.27  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  * 
+ * Revision 1.26  2005/10/11 16:59:50  dhdfu
+ * Be correct when comparing floating-point literals.
+ *
  * Revision 1.25  2005/10/11 16:14:03  dhdfu
  * Oops!  Don't get rid of doublebw.  Also use -1 as the default value
  * for lower filter frequency in case someone thinks that 0Hz is a good
@@ -565,7 +568,7 @@ static float *cep, *dcep, *dcep_80ms, *pcep, *ddcep;
 static int32 maxwpf = 100000000;	/* Max words recognized per frame */
 static int32 maxhmmpf = 1000000000;	/* Max active HMMs per frame */
 
-int32 print_back_trace = TRUE;
+static int32 print_back_trace = TRUE;
 static int32 print_short_back_trace = FALSE;
 static char *arg_file = NULL;
 int32 verbosity_level = 9;		/* rkm: Was 0 */

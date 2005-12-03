@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2005/11/04  18:27:02  egouvea
- * Added state-from and state-to to fsg_history_dump()
+ * Revision 1.6  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  * 
+ * Revision 1.5  2005/11/04 18:27:02  egouvea
+ * Added state-from and state-to to fsg_history_dump()
+ *
  * Revision 1.4  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
@@ -260,10 +263,13 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
   hyp->wid = word_fsglink_wid(fl);
   hyp->word = (hyp->wid >= 0) ? kb_get_word_str(hyp->wid) : "";
   hyp->ef = entry->frame;
+  hyp->scr = entry->score;
   hyp->lscr = word_fsglink_logs2prob(fl);
   hyp->fsg_state_from = word_fsglink_from_state(fl);
   hyp->fsg_state_to = word_fsglink_to_state(fl);
-  hyp->conf = 0.0;		/* Not known */
+  hyp->bsdiff = 0;		/* Not known */
+  hyp->tsdiff = 0;		/* Not known */
+  hyp->conf = 0.0;		/* Not known yet */
   hyp->latden = 0;		/* Not known */
   hyp->phone_perp = 0.0;	/* Not known */
   
@@ -298,9 +304,9 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
   fprintf (fp, "# Hist-Begin %s\n", uttid ? uttid : "");
   fprintf (fp, "# Dummy root entry ID = 0\n");
   
-  fprintf (fp, "# %5s %5s %5s %7s %11s %10s %11s %8s %8s %7s %7s %4s %8s\n",
+  fprintf (fp, "# %5s %5s %5s %7s %11s %10s %11s %8s %8s %6s %6s %4s %8s\n",
 	   "Index", "SFrm", "EFrm", "Pred", "PathScr", "Lscr", "Ascr", "Ascr/Frm", "A-BS/Frm",
-	   "FsgSSt", "FsgESt", "LC", "RC-set");
+	   "SrcSt", "DstSt", "LC", "RC-set");
   
   for (i = 1; i < fsg_history_n_entries(h); i++) {
     entry = fsg_history_entry_get (h, i);
@@ -309,7 +315,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
       nf = hyp.ef - hyp.sf + 1;
       fl = entry->fsglink;
       
-      fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %8d %7d %7s %4d ",
+      fprintf (fp, "%7d %5d %5d %7d %11d %10d %11d %8d %8d %6d %6d %4d ",
 	       i,
 	       hyp.sf, hyp.ef,
 	       entry->pred,

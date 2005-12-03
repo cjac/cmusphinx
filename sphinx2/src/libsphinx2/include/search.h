@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.12  2005/05/24  20:55:25  rkm
- * Added -fsgbfs flag
+ * Revision 1.13  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  * 
+ * Revision 1.12  2005/05/24 20:55:25  rkm
+ * Added -fsgbfs flag
+ *
  * Revision 1.11  2005/01/20 15:11:47  rkm
  * Cleaned up pscr-related functions
  *
@@ -185,7 +188,7 @@ double *search_get_phone_perplexity ( void );
 int32 search_get_sil_penalty (void);
 int32 search_get_filler_penalty ( void );
 BPTBL_T *search_get_bptable ( void );
-void search_postprocess_bptable (double lwf, char const *pass);
+
 int32 *search_get_bscorestack ( void );
 double search_get_lw ( void );
 int32 **search_get_uttpscr ( void );
@@ -295,10 +298,22 @@ void search_bestpscr2uttpscr (int32 currentframe);
 void search_uttpscr_reset ( void );
 
 /*
- * Set the hyp_wid (and n_hyp_wid) global variables in search.c to the given
- * hypothesis (linked list of search_hyp_t entries).
+ * Compute confidence scores for hyp[].
+ * (The hyp[] array must have been filled out by uttproc_result(), or
+ * uttproc_partial_result().)
  */
-void search_set_hyp_wid (search_hyp_t *hyp);
+void search_hyp_conf ( void );
+
+/*
+ * Remove non-REAL (<s>, </s>, filler) words from hyp[] array, and compress
+ * the rest.
+ */
+void search_hyp_filter( void );
+
+/*
+ * Blindly copy linked list of hyp into hyp[] array.
+ */
+void search_hyp_list2array (search_hyp_t *hyplist);
 
 
 #endif

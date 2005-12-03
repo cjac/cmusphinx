@@ -38,10 +38,17 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.24  2005/11/01  23:30:53  egouvea
- * Replaced explicit assignments with memcpy
+ * 30-Nov-2005	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Added acoustic confidence scoring (in search_hyp_t.conf).
+ * 		(Currently, needs compute-all-senones for this to work.)
  * 
+ * $Log$
+ * Revision 1.25  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * 
+ * Revision 1.24  2005/11/01 23:30:53  egouvea
+ * Replaced explicit assignments with memcpy
+ *
  * Revision 1.23  2005/10/11 13:08:40  dhdfu
  * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  *
@@ -922,7 +929,7 @@ static int32 uttproc_frame ( void )
     uttproc_partial_result_seg (&frm, &hyp);
     printf ("PARTSEG[%d]:", frm);
     for (; hyp; hyp = hyp->next)
-      printf (" %s %d %d", hyp->word, hyp->sf, hyp->ef);
+      printf (" %s %d %d %.2f", hyp->word, hyp->sf, hyp->ef, hyp->conf);
     printf ("\n");
     fflush (stdout);
   }
@@ -1002,13 +1009,12 @@ static void uttproc_windup (int32 *fr, char **hyp)
         bestpath_search ();
   }
   
+  /* Obtain pscr-based word confidence scores */
+  search_hyp_conf();
+  
   /* Moved out of the above else clause (rkm:2005/03/08) */
   if (query_phone_conf()) {
-    search_hyp_t *pseg, *search_hyp_pscr_path(), *search_uttpscr2allphone();
-    
-    /* Obtain pscr-based phone segmentation for hypothesis */
-    pseg = search_hyp_pscr_path();
-    search_hyp_free (pseg);
+    search_hyp_t *pseg, *search_uttpscr2allphone();
     
     /* Obtain pscr-based allphone segmentation */
     pseg = search_uttpscr2allphone();
@@ -1552,6 +1558,8 @@ int32 uttproc_partial_result (int32 *fr, char **hyp)
     } else
       search_partial_result (fr, hyp);
     
+    search_hyp_conf();
+    
     return 0;
 }
 
@@ -1640,6 +1648,8 @@ int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
       search_result (fr, &str);
     } else
       search_partial_result (fr, &str); /* Internally makes partial result */
+    
+    search_hyp_conf();
     
     build_utt_seghyp();
     *hyp = utt_seghyp;

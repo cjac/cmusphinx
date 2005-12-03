@@ -42,12 +42,22 @@
  * **********************************************
  * 
  * HISTORY
- *
+ * 
+ * 30-Nov-2005	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ * 		Modified backtrace function to fill in as much of search_hyp_t
+ * 		structure as possible, in one place.  (Previously this was being
+ * 		done, piecemeal, all over the place.)
+ * 		Added acoustic confidence scoring to all hypotheses.  (Currently,
+ * 		needs compute-all-senones for this to work.)
+ * 
  * $Log$
- * Revision 1.6  2005/11/03  21:26:09  egouvea
+ * Revision 1.7  2005/12/03  17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * 
+ * Revision 1.6  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
- * 
+ *
  * Revision 1.5  2005/05/24 20:55:24  rkm
  * Added -fsgbfs flag
  *
@@ -879,69 +889,30 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
   int32 nf;
   
   /* Print backtrace */
-  fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %7s %7s  %s (FSG) (%s)\n",
-	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "SState", "EState", "Word",
+  fprintf (fp, "\t%4s %4s %11s %9s %8s %6s %6s %6s  %s (FSG) (%s)\n",
+	   "SFrm", "EFrm", "AScr", "LScr", "TSDiffPF", "SrcSt", "DstSt", "Conf", "Word",
 	   uttproc_get_uttid());
   fprintf (fp, "\t----------------------------------------------------------------------------------------\n");
   for (hyp = search->hyp; hyp; hyp = hyp->next) {
     nf = hyp->ef - hyp->sf + 1;
-    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %7d %7d  %s\n",
+    fprintf (fp, "\t%4d %4d %11d %9d %8d %6d %6d %6.2f  %s\n",
 	     hyp->sf, hyp->ef,
-	     (nf > 0) ? hyp->ascr/nf : 0,
-	     hyp->ascr, hyp->lscr, hyp->ascr + hyp->lscr,
-	     ((nf > 0) && (hyp->ascr != 0)) ? (seg_topsen_score(hyp->sf, hyp->ef) - hyp->ascr) / nf : 0,
+	     hyp->ascr, hyp->lscr,
+	     ((nf > 0) && (hyp->ascr != 0)) ? (hyp->ascr - seg_topsen_score(hyp->sf, hyp->ef)) / nf : 0,
 	     hyp->fsg_state_from, hyp->fsg_state_to,
+	     hyp->conf,
 	     hyp->word);
   }
   fprintf (fp, "\t----------------------------------------------------------------------------------------\n");
-  fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6dF %s(TOTAL)\n",
+  fprintf (fp, "\t%4d %4d %11d %9d %8s %6s %6dF %6s %s(TOTAL)\n",
 	   0, search->frame-1,
-	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
-	   search->ascr, search->lscr, search->ascr + search->lscr,
-	   (search->frame > 0) ? (seg_topsen_score(0, search->frame-1) - search->ascr)/search->frame : 0,
-	   word_fsg_final_state (search->fsg),
+	   search->ascr, search->lscr,
+	   "",
+	   "", word_fsg_final_state (search->fsg),
+	   "",
 	   uttproc_get_uttid());
   
   fflush (fp);
-}
-
-
-/* Fill in hyp_str in search.c; filtering out fillers and null trans */
-static void fsg_search_hyp_filter(fsg_search_t *search)
-{
-  search_hyp_t *hyp, *filt_hyp;
-  int32 i;
-  int32 startwid, finishwid;
-  int32 altpron;
-  dictT *dict;
-  
-  filt_hyp = search_get_hyp();
-  startwid = kb_get_word_id (kb_get_lm_start_sym());
-  finishwid = kb_get_word_id (kb_get_lm_end_sym());
-  dict = kb_get_word_dict();
-  
-  altpron = query_report_altpron();
-  
-  i = 0;
-  for (hyp = search->hyp; hyp; hyp = hyp->next) {
-    if ((hyp->wid < 0) ||
-	(hyp->wid == startwid) ||
-	(hyp->wid >= finishwid))
-      continue;
-    
-    /* Copy this hyp entry to filtered result */
-    filt_hyp[i] = *hyp;
-    
-    /* Replace specific word pronunciation ID with base ID */
-    if (! altpron)
-      filt_hyp[i].wid = dictid_to_baseid(dict, filt_hyp[i].wid);
-    
-    i++;
-    if ((i+1) >= HYP_SZ)
-      E_FATAL("Hyp array overflow; increase HYP_SZ in search.h\n");
-  }
-  
-  filt_hyp[i].wid = -1;	/* Sentinel */
 }
 
 
@@ -951,12 +922,29 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
  */
 static void fsg_search_set_result (fsg_search_t *search)
 {
-  fsg_search_hyp_filter (search);
+  int32 i;
+  search_hyp_t *h, *hyp;
+  
+  /* Create raw hyp[] array from this hyp list (including ALL words) */
+  search_hyp_list2array (search->hyp);
+  
+  /* Compute confidence scores */
+  search_hyp_conf ();
+  
+  /* Update confidence scores in this hyp list */
+  hyp = search_get_hyp();
+  for (h = search->hyp, i = 0; h; h = h->next, i++) {
+    h->conf = hyp[i].conf;
+  }
+  
+  /* Filter non-REAL words out of raw hyp[] */
+  search_hyp_filter ();
+  
   searchSetFrame(search->frame);
-  search_set_hyp_wid (search->hyp);
-  search_hyp_to_str();
   search_set_hyp_total_score (search->ascr + search->lscr);
   search_set_hyp_total_lscr (search->lscr);
+  
+  search_hyp_to_str();
 }
 
 
