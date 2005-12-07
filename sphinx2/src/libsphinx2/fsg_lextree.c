@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/07/16  00:57:11  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.2  2005/12/07  23:04:39  rkm
+ * Moved __FSG_DBG__ definition to include/word_fsg.h
  * 
+ * Revision 1.1  2004/07/16 00:57:11  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.3  2004/06/23 20:32:16  rkm
  * *** empty log message ***
  *
@@ -79,9 +82,6 @@
 #include <ckd_alloc.h>
 #include <err.h>
 #include <fsg_lextree.h>
-
-
-#define __FSG_DBG__		0
 
 
 /*

@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2005/12/07  22:54:45  rkm
- * Changed word transition (FSGmode) to use regular beam
+ * Revision 1.8  2005/12/07  23:04:39  rkm
+ * Moved __FSG_DBG__ definition to include/word_fsg.h
  * 
+ * Revision 1.7  2005/12/07 22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
+ *
  * Revision 1.6  2005/12/03 17:54:34  rkm
  * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  *
@@ -74,9 +77,6 @@
 #include <kb.h>
 #include <phone.h>
 #include <search.h>
-
-
-#define __FSG_DBG__	0
 
 
 fsg_history_t *fsg_history_init (word_fsg_t *fsg)

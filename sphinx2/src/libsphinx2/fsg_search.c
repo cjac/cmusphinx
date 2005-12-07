@@ -51,9 +51,12 @@
  * 		needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.8  2005/12/07  22:54:45  rkm
- * Changed word transition (FSGmode) to use regular beam
+ * Revision 1.9  2005/12/07  23:04:39  rkm
+ * Moved __FSG_DBG__ definition to include/word_fsg.h
  * 
+ * Revision 1.8  2005/12/07 22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
+ *
  * Revision 1.7  2005/12/03 17:54:34  rkm
  * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  *
@@ -190,8 +193,7 @@
 #define FSG_SEARCH_IDLE		0
 #define FSG_SEARCH_BUSY		1
 
-/* Turn this on for detailed debugging dump */
-#define __FSG_DBG__		0
+/* Turn this on for detailed channel debugging dump */
 #define __FSG_DBG_CHAN__	0
 
 
@@ -640,7 +642,7 @@ static void fsg_search_null_prop (fsg_search_t *search)
   
   fsg = search->fsg;
   
-  /* Use beam to accommodate LM prob spike */
+  /* Use beam (not wbeam) to accommodate LM prob spike */
   thresh = search->bestscore + search->beam;
   
   n_entries = fsg_history_n_entries (search->history);
@@ -693,7 +695,9 @@ static void fsg_search_word_trans (fsg_search_t *search)
   
   n_entries = fsg_history_n_entries (search->history);
   
+  /* Use beam (not wbeam) to accommodate LM prob spike */
   thresh = search->bestscore + search->beam;
+  
   nf = search->frame + 1;
   
   for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
