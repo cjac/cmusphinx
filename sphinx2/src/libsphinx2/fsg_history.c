@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.7  2005/12/07  22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
  * 
+ * Revision 1.6  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.5  2005/11/04 18:27:02  egouvea
  * Added state-from and state-to to fsg_history_dump()
  *
@@ -296,7 +299,7 @@ int32 fsg_history_entry_hyp_extract (fsg_history_t *h, int32 id,
 
 void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
 {
-  int32 i, r, nf;
+  int32 i, nf;
   fsg_hist_entry_t *entry;
   word_fsglink_t *fl;
   search_hyp_t hyp;
@@ -327,9 +330,7 @@ void fsg_history_dump (fsg_history_t *h, char const *uttid, FILE *fp)
 	       word_fsglink_to_state(fl),
 	       entry->lc);
       
-      for (r = FSG_PNODE_CTXT_BVSZ-1; r > 0; r--)
-	fprintf (fp, "%08x.", entry->rc.bv[r]);
-      fprintf (fp, "%08x", entry->rc.bv[0]);
+      fsg_pnode_ctxt_dump (fp, &(entry->rc));
       
       fprintf (fp, "  %s\n", hyp.word);
     }

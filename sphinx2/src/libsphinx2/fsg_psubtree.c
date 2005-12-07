@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2005/01/26  17:54:52  rkm
- * Added -maxhmmpf absolute pruning parameter in FSG mode
+ * Revision 1.3  2005/12/07  22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
  * 
+ * Revision 1.2  2005/01/26 17:54:52  rkm
+ * Added -maxhmmpf absolute pruning parameter in FSG mode
+ *
  * Revision 1.1  2004/07/16 00:57:11  egouvea
  * Added Ravi's implementation of FSG support.
  *
@@ -95,6 +98,16 @@
 #include <log.h>
 #include <hmm_tied_r.h>
 #include <search.h>
+
+
+void fsg_pnode_ctxt_dump (FILE *fp, fsg_pnode_ctxt_t *ctxt)
+{
+  int32 i;
+  
+  for (i = FSG_PNODE_CTXT_BVSZ-1; i > 0; --i)
+    fprintf (fp, "%08x.", ctxt->bv[i]);
+  fprintf (fp, "%08x", ctxt->bv[0]);
+}
 
 
 void fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t *ctxt)
@@ -448,8 +461,7 @@ void fsg_psubtree_dump (fsg_pnode_t *head, FILE *fp)
     fprintf (fp, " %s.%d", phone_from_id(head->ci_ext), head->ppos);
     if ((head->ppos == 0) || head->leaf) {
       fprintf (fp, " [");
-      for (i = 0; i < FSG_PNODE_CTXT_BVSZ; i++)
-	fprintf (fp, "%08x", head->ctxt.bv[i]);
+      fsg_pnode_ctxt_dump (fp, &(head->ctxt));
       fprintf (fp, "]");
     }
     if (head->leaf) {

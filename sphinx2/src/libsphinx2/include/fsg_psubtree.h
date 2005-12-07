@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2004/07/16  00:57:12  egouvea
- * Added Ravi's implementation of FSG support.
+ * Revision 1.2  2005/12/07  22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
  * 
+ * Revision 1.1  2004/07/16 00:57:12  egouvea
+ * Added Ravi's implementation of FSG support.
+ *
  * Revision 1.3  2004/06/25 14:49:08  rkm
  * Optimized size of history table and speed of word transitions by maintaining only best scoring word exits at each state
  *
@@ -243,6 +246,12 @@ void fsg_pnode_add_all_ctxt(fsg_pnode_ctxt_t *ctxt);
  * Return 0 if result is all 0, non-zero otherwise.
  */
 uint32 fsg_pnode_ctxt_sub (fsg_pnode_ctxt_t *src, fsg_pnode_ctxt_t *sub);
+
+
+/*
+ * Print the context bit vector to the given stream.
+ */
+void fsg_pnode_ctxt_dump (FILE *fp, fsg_pnode_ctxt_t *ctxt);
 
 
 #endif

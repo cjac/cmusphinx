@@ -51,9 +51,12 @@
  * 		needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.7  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.8  2005/12/07  22:54:45  rkm
+ * Changed word transition (FSGmode) to use regular beam
  * 
+ * Revision 1.7  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.6  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
@@ -636,7 +639,9 @@ static void fsg_search_null_prop (fsg_search_t *search)
   word_fsg_t *fsg;
   
   fsg = search->fsg;
-  thresh = search->bestscore + search->wbeam;	/* Which beam really?? */
+  
+  /* Use beam to accommodate LM prob spike */
+  thresh = search->bestscore + search->beam;
   
   n_entries = fsg_history_n_entries (search->history);
   
