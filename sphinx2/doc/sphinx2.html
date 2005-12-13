@@ -2238,6 +2238,19 @@ Current dir.
 
 <TR>
 <TD VALIGN=TOP>
+<strong><code>-nbestseg</code></strong>
+</TD>
+<TD VALIGN=TOP>
+If FALSE, nbest hypotheses files contain only the word sequence for each alternative.
+But, if TRUE, each word also includes segmentation and confidence score information.
+</TD>
+<TD VALIGN=TOP>
+<strong><code>FALSE</code></strong>
+</TD>
+</TR>
+
+<TR>
+<TD VALIGN=TOP>
 <strong><code>-phoneconf</code></strong>
 </TD>
 <TD VALIGN=TOP>
@@ -2515,6 +2528,10 @@ Recursive <strong><code>-argfile</code></strong> specifications are not allowed.
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">nbestdir</A>:</TD>
 <TD VALIGN=TOP>Directory for writing N-best hypotheses files.</TD>
+</TR>
+<TR>
+<TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_outputspec">nbestseg</A>:</TD>
+<TD VALIGN=TOP>Whether to include segmentation for each nbest hypothesis word</TD>
 </TR>
 <TR>
 <TD nowrap VALIGN=TOP><LI><A HREF="#sec_cmdline_inputdb">ndictfn</A>:</TD>
@@ -2882,7 +2899,7 @@ indicated by a <strong><code>#</code></strong> character in the first column.
 <address><a href="mailto:rkm@cs.cmu.edu">Ravishankar Mosur</a></address>
 <!-- Created: Jan 01, 1997 -->
 <!-- hhmts start -->
-Last modified: Tue May 24 13:12:24 EDT 2005
+Last modified: Tue Dec 13 13:12:34 EST 2005
 <!-- hhmts end -->
 
 </BODY>
