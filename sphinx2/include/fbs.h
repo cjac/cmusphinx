@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.14  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.15  2005/12/13  17:04:07  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.14  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.13  2005/11/03 21:26:09  egouvea
  * Added state-to and state-from to search_hyp_t, and report both in the
  * log output.
@@ -388,15 +391,16 @@ int32 uttproc_restart_utt ( void );
  * Arguments:
  *     sf, ef: Start and end frame range within utterance for generating N-best list.
  *     w1, w2: Two-word context preceding utterance; w2 is the later one.  w1 may be -1
- *             (i.e., non-existent).  w2 must be valid; it can be the word-id for <s>.
- *     On return, alt_out[i] = i-th hypothesis generated.
- * Return value: #alternative hypotheses returned; -1 if error.
+ *		(i.e., non-existent).  w2 must be valid; it can be the word-id for <s>.
+ *     On return, *alt_out[i] = i-th hypothesis, a NULL-terminated list of search_hyp_t
+ * 		entries for that hypothesis.
+ * Return value: #alternative hypotheses returned, may be 0; -1 if error.
  */
 int32 search_get_alt (int32 n,			/* In: No. of alternatives to produce */
 		      int32 sf, int32 ef,	/* In: Start/End frame */
 		      int32 w1, int32 w2,	/* In: context words */
-		      search_hyp_t ***alt_out);	/* Out: array of alternatives */
-
+		      search_hyp_t ***alt_out);	/* Out: array of alternatives; each
+						   alternative is NULL-terminated list */
 
 /* Should be called before search_get_alt */
 void search_save_lattice ( void );

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.27  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.28  2005/12/13  17:04:13  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.27  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.26  2005/10/11 16:59:50  dhdfu
  * Be correct when comparing floating-point literals.
  *
@@ -383,6 +386,7 @@ static int32 phone_conf = 0;
 static char *pscr2lat = NULL;		/* Directory for phone lattice files */
 
 static int32 nbest = 0;			/* #N-best hypotheses to generate/utterance */
+static int32 nbest_seg = FALSE;		/* TRUE => include segmentation in nbest files */
 static char const *nbest_dir = ".";
 static char const *nbest_ext = "hyp";
 
@@ -749,6 +753,9 @@ config_t param[] = {
 
 	{ "NbestCount", "No. N-best Hypotheses", "-nbest",
 		INT, (caddr_t) &nbest }, 
+
+	{ "NbestReportSeg", "Report segmentation in Nbest files", "-nbestseg",
+		BOOL, (caddr_t) &nbest_seg }, 
 
 	{ "NbestExt", "N-best Hypothesis File Extension", "-nbestext",
   	        STRING, (caddr_t) &nbest_ext }, 
@@ -2017,9 +2024,15 @@ search_hyp_t *run_sc_utterance (char *mfcfile, int32 sf, int32 ef, char *idspec)
 	    nbestfp = stdout;
 	}
 	for (i = 0; i < n_alt; i++) {
-	    for (h = alt[i]; h; h = h->next)
-		fprintf (nbestfp, "%s ", h->word);
-	    fprintf (nbestfp, "\n");
+	  for (h = alt[i]; h; h = h->next) {
+	    if (nbest_seg) {
+	      fprintf (nbestfp, "%s %d %d %.2f ",
+		       h->word, h->sf, h->ef, h->conf);
+	    } else {
+	      fprintf (nbestfp, "%s ", h->word);
+	    }
+	  }
+	  fprintf (nbestfp, "\n");
 	}
 	if (nbestfp != stdout)
 	    fclose (nbestfp);

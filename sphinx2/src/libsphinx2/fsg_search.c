@@ -51,9 +51,12 @@
  * 		needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.9  2005/12/07  23:04:39  rkm
- * Moved __FSG_DBG__ definition to include/word_fsg.h
+ * Revision 1.10  2005/12/13  17:04:13  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.9  2005/12/07 23:04:39  rkm
+ * Moved __FSG_DBG__ definition to include/word_fsg.h
+ *
  * Revision 1.8  2005/12/07 22:54:45  rkm
  * Changed word transition (FSGmode) to use regular beam
  *
@@ -931,29 +934,19 @@ static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
  */
 static void fsg_search_set_result (fsg_search_t *search)
 {
-  int32 i;
-  search_hyp_t *h, *hyp;
+  search_hyp_t *hyplist;
   
   /* Create raw hyp[] array from this hyp list (including ALL words) */
   search_hyp_list2array (search->hyp);
   
-  /* Compute confidence scores */
-  search_hyp_conf ();
-  
-  /* Update confidence scores in this hyp list */
-  hyp = search_get_hyp();
-  for (h = search->hyp, i = 0; h; h = h->next, i++) {
-    h->conf = hyp[i].conf;
-  }
-  
   /* Filter non-REAL words out of raw hyp[] */
-  search_hyp_filter ();
+  hyplist = search_hyp_filter ();
   
   searchSetFrame(search->frame);
   search_set_hyp_total_score (search->ascr + search->lscr);
   search_set_hyp_total_lscr (search->lscr);
   
-  search_hyp_to_str();
+  search_hyp_to_str (hyplist);
 }
 
 
@@ -1069,7 +1062,12 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   }
   search->hyp = head;
   
-  /* For backward compatibility with existing API for obtaining results */
+  /* Compute confidence scores */
+  search_hyp_conf (search->hyp);
+  
+  /*
+   * For backward compatibility with existing API for obtaining results.
+   */
   fsg_search_set_result (search);
 }
 

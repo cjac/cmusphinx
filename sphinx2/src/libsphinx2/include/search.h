@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.14  2005/12/13  17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.13  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.12  2005/05/24 20:55:25  rkm
  * Added -fsgbfs flag
  *
@@ -202,7 +205,7 @@ int32 search_uttpscr2phlat_print (FILE *outfp);
 
 search_hyp_t *search_uttpscr2allphone ( void );
 void search_remove_context (search_hyp_t *hyp);
-void search_hyp_to_str ( void );
+void search_hyp_to_str (search_hyp_t *hyplist);
 void search_hyp_free (search_hyp_t *h);
 
 void sort_lattice(void);
@@ -298,22 +301,31 @@ void search_bestpscr2uttpscr (int32 currentframe);
 void search_uttpscr_reset ( void );
 
 /*
- * Compute confidence scores for hyp[].
- * (The hyp[] array must have been filled out by uttproc_result(), or
- * uttproc_partial_result().)
+ * Compute confidence scores for the NULL terminated linked list of
+ * hypothesis words.
  */
-void search_hyp_conf ( void );
+void search_hyp_conf (search_hyp_t *hyplist);
 
 /*
  * Remove non-REAL (<s>, </s>, filler) words from hyp[] array, and compress
- * the rest.
+ * the rest.  Also, filter exact pronunciation info if specified by
+ * -reportpron flag.
+ * Return value: Head of NULL-terminated linked list of filtered hyp
+ * entries.
  */
-void search_hyp_filter( void );
+search_hyp_t *search_hyp_filter( void );
 
 /*
  * Blindly copy linked list of hyp into hyp[] array.
  */
 void search_hyp_list2array (search_hyp_t *hyplist);
 
+/*
+ * Setup hyparray[] such that hyparray[i]->next = &(hyparray[i+1]).
+ * The last [size-1] item, of course, points to NULL.
+ * Return value: NULL of size is <= 0, otherwise hyparray.
+ */
+search_hyp_t *search_hyparray_build_nextptr (search_hyp_t *hyparray,
+					     int32 size);
 
 #endif

@@ -47,9 +47,12 @@
  * 		needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.15  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.16  2005/12/13  17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.15  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.14  2005/11/14 15:28:39  rkm
  * Bugfixes: using SIL when context is filler; pruning WORST_SCORE links from dag
  *
@@ -151,7 +154,7 @@ static int32 *BScoreStack;
 static int32 **rc_fwdperm;
 
 /* For storing utterance hypothesis */
-static search_hyp_t *hyp;
+extern search_hyp_t *hyp;		/* Defined in search.c */
 extern int32 hyp_sz_max, hyp_sz_cur;	/* Defined in search.c */
 
 static int32 altpron = FALSE;
@@ -159,7 +162,6 @@ static int32 altpron = FALSE;
 extern BPTBL_T *search_get_bptable ();
 extern int32 *search_get_bscorestack ();
 extern double search_get_lw ();
-extern search_hyp_t *search_get_hyp ();
 
 #if 0
 extern char *query_utt_id(void);
@@ -752,8 +754,8 @@ static void print_back_trace (search_hyp_t *h, int32 n_seg)
 
 /*
  * Obtain result and segmentation.
- * NOTE: All segment information is unreliable, since filler word
- * segments have been merged with non-filler neighbors.
+ * NOTE: All acoustic/lm score information is unreliable, since filler
+ * word scores have been accumulated into non-filler neighbors.
  */
 static void lattice_seg_back_trace (latlink_t *link)
 {
@@ -823,6 +825,7 @@ int32 lattice_rescore ( double lwf )
     int32 fr;
     char *res;
     char *orig_lmname = NULL;
+    search_hyp_t *hyplist;
     
     sil_pen = search_get_sil_penalty ();
     filler_pen = search_get_filler_penalty ();
@@ -967,21 +970,26 @@ int32 lattice_rescore ( double lwf )
 	assert(best != NULL);
 	lattice_seg_back_trace (best);
 	
+	/* Fill in .next ptr for hyp[] entries */
+	hyplist = search_hyparray_build_nextptr (hyp, hyp_sz_cur);
+	
 	/* Fill in confidence information */
-	search_hyp_conf();
+	search_hyp_conf(hyplist);
 	
 	/* Log detailed back trace, if specified */
 	if (query_back_trace())
 	  print_back_trace (hyp, hyp_sz_cur);
 	
 	/* Remove non-REAL words from hyp[] */
-	search_hyp_filter();
+	hyplist = search_hyp_filter();
 	
-	/* Remove context words */
+#if 0
+	/* Remove context words (OBSOLETE; no longer compatible) */
 	search_remove_context (hyp);
-	
+#endif
+
 	/* Generate sentence string */
-	search_hyp_to_str ();
+	search_hyp_to_str (hyplist);
 
 	/* NB: best->path_scr doesn't include acoustic score for the final </s>! */
 	search_set_hyp_total_score (best->path_scr+final_node_ascr);
@@ -1061,8 +1069,6 @@ void searchlat_init ( void )
     bptbl = search_get_bptable ();
     BScoreStack = search_get_bscorestack ();
 
-    hyp = search_get_hyp ();
-
     lattice.latnode_list = NULL;
     lattice.final_node = NULL;
 }
@@ -1078,6 +1084,7 @@ typedef struct latpath_s {
     latnode_t *node;		/* Also contains score estimate to final node */
     struct latpath_s *parent;
     struct latpath_s *next;	/* All paths linked linearly, sorted by best score */
+    int32 parent_ef;		/* End frame for link from parent to this node */
     int32 score;		/* Exact score from start node upto node->sf */
 } latpath_t;
 static latpath_t *path_list;	/* Partial paths to be processed */
@@ -1095,7 +1102,7 @@ static int32 insert_depth;
 #define MAX_HYP_TRIES	10000
 
 /* Back trace from path to root */
-static search_hyp_t *latpath_seg_back_trace (latpath_t *path)
+static search_hyp_t *latpath_seg_back_trace (latpath_t *path, int32 ef)
 {
     search_hyp_t *head, *h;
     
@@ -1105,12 +1112,17 @@ static search_hyp_t *latpath_seg_back_trace (latpath_t *path)
 	h->wid = path->node->wid;
 	h->word = kb_get_word_str (h->wid);
 	h->sf = path->node->sf;
-	h->ef = path->node->fef;	/* Approximately */
-
+	h->ef = ef;
+	h->bsdiff = 0;
+	h->tsdiff = 0;
+	h->conf = -1.0;
+	
 	h->next = head;
 	head = h;
+	
+	ef = path->parent_ef;
     }
-
+    
     return head;
 }
 
@@ -1216,6 +1228,7 @@ static void  path_extend (latpath_t *path)
 	newpath = (latpath_t *) listelem_alloc (sizeof(latpath_t));
 	newpath->node = link->to;
 	newpath->parent = path;
+	newpath->parent_ef = link->ef;
 	newpath->score = path->score + link->link_scr;
 	
 	if (path->parent) {
@@ -1356,6 +1369,7 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 	    path = (latpath_t *) listelem_alloc (sizeof(latpath_t));
 	    path->node = node;
 	    path->parent = NULL;
+	    path->parent_ef = sf-1;
 	    
 	    bwid = (altpron) ? dict->dict_list[node->wid]->fwid : node->wid;
 	    
@@ -1383,18 +1397,20 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 	if ((top->node->sf >= ef) || ((top->node == lattice.final_node) &&
 				      (ef > lattice.final_node->sf))) {
 	    /* Complete hypothesis; generate output, but omit last (bracketing) node */
-	    alt[n_alt] = latpath_seg_back_trace (top->parent);
+	    alt[n_alt] = latpath_seg_back_trace (top->parent, top->parent_ef);
 	    /* alt[n_alt] = latpath_seg_back_trace (top); */
 
 	    /* Accept hyp only if non-empty */
 	    if (alt[n_alt]) {
 		/* Check if hypothesis already output */
 		for (j = 0; (j < n_alt) && (hyp_diff (alt[j], alt[n_alt])); j++);
-		if (j >= n_alt)	/* New, distinct alternative hypothesis */
-		    n_alt++;
-		else {
-		    search_hyp_free (alt[n_alt]);
-		    alt[n_alt] = NULL;
+		
+		if (j >= n_alt)	{	/* New, distinct alternative hypothesis */
+		  search_hyp_conf (alt[n_alt]);	  /* Get confidence scores */
+		  n_alt++;
+		} else {
+		  search_hyp_free (alt[n_alt]);
+		  alt[n_alt] = NULL;
 		}
 	    }
 #if 0

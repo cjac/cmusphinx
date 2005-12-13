@@ -43,9 +43,12 @@
  * 		(Currently, needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.25  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.26  2005/12/13  17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.25  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.24  2005/11/01 23:30:53  egouvea
  * Replaced explicit assignments with memcpy
  *
@@ -386,8 +389,6 @@ static char *uttid_prefix = NULL;
 #define UTTIDSIZE       4096
 static int32 uttno;     /* A running sequence number assigned to every utterance.  Used as
                            an id for an utterance if uttid is undefined. */
-
-static search_hyp_t *utt_seghyp = NULL;
 
 static CDCN_type cdcn;
 
@@ -951,8 +952,7 @@ static void fwdflat_search (int32 n_frames)
 
 static void write_results (char const *hyp, int32 aborted)
 {
-    search_hyp_t *seghyp;       /* Hyp with word segmentation information */
-    int32 i;
+    search_hyp_t *hyplist;       /* Hyp with word segmentation information */
     
     /* Check if need to autonumber utterances */
     if (matchfp) {
@@ -963,27 +963,13 @@ static void write_results (char const *hyp, int32 aborted)
     
     if (matchsegfp) {
         fprintf (matchsegfp, "%s ", uttid);
-        seghyp = search_get_hyp ();
-        for (i = 0; seghyp[i].wid >= 0; i++) {
-            fprintf (matchsegfp, " %d %d %s",
-                     seghyp[i].sf,
-                     (seghyp[i].ef-seghyp[i].sf+1),
-                     kb_get_word_str(seghyp[i].wid));
+        for (hyplist = search_get_hyp (); hyplist; hyplist = hyplist->next) {
+            fprintf (matchsegfp, " %d %d %.2f %s",
+                     hyplist->sf, hyplist->ef, hyplist->conf, hyplist->word);
         }
         fprintf (matchsegfp, "\n");
         fflush (matchsegfp);
     }
-    
-#if 0
-    {
-        char const *dumplatdir;
-        if ((dumplatdir = query_dumplat_dir()) != NULL) {
-            char fplatfile[1024];
-        
-            sprintf (fplatfile, "%s/%s.fplat", dumplatdir, uttid);
-            search_dump_lattice_ascii (fplatfile);
-    }
-#endif /* 0 */
 }
 
 static void uttproc_windup (int32 *fr, char **hyp)
@@ -1008,9 +994,6 @@ static void uttproc_windup (int32 *fr, char **hyp)
     if ((searchFrame() > 0) && query_bestpath_flag())
         bestpath_search ();
   }
-  
-  /* Obtain pscr-based word confidence scores */
-  search_hyp_conf();
   
   /* Moved out of the above else clause (rkm:2005/03/08) */
   if (query_phone_conf()) {
@@ -1558,8 +1541,6 @@ int32 uttproc_partial_result (int32 *fr, char **hyp)
     } else
       search_partial_result (fr, hyp);
     
-    search_hyp_conf();
-    
     return 0;
 }
 
@@ -1594,52 +1575,15 @@ void uttproc_align (char *sent)
     time_align_utterance ("alignment", NULL, "<s>", -1, sent, -1, "</s>");
 }
 
-void utt_seghyp_free (search_hyp_t *h)
-{
-    search_hyp_t *tmp;
 
-    while (h) {
-        tmp = h->next;
-        listelem_free (h, sizeof(search_hyp_t));
-        h = tmp;
-    }
-}
-
-static void build_utt_seghyp ( void )
-{
-    int32 i;
-    search_hyp_t *seghyp, *last, *new;
-
-    /* Obtain word segmentation result */
-    seghyp = search_get_hyp ();
-
-    /* Fill in missing details and build segmentation linked list */
-    last = NULL;
-    for (i = 0; seghyp[i].wid >= 0; i++) {
-        new = (search_hyp_t *) listelem_alloc (sizeof(search_hyp_t));
-	memcpy(new, &(seghyp[i]), sizeof(search_hyp_t));
-        new->next = NULL;
-
-        if (! last)
-            utt_seghyp = new;
-        else
-            last->next = new;
-        last = new;
-    }
-}
-
-int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
+int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyplist)
 {
     char *str;
-    
-    /* Free any previous segmentation result */
-    utt_seghyp_free (utt_seghyp);
-    utt_seghyp = NULL;
     
     if ((uttstate != UTTSTATE_BEGUN) && (uttstate != UTTSTATE_ENDED)) {
         E_ERROR("uttproc_partial_result called outside utterance\n");
         *fr = -1;
-        *hyp = NULL;
+        *hyplist = NULL;
         return -1;
     }
 
@@ -1649,29 +1593,25 @@ int32 uttproc_partial_result_seg (int32 *fr, search_hyp_t **hyp)
     } else
       search_partial_result (fr, &str); /* Internally makes partial result */
     
-    search_hyp_conf();
-    
-    build_utt_seghyp();
-    *hyp = utt_seghyp;
+    *hyplist = search_get_hyp();
+    if ((*hyplist)->wid < 0)
+      *hyplist = NULL;
     
     return 0;
 }
 
-int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyp, int32 block)
+int32 uttproc_result_seg (int32 *fr, search_hyp_t **hyplist, int32 block)
 {
     char *str;
     int32 res;
     
-    /* Free any previous segmentation result */
-    utt_seghyp_free (utt_seghyp);
-    utt_seghyp = NULL;
-    
     if ((res = uttproc_result (fr, &str, block)) != 0)
         return res;     /* Not done yet; or ERROR */
-
-    build_utt_seghyp();
-    *hyp = utt_seghyp;
-
+    
+    *hyplist = search_get_hyp();
+    if ((*hyplist)->wid < 0)
+      *hyplist = NULL;
+    
     return 0;
 }
 

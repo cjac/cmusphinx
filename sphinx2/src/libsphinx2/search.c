@@ -49,9 +49,12 @@
  * 		Removed hyp_word[] array.
  *
  * $Log$
- * Revision 1.19  2005/12/03  17:54:34  rkm
- * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ * Revision 1.20  2005/12/13  17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
+ * Revision 1.19  2005/12/03 17:54:34  rkm
+ * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
+ *
  * Revision 1.18  2005/11/14 15:28:39  rkm
  * Bugfixes: using SIL when context is filler; pruning WORST_SCORE links from dag
  *
@@ -438,11 +441,12 @@ static double *phone_perplexity;/* How sharply phones are discriminated/frame */
 static int32 *zeroPermTab;
 
 /* Word-id sequence hypothesized by decoder */
-static search_hyp_t *hyp = NULL;	/* no <s>, </s>, or filler words */
-int32 hyp_sz_max = 0;			/* Current allocation size of hyp[] array */
-int32 hyp_sz_cur;			/* #Valid hyp segments in hyp[] array */
+search_hyp_t *hyp = NULL;	/* no <s>, </s>, or filler words */
+int32 hyp_sz_max = 0;		/* Current allocation size of hyp[] array */
+int32 hyp_sz_cur;		/* #Valid hyp segments in hyp[] array */
 
-static char hyp_str[4096];	/* hyp as string of words sep. by blanks */
+static char *hyp_str;		/* hyp as string of words sep. by blanks */
+static int32 hyp_str_max = 0;
 
 static int32 HypTotalScore;
 static int32 TotalLangScore;
@@ -503,6 +507,9 @@ static int32 utt_pscr_valid = FALSE;
 
 static void topsen_init ( void );
 static void compute_phone_active (int32 topsenscr, int32 npa_th);
+
+static void compute_phone_perplexity( void );
+
 
 /* FIXME: put this in a header file */
 extern void quit (int status, char const *fmt, ...);
@@ -1954,7 +1961,7 @@ search_initialize (void)
 #if SEARCH_TRACE_CHAN_DETAILED
     static void load_trace_wordlist ();
 #endif
-
+    
     ForcedRecMode = FALSE;
     
     NumWords =            kb_get_num_words ();
@@ -1984,6 +1991,8 @@ search_initialize (void)
     
     hyp = (search_hyp_t *) CM_calloc (HYP_SZ, sizeof(search_hyp_t));
     hyp_sz_max = HYP_SZ;
+    hyp_str = (char *) CM_calloc (4096, sizeof(char));
+    hyp_str_max = 4096;
     
     word_chan = (CHAN_T **) CM_calloc (NumWords, sizeof (CHAN_T *));
     WordLatIdx =  (int32 *) CM_calloc (NumWords, sizeof(int32));
@@ -2141,8 +2150,10 @@ int32 search_get_current_startwid ( void )
  */
 void search_set_context (int32 w1, int32 w2)
 {
+#if 0
     context_word[0] = w1;
     context_word[1] = w2;
+#endif
 }
 
 /*
@@ -2483,13 +2494,26 @@ search_one_ply_fwd (void)
     lm_next_frame ();
 }
 
-static void compute_phone_perplexity( void );
+
+search_hyp_t *search_hyparray_build_nextptr (search_hyp_t *hyparray, int32 size)
+{
+  int32 i;
+  
+  for (i = 0; i < size-1; i++)
+    hyparray[i].next = &(hyparray[i+1]);
+  
+  if (size > 0) {
+    hyparray[size-1].next = NULL;
+    return hyparray;
+  } else
+    return NULL;
+}
 
 
 /*
  * Remove non-REAL words from hyp[] and compress the remaining array
  */
-void search_hyp_filter ( void )
+search_hyp_t *search_hyp_filter ( void )
 {
   int32 i, j;
   
@@ -2498,6 +2522,7 @@ void search_hyp_filter ( void )
       if (j < i)
 	hyp[j] = hyp[i];	/* Copy into compressed array */
       
+      /* Filter exact pronunciation info in hyp[], if specified */
       if (! query_report_altpron()) {
 	hyp[j].wid = WordDict->dict_list[hyp[j].wid]->fwid;
 	hyp[j].word = WordIdToStr(WordDict, hyp[j].wid);
@@ -2509,6 +2534,9 @@ void search_hyp_filter ( void )
   
   hyp[j].wid = -1;	/* Sentinel */
   hyp_sz_cur = j;
+  
+  /* Fill in .next ptr for hyp[] entries */
+  return search_hyparray_build_nextptr (hyp, hyp_sz_cur);
 }
 
 
@@ -2585,9 +2613,10 @@ static void print_back_trace (search_hyp_t *h, int32 n_seg, char const *pass)
 }
 
 
-/* SEG_BACK_TRACE
- *-------------------------------------------------------------*
- * Print32 out the backtrace
+/*
+ * SEG_BACK_TRACE
+ * Viterbi result, includes ALL words, including fillers, and exact pronunciation
+ * info.  These have to be filtered out subsequently.
  */
 static void
 seg_back_trace (int32 bpidx, char const *pass)
@@ -2679,6 +2708,7 @@ search_postprocess_bptable (double lwf, char const *pass)
     /* CHAN_T *hmm, *thmm, **acl; */
     int32 bp;
     int32 l_scr;
+    search_hyp_t *hyplist;
     
     if (LastFrame < 10) {	/* HACK!!  Hardwired constant 10 */
 	E_WARN("UTTERANCE TOO SHORT; IGNORED\n");
@@ -2736,22 +2766,27 @@ search_postprocess_bptable (double lwf, char const *pass)
 
     /* Viterbi back trace */
     seg_back_trace (bp, pass);
-
+    
+    /* Fill in .next ptr for hyp[] entries */
+    hyplist = search_hyparray_build_nextptr (hyp, hyp_sz_cur);
+    
     /* Fill in confidence scores for Viterbi path */
-    search_hyp_conf ();
+    search_hyp_conf (hyplist);
     
     /* Log detailed back trace, if specified */
     if (query_back_trace())
       print_back_trace (hyp, hyp_sz_cur, pass);
     
-    /* Remove non-REAL words from hyp[] */
-    search_hyp_filter();
+    /* Remove non-REAL words, and maybe pronunciation spec, from hyp[] */
+    hyplist = search_hyp_filter();
 
-    /* Remove context words */
+#if 0
+    /* Remove context words; OBSOLETE; no longer compatible */
     search_remove_context (hyp);
-    
+#endif
+
     /* Generate sentence string */
-    search_hyp_to_str();
+    search_hyp_to_str (hyplist);
 
     E_INFO ("%s: %s (%s %d (A=%d L=%d))\n",
 	    pass, hyp_str, uttproc_get_uttid(),
@@ -2874,21 +2909,22 @@ void bestpath_search ( void )
  * Convert search hypothesis (word-id sequence) to a single string.
  */
 void
-search_hyp_to_str ( void )
+search_hyp_to_str (search_hyp_t *hyplist)
 {
-    int32 i, k, l;
-    char const *wd;
+    int32 k, l;
     
     hyp_str[0] = '\0';
     k = 0;
-    for (i = 0; hyp[i].wid >= 0; i++) {
-	wd = WordIdToStr (WordDict, hyp[i].wid);
-	l = strlen (wd);
+    
+    for (; hyplist; hyplist = hyplist->next) {
+	l = strlen (hyplist->word);
 	
-	if (k+l > 4090)
-	    E_FATAL("**ERROR** Increase hyp_str[] size\n");
+	if (k+l > hyp_str_max-6) {	/* why 6? just approx. */
+	  hyp_str_max += 4096;
+	  hyp_str = (char *) CM_recalloc (hyp_str, hyp_str_max, sizeof(char));
+	}
 	
-	strcpy (hyp_str+k, wd);
+	strcpy (hyp_str+k, hyplist->word);
 	k += l;
 	hyp_str[k] = ' ';
 	k++;
@@ -3180,6 +3216,7 @@ parse_ref_str (void)
 int32 search_partial_result (int32 *fr, char **res)
 {
     int32 bp, bestscore = 0, bestbp = 0, f; /* FIXME: good defaults? */
+    search_hyp_t *hyplist;
     
     bestscore = WORST_SCORE;
     f = CurrentFrame-1;
@@ -3199,14 +3236,17 @@ int32 search_partial_result (int32 *fr, char **res)
 	/* Viterbi back trace */
 	partial_seg_back_trace (bestbp);
 	
+	/* Fill in .next ptr for hyp[] entries */
+	hyplist = search_hyparray_build_nextptr (hyp, hyp_sz_cur);
+	
 	/* Fill in confidence scores for Viterbi path */
-	search_hyp_conf ();
+	search_hyp_conf (hyplist);
 	
 	/* Remove non-REAL words from hyp[] */
-	search_hyp_filter();
+	hyplist = search_hyp_filter();
 	
 	/* Generate sentence string */
-	search_hyp_to_str();
+	search_hyp_to_str (hyplist);
     } else
 	hyp_str[0] = '\0';
     
@@ -5157,22 +5197,22 @@ search_hyp_t *search_uttpscr2allphone ( void )
  * Variations on the above may be tried.  For example, to model the fact
  * that only some phone sequences are allowed in the language.
  */
-void search_hyp_conf ( void )
+void search_hyp_conf (search_hyp_t *hyplist)
 {
     int32 n_state, nfrm;
-    int32 i, j, k;
+    int32 j, k;
     dict_entry_t *de;
     vithist_t **pseg_vithist;
     int32 **pseg_tmat;
-    search_hyp_t *pseg_hyp, *h;
+    search_hyp_t *pseg_hyp, *h, *wh;
     int32 *phone_score;
     int32 p, f, t, pseg_nf, n_pseg;
     double *fprob, total_fprob;
     double word_conf;
 
     /* Initialize all confidence scores to unknown */
-    for (i = 0; i < hyp_sz_cur; i++)
-      hyp[i].conf = -1.0;
+    for (wh = hyplist; wh; wh = wh->next)
+      wh->conf = -1.0;
     
     if (! utt_pscr_valid) {
       /* Need all senone scores for computing word confidence scores */
@@ -5183,17 +5223,17 @@ void search_hyp_conf ( void )
     fprob = (double *) CM_calloc (NumCiPhones, sizeof(double));
     
     /* For each word in hypothesis, find phone segmentation using pscr scores */
-    for (i = 0; i < hyp_sz_cur; i++) {
+    for (wh = hyplist; wh; wh = wh->next) {
       /* Skip null transitions (FSG-mode) and filler words */
-      if ((hyp[i].wid < 0) || (! (ISA_REAL_WORD(hyp[i].wid))))
+      if ((wh->wid < 0) || (! (ISA_REAL_WORD(wh->wid))))
 	continue;
       
-      de = WordDict->dict_list[hyp[i].wid];
+      de = WordDict->dict_list[wh->wid];
       
       /* 1-state HMM per phone in pronunciation */
       n_state = de->len;
       
-      nfrm = hyp[i].ef - hyp[i].sf + 1;
+      nfrm = wh->ef - wh->sf + 1;
       
       /* Allocate Viterbi search matrix */
       pseg_vithist = (vithist_t **) CM_2dcalloc (nfrm+1, n_state,
@@ -5227,7 +5267,7 @@ void search_hyp_conf ( void )
 				   pseg_tmat,
 				   de->ci_phone_ids,
 				   n_state,
-				   hyp[i].sf, hyp[i].ef,
+				   wh->sf, wh->ef,
 				   1,
 				   kb_get_pip(),
 				   n_state-1);
@@ -5261,7 +5301,7 @@ void search_hyp_conf ( void )
 	
 	/*
 	 * Scale factor to account for fact that only some phone sequences
-	 * allowed in language.
+	 * allowed in language.  (YUCK!! SERIOUS HACK!!)
 	 */
 	if (n_pseg > 0)
 	  word_conf /= _SEARCH_CONF_PHONEPAIR_PROB_;
@@ -5297,15 +5337,15 @@ void search_hyp_conf ( void )
       
       if (n_pseg != de->len) {	/* But this should never happen */
 	assert (n_pseg < de->len);
-	hyp[i].conf = 0.0;
+	wh->conf = 0.0;
       } else {
 	/* Compute P(word) = N-th root (product[P(phones in pronunciation sequence)]) */
-	hyp[i].conf = exp(log(word_conf) / de->len);
+	wh->conf = exp(log(word_conf) / de->len);
       }
       
 #if 0
       printf ("    %04d %04d %.2f %s\n",
-	      hyp[i].sf, hyp[i].ef, hyp[i].conf, hyp[i].word);
+	      wh->sf, wh->ef, wh->conf, wh->word);
       
       print_pscr_path (stdout, pseg_hyp, "Hyp-PSCR");
 #endif
@@ -5543,4 +5583,6 @@ void search_hyp_list2array (search_hyp_t *h)
   
   hyp[i].wid = -1;	/* sentinel */
   hyp_sz_cur = i;
+  
+  search_hyparray_build_nextptr (hyp, hyp_sz_cur);
 }
