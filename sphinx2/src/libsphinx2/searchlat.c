@@ -47,7 +47,10 @@
  * 		needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.16  2005/12/13  17:04:14  rkm
+ * Revision 1.17  2005/12/18  17:22:19  rkm
+ * Fixed minor bug in search_get_alt
+ * 
+ * Revision 1.16  2005/12/13 17:04:14  rkm
  * Added confidence reporting in nbest files; fixed some backtrace bugs
  * 
  * Revision 1.15  2005/12/03 17:54:34  rkm
@@ -157,7 +160,7 @@ static int32 **rc_fwdperm;
 extern search_hyp_t *hyp;		/* Defined in search.c */
 extern int32 hyp_sz_max, hyp_sz_cur;	/* Defined in search.c */
 
-static int32 altpron = FALSE;
+static int32 reportpron = FALSE;
 
 extern BPTBL_T *search_get_bptable ();
 extern int32 *search_get_bscorestack ();
@@ -599,12 +602,6 @@ static int32 build_lattice (int32 bptbl_sz)
 	dump_lattice (latfile);
     }
 
-    /* Change node->wid to base wid if not reporting actual pronunciations. */
-    for (node = latnode_list; node; node = node->next) {
-	if (! altpron)
-	    node->wid = dict->dict_list[node->wid]->fwid;
-    }
-
     /* Remove SIL and noise nodes from DAG; extend links through them */
     bypass_filler_nodes ();
     
@@ -884,14 +881,10 @@ int32 lattice_rescore ( double lwf )
     for (link = start_node->links; link; link = link->next) {
 	assert (! (ISA_FILLER_WORD(link->to->wid)));
 
-	if (altpron) {
-	    bw1 = dict->dict_list[start_wid]->fwid;
-	    bw2 = dict->dict_list[link->to->wid]->fwid;
-	    
-	    link->path_scr = link->link_scr + lm_bg_score (bw1, bw2) * lwf;
-	} else
-	    link->path_scr = link->link_scr +
-		lm_bg_score (start_wid, link->to->wid) * lwf;
+	bw1 = dict->dict_list[start_wid]->fwid;
+	bw2 = dict->dict_list[link->to->wid]->fwid;
+	
+	link->path_scr = link->link_scr + lm_bg_score (bw1, bw2) * lwf;
 
 	link->best_prev = NULL;
 	
@@ -918,16 +911,12 @@ int32 lattice_rescore ( double lwf )
 	for (link = node->links; link; link = link->next) {
 	    assert (! (ISA_FILLER_WORD(link->to->wid)));
 
-	    if (altpron) {
-		bw0 = dict->dict_list[q_head->from->wid]->fwid;
-		bw1 = dict->dict_list[node->wid]->fwid;
-		bw2 = dict->dict_list[link->to->wid]->fwid;
-		
-		score = q_head->path_scr + link->link_scr +
-		    lm_tg_score (bw0, bw1, bw2) * lwf;
-	    } else
-		score = q_head->path_scr + link->link_scr +
-		    lm_tg_score (q_head->from->wid, node->wid, link->to->wid) * lwf;
+	    bw0 = dict->dict_list[q_head->from->wid]->fwid;
+	    bw1 = dict->dict_list[node->wid]->fwid;
+	    bw2 = dict->dict_list[link->to->wid]->fwid;
+	    
+	    score = q_head->path_scr + link->link_scr +
+	      lm_tg_score (bw0, bw1, bw2) * lwf;
 	    
 	    if (score > link->path_scr) {
 		link->path_scr = score;
@@ -1064,7 +1053,7 @@ void searchlat_init ( void )
     sil_wid = kb_get_word_id ("SIL");
     dict = kb_get_word_dict ();
     rc_fwdperm = dict_right_context_fwd_perm ();
-    altpron = query_report_altpron ();
+    reportpron = query_report_altpron ();
     
     bptbl = search_get_bptable ();
     BScoreStack = search_get_bscorestack ();
@@ -1146,14 +1135,10 @@ static int32 best_rem_score (latnode_t *from)
 	score = best_rem_score (link->to);
 	score += link->link_scr;
 	
-	if (altpron) {
-	  bw1 = dict->dict_list[from->wid]->fwid;
-	  bw2 = dict->dict_list[link->to->wid]->fwid;
-	  
-	  score += (lm_bg_score (bw1, bw2) * lw_factor);
-	} else {
-	  score += (lm_bg_score (from->wid, link->to->wid) * lw_factor);
-	}
+	bw1 = dict->dict_list[from->wid]->fwid;
+	bw2 = dict->dict_list[link->to->wid]->fwid;
+	
+	score += (lm_bg_score (bw1, bw2) * lw_factor);
 	
 	if (score > bestscore)
 	    bestscore = score;
@@ -1232,28 +1217,16 @@ static void  path_extend (latpath_t *path)
 	newpath->score = path->score + link->link_scr;
 	
 	if (path->parent) {
-	  if (altpron) {
-	    bw0 = dict->dict_list[path->parent->node->wid]->fwid;
-	    bw1 = dict->dict_list[path->node->wid]->fwid;
-	    bw2 = dict->dict_list[newpath->node->wid]->fwid;
-	    
-	    newpath->score += (lm_tg_score (bw0, bw1, bw2) * lw_factor);
-	  } else {
-	    newpath->score += (lm_tg_score (path->parent->node->wid,
-					    path->node->wid,
-					    newpath->node->wid)
-			       * lw_factor);
-	  }
+	  bw0 = dict->dict_list[path->parent->node->wid]->fwid;
+	  bw1 = dict->dict_list[path->node->wid]->fwid;
+	  bw2 = dict->dict_list[newpath->node->wid]->fwid;
+	  
+	  newpath->score += (lm_tg_score (bw0, bw1, bw2) * lw_factor);
 	} else {
-	  if (altpron) {
-	    bw1 = dict->dict_list[path->node->wid]->fwid;
-	    bw2 = dict->dict_list[newpath->node->wid]->fwid;
-	    
-	    newpath->score += (lm_bg_score (bw1, bw2) * lw_factor);
-	  } else {
-	    newpath->score += (lm_bg_score (path->node->wid, newpath->node->wid)
-			       * lw_factor);
-	  }
+	  bw1 = dict->dict_list[path->node->wid]->fwid;
+	  bw2 = dict->dict_list[newpath->node->wid]->fwid;
+	  
+	  newpath->score += (lm_bg_score (bw1, bw2) * lw_factor);
 	}
 	
 	/* Insert new partial path hypothesis into sorted path_list */
@@ -1294,6 +1267,18 @@ static int32 hyp_diff (search_hyp_t *hyp1, search_hyp_t *hyp2)
 	 h1 = h1->next, h2 = h2->next);
     return (h1 || h2) ? 1 : 0;
 }
+
+
+static void hyp_basepron (search_hyp_t *hyplist)
+{
+  search_hyp_t *h;
+  
+  for (h = hyplist; h; h = h->next) {
+    h->wid = dict->dict_list[h->wid]->fwid;
+    h->word = dict->dict_list[h->wid]->word;
+  }
+}
+
 
 /*
  * Get n best alternatives in lattice for the given frame range [sf..ef].
@@ -1371,7 +1356,7 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 	    path->parent = NULL;
 	    path->parent_ef = sf-1;
 	    
-	    bwid = (altpron) ? dict->dict_list[node->wid]->fwid : node->wid;
+	    bwid = dict->dict_list[node->wid]->fwid;
 	    
 	    if (w1 < 0) {
 	      scr = lm_bg_score(w2, bwid);
@@ -1402,16 +1387,20 @@ int32 search_get_alt (int32 n,			/* In: No. of alternatives to look for */
 
 	    /* Accept hyp only if non-empty */
 	    if (alt[n_alt]) {
-		/* Check if hypothesis already output */
-		for (j = 0; (j < n_alt) && (hyp_diff (alt[j], alt[n_alt])); j++);
-		
-		if (j >= n_alt)	{	/* New, distinct alternative hypothesis */
-		  search_hyp_conf (alt[n_alt]);	  /* Get confidence scores */
-		  n_alt++;
-		} else {
-		  search_hyp_free (alt[n_alt]);
-		  alt[n_alt] = NULL;
-		}
+	      search_hyp_conf (alt[n_alt]);	  /* Get confidence scores */
+
+	      if (! reportpron)			/* Remove exact pronunciation spec */
+		hyp_basepron (alt[n_alt]);
+	      
+	      /* Accept only if hypothesis not already output */
+	      for (j = 0; (j < n_alt) && (hyp_diff (alt[j], alt[n_alt])); j++);
+	      
+	      if (j >= n_alt)	{	/* New, distinct alternative hypothesis */
+		n_alt++;
+	      } else {
+		search_hyp_free (alt[n_alt]);
+		alt[n_alt] = NULL;
+	      }
 	    }
 #if 0
 	    /* Print path here for debugging */
