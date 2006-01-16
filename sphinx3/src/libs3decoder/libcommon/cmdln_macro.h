@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.13  2005/11/17  06:11:15  arthchan2003
- * 1, Added -hypsegfmt which allows output of hyp(match)seg to s3, s2 and ctm segment format. 2, Added -outlatfmt, which allows conversion of sphinx 3 lattice to IBM lattice. 3, -latcompress, create an uncompressed(in terms of no. of links) version of dag.
+ * Revision 1.1.2.14  2006/01/16  19:50:19  arthchan2003
+ * 1, Changed -ltsoov to -lts_mismatch, 2, Added an option to unscale the hypothesis segment scores. , 3, Added an option to dump the best senone scores.
  * 
+ * Revision 1.1.2.13  2005/11/17 06:11:15  arthchan2003
+ * 1, Added -hypsegfmt which allows output of hyp(match)seg to s3, s2 and ctm segment format. 2, Added -outlatfmt, which allows conversion of sphinx 3 lattice to IBM lattice. 3, -latcompress, create an uncompressed(in terms of no. of links) version of dag.
+ *
  * Revision 1.1.2.12  2005/10/07 18:55:10  arthchan2003
  * Fixed the display problem.
  *
@@ -271,10 +274,10 @@
       ARG_STRING, \
       NULL, \
       "Silence and filler (noise) word pronunciation dictionary input file" }, \
-    { "-ltsoov", \
+    { "-lts_mismatch", \
       ARG_INT32, \
       "0", \
-      "Use CMUDict letter-to-sound rules to generate pronunciations for out of vocabulary words. Use it with care. It implicity implies that the phone set in the mdef and dict are the same as the LTS rule. "},
+      "Use CMUDict letter-to-sound rules to generate pronunciations for LM words doesn't appear in the dictionary . Use it with care. It assumes that the phone set in the mdef and dict are the same as the LTS rule. "},
 
 #define gaussian_selection_command_line_macro() \
     { "-gs", \
@@ -529,6 +532,11 @@
       "0", \
       "Hypothesis segmentation format, 0: Sphinx 3 format, 1: Sphinx 2 format, 2: NIST CTM format"},
 
+#define score_handling_command_line_macro() \
+    { "-hypsegscore_unscale", \
+      ARG_INT32, \
+      "1", \
+      "When displaying the results, whether to unscale back the acoustic score with the best score in a frame"}, 
 
 #define cepstral_input_handling_command_line_macro() \
     { "-cepdir", \
@@ -567,7 +575,7 @@
       "Directory in which to dump word Viterbi back pointer table (for debugging)" }, \
     { "-bptblsize", \
       ARG_INT32, \
-      "32767", \
+      "32768", \
       "Number of BPtable entries to allocate initially (grown as necessary)" },
 
 /* decode-specific, that includes mode 4 and mode 5'
@@ -691,7 +699,12 @@
     {"-backtrace", \
      ARG_INT32, \
       "1", \
-      "Whether detailed backtrace information (word segmentation/scores) shown in log" }, 
+      "Whether detailed backtrace information (word segmentation/scores) shown in log" }, \
+    { "-bestsenscrdir", \
+      ARG_STRING, \
+      NULL, \
+      "When Best senone score directory." }, 
+
 
 /* mode TST or mode 4*/
 #define search_modeTST_specific_command_line_macro() \
