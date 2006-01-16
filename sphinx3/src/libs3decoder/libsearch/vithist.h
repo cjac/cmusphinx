@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.8  2005/11/17  06:46:02  arthchan2003
- * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
+ * Revision 1.11.4.9  2006/01/16  18:11:39  arthchan2003
+ * 1, Important Bug fixes, a local pointer is used when realloc is needed.  This causes invalid writing of the memory, 2, Acoustic scores of the last segment in IBM lattice generation couldn't be found in the past.  Now, this could be handled by the optional acoustic scores in the node of lattice.  Application code is not yet checked-in
  * 
+ * Revision 1.11.4.8  2005/11/17 06:46:02  arthchan2003
+ * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
+ *
  * Revision 1.11.4.7  2005/10/17 04:58:30  arthchan2003
  * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
  *
@@ -407,7 +410,8 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 			dict_t *dict,	/**< In: Dictionary; for generating word string names */
 			int32 oldfmt,	/**< In: If TRUE, old format, edges: srcnode dstnode ascr;
 					 * else new format, edges: srcnode endframe ascr */
-			FILE *fp	/**< Out: File to be written */
+			FILE *fp,	/**< Out: File to be written */
+			int32 dump_nodescr /** In: If True, dump the acoustic and language score for the node */
 			);
 
   /** 

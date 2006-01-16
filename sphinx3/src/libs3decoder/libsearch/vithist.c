@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.11  2005/11/17  06:46:02  arthchan2003
- * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
+ * Revision 1.8.4.12  2006/01/16  18:11:39  arthchan2003
+ * 1, Important Bug fixes, a local pointer is used when realloc is needed.  This causes invalid writing of the memory, 2, Acoustic scores of the last segment in IBM lattice generation couldn't be found in the past.  Now, this could be handled by the optional acoustic scores in the node of lattice.  Application code is not yet checked-in
  * 
+ * Revision 1.8.4.11  2005/11/17 06:46:02  arthchan2003
+ * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
+ *
  * Revision 1.8.4.10  2005/10/17 04:58:30  arthchan2003
  * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
  *
@@ -1249,7 +1252,7 @@ typedef struct {
 /*
  * Header written BEFORE this function is called.
  */
-void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, FILE *fp)
+void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, FILE *fp, int32 dump_nodescr)
 {
 
   /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
@@ -1295,7 +1298,9 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 	    dn = (vithist_dagnode_t *) ckd_calloc (1, sizeof(vithist_dagnode_t));
 	    dn->wid = ve->wid;
 
-	    /* New at 1116, to take care of the issues of last segment for converting S3 lattice to IBM lattice */
+	    /* New at 20051116, to take care of the issues of last
+	       segment for converting S3 lattice to IBM lattice */
+
 	    dn->ascr = ve->ascr;
 	    dn->lscr = ve->lscr;
 
@@ -1366,10 +1371,15 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 	for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
 	    dn = (vithist_dagnode_t *) gnode_ptr(gn);
 	    if (dn->seqid >= 0) {
-		fprintf (fp, "%d %s %d %d %d %d %d\n",
+		fprintf (fp, "%d %s %d %d %d ",
 			 dn->seqid, dict_wordstr(dict, dn->wid), f, 
-			 dn->fef, dn->lef,
-			 dn->ascr,dn->lscr);
+			 dn->fef, dn->lef);
+		
+		if(dump_nodescr)
+		  fprintf(fp, "%d %d\n",dn->ascr,dn->lscr);
+		else
+		  fprintf(fp, "\n");
+
 	    }
 	}
     }
@@ -1401,8 +1411,9 @@ void vithist_dag_write (vithist_t *vh, glist_t hyp, dict_t *dict, int32 oldfmt, 
 		if (oldfmt) {
 		    for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
 			dn2 = (vithist_dagnode_t *) gnode_ptr(gn3);
-			if (dn2->seqid >= 0)
+			if (dn2->seqid >= 0){
 			    fprintf (fp, "%d %d %d\n", dn->seqid, dn2->seqid, ve->ascr);
+			}
 		    }
 		} else {
 		    for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
@@ -1567,55 +1578,58 @@ void latticehist_dump (latticehist_t *lathist, FILE *fp, dict_t *dict,ctxt_table
 void lattice_entry (latticehist_t *lathist, s3wid_t w, int32 f, int32 score, s3latid_t history, int32 rc, ctxt_table_t *ct, dict_t* dict)
 {
     s3cipid_t rc_ind, npid;
-    lattice_t *lat;
     
-    lat=lathist->lattice;
-    /*    E_INFO("n_lat_entry %d\n",lathist->n_lat_entry);*/
+
+    assert(lathist->lattice);
     if ((lathist->n_lat_entry <= 0) ||
-	(lat[lathist->n_lat_entry-1].wid != w) || (lat[lathist->n_lat_entry-1].frm != f)) {
+	(lathist->lattice[lathist->n_lat_entry-1].wid != w) || (lathist->lattice[lathist->n_lat_entry-1].frm != f)) {
 	/* New lattice entry */
 	if (lathist->n_lat_entry >= lathist->lat_alloc) {
 	    printf ("\n");
 	    E_INFO("Lattice size(%d) exceeded; increasing to %d\n",
 		   lathist->lat_alloc,lathist->lat_alloc+LAT_ALLOC_INCR);
 	    lathist->lat_alloc += LAT_ALLOC_INCR;
-	    lat = ckd_realloc (lat, lathist->lat_alloc * sizeof(lattice_t));
+	    lathist->lattice = ckd_realloc (lathist->lattice, lathist->lat_alloc * sizeof(lattice_t));
 	}
 	
-	lat[lathist->n_lat_entry].wid = w;
-	lat[lathist->n_lat_entry].frm = (s3frmid_t) f;
-	lat[lathist->n_lat_entry].score = score;
-	lat[lathist->n_lat_entry].history = history;
+	lathist->lattice[lathist->n_lat_entry].wid = w;
+	lathist->lattice[lathist->n_lat_entry].frm = (s3frmid_t) f;
+	lathist->lattice[lathist->n_lat_entry].score = score;
+	lathist->lattice[lathist->n_lat_entry].history = history;
 
 	/* Allocate space for different right context scores */
 	npid = get_rc_npid (ct, w,dict );
 	assert (npid > 0);
 
-	lat[lathist->n_lat_entry].rcscore = (int32 *) ckd_calloc (npid, sizeof(int32));
-	for (rc_ind = 0; rc_ind < npid; rc_ind++)
-	    lat[lathist->n_lat_entry].rcscore[rc_ind] = S3_LOGPROB_ZERO;
+	lathist->lattice[lathist->n_lat_entry].rcscore = (int32 *) ckd_calloc (npid, sizeof(int32));
 
-	/* ARCHAN: set up individual history for each right context */
-	lat[lathist->n_lat_entry].rchistory = (s3latid_t *) ckd_calloc (npid, sizeof(s3latid_t));
 	for (rc_ind = 0; rc_ind < npid; rc_ind++)
-	  lat[lathist->n_lat_entry].rchistory[rc_ind] = BAD_S3LATID;
+	    lathist->lattice[lathist->n_lat_entry].rcscore[rc_ind] = S3_LOGPROB_ZERO;
 
 	lathist->n_lat_entry++;
+
+#if !SINGLE_RC_HISTORY
+	/* ARCHAN: set up individual history for each right context */
+	lathist->lattice[lathist->n_lat_entry].rchistory = (s3latid_t *) ckd_calloc (npid, sizeof(s3latid_t));
+	for (rc_ind = 0; rc_ind < npid; rc_ind++)
+	  lathist->lattice[lathist->n_lat_entry].rchistory[rc_ind] = BAD_S3LATID;
+#endif
+
     }
 
-    if (lat[lathist->n_lat_entry-1].score < score) {
-	lat[lathist->n_lat_entry-1].score = score;
-	lat[lathist->n_lat_entry-1].history = history;
+    if (lathist->lattice[lathist->n_lat_entry-1].score < score) {
+	lathist->lattice[lathist->n_lat_entry-1].score = score;
+	lathist->lattice[lathist->n_lat_entry-1].history = history;
     }
 
-#if 0
-    lat[lathist->n_lat_entry-1].rcscore[rc] = score;
+#if SINGLE_RC_HISTORY
+    lathist->lattice[lathist->n_lat_entry-1].rcscore[rc] = score;
 #else
 
     /* ARCHAN, fix the bug where right context doesn't maintain its own history*/
-    if(lat[lathist->n_lat_entry-1].rcscore[rc] < score){
-       lat[lathist->n_lat_entry-1].rcscore[rc] = score;
-       lat[lathist->n_lat_entry-1].rchistory[rc] = history;
+    if(lathist->lattice[lathist->n_lat_entry-1].rcscore[rc] < score){
+       lathist->lattice[lathist->n_lat_entry-1].rcscore[rc] = score;
+       lathist->lattice[lathist->n_lat_entry-1].rchistory[rc] = history;
     }
 #endif
 
