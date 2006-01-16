@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.6  2005/09/18  01:45:43  arthchan2003
- * Clean up the interfaces for srch_fsg.[ch]
+ * Revision 1.1.2.7  2006/01/16  20:12:42  arthchan2003
+ * Interfaces for the 2nd-stage search. Now commented.
  * 
+ * Revision 1.1.2.6  2005/09/18 01:45:43  arthchan2003
+ * Clean up the interfaces for srch_fsg.[ch]
+ *
  * Revision 1.1.2.5  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -75,6 +78,9 @@ word_fsg_t* srch_FSG_read_fsgfile(void* srch_struct,const char* fsgname);
 int srch_FSG_uninit(void* srch_struct);
 int srch_FSG_begin(void* srch_struct);
 int srch_FSG_end(void* srch_struct);
+
+glist_t srch_FSG_gen_hyp(void* srch_struct);
+int srch_FSG_dump_vithist(void* srch_struct);
 
 int srch_FSG_set_lm(void* srch_struct, const char* lmname);
 int srch_FSG_add_lm(void* srch, lm_t *lm, const char *lmname);

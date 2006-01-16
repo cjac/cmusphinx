@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.7  2005/09/18  01:45:43  arthchan2003
- * Clean up the interfaces for srch_fsg.[ch]
+ * Revision 1.1.2.8  2006/01/16  20:12:42  arthchan2003
+ * Interfaces for the 2nd-stage search. Now commented.
  * 
+ * Revision 1.1.2.7  2005/09/18 01:45:43  arthchan2003
+ * Clean up the interfaces for srch_fsg.[ch]
+ *
  * Revision 1.1.2.6  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -156,6 +159,7 @@ int srch_FSG_end(void* srch){
   s=(srch_t *)srch;
   fsgsrch=(fsg_search_t*) s->grh->graph_struct;
 
+  fsgsrch->senscr=s->ascale;
   fsg_search_utt_end(fsgsrch);
 
   return SRCH_SUCCESS;
@@ -168,6 +172,7 @@ int srch_FSG_srch_one_frame_lv2(void* srch)
   fsg_search_t* fsgsrch;
   s=(srch_t *)srch;
   fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+  fsgsrch->uttid=s->uttid;
 
   fsg_search_frame_fwd (fsgsrch);
 
@@ -222,3 +227,46 @@ int srch_FSG_windup(void* srch, int32 frmno)
   return SRCH_SUCCESS;
 }
 
+int srch_FSG_dump_vithist(void* srch)
+{
+  FILE *latfp;
+  char file[8192];
+  srch_t *s;
+  fsg_search_t* fsgsrch;
+
+  s=(srch_t *)srch;
+  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+
+  sprintf (file, "%s/%s.hist", cmd_ln_str("-bptbldir"), fsgsrch->uttid);
+  if ((latfp = fopen(file, "w")) == NULL)
+    E_ERROR("fopen(%s,w) failed\n", file);
+  else {
+    fsg_history_dump (fsgsrch->history, fsgsrch->uttid, latfp,fsgsrch->dict);
+    fclose(latfp);
+  }
+
+  return SRCH_SUCCESS;
+}
+
+glist_t srch_FSG_gen_hyp (void * srch /**< a pointer of srch_t */
+			  )
+{
+  srch_t *s;
+  fsg_search_t* fsgsrch;
+  srch_hyp_t *tmph;
+  glist_t ghyp, rhyp;
+
+  s=(srch_t *)srch;
+  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+
+  fsg_search_history_backtrace (fsgsrch, TRUE);
+
+  ghyp=NULL;
+  for(tmph= fsgsrch->hyp ; tmph ; tmph = tmph->next){
+    ghyp=glist_add_ptr(ghyp,(void*)tmph);
+  }
+
+  rhyp= glist_reverse(ghyp);
+
+  return rhyp;
+}
