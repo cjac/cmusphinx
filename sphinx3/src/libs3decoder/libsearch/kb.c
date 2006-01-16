@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26.4.9  2005/10/17  04:52:02  arthchan2003
- * Free fast_gmm_t.
+ * Revision 1.26.4.10  2006/01/16  18:22:21  arthchan2003
+ * Removed fcloses in kb_free because it caused seg faults. Valgrind also reported.
  * 
+ * Revision 1.26.4.9  2005/10/17 04:52:02  arthchan2003
+ * Free fast_gmm_t.
+ *
  * Revision 1.26.4.8  2005/09/26 02:26:08  arthchan2003
  * Change -s3hmmdir to -hmm
  *
@@ -448,7 +451,11 @@ void kb_free (kb_t *kb)
     ckd_free_2d ((void **)kb->feat);
   }
 
+
+#if 0 /* valgrind reports this one. */
   if (kb->matchsegfp) fclose(kb->matchsegfp);
   if (kb->matchfp) fclose(kb->matchfp);
+#endif
+
 
 }
