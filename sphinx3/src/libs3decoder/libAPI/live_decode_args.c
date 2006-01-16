@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13.4.6  2005/09/18  01:11:17  arthchan2003
- * Add command line for flat-lexicon decoding in livepretend.
+ * Revision 1.13.4.7  2006/01/16  18:36:03  arthchan2003
+ * Add unscaling feature in both decode/livepretend.
  * 
+ * Revision 1.13.4.6  2005/09/18 01:11:17  arthchan2003
+ * Add command line for flat-lexicon decoding in livepretend.
+ *
  * Revision 1.13.4.5  2005/07/20 19:42:30  arthchan2003
  * Completed live decode layer of lm add. Added command-line arguments for fsg and phone insertion.
  *
@@ -128,6 +131,7 @@ arg_t arg_def[] = {
   common_s3x_beam_properties_command_line_macro()
   control_file_handling_command_line_macro()
   hypothesis_file_handling_command_line_macro()
+  score_handling_command_line_macro()
   output_lattice_handling_command_line_macro()
   dag_handling_command_line_macro()
   second_stage_dag_handling_command_line_macro()
