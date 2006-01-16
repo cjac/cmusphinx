@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4.4.1  2005/07/14  05:52:15  arthchan2003
- * Apply bugs of 1136322, similar to patch 1099844, currently identified it as a hack because it doesn't fully clean up the internal representation of the hash function.
+ * Revision 1.4.4.2  2006/01/16  20:21:46  arthchan2003
+ * Fixed the typo in str2words.c
  * 
+ * Revision 1.4.4.1  2005/07/14 05:52:15  arthchan2003
+ * Apply bugs of 1136322, similar to patch 1099844, currently identified it as a hack because it doesn't fully clean up the internal representation of the hash function.
+ *
  * Revision 1.4  2005/06/22 03:11:25  arthchan2003
  * 1, Fixed doxygen documentation, 2, Added  keyword.
  *
@@ -80,7 +83,7 @@ int32 str2words (char *line, char **ptr, int32 max_ptr)
 
       /** 
 	  ARCHAN 20050713: 
-	  [1236322] libutil\str2words special character bgu
+	  [1236322] libutil\str2words special character bug
 	  HACK Apply suggested hack of fixing the hash
 	  table such that it can work with extended ascii code . This is
 	  a hack because the best way to solve it is to make sure all

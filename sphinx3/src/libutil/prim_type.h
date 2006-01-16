@@ -36,7 +36,7 @@
 /*
  * prim_type.h -- Primitive types; more machine-independent.
  *
- * **********************************************
+ * *********************************************
  * CMU ARPA Speech Project
  *
  * Copyright (c) 1999 Carnegie Mellon University.
@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.3  2005/10/09  20:02:13  arthchan2003
- * Explicitly make int8 to be signed. This will make the code works well in some architecture.
+ * Revision 1.11.4.4  2006/01/16  20:21:46  arthchan2003
+ * Fixed the typo in str2words.c
  * 
+ * Revision 1.11.4.3  2005/10/09 20:02:13  arthchan2003
+ * Explicitly make int8 to be signed. This will make the code works well in some architecture.
+ *
  * Revision 1.11.4.2  2005/09/07 23:43:50  arthchan2003
  * Add boolean in the prim_type. Not yet fully implemented.
  *
@@ -74,6 +77,8 @@
 
 #ifndef _LIBUTIL_PRIM_TYPE_H_
 #define _LIBUTIL_PRIM_TYPE_H_
+
+
 
 /** \file prim_type.h
  * \brief Type signatures used in Sphinx. 
@@ -149,8 +154,11 @@ typedef union anytype_s {
 #define MIN_NEG_FLOAT64		((float64) (-MIN_POS_FLOAT64))
 
 
+
 #ifdef __cplusplus
 }
 #endif
+
+
 
 #endif
