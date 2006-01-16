@@ -37,9 +37,12 @@
 /* srch.h
  * HISTORY
  * $Log$
- * Revision 1.1.4.14  2005/11/17  06:36:36  arthchan2003
- * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
+ * Revision 1.1.4.15  2006/01/16  20:01:20  arthchan2003
+ * Added Commented code in srch.[ch] for second-stage rescoring. Not used for now.
  * 
+ * Revision 1.1.4.14  2005/11/17 06:36:36  arthchan2003
+ * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
+ *
  * Revision 1.1.4.13  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -174,16 +177,13 @@
 
 #include "gmm_wrap.h"
 #include "srch_debug.h"
+#include "srch_output.h"
 
+#ifndef _SRCH_H_
+#define _SRCH_H_
 
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
-
-#if 0
-#define SRCH_STATE_BEGIN 0
-#define SRCH_STATE_DECODE 1
-#define SRCH_STATE_END 2
-#endif
 
 #define OPERATION_ALIGN 0
 #define OPERATION_ALLPHONE 1
@@ -203,14 +203,14 @@
 #define GMM_STRUCT_SCHMM 1
 
 
-
-
 #define GAUDEN_EVAL_WINDOW 8 /*Moving window length when frames are
 			       considered as blocks, currently used in
 			       3.0 family of tools. */
 
 #define DFLT_UTT_SIZE 5000 /**< The default number of frames of an utterance */
 #define DFLT_NUM_SEGS 200  /**< The default number of segments of an utterance */
+
+
 
 /* \struct grp_str_t 
  */
@@ -491,8 +491,8 @@ typedef struct srch_s {
 			      );
 
 
-  /* The level 1 search functions are not yet fully used. When fast match is needed. We will
-     need them more. 
+  /* The level 1 search functions are not yet fully used. Not all of them are defined nowWhen fast
+     match is needed. We will need them more. 
    */
   int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
 				 );
@@ -550,6 +550,46 @@ typedef struct srch_s {
   int (*srch_shift_one_cache_frame) (void *srch_struct,int32 win_efv);
   int (*srch_select_active_gmm) (void *srch_struct);
 
+
+  /** 
+      Second stage functions. They provide a generalized interface for
+      different modes to generate output
+   */
+  /**
+     Generation of hypothesis (*.hyp). Notice, displaying hypothesis is taken care by srch.c itself. 
+   */
+  glist_t (*srch_gen_hyp) (void * srch_struct /**< a pointer of srch_t */
+		       );
+
+  /**
+    Generation of directed acyclic graph (*.lat.gz). Notice , dumping
+    the dag will be taken care by srch.c. There is mode specific
+    optimization.
+    @return a dag which represent the word graphs. 
+   */
+  dag_t* (*srch_gen_dag) (void* srch_struct, /**< a pointer of srch_t */
+			  glist_t hyp
+			  );
+
+  /**
+     Dump vithist 
+   */
+  int (*srch_dump_vithist)(void * srch_struct /**< a pointer of srch_t */
+		       );
+
+  /**
+     Interface of best path search. 
+   */
+  glist_t (*srch_bestpath_impl)(void *srch_struct, /**< a pointer of srch_t */
+				dag_t *dag 
+				);
+
+  /**
+     Interface for sphinx3 dag dumping function     
+   */
+  int (*srch_dag_dump) (void * srch_struct,
+			glist_t hyp
+			);
 }srch_t;
 
 
@@ -656,45 +696,19 @@ int32 srch_uninit(srch_t* srch /**< In: a search structure */
 		  );
 
 
-#define SEG_FMT_SPHINX3 0
-#define SEG_FMT_SPHINX2 1
-#define SEG_FMT_CTM 2
-#define CTM_CHANNEL_MARKER "A"
-#define CTM_CONFIDENCE_SCORE_STUB 0.7
-
-/** write match segment */
-void matchseg_write (FILE *fp,  /**< The file pointer */
-		     srch_t *s, /**< The search structure */
-		     glist_t hyp, /**< A link-list that contains the hypotheesis*/
-		     char *hdr, /**< The header */
-		     int32 fmt /**< The format of segmentation file 
-				  SEG_FMT_SPHINX3 : Sphinx 3 segmentation format. 
-				  SEG_FMT_SPHINX2 : Sphinx 2 segmentation format. 
-				  CTM : CTM format used by NIST sctk rescoring kit. 
-				*/
-		     );
-
-/** write a match file 
-
-  NOTE: Current match_write has four features which is different with log_hypstr. 
-  1, match_write allows the use of hdr. 
-  2, log_hypstr allows matchexact in output. 
-  3, log_hypstr allows output the score after the match file name. 
-  4, log_hypstr will dump the pronounciation variation to the code. 
-
-  I don't think they are very important in processing so I removed them. 
-
-*/
-void match_write (FILE *fp,  /**< The file pointer */
-		  srch_t* s, /**< The search structure */
-		  glist_t hyp, /**< A link-list that contains the hypothesis */
-		  char *hdr    /**< The header */
-		  );
 
 /** Dump recognition result */
 void reg_result_dump (srch_t* s, /**< A search structure */
 		      int32 id  /**< Utterance ID */
 		      );
+/**
+   Dump the best senone score for each frame
+ */
+void write_bstsenscr(FILE *fp, /**< A file pointer */
+		      int32 numframe, /**< Number of frame in one recognition */
+		      int32* scale    /**< Scales */
+		      );
+
 
 /** using file name of the LM or defined lmctlfn mechanism */
 int32 srch_set_lm(srch_t* srch,  /**< A search structure */
@@ -704,46 +718,6 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 /** delete lm */
 int32 srch_delete_lm();
 
-
-/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
-    When hyp_t, srch_hyp_t are united, we could tie it with match_write
-    (20051109) ARCHAN: The only consumer of log_hypstr now is main_dag.c
-
- */
-void log_hypstr (FILE *fp,  /**< A file pointer */
-		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
-		 char *uttid,   /**< An utterance ID */
-		 int32 exact,   /**< Whether to dump an exact */
-		 int32 scr,      /**< The score */
-		 dict_t *dict    /**< A dictionary to look up wid */
-		 );
-
-
-void log_hyp_detailed (FILE *fp, /**< A file poointer */
-		       srch_hyp_t *hypptr,  /**< A srch_hyp_t */
-		       char *uttid,         /**< An utternace ID */
-		       char *LBL,           /**< A header in cap */
-		       char *lbl,           /**< A header in small */
-		       int32* senscale      /**< Senone scale vector, 
-					       if specified, normalized score would be displayed, 
-					       if not, the unormalized score would be displayed. 
-					     */
-		       );
-
-/** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
-    When hyp_t, srch_hyp_t are united, we could tie it with match_write
-    (20051109) ARCHAN: The only consumer of log_hypseg now is main_dag.c
- */
-
-void log_hypseg (char *uttid,
-		 FILE *fp,	/* Out: output file */
-		 srch_hyp_t *hypptr,	/* In: Hypothesis */
-		 int32 nfrm,	/* In: #frames in utterance */
-		 int32 scl,	/* In: Acoustic scaling for entire utt */
-		 float64 lwf,	/* In: LM score scale-factor (in dagsearch) */
-		 dict_t* dict,  /* In: dictionary */
-		 lm_t *lm
-		 );
 
 
 #if 0 /*Not implemented */
@@ -783,4 +757,6 @@ int32 srch_add_words_to_dict();
 
 
 
-#endif
+#endif /* End not implemented */
+
+#endif /*_SRCH_H_ */
