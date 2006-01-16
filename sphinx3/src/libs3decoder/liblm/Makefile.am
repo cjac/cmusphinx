@@ -9,6 +9,7 @@ liblm_la_SOURCES = \
 	fillpen.c \
         lm.c \
 	lm_3g.c \
+	lm_attfsm.c \
 	lm_3g_dmp.c \
 	lmclass.c \
 	lmset.c
