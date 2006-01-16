@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6.4.5  2005/10/09  19:51:05  arthchan2003
- * Followed Dave's changed in the trunk.
+ * Revision 1.6.4.6  2006/01/16  19:45:59  arthchan2003
+ * Change the gaussian density dumping routine to a function.
  * 
+ * Revision 1.6.4.5  2005/10/09 19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
+ *
  * Revision 1.6.4.4  2005/09/25 18:54:20  arthchan2003
  * Added a flag to turn on and off precomputation.
  *
@@ -196,6 +199,20 @@ gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks *
 		  uint8 *active	/**< In: active[gid] is non-0 iff codebook gid is
 					   active.  If NULL, all codebooks active */
 		  );
+
+
+  /**
+    Dump the definitionn of Gaussian distribution. 
+   */
+  void gauden_dump (const gauden_t *g  /**< In: Gaussian distribution g*/
+		    );
+
+  /**
+    Dump the definition of Gaussian distribution of a particular index to the standard output stream
+   */
+  void gauden_dump_ind (const gauden_t *g,  /**< In: Gaussian distribution g*/
+			int senidx          /**< In: The senone index of the Gaussian */
+			);
 
 #ifdef __cplusplus
 }

@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.5.4.6  2005/10/09  19:51:05  arthchan2003
- * Followed Dave's changed in the trunk.
+ * Revision 1.5.4.7  2006/01/16  19:45:59  arthchan2003
+ * Change the gaussian density dumping routine to a function.
  * 
+ * Revision 1.5.4.6  2005/10/09 19:51:05  arthchan2003
+ * Followed Dave's changed in the trunk.
+ *
  * Revision 1.5.4.5  2005/09/25 18:54:20  arthchan2003
  * Added a flag to turn on and off precomputation.
  *
@@ -122,38 +125,45 @@ static float64 min_density;	/* Density values, once converted to (int32)logs3 do
 				   can underflow (or overflow?), causing headaches all
 				   around.  To avoid underflow, use this floor value */
 
-#if 0
 void gauden_dump (const gauden_t *g)
 {
-    int32 c, f, d, i;
+    int32 c; 
     
-    for (c = 0; c < g->n_mgau; c++) {
-	for (f = 0; f < g->n_feat; f++) {
-	    E_INFO ("Codebook %d, Feature %d (%dx%d):\n",
-		    c, f, g->n_density, g->featlen[f]);
-	    
-	    for (d = 0; d < g->n_density; d++) {
-		printf ("m[%3d]", d);
-		for (i = 0; i < g->featlen[f]; i++)
-		    printf (" %7.4f", g->mean[c][f][d][i]);
-		printf ("\n");
-	    }
-	    printf ("\n");
-	    
-	    for (d = 0; d < g->n_density; d++) {
-		printf ("v[%3d]", d);
-		for (i = 0; i < g->featlen[f]; i++)
-		    printf (" %7.4f", g->var[c][f][d][i]);
-		printf ("\n");
-	    }
-	    printf ("\n");
-
-	    for (d = 0; d < g->n_density; d++)
-		printf ("d[%3d] %7.4f\n", d, g->det[c][f][d]);
-	}
-    }
+    for (c = 0; c < g->n_mgau; c++) 
+      gauden_dump_ind(g,c);
 }
-#endif
+
+
+void gauden_dump_ind (const gauden_t *g, int senidx)
+{
+    int32 f, d, i;
+    
+    for (f = 0; f < g->n_feat; f++) {
+      E_INFO ("Codebook %d, Feature %d (%dx%d):\n",
+	      senidx, f, g->n_density, g->featlen[f]);
+      
+      for (d = 0; d < g->n_density; d++) {
+	printf ("m[%3d]", d);
+	for (i = 0; i < g->featlen[f]; i++)
+	  printf (" %7.4f", g->mean[senidx][f][d][i]);
+	printf ("\n");
+      }
+      printf ("\n");
+      
+      for (d = 0; d < g->n_density; d++) {
+	printf ("v[%3d]", d);
+	for (i = 0; i < g->featlen[f]; i++)
+	  printf (" %7.4f", g->var[senidx][f][d][i]);
+	printf ("\n");
+      }
+      printf ("\n");
+      
+      for (d = 0; d < g->n_density; d++)
+	printf ("d[%3d] %7.4f\n", d, g->det[senidx][f][d]);
+    }
+    fflush(stderr);
+}
+
 
 
 static int32 gauden_param_read(vector_t ****out_param,	/* Alloc space iff *out_param == NULL */
