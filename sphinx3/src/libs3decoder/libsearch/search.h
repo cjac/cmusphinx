@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4.4.4  2005/11/17  06:30:37  arthchan2003
- * Remove senscale from srch_hyp_t (Also see changes in vithist.[ch]). Added some preliminary structure for confidence score estimation.
+ * Revision 1.4.4.5  2006/01/16  18:28:19  arthchan2003
+ * 1, Fixed dox-doc, 2, Added confidence scores parameter in search.h. Also change names of parameters.
  * 
+ * Revision 1.4.4.4  2005/11/17 06:30:37  arthchan2003
+ * Remove senscale from srch_hyp_t (Also see changes in vithist.[ch]). Added some preliminary structure for confidence score estimation.
+ *
  * Revision 1.4.4.3  2005/07/26 02:19:20  arthchan2003
  * Comment out hyp_t, change name of wid in srch_hyp_t to id.
  *
@@ -150,7 +153,7 @@ extern "C" {
       \brief a hypothesis structure 
    */
 typedef struct srch_hyp_s {
-    const char     *word;    /**< A pointer to the word string*/
+    char     *word;    /**< A pointer to the word string*/
 
     int32   id;        /**< Token ID; could be s3wid_t, s3cipid_t...
 			  Interpreted by client. */
@@ -167,6 +170,7 @@ typedef struct srch_hyp_s {
     int32     ascr;       /**< AM score */
     int32     lscr;       /**< LM score */
     int32     pscr;       /**< score for heuristic search (Only used in dag and astar)*/
+    int32     cscr;       /**< Use when the recognizer is generating word-based confidence scores */
 
     int32  fsg_state;     /**< At which this entry terminates (FSG mode only) */
 
@@ -181,12 +185,12 @@ typedef struct srch_hyp_s {
    */
 
 typedef struct conf_srch_hyp {
-  srch_hyp_t h;
-  int cscore; /**< Confidence score */
-  float lmtype; /**< Language model type */
-  float l1, l2, l3; 
-  int matchtype; /**< Match type: INSERTION, SUBSTITUTION, CORRECT */
-  struct conf_srch_hyp_t *next; /**< a pointer to the next structure */
+  srch_hyp_t sh; /**< a srch_hyp_t */
+  float32 lmtype; /**< Language model type */
+  float32 l1, l2, l3;  
+  int32 matchtype; /**< (Currently not used) Match type: INSERTION, SUBSTITUTION, CORRECT */
+  int compound; /**< (Currently not used) The compound type */
+  struct conf_srch_hyp *next; /**< a pointer to the next structure */
 } conf_srch_hyp_t;
 
 
@@ -196,12 +200,13 @@ typedef struct conf_srch_hyp {
 
 typedef struct seg_hyp_line {
   char seq[1024]; /**< The file name */
-  int sent_end_cscore;  /**< The confidenece score at the end of the utterance */
-  float lmtype;   /**<  LM type, depends on the backoff_modes */
-  int wordno;     /**< The number of word in a sentence */
-  int nfr;        /**< The number of frame in a sentence */
-  int ascr;       /**< The sentence acoustic model score */
-  int lscr;       /**< The sentence language model score */
+  int32 sent_end_cscore;  /**< The confidenece score at the end of the utterance */
+  int32 cscore ; /**< Confidence score */
+  float32 lmtype;   /**<  LM type, depends on the backoff_modes */
+  int32 wordno;     /**< The number of word in a sentence */
+  int32 nfr;        /**< The number of frame in a sentence */
+  int32 ascr;       /**< The sentence acoustic model score */
+  int32 lscr;       /**< The sentence language model score */
   conf_srch_hyp_t *wordlist; /**< The list of words */
 } seg_hyp_line_t;
 
