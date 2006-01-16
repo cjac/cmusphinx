@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10.4.11  2005/09/26  02:27:22  arthchan2003
- * Fixed bugs when using of -hmm, also fixed a bug when the dictionary is not specified.  Now, it is safe-guard. Notice, this is a case we cannot use RARG in cmd_ln
+ * Revision 1.10.4.12  2006/01/16  18:25:16  arthchan2003
+ * Sphinx 3.x tree decoders assume silences are unlinked (set them to BAD_S3WID) before used. Whereas the flat lexicon decode doesn't have this assumption.  The changes in versions this branch also significantly changed behavior of the decoder. Thus the function LinkSilences is introduced to change back the behavior if necessary.
  * 
+ * Revision 1.10.4.11  2005/09/26 02:27:22  arthchan2003
+ * Fixed bugs when using of -hmm, also fixed a bug when the dictionary is not specified.  Now, it is safe-guard. Notice, this is a case we cannot use RARG in cmd_ln
+ *
  * Revision 1.10.4.10  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -144,14 +147,33 @@ void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
 {
   s3wid_t w;
 
+    /* Store the word ID for later uses */
+    kbc->startwid=lm_startwid(l);
+    kbc->finishwid=lm_finishwid(l);
+
   lm_lmwid2dictwid(l, lm_startwid(l)) = BAD_S3WID;
   lm_lmwid2dictwid(l, lm_finishwid(l)) = BAD_S3WID;
-
 
   for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
     l->dict2lmwid[w] = BAD_S3LMWID;
   for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
       l->dict2lmwid[w] = BAD_S3LMWID;
+
+}
+
+void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
+{
+  s3wid_t w;
+
+    /* Store the word ID for later uses */
+
+  lm_lmwid2dictwid(l, lm_startwid(l)) = kbc->startwid;
+  lm_lmwid2dictwid(l, lm_finishwid(l)) = kbc->finishwid;
+
+  for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+    l->dict2lmwid[w] = lm_startwid(l);
+  for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+      l->dict2lmwid[w] = lm_finishwid(l);
 
 }
 
@@ -457,7 +479,7 @@ kbcore_t *kbcore_init (float64 logbase,
 	    E_FATAL("Compound word separator(%s) must be empty or single character string\n",
 		    compsep);
 	}
-	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],cmd_ln_int32("-ltsoov"),REPORT_KBCORE)) == NULL)
+	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],cmd_ln_int32("-lts_mismatch"),REPORT_KBCORE)) == NULL)
 	    E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
 		    fdictfile ? fdictfile : "", compsep);
     }else{
@@ -518,9 +540,11 @@ kbcore_t *kbcore_init (float64 logbase,
       for(i=0;i<kb->lmset->n_lm;i++){
 	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
 
-#if 0 /* This is now put in search-specific initialization */
+	/*HACK! Only thing that is op_mode-specific. (Hopefully),
+	  op-mode name is also hard-wired. Evandro will kill me.  */
+
+	if(cmd_ln_int32("-op_mode")==4||cmd_ln_int32("-op_mode")==5)
 	  unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
-#endif
       }
 
     }else if (fsgfile||fsgctlfile){

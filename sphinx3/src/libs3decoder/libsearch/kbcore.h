@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11.4.4  2005/09/18  01:29:37  arthchan2003
- * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
+ * Revision 1.11.4.5  2006/01/16  18:25:16  arthchan2003
+ * Sphinx 3.x tree decoders assume silences are unlinked (set them to BAD_S3WID) before used. Whereas the flat lexicon decode doesn't have this assumption.  The changes in versions this branch also significantly changed behavior of the decoder. Thus the function LinkSilences is introduced to change back the behavior if necessary.
  * 
+ * Revision 1.11.4.4  2005/09/18 01:29:37  arthchan2003
+ * 1, .s3cont. mode is supported.  When it is specified by -senmgau, it will invoke the MS version of GMM computation even for CDHMM. Not supposed to be documented for users. 2, Remove unlinkSilences and put it inside search-specific initialization.  Apparently, remove it entirely will screw up the current test of mode 4 and 5.  add it back will screw up mode 3.  That's why I used temp solution.
+ *
  * Revision 1.11.4.3  2005/08/03 18:54:32  dhdfu
  * Fix the support for multi-stream / semi-continuous models.  It is
  * still kind of a hack, but it now works.
@@ -102,6 +105,7 @@
 #include "subvq.h"
 #include "gs.h"
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -132,6 +136,8 @@ typedef struct {
   int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
   int32 lastfrm; /**, Temporary variables, should be removed */
 
+  s3lmwid_t startwid;
+  s3lmwid_t finishwid;
 } kbcore_t;
 
   
@@ -218,7 +224,16 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
   void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
 		    );
 
+  /**
+     Sphinx 3.x tree decoders assume silences are unlinked (set them
+     to BAD_S3WID) before used. Whereas the flat lexicon decoder
+     doesn't have such assumption.  These two functions change this
+     behavior.  Called in mode 3, 4 and 5 to make sure different code
+     works. 
+   */
   void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
+
+  void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
   /** Access macros; not meant for arbitrary use */
 #define kbcore_fcb(k)		((k)->fcb)
