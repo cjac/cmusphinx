@@ -79,6 +79,7 @@ static arg_t arg[] = {
   common_application_properties_command_line_macro()
   control_file_handling_command_line_macro()
   hypothesis_file_handling_command_line_macro() 
+  score_handling_command_line_macro()
   output_lattice_handling_command_line_macro()
   dag_handling_command_line_macro()
   second_stage_dag_handling_command_line_macro()
