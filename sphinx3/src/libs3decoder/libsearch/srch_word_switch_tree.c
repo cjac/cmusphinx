@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.16  2005/11/17  06:43:25  arthchan2003
- * Removed senone scale in lextree_hmm_propagate.
+ * Revision 1.1.4.17  2006/01/16  20:15:37  arthchan2003
+ * 1, removed the unlinksilences part, 2, added 2nd-stage interface, but now commented.
  * 
+ * Revision 1.1.4.16  2005/11/17 06:43:25  arthchan2003
+ * Removed senone scale in lextree_hmm_propagate.
+ *
  * Revision 1.1.4.15  2005/10/09 20:00:45  arthchan2003
  * Added back match file logging in mode 3. Safe-guard the code from using LM switching in mode 3 and mode 5.
  *
@@ -169,13 +172,6 @@ int32 srch_WST_init(kb_t* kb, void *srch)
 
   wstg->expandtree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
   wstg->expandfillertree=(lextree_t **) ckd_calloc (wstg->n_static_lextree, sizeof(lextree_t *));
-
-  for(i=0;i<kbc->lmset->n_lm;i++){
-    /* HACK! This will allow rescoring works but will definitely
-       change the answer for the first stage. Still not the best way. */
-    if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
-      unlinksilences(kbc->lmset->lmarray[i],kbc,kbc->dict);
-  }
 
   if(kbc->lmset->n_lm>1){
     E_FATAL("Multiple lm doesn't work for this mode 5 yet\n");
@@ -414,10 +410,13 @@ int32 srch_WST_end(void *srch)
   uttid = s->uttid;
 
   /* This part is duplicated with TST_end */
+
+#if 0
   if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
     reg_result_dump(s,id);
   } else
     E_ERROR("%s: No recognition\n\n", uttid);
+#endif
 
   st->utt_wd_exit=vithist_n_entry(s->vithist);
   stat_report_utt(st,uttid);
@@ -1366,3 +1365,48 @@ int srch_WST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
+#if 0
+int srch_WST_dump_vithist(void* srch)
+{
+  srch_t* s;
+  FILE  *bptfp;
+  char file[8192];
+
+  s=(srch_t*) srch;
+
+  assert(s->vithist);
+
+  sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , s->uttid);
+  if ((bptfp = fopen (file, "w")) == NULL) {
+    E_ERROR("fopen(%s,w) failed; using stdout\n", file);
+    bptfp = stdout;
+  }
+
+  vithist_dump (s->vithist, -1, s->kbc, bptfp);
+    
+  if (bptfp != stdout)
+    fclose (bptfp);
+
+  return SRCH_SUCCESS;
+}
+
+
+glist_t srch_WST_gen_hyp (void * srch /**< a pointer of srch_t */
+			  )
+{
+  srch_t* s;
+  s=(srch_t*) srch;
+  int32 id;
+  glist_t hyp;
+
+  assert(s->vithist);
+  if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
+    assert(id>=0);
+    hyp = vithist_backtrace (s->vithist, id, kbcore_dict(s->kbc));
+
+  } else{
+    E_ERROR("%s: No recognition\n\n", s->uttid);
+    return NULL;
+  }
+}
+#endif

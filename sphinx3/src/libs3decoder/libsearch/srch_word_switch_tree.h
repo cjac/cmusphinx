@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.4  2005/07/07  02:41:55  arthchan2003
- * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
+ * Revision 1.1.4.5  2006/01/16  20:15:37  arthchan2003
+ * 1, removed the unlinksilences part, 2, added 2nd-stage interface, but now commented.
  * 
+ * Revision 1.1.4.4  2005/07/07 02:41:55  arthchan2003
+ * 1, Added an experimental version of tree expansion interface it the code, it does tree expansion without history pruning. Currently disabled because it used to much memory space srch_word_switch_tree.[ch].  2, Remove -lminsearch segments of code, it proves to be unnecessary. 3, Remove the rescoring interface.  In this search, WST_rescoring is actually not doing rescoring, it is rather a segment of code which collect all active word end together and input it into the viterbi history.
+ *
  * Revision 1.1.4.3  2005/07/04 07:24:15  arthchan2003
  * Added some comments
  *
@@ -160,4 +163,14 @@ int srch_WST_compute_heuristic(void *srch, int32 win_efv);
 int srch_WST_frame_windup(void *srch_struct,int32 frmno);
 int srch_WST_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_WST_select_active_gmm(void *srch);
+
+glist_t srch_WST_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
+		     ); 
+
+int srch_WST_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
+		      );
+
+int srch_WST_bestpath_impl(void * srch_struct /**< A void pointer to a search structure */
+			   );
+
 
