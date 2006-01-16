@@ -46,11 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6.4.3  2005/08/03  18:53:43  dhdfu
+ * Revision 1.6.4.4  2006/01/16  19:47:05  arthchan2003
+ * Removed the truncation of senone probability code.
+ * 
+ * Revision 1.6.4.3  2005/08/03 18:53:43  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.6.4.2  2005/07/20 19:39:01  arthchan2003
  * Added licences in ms_* series of code.
  *
@@ -115,7 +118,7 @@
 extern "C" {
 #endif
 
-typedef uint8 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
+typedef uint32 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
 
   /**
    * \struct senone_t

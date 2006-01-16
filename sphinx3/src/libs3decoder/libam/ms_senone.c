@@ -46,11 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5.4.3  2005/08/03  18:53:43  dhdfu
+ * Revision 1.5.4.4  2006/01/16  19:47:05  arthchan2003
+ * Removed the truncation of senone probability code.
+ * 
+ * Revision 1.5.4.3  2005/08/03 18:53:43  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
  * from decode_anytopo and friends.
- * 
+ *
  * Revision 1.5.4.2  2005/08/02 21:06:33  arthchan2003
  * Change options such that .s3cont. works as well.
  *
@@ -245,9 +248,13 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
      */
     if ((s->mixwfloor <= 0.0) || (s->mixwfloor >= 1.0))
 	E_FATAL("mixwfloor (%e) not in range (0, 1)\n", s->mixwfloor);
+
     p = logs3(s->mixwfloor);
+
+#if 0
     for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
     E_INFO("Truncating senone logs3(pdf) values by %d bits, to 8 bits\n", s->shift);
+#endif
 
     /*
      * Allocate memory for senone PDF data.  Organize normally or transposed depending on
@@ -282,12 +289,19 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
 	    /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
 	    for (c = 0; c < s->n_cw; c++) {
 		p = -(logs3(pdf[c]));
+
+		if (s->n_gauden > 1)
+		  s->pdf[i][f][c] = p;
+		else
+		  s->pdf[f][c][i] = p;
+#if 0
 		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
 
 		if (s->n_gauden > 1)
 		    s->pdf[i][f][c] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
 		else
 		    s->pdf[f][c][i] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
+#endif
 	    }
 	}
     }
@@ -320,6 +334,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
     
     s = (senone_t *) ckd_calloc (1, sizeof(senone_t));
     s->mixwfloor = mixwfloor;
+
 
     if (strcmp (sen2mgau_map_file, ".semi.") == 0)
 	s->n_gauden = 1;
@@ -391,19 +406,36 @@ int32 senone_eval (senone_t *s, s3senid_t id, gauden_dist_t **dist, int32 n_top)
 	fdist = dist[f];
 
 	/* Top codeword for feature f */
+#if 0
 	fscr = (s->n_gauden > 1) ?
 	    fdist[0].dist - (s->pdf[id][f][fdist[0].id] << s->shift) :	/* untransposed */
 	    fdist[0].dist - (s->pdf[f][fdist[0].id][id] << s->shift);	/* transposed */
-	
+#else
+
+	fscr = (s->n_gauden > 1) ?
+	    fdist[0].dist - (s->pdf[id][f][fdist[0].id] ) :	/* untransposed */
+	    fdist[0].dist - (s->pdf[f][fdist[0].id][id] );	/* transposed */
+#endif
+
 	/* Remaining of n_top codewords for feature f */
 	for (t = 1; t < n_top; t++) {
+#if 0
 	    fwscr = (s->n_gauden > 1) ?
 		fdist[t].dist - (s->pdf[id][f][fdist[t].id] << s->shift) :
 		fdist[t].dist - (s->pdf[f][fdist[t].id][id] << s->shift);
+#else
+
+	    fwscr = (s->n_gauden > 1) ?
+		fdist[t].dist - (s->pdf[id][f][fdist[t].id] ) :
+		fdist[t].dist - (s->pdf[f][fdist[t].id][id] );
+#endif
+
 	    fscr = logs3_add (fscr, fwscr);
+
 	}
 	
 	scr += fscr;
+
     }
 
     return scr;
@@ -433,8 +465,14 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
     cwdist = dist[0][0].dist;
     pdf = s->pdf[0][dist[0][0].id];
 
+#if 0
     for (i = 0; i < s->n_sen; i++)
 	senscr[i] = cwdist - (pdf[i] << s->shift);
+#else
+    for (i = 0; i < s->n_sen; i++)
+	senscr[i] = cwdist - (pdf[i]);
+
+#endif
 
     /* Remaining top-N codewords */
     for (k = 1; k < n_top; k++) {
@@ -442,7 +480,11 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	pdf = s->pdf[0][dist[0][k].id];
 	
 	for (i = 0; i < s->n_sen; i++) {
+#if 0
 	    scr = cwdist - (pdf[i] << s->shift);
+#else
+	    scr = cwdist - (pdf[i]);
+#endif
 	    senscr[i] = logs3_add (senscr[i], scr);
 	}
     }
@@ -453,8 +495,13 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	cwdist = dist[f][0].dist;
 	pdf = s->pdf[f][dist[f][0].id];
 	
+#if 0
 	for (i = 0; i < s->n_sen; i++)
 	    featscr[i] = cwdist - (pdf[i] << s->shift);
+#else
+	for (i = 0; i < s->n_sen; i++)
+	    featscr[i] = cwdist - (pdf[i]);
+#endif
 	
 	/* Remaining top-N codewords */
 	for (k = 1; k < n_top; k++) {
@@ -462,7 +509,11 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	    pdf = s->pdf[f][dist[f][k].id];
 	    
 	    for (i = 0; i < s->n_sen; i++) {
+#if 0
 		scr = cwdist - (pdf[i] << s->shift);
+#else
+		scr = cwdist - (pdf[i] );
+#endif
 		featscr[i] = logs3_add (featscr[i], scr);
 	    }
 	}
