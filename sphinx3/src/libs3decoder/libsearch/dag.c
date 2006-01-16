@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.6  2005/11/17  06:25:04  arthchan2003
- * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
+ * Revision 1.1.4.7  2006/01/16  18:18:12  arthchan2003
+ * Added a flag on DAG loading when acoustic scores are presented in the lattice file.
  * 
+ * Revision 1.1.4.6  2005/11/17 06:25:04  arthchan2003
+ * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
+ *
  * Revision 1.1.4.5  2005/09/25 19:20:43  arthchan2003
  * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
  *
@@ -866,6 +869,8 @@ dag_t* dag_load (
     /* Read nodes */
     darray = (dagnode_t **) ckd_calloc (dag->nnode, sizeof(dagnode_t *));
     for (i = 0; i < dag->nnode; i++) {
+
+      report =1;
 	if (fgets (line, 1024, fp) == NULL) {
 	    E_ERROR ("Premature EOF while loading Nodes(%s)\n", file);
 	    goto load_error;
