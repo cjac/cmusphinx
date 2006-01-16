@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.14.4.2  2005/07/27  23:23:39  arthchan2003
- * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ * Revision 1.14.4.3  2006/01/16  20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  * 
+ * Revision 1.14.4.2  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
  * Revision 1.14.4.1  2005/07/18 23:21:24  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -113,7 +116,6 @@ static void utt_livepretend(void *data, utt_res_t *ur, int32 sf, int32 ef, char 
   len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
   
   while (len > 0) {
-    E_INFO("hihi %d\n",len);
     ptmr_start (&(st->tm));
     ld_process_raw(&decoder, samples, len);
     ptmr_stop (&(st->tm));

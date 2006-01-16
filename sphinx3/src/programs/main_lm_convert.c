@@ -48,9 +48,12 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.1.2.4  2005/11/17  06:48:58  arthchan2003
- * Support simple encoding conversion in lm_convert.
+ * Revision 1.1.2.5  2006/01/16  20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  * 
+ * Revision 1.1.2.4  2005/11/17 06:48:58  arthchan2003
+ * Support simple encoding conversion in lm_convert.
+ *
  * Revision 1.1.2.3  2005/07/18 23:21:24  arthchan2003
  * Tied command-line arguments with marcos
  *
@@ -83,11 +86,12 @@ static arg_t arg[] = {
   { "-inputfmt",
     REQARG_STRING,
     "TXT",
-    "Input LM format. TXT or DMP"},
+    "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format)"},
   { "-outputfmt",
     ARG_STRING,
     "DMP",
-    "Output LM format: TXT or DMP"},
+    "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format)"}, /* Also FST for AT&T file format 
+										      but the option is hidden because it is not well tested*/
   { "-inputenc",
     ARG_STRING,
     "iso8859-1",

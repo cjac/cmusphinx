@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.12.4.16  2005/09/25  20:14:07  arthchan2003
- * Added bogus argument for decode_anytopo. Fixed compilation rules.
+ * Revision 1.12.4.17  2006/01/16  20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  * 
+ * Revision 1.12.4.16  2005/09/25 20:14:07  arthchan2003
+ * Added bogus argument for decode_anytopo. Fixed compilation rules.
+ *
  * Revision 1.12.4.15  2005/09/18 01:51:09  arthchan2003
  * put decode_anytopo as a permanent interface for flat lexicon decoding. However, it starts to used the standard utt.c interface.
  *
@@ -382,6 +385,8 @@ static arg_t defn[] = {
   common_application_properties_command_line_macro()
   control_file_handling_command_line_macro()
   hypothesis_file_handling_command_line_macro()
+  score_handling_command_line_macro()
+
   cepstral_input_handling_command_line_macro()
 
   input_lattice_handling_command_line_macro() 

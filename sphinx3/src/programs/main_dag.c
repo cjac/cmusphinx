@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.10  2005/11/17  06:48:24  arthchan2003
- * Changed a misleading comment in main_dag.c
+ * Revision 1.10.4.11  2006/01/16  20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  * 
+ * Revision 1.10.4.10  2005/11/17 06:48:24  arthchan2003
+ * Changed a misleading comment in main_dag.c
+ *
  * Revision 1.10.4.9  2005/09/25 20:09:47  arthchan2003
  * Added support for LTS.
  *
@@ -289,7 +292,7 @@ static void models_init ( void )
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      0,
-		      cmd_ln_int32("-ltsoov"),
+		      cmd_ln_int32("-lts_mismatch"),
 		      1);
 
     /* LM Set */
@@ -337,7 +340,7 @@ static void s3dag_log_hypseg (char *uttid,
     for (h = hypptr; h; h = h->next) {
 	ascr += h->ascr;
 	if (dict_basewid(dict,h->id) != dict->startwid) {
-	    lscr += lm_rawscore (lmset->cur_lm,h->lscr, 1.0);
+	    lscr += lm_rawscore (lmset->cur_lm,h->lscr);
 	} else {
 	    assert (h->lscr == 0);
 	}
@@ -350,7 +353,7 @@ static void s3dag_log_hypseg (char *uttid,
 	fprintf (fp, " (null)\n");
     else {
 	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr, 1.0) : 0;
+	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr) : 0;
 	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->id));
 	}
 	fprintf (fp, " %d\n", nfrm);
@@ -373,8 +376,9 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     ptmr_start (&tm_utt);
 
     
-    latdir = (char *) cmd_ln_access ("-inlatdir");
-    latext = (char *) cmd_ln_access ("-latext");
+    latdir = cmd_ln_str ("-inlatdir");
+    latext = cmd_ln_str ("-latext");
+
     if (latdir)
 	sprintf (dagfile, "%s/%s.%s", latdir, uttid, latext);
     else
@@ -390,17 +394,15 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
 	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
 
-#if 1
-	  /* Total scaled acoustic score and LM score */
+	  /* Total acoustic score and LM score */
 	  ascr = lscr = 0;
 	  for (h = hyp; h; h = h->next) {
 	    ascr += h->ascr;
 	    lscr += h->lscr;
 	  }
 
-	  printf ("BSTPTH: ");
-	  log_hypstr (stdout, hyp, uttid, NOTEXACT, ascr+lscr, dict);
-#endif
+	  printf("BSTPTH\n");
+	  log_hypstr(stdout, hyp, uttid, 0, ascr+lscr, dict);
 	  
 	  printf ("BSTXCT: ");
 	  s3dag_log_hypseg (uttid, stdout, hyp, nfrm);
@@ -418,10 +420,11 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 
     
     /* Log recognition output to the standard match and matchseg files */
-    if (_matchfp)
-	log_hypstr (_matchfp, hyp, uttid, NOTEXACT, 0, dict);
+    if (_matchfp){
+      log_hypstr(_matchfp, hyp, uttid, 0, 0 ,dict );
+    }
     if (_matchsegfp)
-	s3dag_log_hypseg (uttid, _matchsegfp, hyp, nfrm);
+      s3dag_log_hypseg (uttid, _matchsegfp, hyp, nfrm);
     
     dag_destroy (dag);
 

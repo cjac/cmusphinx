@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8.4.3  2005/09/12  18:07:22  arthchan2003
- * dag is now a pointer, the bug initializ a pointer of it before it is allocated.
+ * Revision 1.8.4.4  2006/01/16  20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  * 
+ * Revision 1.8.4.3  2005/09/12 18:07:22  arthchan2003
+ * dag is now a pointer, the bug initializ a pointer of it before it is allocated.
+ *
  * Revision 1.8.4.2  2005/09/11 02:54:19  arthchan2003
  * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  *
@@ -657,7 +660,7 @@ static void ppath_seg_write (FILE *fp, ppath_t *pp, int32 ascr)
     if (pp->hist)
 	ppath_seg_write (fp, pp->hist, pp->pscr - pp->hist->pscr - pp->lscr);
 
-    lscr_base = pp->hist ? lm_rawscore (lmset->cur_lm, pp->lscr, 1.0) : 0;
+    lscr_base = pp->hist ? lm_rawscore (lmset->cur_lm, pp->lscr) : 0;
 
     fprintf (fp, " %d %d %d %s",
 	     pp->dagnode->sf, ascr, lscr_base, dict_wordstr (dict, pp->dagnode->wid));
@@ -672,7 +675,7 @@ static void nbest_hyp_write (FILE *fp, ppath_t *top, int32 pscr, int32 nfr)
     lscr_base = 0;
     for (lscr = 0, pp = top; pp; lscr += pp->lscr, pp = pp->hist) {
 	if (pp->hist)
-	    lscr_base += lm_rawscore (lmset->cur_lm, pp->lscr, 1.0);
+	    lscr_base += lm_rawscore (lmset->cur_lm, pp->lscr);
 	else
 	    assert (pp->lscr == 0);
     }
