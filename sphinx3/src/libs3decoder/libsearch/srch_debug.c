@@ -154,7 +154,39 @@ int srch_debug_rescoring(void* srch, int32 frmno)
   return SRCH_SUCCESS;
 }
 
+int srch_debug_dump_vithist(void* srch /**< A void pointer to a search structure */
+			    )
+{
+  E_INFOCONT("SEARCH DEBUG: DUMP VITHIST\n");
+  return SRCH_SUCCESS;
+}
 
+glist_t srch_debug_gen_hyp (void * srch /**< a pointer of srch_t */
+			       )
+{
+  return NULL;
+}
+
+dag_t* srch_debug_gen_dag (void* srch, /**< a pointer of srch_t */
+			      glist_t hyp
+			      )
+{
+  return NULL;
+}
+
+glist_t srch_debug_bestpath_impl(void * srch, /**< A void pointer to a search structure */
+			   dag_t *dag
+			   )
+{
+  return SRCH_SUCCESS;
+}
+
+int32 srch_debug_dag_dump(void *srch,
+			     glist_t hyp
+			     )
+{
+  return SRCH_SUCCESS;
+}
 
 
 
