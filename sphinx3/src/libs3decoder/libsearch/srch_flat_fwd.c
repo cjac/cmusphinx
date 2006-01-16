@@ -35,12 +35,15 @@
  */
 
 /* srch_flat_fwd.c
- * HISTORY
+ * HISTORYg
  * 
  * $Log$
- * Revision 1.1.2.6  2005/11/17  06:42:15  arthchan2003
- * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
+ * Revision 1.1.2.7  2006/01/16  20:11:23  arthchan2003
+ * Interfaces for 2nd stage search, now commented.
  * 
+ * Revision 1.1.2.6  2005/11/17 06:42:15  arthchan2003
+ * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
+ *
  * Revision 1.1.2.5  2005/10/26 03:53:12  arthchan2003
  * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
  *
@@ -255,6 +258,7 @@ int srch_FLAT_FWD_init(kb_t *kb, /**< The KB */
   dict=kbcore_dict(kbc);
   lm=kbcore_lm(kbc);
 
+
   fwg=ckd_calloc(1,sizeof(srch_FLAT_FWD_graph_t));
 
   E_INFO("Initialization\n");
@@ -266,8 +270,8 @@ int srch_FLAT_FWD_init(kb_t *kb, /**< The KB */
   fwg->multiplex=cmd_ln_int32("-multiplex_multi");
   fwg->multiplex_singleph=cmd_ln_int32("-multiplex_single");
 
-  /* ARCHAN : BUG, though allowing both options of multiple_multi
-     and multiplex_single, currently !multiplex &&
+  /* ARCHAN : MINOR BUG, though allowing both options of
+     multiple_multi and multiplex_single, currently !multiplex &&
      multiplex_singleph is not taken care correctly. */
 
   if(fwg->multiplex && !(fwg->multiplex_singleph))
@@ -438,6 +442,7 @@ int srch_FLAT_FWD_begin(void* srch)
   return SRCH_SUCCESS;
 
 }
+
 int srch_FLAT_FWD_end(void* srch)
 {
   srch_FLAT_FWD_graph_t* fwg ;
@@ -493,6 +498,7 @@ int srch_FLAT_FWD_end(void* srch)
     fwg->n_word_cand=0;
   }
 
+
   /* Check if bptable should be dumped (for debugging) */
   if (cmd_ln_str("-bptbldir")) {
     char file[8192];
@@ -507,7 +513,9 @@ int srch_FLAT_FWD_end(void* srch)
     if (bptfp != stdout)
       fclose (bptfp);
   }
+
   /* Backtrack through lattice for Viterbi result */
+
   l = lat_final_entry (s->lathist, dict, fwg->n_frm, s->uttid);
   if (NOT_S3LATID(l)){
     E_INFO("lattice ID: %d\n",l);
@@ -517,64 +525,61 @@ int srch_FLAT_FWD_end(void* srch)
     /* BAD_S3WID => Any right context */
     lattice_backtrace (s->lathist, l, BAD_S3WID, &hyp, lm, dict, fwg->ctxt, s->kbc->fillpen);
   }
+  
+  ghyp=NULL;
+  for(tmph= hyp ; tmph ; tmph = tmph->next){
+    /*    E_INFO("tmph %s\n", tmph->word);*/
+    ghyp=glist_add_ptr(ghyp,(void*)tmph);
+  }
+
+
+  rhyp =glist_reverse(ghyp);
 
   if ( cmd_ln_int32("-backtrace") )
     log_hyp_detailed(stdout, hyp, s->uttid, "FV", "fv", s->ascale);
 
-  
-  ghyp=NULL;
-  for(tmph= hyp ; tmph ; tmph = tmph->next){
-    ghyp=glist_add_ptr(ghyp,(void*)tmph);
-  }
 
-  rhyp= glist_reverse(ghyp);
+  /* Log recognition output to the standard match and matchseg files */
 
   if(s->matchfp)
-    match_write(s->matchfp,s,rhyp, NULL);
-  match_write(stdout,s,rhyp,"\nFWDVIT: ");
-
+    match_write(s->matchfp,rhyp, s->uttid,kbcore_dict(s->kbc), NULL);
+    match_write(stdout,rhyp,s->uttid,kbcore_dict(s->kbc),"\nFWDVIT: ");
 
   if(s->matchsegfp)
-    matchseg_write(s->matchsegfp,s, rhyp,NULL, cmd_ln_int32("-hypsegfmt"));
-  matchseg_write(stdout,s, rhyp,"FWDXCT: ", cmd_ln_int32("-hypsegfmt"));
+    matchseg_write(s->matchsegfp,rhyp,s->uttid, NULL,cmd_ln_int32("-hypsegfmt"),
+		   kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		   cmd_ln_int32("-hypsegscore_unscale")
+		   );
+  matchseg_write(stdout,rhyp, s->uttid, "FWDXCT: ", cmd_ln_int32("-hypsegfmt"),
+		 kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		 cmd_ln_int32("-hypsegscore_unscale")
+		 );
 
-  glist_free(ghyp);
+
+
+  /*  glist_free(ghyp);*/
 
   lm_cache_stats_dump (lm);
   lm_cache_reset (lm);
 
-#if 0  /* Old routines for dumping the code using log_hypstr family of functions*/
-  /* Total scaled acoustic score and LM score */
-  ascr = lscr = scl = 0;
-  /* This part is wrong */
-  for (tmph = hyp; tmph; tmph = tmph->next) {
-    ascr += tmph->ascr;
-    lscr += tmph->lscr;
-    for(i=tmph->sf;i<tmph->ef; i++){
-      scl += s->ascale[i];
+  if(cmd_ln_str("-bestsenscrdir")){
+    int32 ispipe;
+    char str[2048];
+    FILE* bsfp;
+    sprintf (str, "%s/%s.bsenscr",
+	     cmd_ln_str("-bestsenscrdir"), s->uttid);
+    E_INFO("Dumping the Best senone scores.\n");
+
+    if ((bsfp = fopen_comp (str, "w", &ispipe)) == NULL)
+      E_ERROR("fopen_comp (%s,w) failed\n", str);
+    else{
+      write_bstsenscr(bsfp,s->stat->nfr,s->ascale);
+      fclose_comp (bsfp, ispipe);
     }
   }
-  
-  /* Print sanitized recognition */
-  printf ("FWDVIT: ");
-  log_hypstr(stdout, hyp, s->uttid, 0, ascr + lscr,dict);
-  if(s->matchfp)
-    log_hypstr(s->matchfp,hyp,s->uttid,0, 0.0, dict);
-
-  printf ("FWDXCT: ");
-
-  log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, scl, lm->lw ,s->kbc->dict,lm);
-  if(s->matchsegfp){
-    log_hypseg (s->uttid, s->matchsegfp, hyp, fwg->n_frm, scl, lm->lw ,s->kbc->dict,lm);
-  }
-
-  lm_cache_stats_dump (lm);
-
-#endif
-    
-
 
   if(cmd_ln_str("-outlatdir")||cmd_ln_int32("-bestpath")){
+
     dag=dag_build(l,s->lathist,dict,lm,fwg->ctxt,s->kbc->fillpen,fwg->n_frm);
 
 
@@ -585,9 +590,9 @@ int srch_FLAT_FWD_end(void* srch)
 			    lm,dict,fwg->ctxt,s->kbc->fillpen);
       }else if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM){
 
-	E_WARN("Currently disabled. Please use s3.x routines instead\n");
+	E_WARN("IBM lattice generation is currently disabled. Please use s3.x routines instead.\n");
 
-#if 0
+#if 0 /* Keeper, we just don't know how to dump IBM lattice correctly with s3.0  yet */
 	/* Add fudge before dump the graph */
 	dag_add_fudge_edges (dag, 
 			     cmd_ln_int32("-dagfudge"), 
@@ -620,43 +625,33 @@ int srch_FLAT_FWD_end(void* srch)
 	dag->filler_removed = 1;
       }
 
-
       tmph = dag_search (dag,s->uttid,lwf, s->lathist->lattice[dag->latfinal].dagnode,
-		      s->kbc->dict,lm,s->kbc->fillpen);
-
+			 s->kbc->dict,lm,s->kbc->fillpen);
+ 
       if (tmph) 
 	hyp = tmph;
       else
 	E_ERROR("%s: Bestpath search failed; using Viterbi result\n", s->uttid);
 
-      if (cmd_ln_int32("-backtrace")) {
+      if (cmd_ln_int32("-backtrace")) 
 	log_hyp_detailed (stdout, hyp, s->uttid, "BP", "bp", s->ascale);
-      }
 
-#if 1
       bghyp=NULL;
-      for(btmph= hyp ; btmph ; btmph = btmph->next){
+
+      for(btmph= hyp ; btmph ; btmph = btmph->next)
 	bghyp=glist_add_ptr(bghyp,(void*)btmph);
-      }
 
       brhyp=glist_reverse(bghyp);
-      match_write(stdout,s, brhyp, "\nBSTPTH: ");
-      glist_free(bghyp);
-#endif
+      match_write(stdout,brhyp,s->uttid, kbcore_dict(s->kbc),"\nBSTPTH: ");
+      matchseg_write (stdout, brhyp, s->uttid, "BSTXCT: ",cmd_ln_int32("-hypsegfmt"), 
+		      kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		      cmd_ln_int32("-hypsegscore_unscale")
+		      );
 
-
-#if 0 /* The old routines which used  */
-      printf ("BSTPTH: ");
-      /* FIXME */
-      log_hypstr (stdout, hyp, s->uttid, 1, ascr + lscr,s->kbc->dict);
-      printf ("BSTXCT: ");
-
-      log_hypseg (s->uttid, stdout, hyp, fwg->n_frm, scl, lwf,s->kbc->dict,lm);
-
-#endif
-      
-
+      /*      if(bghyp)
+	      glist_free(bghyp);*/
     }
+
     if(dag)
       dag_destroy(dag);
 
@@ -665,12 +660,7 @@ int srch_FLAT_FWD_end(void* srch)
 
   }
 
-
-/* Log recognition output to the standard match and matchseg files */
-
-
-
-#if 0
+#if 0 /* HACK! Temporarily removed, to be put in srch.c */
   if ((bscrdir = (char *) cmd_ln_access ("-bestscoredir")) != NULL)
     write_bestscore (bscrdir, s->uttid, bestscr, nfr);
 #endif
@@ -678,21 +668,19 @@ int srch_FLAT_FWD_end(void* srch)
   fwd_timing_dump(fwg);
   stat_report_utt(st,s->uttid);
   stat_update_corpus(st);
-
   
   ptmr_reset (&(st->tm_sen));
   ptmr_reset (&(st->tm_srch));
   ptmr_reset (&(st->tm_ovrhd));
   
-#if (!defined(WIN32))
-  if (! system("ps auxgw > /dev/null 2>&1")) {
-    system ("ps aguxwww | grep /live | grep -v grep");
-    system ("ps aguxwww | grep /dec | grep -v grep");
-  }
-#endif
-
-
+  /*  if(hyp!=NULL){
+    srch_hyp_t *h;
+    for(h=hyp ; h ; h =h->next)
+      ckd_free(h);
+      }*/
+    
   return SRCH_SUCCESS;
+
 
 }
 
@@ -834,3 +822,158 @@ int srch_FLAT_FWD_select_active_gmm(void *srch)
 int srch_FLAT_FWD_frame_windup(void *srch_struct,int32 frmno){
   return SRCH_SUCCESS;
 }
+
+#if 0
+int srch_FLAT_FWD_dump_vithist(void* srch)
+{
+  srch_t *s;
+  srch_FLAT_FWD_graph_t* fwg ;
+  char file[8192];
+  FILE  *bptfp;
+
+  /* Check if bptable should be dumped (for debugging) */
+
+  s=(srch_t*) srch;
+  fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
+
+  assert(s->lathist);
+
+  sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , s->uttid);
+  if ((bptfp = fopen (file, "w")) == NULL) {
+    E_ERROR("fopen(%s,w) failed; using stdout\n", file);
+    bptfp = stdout;
+  }
+    
+  latticehist_dump (s->lathist, bptfp, kbcore_dict(s->kbc), fwg->ctxt, 0);
+    
+  if (bptfp != stdout)
+    fclose (bptfp);
+  return SRCH_SUCCESS;
+}
+
+
+glist_t srch_FLAT_FWD_gen_hyp (void * srch /**< a pointer of srch_t */
+			       )
+{
+  srch_t* s;
+  srch_FLAT_FWD_graph_t* fwg ;
+  s3latid_t l;
+  srch_hyp_t *tmph, *hyp;
+  glist_t ghyp, rhyp;
+
+  s=(srch_t*) srch;
+  fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
+
+
+
+  l = lat_final_entry (s->lathist, kbcore_dict(s->kbc), fwg->n_frm, s->uttid);
+  if (NOT_S3LATID(l)){
+    E_INFO("lattice ID: %d\n",l);
+    E_ERROR("%s: NO RECOGNITION\n", s->uttid);
+    return NULL;
+  }
+  else{
+    /* BAD_S3WID => Any right context */
+    lattice_backtrace (s->lathist, l, BAD_S3WID, &hyp, s->kbc->lmset->cur_lm, kbcore_dict(s->kbc), fwg->ctxt, s->kbc->fillpen);
+    ghyp=NULL;
+    for(tmph= hyp ; tmph ; tmph = tmph->next){
+      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+    }
+    
+    rhyp= glist_reverse(ghyp);
+    return rhyp;
+  }
+  
+}
+
+dag_t* srch_FLAT_FWD_gen_dag (void* srch, /**< a pointer of srch_t */
+			      glist_t hyp
+		     )
+{
+  srch_t* s;
+  srch_FLAT_FWD_graph_t* fwg ;
+  dag_t *dag;
+  s3latid_t l;
+
+  s=(srch_t*) srch;
+  fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
+
+  l = lat_final_entry (s->lathist, kbcore_dict(s->kbc), fwg->n_frm, s->uttid);
+
+  dag=dag_build(l,s->lathist,kbcore_dict(s->kbc),s->kbc->lmset->cur_lm,fwg->ctxt,s->kbc->fillpen,fwg->n_frm);
+
+  return dag;
+}
+
+
+glist_t  srch_FLAT_FWD_bestpath_impl(void * srch, /**< A void pointer to a search structure */
+				dag_t *dag
+				)
+{
+  srch_t *s;
+  srch_FLAT_FWD_graph_t* fwg ;
+
+  float32 *f32arg;
+  float64 lwf;
+  srch_hyp_t *tmph, *bph;
+  glist_t ghyp, rhyp;
+
+
+  s=(srch_t*) srch;
+  fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
+
+  assert(s->lathist);
+
+  f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+  lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+  dag_add_fudge_edges (dag, 
+		       cmd_ln_int32("-dagfudge"), 
+		       cmd_ln_int32("-min_endfr"), 
+		       (void*) s->lathist, s->kbc->dict);
+
+
+  /* Bypass filler nodes */
+  if (! dag->filler_removed) {
+    flat_fwd_dag_remove_filler_nodes (dag, s->lathist, lwf,s->kbc->lmset->cur_lm,s->kbc->dict,fwg->ctxt,s->kbc->fillpen);
+    dag->filler_removed = 1;
+  }
+
+  bph = dag_search (dag,s->uttid,lwf, s->lathist->lattice[dag->latfinal].dagnode,
+		    s->kbc->dict,s->kbc->lmset->cur_lm,s->kbc->fillpen);
+
+  if(bph!=NULL){
+    ghyp=NULL;
+    for(tmph= bph ; tmph ; tmph = tmph->next)
+      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    
+    rhyp=glist_reverse(ghyp);
+    return rhyp;
+  }else{
+    return NULL;
+  }
+
+}
+
+int32 srch_FLAT_FWD_dag_dump(void *srch,
+			     glist_t hyp
+			     )
+{
+  srch_t* s;
+  srch_FLAT_FWD_graph_t* fwg ;
+  dag_t* dag;
+  s3latid_t l;
+
+  s=(srch_t*) srch;
+  fwg=(srch_FLAT_FWD_graph_t*) s->grh->graph_struct;
+  assert(s->lathist);
+
+  l = lat_final_entry (s->lathist, kbcore_dict(s->kbc), fwg->n_frm, s->uttid);
+  dag=dag_build(l,s->lathist,kbcore_dict(s->kbc),kbcore_lm(s->kbc),fwg->ctxt,s->kbc->fillpen,fwg->n_frm);
+
+  s3flat_fwd_dag_dump(cmd_ln_str("-outlatdir"), 0, s->uttid, cmd_ln_str("-latext"), 
+		      s->lathist, fwg->n_frm, dag, 
+		      kbcore_lm(s->kbc),kbcore_dict(s->kbc), fwg->ctxt,s->kbc->fillpen);
+  return SRCH_SUCCESS;
+}
+#endif

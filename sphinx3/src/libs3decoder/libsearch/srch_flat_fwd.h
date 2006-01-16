@@ -37,9 +37,12 @@
  /*
   * HISTORY
  * $Log$
- * Revision 1.1.2.4  2005/11/17  06:42:15  arthchan2003
- * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
+ * Revision 1.1.2.5  2006/01/16  20:11:23  arthchan2003
+ * Interfaces for 2nd stage search, now commented.
  * 
+ * Revision 1.1.2.4  2005/11/17 06:42:15  arthchan2003
+ * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
+ *
  * Revision 1.1.2.3  2005/09/25 19:23:55  arthchan2003
  * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
  *
@@ -210,6 +213,26 @@ int srch_FLAT_FWD_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_FLAT_FWD_frame_windup(void* srch_struct, int32 frmno);
 
 int srch_FLAT_FWD_select_active_gmm(void *srch_struct);
+
+
+glist_t srch_FLAT_FWD_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
+		     ); 
+
+int srch_FLAT_FWD_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
+		      );
+
+dag_t* srch_FLAT_FWD_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
+			     glist_t hyp
+			     );
+
+glist_t srch_FLAT_FWD_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
+				    dag_t *dag
+				    );
+
+
+int32 srch_FLAT_FWD_dag_dump(void *srch_struct,
+			     glist_t hyp
+			     );
 
 
 #endif /* SRCH_FLT_FWD*/
