@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2.4.15  2005/11/17  06:43:25  arthchan2003
- * Removed senone scale in lextree_hmm_propagate.
+ * Revision 1.2.4.16  2006/01/16  20:14:02  arthchan2003
+ * Remove the unlink silences part because that could affect the performance of the 1st pass search when -bestpath is specified.
  * 
+ * Revision 1.2.4.15  2005/11/17 06:43:25  arthchan2003
+ * Removed senone scale in lextree_hmm_propagate.
+ *
  * Revision 1.2.4.14  2005/10/17 04:54:49  arthchan2003
  * Freed the tree set correctly.
  *
@@ -166,15 +169,6 @@ int srch_TST_init(kb_t *kb, void *srch)
   }
 
   n_ltree=tstg->n_lextree;
-
-
-  for(i=0;i<kbc->lmset->n_lm;i++){
-    /* HACK! This will allow rescoring works but will definitely
-       change the answer for the first stage. Still not the best way*/
-    
-    if(! (cmd_ln_str("-outlatdir") && cmd_ln_str("-bestpath")))
-      unlinksilences(kbc->lmset->lmarray[i],kbc,kbc->dict);
-  }
 
   /* STRUCTURE and REPORT: Initialize lexical tree. Filler tree's
      initialization is followed.  */
@@ -385,7 +379,7 @@ int srch_TST_end(void *srch)
   fp = stderr;
   dict = kbcore_dict (s->kbc);
   uttid = s->uttid;
-    
+
   if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
     /*    E_INFO("ID %d\n",id);*/
     reg_result_dump(s,id);
@@ -1122,5 +1116,180 @@ int srch_TST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
+#if 0
+int srch_TST_dump_vithist(void* srch)
+{
+  srch_t* s;
+  FILE  *bptfp;
+  char file[8192];
+
+  s=(srch_t*) srch;
+
+  assert(s->vithist);
+
+  sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , s->uttid);
+  
+  if ((bptfp = fopen (file, "w")) == NULL) {
+    E_ERROR("fopen(%s,w) failed; using stdout\n", file);
+    bptfp = stdout;
+  }
+
+  vithist_dump (s->vithist, -1, s->kbc, bptfp);
+    
+  if (bptfp != stdout)
+    fclose (bptfp);
+
+  return SRCH_SUCCESS;
+}
 
 
+glist_t srch_TST_gen_hyp (void * srch /**< a pointer of srch_t */
+			  )
+{
+  srch_t* s;
+  int32 id;
+  glist_t hyp;
+
+  s=(srch_t*) srch;
+
+  assert(s->vithist);
+  if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
+    assert(id>=0);
+    hyp = vithist_backtrace (s->vithist, id, kbcore_dict(s->kbc));
+    return hyp;
+  } else{
+    E_ERROR("%s: No recognition\n\n", s->uttid);
+    return NULL;
+  }
+}
+
+/* FIXME! Temporary measure, The code now actually temporarily
+   write the dag file onto harddisc and all subsequent operation
+   will need to require reading the dag back.  Currently that
+   includes the -bestpath, -outlatfmt and -confidence operation.
+   They are now separated with different ifs. 
+   
+   A good way to solve is to work on the dag structure which
+   unfortunately was not supported by vithist.c from 3.x (x<6).
+   We will change this later on. 
+*/
+
+dag_t* srch_TST_gen_dag (void* srch, /**< a pointer of srch_t */
+			 glist_t hyp
+		     )
+{
+  /* This is ugly and write back is required */
+
+  int32 ispipe;
+  char str[2048];
+  FILE *latfp;
+  dag_t *dag;
+  srch_t* s;
+  float32 *f32arg;
+  float64 lwf;
+
+  s=(srch_t*) srch;
+  dag=NULL;
+
+  sprintf (str, "%s/%s.%s",
+	   cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
+
+  E_INFO("Writing lattice file: %s\n", str);
+
+  if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL){
+    E_ERROR("fopen_comp (%s,w) failed\n", str);
+    return NULL;
+  }else {
+    dag_write_header(latfp,s->stat->nfr, 0); /* Very fragile, if 1 is specifed, 
+					   the code will just be stopped */
+    
+    vithist_dag_write (s->vithist, hyp, kbcore_dict(s->kbc),
+		       cmd_ln_int32("-outlatoldfmt"), latfp, 
+		       cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM);
+
+    fclose_comp (latfp, ispipe);
+
+    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+    s3dag_dag_load(&dag,lwf,
+		   str,
+		   kbcore_dict(s->kbc),
+		   kbcore_fillpen(s->kbc));
+    return dag;
+  }
+    
+
+}
+
+glist_t srch_TST_bestpath_impl(void * srch, /**< A void pointer to a search structure */
+			   dag_t *dag
+			   )
+{
+  glist_t ghyp,rhyp;
+  float32 *f32arg;
+  float64 lwf;
+  srch_t* s;
+  srch_hyp_t *tmph, *bph;
+
+  s=(srch_t*) srch;
+
+  f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+  lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+  
+  bph=dag_search (dag,s->uttid, 
+		  lwf,
+		  dag->final.node,
+		  kbcore_dict(s->kbc),
+		  kbcore_lm(s->kbc),
+		  kbcore_fillpen(s->kbc)
+		  );
+
+  if(bph!=NULL){
+    ghyp=NULL;
+    for(tmph= bph ; tmph ; tmph = tmph->next)
+      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    
+    rhyp=glist_reverse(ghyp);
+    return rhyp;
+  }else{
+    return NULL;
+  }
+
+}
+
+int32 srch_TST_dag_dump(void *srch, glist_t hyp)
+{
+  int32 ispipe;
+  char str[2048];
+  FILE *latfp;
+  float32 *f32arg;
+  dag_t *dag;
+  srch_t* s;
+
+  s=(srch_t*) srch;
+  dag=NULL;
+
+  sprintf (str, "%s/%s.%s",
+	   cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
+
+  E_INFO("Writing lattice file: %s\n", str);
+
+  if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL){
+    E_ERROR("fopen_comp (%s,w) failed\n", str);
+    return NULL;
+  }else {
+    dag_write_header(latfp,s->stat->nfr, 0); /* Very fragile, if 1 is specifed, 
+					   the code will just be stopped */
+    
+    vithist_dag_write (s->vithist, hyp, kbcore_dict(s->kbc),
+		       cmd_ln_int32("-outlatoldfmt"), latfp, 
+		       cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM);
+
+    fclose_comp (latfp, ispipe);    
+  }
+
+}
+
+
+#endif

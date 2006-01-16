@@ -37,9 +37,12 @@
 /* srch_time_switch_tree.h
  * HISTORY
  * $Log$
- * Revision 1.2.4.2  2005/07/07  02:38:35  arthchan2003
- * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ * Revision 1.2.4.3  2006/01/16  20:14:02  arthchan2003
+ * Remove the unlink silences part because that could affect the performance of the 1st pass search when -bestpath is specified.
  * 
+ * Revision 1.2.4.2  2005/07/07 02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ *
  * Revision 1.2.4.1  2005/07/04 07:20:48  arthchan2003
  * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
  *
@@ -219,6 +222,24 @@ int srch_TST_begin(void *srch /**< A void pointer to a search structure */
 
 int srch_TST_end(void * srch /**< A void pointer to a search structure */
 		 );
+
+glist_t srch_TST_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
+		     ); 
+
+int srch_TST_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
+		      );
+
+dag_t* srch_TST_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
+			 glist_t hyp
+		     );
+
+glist_t srch_TST_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
+			       dag_t *dag
+			   );
+
+int32 srch_TST_dag_dump(void *srch_struct,
+			glist_t hyp
+			);
 
 /* An empty function, specified for possibly future use of overloading the default
    search abstraction mechanism. 
