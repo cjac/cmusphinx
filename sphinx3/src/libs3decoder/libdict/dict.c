@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5.4.1  2005/09/25  19:12:09  arthchan2003
- * Added optional LTS support for the dictionary.
+ * Revision 1.5.4.2  2006/01/16  19:53:17  arthchan2003
+ * Changed the option name from -ltsoov to -lts_mismatch
  * 
+ * Revision 1.5.4.1  2005/09/25 19:12:09  arthchan2003
+ * Added optional LTS support for the dictionary.
+ *
  * Revision 1.5  2005/06/21 21:04:36  arthchan2003
  * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
  *
@@ -238,9 +241,10 @@ static int32 dict_read (FILE *fp, dict_t *d)
 	      break;
 	  }
 	  if(cmu6_lts_phone_table[ph]==NULL){
-	  E_FATAL("A phone in the model definition doesn't appear in the letter to sound rules. \n
-	           This is case we don't recommend user to use the built-in LTS. \n
-		   Please kindly turn off -ltsoov\n");
+	    E_FATAL("A phone in the model definition doesn't appear in the letter to sound
+	           rules. \n This is case we don't recommend user to
+	           use the built-in LTS. \n Please kindly turn off
+	           -lts_mismatch\n");
 	  }
 	}
       }
