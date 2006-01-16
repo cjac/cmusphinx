@@ -43,9 +43,12 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.1.2.9  2005/08/02  21:14:34  arthchan2003
- * Removed comments and change sen to senscr.
+ * Revision 1.1.2.10  2006/01/16  18:20:46  arthchan2003
+ * Remove junks in the code, change the reporting from printf to log_hypstr.
  * 
+ * Revision 1.1.2.9  2005/08/02 21:14:34  arthchan2003
+ * Removed comments and change sen to senscr.
+ *
  * Revision 1.1.2.8  2005/07/26 02:20:39  arthchan2003
  * merged hyp_t with srch_hyp_t.
  *
@@ -869,56 +872,8 @@ void fsg_search_utt_start (fsg_search_t *search)
 
 static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
 {
-  srch_hyp_t *hyp;
-  int32 nf;
-  
-
   /* Print backtrace */
-
-  fprintf (fp, "\t%4s %4s %10s %11s %9s %11s %10s %6s  %s (FSG) (%s)\n",
-	   "SFrm", "EFrm", "AScr/Frm", "AScr", "LScr", "AScr+LScr", "(A-BS)/Frm", "State", "Word",
-	   search->uttid);
-
-  fprintf (fp, "\t-------------------------------------------------------------------------------\n");
-  for (hyp = search->hyp; hyp; hyp = hyp->next) {
-    nf = hyp->ef - hyp->sf + 1;
-    /* HACK
-    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6d  %s\n",
-	     hyp->sf, hyp->ef,
-	     (nf > 0) ? hyp->ascr/nf : 0,
-	     hyp->ascr, hyp->lscr, hyp->ascr + hyp->lscr,
-	     ((nf > 0) && (hyp->ascr != 0)) ? (seg_topsen_score(hyp->sf, hyp->ef) - hyp->ascr) / nf : 0,
-	     hyp->fsg_state,
-	     hyp->word);
-    */
-    fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %6d  %s\n",
-	     hyp->sf, hyp->ef,
-	     (nf > 0) ? hyp->ascr/nf : 0,
-	     hyp->ascr, hyp->lscr, hyp->ascr + hyp->lscr,
-	     hyp->fsg_state,
-	     hyp->word);
-
-  }
-  fprintf (fp, "\t-------------------------------------------------------------------------------\n");
-
-
-  /* HACK
-  fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %10d %6dF %s(TOTAL)\n",
-	   0, search->frame-1,
-	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
-	   search->ascr, search->lscr, search->ascr + search->lscr,
-	   (search->frame > 0) ? (seg_topsen_score(0, search->frame-1) - search->ascr)/search->frame : 0,
-	   word_fsg_final_state (search->fsg),
-	   search->uttid);
-  */
-  fprintf (fp, "\t%4d %4d %10d %11d %9d %11d %6dF %s(TOTAL)\n",
-	   0, search->frame-1,
-	   (search->frame > 0) ? (search->ascr / search->frame) : 0,
-	   search->ascr, search->lscr, search->ascr + search->lscr,
-	   word_fsg_final_state (search->fsg),
-	   search->uttid);
-  
-  fflush (fp);
+  log_hyp_detailed(fp, search->hyp,search->uttid,"FSG","fsg",NULL);
 }
 
 
@@ -955,29 +910,13 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
     
     i++;
     if ((i+1) >= HYP_SZ)
-      E_FATAL("Hyp array overflow; increase HYP_SZ in search.h\n");
+      E_FATAL("Hyp array overflow; increase HYP_SZ in fsg_search.h\n");
   }
   
   filt_hyp[i].id = -1;	/* Sentinel */
 }
 
 
-/*
- * Push result into old search module, from where we can obtain the result
- * using the old API.
- */
-static void fsg_search_set_result (fsg_search_t *search)
-{
-  /*  No need: searchSetFrame(search->frame);*/
-
-
-  /* HACK!, don't know what these functions are doing. 
-  fsg_search_hyp_filter (search);
-  search_hyp_to_str();
-  search_set_hyp_total_score (search->ascr + search->lscr);
-  search_set_hyp_total_lscr (search->lscr);
-  */
-}
 
 
 void fsg_search_history_backtrace (fsg_search_t *search,
@@ -1010,15 +949,11 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   
   if ((bpidx <= 0) || (last_frm < 0)) {
     /* Only the dummy root entry, or null transitions from it, exist */
-    if (check_fsg_final_state)
-      {
-
-	/*      E_WARN("Empty utterance: %s\n", uttproc_get_uttid());*/
-	E_WARN("Empty utterance: %s\n", search->uttid);
-      }
+    if (check_fsg_final_state)      {
+      E_WARN("Empty utterance: %s\n", search->uttid);
+    }
     
-    /* Set result (empty recognition) in backward compatible format */
-    fsg_search_set_result(search);
+
     
     return;
   }
@@ -1096,8 +1031,6 @@ void fsg_search_history_backtrace (fsg_search_t *search,
   }
   search->hyp = head;
   
-  /* For backward compatibility with existing API for obtaining results */
-  fsg_search_set_result (search);
 }
 
 
@@ -1110,13 +1043,13 @@ void fsg_search_utt_end (fsg_search_t *search)
   fsg_pnode_t *pnode;
   whmm_t *hmm;
   int32 n_hist;
-  char *result;
   FILE *latfp;
   char file[4096];
   
   /* Write history table if needed */
-  if (cmd_ln_str("-outlatdir")) {
-    sprintf (file, "%s/%s.hist", cmd_ln_str("-outlatdir"), search->uttid);
+
+  if (cmd_ln_str("-bptbldir")) {
+    sprintf (file, "%s/%s.hist", cmd_ln_str("-bptbldir"), search->uttid);
     if ((latfp = fopen(file, "w")) == NULL)
       E_ERROR("fopen(%s,w) failed\n", file);
     else {
@@ -1131,16 +1064,15 @@ void fsg_search_utt_end (fsg_search_t *search)
    * the best scoring state.
    */
   fsg_search_history_backtrace (search, TRUE);
-  
+
+  /*  fsg_search_hyp_filter(search);*/
+
   if (search->isBacktrace)
     fsg_search_hyp_dump (search, stdout);
-  
-  /* HACK: Temporarily removed. 
-    search_result (&nfr, &result);
-  */
-  printf("FSGSRCH: %s (%s %d (A=%d L=%d))\n",
-	 result, search->uttid, search->ascr + search->lscr,
-	 search->ascr, search->lscr);
+
+  printf("\nFSGSRCH: ");
+  log_hypstr(stdout, search->hyp,search->uttid,0,search->ascr+search->lscr,search->dict);
+
   fflush (stdout);
   
   n_hist = fsg_history_n_entries(search->history);

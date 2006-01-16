@@ -43,9 +43,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.6  2005/07/24  19:34:46  arthchan2003
- * Removed search_hyp_t, used srch_hyp_t instead
+ * Revision 1.1.2.7  2006/01/16  18:20:46  arthchan2003
+ * Remove junks in the code, change the reporting from printf to log_hypstr.
  * 
+ * Revision 1.1.2.6  2005/07/24 19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
+ *
  * Revision 1.1.2.5  2005/07/24 01:34:54  arthchan2003
  * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  *
@@ -123,6 +126,7 @@
 #include <fsg_lextree.h>
 #include <fsg_history.h>
 #include <ascr.h>
+#include <srch_output.h>
 
 typedef struct fsg_search_s {
   glist_t fsglist;		/* List of all FSGs loaded */
@@ -168,11 +172,10 @@ typedef struct fsg_search_s {
   mdef_t *mdef;
   tmat_t *tmat; 
   ascr_t *am_score_pool;
-#if 0
+
   int32 *senscr; /** The senone score */
-#endif
-  char* uttid; /* HACK! add uttid in fsg_search, remember to set it */
-  srch_hyp_t *filt_hyp;
+  char* uttid;  /**< Utterance ID */
+  srch_hyp_t *filt_hyp; 
 } fsg_search_t;
 
 
