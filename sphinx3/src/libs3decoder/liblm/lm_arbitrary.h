@@ -46,9 +46,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.1.2.1  2005/07/17  05:24:31  arthchan2003
- * (Incomplete) Added lm_arbitrary.[ch], an arbitrary n-gram data structure.  Far from completed. Don't expect too much.
+ * Revision 1.1.2.2  2006/01/16  19:59:40  arthchan2003
+ * Commented out the unfinished code.
  * 
+ * Revision 1.1.2.1  2005/07/17 05:24:31  arthchan2003
+ * (Incomplete) Added lm_arbitrary.[ch], an arbitrary n-gram data structure.  Far from completed. Don't expect too much.
+ *
  *
  */
 
@@ -59,6 +62,9 @@
 #include <lm.h>
 #include <s3types.h> 
 
+
+
+#if 0 /*Unfinished code of 
 #define DEFAULT_COUNT_TABLE_SIZE MAX_INT32
 #define KEY  4294960000
 
@@ -126,6 +132,6 @@ typedef struct {
   uint16 first_id;       /* 0 if open vocab, 1 if closed vocab. */
   
 } slm_t;
-
+#endif 
 
 #endif /* _S3_LM_ARBITRARY_H_*/
