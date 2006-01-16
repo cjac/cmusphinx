@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.2.1  2005/11/17  06:39:30  arthchan2003
- * Added a structure for linked-based lattice.
+ * Revision 1.1.2.2  2006/01/16  20:17:43  arthchan2003
+ * Add flags whether scale to be computed. fixed the arguments in lm_rawscore.
  * 
+ * Revision 1.1.2.1  2005/11/17 06:39:30  arthchan2003
+ * Added a structure for linked-based lattice.
+ *
  */
 
 
@@ -118,11 +121,8 @@ static int32 new_word_graph_link(word_graph_t* wg,  /**< The word graph */
 #endif
   assert(sf<=ef);
 
-#if 0
-  for(i=sf;i<ef;i++){
-    scl+=senscale[i];
-  }
-#endif
+  if(cmd_ln_int32("-hypsegscore_unscale"))
+    scl=compute_scale(sf,ef,senscale);
 
 #if 0
   E_INFO("snodeid %d enodeid %d, sf %d, ef %d, ascr %d scl %d\n",snodeid, enodeid,sf, ef, ascr, scl);  
@@ -330,7 +330,7 @@ static void wg_from_dag(word_graph_t *wg,dag_t *dag,dagnode_t *d, int32 dnode_st
 
       stfr[i].nodeidx = nodeidx;
       /* FIX ME ! Currently, confidence score is hard-wired to 0.0*/
-      new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, n->sf,d->wid,l->ascr,lm_rawscore(lm,l->lscr,1.0),0.0, senscale);
+      new_word_graph_link(wg, dnode_stidx, nodeidx, d->sf, n->sf,d->wid,l->ascr,lm_rawscore(lm,l->lscr),0.0, senscale);
     }
   }
 
@@ -351,7 +351,7 @@ static void wg_from_dag(word_graph_t *wg,dag_t *dag,dagnode_t *d, int32 dnode_st
       
     }else{
       new_word_graph_link(wg,dnode_stidx,nodeidx,d->sf,d->lef, d->wid,
-			  0.0, lm_rawscore(lm,lm_ug_score(lm,lm->dict2lmwid[d->wid],d->wid), 1.0),
+			  0.0, lm_rawscore(lm,lm_ug_score(lm,lm->dict2lmwid[d->wid],d->wid)),
 			  0.0, senscale);
     }
 #endif
