@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.12.4.2  2005/11/17  06:15:22  arthchan2003
- * Added input-encoding and output-encoding into the lm structure.
+ * Revision 1.12.4.3  2006/01/16  19:56:37  arthchan2003
+ * 1, lm_rawscore doesn't need a language weight, 2, Support dumping the LM in FST format.  This code used Yannick Esteve's and LIUM code.
  * 
+ * Revision 1.12.4.2  2005/11/17 06:15:22  arthchan2003
+ * Added input-encoding and output-encoding into the lm structure.
+ *
  * Revision 1.12.4.1  2005/07/13 01:46:22  arthchan2003
  * 1, Fixed dox-doc, 2, Added more documentation for major functions such as lm_read and lm_write.
  *
@@ -205,8 +208,8 @@ extern "C" {
 
   typedef struct {
     s3lmwid_t wid;	/**< LM wid (index into lm_t.ug) */
-    uint16 probid;
-    uint16 bowtid;
+    uint16 probid;      /**< Index into array of actualy bigram probs*/
+    uint16 bowtid;      /**< Index into array of actualy bigram backoff wts */
     uint16 firsttg;     /**< 1st trigram entry on disk (see tg_segbase below) */
   } bg_t;
 
@@ -260,6 +263,7 @@ typedef struct {
     s3lmwid_t lwid[3];		/**< 0 = oldest, 2 = newest (i.e., P(2|0,1)) */
     int32 lscr;			/**< LM score for above trigram */
   } lm_tgcache_entry_t;
+
 
 
 
@@ -677,11 +681,15 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		     s3wid_t wid     /**< Dict ID for the word */
 		     );
 
-
+  
+  int32 lm_ug_exists(lm_t* lm ,  /**< LM */
+		     s3lmwid_t lwid /**< LM ID for the word */
+		     );
+  
   /*
    * Return bigram score for the given two word sequence.  If w1 is BAD_S3LMWID, return
    * lm_ug_score (w2).
-   * 20040227: This also account the in-class probability of w2. 
+   * 20040227: This also account for the in-class probability of w2. 
    */
   int32 lm_bg_score (lm_t *lmp, /**< In: LM begin queried */
 		     s3lmwid_t lw1, 
@@ -690,10 +698,18 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 
 
   /**
+     Whether a certain bigram exists. 
+   */
+  int32 lm_bg_exists (lm_t *lm,  /**< In: LM */
+		     s3lmwid_t lw1,  
+		     s3lmwid_t lw2   
+		     );
+
+  /**
    * Return trigram score for the given three word sequence.  If w1 is BAD_S3LMWID, return
    * lm_bg_score (w2, w3).  If both lw1 and lw2 are BAD_S3LMWID, return lm_ug_score (lw3).
    * 
-   * 20040227: This also account the in-class probability of w3. 
+   * 20040227: This also account for the in-class probability of w3. 
    */
   int32 lm_tg_score (lm_t *lmp,  /**< In: LM begin queried */
 		     s3lmwid_t lw1, 
@@ -701,6 +717,15 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		     s3lmwid_t lw3, 
 		     s3wid_t w3);
 
+
+  /**
+     Whether a certain trigram exists. 
+   */
+  int32 lm_tg_exists (lm_t *lm,  /**< In: LM */
+		     s3lmwid_t lw1,  
+		     s3lmwid_t lw2,
+		     s3lmwid_t lw3
+		     );
 
   /**
    * Set the language-weight and insertion penalty parameters for the LM, after revoking
@@ -713,8 +738,7 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 
 
   int32 lm_rawscore (lm_t *lm,  /**< In: the LM */
-		     int32 score, 
-		     float64 lwf
+		     int32 score
 		     );
 
 
@@ -814,12 +838,23 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 			char *name   /**< In: The name of the class */
 			);
 
+  
+  int32 find_bg (bg_t *bg, int32 n, s3lmwid_t w);
+  int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w);
+  
 /* Macro versions of access functions */
 #define LM_TGPROB(lm,tgptr)	((lm)->tgprob[(tgptr)->probid].l)
 #define LM_BGPROB(lm,bgptr)	((lm)->bgprob[(bgptr)->probid].l)
 #define LM_UGPROB(lm,ugptr)	((ugptr)->prob.l)
 #define LM_RAWSCORE(lm,score)	((score - (lm)->wip) / ((lm)->lw))
 #define LM_DICTWID(lm,lmwid)     ((lm)->ug[(lmwid)].dictwid)
+
+  /** 
+      Create a new unigram table
+   */
+  ug_t *NewUnigramTable (int32 n_ug /**< Number of unigram */
+			 );
+
 
 #ifdef __cplusplus
 }

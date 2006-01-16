@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.14.4.8  2005/11/17  06:18:49  arthchan2003
- * Added a string encoding conversion routine in lm.c. Currently it only works for converting hex to its value.
+ * Revision 1.14.4.9  2006/01/16  19:56:37  arthchan2003
+ * 1, lm_rawscore doesn't need a language weight, 2, Support dumping the LM in FST format.  This code used Yannick Esteve's and LIUM code.
  * 
+ * Revision 1.14.4.8  2005/11/17 06:18:49  arthchan2003
+ * Added a string encoding conversion routine in lm.c. Currently it only works for converting hex to its value.
+ *
  * Revision 1.14.4.7  2005/10/17 04:49:13  arthchan2003
  * Free resource of lm_t and lmset_t correctly.
  *
@@ -160,12 +163,15 @@ int32 lm3g_dump (char const *file,  /**< the file name */
 		 int32 mtime  /**< LM file modification date */
 		 );
 
-int32 lm_write_arpa_text(lm_t *lmp,
-			 const char* outputfn,
-			 const char* inputenc,
-			 const char* outputenc
+int32 lm_write_arpa_text(lm_t *lmp,/**< the pointer of the language model */
+			 const char* outputfn, /**< the output file name */
+			 const char* inputenc, /**< The input encoding method */
+			 const char* outputenc /**< The output encoding method */
 			 );
 
+int32 lm_write_att_fsm(lm_t *lm,  /**< the languauge model pointer */
+		      const char *filename /**< output file name */
+		      );
 
 int32 lm_get_classid (lm_t *model, char *name)
 {
@@ -460,6 +466,9 @@ int32 lm_write_advance(lm_t * lmp, const char* outputfn,const char* filename,cha
     /* set mtime to be zero because sphinx3 has no mechanism to check
        whether the file is generated earlier (at least for now.)*/
     return lm3g_dump(outputfn,lmp,filename,0);
+  }else if (!strcmp(fmt,"FST")){
+    E_WARN("Invoke un-tested ATT-FSM writer\n");
+    return lm_write_att_fsm(lmp,outputfn);
   }else{
     E_INFO("Unknown format (%s) is specified\n",fmt);
     return LM_FAIL; 
@@ -566,6 +575,14 @@ int32 lm_ug_score (lm_t *lm, s3lmwid_t lwid, s3wid_t wid)
       return (lm->ug[lwid].prob.l );
 }
 
+int32 lm_ug_exists(lm_t* lm, s3lmwid_t lwid)
+{
+  if(NOT_S3LMWID(lwid) || (lwid >=lm->n_ug))
+    return 0;
+  else
+    return 1;
+}
+
 
 int32 lm_uglist (lm_t *lm, ug_t **ugptr)
 {
@@ -664,7 +681,7 @@ static void load_bg (lm_t *lm, s3lmwid_t lw1)
 #define BINARY_SEARCH_THRESH	16
 
 /* Locate a specific bigram within a bigram list */
-static int32 find_bg (bg_t *bg, int32 n, s3lmwid_t w)
+int32 find_bg (bg_t *bg, int32 n, s3lmwid_t w)
 {
     int32 i, b, e;
     
@@ -795,6 +812,38 @@ int32 lm_bg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3wid_t w2)
     return (score);
 }
 
+int32 lm_bg_exists (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
+{
+    int32 i, n, score;
+    bg_t *bg=0;
+
+    if ((lm->n_bg == 0) || (NOT_S3LMWID(lw1)))
+      return 0 ;
+
+    if (NOT_S3LMWID(lw2) || (lw2 >= lm->n_ug))
+      return 0;
+    
+    n = lm->ug[lw1+1].firstbg - lm->ug[lw1].firstbg;
+    
+    if (n > 0) {
+	if (! lm->membg[lw1].bg)
+	    load_bg (lm, lw1);
+	lm->membg[lw1].used = 1;
+	bg = lm->membg[lw1].bg;
+
+	i = find_bg (bg, n, lw2);
+    } else
+	i = -1;
+    
+    if (i >= 0) 
+      return 1;
+    else 
+      return 0;
+
+
+    return (score);
+}
+
 
 static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 {
@@ -881,7 +930,7 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
 
 
 /* Similar to find_bg */
-static int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w)
+int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w)
 {
     int32 i, b, e;
 
@@ -1030,6 +1079,53 @@ int32 lm_tg_score (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3, s3wid_
     return (score);
 }
 
+int32 lm_tg_exists (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2, s3lmwid_t lw3)
+{
+    int32 i,n;
+    tg_t *tg;
+    tginfo_t *tginfo, *prev_tginfo;
+
+    if ((lm->n_tg == 0) || (NOT_S3LMWID(lw1)))
+      return 0;
+
+    if (NOT_S3LMWID(lw1) || (lw1 >= lm->n_ug))
+      return 0;
+    if (NOT_S3LMWID(lw2) || (lw2 >= lm->n_ug))
+      return 0;
+    if (NOT_S3LMWID(lw3) || (lw3 >= lm->n_ug))
+      return 0;
+
+    prev_tginfo = NULL;
+    for (tginfo = lm->tginfo[lw2]; tginfo; tginfo = tginfo->next) {
+	if (tginfo->w1 == lw1)
+	    break;
+	prev_tginfo = tginfo;
+    }
+
+    if (! tginfo) {
+
+    	load_tg (lm, lw1, lw2);
+	tginfo = lm->tginfo[lw2];
+    } else if (prev_tginfo) {
+
+	prev_tginfo->next = tginfo->next;
+	tginfo->next = lm->tginfo[lw2];
+	lm->tginfo[lw2] = tginfo;
+    }
+
+    tginfo->used = 1;
+
+    /* Trigrams for w1,w2 now in memory; look for w1,w2,w3 */
+    n = tginfo->n_tg;
+    tg = tginfo->tg;
+
+    assert(tginfo);
+    if ((i = find_tg (tg, n, lw3)) >= 0) 
+      return 1;
+    else 
+      return 0;
+}
+
 
 s3lmwid_t lm_wid (lm_t *lm, char *word)
 {
@@ -1110,11 +1206,9 @@ void lm_free (lm_t *lm)
 }
 
 
-int32 lm_rawscore (lm_t *lm, int32 score, float64 lwf)
+int32 lm_rawscore (lm_t *lm, int32 score)
 {
 
-    if (lwf != 1.0)
-        score /= (int32)lwf;
     score -= lm->wip;
     score /= (int32)lm->lw;
     
