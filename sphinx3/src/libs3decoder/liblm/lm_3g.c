@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1.2.3  2005/11/17  06:21:05  arthchan2003
- * 1, Change all lm_write_arpa_* functions' s3wid_t to s3lmwid_t.  2, Make the writing code to be changed more easily.
+ * Revision 1.1.2.4  2006/01/16  19:58:25  arthchan2003
+ * Small change to make function public.
  * 
+ * Revision 1.1.2.3  2005/11/17 06:21:05  arthchan2003
+ * 1, Change all lm_write_arpa_* functions' s3wid_t to s3lmwid_t.  2, Make the writing code to be changed more easily.
+ *
  * Revision 1.1.2.2  2005/07/28 20:04:20  dhdfu
  * Make LM writing not crash for bigram LM
  *
@@ -197,7 +200,7 @@ static void ReadNgramCounts (FILE *fp,
 
 }
 
-static ug_t *NewUnigramTable (int32 n_ug)
+ug_t *NewUnigramTable (int32 n_ug)
 {
     ug_t *table;
     int32 i;
@@ -845,3 +848,5 @@ int32 lm_write_arpa_text(lm_t *lmp,
   fclose(fp);
   return LM_SUCCESS;
 }
+
+
