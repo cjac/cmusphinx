@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11.4.5  2005/09/25  20:09:47  arthchan2003
- * Added support for LTS.
+ * Revision 1.11.4.6  2006/01/16  20:27:41  arthchan2003
+ * Changed -ltsoov to -lts_mismatch.
  * 
+ * Revision 1.11.4.5  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
  * Revision 1.11.4.4  2005/09/18 01:52:27  arthchan2003
  * Tied dag handling command line argument.
  *
@@ -305,9 +308,11 @@ static void models_init ( void )
     mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Dictionary */
-    dict = dict_init (mdef, (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"), 0, 
-		      cmd_ln_int32("-ltsoov"),
+    dict = dict_init (mdef, 
+		      (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"), 
+		      0, 
+		      cmd_ln_int32("-lts_mismatch"),
 		      1);
 
     lmset=lmset_init(cmd_ln_str("-lm"),

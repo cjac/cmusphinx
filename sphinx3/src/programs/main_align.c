@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15.4.10  2005/09/26  02:28:26  arthchan2003
- * Changed -s3hmmdir to -hmm
+ * Revision 1.15.4.11  2006/01/16  20:26:03  arthchan2003
+ * Changed -ltsoov to -lts_mismatch.
  * 
+ * Revision 1.15.4.10  2005/09/26 02:28:26  arthchan2003
+ * Changed -s3hmmdir to -hmm
+ *
  * Revision 1.15.4.9  2005/09/25 20:09:47  arthchan2003
  * Added support for LTS.
  *
@@ -377,7 +380,7 @@ static void models_init ( void )
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      '_',
-		      cmd_ln_int32("-ltsoov"),
+		      cmd_ln_int32("-lts_mismatch"),
 		      1);	/* Compound word separator.  Default: none. */
     
 
