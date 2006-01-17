@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.8  2006/01/17  20:57:53  dhdfu
+ * Make sure we don't doubly-free hyp if bestpath search fails (which it sometimes does due to -min_endfr pruning out crucial nodes...)
  * 
+ * Revision 1.7  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.7  2005/06/20 22:20:19  archan
  * Fix non-conforming problems for Windows plot.
  *
@@ -581,6 +584,7 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     
     /* Free any old hypothesis */
     hyp_free (hyp);
+    hyp = NULL;
     
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
