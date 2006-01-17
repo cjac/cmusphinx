@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.11  2006/01/16  20:29:52  arthchan2003
- * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
+ * Revision 1.10.4.12  2006/01/17  20:31:01  arthchan2003
+ * Changed BSTPTH <control n> to BSTPTH:
  * 
+ * Revision 1.10.4.11  2006/01/16 20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
+ *
  * Revision 1.10.4.10  2005/11/17 06:48:24  arthchan2003
  * Changed a misleading comment in main_dag.c
  *
@@ -401,7 +404,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 	    lscr += h->lscr;
 	  }
 
-	  printf("BSTPTH\n");
+	  printf("BSTPTH: ");
 	  log_hypstr(stdout, hyp, uttid, 0, ascr+lscr, dict);
 	  
 	  printf ("BSTXCT: ");
