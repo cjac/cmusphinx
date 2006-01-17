@@ -16,7 +16,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -topn 1000 \
 -beam 1e-80 \
 -agc max \
--senmgau .cont. \
+-senmgau .s3cont. \
 -ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
 -cepdir @abs_top_srcdir@/model/lm/an4/ \
 -phsegdir ./ \
