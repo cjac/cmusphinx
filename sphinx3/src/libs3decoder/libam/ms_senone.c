@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5.4.4  2006/01/16  19:47:05  arthchan2003
- * Removed the truncation of senone probability code.
+ * Revision 1.5.4.5  2006/01/17  22:57:06  arthchan2003
+ * Add directive TRUNCATE_LOGPDF in ms_senone.c
  * 
+ * Revision 1.5.4.4  2006/01/16 19:47:05  arthchan2003
+ * Removed the truncation of senone probability code.
+ *
  * Revision 1.5.4.3  2005/08/03 18:53:43  dhdfu
  * Add memory deallocation functions.  Also move all the initialization
  * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
@@ -251,7 +254,7 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
 
     p = logs3(s->mixwfloor);
 
-#if 0
+#if TRUNCATE_LOGPDF
     for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
     E_INFO("Truncating senone logs3(pdf) values by %d bits, to 8 bits\n", s->shift);
 #endif
@@ -290,17 +293,19 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
 	    for (c = 0; c < s->n_cw; c++) {
 		p = -(logs3(pdf[c]));
 
-		if (s->n_gauden > 1)
-		  s->pdf[i][f][c] = p;
-		else
-		  s->pdf[f][c][i] = p;
-#if 0
+#if TRUNCATE_LOGPDF
 		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
 
 		if (s->n_gauden > 1)
 		    s->pdf[i][f][c] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
 		else
 		    s->pdf[f][c][i] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
+
+#else
+		if (s->n_gauden > 1)
+		  s->pdf[i][f][c] = p;
+		else
+		  s->pdf[f][c][i] = p;
 #endif
 	    }
 	}
@@ -406,7 +411,7 @@ int32 senone_eval (senone_t *s, s3senid_t id, gauden_dist_t **dist, int32 n_top)
 	fdist = dist[f];
 
 	/* Top codeword for feature f */
-#if 0
+#if TRUNCATE_LOGPDF
 	fscr = (s->n_gauden > 1) ?
 	    fdist[0].dist - (s->pdf[id][f][fdist[0].id] << s->shift) :	/* untransposed */
 	    fdist[0].dist - (s->pdf[f][fdist[0].id][id] << s->shift);	/* transposed */
@@ -419,7 +424,7 @@ int32 senone_eval (senone_t *s, s3senid_t id, gauden_dist_t **dist, int32 n_top)
 
 	/* Remaining of n_top codewords for feature f */
 	for (t = 1; t < n_top; t++) {
-#if 0
+#if TRUNCATE_LOGPDF
 	    fwscr = (s->n_gauden > 1) ?
 		fdist[t].dist - (s->pdf[id][f][fdist[t].id] << s->shift) :
 		fdist[t].dist - (s->pdf[f][fdist[t].id][id] << s->shift);
@@ -465,7 +470,7 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
     cwdist = dist[0][0].dist;
     pdf = s->pdf[0][dist[0][0].id];
 
-#if 0
+#if TRUNCATE_LOGPDF
     for (i = 0; i < s->n_sen; i++)
 	senscr[i] = cwdist - (pdf[i] << s->shift);
 #else
@@ -480,7 +485,7 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	pdf = s->pdf[0][dist[0][k].id];
 	
 	for (i = 0; i < s->n_sen; i++) {
-#if 0
+#if TRUNCATE_LOGPDF
 	    scr = cwdist - (pdf[i] << s->shift);
 #else
 	    scr = cwdist - (pdf[i]);
@@ -495,7 +500,7 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	cwdist = dist[f][0].dist;
 	pdf = s->pdf[f][dist[f][0].id];
 	
-#if 0
+#if TRUNCATE_LOGPDF
 	for (i = 0; i < s->n_sen; i++)
 	    featscr[i] = cwdist - (pdf[i] << s->shift);
 #else
@@ -509,7 +514,7 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	    pdf = s->pdf[f][dist[f][k].id];
 	    
 	    for (i = 0; i < s->n_sen; i++) {
-#if 0
+#if TRUNCATE_LOGPDF
 		scr = cwdist - (pdf[i] << s->shift);
 #else
 		scr = cwdist - (pdf[i] );
