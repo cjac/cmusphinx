@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.17  2006/01/16  20:15:37  arthchan2003
- * 1, removed the unlinksilences part, 2, added 2nd-stage interface, but now commented.
+ * Revision 1.1.4.18  2006/01/17  20:28:48  arthchan2003
+ * Uncomment the result dump code in mode 5.
  * 
+ * Revision 1.1.4.17  2006/01/16 20:15:37  arthchan2003
+ * 1, removed the unlinksilences part, 2, added 2nd-stage interface, but now commented.
+ *
  * Revision 1.1.4.16  2005/11/17 06:43:25  arthchan2003
  * Removed senone scale in lextree_hmm_propagate.
  *
@@ -411,7 +414,7 @@ int32 srch_WST_end(void *srch)
 
   /* This part is duplicated with TST_end */
 
-#if 0
+#if 1
   if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
     reg_result_dump(s,id);
   } else
