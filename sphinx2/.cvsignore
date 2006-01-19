@@ -4,6 +4,7 @@ Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache
+bin
 config.cache
 config.guess
 config.h
@@ -15,11 +16,14 @@ configure
 depcomp
 gmon.out
 install-sh
+lib
 libtool
 ltconfig
 ltmain.sh
 missing
 mkinstalldirs
+sphinx2.ncb
+sphinx2.suo
 stamp-h
 stamp-h.in
 stamp-h1
