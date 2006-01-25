@@ -43,9 +43,12 @@
  * 		(Currently, needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.26  2005/12/13  17:04:14  rkm
- * Added confidence reporting in nbest files; fixed some backtrace bugs
+ * Revision 1.27  2006/01/25  14:43:24  rkm
+ * *** empty log message ***
  * 
+ * Revision 1.26  2005/12/13 17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
+ *
  * Revision 1.25  2005/12/03 17:54:34  rkm
  * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  *
@@ -1008,9 +1011,10 @@ static void uttproc_windup (int32 *fr, char **hyp)
   if ((dir = query_pscr2lat()) != NULL) {
     sprintf (filename, "%s/%s.pscrlat", dir, uttid);
     
-    if ((pscrlat_fp = fopen(filename, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", filename);
-    else {
+    if ((pscrlat_fp = fopen(filename, "w")) == NULL) {
+      E_ERROR("fopen(%s,w) failed; writing to stdout\n", filename);
+      search_uttpscr2phlat_print (stdout);
+    } else {
       search_uttpscr2phlat_print (pscrlat_fp);
       fclose (pscrlat_fp);
     }
