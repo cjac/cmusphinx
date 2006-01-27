@@ -52,9 +52,12 @@
  *
  * 
  * $Log$
- * Revision 1.10.4.12  2006/01/17  20:31:01  arthchan2003
- * Changed BSTPTH <control n> to BSTPTH:
+ * Revision 1.10.4.13  2006/01/27  20:17:47  arthchan2003
+ * Manual merge of Dave's bug fixes into main_dag.c.
  * 
+ * Revision 1.10.4.12  2006/01/17 20:31:01  arthchan2003
+ * Changed BSTPTH <control n> to BSTPTH:
+ *
  * Revision 1.10.4.11  2006/01/16 20:29:52  arthchan2003
  * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  *
@@ -374,7 +377,7 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     char *latdir, *latext;
     int32 nfrm, ascr, lscr;
 
-
+    hyp = NULL;
     ptmr_reset (&tm_utt);
     ptmr_start (&tm_utt);
 
@@ -442,6 +445,9 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     fflush (stdout);
 
     tot_nfr += nfrm;
+
+    if(hyp != NULL)
+      hyp_free(hyp);
 }
 
 static void utt_dag(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
