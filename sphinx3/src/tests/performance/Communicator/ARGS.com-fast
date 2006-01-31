@@ -20,5 +20,6 @@
 -vqeval 13
 -agc none 
 -varnorm no 
+-remove_zero_var_gau 1
 
 
