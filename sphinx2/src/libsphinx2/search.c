@@ -49,9 +49,12 @@
  * 		Removed hyp_word[] array.
  *
  * $Log$
- * Revision 1.20  2005/12/13  17:04:14  rkm
- * Added confidence reporting in nbest files; fixed some backtrace bugs
+ * Revision 1.21  2006/01/31  18:40:44  rkm
+ * Changed pscr-based phone lattice dump
  * 
+ * Revision 1.20  2005/12/13 17:04:14  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
+ *
  * Revision 1.19  2005/12/03 17:54:34  rkm
  * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  *
@@ -4877,6 +4880,93 @@ typedef struct {
 #endif
 
 
+#if 1
+
+/*
+ * Dump a "phone lattice" to the given file:
+ *   For each frame, determine the CIphones with top scoring senones, threshold
+ *   and sort them in descending order.  (Threshold based on topsen_thresh.)
+ */
+int32 search_uttpscr2phlat_print (FILE *outfp)
+{
+  int32 nf, sum, prob;
+  int32 f, p, l, k;
+  const char *pstr;
+  int32 ts = Table_Size;
+  int16 *at = Addition_Table;
+  double ent, fprob;
+  
+  if (! utt_pscr_valid)
+    return -1;
+  
+  /* Print header */
+  fprintf(outfp, "  Frm  Entr  PhoneProbs (%s)\n", uttproc_get_uttid());
+  l = 0;
+  for (p = 0; p < NumCiPhones; p++) {
+    pstr = phone_from_id (p);
+    k = strlen(pstr);
+    if (l < k)
+      l = k;
+  }
+  for (; l > 0; --l) {
+    fprintf (outfp, "            ");
+    for (p = 0; p < NumCiPhones; p++) {
+      pstr = phone_from_id (p);
+      k = strlen(pstr);
+      if (l <= k)
+	fprintf (outfp, "  %c", pstr[k-l]);
+      else
+	fprintf (outfp, "   ");
+    }
+    fprintf (outfp, "\n");
+  }
+  fprintf(outfp, "  ---------");
+  for (p = 0; p < NumCiPhones; p++)
+    fprintf (outfp, "---");
+  fprintf (outfp, "\n");
+
+  nf = LastFrame;  /* Strictly, #frames may > LastFrame, but... */
+  
+  for (f = 0; f < nf; f++) {
+    /* Sum up pscr[p] over all CI phones */
+    sum = utt_pscr[f][0];
+    for (p = 1; p < NumCiPhones; p++) {
+      prob = utt_pscr[f][p];
+      FAST_ADD(sum, sum, prob, at, ts);
+    }
+    
+    /* pscr entropy */
+    ent = 0.0;
+    for (p = 0; p < NumCiPhones; p++) {
+      fprob = EXP(utt_pscr[f][p] - sum);
+      ent -= fprob * log(fprob);
+    }
+    
+    fprintf (outfp, "%5d %.3f ", f, ent);
+
+    /* Find prob for each CIphone */ 
+    for (p = 0; p < NumCiPhones; p++) {
+      prob = utt_pscr[f][p] - sum;
+      k = 100.0 * EXP(prob) + 0.5;	/* Scaled to 100 and integerized */
+      assert ((k <= 101) && (k >= 0));
+      if (k > 99)
+	k = 99;
+      fprintf (outfp, " %2d", k);
+    }
+    fprintf (outfp, "\n");
+  }
+  
+  fprintf(outfp, "  ---------");
+  for (p = 0; p < NumCiPhones; p++)
+    fprintf (outfp, "---");
+  fprintf (outfp, "\n");
+  fflush (outfp);
+  
+  return 0;
+}
+
+#else
+
 /*
  * Dump a "phone lattice" to the given file:
  *   For each frame, determine the CIphones with top scoring senones, threshold
@@ -4938,6 +5028,8 @@ int32 search_uttpscr2phlat_print (FILE *outfp)
     
     return 0;
 }
+
+#endif
 
 
 static void vithist_dump (FILE *fp, vithist_t **vithist, int32 *pid, int32 nfr, int32 n_state)
