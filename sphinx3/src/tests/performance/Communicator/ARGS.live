@@ -1,0 +1,6 @@
+-lowerf 200
+-upperf 3500
+-nfft 256
+-nfilt 31
+-samprate 8000
+-wlen 0.0256

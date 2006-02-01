@@ -70,6 +70,7 @@ CLEANFILES = *.tmp *.ctl *.sent  *.lex *.results *.match *.match.* *.hyp* ARGS.*
 com-base-lp com-fast-lp:
 	-rm -f $@.results $@.match $@.match.* $@.hyp
 	/bin/cp ARGS.$(subst -lp,,$@) ARGS.$@
+	cat ARGS.live >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(LPBIN) $(CTLFILE) $(COMPATH)/nist_data/ ARGS.$@ > $@.results 2>&1 
 	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
