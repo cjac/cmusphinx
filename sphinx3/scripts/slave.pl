@@ -185,7 +185,7 @@ sub align_hyp {
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
     if (open (PIPE, "\"$align\" " .
 	  "-i rm " .
-	  "-o rsum stdout " .
+	  "-o rsum pralign dtl stdout " .
 	  "-f 0 " .
 	  "-r \"$ref\" " .
 	  "-h \"$hyp\" 2>&1 |")) {
@@ -218,7 +218,7 @@ sub align_hyp {
     &DEC_HTML_Print ("\t" . &DEC_ImgSrc("$DEC_CFG_BASE_DIR/.align.state.gif") . " ");   
     &DEC_Log("SENTENCE ERROR: " . (sprintf "%.3f%", $ser) . 
 	    (sprintf " (%d/%d)", $sent_err, $sent_total) .
-	    "   WORD_ACCURACY: " . (sprintf "%.3f%", $wer) . 
+	    "   WORD ERROR RATE: " . (sprintf "%.3f%", $wer) . 
 	    (sprintf " (%d/%d) ", $word_err, $word_total));
     &DEC_HTML_Print (&DEC_FormatURL("$outfile", "Log File"));
     &DEC_Log("\n");
