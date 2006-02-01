@@ -113,7 +113,7 @@ if ($#dirlist > 0) {
 }
 
 # Start building the directory structure
-print "Making basic directory structure\n";
+print "Making basic directory structure.\n";
 mkdir "bin" unless -d bin;
 mkdir "etc" unless -d etc;
 mkdir "feat" unless -e feat;
@@ -122,45 +122,36 @@ mkdir "wav" unless -e wav;
 mkdir "logdir" unless -d logdir;
 
 # Figure out the platform string definition
-my $PLATFORM = "";
 my $INSTALL = "";
-if (-e "$SPHINX_DECODER_DIR/config.status") {
-# Let's guess it's a platform that supports GNU's autoconf stuff.
-  $PLATFORM = `$SPHINX_DECODER_DIR/config.guess`;
-  if (open (SYSDESC, "< $SPHINX_DECODER_DIR/config.status")) {
-    while (<SYSDESC>) {
-      next unless m/\@prefix\@,([^,]+),/;
-      $INSTALL = $1;
-      last;
-    }
-    close(SYSDESC);
-  } else {
-    $INSTALL = "$SPHINX_DECODER_DIR/bin";
+if (open (SYSDESC, "< $SPHINX_DECODER_DIR/config.status")) {
+  while (<SYSDESC>) {
+    next unless m/\@prefix\@,([^,]+),/;
+    $INSTALL = $1;
+    last;
   }
-  print "Platform: $PLATFORM\n";
-  print "Install: $INSTALL\n";
-} else {
-  print "Platform: Win32\n";
-  $PLATFORM = "";
-  $INSTALL = "$SPHINX_DECODER_DIR";
-  print "Install: $INSTALL\n";
+  close(SYSDESC);
 }
 
-# Copy all executables to the local bin directory. We first try the
-# directory bin/Release, that is, release build in windows. Then we
-# back off to the Debug build. If it still fails, then we're probably
-# in linux/unix, and we use the platform info to find the executables
-my $execdir;
-if (opendir(DIR, "$INSTALL/bin/Release")) {
-  $execdir = "$INSTALL/bin/Release";
-} elsif (opendir(DIR, "$INSTALL/bin/Debug")) {
-  $execdir = "$INSTALL/bin/Debug";
-} elsif (opendir(DIR, "$INSTALL/bin")) {
-  $execdir = "$INSTALL/bin";
-} else {
-  die "Can't open $INSTALL/bin";
-}
+# Copy all executables to the local bin directory. We verify which
+# directory from a list has the most recent file, and assume this is
+# the last time the user compiled something. Therefore, this must be
+# the directory the user cares about. We add bin/Release and bin/Debug
+# to the list (that's where MS Visual C compiles files to), as well as
+# any existing bin.platform
+
+my @dir_candidates = ();
+push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Release";
+push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Debug";
+push @dir_candidates, "$SPHINX_DECODER_DIR/bin";
+push @dir_candidates, $INSTALL if ($INSTALL ne "");
+
+my $execdir = executable_dir(@dir_candidates);
+
+die "Couldn't find executables. Did you compile sphinx3?\n" if ($execdir eq "");
+
 print "Copying executables from $execdir\n";
+
+opendir(DIR, "$execdir") or die "Can't open $execdir\n";
 @dirlist = grep !/^\./, readdir DIR;
 closedir(DIR);
 foreach my $executable (@dirlist) {
@@ -228,6 +219,36 @@ close(CFGIN);
 close(CFGOUT);
 
 print "Set up for decoding $DBNAME using Sphinx-3 complete\n";
+
+sub executable_dir {
+  my @dirs = @_;
+  my $return_dir = "";
+  my $most_recent = 0;
+  for my $dir (@dirs) {
+    my $this_date = get_most_recent_date($dir);
+    if ($this_date > $most_recent) {
+      $most_recent = $this_date;
+      $return_dir = $dir;
+    }
+  }
+  return $return_dir;
+}
+
+sub get_most_recent_date {
+  my $dir = shift;
+  my $return_date = 0;
+  if (opendir(DIR, "$dir")) {
+    @dirlist = grep !/^\./, readdir DIR;
+    closedir(DIR);
+    for my $file (@dirlist) {
+      my $this_date = stat("$dir/$file");
+      if (($this_date->mtime) > ($return_date)) {
+	$return_date = $this_date->mtime;
+      }
+    }
+  }
+  return $return_date;
+}
 
 sub replace_file {
   my $source = shift;
