@@ -46,17 +46,23 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.7  2006/02/02  22:56:07  dhdfu
+ * Add ARPA language model support to allphone
  * 
+ * Revision 1.6  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.3  2005/04/20 03:50:36  archan
  * Add comments on all mains for preparation of factoring the command-line.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.6  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.7  2006/02/02  22:56:07  dhdfu
+ * Add ARPA language model support to allphone
  * 
+ * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
+ * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Add
  * Add Revision 1.3  2005/04/20 03:50:36  archan
  * Add Add comments on all mains for preparation of factoring the command-line.
  * Add into most of the .[ch] files. It is easy to keep track changes.
@@ -80,6 +86,7 @@
 #include <s3types.h>
 #include "mdef.h"
 #include "tmat.h"
+#include "lm.h"
 #include "logs3.h"
 #include "s3_allphone.h"
 
@@ -137,6 +144,9 @@ static history_t **frm_hist;	/** List of history nodes allocated in each frame *
 
 extern mdef_t *mdef;		/** Model definition */
 extern tmat_t *tmat;		/** Transition probability matrices */
+extern lm_t *lm;		/** Language model */
+
+static s3lmwid_t *ci2lmwid;	/** Mapping from CI-phone-id to LM-word-id */
 
 static int32 lrc_size = 0;
 static int32 curfrm;		/* Current frame */
@@ -593,7 +603,21 @@ static void phmm_trans ( void )
 	for (l = from->succlist; l; l = l->next) {
 	    to = l->phmm;
 
-	    newscore = h->score + tp[(unsigned)from->ci][(unsigned)to->ci];
+	    if (lm) {
+		    /* If they are not in the LM, kill this
+		     * transition. */
+		    if (ci2lmwid[from->ci] == BAD_S3LMWID
+			|| ci2lmwid[to->ci] == BAD_S3LMWID)
+			    newscore = S3_LOGPROB_ZERO;
+		    else 
+			    newscore = h->score + lm_bg_score(lm,
+							      ci2lmwid[from->ci],
+							      ci2lmwid[to->ci],
+							      ci2lmwid[to->ci]);
+	    }
+	    else {
+		    newscore = h->score + tp[(unsigned)from->ci][(unsigned)to->ci];
+	    }
 	    if ((newscore > beam) && (newscore > to->inscore)) {
 		to->inscore = newscore;
 		to->inhist = h;
@@ -829,7 +853,7 @@ static void phone_tp_init (char *file, float64 floor, float64 wt, float64 ip)
 }
 
 
-int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
+int32 allphone_init ( mdef_t *mdef, tmat_t *tmat, lm_t *lm )
 {
     float64 *f64arg;
     char *file;
@@ -838,14 +862,27 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
     chk_tp_uppertri ();
     
     phmm_build ();
+
+    /* Old -phonetp file format still supported. */
     file = (char *)cmd_ln_access("-phonetp");
-    if (! file)
-	E_ERROR("-phonetpfn argument missing; assuming uniform transition probs\n");
-    tpfloor = *((float32 *) cmd_ln_access ("-phonetpfloor"));
-    ip = *((float32 *) cmd_ln_access ("-wip"));
-    wt = *((float32 *) cmd_ln_access ("-phonetpwt"));
-    phone_tp_init (file, tpfloor, wt, ip);
-    
+    if (lm) {
+	    s3cipid_t i;
+
+	    /* Build mapping of CI phones to LM word IDs. */
+	    ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid_t));
+	    for (i = 0; i < mdef->n_ciphone; i++) {
+		    ci2lmwid[i] = lm_wid(lm,
+					 (char *)mdef_ciphone_str(mdef, i));
+	    }
+    }
+    else {
+	    if (! file)
+		    E_ERROR("-phonetpfn argument missing; assuming uniform transition probs\n");
+	    tpfloor = *((float32 *) cmd_ln_access ("-phonetpfloor"));
+	    ip = *((float32 *) cmd_ln_access ("-wip"));
+	    wt = *((float32 *) cmd_ln_access ("-phonetpwt"));
+	    phone_tp_init (file, tpfloor, wt, ip);
+    }    
     f64arg = (float64 *) cmd_ln_access ("-beam");
     beam = logs3 (*f64arg);
     E_INFO ("logs3(beam)= %d\n", beam);
