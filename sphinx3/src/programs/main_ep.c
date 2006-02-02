@@ -34,9 +34,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.18  2005/07/05  13:12:36  dhdfu
- * Add new arguments to logs3_init() in some tests, main_ep
+ * Revision 1.19  2006/02/02  22:56:26  dhdfu
+ * add a missing parameter
  * 
+ * Revision 1.18  2005/07/05 13:12:36  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
  * Revision 1.17  2005/07/04 20:57:52  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
@@ -54,9 +57,12 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.18  2005/07/05  13:12:36  dhdfu
- * Add new arguments to logs3_init() in some tests, main_ep
+ * Revision 1.19  2006/02/02  22:56:26  dhdfu
+ * add a missing parameter
  * 
+ * Add Revision 1.18  2005/07/05 13:12:36  dhdfu
+ * Add Add new arguments to logs3_init() in some tests, main_ep
+ * Add
  * Add Revision 1.17  2005/07/04 20:57:52  dhdfu
  * Add Finally remove the "temporary hack" for the endpointer, and do
  * Add everything in logs3 domain.  Should make it faster and less likely to
@@ -270,6 +276,10 @@ static arg_t arg[] = {
     ARG_INT32,
     "0",
     "Add 1/2-bit noise" },
+    { "-seed",
+      ARG_INT32,
+      "-1",
+      "The seed for the random generator"},
   { "-verbose",
     ARG_INT32,
     "0",
