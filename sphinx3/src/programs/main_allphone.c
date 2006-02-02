@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.13  2005/06/22  05:37:45  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
+ * Revision 1.14  2006/02/02  22:56:07  dhdfu
+ * Add ARPA language model support to allphone
  * 
+ * Revision 1.13  2005/06/22 05:37:45  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
+ *
  * Revision 1.8  2005/06/19 04:51:48  archan
  * Add multi-class MLLR support for align, decode_anytopo as well as allphone.
  *
@@ -97,6 +100,7 @@
 #include "ms_gauden.h"
 #include "ms_senone.h"
 #include "cb2mllr_io.h"
+#include "lm.h"
 
 
 #ifdef INTERP
@@ -223,6 +227,14 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-20",
       "Pruning beam for writing phone lattice" },
+    { "-lminmemory",
+      ARG_INT32,
+      "0",
+      "Load language model into memory (default: use disk cache for lm"},
+    { "-lm",
+      ARG_STRING,
+      NULL,
+      "Phoneme language model in .DMP format" },
     { "-phonetp",
       ARG_STRING,
       NULL,
@@ -239,6 +251,10 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "0.05",
       "Phone insertion penalty (applied above phone transition probabilities)" },
+    { "-uw",
+      ARG_FLOAT32,
+      "0.7",
+      "Phone unigram weight: unigram probs interpolated with uniform distribution with this weight" },
     { "-phsegdir",
       ARG_STRING,
       NULL,
@@ -261,6 +277,7 @@ static arg_t defn[] = {
 
 mdef_t *mdef;
 tmat_t *tmat;
+lm_t *lm;
 
 static gauden_t *g;		/* Gaussian density codebooks */
 static senone_t *sen;		/* Senones */
@@ -365,6 +382,15 @@ static void models_init ( void )
     arg = (char *) cmd_ln_access ("-cmn");
     if ((strcmp (arg, "current") != 0) && (strcmp (arg, "none") != 0))
 	E_FATAL("Unknown -cmn argument: %s\n", arg);
+
+    /* Language model, if any. */
+    if (cmd_ln_access("-lm")) {
+	    if ((lm = lm_read(cmd_ln_str("-lm"),
+			      cmd_ln_float32("-phonetpwt"),
+			      cmd_ln_float32("-wip"),
+			      cmd_ln_float32("-uw"))) == NULL)
+		    E_FATAL("Failed to read language model from %s\n", cmd_ln_str("-lm"));
+    }
 }
 
 
