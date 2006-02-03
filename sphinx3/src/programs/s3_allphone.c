@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2006/02/02  22:56:07  dhdfu
- * Add ARPA language model support to allphone
+ * Revision 1.8  2006/02/03  12:59:32  dhdfu
+ * oops, remove bogus extra arg to allphone_init
  * 
+ * Revision 1.7  2006/02/02 22:56:07  dhdfu
+ * Add ARPA language model support to allphone
+ *
  * Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -57,9 +60,12 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.7  2006/02/02  22:56:07  dhdfu
- * Add ARPA language model support to allphone
+ * Revision 1.8  2006/02/03  12:59:32  dhdfu
+ * oops, remove bogus extra arg to allphone_init
  * 
+ * Add Revision 1.7  2006/02/02 22:56:07  dhdfu
+ * Add Add ARPA language model support to allphone
+ * Add
  * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  * Add
@@ -853,7 +859,7 @@ static void phone_tp_init (char *file, float64 floor, float64 wt, float64 ip)
 }
 
 
-int32 allphone_init ( mdef_t *mdef, tmat_t *tmat, lm_t *lm )
+int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
 {
     float64 *f64arg;
     char *file;
