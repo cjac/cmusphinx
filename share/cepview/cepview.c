@@ -74,7 +74,7 @@ main(int argc, char *argv[])
    int i, j, offset;
    int len, vsize, dsize, column;
    float *z, **cep;
-   char cepfile[80];
+   char cepfile[1024];
 
    if (argc == 1)
       QUIT((CMD_USAGE, argv[0]))
