@@ -44,9 +44,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.14  2006/02/02  22:56:07  dhdfu
- * Add ARPA language model support to allphone
+ * Revision 1.15  2006/02/07  20:51:33  dhdfu
+ * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
+ * error rate in a straightforward way.
  * 
+ * Revision 1.14  2006/02/02 22:56:07  dhdfu
+ * Add ARPA language model support to allphone
+ *
  * Revision 1.13  2005/06/22 05:37:45  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
  *
@@ -267,6 +271,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Log file (default stdout/stderr)" },
+    { "-hyp",
+      ARG_STRING,
+      NULL,
+      "Recognition result file, with only phones" },
+    { "-hypseg",
+      ARG_STRING,
+      NULL,
+      "Exact recognition result file with phone segmentations and scores" },
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -296,6 +308,9 @@ static int32 tot_nfr;
 static ptmr_t tm_utt;
 static ptmr_t tm_gausen;
 static ptmr_t tm_allphone;
+
+/* File handles for match and hypseg files */
+static FILE *matchfp, *matchsegfp;
 
 
 /*
@@ -525,6 +540,63 @@ static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
     return S3_SUCCESS;
 }
 
+/*
+ * Write exact hypothesis.  Format
+ *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
+ * where:
+ *   scl = acoustic score scaling for entire utterance
+ *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
+ *   ascr = scaled acoustic score for entire utterance
+ *   lscr = LM score (without lw or wip) for entire utterance
+ *   sf = start frame for word
+ *   wascr = scaled acoustic score for word
+ *   wlscr = LM score (without lw or wip) for word
+ *   ef = end frame for utterance.
+ */
+static void log_hypseg (char *uttid,
+			FILE *fp,	/* Out: output file */
+			phseg_t *hypptr,	/* In: Hypothesis */
+			int32 nfrm,	/* In: #frames in utterance */
+			int32 scl)	/* In: Acoustic scaling for entire utt */
+{
+    phseg_t *h;
+    int32 ascr, lscr, tscr;
+    
+    ascr = lscr = tscr = 0;
+    for (h = hypptr; h; h = h->next) {
+	ascr += h->score;
+	lscr += h->tscore; /* FIXME: unscaled score? */
+	tscr += h->score + h->tscore;
+    }
+
+    fprintf (fp, "%s S %d T %d A %d L %d", uttid, scl, tscr, ascr, lscr);
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, " (null)\n");
+    else {
+	for (h = hypptr; h; h = h->next) {
+	    fprintf (fp, " %d %d %d %s", h->sf, h->score, h->tscore,
+		     mdef_ciphone_str(mdef, h->ci));
+	}
+	fprintf (fp, " %d\n", nfrm);
+    }
+    
+    fflush (fp);
+}
+
+/* Write hypothesis in old (pre-Nov95) NIST format */
+static void log_hypstr (FILE *fp, phseg_t *hypptr, char *uttid)
+{
+    phseg_t *h;
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, "(null)");
+    
+    for (h = hypptr; h; h = h->next)
+	fprintf (fp, "%s ", mdef_ciphone_str(mdef, h->ci));
+    fprintf (fp, " (%s)\n", uttid);
+    fflush (fp);
+}
 
 /*
  * Find Viterbi allphone decoding.
@@ -537,8 +609,8 @@ static void allphone_utt (int32 nfr, char *uttid)
     static int32 **senscr = NULL;	/* Senone scores for window of frames */
     static mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
 
-    int32 i, j, k, s, gid, best;
-    phseg_t *phseg;
+    int32 i, j, k, s, gid, best, scl, ascr, lscr;
+    phseg_t *phseg, *h;
     mgau2sen_t *m2s;
     float32 **fv;
 
@@ -580,7 +652,7 @@ static void allphone_utt (int32 nfr, char *uttid)
     ptmr_start (&tm_utt);
 
     allphone_start_utt (uttid);
-
+    scl = ascr = lscr = 0;
     for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
 	/* Compute Gaussian densities and senone scores for window of frames */
 	ptmr_start (&tm_gausen);
@@ -620,6 +692,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 	  for (s = 0; s < sen->n_sen; s++)
 	      senscr[k][s] -= best;
 	  senscale[i] = best;
+	  scl += senscale[i];
       }
       ptmr_stop (&tm_gausen);
 
@@ -637,6 +710,15 @@ static void allphone_utt (int32 nfr, char *uttid)
   
   phseg = allphone_end_utt (uttid);
   write_phseg ((char *) cmd_ln_access ("-phsegdir"), uttid, phseg);
+  /* Log recognition output to the standard match and matchseg files */
+  if (matchfp)
+    log_hypstr (matchfp, phseg, uttid);
+  for (h = phseg; h; h = h->next) {
+    ascr += h->score;
+    lscr += h->tscore;
+  }
+  if (matchsegfp)
+    log_hypseg (uttid, matchsegfp, phseg, nfr, scl);
   
   ptmr_stop (&tm_utt);
   
@@ -658,7 +740,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 static void process_ctlfile ( void )
 {
   FILE *ctlfp, *mllrctlfp;
-  char *ctlfile, *cepdir, *cepext, *mllrctlfile;
+  char *ctlfile, *matchfile, *matchsegfile, *cepdir, *cepext, *mllrctlfile;
   char line[1024], ctlspec[1024];
   int32 ctloffset, ctlcount, sf, ef, nfr;
 
@@ -669,6 +751,18 @@ static void process_ctlfile ( void )
   ctlfile = (char *) cmd_ln_access("-ctl");
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
+  if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
+    matchfp = NULL;
+  } else {
+    if ((matchfp = fopen (matchfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchfile);
+  }
+  if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
+    matchsegfp = NULL;
+  } else {
+    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+  }
   
   if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
     if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
@@ -779,6 +873,11 @@ static void process_ctlfile ( void )
 	    break;
 	}
     }
+
+    if (matchfp)
+	fclose (matchfp);
+    if (matchsegfp)
+	fclose (matchsegfp);
 
     fclose (ctlfp);
 
