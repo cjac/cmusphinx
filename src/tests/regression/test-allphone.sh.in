@@ -16,6 +16,8 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -senmgau .cont. \
 -ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
 -cepdir @abs_top_srcdir@/model/lm/an4/ \
+-hyp allphone.match \
+-hypseg allphone.matchseg \
 -phsegdir ./ \
 -phlatdir ./
 

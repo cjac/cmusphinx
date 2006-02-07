@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2006/02/03  12:59:32  dhdfu
- * oops, remove bogus extra arg to allphone_init
+ * Revision 1.9  2006/02/07  20:51:33  dhdfu
+ * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
+ * error rate in a straightforward way.
  * 
+ * Revision 1.8  2006/02/03 12:59:32  dhdfu
+ * oops, remove bogus extra arg to allphone_init
+ *
  * Revision 1.7  2006/02/02 22:56:07  dhdfu
  * Add ARPA language model support to allphone
  *
@@ -60,9 +64,13 @@
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.8  2006/02/03  12:59:32  dhdfu
- * oops, remove bogus extra arg to allphone_init
+ * Revision 1.9  2006/02/07  20:51:33  dhdfu
+ * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
+ * error rate in a straightforward way.
  * 
+ * Add Revision 1.8  2006/02/03 12:59:32  dhdfu
+ * Add oops, remove bogus extra arg to allphone_init
+ * Add
  * Add Revision 1.7  2006/02/02 22:56:07  dhdfu
  * Add Add ARPA language model support to allphone
  * Add
@@ -142,6 +150,7 @@ typedef struct plink_s {
 typedef struct history_s {
     phmm_t *phmm;	/** PHMM ending this path */
     int32 score;	/** Path score for this path */
+    int32 tscore;	/** Transition score for this path */
     s3frmid_t ef;	/** End frame */
     struct history_s *hist;	/** Previous history entry */
     struct history_s *next;	/** Next in allocated list */
@@ -610,20 +619,21 @@ static void phmm_trans ( void )
 	    to = l->phmm;
 
 	    if (lm) {
-		    /* If they are not in the LM, kill this
-		     * transition. */
-		    if (ci2lmwid[from->ci] == BAD_S3LMWID
-			|| ci2lmwid[to->ci] == BAD_S3LMWID)
-			    newscore = S3_LOGPROB_ZERO;
-		    else 
-			    newscore = h->score + lm_bg_score(lm,
-							      ci2lmwid[from->ci],
-							      ci2lmwid[to->ci],
-							      ci2lmwid[to->ci]);
+		/* If they are not in the LM, kill this
+		 * transition. */
+		if (ci2lmwid[from->ci] == BAD_S3LMWID
+		    || ci2lmwid[to->ci] == BAD_S3LMWID)
+		    h->tscore = S3_LOGPROB_ZERO;
+		else
+		    h->tscore = lm_bg_score(lm,
+					 ci2lmwid[from->ci],
+					 ci2lmwid[to->ci],
+					 ci2lmwid[to->ci]);
 	    }
-	    else {
-		    newscore = h->score + tp[(unsigned)from->ci][(unsigned)to->ci];
-	    }
+	    else
+		h->tscore = tp[(unsigned)from->ci][(unsigned)to->ci];
+
+	    newscore = h->score + h->tscore;
 	    if ((newscore > beam) && (newscore > to->inscore)) {
 		to->inscore = newscore;
 		to->inhist = h;
@@ -788,6 +798,7 @@ phseg_t *allphone_end_utt (char *uttid)
 	    s->sf = (h->hist) ? h->hist->ef + 1 : 0;
 	    s->ef = h->ef;
 	    s->score = h->score;
+	    s->tscore = h->tscore;
 	    if (h->hist)
 		s->score -= h->hist->score;
 	    s->score += seg_score_scale (s->sf, s->ef);
@@ -876,10 +887,9 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
 
 	    /* Build mapping of CI phones to LM word IDs. */
 	    ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid_t));
-	    for (i = 0; i < mdef->n_ciphone; i++) {
+	    for (i = 0; i < mdef->n_ciphone; i++)
 		    ci2lmwid[i] = lm_wid(lm,
 					 (char *)mdef_ciphone_str(mdef, i));
-	    }
     }
     else {
 	    if (! file)
