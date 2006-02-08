@@ -73,6 +73,7 @@ test-full : \
 	test-decode-mode3-mpx \
 	test-decode-mode5 \
 	test-decode-mode5-noncomp \
+	test-decode-2ndstage \
 	test-align \
 	test-align-mllr \
 	test-allphone \
