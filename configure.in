@@ -179,9 +179,11 @@ src/tests/regression/test-dag.sh
 src/tests/regression/test-dag-clm.sh
 src/tests/regression/test-decode_anytopo.sh
 src/tests/regression/test-decode_anytopo-mllr.sh
+src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode.sh
 src/tests/regression/test-decode-clm.sh
 src/tests/regression/test-decode-mllr.sh
+src/tests/regression/test-decode-2ndstage.sh
 src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
 src/tests/regression/test-wave2feat.sh
@@ -217,9 +219,11 @@ chmod +x src/tests/regression/test-astar.sh
 chmod +x src/tests/regression/test-dag.sh
 chmod +x src/tests/regression/test-decode_anytopo.sh
 chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
+chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode.sh
 chmod +x src/tests/regression/test-decode-clm.sh
 chmod +x src/tests/regression/test-decode-mllr.sh
+chmod +x src/tests/regression/test-decode-2ndstage.sh
 chmod +x src/tests/regression/test-ep.sh
 chmod +x src/tests/regression/test-gausubvq.sh
 chmod +x src/tests/regression/test-wave2feat.sh
