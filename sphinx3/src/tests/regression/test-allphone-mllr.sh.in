@@ -12,6 +12,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 -tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
 -mllr @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mllr_matrices \
+-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP \
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
