@@ -1,0 +1,83 @@
+#!/bin/sh
+
+tmpout="test-decode-2ndstage.out"
+
+echo "DECODE 2ND STAGE TEST"
+echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+-var @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+-mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+-tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
+-cepdir @abs_top_srcdir@/model/lm/an4/ \
+-agc none \
+-varnorm no \
+-cmn current \
+-subvqbeam 1e-02 \
+-epl 4 \
+-fillprob 0.02 \
+-feat 1s_c_d_dd \
+-lw 9.5 \
+-maxwpf 1 \
+-beam 1e-40 \
+-pbeam 1e-30 \
+-wbeam 1e-20 \
+-maxhmmpf 1500 \
+-wend_beam 1e-1 \
+-ci_pbeam 1e-5 \
+-ds 2 \
+-tighten_factor 0.4 \
+-outlatdir ./ "
+
+lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
+
+clsargs="-lmctlfn @abs_top_srcdir@/model/lm/an4/an4.ug.cls.lmctl \
+-ctl_lm  @abs_top_srcdir@/model/lm/an4/an4.ctl_lm" 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode $margs $lmargs > $tmpout 2>&1
+
+#Next try to read the lattices with dag and see whether dag could read it. 
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-lw 13.0 \
+-wip 0.2 \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl.platform_independent \
+-inlatdir @abs_top_srcdir@/model/lm/an4/ \
+-logbase 1.0003 \
+-backtrace 1 "
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dag $margs $lmargs >> $tmpout 2>&1 
+
+grep "BSTPTH:" $tmpout 
+grep "BSTXCT" $tmpout 
+
+if(grep "BSTPTH:" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
+then echo "DAG test after DECODE 1st stage PASSED" ; else \
+echo "DAG test after DECODE 1st stage FAILED" ; fi
+
+#Next try to read the lattices with astar and see whether astar could read it. 
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-wip 0.2 \
+-beam 1e-64 \
+-nbest 5 \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl.platform_independent \
+-inlatdir @abs_top_srcdir@/model/lm/an4/ \
+-logbase 1.0003 \
+-nbestdir .  "
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/astar $margs $lmargs >> $tmpout 2>&1 
+
+gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
+if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
+then echo "ASTAR test after DECODE 1st stage PASSED"; else \
+echo "ASTAR test after DECODE 1st stage FAILED"; fi
+
