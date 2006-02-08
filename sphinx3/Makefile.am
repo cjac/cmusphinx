@@ -64,6 +64,7 @@ test-full : \
 	test-decode \
 	test-decode-clm \
 	test-decode-mllr \
+	test-decode-2ndstage \
 	test-align \
 	test-align-mllr \
 	test-allphone \
@@ -79,13 +80,18 @@ test-full : \
 	test-ep \
 	test-cepview \
 	test-decode_anytopo \
-	test-decode_anytopo-mllr
+	test-decode_anytopo-mllr \
+	test-decode_anytopo-2ndstage 
+
+
 
 test-all-app : test-full test-wave2feat
 
 
+test-decode_anytopo-2ndstage \
 test-decode_anytopo \
 test-decode_anytopo-mllr \
+test-decode-2ndstage \
 test-decode \
 test-decode-clm \
 test-decode-mllr \
