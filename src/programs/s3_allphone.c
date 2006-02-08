@@ -46,10 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2006/02/07  20:51:33  dhdfu
+ * Revision 1.10  2006/02/08  02:34:42  dhdfu
+ * Enable trigrams for allphone decoding and update tests to include them.  This significantly improves phoneme recognition, though there are some implementation issues I don't totally understand and thus this is subject to change
+ * 
+ * Revision 1.9  2006/02/07 20:51:33  dhdfu
  * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
  * error rate in a straightforward way.
- * 
+ *
  * Revision 1.8  2006/02/03 12:59:32  dhdfu
  * oops, remove bogus extra arg to allphone_init
  *
@@ -63,23 +66,7 @@
  * Add comments on all mains for preparation of factoring the command-line.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
- * Add $Log$
- * Revision 1.9  2006/02/07  20:51:33  dhdfu
- * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
- * error rate in a straightforward way.
- * 
- * Add Revision 1.8  2006/02/03 12:59:32  dhdfu
- * Add oops, remove bogus extra arg to allphone_init
- * Add
- * Add Revision 1.7  2006/02/02 22:56:07  dhdfu
- * Add Add ARPA language model support to allphone
- * Add
- * Add Revision 1.6  2005/06/22 05:39:56  arthchan2003
- * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
- * Add
- * Add Revision 1.3  2005/04/20 03:50:36  archan
- * Add Add comments on all mains for preparation of factoring the command-line.
- * Add into most of the .[ch] files. It is easy to keep track changes.
+ * Add Log
  *
  * 02-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added allphone lattice output.
@@ -130,6 +117,7 @@ typedef struct phmm_s {
     struct history_s **hist;	/** Viterbi history (for backtrace) */
     int32 bestscore;	/** Best state score in any frame */
     int32 inscore;	/** Incoming score from predecessor PHMMs */
+    int32 in_tscore;	/** Incoming transition score from predecessor PHMMs */
     struct history_s *inhist;	/** History corresponding to inscore */
     struct phmm_s *next;	/** Next unique PHMM for same parent basephone */
     struct plink_s *succlist;	/** List of predecessor PHMM nodes */
@@ -575,10 +563,14 @@ static void phmm_exit (int32 best)
 		    if (p->score[nst] >= beam) { /* beam, not th because scores scaled */
 			h = (history_t *) listelem_alloc (sizeof(history_t));
 			h->score = p->score[nst];
+			/* FIXME: This isn't going to be the correct
+			 * transition score, for reasons I don't
+			 * totally understand (dhuggins@cs,
+			 * 2006-02-07). */
+			h->tscore = p->in_tscore;
 			h->ef = curfrm;
 			h->phmm = p;
 			h->hist = p->hist[nst];
-			
 			h->next = frm_hist[curfrm];
 			frm_hist[curfrm] = h;
 			
@@ -598,6 +590,7 @@ static void phmm_exit (int32 best)
 	    
 	    /* Reset incoming score in preparation for cross-PHMM transition */
 	    p->inscore = S3_LOGPROB_ZERO;
+	    p->in_tscore = S3_LOGPROB_ZERO;
 	}
     }
 }
@@ -616,26 +609,37 @@ static void phmm_trans ( void )
     for (h = frm_hist[curfrm]; h; h = h->next) {
 	from = h->phmm;
 	for (l = from->succlist; l; l = l->next) {
+	    int32 tscore;
 	    to = l->phmm;
 
 	    if (lm) {
+
 		/* If they are not in the LM, kill this
 		 * transition. */
-		if (ci2lmwid[from->ci] == BAD_S3LMWID
-		    || ci2lmwid[to->ci] == BAD_S3LMWID)
-		    h->tscore = S3_LOGPROB_ZERO;
-		else
-		    h->tscore = lm_bg_score(lm,
-					 ci2lmwid[from->ci],
-					 ci2lmwid[to->ci],
-					 ci2lmwid[to->ci]);
+		if (ci2lmwid[to->ci] == BAD_S3LMWID)
+		    tscore = S3_LOGPROB_ZERO;
+		else {
+		    if (h->hist && h->hist->phmm) {
+			tscore = lm_tg_score(lm,
+						ci2lmwid[h->hist->phmm->ci],
+						ci2lmwid[from->ci],
+						ci2lmwid[to->ci],
+						ci2lmwid[to->ci]);
+		    }
+		    else
+			tscore = lm_bg_score(lm,
+						ci2lmwid[from->ci],
+						ci2lmwid[to->ci],
+						ci2lmwid[to->ci]);
+		}
 	    }
 	    else
-		h->tscore = tp[(unsigned)from->ci][(unsigned)to->ci];
+		tscore = tp[(unsigned)from->ci][(unsigned)to->ci];
 
-	    newscore = h->score + h->tscore;
+	    newscore = h->score + tscore;
 	    if ((newscore > beam) && (newscore > to->inscore)) {
 		to->inscore = newscore;
+		to->in_tscore = tscore;
 		to->inhist = h;
 		to->active = nf;
 	    }
