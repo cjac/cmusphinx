@@ -55,9 +55,12 @@
  * Revision History
  * 
  * $Log$
- * Revision 1.19  2005/08/24  15:40:24  egouvea
- * Removed E_INFO statement; message appears too many times, and it's not very informative
+ * Revision 1.20  2006/02/09  22:45:34  egouvea
+ * Removed E_INFO about "skipping c. alt pron".
  * 
+ * Revision 1.19  2005/08/24 15:40:24  egouvea
+ * Removed E_INFO statement; message appears too many times, and it's not very informative
+ *
  * Revision 1.18  2005/07/21 22:20:49  egouvea
  * Fixed bug 1236322, casting the argument to isspace from char to unsigned char, in remaining files that use isspace()
  *
@@ -467,7 +470,9 @@ mk_compound_word_list(int *out_cnt)
 	    }
 	    else {
 	        if (alt_marker[strlen(alt_marker) - 1] == ')') {
-		    E_INFO("skipping c. alt pron %s\n", word);
+		  /*
+		   * E_INFO("skipping c. alt pron %s\n", word);
+		   */
 		}
 		else {
 		    E_WARN("unusual word format %s.  Word not added to compound list\n", word);
