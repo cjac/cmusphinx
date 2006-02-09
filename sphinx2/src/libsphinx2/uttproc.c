@@ -43,9 +43,14 @@
  * 		(Currently, needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.27  2006/01/25  14:43:24  rkm
- * *** empty log message ***
+ * Revision 1.28  2006/02/09  22:48:38  egouvea
+ * Fixed computation of max file size allowed. It was using FRAME_RATE
+ * instead of FRAME_SHIFT (i.e. SAMPLING_RATE / FRAME_RATE) to compute
+ * max number of samples from max number of frames.
  * 
+ * Revision 1.27  2006/01/25 14:43:24  rkm
+ * *** empty log message ***
+ *
  * Revision 1.26  2005/12/13 17:04:14  rkm
  * Added confidence reporting in nbest files; fixed some backtrace bugs
  *
@@ -1278,7 +1283,10 @@ int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
     if (utt_ofl)
         return -1;
     
-    k = (MAX_UTT_LEN - n_rawfr) * fe_param.FRAME_RATE;
+    /* FRAME_SHIFT is SAMPLING_RATE/FRAME_RATE, thus resulting in
+     * number of sample per frame.
+     */
+    k = (MAX_UTT_LEN - n_rawfr) * fe->FRAME_SHIFT;
     if (len > k) {
         len = k;
         utt_ofl = 1;
