@@ -55,9 +55,17 @@
  * Revision History
  * 
  * $Log$
- * Revision 1.20  2006/02/09  22:45:34  egouvea
- * Removed E_INFO about "skipping c. alt pron".
+ * Revision 1.21  2006/02/13  17:40:30  egouvea
+ * Fixed some memory leaks:
  * 
+ * -Read/write of active_models beyond the alloc'ed memory
+ * 
+ * -Freeing of alloc'ed memory in time_align_word_sequence() if something
+ * failed (e.g. search didn't reach end of utterance).
+ * 
+ * Revision 1.20  2006/02/09 22:45:34  egouvea
+ * Removed E_INFO about "skipping c. alt pron".
+ *
  * Revision 1.19  2005/08/24 15:40:24  egouvea
  * Removed E_INFO statement; message appears too many times, and it's not very informative
  *
@@ -475,7 +483,7 @@ mk_compound_word_list(int *out_cnt)
 		   */
 		}
 		else {
-		    E_WARN("unusual word format %s.  Word not added to compound list\n", word);
+		    E_WARN("Unusual word format %s.  Word not added to compound list\n", word);
 		}
 	    }
 	}
@@ -543,6 +551,8 @@ time_align_init(void)
 	   max_word_bp_table_size * sizeof(BACK_POINTER_T) / 1024);
 
     compound_word_list = mk_compound_word_list(&compound_word_cnt);
+
+    memset(active_models, 0, 2 * sizeof(int *));
 
     return 0;
 }
@@ -2551,8 +2561,8 @@ time_align_word_sequence_init(
     print_models(model, model_cnt, *out_word_id_map, *out_boundary);
 #endif
     
-    active_models[0] = (int *)CM_calloc(model_cnt, sizeof(int));
-    active_models[1] = (int *)CM_calloc(model_cnt, sizeof(int));
+    active_models[0] = (int *)CM_calloc(model_cnt + 1, sizeof(int));
+    active_models[1] = (int *)CM_calloc(model_cnt + 1, sizeof(int));
 
     word_bp_table_next_free = 0;
     word_bp_table_frame_start = 0;
@@ -2834,8 +2844,8 @@ time_align_word_sequence(char const * Utt,
 {
     int phone_bnd_cnt;
     int32 *phone_id_map;
-    int32 *word_id_map;
-    char *boundary;
+    int32 *word_id_map = NULL;
+    char *boundary = NULL;
     int   pruning_threshold;
     int   best_score;
     int   bp;
@@ -2844,7 +2854,7 @@ time_align_word_sequence(char const * Utt,
 #ifdef   FBSVQ_V6
     int   norm;
 #endif
-
+    int   return_value = 0;
     int   total_models_evaluated;
     int   total_model_boundaries_crossed;
     int	  total_models_pruned;
@@ -2885,9 +2895,10 @@ time_align_word_sequence(char const * Utt,
 				      
 				      left_word,
 				      word_seq,
-				      right_word) < 0)
-	return -1;
-
+				      right_word) < 0) {
+	return_value = -1;
+	goto cleanup;
+    }
     saved_phone_id_map = phone_id_map;
     saved_final_model  = final_model;
 
@@ -2977,7 +2988,8 @@ time_align_word_sequence(char const * Utt,
 
     if (cur_active_cnt == 0) {
       E_WARN("all paths pruned at end of input\n");
-      return -1;
+      return_value = -1;
+      goto cleanup;
     }
 
 #if SHOW&SHOW_SYS_INFO
@@ -3107,7 +3119,8 @@ time_align_word_sequence(char const * Utt,
     }
     else {
 	E_ERROR("Last state not reached at end of utterance\n");
-	return -1;
+	return_value = -1;
+	goto cleanup;
     }
 
     E_INFO("acscr> %d\n", all_models[final_model].score[NODE_CNT-1]);
@@ -3115,13 +3128,22 @@ time_align_word_sequence(char const * Utt,
     if (kb_get_no_lm_flag() == FALSE)
 	E_INFO("lmscr> %d\n", lm_score(left_word, word_seq, right_word));
 
-    free(active_models[0]);
-    free(active_models[1]);
-
-    free(word_id_map);
-    free(boundary);
-
-    return 0;
+ cleanup:
+    if (active_models[0] != NULL) {
+        free(active_models[0]);
+	active_models[0] = NULL;
+    }
+    if (active_models[1] != NULL) {
+        free(active_models[1]);
+	active_models[1] = NULL;
+    }
+    if (word_id_map != NULL) {
+        free(word_id_map);
+    }
+    if (boundary != NULL) {
+        free(boundary);
+    }
+    return return_value;
 }
 
 void
