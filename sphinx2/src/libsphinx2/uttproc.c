@@ -43,11 +43,28 @@
  * 		(Currently, needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.28  2006/02/09  22:48:38  egouvea
+ * Revision 1.29  2006/02/17  00:49:58  egouvea
+ * Yet another attempt at synchronizing the front end code between
+ * SphinxTrain and sphinx2.
+ * 
+ * Added support for warping functions.
+ * 
+ * Replaced some fprintf() followed by exit() with E_WARN and return() in
+ * functions that had a non void return type.
+ * 
+ * Set return value to FE_ZERO_ENERGY_ERROR if the energy is zero in a
+ * frame, allowing the application to do something (currently, uttproc
+ * and raw2cep simply print a message.
+ * 
+ * Warning: the return value in fe_process_utt() and fe_end_utt()
+ * required a change in the API (the return value has a different meaning
+ * now).
+ * 
+ * Revision 1.28  2006/02/09 22:48:38  egouvea
  * Fixed computation of max file size allowed. It was using FRAME_RATE
  * instead of FRAME_SHIFT (i.e. SAMPLING_RATE / FRAME_RATE) to compute
  * max number of samples from max number of frames.
- * 
+ *
  * Revision 1.27  2006/01/25 14:43:24  rkm
  * *** empty log message ***
  *
@@ -1250,6 +1267,7 @@ int32 uttproc_begin_utt (char const *id)
 int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
 {
     int32 i, k, v;
+    int32 fe_ret;
     
     for (i = 0; i < len; i++) {
         v = raw[i];
@@ -1300,8 +1318,14 @@ int32 uttproc_rawdata (int16 *raw, int32 len, int32 block)
           if ((k = fe_raw2cep (raw, len, mfcbuf + n_rawfr)) < 0)
           return -1;
     */
-    if ((k = fe_process_utt (fe, raw, len, mfcbuf + n_rawfr)) < 0)
+    fe_ret = fe_process_utt (fe, raw, len, mfcbuf + n_rawfr, &k);
+    if (fe_ret != FE_SUCCESS) {
+      if (fe_ret == FE_ZERO_ENERGY_ERROR) {
+	E_WARN("uttproc_rawdata processed some frames with zero energy. Consider using dither.\n");
+      } else {
         return -1;
+      }
+    }
 
     if (mfcfp && (k > 0))
         fwrite (mfcbuf[n_rawfr], sizeof(float), k * CEP_SIZE, mfcfp);
@@ -1395,7 +1419,7 @@ int32 uttproc_end_utt ( void )
     }
 
     if (livemode) {
-        live_nframe = fe_end_utt(fe, leftover_cep);
+        fe_end_utt(fe, leftover_cep, &live_nframe);
         mfc2feat_live_frame (leftover_cep, live_nframe);
     } else {
         mfc2feat_batch (mfcbuf, n_rawfr);
@@ -1404,7 +1428,7 @@ int32 uttproc_end_utt ( void )
          * case the code changes, we can fe_end_utt here for front end
          * cleanups.
          */
-        fe_end_utt(fe, leftover_cep);
+        fe_end_utt(fe, leftover_cep, &live_nframe);
     }
 
     uttstate = nosearch ? UTTSTATE_IDLE : UTTSTATE_ENDED;

@@ -91,6 +91,22 @@ SOURCE=..\..\..\src\libsphinx2fe\fe_interface.c
 
 SOURCE=..\..\..\src\libsphinx2fe\fe_sigproc.c
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_affine.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_inverse_linear.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_piecewise_linear.c
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -102,6 +118,22 @@ SOURCE=..\..\..\include\fe.h
 # Begin Source File
 
 SOURCE=..\..\..\src\libsphinx2fe\fe_internal.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_affine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_inverse_linear.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libsphinx2fe\fe_warp_piecewise_linear.h
 # End Source File
 # Begin Source File
 

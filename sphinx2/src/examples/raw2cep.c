@@ -344,7 +344,9 @@ main (int32 argc, char **argv)
 
 	    if (mfcout) {
 		int slop;
-		slop = fe_end_utt(fe, mfcbuf[0]);
+		if (fe_end_utt(fe, mfcbuf[0], &slop) == FE_ZERO_ENERGY_ERROR) {
+		  E_WARN("Some frames with zero energy. Consider using dither\n");
+		}
 		if (slop) {
 		    fwrite (mfcbuf[0], sizeof(float), fe->NUM_CEPSTRA, mfcout);
 		    nc += 1;
@@ -408,8 +410,9 @@ main (int32 argc, char **argv)
 	    tot_ns += k;
 	    
 	    if (mfcout) {
-		
-		k = fe_process_utt (fe, adbuf, k, mfcbuf);
+ 	        if (fe_process_utt (fe, adbuf, k, mfcbuf, &k) == FE_ZERO_ENERGY_ERROR) {
+		    E_WARN("File %s has some frames with zero energy. Consider using dither\n", uttid);
+		}
 		nc += k;
 		
 		for (i = 0; i < k; i++)
