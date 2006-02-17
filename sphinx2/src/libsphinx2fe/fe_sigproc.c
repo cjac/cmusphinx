@@ -654,7 +654,11 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     else
         MEL->doublewide = OFF;
 
-    MEL->warp_type = P->warp_type;
+    if (P->warp_type == NULL) {
+        MEL->warp_type = DEFAULT_WARP_TYPE;
+    } else {
+        MEL->warp_type = P->warp_type;
+    }
     MEL->warp_params = P->warp_params;
 
     if (fe_warp_set(MEL->warp_type) != FE_SUCCESS) {
