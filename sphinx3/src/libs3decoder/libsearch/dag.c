@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1.4.7  2006/01/16  18:18:12  arthchan2003
- * Added a flag on DAG loading when acoustic scores are presented in the lattice file.
+ * Revision 1.1.4.8  2006/02/17  19:27:37  arthchan2003
+ * Fixed a conformance issue of dag.c, this will transform the word to its basewid, in computing LM.
  * 
+ * Revision 1.1.4.7  2006/01/16 18:18:12  arthchan2003
+ * Added a flag on DAG loading when acoustic scores are presented in the lattice file.
+ *
  * Revision 1.1.4.6  2005/11/17 06:25:04  arthchan2003
  * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
  *
@@ -392,12 +395,12 @@ int32 dag_bestpath (
 					dict2lmwid[dict_basewid(dict,pd->wid)],
 					dict2lmwid[dict_basewid(dict,d->wid)],
 					dict2lmwid[dict_basewid(dict,src->wid)],
-					src->wid);
+					dict_basewid(dict, src->wid));
 		else
 		    lscr = lwf * lm_bg_score (lm,
 					dict2lmwid[dict_basewid(dict,d->wid)], 
 					dict2lmwid[dict_basewid(dict,src->wid)],
-					src->wid);
+					dict_basewid(dict, src->wid));
 		score += lscr;
 
 		if (dagp->lmop++ >= dagp->maxlmop)
