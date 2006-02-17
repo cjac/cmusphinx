@@ -49,9 +49,12 @@
  *              First incorporate it from s3 code base. 
  *
  * $Log$
- * Revision 1.12.4.11  2005/11/17  06:27:48  arthchan2003
- * 1, Clean up. 2, removed fwg in dag_build.
+ * Revision 1.12.4.12  2006/02/17  19:30:45  arthchan2003
+ * Added specific version of dag_add_fudge_edges, flat_fwd_add_fudge_edges into flat_fwd.c . When using mode3, ascr and lscr need to be gathered using specific function lat_seg_ascr_lscr.  The one in lattice could well be S3_LOGPROB_ZERO and caused a lot of problem in the lattices.
  * 
+ * Revision 1.12.4.11  2005/11/17 06:27:48  arthchan2003
+ * 1, Clean up. 2, removed fwg in dag_build.
+ *
  * Revision 1.12.4.10  2005/10/26 03:53:12  arthchan2003
  * Put add_fudge and remove_filler_nodes into srch_flat_fwd.c . This conformed to s3.0 behavior.
  *
@@ -1076,6 +1079,65 @@ void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id, char* latfile_ext
 
 
 
+void flat_fwd_dag_add_fudge_edges (srch_FLAT_FWD_graph_t* fwg, dag_t *dagp, int32 fudge, int32 min_ef_range, void *hist, dict_t *dict)
+{
+    dagnode_t *d, *pd;
+    int32 l, ascr, lscr;
+    latticehist_t *lathist;
+    
+    lathist=(latticehist_t*)hist;
+    assert (dagp);
+
+    if(fudge> 0 && !dagp->fudged){
+      /* Add "illegal" links that are near misses */
+      for (d = dagp->list; d; d = d->alloc_next) {
+	if (d->lef - d->fef < min_ef_range-1)
+	  continue;
+	
+	/* Links to d from nodes that first ended just when d started */
+	for (l = lathist->frm_latstart[d->sf]; l < lathist->frm_latstart[d->sf+1]; l++) {
+	    pd = lathist->lattice[l].dagnode;		/* Predecessor DAG node */
+
+	    if ((pd->wid != dict->finishwid) &&
+		(pd->fef == d->sf) &&
+		(pd->lef - pd->fef >= min_ef_range-1)) {
+
+	      lat_seg_ascr_lscr (lathist, l, BAD_S3WID, &ascr, &lscr, 
+				 kbcore_lm(fwg->kbcore),
+				 kbcore_dict(fwg->kbcore),
+				 fwg->ctxt,
+				 kbcore_fillpen(fwg->kbcore));
+
+	      dag_link_w_lscr (dagp, pd, d, ascr, lscr, d->sf-1, NULL);
+	    }
+	}
+	
+	if (fudge < 2)
+	    continue;
+	
+	/* Links to d from nodes that first ended just BEYOND when d started */
+	for (l = lathist->frm_latstart[d->sf+1]; l < lathist->frm_latstart[d->sf+2]; l++) {
+	    pd = lathist->lattice[l].dagnode;		/* Predecessor DAG node */
+
+	    if ((pd->wid != dict->finishwid) &&
+		(pd->fef == d->sf+1) &&
+		(pd->lef - pd->fef >= min_ef_range-1)) {
+
+	      lat_seg_ascr_lscr (lathist, l, BAD_S3WID, &ascr, &lscr, 
+				 kbcore_lm(fwg->kbcore),
+				 kbcore_dict(fwg->kbcore),
+				 fwg->ctxt,
+				 kbcore_fillpen(fwg->kbcore));
+
+	      dag_link_w_lscr (dagp, pd, d, ascr, lscr, d->sf-1, NULL);
+	    }
+	}
+      }
+      dagp->fudged=1;
+    }
+}
+
+
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
  * a single start time but it can represent several end times.  Links are created
@@ -1189,10 +1251,10 @@ dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *
 	}
     }
     
+
     dag->filler_removed = 0;
     dag->fudged = 0;
     dag->nfrm=_nfrm;
-
 
     dag->maxedge = cmd_ln_int32("-maxedge");
     /*
