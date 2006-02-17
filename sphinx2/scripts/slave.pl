@@ -128,7 +128,12 @@ sub condition_text {
     $text =~ s/\(\d+\)\b/ /g;
     my $file = <LIST>;
     @path = split /[\\\/]/, $file;
-    my $user = $path[$#path - 1];
+    my $user;
+    if ($#path > 0) {
+      $user = $path[$#path - 1];
+    } else {
+      $user = "user";
+    }
     print OUT "$text ($user-$id)\n";
   }
   close(LIST);
