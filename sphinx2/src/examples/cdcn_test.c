@@ -112,11 +112,13 @@ int main (int32 argc, char *argv[])
 	fe_start_utt(fe);
 	nf = 0;
 	while ((k = adc_file_read (adbuf, 4096)) >= 0) {
-	    k = fe_process_utt (fe, adbuf, k, mfcbuf+nf);
+	    if (fe_process_utt (fe, adbuf, k, mfcbuf+nf, &k) == FE_ZERO_ENERGY_ERROR) {
+	        E_WARN("Frames with zero energy. Consider using dither\n");
+	    }
 	    nf += k;
 	    /* WARNING!! No check for mfcbuf overflow */
 	}
-	fe_end_utt(fe, mfcbuf[nf]);
+	fe_end_utt(fe, mfcbuf[nf], &k);
 	fe_close(fe);
 	uttfile_close ();
 	
