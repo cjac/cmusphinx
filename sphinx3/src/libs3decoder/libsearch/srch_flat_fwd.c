@@ -38,9 +38,12 @@
  * HISTORYg
  * 
  * $Log$
- * Revision 1.1.2.7  2006/01/16  20:11:23  arthchan2003
- * Interfaces for 2nd stage search, now commented.
+ * Revision 1.1.2.8  2006/02/17  19:32:08  arthchan2003
+ * Use specific version flat_fwd_dag_add_fudge_edge instead dag_add_fudge_edge.
  * 
+ * Revision 1.1.2.7  2006/01/16 20:11:23  arthchan2003
+ * Interfaces for 2nd stage search, now commented.
+ *
  * Revision 1.1.2.6  2005/11/17 06:42:15  arthchan2003
  * Added back crossword triphone traversing timing for search. Also. for consistency with srch.c.  Some dummy code of IBM lattice conversion was added. They are now bypassed because it is not fully function.
  *
@@ -106,6 +109,14 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg,
 void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id, char* latfile_ext, latticehist_t *lathist, int32 n_frm, dag_t *dag, 
 			 lm_t *lm, dict_t *dict, ctxt_table_t *ctxt, fillpen_t *fpen
 			 );
+
+
+void flat_fwd_dag_add_fudge_edges (srch_FLAT_FWD_graph_t* fwg, 
+				   dag_t *dagp, 
+				   int32 fudge, 
+				   int32 min_ef_range, 
+				   void *hist, 
+				   dict_t *dict);
 
 static void fwd_timing_dump (srch_FLAT_FWD_graph_t* fwg)
 {
@@ -594,7 +605,7 @@ int srch_FLAT_FWD_end(void* srch)
 
 #if 0 /* Keeper, we just don't know how to dump IBM lattice correctly with s3.0  yet */
 	/* Add fudge before dump the graph */
-	dag_add_fudge_edges (dag, 
+	flat_fwd_dag_add_fudge_edges (dag, 
 			     cmd_ln_int32("-dagfudge"), 
 			     cmd_ln_int32("-min_endfr"), 
 			     s->lathist, s->kbc->dict);
@@ -613,10 +624,11 @@ int srch_FLAT_FWD_end(void* srch)
       f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
       lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
       
-      dag_add_fudge_edges (dag, 
-			   cmd_ln_int32("-dagfudge"), 
-			   cmd_ln_int32("-min_endfr"), 
-			   (void*) s->lathist, s->kbc->dict);
+      flat_fwd_dag_add_fudge_edges (fwg, 
+				    dag, 
+				    cmd_ln_int32("-dagfudge"), 
+				    cmd_ln_int32("-min_endfr"), 
+				    ls(void*) s->lathist, s->kbc->dict);
 
 
       /* Bypass filler nodes */
