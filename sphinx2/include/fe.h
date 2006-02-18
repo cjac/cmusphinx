@@ -202,29 +202,36 @@ int32 fe_close(fe_t *FE);
 
 int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, int32 *nframes);
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif
 
 /*
  * fe.h
  * 
  * $Log$
- * Revision 1.13  2006/02/17  00:49:57  egouvea
+ * Revision 1.14  2006/02/18  00:11:00  egouvea
+ * Closing bracket if __cplusplus defined.
+ * 
+ * Revision 1.13  2006/02/17 00:49:57  egouvea
  * Yet another attempt at synchronizing the front end code between
  * SphinxTrain and sphinx2.
- * 
+ *
  * Added support for warping functions.
- * 
+ *
  * Replaced some fprintf() followed by exit() with E_WARN and return() in
  * functions that had a non void return type.
- * 
+ *
  * Set return value to FE_ZERO_ENERGY_ERROR if the energy is zero in a
  * frame, allowing the application to do something (currently, uttproc
  * and raw2cep simply print a message.
- * 
+ *
  * Warning: the return value in fe_process_utt() and fe_end_utt()
  * required a change in the API (the return value has a different meaning
  * now).
- * 
+ *
  * Revision 1.12  2005/10/11 13:08:40  dhdfu
  * Change the default FFT size for 8kHz to 512, as that is what Communicator models are.  Add command-line arguments to specify all FE parameters, thus removing the 8 or 16kHz only restriction.  Add default parameters for 11025Hz as well
  *
