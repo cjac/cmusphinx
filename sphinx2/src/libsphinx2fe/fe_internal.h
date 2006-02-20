@@ -55,6 +55,7 @@ int32 fe_build_melfilters(melfb_t *MEL_FB);
 int32 fe_compute_melcosine(melfb_t *MEL_FB);
 float32 fe_mel(float32 x);
 float32 fe_melinv(float32 x);
+int32 fe_dither(int16 *buffer,int32 nsamps);
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32 factor, int16 prior);
 void fe_create_hamming(float64 *in, int32 in_len);
 void fe_hamming_window(float64 *in, float64 *window, int32 in_len);
@@ -66,7 +67,7 @@ int32 fe_fft(complex const *in, complex *out, int32 N, int32 invert);
 void fe_short_to_double(int16 const *in, float64 *out, int32 len);
 void *fe_create_2d(int32 d1, int32 d2, int32 elem_size);
 void fe_free_2d(void *arr);
-void fe_print_current(fe_t *FE);
+void fe_print_current(fe_t const *FE);
 void fe_parse_general_params(param_t const *P, fe_t *FE);
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL);
 

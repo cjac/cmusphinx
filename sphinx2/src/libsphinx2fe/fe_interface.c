@@ -38,6 +38,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
 #include "s2types.h"
 #include "fe.h"
@@ -83,7 +84,7 @@ fe_t *fe_init(param_t const *P)
 
     if (FE==NULL){
       E_WARN("memory alloc failed in fe_init()\n");
-	return(NULL);
+        return(NULL);
     }
     
     /* transfer params to front end */
@@ -94,15 +95,19 @@ fe_t *fe_init(param_t const *P)
     FE->FRAME_SHIFT        = (int32)(FE->SAMPLING_RATE/FE->FRAME_RATE + 0.5);
     FE->FRAME_SIZE         = (int32)(FE->WINDOW_LENGTH*FE->SAMPLING_RATE + 0.5);
     FE->PRIOR              = 0;
-    FE->FRAME_COUNTER 	   = 0;	 	
+    FE->FRAME_COUNTER      = 0;         
+
+    if (FE->dither) {
+        srand48((long)time(0));
+    }
 
     /* establish buffers for overflow samps and hamming window */
     FE->OVERFLOW_SAMPS = (int16 *)calloc(FE->FRAME_SIZE,sizeof(int16));
     FE->HAMMING_WINDOW = (float64 *) calloc(FE->FRAME_SIZE,sizeof(float64));
     
     if (FE->OVERFLOW_SAMPS==NULL || FE->HAMMING_WINDOW==NULL){
-	E_WARN("memory alloc failed in fe_init()\n");
-	return(NULL);
+        E_WARN("memory alloc failed in fe_init()\n");
+        return(NULL);
     }
 
     /* create hamming window */    
@@ -110,22 +115,25 @@ fe_t *fe_init(param_t const *P)
     
     /* init and fill appropriate filter structure */
     if (FE->FB_TYPE==MEL_SCALE) {   
-	if ((FE->MEL_FB = (melfb_t *) calloc(1,sizeof(melfb_t)))==NULL){
-	    E_WARN("memory alloc failed in fe_init()\n");
-	    return(NULL);
-	}
-	/* transfer params to mel fb */
-	fe_parse_melfb_params(P, FE->MEL_FB);
+        if ((FE->MEL_FB = (melfb_t *) calloc(1,sizeof(melfb_t)))==NULL){
+            E_WARN("memory alloc failed in fe_init()\n");
+            return(NULL);
+        }
+        /* transfer params to mel fb */
+        fe_parse_melfb_params(P, FE->MEL_FB);
 
-	fe_build_melfilters(FE->MEL_FB);
-	fe_compute_melcosine(FE->MEL_FB);
+        fe_build_melfilters(FE->MEL_FB);
+        fe_compute_melcosine(FE->MEL_FB);
     } else {
-	E_WARN("MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
-	return(NULL);
+        E_WARN("MEL SCALE IS CURRENTLY THE ONLY IMPLEMENTATION!\n");
+        return(NULL);
     }
 
-    /*** Z.A.B. ***/	
-    /*** Initialize the overflow buffers ***/		
+    if (P->verbose) {
+        fe_print_current(FE);
+    }
+    /*** Z.A.B. ***/    
+    /*** Initialize the overflow buffers ***/           
     fe_start_utt(FE);
 
     return(FE);
@@ -157,12 +165,12 @@ int32 fe_start_utt(fe_t *FE)
    features. will prepend overflow data from last call and store new
    overflow data within the FE
 **********************************************************************/
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, int32 *nframes)
+int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep, int32 *nframes)
 {
     int32 frame_start, frame_count=0, whichframe=0;
     int32 i, spbuf_len, offset=0;  
     float64 *spbuf, *fr_data, *fr_fea;
-    int16 const *allspch = spch;
+    int16 *allspch = spch;
     int16 * tmp_spch = NULL;
     int32 return_value = FE_SUCCESS;
     int32 frame_return_value;
@@ -173,35 +181,41 @@ int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, i
       /* if there are previous samples, pre-pend them to input speech samps */
       if ((FE->NUM_OVERFLOW_SAMPS > 0)) {
 
-	if ((tmp_spch = (int16 *) malloc (sizeof(int16)*(FE->NUM_OVERFLOW_SAMPS +nsamps)))==NULL){
-	    E_WARN("memory alloc failed in fe_process_utt()\n");
-	    return FE_MEM_ALLOC_ERROR;
-	}
-	/* RAH */
-	memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
-	memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
-	nsamps += FE->NUM_OVERFLOW_SAMPS;
-	allspch = tmp_spch;
-	FE->NUM_OVERFLOW_SAMPS = 0; /*reset overflow samps count */
+        if ((tmp_spch = (int16 *) malloc (sizeof(int16)*(FE->NUM_OVERFLOW_SAMPS +nsamps)))==NULL){
+            E_WARN("memory alloc failed in fe_process_utt()\n");
+            return FE_MEM_ALLOC_ERROR;
+        }
+        /* RAH */
+        memcpy (tmp_spch,FE->OVERFLOW_SAMPS,FE->NUM_OVERFLOW_SAMPS*(sizeof(int16))); /* RAH */
+        memcpy(tmp_spch+FE->NUM_OVERFLOW_SAMPS, spch, nsamps*(sizeof(int16))); /* RAH */
+        nsamps += FE->NUM_OVERFLOW_SAMPS;
+        allspch = tmp_spch;
+        FE->NUM_OVERFLOW_SAMPS = 0; /*reset overflow samps count */
       }
       /* compute how many complete frames  can be processed and which samples correspond to those samps */
       frame_count=0;
       for (frame_start=0; frame_start+FE->FRAME_SIZE <= nsamps; frame_start += FE->FRAME_SHIFT)
-	frame_count++;
+        frame_count++;
       
       spbuf_len = (frame_count-1)*FE->FRAME_SHIFT + FE->FRAME_SIZE;    
       assert(spbuf_len <= nsamps); // why this assertion?
       
       if ((spbuf=(float64 *)calloc(spbuf_len, sizeof(float64)))==NULL){
-	  E_WARN("memory alloc failed in fe_process_utt()\n");
-	  return(FE_MEM_ALLOC_ERROR);
+          E_WARN("memory alloc failed in fe_process_utt()\n");
+          return(FE_MEM_ALLOC_ERROR);
       }
       
+
+      /* Add dither, if requested */
+      if (FE->dither) {
+        fe_dither(allspch, spbuf_len);
+      }
+
       /* pre-emphasis if needed,convert from int16 to float64 */
       if (FE->PRE_EMPHASIS_ALPHA != 0.0){
-	fe_pre_emphasis(allspch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
+        fe_pre_emphasis(allspch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
       } else{
-	fe_short_to_double(allspch, spbuf, spbuf_len);
+        fe_short_to_double(allspch, spbuf, spbuf_len);
       }
       
       /* frame based processing - let's make some cepstra... */    
@@ -209,40 +223,40 @@ int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, i
       fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64));
       
       if (fr_data==NULL || fr_fea==NULL){
-	  E_WARN("memory alloc failed in fe_process_utt()\n");
-	  return(FE_MEM_ALLOC_ERROR);
+          E_WARN("memory alloc failed in fe_process_utt()\n");
+          return(FE_MEM_ALLOC_ERROR);
       }
 
       for (whichframe=0;whichframe<frame_count;whichframe++){
 
-	for (i=0;i<FE->FRAME_SIZE;i++)
-	  fr_data[i] = spbuf[whichframe*FE->FRAME_SHIFT + i];
-	
-	fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
-	
-	frame_return_value = fe_frame_to_fea(FE, fr_data, fr_fea);
-	
-	if (FE_SUCCESS != frame_return_value) {
-	  return_value = frame_return_value;
-	}
+        for (i=0;i<FE->FRAME_SIZE;i++)
+          fr_data[i] = spbuf[whichframe*FE->FRAME_SHIFT + i];
+        
+        fe_hamming_window(fr_data, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
+        
+        frame_return_value = fe_frame_to_fea(FE, fr_data, fr_fea);
+        
+        if (FE_SUCCESS != frame_return_value) {
+          return_value = frame_return_value;
+        }
 
-	for (i=0;i<FE->FEATURE_DIMENSION;i++)
-	  cep[whichframe][i] = (float32)fr_fea[i];
+        for (i=0;i<FE->FEATURE_DIMENSION;i++)
+          cep[whichframe][i] = (float32)fr_fea[i];
       }
       /* done making cepstra */
       
       
       /* assign samples which don't fill an entire frame to FE overflow buffer for use on next pass */
-      if (spbuf_len < nsamps)	{
-	offset = ((frame_count)*FE->FRAME_SHIFT);
-	memcpy(FE->OVERFLOW_SAMPS,allspch+offset,(nsamps-offset)*sizeof(int16));
-	FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
-	FE->PRIOR = allspch[offset-1];
-	assert(FE->NUM_OVERFLOW_SAMPS<FE->FRAME_SIZE);
+      if (spbuf_len < nsamps)   {
+        offset = ((frame_count)*FE->FRAME_SHIFT);
+        memcpy(FE->OVERFLOW_SAMPS,allspch+offset,(nsamps-offset)*sizeof(int16));
+        FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
+        FE->PRIOR = allspch[offset-1];
+        assert(FE->NUM_OVERFLOW_SAMPS<FE->FRAME_SIZE);
       }
       
       if (tmp_spch)
-	free(tmp_spch);
+        free(tmp_spch);
       free(spbuf);
       free(fr_data);
       free(fr_fea);
@@ -287,10 +301,14 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
     assert(FE->NUM_OVERFLOW_SAMPS==FE->FRAME_SIZE);
     
     if ((spbuf=(float64 *)calloc(FE->FRAME_SIZE,sizeof(float64)))==NULL){
-	E_WARN("memory alloc failed in fe_end_utt()\n");
-	return(FE_MEM_ALLOC_ERROR);
+        E_WARN("memory alloc failed in fe_end_utt()\n");
+        return(FE_MEM_ALLOC_ERROR);
     }
  
+    if (FE->dither) {
+      fe_dither(FE->OVERFLOW_SAMPS, FE->FRAME_SIZE);
+    }
+
     if (FE->PRE_EMPHASIS_ALPHA != 0.0){
       fe_pre_emphasis(FE->OVERFLOW_SAMPS, spbuf, FE->FRAME_SIZE,FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
     } else {
@@ -300,17 +318,17 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
     /* again, who should implement cep vector? this can be implemented
        easily from outside or easily from in here */
     if ((fr_fea = (float64 *)calloc(FE->FEATURE_DIMENSION, sizeof(float64)))==NULL){
-	E_WARN("memory alloc failed in fe_end_utt()\n");
-	return(FE_MEM_ALLOC_ERROR);
+        E_WARN("memory alloc failed in fe_end_utt()\n");
+        return(FE_MEM_ALLOC_ERROR);
     }
 
     fe_hamming_window(spbuf, FE->HAMMING_WINDOW, FE->FRAME_SIZE);
-    return_value = fe_frame_to_fea(FE, spbuf, fr_fea);	
+    return_value = fe_frame_to_fea(FE, spbuf, fr_fea);  
     for (i=0;i<FE->FEATURE_DIMENSION;i++)
       cepvector[i] = (float32)fr_fea[i];
     frame_count=1;
-    free(fr_fea);		/* RAH - moved up */
-    free (spbuf);		/* RAH */
+    free(fr_fea);               /* RAH - moved up */
+    free (spbuf);               /* RAH */
   } else {
     frame_count=0;
     /* FIXME: This statement has no effect whatsoever! */

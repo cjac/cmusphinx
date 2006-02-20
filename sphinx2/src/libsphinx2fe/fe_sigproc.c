@@ -184,7 +184,6 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB)
         
 }
 
-
 float32 fe_mel(float32 x)
 {
      float32 warped = fe_warp_unwarped_to_warped(x);
@@ -198,6 +197,15 @@ float32 fe_melinv(float32 x)
      return fe_warp_warped_to_unwarped(warped);
 }
 
+/* adds 1/2-bit noise */
+int32 fe_dither(int16 *buffer, int32 nsamps)
+{
+  int32 i;
+  for (i=0;i<nsamps;i++)
+    buffer[i] += (short)((!(lrand48()%4))?1:0);
+  
+  return 0;
+}
 
 void fe_pre_emphasis(int16 const *in, float64 *out, int32 len, float32
                      factor, int16 prior)
@@ -263,7 +271,7 @@ int32 fe_frame_to_fea(fe_t *FE, float64 *in, float64 *fea)
         fe_spec_magnitude(in, FE->FRAME_SIZE, spec, FE->FFT_SIZE);
         fe_mel_spec(FE, spec, mfspec);
         returnValue = fe_mel_cep(FE, mfspec, fea);
-        
+
         free(spec);
         free(mfspec);   
     }
@@ -535,7 +543,6 @@ void fe_free_2d(void *arr)
 
 void fe_parse_general_params(param_t const *P, fe_t *FE)
 {
-
     if (P->SAMPLING_RATE != 0) 
         FE->SAMPLING_RATE = P->SAMPLING_RATE;
     else
@@ -555,7 +562,9 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
         FE->FB_TYPE = P->FB_TYPE;
     else 
         FE->FB_TYPE = DEFAULT_FB_TYPE;
- 
+
+    FE->dither = P->dither;
+
     if (P->PRE_EMPHASIS_ALPHA != 0) 
         FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
     else 
@@ -573,21 +582,20 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
 
     FE->LOG_SPEC = P->logspec;
     if (FE->LOG_SPEC == OFF) 
-      FE->FEATURE_DIMENSION = FE->NUM_CEPSTRA;
+        FE->FEATURE_DIMENSION = FE->NUM_CEPSTRA;
     else {
-      if (P->NUM_FILTERS != 0)  
-        FE->FEATURE_DIMENSION = P->NUM_FILTERS;
-      else {
-        if (FE->SAMPLING_RATE == BB_SAMPLING_RATE)
-          FE->FEATURE_DIMENSION = DEFAULT_BB_NUM_FILTERS;
-        else if (FE->SAMPLING_RATE == NB_SAMPLING_RATE)
-          FE->FEATURE_DIMENSION = DEFAULT_NB_NUM_FILTERS;
+        if (P->NUM_FILTERS != 0)  
+            FE->FEATURE_DIMENSION = P->NUM_FILTERS;
         else {
-          E_FATAL("Please define the number of MEL filters needed\n");
+            if (FE->SAMPLING_RATE == BB_SAMPLING_RATE)
+                FE->FEATURE_DIMENSION = DEFAULT_BB_NUM_FILTERS;
+            else if (FE->SAMPLING_RATE == NB_SAMPLING_RATE)
+                FE->FEATURE_DIMENSION = DEFAULT_NB_NUM_FILTERS;
+            else {
+                E_FATAL("Please define the number of MEL filters needed\n");
+            }
         }
-      }
     }
- 
 }
 
 void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
@@ -600,14 +608,14 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     if (P->FFT_SIZE != 0) 
         MEL->fft_size = P->FFT_SIZE;
     else {
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->fft_size = DEFAULT_BB_FFT_SIZE;
-      if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->fft_size = DEFAULT_NB_FFT_SIZE;
-      else 
-        MEL->fft_size = DEFAULT_FFT_SIZE;
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->fft_size = DEFAULT_BB_FFT_SIZE;
+        if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->fft_size = DEFAULT_NB_FFT_SIZE;
+        else 
+            MEL->fft_size = DEFAULT_FFT_SIZE;
     }
- 
+
     if (P->NUM_CEPSTRA != 0) 
         MEL->num_cepstra = P->NUM_CEPSTRA;
     else 
@@ -617,36 +625,36 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
         MEL->num_filters = P->NUM_FILTERS;
     else {
         if (MEL->sampling_rate == BB_SAMPLING_RATE)
-          MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
-	else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-	  MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
-	else {
-	  E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -nfilt\n");
-	}
+            MEL->num_filters = DEFAULT_BB_NUM_FILTERS;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->num_filters = DEFAULT_NB_NUM_FILTERS;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -nfilt\n");
+        }
     }
 
     if (P->UPPER_FILT_FREQ != 0)        
         MEL->upper_filt_freq = P->UPPER_FILT_FREQ;
     else{
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
-      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
-      else {
-        E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -upperf\n");
-      }
-    } 
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->upper_filt_freq = (float32) DEFAULT_BB_UPPER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->upper_filt_freq = (float32) DEFAULT_NB_UPPER_FILT_FREQ;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -upperf\n");
+        }
+    }
 
     if (P->LOWER_FILT_FREQ != 0)        
         MEL->lower_filt_freq = P->LOWER_FILT_FREQ;
     else {
-      if (MEL->sampling_rate == BB_SAMPLING_RATE)
-        MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
-      else if (MEL->sampling_rate == NB_SAMPLING_RATE)
-        MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
-      else {
-        E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -lowerf\n");
-      }
+        if (MEL->sampling_rate == BB_SAMPLING_RATE)
+            MEL->lower_filt_freq = (float32) DEFAULT_BB_LOWER_FILT_FREQ;
+        else if (MEL->sampling_rate == NB_SAMPLING_RATE)
+            MEL->lower_filt_freq = (float32) DEFAULT_NB_LOWER_FILT_FREQ;
+        else {
+            E_FATAL("Default value not defined for this sampling rate\nPlease explictly set -lowerf\n");
+        }
     } 
 
     if (P->doublebw == ON)
@@ -667,14 +675,27 @@ void fe_parse_melfb_params(param_t const *P, melfb_t *MEL)
     fe_warp_set_parameters(MEL->warp_params, MEL->sampling_rate);
 }
 
-void fe_print_current(fe_t *FE)
+void fe_print_current(fe_t const *FE)
 {
-    fprintf(stderr,"Current FE Parameters:\n");
-    fprintf(stderr,"\tSampling Rate:             %f\n",FE->SAMPLING_RATE);
-    fprintf(stderr,"\tFrame Size:                %d\n",FE->FRAME_SIZE);
-    fprintf(stderr,"\tFrame Shift:               %d\n",FE->FRAME_SHIFT);
-    fprintf(stderr,"\tFFT Size:                  %d\n",FE->FFT_SIZE);
-    fprintf(stderr,"\tNumber of Overflow Samps:  %d\n",FE->NUM_OVERFLOW_SAMPS);
-    fprintf(stderr,"\tStart Utt Status:          %d\n",FE->START_FLAG);
+    E_INFO("Current FE Parameters:\n");
+    E_INFO("\tSampling Rate:             %f\n", FE->SAMPLING_RATE);
+    E_INFO("\tFrame Size:                %d\n", FE->FRAME_SIZE);
+    E_INFO("\tFrame Shift:               %d\n", FE->FRAME_SHIFT);
+    E_INFO("\tFFT Size:                  %d\n", FE->FFT_SIZE);
+    E_INFO("\tLower Frequency:           %g\n", FE->MEL_FB->lower_filt_freq);
+    E_INFO("\tUpper Frequency:           %g\n", FE->MEL_FB->upper_filt_freq);
+    E_INFO("\tNumber of filters:         %d\n", FE->MEL_FB->num_filters);
+    E_INFO("\tNumber of Overflow Samps:  %d\n", FE->NUM_OVERFLOW_SAMPS);
+    E_INFO("\tStart Utt Status:          %d\n", FE->START_FLAG);
+    if (FE->dither) {
+        E_INFO("Will add dither to audio\n");
+    } else {
+        E_INFO("Will not add dither to audio\n");
+    }
+    if (FE->MEL_FB->doublewide == ON) {
+        E_INFO("Will use double bandwidth in mel filter\n");
+    } else {
+        E_INFO("Will not use double bandwidth in mel filter\n");
+    }
 }
 

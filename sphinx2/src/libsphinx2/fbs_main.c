@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.28  2005/12/13  17:04:13  rkm
- * Added confidence reporting in nbest files; fixed some backtrace bugs
+ * Revision 1.29  2006/02/20  23:59:52  egouvea
+ * Moved fe_dither() from the app (wave2feat) to the library, so it can
+ * be used by other applications as well. Added "-dither" as an option to
+ * sphinx2.
  * 
+ * Revision 1.28  2005/12/13 17:04:13  rkm
+ * Added confidence reporting in nbest files; fixed some backtrace bugs
+ *
  * Revision 1.27  2005/12/03 17:54:34  rkm
  * Added acoustic confidence scores to hypotheses; and cleaned up backtrace functions
  *
@@ -536,6 +541,7 @@ static int32 sampling_rate = 16000;
 static int32 n_mel_filt;
 static float lower_filt = -1.0f; /* Someone might want this to be zero. */
 static float upper_filt = 0.0f;
+static int32 dither = FALSE;
 static float pre_emphasis_alpha = 0.0f;
 static int32 frame_rate;
 static int32 n_fft;
@@ -927,6 +933,9 @@ config_t param[] = {
 
 	{ "UseDoubleBW", "Double bandwidth mel filter", "-doublebw",
 		BOOL, (caddr_t) &doublebw }, 
+
+	{ "UseDither", "Add dither to the incoming audio", "-dither",
+		BOOL, (caddr_t) &dither }, 
 
 	{ "RawLogDir", "Log directory for raw output files)", "-rawlogdir",
 		STRING, (caddr_t) &rawlogdir }, 
@@ -2308,13 +2317,13 @@ void query_fe_params(param_t *param)
 	 * using 512 points.  So we will use DEFAULT_FFT_SIZE (512)
 	 * everywhere. */
 	param->FFT_SIZE = DEFAULT_FFT_SIZE;
+	param->dither = dither;
 	param->doublebw = doublebw;
-	if (param->doublebw) {
-		E_INFO("Will use double bandwidth in mel filter\n");
+	if (verbosity_level < 1) {
+ 	    param->verbose = 0;
 	} else {
-		E_INFO("Will not use double bandwidth in mel filter\n");
+	    param->verbose = 1;
 	}
-
 	/* Provide some defaults based on sampling rate if the user
 	 * hasn't. */
 	switch (sampling_rate) {

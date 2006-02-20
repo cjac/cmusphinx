@@ -43,91 +43,97 @@
 extern "C" {
 #endif
 
-typedef struct{
-    float32 SAMPLING_RATE;
-    int32 FRAME_RATE;
-    float32 WINDOW_LENGTH;
-    int32 FB_TYPE;
-    int32 NUM_CEPSTRA;
-    int32 NUM_FILTERS;
-    int32 FFT_SIZE;
-    float32 LOWER_FILT_FREQ;
-    float32 UPPER_FILT_FREQ;
-    float32 PRE_EMPHASIS_ALPHA;
+#if defined(WIN32)
+#define srand48(x) srand(x)
+#define lrand48() rand()
+#endif
 
-    char *warp_type;
-    char *warp_params;
+    typedef struct{
+	float32 SAMPLING_RATE;
+	int32 FRAME_RATE;
+	float32 WINDOW_LENGTH;
+	int32 FB_TYPE;
+	int32 NUM_CEPSTRA;
+	int32 NUM_FILTERS;
+	int32 FFT_SIZE;
+	float32 LOWER_FILT_FREQ;
+	float32 UPPER_FILT_FREQ;
+	float32 PRE_EMPHASIS_ALPHA;
 
-    char *wavfile;
-    char *cepfile;
-    char *ctlfile;
-    int32 nskip;
-    int32 runlen;
-    char *wavdir;
-    char *cepdir;
-    char *wavext;
-    char *cepext;
-    int32 input_format;
-    int32 is_batch;
-    int32 is_single;
-    int32 blocksize;
-    int32 verbose;
-    int32 machine_endian;
-    int32 input_endian;
-    int32 output_endian;
-    int32 dither;
-    int32 logspec;
-    int32 doublebw;
-    int32 nchans;
-    int32 whichchan;
-} param_t;
+	char *warp_type;
+	char *warp_params;
 
-
-typedef struct{
-    float32 sampling_rate;
-    int32 num_cepstra;
-    int32 num_filters;
-    int32 fft_size;
-    float32 lower_filt_freq;
-    float32 upper_filt_freq;
-    float32 **filter_coeffs;
-    float32 **mel_cosine;
-    float32 *left_apex;
-    int32 *width;
-    int32 doublewide;
-    char *warp_type;
-    char *warp_params;
-} melfb_t;
+	char *wavfile;
+	char *cepfile;
+	char *ctlfile;
+	int32 nskip;
+	int32 runlen;
+	char *wavdir;
+	char *cepdir;
+	char *wavext;
+	char *cepext;
+	int32 input_format;
+	int32 is_batch;
+	int32 is_single;
+	int32 blocksize;
+	int32 verbose;
+	int32 machine_endian;
+	int32 input_endian;
+	int32 output_endian;
+	int32 dither;
+	int32 logspec;
+	int32 doublebw;
+	int32 nchans;
+	int32 whichchan;
+    } param_t;
 
 
-typedef struct{
-    float32 SAMPLING_RATE;
-    int32 FRAME_RATE;
-    int32 FRAME_SHIFT;
-    float32 WINDOW_LENGTH;
-    int32 FRAME_SIZE;
-    int32 FFT_SIZE;
-    int32 FB_TYPE;
-    int32 LOG_SPEC;
-    int32 NUM_CEPSTRA;
-    int32 FEATURE_DIMENSION;
-    float32 PRE_EMPHASIS_ALPHA;
-    int16 *OVERFLOW_SAMPS;
-    int32 NUM_OVERFLOW_SAMPS;    
-    melfb_t *MEL_FB;
-    int32 START_FLAG;
-    int16 PRIOR;
-    float64 *HAMMING_WINDOW;
-    int32 FRAME_COUNTER;
-} fe_t;
+    typedef struct{
+	float32 sampling_rate;
+	int32 num_cepstra;
+	int32 num_filters;
+	int32 fft_size;
+	float32 lower_filt_freq;
+	float32 upper_filt_freq;
+	float32 **filter_coeffs;
+	float32 **mel_cosine;
+	float32 *left_apex;
+	int32 *width;
+	int32 doublewide;
+	char *warp_type;
+	char *warp_params;
+    } melfb_t;
+
+
+    typedef struct{
+	float32 SAMPLING_RATE;
+	int32 FRAME_RATE;
+	int32 FRAME_SHIFT;
+	float32 WINDOW_LENGTH;
+	int32 FRAME_SIZE;
+	int32 FFT_SIZE;
+	int32 FB_TYPE;
+	int32 LOG_SPEC;
+	int32 NUM_CEPSTRA;
+	int32 FEATURE_DIMENSION;
+	int32 dither;
+	float32 PRE_EMPHASIS_ALPHA;
+	int16 *OVERFLOW_SAMPS;
+	int32 NUM_OVERFLOW_SAMPS;    
+	melfb_t *MEL_FB;
+	int32 START_FLAG;
+	int16 PRIOR;
+	float64 *HAMMING_WINDOW;
+	int32 FRAME_COUNTER;
+    } fe_t;
 
 /* Struct to hold the front-end parameters */
-typedef struct{
+    typedef struct{
         param_t *P;
         fe_t *FE;
         int16 *fr_data;
         float32 *fr_cep;
-} fewrap_t;
+    } fewrap_t;
 
 
 
@@ -192,15 +198,15 @@ typedef struct{
 #define DITHER  OFF
 
 /* Interface */
-fe_t *fe_init(param_t const *P);
+    fe_t *fe_init(param_t const *P);
 
-int32 fe_start_utt(fe_t *FE);
+    int32 fe_start_utt(fe_t *FE);
 
-int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
+    int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes);
 
-int32 fe_close(fe_t *FE);
+    int32 fe_close(fe_t *FE);
 
-int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, int32 *nframes);
+    int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep, int32 *nframes);
 
 #ifdef __cplusplus
 }
@@ -212,9 +218,14 @@ int32 fe_process_utt(fe_t *FE, int16 const *spch, int32 nsamps, float32 **cep, i
  * fe.h
  * 
  * $Log$
- * Revision 1.14  2006/02/18  00:11:00  egouvea
- * Closing bracket if __cplusplus defined.
+ * Revision 1.15  2006/02/20  23:59:52  egouvea
+ * Moved fe_dither() from the app (wave2feat) to the library, so it can
+ * be used by other applications as well. Added "-dither" as an option to
+ * sphinx2.
  * 
+ * Revision 1.14  2006/02/18 00:11:00  egouvea
+ * Closing bracket if __cplusplus defined.
+ *
  * Revision 1.13  2006/02/17 00:49:57  egouvea
  * Yet another attempt at synchronizing the front end code between
  * SphinxTrain and sphinx2.
