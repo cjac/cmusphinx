@@ -1,8 +1,0 @@
-
-.deps
-Makefile
-Makefile.in
-batchmetrics
-dumpfrontend
-lm_test
-lm_utt_test
