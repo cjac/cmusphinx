@@ -133,6 +133,7 @@ perf-std :
 	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode ti46-decany
 	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode  
 	make -C $(top_srcdir)/src/tests/performance/Communicator com-fast-lp com-fast-decode
+	make -C $(top_srcdir)/src/tests/performance/Communicator com-2stage-decode com-2stage-decany
 
 perf-std-s3 : 
 	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-decany
