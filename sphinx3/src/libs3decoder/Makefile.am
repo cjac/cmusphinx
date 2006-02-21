@@ -7,6 +7,7 @@ lib_LTLIBRARIES = libs3decoder.la
 
 libs3decoder_la_SOURCES = 
 
+
 libs3decoder_la_LIBADD = \
 	libam/libam.la \
 	libcep_feat/libcep_feat.la \
