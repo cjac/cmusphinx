@@ -7,12 +7,18 @@ libdict_la_LDFLAGS = -version-info 0:4:0
 libdict_la_SOURCES = \
 	dict2pid.c \
 	dict.c \
-	wid.c
+	wid.c \
+	lts.c \
+	ctxt_table.c \
+	cmu6_lts_rules.c
 
 pkginclude_HEADERS = \
 	dict2pid.h \
 	dict.h \
-	wid.h
+	wid.h \
+	lts.h \
+	ctxt_table.h \
+	cmu6_lts_rules.h
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \
