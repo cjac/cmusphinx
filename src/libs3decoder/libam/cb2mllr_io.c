@@ -52,12 +52,16 @@
 #define NOT_MAPPED	0
 #define MAP_FILE_VERSION	"1.2"
 
+/**
+   Reading a regression map
+ */
 static int
-s3map_read(const char *fn,
+s3map_read(const char *fn, /**< The file name */
 	   void **out_map,
 	   int32 *out_n_dom,
 	   int32 *out_n_rng,
-	   size_t map_elem_size)
+	   size_t map_elem_size
+	   )
 {
     uint32 rd_chksum = 0;
     uint32 sv_chksum;
@@ -194,9 +198,13 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.3  2005/10/05  00:29:44  dhdfu
- * Silence some largely unimportant signedness warnings.
+ * Revision 1.4  2006/02/22  15:02:47  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Follow Dave's change to make uint32 to int32. 2, Fixed some dox-doc issue.
  * 
+ *
+ * Revision 1.3  2005/10/05 00:29:44  dhdfu
+ * Silence some largely unimportant signedness warnings.
+ *
  * Revision 1.2  2005/06/22 03:29:35  arthchan2003
  * Makefile.am s  for all subdirectory of libs3decoder/
  *
