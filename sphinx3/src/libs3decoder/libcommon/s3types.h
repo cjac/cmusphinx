@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/21  20:54:44  arthchan2003
- * 1, Added $ keyword. 2, make a small change for compilation purpose.
+ * Revision 1.16  2006/02/22  19:57:57  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Increase the size of MAX_S3CIPID from 127 to 32767.  This will make Chinese Mandarin setup works.
  * 
+ * Revision 1.15.4.1  2005/10/09 19:53:09  arthchan2003
+ * Changed the maximum number of CI PID from 127 to 32767, this will allow us to take care of Chinese syllable, Chinese initial/final and even Cantononese.  It might still cause us problem in Turkish.
+ *
+ * Revision 1.15  2005/06/21 20:54:44  arthchan2003
+ * 1, Added $ keyword. 2, make a small change for compilation purpose.
+ *
  * Revision 1.5  2005/06/16 04:59:09  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -96,7 +102,9 @@ typedef int16		s3cipid_t;	/** Ci phone id */
 #define BAD_S3CIPID	((s3cipid_t) -1)
 #define NOT_S3CIPID(p)	((p)<0)
 #define IS_S3CIPID(p)	((p)>=0)
-#define MAX_S3CIPID	127
+#define MAX_S3CIPID	32767
+
+  /*#define MAX_S3CIPID	127*/
 
 typedef int32		s3pid_t;	/** Phone id (triphone or ciphone) */
 #define BAD_S3PID	((s3pid_t) -1)
