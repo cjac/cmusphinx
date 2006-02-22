@@ -45,9 +45,17 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  19:23:35  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.10  2006/02/22  17:46:26  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Used new log function in logs3
+ * 2, Fixed dox-doc.
  * 
+ * Revision 1.9.4.1  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.9  2005/06/21 19:23:35  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.6  2005/06/13 04:02:56  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -88,7 +96,8 @@ extern "C" {
 #endif
 
   /**
-   * Transition matrix data structure.  All phone HMMs are assumed to have the same
+   * \struct tmat_t
+   * \brief Transition matrix data structure.  All phone HMMs are assumed to have the same
    * topology.
    */
   typedef struct {
