@@ -45,9 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/07/05  13:12:39  dhdfu
- * Add new arguments to logs3_init() in some tests, main_ep
+ * Revision 1.7  2006/02/22  17:46:26  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Used new log function in logs3
+ * 2, Fixed dox-doc.
  * 
+ *
+ * Revision 1.5.4.1  2005/07/05 21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ *
+ * Revision 1.6  2005/07/05 13:12:39  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
  * Revision 1.5  2005/06/21 19:23:35  arthchan2003
  * 1, Fixed doxygen documentation. 2, Added $ keyword.
  *
