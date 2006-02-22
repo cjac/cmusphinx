@@ -45,9 +45,21 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  18:28:05  arthchan2003
- * Log. 1, Fixed doxygen documentation. 2, Add $Log$ keyword.
+ * Revision 1.7  2006/02/22  16:41:58  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed issue in $ keyword, 2, Fixed dox-doc
  * 
+ * Revision 1.6.4.1  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.6  2005/06/21 18:28:05  arthchan2003
+ * Log. 1, Fixed doxygen documentation. 2, Add $Log$
+ * Revision 1.7  2006/02/22  16:41:58  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed issue in $ keyword, 2, Fixed dox-doc
+ * 
+ * Log. 1, Fixed doxygen documentation. 2, Add Revision 1.6.4.1  2005/07/05 05:47:59  arthchan2003
+ * Log. 1, Fixed doxygen documentation. 2, Add Fixed dox-doc. struct level of documentation are included.
+ * Log. 1, Fixed doxygen documentation. 2, Add keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -93,19 +105,20 @@ extern "C" {
 #endif
 
   /**
-   *  Wrapper structure of gaussian selector
+   *  \struct gs_t
+   *  Wrapper structure of the gaussian selection algorithm
    */
 typedef struct gs_s {
-  int32 n_mgau;  /** number of GMMs */
-  int32 n_feat;  /** number of streams */
-  int32 n_code;  
-  int32 n_density; /** number of density */
-  int32 n_featlen; /** (This is not consistent to the Gaussian family of function */
-  int32 n_mbyte; /** number of bytes to read each time */
-  float32 **codeword; /** n_code * n_featlen */
-  uint32 ***codemap; /** n_feat * n_mgau * n_code*/
-  FILE *fp;
-  int32* mgau_sl; /** The short list for how many Gaussians will be computed */
+  int32 n_mgau;  /**< number of GMMs */
+  int32 n_feat;  /**< number of streams */
+  int32 n_code;  /**< number of code word */
+  int32 n_density; /**< number of density */
+  int32 n_featlen; /**< (This is not consistent to the Gaussian family of function */
+  int32 n_mbyte; /**< number of bytes to read each time */
+  float32 **codeword; /**< n_code * n_featlen */
+  uint32 ***codemap; /**< n_feat * n_mgau * n_code*/
+  FILE *fp;       /**< A file pointer to dump the gaussian selector */
+  int32* mgau_sl; /**< The short list for how many Gaussians will be computed */
 } gs_t;
 
 
