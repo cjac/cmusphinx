@@ -45,9 +45,33 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/21  18:34:41  arthchan2003
- * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$ keyword.
+ * Revision 1.9  2006/02/22  16:46:38  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Added function hmm_vit_eval, a wrapper of computing the hmm level scores. 2, Fixed issues in , 3, Fixed issues of dox-doc
  * 
+ * Revision 1.8.4.6  2005/09/25 18:53:36  arthchan2003
+ * Added hmm_vit_eval, in lextree.c, hmm_dump and hmm_vit_eval is now separated.
+ *
+ * Revision 1.8.4.5  2005/07/26 02:17:44  arthchan2003
+ * Fixed  keyword problem.
+ *
+ * Revision 1.8.4.4  2005/07/17 05:15:47  arthchan2003
+ * Totally removed the data members in hmm_t structure
+ *
+ * Revision 1.8.4.3  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.8.4.2  2005/07/04 07:15:55  arthchan2003
+ * Removed fsg compliant stuff from hmm_t
+ *
+ * Revision 1.8.4.1  2005/06/27 05:38:54  arthchan2003
+ * Added changes to make libsearch/fsg_* family of code to be compiled.
+ *
+ * Revision 1.8  2005/06/21 18:34:41  arthchan2003
+ * Log. 1, Fixed doxygen documentation for all functions. 2, Add $Log$
+ * Revision 1.9  2006/02/22  16:46:38  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Added function hmm_vit_eval, a wrapper of computing the hmm level scores. 2, Fixed issues in , 3, Fixed issues of dox-doc
+ * 
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -111,27 +135,31 @@ extern "C" {
  * 3-state topologies that contain a subset of the above transitions should work as well.  */
 
 
-  /** A single state in the HMM */
+  /**  \struct hmm_state_t
+   * \brief A single state in the HMM 
+   */
 typedef struct {
-    int32 score;	/** State score (path log-likelihood) */
-    int32 history;	/** History index */
+    int32 score;	/**< State score (path log-likelihood) */
+    int32 history;	/**< History index */
 } hmm_state_t;
 
 
-  /**
- * An individual HMM among the HMM search space.  An HMM with N emitting states consists
- * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
- * For compatibility with Sphinx-II, we assume that the initial or entry state can only
- * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
- * where the extra destination dimension correponds to the final or exit state.
- */
+  /** \struct hmm_t
+   * \brief An individual HMM among the HMM search space.
+   *
+   * An individual HMM among the HMM search space.  An HMM with N emitting states consists
+   * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
+   * For compatibility with Sphinx-II, we assume that the initial or entry state can only
+   * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
+   * where the extra destination dimension correponds to the final or exit state.
+   */
 
 typedef struct {
-    hmm_state_t *state;	/** Per-state data for emitting states */
-    hmm_state_t in;	/** Non-emitting entry state */
-    hmm_state_t out;	/** Non-emitting exit state */
-    int32 **tp;		/** State transition scores tp[from][to] (logs3 values) */
-    int32 bestscore;	/** Best [emitting] state score in current frame (for pruning) */
+    hmm_state_t *state;	/**< Per-state data for emitting states */
+    hmm_state_t in;	/**< Non-emitting entry state */
+    hmm_state_t out;	/**< Non-emitting exit state */
+    int32 **tp;		/**< State transition scores tp[from][to] (logs3 values) */
+    int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning) */
 } hmm_t;
 
 
@@ -168,6 +196,23 @@ int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
 			int32 *senscore	/**< In: Senone scores, for all senones */
 			);
 
+
+  /**
+     A wrapper of both hmm_vit_eval_5st and hmm_vit_eval_3st.  Only carry out evaluation but assume
+     writing be the job of hmm_dump
+     @see hmm_vit_eval_3st
+     @see hmm_vit_eval_5st
+     @see hmm_dump_vit_eval
+     @see hmm_dump
+   */
+  int32 hmm_vit_eval (hmm_t *hmm, /**< In/Out: HMM being updated */
+		      int32 n_state, /**< In number of state */
+		      s3senid_t *senid, /**< an array of senone ID */
+		      int32 *senscr     /**< an array of senone score */
+		      );
+
+  
+
   /** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging 
       @see hmm_vit_eval_3st
       @see hmm_vit_eval_5st
@@ -181,12 +226,12 @@ int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
 			 );
 
   /** For debugging, dump the whole hmm out */
-void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
-	       int32 n_emit_state, /**< In: Number of emitting state */
-	       s3senid_t *senid, /**< An array of senone ID */
-	       int32 *senscr, /**< An array of senone scores*/
-	       FILE *fp /**< An output file pointer */
-	       );
+  void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
+		 int32 n_emit_state, /**< In: Number of emitting state */
+		 s3senid_t *senid, /**< An array of senone ID */
+		 int32 *senscr, /**< An array of senone scores*/
+		 FILE *fp /**< An output file pointer */
+		 );
 
 
 #ifdef __cplusplus
