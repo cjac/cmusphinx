@@ -42,14 +42,17 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.23  2006/02/22  21:46:51  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII:
+ * Revision 1.24  2006/02/22  22:36:56  arthchan2003
+ * changed cmd_ln_access to cmd_ln_int32 in live_decode_API.c
  * 
+ * Revision 1.23  2006/02/22 21:46:51  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII:
+ *
  * 1, Supported -dither (also -seed).
  * 2, Changed implementation from hyp_t to srch_hyp_t.  The definition will have NO CHANGE because hyp_t will be typedef as srch_hyp_t.
  * 3, Supported reading, addition and deletion of LMs through ld_read,
  * ld_set_lm and ld_delete_lm.
- * 
+ *
  * Revision 1.22.4.7  2005/09/25 18:56:11  arthchan2003
  * Added dict argument into vithist_backtrace.
  *
@@ -192,7 +195,7 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   fe_param.dither=cmd_ln_int32("-dither");
 
   if(fe_param.dither){
-    fe_init_dither(*(int32 *)cmd_ln_access("-seed"));
+    fe_init_dither(cmd_ln_int32("-seed"));
   }
 
   if ((_decoder->fe = fe_init(&fe_param)) == NULL) {
