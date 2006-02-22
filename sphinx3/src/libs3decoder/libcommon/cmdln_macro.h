@@ -45,13 +45,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2006/02/22  18:46:43  arthchan2003
+ * Revision 1.3  2006/02/22  19:37:51  arthchan2003
+ * Removed command-line remove_zero_var_gau.  See the comments in revision 1.20 of cont_mgau.c
+ * 
+ * Revision 1.2  2006/02/22 18:46:43  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Add a macro files that
  * unified the command line of all the executables in Sphinx 3.6.
  * Affected executable includes decode, decode_anytopo, livepretend,
  * align, allphone, dag, astar and conf.  This will be commmented
  * individually in each executable.
- * 
+ *
  * Revision 1.1.2.14  2006/01/16 19:50:19  arthchan2003
  * 1, Changed -ltsoov to -lts_mismatch, 2, Added an option to unscale the hypothesis segment scores. , 3, Added an option to dump the best senone scores.
  *
@@ -145,10 +148,6 @@
       ARG_FLOAT32,\
       "0.0001",\
       "Mixture gaussian variance floor (applied to data from -var file)" },\
-    { "-remove_zero_var_gau", \
-      ARG_INT32, \
-      "0" , \
-      "(Fast GMM Computation only) If 0, gaussian will only be removed if its means and variance are both zero.  If 1, gaussian will be removed even if just the variance are zero." },\
     { "-mixw",\
       ARG_STRING,\
       NULL,\
