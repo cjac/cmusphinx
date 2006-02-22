@@ -1,3 +1,38 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
  * senone.c -- Mixture density weights associated with each tied state.
  *
@@ -11,9 +46,29 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2005/06/21  18:57:31  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.6  2006/02/22  17:27:39  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, NOT doing truncation in the multi-stream GMM computation \n. 2, Added .s3cont. to be the alias of the old multi-stream GMM computation routine \n. 3, Added license \n.  4, Fixed dox-doc. \n
  * 
+ * Revision 1.5.4.5  2006/01/17 22:57:06  arthchan2003
+ * Add directive TRUNCATE_LOGPDF in ms_senone.c
+ *
+ * Revision 1.5.4.4  2006/01/16 19:47:05  arthchan2003
+ * Removed the truncation of senone probability code.
+ *
+ * Revision 1.5.4.3  2005/08/03 18:53:43  dhdfu
+ * Add memory deallocation functions.  Also move all the initialization
+ * of ms_mgau_model_t into ms_mgau_init (duh!), which entails removing it
+ * from decode_anytopo and friends.
+ *
+ * Revision 1.5.4.2  2005/08/02 21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
+ *
+ * Revision 1.5.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
+ * Revision 1.5  2005/06/21 18:57:31  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.1.1.1  2005/03/24 15:24:00  archan
  * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
  *
@@ -199,9 +254,13 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
      */
     if ((s->mixwfloor <= 0.0) || (s->mixwfloor >= 1.0))
 	E_FATAL("mixwfloor (%e) not in range (0, 1)\n", s->mixwfloor);
+
     p = logs3(s->mixwfloor);
+
+#if TRUNCATE_LOGPDF
     for (s->shift = 0, p = -p; p >= 256; s->shift++, p >>= 1);
     E_INFO("Truncating senone logs3(pdf) values by %d bits, to 8 bits\n", s->shift);
+#endif
 
     /*
      * Allocate memory for senone PDF data.  Organize normally or transposed depending on
@@ -236,12 +295,21 @@ static int32 senone_mixw_read(senone_t *s, char *file_name)
 	    /* Convert to logs3, truncate to 8 bits, and store in s->pdf */
 	    for (c = 0; c < s->n_cw; c++) {
 		p = -(logs3(pdf[c]));
+
+#if TRUNCATE_LOGPDF
 		p += (1 << (s->shift-1)) - 1;	/* Rounding before truncation */
 
 		if (s->n_gauden > 1)
 		    s->pdf[i][f][c] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
 		else
 		    s->pdf[f][c][i] = (p < (255 << s->shift)) ? (p >> s->shift) : 255;
+
+#else
+		if (s->n_gauden > 1)
+		  s->pdf[i][f][c] = p;
+		else
+		  s->pdf[f][c][i] = p;
+#endif
 	    }
 	}
     }
@@ -275,9 +343,10 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
     s = (senone_t *) ckd_calloc (1, sizeof(senone_t));
     s->mixwfloor = mixwfloor;
 
+
     if (strcmp (sen2mgau_map_file, ".semi.") == 0)
 	s->n_gauden = 1;
-    else if (strcmp (sen2mgau_map_file, ".cont.") == 0)
+    else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0)
 	s->n_gauden = 2;	/* HACK!! Dummy value >1 for the moment; fixed below */
     else {
 	senone_mgau_map_read (s, sen2mgau_map_file);
@@ -289,7 +358,7 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
     if (strcmp (sen2mgau_map_file, ".semi.") == 0) {
 	/* All-to-1 senones-codebook mapping */
 	s->mgau = (s3mgauid_t *) ckd_calloc (s->n_sen, sizeof(s3mgauid_t));
-    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0) {
+    } else if (strcmp (sen2mgau_map_file, ".cont.") == 0 || strcmp (sen2mgau_map_file, ".s3cont.") == 0) {
 	/* 1-to-1 senone-codebook mapping */
 	if (s->n_sen <= 1)
 	    E_FATAL("#senone=%d; must be >1\n", s->n_sen);
@@ -307,6 +376,19 @@ senone_t *senone_init (char *mixwfile, char *sen2mgau_map_file, float32 mixwfloo
 
     s->featscr=NULL;
     return s;
+}
+
+void senone_free(senone_t *s)
+{
+    if (s == NULL)
+	return;
+    if (s->pdf)
+	ckd_free_3d((void *)s->pdf);
+    if (s->mgau)
+	ckd_free(s->mgau);
+    if (s->featscr)
+	ckd_free(s->featscr);
+    ckd_free(s);
 }
 
 
@@ -332,19 +414,36 @@ int32 senone_eval (senone_t *s, s3senid_t id, gauden_dist_t **dist, int32 n_top)
 	fdist = dist[f];
 
 	/* Top codeword for feature f */
+#if TRUNCATE_LOGPDF
 	fscr = (s->n_gauden > 1) ?
 	    fdist[0].dist - (s->pdf[id][f][fdist[0].id] << s->shift) :	/* untransposed */
 	    fdist[0].dist - (s->pdf[f][fdist[0].id][id] << s->shift);	/* transposed */
-	
+#else
+
+	fscr = (s->n_gauden > 1) ?
+	    fdist[0].dist - (s->pdf[id][f][fdist[0].id] ) :	/* untransposed */
+	    fdist[0].dist - (s->pdf[f][fdist[0].id][id] );	/* transposed */
+#endif
+
 	/* Remaining of n_top codewords for feature f */
 	for (t = 1; t < n_top; t++) {
+#if TRUNCATE_LOGPDF
 	    fwscr = (s->n_gauden > 1) ?
 		fdist[t].dist - (s->pdf[id][f][fdist[t].id] << s->shift) :
 		fdist[t].dist - (s->pdf[f][fdist[t].id][id] << s->shift);
+#else
+
+	    fwscr = (s->n_gauden > 1) ?
+		fdist[t].dist - (s->pdf[id][f][fdist[t].id] ) :
+		fdist[t].dist - (s->pdf[f][fdist[t].id][id] );
+#endif
+
 	    fscr = logs3_add (fscr, fwscr);
+
 	}
 	
 	scr += fscr;
+
     }
 
     return scr;
@@ -374,8 +473,14 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
     cwdist = dist[0][0].dist;
     pdf = s->pdf[0][dist[0][0].id];
 
+#if TRUNCATE_LOGPDF
     for (i = 0; i < s->n_sen; i++)
 	senscr[i] = cwdist - (pdf[i] << s->shift);
+#else
+    for (i = 0; i < s->n_sen; i++)
+	senscr[i] = cwdist - (pdf[i]);
+
+#endif
 
     /* Remaining top-N codewords */
     for (k = 1; k < n_top; k++) {
@@ -383,7 +488,11 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	pdf = s->pdf[0][dist[0][k].id];
 	
 	for (i = 0; i < s->n_sen; i++) {
+#if TRUNCATE_LOGPDF
 	    scr = cwdist - (pdf[i] << s->shift);
+#else
+	    scr = cwdist - (pdf[i]);
+#endif
 	    senscr[i] = logs3_add (senscr[i], scr);
 	}
     }
@@ -394,8 +503,13 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	cwdist = dist[f][0].dist;
 	pdf = s->pdf[f][dist[f][0].id];
 	
+#if TRUNCATE_LOGPDF
 	for (i = 0; i < s->n_sen; i++)
 	    featscr[i] = cwdist - (pdf[i] << s->shift);
+#else
+	for (i = 0; i < s->n_sen; i++)
+	    featscr[i] = cwdist - (pdf[i]);
+#endif
 	
 	/* Remaining top-N codewords */
 	for (k = 1; k < n_top; k++) {
@@ -403,7 +517,11 @@ void senone_eval_all (senone_t *s, gauden_dist_t **dist, int32 n_top, int32 *sen
 	    pdf = s->pdf[f][dist[f][k].id];
 	    
 	    for (i = 0; i < s->n_sen; i++) {
+#if TRUNCATE_LOGPDF
 		scr = cwdist - (pdf[i] << s->shift);
+#else
+		scr = cwdist - (pdf[i] );
+#endif
 		featscr[i] = logs3_add (featscr[i], scr);
 	    }
 	}
