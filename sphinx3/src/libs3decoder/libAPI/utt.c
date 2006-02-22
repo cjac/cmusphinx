@@ -42,9 +42,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.28  2006/02/22  22:46:51  arthchan2003
- * Merged from branch: SPHINX3_5_2_RCI_IRII: Change prototypes of utt_decode, this allow utterance-base resource (lm, mllr, file id) allocation to be carried out.
+ * Revision 1.29  2006/02/22  23:35:29  arthchan2003
+ * Changed the code following Evandro's suggestion.
  * 
+ * Revision 1.28  2006/02/22 22:46:51  arthchan2003
+ * Merged from branch: SPHINX3_5_2_RCI_IRII: Change prototypes of utt_decode, this allow utterance-base resource (lm, mllr, file id) allocation to be carried out.
+ *
  * Revision 1.27.4.3  2005/09/26 02:19:06  arthchan2003
  * 1, Forced exit when the decoder cannot find a file, 2, fixed dox-doc.
  *
@@ -138,7 +141,7 @@ void utt_decode (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
   /* Read mfc file and build feature vectors for entire utterance */
   if((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, 
 				    cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
-				    sf, ef, kb->feat, S3_MAX_FRAMES)) == -1)
+				    sf, ef, kb->feat, S3_MAX_FRAMES)) < 0)
     {
       E_FATAL("Cannot read file %s. Forced exit\n",ur->uttfile);
     }
