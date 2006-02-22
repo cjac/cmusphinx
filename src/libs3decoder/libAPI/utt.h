@@ -39,6 +39,7 @@
 #include <s3types.h>
 #include "kb.h"
 #include "approx_cont_mgau.h"
+#include "corpus.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,22 +51,24 @@ extern "C" {
 
 #define MAXHYPLEN       1000
 
+
+
   /** Begin utterance */
-void utt_begin (kb_t *kb);
+  void utt_begin (kb_t *kb /**< A kb */
+		);
 
     /** End utterance */
-void utt_end (kb_t *kb);
+  void utt_end (kb_t *kb     /**< A kb */
+		);
 
-  /** Word transition */
-void utt_word_trans (kb_t *kb, int32 cf);
+   /** Decoding the whole utterance */
+  void utt_decode (void *data,  /**< A kb */
+		 utt_res_t *ur, /**< Utterance resource structure */
+		 int32 sf,  /**< Starting frame of the decoding */
+		 int32 ef,  /**< Ending frame of the decoding */
+		 char *uttid /**< Utterance ID */
+		 );
 
-  /** Decoding the whole utterance */
-void utt_decode (void *data, char *uttfile, int32 sf, 
-			     int32 ef, char *uttid);
-
-  /** Decoding the whole utterance using tree copies. 80-90% duplicated with utt_decode*/
-void utt_decode_tree_copies (void *data, char *uttfile, int32 sf, 
-			     int32 ef, char *uttid);
   
   /** This function decodes a block of incoming feature vectors.
  * Feature vectors have to be computed by the calling routine.
