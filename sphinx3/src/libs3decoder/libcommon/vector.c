@@ -47,9 +47,20 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.17  2005/07/02  03:48:46  egouvea
- * Removed condition compilation on WIN32 for included time.h. Not regression tested since this affects only Windows
+ * Revision 1.18  2006/02/22  20:35:17  arthchan2003
+ * Merge from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Not allocated lrd in vector.c because its only consumer subvq.c has done it. 2, Fixed dox-doc.
  * 
+ *
+ * Revision 1.16.4.2  2005/10/17 04:47:53  arthchan2003
+ * Not allocate lrd in vector.c because subvq(its only consumer) will do it separately.
+ *
+ * Revision 1.16.4.1  2005/07/05 06:47:08  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.17  2005/07/02 03:48:46  egouvea
+ * Removed condition compilation on WIN32 for included time.h. Not regression tested since this affects only Windows
+ *
  * Revision 1.16  2005/06/21 21:02:05  arthchan2003
  * Please ignore the last log. vector.c has now fix doxygen-style documents and fixed $ keyword.
  *
@@ -480,16 +491,23 @@ void vector_gautbl_alloc (vector_gautbl_t *gautbl, int32 n_gau, int32 veclen)
     gautbl->veclen = veclen;
     gautbl->mean = (float32 **) ckd_calloc_2d (n_gau, veclen, sizeof(float32));
     gautbl->var = (float32 **) ckd_calloc_2d (n_gau, veclen, sizeof(float32));
-    gautbl->lrd = (float32 *) ckd_calloc (n_gau, sizeof(float32));
+    /*    gautbl->lrd = (float32 *) ckd_calloc (n_gau, sizeof(float32));*/
     gautbl->distfloor = logs3_to_log (S3_LOGPROB_ZERO);
 }
 
 
 void vector_gautbl_free (vector_gautbl_t *gautbl)
 {
-    ckd_free_2d ((void **) gautbl->mean);
-    ckd_free_2d ((void **) gautbl->var);
-    ckd_free ((void *) gautbl->lrd);
+    if(gautbl->mean!=NULL){
+      ckd_free_2d ((void **) gautbl->mean);
+    }
+    if(gautbl->var!=NULL){
+      ckd_free_2d ((void **) gautbl->var);
+    }
+    if(gautbl->lrd!=NULL){
+      ckd_free ((void *) gautbl->lrd);
+    }
+
 }
 
 

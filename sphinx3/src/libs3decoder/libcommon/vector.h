@@ -74,20 +74,31 @@ typedef float32 *vector_t;
 
 
 /* Why do these belong here?? */
+  /** \struct arraysize_t
+   * \brief wrapper of array size 
+   */
 typedef struct {
-    int32 r;		/* #rows, */
-    int32 c;		/* #cols in an array */
+    int32 r;		/**< #rows, */
+    int32 c;		/**< #cols in an array */
 } arraysize_t;
 
-typedef struct {
-    int32 x;		/* x-coordinate, */
-    int32 y;		/* y-coordinate of a point */
-} point_t;
+  /** \struct point_t
+   * \brief wrapper of a point in integer
+   */
 
 typedef struct {
-    float32 x;		/* x-coordinate, */
-    float32 y;		/* y-coordinate of a point */
-} fpoint_t;		/* Like point_t, but with float32 values */
+    int32 x;		/**< x-coordinate, */
+    int32 y;		/**< y-coordinate of a point */
+} point_t;
+
+  /** \struct point_t
+   * \brief wrapper of a point in floating point
+   */
+
+typedef struct {
+    float32 x;		/**< x-coordinate, */
+    float32 y;		/**< y-coordinate of a point */
+} fpoint_t;		/**< Like point_t, but with float32 values */
 
 
   /**
@@ -97,7 +108,10 @@ typedef struct {
 
 
   /** Floor all elements of v[0..dim-1] to min value of f */
-void vector_floor(vector_t v, int32 dim, float64 f);
+  void vector_floor(vector_t v,  /**< The vector */
+		    int32 dim,     /**< The dimension of the vector */
+		    float64 f      /**< The floor value */
+		  );
 
 
   /** Floor all non-0 elements of v[0..dim-1] to min value of f */
@@ -105,12 +119,15 @@ void vector_nz_floor(vector_t v, int32 dim, float64 f);
 
 
   /** Normalize the vector. */
-int32 vector_normalize(vector_t v, uint32 dim);
+  int32 vector_normalize(vector_t v,  /**< The vector */
+			 uint32 dim    /**< The dimension of the vector */
+		       );
 
 
   /**
  * Normalize the elements of the given vector so that they sum to 1.0.  If the sum is 0.0
- * to begin with, the vector is left untouched.  Return value: The normalization factor.
+ * to begin with, the vector is left untouched.  
+ * @ The normalization factor.
  */
 float64 vector_sum_norm(vector_t v, int32 dim);
 
@@ -143,8 +160,8 @@ void vector_accum (float32 *dst,	/**< In/Out: dst[i] += src[i] */
 		   );
 
   /**
- * Compare the two given vectors.  Return -1, 0, or +1 depending on v1 <, =, or > v2 (as
- * determined by the earliest unequal component).
+ * Compare the two given vectors. 
+ * @return -1, 0, or +1 depending on v1 <, =, or > v2 (as determined by the earliest unequal component).
  */
 int32 vector_cmp (float32 *v1, float32 *v2,	/**< In: Vectors to be compared */
 		  int32 len		/**< In: Length of each vector */
@@ -152,7 +169,7 @@ int32 vector_cmp (float32 *v1, float32 *v2,	/**< In: Vectors to be compared */
 
   /**
  * Compute the mean vector from the given set of vector data.
- * Return value: 0 if successful, -1 if any error (there shouldn't be any error).
+ * @return: 0 if successful, -1 if any error (there shouldn't be any error).
  */
 int32 vector_mean (float32 *mean,	/**< Out: Computed mean; caller should allocate
 					   this memory */
@@ -325,9 +342,16 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.12  2005/06/21  21:00:44  arthchan2003
- * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ * Revision 1.13  2006/02/22  20:35:17  arthchan2003
+ * Merge from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Not allocated lrd in vector.c because its only consumer subvq.c has done it. 2, Fixed dox-doc.
  * 
+ * Revision 1.12.4.1  2005/07/05 06:25:40  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.12  2005/06/21 21:00:44  arthchan2003
+ * Add a statistics inventory structure, it takes care of 1, counters, 2, timers. Interfaces are provided to allow convenient clearing and updating of structures
+ *
  * Revision 1.2  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
