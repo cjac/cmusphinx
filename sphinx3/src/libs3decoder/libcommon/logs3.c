@@ -45,9 +45,19 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7  2005/07/05  13:12:39  dhdfu
- * Add new arguments to logs3_init() in some tests, main_ep
+ * Revision 1.8  2006/02/22  19:55:02  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII: Add function logs3_base and logs3_10base.
  * 
+ *
+ * Revision 1.6.4.2  2006/01/16 19:51:19  arthchan2003
+ * Added a function to convert Sphinx 3 log to log 10.
+ *
+ * Revision 1.6.4.1  2005/07/05 21:29:31  arthchan2003
+ * 1, Merged from HEAD.
+ *
+ * Revision 1.7  2005/07/05 13:12:39  dhdfu
+ * Add new arguments to logs3_init() in some tests, main_ep
+ *
  * Revision 1.6  2005/06/21 20:46:54  arthchan2003
  * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
  *
@@ -105,7 +115,7 @@ static float64 F = 0;		/* Set this global variable so we don't have to keep comp
  */
 
 
-static float64 B, logB, invlogB, invlog10B;
+static float64 B, logB, log10B, invlogB, invlog10B;
 static uint16 *add_tbl = NULL;	/* See discussion above */
 static int32 add_tbl_size;
 
@@ -134,6 +144,7 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
     
     B = base;
     logB = log(base);
+    log10B = log10(base);
     invlogB = 1.0/logB;
     invlog10B = 1.0/log10(base);
 
@@ -255,6 +266,14 @@ float64 logs3_to_log (int32 logs3p)
 }
 
 
+float64 logs3_to_log10 (int32 logs3p)
+{
+    if (! add_tbl)
+	E_FATAL("logs3 module not initialized\n");
+    
+    return ((float64)logs3p * log10B);
+}
+
 float64 logs3_to_p (int32 logs3p)
 {
     return (exp((float64)logs3p * logB));
@@ -282,6 +301,17 @@ void logs3_report()
   E_INFO_NOFN("\n");
 }
 
+
+float64 logs3_base()
+{
+  return logB;
+}
+
+
+float64 logs3_10base()
+{
+  return log(10) / logB ;
+}
 
 #if _LOGS3_TEST_
 main (int argc, char *argv[])
