@@ -380,7 +380,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
 */
 int ld_retrieve_hyps(live_decoder_t *_decoder, char **_uttid, char **_hyp_str,
 		     hyp_t ***_hyp_segs);
-
+  
 /** Abort the current decoding process immediately.  As opposed to
     <I>{@link ld_end_utt ld_end_utt()}</I>.  Retrieving the hypothesis after an
     abort is not guaranteed.
@@ -410,6 +410,18 @@ void ld_set_lm(live_decoder_t *_decoder,const char *lmname);
 void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
 
 
+/** Read LM from a file. 
+    @param _decoder Pointer to the decoder. 
+    @param lmfile LM file name. 
+    @param lmname LM name associated with this file. 
+    @see ld_set_lm
+ */
+
+void ld_read_lm(live_decoder_t *_decoder, 
+		const char *lmfile, 
+		const char *lmname
+		);
+
 #ifdef __cplusplus
 }
 #endif
@@ -419,89 +431,3 @@ void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
 
 
 
-#if 0 /* Do not support the following function at this point */
-/** Read LM from a file. 
-    @param _decoder Pointer to the decoder. 
-    @param lmfile LM file name. 
-    @param lmname LM name associated with this file. 
-    @param lw     Language weight; typically 6.5-9.5
-    @param uw     Unigram weight; typically 0.5 
-    @param wip    Word insertion penalty; typically 0.65 
-    @see ld_set_lm
- */
-
-void ld_read_lm(live_decoder_t *_decoder, 
-		const char *lmfile, 
-		const char *lmname,
-		double lw,
-		double uw,
-		double wip
-		);
-
-
-
-  /**
-   */
-void ld_update_lm(live_decoder_t *_decoder, const char *lmname);
-
-
-/** Read FSG from a file.
- */
-
-void ld_read_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/**
- */
-
-void ld_set_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/**
- */
-
-void ld_update_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/**
- */
-
-void ld_delete_fsg(live_decoder_t *_decoder, const char *fsgname);
-
-/** Read MLLR matrix from a file. 
- */
-
-void ld_read_mllr(live_decoder_t *_decoder,const char *mllrname);
-
-/**
- */
-
-void ld_set_mllr(live_decoder_t *_decoder,const char *mllrname);
-
-/**
- */
-
-void ld_update_mllr(live_decoder_t *_decoder,const char *mllrname);
-
-/**
- */
-
-void ld_delete_mllr(live_decoder_t *_decoder,const char *mllrname);
-
-/** Read acoustic model from a file. 
- */
-
-void ld_read_am(live_decoder_t *_decoder,const char *amdir);
-
-/**
- */
-
-void ld_set_am(live_decoder_t *_decoder,const char *amname);
-
-/**
- */
-
-void ld_update_am(live_decoder_t *_decoder, const char *amname);
-
-/**
- */
-
-void ld_delete_am(live_decoder_t *_decoder, const char *amname);
-#endif
