@@ -14,9 +14,10 @@ libam_la_SOURCES = \
 	interp.c \
 	mdef.c \
 	mllr.c \
-	ms_gauden.c \
 	cb2mllr_io.c \
 	ms_mllr.c \
+	ms_mgau.c \
+	ms_gauden.c \
 	ms_senone.c \
 	subvq.c \
 	tmat.c
@@ -31,8 +32,9 @@ pkginclude_HEADERS = \
 	interp.h \
 	mdef.h \
 	mllr.h \
-	ms_gauden.h \
 	cb2mllr_io.h \
+	ms_mgau.h \
+	ms_gauden.h \
 	ms_mllr.h \
 	ms_senone.h \
 	subvq.h \
