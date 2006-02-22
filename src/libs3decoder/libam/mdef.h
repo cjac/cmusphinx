@@ -45,10 +45,22 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2005/06/21  18:47:39  arthchan2003
- * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
- * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$ keyword.
+ * Revision 1.13  2006/02/22  16:52:51  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
  * 
+ * Revision 1.12.4.2  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.12.4.1  2005/07/03 22:54:09  arthchan2003
+ * move st2senmap into mdef_t, it was not properly freed before. \n
+ *
+ * Revision 1.12  2005/06/21 18:47:39  arthchan2003
+ * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$
+ * Revision 1.13  2006/02/22  16:52:51  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ * 
+ *
  * Revision 1.5  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -88,87 +100,108 @@ extern "C" {
    * \brief Model definition 
    */
 
+  /** \enum word_posn_t
+   * \brief Union of different type of word position
+   */
 
 typedef enum {
-    WORD_POSN_BEGIN = 0,	/** Beginning phone of word */
-    WORD_POSN_END = 1,		/** Ending phone of word */
-    WORD_POSN_SINGLE = 2,	/** Single phone word (i.e. begin & end) */
-    WORD_POSN_INTERNAL = 3,	/** Internal phone of word */
-    WORD_POSN_UNDEFINED = 4	/** Undefined value, used for initial conditions, etc */
+    WORD_POSN_BEGIN = 0,	/**< Beginning phone of word */
+    WORD_POSN_END = 1,		/**< Ending phone of word */
+    WORD_POSN_SINGLE = 2,	/**< Single phone word (i.e. begin & end) */
+    WORD_POSN_INTERNAL = 3,	/**< Internal phone of word */
+    WORD_POSN_UNDEFINED = 4	/**< Undefined value, used for initial conditions, etc */
 } word_posn_t;
-#define N_WORD_POSN	4	/** total # of word positions (excluding undefined) */
-#define WPOS_NAME	"besiu"	/** Printable code for each word position above */
+#define N_WORD_POSN	4	/**< total # of word positions (excluding undefined) */
+#define WPOS_NAME	"besiu"	/**< Printable code for each word position above */
 
 
-  /** CI phone information */
+  /**
+     \struct ciphone_t
+     \brief CI phone information 
+  */
 typedef struct {
-    char *name;
-    int32 filler;		/** Whether a filler phone; if so, can be substituted by
+    char *name;                 /**< The name of the CI phone */
+    int32 filler;		/**< Whether a filler phone; if so, can be substituted by
 				   silence phone in left or right context position */
 } ciphone_t;
 
   /**
- * Triphone information, including base phones as a subset.  For the latter, lc, rc
- * and wpos are non-existent.
- */
+   * \struct phone_t
+   * \brief Triphone information, including base phones as a subset.  For the latter, lc, rc and wpos are non-existent.
+   */
 typedef struct {
-    s3ssid_t ssid;		/** State sequence (or senone sequence) ID, considering the
+    s3ssid_t ssid;		/**< State sequence (or senone sequence) ID, considering the
 				   n_emit_state senone-ids are a unit.  The senone sequences
 				   themselves are in a separate table */
-    s3tmatid_t tmat;		/** Transition matrix id */
-    s3cipid_t ci, lc, rc;	/** Base, left, right context ciphones */
-    word_posn_t wpos;		/** Word position */
-    s3senid_t *state;           /** State->senone mappings */
+    s3tmatid_t tmat;		/**< Transition matrix id */
+    s3cipid_t ci, lc, rc;	/**< Base, left, right context ciphones */
+    word_posn_t wpos;		/**< Word position */
+    s3senid_t *state;           /**< State->senone mappings */
     
 } phone_t;
 
   /**
- * Structures needed for mapping <ci,lc,rc,wpos> into pid.  (See mdef_t.wpos_ci_lclist
- * below.)  (lc = left context; rc = right context.)
- * NOTE: Both ph_rc_t and ph_lc_t FOR INTERNAL USE ONLY.
- */
+   * \struct ph_rc_t
+   * \brief Structures needed for mapping <ci,lc,rc,wpos> into pid.  (See mdef_t.wpos_ci_lclist below.)  (lc = left context; rc = right context.)
+   * NOTE: Both ph_rc_t and ph_lc_t FOR INTERNAL USE ONLY.
+   */
 typedef struct ph_rc_s {
-    s3cipid_t rc;		/** Specific rc for a parent <wpos,ci,lc> */
-    s3pid_t pid;		/** Triphone id for above rc instance */
-    struct ph_rc_s *next;	/** Next rc entry for same parent <wpos,ci,lc> */
+    s3cipid_t rc;		/**< Specific rc for a parent <wpos,ci,lc> */
+    s3pid_t pid;		/**< Triphone id for above rc instance */
+    struct ph_rc_s *next;	/**< Next rc entry for same parent <wpos,ci,lc> */
 } ph_rc_t;
 
+  /**
+   * \struct ph_lc_t
+   * \brief Structures for storing the left context. 
+   */
+
 typedef struct ph_lc_s {
-    s3cipid_t lc;		/** Specific lc for a parent <wpos,ci> */
-    ph_rc_t *rclist;		/** rc list for above lc instance */
-    struct ph_lc_s *next;	/** Next lc entry for same parent <wpos,ci> */
+    s3cipid_t lc;		/**< Specific lc for a parent <wpos,ci> */
+    ph_rc_t *rclist;		/**< rc list for above lc instance */
+    struct ph_lc_s *next;	/**< Next lc entry for same parent <wpos,ci> */
 } ph_lc_t;
 
 
   /** The main model definition structure */
+  /**
+     \struct mdef_t
+     \brief strcture for storing the model definition. 
+   */
 typedef struct {
-    int32 n_ciphone;		/** #basephones actually present */
-    int32 n_phone;		/** #basephones + #triphones actually present */
-    int32 n_emit_state;		/** #emitting states per phone */
-    int32 n_ci_sen;		/** #CI senones; these are the first */
-    int32 n_sen;		/** #senones (CI+CD) */
-    int32 n_tmat;		/** #transition matrices */
+    int32 n_ciphone;		/**< #basephones actually present */
+    int32 n_phone;		/**< #basephones + #triphones actually present */
+    int32 n_emit_state;		/**< #emitting states per phone */
+    int32 n_ci_sen;		/**< #CI senones; these are the first */
+    int32 n_sen;		/**< #senones (CI+CD) */
+    int32 n_tmat;		/**< #transition matrices */
     
-    hash_table_t *ciphone_ht;	/** Hash table for mapping ciphone strings to ids */
-    ciphone_t *ciphone;		/** CI-phone information for all ciphones */
-    phone_t *phone;		/** Information for all ciphones and triphones */
-    s3senid_t **sseq;		/** Unique state (or senone) sequences in this model, shared
+    hash_table_t *ciphone_ht;	/**< Hash table for mapping ciphone strings to ids */
+    ciphone_t *ciphone;		/**< CI-phone information for all ciphones */
+    phone_t *phone;		/**< Information for all ciphones and triphones */
+    s3senid_t **sseq;		/**< Unique state (or senone) sequences in this model, shared
 				   among all phones/triphones */
-    int32 n_sseq;		/** No. of unique senone sequences in this model */
+    int32 n_sseq;		/**< No. of unique senone sequences in this model */
     
-    s3senid_t *cd2cisen;	/** Parent CI-senone id for each senone; the first
+    s3senid_t *cd2cisen;	/**< Parent CI-senone id for each senone; the first
 				   n_ci_sen are identity mappings; the CD-senones are
 				   contiguous for each parent CI-phone */
-    s3cipid_t *sen2cimap;	/** Parent CI-phone for each senone (CI or CD) */
-    int32 *ciphone2n_cd_sen;	/** #CD-senones for each parent CI-phone */
+    s3cipid_t *sen2cimap;	/**< Parent CI-phone for each senone (CI or CD) */
+    int32 *ciphone2n_cd_sen;	/**< #CD-senones for each parent CI-phone */
     
-    s3cipid_t sil;		/** SILENCE_CIPHONE id */
+    s3cipid_t sil;		/**< SILENCE_CIPHONE id */
     
-    ph_lc_t ***wpos_ci_lclist;	/** wpos_ci_lclist[wpos][ci] = list of lc for <wpos,ci>.
+    ph_lc_t ***wpos_ci_lclist;	/**< wpos_ci_lclist[wpos][ci] = list of lc for <wpos,ci>.
 				   wpos_ci_lclist[wpos][ci][lc].rclist = list of rc for
 				   <wpos,ci,lc>.  Only entries for the known triphones
 				   are created to conserve space.
 				   (NOTE: FOR INTERNAL USE ONLY.) */
+  
+  s3senid_t *st2senmap; /**< A mapping from State to senone. Only used
+			    in sphinx 3.0 HACK!, In general, there is
+			    only need for either one of st2senmap or
+			    sseq. 
+			 */
 } mdef_t;
 
   /** Access macros; not meant for arbitrary use */
