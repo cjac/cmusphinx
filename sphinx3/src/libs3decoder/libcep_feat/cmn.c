@@ -45,9 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  19:28:00  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.11  2006/02/22  23:43:55  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
  * 
+ * Revision 1.10.4.2  2005/10/17 04:45:57  arthchan2003
+ * Free stuffs in cmn and feat corectly.
+ *
+ * Revision 1.10.4.1  2005/07/05 06:25:08  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.10  2005/06/21 19:28:00  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -71,6 +80,7 @@
 cmn_t* cmn_init()
 {
   cmn_t *cmn;
+  cmn=NULL;
   cmn=(cmn_t*)ckd_calloc (1, sizeof (cmn_t));
   cmn->cmn_mean=NULL;
   cmn->cmn_var=NULL;
@@ -80,16 +90,15 @@ cmn_t* cmn_init()
   return cmn;
 }
 
+
 void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
 {
     float32 *mfcp;
     float32 t;
     int32 i, f;
-    float32 *cmn_mean;
     float32 *cmn_var;
 
     assert(mfc!=NULL);
-    cmn_mean=cmn->cmn_mean;
     cmn_var=cmn->cmn_var;
 
     /* assert ((n_frame > 0) && (veclen > 0)); */
@@ -98,26 +107,26 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
         return;
     }
     
-    if (cmn_mean == NULL)
-	cmn_mean = (float32 *) ckd_calloc (veclen, sizeof (float32));
+    if (cmn->cmn_mean == NULL)
+	cmn->cmn_mean = (float32 *) ckd_calloc (veclen, sizeof (float32));
 
     /* Find mean cep vector for this utterance */
     for (i = 0; i < veclen; i++)
-      cmn_mean[i] = 0.0;
+      cmn->cmn_mean[i] = 0.0;
     for (f = 0; f < n_frame; f++) {
 	mfcp = mfc[f];
 	for (i = 0; i < veclen; i++)
-	    cmn_mean[i] += mfcp[i];
+	    cmn->cmn_mean[i] += mfcp[i];
     }
     for (i = 0; i < veclen; i++)
-	cmn_mean[i] /= n_frame;
+	cmn->cmn_mean[i] /= n_frame;
     
     if (! varnorm) {
 	/* Subtract mean from each cep vector */
 	for (f = 0; f < n_frame; f++) {
 	    mfcp = mfc[f];
 	    for (i = 0; i < veclen; i++)
-		mfcp[i] -= cmn_mean[i];
+		mfcp[i] -= cmn->cmn_mean[i];
 	}
     } else {
 	/* Scale cep vectors to have unit variance along each dimension, and subtract means */
@@ -131,7 +140,7 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
     	    mfcp = mfc[f];
 	    
 	    for (i = 0; i < veclen; i++) {
-                t = mfcp[i] - cmn_mean[i];
+                t = mfcp[i] - cmn->cmn_mean[i];
                 cmn_var[i] += t * t;
             }
         }
@@ -141,7 +150,7 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
         for (f = 0; f < n_frame; f++) {
 	    mfcp = mfc[f];
 	    for (i = 0; i < veclen; i++)
-	        mfcp[i] = (mfcp[i] - cmn_mean[i]) * cmn_var[i];
+	        mfcp[i] = (mfcp[i] - cmn->cmn_mean[i]) * cmn_var[i];
         }
     }
 }
@@ -226,8 +235,16 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
  */
 void cmn_free (cmn_t *cmn)
 {
-  if(cmn->cmn_var)
-  ckd_free ((void *) cmn->cmn_var);
-  if(cmn->cmn_mean)
-  ckd_free ((void *) cmn->cmn_mean);
+  if(cmn!=NULL){
+    if(cmn->cmn_var)
+      ckd_free ((void *) cmn->cmn_var);
+
+    if(cmn->cmn_mean)
+      ckd_free ((void *) cmn->cmn_mean);
+
+    if(cmn->cur_mean)
+      ckd_free ((void *) cmn->cur_mean);
+    
+    ckd_free((void*) cmn);
+  }
 }
