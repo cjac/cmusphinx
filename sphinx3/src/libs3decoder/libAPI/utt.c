@@ -42,11 +42,23 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.27  2005/06/22  02:54:55  arthchan2003
+ * Revision 1.28  2006/02/22  22:46:51  arthchan2003
+ * Merged from branch: SPHINX3_5_2_RCI_IRII: Change prototypes of utt_decode, this allow utterance-base resource (lm, mllr, file id) allocation to be carried out.
+ * 
+ * Revision 1.27.4.3  2005/09/26 02:19:06  arthchan2003
+ * 1, Forced exit when the decoder cannot find a file, 2, fixed dox-doc.
+ *
+ * Revision 1.27.4.2  2005/09/25 18:57:15  arthchan2003
+ * Changed srch_utt_decode_blk from a FATAL to an ERROR. This corresponds to the problem of putting history pointer to the vithistory routine.
+ *
+ * Revision 1.27.4.1  2005/07/27 23:16:26  arthchan2003
+ * 1, Fixed dox-doc, 2, Move set_lm and setmllr to utt_decode.
+ *
+ * Revision 1.27  2005/06/22 02:54:55  arthchan2003
  * Log. hand the implementation of utt_begin, utt_decode and utt_end to
  * srch, utt.c now only maintain a wrapper for search operation. In
  * future, I expect it to become the prototype of batch mode API of search.
- * 
+ *
  * Revision 1.9  2005/05/04 05:15:25  archan
  * reverted the last change, seems to be not working because of compilation issue. Try not to deal with it now.
  *
@@ -92,7 +104,6 @@
 #include "logs3.h"
 #include "srch.h"
 
-#define COMPUTE_HEURISTIC 1
 /*
  * Begin search at bigrams of <s>, backing off to unigrams; and fillers. 
  * Update kb->lextree_next_active with the list of active lextrees.
@@ -107,7 +118,7 @@ void utt_end (kb_t *kb)
   srch_utt_end((srch_t*) kb->srch);
 }
 
-void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
+void utt_decode (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
   kb_t *kb;
   kbcore_t *kbcore;
@@ -125,16 +136,24 @@ void utt_decode (void *data, char *uttfile, int32 sf, int32 ef, char *uttid)
 
   
   /* Read mfc file and build feature vectors for entire utterance */
-  total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), uttfile, 
-				cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
-				sf, ef, kb->feat, S3_MAX_FRAMES);
+  if((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, 
+				    cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
+				    sf, ef, kb->feat, S3_MAX_FRAMES)) == -1)
+    {
+      E_FATAL("Cannot read file %s. Forced exit\n",ur->uttfile);
+    }
+
+  /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
+     could be provided inside the following function. 
+   */
+  if(ur->lmname!=NULL) srch_set_lm((srch_t*)kb->srch,ur->lmname);
+  if(ur->regmatname!=NULL) kb_setmllr(ur->regmatname,ur->cb2mllrname,kb);
 
   utt_begin (kb);
   utt_decode_block(kb->feat,total_frame,&num_decode_frame,kb);
   utt_end (kb);
 
   st->tot_fr += st->nfr;
-  
 }
 
 
@@ -160,8 +179,7 @@ void utt_decode_block (float ***block_feat,  /* Incoming block of featurevecs */
   s->uttid = kb->uttid;
 
   if(srch_utt_decode_blk(s,block_feat,no_frm,curfrm)==SRCH_FAILURE){
-    E_FATAL("srch_utt_decode_blk failed\n");
+    E_ERROR("srch_utt_decode_blk failed. \n");
   }
-
 }
 
