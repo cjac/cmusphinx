@@ -45,10 +45,19 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  18:47:39  arthchan2003
- * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
- * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$ keyword.
+ * Revision 1.10  2006/02/22  16:52:51  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
  * 
+ * Revision 1.9.4.1  2005/07/03 22:54:09  arthchan2003
+ * move st2senmap into mdef_t, it was not properly freed before. \n
+ *
+ * Revision 1.9  2005/06/21 18:47:39  arthchan2003
+ * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$
+ * Revision 1.10  2006/02/22  16:52:51  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ * 
+ *
  * Revision 1.4  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -605,7 +614,7 @@ mdef_t *mdef_init (char *mdeffile, int32 breport)
     int32 n_ci, n_tri, n_map, n;
     char tag[1024], buf[1024];
     s3senid_t **senmap;
-    s3senid_t *tempsenmap;
+    /*    s3senid_t *tempsenmap;*/
 
     s3pid_t p;
     int32 s, ci, cd;
@@ -695,6 +704,8 @@ mdef_t *mdef_init (char *mdeffile, int32 breport)
     senmap = (s3senid_t **) ckd_calloc_2d (m->n_phone, m->n_emit_state, sizeof(s3senid_t));/* freed in mdef_free */
     m->sseq = senmap;	/* TEMPORARY; until it is compressed into just the unique ones */
 
+
+    /**CODE DUPLICATION!*****************************************************************************************************/
     /* Flat decoder-specific */
     /* Allocate space for state->senone map for each phone */
 
@@ -708,9 +719,10 @@ mdef_t *mdef_init (char *mdeffile, int32 breport)
      */
     
     /* ARCHAN, this part should not be used when one of the recognizer is used. */ 
-    tempsenmap = (s3senid_t *) ckd_calloc (m->n_phone * m->n_emit_state, sizeof(s3senid_t));
+    m->st2senmap = (s3senid_t *) ckd_calloc (m->n_phone * m->n_emit_state, sizeof(s3senid_t));
     for (p = 0; p < m->n_phone; p++)
-        m->phone[p].state = tempsenmap + (p * m->n_emit_state);
+        m->phone[p].state = m->st2senmap + (p * m->n_emit_state);
+    /******************************************************************************************************/
 
         
     /* Allocate initial space for <ci,lc,rc,wpos> -> pid mapping */
@@ -921,9 +933,14 @@ void mdef_free (mdef_t *m)
       if (m->ciphone[i].name) 
 	ckd_free    ((void *)m->ciphone[i].name);
     }
-    if (m->ciphone) 
+
+
+    if(m->ciphone) 
       ckd_free    ((void *)m->ciphone);
-    
+
+    if(m->st2senmap)
+      ckd_free ((void*)m->st2senmap);
+
     ckd_free    ((void *)m);
   }
 }
