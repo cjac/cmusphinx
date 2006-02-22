@@ -45,9 +45,17 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/21  19:01:33  arthchan2003
- * Added $ keyword.
+ * Revision 1.12  2006/02/22  17:43:31  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, vector_gautbl_free is not appropiate to be used in this case because it will free a certain piece of memory twice.
+ * 2, Fixed dox-doc.
  * 
+ * Revision 1.11.4.1  2005/10/17 04:44:45  arthchan2003
+ * Free subvq_t correctly.
+ *
+ * Revision 1.11  2005/06/21 19:01:33  arthchan2003
+ * Added $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:47  archan
  * Fixed mistakes in last updates. Add
  *
@@ -573,12 +581,31 @@ void subvq_free (subvq_t *s)
 {
   int i;
 
+
+
   if (s) {
     
     for (i=0;i<s->n_sv;i++) {
-      //      vector_gautbl_free (&(s->gautbl[i]));
-      if (s->featdim[i]) ckd_free ((void *) s->featdim[i]);
+
+      if(i <s->n_sv){
+	/*vector_gautbl_free(&(s->gautbl[i]));*/
+
+	if (s->gautbl[i].mean!=NULL) 
+	  ckd_free_2d((void**)(s->gautbl[i].mean));
+
+	if (s->gautbl[i].var!=NULL) 
+	  ckd_free_2d((void**)(s->gautbl[i].var));
+
+
+	if (s->featdim[i]) ckd_free ((void *) s->featdim[i]);
+      }
     }
+
+    /* This is tricky because this part of memory is actually allocated only once in .
+       subvq_maha_precomp.  So multiple free is actually wrong.*/
+
+    if (s->gautbl[0].lrd!=NULL) 
+      ckd_free((void*)(s->gautbl[0].lrd));
 
 
     if (s->featdim) 
