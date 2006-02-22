@@ -46,9 +46,12 @@
  * **********************************************
  * HISTORY
  * $Log$
- * Revision 1.2  2006/02/22  16:56:01  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Added ms_mgau.[ch] into the trunk. It is a wrapper of ms_gauden and ms_senone
+ * Revision 1.3  2006/02/22  16:57:15  arthchan2003
+ * Fixed minor dox-doc issue
  * 
+ * Revision 1.2  2006/02/22 16:56:01  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Added ms_mgau.[ch] into the trunk. It is a wrapper of ms_gauden and ms_senone
+ *
  * Revision 1.1.2.4  2005/09/25 18:55:19  arthchan2003
  * Added a flag to turn on and off precomputation.
  *
@@ -105,8 +108,8 @@
    \brief a mapping from gaussian to senone
  */
 typedef struct mgau2sen_s {
-    s3senid_t sen;		/* Senone shared by this mixture Gaussian */
-    struct mgau2sen_s *next;	/* Next entry in list for this mixture Gaussian */
+    s3senid_t sen;		/**< Senone shared by this mixture Gaussian */
+    struct mgau2sen_s *next;	/**< Next entry in list for this mixture Gaussian */
 } mgau2sen_t;
 
 /** \struct ms_mgau_t
@@ -121,7 +124,7 @@ typedef struct {
   int32 topn;    /**< Top-n gaussian will be computed */
 
   /**< Intermediate used in computation */
-  gauden_dist_t ***dist; 
+  gauden_dist_t ***dist;  
   int8 *mgau_active;
 
 } ms_mgau_model_t;  
@@ -157,9 +160,9 @@ int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 
 int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
 		     const char *mllrfile, /**< The MLLR file name */
-		     const char *cb2mllrfile, /** The codebook to MLLR file name */
+		     const char *cb2mllrfile, /**< The codebook to MLLR file name */
 		     feat_t* fcb,            /**< FCB object */
-		     mdef_t *mdef            /** A model definition */
+		     mdef_t *mdef            /**< A model definition */
 		     );
 
 
