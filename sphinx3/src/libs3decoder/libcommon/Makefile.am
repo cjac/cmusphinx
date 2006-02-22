@@ -7,6 +7,7 @@ libcommon_la_LDFLAGS = -version-info 0:4:0
 libcommon_la_SOURCES = \
 	bio.c \
 	corpus.c \
+	encoding.c \
 	logs3.c \
 	misc.c \
 	stat.c \
@@ -15,11 +16,13 @@ libcommon_la_SOURCES = \
 pkginclude_HEADERS = \
 	bio.h \
 	corpus.h \
+	encoding.h \
 	logs3.h \
 	misc.h \
 	stat.h \
 	vector.h \
-	s3types.h 
+	s3types.h \
+	cmdln_macro.h
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \
