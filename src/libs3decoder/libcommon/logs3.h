@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  20:46:54  arthchan2003
- * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ * Revision 1.10  2006/02/22  20:31:53  arthchan2003
+ * Add clarification comment on logs3.h
  * 
+ * Revision 1.9.4.1  2006/01/16 19:51:19  arthchan2003
+ * Added a function to convert Sphinx 3 log to log 10.
+ *
+ * Revision 1.9  2005/06/21 20:46:54  arthchan2003
+ * 1, Added a report flag in logs3_init, 2, Fixed doxygen documentation, 3, Add the $ keyword.
+ *
  * Revision 1.6  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -119,6 +125,10 @@ extern "C" {
   float64 logs3_to_log (int32 logs3p    /**< A number in log s3 domain*/
 		      );
 
+  /** Given logs3(p), return log10(p) */
+  float64 logs3_to_log10 (int32 logs3p    /**< A number in log s3 domain*/
+			  );
+
   /** Given logs3(p), return p */
   float64 logs3_to_p (int32 logs3p  /**< A number in log s3 domain*/
 		      );
@@ -133,6 +143,12 @@ extern "C" {
 
   /** Report the parameters for s3 log table */
   void logs3_report();
+  
+  /** Return the base of s3. */
+  float64 logs3_base();
+  
+  /** Compute log 10 in base of s3 */
+  float64 logs3_10base(); 
 
 #ifdef __cplusplus
 }
