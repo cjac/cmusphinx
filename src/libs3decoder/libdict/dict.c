@@ -45,9 +45,29 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  21:04:36  arthchan2003
- * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * Revision 1.6  2006/02/22  20:55:06  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 
+ * 1, Added Letter-to-sound LTS rule, dict_init will only specify
+ * d->lts_rules to be true if the useLTS is specified.  Only if
+ * d->lts_rules is specified, the LTS logic will be used. The code safe
+ * guarded the case when a phone in mdef doesn't appear in LTS, in that
+ * case, the code will force exit.
+ * 
+ * 2, The LTS logic is only used as a reserved measure.  By default, it
+ * is not turned on.  See also the comment in kbcore.c and the default
+ * parameters in revision 1.3 cmdln_macro.h . We added it because we have
+ * this functionality in SphinxTrain.
+ * 
+ * Revision 1.5.4.2  2006/01/16 19:53:17  arthchan2003
+ * Changed the option name from -ltsoov to -lts_mismatch
+ *
+ * Revision 1.5.4.1  2005/09/25 19:12:09  arthchan2003
+ * Added optional LTS support for the dictionary.
+ *
+ * Revision 1.5  2005/06/21 21:04:36  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ *
  * Revision 1.5  2005/06/19 03:58:16  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -80,6 +100,7 @@
 #define DEFAULT_NUM_PHONE	(MAX_S3CIPID+1)
 
 
+extern const char * const cmu6_lts_phone_table[];
 static s3cipid_t dict_ciphone_id (dict_t *d, char *str)
 {
     int32 id;
@@ -177,6 +198,8 @@ static int32 dict_read (FILE *fp, dict_t *d)
     int32 lineno, nwd;
     s3wid_t w;
     int32 i, maxwd;
+    s3cipid_t ci;
+    int32 ph;
     
     maxwd = 4092;
     wptr = (char **) ckd_calloc (maxwd, sizeof(char *)); /* Freed below */
@@ -194,7 +217,7 @@ static int32 dict_read (FILE *fp, dict_t *d)
 	    continue;
 	/* wptr[0] is the word-string and wptr[1..nwd-1] the pronunciation sequence */
 	if (nwd == 1) {
-	    E_ERROR("Line %d: No pronunciation for word %s; ignored\n", lineno, wptr[0]);
+ 	    E_ERROR("Line %d: No pronunciation for word %s; ignored\n", lineno, wptr[0]);
 	    continue;
 	}
 	
@@ -216,6 +239,31 @@ static int32 dict_read (FILE *fp, dict_t *d)
 	}
     }
 
+
+    if(d->lts_rules){
+
+#if 1 /* Until we allow user to put in a mapping of the phoneset from LTS to the phoneset from mdef, 
+	 The checking will intrusively stop the recognizer.  */
+
+      for(ci=0;ci<mdef_n_ciphone(d->mdef);ci++){
+
+	if(!mdef_is_fillerphone(d->mdef,ci)){
+	  for(ph=0;cmu6_lts_phone_table[ph]!=NULL;ph++){
+
+	  /*	    E_INFO("%s %s\n",cmu6_lts_phone_table[ph],mdef_ciphone_str(d->mdef,ci));*/
+	    if(!strcmp(cmu6_lts_phone_table[ph],mdef_ciphone_str(d->mdef,ci)))
+	      break;
+	  }
+	  if(cmu6_lts_phone_table[ph]==NULL){
+	    E_FATAL("A phone in the model definition doesn't appear in the letter to sound
+	           rules. \n This is case we don't recommend user to
+	           use the built-in LTS. \n Please kindly turn off
+	           -lts_mismatch\n");
+	  }
+	}
+      }
+#endif
+    }
     ckd_free (wptr);
     
     return 0;
@@ -304,7 +352,7 @@ static int32 dict_build_comp (dict_t *d,
 }
 
 
-dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep, int breport)
+dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep, int useLTS, int breport)
 {
     FILE *fp, *fp2;
     int32 n ;
@@ -366,6 +414,11 @@ dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep
 
     /* Initialize with no compound words */
     d->comp_head = NULL;
+
+    d->lts_rules=NULL;
+    if(useLTS)
+      d->lts_rules=(lts_t*)&(cmu6_lts_rules);
+    
     
     /* Digest main dictionary file */
     E_INFO("Reading main dictionary: %s\n", dictfile);
@@ -414,6 +467,8 @@ dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep
 	n = dict_build_comp (d, comp_sep);
 	E_INFO("%d compound words\n", n);
     }
+
+
     
     return d;
 }

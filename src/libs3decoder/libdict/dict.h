@@ -45,9 +45,35 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  21:04:36  arthchan2003
- * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ * Revision 1.10  2006/02/22  20:55:06  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 
+ * 1, Added Letter-to-sound LTS rule, dict_init will only specify
+ * d->lts_rules to be true if the useLTS is specified.  Only if
+ * d->lts_rules is specified, the LTS logic will be used. The code safe
+ * guarded the case when a phone in mdef doesn't appear in LTS, in that
+ * case, the code will force exit.
+ * 
+ * 2, The LTS logic is only used as a reserved measure.  By default, it
+ * is not turned on.  See also the comment in kbcore.c and the default
+ * parameters in revision 1.3 cmdln_macro.h . We added it because we have
+ * this functionality in SphinxTrain.
+ * 
+ * Revision 1.9.4.4  2005/10/07 18:58:04  arthchan2003
+ * Added macro for getting second last phone for a word.
+ *
+ * Revision 1.9.4.3  2005/09/25 19:12:09  arthchan2003
+ * Added optional LTS support for the dictionary.
+ *
+ * Revision 1.9.4.2  2005/09/18 01:15:45  arthchan2003
+ * Add one doxy-doc in dict.h
+ *
+ * Revision 1.9.4.1  2005/07/05 06:55:26  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.9  2005/06/21 21:04:36  arthchan2003
+ * 1, Introduced a reporting routine. 2, Fixed doyxgen documentation, 3, Added  keyword.
+ *
  * Revision 1.5  2005/06/13 04:02:57  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -80,41 +106,53 @@
  */
 #include <s3types.h>
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
+#include "lts.h" 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /** 
+      \struct dictword_t
+      \brief a structure for one dictionary word. 
+   */
 typedef struct {
-    char *word;		/** Ascii word string */
-    s3cipid_t *ciphone;	/** Pronunciation */
-    int32 pronlen;	/** Pronunciation length */
-    s3wid_t alt;	/** Next alternative pronunciation id, NOT_S3WID if none */
-    s3wid_t basewid;	/** Base pronunciation id */
-    int32 n_comp;	/** If this is a compound word, no. of component words; else 0.
+    char *word;		/**< Ascii word string */
+    s3cipid_t *ciphone;	/**< Pronunciation */
+    int32 pronlen;	/**< Pronunciation length */
+    s3wid_t alt;	/**< Next alternative pronunciation id, NOT_S3WID if none */
+    s3wid_t basewid;	/**< Base pronunciation id */
+    int32 n_comp;	/**< If this is a compound word, no. of component words; else 0.
 			   (Compound words are concatenations of other words, such as
 			   GOING_TO, whose pronunciation is quite different from the
 			   mere concatenation of their components.) */
-    s3wid_t *comp;	/** If n_comp > 0, its components */
+    s3wid_t *comp;	/**< If n_comp > 0, its components */
 } dictword_t;
 
+  /** 
+      \struct dict_t
+      \brief a structure for a dictionary. 
+   */
+
 typedef struct {
-    mdef_t *mdef;	/** Model definition used for phone IDs; NULL if none used */
-    hash_table_t *pht;	/** Used only if CI phones handled internally (mdef == NULL) */
-    char **ciphone_str;	/** Used only if CI phones handled internally (mdef == NULL) */
-    int32 n_ciphone;	/** Used only if CI phones handled internally (mdef == NULL) */
-    dictword_t *word;	/** Array of entries in dictionary */
-    hash_table_t *ht;	/** Hash table for mapping word strings to word ids */
-    int32 max_words;	/** #Entries allocated in dict, including empty slots */
-    int32 n_word;	/** #Occupied entries in dict; ie, excluding empty slots */
-    int32 filler_start;	/** First filler word id (read from filler dict) */
-    int32 filler_end;	/** Last filler word id (read from filler dict) */
-    s3wid_t *comp_head;	/** comp_head[w] = wid of a compound word with 1st component = w;
+    mdef_t *mdef;	/**< Model definition used for phone IDs; NULL if none used */
+    hash_table_t *pht;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    char **ciphone_str;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    int32 n_ciphone;	/**< Used only if CI phones handled internally (mdef == NULL) */
+    dictword_t *word;	/**< Array of entries in dictionary */
+    hash_table_t *ht;	/**< Hash table for mapping word strings to word ids */
+    int32 max_words;	/**< #Entries allocated in dict, including empty slots */
+    int32 n_word;	/**< #Occupied entries in dict; ie, excluding empty slots */
+    int32 filler_start;	/**< First filler word id (read from filler dict) */
+    int32 filler_end;	/**< Last filler word id (read from filler dict) */
+    s3wid_t *comp_head;	/**< comp_head[w] = wid of a compound word with 1st component = w;
 			   comp_head[comp_head[w]] = next such compound word, and so on,
 			   until we hit BAD_S3WID.  NULL if no compound word in dict. */
-    s3wid_t startwid;	/** FOR INTERNAL-USE ONLY */
-    s3wid_t finishwid;	/** FOR INTERNAL-USE ONLY */
-    s3wid_t silwid;	/** FOR INTERNAL-USE ONLY */
+    s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */
+    s3wid_t finishwid;	/**< FOR INTERNAL-USE ONLY */
+    s3wid_t silwid;	/**< FOR INTERNAL-USE ONLY */
+  
+  lts_t *lts_rules;     /**< The LTS rules */
 } dict_t;
 
 
@@ -129,6 +167,7 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 		   char *fillerfile,	/**< Filler dictionary file */
 		   char comp_sep,	/**< Compound word separator character, or 0 if
 					   no compound words */
+		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
 		   );
 
@@ -175,14 +214,15 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 #define dict_basewid(d,w)	((d)->word[w].basewid)
 #define dict_wordstr(d,w)	((d)->word[w].word)
 #define dict_nextalt(d,w)	((d)->word[w].alt)
-#define dict_pronlen(d,w)	((d)->word[w].pronlen)
-#define dict_pron(d,w,p)	((d)->word[w].ciphone[p])
+#define dict_pronlen(d,w)	((d)->word[w].pronlen) 
+#define dict_pron(d,w,p)	((d)->word[w].ciphone[p]) /**< The CI phones of the word w at position p */
 #define dict_filler_start(d)	((d)->filler_start)
 #define dict_filler_end(d)	((d)->filler_end)
 #define dict_startwid(d)	((d)->startwid)
 #define dict_finishwid(d)	((d)->finishwid)
 #define dict_silwid(d)		((d)->silwid)
 #define dict_first_phone(d,w)	((d)->word[w].ciphone[0])
+#define dict_second_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 2])
 #define dict_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 1])
 
 
