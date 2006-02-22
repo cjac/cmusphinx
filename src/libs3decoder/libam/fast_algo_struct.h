@@ -45,9 +45,28 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/30  13:08:45  egouvea
- * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
+ * Revision 1.10  2006/02/22  16:39:43  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Initialize beam->n_ciphone properly, 2, use ckd_free instead of free, use float64 for subvqbeam and cipbeam.  3, Add a proper free function for fast_gmm_free
  * 
+ *
+ * Revision 1.7.4.5  2005/11/17 06:07:07  arthchan2003
+ * Added fast_gmm_free in the header.
+ *
+ * Revision 1.7.4.4  2005/07/05 21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ *
+ * Revision 1.7.4.3  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.7.4.2  2005/07/04 02:44:25  arthchan2003
+ * Changed float32 to float64 for ci_pbeam and svqbeam. Code now compiled.
+ *
+ * Revision 1.7.4.1  2005/06/27 05:22:19  arthchan2003
+ * Merged from the HEAD.
+ *
+ * Revision 1.9  2005/06/30 13:08:45  egouvea
+ * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
+ *
  * Revision 1.8  2005/06/22 08:00:09  arthchan2003
  * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
  *
@@ -99,18 +118,26 @@
 #include <mdef.h>
 #include <ascr.h>
 
-/** \file fast_algo_struct.h
- * \Brief wrappers of parameters for fast search. 
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+  /** 
+   *  \struct beam_t fast_algo_struct.h "fast_algo_struct.h"
+   *  \brief Structure that contains all beam parameters for beam pruning in Viterbi algorithm. 
+   *  
+   *  This function include the definition of beam in multiple level of pruning in Viterbi
+   *  algorithm.  That includes hmm (state-level), ptrans (phone-level), word (word-level). 
+   *  ptranskip is used to specify how often in the Viterbi algorithm that phoneme level word 
+   *  beam will be replaced by a word-level beam. 
+   */
 
   /**
  * Structure containing various beamwidth parameters.  All logs3 values; -infinite is widest,
  * 0 is narrowest.
  */
+
   typedef struct {
     int32 hmm;		   /**< For selecting active HMMs, relative to best */
     int32 ptrans;	   /**< For determining which HMMs transition to their successors */
@@ -130,6 +157,11 @@ extern "C" {
 
   } beam_t;
 
+  /** 
+   *  \struct pl_t 
+   *  \brief Structure that contains all parameters for phoneme lookahead 
+   */
+
   typedef struct{
     int32 pheurtype;       /**< For differnt phoneme lookahead heuristic type. */
     int32 pl_beam;         /**< Phoneme lookahead beams */
@@ -142,9 +174,10 @@ extern "C" {
   }pl_t;
 
   /**
- * Structure containing various histogram pruning parameters.  All in
- * integers.
- */
+   *  \struct histprune_t 
+   * \brief Structure containing various histogram pruning parameters and internal storage  All in integers.
+   * 
+   */
 
   typedef struct {
     int32 maxwpf;          /**< Max words per frame*/
@@ -155,6 +188,11 @@ extern "C" {
     int32 *hmm_hist;	   /**< Histogram: #frames in which a given no. of HMMs are active */
     
   } histprune_t;
+
+  /**
+   * \struct downsampling_t 
+   * \brief Structure containing various parameters for downsampling.
+   */
 
   typedef struct{
     int32 ds_ratio;        /**< Ratio of down-sampling the frame computation */
@@ -172,6 +210,10 @@ extern "C" {
 
   } downsampling_t;
 
+  /**
+   * \struct gmm_select_t
+   * \brief Structure that contains all parameters for CI-based GMM selection.
+   */
   typedef struct{
     int32 ci_pbeam;        /**< The beam which prune out unnesseary parent CI phones in 
 			      CI-based GMM selection*/
@@ -189,11 +231,20 @@ extern "C" {
      */
   } gmm_select_t;
 
+  /**
+   * \struct gau_select_t
+   * \brief Structure that contains all parameters related to Gaussian selection.
+   */
+
   typedef struct{
     int32 subvqbeam;	   /**< For selecting active mixture components based on subvq scores */
     int32 rec_bstcid;      /**< Best codeword ID for Gaussian Selection Map. */
   } gau_select_t;
 
+  /**
+   * \struct fast_gmm_t
+   * \brief Structure that contains all parameter related to 4-Level Fast GMM computation. 
+   */
   typedef struct{
     downsampling_t* downs; /**< All structure for down-sampling */
     gmm_select_t* gmms;    /**< All structure for GMM-level of selection */
@@ -283,6 +334,11 @@ extern "C" {
   /** report the content of the fast_gmm_t data structure*/
   void fast_gmm_report(fast_gmm_t* f  /**< Input: the fast GMM computation structure */
 		       );
+
+  /** Free the fast_gmm_t structure */
+  void fast_gmm_free (fast_gmm_t *fg /**< Input: structure to free*/
+		      );
+  
 
   /**
    * Create and initialize the pl_t data structure 
