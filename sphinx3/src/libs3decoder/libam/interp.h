@@ -45,9 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  18:39:04  arthchan2003
- * Log. 1, Fixed doxygen documentation, 2, Added $Log$ keyword
+ * Revision 1.6  2006/02/22  16:48:30  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed issues in , 2, Fixed issues of dox-doc
  * 
+ * Revision 1.5.4.1  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.5  2005/06/21 18:39:04  arthchan2003
+ * Log. 1, Fixed doxygen documentation, 2, Added $Log$
+ * Revision 1.6  2006/02/22  16:48:30  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed issues in , 2, Fixed issues of dox-doc
+ * 
+ *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -77,14 +86,21 @@ extern "C" {
 #endif
 
   /**
-   * Wrapper structure of CD/CI interpolation
+   * \struct interp_t
+   * \brief Wrapper structure of CD/CI interpolation
    */
 typedef struct {
-    int32 n_sen;	/* #senones */
+    int32 n_sen;	/**< #senones */
+
+  /**
+   * \struct interp_wt_s
+   * \brief Quick and Dirty wrapper of the CD and CI weight 
+   */
+
     struct interp_wt_s {
-	int32 cd;	/* logs3(CD senone weight) */
-	int32 ci;	/* logs3(1 - cd) */
-    } *wt;		/* wt[i] = interpolation weight for senone i */
+	int32 cd;	/**< logs3(CD senone weight) */
+	int32 ci;	/**< logs3(1 - cd) */
+    } *wt;		/**< wt[i] = interpolation weight for senone i */
 } interp_t;
 
 
