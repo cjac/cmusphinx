@@ -1,5 +1,40 @@
+/* ====================================================================
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
+ * reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer. 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ *
+ * This work was supported in part by funding from the Defense Advanced 
+ * Research Projects Agency and the National Science Foundation of the 
+ * United States of America, and the CMU Sphinx Speech Consortium.
+ *
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * ====================================================================
+ *
+ */
 /*
- * mllr.h -- Application of MLLR regression matrices to codebook means
+ * ms_mllr.h -- Application of MLLR regression matrices to codebook means
  * 
  * **********************************************
  * CMU ARPA Speech Project
@@ -10,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/21  18:56:13  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ * Revision 1.7  2006/02/22  17:21:35  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Added ms_mllr.[ch]
  * 
+ * Revision 1.6.4.1  2005/07/20 19:39:01  arthchan2003
+ * Added licences in ms_* series of code.
+ *
+ * Revision 1.6  2005/06/21 18:56:13  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added $ keyword.
+ *
  * Revision 1.6  2005/06/19 04:50:02  archan
  * Sphinx3 to s3.generic: allow multiple classes for MLLR
  *
