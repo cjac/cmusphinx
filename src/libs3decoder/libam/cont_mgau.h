@@ -45,26 +45,35 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.14  2005/07/04  20:57:53  dhdfu
+ * Revision 1.15  2006/02/22  16:32:40  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
+ * 
+ *
+ * Revision 1.13.4.3  2005/07/05 21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ *
+ * Revision 1.13.4.2  2005/07/05 06:48:54  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.14  2005/07/04 20:57:53  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
  * crash on Alphas.
- * 
+ *
  * Actually it kind of duplicates the existing GMM computation functions,
  * but it is slightly different (see the comment in classify.c).  I don't
  * know the rationale for this.
- * 
+ *
+ * Revision 1.13.4.1  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ *
  * Revision 1.13  2005/06/21 18:06:45  arthchan2003
+ *
  * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
- * Revision 1.14  2005/07/04  20:57:53  dhdfu
- * Finally remove the "temporary hack" for the endpointer, and do
- * everything in logs3 domain.  Should make it faster and less likely to
- * crash on Alphas.
+ * Revision 1.15  2006/02/22  16:32:40  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
  * 
- * Actually it kind of duplicates the existing GMM computation functions,
- * but it is slightly different (see the comment in classify.c).  I don't
- * know the rationale for this.
- *  keyword.
  *
  * Revision 1.4  2005/06/13 04:02:55  archan
  * Fixed most doxygen-style documentation under libs3decoder.
@@ -144,7 +153,8 @@ extern "C" {
  */
 
   /**
-   * A single mixture-Gaussian model for one senone (see above comment).
+   * \struct mgau_t
+   * \brief A single mixture-Gaussian model for one senone (see above comment).
    */
 typedef struct {
   int32 n_comp;	/**< #Component Gaussians in this mixture.  NOTE: May be 0 (for the
@@ -180,8 +190,9 @@ typedef struct {
 
 
   /**
- * The set of mixture-Gaussians in an acoustic model.
- */
+   * \struct mgau_model_t
+   * \brief The set of mixture-Gaussians in an acoustic model used in Sphinx 3.X family of tool
+   */
 typedef struct {
   int32 n_mgau;	/**< #Mixture Gaussians in this model (i.e., #senones) */
   int32 max_comp;	/**< Max components in any mixture */
@@ -274,7 +285,9 @@ mgau_init (char *meanfile,	/**< In: File containing means of mixture gaussians *
    * Floor any variance vector that is non-zero (vector).
    * @return No. of variance VALUES floored.
    */
-int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor);
+  int32 mgau_var_nzvec_floor (mgau_model_t *g,  /**< In: A mixture of Gaussian components */
+			      float64 floor /**< In: The floor value */
+			    );
 
 
   /**

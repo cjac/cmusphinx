@@ -45,26 +45,46 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.18  2005/07/04  20:57:53  dhdfu
+ * Revision 1.19  2006/02/22  16:31:10  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
+ * 
+ *
+ *
+ * Revision 1.17.4.5  2005/09/07 23:25:10  arthchan2003
+ * 1, Behavior changes of cont_mgau, instead of remove Gaussian with zero variance vector before flooring, now remove Gaussian with zero mean and variance before flooring. Notice that this is not yet synchronize with ms_mgau. 2, Added warning message in multi-stream gaussian distribution.
+ *
+ * Revision 1.17.4.4  2005/08/02 21:06:33  arthchan2003
+ * Change options such that .s3cont. works as well.
+ *
+ * Revision 1.17.4.3  2005/07/20 19:39:43  arthchan2003
+ * Fix comments in cont_mgau.c
+ *
+ * Revision 1.17.4.2  2005/07/05 21:28:57  arthchan2003
+ * 1, Merged from HEAD. 2, Remove redundant keyword in cont_mgau.
+ *
+ * Revision 1.17.4.1  2005/07/05 06:48:54  arthchan2003
+ * Merged from HEAD.
+ *
+ * Revision 1.18  2005/07/04 20:57:53  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
  * crash on Alphas.
- * 
+ *
  * Actually it kind of duplicates the existing GMM computation functions,
  * but it is slightly different (see the comment in classify.c).  I don't
  * know the rationale for this.
- * 
+ *
+ *
+ * Actually it kind of duplicates the existing GMM computation functions,
+ * but it is slightly different (see the comment in classify.c).  I don't
+ * know the rationale for this.
+ *
  * Revision 1.17  2005/06/21 18:06:45  arthchan2003
+ *
  * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
- * Revision 1.18  2005/07/04  20:57:53  dhdfu
- * Finally remove the "temporary hack" for the endpointer, and do
- * everything in logs3 domain.  Should make it faster and less likely to
- * crash on Alphas.
+ * Revision 1.19  2006/02/22  16:31:10  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
  * 
- * Actually it kind of duplicates the existing GMM computation functions,
- * but it is slightly different (see the comment in classify.c).  I don't
- * know the rationale for this.
- *  keyword.
  *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
@@ -512,46 +532,66 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 
 
 /**
- * Compact each mixture Gaussian in the given model by removing any uninitialized components.
- * A component is considered to be uninitialized if its variance is the 0 vector.  Compact by
- * copying the data rather than moving pointers.  Otherwise, malloc pointers could get
- * corrupted.
+ * Compact each mixture Gaussian in the given model by removing any
+ * uninitialized components.  A component is considered to be
+ * uninitialized if its variance is the 0 vector and its means is the
+ * 0 vector.  Compact by copying the data rather than moving pointers.
+ * Otherwise, malloc pointers could get corrupted.
+ * 
+ * The past behavior will remove a Gaussian even if just the variance
+ * vector is 0-vector. This can be turned on by changing the #if flag. 
  */
-static void mgau_uninit_compact (mgau_model_t *g)
+
+static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution need to be compacted*/
+				 )
 {
     int32 m, c, c2, n, nm;
+    int32 removal_cond;
     
     if(g->verbose) E_INFO("Removing uninitialized Gaussian densities\n");
     
     n = 0;
     nm = 0;
     for (m = 0; m < mgau_n_mgau(g); m++) {
-	for (c = 0, c2 = 0; c < mgau_n_comp(g,m); c++) {
-	    if (! vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))) {
-		if (c2 != c) {
-		    memcpy (mgau_mean(g,m,c2), mgau_mean(g,m,c),
-			    mgau_veclen(g) * sizeof(float32));
-		    memcpy (mgau_var(g,m,c2), mgau_var(g,m,c),
-			    mgau_veclen(g) * sizeof(float32));
-		    
-		    if(g->comp_type==MIX_INT_FLOAT_COMP)
-		      mgau_mixw(g,m,c2) = mgau_mixw(g,m,c);
-		    else if(g->comp_type==FULL_FLOAT_COMP)
-		      mgau_mixw_f(g,m,c2) = mgau_mixw_f(g,m,c);
-		    else
-		      E_FATAL("Unsupported computation type %d \n",g->comp_type);
-		}
-		c2++;
-	    } else {
-		n++;
+      for (c = 0, c2 = 0; c < mgau_n_comp(g,m); c++) {
+
+	if(cmd_ln_int32("-remove_zero_var_gau"))
+	  removal_cond= ! vector_is_zero (mgau_var(g,m,c), mgau_veclen(g));
+	else
+	  removal_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
+			    vector_is_zero (mgau_mean(g,m,c), mgau_veclen(g)));
+
+	if (removal_cond) { 
+	  /* ARCHAN: The other loop will make sure flooring is done
+	     for all Gaussians even they have zero variance
+	     vectors. */
+
+	  if (c2 != c) {
+	    memcpy (mgau_mean(g,m,c2), mgau_mean(g,m,c),
+		    mgau_veclen(g) * sizeof(float32));
+	    memcpy (mgau_var(g,m,c2), mgau_var(g,m,c),
+		    mgau_veclen(g) * sizeof(float32));
+	      
+	    if(g->comp_type==MIX_INT_FLOAT_COMP)
+	      mgau_mixw(g,m,c2) = mgau_mixw(g,m,c);
+	    else if(g->comp_type==FULL_FLOAT_COMP)
+	      mgau_mixw_f(g,m,c2) = mgau_mixw_f(g,m,c);
+	    else
+	      E_FATAL("Unsupported computation type %d \n",g->comp_type);
 	    }
+	  c2++;
+	  
+	} else {
+	  n++;
 	}
-	mgau_n_comp(g,m) = c2;
-	if (c2 == 0) {
-	    fprintf (stderr, " %d", m);
-	    fflush (stderr);
-	    nm++;
-	}
+
+      }
+      mgau_n_comp(g,m) = c2;
+      if (c2 == 0) {
+	fprintf (stderr, " %d", m);
+	fflush (stderr);
+	nm++;
+      }
     }
     if (nm > 0)
 	fprintf (stderr, "\n");
@@ -577,6 +617,11 @@ static void mgau_var_floor (mgau_model_t *g, float64 floor)
     for (c = 0; c < mgau_n_comp(g,m); c++) {
       for (i = 0; i < mgau_veclen(g); i++) {
 	if (g->mgau[m].var[c][i] < floor) {
+
+#if 0
+	  E_INFO("var[i] %f , floor %f n %d m %d, c %d, i %d\n",g->mgau[m].var[c][i],floor,n, m,c,i);
+#endif
+
 	  g->mgau[m].var[c][i] = (float32) floor;
 	  n++;
 	}
@@ -918,3 +963,4 @@ void mgau_free (mgau_model_t *g)
     ckd_free ((void *) g);
   }
 }
+
