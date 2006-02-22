@@ -45,12 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1  2005/06/21  17:59:44  arthchan2003
+ * Revision 1.2  2006/02/22  14:48:13  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Added adapt_set_mllr (Moved from kb)
+ * 
+ * Revision 1.1.4.1  2005/09/18 01:12:31  arthchan2003
+ * Add adapt_set_mllr which is responsible for single stream MLLR switching.
+ *
+ * Revision 1.1  2005/06/21 17:59:44  arthchan2003
  * Log: Implementation and Interface of adapt_am_t, a wrapper of
  * adaptation capabability of Sphinx 3.  It takes the responsibility from
  * kb_t to manage regA, regB and mllr_nclass.  Interfaces are not fully
  * completed. So "pointer" symtom code still appears in kb.c
- * 
+ *
  * Revision 1.5  2005/06/19 19:41:21  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -89,3 +95,53 @@ void adapt_am_free(adapt_am_t* ad)
   }
 }
 
+void adapt_set_mllr(adapt_am_t *ad, mgau_model_t *g, const char *mllrfile, const char* cb2mllrname, mdef_t *mdef)
+{
+  int32 *cb2mllr;
+
+    /* Reread the gaussian mean from the file again */
+    E_INFO("Reloading mean\n");
+
+    /* Read in the mllr matrix */
+    mgau_mean_reload(g,cmd_ln_str("-mean"));
+
+#if MLLR_DEBUG
+    /*This generates huge amount of information */
+    /*    mgau_dump(g,1);*/
+#endif
+
+    mllr_read_regmat(mllrfile,
+		     &(ad->regA),
+		     &(ad->regB),
+		     &(ad->mllr_nclass),
+		     mgau_veclen(g));
+
+    if (cb2mllrname  && strcmp(cb2mllrname, ".1cls.") != 0) {
+      int32 ncb, nmllr;
+
+      cb2mllr_read(cb2mllrname,
+		   &cb2mllr,
+		   &ncb, &nmllr);
+      if (nmllr != ad->mllr_nclass)
+	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+		ncb, ad->mllr_nclass);
+      if (ncb != mdef->n_sen)
+	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+		ncb, mdef->n_sen);
+    }
+    else
+      cb2mllr = NULL;
+
+    /* Transform all the mean vectors */
+
+    mllr_norm_mgau(g,ad->regA,ad->regB,ad->mllr_nclass,cb2mllr);
+    ckd_free(cb2mllr);
+
+#if MLLR_DEBUG
+    /*#if 1*/
+    mllr_dump(ad->regA,ad->regB,mgau_veclen(g),g->mllr_class,cb2mllr);
+    /*This generates huge amount of information */
+    /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
+#endif 
+
+}

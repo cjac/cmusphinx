@@ -45,9 +45,24 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  08:00:07  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.3  2006/02/22  14:48:13  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Added adapt_set_mllr (Moved from kb)
  * 
+ *
+ * Revision 1.1.4.3  2005/09/18 01:12:31  arthchan2003
+ * Add adapt_set_mllr which is responsible for single stream MLLR switching.
+ *
+ * Revision 1.1.4.2  2005/07/05 05:47:59  arthchan2003
+ * Fixed dox-doc. struct level of documentation are included.
+ *
+ * Revision 1.1.4.1  2005/06/27 05:22:19  arthchan2003
+ * Merged from the HEAD.
+ *
+ * Revision 1.2  2005/06/22 08:00:07  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.2  2005/06/22 08:00:07  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.1  2005/06/21 17:59:44  arthchan2003
  * Log: Implementation and Interface of adapt_am_t, a wrapper of
  * adaptation capabability of Sphinx 3.  It takes the responsibility from
@@ -74,6 +89,11 @@
 #define _ADAPT_H_
 
 #include <s3types.h>
+#include <cont_mgau.h>
+#include <mdef.h>
+#include <mllr.h>
+#include <cb2mllr_io.h>
+
 
 #define ADAPTATION_MLLR 0
 
@@ -88,6 +108,9 @@ extern "C" {
 
 /** variables for acoustic model adaptation.  Currently, this really means MLLR */
 
+/** \struct adapt_am_t
+ * \brief A wrapper for all adaptation operations in Sphinx 3.X including MLLR and MAP. 
+ */
 typedef struct {
   char* prevmllrfn; /**< Last MLLR matrix files */
 #if 0
@@ -106,7 +129,16 @@ typedef struct {
   
   /** free adaptor structure */
   void adapt_am_free(adapt_am_t *ad);
+
+  void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
+		      mgau_model_t *g,  /**< Gaussian model object */
+		      const char *mllrfile,  /**< MLLR file name */
+		      const char* cbs2mllr,  /**< CB2MLLR */
+		      mdef_t *mdef /**< MDEF */
+		      );
 #ifdef __cplusplus
+
+
 }
 #endif
 
