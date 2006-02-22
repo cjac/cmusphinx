@@ -45,9 +45,24 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/30  13:08:44  egouvea
- * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
+ * Revision 1.7  2006/02/22  16:39:43  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Initialize beam->n_ciphone properly, 2, use ckd_free instead of free, use float64 for subvqbeam and cipbeam.  3, Add a proper free function for fast_gmm_free
  * 
+ * Revision 1.5.4.4  2005/10/17 04:43:57  arthchan2003
+ * Free fast_gmm_t.
+ *
+ * Revision 1.5.4.3  2005/09/25 19:35:26  arthchan2003
+ * Change realloc to calloc. Could be permanent if we found that there is no need to reallocate the array.
+ *
+ * Revision 1.5.4.2  2005/07/24 01:29:54  arthchan2003
+ * Set #ci phone.
+ *
+ * Revision 1.5.4.1  2005/07/03 22:53:15  arthchan2003
+ * 1, Changed free to ckd_free, 2, Join from HEAD, using float64 instead of float32.
+ *
+ * Revision 1.6  2005/06/30 13:08:44  egouvea
+ * Beams in linear scale have to be float64, since they can be easily defined as < 1e-40
+ *
  * Revision 1.5  2005/06/21 18:26:38  arthchan2003
  * Log. fast_algo_struct.c go through major changes in the gentle
  * refactoring process. It is the location of several wrapper structures
@@ -105,6 +120,7 @@ beam_t *beam_init (float64 hmm, float64 ptr, float64 wd, float64 wdend, int32 pt
     beam->ptranskip=ptranskip;
     beam->bestscore=MAX_NEG_INT32;
     beam->bestwordscore=MAX_NEG_INT32;
+    beam->n_ciphone=n_ciphone;
 
     beam->wordbestscores=(int32*)ckd_calloc(n_ciphone,sizeof(int32));
     beam->wordbestexits=(int32*)ckd_calloc(n_ciphone,sizeof(int32));
@@ -297,7 +313,7 @@ histprune_t *histprune_init (int32 maxhmm,int32 maxhist, int32 maxword, int32 hm
 
   h->hmm_hist_bins= n+1;
 
-  h->hmm_hist = (int32 *) ckd_realloc (h->hmm_hist, h->hmm_hist_bins * sizeof(int32));	
+  h->hmm_hist = (int32 *) ckd_calloc (h->hmm_hist_bins,sizeof(int32));
     
 
   return h;
@@ -336,7 +352,7 @@ void histprune_update_histbinsize(histprune_t *h,
 void histprune_free(histprune_t *h){
   if(h!=NULL){
     if(h->hmm_hist!=NULL){
-      free(h->hmm_hist);
+      ckd_free(h->hmm_hist);
     }
     free(h);
   }
@@ -422,6 +438,28 @@ fast_gmm_t *fast_gmm_init (int32 down_sampling_ratio,
 
   return fg;
 }
+
+void fast_gmm_free (fast_gmm_t *fg)
+{
+  if(fg){
+    if(fg->gmms->ci_occu)
+      ckd_free(fg->gmms->ci_occu);
+    if(fg->gmms->idx)
+      ckd_free(fg->gmms->idx);
+
+    if(fg->gmms)
+      ckd_free(fg->gmms);
+
+    if(fg->gaus)
+      ckd_free(fg->gaus);
+    
+    if(fg->downs)
+      ckd_free(fg->downs);
+    
+  ckd_free(fg);
+  }
+}
+
 
 void fast_gmm_report(fast_gmm_t *f)
 {
