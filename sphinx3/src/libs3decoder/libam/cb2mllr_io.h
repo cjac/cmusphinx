@@ -43,11 +43,15 @@
 
 #include "s3types.h"
 
+/**
+  Read codeword to MLLR class mapping file
+ */
 int
-cb2mllr_read(const char *fn,
-	     int32 **out_cb2mllr,
-	     int32 *out_n_cb,
-	     int32 *out_n_mllr);
+cb2mllr_read(const char *fn, /**< MLLR class mapping file.*/
+	     int32 **out_cb2mllr,  /**< Output CB 2 MLLR */
+	     int32 *out_n_cb,      /**< Number of codebook */
+	     int32 *out_n_mllr     /**< Number of MLLR class */
+	     );
 
 #endif /* S3CB2MLLR_IO_H */ 
 
@@ -56,9 +60,13 @@ cb2mllr_read(const char *fn,
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.5  2005/10/05  00:29:44  dhdfu
- * Silence some largely unimportant signedness warnings.
+ * Revision 1.6  2006/02/22  15:02:47  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Follow Dave's change to make uint32 to int32. 2, Fixed some dox-doc issue.
  * 
+ *
+ * Revision 1.5  2005/10/05 00:29:44  dhdfu
+ * Silence some largely unimportant signedness warnings.
+ *
  * Revision 1.4  2005/06/22 08:05:55  arthchan2003
  * Fixed spelling in doc
  *
