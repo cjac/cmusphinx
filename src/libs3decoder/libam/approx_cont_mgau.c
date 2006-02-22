@@ -46,11 +46,20 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.15  2005/06/21  18:05:12  arthchan2003
+ * Revision 1.16  2006/02/22  14:52:07  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Changed a->sen to a->senscr, it makes applications in the new architecture better.
+ * 
+ * Revision 1.15.4.2  2005/09/25 18:51:50  arthchan2003
+ * Add a FIXME in approx_cont_mgau.c. Yes, sorting is too slow.
+ *
+ * Revision 1.15.4.1  2005/08/02 21:03:02  arthchan2003
+ * Changes sen to senscr, it confuses some applications.
+ *
+ * Revision 1.15  2005/06/21 18:05:12  arthchan2003
  * Log. approx_cont_mgau_frame_eval has interface's changes. ci_senscr,
  * best_score is now wrapped up ascr_t. approx_cont_mgau_ci_eval is now
  * taking care of maxing ci senone score for a frame.
- * 
+ *
  * Revision 1.5  2005/04/20 03:30:57  archan
  * Part of refactoring: move best scores inside approx_cont_mgau.h
  *
@@ -313,6 +322,7 @@ int32 approx_compute_dyn_ci_pbeam(mdef_t* mdef, /**< In: model definition */
      for sorting. How about Chinese then? Hmm. We'll think about that
      later...... */
 
+  /* FIXME : sorting is too slow */
   qsort(idx,mdef->n_ci_sen,sizeof(int32), intcmp);
 
   total=0;
@@ -457,7 +467,7 @@ int32 approx_cont_mgau_frame_eval (kbcore_t *kbc,
 
   sen_active=a->sen_active;
   rec_sen_active=a->rec_sen_active;
-  senscr=a->sen;
+  senscr=a->senscr;
 
   ptmr_start(tm_ovrhd);
   if(gs)  best_cid=gc_compute_closest_cw(gs,feat);
