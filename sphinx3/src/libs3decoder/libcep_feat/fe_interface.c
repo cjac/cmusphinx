@@ -48,9 +48,18 @@
 /* 
  *   HISTORY
  * $Log$
- * Revision 1.21  2005/06/21  20:35:55  arthchan2003
- * Add $ keyword.
+ * Revision 1.22  2006/02/23  03:56:47  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added dithering in the interface layer. Removed some bogus messaged.
  * 
+ * Revision 1.21.4.2  2005/09/18 01:13:33  arthchan2003
+ * Remove unnecessary info.
+ *
+ * Revision 1.21.4.1  2005/07/13 01:48:14  arthchan2003
+ * Set the variable dither in FE.
+ *
+ * Revision 1.21  2005/06/21 20:35:55  arthchan2003
+ * Add $ keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -137,6 +146,7 @@ fe_t *fe_init(param_t const *P)
 	return(NULL);
     }
 
+    FE->dither=P->dither;
     /*** Z.A.B. ***/	
     /*** Initialize the overflow buffers ***/		
     fe_start_utt(FE);
@@ -368,7 +378,7 @@ int32 fe_end_utt(fe_t *FE, float32 *cepvector, int32 *nframes)
   /* if there are any samples left in overflow buffer, pad zeros to
      make a frame and then process that frame */
   
-  E_INFO("%d\n",FE->NUM_OVERFLOW_SAMPS);
+  /*  E_INFO("%d\n",FE->NUM_OVERFLOW_SAMPS);*/
   if ((FE->NUM_OVERFLOW_SAMPS > 0)) { 
     pad_len = FE->FRAME_SIZE - FE->NUM_OVERFLOW_SAMPS;
     memset(FE->OVERFLOW_SAMPS+(FE->NUM_OVERFLOW_SAMPS),0,pad_len*sizeof(int16));
