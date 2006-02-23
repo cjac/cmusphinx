@@ -37,9 +37,22 @@
 /* gmm_wrap.h
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  08:00:09  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.3  2006/02/23  05:38:39  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Added multi-stream GMM computation routine.
  * 
+ *
+ * Revision 1.1.4.3  2005/08/02 21:31:35  arthchan2003
+ * Added interface for 1, doing multi stream gmm computation with/without composite senone. 2, doing gmm computation (ms or ss optimized) with/wihout composite senone.  Haven't tested on the SCHMM on s3.x yet.  I think it will work though.
+ *
+ * Revision 1.1.4.2  2005/07/24 01:35:41  arthchan2003
+ * Add a wrapper for computing senone score without computing composite senone score. Mainly used in mode FSG now
+ *
+ * Revision 1.1.4.1  2005/06/27 05:30:25  arthchan2003
+ * Merge from the tip of the trunk
+ *
+ * Revision 1.2  2005/06/22 08:00:09  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.1  2005/06/21 22:48:14  arthchan2003
  * A wrapper that provide the function pointer interface of approx_cont_mgau_ci_eval  and approx_cont_mgau_frame_eval.  They are used in srch_gmm_compute_lv1  and srch_gmm_compute_lv2 respectively.  This will also be the home of other gmm computation routine. (Say the s3.0 version of GMM computation)
  *
@@ -60,11 +73,82 @@
 int32 approx_ci_gmm_compute(void *srch,  /**< a pointer to a srch_t */
 			    float32 *feat,  /**< feature vector */
 			    int32 cache_idx, /**< cache index */
-			    int32 wav_idx    /**< wave index */
+			    int32 wav_idx    /**< frame index */
 			    );
 
+/**
+   This wrapper calls the approximate GMM computation routine which
+   compute the senone score.  Then the composite senone will also be
+   computed. 
+ */
+int32 approx_cd_gmm_compute_sen_comp(
+				     void *srch, /**< a pointer to a srch_t */
+				     float32 **feat, /**< feature vector */
+				     int32 wav_idx  /**< frame index */
+				     );
 
-int32 approx_cd_gmm_compute(void *srch, /**< a pointer to a srch_t */
-			    float32 *feat, /**< feature vector */
-			    int32 wav_idx  /**< wave index */
+/**
+   This wrapper that calls the approximate GMM computation routine which 
+   compute only normal senone. 
+ */
+int32 approx_cd_gmm_compute_sen(
+				void *srch, /**< a pointer to a srch_t */
+				float32 **feat, /**< feature vector #stream x #coeff*/
+				int32 wav_idx  /**< frame index */
+				);
+
+/**
+   This wrapper calls the multi-stream exact GMM computation routine
+   which compute the senone score.  Then the composite senone will also be
+   computed.
+ */
+
+int32 ms_cd_gmm_compute_sen_comp(
+				 void *srch,   /**< a pointer to a srch_t */
+				 float32 **feat,  /**< feature vector #stream x #coeff*/
+				 int32 wav_idx    /**< frame index */
+				 );
+
+/**
+   This wrapper that calls the approximate GMM computation routine which 
+   compute only normal senone. 
+ */
+
+int32 ms_cd_gmm_compute_sen(
+			    void *srch,   /**< a pointer to a srch_t */
+			    float32 **feat,  /**< feature vector #stream x #coeff*/
+			    int32 wav_idx    /**< frame index */
 			    );
+
+/**
+   Depends on which data structure has been initialized, s3_cd_gmm_compute_sen_comp
+   calls
+   ms_cd_gmm_compute_sen_comp (if ms_mgau is initialized) or
+   approx_cd_gmm_coupute_sen_compu (if _mgau is initialized)
+
+   Then composite triphone will also be computed. 
+ */
+
+int32 s3_cd_gmm_compute_sen_comp(
+				 void *srch,   /**< a pointer to a srch_t */
+				 float32 **feat,  /**< feature vector #stream x #coeff*/
+				 int32 wav_idx    /**< frame index */
+
+				 );
+
+/**
+   Depends on which data structure has been initialized, s3_cd_gmm_compute_sen
+   calls
+   ms_cd_gmm_compute_sen (if ms_mgau is initialized) or
+   approx_cd_gmm_coupute_sen (if _mgau is initialized)
+
+   Only normal senone will be computed. 
+ */
+
+
+int32 s3_cd_gmm_compute_sen(
+			    void *srch,   /**< a pointer to a srch_t */
+			    float32 **feat,  /**< feature vector #stream x #coeff*/
+			    int32 wav_idx    /**< frame index */
+			    );
+
