@@ -45,9 +45,42 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2005/06/22  02:47:35  arthchan2003
- * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ * Revision 1.12  2006/02/23  16:56:13  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
+ * 1, Split latticehist_t from flat_fwd.c to  here.
+ * 2, Introduced vithist_entry_cp.  This is much better than the direct
+ * copy we have been using. (Which could cause memory problem easily)
  * 
+ * Revision 1.11.4.9  2006/01/16 18:11:39  arthchan2003
+ * 1, Important Bug fixes, a local pointer is used when realloc is needed.  This causes invalid writing of the memory, 2, Acoustic scores of the last segment in IBM lattice generation couldn't be found in the past.  Now, this could be handled by the optional acoustic scores in the node of lattice.  Application code is not yet checked-in
+ *
+ * Revision 1.11.4.8  2005/11/17 06:46:02  arthchan2003
+ * 3 changes. 1, Code was added for full triphone implementation, not yet working. 2, Senone scale is removed from vithist table. This was a bug introduced during some fixes in CALO.
+ *
+ * Revision 1.11.4.7  2005/10/17 04:58:30  arthchan2003
+ * vithist.c is the true source of memory leaks in the past for full cwtp expansion.  There are two changes made to avoid this happen, 1, instead of using ve->rc_info as the indicator whether something should be done, used a flag bFullExpand to control it. 2, avoid doing direct C-struct copy (like *ve = *tve), it becomes the reason of why memory are leaked and why the code goes wrong.
+ *
+ * Revision 1.11.4.6  2005/10/07 20:05:05  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
+ * Revision 1.11.4.5  2005/09/26 06:37:33  arthchan2003
+ * Before anyone get hurt, quickly change back to using SINGLE_RC_HISTORY.
+ *
+ * Revision 1.11.4.4  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
+ * Revision 1.11.4.3  2005/09/11 03:00:15  arthchan2003
+ * All lattice-related functions are not incorporated into vithist. So-called "lattice" is essentially the predecessor of vithist_t and fsg_history_t.  Later when vithist_t support by right context score and history.  It should replace both of them.
+ *
+ * Revision 1.11.4.2  2005/07/26 02:20:39  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
+ * Revision 1.11.4.1  2005/07/04 07:25:22  arthchan2003
+ * Added vithist_entry_display and vh_lmstate_display in vithist.
+ *
+ * Revision 1.11  2005/06/22 02:47:35  arthchan2003
+ * 1, Added reporting flag for vithist_init. 2, Added a flag to allow using words other than silence to be the last word for backtracing. 3, Fixed doxygen documentation. 4, Add  keyword.
+ *
  * Revision 1.10  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -89,12 +122,20 @@
 
 #include <s3types.h>
 #include "kbcore.h"
-#include "hyp.h"
+#include "search.h"
 #include "dict.h"
 #include "wid.h"
 
-/** \file vithist.h
-    \brief Viterbi history
+#include "dag.h"  
+#include "ctxt_table.h"
+#include "glist.h"
+
+/** \file vithist.h 
+
+    \brief Viterbi history structures.  Mainly vithist_t, also its
+    slightly older brother latticehist_t. They are respectively used
+    by decode (mode 4 and 5) and decode_anytopo (mode 3).  The curent
+    arrangement is temporary. 
  */
 
 #ifdef __cplusplus
@@ -113,6 +154,11 @@ typedef union {
 } vh_lmstate_t;
 
 
+  typedef struct {
+    int32 score;
+    int32 pred;
+  } scr_hist_pair;
+
   /**
  * Viterbi history entry.
  */
@@ -121,25 +167,46 @@ typedef struct {
     s3frmid_t sf, ef;		/**< Start and end frames for this entry */
     int32 ascr;			/**< Acoustic score for this node */
     int32 lscr;			/**< LM score for this node, given its Viterbi history */
+
     int32 score;		/**< Total path score ending here */
-    int32 senscale;             /**< Scaling factor attached to the score */
     int32 pred;			/**< Immediate predecessor */
     int32 type;			/**< >=0: regular n-gram word; <0: filler word entry */
     int32 valid;		/**< Whether it should be a valid history for LM rescoring */
     vh_lmstate_t lmstate;	/**< LM state */
+
+    scr_hist_pair *rc_info;             /**< Right context information pair (score, pred), I don't want to look up, so I used*/ 
+    int32 n_rc_info;            /**< Number of rc_info */
+
+#if 0
+    int32 *rcpred;              /**< Correspond to predecesoor of each right contexts */
+    int32 *rcscore;             /**< Correspond to the score for each right contexts */
+#endif
+
 } vithist_entry_t;
 
+  /** Return the word ID of an entry */
 #define vithist_entry_wid(ve)	((ve)->wid)
+
+  /** Return the starting frame of an entry */
 #define vithist_entry_sf(ve)	((ve)->sf)
+
+  /** Return the ending frame of an entry */
 #define vithist_entry_ef(ve)	((ve)->ef)
+
+  /** Return the acoustic score of an entry */
 #define vithist_entry_ascr(ve)	((ve)->ascr)
+
+  /** Return the language score of an entry */
 #define vithist_entry_lscr(ve)	((ve)->lscr)
+
+  /** Return the total score of an entry */
 #define vithist_entry_score(ve)	((ve)->score)
 #define vithist_entry_pred(ve)	((ve)->pred)
 #define vithist_entry_valid(ve)	((ve)->valid)
 
 
   /**
+   * \struct vh_lms2vh_t
  * In each frame, there are several word exits.  There can be several exit instances of the
  * same word, corresponding to different LM histories.  Generally, each exit is associated
  * with an LM state.  We only need to retain the best entry for each LM state.  The following
@@ -159,18 +226,19 @@ typedef struct {		/**< Mapping from LM state to vithist entry */
 
 
   /**
- * Memory management of Viterbi history entries done in blocks.  Initially, one block of
- * VITHIST_BLKSIZE entries allocated.  If exhausted, another block allocated, and so on.
- * So we can have several discontiguous blocks allocated.  Entries are identified by a
- * global, running sequence no.
- */
+   * \struct vithist_t 
+   * Memory management of Viterbi history entries done in blocks.  Initially, one block of
+   * VITHIST_BLKSIZE entries allocated.  If exhausted, another block allocated, and so on.
+   * So we can have several discontiguous blocks allocated.  Entries are identified by a
+   * global, running sequence no.
+   */
 typedef struct {
     vithist_entry_t **entry;	/**< entry[i][j]= j-th entry in the i-th block allocated */
     int32 *frame_start;		/**< For each frame, the first vithist ID in that frame; (the
-				   last is just before the first of the next frame) */
+ 				   last is just before the first of the next frame) */
     int32 n_entry;		/**< Total #entries used (generates global seq no. or ID) */
     int32 n_frm;		/**< No. of frames processed so far in this utterance */
-    
+    int32 n_ci;                   /**< No. of CI phones */
     int32 bghist;		/**< If TRUE (bigram-mode) only one entry/word/frame; otherwise
 				   multiple entries allowed, one per distinct LM state */
     
@@ -183,6 +251,8 @@ typedef struct {
     glist_t lwidlist;		/**< List of LM word IDs with entries in lms2vh_root */
     int32 bLMRescore;           /**< Whether LM should be used to rescore */
     int32 bBtwSil;              /**< Whether backtracking should be done using silence as the final word*/
+  int32 bFullExpand;          /**< Whether full expansion is done */
+
 } vithist_t;
 
 
@@ -192,12 +262,26 @@ typedef struct {
 #define VITHIST_ID2BLKOFFSET(i)	((i) & 0x00003fff)	/* 14 LSB */
 
   /** Access macros; not meant for arbitrary use */
+
+  /** Return the number of entry in the Viterbi history */
 #define vithist_n_entry(vh)		((vh)->n_entry)
+
+  /** Return the best score of the Viterbi history */
 #define vithist_bestscore(vh)		((vh)->bestscore)
+
+  /** Return the best viterbi history entry ID of the Viterbi history */
 #define vithist_bestvh(vh)		((vh)->bestvh)
+
+  /** Return lms2vh */
 #define vithist_lms2vh_root(vh,w)	((vh)->lms2vh_root[w])
+
+  /** Return the language word ID list */
 #define vithist_lwidlist(vh)		((vh)->lwidlist)
+
+  /** Return the first entry for the frame f */
 #define vithist_first_entry(vh,f)	((vh)->frame_start[f])
+
+  /** Return the last entry for the frame f */
 #define vithist_last_entry(vh,f)	((vh)->frame_start[f+1] - 1)
 
 
@@ -209,16 +293,17 @@ typedef struct {
 
   vithist_t *vithist_init (kbcore_t *kbc,  /**< A KBcore */
 			   int32 wbeam,    /**< Word beam */
-			   int32 bghist,
+			   int32 bghist,    /**< If only bigram history is used */
 			   int32 isRescore, /**< Whether LM is used to rescore Viterbi history */
 			   int32 isbtwsil,  /**< Whether silence should be used as the final word of backtracking. */
+			   int32 isFullExpand, /**<Whether we are using full cross word triphone expansion */
 			   int32 isreport   /**< Whether to report the progress  */
 			   );
 
 
   /**
  * Invoked at the beginning of each utterance; vithist initialized with a root <s> entry.
- * Return value: Vithist ID of the root <s> entry.
+ * @return Vithist ID of the root <s> entry.
  */
 int32 vithist_utt_begin (vithist_t *vh, /**< In: a Viterbi history data structure*/
 			 kbcore_t *kbc  /**< In: a KBcore */
@@ -253,7 +338,8 @@ void vithist_utt_reset (vithist_t *vh  /**< In: a Viterbi history data structure
  * segments.  Caller responsible for freeing the list.
  */
 glist_t vithist_backtrace (vithist_t *vh,       /**< In: a Viterbi history data structure*/
-			   int32 id		/**< ID from which to begin backtrace */
+			   int32 id,		/**< ID from which to begin backtrace */
+			   dict_t *dict         /**< a dictionary for look up the ci phone of a word*/
 			   );
 
   /**
@@ -268,15 +354,17 @@ vithist_entry_t *vithist_id2entry (vithist_t *vh,  /**< In: a Viterbi history da
  * Like vithist_enter, but LM-rescore this word exit wrt all histories that ended at the
  * same time as the given, tentative pred.  Create a new vithist entry for each predecessor
  * (but, of course, only the best for each distinct LM state will be retained; see above).
+ * 
+ * ARCHAN: Precisely speaking, it is a full trigram rescoring. 
  */
 void vithist_rescore (vithist_t *vh,    /**< In: a Viterbi history data structure*/
 		      kbcore_t *kbc,    /**< In: a kb core. */
 		      s3wid_t wid,      /**< In: a word ID */
 		      int32 ef,		/**< In: End frame for this word instance */
 		      int32 score,	/**< In: Does not include LM score for this entry */
-		      int32 senscale,   /**< In: The senscale */
 		      int32 pred,	/**< In: Tentative predecessor */
-		      int32 type       /**< In: Type of lexical tree */
+		      int32 type,       /**< In: Type of lexical tree */
+		      int32 rc          /**< In: The compressed rc. So if you use the actual rc, it doesn't work.  */
 		      );
 
 
@@ -328,7 +416,8 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 			dict_t *dict,	/**< In: Dictionary; for generating word string names */
 			int32 oldfmt,	/**< In: If TRUE, old format, edges: srcnode dstnode ascr;
 					 * else new format, edges: srcnode endframe ascr */
-			FILE *fp	/**< Out: File to be written */
+			FILE *fp,	/**< Out: File to be written */
+			int32 dump_nodescr /** In: If True, dump the acoustic and language score for the node */
 			);
 
   /** 
@@ -345,6 +434,246 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
   
   void vithist_report(vithist_t *vh       /**< In: a Viterbi history data structure */
 		      );
+
+  /**
+   * Display the lmstate of an entry. 
+   */
+
+  void vh_lmstate_display(vh_lmstate_t *vhl, /**< In: An lmstate data structure */
+			  dict_t *dict /**< In: If specified, the word string of lm IDs would also be translated */
+			  );
+
+  /**
+   * Display the vithist_entry structure. 
+   */
+  void vithist_entry_display(vithist_entry_t *ve, /**< In: An entry of vithist */
+			      dict_t* dict  /**< In: If specified, the word string of lm IDs would also be translated */
+			      );
+
+
+  /**
+   * \struct lattice_t 
+   * Word lattice for recording decoded hypotheses.
+   * 
+   * lattice[i] = entry for a word ending at a particular frame.  There can be at most one
+   * entry for a word in a given frame.
+   * NOTE: lattice array allocated statically.  Need a more graceful way to grow without
+   * such an arbitrary internal limit.
+   */
+  typedef struct lattice_s {
+    s3wid_t   wid;	/**< Decoded word */
+    s3frmid_t frm;	/**< End frame for this entry */
+    s3latid_t history;	/**< Index of predecessor lattice_t entry */
+
+    /*Augmented in 3.6 */
+    int32 ascr;         /**< Acoustic score for this node */
+    int32 lscr;         /**< Language score for this node */
+    int32 ef;           /**< Ending frame */
+
+    s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
+    int32     score;	/**< Best path score upto the end of this entry */
+    int32    *rcscore;	/**< Individual path scores for different right context ciphones */
+    dagnode_t *dagnode;	/**< DAG node representing this entry */
+  } lattice_t;
+
+
+#define LAT_ALLOC_INCR		32768
+
+#define LATID2SF(hist,l)	(IS_S3LATID(hist->lattice[l].history) ? \
+			 hist->lattice[hist->lattice[l].history].frm + 1 : 0)
+
+#define SINGLE_RC_HISTORY 1  /* The logic of using multiple RC history
+				is actually available. However,
+				testing show that it doesn't work very
+				well. Therefore I disabled it at this
+				point */
+
+  /** 
+   * \struct latticehist_t 
+   *
+   * Encapsulation of all memory management of the lattice structure.
+   * The name of lattice_t and latticehist_t is slighly confusing.
+   * lattice_t is actually just one entry. One should also
+   * differentiate the term "lattice" as a general graph-like
+   * structure which either represent the search graph or as a
+   * constraint of a search graph
+   */
+
+  /* FIXME, 1, Either replace all latticehist_t by vithist_t or 
+     2, there is no need to always put dict_t, ctxt_table_t , lm_t and fillpen_t as arguments 
+  */
+
+  typedef struct {
+
+    lattice_t *lattice;  /**< An array of lattice entries. frm_lat_start[f] represnet the first entry for the frame f */
+    s3latid_t *frm_latstart;	/**< frm_latstart[f] = first lattice entry in frame f */
+
+    int32 lat_alloc;     /**< Number of allocated entries */
+    int32 n_lat_entry;   /**< Number of lattice entries */
+    int32 n_cand;        /**< If number of candidate is larger than
+			    zero, The then decoder is workin in
+			    "lattice-mode", which means using the
+			    candidate in the lattice to constrain the
+			    search? */
+
+  } latticehist_t;
+
+
+#define latticehist_n_cand(hist)		((hist)->n_cand)
+
+  
+  /**
+   * Initialization of lattice history table 
+   */
+  
+  latticehist_t *latticehist_init(int32 init_alloc_size, /**<Initial allocation size */
+				  int32 num_frames       /**<Number of frames in represented in the lattice*/
+				  );
+
+  /**
+     Free lattice history table 
+   */
+  void latticehist_free(latticehist_t *lat /**< The latticie history table */
+			);
+
+  /*
+   * Reset a lattice history table 
+   */
+   
+  void latticehist_reset(latticehist_t *lat /**< The lattice history table*/
+			 );
+
+  /**
+   * Dump the lattice history table
+   */
+  void latticehist_dump (latticehist_t *lathist,  /**< A table of lattice entries */
+			 FILE *fp,                /**< File pointer where one would want to dump the lattice */
+			 dict_t *dict,            /**< The dictionary*/
+			 ctxt_table_t *ct,        /**< Context table */
+			 int32 dumpRC             /**< Whether we whould dump all the scores and histories for right context */
+			 );
+
+  /**
+   * Enter a entry into lattice 
+   */
+  void lattice_entry (latticehist_t *lathist, /**< A table of lattice entries */
+		      s3wid_t w,              /**< Word ID to enter. */
+		      int32 f,                /**< current frame number */
+		      int32 score,            /**< The score to enter, usually it is the score of the final state of hmm */
+		      s3latid_t history,      /**< The last lattice entry to enter, usually the entry of the final state of hmm is used. */
+		      int32 rc,                /**< Right context of the HMM*/ 
+		      ctxt_table_t *ct,       /**< A context table */
+		      dict_t *dict            /**< A dictionary */
+		      );
+
+
+#if SINGLE_RC_HISTORY
+  void two_word_history (latticehist_t *lathist, 
+			 s3latid_t l, s3wid_t *w0, s3wid_t *w1, dict_t *dict);
+#else
+  void two_word_history (latticehist_t *lathist, s3latid_t l, s3wid_t *w0, s3wid_t *w1, s3wid_t w_rc, dict_t *dict, ctxt_table_t *ct);
+#endif
+
+
+
+  /**
+   * Find path score for lattice entry l for the given right context word.
+   * If context word is BAD_S3WID it's a wild card; return the best path score.
+   */
+
+  int32 lat_pscr_rc (latticehist_t *lathist, /**< A table of lattice entries */
+		     s3latid_t l,            /**< lattice ID */
+		     s3wid_t w_rc,           /**< The right context word */
+		     ctxt_table_t *ct,       /**< Context table */
+		     dict_t *dict            /**< The dictionary */
+		     );
+
+  /**
+   * Find path history for lattice entry l for the given right context word.
+   * If context word is BAD_S3WID it's a wild card; return the phone history.
+   */
+  s3latid_t lat_pscr_rc_history (latticehist_t *lathist, /**< A table of lattice entries */
+				 s3latid_t l,  /**< lattice ID */
+				 s3wid_t w_rc,  /**< The right context word */
+				 ctxt_table_t *ct,  /**< Context table */
+				 dict_t *dict     /** The dictionary */
+				 );
+
+#if SINGLE_RC_HISTORY
+  int32 lat_seg_lscr (latticehist_t *lathist, 
+		      s3latid_t l, 
+		      lm_t *lm, 
+		      dict_t *dict, 
+		      ctxt_table_t *ct, 
+		      fillpen_t *fillpen, 
+		      int32 isCand);
+#else
+  int32 lat_seg_lscr (latticehist_t *lathist, 
+		      s3latid_t l, 
+		      s3wid_t w_rc, 
+		      lm_t *lm, 
+		      dict_t *dict, 
+		      ctxt_table_t *ct, 
+		      fillpen_t *fillpen, 
+		      int32 isCand);
+#endif
+
+
+  /**
+   * Find LM score for transition into lattice entry l.
+   */
+
+  void lat_seg_ascr_lscr (latticehist_t *lathist, /**< A table of lattice entries */
+			  s3latid_t l,  /**< lattice ID */
+			  s3wid_t w_rc, /**< The right context word */
+			  int32 *ascr,  /**< Out: Acoustic score */
+			  int32 *lscr,  /**< Out: language score */
+			  lm_t *lm,     /**< LM */
+			  dict_t *dict,  /**< Dictionary */
+			  ctxt_table_t *ct,  /** Context table */
+			  fillpen_t *fillpen /**< filler penalty */
+			  );
+
+
+  /**
+     Get the final entry of the lattice
+   */
+  s3latid_t lat_final_entry ( latticehist_t* lathist, /**< A table of lattice entries */
+			      dict_t* dict, /** The dictioanry */
+			      int32 curfrm, /**< The current  frame */
+			      char* uttid /** Utterance ID */
+			      );
+			      
+  /**
+   * Backtrace the lattice and get back a search hypothesis. 
+   */
+  srch_hyp_t *lattice_backtrace (latticehist_t *lathist, /**< A table of lattice entries */
+				 s3latid_t l,   /**< The lattice ID */
+				 s3wid_t w_rc,   /**< The word on the right */
+				 srch_hyp_t **hyp, /**< Output: final hypothesis */ 
+				 lm_t *lm,       /**< LM */
+				 dict_t *dict,   /**< Dictionary */
+				 ctxt_table_t *ct,  /**< Context table */
+				 fillpen_t *fillpen /**< filler penalty struct */
+				 );
+
+
+  /** 
+      Write a dag from latticehist_t
+   */
+  int32 latticehist_dag_write (latticehist_t *lathist,  /**< A table off lattice entries */
+			       char *dir,  /**< The directory node */
+			       int32 onlynodes,  /**< Whether only nodes are printed */
+			       char *id,  
+			       char* latfile_ext, 
+			       int32 totfrm, 
+			       dag_t *dag,
+			       lm_t *lm, 
+			       dict_t *dict, 
+			       ctxt_table_t *ct, 
+			       fillpen_t *fillpen
+			       );
+
 #ifdef __cplusplus
 }
 #endif
