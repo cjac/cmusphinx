@@ -45,9 +45,21 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.21  2005/06/22  03:29:35  arthchan2003
- * Makefile.am s  for all subdirectory of libs3decoder/
+ * Revision 1.22  2006/02/23  03:59:40  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: a, Free buffers correctly. b, Fixed dox-doc.
  * 
+ * Revision 1.21.4.3  2005/10/17 04:45:57  arthchan2003
+ * Free stuffs in cmn and feat corectly.
+ *
+ * Revision 1.21.4.2  2005/09/26 02:19:57  arthchan2003
+ * Add message to show the directory which the feature is searched for.
+ *
+ * Revision 1.21.4.1  2005/07/03 22:55:50  arthchan2003
+ * More correct deallocation in feat.c. The cmn deallocation is still not correct at this point.
+ *
+ * Revision 1.21  2005/06/22 03:29:35  arthchan2003
+ * Makefile.am s  for all subdirectory of libs3decoder/
+ *
  * Revision 1.4  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -830,6 +842,7 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 	return -1;
     }
     
+
     /* 
      * Create mfc filename, combining file, dir and extension if
      * necessary
@@ -842,8 +855,10 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 
     if (dir != NULL) {
       sprintf (path, "%s/%s", dir, file);
+      E_INFO("At directory %s\n",dir);
     } else {
       strcpy (path, file);
+      E_INFO("At directory . (current directory)\n",dir);
     }
 
     /*
@@ -1081,10 +1096,20 @@ int32 feat_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 void feat_free (feat_t *f)
 {
   if (f) {
-    //    if (f->stream_len)
-      //      ckd_free ((void *) f->stream_len);
+    if(f->cepbuf)
+      ckd_free_2d ((void**)f->cepbuf);
+    if(f->tmpcepbuf)
+      ckd_free_2d ((void**)f->tmpcepbuf);
 
-    //    ckd_free ((void *) f);
+    if(f->name){
+      ckd_free ((void *)f->name);
+    }
+    ckd_free ((void *)f->stream_len);
+
+    cmn_free(f->cmn_struct);
+      
+    ckd_free ((void *)f);
+
   }
 
 }
@@ -1275,4 +1300,3 @@ void feat_report(feat_t *f)
 
     return(nfeatvec);
 #endif
-
