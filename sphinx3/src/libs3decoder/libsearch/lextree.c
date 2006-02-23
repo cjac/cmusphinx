@@ -45,13 +45,52 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  23:32:58  arthchan2003
+ * Revision 1.10  2006/02/23  15:08:24  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 
+ * 1, Fixed memory leaks.
+ * 2, Add logic for full triphone expansion.  At this point, the
+ * propagation of scores in word end is still incorrect. So composite
+ * triphone should still be used by default.
+ * 3, Removed lextree_copies_hmm_propagate.
+ * 
+ * Revision 1.9.4.10  2005/11/17 06:28:50  arthchan2003
+ * Changed the code to used compressed triphones. Not yet correct at this point
+ *
+ * Revision 1.9.4.9  2005/10/17 04:53:44  arthchan2003
+ * Shrub the trees so that the run-time memory could be controlled.
+ *
+ * Revision 1.9.4.8  2005/10/07 19:34:29  arthchan2003
+ * In full cross-word triphones expansion, the previous implementation has several flaws, e.g, 1, it didn't consider the phone beam on cross word triphones. 2, Also, when the cross word triphone phone is used, children of the last phones will be regarded as cross word triphone. So, the last phone should not be evaluated at all.  Last implementation has not safe-guaded that. 3, The rescoring for language model is not done correctly.  What we still need to do: a, test the algorithm in more databases. b,  implement some speed up schemes.
+ *
+ * Revision 1.9.4.7  2005/09/25 19:27:04  arthchan2003
+ * (Change for Comment) 1, Added lexical tree reporting. 2, Added a function for getting the number of links. 3, Added support for doing full triphone expansion. 4, In lextree_dump separate hmm evaluation and hmm dumping.
+ *
+ * Revision 1.9.4.6  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
+ * Revision 1.9.4.5  2005/09/18 01:36:47  arthchan2003
+ * Add implementation for lextree_report.
+ *
+ * Revision 1.9.4.4  2005/08/02 21:35:05  arthchan2003
+ * Change sen to senscr.
+ *
+ * Revision 1.9.4.3  2005/07/17 05:44:32  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
+ * Revision 1.9.4.2  2005/07/07 02:34:36  arthchan2003
+ * Remove empty lextree_tree_copies_hmm_propagate
+ *
+ * Revision 1.9.4.1  2005/06/27 05:37:05  arthchan2003
+ * Incorporated several fixes to the search. 1, If a tree is empty, it will be removed and put back to the pool of tree, so number of trees will not be always increasing.  2, In the previous search, the answer is always "STOP P I T G S B U R G H </s>"and filler words never occurred in the search.  The reason is very simple, fillers was not properly propagated in the search at all <**exculamation**>  This version fixed this problem.  The current search will give <sil> P I T T S B U R G H </sil> </s> to me.  This I think it looks much better now.
+ *
+ * Revision 1.9  2005/06/21 23:32:58  arthchan2003
  * Log. Introduced lextree_init and filler_init to wrap up lextree_build
  * process. Split the hmm propagation to propagation for leaves and
  * non-leaves node.  This allows an easier time for turning off the
  * rescoring stage. However, the implementation is not clever enough. One
  * should split the array to leave array and non-leave array.
- * 
+ *
  * Revision 1.11  2005/06/16 04:59:10  archan
  * Sphinx3 to s3.generic, a gentle-refactored version of Dave's change in senone scale.
  *
@@ -90,6 +129,7 @@
  */
 
 
+
 #include "lextree.h"
 
 /*
@@ -101,16 +141,19 @@
 
 
 static lextree_node_t *lextree_node_alloc (int32 wid, int32 prob,
-					   int32 comp, int32 ssid, int32 n_state, int32 ci)
+					   int32 comp, int32 ssid, int32 n_state, int32 ci, int32 rc)
 {
     lextree_node_t *ln;
     
-    ln = (lextree_node_t *) mymalloc (sizeof(lextree_node_t));
+    /*    ln = (lextree_node_t *) mymalloc (sizeof(lextree_node_t));*/
+
+    ln = (lextree_node_t *) ckd_calloc (1,sizeof(lextree_node_t));
     ln->children = NULL;
     ln->wid = wid;
     ln->prob = prob;
     ln->ssid = ssid;
     ln->ci = (s3cipid_t) ci;
+    ln->rc = rc;
     ln->composite = comp;
     ln->frame = -1;
     ln->hmm.state = (hmm_state_t *) ckd_calloc (n_state, sizeof(hmm_state_t));
@@ -120,7 +163,15 @@ static lextree_node_t *lextree_node_alloc (int32 wid, int32 prob,
     return ln;
 }
 
-lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgProb, int32 bReport)
+static void lextree_node_free(lextree_node_t *ln)
+{
+  if(ln){
+    if(ln->hmm.state) ckd_free(ln->hmm.state);
+    ckd_free(ln);
+  }
+}
+
+lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgProb, int32 bReport, int32 type)
 {
   s3cipid_t *lc;
   s3cipid_t ci;
@@ -189,11 +240,13 @@ lextree_t* lextree_init(kbcore_t * kbc, lm_t* lm, char *lmname,int32 istreeUgPro
     }
   }
   ltree=lextree_build (kbc, wp, n, lc);
-  lextree_type(ltree)=0;
+  lextree_type(ltree)=type;
 
   ckd_free ((void *) wp);
   ckd_free ((void *) lc);
   bitvec_free (lc_active);
+
+  strcpy(ltree->prev_word,"");
   return ltree;
 }
 
@@ -223,13 +276,61 @@ lextree_t* fillertree_init(kbcore_t* kbc)
   }
 
   ltree=lextree_build (kbc, wp, n, NULL);
-  lextree_type(ltree)=-1;
+  lextree_type(ltree)=LEXTREE_TYPE_FILLER;
+
+  ckd_free(wp);
   return ltree;
 }
 
 void lextree_report(lextree_t *ltree)
 {
   /*EMPTY, because it is quite hard to report a set of lexical trees at this point. */
+  
+  E_INFO_NOFN("lextree_t, report:\n");
+  E_INFO_NOFN("Parameters of the lexical tree. \n");
+  E_INFO_NOFN("Type of the tree %d (0:unigram, 1: 2g, 2: 3g etc.)\n",ltree->type);
+  E_INFO_NOFN("Number of left contexts %d \n",ltree->n_lc);
+  E_INFO_NOFN("Number of node %d \n",ltree->n_node);
+  E_INFO_NOFN("Number of links in the tree %d\n",num_lextree_links(ltree));
+  /*
+    E_INFO_NOFN("Number of active node in this frame %d \n",ltree->n_active);
+    E_INFO_NOFN("Number of active node in next frame %d \n",ltree->n_next_active);
+    E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
+    E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
+  */
+  E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
+  E_INFO_NOFN("The size of a node of the lexical tree %d \n",sizeof(lextree_node_t));
+  E_INFO_NOFN("The size of a gnode_t %d \n",sizeof(gnode_t));
+}
+
+int32 lextree_subtree_num_links(lextree_node_t *ln)
+{
+  gnode_t *gn;
+  int32 numlink=0;
+  if(ln==NULL){
+    return 0;
+  }else{
+    for(gn=ln->children; gn ; gn = gnode_next(gn)){
+      ln = (lextree_node_t *) gnode_ptr(gn);
+      numlink += 1 + lextree_subtree_num_links (ln);
+    }
+    return numlink;
+  }
+}
+
+int32 num_lextree_links(lextree_t *ltree)
+{
+  gnode_t *gn;
+  int32 numlink=0;
+  lextree_node_t *ln;
+
+  for(gn=ltree->root; gn ; gn = gnode_next(gn)){
+    ln = (lextree_node_t *) gnode_ptr(gn);
+    numlink += 1+ lextree_subtree_num_links (ln);
+  }
+
+  return numlink;
+
 }
 
 
@@ -322,8 +423,15 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    /* Single phone word; node(s) not shared with any other word */
 	    ci = dict_pron(dict, wid, 0);
 	    if (! lc) {
-		ln = lextree_node_alloc (wid, prob, 1, d2p->internal[wid][0], n_st,
-					 dict_pron(dict, wid, 0));
+
+	      if(d2p->is_composite)
+		ssid=d2p->internal[wid][0];
+	      else /* MAJOR HACK! use the phone filler tree */
+		ssid=mdef_pid2ssid(mdef,ci);
+
+		ln = lextree_node_alloc (wid, prob, d2p->is_composite, ssid , n_st,
+					 dict_pron(dict, wid, 0),BAD_S3CIPID);
+
 		ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];	/* Assuming CI tmat!! */
 		
 		lextree->root = glist_add_ptr (lextree->root, (void *) ln);
@@ -331,12 +439,19 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    } else {
 		np = 0;
 		for (j = 0; j < n_lc; j++) {
-		    ssid = d2p->single_lc[ci][(int)lc[j]];
-		    
+
+		  if(d2p->is_composite){ /* In composite triphone */
+		    ssid = d2p->single_lc[ci][(int)lc[j]];  /* This is a composite triphone */
+		  }else{ /* Use approximation to get the SSID */
+		    ssid= d2p->lrdiph_rc[ci][(int)lc[j]][mdef_ciphone_id(mdef,"sil")]; /* HACK, always assume right context is silence */
+		  }
+
 		    /* Check if this ssid already allocated for another lc */
 		    for (k = 0; (k < np) && (parent[k]->ssid != ssid); k++);
 		    if (k >= np) {	/* Not found; allocate new node */
-			ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci);
+
+			ln = lextree_node_alloc (wid, prob, d2p->is_composite, ssid, n_st, ci, BAD_S3CIPID); /**< ARCHAN: This is a composite triphone */
+
 			ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 			
 			lextree->root = glist_add_ptr (lextree->root, (void *) ln);
@@ -354,7 +469,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    
 	    /* Multi-phone word; allocate root node(s) first, if not already present */
 	    if (! lc) {
-		ssid = d2p->internal[wid][0];
+	      ssid = d2p->internal[wid][0]; 
 		ci = dict_pron(dict, wid, 0);
 		
 		/* Check if this ssid already allocated for another word */
@@ -364,7 +479,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 			break;
 		}
 		if (! gn) {
-		    ln = lextree_node_alloc (BAD_S3WID, prob, 1, ssid, n_st, ci);
+		    ln = lextree_node_alloc (BAD_S3WID, prob, d2p->is_composite, ssid, n_st, ci, BAD_S3CIPID);
 		    ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 		    
 		    lextree->root = glist_add_ptr (lextree->root, (void *) ln);
@@ -387,7 +502,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 		    /* Check if ssid already allocated */
 		    ln = ssid2ln[ssid];
 		    if (! ln) {
-			ln = lextree_node_alloc (BAD_S3WID, prob, 0, ssid, n_st, ci);
+			ln = lextree_node_alloc (BAD_S3WID, prob, NOT_COMPOSITE, ssid, n_st, ci, BAD_S3CIPID);
 			ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 			lextree->root = glist_add_ptr (lextree->root, (void *) ln);
 			n_node++;
@@ -429,7 +544,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 		}
 		
 		if (! gn) {	/* Not found under any parent; allocate new node */
-		    ln = lextree_node_alloc (BAD_S3WID, prob, 0, ssid, n_st, ci);
+		    ln = lextree_node_alloc (BAD_S3WID, prob, NOT_COMPOSITE, ssid, n_st, ci, BAD_S3CIPID);
 		    ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 		    
 		    for (j = 0; j < np; j++)
@@ -459,7 +574,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 	    /* Final (leaf) node, no sharing */
 	    ssid = d2p->internal[wid][p];
 	    ci = dict_pron(dict, wid, p);
-	    ln = lextree_node_alloc (wid, prob, 1, ssid, n_st, ci);
+	    ln = lextree_node_alloc (wid, prob, d2p->is_composite, ssid, n_st, ci, BAD_S3CIPID);
 	    ln->hmm.tp = tmat->tp[mdef_pid2tmatid (mdef, ci)];
 	    
 	    for (j = 0; j < np; j++)
@@ -469,9 +584,23 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
     }
     
     lextree->n_node = n_node;
-    
-    lextree->active = (lextree_node_t **) ckd_calloc (n_node, sizeof(lextree_node_t *));
-    lextree->next_active = (lextree_node_t **) ckd_calloc (n_node, sizeof(lextree_node_t *));
+    lextree->n_alloc_node = n_node; /* dynamically allocated. */
+
+    /* Assuming each time, when re-allocation of active, next_active
+       need to be done only one eighth of all possible cross word
+       expansion is needed to be allocated. That would mean in the
+       worst case, for a time moment, that can be a possibility for 8
+       allocations. 
+     */
+    lextree->n_alloc_blk_sz = ((n_word * mdef_n_ciphone(mdef))  >> 3) ; 
+        
+    lextree->active = (lextree_node_t **) ckd_calloc (n_node+n_word * mdef_n_ciphone(mdef), sizeof(lextree_node_t *));
+    lextree->next_active = (lextree_node_t **) ckd_calloc (n_node+ n_word * mdef_n_ciphone(mdef), sizeof(lextree_node_t *));
+
+    /*    lextree->active = (lextree_node_t **) ckd_calloc (n_node, sizeof(lextree_node_t *));
+	  lextree->next_active = (lextree_node_t **) ckd_calloc (n_node, sizeof(lextree_node_t *));*/
+
+
     lextree->n_active = 0;
     lextree->n_next_active = 0;
     
@@ -485,6 +614,7 @@ lextree_t *lextree_build (kbcore_t *kbc, wordprob_t *wordprob, int32 n_word, s3c
 }
 
 
+/* Also work for the case where triphone is allocated */
 static int32 lextree_subtree_free (lextree_node_t *ln, int32 level)
 {
     gnode_t *gn;
@@ -503,13 +633,105 @@ static int32 lextree_subtree_free (lextree_node_t *ln, int32 level)
     
     /* Free this node, but for level-1 nodes only if reference count drops to 0 */
     if ((level != 1) || (--ln->ssid == 0)) {
-	myfree ((void *) ln, sizeof(lextree_node_t));
-	k++;
+      /*	myfree ((void *) ln, sizeof(lextree_node_t));*/
+
+      lextree_node_free ((void *) ln);
+      k++;
     }
     
     return k;
 }
 
+static int32 lextree_shrub_subtree_cw_leaves(lextree_node_t *ln, int32 level)
+{
+  gnode_t *gn;
+  lextree_node_t *ln2;
+  int32 k;
+  k=0;
+
+  /* If it is a leave and it is a WID and it has not SSID, then, it is
+     a mother of the list of cross-word triphones.
+   */
+
+  if(IS_S3WID(ln->wid)&& ! IS_S3SSID(ln->ssid)){ 
+
+    /* If it is a node with WID and have bad senone sequence */
+
+    if(ln->children != NULL){      
+
+#if 0
+      E_INFO("Free Cross word is carried out  for wid %d, ln->children %d\n", ln->wid, ln->children);
+#endif
+
+      for (gn = ln->children; gn; gn = gnode_next(gn)) {
+	ln2 = (lextree_node_t *) gnode_ptr (gn);
+	/*	E_INFO("I am freeing something! WID, %d, rc %d\n",ln->wid,ln2->rc);*/
+
+	/* Free this node, but for level-1 nodes only if reference count drops to 0 */
+
+	lextree_node_free(ln2);
+	k++;
+      }
+      glist_free (ln->children);
+      ln->children = NULL; 
+    }
+
+  }else{
+    /* Free subtrees below this node */
+    for (gn = ln->children; gn; gn = gnode_next(gn)) {
+      ln2 = (lextree_node_t *) gnode_ptr (gn);
+      k += lextree_shrub_subtree_cw_leaves (ln2, level+1);
+    }
+  }
+
+    
+  return k;
+    
+}
+
+void lextree_shrub_cw_leaves(lextree_t *lextree)
+{
+  gnode_t *gn, *cwgn;
+  glist_t root;
+  lextree_node_t *ln;
+  lextree_node_t *cwln;
+  int32 k,i;
+
+  /* Free lextree */
+  k = 0;
+
+  if (lextree->n_lc > 0) {
+    for(i=0; i< lextree->n_lc ;i++){
+      root = lextree->lcroot[i].root;
+
+      if(root!=NULL){
+	for(gn = root ; gn ; gn = gnode_next(gn)){
+
+	  ln = (lextree_node_t*) gnode_ptr(gn);
+
+	  if(IS_S3WID(ln->wid)&& ln->children!=NULL){
+
+#if 0
+	    E_INFO("Tree %d, lc %d, Free Cross word is carried out  for wid %d, ln->children %d\n", lextree, lextree->lcroot[i].lc, ln->wid, ln->children);
+#endif
+	    for(cwgn = ln->children ; cwgn ; cwgn = gnode_next(cwgn)){
+	      cwln = (lextree_node_t *) gnode_ptr(cwgn);
+	      lextree_node_free(cwln);
+	    }
+	    glist_free(ln->children);
+	    ln->children=NULL;
+	  }
+	}
+      }
+    }
+  }
+
+  for (gn = lextree->root; gn; gn = gnode_next(gn)) {
+    ln = (lextree_node_t *) gnode_ptr (gn);
+    k += lextree_shrub_subtree_cw_leaves (ln,0);
+  }
+  lextree_n_node(lextree) -= k;
+}
 
 /*
  * This is a bit tricky because of the replication of root nodes for different left-contexts.
@@ -523,8 +745,10 @@ void lextree_free (lextree_t *lextree)
     int32 i, k;
     
     if (lextree->n_lc > 0) {
-	for (i = 0; i < lextree->n_lc; i++)
-	    glist_free (lextree->lcroot[i].root);
+        for (i = 0; i < lextree->n_lc; i++){
+	  glist_free (lextree->lcroot[i].root);
+	  lextree->lcroot[i].root=NULL;
+	}
 	
 	ckd_free (lextree->lcroot);
     }
@@ -553,13 +777,14 @@ void lextree_free (lextree_t *lextree)
     ckd_free ((void *) lextree->active);
     ckd_free ((void *) lextree->next_active);
     
+    /*    E_INFO("%d %d\n",k,lextree->n_node);*/
     if (k != lextree->n_node)
-	E_ERROR("#Nodes allocated(%d) != #nodes freed(%d)\n", lextree->n_node, k);
+      E_ERROR("#Nodes allocated(%d) != #nodes freed(%d)\n", lextree->n_node, k);
     
     ckd_free (lextree);
 }
 
-
+/* Not full triphone expansion aware */
 void lextree_ci_active (lextree_t *lextree, bitvec_t ci_active)
 {
     lextree_node_t **list, *ln;
@@ -583,6 +808,14 @@ void lextree_ssid_active (lextree_t *lextree, int32 *ssid, int32 *comssid)
     
     for (i = 0; i < lextree->n_active; i++) {
 	ln = list[i];
+
+
+	/*	if(IS_S3WID(ln->wid)){
+		E_INFO("Is WID %d,  ln->ssid %d, Do I have children %d?\n",ln ->wid, ln->ssid, (ln->children!=NULL));
+	  
+	  assert(ln->ssid!=BAD_S3SSID);
+	}*/
+
 	if (ln->composite)
 	    comssid[ln->ssid] = 1;
 	else
@@ -601,23 +834,36 @@ void lextree_utt_end (lextree_t *l, kbcore_t *kbc)
     
     for (i = 0; i < l->n_active; i++) {	/* The inactive ones should already be reset */
 	ln = l->active[i];
-	
+
 	ln->frame = -1;
 	hmm_clear (&(ln->hmm), mdef_n_emit_state(mdef));
     }
 
     l->n_active = 0;
     l->n_next_active = 0;
+
+    strcpy(l->prev_word,"");
+
+    /* If the tree has crossword triphone, shrub them off at the end
+       of the utterance */
+
+    
+    if(! dict2pid_is_composite(kbc->dict2pid)){
+      lextree_shrub_cw_leaves(l);
+    }
+    
+
 }
 
 
 static void lextree_node_print (lextree_node_t *ln, dict_t *dict, FILE *fp)
 {
-    fprintf (fp, "wid(%d)pr(%d)com(%d)ss(%d)", ln->wid, ln->prob, ln->composite, ln->ssid);
+    fprintf (fp, "wid(%d)pr(%d)com(%d)ss(%d)rc(%d)", ln->wid, ln->prob, ln->composite, ln->ssid,ln->rc);
     if (IS_S3WID(ln->wid))
 	fprintf (fp, "%s", dict_wordstr(dict, ln->wid));
     fprintf (fp, "\n");
 }
+
 
 
 static void lextree_subtree_print (lextree_node_t *ln, int32 level, dict_t *dict, FILE *fp)
@@ -635,42 +881,106 @@ static void lextree_subtree_print (lextree_node_t *ln, int32 level, dict_t *dict
     }
 }
 
+static void lextree_subtree_print_dot (lextree_node_t *ln, int32 level, dict_t *dict, mdef_t *mdef, FILE *fp)
+{
+    gnode_t *gn;
 
-void lextree_dump (lextree_t *lextree, dict_t *dict, FILE *fp)
+    
+    if(IS_S3WID(ln->wid)){
+      fprintf(fp,"\"%s\";\n", dict_wordstr(dict, ln->wid));
+    }else{
+      for (gn = ln->children; gn; gn = gnode_next(gn)) {
+	ln = (lextree_node_t *) gnode_ptr (gn);
+	fprintf(fp," \"%s\" -> ", mdef_ciphone_str(mdef, ln->ci) );
+    	lextree_subtree_print_dot (ln, level+1, dict, mdef, fp);
+      }
+    }
+}
+
+#define GRAPH_RAVIFMT 1
+#define GRAPH_DOTFMT 2
+
+void lextree_dump (lextree_t *lextree, dict_t *dict, mdef_t *mdef, FILE *fp, int32 fmt)
 {
     gnode_t *gn;
     lextree_node_t *ln;
     int32 i;
     
-    for (gn = lextree->root; gn; gn = gnode_next(gn)) {
+    if(fmt>2){fmt=GRAPH_RAVIFMT;}
+    if(fmt==GRAPH_RAVIFMT){ /*Ravi's format */
+      for (gn = lextree->root; gn; gn = gnode_next(gn)) {
 	ln = (lextree_node_t *) gnode_ptr (gn);
     	lextree_subtree_print (ln, 0, dict, fp);
-    }
-    
-    if (lextree->n_lc > 0) {
+      }
+      
+      if (lextree->n_lc > 0) {
 	for (i = 0; i < lextree->n_lc; i++) {
-	    fprintf (fp, "lcroot %d\n", lextree->lcroot[i].lc);
+	  fprintf (fp, "lcroot %d\n", lextree->lcroot[i].lc);
 	    for (gn = lextree->lcroot[i].root; gn; gn = gnode_next(gn)) {
-		ln = (lextree_node_t *) gnode_ptr(gn);
-		lextree_node_print (ln, dict, fp);
+	      ln = (lextree_node_t *) gnode_ptr(gn);
+	      lextree_node_print (ln, dict, fp);
 	    }
 	}
+      }
+    }else if(fmt==GRAPH_DOTFMT){
+      fprintf(fp,"digraph G {\n");
+      fprintf(fp, "rankdir=LR \n");
+      for (gn = lextree->root; gn  ; gn = gnode_next(gn)){
+	ln = (lextree_node_t *) gnode_ptr (gn);
+
+	fprintf(fp," \"%s\" -> ", mdef_ciphone_str(mdef, ln->ci) );
+
+    	lextree_subtree_print_dot (ln, 0, dict, mdef, fp);
+      }
+      fprintf(fp, "}\n");
     }
     fflush (fp);
 }
 
+/*
+  Hmm. For some reason, it doesn't really work yet. 
+ */
+static void lextree_realloc_active_list(lextree_t *lt, int32 num_active)
+{
+  if(num_active >= lt->n_alloc_node && lt->type!=LEXTREE_TYPE_FILLER){
+    E_INFO("num_active %d, n_alloc_node %d, n_node %d\n", num_active, lt->n_alloc_node, lt->n_node);
+    lextree_n_alloc_node(lt)=lextree_n_node(lt);
+    lt->active = (lextree_node_t **) ckd_realloc(lt->active, lextree_n_alloc_node(lt) * sizeof(lextree_node_t *));
+    if(lt->active==NULL){
+      E_INFO("help.");
+    }
+    lt->next_active = (lextree_node_t **) ckd_realloc(lt->next_active, lextree_n_alloc_node(lt) * sizeof(lextree_node_t *));
+    if(lt->next_active==NULL){
+      E_INFO("help.");
+    }
+
+    E_INFO("Reallocating more memory, now has node %d\n",lextree_n_alloc_node(lt));
+  }
+  
+}
+
 
 void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
-		    int32 inscore, int32 inhist, int32 thresh)
+		    int32 inscore, int32 inhist, int32 thresh, kbcore_t * kbc)
 {
     glist_t root;
-    gnode_t *gn;
-    lextree_node_t *ln;
+    gnode_t *gn,*cwgn;
+    lextree_node_t *ln, *cwln;
     int32 nf, scr;
     int32 i, n;
-    hmm_t *hmm;
+    hmm_t *hmm, *cwhmm;
+    int32 rc;
+    int32 n_ci, n_st, n_rc;
+    int32 tmp_lc;
+    tmat_t *tmat;
+    s3ssid_t *rmap;
     
     nf = cf+1;
+
+    n_ci = mdef_n_ciphone(kbc->mdef);
+    n_st = mdef_n_emit_state (kbc->mdef);
+    tmat = kbc->tmat;
+    rc =0;
     
     assert(lextree);
     /* Locate root nodes list */
@@ -679,20 +989,26 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 	root = lextree->root;
     } else {
 	for (i = 0; (i < lextree->n_lc) && (lextree->lcroot[i].lc != lc); i++);
+	/*	E_INFO("i=%d, lextree->n_lc %d\n",i,lextree->n_lc);*/
 	assert (i < lextree->n_lc);
-	
+
 	root = lextree->lcroot[i].root;
     }
     
     /* Enter root nodes */
     n = lextree->n_next_active;
+
+
     for (gn = root; gn; gn = gnode_next(gn)) {
-	ln = (lextree_node_t *) gnode_ptr (gn);
+        ln = (lextree_node_t *) gnode_ptr (gn);
 	
 	hmm = &(ln->hmm);
-	
-	scr = inscore + ln->prob;
-	if ((scr >= thresh) && (hmm->in.score < scr)) {
+
+	if(NOT_S3WID(ln->wid)|| /* If the first node we see it a non leave */
+	   (IS_S3WID(ln->wid)&&dict2pid_is_composite(kbc->dict2pid)) /* Or it is a leave but we are using composite triphone */
+	   ){
+	  scr = inscore + ln->prob;
+	  if ((scr >= thresh) && (hmm->in.score < scr)) {
 	    hmm->in.score = scr;
 	    hmm->in.history = inhist;
 	    
@@ -700,7 +1016,75 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
 		ln->frame = nf;
 		lextree->next_active[n++] = ln;
 	    }
-	} /* else it is activated separately */
+	  } /* else it is activated separately */
+	}else{ /* It is a leave node, so we consider all possible contexts */
+	  
+	  /* FIX ME! To allow extra flexibility, one should allow 
+	     optionally composite single phone */
+
+	  assert(IS_S3WID(ln->wid));
+	  if(ln->children==NULL){
+#if 0
+	    E_INFO("Tree %d, lc %d, Cross word expansion is carried out at cf %d for wid %d, wstr %s, ln->children %d\n", lextree, lc, cf,ln->wid, dict_wordstr(kbc->dict,ln->wid), ln->children);
+#endif
+
+	    n_ci=mdef_n_ciphone(kbc->mdef);
+	    /* HACK, assuming the left context is sil */
+
+	    /*	    if(lc==-1)
+	      tmp_lc=0;
+	    else
+	    tmp_lc=lc;*/
+
+	    rmap=kbc->dict2pid->lrssid[ln->ci][0].ssid;
+	    n_rc = get_rc_nssid(kbc->dict2pid,ln->wid,kbc->dict);
+
+	    /*	    n_rc = kbc->dict2pid->lrssid[ln->ci][tmp_lc].n_ssid;*/
+
+	    /*	    E_INFO("I am here\n");
+	    E_INFO("lrssid n_rc %d, get_nssid %d\n", n_rc, get_rc_nssid(kbc->dict2pid,ln->wid,kbc->dict));
+	    */
+
+
+
+	    if(!dict_filler_word(kbc->dict,ln->wid)){
+
+	      for(rc=0;rc< n_rc;rc++){
+		cwln=lextree_node_alloc(ln->wid,ln->prob,NOT_COMPOSITE,rmap[rc],n_st,ln->ci, rc);
+		cwln->hmm.tp= tmat->tp[mdef_pid2tmatid(kbc->mdef,ln->ci)];
+		ln->children=glist_add_ptr(ln->children,(void *) cwln);
+	      }
+
+	    }else{
+	      /* Assume there is no context when filler. Still expands to keep the program
+		 consistency. */
+
+	      cwln=lextree_node_alloc(ln->wid,ln->prob,NOT_COMPOSITE,rmap[0],n_st,ln->ci, 0);
+	      lextree_n_node(lextree) +=1;
+
+	      cwln->hmm.tp= tmat->tp[mdef_pid2tmatid(kbc->mdef,ln->ci)];
+	      ln->children=glist_add_ptr(ln->children,(void *) cwln);
+	    }
+
+	  }
+
+	  /* This part should be moved to a function */
+	  for (cwgn = ln->children; cwgn; cwgn = gnode_next(cwgn)) {
+	    cwln = (lextree_node_t *)gnode_ptr(cwgn);
+	    cwhmm = &(cwln->hmm);
+
+	    scr = inscore + cwln->prob;
+	    if( (scr >= thresh) &&  (cwhmm->in.score <scr)){
+	      cwhmm->in.score =scr;
+	      cwhmm->in.history =inhist;
+	      if(cwln->frame !=nf){
+		cwln->frame = nf;
+		lextree->next_active[n++] = cwln;
+	      }
+	    }
+	  }
+	}
+
     }
     lextree->n_next_active = n;
 }
@@ -734,28 +1118,58 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
     best = MAX_NEG_INT32;
     wbest = MAX_NEG_INT32;
     
+
+    for (i = 0; i < lextree->n_active; i++) {
+      ln = list[i];
+
+      if(IS_S3WID(ln->wid)){
+	/*	E_INFO("Frm %d, Is WID %d, wdstr %s, ln->ssid %d\n",frm, ln->wid,dict_wordstr(kbc->dict,ln->wid), ln->ssid);*/
+      }
+
+      assert (ln->frame == frm);
+      assert(ln->ssid >= 0);
+      
+      if(fp) {
+	/*	lextree_node_print (ln, kbc->dict, fp);*/
+	if(!ln->composite)
+	  hmm_dump(&(ln->hmm), n_st,mdef->sseq[ln->ssid], ascr->senscr,fp);
+	else
+      	  hmm_dump(&(ln->hmm), n_st,d2p->comsseq[ln->ssid],ascr->comsen,fp);
+      }
+      
+      if (! ln->composite){
+	k = hmm_vit_eval (&(ln->hmm), n_st,
+			    mdef->sseq[ln->ssid], ascr->senscr);
+
+      }else{
+	k = hmm_vit_eval (&(ln->hmm), n_st,
+			  d2p->comsseq[ln->ssid], ascr->comsen);
+      }
+      
+      if (best < k)
+	best = k;
+      
+      if (IS_S3WID(ln->wid)) {
+	if (wbest < k)
+	  wbest = k;
+      }
+
+    }
+
+    lextree->best = best;
+    lextree->wbest = wbest;
+    
     if (fp) {
-	for (i = 0; i < lextree->n_active; i++) {
-	    ln = list[i];
-	    assert (ln->frame == frm);
-	    
-	    lextree_node_print (ln, kbc->dict, fp);
-	    
-	    if (! ln->composite)
-		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
-				       mdef->sseq[ln->ssid], ascr->sen, fp);
-	    else
-		k = hmm_dump_vit_eval (&(ln->hmm), n_st,
-				       d2p->comsseq[ln->ssid], ascr->comsen, fp);
-	    
-	    if (best < k)
-		best = k;
-	    
-	    if (IS_S3WID(ln->wid)) {
-		if (wbest < k)
-		    wbest = k;
-	    }
-	}
+	fprintf (fp, "Fr %d  #active %d  best %d  wbest %d\n",
+		 frm, lextree->n_active, best, wbest);
+	fflush (fp);
+    }
+    
+    return best;
+
+#if 0 /* The old logic, duplicated with hmm_dump_vit_eval */
+    if (fp) {
+
     } else {
 	if (n_st == 3) {
 	    for (i = 0; i < lextree->n_active; i++) {
@@ -765,7 +1179,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		if (! ln->composite)
 		  {
 
-		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_3st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		  }
 		else
 		  {
@@ -786,7 +1200,7 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 		assert (ln->frame == frm);
 		
 		if (! ln->composite)
-		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->sen);
+		    k = hmm_vit_eval_5st (&(ln->hmm), mdef->sseq[ln->ssid], ascr->senscr);
 		else
 		    k = hmm_vit_eval_5st (&(ln->hmm), d2p->comsseq[ln->ssid], ascr->comsen);
 		
@@ -801,17 +1215,8 @@ int32 lextree_hmm_eval (lextree_t *lextree, kbcore_t *kbc, ascr_t *ascr, int32 f
 	} else
 	    E_FATAL("#State= %d unsupported\n", n_st);
     }
+#endif
     
-    lextree->best = best;
-    lextree->wbest = wbest;
-    
-    if (fp) {
-	fprintf (fp, "Fr %d  #active %d  best %d  wbest %d\n",
-		 frm, lextree->n_active, best, wbest);
-	fflush (fp);
-    }
-    
-    return best;
 }
 
 
@@ -829,6 +1234,15 @@ void lextree_hmm_histbin (lextree_t *lextree, int32 bestscr, int32 *bin, int32 n
     
     for (i = 0; i < lextree->n_active; i++) {
 	ln = list[i];
+
+	if(IS_S3WID(ln->wid)){
+	  assert(ln->ssid!=BAD_S3SSID);
+	}
+
+	/*	if(IS_S3WID(ln->wid)){
+	  E_INFO("Is WID\n");
+	  }*/
+
 	hmm = &(ln->hmm);
 	
 	k = (bestscr - hmm->bestscore) / bw;
@@ -855,25 +1269,40 @@ void lextree_hmm_histbin (lextree_t *lextree, int32 bestscr, int32 *bin, int32 n
 }
 
 
-void lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
+
+
+
+int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 			    int32 cf, int32 th, int32 pth, int32 wth,pl_t* pl)
 {
     mdef_t *mdef;
+    dict2pid_t *d2p;
+    dict_t *dict;
     int32 nf, newscore, newHeurScore;
     lextree_node_t **list, *ln, *ln2;
-    hmm_t *hmm, *hmm2;
-    gnode_t *gn;
+    lextree_node_t *cwln;
+    hmm_t *hmm, *hmm2, *cwhmm;
+    tmat_t *tmat;
+    gnode_t *gn, *gn2;
     int32 i, n;
     int32 hth ;
     int32 *phn_heur_list;
     int32 heur_beam;
     int32 heur_type;
+    int32 rc;
+    int32 n_ci, n_st, n_rc;
+    s3ssid_t *rmap;
 
     /* Code for heursitic score */
     kbc->maxNewHeurScore=MAX_NEG_INT32;
     kbc->lastfrm=-1;
 	hth = 0;
     mdef = kbcore_mdef(kbc);
+    n_ci = mdef_n_ciphone(mdef);
+    n_st = mdef_n_emit_state (mdef);
+    d2p = kbc->dict2pid;
+    dict= kbc->dict;
+    tmat= kbc->tmat;
     
     phn_heur_list=pl->phn_heur_list;
     heur_beam=pl->pl_beam;
@@ -890,18 +1319,26 @@ void lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
     /*    E_INFO("No. of active node within the lexical tree: %d\n",lextree->n_active);*/
 
     for (i = 0; i < lextree->n_active; i++) {
-	ln = list[i];
-	hmm = &(ln->hmm);
-	
-	if (ln->frame < nf) {
-	    if (hmm->bestscore >= th) {		/* Active in next frm */
-		ln->frame = nf;
-		lextree->next_active[n++] = ln;
-	    } else {				/* Deactivate */
-	      ln->frame = -1;
-		hmm_clear (hmm, mdef_n_emit_state(mdef));
-	    }
+      /*      E_INFO("%d, %d\n", i,  lextree->n_alloc_node);*/
+      ln = list[i];
+      hmm = &(ln->hmm);
+
+      if(IS_S3WID(ln->wid)){
+	/*	E_INFO("Is WID %d, ln->rc %d, ln->ssid %d\n",ln->wid, ln->rc, ln->ssid);*/
+	  assert(ln->ssid!=BAD_S3SSID);
+      }
+
+
+      /* This if will activate nodes */
+      if (ln->frame < nf) {
+	if (hmm->bestscore >= th) {		/* Active in next frm */
+	  ln->frame = nf;
+	  lextree->next_active[n++] = ln;
+	} else {				/* Deactivate */
+	  ln->frame = -1;
+	  hmm_clear (hmm, mdef_n_emit_state(mdef));
 	}
+      }
 	
 	if (NOT_S3WID(ln->wid)) {		/* Not a leaf node */
 #if 0
@@ -911,7 +1348,8 @@ void lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 	    if (hmm->out.score < pth)
 		continue;			/* HMM exit score not good enough */
 #endif
-	    if(heur_type >0){
+	    if(heur_type >0){ /* In full expansion, this part is not
+				 really correct */
 	      if (cf!=kbc->lastfrm) {
 		kbc->lastfrm=cf;
 		kbc->maxNewHeurScore=MAX_NEG_INT32;
@@ -928,47 +1366,138 @@ void lextree_hmm_propagate_non_leaves (lextree_t *lextree, kbcore_t *kbc,
 
 	    /* Transition to each child */
 	    for (gn = ln->children; gn; gn = gnode_next(gn)) {
-		ln2 = gnode_ptr(gn);
-		hmm2 = &(ln2->hmm);
-		
+	      
+	      ln2 = gnode_ptr(gn);
+	      hmm2 = &(ln2->hmm);
+
+	      /*Sorry, code of composite triphone mode and full expansion mode are mixed 
+		If not, it could run on. 
+	       */
+	      if(dict2pid_is_composite(d2p) || 
+		 (!dict2pid_is_composite(d2p) && NOT_S3WID(ln2->wid))
+		 ){ /* If we use composite triphone mode. Or If we are 
+		       not using composite triphone mode but the next node
+		       is not a leave node .
+		       Just enter like it is a simple triphone. 
+		    */
 		newscore = hmm->out.score + (ln2->prob - ln->prob);
 		newHeurScore = newscore + phn_heur_list[(int32)ln2->ci];
-
-#if 0
-                E_INFO("Newscore %d, Heurscore %d, hth %d, CI phone ID %d, CI phone Str %s\n",newscore, newHeurScore, hth, ln2->ci,mdef_ciphone_str(mdef,ln2->ci));
-#endif
-
+		
  		if (((heur_type==0)||                          /*If the heuristic type is 0, 
-								by-pass heuristic score OR */
+								 by-pass heuristic score OR */
 		     (heur_type>0 && newHeurScore >= hth)) &&  /*If the heuristic type is other 
-								and if the heur score is within threshold*/
+								 and if the heur score is within threshold*/
 		    (newscore >= th) &&                       /*If the score is smaller than the
 								phone score, prune away*/
 		    (hmm2->in.score < newscore)               /*Just the Viterbi Update */
-		   ) {
-		    hmm2->in.score = newscore;
-		    hmm2->in.history = hmm->out.history;
-	    
-		    if (ln2->frame != nf) {
-			ln2->frame = nf;
-			lextree->next_active[n++] = ln2;
-		    }
+		    ){
+		  
+		  hmm2->in.score = newscore;
+		  hmm2->in.history = hmm->out.history;
+		  
+		  if (ln2->frame != nf) {
+		    ln2->frame = nf;
+		    /*			lextree_realloc_active_list(lextree,n+1);*/
+		    lextree->next_active[n++] = ln2;
+		  }
 		}
+	      }else{
+		assert(IS_S3WID(ln2->wid));
+		assert(ln2->ssid==BAD_S3SSID && ln2->rc==BAD_S3CIPID); /* Make sure that the another indication is 
+									  proved. */
+		assert(!dict2pid_is_composite(d2p));
+
+		/* If the node doens't has children */ 
+		if(ln2->children==NULL){ /*Is children not allocated, then allocate it first. */
+		  assert(dict_pronlen(dict,ln2->wid) > 1); /* Because word enter should have already taken care 
+								expansion of single word case. 
+							     */
+		  assert(ln2->ssid == BAD_S3SSID); /*First timer of being expanded */
+		  n_ci = mdef_n_ciphone(mdef);
+
+
+#if 0		  
+		  E_INFO("Tree %d, Cross word expansion is carried out at cf %d for wid %d, wstr %s, ln->children %d\n", lextree, cf,ln2->wid, dict_wordstr(kbc->dict,ln2->wid), ln2->children);
+#endif
+
+		  rmap=kbc->dict2pid->rssid[ln2->ci][ln->ci].ssid;
+		  n_rc = kbc->dict2pid->rssid[ln2->ci][ln->ci].n_ssid;
+		  
+		  assert (n_rc == get_rc_nssid(kbc->dict2pid,ln2->wid,kbc->dict));
+
+		  for(rc=0;rc< n_rc;rc++){
+		    
+		    cwln=lextree_node_alloc(ln2->wid,ln2->prob,NOT_COMPOSITE,rmap[rc],n_st,ln2->ci, rc);
+		    lextree_n_node(lextree) +=1;
+		    
+		    cwln->hmm.tp= tmat->tp[mdef_pid2tmatid(mdef,ln2->ci)];
+		    ln2->children=glist_add_ptr(ln2->children,(void *) cwln);
+		  }
+		}
+		       
+		/* For each of them sum of the scores and decide which one should be enter*/		
+		for (gn2 = ln2->children; gn2; gn2 = gnode_next(gn2)) {
+		  cwln = gnode_ptr(gn2);
+		  cwhmm = &(cwln->hmm);
+
+		  /* The following two can actually be saved. However, there is a possiblity
+		     that one might want to use different lookahead probability for different
+		     cw triphone */
+
+		  newscore = hmm->out.score + (cwln->prob - ln->prob); /*< This is correct! because ln->prob is directly
+									 feed into the cross word */
+		  newHeurScore = newscore + phn_heur_list[(int32)cwln->ci];
+
+		  if (((heur_type==0)||                          /*If the heuristic type is 0, 
+								 by-pass heuristic score OR */
+		       (heur_type>0 && newHeurScore >= hth)) &&  /*If the heuristic type is other 
+								 and if the heur score is within threshold*/
+		      (newscore >= th) &&                       /*If the score is smaller than the
+								  phone score, prune away*/
+		      (cwhmm->in.score < newscore)               /*Just the Viterbi Update */
+		    ){
+		    
+		    cwhmm->in.score = newscore;
+		    cwhmm->in.history = hmm->out.history;
+		    
+		    if (cwln->frame != nf) {
+		      cwln->frame = nf;
+		      /*			lextree_realloc_active_list(lextree,n+1);*/
+		      lextree->next_active[n++] = cwln;
+		    }
+		  }
+		}
+		assert(ln2->ssid==BAD_S3SSID && ln2->rc==BAD_S3CIPID); /* Make sure that the mother of all cross-word expansion
+									  is not touched*/
+	      }
 	    }
 	}
     }
 
     lextree->n_next_active = n;
+#if 0
+    E_INFO("Debugging.\n");
+    for(i=0;i<lextree->n_next_active;i++){
+      ln = lextree->next_active[i];
+      hmm = &(ln->hmm);
+
+      E_INFO(" ln->wid %d, str %s, ln->ssid %d, ln->rc %d,\n",ln->wid, dict_wordstr(dict,ln->wid),ln->ssid, ln->rc);
+    }
+#endif
+    /*    E_INFO("lextree->n_next_active %d\n",    lextree->n_next_active); */
+    return LEXTREE_OPERATION_SUCCESS;
 }
 
-void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
-			    int32 cf, int32 wth,int32 senscale)
+int32 lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t *vh,
+				    int32 cf, int32 wth)
 {
 
     lextree_node_t **list, *ln;
     hmm_t *hmm;
     int32 i;
+#if 0
     int32 active_word_end=0;
+#endif
 
     /* Code for heursitic score */
     list = lextree->active;
@@ -977,70 +1506,49 @@ void lextree_hmm_propagate_leaves (lextree_t *lextree, kbcore_t *kbc, vithist_t 
 	ln = list[i];
 	hmm = &(ln->hmm);
 	
-	if (! NOT_S3WID(ln->wid)) {    /* Leaf node; word exit */
+	if (IS_S3WID(ln->wid)) {    /* Leaf node; word exit */
+
 	    if (hmm->out.score < wth)
 		continue;		/* Word exit score not good enough */
 
-	    if(hmm->out.history==-1)
-	      E_ERROR("Hmm->out.history equals to -1 with score %d and active idx %d, lextree->type\n",hmm->out.score,i,lextree->type);
+	    if(hmm->out.history==-1){ /* This is a case where continue
+					subsituting out.history into
+					vithist_rescore will cause
+					core-dump */
+	      E_ERROR("out.history==-1, error\n");
+	      return LEXTREE_OPERATION_FAILURE;
+	    }
+	      
 	    
 	    /* Rescore the LM prob for this word wrt all possible predecessors */
-	    vithist_rescore (vh, kbc, ln->wid, cf,
-			     hmm->out.score - ln->prob, senscale, 
-			     hmm->out.history, lextree->type);
+	    
+	    if(dict2pid_is_composite(kbc->dict2pid)){
+	      vithist_rescore (vh, kbc, ln->wid, cf,
+			       hmm->out.score - ln->prob, 
+			       hmm->out.history, lextree->type, -1);
+	    }else{ 
+	      /*	      lextree_node_print(ln,kbc->dict,stdout);*/
+	      assert(ln->ssid!=BAD_S3SSID); /*This make we are not using the mother of cross-word triphone*/
+	      assert(ln->rc!=BAD_S3CIPID); 
+
+	      vithist_rescore (vh, kbc, ln->wid, cf,
+			       hmm->out.score - ln->prob, 
+			       hmm->out.history, lextree->type, ln->rc);
+
+	    }
+	      
+
+#if 0	   
 	    active_word_end++;
 
 	    /*	    E_INFO("What is the hmm->out.score %d wth %d\n", hmm->out.score,wth);
 		    E_INFO("\nActive word end id %d, word end %s\n", ln->wid, dict_wordstr(kbc->dict,dict_basewid(kbc->dict,ln->wid)));*/
+#endif
 	}
     }
     
     /*    E_INFO("No of active word end %d\n\n",active_word_end);*/
-
+    return LEXTREE_OPERATION_SUCCESS;
 }
-
-
-void lextree_tree_copies_hmm_propagate (lextree_t *roottree, lextree_t ** expandtrees, kbcore_t *kbc, vithist_t *vh,
-					int32 cf, int32 th, int32 pth, int32 wth,pl_t * pl)
-{
-
-#if 0 
-    mdef_t *mdef;
-    int32 nf, newscore, newHeurScore;
-    lextree_node_t **list, *ln, *ln2;
-    hmm_t *hmm, *hmm2;
-    gnode_t *gn;
-    int32 i, n;
-    int32 hth ;
-    int32 *phn_heur_list;
-    int32 heur_beam;
-    int32 heur_type;
-
-    /* Code for heursitic score */
-    kbc->maxNewHeurScore=MAX_NEG_INT32;
-    kbc->lastfrm=-1;
-	hth = 0;
-    mdef = kbcore_mdef(kbc);
-    
-    phn_heur_list=pl->phn_heur_list;
-    heur_beam=pl->pl_beam;
-    heur_type=pl->pheurtype;
-
-    /* This implicitly do topological sort */
-    /* 1, First enter the root tree from the expanded tree using the backoff weight*/
-    /* In this part, the back-off weight will be multiplied from the paths */
-
-    /* 2, Then, propagate the root tree. */
-    /* In this part, the amount of active 2nd stage tree will be computed */
-
-    /* 3, Then, propagate the expand tree (?) */
-    /* In this part, it will also decide whether new tree allocated */
-
-    /* 4, Should I rescore at here ? */
-#endif
-}
-
-
-
 
 
