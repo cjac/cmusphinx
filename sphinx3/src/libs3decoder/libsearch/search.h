@@ -46,9 +46,27 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2005/06/21  23:34:39  arthchan2003
- * Remove all dag functions. Eventually I may just want to delete the whole file as well.
+ * Revision 1.5  2006/02/23  15:12:09  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Introduced srch_hyp_t and conf_srch_hyp_t. The former unifies the usage of multiple hyp_t in the past.  The latter is only used in confidence estimation.
  * 
+ * Revision 1.4.4.5  2006/01/16 18:28:19  arthchan2003
+ * 1, Fixed dox-doc, 2, Added confidence scores parameter in search.h. Also change names of parameters.
+ *
+ * Revision 1.4.4.4  2005/11/17 06:30:37  arthchan2003
+ * Remove senscale from srch_hyp_t (Also see changes in vithist.[ch]). Added some preliminary structure for confidence score estimation.
+ *
+ * Revision 1.4.4.3  2005/07/26 02:19:20  arthchan2003
+ * Comment out hyp_t, change name of wid in srch_hyp_t to id.
+ *
+ * Revision 1.4.4.2  2005/07/24 19:34:46  arthchan2003
+ * Removed search_hyp_t, used srch_hyp_t instead
+ *
+ * Revision 1.4.4.1  2005/06/27 05:37:58  arthchan2003
+ * Fixes to make the search of fsg in place (NOT WORKING NOW) in Makefile.am.
+ *
+ * Revision 1.4  2005/06/21 23:34:39  arthchan2003
+ * Remove all dag functions. Eventually I may just want to delete the whole file as well.
+ *
  * Revision 1.2  2005/06/03 05:46:19  archan
  * Refactoring across dag/astar/decode_anytopo.  Code is not fully tested.
  * There are several changes I have done to refactor the code across
@@ -129,20 +147,85 @@
    \brief The temporary header file for sphinx 3 functions. 
  */
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+  /** \struct srch_hyp_t
+      \brief a hypothesis structure 
+   */
 typedef struct srch_hyp_s {
-    char     *word;		/* READ-ONLY item!! */
-    s3wid_t   wid;
-    s3frmid_t sf;
-    s3frmid_t ef;
-    int32     ascr;
-    int32     lscr;
-    int32     pscr;
-    struct srch_hyp_s *next;
+    char     *word;    /**< A pointer to the word string*/
+
+    int32   id;        /**< Token ID; could be s3wid_t, s3cipid_t...
+			  Interpreted by client. */
+
+
+    int32 vhid;         /**< Viterbi history (lattice) ID from which
+			   this entry created Specific to Sphinx 3.x
+			   mode 4 and mode 5*/
+
+    int32 type;		/**< Uninterpreted data; see vithist_entry_t in vithist.h */
+
+    s3frmid_t sf;         /**< Starting frame */
+    s3frmid_t ef;         /**< Ending frame */
+    int32     ascr;       /**< AM score */
+    int32     lscr;       /**< LM score */
+    int32     pscr;       /**< score for heuristic search (Only used in dag and astar)*/
+    int32     cscr;       /**< Use when the recognizer is generating word-based confidence scores */
+
+    int32  fsg_state;     /**< At which this entry terminates (FSG mode only) */
+
+  struct srch_hyp_s *next;  /**< a pointer to next structure, a convenient device such 
+			       that a programmer could choose to use it instead of using
+			       a link list.  Of course one could also use glist
+			    */
 } srch_hyp_t;
+
+  /** \struct conf_srch_hyp_t
+      \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
+   */
+
+typedef struct conf_srch_hyp {
+  srch_hyp_t sh; /**< a srch_hyp_t */
+  float32 lmtype; /**< Language model type */
+  float32 l1, l2, l3;  
+  int32 matchtype; /**< (Currently not used) Match type: INSERTION, SUBSTITUTION, CORRECT */
+  int compound; /**< (Currently not used) The compound type */
+  struct conf_srch_hyp *next; /**< a pointer to the next structure */
+} conf_srch_hyp_t;
+
+
+  /** \struct seg_hyp_line_t
+      \brief a strurcture that stores one line of hypothesis. Mainly used in confidence.c
+   */
+
+typedef struct seg_hyp_line {
+  char seq[1024]; /**< The file name */
+  int32 sent_end_cscore;  /**< The confidenece score at the end of the utterance */
+  int32 cscore ; /**< Confidence score */
+  float32 lmtype;   /**<  LM type, depends on the backoff_modes */
+  int32 wordno;     /**< The number of word in a sentence */
+  int32 nfr;        /**< The number of frame in a sentence */
+  int32 ascr;       /**< The sentence acoustic model score */
+  int32 lscr;       /**< The sentence language model score */
+  conf_srch_hyp_t *wordlist; /**< The list of words */
+} seg_hyp_line_t;
+
+
+
+#if 0 /* Only in Sphinx 2 */
+    float conf;         /* Confidence measure (roughly prob(correct)) for this word;
+                           NOT FILLED IN BY THE RECOGNIZER at the moment!! */
+    int32 latden;       /* Average lattice density in segment.  Larger values imply
+                           more confusion and less certainty about the result.  To use
+                           it for rejection, cutoffs must be found independently */
+    double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
+                           more confusion and less certainty.  To use it for rejection,
+                           cutoffs must be found independently. */
+#endif
+
 
 #ifdef __cplusplus
 }
