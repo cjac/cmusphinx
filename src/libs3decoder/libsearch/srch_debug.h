@@ -38,10 +38,16 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/22  02:37:41  arthchan2003
+ * Revision 1.2  2006/02/23  15:50:25  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc, Added empty functions into srch_debug.[ch]
+ * 
+ * Revision 1.1.4.1  2006/01/16 20:02:08  arthchan2003
+ * Added interfaces for second stage operations
+ *
+ * Revision 1.1  2005/06/22 02:37:41  arthchan2003
  * Log. A search debugging implementation.  Users will only see a text
  * message provided in this search implementation.
- * 
+ *
  * Revision 1.6  2005/05/11 06:10:39  archan
  * Code for lattice and back track pointer table dumping is now wrapped in reg_result_dump.  The function is shared across mode 4 and mode 5.  Possibly later for mode 3 and mode 6 as well.
  *
@@ -89,6 +95,23 @@ int srch_debug_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_debug_select_active_gmm(void *srch);
 int srch_debug_rescoring(void* srch, int32 frmno);
 
+glist_t srch_debug_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
+		     ); 
+
+int srch_debug_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
+		      );
+
+dag_t* srch_debug_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
+			  glist_t hyp
+		     );
+
+glist_t srch_debug_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
+				 dag_t *dag 
+			   );
+
+int32 srch_debug_dag_dump(void *srch_struct,
+			  glist_t hyp
+			  );
 
 
 
