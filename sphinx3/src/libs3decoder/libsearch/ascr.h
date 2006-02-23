@@ -45,14 +45,23 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2005/06/21  22:32:25  arthchan2003
+ * Revision 1.10  2006/02/23  05:19:57  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added acoustic scores. 1, change names of sen to senscr. Add functions to clean up ascr's buffers.
+ * 
+ * Revision 1.9.4.2  2005/08/02 21:11:33  arthchan2003
+ * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
+ *
+ * Revision 1.9.4.1  2005/07/24 01:31:03  arthchan2003
+ * add interface to set temporary active array correctly.
+ *
+ * Revision 1.9  2005/06/21 22:32:25  arthchan2003
  * Log. Significant expansion of ascr_t to be the container of all types
  * of acoustic scores.  Implementations of init, report, free functions
  * are now provided. ascr_shift_one_cache_frame is used to provide a
  * wrapper for shifting one frame of cache frame in phoneme lookahead.
  * It is expected to be used later more if more complicated scheme of
  * lookahead is used.
- * 
+ *
  * Revision 1.5  2005/04/20 03:31:57  archan
  * Part of refactoring: add ascr_shift_one_cache_frame which could shift one cache frame.
  *
@@ -81,7 +90,7 @@ extern "C" {
    */
 
 typedef struct {
-  int32 *sen;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
+  int32 *senscr;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
   int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
 
   int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
@@ -132,7 +141,28 @@ typedef struct {
   void ascr_shift_one_cache_frame(ascr_t *a,  /**<Input: an initialized ascr data structure */
 				  int32 win_efv /**<Input: the effective size of cache windows */
 				  );
-       
+     
+  /**
+     Clear the senone active array
+   */
+  void ascr_clear_sen_active(ascr_t *a /**<Input, an initialized ascr
+					   data structure */
+			     );
+
+  /** 
+      Clear senone sequence ID active array. 
+   */
+  void ascr_clear_ssid_active(ascr_t *a /**< Input, an initialized ascr
+					   data structure */
+			      );
+			    
+  /**
+     Clear the composite senone sequence ID active array
+   */
+  void ascr_clear_comssid_active(ascr_t *a /**< Input, an initialized ascr
+					   data structure */
+				 );
+
 #ifdef __cplusplus
 }
 #endif
