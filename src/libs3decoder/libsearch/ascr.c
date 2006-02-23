@@ -45,14 +45,29 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4  2005/06/21  22:32:25  arthchan2003
+ * Revision 1.5  2006/02/23  05:19:57  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added acoustic scores. 1, change names of sen to senscr. Add functions to clean up ascr's buffers.
+ * 
+ * Revision 1.4.4.4  2005/10/17 04:51:03  arthchan2003
+ * Fixed resource in ascr correctly.
+ *
+ * Revision 1.4.4.3  2005/08/02 21:11:33  arthchan2003
+ * Changed sen to senscr, this avoid confusion in align,allphone, decode_anytopo.
+ *
+ * Revision 1.4.4.2  2005/07/24 01:31:03  arthchan2003
+ * add interface to set temporary active array correctly.
+ *
+ * Revision 1.4.4.1  2005/07/17 05:44:30  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
+ * Revision 1.4  2005/06/21 22:32:25  arthchan2003
  * Log. Significant expansion of ascr_t to be the container of all types
  * of acoustic scores.  Implementations of init, report, free functions
  * are now provided. ascr_shift_one_cache_frame is used to provide a
  * wrapper for shifting one frame of cache frame in phoneme lookahead.
  * It is expected to be used later more if more complicated scheme of
  * lookahead is used.
- * 
+ *
  * Revision 1.6  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
  *
@@ -76,15 +91,16 @@ ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, i
     ascr_t *ascr;
     
     ascr = (ascr_t *) ckd_calloc (1, sizeof(ascr_t));
-    ascr->sen = (int32 *) ckd_calloc (n_sen + n_comsen, sizeof(int32));
-    ascr->comsen = ascr->sen + n_sen;
+    ascr->senscr = (int32 *) ckd_calloc (n_sen + n_comsen, sizeof(int32));
+    ascr->comsen = ascr->senscr + n_sen;
 
 
     /* MEMORY ALLOCATION : Active senones */
     ascr->sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
     ascr->rec_sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
     ascr->ssid_active = (int32 *) ckd_calloc (n_sseq, sizeof(int32));
-    ascr->comssid_active = (int32 *) ckd_calloc (n_comsseq, sizeof(int32));
+    if(n_comsseq>0)
+      ascr->comssid_active = (int32 *) ckd_calloc (n_comsseq, sizeof(int32));
 
     /* MEMORY ALLOCATION : CI senones */
     ascr->cache_ci_senscr=(int32**)ckd_calloc_2d(pl_win,n_cisen,sizeof(int32));
@@ -102,12 +118,12 @@ ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, i
 void ascr_report(ascr_t *a)
 {
   E_INFO_NOFN("Initialization of ascr_t, report:\n");
-  E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
   E_INFO_NOFN("No. of CI senone =%d \n",a->n_cisen);
   E_INFO_NOFN("No. of senone = %d\n",a->n_sen);
   E_INFO_NOFN("No. of composite senone = %d\n",a->n_comsen);
   E_INFO_NOFN("No. of senone sequence = %d\n",a->n_sseq);
   E_INFO_NOFN("No. of composite senone sequence=%d \n",a->n_comsseq);
+  E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
   E_INFO_NOFN("Phoneme lookahead window = %d\n",a->pl_win);
   E_INFO_NOFN("\n");
 }
@@ -129,12 +145,21 @@ void ascr_shift_one_cache_frame(ascr_t *a, int32 win_efv)
 void ascr_free(ascr_t *a)
 {
   if(a){
+    if(a->senscr)
+      ckd_free(a->senscr);
+
     if (a->sen_active)
       ckd_free ((void *)a->sen_active);
+
+    if (a->rec_sen_active)
+      ckd_free ((void *)a->rec_sen_active);
+
     if (a->ssid_active) 
       ckd_free ((void *)a->ssid_active);
+
     if (a->comssid_active)
       ckd_free ((void *)a->comssid_active);
+
     if (a->cache_ci_senscr) 
       ckd_free_2d ((void **)a->cache_ci_senscr);
     if(a->cache_best_list) 
@@ -143,4 +168,28 @@ void ascr_free(ascr_t *a)
     ckd_free(a);
   }
 
+}
+
+void ascr_clear_sen_active(ascr_t *a)
+{
+  assert(a);
+  assert(a->sen_active);
+  memset (a->sen_active, 0, a->n_sen * sizeof(int32));
+}
+
+
+void ascr_clear_ssid_active(ascr_t *a)
+{
+  assert(a);
+  assert(a->ssid_active);
+  memset (a->ssid_active, 0, a->n_sseq * sizeof(int32));
+}
+
+void ascr_clear_comssid_active(ascr_t *a)
+{
+  assert(a);
+  if(a->n_comsseq>0){
+    assert(a->comssid_active);
+    memset (a->comssid_active, 0, a->n_comsseq * sizeof(int32));
+  }
 }
