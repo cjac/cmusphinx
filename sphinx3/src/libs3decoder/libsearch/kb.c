@@ -1,5 +1,5 @@
 /* ====================================================================
- * Copyrightgot (c) 1999-2004 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,43 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.26  2005/06/21  23:21:58  arthchan2003
+ * Revision 1.27  2006/02/23  05:44:59  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH.
+ * 1, Added temp_init_vithistory, this will choose to initialize the correct viterbi history given the mode.
+ * 2, Moved most of the code in kb_setmllr to adaptor.c
+ * 
+ * Revision 1.26.4.10  2006/01/16 18:22:21  arthchan2003
+ * Removed fcloses in kb_free because it caused seg faults. Valgrind also reported.
+ *
+ * Revision 1.26.4.9  2005/10/17 04:52:02  arthchan2003
+ * Free fast_gmm_t.
+ *
+ * Revision 1.26.4.8  2005/09/26 02:26:08  arthchan2003
+ * Change -s3hmmdir to -hmm
+ *
+ * Revision 1.26.4.7  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
+ * Revision 1.26.4.6  2005/09/18 01:21:18  arthchan2003
+ * 1, Add a latticehist_t into kb_t, use a temporary method to allow polymorphism of initialization of vithist_t and latticehist_t. 2, remove the logic kb_set_mllr and put it to adapt_set_mllr
+ *
+ * Revision 1.26.4.5  2005/08/03 18:54:33  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
+ *
+ * Revision 1.26.4.4  2005/08/02 21:32:30  arthchan2003
+ * added -s3hmmdir option.
+ *
+ * Revision 1.26.4.3  2005/07/20 21:19:52  arthchan2003
+ * Added options such that finite state grammar option is now accepted.
+ *
+ * Revision 1.26.4.2  2005/07/18 19:08:55  arthchan2003
+ * Fixed Copy right statement.
+ *
+ * Revision 1.26.4.1  2005/07/03 23:00:58  arthchan2003
+ * Free stat_t, histprune_t and srch_t correctly.
+ *
+ * Revision 1.26  2005/06/21 23:21:58  arthchan2003
  * Log. This is a big refactoring for kb.c and it is worthwhile to give
  * words on why and how things were done.  There were generally a problem
  * that the kb structure itself is too flat.  That makes it has to
@@ -51,23 +87,23 @@
  * well be put into the same structure to increase readability and
  * modularity. One can explain why histprune_t, pl_t, stat_t and
  * adapt_am_t were introduced with that line of reasoning.
- * 
+ *
  * In srch_t, polymorphism of implementation is also one important
  * element in separting all graph related members from kb_t to srch_t.
  * One could probably implement the polymorphism as an interface of kb
  * but it is not trivial from the semantic meaning of kb.  That is
  * probably why srch_t is introduced as the gateway of search interfaces.
- * 
+ *
  * Another phenonemon one could see in the code was bad interaction
  * between modules. This is quite serious in two areas: logging and
  * checking. The current policy is unless something required cross
  * checking two structures, they would be done internally inside a module
  * initialization.
- * 
+ *
  * Finally, kb_setlm is now removed and is replaced by ld_set_lm (by
  * users) or srch_set_lm (by developers). I think this is quite
  * reasonable.
- * 
+ *
  * Revision 1.14  2005/06/19 19:41:23  archan
  * Sphinx3 to s3.generic: Added multiple regression class for single stream MLLR. Enabled MLLR for livepretend and decode.
  *
@@ -136,6 +172,32 @@ FILE* file_open(char* filepath)
   return fp;
 }
 
+/*
+ * EW! This is search mode and in general it shouldn't. I do it because
+ * I expect vithist_t and lattice_hist_t will soon be merged 
+ */
+void temp_init_vithistory(kb_t* kb, int32 op_mode)
+{
+  kb->vithist=NULL;
+  kb->lathist=NULL;
+  if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
+     kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
+				 cmd_ln_int32("-bghist"),
+				 cmd_ln_int32("-lmrescore"),
+				 cmd_ln_int32("-bt_wsil"),
+  				 !cmd_ln_int32("-composite"),
+				 REPORT_KB);
+      
+     if(REPORT_KB)
+       vithist_report(kb->vithist);
+  }
+
+  if(op_mode==OPERATION_FLATFWD){
+    kb->lathist=latticehist_init(cmd_ln_int32("-bptblsize"),
+				 S3_MAX_FRAMES+1);
+  }
+}
+
 
 /*ARCHAN, to allow backward compatibility -lm, -lmctlfn coexists. This makes the current implmentation more complicated than necessary. */
 void kb_init (kb_t *kb)
@@ -163,6 +225,11 @@ void kb_init (kb_t *kb)
 			      cmd_ln_str("-lm"),
 			      cmd_ln_str("-lmctlfn"),
 			      cmd_ln_str("-lmdumpdir"),
+			      cmd_ln_str("-fsg"),
+#if 0
+			      cmd_ln_str("-fsgctlfn"),
+#endif
+			      NULL, /*Currently, not try to handle the -fsgctlfn */
 			      cmd_ln_str("-fillpen"),
 			      cmd_ln_str("-senmgau"),
 			      cmd_ln_float32("-silprob"),
@@ -170,6 +237,7 @@ void kb_init (kb_t *kb)
 			      cmd_ln_float32("-lw"),
 			      cmd_ln_float32("-wip"),
 			      cmd_ln_float32("-uw"),
+			      cmd_ln_str("-hmm"),
 			      cmd_ln_str("-mean"),
 			      cmd_ln_str("-var"),
 			      cmd_ln_float32("-varfloor"),
@@ -233,7 +301,7 @@ void kb_init (kb_t *kb)
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
     for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
-    kb->ascr = ascr_init (mgau_n_mgau(kbcore_mgau(kbcore)), 
+    kb->ascr = ascr_init (kbcore_n_mgau(kbcore),
 			  kb->kbcore->dict2pid->n_comstate,
 			  mdef_n_sseq(mdef),
 			  dict2pid_n_comsseq(d2p),
@@ -243,16 +311,23 @@ void kb_init (kb_t *kb)
 
     if(REPORT_KB)
       ascr_report(kb->ascr);
-    
-    /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
-    kb->vithist = vithist_init(kbcore, kb->beam->word,
-			       cmd_ln_int32("-bghist"),
-			       cmd_ln_int32("-lmrescore"),
-			       cmd_ln_int32("-bt_wsil"),
-			       REPORT_KB);
 
-    if(REPORT_KB)
-      vithist_report(kb->vithist);
+    if(kbcore->lmset&&(cmd_ln_str("-lm")||cmd_ln_str("-lmctlfn"))){
+      /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+
+#if 0
+      kb->vithist = vithist_init(kbcore, kb->beam->word,
+				 cmd_ln_int32("-bghist"),
+				 cmd_ln_int32("-lmrescore"),
+				 cmd_ln_int32("-bt_wsil"),
+				 REPORT_KB);
+      
+      if(REPORT_KB)
+	vithist_report(kb->vithist);
+#endif
+      /* HACK! */
+      temp_init_vithistory(kb,cmd_ln_int32("-op_mode"));
+    }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
@@ -277,6 +352,7 @@ void kb_init (kb_t *kb)
     kb->matchsegfp = kb->matchfp = NULL; 
     kb->matchsegfp=file_open(cmd_ln_str("-hypseg"));
     kb->matchfp=file_open(cmd_ln_str("-hyp"));
+
     kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
     
     /* STRUCTURE INITIALIZATION : The search data structure, done only
@@ -312,60 +388,24 @@ void kb_setmllr(char* mllrname,
 		kb_t* kb)
 {
 /*  int32 veclen;*/
-  int32 *cb2mllr;
+
+  kbcore_t *kbc;
+  
   E_INFO("Using MLLR matrix %s\n", mllrname);
+  kbc=kb->kbcore;
   
   if(strcmp(kb->adapt_am->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
-    /* Reread the gaussian mean from the file again */
-    E_INFO("Reloading mean\n");
-    mgau_mean_reload(kbcore_mgau(kb->kbcore),cmd_ln_str("-mean"));
 
-    /* Read in the mllr matrix */
-
-#if MLLR_DEBUG
-    /*This generates huge amount of information */
-    /*    mgau_dump(kbcore_mgau(kb->kbcore),1);*/
-#endif
-
-    mllr_read_regmat(mllrname,
-		     &(kb->adapt_am->regA),
-		     &(kb->adapt_am->regB),
-		     &(kb->adapt_am->mllr_nclass),
-		     mgau_veclen(kbcore_mgau(kb->kbcore)));
-
-    if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
-      int32 ncb, nmllr;
-
-      cb2mllr_read(cb2mllrname,
-		   &cb2mllr,
-		   &ncb, &nmllr);
-      if (nmllr != kb->adapt_am->mllr_nclass)
-	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		ncb, kb->adapt_am->mllr_nclass);
-      if (ncb != kbcore_mdef(kb->kbcore)->n_sen)
-	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		ncb, kbcore_mdef(kb->kbcore)->n_sen);
-    }
+    if(kbc->mgau)
+      adapt_set_mllr(kb->adapt_am,kbc->mgau,mllrname,cb2mllrname,kbc->mdef);
+    else if(kbc->ms_mgau)
+      model_set_mllr(kbc->ms_mgau,mllrname, cb2mllrname, kbc->fcb, kbc->mdef);
     else
-      cb2mllr = NULL;
-
-    /* Transform all the mean vectors */
-
-    mllr_norm_mgau(kbcore_mgau(kb->kbcore),kb->adapt_am->regA,kb->adapt_am->regB,kb->adapt_am->mllr_nclass,cb2mllr);
-    ckd_free(cb2mllr);
-
-#if MLLR_DEBUG
-    /*#if 1*/
-    mllr_dump(kb->adapt_am->regA,kb->adapt_am->regB,mgau_veclen(kbcore_mgau(kb->kbcore)),kb-adapt_am->mllr_class,cb2mllr);
-    /*This generates huge amount of information */
-    /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
-#endif 
-
+      E_FATAL("Panic, kb has not Gaussian\n");
 
     /* allocate memory for the prevmllrfn if it is too short*/
-    if(strlen(mllrname)*sizeof(char) > 1024){
+    if(strlen(mllrname)*sizeof(char) > 1024)
       kb->adapt_am->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
-    }
 
     strcpy(kb->adapt_am->prevmllrfn,mllrname);
   }else{
@@ -379,9 +419,13 @@ void kb_free (kb_t *kb)
 {
 
   if(kb->srch){
+    srch_uninit(kb->srch);
     /** Add search free code */
   }
 
+  if(kb->stat){
+    stat_free((void*) kb->stat);
+  }
   /* vithist */
   if (kb->vithist) 
     vithist_free((void*) kb->vithist);
@@ -390,18 +434,16 @@ void kb_free (kb_t *kb)
     ascr_free((void*) kb->ascr);
 
   if(kb->fastgmm)
-    ckd_free((void *) kb->fastgmm);
+    fast_gmm_free((void *) kb->fastgmm);
 
   if(kb->beam)
     beam_free((void*) kb->beam);
 
-  if(kb->histprune)
-    histprune_free((void*) kb->histprune);
   
   if(kb->pl)
     pl_free((void*)kb->pl);
 
-  if(kb->kbcore)
+  if(kb->kbcore!=NULL)
     kbcore_free (kb->kbcore);
 
   /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 
@@ -414,7 +456,11 @@ void kb_free (kb_t *kb)
     ckd_free_2d ((void **)kb->feat);
   }
 
+
+#if 0 /* valgrind reports this one. */
   if (kb->matchsegfp) fclose(kb->matchsegfp);
   if (kb->matchfp) fclose(kb->matchfp);
+#endif
+
 
 }
