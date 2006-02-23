@@ -38,11 +38,65 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.3  2006/02/23  16:46:50  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Used the corresponding lextree interface.
+ * 2, 2nd-stage search logic are all commented.
+ * 
+ * Revision 1.2.4.16  2006/01/16 20:14:02  arthchan2003
+ * Remove the unlink silences part because that could affect the performance of the 1st pass search when -bestpath is specified.
+ *
+ * Revision 1.2.4.15  2005/11/17 06:43:25  arthchan2003
+ * Removed senone scale in lextree_hmm_propagate.
+ *
+ * Revision 1.2.4.14  2005/10/17 04:54:49  arthchan2003
+ * Freed the tree set correctly.
+ *
+ * Revision 1.2.4.13  2005/10/07 20:04:50  arthchan2003
+ * When rescoring in full triphone expansion, the code should use the score for the word end with corret right context.
+ *
+ * Revision 1.2.4.12  2005/09/25 19:32:11  arthchan2003
+ * (Change for comments) Allow lexical tree to be dumped optionally.
+ *
+ * Revision 1.2.4.11  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
+ * Revision 1.2.4.10  2005/09/18 01:46:20  arthchan2003
+ * Moved unlinkSilences to mode 4 and mode 5 search-specific implementation.
+ *
+ * Revision 1.2.4.9  2005/09/11 03:01:01  arthchan2003
+ * Bug fix on the size of hmmpf and histpf
+ *
+ * Revision 1.2.4.8  2005/08/03 18:54:32  dhdfu
+ * Fix the support for multi-stream / semi-continuous models.  It is
+ * still kind of a hack, but it now works.
+ *
+ * Revision 1.2.4.7  2005/07/27 23:19:59  arthchan2003
+ * Added assert for make sure lmname is valid.
+ *
+ * Revision 1.2.4.6  2005/07/24 01:41:52  arthchan2003
+ * Use ascr provided clearing function instead of directly clearing the array.
+ *
+ * Revision 1.2.4.5  2005/07/13 02:00:33  arthchan2003
+ * Add ptmr_init for lexical tree timer. The program will not cause invalid write on the timer structure.
+ *
+ * Revision 1.2.4.4  2005/07/07 02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ *
+ * Revision 1.2.4.3  2005/07/04 07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ *
+ * Revision 1.2.4.2  2005/07/03 23:19:16  arthchan2003
+ * Added free code for srch_time_switch_tree.c
+ *
+ * Revision 1.2.4.1  2005/06/28 07:03:37  arthchan2003
+ * Set lmset correctly in srch_time_switch_tree.
+ *
+ * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.15  2005/06/17 23:44:40  archan
  * Sphinx3 to s3.generic, 1, Support -lmname in decode and livepretend.  2, Wrap up the initialization of dict2lmwid to lm initialization. 3, add Dave's trick in LM switching in mode 4 of the search.
  *
@@ -84,6 +138,7 @@
 
 #define REPORT_SRCH_TST 1 
 
+
 int srch_TST_init(kb_t *kb, void *srch)
 {
 
@@ -95,11 +150,14 @@ int srch_TST_init(kb_t *kb, void *srch)
   ptmr_t tm_build;
   
   kbc=kb->kbcore;
-  
   s=(srch_t *)srch;
+
+  ptmr_init(&(tm_build));
+
 
   if(cmd_ln_int32("-Nstalextree"))
     E_WARN("-Nstalextree is omitted in TST search.\n");
+
 
   /** STRUCTURE : allocation of the srch graphs */
   tstg=ckd_calloc(1,sizeof(srch_TST_graph_t));
@@ -116,7 +174,6 @@ int srch_TST_init(kb_t *kb, void *srch)
   }
 
   n_ltree=tstg->n_lextree;
-
 
   /* STRUCTURE and REPORT: Initialize lexical tree. Filler tree's
      initialization is followed.  */
@@ -135,10 +192,15 @@ int srch_TST_init(kb_t *kb, void *srch)
     for (j = 0; j < n_ltree; j++) {
       /*     ptmr_reset(&(tm_build));*/
       ptmr_start(&tm_build);
+
       tstg->ugtree[i*n_ltree+j]=lextree_init(kbc,kbc->lmset->lmarray[i],lmset_idx_to_name(kbc->lmset,i),
-					     tstg->isLMLA,REPORT_SRCH_TST);
+					     tstg->isLMLA,REPORT_SRCH_TST,LEXTREE_TYPE_UNIGRAM);
+
       ptmr_stop(&tm_build);
 	
+      /* Just report the lexical tree parameters for the first tree */
+      lextree_report(tstg->ugtree[0]);
+
       if(tstg->ugtree[i*n_ltree+j]==NULL){
 	E_INFO("Fail to allocate lexical tree for lm %d and lextree %d\n",i,j);
 	return SRCH_FAILURE;
@@ -181,12 +243,12 @@ int srch_TST_init(kb_t *kb, void *srch)
     for(i=0;i<kbc->lmset->n_lm;i++){
       for (j = 0; j < n_ltree; j++) {
 	fprintf (stderr, "LM %d name %s UGTREE %d\n",i,lmset_idx_to_name(kbc->lmset,i),j);
-	lextree_dump (tstg->ugtree[i*n_ltree+j], kbc->dict, stderr);
+	lextree_dump (tstg->ugtree[i*n_ltree+j], kbc->dict, kbc->mdef, stderr,cmd_ln_int32("-lextreedump"));
       }
     }
     for (i = 0; i < n_ltree; i++) {
       fprintf (stderr, "FILLERTREE %d\n", i);
-      lextree_dump (tstg->fillertree[i], kbc->dict, stderr);
+      lextree_dump (tstg->fillertree[i], kbc->dict, kbc->mdef, stderr, cmd_ln_int32("-lextreedump"));
     }
   }
 
@@ -202,11 +264,41 @@ int srch_TST_init(kb_t *kb, void *srch)
   s->grh->graph_struct=tstg;
   s->grh->graph_type=GRAPH_STRUCT_TST;
 
+
+  tstg->lmset=kbc->lmset;
+
   return SRCH_SUCCESS;
 
 }
 int srch_TST_uninit(void *srch)
 {
+  srch_TST_graph_t* tstg ;
+  srch_t* s;
+  int32 i,j;
+  kbcore_t * kbc;
+  
+  s=(srch_t *)srch;
+  kbc=s->kbc;
+
+  tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+
+  for(i=0;i<kbc->lmset->n_lm;i++){
+    for(j=0;j< tstg->n_lextree;j++){
+      lextree_free(tstg->ugtree[i*tstg->n_lextree+j]);
+      lextree_free(tstg->fillertree[i*tstg->n_lextree+j]);
+    }
+  }
+
+  ckd_free(tstg->ugtree);
+  ckd_free(tstg->curugtree);
+  ckd_free(tstg->fillertree);
+
+  if(tstg->histprune!=NULL){
+    histprune_free((void*) tstg->histprune);
+  }
+
+  ckd_free(tstg);
+
   return SRCH_SUCCESS;
 }
 int srch_TST_begin(void *srch)
@@ -236,21 +328,23 @@ int srch_TST_begin(void *srch)
   assert (pred == 0);	/* Vithist entry ID for <s> */
   
   /* This reinitialize the cont_mgau routine in a GMM.  */
-  for(i=0;i<g->n_mgau;i++){
-    g->mgau[i].bstidx=NO_BSTIDX;
-    g->mgau[i].updatetime=NOT_UPDATED;
+  if (g) {
+	  for(i=0;i<g->n_mgau;i++){
+		  g->mgau[i].bstidx=NO_BSTIDX;
+		  g->mgau[i].updatetime=NOT_UPDATED;
+	  }
   }
 
   /* Enter into unigram lextree[0] */
   n = lextree_n_next_active(tstg->curugtree[0]);
   assert (n == 0);
   lextree_enter (tstg->curugtree[0], mdef_silphone(kbc->mdef), -1, 0, pred,
-		 s->beam->hmm);
+		 s->beam->hmm,s->kbc);
     
   /* Enter into filler lextree */
   n = lextree_n_next_active(tstg->fillertree[0]);
   assert (n == 0);
-  lextree_enter (tstg->fillertree[0], BAD_S3CIPID, -1, 0, pred, s->beam->hmm);
+  lextree_enter (tstg->fillertree[0], BAD_S3CIPID, -1, 0, pred, s->beam->hmm,s->kbc);
     
   tstg->n_lextrans = 1;
 
@@ -266,10 +360,6 @@ int srch_TST_begin(void *srch)
 int srch_TST_end(void *srch)
 {
   int32 id;
-  /*int32 ascr, lscr;*/
-  /*glist_t hyp;*/
-  /*gnode_t *gn;*/
-  /*hyp_t *h;*/
   int32 i;
   FILE *fp;
   /**latfp, *bptfp;*/
@@ -294,8 +384,9 @@ int srch_TST_end(void *srch)
   fp = stderr;
   dict = kbcore_dict (s->kbc);
   uttid = s->uttid;
-    
+
   if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
+    /*    E_INFO("ID %d\n",id);*/
     reg_result_dump(s,id);
   } else
     E_ERROR("%s: No recognition\n\n", uttid);
@@ -326,13 +417,11 @@ int srch_TST_end(void *srch)
   
   lm_cache_stats_dump (kbcore_lm(s->kbc));
   lm_cache_reset (kbcore_lm(s->kbc));
-  
-  return SRCH_SUCCESS;
-}
 
-int srch_TST_decode(void *srch)
-{
-  return SRCH_SUCCESS;
+  if(id >=0){
+    return SRCH_SUCCESS;
+  }else
+    return SRCH_FAILURE;
 }
 
 int srch_TST_add_lm(void* srch, lm_t *lm, const char *lmname)
@@ -366,7 +455,7 @@ int srch_TST_add_lm(void* srch, lm_t *lm, const char *lmname)
 					       lms->lmarray[idx],
 					       lmset_idx_to_name(lms,idx),
 					       tstg->isLMLA,
-					       REPORT_SRCH_TST);
+					       REPORT_SRCH_TST,LEXTREE_TYPE_UNIGRAM);
 	
     if(tstg->ugtree[idx*n_ltree+j]==NULL){
       E_INFO("Fail to allocate lexical tree for lm %d and lextree %d\n",idx,j);
@@ -447,6 +536,7 @@ int srch_TST_set_lm(void *srch, const char* lmname)
 
   assert(lms!=NULL);
   assert(lms->lmarray!=NULL);
+  assert(lmname!=NULL);
 
   idx=lmset_name_to_idx(lms,lmname);
 
@@ -573,7 +663,7 @@ int srch_TST_hmm_compute_lv2(void *srch, int32 frmno)
     
 
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
   histbinsize = hp->hmm_hist_binsize;
   numhistbins = hp->hmm_hist_bins;
@@ -605,8 +695,17 @@ int srch_TST_hmm_compute_lv2(void *srch, int32 frmno)
     E_ERROR("***ERROR*** Fr %d, best HMM score > 0 (%d); int32 wraparound?\n",
 	    frmno, besthmmscr);
   }
-  
-  hmm_hist[frm_nhmm / histbinsize]++;
+
+
+  /* Hack! similar to the one in mode 5. The reason though is because
+     dynamic allocation of node cause the histroyt array need to be
+     allocated too.  I skipped this step by just making simple
+     assumption here.
+   */
+  if(frm_nhmm/histbinsize > hp->hmm_hist_bins-1)
+    hmm_hist[hp->hmm_hist_bins-1]++;
+  else
+    hmm_hist[frm_nhmm / histbinsize]++;
     
   /* Set pruning threshold depending on whether number of active HMMs 
    * is within limit 
@@ -684,14 +783,19 @@ int srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
   n_ltree   = tstg->n_lextree;
   ptranskip = s->beam->ptranskip;
 
-  /*  st->utt_node_active*/
+  /*  This stupid is the legacy when we try to make the intel compiler happy. */
   if(ptranskip==0){
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] : tstg->fillertree[i - tstg->n_lextree];
-      lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
-			    s->beam->thres, 
-			    s->beam->phone_thres, 
-			    s->beam->word_thres,pl);
+
+      if(lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
+					  s->beam->thres, 
+					  s->beam->phone_thres, 
+					  s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
+	E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	lextree_utt_end(lextree,kbcore);
+	return SRCH_FAILURE;
+      }
 
     }
   }else{
@@ -699,18 +803,26 @@ int srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
       lextree = (i < n_ltree) ? tstg->curugtree[i] : tstg->fillertree[i - n_ltree];
       
       if ((frmno % ptranskip) != 0){
-	lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
-			      s->beam->thres, 
-			      s->beam->phone_thres, 
-			      s->beam->word_thres,pl);
+	if(lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
+					    s->beam->thres, 
+					    s->beam->phone_thres, 
+					    s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
+	  E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
+	  return SRCH_FAILURE;
+	}
 
       }
       else{
-	lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
-			      s->beam->thres, 
-			      s->beam->word_thres, 
-			      s->beam->word_thres,pl);
-
+	
+	if(lextree_hmm_propagate_non_leaves(lextree, kbcore, frmno,
+					    s->beam->thres, 
+					    s->beam->word_thres, 
+					    s->beam->word_thres,pl)!=LEXTREE_OPERATION_SUCCESS){
+	  E_ERROR("Propagation Failed for lextree_hmm_propagate_non_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
+	  return SRCH_FAILURE;
+	}
       }
     }
   }
@@ -740,8 +852,12 @@ int srch_TST_rescoring(void *srch,int32 frmno)
   if(ptranskip==0){
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] : tstg->fillertree[i - tstg->n_lextree];
-      lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				   s->beam->word_thres,s->senscale);
+      if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
+				      s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
+	E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	lextree_utt_end(lextree,kbcore);
+	return SRCH_FAILURE;
+      }
 
     }
   }else{
@@ -749,14 +865,22 @@ int srch_TST_rescoring(void *srch,int32 frmno)
       lextree = (i < n_ltree) ? tstg->curugtree[i] : tstg->fillertree[i - n_ltree];
       
       if ((frmno % ptranskip) != 0){
-	lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-				     s->beam->word_thres,s->senscale);
+	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
+					s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
+	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	  lextree_utt_end(lextree,kbcore);
+	  return SRCH_FAILURE;
+	}
 
       }
       else{
-  	lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
-	  s->beam->word_thres,s->senscale);
-
+  	if(lextree_hmm_propagate_leaves(lextree, kbcore, vh, frmno,
+					s->beam->word_thres)!=LEXTREE_OPERATION_SUCCESS){
+	  E_ERROR("Propagation Failed for lextree_hmm_propagate_leave at tree %d\n",i);
+	  	lextree_utt_end(lextree,kbcore);
+	  lextree_utt_end(lextree,kbcore);
+	  return SRCH_FAILURE;
+	}
       }
     }
   }
@@ -779,6 +903,12 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
   dict_t *dict;
   mdef_t *mdef;
   srch_TST_graph_t* tstg ;
+
+
+  /* Call the rescoring routines at all word end */
+
+
+
 
   maxpscore=MAX_NEG_INT32;
   bm=s->beam;
@@ -841,7 +971,7 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
       if (s->beam->wordend==0 || bs[p]> s->beam->wordend + maxpscore)
 	{
 	  /* RAH, typecast p to (s3cipid_t) to make compiler happy */
-	  lextree_enter (tstg->curugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th); 
+	  lextree_enter (tstg->curugtree[k], (s3cipid_t) p, cf, bs[p], bv[p], th, s->kbc); 
 	}
     }
 
@@ -849,7 +979,7 @@ static void srch_utt_word_trans (srch_t* s, int32 cf)
   
   /* Transition to filler lextrees */
   lextree_enter (tstg->fillertree[k], BAD_S3CIPID, cf, vh->bestscore[cf],
-		 vh->bestvh[cf], th);
+		 vh->bestvh[cf], th, s->kbc);
 }
 
 int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
@@ -875,12 +1005,14 @@ int srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   dict = kbcore_dict (kbcore);
 
   maxwpf    = hp->maxwpf;
-  maxhistpf = hp->maxwpf;
+  maxhistpf = hp->maxhistpf;
   maxhmmpf  = hp->maxhmmpf;
 
 
   s=(srch_t*) srch;
   tstg=(srch_TST_graph_t*) s->grh->graph_struct;
+
+  srch_TST_rescoring((void *)s,frmno);    
 
   vithist_prune (vh, dict, frmno, maxwpf, maxhistpf, 
 		 s->beam->word_thres-s->beam->bestwordscore);
@@ -963,8 +1095,11 @@ int srch_TST_select_active_gmm(void *srch)
   if (ascr->sen_active) {
     /*    E_INFO("Decide whether senone is active\n");*/
 
-    memset (ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
-    memset (ascr->comssid_active, 0, dict2pid_n_comsseq(d2p) * sizeof(int32));
+
+    ascr_clear_ssid_active(ascr);
+    ascr_clear_comssid_active(ascr);
+
+
     /* Find active senone-sequence IDs (including composite ones) */
     for (i = 0; i < (n_ltree <<1); i++) {
       lextree = (i < n_ltree) ? tstg->curugtree[i] :
@@ -973,7 +1108,10 @@ int srch_TST_select_active_gmm(void *srch)
     }
     
     /* Find active senones from active senone-sequences */
-    memset (ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
+
+    ascr_clear_sen_active(ascr);
+
+
     mdef_sseq2sen_active (mdef, ascr->ssid_active, ascr->sen_active);
     
     /* Add in senones needed for active composite senone-sequences */
@@ -983,5 +1121,180 @@ int srch_TST_select_active_gmm(void *srch)
   return SRCH_SUCCESS;
 }
 
+#if 0
+int srch_TST_dump_vithist(void* srch)
+{
+  srch_t* s;
+  FILE  *bptfp;
+  char file[8192];
+
+  s=(srch_t*) srch;
+
+  assert(s->vithist);
+
+  sprintf (file, "%s/%s.bpt",cmd_ln_str("-bptbldir") , s->uttid);
+  
+  if ((bptfp = fopen (file, "w")) == NULL) {
+    E_ERROR("fopen(%s,w) failed; using stdout\n", file);
+    bptfp = stdout;
+  }
+
+  vithist_dump (s->vithist, -1, s->kbc, bptfp);
+    
+  if (bptfp != stdout)
+    fclose (bptfp);
+
+  return SRCH_SUCCESS;
+}
 
 
+glist_t srch_TST_gen_hyp (void * srch /**< a pointer of srch_t */
+			  )
+{
+  srch_t* s;
+  int32 id;
+  glist_t hyp;
+
+  s=(srch_t*) srch;
+
+  assert(s->vithist);
+  if ((id = vithist_utt_end (s->vithist, s->kbc)) >= 0) {
+    assert(id>=0);
+    hyp = vithist_backtrace (s->vithist, id, kbcore_dict(s->kbc));
+    return hyp;
+  } else{
+    E_ERROR("%s: No recognition\n\n", s->uttid);
+    return NULL;
+  }
+}
+
+/* FIXME! Temporary measure, The code now actually temporarily
+   write the dag file onto harddisc and all subsequent operation
+   will need to require reading the dag back.  Currently that
+   includes the -bestpath, -outlatfmt and -confidence operation.
+   They are now separated with different ifs. 
+   
+   A good way to solve is to work on the dag structure which
+   unfortunately was not supported by vithist.c from 3.x (x<6).
+   We will change this later on. 
+*/
+
+dag_t* srch_TST_gen_dag (void* srch, /**< a pointer of srch_t */
+			 glist_t hyp
+		     )
+{
+  /* This is ugly and write back is required */
+
+  int32 ispipe;
+  char str[2048];
+  FILE *latfp;
+  dag_t *dag;
+  srch_t* s;
+  float32 *f32arg;
+  float64 lwf;
+
+  s=(srch_t*) srch;
+  dag=NULL;
+
+  sprintf (str, "%s/%s.%s",
+	   cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
+
+  E_INFO("Writing lattice file: %s\n", str);
+
+  if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL){
+    E_ERROR("fopen_comp (%s,w) failed\n", str);
+    return NULL;
+  }else {
+    dag_write_header(latfp,s->stat->nfr, 0); /* Very fragile, if 1 is specifed, 
+					   the code will just be stopped */
+    
+    vithist_dag_write (s->vithist, hyp, kbcore_dict(s->kbc),
+		       cmd_ln_int32("-outlatoldfmt"), latfp, 
+		       cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM);
+
+    fclose_comp (latfp, ispipe);
+
+    f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+    s3dag_dag_load(&dag,lwf,
+		   str,
+		   kbcore_dict(s->kbc),
+		   kbcore_fillpen(s->kbc));
+    return dag;
+  }
+    
+
+}
+
+glist_t srch_TST_bestpath_impl(void * srch, /**< A void pointer to a search structure */
+			   dag_t *dag
+			   )
+{
+  glist_t ghyp,rhyp;
+  float32 *f32arg;
+  float64 lwf;
+  srch_t* s;
+  srch_hyp_t *tmph, *bph;
+
+  s=(srch_t*) srch;
+
+  f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+  lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+  
+  bph=dag_search (dag,s->uttid, 
+		  lwf,
+		  dag->final.node,
+		  kbcore_dict(s->kbc),
+		  kbcore_lm(s->kbc),
+		  kbcore_fillpen(s->kbc)
+		  );
+
+  if(bph!=NULL){
+    ghyp=NULL;
+    for(tmph= bph ; tmph ; tmph = tmph->next)
+      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    
+    rhyp=glist_reverse(ghyp);
+    return rhyp;
+  }else{
+    return NULL;
+  }
+
+}
+
+int32 srch_TST_dag_dump(void *srch, glist_t hyp)
+{
+  int32 ispipe;
+  char str[2048];
+  FILE *latfp;
+  float32 *f32arg;
+  dag_t *dag;
+  srch_t* s;
+
+  s=(srch_t*) srch;
+  dag=NULL;
+
+  sprintf (str, "%s/%s.%s",
+	   cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
+
+  E_INFO("Writing lattice file: %s\n", str);
+
+  if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL){
+    E_ERROR("fopen_comp (%s,w) failed\n", str);
+    return NULL;
+  }else {
+    dag_write_header(latfp,s->stat->nfr, 0); /* Very fragile, if 1 is specifed, 
+					   the code will just be stopped */
+    
+    vithist_dag_write (s->vithist, hyp, kbcore_dict(s->kbc),
+		       cmd_ln_int32("-outlatoldfmt"), latfp, 
+		       cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM);
+
+    fclose_comp (latfp, ispipe);    
+  }
+
+}
+
+
+#endif

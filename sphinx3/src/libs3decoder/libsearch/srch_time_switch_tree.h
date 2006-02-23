@@ -37,11 +37,25 @@
 /* srch_time_switch_tree.h
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  02:45:52  arthchan2003
+ * Revision 1.3  2006/02/23  16:46:50  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * 1, Used the corresponding lextree interface.
+ * 2, 2nd-stage search logic are all commented.
+ * 
+ * Revision 1.2.4.3  2006/01/16 20:14:02  arthchan2003
+ * Remove the unlink silences part because that could affect the performance of the 1st pass search when -bestpath is specified.
+ *
+ * Revision 1.2.4.2  2005/07/07 02:38:35  arthchan2003
+ * 1, Remove -lminsearch, 2 Remove rescoring interface in the header.
+ *
+ * Revision 1.2.4.1  2005/07/04 07:20:48  arthchan2003
+ * 1, Ignored -lmsearch, 2, cleaned up memory, 3 added documentation of TST search.
+ *
+ * Revision 1.2  2005/06/22 02:45:52  arthchan2003
  * Log. Implementation of word-switching tree. Currently only work for a
  * very small test case and it's deliberately fend-off from users. Detail
  * omitted.
- * 
+ *
  * Revision 1.8  2005/05/11 00:18:46  archan
  * Add comments on srch.h and srch_time_switch_tree.h and srch_debug.h on how things work. A very detail comment is added in srch.h to describe how generally srch_t is interacting with other parts of the code.
  *
@@ -78,8 +92,8 @@
     word-conditioned tree copies which probably first introduced by
     the RWTH group. Without careful adjustment of the allocation of
     tree, this implementation method will requires (w+1) * lexical
-    trees in search.  Where w is the number of words in the search
-    architecture. 
+    trees in search for a bigram implementation.  Where w is the
+    number of words in the search architecture.
 
     Therefore, he decided to use an interesting way to deal with the
     word segmentation problem (and I personally feel that it is very
@@ -119,9 +133,21 @@
     and conventional tree copies method. This could result in a better
     memory/accuracy/speed trade-off. Second, I actually don't know
     whether mode 5 (word copies searrch ) will work well in
-    general. Last but not least, I preserve the search because of my
+    general. Last but not least, I preserved the search because of my
     respect to Ravi. :-)
   */
+
+/**
+   A note by ARCHAN at 20050703
+
+   In general, what made a LVCSR search to be unique has three major
+   factors.  They are 1) how high level knowledge source (LM, FSG) is
+   applied, 2) how the lexicon is organized, 3, how cross word
+   triphones is realized and implemented.  It is important to realize
+   the interplay between these 3 components to realize how a search
+   actually really works. 
+   
+ */
 
 typedef struct {
 
@@ -153,22 +179,102 @@ typedef struct {
 
 } srch_TST_graph_t ;
 
+/** Initializing search-specific data structure for time-switching
+    tree search Currently, that is to say to initialize lexical
+    tree(s) (both words and fillers) and histprune (it is necessary
+    because histprune rely on the number of states of the data
+    structure.
+ */
+
 int srch_TST_init(kb_t *kb,  /**< The KB. */
 		  void* srch_struct /** The pointer to a search structure. */
 		  );
-int srch_TST_uninit(void *srch);
-int srch_TST_begin(void *srch);
-int srch_TST_end(void * srch);
-int srch_TST_decode(void *srch);
 
-int srch_TST_set_lm(void* srch,const char* lmname);
-int srch_TST_add_lm(void* srch, lm_t *lm, const char *lmname);
-int srch_TST_delete_lm(void* srch, const char *lmname);
+/** Uninitialize search-specific data structure for time-switching
+    tree search Currently, that is to say un-initialize lexical tree
+    and histprune. Notice that lmset is assumed to be deallocate at kb
+    which is the global copy boards of data structure. 
+ */
+int srch_TST_uninit(void *srch  /**< A void pointer to a search structure */
+		    );
 
-int srch_TST_gmm_compute_lv2(void *srch, float32 *feat, int32 time);
-int srch_TST_hmm_compute_lv1(void *srch);
-int srch_TST_hmm_compute_lv2(void *srch, int32 frmno);
-int srch_TST_eval_beams_lv1 (void* srch);
+
+/** Do the preparation for beginning a search for time-switching tree search.
+    There are several things would happen in this function
+
+    1, statistics of an utterance will be clear, (i.e stat_clear_utt
+    is called)
+
+    2, all the bins for histogram pruning will be zeroed
+    (i.e. histprune_zero_histbin is called)
+
+    3, a new viterbi istory will be created. A silence (usually <s> or <sil>)
+     will be inserted at the beginning of the history.
+     (vithist_utt_begin )
+
+    4, Enter the current word tree with index 0 (curugtree[0])
+    assuming left context is silence and enter filler tree with a
+    BAD_S3CIPID
+       
+    5, Swap the active list of the lexical tree.
+    
+    @return SRCH_SUCCESS if succeed. 
+    @see gmm_wrap, srch_TST_end
+ */
+
+int srch_TST_begin(void *srch /**< A void pointer to a search structure */
+		   );
+
+int srch_TST_end(void * srch /**< A void pointer to a search structure */
+		 );
+
+glist_t srch_TST_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
+		     ); 
+
+int srch_TST_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
+		      );
+
+dag_t* srch_TST_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
+			 glist_t hyp
+		     );
+
+glist_t srch_TST_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
+			       dag_t *dag
+			   );
+
+int32 srch_TST_dag_dump(void *srch_struct,
+			glist_t hyp
+			);
+
+/* An empty function, specified for possibly future use of overloading the default
+   search abstraction mechanism. 
+ */
+
+int srch_TST_decode(void *srch /**< A void pointer to a search structure */
+		    );
+
+int srch_TST_set_lm(void* srch, /**< A void pointer to a search structure */
+		    const char* lmname /**< lm name which need to be deleted */
+		    );
+
+int srch_TST_add_lm(void* srch,  /**< A void pointer to a search structure */
+		    lm_t *lm, const char *lmname);
+
+int srch_TST_delete_lm(void* srch,  /**< A void pointer to a search structure */
+		       const char *lmname /**< lm name which need to be deleted */
+		       );
+
+int srch_TST_gmm_compute_lv2(void *srch,  /** A void pointer to a search structure */
+			     float32 *feat, int32 time);
+
+int srch_TST_hmm_compute_lv1(void *srch /** A void pointer to a search structure */
+			     );
+
+int srch_TST_hmm_compute_lv2(void *srch,  /** A void pointer to a search structure */
+			     int32 frmno);
+
+int srch_TST_eval_beams_lv1 (void* srch /** A void pointer to a search structure */
+			     );
 int srch_TST_eval_beams_lv2 (void* srch);
 int srch_TST_propagate_graph_ph_lv1(void *srch_struct);
 int srch_TST_propagate_graph_wd_lv1(void *srch_struct);
@@ -180,7 +286,6 @@ int srch_TST_compute_heuristic(void *srch, int32 win_efv);
 int srch_TST_frame_windup(void *srch_struct,int32 frmno);
 int srch_TST_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_TST_select_active_gmm(void *srch);
-int srch_TST_rescoring(void *s,int32 frmno);
 
 #endif
 
