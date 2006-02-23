@@ -45,9 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2006/02/23  00:48:23  egouvea
- * Replaced loops resetting vectors with the more efficient memset()
+ * Revision 1.13  2006/02/23  03:47:49  arthchan2003
+ * Used Evandro's changes. Resolved conflicts.
  * 
+ *
+ * Revision 1.12  2006/02/23 00:48:23  egouvea
+ * Replaced loops resetting vectors with the more efficient memset()
+ *
  * Revision 1.11  2006/02/22 23:43:55  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
  *
