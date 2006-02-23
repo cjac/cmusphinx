@@ -41,15 +41,22 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.11  2005/07/04  20:57:53  dhdfu
+ * Revision 1.12  2006/02/23  04:05:21  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ * 
+ *
+ * Revision 1.10.4.1  2005/07/05 06:46:23  arthchan2003
+ * 1, Merged from HEAD.  2, fixed dox-doc.
+ *
+ * Revision 1.11  2005/07/04 20:57:53  dhdfu
  * Finally remove the "temporary hack" for the endpointer, and do
  * everything in logs3 domain.  Should make it faster and less likely to
  * crash on Alphas.
- * 
+ *
  * Actually it kind of duplicates the existing GMM computation functions,
  * but it is slightly different (see the comment in classify.c).  I don't
  * know the rationale for this.
- * 
+ *
  * Revision 1.10  2005/06/21 21:06:47  arthchan2003
  * 1, Fixed doxygen documentation, 2, Added  keyword. 3, Change for mdef_init to use logging.
  *
