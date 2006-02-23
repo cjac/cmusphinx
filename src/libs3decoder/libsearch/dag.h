@@ -46,9 +46,30 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2005/06/21  22:37:47  arthchan2003
- * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ * Revision 1.2  2006/02/23  05:22:32  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
  * 
+ * Revision 1.1.4.5  2005/11/17 06:25:04  arthchan2003
+ * 1, Added structure to record node-based ascr and lscr. 2, Added a version of dag_link that copies the langauge model score as well.
+ *
+ * Revision 1.1.4.4  2005/09/25 19:20:43  arthchan2003
+ * Added hooks in dag_node and dag_link. Probably need some time to use it various routines of ours.
+ *
+ * Revision 1.1.4.3  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
+ * Revision 1.1.4.2  2005/09/11 02:56:47  arthchan2003
+ * Log. Incorporated all dag related functions from s3_dag.c and
+ * flat_fwd.c.  dag_search, dag_add_fudge, dag_remove_filler is now
+ * shared by dag and decode_anytopo. (Hurray!). s3_astar.c still has
+ * special functions and it probably unavoidable.
+ *
+ * Revision 1.1.4.1  2005/07/17 05:44:31  arthchan2003
+ * Added dag_write_header so that DAG header writer could be shared between 3.x and 3.0. However, because the backtrack pointer structure is different in 3.x and 3.0. The DAG writer still can't be shared yet.
+ *
+ * Revision 1.1  2005/06/21 22:37:47  arthchan2003
+ * Build a stand-alone wrapper for direct acyclic graph, it is now shared across dag/astar and decode_anytopo.  This eliminate about 500 lines of code in decode_anytopo/dag and astar. However, its existence still can't exterminate code duplication between dag/decode_anytopo.  That effectively means we have many refactoring to do.  Things that are still pretty difficult to merge include dag_search(decode_anytopo/dag) and dag_read (dag/astar).
+ *
  * Revision 1.2  2005/06/03 06:45:28  archan
  * 1, Fixed compilation of dag_destroy, dag_dump and dag_build. 2, Changed RARG to REQARG.
  *
@@ -95,10 +116,62 @@
 #include "dict.h"
 #include "lm.h"
 #include "fillpen.h"
+#include "logs3.h"
+
+#define SPHINX_LATTICE_FORMAT 0
+#define IBM_LATTICE_FORMAT 1 
+
 
 /** \file dag.h
     \brief data structure for dag. Adapted from s3_dag.h in s3.5
  */
+
+/**
+ * \struct word_cand_t
+ *
+ * Word cand structure used in word lattice structure search. For now, it is derived from dag, 
+ * so it is now put inside dag.h. 
+ */
+typedef struct word_cand_s {
+    s3wid_t wid;		/**< A particular candidate word starting in a given frame */
+    struct word_cand_s *next;	/**< Next candidate starting in same frame; NULL if none */
+} word_cand_t;
+
+
+/**
+ * Build array of candidate words that start around the current frame (cf).
+ * Note: filler words are not in this list since they are always searched (see
+ * word_trans).
+ */
+
+void build_word_cand_cf (int32 cf, /**< Current frame */
+			 dict_t *dict, /**< The dictionary */
+			 s3wid_t* wcand_cf, /**< The array of word candidate */
+			 int32 word_cand_win, /**< In frame f, candidate words in input lattice from frames
+						[(f - word_cand_win) .. (f + word_cand_win)] will be
+						the actual candidates to be started(entered) */
+			 word_cand_t ** wcand
+
+			 );
+
+
+
+/**
+ * Load word candidate into a list 
+ */
+int32 word_cand_load (FILE *fp,  /**< An initialized for inputfile poiner */
+		      word_cand_t** wcand, /**< list of word candidate */
+		      dict_t *dict, /**< The dictionary*/
+		      char* uttid   /**< The ID of an utterance */
+		      );
+
+
+/**
+ * Free word candidate
+ */
+void word_cand_free ( word_cand_t ** wcand  /**< list of word candidate to free */
+		      );
+
 /**
  * DAG structure representation of word lattice.  A unique <wordid,startframe> is a node.
  * Edges are formed if permitted by time adjacency.  (See comment before dag_build.)
@@ -112,11 +185,22 @@ typedef struct dagnode_s {
     struct daglink_s *succlist;		/**< List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/**< List of preceding nodes (adjacent in time) */
 
-  uint8 reachable;                      /**< astar specific: Whether final node reachable from here */
+  uint8 reachable;                      /**< In astar: Whether final node reachable from here 
+					     In flat_fwd's dag_to_wordgraph: A marker for whether 
+					     a node is already marked. 
+					     
+					 */
+  int32 node_ascr;                      /**< Node acoustic score */
+  int32 node_lscr;                      /**< Node langauge score */
+  void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
 
 } dagnode_t;
 
-/** A DAG node can have several successor or predecessor nodes, each represented by a link */
+/** 
+    \struct daglink_t
+    A DAG node can have several successor or predecessor nodes, each represented by a link 
+    Multiple-purpose, so some fields may not be used some time. 
+*/
 typedef struct daglink_s {
     dagnode_t *node;		/**< Target of link (source determined by dagnode_t.succlist
 				   or dagnode_t.predlist) */
@@ -126,10 +210,9 @@ typedef struct daglink_s {
     struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
 				   bypass is ptr to fillnode->B */
 
+
     int32 ascr;			/**< Acoustic score for segment of source node ending just
-
 				   before the end point of this link.  (Actually this gets
-
 				   corrupted because of filler node deletion.) */
     int32 lscr;			/**< LM score to the SUCCESSOR node */
     int32 pscr;			/**< Best path score to root beginning with this link */
@@ -140,24 +223,36 @@ typedef struct daglink_s {
 				   links), but gets corrupted because of filler deletion */
     uint8 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
 
-  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
   int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
+  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
+
+  void *hook;                           /**< A hook that could allow arbitrary data structure to use daglink_t */
 
 } daglink_t;
 
-/** Summary of DAG structure information */
+/** 
+    \struct dag_t 
+    Summary of DAG structure information 
+    Multiple-purpose, so some fields may not be used some time. 
+
+    FIXE, latfinal and exit are very very similar things, they just
+    happend to be declared by Ravi different time. 
+ */
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
-    dagnode_t *root;            /**< Corresponding to (<s>,0) */
-    daglink_t final;            /**< Exit link from final DAG node */
+    dagnode_t *root;            /**< Corresponding to the node of (<s>,0)  */
+
     daglink_t entry;		/**< Entering (<s>,0) */
-    daglink_t exit;		/**< Exiting (</s>,finalframe) */
+    daglink_t final;            /**< Exit link from final DAG node */
+
     s3wid_t orig_exitwid;	/**< If original exit node is not a filler word */
 
-    int32 nfrm;
-    int32 nlink;
-    int32 nbypass;
-    int32 maxedge;              /**< (New in S3.6) Used in both dag and flat foward, this decides whether
+    int32 nfrm;                 /**< Number of frames */
+    int32 nlink;                /**< Number of links */
+    int32 nnode;                /**< Number of nodes */
+    int32 nbypass;              /**< The number of linke which are by-passed */
+
+    int32 maxedge;              /**< (New in S3.6) Used in dag/astar/decode_anytopo, this decides whether
 				     parts of the dag code will exceed the maximum no of edge 
 				 */
 
@@ -169,8 +264,13 @@ typedef struct {
     int32 fudged;               /**< Whether fudge edges have been added */
 
     s3latid_t latfinal;         /**< Lattice entry determined to be final end point */
+  void *hook;                   /**< A hook for general purpose */
 
 } dag_t;
+
+
+
+
 
 /** Clean up the hypothesis list */
 
@@ -190,6 +290,18 @@ int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
 		int32 ef,       /**< The ending frame */
 		daglink_t *byp  
 		);
+
+/** Link two DAG nodes with the given arguments
+ * @return 0 if successful, -1 if maxedge limit exceeded.
+ */
+int32 dag_link_w_lscr (dag_t * dagp,    /**< A pointer to a DAG */
+		       dagnode_t *pd,  
+		       dagnode_t *d,   
+		       int32 ascr,     /**< The acoustic scores */
+		       int32 lscr,     /**< The language scores */
+		       int32 ef,       /**< The ending frame */
+		       daglink_t *byp  
+		       );
 
 
 daglink_t *find_succlink (dagnode_t *src, dagnode_t *dst);
@@ -245,12 +357,107 @@ int32 dag_destroy (
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
  * Restore bypassed links during backtrace.
  */
-srch_hyp_t *dag_backtrace (srch_hyp_t *hyp, /**< A pointer to the hypothesis*/
+srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the hypothesis*/
 			   daglink_t *l,  /**< A pointer to the final link*/
 			   float64 lwf,    /**< The language weight factor */
 			   dict_t* dict,   /**< The dictionary*/
 			   fillpen_t* fpen /**< The filler penalty structure */
 			   );
 
+/**
+ * writing the header of dag in Sphinx 3's format
+ */
+
+void dag_write_header (FILE *fp, /**< A file pointer */
+		       int32 nfr, /**< number of frame */
+		       int32 printminfr /**< Print minfr information,
+					   sphinx 3.0 should use 1,
+					   sphinx 3.x should use 0*/
+		       
+		       );
+
+
+/**
+ * Search a dag given language model (lm) and filler penalty struct (fpen)
+ * Final global best path through DAG constructed from the word lattice.
+ * Assumes that the DAG has already been constructed and is consistent with the word
+ * lattice.
+ * The search uses a recursive algorithm to find the best (reverse) path from the final
+ * DAG node to the root:  The best path from any node (beginning with a particular link L)
+ * depends on a similar best path for all links leaving the endpoint of L.  (This is
+ * sufficient to handle trigram LMs.)
+ */
+
+srch_hyp_t *dag_search (dag_t *dagp, /**< The initalized directed acyclic graph to search */
+			char *utt,  /**< The utterance ID */
+			float64 lwf,  /**< LM weight */
+			dagnode_t *final,  /**< The final node, see source code in flat_fwd.c and dag.c */
+			dict_t *dict,  /**< Dict */
+			lm_t *lm,      /**< LM */
+			fillpen_t *fpen /**< Fillpen */
+			);
+
+/**
+ * Add fudges into a DAG 
+ */
+
+void dag_add_fudge_edges (dag_t* dagp,  /** An initialized DAG */
+			  int32 fudge,  /**< Number of fudges */
+			  int32 min_ef_range, /**< Minimum ending frame ranges */
+			  void *lathist, /**< lattice history, compilation problem cause me to cast it as void. 
+					    It should be in latticehist_t */
+			  dict_t *dict  /**< Dictionary */
+			  );
+
+
+/**
+ * Remove filler nodes from DAG by replacing each link TO a filler with links
+ * to its successors.  In principle, successors can be fillers and the process
+ * must be repeated.  But removing fillers in the order in which they appear in
+ * dag.list ensures that succeeding fillers have already been eliminated.
+ *
+ * @return: 0 if successful; -1 if DAG maxedge limit exceeded.
+ */
+
+int32 dag_remove_filler_nodes (dag_t* dagp,  /**< DAG */
+			       float64 lwf,  /**< language weight factor */
+			       dict_t *dict,  /**< Dictionary */
+			       fillpen_t *fpen /**< The filler penalty */
+			       );
+
+
+/**
+ * Load a DAG from a file: each unique <word-id,start-frame> is a node, i.e. with
+ * a single start time but it can represent several end times.  Links are created
+ * whenever nodes are adjacent in time.
+ * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
+ * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
+ * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
+ * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
+ * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
+ * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
+ * absurdum.
+ * @return: 0 if successful, -1 otherwise.
+ */
+
+dag_t* dag_load (  
+		char *file,   /**< Input: File to lod from */
+		int32 maxedge, /**< Maximum # of edges */
+		float32 logbase,  /**< Logbase in float */
+		int32 fudge,    /**< The number of fudges added */
+		dict_t *dict,       /**< Dictionary */
+		fillpen_t *fpen    /**< Filler penalty structure */
+		);
+
+/**
+   A version of dag load that is used in main_dag and srch.c 
+   @return number of frame read
+ */
+int32 s3dag_dag_load (dag_t **dagpp,  /**< Output: pointer of pointer of DAG */
+		      float32 lwf,     /**<Input, language weight */
+		      char *file,      /**< The file name */
+		      dict_t *dict, 
+		      fillpen_t *fpen
+		      );
 
 #endif
