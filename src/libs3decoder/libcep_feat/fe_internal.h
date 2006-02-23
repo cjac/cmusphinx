@@ -51,6 +51,9 @@ extern "C" {
 #define FORWARD_FFT 1
 #define INVERSE_FFT -1
 
+  /** \struct complex
+      \brief A structure to represent complex numbers
+   */
 typedef struct { float64 r, i; } complex;
 
 
