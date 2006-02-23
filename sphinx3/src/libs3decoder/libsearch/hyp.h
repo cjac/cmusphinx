@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2006/02/23  05:40:53  arthchan2003
- * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Comment the hyp_t structure,  Now only defined srch_hyp_t struct
+ * Revision 1.11  2006/02/23  15:13:16  arthchan2003
+ * Typedef hyp_t to srch_hyp_t.  This makes libAPI compiled.
  * 
+ * Revision 1.10  2006/02/23 05:40:53  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Comment the hyp_t structure,  Now only defined srch_hyp_t struct
+ *
  * Revision 1.9.4.2  2005/07/26 02:19:20  arthchan2003
  * Comment out hyp_t, change name of wid in srch_hyp_t to id.
  *
@@ -83,6 +86,8 @@
 extern "C" {
 #endif
 
+
+  typedef hyp_t srch_hyp_t;
 #if 0
   /**
    * Structure to store hypothesis. 
