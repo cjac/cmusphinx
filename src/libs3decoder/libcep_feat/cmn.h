@@ -45,9 +45,13 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2006/02/22  23:43:55  arthchan2003
- * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
+ * Revision 1.13  2006/02/23  03:48:27  arthchan2003
+ * Resolved conflict in cmn.h
  * 
+ *
+ * Revision 1.12  2006/02/22 23:43:55  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
+ *
  * Revision 1.11.4.2  2005/10/17 04:45:57  arthchan2003
  * Free stuffs in cmn and feat corectly.
  *
