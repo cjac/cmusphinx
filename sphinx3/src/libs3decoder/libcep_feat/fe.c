@@ -34,6 +34,33 @@
  *
  */
 
+/*
+ * fe.c -- Feature vector description and cepstra->feature computation.
+ *
+ * **********************************************
+ * CMU ARPA Speech Project
+ *
+ * Copyright (c) 1996 Carnegie Mellon University.
+ * ALL RIGHTS RESERVED.
+ * **********************************************
+ * 
+ * HISTORY
+ * $Log$
+ * Revision 1.10  2006/02/23  03:53:02  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
+ * 1, Added fe_convert_one_file
+ * 2, Use fe_convert_one_file twice in fe_convert_files instead of repeating 200 lines of code twice.
+ * 3, Replaced -srate by -samprate
+ * 4, Replaced -mach_endian by -machine_endian
+ * 5, eliminate ep_fe_openfiles.
+ * 6, Fixed dox-doc.
+ * 
+ * Revision 1.9.4.3  2005/07/18 19:07:42  arthchan2003
+ * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
+ *
+ *
+ */
+
 #include "fe.h"
 
 #include <stdio.h>
@@ -62,21 +89,7 @@
   #define lrand48() rand()*/
 #endif
 
-int32 ep_fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, int32 *nframes, int32 *nblocks);
-void fe_init_dither(int32 seed);
 
-/*** Function to free the front-end wrapper ***/
-void few_free(fewrap_t *FEW)
-{
-
-	free(FEW->fr_data);
-        free(FEW->fr_cep);
- 
-        fe_close(FEW->FE);
-        fe_free_param(FEW->P);
-        free(FEW);   
-
-}
 
 /*** Function to initialize the front-end wrapper ***/
 fewrap_t * few_initialize()
@@ -103,21 +116,154 @@ fewrap_t * few_initialize()
 
 }
 
+/*** Function to free the front-end wrapper ***/
+void few_free(fewrap_t *FEW)
+{
+  if(FEW){
+    if(FEW->fr_data)
+      free(FEW->fr_data);
+
+    if(FEW->fr_cep)
+      free(FEW->fr_cep);
+    
+    fe_close(FEW->FE);
+    fe_free_param(FEW->P);
+    
+    free(FEW);   
+  }
+
+}
+
+/** 
+ * 
+ */
+static int32 fe_convert_one_file(param_t *P, /**< A parameter structure */
+				 fe_t *FE,    /**< A FE parameter structure */
+				 char* fileroot /**< the file root*/
+				 )
+{
+  char *infile, *outfile; 
+  int16 *spdata=NULL;
+
+  int32 splen, total_samps, frames_proc, nframes, nblocks, last_frame;
+  int32 fp_in, fp_out, last_blocksize=0, curr_block, total_frames;
+  float32 **cep = NULL, **last_frame_cep;
+  int32 return_value;
+  int32 warn_zero_energy = OFF;
+  int32 process_utt_return_value;
+
+  fe_build_filenames(P, fileroot, &infile, &outfile);
+
+  if (P->verbose) E_INFO("%s\n", infile);
+
+  return_value = fe_openfiles(P, FE, infile, &fp_in, &total_samps, &nframes, &nblocks, outfile, &fp_out);
+  if (return_value != FE_SUCCESS){
+    return(return_value);
+  }
+
+  warn_zero_energy = OFF;
+
+  if (nblocks*P->blocksize>=total_samps) 
+    last_blocksize = total_samps - (nblocks-1)*P->blocksize;
+
+  if (!fe_start_utt(FE)){
+    curr_block=1;
+    total_frames=frames_proc=0;
+    /*execute this loop only if there is more than 1 block to
+      be processed */
+    while(curr_block < nblocks){
+      splen = P->blocksize;
+      if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
+	E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
+	return(FE_MEM_ALLOC_ERROR);
+      } 
+      if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
+	E_ERROR("error reading speech data\n");
+	return(FE_INPUT_FILE_READ_ERROR);
+      }
+      process_utt_return_value = 
+	fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
+      if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+	warn_zero_energy = ON;
+      } else {
+	assert(process_utt_return_value == FE_SUCCESS);
+      }
+      if (frames_proc>0)
+	fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
+      ckd_free_2d((void **)cep);
+      curr_block++;
+      total_frames += frames_proc;
+      if (spdata!=NULL) { 
+	free(spdata); 
+	spdata = NULL; 
+      }
+    }
+    /* process last (or only) block */
+    if (spdata!=NULL) {
+      free(spdata);
+    }
+    splen=last_blocksize;
+    
+    if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
+      E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
+      return(FE_MEM_ALLOC_ERROR);
+    } 
+    
+    if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
+      E_ERROR("error reading speech data\n");
+      return(FE_INPUT_FILE_READ_ERROR);
+    }
+    
+    process_utt_return_value = 
+      fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
+    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+      warn_zero_energy = ON;
+    } else {
+      assert(process_utt_return_value == FE_SUCCESS);
+    }
+    if (frames_proc>0)
+      fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
+    ckd_free_2d((void **)cep);
+    curr_block++;
+    if (P->logspec != ON)
+      last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->NUM_CEPSTRA, sizeof(float32));
+    else
+      last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->MEL_FB->num_filters, sizeof(float32));
+    process_utt_return_value = 
+      fe_end_utt(FE, last_frame_cep[0], &last_frame);
+    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
+      warn_zero_energy = ON;
+    } else {
+      assert(process_utt_return_value == FE_SUCCESS);
+    }
+    if (last_frame>0){
+      fe_writeblock_feat(P, FE, fp_out, last_frame, last_frame_cep);
+      frames_proc++;
+    }
+    total_frames += frames_proc;
+    
+    fe_closefiles(fp_in, fp_out);		
+    free(spdata); spdata = 0;
+    ckd_free_2d((void **)last_frame_cep);
+    
+  }
+  else{
+    E_ERROR("fe_start_utt() failed\n");
+    return(FE_START_ERROR);
+  }
+  if (ON == warn_zero_energy) {
+    E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
+  }
+
+  return(FE_SUCCESS);
+}
+
 int32 fe_convert_files(param_t *P)
 {
-
     fe_t *FE;
-    char *infile, *outfile, fileroot[MAXCHARS];
+    char fileroot[MAXCHARS];
     FILE *ctlfile;
-    int16 *spdata=NULL;
-    int32 splen, total_samps, frames_proc, nframes, nblocks, last_frame;
-    int32 fp_in, fp_out, last_blocksize=0, curr_block, total_frames;
-    float32 **cep = NULL, **last_frame_cep;
-    int32 return_value;
-    int32 warn_zero_energy = OFF;
-    int32 process_utt_return_value;
     
-    splen=0;
     if ((FE = fe_init(P))==NULL){
 	E_ERROR("memory alloc failed...exiting\n");
 	return(FE_MEM_ALLOC_ERROR);
@@ -129,222 +275,16 @@ int32 fe_convert_files(param_t *P)
 	    return(FE_CONTROL_FILE_ERROR);
 	}
 	while (fscanf(ctlfile, "%s", fileroot)!=EOF){
-	    fe_build_filenames(P, fileroot, &infile, &outfile);
-
-	    if (P->verbose) E_INFO("%s\n", infile);
-
-	    return_value = fe_openfiles(P, FE, infile, &fp_in, &total_samps, &nframes, &nblocks, outfile, &fp_out);
-	    if (return_value != FE_SUCCESS){
-	      return(return_value);
-	    }
-
-	    warn_zero_energy = OFF;
-
-	    if (nblocks*P->blocksize>=total_samps) 
-		last_blocksize = total_samps - (nblocks-1)*P->blocksize;
-	    
-	    if (!fe_start_utt(FE)){
-		curr_block=1;
-		total_frames=frames_proc=0;
-		/*execute this loop only if there is more than 1 block to
-		  be processed */
-		while(curr_block < nblocks){
-		    splen = P->blocksize;
-		    if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
-			E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
-			return(FE_MEM_ALLOC_ERROR);
-		    } 
-		    if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
-			E_ERROR("error reading speech data\n");
-			return(FE_INPUT_FILE_READ_ERROR);
-		    }
-		    process_utt_return_value = 
-		      fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
-		    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-		      warn_zero_energy = ON;
-		    } else {
-		      assert(process_utt_return_value == FE_SUCCESS);
-		    }
-		    if (frames_proc>0)
-			fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
-		    ckd_free_2d((void **)cep);
-		    curr_block++;
-		    total_frames += frames_proc;
-		    if (spdata!=NULL) { 
-		      free(spdata); 
-		      spdata = NULL; 
-		    }
-		}
-		/* process last (or only) block */
-		if (spdata!=NULL) {
-		  free(spdata);
-		}
-		splen=last_blocksize;
-		
-		if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
-		    E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
-		    return(FE_MEM_ALLOC_ERROR);
-		} 
-
-		if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
-		    E_ERROR("error reading speech data\n");
-		    return(FE_INPUT_FILE_READ_ERROR);
-		}
-		
-		process_utt_return_value = 
-		  fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
-		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-		  warn_zero_energy = ON;
-		} else {
-		  assert(process_utt_return_value == FE_SUCCESS);
-		}
-		if (frames_proc>0)
-		    fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
-		ckd_free_2d((void **)cep);
-		curr_block++;
-		if (P->logspec != ON)
-		    last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->NUM_CEPSTRA, sizeof(float32));
-		else
-		    last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->MEL_FB->num_filters, sizeof(float32));
-		process_utt_return_value = 
-		  fe_end_utt(FE, last_frame_cep[0], &last_frame);
-		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-		  warn_zero_energy = ON;
-		} else {
-		  assert(process_utt_return_value == FE_SUCCESS);
-		}
-		if (last_frame>0){
-		    fe_writeblock_feat(P, FE, fp_out, last_frame, last_frame_cep);
-		    frames_proc++;
-		}
-		total_frames += frames_proc;
-		
-		fe_closefiles(fp_in, fp_out);		
-		free(spdata); spdata = 0;
-		ckd_free_2d((void **)last_frame_cep);
-		
-	    }
-	    else{
-		E_ERROR("fe_start_utt() failed\n");
-		return(FE_START_ERROR);
-	    }
+	  fe_convert_one_file(P,FE,fileroot);
 	}
-	fe_close(FE);
-	if (ON == warn_zero_energy) {
-	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
-	}
-    }
-    
-    else if (P->is_single){
-	
-	fe_build_filenames(P, fileroot, &infile, &outfile);
-	if (P->verbose) printf("%s\n", infile);
-	return_value = fe_openfiles(P, FE, infile, &fp_in, &total_samps, &nframes, &nblocks, outfile, &fp_out);
-	if (return_value != FE_SUCCESS){
-	  return(return_value);
-	}
-
-	warn_zero_energy = OFF;
-	
-	if (nblocks*P->blocksize>=total_samps) 
-	    last_blocksize = total_samps - (nblocks-1)*P->blocksize;
-	
-	if (!fe_start_utt(FE)){
-	    curr_block=1;
-	    total_frames=frames_proc=0;
-	    /*execute this loop only if there are more than 1 block to
-	      be processed */
-	    while(curr_block < nblocks){
-		splen = P->blocksize;
-		if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
-		    E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
-		    return(FE_MEM_ALLOC_ERROR);
-		} 
-		if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
-		    E_ERROR("Error reading speech data\n");
-		    return(FE_INPUT_FILE_READ_ERROR);
-		}
-		process_utt_return_value = 
-		  fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
-		if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-		  warn_zero_energy = ON;
-		} else {
-		  assert(process_utt_return_value == FE_SUCCESS);
-		}
-		if (frames_proc>0)
-		    fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
-		ckd_free_2d((void **)cep);
-		curr_block++;
-		total_frames += frames_proc;
-		if (spdata!=NULL) { 
-		  free(spdata); 
-		  spdata = NULL; 
-		}		
-	    }
-	    /* process last (or only) block */
-	    if (spdata!=NULL) {free(spdata);}
-	    splen =last_blocksize;
-	    if ((spdata = (int16 *)calloc(splen, sizeof(int16)))==NULL){
-		E_ERROR("Unable to allocate memory block of %d shorts for input speech\n", splen);
-		return(FE_MEM_ALLOC_ERROR);
-	    } 
-	    if (fe_readblock_spch(P, fp_in, splen, spdata)!=splen){
-		E_ERROR("Error reading speech data\n");
-		return(FE_INPUT_FILE_READ_ERROR);
-	    }
-	    process_utt_return_value = 
-	      fe_process_utt(FE, spdata, splen, &cep, &frames_proc);
-	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-	      warn_zero_energy = ON;
-	    } else {
-	      assert(process_utt_return_value == FE_SUCCESS);
-	    }
-	    if (frames_proc>0)
-		fe_writeblock_feat(P, FE, fp_out, frames_proc, cep);
-	    ckd_free_2d((void **)cep);
-
-	    curr_block++;
-	    if (P->logspec != ON)
-	        last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->NUM_CEPSTRA, sizeof(float32));
-	    else
-	        last_frame_cep = (float32 **)ckd_calloc_2d(1, FE->MEL_FB->num_filters, sizeof(float32));
-	    process_utt_return_value = 
-	      fe_end_utt(FE, last_frame_cep[0], &last_frame);
-	    if (FE_ZERO_ENERGY_ERROR == process_utt_return_value) {
-	      warn_zero_energy = ON;
-	    } else {
-	      assert(process_utt_return_value == FE_SUCCESS);
-	    }
-	    if (last_frame>0){
-	      fe_writeblock_feat(P, FE, fp_out, last_frame, last_frame_cep);
-	      frames_proc++;
-	    }
-	    total_frames += frames_proc;
-	    	    
-	    fe_closefiles(fp_in, fp_out);
-	    
-	    free(spdata);
-	    ckd_free_2d((void **)last_frame_cep);
-	}
-	else{
-	    E_ERROR("fe_start_utt() failed\n");
-	    return(FE_START_ERROR);
-	}
-	
-	fe_close(FE);
-	if (ON == warn_zero_energy) {
-	  E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
-	}
-    }
+    }else if (P->is_single)
+      fe_convert_one_file(P,FE,NULL);
     else{
-	E_ERROR("Unknown mode - single or batch?\n");
-	return(FE_UNKNOWN_SINGLE_OR_BATCH);
-	
+      E_ERROR("Unknown mode - single or batch?\n");
+      return(FE_UNKNOWN_SINGLE_OR_BATCH);
     }
 
-    P->splen=splen;
-    P->nframes=nframes;
-    P->spdata=spdata;
+    fe_close(FE);
     return(FE_SUCCESS);
     
 }
@@ -367,10 +307,9 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
       fe_build_filenames(P, fileroot, &infile, NULL);
       if (P->verbose) printf("%s\n", infile);
 
-      if (ep_fe_openfiles(P, FE, infile, &fp_in, &total_samps, &nframes, &nblocks) != FE_SUCCESS){       
-	E_FATAL("ep_fe_openfiles exited!\n");        
+      if (fe_openfiles(P, FE, infile, &fp_in, &total_samps, &nframes, &nblocks,NULL,NULL) != FE_SUCCESS){       
+	E_FATAL("fe_openfiles exited!\n");        
       }
-                
 
       if (P->blocksize < total_samps) {
 	E_FATAL("Block size (%d) has to be at least the number of samples in the file (%d)\n", 
@@ -383,7 +322,7 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
       if (!fe_start_utt(FE)){
 	curr_block=1;
 	total_frames = frames_proc = 0;
-	//printf("Total frames %d, last_blocksize: %d\n", total_frames, last_blocksize);
+	/*printf("Total frames %d, last_blocksize: %d\n", total_frames, last_blocksize);*/
         
 	/* process last (or only) block */
 	if (spdata != NULL) free(spdata);
@@ -414,11 +353,14 @@ int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *n
 }
 
 
-void fe_validate_parameters(param_t *P) 
+/** Validate the param_t function. 
+ */
+static void fe_validate_parameters(param_t *P /**< A parameter structure */
+				   ) 
 {
     
     if ((P->is_batch) && (P->is_single)) {
-        E_FATAL("You cannot define an input file and a control file\n");
+        E_FATAL("You cannot define an input file and a control file at the same time.\n");
     }
     
     if (P->wavfile == NULL && P->wavdir == NULL){
@@ -443,6 +385,7 @@ void fe_validate_parameters(param_t *P)
     }
     
     if ((P->UPPER_FILT_FREQ * 2) > P->SAMPLING_RATE) {
+      
         E_WARN("Upper frequency higher than Nyquist frequency");
     }
     
@@ -496,9 +439,10 @@ param_t *fe_parse_options()
     P->nchans = cmd_ln_int32("-nchans");
     P->whichchan = cmd_ln_int32("-whichchan");
     P->PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
-    P->SAMPLING_RATE = cmd_ln_float32("-srate");
+    P->SAMPLING_RATE = cmd_ln_float32("-samprate");
     P->WINDOW_LENGTH = cmd_ln_float32("-wlen");
     P->FRAME_RATE = cmd_ln_int32("-frate");
+
     if (!strcmp(cmd_ln_str("-feat"), "sphinx")) 
     {
         P->FB_TYPE = MEL_SCALE;
@@ -521,7 +465,8 @@ param_t *fe_parse_options()
     }
     P->blocksize = cmd_ln_int32("-blocksize");
     P->verbose = cmd_ln_int32("-verbose");
-    endian = cmd_ln_str("-mach_endian");
+
+    endian = cmd_ln_str("-machine_endian");
     if (!strcmp("big", endian)) {
         P->machine_endian = BIG;
     } else {
@@ -581,6 +526,7 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
         sprintf(chanlabel, ".ch%d", P->whichchan);
     
     if (P->is_batch){
+      assert(fileroot);
         sprintf(cbuf, "%s", "");
         strcat(cbuf, P->wavdir);
         strcat(cbuf, "/");
@@ -604,6 +550,7 @@ int32 fe_build_filenames(param_t *P, char *fileroot, char **infilename, char **o
 	}
     }
     else if (P->is_single){
+      /*      assert(fileroot==NULL);*/
         sprintf(cbuf, "%s", "");
         strcat(cbuf, P->wavfile);
 	if (infilename != NULL) {
@@ -643,9 +590,11 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
 {
     int32 frame_start, frame_count = 0;
     
+    assert(FE->FRAME_SIZE!=0);
     for (frame_start=0;frame_start+FE->FRAME_SIZE<=nsamps;
-    frame_start+=FE->FRAME_SHIFT)
+	 frame_start+=FE->FRAME_SHIFT){
         frame_count++;
+    }
    
     if (count_partial_frames){
 	if ((frame_count-1)*FE->FRAME_SHIFT+FE->FRAME_SIZE < nsamps)
@@ -653,175 +602,6 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
     }
     
     return(frame_count);
-}
-
-
-/* Temporary hack. This will duplicate some code, but allow wave2feat and main_ep.c coexists in the same codebase. */	
-int32 ep_fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, 
-                   int32 *nframes, int32 *nblocks)
-{
-    struct stat filestats;
-    int fp=0, len=0, numframes, numblocks;
-    FILE *fp2;
-    char line[MAXCHARS];
-    int got_it=0;
-
-    /* Note: this is kind of a hack to read the byte format from the
-       NIST header */
-    if (P->input_format == NIST){
-        if ((fp2 = fopen(infile, "rb")) == NULL){
-            fprintf(stderr, "Cannot read %s\n", infile);
-            return(FE_INPUT_FILE_READ_ERROR);
-        }
-        *line=0;
-        got_it = 0;
-        while(strcmp(line, "end_head") && !got_it){
-            fscanf(fp2, "%s", line);
-            if (!strcmp(line, "sample_byte_format")){
-                fscanf(fp2, "%s", line);
-                if (!strcmp(line, "-s2")){
-                    fscanf(fp2, "%s", line);
-                    if (!strcmp(line, "01")){
-                        P->input_endian=LITTLE;
-                        got_it=1;
-                    }
-                    else if(!strcmp(line, "10")){
-                        P->input_endian=BIG;
-                        got_it = 1;
-                    }
-                    else
-                        fprintf(stderr, "Unknown/unsupported byte order\n");     
-                }
-                else 
-                    fprintf(stderr, "Error determining byte format\n");
-            }
-        }
-        if (!got_it){
-            fprintf(stderr, "Can't find byte format in header, setting to machine's endian\n");
-            P->input_endian = P->machine_endian;
-        }           
-        fclose(fp2);
-    }
-       else if (P->input_format == RAW){
-      /*
-        P->input_endian = P->machine_endian;
-      */
-    }
-    else if (P->input_format == MSWAV){
-        P->input_endian = LITTLE; // Default for MS WAV riff files
-    }
-    
-    
-    if ((fp = open(infile, O_RDONLY | O_BINARY, 0644))<0){
-        fprintf(stderr, "Cannot open %s\n", infile);
-        return (FE_INPUT_FILE_OPEN_ERROR);
-    }
-    else{
-        if (fstat(fp, &filestats)!=0) printf("fstat failed\n");
-        
-        if (P->input_format == NIST){
-            short *hdr_buf;
-
-            len = (filestats.st_size-HEADER_BYTES)/sizeof(short);
-            /* eat header */
-            hdr_buf = (short *)calloc(HEADER_BYTES/sizeof(short), sizeof(short));
-            if (read(fp, hdr_buf, HEADER_BYTES)!=HEADER_BYTES){
-                fprintf(stderr, "Cannot read %s\n", infile);
-                return (FE_INPUT_FILE_READ_ERROR);
-            }
-            free(hdr_buf);    
-        }
-        else if (P->input_format == RAW){
-            len = filestats.st_size/sizeof(int16);
-        }
-        else if (P->input_format == MSWAV){
-            /* Read the header */
-            MSWAV_hdr *hdr_buf;
-            if ((hdr_buf = (MSWAV_hdr*) calloc(1, sizeof(MSWAV_hdr))) == NULL){
-                fprintf(stderr, "Cannot allocate for input file header\n");
-                return (FE_INPUT_FILE_READ_ERROR);
-            }
-            if (read(fp, hdr_buf, sizeof(MSWAV_hdr)) != sizeof(MSWAV_hdr)){
-                fprintf(stderr, "Cannot allocate for input file header\n");
-                return (FE_INPUT_FILE_READ_ERROR);
-            }
-            /* Check header */
-            if (strncmp(hdr_buf->rifftag, "RIFF", 4)!=0 ||
-                strncmp(hdr_buf->wavefmttag, "WAVEfmt", 7)!=0) {
-             fprintf(stderr, "Error in mswav file header\n");
-                return (FE_INPUT_FILE_READ_ERROR);
-            }
-            if (strncmp(hdr_buf->datatag, "data", 4)!=0) {
-              /* In this case, there are other "chunks" before the
-               * data chunk, which we can ignore. We have to find the
-               * start of the data chunk, which begins with the string
-               * "data".
-               */
-              int16 found=OFF;
-              char readChar;
-              char *dataString = "data";
-              int16 charPointer = 0;
-              printf("LENGTH: %d\n", strlen(dataString));
-              while (found != ON) {
-                if (read(fp, &readChar, sizeof(char)) != sizeof(char)){
-                  fprintf(stderr, "Failed reading wav file.\n");
-                  return (FE_INPUT_FILE_READ_ERROR);
-                }
-                if (readChar == dataString[charPointer]) {
-                  charPointer++;
-                }
-                if (charPointer == (int16)strlen(dataString)) {
-                  found = ON;
-                  strcpy(hdr_buf->datatag, dataString);
-                  if (read(fp, &(hdr_buf->datalength), sizeof(int32)) != sizeof(int32)){
-                    fprintf(stderr, "Failed reading wav file.\n");
-                    return (FE_INPUT_FILE_READ_ERROR);
-                  }
-                }
-              }
-            }
-            if (P->input_endian!=P->machine_endian) { // If machine is Big Endian
-                hdr_buf->datalength = SWAPL(&(hdr_buf->datalength));
-                hdr_buf->data_format = SWAPW(&(hdr_buf->data_format));
-                hdr_buf->numchannels = SWAPW(&(hdr_buf->numchannels));
-                hdr_buf->BitsPerSample = SWAPW(&(hdr_buf->BitsPerSample));
-                hdr_buf->SamplingFreq = SWAPL(&(hdr_buf->SamplingFreq));
-                hdr_buf->BytesPerSec = SWAPL(&(hdr_buf->BytesPerSec));
-            }
-            /* Check Format */
-            if (hdr_buf->data_format != 1 || hdr_buf->BitsPerSample != 16){
-                fprintf(stderr, "MS WAV file not in 16-bit PCM format\n");
-                return (FE_INPUT_FILE_READ_ERROR);
-            }
-            len = hdr_buf->datalength / sizeof(short);
-            P->nchans = hdr_buf->numchannels;
-          /* DEBUG: Dump Info */
-            fprintf(stderr, "Reading MS Wav file %s:\n", infile);
-            fprintf(stderr, "\t16 bit PCM data, %d channels %d samples\n", P->nchans, len);
-            fprintf(stderr, "\tSampled at %d\n", hdr_buf->SamplingFreq);
-            free(hdr_buf);
-        }
-        else {
-            fprintf(stderr, "Unknown input file format\n");
-            return(FE_INPUT_FILE_OPEN_ERROR);
-        }
-    }
-
-
-    len = len/P->nchans;
-    *nsamps = len;
-    *fp_in = fp;
-
-    numblocks = (int)((float)len/(float)P->blocksize);
-    if (numblocks*P->blocksize<len)
-        numblocks++;
-
-        numframes = fe_count_frames(FE, len, COUNT_PARTIAL);
-
-    *nblocks = numblocks;  
-    *nframes = numframes;  
-
-    return 0;
 }
 
 int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsamps, 
@@ -835,7 +615,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
     
     
     /* Note: this is kind of a hack to read the byte format from the
-    NIST header */
+       NIST header */
     if (P->input_format == NIST){
         if ((fp2 = fopen(infile, "rb")) == NULL){
             E_ERROR("Cannot read %s\n", infile);
@@ -871,9 +651,9 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
         fclose(fp2);
     }
     else if (P->input_format == RAW){
-    /*
-    P->input_endian = P->machine_endian;
-        */
+      /*
+	P->input_endian = P->machine_endian;
+      */
     }
     else if (P->input_format == MSWAV){
         P->input_endian = LITTLE; // Default for MS WAV riff files
@@ -920,11 +700,11 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
                 return (FE_INPUT_FILE_READ_ERROR);
             }
             if (strncmp(hdr_buf->datatag, "data", 4)!=0) {
-            /* In this case, there are other "chunks" before the
-            * data chunk, which we can ignore. We have to find the
-            * start of the data chunk, which begins with the string
-            * "data".
-                */
+	      /* In this case, there are other "chunks" before the
+	       * data chunk, which we can ignore. We have to find the
+	       * start of the data chunk, which begins with the string
+	       * "data".
+	       */
                 int16 found=OFF;
                 char readChar;
                 char *dataString = "data";
@@ -985,7 +765,21 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
         numblocks++;
     
     *nblocks = numblocks;  
-    
+
+    /* ARCHAN 20050708, If outfile and fp_out = NULL, then we don't
+       consider the output file in the process. In general, why? why
+       in an open file function we need to think of the output as
+       well? To avoid deep factoring, I just apply this hack for now
+       to eliminate ep_fe_openfiles
+    */
+    if(outfile==NULL&&fp_out==NULL){
+      
+      numframes = fe_count_frames(FE, len, COUNT_PARTIAL);
+      *nframes = numframes;  
+
+      return 0;
+    }
+
     if ((fp = open(outfile, O_CREAT | O_WRONLY | O_TRUNC | O_BINARY, 0644)) < 0) {
         E_ERROR("Unable to open %s for writing features\n", outfile);
         return(FE_OUTPUT_FILE_OPEN_ERROR);
@@ -1010,7 +804,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
         if (P->output_endian != P->machine_endian)
             SWAPL(&outlen);
     }
-    
+
     *nframes = numframes;  
     *fp_out = fp;
     
