@@ -46,9 +46,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/21  21:09:22  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added  keyword.
+ * Revision 1.11  2006/02/23  04:11:13  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added silprob and fillprob. Added fillpen_report.
  * 
+ * Revision 1.10.4.2  2005/06/28 19:09:04  arthchan2003
+ * Add declaration for fillpen_report.
+ *
+ * Revision 1.10.4.1  2005/06/28 06:59:04  arthchan2003
+ * Add silence probability and filler probability as members of fillpen_t, add reporting functions.
+ *
+ * Revision 1.10  2005/06/21 21:09:22  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added  keyword.
+ *
  * Revision 1.4  2005/06/13 04:02:58  archan
  * Fixed most doxygen-style documentation under libs3decoder.
  *
@@ -84,6 +93,13 @@ typedef struct {
 			   langwt and inspen application) */
     float64 lw;		/** Language weight */
     float64 wip;	/** Word insertion penalty */
+
+  float64 silprob;      /** Probability of silence */
+  float64 fillerprob;      /** Probability of filler */
+
+#if 0
+  float64 pip;
+#endif
 } fillpen_t;
 
 
@@ -114,6 +130,13 @@ fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler wo
 int32 fillpen (fillpen_t *f,		/**< In: Filler word probabilities structure */
 	       s3wid_t w		/**< In: Dictionary word-ID of filler word */
 	       );
+
+  /**
+     Report the fillpen_t structure 
+   */
+  void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities structure */
+		      );
+
 /* RAH 
    free memory allocated by fillpen_init
  */

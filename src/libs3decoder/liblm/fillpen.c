@@ -46,9 +46,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/21  21:09:22  arthchan2003
- * 1, Fixed doxygen documentation. 2, Added  keyword.
+ * Revision 1.6  2006/02/23  04:11:13  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added silprob and fillprob. Added fillpen_report.
  * 
+ * Revision 1.5.4.1  2005/06/28 06:59:04  arthchan2003
+ * Add silence probability and filler probability as members of fillpen_t, add reporting functions.
+ *
+ * Revision 1.5  2005/06/21 21:09:22  arthchan2003
+ * 1, Fixed doxygen documentation. 2, Added  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:46  archan
  * Fixed mistakes in last updates. Add
  *
@@ -87,6 +93,8 @@ fillpen_t *fillpen_init (dict_t *dict, char *file, float64 silprob, float64 fill
     _fillpen->dict = dict;
     _fillpen->lw = lw;
     _fillpen->wip = wip;
+    _fillpen->silprob=silprob;
+    _fillpen->fillerprob=fillprob;
     if (dict->filler_end >= dict->filler_start)
 	_fillpen->prob = (int32 *) ckd_calloc (dict->filler_end - dict->filler_start + 1,
 					       sizeof(int32));
@@ -146,6 +154,16 @@ fillpen_t *fillpen_init (dict_t *dict, char *file, float64 silprob, float64 fill
     return _fillpen;
 }
 
+void fillpen_report(fillpen_t *f)
+{
+  E_INFO_NOFN("Initialization of fillpen_t, report:\n");
+  E_INFO_NOFN("Language weight =%f \n",f->lw);
+  E_INFO_NOFN("Word Insertion Penalty =%f \n",f->wip);
+  E_INFO_NOFN("Silence probability =%f \n",f->silprob);
+  E_INFO_NOFN("Filler probability =%f \n",f->fillerprob);
+  E_INFO_NOFN("\n");
+
+}
 
 int32 fillpen (fillpen_t *f, s3wid_t w)
 {
