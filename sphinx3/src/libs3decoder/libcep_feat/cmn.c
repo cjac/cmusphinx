@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2006/02/22  23:43:55  arthchan2003
- * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
+ * Revision 1.12  2006/02/23  00:48:23  egouvea
+ * Replaced loops resetting vectors with the more efficient memset()
  * 
+ * Revision 1.11  2006/02/22 23:43:55  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Put data structure into the cmn_t structure.
+ *
  * Revision 1.10.4.2  2005/10/17 04:45:57  arthchan2003
  * Free stuffs in cmn and feat corectly.
  *
@@ -80,13 +83,7 @@
 cmn_t* cmn_init()
 {
   cmn_t *cmn;
-  cmn=NULL;
-  cmn=(cmn_t*)ckd_calloc (1, sizeof (cmn_t));
-  cmn->cmn_mean=NULL;
-  cmn->cmn_var=NULL;
-  cmn->cur_mean=NULL;
-  cmn->sum=NULL;
-  cmn->nframe=0;
+  cmn = (cmn_t *)ckd_calloc (1, sizeof (cmn_t));
   return cmn;
 }
 
@@ -110,9 +107,10 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
     if (cmn->cmn_mean == NULL)
 	cmn->cmn_mean = (float32 *) ckd_calloc (veclen, sizeof (float32));
 
+    /* If cmn->cmn_mean wasn't NULL, we need to zero the contents */
+    memset(cmn->cmn_mean, 0, veclen * sizeof(float32));
+
     /* Find mean cep vector for this utterance */
-    for (i = 0; i < veclen; i++)
-      cmn->cmn_mean[i] = 0.0;
     for (f = 0; f < n_frame; f++) {
 	mfcp = mfc[f];
 	for (i = 0; i < veclen; i++)
@@ -133,8 +131,8 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
         if (cmn_var == NULL)
     	    cmn_var = (float32 *) ckd_calloc (veclen, sizeof (float32));
 	
-        for (i = 0; i < veclen; i++)
-	    cmn_var[i] = 0.0;
+	/* If cmn->cmn_var wasn't NULL, we need to zero the contents */
+	memset(cmn->cmn_var, 0, veclen * sizeof(float32));
 	
         for (f = 0; f < n_frame; f++) {
     	    mfcp = mfc[f];
@@ -172,13 +170,13 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
     E_FATAL("Variance normalization not implemented in live mode decode\n");
   
 
-  if(cur_mean == NULL){
+  if (cur_mean == NULL) {
     cur_mean = (float32 *) ckd_calloc(ceplen, sizeof(float32));
     
     /* A front-end dependent magic number */
     cur_mean[0] = 12.0;
 
-    if(sum == NULL)
+    if (sum == NULL)
     sum      = (float32 *) ckd_calloc(ceplen, sizeof(float32));
   }
 
@@ -188,8 +186,8 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
   if (nfr <= 0)
     return;
   
-  for (i = 0; i < nfr; i++){
-    for (j = 0; j < ceplen; j++){
+  for (i = 0; i < nfr; i++) {
+    for (j = 0; j < ceplen; j++) {
       sum[j] += incep[i][j];
       incep[i][j] -= cur_mean[j];
     }
@@ -235,16 +233,17 @@ void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen,
  */
 void cmn_free (cmn_t *cmn)
 {
-  if(cmn!=NULL){
-    if(cmn->cmn_var)
+  if (cmn!=NULL) {
+    if (cmn->cmn_var)
       ckd_free ((void *) cmn->cmn_var);
 
-    if(cmn->cmn_mean)
+    if (cmn->cmn_mean)
       ckd_free ((void *) cmn->cmn_mean);
 
-    if(cmn->cur_mean)
+    if (cmn->cur_mean)
       ckd_free ((void *) cmn->cur_mean);
-    
+
     ckd_free((void*) cmn);
+    cmn = NULL;
   }
 }
