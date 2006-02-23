@@ -35,9 +35,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7  2005/06/21  22:25:04  arthchan2003
- * Added  keyword.
+ * Revision 1.8  2006/02/23  04:22:34  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed  dox-doc.
  * 
+ * Revision 1.7.4.1  2005/07/13 01:26:23  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.7  2005/06/21 22:25:04  arthchan2003
+ * Added  keyword.
+ *
  * Revision 1.1  2005/05/04 06:08:07  archan
  * Refactor all lm routines except fillpen.c into ./libs3decoder/liblm/ . This will be equivalent to ./lib/liblm in future.
  *
@@ -62,50 +68,47 @@ extern "C" {
 #endif
 
   /** \file lmclass.h
-      \brief Language model class. 
+   * \brief Language model class modules. 
+   * This module maintains classes of words and associated probabilities (P(word | class)).
+   * Examples of such classes: days of week, months of year, digits, last names, etc.
+   * Restrictions:
+   *   - Classes cannot be nested; all classes are top-level classes.
+   *   - Contents of classes are individual words.  Use "compound words" for phrases.
+   * By convention, class names begin and end with [ and ], respectively.  Also, class
+   * names are CASE-SENSITIVE.
    */
 
-  /**
- * This module maintains classes of words and associated probabilities (P(word | class)).
- * Examples of such classes: days of week, months of year, digits, last names, etc.
- * Restrictions:
- *   - Classes cannot be nested; all classes are top-level classes.
- *   - Contents of classes are individual words.  Use "compound words" for phrases.
- * By convention, class names begin and end with [ and ], respectively.  Also, class
- * names are CASE-SENSITIVE.
- */
 
-
-  /**
- * A single word in an LM class.
- */
+  /** \struct lmclass_word_t
+   * \brief A single word in an LM class.
+   */
 typedef struct lmclass_word_s {
-    char *word;		/* The word string */
-    int32 dictwid;	/* Dictionary word id; NOT filled in by this module, but by
+    char *word;		/**< The word string */
+    int32 dictwid;	/**< Dictionary word id; NOT filled in by this module, but by
 			   the application if desired */
-    int32 LOGprob;	/* Conditional (LOG)probability of this word, given the class */
-    struct lmclass_word_s *next;	/* For linking together words in this LM class,
+    int32 LOGprob;	/**< Conditional (LOG)probability of this word, given the class */
+    struct lmclass_word_s *next;	/**< For linking together words in this LM class,
 					   in no particular order. */
 } *lmclass_word_t;
 
 
-  /**
- * An LM class object.
- */
+  /** \struct lmclass_t
+   * \brief An LM class object.
+   */
 typedef struct lmclass_s {
-    char *name;			/* Name for this LM class */
-    lmclass_word_t wordlist;	/* Head of list of words in this class */
-    struct lmclass_s *next;	/* For linking together multiple LM classes in the
+    char *name;			/**< Name for this LM class */
+    lmclass_word_t wordlist;	/**< Head of list of words in this class */
+    struct lmclass_s *next;	/**< For linking together multiple LM classes in the
 				   application, in no particular order. */
 } *lmclass_t;
 
 
-  /**
- * Collection of LM classes.  Most applications would use multiple classes.  This data
- * type is provided as a convenience for maintaining several such classes.
- */
+  /** \struct lmclass_set_t
+   * \brief Collection of LM classes.  Most applications would use multiple classes.  This data
+   * type is provided as a convenience for maintaining several such classes.
+   */
 typedef struct lmclass_set_s {
-    lmclass_t lmclass_list;	/* Head of list of LM classes in this module */
+    lmclass_t lmclass_list;	/**< Head of list of LM classes in this module */
 } *lmclass_set_t;
 
 
@@ -137,7 +140,9 @@ lmclass_set_t lmclass_newset ( void );
  * 
  * Lines beginning with a # IN THE FIRST COLUMN are comments and are ignored.
  */
-lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set, char *file);
+  lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set,  /**< An lm class set */
+				  char *file /**< A class definition file */
+				);
 
 
   /**
