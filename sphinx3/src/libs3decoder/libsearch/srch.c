@@ -34,13 +34,101 @@
  *
  */
 
-
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.2  2005/11/24  07:34:04  arthchan2003
- * Fixed a typo in the code which caused the header of the lattice wasn't dumped correctly.
+ * Revision 1.3  2006/02/23  15:26:10  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII:
  * 
+ * Summary of changes. Detail could be seen in the comments from the
+ * branches.
+ * 
+ *  After 6 months, we have two more searches using interface
+ * provided by srch.c. That included an adapted version of Sphinx 2's FSG
+ * search.  Also, the original version of flat-lexicon decoding search.
+ * 
+ * Second stage search operation is still not properly put in the srch_t
+ * structure.  We should create function hooks that allow developer to
+ * put the code more properly than now.
+ * 
+ * The interface of srch.c is still not very completed. Things we should
+ * support include switching of AM and MLLR.  They are currently
+ * commented.
+ * 
+ * Mode 5, the word-dependent tree copies are now fended off from the
+ * users.
+ * 
+ * Mode 2, the FSG search are opened.  It is not very well tested so the
+ * user will be warned about its nature.
+ * 
+ *
+ * Revision 1.1.4.21  2006/01/16 20:01:20  arthchan2003
+ * Added Commented code in srch.[ch] for second-stage rescoring. Not used for now.
+ *
+ * Revision 1.2  2005/11/24 07:34:04  arthchan2003
+ * Fixed a typo in the code which caused the header of the lattice wasn't dumped correctly.
+ *
+ *
+ * Revision 1.1.4.20  2005/11/17 06:38:43  arthchan2003
+ * change for comment, srch.c also now support conversion from s3 lattice to IBM lattice format.
+ *
+ * Revision 1.1.4.19  2005/11/17 06:36:36  arthchan2003
+ * There are several important changes. 1, acoustic score scale has changed back to put it the search structure.  This fixed a bug introduced pre-2005 code branching where only the scaling factor of the last frame. 2, Added a fmt argument of matchseg_write , implemented segmentation output for s2 and ctm file format. matchseg_write also now shared across the flat and tree decoder now. 3, Added Rong's read_seg_hyp_line.
+ *
+ * Revision 1.1.4.18  2005/10/17 04:54:20  arthchan2003
+ * Freed graph correctly.
+ *
+ * Revision 1.1.4.17  2005/09/25 19:30:21  arthchan2003
+ * (Change for comments) Track error messages from propagate_leave and propagate_non_leave, this allow us to return error when bugs occur in internal of search.
+ *
+ * Revision 1.1.4.16  2005/09/25 19:23:55  arthchan2003
+ * 1, Added arguments for turning on/off LTS rules. 2, Added arguments for turning on/off composite triphones. 3, Moved dict2pid deallocation back to dict2pid. 4, Tidying up the clean up code.
+ *
+ * Revision 1.1.4.15  2005/09/18 01:44:12  arthchan2003
+ * Very boldly, started to support flat lexicon decoding (mode 3) in srch.c.  Add log_hypseg. Mode 3 is implemented as srch-one-frame implementation. Scaling doesn't work at this point.
+ *
+ * Revision 1.1.4.14  2005/09/11 23:07:28  arthchan2003
+ * srch.c now support lattice rescoring by rereading the generated lattice in a file. When it is operated, silence cannot be unlinked from the dictionary.  This is a hack and its reflected in the code of dag, kbcore and srch. code
+ *
+ * Revision 1.1.4.13  2005/08/02 21:37:28  arthchan2003
+ * 1, Used s3_cd_gmm_compute_sen instead of approx_cd_gmm_compute_sen in mode 2, 4 and 5.  This will suppose to make s3.0 to be able to read SCHMM and use them as well. 2, Change srch_gmm_compute_lv2 to accept a two-dimensional array (no_stream*no_coeff) instead of a one dimensional array (no_coeff).
+ *
+ * Revision 1.1.4.12  2005/07/26 02:21:14  arthchan2003
+ * merged hyp_t with srch_hyp_t.
+ *
+ * Revision 1.1.4.11  2005/07/24 01:39:26  arthchan2003
+ * Added srch_on_srch_frame_lv[12] in the search abstraction routine.  This will allow implementation just provide the search for one frame without supplying all function pointer in the standard abstraction.
+ *
+ * Revision 1.1.4.10  2005/07/22 03:41:05  arthchan2003
+ * 1, (Incomplete) Add function pointers for flat foward search. Notice implementation is not yet filled in. 2, adding log_hypstr and log_hyp_detailed.  It is sphinx 3.0 version of matchwrite.  Add it to possible code merge.
+ *
+ * Revision 1.1.4.9  2005/07/20 21:21:59  arthchan2003
+ * Removed graph search fend-off.
+ *
+ * Revision 1.1.4.8  2005/07/17 05:54:55  arthchan2003
+ * replace vithist_dag_write_header with dag_write_header
+ *
+ * Revision 1.1.4.7  2005/07/13 18:42:35  arthchan2003
+ * Re-enabled function assignments for mode 3 in srch.c. Code compiled. Still has 3 major hacks and 8 minor hacks.  See message in fsg_*
+ *
+ * Revision 1.1.4.6  2005/07/07 02:37:39  arthchan2003
+ * 1, Changed names of srchmode* functions to srch_mode*, 2, complete srch_mode_index_to_str, 3, Remove srch_rescoring and ask implementation to call these "rescoring functions" themselves.  The reason is rescoring is not as universal as I would think in the general search. I think search implementer should be the one who decide whether rescoring is one part of their search algorithms
+ *
+ * Revision 1.1.4.5  2005/07/04 07:18:49  arthchan2003
+ * Disabled support of FSG. Added comments for srch_utt_begin and srch_utt_end.
+ *
+ * Revision 1.1.4.4  2005/07/03 23:04:55  arthchan2003
+ * 1, Added srchmode_str_to_index, 2, called the deallocation routine of the search implementation layer in srch_uninit
+ *
+ * Revision 1.1.4.3  2005/06/28 07:03:01  arthchan2003
+ * Added read_fsg operation as one method. Currently, it is still not clear how it should iteract with lm
+ *
+ * Revision 1.1.4.2  2005/06/27 05:32:35  arthchan2003
+ * Started to give pointer function to mode 3. (It is already in my todolist to give better names to modes. )
+ *
+ * Revision 1.1.4.1  2005/06/24 21:13:52  arthchan2003
+ * 1, Turn on mode 5 again, 2, fixed srch_WST_end, 3, Add empty function implementations of add_lm and delete_lm in mode 5. This will make srch.c checking happy.
+ *
  * Revision 1.1  2005/06/22 02:24:42  arthchan2003
  * Log. A search interface implementation are checked in. I will call
  * srch_t to be search abstraction or search mechanism from now on.  The
@@ -123,39 +211,155 @@
 #define COMPUTE_HEURISTIC 1
 
 
-void srch_assert_funcptrs(srch_t *s){
-  assert(s->srch_init!=NULL);
-  assert(s->srch_uninit!=NULL);
-  assert(s->srch_utt_begin!=NULL);
-  assert(s->srch_utt_end!=NULL);
-  assert(s->srch_decode!=NULL);
-  assert(s->srch_set_lm!=NULL);
-  assert(s->srch_add_lm!=NULL);
-  assert(s->srch_delete_lm!=NULL);
-  assert(s->srch_compute_heuristic!=NULL);
-  assert(s->srch_gmm_compute_lv1!=NULL);
-  assert(s->srch_hmm_compute_lv1!=NULL);
-  assert(s->srch_eval_beams_lv1!=NULL);
-  assert(s->srch_propagate_graph_ph_lv1!=NULL);
-  assert(s->srch_propagate_graph_wd_lv1!=NULL);
-  assert(s->srch_gmm_compute_lv2!=NULL);
-  assert(s->srch_hmm_compute_lv2!=NULL);
-  assert(s->srch_eval_beams_lv2!=NULL);
-  assert(s->srch_propagate_graph_ph_lv2!=NULL);
-  assert(s->srch_propagate_graph_wd_lv2!=NULL);
-  assert(s->srch_rescoring!=NULL);
-  assert(s->srch_frame_windup!=NULL);
-  assert(s->srch_compute_heuristic!=NULL);
-  assert(s->srch_shift_one_cache_frame!=NULL);
-  assert(s->srch_select_active_gmm!=NULL);
+static void write_bestsenscore(srch_t *s);
 
+static void display_dump_hypothesis (srch_t *s, 
+			      glist_t hyp, 
+			      char* hyptag, 
+			      char* hypsegtag, 
+			      char* shortformCap, 
+			      char* shortformSmall
+			      );
+
+int32 srch_mode_str_to_index(const char* mode_str)
+{
+  if(!strcmp(mode_str,"OP_ALIGN")){
+    return OPERATION_ALIGN;
+  }
+
+  if(!strcmp(mode_str,"OP_ALLPHONE")){
+    return OPERATION_ALLPHONE;
+  }
+
+  if(!strcmp(mode_str,"OP_FSG")){
+    return OPERATION_GRAPH;
+  }
+
+  if(!strcmp(mode_str,"OP_FLATFWD")){
+    return OPERATION_FLATFWD;
+  }
+
+  if(!strcmp(mode_str,"OP_MAGICWHEEL")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_TST_DECODE")){
+    return OPERATION_TST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_WST_DECODE")){
+    return OPERATION_WST_DECODE;
+  }
+
+  if(!strcmp(mode_str,"OP_DEBUG")){
+    return OPERATION_DEBUG;
+  }
+
+  E_WARN("UNKNOWN MODE NAME %s\n",mode_str);
+  return -1; 
+
+}
+
+char* srch_mode_index_to_str(int32 index)
+{
+  char* str;
+  str=NULL;
+  if(index==OPERATION_ALIGN){
+    str=ckd_salloc("OP_ALIGN");
+  }else if (index==OPERATION_ALLPHONE){
+    str=ckd_salloc("OP_ALLPHONE");
+  }else if (index==OPERATION_GRAPH){
+    str=ckd_salloc("OP_FSG");
+  }else if (index==OPERATION_FLATFWD){
+    str=ckd_salloc("OP_FLATFWD");
+  }else if (index==OPERATION_TST_DECODE){
+    str=ckd_salloc("OP_TST_DECODE");
+  }else if (index==OPERATION_WST_DECODE){
+    str=ckd_salloc("OP_WST_DECODE");
+  }else if (index==OPERATION_DEBUG){
+    str=ckd_salloc("OP_DEBUG");
+  }
+  return str;
+}
+
+void srch_assert_funcptrs(srch_t *s){
+
+  if(s->srch_decode!=NULL){    /* Provide that the implementation does
+				  not override the search abstraction
+				  assert every implementation pointers
+			       */
+
+    assert(s->srch_init!=NULL);
+    assert(s->srch_uninit!=NULL);
+    assert(s->srch_utt_begin!=NULL);
+    assert(s->srch_set_lm!=NULL);
+    assert(s->srch_add_lm!=NULL);
+    assert(s->srch_delete_lm!=NULL);
+    assert(s->srch_compute_heuristic!=NULL);
+    
+    assert(s->srch_gmm_compute_lv1!=NULL);
+
+    if(s->srch_one_srch_frame_lv1!=NULL){ /* If implementation
+					     provides only 
+					     how to search one frame after 
+					     GMM computation*/
+      assert(s->srch_hmm_compute_lv1==NULL);
+      assert(s->srch_eval_beams_lv1==NULL);
+      assert(s->srch_propagate_graph_ph_lv1==NULL);
+      assert(s->srch_propagate_graph_wd_lv1==NULL);
+    }else{
+      if(s->srch_hmm_compute_lv1==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_hmm_compute_lv1 is not specified\n");
+      if(s->srch_eval_beams_lv1==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_eval_beams_lv1 is not specified\n");
+      if(s->srch_propagate_graph_ph_lv1==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_propagate_graph_ph_lv1 is not specified\n");
+      if(s->srch_propagate_graph_wd_lv1==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_propagate_graph_wd_lv1 is not specified\n");
+    }
+
+    assert(s->srch_gmm_compute_lv2!=NULL);
+    if(s->srch_one_srch_frame_lv2!=NULL){ /* If implementation
+					     provides only 
+					     how to search one frame after 
+					     GMM computation*/
+
+      assert(s->srch_hmm_compute_lv2==NULL);
+      assert(s->srch_eval_beams_lv2==NULL);
+      assert(s->srch_propagate_graph_ph_lv2==NULL);
+      assert(s->srch_propagate_graph_wd_lv2==NULL);
+    }else{
+      if(s->srch_hmm_compute_lv2==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_hmm_compute_lv2 is not specified\n");
+      if(s->srch_eval_beams_lv2==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_eval_beams_lv2 is not specified\n");
+      if(s->srch_propagate_graph_ph_lv2==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_propagate_graph_ph_lv2 is not specified\n");
+      if(s->srch_propagate_graph_wd_lv2==NULL)
+	E_WARN("Search one frame implementation is not specified but srch_propagate_graph_wd_lv2 is not specified\n");
+
+    }
+    assert(s->srch_frame_windup!=NULL);
+    assert(s->srch_compute_heuristic!=NULL);
+    assert(s->srch_shift_one_cache_frame!=NULL);
+    assert(s->srch_select_active_gmm!=NULL);
+
+    assert(s->srch_utt_end!=NULL);
+    assert(s->srch_gen_hyp!=NULL);
+    assert(s->srch_dump_vithist!=NULL);
+
+#if 0 /* Not asserts for everything now, mainly because the FST mode
+	 is not generating dag at this point */
+    assert(s->srch_gen_dag!=NULL);
+
+#endif
+  }
 }
 
 void srch_clear_funcptrs(srch_t *s){
   s->srch_init=NULL;
   s->srch_uninit=NULL;
   s->srch_utt_begin=NULL;
-  s->srch_utt_end=NULL;
   s->srch_decode=NULL;
   s->srch_set_lm=NULL;
   s->srch_add_lm=NULL;
@@ -166,6 +370,7 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_eval_beams_lv1=NULL;
   s->srch_propagate_graph_ph_lv1=NULL;
   s->srch_propagate_graph_wd_lv1=NULL;
+  s->srch_one_srch_frame_lv2=NULL;
   s->srch_gmm_compute_lv2=NULL;
   s->srch_hmm_compute_lv2=NULL;
   s->srch_eval_beams_lv2=NULL;
@@ -177,6 +382,15 @@ void srch_clear_funcptrs(srch_t *s){
   s->srch_shift_one_cache_frame=NULL;
   s->srch_select_active_gmm=NULL;
 
+  s->srch_utt_end=NULL;
+  s->srch_gen_hyp=NULL;
+  s->srch_gen_dag=NULL;
+  s->srch_dump_vithist=NULL;
+
+
+  /* For convenience, clear but not check at this point */
+  /*  s->srch_read_fsgfile=NULL;*/
+
 }
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces*/
@@ -184,6 +398,7 @@ void srch_clear_funcptrs(srch_t *s){
 srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   srch_t *s;
+  char *str;
   s=(srch_t*) ckd_calloc(1, sizeof(srch_t));
 
   E_INFO("Search Initialization. \n");
@@ -192,6 +407,11 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   s->cache_win=cmd_ln_int32("-pl_window");
   s->cache_win_strt=0 ; 
   s->senscale=0;
+
+  s->ascale= (int32 *) ckd_calloc(DFLT_UTT_SIZE,sizeof(int32));
+  s->ascale_sz = DFLT_UTT_SIZE;
+  s->segsz= (int32 *) ckd_calloc(DFLT_NUM_SEGS,sizeof(int32));
+  s->segsz_sz = DFLT_NUM_SEGS;
 
   srch_clear_funcptrs(s);
 
@@ -207,11 +427,75 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_FATAL("Finite state graphs search is not supported yet");
+    E_WARN("In Sphinx 3.6 RCI, Graph search is still recommended for internal use only. ");
 
-  }else if(op_mode==OPERATION_FLAT_DECODE){
+    s->srch_init=&srch_FSG_init;
+    /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
 
-    E_FATAL("Flat decoding is not supported yet");
+    s->srch_uninit=&srch_FSG_uninit;
+    s->srch_utt_begin=&srch_FSG_begin;
+
+    s->srch_set_lm=&srch_FSG_set_lm;
+    s->srch_add_lm=&srch_FSG_add_lm;
+    s->srch_delete_lm=&srch_FSG_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FSG_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_one_srch_frame_lv2=&srch_FSG_srch_one_frame_lv2;
+
+    s->srch_frame_windup=&srch_FSG_windup;
+    s->srch_shift_one_cache_frame=&srch_FSG_shift_one_cache_frame;
+
+    s->srch_utt_end=&srch_FSG_end;
+
+#if 0
+    s->srch_gen_hyp=&srch_FSG_gen_hyp;
+    s->srch_dump_vithist=&srch_FSG_dump_vithist;
+
+    s->srch_gen_dag=NULL;
+#endif
+
+  }else if(op_mode==OPERATION_FLATFWD){
+
+    s->srch_init=&srch_FLAT_FWD_init;
+    s->srch_uninit=&srch_FLAT_FWD_uninit;
+    s->srch_utt_begin=&srch_FLAT_FWD_begin;
+    s->srch_utt_end=&srch_FLAT_FWD_end;
+
+    s->srch_set_lm=&srch_FLAT_FWD_set_lm;
+    s->srch_add_lm=&srch_FLAT_FWD_add_lm;
+    s->srch_delete_lm=&srch_FLAT_FWD_delete_lm;
+
+    s->srch_select_active_gmm=&srch_FLAT_FWD_select_active_gmm;
+    s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen;
+
+    s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
+    s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
+    s->srch_propagate_graph_ph_lv1=&srch_debug_propagate_graph_ph_lv1;
+    s->srch_propagate_graph_wd_lv1=&srch_debug_propagate_graph_wd_lv1;
+
+    s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+
+
+    s->srch_one_srch_frame_lv2=&srch_FLAT_FWD_srch_one_frame_lv2;
+    s->srch_frame_windup=&srch_FLAT_FWD_frame_windup;
+    s->srch_shift_one_cache_frame=&srch_FLAT_FWD_shift_one_cache_frame;
+
+#if 0
+    s->srch_gen_hyp=&srch_FLAT_FWD_gen_hyp;
+    s->srch_gen_dag=&srch_FLAT_FWD_gen_dag;
+    s->srch_dump_vithist=&srch_FLAT_FWD_dump_vithist;
+    s->srch_bestpath_impl=&srch_FLAT_FWD_bestpath_impl;
+    s->srch_dag_dump=&srch_FLAT_FWD_dag_dump;
+#endif
 
   }else if(op_mode==OPERATION_TST_DECODE){
 
@@ -219,7 +503,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_TST_uninit;
     s->srch_utt_begin=&srch_TST_begin;
     s->srch_utt_end=&srch_TST_end;
-    s->srch_decode=&srch_TST_decode;
 
     s->srch_set_lm=&srch_TST_set_lm;
     s->srch_add_lm=&srch_TST_add_lm;
@@ -227,7 +510,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
     s->srch_select_active_gmm=&srch_TST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen_comp;
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -239,28 +522,38 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_TST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_TST_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_TST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_TST_rescoring;
 
     s->srch_compute_heuristic=&srch_TST_compute_heuristic;
     s->srch_frame_windup=&srch_TST_frame_windup;
     s->srch_shift_one_cache_frame=&srch_TST_shift_one_cache_frame;
 
+#if 0
+    s->srch_gen_hyp=&srch_TST_gen_hyp;
+    s->srch_dump_vithist=&srch_TST_dump_vithist;
+    s->srch_gen_dag=&srch_TST_gen_dag;
+    s->srch_bestpath_impl=&srch_TST_bestpath_impl;
+    s->srch_dag_dump=&srch_TST_dag_dump;
+#endif
+
   }else if(op_mode==OPERATION_WST_DECODE){
 
+    E_INFO("You have used a function which is still under development\n");
     E_FATAL("Word Conditioned Tree Search is still under development. It is now fended off from the users.");
 
     s->srch_init=&srch_WST_init;
     s->srch_uninit=&srch_WST_uninit;
     s->srch_utt_begin=&srch_WST_begin;
     s->srch_utt_end=&srch_WST_end;
-    s->srch_decode=&srch_WST_decode;
     s->srch_set_lm=&srch_WST_set_lm;
+    s->srch_add_lm=&srch_TST_add_lm;
+    s->srch_delete_lm=&srch_TST_delete_lm;
 
     s->srch_select_active_gmm=&srch_WST_select_active_gmm;
     s->srch_gmm_compute_lv1=&approx_ci_gmm_compute;
-    s->srch_gmm_compute_lv2=&approx_cd_gmm_compute;
+    s->srch_gmm_compute_lv2=&s3_cd_gmm_compute_sen_comp;
 
     s->srch_eval_beams_lv2=&srch_debug_eval_beams_lv2;
+    /*    s->srch_rescoring=&srch_WST_rescoring;*/
 
     s->srch_hmm_compute_lv1=&srch_debug_hmm_compute_lv1;
     s->srch_eval_beams_lv1=&srch_debug_eval_beams_lv1;
@@ -270,12 +563,22 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_hmm_compute_lv2=&srch_WST_hmm_compute_lv2;
     s->srch_propagate_graph_ph_lv2=&srch_WST_propagate_graph_ph_lv2;
 
+    /*    s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2_with_rescoring;*/
+
     s->srch_propagate_graph_wd_lv2=&srch_WST_propagate_graph_wd_lv2;
-    s->srch_rescoring=&srch_WST_rescoring;
 
     s->srch_compute_heuristic=&srch_WST_compute_heuristic;
     s->srch_frame_windup=&srch_WST_frame_windup;
     s->srch_shift_one_cache_frame=&srch_WST_shift_one_cache_frame;
+
+#if 0
+    /* Yes, use TST gen DAG to avoid duplication */
+    s->srch_gen_hyp=&srch_TST_gen_hyp;
+    s->srch_dump_vithist=&srch_TST_dump_vithist;
+    s->srch_gen_dag=&srch_TST_gen_dag; 
+    s->srch_bestpath_impl=&srch_TST_bestpath_impl;
+    s->srch_dag_dump=&srch_TST_dag_dump;
+#endif
 
   }else if(op_mode==OPERATION_DEBUG){
 
@@ -283,7 +586,6 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_uninit=&srch_debug_uninit;
     s->srch_utt_begin=&srch_debug_begin;
     s->srch_utt_end=&srch_debug_end;
-    s->srch_decode=&srch_debug_decode;
     s->srch_set_lm=&srch_debug_set_lm;
 
     s->srch_select_active_gmm=&srch_debug_select_active_gmm;    
@@ -299,10 +601,15 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_propagate_graph_ph_lv2=&srch_debug_propagate_graph_ph_lv2;
     s->srch_propagate_graph_wd_lv2=&srch_debug_propagate_graph_wd_lv2;
 
-    s->srch_rescoring=&srch_debug_rescoring;
     s->srch_compute_heuristic=&srch_debug_compute_heuristic;
     s->srch_frame_windup=&srch_debug_frame_windup;
     s->srch_shift_one_cache_frame=&srch_debug_shift_one_cache_frame;
+
+    s->srch_gen_hyp=&srch_debug_gen_hyp;
+    s->srch_dump_vithist=&srch_debug_dump_vithist;
+    s->srch_gen_dag=&srch_debug_gen_dag;
+    s->srch_bestpath_impl=&srch_debug_bestpath_impl;
+    s->srch_dag_dump=&srch_debug_dag_dump;
   }else{
     E_FATAL("Unknown mode %d, failed to initialized srch_t\n",op_mode);
   }
@@ -313,6 +620,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
   s->stat=kb->stat;
   s->ascr=kb->ascr;
   s->vithist=kb->vithist;
+  s->lathist=kb->lathist;
   s->beam=kb->beam;
   s->fastgmm=kb->fastgmm;
   s->pl=kb->pl;
@@ -325,35 +633,104 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
 
 
+  str=srch_mode_index_to_str(op_mode);
+
+  /* FIXME! Do search-specific checking here. In a true OO
+     programming, this should not happen. This happens because we have
+     duplicated code. */
+  if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
+    if(s->kbc->lmset==NULL||s->vithist==NULL){      
+      E_INFO("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n",str);
+      goto check_error;
+    }
+  }
+
+  if(op_mode==OPERATION_FLATFWD){
+    if(s->kbc->lmset==NULL||s->lathist==NULL){      
+      E_INFO("lmset is NULL and lathist is NULL in op_mode %s, wrong operation mode?\n",str);
+      goto check_error;
+    }
+  }
+
+  if(op_mode==OPERATION_GRAPH){
+    if(!cmd_ln_str("-fsg")&&!cmd_ln_str("-fsgfile")){
+      E_INFO("-fsg and -fsgfile are not specified in op_mode %s, wrong operation mode?\n",str);
+      goto check_error;
+    }
+
+  }
   /* Do search-specific initialization here. */ 
 
   if(s->srch_init(kb,s)==SRCH_FAILURE){
     E_INFO("search initialization failed for op-mode %d\n",op_mode);
-    return NULL;
+    goto check_error;
   }
-  
+
+  ckd_free(str);
   return s;
+
+check_error:
+  ckd_free(str);
+  return NULL;
+
 }
 
 int32 srch_utt_begin(srch_t* srch){
+
+  int32 i;
   if(srch->srch_utt_begin==NULL){
-    E_INFO("srch->srch_utt_begin is NULL. Please make sure it is set.\n");
+    E_ERROR("srch->srch_utt_begin is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
 
+  srch->num_frm=0;
+  srch->num_segs=0;
+  for(i=0;i<srch->ascale_sz;i++)
+    srch->ascale[i]=0;
+
+  for(i=0;i<srch->segsz_sz;i++)
+    srch->segsz[i]=0;
+
   srch->srch_utt_begin(srch);
+
+  
   return SRCH_SUCCESS;
 }
 
+  /* Several things we want to take care in srch_utt_end 
+     1, (Optionally) Generate the history table. 
+     2, (Optionally) Generate the best senone score. 
+     3, Generate hypothesis.
+     4, Display the hypothesis.
+     5, (Optionally) If enerate the DAG. 
+     6, (Optionally) Do best path search  <- Given 5 is done
+     7, (Optionally) Confidence estimation based on Lattice <- Given 5 is done. 
+     Result could come from either 1 or 6.  
+     8, Then, finally of course you want to clean up. 
+     The following essentially follows the above procedure. 
+
+     The first 1-7 will be mainly taken by function pointers supplied
+     by different modes.
+
+     The first 8 will be taken care by s->srch_utt_end. That is very
+     different from the past because s->srch_utt_end takes of
+     everything.  
+   */
+
 int32 srch_utt_end(srch_t* srch){
 
+  glist_t hyp, bphyp;
+  dag_t *dag;
+
+  hyp=bphyp=NULL;
+  dag=NULL;
+
   if(srch->srch_utt_end==NULL){
-    E_INFO("srch->srch_utt_end is NULL. Please make sure it is set.\n");
+    E_ERROR("srch->srch_utt_end is NULL. Please make sure it is set.\n");
     return SRCH_FAILURE;
   }
 
-  srch->srch_utt_end(srch);
-  return SRCH_SUCCESS;
+  return srch->srch_utt_end(srch);
 }
 
 int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, int32 *curfrm)
@@ -366,10 +743,33 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   frmno = *curfrm;
 
+  /* Overriding this implementation. Use search implementation
+     provided search abstraction routine instead of the default search
+     abstraction */
+  if(s->srch_decode!=NULL){
+    return s->srch_decode((void*)s);
+  }
+   
+  /* Else, go over the default search abstraction*/
+
   /* the effective window is the min of (s->cache_win, block_nfeatvec) */
   win_efv = s->cache_win;
   if(win_efv > block_nfeatvec) 
     win_efv = block_nfeatvec;
+
+  s->num_frm =frmno;  /* Make a copy to the structure */
+  s->segsz[s->num_segs] = win_efv; 
+  s->num_segs++;
+
+  if(frmno+win_efv > s->ascale_sz){
+    s->ascale= (int32 *) ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE));
+    s->ascale_sz+=DFLT_UTT_SIZE;
+  }
+
+  if(s->num_segs==s->segsz_sz){
+    s->segsz= (int32* ) ckd_realloc(s->segsz,(s->segsz_sz+DFLT_NUM_SEGS));
+    s->segsz_sz+=DFLT_NUM_SEGS;
+  }
 
   s->cache_win_strt=0;
 
@@ -385,33 +785,53 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
   ptmr_stop (&(st->tm_sen));
 
   for (t = 0; t < block_nfeatvec; t++,frmno++) {
-    /*    E_INFO("Time: %d\n",t);*/
+
     /* Acoustic (senone scores) evaluation */
     ptmr_start (&(st->tm_sen));
     s->srch_select_active_gmm(s);
-    s->srch_gmm_compute_lv2(s,block_feat[t][0],t);
+    s->srch_gmm_compute_lv2(s,block_feat[t],t);
+    s->ascale[s->num_frm+t]=s->senscale;
+
     ptmr_stop (&(st->tm_sen));
 
+    
     /* Propagate graph at phoneme (hmm) level */
     ptmr_start (&(st->tm_srch));
-    
-    /* Determine which set of phonemes should be active in next stage
-       using the lookahead information*/
-    /* This should be part of hmm_compute_lv1 */
-    if(COMPUTE_HEURISTIC) s->srch_compute_heuristic(s,win_efv);
-    /* HMM compute Lv 2, currently, this routine compute hmm for the
-     *  data structure and compute the beam. */
-    s->srch_hmm_compute_lv2(s,frmno);
 
-    /* After the HMM scores are computed, tokens are propagate in the
-     * phone-level.  */
-    s->srch_propagate_graph_ph_lv2(s,frmno);
 
-    /* Rescoring. Usually happened at the word end.  */
-    s->srch_rescoring(s,frmno);
-
-    /* Propagate the score on the word-level */
-    s->srch_propagate_graph_wd_lv2(s,frmno);
+    if(s->srch_one_srch_frame_lv2!=NULL){ /* If user provided only how
+					     to search for one frame, then
+					     use it instead of going through
+					     the standard abstraction. 
+					  */
+      s->srch_one_srch_frame_lv2(s);
+      
+    }else{
+      /* Determine which set of phonemes should be active in next stage
+	 using the lookahead information*/
+      /* This should be part of hmm_compute_lv1 */
+      if(COMPUTE_HEURISTIC) s->srch_compute_heuristic(s,win_efv);
+      /* HMM compute Lv 2, currently, this routine compute hmm for the
+       *  data structure and compute the beam. */
+      s->srch_hmm_compute_lv2(s,frmno);
+      
+      /* After the HMM scores are computed, tokens are propagate in the
+       * phone-level.  */
+      if(s->srch_propagate_graph_ph_lv2(s,frmno)!=SRCH_SUCCESS){
+	E_ERROR("Code failed in srch_propagate_graph_ph_lv2\n");
+	return SRCH_FAILURE;
+      }
+      
+      /* Rescoring. Usually happened at the word end.  */
+      if(s->srch_rescoring!=NULL)
+	s->srch_rescoring(s,frmno);
+      
+      /* Propagate the score on the word-level */
+      if(s->srch_propagate_graph_wd_lv2(s,frmno)!=SRCH_SUCCESS){
+	E_ERROR("Code failed in srch_propagate_graph_wd_lv2\n");
+	return SRCH_FAILURE;
+      }
+    }
     ptmr_stop (&(st->tm_srch));
 
     ptmr_start (&(st->tm_sen));
@@ -430,10 +850,15 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
     ptmr_stop (&(st->tm_sen));
 
     s->srch_frame_windup(s,frmno);
+    
+    if(frmno%10==0){
+      fprintf(stdout,".");
+      fflush(stdout);
+    }
   }
+  fprintf(stdout,"\n");
 
   st->nfr += block_nfeatvec;
-  
   
   *curfrm = frmno;
 
@@ -444,17 +869,30 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 /** Wrap up the search routine*/
 int32 srch_uninit(srch_t* srch){
   if(srch->srch_uninit==NULL){
+    E_ERROR("Search un-initialization failed\n");
     return SRCH_FAILURE;
   }
   srch->srch_uninit(srch);
+
+  ckd_free(srch->segsz);
+  ckd_free(srch->ascale);
+  ckd_free(srch->grh);
+  ckd_free(srch);
+
   return SRCH_SUCCESS;
 }
 
 /** Wrap up the search report routine*/
 void srch_report(srch_t* srch){
+
+  char *op_str;
+  op_str=srch_mode_index_to_str(srch->op_mode);
+
   E_INFO_NOFN("Initialization of srch_t, report:\n");
-  E_INFO_NOFN("Operation Mode = %d\n",srch->op_mode);
+  E_INFO_NOFN("Operation Mode = %d, Operation Name = %s\n",srch->op_mode,op_str);
   E_INFO_NOFN("\n");
+
+  ckd_free(op_str);
 }
 
 
@@ -480,8 +918,6 @@ int32 srch_add_lm(srch_t* srch, lm_t* lm, const char *lmname)
   srch->srch_add_lm(srch,lm,lmname);
   return SRCH_SUCCESS;
 }
-
-
 int32 srch_delete_lm(srch_t *srch, const char* lmname)
 {
   if(srch->srch_delete_lm==NULL){
@@ -526,74 +962,29 @@ int32 srch_set_lamdafn(srch_t* srch){
 }
 #endif
 
-
-void matchseg_write (FILE *fp, srch_t *s,  glist_t hyp, char *hdr)
-{
-    gnode_t *gn;
-    hyp_t *h;
-    int32 ascr, lscr, scl;
-    dict_t *dict;
-
-    ascr = 0;
-    lscr = 0;
-    scl =0;
-    
-    for (gn = hyp; gn; gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
-	ascr += h->ascr;
-	lscr += h->lscr;
-	scl += h->senscale;
-    }
-    
-    dict = kbcore_dict(s->kbc);
-    
-    fprintf (fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), s->uttid,
-	     scl, ascr+lscr, ascr, lscr);
-    
-    for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-	h = (hyp_t *) gnode_ptr (gn);
-	fprintf (fp, " %d %d %d %s", h->sf, h->ascr, h->lscr,
-		 dict_wordstr(dict, h->id));
-    }
-    fprintf (fp, " %d\n", s->stat->nfr);
-    fflush (fp);
-}
-
-void match_write (FILE *fp, srch_t* s, glist_t hyp, char *hdr)
-{
-    gnode_t *gn;
-    hyp_t *h;
-    dict_t *dict;
-    int counter=0;
-
-    dict = kbcore_dict(s->kbc);
-
-    fprintf (fp, "%s ", (hdr ? hdr : ""));
-
-    for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-      h = (hyp_t *) gnode_ptr (gn);
-      if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)))
-	fprintf(fp,"%s ",dict_wordstr(dict, dict_basewid(dict,h->id)));
-      counter++;
-    }
-    if(counter==0) fprintf(fp," ");
-    fprintf (fp, "(%s)\n", s->uttid);
-    fflush (fp);
-}
-
-
-void reg_result_dump (srch_t* s, int32 id)
+#if 1 /* Currently only used by tree searches*/
+void reg_result_dump (srch_t* s, int32 id )
 {
   FILE *fp, *latfp, *bptfp;
-  int32 ascr, lscr;
   glist_t hyp;
+  glist_t ghyp,rhyp;
   stat_t* st; 
   gnode_t *gn;
-  hyp_t *h;
-
+  srch_hyp_t *bph, *tmph;
+  int32 bp;
+  float32 *f32arg;
+  float64 lwf;
+  dag_t *dag;
+  int32 nfrm;
+  dict_t *dict;
+  
   st= s->stat;
-
   fp = stderr;
+  dag=NULL;
+
+  dict=s->kbc->dict;
+
+  hyp=ghyp=rhyp=NULL;
 
   if (cmd_ln_str("-bptbldir")) {
     char file[8192];
@@ -602,60 +993,63 @@ void reg_result_dump (srch_t* s, int32 id)
       E_ERROR("fopen(%s,w) failed; using stdout\n", file);
       bptfp = stdout;
     }
-    
-    vithist_dump (s->vithist, -1, s->kbc, bptfp);
+
+    if(s->vithist)
+     vithist_dump (s->vithist, -1, s->kbc, bptfp);
     
     if (bptfp != stdout)
 	fclose (bptfp);
   }
-  
-  hyp = vithist_backtrace (s->vithist, id);
-  
+
+  if(s->vithist){
+    assert(id>=0);
+    hyp = vithist_backtrace (s->vithist, id, dict);
+  }
+
+
   /* Detailed backtrace */
   if (cmd_ln_int32("-backtrace")) {
     fprintf (fp, "\nBacktrace(%s)\n", s->uttid);
-    fprintf (fp, "%6s %5s %5s %11s %8s %4s\n",
-	     "LatID", "SFrm", "EFrm", "AScr", "LScr", "Type");
-      
-    ascr = 0;
-    lscr = 0;
-    
-    for (gn = hyp; gn; gn = gnode_next(gn)) {
-      h = (hyp_t *) gnode_ptr (gn);
-      fprintf (fp, "%6d %5d %5d %11d %8d %4d %s\n",
-	       h->vhid, h->sf, h->ef, h->ascr + h->senscale, h->lscr, h->type,
-	       dict_wordstr(s->kbc->dict, h->id));
-
-#if 1      
-      ascr += h->ascr + h->senscale;
-#else /* ARCHAN: If you want the score of without scaling. This behavior appeas in 3.1 to 3.5
-	 During the time of CALO, we found that it is not in-sync with s3.0 family of tools. So,
-	 we decided to change it back. I leave this line for the future purpose of debugging. 
-       */
-      ascr += h->ascr;
-#endif
-
-      lscr += h->lscr;
-    }
-
-    fprintf (fp, "       %5d %5d %11d %8d (Total)\n",0,st->nfr,ascr,lscr);
+    match_detailed(fp, hyp, s->uttid, "FV", "fv", s->ascale, kbcore_dict(s->kbc));
   }
   
   /* Match */
   if (s->matchfp)
-    match_write (s->matchfp, s, hyp, NULL);
-  match_write(fp, s, hyp, "\nFWDVIT: ");
+    match_write (s->matchfp, hyp, s->uttid,kbcore_dict(s->kbc), NULL);
+  match_write(fp, hyp, s->uttid, kbcore_dict(s->kbc),"\nFWDVIT: ");
   
   /* Matchseg */
   if (s->matchsegfp)
-    matchseg_write (s->matchsegfp, s, hyp, NULL);
-  matchseg_write (fp, s, hyp, "FWDXCT: ");
+    matchseg_write (s->matchsegfp, hyp, s->uttid, NULL,cmd_ln_int32("-hypsegfmt"),
+		    kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		    cmd_ln_int32("-hypsegscore_unscale")
+		    );
+  matchseg_write (fp, hyp, s->uttid, "FWDXCT: ",cmd_ln_int32("-hypsegfmt"), 
+		  kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		  cmd_ln_int32("-hypsegscore_unscale")
+
+		  );
   fprintf (fp, "\n");
-  
-      
-  if (cmd_ln_str ("-outlatdir")) {
+
+  if(cmd_ln_str("-bestsenscrdir")){
     int32 ispipe;
-    char str[16384];
+    char str[2048];
+    FILE* bsfp;
+    sprintf (str, "%s/%s.bsenscr",
+	     cmd_ln_str("-bestsenscrdir"), s->uttid);
+    E_INFO("Dumping the Best senone scores.\n");
+    if ((bsfp = fopen_comp (str, "w", &ispipe)) == NULL)
+      E_ERROR("fopen_comp (%s,w) failed\n", str);
+    else{
+      write_bestsenscore(s);
+      fclose_comp (bsfp, ispipe);
+    }
+  }
+      
+  if(cmd_ln_str ("-outlatdir")) {
+
+    int32 ispipe;
+    char str[2048];
     sprintf (str, "%s/%s.%s",
 	     cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
     
@@ -664,14 +1058,110 @@ void reg_result_dump (srch_t* s, int32 id)
     if ((latfp = fopen_comp (str, "w", &ispipe)) == NULL)
       E_ERROR("fopen_comp (%s,w) failed\n", str);
     else {
+
+
       /* Write header info */
-      vithist_dag_write_header(latfp,st->nfr,str);
-      vithist_dag_write (s->vithist, hyp, s->kbc->dict,
-			 cmd_ln_int32("-outlatoldfmt"), latfp);
+      /* Do link and unlink silences at here */
+      dag_write_header(latfp,st->nfr, 0); /* Very fragile, if 1 is specifed, 
+					     the code will just be stopped */
+					     
+      vithist_dag_write (s->vithist, hyp, dict,
+			 cmd_ln_int32("-outlatoldfmt"), latfp, 
+			 cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM);
       fclose_comp (latfp, ispipe);
+
+      /* This should be moved out from the functions and allow polymorphism*/
+      /* Reread the lattice and create rescore it */
+      bp=cmd_ln_int32("-bestpath");
+
+      if(bp){
+	f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+	lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+
+
+	if(( nfrm= s3dag_dag_load(&dag,lwf,
+				  str,
+				  dict,
+				  kbcore_fillpen(s->kbc)))
+	    >=0 ){
+
+
+	  /** Link back silences */
+	  linksilences(kbcore_lm(s->kbc),s->kbc,kbcore_dict(s->kbc));
+
+	  bph=dag_search (dag,s->uttid, 
+			  lwf,
+			  dag->final.node,
+			  dict,
+			  kbcore_lm(s->kbc),
+			  kbcore_fillpen(s->kbc)
+			  );
+
+	  if(bph!=NULL){
+	    ghyp=NULL;
+	    for(tmph= bph ; tmph ; tmph = tmph->next)
+	      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    
+	    rhyp=glist_reverse(ghyp);
+	    if ( cmd_ln_int32("-backtrace") )
+	      match_detailed (stdout, rhyp, s->uttid, "BP", "bp",s->ascale, kbcore_dict(s->kbc));
+
+	  }else{
+	    E_ERROR("%s: Bestpath search failed; using Viterbi result\n", s->uttid);
+	    rhyp=hyp;
+	  }
+
+	  match_write(stdout,rhyp,s->uttid, kbcore_dict(s->kbc), "BSTPTH: ");
+	  matchseg_write (stdout, rhyp, s->uttid, "BSTXCT: ",cmd_ln_int32("-hypsegfmt"), 
+			  kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+			  cmd_ln_int32("-hypsegscore_unscale")
+			  );
+
+	  if(ghyp)
+	    glist_free(ghyp);
+
+	  /** unlink silences again */
+	  unlinksilences(kbcore_lm(s->kbc),s->kbc,kbcore_dict(s->kbc));
+
+	}else{
+	  E_ERROR("DAG search (%s) failed\n",s->uttid);
+	  bph=NULL;
+	}
+
+	if(dag)
+	  dag_destroy (dag);
+
+	lm_cache_stats_dump (kbcore_lm(s->kbc));
+	lm_cache_reset (kbcore_lm(s->kbc));
+
+      }
+
+      /* If IBM format is required to dumped */
+      if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM){
+	dag=dag_load(str,
+		     cmd_ln_int32("-maxedge"),
+		     cmd_ln_float32("-logbase"),
+		     0,  /** No fudge added */
+		     dict,
+		     kbcore_fillpen(s->kbc));
+		
+	if(dag!=NULL){
+
+	  word_graph_dump(cmd_ln_str("-outlatdir"),s->uttid,cmd_ln_str("-latext"),
+			  dag, dict, kbcore_lm(s->kbc), s->ascale);
+	  
+	}else{
+	  E_ERROR("DAG conversion (%s) failed\n",s->uttid);
+	}
+
+	if(dag){
+	  dag_destroy (dag);
+	}
+      }
     }
   }
       
+
   /** free the list containing hyps */
   for (gn = hyp; gn; gn = gnode_next(gn)) {
     ckd_free(gnode_ptr(gn));
@@ -679,4 +1169,256 @@ void reg_result_dump (srch_t* s, int32 id)
   glist_free(hyp);
 
 }
+#endif
 
+void write_bstsenscr(FILE *fp,int32 numframe, int32* scale)
+{
+
+  int32 i;
+  fprintf(fp,"NumFrame %d\n",numframe);
+  for(i=0;i<numframe;i++)
+    fprintf(fp,"%d %d\n",i,scale[i]);
+}
+
+static void write_bestsenscore(srch_t *s)
+{
+  int32 ispipe;
+  char str[2048];
+  FILE* bsfp;
+
+  E_INFO("Dumping the Best senone scores.\n");
+  sprintf (str, "%s/%s.bsenscr",
+	   cmd_ln_str("-bestsenscrdir"), s->uttid);
+
+  if ((bsfp = fopen_comp (str, "w", &ispipe)) == NULL)
+    E_ERROR("fopen_comp (%s,w) failed\n", str);
+  else{
+    write_bstsenscr(bsfp,s->stat->nfr,s->ascale);
+    fclose_comp (bsfp, ispipe);
+  }
+}
+
+static void display_dump_hypothesis (srch_t *s, glist_t hyp, char* hyptag, char* hypsegtag, char* shortformCap, char* shortformSmall)
+{
+  FILE *fp;
+
+  fp=stderr;
+  
+  if (cmd_ln_int32("-backtrace")) {
+    fprintf (fp, "\nBacktrace(%s)\n", s->uttid);
+    match_detailed(fp, hyp, s->uttid, shortformCap, shortformSmall, s->ascale, kbcore_dict(s->kbc));
+  }
+  
+  /* Match */
+  if (s->matchfp)
+    match_write (s->matchfp, hyp, s->uttid,kbcore_dict(s->kbc), NULL);
+  fprintf(fp,"\n");
+  match_write(fp, hyp, s->uttid, kbcore_dict(s->kbc),hyptag);
+  
+  /* Matchseg */
+  if (s->matchsegfp)
+    matchseg_write (s->matchsegfp, hyp, s->uttid, NULL,cmd_ln_int32("-hypsegfmt"),
+		    kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		    cmd_ln_int32("-hypsegscore_unscale")
+		    );
+  matchseg_write (fp, hyp, s->uttid, hypsegtag,cmd_ln_int32("-hypsegfmt"), 
+		  kbcore_lm(s->kbc), kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+		  cmd_ln_int32("-hypsegscore_unscale")
+
+		  );
+  fprintf (fp, "\n");
+}
+
+#if 0
+int32 srch_bestpath_srch(srch_t *srch,dag_t *dag)
+{
+  float32 *f32arg;
+  float64 lwf;
+
+  f32arg = (float32 *) cmd_ln_access ("-bestpathlw");
+  lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access ("-lw"))) : 1.0;
+  
+  bph=dag_search (dag,srch->uttid, 
+		  lwf,
+		  dag->final.node,
+		  dict,
+		  kbcore_lm(srch->kbc),
+		  kbcore_fillpen(srch->kbc)
+		  );
+
+  if(bph!=NULL){
+    ghyp=NULL;
+    for(tmph= bph ; tmph ; tmph = tmph->next)
+      ghyp=glist_add_ptr(ghyp,(void*)tmph);
+	    
+    rhyp=glist_reverse(ghyp);
+    return rhyp;
+  }else{
+    return NULL;
+  }
+}
+
+#endif
+
+
+
+#if 0 /* Insert this part of the code when score is needed to be dumped */
+    /* This should be written as a small function*/
+    int32 ind;
+
+    if(t==0){
+      ms_mgau_model_t *mg;
+      gauden_t *g;
+      mg=kbcore_ms_mgau(s->kbc);
+      g=mg->g;
+      E_INFO("Time %d, Accum. Time %d, Segments %d Senscale %d. \n", t, s->num_frm+t, s->num_segs-1, s->senscale);
+      for(ind=0;ind<g->n_mgau;ind++){
+	
+	if(s->ascr->sen_active[ind]){
+#if 0	  
+	  int32 i,j;
+	  gauden_dump_ind(g,ind);
+
+	  printf("Feature vector:\n");
+	  for(i=0;i<g->n_feat;i++){
+	    for(j=0;j<g->featlen[i];j++){
+	      printf("%f ",block_feat[t][i][j]);
+	    }
+	  }
+	  printf("\n");
+	  fflush(stderr);
+#endif
+	  E_INFO("Time %d Ind %d Active %d Senscr %d %f actual %f (Unnorm) %d %f actual %f \n", t, ind, s->ascr->sen_active[ind],
+		 s->ascr->senscr[ind], logs3_to_log(s->ascr->senscr[ind]), 
+		 exp(logs3_to_log(s->ascr->senscr[ind])),
+		 s->ascr->senscr[ind] + s->senscale, logs3_to_log(s->ascr->senscr[ind] + s->senscale),
+		 exp(logs3_to_log(s->ascr->senscr[ind] + s->senscale))
+	       );
+	}
+      }
+    }
+#endif
+
+
+/* Some draft code for 2nd stage: Disabled at this point. */
+
+#if 0 /** Refactor code that should be used, but I just don't have time to test them */
+  /*  1, (Optionally) Generate the history table. */
+  if(cmd_ln_str("-bptbldir"))
+    srch->srch_dump_vithist(srch);
+
+  /* 2, (Optionally) Generate the best senone score. */
+  if(cmd_ln_str("-bestsenscrdir"))
+    write_bestsenscore(srch);
+
+  /* 3, Generate hypothesis.*/
+  hyp=srch->srch_gen_hyp(srch);
+
+  /* 4, Display the hypthesis */
+  if(hyp==NULL)
+    E_WARN("No recognition result\n");
+
+  display_dump_hypothesis(srch,hyp,"FWDVIT: ","FWDXCT: ","FV","fv");
+
+  if(srch->op_mode==OPERATION_GRAPH){
+    E_WARN("Currently mode 2 (FSG decoding) doesn't support DAG generation.\n");
+    return srch->srch_utt_end(srch);
+  }
+
+  /*5, (Optionally) Generate the DAG. */
+  if(cmd_ln_int32("-bestpath") ||   /* Generate lattice for best path search */
+     cmd_ln_int32("-confidence")||  /* Generate lattice for confidence scoring. */
+     cmd_ln_str("-outlatdir")       /* Generate lattice for the sake of generating lattice */
+     ){
+
+#if 1
+    /* Hack! */
+    /* Take care of the situation where mode 4 and 5 requires lattice
+       write back to the harddiscs . That is if the users need to use bestpath
+    */
+    if(
+       (cmd_ln_int32("-bestpath")|| cmd_ln_int32("-confidence"))&&
+       cmd_ln_str("-outlatdir")==NULL &&
+       (srch->op_mode==OPERATION_TST_DECODE ||  srch->op_mode==OPERATION_WST_DECODE)
+       )
+      E_FATAL("In TST and WST search (Mode 4 or 5), specifying -bestpath and -confidence also require -outlatdir");
+#endif    
+
+    dag=srch->srch_gen_dag(srch,hyp);
+  }  
+
+
+
+  /* 6, (Optionally) Do best path search  <- Given 5 is done*/
+  if(cmd_ln_int32("-bestpath")){
+
+    bphyp=srch->srch_bestpath_impl(srch,dag);
+    
+    if(bphyp==NULL) {
+      E_ERROR("%s: Bestpath search failed; using Viterbi result\n", srch->uttid);
+      bphyp=hyp;
+    }
+
+    display_dump_hypothesis(srch, bphyp, "BSTPTH: ","BSTXCT: ","BP","bp");
+
+    E_INFO("LM Cache After bestpath search\n");
+    lm_cache_stats_dump (kbcore_lm(srch->kbc));
+    lm_cache_reset (kbcore_lm(srch->kbc));
+
+  }
+  
+  /*7, (Optionally) Confidence estimation based on Lattice <- Given 5 is done. */
+  if(cmd_ln_int32("-confidence")){
+  }
+
+
+  if(cmd_ln_int32("-outlatdir")){
+    if(cmd_ln_int32("-outlatfmt")==OUTLATFMT_IBM){
+
+      if(srch->op_mode==OPERATION_FLATFWD){
+	E_WARN("Not dumping IBM lattice file format at this point\n");
+      }else{
+	if(dag!=NULL)
+	  word_graph_dump(cmd_ln_str("-outlatdir"),srch->uttid,cmd_ln_str("-latext"),
+			  dag, kbcore_dict(srch->kbc), kbcore_lm(srch->kbc), srch->ascale);	
+	else
+	  E_ERROR("DAG conversion (%s) failed\n",srch->uttid);
+      }
+    }else if (cmd_ln_int32("-outlatfmt")==OUTLATFMT_SPHINX3){
+
+      if(
+	 (cmd_ln_int32("-bestpath")|| cmd_ln_int32("-confidence"))&&
+	 cmd_ln_str("-outlatdir")==NULL &&
+	 (srch->op_mode==OPERATION_TST_DECODE ||  srch->op_mode==OPERATION_WST_DECODE)
+	 )
+	{
+	  
+	/* Do nothing, because the code has already dumped the lattice
+	   as intermediates. 
+	*/
+	}else{
+	  srch->srch_dag_dump(srch,hyp);
+	}
+      
+    }else{
+      E_ERROR("Unknown format ,do nothing in dumping files out\n");
+    }
+  }
+
+
+  if(hyp!=NULL) {
+    /** free the list containing hyps */
+    for (gn = hyp; gn; gn = gnode_next(gn))
+      ckd_free(gnode_ptr(gn));
+    glist_free(hyp);
+  }
+  if(bphyp!=NULL) {
+    for (gn = bphyp; gn; gn = gnode_next(gn))
+      ckd_free(gnode_ptr(gn));
+    glist_free(bphyp);
+  } 
+  if(dag!=NULL) 
+    dag_destroy(dag);
+
+  return srch->srch_utt_end(srch);
+#endif
