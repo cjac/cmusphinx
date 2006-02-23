@@ -46,9 +46,19 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2005/06/22  08:00:06  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.9  2006/02/23  03:45:02  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 
+ *
+ * Revision 1.7.4.2  2005/07/05 06:24:21  arthchan2003
+ * Fixed dox-doc.
+ *
+ * Revision 1.7.4.1  2005/06/27 05:21:31  arthchan2003
+ * Merged from the tip of the trunk.
+ *
+ * Revision 1.8  2005/06/22 08:00:06  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.7  2004/12/14 00:39:49  arthchan2003
  * add <s3types.h> to the code, change some comments to doxygen style
  *
@@ -165,6 +175,9 @@ typedef struct {
 
 #if (defined(WIN32) || defined(AD_BACKEND_WIN32))
 
+/** \struct ad_rec_t
+ *  \brief Audio recording structure. 
+ */
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
     ad_wbuf_t *wi_buf;	/* Recording buffers provided to system */
@@ -201,6 +214,10 @@ typedef struct {
 } ad_rec_t;
 
 #elif defined(AD_BACKEND_OSS) || defined(AD_BACKEND_OSS_BSD)
+
+/** \struct ad_rec_t
+ *  \brief Audio recording structure. 
+ */
 
 /* Added by jd5q+@andrew.cmu.edu, 10/3/1997: */
 typedef struct {
@@ -240,10 +257,15 @@ typedef struct {
 
 #else
 
+/**
+   \struct ad_rec_t
+   \brief Dummy definition for systems without A/D stuff 
+*/
+
 typedef struct {
-    int32 sps;		/* Samples/sec */
-    int32 bps;		/* Bytes/sample */
-} ad_rec_t;	/* Dummy definition for systems without A/D stuff */
+    int32 sps;		/**< Samples/sec */
+    int32 bps;		/**< Bytes/sample */
+} ad_rec_t;	
 
 
 #endif
@@ -255,7 +277,9 @@ typedef struct {
  * otherwise.  The return value to be used as the first argument to other recording
  * functions.
  */
-ad_rec_t *ad_open_sps (int32 samples_per_sec);
+ad_rec_t *ad_open_sps (
+		       int32 samples_per_sec /**< Samples per second */
+		       );
 
 
 /* Like ad_open_sps but with default samples/sec and bufsize */

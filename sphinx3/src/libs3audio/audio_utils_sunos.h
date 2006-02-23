@@ -50,9 +50,10 @@
  * 		Created from Bob Brennan's original.
  */
 
-/* \file audio_utils_sunos.h
+/** \file audio_utils_sunos.h
  * \brief Implemtation for Sun audio utilities.
  */
+
 
 #ifdef SUN4
 #include <sun/audioio.h>
