@@ -37,30 +37,33 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.3  2006/02/23  15:26:10  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII:
+ * Revision 1.4  2006/02/23  16:47:16  arthchan2003
+ * Safe-guarded the use of composite triphones.
  * 
+ * Revision 1.3  2006/02/23 15:26:10  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII:
+ *
  * Summary of changes. Detail could be seen in the comments from the
  * branches.
- * 
+ *
  *  After 6 months, we have two more searches using interface
  * provided by srch.c. That included an adapted version of Sphinx 2's FSG
  * search.  Also, the original version of flat-lexicon decoding search.
- * 
+ *
  * Second stage search operation is still not properly put in the srch_t
  * structure.  We should create function hooks that allow developer to
  * put the code more properly than now.
- * 
+ *
  * The interface of srch.c is still not very completed. Things we should
  * support include switching of AM and MLLR.  They are currently
  * commented.
- * 
+ *
  * Mode 5, the word-dependent tree copies are now fended off from the
  * users.
- * 
+ *
  * Mode 2, the FSG search are opened.  It is not very well tested so the
  * user will be warned about its nature.
- * 
+ *
  *
  * Revision 1.1.4.21  2006/01/16 20:01:20  arthchan2003
  * Added Commented code in srch.[ch] for second-stage rescoring. Not used for now.
@@ -499,6 +502,12 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_TST_DECODE){
 
+
+    if(!cmd_ln_int32("-composite")){
+      E_ERROR("Full triphone expansion is not supported at this point.\n");
+      return NULL;
+    }
+
     s->srch_init=&srch_TST_init;
     s->srch_uninit=&srch_TST_uninit;
     s->srch_utt_begin=&srch_TST_begin;
@@ -611,7 +620,8 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
     s->srch_bestpath_impl=&srch_debug_bestpath_impl;
     s->srch_dag_dump=&srch_debug_dag_dump;
   }else{
-    E_FATAL("Unknown mode %d, failed to initialized srch_t\n",op_mode);
+    E_ERROR("Unknown mode %d, failed to initialized srch_t\n",op_mode);
+
   }
 
   srch_assert_funcptrs(s);
