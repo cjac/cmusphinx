@@ -40,9 +40,16 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.6  2005/07/02  04:24:45  egouvea
- * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ * Revision 1.7  2006/02/23  04:05:21  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
  * 
+ *
+ * Revision 1.5.4.1  2005/07/05 06:46:23  arthchan2003
+ * 1, Merged from HEAD.  2, fixed dox-doc.
+ *
+ * Revision 1.6  2005/07/02 04:24:45  egouvea
+ * Changed some hardwired constants to user defined parameters in the end pointer. Tested with make test-ep.
+ *
  * Revision 1.5  2005/06/21 21:12:05  arthchan2003
  * Added some bogus comments to endptr.h
  *
@@ -67,40 +74,43 @@ extern "C" {
 #ifndef __END_POINTER__
 #define __END_POINTER__
 
-     /** Struct to hold the end-pointer parameters */
+     /** 
+      * \struct endpointer_t
+      * \brief Struct to hold the end-pointer parameters 
+      */
 
      typedef struct{
-	  int     status;                 /** current status of recording */
-	  int     leader;                 /** pointer to the start of the utterance to be passed to decoder*/
-	  int     spbegin;                /** pointer to the start of speech */
-	  int     spend;                  /** pointer to the end of speech */
-	  int     trailer;                /** pointer to the end of the utterance passed to the decoder */
-	  int     utt_counter;            /** to count the number of utterances in a meeting */
+	  int     status;                 /**< current status of recording */
+	  int     leader;                 /**< pointer to the start of the utterance to be passed to decoder*/
+	  int     spbegin;                /**< pointer to the start of speech */
+	  int     spend;                  /**< pointer to the end of speech */
+	  int     trailer;                /**< pointer to the end of the utterance passed to the decoder */
+	  int     utt_counter;            /**< to count the number of utterances in a meeting */
   
-	  int     PAD_F_BEFORE;           /** to pad this much of frames before spbegin */
-	  int     PAD_F_AFTER;            /** to pad this much of frames after spend   */
-	  int     UTT_F_START;            /** to announce STAT_SPEECH after this much of speech frames */
-	  int     UTT_F_END;              /** to end an utterance after this much of non-speech frames */
-	  int     UTT_F_CANCEL;           /** to cancel an utterance after this much of non-speech frames */
+	  int     PAD_F_BEFORE;           /**< to pad this much of frames before spbegin */
+	  int     PAD_F_AFTER;            /**< to pad this much of frames after spend   */
+	  int     UTT_F_START;            /**< to announce STAT_SPEECH after this much of speech frames */
+	  int     UTT_F_END;              /**< to end an utterance after this much of non-speech frames */
+	  int     UTT_F_CANCEL;           /**< to cancel an utterance after this much of non-speech frames */
 
      } endpointer_t;
 
 
      /** Status of the recording */
 
-#define STAT_OTHER      0               /** non-speech period, noise, silence, or secondary speech */
-#define STAT_BEGIN      1               /** beginning of speech period, starts with first speech frame */
-#define STAT_SPEECH     2               /** inter-speech period, once */
-#define STAT_END        3               /** end of speech period */
-#define STAT_CANCEL     4               /** non-speech frames while an utterances is in STAT_BEGIN*/
+#define STAT_OTHER      0               /**< non-speech period, noise, silence, or secondary speech */
+#define STAT_BEGIN      1               /**< beginning of speech period, starts with first speech frame */
+#define STAT_SPEECH     2               /**< inter-speech period, once */
+#define STAT_END        3               /**< end of speech period */
+#define STAT_CANCEL     4               /**< non-speech frames while an utterances is in STAT_BEGIN*/
 
      /* End-Pointing parameters */
 
-#define PAD_T_BEFORE    "0.15"    /** to pad this much of seconds before spbegin*/
-#define PAD_T_AFTER     "0.2"    /** to pad this much of seconds after spend */
-#define UTT_T_START     "0.08"    /** to announce STAT_SPEECH after this much of speech seconds */
-#define UTT_T_END       "0.30"    /** to end an utterance after this much of non-speech seconds */
-#define UTT_T_CANCEL    "0.05"    /** to cancel an utterance after this much of non-speech seconds */
+#define PAD_T_BEFORE    "0.15"    /**< to pad this much of seconds before spbegin*/
+#define PAD_T_AFTER     "0.2"    /**< to pad this much of seconds after spend */
+#define UTT_T_START     "0.08"    /**< to announce STAT_SPEECH after this much of speech seconds */
+#define UTT_T_END       "0.30"    /**< to end an utterance after this much of non-speech seconds */
+#define UTT_T_CANCEL    "0.05"    /**< to cancel an utterance after this much of non-speech seconds */
 
      /*#define PAD_T_AFTER     0.15    // to pad this much of seconds after spend
        #define UTT_T_END       0.20    // to end an utterance after this much of non-speech seconds 
