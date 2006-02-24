@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2006/02/23  15:13:16  arthchan2003
- * Typedef hyp_t to srch_hyp_t.  This makes libAPI compiled.
+ * Revision 1.12  2006/02/24  12:43:18  arthchan2003
+ * Fixed typedef issue of hyp_t and srch_hyp_t.
  * 
+ * Revision 1.11  2006/02/23 15:13:16  arthchan2003
+ * Typedef hyp_t to srch_hyp_t.  This makes libAPI compiled.
+ *
  * Revision 1.10  2006/02/23 05:40:53  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Comment the hyp_t structure,  Now only defined srch_hyp_t struct
  *
@@ -87,7 +90,7 @@ extern "C" {
 #endif
 
 
-  typedef hyp_t srch_hyp_t;
+  /*  typedef hyp_t srch_hyp_t;*/
 #if 0
   /**
    * Structure to store hypothesis. 
