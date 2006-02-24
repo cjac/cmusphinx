@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.17  2006/02/24  03:59:44  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro, Used ctl_process from now on.
+ * Revision 1.18  2006/02/24  18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
  * 
+ * Revision 1.17  2006/02/24 03:59:44  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro, Used ctl_process from now on.
+ *
  *
  * Revision 1.16  2005/10/05 00:31:14  dhdfu
  * Make int8 be explicitly signed (signedness of 'char' is
@@ -861,6 +864,7 @@ static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid
   /* UGLY! */
   /* Read utterance transcript and match it with the control file. */
   if (fgets (sent, sizeof(sent), sentfp) == NULL) {
+    E_INFO("%s\n",sent);
     E_FATAL("EOF(%s) of the transcription\n", sentfile);
   }
   /*  E_INFO("SENT %s\n",sent);*/

@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2006/02/24  16:42:48  arthchan2003
- * Fixed function prototype for align_sen_active
+ * Revision 1.8  2006/02/24  18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
  * 
+ * Revision 1.7  2006/02/24 16:42:48  arthchan2003
+ * Fixed function prototype for align_sen_active
+ *
  * Revision 1.6  2006/02/24 04:42:32  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc.
  *
@@ -149,7 +152,7 @@ int32 align_start_utt (char *uttid);
  * Called at the beginning of a frame to flag the active senones (any senone used
  * by active HMMs) in that frame.
  */
-void align_sen_active (s3senid_t *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
+void align_sen_active (int32 *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
 		       int32 n_sen		/**< In: Size of senlist[] array */
 		       );
 

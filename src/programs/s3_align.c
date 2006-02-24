@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2006/02/24  13:45:55  arthchan2003
- * Forgotten to check in changes in s3_align.c
+ * Revision 1.8  2006/02/24  18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
  * 
+ * Revision 1.7  2006/02/24 13:45:55  arthchan2003
+ * Forgotten to check in changes in s3_align.c
+ *
  * Revision 1.6.4.3  2005/09/11 02:54:19  arthchan2003
  * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
  *
@@ -953,7 +956,7 @@ static void activate (snode_t *s, int32 frm)
 /**
  * Flag the active senones. 
  */
-void align_sen_active (s3senid_t *senlist, int32 n_sen)
+void align_sen_active (int32 *senlist, int32 n_sen)
 {
     int32 i, sen;
     
