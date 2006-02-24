@@ -49,9 +49,12 @@
  *              First incorporated from sphinx 3.0 code base to 3.X codebase. 
  *
  * $Log$
- * Revision 1.15  2006/02/24  04:16:16  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, tied commands to macros, use utt_decode as the decoding interface.
+ * Revision 1.16  2006/02/24  13:43:43  arthchan2003
+ * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
  * 
+ * Revision 1.15  2006/02/24 04:16:16  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, tied commands to macros, use utt_decode as the decoding interface.
+ *
  *
  * Revision 1.14  2005/10/05 00:31:14  dhdfu
  * Make int8 be explicitly signed (signedness of 'char' is
@@ -377,7 +380,8 @@
 #include "srch.h"
 #include "utt.h"
 
-static int32 matchexact;
+/*static int32 matchexact;
+ */
 static int32 outlat_onlynodes;
 static char *inlatdir;
 static char *outlatdir;
