@@ -52,9 +52,57 @@
  *
  * 
  * $Log$
- * Revision 1.10  2005/06/22  05:39:13  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.11  2006/02/24  04:09:17  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro.  Used ctl_process. Moved most of the routines to dag.c
  * 
+ * Revision 1.10.4.13  2006/01/27 20:17:47  arthchan2003
+ * Manual merge of Dave's bug fixes into main_dag.c.
+ *
+ * Revision 1.10.4.12  2006/01/17 20:31:01  arthchan2003
+ * Changed BSTPTH <control n> to BSTPTH:
+ *
+ * Revision 1.10.4.11  2006/01/16 20:29:52  arthchan2003
+ * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
+ *
+ * Revision 1.10.4.10  2005/11/17 06:48:24  arthchan2003
+ * Changed a misleading comment in main_dag.c
+ *
+ * Revision 1.10.4.9  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
+ * Revision 1.10.4.8  2005/09/18 01:52:05  arthchan2003
+ * Changed name of log_hypseg to s3dag_log_hypseg to avoid confusion.
+ *
+ * Revision 1.10.4.7  2005/09/11 23:08:47  arthchan2003
+ * Synchronize command-line for 2-nd stage rescoring in decode/decode_anytopo/dag, move s3dag_dag_load to dag.c so that srch.c could use it.
+ *
+ * Revision 1.10.4.6  2005/09/11 03:04:34  arthchan2003
+ * Change for Comments for last commit. Last commit involves an important
+ * bug fix for dag.  In the past, dag was using a set of bestpath search
+ * where the language model weight is **not** accounted for.  This is
+ * quite subtle because it was missed in more than 3 functions and the
+ * effect was not obvious. Now, -lw will be directly applied to the
+ * score.  This is discovered during merging the code of 2-nd stage of
+ * decode_anytopo and dag.
+ *
+ * Revision 1.10.4.5  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
+ * Revision 1.10.4.4  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
+ * Revision 1.10.4.3  2005/07/26 02:22:27  arthchan2003
+ * Merged srch_hyp_t and hyp_t
+ *
+ * Revision 1.10.4.2  2005/07/22 03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
+ * Revision 1.10.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.10  2005/06/22 05:39:13  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.11  2005/06/19 03:58:17  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -163,6 +211,7 @@
 /** \file main_dag.c
  * \brief main driver for DAG and find the best path. 
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -172,7 +221,7 @@
 #include <assert.h>
 
 #include <s3types.h>
-#include "s3_dag.h"
+
 #include "dag.h"
 #include "logs3.h"
 #include "tmat.h"
@@ -182,129 +231,44 @@
 #include "fillpen.h"
 #include "search.h"
 #include "wid.h"
-
+#include <cmdln_macro.h>
+#include "corpus.h"
+#include "srch.h"
+#define EXACT 1
+#define NOTEXACT 0
 
 static mdef_t *mdef;		/* Model definition */
-extern dict_t *dict;            /* The dictionary */
+static dict_t *dict;            /* The dictionary */
 
-
-#if 0
-extern lm_t *lm ;               /* The lm */
-extern s3lmwid_t *dict2lmwid;   /* Mapping from decoding dictionary wid's to lm  */
-#endif
-
-extern fillpen_t *fpen;         /* The filler penalty structure */
-extern dag_t dag;
-extern lmset_t *lmset;          /* The lmset. Replace lm */
+static fillpen_t *fpen;         /* The filler penalty structure */
+static dag_t* dag;
+static lmset_t *lmset;          /* The lmset. Replace lm */
 
 static ptmr_t tm_utt;
 static int32 tot_nfr;
-
+static char *matchfile, *matchsegfile;
+static FILE *matchfp, *matchsegfp;
 
 /*
  * Command line arguments.
  */
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-lminmemory",
-      ARG_INT32,
-      "0",
-      "Load language model into memory (default: use disk cache for lm"},
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
+
+  log_table_command_line_macro()
+  dictionary_command_line_macro()
+  language_model_command_line_macro()
+  common_filler_properties_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  hypothesis_file_handling_command_line_macro()
+  dag_handling_command_line_macro()
+  control_lm_file_command_line_macro()
+
+  /* This all sounds like we can still factor them */
     { "-mdef",
       REQARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
-    { "-dict",
-      REQARG_STRING,
-      NULL,
-      "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdict",
-      ARG_STRING,
-      NULL,
-      "Optional filler word (noise word) pronunciation dictionary input file" },
-    { "-lm",
-      ARG_STRING,
-      NULL,
-      "Language model input file (precompiled .DMP file)" },
-    { "-lmctlfn",
-      ARG_STRING,
-      NULL,
-      "Language model control file (for class-based language model)" },
-    { "-lmname",
-      ARG_STRING,
-      NULL,
-      "Name of language model in -lmctlfn to use for all utterances" },
-    { "-ctl_lm",
-      ARG_STRING,
-      NULL,
-      "List of language model to use for each utterance (one line per utt)" },
-    { "-lmdumpdir",
-      ARG_STRING,
-      NULL,
-      "The directory for dumping the DMP file. "},
-    { "-lw",
-      ARG_FLOAT32,
-      "9.5",
-      "Language weight: empirical exponent applied to LM probabilty" },
-    { "-uw",
-      ARG_FLOAT32,
-      "0.7",
-      "LM unigram weight: unigram probs interpolated with uniform distribution with this weight" },
-    { "-wip",
-      ARG_FLOAT32,
-      "0.65",
-      "Word insertion penalty" },
-    { "-ctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      NULL,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
-    { "-silprob",
-      ARG_FLOAT32,
-      "0.1",
-      "Language model 'probability' of silence word" },
-    { "-noisepen",
-      ARG_FLOAT32,
-      "0.05",
-      "Language model 'probability' of each non-silence filler word" },
-    { "-fillpen",
-      ARG_STRING,
-      NULL,
-      "Filler word probabilities input file (used in place of -silprob and -noisepen)" },
-    { "-min_endfr",
-      ARG_INT32,
-      "3",
-      "Nodes ignored during search if they persist for fewer than so many end frames" },
-    { "-dagfudge",
-      ARG_INT32,
-      "2",
-      "(0..2); 1 or 2: add edge if endframe == startframe; 2: if start == end-1" },
-    { "-maxlpf",
-      ARG_INT32,
-      "40000",
-      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" },
-    { "-maxlmop",
-      ARG_INT32,
-      "100000000",
-      "Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)" },
-    { "-maxedge",
-      ARG_INT32,
-      "2000000",
-      "Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage" },
     { "-inlatdir",
       ARG_STRING,
       NULL,
@@ -313,18 +277,6 @@ static arg_t defn[] = {
       ARG_STRING,
       "lat.gz",
       "Word-lattice filename extension (.gz or .Z extension for compression)" },
-    { "-match",
-      ARG_STRING,
-      NULL,
-      "Recognition result output file (old NIST format; pre Nov95)" },
-    { "-matchseg",
-      ARG_STRING,
-      NULL,
-      "Exact recognition result file with word segmentations and scores" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
     { "-backtrace",
       ARG_INT32,
       "1",
@@ -332,6 +284,9 @@ static arg_t defn[] = {
     
     { NULL, ARG_INT32,  NULL, NULL }
 };
+
+
+
 
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
@@ -346,6 +301,7 @@ static void models_init ( void )
 		      (char *) cmd_ln_access("-dict"),
 		      (char *) cmd_ln_access("-fdict"),
 		      0,
+		      cmd_ln_int32("-lts_mismatch"),
 		      1);
 
     /* LM Set */
@@ -362,7 +318,7 @@ static void models_init ( void )
     /* Filler penalties */
     fpen = fillpen_init (dict,(char *) cmd_ln_access("-fillpen"),
 			 *(float32 *)cmd_ln_access("-silprob"),
-			 *(float32 *)cmd_ln_access("-noisepen"),
+			 *(float32 *)cmd_ln_access("-fillprob"),
 			 *(float32 *)cmd_ln_access("-lw"),
 			 *(float32 *)cmd_ln_access("-wip"));
     
@@ -381,7 +337,7 @@ static void models_init ( void )
  *   wlscr = LM score (without lw or wip) for word
  *   ef = end frame for utterance.
  */
-static void log_hypseg (char *uttid,
+static void s3dag_log_hypseg (char *uttid,
 			FILE *fp,	/* Out: output file */
 			srch_hyp_t *hypptr,	/* In: Hypothesis */
 			int32 nfrm)	/* In: #frames in utterance */
@@ -392,8 +348,8 @@ static void log_hypseg (char *uttid,
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
 	ascr += h->ascr;
-	if (dict_basewid(dict,h->wid) != dict->startwid) {
-	    lscr += lm_rawscore (lmset->cur_lm,h->lscr, 1.0);
+	if (dict_basewid(dict,h->id) != dict->startwid) {
+	    lscr += lm_rawscore (lmset->cur_lm,h->lscr);
 	} else {
 	    assert (h->lscr == 0);
 	}
@@ -406,8 +362,8 @@ static void log_hypseg (char *uttid,
 	fprintf (fp, " (null)\n");
     else {
 	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->wid) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr, 1.0) : 0;
-	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->wid));
+	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr) : 0;
+	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->id));
 	}
 	fprintf (fp, " %d\n", nfrm);
     }
@@ -416,94 +372,49 @@ static void log_hypseg (char *uttid,
 }
 
 
-/* Write hypothesis in old (pre-Nov95) NIST format */
-static void log_hypstr (FILE *fp, srch_hyp_t *hypptr, char *uttid, int32 scr)
-{
-    srch_hyp_t *h;
-    s3wid_t w;
-
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, "(null)");
-    
-    for (h = hypptr; h; h = h->next) {
-	w = dict_basewid (dict,h->wid);
-	if ((w != dict->startwid) && (w != dict->finishwid) && (! dict_filler_word (dict,w)))
-	    fprintf (fp, "%s ", dict_wordstr(dict,w));
-    }
-
-    if (scr != 0)
-	fprintf (fp, " (%s %d)\n", uttid, scr);
-    else
-	fprintf (fp, " (%s)\n", uttid);
-
-    fflush (fp);
-}
-
-
-/* Log hypothesis in detail with word segmentations, acoustic and LM scores  */
-static void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, char *lbl)
-{
-    srch_hyp_t *h;
-    int32 ascr_norm, lscr;
-
-    ascr_norm = 0;
-    lscr = 0;
-    
-    fprintf (fp, "%s:%s> %20s %5s %5s %11s %10s\n", LBL, uttid,
-	     "WORD", "SFrm", "EFrm", "AScr(Norm)", "LMScore");
-    
-    for (h = hypptr; h; h = h->next) {
-	fprintf (fp, "%s:%s> %20s %5d %5d %11d %10d\n", lbl, uttid,
-		 h->word, h->sf, h->ef, h->ascr, h->lscr);
-
-	ascr_norm += h->ascr;
-	lscr += h->lscr;
-    }
-
-    fprintf (fp, "%s:%s> %20s %5s %5s %11d %10d\n", LBL, uttid,
-	     "TOTAL", "", "", ascr_norm, lscr);
-}
-
-
-/* Decode the given mfc file and write result to matchfp and matchsegfp */
-static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
+/* Find the best path in the lattice file and write result to matchfp and matchsegfp */
+static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
 {
     char dagfile[1024];
     srch_hyp_t *h, *hyp;
     char *latdir, *latext;
     int32 nfrm, ascr, lscr;
 
-
+    hyp = NULL;
     ptmr_reset (&tm_utt);
     ptmr_start (&tm_utt);
 
     
-    latdir = (char *) cmd_ln_access ("-inlatdir");
-    latext = (char *) cmd_ln_access ("-latext");
+    latdir = cmd_ln_str ("-inlatdir");
+    latext = cmd_ln_str ("-latext");
+
     if (latdir)
 	sprintf (dagfile, "%s/%s.%s", latdir, uttid, latext);
     else
 	sprintf (dagfile, "%s.%s", uttid, latext);
 
     
-    if ((nfrm = s3dag_dag_load (dagfile)) >= 0) {
-	hyp = s3dag_dag_search (uttid);
+    if ((nfrm = s3dag_dag_load (&dag,cmd_ln_float32("-lw"),dagfile,dict,fpen)) >= 0) {
+	hyp = dag_search (dag,uttid, cmd_ln_float32("-lw"),
+			  dag->final.node,
+			  dict,lmset->cur_lm,fpen
+			  );
 	if(hyp!=NULL){
 	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
-	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp");
-	  
-	  /* Total scaled acoustic score and LM score */
+	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
+
+	  /* Total acoustic score and LM score */
 	  ascr = lscr = 0;
 	  for (h = hyp; h; h = h->next) {
 	    ascr += h->ascr;
 	    lscr += h->lscr;
 	  }
-	  
-	  printf ("BSTPTH: ");
-	  log_hypstr (stdout, hyp, uttid, ascr+lscr);
+
+	  printf("BSTPTH: ");
+	  log_hypstr(stdout, hyp, uttid, 0, ascr+lscr, dict);
 	  
 	  printf ("BSTXCT: ");
-	  log_hypseg (uttid, stdout, hyp, nfrm);
+	  s3dag_log_hypseg (uttid, stdout, hyp, nfrm);
 	  
 	  lm_cache_stats_dump (lmset->cur_lm);
 	  lm_cache_reset (lmset->cur_lm);
@@ -518,12 +429,13 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
 
     
     /* Log recognition output to the standard match and matchseg files */
-    if (matchfp)
-	log_hypstr (matchfp, hyp, uttid, 0);
-    if (matchsegfp)
-	log_hypseg (uttid, matchsegfp, hyp, nfrm);
+    if (_matchfp){
+      log_hypstr(_matchfp, hyp, uttid, 0, 0 ,dict );
+    }
+    if (_matchsegfp)
+      s3dag_log_hypseg (uttid, _matchsegfp, hyp, nfrm);
     
-    dag_destroy (&dag);
+    dag_destroy (dag);
 
     ptmr_stop (&tm_utt);
     
@@ -536,126 +448,20 @@ static void decode_utt (char *uttid, FILE *matchfp, FILE *matchsegfp)
     fflush (stdout);
 
     tot_nfr += nfrm;
+
+    if(hyp != NULL)
+      hyp_free(hyp);
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_dag(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *ctllmfp, *matchfp, *matchsegfp;
-    char *ctlfile, *ctllmfile;
-    char *matchfile, *matchsegfile;
-    char line[1024], ctlspec[1024], uttid[1024], lmname[1024];
-    int32 ctloffset, ctlcount;
-    int32 i, k, sf, ef;
-    
-    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
-	E_FATAL("No -ctl argument\n");
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-    
-    ctllmfile = (char *) cmd_ln_access("-ctl_lm");
-    if (ctllmfile) {
-	if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", ctllmfile);
-    }
-    else
-	ctllmfp = NULL;
 
-    if ((matchfile = (char *) cmd_ln_access("-match")) == NULL) {
-	E_WARN("No -match argument\n");
-	matchfp = NULL;
-    } else {
-	if ((matchfp = fopen (matchfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchfile);
-    }
-    
-    if ((matchsegfile = (char *) cmd_ln_access("-matchseg")) == NULL) {
-	E_WARN("No -matchseg argument\n");
-	matchsegfp = NULL;
-    } else {
-	if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-    }
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	return;
-    }
-
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0)
-	    --ctloffset;
-	if (fgets(line, sizeof(line), ctllmfp) == NULL)
-	    E_FATAL("File size mismatch between %s and %s\n",
-		    ctlfile, ctllmfile);
-    }
-    
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	    E_ERROR("Error in ctlfile spec; skipped\n");
-	    /* What happens to ctlcount??? */
-	    continue;
-	}
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (ctllmfp) {
-	    fgets(line, sizeof(line), ctllmfp);
-	    if (sscanf(line, "%s", lmname) > 0)
-	      lmset_set_curlm_wname(lmset,lmname);
-	    /*		s3dag_set_lm(lmname);*/
-	}
-
-	decode_utt (uttid, matchfp, matchsegfp);
-
-	--ctlcount;
-    }
-    printf ("\n");
-
-    if (fscanf (ctlfp, "%s", line) == 1)
-	E_INFO("Skipping rest of control file beginning with:\n\t%s\n", line);
-
-    if (matchfp)
-	fclose (matchfp);
-    if (matchsegfp)
-	fclose (matchsegfp);
-    if (ctllmfp)
-	fclose (ctllmfp);
-    fclose (ctlfp);
+  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
+  decode_utt(uttid,matchfp,matchsegfp);
 }
 
 int main (int32 argc, char *argv[])
 {
-  /*  kb_t kb;
-      ptmr_t tm;*/
-
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
 
@@ -670,11 +476,48 @@ int main (int32 argc, char *argv[])
   ptmr_init(&tm_utt);
   tot_nfr = 0;
     
-  /* Initialize forward Viterbi search module */
-  s3_dag_init (dict);
   printf ("\n");
+
+  matchfile=NULL;
+  matchfile=cmd_ln_str("-hyp");
+
+  if(matchfile==NULL){
+    E_WARN("No -hyp argument\n");
+    matchfp=NULL;
+  }else{
+    if ((matchfp = fopen (matchfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchfile);
+  }
   
-  process_ctlfile ();
+
+  matchsegfile=NULL;
+  matchsegfile=cmd_ln_str("-hypseg");
+  if(matchsegfile==NULL){
+    E_WARN("No -hypseg argument\n");
+    matchsegfp=NULL;
+  }else{
+    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+  }
+
+  if(cmd_ln_str("-ctl")){
+    ctl_process(cmd_ln_str("-ctl"),
+		cmd_ln_str("-ctl_lm"),
+		NULL,
+		cmd_ln_int32("-ctloffset"),
+		cmd_ln_int32("-ctlcount"),
+		utt_dag, 
+		NULL);
+
+  }else{
+    E_FATAL("-ctl is not specified\n");
+  }
+  
+  if(matchfp)
+    fclose(matchfp);
+
+  if(matchsegfp)
+    fclose(matchsegfp);
 
   printf ("\n");
   printf("TOTAL FRAMES:       %8d\n", tot_nfr);
