@@ -44,12 +44,46 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.15  2006/02/07  20:51:33  dhdfu
+ * Revision 1.16  2006/02/24  04:38:04  arthchan2003
+ * Merged Dave's change and my changes: started to use macros.  use Dave's change on -hyp and -hypseg. Used ctl_process.  Still need test.
+ * 
+ *
+ * Revision 1.15  2006/02/07 20:51:33  dhdfu
  * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
  * error rate in a straightforward way.
- * 
+ *
  * Revision 1.14  2006/02/02 22:56:07  dhdfu
  * Add ARPA language model support to allphone
+ *
+ * Revision 1.13.4.10  2005/09/26 02:28:26  arthchan2003
+ * Changed -s3hmmdir to -hmm
+ *
+ * Revision 1.13.4.9  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
+ * Revision 1.13.4.8  2005/08/03 20:01:32  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
+ *
+ * Revision 1.13.4.7  2005/08/03 18:55:03  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
+ *
+ * Revision 1.13.4.6  2005/08/02 21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
+ * Revision 1.13.4.5  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
+ * Revision 1.13.4.4  2005/07/24 19:37:19  arthchan2003
+ * Removed GAUDEN_EVAL_WINDOW, put it in srch.h now.
+ *
+ * Revision 1.13.4.3  2005/07/22 03:46:55  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
+ * Revision 1.13.4.2  2005/07/20 21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ *
+ * Revision 1.13.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
  *
  * Revision 1.13  2005/06/22 05:37:45  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init
@@ -103,9 +137,10 @@
 #include "ms_mllr.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
+#include "ms_mgau.h"
 #include "cb2mllr_io.h"
-#include "lm.h"
-
+#include "srch.h"
+#include "corpus.h"
 
 #ifdef INTERP
 #include "interp.h"
@@ -116,129 +151,36 @@
 #include "s3_allphone.h"
 #include "agc.h"
 #include "cmn.h"
+#include "cmdln_macro.h"
 
 /** \file main_allphone.c
  * \brief  Main driver routine for allphone Viterbi decoding
  */
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-mdef", 
-      ARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmat",
-      ARG_STRING,
-      NULL,
-      "Transition matrix input file" },
-    { "-mean",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks mean parameters input file" },
-    { "-var",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks variance parameters input file" },
-    { "-mllr",
-      ARG_STRING,
-      NULL,
-      "MLLR transfomation matrix to be applied to mixture gaussian means"},
-    { "-cb2mllr",
-      ARG_STRING,
-      ".1cls.",
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
-    { "-senmgau",
-      ARG_STRING,
-      ".cont.",
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixw",
-      ARG_STRING,
-      NULL,
-      "Senone mixture weights parameters input file" },
-#ifdef INTERP
+  cepstral_to_feature_command_line_macro()
+  log_table_command_line_macro()
+  acoustic_model_command_line_macro()
+  speaker_adaptation_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  hypothesis_file_handling_command_line_macro()
+  control_mllr_file_command_line_macro()
+  cepstral_input_handling_command_line_macro()
+
     { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
-#endif
-    { "-tmatfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Triphone state transition probability floor applied to -tmat file" },
-    { "-varfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Codebook variance floor applied to -var file" },
-    { "-mixwfloor",
-      ARG_FLOAT32,
-      "0.0000001",
-      "Codebook mixture weight floor applied to -mixw file" },
-    { "-agc",
-      ARG_STRING,
-      "max",
-      "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-cmn",
-      ARG_STRING,
-      "current",
-      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-varnorm",
-      ARG_STRING,
-      "no",
-      "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
-      ARG_STRING,
-      "1s_c_d_dd",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-ctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      NULL,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
-    { "-cepdir",
-      ARG_STRING,
-      NULL,
-      "Directory for utterances in -ctl file (if relative paths specified)." },
-    { "-cepext",
-      ARG_STRING,
-      ".mfc",
-      "File extension appended to utterances listed in -ctl file" },
-    { "-mllrctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing MLLR input data; parallel to ctl argument file" },
-    { "-topn",
-      ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
     { "-beam",
       ARG_FLOAT64,
       "1e-64",
       "Main pruning beam applied during search" },
-    { "-phlatbeam",
-      ARG_FLOAT64,
-      "1e-20",
-      "Pruning beam for writing phone lattice" },
-    { "-lminmemory",
-      ARG_INT32,
-      "0",
-      "Load language model into memory (default: use disk cache for lm"},
-    { "-lm",
-      ARG_STRING,
-      NULL,
-      "Phoneme language model in .DMP format" },
+    { "-wip",
+      ARG_FLOAT32,
+      "0.05",
+      "Phone insertion penalty (applied above phone transition probabilities)" },
+
+  /* allphone-specific arguments */
     { "-phonetp",
       ARG_STRING,
       NULL,
@@ -251,52 +193,29 @@ static arg_t defn[] = {
       ARG_FLOAT32,
       "3.0",
       "Weight (exponent) applied to phone transition probabilities" },
-    { "-wip",
-      ARG_FLOAT32,
-      "0.05",
-      "Phone insertion penalty (applied above phone transition probabilities)" },
-    { "-uw",
-      ARG_FLOAT32,
-      "0.7",
-      "Phone unigram weight: unigram probs interpolated with uniform distribution with this weight" },
     { "-phsegdir",
       ARG_STRING,
       NULL,
       "Output directory for phone segmentation files; optionally end with ,CTL" },
+    { "-phlatbeam",
+      ARG_FLOAT64,
+      "1e-20",
+      "Pruning beam for writing phone lattice" },
     { "-phlatdir",
       ARG_STRING,
       NULL,
       "Output directory for phone lattice files" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
-    { "-hyp",
-      ARG_STRING,
-      NULL,
-      "Recognition result file, with only phones" },
-    { "-hypseg",
-      ARG_STRING,
-      NULL,
-      "Exact recognition result file with phone segmentations and scores" },
     { NULL, ARG_INT32, NULL, NULL }
 };
-
 
 
 /*  The definition of mdef and tmat can be found in s3_allphone.c
 */
 
-mdef_t *mdef;
-tmat_t *tmat;
+static kbcore_t *kbc;   /* a kbcore */
+static ascr_t *ascr;    /* An acoustic score structure.  */
+
 lm_t *lm;
-
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-#ifdef INTERP
-static interp_t *interp;	/* CD/CI interpolation */
-#endif
-
 
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 static float32 ***feat = NULL;	/* Speech feature data */
@@ -318,18 +237,59 @@ static FILE *matchfp, *matchsegfp;
  */
 static void models_init ( void )
 {
-    float32 varfloor, mixwfloor, tpfloor;
     int32 i;
-    char *arg;
-    
-    /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    gauden_t* g;
+    senone_t* sen;
+    ms_mgau_model_t *msg;
+    char str[10];
+    int32 cisencnt;
 
-    /* Codebooks */
-    varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-mean"),
-		     (char *) cmd_ln_access("-var"),
-		     varfloor);
+    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
+
+    /* Initialize feature stream type */
+    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		      (char *) cmd_ln_access ("-cmn"),
+		      (char *) cmd_ln_access ("-varnorm"),
+		      (char *) cmd_ln_access ("-agc"),
+		      1);
+
+    kbc=New_kbcore();
+
+    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
+	Then no need for changing the default command-line. 
+     */
+
+    if(strcmp(cmd_ln_str("-senmgau"),".cont.")==0){
+      strcpy(str,".s3cont.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".semi.")==0){
+      strcpy(str,".semi.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".s3cont.")==0){
+      strcpy(str,".s3cont.");
+    }
+
+    s3_am_init(kbc,
+	       cmd_ln_str("-hmm"),
+	       cmd_ln_str("-mdef"),
+	       cmd_ln_str("-mean"),
+	       cmd_ln_str("-var"),
+	       cmd_ln_float32("-varfloor"),
+	       cmd_ln_str("-mixw"),
+	       cmd_ln_float32("-mixwfloor"),
+	       cmd_ln_str("-tmat"),
+	       cmd_ln_float32("-tmatfloor"),
+	       str, 
+	       cmd_ln_str("-lambda"),
+	       cmd_ln_int32("-topn")
+	       );
+
+
+    msg=kbcore_ms_mgau(kbc);
+    assert(msg);    
+    assert(msg->g);    
+    assert(msg->s);
+
+    g=ms_mgau_gauden(msg);
+    sen=ms_mgau_senone(msg);
 
     /* Verify codebook feature dimensions against libfeat */
     if (feat_n_stream(fcb) != g->n_feat) {
@@ -342,61 +302,9 @@ static void models_init ( void )
 		    feat_stream_len(fcb, i), g->featlen[i]);
 	}
     }
-    
-    /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixw"),
-		       (char *) cmd_ln_access("-senmgau"),
-		       mixwfloor);
-    
-    /* Verify senone parameters against gauden parameters */
-    if (sen->n_feat != g->n_feat)
-	E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, sen->n_feat);
-    if (sen->n_cw != g->n_density)
-	E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, sen->n_cw);
-    if (sen->n_gauden > g->n_mgau)
-	E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
-    if (sen->n_gauden < g->n_mgau)
-	E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
 
-    /* Verify senone parameters against model definition parameters */
-    if (mdef->n_sen != sen->n_sen)
-	E_FATAL("Model definition has %d senones; but #senone= %d\n",
-		mdef->n_sen, sen->n_sen);
+    for(cisencnt=0;cisencnt==kbc->mdef->cd2cisen[cisencnt];cisencnt++) ;
 
-#ifdef INTERP
-    /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
-	interp = interp_init (arg);
-
-	/* Verify interpolation weights size with senones */
-	if (interp->n_sen != sen->n_sen)
-	    E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
-		    interp->n_sen, sen->n_sen);
-    } else
-	interp = NULL;
-#endif
-
-    /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
-
-    /* Verify transition matrices parameters against model definition parameters */
-    if (mdef->n_tmat != tmat->n_tmat)
-	E_FATAL("Model definition has %d tmat; but #tmat= %d\n",
-		mdef->n_tmat, tmat->n_tmat);
-    if (mdef->n_emit_state != tmat->n_state)
-	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
-		mdef->n_emit_state, tmat->n_state);
-
-    arg = (char *) cmd_ln_access ("-agc");
-    if ((strcmp (arg, "max") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -agc argument: %s\n", arg);
-    arg = (char *) cmd_ln_access ("-cmn");
-    if ((strcmp (arg, "current") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -cmn argument: %s\n", arg);
 
     /* Language model, if any. */
     if (cmd_ln_access("-lm")) {
@@ -406,6 +314,13 @@ static void models_init ( void )
 			      cmd_ln_float32("-uw"))) == NULL)
 		    E_FATAL("Failed to read language model from %s\n", cmd_ln_str("-lm"));
     }
+
+    ascr=ascr_init(kbc->mdef->n_sen,
+		   0, /* No composite senone */
+		   mdef_n_sseq(kbc->mdef),
+		   0, /* No composite senone sequence */
+		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead and CIGMMS at this moment */
+		   cisencnt);
 }
 
 
@@ -450,7 +365,7 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
 	}
 	fprintf (fp, "\t%5d %5d %9d %s\n",
 		 phseg->sf, phseg->ef, phseg->score + scale,
-		 mdef_ciphone_str (mdef, phseg->ci));
+		 mdef_ciphone_str (kbc->mdef, phseg->ci));
 	fflush(fp);
 	uttscr += (phseg->score + scale);
     }
@@ -469,133 +384,13 @@ static void write_phseg (char *dir, char *uttid, phseg_t *phseg)
     }
 }
 
-
-#define GAUDEN_EVAL_WINDOW	8
-
-/* Lists of senones sharing each mixture Gaussian codebook */
-typedef struct mgau2sen_s {
-    s3senid_t sen;		/* Senone shared by this mixture Gaussian */
-    struct mgau2sen_s *next;	/* Next entry in list for this mixture Gaussian */
-} mgau2sen_t;
-
-
-static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
+/* FIX ME! Should only consider active senone from every frame in the search */
+static void allphone_sen_active (int32 *senlist, int32 n_sen)
 {
-    float32 ****A, ***B;
-    int32 *cb2mllr;
-    int32 gid, sid, nclass;
-    uint8 *mgau_xform;
-		
-    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
-		
-    if (ms_mllr_read_regmat (mllrfile, &A, &B,
-			     fcb->stream_len, feat_n_stream(fcb),
-			     &nclass) < 0)
-	E_FATAL("ms_mllr_read_regmat failed\n");
-
-    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
-
-	cb2mllr_read(cb2mllrfile,
-		     &cb2mllr,
-		     &ncb, &nmllr);
-	if (nmllr != nclass)
-	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		    ncb, nclass);
-	if (ncb != sen->n_sen)
-	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		    ncb, sen->n_sen);
-    }
-    else
-	cb2mllr = NULL;
-
-		
-    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
-
-    /* Transform each non-CI mixture Gaussian */
-    for (sid = 0; sid < sen->n_sen; sid++) {
-	int32 class = 0;
-
-	if (cb2mllr)
-	    class = cb2mllr[sid];
-	if (class == -1)
-	    continue;
-
-	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-	    gid = sen->mgau[sid];
-	    if (! mgau_xform[gid]) {
-		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-				   fcb->stream_len, feat_n_stream(fcb),
-				   class);
-		mgau_xform[gid] = 1;
-	    }
-	}
-    }
-
-    ckd_free (mgau_xform);
-		
-    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
-    ckd_free(cb2mllr);
-
-    return S3_SUCCESS;
-}
-
-/*
- * Write exact hypothesis.  Format
- *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
- * where:
- *   scl = acoustic score scaling for entire utterance
- *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
- *   ascr = scaled acoustic score for entire utterance
- *   lscr = LM score (without lw or wip) for entire utterance
- *   sf = start frame for word
- *   wascr = scaled acoustic score for word
- *   wlscr = LM score (without lw or wip) for word
- *   ef = end frame for utterance.
- */
-static void log_hypseg (char *uttid,
-			FILE *fp,	/* Out: output file */
-			phseg_t *hypptr,	/* In: Hypothesis */
-			int32 nfrm,	/* In: #frames in utterance */
-			int32 scl)	/* In: Acoustic scaling for entire utt */
-{
-    phseg_t *h;
-    int32 ascr, lscr, tscr;
+  int32 sen;
     
-    ascr = lscr = tscr = 0;
-    for (h = hypptr; h; h = h->next) {
-	ascr += h->score;
-	lscr += h->tscore; /* FIXME: unscaled score? */
-	tscr += h->score + h->tscore;
-    }
-
-    fprintf (fp, "%s S %d T %d A %d L %d", uttid, scl, tscr, ascr, lscr);
-    
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, " (null)\n");
-    else {
-	for (h = hypptr; h; h = h->next) {
-	    fprintf (fp, " %d %d %d %s", h->sf, h->score, h->tscore,
-		     mdef_ciphone_str(mdef, h->ci));
-	}
-	fprintf (fp, " %d\n", nfrm);
-    }
-    
-    fflush (fp);
-}
-
-/* Write hypothesis in old (pre-Nov95) NIST format */
-static void log_hypstr (FILE *fp, phseg_t *hypptr, char *uttid)
-{
-    phseg_t *h;
-    
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, "(null)");
-    
-    for (h = hypptr; h; h = h->next)
-	fprintf (fp, "%s ", mdef_ciphone_str(mdef, h->ci));
-    fprintf (fp, " (%s)\n", uttid);
-    fflush (fp);
+  for (sen = 0; sen < n_sen; sen++)
+    senlist[sen] = 1;
 }
 
 /*
@@ -603,43 +398,16 @@ static void log_hypstr (FILE *fp, phseg_t *hypptr, char *uttid)
  */
 static void allphone_utt (int32 nfr, char *uttid)
 {
-    static int32 w;
-    static int32 topn;
-    static gauden_dist_t **dist;	/* Density values for one mgau in one frame */
-    static int32 **senscr = NULL;	/* Senone scores for window of frames */
-    static mgau2sen_t **mgau2sen;	/* Senones sharing mixture Gaussian codebooks */
+    int32 i;
+    phseg_t *phseg;
+    int32 topn;
+    int32 w;
+    ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
 
-    int32 i, j, k, s, gid, best, scl, ascr, lscr;
-    phseg_t *phseg, *h;
-    mgau2sen_t *m2s;
-    float32 **fv;
-
-    if (! senscr) {
-	/* One-time allocation of necessary intermediate variables */
-	
-	/* Allocate space for top-N codeword density values in a codebook */
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
-					   frame to compute one feature vector */
-	topn = *((int32 *) cmd_ln_access("-topn"));
-	if (topn > g->n_density) {
-	    E_WARN("-topn argument (%d) > #density codewords (%d); set to latter\n",
-		   topn, g->n_density);
-	    topn = g->n_density;
-	}
-	dist = (gauden_dist_t **) ckd_calloc_2d (g->n_feat, topn, sizeof(gauden_dist_t));
-	
-	/* Space for one frame of senone scores, and per frame active flags */
-	senscr = (int32 **) ckd_calloc_2d (GAUDEN_EVAL_WINDOW, sen->n_sen, sizeof(int32));
-	
-	/* Initialize mapping from mixture Gaussian to senones */
-	mgau2sen = (mgau2sen_t **) ckd_calloc (g->n_mgau, sizeof(mgau2sen_t *));
-	for (s = 0; s < sen->n_sen; s++) {
-	    m2s = (mgau2sen_t *) listelem_alloc (sizeof(mgau2sen_t));
-	    m2s->sen = s;
-	    m2s->next = mgau2sen[sen->mgau[s]];
-	    mgau2sen[sen->mgau[s]] = m2s;
-	}
-    }
+    msg=kbcore_ms_mgau(kbc);
+    topn=ms_mgau_topn(msg);
+    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+				   frame to compute one feature vector */
 
     ptmr_reset (&tm_utt);
     ptmr_reset (&tm_gausen);
@@ -652,61 +420,34 @@ static void allphone_utt (int32 nfr, char *uttid)
     ptmr_start (&tm_utt);
 
     allphone_start_utt (uttid);
-    scl = ascr = lscr = 0;
-    for (j = 0; j < nfr; j += GAUDEN_EVAL_WINDOW) {
-	/* Compute Gaussian densities and senone scores for window of frames */
-	ptmr_start (&tm_gausen);
-	for (gid = 0; gid < g->n_mgau; gid++) {
-	    for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-		fv = feat[i];
-		
-		/* Evaluate mixture Gaussian densities */
-		gauden_dist (g, gid, topn, fv, dist);
-		
-		/* Compute senone scores */
-		if (g->n_mgau > 1) {
-		    for (m2s = mgau2sen[gid]; m2s; m2s = m2s->next) {
-			s = m2s->sen;
-			senscr[k][s] = senone_eval (sen, s, dist, topn);
-		    }
-		} else {
-		    /* Semi-continuous special case; single shared codebook */
-		    senone_eval_all (sen, dist, topn, senscr[k]);
-		}
-	    }
-	}
-	
-	/* Find best phone scores for each frame in window */
-	for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-#ifdef INTERP
-	  /* Interpolate senones for each frame in window */
-	  if (interp)
-	      interp_all (interp, senscr[k], mdef->cd2cisen, mdef->n_ci_sen);
+
+#if 0
+    /* Also see the old implementation at the bottom of the file */
+
 #endif
 
-	  /* Normalize senone scores */
-	  best = (int32)0x80000000;
-	  for (s = 0; s < sen->n_sen; s++)
-	      if (best < senscr[k][s])
-		  best = senscr[k][s];
-	  for (s = 0; s < sen->n_sen; s++)
-	      senscr[k][s] -= best;
-	  senscale[i] = best;
-	  scl += senscale[i];
-      }
+#if 1
+    for(i = 0 ; i < nfr ; i++){
+      ptmr_start(&tm_gausen);
+      allphone_sen_active(ascr->sen_active,ascr->n_sen);
+      senscale[i]=ms_cont_mgau_frame_eval(ascr,
+					  msg,
+					  kbc->mdef,
+					  feat[i]);
       ptmr_stop (&tm_gausen);
 
-      /* Step search one frame forward */
       ptmr_start (&tm_allphone);
-      for (i = j, k = 0; (k < GAUDEN_EVAL_WINDOW) && (i < nfr); i++, k++) {
-	  allphone_frame (senscr[k]);
-	  if ((i%10) == 9) {
-	      printf ("."); fflush (stdout);
-	  }
+      allphone_frame (ascr->senscr);
+      if ((i%10) == 9) {
+	printf ("."); fflush (stdout);
       }
       ptmr_stop (&tm_allphone);
-  }
-  printf ("\n");
+
+    }
+
+    printf ("\n");
+#endif
+
   
   phseg = allphone_end_utt (uttid);
   write_phseg ((char *) cmd_ln_access ("-phsegdir"), uttid, phseg);
@@ -735,19 +476,12 @@ static void allphone_utt (int32 nfr, char *uttid)
   fflush (stdout);
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-  FILE *ctlfp, *mllrctlfp;
-  char *ctlfile, *matchfile, *matchsegfile, *cepdir, *cepext, *mllrctlfile;
-  char line[1024], ctlspec[1024];
-  int32 ctloffset, ctlcount, sf, ef, nfr;
+  int32 nfr;
+  char *cepdir, *cepext;
 
-  char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096]; 
-  char uttid[1024];
-  int32 k,i;
-  
+	/* FIX ME: merging is incomplete for this part. */
   ctlfile = (char *) cmd_ln_access("-ctl");
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
@@ -776,147 +510,69 @@ static void process_ctlfile ( void )
     strcpy(prevmllr, cmd_ln_access("-mllr"));
   }
 
-  E_INFO("Processing ctl file %s\n", ctlfile);
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
+
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
+
+  assert(kbc->ms_mgau);
+  if(ur->regmatname) model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
   
-  cepdir = (char *) cmd_ln_access("-cepdir");
-  cepext = (char *) cmd_ln_access("-cepext");
-  assert (cepext != NULL);
-  
-  ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-  if (! cmd_ln_access("-ctlcount"))
-      ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-  else
-      ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-  if (ctlcount == 0) {
-      E_INFO("-ctlcount argument = 0!!\n");
-      fclose (ctlfp);
-      return;
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
+    } else {
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
+    }
   }
-  
-  /* Skipping initial offset */
-  if (ctloffset > 0)
-      E_INFO("Skipping %d utterances in the beginning of control file\n",
-	     ctloffset);
-  while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-      if (sscanf (line, "%s", ctlspec) > 0)
-	  --ctloffset;
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    allphone_utt (nfr, uttid);
   }
 
-  /* Process the specified number of utterance or until end of control file */
-  while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-      printf ("\n");
-      E_INFO("Utterance: %s", line);
-      
-      sf = 0;
-      ef = (int32)0x7ffffff0;
-      if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	  continue;	    /* Empty line */
-
-      if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	  E_ERROR("Error in ctlfile spec; skipped\n");
-	  /* What happens to ctlcount??? */
-	  continue;
-      }
-
-      if (k < 4) {
-	/* Create utt-id from mfc-filename (and sf/ef if specified) */
-	for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	if (k == 3)
-	  sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	else
-	  strcpy (uttid, ctlspec+i+1);
-      }
-
-      if (mllrctlfp) {
-	int32 tmp1, tmp2;
-	
-	if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			 &tmp1, &tmp2, cb2mllrfile)) <= 0)
-	  E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	if (!(k == 1) || (k == 4))
-	  E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
-		   mllrctlfile);
-	if (k == 1)
-	  strcpy(cb2mllrfile, ".1cls.");
-	
-	if (strcmp (prevmllr, mllrfile) != 0) {
-	  model_set_mllr(mllrfile, cb2mllrfile);
-	  strcpy (prevmllr, mllrfile);
-	}
-      }
-
-      if (! feat) 
-	  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-
-      nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
-
-      if (nfr <= 0){
-	if (cepdir != NULL) {
-	  E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
-		  uttid, ctlspec, cepdir, cepext);
-	} else {
-	  E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ctlspec, cepext);
-	}
-      }
-      else {
-	  E_INFO ("%s: %d input frames\n", uttid, nfr);
-	  allphone_utt (nfr, uttid);
-      }
-	
-      --ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    if (matchfp)
-	fclose (matchfp);
-    if (matchsegfp)
-	fclose (matchsegfp);
-
-    fclose (ctlfp);
-
-    if (mllrctlfp)
-	fclose (mllrctlfp);
 }
 
 int
 main (int32 argc, char *argv[])
 {
-    /*  kb_t kb;
-      ptmr_t tm;*/
-
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
   unlimit ();
-    
-  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
-  /* Initialize feature stream type */
-  fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		    (char *) cmd_ln_access ("-cmn"),
-		    (char *) cmd_ln_access ("-varnorm"),
-		    (char *) cmd_ln_access ("-agc"),
-		    1);
-    
-    /* Read in input databases */
+  /* Read in input databases */
   models_init ();
   
   /* Senone scaling factor in each frame */
   senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+  feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
     
   /* Initialize allphone decoder module */
-  allphone_init (mdef, tmat);
+  allphone_init (kbc->mdef, kbc->tmat);
   printf ("\n");
   
+  assert(kbc->ms_mgau);
+  if (cmd_ln_access("-mllr") != NULL) 
+    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
+
   tot_nfr = 0;
-    
-  process_ctlfile ();
+
+  if (cmd_ln_str ("-ctl")) {
+    /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+       the corresponding  MLLR for the utterance */
+    ctl_process (cmd_ln_str("-ctl"),
+		 NULL,
+		 cmd_ln_str("-ctl_mllr"),
+		 cmd_ln_int32("-ctloffset"),
+		 cmd_ln_int32("-ctlcount"),
+		 utt_allphone, 
+		 NULL);
+  } else {
+      /* Is error checking good enough?" */
+      E_FATAL(" -ctl are not specified.\n");
+      
+  }
+
   
   if (tot_nfr > 0) {
     printf ("\n");
@@ -926,6 +582,11 @@ main (int32 argc, char *argv[])
     printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
 	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
   }
+
+  if(ascr){
+    ascr_free(ascr);
+  }
+
   
 #if (! WIN32)
   system ("ps aguxwww | grep s3allphone");
@@ -935,3 +596,4 @@ main (int32 argc, char *argv[])
     
   return 0;
 }
+
