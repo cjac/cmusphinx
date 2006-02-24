@@ -46,12 +46,49 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.16  2005/10/05  00:31:14  dhdfu
+ * Revision 1.17  2006/02/24  03:59:44  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro, Used ctl_process from now on.
+ * 
+ *
+ * Revision 1.16  2005/10/05 00:31:14  dhdfu
  * Make int8 be explicitly signed (signedness of 'char' is
  * architecture-dependent).  Then make a bunch of things use uint8 where
  * signedness is unimportant, because on the architecture where 'char' is
  * unsigned, it is that way for a reason (signed chars are slower).
- * 
+ *
+ * Revision 1.15.4.11  2006/01/16 20:26:03  arthchan2003
+ * Changed -ltsoov to -lts_mismatch.
+ *
+ * Revision 1.15.4.10  2005/09/26 02:28:26  arthchan2003
+ * Changed -s3hmmdir to -hmm
+ *
+ * Revision 1.15.4.9  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
+ * Revision 1.15.4.8  2005/08/03 20:01:32  arthchan2003
+ * Added the -topn argument into acoustic_model_command_line_macro
+ *
+ * Revision 1.15.4.7  2005/08/03 18:55:04  dhdfu
+ * Remove bogus initialization of ms_mgau's internals from here
+ *
+ * Revision 1.15.4.6  2005/08/02 21:42:33  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
+ * Revision 1.15.4.5  2005/07/28 03:11:17  arthchan2003
+ * Removed process_ctl in main_align.c, slightly ugly b ut the evil of duplicating ctl_process is larger.
+ *
+ * Revision 1.15.4.4  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
+ * Revision 1.15.4.3  2005/07/22 03:46:53  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
+ * Revision 1.15.4.2  2005/07/20 21:25:42  arthchan2003
+ * Shared to code of Multi-stream GMM initialization in align/allphone and decode_anytopo.
+ *
+ * Revision 1.15.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
  * Revision 1.15  2005/06/22 05:36:11  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid
  *
@@ -170,172 +207,43 @@
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"
+#include "ms_mgau.h"
 #include "ms_mllr.h"
 #include "ms_gauden.h"
 #include "ms_senone.h"
 #include "interp.h"
 #include "cb2mllr_io.h"
+#include "cmdln_macro.h"
+#include "corpus.h"
+#include "kbcore.h"
 
 /** \file main_align.c
    \brief Main driver routine for time alignment.
 
 */
 
-#if 0
-defn = {logs3_arg,am_arg,cep2feat_arg,dict_arg,ctl_arg,output_arg, s3_align_arg}
-
-static arg_t s3_align_arg[] = {
-    { "-compwd",
-      ARG_INT32,
-      "0",
-      "Compound words in dictionary (not supported yet)" },
-    { "-topn",
-      ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
-    { "-insent",
-      ARG_STRING,
-      NULL,
-      "Input transcript file corresponding to control file" },
-    { "-outsent",
-      ARG_STRING,
-      NULL,
-      "Output transcript file with exact pronunciation/transcription" },
-
-    { "-stsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for state segmentation files; optionally end with ,CTL" },
-    { "-phsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for phone segmentation files; optionally end with ,CTL" },
-    { "-wdsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for word segmentation files; optionally end with ,CTL" },
-    { "-s2stsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
-    
-    { NULL, ARG_INT32, NULL, NULL }
-};
-#endif
-
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-mdef", 
-      REQARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-tmat",
-      REQARG_STRING,
-      NULL,
-      "Transition matrix input file" },
-    { "-mean",
-      REQARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks mean parameters input file" },
-    { "-var",
-      REQARG_STRING,
-      NULL,
-      "Mixture gaussian codebooks variance parameters input file" },
-    { "-mllr",
-      ARG_STRING,
-      NULL,
-      "MLLR transfomation matrix to be applied to mixture gaussian means"},
-    { "-cb2mllr",
-      ARG_STRING,
-      ".1cls.",
-      "Senone to MLLR transformation matrix mapping file (or .1cls.)" },
-    { "-senmgau",
-      ARG_STRING,
-      ".cont.",
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" },
-    { "-mixw",
-      REQARG_STRING,
-      NULL,
-      "Senone mixture weights parameters input file" },
-    { "-tmatfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Triphone state transition probability floor applied to -tmat file" },
-    { "-varfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Codebook variance floor applied to -var file" },
-    { "-mixwfloor",
-      ARG_FLOAT32,
-      "0.0000001",
-      "Codebook mixture weight floor applied to -mixw file" },
-    { "-agc",
-      ARG_STRING,
-      "max",
-      "AGC.  max: C0 -= max(C0) in current utt; none: no AGC" },
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-cmn",
-      ARG_STRING,
-      "current",
-      "Cepstral mean norm.  current: C[1..n-1] -= mean(C[1..n-1]) in current utt; none: no CMN" },
-    { "-varnorm",
-      ARG_STRING,
-      "no",
-      "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" },
-    { "-feat",	/* Captures the computation for converting input to feature vector */
-      ARG_STRING,
-      "1s_c_d_dd",
-      "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
-    { "-dict",
-      REQARG_STRING,
-      NULL,
-      "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdict",
-      ARG_STRING,
-      NULL,
-      "Optional filler word (noise word) pronunciation dictionary input file" },
-    { "-compwd",
-      ARG_INT32,
-      "0",
-      "Compound words in dictionary (not supported yet)" },
-    { "-ctl",
-      REQARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      0,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
-    { "-cepdir",
-      ARG_STRING,
-      NULL,
-      "Directory for utterances in -ctl file (if relative paths specified)." },
-    { "-cepext",
-      ARG_STRING,
-      ".mfc",
-      "File extension appended to utterances listed in ctl file" },
-    { "-mllrctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing MLLR input data; parallel to ctl argument file" },
+  cepstral_to_feature_command_line_macro()
+  log_table_command_line_macro()
+  acoustic_model_command_line_macro()
+  speaker_adaptation_command_line_macro()
+  dictionary_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  hypothesis_file_handling_command_line_macro()
+  control_mllr_file_command_line_macro()
+  cepstral_input_handling_command_line_macro()
+
     { "-lambda",
       ARG_STRING,
       NULL,
       "Interpolation weights (CD/CI senone) parameters input file" },
-    { "-topn",
+    { "-compwd",
       ARG_INT32,
-      "4",
-      "No. of top scoring densities computed in each mixture gaussian codebook" },
+      "0",
+      "Compound words in dictionary (not supported yet)" },
+
+  /* align-specific argument */
     { "-beam",
       ARG_FLOAT64,
       "1e-64",
@@ -364,26 +272,39 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
 
-static mdef_t *mdef;		/* Model definition */
-static gauden_t *g;		/* Gaussian density codebooks */
-static senone_t *sen;		/* Senones */
-static interp_t *interp;	/* CD/CI interpolation */
-static tmat_t *tmat;		/* HMM transition matrices */
+
+/** These are the definition of HMMs */
+
+static kbcore_t *kbc; /* A kbcore structure */
+static ascr_t *ascr;  /* An acoustic score structure.  */
 
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
+/*
+ * Load and cross-check all models (acoustic/lexical/linguistic).
+ */
+static dict_t *dict;
+
 static float32 ***feat = NULL;	/* Speech feature data */
 
 static int32 *senscale;		/* ALL senone scores scaled by senscale[i] in frame i */
 
+static int32 ctloffset; 
+
+static char *outsentfile;
 static FILE *outsentfp = NULL;
+
+static char *sentfile;
+static FILE *sentfp = NULL;
+
+static char *s2stsegdir = NULL;
+static char *stsegdir = NULL;
+static char *phsegdir = NULL;
+static char *wdsegdir = NULL;
+
 
 /* For profiling/timing */
 enum { tmr_utt, tmr_gauden, tmr_senone, tmr_align };
@@ -392,32 +313,64 @@ ptmr_t timers[5];
 static int32 tot_nfr;
 static ptmr_t tm_utt;
 
-/*
- * Load and cross-check all models (acoustic/lexical/linguistic).
- */
-static dict_t *dict;
 
 static void models_init ( void )
 {
-    float32 varfloor, mixwfloor, tpfloor;
     int32 i;
-    char *arg;
+    gauden_t *g;		/* Gaussian density codebooks */
+    interp_t *interp;
+    ms_mgau_model_t *msg;
+    char str[10];
+    int32 cisencnt;
     
-    /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
+  
+    /* Initialize feaure stream type */
+    fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
+		    (char *) cmd_ln_access ("-cmn"),
+		    (char *) cmd_ln_access ("-varnorm"),
+		    (char *) cmd_ln_access ("-agc"),
+		    1);
 
-    /* Dictionary */
-    dict = dict_init (mdef,
-		      (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"),
-		      '_',
-		      1);	/* Compound word separator.  Default: none. */
+    kbc=New_kbcore();
 
-    /* Codebooks */
-    varfloor = *((float32 *) cmd_ln_access("-varfloor"));
-    g = gauden_init ((char *) cmd_ln_access("-mean"),
-		     (char *) cmd_ln_access("-var"),
-		     varfloor);
+    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
+	Then no need for changing the default command-line. 
+     */
+
+    if(strcmp(cmd_ln_str("-senmgau"),".cont.")==0){
+      strcpy(str,".s3cont.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".semi.")==0){
+      strcpy(str,".semi.");
+    }else if(strcmp(cmd_ln_str("-senmgau"),".s3cont.")==0){
+      strcpy(str,".s3cont.");
+    }
+
+    s3_am_init(kbc,
+	       cmd_ln_str("-hmm"),
+	       cmd_ln_str("-mdef"),
+	       cmd_ln_str("-mean"),
+	       cmd_ln_str("-var"),
+	       cmd_ln_float32("-varfloor"),
+	       cmd_ln_str("-mixw"),
+	       cmd_ln_float32("-mixwfloor"),
+	       cmd_ln_str("-tmat"),
+	       cmd_ln_float32("-tmatfloor"),
+	       str, 
+	       cmd_ln_str("-lambda"),
+	       cmd_ln_int32("-topn")
+	       );
+
+    assert(kbc);
+    assert(kbc->mdef);
+    assert(kbc->tmat);
+    msg=kbcore_ms_mgau(kbc);
+    assert(msg);    
+    assert(msg->g);    
+    assert(msg->s);
+
+    g=ms_mgau_gauden(msg);
+    interp=ms_mgau_interp(msg);
 
     /* Verify codebook feature dimensions against libfeat */
     if (feat_n_stream(fcb) != g->n_feat) {
@@ -430,59 +383,27 @@ static void models_init ( void )
 		    feat_stream_len(fcb, i), g->featlen[i]);
 	}
     }
+
+
+    /* Dictionary */
+    dict = dict_init (kbc->mdef,
+		      (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"),
+		      '_',
+		      cmd_ln_int32("-lts_mismatch"),
+		      1);	/* Compound word separator.  Default: none. */
     
-    /* Senone mixture weights */
-    mixwfloor = *((float32 *) cmd_ln_access("-mixwfloor"));
-    sen = senone_init ((char *) cmd_ln_access("-mixw"),
-		       (char *) cmd_ln_access("-senmgau"),
-		       mixwfloor);
-    
-    /* Verify senone parameters against gauden parameters */
-    if (sen->n_feat != g->n_feat)
-	E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, sen->n_feat);
-    if (sen->n_cw != g->n_density)
-	E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, sen->n_cw);
-    if (sen->n_gauden > g->n_mgau)
-	E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
-    if (sen->n_gauden < g->n_mgau)
-	E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
-		sen->n_gauden, g->n_mgau);
 
-    /* Verify senone parameters against model definition parameters */
-    if (mdef->n_sen != sen->n_sen)
-	E_FATAL("Model definition has %d senones; but #senone= %d\n",
-		mdef->n_sen, sen->n_sen);
 
-    /* CD/CI senone interpolation weights file, if present */
-    if ((arg = (char *) cmd_ln_access ("-lambda")) != NULL) {
-	interp = interp_init (arg);
 
-	/* Verify interpolation weights size with senones */
-	if (interp->n_sen != sen->n_sen)
-	    E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
-		    interp->n_sen, sen->n_sen);
-    } else
-	interp = NULL;
+    for(cisencnt=0;cisencnt==kbc->mdef->cd2cisen[cisencnt];cisencnt++) ;
 
-    /* Transition matrices */
-    tpfloor = *((float32 *) cmd_ln_access("-tmatfloor"));
-    tmat = tmat_init ((char *) cmd_ln_access("-tmat"), tpfloor,1);
-
-    /* Verify transition matrices parameters against model definition parameters */
-    if (mdef->n_tmat != tmat->n_tmat)
-	E_FATAL("Model definition has %d tmat; but #tmat= %d\n",
-		mdef->n_tmat, tmat->n_tmat);
-    if (mdef->n_emit_state != tmat->n_state)
-	E_FATAL("#Emitting states in model definition = %d, #states in tmat = %d\n",
-		mdef->n_emit_state, tmat->n_state);
-
-    arg = (char *) cmd_ln_access ("-agc");
-    if ((strcmp (arg, "max") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -agc argument: %s\n", arg);
-    arg = (char *) cmd_ln_access ("-cmn");
-    if ((strcmp (arg, "current") != 0) && (strcmp (arg, "none") != 0))
-	E_FATAL("Unknown -cmn argument: %s\n", arg);
+    ascr=ascr_init(kbc->mdef->n_sen,
+		   0, /* No composite senone */
+		   mdef_n_sseq(kbc->mdef),
+		   0, /* No composite senone sequence */
+		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead at this moment */
+		   cisencnt);
 }
 
 
@@ -573,9 +494,9 @@ static void write_s2stseg (char *dir, align_stseg_t *stseg, char *uttid, char *c
     
     /* Write state info for each frame */
     for (; stseg; stseg = stseg->next) {
-	mdef_phone_components (mdef, stseg->pid, ci, &(ci[1]), &(ci[2]), &wpos);
+	mdef_phone_components (kbc->mdef, stseg->pid, ci, &(ci[1]), &(ci[2]), &wpos);
 
-	s2_info = ci[0] * mdef->n_emit_state + stseg->state;
+	s2_info = ci[0] * kbc->mdef->n_emit_state + stseg->state;
 	if (stseg->start)
 	    s2_info |= 0x8000;
 	if (byterev)
@@ -619,8 +540,8 @@ static void write_stseg (char *dir, align_stseg_t *stseg, char *uttid, char *ctl
 	goto write_error;
 
     /* Write CI phone names */
-    for (k = 0; k < mdef->n_ciphone; k++) {
-        const char *str = mdef_ciphone_str (mdef, k);
+    for (k = 0; k < kbc->mdef->n_ciphone; k++) {
+        const char *str = mdef_ciphone_str (kbc->mdef, k);
 	if (fwrite (str, sizeof(char), strlen(str), fp) != strlen(str))
 	    goto write_error;
 	if (fwrite (" ", sizeof(char), 1, fp) != 1)
@@ -651,7 +572,7 @@ static void write_stseg (char *dir, align_stseg_t *stseg, char *uttid, char *ctl
     
     /* Write state segmentation for each frame */
     for (i = 0; stseg; i++, stseg = stseg->next) {
-	mdef_phone_components (mdef, stseg->pid, ci, &(ci[1]), &(ci[2]), &wpos);
+	mdef_phone_components (kbc->mdef, stseg->pid, ci, &(ci[1]), &(ci[2]), &wpos);
 	assert ((wpos >= 0) && (wpos < 8));
 	assert ((stseg->state >= 0) && (stseg->state < 32));
 	
@@ -702,7 +623,7 @@ static void write_phseg (char *dir, align_phseg_t *phseg, char *uttid, char *ctl
     fflush(fp);
     uttscr = 0;
     for (; phseg; phseg = phseg->next) {
-	mdef_phone_str (mdef, phseg->pid, str);
+	mdef_phone_str (kbc->mdef, phseg->pid, str);
 	
 	/* Account for senone score scaling in each frame */
 	scale = 0;
@@ -815,58 +736,19 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 		       char *ctlspec,	/* In: Utt specifiction from control file */
 		       char *uttid)	/* In: Utterance id, for logging and other use */
 {
-    static int32 w;
-    static int32 topn;
-    static gauden_dist_t ***dist;
-    static int32 *senscr = NULL;
-    static s3senid_t *sen_active;
-    static uint8 *mgau_active;
-    static char *s2stsegdir;
-    static char *stsegdir;
-    static char *phsegdir;
-    static char *wdsegdir;
-    
-    int32 i, s, sid, gid, n_sen_active, best;
-    char *arg;
+    int32 i;
     align_stseg_t *stseg;
     align_phseg_t *phseg;
     align_wdseg_t *wdseg;
-    float32 **fv;
-    
-    if (! senscr) {
-	/* One-time allocation of necessary intermediate variables */
+    int32 w;
+    int32 topn;
+    ms_mgau_model_t *msg;
 
-	/* Allocate space for top-N codeword density values in a codebook */
-	w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
-					   frame to compute one feature vector */
-	topn = *((int32 *) cmd_ln_access("-topn"));
-	if (topn > g->n_density) {
-	    E_ERROR("-topn argument (%d) > #density codewords (%d); set to latter\n",
-		   topn, g->n_density);
-	    topn = g->n_density;
-	}
-	dist = (gauden_dist_t ***) ckd_calloc_3d (g->n_mgau, g->n_feat, topn,
-						  sizeof(gauden_dist_t));
-	
-	/* Space for one frame of senone scores, and per frame active flags */
-	senscr = (int32 *) ckd_calloc (sen->n_sen, sizeof(int32));
-	sen_active = (s3senid_t *) ckd_calloc (sen->n_sen, sizeof(s3senid_t));
-	mgau_active = (uint8 *) ckd_calloc (g->n_mgau, sizeof(int8));
+    msg=kbcore_ms_mgau(kbc);
 
-	/* Note various output directories */
-	s2stsegdir = NULL;
-	stsegdir = NULL;
-	phsegdir = NULL;
-	wdsegdir = NULL;
-	if ((arg = (char *) cmd_ln_access ("-s2stsegdir")) != NULL)
-	    s2stsegdir = (char *) ckd_salloc (arg);
-	if ((arg = (char *) cmd_ln_access ("-stsegdir")) != NULL)
-	    stsegdir = (char *) ckd_salloc (arg);
-	if ((arg = (char *) cmd_ln_access ("-phsegdir")) != NULL)
-	    phsegdir = (char *) ckd_salloc (arg);
-	if ((arg = (char *) cmd_ln_access ("-wdsegdir")) != NULL)
-	    wdsegdir = (char *) ckd_salloc (arg);
-    }
+    w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
+				   frame to compute one feature vector */
+    topn  = ms_mgau_topn(msg);
     
     if (nfr <= (w<<1)) {
 	E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid, (w<<1)+1, nfr);
@@ -893,73 +775,24 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     
     for (i = 0; i < nfr; i++) {
 	ptmr_start (timers+tmr_utt);
-	fv = feat[i];
 	
-	/*
-	 * Evaluate gaussian density codebooks and senone scores for input codeword.
-	 * Evaluate only active codebooks and senones.
-	 */
 	/* Obtain active senone flags */
-	ptmr_start (timers+tmr_senone);
-	align_sen_active (sen_active, sen->n_sen);
-	/* Turn active flags into list (for faster access) */
-
-	if (interp) {
-	    for (s = 0; s < mdef->n_ci_sen; s++)
-		sen_active[s] = 1;
-	}
-
-	n_sen_active = 0;
-	for (s = 0; s < mdef->n_sen; s++) {
-	    if (sen_active[s])
-		sen_active[n_sen_active++] = s;
-	}
-	ptmr_stop (timers+tmr_senone);
-	
-	/* Flag all active mixture-gaussian codebooks */
 	ptmr_start (timers+tmr_gauden);
-	for (gid = 0; gid < g->n_mgau; gid++)
-	    mgau_active[gid] = 0;
-	for (s = 0; s < n_sen_active; s++) {
-	    sid = sen_active[s];
-	    mgau_active[sen->mgau[sid]] = 1;
-	}
-	
-	/* Compute topn gaussian density values (for active codebooks) */
-	for (gid = 0; gid < g->n_mgau; gid++)
-	    if (mgau_active[gid])
-		gauden_dist (g, gid, topn, fv, dist[gid]);
-	ptmr_start (timers+tmr_gauden);
-	
-	/* Evaluate active senones */
 	ptmr_start (timers+tmr_senone);
-	best = (int32) 0x80000000;
-	for (s = 0; s < n_sen_active; s++) {
-	    sid = sen_active[s];
-	    senscr[sid] = senone_eval (sen, sid, dist[sen->mgau[sid]], topn);
-	    if (best < senscr[sid])
-		best = senscr[sid];
-	}
 
-	if (interp) {
-	    for (s = 0; s < n_sen_active; s++) {
-		if ((sid = sen_active[s]) >= mdef->n_ci_sen)
-		    interp_cd_ci (interp, senscr, sid, mdef->cd2cisen[sid]);
-	    }
-	}
+	align_sen_active (ascr->sen_active, ascr->n_sen);
 
+	senscale[i]=ms_cont_mgau_frame_eval(ascr,
+					    msg,
+					    kbc->mdef,
+					    feat[i]);
 
-	/* Normalize senone scores (interpolation above can only lower best score) */
-	for (s = 0; s < n_sen_active; s++) {
-	    sid = sen_active[s];
-	    senscr[sid] -= best;
-	}
-	senscale[i] = best;
+	ptmr_stop (timers+tmr_gauden);
 	ptmr_stop (timers+tmr_senone);
 	
 	/* Step alignment one frame forward */
 	ptmr_start (timers+tmr_align);
-	align_frame (senscr);
+	align_frame (ascr->senscr);
 	ptmr_stop (timers+tmr_align);
 	ptmr_stop (timers+tmr_utt);
     }
@@ -1014,268 +847,112 @@ static int32 id_cmp (char *str1, char *str2)
     }
 }
 
-static int32 model_set_mllr(const char *mllrfile, const char *cb2mllrfile)
+static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    float32 ****A, ***B;
-    int32 *cb2mllr;
-    int32 gid, sid, nclass;
-    uint8 *mgau_xform;
-		
-    gauden_mean_reload (g, (char *) cmd_ln_access("-mean"));
-		
-    if (ms_mllr_read_regmat (mllrfile, &A, &B,
-			     fcb->stream_len, feat_n_stream(fcb),
-			     &nclass) < 0)
-	E_FATAL("ms_mllr_read_regmat failed\n");
+  int32 nfr;
+  int k,i;
+  char *cepdir, *cepext;
+  char sent[16384]  ;
 
-    if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
+  cepdir=cmd_ln_str("-cepdir");
+  cepext=cmd_ln_str("-cepext");
 
-	cb2mllr_read(cb2mllrfile,
-		     &cb2mllr,
-		     &ncb, &nmllr);
-	if (nmllr != nclass)
-	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		    ncb, nclass);
-	if (ncb != sen->n_sen)
-	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		    ncb, sen->n_sen);
+
+  /* UGLY! */
+  /* Read utterance transcript and match it with the control file. */
+  if (fgets (sent, sizeof(sent), sentfp) == NULL) {
+    E_FATAL("EOF(%s) of the transcription\n", sentfile);
+  }
+  /*  E_INFO("SENT %s\n",sent);*/
+  /* Strip utterance id from the end of the transcript */
+  for (k = strlen(sent) - 1;
+       (k > 0) && ((sent[k] == '\n') || (sent[k] == '\t') || (sent[k] == ' '));
+       --k);
+  if ((k > 0) && (sent[k] == ')')) {
+    for (--k; (k >= 0) && (sent[k] != '('); --k);
+    if ((k >= 0) && (sent[k] == '(')) {
+      sent[k] = '\0';
+      
+      /* Check that uttid in transcript and control file match */
+      for (i = ++k;
+	   sent[i] && (sent[i] != ')') &&
+	     (sent[i] != '\n') && (sent[i] != '\t') && (sent[i] != ' ');
+	   i++);
+      sent[i] = '\0';
+      if (id_cmp (sent+k, uttid) != 0)
+	E_ERROR("Uttid mismatch: ctlfile = \"%s\"; transcript = \"%s\"\n",
+		uttid, sent+k);
     }
-    else
-	cb2mllr = NULL;
+  }
 
-		
-    mgau_xform = (uint8 *) ckd_calloc (g->n_mgau, sizeof(uint8));
 
-    /* Transform each non-CI mixture Gaussian */
-    for (sid = 0; sid < sen->n_sen; sid++) {
-	int32 class = 0;
+  nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
-	if (cb2mllr)
-	    class = cb2mllr[sid];
-	if (class == -1)
-	    continue;
+  assert(kbc->ms_mgau);
+  if(ur->regmatname) model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
 
-	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-	    gid = sen->mgau[sid];
-	    if (! mgau_xform[gid]) {
-		ms_mllr_norm_mgau (g->mean[gid], g->n_density, A, B,
-				   fcb->stream_len, feat_n_stream(fcb),
-				   class);
-		mgau_xform[gid] = 1;
-	    }
-	}
+  if (nfr <= 0){
+    if (cepdir != NULL) {
+      E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
+	      uttid, ur->uttfile, cepdir, cepext);
+    } else {
+      E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", uttid, ur->uttfile, cepext);
     }
+  }
+  else {
+    E_INFO ("%s: %d input frames\n", uttid, nfr);
+    align_utt (sent,nfr,ur->uttfile, uttid);
+  }
 
-    ckd_free (mgau_xform);
-		
-    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
-    ckd_free(cb2mllr);
-
-    return S3_SUCCESS;
 }
-
-/* Process utterances in the control file (ctl argument) */
-static void process_ctlfile ( void )
-{
-    FILE *ctlfp, *sentfp, *mllrctlfp;
-    char *ctlfile, *cepdir, *cepext, *sentfile, *outsentfile, *mllrctlfile;
-    char line[1024], ctlspec[1024];
-    int32 ctloffset, ctlcount, sf, ef, nfr;
-    char mllrfile[4096], cb2mllrfile[4096], prevmllr[4096], sent[16384];
-    char uttid[1024];
-    int32 i, k;
-    
-    ctlfile = (char *) cmd_ln_access("-ctl");
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-    
-    if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
-	if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
-    } else
-	mllrctlfp = NULL;
-    prevmllr[0] = '\0';
-    
-    if (cmd_ln_access("-mllr") != NULL) {
-	model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
-	strcpy(prevmllr, cmd_ln_access("-mllr"));
-    }
-
-    sentfile = (char *) cmd_ln_access("-insent");
-    if ((sentfp = fopen (sentfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", sentfile);
-
-    if ((outsentfile = (char *) cmd_ln_access("-outsent")) != NULL) {
-	if ((outsentfp = fopen (outsentfile, "w")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", outsentfile);
-    }
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    cepdir = (char *) cmd_ln_access("-cepdir");
-    cepext = (char *) cmd_ln_access("-cepext");
-    assert (cepext != NULL);
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	fclose (sentfp);
-	if (outsentfp)
-	    fclose (outsentfp);
-	
-	return;
-    }
-    
-    /* Skipping initial offset */
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    if (fgets (sent, sizeof(sent), sentfp) == NULL) {
-		E_ERROR("EOF(%s)\n", sentfile);
-		ctlcount = 0;
-		break;
-	    }
-	    if (mllrctlfp) {
-		int32 tmp1, tmp2;
-		if (fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			    &tmp1, &tmp2, cb2mllrfile) <= 0)
-		    E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    }
-	    --ctloffset;
-	}
-    }
-
-    /* Process the specified number of utterance or until end of control file */
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-	
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) )
-	    E_FATAL("Bad ctlfile line: %s\n", line);
-
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (mllrctlfp) {
-	    int32 tmp1, tmp2;
-
-	    if ((k = fscanf (mllrctlfp, "%s %d %d %s", mllrfile,
-			     &tmp1, &tmp2, cb2mllrfile)) <= 0)
-		E_FATAL ("Unexpected EOF(%s)\n", mllrctlfile);
-	    if (!(k == 1) || (k == 4))
-		E_FATAL ("Expected MLLR file or MLLR, two ints, and cb2mllr (%s)\n",
-			 mllrctlfile);
-	    if (k == 1)
-		strcpy(cb2mllrfile, ".1cls.");
-	    
-	    if (strcmp (prevmllr, mllrfile) != 0) {
-		model_set_mllr(mllrfile, cb2mllrfile);
-		strcpy (prevmllr, mllrfile);
-	    }
-	}
-
-
-	/* Read utterance transcript */
-	if (fgets (sent, sizeof(sent), sentfp) == NULL) {
-	    E_ERROR("EOF(%s)\n", sentfile);
-	    break;
-	}
-	/* Strip utterance id from the end of the transcript */
-	for (k = strlen(sent) - 1;
-	     (k > 0) && ((sent[k] == '\n') || (sent[k] == '\t') || (sent[k] == ' '));
-	     --k);
-	if ((k > 0) && (sent[k] == ')')) {
-	    for (--k; (k >= 0) && (sent[k] != '('); --k);
-	    if ((k >= 0) && (sent[k] == '(')) {
-		sent[k] = '\0';
-
-		/* Check that uttid in transcript and control file match */
-		for (i = ++k;
-		     sent[i] && (sent[i] != ')') &&
-			 (sent[i] != '\n') && (sent[i] != '\t') && (sent[i] != ' ');
-		     i++);
-		sent[i] = '\0';
-		if (id_cmp (sent+k, uttid) != 0)
-		    E_ERROR("Uttid mismatch: ctlfile = \"%s\"; transcript = \"%s\"\n",
-			   uttid, sent+k);
-	    }
-	}
-	
-	if (! feat)
-	    feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
-	
-	/* Read and process mfc/feature speech input file */
-	nfr = feat_s2mfc2feat(fcb, ctlspec, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
-	
-	if (nfr <= 0){
-	  if (cepdir != NULL) {
-	    E_ERROR("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n", 
-		    uttid, ctlspec, cepdir, cepext);
-	  } else {
-	    E_ERROR("Utt %s: Input file read (%s) with extension (%s) failed \n", 
-		    uttid, ctlspec, cepext);
-	  }
-	}
-	else {
-	    E_INFO ("%s: %d input frames\n", uttid, nfr);
-	    align_utt (sent, nfr, ctlspec, uttid);
-	}
-	
-	--ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    fclose (ctlfp);
-    fclose (sentfp);
-    if (outsentfp)
-	fclose (outsentfp);
-    if (mllrctlfp)
-	fclose (mllrctlfp);
-}
-
 int
 main (int32 argc, char *argv[])
 {
-  /*  kb_t kb;
-      ptmr_t tm;*/
-
-  int a[10];
-  int i;
-  
-  for(i=0;i<11;i++){
-    printf("%d %d\n",i,a[i]);
-  }
+  char sent[16384]  ;
 
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc,argv,"default.arg",defn);
     
   unlimit();
+
+  ctloffset=cmd_ln_int32("-ctloffset");
+  sentfile = cmd_ln_str("-insent");
+
+  if ((sentfp = fopen (sentfile, "r")) == NULL)
+    E_FATAL("fopen(%s,r) failed\n", sentfile);
+
+	/* Note various output directories */
+  if (cmd_ln_str ("-s2stsegdir")!= NULL)
+    s2stsegdir = (char *) ckd_salloc (cmd_ln_str ("-s2stsegdir"));
+  if (cmd_ln_str ("-stsegdir") != NULL)
+    stsegdir = (char *) ckd_salloc (cmd_ln_str ("-stsegdir"));
+  if (cmd_ln_str ("-phsegdir") != NULL)
+    phsegdir = (char *) ckd_salloc (cmd_ln_str ("-phsegdir"));
+  if (cmd_ln_str ("-wdsegdir") != NULL)
+    wdsegdir = (char *) ckd_salloc (cmd_ln_str ("-wdsegdir"));
+
+  /* HACK! Pre-read insent without checking whether ctl could also 
+     be read.  In general, this is caused by the fact that we used
+     multiple files to specify resource in sphinx III.  This is easy
+     to solve but currently I just to remove process_ctl because it
+     duplicates badly with ctl_process.  
+
+     The call back function will take care of matching the uttfile
+     names. We don't need to worry too much about inconsistency. 
+   */
+
+  while (ctloffset > 0) {
+    if (fgets (sent, sizeof(sent), sentfp) == NULL) {
+      E_ERROR("EOF(%s)\n", sentfile);
+      break;
+    }
+    --ctloffset;
+  }
+
+  if ((outsentfile = cmd_ln_str("-outsent")) != NULL) {
+    if ((outsentfp = fopen (outsentfile, "w")) == NULL)
+      E_FATAL("fopen(%s,r) failed\n", outsentfile);
+  }
 
   if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
       (cmd_ln_access ("-stsegdir") == NULL) &&
@@ -1283,20 +960,14 @@ main (int32 argc, char *argv[])
       (cmd_ln_access ("-wdsegdir") == NULL) &&
       (cmd_ln_access ("-outsent") == NULL))
     E_FATAL("Missing output file/directory argument(s)\n");
-    
-  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
-  
-  /* Initialize feaure stream type */
-  fcb = feat_init ( (char *) cmd_ln_access ("-feat"),
-		    (char *) cmd_ln_access ("-cmn"),
-		    (char *) cmd_ln_access ("-varnorm"),
-		    (char *) cmd_ln_access ("-agc"),
-		    1);
   
     /* Read in input databases */
   models_init ();
-    
+  
   senscale = (int32 *) ckd_calloc (S3_MAX_FRAMES, sizeof(int32));
+
+  if (! feat)
+    feat = feat_array_alloc (fcb, S3_MAX_FRAMES);
   
   timers[tmr_utt].name = "U";
   timers[tmr_gauden].name = "G";
@@ -1304,12 +975,30 @@ main (int32 argc, char *argv[])
   timers[tmr_align].name = "A";
 
   /* Initialize align module */
-  align_init (mdef, tmat, dict);
+  align_init (kbc->mdef, kbc->tmat, dict);
   printf ("\n");
+
+  assert(kbc->ms_mgau);
+  if (cmd_ln_access("-mllr") != NULL) 
+    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
     
   tot_nfr = 0;
     
-  process_ctlfile ();
+  /*  process_ctlfile ();*/
+
+  if (cmd_ln_str ("-ctl")) {
+    /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+       the corresponding  MLLR for the utterance */
+    ctl_process (cmd_ln_str("-ctl"),
+		 NULL,
+		 cmd_ln_str("-ctl_mllr"),
+		 cmd_ln_int32("-ctloffset"),
+		 cmd_ln_int32("-ctlcount"),
+		 utt_align, 
+		 NULL);
+  } else {
+      E_FATAL(" -ctl are not specified.\n");
+  }
 
   if (tot_nfr > 0) {
     printf ("\n");
@@ -1318,6 +1007,20 @@ main (int32 argc, char *argv[])
 	   tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
     printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
 	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
+  }
+
+  if (outsentfp)
+    fclose(outsentfp);
+  if(sentfp)
+    fclose(sentfp);
+
+  ckd_free(s2stsegdir);
+  ckd_free(stsegdir);
+  ckd_free(phsegdir);
+  ckd_free(wdsegdir);
+
+  if(ascr){
+    ascr_free(ascr);
   }
 
 #if (! WIN32)
