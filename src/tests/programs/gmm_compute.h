@@ -47,6 +47,7 @@
  */
 
 #define NBEST_STEP 50
+#include <corpus.h>
 
 typedef struct stats_s{
   float32 total_hit;
@@ -59,7 +60,7 @@ typedef struct stats_s{
 
 } stats_t;
 
-void gmm_compute (void *data, char *uttfile, int32 sf, int32 ef, char *uttid);
+void gmm_compute (void *data, utt_res_t* ur, int32 sf, int32 ef, char *uttid);
 void init_stat(stats_t *st, char* _desc);
 void add_stat(stats_t *a, stats_t *b);
 void print_stat(stats_t *st);

@@ -408,6 +408,7 @@ int32 main (int32 argc, char *argv[])
 
     if(cmd_ln_str("-ctl")){
       tm = ctl_process (cmd_ln_str("-ctl"),
+			NULL,
 			cmd_ln_str("-ctl_mllr"),
 			cmd_ln_int32("-ctloffset"),
 			cmd_ln_int32("-ctlcount"),
