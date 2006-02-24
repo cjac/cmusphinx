@@ -45,7 +45,10 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.13  2006/02/23  04:16:29  arthchan2003
+ * Revision 1.14  2006/02/24  13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ * 
+ * Revision 1.13  2006/02/23 04:16:29  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
  * Splited the original lm.c into five parts,
  * a, lm.c - a controller of other subroutines.
@@ -53,7 +56,7 @@
  * c, lm_3g_dmp.c - implement DMP-based lm operations
  * d, lm_attfsm.c - implement FSM-based lm operations
  * e, lmset.c - implement sets of lm.
- * 
+ *
  * Revision 1.12.4.3  2006/01/16 19:56:37  arthchan2003
  * 1, lm_rawscore doesn't need a language weight, 2, Support dumping the LM in FST format.  This code used Yannick Esteve's and LIUM code.
  *
@@ -401,14 +404,14 @@ typedef struct lm_s {
   int32 isLM_IN_MEMORY;  /**< Whether LM in in memory, it is a property, potentially it means
 			    the code could allow you some model to be disk-based, some are not. */
 
+  int32 dict_size;  /**< Only used in class-based LM, because class-based LM is addressed in 
+		       the dictionary space. */
   hash_table_t *HT;		/**<  hash table for word-string->word-id map */
 
   /* 20040225 ARCHAN : Data structure to maintain dictionary information */
   /* Data structure for dictionary to LM words look up mapping */
   s3lmwid_t *dict2lmwid; /**< a mapping from dictionary word to LM word */
   
-  /* Data structure to maintain the class information */
-  int32 dict_size;	/**< CURRENTLY NOT USED: #words in lexicon */
   /* Data structure that maintains the class information */
   lmclass_t *lmclass;   /**< LM class for this LM */
   int32 n_lmclass;      /**< # LM class */
@@ -760,20 +763,26 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
   void lm_cache_stats_dump (lm_t *lmp /**< In: the LM */
 			    );
 
-  /*
-   * ARCHAN Self Critism, this doesn't work very well. It is too
-   * clunky to use. May be we should add something like lm_init to lighten
-   * the process of initialization. 
+  /** 
+   * A simple version of reading in a LM 
+   *
+   * lm_read is a simple version of lm_read_advance.  It will assume
+   * language weight, word insertion penalty and unigram weight to be
+   * automatically applied.  There is also no class-based LM (so
+   * ndict=0).  Format is set to NULL, so the program will determine
+   * it automatically. 
    */
 
+  lm_t * lm_read ( 
+		  const char *file,	/**< In: LM file being read */
+		  const char *lmname   /**<In: LM name*/
+		  );
   /**
    * Read an LM file, it will automatically decide whether the file is
    * a DUMP file or a txt file. Then call lm_read_txt and lm_read_dump
    * (non-public functions) correspondingly.  Currently the code is
    * not aware about OOV.  
    *
-   * The interaction of lm_read and the option -lm_in_memory :
-   * [To be filled in]
    *
    * lw, wip, uw and ndict are mainly used for recognition purpose.
    * When lm_read is used for other purpose, one could just used dummy
@@ -794,15 +803,22 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
    * called. In such a case, it is important for the users to know
    * what he/she is doing.  (Unfortunately, this is mostly not true.)
    *
+   * ndict is the dictionary size of the application.  This is needed
+   * because class-based LM are addressed in the dictionary wid-space
+   * instead of lm wid-space. If class-based LM is not used, just set
+   * this to zero.
+   *
    *
    * @return pointer to LM structure created.
    */
-  lm_t *lm_read (const char *file,	/**< In: LM file being read */
+  lm_t *lm_read_advance (const char *file,	/**< In: LM file being read */
 		 const char *lmname,   /**<In: LM name*/
 		 float64 lw,	/**< In: Language weight */
 		 float64 wip,	/**< In: Word insertion penalty */
 		 float64 uw,	/**< In: Unigram weight (interpolation with uniform distr.) */
-		 int32 ndict,    /**< In: Number of dictionary entry */  
+		 int32 ndict,    /**< In: Number of dictionary entry.  We need that because
+				    class-based LM is addressed in dictionary word ID space. 
+				  */  
 		 char* fmt,       /**< In: file format of the LM, it is
 				    now either "TXT", "DMP" and NULL,
 				    if NULL, file format is
@@ -814,7 +830,7 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
   /**
      Simple writing of an LM file, the input and output encoding will
      assume to be iso8859-1. Call lm_write. To convert encoding, please use
-     lm_write_impl.
+     lm_write_advance.
    */
   int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 		const char *outputfile, /**< In: the output file name */

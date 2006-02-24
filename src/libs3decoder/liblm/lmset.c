@@ -46,13 +46,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2006/02/23  04:08:36  arthchan2003
+ * Revision 1.3  2006/02/24  13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ * 
+ * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
  * 2, Added lm_3g_dmp.c - a DMP-based LM routines.
  * 3, (Contributed by LIUM) Added lm_attfsm.c - convert lm to FSM
  * 4, Added lmset.c - a wrapper for the lmset_t structure.
- * 
+ *
  * Revision 1.1.2.2  2005/10/17 04:49:13  arthchan2003
  * Free resource of lm_t and lmset_t correctly.
  *
@@ -259,8 +262,8 @@ lmset_t* lmset_read_lm(const char *lmfile,dict_t *dict, const char *lmname,float
   /* 
      No need to check whether lmname exists here.
    */
-  if ((lms->lmarray[0] = lm_read (lmfile,lmname,lw, wip, uw, dict_size(dict),NULL,1))== NULL)
-    E_FATAL("lm_read(%s, %e, %e, %e) failed\n", lmfile, lw, wip, uw);
+  if ((lms->lmarray[0] = lm_read_advance (lmfile,lmname,lw, wip, uw, dict_size(dict),NULL,1))== NULL)
+    E_FATAL("lm_read_advance(%s, %e, %e, %e %d [Arbitrary Fmt], Weighted Apply) failed\n", lmfile, lw, wip, uw, dict_size(dict));
 
   if(dict!=NULL) {
     assert(lms->lmarray[0]);
@@ -412,7 +415,7 @@ lmset_t* lmset_read_ctl(const char *ctlfile,
     } else
       str[0] = '\0';
       
-    lm = (lm_t*) lm_read (lmfile, lmname, lw, wip, uw, dict_size(dict),NULL,1);
+    lm = (lm_t*) lm_read_advance (lmfile, lmname, lw, wip, uw, dict_size(dict),NULL,1);
     
 
     if(n_lmclass_used>0) {
