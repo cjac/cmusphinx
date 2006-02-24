@@ -46,9 +46,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.4  2005/06/22  03:05:49  arthchan2003
- * 1, Fixed doxygen documentation, 2, Add  keyword.
+ * Revision 1.5  2006/02/24  03:13:55  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: changed from mymalloc to ckd_calloc
  * 
+ * Revision 1.4.4.1  2005/10/17 05:02:05  arthchan2003
+ * Usage of mymalloc and myfree leaks memory.  This is told by dmalloc when I tried to debug a dynamic algorithm for lexical tree.
+ *
+ * Revision 1.4  2005/06/22 03:05:49  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Add  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -115,7 +121,7 @@ static heapnode_t *subheap_insert (heapnode_t *root, void *data, int32 val)
     int32 tmpval;
     
     if (! root) {
-	h = (heapnode_t *) mymalloc (sizeof(heapnode_t));
+	h = (heapnode_t *) ckd_calloc (1, sizeof(heapnode_t));
 	h->data = data;
 	h->val = val;
 	h->l = h->r = NULL;
@@ -168,7 +174,7 @@ static heapnode_t *subheap_pop (heapnode_t *root)
 
     if (! l) {
 	if (! r) {
-	    myfree ((char *) root, sizeof(heapnode_t));
+	    ckd_free ((char *) root);
 	    return NULL;
 	} else {
 	    root->data = r->data;
