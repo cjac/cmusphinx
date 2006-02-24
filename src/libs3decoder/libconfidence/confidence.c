@@ -48,9 +48,12 @@
  * incorporating to Sphinx 3.x
  *
  * $Log$
- * Revision 1.2  2006/02/21  18:31:09  arthchan2003
- * Merge confidence.c confidence.h and Makefile.am into the trunk.
+ * Revision 1.3  2006/02/24  13:40:50  arthchan2003
+ * Commented overlap currently.
  * 
+ * Revision 1.2  2006/02/21 18:31:09  arthchan2003
+ * Merge confidence.c confidence.h and Makefile.am into the trunk.
+ *
  * Revision 1.1.2.1  2006/01/16 18:38:25  arthchan2003
  * Adding Rong's confidence routine.  Compare to Rong's routine, this routine used Sphinx3's njmerical routines and make the chances of backward-forward scores inconsistency to be lower.
  *
@@ -92,6 +95,7 @@ static int int_add(int i, int j)
   return k;
 }
 
+#if 0
 static int overlap(int a, int b, int x, int y, int *start, int *end)
 {
   if ((b < x) || (a > y))
@@ -110,6 +114,7 @@ static int overlap(int a, int b, int x, int y, int *start, int *end)
   else
     return -1;
 }
+#endif
 
 /**
   Delete filler words
