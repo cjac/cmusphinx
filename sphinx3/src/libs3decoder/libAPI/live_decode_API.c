@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.24  2006/02/22  22:36:56  arthchan2003
- * changed cmd_ln_access to cmd_ln_int32 in live_decode_API.c
+ * Revision 1.25  2006/02/24  13:41:26  arthchan2003
+ * Used lm_read_advance instead of lm_read
  * 
+ * Revision 1.24  2006/02/22 22:36:56  arthchan2003
+ * changed cmd_ln_access to cmd_ln_int32 in live_decode_API.c
+ *
  * Revision 1.23  2006/02/22 21:46:51  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII:
  *
@@ -655,7 +658,7 @@ void ld_read_lm(live_decoder_t *_decoder,
   ndict=dict_size(_decoder->kb.kbcore->dict);
 
 
-  lm=lm_read(lmpath,lmname,
+  lm=lm_read_advance(lmpath,lmname,
 	     cmd_ln_float32("-lw"),
 	     cmd_ln_float32("-wip"),
 	     cmd_ln_float32("-uw"),

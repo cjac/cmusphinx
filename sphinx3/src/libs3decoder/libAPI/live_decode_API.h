@@ -116,6 +116,7 @@ date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
 #include "kb.h"
 #include "fe.h"
 #include "srch.h"
+#include "hyp.h"
 
 /** \file live_decode_API.h
  * \brief header for live mode decoding API 
