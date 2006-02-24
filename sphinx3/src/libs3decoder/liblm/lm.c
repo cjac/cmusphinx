@@ -45,7 +45,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.16  2006/02/23  04:16:29  arthchan2003
+ * Revision 1.17  2006/02/24  13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ * 
+ * Revision 1.16  2006/02/23 04:16:29  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
  * Splited the original lm.c into five parts,
  * a, lm.c - a controller of other subroutines.
@@ -53,7 +56,7 @@
  * c, lm_3g_dmp.c - implement DMP-based lm operations
  * d, lm_attfsm.c - implement FSM-based lm operations
  * e, lmset.c - implement sets of lm.
- * 
+ *
  *
  * Revision 1.14.4.9  2006/01/16 19:56:37  arthchan2003
  * 1, lm_rawscore doesn't need a language weight, 2, Support dumping the LM in FST format.  This code used Yannick Esteve's and LIUM code.
@@ -342,10 +345,19 @@ void lm_set_param (lm_t *lm, float64 lw, float64 wip)
 
 
 
+lm_t * lm_read(const char *file, const char *lmname)
+{
+  return lm_read_advance(file,
+			 lmname,
+			 cmd_ln_float32("-lw"),
+			 cmd_ln_float32("-wip"),
+			 cmd_ln_float32("-uw"),
+			 0,
+			 NULL,
+			 1);
+}
 
-
-
-lm_t *lm_read (const char *file, const char *lmname, float64 lw, float64 wip, float64 uw, int32 ndict, char* fmt, int32 applyWeight)
+lm_t *lm_read_advance (const char *file, const char *lmname, float64 lw, float64 wip, float64 uw, int32 ndict, char* fmt, int32 applyWeight)
 {
     int32 i, u;
     lm_t *lm;
