@@ -18,8 +18,9 @@ libutil_la_SOURCES = \
         pio.c \
 	info.c \
 	linklist.c \
-	nextword.c \
         profile.c \
+	sort.c \
+	nextword.c \
         str2words.c \
         unlimit.c
 
@@ -38,9 +39,10 @@ pkginclude_HEADERS = \
 	info.h \
 	linklist.h \
         libutil.h \
-	nextword.h \
         prim_type.h \
         profile.h \
+	sort.h \
+	nextword.h \
         str2words.h \
         unlimit.h
 
