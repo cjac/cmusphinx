@@ -38,9 +38,12 @@
  * HISTORYg
  * 
  * $Log$
- * Revision 1.2  2006/02/23  05:16:14  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Add wrapper of flat_fwd.c
+ * Revision 1.3  2006/02/24  12:33:56  arthchan2003
+ * Removed ls from line 634 of srch_flat_fwd.c. Code compile.
  * 
+ * Revision 1.2  2006/02/23 05:16:14  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Add wrapper of flat_fwd.c
+ *
  * Revision 1.1.2.8  2006/02/17 19:32:08  arthchan2003
  * Use specific version flat_fwd_dag_add_fudge_edge instead dag_add_fudge_edge.
  *
@@ -631,7 +634,7 @@ int srch_FLAT_FWD_end(void* srch)
 				    dag, 
 				    cmd_ln_int32("-dagfudge"), 
 				    cmd_ln_int32("-min_endfr"), 
-				    ls(void*) s->lathist, s->kbc->dict);
+				    (void*) s->lathist, s->kbc->dict);
 
 
       /* Bypass filler nodes */
