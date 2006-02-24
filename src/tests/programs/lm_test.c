@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     
     /* initialize the language model */
     /* HACK! This doesn't work for class-based LM */
-    lm = lm_read(lm_file, "default",lw, wip, uw, 0, NULL,1);
+    lm = lm_read_advance(lm_file, "default",lw, wip, uw, 0, NULL,1);
 
     metricsStop(lmLoadTimer);
 

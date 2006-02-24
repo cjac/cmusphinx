@@ -67,6 +67,8 @@ int has_more_utterances(FILE* fp);
 /* FIX ME!, why do we use this function instead of strcmp? */
 int str_cmp(char *s1, char *s2);
 
+#if 0
+
 int main(int argc, char *argv[])
 {
   while (*s1 != '\0' && *s2 != '\0') {
@@ -144,6 +146,9 @@ int main(int argc, char *argv[])
   }
 }
 
+#endif
+
+
 
 /**
  * Returns true if the given file has more utterances in it.
@@ -159,6 +164,7 @@ int has_more_utterances(FILE* fp)
     char line_read[MAX_STRLEN];
     if (fgets(line_read, MAX_STRLEN, fp) != NULL) {
 
+#if 0
         if (str_cmp("<START_UTT>\n", line_read) != 0) {
 
             /* if not <START_UTT>, we want to push the line back */
@@ -166,6 +172,7 @@ int has_more_utterances(FILE* fp)
                 ungetc(line_read[i], fp);
             }
         }
+#endif
         return 1;
     }
     return 0;
@@ -188,6 +195,7 @@ int has_more_utterances(FILE* fp)
  */
 int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
 {
+#if 0
     char word[1024];
     int nwd;
     int i;
@@ -215,6 +223,7 @@ int ngram2wid(char *ngram, int length, s3lmwid_t w[], lm_t *lm)
     }
 
     return nwd;
+#endif
 }
 
 
@@ -241,9 +250,11 @@ int read_ngrams(FILE *fp,
 
     /* read each line in the file into the ngrams array */
     while (fgets(line_read, MAX_STRLEN, fp) != NULL) {
+#if 0
       if (str_cmp("<END_UTT>\n", line_read) == 0) {
 	break;
       }
+#endif
       if (n < max_lines) {
 	length = strlen(line_read);
 	line_read[length-1] = '\0';
@@ -343,7 +354,7 @@ int main(int argc, char *argv[])
     metricsStart(lmLoadTimer);
     
     /* initialize the language model */
-    lm = lm_read(lm_file, lw, wip, uw);
+    lm = lm_read(lm_file,"default");
 
     metricsStop(lmLoadTimer);
 
