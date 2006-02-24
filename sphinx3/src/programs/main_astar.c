@@ -46,9 +46,30 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2005/06/22  05:38:26  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset
+ * Revision 1.12  2006/02/24  04:02:15  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro.
  * 
+ * Revision 1.11.4.6  2006/01/16 20:27:41  arthchan2003
+ * Changed -ltsoov to -lts_mismatch.
+ *
+ * Revision 1.11.4.5  2005/09/25 20:09:47  arthchan2003
+ * Added support for LTS.
+ *
+ * Revision 1.11.4.4  2005/09/18 01:52:27  arthchan2003
+ * Tied dag handling command line argument.
+ *
+ * Revision 1.11.4.3  2005/09/11 02:54:19  arthchan2003
+ * Remove s3_dag.c and s3_dag.h, all functions are now merged into dag.c and shared by decode_anytopo and dag.
+ *
+ * Revision 1.11.4.2  2005/07/27 23:23:39  arthchan2003
+ * Removed process_ctl in allphone, dag, decode_anytopo and astar. They were duplicated with ctl_process and make Dave and my lives very miserable.  Now all application will provided their own utt_decode style function and will pass ctl_process.  In that way, the mechanism of reading would not be repeated. livepretend also follow the same mechanism now.  align is still not yet finished because it read yet another thing which has not been considered : transcription.
+ *
+ * Revision 1.11.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.11  2005/06/22 05:38:26  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset
+ *
  * Revision 1.12  2005/06/19 03:58:17  archan
  * 1, Move checking of Silence wid, start wid, finish wid to dict_init. This unify the checking and remove several segments of redundant code. 2, Remove all startwid, silwid and finishwid.  They are artefacts of 3.0/3.x merging. This is already implemented in dict.  (In align, startwid, endwid, finishwid occured in several places.  Checking is also done multiple times.) 3, Making corresponding changes to all files which has variable startwid, silwid and finishwid.  Should make use of the marco more.
  *
@@ -205,6 +226,8 @@
 #include <hyp.h>
 #include <wid.h>
 #include <dag.h>
+#include <cmdln_macro.h>
+#include "corpus.h"
 
 static mdef_t *mdef;		/* Model definition */
 
@@ -213,12 +236,10 @@ static ptmr_t tm_utt;		/* Entire utterance */
 extern dict_t *dict;		/* The dictionary	*/
 extern fillpen_t *fpen;		/* The filler penalty structure. */
 
-#if 0
-extern s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
-#endif
-
-extern dag_t dag;
+extern dag_t* dag;
 extern lmset_t *lmset;		/* The lmset.		*/
+
+char *nbestdir;
 
 void nbest_search (char *filename, char *uttid);
 int32 s3astar_dag_load (char *file);
@@ -228,110 +249,31 @@ void nbest_init ( void );
  * Command line arguments.
  */
 static arg_t defn[] = {
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log values calculated" },
-    { "-lminmemory",
-      ARG_INT32,
-      "0",
-      "Load language model into memory (default: use disk cache for lm"},
-    { "-log3table",
-      ARG_INT32,
-      "1",
-      "Determines whether to use the log3 table or to compute the values at run time."},
+  log_table_command_line_macro()
+  dictionary_command_line_macro()
+  language_model_command_line_macro()
+  common_filler_properties_command_line_macro()
+  common_application_properties_command_line_macro()
+  control_file_handling_command_line_macro()
+  control_lm_file_command_line_macro()
+  dag_handling_command_line_macro()
+
     { "-mdef",
       ARG_STRING,
       NULL,
       "Model definition input file: triphone -> senones/tmat tying" },
-    { "-dict",
-      ARG_STRING,
-      NULL,
-      "Main pronunciation dictionary (lexicon) input file" },
-    { "-fdict",
-      ARG_STRING,
-      NULL,
-      "Optional filler word (noise word) pronunciation dictionary input file" },
     { "-compwd",
       ARG_INT32,
       "0",
       "Whether compound words should be broken up internally into component words" },
-    { "-lm",
-      ARG_STRING,
-      NULL,
-      "Language model input file (precompiled .DMP file)" },
-    { "-lmctlfn",
-      ARG_STRING,
-      NULL,
-      "Language model control file (for class-based language model)" },
-    { "-lmname",
-      ARG_STRING,
-      NULL,
-      "Name of language model in -lmctlfn to use for all utterances" },
-    { "-ctl_lm",
-      ARG_STRING,
-      NULL,
-      "List of language model to use for each utterance (one line per utt)" },
-    { "-lmdumpdir",
-      ARG_STRING,
-      NULL,
-      "The directory for dumping the DMP file. "},
-    { "-lw",
-      ARG_FLOAT32,
-      "9.5",
-      "Language weight: empirical exponent applied to LM probabilty" },
-    { "-uw",
-      ARG_FLOAT32,
-      "0.7",
-      "LM unigram weight: unigram probs interpolated with uniform distribution with this weight" },
-    { "-wip",
-      ARG_FLOAT32,
-      "0.65",
-      "Word insertion penalty" },
     { "-beam",
       ARG_FLOAT64,
       "1e-64",
       "Partial path pruned if below beam * score of best partial ppath so far" },
-    { "-silprob",
-      ARG_FLOAT32,
-      "0.1",
-      "Language model 'probability' of silence word" },
-    { "-noisepen",
-      ARG_FLOAT32,
-      "0.05",
-      "Language model 'probability' of each non-silence filler word" },
-    { "-fillpen",
-      ARG_STRING,
-      NULL,
-      "Filler word probabilities input file (used in place of -silpen and -noisepen)" },
-    { "-maxlpf",
-      ARG_INT32,
-      "40000",
-      "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" },
-    { "-maxlmop",
-      ARG_INT32,
-      "100000000",
-      "Max LMops in utterance after which it is aborted; controls CPU use (see maxlpf)" },
-    { "-maxedge",
-      ARG_INT32,
-      "2000000",
-      "Max DAG edges allowed in utterance; aborted if exceeded; controls memory usage" },
     { "-maxppath",
       ARG_INT32,
       "1000000",
       "Max partial paths created after which utterance aborted; controls CPU/memory use" },
-    { "-ctl",
-      ARG_STRING,
-      NULL,
-      "Input control file listing utterances to be decoded" },
-    { "-ctloffset",
-      ARG_INT32,
-      "0",
-      "No. of utterances at the beginning of -ctl file to be skipped" },
-    { "-ctlcount",
-      ARG_INT32,
-      0,
-      "No. of utterances in -ctl file to be processed (after -ctloffset).  Default: Until EOF" },
     { "-inlatdir",
       ARG_STRING,
       NULL,
@@ -352,22 +294,10 @@ static arg_t defn[] = {
       ARG_INT32,
       "200",
       "Max. n-best hypotheses to generate per utterance" },
-    { "-min_endfr",
-      ARG_INT32,
-      "3",
-      "Nodes ignored during search if they persist for fewer than so many end frames" },
-    { "-dagfudge",
-      ARG_INT32,
-      "2",
-      "Adjacency fudge (#frames) between nodes in DAG (0..2)" },
     { "-ppathdebug",
       ARG_INT32,
       "0",
       "Adjacency fudge (#frames) between nodes in DAG (0..2)" },
-    { "-logfn",
-      ARG_STRING,
-      NULL,
-      "Log file (default stdout/stderr)" },
     
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -381,8 +311,11 @@ static void models_init ( void )
     mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
 
     /* Dictionary */
-    dict = dict_init (mdef, (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"), 0, 
+    dict = dict_init (mdef, 
+		      (char *) cmd_ln_access("-dict"),
+		      (char *) cmd_ln_access("-fdict"), 
+		      0, 
+		      cmd_ln_int32("-lts_mismatch"),
 		      1);
 
     lmset=lmset_init(cmd_ln_str("-lm"),
@@ -398,7 +331,7 @@ static void models_init ( void )
 
     fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
 			 *(float32 *)cmd_ln_access("-silprob"),
-			 *(float32 *)cmd_ln_access("-noisepen"),
+			 *(float32 *)cmd_ln_access("-fillprob"),
 			 *(float32 *)cmd_ln_access("-lw"),
 			 *(float32 *)cmd_ln_access("-wip"));
 
@@ -431,7 +364,7 @@ static void decode_utt (char *uttid, char *nbestdir)
 	lm_cache_reset (lmset->cur_lm);
     } else
 	E_ERROR("Dag load (%s) failed\n", uttid);
-    dag_destroy (&dag);
+    dag_destroy (dag);
 
     ptmr_stop (&tm_utt);
     
@@ -444,105 +377,10 @@ static void decode_utt (char *uttid, char *nbestdir)
     fflush (stdout);
 }
 
-
-/* Process utterances in the control file (-ctl argument) */
-static void process_ctlfile ( void )
+static void utt_astar(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
 {
-    FILE *ctlfp, *ctllmfp;
-    char *ctlfile, *ctllmfile, *nbestdir;
-    char line[1024], ctlspec[1024], uttid[1024], lmname[1024];
-    int32 ctloffset, ctlcount;
-    int32 i, k, sf, ef;
-    
-    if ((ctlfile = (char *) cmd_ln_access("-ctl")) == NULL)
-	E_FATAL("No -ctl argument\n");
-    
-    E_INFO("Processing ctl file %s\n", ctlfile);
-    
-    if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-	E_FATAL("fopen(%s,r) failed\n", ctlfile);
-
-    ctllmfile = (char *) cmd_ln_access("-ctl_lm");
-    if (ctllmfile) {
-	if ((ctllmfp = fopen(ctllmfile, "r")) == NULL)
-	    E_FATAL("fopen(%s,r) failed\n", ctllmfile);
-    }
-    else
-	ctllmfp = NULL;
-    
-    ctloffset = *((int32 *) cmd_ln_access("-ctloffset"));
-    if (! cmd_ln_access("-ctlcount"))
-	ctlcount = 0x7fffffff;	/* All entries processed if no count specified */
-    else
-	ctlcount = *((int32 *) cmd_ln_access("-ctlcount"));
-    if (ctlcount == 0) {
-	E_INFO("-ctlcount argument = 0!!\n");
-	fclose (ctlfp);
-	return;
-    }
-    
-    nbestdir = (char *) cmd_ln_access ("-nbestdir");
-
-    if (ctloffset > 0)
-	E_INFO("Skipping %d utterances in the beginning of control file\n",
-	       ctloffset);
-    while ((ctloffset > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	if (sscanf (line, "%s", ctlspec) > 0)
-	    --ctloffset;
-	if (fgets(line, sizeof(line), ctllmfp) == NULL)
-	    E_FATAL("File size mismatch between %s and %s\n",
-		    ctlfile, ctllmfile);
-    }
-    
-    while ((ctlcount > 0) && (fgets(line, sizeof(line), ctlfp) != NULL)) {
-	printf ("\n");
-	E_INFO("Utterance: %s", line);
-
-	sf = 0;
-	ef = (int32)0x7ffffff0;
-	if ((k = sscanf (line, "%s %d %d %s", ctlspec, &sf, &ef, uttid)) <= 0)
-	    continue;	    /* Empty line */
-
-	if ((k == 2) || ( (k >= 3) && ((sf >= ef) || (sf < 0))) ) {
-	    E_ERROR("Error in ctlfile spec; skipped\n");
-	    /* What happens to ctlcount??? */
-	    continue;
-	}
-	if (k < 4) {
-	    /* Create utt-id from mfc-filename (and sf/ef if specified) */
-	    for (i = strlen(ctlspec)-1; (i >= 0) && (ctlspec[i] != '/'); --i);
-	    if (k == 3)
-		sprintf (uttid, "%s_%d_%d", ctlspec+i+1, sf, ef);
-	    else
-		strcpy (uttid, ctlspec+i+1);
-	}
-
-	if (ctllmfp) {
-	    fgets(line, sizeof(line), ctllmfp);
-	    if (sscanf(line, "%s", lmname) > 0)
-	      lmset_set_curlm_wname(lmset,lmname);
-
-	    /*s3astar_set_lm(lmsetlmname);*/
-	}
-
-	decode_utt (uttid, nbestdir);
-#if 0
-	linklist_stats ();
-#endif
-	--ctlcount;
-    }
-    printf ("\n");
-
-    while (fgets(line, sizeof(line), ctlfp) != NULL) {
-	if (sscanf (line, "%s", ctlspec) > 0) {
-	    E_INFO("Skipping rest of control file beginning with:\n\t%s", line);
-	    break;
-	}
-    }
-
-    fclose (ctlfp);
-    if (ctllmfp)
-	fclose (ctllmfp);
+  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
+  decode_utt (uttid, nbestdir);
 }
 
 int
@@ -565,8 +403,23 @@ main (int32 argc, char *argv[])
   printf ("\n");
 
   ptmr_init (&tm_utt);
+
+  nbestdir = cmd_ln_str ("-nbestdir");
     
-  process_ctlfile ();
+  if(cmd_ln_str("-ctl")){
+    ctl_process(cmd_ln_str("-ctl"),
+		cmd_ln_str("-ctl_lm"),
+		NULL,
+		cmd_ln_int32("-ctloffset"),
+		cmd_ln_int32("-ctlcount"),
+		utt_astar, 
+		NULL);
+
+  }else{
+    E_FATAL("-ctl is not specified\n");
+  }
+  
+
 
 #if (! WIN32)
   system ("ps aguxwww | grep s3astar");
