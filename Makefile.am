@@ -37,6 +37,8 @@ EXTRA_DIST = autogen.sh \
 CLEANFILES = chan3.mfc \
 	test.out \
 	test-*.out \
+	test-*.cepview \
+	test-*.mfc \
 	tmp.out \
 	pittsburgh.* \
 	tmp
