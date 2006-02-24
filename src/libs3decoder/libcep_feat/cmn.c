@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13  2006/02/23  03:47:49  arthchan2003
- * Used Evandro's changes. Resolved conflicts.
+ * Revision 1.14  2006/02/24  15:57:47  egouvea
+ * Removed cmn = NULL from the cmn_free(), since it's pointless (my bad!).
  * 
+ * Removed cmn_prior, which was surrounded by #if 0/#endif, since the
+ * function is already in cmn_prior.c
+ * 
+ * Revision 1.13  2006/02/23 03:47:49  arthchan2003
+ * Used Evandro's changes. Resolved conflicts.
+ *
  *
  * Revision 1.12  2006/02/23 00:48:23  egouvea
  * Replaced loops resetting vectors with the more efficient memset()
@@ -157,81 +163,6 @@ void cmn (float32 **mfc, int32 varnorm, int32 n_frame, int32 veclen, cmn_t *cmn)
     }
 }
 
-#if 0
-void cmn_prior(float32 **incep, int32 varnorm, int32 nfr, int32 ceplen, 
-							   int32 endutt, cmn_t *cmn)
-{
-  float32 *cur_mean;
-  float32 *sum;
-  float32 sf;
-  int32   i, j;
-  
-  cur_mean = cmn-> cur_mean;
-  sum = cmn-> sum;
-
-  assert(incep!=NULL);
-  if (varnorm)
-    E_FATAL("Variance normalization not implemented in live mode decode\n");
-  
-
-  if (cur_mean == NULL) {
-    cur_mean = (float32 *) ckd_calloc(ceplen, sizeof(float32));
-    
-    /* A front-end dependent magic number */
-    cur_mean[0] = 12.0;
-
-    if (sum == NULL)
-    sum      = (float32 *) ckd_calloc(ceplen, sizeof(float32));
-  }
-
-  E_INFO("mean[0]= %.2f, mean[1..%d]= 0.0\n", cur_mean[0], ceplen-1);
-  
-  
-  if (nfr <= 0)
-    return;
-  
-  for (i = 0; i < nfr; i++) {
-    for (j = 0; j < ceplen; j++) {
-      sum[j] += incep[i][j];
-      incep[i][j] -= cur_mean[j];
-    }
-    ++(cmn->nframe);
-  }
-  
-  /* Shift buffer down if we have more than CMN_WIN_HWM frames */
-  if (cmn->nframe > CMN_WIN_HWM) {
-    sf = (float32) (1.0/cmn->nframe);
-    for (i = 0; i < ceplen; i++)
-      cur_mean[i] = sum[i] * sf;
-    
-    /* Make the accumulation decay exponentially */
-    if (cmn->nframe >= CMN_WIN_HWM) {
-      sf = CMN_WIN * sf;
-      for (i = 0; i < ceplen; i++)
-	sum[i] *= sf;
-      cmn->nframe = CMN_WIN;
-    }
-  }
-  
-  if (endutt) {
-    /* Update mean buffer */
-    
-    sf = (float32) (1.0/cmn->nframe);
-    for (i = 0; i < ceplen; i++)
-      cur_mean[i] = sum[i] * sf;
-    
-    /* Make the accumulation decay exponentially */
-    if (cmn->nframe > CMN_WIN_HWM) {
-      sf = CMN_WIN * sf;
-      for (i = 0; i < ceplen; i++)
-	sum[i] *= sf;
-      cmn->nframe = CMN_WIN;
-    }
-    
-  }
-/*  E_INFO("Hihi\n");*/
-}
-#endif
 /* 
  * RAH, free previously allocated memory
  */
@@ -248,6 +179,5 @@ void cmn_free (cmn_t *cmn)
       ckd_free ((void *) cmn->cur_mean);
 
     ckd_free((void*) cmn);
-    cmn = NULL;
   }
 }
