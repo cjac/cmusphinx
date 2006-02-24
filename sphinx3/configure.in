@@ -2,9 +2,10 @@ dnl Welcome to the Sphinx-3 automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx3,0.5)
+AM_INIT_AUTOMAKE(sphinx3,0.6)
 
-CFLAGS=${CFLAGS:--g -O2 -Wall  -DXML_CONTEXT_BYTES=1024}
+CFLAGS=${CFLAGS:--g -O2 -Wall  -DXML_CONTEXT_BYTES=1024 }
+#CFLAGS=${CFLAGS:--g -O2 -Wall  -DXML_CONTEXT_BYTES=1024 -DDMALLOC}
 
 AC_ISC_POSIX
 AC_PROG_CC
@@ -145,8 +146,10 @@ src/libs3decoder/Makefile
 src/libs3decoder/libAPI/Makefile
 src/libs3decoder/libam/Makefile
 src/libs3decoder/libcep_feat/Makefile
+src/libs3decoder/libconfidence/Makefile
 src/libs3decoder/libcommon/Makefile
 src/libs3decoder/libdict/Makefile
+src/libs3decoder/libdp/Makefile
 src/libs3decoder/libep/Makefile
 src/libs3decoder/liblm/Makefile
 src/libs3decoder/libsearch/Makefile
@@ -178,9 +181,20 @@ src/tests/regression/test-astar-clm.sh
 src/tests/regression/test-dag.sh
 src/tests/regression/test-dag-clm.sh
 src/tests/regression/test-decode_anytopo.sh
+src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode_anytopo-mllr.sh
 src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode.sh
+src/tests/regression/test-decode-simple.sh
+src/tests/regression/test-decode-noncomp.sh
+src/tests/regression/test-decode-lts.sh
+src/tests/regression/test-decode-mode3.sh
+src/tests/regression/test-decode-mode3-mulmpx.sh
+src/tests/regression/test-decode-mode3-mpx.sh
+src/tests/regression/test-decode-mode5.sh
+src/tests/regression/test-decode-mode5-noncomp.sh
+src/tests/regression/test-decode-s3cont.sh
+src/tests/regression/test-decode-2ndstage.sh
 src/tests/regression/test-decode-clm.sh
 src/tests/regression/test-decode-mllr.sh
 src/tests/regression/test-decode-2ndstage.sh
@@ -218,9 +232,20 @@ chmod +x src/tests/regression/test-allphone-mllr.sh
 chmod +x src/tests/regression/test-astar.sh
 chmod +x src/tests/regression/test-dag.sh
 chmod +x src/tests/regression/test-decode_anytopo.sh
+chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
 chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode.sh
+chmod +x src/tests/regression/test-decode-simple.sh
+chmod +x src/tests/regression/test-decode-noncomp.sh
+chmod +x src/tests/regression/test-decode-lts.sh
+chmod +x src/tests/regression/test-decode-mode3.sh
+chmod +x src/tests/regression/test-decode-mode3-mulmpx.sh
+chmod +x src/tests/regression/test-decode-mode3-mpx.sh
+chmod +x src/tests/regression/test-decode-mode5.sh
+chmod +x src/tests/regression/test-decode-mode5-noncomp.sh
+chmod +x src/tests/regression/test-decode-s3cont.sh
+chmod +x src/tests/regression/test-decode-2ndstage.sh
 chmod +x src/tests/regression/test-decode-clm.sh
 chmod +x src/tests/regression/test-decode-mllr.sh
 chmod +x src/tests/regression/test-decode-2ndstage.sh
