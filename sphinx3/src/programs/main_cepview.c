@@ -40,20 +40,31 @@
  *
  * For history information, please use 'cvs log'
  * $Log$
- * Revision 1.10  2005/08/18  21:18:09  egouvea
- * Added E_INFO displaying information about how many columns are being printed, and how many frames
+ * Revision 1.11  2006/02/24  04:06:43  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro.  Used E_INFO instead of printf in displaying no. of friends
  * 
+ *
+ * Revision 1.10  2005/08/18 21:18:09  egouvea
+ * Added E_INFO displaying information about how many columns are being printed, and how many frames
+ *
+ * Revision 1.9.4.2  2005/09/07 23:51:05  arthchan2003
+ * Fixed keyword expansion problem
+ *
+ * Revision 1.9.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.10  2005/08/18 21:18:09  egouvea
+ * Added E_INFO displaying information about how many columns are being printed, and how many frames
+ *
  * Revision 1.9  2005/06/22 05:38:45  arthchan2003
  * Add
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
+ *
  * Add $Log$
- * Revision 1.10  2005/08/18  21:18:09  egouvea
- * Added E_INFO displaying information about how many columns are being printed, and how many frames
+ * Revision 1.11  2006/02/24  04:06:43  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro.  Used E_INFO instead of printf in displaying no. of friends
  * 
- * Add Revision 1.9  2005/06/22 05:38:45  arthchan2003
- * Add Add
- * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  */
 
@@ -62,6 +73,7 @@
 #include <string.h>
 #include <s3types.h>
 #include "bio.h"
+#include "cmdln_macro.h"
 
 
 /** \file main_cepview.c
@@ -82,6 +94,8 @@
 #define STR_MAX_INT "2147483647"
 
 static arg_t arg[] = {
+
+  common_application_properties_command_line_macro()
   { "-i",
     ARG_INT32,
     NUM_COEFF,
@@ -110,10 +124,6 @@ static arg_t arg[] = {
     ARG_STRING,
     NULL,
     "Input feature file."},
-  { "-logfn",
-    ARG_STRING,
-    NULL,
-    "Log file (default stdout/stderr)." },
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
