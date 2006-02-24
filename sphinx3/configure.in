@@ -149,7 +149,6 @@ src/libs3decoder/libcep_feat/Makefile
 src/libs3decoder/libconfidence/Makefile
 src/libs3decoder/libcommon/Makefile
 src/libs3decoder/libdict/Makefile
-src/libs3decoder/libdp/Makefile
 src/libs3decoder/libep/Makefile
 src/libs3decoder/liblm/Makefile
 src/libs3decoder/libsearch/Makefile
