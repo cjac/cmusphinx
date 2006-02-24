@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2006/02/24  04:42:32  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc.
+ * Revision 1.7  2006/02/24  16:42:48  arthchan2003
+ * Fixed function prototype for align_sen_active
  * 
+ * Revision 1.6  2006/02/24 04:42:32  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc.
+ *
  * Revision 1.5.4.2  2005/08/02 21:42:34  arthchan2003
  * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
  *
@@ -146,7 +149,7 @@ int32 align_start_utt (char *uttid);
  * Called at the beginning of a frame to flag the active senones (any senone used
  * by active HMMs) in that frame.
  */
-void align_sen_active (int32 *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
+void align_sen_active (s3senid_t *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
 		       int32 n_sen		/**< In: Size of senlist[] array */
 		       );
 
