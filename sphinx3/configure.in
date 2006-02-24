@@ -181,7 +181,6 @@ src/tests/regression/test-astar-clm.sh
 src/tests/regression/test-dag.sh
 src/tests/regression/test-dag-clm.sh
 src/tests/regression/test-decode_anytopo.sh
-src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode_anytopo-mllr.sh
 src/tests/regression/test-decode_anytopo-2ndstage.sh
 src/tests/regression/test-decode.sh
@@ -194,7 +193,6 @@ src/tests/regression/test-decode-mode3-mpx.sh
 src/tests/regression/test-decode-mode5.sh
 src/tests/regression/test-decode-mode5-noncomp.sh
 src/tests/regression/test-decode-s3cont.sh
-src/tests/regression/test-decode-2ndstage.sh
 src/tests/regression/test-decode-clm.sh
 src/tests/regression/test-decode-mllr.sh
 src/tests/regression/test-decode-2ndstage.sh
@@ -232,7 +230,6 @@ chmod +x src/tests/regression/test-allphone-mllr.sh
 chmod +x src/tests/regression/test-astar.sh
 chmod +x src/tests/regression/test-dag.sh
 chmod +x src/tests/regression/test-decode_anytopo.sh
-chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
 chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
 chmod +x src/tests/regression/test-decode.sh
@@ -245,7 +242,6 @@ chmod +x src/tests/regression/test-decode-mode3-mpx.sh
 chmod +x src/tests/regression/test-decode-mode5.sh
 chmod +x src/tests/regression/test-decode-mode5-noncomp.sh
 chmod +x src/tests/regression/test-decode-s3cont.sh
-chmod +x src/tests/regression/test-decode-2ndstage.sh
 chmod +x src/tests/regression/test-decode-clm.sh
 chmod +x src/tests/regression/test-decode-mllr.sh
 chmod +x src/tests/regression/test-decode-2ndstage.sh
