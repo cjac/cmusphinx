@@ -9,7 +9,6 @@ LIVEDECOBJS = $(LIVEDECSRCS:.c=.o)
 
 
 noinst_PROGRAMS = lm_test \
-		  lm_utt_test \
 		  dumpfrontend \
 		  analysis 
 
@@ -30,8 +29,8 @@ analysis_SOURCES = analysis.c \
 lm_test_SOURCES = lm_test.c \
 			${LIVEDECSRCS}
 
-lm_utt_test_SOURCES = lm_utt_test.c \
-			${LIVEDECSRCS}
+#lm_utt_test_SOURCES = lm_utt_test.c \
+#			${LIVEDECSRCS}
 
 
 INCLUDES = -I$(top_srcdir) \
