@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7  2005/06/22  03:10:59  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * Revision 1.8  2006/02/24  03:20:30  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed pctr so that it really gives the correct counting.
  * 
+ * Revision 1.7.4.1  2005/09/07 23:44:45  arthchan2003
+ * Added dox-doc, Fixed the behavior of pctr.
+ *
+ * Revision 1.7  2005/06/22 03:10:59  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -82,32 +88,43 @@ extern uint32 rpcc( void );	/* On an alpha, use the RPCC instruction */
 #endif
 
 
-int32 pctr_new (pctr_t ctr, char *nm)
+pctr_t* pctr_new (char *nm)
 {
-  ctr.name = ckd_salloc (nm); 
-  ctr.count = 0;
-  return 1;
+  pctr_t* pc;
+
+  pc=ckd_calloc(1,sizeof(pctr_t));
+  pc->name = ckd_salloc (nm); 
+  pc->count = 0;
+
+  return pc;
 }
 
-void pctr_reset (pctr_t ctr)
+void pctr_reset (pctr_t *ctr)
 {
-    ctr.count = 0;
+    ctr->count = 0;
 }
 
 
-void pctr_increment (pctr_t ctr, int32 inc)
+void pctr_increment (pctr_t *ctr, int32 inc)
 {
-    ctr.count += inc;
+    ctr->count += inc;
+    /*   E_INFO("Name %s, Count %d, inc %d\n",ctr->name, ctr->count, inc);*/
 }
 
-void pctr_print(FILE *fp, pctr_t ctr)
+void pctr_print(FILE *fp, pctr_t *ctr)
 {
-/*  if(!ctr.name)
-    return 0;*/
   fprintf (fp, "CTR:");
-  fprintf (fp, "  %d %s", ctr.count, ctr.name);
+  fprintf (fp, "[%d %s]", ctr->count, ctr->name);
 }
 
+void pctr_free(pctr_t* pc)
+{
+  if(pc){
+    if(pc->name)
+      ckd_free(pc->name);
+  }
+  ckd_free(pc);
+}
 
 
 int32 host_pclk (int32 dummy)

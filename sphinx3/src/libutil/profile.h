@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/22  03:10:59  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * Revision 1.11  2006/02/24  03:20:30  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed pctr so that it really gives the correct counting.
  * 
+ * Revision 1.10.4.1  2005/09/07 23:44:45  arthchan2003
+ * Added dox-doc, Fixed the behavior of pctr.
+ *
+ * Revision 1.10  2005/06/22 03:10:59  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ *
  * Revision 1.5  2005/06/15 04:21:47  archan
  * 1, Fixed doxygen-documentation, 2, Add  keyword such that changes will be logged into a file.
  *
@@ -83,56 +89,72 @@ extern "C" {
 
 
   /**
+   * \struct pctr_t 
+   *
    * Generic event counter for profiling.  User is responsible for allocating an array
    * of the desired number.  There should be a sentinel with name = NULL.
    */
 typedef struct {
-  char *name;		/* Counter print name; NULL 
+  char *name;		/**< Counter print name; NULL 
 			   terminates array of counters
 			   Used by pctr_print_all */
-  int32 count;		/* Counter value */
+  int32 count;		/**< Counter value */
 } pctr_t;
 
   /**
    * operations of pctr_t
    */
 
-
   /**
    * Initialize a counter
+   * @return an initialized counter 
    */ 
-int32 pctr_new (pctr_t ctr,char *name);
+  pctr_t* pctr_new (
+		    char *name   /**< The name of the counter */
+		    );
 
   /**
    * Reset a counter
    */ 
 
-void pctr_reset (pctr_t ctr);
+void pctr_reset (pctr_t *ctr  /**< A pointer of a counter */
+		 );
 
   /**
    * Print a counter
    */ 
-void pctr_print(FILE *fp, pctr_t ctr);
+  void pctr_print(FILE *fp,      /**< A file pointer */
+		pctr_t *ctr   /**< A pointer of a counter */
+		);
 
   /**
    * Increment a counter
    */ 
-void pctr_increment (pctr_t ctr,int32 inc);
+void pctr_increment (pctr_t *ctr, /**< A pointer of a counter */
+		     int32 inc   /**< The increment of the counter */
+		     );
+
+  /**
+     Free the counter 
+   */
+  void pctr_free(pctr_t* ctr /**< A pointer of a counter */ 
+		 );
 
 
   /**
+   * \struct ptmr_t
    * Generic timer structures and functions for coarse-grained performance measurements
    * using standard system calls.
    */
 typedef struct {
-    const char *name;		/** Timer print name; NULL terminates an array of timers.
+    const char *name;		/**< Timer print name; NULL terminates an array of timers.
 				   Used by ptmr_print_all */
-    float64 t_cpu;		/** CPU time accumulated since most recent reset op */
-    float64 t_elapsed;		/** Elapsed time accumulated since most recent reset */
-    float64 t_tot_cpu;		/** Total CPU time since creation */
-    float64 t_tot_elapsed;	/** Total elapsed time since creation */
-    float64 start_cpu;		/** ---- FOR INTERNAL USE ONLY ---- */
-    float64 start_elapsed;	/** ---- FOR INTERNAL USE ONLY ---- */
+    float64 t_cpu;		/**< CPU time accumulated since most recent reset op */
+    float64 t_elapsed;		/**< Elapsed time accumulated since most recent reset */
+    float64 t_tot_cpu;		/**< Total CPU time since creation */
+    float64 t_tot_elapsed;	/**< Total elapsed time since creation */
+    float64 start_cpu;		/**< ---- FOR INTERNAL USE ONLY ---- */
+    float64 start_elapsed;	/**< ---- FOR INTERNAL USE ONLY ---- */
 } ptmr_t;
 
 
