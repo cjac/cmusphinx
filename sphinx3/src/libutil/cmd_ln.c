@@ -84,6 +84,17 @@ typedef struct argval_s {
 static argval_t *argval = NULL;
 static hash_table_t *ht;	/* Hash table */
 
+/** Added at 20050701 to keep track of the memory allocated when a file
+    is used in input of the command-line. 
+*/
+
+static char **f_argv; /** The true memory reservoir for all the string
+			  pointer if the command line is read as a
+			  file. */
+
+static uint32 f_argc;
+
+
 /*variables that allow redirecting all files to a log file */
 static FILE orig_stdout, orig_stderr;
 static FILE *logfp;
@@ -131,6 +142,7 @@ static int32 arg_strlen (arg_t *defn, int32 *namelen, int32 *deflen)
 	
 	if (defn[i].deflt) {
 	    l = strlen (defn[i].deflt);
+	    /*	    E_INFO("string default, %s , name %s, length %d\n",defn[i].deflt,defn[i].name,l);*/
 	    if (*deflen < l)
 		*deflen = l;
 	}
@@ -163,7 +175,7 @@ static int32 *arg_sort (arg_t *defn, int32 n)
     return pos;
 }
 
-
+/** HACK! The boolean logic is still not well defined */
 static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 {
     if (! str)
@@ -187,6 +199,12 @@ static int32 arg_str2val (argval_t *v, argtype_t t, char *str)
 	  if (sscanf (str, "%lf", &(v->val.fl_64)) != 1)
 	    return -1;
 	  v->ptr = (void *) &(v->val.fl_64);
+	    break;
+	case ARG_BOOLEAN:
+	case REQARG_BOOLEAN:
+	  if (sscanf (str, "%c", &(v->val.b)) != 1)
+	    return -1;
+	  v->ptr = (void *) &(v->val.b);
 	    break;
 	case ARG_STRING:
 	case REQARG_STRING:
@@ -281,6 +299,7 @@ void cmd_ln_appl_exit()
     *stdout = orig_stdout;
     *stderr = orig_stderr;
   }
+  cmd_ln_free();
 }
 
 static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
@@ -292,6 +311,7 @@ static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
     
     /* Find max lengths of name and default value fields, and #entries in defn */
     n = arg_strlen (defn, &namelen, &deflen);
+    /*    E_INFO("String length %d. Name length %d, Default Length %d\n",n, namelen, deflen);*/
     namelen = namelen & 0xfffffff8;	/* Previous tab position */
     deflen = deflen & 0xfffffff8;	/* Previous tab position */
 
@@ -350,6 +370,10 @@ static void arg_dump (FILE *fp, arg_t *defn, int32 doc)
 		case REQARG_STRING:
 		    fprintf (fp, "%s", (char *)vp);
 		    break;
+		case ARG_BOOLEAN:
+		case REQARG_BOOLEAN:
+		    fprintf (fp, "%c", *((boolean *)vp));
+		    break;
 		default: E_FATAL("Unknown argument type: %d\n", defn[j].type);
 		}
 	    }
@@ -391,30 +415,37 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     /* Enter argument names into hash table */
     for (i = 0; i < n; i++) {
 	/* Associate argument name with index i */
-	if (hash_enter (ht, defn[i].name, i) != i)
-	    E_FATAL("Duplicate argument name: %s\n", defn[i].name);
+      if (hash_enter (ht, defn[i].name, i) != i){
+	    E_ERROR("Duplicate argument name: %s\n", defn[i].name);
+	    goto error;
+      }
     }
     
     /* Parse command line arguments (name-value pairs); skip argv[0] if argc is odd */
     for (j = 1; j < argc; j += 2) {
 	if (hash_lookup(ht, argv[j], &i) < 0) {
 	    cmd_ln_print_help (stderr, defn);
-	    E_FATAL("Unknown argument: %s\n", argv[j]);
+	    E_ERROR("Unknown argument: %s\n", argv[j]);
+	    goto error;
 	}
 	
 	/* Check if argument has already been parsed before */
-	if (argval[i].ptr)
-	    E_FATAL("Multiple occurrences of argument %s\n", argv[j]);
+	if (argval[i].ptr){
+	    E_ERROR("Multiple occurrences of argument %s\n", argv[j]);
+	    goto error;
+	}
 	
 	if (j+1 >= argc) {
 	    cmd_ln_print_help (stderr, defn);
-	    E_FATAL("Argument value for '%s' missing\n", argv[j]);
+	    E_ERROR("Argument value for '%s' missing\n", argv[j]);
+	    goto error;
 	}
 	
 	/* Enter argument value */
 	if (arg_str2val (argval+i, defn[i].type, argv[j+1]) < 0) {
 	    cmd_ln_print_help (stderr, defn);
-	    E_FATAL("Bad argument value for %s: %s\n", argv[j], argv[j+1]);
+	    E_ERROR("Bad argument value for %s: %s\n", argv[j], argv[j+1]);
+	    goto error;
 	}
 
 	assert (argval[i].ptr);
@@ -423,9 +454,11 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     /* Fill in default values, if any, for unspecified arguments */
     for (i = 0; i < n; i++) {
       if (! argval[i].ptr) {
-	if (arg_str2val (argval+i, defn[i].type, defn[i].deflt) < 0)
-	  E_FATAL("Bad default argument value for %s: %s\n",
+	if (arg_str2val (argval+i, defn[i].type, defn[i].deflt) < 0){
+	  E_ERROR("Bad default argument value for %s: %s\n",
 		  defn[i].name, defn[i].deflt);
+	  goto error;
+	}
       }
     }
     
@@ -439,26 +472,37 @@ int32 cmd_ln_parse (arg_t *defn, int32 argc, char *argv[])
     }
     if (j > 0) {
 	cmd_ln_print_help (stderr, defn);
-	exit(-1);
+	goto error;
     }
 
     if (argc == 1){
 	cmd_ln_print_help (stderr, defn);
-	exit(-1);
+	goto error;
     }
 
     /* Print configuration */
     fprintf (stderr, "Current configuration:\n");
     arg_dump (stderr, defn, 0);
-    
+
     return 0;
+
+ error:
+
+    if(ht){
+      hash_free(ht);
+    }
+    if(argval){
+      ckd_free(argval);
+    }
+
+    E_ERROR("cmd_ln_parse failed, forced exit\n");
+    exit (-1);
 }
 
 int32 cmd_ln_parse_file(arg_t *defn, char *filename)
 {
   FILE *file;
   char **tmp_argv;
-  char **argv;
   int argc;
   int argv_size;
   char str[ARG_MAX_LENGTH];
@@ -468,6 +512,7 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
   int rv = 0;
 
   if ((file = fopen(filename, "r")) == NULL) {
+    E_INFO("Cannot open configuration file %s for reading\n",filename);
     return -1;
   }
 
@@ -478,9 +523,9 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
    */
   argv_size = 10;
   argc = 1;
-  argv = ckd_calloc(argv_size, sizeof(char *));
-  argv[0] = ckd_calloc(1, sizeof(char *));
-  argv[0][0] = '\0';
+  f_argv = ckd_calloc(argv_size, sizeof(char *));
+  f_argv[0] = ckd_calloc(1, sizeof(char *));
+  f_argv[0][0] = '\0';
 
   do {
     ch = fgetc(file);
@@ -491,15 +536,15 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
 	  rv = 1;
 	  break;
 	}
-	memcpy(tmp_argv, argv, argv_size * sizeof(char *));
-	ckd_free(argv);
-	argv = tmp_argv;
+	memcpy(tmp_argv, f_argv, argv_size * sizeof(char *));
+	ckd_free(f_argv);
+	f_argv = tmp_argv;
 	argv_size *= 2;
       }
       /* add the string to the list of arguments */
-      argv[argc] = ckd_calloc(len + 1, sizeof(char));
-      strncpy(argv[argc], str, len);
-      argv[argc][len] = '\0';
+      f_argv[argc] = ckd_calloc(len + 1, sizeof(char));
+      strncpy(f_argv[argc], str, len);
+      f_argv[argc][len] = '\0';
       len = 0;
       argc++;
 
@@ -520,10 +565,11 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename)
   } while (ch != EOF);
   
   if (rv == 0) {
-    rv = cmd_ln_parse(defn, argc, argv);
+    rv = cmd_ln_parse(defn, argc, f_argv);
   }
 
-  ckd_free(argv);
+  f_argc=argc;
+  fclose(file);
 
   return rv;
 }
@@ -544,15 +590,30 @@ const void *cmd_ln_access (char *name)
     
     if (hash_lookup (ht, name, &i) < 0)
 	E_FATAL("Unknown argument: %s\n", name);
-    
     return (argval[i].ptr);
 }
 
 /* RAH, 4.17.01, free memory allocated above  */
 void cmd_ln_free ()
 {
-  hash_free (ht);
+  int32 i;
+
+  if(ht)
+    hash_free (ht);
+
   ht=NULL;
   ckd_free ((void *) argval);
   argval = NULL;
+
+
+  if(f_argv){
+    if(f_argc>1){
+      for(i=1;i<f_argc;i++){
+	ckd_free(f_argv[i]);
+      }
+    }
+    ckd_free(f_argv[0]);
+    ckd_free(f_argv);
+  }
+
 }

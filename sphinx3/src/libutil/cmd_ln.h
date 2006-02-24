@@ -86,12 +86,15 @@ extern "C" {
    * Type of 64-bit floating-point number
    * \def ARG_STRING
    * Type of String
+   * \def ARG_BOOLEAN
+   * Type of Boolean
    */
   
 #define ARG_INT32	2
 #define ARG_FLOAT32	4
 #define ARG_FLOAT64	6
 #define ARG_STRING	8
+#define ARG_BOOLEAN	16
 
 #define ARG_MAX_LENGTH 256
 
@@ -100,15 +103,20 @@ extern "C" {
 #define REQARG_FLOAT32	(ARG_FLOAT32 | ARG_REQUIRED)
 #define REQARG_FLOAT64	(ARG_FLOAT64 | ARG_REQUIRED)
 #define REQARG_STRING	(ARG_STRING | ARG_REQUIRED)
+#define REQARG_BOOLEAN	(ARG_BOOLEAN | ARG_REQUIRED)
 typedef int32 argtype_t;
 
+
+  /** \struct arg_t
+      \brief A structure for storing one argument. 
+   */
 
 
 typedef struct {
     char *name;		/** Name of the command line switch (case-insensitive) */
-    argtype_t type;
-    char *deflt;	/** Default value (as a printed string) or NULL if none */
-    char *doc;		/** Documentation/description string */
+  argtype_t type;     /**<< Variable that could represent any arguments */
+    char *deflt;	/**< Default value (as a printed string) or NULL if none */
+    char *doc;		/**< Documentation/description string */
 } arg_t;
 
 
@@ -119,15 +127,18 @@ typedef struct {
  * also prints the prevailing argument values (to stderr) after parsing.
  * Return value: 0 if successful, -1 if error.
  */
-int32 cmd_ln_parse (arg_t *defn,	/** In: Array of argument name definitions */
-		    int32 argc,		/** In: #Actual arguments */
-		    char *argv[]);	/** In: Actual arguments */
+int32 cmd_ln_parse (arg_t *defn,	/**< In: Array of argument name definitions */
+		    int32 argc,		/**< In: #Actual arguments */
+		    char *argv[]	/**< In: Actual arguments */
+		    );
 
   /**
    * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
  * into an argv[] for cmd_ln_parse().
  */
-int32 cmd_ln_parse_file(arg_t *defn, char *filename);
+  int32 cmd_ln_parse_file(arg_t *defn,  /**< In: Array of argument name definitions*/
+			  char *filename  /**< In: A file that contains all the arguments */ 
+			);
 
   /**
  *Default entering routine application routine for command-line
@@ -135,10 +146,11 @@ int32 cmd_ln_parse_file(arg_t *defn, char *filename);
  *argument file and argument list.
  */
 
-void cmd_ln_appl_enter(int argc,   /** In: #Actual arguments */
-		       char *argv[], /** In: Actual arguments */
-		       char* default_argfn, /** In: default argument file name*/
-		       arg_t *defn); /** Command-line argument definition */
+void cmd_ln_appl_enter(int argc,   /**< In: #Actual arguments */
+		       char *argv[], /**< In: Actual arguments */
+		       char* default_argfn, /**< In: default argument file name*/
+		       arg_t *defn /**< Command-line argument definition */
+		       );
 
 
   /**
@@ -160,14 +172,16 @@ const void *cmd_ln_access (char *name);	/* In: Argument name whose value is soug
 #define cmd_ln_int32(name)	(*((int32 *)cmd_ln_access(name)))
 #define cmd_ln_float32(name)	(*((float32 *)cmd_ln_access(name)))
 #define cmd_ln_float64(name)	(*((float64 *)cmd_ln_access(name)))
+#define cmd_ln_boolean(name)	(*((boolean *)cmd_ln_access(name)))
 
 
   /**
    * Print a help message listing the valid argument names, and the associated
  * attributes as given in defn.
  */
-void  cmd_ln_print_help (FILE *fp,	/** In: File to which to print */
-			 arg_t *defn);	/** In: Array of argument name definitions */
+void  cmd_ln_print_help (FILE *fp,	/**< In: File to which to print */
+			 arg_t *defn	/**< In: Array of argument name definitions */
+			 );
 
 /* RAH, 4.17.01, call this to free memory allocated during cmd_ln_parse() */
 void cmd_ln_free ();
