@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2005/06/22  02:59:25  arthchan2003
- * Added  keyword
+ * Revision 1.7  2006/02/24  03:04:51  arthchan2003
+ * Added compiler flag for dmalloc.
  * 
+ * Revision 1.6.4.1  2005/10/17 05:03:05  arthchan2003
+ * Add compiler flag for dmalloc. With gdb, it proves to be very handy in fixing memory leaks.
+ *
+ * Revision 1.6  2005/06/22 02:59:25  arthchan2003
+ * Added  keyword
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -123,7 +129,6 @@ void *__ckd_realloc__(void *ptr, size_t new_size,
 		      const char *caller_file, int caller_line)
 {
     void *mem;
-
     if ((mem = realloc(ptr, new_size)) == NULL) {
 	E_FATAL("realloc(%d) failed from %s(%d)\n", new_size,
 		caller_file, caller_line);

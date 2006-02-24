@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2005/06/22  02:59:25  arthchan2003
- * Added  keyword
+ * Revision 1.11  2006/02/24  03:04:51  arthchan2003
+ * Added compiler flag for dmalloc.
  * 
+ * Revision 1.10.4.1  2005/10/17 05:03:28  arthchan2003
+ * Add compiler flag for dmalloc. With gdb, it proves to be very handy in fixing memory leaks.
+ *
+ * Revision 1.10  2005/06/22 02:59:25  arthchan2003
+ * Added  keyword
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -86,6 +92,7 @@
 #define _LIBUTIL_CKD_ALLOC_H_
 
 #include <stdlib.h>
+
 #include "prim_type.h"
 
   /** \file ckd_alloc.h
@@ -227,6 +234,11 @@ void __myfree__ (char *elem, int32 elemsize, char *file, int32 line);
    */
 
 #define myfree(ptr,sz)		__myfree__(ptr,(sz),__FILE__,__LINE__)
+
+#ifdef DMALLOC
+#include "dmalloc.h"
+#endif
+
 
 #ifdef __cplusplus
 }
