@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2006/02/23  15:12:09  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Introduced srch_hyp_t and conf_srch_hyp_t. The former unifies the usage of multiple hyp_t in the past.  The latter is only used in confidence estimation.
+ * Revision 1.6  2006/02/24  12:43:18  arthchan2003
+ * Fixed typedef issue of hyp_t and srch_hyp_t.
  * 
+ * Revision 1.5  2006/02/23 15:12:09  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Introduced srch_hyp_t and conf_srch_hyp_t. The former unifies the usage of multiple hyp_t in the past.  The latter is only used in confidence estimation.
+ *
  * Revision 1.4.4.5  2006/01/16 18:28:19  arthchan2003
  * 1, Fixed dox-doc, 2, Added confidence scores parameter in search.h. Also change names of parameters.
  *
@@ -182,6 +185,12 @@ typedef struct srch_hyp_s {
 			       a link list.  Of course one could also use glist
 			    */
 } srch_hyp_t;
+
+  /** \struct hyp_t
+      \brief an alias of srch_hyp_t;
+   */
+
+  typedef struct srch_hyp_t hyp_t;
 
   /** \struct conf_srch_hyp_t
       \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
