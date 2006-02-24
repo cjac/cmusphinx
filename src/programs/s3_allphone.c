@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2006/02/08  02:34:42  dhdfu
- * Enable trigrams for allphone decoding and update tests to include them.  This significantly improves phoneme recognition, though there are some implementation issues I don't totally understand and thus this is subject to change
+ * Revision 1.11  2006/02/24  04:47:46  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Used Dave's change in initialization.
  * 
+ *
+ * Revision 1.10  2006/02/08 02:34:42  dhdfu
+ * Enable trigrams for allphone decoding and update tests to include them.  This significantly improves phoneme recognition, though there are some implementation issues I don't totally understand and thus this is subject to change
+ *
  * Revision 1.9  2006/02/07 20:51:33  dhdfu
  * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
  * error rate in a straightforward way.
@@ -59,6 +63,15 @@
  * Revision 1.7  2006/02/02 22:56:07  dhdfu
  * Add ARPA language model support to allphone
  *
+ * Revision 1.6.4.3  2005/08/02 21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
+ * Revision 1.6.4.2  2005/07/20 21:26:55  arthchan2003
+ * Use cmd_ln_<type> instead of cmd_ln_access in align/allphone.
+ *
+ * Revision 1.6.4.1  2005/07/17 06:06:04  arthchan2003
+ * Removed chk_tp_uppertri and used in tmat_chk_uppertri.
+ *
  * Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -66,7 +79,8 @@
  * Add comments on all mains for preparation of factoring the command-line.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
- * Add Log
+ *
+ * Add $Log $
  *
  * 02-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Added allphone lattice output.
@@ -101,26 +115,28 @@
 
 
 /**
- * Phone-HMM (PHMM) structure:  Models a single unique <senone-sequence, tmat> pair.
+ * \struct phmm_t
+ * \brief Phone-HMM (PHMM) structure
+ *
+ * Models a single unique <senone-sequence, tmat> pair.
  * Can represent several different triphones, but all with the same parent basephone.
  * (NOTE: Word-position attribute of triphone is ignored.)
  */
 typedef struct phmm_s {
-    s3pid_t pid;	/** Phone id (temp. during init.) */
-    s3tmatid_t tmat;	/** Transition matrix id for this PHMM */
-    s3cipid_t ci;	/** Parent basephone for this PHMM */
-    s3frmid_t active;	/** Latest frame in which this PHMM is/was active */
-    uint32 *lc;		/** Set (bit-vector) of left context phones seen for this PHMM */
-    uint32 *rc;		/** Set (bit-vector) of right context phones seen for this PHMM */
-    s3senid_t *sen;	/** Senone-id sequence underlying this PHMM */
-    int32 *score;	/** Total path score during Viterbi decoding */
-    struct history_s **hist;	/** Viterbi history (for backtrace) */
-    int32 bestscore;	/** Best state score in any frame */
-    int32 inscore;	/** Incoming score from predecessor PHMMs */
-    int32 in_tscore;	/** Incoming transition score from predecessor PHMMs */
-    struct history_s *inhist;	/** History corresponding to inscore */
-    struct phmm_s *next;	/** Next unique PHMM for same parent basephone */
-    struct plink_s *succlist;	/** List of predecessor PHMM nodes */
+    s3pid_t pid;	/**< Phone id (temp. during init.) */
+    s3tmatid_t tmat;	/**< Transition matrix id for this PHMM */
+    s3cipid_t ci;	/**< Parent basephone for this PHMM */
+    s3frmid_t active;	/**< Latest frame in which this PHMM is/was active */
+    uint32 *lc;		/**< Set (bit-vector) of left context phones seen for this PHMM */
+    uint32 *rc;		/**< Set (bit-vector) of right context phones seen for this PHMM */
+    s3senid_t *sen;	/**< Senone-id sequence underlying this PHMM */
+    int32 *score;	/**< Total path score during Viterbi decoding */
+    struct history_s **hist;	/**< Viterbi history (for backtrace) */
+    int32 bestscore;	/**< Best state score in any frame */
+    int32 inscore;	/**< Incoming score from predecessor PHMMs */
+    struct history_s *inhist;	/**< History corresponding to inscore */
+    struct phmm_s *next;	/**< Next unique PHMM for same parent basephone */
+    struct plink_s *succlist;	/**< List of predecessor PHMM nodes */
 } phmm_t;
 static phmm_t **ci_phmm;	/** PHMM lists (for each CI phone) */
 
@@ -145,11 +161,12 @@ typedef struct history_s {
 } history_t;
 static history_t **frm_hist;	/** List of history nodes allocated in each frame */
 
-extern mdef_t *mdef;		/** Model definition */
-extern tmat_t *tmat;		/** Transition probability matrices */
 extern lm_t *lm;		/** Language model */
 
 static s3lmwid_t *ci2lmwid;	/** Mapping from CI-phone-id to LM-word-id */
+
+static mdef_t *mdef;		/** Model definition */
+static tmat_t *tmat;		/** Transition probability matrices */
 
 static int32 lrc_size = 0;
 static int32 curfrm;		/* Current frame */
@@ -394,25 +411,6 @@ static void phmm_dump ( void )
     }
 }
 #endif
-
-/**
- * Check model tprob matrices that they conform to upper-diagonal assumption.
- */
-static void chk_tp_uppertri ( void )
-{
-    int32 i, n_state, from, to;
-    
-    n_state = mdef->n_emit_state;
-    
-    /* Check that each tmat is upper-triangular */
-    for (i = 0; i < tmat->n_tmat; i++) {
-	for (to = 0; to < n_state; to++)
-	    for (from = to+1; from < n_state; from++)
-		if (tmat->tp[i][from][to] > S3_LOGPROB_ZERO)
-		    E_FATAL("HMM transition matrix not upper triangular\n");
-    }
-}
-
 
 int32 allphone_start_utt (char *uttid)
 {
@@ -874,18 +872,21 @@ static void phone_tp_init (char *file, float64 floor, float64 wt, float64 ip)
 }
 
 
-int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
+int32 allphone_init ( mdef_t *_mdef, tmat_t *_tmat )
 {
-    float64 *f64arg;
     char *file;
     float64 tpfloor, ip, wt;
-    
-    chk_tp_uppertri ();
+
+    mdef = _mdef;
+    tmat = _tmat;
+
+    tmat_chk_uppertri(tmat);
     
     phmm_build ();
 
     /* Old -phonetp file format still supported. */
     file = (char *)cmd_ln_access("-phonetp");
+
     if (lm) {
 	    s3cipid_t i;
 
@@ -894,8 +895,7 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
 	    for (i = 0; i < mdef->n_ciphone; i++)
 		    ci2lmwid[i] = lm_wid(lm,
 					 (char *)mdef_ciphone_str(mdef, i));
-    }
-    else {
+    }else {
 	    if (! file)
 		    E_ERROR("-phonetpfn argument missing; assuming uniform transition probs\n");
 	    tpfloor = *((float32 *) cmd_ln_access ("-phonetpfloor"));
@@ -903,8 +903,7 @@ int32 allphone_init ( mdef_t *mdef, tmat_t *tmat )
 	    wt = *((float32 *) cmd_ln_access ("-phonetpwt"));
 	    phone_tp_init (file, tpfloor, wt, ip);
     }    
-    f64arg = (float64 *) cmd_ln_access ("-beam");
-    beam = logs3 (*f64arg);
+    beam = logs3( cmd_ln_float64 ("-beam"));
     E_INFO ("logs3(beam)= %d\n", beam);
 
     frm_hist = (history_t **) ckd_calloc (S3_MAX_FRAMES, sizeof(history_t *));
