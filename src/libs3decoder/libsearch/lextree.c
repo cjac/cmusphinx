@@ -45,15 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2006/02/23  15:08:24  arthchan2003
- * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * Revision 1.11  2006/02/24  12:42:43  arthchan2003
+ * Removed warnings in srch_flat_fwd.c and lextree.c
  * 
+ * Revision 1.10  2006/02/23 15:08:24  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ *
  * 1, Fixed memory leaks.
  * 2, Add logic for full triphone expansion.  At this point, the
  * propagation of scores in word end is still incorrect. So composite
  * triphone should still be used by default.
  * 3, Removed lextree_copies_hmm_propagate.
- * 
+ *
  * Revision 1.9.4.10  2005/11/17 06:28:50  arthchan2003
  * Changed the code to used compressed triphones. Not yet correct at this point
  *
@@ -971,7 +974,7 @@ void lextree_enter (lextree_t *lextree, s3cipid_t lc, int32 cf,
     hmm_t *hmm, *cwhmm;
     int32 rc;
     int32 n_ci, n_st, n_rc;
-    int32 tmp_lc;
+    /*    int32 tmp_lc;*/
     tmat_t *tmat;
     s3ssid_t *rmap;
     
