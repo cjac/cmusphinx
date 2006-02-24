@@ -1,3 +1,132 @@
+2006-02-22  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+	
+	Sphinx 3.6 Release Candidate I
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	The corresponding SphinxTrain's tag is SPHINX3_6_CMU_INTERNAL_RELEASE
+	One can check out the matching SphinxTrain of the sphinx3.6 release by command,
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_6_CMU_INTERNAL_RELEASE SphinxTrain
+
+	A Summary of Sphinx 3.6 RCI
+	---------------------------
+
+	Sphinx 3.6 is a gently refactored version of Sphinx 3.5.  Our
+	programming is defensive and we only aim at further
+	consolidation and unification our code-bases in Sphinx 3.
+
+	Despite our programming is defensive, there are still several
+	interesting and new features could be found in this
+	release. Their details could be found in the "New Feature"
+	section below. Here is a brief summary:
+	
+	1, Further speed-up of CIGMMS in the 4 level GMM Computation
+	Schemes (4LGC)
+	2, Multiple regression classes an MAP adaptation in SphinxTrain
+	3, Better support in using LM in Sphinx 3.X.  
+	4, FSG search. 
+	5, Support of full triphone search in flat lexicon search. 
+	6, Some support of different character sets other than of
+	Sphinx 3.X.  Models in multiple languages are now tested in
+	Sphinx 3.X.
+
+	We hope you enjoy this release candidate. In future, we will
+	continue to improve the quality of CMU Sphinx and CMU Sphinx's
+	related software.
+
+	New Features 
+	------------
+	-Speaker Adaptation:
+	a, Multiple regression class (phoneme-based) is now supported. 
+	
+	-GMM Computation 
+	a, Improvements of CIGMMs is now incorporated. 
+	  i, One could specify the upper limit of the number of CD
+	  senones to be computed in each frame by specifying -maxcdsenpf.
+          ii, The best Gaussian index (BGI) are not stored and could
+	  be used as a mechanism to speed up GMM computation
+	  iii, tightening-factor (-tighten_factor) is introduced to
+	  smooth between fix naive down-sampling technique and CI-GMMS.
+	b, Support of SCHMM and FCHMM
+	  i, decode will fully support computation of SCHMM. 
+	
+	-Language Model 
+	a, reading an LM in ARPA text format is now supported. Users
+	now have an option to by-pass the use of lm3g2dmp.
+	b, live decoding API now supports switching of language models. 
+	c, full support of class-based LM. See also the Bug fixes section
+	d, lm_convert is introduced. lm_convert supersede the
+	functionalities of lm3g2dmp. Not only could lm_convert convert an LM 
+	from TXT format to DMP format.  It could also do the reverse.  
+
+	-Search 
+	This part will detail the change we make in different search
+	algorithms.
+	In 3.6, collection of algorithms could all be used under a
+	single executable decode.  decode_anytopo is still reserved
+	for backward compatibility purpose. 
+	Decode now support three modes of search. 
+	Mode 2 (FSG): (Adapted from Sphinx 2) FSG search. 
+	Mode 3 (FLAT): Flat-lexicon search. (The original search in decode_anytopo in 3.X (X < 6))
+	Mode 4 (TREE): Tree-lexicion search. (The original search in decode in 3.X (x<6) 
+	
+	
+	Some of these functionalities will only be applicable in one
+	particular search. We will mark tem with FSG, FLAT and TREE. 
+
+	a, One could now turn off -bt_wsil to control whether silence
+	should be used as the ending word.  (FLAT, TREE)
+
+	-Frontend
+	a, -dither is now supported in live_pretend and
+	live_decode, the initial seed could always be set the command
+	-seed. (Jerry Wolf will be very happy about this feature.)
+
+	-Miscellaneous
+	a, One could turn on built-in letter-to-sound rule in dict.c by using -lts_mismatch. 
+	b, current Sphinx 3.6 is tested to work on setup of English,
+	Chinese Mandarin, French and English. 
+	c, changes in ep: [To be filled in.]
+
+	Bug fixes
+	---------
+	-Miscellaneous memory leak fixed in the tree search (mode 4)
+	-Initialization class-based LM routine use to switch the order of
+	word insertion penalty and language model weight. This is now fixed. 
+	-Assertion generated vithist.c is now turn into an error
+	message.  Instead of causing the whole program stopped.  The
+	decoding will just fail for that sentnece. 
+	-Number of CI phones could now be at most 32767 (instead of 127)
+	-[1236322]: libutil\str2words special character bugs. 
+
+	Behavior Changes
+	----------------
+	-Endpointer (ep) now used computation of s3 log. 
+
+	-Multi-stream GMM computation will not truncate the pdf to 8
+	bit anymore.  This will avoid confusion of programmer. However
+
+	-Except in allphone and align, When .cont. is used in
+	-senmgau, the code will automatically turn to use fast GMM computation
+	routine. To make sure the multiple-stream GMM computation will
+	be in effect, one need to specify .s3cont.
+
+	-executable dag hadn't accounted for the language weight.  Now
+	this issue is fixed.
+
+	Functions still under test 
+	-----------------------------------------
+	-Encoding conversion in lm_convert. 
+	-Confidence estimation, the computations of forward and
+	backward posterior probability have mismatch
+	-LIUM contribution. LM could now represented as AT&T fsm format. 
+	
+	Corresponding changes in SphinxTrain
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	Please noted that SphinxTrain is distributed as a separate package and you can get it 
+	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_6_CMU_INTERNAL_RELEASE SphinxTrain
+	through time stamp SPHINX3_5_CMU_INTERNAL_RELEASE
+	
+	[To be filled in]
+
 2004-08-25  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
 
 	sphinx 3.5 release
