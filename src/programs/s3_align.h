@@ -46,9 +46,18 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.5  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.6  2006/02/24  04:42:32  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc.
  * 
+ * Revision 1.5.4.2  2005/08/02 21:42:34  arthchan2003
+ * 1, Moved static variables from function level to the application level. 2, united all initialization of HMM using s3_am_init, 3 united all GMM computation using ms_cont_mgau_frame_eval.
+ *
+ * Revision 1.5.4.1  2005/07/22 03:46:56  arthchan2003
+ * 1, cleaned up the code, 2, fixed dox-doc. 3, use srch.c version of log_hypstr and log_hyp_detailed.
+ *
+ * Revision 1.5  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.1.1.1  2005/03/24 15:24:01  archan
  * I found Evandro's suggestion is quite right after yelling at him 2 days later. So I decide to check this in again without any binaries. (I have done make distcheck. ) . Again, this is a candidate for s3.6 and I believe I need to work out 4-5 intermediate steps before I can complete the first prototype.  That's why I keep local copies. 
  *
@@ -93,35 +102,35 @@
 
 /** State level segmentation/alignment; one entry per frame */
 typedef struct align_stseg_s {
-    s3pid_t pid;		/** Phone id */
-    int8 state;			/** State id within phone */
-    int8 start;			/** Whether this is an entry into phone start state */
-    int32 score;		/** Acoustic score for transition to this state from the
+    s3pid_t pid;		/**< Phone id */
+    int8 state;			/**< State id within phone */
+    int8 start;			/**< Whether this is an entry into phone start state */
+    int32 score;		/**< Acoustic score for transition to this state from the
 				   previous one in the list */
-    int32 bsdiff;		/** Distance between this state and the best in this frame */
-    struct align_stseg_s *next;	/** Next state (in the next frame) in alignment */
+    int32 bsdiff;		/**< Distance between this state and the best in this frame */
+    struct align_stseg_s *next;	/**< Next state (in the next frame) in alignment */
 } align_stseg_t;
 
 
 /** Phone level segmentation/alignment information */
 typedef struct align_phseg_s {
-    s3pid_t pid;		/** Phone id */
-    s3frmid_t sf, ef;		/** Start and end frame for this phone occurrence */
-    int32 score;		/** Acoustic score for this segment of alignment */
-    int32 bsdiff;		/** Distance between this and the best unconstrained state
+    s3pid_t pid;		/**< Phone id */
+    s3frmid_t sf, ef;		/**< Start and end frame for this phone occurrence */
+    int32 score;		/**< Acoustic score for this segment of alignment */
+    int32 bsdiff;		/**< Distance between this and the best unconstrained state
 				   sequence for the same time segment */
-    struct align_phseg_s *next;	/** Next entry in alignment */
+    struct align_phseg_s *next;	/**< Next entry in alignment */
 } align_phseg_t;
 
 
 /** Word level segmentation/alignment information */
 typedef struct align_wdseg_s {
-    s3wid_t wid;		/** Word id */
-    s3frmid_t sf, ef;		/** Start and end frame for this word occurrence */
-    int32 score;		/** Acoustic score for this segment of alignment */
-    int32 bsdiff;		/** Distance between this and the best unconstrained state
+    s3wid_t wid;		/**< Word id */
+    s3frmid_t sf, ef;		/**< Start and end frame for this word occurrence */
+    int32 score;		/**< Acoustic score for this segment of alignment */
+    int32 bsdiff;		/**< Distance between this and the best unconstrained state
 				   sequence for the same time segment */
-    struct align_wdseg_s *next;	/** Next entry in alignment */
+    struct align_wdseg_s *next;	/**< Next entry in alignment */
 } align_wdseg_t;
 
 
@@ -137,21 +146,24 @@ int32 align_start_utt (char *uttid);
  * Called at the beginning of a frame to flag the active senones (any senone used
  * by active HMMs) in that frame.
  */
-void align_sen_active (s3senid_t *senlist,	/** Out: senlist[s] TRUE iff active in frame */
-		       int32 n_sen);		/** In: Size of senlist[] array */
+void align_sen_active (int32 *senlist,	/**< Out: senlist[s] TRUE iff active in frame */
+		       int32 n_sen		/**< In: Size of senlist[] array */
+		       );
 
 
 /** Step time aligner one frame forward */
-int32 align_frame (int32 *senscr);		/** In: array of senone scores this frame */
+int32 align_frame (int32 *senscr		/**< In: array of senone scores this frame */
+		   );
 
 
-/**
+/**<
  * Wind up utterance and return final result (READ-ONLY).  Results only valid until
  * the next utterance is begun.
  */
-int32 align_end_utt (align_stseg_t **stseg,	/** Out: list of state segmentation */
-		     align_phseg_t **phseg,  	/** Out: list of phone segmentation */
-		     align_wdseg_t **wdseg);	/** Out: list of word segmentation */
+int32 align_end_utt (align_stseg_t **stseg,	/**< Out: list of state segmentation */
+		     align_phseg_t **phseg,  	/**< Out: list of phone segmentation */
+		     align_wdseg_t **wdseg	/**< Out: list of word segmentation */
+		     );
 
 
 #endif
