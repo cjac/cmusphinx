@@ -1,6 +1,7 @@
 #!/bin/sh
 tmpout="test-allphone-mllr.out"
 
+#we used -agc max. Beware that this is an exception. 
 echo "ALLPHONE+MLLR TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
@@ -16,7 +17,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
--senmgau .cont. \
+-senmgau .s3cont. \
 -ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
 -cepdir @abs_top_srcdir@/model/lm/an4/ \
 -hyp allphone.match \

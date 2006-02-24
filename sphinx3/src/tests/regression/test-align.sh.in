@@ -15,7 +15,8 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ali
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
--senmgau .cont. \
+-senmgau .s3cont. \
+-agc max \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
 -dict @abs_top_srcdir@/model/lm/an4/an4.dict \
 -ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
@@ -37,6 +38,7 @@ echo "ALIGN simple phseg test FAILED"; fi
 
 echo "ALIGN TEST cepext"
 
+#Program we used -agc max. This is an exception
 #test for extension
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/align \
 -logbase 1.0003 \
@@ -48,7 +50,8 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ali
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
--senmgau .cont. \
+-agc max \
+-senmgau .s3cont. \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
 -dict @abs_top_srcdir@/model/lm/an4/an4.dict \
 -ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
