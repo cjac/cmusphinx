@@ -57,27 +57,87 @@
 #define MAX_STRLEN 100
 #define MAX_WORDS_PER_NGRAM 3
 
-/**
- * Compares the two given strings for equality. Unlike the strcmp()
- * function in the standard libraries, this method returns immediately
- * if any characters don't match up.
- *
- * args:
- * s1 - the first string
- * s2 - the second string
- *
- * return:
- * 0 if the two strings are completely equal
- * -1 otherwise
- */
-int str_cmp(char *s1, char *s2)
+int read_ngrams(FILE* fp, char **ngrams, 
+                s3lmwid_t wid[MAX_NGRAMS][MAX_WORDS_PER_NGRAM], int32 nwords[], int max_lines, lm_t *lm);
+int ngram2wid(char *word, int length, s3lmwid_t *w, lm_t *lm);
+int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
+int has_more_utterances(FILE* fp);
+
+
+/* FIX ME!, why do we use this function instead of strcmp? */
+int str_cmp(char *s1, char *s2);
+
+int main(int argc, char *argv[])
 {
   while (*s1 != '\0' && *s2 != '\0') {
     if (*s1++ != *s2++) {
       return -1;
     }
   }
+
   if (*s1 == '\0' && *s2 == '\0') {
+
+    args_file = argv[1];
+    lm_file = argv[2];
+    ngrams_file = argv[3];
+
+    parse_args_file(args_file);
+
+    lw = cmd_ln_float32("-lw");
+    wip = cmd_ln_float32("-wip");
+    uw = cmd_ln_float32("-uw");
+    logbase = cmd_ln_float32("-logbase");
+
+    logs3_init(logbase,1,1); /*Report progress and use log table*/
+
+    metricsStart(lmLoadTimer);
+    
+    /* initialize the language model */
+    /* HACK! This doesn't work for class-based LM */
+
+    lm = lm_read(lm_file, "default", lw, wip, uw, 0
+		 , NULL, /*No fmt */
+		 1   /* Set lm weights */
+		 );
+
+    metricsStop(lmLoadTimer);
+
+    if ((fp = fopen(ngrams_file, "r")) == NULL) {
+        E_FATAL("Unable to open N-gram file %s\n", ngrams_file);
+    }
+
+    
+    while (has_more_utterances(fp)) {
+
+      /* read in all the N-grams */
+      n = read_ngrams(fp, ngrams, wid, nwords, MAX_NGRAMS, lm);
+      
+      metricsStart(lmLookupTimer);
+
+      /* scores the N-grams */
+      for (i = 0; i < n; i++) {
+        scores[i] = score_ngram(wid[i], nwords[i], lm);
+        printf("%-10d %s\n", scores[i], ngrams[i]);
+	/*
+	printf("%-10d %s %d %d %d\n", scores[i], ngrams[i], 
+	       wid[i][0], wid[i][1], wid[i][2]);
+	*/
+      }
+
+      /* reset cache if <END_UTT> was reached */
+      if (n != MAX_NGRAMS) {
+	lm_cache_reset(lm);
+      }
+
+      metricsStop(lmLookupTimer);
+    }
+
+    printf("Bigram misses: %d \n", lm->n_bg_bo);
+    printf("Trigram misses: %d \n", lm->n_tg_bo);
+
+    fflush(stdout);
+
+    metricsPrint();
     return 0;
   } else {
     return -1;
