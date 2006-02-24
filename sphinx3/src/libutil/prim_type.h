@@ -36,7 +36,7 @@
 /*
  * prim_type.h -- Primitive types; more machine-independent.
  *
- * **********************************************
+ * *********************************************
  * CMU ARPA Speech Project
  *
  * Copyright (c) 1999 Carnegie Mellon University.
@@ -45,12 +45,28 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.12  2005/10/05  00:31:14  dhdfu
+ * Revision 1.13  2006/02/24  03:18:30  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Followed Dave's change.
+ * 
+ *
+ * Revision 1.12  2005/10/05 00:31:14  dhdfu
  * Make int8 be explicitly signed (signedness of 'char' is
  * architecture-dependent).  Then make a bunch of things use uint8 where
  * signedness is unimportant, because on the architecture where 'char' is
  * unsigned, it is that way for a reason (signed chars are slower).
- * 
+ *
+ * Revision 1.11.4.4  2006/01/16 20:21:46  arthchan2003
+ * Fixed the typo in str2words.c
+ *
+ * Revision 1.11.4.3  2005/10/09 20:02:13  arthchan2003
+ * Explicitly make int8 to be signed. This will make the code works well in some architecture.
+ *
+ * Revision 1.11.4.2  2005/09/07 23:43:50  arthchan2003
+ * Add boolean in the prim_type. Not yet fully implemented.
+ *
+ * Revision 1.11.4.1  2005/06/27 05:42:21  arthchan2003
+ * Merge from the tip of the trunk
+ *
  * Revision 1.11  2005/06/22 03:10:23  arthchan2003
  * Added  keyword.
  *
@@ -71,6 +87,8 @@
 
 #ifndef _LIBUTIL_PRIM_TYPE_H_
 #define _LIBUTIL_PRIM_TYPE_H_
+
+
 
 /** \file prim_type.h
  * \brief Type signatures used in Sphinx. 
@@ -94,12 +112,22 @@ typedef unsigned char	uint8;
 typedef float		float32;
 typedef double		float64;
 
+#if 1 /* This is added for sphinx 2 routine tool compilation. Currently, it is only used in the fsg routine. */
+typedef unsigned char   boolean;
+#endif
+
+typedef union any4byte_type_s {
+    int32 i_32;
+    uint32 ui_32;
+} any4byte_type_t;
+
 typedef union anytype_s {
     void *ptr;		/* User defined data types at this ptr */
     int32 i_32;
     uint32 ui_32;
     float32 fl_32;
     float64 fl_64;
+    boolean b;
 } anytype_t;
 
 
@@ -136,8 +164,11 @@ typedef union anytype_s {
 #define MIN_NEG_FLOAT64		((float64) (-MIN_POS_FLOAT64))
 
 
+
 #ifdef __cplusplus
 }
 #endif
+
+
 
 #endif
