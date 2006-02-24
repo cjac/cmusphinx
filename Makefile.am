@@ -98,7 +98,6 @@ test-all-app : test-full test-wave2feat
 
 test-decode_anytopo-2ndstage \
 test-decode_anytopo \
-test-decode_anytopo-2ndstage \
 test-decode_anytopo-mllr \
 test-decode-2ndstage \
 test-decode \
@@ -111,7 +110,6 @@ test-decode-mode3-mpx \
 test-decode-mode5 \
 test-decode-mode5-noncomp \
 test-decode-s3cont \
-test-decode-2ndstage \
 test-decode-clm \
 test-decode-mllr \
 test-align \
