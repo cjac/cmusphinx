@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2005/06/22  03:09:52  arthchan2003
- * 1, Fixed doxygen documentation, 2, Added  keyword.
+ * Revision 1.3  2006/02/24  03:16:29  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Sleep only 1 second insntead of 10
  * 
+ * Revision 1.2.4.1  2005/10/07 21:12:58  arthchan2003
+ * sleep less when a file couldn't be found in pio.c
+ *
+ * Revision 1.2  2005/06/22 03:09:52  arthchan2003
+ * 1, Fixed doxygen documentation, 2, Added  keyword.
+ *
  * Revision 1.3  2005/06/16 00:14:08  archan
  * Added const keyword to file argument for file_open
  *
@@ -289,7 +295,7 @@ int32 stat_retry (char *file, struct stat *statbuf)
 	    E_ERROR_SYSTEM("stat(%s) failed; retrying...\n", file);
 	}
 #if (! WIN32)
-	sleep (10);
+	sleep (1);
 #endif
     }
     
