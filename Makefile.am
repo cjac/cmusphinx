@@ -61,9 +61,18 @@ check: test-full
 	@:
 
 test-full : \
+	test-decode-simple \
 	test-decode \
 	test-decode-clm \
 	test-decode-mllr \
+	test-decode-s3cont \
+	test-decode-lts \
+	test-decode-noncomp \
+	test-decode-mode3 \
+	test-decode-mode3-mulmpx \
+	test-decode-mode3-mpx \
+	test-decode-mode5 \
+	test-decode-mode5-noncomp \
 	test-decode-2ndstage \
 	test-align \
 	test-align-mllr \
@@ -81,18 +90,28 @@ test-full : \
 	test-cepview \
 	test-decode_anytopo \
 	test-decode_anytopo-mllr \
-	test-decode_anytopo-2ndstage 
-
-
+	test-decode_anytopo-2ndstage \
+	test-wave2feat 
 
 test-all-app : test-full test-wave2feat
 
 
 test-decode_anytopo-2ndstage \
 test-decode_anytopo \
+test-decode_anytopo-2ndstage \
 test-decode_anytopo-mllr \
 test-decode-2ndstage \
 test-decode \
+test-decode-simple \
+test-decode-noncomp \
+test-decode-lts \
+test-decode-mode3 \
+test-decode-mode3-mulmpx \
+test-decode-mode3-mpx \
+test-decode-mode5 \
+test-decode-mode5-noncomp \
+test-decode-s3cont \
+test-decode-2ndstage \
 test-decode-clm \
 test-decode-mllr \
 test-align \
@@ -115,8 +134,9 @@ test-wave2feat:
 
 perf-std : 
 	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-lp ti46-decode ti46-decany
-	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode 
+	make -C $(top_srcdir)/src/tests/performance/tidigits tidigits-lp tidigits-decode  
 	make -C $(top_srcdir)/src/tests/performance/Communicator com-fast-lp com-fast-decode
+	make -C $(top_srcdir)/src/tests/performance/Communicator com-2stage-decode com-2stage-decany
 
 perf-std-s3 : 
 	make -C $(top_srcdir)/src/tests/performance/ti46 ti46-decany
