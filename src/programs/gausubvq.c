@@ -44,20 +44,22 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2005/06/22  05:34:46  arthchan2003
- * Change gausubvq to use a new mdef_init interface. Add  keyword.
+ * Revision 1.10  2006/02/24  03:54:43  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Change commands to macro, add -logs3table.
  * 
+ * Revision 1.9.4.2  2005/09/25 20:07:53  arthchan2003
+ * Tied clustering arguments of gausubvq and gauvq.
+ *
+ * Revision 1.9.4.1  2005/07/18 23:21:23  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.9  2005/06/22 05:34:46  arthchan2003
+ * Change gausubvq to use a new mdef_init interface. Add  keyword.
+ *
  * Revision 1.3  2005/05/27 01:15:45  archan
  * 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
  *
  * Revision 1.2  2005/03/30 00:43:40  archan
- * Add $Log$
- * Revision 1.9  2005/06/22  05:34:46  arthchan2003
- * Change gausubvq to use a new mdef_init interface. Add  keyword.
- * 
- * Add Revision 1.3  2005/05/27 01:15:45  archan
- * Add 1, Changing the function prototypes of logs3_init to have another argument which specify whether an add table should be used. Corresponding changes have made in all executables and test programs. 2, Synchronzie how align, allphone, decode_anytopo, dag sets the default value of logbase.
- * Add into most of the .[ch] files. It is easy to keep track changes.
  *
  * 15-Dec-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Porting initial version to s3.2.
@@ -67,6 +69,7 @@
 #include "cont_mgau.h"
 #include "logs3.h"
 #include "vector.h"
+#include "cmdln_macro.h"
 
 /** \file gausubvq.c 
  * \brief Compute the SVQ map 
@@ -175,22 +178,22 @@ static int32 **parse_subvecs (char *str)
 
 
 static arg_t arg[] = {
-    { "-mean",
-      REQARG_STRING,
-      NULL,
-      "Means file" },
-    { "-var",
-      REQARG_STRING,
-      NULL,
-      "Variances file" },
-    { "-mixw",
-      REQARG_STRING,
-      NULL,
-      "Mixture weights file (needed, even though it's not part of the computation)" },
-    { "-stdev",
+
+  /** Please see cmdln_macro.h */
+
+  log_table_command_line_macro()
+  common_application_properties_command_line_macro()
+  gmm_command_line_macro() /* At here, mixw is involved, even though it is not used in the computation*/
+  vq_cluster_command_line_macro()
+
+  /** gausubvq-specific argument. */
+
+
+    { "-seed",
       ARG_INT32,
-      "0",
-      "Use std.dev. (rather than var) in computing vector distances during clustering" },
+      "-1",
+      "User defined seed to seed the random generator of the K-mean algorithm, if it is a value smaller than 0, internal mechanism will be used."
+    },
     { "-svspec",
       REQARG_STRING,
       NULL,
@@ -199,36 +202,10 @@ static arg_t arg[] = {
       ARG_INT32,
       "4096",
       "No. of codewords in output subvector codebooks" },
-    { "-iter",
-      ARG_INT32,
-      "100",
-      "Max no. of k-means iterations for clustering" },
-    { "-eps",
-      ARG_FLOAT64,
-      "0.0001",
-      "Stopping criterion: stop iterations if relative decrease in sq(error) < eps" },
-    { "-varfloor",
-      ARG_FLOAT64,
-      "0.0001",
-      "Floor for non-zero variance values in input model" },
-    { "-mixwfloor",
-      ARG_FLOAT64,
-      "0.0000001",
-      "Floor for non-zero mixture weight values in input model" },
-    { "-subvq",
+    { "-subvq", 
       ARG_STRING,
       NULL,
       "Output subvq file (stdout if not specified)" },
-
-    { "-log3table",
-      ARG_FLOAT64,
-      "1.0003",
-      "Determines whether to use the log3 table or to compute the values at run time."},
-    { "-seed",
-      ARG_INT32,
-      "-1",
-      "User defined seed to seed the random generator of the K-mean algorithm, if it is a value smaller than 0, internal mechanism will be used."
-    },
 
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -245,14 +222,12 @@ int32 main (int32 argc, char *argv[])
     float64 sqerr;
     int32 stdev;
     int32 i, j, v, m, c;
+
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+    unlimit ();
     
-    for(i=0;i<argc;i++)
-      {
-	printf("Argument %d: %s\n",i,argv[i]);
-      }
-    cmd_ln_parse (arg, argc, argv);
-    
-    logs3_init (cmd_ln_float64("-log3table"),1,1); /*Report Progress, use log table */
+    logs3_init (cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table")); /*Report Progress, use log table */
     
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init (cmd_ln_str("-mean"), 
@@ -395,4 +370,8 @@ int32 main (int32 argc, char *argv[])
     fclose (fpout);
     
     exit(0);
+
+  cmd_ln_appl_exit();
+  exit(0);
+
 }
