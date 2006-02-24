@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.16  2006/02/24  04:38:04  arthchan2003
- * Merged Dave's change and my changes: started to use macros.  use Dave's change on -hyp and -hypseg. Used ctl_process.  Still need test.
+ * Revision 1.17  2006/02/24  13:43:43  arthchan2003
+ * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
  * 
+ * Revision 1.16  2006/02/24 04:38:04  arthchan2003
+ * Merged Dave's change and my changes: started to use macros.  use Dave's change on -hyp and -hypseg. Used ctl_process.  Still need test.
+ *
  *
  * Revision 1.15  2006/02/07 20:51:33  dhdfu
  * Add -hyp and -hypseg arguments to allphone so we can calculate phoneme
@@ -308,10 +311,24 @@ static void models_init ( void )
 
     /* Language model, if any. */
     if (cmd_ln_access("-lm")) {
-	    if ((lm = lm_read(cmd_ln_str("-lm"),
-			      cmd_ln_float32("-phonetpwt"),
-			      cmd_ln_float32("-wip"),
-			      cmd_ln_float32("-uw"))) == NULL)
+      /*
+	ARCHAN 20060224 
+	Hack! Currently the LM read will have a fixed name, "Phoneme LM"
+	We also assume no class-based LM will be used. 
+	
+       */
+	    if ((lm = lm_read_advance(cmd_ln_str("-lm"),
+				      "Phoneme LM",
+				      cmd_ln_float32("-phonetpwt"),
+				      cmd_ln_float32("-wip"),
+				      cmd_ln_float32("-uw"),
+				      0,
+				      NULL,
+				      1)
+			      
+			      
+		 
+		 ) == NULL)
 		    E_FATAL("Failed to read language model from %s\n", cmd_ln_str("-lm"));
     }
 

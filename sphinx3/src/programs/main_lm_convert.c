@@ -48,9 +48,12 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.2  2006/02/24  03:50:30  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application lm_convert.
+ * Revision 1.3  2006/02/24  13:43:43  arthchan2003
+ * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
  * 
+ * Revision 1.2  2006/02/24 03:50:30  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application lm_convert.
+ *
  * Revision 1.1.2.5  2006/01/16 20:29:52  arthchan2003
  * Changed -ltsoov to -lts_mismatch. Changed lm_rawscore interface. Change from cmd_ln_access to cmd_ln_str.
  *
@@ -158,7 +161,7 @@ int main(int argc, char *argv[])
 
 
   /* Read LM */
-  if((lm=lm_read(inputfn,"default",1.0,0.1,1.0,0,inputfmt,0))==NULL)
+  if((lm=lm_read_advance(inputfn,"default",1.0,0.1,1.0,0,inputfmt,0))==NULL)
     E_FATAL("Fail to read inputfn %s in inputfmt %s\n",inputfn,inputfmt);
 
 

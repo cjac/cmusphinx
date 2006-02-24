@@ -7,7 +7,6 @@ bin_PROGRAMS = decode \
 	conf \
 	dag \
 	dp \
-	allphone \
 	ep \
 	lm_convert \
 	cepview \
