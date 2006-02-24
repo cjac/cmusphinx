@@ -38,9 +38,12 @@
  * HISTORYg
  * 
  * $Log$
- * Revision 1.3  2006/02/24  12:33:56  arthchan2003
- * Removed ls from line 634 of srch_flat_fwd.c. Code compile.
+ * Revision 1.4  2006/02/24  12:42:43  arthchan2003
+ * Removed warnings in srch_flat_fwd.c and lextree.c
  * 
+ * Revision 1.3  2006/02/24 12:33:56  arthchan2003
+ * Removed ls from line 634 of srch_flat_fwd.c. Code compile.
+ *
  * Revision 1.2  2006/02/23 05:16:14  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Add wrapper of flat_fwd.c
  *
@@ -470,7 +473,7 @@ int srch_FLAT_FWD_end(void* srch)
   glist_t ghyp, rhyp;
   glist_t bghyp, brhyp;
 
-  char *bscrdir;
+  /*  char *bscrdir;*/
   stat_t* st;
   dag_t *dag;
 
