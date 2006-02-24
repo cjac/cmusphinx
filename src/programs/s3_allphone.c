@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2006/02/24  04:47:46  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Used Dave's change in initialization.
+ * Revision 1.12  2006/02/24  16:42:21  arthchan2003
+ * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
  * 
+ * Revision 1.11  2006/02/24 04:47:46  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Used Dave's change in initialization.
+ *
  *
  * Revision 1.10  2006/02/08 02:34:42  dhdfu
  * Enable trigrams for allphone decoding and update tests to include them.  This significantly improves phoneme recognition, though there are some implementation issues I don't totally understand and thus this is subject to change
@@ -134,6 +137,7 @@ typedef struct phmm_s {
     struct history_s **hist;	/**< Viterbi history (for backtrace) */
     int32 bestscore;	/**< Best state score in any frame */
     int32 inscore;	/**< Incoming score from predecessor PHMMs */
+  int32 in_tscore;      /**< Incoming transition score from predecessor PHMMs */
     struct history_s *inhist;	/**< History corresponding to inscore */
     struct phmm_s *next;	/**< Next unique PHMM for same parent basephone */
     struct plink_s *succlist;	/**< List of predecessor PHMM nodes */

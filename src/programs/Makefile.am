@@ -3,6 +3,7 @@ bin_PROGRAMS = decode \
 	       decode_anytopo \
 	gausubvq \
 	align \
+	allphone \
 	astar \
 	conf \
 	dag \
