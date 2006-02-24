@@ -33,17 +33,29 @@
  * ====================================================================
  *
  * $Log$
- * Revision 1.8  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.9  2006/02/24  05:19:41  arthchan2003
+ * The final one in programs.
  * 
+ * Revision 1.8.4.1  2005/07/18 23:21:24  arthchan2003
+ * Tied command-line arguments with marcos
+ *
+ * Revision 1.8  2005/06/22 05:39:56  arthchan2003
+ * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ *
  * Revision 1.3  2005/04/20 03:50:36  archan
  * Add comments on all mains for preparation of factoring the command-line.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.8  2005/06/22  05:39:56  arthchan2003
- * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Revision 1.9  2006/02/24  05:19:41  arthchan2003
+ * The final one in programs.
  * 
+ * Add Revision 1.8.4.1  2005/07/18 23:21:24  arthchan2003
+ * Add Tied command-line arguments with marcos
+ * Add
+ * Add Revision 1.8  2005/06/22 05:39:56  arthchan2003
+ * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
+ * Add
  * Add Revision 1.3  2005/04/20 03:50:36  archan
  * Add Add comments on all mains for preparation of factoring the command-line.
  * Add into most of the .[ch] files. It is easy to keep track changes.
@@ -54,6 +66,7 @@
 #include "classify.h"
 #include "endptr.h"
 #include "fe.h"
+#include "cmdln_macro.h"
 
 /** \file wave2feat.c
  * \brief Driver for wave2feat
@@ -86,78 +99,6 @@ wave2feat -i  input.raw \n						\
         -nfilt     40 \n						\
         -nfft      512";
 
-#if 0
-static arg_t w2f_specific_arg[] = {
-  /* This should be replaced by something else */
-  { "-raw", => 
-    ARG_STRING,
-    NULL,
-    "Single wave input file" },
-  { "-rawdir", => 
-    ARG_STRING,
-    NULL,
-    "Input directory, input file names are relative to this, if defined" },
-  { "-rawext", => 
-    ARG_STRING,
-    NULL,
-    "Input extension to be applied to all input files" },
-  { "-cep", => 
-    ARG_STRING,
-    NULL,
-    "Single cepstral output file" },
-  { "-cepdir", => 
-    ARG_STRING,
-    NULL,
-    "Output directory, output files are relative to this" },
-  { "cepext", => 
-    ARG_STRING,
-    NULL,
-    "Output extension to be applied to all output files" },
-
-  { "-ctl",  => 
-    ARG_STRING,
-    NULL,
-    "Control file for batch processing" },
-  { "-logspec",
-    ARG_INT32,
-    "0",
-    "Write out logspectral files instead of cepstra" },
-  { "-feat",
-    ARG_STRING,
-    "sphinx",
-    "SPHINX format - big endian" },
-  { "-verbose",
-    ARG_INT32,
-    "0",
-    "Show input filenames" },
-
-  { NULL, ARG_INT32,  NULL, NULL }
-};
-
-static arg_t wavfmt[] = {
-  { "-nist",
-    ARG_INT32,
-    "0",
-    "Defines input format as NIST sphere" },
-  { "-raw",
-    ARG_INT32,
-    "0",
-    "Defines input format as raw binary data" },
-  { "-mswav",
-    ARG_INT32,
-    "0",
-    "Defines input format as Microsoft Wav (RIFF)" },
-  { "-nchans",
-    ARG_INT32,
-    ONE_CHAN,
-    "Number of channels of data (interlaced samples assumed)" },
-  { "-whichchan",
-    ARG_INT32,
-    ONE_CHAN,
-    "Channel to process" },
-
-}
-#endif
 
 static arg_t defn[] = {
 
@@ -171,6 +112,20 @@ static arg_t defn[] = {
     "0",
     "Shows example of how to use the tool"},
 #endif
+
+  waveform_to_cepstral_command_line_macro()
+  common_application_properties_command_line_macro()
+
+  { "-machine_endian",
+    ARG_STRING,
+#ifdef WORDS_BIGENDIAN
+    "big",
+#else
+    "little",
+#endif
+    "Endianness of machine, big or little" },
+
+
   { "-i",
     ARG_STRING,
     NULL,
@@ -211,10 +166,6 @@ static arg_t defn[] = {
     ARG_INT32,
     "0",
     "Defines input format as Microsoft Wav (RIFF)" },
-  { "-input_endian",
-    ARG_STRING,
-    "little",
-    "Endianness of input data, big or little, ignored if NIST or MS Wav" },
   { "-nchans",
     ARG_INT32,
     ONE_CHAN,
@@ -231,74 +182,10 @@ static arg_t defn[] = {
     ARG_STRING,
     "sphinx",
     "SPHINX format - big endian" },
-  { "-mach_endian",
-    ARG_STRING,
-#ifdef WORDS_BIGENDIAN
-    "big",
-#else
-    "little",
-#endif
-    "Endianness of machine, big or little" },
-  { "-alpha",
-    ARG_FLOAT32,
-    DEFAULT_PRE_EMPHASIS_ALPHA,
-    "Preemphasis parameter" },
-  { "-srate",
-    ARG_FLOAT32,
-    DEFAULT_SAMPLING_RATE,
-    "Sampling rate" },
-  { "-frate",
-    ARG_INT32,
-    DEFAULT_FRAME_RATE,
-    "Frame rate" },
-  { "-wlen",
-    ARG_FLOAT32,
-    DEFAULT_WINDOW_LENGTH,
-    "Hamming window length" },
-  { "-nfft",
-    ARG_INT32,
-    DEFAULT_FFT_SIZE,
-    "Size of FFT" },
-  { "-nfilt",
-    ARG_INT32,
-    DEFAULT_NUM_FILTERS,
-    "Number of filter banks" },
-  { "-lowerf",
-    ARG_FLOAT32,
-    DEFAULT_LOWER_FILT_FREQ,
-    "Lower edge of filters" },
-  { "-upperf",
-    ARG_FLOAT32,
-    DEFAULT_UPPER_FILT_FREQ,
-    "Upper edge of filters" },
-  { "-ncep",
-    ARG_INT32,
-    DEFAULT_NUM_CEPSTRA,
-    "Number of cep coefficients" },
-  { "-doublebw",
-    ARG_INT32,
-    "0",
-    "Use double bandwidth filters (same center freq)" },
-  { "-blocksize",
-    ARG_INT32,
-    DEFAULT_BLOCKSIZE,
-    "Block size, used to limit the number of samples used at a time when reading very large audio files" },
-  { "-dither",
-    ARG_INT32,
-    "0",
-    "Add 1/2-bit noise" },
   { "-verbose",
     ARG_INT32,
     "0",
     "Show input filenames" },
-  { "-logfn",
-    ARG_STRING,
-    NULL,
-    "Log file (default stdout/stderr)" },
-  { "-seed",
-    ARG_INT32,
-    "-1",
-    "The seed for the random generator"},
   { NULL, ARG_INT32,  NULL, NULL }
 };
 
