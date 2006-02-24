@@ -45,9 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2005/06/22  03:02:51  arthchan2003
- * 1, Fixed doxygen documentation, 2, add  keyword.
+ * Revision 1.9  2006/02/24  03:11:39  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, changed ckd_calloc to my_malloc, 2, add functions to free nodes.
  * 
+ * Revision 1.8.4.2  2005/10/17 05:02:05  arthchan2003
+ * Usage of mymalloc and myfree leaks memory.  This is told by dmalloc when I tried to debug a dynamic algorithm for lexical tree.
+ *
+ * Revision 1.8.4.1  2005/06/27 05:41:46  arthchan2003
+ * Added glist_delete in glist.h.  glist_delete only delete one node after a specified node. glist_delete and glist_add thus from a simple operation that allow the glist to act like a stack.
+ *
+ * Revision 1.8  2005/06/22 03:02:51  arthchan2003
+ * 1, Fixed doxygen documentation, 2, add  keyword.
+ *
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
@@ -73,7 +82,7 @@ glist_t glist_add_ptr (glist_t g, void *ptr)
 {
     gnode_t *gn;
     
-    gn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    gn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     gn->data.ptr = ptr;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
@@ -84,7 +93,7 @@ glist_t glist_add_int32 (glist_t g, int32 val)
 {
     gnode_t *gn;
     
-    gn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    gn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     gn->data.i_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
@@ -95,7 +104,7 @@ glist_t glist_add_uint32 (glist_t g, uint32 val)
 {
     gnode_t *gn;
     
-    gn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    gn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     gn->data.ui_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
@@ -106,7 +115,7 @@ glist_t glist_add_float32 (glist_t g, float32 val)
 {
     gnode_t *gn;
     
-    gn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    gn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     gn->data.fl_32 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
@@ -117,7 +126,7 @@ glist_t glist_add_float64 (glist_t g, float64 val)
 {
     gnode_t *gn;
     
-    gn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    gn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     gn->data.fl_64 = val;
     gn->next = g;
     return ((glist_t) gn);	/* Return the new head of the list */
@@ -236,7 +245,7 @@ void glist_free (glist_t g)
     while (g) {
 	gn = g;
 	g = gn->next;
-	myfree((char *)gn, sizeof(gnode_t));
+	ckd_free((void *)gn);
     }
 }
 
@@ -248,8 +257,8 @@ void glist_myfree (glist_t g, int32 datasize)
     while (g) {
 	gn = g;
 	g = gn->next;
-	myfree((char *)(gn->data.ptr), datasize);
-	myfree((char *)gn, sizeof(gnode_t));
+	ckd_free((char *)(gn->data.ptr)); 
+	ckd_free((char *)gn);
     }
 }
 
@@ -297,7 +306,7 @@ gnode_t *glist_insert_ptr (gnode_t *gn, void *ptr)
 {
     gnode_t *newgn;
     
-    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn = (gnode_t *) ckd_calloc (1,sizeof(gnode_t));
     newgn->data.ptr = ptr;
     newgn->next = gn->next;
     gn->next = newgn;
@@ -310,7 +319,7 @@ gnode_t *glist_insert_int32 (gnode_t *gn, int32 val)
 {
     gnode_t *newgn;
     
-    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     newgn->data.i_32 = val;
     newgn->next = gn->next;
     gn->next = newgn;
@@ -323,9 +332,10 @@ gnode_t *glist_insert_uint32 (gnode_t *gn, uint32 val)
 {
     gnode_t *newgn;
     
-    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     newgn->data.ui_32 = val;
     newgn->next = gn->next;
+
     gn->next = newgn;
     
     return newgn;
@@ -336,7 +346,7 @@ gnode_t *glist_insert_float32 (gnode_t *gn, float32 val)
 {
     gnode_t *newgn;
     
-    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn = (gnode_t *) ckd_calloc (1,sizeof(gnode_t));
     newgn->data.fl_32 = val;
     newgn->next = gn->next;
     gn->next = newgn;
@@ -349,7 +359,7 @@ gnode_t *glist_insert_float64 (gnode_t *gn, float64 val)
 {
     gnode_t *newgn;
     
-    newgn = (gnode_t *) mymalloc (sizeof(gnode_t));
+    newgn = (gnode_t *) ckd_calloc (1, sizeof(gnode_t));
     newgn->data.fl_64 = val;
     newgn->next = gn->next;
     gn->next = newgn;
@@ -357,6 +367,31 @@ gnode_t *glist_insert_float64 (gnode_t *gn, float64 val)
     return newgn;
 }
 
+gnode_t *glist_delete (gnode_t *gn)
+{
+  gnode_t *newgn;
+  newgn=gn->next;
+  if(newgn){
+    ckd_free((char*)gn);
+    return newgn;
+  }else{
+    return gn;
+  }
+}
 
 
-
+gnode_t *gnode_free (gnode_t *gn, gnode_t *pred)
+{
+  gnode_t *next;
+  
+  next = gn->next;
+  if (pred) {
+    assert (pred->next == gn);
+    
+    pred->next = next;
+  }
+  
+  ckd_free((char *)gn);
+  
+  return next;
+}
