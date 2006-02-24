@@ -10,7 +10,8 @@ bin_PROGRAMS = decode \
 	allphone \
 	ep \
 	lm_convert \
-	cepview
+	cepview \
+	wave2feat 
 
 
 livepretend_SOURCES = main_livepretend.c 
@@ -24,10 +25,10 @@ dp_SOURCES = main_dp.c
 allphone_SOURCES = main_allphone.c s3_allphone.c 
 gausubvq_SOURCES = gausubvq.c
 ep_SOURCES = main_ep.c
-wave2feat_SOURCES = wave2feat.c 
 cepview_SOURCES = main_cepview.c
 lm_convert_SOURCES = main_lm_convert.c
 
+#wave2feat_SOURCES = wave2feat.c 
 #gauvq_read_SOURCES = main_gauvq_read.c 
 #gauvq_SOURCES = main_gauvq.c 
 
