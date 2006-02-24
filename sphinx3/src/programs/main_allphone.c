@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.17  2006/02/24  13:43:43  arthchan2003
- * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
+ * Revision 1.18  2006/02/24  16:42:21  arthchan2003
+ * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
  * 
+ * Revision 1.17  2006/02/24 13:43:43  arthchan2003
+ * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
+ *
  * Revision 1.16  2006/02/24 04:38:04  arthchan2003
  * Merged Dave's change and my changes: started to use macros.  use Dave's change on -hyp and -hypseg. Used ctl_process.  Still need test.
  *
@@ -235,6 +238,51 @@ static ptmr_t tm_allphone;
 static FILE *matchfp, *matchsegfp;
 
 
+static void allphone_log_hypseg (char *uttid,
+			FILE *fp,	/* Out: output file */
+			phseg_t *hypptr,	/* In: Hypothesis */
+			int32 nfrm,	/* In: #frames in utterance */
+			int32 scl)	/* In: Acoustic scaling for entire utt */
+{
+    phseg_t *h;
+    int32 ascr, lscr, tscr;
+    
+    ascr = lscr = tscr = 0;
+    for (h = hypptr; h; h = h->next) {
+	ascr += h->score;
+	lscr += h->tscore; /* FIXME: unscaled score? */
+	tscr += h->score + h->tscore;
+    }
+
+    fprintf (fp, "%s S %d T %d A %d L %d", uttid, scl, tscr, ascr, lscr);
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, " (null)\n");
+    else {
+	for (h = hypptr; h; h = h->next) {
+	    fprintf (fp, " %d %d %d %s", h->sf, h->score, h->tscore,
+		     mdef_ciphone_str(kbc->mdef, h->ci));
+	}
+	fprintf (fp, " %d\n", nfrm);
+    }
+    
+    fflush (fp);
+}
+
+/* Write hypothesis in old (pre-Nov95) NIST format */
+static void allphone_log_hypstr (FILE *fp, phseg_t *hypptr, char *uttid)
+{
+    phseg_t *h;
+    
+    if (! hypptr)	/* HACK!! */
+	fprintf (fp, "(null)");
+    
+    for (h = hypptr; h; h = h->next)
+	fprintf (fp, "%s ", mdef_ciphone_str(kbc->mdef, h->ci));
+    fprintf (fp, " (%s)\n", uttid);
+    fflush (fp);
+}
+
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
  */
@@ -416,10 +464,11 @@ static void allphone_sen_active (int32 *senlist, int32 n_sen)
 static void allphone_utt (int32 nfr, char *uttid)
 {
     int32 i;
-    phseg_t *phseg;
     int32 topn;
     int32 w;
     ms_mgau_model_t *msg;        /* Multi-stream multi mixture Gaussian */
+    phseg_t *phseg;
+    int32 scl;
 
     msg=kbcore_ms_mgau(kbc);
     topn=ms_mgau_topn(msg);
@@ -438,12 +487,8 @@ static void allphone_utt (int32 nfr, char *uttid)
 
     allphone_start_utt (uttid);
 
-#if 0
-    /* Also see the old implementation at the bottom of the file */
-
-#endif
-
 #if 1
+    scl =0;
     for(i = 0 ; i < nfr ; i++){
       ptmr_start(&tm_gausen);
       allphone_sen_active(ascr->sen_active,ascr->n_sen);
@@ -451,6 +496,7 @@ static void allphone_utt (int32 nfr, char *uttid)
 					  msg,
 					  kbc->mdef,
 					  feat[i]);
+      scl += senscale[i];
       ptmr_stop (&tm_gausen);
 
       ptmr_start (&tm_allphone);
@@ -470,13 +516,16 @@ static void allphone_utt (int32 nfr, char *uttid)
   write_phseg ((char *) cmd_ln_access ("-phsegdir"), uttid, phseg);
   /* Log recognition output to the standard match and matchseg files */
   if (matchfp)
-    log_hypstr (matchfp, phseg, uttid);
+    allphone_log_hypstr (matchfp, phseg, uttid);
+
+#if 0
   for (h = phseg; h; h = h->next) {
     ascr += h->score;
     lscr += h->tscore;
   }
+#endif
   if (matchsegfp)
-    log_hypseg (uttid, matchsegfp, phseg, nfr, scl);
+    allphone_log_hypseg (uttid, matchsegfp, phseg, nfr, scl);
   
   ptmr_stop (&tm_utt);
   
@@ -497,8 +546,12 @@ static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *ut
 {
   int32 nfr;
   char *cepdir, *cepext;
+  FILE *ctlfp, *mllrctlfp;
+  char *ctlfile, *matchfile, *matchsegfile, *mllrctlfile;
+  char prevmllr[4096]; 
 
-	/* FIX ME: merging is incomplete for this part. */
+#if 1
+/* FIX ME: merging is incomplete for this part. */
   ctlfile = (char *) cmd_ln_access("-ctl");
   if ((ctlfp = fopen (ctlfile, "r")) == NULL)
       E_FATAL("fopen(%s,r) failed\n", ctlfile);
@@ -521,11 +574,13 @@ static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *ut
   } else
     mllrctlfp = NULL;
   prevmllr[0] = '\0';
-  
+
+  /*  
   if (cmd_ln_access("-mllr") != NULL) {
     model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
     strcpy(prevmllr, cmd_ln_access("-mllr"));
-  }
+    }*/
+#endif
 
   cepdir=cmd_ln_str("-cepdir");
   cepext=cmd_ln_str("-cepext");
@@ -549,6 +604,20 @@ static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *ut
   }
 
 }
+
+/*
+ * Write exact hypothesis.  Format
+ *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
+ * where:
+ *   scl = acoustic score scaling for entire utterance
+ *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
+ *   ascr = scaled acoustic score for entire utterance
+ *   lscr = LM score (without lw or wip) for entire utterance
+ *   sf = start frame for word
+ *   wascr = scaled acoustic score for word
+ *   wlscr = LM score (without lw or wip) for word
+ *   ef = end frame for utterance.
+ */
 
 int
 main (int32 argc, char *argv[])
