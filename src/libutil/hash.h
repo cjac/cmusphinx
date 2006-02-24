@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.7  2005/06/22  03:04:01  arthchan2003
- * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ * Revision 1.8  2006/02/24  03:12:46  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed bug 1236322, fixed special character bug.
  * 
+ * Revision 1.7.4.1  2005/07/04 01:53:47  arthchan2003
+ * Added comment on hash.c on how to use hash_t properly.
+ *
+ * Revision 1.7  2005/06/22 03:04:01  arthchan2003
+ * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ *
  * Revision 1.8  2005/05/24 01:10:54  archan
  * Fix a bug when the value only appear in the hash but there is no chain.   Also make sure that prev was initialized to NULL. All success cases were tested, but not tested with the deletion is tested.
  *
@@ -94,6 +100,22 @@
  * 3, this is a reasonable practice because hash table is only used in
  * lookup in initialization or in lookups which is not critical for
  * speed.
+ */
+
+/**
+ * Another note by ARCHAN at 20050703: To use this data structure
+ * properly, it is very important to realize that the users are
+ * required to handle memory allocation of the C-style keys.  The hash
+ * table will not make a copy of the memory allocated for any of the
+ * C-style key. It will not allocate memory for it. It will not delete
+ * memory for it.  As a result, the following code sniplet will cause
+ * memory leak.  
+ *
+ * while (1){
+ * str=(char*)ckd_calloc(str_length,sizeof(char*))
+ * if(hash_enter(ht,str,id)!=id){ printf("fail to add key str %s with val id %d\n",str,id)} 
+ * }
+ *
  */
 
 #ifndef _LIBUTIL_HASH_H_
@@ -242,8 +264,6 @@ glist_t hash_tolist (hash_table_t *h,	/**< In: Hash table from which list is to 
 					 Use 0 if hash_enter_bkey was
 					 used. */
 		    );
-
-
 
 #ifdef __cplusplus
 }

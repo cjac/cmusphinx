@@ -45,9 +45,15 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.5  2005/06/22  03:04:01  arthchan2003
- * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ * Revision 1.6  2006/02/24  03:12:46  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed bug 1236322, fixed special character bug.
  * 
+ * Revision 1.5.4.1  2005/07/14 05:51:20  arthchan2003
+ * Apply patches of 1099844, currently identified it as a hack because it doesn't fully clean up the internal representation of the hash function.
+ *
+ * Revision 1.5  2005/06/22 03:04:01  arthchan2003
+ * 1, Implemented hash_delete and hash_display, 2, Fixed doxygen documentation, 3, Added  keyword.
+ *
  * Revision 1.9  2005/05/25 06:17:53  archan
  * Delete the test code in cmd_ln.c and fixed platform specific code of hash.c
  *
@@ -164,8 +170,20 @@ hash_table_t *hash_new (int32 size, int32 casearg)
  */
 static uint32 key2hash (hash_table_t *h, const char *key)
 {
+
     register const char *cp;
-    register char c;
+
+    /** ARCHAN 20050712: 
+	[1236322] libutil\str2words special character bgu
+	HACK Apply suggested hack of fixing the hash table such that
+	it can work with extended ascii code . This is a hack because
+	the best way to solve it is to make sure all character
+	representation is unsigned character in the first place. (or
+	better unicode.)
+    **/
+
+    /*register char c; */
+    register unsigned char c;
     register int32 s;
     register uint32 hash;
     
