@@ -1,0 +1,39 @@
+acoustic_model_command_line_macro() shared by decode, decode_anytopo, align, allphone, livepretend and livedecode
+log_table_command_line_macro() shared by decode, decode_anytopo, align, allphone, astar, dag, livepretend and livedecode, gausubvq
+-in gausubvq, only log3table was used. 		      
+phoneme_lookahead_command_line_macro() shared by decode, livepretend and livedecode
+histogram_pruning_command_line_macro() shared by decode, livepretend and livedecode
+fast_GMM_computation_command_line_macro() shared by decode, livepretend and livedecode
+
+dictionary_command_line_marco shared by decode, decode_anytopo, align, dag, astar, livepretend and livedecode
+-in align, astar and dag, it was optionally, but now it is compulsory.
+
+langauge_model_command_line_macro() shared by decode, livepretend, livedecode, dag and astar
+
+cepstral_to_feature_command_line_macro() shared by decode, decode_anytopo, align, allphone, livepretend and livedecode
+
+waveform_to_cepstral_command_line_macro() shared by ep, livedecode, livepretend and wave2feat
+livepretend's -samprate change to 16000
+ep had no filter bank type (-fbtype) and no seed setter (-seed)
+Also changed name -srate to -samprate. 
+We need to put -mach_endian (we couldn't because of macro), -whichchan and -nchans into the macro
+
+common_search_beams_command_line_macro() 
+allphone used -wip = 0.7
+-noisepen becomes -fillpen, the default from 0.05 to 0.1
+dag used -wip = 0.65 now becomes 0.7
+changed -noisepen to -fillprob the default changed from 0.05 to 0.1
+
+Change the default of control_file_handling_command_line_macro to
+1000000000, both are quite reasonable but thew new one seems to be
+more closed to the max. 
+
+hypothesis_file_handling_command_line_macro()
+astar needs to change the -match to -hyp
+
+output_lattice_handling_command_line_macro() shared by
+decode/ld/lp/da. da needs to take care of generation -outlatoldfmt.
+
+-utt is deleted in live_pretend
+
+-change mach_endian to machine_endian in main_ep and wave2feat
