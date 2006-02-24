@@ -22,7 +22,7 @@
 	Schemes (4LGC)
 	2, Multiple regression classes an MAP adaptation in SphinxTrain
 	3, Better support in using LM in Sphinx 3.X.  
-	4, FSG search. 
+	4, FSG search is now supported. This is adapted from Sphinx 2. 
 	5, Support of full triphone search in flat lexicon search. 
 	6, Some support of different character sets other than of
 	Sphinx 3.X.  Models in multiple languages are now tested in
