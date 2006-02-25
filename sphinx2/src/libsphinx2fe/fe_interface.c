@@ -81,7 +81,7 @@ void fe_init_params(param_t *P)
     P->FB_TYPE = DEFAULT_FB_TYPE;
     P->nskip   = -1;
     P->runlen  = -1;
-    P->seed = atoi(SEED);
+    P->seed = SEED;
 }
 
 
