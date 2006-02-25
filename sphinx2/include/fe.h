@@ -49,82 +49,84 @@ extern "C" {
 #endif
 
     typedef struct{
-	float32 SAMPLING_RATE;
-	int32 FRAME_RATE;
-	float32 WINDOW_LENGTH;
-	int32 FB_TYPE;
-	int32 NUM_CEPSTRA;
-	int32 NUM_FILTERS;
-	int32 FFT_SIZE;
-	float32 LOWER_FILT_FREQ;
-	float32 UPPER_FILT_FREQ;
-	float32 PRE_EMPHASIS_ALPHA;
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        float32 WINDOW_LENGTH;
+        int32 FB_TYPE;
+        int32 NUM_CEPSTRA;
+        int32 NUM_FILTERS;
+        int32 FFT_SIZE;
+        float32 LOWER_FILT_FREQ;
+        float32 UPPER_FILT_FREQ;
+        float32 PRE_EMPHASIS_ALPHA;
 
-	char *warp_type;
-	char *warp_params;
+        char *warp_type;
+        char *warp_params;
 
-	char *wavfile;
-	char *cepfile;
-	char *ctlfile;
-	int32 nskip;
-	int32 runlen;
-	char *wavdir;
-	char *cepdir;
-	char *wavext;
-	char *cepext;
-	int32 input_format;
-	int32 is_batch;
-	int32 is_single;
-	int32 blocksize;
-	int32 verbose;
-	int32 machine_endian;
-	int32 input_endian;
-	int32 output_endian;
-	int32 dither;
-	int32 logspec;
-	int32 doublebw;
-	int32 nchans;
-	int32 whichchan;
+        char *wavfile;
+        char *cepfile;
+        char *ctlfile;
+        int32 nskip;
+        int32 runlen;
+        char *wavdir;
+        char *cepdir;
+        char *wavext;
+        char *cepext;
+        int32 input_format;
+        int32 is_batch;
+        int32 is_single;
+        int32 blocksize;
+        int32 verbose;
+        int32 machine_endian;
+        int32 input_endian;
+        int32 output_endian;
+        int32 dither;
+        int32 seed;
+        int32 logspec;
+        int32 doublebw;
+        int32 nchans;
+        int32 whichchan;
     } param_t;
 
 
     typedef struct{
-	float32 sampling_rate;
-	int32 num_cepstra;
-	int32 num_filters;
-	int32 fft_size;
-	float32 lower_filt_freq;
-	float32 upper_filt_freq;
-	float32 **filter_coeffs;
-	float32 **mel_cosine;
-	float32 *left_apex;
-	int32 *width;
-	int32 doublewide;
-	char *warp_type;
-	char *warp_params;
+        float32 sampling_rate;
+        int32 num_cepstra;
+        int32 num_filters;
+        int32 fft_size;
+        float32 lower_filt_freq;
+        float32 upper_filt_freq;
+        float32 **filter_coeffs;
+        float32 **mel_cosine;
+        float32 *left_apex;
+        int32 *width;
+        int32 doublewide;
+        char *warp_type;
+        char *warp_params;
     } melfb_t;
 
 
     typedef struct{
-	float32 SAMPLING_RATE;
-	int32 FRAME_RATE;
-	int32 FRAME_SHIFT;
-	float32 WINDOW_LENGTH;
-	int32 FRAME_SIZE;
-	int32 FFT_SIZE;
-	int32 FB_TYPE;
-	int32 LOG_SPEC;
-	int32 NUM_CEPSTRA;
-	int32 FEATURE_DIMENSION;
-	int32 dither;
-	float32 PRE_EMPHASIS_ALPHA;
-	int16 *OVERFLOW_SAMPS;
-	int32 NUM_OVERFLOW_SAMPS;    
-	melfb_t *MEL_FB;
-	int32 START_FLAG;
-	int16 PRIOR;
-	float64 *HAMMING_WINDOW;
-	int32 FRAME_COUNTER;
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        int32 FRAME_SHIFT;
+        float32 WINDOW_LENGTH;
+        int32 FRAME_SIZE;
+        int32 FFT_SIZE;
+        int32 FB_TYPE;
+        int32 LOG_SPEC;
+        int32 NUM_CEPSTRA;
+        int32 FEATURE_DIMENSION;
+        int32 dither;
+        int32 seed;
+        float32 PRE_EMPHASIS_ALPHA;
+        int16 *OVERFLOW_SAMPS;
+        int32 NUM_OVERFLOW_SAMPS;    
+        melfb_t *MEL_FB;
+        int32 START_FLAG;
+        int16 PRIOR;
+        float64 *HAMMING_WINDOW;
+        int32 FRAME_COUNTER;
     } fe_t;
 
 /* Struct to hold the front-end parameters */
@@ -174,13 +176,15 @@ extern "C" {
 
 #define NB_SAMPLING_RATE 8000
 #define DEFAULT_NB_FFT_SIZE 256 /* NOTE!  In actual fact we will
-				   default to 512, because this is
-				   what SphinxTrain will do.  See
-				   fbs_main.c:query_fe_params() */
+                                   default to 512, because this is
+                                   what SphinxTrain will do.  See
+                                   fbs_main.c:query_fe_params() */
 #define DEFAULT_NB_FRAME_SHIFT 80
 #define DEFAULT_NB_NUM_FILTERS 31
 #define DEFAULT_NB_LOWER_FILT_FREQ 200
 #define DEFAULT_NB_UPPER_FILT_FREQ 3500
+
+#define SEED  -1
 
 #define FE_SUCCESS 0
 #define FE_OUTPUT_FILE_SUCCESS 0
@@ -195,9 +199,10 @@ extern "C" {
 #define FE_ZERO_ENERGY_ERROR 9
 
 #define DEFAULT_BLOCKSIZE 200000
-#define DITHER  OFF
 
 /* Interface */
+    void fe_init_params(param_t *P);
+
     fe_t *fe_init(param_t const *P);
 
     int32 fe_start_utt(fe_t *FE);
@@ -218,11 +223,26 @@ extern "C" {
  * fe.h
  * 
  * $Log$
- * Revision 1.15  2006/02/20  23:59:52  egouvea
+ * Revision 1.16  2006/02/25  01:18:55  egouvea
+ * Sync'ing wiht SphinxTrain.
+ * 
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.15  2006/02/20 23:59:52  egouvea
  * Moved fe_dither() from the app (wave2feat) to the library, so it can
  * be used by other applications as well. Added "-dither" as an option to
  * sphinx2.
- * 
+ *
  * Revision 1.14  2006/02/18 00:11:00  egouvea
  * Closing bracket if __cplusplus defined.
  *

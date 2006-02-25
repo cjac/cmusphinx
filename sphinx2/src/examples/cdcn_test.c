@@ -84,7 +84,7 @@ int main (int32 argc, char *argv[])
     assert (adcin);	/* Limited to processing audio input files (not cep) */
     sps = query_sampling_rate();
 
-    memset(&param, 0, sizeof(param));
+    fe_init_params(&param);
     param.SAMPLING_RATE = (float)sps;
 
     if ((fe = fe_init (&param)) == NULL)

@@ -564,6 +564,7 @@ void fe_parse_general_params(param_t const *P, fe_t *FE)
         FE->FB_TYPE = DEFAULT_FB_TYPE;
 
     FE->dither = P->dither;
+    FE->seed = P->seed;
 
     if (P->PRE_EMPHASIS_ALPHA != 0) 
         FE->PRE_EMPHASIS_ALPHA = P->PRE_EMPHASIS_ALPHA;
@@ -689,6 +690,7 @@ void fe_print_current(fe_t const *FE)
     E_INFO("\tStart Utt Status:          %d\n", FE->START_FLAG);
     if (FE->dither) {
         E_INFO("Will add dither to audio\n");
+        E_INFO("Dither seeded with %d\n", FE->seed);
     } else {
         E_INFO("Will not add dither to audio\n");
     }

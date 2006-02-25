@@ -46,11 +46,26 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.29  2006/02/20  23:59:52  egouvea
+ * Revision 1.30  2006/02/25  01:18:56  egouvea
+ * Sync'ing wiht SphinxTrain.
+ * 
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.29  2006/02/20 23:59:52  egouvea
  * Moved fe_dither() from the app (wave2feat) to the library, so it can
  * be used by other applications as well. Added "-dither" as an option to
  * sphinx2.
- * 
+ *
  * Revision 1.28  2005/12/13 17:04:13  rkm
  * Added confidence reporting in nbest files; fixed some backtrace bugs
  *
@@ -542,6 +557,7 @@ static int32 n_mel_filt;
 static float lower_filt = -1.0f; /* Someone might want this to be zero. */
 static float upper_filt = 0.0f;
 static int32 dither = FALSE;
+static int32 seed = SEED;
 static float pre_emphasis_alpha = 0.0f;
 static int32 frame_rate;
 static int32 n_fft;
@@ -936,6 +952,9 @@ config_t param[] = {
 
 	{ "UseDither", "Add dither to the incoming audio", "-dither",
 		BOOL, (caddr_t) &dither }, 
+
+	{ "Seed", "Seed the random number generator when using dither; if less than zero, use own seed", "-seed",
+		INT, (caddr_t) &seed }, 
 
 	{ "RawLogDir", "Log directory for raw output files)", "-rawlogdir",
 		STRING, (caddr_t) &rawlogdir }, 
@@ -2318,6 +2337,7 @@ void query_fe_params(param_t *param)
 	 * everywhere. */
 	param->FFT_SIZE = DEFAULT_FFT_SIZE;
 	param->dither = dither;
+	param->seed = seed;
 	param->doublebw = doublebw;
 	if (verbosity_level < 1) {
  	    param->verbose = 0;

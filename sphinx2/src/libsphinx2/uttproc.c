@@ -43,23 +43,38 @@
  * 		(Currently, needs compute-all-senones for this to work.)
  * 
  * $Log$
- * Revision 1.29  2006/02/17  00:49:58  egouvea
+ * Revision 1.30  2006/02/25  01:18:56  egouvea
+ * Sync'ing wiht SphinxTrain.
+ * 
+ * Added the flag "-seed". If dither is being used and the seed is less
+ * than zero, the random number generator is initialized with time(). If
+ * it is at least zero, it's initialized with the provided seed. This way
+ * we have the benefit of having dither, and the benefit of being
+ * repeatable.
+ * 
+ * This is consistent with what sphinx3 does. Well, almost. The random
+ * number generator is still what the compiler provides.
+ * 
+ * Also, moved fe_init_params to fe_interface.c, so one can initialize a
+ * variable of type param_t with meaningful values.
+ * 
+ * Revision 1.29  2006/02/17 00:49:58  egouvea
  * Yet another attempt at synchronizing the front end code between
  * SphinxTrain and sphinx2.
- * 
+ *
  * Added support for warping functions.
- * 
+ *
  * Replaced some fprintf() followed by exit() with E_WARN and return() in
  * functions that had a non void return type.
- * 
+ *
  * Set return value to FE_ZERO_ENERGY_ERROR if the energy is zero in a
  * frame, allowing the application to do something (currently, uttproc
  * and raw2cep simply print a message.
- * 
+ *
  * Warning: the return value in fe_process_utt() and fe_end_utt()
  * required a change in the API (the return value has a different meaning
  * now).
- * 
+ *
  * Revision 1.28  2006/02/09 22:48:38  egouvea
  * Fixed computation of max file size allowed. It was using FRAME_RATE
  * instead of FRAME_SHIFT (i.e. SAMPLING_RATE / FRAME_RATE) to compute
@@ -1067,6 +1082,7 @@ int32 uttproc_init ( void )
         return -1;
     }
     
+    fe_init_params(&fe_param);
     query_fe_params(&fe_param);
     fe = fe_init(&fe_param);
 

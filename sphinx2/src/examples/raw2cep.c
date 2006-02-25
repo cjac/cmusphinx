@@ -307,7 +307,7 @@ main (int32 argc, char **argv)
 	param_t param;
 	float *mfcp;
 
-	memset(&param, 0, sizeof(param));
+	fe_init_params(&param);
 	param.SAMPLING_RATE = (float)sps;
 
 	if ((fe = fe_init (&param)) == NULL)
