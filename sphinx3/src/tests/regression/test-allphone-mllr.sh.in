@@ -2,7 +2,7 @@
 tmpout="test-allphone-mllr.out"
 
 #we used -agc max. Beware that this is an exception. 
-echo "ALLPHONE+MLLR TEST"
+echo "ALLPHONE+MLLR PHONE TG TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone \
@@ -24,6 +24,6 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -phsegdir ./ \
 -phlatdir ./
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.mllr.allp > /dev/null 2>&1); \
-then echo "ALLPHONE+MLLR allp test PASSED"; else \
-echo "ALLPHONE+MLLR allp test FAILED"; fi
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.allp > /dev/null 2>&1); \
+then echo "ALLPHONE+MLLR PHONE TG allp test PASSED"; else \
+echo "ALLPHONE+MLLR PHONE TG allp test FAILED"; fi
