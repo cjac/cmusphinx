@@ -69,12 +69,9 @@ test-full : \
 	test-decode-mllr \
 	test-decode-s3cont \
 	test-decode-lts \
-	test-decode-noncomp \
 	test-decode-mode3 \
 	test-decode-mode3-mulmpx \
 	test-decode-mode3-mpx \
-	test-decode-mode5 \
-	test-decode-mode5-noncomp \
 	test-decode-2ndstage \
 	test-align \
 	test-align-mllr \
@@ -94,6 +91,10 @@ test-full : \
 	test-decode_anytopo-mllr \
 	test-decode_anytopo-2ndstage \
 	test-wave2feat 
+
+#	test-decode-noncomp \
+#	test-decode-mode5 \
+#	test-decode-mode5-noncomp 
 
 test-all-app : test-full test-wave2feat
 
