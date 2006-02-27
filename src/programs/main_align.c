@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.18  2006/02/24  18:30:20  arthchan2003
- * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ * Revision 1.19  2006/02/27  15:58:16  arthchan2003
+ * Fixed align, which I forgot to apply regression matrix there.  Luckily, it is detected by make check.
  * 
+ * Revision 1.18  2006/02/24 18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ *
  * Revision 1.17  2006/02/24 03:59:44  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Changed commands to macro, Used ctl_process from now on.
  *
@@ -864,7 +867,6 @@ static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid
   /* UGLY! */
   /* Read utterance transcript and match it with the control file. */
   if (fgets (sent, sizeof(sent), sentfp) == NULL) {
-    E_INFO("%s\n",sent);
     E_FATAL("EOF(%s) of the transcription\n", sentfile);
   }
   /*  E_INFO("SENT %s\n",sent);*/
@@ -893,7 +895,9 @@ static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid
   nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
   assert(kbc->ms_mgau);
-  if(ur->regmatname) model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
+  if(ur->regmatname) {
+    model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
+  }
 
   if (nfr <= 0){
     if (cepdir != NULL) {
