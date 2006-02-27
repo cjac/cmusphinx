@@ -44,9 +44,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.18  2006/02/24  16:42:21  arthchan2003
- * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
+ * Revision 1.19  2006/02/27  16:18:29  arthchan2003
+ * Fixed allphone, 1, matchfile and matchsegfile were not generated correctly.  Now is fixed.  2, also added back apply mllr at the beginning of an utterance.
  * 
+ * Revision 1.18  2006/02/24 16:42:21  arthchan2003
+ * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
+ *
  * Revision 1.17  2006/02/24 13:43:43  arthchan2003
  * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
  *
@@ -181,36 +184,56 @@ static arg_t defn[] = {
       ARG_FLOAT64,
       "1e-64",
       "Main pruning beam applied during search" },
-    { "-wip",
-      ARG_FLOAT32,
-      "0.05",
-      "Phone insertion penalty (applied above phone transition probabilities)" },
 
-  /* allphone-specific arguments */
-    { "-phonetp",
-      ARG_STRING,
-      NULL,
-      "Phone transition probabilities inputfile (default: flat probs)" },
-    { "-phonetpfloor",
-      ARG_FLOAT32,
-      "0.00001",
-      "Floor for phone transition probabilities" },
-    { "-phonetpwt",
-      ARG_FLOAT32,
-      "3.0",
-      "Weight (exponent) applied to phone transition probabilities" },
-    { "-phsegdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for phone segmentation files; optionally end with ,CTL" },
-    { "-phlatbeam",
-      ARG_FLOAT64,
-      "1e-20",
-      "Pruning beam for writing phone lattice" },
-    { "-phlatdir",
-      ARG_STRING,
-      NULL,
-      "Output directory for phone lattice files" },
+   /* allphone-specific arguments */
+     { "-phonetp",
+       ARG_STRING,
+       NULL,
+       "Phone transition probabilities inputfile (default: flat probs)" },
+     { "-phonetpfloor",
+       ARG_FLOAT32,
+       "0.00001",
+       "Floor for phone transition probabilities" },
+     { "-phonetpwt",
+       ARG_FLOAT32,
+       "3.0",
+       "Weight (exponent) applied to phone transition probabilities" },
+     { "-phsegdir",
+       ARG_STRING,
+       NULL,
+       "Output directory for phone segmentation files; optionally end with ,CTL" },
+     { "-phlatbeam",
+       ARG_FLOAT64,
+       "1e-20",
+       "Pruning beam for writing phone lattice" },
+     { "-phlatdir",
+       ARG_STRING,
+       NULL,
+       "Output directory for phone lattice files" },
+
+   /*This should be replaced by language_model_command_line_macro(), 
+     but we just merged so let us do it later. */
+     { "-lm", 
+       ARG_STRING, 
+      NULL, 
+      "Word trigram language model input file" }, 
+    { "-lminmemory", 
+      ARG_INT32,
+      "0",
+      "Load language model into memory (default: use disk cache for lm"},
+
+  
+  /*This should be replaced by common_filler_properties_command_line_macro()     
+   */
+    { "-wip", 
+      ARG_FLOAT32, 
+      "0.05", 
+      "Word insertion penalty" }, 
+    { "-uw", 
+      ARG_FLOAT32, 
+      "0.7",
+      "Unigram weight" }, 
+
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -233,6 +256,8 @@ static int32 tot_nfr;
 static ptmr_t tm_utt;
 static ptmr_t tm_gausen;
 static ptmr_t tm_allphone;
+
+static char *matchfile, *matchsegfile;
 
 /* File handles for match and hypseg files */
 static FILE *matchfp, *matchsegfp;
@@ -277,8 +302,9 @@ static void allphone_log_hypstr (FILE *fp, phseg_t *hypptr, char *uttid)
     if (! hypptr)	/* HACK!! */
 	fprintf (fp, "(null)");
     
-    for (h = hypptr; h; h = h->next)
+    for (h = hypptr; h; h = h->next){
 	fprintf (fp, "%s ", mdef_ciphone_str(kbc->mdef, h->ci));
+    }
     fprintf (fp, " (%s)\n", uttid);
     fflush (fp);
 }
@@ -546,41 +572,6 @@ static void utt_allphone(void *data, utt_res_t *ur, int32 sf, int32 ef, char *ut
 {
   int32 nfr;
   char *cepdir, *cepext;
-  FILE *ctlfp, *mllrctlfp;
-  char *ctlfile, *matchfile, *matchsegfile, *mllrctlfile;
-  char prevmllr[4096]; 
-
-#if 1
-/* FIX ME: merging is incomplete for this part. */
-  ctlfile = (char *) cmd_ln_access("-ctl");
-  if ((ctlfp = fopen (ctlfile, "r")) == NULL)
-      E_FATAL("fopen(%s,r) failed\n", ctlfile);
-  if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-    matchfp = NULL;
-  } else {
-    if ((matchfp = fopen (matchfile, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", matchfile);
-  }
-  if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
-    matchsegfp = NULL;
-  } else {
-    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-  }
-  
-  if ((mllrctlfile = (char *) cmd_ln_access("-mllrctl")) != NULL) {
-    if ((mllrctlfp = fopen (mllrctlfile, "r")) == NULL)
-      E_FATAL("fopen(%s,r) failed\n", mllrctlfile);
-  } else
-    mllrctlfp = NULL;
-  prevmllr[0] = '\0';
-
-  /*  
-  if (cmd_ln_access("-mllr") != NULL) {
-    model_set_mllr(cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"));
-    strcpy(prevmllr, cmd_ln_access("-mllr"));
-    }*/
-#endif
 
   cepdir=cmd_ln_str("-cepdir");
   cepext=cmd_ln_str("-cepext");
@@ -638,10 +629,26 @@ main (int32 argc, char *argv[])
   printf ("\n");
   
   assert(kbc->ms_mgau);
-  if (cmd_ln_access("-mllr") != NULL) 
-    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
 
   tot_nfr = 0;
+
+
+  if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
+    matchfp = NULL;
+  } else {
+    if ((matchfp = fopen (matchfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchfile);
+  }
+  if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
+    matchsegfp = NULL;
+  } else {
+    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
+      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+  }
+
+
+  if (cmd_ln_access("-mllr") != NULL) 
+    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
 
   if (cmd_ln_str ("-ctl")) {
     /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
@@ -673,7 +680,12 @@ main (int32 argc, char *argv[])
     ascr_free(ascr);
   }
 
-  
+  if(matchfp!=NULL)
+    fclose(matchfp);
+
+  if(matchsegfp!=NULL)
+    fclose(matchsegfp);
+
 #if (! WIN32)
   system ("ps aguxwww | grep s3allphone");
 #endif
