@@ -1,29 +1,29 @@
 	 SFrm  EFrm   SegAScr Phone
-	    0    43  -1342113 SIL
-	   44    68  -1119863 SIL
-	   69    76   -339957 P SIL IY b
-	   77    92    132278 IY P AY e
-	   93   104     56729 AY IY T s
-	  105   123  -1157049 T AY IY b
-	  124   128   -273922 IY T SIL e
-	  129   131   -155458 SIL
-	  132   139   -227749 T SIL IY b
-	  140   148      9109 IY T SIL e
-	  149   151    -98307 SIL
-	  152   162     75502 EH SIL S b
-	  163   174   -531295 S EH SIL e
-	  175   191  -1203214 SIL
-	  192   194   -147362 B SIL IY b
-	  195   201    209397 IY B SIL e
-	  202   208    128022 SIL
-	  209   216   -141869 Y SIL UW b
-	  217   227   -532422 UW Y AA e
-	  228   240   -906075 AA UW R b
-	  241   246   -781509 R AA JH e
-	  247   255   -422069 JH R IY b
-	  256   268   -381558 IY JH SIL e
-	  269   277   -103266 SIL
-	  278   280   -151011 EY SIL CH b
-	  281   303  -1258853 CH EY SIL e
-	  304   328  -1204599 SIL
- Total score:   -11868483
+	    0    43  -1341661 SIL
+	   44    68  -1119520 SIL
+	   69    76   -339918 P SIL IY b
+	   77    92    132864 IY P AY e
+	   93   104     56366 AY IY T s
+	  105   123  -1157103 T AY IY b
+	  124   128   -274020 IY T SIL e
+	  129   131   -155414 SIL
+	  132   139   -227795 T SIL IY b
+	  140   148      8748 IY T SIL e
+	  149   151    -98394 SIL
+	  152   162     74818 EH SIL S b
+	  163   174   -531211 S EH SIL e
+	  175   191  -1202976 SIL
+	  192   194   -147429 B SIL IY b
+	  195   201    208859 IY B SIL e
+	  202   208    128159 SIL
+	  209   216   -141650 Y SIL UW b
+	  217   227   -532088 UW Y AA e
+	  228   240   -906715 AA UW R b
+	  241   246   -781568 R AA JH e
+	  247   255   -422315 JH R IY b
+	  256   268   -382749 IY JH SIL e
+	  269   277   -103436 SIL
+	  278   280   -150998 EY SIL CH b
+	  281   303  -1258556 CH EY SIL e
+	  304   328  -1204266 SIL
+ Total score:   -11869968
