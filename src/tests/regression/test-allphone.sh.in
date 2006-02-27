@@ -25,18 +25,18 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -phsegdir ./ \
 -phlatdir ./
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
-then echo "ALLPHONE allp test PASSED"; else \
-echo "ALLPHONE allp test FAILED"; fi
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE TG allp test PASSED"; else \
+echo "ALLPHONE PHONE TG allp test FAILED"; fi
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
-then echo "ALLPHONE phlat test PASSED"; else \
-echo "allphone phlat test FAILED"; fi
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.phlat > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE TG phlat test PASSED"; else \
+echo "allphone PHONE TG phlat test FAILED"; fi
 
-if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.match > /dev/null 2>&1); \
-then echo "ALLPHONE match test PASSED"; else \
-echo "ALLPHONE match test FAILED"; fi
+if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.match > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE TG match test PASSED"; else \
+echo "ALLPHONE PHONE TG match test FAILED"; fi
 
-if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.matchseg > /dev/null 2>&1); \
-then echo "ALLPHONE matchseg test PASSED"; else \
-echo "ALLPHONE matchseg test FAILED"; fi
+if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.matchseg > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE TG 1matchseg test PASSED"; else \
+echo "ALLPHONE PHONE TG matchseg test FAILED"; fi
