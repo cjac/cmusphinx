@@ -45,9 +45,13 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.14  2006/02/24  13:38:08  arthchan2003
- * Added lm_read, it is a simple version of lm_read_advance.
+ * Revision 1.15  2006/02/28  22:26:51  egouvea
+ * Moved definition of lm_wid() outside of the #if 0/#endif block, so
+ * it's declared.
  * 
+ * Revision 1.14  2006/02/24 13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ *
  * Revision 1.13  2006/02/23 04:16:29  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
  * Splited the original lm.c into five parts,
@@ -663,11 +667,11 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		     int32 *bowt	/**< Out: *bowt = backoff-weight associated with w */
 		     );
 
+#endif
+
 /* Return LM word ID for the given string, or BAD_S3LMWID if not available */
   s3lmwid_t lm_wid (lm_t *lm, char *wd);
 
-
-#endif
 
   /**
  * Like lm_bg_wordprob, but for unigrams.
