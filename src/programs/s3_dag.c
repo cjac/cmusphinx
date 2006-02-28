@@ -46,12 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2006/02/28  02:06:47  egouvea
+ * Revision 1.10  2006/02/28  22:28:36  egouvea
+ * Renamed functions so they don't coincide with ones in libsearch.
+ * 
+ * Revision 1.9  2006/02/28 02:06:47  egouvea
  * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
  * compile in Visual C++ (declarations didn't match, etc). There are
  * still some warnings, so this is not final. Also, sorted files in
  * several Makefile.am.
- * 
+ *
  * Revision 1.8  2006/01/17 20:57:53  dhdfu
  * Make sure we don't doubly-free hyp if bestpath search fails (which it sometimes does due to -min_endfr pruning out crucial nodes...)
  *
@@ -183,7 +186,7 @@ void s3_dag_init (dict_t* _dict )
  * dag.list ensures that succeeding fillers have already been eliminated.
  * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
-static int32 dag_remove_filler_nodes ( void )
+static int32 s3_dag_remove_filler_nodes ( void )
 {
     dagnode_t *d, *pnode, *snode;
     daglink_t *plink, *slink;
@@ -234,7 +237,7 @@ static int32 dag_remove_filler_nodes ( void )
  * absurdum.
  * Return value: 0 if successful, -1 otherwise.
  */
-int32 s3dag_dag_load (char *file)
+int32 s3_dag_dag_load (char *file)
 {
     FILE *fp;
     char line[16384], wd[1024];
@@ -544,7 +547,7 @@ int32 s3dag_dag_load (char *file)
 	dag.final.node->wid = finishwid;
     
     /* Add links bypassing filler nodes */
-    if (dag_remove_filler_nodes () < 0) {
+    if (s3_dag_remove_filler_nodes () < 0) {
 	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag.maxedge);
 	return -1;
     }
@@ -647,7 +650,7 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     l->ef = dag.nfrm - 1;
     
     /* Backtrack through DAG for best path */
-    hyp = dag_backtrace (hyp,l,1,dict,fpen);
+    hyp = dag_backtrace (&hyp,l,1,dict,fpen);
     assert(hyp);
     if(hyp==NULL){
       E_INFO("At this point hyp is NULL\n");

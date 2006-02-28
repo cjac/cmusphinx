@@ -47,9 +47,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.7  2005/06/22  08:00:10  arthchan2003
- * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ * Revision 1.8  2006/02/28  22:28:36  egouvea
+ * Renamed functions so they don't coincide with ones in libsearch.
  * 
+ * Revision 1.7  2005/06/22 08:00:10  arthchan2003
+ * Completed all doxygen documentation on file description for libs3decoder/libutil/libs3audio and programs.
+ *
  * Revision 1.6  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -103,7 +106,7 @@
 #include "dict.h"
 
 srch_hyp_t *s3dag_dag_search (char *utt);
-int32 s3dag_dag_load (char *file);
+int32 s3_dag_dag_load (char *file);
 void s3_dag_init (dict_t* _dict);
 
 #endif
