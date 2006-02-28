@@ -5,20 +5,20 @@ noinst_LTLIBRARIES = libdict.la
 libdict_la_LDFLAGS = -version-info 0:4:0
 
 libdict_la_SOURCES = \
-	dict2pid.c \
-	dict.c \
-	wid.c \
-	lts.c \
+	cmu6_lts_rules.c \
 	ctxt_table.c \
-	cmu6_lts_rules.c
+	dict.c \
+	dict2pid.c \
+	lts.c \
+	wid.c
 
 pkginclude_HEADERS = \
-	dict2pid.h \
-	dict.h \
-	wid.h \
-	lts.h \
+	cmu6_lts_rules.h \
 	ctxt_table.h \
-	cmu6_lts_rules.h
+	dict.h \
+	dict2pid.h \
+	lts.h \
+	wid.h
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \

@@ -46,9 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2006/02/23  05:22:32  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
+ * Revision 1.3  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.2  2006/02/23 05:22:32  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
+ *
  * Revision 1.1.4.8  2006/02/17 19:27:37  arthchan2003
  * Fixed a conformance issue of dag.c, this will transform the word to its basewid, in computing LM.
  *
@@ -145,6 +151,9 @@
  * 		Started.
  */
 
+#if defined(WIN32)
+#include <direct.h>
+#endif
 #include "dag.h"
 #include "vithist.h"
 

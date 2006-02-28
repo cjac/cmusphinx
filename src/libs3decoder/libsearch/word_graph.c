@@ -46,9 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2006/02/23  05:15:12  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Word graphs with word attached to links. Now mainly used in conversion from Sphinx to IBM format
+ * Revision 1.3  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.2  2006/02/23 05:15:12  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Word graphs with word attached to links. Now mainly used in conversion from Sphinx to IBM format
+ *
  * Revision 1.1.2.2  2006/01/16 20:17:43  arthchan2003
  * Add flags whether scale to be computed. fixed the arguments in lm_rawscore.
  *
@@ -62,6 +68,7 @@
 #include <dag.h>
 #include <s3types.h>
 #include "word_graph.h"
+#include "srch_output.h"
 
 
 void word_graph_dump(char *dir, char *id, char *latfile_ext, dag_t *dag, dict_t *dict, lm_t *lm, int32 *senscale)

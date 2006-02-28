@@ -48,17 +48,17 @@ int srch_debug_init(kb_t *kb, void* srch)
   E_INFOCONT("SEARCH DEBUG: MODE INITIALIZATION \n");
   return SRCH_SUCCESS;
 }
-int srch_debug_uninit()
+int srch_debug_uninit(void* srch)
 {
   E_INFOCONT("SEARCH DEBUG: MODE UNINITIALIZATION \n");
   return SRCH_SUCCESS;
 }
-int srch_debug_begin()
+int srch_debug_begin(void* srch)
 {
   E_INFOCONT("SEARCH DEBUG: MODE UTT BEGIN\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_end()
+int srch_debug_end(void* srch)
 {
   E_INFOCONT("SEARCH DEBUG: MODE UTT END\n");
   return SRCH_SUCCESS;
@@ -68,7 +68,7 @@ int srch_debug_decode()
   E_INFOCONT("SEARCH DEBUG: MODE UTT DECODE\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_set_lm()
+int srch_debug_set_lm(void* srch, const char *lmname)
 {
   E_INFOCONT("SEARCH DEBUG: MODE SET LM\n");
   return SRCH_SUCCESS;
@@ -79,37 +79,37 @@ int srch_debug_gmm_compute_lv1(void *srch, float32 *feat, int32 cache_idx, int32
 
   return SRCH_SUCCESS;
 }
-int srch_debug_gmm_compute_lv2(void *srch, float32 *feat, int32 wav_idx)
+int srch_debug_gmm_compute_lv2(void *srch, float32 **feat, int32 wav_idx)
 {
   E_INFOCONT("SEARCH DEBUG: DETAIL COMPUTATION AT TIME %d\n",wav_idx);
   return SRCH_SUCCESS;
 }
-int srch_debug_hmm_compute_lv1()
+int srch_debug_hmm_compute_lv1(void* srch)
 {
   E_INFOCONT("SEARCH DEBUG: HMM COMPUTE LV 1\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_hmm_compute_lv2()
+int srch_debug_hmm_compute_lv2(void *srch, int32 wav_idx)
 {
   E_INFOCONT("SEARCH DEBUG: HMM COMPUTE LV 2\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_propagate_graph_ph_lv1()
+int srch_debug_propagate_graph_ph_lv1(void *srch)
 {
   E_INFOCONT("SEARCH DEBUG: HMM PROPAGATE GRAPH (PHONEME) LV 1\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_propagate_graph_wd_lv1()
+int srch_debug_propagate_graph_wd_lv1(void *srch)
 {
   E_INFOCONT("SEARCH DEBUG: HMM PROPAGATE GRAPH (WORD) LV 1\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_propagate_graph_ph_lv2()
+int srch_debug_propagate_graph_ph_lv2(void *srch, int32 wav_idx)
 {
   E_INFOCONT("SEARCH DEBUG: HMM PROPAGATE GRAPH (PHONEME) LV 2\n");
   return SRCH_SUCCESS;
 }
-int srch_debug_propagate_graph_wd_lv2()
+int srch_debug_propagate_graph_wd_lv2(void *srch, int32 wav_idx)
 {
   E_INFOCONT("SEARCH DEBUG: HMM PROPAGATE GRAPH (WORD) LV 2\n");
   return SRCH_SUCCESS;

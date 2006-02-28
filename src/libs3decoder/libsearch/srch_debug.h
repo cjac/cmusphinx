@@ -38,9 +38,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2006/02/23  15:50:25  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc, Added empty functions into srch_debug.[ch]
+ * Revision 1.3  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.2  2006/02/23 15:50:25  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Fixed dox-doc, Added empty functions into srch_debug.[ch]
+ *
  * Revision 1.1.4.1  2006/01/16 20:02:08  arthchan2003
  * Added interfaces for second stage operations
  *
@@ -72,22 +78,22 @@
 
 
 int srch_debug_init(kb_t *kb,void* srch);
-int srch_debug_uninit();
-int srch_debug_begin();
-int srch_debug_end();
+int srch_debug_uninit(void* srch);
+int srch_debug_begin(void* srch);
+int srch_debug_end(void* srch);
 int srch_debug_decode();
-int srch_debug_set_lm();
-int srch_debug_gmm_compute_lv1();
-int srch_debug_gmm_compute_lv2();
-int srch_debug_hmm_compute_lv1();
-int srch_debug_hmm_compute_lv2();
-int srch_debug_eval_beams_lv1 (void* srch_struct);
-int srch_debug_eval_beams_lv2 (void* srch_struct);
+int srch_debug_set_lm(void* srch, const char *lmname);
+int srch_debug_gmm_compute_lv1(void *srch, float32 *feat, int32 cache_idx, int32 wav_idx);
+int srch_debug_gmm_compute_lv2(void *srch, float32 **feat, int32 wav_idx);
+int srch_debug_hmm_compute_lv1(void* srch);
+int srch_debug_hmm_compute_lv2(void *srch, int32 wav_idx);
+int srch_debug_eval_beams_lv1 (void* srch);
+int srch_debug_eval_beams_lv2 (void* srch);
 
-int srch_debug_propagate_graph_ph_lv1();
-int srch_debug_propagate_graph_wd_lv1();
-int srch_debug_propagate_graph_ph_lv2();
-int srch_debug_propagate_graph_wd_lv2();
+int srch_debug_propagate_graph_ph_lv1(void* srch);
+int srch_debug_propagate_graph_wd_lv1(void* srch);
+int srch_debug_propagate_graph_ph_lv2(void *srch, int32 wav_idx);
+int srch_debug_propagate_graph_wd_lv2(void *srch, int32 wav_idx);
 
 int srch_debug_compute_heuristic(void *srch, int32 win_efv);
 int srch_debug_frame_windup(void *srch_struct,int32 frmno);

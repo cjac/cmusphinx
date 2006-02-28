@@ -46,9 +46,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2006/01/17  20:57:53  dhdfu
- * Make sure we don't doubly-free hyp if bestpath search fails (which it sometimes does due to -min_endfr pruning out crucial nodes...)
+ * Revision 1.9  2006/02/28  02:06:47  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.8  2006/01/17 20:57:53  dhdfu
+ * Make sure we don't doubly-free hyp if bestpath search fails (which it sometimes does due to -min_endfr pruning out crucial nodes...)
+ *
  * Revision 1.7  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
@@ -383,11 +389,11 @@ int32 s3dag_dag_load (char *file)
 	E_ERROR("Final node parameter missing or invalid\n");
 	goto load_error;
     }
-    dag.exit.node = darray[k];
-    dag.exit.ascr = 0;
-    dag.exit.next = NULL;
-    dag.exit.pscr_valid = 0;
-    dag.exit.bypass = NULL;
+    dag.final.node = darray[k];
+    dag.final.ascr = 0;
+    dag.final.next = NULL;
+    dag.final.pscr_valid = 0;
+    dag.final.bypass = NULL;
     final = k;
 
     /* Read bestsegscore entries */
@@ -426,8 +432,8 @@ int32 s3dag_dag_load (char *file)
 	lat[i].ef = ef;
 	lat[i].ascr = ascr;
 	
-	if ((seqid == final) && (ef == dag.exit.node->lef))
-	    dag.exit.ascr = ascr;
+	if ((seqid == final) && (ef == dag.final.node->lef))
+	    dag.final.ascr = ascr;
     }
     for (j++; j <= nfrm; j++)
 	frm2lat[j] = k;
@@ -452,7 +458,7 @@ int32 s3dag_dag_load (char *file)
 	d = darray[to];
 
 	/* Skip short-lived nodes */
-	if ((pd == dag.entry.node) || (d == dag.exit.node) ||
+	if ((pd == dag.entry.node) || (d == dag.final.node) ||
 	    ((d->lef - d->fef >= min_ef_range-1) && (pd->lef - pd->fef >= min_ef_range-1))) {
 	    if (dag_link (&dag,pd, d, ascr, d->sf-1, NULL) < 0) {
 		E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag.maxedge);
@@ -474,7 +480,7 @@ int32 s3dag_dag_load (char *file)
 	for (d = dag.list; d; d = d->alloc_next) {
 	    if (d->sf == 0)
 		assert (d->wid == dict->startwid);
-	    else if ((d == dag.exit.node) || (d->lef - d->fef >= min_ef_range-1)) {
+	    else if ((d == dag.final.node) || (d->lef - d->fef >= min_ef_range-1)) {
 		/* Link from all end points == d->sf-1 to d */
 		for (l = frm2lat[d->sf-1]; l < frm2lat[d->sf]; l++) {
 		    pd = lat[l].node;		/* Predecessor DAG node */
@@ -530,12 +536,12 @@ int32 s3dag_dag_load (char *file)
     ckd_free (frm2lat);
     
     /*
-     * HACK!! Change dag.exit.node wid to finishwid if some other filler word,
+     * HACK!! Change dag.final.node wid to finishwid if some other filler word,
      * to avoid complications with LM scores at this point.
      */
-    dag.orig_exitwid = dag.exit.node->wid;
-    if (dict_filler_word(dict, dag.exit.node->wid))
-	dag.exit.node->wid = finishwid;
+    dag.orig_exitwid = dag.final.node->wid;
+    if (dict_filler_word(dict, dag.final.node->wid))
+	dag.final.node->wid = finishwid;
     
     /* Add links bypassing filler nodes */
     if (dag_remove_filler_nodes () < 0) {
@@ -598,7 +604,7 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     dag.lmop = 0;
 
     /* Find the backward link from the final DAG node that has the best path to root */
-    final = dag.exit.node;
+    final = dag.final.node;
     bestscore = (int32) 0x80000000;
     bestl = NULL;
 
@@ -635,7 +641,7 @@ srch_hyp_t *s3dag_dag_search (char *utt)
      * At this point bestl is the best (reverse) link/path leaving the final node.  But
      * this does not include the acoustic score for the final node itself.  Add it.
      */
-    l = &(dag.exit);
+    l = &(dag.final);
     l->history = bestl;
     l->pscr += bestl->pscr + l->ascr;
     l->ef = dag.nfrm - 1;

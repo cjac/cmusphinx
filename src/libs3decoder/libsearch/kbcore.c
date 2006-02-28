@@ -45,11 +45,17 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.11  2006/02/23  05:54:58  arthchan2003
+ * Revision 1.12  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
+ * 
+ * Revision 1.11  2006/02/23 05:54:58  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added linksilences.  This allows silences to be linked correctly in mode FLAT, TREE.
  * 2, Added s3_am_init: an all-in-one initalization routine SCHMM and CDHMM.
- * 
+ *
  * Revision 1.10.4.12  2006/01/16 18:25:16  arthchan2003
  * Sphinx 3.x tree decoders assume silences are unlinked (set them to BAD_S3WID) before used. Whereas the flat lexicon decode doesn't have this assumption.  The changes in versions this branch also significantly changed behavior of the decoder. Thus the function LinkSilences is introduced to change back the behavior if necessary.
  *
@@ -326,9 +332,9 @@ void s3_am_init(kbcore_t *kbc,
 
   }else if(strcmp(senmgau,".semi.") == 0 || strcmp(senmgau,".s3cont.") == 0){
 
+    senone_t* sen;
     /* Multiple stream Gaussian mixture Initialization*/
     E_INFO("Using multi-stream GMM computation\n");
-    senone_t* sen;
     kbc->ms_mgau=ms_mgau_init(meanstr,
 			      varstr,varfloor,
 			      mixwstr,mixwfloor, 

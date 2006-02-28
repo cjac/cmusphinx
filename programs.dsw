@@ -15,7 +15,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -36,7 +60,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -57,7 +105,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -78,7 +150,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -99,7 +195,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -120,7 +240,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -141,7 +285,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -162,7 +330,103 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libs3decoder"=.\win32\msdev\libs3decoder\libs3decoder.dsp - Package Owner=<4>
+Project: "libAPI"=.\win32\msdev\libs3decoder\libAPI.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libam"=.\win32\msdev\libs3decoder\libam.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libcep_feat"=.\win32\msdev\libs3decoder\libcep_feat.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libcommon"=.\win32\msdev\libs3decoder\libcommon.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libconfidence"=.\win32\msdev\libs3decoder\libconfidence.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libdict"=.\win32\msdev\libs3decoder\libdict.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libep"=.\win32\msdev\libs3decoder\libep.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "liblm"=.\win32\msdev\libs3decoder\liblm.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "libsearch"=.\win32\msdev\libs3decoder\libsearch.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -198,7 +462,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
@@ -219,7 +507,31 @@ Package=<4>
     Project_Dep_Name libs3audio
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name libs3decoder
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libutil
