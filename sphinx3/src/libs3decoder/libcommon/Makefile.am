@@ -15,14 +15,14 @@ libcommon_la_SOURCES = \
 
 pkginclude_HEADERS = \
 	bio.h \
+	cmdln_macro.h \
 	corpus.h \
 	encoding.h \
 	logs3.h \
 	misc.h \
-	stat.h \
-	vector.h \
 	s3types.h \
-	cmdln_macro.h
+	stat.h \
+	vector.h
 
 INCLUDES = -I$(top_srcdir) \
 	   -I$(top_srcdir)/src \

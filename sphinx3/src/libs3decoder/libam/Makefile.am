@@ -7,6 +7,7 @@ libam_la_LDFLAGS = -version-info 0:4:0
 libam_la_SOURCES = \
 	adaptor.c \
 	approx_cont_mgau.c \
+	cb2mllr_io.c \
 	cont_mgau.c \
 	fast_algo_struct.c \
 	gs.c \
@@ -14,10 +15,9 @@ libam_la_SOURCES = \
 	interp.c \
 	mdef.c \
 	mllr.c \
-	cb2mllr_io.c \
-	ms_mllr.c \
-	ms_mgau.c \
 	ms_gauden.c \
+	ms_mgau.c \
+	ms_mllr.c \
 	ms_senone.c \
 	subvq.c \
 	tmat.c
@@ -25,6 +25,7 @@ libam_la_SOURCES = \
 pkginclude_HEADERS = \
 	adaptor.h \
 	approx_cont_mgau.h \
+	cb2mllr_io.h \
 	cont_mgau.h \
 	fast_algo_struct.h \
 	gs.h \
@@ -32,9 +33,8 @@ pkginclude_HEADERS = \
 	interp.h \
 	mdef.h \
 	mllr.h \
-	cb2mllr_io.h \
-	ms_mgau.h \
 	ms_gauden.h \
+	ms_mgau.h \
 	ms_mllr.h \
 	ms_senone.h \
 	subvq.h \

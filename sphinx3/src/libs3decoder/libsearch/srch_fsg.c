@@ -38,9 +38,15 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.2  2006/02/23  05:10:18  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Adaptation of Sphinx 2's FSG search into Sphinx 3
+ * Revision 1.3  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.2  2006/02/23 05:10:18  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Adaptation of Sphinx 2's FSG search into Sphinx 3
+ *
  * Revision 1.1.2.8  2006/01/16 20:12:42  arthchan2003
  * Interfaces for the 2nd-stage search. Now commented.
  *
@@ -78,9 +84,9 @@ int srch_FSG_init(kb_t *kb, /**< The KB */
 		  )
 {
   srch_t* s;
-  s=(srch_t *) srch;
   fsg_search_t* fsgsrch;
   word_fsg_t* wordfsg;
+  s=(srch_t *) srch;
 
   /* This is very strange */
   fsgsrch=fsg_search_init(NULL,s);

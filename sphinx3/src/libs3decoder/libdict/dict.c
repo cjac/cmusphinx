@@ -45,20 +45,26 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.6  2006/02/22  20:55:06  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ * Revision 1.7  2006/02/28  02:06:46  egouvea
+ * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
+ * compile in Visual C++ (declarations didn't match, etc). There are
+ * still some warnings, so this is not final. Also, sorted files in
+ * several Makefile.am.
  * 
+ * Revision 1.6  2006/02/22 20:55:06  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
+ *
  * 1, Added Letter-to-sound LTS rule, dict_init will only specify
  * d->lts_rules to be true if the useLTS is specified.  Only if
  * d->lts_rules is specified, the LTS logic will be used. The code safe
  * guarded the case when a phone in mdef doesn't appear in LTS, in that
  * case, the code will force exit.
- * 
+ *
  * 2, The LTS logic is only used as a reserved measure.  By default, it
  * is not turned on.  See also the comment in kbcore.c and the default
  * parameters in revision 1.3 cmdln_macro.h . We added it because we have
  * this functionality in SphinxTrain.
- * 
+ *
  * Revision 1.5.4.2  2006/01/16 19:53:17  arthchan2003
  * Changed the option name from -ltsoov to -lts_mismatch
  *
@@ -255,10 +261,10 @@ static int32 dict_read (FILE *fp, dict_t *d)
 	      break;
 	  }
 	  if(cmu6_lts_phone_table[ph]==NULL){
-	    E_FATAL("A phone in the model definition doesn't appear in the letter to sound
-	           rules. \n This is case we don't recommend user to
-	           use the built-in LTS. \n Please kindly turn off
-	           -lts_mismatch\n");
+	    E_FATAL("A phone in the model definition doesn't appear in the letter to sound ",
+		    "rules. \n This is case we don't recommend user to ",
+		    "use the built-in LTS. \n Please kindly turn off ",
+	           "-lts_mismatch\n");
 	  }
 	}
       }
