@@ -24,7 +24,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cep
 -f test-wave2feat.mfc \
 > test-wave2feat.cepview
 
-if(cmp test-wave2feat.cepview @abs_top_srcdir@/model/ep/chan3.cepview > /dev/null 2>&1) ; \
-then echo "WAVE2FEAT test PASSED"; else \n
+if (cmp test-wave2feat.cepview @abs_top_srcdir@/model/ep/chan3.cepview > /dev/null 2>&1) ; \
+then echo "WAVE2FEAT test PASSED"; else \
 echo "WAVE2FEAT test FAILED"; fi
 
