@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.6  2006/02/24  12:43:18  arthchan2003
- * Fixed typedef issue of hyp_t and srch_hyp_t.
+ * Revision 1.7  2006/02/28  22:29:39  egouvea
+ * Redefined hyp_t as "search_hyp_t" rather than "struct search_hyp_t".
  * 
+ * Revision 1.6  2006/02/24 12:43:18  arthchan2003
+ * Fixed typedef issue of hyp_t and srch_hyp_t.
+ *
  * Revision 1.5  2006/02/23 15:12:09  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Introduced srch_hyp_t and conf_srch_hyp_t. The former unifies the usage of multiple hyp_t in the past.  The latter is only used in confidence estimation.
  *
@@ -190,7 +193,7 @@ typedef struct srch_hyp_s {
       \brief an alias of srch_hyp_t;
    */
 
-  typedef struct srch_hyp_t hyp_t;
+  typedef srch_hyp_t hyp_t;
 
   /** \struct conf_srch_hyp_t
       \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
