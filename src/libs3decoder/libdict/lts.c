@@ -44,9 +44,12 @@
  * lts.c -- Letter to sound rule support 
  * 
  * $Log$
- * Revision 1.2  2006/02/22  20:44:17  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: As we have done in SphinxTrain and with the permission of flite developer. check in the routines for using LTS. In dict.c, one will see detail comment on how it was used and how we avoid problematic conditions.
+ * Revision 1.3  2006/03/01  21:44:26  egouvea
+ * Removed magic number "6", and swap variable if machine is big endian.
  * 
+ * Revision 1.2  2006/02/22 20:44:17  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: As we have done in SphinxTrain and with the permission of flite developer. check in the routines for using LTS. In dict.c, one will see detail comment on how it was used and how we avoid problematic conditions.
+ *
  * Revision 1.1.2.1  2005/09/25 19:07:52  arthchan2003
  * Added LTS rules and the module to use it.
  *
@@ -212,7 +215,7 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,cst_lts_addr start,
     /* structure cst_lts_rules differently                                */
     cst_lts_rule state;
     unsigned short nstate;
-    static const int sizeof_cst_lts_rule = 6;
+    static const int sizeof_cst_lts_rule = sizeof(cst_lts_rule);
 
     memmove(&state,&model[start*sizeof_cst_lts_rule],sizeof_cst_lts_rule);
     for ( ;
@@ -223,15 +226,10 @@ static cst_lts_phone apply_model(cst_lts_letter *vals,cst_lts_addr start,
 	    nstate = state.qtrue;
 	else
 	    nstate = state.qfalse;
-	/* This should really happen at compilation time */
 
-	/* if (WORDS_BIGENDIAN) */ /* byteswap macros are slightly bogus */
-
-	/* ARCHAN, the byte order from flite is temporarily disabled
-	   in x86 port, sphinx3 SWAPW seems to be quite different from
-	   what it should be done, right now just ignore the issue. */
-
-	/* SWAPSHORT(&nstate);*/
+#if defined(WORDS_BIGENDIAN)
+	SWAP_INT16(&nstate);
+#endif
 
 	memmove(&state,&model[nstate*sizeof_cst_lts_rule],sizeof_cst_lts_rule);
     }
