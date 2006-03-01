@@ -50,9 +50,15 @@
  * 
 
  * $Log$
- * Revision 1.2  2006/02/24  03:50:11  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application conf.
+ * Revision 1.3  2006/03/01  00:11:34  egouvea
+ * Added MS Visual C projects for each of the missing executables, fixed
+ * compilation problems. Code now compiles in MS .NET, with several
+ * warnings such as "signed/unsigned mismatch" and "conversion ...,
+ * possible loss of data", which we normally ignore.
  * 
+ * Revision 1.2  2006/02/24 03:50:11  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application conf.
+ *
  * Revision 1.1.2.1  2006/01/16 20:23:20  arthchan2003
  * Added a routine to compute confidence scores and do string matching.
  *
@@ -275,12 +281,13 @@ static void confidence_utt(char* uttid, FILE *_confmatchsegfp)
     dump_line(stdout,&s_hypline,dict);
     dump_line(outconfmatchsegfp, &s_hypline,dict);
   }else if (fmt<=2&&fmt>=0 ){
-    if(fmt==1 || fmt==0)
-      E_WARN("No confidence score will actually be generated.\n");
-
     glist_t hyp;
     srch_hyp_t* s;
     conf_srch_hyp_t* h;
+
+    if(fmt==1 || fmt==0)
+      E_WARN("No confidence score will actually be generated.\n");
+
     hyp=NULL;
     for(h = (conf_srch_hyp_t*) s_hypline.wordlist; h; h = h->next){
       s= &(h->sh);

@@ -183,6 +183,96 @@ Package=<4>
 
 ###############################################################################
 
+Project: "cepview"=.\win32\msdev\programs\cepview\cepview.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "conf"=.\win32\msdev\programs\conf\conf.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "dag"=.\win32\msdev\programs\dag\dag.dsp - Package Owner=<4>
 
 Package=<5>
@@ -229,6 +319,96 @@ Package=<4>
 ###############################################################################
 
 Project: "decode"=.\win32\msdev\programs\decode\decode.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "decode_anytopo"=.\win32\msdev\programs\decode_anytopo\decode_anytopo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libs3audio
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcep_feat
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libutil
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "dp"=.\win32\msdev\programs\dp\dp.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -450,7 +630,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livedecode"=.\win32\msdev\programs\livedecode\livedecode.dsp - Package Owner=<4>
+Project: "livepretend"=.\win32\msdev\programs\livepretend\livepretend.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -495,7 +675,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livepretend"=.\win32\msdev\programs\livepretend\livepretend.dsp - Package Owner=<4>
+Project: "lm_convert"=.\win32\msdev\programs\lm_convert\lm_convert.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
