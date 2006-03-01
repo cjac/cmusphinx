@@ -19,19 +19,33 @@ EXTRA_DIST = autogen.sh \
 	win32/batch/sphinx3-test.gausubvq.bat \
 	win32/batch/sphinx3-test.livepretend.bat \
 	win32/batch/sphinx3-test.simple.bat \
+	win32/mrcp.nsi \
 	win32/msdev/libs3audio/libs3audio.dsp \
-	win32/msdev/libs3decoder/libs3decoder.dsp \
+	win32/msdev/libs3decoder/libam.dsp \
+	win32/msdev/libs3decoder/libAPI.dsp \
+	win32/msdev/libs3decoder/libcep_feat.dsp \
+	win32/msdev/libs3decoder/libcommon.dsp \
+	win32/msdev/libs3decoder/libconfidence.dsp \
+	win32/msdev/libs3decoder/libdict.dsp \
+	win32/msdev/libs3decoder/libep.dsp \
+	win32/msdev/libs3decoder/liblm.dsp \
+	win32/msdev/libs3decoder/libsearch.dsp \
 	win32/msdev/libutil/libutil.dsp \
 	win32/msdev/programs/align/align.dsp \
 	win32/msdev/programs/allphone/allphone.dsp \
 	win32/msdev/programs/astar/astar.dsp \
+	win32/msdev/programs/cepview/cepview.dsp \
+	win32/msdev/programs/conf/conf.dsp \
 	win32/msdev/programs/dag/dag.dsp \
 	win32/msdev/programs/decode/allphone.dsp \
 	win32/msdev/programs/decode/decode.dsp \
+	win32/msdev/programs/decode_anytopo/decode_anytopo.dsp \
+	win32/msdev/programs/dp/dp.dsp \
 	win32/msdev/programs/ep/ep.dsp \
 	win32/msdev/programs/gausubvq/gausubvq.dsp \
 	win32/msdev/programs/livedecode/livedecode.dsp \
-	win32/msdev/programs/livepretend/livepretend.dsp
+	win32/msdev/programs/livepretend/livepretend.dsp \
+	win32/msdev/programs/lm_convert/lm_convert.dsp
 
 # Add an item for each and every test target to the CLEANFILES variable
 CLEANFILES = chan3.mfc \
