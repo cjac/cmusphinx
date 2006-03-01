@@ -94,13 +94,9 @@ SOURCE=..\..\..\..\src\programs\main_ep.c
 
 # PROP Default_Filter ""
 # End Group
-# End Target
-# Begin Group "Header Files No. 1"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
+# End Target
 # End Project

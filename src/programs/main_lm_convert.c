@@ -48,9 +48,15 @@
  * Started by Arthur Chan at July 11, 2005
  * 
  * $Log$
- * Revision 1.3  2006/02/24  13:43:43  arthchan2003
- * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
+ * Revision 1.4  2006/03/01  00:11:34  egouvea
+ * Added MS Visual C projects for each of the missing executables, fixed
+ * compilation problems. Code now compiles in MS .NET, with several
+ * warnings such as "signed/unsigned mismatch" and "conversion ...,
+ * possible loss of data", which we normally ignore.
  * 
+ * Revision 1.3  2006/02/24 13:43:43  arthchan2003
+ * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
+ *
  * Revision 1.2  2006/02/24 03:50:30  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application lm_convert.
  *
@@ -121,9 +127,6 @@ static arg_t arg[] = {
 
 int main(int argc, char *argv[])
 {
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
-
   char *inputfn, *outputfn;
   char *inputfmt, *outputfmt;
   char *inputenc, *outputenc;
@@ -132,6 +135,9 @@ int main(int argc, char *argv[])
 
   lm_t* lm;
   char separator[1];
+
+  print_appl_info(argv[0]);
+  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
   inputfn=NULL;
   outputfn=NULL;

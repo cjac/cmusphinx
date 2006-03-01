@@ -93,10 +93,6 @@ SOURCE=..\..\..\..\src\programs\main_align.c
 
 SOURCE=..\..\..\..\src\programs\s3_align.c
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\libs3decoder\libcommon\vector.c
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
