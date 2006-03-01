@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.17  2006/02/24  13:38:08  arthchan2003
- * Added lm_read, it is a simple version of lm_read_advance.
+ * Revision 1.18  2006/03/01  20:03:55  arthchan2003
+ * Do encoding conversion when the encodings are different. This will avoid a lot of weird characters.
  * 
+ * Revision 1.17  2006/02/24 13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ *
  * Revision 1.16  2006/02/23 04:16:29  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH:
  * Splited the original lm.c into five parts,
@@ -480,7 +483,10 @@ int32 lm_write_advance(lm_t * lmp, const char* outputfn,const char* filename,cha
   lmp->inputenc=encoding_str2ind(inputenc);
   lmp->outputenc=encoding_str2ind(outputenc);
 
-  lm_convert_encoding(lmp);
+  if(lmp->inputenc!=lmp->outputenc){
+    E_INFO("Did I come here?\n");
+    lm_convert_encoding(lmp);
+  }
 
   if (!strcmp(fmt,"TXT")){
     return lm_write_arpa_text(lmp,outputfn,inputenc,outputenc);
