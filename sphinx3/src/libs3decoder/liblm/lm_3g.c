@@ -45,13 +45,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2006/02/23  04:08:36  arthchan2003
+ * Revision 1.3  2006/03/01  20:05:09  arthchan2003
+ * Pretty format the lm dumping and make numbers in 4 decimals only.
+ * 
+ * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
  * 2, Added lm_3g_dmp.c - a DMP-based LM routines.
  * 3, (Contributed by LIUM) Added lm_attfsm.c - convert lm to FSM
  * 4, Added lmset.c - a wrapper for the lmset_t structure.
- * 
+ *
  * Revision 1.1.2.4  2006/01/16 19:58:25  arthchan2003
  * Small change to make function public.
  *
@@ -711,10 +714,10 @@ static void lm_write_arpa_unigram(lm_t *lmp, /**< The LM pointer */
   int32 i;
   fprintf(fp,"\\1-grams:\n");
   for(i=0;i<lmp->n_ug;i++){
-    fprintf(fp,"%4f ",lmp->ug[i].prob.f);
+    fprintf(fp,"%.4f ",lmp->ug[i].prob.f);
     fprintf(fp,"%s",lmp->wordstr[i]);
     fprintf(fp," ");
-    fprintf(fp,"%4f\n",lmp->ug[i].bowt.f);
+    fprintf(fp,"%.4f\n",lmp->ug[i].bowt.f);
   }
   fprintf(fp,"\n");
 }
@@ -746,24 +749,24 @@ static void lm_write_arpa_bigram(lm_t *lmp,
       probid=lmp->bg[j].probid;
       bowtid=lmp->bg[j].bowtid;
 
-      fprintf(fp,"%4f ",lmp->bgprob[probid].f);
+      fprintf(fp,"%.4f ",lmp->bgprob[probid].f);
       fprintf(fp,"%s",lmp->wordstr[lw1]);
       fprintf(fp," ");
       fprintf(fp,"%s",lmp->wordstr[lw2]);
 
       if (lmp->tgbowt){
 	fprintf(fp," ");
-	fprintf(fp,"%4f\n",lmp->tgbowt[bowtid].f);
+	fprintf(fp,"%.4f\n",lmp->tgbowt[bowtid].f);
       }
       else
 	fprintf(fp,"\n");
 
       /*
 	if (lmp->tgbowt)
-	fprintf(fp,"%4f %s %s %4f\n",lmp->bgprob[probid].f,
+	fprintf(fp,"%.4f %s %s %.4f\n",lmp->bgprob[probid].f,
 	lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
 	else
-	fprintf(fp,"%4f %s %s\n",lmp->bgprob[probid].f,
+	fprintf(fp,"%.4f %s %s\n",lmp->bgprob[probid].f,
 		lmp->wordstr[lw1],lmp->wordstr[lw2]);
       */
     }
@@ -801,7 +804,7 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
 	lw2=lmp->bg[j].wid;
 	lw3=lmp->tg[k].wid;
 	probid=lmp->tg[k].probid;
-	fprintf(fp,"%4f ",lmp->tgprob[probid].f);
+	fprintf(fp,"%.4f ",lmp->tgprob[probid].f);
 	fprintf(fp,"%s",lmp->wordstr[lw1]);
 	fprintf(fp," ");
 	fprintf(fp,"%s",lmp->wordstr[lw2]);
@@ -810,7 +813,7 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
 	fprintf(fp,"\n");
 
 	/*
-	  fprintf(fp,"%4f %s %s %s\n",lmp->tgprob[probid].f,lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->wordstr[lw3]);
+	  fprintf(fp,"%.4f %s %s %s\n",lmp->tgprob[probid].f,lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->wordstr[lw3]);
 	*/
       }
     }
