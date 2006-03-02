@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.18  2006/03/01  20:03:55  arthchan2003
- * Do encoding conversion when the encodings are different. This will avoid a lot of weird characters.
+ * Revision 1.19  2006/03/02  22:11:56  arthchan2003
+ * Fixed dox-doc.
  * 
+ * Revision 1.18  2006/03/01 20:03:55  arthchan2003
+ * Do encoding conversion when the encodings are different. This will avoid a lot of weird characters.
+ *
  * Revision 1.17  2006/02/24 13:38:08  arthchan2003
  * Added lm_read, it is a simple version of lm_read_advance.
  *
@@ -179,15 +182,23 @@ int32 lm3g_dump (char const *file,  /**< the file name */
 		 int32 mtime  /**< LM file modification date */
 		 );
 
+/**
+   Writer of lm in ARPA text format
+ */
 int32 lm_write_arpa_text(lm_t *lmp,/**< the pointer of the language model */
 			 const char* outputfn, /**< the output file name */
 			 const char* inputenc, /**< The input encoding method */
 			 const char* outputenc /**< The output encoding method */
 			 );
 
+/**
+   Writer of lm in FST format
+ */
+
 int32 lm_write_att_fsm(lm_t *lm,  /**< the languauge model pointer */
 		      const char *filename /**< output file name */
 		      );
+
 
 int32 lm_get_classid (lm_t *model, char *name)
 {
