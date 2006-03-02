@@ -171,6 +171,7 @@ src/tests/regression/Makefile
 src/tests/regression/test-livepretend.sh
 src/tests/regression/test-livepretend-clm.sh
 src/tests/regression/test-livepretend-mllr.sh
+src/tests/regression/test-lm_convert.sh
 src/tests/regression/test-align.sh
 src/tests/regression/test-align-mllr.sh
 src/tests/regression/test-allphone.sh
@@ -222,6 +223,7 @@ chmod +x scripts/sphinx3-simple
 chmod +x src/tests/regression/test-livepretend.sh
 chmod +x src/tests/regression/test-livepretend-clm.sh
 chmod +x src/tests/regression/test-livepretend-mllr.sh
+chmod +x src/tests/regression/test-lm_convert.sh
 chmod +x src/tests/regression/test-align.sh
 chmod +x src/tests/regression/test-align-mllr.sh
 chmod +x src/tests/regression/test-allphone.sh

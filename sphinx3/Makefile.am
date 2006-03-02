@@ -94,6 +94,7 @@ test-full : \
 	test-livepretend \
 	test-livepretend-clm \
 	test-livepretend-mllr \
+	test-lm_convert \
 	test-astar \
 	test-astar-clm \
 	test-dag \
@@ -138,6 +139,7 @@ test-astar-clm \
 test-cepview \
 test-dag \
 test-dag-clm \
+test-lm_convert \
 test-livepretend \
 test-livepretend-clm \
 test-livepretend-mllr \
