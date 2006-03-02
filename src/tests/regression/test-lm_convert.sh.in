@@ -5,7 +5,7 @@ tmpout="test-lm_convert.out"
 tmptxt="test-lm_convert.TXT"
 tmpdmp="test-lm_convert.DMP"
 
-echo "This will perform several that compare the converted LMs to a pre-generated ones. "
+echo "This will perform several tests that compare the converted LMs to a pre-generated ones. "
 
 #Couldn't do it because the paths generated in the LM will differ.  
 #sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
@@ -16,7 +16,7 @@ echo "This will perform several that compare the converted LMs to a pre-generate
 #then echo "LM_CONVERT PHONE LM TXT -> DMP test PASSED"; else \
 #echo "LM_CONVERT PHONE LM TXT -> DMP test FAILED"; fi 
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \ 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
 -input @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP \
 -inputfmt DMP \
 -output $tmptxt \
