@@ -1,0 +1,81 @@
+#!/bin/sh
+
+echo "LM_CONVERT TEST"
+tmpout="test-lm_convert.out"
+tmptxt="test-lm_convert.TXT"
+tmpdmp="test-lm_convert.DMP"
+
+echo "This will perform several that compare the converted LMs to a pre-generated ones. "
+
+#Couldn't do it because the paths generated in the LM will differ.  
+#sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+#-input @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa \
+#-output $tmpdmp \
+#> $tmpout 2>&1 
+#if(diff $tmpdmp @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP 2>&1); \
+#then echo "LM_CONVERT PHONE LM TXT -> DMP test PASSED"; else \
+#echo "LM_CONVERT PHONE LM TXT -> DMP test FAILED"; fi 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \ 
+-input @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP \
+-inputfmt DMP \
+-output $tmptxt \
+-outputfmt TXT \
+> $tmpout 2>&1 
+
+if(diff $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 2>&1); \
+then echo "LM_CONVERT PHONE LM DMP -> TXT test PASSED"; else \
+echo "LM_CONVERT PHONE LM DMP -> TXT test FAILED"; fi 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa \
+-output $tmpdmp \
+> $tmpout 2>&1 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input $tmpdmp \
+-inputfmt DMP \
+-output $tmptxt \
+-outputfmt TXT \
+> $tmpout 2>&1 
+
+if(diff $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 2>&1); \
+then echo "LM_CONVERT PHONE LM DMP -> TXT -> DMP test PASSED"; else \
+echo "LM_CONVERT PHONE LM DMP -> TXT -> DMP test FAILED"; fi 
+
+
+#Couldn't do it because the paths generated in the LM will differ.  
+#sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+#-input @abs_top_srcdir@/model/lm/an4/an4.ug.lm \
+#-output $tmpdmp \
+#> $tmpout 2>&1 
+#if(diff $tmpdmp @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP 2>&1); \
+#then echo "LM_CONVERT WORD LM TXT -> DMP test PASSED"; else \
+#echo "LM_CONVERT WORD LM TXT -> DMP test FAILED"; fi 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP \
+-inputfmt DMP \
+-output $tmptxt \
+-outputfmt TXT \
+> $tmpout 2>&1 
+
+if(diff $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 2>&1); \
+then echo "LM_CONVERT WORD LM DMP -> TXT test PASSED"; else \
+echo "LM_CONVERT WORD LM DMP -> TXT test FAILED"; fi 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input @abs_top_srcdir@/model/lm/an4/an4.ug.lm \
+-output $tmpdmp \
+> $tmpout 2>&1 
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP \
+-inputfmt DMP \
+-output $tmptxt \
+-outputfmt TXT \
+> $tmpout 2>&1 
+
+if(diff $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 2>&1); \
+then echo "LM_CONVERT WORD LM DMP -> TXT -> DMP test PASSED"; else \
+echo "LM_CONVERT WORD LM DMP -> TXT -> DMP test FAILED"; fi 
