@@ -27,3 +27,15 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.allp > /dev/null 2>&1); \
 then echo "ALLPHONE+MLLR PHONE TG allp test PASSED"; else \
 echo "ALLPHONE+MLLR PHONE TG allp test FAILED"; fi
+
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.phlat > /dev/null 2>&1); \
+then echo "ALLPHONE+MLLR PHONE TG phlat test PASSED"; else \
+echo "ALLPHONE+MLLR PHONE TG phlat test FAILED"; fi
+
+if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.match > /dev/null 2>&1); \
+then echo "ALLPHONE+MLLR PHONE TG match test PASSED"; else \
+echo "ALLPHONE+MLLR PHONE TG match test FAILED"; fi
+
+if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.matchseg > /dev/null 2>&1); \
+then echo "ALLPHONE+MLLR PHONE TG matchseg test PASSED"; else \
+echo "ALLPHONE+MLLR PHONE TG matchseg test FAILED"; fi

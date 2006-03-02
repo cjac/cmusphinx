@@ -38,5 +38,5 @@ then echo "ALLPHONE PHONE TG match test PASSED"; else \
 echo "ALLPHONE PHONE TG match test FAILED"; fi
 
 if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.matchseg > /dev/null 2>&1); \
-then echo "ALLPHONE PHONE TG 1matchseg test PASSED"; else \
+then echo "ALLPHONE PHONE TG matchseg test PASSED"; else \
 echo "ALLPHONE PHONE TG matchseg test FAILED"; fi
