@@ -93,7 +93,7 @@ com-2stage-decode:
 	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECODEBIN) ARGS.$@ > $@.results 2>&1 
-	grep BSTPTH $@.results |awk '{for(i=1;i<=NF;i++){printf("%s ",$i)}printf("\n")}'  > $@.match
+	grep BSTPTH $@.results |awk '{for(i=1;i<=NF;i++){printf("%s ",$$i)}printf("\n")}'  > $@.match
 	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
 	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
@@ -114,7 +114,7 @@ com-2stage-decany:
 	echo "-cepdir $(COMPATH)/nist_data_mfc/" >> ARGS.$@
 	echo "-hyp $@.match" >> ARGS.$@
 	$(DECANYBIN) ARGS.$@ > $@.results 2>&1 
-	grep BSTPTH $@.results |awk '{for(i=1;i<=NF;i++){printf("%s ",$i)}printf("\n")}'  > $@.match
+	grep BSTPTH $@.results |awk '{for(i=1;i<=NF;i++){printf("%s ",$$i)}printf("\n")}'  > $@.match
 	awk '{$$NF=""};{print $$0}' $@.match | sed -e "s/_/ /g" | paste - $(CTLFILE) | awk '{$$NF = "("$$NF")"};{print $$0}' > $@.hyp
 	$(ALIGNBIN) -r $(TRANSFILE) -h $@.hyp
 
