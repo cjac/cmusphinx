@@ -45,10 +45,13 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.15  2006/02/28  22:26:51  egouvea
+ * Revision 1.16  2006/03/02  22:10:36  arthchan2003
+ * Add *g_write into the code.
+ * 
+ * Revision 1.15  2006/02/28 22:26:51  egouvea
  * Moved definition of lm_wid() outside of the #if 0/#endif block, so
  * it's declared.
- * 
+ *
  * Revision 1.14  2006/02/24 13:38:08  arthchan2003
  * Added lm_read, it is a simple version of lm_read_advance.
  *
@@ -867,6 +870,27 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 			char *name   /**< In: The name of the class */
 			);
 
+
+  /**
+     Write of UG structure
+  */
+  void ug_write(FILE* fp,  /**< A file pointer */
+		ug_t* ug   /**< A pointer of the ug_t structure */
+		);
+  /**
+     Write of BG structure
+  */
+  void bg_write(FILE* fp, /**< A file pointer */
+		bg_t* bg  /**< A pointer of the bg_t structure */
+		);
+
+  /**
+     Write of TG structure
+  */
+  
+  void tg_write(FILE* fp, /**< A file pointer */
+		tg_t* tg  /**< A pointer of the tg_t structure */
+		);
   
   int32 find_bg (bg_t *bg, int32 n, s3lmwid_t w);
   int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w);
