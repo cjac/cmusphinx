@@ -10,6 +10,7 @@ liblm_la_SOURCES = \
         lm.c \
 	lm_3g.c \
 	lm_3g_dmp.c \
+	lm_debug.c \
 	lm_attfsm.c \
 	lmclass.c \
 	lmset.c
