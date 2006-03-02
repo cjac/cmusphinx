@@ -87,6 +87,7 @@ test-full : \
 	test-decode-mode3-mulmpx \
 	test-decode-mode3-mpx \
 	test-decode-2ndstage \
+	test-dp \
 	test-align \
 	test-align-mllr \
 	test-allphone \
@@ -130,6 +131,7 @@ test-decode-mode5-noncomp \
 test-decode-s3cont \
 test-decode-clm \
 test-decode-mllr \
+test-dp \
 test-align \
 test-align-mllr \
 test-allphone \
