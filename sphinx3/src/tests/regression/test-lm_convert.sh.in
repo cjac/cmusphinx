@@ -88,11 +88,6 @@ if(diff $tmpfst @abs_top_srcdir@/model/lm/an4/an4.ug.lm.FST 2>&1); \
 then echo "LM_CONVERT WORD LM TXT -> FST test PASSED"; else \
 echo "LM_CONVERT WORD LM TXT -> FST test FAILED"; fi 
 
-if(diff ${tmpfst}.sym @abs_top_srcdir@/model/lm/an4/an4.ug.lm.FST.SYM 2>&1); \
-then echo "LM_CONVERT WORD LM TXT -> FST SYM test PASSED"; else \
-echo "LM_CONVERT WORD LM TXT -> FST SYM test FAILED"; fi 
-
-
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
 -input @abs_top_srcdir@/model/lm/an4/an4.ug.lm \
 -output $tmpdmp \
