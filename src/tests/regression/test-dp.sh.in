@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo "LM_CONVERT TEST"
+tmpout="test-lm_convert.out"
+
+echo "This will perform several tests that compare the converted LMs to a pre-generated ones. "
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dp \
+-hypfile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.hyp \
+-reffile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.ref \
+> $tmpout 
+
+if(diff $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.simple.log 2>&1); \
+then echo "DP SIMPLE PASSED"; else \
+echo "DP SIMPLE FAILED"; fi 
+
+#sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dp \
+#-d 1 \
+#-hypfile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.hyp \
+#-reffile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.ref \
+#> $tmpout
+
+#if(diff $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.detail.log 2>&1); \
+#then echo "DP DETAIL PASSED"; else \
+#echo "DP DETAIL FAILED"; fi 
+
