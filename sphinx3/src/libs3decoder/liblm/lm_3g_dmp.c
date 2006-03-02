@@ -46,13 +46,16 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.2  2006/02/23  04:08:36  arthchan2003
+ * Revision 1.3  2006/03/02  00:35:08  arthchan2003
+ * Merged the logic in share/lm3g2dmp to here.  It will take care the situation when log_bg_seg_sz is different. (Must be an old format Ravi played with in the past). This will match the reading code also generalize the old sphinx 2's logic a little bit.
+ * 
+ * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
  * 2, Added lm_3g_dmp.c - a DMP-based LM routines.
  * 3, (Contributed by LIUM) Added lm_attfsm.c - convert lm to FSM
  * 4, Added lmset.c - a wrapper for the lmset_t structure.
- * 
+ *
  * Revision 1.1.2.1  2005/07/17 05:23:25  arthchan2003
  * added lm_3g_dmp.c and lmset.c, split it out from lm.c to avoid overcrowding situation in it.
  *
@@ -112,6 +115,7 @@ static char const *fmtdesc[] = {
     "(int32) string-length and string (including trailing 0) (iff version# present)",
     "... previous entry continued any number of times (iff version# present)",
     "(int32) 0 (terminating sequence of strings) (iff version# present)",
+    "(int32) log_bg_seg_sz (present iff different from default value of LOG2_BG_SEG_SZ)",
     "(int32) lm_t.ucount (must be > 0)",
     "(int32) lm_t.bcount",
     "(int32) lm_t.tcount",
@@ -132,10 +136,6 @@ static char const *fmtdesc[] = {
     NULL,
 };
 
-/*
- * Dump internal LM to file.  Format described above.
- * Remember to swap bytes if necessary.
- */
 int32 lm3g_dump (char const *file,  /**< the file name */
 		 lm_t *model,       /**< the langauge model for output */
 		 char const *lmfile,  /**< the */
@@ -158,9 +158,14 @@ int32 lm3g_dump (char const *file,  /**< the file name */
     k = strlen(lmfile)+1;
     fwrite_int32 (fp, k);
     fwrite (lmfile, sizeof(char), k, fp);
-    
+
     /* Write version# and LM file modification date */
-    fwrite_int32 (fp, -1);	/* version # */
+    if (model->log_bg_seg_sz != LOG2_BG_SEG_SZ){	/* Hack!! */
+      E_WARN("log_bg_seg_sz is different from default");
+      fwrite_int32 (fp, -2);	/* version # */
+    }else
+      fwrite_int32 (fp, -1);	/* version # */
+
     fwrite_int32 (fp, mtime);
     
     /* Write file format description into header */
@@ -170,6 +175,10 @@ int32 lm3g_dump (char const *file,  /**< the file name */
 	fwrite (fmtdesc[i], sizeof(char), k, fp);
     }
     fwrite_int32 (fp, 0);
+
+    /* HACK!! Write only if different from previous version */
+    if (model->log_bg_seg_sz != LOG2_BG_SEG_SZ)
+	fwrite_int32 (fp, model->log_bg_seg_sz);
     
     fwrite_int32 (fp, model->n_ug);
     fwrite_int32 (fp, model->n_bg);
@@ -278,7 +287,11 @@ lm_t *lm_read_dump (const char *file, /**< The file name*/
     /* Version#.  If present (must be <= 0); otherwise it's actually the unigram count */
     vn = lm_fread_int32 (lm);
     if (vn <= 0) {
-	/* Read and skip orginal file timestamp; (later compare timestamps) */
+
+	/* Read and skip orginal file timestamp; 
+	   ARCHAN: Unlike the sphinx2's code, currently, the timestamp
+	   is not compared in Sphinx 3. 
+	 */
 	k = lm_fread_int32 (lm);
 
 	/* Read and skip format description */
@@ -301,6 +314,10 @@ lm_t *lm_read_dump (const char *file, /**< The file name*/
 	/* Read #ug */
 	lm->n_ug = lm_fread_int32 (lm);
     } else {
+	/* oldest dump file version has no version# or any of the above */
+	if (vn > lm->n_ug)
+	    E_FATAL("LM.ucount(%d) out of range [1..%d]\n", vn, lm->n_ug);
+
 	/* No version number, actually a unigram count */
 	lm->n_ug = vn;
 	lm->log_bg_seg_sz = LOG2_BG_SEG_SZ;	/* Default */
