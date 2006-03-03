@@ -4,7 +4,7 @@ dnl try not to hurt yourself ;)
 AC_INIT(configure.in)
 AM_INIT_AUTOMAKE(sphinx3,0.6)
 
-CFLAGS=${CFLAGS:--g -O2 -Wall   }
+CFLAGS=${CFLAGS:--g -O2 -Wall -ansi}
 #CFLAGS=${CFLAGS:--g -O2 -Wall  -DDMALLOC}
 
 AC_ISC_POSIX
