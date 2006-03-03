@@ -3,7 +3,7 @@ LIVEDECSRCS = parse_args_file.c \
 		feat_dump.c \
 		fe_sigproc_dump.c \
 		live_dump.c \
-		metrics.c
+		metrics.c 
 
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) 
 
@@ -17,8 +17,8 @@ noinst_HEADERS = cmd_ln_args.h \
 	fe_internal_dump.h \
 	feat_dump.h \
 	live_dump.h \
-	metrics.h \
-	gmm_compute.h
+	gmm_compute.h \
+	metrics.h
 
 dumpfrontend_SOURCES = dump_frontend.c \
 			${LIVEDECSRCS}

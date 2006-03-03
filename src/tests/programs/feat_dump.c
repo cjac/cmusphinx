@@ -253,10 +253,10 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
 void feat_dump_free (feat_t *f)
 {
   if (f) {
-    //    if (f->stream_len)
-    //      ckd_free ((void *) f->stream_len);
+    /*    if (f->stream_len)*/
+    /*      ckd_free ((void *) f->stream_len);*/
 
-    //    ckd_free ((void *) f);
+    /*    ckd_free ((void *) f);*/
   }
 
 }
