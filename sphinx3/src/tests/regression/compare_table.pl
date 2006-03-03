@@ -51,18 +51,32 @@ if ((-s $fn1) == (-s $fn2)) {
       next if ($line1 eq $line2);
       my @field1 = split /\s+/, $line1;
       my @field2 = split /\s+/, $line2;
+      # If the number of tokens in each line is different, the lines,
+      # and therefore the files, don't match.
       if ($#field1 != $#field2) {
 	$comparison = 0;
 	last;
       }
       for (my $i = 0; $i <= $#field1; $i++) {
-	if (abs($field1[$i] - $field2[$i]) > $tolerance) {
+	if (($field1[$i] =~ m/[a-z]/i) or ($field2[$i] =~ m/[a-z]/i)) {
+	  # Check if any of the tokens in the line is a string rather
+	  # than a number, and compare the strings
+	  if ($field1[$i] ne $field2[$i]) {
+	    $comparison = 0;
+	    last;
+	  }
+	} elsif (abs($field1[$i] - $field2[$i]) > $tolerance) {
+	  # If the tokens are both numbers, check if they match within
+	  # a tolerance
 	  $comparison = 0;
 	  last;
 	}
       }
+      # If there was a mismatch, we can skip to the end of the loop
       last if ($comparison == 0);
     }
+    # If the files don't have the same number of lines, one of the
+    # lines will be EOF, and the other won't.
     $comparison = 0 if ($line1 != $line2);
   }
 
