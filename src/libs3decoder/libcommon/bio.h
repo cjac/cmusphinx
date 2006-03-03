@@ -45,9 +45,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2006/02/22  18:49:05  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Move the swapping function from fe.h to bio.h
+ * Revision 1.10  2006/03/03  00:42:36  egouvea
+ * In bio.h, definition of REVERSE_SWAP_... depends on WORDS_BIGENDIAN,
+ * since __BIG_ENDIAN__ isn't defined.
  * 
+ * In lm_3g_dmp.c, swap bigram and trigram values if needed.
+ * 
+ * In lm_convert regresssion test, allow for tolerance (< 0.0002) when
+ * comparing the results.
+ * 
+ * Revision 1.9  2006/02/22 18:49:05  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Move the swapping function from fe.h to bio.h
+ *
  * Revision 1.8.4.2  2005/09/25 19:00:05  arthchan2003
  * Added all swap functions from fe.h
  *
@@ -122,7 +131,7 @@ extern "C" {
    Sphinx 3 because lm3g2dmp used it.  Don't think that I am very
    happy with it. */
 
-#if (__BIG_ENDIAN__)
+#if ((__BIG_ENDIAN__) || (WORDS_BIGENDIAN))
 #define REVERSE_SENSE_SWAP_INT16(x)  x = ( (((x)<<8)&0x0000ff00) | (((x)>>8)&0x00ff) )
 #define REVERSE_SENSE_SWAP_INT32(x)  x = ( (((x)<<24)&0xff000000) | (((x)<<8)&0x00ff0000) | \
                          (((x)>>8)&0x0000ff00) | (((x)>>24)&0x000000ff) )

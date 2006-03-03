@@ -46,9 +46,18 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.3  2006/03/02  00:35:08  arthchan2003
- * Merged the logic in share/lm3g2dmp to here.  It will take care the situation when log_bg_seg_sz is different. (Must be an old format Ravi played with in the past). This will match the reading code also generalize the old sphinx 2's logic a little bit.
+ * Revision 1.4  2006/03/03  00:42:36  egouvea
+ * In bio.h, definition of REVERSE_SWAP_... depends on WORDS_BIGENDIAN,
+ * since __BIG_ENDIAN__ isn't defined.
  * 
+ * In lm_3g_dmp.c, swap bigram and trigram values if needed.
+ * 
+ * In lm_convert regresssion test, allow for tolerance (< 0.0002) when
+ * comparing the results.
+ * 
+ * Revision 1.3  2006/03/02 00:35:08  arthchan2003
+ * Merged the logic in share/lm3g2dmp to here.  It will take care the situation when log_bg_seg_sz is different. (Must be an old format Ravi played with in the past). This will match the reading code also generalize the old sphinx 2's logic a little bit.
+ *
  * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
@@ -363,12 +372,24 @@ lm_t *lm_read_dump (const char *file, /**< The file name*/
       if (lm->n_bg > 0) {       /* Read bigrams; remember sentinel at the end */
 	lm->bgoff = ftell (lm->fp);
 	fread (lm->bg, lm->n_bg+1,sizeof(bg_t),lm->fp);
+	if (lm->byteswap)
+	  for (i = 0; i <= lm->n_bg; i++) {
+	    SWAP_INT16(&(lm->bg[i].wid));
+	    SWAP_INT16(&(lm->bg[i].probid));
+	    SWAP_INT16(&(lm->bg[i].bowtid));
+	    SWAP_INT16(&(lm->bg[i].firsttg));
+	  }
 	E_INFO("Read %8d bigrams [in memory]\n", lm->n_bg);
       }
       
       if (lm->n_tg > 0) {       /* Read trigrams */
 	lm->tgoff = ftell (lm->fp);
 	fread (lm->tg,lm->n_tg,sizeof(tg_t),lm->fp);
+	if (lm->byteswap)
+	  for (i = 0; i <= lm->n_tg; i++) {
+	    SWAP_INT16(&(lm->tg[i].wid));
+	    SWAP_INT16(&(lm->tg[i].probid));
+	  }
 	E_INFO("Read %8d trigrams [in memory]\n", lm->n_tg);
       }
     } else {
