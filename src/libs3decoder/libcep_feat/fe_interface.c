@@ -48,9 +48,12 @@
 /* 
  *   HISTORY
  * $Log$
- * Revision 1.22  2006/02/23  03:56:47  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added dithering in the interface layer. Removed some bogus messaged.
+ * Revision 1.23  2006/03/03  20:02:37  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.22  2006/02/23 03:56:47  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added dithering in the interface layer. Removed some bogus messaged.
+ *
  * Revision 1.21.4.2  2005/09/18 01:13:33  arthchan2003
  * Remove unnecessary info.
  *
@@ -195,7 +198,7 @@ int32 fe_process_frame(fe_t *FE, int16 *spch, int32 nsamps, float32 *fr_cep)
     /* pre-emphasis if needed,convert from int16 to float64 */
     if (FE->PRE_EMPHASIS_ALPHA != 0.0){
       fe_pre_emphasis(spch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
-      FE->PRIOR = spch[FE->FRAME_SHIFT - 1];	// Z.A.B for frame by frame analysis  
+      FE->PRIOR = spch[FE->FRAME_SHIFT - 1];	/* Z.A.B for frame by frame analysis  */
       } else{
 	fe_short_to_double(spch, spbuf, spbuf_len);
       }

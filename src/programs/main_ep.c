@@ -34,9 +34,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.20  2006/02/24  04:20:06  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, Used some macros. Merged with Dave and Evandro's changes.
+ * Revision 1.21  2006/03/03  20:04:06  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.20  2006/02/24 04:20:06  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, Used some macros. Merged with Dave and Evandro's changes.
+ *
  *
  * Revision 1.19  2006/02/02 22:56:26  dhdfu
  * add a missing parameter
@@ -92,9 +95,12 @@
  * Revision 1.2  2005/03/30 00:43:41  archan
  *
  * Add $Log$
- * Revision 1.20  2006/02/24  04:20:06  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, Used some macros. Merged with Dave and Evandro's changes.
+ * Revision 1.21  2006/03/03  20:04:06  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Add Revision 1.20  2006/02/24 04:20:06  arthchan2003
+ * Add Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH, Used some macros. Merged with Dave and Evandro's changes.
+ * Add
  *
  */
 #include <stdio.h>
@@ -313,7 +319,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
   
   endutt = 0;      
   
-  wincap = 0;			// voting window current capacity
+  wincap = 0;			/* voting window current capacity*/
 
   for (i = 0; i < NUMCLASSES; i++)
     classcount[i] = 0;	
@@ -324,7 +330,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
   /****************************************************************/
 
   nsamps = splen;
-  //spdata = spbuffer;
+  /*spdata = spbuffer;*/
   
   E_INFO("%d samples, %d overflow, %d frame size\n", nsamps, FEW->FE->NUM_OVERFLOW_SAMPS, FEW->FE->FRAME_SIZE);
 
@@ -359,7 +365,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
       /**************** Start the processing **************************/
       /****************************************************************/
 
-      // initialize the frame_count and frame_start each time a new buffer of speech is available
+      /* initialize the frame_count and frame_start each time a new buffer of speech is available*/
       frame_count = 0;
       frame_start = 0;
 	    
@@ -412,8 +418,8 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
 	printf ("\n"); 
 #endif
                 
-	frame_count++;				// update the frame counter
-	frame_start += FEW->FE->FRAME_SHIFT;		// update the frame shift
+	frame_count++;				/* update the frame counter*/
+	frame_start += FEW->FE->FRAME_SHIFT;		/* update the frame shift*/
 
       }
       
@@ -424,12 +430,12 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
       /********** store new overflow data within the FE  **************/
       /****************************************************************/
       
-      // Calculate the number of samples processed
+      /* Calculate the number of samples processed */
       spbuf_len = (frame_count-1)*FEW->FE->FRAME_SHIFT + FEW->FE->FRAME_SIZE;
       
 		/* assign samples which don't fit an entire frame to FE overflow buffer for use on next pass */
       if (spbuf_len < nsamps)   {
-	  //printf("spbuf_len: %d\n",spbuf_len);
+	/*printf("spbuf_len: %d\n",spbuf_len);*/
 	  offset = ((frame_count)*FEW->FE->FRAME_SHIFT);
 	  memcpy(FEW->FE->OVERFLOW_SAMPS,spdata+offset,(nsamps-offset)*sizeof(int16));
 	  FEW->FE->NUM_OVERFLOW_SAMPS = nsamps-offset;
@@ -443,7 +449,7 @@ void process_fe_class(fewrap_t *FEW, class_t *CLASSW, endpointer_t *ENDPTR, int1
        		append new samps to previously stored overlap samples */
       memcpy(FEW->FE->OVERFLOW_SAMPS + FEW->FE->NUM_OVERFLOW_SAMPS,spbuffer, nsamps*(sizeof(int16)));
       FEW->FE->NUM_OVERFLOW_SAMPS += nsamps;
-      //printf("saved : %d\n samples in the OVERFLOW buffer",FEW->FE->NUM_OVERFLOW_SAMPS);      		
+      /*printf("saved : %d\n samples in the OVERFLOW buffer",FEW->FE->NUM_OVERFLOW_SAMPS);      		 */
       assert(FEW->FE->NUM_OVERFLOW_SAMPS < FEW->FE->FRAME_SIZE);
       frame_count=0;
     }

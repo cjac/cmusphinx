@@ -400,8 +400,9 @@ static void boundary_detect (cont_ad_t *r, int32 frm)
 	return;
     assert (r->win_validfrm == r->winsize);
 
-//    fprintf(stderr, "State is %s n_other is %d\n", r->state == CONT_AD_STATE_SIL ?
-//	    "silence" : "speech", r->n_other);
+    /*    fprintf(stderr, "State is %s n_other is %d\n", r->state == CONT_AD_STATE_SIL ?
+	  "silence" : "speech", r->n_other);*/
+
     
     if (r->state == CONT_AD_STATE_SIL) {	/* Currently in SILENCE state */
 	if (r->n_frm >= r->winsize + r->leader) {

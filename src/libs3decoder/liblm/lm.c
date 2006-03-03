@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.19  2006/03/02  22:11:56  arthchan2003
- * Fixed dox-doc.
+ * Revision 1.20  2006/03/03  20:02:38  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.19  2006/03/02 22:11:56  arthchan2003
+ * Fixed dox-doc.
+ *
  * Revision 1.18  2006/03/01 20:03:55  arthchan2003
  * Do encoding conversion when the encodings are different. This will avoid a lot of weird characters.
  *
@@ -937,7 +940,7 @@ static void load_tg (lm_t *lm, s3lmwid_t lw1, s3lmwid_t lw2)
     /* "t" has not been assigned any meanigful value, so if you use it
      * beyond this point, make sure it's been properly assigned.
      */   
-//	assert (t != -1);
+    /*	assert (t != -1);*/
 
     /* At this point, n = #trigrams for lw1,lw2.  Read them in */
 

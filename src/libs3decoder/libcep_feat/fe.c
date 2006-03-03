@@ -46,7 +46,10 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2006/02/23  03:53:02  arthchan2003
+ * Revision 1.11  2006/03/03  20:02:37  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
+ * 
+ * Revision 1.10  2006/02/23 03:53:02  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added fe_convert_one_file
  * 2, Use fe_convert_one_file twice in fe_convert_files instead of repeating 200 lines of code twice.
@@ -54,7 +57,7 @@
  * 4, Replaced -mach_endian by -machine_endian
  * 5, eliminate ep_fe_openfiles.
  * 6, Fixed dox-doc.
- * 
+ *
  * Revision 1.9.4.3  2005/07/18 19:07:42  arthchan2003
  * 1, Added keyword , 2, Remove unnecessry E_INFO, 3, resolved conflicts in command-line names between wave2feat/ep and decode,  because both ep and wave2feat are relatively new, both follow decode's convention, now call -mach_endian to be -machine_endian, -srate to be -samprate. 4, assert, FRAME_SIZE not equal to 0, in fe_count_frame, if not that could cause infinite loop.
  *
@@ -98,10 +101,10 @@ fewrap_t * few_initialize()
   
   /********************** INITIALIZING COMPONENTS ******************/
   
-  // initialize parameters
+  /* initialize parameters*/
   FEW->P = fe_parse_options();
   
-  // initialize the front-end parameters
+  /* initialize the front-end parameters*/
   if (( FEW->FE = fe_init(FEW->P))==NULL){
     fprintf(stderr, "memory alloc failed in fe_convert_files()\n...exiting\n");
     exit(0);
@@ -656,7 +659,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
       */
     }
     else if (P->input_format == MSWAV){
-        P->input_endian = LITTLE; // Default for MS WAV riff files
+      P->input_endian = LITTLE; /* Default for MS WAV riff files*/
     }
     
     
@@ -728,7 +731,7 @@ int32 fe_openfiles(param_t *P, fe_t *FE, char *infile, int32 *fp_in, int32 *nsam
                     }
                 }
             }
-            if (P->input_endian!=P->machine_endian) { // If machine is Big Endian
+            if (P->input_endian!=P->machine_endian) { /* If machine is Big Endian*/
                 hdr_buf->datalength = SWAPL(&(hdr_buf->datalength));
                 hdr_buf->data_format = SWAPW(&(hdr_buf->data_format));
                 hdr_buf->numchannels = SWAPW(&(hdr_buf->numchannels));
