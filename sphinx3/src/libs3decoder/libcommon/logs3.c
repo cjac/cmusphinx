@@ -45,9 +45,20 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.8  2006/02/22  19:55:02  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII: Add function logs3_base and logs3_10base.
+ * Revision 1.9  2006/03/03  19:45:00  egouvea
+ * Clean up the log handling. In logs3.c, removed unnecessary variables
+ * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
  * 
+ * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
+ * with r_lscr, since the only difference is that one is a double, the
+ * other an int (and as such, they differ on the order of 1e-12).
+ * 
+ * In future cleanups.... replace the "int" declaration with "int32",
+ * used in the rest of the code.
+ * 
+ * Revision 1.8  2006/02/22 19:55:02  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII: Add function logs3_base and logs3_10base.
+ *
  *
  * Revision 1.6.4.2  2006/01/16 19:51:19  arthchan2003
  * Added a function to convert Sphinx 3 log to log 10.
@@ -123,7 +134,7 @@ static int32 add_tbl_size;
 int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 {
     int32 i, k;
-    float64 d, t, f;
+    float64 d, t;
 
     USE_LOG3_ADD_TABLE = bLogTable;
 
@@ -146,7 +157,7 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
     logB = log(base);
     log10B = log10(base);
     invlogB = 1.0/logB;
-    invlog10B = 1.0/log10(base);
+    invlog10B = 1.0/log10B;
 
     /* Create add-table for adding probs in log domain */
 
@@ -157,7 +168,6 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
     }
 
     d = 1.0;
-    f = 1.0/B;
     F = 1.0/B;			/* RAH 5.9.01, set this global variable so that we don't have to compute it in logs3_add() */
 
     /* Figure out size of add-table requried */
@@ -173,7 +183,7 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 	if (k == 0)
 	    break;
 
-	d *= f;
+	d *= F;
     }
 
     add_tbl_size = i+1;
@@ -190,7 +200,7 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 	if (k == 0)
 	    break;
 
-	d *= f;
+	d *= F;
     }
     
 
@@ -202,7 +212,7 @@ int32 logs3_add (int32 logp, int32 logq)
 {
     int32 d, r;
     
-    assert(add_tbl != NULL);	/* Use assert to allow use of NDEBUG for efficiency */
+    assert (add_tbl != NULL);   /* Use assert to allow use of NDEBUG for efficiency */
 
     if (logp > logq) {
 	d = logp - logq;
@@ -221,7 +231,7 @@ int32 logs3_add (int32 logp, int32 logq)
 	r += add_tbl[d];
       else
 	/* Do we need to be checking to see if the value is too large? small? */
-	r += 0.5 + (float64) (log(1.0 + pow(F,d)) * invlogB); /* RAH, 5.9.01 - compute instead of looking it up */
+	r += (int32) (0.5 + log(1.0 + pow(F,d)) * invlogB); /* RAH, 5.9.01 - compute instead of looking it up */
       }
 
     return r;
@@ -276,7 +286,7 @@ float64 logs3_to_log10 (int32 logs3p)
 
 float64 logs3_to_p (int32 logs3p)
 {
-    return (exp((float64)logs3p * logB));
+    return (pow(B, logs3p));
 }
 
 
@@ -301,17 +311,6 @@ void logs3_report()
   E_INFO_NOFN("\n");
 }
 
-
-float64 logs3_base()
-{
-  return logB;
-}
-
-
-float64 logs3_10base()
-{
-  return log(10) / logB ;
-}
 
 #if _LOGS3_TEST_
 main (int argc, char *argv[])

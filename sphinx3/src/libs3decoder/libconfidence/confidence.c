@@ -48,9 +48,20 @@
  * incorporating to Sphinx 3.x
  *
  * $Log$
- * Revision 1.3  2006/02/24  13:40:50  arthchan2003
- * Commented overlap currently.
+ * Revision 1.4  2006/03/03  19:45:02  egouvea
+ * Clean up the log handling. In logs3.c, removed unnecessary variables
+ * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
  * 
+ * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
+ * with r_lscr, since the only difference is that one is a double, the
+ * other an int (and as such, they differ on the order of 1e-12).
+ * 
+ * In future cleanups.... replace the "int" declaration with "int32",
+ * used in the rest of the code.
+ * 
+ * Revision 1.3  2006/02/24 13:40:50  arthchan2003
+ * Commented overlap currently.
+ *
  * Revision 1.2  2006/02/21 18:31:09  arthchan2003
  * Merge confidence.c confidence.h and Makefile.am into the trunk.
  *
@@ -947,7 +958,8 @@ int ca_lm_ug_score(lm_t* lm, dict_t* dict, int wid1)
 		     );
 
   /*  E_INFO("wid1 %d, wid2 %d r_lscr %d %f\n",wid1, wid2,r_lscr, logs3_to_log10(r_lscr));  */
-  return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT / lm->lw);
+  /* return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT / lm->lw); */
+  return (int)((double) r_lscr * MAGIC_CONFIDENCE_CONSTANT / lm->lw);
 
 }
 
@@ -971,7 +983,8 @@ int ca_lm_bg_score(lm_t* lm, dict_t* dict, int wid1, int wid2)
 		     );
 
   /*  E_INFO("wid1 %d, wid2 %d r_lscr %d %f\n",wid1, wid2,r_lscr, logs3_to_log10(r_lscr));  */
-  return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT/ lm->lw);
+  /* return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT/ lm->lw); */
+  return (int)((double) r_lscr * MAGIC_CONFIDENCE_CONSTANT/ lm->lw);
 
 }
 
@@ -997,7 +1010,8 @@ int ca_lm_tg_score(lm_t* lm, dict_t *dict, int wid1, int wid2, int wid3)
 
   /*  E_INFO("wid1 %d, wid2 %d wid3 %d r_lscr %d %f\n",wid1, wid2,wid3, r_lscr, logs3_to_log10(r_lscr));*/
 
-  return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT / lm->lw);
+  /* return (int)((double) logs3_to_log10(r_lscr) * logs3_10base() * MAGIC_CONFIDENCE_CONSTANT / lm->lw); */
+  return (int)((double) r_lscr * MAGIC_CONFIDENCE_CONSTANT / lm->lw);
 }
 
 

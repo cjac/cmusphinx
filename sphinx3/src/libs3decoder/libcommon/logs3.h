@@ -45,9 +45,20 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2006/02/22  20:31:53  arthchan2003
- * Add clarification comment on logs3.h
+ * Revision 1.11  2006/03/03  19:45:01  egouvea
+ * Clean up the log handling. In logs3.c, removed unnecessary variables
+ * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
  * 
+ * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
+ * with r_lscr, since the only difference is that one is a double, the
+ * other an int (and as such, they differ on the order of 1e-12).
+ * 
+ * In future cleanups.... replace the "int" declaration with "int32",
+ * used in the rest of the code.
+ * 
+ * Revision 1.10  2006/02/22 20:31:53  arthchan2003
+ * Add clarification comment on logs3.h
+ *
  * Revision 1.9.4.1  2006/01/16 19:51:19  arthchan2003
  * Added a function to convert Sphinx 3 log to log 10.
  *
@@ -144,12 +155,6 @@ extern "C" {
   /** Report the parameters for s3 log table */
   void logs3_report();
   
-  /** Return the base of s3. */
-  float64 logs3_base();
-  
-  /** Compute log 10 in base of s3 */
-  float64 logs3_10base(); 
-
 #ifdef __cplusplus
 }
 #endif
