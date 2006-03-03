@@ -36,10 +36,13 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <sys/time.h>
+#include "sys/time.h"
 #include "metrics.h"
+#include "ckd_alloc.h"
 
 #define MAX_DURATION_SLOTS 32
+
+
 
 static NamedDuration namedDuration[MAX_DURATION_SLOTS];
 
@@ -65,8 +68,10 @@ static NamedDuration *findDuration(const char *name)
 
     if (i < MAX_DURATION_SLOTS) 
     {
-        namedDuration[i].name = strdup(name);
-	return &namedDuration[i];
+      /*   namedDuration[i].name = strdup(name);*/
+      namedDuration[i].name=ckd_salloc(name);
+      strcpy((char*)namedDuration[i].name, name);
+      return &namedDuration[i];
     }
     return NULL;
 }
