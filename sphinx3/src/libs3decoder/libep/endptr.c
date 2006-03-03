@@ -41,9 +41,12 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.7  2006/02/23  04:05:21  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ * Revision 1.8  2006/03/03  20:02:38  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.7  2006/02/23 04:05:21  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ *
  *
  * Revision 1.5.4.1  2005/07/05 06:46:23  arthchan2003
  * 1, Merged from HEAD.  2, fixed dox-doc.
@@ -107,7 +110,7 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
         switch (ENDPTR->status)
         {
         case STAT_OTHER:
-                // we are in the non-speech region and we received a speech frame
+	  /* we are in the non-speech region and we received a speech frame*/
                 if (class == CLASS_O)
                 {
                         ENDPTR->status = STAT_BEGIN;
@@ -121,21 +124,21 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
                 break;
 
         case STAT_BEGIN:
-                // we are in the speech region but still not enough frames to annouce
-                // start of utterance   
+	  /* we are in the speech region but still not enough frames to annouce
+	     start of utterance   */
                 if ((class == CLASS_O) && ((FE->FRAME_COUNTER - ENDPTR->spbegin) < 
                                            ENDPTR->UTT_F_START))
                 {
-                        // do nothing for now   
+		  /* do nothing for now   */
                 }
 
-                // we are ready to start the utterance
+                /* we are ready to start the utterance */
                 else if (class == CLASS_O)
                 {
                         ENDPTR->status = STAT_SPEECH;
                 }
 
-                // we were beginning to get speech and suddenly we get a non-speech frame
+                /* we were beginning to get speech and suddenly we get a non-speech frame*/
                 else
                 {
                         ENDPTR->status = STAT_CANCEL;
@@ -153,47 +156,47 @@ void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, in
                 }
                 break;
         case STAT_END:
-                // we thought we are ending the utterance and we get a speech frame
+	  /* we thought we are ending the utterance and we get a speech frame*/
                 if (class == CLASS_O)
                 {
                         ENDPTR->status = STAT_SPEECH;   
                 }
 
-                // still not enough non-speech frames to end the utterance      
+                /* still not enough non-speech frames to end the utterance      */
                 else if ((FE->FRAME_COUNTER - ENDPTR->spend) < ENDPTR->UTT_F_END)
                 {                       
-                        // do nothing for now
+		  /* do nothing bfor now*/
                 }
 
-                // enough non-speech frames to end utterance
+                /* enough non-speech frames to end utterance*/
                 else
                 {
                         ENDPTR->status = STAT_OTHER;
                         printf("Utt_End#%d, End: %6.5f,  Trailer: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend), endptr_frame2secs_end(FE, ENDPTR->trailer));
-                        //      printf("Utt_End End: %d,  Trailer: %d\n",ENDPTR->spend, ENDPTR->trailer);
+                        /*     printf("Utt_End End: %d,  Trailer: %d\n",ENDPTR->spend, ENDPTR->trailer);*/
                         fflush(stdout);
                 }
                 break;
 
         case STAT_CANCEL:
-                // we wanted to cancel and boom we get another speech frame!    
+	  /* we wanted to cancel and boom we get another speech frame!    */
                 if (class == CLASS_O)
                 {
                         ENDPTR->status = STAT_BEGIN;    
                 }
 
-                // still not enough non-speech frames to cancel the utterance
+                /* still not enough non-speech frames to cancel the utterance*/
                 else if ((FE->FRAME_COUNTER - ENDPTR->spend) < ENDPTR->UTT_F_CANCEL)
                 {                        
-                        // do nothing for now 
+		  /* do nothing for now */
                 }
 
-                // enough non-speech frames to end utterance
+                /* enough non-speech frames to end utterance*/
                 else
                 {
                         ENDPTR->status = STAT_OTHER;
                         printf("Utt_Cancel#%d End: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend));
-                        //      printf("Utt_Cancel End: %d\n",ENDPTR->spend);
+                        /*      printf("Utt_Cancel End: %d\n",ENDPTR->spend);*/
                         fflush(stdout);
                                                 
                         ENDPTR->utt_counter--;

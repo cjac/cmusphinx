@@ -41,9 +41,12 @@
  * Created
  * HISTORY
  * $Log$
- * Revision 1.12  2006/02/23  04:05:21  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ * Revision 1.13  2006/03/03  20:02:38  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.12  2006/02/23 04:05:21  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ *
  *
  * Revision 1.10.4.1  2005/07/05 06:46:23  arthchan2003
  * 1, Merged from HEAD.  2, fixed dox-doc.
@@ -75,7 +78,7 @@
 #include "logs3.h"
 
 /********************************************************************/
-// This function reports the majority class 
+/* This function reports the majority class */
 /*********************************************************************/
 void majority_class(class_t *CLASSW, int *classcount, int frame_count)
 {
@@ -96,7 +99,7 @@ void majority_class(class_t *CLASSW, int *classcount, int frame_count)
 }
 
 /********************************************************************/
-// This function frees the class wrapper
+/* This function frees the class wrapper*/
 /*********************************************************************/
 void classw_free(class_t *CLASSW)
 {
@@ -115,7 +118,7 @@ void classw_free(class_t *CLASSW)
 
 
 /*********************************************************************/
-// This function initializes the class wrapper
+/* This function initializes the class wrapper*/
 /*********************************************************************/
 
 class_t * classw_initialize(char * mdeffile, char* meanfile, 
@@ -177,19 +180,19 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
   
         /******** Set the priors of the classes *************/
 
-        CLASSW->priors[CLASS_N] = logs3(PRIOR_N);    // N
-        CLASSW->priors[CLASS_O] = logs3(PRIOR_O);    // O
-        CLASSW->priors[CLASS_S] = logs3(PRIOR_S);    // S
-        CLASSW->priors[CLASS_SIL] = logs3(PRIOR_SIL);  // SIL
+        CLASSW->priors[CLASS_N] = logs3(PRIOR_N);    /* N*/
+        CLASSW->priors[CLASS_O] = logs3(PRIOR_O);    /* O*/
+        CLASSW->priors[CLASS_S] = logs3(PRIOR_S);    /* S*/
+        CLASSW->priors[CLASS_SIL] = logs3(PRIOR_SIL);  /* SIL*/
 
         /********* Initialize voting window parameters **********/
 
-        CLASSW->windowlen       = VOTEWINDOWLEN;        // voting window length
+        CLASSW->windowlen       = VOTEWINDOWLEN;        /* voting window length*/
 
-        CLASSW->postprocess     = POSTPROCESS;          // post-processing?
+        CLASSW->postprocess     = POSTPROCESS;          /* post-processing? */
 
         if ( CLASSW->postprocess == 1)
-                CLASSW->classlatency = CLASSLATENCY;            // Number of latency frames      
+	  CLASSW->classlatency = CLASSLATENCY;            /* Number of latency frames      */
         else
                 CLASSW->classlatency = 0;
   
@@ -209,8 +212,8 @@ class_t * classw_initialize(char * mdeffile, char* meanfile,
 
 
 /*********************************************************************/
-// This function post-processes the classification results with a
-// voting window of 5 frames                                          
+/* This function post-processes the classification results with a    */
+/* voting window of 5 frames                                         */ 
 /*********************************************************************/
 
 int postclassify (int *window, int windowlen, int *wincap, int myclass)

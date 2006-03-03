@@ -39,9 +39,12 @@
  * 17-Jun-2004  Ziad Al Bawab (ziada@cs.cmu.edu) at Carnegie Mellon University
  * Created
  * $Log$
- * Revision 1.9  2006/02/23  04:05:21  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ * Revision 1.10  2006/03/03  20:02:38  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
  * 
+ * Revision 1.9  2006/02/23 04:05:21  arthchan2003
+ * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: fixed dox-doc.
+ *
  *
  * Revision 1.6.4.1  2005/07/05 06:46:23  arthchan2003
  * 1, Merged from HEAD.  2, fixed dox-doc.
@@ -81,41 +84,42 @@
 
 /******** Set the parameters of the classes *************/
 
-#define NUMCLASSES      4	// Number of classes
+#define NUMCLASSES      4	/* Number of classes*/
 
 /*
 #define NUMMIXTURES     32 	// Number of gaussian mixtures used in classification
 */
-#define DIMENSIONS      13	// Length of the feature vector
+#define DIMENSIONS      13	/* Length of the feature vector*/
 #define MAXFRAMES       10000	
 
 /******** Set the names of the classes *************/
-// this is how the mdef file arranged the models
+/* this is how the mdef file arranged the models*/
 
-#define CLASS_N         0 	// Noise
-#define CLASS_O         1 	// Owner speech
-#define CLASS_S         2 	// Secondary speech
-#define CLASS_SIL       3 	// Silence
+#define CLASS_N         0 	/* Noise*/
+#define CLASS_O         1 	/* Owner speech*/
+#define CLASS_S         2 	/* Secondary speech */
+#define CLASS_SIL       3 	/* Silence */
 
 /******** Set the priors of the classes *************/
 
-#define PRIOR_N  	0.1 	// N
-#define PRIOR_O  	0.4 	// O
-#define PRIOR_S  	0.1 	// S
-#define PRIOR_SIL  	0.4 	// SIL
+#define PRIOR_N  	0.1 	/* N */
+#define PRIOR_O  	0.4 	/* O */
+#define PRIOR_S  	0.1 	/* S */
+#define PRIOR_SIL  	0.4 	/* SIL */
 
 /****************************************************/
 
 
 /******** Set the width of the voting Window *************/
 
-#define VOTEWINDOWLEN 	5	// Don't change this number as the code expects 5, or you have to 
-				// change the code
+#define VOTEWINDOWLEN 	5	/* Don't change this number as the code expects 5, or you have to 
+				   change the code*/
 
-#define CLASSLATENCY  	2	// Number of latency frames caused by the post processing (voting window)
+#define CLASSLATENCY  	2	/* Number of latency frames caused by the post processing (voting window)
+				 */
 
-#define POSTPROCESS	1	// Enabling/disabling post-processing
-
+#define POSTPROCESS	1	/* Enabling/disabling post-processing
+			 */
 /**************************************************/
 
 /**

@@ -48,17 +48,20 @@
  * incorporating to Sphinx 3.x
  *
  * $Log$
- * Revision 1.4  2006/03/03  19:45:02  egouvea
+ * Revision 1.5  2006/03/03  20:02:37  arthchan2003
+ * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
+ * 
+ * Revision 1.4  2006/03/03 19:45:02  egouvea
  * Clean up the log handling. In logs3.c, removed unnecessary variables
  * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
- * 
+ *
  * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
  * with r_lscr, since the only difference is that one is a double, the
  * other an int (and as such, they differ on the order of 1e-12).
- * 
+ *
  * In future cleanups.... replace the "int" declaration with "int32",
  * used in the rest of the code.
- * 
+ *
  * Revision 1.3  2006/02/24 13:40:50  arthchan2003
  * Commented overlap currently.
  *
@@ -366,7 +369,7 @@ void post_check_lattice(ca_dag *word_lattice,dict_t *dict)
     if (d != word_lattice->exit.to) {
       fwdscore = CONFIDENCE_MIN_INT;
       for (l = d->succlist; l; l = l->next)
-	fwdscore = logs3_add(fwdscore, l->ascore); //int_add(fwdscore, l->ascore);
+	fwdscore = logs3_add(fwdscore, l->ascore); /*int_add(fwdscore, l->ascore);*/
       n = 0;
       bwdscore = CONFIDENCE_MIN_INT;
       for (l = d->succlist; l; l = l->next) {
@@ -374,7 +377,7 @@ void post_check_lattice(ca_dag *word_lattice,dict_t *dict)
 	for (ll = tod->predlist; ll; ll = ll->next) {
 	  if (ll->to == d) {
 	    n++;
-	    bwdscore = logs3_add(bwdscore, ll->ascore); //int_add(bwdscore, ll->ascore);
+	    bwdscore = logs3_add(bwdscore, ll->ascore); /*nt_add(bwdscore, ll->ascore);*/
 	  }
 	}
       }
@@ -394,7 +397,7 @@ void post_check_lattice(ca_dag *word_lattice,dict_t *dict)
       bwdscore = CONFIDENCE_MIN_INT;
       for (l = d->predlist; l; l = l->next) {
 	/*	E_INFO("bwdscore %d, l->ascore %d\n", bwdscore, l->ascore);*/
-	bwdscore = logs3_add(bwdscore, l->ascore); //int_add(bwdscore, l->ascore);
+	bwdscore = logs3_add(bwdscore, l->ascore); /*int_add(bwdscore, l->ascore); */
       }
       n = 0;
       fwdscore = CONFIDENCE_MIN_INT;
@@ -405,7 +408,7 @@ void post_check_lattice(ca_dag *word_lattice,dict_t *dict)
 	    n++;
 	    /*	    E_INFO("fwdscore %d, ll->ascore %d\n", fwdscore, ll->ascore);*/
 
-	    fwdscore = logs3_add(fwdscore, ll->ascore); //int_add(fwdscore, ll->ascore);
+	    fwdscore = logs3_add(fwdscore, ll->ascore); /*int_add(fwdscore, ll->ascore); */
 	  }
 	}
       }
