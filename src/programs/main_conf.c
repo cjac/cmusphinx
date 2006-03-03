@@ -50,12 +50,23 @@
  * 
 
  * $Log$
- * Revision 1.3  2006/03/01  00:11:34  egouvea
+ * Revision 1.4  2006/03/03  19:45:03  egouvea
+ * Clean up the log handling. In logs3.c, removed unnecessary variables
+ * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
+ * 
+ * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
+ * with r_lscr, since the only difference is that one is a double, the
+ * other an int (and as such, they differ on the order of 1e-12).
+ * 
+ * In future cleanups.... replace the "int" declaration with "int32",
+ * used in the rest of the code.
+ * 
+ * Revision 1.3  2006/03/01 00:11:34  egouvea
  * Added MS Visual C projects for each of the missing executables, fixed
  * compilation problems. Code now compiles in MS .NET, with several
  * warnings such as "signed/unsigned mismatch" and "conversion ...,
  * possible loss of data", which we normally ignore.
- * 
+ *
  * Revision 1.2  2006/02/24 03:50:11  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Added application conf.
  *
@@ -323,7 +334,7 @@ int main(int argc, char *argv[])
 
   logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
 
-  E_INFO("Value of log %f \n",logs3_10base());
+  E_INFO("Value of base %f \n", cmd_ln_float32("-logbase"));
   models_init();
   ptmr_init(&tm_utt);
 
