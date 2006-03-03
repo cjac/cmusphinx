@@ -36,7 +36,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "sys/time.h"
+#include <sys/time.h>
 #include "metrics.h"
 #include "ckd_alloc.h"
 
@@ -83,10 +83,9 @@ static NamedDuration *findDuration(const char *name)
 void metricsStart(const char *name)
 {
     struct timeval tv;
-    struct timezone tz;
     NamedDuration *namedDuration;
 
-    gettimeofday(&tv,&tz);
+    gettimeofday(&tv, NULL);
     namedDuration = findDuration(name);
 
     if (namedDuration == NULL)
@@ -107,10 +106,9 @@ void metricsStop(const char *name)
 {
     double time_current;
     struct timeval tv;
-    struct timezone tz;
     NamedDuration *namedDuration;
 
-    gettimeofday(&tv,&tz);
+    gettimeofday(&tv, NULL);
     namedDuration = findDuration(name);
 
     if (namedDuration == NULL)
