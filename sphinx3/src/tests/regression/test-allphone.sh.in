@@ -5,14 +5,12 @@
 echo "ALLPHONE TEST"
 tmpout="test-allphone.out"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone \
--logbase 1.0003 \
+margs="-logbase 1.0003 \
 -mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
 -mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
 -var @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
 -mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
 -tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
--lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP \
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
@@ -23,7 +21,11 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/all
 -hyp allphone.match \
 -hypseg allphone.matchseg \
 -phsegdir ./ \
--phlatdir ./
+-phlatdir ./"
+
+lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone $margs $lmargs 
 
 if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG allp test PASSED"; else \
@@ -40,3 +42,22 @@ echo "ALLPHONE PHONE TG match test FAILED"; fi
 if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.matchseg > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG matchseg test PASSED"; else \
 echo "ALLPHONE PHONE TG matchseg test FAILED"; fi
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone $margs
+
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE LOOP allp test PASSED"; else \
+echo "ALLPHONE PHONE LOOP allp test FAILED"; fi
+
+if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE LOOP phlat test PASSED"; else \
+echo "allphone PHONE LOOP phlat test FAILED"; fi
+
+if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.match > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE LOOP match test PASSED"; else \
+echo "ALLPHONE PHONE LOOP match test FAILED"; fi
+
+if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.matchseg > /dev/null 2>&1); \
+then echo "ALLPHONE PHONE LOOP matchseg test PASSED"; else \
+echo "ALLPHONE PHONE LOOP matchseg test FAILED"; fi
+
