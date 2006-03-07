@@ -42,9 +42,12 @@
 *
 * HISTORY
  * $Log$
- * Revision 1.25  2006/02/24  13:41:26  arthchan2003
- * Used lm_read_advance instead of lm_read
+ * Revision 1.26  2006/03/07  21:04:19  dhdfu
+ * Fill in the word string in srch_hyp_t
  * 
+ * Revision 1.25  2006/02/24 13:41:26  arthchan2003
+ * Used lm_read_advance instead of lm_read
+ *
  * Revision 1.24  2006/02/22 22:36:56  arthchan2003
  * changed cmd_ln_access to cmd_ln_int32 in live_decode_API.c
  *
@@ -517,7 +520,8 @@ ld_record_hyps(live_decoder_t *_decoder, int _end_utt)
   for (node = hyp_list; node != NULL; node = gnode_next(node), i++) {
     hyp = (srch_hyp_t *)gnode_ptr(node);
     hyp_segs[i] = hyp;
-    
+
+    hyp->word = dict_wordstr(dict, dict_basewid(dict, hyp->id));
     if (!dict_filler_word(dict, hyp->id) && hyp->id != finish_wid) {
       strcat(hyp_strptr, dict_wordstr(dict, dict_basewid(dict, hyp->id)));
       hyp_strptr += strlen(hyp_strptr);
