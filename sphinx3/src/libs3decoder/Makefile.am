@@ -5,6 +5,7 @@ lib_LTLIBRARIES = libs3decoder.la
 #lib_LTLIBRARIES = libam.la
 #lib_LTLIBRARIES = libs3decoder.la
 
+libs3decoder_la_LDFLAGS = -version-info 0:6:0
 libs3decoder_la_SOURCES = 
 
 
