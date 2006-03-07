@@ -3,7 +3,7 @@ ARCH   = `uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 noinst_LTLIBRARIES = libcep_feat.la
 
 
-libcep_feat_la_LDFLAGS = -version-info 0:4:0
+libcep_feat_la_LDFLAGS = -version-info 0:6:0
 
 libcep_feat_la_SOURCES = \
 	agc.c \
