@@ -1,0 +1,58 @@
+#!/bin/sh
+
+tmpout="test-decode-mode2.out"
+tmpmatch="test-decode-mode2.match"
+
+echo "DECODE FSG TEST"
+
+margs=" \
+-mdef  @abs_top_srcdir@/model/hmm/tidigits/wd_dependent_phone.500.mdef \
+-dict @abs_top_srcdir@/model/hmm/tidigits/dictionary \
+-fdict  @abs_top_srcdir@/model/hmm/tidigits/fillerdict \
+-mean  @abs_top_srcdir@/model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/means.LittleEndian \
+-var   @abs_top_srcdir@/model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/variances.LittleEndian \
+-mixw  @abs_top_srcdir@/model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/mixture_weights.LittleEndian \
+-tmat  @abs_top_srcdir@/model/hmm/tidigits/wd_dependent_phone.cd_continuous_8gau/transition_matrices.LittleEndian \
+-cepdir @abs_top_srcdir@/model/hmm/tidigits/cepstra/ \
+-hyp $tmpmatch \
+-agc none \
+-varnorm no \
+-cmn current \
+-lw 9.5 \
+-op_mode 2 \
+"
+
+fsgargs=" \
+-fsg @abs_top_srcdir@/model/hmm/tidigits/test.digits.fsg \
+-ctl @abs_top_srcdir@/model/hmm/tidigits/tidigits.length.arb.regression \
+"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode $margs $fsgargs > $tmpout 2>&1
+
+                                  
+if(diff $tmpmatch @abs_top_srcdir@/model/hmm/tidigits/tidigits.length.arb.result > /dev/null 2>&1); \
+then echo "DECODE FSG ARBITRARY LENGTH DIGIT STRING test PASSED"; else \
+echo "DECODE FSG ARBITRARY LENGTH DIGIT STRING test FAILED"; fi
+
+fsgargs=" \
+-fsg src/tests/regression/../../../model/hmm/tidigits/test.iso.digits.fsg \
+-ctl src/tests/regression/../../../model/hmm/tidigits/tidigits.length.1.regression \
+"
+
+sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/decode $margs $fsgargs > $tmpout 2>&1
+
+if(diff $tmpmatch src/tests/regression/../../../model/hmm/tidigits/tidigits.length.1.result > /dev/null 2>&1); \
+then echo "DECODE FSG LENGTH 1 DIGIT (ISOLATED DIGIT) STRING test PASSED"; else \
+echo "DECODE FSG LENGTH 1 DIGIT (ISOLATED DIGITS) STRING test FAILED"; fi
+
+fsgargs=" \
+-fsg src/tests/regression/../../../model/hmm/tidigits/test.2.digits.fsg \
+-ctl src/tests/regression/../../../model/hmm/tidigits/tidigits.length.2.regression \
+"
+
+sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/decode $margs $fsgargs > $tmpout 2>&1
+
+if(diff $tmpmatch src/tests/regression/../../../model/hmm/tidigits/tidigits.length.2.result > /dev/null 2>&1); \
+then echo "DECODE FSG LENGTH 2 DIGIT STRING test PASSED"; else \
+echo "DECODE FSG LENGTH 2 DIGIT STRING test FAILED"; fi
+
