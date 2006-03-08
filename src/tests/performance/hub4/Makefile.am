@@ -54,4 +54,83 @@ hub4_flatunigram-decode hub4_trigram-decode:
 	$(ALIGNBIN) -r $@.sent -h $@.match
 
 
+hub4_flatunigram-decode hub4_trigram-decode:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
 
+hub4_trigram-decode-f0:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f0,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f0 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f0 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+
+hub4_trigram-decode-f1:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f1,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f1 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f1 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+hub4_trigram-decode-f2:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f2,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f2 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f2 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+hub4_trigram-decode-f3:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f3,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f3 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f3 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+hub4_trigram-decode-f4:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f4,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f4 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f4 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+hub4_trigram-decode-f5:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-f5,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep f5 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep f5 | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
+
+hub4_trigram-decode-fx:
+	-rm -f $@.results $@.match $@.match.*
+	/bin/cat ARGS.hub4_base ARGS.$(subst -decode-fx,,$@) > ARGS.$@
+	awk '{print $$1}' $(CTL_FILE) |grep fx | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> ./$@.ctl
+	echo "-ctl $@.ctl" >> ARGS.$@
+	echo "-hyp $@.match" >> ARGS.$@
+	$(DECODEBIN) ./ARGS.$@ > $@.results 2>&1 
+	awk '{for(i=2;i<=NF;i++){printf("%s ",$$i)}; printf("(%s)\n",$$1)}' $(CTL_FILE) |grep fx | sed -e "s/\.raw//" -e "s/supervised/cepstra/"> $@.sent
+	$(ALIGNBIN) -r $@.sent -h $@.match
