@@ -88,16 +88,6 @@ ad_rec_t *ad_open_sps (int32 sps) {
     char *dev;
     int32 numberChannels=1;
     
-    if (sps != DEFAULT_SAMPLES_PER_SEC) {
-      if(abs(sps - DEFAULT_SAMPLES_PER_SEC) <= SPS_EPSILON) {
-	fprintf(stderr, "Audio sampling rate %d is within %d of %d samples/sec\n",
-		sps, SPS_EPSILON, DEFAULT_SAMPLES_PER_SEC);
-      } else {
-	fprintf(stderr, "Audio sampling rate %d not supported; must be %d samples/sec\n",
-		sps, DEFAULT_SAMPLES_PER_SEC);
-	return NULL;
-      }
-    }
     sampleRate = sps;
     
     /* Used to have O_NDELAY. */
