@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.9  2006/02/23  03:45:02  arthchan2003
- * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
+ * Revision 1.10  2006/03/10  04:42:24  dhdfu
+ * Add a slightly hacked-up version of PortAudio to get Mac OS X audio
+ * support.  This is way more code than we actually need to just get
+ * audio input on the Mac, but it will do for the time being.
  * 
+ * Revision 1.9  2006/02/23 03:45:02  arthchan2003
+ * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
+ *
  *
  * Revision 1.7.4.2  2005/07/05 06:24:21  arthchan2003
  * Fixed dox-doc.
@@ -141,6 +146,10 @@
 #elif defined(AD_BACKEND_IRIX)
 
 #include <dmedia/audio.h>
+
+#elif defined(AD_BACKEND_PORTAUDIO)
+
+#include "pablio.h"
 
 #endif
 
@@ -253,6 +262,13 @@ typedef struct {
     int32 recording;	/* TRUE iff currently recording */
     int32 sps;		/* Samples/sec */
     int32 bps;		/* Bytes/sample */
+} ad_rec_t;
+
+#elif defined(AD_BACKEND_PORTAUDIO)
+typedef struct {
+  PABLIO_Stream *astream;
+  int32 sps;
+  int32 bps;
 } ad_rec_t;
 
 #else
