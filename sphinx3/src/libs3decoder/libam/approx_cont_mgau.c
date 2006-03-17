@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.16  2006/02/22  14:52:07  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Changed a->sen to a->senscr, it makes applications in the new architecture better.
+ * Revision 1.17  2006/03/17  23:35:42  egouvea
+ * mdef_is_cisenone failed if only ci phones were used. Changed condition to return 0 if senid is higher than n_sen, satisfying the loops in approx_cont_mgau
  * 
+ * Revision 1.16  2006/02/22 14:52:07  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: Changed a->sen to a->senscr, it makes applications in the new architecture better.
+ *
  * Revision 1.15.4.2  2005/09/25 18:51:50  arthchan2003
  * Add a FIXME in approx_cont_mgau.c. Yes, sorting is too slow.
  *

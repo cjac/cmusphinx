@@ -45,18 +45,24 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.10  2006/02/22  16:52:51  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ * Revision 1.11  2006/03/17  23:35:42  egouvea
+ * mdef_is_cisenone failed if only ci phones were used. Changed condition to return 0 if senid is higher than n_sen, satisfying the loops in approx_cont_mgau
  * 
+ * Revision 1.10  2006/02/22 16:52:51  arthchan2003
+ * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ *
  * Revision 1.9.4.1  2005/07/03 22:54:09  arthchan2003
  * move st2senmap into mdef_t, it was not properly freed before. \n
  *
  * Revision 1.9  2005/06/21 18:47:39  arthchan2003
  * Log. 1, Added breport flag to mdef_init, 2, implemented reporting functions to
  * mdef_report. 3, Fixed doxygen-style documentation. 4, Added $Log$
- * Revision 1.10  2006/02/22  16:52:51  arthchan2003
- * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ * Revision 1.11  2006/03/17  23:35:42  egouvea
+ * mdef_is_cisenone failed if only ci phones were used. Changed condition to return 0 if senid is higher than n_sen, satisfying the loops in approx_cont_mgau
  * 
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added Revision 1.10  2006/02/22 16:52:51  arthchan2003
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed memory leaks in mdef. 2,  Fixed $, 3, Fixed dox-doc.
+ * mdef_report. 3, Fixed doxygen-style documentation. 4, Added
  *
  * Revision 1.4  2005/04/21 23:50:26  archan
  * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
@@ -390,7 +396,10 @@ int32 mdef_is_ciphone (mdef_t *m, s3pid_t p)
 int32 mdef_is_cisenone (mdef_t *m, s3senid_t s)
 {
     assert (m);
-    assert ((s >= 0) && (s < m->n_sen));
+    if (s >= m->n_sen) {
+        return 0;
+    }
+    assert (s >= 0);
     return ((s == m->cd2cisen[s]) ? 1 : 0);
 }
 
