@@ -45,17 +45,23 @@
  * HISTORY
  *
  * $Log$
- * Revision 1.12  2005/10/05  15:42:52  dhdfu
- * Accidentally checked-in a different version, reverting...
+ * Revision 1.13  2006/03/18  21:49:54  dhdfu
+ * Port this to Unix (sorry about the kind of ugly thread-abstraction macros)
  * 
+ * Revision 1.12  2005/10/05 15:42:52  dhdfu
+ * Accidentally checked-in a different version, reverting...
+ *
  * Revision 1.10  2005/06/22 05:39:56  arthchan2003
  * Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  *
  * Revision 1.2  2005/03/30 00:43:41  archan
  * Add $Log$
- * Revision 1.12  2005/10/05  15:42:52  dhdfu
- * Accidentally checked-in a different version, reverting...
+ * Revision 1.13  2006/03/18  21:49:54  dhdfu
+ * Port this to Unix (sorry about the kind of ugly thread-abstraction macros)
  * 
+ * Add Revision 1.12  2005/10/05 15:42:52  dhdfu
+ * Add Accidentally checked-in a different version, reverting...
+ * Add
  * Add Revision 1.10  2005/06/22 05:39:56  arthchan2003
  * Add Synchronize argument with decode. Removed silwid, startwid and finishwid.  Wrapped up logs3_init, Wrapped up lmset. Refactor with functions in dag.
  * Add into most of the .[ch] files. It is easy to keep track changes.
@@ -82,26 +88,91 @@
 #include <stdio.h>
 
 #define BUFSIZE 4096
+#define TIMEOUT 100
 
-HANDLE startEvent;
-HANDLE finishEvent;
+#ifdef WIN32
+#include <windows.h>
+#define THREAD_START DWORD WINAPI
+#define COND_TIMEDOUT WAIT_TIMEOUT
+typedef HANDLE condition_t;
+typedef HANDLE thread_t;
+#define cond_wait(c) WaitForSingleObject(c, INFINITE)
+#define cond_wait_timed(cc,ticks)  WaitForSingleObject(*(cc),ticks)
+#define cond_signal(c) SetEvent(c)
+#define create_cond(cc) (*(cc) = CreateEvent(NULL, TRUE, FALSE, NULL))
+#define create_thread(tt, proc) (*(tt) = CreateThread(NULL, 0, proc, NULL, 0, NULL))
+#define join_thread(t) WaitForSingleObject(t, INFINITE)
+
+#else /* !WIN32 */
+
+#include <pthread.h>
+#include <sys/time.h>
+#include <time.h>
+#define THREAD_START void *
+#define COND_TIMEDOUT ETIMEDOUT
+typedef struct {
+	pthread_cond_t cond;
+	pthread_mutex_t mtx;
+} condition_t;
+typedef pthread_t thread_t;
+#define cond_wait(c) {				\
+	pthread_mutex_lock(&(c).mtx);		\
+	pthread_cond_wait(&(c).cond, &(c).mtx);	\
+	pthread_mutex_unlock(&(c).mtx);		\
+}
+int cond_wait_timed(condition_t *c, int ticks)
+{
+	struct timeval now;
+	struct timespec timeout;
+	int rv;
+
+	pthread_mutex_lock(&c->mtx);
+	gettimeofday(&now, NULL);
+	timeout.tv_sec = now.tv_sec + ((ticks) / 1000);
+	timeout.tv_nsec = now.tv_usec * 1000 + ((ticks) % 1000) * 1000000;
+	if (timeout.tv_nsec > 1000000000) {
+	  ++timeout.tv_sec;
+	  timeout.tv_nsec -= 1000000000;
+	}
+	rv = pthread_cond_timedwait(&c->cond, &c->mtx, &timeout);
+	pthread_mutex_unlock(&c->mtx);
+	return rv;
+}
+#define cond_signal(c) {			\
+	pthread_mutex_lock(&(c).mtx);		\
+	pthread_cond_signal(&(c).cond);		\
+	pthread_mutex_unlock(&(c).mtx);		\
+}
+#define create_cond(cc) {			\
+	pthread_cond_init(&(cc)->cond, NULL);	\
+	pthread_mutex_init(&(cc)->mtx, NULL);	\
+}
+#define create_thread(tt, proc) pthread_create(tt, NULL, proc, NULL)
+#define join_thread(t) pthread_join(t, NULL)
+#endif /* !WIN32 */
+
+condition_t startEvent;
+condition_t finishEvent;
 live_decoder_t decoder;
 
 FILE *dump = 0;
 
-DWORD WINAPI
-process_thread(LPVOID aParam)
+THREAD_START
+process_thread(void * aParam)
 {
   ad_rec_t *in_ad = 0;
   int16 samples[BUFSIZE];
   int32 num_samples;
 
-  WaitForSingleObject(startEvent, INFINITE);
+  cond_wait(startEvent);
 
-  in_ad = ad_open_sps(cmd_ln_int32 ("-samprate"));
+  if ((in_ad = ad_open_sps((int)cmd_ln_float32("-samprate"))) == NULL) {
+    printf("Failed to open audio input device\n");
+    exit(1);
+  }
   ad_start_rec(in_ad);
 
-  while (WaitForSingleObject(finishEvent, 0) == WAIT_TIMEOUT) {
+  while (cond_wait_timed(&finishEvent, TIMEOUT) == COND_TIMEDOUT) {
     num_samples = ad_read(in_ad, samples, BUFSIZE);
     if (num_samples > 0) {
       /** dump the recorded audio to disk */
@@ -124,7 +195,7 @@ process_thread(LPVOID aParam)
 int
 main(int argc, char **argv)
 {
-  HANDLE thread;
+  thread_t thread;
   char buffer[1024];
   char *hypstr;
 
@@ -157,9 +228,9 @@ main(int argc, char **argv)
     return -1;
   }
 
-  startEvent = CreateEvent(NULL, TRUE, FALSE, "StartEvent");
-  finishEvent = CreateEvent(NULL, TRUE, FALSE, "FinishEvent");
-  thread = CreateThread(NULL, 0, process_thread, NULL, 0, NULL);
+  create_cond(&startEvent);
+  create_cond(&finishEvent);
+  create_thread(&thread, &process_thread);
 
   /*
    * Wait for some user input, then signal the processing thread to start
@@ -167,7 +238,7 @@ main(int argc, char **argv)
    */
   printf("press ENTER to start recording\n");
   fgets(buffer, 1024, stdin);
-  SetEvent(startEvent);
+  cond_signal(startEvent);
 
   /*
    *  Wait for some user input again, then signal the processing thread to end
@@ -175,12 +246,12 @@ main(int argc, char **argv)
    */
   printf("press ENTER to finish recording\n");
   fgets(buffer, 1024, stdin);
-  SetEvent(finishEvent);
+  cond_signal(finishEvent);
 
   /*
    *  Wait for the working thread to join
    */
-  WaitForSingleObject(thread, INFINITE);
+  join_thread(thread);
 
   /*
    *  Print the decoding output

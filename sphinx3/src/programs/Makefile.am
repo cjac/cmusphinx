@@ -1,5 +1,6 @@
 bin_PROGRAMS = decode \
 	       livepretend \
+	       livedecode \
 	       decode_anytopo \
 	gausubvq \
 	align \
@@ -15,6 +16,7 @@ bin_PROGRAMS = decode \
 
 
 livepretend_SOURCES = main_livepretend.c 
+livedecode_SOURCES = main_livedecode.c 
 decode_SOURCES = decode.c
 decode_anytopo_SOURCES = main_decode_anytopo.c 
 align_SOURCES = main_align.c s3_align.c
@@ -45,6 +47,11 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
 	$(top_builddir)/src/libutil/libutil.la \
 	-lm  @ad_libs@ 
+
+livedecode_LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
+	$(top_builddir)/src/libs3audio/libs3audio.la \
+	$(top_builddir)/src/libutil/libutil.la \
+	-lm -lpthread  @ad_libs@ 
 
 #	-lm -ldmalloc @ad_libs@ 
 #	-lm -ldmalloc @ad_libs@ 
