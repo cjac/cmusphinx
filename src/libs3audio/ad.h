@@ -46,11 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.10  2006/03/10  04:42:24  dhdfu
+ * Revision 1.11  2006/03/18  19:57:18  dhdfu
+ * Add optional (also untested) ESD audio support
+ * 
+ * Revision 1.10  2006/03/10 04:42:24  dhdfu
  * Add a slightly hacked-up version of PortAudio to get Mac OS X audio
  * support.  This is way more code than we actually need to just get
  * audio input on the Mac, but it will do for the time being.
- * 
+ *
  * Revision 1.9  2006/02/23 03:45:02  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
  *
@@ -234,6 +237,15 @@ typedef struct {
     int32 recording;
     int32 sps;		/* Samples/sec */
     int32 bps;		/* Bytes/sample */
+} ad_rec_t;
+
+#elif defined(AD_BACKEND_ESD)
+
+typedef struct {
+    int32 fd;
+    int32 recording;
+    int32 sps;
+    int32 bps;
 } ad_rec_t;
 
 #elif defined(AD_BACKEND_ALSA)
