@@ -51,6 +51,16 @@ AC_ARG_WITH(alsa,
             AC_CHECK_HEADER(sys/asoundlib.h,,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
+dnl This may also be useful
+AC_ARG_WITH(esd,
+           AC_HELP_STRING([--with-esd], [Use ESound daemon for sound I/O]),
+           [ad_files="ad_esd.lo"
+            ad_backend="AD_BACKEND_ESD"
+            ad_libs="-lesd"
+            CFLAGS="$CFLAGS -DAD_BACKEND_ESD"
+            AC_CHECK_HEADER(esd.h,,
+                    AC_ERROR(ESD header file <esd.h> not found!))]
+)
 
 dnl soundcard.h defaults to <soundcard.h>. If <sys/soundcard.h> is
 dnl found instead, then use the latter.
