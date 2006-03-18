@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <esd.h>
 
 #include "s3types.h"
@@ -60,7 +61,8 @@ ad_rec_t *ad_open_sps (int32 sps)
 	ad_rec_t *ad;
 	int fd;
 
-	if ((fd = esd_record_stream_fallback(ESD_MONO | ESD_BITS16,
+	if ((fd = esd_record_stream_fallback(ESD_BITS16 | ESD_MONO
+					     | ESD_STREAM | ESD_RECORD,
 					     sps, NULL, NULL)) < 0) {
 		/* FIXME: We'd like a better error message, probably. */
 		fprintf(stderr, "Failed to open ESD record stream.\n");
@@ -70,6 +72,10 @@ ad_rec_t *ad_open_sps (int32 sps)
 	if ((ad = calloc(1, sizeof(ad_rec_t))) == NULL) {
 		fprintf(stderr, "calloc(%ld) failed\n", sizeof(ad_rec_t));
 		abort();
+	}
+	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0) {
+		fprintf(stderr, "Failed to set non-blocking: %s\n",
+			strerror(errno));
 	}
 	ad->fd = fd;
 	ad->recording = 0;
@@ -87,12 +93,14 @@ ad_rec_t *ad_open ( void )
 
 int32 ad_start_rec (ad_rec_t *r)
 {
+	r->recording = 1;
 	return 0;
 }
 
 
 int32 ad_stop_rec (ad_rec_t *r)
 {
+	r->recording = 0;
 	return 0;
 }
 
@@ -102,9 +110,8 @@ int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
 	int32 length;
 
 	length = max * r->bps;
-	if ((length = read(r->fd, buf, length)) > 0) {
+	if ((length = read(r->fd, buf, length)) > 0)
 		length /= r->bps;
-	}
 	if (length < 0) {
 		if (errno!=EAGAIN){ 
 			fprintf(stderr, "Audio read error: %s\n",
