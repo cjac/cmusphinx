@@ -89,13 +89,19 @@ setparams(int32 sps, snd_pcm_t *handle)
 {
     snd_pcm_hw_params_t *hwparams;
     unsigned int out_sps;
-    int out_dir;
     int err;
 
     snd_pcm_hw_params_alloca(&hwparams);
     err = snd_pcm_hw_params_any(handle, hwparams);
     if (err < 0) {
 	    fprintf(stderr, "Can not configure this PCM device: %s\n",
+		    snd_strerror(err));
+	    return -1;
+    }
+
+    err = snd_pcm_hw_params_set_access(handle, hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
+    if (err < 0) {
+	    fprintf(stderr, "Failed to set PCM device to interleaved: %s\n",
 		    snd_strerror(err));
 	    return -1;
     }
@@ -114,7 +120,8 @@ setparams(int32 sps, snd_pcm_t *handle)
 	    return -1;
     }
 
-    err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &out_sps, &out_dir);
+    out_sps = sps;
+    err = snd_pcm_hw_params_set_rate_near(handle, hwparams, &out_sps, NULL);
     if (err < 0) {
 	    fprintf(stderr, "Failed to set sampling rate: %s\n",
 		    snd_strerror(err));
@@ -126,10 +133,16 @@ setparams(int32 sps, snd_pcm_t *handle)
 	    return -1;
     }
 
-    /* I think we don't particularly care about the buffersize, but I could be wrong. */
     err = snd_pcm_hw_params(handle, hwparams);
     if (err < 0) {
 	    fprintf(stderr, "Failed to set hwparams: %s\n",
+		    snd_strerror(err));
+	    return -1;
+    }
+
+    err = snd_pcm_nonblock(handle, 1);
+    if (err < 0) {
+	    fprintf(stderr, "Failed to set non-blocking mode: %s\n",
 		    snd_strerror(err));
 	    return -1;
     }
@@ -183,7 +196,7 @@ ad_rec_t *ad_open_sps (int32 sps)
 {
     ad_rec_t *handle;
     snd_pcm_t *dspH;
-    const char *dev = "plughw:0,0";
+    const char *dev = "plughw:0,0,0";
 
     int err;
     
@@ -238,14 +251,21 @@ int32 ad_close (ad_rec_t *handle)
 
 int32 ad_start_rec (ad_rec_t *handle)
 {
+    int err;
+
     if (handle->dspH == NULL)
 	return AD_ERR_NOT_OPEN;
     
     if (handle->recording)
 	return AD_ERR_GEN;
-    
+
+    /* This is actually not necessary. */
+    err = snd_pcm_start(handle->dspH);
+    if (err < 0) {
+	fprintf(stderr, "snd_pcm_start failed: %s\n", snd_strerror(err));
+	return AD_ERR_GEN;
+    }
     handle->recording = 1;
-    snd_pcm_prepare(handle->dspH);
 
     return(0);
 }
@@ -276,24 +296,23 @@ int32 ad_stop_rec (ad_rec_t *handle)
 int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
 {
     int32 length;
-    static int infoz = 0;
 
-    length = max * handle->bps;		/* #samples -> #bytes */
-    length = snd_pcm_readi(handle->dspH, buf, length);
-    if (length > 0) {
-	if (length % 2) {
-	    fprintf(stderr, "snd_pcm_readi returned an odd number: %d\n", length);
-	    abort();
-	}
-	length /= handle->bps;
-    } else if (length < 0) {
-	fprintf(stderr, "Audio read error\n");
-	return AD_ERR_GEN;
-    } else if (!handle->recording)
+    length = snd_pcm_readi(handle->dspH, buf, max);
+    if (length == -EAGAIN) {
+      length = 0;
+    }
+    else if (length == -EPIPE || length == -ESTRPIPE) {
+      fprintf(stderr, "Input overrrun (non-fatal)\n");
+      snd_pcm_prepare(handle->dspH);
+      length = 0;
+    }
+    else if (length < 0) {
+      if (!handle->recording)
 	return AD_EOF;
-#if 0					/* only do this if you're stumped */
-    if ((length != 0) && (++infoz < 200))
-	fprintf(stderr, "ad_read(0x%08lx,0x%08lx,%d) => %d\n", handle, buf, max,length);
-#endif
+      else {
+	fprintf(stderr, "Audio read error: %s\n", snd_strerror(length));
+	return AD_ERR_GEN;
+      }
+    }
     return length;
 }
