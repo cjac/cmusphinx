@@ -43,10 +43,11 @@ dnl Added from suggestion by
 dnl Jasper van Veghel <jvveghel@vanboxtelsoftware.nl>, 02/03/2003:
 AC_ARG_WITH(alsa,
            AC_HELP_STRING([--with-alsa], [Use ALSA library for sound I/O]),
-           [ad_files="ad_alsa.lo",
-            ad_backend="AD_BACKEND_ALSA",
-            ad_libs="-lasound",
-                   CFLAGS="$CFLAGS -DAD_BACKEND_ALSA",
+           [ad_files="ad_alsa.lo"
+            ad_backend="AD_BACKEND_ALSA"
+            ad_libs="-lasound"
+	    # We must remove -ansi because ALSA headers don't like it (is it really worth it?)
+            CFLAGS="`echo $CFLAGS -DAD_BACKEND_ALSA | sed -e s,-ansi,,`"
             AC_CHECK_HEADER(sys/asoundlib.h,,
                     AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
 )
