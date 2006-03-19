@@ -15,7 +15,7 @@ if test $1 = "archan"
 fi
 
 # Arthur : To be replaced by global symbol
-sphinx_ver="sphinx3-0.5"
+sphinx_ver="sphinx3-0.6"
 
 #Package name 
 package_name="sphinx3"
