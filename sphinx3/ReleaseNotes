@@ -134,6 +134,7 @@
 	backward posterior probability have mismatch
 	-In allphone, sometimes the scores generated in the matchseg file 
 	will have very low scores. 
+	-Regression test on second-stage search still have bugs. 
 	
 	Corresponding changes in SphinxTrain
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
