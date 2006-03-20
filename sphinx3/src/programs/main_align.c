@@ -46,9 +46,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.19  2006/02/27  15:58:16  arthchan2003
- * Fixed align, which I forgot to apply regression matrix there.  Luckily, it is detected by make check.
+ * Revision 1.20  2006/03/20  16:29:30  dhdfu
+ * Add an option to output xlabel-style phone label files for TTS and visualization purposes.
  * 
+ * Revision 1.19  2006/02/27 15:58:16  arthchan2003
+ * Fixed align, which I forgot to apply regression matrix there.  Luckily, it is detected by make check.
+ *
  * Revision 1.18  2006/02/24 18:30:20  arthchan2003
  * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
  *
@@ -278,6 +281,14 @@ static arg_t defn[] = {
       ARG_STRING,
       NULL,
       "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL" },
+    { "-phlabdir",
+      ARG_STRING,
+      NULL,
+      "Output directory for xlabel style phone labels; optionally end with ,CTL" },
+    { "-frate",
+      ARG_INT32,
+      DEFAULT_FRAME_RATE,
+      "Frame rate (only requred for xlabel style phone labels)"}, \
     
     { NULL, ARG_INT32, NULL, NULL }
 };
@@ -309,6 +320,7 @@ static FILE *sentfp = NULL;
 static char *s2stsegdir = NULL;
 static char *stsegdir = NULL;
 static char *phsegdir = NULL;
+static char *phlabdir = NULL;
 static char *wdsegdir = NULL;
 
 
@@ -415,7 +427,7 @@ static void models_init ( void )
 
 /*
  * Build a filename int buf as follows (without file extension):
- *     if dir ends with ,CTL and ctlspec does not begin with /, filename is dir/ctlspec
+ *     if dir ends with ,CTLand ctlspec does not begin with /, filename is dir/ctlspec
  *     if dir ends with ,CTL and ctlspec DOES begin with /, filename is ctlspec
  *     if dir does not end with ,CTL, filename is dir/uttid,
  * where ctlspec is the complete utterance spec in the input control file, and
@@ -663,6 +675,59 @@ static void write_phseg (char *dir, align_phseg_t *phseg, char *uttid, char *ctl
     }
 }
 
+/* Write xlabel style phone segmentation output file */
+static void write_phlab (char *dir, align_phseg_t *phseg, char *uttid, char *ctlspec)
+{
+    char str[1024];
+    FILE *fp;
+    int32 f, scale, fps;
+
+    fps = cmd_ln_int32("-frate");
+    /* Attempt to write segmentation for this utt to a separate file */
+    build_output_uttfile (str, dir, uttid, ctlspec);
+    strcat (str, ".lab");
+    E_INFO("Writing xlabel style phone labels to: %s\n", str);
+    if ((fp = fopen (str, "w")) == NULL) {
+	E_ERROR("fopen(%s,w) failed\n", str);
+	fp = stdout;	/* Segmentations can be directed to stdout this way */
+	E_INFO ("Phone segmentation (%s):\n", uttid);
+	dir = NULL;	/* Flag to indicate fp shouldn't be closed at the end */
+    }
+    
+    if (! dir){
+	fprintf (fp, "PH:%s>", uttid);
+	fflush(fp);
+    }
+    fprintf (fp, "#\n");
+    for (; phseg; phseg = phseg->next) {
+	const char *name;
+
+	name = mdef_ciphone_str(kbc->mdef, kbc->mdef->phone[phseg->pid].ci);
+	
+	/* Account for senone score scaling in each frame */
+	scale = 0;
+
+	for (f = phseg->sf; f <= phseg->ef; f++){
+	    scale += senscale[f];
+	}
+	
+	if (! dir){
+	    fprintf (fp, "ph:%s>", uttid);
+	    fflush(fp);
+	}
+	fprintf (fp, "%0.6f 125 %s\n",
+		 (double)phseg->ef / fps, name);
+	fflush(fp);
+    }
+
+    if (dir)
+	fclose (fp);
+    else{
+	fprintf (fp, "\n");
+	fflush(fp);
+    }
+}
+
 
 /* Write word segmentation output file */
 static void write_wdseg (char *dir, align_wdseg_t *wdseg, char *uttid, char *ctlspec)
@@ -816,6 +881,8 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	    write_stseg (stsegdir, stseg, uttid, ctlspec);
 	if (phsegdir)
 	    write_phseg (phsegdir, phseg, uttid, ctlspec);
+	if (phlabdir)
+	    write_phlab (phsegdir, phseg, uttid, ctlspec);
 	if (wdsegdir)
 	    write_wdseg (wdsegdir, wdseg, uttid, ctlspec);
 	if (outsentfp)
@@ -936,6 +1003,8 @@ main (int32 argc, char *argv[])
     stsegdir = (char *) ckd_salloc (cmd_ln_str ("-stsegdir"));
   if (cmd_ln_str ("-phsegdir") != NULL)
     phsegdir = (char *) ckd_salloc (cmd_ln_str ("-phsegdir"));
+  if (cmd_ln_str ("-phlabdir") != NULL)
+    phlabdir = (char *) ckd_salloc (cmd_ln_str ("-phlabdir"));
   if (cmd_ln_str ("-wdsegdir") != NULL)
     wdsegdir = (char *) ckd_salloc (cmd_ln_str ("-wdsegdir"));
 
@@ -964,6 +1033,7 @@ main (int32 argc, char *argv[])
 
   if ((cmd_ln_access ("-s2stsegdir") == NULL) &&
       (cmd_ln_access ("-stsegdir") == NULL) &&
+      (cmd_ln_access ("-phlabdir") == NULL) &&
       (cmd_ln_access ("-phsegdir") == NULL) &&
       (cmd_ln_access ("-wdsegdir") == NULL) &&
       (cmd_ln_access ("-outsent") == NULL))
