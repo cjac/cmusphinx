@@ -87,8 +87,7 @@
 	a, One could turn on built-in letter-to-sound rule in dict.c by using -lts_mismatch. 
 	b, current Sphinx 3.6 is tested to work on setup of English,
 	Chinese Mandarin, French and English. 
-	c, changes in ep: [To be filled in.]
-	d, changes in allphone: allphone can now generate a match and a matchseg just like
+	c, changes in allphone: allphone can now generate a match and a matchseg just like
 	decode* recognizers. 
 
 	Bug fixes
@@ -98,7 +97,9 @@
 	word insertion penalty and language model weight. This is now fixed. 
 	-Assertion generated vithist.c is now turn into an error
 	message.  Instead of causing the whole program stopped.  The
-	decoding will just fail for that sentnece. 
+	decoding will just fail for that sentnece.  We suspect that this is
+	the problem which caused possible wipe out of memory in Sphinx
+	3.4 & 3.5		
 	-Number of CI phones could now be at most 32767 (instead of 127)
 	-[1236322]: libutil\str2words special character bugs. 
 
@@ -116,12 +117,16 @@
 
 	-executable dag hadn't accounted for the language weight.  Now
 	this issue is fixed.
+	
+	-(See Bug fixes also) decode will now return error message
+	when vithist was fed in with history -1.  Instead of asserting
+	the problem.  The recognizer will dump Warning
+	message. Usually that means beam widths need to increase. 
 
 	Functions still under test 
 	-----------------------------------------
 	-Encoding conversion in lm_convert. 
-	-LIUM contribution. LM could now represented as AT&T fsm format. 
-
+	-LIUM contribution: LM could now represented as AT&T fsm format. 
 
 	Known bugs
 	------------------------------------------
@@ -136,7 +141,8 @@
 	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_6_CMU_INTERNAL_RELEASE SphinxTrain
 	through time stamp SPHINX3_5_CMU_INTERNAL_RELEASE
 	
-	[To be filled in]
+	-Support for generation of MAP, multiple-class MLLR. 
+	-Support for BBI tree generation
 
 2004-08-25  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University.
 
