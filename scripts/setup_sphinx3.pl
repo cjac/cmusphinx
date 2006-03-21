@@ -143,7 +143,7 @@ my @dir_candidates = ();
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Release";
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Debug";
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin";
-push @dir_candidates, $INSTALL if ($INSTALL ne "");
+push @dir_candidates, "$INSTALL/bin" if ($INSTALL ne "");
 
 my $execdir = executable_dir(@dir_candidates);
 
