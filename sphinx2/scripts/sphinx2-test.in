@@ -1,5 +1,5 @@
 #!/bin/sh
-S2BATCH=@prefix@/bin/sphinx2-continuous
+S2BATCH=@prefix@/bin/sphinx2_continuous
 HMM=@prefix@/share/sphinx2/model/hmm/6k
 TASK=@prefix@/share/sphinx2/model/lm/turtle
 CTLFILE=@prefix@/share/sphinx2/model/lm/turtle/turtle.ctl

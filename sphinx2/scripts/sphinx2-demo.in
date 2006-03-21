@@ -39,7 +39,7 @@ my $task = "$s2root/model/lm/turtle";
 die "don't know how to do '$task' and cant find $task directory: $!" 
   unless -d $task;
 
-$pgm = "@prefix@/bin/sphinx2-continuous";
+$pgm = "@prefix@/bin/sphinx2_continuous";
 
 if (! -x $pgm) {
   foreach (@INC) {

@@ -8,12 +8,12 @@ bin_PROGRAMS = adpow \
         lm3g2dmp \
 	pdf32to8b \
 	raw2cep \
-	sphinx2-allphone \
-	sphinx2-batch \
-	sphinx2-continuous \
-	sphinx2-ptt \
-	sphinx2-server \
-	sphinx2-client
+	sphinx2_allphone \
+	sphinx2_batch \
+	sphinx2_continuous \
+	sphinx2_ptt \
+	sphinx2_server \
+	sphinx2_client
 
 EXTRA_DIST = README \
 	README.bin \

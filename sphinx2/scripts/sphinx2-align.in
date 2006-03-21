@@ -2,7 +2,7 @@
 # example script to call sphinx2-batch to do forced alignment
 
 # the binary to run
-S2BATCH=sphinx2-batch
+S2BATCH=sphinx2_batch
 
 # the HMM directory 
 HMM=@prefix@/share/sphinx2/model/hmm/6k
