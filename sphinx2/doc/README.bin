@@ -6,7 +6,7 @@ bin/ : binaries of example programs and scripts.  sources
           for these are in src/examples/ and they link
           against lib/libsphinx2.a
 
-  sphinx2-test: a simple shell script that calls sphinx2-batch
+  sphinx2-test: a simple shell script that calls sphinx2_batch
           to decode an example utterance in the demo, called
           goforward.16k, which contains the utterance 
           "GO FORWARD TEN METERS".  If you've built Sphinx2
@@ -31,29 +31,29 @@ bin/ : binaries of example programs and scripts.  sources
               http://www.speech.cs.cmu.edu/sphinx/
 
   sphinx2-simple: a simple command-line call that runs 
-          sphinx2-continuous with all the necessary
+          sphinx2_continuous with all the necessary
           command-line options.  this is a good thing
           to look at and use when you first start out.
           This gives a lot of diagnostic info that 
           sphinx2-demo suppresses.
           
-  sphinx2-continuous: this is a compiled example that takes
+  sphinx2_continuous: this is a compiled example that takes
           a large number of command line arguments to 
           run directly -- thus the sphinx2-demo script
           above.  it takes audio from /dev/dsp and prints
           out its status while decoding. listens all the
           time.  
 
-  sphinx2-ptt: like sphinx2-continuous, but you press
+  sphinx2_ptt: like sphinx2_continuous, but you press
           a key to start and stop listening.  hack 
           sphinx2-demo if you prefer this behaviour;
           change $PGM.
 
-  sphinx2-batch: batch mode executable.  use this on 
+  sphinx2_batch: batch mode executable.  use this on 
           pre-recorded files; requires command line switches 
           similar to those shown in turtle-demo.
 
-  sphinx2-client and sphinx2-server: a lightweight client
+  sphinx2_client and sphinx2_server: a lightweight client
           and a server version of sphinx so that you can
           have the recognizer on one machine and be 
           using the results somewhere else.

@@ -36,7 +36,7 @@ change the bang path to perl at the top.
 -in MS Windows (TM), under MS Visual C++ 6.0 (or better):
 
 -load sphinx2.dsw (located at the top level directory)
--compile minimally the project 'sphinx2-continuous'
+-compile minimally the project 'sphinx2_continuous'
 -in a command prompt (Follow the menus "Start" -> "Run" -> "cmd"), cd
 to the location where you installed sphinx2 (e.g., c:\sphinx2-0.5)
 -run .\win32\batch\sphinx-test.bat
@@ -47,7 +47,7 @@ and the libraries under .\lib\Release or .\lib\Build.
 
 When successfully built, either in unix/linux or in Windows,
 sphinx2-test (or sphinx2-test.bat, in Windows) should run
-sphinx2-continuous (or sphinx2-continuous.exe) over an example
+sphinx2_continuous (or sphinx2_continuous.exe) over an example
 utterance of "go forward ten meters".
 
 Please see the web site at
