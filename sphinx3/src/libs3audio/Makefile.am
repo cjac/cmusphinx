@@ -12,7 +12,7 @@ EXTRA_libs3audio_la_SOURCES = ad_base.c \
 	pa_mac_core.c \
 	pa_trace.c \
 	pablio.c \
-	ringbuffer.c
+	ringbuffer.c \
 	ad_oss.c \
 	ad_oss_bsd.c \
 	ad_alsa.c \
