@@ -17,7 +17,7 @@ echo "This will perform several tests that compare the converted LMs to a pre-ge
 #then echo "LM_CONVERT PHONE LM TXT -> DMP test PASSED"; else \
 #echo "LM_CONVERT PHONE LM TXT -> DMP test FAILED"; fi 
 
-sh @abs_top_srcdir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
 -input @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP \
 -inputfmt DMP \
 -output $tmptxt \
