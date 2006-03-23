@@ -55,7 +55,11 @@ CLEANFILES = chan3.mfc \
 	test-*.mfc \
 	tmp.out \
 	pittsburgh.* \
-	tmp
+	tmp \
+	test-align-mllr.log \
+	allphone.match \
+	allphone.matchseg \
+	test-lm_convert.*
 
 etags:
 	etags `find . -name "*.[ch]"`
