@@ -1,6 +1,0 @@
-*.lo
-.deps
-.libs
-Makefile
-Makefile.in
-libsphinx2.la
