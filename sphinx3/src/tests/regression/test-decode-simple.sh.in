@@ -1,6 +1,5 @@
 #!/bin/sh
 
-
 # (README BEFORE YOU CHANGE THIS TEST) ARCHAN: 
 # This is perhaps the most important test for the decoder because the argument specified
 # is the smallest set that one could use the decoder. 
@@ -23,7 +22,7 @@ tmpout="test-decode-simple.out"
 
 echo "DECODE SIMPLE TEST"
 
-sh  @abs_top_builddir@/libtool --mode=execute cp @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mdef
+#sh  @abs_top_builddir@/libtool --mode=execute cp @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mdef
 
 margs="-hmm @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/ \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
