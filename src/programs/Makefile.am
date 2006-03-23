@@ -74,6 +74,7 @@ INCLUDES = -I$(top_srcdir) \
 	-I$(top_srcdir)/src/libs3decoder/libsearch/ \
 	-I$(top_srcdir)/src/libutil/ \
         -I$(top_srcdir)/src/libs3audio \
+        -I$(top_builddir)/src/libs3audio \
         -I$(top_builddir)/include
 
 # add for solaris
