@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.20  2006/03/20  16:29:30  dhdfu
- * Add an option to output xlabel-style phone label files for TTS and visualization purposes.
+ * Revision 1.21  2006/03/28  04:50:14  dhdfu
+ * Add an option to control the insertion of optional silences and filler
+ * words (the TTS people may want to use this, and I need it)
  * 
+ * Revision 1.20  2006/03/20 16:29:30  dhdfu
+ * Add an option to output xlabel-style phone label files for TTS and visualization purposes.
+ *
  * Revision 1.19  2006/02/27 15:58:16  arthchan2003
  * Fixed align, which I forgot to apply regression matrix there.  Luckily, it is detected by make check.
  *
@@ -288,8 +292,11 @@ static arg_t defn[] = {
     { "-frate",
       ARG_INT32,
       DEFAULT_FRAME_RATE,
-      "Frame rate (only requred for xlabel style phone labels)"}, \
-    
+      "Frame rate (only requred for xlabel style phone labels)"},
+  { "-insert_sil",
+    ARG_INT32,
+    "1",
+    "Whether to insert optional silences and fillers between words." },
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -833,7 +840,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     ptmr_start (timers+tmr_utt);
 
 
-    if (align_build_sent_hmm (sent) != 0) {
+    if (align_build_sent_hmm (sent, cmd_ln_int32("-insert_sil")) != 0) {
 	align_destroy_sent_hmm ();
 	ptmr_stop (timers+tmr_utt);
 

@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2006/02/24  18:30:20  arthchan2003
- * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ * Revision 1.9  2006/03/28  04:50:14  dhdfu
+ * Add an option to control the insertion of optional silences and filler
+ * words (the TTS people may want to use this, and I need it)
  * 
+ * Revision 1.8  2006/02/24 18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ *
  * Revision 1.7  2006/02/24 13:45:55  arthchan2003
  * Forgotten to check in changes in s3_align.c
  *
@@ -782,7 +786,7 @@ static void dump_sent_hmm ( void )
  * HMM.
  * Return 0 if successful, <0 if any error (eg, OOV word encountered).
  */
-int32 align_build_sent_hmm (char *wordstr)
+int32 align_build_sent_hmm (char *wordstr, int insert_sil)
 {
     s3wid_t w, nextw;
     int32 k, oov;
@@ -845,7 +849,7 @@ int32 align_build_sent_hmm (char *wordstr)
     }
     
     /* Create node(s) for <s> before any transcript word */
-    word_end = append_transcript_word (dict->startwid, &phead, nextw, 0, 1);
+    word_end = append_transcript_word (dict->startwid, &phead, nextw, 0, insert_sil);
 
     /* Append each word in transcription to partial sent HMM created so far */
     while (k >= 0) {
@@ -870,13 +874,13 @@ int32 align_build_sent_hmm (char *wordstr)
 		nextw = dict_basewid (dict, nextw);
 	}
 
-	word_end = append_transcript_word (w, word_end, nextw, 1, 1);
+	word_end = append_transcript_word (w, word_end, nextw, insert_sil, insert_sil);
     }
     if (oov)
 	return -1;
     
     /* Append phone HMMs for </s> at the end; link to tail node */
-    word_end = append_transcript_word (dict->finishwid, word_end, BAD_S3WID, 1, 0);
+    word_end = append_transcript_word (dict->finishwid, word_end, BAD_S3WID, insert_sil, 0);
     for (node = word_end; node; node = node->next)
 	link_pnodes (node, &ptail);
     

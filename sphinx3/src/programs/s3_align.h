@@ -46,9 +46,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.8  2006/02/24  18:30:20  arthchan2003
- * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ * Revision 1.9  2006/03/28  04:50:14  dhdfu
+ * Add an option to control the insertion of optional silences and filler
+ * words (the TTS people may want to use this, and I need it)
  * 
+ * Revision 1.8  2006/02/24 18:30:20  arthchan2003
+ * Changed back s3senid to int32.  Don't know the reason why using s3senid_t will cause failure in test. Need to talk with Dave.
+ *
  * Revision 1.7  2006/02/24 16:42:48  arthchan2003
  * Fixed function prototype for align_sen_active
  *
@@ -142,7 +146,9 @@ typedef struct align_wdseg_s {
 
 int32 align_init ( mdef_t *_mdef, tmat_t *_tmat, dict_t *_dict );
 
-int32 align_build_sent_hmm (char *transcript);
+int32 align_build_sent_hmm (char *transcript, /**< In: Word transcript */
+			    int insert_sil    /**< In: Whether to insert silences/fillers */
+	);
 
 int32 align_destroy_sent_hmm ( void );
 
