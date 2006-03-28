@@ -150,23 +150,32 @@ setparams(int32 sps, snd_pcm_t *handle)
 }
 
 static int
-setlevels(int card, int device)
+setlevels(const char *dev)
 {
     snd_mixer_t *handle;
     snd_mixer_selem_id_t *sid;
     snd_mixer_elem_t *elem;
     int err;
+    char *mixer_dev, *c;
 
     /* Basically we just want to turn on Mic capture. */
     if ((err = snd_mixer_open(&handle, 0)) < 0) { 
 	fprintf(stderr, "Mixer open failed: %s\n", snd_strerror(err)); 
 	return -1;
     } 
-    if ((err = snd_mixer_attach(handle, "hw:0")) < 0) { 
-	fprintf(stderr, "Mixer attach to hw:0 failed: %s\n", snd_strerror(err)); 
+
+    mixer_dev = strdup(dev);
+    if (strncmp(mixer_dev, "plug", 4) == 0)
+	    memmove(mixer_dev, mixer_dev+4, strlen(mixer_dev)-4+1);
+    if ((c = strchr(mixer_dev, ',')))
+	    *c = '\0';
+    if ((err = snd_mixer_attach(handle, mixer_dev)) < 0) { 
+	fprintf(stderr, "Mixer attach to %s failed: %s\n", mixer_dev, snd_strerror(err)); 
+	free(mixer_dev);
 	snd_mixer_close(handle);
 	return -1;
     } 
+    free(mixer_dev);
     if ((err = snd_mixer_selem_register(handle, NULL, NULL)) < 0) { 
 	fprintf(stderr, "Mixer register failed: %s\n", snd_strerror(err)); 
 	snd_mixer_close(handle);
@@ -192,11 +201,10 @@ setlevels(int card, int device)
     return 0;
 }
 
-ad_rec_t *ad_open_sps (int32 sps)
+ad_rec_t *ad_open_dev (const char *dev, int32 sps)
 {
     ad_rec_t *handle;
     snd_pcm_t *dspH;
-    const char *dev = "plughw:0,0,0";
 
     int err;
     
@@ -210,7 +218,7 @@ ad_rec_t *ad_open_sps (int32 sps)
     if (setparams(sps, dspH) < 0) {
 	return NULL;
     }
-    if (setlevels(0, 0) < 0) {
+    if (setlevels(dev) < 0) {
 	return NULL;
     }
     if ((handle = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL) {
@@ -226,6 +234,10 @@ ad_rec_t *ad_open_sps (int32 sps)
     return(handle);
 }
 
+ad_rec_t *ad_open_sps ( int32 sps )
+{
+    return ad_open_dev (DEFAULT_DEVICE, sps);
+}
 
 ad_rec_t *ad_open ( void )
 {
