@@ -88,7 +88,7 @@ static int
 setparams(int32 sps, snd_pcm_t *handle)
 {
     snd_pcm_hw_params_t *hwparams;
-    unsigned int out_sps;
+    unsigned int out_sps, buffer_time, period_time;
     int err;
 
     snd_pcm_hw_params_alloca(&hwparams);
@@ -130,6 +130,24 @@ setparams(int32 sps, snd_pcm_t *handle)
     if (abs(out_sps - sps) > SPS_EPSILON) {
 	    fprintf(stderr, "Available samping rate %d is too far from requested %d\n",
 		    out_sps, sps);
+	    return -1;
+    }
+
+    /* Set buffer time to the maximum. */
+    err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time, 0);
+    period_time = buffer_time / 4;
+    err = snd_pcm_hw_params_set_period_time_near(handle, hwparams,
+						 &period_time, 0);
+    if (err < 0) {
+	    fprintf(stderr, "Failed to set period time to %u: %s\n",
+		    period_time, snd_strerror(err));
+	    return -1;
+    }
+    err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams,
+						 &buffer_time, 0);
+    if (err < 0) {
+	    fprintf(stderr, "Failed to set buffer time to %u: %s\n",
+		    buffer_time, snd_strerror(err));
 	    return -1;
     }
 
