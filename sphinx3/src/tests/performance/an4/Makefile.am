@@ -43,7 +43,7 @@ INCLUDES = -I$(top_srcdir) \
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
-	$(top_builddir)/src/libutil/libutil.la \
+	$(top_builddir)/src/libutil/libs3util.la \
 	-lm @ad_libs@ 
 
 PROGRAMDIR= ${top_builddir}/src/programs

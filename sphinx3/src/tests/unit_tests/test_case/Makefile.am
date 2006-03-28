@@ -7,7 +7,7 @@ INCLUDES = \
 	-I$(top_srcdir)/src/libutil \
 	-I$(top_builddir)/include
 
-LDADD = ${top_builddir}/src/libutil/libutil.la \
+LDADD = ${top_builddir}/src/libutil/libs3util.la \
 	-lm @ad_libs@
 
 

@@ -10,7 +10,7 @@ INCLUDES = \
         -I$(top_srcdir)/src/libs3decoder/libcommon/ \
         -I$(top_builddir)/include
 
-LDADD = ${top_builddir}/src/libutil/libutil.la \
+LDADD = ${top_builddir}/src/libutil/libs3util.la \
 	${top_builddir}/src/libs3decoder/libs3decoder.la \
         -lm @ad_libs@
 

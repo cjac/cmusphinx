@@ -1,10 +1,10 @@
 ARCH   = `uname -m | sed s/i.86/i386/`_`uname -s | tr A-Z a-z`
 
-lib_LTLIBRARIES = libutil.la
+lib_LTLIBRARIES = libs3util.la
 
-libutil_la_LDFLAGS = -version-info 0:4:0
+libs3util_la_LDFLAGS = -version-info 0:4:0
 
-libutil_la_SOURCES = \
+libs3util_la_SOURCES = \
         bitvec.c \
         case.c \
         ckd_alloc.c \
