@@ -56,6 +56,13 @@
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 
+ad_rec_t *ad_open_dev (const char *dev, int32 samples_per_sec)
+{
+    fprintf(stderr, "A/D library not implemented\n");
+    return NULL;
+}
+
+
 ad_rec_t *ad_open_sps (int32 samples_per_sec)
 {
     fprintf(stderr, "A/D library not implemented\n");

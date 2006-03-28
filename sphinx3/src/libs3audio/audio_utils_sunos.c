@@ -68,7 +68,7 @@ static	int	sampleEncoding;
 /*
  * Open audio, put it in paused state, and set IO to non-blocking mode.
  */
-int	audioOpen(int rate)
+int	audioOpen(const char *dev, int rate)
 {
     int		fd;
     int		non_blocking;
@@ -90,7 +90,7 @@ int	audioOpen(int rate)
      * Open the device for read-only access and do not block (wait) if
      * the device is currently busy.
      */
-    fd = open("/dev/audio", O_RDONLY | O_NDELAY);
+    fd = open(dev, O_RDONLY | O_NDELAY);
     if (fd < 0) {
 	if (errno == EBUSY)
 	    fprintf(stderr, "audioOpen: audio device is busy\n");

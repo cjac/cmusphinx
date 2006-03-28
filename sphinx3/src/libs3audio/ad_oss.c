@@ -69,29 +69,24 @@
 #include <s3types.h>
 #include "ad.h"
 
-
 #define AUDIO_FORMAT AFMT_S16_LE	/* 16-bit signed, little endian */
-#define INPUT_GAIN   (85)
+#define INPUT_GAIN   (80)
 
 #define SPS_EPSILON   200
 #define SAMPLERATE_TOLERANCE 0.01
 
-ad_rec_t *ad_open_sps (int32 sps) {
+ad_rec_t *ad_open_dev (const char *dev, int32 sps) {
     ad_rec_t *handle;
     int32 dspFD, mixerFD;
-    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN;
-    /*int32 devMask=0; ARCHAN 20041205*/ 
-
+    int32 nonBlocking=1, sourceMic=SOUND_MASK_MIC, inputGain=INPUT_GAIN, devMask=0;
     int32 audioFormat=AUDIO_FORMAT;
     int32 dspCaps=0;
     int32 sampleRate;
-    char *dev;
     int32 numberChannels=1;
     
     sampleRate = sps;
     
     /* Used to have O_NDELAY. */
-    dev = "/dev/dsp";
     if((dspFD = open (dev, O_RDONLY))<0){
 	if (errno == EBUSY)
 	    fprintf(stderr, "%s(%d): Audio device(%s) busy\n",
@@ -203,17 +198,36 @@ ad_rec_t *ad_open_sps (int32 sps) {
     /* Set the same gain for left and right channels. */
     inputGain = inputGain << 8 | inputGain;
 
-    if(ioctl(mixerFD, SOUND_MIXER_WRITE_MIC, &inputGain)<0){
-      fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
-              inputGain, strerror(errno));
-      exit(1);
+    /* Some OSS devices have no input gain control, but do have a
+       recording level control.  Find out if this is one of them and
+       adjust accordingly. */
+    if (ioctl(mixerFD, SOUND_MIXER_READ_DEVMASK, &devMask) < 0) {
+	fprintf(stderr, "%s %d: failed to read device mask: %s\n", __FILE__, __LINE__,
+		strerror(errno));
+	exit(1); /* FIXME: not a well-behaved-library thing to do! */
+    }
+    if (devMask & SOUND_MASK_IGAIN) {
+	if (ioctl(mixerFD, SOUND_MIXER_WRITE_IGAIN, &inputGain) < 0){
+	    fprintf(stderr, "%s %d: mixer input gain to %d: %s\n", __FILE__, __LINE__,
+		    inputGain, strerror(errno));
+	    exit(1);
+	}
+    } else if (devMask & SOUND_MASK_RECLEV) {
+	if (ioctl(mixerFD, SOUND_MIXER_WRITE_RECLEV, &inputGain) < 0){
+	    fprintf(stderr, "%s %d: mixer record level to %d: %s\n", __FILE__, __LINE__,
+		    inputGain, strerror(errno));
+	    exit(1);
+	}
+    } else {
+        fprintf(stderr, "%s %d: can't set input gain/recording level for this device.\n",
+                __FILE__, __LINE__);
     }
 
     close(mixerFD);
   }
 
   if ((handle = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL) {
-      fprintf(stderr, "calloc(%d) failed\n", sizeof(ad_rec_t));
+      fprintf(stderr, "calloc(%ld) failed\n", sizeof(ad_rec_t));
       abort();
   }
     
@@ -225,12 +239,15 @@ ad_rec_t *ad_open_sps (int32 sps) {
   return(handle);
 }
 
+ad_rec_t *ad_open_sps ( int32 sps )
+{
+    return ad_open_dev (DEFAULT_DEVICE, sps);
+}
 
 ad_rec_t *ad_open ( void )
 {
     return ad_open_sps (DEFAULT_SAMPLES_PER_SEC);
 }
-
 
 int32 ad_close (ad_rec_t *handle)
 {
@@ -247,7 +264,6 @@ int32 ad_close (ad_rec_t *handle)
     
     return(0);
 }
-
 
 int32 ad_start_rec (ad_rec_t *handle)
 {
@@ -270,7 +286,6 @@ int32 ad_start_rec (ad_rec_t *handle)
     return(0);
 }
 
-
 int32 ad_stop_rec (ad_rec_t *handle)
 {
     if (handle->dspFD < 0)
@@ -288,7 +303,6 @@ int32 ad_stop_rec (ad_rec_t *handle)
     
     return (0);
 }
-
 
 int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
 {

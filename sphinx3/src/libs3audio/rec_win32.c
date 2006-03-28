@@ -228,7 +228,7 @@ ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
     int32 i, j;
     HWAVEIN h;
     
-    if ((h = wavein_open (sps, sizeof(int16))) == NULL)
+    if ((h = wavein_open ((DWORD)dev, sps, sizeof(int16))) == NULL)
 	return NULL;
     
     if ((r = (ad_rec_t *) malloc (sizeof (ad_rec_t))) == NULL) {
@@ -271,6 +271,12 @@ ad_rec_t *ad_open_sps_bufsize (int32 sps, int32 bufsize_msec)
     r->bps = sizeof(int16);	/* HACK!! Hardwired value for bytes/sec */
 
     return r;
+}
+
+/* FIXME: Dummy function, doesn't actually use dev. */
+ad_rec_t *ad_open_dev (const char *dev, int32 sps)
+{
+    return (ad_open_sps_bufsize (sps, WI_BUFSIZE*DEFAULT_N_WI_BUF*1000/sps));
 }
 
 
