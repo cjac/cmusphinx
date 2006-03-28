@@ -41,7 +41,7 @@ LIBDIR=$(shell test -d $(TOP)/lib || mkdir $(TOP)/lib; cd $(TOP)/lib; pwd;)
 
 CFLAGS += $(EXTRA_CC_FLAGS) $(OPT) $(DBG) $(LOCAL_INCLUDES) $(INCLUDES)
 LDFLAGS += -L$(LIBDIR) $(EXTRA_LD_FLAGS)
-STLIBS = -ls3decoder -lutil -ls3audio
+STLIBS = -ls3decoder -ls3util -ls3audio
 LIBS = $(STLIBS) -lm
 
 %.o : %.c
