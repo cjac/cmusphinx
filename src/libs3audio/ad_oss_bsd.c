@@ -76,7 +76,7 @@
 
 
 #define AUDIO_FORMAT AFMT_S16_LE	/* 16-bit signed, little endian */
-#define INPUT_GAIN   (85)
+#define INPUT_GAIN   (80)
 
 #define SPS_EPSILON   200
 
@@ -84,7 +84,7 @@
 #define SNDCTL_DSP_SETDUPLEX -1
 #endif
 
-ad_rec_t *ad_open_sps (int32 sps) {
+ad_rec_t *ad_open_dev (const char *dev, int32 sps) {
     ad_rec_t *handle;
     int32 dspFD, mixerFD;
     int32 nonBlocking=1, sourceMic=1, inputGain=INPUT_GAIN;
@@ -95,7 +95,7 @@ ad_rec_t *ad_open_sps (int32 sps) {
     sampleRate = sps;
     
     /* Used to have O_NDELAY. */
-    if((dspFD = open ("/dev/dsp", O_RDONLY))<0){
+    if((dspFD = open (dev, O_RDONLY))<0){
 	if (errno == EBUSY)
 	    fprintf(stderr, "Audio device busy\n");
 	else
@@ -215,12 +215,15 @@ ad_rec_t *ad_open_sps (int32 sps) {
   return(handle);
 }
 
+ad_rec_t *ad_open_sps ( int32 sps )
+{
+    return ad_open_dev (DEFAULT_DEVICE, sps);
+}
 
 ad_rec_t *ad_open ( void )
 {
     return ad_open_sps (DEFAULT_SAMPLES_PER_SEC);
 }
-
 
 int32 ad_close (ad_rec_t *handle)
 {
@@ -237,7 +240,6 @@ int32 ad_close (ad_rec_t *handle)
     
     return(0);
 }
-
 
 int32 ad_start_rec (ad_rec_t *handle)
 {
@@ -260,7 +262,6 @@ int32 ad_start_rec (ad_rec_t *handle)
     return(0);
 }
 
-
 int32 ad_stop_rec (ad_rec_t *handle)
 {
     if (handle->dspFD < 0)
@@ -278,7 +279,6 @@ int32 ad_stop_rec (ad_rec_t *handle)
     
     return (0);
 }
-
 
 int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
 {

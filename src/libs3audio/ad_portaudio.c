@@ -49,7 +49,7 @@
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 
-ad_rec_t *ad_open_sps (int32 samples_per_sec)
+ad_rec_t *ad_open_dev (const char *dev, int32 samples_per_sec)
 {
     PABLIO_Stream *astream;
     ad_rec_t *adrec;
@@ -68,6 +68,11 @@ ad_rec_t *ad_open_sps (int32 samples_per_sec)
     adrec->bps = sizeof(int16);
 
     return adrec;
+}
+
+ad_rec_t *ad_open_sps ( int32 sps )
+{
+    return ad_open_dev (DEFAULT_DEVICE, sps);
 }
 
 

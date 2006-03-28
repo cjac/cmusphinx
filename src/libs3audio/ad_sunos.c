@@ -66,32 +66,28 @@
 
 #define QUIT(x)		{fprintf x; exit(-1);}
 
-ad_rec_t *ad_open_sps (int32 sps)
+ad_rec_t *ad_open_dev (const char *dev, int32 sps)
 {
     ad_rec_t *r;
     
     if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
 	return NULL;
     
-    r->audio_fd = audioOpen ((int)sps);
+    r->audio_fd = audioOpen (dev, (int)sps);
     r->recording = 0;
     
     return r;
+}
+
+ad_rec_t *ad_open_sps ( int32 sps )
+{
+    return ad_open_dev (DEFAULT_DEVICE, sps);
 }
 
 ad_rec_t *ad_open ( void )
 {
-    ad_rec_t *r;
-    
-    if ((r = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL)
-	return NULL;
-    
-    r->audio_fd = audioOpen (16000);
-    r->recording = 0;
-    
-    return r;
+    return ad_open_dev (DEFAULT_DEVICE, DEFAULT_SAMPLES_PER_SEC);
 }
-
 
 int32 ad_start_rec (ad_rec_t *r)
 {

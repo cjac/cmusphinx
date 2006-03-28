@@ -46,9 +46,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.11  2006/03/18  19:57:18  dhdfu
- * Add optional (also untested) ESD audio support
+ * Revision 1.12  2006/03/28  02:25:10  dhdfu
+ * Add another ad_open() function, called ad_open_dev(), to allow people
+ * like me to use a different audio device (such as a USB microphone) for
+ * speech input.
  * 
+ * Revision 1.11  2006/03/18 19:57:18  dhdfu
+ * Add optional (also untested) ESD audio support
+ *
  * Revision 1.10  2006/03/10 04:42:24  dhdfu
  * Add a slightly hacked-up version of PortAudio to get Mac OS X audio
  * support.  This is way more code than we actually need to just get
@@ -190,6 +195,9 @@ typedef struct {
 /** \struct ad_rec_t
  *  \brief Audio recording structure. 
  */
+
+#define DEFAULT_DEVICE (char*)DEV_MAPPER
+
 typedef struct {
     HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
     ad_wbuf_t *wi_buf;	/* Recording buffers provided to system */
@@ -206,6 +214,8 @@ typedef struct {
 
 #elif defined(AD_BACKEND_OSF)
 
+#define DEFAULT_DEVICE NULL
+
 typedef struct {
     AFAudioConn *aud;
     AC ac;
@@ -218,6 +228,8 @@ typedef struct {
 
 #elif defined(AD_BACKEND_SUNOS)
 
+#define DEFAULT_DEVICE "/dev/audio"
+
 typedef struct {
     int32 audio_fd;
     int32 recording;
@@ -226,6 +238,8 @@ typedef struct {
 } ad_rec_t;
 
 #elif defined(AD_BACKEND_OSS) || defined(AD_BACKEND_OSS_BSD)
+
+#define DEFAULT_DEVICE "/dev/dsp"
 
 /** \struct ad_rec_t
  *  \brief Audio recording structure. 
@@ -241,6 +255,7 @@ typedef struct {
 
 #elif defined(AD_BACKEND_ESD)
 
+#define DEFAULT_DEVICE NULL
 typedef struct {
     int32 fd;
     int32 recording;
@@ -250,6 +265,7 @@ typedef struct {
 
 #elif defined(AD_BACKEND_ALSA)
 
+#define DEFAULT_DEVICE "plughw:0,0,0"
 typedef struct {
     snd_pcm_t *dspH;
     int32 recording;
@@ -259,6 +275,7 @@ typedef struct {
 
 #elif defined(AD_BACKEND_HPUX)
 
+#define DEFAULT_DEVICE NULL
 typedef struct {
     Audio *audio;	/* The main audio handle */
     ATransID xid;	/* The current transaction ID */
@@ -269,6 +286,7 @@ typedef struct {
 } ad_rec_t;
 
 #elif defined(AD_BACKEND_IRIX)
+#define DEFAULT_DEVICE NULL
 typedef struct {
     ALport audio;	/* The main audio handle */
     int32 recording;	/* TRUE iff currently recording */
@@ -277,6 +295,7 @@ typedef struct {
 } ad_rec_t;
 
 #elif defined(AD_BACKEND_PORTAUDIO)
+#define DEFAULT_DEVICE NULL /* FIXME */
 typedef struct {
   PABLIO_Stream *astream;
   int32 sps;
@@ -290,6 +309,7 @@ typedef struct {
    \brief Dummy definition for systems without A/D stuff 
 */
 
+#define DEFAULT_DEVICE NULL
 typedef struct {
     int32 sps;		/**< Samples/sec */
     int32 bps;		/**< Bytes/sample */
@@ -305,6 +325,11 @@ typedef struct {
  * otherwise.  The return value to be used as the first argument to other recording
  * functions.
  */
+ad_rec_t *ad_open_dev (
+	const char *dev, /**< Device name (platform-specific) */
+	int32 samples_per_sec /**< Samples per second */
+	);
+
 ad_rec_t *ad_open_sps (
 		       int32 samples_per_sec /**< Samples per second */
 		       );
