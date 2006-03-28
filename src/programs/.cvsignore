@@ -8,12 +8,15 @@ align
 allphone
 astar
 cepview
+conf
 dag
 decode
 decode_anytopo
+dp
 ep
 gausubvq
 livedecode
 livepretend
 livepretendDEVEL
+lm_convert
 wave2feat
