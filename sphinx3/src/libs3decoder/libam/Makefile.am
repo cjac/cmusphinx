@@ -13,6 +13,7 @@ libam_la_SOURCES = \
 	gs.c \
 	hmm.c \
 	interp.c \
+	kdtree.c \
 	mdef.c \
 	mllr.c \
 	ms_gauden.c \
@@ -20,36 +21,12 @@ libam_la_SOURCES = \
 	ms_mllr.c \
 	ms_senone.c \
 	subvq.c \
-	tmat.c
-
-pkginclude_HEADERS = \
-	adaptor.h \
-	approx_cont_mgau.h \
-	cb2mllr_io.h \
-	cont_mgau.h \
-	fast_algo_struct.h \
-	gs.h \
-	hmm.h \
-	interp.h \
-	mdef.h \
-	mllr.h \
-	ms_gauden.h \
-	ms_mgau.h \
-	ms_mllr.h \
-	ms_senone.h \
-	subvq.h \
-	tmat.h
+	tmat.c \
+	log_add.c \
+	s2_semi_mgau.c
 
 INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
-	   -I$(top_srcdir)/src/libs3decoder/libdict/ \
-	   -I$(top_srcdir)/src/libs3decoder/liblm/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon/ \
-	   -I$(top_srcdir)/src/libs3decoder/libsearch/ \
+	   -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

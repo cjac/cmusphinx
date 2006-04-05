@@ -35,10 +35,7 @@
 #
 # ====================================================================
 
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-       -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
 
 
@@ -52,9 +49,9 @@ WSJ5KBATCH=/lab/speech/sphinx4/data/wsj0/wsj0/wsj5k.batch
 WSJ5KNVPBATCH=/lab/speech/sphinx4/data/wsj0/wsj0/wsj5k.e.batch
 PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
-LPBIN = $(PROGRAMDIR)/livepretend
-DECODEBIN = $(PROGRAMDIR)/decode
-DECANYBIN = $(PROGRAMDIR)/decode_anytopo
+LPBIN = $(PROGRAMDIR)/sphinx3_livepretend
+DECODEBIN = $(PROGRAMDIR)/sphinx3_decode
+DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine

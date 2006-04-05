@@ -14,19 +14,10 @@ libcep_feat_la_SOURCES = \
 	fe_sigproc.c \
 	feat.c
 
-pkginclude_HEADERS = \
-	agc.h \
-	cmn.h \
-	cmn_prior.h \
-	fe.h \
-	fe_internal.h \
-	fe_sigproc.c \
-	feat.h
+noinst_HEADERS = \
+	fe_internal.h
 
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

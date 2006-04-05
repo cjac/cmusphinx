@@ -1,7 +1,8 @@
 SUBDIRS = src \
 	doc \
 	scripts \
-	model
+	model \
+	include
 
 EXTRA_DIST = autogen.sh \
 	programs.dsw \
@@ -86,6 +87,7 @@ test-full : \
 	test-decode-clm \
 	test-decode-mllr \
 	test-decode-s3cont \
+	test-decode-s2semi \
 	test-decode-lts \
 	test-decode-mode3 \
 	test-decode-mode3-mulmpx \
@@ -133,6 +135,7 @@ test-decode-mode3-mpx \
 test-decode-mode5 \
 test-decode-mode5-noncomp \
 test-decode-s3cont \
+test-decode-s2semi \
 test-decode-clm \
 test-decode-mllr \
 test-dp \

@@ -27,7 +27,7 @@ fsgargs=" \
 -ctl @abs_top_srcdir@/model/hmm/tidigits/tidigits.length.arb.regression \
 "
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode $margs $fsgargs > $tmpout 2>&1
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_decode $margs $fsgargs > $tmpout 2>&1
 
                                   
 if(diff $tmpmatch @abs_top_srcdir@/model/hmm/tidigits/tidigits.length.arb.result > /dev/null 2>&1); \
@@ -39,7 +39,7 @@ fsgargs=" \
 -ctl src/tests/regression/../../../model/hmm/tidigits/tidigits.length.1.regression \
 "
 
-sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/decode $margs $fsgargs > $tmpout 2>&1
+sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/sphinx3_decode $margs $fsgargs > $tmpout 2>&1
 
 if(diff $tmpmatch src/tests/regression/../../../model/hmm/tidigits/tidigits.length.1.result > /dev/null 2>&1); \
 then echo "DECODE FSG LENGTH 1 DIGIT (ISOLATED DIGIT) STRING test PASSED"; else \
@@ -50,7 +50,7 @@ fsgargs=" \
 -ctl src/tests/regression/../../../model/hmm/tidigits/tidigits.length.2.regression \
 "
 
-sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/decode $margs $fsgargs > $tmpout 2>&1
+sh src/tests/regression/../../.././libtool --mode=execute src/tests/regression/../../.././src/programs/sphinx3_decode $margs $fsgargs > $tmpout 2>&1
 
 if(diff $tmpmatch src/tests/regression/../../../model/hmm/tidigits/tidigits.length.2.result > /dev/null 2>&1); \
 then echo "DECODE FSG LENGTH 2 DIGIT STRING test PASSED"; else \

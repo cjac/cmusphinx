@@ -25,7 +25,7 @@ margs="-logbase 1.0003 \
 
 lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP "
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone $margs $lmargs
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_allphone $margs $lmargs
 
 if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.mllr.allp > /dev/null 2>&1); \
 then echo "ALLPHONE+MLLR PHONE TG allp test PASSED"; else \
@@ -43,7 +43,7 @@ if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s
 then echo "ALLPHONE+MLLR PHONE TG matchseg test PASSED"; else \
 echo "ALLPHONE+MLLR PHONE TG matchseg test FAILED"; fi
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/allphone $margs 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_allphone $margs 
 
 if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.mllr.allp > /dev/null 2>&1); \
 then echo "ALLPHONE+MLLR PHONE LOOP allp test PASSED"; else \

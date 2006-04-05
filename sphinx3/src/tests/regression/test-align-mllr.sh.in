@@ -6,7 +6,7 @@ tmplog="test-align-mllr.log"
 echo "ALIGN+MLLR TEST simple"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/align \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_align \
 -logbase 1.0003 \
 -mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
 -mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \

@@ -35,7 +35,7 @@ lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
 clsargs="-lmctlfn @abs_top_srcdir@/model/lm/an4/an4.ug.cls.lmctl \
 -ctl_lm  @abs_top_srcdir@/model/lm/an4/an4.ctl_lm" 
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode $margs $lmargs > $tmpout 2>&1
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_decode $margs $lmargs > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout
 

@@ -45,17 +45,20 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.9  2006/03/03  19:45:00  egouvea
+ * Revision 1.10  2006/04/05  20:27:32  dhdfu
+ * A Great Reorganzation of header files and executables
+ * 
+ * Revision 1.9  2006/03/03 19:45:00  egouvea
  * Clean up the log handling. In logs3.c, removed unnecessary variables
  * (e.g. "f", exactly the same as "F") and functions (e.g. "logs3_10base()").
- * 
+ *
  * In confidence.c, replace (logs3_to_log10(r_lscr) * logs3_10base())
  * with r_lscr, since the only difference is that one is a double, the
  * other an int (and as such, they differ on the order of 1e-12).
- * 
+ *
  * In future cleanups.... replace the "int" declaration with "int32",
  * used in the rest of the code.
- * 
+ *
  * Revision 1.8  2006/02/22 19:55:02  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII: Add function logs3_base and logs3_10base.
  *
@@ -130,6 +133,10 @@ static float64 B, logB, log10B, invlogB, invlog10B;
 static uint16 *add_tbl = NULL;	/* See discussion above */
 static int32 add_tbl_size;
 
+float64 logs3_base(void)
+{
+	return B;
+}
 
 int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 {
@@ -206,7 +213,6 @@ int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
 
     return LOGS3_SUCCESS;
 }
-
 
 int32 logs3_add (int32 logp, int32 logq)
 {

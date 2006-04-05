@@ -3,7 +3,7 @@
 echo "EP TEST"
 tmpout="test-ep.out"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/ep \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_ep \
 -i @abs_top_srcdir@/model/ep/chan3.raw  \
 -samprate 11025 \
 -frate 105 \

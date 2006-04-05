@@ -16,7 +16,7 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 
 lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/astar $margs $lmargs > $tmpout 2>&1 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_astar $margs $lmargs > $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
 if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \

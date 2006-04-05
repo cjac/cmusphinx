@@ -9,21 +9,7 @@ libAPI_la_SOURCES = \
 	live_decode_args.c \
 	utt.c 
 
-pkginclude_HEADERS = \
-	live_decode_API.h \
-	live_decode_args.h \
-	utt.h 
-
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/ \
-	   -I$(top_srcdir)/src/libs3decoder/libdict/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam/ \
-	   -I$(top_srcdir)/src/libs3decoder/liblm/ \
-	   -I$(top_srcdir)/src/libs3decoder/libsearch/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

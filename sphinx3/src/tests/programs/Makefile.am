@@ -33,19 +33,9 @@ lm_test_SOURCES = lm_test.c \
 #			${LIVEDECSRCS}
 
 
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder/libAPI \
-	-I$(top_srcdir)/src/libs3decoder/libam \
-	-I$(top_srcdir)/src/libs3decoder/libcep_feat \
-	-I$(top_srcdir)/src/libs3decoder/libcommon \
-	-I$(top_srcdir)/src/libs3decoder/libdict \
-	-I$(top_srcdir)/src/libs3decoder/libep \
-	-I$(top_srcdir)/src/libs3decoder/liblm \
-	-I$(top_srcdir)/src/libs3decoder/libsearch \
-	-I$(top_srcdir)/src/libutil \
-       -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
        -I$(top_srcdir)/src/test/programs/ \
+       -I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
        -I$(top_builddir)/include
 
 

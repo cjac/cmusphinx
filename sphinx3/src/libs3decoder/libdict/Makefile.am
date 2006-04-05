@@ -12,21 +12,10 @@ libdict_la_SOURCES = \
 	lts.c \
 	wid.c
 
-pkginclude_HEADERS = \
-	cmu6_lts_rules.h \
-	ctxt_table.h \
-	dict.h \
-	dict2pid.h \
-	lts.h \
-	wid.h
+noinst_HEADERS = \
+	cmu6_lts_rules.h
 
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon/ \
-	   -I$(top_srcdir)/src/libs3decoder/liblm/ \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

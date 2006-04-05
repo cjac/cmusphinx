@@ -38,11 +38,14 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.3  2006/02/23  16:46:50  arthchan2003
+ * Revision 1.4  2006/04/05  20:27:34  dhdfu
+ * A Great Reorganzation of header files and executables
+ * 
+ * Revision 1.3  2006/02/23 16:46:50  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 1, Used the corresponding lextree interface.
  * 2, 2nd-stage search logic are all commented.
- * 
+ *
  * Revision 1.2.4.16  2006/01/16 20:14:02  arthchan2003
  * Remove the unlink silences part because that could affect the performance of the 1st pass search when -bestpath is specified.
  *
@@ -133,7 +136,7 @@
 
 #include "srch.h"
 #include "dict.h"
-#include "libutil/cmd_ln.h"
+#include "cmd_ln.h"
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_TST 1 

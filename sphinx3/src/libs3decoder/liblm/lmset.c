@@ -46,9 +46,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.3  2006/02/24  13:38:08  arthchan2003
- * Added lm_read, it is a simple version of lm_read_advance.
+ * Revision 1.4  2006/04/05  20:27:33  dhdfu
+ * A Great Reorganzation of header files and executables
  * 
+ * Revision 1.3  2006/02/24 13:38:08  arthchan2003
+ * Added lm_read, it is a simple version of lm_read_advance.
+ *
  * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
@@ -281,7 +284,7 @@ lmset_t* lmset_read_lm(const char *lmfile,dict_t *dict, const char *lmname,float
 
 /*
  * I attached the comment in Sphinx 2 here.  It specifies the restriction of the Darpa file format. 
- *
+ */
 
 /*
  * Read control file describing multiple LMs, if specified.

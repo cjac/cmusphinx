@@ -25,16 +25,11 @@ EXTRA_libs3audio_la_SOURCES = ad_base.c \
 	rec_win32.c \
 	mulaw_base.c
 
-noinst_HEADERS = audio_utils_sunos.h mulaw.h ad.h cont_ad.h \
-	pa_host.h \
-	ringbuffer.h \
-	pa_trace.h
+pkginclude_HEADERS = ad_conf.h
 
 libs3audio_la_DEPENDENCIES = @ad_files@
 
 libs3audio_la_LIBADD = @ad_files@ @ad_libs@
 
-INCLUDES = -I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libutil \
-	-I$(top_srcdir)/src/libs3decoder/libcommon \
+INCLUDES = -I$(top_srcdir)/include \
 	-I$(top_builddir)/include

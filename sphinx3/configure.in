@@ -207,6 +207,7 @@ src/tests/regression/test-decode-mode3-mpx.sh
 src/tests/regression/test-decode-mode5.sh
 src/tests/regression/test-decode-mode5-noncomp.sh
 src/tests/regression/test-decode-s3cont.sh
+src/tests/regression/test-decode-s2semi.sh
 src/tests/regression/test-decode-clm.sh
 src/tests/regression/test-decode-mllr.sh
 src/tests/regression/test-decode-2ndstage.sh
@@ -232,6 +233,7 @@ model/lm/an4/args.an4.test
 model/lm/an4/args.an4.test.cls
 model/lm/an4/args.an4.test.mllr
 model/lm/an4/an4.ug.cls.lmctl
+include/Makefile
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
@@ -258,6 +260,7 @@ chmod +x src/tests/regression/test-decode-mode3-mpx.sh
 chmod +x src/tests/regression/test-decode-mode5.sh
 chmod +x src/tests/regression/test-decode-mode5-noncomp.sh
 chmod +x src/tests/regression/test-decode-s3cont.sh
+chmod +x src/tests/regression/test-decode-s2semi.sh
 chmod +x src/tests/regression/test-decode-clm.sh
 chmod +x src/tests/regression/test-decode-mllr.sh
 chmod +x src/tests/regression/test-decode-2ndstage.sh

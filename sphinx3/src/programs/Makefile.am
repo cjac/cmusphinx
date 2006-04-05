@@ -1,32 +1,31 @@
-bin_PROGRAMS = decode \
-	       livepretend \
-	       livedecode \
-	       decode_anytopo \
-	gausubvq \
-	align \
-	allphone \
-	astar \
-	conf \
-	dag \
-	dp \
-	ep \
-	lm_convert \
+bin_PROGRAMS = sphinx3_decode \
+	       sphinx3_livepretend \
+	       sphinx3_livedecode \
+	       sphinx3_decode_anytopo \
+	sphinx3_gausubvq \
+	sphinx3_align \
+	sphinx3_allphone \
+	sphinx3_astar \
+	sphinx3_conf \
+	sphinx3_dag \
+	sphinx3_dp \
+	sphinx3_ep \
+	wave2feat \
 	cepview \
-	wave2feat 
+	lm_convert
 
-
-livepretend_SOURCES = main_livepretend.c 
-livedecode_SOURCES = main_livedecode.c 
-decode_SOURCES = decode.c
-decode_anytopo_SOURCES = main_decode_anytopo.c 
-align_SOURCES = main_align.c s3_align.c
-astar_SOURCES = main_astar.c s3_astar.c
-conf_SOURCES = main_conf.c 
-dag_SOURCES = main_dag.c 
-dp_SOURCES = main_dp.c
-allphone_SOURCES = main_allphone.c s3_allphone.c 
-gausubvq_SOURCES = gausubvq.c
-ep_SOURCES = main_ep.c
+sphinx3_livepretend_SOURCES = main_livepretend.c 
+sphinx3_livedecode_SOURCES = main_livedecode.c 
+sphinx3_decode_SOURCES = decode.c
+sphinx3_decode_anytopo_SOURCES = main_decode_anytopo.c 
+sphinx3_align_SOURCES = main_align.c s3_align.c
+sphinx3_astar_SOURCES = main_astar.c s3_astar.c
+sphinx3_conf_SOURCES = main_conf.c 
+sphinx3_dag_SOURCES = main_dag.c 
+sphinx3_dp_SOURCES = main_dp.c
+sphinx3_allphone_SOURCES = main_allphone.c s3_allphone.c 
+sphinx3_gausubvq_SOURCES = gausubvq.c
+sphinx3_ep_SOURCES = main_ep.c
 cepview_SOURCES = main_cepview.c
 lm_convert_SOURCES = main_lm_convert.c
 
@@ -48,7 +47,7 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libutil/libs3util.la \
 	-lm  @ad_libs@ 
 
-livedecode_LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
+sphinx3_livedecode_LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	$(top_builddir)/src/libs3audio/libs3audio.la \
 	$(top_builddir)/src/libutil/libs3util.la \
 	-lm -lpthread  @ad_libs@ 
@@ -60,20 +59,7 @@ livedecode_LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 # add these for solaris
 # -L/usr/demo/SOUND/lib/ -laudio -lnsl -lsocket
 
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder/libAPI/ \
-	-I$(top_srcdir)/src/libs3decoder/libam/ \
-	-I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
-	-I$(top_srcdir)/src/libs3decoder/libcommon/ \
-	-I$(top_srcdir)/src/libs3decoder/libconfidence/ \
-	-I$(top_srcdir)/src/libs3decoder/libdict/ \
-	-I$(top_srcdir)/src/libs3decoder/libdp/ \
-	-I$(top_srcdir)/src/libs3decoder/libep/ \
-	-I$(top_srcdir)/src/libs3decoder/liblm/ \
-	-I$(top_srcdir)/src/libs3decoder/libsearch/ \
-	-I$(top_srcdir)/src/libutil/ \
-        -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
         -I$(top_builddir)/src/libs3audio \
         -I$(top_builddir)/include
 

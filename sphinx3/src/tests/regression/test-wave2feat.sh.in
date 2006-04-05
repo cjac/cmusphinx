@@ -3,7 +3,7 @@
 tmpout="test-wave2feat.out"
 
 echo "WAVE2FEAT TEST"
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/wave2feat \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_wave2feat \
 -samprate 11025 \
 -frate 105 \
 -wlen 0.024 \
@@ -18,7 +18,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/wav
 -o test-wave2feat.mfc  \
 -raw 1 > $tmpout 2>&1 
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cepview \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_cepview \
 -i 13 \
 -d 13 \
 -f test-wave2feat.mfc \
