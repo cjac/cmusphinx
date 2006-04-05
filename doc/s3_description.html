@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//w3c//DTD HTML 4.01//EN">
 <html>
   <head>
-    <title>Sphinx-3 s3.X Decoder (X=5)</title>
+    <title>Sphinx-3 s3.X Decoder (X=6)</title>
     <style type="text/css">
       body { margin-left: 6%; margin-right: 3%; background: white; }
       h1 { color: green; align: center; }
@@ -17,7 +17,7 @@
   </head>
   
   <BODY>
-    <H1><U>Sphinx-3 s3.X Decoder (X=5)</U></H1>
+    <H1><U>Sphinx-3 s3.X Decoder (X=6)</U></H1>
     <center>
       Mosur K. Ravishankar (<em>aka</em> Ravi Mosur)<br>
       Sphinx Speech Group<br>
@@ -98,14 +98,14 @@
     <P>This package contains the following programs:
     </P>
     <OL>
-      <LI><code>decode</code>: The Sphinx-3 s3.2/s3.3/s3.X decoder processing cesptra files</li>
-      <LI><code>gausubvq</code>: Sub-vector clustered acoustic model building</LI>
-      <LI><code>livedecode</code>: The Sphinx-3 s3.X decoder in live mode</LI>
-      <LI><code>livepretend</code>: The Sphinx-3 s3.X decoder in batch mode</LI>      
-      <LI><code>align</code>: The Sphinx-3 aligner</LI>
-      <LI><code>allphone</code>: The Sphinx-3 phoneme recognizer</LI>
-      <LI><code>astar</code>: The Sphinx-3 N-best generator</LI>
-      <LI><code>dag</code>: The Sphinx-3 application for best-path searching</LI>
+      <LI><code>s3decode</code>: The Sphinx-3 s3.2/s3.3/s3.X decoder processing cesptra files</li>
+      <LI><code>s3gausubvq</code>: Sub-vector clustered acoustic model building</LI>
+      <LI><code>s3livedecode</code>: The Sphinx-3 s3.X decoder in live mode</LI>
+      <LI><code>s3livepretend</code>: The Sphinx-3 s3.X decoder in batch mode</LI>      
+      <LI><code>s3align</code>: The Sphinx-3 aligner</LI>
+      <LI><code>s3allphone</code>: The Sphinx-3 phoneme recognizer</LI>
+      <LI><code>s3astar</code>: The Sphinx-3 N-best generator</LI>
+      <LI><code>s3dag</code>: The Sphinx-3 application for best-path searching</LI>
 
     </OL>
     <P>This distribution has been prepared for Unix platforms. Port to
@@ -182,11 +182,11 @@
       
       <LI><a href="#sec_ctl"><em>Speech input specification</em></a>:
       This distribution contains four executable files, three of which
-      perform recognition. <code>livedecode</code> decodes live
+      perform recognition. <code>s3livedecode</code> decodes live
       speech, that is, speech incoming from your audio
-      card. <code>livepretend</code> decodes in batch mode using a
+      card. <code>s3livepretend</code> decodes in batch mode using a
       <em>control file</em> that describes the input to be decoded
-      into text. <code>decode</code> decodes also uses a control file
+      into text. <code>s3decode</code> decodes also uses a control file
       for batch mode processing. In the latter, the entire input to be
       processed must be available beforehand, <em>i.e.</em>, the raw
       audio samples must have been preprocessed into cepstrum
@@ -271,13 +271,13 @@
     <H2><A NAME="sec_exec"><u>Running s3.X</u></A></H2>
     
     <P>Running the decoder is simply a matter of invoking the binary
-    (<em>i.e.</em>, <code>decode</code>, <code>livedecode</code> or
-    <code>livepretend</code>), with a number of command line arguments
+    (<em>i.e.</em>, <code>s3decode</code>, <code>s3livedecode</code> or
+    <code>s3livepretend</code>), with a number of command line arguments
     specifying the various input files, as well as decoding
-    configuration parameters. <code>decode</code> and
-    <code>livepretend</code> require a control file, the directory
+    configuration parameters. <code>s3decode</code> and
+    <code>s3livepretend</code> require a control file, the directory
     where the audio files are available, and a file containing the
-    configuration arguments. <code>livedecode</code>, which runs live,
+    configuration arguments. <code>s3livedecode</code>, which runs live,
     requires only the file with the arguments.
     </p>
 
@@ -385,7 +385,7 @@
       <tr>
 	<td><UL><LI><code>-cepdir</code></LI></UL></td>
 	<td>Directory prefix for cepstrum files specified in the
-	  <a href="#sec_ctl">control file</a>, ignored in <code>livedecode</code> and <code>livepretend</code></td>
+	  <a href="#sec_ctl">control file</a>, ignored in <code>s3livedecode</code> and <code>s3livepretend</code></td>
       </tr>
       
       <tr>
@@ -553,19 +553,19 @@
 
     <H4><A name="sec_ctl_process"><U>Control File Processing</U></a></H4>
 
-    <P>Following initialization, <code>decode</code> and
-    <code>livepretend</code> processes the entries in the control file
+    <P>Following initialization, <code>s3decode</code> and
+    <code>s3livepretend</code> processes the entries in the control file
     sequentially, one at a time.  It is possible to process a
     contiguous subset of the control file, using the
     <code>-ctloffset</code> and <code>-ctlcount</code> flags, as
     mentioned earlier.  There is no learning or <em>adaptation</em>
-    capability as decoding progresses.  Since <code>livepretend</code>
+    capability as decoding progresses.  Since <code>s3livepretend</code>
     behaves as if the files were being spoken at the time of
     processing, rearranging the order of the entries in the control
     file may affect the individual results, but this change may be
     imperceptible if the environment in which the files were recorded
     remains constant. The order of entries in the control file does
-    not affect <code>decode</code>.
+    not affect <code>s3decode</code>.
     </P>
 
 
@@ -1734,8 +1734,8 @@ End</pre>
     
     <H2><a name="sec_utilpgm"><U>Other Utilities</U></a></H2>
     
-    <P>In addition to the s3.X decoders, <code>decode</code>,
-    <code>livedecode</code> and <code>livrepretend</code>, this
+    <P>In addition to the s3.X decoders, <code>s3decode</code>,
+    <code>s3livedecode</code> and <code>livrepretend</code>, this
     distribution also provides other utility programs.</P>
 
     <H4><a name="sec_gausubvq"><U>Gaussian Sub-Vector Quantization
@@ -1794,8 +1794,8 @@ End</pre>
 
       <tr>
 	<td><a
-	href="../src/programs/decode.c"><code>decode.c</code></a></td>
-	<td>Main file for <code>decode</code></td>
+	href="../src/programs/decode.c"><code>s3decode.c</code></a></td>
+	<td>Main file for <code>s3decode</code></td>
       </tr>
 
       <tr>
@@ -1849,7 +1849,7 @@ End</pre>
       </tr>
       
       <tr>
-	<td><a href="../src/programs/live.c"><code>live.c</code></a></td>
+	<td><a href="../src/programs/live.c"><code>s3live.c</code></a></td>
 	<td>Live decoder functions</td>
       </tr>
       
@@ -1866,15 +1866,15 @@ End</pre>
       <tr>
 	<td><a
 	href="../src/programs/main_live_example.c"><code>main_live_example.c</code></a></td>
-	<td>Main file for <code>livedecode</code> showing use of
-	<code>live.c</code></td>
+	<td>Main file for <code>s3livedecode</code> showing use of
+	<code>live_decode_API.h</code></td>
       </tr>
 
       <tr>
 	<td><a
 	href="../src/programs/main_live_pretend.c"><code>main_live_pretend.c</code></a></td>
-	<td>Main file for <code>livepretend</code> showing use of
-	<code>live.c</code></td>
+	<td>Main file for <code>s3livepretend</code> showing use of
+	<code>live_decode_API.h</code></td>
       </tr>
 
       <tr>

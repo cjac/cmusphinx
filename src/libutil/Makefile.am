@@ -24,30 +24,7 @@ libs3util_la_SOURCES = \
         str2words.c \
         unlimit.c
 
-pkginclude_HEADERS = \
-        bitvec.h \
-        case.h \
-        ckd_alloc.h \
-        cmd_ln.h \
-        err.h \
-        filename.h \
-	genrand.h \
-        glist.h \
-        hash.h \
-        heap.h \
-        pio.h \
-	info.h \
-	linklist.h \
-        libutil.h \
-        prim_type.h \
-        profile.h \
-	sort.h \
-	nextword.h \
-        str2words.h \
-        unlimit.h
-
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/include \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

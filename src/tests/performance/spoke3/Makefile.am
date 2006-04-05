@@ -35,10 +35,7 @@
 #
 # ====================================================================
 
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-       -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
 
 
@@ -49,9 +46,9 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 
 SPOKE3DIR = /net/scylla/usr3/dhuggins/adaptation/Spoke3
 PROGRAMDIR = ${top_builddir}/src/programs
-LPBIN = $(PROGRAMDIR)/livepretend
-DECODEBIN = $(PROGRAMDIR)/decode
-DECANYBIN = $(PROGRAMDIR)/decode_anytopo
+LPBIN = $(PROGRAMDIR)/sphinx3_livepretend
+DECODEBIN = $(PROGRAMDIR)/sphinx3_decode
+DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine

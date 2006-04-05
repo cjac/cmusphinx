@@ -35,10 +35,7 @@
 #
 # ====================================================================
 
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-       -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
 
 
@@ -48,8 +45,8 @@ LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	-lm @ad_libs@ 
 
 BMBIN=$(top_builddir)/src/tests/programs/batchmetrics
-LPBIN=$(top_builddir)/src/programs/livepretend
-DECODEBIN=$(top_builddir)/src/programs/decode
+LPBIN=$(top_builddir)/src/programs/sphinx3_livepretend
+DECODEBIN=$(top_builddir)/src/programs/sphinx3_decode
 RMBATCH="./rm1.batch"
 RMQUICKBATCH="./rm1_quick.batch"
 RMARG="ARGS.rm1"

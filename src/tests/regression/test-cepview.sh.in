@@ -3,7 +3,7 @@
 echo "CEPVIEW TEST"
 tmpout="test-cepview.out"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cepview \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_cepview \
 -i 13 \
 -d 13 \
 -f @abs_top_srcdir@/model/ep/chan3.mfc \

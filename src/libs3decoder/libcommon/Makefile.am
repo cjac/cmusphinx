@@ -13,26 +13,7 @@ libcommon_la_SOURCES = \
 	stat.c \
 	vector.c 
 
-pkginclude_HEADERS = \
-	bio.h \
-	cmdln_macro.h \
-	corpus.h \
-	encoding.h \
-	logs3.h \
-	misc.h \
-	s3types.h \
-	stat.h \
-	vector.h
-
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/src/libs3decoder/libsearch/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam/ \
-	   -I$(top_srcdir)/src/libs3decoder/libdict/ \
-	   -I$(top_srcdir)/src/libs3decoder/liblm/ \
-	   -I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
-	   -I$(top_srcdir)/ \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

@@ -2,12 +2,7 @@ check_PROGRAMS = testlogs3
 
 
 INCLUDES = \
-        -I$(top_srcdir) \
-        -I$(top_srcdir)/src \
-        -I$(top_srcdir)/src/libutil \
-        -I$(top_srcdir)/src/libs3decoder \
-        -I$(top_srcdir)/src/libs3decoder/liblm/ \
-        -I$(top_srcdir)/src/libs3decoder/libcommon/ \
+        -I$(top_srcdir)/include \
         -I$(top_builddir)/include
 
 LDADD = ${top_builddir}/src/libutil/libs3util.la \

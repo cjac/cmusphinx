@@ -4,6 +4,8 @@ INSTALL
 Makefile
 Makefile.in
 aclocal.m4
+allphone.match
+allphone.matchseg
 an4.out
 autom4te.cache
 config.cache
@@ -29,4 +31,6 @@ pittsburgh.nbest
 stamp-h
 stamp-h.in
 stamp-h1
+test-*.log
 test-*.out
+test-wave2feat.cepview

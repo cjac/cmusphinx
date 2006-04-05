@@ -36,9 +36,6 @@
 # ====================================================================
 
 INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-       -I$(top_srcdir)/src/libs3audio \
        -I$(top_builddir)/include
 
 
@@ -53,9 +50,9 @@ TI46CEPPATH = $(DATAPATH)/cepstra
 TI46RESULTPATH = ${top_builddir}/src/tests/performance/ti46/
 PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
-LPBIN = $(PROGRAMDIR)/livepretend
-DECODEBIN = $(PROGRAMDIR)/decode
-DECANYBIN = $(PROGRAMDIR)/decode_anytopo
+LPBIN = $(PROGRAMDIR)/sphinx3_livepretend
+DECODEBIN = $(PROGRAMDIR)/sphinx3_decode
+DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine

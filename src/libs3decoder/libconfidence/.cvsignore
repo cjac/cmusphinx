@@ -1,6 +1,5 @@
 .deps
 .libs
 Makefile
-Makefile.in
 confidence.lo
 libconfidence.la

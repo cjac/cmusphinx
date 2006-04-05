@@ -52,6 +52,7 @@
  * Created
  */
 
+#include <string.h>
 #include <utt.h>
 #include <profile.h>
 #include <kb.h>

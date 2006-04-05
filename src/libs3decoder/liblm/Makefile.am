@@ -15,19 +15,7 @@ liblm_la_SOURCES = \
 	lmclass.c \
 	lmset.c
 
-
-
-pkginclude_HEADERS = \
-	fillpen.h \
-        lm.h \
-	lmclass.h 
-
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam \
-	   -I$(top_srcdir)/src/libs3decoder/libdict \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

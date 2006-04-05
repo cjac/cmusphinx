@@ -9,17 +9,7 @@ libep_la_SOURCES = \
 	classify.c \
 	endptr.c
 
-pkginclude_HEADERS = \
-	classify.h \
-	endptr.h
-
-
-INCLUDES = -I$(top_srcdir) \
-	   -I$(top_srcdir)/src \
-	   -I$(top_srcdir)/src/libutil/ \
-	   -I$(top_srcdir)/src/libs3decoder/libam \
-	   -I$(top_srcdir)/src/libs3decoder/libcep_feat \
-	   -I$(top_srcdir)/src/libs3decoder/libcommon \
+INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 
 
 LIBOBJS = @LIBOBJS@

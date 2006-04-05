@@ -1,7 +1,4 @@
-INCLUDES = -I$(top_srcdir) \
-	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/src/libs3decoder \
-       -I$(top_srcdir)/src/libs3audio \
+INCLUDES = -I$(top_srcdir)/include \
        -I$(top_builddir)/include
 
 
@@ -15,8 +12,8 @@ HUB4_DIR=/lab/speech/sphinx4/data/hub4/eval99/supervised
 CTL_FILE=$(HUB4_DIR)/all_hub4.batch
 PROGRAMDIR = ${top_builddir}/src/programs
 BMBIN = ${top_builddir}/src/test/programs/batchmetrics
-LPBIN = $(PROGRAMDIR)/livepretend
-DECODEBIN = $(PROGRAMDIR)/decode
+LPBIN = $(PROGRAMDIR)/sphinx3_livepretend
+DECODEBIN = $(PROGRAMDIR)/sphinx3_decode
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine

@@ -5,7 +5,7 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 tmpout="test-decode_anytopo-2ndstage.out"
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/decode_anytopo \
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_decode_anytopo \
 -mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
 -fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
 -dict @abs_top_srcdir@/model/lm/an4/an4.dict \
@@ -50,7 +50,7 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 -logbase 1.0003 \
 -backtrace 1 "
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/dag $margs $lmargs > $tmpout 2>&1 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_dag $margs $lmargs > $tmpout 2>&1 
 
 grep "BSTPTH:" $tmpout 
 grep "BSTXCT" $tmpout 
@@ -72,7 +72,7 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 -logbase 1.0003 \
 -nbestdir .  "
 
-sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/astar $margs $lmargs > $tmpout 2>&1 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_astar $margs $lmargs > $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
 if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
