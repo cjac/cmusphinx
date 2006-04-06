@@ -49,6 +49,7 @@ pkginclude_HEADERS = adaptor.h			\
     interp.h					\
     kbcore.h					\
     kb.h					\
+    kdtree.h					\
     lextree.h					\
     libutil.h					\
     linklist.h					\
@@ -70,6 +71,7 @@ pkginclude_HEADERS = adaptor.h			\
     pio.h					\
     prim_type.h					\
     profile.h					\
+    s2_semi_mgau.h				\
     s3types.h					\
     search.h					\
     sort.h					\
