@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
+ * Revision 1.2  2006/04/06  14:03:02  dhdfu
+ * Prevent confusion among future generations by calling this s2_semi_mgau instead of sc_vq
  * 
+ * Revision 1.1  2006/04/05 20:27:30  dhdfu
+ * A Great Reorganzation of header files and executables
+ *
  * Revision 1.12  2006/02/23 05:54:58  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added linksilences.  This allows silences to be linked correctly in mode FLAT, TREE.
@@ -136,7 +139,7 @@ typedef struct {
   /*Specified either one of them when using kbcore.h.  It is not yet very nice now. */
   mgau_model_t *mgau; /**< Acoustic Model for single stream */
   ms_mgau_model_t *ms_mgau; /**< Acoustic Model for multipel stream */
-  sc_vq_t *s2_mgau; /**< Acoustic model for Sphinx2 semi-continuous */
+  s2_semi_mgau_t *s2_mgau; /**< Acoustic model for Sphinx2 semi-continuous */
 
   fillpen_t *fillpen; /**< Filler penalty */
   subvq_t *svq; /**< SVQ */

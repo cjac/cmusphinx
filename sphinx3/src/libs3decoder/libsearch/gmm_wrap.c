@@ -37,9 +37,12 @@
 /* gmm_wrap.c
  * HISTORY
  * $Log$
- * Revision 1.3  2006/04/05  20:27:34  dhdfu
- * A Great Reorganzation of header files and executables
+ * Revision 1.4  2006/04/06  14:03:02  dhdfu
+ * Prevent confusion among future generations by calling this s2_semi_mgau instead of sc_vq
  * 
+ * Revision 1.3  2006/04/05 20:27:34  dhdfu
+ * A Great Reorganzation of header files and executables
+ *
  * Revision 1.2  2006/02/23 05:38:39  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH: Added multi-stream GMM computation routine.
  *
@@ -132,7 +135,7 @@ int32 s3_cd_gmm_compute_sen(void *srch, float32 **feat, int32 wav_idx)
     /* FIXME: Statistics is not correctly updated */
   }
   else if (kbcore->s2_mgau) {
-    s->senscale = sc_vq_frame_eval(kbcore->s2_mgau, ascr, fgmm, feat, wav_idx);
+    s->senscale = s2_semi_mgau_frame_eval(kbcore->s2_mgau, ascr, fgmm, feat, wav_idx);
     /* FIXME: Statistics is not correctly updated */
   }
   else if(kbcore->mgau){
