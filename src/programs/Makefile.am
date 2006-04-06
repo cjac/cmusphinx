@@ -2,7 +2,6 @@ bin_PROGRAMS = sphinx3_decode \
 	       sphinx3_livepretend \
 	       sphinx3_livedecode \
 	       sphinx3_decode_anytopo \
-	sphinx3_gausubvq \
 	sphinx3_align \
 	sphinx3_allphone \
 	sphinx3_astar \
@@ -10,6 +9,7 @@ bin_PROGRAMS = sphinx3_decode \
 	sphinx3_dag \
 	sphinx3_dp \
 	sphinx3_ep \
+	gausubvq \
 	wave2feat \
 	cepview \
 	lm_convert
@@ -24,8 +24,8 @@ sphinx3_conf_SOURCES = main_conf.c
 sphinx3_dag_SOURCES = main_dag.c 
 sphinx3_dp_SOURCES = main_dp.c
 sphinx3_allphone_SOURCES = main_allphone.c s3_allphone.c 
-sphinx3_gausubvq_SOURCES = gausubvq.c
 sphinx3_ep_SOURCES = main_ep.c
+gausubvq_SOURCES = gausubvq.c
 cepview_SOURCES = main_cepview.c
 lm_convert_SOURCES = main_lm_convert.c
 
