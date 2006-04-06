@@ -38,16 +38,19 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.1  2006/04/05  20:14:26  dhdfu
+ * Revision 1.2  2006/04/06  14:03:02  dhdfu
+ * Prevent confusion among future generations by calling this s2_semi_mgau instead of sc_vq
+ * 
+ * Revision 1.1  2006/04/05 20:14:26  dhdfu
  * Add cut-down support for Sphinx-2 fast GMM computation (from
  * PocketSphinx).  This does *not* support Sphinx2 format models, but
  * rather semi-continuous Sphinx3 models.  I'll try to write a model
  * converter at some point soon.
- * 
+ *
  * Unfortunately the smallest models I have for testing don't do so well
  * on the AN4 test sentence (should use AN4 models, maybe...) so it comes
  * with a "don't panic" warning.
- * 
+ *
  * Revision 1.4  2006/04/04 15:31:31  dhuggins
  * Remove redundant acoustic score scaling in senone computation.
  *
@@ -153,18 +156,18 @@ extern unsigned char logadd_tbl[];
 /*
  * Compute senone scores.
  */
-static int32 SCVQComputeScores(sc_vq_t *s, ascr_t *ascr);
+static int32 SCVQComputeScores(s2_semi_mgau_t *s, ascr_t *ascr);
 
 /*
  * Optimization for various topN cases, PDF-size(#bits) cases of
  * SCVQCoomputeScores() and SCVQCoomputeScores_all().
  */
-static int32 get_scores4_8b (sc_vq_t *s, ascr_t *ascr);
-static int32 get_scores2_8b (sc_vq_t *s, ascr_t *ascr);
-static int32 get_scores1_8b (sc_vq_t *s, ascr_t *ascr);
-static int32 get_scores_8b (sc_vq_t *s, ascr_t *ascr);
+static int32 get_scores4_8b (s2_semi_mgau_t *s, ascr_t *ascr);
+static int32 get_scores2_8b (s2_semi_mgau_t *s, ascr_t *ascr);
+static int32 get_scores1_8b (s2_semi_mgau_t *s, ascr_t *ascr);
+static int32 get_scores_8b (s2_semi_mgau_t *s, ascr_t *ascr);
 
-static void cepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
+static void cepDist0(s2_semi_mgau_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
 {
     register int32	i, j, k, cw;
     vqFeature_t		*worst, *best, *topn, *cur; /*, *src; */
@@ -280,7 +283,7 @@ static void cepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
 }
 
 
-static void dcepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame,  mfcc_t *dzs, mfcc_t *dzl)
+static void dcepDist0(s2_semi_mgau_t *s, fast_gmm_t *fgmm, int32 frame,  mfcc_t *dzs, mfcc_t *dzl)
 {
     register int32	i, j, k, cw;
     vqFeature_t		*worst, *best, *topn, *cur; /* , *src; */
@@ -419,7 +422,7 @@ static void dcepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame,  mfcc_t *dzs, m
     memcpy (s->ldfrm, topn, sizeof(vqFeature_t)*s->topN);
 }
 
-static void ddcepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
+static void ddcepDist0(s2_semi_mgau_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
 {
     register int32 i, j, k, cw;
     vqFeature_t		*worst, *best, *topn, *cur; /*, *src; */
@@ -538,7 +541,7 @@ static void ddcepDist0(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *z)
     memcpy(s->lxfrm, topn, sizeof(vqFeature_t)*s->topN);
 }
 
-static void powDist(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *pz)
+static void powDist(s2_semi_mgau_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *pz)
 {
   register int32	i, j, cw;
   vqFeature_t		*topn;
@@ -591,7 +594,7 @@ static void powDist(sc_vq_t *s, fast_gmm_t *fgmm, int32 frame, mfcc_t *pz)
 /*
  * Compute senone scores for the active senones.
  */
-int32 sc_vq_frame_eval(sc_vq_t *s,
+int32 s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
 		       ascr_t *ascr,
 		       fast_gmm_t *fgmm,
 		       mfcc_t **feat,
@@ -630,7 +633,7 @@ int32 sc_vq_frame_eval(sc_vq_t *s,
 }
 
 
-static int32 SCVQComputeScores(sc_vq_t *s, ascr_t *ascr)
+static int32 SCVQComputeScores(s2_semi_mgau_t *s, ascr_t *ascr)
 {
 	switch (s->topN) {
 	case 4:	 return get_scores4_8b(s, ascr); break;
@@ -640,7 +643,7 @@ static int32 SCVQComputeScores(sc_vq_t *s, ascr_t *ascr)
 	}
 }
 
-static int32 get_scores_8b(sc_vq_t *s, ascr_t *ascr)
+static int32 get_scores_8b(s2_semi_mgau_t *s, ascr_t *ascr)
 {
     E_FATAL("get_scores_8b() not implemented\n");
     return 0;
@@ -652,7 +655,7 @@ static int32 get_scores_8b(sc_vq_t *s, ascr_t *ascr)
  *         OPDF_8B[f]->prob[c][s]
  * Also, uses true 8-bit probs, so addition in logspace is an easy lookup.
  */
-static int32 get_scores4_8b(sc_vq_t *s, ascr_t *ascr)
+static int32 get_scores4_8b(s2_semi_mgau_t *s, ascr_t *ascr)
 {
     register int32 j, n;
     int32 tmp1, tmp2;
@@ -704,7 +707,7 @@ static int32 get_scores4_8b(sc_vq_t *s, ascr_t *ascr)
     return 0;
 }
 
-static int32 get_scores2_8b (sc_vq_t *s, ascr_t *ascr)
+static int32 get_scores2_8b (s2_semi_mgau_t *s, ascr_t *ascr)
 {
     register int32 n;
     int32 tmp1, tmp2;
@@ -776,7 +779,7 @@ static int32 get_scores2_8b (sc_vq_t *s, ascr_t *ascr)
     return 0;
 }
 
-static int32 get_scores1_8b(sc_vq_t *s, ascr_t *ascr)
+static int32 get_scores1_8b(s2_semi_mgau_t *s, ascr_t *ascr)
 {
     int32 j;
     unsigned char *pid_cw0, *pid_cw1, *pid_cw2, *pid_cw3;
@@ -798,8 +801,8 @@ static int32 get_scores1_8b(sc_vq_t *s, ascr_t *ascr)
 }
 
 int32
-sc_vq_load_kdtree(sc_vq_t *s, const char *kdtree_path,
-		  uint32 maxdepth, int32 maxbbi)
+s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
+			 uint32 maxdepth, int32 maxbbi)
 {
 	if (read_kd_trees(kdtree_path, &s->kdtrees, &s->n_kdtrees,
 			  maxdepth, maxbbi) == -1)
@@ -812,9 +815,9 @@ sc_vq_load_kdtree(sc_vq_t *s, const char *kdtree_path,
 	return 0;
 }
 
-static int32 read_dists_s3(sc_vq_t *s,
-			  char const *file_name,
-			  double SmoothMin)
+static int32 read_dists_s3(s2_semi_mgau_t *s,
+			   char const *file_name,
+			   double SmoothMin)
 {
     char **argname, **argval;
     char eofchk;
@@ -1087,12 +1090,12 @@ s3_precomp(mean_t **means, var_t **vars, int32 **dets, float32 vFloor)
     return 0;
 }
 
-sc_vq_t *
-sc_vq_init(const char *mean_path, const char *var_path,
-	   float64 varfloor, const char *mixw_path,
-	   float64 mixwfloor, int32 topn)
+s2_semi_mgau_t *
+s2_semi_mgau_init(const char *mean_path, const char *var_path,
+		  float64 varfloor, const char *mixw_path,
+		  float64 mixwfloor, int32 topn)
 {
-	sc_vq_t *s;
+	s2_semi_mgau_t *s;
 	int i;
 
 	s = ckd_calloc(1, sizeof(*s));
@@ -1128,7 +1131,7 @@ sc_vq_init(const char *mean_path, const char *var_path,
 }
 
 void
-sc_vq_free(sc_vq_t *s)
+s2_semi_mgau_free(s2_semi_mgau_t *s)
 {
 	/* FIXME: Need to free stuff. */
 	ckd_free(s);

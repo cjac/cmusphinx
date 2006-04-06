@@ -45,9 +45,12 @@
  * 
  * HISTORY
  * $Log$
- * Revision 1.13  2006/04/05  20:27:34  dhdfu
- * A Great Reorganzation of header files and executables
+ * Revision 1.14  2006/04/06  14:03:02  dhdfu
+ * Prevent confusion among future generations by calling this s2_semi_mgau instead of sc_vq
  * 
+ * Revision 1.13  2006/04/05 20:27:34  dhdfu
+ * A Great Reorganzation of header files and executables
+ *
  * Revision 1.12  2006/02/28 02:06:46  egouvea
  * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
  * compile in Visual C++ (declarations didn't match, etc). There are
@@ -336,23 +339,23 @@ void s3_am_init(kbcore_t *kbc,
   }else if(strcmp(senmgau,".s2semi.") == 0){
     /* SC_VQ initialization. */
     E_INFO("Using Sphinx2 multi-stream GMM computation\n");
-    kbc->s2_mgau=sc_vq_init(meanstr,
-			  varstr,varfloor,
-			  mixwstr,mixwfloor, 
-			  topn);
+    kbc->s2_mgau=s2_semi_mgau_init(meanstr,
+				   varstr,varfloor,
+				   mixwstr,mixwfloor, 
+				   topn);
     if (kbc->mdef && kbc->s2_mgau) {
       /* Verify senone parameters against model definition parameters */
       if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
-	E_FATAL("Mdef #senones(%d) != sc_vq #PDFs(%d)\n",
+	E_FATAL("Mdef #senones(%d) != s2_semi_mgau #PDFs(%d)\n",
 		kbc->mdef->n_sen, kbc->s2_mgau->CdWdPDFMod);
     }
     /* FIXME: This should probably move as soon as we support kd-trees
      * for other model types. */
     if (cmd_ln_access("-kdtree")) {
-	    if (sc_vq_load_kdtree(kbc->s2_mgau,
-				  cmd_ln_str("-kdtree"),
-				  cmd_ln_int32("-kdmaxdepth"),
-				  cmd_ln_int32("-kdmaxbbi")) < 0) {
+	    if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
+					 cmd_ln_str("-kdtree"),
+					 cmd_ln_int32("-kdmaxdepth"),
+					 cmd_ln_int32("-kdmaxbbi")) < 0) {
 		    E_FATAL("Failed to load kdtrees from %s\n",
 			    cmd_ln_str("-kdtree"));
 	    }

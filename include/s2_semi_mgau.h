@@ -68,8 +68,8 @@ typedef float32 var_t;
 #define VARMUL(a,b) FIXMUL(a,b)
 #define FLOAT2MFCC(x) (x)
 
-typedef struct sc_vq_s sc_vq_t;
-struct sc_vq_s {
+typedef struct s2_semi_mgau_s s2_semi_mgau_t;
+struct s2_semi_mgau_s {
 	int32   detArr[S2_NUM_FEATURES*S2_NUM_ALPHABET];	/* storage for det vectors */
 	int32   *dets[S2_NUM_FEATURES];	/* det values foreach feature */
 	mean_t  *means[S2_NUM_FEATURES];	/* mean vectors foreach feature */
@@ -97,20 +97,20 @@ struct sc_vq_s {
 	vqFeature_t vtmp;
 };
 
-sc_vq_t *sc_vq_init(const char *mean_path, const char *var_path,
-		    float64 varfloor, const char *mixw_path,
-		    float64 mixwfloor, int32 topn);
+s2_semi_mgau_t *s2_semi_mgau_init(const char *mean_path, const char *var_path,
+				  float64 varfloor, const char *mixw_path,
+				  float64 mixwfloor, int32 topn);
 
-void sc_vq_free(sc_vq_t *s);
+void s2_semi_mgau_free(s2_semi_mgau_t *s);
 
-int32 sc_vq_frame_eval(sc_vq_t *s,
+int32 s2_semi_mgau_frame_eval(s2_semi_mgau_t *s,
 		       ascr_t *ascr,
 		       fast_gmm_t *fgmm,
 		       mfcc_t **feat,
 		       int32 frame);
 
-int32 sc_vq_load_kdtree(sc_vq_t *s, const char *kdtree_path,
-			uint32 maxdepth, int32 maxbbi);
+int32 s2_semi_mgau_load_kdtree(s2_semi_mgau_t *s, const char *kdtree_path,
+			       uint32 maxdepth, int32 maxbbi);
 
 
 #endif /*  __S2_SEMI_MGAU_H__ */
