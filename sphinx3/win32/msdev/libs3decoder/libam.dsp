@@ -25,7 +25,7 @@ CFG=libam - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libam - Win32 Release"
@@ -41,13 +41,13 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\..\src\libs3decoder" /I "..\..\..\src" /I "..\..\..\src\libutil" /I "..\..\..\src\libs3decoder\libAPI\\" /I "..\..\..\src\libs3decoder\libam\\" /I "..\..\..\src\libs3decoder\libcep_feat\\" /I "..\..\..\src\libs3decoder\libcommon\\" /I "..\..\..\src\libs3decoder\libdict\\" /I "..\..\..\src\libs3decoder\liblm\\" /I "..\..\..\src\libs3decoder\libsearch\\" /I "..\..\..\src\libs3decoder\libam" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "..\..\..\include" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -64,13 +64,13 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\src\libs3decoder\libAPI\\" /I "..\..\..\src\libs3decoder\libam\\" /I "..\..\..\src\libs3decoder\libcep_feat\\" /I "..\..\..\src\libs3decoder\libcommon\\" /I "..\..\..\src\libs3decoder\libdict\\" /I "..\..\..\src\libs3decoder\liblm\\" /I "..\..\..\src\libs3decoder\libsearch\\" /I "..\..\..\src\libs3decoder\libam" /I "..\..\..\src" /I "..\..\..\src\libutil" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\include" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "AD_BACKEND_WIN32" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -117,6 +117,14 @@ SOURCE=..\..\..\src\libs3decoder\libam\interp.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\libam\kdtree.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libam\log_add.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\libam\mdef.c
 # End Source File
 # Begin Source File
@@ -138,6 +146,10 @@ SOURCE=..\..\..\src\libs3decoder\libam\ms_mllr.c
 # Begin Source File
 
 SOURCE=..\..\..\src\libs3decoder\libam\ms_senone.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libam\s2_semi_mgau.c
 # End Source File
 # Begin Source File
 
