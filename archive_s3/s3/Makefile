@@ -53,7 +53,20 @@
 #     src/libfeat/$(MACHINE),
 #     src/libfbs/$(MACHINE),
 
-all: s3decode-anytopo s3align s3allphone s3dag s3astar s3nbestrescore
+
+all: verify s3decode-anytopo s3align s3allphone s3dag s3astar s3nbestrescore
+
+verify:
+	@if test x$(MACHINE) = x; then echo "Define MACHINE, e.g. \"make MACHINE=linux\""; exit 1; fi
+	@if test x$(S3ROOT) = x; then echo "Define S3ROOT, e.g. \"make S3ROOT=\`pwd\`\""; exit 1; fi
+	@if test ! -d lib; then mkdir lib; fi
+	@if test ! -d lib/$(MACHINE); then mkdir lib/$(MACHINE); fi
+	@if test ! -d bin; then mkdir bin; fi
+	@if test ! -d bin/$(MACHINE); then mkdir bin/$(MACHINE); fi
+	@if test ! -d src/libutil/$(MACHINE); then mkdir src/libutil/$(MACHINE); fi
+	@if test ! -d src/libio/$(MACHINE); then mkdir src/libio/$(MACHINE); fi
+	@if test ! -d src/libfeat/$(MACHINE); then mkdir src/libfeat/$(MACHINE); fi
+	@if test ! -d src/libfbs/$(MACHINE); then mkdir src/libfbs/$(MACHINE); fi
 
 libutil:
 	(cd src/libutil/$(MACHINE); make -f ../Makefile install)
@@ -109,10 +122,10 @@ only-s3align:
 only-s3allphone:
 	(cd src/libfbs/$(MACHINE);  make -f ../Makefile-allphone install)
 
-clean:
-	(cd src/libutil/$(MACHINE); make -f ../Makefile clean)
-	(cd src/libio/$(MACHINE);   make -f ../Makefile clean)
-	(cd src/libfeat/$(MACHINE); make -f ../Makefile clean)
-	(cd src/libfbs/$(MACHINE);  make -f ../Makefile clean)
-	(cd lib/$(MACHINE); rm -f *.*)
-	(cd bin/$(MACHINE); rm -f *.*)
+clean: verify
+	-(cd src/libutil/$(MACHINE) && make -f ../Makefile clean)
+	-(cd src/libio/$(MACHINE) &&   make -f ../Makefile clean)
+	-(cd src/libfeat/$(MACHINE) && make -f ../Makefile clean)
+	-(cd src/libfbs/$(MACHINE) &&  make -f ../Makefile clean)
+	-(cd lib/$(MACHINE) && rm -f *.*)
+	-(cd bin/$(MACHINE) && rm -f *.*)
