@@ -1,3 +1,18 @@
+2006-04-13  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+
+	Sphinx 3.6 Release Candidate II
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	Changes in RCII
+	-Headers and directories are now in the include folder.  Thus
+	directories change would never affect external developers any more.
+
+	-Bug Fix 1459062 - serious Memory Management Bug in srch.c 
+	
+	-PocketSphinx's style of Semi-continuous HMM fast computation is
+	now incorproated into Sphinx 3.X, it could be enabled by .s2semi.
+	
+
 2006-02-22  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	
 	Sphinx 3.6 Release Candidate I
