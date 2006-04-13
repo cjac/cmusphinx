@@ -37,9 +37,12 @@
 /* srch.c
  * HISTORY
  * $Log$
- * Revision 1.4  2006/02/23  16:47:16  arthchan2003
- * Safe-guarded the use of composite triphones.
+ * Revision 1.5  2006/04/13  16:08:09  arthchan2003
+ * Fix a Priority 9 Bug 1459402.
  * 
+ * Revision 1.4  2006/02/23 16:47:16  arthchan2003
+ * Safe-guarded the use of composite triphones.
+ *
  * Revision 1.3  2006/02/23 15:26:10  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII:
  *
@@ -767,19 +770,47 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
   if(win_efv > block_nfeatvec) 
     win_efv = block_nfeatvec;
 
-  s->num_frm =frmno;  /* Make a copy to the structure */
-  s->segsz[s->num_segs] = win_efv; 
-  s->num_segs++;
 
-  if(frmno+win_efv > s->ascale_sz){
-    s->ascale= (int32 *) ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE));
+  s->num_frm =frmno;  /* Make a copy to the structure */
+
+
+  /* 20060413 ARCHAN: Bug Fix 1459402, the old segments failed to
+     increase the size of the memory buffer properly
+  */
+
+  if (block_nfeatvec + frmno >= s->ascale_sz){
+    s->ascale= (int32*)
+      ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE) *
+		  sizeof(int32));
     s->ascale_sz+=DFLT_UTT_SIZE;
   }
-
-  if(s->num_segs==s->segsz_sz){
-    s->segsz= (int32* ) ckd_realloc(s->segsz,(s->segsz_sz+DFLT_NUM_SEGS));
+  
+  if (s->num_segs >= s->segsz_sz) {
+    s->segsz= (int32*)
+      ckd_realloc(s->segsz,(s->segsz_sz+DFLT_NUM_SEGS) *
+		  sizeof(int32));
     s->segsz_sz+=DFLT_NUM_SEGS;
   }
+
+  s->segsz[s->num_segs] = win_efv;
+  s->num_segs++;
+
+#if 0
+s->segsz[s->num_segs] = win_efv;
+s->num_segs++;
+
+if(frmno+win_efv > s->ascale_sz){
+s->ascale= (int32 *)
+ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE));
+s->ascale_sz+=DFLT_UTT_SIZE;
+}
+
+if(s->num_segs==s->segsz_sz){
+s->segsz= (int32* )
+ckd_realloc(s->segsz,(s->segsz_sz+DFLT_NUM_SEGS));
+s->segsz_sz+=DFLT_NUM_SEGS;
+}
+#endif
 
   s->cache_win_strt=0;
 
