@@ -38,9 +38,12 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.4  2006/04/05  20:27:34  dhdfu
- * A Great Reorganzation of header files and executables
+ * Revision 1.5  2006/04/17  20:14:12  dhdfu
+ * Fix a class-based LM segfault
  * 
+ * Revision 1.4  2006/04/05 20:27:34  dhdfu
+ * A Great Reorganzation of header files and executables
+ *
  * Revision 1.3  2006/02/23 16:46:50  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 1, Used the corresponding lextree interface.
@@ -544,7 +547,7 @@ int srch_TST_set_lm(void *srch, const char* lmname)
   idx=lmset_name_to_idx(lms,lmname);
 
   if(idx==LM_NOT_FOUND){
-    E_ERROR("LM name %s cannot be found, use the first language model");
+    E_ERROR("LM name %s cannot be found, use the first language model", lmname);
     idx=0;
   }
 
