@@ -45,9 +45,12 @@
  *
  * HISTORY
  * $Log$
- * Revision 1.20  2006/02/22  19:35:21  arthchan2003
- * Removed the logic of remove_zero_var_gau.  As far as I know, the change will only allow the code work in one cheating experiment.  I also found that I couldn't convince Evandro and myself this is a good change.
+ * Revision 1.21  2006/04/19  18:59:38  arthchan2003
+ * Check whether nan appear explicitly in the acoustic models and vector.c, this will make gausubvq works. This shouldn't break the VQ generated in the past.  Because if nan exists in any of the past models, gausubvq will give abnormal results and some of us should have observed.
  * 
+ * Revision 1.20  2006/02/22 19:35:21  arthchan2003
+ * Removed the logic of remove_zero_var_gau.  As far as I know, the change will only allow the code work in one cheating experiment.  I also found that I couldn't convince Evandro and myself this is a good change.
+ *
  * Revision 1.19  2006/02/22 16:31:10  arthchan2003
  * Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
  *
@@ -85,9 +88,12 @@
  * Revision 1.17  2005/06/21 18:06:45  arthchan2003
  *
  * Log. 1, Fixed Doxygen documentation. 2, Added $Log$
- * Revision 1.20  2006/02/22  19:35:21  arthchan2003
- * Removed the logic of remove_zero_var_gau.  As far as I know, the change will only allow the code work in one cheating experiment.  I also found that I couldn't convince Evandro and myself this is a good change.
+ * Revision 1.21  2006/04/19  18:59:38  arthchan2003
+ * Check whether nan appear explicitly in the acoustic models and vector.c, this will make gausubvq works. This shouldn't break the VQ generated in the past.  Because if nan exists in any of the past models, gausubvq will give abnormal results and some of us should have observed.
  * 
+ * Log. 1, Fixed Doxygen documentation. 2, Added Revision 1.20  2006/02/22 19:35:21  arthchan2003
+ * Log. 1, Fixed Doxygen documentation. 2, Added Removed the logic of remove_zero_var_gau.  As far as I know, the change will only allow the code work in one cheating experiment.  I also found that I couldn't convince Evandro and myself this is a good change.
+ * Log. 1, Fixed Doxygen documentation. 2, Added
  * Log. 1, Fixed Doxygen documentation. 2, Added Revision 1.19  2006/02/22 16:31:10  arthchan2003
  * Log. 1, Fixed Doxygen documentation. 2, Added Merged from SPHINX3_5_2_RCI_IRII_BRANCH: 1, Dave's change in 1.18 for removing temp_hack is followed 2, The logic of uninit_compact is changed, by default the code will remove a Gaussian if it has zero mean AND zero variance. The old behavior (removal if Gaussian has zero mean.) could be retained if specifying -remove_zero_var_gau=1, 3, Fix issue in  .
  * Log. 1, Fixed Doxygen documentation. 2, Added
@@ -561,7 +567,13 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
     for (m = 0; m < mgau_n_mgau(g); m++) {
       for (c = 0, c2 = 0; c < mgau_n_comp(g,m); c++) {
 
-	  removal_cond= ! vector_is_zero (mgau_var(g,m,c), mgau_veclen(g));
+	removal_cond= ! (
+			 vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
+
+			 vector_is_nan(mgau_var(g,m,c),mgau_veclen(g))||
+
+			 vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))
+			 );
 
 #if 0 /* Set it to 1 when you have very few training data */
 	  removal_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
