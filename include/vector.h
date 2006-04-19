@@ -141,6 +141,11 @@ int32 vector_is_zero (float32 *vec,	/**< In: Vector to be checked */
 		      int32 len	/**< In: Length of above vector */
 		      );
 
+  /** Return TRUE iff one of the component of the vector is nan */
+  int32 vector_is_nan (float32 *vec, /**< In: Vector to be checked */
+		       int32 len     /**< In: Length of above vector */
+		       );
+
   /**
  * Search for the max or min valued component in the given vector.  The vector length must be
  * strictly > 0 (val[] must have at least one valid value).  If more than one component
@@ -342,9 +347,12 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
  * Log record.  Maintained by RCS.
  *
  * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
+ * Revision 1.2  2006/04/19  18:59:37  arthchan2003
+ * Check whether nan appear explicitly in the acoustic models and vector.c, this will make gausubvq works. This shouldn't break the VQ generated in the past.  Because if nan exists in any of the past models, gausubvq will give abnormal results and some of us should have observed.
  * 
+ * Revision 1.1  2006/04/05 20:27:30  dhdfu
+ * A Great Reorganzation of header files and executables
+ *
  * Revision 1.13  2006/02/22 20:35:17  arthchan2003
  * Merge from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 1, Not allocated lrd in vector.c because its only consumer subvq.c has done it. 2, Fixed dox-doc.

@@ -47,10 +47,13 @@
  * HISTORY
  * 
  * $Log$
- * Revision 1.18  2006/02/22  20:35:17  arthchan2003
+ * Revision 1.19  2006/04/19  18:59:38  arthchan2003
+ * Check whether nan appear explicitly in the acoustic models and vector.c, this will make gausubvq works. This shouldn't break the VQ generated in the past.  Because if nan exists in any of the past models, gausubvq will give abnormal results and some of us should have observed.
+ * 
+ * Revision 1.18  2006/02/22 20:35:17  arthchan2003
  * Merge from branch SPHINX3_5_2_RCI_IRII_BRANCH:
  * 1, Not allocated lrd in vector.c because its only consumer subvq.c has done it. 2, Fixed dox-doc.
- * 
+ *
  *
  * Revision 1.16.4.2  2005/10/17 04:47:53  arthchan2003
  * Not allocate lrd in vector.c because subvq(its only consumer) will do it separately.
@@ -88,6 +91,8 @@
 #include "vector.h"
 #include "logs3.h"
 #include "s3types.h"
+#include <math.h>
+#include <float.h>
 
 
 #include <time.h>		/* RAH */
@@ -170,6 +175,19 @@ int32 vector_is_zero (float32 *vec, int32 len)
     for (i = 0; (i < len) && (vec[i] == 0.0); i++);
     return (i == len);	/* TRUE iff all mean values are 0.0 */
 }
+
+int32 vector_is_nan (float32 *vec, int32 len)
+{
+    int32 i;    
+    for (i = 0; i < len; i++){
+#if defined(WIN32)
+      return _isnan(vec[i]);
+#else      
+      return isnan(vec[i]);
+#endif
+    }
+}
+
 
 
 int32 vector_maxcomp_int32 (int32 *val, int32 len)
