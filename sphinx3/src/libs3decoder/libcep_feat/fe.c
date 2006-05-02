@@ -45,10 +45,10 @@
  * **********************************************
  * 
  * HISTORY
- * $Log$
- * Revision 1.11  2006/03/03  20:02:37  arthchan2003
+ * $Log: fe.c,v $
+ * Revision 1.11  2006/03/03 20:02:37  arthchan2003
  * Removed C++ styles comment. This will make options -ansi and -std=c89 happy
- * 
+ *
  * Revision 1.10  2006/02/23 03:53:02  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added fe_convert_one_file
@@ -598,9 +598,11 @@ int32 fe_count_frames(fe_t *FE, int32 nsamps, int32 count_partial_frames)
 	 frame_start+=FE->FRAME_SHIFT){
         frame_count++;
     }
-   
+
+    /* dhuggins@cs, 2006-04-25: Update this to match the updated
+     * partial frame condition in fe_process_utt(). */
     if (count_partial_frames){
-	if ((frame_count-1)*FE->FRAME_SHIFT+FE->FRAME_SIZE < nsamps)
+	if (frame_count*FE->FRAME_SHIFT < nsamps)
 	    frame_count++;
     }
     
