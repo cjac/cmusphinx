@@ -32,21 +32,22 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/libs3decoder/liblm.dsp \
 	win32/msdev/libs3decoder/libsearch.dsp \
 	win32/msdev/libutil/libutil.dsp \
-	win32/msdev/programs/align/align.dsp \
-	win32/msdev/programs/allphone/allphone.dsp \
-	win32/msdev/programs/astar/astar.dsp \
+	win32/msdev/programs/align/sphinx3_align.dsp \
+	win32/msdev/programs/allphone/sphinx3_allphone.dsp \
+	win32/msdev/programs/astar/sphinx3_astar.dsp \
 	win32/msdev/programs/cepview/cepview.dsp \
-	win32/msdev/programs/conf/conf.dsp \
-	win32/msdev/programs/dag/dag.dsp \
+	win32/msdev/programs/conf/sphinx3_conf.dsp \
+	win32/msdev/programs/dag/sphinx3_dag.dsp \
 	win32/msdev/programs/decode/allphone.dsp \
-	win32/msdev/programs/decode/decode.dsp \
-	win32/msdev/programs/decode_anytopo/decode_anytopo.dsp \
-	win32/msdev/programs/dp/dp.dsp \
-	win32/msdev/programs/ep/ep.dsp \
+	win32/msdev/programs/decode/sphinx3_decode.dsp \
+	win32/msdev/programs/decode_anytopo/sphinx3_decode_anytopo.dsp \
+	win32/msdev/programs/dp/sphinx3_dp.dsp \
+	win32/msdev/programs/ep/sphinx3_ep.dsp \
 	win32/msdev/programs/gausubvq/gausubvq.dsp \
-	win32/msdev/programs/livedecode/livedecode.dsp \
-	win32/msdev/programs/livepretend/livepretend.dsp \
-	win32/msdev/programs/lm_convert/lm_convert.dsp
+	win32/msdev/programs/livedecode/sphinx3_livedecode.dsp \
+	win32/msdev/programs/livepretend/sphinx3_livepretend.dsp \
+	win32/msdev/programs/lm_convert/lm_convert.dsp \
+	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.dsp
 
 # Add an item for each and every test target to the CLEANFILES variable
 CLEANFILES = chan3.mfc \

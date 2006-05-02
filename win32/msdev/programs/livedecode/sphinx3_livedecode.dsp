@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="align" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="sphinx3_livedecode" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
 
-CFG=align - Win32 Debug
+CFG=sphinx3_livedecode - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "align.mak".
+!MESSAGE NMAKE /f "sphinx3_livedecode.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "align.mak" CFG="align - Win32 Debug"
+!MESSAGE NMAKE /f "sphinx3_livedecode.mak" CFG="sphinx3_livedecode - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "align - Win32 Release" (based on "Win32 (x86) Console Application")
-!MESSAGE "align - Win32 Debug" (based on "Win32 (x86) Console Application")
+!MESSAGE "sphinx3_livedecode - Win32 Release" (based on "Win32 (x86) Console Application")
+!MESSAGE "sphinx3_livedecode - Win32 Debug" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
@@ -28,7 +28,7 @@ CFG=align - Win32 Debug
 CPP=xicl6.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "align - Win32 Release"
+!IF  "$(CFG)" == "sphinx3_livedecode - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -52,7 +52,7 @@ LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib winmm.lib /nologo /subsystem:console /machine:I386
 
-!ELSEIF  "$(CFG)" == "align - Win32 Debug"
+!ELSEIF  "$(CFG)" == "sphinx3_livedecode - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -66,7 +66,7 @@ LINK32=xilink6.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\..\include" /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "AD_BACKEND_WIN32" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\..\..\..\include" /D "_DEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" /D "AD_BACKEND_WIN32" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,31 +80,31 @@ LINK32=xilink6.exe
 
 # Begin Target
 
-# Name "align - Win32 Release"
-# Name "align - Win32 Debug"
+# Name "sphinx3_livedecode - Win32 Release"
+# Name "sphinx3_livedecode - Win32 Debug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\main_align.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\src\programs\s3_align.c
+SOURCE=..\..\..\..\src\programs\main_sphinx3_livedecode.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
-# PROP Default_Filter ""
-# End Group
-# End Target
-# Begin Group "Header Files No. 1"
-
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\cmd_ln_args.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\programs\live.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # End Group
+# End Target
 # End Project
