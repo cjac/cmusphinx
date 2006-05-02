@@ -1,5 +1,6 @@
 bin_PROGRAMS = sphinx3_decode \
 	       sphinx3_livepretend \
+	       sphinx3_continuous \
 	       sphinx3_livedecode \
 	       sphinx3_decode_anytopo \
 	sphinx3_align \
@@ -15,6 +16,7 @@ bin_PROGRAMS = sphinx3_decode \
 	lm_convert
 
 sphinx3_livepretend_SOURCES = main_livepretend.c 
+sphinx3_continuous_SOURCES = main_continuous.c 
 sphinx3_livedecode_SOURCES = main_livedecode.c 
 sphinx3_decode_SOURCES = decode.c
 sphinx3_decode_anytopo_SOURCES = main_decode_anytopo.c 
