@@ -178,7 +178,8 @@ void stat_report_utt(stat_t* st,char * uttid){
 	   uttid);
     }
   }else{
-    assert(st->tot_fr > 0);
+	  /* (dhuggins 2006-05-01: I think this assert is bogus.) */
+	  /* assert(st->tot_fr > 0); */
     E_INFO("%4d frm , No report\n",0);
   }
 
