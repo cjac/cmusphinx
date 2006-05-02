@@ -120,7 +120,7 @@ copy "$DEC_CFG_GIF_DIR/green-ball.gif", "$DEC_CFG_BASE_DIR/.decode.$part.state.g
 open LOG,">$logfile";
 
 ### now actually start  (this will clobber the previous logfile)
-$DECODER = "$DEC_CFG_BIN_DIR/decode";
+$DECODER = "$DEC_CFG_BIN_DIR/sphinx3_decode";
 
 if (open PIPE, "\"$DECODER\" " .
     "-mdef \"$moddeffn\" " .
