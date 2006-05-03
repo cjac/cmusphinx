@@ -489,13 +489,8 @@ param_t *fe_parse_options()
             E_FATAL("Input must be big or little Endian\n");
         }	
     }
-    P->dither = cmd_ln_int32("-dither");
     P->logspec = cmd_ln_int32("-logspec");
     
-    if(P->dither){
-      fe_init_dither(*(int32 *)cmd_ln_access("-seed"));
-    }
-
     fe_validate_parameters(P);
     
     return (P);
@@ -913,9 +908,6 @@ int32 fe_readblock_spch(param_t *P, int32 fp, int32 nsamps, int16 *buf)
 	    SWAPW(&buf[i]);
     }
 
-    if (P->dither==ON)
-        fe_dither(buf, nsamps);
-
     return(cum_bytes_read/sizeof(int16));
 
 }
@@ -957,27 +949,6 @@ int32 fe_closefiles(int32 fp_in, int32 fp_out)
     close(fp_in);
     close(fp_out);
     return 0;
-}
-
-void fe_init_dither(int32 seed)
-{
-  if(seed<0){
-    E_INFO("You are using the internal mechanism to generate the seed.");
-    s3_rand_seed((long)time(0));
-  }else{
-    E_INFO("You are using %d as the seed.", seed);
-    s3_rand_seed(seed);
-  }
-}
-
-/* adds 1/2-bit noise */
-int32 fe_dither(int16 *buffer, int32 nsamps)
-{
-  int32 i;
-  for (i=0;i<nsamps;i++)
-    buffer[i] += (short)((!(s3_rand_int31()%4))?1:0);
-  
-  return 0;
 }
 
 int32 fe_free_param(param_t *P)
