@@ -38,6 +38,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 #include "s3types.h"
 /*
 #include <s2types.h>
@@ -150,7 +151,7 @@ fe_t *fe_init(param_t const *P)
     }
 
     FE->dither=P->dither;
-    if(P->dither){
+    if (P->dither){
       fe_init_dither(*(int32 *)cmd_ln_access("-seed"));
     }
 
@@ -260,7 +261,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps,
     
     /* are there enough samples to make at least 1 frame? */
     /*E_INFO("%d %d %d\n", nsamps, FE->NUM_OVERFLOW_SAMPS, FE->FRAME_SIZE);*/
-    if (FE->dither)
+    if (ON == FE->dither)
         fe_dither(spch, nsamps);
 
     if (nsamps+FE->NUM_OVERFLOW_SAMPS >= FE->FRAME_SIZE){
