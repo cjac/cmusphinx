@@ -254,7 +254,7 @@ static int32 fe_convert_one_file(param_t *P, /**< A parameter structure */
     E_ERROR("fe_start_utt() failed\n");
     return(FE_START_ERROR);
   }
-  if (ON == warn_zero_energy) {
+  if (ON == warn_zero_energy && !P->dither) {
     E_WARN("File %s has some frames with zero energy. Consider using dither\n", infile);
   }
 
