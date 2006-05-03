@@ -76,7 +76,6 @@
 #endif
 #endif
 #include <string.h>
-#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -489,6 +488,7 @@ param_t *fe_parse_options()
             E_FATAL("Input must be big or little Endian\n");
         }	
     }
+    P->dither = cmd_ln_int32("-dither");
     P->logspec = cmd_ln_int32("-logspec");
     
     fe_validate_parameters(P);
