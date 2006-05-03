@@ -461,3 +461,25 @@ int32 fe_close(fe_t *FE)
   free(FE);
   return(0);
 }
+
+void fe_init_dither(int32 seed)
+{
+  if(seed<0){
+    E_INFO("You are using the internal mechanism to generate the seed.");
+    s3_rand_seed((long)time(0));
+  }else{
+    E_INFO("You are using %d as the seed.", seed);
+    s3_rand_seed(seed);
+  }
+}
+
+/* adds 1/2-bit noise */
+int32 fe_dither(int16 *buffer, int32 nsamps)
+{
+  int32 i;
+  for (i=0;i<nsamps;i++)
+    buffer[i] += (short)((!(s3_rand_int31()%4))?1:0);
+  
+  return 0;
+}
+
