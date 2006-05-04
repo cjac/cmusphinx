@@ -231,6 +231,8 @@ int32 logs3_add (int32 logp, int32 logq)
        the add_tbl_size, speed degrades quickly, for that reason,
        limit the calculations to the same range as the table. This
        seems wrong. Must think more about it */
+    if (d < 0) /* Overflow */
+      return r;
     if (d < add_tbl_size)
       {
       if (USE_LOG3_ADD_TABLE) 
