@@ -232,13 +232,11 @@ int32 main (int32 argc, char *argv[])
     /* Load means/vars but DO NOT precompute variance inverses or determinants */
     mgau = mgau_init (cmd_ln_str("-mean"), 
 		      cmd_ln_str("-var"), 0.0 /* no varfloor */,
-		      cmd_ln_str("-mixw"), cmd_ln_float64 ("-mixwfloor"),
+		      cmd_ln_str("-mixw"), cmd_ln_float32 ("-mixwfloor"),
 		      FALSE,  /* No precomputation*/
 		      ".cont.",
 		      MIX_INT_FLOAT_COMP);
 
-    mgau_var_nzvec_floor (mgau, cmd_ln_float32 ("-varfloor"));
-    
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */
     subvec = parse_subvecs (cmd_ln_str("-svspec"));
     
@@ -294,8 +292,10 @@ int32 main (int32 argc, char *argv[])
 	datarows = 0;
 	for (m = 0; m < mgau_n_mgau(mgau); m++) {		/* For each mixture m */
 	    for (c = 0; c < mgau_n_comp(mgau, m); c++) {	/* For each component c in m */
-		if (vector_is_zero (mgau_var(mgau, m, c), mgau_veclen(mgau)))
+		if (vector_is_zero (mgau_var(mgau, m, c), mgau_veclen(mgau))) {
+		    E_INFO("Skipping mgau %d comp %d\n", m,c);
 		    continue;
+		}
 		
 		for (i = 0; i < datacols; i++) {	/* Copy specified dimensions, mean+var */
 		    data[datarows][i*2]   = mgau->mgau[m].mean[c][subvec[v][i]];
