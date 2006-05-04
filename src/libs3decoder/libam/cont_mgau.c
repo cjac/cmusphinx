@@ -546,19 +546,21 @@ static int32 mgau_mixw_read(mgau_model_t *g, char *file_name, float64 mixwfloor)
 /**
  * Compact each mixture Gaussian in the given model by removing any
  * uninitialized components.  A component is considered to be
- * uninitialized if its variance is the 0 vector and its means is the
- * 0 vector.  Compact by copying the data rather than moving pointers.
- * Otherwise, malloc pointers could get corrupted.
+ * uninitialized if its variance is the 0 vector or if its mean or
+ * variance contain NaN (not-a-numbers).  Compact by copying the data
+ * rather than moving pointers.  Otherwise, malloc pointers could get
+ * corrupted.
  * 
- * The past behavior will remove a Gaussian even if just the variance
- * vector is 0-vector. This can be turned on by changing the #if flag. 
+ * The past behavior will remove a Gaussian if the mean and variance
+ * vectors are 0-vector. This can be turned on by changing the #if
+ * flag.
  */
 
 static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution need to be compacted*/
 				 )
 {
     int32 m, c, c2, n, nm;
-    int32 removal_cond;
+    int32 keep_cond;
     
     if(g->verbose) E_INFO("Removing uninitialized Gaussian densities\n");
     
@@ -567,20 +569,18 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
     for (m = 0; m < mgau_n_mgau(g); m++) {
       for (c = 0, c2 = 0; c < mgau_n_comp(g,m); c++) {
 
-	removal_cond= ! (
-			 vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
-
-			 vector_is_nan(mgau_var(g,m,c),mgau_veclen(g))||
-
-			 vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))
-			 );
+	keep_cond = ! (
+		       vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
+		       vector_is_nan(mgau_var(g,m,c),mgau_veclen(g))||
+		       vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))
+		       );
 
 #if 0 /* Set it to 1 when you have very few training data */
-	  removal_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
-			    vector_is_zero (mgau_mean(g,m,c), mgau_veclen(g)));
+	  keep_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
+			 vector_is_zero (mgau_mean(g,m,c), mgau_veclen(g)));
 #endif
 
-	if (removal_cond) { 
+	if (keep_cond) { 
 	  /* ARCHAN: The other loop will make sure flooring is done
 	     for all Gaussians even they have zero variance
 	     vectors. */
