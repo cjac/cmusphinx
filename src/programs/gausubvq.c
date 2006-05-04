@@ -237,7 +237,7 @@ int32 main (int32 argc, char *argv[])
 		      ".cont.",
 		      MIX_INT_FLOAT_COMP);
 
-    mgau_var_nzvec_floor (mgau, cmd_ln_float64 ("-varfloor"));
+    mgau_var_nzvec_floor (mgau, cmd_ln_float32 ("-varfloor"));
     
     /* Parse subvector spec argument; subvec is null terminated; subvec[x] is -1 terminated */
     subvec = parse_subvecs (cmd_ln_str("-svspec"));
