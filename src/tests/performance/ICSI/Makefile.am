@@ -61,7 +61,7 @@ ICSIPATH = /net/scylla/usr0/archan/ICSI_feat/
 #all : base fast
 base :  icsi-base-decode icsi-base-decany
 
-CLEANFILES = *.tmp *.ctl *.sent  *.lex *.results *.match *.match.* *.hyp* ARGS.*-{lp,decode}
+CLEANFILES = *.tmp *.sent  *.lex *.results *.match *.match.* *.hyp* ARGS.*-{lp,decode}
 
 icsi-base-decode:
 	-rm -f $@.results $@.match $@.match.* $@.hyp*

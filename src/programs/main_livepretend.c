@@ -177,10 +177,10 @@ main(int _argc, char **_argv)
     E_FATAL("control file is not specified.\n");
   }
 
-  ld_finish(&decoder);
-
   stat_report_corpus(decoder.kb.stat);
   
+  ld_finish(&decoder);
+
   return 0;
 }
 

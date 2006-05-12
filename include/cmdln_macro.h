@@ -426,6 +426,14 @@
       ARG_INT32, \
       "0", \
       "whether mel filter triangle will have double the bandwidth, 0 is false"}, \
+    { "-warp_type", \
+      ARG_STRING, \
+      DEFAULT_WARP_TYPE, \
+      "Warping function type (or shape)"}, \
+    { "-warp_params", \
+      ARG_STRING, \
+      "1.0", \
+      "Parameters defining the warping function"}, \
     { "-input_endian", \
       ARG_STRING, \
       "little", \
@@ -439,9 +447,9 @@
       "mel_scale", \
       "FB Type of mel_scale or log_linear" }, \
     { "-dither", \
-      ARG_INT32, \
-      "0", \
-      "Add 1/2-bit noise" }, \
+      ARG_STRING, \
+      "no", \
+      "Whether to add 1/2-bit noise" }, \
     { "-seed", \
       ARG_INT32, \
       "-1", \

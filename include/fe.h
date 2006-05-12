@@ -75,110 +75,118 @@
 
 /** \file fe.h
     \brief High level function for converting waveforms to cepstral
- */
+*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  /**
-   *  \struct param_t
-   *  \brief  Base Struct to hold all front-end parameters for computation.
-   */
+    /**
+     *  \struct param_t
+     *  \brief  Base Struct to hold all front-end parameters for computation.
+     */
 
-typedef struct{
-    float32 SAMPLING_RATE;
-    int32 FRAME_RATE;
-    float32 WINDOW_LENGTH;
-    int32 FB_TYPE;
-    int32 NUM_CEPSTRA;
-    int32 NUM_FILTERS;
-    int32 FFT_SIZE;
-    int32 LOG_SPEC;
-    int32 FEATURE_DIMENSION;
-    float32 LOWER_FILT_FREQ;
-    float32 UPPER_FILT_FREQ;
-    float32 PRE_EMPHASIS_ALPHA;
+    typedef struct{
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        float32 WINDOW_LENGTH;
+        int32 FB_TYPE;
+        int32 NUM_CEPSTRA;
+        int32 NUM_FILTERS;
+        int32 FFT_SIZE;
+        float32 LOWER_FILT_FREQ;
+        float32 UPPER_FILT_FREQ;
+        float32 PRE_EMPHASIS_ALPHA;
 
-    char *wavfile;
-    char *cepfile;
-    char *ctlfile;
-    char *wavdir;
-    char *cepdir;
-    char *wavext;
-    char *cepext;
-    int32 input_format;
-    int32 is_batch;
-    int32 is_single;
-    int32 blocksize;
-    int32 verbose;
-    int32 machine_endian;
-    int32 input_endian;
-    int32 output_endian;
-    int32 dither;
-    int32 logspec;
-    int32 doublebw;
-    int32 nchans;
-    int32 whichchan;
+        char *warp_type;
+        char *warp_params;
+
+        char *wavfile;
+        char *cepfile;
+        char *ctlfile;
+        int32 nskip;
+        int32 runlen;
+        char *wavdir;
+        char *cepdir;
+        char *wavext;
+        char *cepext;
+        int32 input_format;
+        int32 is_batch;
+        int32 is_single;
+        int32 blocksize;
+        int32 verbose;
+        int32 machine_endian;
+        int32 input_endian;
+        int32 output_endian;
+        int32 dither;
+        int32 seed;
+        int32 logspec;
+        int32 doublebw;
+        int32 nchans;
+        int32 whichchan;
   
-  int32 splen;
-  int32 nframes;
-  int16* spdata;
-} param_t;
+        int32 splen;
+        int32 nframes;
+        int16* spdata;
+    } param_t;
 
+    /**
+     * \struct melfb_t
+     * \brief Base Struct to hold all structure for MFCC computation. 
+     */
 
-  /**
-   * \struct melfb_t
-   * \brief Base Struct to hold all structure for MFCC computation. 
-   */
+    typedef struct{
+        float32 sampling_rate;  /**< Sampling rate  */
+        int32 num_cepstra;      /**< Number of cepstra */
+        int32 num_filters;      /**< Number of filters */
+        int32 fft_size;         /**< Size of FFT */
+        float32 lower_filt_freq;
+        float32 upper_filt_freq;
+        float32 **filter_coeffs;
+        float32 **mel_cosine;
+        float32 *left_apex;
+        int32 *width;
+        int32 doublewide;
+        char *warp_type;
+        char *warp_params;
+    } melfb_t;
 
-typedef struct{
-  float32 sampling_rate;  /**< Sampling rate  */
-  int32 num_cepstra;      /**< Number of cepstra */
-  int32 num_filters;      /**< Number of filters */
-  int32 fft_size;         /**< Size of FFT */
-    float32 lower_filt_freq;
-    float32 upper_filt_freq;
-    float32 **filter_coeffs;
-    float32 **mel_cosine;
-    float32 *left_apex;
-    int32 *width;
-    int32 doublewide;
-}melfb_t;
+    /**
+     * \struct fe_t
+     * \brief Structure that hold information and variable for the front end. 
+     */
+    typedef struct{
+        float32 SAMPLING_RATE;
+        int32 FRAME_RATE;
+        int32 FRAME_SHIFT;
+        float32 WINDOW_LENGTH;
+        int32 FRAME_SIZE;
+        int32 FFT_SIZE;
+        int32 FB_TYPE;
+        int32 LOG_SPEC;
+        int32 NUM_CEPSTRA;
+        int32 FEATURE_DIMENSION;
+        int32 dither;
+        int32 seed;
+        float32 PRE_EMPHASIS_ALPHA;
+        int16 *OVERFLOW_SAMPS;
+        int32 NUM_OVERFLOW_SAMPS;    
+        melfb_t *MEL_FB;
+        int32 START_FLAG;
+        int16 PRIOR;
+        float64 *HAMMING_WINDOW;
+        int32 FRAME_COUNTER;
+    } fe_t;
 
-  /**
-   * \struct fe_t
-   * \brief Structure that hold information and variable for the front end. 
-   */
-typedef struct{
-    float32 SAMPLING_RATE;
-    int32 FRAME_RATE;
-    int32 FRAME_SHIFT;
-    float32 WINDOW_LENGTH;
-    int32 FRAME_SIZE;
-    int32 FFT_SIZE;
-    int32 FB_TYPE;
-    int32 NUM_CEPSTRA;
-    float32 PRE_EMPHASIS_ALPHA;
-    int16 *OVERFLOW_SAMPS;
-    int32 NUM_OVERFLOW_SAMPS;    
-    melfb_t *MEL_FB;
-    int32 START_FLAG;
-    int16 PRIOR;
-    float64 *HAMMING_WINDOW;
-    int32 FRAME_COUNTER;
-  int32 dither;
-} fe_t;
-
-  /**
-   * \struct fewrap_t
-   * \brief Wrapper structure to hold the front-end parameters  
-   */
-typedef struct{
+    /**
+     * \struct fewrap_t
+     * \brief Wrapper structure to hold the front-end parameters  
+     */
+    typedef struct{
         param_t *P;
         fe_t *FE;
         int16 *fr_data;
         float32 *fr_cep;
-} fewrap_t;
+    } fewrap_t;
 
 
 
@@ -193,7 +201,13 @@ typedef struct{
 #define DEFAULT_SAMPLING_RATE "16000.0" /**Default sampling rate */
 #define DEFAULT_FRAME_RATE "100"  /**Default frame rate */
 #define DEFAULT_FRAME_SHIFT "160" /**Default frame shift */
+/* The default below is set so that we have an integral number of
+ * samples in a frame.
+ */
 #define DEFAULT_WINDOW_LENGTH "0.025625" /** Default window length */
+/* Since the default sampling rate is 16000, let's make the default
+ * fft size consistent with it.
+ */
 #define DEFAULT_FFT_SIZE "512" /** Default FFT size */
 #define DEFAULT_FB_TYPE MEL_SCALE  /** Default filter bank type */
 #define DEFAULT_NUM_CEPSTRA "13"  /** Default number of ceptral */
@@ -202,6 +216,8 @@ typedef struct{
 #define DEFAULT_UPPER_FILT_FREQ "6855.4976" /** Default upper filter frequency */
 #define DEFAULT_PRE_EMPHASIS_ALPHA "0.97" /** Default emphasis alpha */
 #define DEFAULT_START_FLAG 0
+
+#define DEFAULT_WARP_TYPE "inverse_linear"
 
 #define BB_SAMPLING_RATE 16000 /**(For 16K sampling frequency) Broad band sampling rate */
 #define DEFAULT_BB_FFT_SIZE 512 /**(For 16K sampling frequency)Broad band FFT sampling rate */
@@ -220,6 +236,7 @@ typedef struct{
 #define DEFAULT_BLOCKSIZE "200000" /** Default block size*/
 #define DITHER  OFF /** By default, dithering is off */
 
+#define SEED  "-1"
 
 /* The following only use in the application level */
 
@@ -257,180 +274,166 @@ typedef struct{
 /*#define SWAPBYTES*/
 
 
-  /** 
-      \struct MSWAV_hdr
-      \brief A MS Wavefile header. 
-      Some defines for MS Wav Files 
-      The MS Wav file is a RIFF file, and has the following 44 byte header 
-  */
-typedef struct RIFFHeader{
-    char rifftag[4];      /**< "RIFF" string */
-    int32 TotalLength;      /**< Total length */
-    char wavefmttag[8];   /**< "WAVEfmt " string (note space after 't') */
-    int32 RemainingLength;  /**< Remaining length */
-    int16 data_format;    /**< data format tag, 1 = PCM */
-    int16 numchannels;    /**< Number of channels in file */
-    int32 SamplingFreq;     /**< Sampling frequency */
-    int32 BytesPerSec;      /**< Average bytes/sec */
-    int16 BlockAlign;     /**< Block align */
-    int16 BitsPerSample;  /**< 8 or 16 bit */
-    char datatag[4];      /**< "data" string */
-    int32 datalength;       /**< Raw data length */
-} MSWAV_hdr;
+    /** 
+        \struct MSWAV_hdr
+        \brief A MS Wavefile header. 
+        Some defines for MS Wav Files 
+        The MS Wav file is a RIFF file, and has the following 44 byte header 
+    */
+    typedef struct RIFFHeader{
+        char rifftag[4];      /**< "RIFF" string */
+        int32 TotalLength;      /**< Total length */
+        char wavefmttag[8];   /**< "WAVEfmt " string (note space after 't') */
+        int32 RemainingLength;  /**< Remaining length */
+        int16 data_format;    /**< data format tag, 1 = PCM */
+        int16 numchannels;    /**< Number of channels in file */
+        int32 SamplingFreq;     /**< Sampling frequency */
+        int32 BytesPerSec;      /**< Average bytes/sec */
+        int16 BlockAlign;     /**< Block align */
+        int16 BitsPerSample;  /**< 8 or 16 bit */
+        char datatag[4];      /**< "data" string */
+        int32 datalength;       /**< Raw data length */
+    } MSWAV_hdr;
 
 
 
 /* Functions */
 
-  /**
-     Function that initialize the routine 
-     @return, an initialized fe_t structure
-   */
-  fe_t *fe_init(param_t const *P /**< Input: A filled param_t structure */
-	      );
+    /**
+       Function that initialize the routine 
+       @return, an initialized fe_t structure
+    */
+    fe_t *fe_init(param_t const *P /**< Input: A filled param_t structure */
+        );
 
-  /**
-     Function call for starting utternace 
-   */
-  int32 fe_start_utt(fe_t *FE /**< Input: A filled FE rountine */
-		   );
+    /**
+       Function call for starting utternace 
+    */
+    int32 fe_start_utt(fe_t *FE /**< Input: A filled FE rountine */
+        );
 
-  /**
-     Function call for the end of the utterance. It also collect the
-     rest of the sample and put in a cepstral vector: if there are
-     overflow samples remaining, it will pad with zeros to make a
-     complete frame and then process to cepstra. also deactivates
-     start flag of FE, and resets overflow buffer count.
-   */
-  int32 fe_end_utt(fe_t *FE,  /**< Input: A filled FE structure */
-		   float32 *cepvector, /**< Input: The cepstral vector */
-		   int32 *nframes /**Output: number of frames */
-		   );
+    /**
+       Function call for the end of the utterance. It also collect the
+       rest of the sample and put in a cepstral vector: if there are
+       overflow samples remaining, it will pad with zeros to make a
+       complete frame and then process to cepstra. also deactivates
+       start flag of FE, and resets overflow buffer count.
+    */
+    int32 fe_end_utt(fe_t *FE,  /**< Input: A filled FE structure */
+                     float32 *cepvector, /**< Input: The cepstral vector */
+                     int32 *nframes /**Output: number of frames */
+        );
 
-  /**
-     Close the front end. 
-     Free all allocated memory within FE and destroy FE. 
-   */
-  int32 fe_close(fe_t *FE /**< Input, a FE structure */
-		 );
+    /**
+       Close the front end. 
+       Free all allocated memory within FE and destroy FE. 
+    */
+    int32 fe_close(fe_t *FE /**< Input, a FE structure */
+        );
   
-  /**
-     Process frames. 
-     A wrapper function to batch process a block of cepstrum
-   */
-		 
-  int32 fe_process(fe_t *FE,  /**< A FE structure */
-		   int16 *spch, /**< */
-		   int32 nsamps,  /**< Number of samples */
-		   float32 ***cep_block /**< A block of cepstrum*/
-		   );
+    /**
+       Process frames. 
+       A wrapper function to batch process a block of cepstrum
+    */
+                 
+    int32 fe_process(fe_t *FE,  /**< A FE structure */
+                     int16 *spch, /**< */
+                     int32 nsamps,  /**< Number of samples */
+                     float32 ***cep_block /**< A block of cepstrum*/
+        );
 
-  /**
-     Process only one frame of samples
-   */
-  int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
-			 int16 *spch, /**< The speech samples */
-			 int32 nsamps, /**< number of samples*/
-			 float32 *fr_cep /**< One frame of cepstrum*/
-			 );
+    /**
+       Process only one frame of samples
+    */
+    int32 fe_process_frame(fe_t *FE,  /**< A FE structure */
+                           int16 *spch, /**< The speech samples */
+                           int32 nsamps, /**< number of samples*/
+                           float32 *fr_cep /**< One frame of cepstrum*/
+        );
 
-  int32 fe_process_utt(fe_t *FE,  /**< A FE structure */
-		       int16 *spch, /**< The speech samples */
-		       int32 nsamps, /**< number of samples*/
-		       float32 ***cep_block, 
-		       int32 *nframes);
+    int32 fe_process_utt(fe_t *FE,  /**< A FE structure */
+                         int16 *spch, /**< The speech samples */
+                         int32 nsamps, /**< number of samples*/
+                         float32 ***cep_block, 
+                         int32 *nframes);
 
-  /** 
-      Functions that wrap up the front-end operations on the front-end
-      wrapper operations.  
-  */
-  fewrap_t * few_initialize();
+    /** 
+        Functions that wrap up the front-end operations on the front-end
+        wrapper operations.  
+    */
+    fewrap_t * few_initialize();
 
-  /**
-   *  Free the FEW structure
-   */
-  void few_free(fewrap_t *FEW /**< the FEW structure one wants to free*/
-		);
+    /**
+     *  Free the FEW structure
+     */
+    void few_free(fewrap_t *FEW /**< the FEW structure one wants to free*/
+        );
 
-  /**
-     Function that parse the command line and put it into the param_t structure. 
-   */
-  param_t *fe_parse_options();
+    /**
+       Function that parse the command line and put it into the param_t structure. 
+    */
+    param_t *fe_parse_options();
   
-  /** 
-      Function that initialize give a simple param_t structure 
-   */
-  void fe_init_params(param_t *P /** An allocated param_t structure */
-		      );
+    /** 
+        Function that initialize give a simple param_t structure 
+    */
+    void fe_init_params(param_t *P /** An allocated param_t structure */
+        );
   
-  /**
-   * The master function that control conversion of batch of waveforms or a waveform to cepstrals. 
-     
-   */
-  int32 fe_convert_files(param_t *P /**An allocated param_t structure */
-			 );
-int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *nframesp);
+    /**
+     * The master function that control conversion of batch of waveforms or a waveform to cepstrals.
+     */
+    int32 fe_convert_files(param_t *P /**An allocated param_t structure */
+        );
+    int16 * fe_convert_files_to_spdata(param_t *P, fe_t *FE, int32 *splenp, int32 *nframesp);
 
-  /**
-     When P->is_batch :  
-     When P->is_single :
-   */
-  int32 fe_build_filenames(param_t *P,  /**<In: a parameter structure */
-			   char *fileroot,  /**< In: the file root */
-			   char **infilename, /**< In?: Infilename */
-			   char **outfilename /**< In?: Outfilename */
-			   );
+    /**
+       When P->is_batch :  
+       When P->is_single :
+    */
+    int32 fe_build_filenames(param_t *P,  /**<In: a parameter structure */
+                             char *fileroot,  /**< In: the file root */
+                             char **infilename, /**< In?: Infilename */
+                             char **outfilename /**< In?: Outfilename */
+        );
 
-  /** 
-      Copy string from src_str to dest_str 
-      Notice that both strings need to be pre-allocated by users. 
-   */
-  char *fe_copystr(char *dest_str,  /**< Out: a destination string */
-		   char *src_str    /**< In: a source string */
-		   );
+    /** 
+        Copy string from src_str to dest_str 
+        Notice that both strings need to be pre-allocated by users. 
+    */
+    char *fe_copystr(char *dest_str,  /**< Out: a destination string */
+                     char *src_str    /**< In: a source string */
+        );
 
-  /**
-     Count number of frames for ?
-   */
-  int32 fe_count_frames(fe_t *FE,  /**<In: a front end structure */
-			int32 nsamps, 
-			int32 count_partial_frames
-			);
-int32 fe_readspch(param_t *P, char *infile, int16 **spdata, int32 *splen);
-int32 fe_writefeat(fe_t *FE, char *outfile, int32 nframes, float32 **feat);
-int32 fe_free_param(param_t *P);
+    /**
+       Count number of frames for ?
+    */
+    int32 fe_count_frames(fe_t *FE,  /**<In: a front end structure */
+                          int32 nsamps, 
+                          int32 count_partial_frames
+        );
+    int32 fe_readspch(param_t *P, char *infile, int16 **spdata, int32 *splen);
+    int32 fe_writefeat(fe_t *FE, char *outfile, int32 nframes, float32 **feat);
+    int32 fe_free_param(param_t *P);
 
-  int32 fe_openfiles(param_t *P,       /**<In: a parameter structure */
-		     fe_t *FE,         /**<In: a front-end parameter structure */
-		     char *infile,     /**<In: The input file string */
-		     int32 *fp_in,     /**<Out: Input file pointer.  */
-		     int32 *nsamps,    /**<Out: Number of samples.  */
-		     int32 *nframes,   /**<Out: Number of frames.  */
-		     int32 *nblocks,   /**<Out: Number of blocks. */
-		     char *outfile,    /**<In: The input file string */
-		     int32 *fp_out     /**<Out: Output file pointer */
-		     );
+    int32 fe_openfiles(param_t *P,       /**<In: a parameter structure */
+                       fe_t *FE,         /**<In: a front-end parameter structure */
+                       char *infile,     /**<In: The input file string */
+                       int32 *fp_in,     /**<Out: Input file pointer.  */
+                       int32 *nsamps,    /**<Out: Number of samples.  */
+                       int32 *nframes,   /**<Out: Number of frames.  */
+                       int32 *nblocks,   /**<Out: Number of blocks. */
+                       char *outfile,    /**<In: The input file string */
+                       int32 *fp_out     /**<Out: Output file pointer */
+        );
 
-  int32 fe_readblock_spch(param_t *P, /**< In: a parameter structure */
-			  int32 fp,  /**< In: The input file pointer*/
-			  int32 nsamps, /**< In: Number of samples */
-			  int16 *buf
-			  );
-int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
-int32 fe_closefiles(int32 fp_in, int32 fp_out);
-
-
-  /** Initialize dither with seed */
-  void fe_init_dither(int32 seed /**< In: seed to initialize dither */
-		      );
-
-  /**
-     Apply dither on the samples of frames. 
-   */
-  int32 fe_dither(int16 *buffer, /**<In/Out: a buffer of samples */
-		  int32 nsamps   /**<In: number of samples */
-		  );
-  
+    int32 fe_readblock_spch(param_t *P, /**< In: a parameter structure */
+                            int32 fp,  /**< In: The input file pointer*/
+                            int32 nsamps, /**< In: Number of samples */
+                            int16 *buf
+        );
+    int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
+    int32 fe_closefiles(int32 fp_in, int32 fp_out);
 
 #ifdef __cplusplus
 }
