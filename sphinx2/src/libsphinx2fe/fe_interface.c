@@ -86,6 +86,27 @@ void fe_init_params(param_t *P)
 
 
 /*********************************************************************
+   FUNCTION:   fe_init_dither
+   PARAMETERS: int32 seed
+   RETURNS:    void
+   DESCRIPTION: Seed the random number generator used by dither. The
+   random number generator is used to add dither to the audio file. If
+   a seed less than zero is used, then an internal mechanism is used
+   to seed the generator.
+**********************************************************************/
+void fe_init_dither(int32 seed)
+{
+    if (seed < 0) {
+        E_INFO("You are using the internal mechanism to generate the seed.");
+        srand48((long)time(0));
+    } else {
+        E_INFO("You are using %d as the seed.", seed);
+        srand48(seed);
+    }
+}
+
+
+/*********************************************************************
    FUNCTION:   fe_init
    PARAMETERS: param_t *P
    RETURNS:    pointer to a new front end or NULL if failure.
@@ -123,11 +144,7 @@ fe_t *fe_init(param_t const *P)
     }
 
     if (FE->dither) {
-      if (FE->seed < 0) {
-        srand48((long)time(0));
-      } else {
-        srand48((long)FE->seed);
-      }
+        fe_init_dither(FE->seed);
     }
 
     /* establish buffers for overflow samps and hamming window */
@@ -239,7 +256,7 @@ int32 fe_process_utt(fe_t *FE, int16 *spch, int32 nsamps, float32 **cep, int32 *
         fe_dither(allspch, spbuf_len);
       }
 
-      /* pre-emphasis if needed,convert from int16 to float64 */
+      /* pre-emphasis if needed, convert from int16 to float64 */
       if (FE->PRE_EMPHASIS_ALPHA != 0.0){
         fe_pre_emphasis(allspch, spbuf, spbuf_len, FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
       } else{

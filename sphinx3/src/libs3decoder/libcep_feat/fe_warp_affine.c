@@ -44,7 +44,7 @@
  *	
  *********************************************************************/
 
-/* static char rcsid[] = "@(#)$Id$"; */
+/* static char rcsid[] = "@(#)$Id: fe_warp_affine.c 5227 2006-02-17 00:31:34Z egouvea $"; */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -35,16 +35,24 @@
  */
 /*********************************************************************
  *
- * File: fe_warp_affine.c
+ * File: fe_warp_piecewise_linear.c
  * 
  * Description: 
- * 	Warp the frequency axis according to an affine function, i.e.:
  *
- *		w' = a * w + b
+ * 	Warp the frequency axis according to an piecewise linear
+ * 	function. The function is linear up to a frequency F, where
+ * 	the slope changes so that the Nyquist frequency in the warped
+ * 	axis maps to the Nyquist frequency in the unwarped.
+ *
+ *		w' = a * w, w < F
+ *              w' = a' * w + b, W > F
+ *              w'(0) = 0
+ *              w'(F) = F
+ *              w'(Nyq) = Nyq
  *	
  *********************************************************************/
 
-/* static char rcsid[] = "@(#)$Id$"; */
+/* static char rcsid[] = "@(#)$Id: fe_warp_piecewise_linear.c 5227 2006-02-17 00:31:34Z egouvea $"; */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +60,7 @@
 #include <string.h>
 
 #include "fe_warp.h"
-#include "fe_warp_affine.h"
+#include "fe_warp_piecewise_linear.h"
 
 #define N_PARAM		2
 #define YES             1
@@ -60,34 +68,35 @@
 
 /*
  * params[0] : a
- * params[1] : b
+ * params[1] : F (the non-differentiable point)
  */
-static float params[N_PARAM] = {1.0f, 0.0f};
+static float params[N_PARAM] = {1.0f, 6800.0f};
+static float final_piece[2];
 static int32 is_neutral = YES;
 static char  p_str[256] = "";
 static float nyquist_frequency = 0.0f;
 
 
 const char *
-fe_warp_affine_doc()
+fe_warp_piecewise_linear_doc()
 {
-    return "affine :== < w' = a * x + b >";
+    return "piecewise_linear :== < w' = a * w, w < F >";
 }
 
 uint32
-fe_warp_affine_id()
+fe_warp_piecewise_linear_id()
 {
-    return FE_WARP_ID_AFFINE;
+    return FE_WARP_ID_PIECEWISE_LINEAR;
 }
 
 uint32
-fe_warp_affine_n_param()
+fe_warp_piecewise_linear_n_param()
 {
      return N_PARAM;
 }
 
 void
-fe_warp_affine_set_parameters(char *param_str, float sampling_rate)
+fe_warp_piecewise_linear_set_parameters(char *param_str, float sampling_rate)
 {
      char *tok;
      char *seps = " \t";
@@ -106,6 +115,7 @@ fe_warp_affine_set_parameters(char *param_str, float sampling_rate)
      is_neutral = NO;
      strcpy(temp_param_str, param_str);
      memset(params, 0, N_PARAM * sizeof(float));
+     memset(final_piece, 0, 2 * sizeof(float));
      strcpy(p_str, param_str);
      tok = strtok(temp_param_str, seps);
      while (tok != NULL) {
@@ -116,23 +126,42 @@ fe_warp_affine_set_parameters(char *param_str, float sampling_rate)
 	  }
      }
      if (tok != NULL) {
-	  E_INFO("Affine warping takes up to two arguments, %s ignored.\n", tok);
+	  E_INFO("Piecewise linear warping takes up to two arguments, %s ignored.\n", tok);
+     }
+     if (params[1] < sampling_rate) {
+	  /* Precompute these. These are the coefficients of a
+	   * straight line that contains the points (F, aF) and (N,
+	   * N), where a = params[0], F = params[1], N = Nyquist
+	   * frequency.
+	   */
+	  if (params[1] == 0) {
+	       params[1] = sampling_rate * 0.85f;
+	  }
+	  final_piece[0] = (sampling_rate - params[0] * params[1]) / (sampling_rate - params[1]);
+	  final_piece[1] = sampling_rate * params[0] * (params[0] - 1.0f) / (sampling_rate - params[1]);
+     } else {
+	  memset(final_piece, 0, 2 * sizeof(float));
      }
      if (params[0] == 0) {
 	  is_neutral = YES;
-	  E_INFO("Affine warping cannot have slope zero, warping not applied.\n");
+	  E_INFO("Piecewise linear warping cannot have slope zero, warping not applied.\n");
      }
 }
 
 float
-fe_warp_affine_warped_to_unwarped(float nonlinear)
+fe_warp_piecewise_linear_warped_to_unwarped(float nonlinear)
 {
      if (is_neutral) {
 	  return nonlinear;
      } else {
 	  /* linear = (nonlinear - b) / a */
-	  float temp = nonlinear - params[1];
-	  temp /= params[0];
+	  float temp;
+	  if (nonlinear < params[0] * params[1]) {
+	       temp = nonlinear / params[0];
+	  } else {
+	       temp = nonlinear - final_piece[1];
+	       temp /= final_piece[0];
+	  }
 	  if (temp > nyquist_frequency) {
 	       E_WARN("Warp factor %g results in frequency (%.1f) higher than Nyquist (%.1f)\n", params[0], temp, nyquist_frequency);
 	  }
@@ -141,20 +170,24 @@ fe_warp_affine_warped_to_unwarped(float nonlinear)
 }
 
 float
-fe_warp_affine_unwarped_to_warped(float linear)
+fe_warp_piecewise_linear_unwarped_to_warped(float linear)
 {
      if (is_neutral) {
 	  return linear;
      } else {
+	  float temp;
 	  /* nonlinear = a * linear - b */
-	  float temp = linear * params[0];
-	  temp += params[1];
+	  if (linear < params[1]) {
+	       temp = linear * params[0];
+	  } else {
+	       temp = final_piece[0] * linear + final_piece[1];
+	  }
 	  return temp;
      }
 }
 
 void
-fe_warp_affine_print(const char *label)
+fe_warp_piecewise_linear_print(const char *label)
 {
     uint32 i;
 

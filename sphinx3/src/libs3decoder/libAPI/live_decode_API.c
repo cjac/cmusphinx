@@ -187,6 +187,7 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
 
   /* ARCHAN 20050708: This part should be factored with fe_parse_option*/
   /* allocate and initialize front-end */
+  fe_init_params(&fe_param);
   fe_param.SAMPLING_RATE = cmd_ln_float32 ("-samprate");
   fe_param.FRAME_RATE = cmd_ln_int32("-frate");
   fe_param.WINDOW_LENGTH = cmd_ln_float32("-wlen");
@@ -198,11 +199,9 @@ ld_init_impl(live_decoder_t *_decoder, int32 _internal_cmdln)
   fe_param.LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
   fe_param.UPPER_FILT_FREQ = cmd_ln_float32("-upperf");
   fe_param.PRE_EMPHASIS_ALPHA = cmd_ln_float32("-alpha");
-  fe_param.dither=cmd_ln_int32("-dither");
-
-  if(fe_param.dither){
-    fe_init_dither(cmd_ln_int32("-seed"));
-  }
+  fe_param.dither = strcmp("no", cmd_ln_str("-dither"));
+  fe_param.warp_type = cmd_ln_str("-warp_type");
+  fe_param.warp_params = cmd_ln_str("-warp_params");
 
   if ((_decoder->fe = fe_init(&fe_param)) == NULL) {
     E_WARN("Failed to initialize front-end.\n");
@@ -604,9 +603,6 @@ ld_process_raw_impl(live_decoder_t *_decoder,
   if(_decoder->swap){
     for (i = 0; i < num_samples; i++) {
       SWAP_INT16(samples + i);
-    }
-    if(_decoder->fe->dither){
-      fe_dither(samples,num_samples);
     }
   }
 

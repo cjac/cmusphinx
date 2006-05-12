@@ -38,7 +38,6 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/cepview/cepview.dsp \
 	win32/msdev/programs/conf/sphinx3_conf.dsp \
 	win32/msdev/programs/dag/sphinx3_dag.dsp \
-	win32/msdev/programs/decode/allphone.dsp \
 	win32/msdev/programs/decode/sphinx3_decode.dsp \
 	win32/msdev/programs/decode_anytopo/sphinx3_decode_anytopo.dsp \
 	win32/msdev/programs/dp/sphinx3_dp.dsp \
@@ -113,7 +112,10 @@ test-full : \
 	test-decode_anytopo \
 	test-decode_anytopo-mllr \
 	test-decode_anytopo-2ndstage \
-	test-wave2feat 
+	test-wave2feat \
+	test-wave2feat-dither-seed \
+	test-wave2feat-dither-rand \
+	test-wave2feat-logspec
 
 #	test-decode-noncomp \
 #	test-decode-mode5 \
@@ -155,7 +157,10 @@ test-livepretend-clm \
 test-livepretend-mllr \
 test-gausubvq \
 test-ep \
-test-wave2feat:
+test-wave2feat \
+test-wave2feat-dither-seed \
+test-wave2feat-dither-rand \
+test-wave2feat-logspec:
 	sh $(top_builddir)/src/tests/regression/$@.sh
 
 

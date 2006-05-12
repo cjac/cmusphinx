@@ -109,6 +109,22 @@ SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_sigproc.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_affine.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_inverse_linear.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_piecewise_linear.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\libcep_feat\feat.c
 # End Source File
 # End Group
@@ -129,7 +145,7 @@ SOURCE=..\..\..\src\libs3decoder\libcep_feat\cmn_prior.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe.h
+SOURCE=..\..\..\include\fe.h
 # End Source File
 # Begin Source File
 
@@ -137,11 +153,23 @@ SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_internal.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_sigproc.h
+SOURCE=..\..\..\include\feat.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\libcep_feat\feat.h
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_affine.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_inverse_linear.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libcep_feat\fe_warp_piecewise_linear.h
 # End Source File
 # End Group
 # End Target

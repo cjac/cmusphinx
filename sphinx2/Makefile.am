@@ -55,7 +55,7 @@ EXTRA_DIST = sphinx2.spec \
 
 test:
 	$(LIBTOOL) --mode=execute src/examples/sphinx2_continuous \
-		-verbose 9 -adcin TRUE -adcext 16k \
+		-verbose 9 -adcin TRUE -adcext 16k -dither TRUE \
 		-ctlfn $(top_srcdir)/model/lm/turtle/turtle.ctl \
 		-ctloffset 0 -ctlcount 100000000 \
 		-datadir $(top_srcdir)/model/lm/turtle \

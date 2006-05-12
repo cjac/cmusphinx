@@ -86,6 +86,10 @@ extern "C" {
         int32 doublebw;
         int32 nchans;
         int32 whichchan;
+  
+        int32 splen;
+        int32 nframes;
+        int16* spdata;
     } param_t;
 
 
@@ -200,7 +204,9 @@ extern "C" {
 
 #define DEFAULT_BLOCKSIZE 200000
 
-/* Interface */
+
+/* Functions */
+
     void fe_init_params(param_t *P);
 
     fe_t *fe_init(param_t const *P);
