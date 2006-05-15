@@ -44,7 +44,7 @@
  * **********************************************
  * 
  * HISTORY
- * $Log$
+ * $Log: dict.c,v $
  * Revision 1.7  2006/02/28  02:06:46  egouvea
  * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
  * compile in Visual C++ (declarations didn't match, etc). There are
