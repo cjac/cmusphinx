@@ -8,6 +8,6 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/cep
 -d 13 \
 -f @abs_top_srcdir@/model/ep/chan3.mfc \
 > $tmpout
-if (diff $tmpout @abs_top_srcdir@/model/ep/chan3.cepview > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout @abs_top_srcdir@/model/ep/chan3.cepview | grep SUCCESS > /dev/null 2>&1); \
 then echo "CEPVIEW test PASSED"; else \
 echo "CEPVIEW test FAILED"; fi 

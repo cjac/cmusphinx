@@ -19,6 +19,6 @@ lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_astar $margs $lmargs > $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
-if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
-then echo "ASTAR PASSED"; else \
-echo "ASTAR FAILED"; fi
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest | grep SUCCESS > /dev/null 2>&1); \
+then echo "ASTAR test PASSED"; else \
+echo "ASTAR test FAILED"; fi

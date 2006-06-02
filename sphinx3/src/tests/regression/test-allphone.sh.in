@@ -23,41 +23,41 @@ margs="-logbase 1.0003 \
 -phsegdir ./ \
 -phlatdir ./"
 
-lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP"
+lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP "
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_allphone $margs $lmargs 
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG allp test PASSED"; else \
 echo "ALLPHONE PHONE TG allp test FAILED"; fi
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.phlat > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.phlat | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG phlat test PASSED"; else \
-echo "allphone PHONE TG phlat test FAILED"; fi
+echo "ALLPHONE PHONE TG phlat test FAILED"; fi
 
-if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.match > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.match | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG match test PASSED"; else \
 echo "ALLPHONE PHONE TG match test FAILED"; fi
 
-if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.matchseg > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.matchseg 2 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG matchseg test PASSED"; else \
 echo "ALLPHONE PHONE TG matchseg test FAILED"; fi
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_allphone $margs
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.allp 2 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE LOOP allp test PASSED"; else \
 echo "ALLPHONE PHONE LOOP allp test FAILED"; fi
 
-if(diff `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phlat @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phlat | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE LOOP phlat test PASSED"; else \
-echo "allphone PHONE LOOP phlat test FAILED"; fi
+echo "ALLPHONE PHONE LOOP phlat test FAILED"; fi
 
-if(diff allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.match > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl allphone.match @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.match | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE LOOP match test PASSED"; else \
 echo "ALLPHONE PHONE LOOP match test FAILED"; fi
 
-if(diff allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.matchseg > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl allphone.matchseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.matchseg 2 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE LOOP matchseg test PASSED"; else \
 echo "ALLPHONE PHONE LOOP matchseg test FAILED"; fi
 

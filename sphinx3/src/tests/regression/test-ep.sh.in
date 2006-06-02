@@ -1,6 +1,7 @@
 #!/bin/sh
 
 echo "EP TEST"
+tmplog="test-ep.log"
 tmpout="test-ep.out"
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_ep \
@@ -20,9 +21,9 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sph
 -var @abs_top_srcdir@/model/ep/variances \
 -mixw @abs_top_srcdir@/model/ep/mixture_weights \
 -raw 1 \
-> $tmpout 2>&1
+> $tmplog 2>&1
 
-if (grep "Utt_" $tmpout | perl -pe 's/(\d+\.\d+)/sprintf "%.3f", $1/ge' \
-| diff @abs_top_srcdir@/model/ep/ep.result - > /dev/null 2>&1); \
+grep "Utt_" $tmplog > $tmpout
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout @abs_top_srcdir@/model/ep/ep.result | grep SUCCESS > /dev/null 2>&1); \
 then echo "EP test PASSED"; else \
 echo "EP test FAILED"; fi 

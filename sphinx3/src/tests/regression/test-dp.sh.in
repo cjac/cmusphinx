@@ -1,18 +1,18 @@
 #!/bin/sh
 
-echo "LM_CONVERT TEST"
-tmpout="test-lm_convert.out"
+echo "DP TEST"
+tmpout="test-dp.out"
 
-echo "This will perform several tests that compare the converted LMs to a pre-generated ones. "
+echo "This will test of the word alignment routine. "
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_dp \
 -hypfile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.hyp \
 -reffile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.ref \
 > $tmpout 
 
-if(diff $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.simple.log 2>&1); \
-then echo "DP SIMPLE PASSED"; else \
-echo "DP SIMPLE FAILED"; fi 
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.simple.log | grep SUCCESS > /dev/null 2>&1); \
+then echo "DP SIMPLE test PASSED"; else \
+echo "DP SIMPLE test FAILED"; fi 
 
 #sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_dp \
 #-d 1 \
@@ -20,7 +20,7 @@ echo "DP SIMPLE FAILED"; fi
 #-reffile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.ref \
 #> $tmpout
 
-#if(diff $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.detail.log 2>&1); \
-#then echo "DP DETAIL PASSED"; else \
-#echo "DP DETAIL FAILED"; fi 
+#if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.detail.log | grep SUCCESS > /dev/null 2>&1); \
+#then echo "DP DETAIL test PASSED"; else \
+#echo "DP DETAIL test FAILED"; fi 
 
