@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   char *outputpath;
 
   lm_t* lm;
-  char separator[1];
+  char separator[2];
 
   print_appl_info(argv[0]);
   cmd_ln_appl_enter(argc, argv, "default.arg", arg);

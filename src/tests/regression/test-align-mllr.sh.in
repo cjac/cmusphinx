@@ -29,6 +29,6 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sph
 -phsegdir ./ \
 >$tmplog 2>&1 
 
-if (diff $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.mllr.out > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.mllr.out | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN+MLLR simple output test PASSED"; else \
 echo "ALIGN+MLLR simple output test FAILED"; fi 

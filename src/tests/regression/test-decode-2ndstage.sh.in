@@ -58,8 +58,8 @@ grep "BSTPTH:" $tmpout
 grep "BSTXCT" $tmpout 
 
 if(grep "BSTPTH:" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
-then echo "DAG test after DECODE 1st stage PASSED" ; else \
-echo "DAG test after DECODE 1st stage FAILED" ; fi
+then echo "DAG after DECODE 1st stage test PASSED" ; else \
+echo "DAG after DECODE 1st stage test FAILED" ; fi
 
 #Next try to read the lattices with astar and see whether astar could read it. 
 
@@ -77,7 +77,7 @@ margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4op
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_astar $margs $lmargs >> $tmpout 2>&1 
 
 gzip -cfd ./pittsburgh.nbest.gz > ./pittsburgh.nbest 
-if(diff ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest > /dev/null 2>&1); \
-then echo "ASTAR test after DECODE 1st stage PASSED"; else \
-echo "ASTAR test after DECODE 1st stage FAILED"; fi
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl ./pittsburgh.nbest @abs_top_srcdir@/model/lm/an4/pittsburgh.nbest | grep SUCCESS > /dev/null 2>&1); \
+then echo "ASTAR after DECODE 1st stage test PASSED"; else \
+echo "ASTAR after DECODE 1st stage test FAILED"; fi
 

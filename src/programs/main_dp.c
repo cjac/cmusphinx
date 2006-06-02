@@ -470,6 +470,7 @@ static int32 hypline2wds (char *line, int32 *wid, int32 *sf, int32 oldfmt)
     
     lp = line;
     n = 0;
+    f = 0;
     
     /* Skip uttid, scalefactor, acoustic and LM scores info */
     if (! oldfmt) {

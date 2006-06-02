@@ -127,6 +127,13 @@ FILE *fopen_comp (const char *file, char *mode, int32 *ispipe)
 		E_ERROR_SYSTEM("_popen (%s,%s) failed\n", command, mode);
 		return NULL;
 	    }
+	} else if (strcmp (mode, "w") == 0) {
+	    sprintf (command, "gzip.exe > %s", file);
+	    
+	    if ((fp = _popen (command, mode)) == NULL) {
+		E_ERROR_SYSTEM("_popen (%s,%s) failed\n", command, mode);
+		return NULL;
+	    }
 	} else {
 	    E_ERROR ("fopen_comp not implemented for mode = %s\n", mode);
 	    return NULL;
