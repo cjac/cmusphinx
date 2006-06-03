@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "ep"=.\win32\msdev\programs\ep\sphinx3_ep.dsp - Package Owner=<4>
+Project: "sphinx3_ep"=.\win32\msdev\programs\ep\sphinx3_ep.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -48,7 +48,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "align"=.\win32\msdev\programs\align\sphinx3_align.dsp - Package Owner=<4>
+Project: "sphinx3_align"=.\win32\msdev\programs\align\sphinx3_align.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -93,7 +93,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "allphone"=.\win32\msdev\programs\allphone\sphinx3_allphone.dsp - Package Owner=<4>
+Project: "sphinx3_allphone"=.\win32\msdev\programs\allphone\sphinx3_allphone.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -138,7 +138,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "astar"=.\win32\msdev\programs\astar\sphinx3_astar.dsp - Package Owner=<4>
+Project: "sphinx3_astar"=.\win32\msdev\programs\astar\sphinx3_astar.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -228,7 +228,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "conf"=.\win32\msdev\programs\conf\sphinx3_conf.dsp - Package Owner=<4>
+Project: "sphinx3_conf"=.\win32\msdev\programs\conf\sphinx3_conf.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -318,7 +318,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "dag"=.\win32\msdev\programs\dag\sphinx3_dag.dsp - Package Owner=<4>
+Project: "sphinx3_dag"=.\win32\msdev\programs\dag\sphinx3_dag.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -363,7 +363,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "decode"=.\win32\msdev\programs\decode\sphinx3_decode.dsp - Package Owner=<4>
+Project: "sphinx3_decode"=.\win32\msdev\programs\decode\sphinx3_decode.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -408,7 +408,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "decode_anytopo"=.\win32\msdev\programs\decode_anytopo\sphinx3_decode_anytopo.dsp - Package Owner=<4>
+Project: "sphinx3_decode_anytopo"=.\win32\msdev\programs\decode_anytopo\sphinx3_decode_anytopo.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -453,7 +453,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "dp"=.\win32\msdev\programs\dp\sphinx3_dp.dsp - Package Owner=<4>
+Project: "sphinx3_dp"=.\win32\msdev\programs\dp\sphinx3_dp.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -675,7 +675,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "livepretend"=.\win32\msdev\programs\livepretend\sphinx3_livepretend.dsp - Package Owner=<4>
+Project: "sphinx3_livepretend"=.\win32\msdev\programs\livepretend\sphinx3_livepretend.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
