@@ -20,7 +20,7 @@
       </component>
       <component id="c9677" class="javax.swing.JButton" binding="play">
         <constraints>
-          <xy x="444" y="263" width="69" height="25"/>
+          <xy x="456" y="264" width="57" height="25"/>
           <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1"/>
         </constraints>
         <properties>
@@ -29,21 +29,12 @@
       </component>
       <component id="1be1f" class="javax.swing.JSlider" binding="zoom">
         <constraints>
-          <xy x="79" y="265" width="355" height="21"/>
+          <xy x="79" y="266" width="367" height="21"/>
           <grid row="1" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1"/>
         </constraints>
         <properties>
           <value value="0"/>
         </properties>
-      </component>
-      <component id="73c88" class="edu.cmu.sphinx.tools.corpusEditor.WordSpectrogramPanel" binding="spectrogram">
-        <constraints>
-          <xy x="0" y="1" width="512" height="256"/>
-          <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="0" anchor="0" fill="0">
-            <minimum-size width="512" height="256"/>
-          </grid>
-        </constraints>
-        <properties/>
       </component>
     </children>
   </grid>
