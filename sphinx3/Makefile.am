@@ -54,6 +54,7 @@ CLEANFILES = chan3.mfc \
 	test-*.out \
 	test-*.cepview \
 	test-*.mfc \
+	test-*.log \
 	tmp.out \
 	pittsburgh.* \
 	tmp \
