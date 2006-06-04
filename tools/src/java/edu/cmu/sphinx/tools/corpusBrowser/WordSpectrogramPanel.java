@@ -1,4 +1,4 @@
-package edu.cmu.sphinx.tools.corpusEditor;
+package edu.cmu.sphinx.tools.corpusBrowser;
 
 import edu.cmu.sphinx.frontend.Data;
 import edu.cmu.sphinx.frontend.DataEndSignal;
@@ -18,8 +18,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageFilter;
 import java.awt.image.ReplicateScaleFilter;
-import java.util.ArrayList;
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Copyright 1999-2006 Carnegie Mellon University.
@@ -89,7 +89,7 @@ public class WordSpectrogramPanel extends SpectrogramPanel {
             /* Run through all the spectra one at a time and convert
             * them to an log intensity value.
             */
-            ArrayList intensitiesList = new ArrayList();
+            ArrayList<double[]> intensitiesList = new ArrayList<double[]>();
             maxIntensity = Double.MIN_VALUE;
             minIntensity = Double.MAX_VALUE;
             Data spectrum = frontEnd.getData();
@@ -119,7 +119,7 @@ public class WordSpectrogramPanel extends SpectrogramPanel {
             is.close();
 
             int width = intensitiesList.size();
-            int height = ((double[]) intensitiesList.get(0)).length;
+            int height = (intensitiesList.get(0)).length;
             int maxYIndex = height - 1;
             Dimension d = new Dimension(width, height);
 
@@ -139,7 +139,7 @@ public class WordSpectrogramPanel extends SpectrogramPanel {
             double scaleFactor = ((0xff + offsetFactor) / maxIntensity);
 
             for (int i = 0; i < width; i++) {
-                double[] intensities = (double[]) intensitiesList.get(i);
+                double[] intensities = intensitiesList.get(i);
                 for (int j = maxYIndex; j >= 0; j--) {
 
                     /* Adjust the grey value to make a value of 0 to mean

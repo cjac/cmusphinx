@@ -1,12 +1,12 @@
-package edu.cmu.sphinx.tools.corpusEditor;
+package edu.cmu.sphinx.tools.corpusBrowser;
 
-import edu.cmu.sphinx.util.props.ConfigurationManager;
-import edu.cmu.sphinx.util.props.PropertyException;
+import edu.cmu.sphinx.tools.batch.BatchNISTRecognizer;
 import edu.cmu.sphinx.tools.corpus.Corpus;
 import edu.cmu.sphinx.tools.corpus.Utterance;
 import edu.cmu.sphinx.tools.corpus.Word;
 import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLReader;
-import edu.cmu.sphinx.tools.batch.BatchNISTRecognizer;
+import edu.cmu.sphinx.util.props.ConfigurationManager;
+import edu.cmu.sphinx.util.props.PropertyException;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;

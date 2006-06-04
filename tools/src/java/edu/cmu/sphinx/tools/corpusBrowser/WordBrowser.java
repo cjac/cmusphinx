@@ -1,21 +1,20 @@
-package edu.cmu.sphinx.tools.corpusEditor;
+package edu.cmu.sphinx.tools.corpusBrowser;
 
+import edu.cmu.sphinx.tools.audio.Player;
 import edu.cmu.sphinx.tools.corpus.Corpus;
 import edu.cmu.sphinx.tools.corpus.Word;
 import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLReader;
-import edu.cmu.sphinx.tools.audio.Player;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -35,7 +34,7 @@ import java.util.List;
  * Time: 3:02:10 PM
  */
 public class WordBrowser {
-//    WordSpectrogramPanel spectrogram;
+    WordSpectrogramPanel spectrogram;
     private JCheckBox excluded;
     private JButton play;
     JPanel mainPane;
@@ -45,7 +44,7 @@ public class WordBrowser {
 
     WordBrowser( ConfigurationManager cm, Word w ) {
         this.word = w;
-//        player = new Player(word.getRegionOfAudioData().getAudioData());
+        player = new Player(word.getRegionOfAudioData());
 
         zoom.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent event) {
@@ -55,7 +54,7 @@ public class WordBrowser {
                 int val = slider.getValue();
                 //double z = Math.pow(100.0,((double)val)/(max-min));
                 //w.spectrogram.setZoom(z);
-//                spectrogram.setOffset(((double) val) / (max - min));
+                spectrogram.setOffset(((double) val) / (max - min));
             }
         });
 
@@ -70,7 +69,7 @@ public class WordBrowser {
             }
         });
 
-//        spectrogram.setWord(cm, word);
+        spectrogram.setWord(cm, word);
     }
 
 

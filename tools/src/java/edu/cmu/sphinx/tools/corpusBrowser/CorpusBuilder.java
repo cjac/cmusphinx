@@ -1,14 +1,14 @@
-package edu.cmu.sphinx.tools.corpusEditor;
+package edu.cmu.sphinx.tools.corpusBrowser;
 
 import edu.cmu.sphinx.decoder.search.Token;
-import edu.cmu.sphinx.linguist.flat.FlatLinguist;
-import edu.cmu.sphinx.linguist.dictionary.FullDictionary;
 import edu.cmu.sphinx.linguist.dictionary.FastDictionary;
+import edu.cmu.sphinx.linguist.dictionary.FullDictionary;
+import edu.cmu.sphinx.linguist.flat.FlatLinguist;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.tools.batch.BatchForcedAlignerRecognizer;
 import edu.cmu.sphinx.tools.corpus.*;
-import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLWriter;
 import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLReader;
+import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLWriter;
 import edu.cmu.sphinx.util.props.*;
 import javolution.util.FastSet;
 
