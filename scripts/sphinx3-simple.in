@@ -1,5 +1,5 @@
 #!/bin/sh
-S3CONTINUOUS=@prefix@/bin/livedecode
+S3CONTINUOUS=@prefix@/bin/sphinx3_livedecode
 ARGS=@prefix@/share/sphinx3/model/lm/an4/args.an4
 
 echo " "
