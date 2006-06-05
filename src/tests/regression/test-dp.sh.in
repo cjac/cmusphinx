@@ -3,7 +3,7 @@
 echo "DP TEST"
 tmpout="test-dp.out"
 
-echo "This will test of the word alignment routine. "
+echo "TEST THE WORD ALIGNMENT ROUTINE. "
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_dp \
 -hypfile @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/test.dp.hyp \

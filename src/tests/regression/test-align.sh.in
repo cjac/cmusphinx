@@ -2,7 +2,7 @@
 
 echo "ALIGN TEST simple"
 
-tmpout="test-align.out"
+tmpout="test-align-simple.seg"
 
 #Simple test
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_align \
@@ -36,7 +36,11 @@ if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_to
 then echo "ALIGN simple phseg test PASSED"; else \
 echo "ALIGN simple phseg test FAILED"; fi 
 
+tar czf test-align-simple.tgz $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg
+
 echo "ALIGN TEST cepext"
+
+tmpout="test-align-cepext.seg"
 
 #Program we used -agc max. This is an exception
 #test for extension
@@ -62,7 +66,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sph
 -wdsegdir ./ \
 -phsegdir ./ > test-align-cepext.out 2>&1
 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl test-align.out  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN cepext output test PASSED"; else \
 echo "ALIGN cepext output test FAILED"; fi 
 if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg | grep SUCCESS > /dev/null 2>&1); \
@@ -72,3 +76,4 @@ if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_to
 then echo "ALIGN cepext phseg test PASSED"; else \
 echo "ALIGN cepext phseg test FAILED"; fi 
 
+tar czf test-align-cepext.tgz $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg

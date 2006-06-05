@@ -27,7 +27,7 @@ lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.DMP "
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_allphone $margs $lmargs 
 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.allp @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.allphone.phone_tg.allp 2 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALLPHONE PHONE TG allp test PASSED"; else \
 echo "ALLPHONE PHONE TG allp test FAILED"; fi
 
