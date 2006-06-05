@@ -1,10 +1,5 @@
 #!/bin/bash
 
-username=$1
-
-# The repository address
-address=${username}@cvs.sf.net
-
 # Define a path, just in case
 export PATH="/usr/local/bin:/bin:/usr/bin:/usr/ccs/bin"
 
@@ -68,11 +63,8 @@ cd $root
 # Output file that will get sent in case of failure
 outfile=$root/test.out
 
-# CVS requires us to define this
-export CVS_RSH=ssh
-
 # Fresh download of sphinx2
-cvs -d:ext:${address}:/cvsroot/cmusphinx co sphinx2 > $outfile 2>&1
+svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx2 > $outfile 2>&1
 
 # Configure it
 pushd sphinx2 >> $outfile 2>&1
@@ -93,7 +85,7 @@ popd >> $outfile 2>&1
 /bin/rm -rf sphinx2
 
 # Fresh download of sphinx3
-cvs -d:ext:${address}:/cvsroot/cmusphinx co sphinx3 > $outfile 2>&1
+svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 > $outfile 2>&1
 
 # Configure it
 pushd sphinx3 >> $outfile 2>&1
@@ -118,7 +110,8 @@ popd >> $outfile 2>&1
 /bin/rm -rf sphinx3
 
 # Fresh download of SphinxTrain
-cvs -d:ext:${address}:/cvsroot/cmusphinx co SphinxTrain > $outfile 2>&1
+svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/SphinxTrain > $outfile 2>&1
+
 
 # Configure it
 pushd SphinxTrain >> $outfile 2>&1
