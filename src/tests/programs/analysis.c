@@ -372,10 +372,10 @@ int32 main (int32 argc, char *argv[])
     kb_t kb;
     ptmr_t tm;
     int i;
+    char str[100];
     
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc,argv,"default.arg",arg);
-    char str[100];
 
     unlimit ();
     

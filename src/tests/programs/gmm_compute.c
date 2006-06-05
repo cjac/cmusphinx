@@ -102,6 +102,7 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
   int32* cur_scr;
   int32* last_scr;
   int32 tmpint;
+  s3senid_t *cd2cisen;
 
   int32 pheurtype;
   E_INFO("Processing: %s\n", uttid);
@@ -115,8 +116,6 @@ void gmm_compute (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
   svq = kbcore_svq (kbcore);
   gs = kbcore_gs(kbcore);
   kb->uttid = uttid;
-
-  s3senid_t *cd2cisen;
 
   ptranskip = kb->beam->ptranskip;
 
