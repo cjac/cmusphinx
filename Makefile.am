@@ -51,10 +51,12 @@ EXTRA_DIST = autogen.sh \
 # Add an item for each and every test target to the CLEANFILES variable
 CLEANFILES = chan3.mfc \
 	test.out \
-	test-*.out \
 	test-*.cepview \
-	test-*.mfc \
 	test-*.log \
+	test-*.mfc \
+	test-*.out \
+	test-*.seg \
+	test-*.tgz \
 	tmp.out \
 	pittsburgh.* \
 	tmp \
