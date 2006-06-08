@@ -56,7 +56,7 @@ CLEANFILES = chan3.mfc \
 	test-*.mfc \
 	test-*.out \
 	test-*.seg \
-	test-*.tgz \
+	test-*.tar \
 	tmp.out \
 	pittsburgh.* \
 	tmp \
