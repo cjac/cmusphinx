@@ -36,7 +36,7 @@ if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_to
 then echo "ALIGN simple phseg test PASSED"; else \
 echo "ALIGN simple phseg test FAILED"; fi 
 
-tar czf test-align-simple.tgz $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg
+tar cf test-align-simple.tar $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg
 
 echo "ALIGN TEST cepext"
 
@@ -76,4 +76,4 @@ if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_to
 then echo "ALIGN cepext phseg test PASSED"; else \
 echo "ALIGN cepext phseg test FAILED"; fi 
 
-tar czf test-align-cepext.tgz $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg
+tar cf test-align-cepext.tar $tmpout `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg
