@@ -23,7 +23,13 @@ EXTRA_libs3audio_la_SOURCES = ad_base.c \
 	audio_utils_sunos.c \
 	play_win32.c \
 	rec_win32.c \
-	mulaw_base.c
+	mulaw_base.c \
+	audio_utils_sunos.h \
+	pa_host.h \
+	pa_trace.h \
+	pablio.h \
+	portaudio.h \
+	ringbuffer.h
 
 pkginclude_HEADERS = ad_conf.h
 
