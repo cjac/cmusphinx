@@ -307,7 +307,7 @@ void fe_spec_magnitude(float64 const *data, int32 data_len, float64 *spec, int32
     /* zero is a special case. */
     spec[0] = fft[0]*fft[0];
     for (j=1; j <= fftsize/2; j++)
-        spec[j] = fft[j]*fft[j] + fft[fftsize-j-1]*fft[fftsize-j-1];
+        spec[j] = fft[j]*fft[j] + fft[fftsize-j]*fft[fftsize-j];
 
     free(fft);
     return;
@@ -515,6 +515,7 @@ int32 fe_fft_real(float64 *x, int n, int m)
                 }
                 lastn = n;
         }
+
         j = 0;
         n1 = n-1;
         for (i = 0; i < n1; ++i) {
@@ -564,7 +565,6 @@ int32 fe_fft_real(float64 *x, int n, int m)
                         }
                 }
         }
-E_INFO("%d\n", n);
         return 0;
 }
 
