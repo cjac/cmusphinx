@@ -1,17 +1,40 @@
-2006-04-13  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+2006-06-12  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 
-	Sphinx 3.6 Release Candidate II
-	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-	Changes in RCII
-	-Headers and directories are now in the include folder.  Thus
-	directories change would never affect external developers any more.
-
-	-Bug Fix 1459062 - serious Memory Management Bug in srch.c 
+	Sphinx 3.6 Official Release
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	
-	-PocketSphinx's style of Semi-continuous HMM fast computation is
-	now incorproated into Sphinx 3.X, it could be enabled by .s2semi.
+	Sphinx 3.6 official release included all changes one found in
+	Sphinx 3.6 RC I.
+
+	From 3.6 RC I to 3.6 official: 
+
+ 	New Features: 
+	-Added support for sphinx 2-style semi-continuous HMM in Sphinx 3. 
+	-Added sphinx3_continuous which performs on-line decoding in
+	both windows and linux platforms.
+	-Synchronized the frontend with Sphinx2, adding implementation of VTLN.
+	(i.e.  -warp_type = inverse_linear, piewise_linear, affine) 
+
+ 	Changes: 
+	-Prefix "sphinx3_" has been added to programs align, allphone,
+	astar, dag, decode, decode_anytopo, ep to avoid confusion in
+	some unix systems.
+
+ 	For Developers: 
+	-All public headers (*.h) are now put under $root/include instead
+	of the same directories as their source .c file.
+	-The directory name libutil is now changed to libs3util 
+	-Sphinx3, as well as all other modules in the CMU Sphinx
+	project, is now versioned by Subversion.
 	
+	Bug Fixes: 
+	-[1459402] Serious memory relocation is fixed.  
+	-In RCI, -dither was not properly implemented, this has been fixed.  
+
+ 	Known Problem: 
+	-When the model contains nan, there will be abnormal output of
+	the result.  At this point, this issue is resolved in
+	SphinxTrain
 
 2006-02-22  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	
@@ -19,16 +42,16 @@
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	The corresponding SphinxTrain's tag is SPHINX3_6_CMU_INTERNAL_RELEASE
 	One can check out the matching SphinxTrain of the sphinx3.6 release by command,
-	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_6_CMU_INTERNAL_RELEASE SphinxTrain
+	svn co https://svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
 
-	A Summary of Sphinx 3.6 RCI
-	---------------------------
+	A Summary of Sphinx 3.6 RC I
+	----------------------------
 
 	Sphinx 3.6 is a gently refactored version of Sphinx 3.5.  Our
 	programming is defensive and we only aim at further
 	consolidation and unification our code-bases in Sphinx 3.
 
-	Despite our programming is defensive, there are still several
+	Despite our programming is defensOfficial ive, there are still several
 	interesting and new features could be found in this
 	release. Their details could be found in the "New Feature"
 	section below. Here is a brief summary:
@@ -153,9 +176,8 @@
 	
 	Corresponding changes in SphinxTrain
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	Please noted that SphinxTrain is distributed as a separate package and you can get it 
-	cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/cmusphinx/ co -r SPHINX3_6_CMU_INTERNAL_RELEASE SphinxTrain
-	through time stamp SPHINX3_5_CMU_INTERNAL_RELEASE
+	Please note that SphinxTrain is distributed as a separate package and you can get it by:
+	svn co https://svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
 	
 	-Support for generation of MAP, multiple-class MLLR. 
 	-Support for BBI tree generation
