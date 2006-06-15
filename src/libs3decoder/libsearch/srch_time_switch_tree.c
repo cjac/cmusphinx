@@ -570,6 +570,7 @@ int srch_TST_set_lm(void *srch, const char* lmname)
 				))==NULL){
     E_FATAL("failed to allocate memory for vithist\n");
   }
+  memset(s->vithist->lms2vh_root, 0, lm_n_ug(lm)*sizeof(vh_lms2vh_t *));
 
   histprune_update_histbinsize(tstg->histprune,
 			       tstg->histprune->hmm_hist_binsize,
