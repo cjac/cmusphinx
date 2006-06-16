@@ -1,16 +1,19 @@
 package edu.cmu.sphinx.tools.corpus.xml;
 
 import edu.cmu.sphinx.tools.corpus.*;
-import javolution.xml.XmlFormat;
-import javolution.xml.XmlElement;
-import javolution.xml.ObjectWriter;
 import javolution.xml.ObjectReader;
+import javolution.xml.ObjectWriter;
+import javolution.xml.XmlElement;
+import javolution.xml.XmlFormat;
 
-import java.util.List;
-import java.util.Collection;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
+import java.util.List;
+import java.util.HashMap;
+
+//import com.sun.corba.se.impl.orbutil.ObjectWriter;
 
 /**
  * Copyright 1999-2006 Carnegie Mellon University.
@@ -38,17 +41,21 @@ public class CorpusXMLJavalutionFormats {
         return c;
     }
 
+
     static final XmlFormat<Corpus> CorpusXMLFormat = new XmlFormat<Corpus>(Corpus.class) {
 
         public void format(Corpus c, XmlElement xml) {
             xml.add(c.getDictionary(), "dictionary");
             xml.add(c.getUtterances(), "utterances");
+            xml.add(c.getProperties(), "properties");
         }
 
         public Corpus parse(XmlElement xml) {
             Corpus c = xml.object();
             c.setDictionary((Dictionary) xml.get("dictionary"));
+            c.setProperties((HashMap<String,String>) xml.get("properties"));
             c.setUtterances((List<Utterance>) xml.get("utterances"));
+
             return c;
         }
     };
@@ -56,12 +63,12 @@ public class CorpusXMLJavalutionFormats {
     static final XmlFormat<Dictionary> DictionaryXMLFormat = new XmlFormat<Dictionary>(Dictionary.class) {
 
         public void format(Dictionary d, XmlElement xml) {
-            xml.setAttribute("dictionaryFile", d.getDictionaryFile());
+            xml.add("dictionaryFile", d.getDictionaryFile());
         }
 
         public Dictionary parse(XmlElement xml) {
             Dictionary d = xml.object();
-            d.setDictionaryFile(xml.getAttribute("dictionaryFile", ""));
+            d.setDictionaryFile((String)xml.get("dictionaryFile"));
             return d;
         }
 
