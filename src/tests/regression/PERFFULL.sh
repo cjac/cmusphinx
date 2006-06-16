@@ -23,6 +23,7 @@ fi
 # If we found one of the above, use it. Otherwise, keep sendmail
 if test z${TMPMAIL} != z; then MAILX=${TMPMAIL};fi
 
+if [ -n "$PBS_ENVIRONMENT" ]; then
 echo "This job was submitted by user $PBS_O_LOGNAME"
 echo "This job was submitted to host $PBS_O_HOST"
 echo "This job was submitted to queue $PBS_O_QUEUE"
@@ -31,21 +32,22 @@ echo "PBS job id $PBS_JOBID"
 echo "PBS job name $PBS_JOBNAME"
 echo "PBS environment $PBS_ENVIRONMENT"
 echo "This script is running on `hostname`"
+fi
 
 S3REGTESTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu yitao@cs.cmu.edu dhuggins@cs.cmu.edu'
 
-#Run test. 
-cd $PBS_O_WORKDIR
+#Run test, assume we're at the top level (sphinx3 directory). 
+
+testdate=`date -I`
 
 if ! make perf-full > perf-full.log 2>&1 ;
  then
-    ${MAILX} -s "Full Performance Test failed at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR" ${S3REGTESTLIST} < perf-full.log
+    ${MAILX} -s "Full Performance Test failed on date:$testdate, machine:`hostname`, dir:`pwd`" ${S3REGTESTLIST} < perf-full.log
     exit
  fi
 
 
 #Store the results. 
-testdate=`date -I`
 logdir=log.$testdate
 resultfn=allresults
 mkdir $logdir
@@ -54,5 +56,5 @@ cp ./src/tests/performance/*/*.raw ./perf-full.log ./dailySTD.sh.[oe]* $logdir
 
 #Add analysis script at here. 
 cat $logdir/*.raw > $resultfn
-${MAILX} -s "Results of S3 FULL Regression Test at date:$testdate,machine:`hostname`,dir:$PBS_O_WORKDIR " ${S3REGTESTLIST} < $resultfn
+${MAILX} -s "Results of S3 FULL Regression Test on date:$testdate, machine:`hostname`, dir:`pwd` " ${S3REGTESTLIST} < $resultfn
 rm $resultfn
