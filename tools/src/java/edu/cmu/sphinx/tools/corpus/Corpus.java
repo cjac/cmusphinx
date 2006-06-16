@@ -1,5 +1,11 @@
 package edu.cmu.sphinx.tools.corpus;
 
+import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLReader;
+import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLWriter;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.*;
 
 
@@ -28,6 +34,41 @@ public class Corpus {
     protected Map<String, List<Word>> character2Words = new HashMap<String, List<Word>>();
     protected Map<String, List<Word>> spelling2Words = new HashMap<String, List<Word>>();
     protected Map<String, List<Word>> phonemeSequence2Words = new HashMap<String, List<Word>>();
+    protected HashMap properties = new HashMap<String, String>();
+
+
+
+    static String getCorpusAsString(Corpus corpus) {
+        ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+        CorpusXMLWriter cWriter = new CorpusXMLWriter(ostream);
+        try {
+            cWriter.write(corpus);
+
+            return ostream.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void main(String args[]) {
+        Corpus corpus = getFakeCorpus();
+        String corpusString = getCorpusAsString(corpus);
+
+        byte[] buf = corpusString.getBytes();
+
+        ByteArrayInputStream istream = new ByteArrayInputStream(buf);
+        System.out.println(new String(buf));
+        CorpusXMLReader cReader = new CorpusXMLReader(istream);
+        Corpus newcorpus = cReader.read();
+
+        System.out.println(getCorpusAsString(newcorpus));
+
+    }
+
+    /* Testing Roundtrip End*/
+
 
     void init() {
         dictionary.init(this);
@@ -37,6 +78,23 @@ public class Corpus {
     }
 
     public Corpus() {
+    }
+
+    public HashMap<String, String> getProperties() {
+        return properties;
+    }
+
+     public void setProperties(HashMap<String, String> p) {
+       properties = p;
+    }
+
+
+    public String setProperty(String name, String value) {
+        return (String)properties.put(name, value);
+    }
+
+    public String getProperty(String name) {
+        return (String)properties.get(name);
     }
 
     public Dictionary getDictionary() {
