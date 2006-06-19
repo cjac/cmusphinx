@@ -1,8 +1,10 @@
 #!/bin/sh
 # Try to find an executable that can send mail
-export PATH=/usr/local/bin:/bin/:/usr/bin/:/net/elroy/usr1/archan/toolbox/sctk-1.3/src/:~robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin:$PATH
+export PATH=/usr/local/bin:/bin/:/usr/bin/:~robust/archive/third_party_packages/NIST_scoring_tools/sctk/linux/bin:$PATH
 
-# Default to mailto but safe guard by checking whether sendmail also exists
+# Try, in this order, mhmail. mailx, mail, and mailto. If all fail,
+# safe guard by using sendmail.
+
 MAILX=sendmail
 
 # Try to find mhmail
@@ -21,7 +23,7 @@ if test z${TMPMAIL} == z; then
 fi
 
 # If we found one of the above, use it. Otherwise, keep sendmail
-if test z${TMPMAIL} != z; then MAILX=${TMPMAIL};fi
+if test z${TMPMAIL} != z; then MAILX=${TMPMAIL}; fi
 
 if [ -n "$PBS_ENVIRONMENT" ]; then
 echo "This job was submitted by user $PBS_O_LOGNAME"
@@ -52,14 +54,11 @@ if ! make perf-std > perf-std.log 2>&1 ;
     exit
  fi
 
-#Store the results. 
-logdir=log.$testdate
-resultfn=allresults
-mkdir $logdir
+# Send all results to standard out. If the job is running via the
+# queue, it will be stored in a file, and it's up to the caller to
+# save it.
 
-cp ./src/tests/performance/*/*.raw ./perf-std.log ./perf-quick.log ./dailySTD.sh.[oe]* $logdir
+cat ./perf-std.log ./perf-quick.log ./src/tests/performance/*/*.raw
 
-#Add analysis script at here. 
-cat $logdir/*.raw > $resultfn
-${MAILX} -s "Results of S3 Standard Regression Test on date:$testdate, machine:`hostname`, dir:`pwd` " ${S3REGTESTLIST} < $resultfn
-rm $resultfn
+# Send analysis results.
+cat ./src/tests/performance/*/*.raw | ${MAILX} -s "Results of S3 Standard Regression Test on date:$testdate, machine:`hostname`, dir:`pwd` " ${S3REGTESTLIST} 
