@@ -343,6 +343,10 @@ ld_end_utt(live_decoder_t *_decoder)
 {
   assert(_decoder != NULL);
 
+  if (_decoder->ld_state != LD_STATE_DECODING) {
+    E_WARN("ld_end_utt() called with decoder idle/finished.\n");
+    return;
+  }
   ld_process_raw_impl(_decoder, NULL, 0, TRUE);
   _decoder->kb.stat->tot_fr += _decoder->kb.stat->nfr;
   ld_record_hyps(_decoder, TRUE);
