@@ -141,7 +141,8 @@ static void utt_livepretend(void *data, utt_res_t *ur, int32 sf, int32 ef, char 
   }
   fclose(rawfd);
   cont_ad_close(cont_ad);
-  ld_end_utt(&decoder);
+  if (listening)
+    ld_end_utt(&decoder);
 }
 
 int
