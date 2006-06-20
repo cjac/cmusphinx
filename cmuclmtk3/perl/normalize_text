@@ -1,0 +1,241 @@
+#!/usr/bin/perl
+
+# Copyright (c) 2006 Carnegie Mellon University.  All rights
+# reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# This work was supported in part by funding from the Defense Advanced
+# Research Projects Agency and the National Science Foundation of the
+# United States of America, and the CMU Sphinx Speech Consortium.
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+use strict;
+use File::Basename qw(basename dirname);
+use File::Spec::Functions qw(catfile);
+use lib dirname($0);
+use LMTraining;
+use Getopt::Long;
+use Pod::Usage;
+use File::Temp qw(tempdir);
+
+Getopt::Long::Configure("no_getopt_compat", "bundling");
+
+my %opts = (
+	    inputfilter => 'CMU',
+	    fps => 100
+	   );
+GetOptions(\%opts,
+	   "help|h",
+	   "inputfilter|i=s",
+	   "fillermap|f=s",
+	   "replacelist|r=s",
+	   "filesfrom=s",
+	   "sentencebreaks=s",
+	   "split|t",
+	   "partials|p",
+	   "falsestarts|s",
+	   "uttered|u",
+	   "filledpauses|P",
+	   "crosstalk|k",
+	   "feed|F",
+	   "noisy|E",
+	   "fps=s",
+	   "outdir|d=s",
+	   "outtrans|o=s",
+	   "outctl|c=s")
+    or pod2usage(-verbose => 1, -exitval => 1);
+pod2usage(-verbose => 1) if $opts{help};
+pod2usage(-verbose => 0, exitval => 1,
+	  -msg => 'Please specify at least one input file (use -h for a summary of usage).')
+    unless @ARGV or $opts{filesfrom};
+pod2usage(-verbose => 0, exitval => 1,
+	  -msg => 'Please specify an input filter with -i.')
+    unless defined($opts{inputfilter});
+
+my $class = "InputFilter::$opts{inputfilter}";
+eval {
+    $opts{inputfilter} = $class->new(%opts);
+};
+pod2usage(-verbose => 0, exitval => 1,
+	  -msg => "Input Filter $opts{inputfilter} not found:\n$@\n")
+    if $@;
+$opts{outdir} = tempdir(CLEANUP => 1)
+    unless defined $opts{outdir};
+
+if (defined($opts{filesfrom})) {
+    open LIST, "<$opts{filesfrom}" or die "Failed to open file listing $opts{filesfrom}: $!";
+    while (<LIST>) {
+	chomp;
+	push @ARGV, $_;
+    }
+}
+
+my (@outfiles, @outctls);
+foreach my $transcript (@ARGV) {
+    my $outfile = catfile($opts{outdir}, basename($transcript). '.lsn');
+    my $outctl = catfile($opts{outdir}, basename($transcript). '.ctl');
+    print STDERR "Filtering $transcript to $outfile and $outctl\n";
+    $opts{inputfilter}->normalize_transcript($transcript, $outfile, $outctl);
+    push @outfiles, $outfile;
+    push @outctls, $outctl;
+}
+
+# Concatenate the individual files
+if (defined($opts{outtrans})) {
+    open OUTTRANS, ">$opts{outtrans}" or die "Failed to open $opts{outtrans}: $!";
+    foreach my $transcript (@outfiles) {
+	open TRANS, "<$transcript" or die "Failed to open $transcript: $!";
+	while (<TRANS>) {
+	    print OUTTRANS $_;
+	}
+    }
+}
+
+if (defined($opts{outctl})) {
+    open OUTCTL, ">$opts{outctl}" or die "Failed to open $opts{outctl}: $!";
+    foreach my $ctl (@outctls) {
+	open CTL, "<$ctl" or die "Failed to open $ctl: $!";
+	while (<CTL>) {
+	    print OUTCTL $_;
+	}
+    }
+}
+
+1;
+__END__
+
+=head1 NAME
+
+normalize_text - Produce transcripts for acoustic model training and evaluation
+
+=head1 SYNOPSIS
+
+B<normalize_text> -i I<INPUTFILTER> [ I<OPTIONS> ] I<TRANSCRIPTS>...
+
+=head1 OPTIONS
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help> | B<-h>
+
+Print a short help message and exit.
+
+=item B<--filesfrom> I<LISTING>
+
+Take the list of input files from I<LISTING> instead of the command-line.
+
+=item B<--inputfilter> | B<-i> I<FILTER>
+
+Use the input filter specified for I<TRANSCRIPTS>.  Currently defined
+input filters are B<CMU>, B<ICSI>, B<ISL>, B<NIST>, and B<SWB>.  These
+are implemented by Perl modules in the C<InputFilter::> namespace.
+See L<InputFilter> for more information.  This is a required argument.
+
+=item B<--outtrans> | B<-o> I<OUTPUT>
+
+Dump the (filtered and pre-procesed) training transcripts to
+I<OUTPUT>.
+
+=item B<--outctl> | B<-c> I<OUTPUT>
+
+Dump the (filtered and pre-procesed) acoustic model control file to
+I<OUTPUT>.
+
+=item B<--outdir> | B<-d> I<OUTPUT>
+
+Write out a single transcript and control file for each input file to
+I<OUTPUT>.
+
+=item B<--fps> I<FRAMERATE>
+
+Specify the frame rate to be used for the acoustic model control file.
+The sensible default is 100, which is okay for 8kHz and 16kHz data,
+but you should make sure this matches your feature extraction
+parameters.
+
+=item B<--fillermap> | B<-f> I<FILLERMAP>
+
+Pass the filler map file given to the input filter.  This file maps
+"filler words" (i.e. vocal and non-vocal noises, disfluencies) to
+words or nothing.  The implementation is somewhat dependent on the
+input filter, and only B<CMU>, B<ICSI>, and B<ISL> actually support it
+at the moment.
+
+=item B<--replacelist> | B<-r> I<REPLACELIST>
+
+Pass the replacement map file given to the input filter.  This file is
+a list of words and their replacements, separated by ':'.  You can
+also replace regular expression pattersn in the text by prefixing the
+source with a '+'.  This doesn't always exactly do what you want
+because it applies to the output of the input filter.  That's a bug.
+
+=item B<--split> | B<-t>
+
+Split compound words.
+
+=item B<--partials> | B<-p>
+
+Include partial words.
+
+=item B<--falsestarts> | B<-s>
+
+Include false starts.
+
+=item B<--uttered> | B<-u>
+
+Use "uttered" rather than "intended" text for mispronunciations.
+
+=item B<--noisy> | B<-E>
+
+Include noise-only utterances.
+
+=item B<--filledpauses> | B<-P>
+
+Include filled pauses (UH, UM, ER, AH, etc) in the text.
+
+=item B<--crosstalk> | B<-k>
+
+Include cross-talk and asides in the text.
+
+=item B<--feed> | B<-F>
+
+Include system messages in the text.
+
+=back
+
+=head1 DESCRIPTION
+
+=head1 AUTHOR
+
+David Huggins-Daines E<lt>dhuggins@cs.cmu.eduE<gt>.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2006 Carnegie Mellon University.  All rights reserved.
+This is free software; see source code for copying conditions.
+
+=cut

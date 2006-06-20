@@ -1,0 +1,31 @@
+<NGramModel name="interp.test">
+  <Transcripts name="cmu.test">
+    t/cmu.test.lsn
+  </Transcripts>
+  <Transcripts name="cmu2.test">
+    t/cmu2.test.lsn
+  </Transcripts>
+  <Vocabulary name="cmu1">
+    <Vocabulary cutoff="1">
+      <Transcripts ref="cmu.test"/>
+    </Vocabulary>
+    <Vocabulary cutoff="1">
+      <Transcripts ref="cmu2.test"/>
+    </Vocabulary>
+  </Vocabulary>
+  <NGramModel name="cmu.test">
+    <Transcripts ref="cmu.test"/>
+    <Vocabulary ref="cmu1"/>
+  </NGramModel>
+  <NGramModel name="cmu2.test">
+    <Transcripts ref="cmu2.test"/>
+    <Vocabulary ref="cmu1"/>
+  </NGramModel>
+  <Interpolation>
+    <InputFilter::CMU fillermap="t/cmu.test.fillermap">
+      t/cmu3.test.trs
+    </InputFilter::CMU>
+    <NGramModel ref="cmu.test"/>
+    <NGramModel ref="cmu2.test"/>
+  </Interpolation>
+</NGramModel>
