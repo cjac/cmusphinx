@@ -1,0 +1,5 @@
+all::
+	./test.sh
+
+test32:
+	./test32bit.sh
