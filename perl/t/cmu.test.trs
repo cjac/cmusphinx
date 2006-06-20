@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE Trans SYSTEM "trans-13.dtd">
+<Trans scribe="Merc" audio_filename="2004_09_30_17_13_12_891_dhuggins" version="2" version_date="050811">
+<Episode>
+<Section type="report" startTime="0" endTime="598.471">
+<Turn startTime="0" endTime="598.471">
+<Sync time="0"/>
+
+<Sync time="0.65"/>
+okay
+<Sync time="1.173"/>
+/background/
+<Sync time="8.436"/>
+what's the new version
+<Sync time="9.442"/>
+
+<Sync time="11.038"/>
+&lt;[w (what)]&gt; new version of what /lg/
+<Sync time="12.683"/>
+/background/
+<Sync time="29.016"/>
+they're kind of flaky /h#/
+<Sync time="30.493"/>
+/background/
+<Sync time="35.097"/>
+yeah
+<Sync time="35.589"/>
+/background/
+<Sync time="41.361"/>
+/h#/ /um/ &lt;it's it's [im (improved)]&gt; it's improved on Macintosh like it actually works on Macintosh now /h#/ /um/
+<Sync time="47.045"/>
+
+<Sync time="47.563"/>
+which it didn't really do before /h#/ and then
+<Sync time="50.278"/>
+&lt;it's&gt; yeah so it's actually alright now on the Mac it's kind of stable and /h#/ there's only like one problem really on Linux that i had
+<Sync time="56.925"/>
+/background/
+<Sync time="61.098"/>
+yeah &lt;if you&gt; if you
+<Sync time="62.763"/>
+&lt;well it'll build that [d_m (d_m_g)]&gt; &lt;i think it builds that [d_m (d_m_g)]&gt; if you type make d_m_g it'll do the right thing
+<Sync time="67.118"/>
+/background/
+<Sync time="86.834"/>
+okay
+<Sync time="87.356"/>
+/background/
+<Sync time="124.91"/>
+oh good /h#/
+<Sync time="126.62"/>
+well this is much improved so &lt;[dub (w)]&gt; /uh/ m_r_c_p &lt;now&gt; /uh/ now that it's not using the crappy threading it's only using fifteen percent of c_p_u on my mac instead of like a hundred /h#/
+<Sync time="136.524"/>
+so i could &lt;[act (actually)]&gt; &lt;so actually i&gt; my batteries will actually last the whole meeting possibly /lg/
+<Sync time="142.189"/>
+
+<Sync time="147.398"/>
+/h#/ &lt;i&gt; i think so yeah
+<Sync time="149.225"/>
+
+<Sync time="153.925"/>
+/h#/ oh you know what &lt;it actually might have been&gt; &lt;i think it may have been that&gt; also might have been that call to /um/ /h#/
+<Sync time="159.012"/>
+wait for read because apparently wait for read actually busy waits 
+<Sync time="161.679"/>
+i was reading the documentation they say don't use this if you don't have to because it's just gonna busy wait
+<Sync time="165.428"/>
+/background/
+<Sync time="166.285"/>
+so
+<Sync time="166.882"/>
+
+<Sync time="170.116"/>
+/noise/ might be on all platforms yeah
+<Sync time="172.164"/>
+
+<Sync time="176.75"/>
+/ls/ /h#/ /mumble/ see &lt;the thing&gt; the thing about that call
+<Sync time="179.301"/>
+
+<Sync time="181.84"/>
+yeah /h#/ the thing i don't quite understand &lt;about that call&gt; about having that call there is that you know if the socket is non blocking you try and read and it says &lt;no&gt; no data and you just go back into your loop and you wait some more and then you pull it again right i mean /h#/
+<Sync time="193.608"/>
+
+<Sync time="196.2"/>
+huh
+<Sync time="196.715"/>
+
+<Sync time="199.763"/>
+/mm/ /hm/
+<Sync time="200.254"/>
+/background/
+<Sync time="212.098"/>
+/h#/ oh whoa so &lt;it's&gt; it actually exists on Windows too then /lg/ 
+<Sync time="216.284"/>
+okay so that stuff just doesn't work
+<Sync time="218.537"/>
+/h#/
+<Sync time="219.316"/>
+
+<Sync time="239.014"/>
+/hm/
+<Sync time="240.514"/>
+
+<Sync time="252.905"/>
+&lt;is that&gt; do you those connection errors are due to that thing though or
+<Sync time="256.164"/>
+
+<Sync time="257.011"/>
+yeah i don't know
+<Sync time="257.731"/>
+
+<Sync time="259.045"/>
+is there a new build of it or
+<Sync time="260.694"/>
+
+<Sync time="268.405"/>
+oh okay huh
+<Sync time="270.027"/>
+/background/
+<Sync time="273.077"/>
+not until i started fixing it /lg/ /h#/
+<Sync time="277.1"/>
+
+<Sync time="289.556"/>
+/uh/
+<Sync time="290.171"/>
+
+<Sync time="293.332"/>
+&lt;it&gt; it does seem to leak memory but anyway /lg/
+<Sync time="296.976"/>
+
+<Sync time="310.891"/>
+/mm/ [kay (okay)] &lt;what is this&gt; what is this
+<Sync time="312.569"/>
+
+<Sync time="313.807"/>
+what is this version that people &lt;are&gt; are trying to run that's failing for them is it something they've just compiled or is it something
+<Sync time="319.166"/>
+
+<Sync time="319.604"/>
+/oh/ it's the
+<Sync time="320.354"/>
+
+<Sync time="325.723"/>
+/noise/
+<Sync time="326.007"/>
+
+<Sync time="326.343"/>
+the problem is that people are not running the stuff that's the latest running build from a few days ago too like and we've changed things since then haven't we
+<Sync time="333.3"/>
+
+<Sync time="335.995"/>
+yeah i guess that's true
+<Sync time="337.095"/>
+
+<Sync time="361.033"/>
+/uh/ yeah good idea
+<Sync time="362.48"/>
+
+<Sync time="373.201"/>
+/hm/
+<Sync time="373.514"/>
+/background/
+<Sync time="440.303"/>
+/lg/
+<Sync time="441.803"/>
+
+<Sync time="445.661"/>
+/h#/
+<Sync time="446.386"/>
+/background/
+<Sync time="493.97"/>
+/h#/
+<Sync time="497.241"/>
+
+<Sync time="512.969"/>
+the speechalizer /lg/ no
+<Sync time="515.588"/>
+/background/
+<Sync time="568.546"/>
+/mm/
+<Sync time="568.949"/>
+/background/
+</Turn>
+</Section>
+</Episode>
+</Trans>

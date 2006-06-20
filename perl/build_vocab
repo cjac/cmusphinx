@@ -1,0 +1,316 @@
+#!/usr/bin/perl
+
+# Copyright (c) 2006 Carnegie Mellon University.  All rights
+# reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# This work was supported in part by funding from the Defense Advanced
+# Research Projects Agency and the National Science Foundation of the
+# United States of America, and the CMU Sphinx Speech Consortium.
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+use strict;
+use File::Basename qw(basename dirname);
+use File::Spec::Functions qw(catfile);
+use lib dirname($0);
+use LMTraining;
+use Getopt::Long;
+use Pod::Usage;
+use File::Temp qw(tempdir);
+
+Getopt::Long::Configure("no_getopt_compat", "bundling");
+
+my %opts;
+GetOptions(\%opts,
+	   "help|h",
+	   "closure|c=s",
+	   "inputfilter|i=s",
+	   "fillermap|f=s",
+	   "replacelist|r=s",
+	   "filesfrom=s",
+	   "sentencebreaks=s",
+	   "split",
+	   "partials",
+	   "falsestarts",
+	   "uttered",
+	   "filledpauses",
+	   "tempdir|t=s",
+	   "output|o=s",
+	   "outwfreq|W=s",
+	   "inwfreq|w=s@",
+	   "invocab|v=s@",
+	   "outtrans|O=s",
+	   "cutoff=i",
+	   "topn=i")
+    or pod2usage(-verbose => 1, -exitval => 1);
+pod2usage(-verbose => 1) if $opts{help};
+pod2usage(-verbose => 0, exitval => 1,
+	  -msg => 'Please specify at least one input file (use -h for a summary of usage).')
+    unless @ARGV or $opts{filesfrom} or $opts{inwfreq};
+
+if (defined $opts{inputfilter}) {
+    my $class = "InputFilter::$opts{inputfilter}";
+    $opts{inputfilter} = $class->new(%opts);
+}
+$opts{tempdir} = tempdir(CLEANUP => 1)
+    unless defined $opts{tempdir};
+
+my $vocab = Vocabulary->new(%opts);
+if (defined($opts{filesfrom})) {
+    open LIST, "<$opts{filesfrom}" or die "Failed to open file listing $opts{filesfrom}: $!";
+    while (<LIST>) {
+	chomp;
+	push @ARGV, $_;
+    }
+}
+
+my $i = 0;
+foreach my $transcript (@ARGV) {
+    if (defined($opts{inputfilter})) {
+	my $tempfile = catfile($opts{tempdir},
+			       sprintf "%03d_%s", ++$i, basename($transcript));
+	print STDERR "Filtering $transcript to $tempfile\n";
+	$opts{inputfilter}->normalize_transcript($transcript, $tempfile);
+	$transcript = $tempfile;
+    }
+    $vocab->add_transcript($transcript);
+}
+
+if (defined($opts{inwfreq})) {
+    foreach my $wfreq (@{$opts{inwfreq}}) {
+	my $ov = Vocabulary->new();
+	$ov->load($wfreq);
+	$vocab->merge($ov);
+    }
+}
+
+if (defined($opts{invocab})) {
+    foreach my $v (@{$opts{invocab}}) {
+	my $ov = Vocabulary->new();
+	$ov->load_words($v);
+	$vocab->merge($ov);
+    }
+}
+
+if (defined($opts{closure})) {
+    open LIST, "<$opts{closure}" or die "Failed to open closure file $opts{closure}: $!";
+    while (<LIST>) {
+	chomp;
+	next if /^$/;
+	next if /^##/;
+	$vocab->add_closure_word($_);
+    }
+}
+
+$vocab->save_words($opts{output}) if defined($opts{output});
+$vocab->save($opts{outwfreq}) if defined($opts{outwfreq});
+
+if (defined($opts{outtrans})) {
+    open OUTTRANS, ">$opts{outtrans}" or die "Failed to open $opts{outtrans}: $!";
+    foreach my $transcript (@ARGV) {
+	open TRANS, "<$transcript" or die "Failed to open $transcript: $!";
+	while (<TRANS>) {
+	    print OUTTRANS $_;
+	}
+    }
+}
+
+1;
+__END__
+
+=head1 NAME
+
+build_vocab - Build a vocabulary from some trnascripts
+
+=head1 SYNOPSIS
+
+B<build_vocab> [I<OPTIONS>] [I<TRANSCRIPTS>]
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help> | B<-h>
+
+Print a short help message and exit.
+
+=item B<--filesfrom> I<LISTING>
+
+Take the list of input files from I<LISTING> instead of the command-line.
+
+=item B<--output> | B<-o> I<VOCAB>
+
+Output a vocabulary list (a sorted list of words, one per line) to
+I<VOCAB>.  Otherwise, no output will be created!
+
+=item B<--outwfreq> | B<-W> I<VOCAB>
+
+Output a word frequency list to I<VOCAB>.  Otherwise, no output will
+be created!
+
+=item B<--inwfreq> | B<-w> I<VOCAB> [B<--inwfreq> | B<-w> I<VOCAB> ...]
+
+Take word frequencies from I<VOCAB>.  If this option is specified
+multiple times, multiple word frequency lists will be merged.
+
+=item B<--tempdir> | B<-t> I<TEMPDIR>
+
+Directory to use for storing temporary files.  If not specified, a
+random directory will be generated in $TMPDIR and removed at program
+exit.
+
+=item B<--outtrans> | B<-O> I<OUTPUT>
+
+Dump the (filtered and pre-procesed) training transcripts to
+I<OUTPUT>.
+
+=item B<--cutoff> I<CUTOFF>
+
+Exclude all words from the (automatically generated) vocabulary
+occuring less than I<CUTOFF> times.  This option is exclusive with
+B<--vocabfile>.
+
+=item B<--topn> I<TOPN>
+
+Use the I<TOPN> most frequent words when automatically generating a
+vocabulary.  This option is exclusive with B<--vocabfile>.
+
+=item B<--closure> | B<-c> I<LISTING>
+
+Read a closure set of words, one per line, from I<LISTING> (i.e. words
+which must be present in the output vocabulary regardless of their
+occurrence in the training set).
+
+=item B<--inputfilter> | B<-i> I<FILTER>
+
+Use the input filter specified for I<TRANSCRIPTS>.  Currently defined
+input filters are B<CMU>, B<ICSI>, B<ISL>, B<NIST>, and B<SWB>.  These
+are implemented by Perl modules in the C<InputFilter::> namespace.
+See L<InputFilter> for more information.
+
+=item B<--fillermap> | B<-f> I<FILLERMAP>
+
+Pass the filler map file given to the input filter.  This file maps
+"filler words" (i.e. vocal and non-vocal noises, disfluencies) to
+words or nothing.  The implementation is somewhat dependent on the
+input filter, and only B<CMU>, B<ICSI>, and B<ISL> actually support it
+at the moment.
+
+=item B<--replacelist> | B<-r> I<REPLACELIST>
+
+Pass the replacement map file given to the input filter.  This file is
+a list of words and their replacements, separated by ':'.  You can
+also replace regular expression pattersn in the text by prefixing the
+source with a '+'.  This doesn't always exactly do what you want
+because it applies to the output of the input filter.  That's a bug.
+
+=item B<--split>
+
+Split compound words.
+
+=item B<--partials>
+
+Include partial words.
+
+=item B<--falsestarts>
+
+Include false starts.
+
+=item B<--uttered>
+
+Use "uttered" rather than "intended" text for mispronunciations.
+
+=item B<--filledpauses>
+
+Include filled pauses (UH, UM, ER, AH, etc) in the text.
+
+=back
+
+=head1 DESCRIPTION
+
+This program reads one or  more transcriptions and builds a vocabulary
+from them.  It allows for a  variety of input formats, and new ones can
+be  defined  by   writing  Perl  modules  using  a   simple  API  (see
+L<InputFilter>).  A  number of options  are available for  varying the
+text normalization for experimental purposes.
+
+=head2 Input Formats
+
+By default, the transcriptions are expected to be in the standard
+format used by SphinxTrain, which is similar to the NIST "trn" format,
+namely:
+
+ <s> WORD1 WORD2 WORD3 WORD4 ... </s> (uttid)
+
+As an extension, class tags are also allowed, which are expected to be
+in the form used by the CMU Communicator class tagger:
+
+ <ClassName>WORD</ClassName>
+
+The other formats supported (using the B<--inputfilter> option) are:
+
+=over 4
+
+=item CMU
+
+This is the format used for CMU Communicator data.  See
+L<InputFilter::CMU> for more information.
+
+=item ISL
+
+This is the format used in the ISL Meeting Room transcription project.
+See L<InputFilter::ISL> for more information.
+
+=item NIST
+
+This is the format used in the NIST Pilot Meeting corpus.  See
+L<InputFilter::NIST> for more information.
+
+=item SWB
+
+This is the format used in the Switchboard Transcription Project.  See
+L<InputFilter::SWB> for more information.
+
+=item ICSI
+
+This is the format used in the ICSI Meeting corpus.  See
+L<InputFilter::ICSI> for more information.
+
+=back
+
+=head1 SEE ALSO
+
+L<ngram_train>, L<InputFilter>, L<Vocabulary>
+
+=head1 AUTHOR
+
+David Huggins-Daines E<lt>dhuggins@cs.cmu.eduE<gt>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2006 Carnegie Mellon University.  All rights reserved.
+This is free software; see source code for copying conditions.
+
+=cut

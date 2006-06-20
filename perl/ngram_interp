@@ -1,0 +1,167 @@
+#!/usr/bin/perl
+
+# Copyright (c) 2006 Carnegie Mellon University.  All rights
+# reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in
+#    the documentation and/or other materials provided with the
+#    distribution.
+#
+# This work was supported in part by funding from the Defense Advanced
+# Research Projects Agency and the National Science Foundation of the
+# United States of America, and the CMU Sphinx Speech Consortium.
+#
+# THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+# ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+# NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+use strict;
+use File::Spec::Functions qw(catfile);
+use File::Basename qw(basename dirname);
+use lib dirname($0);
+use Getopt::Long;
+use Pod::Usage;
+use LMTraining;
+
+Getopt::Long::Configure("no_getopt_compat", "bundling");
+
+my %opts;
+GetOptions(\%opts, "help|h", "bindir=s", "output|o=s", "verbose|v", "reverse", "all")
+    or pod2usage(-verbose => 1, -exitval => 1);
+pod2usage(-verbose => 1, -exitval => 0) if $opts{help};
+pod2usage(-verbose => 0, -exitval => 1,
+	  -msg => "Please specify a held-out set and at least two ARPA LM files.\n".
+	  "(use -h for a summary of usage)")
+    unless @ARGV > 2;
+
+my ($heldout, @lms) = @ARGV;
+
+# Exit cleanly on Ctrl-C so that temporary dirs get cleaned up
+$SIG{INT} = sub { exit 1 };
+
+# Evaluate held out set with each LM to produce a probability stream
+my %pplx;
+foreach my $lm (@lms) {
+    my $ngram = NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
+    $ngram->load($lm);
+    $lm = $ngram;
+    my $result = $lm->evaluate($heldout);
+    $pplx{$lm} = $result->perplexity();
+    print STDERR "Perplexity of ", $lm->tempfile("arpabo")," on $heldout: $pplx{$lm}\n";
+}
+
+# Now merge them one by one
+if ($opts{reverse}) {
+    @lms = sort {$pplx{$b} <=> $pplx{$a}} @lms;
+}
+else {
+    @lms = sort {$pplx{$a} <=> $pplx{$b}} @lms;
+}
+my $lm1 = shift @lms;
+my $last_pplx = $pplx{$lm1};
+print STDERR "\nPerplexity of ", $lm1->tempfile("arpabo"), ": $last_pplx\n";
+foreach my $lm2 (@lms) {
+    # Create a new interpolated LM
+    my $lmout = NGramModel->new(verbose => $opts{verbose}, bindir => $opts{bindir});
+    my $pplx = $lmout->interpolate($heldout, $lm1, $lm2);
+    print STDERR "Perplexity after adding ", $lm2->tempfile("arpabo"), ": $pplx\n";
+    if (defined($last_pplx)
+	and not($opts{all} or $opts{reverse})
+	and $last_pplx < $pplx) {
+	print STDERR "Perplexity has increased ($pplx > $last_pplx), will not continue interpolation\n";
+	last;
+    }
+
+    # Use it as the basis for further interpolation
+    $lm1 = $lmout;
+    $last_pplx = $pplx;
+}
+
+# And save the output LM to the specified file
+if (defined($opts{output})) {
+    print STDERR "Saving interpolated LM to $opts{output}\n";
+    $lm1->save($opts{output});
+}
+
+1;
+
+__END__
+
+=head1 NAME
+
+ngram_interp - Interpolate multiple N-gram models
+
+=head1 SYNOPSIS
+
+B<ngram_interp> [I<OPTIONS>] I<HELD_OUT_DATA> I<ARPA_LM> [I<ARPA_LM>...]
+
+=head1 DESCRIPTION
+
+=head1 OPTIONS
+
+=over 4
+
+=item B<--help> | B<-h>
+
+Print a short help message and exit.
+
+=item B<--verbose> | B<-v>
+
+Show intimate details of what is being done.
+
+=item B<--bindir> I<DIR>
+
+Look for CMU LM toolkit binaries (lm_combine and friends) in I<DIR>
+(the default is just to use $PATH).
+
+=item B<--output> | B<-o> I<ARPA_LM>
+
+Write the output LM to the file specified (otherwise no output will be
+generated!)
+
+=item B<--reverse>
+
+Combine language models in reverse order of perplexity (they currently
+have to be combined two at a time, so the default is to merge the
+lowest-perplexity ones first).
+
+=item B<--all>
+
+Use all language models for interpolation.  Normally, unless
+B<--reverse> is specified, interpolation will halt if newly introduced
+language models cause the overall perplexity to increase.  This will
+disable this behaviour (since adding more LMs may still reduce the
+word error rate).
+
+=back
+
+=head1 SEE ALSO
+
+L<ngram_train>, L<ngram_test>
+
+=head1 AUTHOR
+
+David Huggins-Daines E<lt>dhuggins@cs.cmu.eduE<gt>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2006 Carnegie Mellon University.  All rights reserved.
+This is free software; see source code for copying conditions.
+
+=cut
