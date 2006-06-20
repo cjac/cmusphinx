@@ -1,0 +1,10 @@
+evallm : 
+Computing perplexity of the language model with respect
+   to the text ./English/pandp12.txt.filtered
+Perplexity = 225.07, Entropy = 7.81 bits
+Computation based on 112862 words.
+Number of 3-grams hit = 21535  (19.08%)
+Number of 2-grams hit = 47328  (41.93%)
+Number of 1-grams hit = 43999  (38.98%)
+16002 OOVs (12.42%) and 0 context cues were removed from the calculation.
+evallm : 

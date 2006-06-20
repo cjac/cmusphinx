@@ -1,0 +1,21 @@
+Reading in language model from file ./English/emma11.bin
+
+Done.
+This is a 3-gram language model, based on a vocabulary of 7101 words,
+  which begins "000", "10", "23rd"...
+There are 0 context cues.
+This is an OPEN-vocabulary model (type 1)
+  (OOVs were mapped to UNK, which is treated as any other vocabulary word)
+The back-off weights are stored in four bytes.
+The 2-gram component was based on 64355 2-grams.
+The 3-gram component was based on 131483 3-grams.
+Good-Turing discounting was applied.
+1-gram frequency of frequency : 2753 
+2-gram frequency of frequency : 45987 8214 3177 1764 1081 699 523 
+3-gram frequency of frequency : 116614 8904 2574 1162 645 376 234 
+1-gram discounting ratios : 1.00 
+2-gram discounting ratios : 0.31 0.55 0.72 0.75 0.76 0.86 0.86 
+3-gram discounting ratios : 0.14 0.43 0.60 0.69 0.70 0.72 0.91 
+evallm : Done.
+evallm : 
+evallm : 
