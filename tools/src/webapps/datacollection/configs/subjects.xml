@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>This properties file defines subject for the audio data collection tool</comment>
+
+    <entry key="subjects">john kai calvin test</entry>
+
+    <entry key="john.password">passen</entry>
+    <entry key="john.locale">en_US</entry>
+    <entry key="john.encoding">ISO-8859-1</entry>
+    <entry key="john.status">nothing left to transcribe in english</entry>
+    <entry key="john.ID">1</entry>
+
+    <entry key="test.password">test</entry>
+    <entry key="test.locale">en_US</entry>
+    <entry key="test.encoding">ISO-8859-1</entry>
+    <entry key="test.status">ok</entry>
+    <entry key="test.ID">4</entry>
+
+    <entry key="calvin.password">passkr</entry>
+    <entry key="calvin.locale">kr</entry>
+    <entry key="calvin.encoding">euc-kr</entry>
+    <entry key="calvin.status">nothing left to transcribe in english</entry>
+    <entry key="calvin.ID">3</entry>
+
+    <entry key="kai.password">passzh</entry>
+    <entry key="kai.locale">zh</entry>
+    <entry key="kai.encoding">utf-8</entry>
+    <entry key="kai.status">ok</entry>
+    <entry key="kai.ID">2</entry>
+
+</properties>
