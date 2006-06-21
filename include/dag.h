@@ -45,10 +45,7 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
+ * $Log: dag.h,v $
  * Revision 1.2  2006/02/23 05:22:32  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
  *
@@ -339,7 +336,7 @@ int32 dag_bestpath (
 		    float64 lwf,         /**< Language weight multiplication factor */ 
 		    dict_t *dict,        /**<  The dictionary */
 		    lm_t *lm,             /**< The LM */
-		    s3lmwid_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
+		    s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
 		    ); 
 
 
