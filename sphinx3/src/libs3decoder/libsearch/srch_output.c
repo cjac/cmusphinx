@@ -35,10 +35,10 @@
  */
 /* srch_output.c
  * HISTORY
- * $Log$
- * Revision 1.2  2006/02/23  05:13:26  arthchan2003
+ * $Log: srch_output.c,v $
+ * Revision 1.2  2006/02/23 05:13:26  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: A wrapper for the outptu functions of the search routine
- * 
+ *
  * Revision 1.1.2.1  2006/01/17 01:24:21  arthchan2003
  * The home of log output functions.
  *
@@ -352,7 +352,10 @@ void log_hyp_detailed (FILE *fp, srch_hyp_t *hypptr, char *uttid, char *LBL, cha
     
     for (h = hypptr; h; h = h->next) {
 	scale = 0;
-       
+
+	if(h->id <0 || (h->sf == h->ef))
+	  continue;
+
 	if(senscale)
 	  scale =compute_scale(h->sf,h->ef,senscale);
 
