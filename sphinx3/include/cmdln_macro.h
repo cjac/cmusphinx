@@ -165,7 +165,7 @@
     { "-hmm", \
       ARG_STRING, \
       NULL, \
-      "Directory for specifying Sphinx 3's hmm, the following files are assummed to be present, mdef, mean, var, mixw, tmat. If -mdef, -mean, -var, -mixw or -tmat are specified, they will override the s3hmmdir "}, \
+      "Directory for specifying Sphinx 3's hmm, the following files are assummed to be present, mdef, mean, var, mixw, tmat. If -mdef, -mean, -var, -mixw or -tmat are specified, they will override this command. "}, \
     { "-mdef", \
       ARG_STRING,\
       NULL,\
