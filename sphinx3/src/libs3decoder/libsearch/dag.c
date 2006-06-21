@@ -45,13 +45,13 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.3  2006/02/28  02:06:46  egouvea
+ * $Log: dag.c,v $
+ * Revision 1.3  2006/02/28 02:06:46  egouvea
  * Updated MS Visual C++ 6.0 support files. Fixed things that didn't
  * compile in Visual C++ (declarations didn't match, etc). There are
  * still some warnings, so this is not final. Also, sorted files in
  * several Makefile.am.
- * 
+ *
  * Revision 1.2  2006/02/23 05:22:32  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: 1, Fixed bugs from last check in, lw should be * instead of +, 2, Moved most of the functions from flat_fwd.c and s3_dag.c to here.  Things that required specified will be prefixed.
  *
@@ -361,7 +361,7 @@ int32 dag_bestpath (
 		    float64 lwf,         /* Language weight multiplication factor */ 
 		    dict_t *dict,        /* The dictionary */
 		    lm_t *lm,             /* The LM */
-		    s3lmwid_t *dict2lmwid /* A map from dictionary id to lm id, should use wid2lm insteead*/
+		    s3lmwid32_t *dict2lmwid /* A map from dictionary id to lm id, should use wid2lm insteead*/
  		    )
 {
     dagnode_t *d, *pd;
