@@ -45,10 +45,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.8  2006/02/22  21:07:29  arthchan2003
+ * $Log: wid.c,v $
+ * Revision 1.8  2006/02/22 21:07:29  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: add LTS to wid.c.  Please read the comment in revision 1.6 of dict.c
- * 
+ *
  * Revision 1.7.4.2  2005/10/17 04:48:45  arthchan2003
  * Free resource correctly in dict2pid.
  *
@@ -74,18 +74,21 @@
 
 
 /*ARCHAN 
-This loop was first created by Ravi to separate logic which build 
-dict->lm and lm->dict mapping to here. I modified it to make it handle 
-class-based LM. 
+  This loop was first created by Ravi to separate logic which build 
+  dict->lm and lm->dict mapping to here. I modified it to make it handle 
+  class-based LM. 
+  
+  ARCHAN 20060320
+  The code has been slightly refactored so that the case when words 
 */
 
 
-s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
+s3lmwid32_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 {
     int32 u, n;
     s3wid_t w,dictid;
     int32 classid = BAD_LMCLASSID;
-    s3lmwid_t *map;
+    s3lmwid32_t *map;
     int32 maperr;
     lmclass_word_t lmclass_word;
     lex_entry_t lexent;
@@ -97,9 +100,9 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
     assert (lm);
     assert (dict_size(dict) > 0);
 
-    map = (s3lmwid_t *) ckd_calloc (dict_size(dict), sizeof(s3lmwid_t));
+    map = (s3lmwid32_t *) ckd_calloc (dict_size(dict), sizeof(s3lmwid32_t));
     for (n = 0; n < dict_size(dict); n++){
-	map[n] = BAD_S3LMWID;
+	map[n] = BAD_LMWID(lm);
 	if(lm->inclass_ugscore)
 	  lm->inclass_ugscore[n] = 0; /* Just to be safe, although calloc already did it*/
     }
@@ -145,7 +148,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 	    }
 	    
 	    for (; IS_S3WID(w); w = dict_nextalt(dict, w))
-	      map[w] = (s3lmwid_t) u;
+	      map[w] = (s3lmwid32_t) u;
 	  }
 	} else {
 	  if((lm->lmclass)&&(classid!=BAD_LMCLASSID)){ /* it is not a valid word ID but it is a valid class ID */
@@ -159,7 +162,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 
 	      /*	      E_INFO("CLASS INFO Inside the word loop: %d, %d, %s\n",dictid,classid,lm_wordstr(lm,u));*/
 	      if (dictid >= 0) { 
-		if (map[dictid]!=BAD_S3LMWID) {
+		if (map[dictid]!=BAD_LMWID(lm)) {
 		  /* 
 		   *  This will tell us whether this word is already a normal word,
 		   *  Again, we don't do multiple mappings. 
@@ -181,7 +184,7 @@ s3lmwid_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
 
 		  for (; IS_S3WID(dictid); dictid = dict_nextalt(dict, dictid)){
 		    /*		    E_INFO("Inside loop for alternative pronounciations dictid %d %s.\n",dictid,dict_wordstr(dict,dictid));*/
-		    map[dictid] = (s3lmwid_t) u; /*Just the normal mapping the unigram space, 
+		    map[dictid] = (s3lmwid32_t) u; /*Just the normal mapping the unigram space, 
 						   The LM file doens't really differentiate between
 						   normal word and a class tag */
 		    lm->inclass_ugscore[dictid] =
@@ -201,7 +204,7 @@ lmclass_word);
 	    /* If LTS rule is specified, the try to use it */
 	    if(dict->lts_rules){
 
-	      E_WARN("%s is not a word in dictionary and it is not a class tag. Internal LTS rule is used to build the prounouciation\n",lm_wordstr(lm, u));
+	      E_WARN("%s is not a word in dictionary and it is not a class tag. Assume it is a word. Internal LTS rule is used to build the prounouciation\n",lm_wordstr(lm, u));
 
 	      lts_apply(lm_wordstr(lm,u),"", dict->lts_rules,&lexent);
 	      E_INFO("The pronunciations\n");
@@ -223,8 +226,8 @@ lmclass_word);
 
 		 
 	      /* This is quite stupid. However, this disallows overlarged memory space. */
-	      map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid_t));
-	      map[dict_size(dict)-1] = (s3lmwid_t) u;
+	      map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid32_t));
+	      map[dict_size(dict)-1] = (s3lmwid32_t) u;
 	      
 	      ckd_free(p);
 	      ckd_free(lexent.phone);
@@ -278,7 +281,7 @@ lmclass_word);
 	    }
 	    
 	    for (; IS_S3WID(w); w = dict_nextalt(dict, w))
-		map[w] = (s3lmwid_t) u;
+		map[w] = (s3lmwid32_t) u;
 	}
 	}
     if (n > 0)
@@ -297,6 +300,7 @@ int32 wid_wordprob2alt (dict_t *dict, wordprob_t *wp, int32 n)
     for (i = 0, j = n; i < n; i++) {
 	w = wp[i].wid;
 	for (w = dict_nextalt (dict, w); IS_S3WID(w); w = dict_nextalt (dict, w)) {
+	  E_INFO("i %d, j %d n %d\n",i,j,n);
 	    wp[j].wid = w;
 	    wp[j].prob = wp[i].prob;
 	    j++;
