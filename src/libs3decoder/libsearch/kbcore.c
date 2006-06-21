@@ -149,7 +149,7 @@
 
 void checkLMstartword(lm_t* l,char* name)
 {
-  if (NOT_S3LMWID(lm_startwid(l)) || NOT_S3LMWID(lm_finishwid(l))){
+  if (NOT_LMWID(l, lm_startwid(l)) || NOT_LMWID(l, lm_finishwid(l))){
     E_FATAL("%s or %s not in LM %s\n", S3_START_WORD, S3_FINISH_WORD,name);
   }
 }
@@ -172,9 +172,9 @@ void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
   lm_lmwid2dictwid(l, lm_finishwid(l)) = BAD_S3WID;
 
   for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-    l->dict2lmwid[w] = BAD_S3LMWID;
+    l->dict2lmwid[w] = BAD_LMWID(l);
   for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-      l->dict2lmwid[w] = BAD_S3LMWID;
+      l->dict2lmwid[w] = BAD_LMWID(l);
 
 }
 
@@ -360,7 +360,7 @@ void s3_am_init(kbcore_t *kbc,
 			    cmd_ln_str("-kdtree"));
 	    }
     }
-  }else if(strcmp(senmgau,".semi.") == 0 || strcmp(senmgau,".s3cont.") == 0){
+    }else if(strcmp(senmgau,".semi.") == 0 || strcmp(senmgau,".s3cont.") == 0){
 
     senone_t* sen;
     /* Multiple stream Gaussian mixture Initialization*/
