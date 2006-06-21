@@ -42,10 +42,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.2  2006/02/23  05:10:18  arthchan2003
+ * $Log: word_fsg.c,v $
+ * Revision 1.2  2006/02/23 05:10:18  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Adaptation of Sphinx 2's FSG search into Sphinx 3
- * 
+ *
  * Revision 1.1.2.6  2005/07/24 01:34:54  arthchan2003
  * Mode 2 is basically running. Still need to fix function such as resulting and build the correct utterance ID
  *
@@ -803,6 +803,13 @@ word_fsg_t *word_fsg_read (FILE *fp,
 	  || (p <= 0.0) || (p > 1.0)) {
 	E_ERROR("Line[%d]: transition spec malformed; Expecting: from-state to-state trans-prob [word]\n",
 		lineno);
+	if(p<=0.0){
+	  E_ERROR("Probability couldn't be zero in the current format. \n");
+	}
+	if(j>=fsg->n_state){
+	  E_ERROR("Number of state (%d) is more than expected (from the FINAL_STATE: %d)\n",j+1,fsg->n_state);
+	}
+
 	goto parse_error;
       }
     } else {
@@ -851,6 +858,9 @@ word_fsg_t *word_fsg_readfile (const char *file,
   fsg = word_fsg_read (fp,
 		       use_altpron, use_filler,
 		       silprob, fillprob, lw, dict,mdef);
+  if(fsg==NULL){
+    return NULL;
+  }
   
   /* Also build the context table, hmm, not so nice...*/
   fsg->ctxt=ctxt_table_init(fsg->dict,fsg->mdef);
