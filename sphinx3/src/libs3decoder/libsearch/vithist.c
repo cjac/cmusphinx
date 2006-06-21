@@ -45,13 +45,13 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.9  2006/02/23  16:56:12  arthchan2003
+ * $Log: vithist.c,v $
+ * Revision 1.9  2006/02/23 16:56:12  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Split latticehist_t from flat_fwd.c to  here.
  * 2, Introduced vithist_entry_cp.  This is much better than the direct
  * copy we have been using. (Which could cause memory problem easily)
- * 
+ *
  * Revision 1.8.4.12  2006/01/16 18:11:39  arthchan2003
  * 1, Important Bug fixes, a local pointer is used when realloc is needed.  This causes invalid writing of the memory, 2, Acoustic scores of the last segment in IBM lattice generation couldn't be found in the past.  Now, this could be handled by the optional acoustic scores in the node of lattice.  Application code is not yet checked-in
  *
@@ -340,7 +340,7 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     ve->type = 0;
     ve->valid = 1;
     ve->lmstate.lm3g.lwid[0] = lm_startwid(lm);
-    ve->lmstate.lm3g.lwid[1] = BAD_S3LMWID;
+    ve->lmstate.lm3g.lwid[1] = BAD_LMWID(lm);
 
 
     if(vh->bFullExpand){
@@ -367,7 +367,7 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
 static int32 vh_lmstate_find (vithist_t *vh, vh_lmstate_t *lms)
 {
     vh_lms2vh_t *lms2vh;
-    s3lmwid_t lwid;
+    s3lmwid32_t lwid;
     gnode_t *gn;
     
     lwid = lms->lm3g.lwid[0];
@@ -394,7 +394,7 @@ static int32 vh_lmstate_find (vithist_t *vh, vh_lmstate_t *lms)
 static void vithist_lmstate_enter (vithist_t *vh, int32 vhid, vithist_entry_t *ve)
 {
     vh_lms2vh_t *lms2vh, *child;
-    s3lmwid_t lwid;
+    s3lmwid32_t lwid;
     
     lwid = ve->lmstate.lm3g.lwid[0];
     if ((lms2vh = vh->lms2vh_root[lwid]) == NULL) {
@@ -550,7 +550,7 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		      int32 pred, int32 type, int32 rc)
 {
     vithist_entry_t *pve, tve;
-    s3lmwid_t lwid;
+    s3lmwid32_t lwid;
     int32 se, fe;
     int32 i;
     int32 ci;
@@ -667,6 +667,11 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	      tve.score += tve.ascr;
 
 		if(vh->bLMRescore){
+		  /*		  E_INFO("prev->lmstate.lm3g.lwid[1] %u, prev->lmstate.lm3g.lwid[0] %d, lwid %d\n", 
+			 pve->lmstate.lm3g.lwid[1],
+			 pve->lmstate.lm3g.lwid[0],
+			 lwid);*/
+			 
 		  tve.lscr = lm_tg_score (kbcore_lm(kbc),
 					pve->lmstate.lm3g.lwid[1],
 					pve->lmstate.lm3g.lwid[0],
@@ -886,7 +891,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     int32 f, i, b, l;
     int32 sv, nsv, scr, bestscore, bestvh, vhid;
     vithist_entry_t *ve, *bestve=0;
-    s3lmwid_t endwid;
+    s3lmwid32_t endwid;
     lm_t *lm;
     dict_t *dict;
 
@@ -981,7 +986,7 @@ int32 vithist_partialutt_end (vithist_t *vh, kbcore_t *kbc)
     int32 f, i, b, l;
     int32 sv, nsv, scr, bestscore, bestvh;
     vithist_entry_t *ve, *bestve;
-    s3lmwid_t endwid;
+    s3lmwid32_t endwid;
     lm_t *lm;
     dict_t *dict;
 
@@ -1128,7 +1133,7 @@ void vithist_dump (vithist_t *vh, int32 frm, kbcore_t *kbc, FILE *fp)
     dict_t *dict;
     lm_t *lm;
     vithist_entry_t *ve;
-    s3lmwid_t lwid;
+    s3lmwid32_t lwid;
     int32 sf, ef;
     
     dict = kbcore_dict (kbc);
@@ -1165,7 +1170,7 @@ void vithist_dump (vithist_t *vh, int32 frm, kbcore_t *kbc, FILE *fp)
 	    
 	    fprintf (fp, " (%s", lm_wordstr (lm, ve->lmstate.lm3g.lwid[0]));
 	    lwid = ve->lmstate.lm3g.lwid[1];
-	    if (IS_S3LMWID(lwid))
+	    if (IS_LMWID(lm,lwid))
 		fprintf (fp, ", %s", lm_wordstr (lm, lwid));
 	    fprintf (fp, ")\n");
 	}
@@ -1720,11 +1725,16 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 #endif
 {
     s3wid_t bw0, bw1, bw2;
-    s3lmwid_t lw0;
+    s3lmwid32_t lw0;
     int32 lscr, bowt, bo_lscr;
     tg_t *tgptr;
     bg_t *bgptr;
+
+    tg32_t *tgptr32;
+    bg32_t *bgptr32;
+    int is32bits;
     
+    is32bits=lm->is32bits;
     bw2 = dict_basewid (dict,lathist->lattice[l].wid);
 
     if (dict_filler_word (dict,bw2))
@@ -1750,7 +1760,7 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 #endif
 
     /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);*/
-    lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
+    lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_LMWID(lm);
     lscr = lm_tg_score (lm, 
 			lw0, 
 			lm->dict2lmwid[dict_basewid(dict,bw1)], 
@@ -1761,13 +1771,26 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 
     /* Correction for backoff cpase if that scores better (see word_trans) */
     bo_lscr = 0;
-    if ((IS_S3WID(bw0)) && (lm_tglist (lm,
-				       lm->dict2lmwid[dict_basewid(dict,bw0)], 
-				       lm->dict2lmwid[dict_basewid(dict,bw1)],
-				       &tgptr, &bowt) > 0))
+
+
+    if(is32bits){
+      if ((IS_S3WID(bw0)) && (lm_tg32list (lm,
+					   lm->dict2lmwid[dict_basewid(dict,bw0)], 
+					   lm->dict2lmwid[dict_basewid(dict,bw1)],
+					   &tgptr32, &bowt) > 0))
 	bo_lscr = bowt;
-    if (lm_bglist (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
+      if (lm_bg32list (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr32, &bowt) > 0)
 	bo_lscr += bowt;
+    }else{
+      if ((IS_S3WID(bw0)) && (lm_tglist (lm,
+					 lm->dict2lmwid[dict_basewid(dict,bw0)], 
+					 lm->dict2lmwid[dict_basewid(dict,bw1)],
+					 &tgptr, &bowt) > 0))
+	bo_lscr = bowt;
+      if (lm_bglist (lm, lm->dict2lmwid[dict_basewid(dict,bw1)], &bgptr, &bowt) > 0)
+	bo_lscr += bowt;
+
+    }
     bo_lscr += lm_ug_score (lm,lm->dict2lmwid[dict_basewid(dict,bw2)], dict_basewid(dict,bw2));
 
     return ((lscr > bo_lscr) ? lscr : bo_lscr);
