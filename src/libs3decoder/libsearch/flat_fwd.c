@@ -48,10 +48,10 @@
  * 28-Jul-04    ARCHAN (archan@cs.cmu.edu at Carnegie Mellon Unversity 
  *              First incorporate it from s3 code base. 
  *
- * $Log$
- * Revision 1.14  2006/02/23  05:36:23  arthchan2003
+ * $Log: flat_fwd.c,v $
+ * Revision 1.14  2006/02/23 05:36:23  arthchan2003
  * Merged from the branch SPHINX3_5_2_RCI_IRII_BRANCH.  this is a version where function except search are moved to other files.
- * 
+ *
  *
  * Revision 1.13  2005/10/05 00:31:14  dhdfu
  * Make int8 be explicitly signed (signedness of 'char' is
@@ -849,9 +849,15 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
     s3latid_t l;	/* lattice entry index */
     s3cipid_t *rcmap, rc, lc;
     s3wid_t w, bw0, bw1, nextwid;
-    s3lmwid_t lw0;
+    s3lmwid32_t lw0;
+
+
     tg_t *tgptr;
     bg_t *bgptr;
+
+    tg32_t *tgptr32;
+    bg32_t *bgptr32;
+
     int32 bowt, acc_bowt, newscore;
     int32 n_tg, n_bg;
     int32 cand, lscr;
@@ -863,6 +869,7 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
     lm_t* lm;
     ctxt_table_t *ct_table;
     fillpen_t *fpen;
+    int32 is32bits;
 
     kbc=fwg->kbcore;
     dict=kbcore_dict(kbc);
@@ -871,6 +878,12 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
     lm=kbcore_lm(kbc);
     fpen=kbcore_fillpen(kbc);
     ct_table=fwg->ctxt;
+
+    is32bits=lm->is32bits;
+    tgptr=NULL;
+    bgptr=NULL;
+    tgptr32=NULL;
+    bgptr32=NULL;
 
     lat_start = lathist->frm_latstart[fwg->n_frm];
     
@@ -913,49 +926,91 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
 
 	    /* First, transition to trigram followers of bw0, bw1 */
 	    acc_bowt = 0;
-	    if ((IS_S3WID(bw0)) && ((n_tg = lm_tglist (lm,
-						       lm->dict2lmwid[dict_basewid(dict,bw0)], 
-						       lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt)) > 0)) {
+	    
+	    if (IS_S3WID(bw0)){
+
+	      if(is32bits){
+		n_tg = lm_tg32list (lm,
+				    lm->dict2lmwid[dict_basewid(dict,bw0)], 
+				    lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr32, &bowt);
+
+	      }else{
+		n_tg = lm_tglist (lm,
+				  lm->dict2lmwid[dict_basewid(dict,bw0)], 
+				  lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt);
+
+	      }
+
+	      if( n_tg > 0){		
 		/* Transition to trigram followers of bw0, bw1, if any */
-		for (; n_tg > 0; --n_tg, tgptr++) {
-		    /* Transition to all alternative pronunciations for trigram follower */
-		    nextwid = LM_DICTWID(lm, tgptr->wid);
-		    
-		    if (IS_S3WID(nextwid) && (nextwid != dict->startwid)) {
-			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-			    newscore = fwg->rcscore[dict->word[w].ciphone[0]] +
-				LM_TGPROB (lm, tgptr) + phone_penalty;
-			    
-			    if (newscore >= thresh) {
-				word_enter (fwg, w, n_state, newscore, l, lc);
-				fwg->tg_trans_done[w] = 1;
-			    }
-			}
+		for (; n_tg > 0; --n_tg) {
+		  
+		  if(is32bits) 
+		    tgptr32++;
+		  else
+		    tgptr++;
+
+		  nextwid=is32bits?
+		    LM_DICTWID(lm, tgptr32->wid):
+		    LM_DICTWID(lm, tgptr->wid);
+
+		  /* Transition to all alternative pronunciations for trigram follower */
+
+		  
+		  if (IS_S3WID(nextwid) && (nextwid != dict->startwid)) {
+		    for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+
+
+		      newscore = fwg->rcscore[dict->word[w].ciphone[0]]; /* right context scores with phone ciphone[0]*/
+		      newscore += is32bits?LM_TGPROB (lm, tgptr32): LM_TGPROB (lm, tgptr); /* The LM scores */
+		      newscore += phone_penalty;
+		      
+		      if (newscore >= thresh) {
+			word_enter (fwg, w, n_state, newscore, l, lc);
+			fwg->tg_trans_done[w] = 1;
+		      }
 		    }
+		  }
 		}
-		
 		acc_bowt = bowt;
+	      }
 	    }
 	    
 	    /* Transition to bigram followers of bw1 */
-	    if ((n_bg = lm_bglist (lm,
-				   lm->dict2lmwid[dict_basewid(dict,bw1)], 
-				   &bgptr, 
-				   &bowt)) > 0) {
+	    if(is32bits)
+	      n_bg = lm_bg32list (lm,
+				lm->dict2lmwid[dict_basewid(dict,bw1)], 
+				&bgptr32, 
+				&bowt);
+	    else
+	      n_bg = lm_bglist (lm,
+				  lm->dict2lmwid[dict_basewid(dict,bw1)], 
+				  &bgptr, 
+				  &bowt);
+	      
+	    if (n_bg > 0) {
 		/* Transition to bigram followers of bw1, if any */
-		for (; n_bg > 0; --n_bg, bgptr++) {
+		for (; n_bg > 0; --n_bg) {
+		  if(is32bits)
+		    bgptr32++;
+		  else
+		    bgptr++;
+		    
 		    /* Transition to all alternative pronunciations for bigram follower */
-		    nextwid = LM_DICTWID (lm, bgptr->wid);
+		  
+		  nextwid = is32bits?LM_DICTWID (lm, bgptr32->wid):LM_DICTWID (lm, bgptr->wid);
 		    
 		    if (IS_S3WID(nextwid) &&
 			(! fwg->tg_trans_done[nextwid]) &&	/* TG transition already done */
 			(nextwid != dict->startwid)) {	/* No transition to <s> */
 			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-			    newscore = fwg->rcscore[dict->word[w].ciphone[0]] +
-				LM_BGPROB (lm, bgptr) + acc_bowt + phone_penalty;
+
+			  newscore = fwg->rcscore[dict->word[w].ciphone[0]];
+			  newscore += is32bits?LM_BGPROB (lm, bgptr32):LM_BGPROB (lm, bgptr);
+			  newscore += phone_penalty;
 			    
-			    if (newscore >= thresh)
-				word_enter (fwg, w, n_state, newscore, l, lc);
+			  if (newscore >= thresh)
+			    word_enter (fwg, w, n_state, newscore, l, lc);
 			}
 		    }
 		}
@@ -980,7 +1035,7 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
 	    for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
 		nextwid = fwg->word_cand_cf[cand];
 
-		lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_S3LMWID;
+		lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_LMWID(lm);
 		  
 		lscr = lm_tg_score (lm,
 				    lw0,
