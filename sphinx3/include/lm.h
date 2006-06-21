@@ -44,10 +44,7 @@
  * **********************************************
  *
  * HISTORY
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
+ * $Log: lm.h,v $
  * Revision 1.16  2006/03/02 22:10:36  arthchan2003
  * Add *g_write into the code.
  *
@@ -146,6 +143,22 @@ extern "C" {
 
 #define LM_DICTWID_BADMAP	-16000		/** An illegal mapping */
 #define LM_CLASSID_BASE		0x01000000	/** Interpreted as LMclass ID */
+
+  /** Upper limit of the words of Sphinx 3.X */
+#define LM_LEGACY_CONSTANT      BAD_S3LMWID          /**< =65535 (~65k), this is introduced 
+							since 1996 when Ravi first wrote Sphinx 3.0. It
+							haunted us since. 
+						     */
+
+#define LM_SPHINX_CONSTANT      BAD_S3LMWID32      /**< (4 billion), ARCHAN: this is introduced by in Sphinx 3.6
+						      during the time of Release Candidate I (2006 March). The caveat of using
+						      this constant is that it is much hard to detect byte-swapping problem.
+						      in general. Also, if the world has more than 10000 cities, each has 1 million
+						      roads name. We are stuck in this case. I assume this will happen in 
+						      3001. 
+						   */
+
+
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
 #define MIN_PROB_F -99.0
 #define LM_ALLOC_BLOCK 16 
@@ -153,6 +166,30 @@ extern "C" {
 #define LM_NOT_FOUND  -1 /** Constant which indicate an LM couldn't be found */
 #define LM_SUCCESS 1 /** Constant that indicates an operation succeed */
 #define LM_FAIL 0 /** Constant that define an operation failed.  */
+
+
+  /** Versioning of LM */
+#define LMDMP_VERSIONNULL 0   /**< VERSION 0 is oldest, in the past, we
+				 used to use the version number to
+				 store the number of unigram, you will
+				 see logic that said vn > LMDMP_VERSIONNULL				 
+			      */
+				 
+#define LMDMP_VERSION_TG_16BIT -1 /**< VERSION 1 is the simplest DMP file which
+			     is trigram or lower which used 16 bits in
+			     bigram and trigram.*/
+
+#define LMDMP_VERSION_TG_16BIT_V2 -2 /**< VERSION 2 means legacy VERSION 1 DMP file
+					   which has log_bg_seg_sz != 9*/
+
+#define LMDMP_VERSION_TG_32BIT -3 /**< VERSION 3 is the 32 bit
+					 extension of VERSION 1 but
+					 the bigram and trigram are
+					 represented by 32 bits data
+					 structure */
+
+#define LMTXT_VERSION 1000 /**< VERSION 1000 is the text-based LM */
+#define LMFST_VERSION 1001 /**< VERSION 1001 is the text-based LM */
 
 #define NO_WORD	-1
 
@@ -173,8 +210,26 @@ extern "C" {
    */
 
   /** \file lm.h
-     \brief Language model
+     \brief Language model 
 
+     This is the header file for language model support in Sphinx 3. 
+     Sphinx 3 supports language model in 4 formats. The four formats are
+
+     ARPA format: First appear in Sphinx 2. We port it to Sphinx 3 in
+     3.X (X=6)
+
+     DMP : Sphinx 3 slow and fast used it, so does later in Sphinx 3.X
+     (X>4)
+
+     DMP32 : We start to break the limit of number of words of
+     65535. This is the first LM file format in Sphinx 3.X that could
+     capture 4 billion words in the language model
+     
+     FST: In AT&T format, we start to support in 3.X (X=6).
+
+     At 20060302
+     we can only read and used ARPA, DMP-based format in the decoder. 
+     we can write ARPA, DMP, DMP32 and FST file format. 
    */
   
   /** \struct lmlog_t
@@ -193,10 +248,10 @@ extern "C" {
   
   typedef struct sorted_entry_s {
     lmlog_t val;		/**< value being kept in this node */
-    uint16 lower;	/**< index of another entry.  All descendants down
+    uint32 lower;	/**< index of another entry.  All descendants down
 			   this path have their val < this node's val.
 			   0 => no son exists (0 is root index) */
-    uint16 higher;	/**< index of another entry.  All descendants down
+    uint32 higher;	/**< index of another entry.  All descendants down
 			   this path have their val > this node's val
 			   0 => no son exists (0 is root index) */
   } sorted_entry_t;
@@ -236,24 +291,55 @@ extern "C" {
   } bg_t;
 
 
+  /** \structu bg32_t 
+   * \brief A bigram structure which has 32 bits. 
+   */
+  typedef struct {
+    s3lmwid32_t wid;	/**< LM wid (index into lm_t.ug) */
+    uint32 probid;      /**< Index into array of actualy bigram probs*/
+    uint32 bowtid;      /**< Index into array of actualy bigram backoff wts */
+    uint32 firsttg;     /**< 1st trigram entry on disk (see tg_segbase below) */
+  } bg32_t;
+
+
   /** \struct tg_t
    * \brief A trigram structure
    */
 
   typedef struct {
     s3lmwid_t wid;	/**< LM wid (index into lm_t.ug) */
-    uint16 probid;
+    uint16 probid;      /**< Index into array of actualy trigram probs*/
   } tg_t;
+
+
+  /** \struct tg32_t
+   * \brief A 32 bits version of tg_t 
+   */
+
+  typedef struct {
+    s3lmwid32_t wid;	/**< LM wid (index into lm_t.ug) */
+    uint32 probid;      /**< Index into array of actualy trigram probs*/
+  } tg32_t;
 
 
   /** \struct membg_t
    *  \brief Management of in-memory bigrams.  Not used if all bigrams in memory.
    */
-typedef struct {
+  typedef struct {
     bg_t *bg;		/**< Bigrams for a specific unigram; see lm_t.membg */
     int32 used;		/**< Whether used since last lm_reset.  If not used, at the next
 			   lm_reset bg are freed */
-} membg_t;
+  } membg_t;
+
+  /** \struct membg32_t
+   *
+   * \brief A 32 bits version of membg_t
+   */
+  typedef struct {
+    bg32_t *bg32;		/**< Bigrams for a specific unigram; see lm_t.membg */
+    int32 used;		/**< Whether used since last lm_reset.  If not used, at the next
+			   lm_reset bg are freed */
+  } membg32_t;
 
 
   /**
@@ -277,8 +363,24 @@ typedef struct {
     struct tginfo_s *next;	/**< Next w1 with same parent w2 */
   } tginfo_t;
 
+  /**
+   * \struct tginfo32_t
+   * \brief 32 bit version of tginfo
+   *
+   */
+  typedef struct tginfo32_s {
+    s3lmwid32_t w1;		/**< w1 component of bigram w1,w2.  All bigrams with
+				   same w2 linked together. */
+    int32 n_tg;			/**< #tg for parent bigram w1,w2 */
+    tg32_t *tg32;			/**< Trigrams for w1,w2 */
+    int32 bowt;			/**< tg bowt for w1,w2 */
+    int32 used;			/**< whether used since last lm_reset */
+    struct tginfo32_s *next;	/**< Next w1 with same parent w2 */
+  } tginfo32_t;
+
 
   /*
+   * \struct lm_tgcache_entry_t
    * Entries in a fast and dirty cache for trigram lookups.  See lm_t.tgcache.
    */
   typedef struct {
@@ -286,6 +388,15 @@ typedef struct {
     int32 lscr;			/**< LM score for above trigram */
   } lm_tgcache_entry_t;
 
+
+  /*
+   * \struct lm_tgcache_entry32_t
+   * \brief 32 bit version of lm_tg_cache_entry
+   */
+  typedef struct {
+    s3lmwid32_t lwid[3];		/**< 0 = oldest, 2 = newest (i.e., P(2|0,1)) */
+    int32 lscr;			/**< LM score for above trigram */
+  } lm_tgcache_entry32_t;
 
 
 
@@ -343,6 +454,7 @@ typedef struct {
 #define LOG2_BG_SEG_SZ  9	
 #define BG_SEG_SZ       (1 << (LOG2_BG_SEG_SZ))
 #define LM_TGCACHE_SIZE		100003	/* A prime no. (hopefully it IS one!) */
+
 /* 20040211 ARCHAN: Yes! Indeed it is a prime */
 
   /** \struct lm_t
@@ -361,17 +473,44 @@ typedef struct lm_s {
     
     char **wordstr;	/**< The LM word list (in unigram order) */
     
-    s3lmwid_t startlwid;	/**< S3_START_WORD id, if it exists */
-    s3lmwid_t finishlwid;	/**< S3_FINISH_WORD id, if it exists */
     
-    int32 log_bg_seg_sz;/**< See big comment above */
-    int32 bg_seg_sz;
-    
+    uint32 log_bg_seg_sz;/**< See big comment above */
+    uint32 bg_seg_sz;
+
     ug_t *ug;           /**< Unigrams */
+
+  /* 20040225 ARCHAN : Data structure to maintain dictionary information */
+  /* Data structure for dictionary to LM words look up mapping */
+  /* 20060306 ARCHAN: Change this to a 32 bits data structure */
+  s3lmwid32_t *dict2lmwid; /**< a mapping from dictionary word to LM word */
+    s3lmwid32_t startlwid;	/**< S3_START_WORD id, if it exists */
+    s3lmwid32_t finishlwid;	/**< S3_FINISH_WORD id, if it exists */
+
     bg_t *bg;		/**< NULL iff disk-based */
     tg_t *tg;		/**< NULL iff disk-based */
     membg_t *membg;	/**< membg[w1] = bigrams for lm wid w1 (used iff disk-based) */
     tginfo_t **tginfo;	/**< tginfo[w2] = fast trigram access info for bigrams (*,w2) */
+
+
+  lm_tgcache_entry_t *tgcache; /**< <w0,w1,w2> hashed to an entry into
+				  this array.  Only the last trigram
+				  mapping to any * given hash entry is
+				  kept in that entry.  (The cache
+				  doesn't have to be super-efficient.)
+			       */
+
+
+  /**************************/
+
+
+    bg32_t *bg32;		/**< Bigram 32 bits, NULL iff disk-based */
+    tg32_t *tg32;		/**< Trigram 32 bits NULL iff disk-based */
+    membg32_t *membg32;	/**< membg 32bits membg[w1] = bigrams for lm wid w1 (used iff disk-based) */
+    tginfo32_t **tginfo32;	/**< tginfo 32bits tginfo[w2] = fast trigram access info for bigrams (*,w2) */
+
+  lm_tgcache_entry32_t *tgcache32; /** tgcache 32 bits */
+
+  /**************************/
     
     lmlog_t *bgprob;    /**< Table of actual bigram probs */
     lmlog_t *tgprob;    /**< Table of actual trigram probs */
@@ -390,11 +529,6 @@ typedef struct lm_s {
     float32 lw;		/**< Language weight currently in effect for this LM */
     int32 wip;          /**< logs3(word insertion penalty) in effect for this LM */
     
-  /**
-     * <w0,w1,w2> hashed to an entry into this array.  Only the last trigram mapping to any
-     * given hash entry is kept in that entry.  (The cache doesn't have to be super-efficient.)
-     */
-    lm_tgcache_entry_t *tgcache;
     
     /* Statistics */
     int32 n_bg_fill;    /**< #bg fill operations */
@@ -418,22 +552,26 @@ typedef struct lm_s {
 		       the dictionary space. */
   hash_table_t *HT;		/**<  hash table for word-string->word-id map */
 
-  /* 20040225 ARCHAN : Data structure to maintain dictionary information */
-  /* Data structure for dictionary to LM words look up mapping */
-  s3lmwid_t *dict2lmwid; /**< a mapping from dictionary word to LM word */
   
   /* Data structure that maintains the class information */
   lmclass_t *lmclass;   /**< LM class for this LM */
   int32 n_lmclass;      /**< # LM class */
   int32 *inclass_ugscore; /**< An array of inter-class unigram probability */
 
+
+  int32 inputenc ; /**< Input encoding method */
+  int32 outputenc ; /**< Output encoding method */
+  int32 version;  /**< The version number of LM, in particular, this is the version that recently
+		     read in. 
+		   */
+  int32 is32bits; /**< Whether the current LM is 32 bits or not. Derived from version and n_ug*/
+
   /* Arrays of unique bigram probs and bo-wts, and trigram probs */
   sorted_list_t sorted_prob2; /**< Temporary Variable: Sorted list */
   sorted_list_t sorted_bowt2; /**< Temporary Variable: Sorted list */
   sorted_list_t sorted_prob3; /**< Temporary Variable: Sorted list */
+  int32 max_sorted_entries; /**< Temporary Variable: 2x the maximum size of the MAX_SORTED_ENTRIES*/
 
-  int32 inputenc ; /**< Input encoding method */
-  int32 outputenc ; /**< Output encoding method */
 } lm_t;
 
 
@@ -466,7 +604,7 @@ typedef struct lmset_s {
       \brief Generic structure that could be used at any n-gram level 
   */
 typedef struct {
-    s3wid_t wid;	/**< NOTE: dictionary wid; may be BAD_S3WID if not available */
+  s3wid_t wid;	/**< NOTE: dictionary wid; may be BAD_S3WID if not available */
   int32 prob;         /**< The probability */
 } wordprob_t;
   
@@ -640,10 +778,17 @@ typedef struct {
    * Return value: #trigrams in returned list.
    */
 int32 lm_tglist (lm_t *lmp,	/**< In: LM being queried */
-		 s3lmwid_t w1,	/**< In: LM word id of the first of a 2-word history */
-		 s3lmwid_t w2,	/**< In: LM word id of the second of the 2-word history */
+		 s3lmwid32_t w1,	/**< In: LM word id of the first of a 2-word history */
+		 s3lmwid32_t w2,	/**< In: LM word id of the second of the 2-word history */
 		 tg_t **tg,	/**< Out: *tg = array of trigrams for <w1,w2> */
 		 int32 *bowt	/**< Out: *bowt = backoff-weight for <w1, w2> */
+		 );
+
+int32 lm_tg32list (lm_t *lmp,	/**< In: LM being queried */
+		   s3lmwid32_t w1,	/**< In: LM word id of the first of a 2-word history */
+		   s3lmwid32_t w2,	/**< In: LM word id of the second of the 2-word history */
+		   tg32_t **tg,	/**< Out: *tg = array of trigrams for <w1,w2> */
+		   int32 *bowt	/**< Out: *bowt = backoff-weight for <w1, w2> */
 		 );
 
   /**
@@ -651,10 +796,16 @@ int32 lm_tglist (lm_t *lmp,	/**< In: LM being queried */
  * Return value: #bigrams in returned list.
  */
 int32 lm_bglist (lm_t *lmp,	/**< In: LM being queried */
-		 s3lmwid_t w,	/**< In: LM word id of the 1-word history */
+		 s3lmwid32_t w,	/**< In: LM word id of the 1-word history */
 		 bg_t **bg,	/**< Out: *bg = array of bigrams for w */
 		 int32 *bowt	/**< Out: *bowt = backoff-weight for w */
 		 );
+
+int32 lm_bg32list (lm_t *lmp,	/**< In: LM being queried */
+		   s3lmwid32_t w,	/**< In: LM word id of the 1-word history */
+		   bg32_t **bg,	/**< Out: *bg = array of bigrams for w */
+		   int32 *bowt	/**< Out: *bowt = backoff-weight for w */
+		   );
 
 
 #if 0 /*Obsolete and it will cause conflict the code, so comment for now*/
@@ -666,7 +817,7 @@ int32 lm_bglist (lm_t *lmp,	/**< In: LM being queried */
  * Return value:  #entries filled in the wordprob array.
  */
 int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
-		     s3lmwid_t w,	/**< In: LM word ID of the 1-word history */
+		     s3lmwid32_t w,	/**< In: LM word ID of the 1-word history */
 		     int32 th,		/**< In: If a prob (logs3, langwt-ed) < th, ignore it */
 		     wordprob_t *wp,	/**< In/Out: Array to be filled; caller must have
 					   allocated this array */
@@ -675,9 +826,14 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 
 #endif
 
-/* Return LM word ID for the given string, or BAD_S3LMWID if not available */
-  s3lmwid_t lm_wid (lm_t *lm, char *wd);
+/* Return LM word ID for the given string, or BAD_LMWID(lm) if not available */
+  s3lmwid32_t lm_wid (lm_t *lm, char *wd);
 
+  /**
+     Set all pointers to NULL in the lm
+   */
+  void lm_null_struct(lm_t* lm 
+		      );
 
   /**
  * Like lm_bg_wordprob, but for unigrams.
@@ -699,23 +855,23 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
   /* 20040227: This also account the in-class probability of wid*/
   /** Return unigram score for the given word */
   int32 lm_ug_score (lm_t *lmp,  /**< In: LM begin queried */
-		     s3lmwid_t lwid, /**< LM ID for the word */
+		     s3lmwid32_t lwid, /**< LM ID for the word */
 		     s3wid_t wid     /**< Dict ID for the word */
 		     );
 
   
   int32 lm_ug_exists(lm_t* lm ,  /**< LM */
-		     s3lmwid_t lwid /**< LM ID for the word */
+		     s3lmwid32_t lwid /**< LM ID for the word */
 		     );
   
   /*
-   * Return bigram score for the given two word sequence.  If w1 is BAD_S3LMWID, return
+   * Return bigram score for the given two word sequence.  If w1 is BAD_LMWID(lm), return
    * lm_ug_score (w2).
    * 20040227: This also account for the in-class probability of w2. 
    */
   int32 lm_bg_score (lm_t *lmp, /**< In: LM begin queried */
-		     s3lmwid_t lw1, 
-		     s3lmwid_t lw2,
+		     s3lmwid32_t lw1, 
+		     s3lmwid32_t lw2,
 		     s3wid_t w2);
 
 
@@ -723,20 +879,20 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
      Whether a certain bigram exists. 
    */
   int32 lm_bg_exists (lm_t *lm,  /**< In: LM */
-		     s3lmwid_t lw1,  
-		     s3lmwid_t lw2   
+		     s3lmwid32_t lw1,  
+		     s3lmwid32_t lw2   
 		     );
 
   /**
-   * Return trigram score for the given three word sequence.  If w1 is BAD_S3LMWID, return
-   * lm_bg_score (w2, w3).  If both lw1 and lw2 are BAD_S3LMWID, return lm_ug_score (lw3).
+   * Return trigram score for the given three word sequence.  If w1 is BAD_LMWID(lm), return
+   * lm_bg_score (w2, w3).  If both lw1 and lw2 are BAD_LMWID(lm), return lm_ug_score (lw3).
    * 
    * 20040227: This also account for the in-class probability of w3. 
    */
   int32 lm_tg_score (lm_t *lmp,  /**< In: LM begin queried */
-		     s3lmwid_t lw1, 
-		     s3lmwid_t lw2, 
-		     s3lmwid_t lw3, 
+		     s3lmwid32_t lw1, 
+		     s3lmwid32_t lw2, 
+		     s3lmwid32_t lw3, 
 		     s3wid_t w3);
 
 
@@ -744,9 +900,9 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
      Whether a certain trigram exists. 
    */
   int32 lm_tg_exists (lm_t *lm,  /**< In: LM */
-		     s3lmwid_t lw1,  
-		     s3lmwid_t lw2,
-		     s3lmwid_t lw3
+		     s3lmwid32_t lw1,  
+		     s3lmwid32_t lw2,
+		     s3lmwid32_t lw3
 		     );
 
   /**
@@ -792,7 +948,6 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
    * a DUMP file or a txt file. Then call lm_read_txt and lm_read_dump
    * (non-public functions) correspondingly.  Currently the code is
    * not aware about OOV.  
-   *
    *
    * lw, wip, uw and ndict are mainly used for recognition purpose.
    * When lm_read is used for other purpose, one could just used dummy
@@ -840,7 +995,7 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
   /**
      Simple writing of an LM file, the input and output encoding will
      assume to be iso8859-1. Call lm_write. To convert encoding, please use
-     lm_write_advance.
+     lm_write_advance. 
    */
   int32 lm_write(lm_t *model, /** In: the pointer LM we want to output */
 		const char *outputfile, /**< In: the output file name */
@@ -848,24 +1003,93 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		char *fmt   /**< In: LM file format, it is now either "TXT" or "DMP" */
 		);
   
-  /*
+  /**
      Writing of an LM file with advanced options such as encoding support. 
      Called by lm_write. 
+     
+     fmt now could be TXT, DMP, FST
+     
+     inputenc and outputenc could now be iso8859-1, gb2312-hex, gb2312.  
+     Not every pair of conversion works.  
+     
+     Current input/output encodings support list. 
+     0: iso8859-1
+     1: gb2312-hex
+     2: gb2312
+
+     -: do nothing
+     n: doesn't make sense or not compatible
+     x: not supported yet
+     y: supported
+
+     i\o 0 1 2
+     0 - n n
+     1 n - y
+     2 n x -
+
+     When we have 4 encoding types: This document should be
+     implemented as a data structure.
+
+     This conversion table is copied from encoding.c, please take a
+     look the latest support in encoding.c
    */
 
-  int32 lm_write_advance(lm_t *model, /** In: the pointer LM we want to output */
+  int32 lm_write_advance(lm_t *model, /**< In: the pointer LM we want to output */
 		      const char *outputfile, /**< In: the output file name */
 		      const char *filename, /**< In: the LM file name  */
-		      char *fmt,   /**< In: LM file format, it is now either "TXT" or "DMP" */
+		      char *fmt,   /**< In: LM file format, it is now either "TXT", "DMP", "FST" */
 		      char* inputenc, /**< In: Input encoding type */
 		      char* outputenc /**< Out: Output encoding type */
 		      );
 
-  /* RAH, added code for freeing allocated memory */
+  /* RAH, added code for freeing allocated memory 
+   */
+  /**
+     Deallocate the language model. 
+   */
   void lm_free (lm_t *lm /**< In: a LM structure */
 		);
 
+  /**
+     Add word list to the LM 
+     For each word in the file, call lm_add_wordlist. 
+     The file is assume to have a format like this:
+     <word1> 
+     <word2>
+     <word3>
+     <word4>
+     
+     If the lmwid2dictid mapping is not updated, or the dictionary
+     itself is not used in the context.  Just specify dict=NULL;
+     
+   */
+  int32 lm_add_wordlist(lm_t *lm, /**< In/Out: a modified LM structure */
+			dict_t *dict, /**< In: an initialized dictionary structure 
+					 Used to update 
+				       */
+			char* filename /**< In: a file that contains a
+					  list of word one wants to
+					  add*/
+			);
 
+  /**
+     Add a word to the LM 
+
+     look up the dictionary and see whether it exists in the dictionary
+     Looks alike with wid.c's logic at this point.  
+
+     (Incomplete!) Not fully tested in the situation for on-line
+     recognition.
+     
+     We also avoid the addition of classes at this point because that
+     could complicated things quite a lot. 
+   */
+  int32 lm_add_word_to_ug(lm_t *lm, /**< In/Out: a modified LM structure */
+			  dict_t *dict, /**< In: an initialized dictionary structure 
+					   Used to update lmwid2dictid mapping. 
+					*/
+			  char* newword /**<In: a pointer of a new word */
+			  );
   /** 
       Get class ID given a LM. 
    */
@@ -873,6 +1097,17 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 			char *name   /**< In: The name of the class */
 			);
 
+  /**
+   * Explicity convert structure from 16bit -> 32bit or 32bit to 16bit. 
+   */
+  void lm_convert_structure(lm_t *model, /**< In: LM file being used */
+			     int32 is32bits 
+			     );	
+
+  /**
+     Check whether the model is operating at 32 bits 
+   */
+  int32 lm_is32bits(lm_t* model);
 
   /**
      Write of UG structure
@@ -888,15 +1123,93 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
 		);
 
   /**
+     Write of BG (32bits) structure
+  */
+  void bg32_write(FILE* fp, /**< A file pointer */
+		  bg32_t* bg  /**< A pointer of the bg32_t structure */
+		  );
+
+  /**
      Write of TG structure
   */
   
   void tg_write(FILE* fp, /**< A file pointer */
 		tg_t* tg  /**< A pointer of the tg_t structure */
 		);
+
+  /**
+     Write of TG (32bits) structure
+  */
   
-  int32 find_bg (bg_t *bg, int32 n, s3lmwid_t w);
-  int32 find_tg (tg_t *tg, int32 n, s3lmwid_t w);
+  void tg32_write(FILE* fp, /**< A file pointer */
+		  tg32_t* tg  /**< A pointer of the tg32_t structure */
+		  );
+
+
+  /**
+     Convert the 16 bit bigram structure to 32 bit
+   */
+  void copy_bg_to_bg32(lm_t *lm /**< LM */
+			);
+
+  /**
+     Convert the 32 bit bigram structure to 16 bit
+   */
+
+  void copy_bg32_to_bg(lm_t *lm /**< LM */
+			);
+
+  /**
+     Convert the 16 bit trigram structure to 32 bit
+   */
+  void copy_tg_to_tg32(lm_t *lm /**< LM */
+			);
+
+  /**
+     Convert the 32 bit trigram structure to 16 bit
+   */
+
+  void copy_tg32_to_tg(lm_t *lm /**< LM */
+			);
+
+  /**
+     Swap 16 bits bigram
+   */
+  void swap_bg(bg_t* bg);
+  
+
+  /**
+     Swap 32 bits bigram
+   */
+  void swap_bg32(bg32_t* bg);
+
+  /**
+     Swap 16 bits trigram
+   */
+  void swap_tg(tg_t* tg);
+  
+
+  /**
+     Swap 32 bits trigram
+   */
+  void swap_tg32(tg32_t* tg);
+
+  int32 find_bg (bg_t *bg,  /**< In: The bigram */
+		 int32 n, 
+		 s3lmwid32_t w
+		 );
+
+  int32 find_bg32 (bg32_t *bg,  /**< In: The bigram */
+		   int32 n, 
+		   s3lmwid32_t w
+		   );
+
+
+  int32 find_tg (tg_t *tg, /**< In: The trigram */
+		 int32 n, s3lmwid32_t w);
+
+  int32 find_tg32 (tg32_t *tg, /**< In: The trigram */
+		   int32 n, s3lmwid32_t w);
   
 /* Macro versions of access functions */
 #define LM_TGPROB(lm,tgptr)	((lm)->tgprob[(tgptr)->probid].l)
