@@ -57,9 +57,9 @@
 #define MAX_STRLEN 100
 
 int read_ngrams(char *ngrams_file, char **ngrams, 
-                s3lmwid_t *wid[], int32 nwords[], int max_lines, lm_t *lm);
-int ngram2wid(char *word, int length, s3lmwid_t *w, lm_t *lm);
-int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm);
+                s3lmwid32_t *wid[], int32 nwords[], int max_lines, lm_t *lm);
+int ngram2wid(char *word, int length, s3lmwid32_t *w, lm_t *lm);
+int score_ngram(s3lmwid32_t *wid, int nwd, lm_t *lm);
 
 
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
     lm_t *lm;
 
-    s3lmwid_t *wid[MAX_NGRAMS];
+    s3lmwid32_t *wid[MAX_NGRAMS];
 
 
     if (argc < 3) {
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
  */
 int read_ngrams(char *ngrams_file, 
                 char **ngrams, 
-                s3lmwid_t *wid[], 
+                s3lmwid32_t *wid[], 
                 int32 nwords[],
                 int max_lines, 
                 lm_t *lm)
@@ -169,7 +169,7 @@ int read_ngrams(char *ngrams_file,
             line_read[length-1] = '\0';
             ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
             strncpy(ngrams[n], line_read, length-1);
-            wid[n] = (s3lmwid_t *) ckd_calloc(3, sizeof(s3lmwid_t));
+            wid[n] = (s3lmwid32_t *) ckd_calloc(3, sizeof(s3lmwid32_t));
             nwords[n] = ngram2wid(line_read, length, wid[n], lm);
             n++;
         } else {
@@ -195,7 +195,7 @@ int read_ngrams(char *ngrams_file,
  * the number of words in the ngram string, or 0 if the string contains an
  * unknown word
  */
-int ngram2wid(char *ngram, int length, s3lmwid_t *w, lm_t *lm)
+int ngram2wid(char *ngram, int length, s3lmwid32_t *w, lm_t *lm)
 {
     char *word[1024];
     int nwd;
@@ -206,7 +206,7 @@ int ngram2wid(char *ngram, int length, s3lmwid_t *w, lm_t *lm)
     
     for (i = 0; i < nwd; i++) {
 	w[i] = lm_wid (lm, word[i]);
-	if (NOT_S3LMWID(w[i])) {
+	if (NOT_LMWID(lm,w[i])) {
 	    E_ERROR("Unknown word: %s\n", word[i]);
 	    return 0;
 	}
@@ -226,7 +226,7 @@ int ngram2wid(char *ngram, int length, s3lmwid_t *w, lm_t *lm)
  *
  * return: the language model score of the given sequence of words
  */
-int score_ngram(s3lmwid_t *wid, int nwd, lm_t *lm)
+int score_ngram(s3lmwid32_t *wid, int nwd, lm_t *lm)
 {
     int32 score;
     

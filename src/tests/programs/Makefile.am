@@ -5,12 +5,15 @@ LIVEDECSRCS = parse_args_file.c \
 		live_dump.c \
 		metrics.c 
 
+
 LIVEDECOBJS = $(LIVEDECSRCS:.c=.o) 
 
 
-noinst_PROGRAMS = lm_test \
-		  dumpfrontend \
-		  analysis 
+noinst_PROGRAMS = dumpfrontend \
+		  analysis \
+		  lm_test
+
+bin_PROGRAMS = lm_addwords
 
 noinst_HEADERS = cmd_ln_args.h \
 	fe_dump.h \
@@ -29,13 +32,26 @@ analysis_SOURCES = analysis.c \
 lm_test_SOURCES = lm_test.c \
 			${LIVEDECSRCS}
 
+lm_addwords_SOURCES = lm_addwords.c \
+			${LIVEDECSRCS}			
+
 #lm_utt_test_SOURCES = lm_utt_test.c \
 #			${LIVEDECSRCS}
 
 
-INCLUDES = -I$(top_srcdir)/include \
+INCLUDES = -I$(top_srcdir) \
+	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/src/libs3decoder/libAPI \
+	-I$(top_srcdir)/src/libs3decoder/libam \
+	-I$(top_srcdir)/src/libs3decoder/libcep_feat \
+	-I$(top_srcdir)/src/libs3decoder/libcommon \
+	-I$(top_srcdir)/src/libs3decoder/libdict \
+	-I$(top_srcdir)/src/libs3decoder/libep \
+	-I$(top_srcdir)/src/libs3decoder/liblm \
+	-I$(top_srcdir)/src/libs3decoder/libsearch \
+	-I$(top_srcdir)/src/libutil \
+       -I$(top_srcdir)/src/libs3audio \
        -I$(top_srcdir)/src/test/programs/ \
-       -I$(top_srcdir)/src/libs3decoder/libcep_feat/ \
        -I$(top_builddir)/include
 
 
