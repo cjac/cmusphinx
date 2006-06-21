@@ -44,10 +44,7 @@
  * **********************************************
  * 
  * HISTORY
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
+ * $Log: s3types.h,v $
  * Revision 1.16  2006/02/22 19:57:57  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Increase the size of MAX_S3CIPID from 127 to 32767.  This will make Chinese Mandarin setup works.
  *
@@ -139,6 +136,23 @@ typedef uint16		s3lmwid_t;	/** LM word id (uint16 for conserving space) */
 #define IS_S3LMWID(w)	((w)!=BAD_S3LMWID)
 #define MAX_S3LMWID	((uint32)0xfffe)
 #define BAD_LMCLASSID   (-1)
+
+typedef uint32		s3lmwid32_t;	/** LM word id (uint16 for conserving space) */
+#define BAD_S3LMWID32	((s3lmwid32_t) 0x0fffffff)
+#define NOT_S3LMWID32(w)  ((w)==BAD_S3LMWID32)
+#define IS_S3LMWID32(w)	((w)!=BAD_S3LMWID32)
+#define MAX_S3LMWID32	((uint32)0xfffffffe)
+
+  /* Generic macro that is applicable to both uint16 and uint32
+     Careful with efficiency issue. 
+
+     Also, please don't use BAD_S3LATID(l);
+   */
+
+#define BAD_LMWID(lm)      (lm->is32bits? BAD_S3LMWID32 : BAD_S3LMWID)
+#define NOT_LMWID(lm,w)    (lm->is32bits? NOT_S3LMWID32(w): NOT_S3LMWID(w))
+#define IS_LMWID(lm,w)     (lm->is32bits? IS_S3LMWID32(w): IS_S3LMWID(w))
+#define MAX_LMWID(lm)      (lm->is32bits? MAX_S3LMWID32: MAX_S3LMWID)
 
 typedef int32		s3latid_t;	/** Lattice entry id */
 #define BAD_S3LATID	((s3latid_t) -1)
