@@ -42,10 +42,7 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
+ * $Log: fsg_search.h,v $
  * Revision 1.2  2006/02/23 05:12:43  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Adaptation of Sphinx 2's FSG search into Sphinx 3
  *
@@ -157,6 +154,7 @@ typedef struct fsg_search_s {
   int32 bpidx_start;		/* First history entry index this frame */
   
   srch_hyp_t *hyp;		/* Search hypothesis */
+  srch_hyp_t *filt_hyp;         /* Filtered hypothesis */
   int32 ascr, lscr;		/* Total acoustic and lm score for utt */
   
   int32 n_hmm_eval;		/* Total HMMs evaluated this utt */
@@ -178,10 +176,12 @@ typedef struct fsg_search_s {
   mdef_t *mdef;
   tmat_t *tmat; 
   ascr_t *am_score_pool;
-
   int32 *senscr; /** The senone score */
   char* uttid;  /**< Utterance ID */
-  srch_hyp_t *filt_hyp; 
+  int32 *senscale; /** The senone scale */
+
+  FILE* matchfp; 
+  FILE* matchsegfp; 
 } fsg_search_t;
 
 
