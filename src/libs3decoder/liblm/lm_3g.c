@@ -44,10 +44,10 @@
  * **********************************************
  * 
  * HISTORY
- * $Log$
- * Revision 1.3  2006/03/01  20:05:09  arthchan2003
+ * $Log: lm_3g.c,v $
+ * Revision 1.3  2006/03/01 20:05:09  arthchan2003
  * Pretty format the lm dumping and make numbers in 4 decimals only.
- * 
+ *
  * Revision 1.2  2006/02/23 04:08:36  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH
  * 1, Added lm_3g.c - a TXT-based LM routines.
@@ -74,10 +74,32 @@
 #include "logs3.h"
 #include "wid.h"
 
-#define MAX_SORTED_ENTRIES	65534
+/*#define LEGACY_MAX_SORTED_ENTRIES	65534*/
+
+/* 
+   20060321 ARCHAN: Why MAX_SORTED_ENTRIES = 200000?
+
+   Generally, MAX_SORTED_ENTRIES relates the quantization schemes of
+   the log probabilities values and back-off weights.  In the
+   Sphinx/CMUCamLMtk case.  This is usually represented as
+   -x.xxxx. That is to say maximally 100000 could be involved.  It is
+   also possible that value such as -99.0 and other special values is
+   involved.   Therefore, doubling the size is reasonable measure. 
+
+   When we use better precision, say 5 decimal places, we should
+   revise the validity of the above schemes. 
+ */
+#define MAX_SORTED_ENTRIES 200000 
+#define QUANTIZATION_MULTIPLIER 10000
+#define QUANTIZATION_DIVISOR 0.0001
+
+
 #define FIRST_BG(m,u)		((m)->ug[u].firstbg)
 #define TSEG_BASE(m,b)		((m)->tg_segbase[(b)>>LOG2_BG_SEG_SZ])
+
 #define FIRST_TG(m,b)		(TSEG_BASE((m),(b))+((m)->bg[b].firsttg))
+#define FIRST_TG32(m,b)		(TSEG_BASE((m),(b))+((m)->bg32[b].firsttg))
+
 
 static int32 wstr2wid (lm_t *model, /**< an LM */
 		       char *w      /**< a pre-allocated word string */
@@ -94,7 +116,7 @@ static int32 wstr2wid (lm_t *model, /**< an LM */
  * Initialize sorted list with the 0-th entry = MIN_PROB_F, which may be needed
  * to replace spurious values in the Darpa LM file.
  */
-static void init_sorted_list (sorted_list_t *l /**< a sorted list */
+static void init_sorted_list (sorted_list_t *l/**< a sorted list */
 			      )
 {
     l->list =
@@ -134,8 +156,10 @@ static int32 sorted_id (sorted_list_t *l, float *val)
 	    return (i);
 	if (*val < l->list[i].val.f) {
 	    if (l->list[i].lower == 0) {
-		if (l->free >= MAX_SORTED_ENTRIES)
-		    E_INFO("sorted list overflow\n");
+
+	      if (l->free >= MAX_SORTED_ENTRIES)
+		E_INFO("sorted list overflow\n");
+
 		l->list[i].lower = l->free;
 		(l->free)++;
 		i = l->list[i].lower;
@@ -145,8 +169,10 @@ static int32 sorted_id (sorted_list_t *l, float *val)
 		i = l->list[i].lower;
 	} else {
 	    if (l->list[i].higher == 0) {
-		if (l->free >= MAX_SORTED_ENTRIES)
-		    E_INFO("sorted list overflow\n");
+
+	      if (l->free >= MAX_SORTED_ENTRIES)
+		E_INFO("sorted list overflow\n");
+
 		l->list[i].higher = l->free;
 		(l->free)++;
 		i = l->list[i].higher;
@@ -230,21 +256,32 @@ static lm_t * NewModel (int32 n_ug, int32 n_bg, int32 n_tg)
 
     model = (lm_t *) ckd_calloc (1, sizeof (lm_t));
 
+    lm_null_struct(model);
     /*
      * Allocate one extra unigram and bigram entry: sentinels to terminate
      * followers (bigrams and trigrams, respectively) of previous entry.
      */
     model->ug	= NewUnigramTable (n_ug+1);
-    model->bg	= (bg_t *) ckd_calloc (n_bg+1, sizeof (bg_t));
-    if (n_tg > 0)
-      model->tg	= (tg_t *) ckd_calloc (n_tg+1, sizeof (tg_t));
+    
+    model->is32bits= n_ug > LM_LEGACY_CONSTANT;
+
+    if(model->is32bits){
+      model->bg32 = (bg32_t *) ckd_calloc (n_bg+1, sizeof (bg32_t));
+      if (n_tg > 0)
+	model->tg32 = (tg32_t *) ckd_calloc (n_tg+1, sizeof (tg32_t));
+      
+    }else{
+      model->bg	= (bg_t *) ckd_calloc (n_bg+1, sizeof (bg_t));
+      if (n_tg > 0)
+	model->tg = (tg_t *) ckd_calloc (n_tg+1, sizeof (tg_t));
+    }
 
     if (n_tg > 0) {
 	model->tg_segbase = (int32 *) ckd_calloc ((n_bg+1)/BG_SEG_SZ+1, sizeof (int32));
-#if 0
+
 	E_INFO("%8d = tseg_base entries allocated\n",
 	       (n_bg+1)/BG_SEG_SZ+1);
-#endif
+
     }
 
     /*This part will not be compiled */
@@ -294,7 +331,6 @@ static void ReadUnigrams (FILE *fp,
 	hash_enter (model->HT, model->wordstr[wcnt], wcnt);
 	model->ug[wcnt].prob.f = p1;
 	model->ug[wcnt].bowt.f = bo_wt;
-
 	model->ug[wcnt].dictwid = wcnt;
 	wcnt++;
     }
@@ -305,7 +341,7 @@ static void ReadUnigrams (FILE *fp,
 	model->n_ug = wcnt;
     }
 
-    startwid = endwid = BAD_S3LMWID;
+    startwid = endwid = BAD_LMWID(model);
 
     for(i=0;i< model->n_ug ;i++){
       if (strcmp (model->wordstr[i], S3_START_WORD) == 0)
@@ -315,13 +351,13 @@ static void ReadUnigrams (FILE *fp,
     }
 
     /* Force ugprob(<s>) = MIN_PROB_F */
-    if (IS_S3LMWID(startwid)) {
+    if (IS_LMWID(model,startwid)) {
 	model->ug[startwid].prob.f = MIN_PROB_F;
 	model->startlwid = startwid;
     }
     
     /* Force bowt(</s>) = MIN_PROB_F */
-    if (IS_S3LMWID(endwid)) {
+    if (IS_LMWID(model,endwid)) {
 	model->ug[endwid].bowt.f = MIN_PROB_F;
 	model->finishlwid = endwid;
     }
@@ -337,17 +373,22 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
     char string[1024], word1[256], word2[256];
     int32 w1, w2, prev_w1, bgcount, p;
     bg_t *bgptr;
+    bg32_t *bgptr32;
     float p2, bo_wt;
     int32 n_fld, n;
+    int32 is32bits;
     
     E_INFO ("Reading bigrams\n");
     
     bgcount = 0;
     bgptr = model->bg;
+    bgptr32 = model->bg32;
+
     prev_w1 = -1;
     n_fld = (model->n_tg > 0) ? 4 : 3;
 
     bo_wt = 0.0;
+    is32bits=model->is32bits;
     while (fgets (string, sizeof(string), fp) != NULL) {
 	if (! idfmt)
 	    n = sscanf (string, "%f %s %s %f", &p2, word1, word2, &bo_wt);
@@ -358,7 +399,7 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 		break;
 	    continue;
 	}
-
+ 
 	if (! idfmt) {
 	    if ((w1 = wstr2wid (model, word1)) == NO_WORD)
 		E_FATAL("Unknown word: %s\n",word1);
@@ -370,18 +411,26 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p2*10000;
-	p2 = p*0.0001;
-	p = bo_wt*10000;
-	bo_wt = p*0.0001;
+	p = p2*QUANTIZATION_MULTIPLIER;
+	p2 = p*QUANTIZATION_DIVISOR;
+	p = bo_wt*QUANTIZATION_MULTIPLIER;
+	bo_wt = p*QUANTIZATION_DIVISOR;
 
 	if (bgcount >= model->n_bg)
 	  E_INFO("Too many bigrams\n");
-	
-	bgptr->wid = w2;
-	bgptr->probid = sorted_id (&(model->sorted_prob2), &p2);
-	if (model->n_tg > 0)
+
+	if(is32bits){
+	  bgptr32->wid = w2;
+	  bgptr32->probid = sorted_id (&(model->sorted_prob2), &p2);
+	  if (model->n_tg > 0)
+	    bgptr32->bowtid = sorted_id (&(model->sorted_bowt2), &bo_wt);
+
+	}else{
+	  bgptr->wid = w2;
+	  bgptr->probid = sorted_id (&(model->sorted_prob2), &p2);
+	  if (model->n_tg > 0)
 	    bgptr->bowtid = sorted_id (&(model->sorted_bowt2), &bo_wt);
+	}
 
 	if (w1 != prev_w1) {
 	    if (w1 < prev_w1)
@@ -393,7 +442,11 @@ static void ReadBigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	bgcount++;
-	bgptr++;
+
+	if(is32bits)
+	  bgptr32++;
+	else
+	  bgptr++;
 
 	if ((bgcount & 0x0000ffff) == 0) {
 	    E_INFO_NOFN ("Processing bigram .\n");
@@ -415,13 +468,18 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
     int32 i, n, w1, w2, w3, prev_w1, prev_w2, tgcount, prev_bg, bg, endbg, p;
     int32 seg, prev_seg, prev_seg_lastbg;
     tg_t *tgptr;
+    tg32_t *tgptr32;
     bg_t *bgptr;
+    bg32_t *bgptr32;
     float p3;
+    int32 is32bits;
     
     E_INFO ("Reading trigrams\n");
     
+    is32bits=model->is32bits;
     tgcount = 0;
     tgptr = model->tg;
+    tgptr32 = model->tg32;
     prev_w1 = -1;
     prev_w2 = -1;
     prev_bg = -1;
@@ -452,14 +510,20 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	/* HACK!! to quantize probs to 4 decimal digits */
-	p = p3*10000;
-	p3 = p*0.0001;
+	p = p3*QUANTIZATION_MULTIPLIER;
+	p3 = p*QUANTIZATION_DIVISOR;
 
 	if (tgcount >= model->n_tg)
 	    E_INFO("Too many trigrams\n");
-	
-	tgptr->wid = w3;
-	tgptr->probid = sorted_id (&model->sorted_prob3, &p3);
+
+	if(is32bits){
+	  tgptr32->wid = w3;
+	  tgptr32->probid = sorted_id (&model->sorted_prob3, &p3);
+
+	}else{
+	  tgptr->wid = w3;
+	  tgptr->probid = sorted_id (&model->sorted_prob3, &p3);
+	}
 
 	if ((w1 != prev_w1) || (w2 != prev_w2)) {
 	    /* Trigram for a new bigram; update tg info for all previous bigrams */
@@ -469,8 +533,15 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	    
 	    bg = (w1 != prev_w1) ? model->ug[w1].firstbg : prev_bg+1;
 	    endbg = model->ug[w1+1].firstbg;
-	    bgptr = model->bg + bg;
-	    for (; (bg < endbg) && (bgptr->wid != w2); bg++, bgptr++);
+
+	    if(is32bits){	      
+	      bgptr32 = model->bg32 + bg;
+	      for (; (bg < endbg) && (bgptr32->wid != w2); bg++, bgptr32++);
+	    }else{
+	      bgptr = model->bg + bg;
+	      for (; (bg < endbg) && (bgptr->wid != w2); bg++, bgptr++);
+	    }
+	    
 	    if (bg >= endbg)
 	      E_FATAL("Missing bigram for trigram: %s",string);
 
@@ -485,27 +556,48 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 
 		if (prev_seg >= 0) {
 		    tgoff = tgcount - model->tg_segbase[prev_seg];
-		    if (tgoff > 65535)
-		      E_FATAL( "Offset from tseg_base > 65535\n");
+
+		    if(!is32bits){
+		      if (tgoff > LM_LEGACY_CONSTANT)
+			E_FATAL( "Offset from tseg_base > %d\n", LM_LEGACY_CONSTANT);
+		    }
 		}
 		
 		prev_seg_lastbg = ((prev_seg+1) << LOG2_BG_SEG_SZ) - 1;
-		bgptr = model->bg + prev_bg;
-		for (++prev_bg, ++bgptr; prev_bg <= prev_seg_lastbg; prev_bg++, bgptr++)
-		    bgptr->firsttg = tgoff;
-		
-		for (; prev_bg <= bg; prev_bg++, bgptr++)
+
+		if(is32bits){
+		  bgptr32 = model->bg32 + prev_bg;
+		  for (++prev_bg, ++bgptr32; prev_bg <= prev_seg_lastbg; prev_bg++, bgptr32++)
+		    bgptr32->firsttg = tgoff;		
+		  for (; prev_bg <= bg; prev_bg++, bgptr32++)
+		    bgptr32->firsttg = 0;
+		}else{
+		  bgptr = model->bg + prev_bg;
+		  for (++prev_bg, ++bgptr; prev_bg <= prev_seg_lastbg; prev_bg++, bgptr++)
+		    bgptr->firsttg = tgoff;		
+		  for (; prev_bg <= bg; prev_bg++, bgptr++)
 		    bgptr->firsttg = 0;
+		}
+
 	    } else {
 		int32 tgoff;
 
 		tgoff = tgcount - model->tg_segbase[prev_seg];
-		if (tgoff > 65535)
-		  E_FATAL("Offset from tseg_base > 65535\n");
-		
-		bgptr = model->bg + prev_bg;
-		for (++prev_bg, ++bgptr; prev_bg <= bg; prev_bg++, bgptr++)
+
+		if(!is32bits){
+		  if (tgoff > LM_LEGACY_CONSTANT)
+		    E_FATAL("Offset from tseg_base > %d\n",LM_LEGACY_CONSTANT);
+		}
+
+		if(is32bits){
+		  bgptr32 = model->bg32 + prev_bg;
+		  for (++prev_bg, ++bgptr32; prev_bg <= bg; prev_bg++, bgptr32++)
+		    bgptr32->firsttg = tgoff;
+		}else{
+		  bgptr = model->bg + prev_bg;
+		  for (++prev_bg, ++bgptr; prev_bg <= bg; prev_bg++, bgptr++)
 		    bgptr->firsttg = tgoff;
+		}
 	    }
 	    
 	    prev_w1 = w1;
@@ -515,7 +607,10 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
 	}
 	
 	tgcount++;
-	tgptr++;
+	if(is32bits){
+	  tgptr32++;
+	}else
+	  tgptr++;
 
 	if ((tgcount & 0x0000ffff) == 0) {
 	    E_INFO_NOFN ("Processing trigram .\n");
@@ -527,10 +622,19 @@ static void ReadTrigrams (FILE *fp, lm_t *model, int32 idfmt)
     for (prev_bg++; prev_bg <= model->n_bg; prev_bg++) {
 	if ((prev_bg & (BG_SEG_SZ-1)) == 0)
 	    model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ] = tgcount;
-	if ((tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ]) > 65535)
-	    E_FATAL("Offset from tseg_base > 65535\n");
-	model->bg[prev_bg].firsttg =
+
+	if(!is32bits){
+	  if ((tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ]) > LM_LEGACY_CONSTANT)
+	    E_FATAL("Offset from tseg_base > %d\n",LM_LEGACY_CONSTANT);
+	}
+
+	if(is32bits){
+	  model->bg32[prev_bg].firsttg =
 	    tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ];
+	}else{
+	  model->bg[prev_bg].firsttg =
+	    tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ];
+	}
     }
 }
 
@@ -546,6 +650,7 @@ lm_t *lm_read_txt(const char *filename,  /**< The file name*/
   int32 n_bigram;
   int32 n_trigram;
   int32 idfmt=0;
+  int32 is32bit;
 
   E_INFO ("Reading LM file %s (name \"%s\")\n",filename);
 
@@ -555,23 +660,26 @@ lm_t *lm_read_txt(const char *filename,  /**< The file name*/
     E_FATAL("failed to read filename for LM\n");
   }
 
-
   ReadNgramCounts (fp, &n_unigram, &n_bigram, &n_trigram);
 
 
   E_INFO ("ngrams 1=%d, 2=%d, 3=%d\n",n_unigram, n_bigram, n_trigram); 
   /* HACK! This should be something provided by the dictionary What is dict_size? */
+
   model=NewModel(n_unigram,n_bigram,n_trigram);
   model->n_ng=1;
 
-  assert(lminmemory==1);
   model->isLM_IN_MEMORY = lminmemory;
+  model->version=LMTXT_VERSION;
+  is32bit=lm_is32bits(model);
+
 
 
   if(model->n_bg>0){
     model->n_ng=2;
     model->membg = (membg_t *) ckd_calloc (model->n_ug, sizeof(membg_t));
   }
+
   if(model->n_tg>0){
     model->n_ng=3;
     model->tginfo = (tginfo_t **) ckd_calloc (model->n_ug, sizeof(tginfo_t *));
@@ -597,7 +705,7 @@ lm_t *lm_read_txt(const char *filename,  /**< The file name*/
   model->bgprob  = vals_in_sorted_list (&(model->sorted_prob2));
   free_sorted_list (&(model->sorted_prob2));
 
-  E_INFO("\n%8d = #bigrams created\n", model->n_bg);
+  E_INFO("%8d = #bigrams created\n", model->n_bg);
   E_INFO("%8d = #prob2 entries\n", model->n_bgprob);
 
   if (model->n_tg > 0) {
@@ -611,10 +719,11 @@ lm_t *lm_read_txt(const char *filename,  /**< The file name*/
     
     ReadTrigrams (fp, model, idfmt);
     
-    model->n_tg = FIRST_TG(model,model->n_bg);
+   
+    model->n_tg = is32bit? FIRST_TG32(model, model->n_bg): FIRST_TG(model,model->n_bg);
     model->n_tgprob = model->sorted_prob3.free;
     model->tgprob  = vals_in_sorted_list (&(model->sorted_prob3));
-    E_INFO("\n%8d = #trigrams created\n", model->n_tg);
+    E_INFO("%8d = #trigrams created\n", model->n_tg);
     E_INFO("%8d = #prob3 entries\n", model->n_tgprob);
     
     free_sorted_list (&model->sorted_prob3);
@@ -732,12 +841,17 @@ static void lm_write_arpa_bigram(lm_t *lmp,
 {
   int32 i,j;
   int32 n,b;
-  s3lmwid_t lw1, lw2;
-  
-  /*  s3wid_t w1;*/
-  uint16 probid;
-  uint16 bowtid;
+  s3lmwid32_t lw1, lw2;
+  int32 is32bit;
+  uint32 probid;
+  uint32 bowtid;
+
   fprintf(fp,"\\2-grams:\n");
+
+  /* Decide whether we are working on 32bits 
+     either lmp->bg is NULL or number of ug need more than 16 bits to represent.
+   */
+  is32bit=lm_is32bits(lmp);
 
   for(i=0;i<=lmp->n_ug-1;i++){
     b=lmp->ug[i].firstbg;
@@ -745,9 +859,18 @@ static void lm_write_arpa_bigram(lm_t *lmp,
     
     for(j=b;j<n;j++){
       lw1=i;
-      lw2=lmp->bg[j].wid;
-      probid=lmp->bg[j].probid;
-      bowtid=lmp->bg[j].bowtid;
+      if(is32bit){
+	assert(lmp->bg32!=NULL);
+	lw2=lmp->bg32[j].wid;
+	probid=lmp->bg32[j].probid;
+	bowtid=lmp->bg32[j].bowtid;
+
+      }else{
+	assert(lmp->bg!=NULL);
+	lw2=(s3lmwid32_t)lmp->bg[j].wid;
+	probid=(int32)lmp->bg[j].probid;
+	bowtid=(int32)lmp->bg[j].bowtid;
+      }
 
       fprintf(fp,"%.4f ",lmp->bgprob[probid].f);
       fprintf(fp,"%s",lmp->wordstr[lw1]);
@@ -761,14 +884,6 @@ static void lm_write_arpa_bigram(lm_t *lmp,
       else
 	fprintf(fp,"\n");
 
-      /*
-	if (lmp->tgbowt)
-	fprintf(fp,"%.4f %s %s %.4f\n",lmp->bgprob[probid].f,
-	lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->tgbowt[bowtid].f);
-	else
-	fprintf(fp,"%.4f %s %s\n",lmp->bgprob[probid].f,
-		lmp->wordstr[lw1],lmp->wordstr[lw2]);
-      */
     }
   }
 
@@ -786,8 +901,11 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
   int32 i,j,k;
   int32 b_bg,n_bg;
   int32 b_tg,n_tg;
-  s3lmwid_t lw1,lw2,lw3;
+  s3lmwid32_t lw1,lw2,lw3;
   uint32 probid;
+  int32 is32bit;
+
+  is32bit=lm_is32bits(lmp);
 
   fprintf(fp,"\\3-grams:\n");
   for(i=0;i<=lmp->n_ug-1;i++){
@@ -796,14 +914,32 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
 
     for(j=b_bg;j<= n_bg-1 ; j++){
 
-      b_tg=lmp->tg_segbase[j >> lmp->log_bg_seg_sz] + lmp->bg[j].firsttg;
-      n_tg=lmp->tg_segbase[(j+1) >> lmp->log_bg_seg_sz] + lmp->bg[j+1].firsttg;
+      if(is32bit){
+	assert(lmp->bg32);
+	b_tg=lmp->tg_segbase[j >> lmp->log_bg_seg_sz] + lmp->bg32[j].firsttg;
+	n_tg=lmp->tg_segbase[(j+1) >> lmp->log_bg_seg_sz] + lmp->bg32[j+1].firsttg;
+      }else{
+	assert(lmp->bg);
+	b_tg=lmp->tg_segbase[j >> lmp->log_bg_seg_sz] + lmp->bg[j].firsttg;
+	n_tg=lmp->tg_segbase[(j+1) >> lmp->log_bg_seg_sz] + lmp->bg[j+1].firsttg;
+      }
 
       for(k=b_tg;k<n_tg;k++){
-	lw1=i;
-	lw2=lmp->bg[j].wid;
-	lw3=lmp->tg[k].wid;
-	probid=lmp->tg[k].probid;
+
+	if(is32bit){
+	  assert(lmp->bg32 && lmp->tg32);
+	  lw1=i;
+	  lw2=lmp->bg32[j].wid;
+	  lw3=lmp->tg32[k].wid;
+	  probid=lmp->tg32[k].probid;
+	}else{
+	  assert(lmp->bg && lmp->tg);
+	  lw1=i;
+	  lw2=(s3lmwid32_t)lmp->bg[j].wid;
+	  lw3=(s3lmwid32_t)lmp->tg[k].wid;
+	  probid=(uint32)lmp->tg[k].probid;
+	}
+
 	fprintf(fp,"%.4f ",lmp->tgprob[probid].f);
 	fprintf(fp,"%s",lmp->wordstr[lw1]);
 	fprintf(fp," ");
@@ -812,9 +948,6 @@ static void lm_write_arpa_trigram(lm_t *lmp, /**< The pointer of LM */
 	fprintf(fp,"%s",lmp->wordstr[lw3]);
 	fprintf(fp,"\n");
 
-	/*
-	  fprintf(fp,"%.4f %s %s %s\n",lmp->tgprob[probid].f,lmp->wordstr[lw1],lmp->wordstr[lw2],lmp->wordstr[lw3]);
-	*/
       }
     }
   }
@@ -839,6 +972,7 @@ int32 lm_write_arpa_text(lm_t *lmp,
 			 )
 {
   FILE *fp;
+  int is32bit;
 
   E_INFO ("Dumping LM to %s\n", outputfn);
   if ((fp = fopen (outputfn, "w")) == NULL) {
@@ -846,9 +980,13 @@ int32 lm_write_arpa_text(lm_t *lmp,
     return LM_FAIL;
   }
 
+  is32bit=lm_is32bits(lmp);
   lm_write_arpa_header(lmp,fp);
   lm_write_arpa_count(lmp,fp);
   lm_write_arpa_unigram(lmp,fp);
+
+  lm_convert_structure(lmp,is32bit);	
+
   if(lmp->n_bg>0)
     lm_write_arpa_bigram(lmp,fp);
   if(lmp->n_tg>0)
