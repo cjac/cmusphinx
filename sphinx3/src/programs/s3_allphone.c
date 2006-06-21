@@ -45,10 +45,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.12  2006/02/24  16:42:21  arthchan2003
+ * $Log: s3_allphone.c,v $
+ * Revision 1.12  2006/02/24 16:42:21  arthchan2003
  * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
- * 
+ *
  * Revision 1.11  2006/02/24 04:47:46  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Used Dave's change in initialization.
  *
@@ -167,7 +167,7 @@ static history_t **frm_hist;	/** List of history nodes allocated in each frame *
 
 extern lm_t *lm;		/** Language model */
 
-static s3lmwid_t *ci2lmwid;	/** Mapping from CI-phone-id to LM-word-id */
+static s3lmwid32_t *ci2lmwid;	/** Mapping from CI-phone-id to LM-word-id */
 
 static mdef_t *mdef;		/** Model definition */
 static tmat_t *tmat;		/** Transition probability matrices */
@@ -895,7 +895,7 @@ int32 allphone_init ( mdef_t *_mdef, tmat_t *_tmat )
 	    s3cipid_t i;
 
 	    /* Build mapping of CI phones to LM word IDs. */
-	    ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid_t));
+	    ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid32_t));
 	    for (i = 0; i < mdef->n_ciphone; i++)
 		    ci2lmwid[i] = lm_wid(lm,
 					 (char *)mdef_ciphone_str(mdef, i));

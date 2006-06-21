@@ -21,7 +21,7 @@
  * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
  * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY 
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
  * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
@@ -47,13 +47,13 @@
  * 
  * Started by Arthur Chan at July 11, 2005
  * 
- * $Log$
- * Revision 1.4  2006/03/01  00:11:34  egouvea
+ * $Log: main_lm_convert.c,v $
+ * Revision 1.4  2006/03/01 00:11:34  egouvea
  * Added MS Visual C projects for each of the missing executables, fixed
  * compilation problems. Code now compiles in MS .NET, with several
  * warnings such as "signed/unsigned mismatch" and "conversion ...,
  * possible loss of data", which we normally ignore.
- * 
+ *
  * Revision 1.3  2006/02/24 13:43:43  arthchan2003
  * Temporarily removed allphone's compilation. used lm_read_advance in several cases.
  *
@@ -98,12 +98,15 @@ static arg_t arg[] = {
   { "-inputfmt",
     REQARG_STRING,
     "TXT",
-    "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format)"},
+    "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits)"},
   { "-outputfmt",
     ARG_STRING,
     "DMP",
-    "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format)"}, /* Also FST for AT&T file format 
-										      but the option is hidden because it is not well tested*/
+    "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits), DMP32 (Sphinx 3 efficient LM format 32 bits) "}, 
+  /* Also FST for AT&T file format but the option is hidden because it
+     is not well tested*/
+  /* Also DMP32 for LM which has 32 bits. This is yet another option I
+     hired because we want to hide the format issue from the user. */
   { "-inputenc",
     ARG_STRING,
     "iso8859-1",

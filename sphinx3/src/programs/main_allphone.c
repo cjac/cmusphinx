@@ -43,10 +43,10 @@
  * 
  * HISTORY
  * 
- * $Log$
- * Revision 1.19  2006/02/27  16:18:29  arthchan2003
+ * $Log: main_allphone.c,v $
+ * Revision 1.19  2006/02/27 16:18:29  arthchan2003
  * Fixed allphone, 1, matchfile and matchsegfile were not generated correctly.  Now is fixed.  2, also added back apply mllr at the beginning of an utterance.
- * 
+ *
  * Revision 1.18  2006/02/24 16:42:21  arthchan2003
  * Fixed allphone compilation.  At this point, the code doesn't pass make check yet.
  *
