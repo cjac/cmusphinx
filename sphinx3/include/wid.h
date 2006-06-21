@@ -44,10 +44,7 @@
  * **********************************************
  * 
  * HISTORY
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
+ * $Log: wid.h,v $
  * Revision 1.9  2005/06/21 21:05:49  arthchan2003
  * 1, Fixed doxygen documentation, 2, Added  keyword.
  *
@@ -80,14 +77,14 @@ extern "C" {
 
   /**
  * Create mappings between dictionary and LM word-IDs.  In short:
- *    - An array of s3lmwid_t entries (map[]) is created; where map[i] is the LM word-ID for
+ *    - An array of s3lmwid32_t entries (map[]) is created; where map[i] is the LM word-ID for
  * 	the dictionary word-ID i.  Mappings are created for the alternative pronunciations as
- * 	well.  For words not in the LM, the corresponding entries are BAD_S3LMWID.
+ * 	well.  For words not in the LM, the corresponding entries are BAD_LMWID(lm).
  *    - Similarly, lm->ug[u].dictwid is assigned the dictionary word id for unigram word u.
  * Return value: The map[] array built as described above.
  */
 
-s3lmwid_t *wid_dict_lm_map (dict_t *dict,	/**< In: Dictionary */
+s3lmwid32_t *wid_dict_lm_map (dict_t *dict,	/**< In: Dictionary */
 			    lm_t *lm,           /**< In/Out: LM; lm->ug[].dictwid values are
 						   updated. */
 			    int32 lw            /**< In: Language Weight */
