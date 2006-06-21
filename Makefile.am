@@ -54,6 +54,7 @@ CLEANFILES = chan3.mfc \
 	test-*.cepview \
 	test-*.log \
 	test-*.mfc \
+	test-*.log \
 	test-*.out \
 	test-*.seg \
 	test-*.tar \
@@ -63,6 +64,7 @@ CLEANFILES = chan3.mfc \
 	test-align-mllr.log \
 	allphone.match \
 	allphone.matchseg \
+	test-decode-mode2.match \
 	test-lm_convert.*
 
 etags:
@@ -90,6 +92,7 @@ test-full : \
 	test-decode-clm \
 	test-decode-mllr \
 	test-decode-s3cont \
+	test-decode-mode2 \
 	test-decode-s2semi \
 	test-decode-lts \
 	test-decode-mode3 \
@@ -135,6 +138,7 @@ test-decode \
 test-decode-simple \
 test-decode-noncomp \
 test-decode-lts \
+test-decode-mode2 \
 test-decode-mode3 \
 test-decode-mode3-mulmpx \
 test-decode-mode3-mpx \
