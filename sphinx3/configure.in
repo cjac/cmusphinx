@@ -203,6 +203,7 @@ src/tests/regression/test-decode.sh
 src/tests/regression/test-decode-simple.sh
 src/tests/regression/test-decode-noncomp.sh
 src/tests/regression/test-decode-lts.sh
+src/tests/regression/test-decode-mode2.sh
 src/tests/regression/test-decode-mode3.sh
 src/tests/regression/test-decode-mode3-mulmpx.sh
 src/tests/regression/test-decode-mode3-mpx.sh
@@ -259,6 +260,7 @@ chmod +x src/tests/regression/test-decode.sh
 chmod +x src/tests/regression/test-decode-simple.sh
 chmod +x src/tests/regression/test-decode-noncomp.sh
 chmod +x src/tests/regression/test-decode-lts.sh
+chmod +x src/tests/regression/test-decode-mode2.sh
 chmod +x src/tests/regression/test-decode-mode3.sh
 chmod +x src/tests/regression/test-decode-mode3-mulmpx.sh
 chmod +x src/tests/regression/test-decode-mode3-mpx.sh
