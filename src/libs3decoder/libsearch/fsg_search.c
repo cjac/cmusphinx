@@ -42,10 +42,10 @@
  * 
  * HISTORY
  *
- * $Log$
- * Revision 1.2  2006/02/23  05:10:18  arthchan2003
+ * $Log: fsg_search.c,v $
+ * Revision 1.2  2006/02/23 05:10:18  arthchan2003
  * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: Adaptation of Sphinx 2's FSG search into Sphinx 3
- * 
+ *
  * Revision 1.1.2.10  2006/01/16 18:20:46  arthchan2003
  * Remove junks in the code, change the reporting from printf to log_hypstr.
  *
@@ -254,7 +254,9 @@ fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
   search->isUsealtpron=cmd_ln_int32("-fsgusealtpron");
   search->isUseFiller=cmd_ln_int32("-fsgusefiller");
   search->isBacktrace=cmd_ln_int32("-backtrace");
-  
+  search->matchfp=s->matchfp;
+  search->matchsegfp=s->matchsegfp;
+  search->senscale=s->ascale;
 
   E_INFO("Number of state %d\n",search->n_state_hmm);
 
@@ -350,7 +352,7 @@ boolean fsg_search_del_fsg (fsg_search_t *search, word_fsg_t *fsg)
       }
       
       E_INFO("Deleting FSG '%s'\n", word_fsg_name(fsg));
-      
+
       word_fsg_free (fsg);
       
       return TRUE;
@@ -876,18 +878,20 @@ void fsg_search_utt_start (fsg_search_t *search)
 static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
 {
   /* Print backtrace */
-  log_hyp_detailed(fp, search->hyp,search->uttid,"FSG","fsg",NULL);
+  log_hyp_detailed(fp, search->hyp,search->uttid,"FSG","fsg",search->senscale);
 }
 
 
+#if 0
 /* Fill in hyp_str in search.c; filtering out fillers and null trans */
 static void fsg_search_hyp_filter(fsg_search_t *search)
 {
-  srch_hyp_t *hyp, *filt_hyp;
+  srch_hyp_t *hyp, *filt_hyp, *head;
   int32 i;
   int32 startwid, finishwid;
   int32 altpron;
   dict_t *dict;
+  
 
   dict=search->dict;
   filt_hyp = search->filt_hyp;
@@ -895,9 +899,9 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
   finishwid = dict_basewid(dict, dict_finishwid(dict));
   dict = search->dict;
   altpron = search->isUsealtpron;
-
   
   i = 0;
+  head = 0;
   for (hyp = search->hyp; hyp; hyp = hyp->next) {
     if ((hyp->id < 0) ||
 	(hyp->id == startwid) ||
@@ -905,21 +909,38 @@ static void fsg_search_hyp_filter(fsg_search_t *search)
       continue;
     
     /* Copy this hyp entry to filtered result */
-    filt_hyp[i] = *hyp;
+    filt_hyp = (srch_hyp_t*) ckd_calloc(1,sizeof(srch_hyp_t));
+
+    filt_hyp->word=hyp->word;
+    filt_hyp->id =hyp->id;
+    filt_hyp->type =hyp->type;
+    filt_hyp->sf =hyp->sf;
+    filt_hyp->ascr =hyp->ascr;
+    filt_hyp->lscr= hyp->lscr;
+    filt_hyp->pscr= hyp->pscr;
+    filt_hyp->cscr= hyp->cscr;
+    filt_hyp->fsg_state= hyp->fsg_state;
+    filt_hyp->next=head;
+    head = filt_hyp;
+    /*
+      filt_hyp[i] = *hyp;
+    */
     
     /* Replace specific word pronunciation ID with base ID */
-    if (! altpron)
-      filt_hyp[i].id = dict_basewid(dict, filt_hyp[i].id);
+    if (! altpron){
+      filt_hyp->id = dict_basewid(dict, filt_hyp->id);
+    }
     
     i++;
     if ((i+1) >= HYP_SZ)
       E_FATAL("Hyp array overflow; increase HYP_SZ in fsg_search.h\n");
   }
   
-  filt_hyp[i].id = -1;	/* Sentinel */
+  filt_hyp->id = -1;	/* Sentinel */
+  search->filt_hyp=filt_hyp;
 }
 
-
+#endif
 
 
 void fsg_search_history_backtrace (fsg_search_t *search,
@@ -955,9 +976,7 @@ void fsg_search_history_backtrace (fsg_search_t *search,
     if (check_fsg_final_state)      {
       E_WARN("Empty utterance: %s\n", search->uttid);
     }
-    
 
-    
     return;
   }
   
@@ -1075,8 +1094,13 @@ void fsg_search_utt_end (fsg_search_t *search)
 
   printf("\nFSGSRCH: ");
   log_hypstr(stdout, search->hyp,search->uttid,0,search->ascr+search->lscr,search->dict);
-
   fflush (stdout);
+
+  if(search->matchfp)
+    log_hypstr(search->matchfp, search->hyp,search->uttid,0,search->ascr+search->lscr,search->dict);
+
+  if(search->matchsegfp)
+    E_WARN("Option -hypsegfp is not implemented in FSG mode yet.\n");    
   
   n_hist = fsg_history_n_entries(search->history);
   fsg_history_reset (search->history);
