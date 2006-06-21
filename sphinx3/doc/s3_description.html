@@ -87,6 +87,7 @@
     latter on large vocabulary tasks.  The following is a brief
     summary of its main features and limitations:
     </P>
+
     <UL>
       <LI>5-10x real-time recognition time on large vocabulary tasks</LI>
       <LI>Limited to fully continuous acoustic models</LI>
@@ -95,17 +96,34 @@
       <LI>Batch-mode or live operation from pre-recorded speech</LI>
     </UL>
     
+    <P> After s3.5, s3.X decoder also starts to integrate both the
+    flat-lexicon decoder search, tree decoder search by wrapping them
+    under the same interface.  An implementation of finite-state
+    transducer search is also available under the same condition.  
+    </P> 
+
+    <P> All of the decoding routines could be accessible under the
+    executable <code> sphinx3_decode </code> through using the <code>
+    -op_mode </mode> options.  (-op_mode 2: FST, -op_mode 3: Flat
+    Lexicon Decoder, -op_mode: Tree Lexicon Decoder) The original
+    flat-lexicon decoder interface still exists for backward
+    compatibility purpose. 
+    </P> 
+
     <P>This package contains the following programs:
     </P>
     <OL>
-      <LI><code>s3decode</code>: The Sphinx-3 s3.2/s3.3/s3.X decoder processing cesptra files</li>
-      <LI><code>s3gausubvq</code>: Sub-vector clustered acoustic model building</LI>
-      <LI><code>s3livedecode</code>: The Sphinx-3 s3.X decoder in live mode</LI>
-      <LI><code>s3livepretend</code>: The Sphinx-3 s3.X decoder in batch mode</LI>      
-      <LI><code>s3align</code>: The Sphinx-3 aligner</LI>
-      <LI><code>s3allphone</code>: The Sphinx-3 phoneme recognizer</LI>
-      <LI><code>s3astar</code>: The Sphinx-3 N-best generator</LI>
-      <LI><code>s3dag</code>: The Sphinx-3 application for best-path searching</LI>
+      <LI><code>sphinx3_decode</code>: The Sphinx-3 s3.2/s3.3/s3.X decoder processing cesptra files</li>
+      <LI><code>sphinx3_decode_anytopo</code>: The Sphinx-3 s3.0 decoder processing cesptra files (for backward compatibility purpose) </li>
+      <LI><code>sphinx3_continuous</code>: The Sphinx-3 live mode demo and ready for simple speak-and-decode application. </li>
+      <LI><code>sphinx3_gausubvq</code>: Sub-vector clustered acoustic model building</LI>
+      <LI><code>sphinx3_livedecode</code>: The Sphinx-3 s3.X decoder in live mode</LI>
+      <LI><code>sphinx3_livepretend</code>: The Sphinx-3 s3.X decoder in batch mode</LI>      
+      <LI><code>sphinx3_align</code>: The Sphinx-3 aligner</LI>
+      <LI><code>sphinx3_allphone</code>: The Sphinx-3 phoneme recognizer</LI>
+      <LI><code>sphinx3_astar</code>: The Sphinx-3 N-best generator</LI>
+      <LI><code>sphinx3_dag</code>: The Sphinx-3 application for best-path searching</LI>
+      <LI><code>lm_convert</code>: A program that could convert the DMP and TXT-format of LM </LI>
 
     </OL>
     <P>This distribution has been prepared for Unix platforms. Port to
@@ -120,7 +138,7 @@
     href="s3-2.ppt">slides</a> are available that give additional
     information about the decoder. Even though the slides refer to
     s3.2, keep in mind that the basic search structure remains te same
-    in s3.X (where x=3,4 and 5)
+    in s3.X (where x=3 to 6). 
     </P>
     
     <P>The initial part of this document provides an overview of the
@@ -143,8 +161,6 @@
     than the latter. It takes its input from pre-recorded speech in
     raw PCM format and writes its recognition results to output files.
     </P>
-    
-    
     
     <H3><A NAME="sec_dec_input"><U>Inputs</U></A></H3>
     
@@ -182,11 +198,11 @@
       
       <LI><a href="#sec_ctl"><em>Speech input specification</em></a>:
       This distribution contains four executable files, three of which
-      perform recognition. <code>s3livedecode</code> decodes live
+      perform recognition. <code>sphinx3_livedecode</code> decodes live
       speech, that is, speech incoming from your audio
-      card. <code>s3livepretend</code> decodes in batch mode using a
+      card. <code>sphinx3_livepretend</code> decodes in batch mode using a
       <em>control file</em> that describes the input to be decoded
-      into text. <code>s3decode</code> decodes also uses a control file
+      into text. <code>sphinx3_decode</code> decodes also uses a control file
       for batch mode processing. In the latter, the entire input to be
       processed must be available beforehand, <em>i.e.</em>, the raw
       audio samples must have been preprocessed into cepstrum
@@ -236,7 +252,9 @@
     
     <P>The current distribution has been set up for Unix platforms.
     The following steps are needed to compile the decoder:
-    </P>
+    </P> 
+ 
+    <P> For Users: </P> 
     <OL>
       <LI><code>./configure [--prefix=/my/install/directory]</code>:
       the argument is optional. If not given, it will install s3.X
@@ -260,6 +278,15 @@
     clean out the compilation directories entirely by running
     <code>make distclean</code> and start over.
 
+    <P> For Developers </P> 
+    <OL> 
+	<LI> The project could be boostrap from the SVN repository
+	which
+	could be obtained by command <code> svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 </code>  </LI> 
+	<LI> One could boostrap the installation by typing command <code> ./autogen.sh ; ./autogen.sh </LI>
+    </OL> 
+
+
     </P>
     <div class="endsec">
       &curren
@@ -271,13 +298,13 @@
     <H2><A NAME="sec_exec"><u>Running s3.X</u></A></H2>
     
     <P>Running the decoder is simply a matter of invoking the binary
-    (<em>i.e.</em>, <code>s3decode</code>, <code>s3livedecode</code> or
-    <code>s3livepretend</code>), with a number of command line arguments
+    (<em>i.e.</em>, <code>sphinx3_decode</code>, <code>sphinx3_livedecode</code> or
+    <code>sphinx3_livepretend</code>), with a number of command line arguments
     specifying the various input files, as well as decoding
-    configuration parameters. <code>s3decode</code> and
-    <code>s3livepretend</code> require a control file, the directory
+    configuration parameters. <code>sphinx3_decode</code> and
+    <code>sphinx3_livepretend</code> require a control file, the directory
     where the audio files are available, and a file containing the
-    configuration arguments. <code>s3livedecode</code>, which runs live,
+    configuration arguments. <code>sphinx3_livedecode</code>, which runs live,
     requires only the file with the arguments.
     </p>
 
@@ -323,9 +350,18 @@
 	    <LI><code>-mixw</code></LI>
 	    <LI><code>-tmat</code></LI>
 	    <LI><code>-subvq</code></LI>
+	    <LI><code>-hmm</code></LI>
 	  </UL>
 	</td>
-	<td><a href="#am_files">Acoustic model</a> files</td>
+
+	<td><a href="#am_files">Acoustic model</a> files.  One could
+	conveniently specify the acoustic model by simply specifying
+	the -hmm option.  The default model file names for the
+	components HMMs are <code> means </code>, <code> variances
+	</code>, <code> mixture_weights </code>, <code>
+	transition_matrices </code> and <code> mdef </code> (the model
+	definition).
+	</td>
       </tr>
       
       <tr>
@@ -339,8 +375,21 @@
       </tr>
       
       <tr>
-	<td><UL><LI><code>-lm</code></LI></UL></td>
-	<td>Language model <a href="#lm_dumpfile">binary dump file</a></td>
+	<td>
+	<UL>
+	<LI><code>-lm</code></LI>
+	<LI><code>-lmctlfn</code></LI>
+	<LI><code>-lminmemory</code></LI>
+	<LI><code>-lmname</code></LI>
+	</td>
+
+	<td>One could specify language model <a
+	href="#lm_dumpfile">binary dump file</a>
+	or txt file using <code> -lm </code>.  Set of class-based LMs
+	could be specified with <code> -lmctlfn </code>.  By default,
+	the lm is accessed mainly at harddisc with a cache
+	mechanism. One could toggle this behavior to fully memory-mode
+	by specifying option <code> -lminmemory </code> </td>
       </tr>
       
       <tr>
@@ -355,9 +404,19 @@
       </tr>
       
       <tr>
-	<td><UL><LI><code>-hypseg</code></LI></UL></td>
-	<td>Output <a href="#sec_hypseg">hypotheses file</a></td>
+	<td><UL>
+	<LI><code>-hypseg</code></LI>
+	<LI><code>-hypsegfmt</code></LI>
+	<LI><code>-hypsegscore_unscale</code></LI>
+	</UL></td>
+	<td>Output <a href="#sec_hypseg">hypotheses file with detail scores and timing.  <code> -hypsegfmt </code> could be used to specify format for sphinx 2, Sphinx 3 and NIST CTM format. </a></td>
       </tr>
+
+      <tr>
+	<td><UL><LI><code>-hyp</code></LI></UL></td>
+	<td>Output <a href="#sec_hypseg">hypotheses file without detail scores and timing </a></td>
+      </tr>
+
     </table>
     
     
@@ -385,7 +444,42 @@
       <tr>
 	<td><UL><LI><code>-cepdir</code></LI></UL></td>
 	<td>Directory prefix for cepstrum files specified in the
-	  <a href="#sec_ctl">control file</a>, ignored in <code>s3livedecode</code> and <code>s3livepretend</code></td>
+	  <a href="#sec_ctl">control file</a>, ignored in <code>sphinx3_livedecode</code> and <code>sphinx3_livepretend</code></td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-ctl</code></LI>
+	    <LI><code>-ctl_lm</code></LI>
+	    <LI><code>-ctl_mllr</code></LI>
+	  </UL>
+	</td>
+	<td>Specify the file, the LM and the MLLR used in each
+	utterances. </td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-mllr</code></LI>
+	    <LI><code>-cb2mllr</code></LI>
+	  </UL>
+	</td>
+	<td> The regression matrix and the senone to regression matrix
+	mapping </td>
+      </tr>
+
+      <tr>
+	<td>
+	  <UL>
+	    <LI><code>-bestpath</code></LI>
+	    <LI><code>-bestpathlw</code></LI>
+	  </UL>
+	</td>
+	<td> Applicable for mode 3 (flat-lexicon) and mode 4
+	(tree-lexicon) search.  In the second pass, control the
+	best-path search. </td>
       </tr>
       
       <tr>
@@ -447,6 +541,7 @@
 	<td>
 	  <UL>
 	    <LI><code>-ci_pbeam</code></LI>
+	    <LI><code>-max_cdsenpf</code></LI>
 	    <LI><code>-ds</code></LI>
 	  </UL>
 	</td>
@@ -553,19 +648,19 @@
 
     <H4><A name="sec_ctl_process"><U>Control File Processing</U></a></H4>
 
-    <P>Following initialization, <code>s3decode</code> and
-    <code>s3livepretend</code> processes the entries in the control file
+    <P>Following initialization, <code>sphinx3_decode</code> and
+    <code>sphinx3_livepretend</code> processes the entries in the control file
     sequentially, one at a time.  It is possible to process a
     contiguous subset of the control file, using the
     <code>-ctloffset</code> and <code>-ctlcount</code> flags, as
     mentioned earlier.  There is no learning or <em>adaptation</em>
-    capability as decoding progresses.  Since <code>s3livepretend</code>
+    capability as decoding progresses.  Since <code>sphinx3_livepretend</code>
     behaves as if the files were being spoken at the time of
     processing, rearranging the order of the entries in the control
     file may affect the individual results, but this change may be
     imperceptible if the environment in which the files were recorded
     remains constant. The order of entries in the control file does
-    not affect <code>s3decode</code>.
+    not affect <code>sphinx3_decode</code>.
     </P>
 
 
@@ -620,7 +715,7 @@
     href="#sec_flags_tune">configuration arguments</a>.
     </P>
 
-    <H4><A name="sec_gmm_compute"><U>(Added in s3.4) Fast GMM
+    <H4><A name="sec_gmm_compute"><U>(After s3.4) Fast GMM
     Computation</U></a></H4>
 
     <p> The computation of likelihood Gaussian distribution can be one
@@ -633,7 +728,9 @@
       computed.  If this beam is used, only CD models, which correspond
       to CI models within the beam (relative to the max CI scores), are
       computed </LI>
-
+      <LI><code>-maxcdsenpf</code>: Similar to <code> -ci_pbeam
+      </code> but the beam is decided by an absolute number of senones
+      computd.  </LI>
       <LI><code>-ds  </code> : Enable frame down-sampling. Only 1
       another N frames were computed.  </LI>
     </ul>
@@ -1537,8 +1634,6 @@ AudioFile [ StartFrame EndFrame UttID ]</pre>
       <a href="#sec_ctl">Back to top of this section</a>
     </div>
     
-
-    
     <H2><a name="sec_hypseg"><U>Recognition Hypothesis Output</U></a></H2>
     
     <P>The Sphinx-3 decoder produces a single recognition
@@ -1734,8 +1829,8 @@ End</pre>
     
     <H2><a name="sec_utilpgm"><U>Other Utilities</U></a></H2>
     
-    <P>In addition to the s3.X decoders, <code>s3decode</code>,
-    <code>s3livedecode</code> and <code>livrepretend</code>, this
+    <P>In addition to the s3.X decoders, <code>sphinx3_decode</code>,
+    <code>sphinx3_livedecode</code> and <code>livrepretend</code>, this
     distribution also provides other utility programs.</P>
 
     <H4><a name="sec_gausubvq"><U>Gaussian Sub-Vector Quantization
@@ -1752,39 +1847,75 @@ End</pre>
     
     <P>In alphabetical order:</P>
     <table>
+
       <tr>
-	<td><a href="../src/libs3decoder/approx_cont_mgau.c"><code>approx_cont_mgau.c</code></a></td>
+	<td><a href="../src/libs3decoder/libam/adaptor.c"><code>adaptor.c</code></a></td>
+	<td>A wrapper of adaptation routines. </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/approx_cont_mgau.c"><code>approx_cont_mgau.c</code></a></td>
 	<td>Fast Gaussian Distribution Computation</td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/agc.c"><code>agc.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcep_feat/agc.c"><code>agc.c</code></a></td>
 	<td>Automatic gain control (on signal energy)</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/ascr.c"><code>ascr.c</code></a></td>
+	<td><a href="../src/libs3decoder/libsearch/ascr.c"><code>ascr.c</code></a></td>
 	<td>Senone acoustic scores</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/beam.c"><code>beam.c</code></a></td>
-	<td>Pruning beam widths</td>
-      </tr>
-      
-      <tr>
-	<td><a href="../src/libs3decoder/bio.c"><code>bio.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcommon/bio.c"><code>bio.c</code></a></td>
 	<td>Binary file I/O support</td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/cmn.c"><code>cmn.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcommon/blkarray.c"><code>blkarray.c</code></a></td>
+	<td>Block array used in FST search</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/cb2mllr.c"><code>cb2mllr.c</code></a></td>
+	<td>Codebook to MLLR mapping</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libep/classify.c"><code>classify.c</code></a></td>
+	<td>GMM Classifier. </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libcep_feat/cmn.c"><code>cmn.c</code></a></td>
 	<td>Cepstral mean normalization and variance normalization</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libdict/cmu6_lts_rules.c"><code>cmn6_lts_rules.c</code></a></td>
+	<td>Letter-to-sound rules from flite.</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libdict/ctxt_table.c"><code>ctxt_table.c</code></a></td>
+	<td>Context table for search functions. </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libconfidence/confidence.c"><code>confidence.c</code></a></td>
+	<td>Word-lattice based word-based confidence scoring. </td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/corpus.c"><code>corpus.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcommon/corpus.c"><code>corpus.c</code></a></td>
 	<td>Control file processing</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libcommon/encoding.c"><code>encoding.c</code></a></td>
+	<td>Take care of text-encoding issues.  </td>
       </tr>
 
       <tr>
@@ -1794,33 +1925,63 @@ End</pre>
 
       <tr>
 	<td><a
-	href="../src/programs/decode.c"><code>s3decode.c</code></a></td>
-	<td>Main file for <code>s3decode</code></td>
+	href="../src/programs/decode.c"><code>decode.c</code></a></td>
+	<td>Main file for <code>sphinx3_decode</code></td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/dict.c"><code>dict.c</code></a></td>
+	<td><a href="../src/libs3decoder/libdict/dict.c"><code>dict.c</code></a></td>
 	<td>Pronunciation lexicon</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/dict2pid.c"><code>dict2pid.c</code></a></td>
+	<td><a href="../src/libs3decoder/libdict/dict2pid.c"><code>dict2pid.c</code></a></td>
 	<td>Generation of triphones for the pronunciation dictionary</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libep/endptr.c"><code>endptr.c</code></a></td>
+	<td>Voting-based end-pointer.</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/fast_algo_struct.c"><code>fast_algo_struct.c</code></a></td>
+	<td>Structures of all fast algorithm. </td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/feat.c"><code>feat.c</code></a></td>
+	<td><a href="../src/libs3decoder/libfeat/feat.c"><code>feat.c</code></a></td>
 	<td>Feature vectors computation</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/fillpen.c"><code>fillpen.c</code></a></td>
+	<td><a href="../src/libs3decoder/libdict/fillpen.c"><code>fillpen.c</code></a></td>
 	<td>Filler word probabilities</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libsearch/flat_fwd.c"><code>flat_fwd.c</code></a></td>
+	<td>Implementation of flat lexicon decoder. </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libsearch/fsg_history.c"><code>fsg_history.c</code></a></td>
+	<td>The history table used in the FSG search </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libsearch/fsg_lextree.c"><code>fsg_lextree.c</code></a></td>
+	<td>It is actually flat structure at this point. </td>
       </tr>
       
       <tr>
 	<td><a href="../src/programs/gausubvq.c"><code>gausubvq.c</code></a></td>
 	<td>Standalone acoustic model sub-vector quantizer</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decode/libam/gs.c"><code>gs.c</code></a></td>
+	<td>Gaussian selector by Bochierri</td>
       </tr>
       
       <tr>
@@ -1829,37 +1990,82 @@ End</pre>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/hyp.h"><code>hyp.h</code></a></td>
+	<td><a href="../include/hyp.h"><code>hyp.h</code></a></td>
 	<td>Recognition hypotheses data type</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/interp.c"><code>interp.c</code></a></td>
+	<td>Interpolation of scoustic models</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/kb.h"><code>kb.h</code></a></td>
+	<td><a href="../include/kb.h"><code>kb.h</code></a></td>
 	<td>All knowledge bases, search structures used by decoder</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/kbcore.c"><code>kbcore.c</code></a></td>
+	<td><a href="../src/libs3decoder/libsearch/kbcore.c"><code>kbcore.c</code></a></td>
 	<td>Collection of core knowledge bases</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/kdtree.c"><code>kdtree.c</code></a></td>
+	<td>KD-tree support in semi-continous HMM</td>
       </tr>
 
       <tr>
 	<td><a href="../src/libs3decoder/lextree.c"><code>lextree.c</code></a></td>
 	<td>Lexical search tree</td>
       </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libAPI/live_decode_args.c"><code>live_decode_args.c</code></a></td>
+	<td>Argument definition of the livedecoder. </td>
+      </tr>
       
       <tr>
-	<td><a href="../src/programs/live.c"><code>s3live.c</code></a></td>
+	<td><a href="../src/libs3decoder/libAPI/live_decode_API.c"><code>live_decode_API.c</code></a></td>
 	<td>Live decoder functions</td>
       </tr>
-      
+
       <tr>
-	<td><a href="../src/libs3decoder/lm.c"><code>lm.c</code></a></td>
-	<td>Trigram language model</td>
+	<td><a href="../src/libs3decoder/libdict/lts.c"><code>lts.c</code></a></td>
+	<td>Letter to sound rules. </td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/logs3.c"><code>logs3.c</code></a></td>
+	<td><a href="../src/libs3decoder/liblm/lm.c"><code>lm.c</code></a></td>
+	<td>Trigram language model, top-level controller module</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/liblm/lm_3g.c"><code>lm_3g.c</code></a></td>
+	<td>Trigram language model, TXT file driver</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/liblm/lm_3g_dmp.c"><code>lm_3g_dmp.c</code></a></td>
+	<td>Trigram language model, DMP file driver</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/liblm/lm_attfsm.c"><code>lm_attfsm.c</code></a></td>
+	<td>Trigram language model, ATT-FSM file format driver</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/liblm/lm_class.c"><code>lm_class.c</code></a></td>
+	<td>Handling of class-based LM </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/liblm/lmset.c"><code>lmset.c</code></a></td>
+	<td>Handling of a set of LMs </td>
+      </tr>
+      
+      <tr>
+	<td><a href="../src/libs3decoder/libcommon/logs3.c"><code>logs3.c</code></a></td>
 	<td>Support for log-likelihood operations</td>
       </tr>
 
@@ -1878,18 +2084,48 @@ End</pre>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/mdef.c"><code>mdef.c</code></a></td>
+	<td><a href="../src/libs3decoder/libam/mdef.c"><code>mdef.c</code></a></td>
 	<td>Acoustic model definition</td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/mllr.c"><code>mllr.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcommon/misc.c"><code>misc.c</code></a></td>
+	<td>Miscellaneous routines used in Sphinx 3</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/mllr.c"><code>mllr.c</code></a></td>
 	<td>transformation of mean based on a linear regression matrix. </td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/s3types.h"><code>s3types.h</code></a></td>
+	<td><a href="../src/libs3decoder/libam/ms_gauden.c"><code>ms_gauden.c</code></a></td>
+	<td>Multi-stream Gaussian computation. (Adapted from s3.0) </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/ms_mllr.c"><code>ms_mllr.c</code></a></td>
+	<td>Multi-stream MLLR. (Adapted from s3.0) </td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libam/ms_senone.c"><code>ms_senone.c</code></a></td>
+	<td>Multi-stream Senone computation. (Adapted from s3.0) </td>
+      </tr>
+
+      <tr>
+	<td><a href="../include/s2_semi_mgau.c"><code>s2_semi_mgau.c</code></a></td>
+	<td>Sphinx 2 semi-continuous HMM computation. </td>
+      </tr>
+
+      <tr>
+	<td><a href="../include/s3types.h"><code>s3types.h</code></a></td>
 	<td>Various data types, for ease of modification</td>
+      </tr>
+
+      <tr>
+	<td><a href="../src/libs3decoder/libcommon/stat.c"><code>stat.c</code></a></td>
+	<td>Statistics of decoding.</td>
       </tr>
 
       <tr>
@@ -1898,22 +2134,22 @@ End</pre>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/tmat.c"><code>tmat.c</code></a></td>
+	<td><a href="../src/libs3decoder/libam/tmat.c"><code>tmat.c</code></a></td>
 	<td>HMM transition matrices (topology definition)</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/vector.c"><code>vector.c</code></a></td>
+	<td><a href="../src/libs3decoder/libcommon/vector.c"><code>vector.c</code></a></td>
 	<td>Vector operations, quantization, etc.</td>
       </tr>
 
       <tr>
-	<td><a href="../src/libs3decoder/vithist.c"><code>vithist.c</code></a></td>
+	<td><a href="../src/libs3decoder/libsearch/vithist.c"><code>vithist.c</code></a></td>
 	<td>Backpointer table (Viterbi history)</td>
       </tr>
       
       <tr>
-	<td><a href="../src/libs3decoder/wid.c"><code>wid.c</code></a></td>
+	<td><a href="../src/libs3decoder/libdict/wid.c"><code>wid.c</code></a></td>
 	<td>Mapping between LM and lexicon word IDs</td>
       </tr>
     </table>
