@@ -1,0 +1,6 @@
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "corpussrc.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "corpus.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "javolution.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "datacollection-client.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "sphinx4.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
+"c:\program files\java\jdk1.5.0_06\bin\jarsigner" "batch.jar" mykey -storepass derrida -keypass derrida  0<pass.txt
