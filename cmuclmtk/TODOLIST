@@ -1,0 +1,38 @@
+BUGS:
+	-text2wdngram has a bug. 
+
+TODOLIST 
+-Generate random sentences from a language model.   (Add Atoth's code)
+-addone in Waterloo LM toolkit
+-null smoothing
+-Incorporate Prof. Esteve's Kneyser Ney smoothing.
+-Merge the ng_t and arpa_ng_t.  The only differ from each other by two
+variables. (used ng_t) -> build something like arpa2binlm.  
+-> Implement at least one word clustering algorithm (Brown's algorithm
+like in SRI or HTK's algorithm) 
+-> Implement some kind of ME type of training. 
+-> Test the code when there are 1 billion words in
+-> Test the code when there are 1 million words and train a 10 grams
+-> Implement at least one method to prune the n-gram
+-> Should we implement clustering like HTK. 
+
+-> Implement PALM tk functionalities: reverseword
+				    : reverseidngram
+				    : mixidngram
+				    : text2idtex				
+	
+
+Thoroughly test the following tool in 16bit mode and 32bit mode
+interpolate
+mergeidngram
+ngram2mgram
+
+text2wngram
+lm_combine
+wngram2idngram
+
+Done 
+
+SRI LM Toolkit replace word with word class.  This could be done by
+class_tagger.pl which is in some sense even more flexible because
+regular expression could be used.
