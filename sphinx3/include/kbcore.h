@@ -149,8 +149,8 @@ typedef struct {
   int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
   int32 lastfrm; /**, Temporary variables, should be removed */
 
-  s3lmwid_t startwid;
-  s3lmwid_t finishwid;
+  s3lmwid32_t startwid;
+  s3lmwid32_t finishwid;
 } kbcore_t;
 
   
@@ -258,14 +258,18 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)
 #define kbcore_ms_mgau(k)	((k)->ms_mgau)
-#define kbcore_s2_mgau(k)	((k)->s2_mgau)
+#define kbcore_s2_mgau(k)      ((k)->s2_mgau)
 #define kbcore_svq(k)		((k)->svq)
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
-#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) \
-				 : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
-				    : (k)->ms_mgau->s->n_sen))
+  /*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
+   */
+#define kbcore_n_mgau(k)       ((k)->mgau ? mgau_n_mgau((k)->mgau) \
+                                : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
+                                   : (k)->ms_mgau->s->n_sen))
+
+
 
 #ifdef __cplusplus
 }
