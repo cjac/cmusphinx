@@ -85,7 +85,10 @@ void readDistsOnly (
 void read_map (char const *map_file, int32 compress);
 void remap (SMD *smdV);
 
+/* Return the parent CI phone ID for the given senone ID */
 int32 senid2pid (int32 senid);
+
+/* Return an array of #senones for each CI phone */
 int32 *hmm_get_psen (void);
 
 

@@ -368,7 +368,7 @@ search_hyp_t *allphone_utt (int32 nfr,
     renorm_scr[0] = 0;
     
     for (f = 0, c = 0, p = 0; f < nfr; f++, c += CEP_SIZE, p += POW_SIZE) {
-	senscr_active (senscr, cep+c, dcep+c, dcep_80ms+c, pcep+p, ddcep+c);
+	senscr_active (senscr, f, cep+c, dcep+c, dcep_80ms+c, pcep+p, ddcep+c);
 
 	if ((bestscr = allphone_eval_ci_chan (f)) <= WORST_SCORE) {
 	    E_ERROR ("POOR MATCH: bestscore= %d\n", bestscr);

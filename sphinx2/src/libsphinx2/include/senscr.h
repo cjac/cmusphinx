@@ -81,12 +81,14 @@ extern int32 n_senone_active;		/* No. of entries in above active list */
  * If using S3, cep[1..12], dcep[1..12], pcep, and ddcep[1..12] are concatenated
  * into a single feature vector.
  * The function also updates an array of best senone scores for each CIphone
- * (bestpscr) maintained by the search module.
+ * (bestpscr) and similar array for all frames of utterance (utt_pscr),
+ * kept in the search module.
  * 
  * Return value: the best senone score overall.
  */
-int32 senscr_all (int32 *senscr,
-		  float32 *cep,
+int32 senscr_all (int32 *senscr,	/* Senone scores (output) */
+		  int32 frm,		/* Current frame */
+		  float32 *cep,		/* Input features */
 		  float32 *dcep,
 		  float32 *dcep_80ms,
 		  float32 *pcep,
@@ -94,12 +96,14 @@ int32 senscr_all (int32 *senscr,
 
 /*
  * Like senscr_all above, except restricted to the currently active senones.
- * (See senone_active and n_senone_active, above.)  Further, this functions
- * does not update the bestpscr array.
+ * (See senone_active and n_senone_active, above.)  Further, this function
+ * may not update the bestpscr and utt_pscr arrays if some senones have no
+ * model (can only happen with continuous models).
  * 
  * Return value: the best senone score overall (among the active ones).
  */
 int32 senscr_active (int32 *senscr,
+		     int32 frm,
 		     float32 *cep,
 		     float32 *dcep,
 		     float32 *dcep_80ms,
@@ -121,6 +125,7 @@ void hmm_sen_active(CHAN_T *hmm);
 
 
 /*
+ * Add CI senones to active list (if they all have non-empty models).
  * Build the active senones list (the global senone_active array) from the
  * (global) senone_active_flag array.  Also update n_senone_active.
  * Return value: number of active senones in the list built.

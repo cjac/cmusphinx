@@ -294,10 +294,8 @@ void search_set_topsen_score (int32 frm, int32 score);
  */
 int32 *search_get_bestpscr( void );
 
-/* Copy bestpscr to uttpscr[currentframe] */
-void search_bestpscr2uttpscr (int32 currentframe);
-
-/* Reset the uttpscr valid flag */
+/* Set/Reset the uttpscr valid flag */
+void search_uttpscr_set ( void );
 void search_uttpscr_reset ( void );
 
 /*

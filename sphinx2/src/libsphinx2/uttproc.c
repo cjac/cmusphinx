@@ -904,17 +904,17 @@ static void uttproc_fsg_search_fwd ( void )
   
   if (query_compute_all_senones()) {
     best = senscr_all(senscore,
+		      fsg_search_frame (fsg_search),
                       cep_buf + search_cep_i,
                       dcep_buf + search_cep_i,
                       dcep_80ms_buf + search_cep_i,
                       pcep_buf + search_pow_i,
                       ddcep_buf + search_cep_i);
-    
-    search_bestpscr2uttpscr (fsg_search->frame);
   } else {
     fsg_search_sen_active(fsg_search);
     
     best = senscr_active(senscore,
+			 fsg_search_frame (fsg_search),
                          cep_buf + search_cep_i,
                          dcep_buf + search_cep_i,
                          dcep_80ms_buf + search_cep_i,

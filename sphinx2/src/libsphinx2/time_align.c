@@ -2918,6 +2918,7 @@ time_align_word_sequence(char const * Utt,
 
 	/* compute the output probabilities for the active shared states */
 	probs_computed_cnt += senscr_active(distScores,
+					    cur_frame,
 					    &cep_f[cur_frame*13],
 					    &dcep_f[cur_frame*13],
 					    &dcep_80ms_f[cur_frame*13],

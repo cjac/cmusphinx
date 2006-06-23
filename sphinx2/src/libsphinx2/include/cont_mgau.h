@@ -118,8 +118,9 @@ typedef struct {
     float64 distfloor;	/* Mahalanobis distances can underflow when finally converted to
 			   logs3 values.  To prevent this, floor the log values first. */
     /* Statistics */
-    int32 frm_sen_eval;		/* #Senones evaluated in the most recent frame */
-    int32 frm_gau_eval;		/* #Gaussian densities evaluated in the most recent frame */
+    int32 n_zero_mgau;	/* #mixtures with 0 components (after removing uninitialized ones) */
+    int32 frm_sen_eval;	/* #Senones evaluated in the most recent frame */
+    int32 frm_gau_eval;	/* #Gaussian densities evaluated in the most recent frame */
 } mgau_model_t;
 
 
@@ -132,6 +133,7 @@ typedef struct {
 #define mgau_var(g,m,c)		((g)->mgau[m].var[c])
 #define mgau_mixw(g,m,c)	((g)->mgau[m].mixw[c])
 #define mgau_lrd(g,m,c)		((g)->mgau[m].lrd[c])
+#define mgau_n_zero_mgau(g)	((g)->n_zero_mgau)
 #define mgau_frm_sen_eval(g)	((g)->frm_sen_eval)
 #define mgau_frm_gau_eval(g)	((g)->frm_gau_eval)
 

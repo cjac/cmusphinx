@@ -98,6 +98,7 @@
 #include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <assert.h>
 
 #ifdef WIN32
 #include <fcntl.h>
@@ -146,6 +147,8 @@ static int32 *ssIdMap;		/* Senone sequence Id Map.
 				 */
 static int32 numSSeq = 0;	/* Number of unique senone sequences
 				 */
+static int32 *senid2pid_map = NULL;	/* Mapping from senone ID -> parent
+					   CI phone ID */
 
 int32 *Out_Prob0;
 int32 *Out_Prob1;
@@ -1611,16 +1614,21 @@ static void zero_senone (int32 s)
 int32
 senid2pid (int32 senid)
 {
-    int32 p, k, nph;
+    int32 p, j, k, nph;
     
-    k = 0;
-    nph = phoneCiCount();
-    for (p = 0; p < nph; p++) {
-	k += numDists[p];
-	if (senid < k)
-	    return p;
+    if (! senid2pid_map) {
+      senid2pid_map = (int32 *) CM_calloc (totalDists, sizeof(int32));
+      
+      nph = phoneCiCount();
+      j = 0;
+      for (p = 0; p < nph; p++) {
+	for (k = 0; k < numDists[p]; k++)
+	  senid2pid_map[j++] = p;
+      }
+      assert (j == totalDists);
     }
-    return (-1);
+    
+    return (senid2pid_map[senid]);
 }
 
 int32 *

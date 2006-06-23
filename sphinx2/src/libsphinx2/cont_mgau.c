@@ -377,9 +377,9 @@ static void mgau_uninit_compact (mgau_model_t *g)
     }
     if (nm > 0)
 	fprintf (stderr, "\n");
+    g->n_zero_mgau = nm;
     
-    if ((nm > 0) || (n > 0))
-	E_INFO ("%d densities removed (%d mixtures removed entirely)\n", n, nm);
+    E_INFO ("%d densities removed (%d mixtures removed entirely)\n", n, nm);
 }
 
 

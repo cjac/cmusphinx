@@ -1183,6 +1183,11 @@ save_bwd_ptr (WORD_ID w, int32 score, int32 path, int32 rc)
 {
     int32 _bp_;
     
+    if (score >= 0) {
+      E_ERROR("save_bwd_ptr(score >= 0; int32 overflow??):  %10d %8d %4d %s\n",
+	      score, path, rc, WordDict->dict_list[w]->word);
+    }
+    
     _bp_ = WordLatIdx[w];
     if (_bp_ != NO_BP) {
 	if (BPTable[_bp_].score < score) {
@@ -2247,17 +2252,9 @@ search_fwd (float *cep, float *dcep, float *dcep_80ms, float *pcep, float *ddcep
     
     if (! compute_all_senones) {
 	compute_sen_active ();
-	topsen_score[cf] = senscr_active(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
+	topsen_score[cf] = senscr_active(newscr, cf, cep, dcep, dcep_80ms, pcep, ddcep);
     } else {
-	topsen_score[cf] = senscr_all(newscr, cep, dcep, dcep_80ms, pcep, ddcep);
-	
-	if (cf < MAX_FRAMES) {
-	  /* Save bestpscr in utt_pscr */
-	  for (i = 0; i < NumCiPhones; i++)
-	    utt_pscr[cf][i] = bestpscr[i];
-	  
-	  utt_pscr_valid = TRUE;
-	}
+	topsen_score[cf] = senscr_all(newscr, cf, cep, dcep, dcep_80ms, pcep, ddcep);
     }
     n_senone_active_utt += n_senone_active;
     
@@ -4284,6 +4281,8 @@ search_fwdflat_start ( void )
 	}
 	expand_word_list[j] = -1;
     }
+    
+    utt_pscr_valid = FALSE;
 }
 
 void
@@ -4294,17 +4293,9 @@ search_fwdflat_frame (float *cep, float *dcep, float *dcep_80ms, float *pcep, fl
     
     if (! compute_all_senones) {
 	compute_fwdflat_senone_active ();
-	senscr_active(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
+	senscr_active(distScores, CurrentFrame, cep, dcep, dcep_80ms, pcep, ddcep);
     } else {
-	senscr_all(distScores, cep, dcep, dcep_80ms, pcep, ddcep);
-	
-	if (CurrentFrame < MAX_FRAMES) {
-	  /* Save bestpscr in utt_pscr */
-	  for (i = 0; i < NumCiPhones; i++)
-	    utt_pscr[CurrentFrame][i] = bestpscr[i];
-	  
-	  utt_pscr_valid = TRUE;
-	}
+	senscr_all(distScores, CurrentFrame, cep, dcep, dcep_80ms, pcep, ddcep);
     }
     n_senone_active_utt += n_senone_active;
 
@@ -5066,7 +5057,8 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
 		  int32 ef,		/* End frame within utterance */
 		  int32 minseg,		/* Min #frames per phone segment */
 		  double tprob,		/* State transition (exit) probability */
-		  int32 final_state)	/* Nominally, where search should exit */
+		  int32 final_state)	/* Nominally, where search should exit;
+					   if -1, can exit anywhere */
 {
     int32 i, j, f, lf, nf;
     int32 tp, newscore, bestscore, bestp, pred_bestp;
@@ -5123,9 +5115,7 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
 #endif
     
     /* Find proper final state to use */
-    if (vithist[nf-1][final_state].pred < 0) {
-        assert (vithist[nf-1][final_state].valid == 0);
-	
+    if ((final_state < 0) || (vithist[nf-1][final_state].pred < 0)) {
 	bestscore = (int32)0x80000000;
 	bestp = -1;
 	for (i = 0; i < n_state; i++) {
@@ -5139,8 +5129,10 @@ search_pscr_path (vithist_t **vithist,	/* properly initialized */
 	    return NULL;
 	}
 	
-	E_ERROR("%s: search_pscr_path() didn't reach final state %d; using state %d\n",
-		uttproc_get_uttid(), final_state, bestp);
+	if (final_state >= 0) {
+	  E_ERROR("%s: search_pscr_path() didn't reach final state %d; using state %d\n",
+		  uttproc_get_uttid(), final_state, bestp);
+	}
 	
 	final_state = bestp;
     }
@@ -5520,7 +5512,7 @@ static int32 search_forward_score (int32 sf, int32 ef)
 
 
 /*
- * Return the viterib score for the given segment, using all senones (actually,
+ * Return the viterbi score for the given segment, using all senones (actually,
  * using best senone per phone, utt_pscr)
  */
 static int32 search_allsen_score (int32 sf, int32 ef)
@@ -5639,22 +5631,15 @@ int32 *search_get_bestpscr ( void )
 }
 
 
-void search_bestpscr2uttpscr (int32 fr)
-{
-  int32 p;
-  
-  if (fr < MAX_FRAMES) {
-    for (p = 0; p < NumCiPhones; p++)
-      utt_pscr[fr][p] = bestpscr[p];
-    
-    utt_pscr_valid = TRUE;
-  }
-}
-
-
 void search_uttpscr_reset ( void )
 {
   utt_pscr_valid = FALSE;
+}
+
+
+void search_uttpscr_set ( void )
+{
+  utt_pscr_valid = TRUE;
 }
 
 

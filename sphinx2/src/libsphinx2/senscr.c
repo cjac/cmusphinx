@@ -87,16 +87,18 @@
  * 
  * Return value: the best senone score this frame.
  */
-static int32 best_senscr_all (int32 *senscr)
+static int32 best_senscr_all (int32 *senscr, int32 frm)
 {
   int32 b, i, j, k;
   int32 n_ci;		/* #CI phones */
   int32 *n_psen;	/* #Senones (CI+CD) for each CIphone */
   int32 *bestpscr;	/* Best senone score (CI or CD) for each CIphone */
+  int32 **utt_pscr;	/* Like bestpscr, but for all frames in utt */
   
   n_ci = phoneCiCount();
   n_psen = hmm_get_psen();
   bestpscr = search_get_bestpscr();
+  utt_pscr = search_get_uttpscr();
   
   b = (int32) 0x80000000;
   
@@ -109,10 +111,14 @@ static int32 best_senscr_all (int32 *senscr)
 	k = *senscr;
     
     bestpscr[i] = k;
+    if (frm < MAX_FRAMES)
+      utt_pscr[frm][i] = k;
     
     if (b < k)
       b = k;
   }
+  
+  search_uttpscr_set ();
   
   return b;
 }
@@ -125,12 +131,45 @@ static int32 best_senscr_all (int32 *senscr)
  * 
  * Return value: the best senone score this frame.
  */
-static int32 best_senscr_active (int32 *senscr)
+static int32 best_senscr_active (int32 *senscr, int32 frm)
 {
-  int32 b, i, s;
+  int32 b, i, j, k, s;
+  int32 n_ci;		/* #CI phones */
+  int32 *n_psen;	/* #Senones (CI+CD) for each CIphone */
+  int32 *bestpscr;	/* Best senone score (CI or CD) for each CIphone */
+  int32 **utt_pscr;	/* Like bestpscr, but for all frames in utt */
+  mgau_model_t *g;
+  
+  g = kb_s3model();
+  n_ci = phoneCiCount();
+  n_psen = hmm_get_psen();
+  bestpscr = search_get_bestpscr();
+  utt_pscr = search_get_uttpscr();
+  
+  if ((g == NULL) || (mgau_n_zero_mgau(g) == 0)) {	/* No empty models */
+    k = 0;
+    for (i = 0; i < n_ci; i++) {
+      b = (int32) 0x80000000;
+      
+      /* Senones (CI) for CIphone i are in at the end of block for i */
+      for (j = n_psen[i] - HMM_LAST_STATE; j < n_psen[i]; j++) {
+	if (b < senscr[j+k])
+	  b = senscr[j+k];
+      }
+      
+      bestpscr[i] = b;
+      if (frm < MAX_FRAMES)
+	utt_pscr[frm][i] = b;
+      
+      k += n_psen[i];
+    }
+    
+    search_uttpscr_set();	/* utt_pscr scores available */
+  } else {
+    search_uttpscr_reset();	/* utt_pscr scores not available */
+  }
   
   b = (int32) 0x80000000;
-
   for (i = 0; i < n_senone_active; i++) {
     s = senone_active[i];
     
@@ -166,13 +205,14 @@ static void s3feat_build (float32 *s3feat,
 }
 
 
-static int32 senscr_compute (int32 *senscr,
-			     float32 *cep,
+static int32 senscr_compute (int32 *senscr,	/* Output senone scores */
+			     int32 frm,		/* Current frame */
+			     float32 *cep,	/* Input features */
 			     float32 *dcep,
 			     float32 *dcep_80ms,
 			     float32 *pcep,
 			     float32 *ddcep,
-			     int32 all)
+			     int32 all)		/* All or active only */
 {
   mgau_model_t *g;
   int32 i, s2id, s3id, best;
@@ -183,7 +223,14 @@ static int32 senscr_compute (int32 *senscr,
   
   g = kb_s3model();
   ascr_sf = kb_get_ascr_scale();
-  
+
+#if 0
+  if (! all) {
+    for (i = 0; i < kb_get_total_dists(); i++)
+      senscr[i] = (WORST_SCORE >> 1);
+  }
+#endif
+
   if (g != NULL) {	/* Use S3 acoustic model */
     s3senscr = kb_s3senscr();
     s3feat = kb_s3feat();
@@ -244,35 +291,40 @@ static int32 senscr_compute (int32 *senscr,
     }
   }
   
-  if (all) {
-    /* Compute best senscore within each CI phone, and overall best */
-    return best_senscr_all (senscr);
-  } else {
-    /* Compute best senscore overall */
-    return best_senscr_active (senscr);
-  }
+  /* Compute best senscore within each CI phone, and return overall best */
+  best = all ? best_senscr_all (senscr, frm)
+    : best_senscr_active (senscr, frm);
+
+#if 0
+  printf ("%5d %10d\n", frm, best);
+  fflush (stdout);
+#endif
+
+  return best;
 }
 
 
 int32 senscr_all (int32 *senscr,
+		  int32 frm,
 		  float32 *cep,
 		  float32 *dcep,
 		  float32 *dcep_80ms,
 		  float32 *pcep,
 		  float32 *ddcep)
 {
-  return senscr_compute (senscr, cep, dcep, dcep_80ms, pcep, ddcep, TRUE);
+  return senscr_compute (senscr, frm, cep, dcep, dcep_80ms, pcep, ddcep, TRUE);
 }
 
 
 int32 senscr_active (int32 *senscr,
+		     int32 frm,
 		     float32 *cep,
 		     float32 *dcep,
 		     float32 *dcep_80ms,
 		     float32 *pcep,
 		     float32 *ddcep)
 {
-  return senscr_compute (senscr, cep, dcep, dcep_80ms, pcep, ddcep, FALSE);
+  return senscr_compute (senscr, frm, cep, dcep, dcep_80ms, pcep, ddcep, FALSE);
 }
 
 
@@ -323,10 +375,29 @@ void hmm_sen_active(CHAN_T *hmm)
 
 int32 sen_active_flags2list ( void )
 {
-  int32 i, j, total_dists;
+  int32 i, j, k;
+  int32 total_dists, n_ci;
+  int32 *n_psen;
   char *flagptr;
+  mgau_model_t *g;
   
+  g = kb_s3model();
   total_dists = kb_get_total_dists();
+  n_ci = phoneCiCount();
+  n_psen = hmm_get_psen();
+  
+  /* Set CI flags to be always active (assuming the senones have models) */
+  if ((g == NULL) || (mgau_n_zero_mgau(g) == 0)) {	/* No empty models */
+    k = 0;
+    for (i = 0; i < n_ci; i++) {
+      /* CI senones are the last N states for each phone; mark them active */
+      for (j = n_psen[i] - HMM_LAST_STATE; j < n_psen[i]; j++)
+	senone_active_flag[j+k] = 1;
+      
+      k += n_psen[i];
+    }
+    assert (k == total_dists);
+  }
   
   j = 0;
   for (i = 0, flagptr = senone_active_flag; i < total_dists; i++, flagptr++) {
