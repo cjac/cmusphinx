@@ -34,7 +34,7 @@ public class Corpus {
     protected Map<String, List<Word>> character2Words = new HashMap<String, List<Word>>();
     protected Map<String, List<Word>> spelling2Words = new HashMap<String, List<Word>>();
     protected Map<String, List<Word>> phonemeSequence2Words = new HashMap<String, List<Word>>();
-    protected HashMap properties = new HashMap<String, String>();
+    protected HashMap<String,String> properties = new HashMap<String, String>();
 
 
 
@@ -53,7 +53,7 @@ public class Corpus {
     }
 
     public static void main(String args[]) {
-        Corpus corpus = getFakeCorpus();
+        Corpus corpus = null; //getFakeCorpus();
         String corpusString = getCorpusAsString(corpus);
 
         byte[] buf = corpusString.getBytes();
@@ -90,11 +90,11 @@ public class Corpus {
 
 
     public String setProperty(String name, String value) {
-        return (String)properties.put(name, value);
+        return properties.put(name, value);
     }
 
     public String getProperty(String name) {
-        return (String)properties.get(name);
+        return properties.get(name);
     }
 
     public Dictionary getDictionary() {
