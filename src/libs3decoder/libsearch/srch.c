@@ -433,7 +433,7 @@ srch_t* srch_init(kb_t* kb, int32 op_mode){
 
   }else if(op_mode==OPERATION_GRAPH){
 
-    E_WARN("In Sphinx 3.6 RCI, Graph search is still recommended for internal use only. ");
+    E_WARN("In Sphinx 3.6.0 official release, Graph search is still recommended for internal use only. ");
 
     s->srch_init=&srch_FSG_init;
     /*    s->srch_read_fsgfile=&srch_FSG_read_fsgfile;*/
@@ -776,9 +776,15 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
   /* 20060413 ARCHAN: Bug Fix 1459402, the old segments failed to
      increase the size of the memory buffer properly
+     20060624 ARCHAN/: Bug Fix from anonymous user is correct if the
+     requested size of memory is within 2 * DFLT_UTT_SIZE, when the 
+     requested size of memory is more than that, the code breaks. 
+     Change if to while to fix this problem. 
   */
 
-  if (block_nfeatvec + frmno >= s->ascale_sz){
+
+  while (block_nfeatvec + frmno >= s->ascale_sz){
+    E_INFO("Reallocate s->ascale. s->ascale_sz %d\n",s->ascale_sz);
     s->ascale= (int32*)
       ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE) *
 		  sizeof(int32));
@@ -831,6 +837,7 @@ s->segsz_sz+=DFLT_NUM_SEGS;
     ptmr_start (&(st->tm_sen));
     s->srch_select_active_gmm(s);
     s->srch_gmm_compute_lv2(s,block_feat[t],t);
+
     s->ascale[s->num_frm+t]=s->senscale;
 
     ptmr_stop (&(st->tm_sen));
