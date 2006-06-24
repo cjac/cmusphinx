@@ -300,7 +300,7 @@ int32 wid_wordprob2alt (dict_t *dict, wordprob_t *wp, int32 n)
     for (i = 0, j = n; i < n; i++) {
 	w = wp[i].wid;
 	for (w = dict_nextalt (dict, w); IS_S3WID(w); w = dict_nextalt (dict, w)) {
-	  E_INFO("i %d, j %d n %d\n",i,j,n);
+	  /*	  E_INFO("i %d, j %d n %d\n",i,j,n);*/
 	    wp[j].wid = w;
 	    wp[j].prob = wp[i].prob;
 	    j++;
