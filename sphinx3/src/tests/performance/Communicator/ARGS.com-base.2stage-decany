@@ -13,5 +13,6 @@
 -agc none 
 -varnorm no 
 -logbase 1.0001
-
+-outlatdir ./lat/
+-bestpath 1
 

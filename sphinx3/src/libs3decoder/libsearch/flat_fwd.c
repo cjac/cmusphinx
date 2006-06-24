@@ -832,7 +832,6 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
 }
 
 
-
 /** 
  * Transition for one word. 
  *
@@ -927,6 +926,7 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
 	    /* First, transition to trigram followers of bw0, bw1 */
 	    acc_bowt = 0;
 	    
+	    /*	    E_INFO("bw0 %d\n",bw0);*/
 	    if (IS_S3WID(bw0)){
 
 	      if(is32bits){
@@ -943,23 +943,19 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
 
 	      if( n_tg > 0){		
 		/* Transition to trigram followers of bw0, bw1, if any */
-		for (; n_tg > 0; --n_tg) {
-		  
-		  if(is32bits) 
-		    tgptr32++;
-		  else
-		    tgptr++;
+		for (; n_tg > 0; --n_tg, is32bits?tgptr32++:tgptr++)
+		  {
 
 		  nextwid=is32bits?
 		    LM_DICTWID(lm, tgptr32->wid):
 		    LM_DICTWID(lm, tgptr->wid);
+
 
 		  /* Transition to all alternative pronunciations for trigram follower */
 
 		  
 		  if (IS_S3WID(nextwid) && (nextwid != dict->startwid)) {
 		    for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-
 
 		      newscore = fwg->rcscore[dict->word[w].ciphone[0]]; /* right context scores with phone ciphone[0]*/
 		      newscore += is32bits?LM_TGPROB (lm, tgptr32): LM_TGPROB (lm, tgptr); /* The LM scores */

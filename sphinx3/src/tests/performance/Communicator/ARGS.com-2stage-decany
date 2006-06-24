@@ -13,7 +13,8 @@
 -agc none 
 -varnorm no 
 -logbase 1.0001
-
+-outlatdir ./lat/
+-bestpath 1
 
 -ctl ./nist.ctl.no_comment.no_id
 -cepdir /net/wilma/usr1/archan/Communicator/nist_data_mfc/
