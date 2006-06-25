@@ -136,7 +136,9 @@ public class  AudioCollectorPresentationApplet extends JApplet
         }
          else if (e.getSource() == _submitButton) {
             setDefaultButton(_submitButton);
+            _billboard.setMember("value", "Sending data collected...");
             _audioCollector.submit(_submitURL);
+            _billboard.setMember("value", "All done! Thank YOU for participating in this data collection effort.");
 
         }
         refresh();
@@ -249,7 +251,8 @@ public class  AudioCollectorPresentationApplet extends JApplet
         _nextButton.setEnabled(_audioCollector.isNextActive());
         _submitButton.setVisible(_audioCollector.isSubmitActive());
         _nextButton.setVisible(!_audioCollector.isSubmitActive());
-        _billboard.setMember("value", getTranscript());
+        if (_audioCollector.getCurrentState() != AudioCollector.INVALID_STATE)
+            _billboard.setMember("value", getTranscript());
     }
 
     public String getTranscript() {

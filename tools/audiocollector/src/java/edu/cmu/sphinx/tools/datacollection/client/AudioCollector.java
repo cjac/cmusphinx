@@ -423,6 +423,7 @@ public class AudioCollector {
             
             in.close();
             System.out.println("=======> Wrote zip file to the outputstream returned: " + retVal);
+            _currentState = INVALID_STATE;
         }
         catch (Exception e) {
             e.printStackTrace();
