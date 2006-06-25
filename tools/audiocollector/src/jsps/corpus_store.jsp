@@ -12,7 +12,8 @@
 
 <%
     try {
-    final String filename = request.getParameter("userID")+"-"+request.getParameter("ID")+".zip";
+    final String dir = application.getInitParameter("collected_data_directory");
+    final String filename = dir+"/"+request.getParameter("userID")+"-"+request.getParameter("ID")+".zip";
     FileOutputStream fos = new FileOutputStream(filename);
     byte[] chunk = new byte[1024];
     int totalLength = 0;
