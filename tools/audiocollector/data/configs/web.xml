@@ -2,6 +2,10 @@
 
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app>
+      <context-param>
+            <param-name>collected_data_directory</param-name>
+            <param-value>/usr0/datacollection-admin/datacollected</param-value>
+        </context-param>
     <servlet>
         <servlet-name>
             data-collection
@@ -9,6 +13,7 @@
         <jsp-file>
             /jsps/login.jsp
         </jsp-file>
+
     </servlet>
  
 </web-app>
