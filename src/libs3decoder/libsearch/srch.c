@@ -215,7 +215,7 @@
 
 #include "srch.h"
 #define COMPUTE_HEURISTIC 1
-
+#define SHOW_SENONE_SCORE_FOR_FRAME 0
 
 static void write_bestsenscore(srch_t *s);
 
@@ -784,7 +784,7 @@ int32 srch_utt_decode_blk(srch_t* s, float ***block_feat, int32 block_nfeatvec, 
 
 
   while (block_nfeatvec + frmno >= s->ascale_sz){
-    E_INFO("Reallocate s->ascale. s->ascale_sz %d\n",s->ascale_sz);
+    E_INFO("Reallocate s->ascale. s->ascale_sz %d\n",s->ascale_sz + DFLT_UTT_SIZE);
     s->ascale= (int32*)
       ckd_realloc(s->ascale,(s->ascale_sz+DFLT_UTT_SIZE) *
 		  sizeof(int32));
@@ -837,8 +837,21 @@ s->segsz_sz+=DFLT_NUM_SEGS;
     ptmr_start (&(st->tm_sen));
     s->srch_select_active_gmm(s);
     s->srch_gmm_compute_lv2(s,block_feat[t],t);
-
     s->ascale[s->num_frm+t]=s->senscale;
+
+    /*
+      A common situation where the decoding scores screwed up 
+      is when some of the senone corrupted by either poor
+      model parameters or poorly formed feature parameters. Turn
+      the following condition to debug this problem.  Notice 
+      that this will generate a lot of information. 
+     */
+    if(SHOW_SENONE_SCORE_FOR_FRAME){
+      E_INFO("At frame %d \n",t);
+      ascr_print_senscr(s->ascr);
+    }
+       
+
 
     ptmr_stop (&(st->tm_sen));
 
@@ -848,9 +861,10 @@ s->segsz_sz+=DFLT_NUM_SEGS;
 
 
     if(s->srch_one_srch_frame_lv2!=NULL){ /* If user provided only how
-					     to search for one frame, then
-					     use it instead of going through
-					     the standard abstraction. 
+					     to search_one_frame
+					     function, then use it
+					     instead of going through
+					     the standard abstraction.
 					  */
       s->srch_one_srch_frame_lv2(s);
       

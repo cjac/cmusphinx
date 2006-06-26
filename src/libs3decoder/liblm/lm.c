@@ -288,6 +288,14 @@ static void lm2logs3 (lm_t *lm, float64 uw)
 
     for (i = 0; i < lm->n_ug; i++) {
 	lm->ug[i].prob.l = log10_to_logs3 (lm->ug[i].prob.f);
+
+	/* This prevent underflow if the backoff value is too small 
+	   It happens sometimes in cmu-lmtk V3's lm_combine. 
+	 */
+
+	if(lm->ug[i].bowt.f < MIN_PROB_F)
+	  lm->ug[i].bowt.f=MIN_PROB_F;
+
 	lm->ug[i].bowt.l = log10_to_logs3 (lm->ug[i].bowt.f);
     }
     
@@ -299,8 +307,13 @@ static void lm2logs3 (lm_t *lm, float64 uw)
     if (lm->n_tg > 0) {
 	for (i = 0; i < lm->n_tgprob; i++)
 	    lm->tgprob[i].l = log10_to_logs3 (lm->tgprob[i].f);
-	for (i = 0; i < lm->n_tgbowt; i++)
+	for (i = 0; i < lm->n_tgbowt; i++){
+
+	  if(lm->tgbowt[i].f < MIN_PROB_F)
+	    lm->tgbowt[i].f = MIN_PROB_F;
+
 	    lm->tgbowt[i].l = log10_to_logs3 (lm->tgbowt[i].f);
+	}
     }
 }
 
@@ -1583,6 +1596,15 @@ int32 lm_tg_score (lm_t *lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3, 
       lm->tgcache[h].lwid[2] = lw3;
       lm->tgcache[h].lscr = score;
     }
+
+
+#if 0
+     printf ("      %5d %5d -> %8d\n", lw1, lw2, score);
+    /* ENABLE this when you suspect the lm routine produce abnormal scores */
+    if(score>0){
+      E_INFO("score %d >0 lm->ug[lw1].bowt.l %d lm_ug[lw2].prob.l %d, lw1 %d lw2 %d i, %d\n", score, lm->ug[lw1].bowt.l, lm->ug[lw2].bowt.l,lw1,lw2,i);
+    }
+#endif
     
     return (score);
 }

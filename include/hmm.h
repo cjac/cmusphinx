@@ -231,7 +231,13 @@ int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
 			 FILE *fp /**< An output file pointer */
 			 );
 
-  /** For debugging, dump the whole hmm out */
+  /** 
+      For debugging, dump the whole hmm out.
+      It also provide debugging information for the hmm. 
+      Say, whether there are abnormal scores enter into the hmm. 
+      
+  */
+
   void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
 		 int32 n_emit_state, /**< In: Number of emitting state */
 		 s3senid_t *senid, /**< An array of senone ID */

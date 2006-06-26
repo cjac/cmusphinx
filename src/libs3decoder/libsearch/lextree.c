@@ -301,9 +301,13 @@ void lextree_report(lextree_t *ltree)
     E_INFO_NOFN("Best HMM score of the current frame %d \n",ltree->best);
     E_INFO_NOFN("Best Word score of the current frame %d \n",ltree->wbest);
   */
-  E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
+  if(ltree->prev_word)
+    E_INFO_NOFN("The previous word for this tree %s \n",ltree->prev_word);
+
   E_INFO_NOFN("The size of a node of the lexical tree %d \n",sizeof(lextree_node_t));
   E_INFO_NOFN("The size of a gnode_t %d \n",sizeof(gnode_t));
+  E_INFO_NOFN("\n");
+
 }
 
 int32 lextree_subtree_num_links(lextree_node_t *ln)

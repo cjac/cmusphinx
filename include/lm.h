@@ -908,6 +908,9 @@ int32 lm_bg_wordprob(lm_t *lm,		/**< In: LM being queried */
   /**
    * Set the language-weight and insertion penalty parameters for the LM, after revoking
    * any earlier set of such parameters.
+   *
+   * WARNING!! This function doesn't prevent underflow of values.  Make sure you call
+   * safe lm2logs3 before it. 
    */
   void lm_set_param (lm_t *lm,  /**< In: the LM */
 		     float64 lw,  /**< In: the langauage weight */
