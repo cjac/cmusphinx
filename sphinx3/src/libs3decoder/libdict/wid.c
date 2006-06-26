@@ -212,31 +212,43 @@ lmclass_word);
 	      /* Add this word into the dictionary */
 	      /* Remember, lexent.ci_acmod_id has different size from s3cipid_t */
 
-	      p=ckd_calloc(lexent.phone_cnt,sizeof(s3cipid_t));
-			   
-	      for(ci=0;ci<lexent.phone_cnt;ci++){
-		cid=mdef_ciphone_id(dict->mdef,lexent.phone[ci]);
-		if(cid==BAD_S3CIPID){
-		  E_FATAL("Phone from LTS couldn't be found in model definition, forced exit. User are not recommended to use built-in Letter-to-Sound rule in this case\n");
-		}
-		p[ci]=cid;;
-	      }
-	      
-	      dict_add_word(dict,lm_wordstr(lm,u),p, lexent.phone_cnt);
+	      if(lexent.phone_cnt>0){
+		s3wid_t addw;
 
+		for(ci=0;ci<lexent.phone_cnt;ci++){
+		  cid=mdef_ciphone_id(dict->mdef,lexent.phone[ci]);
+		  if(cid==BAD_S3CIPID){
+		    E_FATAL("Phone from LTS couldn't be found in model definition, forced exit. User are not recommended to use built-in Letter-to-Sound rule in this case\n");
+		  }
+		  p[ci]=cid;;
+ 		}
+
+		addw=dict_add_word(dict,lm_wordstr(lm,u),p, lexent.phone_cnt);
+		/* HACK! exploit design in ug_t, directrly access dictwid from ug_t in lm_t*/
+		lm->ug[u].dictwid=addw;
+
+		if(NOT_S3WID(addw))
+		  E_ERROR("dict_add_word (%s) failed; ignored\n",lm_wordstr(lm,u));
 		 
-	      /* This is quite stupid. However, this disallows overlarged memory space. */
-	      map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid32_t));
-	      map[dict_size(dict)-1] = (s3lmwid32_t) u;
-	      
-	      ckd_free(p);
+		/* This is quite stupid. However, this disallows overlarged memory space. */
+		map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid_t));
+		map[dict_size(dict)-1] = (s3lmwid_t) u;
+
+	      }else{
+		E_ERROR("%s is not a word in dictionary, it is not a class tag and LTS gave an empty pronounciations \n",lm_wordstr(lm,u));
+		n++;
+ 	      }
+
+	      if(p)
+		ckd_free(p);
+ 
 	      ckd_free(lexent.phone);
 	      ckd_free(lexent.ci_acmod_id);
 	      
 	    }else{
 	      E_ERROR("%s is not a word in dictionary and it is not a class tag. \n",lm_wordstr(lm,u));
+	      n++;
 	    }
-	    n++;
 	  }
 	}
     }
@@ -244,11 +256,11 @@ lmclass_word);
     if (n > 0)
       E_INFO("%d LM words not in dictionary; ignored\n", n);
 
-    /*    for (n = 0; n < dict_size(dict); n++){
+#ifdef SHOW_FINAL_INDEX_MAP
+    for (n = 0; n < dict_size(dict); n++){
       E_INFO("Index %d, map %d word %s\n",n,map[n],dict_wordstr(dict,n));
-      }*/
-
-
+    }
+#endif
     
     if(maperr)
       E_FATAL("Error in mapping, please read the log to see why\n");

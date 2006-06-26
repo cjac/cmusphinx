@@ -131,6 +131,12 @@ typedef struct {
   void ascr_report(ascr_t * a /**<Input : ascr data structure */
 		   ) ;
 
+   /**
+     Report the senone scores and comsen scores array. For debugging. 
+   */
+  void ascr_print_senscr(ascr_t *a /**<Input: ascr data structure */
+			 );
+
   /**
    * Free ascr_t 
    */ 

@@ -119,6 +119,12 @@ void hmm_dump (hmm_t *hmm, int32 n_state, s3senid_t *senid, int32 *senscr, FILE 
 	    fprintf (fp, "\n");
 	}
     }
+
+
+    if(hmm->in.score > 0)
+      fprintf(fp,"ALERT!! The input score %d is large than 0. Probably wrap around.\n",hmm->in.score);
+    if(hmm->out.score > 0)
+      fprintf(fp,"ALERT!! The output score %d is large than 0. Probably wrap around\n.",hmm->out.score);     
     
     fflush (fp);
 }
