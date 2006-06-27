@@ -616,8 +616,10 @@ static int32  lm_read_dump_ug(lm_t *lm,
 		       const char* file
 		       )
 {
-  assert(lm->n_ug >0);
   int32 i;
+  
+  assert(lm->n_ug >0);
+
     /* Read ug; remember sentinel ug at the end! */
     lm->ug = (ug_t *) ckd_calloc (lm->n_ug+1, sizeof(ug_t));
     if (fread (lm->ug, sizeof(ug_t), lm->n_ug+1, lm->fp) != (size_t)(lm->n_ug+1)){
