@@ -231,8 +231,8 @@ lmclass_word);
 		  E_ERROR("dict_add_word (%s) failed; ignored\n",lm_wordstr(lm,u));
 		 
 		/* This is quite stupid. However, this disallows overlarged memory space. */
-		map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid_t));
-		map[dict_size(dict)-1] = (s3lmwid_t) u;
+		map = ckd_realloc (map, (dict_size(dict)) * sizeof(s3lmwid32_t));
+		map[dict_size(dict)-1] = (s3lmwid32_t) u;
 
 	      }else{
 		E_ERROR("%s is not a word in dictionary, it is not a class tag and LTS gave an empty pronounciations \n",lm_wordstr(lm,u));
