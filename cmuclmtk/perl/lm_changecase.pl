@@ -57,10 +57,7 @@ while($line = <INPUT>)
     }
 
     if($process==1){
-	if($line =~ /<\\[sS]>/ ||  #<\s> or <\S> 
-	   $line =~ /<[sS>]/ ||    #<s> or <s>
-	   $line =~ /<UNK>/  ||    #<UNK> 
-	   $line =~ /\\data\\/||   #\data\
+	if($line =~ /\\data\\/||   #\data\
 	   $line =~ /ngram [0-9]=/|| #eg ngram 1, work up to 9-gram
 	   $line =~ /\\[0-9]\-grams:/ || #eg \1-grams, work up to 9-gram
 	   $line =~ /\\end\\/
@@ -72,6 +69,9 @@ while($line = <INPUT>)
 	    }elsif($case==1){
 		$line =~ tr/a-z/A-Z/ ;
 	    }
+	    $line =~ s/<unk>/<UNK>/g; #make sure <UNK> is upper case
+	    # $line =~ /<\\[sS]>/ ||  #<\s> or <\S> 
+	    # $line =~ /<[sS>]/ ||    #<s> or <s>
 	}
     }else{
 	#don't touch them
