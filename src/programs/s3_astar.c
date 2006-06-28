@@ -336,8 +336,18 @@ static void dag_compute_hscr ( void )
 			continue;
 		    
 		    bw2 = dict_basewid (dict, d2->wid);
-		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, lm->dict2lmwid[bw0], lm->dict2lmwid[bw1], lm->dict2lmwid[bw2], bw2);
 		    
+		    /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
+		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, 
+							      (bw0==BAD_S3WID)?
+							      BAD_S3LMWID:
+							      lm->dict2lmwid[bw0], 
+							      (bw1==BAD_S3WID)?
+							      BAD_S3LMWID:							      
+							      lm->dict2lmwid[bw1],
+							      lm->dict2lmwid[bw2], bw2);
+
+
 		    if (hscr > best_hscr)
 			best_hscr = hscr;
 		}
@@ -817,7 +827,16 @@ void nbest_search (char *filename, char *uttid)
 
 	    /* Obtain LM score for link */
 	    bw2 = dict_basewid (dict, l->node->wid);
-	    lscr = (dict_filler_word (dict,bw2)) ? fillpen(fpen, bw2) : lm_tg_score (lm, lm->dict2lmwid[bw0], lm->dict2lmwid[bw1], lm->dict2lmwid[bw2],bw2);
+
+	    /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
+	    lscr = (dict_filler_word (dict,bw2)) ? fillpen(fpen, bw2) : lm_tg_score (lm, 
+										     (bw0==BAD_S3WID)?
+										     BAD_S3LMWID:
+										     lm->dict2lmwid[bw0], 
+										     (bw1==BAD_S3WID)?
+										     BAD_S3LMWID:
+										     lm->dict2lmwid[bw1],
+										     lm->dict2lmwid[bw2], bw2);
 
 	    if (dag->lmop++ > dag->maxlmop) {
 		E_ERROR("%s: Max LM ops (%d) exceeded\n", uttid, dag->maxlmop);

@@ -518,11 +518,15 @@ void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are
 			    "lattice-mode", which means using the
 			    candidate in the lattice to constrain the
 			    search? */
+    int32 n_frms;       /**< Number of frame which is allocated in frm_latstart*/
 
   } latticehist_t;
 
 
 #define latticehist_n_cand(hist)		((hist)->n_cand)
+#define latticehist_n_frms(hist)		((hist)->n_frms)
+#define latticehist_lat_alloc(hist)		((hist)->lat_alloc)
+#define latticehist_n_lat_entry(hist)		((hist)->n_lat_entry)
 
   
   /**

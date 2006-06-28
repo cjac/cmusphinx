@@ -297,7 +297,7 @@ static arg_t defn[] = {
     { "-ppathdebug",
       ARG_INT32,
       "0",
-      "Adjacency fudge (#frames) between nodes in DAG (0..2)" },
+      "Generate debugging information for the search. " },
     
     { NULL, ARG_INT32, NULL, NULL }
 };

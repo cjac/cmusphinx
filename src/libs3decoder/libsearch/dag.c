@@ -701,6 +701,12 @@ void dag_add_fudge_edges (dag_t *dagp, int32 fudge, int32 min_ef_range, void *hi
 	if (d->lef - d->fef < min_ef_range-1)
 	  continue;
 	
+	/* As this part of the code will actually access 2 frames beyond. 
+	   This checking make sure spurious link will be removed. */
+
+	if(d->sf >= lathist->n_frms-3)
+	  continue;
+
 	/* Links to d from nodes that first ended just when d started */
 	for (l = lathist->frm_latstart[d->sf]; l < lathist->frm_latstart[d->sf+1]; l++) {
 	    pd = lathist->lattice[l].dagnode;		/* Predecessor DAG node */
@@ -967,6 +973,8 @@ dag_t* dag_load (
 	E_ERROR("BestSegAscr parameter missing\n");
 	goto load_error;
     }
+
+    E_INFO("dag->nfrm+1, %d\n",dag->nfrm+1);
 
     lathist=latticehist_init(k,dag->nfrm+1);
     
