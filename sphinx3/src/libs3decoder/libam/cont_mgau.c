@@ -218,17 +218,16 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     /* #Floats to follow; for the ENTIRE SET of CODEBOOKS */
     if (bio_fread (&n, sizeof(int32), 1, fp, byteswap, &chksum) != 1)
 	E_FATAL("fread(%s) (total #floats) failed\n", file_name);
-
-    if (n != n_mgau * n_density * blk) {
-	E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
-		file_name, n, n_mgau, n_density, blk);
-    }
     
     if(g->gau_type==SEMIHMM){
       E_FATAL("Currently S2 semi-continous HMM is not supported\n");
     }
 
     if (type == MGAU_MEAN) {
+	if (n != n_mgau * n_density * blk) {
+	    E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
+		    file_name, n, n_mgau, n_density, blk);
+	}
 	/* Allocate memory for mixture gaussian densities */
 	g->n_mgau = n_mgau;
 	g->max_comp = n_density;
@@ -261,9 +260,11 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	buf = g->mgau[0].mean[0];	/* Restore buf to original value */
 
 
-    } else {
-	assert (type == MGAU_VAR);
-	
+    } else if (type == MGAU_VAR) {
+	if (n != n_mgau * n_density * blk) {
+	    E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d\n",
+		    file_name, n, n_mgau, n_density, blk);
+	}
 	if (g->n_mgau != n_mgau)
 	    E_FATAL("#Mixtures(%d) doesn't match that of means(%d)\n", n_mgau, g->n_mgau);
 	if (g->max_comp != n_density)
@@ -305,6 +306,58 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
 	}
 
 	buf = g->mgau[0].var[0];	/* Restore buf to original value */
+    }
+    else {
+	assert (type == MGAU_FULLVAR);
+	if (n != n_mgau * n_density * blk * blk) {
+	    E_FATAL("%s: #float32s(%d) doesn't match dimensions: %d x %d x %d x %d\n",
+		    file_name, n, n_mgau, n_density, blk, blk);
+	}
+	if (g->n_mgau != n_mgau)
+	    E_FATAL("#Mixtures(%d) doesn't match that of means(%d)\n", n_mgau, g->n_mgau);
+	if (g->max_comp != n_density)
+	    E_FATAL("#Components(%d) doesn't match that of means(%d)\n", n_density, g->max_comp);
+	if (g->veclen != blk)
+	    E_FATAL("#Vector length(%d) doesn't match that of means(%d)\n", blk, g->veclen);
+
+	if (!(g->mgau[0].fullvar)){
+	    uint32 l;
+	    float32 ***fpbuf;
+
+	  buf = (float32 *) ckd_calloc (n, sizeof(float32));
+	  fpbuf = (float32 ***) ckd_calloc_2d(n_mgau * n_density, blk, sizeof(float32 *));
+	  
+	  for (i = 0; i < n_mgau; i++) {
+	    if (g->mgau[i].n_comp != n_density)
+	      E_FATAL("Mixture %d: #Components(%d) doesn't match that of means(%d)\n",
+		      i, n_density, g->mgau[i].n_comp);
+	    
+	    g->mgau[i].fullvar = fpbuf;
+	    
+	    for (k = 0; k < n_density; k++) {
+		for (l = 0; l < blk; l++) {
+		    g->mgau[i].fullvar[k][l] = buf;
+		    buf += blk;
+		}
+	    }
+
+	    g->mgau[i].bstidx=NO_BSTIDX;
+	    g->mgau[i].bstscr=S3_LOGPROB_ZERO;
+	    g->mgau[i].updatetime=NOT_UPDATED;
+	    
+
+	    fpbuf += n_density;
+	  }
+
+	  buf = (float32 *) ckd_calloc (n_mgau * n_density, sizeof(float32));
+	  
+	  for (i = 0; i < n_mgau; i++) {
+	    g->mgau[i].lrd = buf;
+	    buf += n_density;
+	  }
+	}
+
+	buf = g->mgau[0].fullvar[0][0];	/* Restore buf to original value */
     }
     
     /* Read mixture gaussian densities data */
