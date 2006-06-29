@@ -137,7 +137,7 @@ typedef uint16		s3lmwid_t;	/** LM word id (uint16 for conserving space) */
 #define MAX_S3LMWID	((uint32)0xfffe)
 #define BAD_LMCLASSID   (-1)
 
-typedef uint32		s3lmwid32_t;	/** LM word id (uint16 for conserving space) */
+typedef uint32		s3lmwid32_t;	/** LM word id (uint32 for conserving space) */
 #define BAD_S3LMWID32	((s3lmwid32_t) 0x0fffffff)
 #define NOT_S3LMWID32(w)  ((w)==BAD_S3LMWID32)
 #define IS_S3LMWID32(w)	((w)!=BAD_S3LMWID32)

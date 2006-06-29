@@ -65,7 +65,8 @@ CLEANFILES = chan3.mfc \
 	allphone.match \
 	allphone.matchseg \
 	test-decode-mode2.match \
-	test-lm_convert.*
+	test-lm_convert.* \
+	test-lm_convert-and-decode.*
 
 etags:
 	etags `find . -name "*.[ch]"`
@@ -99,6 +100,7 @@ test-full : \
 	test-decode-mode3-mulmpx \
 	test-decode-mode3-mpx \
 	test-decode-2ndstage \
+	test-lm_convert-and-decode \
 	test-dp \
 	test-align \
 	test-align-mllr \
@@ -130,6 +132,7 @@ test-full : \
 test-all-app : test-full test-wave2feat
 
 
+test-lm_convert-and-decode \
 test-decode_anytopo-2ndstage \
 test-decode_anytopo \
 test-decode_anytopo-mllr \
