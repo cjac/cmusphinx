@@ -70,8 +70,8 @@ while($line = <INPUT>)
 		$line =~ tr/a-z/A-Z/ ;
 	    }
 	    $line =~ s/<unk>/<UNK>/g; #make sure <UNK> is upper case
-	    # $line =~ /<\\[sS]>/ ||  #<\s> or <\S> 
-	    # $line =~ /<[sS>]/ ||    #<s> or <s>
+	    $line =~ s/<S>/<s>/g; #make sure <s> is lower case
+	    $line =~ s/<\/S>/<\/s>/g; #make sure </s> is lower case
 	}
     }else{
 	#don't touch them
