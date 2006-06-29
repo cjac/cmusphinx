@@ -618,7 +618,7 @@ static void phmm_trans ( void )
 
 		/* If they are not in the LM, kill this
 		 * transition. */
-		if (ci2lmwid[to->ci] == BAD_S3LMWID)
+		if (ci2lmwid[to->ci] == BAD_LMWID(lm))
 		    tscore = S3_LOGPROB_ZERO;
 		else {
 		    if (h->hist && h->hist->phmm) {

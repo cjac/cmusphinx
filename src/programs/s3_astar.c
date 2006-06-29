@@ -340,10 +340,10 @@ static void dag_compute_hscr ( void )
 		    /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
 		    hscr = l2->hscr + l2->ascr + lm_tg_score (lm, 
 							      (bw0==BAD_S3WID)?
-							      BAD_S3LMWID:
+							      BAD_LMWID(lm):
 							      lm->dict2lmwid[bw0], 
 							      (bw1==BAD_S3WID)?
-							      BAD_S3LMWID:							      
+							      BAD_LMWID(lm):							      
 							      lm->dict2lmwid[bw1],
 							      lm->dict2lmwid[bw2], bw2);
 
@@ -831,10 +831,10 @@ void nbest_search (char *filename, char *uttid)
 	    /* ARCHAN , bw2 is bypassed, so we can savely ignored it */
 	    lscr = (dict_filler_word (dict,bw2)) ? fillpen(fpen, bw2) : lm_tg_score (lm, 
 										     (bw0==BAD_S3WID)?
-										     BAD_S3LMWID:
+										     BAD_LMWID(lm):
 										     lm->dict2lmwid[bw0], 
 										     (bw1==BAD_S3WID)?
-										     BAD_S3LMWID:
+										     BAD_LMWID(lm):
 										     lm->dict2lmwid[bw1],
 										     lm->dict2lmwid[bw2], bw2);
 

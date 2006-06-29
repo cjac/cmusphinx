@@ -1475,12 +1475,15 @@ int32 lm_tg_score (lm_t *lm, s3lmwid32_t lw1, s3lmwid32_t lw2, s3lmwid32_t lw3, 
 
     is32bits=lm->is32bits;
 
+    /*    E_INFO("lw1 %d, lw2 %d, lw3 %d is32bits %d BAD_LMWID %d\n",lw1,lw2,lw3,is32bits, BAD_LMWID(lm));*/
+
     if ((lm->n_tg == 0) || (NOT_LMWID(lm,lw1)))
 	return (lm_bg_score (lm, lw2, lw3, w3));
 
     lm->n_tg_score++;
 
-    /*    E_INFO("lw1 %d, lw2 %d, lw3 %d BAD_S3LMWID32 %u, BAD_S3LMWID %d\n",lw1,lw2,lw3,BAD_S3LMWID32, BAD_S3LMWID);*/
+    /*    E_INFO("lw1 %d, lw2 %d, lw3 %d is32bits %d BAD_LMWID %d\n",lw1,lw2,lw3,is32bits, BAD_LMWID(lm));*/
+
     if (NOT_LMWID(lm,lw1) || (lw1 >= lm->n_ug))
 	E_FATAL("Bad lw1 argument (%d) to lm_tg_score\n", lw1);
     if (NOT_LMWID(lm,lw2) || (lw2 >= lm->n_ug))

@@ -342,7 +342,6 @@ int32 vithist_utt_begin (vithist_t *vh, kbcore_t *kbc)
     ve->lmstate.lm3g.lwid[0] = lm_startwid(lm);
     ve->lmstate.lm3g.lwid[1] = BAD_LMWID(lm);
 
-
     if(vh->bFullExpand){
       if(ve->rc_info==NULL){
 	ve->n_rc_info=get_rc_nssid(kbc->dict2pid,dict_startwid(dict),kbc->dict);
@@ -436,12 +435,10 @@ static int32 vithist_entry_maxscr(vithist_entry_t *ve, int32 isFullExpand)
   }else{
     assert(isFullExpand);
     for(i=0;i<ve->n_rc_info;i++){
-      /*     E_INFO("Max %d, ve->rc_info[i].score %d\n",max, ve->rc_info[i].score);*/
       if(max < ve->rc_info[i].score){
 	max = ve->rc_info[i].score;
       }
     }
-    /*    E_INFO("MAX %d ve->wid %d\n", max, ve->wid);*/
     return max;
   }
 }
@@ -644,17 +641,6 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 		/*		tve.score = pve->rc_info[rcmap[ci]].score;*/
 
 #if 0
-
-
-		/*		tve.score = pve->score;*/
-
-		if(pve->rc_info[rcmap[ci]].score> S3_LOGPROB_ZERO)
-		  tve.score = pve->rc_info[rcmap[ci]].score;
-		else
-		  tve.score = pve->score; 
-#endif
-
-#if 0  /*FIX ME, should use the context-specific score instead. */
 		if(pve->rc_info[ci].score > S3_LOGPROB_ZERO)
 		  tve.score = pve->rc_info[ci].score;
 		else
@@ -667,10 +653,6 @@ void vithist_rescore (vithist_t *vh, kbcore_t *kbc,
 	      tve.score += tve.ascr;
 
 		if(vh->bLMRescore){
-		  /*		  E_INFO("prev->lmstate.lm3g.lwid[1] %u, prev->lmstate.lm3g.lwid[0] %d, lwid %d\n", 
-			 pve->lmstate.lm3g.lwid[1],
-			 pve->lmstate.lm3g.lwid[0],
-			 lwid);*/
 			 
 		  tve.lscr = lm_tg_score (kbcore_lm(kbc),
 					pve->lmstate.lm3g.lwid[1],
@@ -974,7 +956,7 @@ int32 vithist_utt_end (vithist_t *vh, kbcore_t *kbc)
     vhid=vh->n_entry-1;
 
 
-    /*vithist_dump(vh,-1,kbc,stdout);*/
+    /*    vithist_dump(vh,-1,kbc,stdout);*/
 
     return vhid;
 
@@ -1759,7 +1741,7 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 		      );
 #endif
 
-    /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);*/
+    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);
     lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_LMWID(lm);
     lscr = lm_tg_score (lm, 
 			lw0, 

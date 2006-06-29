@@ -152,7 +152,7 @@ extern "C" {
  */
 typedef union {
     struct {
-	s3lmwid_t lwid[2];	/**< 2-word history; [0] is most recent */
+	s3lmwid32_t lwid[2];	/**< 2-word history; [0] is most recent */
     } lm3g;
 } vh_lmstate_t;
 
