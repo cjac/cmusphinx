@@ -123,8 +123,9 @@ extern "C" {
 #define FULL_FLOAT_COMP 20002 /** (NOT USED) Use full floating point computation */
 #define MIX_INT_FLOAT_COMP 20003 /** (NOT USED) Use mixture of integer and floating point computation */
 
-#define MGAU_MEAN		1 /** Constant fo specified the mean is used */
-#define MGAU_VAR		2 /** Constant fo specified the variance is used */
+#define MGAU_MEAN		1 /** Constant specifying the mean is used */
+#define MGAU_VAR		2 /** Constant specifying the variance is used */
+#define MGAU_FULLVAR		2 /** Constant specifying the full covariance is used */
 
 #define NO_BSTIDX               -1 /** When there is no best index */
 #define NOT_UPDATED              -100 /** Constant defined that a gaussian is not updated. */
