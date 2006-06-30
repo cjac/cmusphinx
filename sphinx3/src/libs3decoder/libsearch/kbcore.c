@@ -381,7 +381,7 @@ void s3_am_init(kbcore_t *kbc,
 	E_FATAL("Model definition has %d senones; but #senone= %d\n",
 		kbc->mdef->n_sen, sen->n_sen);
   }else {
-    E_FATAL("Feature should be either .semi. or .cont.");
+    E_FATAL("Feature should be either .semi. or .cont., is %s\n", senmgau);
   }
 
 
