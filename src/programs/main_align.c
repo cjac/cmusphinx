@@ -220,6 +220,9 @@
 
 /* ARCHAN: Dangerous routine :-)*/
 #include "s3_align.h"
+#include "approx_cont_mgau.h"
+#include "cont_mgau.h"
+#include "s2_semi_mgau.h"
 #include "ms_mgau.h"
 #include "ms_mllr.h"
 #include "ms_gauden.h"
@@ -297,6 +300,7 @@ static arg_t defn[] = {
     ARG_INT32,
     "1",
     "Whether to insert optional silences and fillers between words." },
+  fast_GMM_computation_command_line_macro()
     { NULL, ARG_INT32, NULL, NULL }
 };
 
@@ -305,7 +309,8 @@ static arg_t defn[] = {
 
 static kbcore_t *kbc; /* A kbcore structure */
 static ascr_t *ascr;  /* An acoustic score structure.  */
-
+static fast_gmm_t *fastgmm;  /* A fast GMM parameter structure.  */
+static adapt_am_t *adapt_am; /* An adaptation structure. */
 static feat_t *fcb;		/* Feature type descriptor (Feature Control Block) */
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
@@ -337,15 +342,11 @@ ptmr_t timers[5];
 
 static int32 tot_nfr;
 static ptmr_t tm_utt;
+static ptmr_t tm_ovrhd;
 
 
 static void models_init ( void )
 {
-    int32 i;
-    gauden_t *g;		/* Gaussian density codebooks */
-    interp_t *interp;
-    ms_mgau_model_t *msg;
-    char str[10];
     int32 cisencnt;
     
     logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
@@ -359,18 +360,6 @@ static void models_init ( void )
 
     kbc=New_kbcore();
 
-    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
-	Then no need for changing the default command-line. 
-     */
-
-    if(strcmp(cmd_ln_str("-senmgau"),".cont.")==0){
-      strcpy(str,".s3cont.");
-    }else if(strcmp(cmd_ln_str("-senmgau"),".semi.")==0){
-      strcpy(str,".semi.");
-    }else if(strcmp(cmd_ln_str("-senmgau"),".s3cont.")==0){
-      strcpy(str,".s3cont.");
-    }
-
     s3_am_init(kbc,
 	       cmd_ln_str("-hmm"),
 	       cmd_ln_str("-mdef"),
@@ -381,7 +370,7 @@ static void models_init ( void )
 	       cmd_ln_float32("-mixwfloor"),
 	       cmd_ln_str("-tmat"),
 	       cmd_ln_float32("-tmatfloor"),
-	       str, 
+	       cmd_ln_str("-senmgau"),
 	       cmd_ln_str("-lambda"),
 	       cmd_ln_int32("-topn")
 	       );
@@ -389,26 +378,6 @@ static void models_init ( void )
     assert(kbc);
     assert(kbc->mdef);
     assert(kbc->tmat);
-    msg=kbcore_ms_mgau(kbc);
-    assert(msg);    
-    assert(msg->g);    
-    assert(msg->s);
-
-    g=ms_mgau_gauden(msg);
-    interp=ms_mgau_interp(msg);
-
-    /* Verify codebook feature dimensions against libfeat */
-    if (feat_n_stream(fcb) != g->n_feat) {
-	E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-		feat_n_stream(fcb), g->n_feat);
-    }
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-	if (feat_stream_len(fcb,i) != g->featlen[i]) {
-	    E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-		    feat_stream_len(fcb, i), g->featlen[i]);
-	}
-    }
-
 
     /* Dictionary */
     dict = dict_init (kbc->mdef,
@@ -429,6 +398,19 @@ static void models_init ( void )
 		   0, /* No composite senone sequence */
 		   1, /* Phoneme lookahead window =1. Not enabled phoneme lookahead at this moment */
 		   cisencnt);
+
+    fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
+			    cmd_ln_int32("-cond_ds"),
+			    cmd_ln_int32("-dist_ds"),
+			    cmd_ln_int32("-gs4gs"),
+			    cmd_ln_int32("-svq4svq"),
+			    cmd_ln_float64("-subvqbeam"),
+			    cmd_ln_float64("-ci_pbeam"),
+			    cmd_ln_float64("-tighten_factor"),
+			    cmd_ln_int32("-maxcdsenpf"),
+			    kbc->mdef->n_ci_sen
+	    );
+    adapt_am = adapt_am_init();
 }
 
 
@@ -819,15 +801,9 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     align_phseg_t *phseg;
     align_wdseg_t *wdseg;
     int32 w;
-    int32 topn;
-    ms_mgau_model_t *msg;
-
-    msg=kbcore_ms_mgau(kbc);
 
     w = feat_window_size (fcb);	/* #MFC vectors needed on either side of current
 				   frame to compute one feature vector */
-    topn  = ms_mgau_topn(msg);
-    
     if (nfr <= (w<<1)) {
 	E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid, (w<<1)+1, nfr);
 	return;
@@ -837,6 +813,8 @@ static void align_utt (char *sent,	/* In: Reference transcript */
     
     ptmr_reset (&tm_utt);
     ptmr_start (&tm_utt);
+    ptmr_reset (&tm_ovrhd);
+    ptmr_start (&tm_ovrhd);
     ptmr_start (timers+tmr_utt);
 
 
@@ -860,10 +838,30 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 
 	align_sen_active (ascr->sen_active, ascr->n_sen);
 
-	senscale[i]=ms_cont_mgau_frame_eval(ascr,
-					    msg,
-					    kbc->mdef,
-					    feat[i]);
+	/* Bah, there ought to be a function for this. */
+	if (kbc->ms_mgau) {
+		senscale[i]=ms_cont_mgau_frame_eval(ascr,
+						    kbc->ms_mgau,
+						    kbc->mdef,
+						    feat[i]);
+	}
+	else if (kbc->s2_mgau) {
+		senscale[i] = s2_semi_mgau_frame_eval(kbc->s2_mgau,
+						      ascr, fastgmm, feat[i], i);
+	}
+	else if (kbc->mgau) {
+		approx_cont_mgau_ci_eval(kbc,
+					 fastgmm,
+					 kbc->mdef,
+					 feat[i][0],
+					 ascr->cache_ci_senscr[0],
+					 &(ascr->cache_best_list[0]),
+					 i);
+		senscale[i] = approx_cont_mgau_frame_eval(kbc, fastgmm, ascr,
+							  feat[i][0], i,
+							  ascr->cache_ci_senscr[0],
+							  &tm_ovrhd);
+	}
 
 	ptmr_stop (timers+tmr_gauden);
 	ptmr_stop (timers+tmr_senone);
@@ -875,6 +873,7 @@ static void align_utt (char *sent,	/* In: Reference transcript */
 	ptmr_stop (timers+tmr_utt);
     }
     ptmr_stop (&tm_utt);
+    ptmr_stop (&tm_ovrhd);
 
     printf ("\n");
 
@@ -968,9 +967,13 @@ static void utt_align(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid
 
   nfr = feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat, S3_MAX_FRAMES);
 
-  assert(kbc->ms_mgau);
   if(ur->regmatname) {
-    model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
+    if(kbc->mgau)
+      adapt_set_mllr(adapt_am,kbc->mgau,ur->regmatname,ur->cb2mllrname,kbc->mdef);
+    else if (kbc->ms_mgau)
+      model_set_mllr(kbc->ms_mgau,ur->regmatname, ur->cb2mllrname,fcb,kbc->mdef);
+    else
+      E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
   }
 
   if (nfr <= 0){
@@ -1063,9 +1066,14 @@ main (int32 argc, char *argv[])
   align_init (kbc->mdef, kbc->tmat, dict);
   printf ("\n");
 
-  assert(kbc->ms_mgau);
-  if (cmd_ln_access("-mllr") != NULL) 
-    model_set_mllr(kbc->ms_mgau,cmd_ln_access("-mllr"), cmd_ln_access("-cb2mllr"),fcb,kbc->mdef);
+  if (cmd_ln_access("-mllr") != NULL) {
+    if(kbc->mgau)
+      adapt_set_mllr(adapt_am,kbc->mgau,cmd_ln_str("-mllr"),NULL,kbc->mdef);
+    else if (kbc->ms_mgau)
+      model_set_mllr(kbc->ms_mgau,cmd_ln_str("-mllr"),NULL,fcb,kbc->mdef);
+    else
+      E_WARN("Can't use MLLR matrices with .s2semi. yet\n");
+  }
     
   tot_nfr = 0;
     
@@ -1106,6 +1114,12 @@ main (int32 argc, char *argv[])
 
   if(ascr){
     ascr_free(ascr);
+  }
+  if (fastgmm) {
+    fast_gmm_free(fastgmm);
+  }
+  if (adapt_am) {
+    adapt_am_free(adapt_am);
   }
 
 #if (! WIN32)
