@@ -193,6 +193,7 @@ src/tests/performance/ICSI/Makefile
 src/tests/performance/spoke3/Makefile
 src/tests/programs/Makefile
 src/tests/regression/Makefile
+src/tests/regression/checkStyle.sh
 src/tests/regression/test-livepretend.sh
 src/tests/regression/test-livepretend-clm.sh
 src/tests/regression/test-livepretend-mllr.sh
@@ -257,37 +258,4 @@ include/Makefile
 doc/Makefile])
 
 chmod +x scripts/sphinx3-simple
-chmod +x src/tests/regression/test-livepretend.sh
-chmod +x src/tests/regression/test-livepretend-clm.sh
-chmod +x src/tests/regression/test-livepretend-mllr.sh
-chmod +x src/tests/regression/test-lm_convert.sh
-chmod +x src/tests/regression/test-align.sh
-chmod +x src/tests/regression/test-align-mllr.sh
-chmod +x src/tests/regression/test-allphone.sh
-chmod +x src/tests/regression/test-allphone-mllr.sh
-chmod +x src/tests/regression/test-astar.sh
-chmod +x src/tests/regression/test-dag.sh
-chmod +x src/tests/regression/test-decode_anytopo.sh
-chmod +x src/tests/regression/test-decode_anytopo-mllr.sh
-chmod +x src/tests/regression/test-decode_anytopo-2ndstage.sh
-chmod +x src/tests/regression/test-decode.sh
-chmod +x src/tests/regression/test-decode-simple.sh
-chmod +x src/tests/regression/test-decode-noncomp.sh
-chmod +x src/tests/regression/test-decode-lts.sh
-chmod +x src/tests/regression/test-decode-mode2.sh
-chmod +x src/tests/regression/test-decode-mode3.sh
-chmod +x src/tests/regression/test-decode-mode3-mulmpx.sh
-chmod +x src/tests/regression/test-decode-mode3-mpx.sh
-chmod +x src/tests/regression/test-decode-mode5.sh
-chmod +x src/tests/regression/test-decode-mode5-noncomp.sh
-chmod +x src/tests/regression/test-decode-s3cont.sh
-chmod +x src/tests/regression/test-decode-s2semi.sh
-chmod +x src/tests/regression/test-decode-clm.sh
-chmod +x src/tests/regression/test-decode-mllr.sh
-chmod +x src/tests/regression/test-decode-2ndstage.sh
-chmod +x src/tests/regression/test-lm_convert-and-decode.sh
-chmod +x src/tests/regression/test-dp.sh
-chmod +x src/tests/regression/test-ep.sh
-chmod +x src/tests/regression/test-gausubvq.sh
-chmod +x src/tests/regression/test-wave2feat.sh
-chmod +x src/tests/regression/test-cepview.sh
+chmod +x src/tests/regression/*.sh
