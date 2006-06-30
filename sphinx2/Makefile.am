@@ -53,7 +53,7 @@ EXTRA_DIST = sphinx2.spec \
         win32/msdev/libsphinx2ad/libsphinx2ad.dsp \
         win32/msdev/libsphinx2fe/libsphinx2fe.dsp
 
-test:
+check:
 	$(LIBTOOL) --mode=execute src/examples/sphinx2_continuous \
 		-verbose 9 -adcin TRUE -adcext 16k -dither TRUE \
 		-ctlfn $(top_srcdir)/model/lm/turtle/turtle.ctl \
