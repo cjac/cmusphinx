@@ -151,9 +151,12 @@ fi
 
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
+AC_SUBST(docdata)
 AC_SUBST(hmmdata)
 AC_SUBST(lmdata)
-AC_SUBST(docdata)
+AC_SUBST(tidigitsdata)
+AC_SUBST(tidigitsmandata)
+AC_SUBST(tidigitswomandata)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
 AC_SUBST(ad_backend)
