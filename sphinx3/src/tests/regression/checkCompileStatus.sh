@@ -107,8 +107,7 @@ popd >> $outfile 2>&1
 # Check coding style, but send message only if script executed
 # successfully. The script will fail, for example, if indent doesn't
 # exist, or doesn't have the same options, in the machine.
-./src/tests/regression/checkStyle.sh > $outfile 2>&1 && ${MAILX} -s
-"Coding style" ${S3LIST} < $outfile
+./src/tests/regression/checkStyle.sh > $outfile 2>&1 && ${MAILX} -s "Coding style" ${S3LIST} < $outfile
 
 chmod -R 755 sphinx3
 /bin/rm -rf sphinx3
