@@ -82,6 +82,7 @@ fi
 
 popd >> $outfile 2>&1
 
+chmod -R 755 sphinx2
 /bin/rm -rf sphinx2
 
 # Fresh download of sphinx3
@@ -103,8 +104,13 @@ fi
 
 popd >> $outfile 2>&1
 
-./src/tests/regression/checkStyle.sh 2>&1 | ${MAILX} -s "Coding style"
+# Check coding style, but send message only if script executed
+# successfully. The script will fail, for example, if indent doesn't
+# exist, or doesn't have the same options, in the machine.
+./src/tests/regression/checkStyle.sh > $outfile 2>&1 && ${MAILX} -s
+"Coding style" ${S3LIST} < $outfile
 
+chmod -R 755 sphinx3
 /bin/rm -rf sphinx3
 
 # Fresh download of SphinxTrain
@@ -122,6 +128,9 @@ if ! ${GMAKE} all >> $outfile 2>&1 ;
 fi
 
 popd >> $outfile 2>&1
+
+chmod -R 755 SphinxTrain
+/bin/rm -rf SphinxTrain
 
 # Remove what we created
 cd /tmp
