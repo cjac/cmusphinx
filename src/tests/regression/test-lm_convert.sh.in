@@ -30,7 +30,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt TXT \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT PHONE LM DMP -> TXT test PASSED"; else \
 echo "LM_CONVERT PHONE LM DMP -> TXT test FAILED"; fi 
 
@@ -40,11 +40,11 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt FST \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmpfst @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.FST 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpfst @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.FST 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT PHONE LM TXT -> FST test PASSED"; else \
 echo "LM_CONVERT PHONE LM TXT -> FST test FAILED"; fi 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl ${tmpfst}.sym @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.FST.SYM 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl ${tmpfst}.sym @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.FST.SYM 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT PHONE LM TXT -> FST SYM test PASSED"; else \
 echo "LM_CONVERT PHONE LM TXT -> FST SYM test FAILED"; fi 
 
@@ -60,7 +60,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt TXT \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT PHONE LM TXT -> DMP -> TXT test PASSED"; else \
 echo "LM_CONVERT PHONE LM TXT -> DMP -> TXT test FAILED"; fi 
 
@@ -76,7 +76,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt TXT \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.tg.phone.arpa.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT PHONE LM TXT -> DMP32 -> TXT test PASSED"; else \
 echo "LM_CONVERT PHONE LM TXT -> DMP32 -> TXT test FAILED"; fi 
 
@@ -102,7 +102,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt TXT \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT WORD LM DMP -> TXT test PASSED"; else \
 echo "LM_CONVERT WORD LM DMP -> TXT test FAILED"; fi 
 
@@ -112,7 +112,7 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt FST \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmpfst @abs_top_srcdir@/model/lm/an4/an4.ug.lm.FST 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpfst @abs_top_srcdir@/model/lm/an4/an4.ug.lm.FST 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT WORD LM TXT -> FST test PASSED"; else \
 echo "LM_CONVERT WORD LM TXT -> FST test FAILED"; fi 
 
@@ -128,6 +128,6 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_
 -outputfmt TXT \
 > $tmpout 2>&1 
 
-if (perl @abs_top_builddir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmptxt @abs_top_srcdir@/model/lm/an4/an4.ug.lm.lm_convert 0.0002 | grep SUCCESS > /dev/null 2>&1); \
 then echo "LM_CONVERT WORD LM DMP -> TXT -> DMP test PASSED"; else \
 echo "LM_CONVERT WORD LM DMP -> TXT -> DMP test FAILED"; fi 

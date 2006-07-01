@@ -8,7 +8,7 @@ if ! which indent > /dev/null 2>&1 ; then
     exit 1;
 fi
 
-pushd  `(cd src/tests/regression/../../.. && pwd)`  > /dev/null 2>&1
+pushd  `(cd /home/archan/src/sphinx3/src/tests/regression/../../.. && pwd)`  > /dev/null 2>&1
 
 # outfile="`pwd`/style.out";
 
