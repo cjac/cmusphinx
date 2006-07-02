@@ -17,6 +17,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
 import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.GridConstraints;
@@ -24,7 +26,6 @@ import com.intellij.uiDesigner.core.GridConstraints;
 /**
  * Copyright 1999-2006 Carnegie Mellon University.
  * Portions Copyright 2002 Sun Microsystems, Inc.
- * Portions Copyright 2002 Mitsubishi Electric Research Laboratories.
  * All Rights Reserved.  Use is subject to license terms.
  * <p/>
  * See the file "license.terms" for information on usage and
@@ -46,7 +47,7 @@ public class DictatorView {
     StreamDataSource dataSource;
     //Font font;
 
-    public void open(String configFile, String fontFile) throws Exception {
+    public void create() throws Exception {
 
         clipboard = new ClipboardControls();
 
@@ -88,9 +89,14 @@ public class DictatorView {
                     }
                 }
                 );
+    }
 
+    private void load(String configFile) throws IOException, PropertyException, InstantiationException, URISyntaxException {
+        text.setText("Unpacking Language Model...");
 
-        text.setText("Loading...");
+        unpackLM();
+
+        text.setText("Loading Recognizer...");
 
         loadRecognizer(configFile);
 
@@ -109,6 +115,26 @@ public class DictatorView {
         dataSource = (StreamDataSource) cm.lookup("streamDataSource");
         recorder = new Recorder();
         recorder.open(cm);
+    }
+
+
+    private void unpackLM() throws IOException, URISyntaxException {
+        File dmpFile = new File("wsj5k.DMP");
+
+        if (!dmpFile.canRead()) {
+
+            InputStream in = getClass().getResourceAsStream(new URI("resource:/wsj5k.DMP").getPath());
+            OutputStream out = new FileOutputStream(dmpFile);
+
+            // Transfer bytes from in to out
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+            in.close();
+            out.close();
+        }
     }
 
     public static String hex2Unicode(String hex) {
@@ -186,9 +212,11 @@ public class DictatorView {
             f.pack();
             f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-            dv.open("dictator.config.xml","mssong.ttf");
+            dv.create();
 
             f.setVisible(true);
+
+            dv.load("dictator.config.xml");
 
             System.out.println("Ready");
 
