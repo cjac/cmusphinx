@@ -111,6 +111,7 @@
 #include "mdef.h"	/* This is still a sore point; dict should be independent of mdef */
 #include "lts.h" 
 
+#define DICT_INC_SZ 4096
 #ifdef __cplusplus
 extern "C" {
 #endif
