@@ -92,7 +92,7 @@ s3lmwid32_t *wid_dict_lm_map (dict_t *dict, lm_t *lm,int32 lw)
     int32 maperr;
     lmclass_word_t lmclass_word;
     lex_entry_t lexent;
-    s3cipid_t *p, ci, cid;
+    s3cipid_t p[1024], ci, cid;
     
     maperr=0;
 
@@ -238,9 +238,6 @@ lmclass_word);
 		E_ERROR("%s is not a word in dictionary, it is not a class tag and LTS gave an empty pronounciations \n",lm_wordstr(lm,u));
 		n++;
  	      }
-
-	      if(p)
-		ckd_free(p);
  
 	      ckd_free(lexent.phone);
 	      ckd_free(lexent.ci_acmod_id);

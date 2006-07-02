@@ -149,7 +149,10 @@ s3wid_t dict_add_word (dict_t *d, char *word, s3cipid_t *p, int32 np)
     s3wid_t newwid;
     
     if (d->n_word >= d->max_words) {
-	E_ERROR("Dictionary full; add(%s) failed\n", word);
+	E_INFO("Dictionary max size (%d) exceeded; reallocate another entries %d \n", d->max_words,DICT_INC_SZ);
+	d->word = (dictword_t*) ckd_realloc (d->word, (d->max_words + DICT_INC_SZ) * sizeof(dictword_t));
+	d->max_words = d->max_words + DICT_INC_SZ;
+
 	return (BAD_S3WID);
     }
     
@@ -399,7 +402,7 @@ dict_t *dict_init (mdef_t *mdef, char *dictfile, char *fillerfile, char comp_sep
      * Also check for type size restrictions.
      */
     d = (dict_t *) ckd_calloc (1, sizeof(dict_t)); /* freed in dict_free() */
-    d->max_words = (n+1024 < MAX_S3WID) ? n+1024 : MAX_S3WID;
+    d->max_words = (n+DICT_INC_SZ < MAX_S3WID) ? n+DICT_INC_SZ : MAX_S3WID;
     if (n >= MAX_S3WID)
 	E_FATAL("#Words in dictionaries (%d) exceeds limit (%d)\n", n, MAX_S3WID);
     
@@ -620,10 +623,8 @@ void dict_free (dict_t *d)
 void dict_report(dict_t *d)
 {
   E_INFO_NOFN("Initialization of dict_t, report:\n");
-  /*
-    E_INFO_NOFN("No of CI phone: %d\n",d->n_ciphone);
-    E_INFO_NOFN("Max word: %d\n",d->max_words);
-  */
+  E_INFO_NOFN("No of CI phone: %d\n",d->n_ciphone);
+  E_INFO_NOFN("Max word: %d\n",d->max_words);
   E_INFO_NOFN("No of word: %d\n",d->n_word);
   E_INFO_NOFN("\n");
 

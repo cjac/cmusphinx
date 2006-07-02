@@ -1578,8 +1578,7 @@ void lattice_entry (latticehist_t *lathist, s3wid_t w, int32 f, int32 score, s3l
 	(lathist->lattice[lathist->n_lat_entry-1].wid != w) || (lathist->lattice[lathist->n_lat_entry-1].frm != f)) {
 	/* New lattice entry */
 	if (lathist->n_lat_entry >= lathist->lat_alloc) {
-	    printf ("\n");
-	    E_INFO("Lattice size(%d) exceeded; increasing to %d\n",
+	    E_INFO("\nLattice size(%d) exceeded; increasing to %d\n",
 		   lathist->lat_alloc,lathist->lat_alloc+LAT_ALLOC_INCR);
 	    lathist->lat_alloc += LAT_ALLOC_INCR;
 	    lathist->lattice = ckd_realloc (lathist->lattice, lathist->lat_alloc * sizeof(lattice_t));
@@ -1741,7 +1740,7 @@ int32 lat_seg_lscr (latticehist_t *lathist, s3latid_t l, s3wid_t w_rc, lm_t *lm,
 		      );
 #endif
 
-    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);
+    /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2);*/
     lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_LMWID(lm);
     lscr = lm_tg_score (lm, 
 			lw0, 
