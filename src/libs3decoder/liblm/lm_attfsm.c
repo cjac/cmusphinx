@@ -33,6 +33,13 @@
  * ====================================================================
  *
  */
+
+/*
+  This file is contributed by Laboratoire d'informatique Universite du
+  Maine (LIUM) by Prof.  Yannick Esteve. 
+ */
+
+
 /*
  * lm_attfsm.c -- language model dumping in FSM format. Mainly adapted
  * from LIUM Sphinx's modification. Also doesn't work for class-based
