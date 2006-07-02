@@ -1,7 +1,33 @@
+2006-07-02  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+
+	Sphinx 3.6.1
+	^^^^^^^^^^^^
+	(Corresponds to Sourceforge SVN rev 5753.)
+
+	Sphinx 3.6.1 (from rev 5660) enables 32-bit LM.  It is tested
+	undere a real-life scenario and shown to provide better
+	results. Also LTS code has bug so it was not truly enable in 
+	official sphinx 3.6
+
+	Several bug fixes:
+	-(rev 5621) Random crash with multiple LMs. 
+	-(rev 5639) Don't allow ld_end_utt() to be called if ld_begin_utt() hasn't been
+ 	called (this leads to crashing and badness).
+	-(rev 5663) Fixed FST output behavior. 
+	-(rev 5711) Fixed underflow problem of ug if backoff weight is
+	too small (<< 0). LTS now truely enabled.
+	-(rev 5730) Fixed Visual Studio 8.0 compilation
+	-(rev 5732) Fixed astar memory problem, tested in a 64000 words scenario. 
+	
+	Developing features:
+	-(rev 5738) full covariance matrices
+	-(rev 5744) Enable fast GMM computation for align. 
+
 2006-06-12  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 
 	Sphinx 3.6 Official Release
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	(Corresponds to Sourceforge SVN rev 5614.)
 	
 	Sphinx 3.6 official release included all changes one found in
 	Sphinx 3.6 RC I.
