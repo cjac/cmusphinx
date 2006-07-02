@@ -1,5 +1,7 @@
 package edu.cmu.sphinx.tools.dictator;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import edu.cmu.sphinx.frontend.util.StreamDataSource;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
@@ -9,6 +11,9 @@ import edu.cmu.sphinx.tools.corpus.RegionOfAudioData;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 
+import javax.jnlp.BasicService;
+import javax.jnlp.ServiceManager;
+import javax.jnlp.UnavailableServiceException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -16,16 +21,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.*;
-import java.net.URL;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.GridConstraints;
+import java.net.URL;
 
 /**
  * Copyright 1999-2006 Carnegie Mellon University.
- * Portions Copyright 2002 Sun Microsystems, Inc.
+ * Portions Copyright 2001 David Wallace Croft
  * All Rights Reserved.  Use is subject to license terms.
  * <p/>
  * See the file "license.terms" for information on usage and
@@ -37,7 +41,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
  * Time: 11:38:42 AM
  */
 public class DictatorView {
-    private JButton ptt;
+    private JButton clearText;
     private VUMeterPanel vu;
     private Recorder recorder;
     JPanel mainPanel;
@@ -45,6 +49,7 @@ public class DictatorView {
     private JTextArea text;
     Recognizer recognizer;
     StreamDataSource dataSource;
+    private JButton donateVoice;
     //Font font;
 
     public void create() throws Exception {
@@ -60,7 +65,7 @@ public class DictatorView {
 
                     public void mousePressed(MouseEvent event) {
                         //text.insert( vu.getVu().getRmsDB() + " ", text.getSelectionStart() );
-                        clipboard.setClipboardContents( text.getText());
+                        clipboard.setClipboardContents(text.getText());
                         String utt = "utt" + System.currentTimeMillis();
                         try {
                             recorder.start(utt);
@@ -80,15 +85,93 @@ public class DictatorView {
                     public void mouseExited(MouseEvent event) {
                     }
                 }
-                );
+        );
 
-        ptt.addActionListener(
+        clearText.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent event) {
                         text.setText("");
                     }
                 }
-                );
+        );
+
+        donateVoice.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        try {
+                            showDocument(new URL("http://mangueira.speech.cs.cmu.edu:8080/data-collection/jsps/login.jsp"));
+                        } catch (MalformedURLException e) {
+                            throw new Error(e);
+                        }
+                    }
+                }
+        );
+
+    }
+
+    /**
+     * ******************************************************************
+     * showDocument(), getBasicServiceObject() and getBasicServiceClass()
+     * are adapteted from a JNLP tutorial by David Croft.
+     *
+     * *******************************************************************
+     * @see <a target="_blank"
+     *      href="http://croftsoft.com/library/tutorials/browser/">
+     *      Launching a Browser from Java</a>
+     * @since 2001-08-31
+     */
+
+    public static boolean showDocument(URL url) {
+
+        Object basicServiceObject
+                = getBasicServiceObject();
+
+        Class basicServiceClass
+                = getBasicServiceClass();
+
+        if (basicServiceObject == null) {
+            return false;
+        }
+
+        try {
+            Method method = basicServiceClass.getMethod(
+                    "showDocument", new Class [ ]{URL.class});
+
+            Boolean resultBoolean = (Boolean)
+                    method.invoke(basicServiceObject, new Object [ ]{url});
+
+            return resultBoolean.booleanValue();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+
+            throw new RuntimeException(ex.getMessage());
+        }
+    }
+
+    private static Object getBasicServiceObject() {
+        try {
+            Class serviceManagerClass
+                    = Class.forName("javax.jnlp.ServiceManager");
+
+            Method lookupMethod = serviceManagerClass.getMethod("lookup",
+                    new Class [ ]{String.class});
+
+            return lookupMethod.invoke(
+                    null, new Object [ ]{"javax.jnlp.BasicService"});
+        }
+        catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static Class getBasicServiceClass() {
+        try {
+            return Class.forName("javax.jnlp.BasicService");
+        }
+        catch (Exception ex) {
+            return null;
+        }
     }
 
     private void load(String configFile) throws IOException, PropertyException, InstantiationException, URISyntaxException {
@@ -161,37 +244,46 @@ public class DictatorView {
      */
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
-        mainPanel.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null));
         final JScrollPane scrollPane1 = new JScrollPane();
-        mainPanel.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(500, 300), null, null));
+        panel1.add(scrollPane1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(500, 300), null, null));
         text = new JTextArea();
         scrollPane1.setViewportView(text);
-        ptt = new JButton();
-        ptt.setText("Button");
-        mainPanel.add(ptt, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null));
-        final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel1, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null));
+        final JPanel panel2 = new JPanel();
+        panel2.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.add(panel2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null));
         vu = new VUMeterPanel();
-        panel1.add(vu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(-1, 300), null, null));
+        panel2.add(vu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, new Dimension(-1, 300), null, null));
+        final JPanel panel3 = new JPanel();
+        panel3.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null));
+        clearText = new JButton();
+        clearText.setText("Clear Text");
+        panel3.add(clearText, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null));
+        donateVoice = new JButton();
+        donateVoice.setText("Donate Voice");
+        panel3.add(donateVoice, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null));
     }
 
     class DictatorThread extends Thread {
 
         public void run() {
-                        try {
-                            RegionOfAudioData rad = recorder.stop();
-                            dataSource.setInputStream( rad.toInputStream(), "Dictator" );
-                            Result result = recognizer.recognize();
-                            String res = result.getBestResultNoFiller();
-                            /*
-                            for( String word : res.split(" ") ) {
-                                text.append(hex2Unicode(word));
-                            }*/
-                            text.append(res+" ");
-                        } catch (Throwable e) {
-                            System.out.println(e);
-                        }
+            try {
+                RegionOfAudioData rad = recorder.stop();
+                dataSource.setInputStream(rad.toInputStream(), "Dictator");
+                Result result = recognizer.recognize();
+                String res = result.getBestResultNoFiller();
+                /*
+                for( String word : res.split(" ") ) {
+                    text.append(hex2Unicode(word));
+                }*/
+                text.append(res + " ");
+            } catch (Throwable e) {
+                System.out.println(e);
+            }
         }
     }
 

@@ -4,7 +4,7 @@ del dictator.jar
 
 mkdir classes
 
-javac -cp ..\..\common\lib\sphinx4.jar;..\..\common\lib\batch.jar;..\..\common\lib\javolution.jar;..\..\common\lib\forms_rt.jar -sourcepath ..\src\java;..\..\common\src\java -d classes ..\src\java\edu\cmu\sphinx\tools\dictator\DictatorView.java
+javac -cp "C:\Program Files\Java\jdk1.5.0_04\jre\lib\javaws.jar";..\..\common\lib\sphinx4.jar;..\..\common\lib\batch.jar;..\..\common\lib\javolution.jar;..\..\common\lib\forms_rt.jar -sourcepath ..\src\java;..\..\common\src\java -d classes ..\src\java\edu\cmu\sphinx\tools\dictator\DictatorView.java
 
 cd classes
 
