@@ -59,6 +59,7 @@ pkginclude_HEADERS = adaptor.h			\
     lm.h					\
     logs3.h					\
     lts.h					\
+    matrix.h					\
     mdef.h					\
     misc.h					\
     mllr.h					\

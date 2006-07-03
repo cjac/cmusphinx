@@ -34,6 +34,13 @@ docdata=`echo $docdata`
 
 AC_CANONICAL_HOST
 
+dnl
+dnl Look for math libraries
+dnl
+AC_CHECK_LIB(m,log)
+AC_CHECK_LIB(g2c,r_log)
+AC_CHECK_LIB(blas,sgemm_)
+AC_CHECK_LIB(lapack,sgesv_)
 
 dnl
 dnl determine audio type or use none if none supported on this platform
