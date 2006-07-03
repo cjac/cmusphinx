@@ -122,6 +122,7 @@
 #include "s3types.h"
 #include "bio.h"
 #include "vector.h"
+#include "matrix.h"
 #include "logs3.h"
 #include "cont_mgau.h"
 
@@ -221,6 +222,14 @@ static int32 mgau_file_read(mgau_model_t *g, char *file_name, int32 type)
     
     if(g->gau_type==SEMIHMM){
       E_FATAL("Currently S2 semi-continous HMM is not supported\n");
+    }
+
+    /* Detect full covariance matrices automatically. */
+    if (type == MGAU_VAR
+	&& n == n_mgau * n_density * blk * blk) {
+	E_INFO("%s is a full covariance matrix file, treating it accordingly\n",
+	       file_name);
+	type = MGAU_FULLVAR;
     }
 
     if (type == MGAU_MEAN) {
@@ -688,15 +697,30 @@ static void mgau_var_floor (mgau_model_t *g, float64 floor)
   for (m = 0; m < mgau_n_mgau(g); m++) {
     for (c = 0; c < mgau_n_comp(g,m); c++) {
       for (i = 0; i < mgau_veclen(g); i++) {
-	if (g->mgau[m].var[c][i] < floor) {
+	  if (g->mgau[m].fullvar) {
+	      if (g->mgau[m].fullvar[c][i][i] < floor) {
 
 #if 0
-	  E_INFO("var[i] %f , floor %f n %d m %d, c %d, i %d\n",g->mgau[m].var[c][i],floor,n, m,c,i);
+		  E_INFO("fullvar[i][i] %f , floor %f n %d m %d, c %d, i %d\n"
+			 g->mgau[m].fullvar[c][i][i],floor,n, m,c,i);
 #endif
 
-	  g->mgau[m].var[c][i] = (float32) floor;
-	  n++;
-	}
+		  g->mgau[m].fullvar[c][i][i] = (float32) floor;
+		  n++;
+	      
+	      }
+	  }
+	  else {
+	      if (g->mgau[m].var[c][i] < floor) {
+
+#if 0
+		  E_INFO("var[i] %f , floor %f n %d m %d, c %d, i %d\n",g->mgau[m].var[c][i],floor,n, m,c,i);
+#endif
+
+		  g->mgau[m].var[c][i] = (float32) floor;
+		  n++;
+	      }
+	  }
       }
     }
   }
@@ -752,14 +776,20 @@ static int32 mgau_precomp (mgau_model_t *g)
 
     for (m = 0; m < mgau_n_mgau(g); m++) {
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
-	    lrd = 0.0;
-	    for (i = 0; i < mgau_veclen(g); i++) {
-		lrd += log(g->mgau[m].var[c][i]);
-		
-		/* Precompute this part of the exponential */
-		g->mgau[m].var[c][i] = (float32) (1.0 / (g->mgau[m].var[c][i] * 2.0));
+	    if (g->mgau[m].fullvar) {
+		lrd = log(determinant(g->mgau[m].fullvar[c], mgau_veclen(g)));
+		invert(g->mgau[m].fullvar[c], g->mgau[m].fullvar[c], mgau_veclen(g));
+		/* Not doubling it here. */
 	    }
-	    
+	    else {
+		lrd = 0.0;
+		for (i = 0; i < mgau_veclen(g); i++) {
+		    lrd += log(g->mgau[m].var[c][i]);
+		
+		    /* Precompute this part of the exponential */
+		    g->mgau[m].var[c][i] = (float32) (1.0 / (g->mgau[m].var[c][i] * 2.0));
+		}
+	    }
 	    lrd += mgau_veclen(g) * log(2.0 * PI);	/* (2pi)^velen */
 	    mgau_lrd(g,m,c) = (float32)(-0.5 * lrd);	/* Reciprocal, sqrt */
 	}
@@ -809,7 +839,9 @@ mgau_model_t *mgau_init (char *meanfile,
     mgau_file_read (g, varfile, MGAU_VAR);
     mgau_mixw_read (g, mixwfile, mixwfloor);
     
-    mgau_uninit_compact (g);		/* Delete uninitialized components */
+    /* FIXME: Could check for singular covariances, etc. */
+    if (g->mgau[0].var)
+	mgau_uninit_compact (g);		/* Delete uninitialized components */
     
     if (varfloor > 0.0)
 	mgau_var_floor (g, varfloor);	/* Variance floor after above compaction */
@@ -824,7 +856,6 @@ mgau_model_t *mgau_init (char *meanfile,
     
     return g;
 }
-
 
 int32 mgau_comp_eval (mgau_model_t *g, int32 s, float32 *x, int32 *score)
 {
@@ -861,36 +892,55 @@ int32 mgau_comp_eval (mgau_model_t *g, int32 s, float32 *x, int32 *score)
     return bs;
 }
 
-/** Compute the log likelihood of a Gaussian mixture model in fixed-point.
-    Notice that within the program, the Gaussian distribution is computed using
-    floating point. But log-add is done in fixed point (usually by table lookup).
- */
-int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x, int32 fr,int32 bUpdBstId)
+static float64
+mgau_density_full(mgau_t *mgau, int32 veclen, int32 c, float32 *x)
 {
-    mgau_t *mgau;
-    int32 veclen, score;
+    float32 *mean, **var_inv, *diff, *vtmp, d;
+    uint32 i, j;
+    
+    d = mgau->lrd[c];
+    mean = mgau->mean[c];
+    var_inv = mgau->fullvar[c];
+
+    /* Precompute x-m */
+    diff = ckd_malloc(veclen * sizeof(float32));
+    for (i = 0; i < veclen; i++)
+	diff[i] = x[i] - mean[i];
+
+    /* Compute -0.5 * (x-m) * sigma^-1 * (x-m)^T */
+    /* FIXME: We could probably use BLAS for this, though it is
+     * unclear if that would actually be faster (particularly with
+     * refblas) */
+    vtmp = ckd_calloc(veclen, sizeof(float32));
+    for (i = 0; i < veclen; ++i)
+	for (j = 0; j < veclen; ++j)
+	    vtmp[j] += var_inv[i][j] * diff[i];
+    for (i = 0; i < veclen; ++i)
+	d -= 0.5 * diff[i] * vtmp[i];
+    ckd_free(vtmp);
+    ckd_free(diff);
+
+    return d;
+}
+
+static int32
+mgau_eval_all(mgau_t *mgau, float32 *x, int32 veclen, float64 distfloor,
+	      int32 update_best_id)
+{
     float32 *m1, *m2, *v1, *v2;
     float64 dval1, dval2, diff1, diff2, f;
     int32 gauscr ; /* This equals to log_to_logs3_factor *dval1 + the mixture weight */
-    int32 i, j, c;
-    
-    veclen = mgau_veclen(g);
-    mgau = &(g->mgau[m]);
-    assert(g->comp_type==MIX_INT_FLOAT_COMP);
+    int32 score, i, c;
+
     f = log_to_logs3_factor();
     score = S3_LOGPROB_ZERO;
 
-    if(bUpdBstId){
-      mgau->bstidx=NO_BSTIDX;
-      mgau->bstscr=S3_LOGPROB_ZERO;
-    }
-    
-    if(bUpdBstId){
-      mgau->updatetime=fr;
-    }
-
-    if (! active) {	/* No short list; use all */
-	for (c = 0; c < mgau->n_comp-1; c += 2) {	/* Interleave 2 components for speed */
+    for (c = 0; c < mgau->n_comp-1; c += 2) {	/* Interleave 2 components for speed */
+	if (mgau->fullvar) {
+	    dval1 = mgau_density_full(mgau, veclen, c, x);
+	    dval2 = mgau_density_full(mgau, veclen, c+1, x);
+	}
+	else {
 	    m1 = mgau->mean[c];
 	    m2 = mgau->mean[c+1];
 	    v1 = mgau->var[c];
@@ -904,34 +954,38 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x, int32 fr,i
 		diff2 = x[i] - m2[i];
 		dval2 -= diff2 * diff2 * v2[i];
 	    }
+	}
 	    
-	    if (dval1 < g->distfloor)	/* Floor */
-		dval1 = g->distfloor;
-	    if (dval2 < g->distfloor)
-		dval2 = g->distfloor;
+	if (dval1 < distfloor)	/* Floor */
+	    dval1 = distfloor;
+	if (dval2 < distfloor)
+	    dval2 = distfloor;
 
-	    /*	    E_INFO("Score %f, Index %d\n",dval1, c);
+	/*	    E_INFO("Score %f, Index %d\n",dval1, c);
 		    E_INFO("Score %f, Index %d\n",dval2, c+1);*/
+	gauscr= (int32)(f * dval1) + mgau->mixw[c];
 
-	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
-
-	    score = logs3_add (score, gauscr);
-	    if(gauscr > mgau->bstscr){
-	      mgau->bstidx=c;
-	      mgau->bstscr=gauscr;
-	    }
-	    
-	    gauscr= (int32)(f * dval2) + mgau->mixw[c+1];
-
-	    score = logs3_add (score, gauscr);
-	    if(bUpdBstId&&gauscr> mgau->bstscr){
-	      mgau->bstidx=c+1;
-	      mgau->bstscr=gauscr;
-	    }
+	score = logs3_add (score, gauscr);
+	if(gauscr > mgau->bstscr){
+	    mgau->bstidx=c;
+	    mgau->bstscr=gauscr;
 	}
+	    
+	gauscr= (int32)(f * dval2) + mgau->mixw[c+1];
+
+	score = logs3_add (score, gauscr);
+	if (update_best_id && gauscr> mgau->bstscr){
+	    mgau->bstidx=c+1;
+	    mgau->bstscr=gauscr;
+	}
+    }
 	
-	/* Remaining iteration if n_mean odd */
-	if (c < mgau->n_comp) {
+    /* Remaining iteration if n_mean odd */
+    if (c < mgau->n_comp) {
+	if (mgau->fullvar) {
+	    dval1 = mgau_density_full(mgau, veclen, c, x);
+	}
+	else {
 	    m1 = mgau->mean[c];
 	    v1 = mgau->var[c];
 	    dval1 = mgau->lrd[c];
@@ -940,51 +994,95 @@ int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x, int32 fr,i
 		diff1 = x[i] - m1[i];
 		dval1 -= diff1 * diff1 * v1[i];
 	    }
-	    
-	    if (dval1 < g->distfloor)
-		dval1 = g->distfloor;
-	    
-	    /*E_INFO("Score %f, Index %d\n",dval1, c);*/
-
-	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
-	    score = logs3_add (score, gauscr);
-
-	    if(bUpdBstId&&gauscr> mgau->bstscr){
-	      mgau->bstidx=c;
-	      mgau->bstscr=gauscr;
-	    }
-
 	}
-	/*E_INFO("No Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m,mgau->bstidx,mgau->bstscr,score);*/
+	    
+	if (dval1 < distfloor)
+	    dval1 = distfloor;
+	    
+	/*E_INFO("Score %f, Index %d\n",dval1, c);*/
 
+	gauscr= (int32)(f * dval1) + mgau->mixw[c];
+	score = logs3_add (score, gauscr);
+
+	if (update_best_id && gauscr> mgau->bstscr){
+	    mgau->bstidx=c;
+	    mgau->bstscr=gauscr;
+	}
+
+    }
+    /*E_INFO("No Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m,mgau->bstidx,mgau->bstscr,score);*/
+    return score;
+}
+
+static int32
+mgau_eval_active(mgau_t *mgau, float32 *x, int32 veclen, float64 distfloor,
+		 int32 *active, int32 update_best_id)
+{
+    float32 *m1, *v1;
+    float64 dval1, diff1, f;
+    int32 gauscr ; /* This equals to log_to_logs3_factor *dval1 + the mixture weight */
+    int32 score, i, j, c;
+
+    f = log_to_logs3_factor();
+    score = S3_LOGPROB_ZERO;
+    for (j = 0; active[j] >= 0; j++) {
+	c = active[j];
+
+	if (mgau->fullvar)
+		dval1 = mgau_density_full(mgau, veclen, c, x);
+	else {
+		m1 = mgau->mean[c];
+		v1 = mgau->var[c];
+		dval1 = mgau->lrd[c];
+	    
+		for (i = 0; i < veclen; i++) {
+			diff1 = x[i] - m1[i];
+			dval1 -= diff1 * diff1 * v1[i];
+		}
+	    
+		if (dval1 < distfloor)
+			dval1 = distfloor;
+	}
+
+	gauscr= (int32)(f * dval1) + mgau->mixw[c];
+
+	score = logs3_add (score, gauscr);
+	/*	    E_INFO("index c %d, gauscr %d , f*dval1 %d, mixw[c] %d\n",c,gauscr,f*dval1, mgau->mixw[c]);*/
+
+	if (update_best_id && gauscr > mgau->bstscr){
+	    mgau->bstidx=c;
+	    mgau->bstscr=gauscr;
+	}
+
+    }
+    /*E_INFO("With Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m, mgau->bstidx,mgau->bstscr,score);*/
+    return score;
+}
+
+/** Compute the log likelihood of a Gaussian mixture model in fixed-point.
+    Notice that within the program, the Gaussian distribution is computed using
+    floating point. But log-add is done in fixed point (usually by table lookup).
+ */
+int32 mgau_eval (mgau_model_t *g, int32 m, int32 *active, float32 *x, int32 fr,
+		 int32 update_best_id)
+{
+    mgau_t *mgau;
+    int32 veclen, score;
+    
+    veclen = mgau_veclen(g);
+    mgau = &(g->mgau[m]);
+    assert(g->comp_type==MIX_INT_FLOAT_COMP);
+
+    if(update_best_id){
+      mgau->bstidx=NO_BSTIDX;
+      mgau->bstscr=S3_LOGPROB_ZERO;
+      mgau->updatetime=fr;
+    }
+
+    if (! active) {	/* No short list; use all */
+	score = mgau_eval_all(mgau, x, veclen, g->distfloor, update_best_id);
     } else {
-	for (j = 0; active[j] >= 0; j++) {
-	    c = active[j];
-	    
-	    m1 = mgau->mean[c];
-	    v1 = mgau->var[c];
-	    dval1 = mgau->lrd[c];
-	    
-	    for (i = 0; i < veclen; i++) {
-		diff1 = x[i] - m1[i];
-		dval1 -= diff1 * diff1 * v1[i];
-	    }
-	    
-	    if (dval1 < g->distfloor)
-		dval1 = g->distfloor;
-
-	    gauscr= (int32)(f * dval1) + mgau->mixw[c];
-
-	    score = logs3_add (score, gauscr);
-	    /*	    E_INFO("index c %d, gauscr %d , f*dval1 %d, mixw[c] %d\n",c,gauscr,f*dval1, mgau->mixw[c]);*/
-
-	    if(bUpdBstId&&gauscr > mgau->bstscr){
-	      mgau->bstidx=c;
-	      mgau->bstscr=gauscr;
-	    }
-
-	}
-	/*E_INFO("With Short List m %d, Best Index %d, Best Score %d, Total Score %d\n",m, mgau->bstidx,mgau->bstscr,score);*/
+	score = mgau_eval_active(mgau, x, veclen, g->distfloor, active, update_best_id);
     }
     
     if(score == S3_LOGPROB_ZERO){

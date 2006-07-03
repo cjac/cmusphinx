@@ -125,7 +125,7 @@ extern "C" {
 
 #define MGAU_MEAN		1 /** Constant specifying the mean is used */
 #define MGAU_VAR		2 /** Constant specifying the variance is used */
-#define MGAU_FULLVAR		2 /** Constant specifying the full covariance is used */
+#define MGAU_FULLVAR		3 /** Constant specifying the full covariance is used */
 
 #define NO_BSTIDX               -1 /** When there is no best index */
 #define NOT_UPDATED              -100 /** Constant defined that a gaussian is not updated. */
@@ -178,7 +178,7 @@ typedef struct {
   float32 **var;	/**< The n_comp (diagonal) variances of the Gaussians.  Could be
 			   converted to 1/(2*var) for faster computation (see above comment).  The diagonal variance vector for a single mixture-Gaussian model for one senone. Dimension: n_comp * dimension */
 
-  float32 ***fullvar;   /* (NOT USED) The n_comp (full) variances of the Gaussians. */
+  float32 ***fullvar;   /* The n_comp (full) variances of the Gaussians. */
                         /* A full co-variance matrix for a single mixture-Gaussian model for one senone */
                         /* Dimension: n_comp * dimension * dimension */
 
