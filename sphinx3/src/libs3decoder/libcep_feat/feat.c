@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -286,12 +287,13 @@ int32 feat_writefile (feat_t *fcb, char *file, float32 ***feat, int32 nfr)
  * Read specified segment [sf..ef] of Sphinx-II format mfc file read and return
  * #frames read.  Return -1 if error.
  */
-int32 feat_s2mfc_read (char *file, int32 sf, int32 ef, float32 **mfc, int32 maxfr)
+int32 feat_s2mfc_read (char *file, int32 sf, int32 ef, float32 **mfc,
+		       int32 maxfr, int32 cepsize)
 {
     FILE *fp;
     int32 n_float32;
     struct stat statbuf;
-    int32 i, n, byterev, cepsize;
+    int32 i, n, byterev;
     
     if (ef < 0)
 	ef = (int32)0x7fff0000;		/* Hack!! hardwired constant */
@@ -301,8 +303,6 @@ int32 feat_s2mfc_read (char *file, int32 sf, int32 ef, float32 **mfc, int32 maxf
 	E_ERROR("%s: End frame (%d) <= Start frame (%d)\n", file, ef, sf);
 	return -1;
     }
-    
-    cepsize = 13;	/* Hack!! hardwired constant */
     
     /* Find filesize; HACK!! To get around intermittent NFS failures, use stat_retry */
     if ((stat_retry (file, &statbuf) < 0) || ((fp = fopen(file, "rb")) == NULL)) {
@@ -761,8 +761,8 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc, int32 brepor
 	    E_FATAL("Bad feature type argument\n");
 	
 	/* Input is already the feature stream */
-	fcb->cepsize = -1;
-	fcb->cepsize_used = -1;
+	fcb->cepsize = feat_stream_len_sum(fcb);
+	fcb->cepsize_used = feat_stream_len_sum(fcb);
 	fcb->window_size = 0;
 	fcb->compute_feat = NULL;
     }
@@ -792,17 +792,19 @@ feat_t *feat_init (char *type, char *cmn, char *varnorm, char *agc, int32 brepor
     fcb->cepbuf=NULL;
     fcb->tmpcepbuf=NULL;
 
-    fcb->cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
-					    feat_cepsize(fcb), sizeof(float32));
-    if (!fcb-> cepbuf) 
-      E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,feat_cepsize(fcb),sizeof(float32));
-
-    fcb->tmpcepbuf=(float32 **) ckd_calloc_2d(2*feat_window_size(fcb)+1,
-					      feat_cepsize(fcb), sizeof(float32));
-    if(!fcb->tmpcepbuf) 
-      E_FATAL("Unable to allocate tmpcepbuf ckd_calloc_2d(%ld,%d,%d)\n",
-	      2*feat_window_size(fcb)+1,feat_cepsize(fcb),sizeof(float32));
-
+    if (fcb->cepsize > 0) {
+	fcb->cepbuf = (float32 **)ckd_calloc_2d(LIVEBUFBLOCKSIZE,
+						feat_cepsize(fcb), sizeof(float32));
+	if (!fcb-> cepbuf) 
+	    E_FATAL("Unable to allocate cepbuf ckd_calloc_2d(%ld,%d,%d)\n",LIVEBUFBLOCKSIZE,feat_cepsize(fcb),sizeof(float32));
+    }
+    if (fcb->window_size > 0) {
+	fcb->tmpcepbuf=(float32 **) ckd_calloc_2d(2*feat_window_size(fcb)+1,
+						  feat_cepsize(fcb), sizeof(float32));
+	if(!fcb->tmpcepbuf) 
+	    E_FATAL("Unable to allocate tmpcepbuf ckd_calloc_2d(%ld,%d,%d)\n",
+		    2*feat_window_size(fcb)+1,feat_cepsize(fcb),sizeof(float32));
+    }
     return fcb;
 }
 
@@ -882,9 +884,11 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
     /* Read mfc file */
     mfc = (float32 **) ckd_calloc_2d (S3_MAX_FRAMES, fcb->cepsize, sizeof(float32));
     if (sf < 0)
-	nfr = feat_s2mfc_read (path, 0, ef, mfc-sf, S3_MAX_FRAMES+sf-win);
+	nfr = feat_s2mfc_read (path, 0, ef, mfc-sf, S3_MAX_FRAMES+sf-win,
+			       fcb->cepsize);
     else
-	nfr = feat_s2mfc_read (path, sf, ef, mfc, S3_MAX_FRAMES-win);
+	nfr = feat_s2mfc_read (path, sf, ef, mfc, S3_MAX_FRAMES-win,
+			       fcb->cepsize);
     if (nfr < 0) {
 	ckd_free_2d((void **) mfc);
 	return -1;
@@ -975,8 +979,9 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 #endif
     
     /* Create feature vectors */
-    for (i = win; i < nfr-win; i++)
-	fcb->compute_feat (fcb, mfc+i, feat[i-win]);
+    if (fcb->compute_feat)
+	for (i = win; i < nfr-win; i++)
+	    fcb->compute_feat (fcb, mfc+i, feat[i-win]);
 
 #if 0    
     E_INFO("After dynamic coefficients computation. \n");
