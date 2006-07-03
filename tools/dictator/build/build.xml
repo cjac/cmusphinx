@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="Dictator">
+
+    <!-- Load the environment -->
+    <property environment="env"/>
+
+    <condition property="javadoc_level" 
+                value="${access}">
+         <isset property="access"/>
+    </condition>
+    <condition property="javadoc_level" 
+                value="public">
+       <not>
+         <isset property="access"/>
+       </not>
+    </condition>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Where to find things...                                * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+
+    <property name="version"            value="0.1"/>
+
+    <path id="libs">
+        <fileset dir="../../common/lib" includes="**/sphinx4.jar,**/batch.jar,**/javolution.jar,**/forms_rt.jar"/>
+        <fileset file="${env.JAVA_HOME}/jre/lib/javaws.jar"/>
+    </path>
+    <property name="src_dir"		value="../src/java/"/>
+    <property name="alt_src_dir"	value="../../common/src/java/"/>
+    <property name="src_path"		value="${src_dir};${alt_src_dir}"/>
+    <property name="build_dir"		value="."/>
+    <property name="classes_dir"	value="${build_dir}/classes"/>
+    <property name="data_dir"		value="../../common/data"/>
+    <property name="lib_dir"            value="."/>
+    <property name="javadoc_dir"	value="javadoc"/>
+    <property name="javadoc_check_dir"  value="${build_dir}/javadoc_check"/>
+    <property name="javadoc_zip"	value="javadoc.zip"/>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Determine which sources should be compiled depending   * -->
+    <!-- * on the availability of lib/jsapi.jar.  This creates a  * -->
+    <!-- * property called "patternset_to_compile" and sets its   * -->
+    <!-- * val to either "all_files" or "no_jsapi", which refers  * -->
+    <!-- * to the name of a patternset. The value of              * -->
+    <!-- * srcs_to_compile will be used in the javac target as a  * -->
+    <!-- * patternset refid.                                      * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+
+    <patternset id="all_files" 
+                includes="edu/**,com/**"
+                />
+
+    <patternset id="edu" 
+                includes="edu/**"
+	        excludes="com/**"
+                />
+             
+    <target name="set_patternset_to_compile">
+        <property name="patternset_to_compile"
+                   value="all_files"/>
+    </target>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Determine which sources should be documented using     * -->
+    <!-- * javadoc depending on the availability of               * -->
+    <!-- * lib/jsapi.jar. This creates a property called          * -->
+    <!-- * "patternset_to_doc" and sets its val to either         * -->
+    <!-- * "all" or "no_jsapi", which refers to the name of a     * -->
+    <!-- * patternset.                                            * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+
+    <target name="set_patternset_to_doc">
+        <property name="patternset_to_doc"
+                   value="edu"/>
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Builds srcs, jars, demos                               * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="all"
+	    description="Build everything">
+	<antcall target="compile_src"/>
+	<antcall target="jars"/>
+	<echo message="Build complete."/>
+    </target>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Builds just the srcs.                                  * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="compile_src"
+	    depends="set_patternset_to_compile"
+	    description="Build just the 1.5 srcs">
+	<mkdir dir="${classes_dir}"/>
+	<javac debug="true"
+	       source="1.5"
+ 	       sourcepath="${src_path}"
+               srcdir="${src_dir}"
+	       deprecation="true"
+	       destdir="${classes_dir}">
+            <patternset refid="${patternset_to_compile}"/>
+	    <classpath refid="libs"/>
+	</javac>
+    </target>
+
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Generates the jar files                                * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="jars"
+            depends="dictator_jar"
+	    description="Builds all the jar files"/>
+
+
+    <!-- dictator.jar -->
+    <property name="dictator_jar" value="${lib_dir}/dictator.jar"/>
+
+
+    <target name="dictator_jar" 
+	    depends="compile_src"
+	    description="Create ${lib_dir}/dictator.jar">
+        <mkdir dir="${lib_dir}"/>
+	<copy file="${build_dir}/dictator.config.xml"
+	  tofile="${classes_dir}/dictator.config.xml"/>
+	<copy file="${data_dir}/wsj5k.dmp"
+	  tofile="${classes_dir}/wsj5k.dmp"/>
+        <jar destfile="${dictator_jar}" 
+	     manifest="MANIFEST.MF"
+	     compress="true"
+	     includes="**"
+             index="true"
+             basedir="${classes_dir}">
+             <zipfileset src="../../common/lib/sphinx4.jar"/>
+             <zipfileset src="../../common/lib/forms_rt.jar"/>
+             <zipfileset src="${data_dir}/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar"/>
+        </jar>
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Generates the javadoc                                  * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <property name="javadoc_desc" value="Dictator"/>
+
+    <target name="javadoc" 	    
+            depends="set_patternset_to_doc"
+	    description="Generate javadoc, optionally with '-Daccess=private'">
+	<delete dir="${javadoc_dir}"/>
+        <mkdir dir="${javadoc_dir}"/>
+        <javadoc sourcepath="${src_path}"
+	         source="1.5"
+		 additionalparam="-breakiterator"
+		 destdir="${javadoc_dir}" 
+		 overview="${build_dir}/overview.html"
+		 windowtitle="${javadoc_desc}"
+                 doctitle="${javadoc_desc}"
+                 access="${javadoc_level}">
+            <link href="http://java.sun.com/products/java-media/speech/forDevelopers/jsapi-doc"
+                  offline="true"
+                  packagelistLoc="lib/jsapi" />
+            <packageset dir="${src_dir}" defaultexcludes="yes">
+                  <patternset refid="${patternset_to_doc}"/>
+            </packageset>
+            <packageset dir="${alt_src_dir}" defaultexcludes="yes">
+                  <patternset refid="${patternset_to_doc}"/>
+            </packageset>
+	    <classpath refid="libs"/>
+        </javadoc>
+    </target>
+
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Checks javadocs                                        * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+
+    <target name="javadoc_check"
+            depends="set_patternset_to_doc"
+	    description="checks the javadocs">
+        <mkdir dir="${javadoc_check_dir}"/>
+        <javadoc sourcepath="${src_path}"
+		 additionalparam="-source 1.5"
+		 packagenames="edu.*"
+		 destdir="${javadoc_check_dir}" 
+		 overview="${build_dir}/overview.html"
+                 doclet="com.sun.tools.doclets.doccheck.DocCheck"
+                 docletpath="/lab/speech/java/doccheck1.2b2/doccheck.jar"
+                 access="${javadoc_level}">
+	    <classpath refid="libs"/>
+        </javadoc>
+    </target>
+
+
+    <!-- ********************************************************** --> 
+    <!-- *                                                        * -->
+    <!-- * Deletes all build output and *~ file droppings         * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** --> 
+    <target name="clean" description="Delete all build output">
+	<delete>
+	    <fileset defaultexcludes="no" dir="." includes="**/*~"/>
+	    <fileset defaultexcludes="no" dir="${src_dir}" includes="**/*~"/>
+	    <fileset defaultexcludes="no" dir="${alt_src_dir}" includes="**/*~"/>
+	</delete>
+	<delete dir="${classes_dir}"/>
+	<delete dir="${javadoc_dir}"/>
+    </target>
+
+</project>
