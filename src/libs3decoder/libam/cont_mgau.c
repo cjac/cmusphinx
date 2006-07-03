@@ -1111,11 +1111,19 @@ void mgau_free (mgau_model_t *g)
 
     /* Free memory allocated for the var structure*/
 
-    if (g->mgau[0].var[0])
-      ckd_free (g->mgau[0].var[0]);
-
-    if (g->mgau[0].var) 
+    if (g->mgau[0].var) {
+      if (g->mgau[0].var[0])
+	ckd_free (g->mgau[0].var[0]);
       ckd_free ((void *) g->mgau[0].var);
+    }
+
+    /* Free memory allocated for the fullvar structure*/
+
+    if (g->mgau[0].fullvar) {
+      if (g->mgau[0].fullvar[0][0])
+	ckd_free (g->mgau[0].fullvar[0][0]);
+      ckd_free_2d ((void *) g->mgau[0].fullvar);
+    }
 
     if (g->mgau[0].lrd) 
       ckd_free ((void *) g->mgau[0].lrd);
