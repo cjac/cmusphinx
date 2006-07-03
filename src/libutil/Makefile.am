@@ -18,6 +18,7 @@ libs3util_la_SOURCES = \
         pio.c \
 	info.c \
 	linklist.c \
+	matrix.c \
         profile.c \
 	sort.c \
 	nextword.c \
