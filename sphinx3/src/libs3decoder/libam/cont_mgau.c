@@ -777,7 +777,8 @@ static int32 mgau_precomp (mgau_model_t *g)
     for (m = 0; m < mgau_n_mgau(g); m++) {
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
 	    if (g->mgau[m].fullvar) {
-		lrd = log(determinant(g->mgau[m].fullvar[c], mgau_veclen(g)));
+		/* determinant *should* be > 0, but often isn't... */
+		lrd = log(fabs(determinant(g->mgau[m].fullvar[c], mgau_veclen(g))));
 		invert(g->mgau[m].fullvar[c], g->mgau[m].fullvar[c], mgau_veclen(g));
 		/* Not doubling it here. */
 	    }
