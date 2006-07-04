@@ -19,8 +19,10 @@ like in SRI or HTK's algorithm)
 -> Implement PALM tk functionalities: reverseword
 				    : reverseidngram
 				    : mixidngram
-				    : text2idtex				
-	
+				    : text2idtex
+
+-> Make sure that by default, the output of files will generate not
+generate results into stdout. 
 
 Thoroughly test the following tool in 16bit mode and 32bit mode
 interpolate
