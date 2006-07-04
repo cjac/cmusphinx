@@ -979,9 +979,14 @@ int32 feat_s2mfc2feat (feat_t *fcb, char *file, char *dir, char *cepext,
 #endif
     
     /* Create feature vectors */
-    if (fcb->compute_feat)
+    if (fcb->compute_feat) {
 	for (i = win; i < nfr-win; i++)
 	    fcb->compute_feat (fcb, mfc+i, feat[i-win]);
+    }
+    else {
+	for (i = win; i < nfr-win; i++)
+	    memcpy(feat[i-win][0], mfc[i], feat_cepsize_used(fcb) * sizeof(float32));
+    }
 
 #if 0    
     E_INFO("After dynamic coefficients computation. \n");
