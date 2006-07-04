@@ -87,6 +87,9 @@ customize it by running ./configure with an argument, as in
 
     ./configure --prefix=/my/own/installation/directory
 
+If your system doesn't have LAPACK, BLAS, please install package
+g2c, blas and lapack.
+
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
 To compile the sphinx 3.5 in Visual C++ 6.0, 
