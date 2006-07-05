@@ -1,0 +1,41 @@
+import os
+import platform
+
+Help("""
+      Type: 'scons shipDictator' to to create and package all dictator related files.
+
+      Type  'scons dictator' to build dictator.jar and its dependencies.
+
+      Type  'scons common' to build common.jar.
+
+      Type  'scons audoCollector' to build audioCollector.jar and its dependencies.
+             This fails because I don't know where AudioRecorder lives.
+
+      Other sphinx projects are not yet supported.
+
+      Ship output will be placed in the scons_ship directory adjacent to trunk.
+      Build output will be placed in the scons_build directory adjacent to trunk.
+
+      This scons script has only been tested on OS X. The dictator builds and runs
+      on OS X, but never actually transcribes anything at this point.
+      """)
+
+SConscript('common.py')
+Import('common')
+Alias('common', common)
+
+SConscript('dictator.py', exports='common')
+Import('dictator')
+Alias('dictator', dictator)
+
+SConscript('audioCollector.py', exports='common')
+Import('audioCollector')
+Alias('audioCollector', audioCollector)
+
+SConscript('corpusBrowser.py')
+Import('corpusBrowser')
+Alias('corpusBrowser', corpusBrowser)
+
+SConscript('shipDictator.py', exports='dictator')
+Import('shipDictator')
+Alias('shipDictator', shipDictator)
