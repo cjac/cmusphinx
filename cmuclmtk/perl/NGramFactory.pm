@@ -157,7 +157,9 @@ sub instantiate {
 		$attr->{name} = sprintf "g%04d", ++$self->{counter}
 		    unless defined($attr->{name});
 		if (defined($self->{builddir})) {
-		    $attr->{tempdir} = catdir($self->{builddir}, $tag, $attr->{name});
+		    my $cleantag = $tag;
+		    $cleantag =~ tr/-A-Za-z_//cd;
+		    $attr->{tempdir} = catdir($self->{builddir}, $cleantag, $attr->{name});
 		    mkpath($attr->{tempdir});
 		}
 		# Create it anew
