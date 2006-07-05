@@ -137,8 +137,8 @@
         <mkdir dir="${lib_dir}"/>
 	<copy file="${build_dir}/dictator.config.xml"
 	  tofile="${classes_dir}/dictator.config.xml"/>
-	<copy file="${data_dir}/wsj5k.dmp"
-	  tofile="${classes_dir}/wsj5k.dmp"/>
+	<copy file="${data_dir}/wsj5k.DMP"
+	  tofile="${classes_dir}/wsj5k.DMP"/>
         <jar destfile="${dictator_jar}" 
 	     manifest="MANIFEST.MF"
 	     compress="true"
