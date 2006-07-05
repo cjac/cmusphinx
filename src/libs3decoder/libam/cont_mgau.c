@@ -634,7 +634,9 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
           if (g->mgau[m].fullvar) {
               keep_cond = ! (
                   vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
-                  determinant(mgau_fullvar(g,m,c),mgau_veclen(g)) <= 0.0
+                  /* Consider determinants under epsilon to be zero. */
+                  /* FIXME: This epsilon is quite arbitrary. */
+                  determinant(mgau_fullvar(g,m,c),mgau_veclen(g)) <= 1e-100
                   );
           }
           else {
@@ -775,6 +777,8 @@ static int32 mgau_precomp (mgau_model_t *g)
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
 	    if (g->mgau[m].fullvar) {
                 lrd = determinant(g->mgau[m].fullvar[c], mgau_veclen(g));
+                /* E_INFO("covariance mgau %d comp %d determinant = %g\n",
+                   m, c, lrd); */
                 /* Shouldn't happen, since we removed them earlier */
                 assert(lrd > 0.0);
                 lrd = log(lrd);
@@ -892,15 +896,15 @@ int32 mgau_comp_eval (mgau_model_t *g, int32 s, float32 *x, int32 *score)
 static float64
 mgau_density_full(mgau_t *mgau, int32 veclen, int32 c, float32 *x)
 {
-    float32 *mean, **var_inv, *diff, *vtmp, d;
+    float32 *mean, **var_inv;
+    float64 *diff, *vtmp, d;
     uint32 i, j;
     
-    d = mgau->lrd[c];
     mean = mgau->mean[c];
     var_inv = mgau->fullvar[c];
 
     /* Precompute x-m */
-    diff = ckd_malloc(veclen * sizeof(float32));
+    diff = ckd_malloc(veclen * sizeof(float64));
     for (i = 0; i < veclen; i++)
 	diff[i] = x[i] - mean[i];
 
@@ -908,16 +912,24 @@ mgau_density_full(mgau_t *mgau, int32 veclen, int32 c, float32 *x)
     /* FIXME: We could probably use BLAS for this, though it is
      * unclear if that would actually be faster (particularly with
      * refblas) */
-    vtmp = ckd_calloc(veclen, sizeof(float32));
+    vtmp = ckd_calloc(veclen, sizeof(float64));
     for (i = 0; i < veclen; ++i)
 	for (j = 0; j < veclen; ++j)
 	    vtmp[j] += var_inv[i][j] * diff[i];
+    d = 0.0;
     for (i = 0; i < veclen; ++i)
-	d -= 0.5 * diff[i] * vtmp[i];
+	d += diff[i] * vtmp[i];
     ckd_free(vtmp);
     ckd_free(diff);
 
-    return d;
+    /* If it's negative, the covariance was probably singular (but
+     * still appeared positive-definite due to imprecision). */
+    if (d < 0.0) {
+        /* E_WARN("Bad Mahalanobis distance %g\n", d); */
+        /* Give it some very small likelihood. */
+        d = -d;
+    }
+    return mgau->lrd[c] - 0.5 * d;
 }
 
 static int32
