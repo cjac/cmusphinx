@@ -634,7 +634,7 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
           if (g->mgau[m].fullvar) {
               keep_cond = ! (
                   vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
-                  determinant(mgau_fullvar(g,m,c),mgau_veclen(g)) < 0.0
+                  determinant(mgau_fullvar(g,m,c),mgau_veclen(g)) <= 0.0
                   );
           }
           else {
