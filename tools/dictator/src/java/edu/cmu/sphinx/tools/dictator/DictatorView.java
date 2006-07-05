@@ -11,9 +11,6 @@ import edu.cmu.sphinx.tools.corpus.RegionOfAudioData;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 
-import javax.jnlp.BasicService;
-import javax.jnlp.ServiceManager;
-import javax.jnlp.UnavailableServiceException;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
