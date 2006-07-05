@@ -83,7 +83,7 @@ determinant(float32 **a, int32 n)
     IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
     sgetrf_(&M, &N, tmp_a, &LDA, IPIV, &INFO);
 
-    det = tmp_a[0];
+    det = IPIV[0] == 1 ? tmp_a[0] : -tmp_a[0];
     for (i = 1; i < n; ++i) {
 	if (IPIV[i] != i+1)
 	    det *= -tmp_a[i+N*i];
