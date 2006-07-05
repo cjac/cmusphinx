@@ -1,7 +1,7 @@
 package edu.cmu.sphinx.tools.datacollection.client;
 
 
-import edu.cmu.sphinx.tools.audio.AudioRecorder;
+import edu.cmu.sphinx.tools.audio.Recorder;
 import edu.cmu.sphinx.tools.audio.Player;
 import edu.cmu.sphinx.tools.audio.VUMeter;
 import edu.cmu.sphinx.tools.corpus.Corpus;
@@ -42,7 +42,7 @@ public class AudioCollector {
     protected Utterance _utterance;
     protected Corpus _corpus;
     protected ListIterator _uttIterator;
-    protected AudioRecorder _recorder;
+    protected Recorder _recorder;
     protected Player _player;
 
 
@@ -73,7 +73,7 @@ public class AudioCollector {
                            ConfigurationManager cm) {
 
         CorpusTranscriptsOnlyReader csr = new CorpusTranscriptsOnlyReader(serializedCorpus);
-        _recorder = new AudioRecorder();
+        _recorder = new Recorder();
         _recorder.open(cm);
         _corpus = csr.read();
         _uttIterator = _corpus.getUtterances().listIterator();
