@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -697,29 +698,13 @@ static void mgau_var_floor (mgau_model_t *g, float64 floor)
   for (m = 0; m < mgau_n_mgau(g); m++) {
     for (c = 0; c < mgau_n_comp(g,m); c++) {
       for (i = 0; i < mgau_veclen(g); i++) {
-	  if (g->mgau[m].fullvar) {
-	      if (g->mgau[m].fullvar[c][i][i] < floor) {
-
+          if (g->mgau[m].var[c][i] < floor) {
 #if 0
-		  E_INFO("fullvar[i][i] %f , floor %f n %d m %d, c %d, i %d\n"
-			 g->mgau[m].fullvar[c][i][i],floor,n, m,c,i);
+              E_INFO("var[i] %f , floor %f n %d m %d, c %d, i %d\n",g->mgau[m].var[c][i],floor,n, m,c,i);
 #endif
 
-		  g->mgau[m].fullvar[c][i][i] = (float32) floor;
-		  n++;
-	      
-	      }
-	  }
-	  else {
-	      if (g->mgau[m].var[c][i] < floor) {
-
-#if 0
-		  E_INFO("var[i] %f , floor %f n %d m %d, c %d, i %d\n",g->mgau[m].var[c][i],floor,n, m,c,i);
-#endif
-
-		  g->mgau[m].var[c][i] = (float32) floor;
-		  n++;
-	      }
+              g->mgau[m].var[c][i] = (float32) floor;
+              n++;
 	  }
       }
     }
@@ -777,8 +762,16 @@ static int32 mgau_precomp (mgau_model_t *g)
     for (m = 0; m < mgau_n_mgau(g); m++) {
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
 	    if (g->mgau[m].fullvar) {
-		/* determinant *should* be > 0, but often isn't... */
-		lrd = log(fabs(determinant(g->mgau[m].fullvar[c], mgau_veclen(g))));
+                lrd = determinant(g->mgau[m].fullvar[c], mgau_veclen(g));
+                if (lrd == 0.0) {
+                    E_FATAL("Singular covariance matrix (mgau %d comp %d)\n",
+                            m, c);
+                }
+                else if (lrd < 0.0) {
+                    E_WARN("Covariance matrix (mgau %d comp %d) not positive-definite: det = %g\n",
+                            m, c, lrd);
+                }
+                lrd = log(fabs(lrd));
 		invert(g->mgau[m].fullvar[c], g->mgau[m].fullvar[c], mgau_veclen(g));
 		/* Not doubling it here. */
 	    }
@@ -840,15 +833,18 @@ mgau_model_t *mgau_init (char *meanfile,
     mgau_file_read (g, varfile, MGAU_VAR);
     mgau_mixw_read (g, mixwfile, mixwfloor);
     
-    /* FIXME: Could check for singular covariances, etc. */
-    if (g->mgau[0].var)
-	mgau_uninit_compact (g);		/* Delete uninitialized components */
+    /* FIXME: Figure out what to do for full covariances (singular
+     * ones will just make us fail in mgau_precomp(), so maybe that's
+     * good enough :-) */
+    if (g->mgau[0].var) {
+	mgau_uninit_compact (g);	 /* Delete uninitialized components */
     
-    if (varfloor > 0.0)
-	mgau_var_floor (g, varfloor);	/* Variance floor after above compaction */
+        if (varfloor > 0.0)
+            mgau_var_floor (g, varfloor);/* Variance floor after above compaction */
+    }
     
     if (precomp)
-	mgau_precomp (g);		/* Precompute Mahalanobis distance invariants */
+	mgau_precomp (g);		 /* Precompute Mahalanobis distance invariants */
     
     if(g->comp_type==MIX_INT_FLOAT_COMP)
       g->distfloor = logs3_to_log (S3_LOGPROB_ZERO);	/* Floor for Mahalanobis distance values */
