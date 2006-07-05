@@ -631,17 +631,24 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
     nm = 0;
     for (m = 0; m < mgau_n_mgau(g); m++) {
       for (c = 0, c2 = 0; c < mgau_n_comp(g,m); c++) {
-
-	keep_cond = ! (
-		       vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
-		       vector_is_nan(mgau_var(g,m,c),mgau_veclen(g))||
-		       vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))
-		       );
-
+          if (g->mgau[m].fullvar) {
+              keep_cond = ! (
+                  vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
+                  determinant(mgau_fullvar(g,m,c),mgau_veclen(g)) < 0.0
+                  );
+          }
+          else {
+              keep_cond = ! (
+                  vector_is_nan(mgau_mean(g,m,c),mgau_veclen(g))||
+                  vector_is_nan(mgau_var(g,m,c),mgau_veclen(g))||
+                  vector_is_zero (mgau_var(g,m,c), mgau_veclen(g))
+                  );
 #if 0 /* Set it to 1 when you have very few training data */
-	  keep_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
-			 vector_is_zero (mgau_mean(g,m,c), mgau_veclen(g)));
+              keep_cond= ! ( vector_is_zero (mgau_var(g,m,c), mgau_veclen(g)) && 
+                             vector_is_zero (mgau_mean(g,m,c), mgau_veclen(g)));
 #endif
+          }
+
 
 	if (keep_cond) { 
 	  /* ARCHAN: The other loop will make sure flooring is done
@@ -651,8 +658,14 @@ static void mgau_uninit_compact (mgau_model_t *g /**< The Gaussian distribution 
 	  if (c2 != c) {
 	    memcpy (mgau_mean(g,m,c2), mgau_mean(g,m,c),
 		    mgau_veclen(g) * sizeof(float32));
-	    memcpy (mgau_var(g,m,c2), mgau_var(g,m,c),
-		    mgau_veclen(g) * sizeof(float32));
+            if (g->mgau[m].fullvar) {
+                memcpy (mgau_fullvar(g,m,c2)[0], mgau_fullvar(g,m,c)[0],
+                        mgau_veclen(g) * mgau_veclen(g) * sizeof(float32));
+            }
+            else {
+                memcpy (mgau_var(g,m,c2), mgau_var(g,m,c),
+                        mgau_veclen(g) * sizeof(float32));
+            }
 	      
 	    if(g->comp_type==MIX_INT_FLOAT_COMP)
 	      mgau_mixw(g,m,c2) = mgau_mixw(g,m,c);
@@ -746,7 +759,6 @@ int32 mgau_var_nzvec_floor (mgau_model_t *g, float64 floor)
   return n;
 }
 
-
 /**
  * Some of the Mahalanobis distance computation (between Gaussian density means and given
  * vectors) can be carried out in advance.  (See comment in .h file.)
@@ -763,15 +775,9 @@ static int32 mgau_precomp (mgau_model_t *g)
 	for (c = 0; c < mgau_n_comp(g,m); c++) {
 	    if (g->mgau[m].fullvar) {
                 lrd = determinant(g->mgau[m].fullvar[c], mgau_veclen(g));
-                if (lrd == 0.0) {
-                    E_FATAL("Singular covariance matrix (mgau %d comp %d)\n",
-                            m, c);
-                }
-                else if (lrd < 0.0) {
-                    E_WARN("Covariance matrix (mgau %d comp %d) not positive-definite: det = %g\n",
-                            m, c, lrd);
-                }
-                lrd = log(fabs(lrd));
+                /* Shouldn't happen, since we removed them earlier */
+                assert(lrd > 0.0);
+                lrd = log(lrd);
 		invert(g->mgau[m].fullvar[c], g->mgau[m].fullvar[c], mgau_veclen(g));
 		/* Not doubling it here. */
 	    }
@@ -833,15 +839,9 @@ mgau_model_t *mgau_init (char *meanfile,
     mgau_file_read (g, varfile, MGAU_VAR);
     mgau_mixw_read (g, mixwfile, mixwfloor);
     
-    /* FIXME: Figure out what to do for full covariances (singular
-     * ones will just make us fail in mgau_precomp(), so maybe that's
-     * good enough :-) */
-    if (g->mgau[0].var) {
-	mgau_uninit_compact (g);	 /* Delete uninitialized components */
-    
-        if (varfloor > 0.0)
-            mgau_var_floor (g, varfloor);/* Variance floor after above compaction */
-    }
+    mgau_uninit_compact (g);		 /* Delete uninitialized components */
+    if (g->mgau[0].var && varfloor > 0.0)
+        mgau_var_floor (g, varfloor);/* Variance floor after above compaction */
     
     if (precomp)
 	mgau_precomp (g);		 /* Precompute Mahalanobis distance invariants */
