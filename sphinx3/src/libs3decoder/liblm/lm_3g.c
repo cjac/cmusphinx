@@ -325,7 +325,7 @@ ReadUnigrams(FILE * fp, lm_t * model  /**< An LM where unigram will be filled in
     char name[128];
     int32 wcnt, i;
     float p1, bo_wt;
-    s3lmwid_t startwid, endwid;
+    s3lmwid32_t startwid, endwid;
 
     E_INFO("Reading unigrams\n");
 
