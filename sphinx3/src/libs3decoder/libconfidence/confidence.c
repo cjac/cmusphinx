@@ -1221,14 +1221,11 @@ int pwp(seg_hyp_line_t *seg_hyp_line, ca_dag *word_lattice)
     */
     for (d = word_lattice->nodelist; d; d = d->alloc_next) {
       /*      E_INFO("hihi, w->sh.cscr %d \n", w->sh.cscr);*/
-#if 0 
       /* 20051128 Removed Rong's implementation which required checking of overlapping frame 
 	 Still remain a question whether it is better. 
        */
-      if ((overlap(d->sf, d->lef, w->sh.sf, w->sh.ef, &start, &end) >= 0) && 
-	  ((strstr(d->word, w->sh.word) != NULL) || (strstr(w->sh.word, d->word) != NULL))) {
-#endif
-
+/*       if ((overlap(d->sf, d->lef, w->sh.sf, w->sh.ef, &start, &end) >= 0) &&  */
+/* 	  ((strstr(d->word, w->sh.word) != NULL) || (strstr(w->sh.word, d->word) != NULL))) { */
       if (strstr(d->word, w->sh.word) != NULL || strstr(w->sh.word, d->word) != NULL) {
 	w->sh.cscr = logs3_add(d->cscore - p, w->sh.cscr);
       }
