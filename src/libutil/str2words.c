@@ -75,14 +75,15 @@
 #include "str2words.h"
 
 
-int32 str2words (char *line, char **ptr, int32 max_ptr)
+int32
+str2words(char *line, char **ptr, int32 max_ptr)
 {
     int32 i, n;
-    
-    n = 0;	/* #words found so far */
-    i = 0;	/* For scanning through the input string */
+
+    n = 0;                      /* #words found so far */
+    i = 0;                      /* For scanning through the input string */
     for (;;) {
-	/* Skip whitespace before next word */
+        /* Skip whitespace before next word */
 
       /** 
 	  ARCHAN 20050713: 
@@ -93,31 +94,31 @@ int32 str2words (char *line, char **ptr, int32 max_ptr)
 	  character representation is unsigned character in the first
 	  place. (or better unicode.)
       **/
-      
-      /*      for (; line[i] && (isspace(line[i])); i++);*/
-      for (; line[i] && (isspace((unsigned char)line[i])); i++);
-	if (! line[i])
-	    break;
-	
-	if (n >= max_ptr) {
-	    /*
-	     * Pointer array size insufficient.  Restore NULL chars inserted so far
-	     * to space chars.  Not a perfect restoration, but better than nothing.
-	     */
-	    for (; i >= 0; --i)
-		if (line[i] == '\0')
-		    line[i] = ' ';
-	    
-	    return -1;
-	}
-	
-	/* Scan to end of word */
-	ptr[n++] = line+i;
-	for (; line[i] && (! isspace((unsigned char)line[i])); i++);
-	if (! line[i])
-	    break;
-	line[i++] = '\0';
+
+        /*      for (; line[i] && (isspace(line[i])); i++); */
+        for (; line[i] && (isspace((unsigned char) line[i])); i++);
+        if (!line[i])
+            break;
+
+        if (n >= max_ptr) {
+            /*
+             * Pointer array size insufficient.  Restore NULL chars inserted so far
+             * to space chars.  Not a perfect restoration, but better than nothing.
+             */
+            for (; i >= 0; --i)
+                if (line[i] == '\0')
+                    line[i] = ' ';
+
+            return -1;
+        }
+
+        /* Scan to end of word */
+        ptr[n++] = line + i;
+        for (; line[i] && (!isspace((unsigned char) line[i])); i++);
+        if (!line[i])
+            break;
+        line[i++] = '\0';
     }
-    
+
     return n;
 }

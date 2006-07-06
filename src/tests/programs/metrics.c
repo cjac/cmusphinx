@@ -54,24 +54,22 @@ static NamedDuration namedDuration[MAX_DURATION_SLOTS];
  * @param name the name to look for
  * @return the NamedDuration or NULL
  */
-static NamedDuration *findDuration(const char *name) 
+static NamedDuration *
+findDuration(const char *name)
 {
     int i;
 
-    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].name; i++) 
-    {
-    	if (strcmp(namedDuration[i].name, name) == 0)
-	{
-	    return &namedDuration[i];
-	}
+    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].name; i++) {
+        if (strcmp(namedDuration[i].name, name) == 0) {
+            return &namedDuration[i];
+        }
     }
 
-    if (i < MAX_DURATION_SLOTS) 
-    {
-      /*   namedDuration[i].name = strdup(name);*/
-      namedDuration[i].name=ckd_salloc(name);
-      strcpy((char*)namedDuration[i].name, name);
-      return &namedDuration[i];
+    if (i < MAX_DURATION_SLOTS) {
+        /*   namedDuration[i].name = strdup(name); */
+        namedDuration[i].name = ckd_salloc(name);
+        strcpy((char *) namedDuration[i].name, name);
+        return &namedDuration[i];
     }
     return NULL;
 }
@@ -80,7 +78,8 @@ static NamedDuration *findDuration(const char *name)
  * Starts timing the given operation
  *    @param name the name of the timer to start
  */
-void metricsStart(const char *name)
+void
+metricsStart(const char *name)
 {
     struct timeval tv;
     NamedDuration *namedDuration;
@@ -88,21 +87,21 @@ void metricsStart(const char *name)
     gettimeofday(&tv, NULL);
     namedDuration = findDuration(name);
 
-    if (namedDuration == NULL)
-    {
+    if (namedDuration == NULL) {
         return;
     }
-    
 
-    namedDuration->start 
-    	= (((double)(tv.tv_sec))+((double)tv.tv_usec/1000000.0));
+
+    namedDuration->start
+        = (((double) (tv.tv_sec)) + ((double) tv.tv_usec / 1000000.0));
 }
 
 /**
  * Stops timing the given operation
  * @param name the name of the timer to stop
  */
-void metricsStop(const char *name)
+void
+metricsStop(const char *name)
 {
     double time_current;
     struct timeval tv;
@@ -111,18 +110,19 @@ void metricsStop(const char *name)
     gettimeofday(&tv, NULL);
     namedDuration = findDuration(name);
 
-    if (namedDuration == NULL)
-    {
+    if (namedDuration == NULL) {
         return;
     }
-    
-    time_current = (((double)(tv.tv_sec))+((double)tv.tv_usec/1000000.0));
-    
+
+    time_current =
+        (((double) (tv.tv_sec)) + ((double) tv.tv_usec / 1000000.0));
+
     /*
-    printf(" %s %f %f %f\n", name, namedDuration->start, time_current,
-    	time_current - namedDuration->start);
-    */
-    namedDuration->duration += (float)(time_current - namedDuration->start);
+       printf(" %s %f %f %f\n", name, namedDuration->start, time_current,
+       time_current - namedDuration->start);
+     */
+    namedDuration->duration +=
+        (float) (time_current - namedDuration->start);
     namedDuration->count++;
 }
 
@@ -132,18 +132,17 @@ void metricsStop(const char *name)
  *
  * @param name the name of the timer to reset
  */
-void metricsReset(const char *name)
+void
+metricsReset(const char *name)
 {
     int i;
 
-    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].name; i++) 
-    {
-    	if (strcmp(namedDuration[i].name, name) == 0)
-	{
+    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].name; i++) {
+        if (strcmp(namedDuration[i].name, name) == 0) {
             namedDuration[i].duration = 0.0;
             namedDuration[i].count = 0;
             break;
-	}
+        }
     }
 }
 
@@ -151,12 +150,14 @@ void metricsReset(const char *name)
 /**
  * Returns the duration of the given timer.
  */
-double metricsDuration(const char *name)
+double
+metricsDuration(const char *name)
 {
     NamedDuration *duration = findDuration(name);
     if (duration != NULL) {
         return duration->duration;
-    } else {
+    }
+    else {
         return 0.0;
     }
 }
@@ -165,20 +166,20 @@ double metricsDuration(const char *name)
 /**
  * Prints the processing time of each step in the speech synthesis process.
  */
-void metricsPrint(void)
+void
+metricsPrint(void)
 {
     int i;
     float total = 0.0;
 
     printf("%20.20s %9s %6s %9s\n", "Function", "Total", "Count",
-    "Average");
-    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].count; i++) 
-    {
-        printf("%20.20s %9.4f %6.6d %9.4f\n", 
-		namedDuration[i].name,
-		namedDuration[i].duration,
-		namedDuration[i].count,
-		namedDuration[i].duration / namedDuration[i].count);
+           "Average");
+    for (i = 0; i < MAX_DURATION_SLOTS && namedDuration[i].count; i++) {
+        printf("%20.20s %9.4f %6.6d %9.4f\n",
+               namedDuration[i].name,
+               namedDuration[i].duration,
+               namedDuration[i].count,
+               namedDuration[i].duration / namedDuration[i].count);
         total += namedDuration[i].duration;
     }
     printf("Total Times %f seconds\n", total);

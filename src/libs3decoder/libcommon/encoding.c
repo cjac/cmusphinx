@@ -59,17 +59,21 @@
 #include <ctype.h>
 
 
-int encoding_str2ind(const char *enc)
+int
+encoding_str2ind(const char *enc)
 {
-  if(!strcmp(ISO88591,enc)){
-    return IND_ISO88591;
-  }else if (!strcmp(GB2312HEX,enc)){
-    return IND_GB2312HEX;
-  }else if (!strcmp(GB2312,enc)){
-    return IND_GB2312;
-  }else{
-    return IND_BADENCODING;
-  }
+    if (!strcmp(ISO88591, enc)) {
+        return IND_ISO88591;
+    }
+    else if (!strcmp(GB2312HEX, enc)) {
+        return IND_GB2312HEX;
+    }
+    else if (!strcmp(GB2312, enc)) {
+        return IND_GB2312;
+    }
+    else {
+        return IND_BADENCODING;
+    }
 }
 
 /*
@@ -91,69 +95,86 @@ i\o 0 1 2
   When we have 4 encoding types: This document should be implemented as a data structure. 
  */
 
-int encoding_resolve(char* inputenc, char *outputenc)
+int
+encoding_resolve(char *inputenc, char *outputenc)
 {
-  int32 inputidx, outputidx;
-  inputidx =encoding_str2ind(inputenc);
-  outputidx=encoding_str2ind(outputenc);
+    int32 inputidx, outputidx;
+    inputidx = encoding_str2ind(inputenc);
+    outputidx = encoding_str2ind(outputenc);
 
-  if(inputidx==outputidx){ /* Coding type is the same: No conflict and do nothing*/
-    return 1;
-  }else if(inputidx==IND_ISO88591 || outputidx==IND_ISO88591){ 
-    E_ERROR("Ascii coding type cannot interconvert with others coding type at this point\n");
-    return 0;
-  }else if(inputidx==IND_GB2312HEX && outputidx==IND_GB2312){
-    return 1;
-  }else if(inputidx==IND_GB2312 && outputidx==IND_GB2312HEX){
-    E_ERROR("Input coding type %s, output coding type %s, Not Supported\n", inputenc, outputenc);
-    return 0;
-  }else{
-    E_ERROR("Unknown types. Input type %s, output type %s\n",inputenc, outputenc);
-    return 0;
-  }
-}
-
-static int hextoval(char c)
-{
-  if(isdigit(c)){
-    return c - '0';
-  }else if(c=='a'|| c=='A'){
-    return 10;
-  }else if(c=='b'|| c=='B'){
-    return 11;
-  }else if(c=='c'|| c=='C'){
-    return 12;
-  }else if(c=='d'|| c=='D'){
-    return 13;
-  }else if(c=='e'|| c=='E'){
-    return 14;
-  }else if(c=='f'|| c=='F'){
-    return 15;
-  }
-  return -1;
-}
-
-int ishex(char* str)
-{
-  int i;
-  for(i=0;str[i]!='\0';i++){
-    if(!(isdigit(str[i]) ||
-	 (str[i]=='a' || str[i]=='A') ||
-	 (str[i]=='b' || str[i]=='B') ||
-	 (str[i]=='c' || str[i]=='C') ||
-	 (str[i]=='d' || str[i]=='D') ||
-	 (str[i]=='e' || str[i]=='E') ||
-	 (str[i]=='f' || str[i]=='F')
-	 )){
-
-      return 0;
+    if (inputidx == outputidx) {        /* Coding type is the same: No conflict and do nothing */
+        return 1;
     }
-  }
+    else if (inputidx == IND_ISO88591 || outputidx == IND_ISO88591) {
+        E_ERROR
+            ("Ascii coding type cannot interconvert with others coding type at this point\n");
+        return 0;
+    }
+    else if (inputidx == IND_GB2312HEX && outputidx == IND_GB2312) {
+        return 1;
+    }
+    else if (inputidx == IND_GB2312 && outputidx == IND_GB2312HEX) {
+        E_ERROR
+            ("Input coding type %s, output coding type %s, Not Supported\n",
+             inputenc, outputenc);
+        return 0;
+    }
+    else {
+        E_ERROR("Unknown types. Input type %s, output type %s\n", inputenc,
+                outputenc);
+        return 0;
+    }
+}
 
-  if(strlen(str)%2==1)  /* Check if its length is an even number */
-    return 0;
-  
-  return 1;
+static int
+hextoval(char c)
+{
+    if (isdigit(c)) {
+        return c - '0';
+    }
+    else if (c == 'a' || c == 'A') {
+        return 10;
+    }
+    else if (c == 'b' || c == 'B') {
+        return 11;
+    }
+    else if (c == 'c' || c == 'C') {
+        return 12;
+    }
+    else if (c == 'd' || c == 'D') {
+        return 13;
+    }
+    else if (c == 'e' || c == 'E') {
+        return 14;
+    }
+    else if (c == 'f' || c == 'F') {
+        return 15;
+    }
+    return -1;
+}
+
+int
+ishex(char *str)
+{
+    int i;
+    for (i = 0; str[i] != '\0'; i++) {
+        if (!(isdigit(str[i]) ||
+              (str[i] == 'a' || str[i] == 'A') ||
+              (str[i] == 'b' || str[i] == 'B') ||
+              (str[i] == 'c' || str[i] == 'C') ||
+              (str[i] == 'd' || str[i] == 'D') ||
+              (str[i] == 'e' || str[i] == 'E') ||
+              (str[i] == 'f' || str[i] == 'F')
+            )) {
+
+            return 0;
+        }
+    }
+
+    if (strlen(str) % 2 == 1)   /* Check if its length is an even number */
+        return 0;
+
+    return 1;
 }
 
 /*
@@ -161,26 +182,27 @@ int ishex(char* str)
   it would be convert to its value space. 
   For example string "AABB" would be turn into value sequence 110, 121
  */
-void hextocode(char* src)
+void
+hextocode(char *src)
 {
-  int i;
-  int length;
+    int i;
+    int length;
 
-  assert(ishex(src));
+    assert(ishex(src));
 
-  length=strlen(src);  
-  for(i=0;src[i]!='\0';i+=2){
+    length = strlen(src);
+    for (i = 0; src[i] != '\0'; i += 2) {
 #if 0
-    printf("%c%c\n",src[i],src[i+1]);
-    printf("%d %d\n",hextoval(src[i]),hextoval(src[i+1]));
-    printf("%d\n", hextoval(src[i]) * 16 + hextoval(src[i+1]));
+        printf("%c%c\n", src[i], src[i + 1]);
+        printf("%d %d\n", hextoval(src[i]), hextoval(src[i + 1]));
+        printf("%d\n", hextoval(src[i]) * 16 + hextoval(src[i + 1]));
 #endif
-    src[i/2]= hextoval(src[i]) * 16 + hextoval(src[i+1]);
-  }
-  src[(length/2)]=0;
+        src[i / 2] = hextoval(src[i]) * 16 + hextoval(src[i + 1]);
+    }
+    src[(length / 2)] = 0;
 
 #if 0
-  printf("\n");
+    printf("\n");
 #endif
 }
 
@@ -189,6 +211,3 @@ void hextocode(char* src)
    assumes non-contagious encoding scheme and it is insensitive to
    case. It also take no responsibility of conversion. 
  */
-
-
-

@@ -100,7 +100,7 @@ _E__pr_info_header(char const *f, long ln, char const *msg)
 }
 
 void
-_E__pr_warn( char const *fmt, ... ) 
+_E__pr_warn(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -112,7 +112,7 @@ _E__pr_warn( char const *fmt, ... )
 }
 
 void
-_E__pr_info( char const *fmt, ... ) 
+_E__pr_info(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -123,7 +123,8 @@ _E__pr_info( char const *fmt, ... )
     (void) fflush(stderr);
 }
 
-void _E__die_error( char const *fmt, ... ) 
+void
+_E__die_error(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -135,11 +136,12 @@ void _E__die_error( char const *fmt, ... )
     va_end(pvar);
 
     (void) fflush(stderr);
-    
-    exit (-1);
+
+    exit(-1);
 }
 
-void _E__fatal_sys_error( char const *fmt, ... ) 
+void
+_E__fatal_sys_error(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -151,13 +153,14 @@ void _E__fatal_sys_error( char const *fmt, ... )
     putc(' ', stderr);
 
     perror("");
-    
+
     (void) fflush(stderr);
 
     exit(errno);
 }
 
-void _E__sys_error( char const *fmt, ... ) 
+void
+_E__sys_error(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -173,7 +176,8 @@ void _E__sys_error( char const *fmt, ... )
     (void) fflush(stderr);
 }
 
-void _E__abort_error( char const *fmt, ... ) 
+void
+_E__abort_error(char const *fmt, ...)
 {
     va_list pvar;
 
@@ -183,7 +187,7 @@ void _E__abort_error( char const *fmt, ... )
 
     (void) fflush(stderr);
 
-    abort ();
+    abort();
 }
 
 #ifdef TEST
@@ -207,7 +211,7 @@ main()
 
     fp = fopen("gondwanaland", "r");
     if (fp == NULL) {
-	E_SYSTEM("Can't open gondwanaland for reading");
+        E_SYSTEM("Can't open gondwanaland for reading");
     }
 }
-#endif /* TEST */
+#endif                          /* TEST */

@@ -69,136 +69,224 @@
 
 #include "lm.h"
 
-static int32 idx_tg_hist (lm_t *lm, bg_t *bgptr, int32 i, int32 j) { /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
-  int32 b;
-  
-  b=lm->ug[i].firstbg + j;
-  return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg) ;
+static int32
+idx_tg_hist(lm_t * lm, bg_t * bgptr, int32 i, int32 j)
+{                               /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
+    int32 b;
+
+    b = lm->ug[i].firstbg + j;
+    return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg);
 }
 
-static int32 idx_tg32_hist (lm_t *lm, bg32_t *bgptr, int32 i, int32 j) { /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
-  int32 b;
-  
-  b=lm->ug[i].firstbg + j;
-  return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg) ;
+static int32
+idx_tg32_hist(lm_t * lm, bg32_t * bgptr, int32 i, int32 j)
+{                               /* return absolute first trigram index for bigram (i, bgptr[j].wid) */
+    int32 b;
+
+    b = lm->ug[i].firstbg + j;
+    return (lm->tg_segbase[b >> lm->log_bg_seg_sz] + bgptr[j].firsttg);
 }
 
-int32 lm_write_att_fsm(lm_t *lm, const char *filename) { 
-  FILE *file;
-  int32 i, j, k, l, nb_bg, nb_bg2, nb_tg, bowt;
-  char filesymbolsname[2048];
-  
-  bg_t *bgptr,*bgptr2;
-  tg_t *tgptr;
-	
-  bg32_t *bgptr32, *bgptr32_2;
-  tg32_t *tgptr32;
-  int32 is32bits;
+int32
+lm_write_att_fsm(lm_t * lm, const char *filename)
+{
+    FILE *file;
+    int32 i, j, k, l, nb_bg, nb_bg2, nb_tg, bowt;
+    char filesymbolsname[2048];
 
-  short prune_lowprobtg=0;
+    bg_t *bgptr, *bgptr2;
+    tg_t *tgptr;
 
-  int32 st_ug=lm_n_ug(lm)+1, st_end=lm_n_ug(lm)+2; /* unigram state, end state */
-  int32 nbwtg=lm_n_ug(lm)+3; /* Number of id states used without trigrams */
-  int32 id_hist1, id_hist2; /* indexes of trigram histories */
+    bg32_t *bgptr32, *bgptr32_2;
+    tg32_t *tgptr32;
+    int32 is32bits;
 
-  is32bits=lm->is32bits;
-  sprintf(filesymbolsname,"%s.sym",filename);
+    short prune_lowprobtg = 0;
 
-  if (!(file=fopen(filesymbolsname, "w")))
-    E_FATAL ("fopen(%s,w) failed\n", file);
-  fprintf(file, "<eps>\t0\n");
-  for (i=0;i<lm_n_ug(lm); i++)
-    fprintf(file, "%s\t%d\n", lm->wordstr[i], i+1); /* i+1 because id of <eps> HAS TO be EQUAL to 0 */
-  fclose(file);
-  
-  if (!(file=fopen(filename, "w")))
-    E_FATAL ("fopen(%s,w) failed\n", file);
-  
-  if (lm_n_ug(lm)<=0)
-    E_FATAL("ngram1=%d",lm_n_ug(lm));
-  
+    int32 st_ug = lm_n_ug(lm) + 1, st_end = lm_n_ug(lm) + 2;    /* unigram state, end state */
+    int32 nbwtg = lm_n_ug(lm) + 3;      /* Number of id states used without trigrams */
+    int32 id_hist1, id_hist2;   /* indexes of trigram histories */
 
-  /* Start state */
-	
-  for (i=0; i<lm_n_ug(lm); i++) {
-    if (i%1000==0) fprintf(stderr, ".");
-    
-    if (i==lm->finishlwid) {
-	fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, st_end, lm->finishlwid+1, -lm->ug[i].prob.f); 
+    is32bits = lm->is32bits;
+    sprintf(filesymbolsname, "%s.sym", filename);
+
+    if (!(file = fopen(filesymbolsname, "w")))
+        E_FATAL("fopen(%s,w) failed\n", file);
+    fprintf(file, "<eps>\t0\n");
+    for (i = 0; i < lm_n_ug(lm); i++)
+        fprintf(file, "%s\t%d\n", lm->wordstr[i], i + 1);       /* i+1 because id of <eps> HAS TO be EQUAL to 0 */
+    fclose(file);
+
+    if (!(file = fopen(filename, "w")))
+        E_FATAL("fopen(%s,w) failed\n", file);
+
+    if (lm_n_ug(lm) <= 0)
+        E_FATAL("ngram1=%d", lm_n_ug(lm));
+
+
+    /* Start state */
+
+    for (i = 0; i < lm_n_ug(lm); i++) {
+        if (i % 1000 == 0)
+            fprintf(stderr, ".");
+
+        if (i == lm->finishlwid) {
+            fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, st_end,
+                    lm->finishlwid + 1, -lm->ug[i].prob.f);
+        }
+        else {
+            if (i != lm->startlwid) {
+                fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, i, i + 1, -lm->ug[i].prob.f);  /* 1g->2g */
+            }
+            fprintf(file, "%d\t%d\t0\t%f\n", i, st_ug, -lm->ug[i].bowt.f);      /* 2g->1g */
+
+
+            nb_bg = is32bits ? lm_bg32list(lm, i, &bgptr32, &bowt) : lm_bglist(lm, i, &bgptr, &bowt);   /* bowt not used ... */
+
+            for (j = 0; j < nb_bg; j++) {
+                if (bgptr[j].wid != lm->finishlwid) {
+
+                    /*32/16 bits code */
+                    id_hist1 =
+                        is32bits ? idx_tg32_hist(lm, bgptr32, i,
+                                                 j) : idx_tg_hist(lm,
+                                                                  bgptr, i,
+                                                                  j);
+                    nb_tg =
+                        is32bits ? lm_tg32list(lm, i, bgptr32[j].wid,
+                                               &tgptr32,
+                                               &bowt) : lm_tglist(lm, i,
+                                                                  bgptr[j].
+                                                                  wid,
+                                                                  &tgptr,
+                                                                  &bowt);
+
+                    if (nb_tg > 0) {
+                        fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f);       /* 2g->3g */
+                    }
+                    fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr[j].wid, -lm->tgbowt[bgptr[j].bowtid].f);   /* 3g->2g */
+
+                    for (k = 0; k < nb_tg; k++) {       /* 3g->3g */
+                        if (tgptr[k].wid == lm->finishlwid) {
+                            fprintf(file, "%d\t%d\t%d\t%f\n",
+                                    id_hist1 + nbwtg, st_end,
+                                    tgptr[k].wid + 1,
+                                    -lm->tgprob[tgptr[k].probid].f);
+                        }
+                        else {
+                            /* bowt not used ... */
+
+                            /*32/16 bits code */
+                            nb_bg2 =
+                                is32bits ? lm_bg32list(lm, bgptr32[j].wid,
+                                                       &bgptr32_2,
+                                                       &bowt) :
+                                lm_bglist(lm, bgptr[j].wid, &bgptr2,
+                                          &bowt);
+                            l = is32bits ? find_bg32(bgptr32_2, nb_bg2,
+                                                     tgptr32[k].
+                                                     wid) : find_bg(bgptr2,
+                                                                    nb_bg2,
+                                                                    tgptr
+                                                                    [k].
+                                                                    wid);
+
+                            if (l > -1) {
+                                if (tgptr[k].wid != lm->finishlwid) {
+
+                                    id_hist2 =
+                                        is32bits ? idx_tg32_hist(lm,
+                                                                 bgptr32_2,
+                                                                 bgptr32
+                                                                 [j].wid,
+                                                                 l) :
+                                        idx_tg_hist(lm, bgptr2,
+                                                    bgptr[j].wid, l);
+
+                                    if (is32bits) {
+                                        if (prune_lowprobtg) {
+                                            if (lm->
+                                                tgprob[tgptr32[k].probid].
+                                                f >
+                                                (lm->
+                                                 tgbowt[bgptr32[j].bowtid].
+                                                 f + lm_bg_score(lm,
+                                                                 bgptr32
+                                                                 [j].wid,
+                                                                 tgptr32
+                                                                 [k].wid,
+                                                                 0))) {
+                                                fprintf(file,
+                                                        "%d\t%d\t%d\t%f\n",
+                                                        id_hist1 + nbwtg,
+                                                        id_hist2 + nbwtg,
+                                                        tgptr32[k].wid + 1,
+                                                        -lm->
+                                                        tgprob[tgptr32[k].
+                                                               probid].f);
+                                            }
+                                        }
+                                        else {
+                                            fprintf(file,
+                                                    "%d\t%d\t%d\t%f\n",
+                                                    id_hist1 + nbwtg,
+                                                    id_hist2 + nbwtg,
+                                                    tgptr32[k].wid + 1,
+                                                    -lm->tgprob[tgptr32[k].
+                                                                probid].f);
+                                        }
+                                    }
+                                    else {
+                                        if (prune_lowprobtg) {
+                                            if (lm->
+                                                tgprob[tgptr[k].probid].f >
+                                                (lm->
+                                                 tgbowt[bgptr[j].bowtid].
+                                                 f + lm_bg_score(lm,
+                                                                 bgptr[j].
+                                                                 wid,
+                                                                 tgptr[k].
+                                                                 wid,
+                                                                 0))) {
+                                                fprintf(file,
+                                                        "%d\t%d\t%d\t%f\n",
+                                                        id_hist1 + nbwtg,
+                                                        id_hist2 + nbwtg,
+                                                        tgptr[k].wid + 1,
+                                                        -lm->
+                                                        tgprob[tgptr[k].
+                                                               probid].f);
+                                            }
+                                        }
+                                        else {
+                                            fprintf(file,
+                                                    "%d\t%d\t%d\t%f\n",
+                                                    id_hist1 + nbwtg,
+                                                    id_hist2 + nbwtg,
+                                                    tgptr[k].wid + 1,
+                                                    -lm->tgprob[tgptr[k].
+                                                                probid].f);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    if (is32bits)
+                        fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr32[j].wid + 1, -lm->bgprob[bgptr32[j].probid].f);     /* 2g->2g */
+                    else
+                        fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f); /* 2g->2g */
+                }
+            }
+        }
     }
-    else {	
-      if (i!=lm->startlwid) {
-	fprintf(file, "%d\t%d\t%d\t%f\n", st_ug, i, i+1, -lm->ug[i].prob.f); /* 1g->2g */
-      }
-      fprintf(file, "%d\t%d\t0\t%f\n", i, st_ug, -lm->ug[i].bowt.f); /* 2g->1g */
 
-      
-      nb_bg=is32bits?lm_bg32list(lm, i, &bgptr32, &bowt):lm_bglist(lm, i, &bgptr, &bowt); /* bowt not used ... */
+    /* End state */
+    fprintf(file, "%d\t0\n", st_end);
 
-      for (j=0; j<nb_bg; j++) {
-	if (bgptr[j].wid!=lm->finishlwid) { 
-
-	  /*32/16 bits code */
-	  id_hist1=is32bits?idx_tg32_hist(lm,bgptr32,i,j):idx_tg_hist (lm, bgptr, i, j);
-	  nb_tg= is32bits? lm_tg32list (lm, i, bgptr32[j].wid, &tgptr32, &bowt): lm_tglist (lm, i, bgptr[j].wid, &tgptr, &bowt);
-
-	  if (nb_tg>0) {
-	    fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1+nbwtg, bgptr[j].wid+1, -lm->bgprob[bgptr[j].probid].f ); /* 2g->3g */
-	  }
-	  fprintf(file, "%d\t%d\t0\t%f\n", id_hist1+nbwtg, bgptr[j].wid, -lm->tgbowt[bgptr[j].bowtid].f); /* 3g->2g */
-	    
-	  for (k=0; k<nb_tg; k++) { /* 3g->3g */
-	    if (tgptr[k].wid==lm->finishlwid) {
-	      fprintf(file, "%d\t%d\t%d\t%f\n", id_hist1+nbwtg, st_end, tgptr[k].wid+1, -lm->tgprob[tgptr[k].probid].f );
-	    }
-	    else {
-	      /* bowt not used ... */				
-		
-	      /*32/16 bits code */
-	      nb_bg2= is32bits? lm_bg32list(lm, bgptr32[j].wid, &bgptr32_2, &bowt): lm_bglist(lm, bgptr[j].wid, &bgptr2, &bowt); 
-	      l=is32bits?find_bg32(bgptr32_2, nb_bg2, tgptr32[k].wid):find_bg(bgptr2, nb_bg2, tgptr[k].wid);
-
-	      if (l>-1) {
-		if (tgptr[k].wid!=lm->finishlwid) {
-		  
-		  id_hist2=is32bits? idx_tg32_hist (lm, bgptr32_2, bgptr32[j].wid, l) : idx_tg_hist (lm, bgptr2, bgptr[j].wid, l);
-		  
-		  if(is32bits){
-		    if (prune_lowprobtg) {
-		      if (lm->tgprob[tgptr32[k].probid].f > (lm->tgbowt[bgptr32[j].bowtid].f + lm_bg_score (lm, bgptr32[j].wid, tgptr32[k].wid, 0)) ) {
-			fprintf(file, "%d\t%d\t%d\t%f\n", id_hist1+nbwtg, id_hist2+nbwtg, tgptr32[k].wid+1, -lm->tgprob[tgptr32[k].probid].f );
-		      }
-		    }else {
-		      fprintf(file, "%d\t%d\t%d\t%f\n", id_hist1+nbwtg, id_hist2+nbwtg, tgptr32[k].wid+1, -lm->tgprob[tgptr32[k].probid].f );
-		    }
-		  }else{
-		    if (prune_lowprobtg) {
-		      if (lm->tgprob[tgptr[k].probid].f > (lm->tgbowt[bgptr[j].bowtid].f + lm_bg_score (lm, bgptr[j].wid, tgptr[k].wid, 0)) ) {
-			fprintf(file, "%d\t%d\t%d\t%f\n", id_hist1+nbwtg, id_hist2+nbwtg, tgptr[k].wid+1, -lm->tgprob[tgptr[k].probid].f );
-		      }
-		    }else {
-		      fprintf(file, "%d\t%d\t%d\t%f\n", id_hist1+nbwtg, id_hist2+nbwtg, tgptr[k].wid+1, -lm->tgprob[tgptr[k].probid].f );
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-	else {
-	  if(is32bits)
-	    fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr32[j].wid+1, -lm->bgprob[bgptr32[j].probid].f);  /* 2g->2g*/
-	  else
-	    fprintf(file, "%d\t%d\t%d\t%f\n", i, st_end, bgptr[j].wid+1, -lm->bgprob[bgptr[j].probid].f);  /* 2g->2g*/
-	}
-      }
-    }
-  }
-
-  /* End state */
-  fprintf(file, "%d\t0\n", st_end); 
-  
-  fclose(file);
-  fprintf(stderr, "\nFSM written\n\n");
-  return LM_SUCCESS;
+    fclose(file);
+    fprintf(stderr, "\nFSM written\n\n");
+    return LM_SUCCESS;
 }

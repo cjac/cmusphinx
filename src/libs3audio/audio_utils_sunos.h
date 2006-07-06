@@ -63,10 +63,10 @@
 #include <sys/filio.h>
 
 
-int	audioOpen(const char *dev, int rate);
-void	audioPause(void);
-void	audioFlush(void);
-void	audioStartRecord(void);
-void	audioStopRecord(void);
-void	audioClose(void);
-int	audioSetRecordGain(int gain);
+int audioOpen(const char *dev, int rate);
+void audioPause(void);
+void audioFlush(void);
+void audioStartRecord(void);
+void audioStopRecord(void);
+void audioClose(void);
+int audioSetRecordGain(int gain);

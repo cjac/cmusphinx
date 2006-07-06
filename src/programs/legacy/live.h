@@ -43,19 +43,19 @@ extern "C" {
 #include "feat.h"
 
 
-typedef struct {
-    int32 ascr;
-    int32 lscr;
-    char  *word;
-    int32 sf;
-    int32 ef;
-} partialhyp_t;
+    typedef struct {
+        int32 ascr;
+        int32 lscr;
+        char *word;
+        int32 sf;
+        int32 ef;
+    } partialhyp_t;
 
-void live_utt_summary();
-void live_utt_set_uttid(char* uttname);
-void live_initialize_decoder (char *argsfile);
+    void live_utt_summary();
+    void live_utt_set_uttid(char *uttname);
+    void live_initialize_decoder(char *argsfile);
 
-int32 live_get_partialhyp(int32 endutt);
+    int32 live_get_partialhyp(int32 endutt);
 
 /* Routine to decode a block of incoming samples. A partial hypothesis
  * for the utterance upto the current block of samples is returned.
@@ -66,13 +66,13 @@ int32 live_get_partialhyp(int32 endutt);
  * of a new utterance
  */
 
-int32 live_utt_decode_block (int16 *samples,    /* Incoming samples */
-			     int32 nsamples,    /* No. of incoming samples */
-                      	     int32 live_endutt, /* End of utterance flag */
-			     partialhyp_t **ohyp);
+    int32 live_utt_decode_block(int16 * samples,        /* Incoming samples */
+                                int32 nsamples, /* No. of incoming samples */
+                                int32 live_endutt,      /* End of utterance flag */
+                                partialhyp_t ** ohyp);
 
-int32 live_free_memory ();
-  
+    int32 live_free_memory();
+
 #ifdef __cplusplus
 }
 #endif

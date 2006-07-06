@@ -65,14 +65,13 @@
 extern "C" {
 #endif
 
-typedef struct _remote_decoder_t
-{
-  live_decoder_t ld;
-  list_t *control_queue;
-  list_t *result_queue;
-  int32 state;
-  int32 internal_cmd_ln;
-} remote_decoder_t;
+    typedef struct _remote_decoder_t {
+        live_decoder_t ld;
+        list_t *control_queue;
+        list_t *result_queue;
+        int32 state;
+        int32 internal_cmd_ln;
+    } remote_decoder_t;
 
 #define RD_SUCCESS	0
 #define RD_FAILURE	-1
@@ -80,82 +79,85 @@ typedef struct _remote_decoder_t
 /**
  * Informs the remote-decoder to initialize and begin a new session.
  */
-remote_decoder_t* rd_init();
+    remote_decoder_t *rd_init();
 
 /**
  * Parses the arguments, then informs the remote-decoder to initialize and
  * begin a new session.
  */
-remote_decoder_t* rd_init_with_args(int argc, char **argv);
+    remote_decoder_t *rd_init_with_args(int argc, char **argv);
 
 /**
  * Informs the remote-decoder to finish the session.
  */
-int rd_finish(remote_decoder_t *decoder);
+    int rd_finish(remote_decoder_t * decoder);
 
 /**
  * Informs the remote-decoder to begin utterance decoding.
  */
-int rd_begin_utt(remote_decoder_t *decoder, char *uttid);
+    int rd_begin_utt(remote_decoder_t * decoder, char *uttid);
 
 /**
  * Informs the remote-decoder to end utterance decoding.
  */
-int rd_end_utt(remote_decoder_t *decoder);
+    int rd_end_utt(remote_decoder_t * decoder);
 
 /**
  * Informs the remote-decoder to abort utterance decoding.
  */
-int rd_abort_utt(remote_decoder_t *decoder);
+    int rd_abort_utt(remote_decoder_t * decoder);
 
 /**
  * Informs the remote-decoder there is new raw data for utterance decoding.
  */
-int rd_process_raw(remote_decoder_t *decoder, int16 *samples, int32 len);
+    int rd_process_raw(remote_decoder_t * decoder, int16 * samples,
+                       int32 len);
 
 /**
  * Informs the remote-decoder there is new framed data for utterance decoding.
  */
-int rd_process_ceps(remote_decoder_t *decoder, float32 **ceps, int32 len);
+    int rd_process_ceps(remote_decoder_t * decoder, float32 ** ceps,
+                        int32 len);
 
 /**
  * Informs the remote-decoder there is new feature vectors for utterance
  * decoding.
  */
-int rd_process_feats(remote_decoder_t *decoder, float32 ***feats, int32 len);
+    int rd_process_feats(remote_decoder_t * decoder, float32 *** feats,
+                         int32 len);
 
 /**
  * Informs the remote-decoder to record the hypothesis (at the current stage
  * of decoding).
  */
-int rd_record_hyps(remote_decoder_t *decoder);
+    int rd_record_hyps(remote_decoder_t * decoder);
 
 /**
  * Retrieves the oldest results from the result queue.
  */
-int rd_retrieve_hyps(remote_decoder_t *decoder, char **uttid, char **hyp_str,
-		     hyp_t ***hyp_segs);
+    int rd_retrieve_hyps(remote_decoder_t * decoder, char **uttid,
+                         char **hyp_str, hyp_t *** hyp_segs);
 
 /**
  * Free the results retrieved by rd_retrieve_hyps.
  */
-int rd_free_hyps(char *uttid, char *hyp_str, hyp_t **hyp_segs);
+    int rd_free_hyps(char *uttid, char *hyp_str, hyp_t ** hyp_segs);
 
 /**
  * Main function for decoding.  Should be run on a separate thread.
  */
-void rd_run(remote_decoder_t *decoder);
-  
+    void rd_run(remote_decoder_t * decoder);
+
 /**
  * Informs the remote-decoder to completely stop when it is finished executing
  * all of the previous commands.
  */
-int rd_join(remote_decoder_t *decoder);
+    int rd_join(remote_decoder_t * decoder);
 
 /**
  * Informs the remote-decoder to completely stop as soon as possible.
  */
-int rd_interrupt(remote_decoder_t *decoder);
+    int rd_interrupt(remote_decoder_t * decoder);
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -164,6 +166,4 @@ int rd_interrupt(remote_decoder_t *decoder);
 #ifdef __cplusplus
 }
 #endif
-
 #endif
-

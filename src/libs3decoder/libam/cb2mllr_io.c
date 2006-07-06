@@ -57,11 +57,8 @@
  */
 static int
 s3map_read(const char *fn, /**< The file name */
-	   void **out_map,
-	   int32 *out_n_dom,
-	   int32 *out_n_rng,
-	   size_t map_elem_size
-	   )
+           void **out_map,
+           int32 * out_n_dom, int32 * out_n_rng, size_t map_elem_size)
 {
     uint32 rd_chksum = 0;
     uint32 sv_chksum;
@@ -74,62 +71,55 @@ s3map_read(const char *fn, /**< The file name */
     int i;
 
     if ((fp = fopen(fn, "rb")) == NULL)
-	E_FATAL_SYSTEM("fopen(%s,rb) failed\n", fn);
-    
+        E_FATAL_SYSTEM("fopen(%s,rb) failed\n", fn);
+
     /* Read header, including argument-value info and 32-bit byteorder magic */
-    if (bio_readhdr (fp, &argname, &argval, &swap) < 0)
-	E_FATAL("bio_readhdr(%s) failed\n", fn);
+    if (bio_readhdr(fp, &argname, &argval, &swap) < 0)
+        E_FATAL("bio_readhdr(%s) failed\n", fn);
 
     /* Parse argument-value list */
     ver = do_chk = NULL;
     for (i = 0; argname[i]; i++) {
-	if (strcmp (argname[i], "version") == 0) {
-	    if (strcmp(argval[i], MAP_FILE_VERSION) != 0) {
-		E_FATAL("Version mismatch(%s): %s, expecting %s\n",
-			fn, argval[i], MAP_FILE_VERSION);
-	    }
-	    ver = argval[i];
-	} else if (strcmp (argname[i], "chksum0") == 0) {
-	    do_chk = argval[i];
-	}
+        if (strcmp(argname[i], "version") == 0) {
+            if (strcmp(argval[i], MAP_FILE_VERSION) != 0) {
+                E_FATAL("Version mismatch(%s): %s, expecting %s\n",
+                        fn, argval[i], MAP_FILE_VERSION);
+            }
+            ver = argval[i];
+        }
+        else if (strcmp(argname[i], "chksum0") == 0) {
+            do_chk = argval[i];
+        }
     }
     if (ver == NULL)
-	E_FATAL("No version attribute for %s\n", fn);
-    bio_hdrarg_free (argname, argval);
+        E_FATAL("No version attribute for %s\n", fn);
+    bio_hdrarg_free(argname, argval);
     argname = argval = NULL;
 
-    if (bio_fread(out_n_rng,
-		  sizeof(uint32),
-		  1,
-		  fp,
-		  swap,
-		  &rd_chksum) != 1) {
-	fclose(fp);
+    if (bio_fread(out_n_rng, sizeof(uint32), 1, fp, swap, &rd_chksum) != 1) {
+        fclose(fp);
 
-	return S3_ERROR;
+        return S3_ERROR;
     }
 
     if (bio_fread_1d(out_map,
-		     map_elem_size,
-		     out_n_dom,
-		     fp,
-		     swap,
-		     &rd_chksum) < 0) {
-	fclose(fp);
+                     map_elem_size, out_n_dom, fp, swap, &rd_chksum) < 0) {
+        fclose(fp);
 
-	return S3_ERROR;
+        return S3_ERROR;
     }
 
     if (do_chk) {
-	if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) != 1) {
-	    fclose(fp);
-	    
-	    return S3_ERROR;
-	}
-	
-	if (sv_chksum != rd_chksum) {
-	    E_FATAL("Checksum error; read corrupted data.\n");
-	}
+        if (bio_fread(&sv_chksum, sizeof(uint32), 1, fp, swap, &ignore) !=
+            1) {
+            fclose(fp);
+
+            return S3_ERROR;
+        }
+
+        if (sv_chksum != rd_chksum) {
+            E_FATAL("Checksum error; read corrupted data.\n");
+        }
     }
 
     E_INFO("Read %s [%u mappings to %u]\n", fn, *out_n_dom, *out_n_rng);
@@ -139,9 +129,7 @@ s3map_read(const char *fn, /**< The file name */
 
 int
 cb2mllr_read(const char *fn,
-	     int32 **out_cb2mllr,
-	     int32 *out_n_cb,
-	     int32 *out_n_mllr)
+             int32 ** out_cb2mllr, int32 * out_n_cb, int32 * out_n_mllr)
 {
     int ret, i, n_d, n_r;
     int *did_map;
@@ -150,50 +138,51 @@ cb2mllr_read(const char *fn,
     int beg_hole = 0;
 
     ret = s3map_read(fn,
-		     (void **)out_cb2mllr,
-		     out_n_cb,
-		     out_n_mllr,
-		     sizeof(int32));
+                     (void **) out_cb2mllr,
+                     out_n_cb, out_n_mllr, sizeof(int32));
 
-    
+
     if (ret == S3_SUCCESS) {
-	n_d = *out_n_cb;
-	n_r = *out_n_mllr;
-	cb2mllr = *out_cb2mllr;
-	
-	did_map = ckd_calloc(n_r, sizeof(int));
+        n_d = *out_n_cb;
+        n_r = *out_n_mllr;
+        cb2mllr = *out_cb2mllr;
 
-	for (i = 0; i < n_d; i++) {
-	    if (cb2mllr[i] >= (int32)*out_n_mllr) {
-		E_FATAL("%s cb2mllr[%d] -> %d which is >= n_mllr_class (%d)\n",
-			fn, i, cb2mllr[i], *out_n_mllr);
-	    }
-	    else if (cb2mllr[i] >= 0)
-		did_map[cb2mllr[i]] = IS_MAPPED;
-	}
-	
-	for (i = 0; i < n_d; i++) {
-	    if (cb2mllr[i] < 0) continue; /* skipped */
-	    if (!in_hole && (did_map[cb2mllr[i]] == NOT_MAPPED)) {
-		beg_hole = i;
-		in_hole = TRUE;
-	    }
-	    if (in_hole && (did_map[cb2mllr[i]] == IS_MAPPED)) {
-		E_FATAL("cb unmapped in region [%u %u]\n", beg_hole, i-1);
-		in_hole = FALSE;
-	    }
-	}
-	if (in_hole) {
-	    E_FATAL("cb unmapped in region [%u %u]\n", beg_hole, i-1);
-	}
+        did_map = ckd_calloc(n_r, sizeof(int));
 
-	ckd_free(did_map);
+        for (i = 0; i < n_d; i++) {
+            if (cb2mllr[i] >= (int32) * out_n_mllr) {
+                E_FATAL
+                    ("%s cb2mllr[%d] -> %d which is >= n_mllr_class (%d)\n",
+                     fn, i, cb2mllr[i], *out_n_mllr);
+            }
+            else if (cb2mllr[i] >= 0)
+                did_map[cb2mllr[i]] = IS_MAPPED;
+        }
+
+        for (i = 0; i < n_d; i++) {
+            if (cb2mllr[i] < 0)
+                continue;       /* skipped */
+            if (!in_hole && (did_map[cb2mllr[i]] == NOT_MAPPED)) {
+                beg_hole = i;
+                in_hole = TRUE;
+            }
+            if (in_hole && (did_map[cb2mllr[i]] == IS_MAPPED)) {
+                E_FATAL("cb unmapped in region [%u %u]\n", beg_hole,
+                        i - 1);
+                in_hole = FALSE;
+            }
+        }
+        if (in_hole) {
+            E_FATAL("cb unmapped in region [%u %u]\n", beg_hole, i - 1);
+        }
+
+        ckd_free(did_map);
     }
 
     return ret;
 }
-
 
+
 /*
  * Log record.  Maintained by RCS.
  *

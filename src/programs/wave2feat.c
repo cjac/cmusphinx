@@ -71,8 +71,7 @@
 /** \file wave2feat.c
  * \brief Driver for wave2feat
  */
-const char helpstr[] =
-  "Description: \n\
+const char helpstr[] = "Description: \n\
 Create cepstra from audio file.\n		\
 									\
 The main parameters that affect the final output, with typical values, are:\n \
@@ -85,8 +84,7 @@ nfft, 256 or 512\n							\
 format, raw or nist or mswav\n						\
 \"";
 
-const char examplestr[] =
-  "Example: \n\
+const char examplestr[] = "Example: \n\
 This example creates a cepstral file named \"output.mfc\" from an input audio file named \"input.raw\", which is a raw audio file (no header information), which was originally sampled at 16kHz. \n \
 \n									\
 wave2feat -i  input.raw \n						\
@@ -102,91 +100,90 @@ wave2feat -i  input.raw \n						\
 
 static arg_t defn[] = {
 
-#if 0 /* ARCHAN: temporarily removed in 3.5 release */
-  { "-help",
-    ARG_INT32,
-    "0",
-    "Shows the usage of the tool"},
-  { "-example",
-    ARG_INT32,
-    "0",
-    "Shows example of how to use the tool"},
+#if 0                           /* ARCHAN: temporarily removed in 3.5 release */
+    {"-help",
+     ARG_INT32,
+     "0",
+     "Shows the usage of the tool"},
+    {"-example",
+     ARG_INT32,
+     "0",
+     "Shows example of how to use the tool"},
 #endif
 
-  waveform_to_cepstral_command_line_macro()
-  common_application_properties_command_line_macro()
-
-  { "-machine_endian",
-    ARG_STRING,
+    waveform_to_cepstral_command_line_macro()
+        common_application_properties_command_line_macro()
+    {"-machine_endian",
+     ARG_STRING,
 #ifdef WORDS_BIGENDIAN
-    "big",
+     "big",
 #else
-    "little",
+     "little",
 #endif
-    "Endianness of machine, big or little" },
+     "Endianness of machine, big or little"},
 
 
-  { "-i",
-    ARG_STRING,
-    NULL,
-    "Single audio input file" },
-  { "-o",
-    ARG_STRING,
-    NULL,
-    "Single cepstral output file" },
-  { "-c",
-    ARG_STRING,
-    NULL,
-    "Control file for batch processing" },
-  { "-di",
-    ARG_STRING,
-    NULL,
-    "Input directory, input file names are relative to this, if defined" },
-  { "-ei",
-    ARG_STRING,
-    NULL,
-    "Input extension to be applied to all input files" },
-  { "-do",
-    ARG_STRING,
-    NULL,
-    "Output directory, output files are relative to this" },
-  { "-eo",
-    ARG_STRING,
-    NULL,
-    "Output extension to be applied to all output files" },
-  { "-nist",
-    ARG_INT32,
-    "0",
-    "Defines input format as NIST sphere" },
-  { "-raw",
-    ARG_INT32,
-    "0",
-    "Defines input format as raw binary data" },
-  { "-mswav",
-    ARG_INT32,
-    "0",
-    "Defines input format as Microsoft Wav (RIFF)" },
-  { "-nchans",
-    ARG_INT32,
-    ONE_CHAN,
-    "Number of channels of data (interlaced samples assumed)" },
-  { "-whichchan",
-    ARG_INT32,
-    ONE_CHAN,
-    "Channel to process" },
-  { "-logspec",
-    ARG_INT32,
-    "0",
-    "Write out logspectral files instead of cepstra" },
-  { "-feat",
-    ARG_STRING,
-    "sphinx",
-    "SPHINX format - big endian" },
-  { "-verbose",
-    ARG_INT32,
-    "0",
-    "Show input filenames" },
-  { NULL, ARG_INT32,  NULL, NULL }
+    {"-i",
+     ARG_STRING,
+     NULL,
+     "Single audio input file"},
+    {"-o",
+     ARG_STRING,
+     NULL,
+     "Single cepstral output file"},
+    {"-c",
+     ARG_STRING,
+     NULL,
+     "Control file for batch processing"},
+    {"-di",
+     ARG_STRING,
+     NULL,
+     "Input directory, input file names are relative to this, if defined"},
+    {"-ei",
+     ARG_STRING,
+     NULL,
+     "Input extension to be applied to all input files"},
+    {"-do",
+     ARG_STRING,
+     NULL,
+     "Output directory, output files are relative to this"},
+    {"-eo",
+     ARG_STRING,
+     NULL,
+     "Output extension to be applied to all output files"},
+    {"-nist",
+     ARG_INT32,
+     "0",
+     "Defines input format as NIST sphere"},
+    {"-raw",
+     ARG_INT32,
+     "0",
+     "Defines input format as raw binary data"},
+    {"-mswav",
+     ARG_INT32,
+     "0",
+     "Defines input format as Microsoft Wav (RIFF)"},
+    {"-nchans",
+     ARG_INT32,
+     ONE_CHAN,
+     "Number of channels of data (interlaced samples assumed)"},
+    {"-whichchan",
+     ARG_INT32,
+     ONE_CHAN,
+     "Channel to process"},
+    {"-logspec",
+     ARG_INT32,
+     "0",
+     "Write out logspectral files instead of cepstra"},
+    {"-feat",
+     ARG_STRING,
+     "sphinx",
+     "SPHINX format - big endian"},
+    {"-verbose",
+     ARG_INT32,
+     "0",
+     "Show input filenames"},
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 /*       
@@ -210,23 +207,23 @@ static arg_t defn[] = {
 	 added -mach_endian switch to specify machine's byte format
 */
 
-int32 main(int32 argc, char **argv)
+int32
+main(int32 argc, char **argv)
 {
-  param_t *P;
+    param_t *P;
 
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
-  unlimit();
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc, argv, "default.arg", defn);
+    unlimit();
 
-  P = fe_parse_options(argc,argv);
-  if (fe_convert_files(P) != FE_SUCCESS){
-    E_FATAL("error converting files...exiting\n");
-  }
-  
-  fe_free_param(P);
+    P = fe_parse_options(argc, argv);
+    if (fe_convert_files(P) != FE_SUCCESS) {
+        E_FATAL("error converting files...exiting\n");
+    }
 
-  cmd_ln_appl_exit();
+    fe_free_param(P);
 
-  return(0);
+    cmd_ln_appl_exit();
+
+    return (0);
 }
-

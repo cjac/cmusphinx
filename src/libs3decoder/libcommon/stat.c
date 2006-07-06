@@ -80,138 +80,147 @@
  * \brief The wrapper structure for all statistics in sphinx 3.x
  */
 
-stat_t* stat_init(){
-  
-  stat_t *st;
-  st=(stat_t*)ckd_calloc(1,sizeof(stat_t));
-  ptmr_init (&(st->tm_sen));
-  ptmr_init (&(st->tm_srch));
-  ptmr_init (&(st->tm_ovrhd));
-
-  stat_clear_corpus(st);
-  stat_clear_utt(st);
-
-  return st;
-
-}
-
-void stat_free(stat_t* st)
+stat_t *
+stat_init()
 {
-  if(st){
-    ckd_free((void*) st);
-  }
+
+    stat_t *st;
+    st = (stat_t *) ckd_calloc(1, sizeof(stat_t));
+    ptmr_init(&(st->tm_sen));
+    ptmr_init(&(st->tm_srch));
+    ptmr_init(&(st->tm_ovrhd));
+
+    stat_clear_corpus(st);
+    stat_clear_utt(st);
+
+    return st;
+
 }
 
-void stat_clear_utt(stat_t* st)
+void
+stat_free(stat_t * st)
 {
-  st->nfr =0 ;
-  st->utt_hmm_eval =0; 
-  st->utt_sen_eval =0; 
-  st->utt_gau_eval =0; 
-  st->utt_cisen_eval =0;
-  st->utt_cigau_eval =0;
-  st->utt_wd_exit = 0 ;
+    if (st) {
+        ckd_free((void *) st);
+    }
 }
 
-void stat_clear_corpus(stat_t* st)
+void
+stat_clear_utt(stat_t * st)
 {
-  st->tot_fr = 0;
-  st->tot_sen_eval = 0.0;
-  st->tot_ci_sen_eval = 0.0;
-  st->tot_gau_eval = 0.0;
-  st->tot_ci_gau_eval = 0.0;
-  st->tot_hmm_eval = 0.0;
-  st->tot_wd_exit = 0.0;
+    st->nfr = 0;
+    st->utt_hmm_eval = 0;
+    st->utt_sen_eval = 0;
+    st->utt_gau_eval = 0;
+    st->utt_cisen_eval = 0;
+    st->utt_cigau_eval = 0;
+    st->utt_wd_exit = 0;
 }
 
-void stat_update_corpus(stat_t* st)
+void
+stat_clear_corpus(stat_t * st)
 {
-  st->tot_sen_eval += st->utt_sen_eval;
-  st->tot_gau_eval += st->utt_gau_eval;
-  st->tot_ci_sen_eval += st->utt_cisen_eval;
-  st->tot_ci_gau_eval += st->utt_cigau_eval;
-  st->tot_hmm_eval += st->utt_hmm_eval;
-  st->tot_wd_exit += st->utt_wd_exit;
+    st->tot_fr = 0;
+    st->tot_sen_eval = 0.0;
+    st->tot_ci_sen_eval = 0.0;
+    st->tot_gau_eval = 0.0;
+    st->tot_ci_gau_eval = 0.0;
+    st->tot_hmm_eval = 0.0;
+    st->tot_wd_exit = 0.0;
+}
+
+void
+stat_update_corpus(stat_t * st)
+{
+    st->tot_sen_eval += st->utt_sen_eval;
+    st->tot_gau_eval += st->utt_gau_eval;
+    st->tot_ci_sen_eval += st->utt_cisen_eval;
+    st->tot_ci_gau_eval += st->utt_cigau_eval;
+    st->tot_hmm_eval += st->utt_hmm_eval;
+    st->tot_wd_exit += st->utt_wd_exit;
 }
 
 
-void stat_report_utt(stat_t* st,char * uttid){    
+void
+stat_report_utt(stat_t * st, char *uttid)
+{
   /** do not print anything if nfr is 0 */
-  if (st->nfr > 0) {
+    if (st->nfr > 0) {
     /** Before mode 3 could measure hmm/fr and word/fr correctly 
 	Don't report it when it is too small to be true. 
      */
-    if(	   (st->utt_hmm_eval + (st->nfr >> 1)) / st->nfr != 0){
+        if ((st->utt_hmm_eval + (st->nfr >> 1)) / st->nfr != 0) {
 
-      E_INFO("%4d frm;  %4d cdsen/fr, %4d cisen/fr, %5d cdgau/fr, %5d cigau/fr, Sen %4.2f, CPU %4.2f "
-	   "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
-	   "%5d hmm/fr, %3d wd/fr, Search: %4.2f CPU %4.2f Clk (%s)  \n",
-	   st->nfr,
-	   (st->utt_sen_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_cisen_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_gau_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_cigau_eval + (st->nfr >> 1)) / st->nfr,
-	   st->tm_sen.t_cpu * 100.0 / st->nfr,
-	   st->tm_sen.t_elapsed * 100.0 / st->nfr,
-	   st->tm_ovrhd.t_cpu * 100.0 / st->nfr,
-	   st->tm_ovrhd.t_elapsed * 100.0 / st->nfr,
-	   (st->utt_hmm_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_wd_exit + (st->nfr >> 1)) / st->nfr,
-	   st->tm_srch.t_cpu * 100.0 / st->nfr,
-	   st->tm_srch.t_elapsed * 100.0 / st->nfr,
-	   uttid);
-    }else{
-      E_INFO("%4d frm;  %4d cdsen/fr, %4d cisen/fr, %5d cdgau/fr, %5d cigau/fr, Sen %4.2f, CPU %4.2f "
-	   "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
-	   "Search: %4.2f CPU %4.2f Clk (%s)  \n",
-	   st->nfr,
-	   (st->utt_sen_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_cisen_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_gau_eval + (st->nfr >> 1)) / st->nfr,
-	   (st->utt_cigau_eval + (st->nfr >> 1)) / st->nfr,
-	   st->tm_sen.t_cpu * 100.0 / st->nfr,
-	   st->tm_sen.t_elapsed * 100.0 / st->nfr,
-	   st->tm_ovrhd.t_cpu * 100.0 / st->nfr,
-	   st->tm_ovrhd.t_elapsed * 100.0 / st->nfr,
-	   st->tm_srch.t_cpu * 100.0 / st->nfr,
-	   st->tm_srch.t_elapsed * 100.0 / st->nfr,
-	   uttid);
+            E_INFO
+                ("%4d frm;  %4d cdsen/fr, %4d cisen/fr, %5d cdgau/fr, %5d cigau/fr, Sen %4.2f, CPU %4.2f "
+                 "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
+                 "%5d hmm/fr, %3d wd/fr, Search: %4.2f CPU %4.2f Clk (%s)  \n",
+                 st->nfr, (st->utt_sen_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_cisen_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_gau_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_cigau_eval + (st->nfr >> 1)) / st->nfr,
+                 st->tm_sen.t_cpu * 100.0 / st->nfr,
+                 st->tm_sen.t_elapsed * 100.0 / st->nfr,
+                 st->tm_ovrhd.t_cpu * 100.0 / st->nfr,
+                 st->tm_ovrhd.t_elapsed * 100.0 / st->nfr,
+                 (st->utt_hmm_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_wd_exit + (st->nfr >> 1)) / st->nfr,
+                 st->tm_srch.t_cpu * 100.0 / st->nfr,
+                 st->tm_srch.t_elapsed * 100.0 / st->nfr, uttid);
+        }
+        else {
+            E_INFO
+                ("%4d frm;  %4d cdsen/fr, %4d cisen/fr, %5d cdgau/fr, %5d cigau/fr, Sen %4.2f, CPU %4.2f "
+                 "Clk [Ovrhd %4.2f CPU %4.2f Clk];  "
+                 "Search: %4.2f CPU %4.2f Clk (%s)  \n", st->nfr,
+                 (st->utt_sen_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_cisen_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_gau_eval + (st->nfr >> 1)) / st->nfr,
+                 (st->utt_cigau_eval + (st->nfr >> 1)) / st->nfr,
+                 st->tm_sen.t_cpu * 100.0 / st->nfr,
+                 st->tm_sen.t_elapsed * 100.0 / st->nfr,
+                 st->tm_ovrhd.t_cpu * 100.0 / st->nfr,
+                 st->tm_ovrhd.t_elapsed * 100.0 / st->nfr,
+                 st->tm_srch.t_cpu * 100.0 / st->nfr,
+                 st->tm_srch.t_elapsed * 100.0 / st->nfr, uttid);
+        }
     }
-  }else{
-	  /* (dhuggins 2006-05-01: I think this assert is bogus.) */
-	  /* assert(st->tot_fr > 0); */
-    E_INFO("%4d frm , No report\n",0);
-  }
+    else {
+        /* (dhuggins 2006-05-01: I think this assert is bogus.) */
+        /* assert(st->tot_fr > 0); */
+        E_INFO("%4d frm , No report\n", 0);
+    }
 
 }
 
 
 
-void stat_report_corpus(stat_t * st){
+void
+stat_report_corpus(stat_t * st)
+{
 
-  if (st->tot_fr != 0){
+    if (st->tot_fr != 0) {
 
-    E_INFO("SUMMARY:  %d fr;  %d cdsen/fr, %d cisen/fr, %d cdgau/fr, %d cigau/fr, %.2f xCPU %.2f xClk [Ovhrd %.2f xCPU %2.f xClk];  %d hmm/fr, %d wd/fr, %.2f xCPU %.2f xClk;  tot: %.2f xCPU, %.2f xClk\n",
-	   st->tot_fr,
-	   (int32)(st->tot_sen_eval / st->tot_fr),
-	   (int32)(st->tot_ci_sen_eval / st->tot_fr),
-	   (int32)(st->tot_gau_eval / st->tot_fr),
-	   (int32)(st->tot_ci_gau_eval / st->tot_fr),
-	   st->tm_sen.t_tot_cpu * 100.0 / st->tot_fr,
-	   st->tm_sen.t_tot_elapsed * 100.0 / st->tot_fr,
-	   st->tm_ovrhd.t_tot_cpu * 100.0 / st->tot_fr,
-	   st->tm_ovrhd.t_tot_elapsed * 100.0 / st->tot_fr,
-	   (int32)(st->tot_hmm_eval / st->tot_fr),
-	   (int32)(st->tot_wd_exit / st->tot_fr),
-	   st->tm_srch.t_tot_cpu * 100.0 / st->tot_fr,
-	   st->tm_srch.t_tot_elapsed * 100.0 / st->tot_fr,
-	   st->tm.t_tot_cpu * 100.0 / st->tot_fr,
-	   st->tm.t_tot_elapsed * 100.0 / st->tot_fr);
-  }else{
-    assert(st->tot_fr == 0);
-    E_INFO("SUMMARY:  0 fr , No report\n");
-  }
+        E_INFO
+            ("SUMMARY:  %d fr;  %d cdsen/fr, %d cisen/fr, %d cdgau/fr, %d cigau/fr, %.2f xCPU %.2f xClk [Ovhrd %.2f xCPU %2.f xClk];  %d hmm/fr, %d wd/fr, %.2f xCPU %.2f xClk;  tot: %.2f xCPU, %.2f xClk\n",
+             st->tot_fr, (int32) (st->tot_sen_eval / st->tot_fr),
+             (int32) (st->tot_ci_sen_eval / st->tot_fr),
+             (int32) (st->tot_gau_eval / st->tot_fr),
+             (int32) (st->tot_ci_gau_eval / st->tot_fr),
+             st->tm_sen.t_tot_cpu * 100.0 / st->tot_fr,
+             st->tm_sen.t_tot_elapsed * 100.0 / st->tot_fr,
+             st->tm_ovrhd.t_tot_cpu * 100.0 / st->tot_fr,
+             st->tm_ovrhd.t_tot_elapsed * 100.0 / st->tot_fr,
+             (int32) (st->tot_hmm_eval / st->tot_fr),
+             (int32) (st->tot_wd_exit / st->tot_fr),
+             st->tm_srch.t_tot_cpu * 100.0 / st->tot_fr,
+             st->tm_srch.t_tot_elapsed * 100.0 / st->tot_fr,
+             st->tm.t_tot_cpu * 100.0 / st->tot_fr,
+             st->tm.t_tot_elapsed * 100.0 / st->tot_fr);
+    }
+    else {
+        assert(st->tot_fr == 0);
+        E_INFO("SUMMARY:  0 fr , No report\n");
+    }
 
 }
-
-

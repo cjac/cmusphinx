@@ -85,64 +85,70 @@ Please do not change it.  Legacy code use this string to match
 const char *darpa_hdr = "Darpa Trigram LM";
 
 
-#define IS32BITS 1 
+#define IS32BITS 1
 #define IS16BITS 0
 
-static void fwrite_int32 (FILE *fp, int32 val)
+static void
+fwrite_int32(FILE * fp, int32 val)
 {
     REVERSE_SENSE_SWAP_INT32(val);
-    fwrite (&val, sizeof(int32), 1, fp);
+    fwrite(&val, sizeof(int32), 1, fp);
 }
 
-static void fwrite_ug (FILE *fp, ug_t *ug)
+static void
+fwrite_ug(FILE * fp, ug_t * ug)
 {
     ug_t tmp_ug = *ug;
-    
+
     REVERSE_SENSE_SWAP_INT32(tmp_ug.dictwid);
     REVERSE_SENSE_SWAP_INT32(tmp_ug.prob.l);
     REVERSE_SENSE_SWAP_INT32(tmp_ug.bowt.l);
     REVERSE_SENSE_SWAP_INT32(tmp_ug.firstbg);
-    fwrite (&tmp_ug, sizeof(ug_t), 1, fp);
+    fwrite(&tmp_ug, sizeof(ug_t), 1, fp);
 }
 
-static void fwrite_bg (FILE *fp, bg_t *bg)
+static void
+fwrite_bg(FILE * fp, bg_t * bg)
 {
     bg_t tmp_bg = *bg;
-    
+
     REVERSE_SENSE_SWAP_INT16(tmp_bg.wid);
     REVERSE_SENSE_SWAP_INT16(tmp_bg.probid);
     REVERSE_SENSE_SWAP_INT16(tmp_bg.bowtid);
     REVERSE_SENSE_SWAP_INT16(tmp_bg.firsttg);
-    fwrite (&tmp_bg, sizeof(bg_t), 1, fp);
+    fwrite(&tmp_bg, sizeof(bg_t), 1, fp);
 }
 
-static void fwrite_bg32 (FILE *fp, bg32_t *bg)
+static void
+fwrite_bg32(FILE * fp, bg32_t * bg)
 {
     bg32_t tmp_bg = *bg;
-    
+
     REVERSE_SENSE_SWAP_INT32(tmp_bg.wid);
     REVERSE_SENSE_SWAP_INT32(tmp_bg.probid);
     REVERSE_SENSE_SWAP_INT32(tmp_bg.bowtid);
     REVERSE_SENSE_SWAP_INT32(tmp_bg.firsttg);
-    fwrite (&tmp_bg, sizeof(bg32_t), 1, fp);
+    fwrite(&tmp_bg, sizeof(bg32_t), 1, fp);
 }
 
-static void fwrite_tg (FILE *fp, tg_t *tg)
+static void
+fwrite_tg(FILE * fp, tg_t * tg)
 {
     tg_t tmp_tg = *tg;
-    
+
     REVERSE_SENSE_SWAP_INT16(tmp_tg.wid);
     REVERSE_SENSE_SWAP_INT16(tmp_tg.probid);
-    fwrite (&tmp_tg, sizeof(tg_t), 1, fp);
+    fwrite(&tmp_tg, sizeof(tg_t), 1, fp);
 }
 
-static void fwrite_tg32 (FILE *fp, tg32_t *tg)
+static void
+fwrite_tg32(FILE * fp, tg32_t * tg)
 {
     tg32_t tmp_tg = *tg;
-    
+
     REVERSE_SENSE_SWAP_INT32(tmp_tg.wid);
     REVERSE_SENSE_SWAP_INT32(tmp_tg.probid);
-    fwrite (&tmp_tg, sizeof(tg32_t), 1, fp);
+    fwrite(&tmp_tg, sizeof(tg32_t), 1, fp);
 }
 
 
@@ -162,7 +168,7 @@ static char const *fmtdesc[] = {
     "(int32) lm_t.bcount",
     "(int32) lm_t.tcount",
     "lm_t.ucount+1 unigrams (including sentinel)",
-    "lm_t.bcount+1 bigrams (including sentinel 64 bits (bg_t) each if version=-1/-2, 128 bits (bg32_t) each if version=-3",  
+    "lm_t.bcount+1 bigrams (including sentinel 64 bits (bg_t) each if version=-1/-2, 128 bits (bg32_t) each if version=-3",
     "lm_t.tcount trigrams (present iff lm_t.tcount > 0 32 bits (tg_t) each if version=-1/-2, 64 bits (tg32_t) each if version=-3)",
     "(int32) lm_t.n_prob2",
     "(int32) lm_t.prob2[]",
@@ -178,219 +184,241 @@ static char const *fmtdesc[] = {
     NULL,
 };
 
-void lm3g_dump_write_header(FILE* fp)
+void
+lm3g_dump_write_header(FILE * fp)
 {
-  int32 k;
-  k = strlen(darpa_hdr)+1;
-  fwrite_int32 (fp, k);
-  fwrite (darpa_hdr, sizeof(char), k, fp);
+    int32 k;
+    k = strlen(darpa_hdr) + 1;
+    fwrite_int32(fp, k);
+    fwrite(darpa_hdr, sizeof(char), k, fp);
 }
 
-void lm3g_dump_write_lm_filename(FILE* fp, const char* lmfile)
+void
+lm3g_dump_write_lm_filename(FILE * fp, const char *lmfile)
 {
-  int32 k;
+    int32 k;
 
-  k = strlen(lmfile)+1;
-  fwrite_int32 (fp, k);
-  fwrite (lmfile, sizeof(char), k, fp);
+    k = strlen(lmfile) + 1;
+    fwrite_int32(fp, k);
+    fwrite(lmfile, sizeof(char), k, fp);
 
 }
 
-void lm3g_dump_write_version(FILE* fp,lm_t* model, int32 mtime, int32 is32bits)
+void
+lm3g_dump_write_version(FILE * fp, lm_t * model, int32 mtime,
+                        int32 is32bits)
 {
-    if(!is32bits){
-      if (model->log_bg_seg_sz != LOG2_BG_SEG_SZ){	/* Hack!! */
-	E_WARN("log_bg_seg_sz is different from default");
-	fwrite_int32 (fp, LMDMP_VERSION_TG_16BIT_V2);	/* version # */
-      }else{
-	fwrite_int32 (fp, LMDMP_VERSION_TG_16BIT);	/* version # */
-      }
-    }else
-      fwrite_int32 (fp, LMDMP_VERSION_TG_32BIT);	/* version # */
-
-    fwrite_int32 (fp, mtime);
-}
-
-void lm3g_dump_write_ngram_counts(FILE* fp, lm_t *model)
-{
-    fwrite_int32 (fp, model->n_ug);
-    fwrite_int32 (fp, model->n_bg);
-    fwrite_int32 (fp, model->n_tg);
-}
-
-void lm3g_dump_write_fmtdesc(FILE* fp)
-{
-  int32 i,k;
-   /* Write file format description into header */
-    for (i = 0; fmtdesc[i] != NULL; i++) {
-	k = strlen(fmtdesc[i])+1;
-	fwrite_int32 (fp, k);
-	fwrite (fmtdesc[i], sizeof(char), k, fp);
+    if (!is32bits) {
+        if (model->log_bg_seg_sz != LOG2_BG_SEG_SZ) {   /* Hack!! */
+            E_WARN("log_bg_seg_sz is different from default");
+            fwrite_int32(fp, LMDMP_VERSION_TG_16BIT_V2);        /* version # */
+        }
+        else {
+            fwrite_int32(fp, LMDMP_VERSION_TG_16BIT);   /* version # */
+        }
     }
-    fwrite_int32 (fp, 0);
-}
-
-void lm3g_dump_write_unigram(FILE* fp, lm_t* model)
-{
-  int32 i;
-  for (i = 0; i <= model->n_ug; i++)
-    fwrite_ug (fp, &(model->ug[i]));
-
-}
-
-
-void lm3g_dump_write_bigram(FILE* fp, lm_t* model, int32 is32bits)
-{
-  int32 i;
-  for (i = 0; i <= model->n_bg; i++){
-    if(is32bits)
-      fwrite_bg32 (fp, &(model->bg32[i]));
     else
-      fwrite_bg (fp, &(model->bg[i]));
-  }
+        fwrite_int32(fp, LMDMP_VERSION_TG_32BIT);       /* version # */
+
+    fwrite_int32(fp, mtime);
+}
+
+void
+lm3g_dump_write_ngram_counts(FILE * fp, lm_t * model)
+{
+    fwrite_int32(fp, model->n_ug);
+    fwrite_int32(fp, model->n_bg);
+    fwrite_int32(fp, model->n_tg);
+}
+
+void
+lm3g_dump_write_fmtdesc(FILE * fp)
+{
+    int32 i, k;
+    /* Write file format description into header */
+    for (i = 0; fmtdesc[i] != NULL; i++) {
+        k = strlen(fmtdesc[i]) + 1;
+        fwrite_int32(fp, k);
+        fwrite(fmtdesc[i], sizeof(char), k, fp);
+    }
+    fwrite_int32(fp, 0);
+}
+
+void
+lm3g_dump_write_unigram(FILE * fp, lm_t * model)
+{
+    int32 i;
+    for (i = 0; i <= model->n_ug; i++)
+        fwrite_ug(fp, &(model->ug[i]));
 
 }
 
-void lm3g_dump_write_trigram(FILE* fp, lm_t* model, int32 is32bits)
+
+void
+lm3g_dump_write_bigram(FILE * fp, lm_t * model, int32 is32bits)
 {
-  int32 i;
-    for (i = 0; i < model->n_tg; i++){
-      if(is32bits)
-	fwrite_tg32(fp,&(model->tg32[i]));
-      else
-	fwrite_tg (fp, &(model->tg[i]));
+    int32 i;
+    for (i = 0; i <= model->n_bg; i++) {
+        if (is32bits)
+            fwrite_bg32(fp, &(model->bg32[i]));
+        else
+            fwrite_bg(fp, &(model->bg[i]));
+    }
+
+}
+
+void
+lm3g_dump_write_trigram(FILE * fp, lm_t * model, int32 is32bits)
+{
+    int32 i;
+    for (i = 0; i < model->n_tg; i++) {
+        if (is32bits)
+            fwrite_tg32(fp, &(model->tg32[i]));
+        else
+            fwrite_tg(fp, &(model->tg[i]));
     }
 }
 
-void lm3g_dump_write_bgprob(FILE* fp, lm_t* model)
+void
+lm3g_dump_write_bgprob(FILE * fp, lm_t * model)
 {
-  int32 i;
-    fwrite_int32 (fp, model->n_bgprob);
+    int32 i;
+    fwrite_int32(fp, model->n_bgprob);
     for (i = 0; i < model->n_bgprob; i++)
-	fwrite_int32 (fp, model->bgprob[i].l);
+        fwrite_int32(fp, model->bgprob[i].l);
 }
 
-void lm3g_dump_write_tgbowt(FILE* fp, lm_t* model)
+void
+lm3g_dump_write_tgbowt(FILE * fp, lm_t * model)
 {
-  int32 i;
-  fwrite_int32 (fp, model->n_tgbowt);
-  for (i = 0; i < model->n_tgbowt; i++)
-    fwrite_int32 (fp, model->tgbowt[i].l);
+    int32 i;
+    fwrite_int32(fp, model->n_tgbowt);
+    for (i = 0; i < model->n_tgbowt; i++)
+        fwrite_int32(fp, model->tgbowt[i].l);
 }
 
-void lm3g_dump_write_tgprob(FILE* fp, lm_t* model)
+void
+lm3g_dump_write_tgprob(FILE * fp, lm_t * model)
 {
-  int32 i;
-  fwrite_int32 (fp, model->n_tgprob);
-  for (i = 0; i < model->n_tgprob; i++)
-    fwrite_int32 (fp, model->tgprob[i].l);
+    int32 i;
+    fwrite_int32(fp, model->n_tgprob);
+    for (i = 0; i < model->n_tgprob; i++)
+        fwrite_int32(fp, model->tgprob[i].l);
 }
 
-void lm3g_dump_write_tg_segbase(FILE* fp, lm_t* model)
+void
+lm3g_dump_write_tg_segbase(FILE * fp, lm_t * model)
 {
-  int32 i,k;
-  k = (model->n_bg+1)/BG_SEG_SZ + 1;
-  fwrite_int32 (fp, k);
-  for (i = 0; i < k; i++)
-    fwrite_int32 (fp, model->tg_segbase[i]);
+    int32 i, k;
+    k = (model->n_bg + 1) / BG_SEG_SZ + 1;
+    fwrite_int32(fp, k);
+    for (i = 0; i < k; i++)
+        fwrite_int32(fp, model->tg_segbase[i]);
 }
 
-void lm3g_dump_write_wordstr(FILE* fp, lm_t* model)
+void
+lm3g_dump_write_wordstr(FILE * fp, lm_t * model)
 {
-  int32 i,k;
+    int32 i, k;
     k = 0;
     for (i = 0; i < model->n_ug; i++)
-	k += strlen(model->wordstr[i])+1;
-    fwrite_int32 (fp, k);
+        k += strlen(model->wordstr[i]) + 1;
+    fwrite_int32(fp, k);
     for (i = 0; i < model->n_ug; i++)
-	fwrite (model->wordstr[i], sizeof(char), strlen(model->wordstr[i])+1, fp);
+        fwrite(model->wordstr[i], sizeof(char),
+               strlen(model->wordstr[i]) + 1, fp);
 }
 
-int32 lm3g_dump (char const *file,  /**< the file name */
-		 lm_t *model,       /**< the langauge model for output */
-		 char const *lmfile,  /**< the */
-		 int32 mtime,  /**< LM file modification date */
-		 int32 noBits  /**< Number of bits of DMP format */
-		 )
+int32
+lm3g_dump(char const *file,         /**< the file name */
+          lm_t * model,             /**< the langauge model for output */
+          char const *lmfile,         /**< the */
+          int32 mtime,         /**< LM file modification date */
+          int32 noBits         /**< Number of bits of DMP format */
+    )
 {
     FILE *fp;
     int32 is32bits;
 
-    if(noBits!=16&&noBits!=32){
-      E_ERROR("No of Bits specified is not 16 or 32\n");
-      return LM_FAIL;
+    if (noBits != 16 && noBits != 32) {
+        E_ERROR("No of Bits specified is not 16 or 32\n");
+        return LM_FAIL;
     }
 
-    is32bits=(noBits==32);
+    is32bits = (noBits == 32);
 
-    if(!is32bits&& model->n_ug > LM_LEGACY_CONSTANT){
-      E_ERROR("Number of words is larger than %d, but 16 bits models were used\n", LM_LEGACY_CONSTANT);
-      return LM_FAIL;
+    if (!is32bits && model->n_ug > LM_LEGACY_CONSTANT) {
+        E_ERROR
+            ("Number of words is larger than %d, but 16 bits models were used\n",
+             LM_LEGACY_CONSTANT);
+        return LM_FAIL;
     }
     /* 
      * If is32bits, 
      */
 
-    E_INFO ("Dumping LM to %s\n", file);
-    if ((fp = fopen (file, "wb")) == NULL) {
-	E_ERROR ("Cannot create file %s\n",file);
-	return LM_FAIL;
+    E_INFO("Dumping LM to %s\n", file);
+    if ((fp = fopen(file, "wb")) == NULL) {
+        E_ERROR("Cannot create file %s\n", file);
+        return LM_FAIL;
     }
 
     lm3g_dump_write_header(fp);
-    lm3g_dump_write_lm_filename(fp,lmfile);
-    lm3g_dump_write_version(fp,model,mtime,is32bits);
+    lm3g_dump_write_lm_filename(fp, lmfile);
+    lm3g_dump_write_version(fp, model, mtime, is32bits);
 
     /* Write version# and LM file modification date */
     lm3g_dump_write_fmtdesc(fp);
-    
+
     /* HACK!! Write only if different from previous version */
     if (model->log_bg_seg_sz != LOG2_BG_SEG_SZ)
-      fwrite_int32 (fp, model->log_bg_seg_sz);
+        fwrite_int32(fp, model->log_bg_seg_sz);
 
-    lm3g_dump_write_ngram_counts(fp,model);
+    lm3g_dump_write_ngram_counts(fp, model);
 
-    if(!is32bits && model->n_ug > LM_LEGACY_CONSTANT){
-      E_ERROR("The model is a 16 bits' one but the number of unigram has more thant 65535 words (>16 bits)");
-      return LM_FAIL;
+    if (!is32bits && model->n_ug > LM_LEGACY_CONSTANT) {
+        E_ERROR
+            ("The model is a 16 bits' one but the number of unigram has more thant 65535 words (>16 bits)");
+        return LM_FAIL;
     }
 
-    lm3g_dump_write_unigram(fp,model);
+    lm3g_dump_write_unigram(fp, model);
 
     /**
        20060302 ARCHAN 
        This part is where the 16/32 bits differ
      */
 
-    lm_convert_structure(model,is32bits);	
-    lm3g_dump_write_bigram(fp,model,is32bits);
-    lm3g_dump_write_trigram(fp,model,is32bits);
-    
+    lm_convert_structure(model, is32bits);
+    lm3g_dump_write_bigram(fp, model, is32bits);
+    lm3g_dump_write_trigram(fp, model, is32bits);
+
     /**************************************/
 
-    lm3g_dump_write_bgprob(fp,model);
-    
+    lm3g_dump_write_bgprob(fp, model);
+
     if (model->n_tg > 0) {
-      lm3g_dump_write_tgbowt(fp,model);
-      lm3g_dump_write_tgprob(fp,model);
-      lm3g_dump_write_tg_segbase(fp,model);
+        lm3g_dump_write_tgbowt(fp, model);
+        lm3g_dump_write_tgprob(fp, model);
+        lm3g_dump_write_tg_segbase(fp, model);
     }
 
     lm3g_dump_write_wordstr(fp, model);
-    
-    fclose (fp);
+
+    fclose(fp);
     return LM_SUCCESS;
 }
 
 
-static int32 lm_fread_int32 (lm_t *lm)
+static int32
+lm_fread_int32(lm_t * lm)
 {
     int32 val;
-    
-    if (fread (&val, sizeof(int32), 1, lm->fp) != 1)
-	E_FATAL("fread failed\n");
+
+    if (fread(&val, sizeof(int32), 1, lm->fp) != 1)
+        E_FATAL("fread failed\n");
     if (lm->byteswap)
-	SWAP_INT32(&val);
+        SWAP_INT32(&val);
     return (val);
 }
 
@@ -408,63 +436,66 @@ static int32 lm_fread_int32 (lm_t *lm)
       This process will also allow us to know the byte-order of the
       DMP file. Swapping could then automatically done in the code. 
  */
-static int32 lm_read_dump_header(lm_t *lm, /**< The LM */
-				 const char* file /**< The file we are reading */
-				 )
+static int32
+lm_read_dump_header(lm_t * lm,             /**< The LM */
+                    const char *file              /**< The file we are reading */
+    )
 {
-  int32 k;
-  char str[1024];
+    int32 k;
+    char str[1024];
 
-  /* Standard header string-size; set byteswap flag based on this */
-  if (fread (&k, sizeof(int32), 1, lm->fp) != 1)
-    E_FATAL("fread(%s) failed\n", file);
+    /* Standard header string-size; set byteswap flag based on this */
+    if (fread(&k, sizeof(int32), 1, lm->fp) != 1)
+        E_FATAL("fread(%s) failed\n", file);
 
-  if ((size_t)k == strlen(darpa_hdr)+1)
-    lm->byteswap = 0;
-  else {
-    SWAP_INT32(&k);
-    if ((size_t)k == strlen(darpa_hdr)+1)
-      lm->byteswap = 1;
+    if ((size_t) k == strlen(darpa_hdr) + 1)
+        lm->byteswap = 0;
     else {
-      SWAP_INT32(&k);
-      E_INFO("Bad magic number: %d(%08x), not an LM dumpfile??\n", k, k);
-      return LM_FAIL;
+        SWAP_INT32(&k);
+        if ((size_t) k == strlen(darpa_hdr) + 1)
+            lm->byteswap = 1;
+        else {
+            SWAP_INT32(&k);
+            E_INFO("Bad magic number: %d(%08x), not an LM dumpfile??\n", k,
+                   k);
+            return LM_FAIL;
+        }
     }
-  }
 
-  /* Read and verify standard header string */
-  if (fread (str, sizeof (char), k, lm->fp) != (size_t)k){
-    E_ERROR("fread(%s) failed\n", file);
-    return LM_FAIL;
-  }
-  if (strncmp (str, darpa_hdr, k) != 0){
-    E_ERROR("Bad header\n");
-    return LM_FAIL;
-  }
-  
-  return LM_SUCCESS;
+    /* Read and verify standard header string */
+    if (fread(str, sizeof(char), k, lm->fp) != (size_t) k) {
+        E_ERROR("fread(%s) failed\n", file);
+        return LM_FAIL;
+    }
+    if (strncmp(str, darpa_hdr, k) != 0) {
+        E_ERROR("Bad header\n");
+        return LM_FAIL;
+    }
+
+    return LM_SUCCESS;
 
 }
 
-static int32 lm_read_lmfilename(lm_t *lm, /**< The LM */
-				const char *file /**< The file we are reading */
-				)
+static int32
+lm_read_lmfilename(lm_t * lm,             /**< The LM */
+                   const char *file              /**< The file we are reading */
+    )
 {
-  int32 k;
-  char str[1024];
+    int32 k;
+    char str[1024];
 
-  /* Original LM filename string size and string */
-  k = lm_fread_int32 (lm);
-  if ((k < 1) || (k > 1024)){
-    E_ERROR("Bad original filename size: %d\n", k);
-    return LM_FAIL;
-  }
-  if (fread (str, sizeof (char), k, lm->fp) != (size_t)k){
-    E_ERROR("fread(%s) failed\n", file);
-    return LM_FAIL;
-  }
+    /* Original LM filename string size and string */
+    k = lm_fread_int32(lm);
+    if ((k < 1) || (k > 1024)) {
+        E_ERROR("Bad original filename size: %d\n", k);
+        return LM_FAIL;
+    }
+    if (fread(str, sizeof(char), k, lm->fp) != (size_t) k) {
+        E_ERROR("fread(%s) failed\n", file);
+        return LM_FAIL;
+    }
 
-  return LM_SUCCESS;
+    return LM_SUCCESS;
 }
 
 /**
@@ -505,135 +536,140 @@ static int32 lm_read_lmfilename(lm_t *lm, /**< The LM */
    because we might need to introduce version 3, 4 and 5.
  */
 
-static int32 lm_read_dump_ver_nug(lm_t *lm, /**< The LM*/
-				  const char* file /**< The file we are reading */
-				  )
+static int32
+lm_read_dump_ver_nug(lm_t * lm,             /**< The LM*/
+                     const char *file              /**< The file we are reading */
+    )
 {
     int32 k;
     char str[1024];
 
     /* Version#.  If present (must be <= 0); otherwise it's actually the unigram count */
-    lm->version = lm_fread_int32 (lm);
+    lm->version = lm_fread_int32(lm);
 
     if (lm->version <= 0) {
-	/* Read and skip orginal file timestamp; 
-	   ARCHAN: Unlike the sphinx2's code, currently, the timestamp
-	   is not compared in Sphinx 3. 
-	*/
-	k = lm_fread_int32 (lm);
+        /* Read and skip orginal file timestamp; 
+           ARCHAN: Unlike the sphinx2's code, currently, the timestamp
+           is not compared in Sphinx 3. 
+         */
+        k = lm_fread_int32(lm);
 
-	/* Read and skip format description */
-	for (;;) {
-	    if ((k = lm_fread_int32 (lm)) == 0)
-		break;
-	    if (fread (str, sizeof(char), k, lm->fp) != (size_t)k){
-	      E_ERROR("fread(%s) failed\n", file);
-	      return LM_FAIL;
-	    }
-	}
+        /* Read and skip format description */
+        for (;;) {
+            if ((k = lm_fread_int32(lm)) == 0)
+                break;
+            if (fread(str, sizeof(char), k, lm->fp) != (size_t) k) {
+                E_ERROR("fread(%s) failed\n", file);
+                return LM_FAIL;
+            }
+        }
 
-	/* Read log_bg_seg_sz if present */
+        /* Read log_bg_seg_sz if present */
 
-	/* ARCHAN 20060304
-	   use lm->version == -2 (LMDMP_VERSION_TG_16BIT_V2) instead of lm->version <2,
-	   This is different from share's version
-	 */
-	if (lm->version == LMDMP_VERSION_TG_16BIT_V2) {
-	    k = lm_fread_int32 (lm);
-	    if ((k < 1) || (k > 15)){
-	      E_ERROR("log2(bg_seg_sz) %d outside range 1..15 \n", k);
-	      return LM_FAIL;
-	    }
-	    lm->log_bg_seg_sz = k;
-	} else{
-	    lm->log_bg_seg_sz = LOG2_BG_SEG_SZ;	/* Default */
-	}
+        /* ARCHAN 20060304
+           use lm->version == -2 (LMDMP_VERSION_TG_16BIT_V2) instead of lm->version <2,
+           This is different from share's version
+         */
+        if (lm->version == LMDMP_VERSION_TG_16BIT_V2) {
+            k = lm_fread_int32(lm);
+            if ((k < 1) || (k > 15)) {
+                E_ERROR("log2(bg_seg_sz) %d outside range 1..15 \n", k);
+                return LM_FAIL;
+            }
+            lm->log_bg_seg_sz = k;
+        }
+        else {
+            lm->log_bg_seg_sz = LOG2_BG_SEG_SZ; /* Default */
+        }
 
-	/* Read #ug */
-	lm->n_ug = lm_fread_int32 (lm);
+        /* Read #ug */
+        lm->n_ug = lm_fread_int32(lm);
 
-    } else {
-	/* oldest dump file version has no version# or any of the above */
-      if (lm->version > lm->n_ug){
-	E_ERROR("LM.ucount(%d) out of range [1..%d]\n", lm->version, lm->n_ug);
-	return LM_FAIL;
-      }
+    }
+    else {
+        /* oldest dump file version has no version# or any of the above */
+        if (lm->version > lm->n_ug) {
+            E_ERROR("LM.ucount(%d) out of range [1..%d]\n", lm->version,
+                    lm->n_ug);
+            return LM_FAIL;
+        }
 
-	/* No version number, actually a unigram count */
-	lm->n_ug = lm->version;
-	lm->log_bg_seg_sz = LOG2_BG_SEG_SZ;	/* Default */
+        /* No version number, actually a unigram count */
+        lm->n_ug = lm->version;
+        lm->log_bg_seg_sz = LOG2_BG_SEG_SZ;     /* Default */
     }
 
-    
-    lm->is32bits=lm_is32bits(lm);
-    if ((lm->n_ug <= 0) || (lm->n_ug >= MAX_LMWID(lm))){
-	E_ERROR("Bad #ug: %u (must be >0, <%u) Version %d\n", lm->n_ug, MAX_LMWID(lm),lm->version);
-	return LM_FAIL;
+
+    lm->is32bits = lm_is32bits(lm);
+    if ((lm->n_ug <= 0) || (lm->n_ug >= MAX_LMWID(lm))) {
+        E_ERROR("Bad #ug: %u (must be >0, <%u) Version %d\n", lm->n_ug,
+                MAX_LMWID(lm), lm->version);
+        return LM_FAIL;
     }
 
     lm->bg_seg_sz = 1 << lm->log_bg_seg_sz;
 
-    if(lm->version==LMDMP_VERSION_TG_32BIT){
-      E_INFO("Reading LM in 32 bits format\n");
-    }else if(lm->version > LMDMP_VERSIONNULL || 
-	     lm->version==LMDMP_VERSION_TG_16BIT ||
-	     lm->version==LMDMP_VERSION_TG_16BIT_V2
-	     ){
-      E_INFO("Reading LM in 16 bits format\n");
+    if (lm->version == LMDMP_VERSION_TG_32BIT) {
+        E_INFO("Reading LM in 32 bits format\n");
     }
-    
+    else if (lm->version > LMDMP_VERSIONNULL ||
+             lm->version == LMDMP_VERSION_TG_16BIT ||
+             lm->version == LMDMP_VERSION_TG_16BIT_V2) {
+        E_INFO("Reading LM in 16 bits format\n");
+    }
+
     return LM_SUCCESS;
 }
 
-static int32 lm_read_dump_ng_counts(lm_t *lm,
-				   const char*file)
+static int32
+lm_read_dump_ng_counts(lm_t * lm, const char *file)
 {
     /* #bigrams */
-    lm->n_bg = lm_fread_int32 (lm);
-    if (lm->n_bg < 0){
-      	E_ERROR("Bad #bigrams: %d\n", lm->n_bg);
-	return LM_FAIL;
+    lm->n_bg = lm_fread_int32(lm);
+    if (lm->n_bg < 0) {
+        E_ERROR("Bad #bigrams: %d\n", lm->n_bg);
+        return LM_FAIL;
     }
 
     /* #trigrams */
-    lm->n_tg = lm_fread_int32 (lm);
-    if (lm->n_tg < 0){
-	E_ERROR("Bad #trigrams: %d\n", lm->n_tg);
-	return LM_FAIL;
+    lm->n_tg = lm_fread_int32(lm);
+    if (lm->n_tg < 0) {
+        E_ERROR("Bad #trigrams: %d\n", lm->n_tg);
+        return LM_FAIL;
     }
 
-    if(lm->n_bg> 0)
-      lm->n_ng=2;
+    if (lm->n_bg > 0)
+        lm->n_ng = 2;
 
-    if(lm->n_tg> 0)
-      lm->n_ng=3;
+    if (lm->n_tg > 0)
+        lm->n_ng = 3;
 
     return LM_SUCCESS;
 }
 
 
-static int32  lm_read_dump_ug(lm_t *lm,
-		       const char* file
-		       )
+static int32
+lm_read_dump_ug(lm_t * lm, const char *file)
 {
-  int32 i;
-  
-  assert(lm->n_ug >0);
+    int32 i;
+
+    assert(lm->n_ug > 0);
 
     /* Read ug; remember sentinel ug at the end! */
-    lm->ug = (ug_t *) ckd_calloc (lm->n_ug+1, sizeof(ug_t));
-    if (fread (lm->ug, sizeof(ug_t), lm->n_ug+1, lm->fp) != (size_t)(lm->n_ug+1)){
-      E_ERROR("unigram fread(%s) failed\n", file);
-      return LM_FAIL;
-      /*	E_FATAL("fread(%s) failed\n", file);*/
+    lm->ug = (ug_t *) ckd_calloc(lm->n_ug + 1, sizeof(ug_t));
+    if (fread(lm->ug, sizeof(ug_t), lm->n_ug + 1, lm->fp) !=
+        (size_t) (lm->n_ug + 1)) {
+        E_ERROR("unigram fread(%s) failed\n", file);
+        return LM_FAIL;
+        /*        E_FATAL("fread(%s) failed\n", file); */
     }
 
-    if (lm->byteswap){
-      for (i = 0; i <= lm->n_ug; i++) {
-	SWAP_INT32(&(lm->ug[i].prob.l));
-	SWAP_INT32(&(lm->ug[i].bowt.l));
-	SWAP_INT32(&(lm->ug[i].firstbg));
-      }
+    if (lm->byteswap) {
+        for (i = 0; i <= lm->n_ug; i++) {
+            SWAP_INT32(&(lm->ug[i].prob.l));
+            SWAP_INT32(&(lm->ug[i].bowt.l));
+            SWAP_INT32(&(lm->ug[i].firstbg));
+        }
     }
     E_INFO("Read %8d unigrams [in memory]\n", lm->n_ug);
     return LM_SUCCESS;
@@ -655,59 +691,65 @@ static int32  lm_read_dump_ug(lm_t *lm,
    ARCHAN 20060304, First introduced 32 bits reading.  This is whether
    the code is 32bit or not, lm->bg32 or lm->bg (16bits) will be used.
  */
-static int32 lm_read_dump_bg(lm_t *lm, /**< LM */
-			     const char* file, /**< file we are reading */
-			     int32 is32bits    /**< Is it a 32 bits reading? */
-			     )
+static int32
+lm_read_dump_bg(lm_t * lm,             /**< LM */
+                const char *file,              /**< file we are reading */
+                int32 is32bits                 /**< Is it a 32 bits reading? */
+    )
 {
-  int32 i;
-  int32 mem_sz;
-  void *lmptr;
-  assert(lm->n_bg >0);
+    int32 i;
+    int32 mem_sz;
+    void *lmptr;
+    assert(lm->n_bg > 0);
 
-  mem_sz=is32bits?sizeof(bg32_t):sizeof(bg_t);
-  lmptr=NULL;
+    mem_sz = is32bits ? sizeof(bg32_t) : sizeof(bg_t);
+    lmptr = NULL;
 
   /** Allocate memory */
-  if (lm->isLM_IN_MEMORY) { /* Remember the sentinel*/
-    if((lmptr= ckd_calloc(lm->n_bg+1,mem_sz)) == NULL){
-      E_ERROR("Fail to allocate memory with size %d for bigram reading. Each bigram with size\n", lm->n_bg+1, mem_sz);
-      return LM_FAIL;
+    if (lm->isLM_IN_MEMORY) {   /* Remember the sentinel */
+        if ((lmptr = ckd_calloc(lm->n_bg + 1, mem_sz)) == NULL) {
+            E_ERROR
+                ("Fail to allocate memory with size %d for bigram reading. Each bigram with size\n",
+                 lm->n_bg + 1, mem_sz);
+            return LM_FAIL;
+        }
     }
-  }else{
-    lmptr=NULL;
-  }
-
-  if(lm->n_bg >0){
-
-    lm->bgoff=ftell(lm->fp);      
-      
-    if(lm->isLM_IN_MEMORY){      
-      if(is32bits){
-	lm->bg32=(bg32_t*)lmptr;
-	fread(lm->bg32, lm->n_bg+1,mem_sz,lm->fp);
-	if(lm->byteswap){
-	  for (i = 0; i <= lm->n_bg; i++) 
-	    swap_bg32(&(lm->bg32[i]));
-	}
-      }else{
-	lm->bg=(bg_t*)lmptr;
-	fread(lm->bg, lm->n_bg+1,mem_sz,lm->fp);
-	if(lm->byteswap){
-	  for (i = 0; i <= lm->n_bg; i++) 
-	    swap_bg(&(lm->bg[i]));
-	}
-      }
-
-      E_INFO("Read %8d bigrams [in memory]\n", lm->n_bg);    
-    }else{
-      fseek (lm->fp, (lm->n_bg+1) * mem_sz, SEEK_CUR);
-      E_INFO("%8d bigrams [on disk]\n", lm->n_bg);
+    else {
+        lmptr = NULL;
     }
 
-  }
+    if (lm->n_bg > 0) {
 
-  return LM_SUCCESS;
+        lm->bgoff = ftell(lm->fp);
+
+        if (lm->isLM_IN_MEMORY) {
+            if (is32bits) {
+                lm->bg32 = (bg32_t *) lmptr;
+                fread(lm->bg32, lm->n_bg + 1, mem_sz, lm->fp);
+                if (lm->byteswap) {
+                    for (i = 0; i <= lm->n_bg; i++)
+                        swap_bg32(&(lm->bg32[i]));
+                }
+            }
+            else {
+                lm->bg = (bg_t *) lmptr;
+                fread(lm->bg, lm->n_bg + 1, mem_sz, lm->fp);
+                if (lm->byteswap) {
+                    for (i = 0; i <= lm->n_bg; i++)
+                        swap_bg(&(lm->bg[i]));
+                }
+            }
+
+            E_INFO("Read %8d bigrams [in memory]\n", lm->n_bg);
+        }
+        else {
+            fseek(lm->fp, (lm->n_bg + 1) * mem_sz, SEEK_CUR);
+            E_INFO("%8d bigrams [on disk]\n", lm->n_bg);
+        }
+
+    }
+
+    return LM_SUCCESS;
 }
 
 /*
@@ -717,303 +759,300 @@ static int32 lm_read_dump_bg(lm_t *lm, /**< LM */
   @see lm_read_dump_bg
  */
 
-static int32 lm_read_dump_tg(lm_t *lm, /**< LM */
-			     const char* file, /**< file we are reading */
-			     int is32bits  /**< Whether the data structure is 32 bits */
-			     )
+static int32
+lm_read_dump_tg(lm_t * lm,             /**< LM */
+                const char *file,              /**< file we are reading */
+                int is32bits               /**< Whether the data structure is 32 bits */
+    )
 {
-  int32 i;
-  int32 mem_sz;
-  void *lmptr;
-  /* Number of Trigrams might be zero 
-  */
+    int32 i;
+    int32 mem_sz;
+    void *lmptr;
+    /* Number of Trigrams might be zero 
+     */
 
 
-  assert(lm->n_tg >=0);
+    assert(lm->n_tg >= 0);
 
-  mem_sz=is32bits?sizeof(tg32_t):sizeof(tg_t);
-  lmptr=NULL;
+    mem_sz = is32bits ? sizeof(tg32_t) : sizeof(tg_t);
+    lmptr = NULL;
 
-  if (lm->isLM_IN_MEMORY) {
-      if((lmptr = ckd_calloc (lm->n_tg+1,mem_sz))==NULL){
-	E_ERROR("Fail to allocate memory with size %d for trigram reading.  Each trigram with mem_sz\n", lm->n_tg+1,mem_sz);
-	return LM_FAIL;
-      }
+    if (lm->isLM_IN_MEMORY) {
+        if ((lmptr = ckd_calloc(lm->n_tg + 1, mem_sz)) == NULL) {
+            E_ERROR
+                ("Fail to allocate memory with size %d for trigram reading.  Each trigram with mem_sz\n",
+                 lm->n_tg + 1, mem_sz);
+            return LM_FAIL;
+        }
 
-  }else
-    lmptr=NULL;
-    
-  if (lm->n_tg > 0){        /* Read bigrams; remember sentinel at the end */  
-
-    lm->tgoff = ftell (lm->fp);
-
-    if (lm->isLM_IN_MEMORY) { 
-      if(is32bits){
-	lm->tg32=(tg32_t*)lmptr;
-	fread (lm->tg32, lm->n_tg,mem_sz,lm->fp);
-	if (lm->byteswap){
-	  for (i = 0; i <= lm->n_tg-1; i++) {
-	    swap_tg32(&(lm->tg32[i]));
-	  }
-	}
-      }else{
-	lm->tg=(tg_t*)lmptr;
-	fread (lm->tg, lm->n_tg,mem_sz,lm->fp);
-	if (lm->byteswap){
-	  for (i = 0; i <= lm->n_tg-1; i++) {
-	    swap_tg(&(lm->tg[i]));
-	  }
-	}
-      }
-
-      E_INFO("Read %8d trigrams [in memory]\n", lm->n_tg);
-    }else{
-      fseek (lm->fp, (lm->n_tg) * mem_sz, SEEK_CUR);
-      E_INFO("%8d bigrams [on disk]\n", lm->n_tg);
     }
-  }
-  return LM_SUCCESS;
+    else
+        lmptr = NULL;
+
+    if (lm->n_tg > 0) {         /* Read bigrams; remember sentinel at the end */
+
+        lm->tgoff = ftell(lm->fp);
+
+        if (lm->isLM_IN_MEMORY) {
+            if (is32bits) {
+                lm->tg32 = (tg32_t *) lmptr;
+                fread(lm->tg32, lm->n_tg, mem_sz, lm->fp);
+                if (lm->byteswap) {
+                    for (i = 0; i <= lm->n_tg - 1; i++) {
+                        swap_tg32(&(lm->tg32[i]));
+                    }
+                }
+            }
+            else {
+                lm->tg = (tg_t *) lmptr;
+                fread(lm->tg, lm->n_tg, mem_sz, lm->fp);
+                if (lm->byteswap) {
+                    for (i = 0; i <= lm->n_tg - 1; i++) {
+                        swap_tg(&(lm->tg[i]));
+                    }
+                }
+            }
+
+            E_INFO("Read %8d trigrams [in memory]\n", lm->n_tg);
+        }
+        else {
+            fseek(lm->fp, (lm->n_tg) * mem_sz, SEEK_CUR);
+            E_INFO("%8d bigrams [on disk]\n", lm->n_tg);
+        }
+    }
+    return LM_SUCCESS;
 }
 
-static int32 lm_read_dump_calloc_membg_tginfo(lm_t *lm,
-					      const char* file,
-					      int is32bits
-					      )
+static int32
+lm_read_dump_calloc_membg_tginfo(lm_t * lm, const char *file, int is32bits)
 {
-  void *lmptr, *lmptr2;
-  int32 mem_sz, mem_sz2;
-  
-  lmptr=lmptr2=NULL;
-  mem_sz =is32bits?sizeof(membg32_t):sizeof(membg_t);
-  mem_sz2=is32bits?sizeof(tginfo32_t*):sizeof(tginfo_t*);
+    void *lmptr, *lmptr2;
+    int32 mem_sz, mem_sz2;
 
-  if(lm->n_bg>0){
-    if( (lmptr = ckd_calloc (lm->n_ug, mem_sz))	==NULL){
-      E_ERROR("Failed to allocate memory for membg.\n");
-      return LM_FAIL;
+    lmptr = lmptr2 = NULL;
+    mem_sz = is32bits ? sizeof(membg32_t) : sizeof(membg_t);
+    mem_sz2 = is32bits ? sizeof(tginfo32_t *) : sizeof(tginfo_t *);
+
+    if (lm->n_bg > 0) {
+        if ((lmptr = ckd_calloc(lm->n_ug, mem_sz)) == NULL) {
+            E_ERROR("Failed to allocate memory for membg.\n");
+            return LM_FAIL;
+        }
     }
-  }
 
-  if(lm->n_tg>0){
-    if( (lmptr2 = ckd_calloc (lm->n_ug, mem_sz2))==NULL) {
-      E_ERROR("Failed to allocate memory for tginfo.\n");
-      return LM_FAIL;
+    if (lm->n_tg > 0) {
+        if ((lmptr2 = ckd_calloc(lm->n_ug, mem_sz2)) == NULL) {
+            E_ERROR("Failed to allocate memory for tginfo.\n");
+            return LM_FAIL;
+        }
     }
-  }
 
-  if(is32bits){
-    lm->membg32=(membg32_t*)lmptr;
-    lm->tginfo32=(tginfo32_t**)lmptr2;
-  }else{
-    lm->membg=(membg_t*)lmptr;
-    lm->tginfo=(tginfo_t**)lmptr2;
-  }
-  return LM_SUCCESS;
-
-}
-
-static int32 lm_read_dump_bgprob(lm_t *lm,
-				 const char* file,
-				 int32 is32bits
-			   )
-{
-  int32 i;
-  uint32 upper_limit;
-
-  upper_limit=is32bits?LM_SPHINX_CONSTANT: LM_LEGACY_CONSTANT;
-  /*  E_INFO("%d upper_limit\n",upper_limit);*/
-  if (lm->n_bg > 0) {
-    /* Bigram probs table size */
-    lm->n_bgprob = lm_fread_int32 (lm);
-    if ((lm->n_bgprob <= 0) || (lm->n_bgprob > upper_limit)){
-      E_ERROR("Bad bigram prob table size: %d\n", lm->n_bgprob);
-      return LM_FAIL;
+    if (is32bits) {
+        lm->membg32 = (membg32_t *) lmptr;
+        lm->tginfo32 = (tginfo32_t **) lmptr2;
     }
-    
-    /* Allocate and read bigram probs table */
-    lm->bgprob = (lmlog_t *) ckd_calloc (lm->n_bgprob, sizeof (lmlog_t));
-    if (fread(lm->bgprob, sizeof(lmlog_t), lm->n_bgprob, lm->fp) !=
-	(size_t)lm->n_bgprob){
-      E_ERROR("fread(%s) failed\n", file);
-      return LM_FAIL;
+    else {
+        lm->membg = (membg_t *) lmptr;
+        lm->tginfo = (tginfo_t **) lmptr2;
     }
-    if (lm->byteswap) {
-      for (i = 0; i < lm->n_bgprob; i++)
-	SWAP_INT32(&(lm->bgprob[i].l));
-    }
-    
-    E_INFO("%8d bigram prob entries\n", lm->n_bgprob);
-  }
-  return LM_SUCCESS;
+    return LM_SUCCESS;
 
 }
 
-static int32 lm_read_dump_tgbowt(lm_t *lm,
-				 const char* file,
-				 int32 is32bits
-				 )
+static int32
+lm_read_dump_bgprob(lm_t * lm, const char *file, int32 is32bits)
 {
-  int32 i;
-  uint32 upper_limit;
+    int32 i;
+    uint32 upper_limit;
 
-  upper_limit=is32bits?LM_SPHINX_CONSTANT:  LM_LEGACY_CONSTANT;
+    upper_limit = is32bits ? LM_SPHINX_CONSTANT : LM_LEGACY_CONSTANT;
+    /*  E_INFO("%d upper_limit\n",upper_limit); */
+    if (lm->n_bg > 0) {
+        /* Bigram probs table size */
+        lm->n_bgprob = lm_fread_int32(lm);
+        if ((lm->n_bgprob <= 0) || (lm->n_bgprob > upper_limit)) {
+            E_ERROR("Bad bigram prob table size: %d\n", lm->n_bgprob);
+            return LM_FAIL;
+        }
 
-  if (lm->n_tg > 0) {
-    /* Trigram bowt table size */
-    lm->n_tgbowt = lm_fread_int32 (lm);
-    if ((lm->n_tgbowt <= 0) || (lm->n_tgbowt > upper_limit)){
-      E_ERROR("Bad trigram bowt table size: %d\n", lm->n_tgbowt);
-      return LM_FAIL;
-    }
-    
-    /* Allocate and read trigram bowt table */
-    lm->tgbowt = (lmlog_t *) ckd_calloc (lm->n_tgbowt, sizeof (lmlog_t));
-    if (fread (lm->tgbowt, sizeof (lmlog_t), lm->n_tgbowt, lm->fp) !=
-	(size_t)lm->n_tgbowt){
+        /* Allocate and read bigram probs table */
+        lm->bgprob = (lmlog_t *) ckd_calloc(lm->n_bgprob, sizeof(lmlog_t));
+        if (fread(lm->bgprob, sizeof(lmlog_t), lm->n_bgprob, lm->fp) !=
+            (size_t) lm->n_bgprob) {
+            E_ERROR("fread(%s) failed\n", file);
+            return LM_FAIL;
+        }
+        if (lm->byteswap) {
+            for (i = 0; i < lm->n_bgprob; i++)
+                SWAP_INT32(&(lm->bgprob[i].l));
+        }
 
-      E_ERROR("fread(%s) failed\n", file);
-      return LM_FAIL;
+        E_INFO("%8d bigram prob entries\n", lm->n_bgprob);
     }
-    if (lm->byteswap) {
-      for (i = 0; i < lm->n_tgbowt; i++)
-	SWAP_INT32(&(lm->tgbowt[i].l));
-    }
-    E_INFO("%8d trigram bowt entries\n", lm->n_tgbowt);
-  }
-  return LM_SUCCESS;
+    return LM_SUCCESS;
+
 }
 
-static int32 lm_read_dump_tgprob(lm_t *lm,
-				 const char* file,
-				 int32 is32bits
-				 )
+static int32
+lm_read_dump_tgbowt(lm_t * lm, const char *file, int32 is32bits)
 {
-  int32 i;
-  uint32 upper_limit;
+    int32 i;
+    uint32 upper_limit;
 
-  upper_limit=is32bits?LM_SPHINX_CONSTANT:  LM_LEGACY_CONSTANT;
+    upper_limit = is32bits ? LM_SPHINX_CONSTANT : LM_LEGACY_CONSTANT;
 
-  if(lm->n_tg>0){
-    lm->n_tgprob = lm_fread_int32 (lm);
-    if ((lm->n_tgprob <= 0) || (lm->n_tgprob > upper_limit)){
-      E_ERROR("Bad trigram bowt table size: %d\n", lm->n_tgprob);
-      return LM_FAIL;
-    }
-    
-    /* Allocate and read trigram bowt table */
-    lm->tgprob = (lmlog_t *) ckd_calloc (lm->n_tgprob, sizeof (lmlog_t));
-    if (fread (lm->tgprob, sizeof (lmlog_t), lm->n_tgprob, lm->fp) !=
-	(size_t)lm->n_tgprob){
-      E_ERROR("fread(%s) failed\n", file);
-      return LM_FAIL;
-    }
-    if (lm->byteswap) {
-      for (i = 0; i < lm->n_tgprob; i++)
-	SWAP_INT32(&(lm->tgprob[i].l));
-    }
-    E_INFO("%8d trigram prob entries\n", lm->n_tgprob);
-  }
+    if (lm->n_tg > 0) {
+        /* Trigram bowt table size */
+        lm->n_tgbowt = lm_fread_int32(lm);
+        if ((lm->n_tgbowt <= 0) || (lm->n_tgbowt > upper_limit)) {
+            E_ERROR("Bad trigram bowt table size: %d\n", lm->n_tgbowt);
+            return LM_FAIL;
+        }
 
-  return LM_SUCCESS;
+        /* Allocate and read trigram bowt table */
+        lm->tgbowt = (lmlog_t *) ckd_calloc(lm->n_tgbowt, sizeof(lmlog_t));
+        if (fread(lm->tgbowt, sizeof(lmlog_t), lm->n_tgbowt, lm->fp) !=
+            (size_t) lm->n_tgbowt) {
+
+            E_ERROR("fread(%s) failed\n", file);
+            return LM_FAIL;
+        }
+        if (lm->byteswap) {
+            for (i = 0; i < lm->n_tgbowt; i++)
+                SWAP_INT32(&(lm->tgbowt[i].l));
+        }
+        E_INFO("%8d trigram bowt entries\n", lm->n_tgbowt);
+    }
+    return LM_SUCCESS;
+}
+
+static int32
+lm_read_dump_tgprob(lm_t * lm, const char *file, int32 is32bits)
+{
+    int32 i;
+    uint32 upper_limit;
+
+    upper_limit = is32bits ? LM_SPHINX_CONSTANT : LM_LEGACY_CONSTANT;
+
+    if (lm->n_tg > 0) {
+        lm->n_tgprob = lm_fread_int32(lm);
+        if ((lm->n_tgprob <= 0) || (lm->n_tgprob > upper_limit)) {
+            E_ERROR("Bad trigram bowt table size: %d\n", lm->n_tgprob);
+            return LM_FAIL;
+        }
+
+        /* Allocate and read trigram bowt table */
+        lm->tgprob = (lmlog_t *) ckd_calloc(lm->n_tgprob, sizeof(lmlog_t));
+        if (fread(lm->tgprob, sizeof(lmlog_t), lm->n_tgprob, lm->fp) !=
+            (size_t) lm->n_tgprob) {
+            E_ERROR("fread(%s) failed\n", file);
+            return LM_FAIL;
+        }
+        if (lm->byteswap) {
+            for (i = 0; i < lm->n_tgprob; i++)
+                SWAP_INT32(&(lm->tgprob[i].l));
+        }
+        E_INFO("%8d trigram prob entries\n", lm->n_tgprob);
+    }
+
+    return LM_SUCCESS;
 }
 
 /*
   The only function which doesn't require switching in lm_read_dump
  */
-static int32 lm_read_dump_tg_segbase(lm_t *lm,
-				     const char *file
-				     )
+static int32
+lm_read_dump_tg_segbase(lm_t * lm, const char *file)
 {
-  int i,k;
-  if (lm->n_tg > 0) {
-    /* Trigram seg table size */
-    k = lm_fread_int32 (lm);
-    if (k != (lm->n_bg+1)/lm->bg_seg_sz+1){
-      E_ERROR("Bad trigram seg table size: %d\n", k);
-      return LM_FAIL;
+    int i, k;
+    if (lm->n_tg > 0) {
+        /* Trigram seg table size */
+        k = lm_fread_int32(lm);
+        if (k != (lm->n_bg + 1) / lm->bg_seg_sz + 1) {
+            E_ERROR("Bad trigram seg table size: %d\n", k);
+            return LM_FAIL;
+        }
+
+        /* Allocate and read trigram seg table */
+        lm->tg_segbase = (int32 *) ckd_calloc(k, sizeof(int32));
+        if (fread(lm->tg_segbase, sizeof(int32), k, lm->fp) != (size_t) k) {
+            E_ERROR("fread(%s) failed\n", file);
+            return LM_FAIL;
+        }
+        if (lm->byteswap) {
+            for (i = 0; i < k; i++)
+                SWAP_INT32(&(lm->tg_segbase[i]));
+        }
+        E_INFO("%8d trigram segtable entries (%d segsize)\n", k,
+               lm->bg_seg_sz);
     }
-	
-    /* Allocate and read trigram seg table */
-    lm->tg_segbase = (int32 *) ckd_calloc (k, sizeof(int32));
-    if (fread (lm->tg_segbase, sizeof(int32), k, lm->fp) != (size_t)k){
-      E_ERROR("fread(%s) failed\n", file);
-      return LM_FAIL;
-    }
-    if (lm->byteswap) {
-      for (i = 0; i < k; i++)
-	SWAP_INT32(&(lm->tg_segbase[i]));
-    }
-    E_INFO("%8d trigram segtable entries (%d segsize)\n", k, lm->bg_seg_sz);
-  }
-  return LM_SUCCESS;
+    return LM_SUCCESS;
 }
 
-static int32 lm_read_dump_wordstr(lm_t *lm,
-				  const char *file,
-				  int32 is32bits
-				  )
+static int32
+lm_read_dump_wordstr(lm_t * lm, const char *file, int32 is32bits)
 {
-  int32 i,j, k;
-  char *tmp_word_str;
-  s3lmwid32_t startwid, endwid;
+    int32 i, j, k;
+    char *tmp_word_str;
+    s3lmwid32_t startwid, endwid;
 
-  /* Read word string names */
-  k = lm_fread_int32 (lm);
-  if (k <= 0){
-    E_ERROR("Bad wordstrings size: %d\n", k);
-    return LM_FAIL;
-  }
-    
-  tmp_word_str = (char *) ckd_calloc (k, sizeof (char));
-  if (fread (tmp_word_str, sizeof(char), k, lm->fp) != (size_t)k){
-    E_ERROR("fread(%s) failed\n", file);
-    return LM_FAIL;
-  }
-  
-  /* First make sure string just read contains n_ug words (PARANOIA!!) */
-  for (i = 0, j = 0; i < k; i++)
-    if (tmp_word_str[i] == '\0')
-      j++;
+    /* Read word string names */
+    k = lm_fread_int32(lm);
+    if (k <= 0) {
+        E_ERROR("Bad wordstrings size: %d\n", k);
+        return LM_FAIL;
+    }
 
-  if (j != lm->n_ug){
-    E_ERROR("Bad #words: %d\n", j);
-    return LM_FAIL;
-  }
+    tmp_word_str = (char *) ckd_calloc(k, sizeof(char));
+    if (fread(tmp_word_str, sizeof(char), k, lm->fp) != (size_t) k) {
+        E_ERROR("fread(%s) failed\n", file);
+        return LM_FAIL;
+    }
 
+    /* First make sure string just read contains n_ug words (PARANOIA!!) */
+    for (i = 0, j = 0; i < k; i++)
+        if (tmp_word_str[i] == '\0')
+            j++;
 
-  startwid = endwid = (s3lmwid32_t) BAD_LMWID(lm);
+    if (j != lm->n_ug) {
+        E_ERROR("Bad #words: %d\n", j);
+        return LM_FAIL;
+    }
 
 
-  lm->wordstr = (char **) ckd_calloc (lm->n_ug, sizeof(char *));
-  j = 0;
-  for (i = 0; i < lm->n_ug; i++) {
-      if (strcmp (tmp_word_str+j, S3_START_WORD) == 0)
-	startwid = i;
-      else if (strcmp (tmp_word_str+j, S3_FINISH_WORD) == 0)
-	endwid = i;
-      
-      lm->wordstr[i] = (char *) ckd_salloc (tmp_word_str+j);
-      
-      hash_enter (lm->HT, lm->wordstr[i], i);
+    startwid = endwid = (s3lmwid32_t) BAD_LMWID(lm);
 
-      j += strlen(tmp_word_str+j) + 1;
-  }
-  free (tmp_word_str);
-  E_INFO("%8d word strings\n", i);
-  
-  /* Force ugprob(<s>) = MIN_PROB_F */
-  if (IS_LMWID(lm, startwid)) {
-    lm->ug[startwid].prob.f = MIN_PROB_F;
-    lm->startlwid = startwid;
-  }
-    
-  /* Force bowt(</s>) = MIN_PROB_F */
-  if (IS_LMWID(lm, endwid)) {
-    lm->ug[endwid].bowt.f = MIN_PROB_F;
-    lm->finishlwid = endwid;
-  }
 
-  return LM_SUCCESS;
+    lm->wordstr = (char **) ckd_calloc(lm->n_ug, sizeof(char *));
+    j = 0;
+    for (i = 0; i < lm->n_ug; i++) {
+        if (strcmp(tmp_word_str + j, S3_START_WORD) == 0)
+            startwid = i;
+        else if (strcmp(tmp_word_str + j, S3_FINISH_WORD) == 0)
+            endwid = i;
+
+        lm->wordstr[i] = (char *) ckd_salloc(tmp_word_str + j);
+
+        hash_enter(lm->HT, lm->wordstr[i], i);
+
+        j += strlen(tmp_word_str + j) + 1;
+    }
+    free(tmp_word_str);
+    E_INFO("%8d word strings\n", i);
+
+    /* Force ugprob(<s>) = MIN_PROB_F */
+    if (IS_LMWID(lm, startwid)) {
+        lm->ug[startwid].prob.f = MIN_PROB_F;
+        lm->startlwid = startwid;
+    }
+
+    /* Force bowt(</s>) = MIN_PROB_F */
+    if (IS_LMWID(lm, endwid)) {
+        lm->ug[endwid].bowt.f = MIN_PROB_F;
+        lm->finishlwid = endwid;
+    }
+
+    return LM_SUCCESS;
 }
 
 
@@ -1077,172 +1116,180 @@ static int32 lm_read_dump_wordstr(lm_t *lm,
 
  */
 
-static int32 lm_read_dump_ng(lm_t* lm,
-		       const char *file)
+static int32
+lm_read_dump_ng(lm_t * lm, const char *file)
 {
 
-  if(lm->version==LMDMP_VERSION_TG_16BIT||
-     lm->version==LMDMP_VERSION_TG_16BIT_V2||
-     lm->version>=LMDMP_VERSIONNULL){
-          
-    if(lm_read_dump_ug(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading unigram. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_bg(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading bigram. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tg(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_calloc_membg_tginfo(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in allocating memory bigram and trigram info. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_bgprob(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading bigram probability. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tgbowt(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram back off weight. \n");
-      
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tgprob(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram probability. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tg_segbase(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading trigram segment base. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_wordstr(lm,file,IS16BITS)==LM_FAIL){
-      E_ERROR("Error in reading the word str.  \n");
-      return LM_FAIL;
-    }
-  }else if(lm->version==LMDMP_VERSION_TG_32BIT){
+    if (lm->version == LMDMP_VERSION_TG_16BIT ||
+        lm->version == LMDMP_VERSION_TG_16BIT_V2 ||
+        lm->version >= LMDMP_VERSIONNULL) {
 
-    if(lm_read_dump_ug(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading unigram. \n");
-      return LM_FAIL;
+        if (lm_read_dump_ug(lm, file) == LM_FAIL) {
+            E_ERROR("Error in reading unigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_bg(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading bigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tg(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_calloc_membg_tginfo(lm, file, IS16BITS) ==
+            LM_FAIL) {
+            E_ERROR
+                ("Error in allocating memory bigram and trigram info. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_bgprob(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading bigram probability. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tgbowt(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram back off weight. \n");
+
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tgprob(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram probability. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tg_segbase(lm, file) == LM_FAIL) {
+            E_ERROR("Error in reading trigram segment base. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_wordstr(lm, file, IS16BITS) == LM_FAIL) {
+            E_ERROR("Error in reading the word str.  \n");
+            return LM_FAIL;
+        }
     }
-    
-    if(lm_read_dump_bg(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading bigram. \n");
-      return LM_FAIL;
+    else if (lm->version == LMDMP_VERSION_TG_32BIT) {
+
+        if (lm_read_dump_ug(lm, file) == LM_FAIL) {
+            E_ERROR("Error in reading unigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_bg(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading bigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tg(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_calloc_membg_tginfo(lm, file, IS32BITS) ==
+            LM_FAIL) {
+            E_ERROR
+                ("Error in allocating memory bigram and trigram info. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_bgprob(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading bigram probability. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tgbowt(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram back off weight. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tgprob(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading trigram probability. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_tg_segbase(lm, file) == LM_FAIL) {
+            E_ERROR("Error in reading trigram segment base. \n");
+            return LM_FAIL;
+        }
+
+        if (lm_read_dump_wordstr(lm, file, IS32BITS) == LM_FAIL) {
+            E_ERROR("Error in reading the word str.  \n");
+            return LM_FAIL;
+        }
+
     }
-    
-    if(lm_read_dump_tg(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_calloc_membg_tginfo(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in allocating memory bigram and trigram info. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_bgprob(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading bigram probability. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tgbowt(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram back off weight. \n");      
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tgprob(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading trigram probability. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_tg_segbase(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading trigram segment base. \n");
-      return LM_FAIL;
-    }
-    
-    if(lm_read_dump_wordstr(lm,file,IS32BITS)==LM_FAIL){
-      E_ERROR("Error in reading the word str.  \n");
-      return LM_FAIL;
+    else {
+        E_ERROR("Error, Format %d is unknown\n", lm->version);
+        return LM_FAIL;
     }
 
-  }else{
-    E_ERROR("Error, Format %d is unknown\n",lm->version);
-    return LM_FAIL;
-  }
-
-  return LM_SUCCESS;
+    return LM_SUCCESS;
 }
-		       
+
 /**
  * Read LM dump (<lmname>.DMP) file and make it the current LM.
  * Same interface as lm_read except that the filename refers to a .DMP file.
  */
-lm_t *lm_read_dump (const char *file, /**< The file name*/
-		    int lminmemory /**< Whether using in memory LM */
-		    )
+lm_t *
+lm_read_dump(const char *file,        /**< The file name*/
+             int lminmemory        /**< Whether using in memory LM */
+    )
 {
     lm_t *lm;
 
-    lm = (lm_t *) ckd_calloc (1, sizeof(lm_t));
-    
+    lm = (lm_t *) ckd_calloc(1, sizeof(lm_t));
+
     lm_null_struct(lm);
 
     lm->isLM_IN_MEMORY = lminmemory;
-    lm->n_ng=1;
+    lm->n_ng = 1;
 
 
-    if ((lm->fp = fopen (file, "rb")) == NULL)
-      E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file);
+    if ((lm->fp = fopen(file, "rb")) == NULL)
+        E_FATAL_SYSTEM("fopen(%s,rb) failed\n", file);
 
     /** Read header and compare byte order */
-    if(lm_read_dump_header(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading the header of the DUMP file. \n");
-      return NULL;
+    if (lm_read_dump_header(lm, file) == LM_FAIL) {
+        E_ERROR("Error in reading the header of the DUMP file. \n");
+        return NULL;
     }
 
     /** Read the full path of file name of lm */
-    if(lm_read_lmfilename(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading the file name of lm. \n");
-      return NULL;
+    if (lm_read_lmfilename(lm, file) == LM_FAIL) {
+        E_ERROR("Error in reading the file name of lm. \n");
+        return NULL;
     }
 
     /** Read the version number and number of unigram */
-    if(lm_read_dump_ver_nug(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading the version name and number of unigram\n");
-      return NULL;
+    if (lm_read_dump_ver_nug(lm, file) == LM_FAIL) {
+        E_ERROR
+            ("Error in reading the version name and number of unigram\n");
+        return NULL;
     }
 
     /** Reading the count of ngrams. */
 
-    if(lm_read_dump_ng_counts(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading the ngram counts.  \n");
-      return NULL;
+    if (lm_read_dump_ng_counts(lm, file) == LM_FAIL) {
+        E_ERROR("Error in reading the ngram counts.  \n");
+        return NULL;
     }
 
-    lm->HT= hash_new(lm->n_ug,HASH_CASE_YES);
+    lm->HT = hash_new(lm->n_ug, HASH_CASE_YES);
 
 
     /** Reading the ngrams, the meat of the code. Also decide how
 	different versions of LM are read in.
      */
 
-    if(lm_read_dump_ng(lm,file)==LM_FAIL){
-      E_ERROR("Error in reading the ngram.  \n");
-      return NULL;
-    }      
-    
+    if (lm_read_dump_ng(lm, file) == LM_FAIL) {
+        E_ERROR("Error in reading the ngram.  \n");
+        return NULL;
+    }
+
 
     return lm;
 }

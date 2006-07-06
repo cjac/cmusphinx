@@ -56,82 +56,88 @@
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 
-ad_rec_t *ad_open_sps (int32 sps)
+ad_rec_t *
+ad_open_sps(int32 sps)
 {
-	ad_rec_t *ad;
-	int fd;
+    ad_rec_t *ad;
+    int fd;
 
-	if ((fd = esd_record_stream_fallback(ESD_BITS16 | ESD_MONO
-					     | ESD_STREAM | ESD_RECORD,
-					     sps, NULL, NULL)) < 0) {
-		/* FIXME: We'd like a better error message, probably. */
-		fprintf(stderr, "Failed to open ESD record stream.\n");
-		return NULL;
-	}
+    if ((fd = esd_record_stream_fallback(ESD_BITS16 | ESD_MONO
+                                         | ESD_STREAM | ESD_RECORD,
+                                         sps, NULL, NULL)) < 0) {
+        /* FIXME: We'd like a better error message, probably. */
+        fprintf(stderr, "Failed to open ESD record stream.\n");
+        return NULL;
+    }
 
-	if ((ad = calloc(1, sizeof(ad_rec_t))) == NULL) {
-		fprintf(stderr, "calloc(%ld) failed\n", sizeof(ad_rec_t));
-		abort();
-	}
-	if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0) {
-		fprintf(stderr, "Failed to set non-blocking: %s\n",
-			strerror(errno));
-	}
-	ad->fd = fd;
-	ad->recording = 0;
-	ad->sps = sps;
-	ad->bps = sizeof(int16);
-	return ad;
+    if ((ad = calloc(1, sizeof(ad_rec_t))) == NULL) {
+        fprintf(stderr, "calloc(%ld) failed\n", sizeof(ad_rec_t));
+        abort();
+    }
+    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0) {
+        fprintf(stderr, "Failed to set non-blocking: %s\n",
+                strerror(errno));
+    }
+    ad->fd = fd;
+    ad->recording = 0;
+    ad->sps = sps;
+    ad->bps = sizeof(int16);
+    return ad;
 }
 
 
-ad_rec_t *ad_open ( void )
+ad_rec_t *
+ad_open(void)
 {
-	return ad_open_sps(DEFAULT_SAMPLES_PER_SEC);
+    return ad_open_sps(DEFAULT_SAMPLES_PER_SEC);
 }
 
 
-int32 ad_start_rec (ad_rec_t *r)
+int32
+ad_start_rec(ad_rec_t * r)
 {
-	r->recording = 1;
-	return 0;
+    r->recording = 1;
+    return 0;
 }
 
 
-int32 ad_stop_rec (ad_rec_t *r)
+int32
+ad_stop_rec(ad_rec_t * r)
 {
-	r->recording = 0;
-	return 0;
+    r->recording = 0;
+    return 0;
 }
 
 
-int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
+int32
+ad_read(ad_rec_t * r, int16 * buf, int32 max)
 {
-	int32 length;
+    int32 length;
 
-	length = max * r->bps;
-	if ((length = read(r->fd, buf, length)) > 0)
-		length /= r->bps;
-	if (length < 0) {
-		if (errno!=EAGAIN){ 
-			fprintf(stderr, "Audio read error: %s\n",
-				strerror(errno));
-			return AD_ERR_GEN; 
-		} else {
-			length=0; 
-		}
-	}
-    
-	if ((length == 0) && (! r->recording))
-		return AD_EOF;
+    length = max * r->bps;
+    if ((length = read(r->fd, buf, length)) > 0)
+        length /= r->bps;
+    if (length < 0) {
+        if (errno != EAGAIN) {
+            fprintf(stderr, "Audio read error: %s\n", strerror(errno));
+            return AD_ERR_GEN;
+        }
+        else {
+            length = 0;
+        }
+    }
 
-	return length;
+    if ((length == 0) && (!r->recording))
+        return AD_EOF;
+
+    return length;
 }
 
 
-int32 ad_close (ad_rec_t *r)
+int32
+ad_close(ad_rec_t * r)
 {
-	esd_close(r->fd);
-	free(r);
-	return 0;
+    esd_close(r->fd);
+    free(r);
+    return 0;
 }

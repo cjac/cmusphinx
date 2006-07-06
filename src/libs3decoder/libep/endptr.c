@@ -66,155 +66,165 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h> 
+#include <math.h>
 
 #include "endptr.h"
 
-endpointer_t * endpointer_initialize(fe_t *FE,
-				     float pad_t_before,
-				     float pad_t_after,
-				     float utt_t_start,
-				     float utt_t_end,
-				     float utt_t_cancel)
+endpointer_t *
+endpointer_initialize(fe_t * FE,
+                      float pad_t_before,
+                      float pad_t_after,
+                      float utt_t_start,
+                      float utt_t_end, float utt_t_cancel)
 {
 
-        endpointer_t *ENDPTR = (endpointer_t *) calloc(1,sizeof(endpointer_t));
+    endpointer_t *ENDPTR =
+        (endpointer_t *) calloc(1, sizeof(endpointer_t));
 
-        /* set the fixed specifications */
+    /* set the fixed specifications */
 
-        ENDPTR->PAD_F_BEFORE = (int)(pad_t_before * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->PAD_F_AFTER  = (int)(pad_t_after * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_START  = (int)(utt_t_start * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_END    = (int)(utt_t_end * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
-        ENDPTR->UTT_F_CANCEL = (int)(utt_t_cancel * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+    ENDPTR->PAD_F_BEFORE =
+        (int) (pad_t_before * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+    ENDPTR->PAD_F_AFTER =
+        (int) (pad_t_after * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+    ENDPTR->UTT_F_START =
+        (int) (utt_t_start * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+    ENDPTR->UTT_F_END =
+        (int) (utt_t_end * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
+    ENDPTR->UTT_F_CANCEL =
+        (int) (utt_t_cancel * FE->SAMPLING_RATE / FE->FRAME_SHIFT + 0.5);
 
-        /* set the rest specifications */
+    /* set the rest specifications */
 
-        ENDPTR->status = STAT_OTHER;
-        ENDPTR->leader = ENDPTR->spbegin = ENDPTR->spend = ENDPTR->trailer = 0;
+    ENDPTR->status = STAT_OTHER;
+    ENDPTR->leader = ENDPTR->spbegin = ENDPTR->spend = ENDPTR->trailer = 0;
 
-        ENDPTR->utt_counter = 0;        
+    ENDPTR->utt_counter = 0;
 
-        return (ENDPTR);
+    return (ENDPTR);
 }
 
-void endpointer_free(endpointer_t *ENDPTR)
+void
+endpointer_free(endpointer_t * ENDPTR)
 {
-        if(ENDPTR)
-                ckd_free(ENDPTR);
+    if (ENDPTR)
+        ckd_free(ENDPTR);
 }
 
-void endpointer_update_stat (endpointer_t *ENDPTR, fe_t *FE, class_t *CLASSW, int class)
+void
+endpointer_update_stat(endpointer_t * ENDPTR, fe_t * FE, class_t * CLASSW,
+                       int class)
 {
-  
-        switch (ENDPTR->status)
-        {
-        case STAT_OTHER:
-	  /* we are in the non-speech region and we received a speech frame*/
-                if (class == CLASS_O)
-                {
-                        ENDPTR->status = STAT_BEGIN;
-                        ENDPTR->spbegin = FE->FRAME_COUNTER - CLASSW->classlatency;
-                        ENDPTR->leader = ENDPTR->spbegin - ENDPTR->PAD_F_BEFORE;
-                        ENDPTR->utt_counter++;
 
-                        printf("Utt_Start#%d, Leader: %6.5f,  Begin: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_beg( FE,ENDPTR->leader), endptr_frame2secs_beg(FE, ENDPTR->spbegin) ); 
-                        fflush(stdout);
-                }
-                break;
+    switch (ENDPTR->status) {
+    case STAT_OTHER:
+        /* we are in the non-speech region and we received a speech frame */
+        if (class == CLASS_O) {
+            ENDPTR->status = STAT_BEGIN;
+            ENDPTR->spbegin = FE->FRAME_COUNTER - CLASSW->classlatency;
+            ENDPTR->leader = ENDPTR->spbegin - ENDPTR->PAD_F_BEFORE;
+            ENDPTR->utt_counter++;
 
-        case STAT_BEGIN:
-	  /* we are in the speech region but still not enough frames to annouce
-	     start of utterance   */
-                if ((class == CLASS_O) && ((FE->FRAME_COUNTER - ENDPTR->spbegin) < 
-                                           ENDPTR->UTT_F_START))
-                {
-		  /* do nothing for now   */
-                }
+            printf("Utt_Start#%d, Leader: %6.5f,  Begin: %6.5f\n",
+                   ENDPTR->utt_counter, endptr_frame2secs_beg(FE,
+                                                              ENDPTR->
+                                                              leader),
+                   endptr_frame2secs_beg(FE, ENDPTR->spbegin));
+            fflush(stdout);
+        }
+        break;
 
-                /* we are ready to start the utterance */
-                else if (class == CLASS_O)
-                {
-                        ENDPTR->status = STAT_SPEECH;
-                }
-
-                /* we were beginning to get speech and suddenly we get a non-speech frame*/
-                else
-                {
-                        ENDPTR->status = STAT_CANCEL;
-                        ENDPTR->spend = FE->FRAME_COUNTER - 1 - CLASSW->classlatency;
-                }
-                break;
-
-        case STAT_SPEECH:
-                if (class != CLASS_O)
-                {
-                        ENDPTR->status = STAT_END; 
-                        ENDPTR->spend = FE->FRAME_COUNTER - 1 - CLASSW->classlatency;
-                        ENDPTR->trailer = ENDPTR->spend + ENDPTR->PAD_F_AFTER;
-
-                }
-                break;
-        case STAT_END:
-	  /* we thought we are ending the utterance and we get a speech frame*/
-                if (class == CLASS_O)
-                {
-                        ENDPTR->status = STAT_SPEECH;   
-                }
-
-                /* still not enough non-speech frames to end the utterance      */
-                else if ((FE->FRAME_COUNTER - ENDPTR->spend) < ENDPTR->UTT_F_END)
-                {                       
-		  /* do nothing bfor now*/
-                }
-
-                /* enough non-speech frames to end utterance*/
-                else
-                {
-                        ENDPTR->status = STAT_OTHER;
-                        printf("Utt_End#%d, End: %6.5f,  Trailer: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend), endptr_frame2secs_end(FE, ENDPTR->trailer));
-                        /*     printf("Utt_End End: %d,  Trailer: %d\n",ENDPTR->spend, ENDPTR->trailer);*/
-                        fflush(stdout);
-                }
-                break;
-
-        case STAT_CANCEL:
-	  /* we wanted to cancel and boom we get another speech frame!    */
-                if (class == CLASS_O)
-                {
-                        ENDPTR->status = STAT_BEGIN;    
-                }
-
-                /* still not enough non-speech frames to cancel the utterance*/
-                else if ((FE->FRAME_COUNTER - ENDPTR->spend) < ENDPTR->UTT_F_CANCEL)
-                {                        
-		  /* do nothing for now */
-                }
-
-                /* enough non-speech frames to end utterance*/
-                else
-                {
-                        ENDPTR->status = STAT_OTHER;
-                        printf("Utt_Cancel#%d End: %6.5f\n", ENDPTR->utt_counter,endptr_frame2secs_end(FE, ENDPTR->spend));
-                        /*      printf("Utt_Cancel End: %d\n",ENDPTR->spend);*/
-                        fflush(stdout);
-                                                
-                        ENDPTR->utt_counter--;
-                }
-                break;
-
+    case STAT_BEGIN:
+        /* we are in the speech region but still not enough frames to annouce
+           start of utterance   */
+        if ((class == CLASS_O) && ((FE->FRAME_COUNTER - ENDPTR->spbegin) <
+                                   ENDPTR->UTT_F_START)) {
+            /* do nothing for now   */
         }
 
+        /* we are ready to start the utterance */
+        else if (class == CLASS_O) {
+            ENDPTR->status = STAT_SPEECH;
+        }
+
+        /* we were beginning to get speech and suddenly we get a non-speech frame */
+        else {
+            ENDPTR->status = STAT_CANCEL;
+            ENDPTR->spend = FE->FRAME_COUNTER - 1 - CLASSW->classlatency;
+        }
+        break;
+
+    case STAT_SPEECH:
+        if (class != CLASS_O) {
+            ENDPTR->status = STAT_END;
+            ENDPTR->spend = FE->FRAME_COUNTER - 1 - CLASSW->classlatency;
+            ENDPTR->trailer = ENDPTR->spend + ENDPTR->PAD_F_AFTER;
+
+        }
+        break;
+    case STAT_END:
+        /* we thought we are ending the utterance and we get a speech frame */
+        if (class == CLASS_O) {
+            ENDPTR->status = STAT_SPEECH;
+        }
+
+        /* still not enough non-speech frames to end the utterance      */
+        else if ((FE->FRAME_COUNTER - ENDPTR->spend) < ENDPTR->UTT_F_END) {
+            /* do nothing bfor now */
+        }
+
+        /* enough non-speech frames to end utterance */
+        else {
+            ENDPTR->status = STAT_OTHER;
+            printf("Utt_End#%d, End: %6.5f,  Trailer: %6.5f\n",
+                   ENDPTR->utt_counter, endptr_frame2secs_end(FE,
+                                                              ENDPTR->
+                                                              spend),
+                   endptr_frame2secs_end(FE, ENDPTR->trailer));
+            /*     printf("Utt_End End: %d,  Trailer: %d\n",ENDPTR->spend, ENDPTR->trailer); */
+            fflush(stdout);
+        }
+        break;
+
+    case STAT_CANCEL:
+        /* we wanted to cancel and boom we get another speech frame!    */
+        if (class == CLASS_O) {
+            ENDPTR->status = STAT_BEGIN;
+        }
+
+        /* still not enough non-speech frames to cancel the utterance */
+        else if ((FE->FRAME_COUNTER - ENDPTR->spend) <
+                 ENDPTR->UTT_F_CANCEL) {
+            /* do nothing for now */
+        }
+
+        /* enough non-speech frames to end utterance */
+        else {
+            ENDPTR->status = STAT_OTHER;
+            printf("Utt_Cancel#%d End: %6.5f\n", ENDPTR->utt_counter,
+                   endptr_frame2secs_end(FE, ENDPTR->spend));
+            /*      printf("Utt_Cancel End: %d\n",ENDPTR->spend); */
+            fflush(stdout);
+
+            ENDPTR->utt_counter--;
+        }
+        break;
+
+    }
+
 }
 
-float endptr_frame2secs_beg (fe_t *FE, int frame)
+float
+endptr_frame2secs_beg(fe_t * FE, int frame)
 {
-        return ( (float)(frame - 1) * FE->FRAME_SHIFT / FE->SAMPLING_RATE);
+    return ((float) (frame - 1) * FE->FRAME_SHIFT / FE->SAMPLING_RATE);
 
 }
 
-float endptr_frame2secs_end (fe_t *FE, int frame)
+float
+endptr_frame2secs_end(fe_t * FE, int frame)
 {
-        return ( (float)((frame - 1) * FE->FRAME_SHIFT + FE->FRAME_SIZE) / FE->SAMPLING_RATE);
+    return ((float) ((frame - 1) * FE->FRAME_SHIFT + FE->FRAME_SIZE) /
+            FE->SAMPLING_RATE);
 
 }

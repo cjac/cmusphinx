@@ -133,116 +133,126 @@
 /* ARCHAN: This functions is duplicated.  
    We should consider separate the function into different parts. 
 */
-int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
-				 int32 beginutt, int32 endutt, float32 ***ofeat)
+int32
+feat_dump_s2mfc2feat_block(feat_t * fcb, float32 ** uttcep, int32 nfr,
+                           int32 beginutt, int32 endutt, float32 *** ofeat)
 {
-  float32 **cepbuf=NULL;
-  float32 **tmpcepbuf=NULL;
-  int32 win, cepsize; 
-  int32 i, j, nfeatvec, residualvecs;
-  int32 tmppos;
+    float32 **cepbuf = NULL;
+    float32 **tmpcepbuf = NULL;
+    int32 win, cepsize;
+    int32 i, j, nfeatvec, residualvecs;
+    int32 tmppos;
 
-  cepbuf=fcb->cepbuf;
-  tmpcepbuf=fcb->tmpcepbuf;
+    cepbuf = fcb->cepbuf;
+    tmpcepbuf = fcb->tmpcepbuf;
 
-  assert(nfr < LIVEBUFBLOCKSIZE);
-  assert(fcb->cepsize > 0);
-  assert(cepbuf);
-  assert(tmpcepbuf);
+    assert(nfr < LIVEBUFBLOCKSIZE);
+    assert(fcb->cepsize > 0);
+    assert(cepbuf);
+    assert(tmpcepbuf);
 
-  win = feat_window_size(fcb);
-  cepsize = feat_cepsize(fcb);
+    win = feat_window_size(fcb);
+    cepsize = feat_cepsize(fcb);
 
-  if (cepbuf == NULL){
-    beginutt = 1; /* If no buffer was present we are beginning an utt */
-    E_INFO("Feature buffers initialized to %d vectors\n",LIVEBUFBLOCKSIZE);
-  }
-
-  /* CMN stuff */
-  metricsStart("cmn");
-
-  if (fcb->cmn) {
-    /* Only cmn_prior in block computation mode */
-    cmn_prior (uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
-  }
-
-  metricsStop("cmn");
-
-  if (fe_dump) {
-    fe_dump2d_float_frame(fe_dumpfile, uttcep, nfr, fcb->cepsize,
-			  "CMN", "CMN_CEPSTRUM");
-  }
-
-  /* Feature Extraction */
-
-  metricsStart("FeatureExtractor");
-
-  residualvecs = 0;
-
-  if (beginutt) {
-    /* Replicate first frame into the first win frames */
-    for (i=0;i<win;i++) {
-      if(nfr>=win+1)
-	memcpy(cepbuf[i],uttcep[0+i+1],cepsize*sizeof(float32));
-      else
-	memcpy(cepbuf[i],uttcep[0],cepsize*sizeof(float32));
+    if (cepbuf == NULL) {
+        beginutt = 1;           /* If no buffer was present we are beginning an utt */
+        E_INFO("Feature buffers initialized to %d vectors\n",
+               LIVEBUFBLOCKSIZE);
     }
-    fcb->bufpos = win;
-    fcb->bufpos %= LIVEBUFBLOCKSIZE;
-    fcb->curpos = fcb->bufpos;
-    residualvecs -= win;
-  }
 
-  for (i=0;i<nfr;i++){
-    assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
-    memcpy(cepbuf[fcb->bufpos++],uttcep[i],cepsize*sizeof(float32));
-    fcb->bufpos %= LIVEBUFBLOCKSIZE;
-  }
+    /* CMN stuff */
+    metricsStart("cmn");
 
-
-  if (endutt){
-    /* Replicate last frame into the last win frames */
-    if (nfr > 0) {
-      for (i=0;i<win;i++) {
-	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[fcb->bufpos++],uttcep[nfr-1],cepsize*sizeof(float32));
-	fcb->bufpos %= LIVEBUFBLOCKSIZE;
-      }
+    if (fcb->cmn) {
+        /* Only cmn_prior in block computation mode */
+        cmn_prior(uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
     }
-    else {
-      int16 tpos = fcb->bufpos-1;
-      tpos %= LIVEBUFBLOCKSIZE;
-      for (i=0;i<win;i++) {
-	assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
-	memcpy(cepbuf[fcb->bufpos++],cepbuf[tpos],cepsize*sizeof(float32));
-	fcb->bufpos %= LIVEBUFBLOCKSIZE;
-      }
+
+    metricsStop("cmn");
+
+    if (fe_dump) {
+        fe_dump2d_float_frame(fe_dumpfile, uttcep, nfr, fcb->cepsize,
+                              "CMN", "CMN_CEPSTRUM");
     }
-    residualvecs += win;
-  }
 
-  /* Create feature vectors */
-  nfeatvec = 0;
-  nfr += residualvecs;
-  
-  for (i=0; i < nfr; i++,nfeatvec++){
-    if(fcb->curpos <win || fcb->curpos > LIVEBUFBLOCKSIZE -win-1){
-      /* HACK! Just copy the frames and read them to compute_feat */
-      for(j=-win;j<=win;j++){
-	tmppos= (j+ fcb->curpos + LIVEBUFBLOCKSIZE)% LIVEBUFBLOCKSIZE;
-	memcpy(tmpcepbuf[win+j],cepbuf[tmppos],cepsize*sizeof(float32));
-      }
-      fcb->compute_feat(fcb, tmpcepbuf+win,ofeat[i]);
-    }else{
-      fcb->compute_feat(fcb, cepbuf+fcb->curpos, ofeat[i]);
+    /* Feature Extraction */
+
+    metricsStart("FeatureExtractor");
+
+    residualvecs = 0;
+
+    if (beginutt) {
+        /* Replicate first frame into the first win frames */
+        for (i = 0; i < win; i++) {
+            if (nfr >= win + 1)
+                memcpy(cepbuf[i], uttcep[0 + i + 1],
+                       cepsize * sizeof(float32));
+            else
+                memcpy(cepbuf[i], uttcep[0], cepsize * sizeof(float32));
+        }
+        fcb->bufpos = win;
+        fcb->bufpos %= LIVEBUFBLOCKSIZE;
+        fcb->curpos = fcb->bufpos;
+        residualvecs -= win;
     }
-    fcb->curpos++;
-    fcb->curpos %= LIVEBUFBLOCKSIZE;
-  }
 
-  metricsStop("FeatureExtractor");
+    for (i = 0; i < nfr; i++) {
+        assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+        memcpy(cepbuf[fcb->bufpos++], uttcep[i],
+               cepsize * sizeof(float32));
+        fcb->bufpos %= LIVEBUFBLOCKSIZE;
+    }
 
-  return(nfeatvec);
+
+    if (endutt) {
+        /* Replicate last frame into the last win frames */
+        if (nfr > 0) {
+            for (i = 0; i < win; i++) {
+                assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+                memcpy(cepbuf[fcb->bufpos++], uttcep[nfr - 1],
+                       cepsize * sizeof(float32));
+                fcb->bufpos %= LIVEBUFBLOCKSIZE;
+            }
+        }
+        else {
+            int16 tpos = fcb->bufpos - 1;
+            tpos %= LIVEBUFBLOCKSIZE;
+            for (i = 0; i < win; i++) {
+                assert(fcb->bufpos < LIVEBUFBLOCKSIZE);
+                memcpy(cepbuf[fcb->bufpos++], cepbuf[tpos],
+                       cepsize * sizeof(float32));
+                fcb->bufpos %= LIVEBUFBLOCKSIZE;
+            }
+        }
+        residualvecs += win;
+    }
+
+    /* Create feature vectors */
+    nfeatvec = 0;
+    nfr += residualvecs;
+
+    for (i = 0; i < nfr; i++, nfeatvec++) {
+        if (fcb->curpos < win || fcb->curpos > LIVEBUFBLOCKSIZE - win - 1) {
+            /* HACK! Just copy the frames and read them to compute_feat */
+            for (j = -win; j <= win; j++) {
+                tmppos =
+                    (j + fcb->curpos +
+                     LIVEBUFBLOCKSIZE) % LIVEBUFBLOCKSIZE;
+                memcpy(tmpcepbuf[win + j], cepbuf[tmppos],
+                       cepsize * sizeof(float32));
+            }
+            fcb->compute_feat(fcb, tmpcepbuf + win, ofeat[i]);
+        }
+        else {
+            fcb->compute_feat(fcb, cepbuf + fcb->curpos, ofeat[i]);
+        }
+        fcb->curpos++;
+        fcb->curpos %= LIVEBUFBLOCKSIZE;
+    }
+
+    metricsStop("FeatureExtractor");
+
+    return (nfeatvec);
 
 }
 
@@ -250,13 +260,14 @@ int32 feat_dump_s2mfc2feat_block(feat_t *fcb, float32 **uttcep, int32 nfr,
  * RAH, remove memory allocated by feat_init
  * What is going on? feat_vector_alloc doesn't appear to be called
  */
-void feat_dump_free (feat_t *f)
+void
+feat_dump_free(feat_t * f)
 {
-  if (f) {
-    /*    if (f->stream_len)*/
-    /*      ckd_free ((void *) f->stream_len);*/
+    if (f) {
+        /*    if (f->stream_len) */
+        /*      ckd_free ((void *) f->stream_len); */
 
-    /*    ckd_free ((void *) f);*/
-  }
+        /*    ckd_free ((void *) f); */
+    }
 
 }

@@ -75,18 +75,21 @@
 
 #define MAXSAMPLES 	1000000
 
-int main (int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     short *samps;
-    int  i, buflen, endutt, blksize, nhypwds, nsamp;
-    char   *argsfile, *ctlfile, *indir, *dumpfile;
-    char   filename[512], cepfile[512];
+    int i, buflen, endutt, blksize, nhypwds, nsamp;
+    char *argsfile, *ctlfile, *indir, *dumpfile;
+    char filename[512], cepfile[512];
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
-    
-    
+
+
     if (argc < 5) {
-        E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile> <dump> <frontend_dumpfile>\n", argv[0]);
+        E_FATAL
+            ("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile> <dump> <frontend_dumpfile>\n",
+             argv[0]);
     }
     ctlfile = argv[1];
     indir = argv[2];
@@ -99,56 +102,58 @@ int main (int argc, char *argv[])
         /* default fe_dump_type is SCIENTIFIC */
         if (strcmp(argv[5], "dec") == 0) {
             fe_dump_type = DECIMAL;
-        } else if (strcmp(argv[5], "hex") == 0) {
+        }
+        else if (strcmp(argv[5], "hex") == 0) {
             fe_dump_type = HEXADECIMAL;
-        } else {
+        }
+        else {
             fe_dump_type = SCIENTIFIC;
         }
 
         dumpfile = argv[6];
-      
+
         /* open dump file */
         if ((fe_dumpfile = fopen(dumpfile, "w")) == NULL) {
             E_FATAL("Unable to open %s\n", dumpfile);
             exit(1);
         }
     }
-    
-    samps = (short *) calloc(MAXSAMPLES,sizeof(short));
+
+    samps = (short *) calloc(MAXSAMPLES, sizeof(short));
     blksize = 2000;
-    
-    if ((fp = fopen(ctlfile,"r")) == NULL)
-	E_FATAL("Unable to read %s\n",ctlfile);
-    
+
+    if ((fp = fopen(ctlfile, "r")) == NULL)
+        E_FATAL("Unable to read %s\n", ctlfile);
+
     live_initialize_decoder(argsfile);
-    
-    while (fscanf(fp,"%s",filename) != EOF) {
 
-        sprintf(cepfile,"%s/%s.raw",indir,filename);
+    while (fscanf(fp, "%s", filename) != EOF) {
 
-        if ((sfp = fopen(cepfile,"rb")) == NULL)
-            E_FATAL("Unable to read %s\n",cepfile);
+        sprintf(cepfile, "%s/%s.raw", indir, filename);
+
+        if ((sfp = fopen(cepfile, "rb")) == NULL)
+            E_FATAL("Unable to read %s\n", cepfile);
 
         nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
 
         fprintf(stdout,
                 "%d samples in file %s.\nWill be decoded in blocks of %d\n",
-                nsamp,cepfile,blksize);
+                nsamp, cepfile, blksize);
 
-        fflush(stdout); fclose(sfp);
-        
-        for (i=0;i<nsamp;i+=blksize){
-            buflen = i+blksize < nsamp ? blksize : nsamp-i;
-            endutt = i+blksize <= nsamp-1 ? 0 : 1;
+        fflush(stdout);
+        fclose(sfp);
+
+        for (i = 0; i < nsamp; i += blksize) {
+            buflen = i + blksize < nsamp ? blksize : nsamp - i;
+            endutt = i + blksize <= nsamp - 1 ? 0 : 1;
 
             /* run the frontend */
-            nhypwds = live_fe_process_block(samps+i,buflen,endutt,&parthyp);
+            nhypwds =
+                live_fe_process_block(samps + i, buflen, endutt, &parthyp);
         }
     }
-    
+
     metricsPrint();
-    
+
     return 0;
 }
-
-

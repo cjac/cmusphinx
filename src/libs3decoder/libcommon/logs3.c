@@ -107,8 +107,8 @@
    not to be used, they are still generated. I'll remove this portion
    later, for now I want to make that there are no problems 
 */
-static int USE_LOG3_ADD_TABLE = 1;	
-static float64 F = 0;		/* Set this global variable so we don't have to keep computing it in logs3_add() */
+static int USE_LOG3_ADD_TABLE = 1;
+static float64 F = 0;           /* Set this global variable so we don't have to keep computing it in logs3_add() */
 
 /*
  * In evaluating HMM models, probability values are often kept in log domain,
@@ -130,219 +130,232 @@ static float64 F = 0;		/* Set this global variable so we don't have to keep comp
 
 
 static float64 B, logB, log10B, invlogB, invlog10B;
-static uint16 *add_tbl = NULL;	/* See discussion above */
+static uint16 *add_tbl = NULL;  /* See discussion above */
 static int32 add_tbl_size;
 
-float64 logs3_base(void)
+float64
+logs3_base(void)
 {
-	return B;
+    return B;
 }
 
-int32 logs3_init (float64 base, int32 bReport, int32 bLogTable)
+int32
+logs3_init(float64 base, int32 bReport, int32 bLogTable)
 {
     int32 i, k;
     float64 d, t;
 
     USE_LOG3_ADD_TABLE = bLogTable;
 
-    if(bReport)
-      E_INFO("Initializing logbase: %e (add table: %d)\n", base,USE_LOG3_ADD_TABLE);
+    if (bReport)
+        E_INFO("Initializing logbase: %e (add table: %d)\n", base,
+               USE_LOG3_ADD_TABLE);
 
     if (base <= 1.0)
-      E_FATAL("Illegal logbase: %e; must be > 1.0\n", base);
+        E_FATAL("Illegal logbase: %e; must be > 1.0\n", base);
     if (base > 1.1)
-      E_WARN("Logbase %e perhaps too large??\n", base);
+        E_WARN("Logbase %e perhaps too large??\n", base);
 
     if (add_tbl) {
-	if (B == base)
-	    E_WARN("logs3_init() already done\n");
-	else
-	    E_FATAL("logs3_init() already done with base %e\n", B);
+        if (B == base)
+            E_WARN("logs3_init() already done\n");
+        else
+            E_FATAL("logs3_init() already done with base %e\n", B);
     }
-    
+
     B = base;
     logB = log(base);
     log10B = log10(base);
-    invlogB = 1.0/logB;
-    invlog10B = 1.0/log10B;
+    invlogB = 1.0 / logB;
+    invlog10B = 1.0 / log10B;
 
     /* Create add-table for adding probs in log domain */
 
-    k = (int32) (log(2.0)*invlogB + 0.5);
+    k = (int32) (log(2.0) * invlogB + 0.5);
     if (k > 65535) {
-	E_ERROR("Logbase too small: %e; needs int32 addtable[]\n", base);
-	return LOGS3_FAILURE;
+        E_ERROR("Logbase too small: %e; needs int32 addtable[]\n", base);
+        return LOGS3_FAILURE;
     }
 
     d = 1.0;
-    F = 1.0/B;			/* RAH 5.9.01, set this global variable so that we don't have to compute it in logs3_add() */
+    F = 1.0 / B;                /* RAH 5.9.01, set this global variable so that we don't have to compute it in logs3_add() */
 
     /* Figure out size of add-table requried */
     for (i = 0;; i++) {
-	t = log(1.0+d)*invlogB;
-	k = (int32) (t + 0.5);
+        t = log(1.0 + d) * invlogB;
+        k = (int32) (t + 0.5);
 
 #if 0
-	if (((i%1000) == 0) || (k == 0))
-	    printf ("%10d %10d %e\n", i, k, d);
+        if (((i % 1000) == 0) || (k == 0))
+            printf("%10d %10d %e\n", i, k, d);
 #endif
 
-	if (k == 0)
-	    break;
+        if (k == 0)
+            break;
 
-	d *= F;
+        d *= F;
     }
 
-    add_tbl_size = i+1;
-    add_tbl = (uint16 *) ckd_calloc (i+1, sizeof(uint16));
-    
+    add_tbl_size = i + 1;
+    add_tbl = (uint16 *) ckd_calloc(i + 1, sizeof(uint16));
+
     /* Fill add-table */
     d = 1.0;
     for (i = 0;; i++) {
-	t = log(1.0+d)*invlogB;
-	k = (int32) (t + 0.5);
+        t = log(1.0 + d) * invlogB;
+        k = (int32) (t + 0.5);
 
-	add_tbl[i] = k;
+        add_tbl[i] = k;
 
-	if (k == 0)
-	    break;
+        if (k == 0)
+            break;
 
-	d *= F;
+        d *= F;
     }
-    
+
 
     return LOGS3_SUCCESS;
 }
 
-int32 logs3_add (int32 logp, int32 logq)
+int32
+logs3_add(int32 logp, int32 logq)
 {
     int32 d, r;
-    
-    assert (add_tbl != NULL);   /* Use assert to allow use of NDEBUG for efficiency */
+
+    assert(add_tbl != NULL);    /* Use assert to allow use of NDEBUG for efficiency */
 
     if (logp > logq) {
-	d = logp - logq;
-	r = logp;
-    } else {
-	d = logq - logp;
-	r = logq;
+        d = logp - logq;
+        r = logp;
+    }
+    else {
+        d = logq - logp;
+        r = logq;
     }
     /* RAH 5.9.01 If we allow the computation of values of d beyond
        the add_tbl_size, speed degrades quickly, for that reason,
        limit the calculations to the same range as the table. This
        seems wrong. Must think more about it */
-    if (d < 0) /* Overflow */
-      return r;
-    if (d < add_tbl_size)
-      {
-      if (USE_LOG3_ADD_TABLE) 
-	r += add_tbl[d];
-      else
-	/* Do we need to be checking to see if the value is too large? small? */
-	r += (int32) (0.5 + log(1.0 + pow(F,d)) * invlogB); /* RAH, 5.9.01 - compute instead of looking it up */
-      }
+    if (d < 0)                  /* Overflow */
+        return r;
+    if (d < add_tbl_size) {
+        if (USE_LOG3_ADD_TABLE)
+            r += add_tbl[d];
+        else
+            /* Do we need to be checking to see if the value is too large? small? */
+            r += (int32) (0.5 + log(1.0 + pow(F, d)) * invlogB);        /* RAH, 5.9.01 - compute instead of looking it up */
+    }
 
     return r;
 }
 
 
-int32 logs3 (float64 p)
+int32
+logs3(float64 p)
 {
-    if (! add_tbl)
-	E_FATAL("logs3 module not initialized\n");
-    
+    if (!add_tbl)
+        E_FATAL("logs3 module not initialized\n");
+
     if (p <= 0.0) {
-	E_WARN("logs3 argument: %e; using S3_LOGPROB_ZERO\n", p);
-	return S3_LOGPROB_ZERO;
+        E_WARN("logs3 argument: %e; using S3_LOGPROB_ZERO\n", p);
+        return S3_LOGPROB_ZERO;
     }
-    
+
     return ((int32) (log(p) * invlogB));
 }
 
 
-int32 log_to_logs3 (float64 logp)
+int32
+log_to_logs3(float64 logp)
 {
-    if (! add_tbl)
-	E_FATAL("logs3 module not initialized\n");
-    
+    if (!add_tbl)
+        E_FATAL("logs3 module not initialized\n");
+
     return ((int32) (logp * invlogB));
 }
 
 
-float64 log_to_logs3_factor ( void )
+float64
+log_to_logs3_factor(void)
 {
     return invlogB;
 }
 
 
-float64 logs3_to_log (int32 logs3p)
+float64
+logs3_to_log(int32 logs3p)
 {
-    if (! add_tbl)
-	E_FATAL("logs3 module not initialized\n");
-    
-    return ((float64)logs3p * logB);
+    if (!add_tbl)
+        E_FATAL("logs3 module not initialized\n");
+
+    return ((float64) logs3p * logB);
 }
 
 
-float64 logs3_to_log10 (int32 logs3p)
+float64
+logs3_to_log10(int32 logs3p)
 {
-    if (! add_tbl)
-	E_FATAL("logs3 module not initialized\n");
-    
-    return ((float64)logs3p * log10B);
+    if (!add_tbl)
+        E_FATAL("logs3 module not initialized\n");
+
+    return ((float64) logs3p * log10B);
 }
 
-float64 logs3_to_p (int32 logs3p)
+float64
+logs3_to_p(int32 logs3p)
 {
     return (pow(B, logs3p));
 }
 
 
-int32 log10_to_logs3 (float64 log10p)
+int32
+log10_to_logs3(float64 log10p)
 {
-    if (! add_tbl)
-	E_FATAL("logs3 module not initialized\n");
-    
+    if (!add_tbl)
+        E_FATAL("logs3 module not initialized\n");
+
     return ((int32) (log10p * invlog10B));
 }
 
-void logs_free ()
+void
+logs_free()
 {
-  if (add_tbl) 
-    ckd_free ((void *) add_tbl);
+    if (add_tbl)
+        ckd_free((void *) add_tbl);
 }
 
-void logs3_report()
+void
+logs3_report()
 {
-  E_INFO_NOFN("Initialization of the log add table\n");
-  E_INFO_NOFN("Log-Add table size = %d\n", add_tbl_size);
-  E_INFO_NOFN("\n");
+    E_INFO_NOFN("Initialization of the log add table\n");
+    E_INFO_NOFN("Log-Add table size = %d\n", add_tbl_size);
+    E_INFO_NOFN("\n");
 }
 
 
 #if _LOGS3_TEST_
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
     float64 base;
     float64 p, q;
     int32 logp, logq, logpq;
 
-    printf ("base: ");
-    scanf ("%lf", &base);
-    if (logs3_init (base, 1, 1) < 0)
-	exit (-1);
+    printf("base: ");
+    scanf("%lf", &base);
+    if (logs3_init(base, 1, 1) < 0)
+        exit(-1);
 
     for (;;) {
-	printf ("p,q: ");
+        printf("p,q: ");
 
-	scanf ("%lf %lf", &p, &q);
-	logp = logs3 (p);
-	logq = logs3 (q);
+        scanf("%lf %lf", &p, &q);
+        logp = logs3(p);
+        logq = logs3(q);
 
-	logpq = logs3_add (logp, logq);
+        logpq = logs3_add(logp, logq);
 
-	printf ("logB(p,q) = %d, %d\n", logp, logq);
-	printf ("logB(p+q) = %d, expected %d\n", logpq, logs3 (p+q));
+        printf("logB(p,q) = %d, %d\n", logp, logq);
+        printf("logB(p+q) = %d, expected %d\n", logpq, logs3(p + q));
     }
 }
 #endif

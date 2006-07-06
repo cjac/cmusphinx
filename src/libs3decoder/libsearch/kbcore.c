@@ -144,14 +144,16 @@
 #include "kbcore.h"
 #include "logs3.h"
 #include "s3types.h"
-#define REPORT_KBCORE 1 
+#define REPORT_KBCORE 1
 
 
-void checkLMstartword(lm_t* l,char* name)
+void
+checkLMstartword(lm_t * l, char *name)
 {
-  if (NOT_LMWID(l, lm_startwid(l)) || NOT_LMWID(l, lm_finishwid(l))){
-    E_FATAL("%s or %s not in LM %s\n", S3_START_WORD, S3_FINISH_WORD,name);
-  }
+    if (NOT_LMWID(l, lm_startwid(l)) || NOT_LMWID(l, lm_finishwid(l))) {
+        E_FATAL("%s or %s not in LM %s\n", S3_START_WORD, S3_FINISH_WORD,
+                name);
+    }
 }
 
 /*
@@ -160,37 +162,39 @@ void checkLMstartword(lm_t* l,char* name)
  * and end of each utterance.
  */
 /* This has to be done before tree is built */
-void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
+void
+unlinksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
 {
-  s3wid_t w;
+    s3wid_t w;
 
     /* Store the word ID for later uses */
-    kbc->startwid=lm_startwid(l);
-    kbc->finishwid=lm_finishwid(l);
+    kbc->startwid = lm_startwid(l);
+    kbc->finishwid = lm_finishwid(l);
 
-  lm_lmwid2dictwid(l, lm_startwid(l)) = BAD_S3WID;
-  lm_lmwid2dictwid(l, lm_finishwid(l)) = BAD_S3WID;
+    lm_lmwid2dictwid(l, lm_startwid(l)) = BAD_S3WID;
+    lm_lmwid2dictwid(l, lm_finishwid(l)) = BAD_S3WID;
 
-  for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-    l->dict2lmwid[w] = BAD_LMWID(l);
-  for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-      l->dict2lmwid[w] = BAD_LMWID(l);
+    for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+        l->dict2lmwid[w] = BAD_LMWID(l);
+    for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+        l->dict2lmwid[w] = BAD_LMWID(l);
 
 }
 
-void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
+void
+linksilences(lm_t * l, kbcore_t * kbc, dict_t * d)
 {
-  s3wid_t w;
+    s3wid_t w;
 
     /* Store the word ID for later uses */
 
-  lm_lmwid2dictwid(l, lm_startwid(l)) = kbc->startwid;
-  lm_lmwid2dictwid(l, lm_finishwid(l)) = kbc->finishwid;
+    lm_lmwid2dictwid(l, lm_startwid(l)) = kbc->startwid;
+    lm_lmwid2dictwid(l, lm_finishwid(l)) = kbc->finishwid;
 
-  for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-    l->dict2lmwid[w] = lm_startwid(l);
-  for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
-      l->dict2lmwid[w] = lm_finishwid(l);
+    for (w = dict_startwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+        l->dict2lmwid[w] = lm_startwid(l);
+    for (w = dict_finishwid(d); IS_S3WID(w); w = dict_nextalt(d, w))
+        l->dict2lmwid[w] = lm_finishwid(l);
 
 }
 
@@ -198,36 +202,35 @@ void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d)
  * Initialize sphinx 3 single stream hmm (use cont_mgau). This
  * function is duplicated with ms_s3_am_init. 
  */
-void s3_am_init(kbcore_t *kbc,
-		char *s3hmmdir,
-		char *mdeffile,
-		char *meanfile,
-		char *varfile,
-		float64 varfloor,
-		char *mixwfile,
-		float64 mixwfloor,
-		char *tmatfile,
-		float64 tmatfloor,
-		char *senmgau,
-		char *lambdafile,
-		int32 topn
-		)
+void
+s3_am_init(kbcore_t * kbc,
+           char *s3hmmdir,
+           char *mdeffile,
+           char *meanfile,
+           char *varfile,
+           float64 varfloor,
+           char *mixwfile,
+           float64 mixwfloor,
+           char *tmatfile,
+           float64 tmatfloor, char *senmgau, char *lambdafile, int32 topn)
 {
 
-  char mdefstr[2048];
-  char meanstr[2048];
-  char varstr[2048];
-  char mixwstr[2048];
-  char tmatstr[2048];
+    char mdefstr[2048];
+    char meanstr[2048];
+    char varstr[2048];
+    char mixwstr[2048];
+    char tmatstr[2048];
 
-  assert(kbc);
+    assert(kbc);
 
-  kbc->mgau=NULL;
-  kbc->ms_mgau=NULL;
+    kbc->mgau = NULL;
+    kbc->ms_mgau = NULL;
 
-  if(s3hmmdir && (mdeffile||meanfile||varfile||mixwfile||tmatfile)){
-    E_WARN("-s3hmmdir is specified together with (-mdef||-mean||-var||-mix||-tmat). Assume the later overide what -s3hmmdir specified.\n");
-  }
+    if (s3hmmdir
+        && (mdeffile || meanfile || varfile || mixwfile || tmatfile)) {
+        E_WARN
+            ("-s3hmmdir is specified together with (-mdef||-mean||-var||-mix||-tmat). Assume the later overide what -s3hmmdir specified.\n");
+    }
 
   /** Determine the location of the resources. 
       If -s3hmmdir if not specified, -mdef, -mean, -var, -mixw and
@@ -245,212 +248,214 @@ void s3_am_init(kbcore_t *kbc,
 
    */
 
-  if(!s3hmmdir){
-    if(!mdeffile) 
-      E_FATAL("Please specified either -s3hmmdir or -mdef\n");
-    else 
-      sprintf(mdefstr,"%s",mdeffile);
+    if (!s3hmmdir) {
+        if (!mdeffile)
+            E_FATAL("Please specified either -s3hmmdir or -mdef\n");
+        else
+            sprintf(mdefstr, "%s", mdeffile);
 
-    if(!meanfile) 
-      E_FATAL("Please specified either -s3hmmdir or -mean\n");
-    else 
-      sprintf(meanstr,"%s",meanfile);
+        if (!meanfile)
+            E_FATAL("Please specified either -s3hmmdir or -mean\n");
+        else
+            sprintf(meanstr, "%s", meanfile);
 
-    if(!varfile)  
-      E_FATAL("Please specified either -s3hmmdir or -var\n");
-    else 
-      sprintf(varstr ,"%s",varfile);
+        if (!varfile)
+            E_FATAL("Please specified either -s3hmmdir or -var\n");
+        else
+            sprintf(varstr, "%s", varfile);
 
-    if(!mixwfile) 
-      E_FATAL("Please specified either -s3hmmdir or -mixw\n");
-    else 
-      sprintf(mixwstr,"%s",mixwfile);
+        if (!mixwfile)
+            E_FATAL("Please specified either -s3hmmdir or -mixw\n");
+        else
+            sprintf(mixwstr, "%s", mixwfile);
 
-    if(!tmatfile) 
-      E_FATAL("Please specified either -s3hmmdir or -tmat\n");
-    else 
-      sprintf(tmatstr,"%s",tmatfile);
-  }else{
-
-    if(mdeffile) {
-      E_WARN("-mdef overrides <-s3hmmdir>/mdef");
-      sprintf(mdefstr,"%s",mdeffile);
+        if (!tmatfile)
+            E_FATAL("Please specified either -s3hmmdir or -tmat\n");
+        else
+            sprintf(tmatstr, "%s", tmatfile);
     }
-    else sprintf(mdefstr,"%s/mdef",s3hmmdir);
-    
-    if(meanfile) {
-      E_WARN("-mean overrides <-s3hmmdir>/means");
-      sprintf(meanstr,"%s",meanfile);
-    }
-    else sprintf(meanstr,"%s/means",s3hmmdir);
-    
-    if(varfile)  {
-      E_WARN("-var overrides <-s3hmmdir>/variances");
-      sprintf(meanstr,"%s",varfile);
-    }
-    else sprintf(varstr,"%s/variances",s3hmmdir);
-    
-    if(mixwfile)  {
-      E_WARN("-mixw overrides <-s3hmmdir>/mixture_weights");
-      sprintf(mixwstr,"%s",mixwfile);
-    }
-    else sprintf(mixwstr,"%s/mixture_weights",s3hmmdir);
-    
-    if(tmatfile)  {
-      E_WARN("-tmat overrides <-s3hmmdir>/transition_matrics");
-      sprintf(tmatstr,"%s",tmatfile);
-    }
-    else sprintf(tmatstr,"%s/transition_matrices",s3hmmdir);
-  }
+    else {
 
+        if (mdeffile) {
+            E_WARN("-mdef overrides <-s3hmmdir>/mdef");
+            sprintf(mdefstr, "%s", mdeffile);
+        }
+        else
+            sprintf(mdefstr, "%s/mdef", s3hmmdir);
 
-  E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
-  E_INFO_NOFN("Model Definition File: %s\n",mdefstr);
-  E_INFO_NOFN("Mean File: %s\n",meanstr);
-  E_INFO_NOFN("Variance File: %s\n",varstr);
-  E_INFO_NOFN("Mixture Weight File: %s\n",mixwstr);
-  E_INFO_NOFN("Transition Matrices File: %s\n",tmatstr);
+        if (meanfile) {
+            E_WARN("-mean overrides <-s3hmmdir>/means");
+            sprintf(meanstr, "%s", meanfile);
+        }
+        else
+            sprintf(meanstr, "%s/means", s3hmmdir);
 
+        if (varfile) {
+            E_WARN("-var overrides <-s3hmmdir>/variances");
+            sprintf(meanstr, "%s", varfile);
+        }
+        else
+            sprintf(varstr, "%s/variances", s3hmmdir);
 
-  if ((kbc->mdef = mdef_init (mdefstr, REPORT_KBCORE)) == NULL)
-    E_FATAL("mdef_init(%s) failed\n", mdefstr);
+        if (mixwfile) {
+            E_WARN("-mixw overrides <-s3hmmdir>/mixture_weights");
+            sprintf(mixwstr, "%s", mixwfile);
+        }
+        else
+            sprintf(mixwstr, "%s/mixture_weights", s3hmmdir);
 
-  if(REPORT_KBCORE){
-    mdef_report(kbc->mdef);
-  }
-
-  if(strcmp(senmgau,".cont.") == 0) {
-    /* Single stream optmized GMM computation Initialization */
-    E_INFO("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
-    kbc->mgau = mgau_init (meanstr, 
-			 varstr, varfloor, 
-			 mixwstr, mixwfloor, 
-			 TRUE,  /* Do precomputation*/
-			 senmgau,
-			 MIX_INT_FLOAT_COMP); /*Use hybrid integer and float routine */
-
-    if (kbc->mdef && kbc->mgau) {
-      /* Verify senone parameters against model definition parameters */
-      if (kbc->mdef->n_sen != mgau_n_mgau(kbc->mgau))
-	E_FATAL("Mdef #senones(%d) != mgau #senones(%d)\n",
-		kbc->mdef->n_sen, mgau_n_mgau(kbc->mgau));
+        if (tmatfile) {
+            E_WARN("-tmat overrides <-s3hmmdir>/transition_matrics");
+            sprintf(tmatstr, "%s", tmatfile);
+        }
+        else
+            sprintf(tmatstr, "%s/transition_matrices", s3hmmdir);
     }
 
-  }else if(strcmp(senmgau,".s2semi.") == 0){
-    /* SC_VQ initialization. */
-    E_INFO("Using Sphinx2 multi-stream GMM computation\n");
-    kbc->s2_mgau=s2_semi_mgau_init(meanstr,
-				   varstr,varfloor,
-				   mixwstr,mixwfloor, 
-				   topn);
-    if (kbc->mdef && kbc->s2_mgau) {
-      /* Verify senone parameters against model definition parameters */
-      if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
-	E_FATAL("Mdef #senones(%d) != s2_semi_mgau #PDFs(%d)\n",
-		kbc->mdef->n_sen, kbc->s2_mgau->CdWdPDFMod);
+
+    E_INFO_NOFN("Reading HMM in Sphinx 3 Model format\n");
+    E_INFO_NOFN("Model Definition File: %s\n", mdefstr);
+    E_INFO_NOFN("Mean File: %s\n", meanstr);
+    E_INFO_NOFN("Variance File: %s\n", varstr);
+    E_INFO_NOFN("Mixture Weight File: %s\n", mixwstr);
+    E_INFO_NOFN("Transition Matrices File: %s\n", tmatstr);
+
+
+    if ((kbc->mdef = mdef_init(mdefstr, REPORT_KBCORE)) == NULL)
+        E_FATAL("mdef_init(%s) failed\n", mdefstr);
+
+    if (REPORT_KBCORE) {
+        mdef_report(kbc->mdef);
     }
-    /* FIXME: This should probably move as soon as we support kd-trees
-     * for other model types. */
-    if (cmd_ln_access("-kdtree")) {
-	    if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
-					 cmd_ln_str("-kdtree"),
-					 cmd_ln_int32("-kdmaxdepth"),
-					 cmd_ln_int32("-kdmaxbbi")) < 0) {
-		    E_FATAL("Failed to load kdtrees from %s\n",
-			    cmd_ln_str("-kdtree"));
-	    }
+
+    if (strcmp(senmgau, ".cont.") == 0) {
+        /* Single stream optmized GMM computation Initialization */
+        E_INFO
+            ("Using optimized GMM computation for Continuous HMM, -topn will be ignored\n");
+        kbc->mgau = mgau_init(meanstr, varstr, varfloor, mixwstr, mixwfloor, TRUE,      /* Do precomputation */
+                              senmgau, MIX_INT_FLOAT_COMP);     /*Use hybrid integer and float routine */
+
+        if (kbc->mdef && kbc->mgau) {
+            /* Verify senone parameters against model definition parameters */
+            if (kbc->mdef->n_sen != mgau_n_mgau(kbc->mgau))
+                E_FATAL("Mdef #senones(%d) != mgau #senones(%d)\n",
+                        kbc->mdef->n_sen, mgau_n_mgau(kbc->mgau));
+        }
+
     }
-    }else if(strcmp(senmgau,".semi.") == 0 || strcmp(senmgau,".s3cont.") == 0){
+    else if (strcmp(senmgau, ".s2semi.") == 0) {
+        /* SC_VQ initialization. */
+        E_INFO("Using Sphinx2 multi-stream GMM computation\n");
+        kbc->s2_mgau = s2_semi_mgau_init(meanstr,
+                                         varstr, varfloor,
+                                         mixwstr, mixwfloor, topn);
+        if (kbc->mdef && kbc->s2_mgau) {
+            /* Verify senone parameters against model definition parameters */
+            if (kbc->mdef->n_sen != kbc->s2_mgau->CdWdPDFMod)
+                E_FATAL("Mdef #senones(%d) != s2_semi_mgau #PDFs(%d)\n",
+                        kbc->mdef->n_sen, kbc->s2_mgau->CdWdPDFMod);
+        }
+        /* FIXME: This should probably move as soon as we support kd-trees
+         * for other model types. */
+        if (cmd_ln_access("-kdtree")) {
+            if (s2_semi_mgau_load_kdtree(kbc->s2_mgau,
+                                         cmd_ln_str("-kdtree"),
+                                         cmd_ln_int32("-kdmaxdepth"),
+                                         cmd_ln_int32("-kdmaxbbi")) < 0) {
+                E_FATAL("Failed to load kdtrees from %s\n",
+                        cmd_ln_str("-kdtree"));
+            }
+        }
+    }
+    else if (strcmp(senmgau, ".semi.") == 0
+             || strcmp(senmgau, ".s3cont.") == 0) {
 
-    senone_t* sen;
-    /* Multiple stream Gaussian mixture Initialization*/
-    E_INFO("Using multi-stream GMM computation\n");
-    kbc->ms_mgau=ms_mgau_init(meanstr,
-			      varstr,varfloor,
-			      mixwstr,mixwfloor, 
-			      TRUE, /*Do precomputation */
-			      senmgau,
-			      lambdafile, /* lambda is not a standard option, so user need to specify it*/
-			      topn
-			      );
+        senone_t *sen;
+        /* Multiple stream Gaussian mixture Initialization */
+        E_INFO("Using multi-stream GMM computation\n");
+        kbc->ms_mgau = ms_mgau_init(meanstr, varstr, varfloor, mixwstr, mixwfloor, TRUE,        /*Do precomputation */
+                                    senmgau, lambdafile,        /* lambda is not a standard option, so user need to specify it */
+                                    topn);
 
-    sen=ms_mgau_senone(kbc->ms_mgau);
+        sen = ms_mgau_senone(kbc->ms_mgau);
 
-    /* Verify senone parameters against model definition parameters */
-    if (kbc->mdef->n_sen != sen->n_sen)
-	E_FATAL("Model definition has %d senones; but #senone= %d\n",
-		kbc->mdef->n_sen, sen->n_sen);
-  }else {
-    E_FATAL("Feature should be either .semi. or .cont., is %s\n", senmgau);
-  }
+        /* Verify senone parameters against model definition parameters */
+        if (kbc->mdef->n_sen != sen->n_sen)
+            E_FATAL("Model definition has %d senones; but #senone= %d\n",
+                    kbc->mdef->n_sen, sen->n_sen);
+    }
+    else {
+        E_FATAL("Feature should be either .semi. or .cont., is %s\n",
+                senmgau);
+    }
 
 
-  /* STRUCTURE: Initialize the transition matrices */
-  if ((kbc->tmat = tmat_init (tmatstr, tmatfloor, REPORT_KBCORE)) == NULL)
-    E_FATAL("tmat_init (%s, %e) failed\n", tmatstr, tmatfloor);
-  
-  if(REPORT_KBCORE){
-    tmat_report(kbc->tmat);
-  }
-  
-  if (kbc->mdef && kbc->tmat) {
-    /* Verify transition matrices parameters against model definition parameters */
-    if (kbc->mdef->n_tmat != kbc->tmat->n_tmat)
-      E_FATAL("Mdef #tmat(%d) != tmatfile(%d)\n", kbc->mdef->n_tmat, kbc->tmat->n_tmat);
-    if (kbc->mdef->n_emit_state != kbc->tmat->n_state)
-      E_FATAL("Mdef #states(%d) != tmat #states(%d)\n",
-	      kbc->mdef->n_emit_state, kbc->tmat->n_state);
-  }
+    /* STRUCTURE: Initialize the transition matrices */
+    if ((kbc->tmat = tmat_init(tmatstr, tmatfloor, REPORT_KBCORE)) == NULL)
+        E_FATAL("tmat_init (%s, %e) failed\n", tmatstr, tmatfloor);
+
+    if (REPORT_KBCORE) {
+        tmat_report(kbc->tmat);
+    }
+
+    if (kbc->mdef && kbc->tmat) {
+        /* Verify transition matrices parameters against model definition parameters */
+        if (kbc->mdef->n_tmat != kbc->tmat->n_tmat)
+            E_FATAL("Mdef #tmat(%d) != tmatfile(%d)\n", kbc->mdef->n_tmat,
+                    kbc->tmat->n_tmat);
+        if (kbc->mdef->n_emit_state != kbc->tmat->n_state)
+            E_FATAL("Mdef #states(%d) != tmat #states(%d)\n",
+                    kbc->mdef->n_emit_state, kbc->tmat->n_state);
+    }
 
 }
 
-kbcore_t *New_kbcore()
+kbcore_t *
+New_kbcore()
 {
-  kbcore_t *kbc;
-  kbc = (kbcore_t *) ckd_calloc (1, sizeof(kbcore_t));
-  return kbc;
+    kbcore_t *kbc;
+    kbc = (kbcore_t *) ckd_calloc(1, sizeof(kbcore_t));
+    return kbc;
 }
-	
-kbcore_t *kbcore_init (float64 logbase,
-		       char *feattype,
-		       char *cmn,
-		       char *varnorm,
-		       char *agc,
-		       char *mdeffile,
-		       char *dictfile,
-		       char *fdictfile,
-		       char *compsep,
-		       char *lmfile,
-		       char *lmctlfile,
-		       char *lmdumpdir,
-		       char *fsgfile,
-		       char *fsgctlfile,
-		       char *fillpenfile,
-		       char *senmgau,
-		       float64 silprob,
-		       float64 fillprob,
-		       float64 langwt,
-		       float64 inspen,
-		       float64 uw,
-		       char *s3hmmdir,
-		       char *meanfile,
-		       char *varfile,
-		       float64 varfloor,
-		       char *mixwfile,
-		       float64 mixwfloor,
-		       char *subvqfile,
-		       char *gsfile,
-		       char *tmatfile,
-		       float64 tmatfloor
-		       )
+
+kbcore_t *
+kbcore_init(float64 logbase,
+            char *feattype,
+            char *cmn,
+            char *varnorm,
+            char *agc,
+            char *mdeffile,
+            char *dictfile,
+            char *fdictfile,
+            char *compsep,
+            char *lmfile,
+            char *lmctlfile,
+            char *lmdumpdir,
+            char *fsgfile,
+            char *fsgctlfile,
+            char *fillpenfile,
+            char *senmgau,
+            float64 silprob,
+            float64 fillprob,
+            float64 langwt,
+            float64 inspen,
+            float64 uw,
+            char *s3hmmdir,
+            char *meanfile,
+            char *varfile,
+            float64 varfloor,
+            char *mixwfile,
+            float64 mixwfloor,
+            char *subvqfile,
+            char *gsfile, char *tmatfile, float64 tmatfloor)
 {
     kbcore_t *kb;
     int i;
     s3cipid_t sil;
-    
+
     E_INFO("Begin Initialization of Core Models:\n");
-    
-    kb = (kbcore_t *) ckd_calloc (1, sizeof(kbcore_t));
+
+    kb = (kbcore_t *) ckd_calloc(1, sizeof(kbcore_t));
     kb->fcb = NULL;
     kb->mdef = NULL;
     kb->dict = NULL;
@@ -461,186 +466,202 @@ kbcore_t *kbcore_init (float64 logbase,
     kb->svq = NULL;
     kb->tmat = NULL;
 
-    
-    if(!logs3_init (logbase, REPORT_KBCORE,cmd_ln_int32 ("-log3table")))
-      E_FATAL("Error in logs3_init, exit\n");
 
-    if(REPORT_KBCORE){
-      logs3_report();
+    if (!logs3_init(logbase, REPORT_KBCORE, cmd_ln_int32("-log3table")))
+        E_FATAL("Error in logs3_init, exit\n");
+
+    if (REPORT_KBCORE) {
+        logs3_report();
     }
 
     if (!feattype)
-      E_FATAL("Please specified the feature type\n");
-    
+        E_FATAL("Please specified the feature type\n");
+
     if (feattype) {
-	if ((kb->fcb = feat_init (feattype, cmn, varnorm, agc, REPORT_KBCORE)) == NULL)
-	    E_FATAL("feat_init(%s) failed\n", feattype);
-	
-	E_INFO("%s\n",senmgau);
-	if(strcmp(senmgau,".cont.") == 0) {
-	  if (feat_n_stream(kb->fcb) != 1)
-	    E_FATAL("#Feature streams(%d) in the feature for continuous HMM!= 1\n", feat_n_stream(kb->fcb));
-	}else if(strcmp(senmgau,".semi.") == 0){
-	  if (feat_n_stream(kb->fcb) != 4)
-	    E_FATAL("#Feature streams(%d) in the feature for semi-continuous HMM!= 4\n", feat_n_stream(kb->fcb));
-	}else if(strcmp(senmgau,".s3cont.")==0){
+        if ((kb->fcb =
+             feat_init(feattype, cmn, varnorm, agc,
+                       REPORT_KBCORE)) == NULL)
+            E_FATAL("feat_init(%s) failed\n", feattype);
 
-	  E_WARN("Secret Mode .s3cont. is used!!\n");
-	}else if(strcmp(senmgau,".s2semi.")==0){
+        E_INFO("%s\n", senmgau);
+        if (strcmp(senmgau, ".cont.") == 0) {
+            if (feat_n_stream(kb->fcb) != 1)
+                E_FATAL
+                    ("#Feature streams(%d) in the feature for continuous HMM!= 1\n",
+                     feat_n_stream(kb->fcb));
+        }
+        else if (strcmp(senmgau, ".semi.") == 0) {
+            if (feat_n_stream(kb->fcb) != 4)
+                E_FATAL
+                    ("#Feature streams(%d) in the feature for semi-continuous HMM!= 4\n",
+                     feat_n_stream(kb->fcb));
+        }
+        else if (strcmp(senmgau, ".s3cont.") == 0) {
 
-	  E_WARN("Secret Mode .s2semi. is used!!\n");
-	}else{
-	  E_FATAL("Feature should be either .semi. or .cont.\n");
-	}
+            E_WARN("Secret Mode .s3cont. is used!!\n");
+        }
+        else if (strcmp(senmgau, ".s2semi.") == 0) {
+
+            E_WARN("Secret Mode .s2semi. is used!!\n");
+        }
+        else {
+            E_FATAL("Feature should be either .semi. or .cont.\n");
+        }
     }
-    
-    if(REPORT_KBCORE){
-      feat_report(kb->fcb);
+
+    if (REPORT_KBCORE) {
+        feat_report(kb->fcb);
     }
 
     /* Initialize sphinx 3 hmm */
-    s3_am_init(kb,
-	       s3hmmdir,
-	       mdeffile,
-	       meanfile,
-	       varfile,
-	       varfloor,
-	       mixwfile,
-	       mixwfloor,
-	       tmatfile,
-	       tmatfloor,
-	       senmgau,
-	       NULL,
-	       cmd_ln_int32("-topn") /* ARRRGH!! */
-	       );
-    
-    assert(kb->mdef!=NULL);
+    s3_am_init(kb, s3hmmdir, mdeffile, meanfile, varfile, varfloor, mixwfile, mixwfloor, tmatfile, tmatfloor, senmgau, NULL, cmd_ln_int32("-topn")      /* ARRRGH!! */
+        );
+
+    assert(kb->mdef != NULL);
 
     if (dictfile) {
-	if (! compsep)
-	    compsep = "";
-	else if ((compsep[0] != '\0') && (compsep[1] != '\0')) {
-	    E_FATAL("Compound word separator(%s) must be empty or single character string\n",
-		    compsep);
-	}
-	if ((kb->dict = dict_init (kb->mdef, dictfile, fdictfile, compsep[0],cmd_ln_int32("-lts_mismatch"),REPORT_KBCORE)) == NULL)
-	    E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
-		    fdictfile ? fdictfile : "", compsep);
-    }else{
-      E_FATAL("Dictionary file is not specified. \n");
+        if (!compsep)
+            compsep = "";
+        else if ((compsep[0] != '\0') && (compsep[1] != '\0')) {
+            E_FATAL
+                ("Compound word separator(%s) must be empty or single character string\n",
+                 compsep);
+        }
+        if ((kb->dict =
+             dict_init(kb->mdef, dictfile, fdictfile, compsep[0],
+                       cmd_ln_int32("-lts_mismatch"),
+                       REPORT_KBCORE)) == NULL)
+            E_FATAL("dict_init(%s,%s,%s) failed\n", dictfile,
+                    fdictfile ? fdictfile : "", compsep);
+    }
+    else {
+        E_FATAL("Dictionary file is not specified. \n");
     }
 
-    assert(kb->dict!=NULL);
-    if(REPORT_KBCORE) {
-      dict_report(kb->dict);
+    assert(kb->dict != NULL);
+    if (REPORT_KBCORE) {
+        dict_report(kb->dict);
     }
-    
-    if (kb->mgau){
-      if(subvqfile && gsfile){
-	E_FATAL("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
-      }
-      if (subvqfile) {
-	if ((kb->svq = subvq_init (subvqfile, varfloor, -1, kb->mgau)) == NULL)
-	  E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile, varfloor);
-      }
-      
-      if(gsfile) {
-	if((kb->gs=gs_read(gsfile))==NULL)
-	  E_FATAL("gs_read(%s) failed\n",gsfile);
-	
-	E_INFO("After reading the number of senones: %d\n",kb->gs->n_mgau);
-      }  
-      /* SVQ and GS-specific checking should be done */
-    }else{
-      E_INFO("Slow GMM computation is used, SVQ and GS will not be used\n");
+
+    if (kb->mgau) {
+        if (subvqfile && gsfile) {
+            E_FATAL
+                ("Currently there is no combination scheme of gs and svq in Gaussian Selection\n");
+        }
+        if (subvqfile) {
+            if ((kb->svq =
+                 subvq_init(subvqfile, varfloor, -1, kb->mgau)) == NULL)
+                E_FATAL("subvq_init (%s, %e, -1) failed\n", subvqfile,
+                        varfloor);
+        }
+
+        if (gsfile) {
+            if ((kb->gs = gs_read(gsfile)) == NULL)
+                E_FATAL("gs_read(%s) failed\n", gsfile);
+
+            E_INFO("After reading the number of senones: %d\n",
+                   kb->gs->n_mgau);
+        }
+        /* SVQ and GS-specific checking should be done */
+    }
+    else {
+        E_INFO
+            ("Slow GMM computation is used, SVQ and GS will not be used\n");
     }
 
     /* Two sore points here 
        1, lmset initialization should be handed to the search itself. This will make it 
        parrallel to the FSG code
      */
-    if( (lmfile||lmctlfile) && (fsgfile||fsgctlfile)){
-      E_FATAL("Only one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile) could be specified\n");
+    if ((lmfile || lmctlfile) && (fsgfile || fsgctlfile)) {
+        E_FATAL
+            ("Only one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile) could be specified\n");
     }
-    
-    if(!(lmfile||lmctlfile) && !(fsgfile||fsgctlfile)){
-      E_FATAL("Please specify one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile)\n");
+
+    if (!(lmfile || lmctlfile) && !(fsgfile || fsgctlfile)) {
+        E_FATAL
+            ("Please specify one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile)\n");
     }
 
     assert(kb->dict);
-    if(lmfile||lmctlfile){
-      kb->lmset=lmset_init(lmfile,
-			   lmctlfile,
-			   cmd_ln_str("-ctl_lm"), /* This two are ugly.*/
-			   cmd_ln_str("-lmname"),
-			   lmdumpdir,
-			   langwt,
-			   inspen,
-			   uw,
-			   kb->dict);
-      
-      /* CHECK: check whether LM has a start word and end word 
-	 Also make sure silences are unlinked. */
-      for(i=0;i<kb->lmset->n_lm;i++){
-	checkLMstartword(kb->lmset->lmarray[i],lmset_idx_to_name(kb->lmset,i));
+    if (lmfile || lmctlfile) {
+        kb->lmset = lmset_init(lmfile, lmctlfile, cmd_ln_str("-ctl_lm"),        /* This two are ugly. */
+                               cmd_ln_str("-lmname"),
+                               lmdumpdir, langwt, inspen, uw, kb->dict);
 
-	/*HACK! Only thing that is op_mode-specific. (Hopefully),
-	  op-mode name is also hard-wired. Evandro will kill me.  */
+        /* CHECK: check whether LM has a start word and end word 
+           Also make sure silences are unlinked. */
+        for (i = 0; i < kb->lmset->n_lm; i++) {
+            checkLMstartword(kb->lmset->lmarray[i],
+                             lmset_idx_to_name(kb->lmset, i));
 
-	if(cmd_ln_int32("-op_mode")==4||cmd_ln_int32("-op_mode")==5)
-	  unlinksilences(kb->lmset->lmarray[i],kb,kb->dict);
-      }
+            /*HACK! Only thing that is op_mode-specific. (Hopefully),
+               op-mode name is also hard-wired. Evandro will kill me.  */
 
-    }else if (fsgfile||fsgctlfile){
-       E_INFO("kbcore will not let the srch_fsg take care of initialization of the search. Hand it to srch_fsg.");
+            if (cmd_ln_int32("-op_mode") == 4
+                || cmd_ln_int32("-op_mode") == 5)
+                unlinksilences(kb->lmset->lmarray[i], kb, kb->dict);
+        }
+
     }
-    
-    if (fillpenfile ||kb->dict) {
-	if (! kb->dict)		/* Sic */
-	    E_FATAL("No dictionary for associating filler penalty file(%s)\n", fillpenfile);
-	
-	if ((kb->fillpen = fillpen_init (kb->dict, fillpenfile, silprob, fillprob,
-					 langwt, inspen)) == NULL)
-	    E_FATAL("fillpen_init(%s) failed\n", fillpenfile);
+    else if (fsgfile || fsgctlfile) {
+        E_INFO
+            ("kbcore will not let the srch_fsg take care of initialization of the search. Hand it to srch_fsg.");
     }
 
-    if(REPORT_KBCORE){
-      fillpen_report(kb->fillpen);
+    if (fillpenfile || kb->dict) {
+        if (!kb->dict)          /* Sic */
+            E_FATAL
+                ("No dictionary for associating filler penalty file(%s)\n",
+                 fillpenfile);
+
+        if ((kb->fillpen =
+             fillpen_init(kb->dict, fillpenfile, silprob, fillprob, langwt,
+                          inspen)) == NULL)
+            E_FATAL("fillpen_init(%s) failed\n", fillpenfile);
+    }
+
+    if (REPORT_KBCORE) {
+        fillpen_report(kb->fillpen);
     }
 
     assert(kb->tmat);
     /* CHECK: that HMM topology restrictions are not violated */
-    if (tmat_chk_1skip (kb->tmat) < 0)
-	E_FATAL("Transition matrices contain arcs skipping more than 1 state, not supported in s3.x's decode\n");
-    
+    if (tmat_chk_1skip(kb->tmat) < 0)
+        E_FATAL
+            ("Transition matrices contain arcs skipping more than 1 state, not supported in s3.x's decode\n");
+
     /* This should be removed and put into the search */
-    if (kb->mdef && kb->dict) {	/* Initialize dict2pid */
-	kb->dict2pid = dict2pid_build (kb->mdef, kb->dict,cmd_ln_int32("-composite"));
+    if (kb->mdef && kb->dict) { /* Initialize dict2pid */
+        kb->dict2pid =
+            dict2pid_build(kb->mdef, kb->dict, cmd_ln_int32("-composite"));
     }
-    
-    if(REPORT_KBCORE){
-      dict2pid_report(kb->dict2pid);
+
+    if (REPORT_KBCORE) {
+        dict2pid_report(kb->dict2pid);
     }
     /* ***************** Verifications ***************** */
-    if(REPORT_KBCORE)
-      E_INFO("Inside kbcore: Verifying models consistency ...... \n");
-    
+    if (REPORT_KBCORE)
+        E_INFO("Inside kbcore: Verifying models consistency ...... \n");
+
     if (kb->fcb && kb->mgau) {
-	/* Verify feature streams against gauden codebooks */
-	if (feat_stream_len(kb->fcb, 0) != mgau_veclen(kb->mgau))
-	    E_FATAL("Feature streamlen(%d) != mgau streamlen(%d)\n",
-		    feat_stream_len(kb->fcb, 0), mgau_veclen(kb->mgau));
+        /* Verify feature streams against gauden codebooks */
+        if (feat_stream_len(kb->fcb, 0) != mgau_veclen(kb->mgau))
+            E_FATAL("Feature streamlen(%d) != mgau streamlen(%d)\n",
+                    feat_stream_len(kb->fcb, 0), mgau_veclen(kb->mgau));
     }
-    
+
 
     /* CHECK: Verify whether the <s> and </s> is in the dictionary. */
-    if (NOT_S3WID(dict_startwid(kb->dict)) || NOT_S3WID(dict_finishwid(kb->dict)))
-	E_FATAL("%s or %s not in dictionary\n", S3_START_WORD, S3_FINISH_WORD);
+    if (NOT_S3WID(dict_startwid(kb->dict))
+        || NOT_S3WID(dict_finishwid(kb->dict)))
+        E_FATAL("%s or %s not in dictionary\n", S3_START_WORD,
+                S3_FINISH_WORD);
 
     /* CHECK: Verify whether <sil> is in the dictionary */
-    sil = mdef_silphone (kbcore_mdef (kb));
+    sil = mdef_silphone(kbcore_mdef(kb));
     if (NOT_S3CIPID(sil))
-      E_FATAL("Silence phone '%s' not in mdef\n", S3_SILENCE_CIPHONE);
+        E_FATAL("Silence phone '%s' not in mdef\n", S3_SILENCE_CIPHONE);
 
 
     E_INFO("End of Initialization of Core Models:\n");
@@ -648,65 +669,66 @@ kbcore_t *kbcore_init (float64 logbase,
 }
 
 /* RAH 4.19.01 free memory allocated within this module */
-void kbcore_free (kbcore_t *kbcore)
+void
+kbcore_free(kbcore_t * kbcore)
 {
-  if(kbcore->lmset){
-    lmset_free(kbcore->lmset);
-    kbcore->lmset=NULL;
-  }
-  
-  /* Clean up the dictionary stuff*/
-  if(kbcore->dict){
-    dict_free (kbcore->dict);
-    kbcore->dict=NULL;
-  }
+    if (kbcore->lmset) {
+        lmset_free(kbcore->lmset);
+        kbcore->lmset = NULL;
+    }
 
-  /* dict2pid */
-  if(kbcore->dict2pid){
-    dict2pid_free(kbcore->dict2pid);
-    kbcore->dict2pid=NULL;
-  }
+    /* Clean up the dictionary stuff */
+    if (kbcore->dict) {
+        dict_free(kbcore->dict);
+        kbcore->dict = NULL;
+    }
 
-  /* Clean up the mdef stuff */  
-  if(kbcore->mdef){
-    mdef_free (kbcore->mdef);
-    kbcore->mdef=NULL;
-  }
+    /* dict2pid */
+    if (kbcore->dict2pid) {
+        dict2pid_free(kbcore->dict2pid);
+        kbcore->dict2pid = NULL;
+    }
 
-  if(kbcore->fillpen){
-    fillpen_free (kbcore->fillpen);
-    kbcore->fillpen=NULL;
-  }
+    /* Clean up the mdef stuff */
+    if (kbcore->mdef) {
+        mdef_free(kbcore->mdef);
+        kbcore->mdef = NULL;
+    }
 
-  if(kbcore->tmat){
-    tmat_free (kbcore->tmat);
-    kbcore->tmat=NULL;
-  }
+    if (kbcore->fillpen) {
+        fillpen_free(kbcore->fillpen);
+        kbcore->fillpen = NULL;
+    }
 
-  if(kbcore->svq){
-    subvq_free (kbcore->svq);
-    kbcore->svq=NULL;
-  }
+    if (kbcore->tmat) {
+        tmat_free(kbcore->tmat);
+        kbcore->tmat = NULL;
+    }
 
-  if(kbcore->mgau){
-    mgau_free (kbcore->mgau);
-    kbcore->mgau=NULL;
-  }
+    if (kbcore->svq) {
+        subvq_free(kbcore->svq);
+        kbcore->svq = NULL;
+    }
 
-  if(kbcore->ms_mgau){
-    ms_mgau_free (kbcore->ms_mgau);
-    kbcore->ms_mgau=NULL;
-  }
+    if (kbcore->mgau) {
+        mgau_free(kbcore->mgau);
+        kbcore->mgau = NULL;
+    }
 
-  /* memory allocated in kbcore*/
-  if (kbcore->fcb){
-    feat_free (kbcore->fcb);
-    kbcore->fcb=NULL;
-  }
+    if (kbcore->ms_mgau) {
+        ms_mgau_free(kbcore->ms_mgau);
+        kbcore->ms_mgau = NULL;
+    }
 
-  /* Free the memory allocated by this module*/
-  logs_free();  
+    /* memory allocated in kbcore */
+    if (kbcore->fcb) {
+        feat_free(kbcore->fcb);
+        kbcore->fcb = NULL;
+    }
 
-  /* Free the object */
-  ckd_free ((void *) kbcore);
+    /* Free the memory allocated by this module */
+    logs_free();
+
+    /* Free the object */
+    ckd_free((void *) kbcore);
 }

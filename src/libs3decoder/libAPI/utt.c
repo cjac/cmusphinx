@@ -98,7 +98,7 @@
  */
 
 #ifdef WIN32
-#include <direct.h>		/* RAH, added */
+#include <direct.h>             /* RAH, added */
 #endif
 
 #include "kb.h"
@@ -111,52 +111,57 @@
  * Begin search at bigrams of <s>, backing off to unigrams; and fillers. 
  * Update kb->lextree_next_active with the list of active lextrees.
  */
-void utt_begin (kb_t *kb)
+void
+utt_begin(kb_t * kb)
 {
-  srch_utt_begin((srch_t*) kb->srch);
+    srch_utt_begin((srch_t *) kb->srch);
 }
 
-void utt_end (kb_t *kb)
+void
+utt_end(kb_t * kb)
 {
-  srch_utt_end((srch_t*) kb->srch);
+    srch_utt_end((srch_t *) kb->srch);
 }
 
-void utt_decode (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
+void
+utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
-  kb_t *kb;
-  kbcore_t *kbcore;
-  int32 num_decode_frame;
-  int32 total_frame;
-  stat_t *st;
-  
-  num_decode_frame=0;
-  E_INFO("Processing: %s\n", uttid);
+    kb_t *kb;
+    kbcore_t *kbcore;
+    int32 num_decode_frame;
+    int32 total_frame;
+    stat_t *st;
 
-  kb = (kb_t *) data;
-  kbcore = kb->kbcore;
-  kb->uttid = uttid;
-  st = kb->stat;
+    num_decode_frame = 0;
+    E_INFO("Processing: %s\n", uttid);
 
-  
-  /* Read mfc file and build feature vectors for entire utterance */
-  if((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile, 
-				    cmd_ln_str("-cepdir"), cmd_ln_str("-cepext"),
-				    sf, ef, kb->feat, S3_MAX_FRAMES)) < 0)
-    {
-      E_FATAL("Cannot read file %s. Forced exit\n",ur->uttfile);
+    kb = (kb_t *) data;
+    kbcore = kb->kbcore;
+    kb->uttid = uttid;
+    st = kb->stat;
+
+
+    /* Read mfc file and build feature vectors for entire utterance */
+    if ((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile,
+                                       cmd_ln_str("-cepdir"),
+                                       cmd_ln_str("-cepext"), sf, ef,
+                                       kb->feat, S3_MAX_FRAMES)) < 0) {
+        E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
     }
 
-  /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
-     could be provided inside the following function. 
-   */
-  if(ur->lmname!=NULL) srch_set_lm((srch_t*)kb->srch,ur->lmname);
-  if(ur->regmatname!=NULL) kb_setmllr(ur->regmatname,ur->cb2mllrname,kb);
+    /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
+       could be provided inside the following function. 
+     */
+    if (ur->lmname != NULL)
+        srch_set_lm((srch_t *) kb->srch, ur->lmname);
+    if (ur->regmatname != NULL)
+        kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
 
-  utt_begin (kb);
-  utt_decode_block(kb->feat,total_frame,&num_decode_frame,kb);
-  utt_end (kb);
+    utt_begin(kb);
+    utt_decode_block(kb->feat, total_frame, &num_decode_frame, kb);
+    utt_end(kb);
 
-  st->tot_fr += st->nfr;
+    st->tot_fr += st->nfr;
 }
 
 
@@ -168,21 +173,21 @@ void utt_decode (void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
  * is passed in.
  */
 
-void utt_decode_block (float ***block_feat,  /* Incoming block of featurevecs */
-		       int32 no_frm, /* No. of vecs in cepblock */
-		       int32 *curfrm,	     /* Utterance level index of
-						frames decoded so far */
-		       kb_t *kb  	     /* kb structure with all model
-						and decoder info */
-		       )
+void
+utt_decode_block(float ***block_feat,   /* Incoming block of featurevecs */
+                 int32 no_frm,  /* No. of vecs in cepblock */
+                 int32 * curfrm,        /* Utterance level index of
+                                           frames decoded so far */
+                 kb_t * kb      /* kb structure with all model
+                                   and decoder info */
+    )
 {
 
-  srch_t* s;
-  s=(srch_t*) kb->srch;
-  s->uttid = kb->uttid;
+    srch_t *s;
+    s = (srch_t *) kb->srch;
+    s->uttid = kb->uttid;
 
-  if(srch_utt_decode_blk(s,block_feat,no_frm,curfrm)==SRCH_FAILURE){
-    E_ERROR("srch_utt_decode_blk failed. \n");
-  }
+    if (srch_utt_decode_blk(s, block_feat, no_frm, curfrm) == SRCH_FAILURE) {
+        E_ERROR("srch_utt_decode_blk failed. \n");
+    }
 }
-

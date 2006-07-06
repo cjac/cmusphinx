@@ -86,134 +86,145 @@
 #include "ascr.h"
 
 
-ascr_t *ascr_init (int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq, int32 pl_win, int32 n_cisen)
+ascr_t *
+ascr_init(int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq,
+          int32 pl_win, int32 n_cisen)
 {
     ascr_t *ascr;
-    
-    ascr = (ascr_t *) ckd_calloc (1, sizeof(ascr_t));
-    ascr->senscr = (int32 *) ckd_calloc (n_sen + n_comsen, sizeof(int32));
+
+    ascr = (ascr_t *) ckd_calloc(1, sizeof(ascr_t));
+    ascr->senscr = (int32 *) ckd_calloc(n_sen + n_comsen, sizeof(int32));
     ascr->comsen = ascr->senscr + n_sen;
 
 
     /* MEMORY ALLOCATION : Active senones */
-    ascr->sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
-    ascr->rec_sen_active = (int32 *) ckd_calloc (n_sen, sizeof(int32));
-    ascr->ssid_active = (int32 *) ckd_calloc (n_sseq, sizeof(int32));
-    if(n_comsseq>0)
-      ascr->comssid_active = (int32 *) ckd_calloc (n_comsseq, sizeof(int32));
+    ascr->sen_active = (int32 *) ckd_calloc(n_sen, sizeof(int32));
+    ascr->rec_sen_active = (int32 *) ckd_calloc(n_sen, sizeof(int32));
+    ascr->ssid_active = (int32 *) ckd_calloc(n_sseq, sizeof(int32));
+    if (n_comsseq > 0)
+        ascr->comssid_active =
+            (int32 *) ckd_calloc(n_comsseq, sizeof(int32));
 
     /* MEMORY ALLOCATION : CI senones */
-    ascr->cache_ci_senscr=(int32**)ckd_calloc_2d(pl_win,n_cisen,sizeof(int32));
-    ascr->cache_best_list=(int32*)ckd_calloc(pl_win,sizeof(int32));
+    ascr->cache_ci_senscr =
+        (int32 **) ckd_calloc_2d(pl_win, n_cisen, sizeof(int32));
+    ascr->cache_best_list = (int32 *) ckd_calloc(pl_win, sizeof(int32));
 
-    ascr->n_sen=n_sen;
-    ascr->n_comsen=n_comsen;
-    ascr->n_sseq=n_sseq;
-    ascr->n_comsseq=n_comsseq;
-    ascr->pl_win=pl_win;
-    ascr->n_cisen=n_cisen;
+    ascr->n_sen = n_sen;
+    ascr->n_comsen = n_comsen;
+    ascr->n_sseq = n_sseq;
+    ascr->n_comsseq = n_comsseq;
+    ascr->pl_win = pl_win;
+    ascr->n_cisen = n_cisen;
     return ascr;
 }
 
-void ascr_report(ascr_t *a)
+void
+ascr_report(ascr_t * a)
 {
-  E_INFO_NOFN("Initialization of ascr_t, report:\n");
-  E_INFO_NOFN("No. of CI senone =%d \n",a->n_cisen);
-  E_INFO_NOFN("No. of senone = %d\n",a->n_sen);
-  E_INFO_NOFN("No. of composite senone = %d\n",a->n_comsen);
-  E_INFO_NOFN("No. of senone sequence = %d\n",a->n_sseq);
-  E_INFO_NOFN("No. of composite senone sequence=%d \n",a->n_comsseq);
-  E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
-  E_INFO_NOFN("Phoneme lookahead window = %d\n",a->pl_win);
-  E_INFO_NOFN("\n");
+    E_INFO_NOFN("Initialization of ascr_t, report:\n");
+    E_INFO_NOFN("No. of CI senone =%d \n", a->n_cisen);
+    E_INFO_NOFN("No. of senone = %d\n", a->n_sen);
+    E_INFO_NOFN("No. of composite senone = %d\n", a->n_comsen);
+    E_INFO_NOFN("No. of senone sequence = %d\n", a->n_sseq);
+    E_INFO_NOFN("No. of composite senone sequence=%d \n", a->n_comsseq);
+    E_INFO_NOFN("Parameters used in phoneme lookahead:\n");
+    E_INFO_NOFN("Phoneme lookahead window = %d\n", a->pl_win);
+    E_INFO_NOFN("\n");
 }
 
 /* Shift one frame. */
 /* get the CI sen scores for the t+pl_win'th frame (a slice) */
 
-void ascr_shift_one_cache_frame(ascr_t *a, int32 win_efv)
+void
+ascr_shift_one_cache_frame(ascr_t * a, int32 win_efv)
 {
-  int32 i,j;
-  for(i=0;i<win_efv-1;i++){
-    a->cache_best_list[i]=a->cache_best_list[i+1];
-    for(j=0;j<a->n_cisen;j++){
-      a->cache_ci_senscr[i][j]=a->cache_ci_senscr[i+1][j];
+    int32 i, j;
+    for (i = 0; i < win_efv - 1; i++) {
+        a->cache_best_list[i] = a->cache_best_list[i + 1];
+        for (j = 0; j < a->n_cisen; j++) {
+            a->cache_ci_senscr[i][j] = a->cache_ci_senscr[i + 1][j];
+        }
     }
-  }
 }
 
 /* Print the senscr now. 
  */
-void ascr_print_senscr(ascr_t *a)
+void
+ascr_print_senscr(ascr_t * a)
 {
-  int32 i;
-  
-  for(i=0;i<a->n_sen ;i++){
-    if(a->sen_active[i]){
-      E_INFO("ascr->senscr[%d], %d\n",i,a->senscr[i]);
-      if(a->senscr[i] >0)
-	E_WARN("Score of %d >0\n",i);
+    int32 i;
+
+    for (i = 0; i < a->n_sen; i++) {
+        if (a->sen_active[i]) {
+            E_INFO("ascr->senscr[%d], %d\n", i, a->senscr[i]);
+            if (a->senscr[i] > 0)
+                E_WARN("Score of %d >0\n", i);
+        }
     }
-  }
 
-  for(i=0;i<a->n_comsen ;i++){
-    if(a->comssid_active[i]){
-      E_INFO("ascr->comsen[%d], %d\n",i,a->comsen[i]);
-      if(a->comsen[i] >0)
-	E_WARN("Score of %d >0\n",i);
+    for (i = 0; i < a->n_comsen; i++) {
+        if (a->comssid_active[i]) {
+            E_INFO("ascr->comsen[%d], %d\n", i, a->comsen[i]);
+            if (a->comsen[i] > 0)
+                E_WARN("Score of %d >0\n", i);
+        }
     }
-  }
 }
 
 
-void ascr_free(ascr_t *a)
+void
+ascr_free(ascr_t * a)
 {
-  if(a){
-    if(a->senscr)
-      ckd_free(a->senscr);
+    if (a) {
+        if (a->senscr)
+            ckd_free(a->senscr);
 
-    if (a->sen_active)
-      ckd_free ((void *)a->sen_active);
+        if (a->sen_active)
+            ckd_free((void *) a->sen_active);
 
-    if (a->rec_sen_active)
-      ckd_free ((void *)a->rec_sen_active);
+        if (a->rec_sen_active)
+            ckd_free((void *) a->rec_sen_active);
 
-    if (a->ssid_active) 
-      ckd_free ((void *)a->ssid_active);
+        if (a->ssid_active)
+            ckd_free((void *) a->ssid_active);
 
-    if (a->comssid_active)
-      ckd_free ((void *)a->comssid_active);
+        if (a->comssid_active)
+            ckd_free((void *) a->comssid_active);
 
-    if (a->cache_ci_senscr) 
-      ckd_free_2d ((void **)a->cache_ci_senscr);
-    if(a->cache_best_list) 
-      ckd_free((void*) a->cache_best_list);
+        if (a->cache_ci_senscr)
+            ckd_free_2d((void **) a->cache_ci_senscr);
+        if (a->cache_best_list)
+            ckd_free((void *) a->cache_best_list);
 
-    ckd_free(a);
-  }
+        ckd_free(a);
+    }
 
 }
 
-void ascr_clear_sen_active(ascr_t *a)
+void
+ascr_clear_sen_active(ascr_t * a)
 {
-  assert(a);
-  assert(a->sen_active);
-  memset (a->sen_active, 0, a->n_sen * sizeof(int32));
+    assert(a);
+    assert(a->sen_active);
+    memset(a->sen_active, 0, a->n_sen * sizeof(int32));
 }
 
 
-void ascr_clear_ssid_active(ascr_t *a)
+void
+ascr_clear_ssid_active(ascr_t * a)
 {
-  assert(a);
-  assert(a->ssid_active);
-  memset (a->ssid_active, 0, a->n_sseq * sizeof(int32));
+    assert(a);
+    assert(a->ssid_active);
+    memset(a->ssid_active, 0, a->n_sseq * sizeof(int32));
 }
 
-void ascr_clear_comssid_active(ascr_t *a)
+void
+ascr_clear_comssid_active(ascr_t * a)
 {
-  assert(a);
-  if(a->n_comsseq>0){
-    assert(a->comssid_active);
-    memset (a->comssid_active, 0, a->n_comsseq * sizeof(int32));
-  }
+    assert(a);
+    if (a->n_comsseq > 0) {
+        assert(a->comssid_active);
+        memset(a->comssid_active, 0, a->n_comsseq * sizeof(int32));
+    }
 }

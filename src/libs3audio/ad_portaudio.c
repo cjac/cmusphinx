@@ -49,20 +49,21 @@
 #define QUIT(x)		{fprintf x; exit(-1);}
 
 
-ad_rec_t *ad_open_dev (const char *dev, int32 samples_per_sec)
+ad_rec_t *
+ad_open_dev(const char *dev, int32 samples_per_sec)
 {
     PABLIO_Stream *astream;
     ad_rec_t *adrec;
     PaError err;
 
     if ((err = OpenAudioStream(&astream, samples_per_sec, paInt16,
-			       PABLIO_READ | PABLIO_MONO))) {
-	fprintf(stderr, "OpenAudioStream failed: %d\n", err);
-	return NULL;
+                               PABLIO_READ | PABLIO_MONO))) {
+        fprintf(stderr, "OpenAudioStream failed: %d\n", err);
+        return NULL;
     }
 
     if ((adrec = calloc(1, sizeof(*adrec))) == NULL)
-	return NULL;
+        return NULL;
     adrec->astream = astream;
     adrec->sps = samples_per_sec;
     adrec->bps = sizeof(int16);
@@ -70,41 +71,47 @@ ad_rec_t *ad_open_dev (const char *dev, int32 samples_per_sec)
     return adrec;
 }
 
-ad_rec_t *ad_open_sps ( int32 sps )
+ad_rec_t *
+ad_open_sps(int32 sps)
 {
-    return ad_open_dev (DEFAULT_DEVICE, sps);
+    return ad_open_dev(DEFAULT_DEVICE, sps);
 }
 
 
-ad_rec_t *ad_open ( void )
+ad_rec_t *
+ad_open(void)
 {
     return ad_open_sps(DEFAULT_SAMPLES_PER_SEC);
 }
 
 
-int32 ad_start_rec (ad_rec_t *r)
+int32
+ad_start_rec(ad_rec_t * r)
 {
     return 0;
 }
 
 
-int32 ad_stop_rec (ad_rec_t *r)
+int32
+ad_stop_rec(ad_rec_t * r)
 {
     return 0;
 }
 
 
-int32 ad_read (ad_rec_t *r, int16 *buf, int32 max)
+int32
+ad_read(ad_rec_t * r, int16 * buf, int32 max)
 {
     if (r == NULL)
-	return -1;
+        return -1;
 
     ReadAudioStream(r->astream, buf, max);
     return max;
 }
 
 
-int32 ad_close (ad_rec_t *r)
+int32
+ad_close(ad_rec_t * r)
 {
     CloseAudioStream(r->astream);
     free(r);

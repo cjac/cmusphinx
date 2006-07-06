@@ -59,251 +59,253 @@
 #include <stdio.h>
 #include "gs.h"
 
-int gs_free(gs_t* gs);
+int gs_free(gs_t * gs);
 
-int32 gs_fread_int32(gs_t *gs)
+int32
+gs_fread_int32(gs_t * gs)
 {
-  int32 val;
-  if(fread (&val, sizeof(int32), 1, gs->fp) != 1)
-     E_FATAL("fread failed\n");
-  return(val);
+    int32 val;
+    if (fread(&val, sizeof(int32), 1, gs->fp) != 1)
+        E_FATAL("fread failed\n");
+    return (val);
 }
 
-float32 gs_fread_float32(gs_t *gs)
+float32
+gs_fread_float32(gs_t * gs)
 {
-  float32 val;
-  if(fread (&val, sizeof(float32), 1, gs->fp) != 1)
-     E_FATAL("fread failed\n");
-  return(val);
+    float32 val;
+    if (fread(&val, sizeof(float32), 1, gs->fp) != 1)
+        E_FATAL("fread failed\n");
+    return (val);
 }
 
-void gs_fread_bitvec_t(bitvec_t val,gs_t *gs)
+void
+gs_fread_bitvec_t(bitvec_t val, gs_t * gs)
 {
-  if(fread (val, gs->n_mbyte, 1, gs->fp) != 1)
-     E_FATAL("fread failed\n");
+    if (fread(val, gs->n_mbyte, 1, gs->fp) != 1)
+        E_FATAL("fread failed\n");
 }
 
-int gs_display(char *file,gs_t *gs)
+int
+gs_display(char *file, gs_t * gs)
 {
-  int32 i;
-  int32 code_id;
-  int32 m_id,s_id,c_id;
-  float32 tmp;
-  bitvec_t bv;
+    int32 i;
+    int32 code_id;
+    int32 m_id, s_id, c_id;
+    float32 tmp;
+    bitvec_t bv;
 
-  E_INFO("Reading gaussian selector map: %s\n", file);
-  gs = (gs_t *) ckd_calloc (1, sizeof(gs_t));
+    E_INFO("Reading gaussian selector map: %s\n", file);
+    gs = (gs_t *) ckd_calloc(1, sizeof(gs_t));
 
-  if((gs->fp = fopen(file,"rb"))==NULL)
-    E_FATAL("fopen(%s,rb) failed\n",file);
+    if ((gs->fp = fopen(file, "rb")) == NULL)
+        E_FATAL("fopen(%s,rb) failed\n", file);
 
-  gs->n_mgau=gs_fread_int32(gs);
+    gs->n_mgau = gs_fread_int32(gs);
 
-  E_INFO("The number of mixtures of gaussian: %d\n", gs->n_mgau);
-  gs->n_feat=gs_fread_int32(gs);
-  E_INFO("The number of features stream: %d\n", gs->n_feat);
-  gs->n_density=gs_fread_int32(gs);
-  E_INFO("The number of density: %d\n", gs->n_density);
-  gs->n_code=gs_fread_int32(gs);
-  E_INFO("The number of code word: %d\n", gs->n_code);
-  gs->n_featlen=gs_fread_int32(gs);
-  E_INFO("The feature length: %d\n", gs->n_featlen);
+    E_INFO("The number of mixtures of gaussian: %d\n", gs->n_mgau);
+    gs->n_feat = gs_fread_int32(gs);
+    E_INFO("The number of features stream: %d\n", gs->n_feat);
+    gs->n_density = gs_fread_int32(gs);
+    E_INFO("The number of density: %d\n", gs->n_density);
+    gs->n_code = gs_fread_int32(gs);
+    E_INFO("The number of code word: %d\n", gs->n_code);
+    gs->n_featlen = gs_fread_int32(gs);
+    E_INFO("The feature length: %d\n", gs->n_featlen);
 
-  gs->n_mbyte=bitvec_uint32size(gs->n_density)*sizeof(uint32);
-  E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
+    gs->n_mbyte = bitvec_uint32size(gs->n_density) * sizeof(uint32);
+    E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
 
-  /* allocate the bit vector here */
-  bv=bitvec_alloc(gs->n_density);
+    /* allocate the bit vector here */
+    bv = bitvec_alloc(gs->n_density);
 
-  /*  for(i=0;i<gs->n_code;i++)*/
-  for(code_id=0;code_id<gs->n_code;code_id++)
-    {
-      printf("Code idx: %d\n",code_id);
-      for (c_id=0;c_id<gs->n_featlen;c_id++)
-	{
-	  tmp=gs_fread_float32(gs);
-	  printf("%f ",tmp);
-	}
-      printf("\n");
-      for(m_id=0;m_id<gs->n_mgau;m_id++)
-	{
-	  for(s_id=0;s_id<gs->n_feat;s_id++)
-	    {
-	      /*The writer currently doesn't support the byte order*/
-	      gs_fread_bitvec_t(bv,gs);
-	      printf("%d %d ",m_id,s_id);
+    /*  for(i=0;i<gs->n_code;i++) */
+    for (code_id = 0; code_id < gs->n_code; code_id++) {
+        printf("Code idx: %d\n", code_id);
+        for (c_id = 0; c_id < gs->n_featlen; c_id++) {
+            tmp = gs_fread_float32(gs);
+            printf("%f ", tmp);
+        }
+        printf("\n");
+        for (m_id = 0; m_id < gs->n_mgau; m_id++) {
+            for (s_id = 0; s_id < gs->n_feat; s_id++) {
+                /*The writer currently doesn't support the byte order */
+                gs_fread_bitvec_t(bv, gs);
+                printf("%d %d ", m_id, s_id);
 
-	      for(i=0;i<gs->n_density;i++)
-		{
-		  if(bitvec_is_set(bv,i))
-		    {
-		      printf("%d ",i);
-		    }
-		}
-	      printf("\n");
-	    }
-	}
+                for (i = 0; i < gs->n_density; i++) {
+                    if (bitvec_is_set(bv, i)) {
+                        printf("%d ", i);
+                    }
+                }
+                printf("\n");
+            }
+        }
     }
 
-  printf("\n");
-  /*  bitvec_free(bv);*/
-  /* destroy the bit vector here */
-  
-  gs_free(gs);
-  return 1;
+    printf("\n");
+    /*  bitvec_free(bv); */
+    /* destroy the bit vector here */
+
+    gs_free(gs);
+    return 1;
 }
 
-gs_t* gs_read(char *file)
+gs_t *
+gs_read(char *file)
 {
 
-  int32 code_id;
-  int32 m_id,s_id,c_id;
-  bitvec_t bv;
-  gs_t* gs;
+    int32 code_id;
+    int32 m_id, s_id, c_id;
+    bitvec_t bv;
+    gs_t *gs;
 
-  E_INFO("Reading gaussian selector map: %s\n", file);
-  gs = (gs_t *) ckd_calloc (1, sizeof(gs_t));
-  if(gs==NULL)
-    E_FATAL("Cannot allocate gs\n");
+    E_INFO("Reading gaussian selector map: %s\n", file);
+    gs = (gs_t *) ckd_calloc(1, sizeof(gs_t));
+    if (gs == NULL)
+        E_FATAL("Cannot allocate gs\n");
 
-  if((gs->fp = fopen(file,"rb"))==NULL)
-    E_FATAL("gs_read(%s,rb) failed\n",file);
+    if ((gs->fp = fopen(file, "rb")) == NULL)
+        E_FATAL("gs_read(%s,rb) failed\n", file);
 
-  gs->n_mgau=gs_fread_int32(gs);
+    gs->n_mgau = gs_fread_int32(gs);
 
-  E_INFO("The number of mixtures of gaussian: %d\n", gs->n_mgau);
-  gs->n_feat=gs_fread_int32(gs);
-  E_INFO("The number of features stream: %d\n", gs->n_feat);
-  gs->n_density=gs_fread_int32(gs);
-  E_INFO("The number of density: %d\n", gs->n_density);
-  gs->n_code=gs_fread_int32(gs);
-  E_INFO("The number of code word: %d\n", gs->n_code);
-  gs->n_featlen=gs_fread_int32(gs);
-  E_INFO("The feature length: %d\n", gs->n_featlen);
+    E_INFO("The number of mixtures of gaussian: %d\n", gs->n_mgau);
+    gs->n_feat = gs_fread_int32(gs);
+    E_INFO("The number of features stream: %d\n", gs->n_feat);
+    gs->n_density = gs_fread_int32(gs);
+    E_INFO("The number of density: %d\n", gs->n_density);
+    gs->n_code = gs_fread_int32(gs);
+    E_INFO("The number of code word: %d\n", gs->n_code);
+    gs->n_featlen = gs_fread_int32(gs);
+    E_INFO("The feature length: %d\n", gs->n_featlen);
 
-  gs->n_mbyte=bitvec_uint32size(gs->n_density)*sizeof(uint32);
-  E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
+    gs->n_mbyte = bitvec_uint32size(gs->n_density) * sizeof(uint32);
+    E_INFO("The number of byte to read: %d\n", gs->n_mbyte);
 
-  /* allocate the bit vector here */
-  bv=bitvec_alloc(gs->n_density);
-  
-  
-  /* allocate memory for the data structure */
-  /* n_code * n_featlen */
-  gs->codeword=(float32 **) ckd_calloc_2d (gs->n_code,gs->n_featlen,sizeof(float32));
-  /* n_mgau * n_feat * n_code */
-  /*Hack ! assume feature stream to be only 1 */
-  gs->codemap=(uint32 ***) ckd_calloc_3d (gs->n_mgau,gs->n_feat,gs->n_code,sizeof(uint32));
-  gs->mgau_sl=(int32 *) ckd_calloc(gs->n_density+1,sizeof(int32));
+    /* allocate the bit vector here */
+    bv = bitvec_alloc(gs->n_density);
 
-  for(code_id=0;code_id<gs->n_code;code_id++)
-    {
-      for (c_id=0;c_id<gs->n_featlen;c_id++)
-	{
-	  gs->codeword[code_id][c_id]=gs_fread_float32(gs);
-	}
-      for(m_id=0;m_id<gs->n_mgau;m_id++)
-	{
-	  for(s_id=0;s_id<gs->n_feat;s_id++)
-	    {
-	      /*The writer currently doesn't support the byte order*/
-	      gs_fread_bitvec_t(bv,gs);
-	      gs->codemap[m_id][s_id][code_id]=*bv;
-	    }
-	}
+
+    /* allocate memory for the data structure */
+    /* n_code * n_featlen */
+    gs->codeword =
+        (float32 **) ckd_calloc_2d(gs->n_code, gs->n_featlen,
+                                   sizeof(float32));
+    /* n_mgau * n_feat * n_code */
+    /*Hack ! assume feature stream to be only 1 */
+    gs->codemap =
+        (uint32 ***) ckd_calloc_3d(gs->n_mgau, gs->n_feat, gs->n_code,
+                                   sizeof(uint32));
+    gs->mgau_sl = (int32 *) ckd_calloc(gs->n_density + 1, sizeof(int32));
+
+    for (code_id = 0; code_id < gs->n_code; code_id++) {
+        for (c_id = 0; c_id < gs->n_featlen; c_id++) {
+            gs->codeword[code_id][c_id] = gs_fread_float32(gs);
+        }
+        for (m_id = 0; m_id < gs->n_mgau; m_id++) {
+            for (s_id = 0; s_id < gs->n_feat; s_id++) {
+                /*The writer currently doesn't support the byte order */
+                gs_fread_bitvec_t(bv, gs);
+                gs->codemap[m_id][s_id][code_id] = *bv;
+            }
+        }
     }
-  return gs;
+    return gs;
 }
 
 
-int32 gc_compute_closest_cw (gs_t *gs, float32 *feat)
+int32
+gc_compute_closest_cw(gs_t * gs, float32 * feat)
 {
-  int32 codeid,bst_codeid;
-  float64 diff1, diff2, tmp1, tmp2,  min;
-  int32 cid;
-  float64 min_density;
-  /*E_INFO("Compute the closest Code word\n");*/
-  min_density = logs3_to_log (S3_LOGPROB_ZERO);
+    int32 codeid, bst_codeid;
+    float64 diff1, diff2, tmp1, tmp2, min;
+    int32 cid;
+    float64 min_density;
+    /*E_INFO("Compute the closest Code word\n"); */
+    min_density = logs3_to_log(S3_LOGPROB_ZERO);
 
-  bst_codeid=0;
-  min=MAX_POS_FLOAT64;
-  
-  for(codeid=0; codeid< gs->n_code ;codeid+=2){
-      tmp1=0;
-      tmp2=0;
+    bst_codeid = 0;
+    min = MAX_POS_FLOAT64;
 
-      for(cid=0;cid<gs->n_featlen ; cid++){
-	  diff1= feat[cid] - (gs->codeword[codeid][cid]);
-	  tmp1+=diff1*diff1;
+    for (codeid = 0; codeid < gs->n_code; codeid += 2) {
+        tmp1 = 0;
+        tmp2 = 0;
 
-	  diff2= feat[cid] - (gs->codeword[codeid+1][cid]);
-	  tmp2+=diff2*diff2;
-      }
+        for (cid = 0; cid < gs->n_featlen; cid++) {
+            diff1 = feat[cid] - (gs->codeword[codeid][cid]);
+            tmp1 += diff1 * diff1;
 
-      if(tmp1< min){
-	min=tmp1;
-	bst_codeid=codeid;
-      }
+            diff2 = feat[cid] - (gs->codeword[codeid + 1][cid]);
+            tmp2 += diff2 * diff2;
+        }
 
-      if(tmp2< min){
-	min=tmp2;
-	bst_codeid=codeid+1;
-      }
+        if (tmp1 < min) {
+            min = tmp1;
+            bst_codeid = codeid;
+        }
+
+        if (tmp2 < min) {
+            min = tmp2;
+            bst_codeid = codeid + 1;
+        }
     }
-  return bst_codeid;
+    return bst_codeid;
 }
 
 
 /* Return the number of gaussians computed */
-int32 gs_mgau_shortlist(gs_t *gs, int m, int n,float32 *feat,int bst_codeid)
+int32
+gs_mgau_shortlist(gs_t * gs, int m, int n, float32 * feat, int bst_codeid)
 {
-  uint32 map;
-  int32 bit_id;
-  int32 nc;
-  nc=0;
+    uint32 map;
+    int32 bit_id;
+    int32 nc;
+    nc = 0;
 
-  map=0;
-  map=gs->codemap[m][0][bst_codeid];
+    map = 0;
+    map = gs->codemap[m][0][bst_codeid];
 
 #if 0
-  E_INFO("The map is %u, the length of gaussian %d\n",map,n);
+    E_INFO("The map is %u, the length of gaussian %d\n", map, n);
 #endif
 
-  for(bit_id=0;bit_id<n;bit_id++)
-    {
-      if(map & (1 << bit_id))
-	gs->mgau_sl[nc++]=bit_id;
+    for (bit_id = 0; bit_id < n; bit_id++) {
+        if (map & (1 << bit_id))
+            gs->mgau_sl[nc++] = bit_id;
     }
-  gs->mgau_sl[nc]=-1;
+    gs->mgau_sl[nc] = -1;
 
-  if(nc==0){
-    /* 20040222 ARCHAN : added to safe guard Gaussian Selection anomality */
-    /* Special case when the number of components is smaller than the max. */
-    /* This happens when zero vectors were removed from the codebook. */
+    if (nc == 0) {
+        /* 20040222 ARCHAN : added to safe guard Gaussian Selection anomality */
+        /* Special case when the number of components is smaller than the max. */
+        /* This happens when zero vectors were removed from the codebook. */
 
-    for(bit_id=0;bit_id<n;bit_id++)
-      {
-	gs->mgau_sl[nc++]=bit_id;
-      }
-    gs->mgau_sl[nc]=-1;
-  }
+        for (bit_id = 0; bit_id < n; bit_id++) {
+            gs->mgau_sl[nc++] = bit_id;
+        }
+        gs->mgau_sl[nc] = -1;
+    }
 
-  if(nc==0){
-    E_INFO("No active gaussian found in senone %d, with num. component = %d\n",m,n);
-  }
-  return nc;
+    if (nc == 0) {
+        E_INFO
+            ("No active gaussian found in senone %d, with num. component = %d\n",
+             m, n);
+    }
+    return nc;
 
 }
 
-int32 gs_delete(char *file)
+int32
+gs_delete(char *file)
 {
-  return 1;
+    return 1;
 }
 
-int gs_free(gs_t* gs)
+int
+gs_free(gs_t * gs)
 {
-  fclose(gs->fp);
-  free(gs);
-  return 1;
+    fclose(gs->fp);
+    free(gs);
+    return 1;
 }
-

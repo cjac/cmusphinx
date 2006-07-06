@@ -95,115 +95,121 @@
 
 static arg_t arg[] = {
 
-  common_application_properties_command_line_macro()
-  { "-i",
-    ARG_INT32,
-    NUM_COEFF,
-    "Number of coefficients in the feature vector."},
-  { "-d",
-    ARG_INT32,
-    DISPLAY_SIZE,
-    "Number of displayed coefficients."},
-  { "-header",
-    ARG_INT32,
-    "0",
-    "Whether header is shown."},
-  { "-describe",
-    ARG_INT32,
-    "0",
-    "Whether description will be shown."},
-  { "-b",
-    ARG_INT32,
-    "0",
-    "The beginning frame 0-based."},
-  { "-e",
-    ARG_INT32,
-    "2147483647",
-    "The ending frame."},
-  { "-f",
-    ARG_STRING,
-    NULL,
-    "Input feature file."},
-  { NULL, ARG_INT32,  NULL, NULL }
+    common_application_properties_command_line_macro(){"-i",
+                                                       ARG_INT32,
+                                                       NUM_COEFF,
+                                                       "Number of coefficients in the feature vector."},
+    {"-d",
+     ARG_INT32,
+     DISPLAY_SIZE,
+     "Number of displayed coefficients."},
+    {"-header",
+     ARG_INT32,
+     "0",
+     "Whether header is shown."},
+    {"-describe",
+     ARG_INT32,
+     "0",
+     "Whether description will be shown."},
+    {"-b",
+     ARG_INT32,
+     "0",
+     "The beginning frame 0-based."},
+    {"-e",
+     ARG_INT32,
+     "2147483647",
+     "The ending frame."},
+    {"-f",
+     ARG_STRING,
+     NULL,
+     "Input feature file."},
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 int read_cep(char *file, float ***cep, int *nframes, int numcep);
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-  int i, j, offset;
-  int32 noframe, vsize, dsize, column;
-  int32 frm_begin, frm_end;
-  int is_header, is_describe;
-  float *z, **cep;
-  char* cepfile;
-  
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
+    int i, j, offset;
+    int32 noframe, vsize, dsize, column;
+    int32 frm_begin, frm_end;
+    int is_header, is_describe;
+    float *z, **cep;
+    char *cepfile;
 
-  vsize = cmd_ln_int32("-i");
-  dsize = cmd_ln_int32("-d");
-  frm_begin = cmd_ln_int32("-b");  
-  frm_end = cmd_ln_int32("-e");  
-  is_header = cmd_ln_int32("-header");
-  is_describe = cmd_ln_int32("-describe");
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
-  if (vsize < 0) E_FATAL("-i : Input vector size should be larger than 0.\n");
-  if (dsize < 0) E_FATAL("-d : Column size should be larger than 0\n");
-  if (frm_begin < 0) E_FATAL("-b : Beginning frame should be larger than 0\n");
-  /* The following condition is redundant
-   * if (frm_end < 0) E_FATAL("-e : Ending frame should be larger than 0\n");
-   */
-  if (frm_begin >= frm_end) E_FATAL("Ending frame (-e) should be larger than beginning frame (-b).\n");
-  
-  if ((cepfile = cmd_ln_str("-f")) == NULL){
-    E_FATAL("Input file was not specified with (-f)\n");
-  }
-  if (read_cep(cepfile, &cep, &noframe, vsize) == IO_ERR)
-    E_FATAL("ERROR opening %s for reading\n", cepfile);
-      
-  z = cep[0];
+    vsize = cmd_ln_int32("-i");
+    dsize = cmd_ln_int32("-d");
+    frm_begin = cmd_ln_int32("-b");
+    frm_end = cmd_ln_int32("-e");
+    is_header = cmd_ln_int32("-header");
+    is_describe = cmd_ln_int32("-describe");
 
-  offset = 0;
-  column = (vsize > dsize) ? dsize : vsize;
-  frm_end = (frm_end> noframe) ? noframe : frm_end;
+    if (vsize < 0)
+        E_FATAL("-i : Input vector size should be larger than 0.\n");
+    if (dsize < 0)
+        E_FATAL("-d : Column size should be larger than 0\n");
+    if (frm_begin < 0)
+        E_FATAL("-b : Beginning frame should be larger than 0\n");
+    /* The following condition is redundant
+     * if (frm_end < 0) E_FATAL("-e : Ending frame should be larger than 0\n");
+     */
+    if (frm_begin >= frm_end)
+        E_FATAL
+            ("Ending frame (-e) should be larger than beginning frame (-b).\n");
 
-  E_INFO("Displaying %d out of %d columns per frame\n", column, vsize);
-  E_INFO("Total %d frames\n\n", noframe);
-
-  /* This part should be moved to a special library if this file is
-     longer than 300 lines. */
-
-  if (is_header) {
-    if (is_describe) {
-      printf("\n%6s", "frame#:");
+    if ((cepfile = cmd_ln_str("-f")) == NULL) {
+        E_FATAL("Input file was not specified with (-f)\n");
     }
-      
-    for (j = 0; j < column; ++j) {
-      printf("%3s%3d%s ", "c[", j, "]");
-    }
-    printf("\n");
-  }
+    if (read_cep(cepfile, &cep, &noframe, vsize) == IO_ERR)
+        E_FATAL("ERROR opening %s for reading\n", cepfile);
 
-  offset += frm_begin * vsize;
-  for (i = frm_begin; i < frm_end; ++i) {
-    if (is_describe) {
-      printf("%6d:", i);
-    }
-    for (j = 0; j < column; ++j)
-      printf("%7.3f ", z[offset + j]);
-    printf("\n");
-      
-    offset += vsize;
-  }
-  fflush(stdout);
-  cmd_ln_appl_exit();
+    z = cep[0];
 
-  return(IO_SUCCESS);
+    offset = 0;
+    column = (vsize > dsize) ? dsize : vsize;
+    frm_end = (frm_end > noframe) ? noframe : frm_end;
+
+    E_INFO("Displaying %d out of %d columns per frame\n", column, vsize);
+    E_INFO("Total %d frames\n\n", noframe);
+
+    /* This part should be moved to a special library if this file is
+       longer than 300 lines. */
+
+    if (is_header) {
+        if (is_describe) {
+            printf("\n%6s", "frame#:");
+        }
+
+        for (j = 0; j < column; ++j) {
+            printf("%3s%3d%s ", "c[", j, "]");
+        }
+        printf("\n");
+    }
+
+    offset += frm_begin * vsize;
+    for (i = frm_begin; i < frm_end; ++i) {
+        if (is_describe) {
+            printf("%6d:", i);
+        }
+        for (j = 0; j < column; ++j)
+            printf("%7.3f ", z[offset + j]);
+        printf("\n");
+
+        offset += vsize;
+    }
+    fflush(stdout);
+    cmd_ln_appl_exit();
+
+    return (IO_SUCCESS);
 
 }
 
-int read_cep(char *file, float***cep, int *numframes, int cepsize)
+int
+read_cep(char *file, float ***cep, int *numframes, int cepsize)
 {
     FILE *fp;
     int n_float;
@@ -217,62 +223,64 @@ int read_cep(char *file, float***cep, int *numframes, int cepsize)
     }
 
     if ((fp = fopen(file, "rb")) == NULL) {
-	printf("fopen(%s, rb) failed\n", file);
-	return IO_ERR;
+        printf("fopen(%s, rb) failed\n", file);
+        return IO_ERR;
     }
-    
+
     /* Read #floats in header */
     if (fread(&n_float, sizeof(int), 1, fp) != 1) {
-	fclose (fp);
-	return IO_ERR;
+        fclose(fp);
+        return IO_ERR;
     }
-    
+
     /* Check if n_float matches file size */
     byterev = FALSE;
-    if ((int)(n_float*sizeof(float) + 4) != statbuf.st_size) {
-	n = n_float;
-	SWAP_INT32(&n);
+    if ((int) (n_float * sizeof(float) + 4) != statbuf.st_size) {
+        n = n_float;
+        SWAP_INT32(&n);
 
-	if ((int)(n*sizeof(float) + 4) != statbuf.st_size) {
-	    printf("Header size field: %d(%08x); filesize: %d(%08x)\n",
-		    n_float, n_float, (int)statbuf.st_size, (int)statbuf.st_size);
-	    fclose (fp);
-	    return IO_ERR;
-	}
+        if ((int) (n * sizeof(float) + 4) != statbuf.st_size) {
+            printf("Header size field: %d(%08x); filesize: %d(%08x)\n",
+                   n_float, n_float, (int) statbuf.st_size,
+                   (int) statbuf.st_size);
+            fclose(fp);
+            return IO_ERR;
+        }
 
-	n_float = n;
-	byterev = TRUE;
+        n_float = n;
+        byterev = TRUE;
     }
     if (n_float <= 0) {
-	printf("Header size field: %d\n",  n_float);
-	fclose (fp);
-	return IO_ERR;
+        printf("Header size field: %d\n", n_float);
+        fclose(fp);
+        return IO_ERR;
     }
-    
+
     /* n = #frames of input */
-    n = n_float/cepsize;
+    n = n_float / cepsize;
     if (n * cepsize != n_float) {
-	printf("Header size field: %d; not multiple of %d\n", n_float, cepsize);
-	fclose (fp);
-	return IO_ERR;
+        printf("Header size field: %d; not multiple of %d\n", n_float,
+               cepsize);
+        fclose(fp);
+        return IO_ERR;
     }
     sf = 0;
     ef = n;
 
-    mfcbuf = (float **) ckd_calloc_2d (n, cepsize, sizeof(float32));
-    
+    mfcbuf = (float **) ckd_calloc_2d(n, cepsize, sizeof(float32));
+
     /* Read mfc data and byteswap if necessary */
     n_float = n * cepsize;
-    if ((int)fread (mfcbuf[0], sizeof(float), n_float, fp) != n_float) {
-	printf("Error reading mfc data\n");
-	fclose (fp);
-	return IO_ERR;
+    if ((int) fread(mfcbuf[0], sizeof(float), n_float, fp) != n_float) {
+        printf("Error reading mfc data\n");
+        fclose(fp);
+        return IO_ERR;
     }
     if (byterev) {
-      for (i = 0; i < n_float; i++)
-	SWAP_FLOAT32(&(mfcbuf[0][i]));
+        for (i = 0; i < n_float; i++)
+            SWAP_FLOAT32(&(mfcbuf[0][i]));
     }
-    fclose (fp);
+    fclose(fp);
 
     *numframes = n;
     *cep = mfcbuf;

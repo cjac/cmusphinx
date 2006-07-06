@@ -63,107 +63,109 @@
 #include "kb.h"
 #include "corpus.h"
 #include "cmdln_macro.h"
- 
+
 static arg_t arg[] = {
-  log_table_command_line_macro()
-  cepstral_to_feature_command_line_macro()
-  acoustic_model_command_line_macro()
-  speaker_adaptation_command_line_macro()
-  language_model_command_line_macro()
-  dictionary_command_line_macro()
-  phoneme_lookahead_command_line_macro()
-  histogram_pruning_command_line_macro()
-  fast_GMM_computation_command_line_macro()
-  common_filler_properties_command_line_macro()
-  common_s3x_beam_properties_command_line_macro()
-  common_application_properties_command_line_macro()
-  control_file_handling_command_line_macro()
-  hypothesis_file_handling_command_line_macro() 
-  score_handling_command_line_macro()
-  output_lattice_handling_command_line_macro()
-  dag_handling_command_line_macro()
-  second_stage_dag_handling_command_line_macro()
-  input_lattice_handling_command_line_macro() 
-  flat_fwd_multiplex_treatment_command_line_macro() 
-  flat_fwd_debugging_command_line_macro() 
-  history_table_command_line_macro()
+    log_table_command_line_macro()
+        cepstral_to_feature_command_line_macro()
+        acoustic_model_command_line_macro()
+        speaker_adaptation_command_line_macro()
+        language_model_command_line_macro()
+        dictionary_command_line_macro()
+        phoneme_lookahead_command_line_macro()
+        histogram_pruning_command_line_macro()
+        fast_GMM_computation_command_line_macro()
+        common_filler_properties_command_line_macro()
+        common_s3x_beam_properties_command_line_macro()
+        common_application_properties_command_line_macro()
+        control_file_handling_command_line_macro()
+        hypothesis_file_handling_command_line_macro()
+        score_handling_command_line_macro()
+        output_lattice_handling_command_line_macro()
+        dag_handling_command_line_macro()
+        second_stage_dag_handling_command_line_macro()
+        input_lattice_handling_command_line_macro()
+        flat_fwd_multiplex_treatment_command_line_macro()
+        flat_fwd_debugging_command_line_macro()
+        history_table_command_line_macro()
 
-  cepstral_input_handling_command_line_macro()
-  decode_specific_command_line_macro()
-  search_specific_command_line_macro()
-  search_modeTST_specific_command_line_macro()
-  search_modeWST_specific_command_line_macro()
-  control_lm_mllr_file_command_line_macro()
-  finite_state_grammar_command_line_macro()
-  phone_insertion_penalty_command_line_macro()
+        cepstral_input_handling_command_line_macro()
+        decode_specific_command_line_macro()
+        search_specific_command_line_macro()
+        search_modeTST_specific_command_line_macro()
+        search_modeWST_specific_command_line_macro()
+        control_lm_mllr_file_command_line_macro()
+        finite_state_grammar_command_line_macro()
+        phone_insertion_penalty_command_line_macro()
 
-  /* Things are yet to refactored */
+        /* Things are yet to refactored */
 #if 0
-    /* Commented out; not supported */
-     { "-compsep",
-      ARG_STRING,
-      "",	/* Default: No compound word (NULL separator char) */
-      "Separator character between components of a compound word (NULL if none)" },
+        /* Commented out; not supported */
+    {"-compsep",
+     ARG_STRING,
+     "",                        /* Default: No compound word (NULL separator char) */
+     "Separator character between components of a compound word (NULL if none)"},
 #endif
 
   /** ARCHAN 20050717: The only argument which I didn't refactor,
       reason is it makes sense to make every s3.0 family of tool to
       accept -utt */
 
-    { "-bestscoredir",
-      ARG_STRING,
-      NULL,
-      "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
+    {"-bestscoredir",
+     ARG_STRING,
+     NULL,
+     "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)"},
 
-    { "-utt",
-      ARG_STRING,
-      NULL,
-      "Utterance file to be processed (-ctlcount argument times)" },
+    {"-utt",
+     ARG_STRING,
+     NULL,
+     "Utterance file to be processed (-ctlcount argument times)"},
 
-    { NULL, ARG_INT32, NULL, NULL }
-    
+    {NULL, ARG_INT32, NULL, NULL}
+
 };
 
-int32 main (int32 argc, char *argv[])
+int32
+main(int32 argc, char *argv[])
 {
     kb_t kb;
-    stat_t* st;
-    
+    stat_t *st;
+
     print_appl_info(argv[0]);
-    cmd_ln_appl_enter(argc,argv,"default.arg",arg);
+    cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
-    unlimit ();
-    
-    kb_init (&kb);
+    unlimit();
+
+    kb_init(&kb);
     st = kb.stat;
-    fprintf (stdout, "\n");
+    fprintf(stdout, "\n");
 
-    if (cmd_ln_str ("-ctl")) {
-      /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and -ctl_mllr to get
-	 the corresponding LM and MLLR for the utterance */
-	st->tm = ctl_process (cmd_ln_str("-ctl"),
-			      cmd_ln_str("-ctl_lm"),
-			      cmd_ln_str("-ctl_mllr"),
-			      cmd_ln_int32("-ctloffset"),
-			      cmd_ln_int32("-ctlcount"),
-			      utt_decode, &kb);
-    } else if (cmd_ln_str ("-utt")) {
-      /* When -utt is specified, corpus.c will wait for the utterance to change */
-	st->tm = ctl_process_utt (cmd_ln_str("-utt"), 
-			      cmd_ln_int32("-ctlcount"), 
-			      utt_decode, &kb);
-
-    } else {
-      /* Is error checking good enough?" */
-      E_FATAL("Both -utt and -ctl are not specified.\n");
-      
+    if (cmd_ln_str("-ctl")) {
+        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and -ctl_mllr to get
+           the corresponding LM and MLLR for the utterance */
+        st->tm = ctl_process(cmd_ln_str("-ctl"),
+                             cmd_ln_str("-ctl_lm"),
+                             cmd_ln_str("-ctl_mllr"),
+                             cmd_ln_int32("-ctloffset"),
+                             cmd_ln_int32("-ctlcount"), utt_decode, &kb);
     }
-    
+    else if (cmd_ln_str("-utt")) {
+        /* When -utt is specified, corpus.c will wait for the utterance to change */
+        st->tm = ctl_process_utt(cmd_ln_str("-utt"),
+                                 cmd_ln_int32("-ctlcount"),
+                                 utt_decode, &kb);
+
+    }
+    else {
+        /* Is error checking good enough?" */
+        E_FATAL("Both -utt and -ctl are not specified.\n");
+
+    }
+
     if (kb.matchsegfp)
-	fclose (kb.matchsegfp);
-    if (kb.matchfp) 
-        fclose (kb.matchfp);
-    
+        fclose(kb.matchsegfp);
+    if (kb.matchfp)
+        fclose(kb.matchfp);
+
     stat_report_corpus(kb.stat);
 
     kb_free(&kb);
@@ -172,10 +174,10 @@ int32 main (int32 argc, char *argv[])
 #if defined(_SUN4)
     system("ps -el | grep decode_anytopo");
 #else
-    system ("ps aguxwww | grep decode_anytopo");
+    system("ps aguxwww | grep decode_anytopo");
 #endif
 #endif
 
-  cmd_ln_appl_exit();
-  exit(0);
+    cmd_ln_appl_exit();
+    exit(0);
 }

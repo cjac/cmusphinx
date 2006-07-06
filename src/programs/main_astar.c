@@ -229,203 +229,203 @@
 #include <cmdln_macro.h>
 #include "corpus.h"
 
-static mdef_t *mdef;		/* Model definition */
+static mdef_t *mdef;            /* Model definition */
 
-static ptmr_t tm_utt;		/* Entire utterance */
+static ptmr_t tm_utt;           /* Entire utterance */
 
-extern dict_t *dict;		/* The dictionary	*/
-extern fillpen_t *fpen;		/* The filler penalty structure. */
+extern dict_t *dict;            /* The dictionary       */
+extern fillpen_t *fpen;         /* The filler penalty structure. */
 
-extern dag_t* dag;
-extern lmset_t *lmset;		/* The lmset.		*/
+extern dag_t *dag;
+extern lmset_t *lmset;          /* The lmset.           */
 
 char *nbestdir;
 
-void nbest_search (char *filename, char *uttid);
-int32 s3astar_dag_load (char *file);
-void nbest_init ( void );
+void nbest_search(char *filename, char *uttid);
+int32 s3astar_dag_load(char *file);
+void nbest_init(void);
 
 /*
  * Command line arguments.
  */
 static arg_t defn[] = {
-  log_table_command_line_macro()
-  dictionary_command_line_macro()
-  language_model_command_line_macro()
-  common_filler_properties_command_line_macro()
-  common_application_properties_command_line_macro()
-  control_file_handling_command_line_macro()
-  control_lm_file_command_line_macro()
-  dag_handling_command_line_macro()
+    log_table_command_line_macro()
+        dictionary_command_line_macro()
+        language_model_command_line_macro()
+        common_filler_properties_command_line_macro()
+        common_application_properties_command_line_macro()
+        control_file_handling_command_line_macro()
+        control_lm_file_command_line_macro()
+        dag_handling_command_line_macro()
+    {"-mdef",
+     ARG_STRING,
+     NULL,
+     "Model definition input file: triphone -> senones/tmat tying"},
+    {"-compwd",
+     ARG_INT32,
+     "0",
+     "Whether compound words should be broken up internally into component words"},
+    {"-beam",
+     ARG_FLOAT64,
+     "1e-64",
+     "Partial path pruned if below beam * score of best partial ppath so far"},
+    {"-maxppath",
+     ARG_INT32,
+     "1000000",
+     "Max partial paths created after which utterance aborted; controls CPU/memory use"},
+    {"-inlatdir",
+     ARG_STRING,
+     NULL,
+     "Input word-lattice directory with per-utt files for restricting words searched"},
+    {"-latext",
+     ARG_STRING,
+     "lat.gz",
+     "Word-lattice filename extension (.gz or .Z extension for compression)"},
+    {"-nbestdir",
+     ARG_STRING,
+     ".",
+     "Input word-lattice directory with per-utt files for restricting words searched"},
+    {"-nbestext",
+     ARG_STRING,
+     "nbest.gz",
+     "N-best filename extension (.gz or .Z extension for compression)"},
+    {"-nbest",
+     ARG_INT32,
+     "200",
+     "Max. n-best hypotheses to generate per utterance"},
+    {"-ppathdebug",
+     ARG_INT32,
+     "0",
+     "Generate debugging information for the search. "},
 
-    { "-mdef",
-      ARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-compwd",
-      ARG_INT32,
-      "0",
-      "Whether compound words should be broken up internally into component words" },
-    { "-beam",
-      ARG_FLOAT64,
-      "1e-64",
-      "Partial path pruned if below beam * score of best partial ppath so far" },
-    { "-maxppath",
-      ARG_INT32,
-      "1000000",
-      "Max partial paths created after which utterance aborted; controls CPU/memory use" },
-    { "-inlatdir",
-      ARG_STRING,
-      NULL,
-      "Input word-lattice directory with per-utt files for restricting words searched" },
-    { "-latext",
-      ARG_STRING,
-      "lat.gz",
-      "Word-lattice filename extension (.gz or .Z extension for compression)" },
-    { "-nbestdir",
-      ARG_STRING,
-      ".",
-      "Input word-lattice directory with per-utt files for restricting words searched" },
-    { "-nbestext",
-      ARG_STRING,
-      "nbest.gz",
-      "N-best filename extension (.gz or .Z extension for compression)" },
-    { "-nbest",
-      ARG_INT32,
-      "200",
-      "Max. n-best hypotheses to generate per utterance" },
-    { "-ppathdebug",
-      ARG_INT32,
-      "0",
-      "Generate debugging information for the search. " },
-    
-    { NULL, ARG_INT32, NULL, NULL }
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
  */
-static void models_init ( void )
+static void
+models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    mdef = mdef_init((char *) cmd_ln_access("-mdef"), 1);
 
     /* Dictionary */
-    dict = dict_init (mdef, 
-		      (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"), 
-		      0, 
-		      cmd_ln_int32("-lts_mismatch"),
-		      1);
+    dict = dict_init(mdef,
+                     (char *) cmd_ln_access("-dict"),
+                     (char *) cmd_ln_access("-fdict"),
+                     0, cmd_ln_int32("-lts_mismatch"), 1);
 
-    lmset=lmset_init(cmd_ln_str("-lm"),
-			 cmd_ln_str("-lmctlfn"),
-			 cmd_ln_str("-ctl_lm"),
-			 cmd_ln_str("-lmname"),
-			 cmd_ln_str("-lmdumpdir"),
-			 cmd_ln_float32("-lw"),
-			 cmd_ln_float32("-wip"),
-			 cmd_ln_float32("-uw"),
-			 dict);
+    lmset = lmset_init(cmd_ln_str("-lm"),
+                       cmd_ln_str("-lmctlfn"),
+                       cmd_ln_str("-ctl_lm"),
+                       cmd_ln_str("-lmname"),
+                       cmd_ln_str("-lmdumpdir"),
+                       cmd_ln_float32("-lw"),
+                       cmd_ln_float32("-wip"),
+                       cmd_ln_float32("-uw"), dict);
 
 
-    fpen = fillpen_init (dict, (char *) cmd_ln_access("-fillpen"),
-			 *(float32 *)cmd_ln_access("-silprob"),
-			 *(float32 *)cmd_ln_access("-fillprob"),
-			 *(float32 *)cmd_ln_access("-lw"),
-			 *(float32 *)cmd_ln_access("-wip"));
+    fpen = fillpen_init(dict, (char *) cmd_ln_access("-fillpen"),
+                        *(float32 *) cmd_ln_access("-silprob"),
+                        *(float32 *) cmd_ln_access("-fillprob"),
+                        *(float32 *) cmd_ln_access("-lw"),
+                        *(float32 *) cmd_ln_access("-wip"));
 
 }
 
 
 /* Decode the given mfc file and write result to given directory */
-static void decode_utt (char *uttid, char *nbestdir)
+static void
+decode_utt(char *uttid, char *nbestdir)
 {
     char dagfile[1024], nbestfile[1024];
     char *latdir, *latext, *nbestext;
     int32 nfrm;
-    
-    latdir = (char *) cmd_ln_access ("-inlatdir");
-    latext = (char *) cmd_ln_access ("-latext");
-    nbestext = (char *) cmd_ln_access ("-nbestext");
+
+    latdir = (char *) cmd_ln_access("-inlatdir");
+    latext = (char *) cmd_ln_access("-latext");
+    nbestext = (char *) cmd_ln_access("-nbestext");
     if (latdir)
-	sprintf (dagfile, "%s/%s.%s", latdir, uttid, latext);
+        sprintf(dagfile, "%s/%s.%s", latdir, uttid, latext);
     else
-	sprintf (dagfile, "%s.%s", uttid, latext);
-    
-    ptmr_reset (&tm_utt);
-    ptmr_start (&tm_utt);
+        sprintf(dagfile, "%s.%s", uttid, latext);
 
-    if ((nfrm = s3astar_dag_load (dagfile)) > 0) {
-	sprintf (nbestfile, "%s/%s.%s", nbestdir, uttid, nbestext);
-	nbest_search (nbestfile, uttid);
-	
-	lm_cache_stats_dump (lmset->cur_lm);
-	lm_cache_reset (lmset->cur_lm);
-    } else
-	E_ERROR("Dag load (%s) failed\n", uttid);
-    dag_destroy (dag);
+    ptmr_reset(&tm_utt);
+    ptmr_start(&tm_utt);
 
-    ptmr_stop (&tm_utt);
-    
-    printf ("%s: TMR: %5d Frm", uttid, nfrm);
-    if (nfrm > 0) {
-	printf (" %6.2f xEl", tm_utt.t_elapsed * 100.0 / nfrm);
-	printf (" %6.2f xCPU", tm_utt.t_cpu * 100.0 / nfrm);
+    if ((nfrm = s3astar_dag_load(dagfile)) > 0) {
+        sprintf(nbestfile, "%s/%s.%s", nbestdir, uttid, nbestext);
+        nbest_search(nbestfile, uttid);
+
+        lm_cache_stats_dump(lmset->cur_lm);
+        lm_cache_reset(lmset->cur_lm);
     }
-    printf ("\n");
-    fflush (stdout);
+    else
+        E_ERROR("Dag load (%s) failed\n", uttid);
+    dag_destroy(dag);
+
+    ptmr_stop(&tm_utt);
+
+    printf("%s: TMR: %5d Frm", uttid, nfrm);
+    if (nfrm > 0) {
+        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / nfrm);
+        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / nfrm);
+    }
+    printf("\n");
+    fflush(stdout);
 }
 
-static void utt_astar(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
+static void
+utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
-  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
-  decode_utt (uttid, nbestdir);
+    if (ur->lmname)
+        lmset_set_curlm_wname(lmset, ur->lmname);
+    decode_utt(uttid, nbestdir);
 }
 
 int
-main (int32 argc, char *argv[])
+main(int32 argc, char *argv[])
 {
-  /*  kb_t kb;
-      ptmr_t tm;*/
+    /*  kb_t kb;
+       ptmr_t tm; */
 
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
-  unlimit ();
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc, argv, "default.arg", defn);
+    unlimit();
 
-  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
-    
+    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
+               cmd_ln_int32("-log3table"));
+
     /* Read in input databases */
-  models_init ();
+    models_init();
 
-  /* Initialize forward Viterbi search module */
-  nbest_init ();
-  printf ("\n");
+    /* Initialize forward Viterbi search module */
+    nbest_init();
+    printf("\n");
 
-  ptmr_init (&tm_utt);
+    ptmr_init(&tm_utt);
 
-  nbestdir = cmd_ln_str ("-nbestdir");
-    
-  if(cmd_ln_str("-ctl")){
-    ctl_process(cmd_ln_str("-ctl"),
-		cmd_ln_str("-ctl_lm"),
-		NULL,
-		cmd_ln_int32("-ctloffset"),
-		cmd_ln_int32("-ctlcount"),
-		utt_astar, 
-		NULL);
+    nbestdir = cmd_ln_str("-nbestdir");
 
-  }else{
-    E_FATAL("-ctl is not specified\n");
-  }
-  
+    if (cmd_ln_str("-ctl")) {
+        ctl_process(cmd_ln_str("-ctl"),
+                    cmd_ln_str("-ctl_lm"),
+                    NULL,
+                    cmd_ln_int32("-ctloffset"),
+                    cmd_ln_int32("-ctlcount"), utt_astar, NULL);
+
+    }
+    else {
+        E_FATAL("-ctl is not specified\n");
+    }
+
 
 
 #if (! WIN32)
-  system ("ps aguxwww | grep s3astar");
+    system("ps aguxwww | grep s3astar");
 #endif
 
-  cmd_ln_appl_exit();
-  return 0;
+    cmd_ln_appl_exit();
+    return 0;
 }
-

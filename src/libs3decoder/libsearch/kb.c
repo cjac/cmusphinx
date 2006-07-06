@@ -149,7 +149,7 @@
 
 
 #include "kb.h"
-#include "logs3.h"		/* RAH, added to resolve log3_free */
+#include "logs3.h"              /* RAH, added to resolve log3_free */
 #include "srch.h"
 
 
@@ -157,50 +157,53 @@
 
 
 /* 20050321 Duplicated function. can also be io.c. Clean it up later. */
-FILE* file_open(char* filepath)
+FILE *
+file_open(char *filepath)
 {
-  FILE *fp;
-  fp=NULL;
-  if (filepath) {
+    FILE *fp;
+    fp = NULL;
+    if (filepath) {
 #ifdef WIN32
-    if ((fp= fopen(filepath, "wt")) == NULL)
+        if ((fp = fopen(filepath, "wt")) == NULL)
 #else
-    if ((fp= fopen(filepath, "w")) == NULL)
+        if ((fp = fopen(filepath, "w")) == NULL)
 #endif
-      E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n", filepath);
-  }
-  return fp;
+            E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n",
+                    filepath);
+    }
+    return fp;
 }
 
 /*
  * EW! This is search mode and in general it shouldn't. I do it because
  * I expect vithist_t and lattice_hist_t will soon be merged 
  */
-void temp_init_vithistory(kb_t* kb, int32 op_mode)
+void
+temp_init_vithistory(kb_t * kb, int32 op_mode)
 {
-  kb->vithist=NULL;
-  kb->lathist=NULL;
-  if(op_mode==OPERATION_TST_DECODE||op_mode==OPERATION_WST_DECODE){
-     kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
-				 cmd_ln_int32("-bghist"),
-				 cmd_ln_int32("-lmrescore"),
-				 cmd_ln_int32("-bt_wsil"),
-  				 !cmd_ln_int32("-composite"),
-				 REPORT_KB);
-      
-     if(REPORT_KB)
-       vithist_report(kb->vithist);
-  }
+    kb->vithist = NULL;
+    kb->lathist = NULL;
+    if (op_mode == OPERATION_TST_DECODE || op_mode == OPERATION_WST_DECODE) {
+        kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
+                                   cmd_ln_int32("-bghist"),
+                                   cmd_ln_int32("-lmrescore"),
+                                   cmd_ln_int32("-bt_wsil"),
+                                   !cmd_ln_int32("-composite"), REPORT_KB);
 
-  if(op_mode==OPERATION_FLATFWD){
-    kb->lathist=latticehist_init(cmd_ln_int32("-bptblsize"),
-				 S3_MAX_FRAMES+1);
-  }
+        if (REPORT_KB)
+            vithist_report(kb->vithist);
+    }
+
+    if (op_mode == OPERATION_FLATFWD) {
+        kb->lathist = latticehist_init(cmd_ln_int32("-bptblsize"),
+                                       S3_MAX_FRAMES + 1);
+    }
 }
 
 
 /*ARCHAN, to allow backward compatibility -lm, -lmctlfn coexists. This makes the current implmentation more complicated than necessary. */
-void kb_init (kb_t *kb)
+void
+kb_init(kb_t * kb)
 {
     kbcore_t *kbcore;
     mdef_t *mdef;
@@ -208,130 +211,115 @@ void kb_init (kb_t *kb)
     dict2pid_t *d2p;
     lmset_t *lmset;
     int32 cisencnt;
-    
+
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
     kb->kbcore = NULL;
-    kb->kbcore = kbcore_init (cmd_ln_float32 ("-logbase"),
-			      cmd_ln_str("-feat"),
-			      cmd_ln_str("-cmn"),
-			      cmd_ln_str("-varnorm"),
-			      cmd_ln_str("-agc"),
-			      cmd_ln_str("-mdef"),
-			      cmd_ln_str("-dict"),
-			      cmd_ln_str("-fdict"),
-			      "",	/* Hack!! Hardwired constant 
-						for -compsep argument */
-			      cmd_ln_str("-lm"),
-			      cmd_ln_str("-lmctlfn"),
-			      cmd_ln_str("-lmdumpdir"),
-			      cmd_ln_str("-fsg"),
+    kb->kbcore = kbcore_init(cmd_ln_float32("-logbase"), cmd_ln_str("-feat"), cmd_ln_str("-cmn"), cmd_ln_str("-varnorm"), cmd_ln_str("-agc"), cmd_ln_str("-mdef"), cmd_ln_str("-dict"), cmd_ln_str("-fdict"), "",       /* Hack!! Hardwired constant 
+                                                                                                                                                                                                                           for -compsep argument */
+                             cmd_ln_str("-lm"),
+                             cmd_ln_str("-lmctlfn"),
+                             cmd_ln_str("-lmdumpdir"), cmd_ln_str("-fsg"),
 #if 0
-			      cmd_ln_str("-fsgctlfn"),
+                             cmd_ln_str("-fsgctlfn"),
 #endif
-			      NULL, /*Currently, not try to handle the -fsgctlfn */
-			      cmd_ln_str("-fillpen"),
-			      cmd_ln_str("-senmgau"),
-			      cmd_ln_float32("-silprob"),
-			      cmd_ln_float32("-fillprob"),
-			      cmd_ln_float32("-lw"),
-			      cmd_ln_float32("-wip"),
-			      cmd_ln_float32("-uw"),
-			      cmd_ln_str("-hmm"),
-			      cmd_ln_str("-mean"),
-			      cmd_ln_str("-var"),
-			      cmd_ln_float32("-varfloor"),
-			      cmd_ln_str("-mixw"),
-			      cmd_ln_float32("-mixwfloor"),
-			      cmd_ln_str("-subvq"),
-			      cmd_ln_str("-gs"),
-			      cmd_ln_str("-tmat"),
-			      cmd_ln_float32("-tmatfloor"));
-    if(kb->kbcore==NULL)
-      E_FATAL("Initialization of kb failed\n");
-    
+                             NULL,      /*Currently, not try to handle the -fsgctlfn */
+                             cmd_ln_str("-fillpen"),
+                             cmd_ln_str("-senmgau"),
+                             cmd_ln_float32("-silprob"),
+                             cmd_ln_float32("-fillprob"),
+                             cmd_ln_float32("-lw"),
+                             cmd_ln_float32("-wip"),
+                             cmd_ln_float32("-uw"),
+                             cmd_ln_str("-hmm"),
+                             cmd_ln_str("-mean"),
+                             cmd_ln_str("-var"),
+                             cmd_ln_float32("-varfloor"),
+                             cmd_ln_str("-mixw"),
+                             cmd_ln_float32("-mixwfloor"),
+                             cmd_ln_str("-subvq"),
+                             cmd_ln_str("-gs"),
+                             cmd_ln_str("-tmat"),
+                             cmd_ln_float32("-tmatfloor"));
+    if (kb->kbcore == NULL)
+        E_FATAL("Initialization of kb failed\n");
+
     kbcore = kb->kbcore;
     mdef = kbcore_mdef(kbcore);
     dict = kbcore_dict(kbcore);
-    lmset=kbcore_lmset(kbcore);
+    lmset = kbcore_lmset(kbcore);
     d2p = kbcore_dict2pid(kbcore);
 
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
-    kb->beam = beam_init (
-			  cmd_ln_float64("-beam"),
-			  cmd_ln_float64("-pbeam"),
-			  cmd_ln_float64("-wbeam"),
-			  cmd_ln_float64("-wend_beam"),
-			  cmd_ln_int32("-ptranskip"),
-			  mdef_n_ciphone(mdef)
-			  );
+    kb->beam = beam_init(cmd_ln_float64("-beam"),
+                         cmd_ln_float64("-pbeam"),
+                         cmd_ln_float64("-wbeam"),
+                         cmd_ln_float64("-wend_beam"),
+                         cmd_ln_int32("-ptranskip"), mdef_n_ciphone(mdef)
+        );
 
     /* REPORT : Report the parameters in the beam data structure */
-    if(REPORT_KB)
-      beam_report(kb->beam);
+    if (REPORT_KB)
+        beam_report(kb->beam);
 
 
     /* STRUCTURE INITIALIZATION: Initialize the fast GMM computation data structure */
     kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
-			        cmd_ln_int32("-cond_ds"),
-				cmd_ln_int32("-dist_ds"),
-				cmd_ln_int32("-gs4gs"),
-				cmd_ln_int32("-svq4svq"),
-				cmd_ln_float64("-subvqbeam"),
-				cmd_ln_float64("-ci_pbeam"),
-				cmd_ln_float64("-tighten_factor"),
-				cmd_ln_int32("-maxcdsenpf"),
-				mdef->n_ci_sen
-				);
+                                cmd_ln_int32("-cond_ds"),
+                                cmd_ln_int32("-dist_ds"),
+                                cmd_ln_int32("-gs4gs"),
+                                cmd_ln_int32("-svq4svq"),
+                                cmd_ln_float64("-subvqbeam"),
+                                cmd_ln_float64("-ci_pbeam"),
+                                cmd_ln_float64("-tighten_factor"),
+                                cmd_ln_int32("-maxcdsenpf"),
+                                mdef->n_ci_sen);
 
     /* REPORT : Report the parameters in the fast_gmm_t data struture */
-    if(REPORT_KB)
-      fast_gmm_report(kb->fastgmm);
-    
+    if (REPORT_KB)
+        fast_gmm_report(kb->fastgmm);
+
     /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
     kb->pl = pl_init(cmd_ln_int32("-pheurtype"),
-		     cmd_ln_int32("-pl_beam"),
-		     mdef_n_ciphone(mdef)
-		     );
+                     cmd_ln_int32("-pl_beam"), mdef_n_ciphone(mdef)
+        );
 
     /* REPORT : Report the parameters in the pl_t data struture */
-    if(REPORT_KB)
-      pl_report(kb->pl);
+    if (REPORT_KB)
+        pl_report(kb->pl);
 
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
-    for(cisencnt=0;cisencnt==mdef->cd2cisen[cisencnt];cisencnt++) ;
-    kb->ascr = ascr_init (kbcore_n_mgau(kbcore),
-			  kb->kbcore->dict2pid->n_comstate,
-			  mdef_n_sseq(mdef),
-			  dict2pid_n_comsseq(d2p),
-			  cmd_ln_int32("-pl_window"),
-			  cisencnt
-			  );
+    for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++);
+    kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
+                         kb->kbcore->dict2pid->n_comstate,
+                         mdef_n_sseq(mdef),
+                         dict2pid_n_comsseq(d2p),
+                         cmd_ln_int32("-pl_window"), cisencnt);
 
-    if(REPORT_KB)
-      ascr_report(kb->ascr);
+    if (REPORT_KB)
+        ascr_report(kb->ascr);
 
-    if(kbcore->lmset&&(cmd_ln_str("-lm")||cmd_ln_str("-lmctlfn"))){
-      /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
+    if (kbcore->lmset && (cmd_ln_str("-lm") || cmd_ln_str("-lmctlfn"))) {
+        /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
 
 #if 0
-      kb->vithist = vithist_init(kbcore, kb->beam->word,
-				 cmd_ln_int32("-bghist"),
-				 cmd_ln_int32("-lmrescore"),
-				 cmd_ln_int32("-bt_wsil"),
-				 REPORT_KB);
-      
-      if(REPORT_KB)
-	vithist_report(kb->vithist);
+        kb->vithist = vithist_init(kbcore, kb->beam->word,
+                                   cmd_ln_int32("-bghist"),
+                                   cmd_ln_int32("-lmrescore"),
+                                   cmd_ln_int32("-bt_wsil"), REPORT_KB);
+
+        if (REPORT_KB)
+            vithist_report(kb->vithist);
 #endif
-      /* HACK! */
-      temp_init_vithistory(kb,cmd_ln_int32("-op_mode"));
+        /* HACK! */
+        temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
     }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
-    if ((kb->feat = feat_array_alloc(kbcore_fcb(kbcore),S3_MAX_FRAMES)) == NULL)
-	E_FATAL("feat_array_alloc() failed\n");
+    if ((kb->feat =
+         feat_array_alloc(kbcore_fcb(kbcore), S3_MAX_FRAMES)) == NULL)
+        E_FATAL("feat_array_alloc() failed\n");
 
     /* STRUCTURE INITIALIZATION : The statistics for the search */
     kb->stat = stat_init();
@@ -340,126 +328,138 @@ void kb_init (kb_t *kb)
     kb->adapt_am = adapt_am_init();
 
     if (cmd_ln_str("-mllr")) {
-      kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
+        kb_setmllr(cmd_ln_str("-mllr"), cmd_ln_str("-cb2mllr"), kb);
     }
 
     /* CHECK: make sure when (-cond_ds) is specified, a Gaussian map is also specified */
-    if(cmd_ln_int32("-cond_ds")>0&&kb->kbcore->gs==NULL) 
-      E_FATAL("Conditional Down Sampling require the use of Gaussian Selection map\n");
+    if (cmd_ln_int32("-cond_ds") > 0 && kb->kbcore->gs == NULL)
+        E_FATAL
+            ("Conditional Down Sampling require the use of Gaussian Selection map\n");
 
     /* MEMORY ALLOCATION : Word best score and exit */
     /* Open hypseg file if specified */
-    kb->matchsegfp = kb->matchfp = NULL; 
-    kb->matchsegfp=file_open(cmd_ln_str("-hypseg"));
-    kb->matchfp=file_open(cmd_ln_str("-hyp"));
+    kb->matchsegfp = kb->matchfp = NULL;
+    kb->matchsegfp = file_open(cmd_ln_str("-hypseg"));
+    kb->matchfp = file_open(cmd_ln_str("-hyp"));
 
     kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
-    
+
     /* STRUCTURE INITIALIZATION : The search data structure, done only
        after kb is initialized kb is acted as a clipboard. */
 
-    kb->op_mode=cmd_ln_int32("-op_mode");
-    if((kb->srch = (srch_t *) srch_init (kb, kb->op_mode))==NULL){
-      E_FATAL("Search initialization failed. Forced exit\n");
+    kb->op_mode = cmd_ln_int32("-op_mode");
+    if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
+        E_FATAL("Search initialization failed. Forced exit\n");
     }
 
-    if(REPORT_KB){
-      srch_report(kb->srch);
+    if (REPORT_KB) {
+        srch_report(kb->srch);
     }
 }
 
-void kb_set_uttid(char *_uttid,kb_t* _kb)
+void
+kb_set_uttid(char *_uttid, kb_t * _kb)
 {
-  assert(_kb != NULL);
-  assert(_uttid!=NULL);
+    assert(_kb != NULL);
+    assert(_uttid != NULL);
 
-  if (_kb->uttid != NULL) {
-    ckd_free(_kb->uttid);
-    _kb->uttid = NULL;
-  }
-  if ((_kb->uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
-    E_FATAL("Failed to allocate space for utterance id.\n");
-  }
-  strcpy(_kb->uttid,_uttid);
+    if (_kb->uttid != NULL) {
+        ckd_free(_kb->uttid);
+        _kb->uttid = NULL;
+    }
+    if ((_kb->uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
+        E_FATAL("Failed to allocate space for utterance id.\n");
+    }
+    strcpy(_kb->uttid, _uttid);
 }
 
-void kb_setmllr(char* mllrname,
-		char* cb2mllrname, /** < In: The filename of the MLLR class map */
-		kb_t* kb)
+void
+kb_setmllr(char *mllrname, char *cb2mllrname,
+                                   /** < In: The filename of the MLLR class map */
+           kb_t * kb)
 {
 /*  int32 veclen;*/
 
-  kbcore_t *kbc;
-  
-  E_INFO("Using MLLR matrix %s\n", mllrname);
-  kbc=kb->kbcore;
-  
-  if(strcmp(kb->adapt_am->prevmllrfn,mllrname)!=0){ /* If there is a change of mllr file name */
+    kbcore_t *kbc;
 
-    if(kbc->mgau)
-      adapt_set_mllr(kb->adapt_am,kbc->mgau,mllrname,cb2mllrname,kbc->mdef);
-    else if(kbc->ms_mgau)
-      model_set_mllr(kbc->ms_mgau,mllrname, cb2mllrname, kbc->fcb, kbc->mdef);
-    else
-      E_FATAL("Panic, kb has not Gaussian\n");
+    E_INFO("Using MLLR matrix %s\n", mllrname);
+    kbc = kb->kbcore;
 
-    /* allocate memory for the prevmllrfn if it is too short*/
-    if(strlen(mllrname)*sizeof(char) > 1024)
-      kb->adapt_am->prevmllrfn=(char*)ckd_calloc(strlen(mllrname), sizeof(char));
+    if (strcmp(kb->adapt_am->prevmllrfn, mllrname) != 0) {      /* If there is a change of mllr file name */
 
-    strcpy(kb->adapt_am->prevmllrfn,mllrname);
-  }else{
-    /* No need to change anything for now */
-  }
+        if (kbc->mgau)
+            adapt_set_mllr(kb->adapt_am, kbc->mgau, mllrname, cb2mllrname,
+                           kbc->mdef);
+        else if (kbc->ms_mgau)
+            model_set_mllr(kbc->ms_mgau, mllrname, cb2mllrname, kbc->fcb,
+                           kbc->mdef);
+        else
+            E_FATAL("Panic, kb has not Gaussian\n");
+
+        /* allocate memory for the prevmllrfn if it is too short */
+        if (strlen(mllrname) * sizeof(char) > 1024)
+            kb->adapt_am->prevmllrfn =
+                (char *) ckd_calloc(strlen(mllrname), sizeof(char));
+
+        strcpy(kb->adapt_am->prevmllrfn, mllrname);
+    }
+    else {
+        /* No need to change anything for now */
+    }
 }
 
 /* RAH 4.15.01 Lots of memory is allocated, but never freed, this function will clean up.
  * First pass will get the low hanging fruit.*/
-void kb_free (kb_t *kb)
+void
+kb_free(kb_t * kb)
 {
 
-  if(kb->srch){
-    srch_uninit(kb->srch);
+    if (kb->srch) {
+        srch_uninit(kb->srch);
     /** Add search free code */
-  }
+    }
 
-  if(kb->stat){
-    stat_free((void*) kb->stat);
-  }
-  /* vithist */
-  if (kb->vithist) 
-    vithist_free((void*) kb->vithist);
+    if (kb->stat) {
+        stat_free((void *) kb->stat);
+    }
+    /* vithist */
+    if (kb->vithist)
+        vithist_free((void *) kb->vithist);
 
-  if(kb->ascr)
-    ascr_free((void*) kb->ascr);
+    if (kb->ascr)
+        ascr_free((void *) kb->ascr);
 
-  if(kb->fastgmm)
-    fast_gmm_free((void *) kb->fastgmm);
+    if (kb->fastgmm)
+        fast_gmm_free((void *) kb->fastgmm);
 
-  if(kb->beam)
-    beam_free((void*) kb->beam);
-
-  
-  if(kb->pl)
-    pl_free((void*)kb->pl);
-
-  if(kb->kbcore!=NULL)
-    kbcore_free (kb->kbcore);
-
-  /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 
-     to unify them yet. TBD*/
-  if(kb->adapt_am->regA && kb->adapt_am->regB) mllr_free_regmat(kb->adapt_am->regA, kb->adapt_am->regB);
-  if(kb->adapt_am) adapt_am_free(kb->adapt_am);
-
-  if (kb->feat) {
-    ckd_free ((void *)kb->feat[0][0]);
-    ckd_free_2d ((void **)kb->feat);
-  }
+    if (kb->beam)
+        beam_free((void *) kb->beam);
 
 
-#if 0 /* valgrind reports this one. */
-  if (kb->matchsegfp) fclose(kb->matchsegfp);
-  if (kb->matchfp) fclose(kb->matchfp);
+    if (kb->pl)
+        pl_free((void *) kb->pl);
+
+    if (kb->kbcore != NULL)
+        kbcore_free(kb->kbcore);
+
+    /* This is awkward, currently, there are two routines to control MLLRs and I don't have time 
+       to unify them yet. TBD */
+    if (kb->adapt_am->regA && kb->adapt_am->regB)
+        mllr_free_regmat(kb->adapt_am->regA, kb->adapt_am->regB);
+    if (kb->adapt_am)
+        adapt_am_free(kb->adapt_am);
+
+    if (kb->feat) {
+        ckd_free((void *) kb->feat[0][0]);
+        ckd_free_2d((void **) kb->feat);
+    }
+
+
+#if 0                           /* valgrind reports this one. */
+    if (kb->matchsegfp)
+        fclose(kb->matchsegfp);
+    if (kb->matchfp)
+        fclose(kb->matchfp);
 #endif
 
 

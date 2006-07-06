@@ -60,31 +60,32 @@
 #include "nextword.h"
 
 
-int32 nextword (char *line, char *delim, char **word, char *delimfound)
+int32
+nextword(char *line, char *delim, char **word, char *delimfound)
 {
     char *w, *d;
 
     /* Skip past any preceding delimiters */
     for (w = line; *w; w++) {
         for (d = delim; *d && (*d != *w); d++);
-	if (! *d)
-	    break;
+        if (!*d)
+            break;
     }
-    if (! *w)
+    if (!*w)
         return -1;
 
-    *word = w;		/* Beginning of word */
+    *word = w;                  /* Beginning of word */
 
     /* Skip until first delimiter char */
     for (w++; *w; w++) {
         for (d = delim; *d && (*d != *w); d++);
-	if (*d)
-	    break;
+        if (*d)
+            break;
     }
-    
+
     /* Replace delimiter with NULL char, but return the original first */
     *delimfound = *w;
     *w = '\0';
 
-    return (w - *word);	/* Length of word */
+    return (w - *word);         /* Length of word */
 }

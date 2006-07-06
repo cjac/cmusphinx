@@ -50,21 +50,22 @@
 #include <unistd.h>
 #endif
 
-void print_appl_info(char* appl_name)
+void
+print_appl_info(char *appl_name)
 {
 #if (! WIN32)
     {
-	char host[4096], path[16384];
-	
-	gethostname (host, 1024);
-	host[1023] = '\0';
-	getcwd (path, sizeof(path));
-	
-	E_INFO ("Host: '%s'\n", host);
-	E_INFO ("Directory: '%s'\n", path);
+        char host[4096], path[16384];
+
+        gethostname(host, 1024);
+        host[1023] = '\0';
+        getcwd(path, sizeof(path));
+
+        E_INFO("Host: '%s'\n", host);
+        E_INFO("Directory: '%s'\n", path);
     }
 #endif
-    
-    E_INFO("%s Compiled on: %s, AT: %s\n\n", appl_name, __DATE__, __TIME__);
-}
 
+    E_INFO("%s Compiled on: %s, AT: %s\n\n", appl_name, __DATE__,
+           __TIME__);
+}

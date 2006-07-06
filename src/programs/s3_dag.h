@@ -105,8 +105,8 @@
 #include "search.h"
 #include "dict.h"
 
-srch_hyp_t *s3dag_dag_search (char *utt);
-int32 s3_dag_dag_load (char *file);
-void s3_dag_init (dict_t* _dict);
+srch_hyp_t *s3dag_dag_search(char *utt);
+int32 s3_dag_dag_load(char *file);
+void s3_dag_init(dict_t * _dict);
 
 #endif

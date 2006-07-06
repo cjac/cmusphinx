@@ -41,34 +41,31 @@
 extern "C" {
 #endif
 
-typedef struct _node_t
-{
-  void *data;
-  struct _node_t next;
-  struct _node_t prev;
-} node_t;
+    typedef struct _node_t {
+        void *data;
+        struct _node_t next;
+        struct _node_t prev;
+    } node_t;
 
-typedef struct _list_t
-{
-  void (*free_data)(void *);
-  void *mutex;
-  void *cond;
-  node_t *tail;
-} list_t;
+    typedef struct _list_t {
+        void (*free_data) (void *);
+        void *mutex;
+        void *cond;
+        node_t *tail;
+    } list_t;
 
-list_t list_init(void (*)(void *));
-void list_free(list_t *);
-int list_insert_head(list_t *, void *);
-int list_insert_tail(list_t *, void *);
-int list_remove_head(list_t *, void **);
-int list_remove_tail(list_t *, void **);
-int list_peek_head(list_t *, void **);
-int list_peek_tail(list_t *, void **); 
-void list_clear(list_t *);
-void list_wait(list_t *, int32);
+    list_t list_init(void (*)(void *));
+    void list_free(list_t *);
+    int list_insert_head(list_t *, void *);
+    int list_insert_tail(list_t *, void *);
+    int list_remove_head(list_t *, void **);
+    int list_remove_tail(list_t *, void **);
+    int list_peek_head(list_t *, void **);
+    int list_peek_tail(list_t *, void **);
+    void list_clear(list_t *);
+    void list_wait(list_t *, int32);
 
 #ifdef __cplusplus
 }
 #endif
-
 #endif

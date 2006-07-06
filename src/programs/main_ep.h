@@ -71,11 +71,11 @@
 
 
 #ifdef __cplusplus
- extern "C" {
- #endif 
+extern "C" {
+#endif
 
 
 
 #ifdef __cplusplus
- }
- #endif 
+}
+#endif

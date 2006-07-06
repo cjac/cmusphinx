@@ -64,66 +64,68 @@
 #include "err.h"
 
 /* Sorting an array to a descending order*/
-void insertion_sort(sort_array_t *s)
+void
+insertion_sort(sort_array_t * s)
 {
-  int32 i,j;
-  sort_t se;
-  for(i = 1;i < s->size ;i++)
-    {
-      se.key = s->s_array[i].key; 
-      se.val = s->s_array[i].val;
+    int32 i, j;
+    sort_t se;
+    for (i = 1; i < s->size; i++) {
+        se.key = s->s_array[i].key;
+        se.val = s->s_array[i].val;
 
-      j=i;
-      while ((j>0)&&(s->s_array[j-1].val > se.val))
-	{
-	  s->s_array[j].key= s->s_array[j-1].key;
-	  s->s_array[j].val= s->s_array[j-1].val;
-	  j--;
-	}
-      s->s_array[j].key = se.key;
-      s->s_array[j].val = se.val;
+        j = i;
+        while ((j > 0) && (s->s_array[j - 1].val > se.val)) {
+            s->s_array[j].key = s->s_array[j - 1].key;
+            s->s_array[j].val = s->s_array[j - 1].val;
+            j--;
+        }
+        s->s_array[j].key = se.key;
+        s->s_array[j].val = se.val;
     }
 }
 
-void reverse_sort_array(sort_array_t *s)
+void
+reverse_sort_array(sort_array_t * s)
 {
-  int32 i;
-  sort_t se;
-  for(i=0;i<(s->size)/2 ;i++)
-    {
-      se.key=s->s_array[i].key;
-      se.val=s->s_array[i].val;
-      s->s_array[i].key=s->s_array[s->size-1-i].key;
-      s->s_array[i].val=s->s_array[s->size-1-i].val;
-      s->s_array[s->size-1-i].key=se.key;
-      s->s_array[s->size-1-i].val=se.val;
+    int32 i;
+    sort_t se;
+    for (i = 0; i < (s->size) / 2; i++) {
+        se.key = s->s_array[i].key;
+        se.val = s->s_array[i].val;
+        s->s_array[i].key = s->s_array[s->size - 1 - i].key;
+        s->s_array[i].val = s->s_array[s->size - 1 - i].val;
+        s->s_array[s->size - 1 - i].key = se.key;
+        s->s_array[s->size - 1 - i].val = se.val;
     }
 }
 
-void init_sort_array(int size, sort_array_t *s)
+void
+init_sort_array(int size, sort_array_t * s)
 {
-  s=(sort_array_t *)malloc(sizeof(sort_array_t));
-  s->size=size;
-  s->s_array=(sort_t*)ckd_calloc(s->size,sizeof(sort_t));
+    s = (sort_array_t *) malloc(sizeof(sort_array_t));
+    s->size = size;
+    s->s_array = (sort_t *) ckd_calloc(s->size, sizeof(sort_t));
 }
 
-void free_sort_array(sort_array_t *s)
+void
+free_sort_array(sort_array_t * s)
 {
-  ckd_free((sort_t*)(s->s_array));
-  /*free(s);*/
+    ckd_free((sort_t *) (s->s_array));
+    /*free(s); */
 }
 
-void change_size(int size,sort_array_t *s)
+void
+change_size(int size, sort_array_t * s)
 {
-  s->size=size;
+    s->size = size;
 }
 
-void print_sort_array(sort_array_t *s)
+void
+print_sort_array(sort_array_t * s)
 {
-  int i;
-  for(i=0;i<s->size;i++)
-    {
-      E_INFO("Rank %d, Key %d %f\n",i,s->s_array[i].key,s->s_array[i].val);
+    int i;
+    for (i = 0; i < s->size; i++) {
+        E_INFO("Rank %d, Key %d %f\n", i, s->s_array[i].key,
+               s->s_array[i].val);
     }
 }
-

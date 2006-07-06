@@ -41,28 +41,31 @@
 #include "ckd_alloc.h"
 
 /* FORTRAN */
-extern int sgetrf_(int32 *m, int32 *n, float32 *a, int32 *lda,
-		   int32 *ipiv, int32 *info);
-extern int sgesv_(int32 *n, int32 *nrhs, float32 *a, int32 *lda,
-		  int32 *ipiv, float32 *b, int32 *ldb, int32 *info);
+extern int sgetrf_(int32 * m, int32 * n, float32 * a, int32 * lda,
+                   int32 * ipiv, int32 * info);
+extern int sgesv_(int32 * n, int32 * nrhs, float32 * a, int32 * lda,
+                  int32 * ipiv, float32 * b, int32 * ldb, int32 * info);
 
 #ifndef HAVE_LIBLAPACK
 float64
-determinant(float32 **a, int32 n)
+determinant(float32 ** a, int32 n)
 {
-    E_FATAL("No LAPACK library available, cannot compute determinant (FIXME)\n");
+    E_FATAL
+        ("No LAPACK library available, cannot compute determinant (FIXME)\n");
     return 0.0;
 }
+
 int32
-invert(float32 **ainv, float32 **a, int32 n)
+invert(float32 ** ainv, float32 ** a, int32 n)
 {
-    E_FATAL("No LAPACK library available, cannot compute matrix inverse (FIXME)\n");
+    E_FATAL
+        ("No LAPACK library available, cannot compute matrix inverse (FIXME)\n");
     return 0.0;
 }
-#else /* HAVE_LIBLAPACK */
+#else                           /* HAVE_LIBLAPACK */
 /* Find determinant through LU decomposition. */
 float64
-determinant(float32 **a, int32 n)
+determinant(float32 ** a, int32 n)
 {
     float32 *tmp_a;
     float64 det;
@@ -75,20 +78,20 @@ determinant(float32 **a, int32 n)
     /* To use the f2c lapack function, row/column ordering of the
        arrays need to be changed.  (FIXME: might be faster to do this
        in-place twice?) */
-    tmp_a = (float32 *)ckd_calloc(N * N, sizeof(float32));
-    for (i = 0; i < N; i++) 
-	for (j = 0; j < N; j++) 
-	    tmp_a[j+N*i] = a[i][j]; 
+    tmp_a = (float32 *) ckd_calloc(N * N, sizeof(float32));
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
+            tmp_a[j + N * i] = a[i][j];
 
-    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+    IPIV = (int32 *) ckd_calloc(N, sizeof(int32));
     sgetrf_(&M, &N, tmp_a, &LDA, IPIV, &INFO);
 
     det = IPIV[0] == 1 ? tmp_a[0] : -tmp_a[0];
     for (i = 1; i < n; ++i) {
-	if (IPIV[i] != i+1)
-	    det *= -tmp_a[i+N*i];
-	else
-	    det *= tmp_a[i+N*i];
+        if (IPIV[i] != i + 1)
+            det *= -tmp_a[i + N * i];
+        else
+            det *= tmp_a[i + N * i];
     }
 
     ckd_free(tmp_a);
@@ -99,97 +102,98 @@ determinant(float32 **a, int32 n)
 
 /* Find inverse by solving AX=I. */
 int32
-invert(float32 **ainv, float32 **a, int32 n)
+invert(float32 ** ainv, float32 ** a, int32 n)
 {
     float32 *tmp_a, *tmp_i;
     int i, j;
     int32 N, NRHS, LDA, LDB, INFO;
     int32 *IPIV;
 
-    N=n;
-    NRHS=n;
-    LDA=n;    
-    LDB=n;
+    N = n;
+    NRHS = n;
+    LDA = n;
+    LDB = n;
 
     /* To use the f2c lapack function, row/column ordering of the
        arrays need to be changed.  (FIXME: might be faster to do this
        in-place twice?) */
-    tmp_a = (float32 *)ckd_calloc(N * N, sizeof(float32));
-    for (i = 0; i < N; i++) 
-	for (j = 0; j < N; j++) 
-	    tmp_a[j+N*i] = a[i][j]; 
+    tmp_a = (float32 *) ckd_calloc(N * N, sizeof(float32));
+    for (i = 0; i < N; i++)
+        for (j = 0; j < N; j++)
+            tmp_a[j + N * i] = a[i][j];
 
     /* Construct an identity matrix. */
     tmp_i = (float32 *) ckd_calloc(N * N, sizeof(float32));
-    for (i = 0; i < N; i++) 
-	tmp_i[i+N*i] = 1.0;
+    for (i = 0; i < N; i++)
+        tmp_i[i + N * i] = 1.0;
 
-    IPIV = (int32 *)ckd_calloc(N, sizeof(int32));
+    IPIV = (int32 *) ckd_calloc(N, sizeof(int32));
 
     /* Beware! all arguments of lapack have to be a pointer */
     sgesv_(&N, &NRHS, tmp_a, &LDA, IPIV, tmp_i, &LDB, &INFO);
 
     if (INFO != 0)
-	return S3_ERROR;
+        return S3_ERROR;
 
     /* FIXME: We should be able to do this in place actually */
     for (i = 0; i < n; ++i)
-	for (j = 0; j < n; ++j)
-	    ainv[i][j] = tmp_i[j+N*i];
-    
-    ckd_free ((void *)tmp_a);
-    ckd_free ((void *)tmp_i);
-    ckd_free ((void *)IPIV);
+        for (j = 0; j < n; ++j)
+            ainv[i][j] = tmp_i[j + N * i];
+
+    ckd_free((void *) tmp_a);
+    ckd_free((void *) tmp_i);
+    ckd_free((void *) IPIV);
 
     return S3_SUCCESS;
 }
 #endif
 
 void
-outerproduct(float32 **a, float32 *x, float32 *y, int32 len)
+outerproduct(float32 ** a, float32 * x, float32 * y, int32 len)
 {
     int32 i, j;
 
     for (i = 0; i < len; ++i) {
-	a[i][i] = x[i] * y[i];
-	for (j = i+1; j < len; ++j) {
-	    a[i][j] = x[i] * y[j];
-	    a[j][i] = x[j] * y[i];
-	}
+        a[i][i] = x[i] * y[i];
+        for (j = i + 1; j < len; ++j) {
+            a[i][j] = x[i] * y[j];
+            a[j][i] = x[j] * y[i];
+        }
     }
 }
 
 void
-matrixmultiply(float32 **c, float32 **a, float32 **b, int32 m, int32 n, int32 k)
+matrixmultiply(float32 ** c, float32 ** a, float32 ** b, int32 m, int32 n,
+               int32 k)
 {
     int32 i, j, r;
 
     /* FIXME: Probably faster to do this with SGEMM */
     memset(c[0], 0, sizeof(float32) * m * n);
     for (i = 0; i < m; ++i)
-	for (j = 0; j < n; ++j)
-	    for (r = 0; r < k; ++r)
-		c[i][j] += a[i][r] * b[r][j];
+        for (j = 0; j < n; ++j)
+            for (r = 0; r < k; ++r)
+                c[i][j] += a[i][r] * b[r][j];
 }
 
 void
-scalarmultiply(float32 **a, float32 x, int32 m, int32 n)
+scalarmultiply(float32 ** a, float32 x, int32 m, int32 n)
 {
     int32 i, j;
 
     for (i = 0; i < m; ++i)
-	for (j = 0; j < n; ++j)
-	    a[i][j] *= x;
+        for (j = 0; j < n; ++j)
+            a[i][j] *= x;
 }
 
 void
-matrixadd(float32 **a, float32 **b, int32 m, int32 n)
+matrixadd(float32 ** a, float32 ** b, int32 m, int32 n)
 {
     int32 i, j;
 
     for (i = 0; i < m; ++i)
-	for (j = 0; j < n; ++j)
-	    a[i][j] += b[i][j];
+        for (j = 0; j < n; ++j)
+            a[i][j] += b[i][j];
 }
 
 /*

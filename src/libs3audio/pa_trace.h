@@ -37,9 +37,8 @@
 #define MAX_TRACE_RECORDS      (2048)
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif /* __cplusplus */
+extern "C" {
+#endif                          /* __cplusplus */
 
 
     /************************************************************************************/
@@ -50,18 +49,17 @@ extern "C"
 
     void DumpTraceMessages();
     void ResetTraceMessages();
-    void AddTraceMessage( char *msg, int data );
+    void AddTraceMessage(char *msg, int data);
 
 #else
 
-#define AddTraceMessage(msg,data) /* noop */
-#define ResetTraceMessages() /* noop */
-#define DumpTraceMessages() /* noop */
+#define AddTraceMessage(msg,data)       /* noop */
+#define ResetTraceMessages()    /* noop */
+#define DumpTraceMessages()     /* noop */
 
 #endif
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
-
-#endif /* PA_TRACE_H */
+#endif                          /* __cplusplus */
+#endif                          /* PA_TRACE_H */

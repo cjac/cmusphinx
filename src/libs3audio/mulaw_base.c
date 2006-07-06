@@ -72,10 +72,11 @@
 #include "mulaw.h"
 
 
-void ad_mu2li (int16 *out, unsigned char *in, int32 n_samp)
+void
+ad_mu2li(int16 * out, unsigned char *in, int32 n_samp)
 {
     int32 i;
-    
+
     for (i = 0; i < n_samp; i++)
-	out[i] = muLaw[in[i]];
+        out[i] = muLaw[in[i]];
 }

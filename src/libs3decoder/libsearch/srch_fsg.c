@@ -79,203 +79,224 @@
 #include "kbcore.h"
 
 
-int srch_FSG_init(kb_t *kb, /**< The KB */
-		  void* srch /**< The pointer to a search structure */
-		  )
+int
+srch_FSG_init(kb_t * kb,    /**< The KB */
+              void *srch     /**< The pointer to a search structure */
+    )
 {
-  srch_t* s;
-  fsg_search_t* fsgsrch;
-  word_fsg_t* wordfsg;
-  s=(srch_t *) srch;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    word_fsg_t *wordfsg;
+    s = (srch_t *) srch;
 
-  /* This is very strange */
-  fsgsrch=fsg_search_init(NULL,s);
+    /* This is very strange */
+    fsgsrch = fsg_search_init(NULL, s);
 
-  s->grh->graph_struct=fsgsrch;
-  s->grh->graph_type=GRAPH_STRUCT_GENGRAPH;
-  
-  if((wordfsg=srch_FSG_read_fsgfile(s,cmd_ln_str("-fsg")))==NULL){
-    E_INFO("Could not read wordfsg with file name %s\n",cmd_ln_str("-fsg"));
-    return SRCH_FAILURE;
-  }
+    s->grh->graph_struct = fsgsrch;
+    s->grh->graph_type = GRAPH_STRUCT_GENGRAPH;
 
-  if(!fsg_search_set_current_fsg(fsgsrch,wordfsg->name)){
-    E_INFO("Could not set the current fsg with name %s\n",wordfsg->name);
-    return SRCH_FAILURE;
-  }
-  
-  return SRCH_SUCCESS;
+    if ((wordfsg = srch_FSG_read_fsgfile(s, cmd_ln_str("-fsg"))) == NULL) {
+        E_INFO("Could not read wordfsg with file name %s\n",
+               cmd_ln_str("-fsg"));
+        return SRCH_FAILURE;
+    }
+
+    if (!fsg_search_set_current_fsg(fsgsrch, wordfsg->name)) {
+        E_INFO("Could not set the current fsg with name %s\n",
+               wordfsg->name);
+        return SRCH_FAILURE;
+    }
+
+    return SRCH_SUCCESS;
 }
 
-word_fsg_t * srch_FSG_read_fsgfile(void* srch,const char* fsgfilename)
+word_fsg_t *
+srch_FSG_read_fsgfile(void *srch, const char *fsgfilename)
 {
-  word_fsg_t *fsg;
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
-  
-  fsg = word_fsg_readfile(fsgfilename, 
-			  cmd_ln_int32("-fsgusealtpron"),
-			  cmd_ln_int32("-fsgusefiller"),
-			  s->kbc->fillpen->silprob,
-			  s->kbc->fillpen->fillerprob,
-			  s->kbc->fillpen->lw,
-			  s->kbc->dict,
-			  s->kbc->mdef
-			  );
-			  
-  if (! fsg){
-    E_INFO("Fail to read fsg from file name %s\n",fsgfilename);
-    return NULL;
-  }
-  
-  if (! fsg_search_add_fsg (fsgsrch, fsg)) {
-    E_ERROR("Failed to add FSG '%s' to system\n", word_fsg_name(fsg));
-    word_fsg_free (fsg);
-    return NULL;
-  }
-  return fsg;
+    word_fsg_t *fsg;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
+
+    fsg = word_fsg_readfile(fsgfilename,
+                            cmd_ln_int32("-fsgusealtpron"),
+                            cmd_ln_int32("-fsgusefiller"),
+                            s->kbc->fillpen->silprob,
+                            s->kbc->fillpen->fillerprob,
+                            s->kbc->fillpen->lw,
+                            s->kbc->dict, s->kbc->mdef);
+
+    if (!fsg) {
+        E_INFO("Fail to read fsg from file name %s\n", fsgfilename);
+        return NULL;
+    }
+
+    if (!fsg_search_add_fsg(fsgsrch, fsg)) {
+        E_ERROR("Failed to add FSG '%s' to system\n", word_fsg_name(fsg));
+        word_fsg_free(fsg);
+        return NULL;
+    }
+    return fsg;
 
 }
-int srch_FSG_uninit(void* srch)
+
+int
+srch_FSG_uninit(void *srch)
 {
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-  fsg_search_free(fsgsrch);
+    fsg_search_free(fsgsrch);
 
-  return SRCH_SUCCESS;
+    return SRCH_SUCCESS;
 }
 
-int srch_FSG_begin(void* srch)
+int
+srch_FSG_begin(void *srch)
 {
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-  fsg_search_utt_start(fsgsrch);
+    fsg_search_utt_start(fsgsrch);
 
-  return SRCH_SUCCESS;
+    return SRCH_SUCCESS;
 }
 
-int srch_FSG_end(void* srch){
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
-
-  fsgsrch->senscr=s->ascale;
-  fsg_search_utt_end(fsgsrch);
-
-  return SRCH_SUCCESS;
-
-}
-
-int srch_FSG_srch_one_frame_lv2(void* srch)
+int
+srch_FSG_end(void *srch)
 {
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
-  fsgsrch->uttid=s->uttid;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-  fsg_search_frame_fwd (fsgsrch);
+    fsgsrch->senscr = s->ascale;
+    fsg_search_utt_end(fsgsrch);
 
-  return SRCH_SUCCESS;
+    return SRCH_SUCCESS;
 
 }
+
+int
+srch_FSG_srch_one_frame_lv2(void *srch)
+{
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
+    fsgsrch->uttid = s->uttid;
+
+    fsg_search_frame_fwd(fsgsrch);
+
+    return SRCH_SUCCESS;
+
+}
+
 /* This should be removed. It is currently to make the checker happy.*/
-int srch_FSG_set_lm(void* srch, const char* lmname)
+int
+srch_FSG_set_lm(void *srch, const char *lmname)
 {
-  return SRCH_SUCCESS;
-
-}
-int srch_FSG_add_lm(void* srch, lm_t *lm, const char *lmname)
-{
-  return SRCH_SUCCESS;
-
-}
-int srch_FSG_delete_lm(void* srch, const char *lmname)
-{
-  return SRCH_SUCCESS;
+    return SRCH_SUCCESS;
 
 }
 
-
-int srch_FSG_shift_one_cache_frame(void *srch,int32 win_efv)
+int
+srch_FSG_add_lm(void *srch, lm_t * lm, const char *lmname)
 {
-  ascr_t *ascr;
-  srch_t* s;
-
-  s=(srch_t*) srch;
-
-  ascr=s->ascr;
-
-  ascr_shift_one_cache_frame(ascr,win_efv);
-
-  return SRCH_SUCCESS;
+    return SRCH_SUCCESS;
 
 }
-int srch_FSG_select_active_gmm(void *srch)
-{
-  srch_t* s;
-  fsg_search_t* fsgsrch;
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
 
-  fsg_search_sen_active(fsgsrch);
-  return SRCH_SUCCESS;
+int
+srch_FSG_delete_lm(void *srch, const char *lmname)
+{
+    return SRCH_SUCCESS;
+
 }
 
-int srch_FSG_windup(void* srch, int32 frmno)
+
+int
+srch_FSG_shift_one_cache_frame(void *srch, int32 win_efv)
 {
-  return SRCH_SUCCESS;
+    ascr_t *ascr;
+    srch_t *s;
+
+    s = (srch_t *) srch;
+
+    ascr = s->ascr;
+
+    ascr_shift_one_cache_frame(ascr, win_efv);
+
+    return SRCH_SUCCESS;
+
 }
 
-int srch_FSG_dump_vithist(void* srch)
+int
+srch_FSG_select_active_gmm(void *srch)
 {
-  FILE *latfp;
-  char file[8192];
-  srch_t *s;
-  fsg_search_t* fsgsrch;
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
-
-  sprintf (file, "%s/%s.hist", cmd_ln_str("-bptbldir"), fsgsrch->uttid);
-  if ((latfp = fopen(file, "w")) == NULL)
-    E_ERROR("fopen(%s,w) failed\n", file);
-  else {
-    fsg_history_dump (fsgsrch->history, fsgsrch->uttid, latfp,fsgsrch->dict);
-    fclose(latfp);
-  }
-
-  return SRCH_SUCCESS;
+    fsg_search_sen_active(fsgsrch);
+    return SRCH_SUCCESS;
 }
 
-glist_t srch_FSG_gen_hyp (void * srch /**< a pointer of srch_t */
-			  )
+int
+srch_FSG_windup(void *srch, int32 frmno)
 {
-  srch_t *s;
-  fsg_search_t* fsgsrch;
-  srch_hyp_t *tmph;
-  glist_t ghyp, rhyp;
+    return SRCH_SUCCESS;
+}
 
-  s=(srch_t *)srch;
-  fsgsrch=(fsg_search_t*) s->grh->graph_struct;
+int
+srch_FSG_dump_vithist(void *srch)
+{
+    FILE *latfp;
+    char file[8192];
+    srch_t *s;
+    fsg_search_t *fsgsrch;
 
-  fsg_search_history_backtrace (fsgsrch, TRUE);
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-  ghyp=NULL;
-  for(tmph= fsgsrch->hyp ; tmph ; tmph = tmph->next){
-    ghyp=glist_add_ptr(ghyp,(void*)tmph);
-  }
+    sprintf(file, "%s/%s.hist", cmd_ln_str("-bptbldir"), fsgsrch->uttid);
+    if ((latfp = fopen(file, "w")) == NULL)
+        E_ERROR("fopen(%s,w) failed\n", file);
+    else {
+        fsg_history_dump(fsgsrch->history, fsgsrch->uttid, latfp,
+                         fsgsrch->dict);
+        fclose(latfp);
+    }
 
-  rhyp= glist_reverse(ghyp);
+    return SRCH_SUCCESS;
+}
 
-  return rhyp;
+glist_t
+srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
+    )
+{
+    srch_t *s;
+    fsg_search_t *fsgsrch;
+    srch_hyp_t *tmph;
+    glist_t ghyp, rhyp;
+
+    s = (srch_t *) srch;
+    fsgsrch = (fsg_search_t *) s->grh->graph_struct;
+
+    fsg_search_history_backtrace(fsgsrch, TRUE);
+
+    ghyp = NULL;
+    for (tmph = fsgsrch->hyp; tmph; tmph = tmph->next) {
+        ghyp = glist_add_ptr(ghyp, (void *) tmph);
+    }
+
+    rhyp = glist_reverse(ghyp);
+
+    return rhyp;
 }

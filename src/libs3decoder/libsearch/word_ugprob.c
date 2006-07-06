@@ -48,42 +48,45 @@
 
 #include "word_ugprob.h"
 
-word_ugprob_t**  init_word_ugprob(mdef_t *_mdef, lm_t *_lm, dict_t *_dict)
+word_ugprob_t **
+init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
 {
-  /* WARNING! _dict and dict are two variables.*/
+    /* WARNING! _dict and dict are two variables. */
 
-  s3wid_t w;
-  s3cipid_t ci;
-  int32 n_ug, ugprob;
-  ug_t *ugptr;
-  word_ugprob_t *wp, *prevwp;
-  word_ugprob_t** wugp;
+    s3wid_t w;
+    s3cipid_t ci;
+    int32 n_ug, ugprob;
+    ug_t *ugptr;
+    word_ugprob_t *wp, *prevwp;
+    word_ugprob_t **wugp;
 
-  wugp = (word_ugprob_t **) ckd_calloc (_mdef->n_ciphone,
-					sizeof(word_ugprob_t *));
-  n_ug = lm_uglist (_lm,&ugptr);
-  for (; n_ug > 0; --n_ug, ugptr++) {
-    if ((w = ugptr->dictwid) == _dict->startwid)
-      continue;
+    wugp = (word_ugprob_t **) ckd_calloc(_mdef->n_ciphone,
+                                         sizeof(word_ugprob_t *));
+    n_ug = lm_uglist(_lm, &ugptr);
+    for (; n_ug > 0; --n_ug, ugptr++) {
+        if ((w = ugptr->dictwid) == _dict->startwid)
+            continue;
 
-    ugprob = LM_UGPROB(_lm, ugptr);
+        ugprob = LM_UGPROB(_lm, ugptr);
 
-    for (; IS_S3WID(w); w = _dict->word[w].alt) {
-      ci = _dict->word[w].ciphone[0];
-      prevwp = NULL;
-      for (wp = wugp[ci]; wp && (wp->ugprob >= ugprob); wp = wp->next)
-	prevwp = wp;
-      wp = (word_ugprob_t *) listelem_alloc (sizeof(word_ugprob_t));
-      wp->wid = w;
-      wp->ugprob = ugprob;
-      if (prevwp) {
-	wp->next = prevwp->next;
-	prevwp->next = wp;
-      } else {
-	wp->next = wugp[ci];
-	wugp[ci] = wp;
-      }
+        for (; IS_S3WID(w); w = _dict->word[w].alt) {
+            ci = _dict->word[w].ciphone[0];
+            prevwp = NULL;
+            for (wp = wugp[ci]; wp && (wp->ugprob >= ugprob);
+                 wp = wp->next)
+                prevwp = wp;
+            wp = (word_ugprob_t *) listelem_alloc(sizeof(word_ugprob_t));
+            wp->wid = w;
+            wp->ugprob = ugprob;
+            if (prevwp) {
+                wp->next = prevwp->next;
+                prevwp->next = wp;
+            }
+            else {
+                wp->next = wugp[ci];
+                wugp[ci] = wp;
+            }
+        }
     }
-  }
-  return wugp;
+    return wugp;
 }

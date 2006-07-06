@@ -2,9 +2,8 @@
 #define PORT_AUDIO_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#endif /* __cplusplus */
+extern "C" {
+#endif                          /* __cplusplus */
 
 /*
  * $Id$
@@ -39,26 +38,26 @@ extern "C"
  *
  */
 
-typedef int PaError;
-typedef enum {
-    paNoError = 0,
+    typedef int PaError;
+    typedef enum {
+        paNoError = 0,
 
-    paHostError = -10000,
-    paInvalidChannelCount,
-    paInvalidSampleRate,
-    paInvalidDeviceId,
-    paInvalidFlag,
-    paSampleFormatNotSupported,
-    paBadIODeviceCombination,
-    paInsufficientMemory,
-    paBufferTooBig,
-    paBufferTooSmall,
-    paNullCallback,
-    paBadStreamPtr,
-    paTimedOut,
-    paInternalError,
-    paDeviceUnavailable
-} PaErrorNum;
+        paHostError = -10000,
+        paInvalidChannelCount,
+        paInvalidSampleRate,
+        paInvalidDeviceId,
+        paInvalidFlag,
+        paSampleFormatNotSupported,
+        paBadIODeviceCombination,
+        paInsufficientMemory,
+        paBufferTooBig,
+        paBufferTooSmall,
+        paNullCallback,
+        paBadStreamPtr,
+        paTimedOut,
+        paInternalError,
+        paDeviceUnavailable
+    } PaErrorNum;
 
 /*
  Pa_Initialize() is the library initialisation function - call this before
@@ -66,7 +65,7 @@ typedef enum {
 
 */
 
-PaError Pa_Initialize( void );
+    PaError Pa_Initialize(void);
 
 /*
  Pa_Terminate() is the library termination function - call this after
@@ -74,7 +73,7 @@ PaError Pa_Initialize( void );
 
 */
 
-PaError Pa_Terminate( void );
+    PaError Pa_Terminate(void);
 
 /*
  Pa_GetHostError() returns a host specific error code.
@@ -82,7 +81,7 @@ PaError Pa_Terminate( void );
 
 */
 
-long Pa_GetHostError( void );
+    long Pa_GetHostError(void);
 
 /*
  Pa_GetErrorText() translates the supplied PortAudio error number
@@ -90,7 +89,7 @@ long Pa_GetHostError( void );
  
 */
 
-const char *Pa_GetErrorText( PaError errnum );
+    const char *Pa_GetErrorText(PaError errnum);
 
 /*
  Sample formats
@@ -109,10 +108,10 @@ const char *Pa_GetErrorText( PaError errnum );
 
 */
 
-typedef unsigned long PaSampleFormat;
-#define paFloat32      ((PaSampleFormat) (1<<0)) /*always available*/
-#define paInt16        ((PaSampleFormat) (1<<1)) /*always available*/
-#define paInt32        ((PaSampleFormat) (1<<2)) /*always available*/
+    typedef unsigned long PaSampleFormat;
+#define paFloat32      ((PaSampleFormat) (1<<0))        /*always available */
+#define paInt16        ((PaSampleFormat) (1<<1))        /*always available */
+#define paInt32        ((PaSampleFormat) (1<<2))        /*always available */
 #define paInt24        ((PaSampleFormat) (1<<3))
 #define paPackedInt24  ((PaSampleFormat) (1<<4))
 #define paInt8         ((PaSampleFormat) (1<<5))
@@ -128,24 +127,22 @@ typedef unsigned long PaSampleFormat;
 
 */
 
-typedef int PaDeviceID;
+    typedef int PaDeviceID;
 #define paNoDevice -1
 
-int Pa_CountDevices( void );
+    int Pa_CountDevices(void);
 
-typedef struct
-{
-    int structVersion;
-    const char *name;
-    int maxInputChannels;
-    int maxOutputChannels;
-    /* Number of discrete rates, or -1 if range supported. */
-    int numSampleRates;
-    /* Array of supported sample rates, or {min,max} if range supported. */
-    const double *sampleRates;
-    PaSampleFormat nativeSampleFormats;
-}
-PaDeviceInfo;
+    typedef struct {
+        int structVersion;
+        const char *name;
+        int maxInputChannels;
+        int maxOutputChannels;
+        /* Number of discrete rates, or -1 if range supported. */
+        int numSampleRates;
+        /* Array of supported sample rates, or {min,max} if range supported. */
+        const double *sampleRates;
+        PaSampleFormat nativeSampleFormats;
+    } PaDeviceInfo;
 
 /*
  Pa_GetDefaultInputDeviceID(), Pa_GetDefaultOutputDeviceID() return the
@@ -163,8 +160,8 @@ PaDeviceInfo;
 
 */
 
-PaDeviceID Pa_GetDefaultInputDeviceID( void );
-PaDeviceID Pa_GetDefaultOutputDeviceID( void );
+    PaDeviceID Pa_GetDefaultInputDeviceID(void);
+    PaDeviceID Pa_GetDefaultOutputDeviceID(void);
 
 
 
@@ -179,7 +176,7 @@ PaDeviceID Pa_GetDefaultOutputDeviceID( void );
 
 */
 
-const PaDeviceInfo* Pa_GetDeviceInfo( PaDeviceID device );
+    const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceID device);
 
 /*
  PaTimestamp is used to represent a continuous sample clock with arbitrary
@@ -188,7 +185,7 @@ const PaDeviceInfo* Pa_GetDeviceInfo( PaDeviceID device );
 
 */
 
-typedef double PaTimestamp;
+    typedef double PaTimestamp;
 
 /*
  PortAudioCallback is implemented by PortAudio clients.
@@ -218,10 +215,9 @@ typedef double PaTimestamp;
 
 */
 
-typedef int (PortAudioCallback)(
-    void *inputBuffer, void *outputBuffer,
-    unsigned long framesPerBuffer,
-    PaTimestamp outTime, void *userData );
+    typedef int (PortAudioCallback) (void *inputBuffer, void *outputBuffer,
+                                     unsigned long framesPerBuffer,
+                                     PaTimestamp outTime, void *userData);
 
 
 /*
@@ -233,10 +229,10 @@ typedef int (PortAudioCallback)(
 */
 
 #define   paNoFlag      (0)
-#define   paClipOff     (1<<0)   /* disable default clipping of out of range samples */
-#define   paDitherOff   (1<<1)   /* disable default dithering */
+#define   paClipOff     (1<<0)  /* disable default clipping of out of range samples */
+#define   paDitherOff   (1<<1)  /* disable default dithering */
 #define   paPlatformSpecificFlags (0x00010000)
-typedef   unsigned long PaStreamFlags;
+    typedef unsigned long PaStreamFlags;
 
 /*
  A single PortAudioStream provides multiple channels of real-time
@@ -244,7 +240,7 @@ typedef   unsigned long PaStreamFlags;
  Pointers to PortAudioStream objects are passed between PortAudio functions.
 */
 
-typedef void PortAudioStream;
+    typedef void PortAudioStream;
 #define PaStream PortAudioStream
 
 /*
@@ -322,21 +318,20 @@ typedef void PortAudioStream;
  
 */
 
-PaError Pa_OpenStream( PortAudioStream** stream,
-                       PaDeviceID inputDevice,
-                       int numInputChannels,
-                       PaSampleFormat inputSampleFormat,
-                       void *inputDriverInfo,
-                       PaDeviceID outputDevice,
-                       int numOutputChannels,
-                       PaSampleFormat outputSampleFormat,
-                       void *outputDriverInfo,
-                       double sampleRate,
-                       unsigned long framesPerBuffer,
-                       unsigned long numberOfBuffers,
-                       PaStreamFlags streamFlags,
-                       PortAudioCallback *callback,
-                       void *userData );
+    PaError Pa_OpenStream(PortAudioStream ** stream,
+                          PaDeviceID inputDevice,
+                          int numInputChannels,
+                          PaSampleFormat inputSampleFormat,
+                          void *inputDriverInfo,
+                          PaDeviceID outputDevice,
+                          int numOutputChannels,
+                          PaSampleFormat outputSampleFormat,
+                          void *outputDriverInfo,
+                          double sampleRate,
+                          unsigned long framesPerBuffer,
+                          unsigned long numberOfBuffers,
+                          PaStreamFlags streamFlags,
+                          PortAudioCallback * callback, void *userData);
 
 
 /*
@@ -352,22 +347,22 @@ PaError Pa_OpenStream( PortAudioStream** stream,
 
 */
 
-PaError Pa_OpenDefaultStream( PortAudioStream** stream,
-                              int numInputChannels,
-                              int numOutputChannels,
-                              PaSampleFormat sampleFormat,
-                              double sampleRate,
-                              unsigned long framesPerBuffer,
-                              unsigned long numberOfBuffers,
-                              PortAudioCallback *callback,
-                              void *userData );
+    PaError Pa_OpenDefaultStream(PortAudioStream ** stream,
+                                 int numInputChannels,
+                                 int numOutputChannels,
+                                 PaSampleFormat sampleFormat,
+                                 double sampleRate,
+                                 unsigned long framesPerBuffer,
+                                 unsigned long numberOfBuffers,
+                                 PortAudioCallback * callback,
+                                 void *userData);
 
 /*
  Pa_CloseStream() closes an audio stream, flushing any pending buffers.
 
 */
 
-PaError Pa_CloseStream( PortAudioStream* );
+    PaError Pa_CloseStream(PortAudioStream *);
 
 /*
  Pa_StartStream() and Pa_StopStream() begin and terminate audio processing.
@@ -377,11 +372,11 @@ PaError Pa_CloseStream( PortAudioStream* );
     
 */
 
-PaError Pa_StartStream( PortAudioStream *stream );
+    PaError Pa_StartStream(PortAudioStream * stream);
 
-PaError Pa_StopStream( PortAudioStream *stream );
+    PaError Pa_StopStream(PortAudioStream * stream);
 
-PaError Pa_AbortStream( PortAudioStream *stream );
+    PaError Pa_AbortStream(PortAudioStream * stream);
 
 /*
  Pa_StreamActive() returns one (1) when the stream is active (ie playing
@@ -394,7 +389,7 @@ PaError Pa_AbortStream( PortAudioStream *stream );
  
 */
 
-PaError Pa_StreamActive( PortAudioStream *stream );
+    PaError Pa_StreamActive(PortAudioStream * stream);
 
 /*
  Pa_StreamTime() returns the current output time in samples for the stream.
@@ -403,7 +398,7 @@ PaError Pa_StreamActive( PortAudioStream *stream );
  
 */
 
-PaTimestamp Pa_StreamTime( PortAudioStream *stream );
+    PaTimestamp Pa_StreamTime(PortAudioStream * stream);
 
 /*
  Pa_GetCPULoad() returns the CPU Load for the stream.
@@ -416,7 +411,7 @@ PaTimestamp Pa_StreamTime( PortAudioStream *stream );
  
 */
 
-double Pa_GetCPULoad( PortAudioStream* stream );
+    double Pa_GetCPULoad(PortAudioStream * stream);
 
 /*
  Pa_GetMinNumBuffers() returns the minimum number of buffers required by
@@ -433,7 +428,7 @@ double Pa_GetCPULoad( PortAudioStream* stream );
  
 */
 
-int Pa_GetMinNumBuffers( int framesPerBuffer, double sampleRate );
+    int Pa_GetMinNumBuffers(int framesPerBuffer, double sampleRate);
 
 /*
  Pa_Sleep() puts the caller to sleep for at least 'msec' milliseconds.
@@ -445,7 +440,7 @@ int Pa_GetMinNumBuffers( int framesPerBuffer, double sampleRate );
  
 */
 
-void Pa_Sleep( long msec );
+    void Pa_Sleep(long msec);
 
 /*
  Pa_GetSampleSize() returns the size in bytes of a single sample in the
@@ -454,10 +449,10 @@ void Pa_Sleep( long msec );
   
 */
 
-PaError Pa_GetSampleSize( PaSampleFormat format );
+    PaError Pa_GetSampleSize(PaSampleFormat format);
 
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
-#endif /* PORT_AUDIO_H */
+#endif                          /* __cplusplus */
+#endif                          /* PORT_AUDIO_H */

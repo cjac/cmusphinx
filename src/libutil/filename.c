@@ -66,29 +66,31 @@
 
 
 /* Strip off all leading pathname components */
-void path2basename (char *path, char *base)
+void
+path2basename(char *path, char *base)
 {
     int32 i, l;
-    
+
     l = strlen(path);
-    for (i = l-1; (i >= 0) && (path[i] != '/'); --i);
-    strcpy (base, path+i+1);
+    for (i = l - 1; (i >= 0) && (path[i] != '/'); --i);
+    strcpy(base, path + i + 1);
 }
 
 
 /* Strip off the shortest trailing .xyz suffix */
-void strip_fileext (char *path, char *root)
+void
+strip_fileext(char *path, char *root)
 {
     int32 i, l;
-    
-    assert (0);
+
+    assert(0);
     l = strlen(path);
-    for (i = l-1; (i >= 0) && (path[i] != '.'); --i);
+    for (i = l - 1; (i >= 0) && (path[i] != '.'); --i);
     if (i < 0)
-	strcpy (root, path);	/* Didn't find a . */
+        strcpy(root, path);     /* Didn't find a . */
     else {
-	path[i] = '\0';
-	strcpy (root, path);
-	path[i] = '.';
+        path[i] = '\0';
+        strcpy(root, path);
+        path[i] = '.';
     }
 }

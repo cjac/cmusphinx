@@ -56,26 +56,27 @@
 #include <utt.h>
 #include <profile.h>
 #include <kb.h>
-#include <fe.h> 
+#include <fe.h>
 #include "live_dump.h"
 #include "fe_dump.h"
 #include "feat_dump.h"
 #include "cmd_ln_args.h"
 
 
-static fe_t  *fe;
+static fe_t *fe;
 
-static kb_t  *kb;
+static kb_t *kb;
 static kbcore_t *kbcore;
 
 static partialhyp_t *parthyp = NULL;
 static float32 *dummyframe;
 
 /* This routine initializes decoder variables for live mode decoding */
-void live_initialize_decoder(char *live_args)
+void
+live_initialize_decoder(char *live_args)
 {
     static kb_t live_kb;
-    int32   maxcepvecs, maxhyplen, samprate, ceplen;
+    int32 maxcepvecs, maxhyplen, samprate, ceplen;
     param_t *fe_param;
 
     metricsStart("Loading");
@@ -86,14 +87,16 @@ void live_initialize_decoder(char *live_args)
     kb = &live_kb;
     kbcore = kb->kbcore;
 
-    maxhyplen = cmd_ln_int32 ("-maxhyplen");
-    if (!parthyp) 
-        parthyp  = (partialhyp_t *) ckd_calloc(maxhyplen, sizeof(partialhyp_t));
+    maxhyplen = cmd_ln_int32("-maxhyplen");
+    if (!parthyp)
+        parthyp =
+            (partialhyp_t *) ckd_calloc(maxhyplen, sizeof(partialhyp_t));
 
     fe_param = (param_t *) ckd_calloc(1, sizeof(param_t));
-    samprate = cmd_ln_int32 ("-samprate");
+    samprate = cmd_ln_int32("-samprate");
     if (samprate != 8000 && samprate != 16000)
-	E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",samprate);
+        E_FATAL("Sampling rate %s not supported. Must be 8000 or 16000\n",
+                samprate);
 
     fe_param->SAMPLING_RATE = (float32) samprate;
     fe_param->LOWER_FILT_FREQ = cmd_ln_float32("-lowerf");
@@ -110,25 +113,26 @@ void live_initialize_decoder(char *live_args)
 
     fe = fe_init(fe_param);
     if (!fe)
-	E_FATAL("Front end initialization fe_init() failed\n");
+        E_FATAL("Front end initialization fe_init() failed\n");
 
-    maxcepvecs = cmd_ln_int32 ("-maxcepvecs");
+    maxcepvecs = cmd_ln_int32("-maxcepvecs");
     ceplen = kbcore->fcb->cepsize;
 
-    dummyframe = (float32*) ckd_calloc(1 * ceplen,sizeof(float32));	/*  */
+    dummyframe = (float32 *) ckd_calloc(1 * ceplen, sizeof(float32));   /*  */
 
     metricsStop("Loading");
 }
 
 
 /* RAH Apr.13.2001: Memory was being held, Added Call fe_close to release memory held by fe and then release locally allocated memory */
-int32 live_free_memory ()
+int32
+live_free_memory()
 {
-    parse_args_free(); /* Free memory allocated during the argument parseing stage */
-    fe_close (fe);		/*  */
-    kb_free (kb);		/*  */
-    ckd_free ((void *) dummyframe); /*  */
-    ckd_free ((void *) parthyp);  /*  */
+    parse_args_free();          /* Free memory allocated during the argument parseing stage */
+    fe_close(fe);               /*  */
+    kb_free(kb);                /*  */
+    ckd_free((void *) dummyframe);      /*  */
+    ckd_free((void *) parthyp); /*  */
     return (0);
 }
 
@@ -142,25 +146,26 @@ int32 live_free_memory ()
  * "parthyp" and returns the number of words in the hypothesis
  *******************************************************************/
 
-int32 live_get_partialhyp(int32 endutt)
+int32
+live_get_partialhyp(int32 endutt)
 {
     int32 id, nwds;
-    glist_t   hyp;
-    gnode_t   *gn;
-    srch_hyp_t     *h;
-    dict_t    *dict;
+    glist_t hyp;
+    gnode_t *gn;
+    srch_hyp_t *h;
+    dict_t *dict;
 
-    dict = kbcore_dict (kb->kbcore);
+    dict = kbcore_dict(kb->kbcore);
     if (endutt)
         id = vithist_utt_end(kb->vithist, kb->kbcore);
     else
         id = vithist_partialutt_end(kb->vithist, kb->kbcore);
 
     if (id > 0) {
-        hyp = vithist_backtrace(kb->vithist,id,dict);
+        hyp = vithist_backtrace(kb->vithist, id, dict);
 
-        for (gn = hyp,nwds=0; gn; gn = gnode_next(gn),nwds++) {
-            h = (srch_hyp_t *) gnode_ptr (gn);
+        for (gn = hyp, nwds = 0; gn; gn = gnode_next(gn), nwds++) {
+            h = (srch_hyp_t *) gnode_ptr(gn);
             if (parthyp[nwds].word != NULL) {
                 ckd_free(parthyp[nwds].word);
                 parthyp[nwds].word = NULL;
@@ -168,20 +173,21 @@ int32 live_get_partialhyp(int32 endutt)
             parthyp[nwds].word = strdup(dict_wordstr(dict, h->id));
             parthyp[nwds].sf = h->sf;
             parthyp[nwds].ef = h->ef;
-	    parthyp[nwds].ascr = h->ascr;
-	    parthyp[nwds].lscr = h->lscr;
+            parthyp[nwds].ascr = h->ascr;
+            parthyp[nwds].lscr = h->lscr;
         }
-        if (parthyp[nwds].word != NULL){
+        if (parthyp[nwds].word != NULL) {
             ckd_free(parthyp[nwds].word);
             parthyp[nwds].word = NULL;
         }
         /* Free hyplist */
         for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-            h = (srch_hyp_t *) gnode_ptr (gn);
-            ckd_free ((void *) h);
+            h = (srch_hyp_t *) gnode_ptr(gn);
+            ckd_free((void *) h);
         }
-        glist_free (hyp);
-    } else {
+        glist_free(hyp);
+    }
+    else {
         nwds = 0;
         if (parthyp[nwds].word != NULL) {
             ckd_free(parthyp[nwds].word);
@@ -189,7 +195,7 @@ int32 live_get_partialhyp(int32 endutt)
         }
     }
 
-    return(nwds);
+    return (nwds);
 }
 
 
@@ -202,31 +208,32 @@ int32 live_get_partialhyp(int32 endutt)
  * of a new utterance 
  */
 
-int32 live_utt_decode_block (int16 *samples, int32 nsamples, 
-		      int32 live_endutt, partialhyp_t **ohyp)
+int32
+live_utt_decode_block(int16 * samples, int32 nsamples,
+                      int32 live_endutt, partialhyp_t ** ohyp)
 {
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
     static float32 ***live_feat = NULL;
 
-    int32   live_nfr, live_nfeatvec;
-    int32   nwds;
+    int32 live_nfr, live_nfeatvec;
+    int32 nwds;
     float32 **mfcbuf;
     stat_t *st;
 
-    st=kb->stat;
+    st = kb->stat;
 
     metricsStart("Decode");
 
-    if(live_feat==NULL)
-      live_feat = feat_array_alloc (kbcore_fcb(kbcore), LIVEBUFBLOCKSIZE);
+    if (live_feat == NULL)
+        live_feat = feat_array_alloc(kbcore_fcb(kbcore), LIVEBUFBLOCKSIZE);
 
-    if (live_begin_new_utt){
+    if (live_begin_new_utt) {
         kb->uttid = "bogus ID";
         fe_start_utt(fe);
-	utt_begin (kb);
-	frmno = 0;
-	st->nfr = 0;
+        utt_begin(kb);
+        frmno = 0;
+        st->nfr = 0;
         st->utt_hmm_eval = 0;
         st->utt_sen_eval = 0;
         st->utt_gau_eval = 0;
@@ -238,16 +245,17 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     metricsStart("FrontEnd");
 
-    live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
+    live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf);     /*  */
 
     if (live_endutt) {
         /* RAH, It seems that we shouldn't throw out this data */
-        fe_dump_end_utt(fe,dummyframe); /* Flush out the fe */
+        fe_dump_end_utt(fe, dummyframe);        /* Flush out the fe */
     }
 
     /* Compute feature vectors */
     live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
-                                               live_nfr, live_begin_new_utt,
+                                               live_nfr,
+                                               live_begin_new_utt,
                                                live_endutt, live_feat);
     metricsStop("FrontEnd");
 
@@ -255,10 +263,10 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     metricsStart("ScorePrune");
 
-    if(live_nfeatvec>0){
-      utt_decode_block (live_feat, live_nfeatvec, &frmno, kb);
+    if (live_nfeatvec > 0) {
+        utt_decode_block(live_feat, live_nfeatvec, &frmno, kb);
     }
-    
+
     metricsStop("ScorePrune");
 
     metricsStop("Decode");
@@ -268,7 +276,7 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
     metricsStart("ExtractHypothesis");
 
-    nwds =  live_get_partialhyp(live_endutt);
+    nwds = live_get_partialhyp(live_endutt);
     *ohyp = parthyp;
 
     metricsStop("ExtractHypothesis");
@@ -278,12 +286,12 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
     metricsStart("Decode");
 
     if (live_endutt) {
-	live_begin_new_utt = 1;
-	st->tot_fr += st->nfr;
-	utt_end(kb);
+        live_begin_new_utt = 1;
+        st->tot_fr += st->nfr;
+        utt_end(kb);
     }
     else {
-	live_begin_new_utt = 0;
+        live_begin_new_utt = 0;
     }
 
     metricsStop("Decode");
@@ -298,32 +306,33 @@ int32 live_utt_decode_block (int16 *samples, int32 nsamples,
 
        RAH, this must be freed since fe_process_utt allocates it
 
-       */
+     */
 
-    return(nwds);
+    return (nwds);
 }
 
 /**
  * Routine to run the frontend on a block of samples.
  */
 
-int32 live_fe_process_block (int16 *samples, int32 nsamples, 
-			     int32 live_endutt, partialhyp_t **ohyp)
+int32
+live_fe_process_block(int16 * samples, int32 nsamples,
+                      int32 live_endutt, partialhyp_t ** ohyp)
 {
     static int32 live_begin_new_utt = 1;
     static int32 frmno;
     float32 **live_feat;
-    int32   live_nfr, live_nfeatvec;
+    int32 live_nfr, live_nfeatvec;
     float32 **mfcbuf;
     stat_t *st;
 
-    st=kb->stat;
+    st = kb->stat;
 
 
     if (live_begin_new_utt) {
         fe_start_utt(fe);
-	frmno = 0;
-	st->nfr = 0;
+        frmno = 0;
+        st->nfr = 0;
         st->utt_hmm_eval = 0;
         st->utt_sen_eval = 0;
         st->utt_gau_eval = 0;
@@ -336,13 +345,14 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 
     metricsStart("FrontEnd");
 
-    live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf); /*  */
-    if (live_endutt) /* RAH, It seems that we shouldn't throw out this data */
-        fe_dump_end_utt(fe,dummyframe); /* Flush out the fe */
+    live_nfr = fe_dump_process_utt(fe, samples, nsamples, &mfcbuf);     /*  */
+    if (live_endutt)            /* RAH, It seems that we shouldn't throw out this data */
+        fe_dump_end_utt(fe, dummyframe);        /* Flush out the fe */
 
     /* Compute feature vectors */
     live_nfeatvec = feat_dump_s2mfc2feat_block(kbcore_fcb(kbcore), mfcbuf,
-                                               live_nfr, live_begin_new_utt,
+                                               live_nfr,
+                                               live_begin_new_utt,
                                                live_endutt, &live_feat);
 
     metricsStop("FrontEnd");
@@ -356,11 +366,11 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 
     /* Clean up */
     if (live_endutt) {
-	live_begin_new_utt = 1;
-	st->tot_fr += st->nfr;
+        live_begin_new_utt = 1;
+        st->tot_fr += st->nfr;
     }
     else {
-	live_begin_new_utt = 0;
+        live_begin_new_utt = 0;
     }
 
     ckd_free_2d((void **) mfcbuf);
@@ -369,7 +379,8 @@ int32 live_fe_process_block (int16 *samples, int32 nsamples,
 }
 
 
-void live_print_profiles(FILE *file)
+void
+live_print_profiles(FILE * file)
 {
     ptmr_print_all(file, &kb->stat->tm_sen, (float64) 1);
     ptmr_print_all(file, &kb->stat->tm_srch, (float64) 1);

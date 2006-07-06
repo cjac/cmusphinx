@@ -39,30 +39,27 @@
 
 #include "fe.h"
 
-const char *
-fe_warp_inverse_linear_doc(void);
+const char *fe_warp_inverse_linear_doc(void);
 
-uint32
-fe_warp_inverse_linear_id(void);
+uint32 fe_warp_inverse_linear_id(void);
 
-uint32
-fe_warp_inverse_linear_n_param(void);
+uint32 fe_warp_inverse_linear_n_param(void);
 
 void
-fe_warp_inverse_linear_set_parameters(char *param_str, float sampling_rate);
+ fe_warp_inverse_linear_set_parameters(char *param_str, float sampling_rate);
 
 float
-fe_warp_inverse_linear_warped_to_unwarped(float nonlinear);
+ fe_warp_inverse_linear_warped_to_unwarped(float nonlinear);
 
 float
-fe_warp_inverse_linear_unwarped_to_warped(float linear);
+ fe_warp_inverse_linear_unwarped_to_warped(float linear);
 
 void
-fe_warp_inverse_linear_print(const char *label);
+ fe_warp_inverse_linear_print(const char *label);
 
-#endif /* FE_WARP_inverse_linear_H */ 
-
+#endif                          /* FE_WARP_inverse_linear_H */
 
+
 /*
  * Log record.  Maintained by RCS.
  *
