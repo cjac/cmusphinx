@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -62,38 +63,41 @@
 
 /** \file vector.h
     \brief operation on Vector
- */
+*/
 #include <s3types.h>
 #include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 typedef float32 *vector_t;
 
 
 /* Why do these belong here?? */
-  /** \struct arraysize_t
-   * \brief wrapper of array size 
-   */
+/** \struct arraysize_t
+ * \brief wrapper of array size 
+ */
 typedef struct {
     int32 r;		/**< #rows, */
     int32 c;		/**< #cols in an array */
 } arraysize_t;
 
-  /** \struct point_t
-   * \brief wrapper of a point in integer
-   */
+/** \struct point_t
+ * \brief wrapper of a point in integer
+ */
 
 typedef struct {
     int32 x;		/**< x-coordinate, */
     int32 y;		/**< y-coordinate of a point */
 } point_t;
 
-  /** \struct point_t
-   * \brief wrapper of a point in floating point
-   */
+/** \struct point_t
+ * \brief wrapper of a point in floating point
+ */
 
 typedef struct {
     float32 x;		/**< x-coordinate, */
@@ -101,30 +105,30 @@ typedef struct {
 } fpoint_t;		/**< Like point_t, but with float32 values */
 
 
-  /**
+/**
  * The reason for some of the "trivial" routines below is that they could be OPTIMIZED for SPEED
  * at some point.
  */
 
 
-  /** Floor all elements of v[0..dim-1] to min value of f */
-  void vector_floor(vector_t v,  /**< The vector */
-		    int32 dim,     /**< The dimension of the vector */
-		    float64 f      /**< The floor value */
-		  );
+/** Floor all elements of v[0..dim-1] to min value of f */
+void vector_floor(vector_t v,  /**< The vector */
+		  int32 dim,     /**< The dimension of the vector */
+		  float64 f      /**< The floor value */
+    );
 
 
-  /** Floor all non-0 elements of v[0..dim-1] to min value of f */
+/** Floor all non-0 elements of v[0..dim-1] to min value of f */
 void vector_nz_floor(vector_t v, int32 dim, float64 f);
 
 
-  /** Normalize the vector. */
-  int32 vector_normalize(vector_t v,  /**< The vector */
-			 uint32 dim    /**< The dimension of the vector */
-		       );
+/** Normalize the vector. */
+int32 vector_normalize(vector_t v,  /**< The vector */
+		       uint32 dim    /**< The dimension of the vector */
+    );
 
 
-  /**
+/**
  * Normalize the elements of the given vector so that they sum to 1.0.  If the sum is 0.0
  * to begin with, the vector is left untouched.  
  * @ The normalization factor.
@@ -132,21 +136,21 @@ void vector_nz_floor(vector_t v, int32 dim, float64 f);
 float64 vector_sum_norm(vector_t v, int32 dim);
 
 
-  /** Print vector in one line, in %11.4e format, terminated by newline */
+/** Print vector in one line, in %11.4e format, terminated by newline */
 void vector_print(FILE *fp, vector_t v, int32 dim);
 
 
-  /** Return TRUE iff given vector is all 0.0 */
+/** Return TRUE iff given vector is all 0.0 */
 int32 vector_is_zero (float32 *vec,	/**< In: Vector to be checked */
 		      int32 len	/**< In: Length of above vector */
-		      );
+    );
 
-  /** Return TRUE iff one of the component of the vector is nan */
-  int32 vector_is_nan (float32 *vec, /**< In: Vector to be checked */
-		       int32 len     /**< In: Length of above vector */
-		       );
+/** Return TRUE iff one of the component of the vector is nan */
+int32 vector_is_nan (float32 *vec, /**< In: Vector to be checked */
+		     int32 len     /**< In: Length of above vector */
+    );
 
-  /**
+/**
  * Search for the max or min valued component in the given vector.  The vector length must be
  * strictly > 0 (val[] must have at least one valid value).  If more than one component
  * qualifies, the first one is chosen.
@@ -158,21 +162,21 @@ int32 vector_maxcomp_float32 (float32 *val, int32 len);
 int32 vector_mincomp_float32 (float32 *val, int32 len);
 
 
-  /** Accumulate src into dst */
+/** Accumulate src into dst */
 void vector_accum (float32 *dst,	/**< In/Out: dst[i] += src[i] */
 		   float32 *src,	/**< In: See above */
 		   int32 len		/**< In: Length of above vectors */
-		   );
+    );
 
-  /**
+/**
  * Compare the two given vectors. 
  * @return -1, 0, or +1 depending on v1 <, =, or > v2 (as determined by the earliest unequal component).
  */
 int32 vector_cmp (float32 *v1, float32 *v2,	/**< In: Vectors to be compared */
 		  int32 len		/**< In: Length of each vector */
-		  );
+    );
 
-  /**
+/**
  * Compute the mean vector from the given set of vector data.
  * @return: 0 if successful, -1 if any error (there shouldn't be any error).
  */
@@ -181,16 +185,16 @@ int32 vector_mean (float32 *mean,	/**< Out: Computed mean; caller should allocat
 		   float32 **data,	/**< In: Set of data over which mean is computed */
 		   int32 n_vec,		/**< In: #Vectors in data */
 		   int32 n_dim	/**< In: Dimensionality of each vector (and mean) */
-		   );
+    );
 
-  /**
+/**
  * Return the Euclidean distance (actually, distance^2) between the two given vectors.
  */
 float64 vector_dist_eucl (float32 *v1, float32 *v2,	/**< In: The two input vectors */
 			  int32 len	/**< In: Length of each vector */
-			  );
+    );
 
-  /**
+/**
  * Given a Gaussian density with mean vector m and diagonal variance vector v, and some
  * input vector x, all of length n, the Mahalanobis distance of x from the Gaussian mean m
  * is given by:
@@ -207,9 +211,9 @@ float64 vector_dist_eucl (float32 *v1, float32 *v2,	/**< In: The two input vecto
 float64
 vector_maha_precomp (float32 *var,	/**< In/Out: Variance vector, modified to 1/2var */
 		     int32 len	/**< In: Length of the above vector */
-		     );
+    );
 
-  /**
+/**
  * Mahalanobis distance, using some precomputed portions of variance and determinant.
  * (Actually not "distance" at all, but Gaussian density value.)
  * Computed in log domain.
@@ -224,9 +228,9 @@ vector_dist_maha (float32 *vec,		/**< In: Vector for which distance from mean
 		  float64 norm,		/**< In: Normalization factor computed by
 					   vector_maha_precomp() */
 		  int32 len		/**< In: Length of each vector involved */
-		  );
+    );
 
-  /**
+/**
  * Generate a vector quantized table for the input data, using the K-means algorithm, and the
  * Euclidean distance measure.
  * Return value: The squared quantization error of the final result.
@@ -247,14 +251,14 @@ float64 vector_vqgen (float32 **data,	/**< In: Input Data to be quantized */
 					   data[i].  Caller must allocate this array */
 
 		      int32 seed      /**< In : The seed for a random generator
-					   if it is smaller than 0, use the internal
-					   mechanism to generate seed. 
-					   else use the seed to seed the random
-					   generator.
-					 */
-		      );
+					 if it is smaller than 0, use the internal
+					 mechanism to generate seed. 
+					 else use the seed to seed the random
+					 generator.
+				      */
+    );
 
-  /**
+/**
  * Find the entry (row) of mean that is closest (according to Euclidean distance) to vec.
  * Return value: index of the selected row.
  */
@@ -264,17 +268,17 @@ int32 vector_vqlabel (float32 *vec,	/**< In: Vector to be compared against VQ ta
 		      int32 cols,	/**< In: #Cols in mean (and vec) */
 		      float64 *sqerr	/**< Out: Squared error (distance) between vec and the
 					   selected codeword.  May be NULL if not needed. */
-		      );
+    );
 
-  /**
+/**
  * Treat the given vector as a PDF and compute its entropy (-sum(p * log2(p))).  (The PDF values
  * must be >= 0.0, of course.)  The zero elements of the PDF are skipped.
  */
 float64 vector_pdf_entropy (float32 *p,	/**< In: Vector (PDF) whose entropy is to be computed */
 			    int32 len	/**< In: Length of p[] */
-			    );
+    );
 
-  /**
+/**
  * Return cross-entropy of two PDFs; like vector_entropy, but (-sum(p1 * log2(p2))).  (The PDF
  * values must be >= 0.0, of course.)  The zero elements of p2 are skipped.
  */
@@ -282,7 +286,7 @@ float64 vector_pdf_cross_entropy (float32 *p1,
 				  float32 *p2,	/**< In: Zero elements of p2 are skipped */
 				  int32 len);
 
-  /**
+/**
  * Generic table of individual Gaussian vectors, with diagonal co-variance matrices (i.e.,
  * only the diagonal is maintained, as a vector).
  */
@@ -293,11 +297,11 @@ typedef struct {
     float32 **var;	/**< n_cw x veclen corresponding (diagonal) variance values */
     float32 *lrd;	/**< Log(Reciprocal(Determinant(Co-var. matrix))) */
     float64 distfloor;	/**< When Mahalanobis distance values are converted to logs3 domain, the
-			   int32 result can underflow.  To avoid this, floor before conversion */
+                           int32 result can underflow.  To avoid this, floor before conversion */
 } vector_gautbl_t;
 
 
-  /**
+/**
  * The obvious allocation and free routines for vector_gautbl_t.{mean,var,lrd}.  Also sets
  * gautbl->{n_mgau, veclen, distfloor}; the last to the equivalent of S3_LOGPROB_ZERO.
  */
@@ -306,21 +310,21 @@ void vector_gautbl_alloc (vector_gautbl_t *gautbl,
 void vector_gautbl_free (vector_gautbl_t *gautbl);
 
 
-  /**
+/**
  * Floor all the variance values in the given Gaussians table.
  */
 void vector_gautbl_var_floor (vector_gautbl_t *gautbl,	/**< In/Out: Table to be updated */
 			      float64 floor		/**< In: Floor value */
-			      );
+    );
 
-  /**
+/**
  * Carry out the vector_maha_precomp, above, over all the Gaussians in the given table, updating
  * gau->lrd[] as a result.  The needed memory must have been already allocated by the caller.
  */
 void vector_gautbl_maha_precomp (vector_gautbl_t *gau);
 
 
-  /**
+/**
  * Compare the input vector to the given range of subvector codewords in the given codebook,
  * Enter the computed Mahalanobis distances, converted into logs3 values, into the given score
  * array.  (Why bother with the {offset,count} range??  For "blocking" such computation so that
@@ -334,7 +338,7 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
 			  int32 *scr	/**< Out: Mahalanobis distance scores (logs3 values).
 					   Caller must allocate this array.  Note that only
 					   score[offset..offset+count-1] are updated. */
-			  );
+    );
 
 #ifdef __cplusplus
 }

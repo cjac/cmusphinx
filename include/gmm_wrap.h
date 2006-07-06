@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -77,51 +78,51 @@ int32 approx_ci_gmm_compute(void *srch,  /**< a pointer to a srch_t */
 			    float32 *feat,  /**< feature vector */
 			    int32 cache_idx, /**< cache index */
 			    int32 wav_idx    /**< frame index */
-			    );
+    );
 
 /**
    This wrapper calls the approximate GMM computation routine which
    compute the senone score.  Then the composite senone will also be
    computed. 
- */
+*/
 int32 approx_cd_gmm_compute_sen_comp(
-				     void *srch, /**< a pointer to a srch_t */
-				     float32 **feat, /**< feature vector */
-				     int32 wav_idx  /**< frame index */
-				     );
+    void *srch, /**< a pointer to a srch_t */
+    float32 **feat, /**< feature vector */
+    int32 wav_idx  /**< frame index */
+    );
 
 /**
    This wrapper that calls the approximate GMM computation routine which 
    compute only normal senone. 
- */
+*/
 int32 approx_cd_gmm_compute_sen(
-				void *srch, /**< a pointer to a srch_t */
-				float32 **feat, /**< feature vector #stream x #coeff*/
-				int32 wav_idx  /**< frame index */
-				);
+    void *srch, /**< a pointer to a srch_t */
+    float32 **feat, /**< feature vector #stream x #coeff*/
+    int32 wav_idx  /**< frame index */
+    );
 
 /**
    This wrapper calls the multi-stream exact GMM computation routine
    which compute the senone score.  Then the composite senone will also be
    computed.
- */
+*/
 
 int32 ms_cd_gmm_compute_sen_comp(
-				 void *srch,   /**< a pointer to a srch_t */
-				 float32 **feat,  /**< feature vector #stream x #coeff*/
-				 int32 wav_idx    /**< frame index */
-				 );
+    void *srch,   /**< a pointer to a srch_t */
+    float32 **feat,  /**< feature vector #stream x #coeff*/
+    int32 wav_idx    /**< frame index */
+    );
 
 /**
    This wrapper that calls the approximate GMM computation routine which 
    compute only normal senone. 
- */
+*/
 
 int32 ms_cd_gmm_compute_sen(
-			    void *srch,   /**< a pointer to a srch_t */
-			    float32 **feat,  /**< feature vector #stream x #coeff*/
-			    int32 wav_idx    /**< frame index */
-			    );
+    void *srch,   /**< a pointer to a srch_t */
+    float32 **feat,  /**< feature vector #stream x #coeff*/
+    int32 wav_idx    /**< frame index */
+    );
 
 /**
    Depends on which data structure has been initialized, s3_cd_gmm_compute_sen_comp
@@ -130,14 +131,14 @@ int32 ms_cd_gmm_compute_sen(
    approx_cd_gmm_coupute_sen_compu (if _mgau is initialized)
 
    Then composite triphone will also be computed. 
- */
+*/
 
 int32 s3_cd_gmm_compute_sen_comp(
-				 void *srch,   /**< a pointer to a srch_t */
-				 float32 **feat,  /**< feature vector #stream x #coeff*/
-				 int32 wav_idx    /**< frame index */
+    void *srch,   /**< a pointer to a srch_t */
+    float32 **feat,  /**< feature vector #stream x #coeff*/
+    int32 wav_idx    /**< frame index */
 
-				 );
+    );
 
 /**
    Depends on which data structure has been initialized, s3_cd_gmm_compute_sen
@@ -146,12 +147,12 @@ int32 s3_cd_gmm_compute_sen_comp(
    approx_cd_gmm_coupute_sen (if _mgau is initialized)
 
    Only normal senone will be computed. 
- */
+*/
 
 
 int32 s3_cd_gmm_compute_sen(
-			    void *srch,   /**< a pointer to a srch_t */
-			    float32 **feat,  /**< feature vector #stream x #coeff*/
-			    int32 wav_idx    /**< frame index */
-			    );
+    void *srch,   /**< a pointer to a srch_t */
+    float32 **feat,  /**< feature vector #stream x #coeff*/
+    int32 wav_idx    /**< frame index */
+    );
 

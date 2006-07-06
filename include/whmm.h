@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -153,7 +154,7 @@
  * correct measure. 
  */
 typedef struct whmm_s {
-  int32     *score;		/**< Per state path score */
+    int32     *score;		/**< Per state path score */
     int32      bestscore;	/**< Best among this whmm.score[] in current frame */
 
     s3latid_t *history;		/**< Per state predecessor lattice entry index */
@@ -174,11 +175,11 @@ typedef struct whmm_s {
 				   index into rcpid[][].pid or lrcpid[][].pid */
 
     s3cipid_t  lc;		/**< Left context position (only for first phone in word);
-				     index into lcpid[][].pid or lrcpid[][].pid */
+				   index into lcpid[][].pid or lrcpid[][].pid */
 
     int32      active;		/**< Whether active in current frame */
 
-  int32 type;  /**< 0 <- multiplex, 1 <- non-multiplex*/
+    int32 type;  /**< 0 <- multiplex, 1 <- non-multiplex*/
     struct whmm_s *next;	/**< Next active whmm_t for this word */
 } whmm_t;
 
@@ -189,7 +190,7 @@ typedef struct whmm_s {
    answer of IS_MULTIPLEX and the type to be different. 
    Of course, (h->type==MULTPLEX_TYPE) should always be equal to 
    IS_MULTIPLEX(h->pos,mul);  That is a would be a good sanity check. 
-  */
+*/
 #define IS_MULTIPLEX(pos,mul) (pos==0&&mul)
 #define MULTIPLEX_TYPE 0
 #define NONMULTIPLEX_TYPE 1 
@@ -197,28 +198,28 @@ typedef struct whmm_s {
 
 /** Free a whmm */
 void whmm_free (whmm_t *h /**< a whmm */
-		);
+    );
 
 /** Allocate a whmm 
     If pos =0 and multiplex=1, then a list of pid will also be allocated for each state. 
     else pid will just be a pointer of pid. 
- */
+*/
 whmm_t *whmm_alloc (int32 pos,  /**< position of the hmm */
 		    int32 nstate, /**< number of state of the hmm*/
 		    int32 alloc_size,  /**< Allocation size , alloc_size/size_of(whmm_t) will be allocated as HMMs that
-					 need a separate HMM id every state. 
+					  need a separate HMM id every state. 
 				       */
 		    int32 multiplex   /**< Is it multiplexed?*/
-		    );
+    );
 
 /** 
     A lesser version of whmm_alloc, whmm_allloc_scores is only
     responsible to allocate memory in score and history.  It also
     won't use the internal structure of whmm to handle multiplexed and
     non-multiplexed triphone. 
- */
+*/
 whmm_t* whmm_alloc_light(int32 nstate /**< number of state of the hmm*/
-			 );
+    );
 
 
 /** Dump one hmm
@@ -231,30 +232,30 @@ void dump_whmm (s3wid_t w,  /**< a word id */
 		int32 n_state,  /**< The number of state */
 		dict_t *dict,  /**< The dictionary */
 		mdef_t *mdef   /**< A model definition */
-		);
+    );
 
 
 /**
    Evaluate non-multiplex whmm . (In Sphinx 3.0, word-internal and the word end)
- */
+*/
 void eval_nonmpx_whmm (
-		       whmm_t *h, /**< the whmm */
-		       int32 *senscr, /**< Senone score array */
-		       tmat_t *tmat,  /**< tmat*/
-		       mdef_t *mdef,   /**< a model definition */
-		       int32 n_state  /**< Number of state */
-		       );
+    whmm_t *h, /**< the whmm */
+    int32 *senscr, /**< Senone score array */
+    tmat_t *tmat,  /**< tmat*/
+    mdef_t *mdef,   /**< a model definition */
+    int32 n_state  /**< Number of state */
+    );
 
 /**
    Evaluate multiplex whmm . (In Sphinx 3.0, the word begin)
- */
+*/
 
 void eval_mpx_whmm (
-		    whmm_t *h, /**< the whmm*/
-		    int32 *senscr, /**< Senone score array */
-		    tmat_t *tmat, /**< tmat*/
-		    mdef_t *mdef,   /**< a model definition */
-		    int32 n_state  /**< Number of state */
-		    );
+    whmm_t *h, /**< the whmm*/
+    int32 *senscr, /**< Senone score array */
+    tmat_t *tmat, /**< tmat*/
+    mdef_t *mdef,   /**< a model definition */
+    int32 n_state  /**< Number of state */
+    );
 
 #endif /* _S3_WHMM_H_ */

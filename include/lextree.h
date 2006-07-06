@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -119,6 +120,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 #define LEXTREE_OPERATION_SUCCESS 1
 #define LEXTREE_OPERATION_FAILURE 0
@@ -134,9 +138,9 @@ extern "C" {
 #endif
 
 
-  /** \file lextree.h
-   * \brief Data structure of lexical tree. 
-   *
+/** \file lextree.h
+ * \brief Data structure of lexical tree. 
+ *
  * A lextree can be built for a specific history (e.g., for all bigram successors of a given
  * word or trigram successors of a word-pair in a given LM).  The history provides a set of left
  * context CIphones (if the final history word has multiple pronunciations; and there is always
@@ -164,8 +168,8 @@ extern "C" {
  */
 
 
-  /*
-   * \struct lextree_node_t
+/*
+ * \struct lextree_node_t
  * One node in a lextree.
  */
 typedef struct {
@@ -173,31 +177,31 @@ typedef struct {
 
     glist_t children;	/**< Its data.ptr are children (lextree_node_t *)
 
-			   If non-leaf node, this is the list of
-			   successor nodes.  
+                        If non-leaf node, this is the list of
+                        successor nodes.  
 
-			   If leaf node, if we are in normal mode and
-			   this list will not be empty. 
+                        If leaf node, if we are in normal mode and
+                        this list will not be empty. 
 
-			   This is the list of all possible triphone.
-			   If it is not allocated. The code will
-			   allocate it. 
+                        This is the list of all possible triphone.
+                        If it is not allocated. The code will
+                        allocate it. 
 
-			 */
+                        */
 
     int32 wid;		/**< Dictionary word-ID if a leaf node; BAD_S3WID otherwise */
     int32 prob;		/**< LM probability of this node (of all words leading from this node) */
     int32 ssid;		/**< Senone-sequence ID (or composite state-seq ID if composite) */
     s3cipid_t rc;        /**< The (compressed) right context for this node. Preferably compressed.
-			  */
+                          */
 #if 0
     s3ssid_t *ssid_lc;	/**< Array of ssid's (composite or not) for each left context CIphone;
-			   READ-ONLY structure */
+                           READ-ONLY structure */
 #endif
     s3cipid_t ci;	/**< CIphone id for this node */
     int8 composite;	/**< Whether it is a composite model (merging many left/right contexts) 
 			   
-			 */
+			*/
     s3frmid_t frame;	/**< Frame in which this node was last active; <0 if inactive */
 } lextree_node_t;
 
@@ -226,10 +230,10 @@ typedef struct {
  */
 typedef struct {
     int32 type;		/**< For use by other modules; NOT maintained here.  For example:
-			   N-gram type; 0: unigram lextree, 1: 2g, 2: 3g lextree... */
+                           N-gram type; 0: unigram lextree, 1: 2g, 2: 3g lextree... */
     glist_t root;	/**< The entire set of root nodes (lextree_node_t) for this lextree */
     lextree_lcroot_t *lcroot;	/**< Lists of subsets of root nodes; a list for each left context;
-				   NULL if n_lc == 0 (i.e., no specific left context) */
+                                   NULL if n_lc == 0 (i.e., no specific left context) */
     int32 n_lc;		/**< No. of separate left contexts being maintained, if any */
     int32 n_node;	/**< Total No. of nodes in this lextree which is allocated in the initialization time */
     int32 n_alloc_node;   /**< Total No. of nodes in this lextree which is allocated dynamically */
@@ -244,7 +248,7 @@ typedef struct {
     int32 best;		/**< Best HMM state score in current frame (for pruning) */
     int32 wbest;	/**< Best wordexit HMM state score in current frame (for pruning) */
 
-  char prev_word[100];      /**< This is used in WST. The previous word for a tree */
+    char prev_word[100];      /**< This is used in WST. The previous word for a tree */
 } lextree_t;
 
 /* Access macros; not meant for arbitrary usage */
@@ -260,32 +264,32 @@ typedef struct {
 #define lextree_n_next_active(l)	((l)->n_next_active)
 
 
-  /** Initialize a lexical tree, also factor language model score through out the tree. Currently only
-   * unigram look-ahead is supported. 
-   */
-  lextree_t* lextree_init(
-		    kbcore_t *kbcore, /**< In: Initialized kbcore */
-		    lm_t* lm,         /**< In: LM, to decide which set of word list is used */
-		    char *lmname,     /**< In: LM name */
-		    int32 istreeUgProb, /**< In: Decide whether LM factoring is used or not */
-		    int32 bReport,     /**< In: Whether to report the progress so far. */
-		    int32 type        /**< In: Type of the lexical tree, 0: unigram lextree, 1: 2g, 2: 3g lextree*/
-		    );
+/** Initialize a lexical tree, also factor language model score through out the tree. Currently only
+ * unigram look-ahead is supported. 
+ */
+lextree_t* lextree_init(
+    kbcore_t *kbcore, /**< In: Initialized kbcore */
+    lm_t* lm,         /**< In: LM, to decide which set of word list is used */
+    char *lmname,     /**< In: LM name */
+    int32 istreeUgProb, /**< In: Decide whether LM factoring is used or not */
+    int32 bReport,     /**< In: Whether to report the progress so far. */
+    int32 type        /**< In: Type of the lexical tree, 0: unigram lextree, 1: 2g, 2: 3g lextree*/
+    );
 
-  /** Initialize a filler tree.
-   */
-  lextree_t* fillertree_init(
-			     kbcore_t *kbcore /**< In: Initialized kbcore */
-			     );
+/** Initialize a filler tree.
+ */
+lextree_t* fillertree_init(
+    kbcore_t *kbcore /**< In: Initialized kbcore */
+    );
 
 
-  /** Report the lextree data structure. 
-   */
-  void lextree_report(
-		      lextree_t *ltree /**< In: Report a lexical tree*/
-		      );
+/** Report the lextree data structure. 
+ */
+void lextree_report(
+    lextree_t *ltree /**< In: Report a lexical tree*/
+    );
 
-  /**
+/**
  * Build a lexical tree for the set of words specified in wordprob[] (with their
  * associated LM probabilities).  wordprob[] must contain EXACTLY the set of words for
  * which the lextree is to be built, i.e, including alternatives and excluding OOVs.
@@ -297,20 +301,20 @@ lextree_build (kbcore_t *kbc,		/**< In: All the necessary knowledge bases */
 	       int32 n_word,		/**< In: Size of the wordprob[] array */
 	       s3cipid_t *lc		/**< In: BAD_S3CIPID terminated array of left context
 					   CIphones, or NULL if no specific left context */
-	       );
+    );
 
 /* Free a lextree that was created by lextree_build */
 void lextree_free (lextree_t *lextree);
 
 
-  /**
+/**
  * Reset the entire lextree (to the inactive state).  I.e., mark each HMM node as inactive,
  * (with lextree_node_t.frame = -1), and the active list size to 0.
  */
 void lextree_utt_end (lextree_t *l, kbcore_t *kbc);
 
 
-  /**
+/**
  * Enter root nodes of lextree for given left-context, with given incoming score/history.
  */
 void lextree_enter (lextree_t *lextree,	/**< In/Out: Lextree being entered */
@@ -321,18 +325,18 @@ void lextree_enter (lextree_t *lextree,	/**< In/Out: Lextree being entered */
 		    int32 thresh,	/**< In: Pruning threshold; incoming scores below this
 					   threshold will not enter successfully */
 		    kbcore_t *kbc       /**< In: a kbcore, that provided stuffs such as dict and dict2pid */
-		    );
+    );
 
-  /**
+/**
  * Swap the active and next_active lists of the given lextree.  (Usually done at the end of
  * each frame: from the current active list, we've built the next_active list for the next
  * frame, and finally need to make the latter the current active list.)
  */
-  void lextree_active_swap (lextree_t *lextree /**< The lexical tree*/
-			  );
+void lextree_active_swap (lextree_t *lextree /**< The lexical tree*/
+    );
 
 
-  /**
+/**
  * Marks the active ssid and composite ssids in the given lextree.  Caller must allocate ssid[]
  * and comssid[].  Caller also responsible for clearing them before calling this function.
  */
@@ -341,16 +345,16 @@ void lextree_ssid_active (lextree_t *lextree,	/**< In: lextree->active is scanne
 						   sequence ID s is active */
 			  int32 *comssid	/**< In/Out: comssid[s] is set to non-0 if
 						   composite senone sequence ID s is active */
-			  );
+    );
 
-  /**
+/**
  * For each active lextree node, mark the corresponding CI phone as active.
  */
 void lextree_ci_active (lextree_t *lextree,	/**< In: Lextree being traversed */
 			bitvec_t ci_active	/**< In/Out: Active/inactive flag for ciphones */
-			);
+    );
 
-  /**
+/**
  * Evaluate the active HMMs in the given lextree, using the current frame senone scores.
  * Return value: The best HMM state score as a result.
  * Note that the current
@@ -360,50 +364,50 @@ int32 lextree_hmm_eval (lextree_t *lextree,	/**< In/Out: Lextree with HMMs to be
 			ascr_t *ascr,	/**< In: Senone scores (primary and composite) */
 			int32 f,	/**< In: Frame in which being invoked */
 			FILE *fp	/**< In: If not-NULL, dump HMM state (for debugging) */
-			);
+    );
 
-  /*
-   * ARCHAN: Starting from Sphinx 3.6, lextree_hmm_propagate is separated to 
-   * lextree_hmm_propagate_non_leaves and lextree_hmm_propagate_leaves.  This allows 
-   * the rescoring routine to be more easily switched off
-   */
+/*
+ * ARCHAN: Starting from Sphinx 3.6, lextree_hmm_propagate is separated to 
+ * lextree_hmm_propagate_non_leaves and lextree_hmm_propagate_leaves.  This allows 
+ * the rescoring routine to be more easily switched off
+ */
 
-  /**
-   *
-   * Propagate the non-leaves nodes of HMMs in the given lextree
-   * through to the start of the next frame.  Called after HMM state
-   * scores have been updated.  Marks those with "good" scores as
-   * active for the next frame.
-   * 
-   * There is a difference between this part of the code in the
-   * composite mode or not in the composite mode.  When in composite
-   * mode, the code will propagate the leaf node as if it is just a
-   * simple node.  In that case, composite senone-sequence index will
-   * be used.
-   *
-   * (Warning! Grandpa is the true daddy! ) In the case when full
-   * triphone is expanded, the code will propagate to all possible
-   * contexts expansion which is stored in the "children" list of the
-   * leaf nodes.  Notice, conceptually the list of all possible
-   * contexts should be the children of the parent of the leave nodes
-   * rather than the children of the leave node. However, physically,
-   * the expansion was part of the children list.  So, there will be 
-   * subtle difference in propagation. 
-   *
-   * @return SRCH_FAILURE if it failed, SRCH_SUCCESS if it succeeded.
-   */
+/**
+ *
+ * Propagate the non-leaves nodes of HMMs in the given lextree
+ * through to the start of the next frame.  Called after HMM state
+ * scores have been updated.  Marks those with "good" scores as
+ * active for the next frame.
+ * 
+ * There is a difference between this part of the code in the
+ * composite mode or not in the composite mode.  When in composite
+ * mode, the code will propagate the leaf node as if it is just a
+ * simple node.  In that case, composite senone-sequence index will
+ * be used.
+ *
+ * (Warning! Grandpa is the true daddy! ) In the case when full
+ * triphone is expanded, the code will propagate to all possible
+ * contexts expansion which is stored in the "children" list of the
+ * leaf nodes.  Notice, conceptually the list of all possible
+ * contexts should be the children of the parent of the leave nodes
+ * rather than the children of the leave node. However, physically,
+ * the expansion was part of the children list.  So, there will be 
+ * subtle difference in propagation. 
+ *
+ * @return SRCH_FAILURE if it failed, SRCH_SUCCESS if it succeeded.
+ */
 int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree,	/**< In/Out: Propagate scores across HMMs in
 								   this lextree */
-				       kbcore_t *kbc,	/**< In: Core knowledge bases */
-				       int32 cf,		/**< In: Current frame index. */
-				       int32 th,		/**< In: General (HMM survival) pruning thresh */
-				       int32 pth,		/**< In: Phone transition pruning threshold */
-				       int32 wth,		/**< In: Word exit pruning threshold */
-				       pl_t* pl            /**< In: Phoneme lookahead struct*/
-					); 
+					kbcore_t *kbc,	/**< In: Core knowledge bases */
+					int32 cf,		/**< In: Current frame index. */
+					int32 th,		/**< In: General (HMM survival) pruning thresh */
+					int32 pth,		/**< In: Phone transition pruning threshold */
+					int32 wth,		/**< In: Word exit pruning threshold */
+					pl_t* pl            /**< In: Phoneme lookahead struct*/
+    ); 
 
 
-  /**
+/**
  * Propagate the leaves nodes of HMMs in the given lextree through to
  * the start of the next frame.  Called after HMM state scores have
  * been updated.  Propagates HMM exit scores through to successor HMM
@@ -414,16 +418,16 @@ int32 lextree_hmm_propagate_non_leaves (lextree_t *lextree,	/**< In/Out: Propaga
  */
 
 int32 lextree_hmm_propagate_leaves (lextree_t *lextree,	/**< In/Out: Propagate scores across HMMs in
-						   this lextree */
-				   kbcore_t *kbc,	/**< In: Core knowledge bases */
-				   vithist_t *vh,	/**< In/Out: Viterbi history structure to be
+							   this lextree */
+				    kbcore_t *kbc,	/**< In: Core knowledge bases */
+				    vithist_t *vh,	/**< In/Out: Viterbi history structure to be
 							   updated with word exits */
-				   int32 cf,            /**< In: Current frame index */
-				   int32 wth		/**< In: Word exit pruning threshold */
-				   ); 
+				    int32 cf,            /**< In: Current frame index */
+				    int32 wth		/**< In: Word exit pruning threshold */
+    ); 
 
 
-  /**
+/**
  * In order to use histogram pruning, get a histogram of the bestscore of each active HMM in
  * the given lextree.  For a given HMM, its bin is determined by:
  * 	(bestscr - hmm->bestscore) / bw.
@@ -432,22 +436,22 @@ int32 lextree_hmm_propagate_leaves (lextree_t *lextree,	/**< In/Out: Propagate s
 void lextree_hmm_histbin (lextree_t *lextree,	/**< In: Its active HMM bestscores are used */
 			  int32 bestscr,	/**< In: Overall bestscore in current frame */
 			  int32 *bin,		/**< In/Out: The histogram bins; caller allocates
-						     this array */
+						   this array */
 			  int32 nbin,		/**< In: Size of bin[] */
 			  int32 bw		/**< In: Bin width; i.e., score range per bin */
-			  );
+    );
 
-  /** For debugging, dump the whole lexical tree*/
-  void lextree_dump (lextree_t *lextree,  /**< In: A lexical tree*/
-		     dict_t *dict,       /**< In: a dictionary */
-		     mdef_t *mdef,       /**< In: a model definition */
-		     FILE *fp,           /**< A file pointer */
-		     int32 fmt           /**< fmt=1, Ravi's format, fmt=2, Dot's format*/ 
-		   );
+/** For debugging, dump the whole lexical tree*/
+void lextree_dump (lextree_t *lextree,  /**< In: A lexical tree*/
+		   dict_t *dict,       /**< In: a dictionary */
+		   mdef_t *mdef,       /**< In: a model definition */
+		   FILE *fp,           /**< A file pointer */
+		   int32 fmt           /**< fmt=1, Ravi's format, fmt=2, Dot's format*/ 
+    );
 
-  /** Utility function that count the number of links */
-  int32 num_lextree_links(lextree_t *ltree /**< In: A lexical tree */
-			  );
+/** Utility function that count the number of links */
+int32 num_lextree_links(lextree_t *ltree /**< In: A lexical tree */
+    );
 #ifdef __cplusplus
 }
 #endif

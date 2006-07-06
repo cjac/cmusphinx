@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -44,33 +45,36 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file utt.h
-      \brief high level caller of the Viterbi algorithm
-   */
+/** \file utt.h
+    \brief high level caller of the Viterbi algorithm
+*/
 
 #define MAXHYPLEN       1000
 
 
 
-  /** Begin utterance */
-  void utt_begin (kb_t *kb /**< A kb */
-		);
+/** Begin utterance */
+void utt_begin (kb_t *kb /**< A kb */
+    );
 
-    /** End utterance */
-  void utt_end (kb_t *kb     /**< A kb */
-		);
+/** End utterance */
+void utt_end (kb_t *kb     /**< A kb */
+    );
 
-   /** Decoding the whole utterance */
-  void utt_decode (void *data,  /**< A kb */
+/** Decoding the whole utterance */
+void utt_decode (void *data,  /**< A kb */
 		 utt_res_t *ur, /**< Utterance resource structure */
 		 int32 sf,  /**< Starting frame of the decoding */
 		 int32 ef,  /**< Ending frame of the decoding */
 		 char *uttid /**< Utterance ID */
-		 );
+    );
 
   
-  /** This function decodes a block of incoming feature vectors.
+/** This function decodes a block of incoming feature vectors.
  * Feature vectors have to be computed by the calling routine.
  * The utterance level index of the last feature vector decoded
  * (before the current block) must be passed.
@@ -83,8 +87,8 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
                        int32 *curfrm,        /* Utterance level index of
                                                 frames decoded so far */
                        kb_t *kb             /* kb structure with all model
-                                                and decoder info */
-		       );
+					       and decoder info */
+    );
 
 
 #ifdef __cplusplus

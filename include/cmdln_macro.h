@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -108,21 +109,21 @@
 
 /* Note by ARCHAN at 20050717 
    
-   The following are macros that used by individual modules and
-   routines. Since we want in one application, there is only one
-   command-line arguments. (The concept of singleton in Pattern).  If
-   we used variables, then every application that call this file and
-   its implementation will need got every command-line from every
-   application. That is not very nice. 
+The following are macros that used by individual modules and
+routines. Since we want in one application, there is only one
+command-line arguments. (The concept of singleton in Pattern).  If
+we used variables, then every application that call this file and
+its implementation will need got every command-line from every
+application. That is not very nice. 
 
-   Using macro will temporarily solve this problem and I hope this
-   will only last for less than one minor version time.  A better way,
-   as what we have already done in Sphinx 4, is to ask the libraries
-   to register its command-line argument as well as configuration
-   arguments.  This will give user a better time of configuration and
-   us a better architecture. 
+Using macro will temporarily solve this problem and I hope this
+will only last for less than one minor version time.  A better way,
+as what we have already done in Sphinx 4, is to ask the libraries
+to register its command-line argument as well as configuration
+arguments.  This will give user a better time of configuration and
+us a better architecture. 
 
- */
+*/
 
 #define vq_cluster_command_line_macro() \
     { "-stdev", \
@@ -210,8 +211,8 @@
       "Name of language model in -lmctlfn to use for all utterances" }, 
 
 #if 0 
-	/* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */
-    { "-fsgctlfn", 
+          /* Comment out because I don't know what is the meaning of Sphinx 2 fsg control file means. */
+{ "-fsgctlfn", 
       ARG_STRING, 
       NULL, 
       "A finite state grammar control file" }, 
@@ -356,12 +357,12 @@
 
 
 #if 0
-    { "-feat",
+{ "-feat",
       ARG_STRING,
       "s2_4x",
       "Feature stream:\n\t\t\t\ts2_4x: Sphinx-II type 4 streams, 12cep, 24dcep, 3pow, 12ddcep\n\t\t\t\ts3_1x39: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_12c_12d_3p_12dd: Single stream, 12cep+12dcep+3pow+12ddcep\n\t\t\t\t1s_c: Single stream, given input vector only\n\t\t\t\t1s_c_d: Feature + Deltas only\n\t\t\t\t1s_c_dd: Feature + Double deltas only\n\t\t\t\t1s_c_d_dd: Feature + Deltas + Double deltas\n\t\t\t\t1s_c_wd_dd: Feature cep+windowed delcep+deldel \n\t\t\t1s_c_d_ld_dd: Feature + delta + longter delta + doubledelta" },
 
-    { "-feat",	/* Captures the computation for converting input to feature vector */
+{ "-feat",	/* Captures the computation for converting input to feature vector */
       ARG_STRING,
       "1s_c_d_dd",
       "Feature stream: s2_4x / s3_1x39 / cep_dcep[,%d] / cep[,%d] / %d,%d,...,%d" },
@@ -496,8 +497,8 @@
       "0.7", \
       "Unigram weight" }, 
 
-	/* Follow sphinx 3.0, this should be implemented in nearly
-	   every tool */
+          /* Follow sphinx 3.0, this should be implemented in nearly
+             every tool */
 #define phone_insertion_penalty_command_line_macro() \
     { "-phonepen", \
       ARG_FLOAT32, \
@@ -608,8 +609,8 @@
       "Number of BPtable entries to allocate initially (grown as necessary)" },
 
 /* decode-specific, that includes mode 4 and mode 5'
-						   share between decode/livepretend/livedecode
-						 */
+   share between decode/livepretend/livedecode
+*/
 #define decode_specific_command_line_macro() \
     { "-op_mode", \
       ARG_INT32, \

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -348,27 +349,27 @@ typedef struct {
  */
 
 typedef struct {
-  xwdpid_t **lcpid; /**< Left context phone id table 
-			First dimension: basephone, 
-			Second dimension: right context
-		     */
+    xwdpid_t **lcpid; /**< Left context phone id table 
+                         First dimension: basephone, 
+                         Second dimension: right context
+                      */
   
-  xwdpid_t **rcpid; /**< right context phone id table 
-		       First dimension: basephone, 
-			Second dimension: left context
+    xwdpid_t **rcpid; /**< right context phone id table 
+                         First dimension: basephone, 
+                         Second dimension: left context
 
-		     */
-  xwdpid_t **lrcpid; /**< left-right ntext phone id table 
-			First dimension: basephone
-			Second dimension: left context. 
-		      */
+                      */
+    xwdpid_t **lrcpid; /**< left-right ntext phone id table 
+                          First dimension: basephone
+                          Second dimension: left context. 
+                       */
 
 
-  s3pid_t **wwpid;  /**< Within word triphone models 
-		       First dimension: the word id
-		       Second dimension: the phone position. 
-		     */
-  int32 n_backoff_ci; /**< # of backoff CI phone */
+    s3pid_t **wwpid;  /**< Within word triphone models 
+                         First dimension: the word id
+                         Second dimension: the phone position. 
+                      */
+    int32 n_backoff_ci; /**< # of backoff CI phone */
 } ctxt_table_t ;
 
 /**
@@ -377,14 +378,14 @@ typedef struct {
 
 ctxt_table_t *ctxt_table_init(dict_t *dict,  /**< A dictionary*/
 			      mdef_t *mdef   /**< A model definition*/
-			      );
+    );
 
 /**
  * Uninitialize a context table
  */
 
 void ctxt_table_free(ctxt_table_t *ct /**< Context Table */
-		     );
+    );
 
 /**
  * Get the array of right context phone ID for the last phone. 
@@ -394,7 +395,7 @@ void get_rcpid (ctxt_table_t *ct,  /**< A context table */
 		s3pid_t **pid,     /**< Out: An array of right context phone ID */
 		int32 *npid,        /**< Out: Number of phone ID */
 		dict_t *dict        /**< In: a dictionary */
-		);
+    );
 
 /**
  * Get the array of left context phone ID for the first phone.
@@ -404,7 +405,7 @@ void get_lcpid (ctxt_table_t *ct,  /**< A context table */
 		s3pid_t **pid,     /**< Out: An array of right context phone ID */
 		int32 *npid,        /**< Out: Number of phone ID */
 		dict_t *dict        /**< In: a dictionary */
-		);
+    );
 
 
 /**
@@ -415,7 +416,7 @@ void get_lcpid (ctxt_table_t *ct,  /**< A context table */
 s3cipid_t *get_rc_cimap (ctxt_table_t *ct, /**< A context table */
 			 s3wid_t w, /**< A word for query*/
 			 dict_t *dict /**< A dictionary */
-			 );
+    );
 
 /**
  * Get the context-independent phone map for the last phone of a
@@ -425,7 +426,7 @@ s3cipid_t *get_rc_cimap (ctxt_table_t *ct, /**< A context table */
 s3cipid_t *get_lc_cimap (ctxt_table_t *ct, /**< A context table */
 			 s3wid_t w, /**< A word for query*/
 			 dict_t *dict /**< A dictionary */
-			 );
+    );
 
 /**
  * Get number of right context for the last phone of a word. 
@@ -435,6 +436,6 @@ s3cipid_t *get_lc_cimap (ctxt_table_t *ct, /**< A context table */
 int32 get_rc_npid (ctxt_table_t *ct,  /**< A context table */
 		   s3wid_t w,          /**< Word for query. */
 		   dict_t *dict        /**< A dictionary */
-		   );
+    );
 
 #endif /*_CTX_TAB_*/

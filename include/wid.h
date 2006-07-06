@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -69,13 +70,16 @@
 
 /** \file wid.h
     \brief coversion of dictionary ID to LM ID. 
- */
+*/
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
   
 
-  /**
+/**
  * Create mappings between dictionary and LM word-IDs.  In short:
  *    - An array of s3lmwid32_t entries (map[]) is created; where map[i] is the LM word-ID for
  * 	the dictionary word-ID i.  Mappings are created for the alternative pronunciations as
@@ -85,12 +89,12 @@ extern "C" {
  */
 
 s3lmwid32_t *wid_dict_lm_map (dict_t *dict,	/**< In: Dictionary */
-			    lm_t *lm,           /**< In/Out: LM; lm->ug[].dictwid values are
-						   updated. */
-			    int32 lw            /**< In: Language Weight */
-			    );		
+			      lm_t *lm,           /**< In/Out: LM; lm->ug[].dictwid values are
+						     updated. */
+			      int32 lw            /**< In: Language Weight */
+    );		
 
-  /**
+/**
  * Augment the given wordprob array with alternative pronunciations from the dictionary.
  * Return value: #entries in the augmented wordprob array (including the original ones).
  */
@@ -100,7 +104,7 @@ int32 wid_wordprob2alt (dict_t *dict,	/**< In: Dictionary */
 					   already exist in it.  Caller must have allocated
 					   this array. */
 			int32 n	/**< In: #Input entries in the wordprob array */
-			);
+    );
 
 #ifdef __cplusplus
 }

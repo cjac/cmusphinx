@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -71,19 +72,22 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * Strip off leading path components from the given path and copy the base into base.
-   * Caller must have allocated base.
-   */
+/**
+ * Strip off leading path components from the given path and copy the base into base.
+ * Caller must have allocated base.
+ */
 void path2basename (char *path, char *base);
 
 
-  /**
-   * Strip off the smallest trailing file-extension suffix and copy
-   * the rest into the given root argument.  Caller must have
-   * allocated root.
-   */
+/**
+ * Strip off the smallest trailing file-extension suffix and copy
+ * the rest into the given root argument.  Caller must have
+ * allocated root.
+ */
 void strip_fileext (char *file, char *root);
 
 #ifdef __cplusplus

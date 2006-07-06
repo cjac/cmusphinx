@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -34,8 +35,8 @@
  *
  */
 
- /*
-  * HISTORY
+/*
+ * HISTORY
  * $Log$
  * Revision 1.1  2006/04/05  20:27:30  dhdfu
  * A Great Reorganzation of header files and executables
@@ -90,11 +91,11 @@
  * Structure for debugging  search. 
  */
 typedef struct {
-  s3wid_t trace_wid;	/**< Word to be traced; for debugging */
-  int32 word_dump_sf;	/**< Start frame for words to be dumped for debugging */
-  int32 word_dump_ef;	/**< End frame for words to be dumped for debugging */
-  int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
-  int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
+    s3wid_t trace_wid;	/**< Word to be traced; for debugging */
+    int32 word_dump_sf;	/**< Start frame for words to be dumped for debugging */
+    int32 word_dump_ef;	/**< End frame for words to be dumped for debugging */
+    int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
+    int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
 } fwd_dbg_t ;
 
 
@@ -116,93 +117,93 @@ typedef struct {
 /*
   \struct srch_FLAT_FWD_graph_t;
   
- */
+*/
 typedef struct {
 
-  /**
-   * Structures for decoding utterances subject to given input word lattices; ie, restricting
-   * the decoding to words found in the lattice.  (For speeding up the decoding process.)
-   * NOTE:  This mode is optional.  If no input lattice is given, the entire vocabulary is
-   * eligible during recognition.  Also, SILENCEWORD, FINISHWORD, and noisewords are always
-   * eligible candidates.
-   * 
-   * Input lattice specifies candidate words that may start at a given frame.  In addition,
-   * this forward pass can also consider words starting at a number of neighbouring frames
-   * within a given window.
-   * 
-   * Input lattice file format:  Each line contains a single <word> <startframe> info.  The
-   * line may contain other info following these two fields; these are ignored.  Empty lines
-   * and lines beginning with a # char in the first column (ie, comment lines) are ignored.
-   */
+    /**
+     * Structures for decoding utterances subject to given input word lattices; ie, restricting
+     * the decoding to words found in the lattice.  (For speeding up the decoding process.)
+     * NOTE:  This mode is optional.  If no input lattice is given, the entire vocabulary is
+     * eligible during recognition.  Also, SILENCEWORD, FINISHWORD, and noisewords are always
+     * eligible candidates.
+     * 
+     * Input lattice specifies candidate words that may start at a given frame.  In addition,
+     * this forward pass can also consider words starting at a number of neighbouring frames
+     * within a given window.
+     * 
+     * Input lattice file format:  Each line contains a single <word> <startframe> info.  The
+     * line may contain other info following these two fields; these are ignored.  Empty lines
+     * and lines beginning with a # char in the first column (ie, comment lines) are ignored.
+     */
 
-  /*
-    FIXME! This should be used by the generic search as well. 
-   */
-  char *word_cand_dir;	/**< Directory containing candidate words
-			   files.  If NULL, full search performed for
-			   entire run */
+    /*
+      FIXME! This should be used by the generic search as well. 
+    */
+    char *word_cand_dir;	/**< Directory containing candidate words
+				   files.  If NULL, full search performed for
+				   entire run */
   
-  char *latfile_ext;	/**< Complete word candidate filename for an utterance formed
-			   by word_cand_dir/<uttid>.latfile_ext */
-  int32 word_cand_win;	/**< In frame f, candidate words in input lattice from frames
-			   [(f - word_cand_win) .. (f + word_cand_win)] will be
-			   the actual candidates to be started(entered) */
-  word_cand_t **word_cand;	/**< Word candidates for each frame.  (NOTE!! Another array
-				   with a hard limit on its size.) */
-  int32 n_word_cand;	/**< #candidate entries in word_cand for current utterance.
-			   If <= 0; full search performed for current utterance */
+    char *latfile_ext;	/**< Complete word candidate filename for an utterance formed
+                           by word_cand_dir/<uttid>.latfile_ext */
+    int32 word_cand_win;	/**< In frame f, candidate words in input lattice from frames
+				   [(f - word_cand_win) .. (f + word_cand_win)] will be
+				   the actual candidates to be started(entered) */
+    word_cand_t **word_cand;	/**< Word candidates for each frame.  (NOTE!! Another array
+                                   with a hard limit on its size.) */
+    int32 n_word_cand;	/**< #candidate entries in word_cand for current utterance.
+                           If <= 0; full search performed for current utterance */
 
 
-  /**
-   * Structures for flat lexicon decoding search 
-   */
-  whmm_t **whmm;        /**< The word hmms list.  For actual search traverse */
+    /**
+     * Structures for flat lexicon decoding search 
+     */
+    whmm_t **whmm;        /**< The word hmms list.  For actual search traverse */
 
-  word_ugprob_t **word_ugprob; /**< word unigram probability */
-  backoff_t *ug_backoff;       /**< Unigram backoff probability */
-  backoff_t *filler_backoff;   /**< Filler probability */
-  uint8 *tg_trans_done;	/**< If tg_trans_done[w] TRUE, trigram transition to w
+    word_ugprob_t **word_ugprob; /**< word unigram probability */
+    backoff_t *ug_backoff;       /**< Unigram backoff probability */
+    backoff_t *filler_backoff;   /**< Filler probability */
+    uint8 *tg_trans_done;	/**< If tg_trans_done[w] TRUE, trigram transition to w
 				   occurred for a given history, and backoff bigram
 				   transition from same history should be avoided */
 
-  int32 *rcscore;	/**< rc scores uncompacted; one entry/rc-ciphone */
+    int32 *rcscore;	/**< rc scores uncompacted; one entry/rc-ciphone */
 
-  s3wid_t *word_cand_cf;	/**< BAD_S3WID terminated array of candidate words for word
+    s3wid_t *word_cand_cf;	/**< BAD_S3WID terminated array of candidate words for word
 				   transition in current frame (if using input word
 				   lattices to restrict search). */
 
-  ctxt_table_t *ctxt;           /**< A context table. This parameter,
-				   as well as the one in word_fsg.c
-				   should all go up to srch.c. They
-				   are more generic  then the others.  */
+    ctxt_table_t *ctxt;           /**< A context table. This parameter,
+                                     as well as the one in word_fsg.c
+                                     should all go up to srch.c. They
+                                     are more generic  then the others.  */
 
-  fwd_dbg_t *fwdDBG;            /**< Debug object of srch_flat_fwd.c */
+    fwd_dbg_t *fwdDBG;            /**< Debug object of srch_flat_fwd.c */
 
-  /*
-    states for the search 
-   */ 
-  int32 n_state;      /**< For convenience, we store the number of state in the code */
-  int32 n_frm;        /**< Number of frame of this utternance */
-  int32 final_state;      /**< Final state is supposed to be the last state, so it is usually equal to n_state-1*/
-  int32 renormalized;	/**< Whether scores had to be renormalized in current utt */
-  int32 multiplex;       /**< Whether we will use multiplexed triphones */
-  int32 multiplex_singleph;       /**< Whether we will use multiplexed triphones */
+    /*
+      states for the search 
+    */ 
+    int32 n_state;      /**< For convenience, we store the number of state in the code */
+    int32 n_frm;        /**< Number of frame of this utternance */
+    int32 final_state;      /**< Final state is supposed to be the last state, so it is usually equal to n_state-1*/
+    int32 renormalized;	/**< Whether scores had to be renormalized in current utt */
+    int32 multiplex;       /**< Whether we will use multiplexed triphones */
+    int32 multiplex_singleph;       /**< Whether we will use multiplexed triphones */
 
-  /* Event count statistics */
-  pctr_t* ctr_mpx_whmm;
-  pctr_t* ctr_nonmpx_whmm;
-  pctr_t* ctr_latentry;
+    /* Event count statistics */
+    pctr_t* ctr_mpx_whmm;
+    pctr_t* ctr_nonmpx_whmm;
+    pctr_t* ctr_latentry;
 
-  ptmr_t tm_hmmeval;
-  ptmr_t tm_hmmtrans;
-  ptmr_t tm_wdtrans;
+    ptmr_t tm_hmmeval;
+    ptmr_t tm_hmmtrans;
+    ptmr_t tm_wdtrans;
 
-  kbcore_t* kbcore;     /**< A pointer for convenience */
+    kbcore_t* kbcore;     /**< A pointer for convenience */
 } srch_FLAT_FWD_graph_t ;
 
 int srch_FLAT_FWD_init(kb_t *kb, /**< The KB */
 		       void* srch_struct /**< The pointer to a search structure */
-		       );
+    );
 
 int srch_FLAT_FWD_uninit(void* srch_struct);
 int srch_FLAT_FWD_begin(void* srch_struct);
@@ -222,23 +223,23 @@ int srch_FLAT_FWD_select_active_gmm(void *srch_struct);
 
 
 glist_t srch_FLAT_FWD_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
-		     ); 
+    ); 
 
 int srch_FLAT_FWD_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
-		      );
+    );
 
 dag_t* srch_FLAT_FWD_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
 			     glist_t hyp
-			     );
+    );
 
 glist_t srch_FLAT_FWD_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
 				    dag_t *dag
-				    );
+    );
 
 
 int32 srch_FLAT_FWD_dag_dump(void *srch_struct,
 			     glist_t hyp
-			     );
+    );
 
 
 #endif /* SRCH_FLT_FWD*/

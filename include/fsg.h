@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -42,22 +43,22 @@
  * and these structures.
  */
 typedef struct s2_fsg_trans_s {
-  int32 from_state;
-  int32 to_state;
-  float32 prob;                 /* Probability associated with transition */
-  char *word;                   /* NULL for null transitions */
-  struct s2_fsg_trans_s *next;  /* For linking together all transitions in FSG */
+    int32 from_state;
+    int32 to_state;
+    float32 prob;                 /* Probability associated with transition */
+    char *word;                   /* NULL for null transitions */
+    struct s2_fsg_trans_s *next;  /* For linking together all transitions in FSG */
 } s2_fsg_trans_t;
 
 typedef struct s2_fsg_s {
-  char *name;                   /* This would be the name on the FSG_BEGIN line
-                                   in an FSG file.  Can be NULL or "" for unnamed
-                                   FSGs */
-  int32 n_state;                /* Set of states = 0 .. n_state-1 */
-  int32 start_state;            /* 0 <= start_state < n_state */
-  int32 final_state;            /* 0 <= final_state < n_state */
-  s2_fsg_trans_t *trans_list;   /* Null-terminated list of transitions in FSG,
-                                   in no particular order */
+    char *name;                   /* This would be the name on the FSG_BEGIN line
+                                     in an FSG file.  Can be NULL or "" for unnamed
+                                     FSGs */
+    int32 n_state;                /* Set of states = 0 .. n_state-1 */
+    int32 start_state;            /* 0 <= start_state < n_state */
+    int32 final_state;            /* 0 <= final_state < n_state */
+    s2_fsg_trans_t *trans_list;   /* Null-terminated list of transitions in FSG,
+                                     in no particular order */
 } s2_fsg_t;
 
 
@@ -79,14 +80,14 @@ typedef struct search_hyp_s {
 
 
 #if 0 /* Only in Sphinx 2 */
-    float conf;         /* Confidence measure (roughly prob(correct)) for this word;
-                           NOT FILLED IN BY THE RECOGNIZER at the moment!! */
-    int32 latden;       /* Average lattice density in segment.  Larger values imply
-                           more confusion and less certainty about the result.  To use
-                           it for rejection, cutoffs must be found independently */
-    double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
-                           more confusion and less certainty.  To use it for rejection,
-                           cutoffs must be found independently. */
+float conf;         /* Confidence measure (roughly prob(correct)) for this word;
+		       NOT FILLED IN BY THE RECOGNIZER at the moment!! */
+int32 latden;       /* Average lattice density in segment.  Larger values imply
+		       more confusion and less certainty about the result.  To use
+		       it for rejection, cutoffs must be found independently */
+double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
+		       more confusion and less certainty.  To use it for rejection,
+		       cutoffs must be found independently. */
 #endif
 
 

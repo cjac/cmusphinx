@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -109,6 +110,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+#if 0
+} /* Fool Emacs into not indenting things. */
 #endif
 
 

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -72,24 +73,27 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file nextword.h
-   * \brief Yet another attempt at a clean "next-word-in-string" function.  See arguments below.
-   *
-   */
+/** \file nextword.h
+ * \brief Yet another attempt at a clean "next-word-in-string" function.  See arguments below.
+ *
+ */
 
 int32
 nextword (char *line,		/**< Input: String being searched for next word */
 	  char *delim,		/**< Input: A word, if found, must be delimited at either
-				    end by a character from this string (or at the end
-				    by the NULL char) */
+				   end by a character from this string (or at the end
+				   by the NULL char) */
 	  char **word,		/**< Output: *word = ptr within line to beginning of first
-				    word, if found.  Delimiter at the end of word replaced
-				    with the NULL char. */
+				   word, if found.  Delimiter at the end of word replaced
+				   with the NULL char. */
 	  char *delimfound	/**< Output: *delimfound = original delimiter found at the end
-				    of the word.  (This way, the caller can restore the
-				    delimiter, preserving the original string.) */
-	  );
+				   of the word.  (This way, the caller can restore the
+				   delimiter, preserving the original string.) */
+    );
 
 #ifdef __cplusplus
 }

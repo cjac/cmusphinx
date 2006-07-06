@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -79,8 +80,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
+/**
  * Apply AGC to the given mfc vectors (normalize all C0 mfc coefficients in the given
  * input such that the max C0 value is 0, by subtracting the input max C0 from all).
  * This function operates on an entire utterance at a time.  Hence, the entire utterance
@@ -88,7 +92,7 @@ extern "C" {
  */
 void agc_max (float32 **mfc,	/**< In/Out: mfc[f] = cepstrum vector in frame f */
 	      int32 n_frame	/**< In: #frames of cepstrum vectors supplied */
-	      );
+    );
 
 #ifdef __cplusplus
 }

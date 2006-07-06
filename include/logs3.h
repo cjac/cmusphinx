@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -108,58 +109,61 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 
 #define LOGS3_SUCCESS 1;
 #define LOGS3_FAILURE 0;
 
-  /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
-  int32 logs3_init (float64 base, /**< The log base of the module */
-		    int32 bReport,  /**< Whether progress should be reported */
-		    int32 bLogTable /**< Whether log table should be used or not */
-		    );
+/** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
+int32 logs3_init (float64 base, /**< The log base of the module */
+		  int32 bReport,  /**< Whether progress should be reported */
+		  int32 bLogTable /**< Whether log table should be used or not */
+    );
 
-  /** Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
-  int32 logs3_add (int32 logs3p, /**< The first number in s3 log */
-		   int32 logs3q  /**< The second number in s3 log */
-		   );
+/** Given logs3p, logs3q (ie, log-S3base of p and q), return logs3(p+q) */
+int32 logs3_add (int32 logs3p, /**< The first number in s3 log */
+		 int32 logs3q  /**< The second number in s3 log */
+    );
 
-  /** Given p, return logs3(p) */
-  int32 logs3 (float64 p   /**< The first number in float */
-	       );
+/** Given p, return logs3(p) */
+int32 logs3 (float64 p   /**< The first number in float */
+    );
 
-  /** Given log(p), return logs3(p) */
-  int32 log_to_logs3 (float64 logp /**< The number in log domain */
-		      );
+/** Given log(p), return logs3(p) */
+int32 log_to_logs3 (float64 logp /**< The number in log domain */
+    );
 
-  /** Return the multiplication factor used for converting log values to logs3 */
-  float64 log_to_logs3_factor( void );
+/** Return the multiplication factor used for converting log values to logs3 */
+float64 log_to_logs3_factor( void );
 
-  /** Given logs3(p), return log(p) */
-  float64 logs3_to_log (int32 logs3p    /**< A number in log s3 domain*/
-		      );
+/** Given logs3(p), return log(p) */
+float64 logs3_to_log (int32 logs3p    /**< A number in log s3 domain*/
+    );
 
-  /** Given logs3(p), return log10(p) */
-  float64 logs3_to_log10 (int32 logs3p    /**< A number in log s3 domain*/
-			  );
+/** Given logs3(p), return log10(p) */
+float64 logs3_to_log10 (int32 logs3p    /**< A number in log s3 domain*/
+    );
 
-  /** Given logs3(p), return p */
-  float64 logs3_to_p (int32 logs3p  /**< A number in log s3 domain*/
-		      );
+/** Given logs3(p), return p */
+float64 logs3_to_p (int32 logs3p  /**< A number in log s3 domain*/
+    );
 
-  /** Given log10(p), return logs3(p) */
-  int32 log10_to_logs3 (float64 log10p /**< A number in log 10 domain */
-			);
+/** Given log10(p), return logs3(p) */
+int32 log10_to_logs3 (float64 log10p /**< A number in log 10 domain */
+    );
 
-  /** Return the logbase. */
-  float64 logs3_base(void);
+/** Return the logbase. */
+float64 logs3_base(void);
 
-  /* RAH, free the add_tbl if still allocated */
-  /** Free the add_tbl if still allocated */
-  void logs_free();
+/* RAH, free the add_tbl if still allocated */
+/** Free the add_tbl if still allocated */
+void logs_free();
 
-  /** Report the parameters for s3 log table */
-  void logs3_report();
+/** Report the parameters for s3 log table */
+void logs3_report();
   
 #ifdef __cplusplus
 }

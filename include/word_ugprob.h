@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
@@ -64,9 +65,9 @@
  * unigram probability within each partition.
  */
 typedef struct word_ugprob_s {
-  s3wid_t wid;        /**< Word ID */
-  int32 ugprob;     /**< Unigram probability */
-  struct word_ugprob_s *next;   /**< Nex unigram probability*/
+    s3wid_t wid;        /**< Word ID */
+    int32 ugprob;     /**< Unigram probability */
+    struct word_ugprob_s *next;   /**< Nex unigram probability*/
 } word_ugprob_t;
 
 /**
@@ -75,7 +76,7 @@ typedef struct word_ugprob_s {
 word_ugprob_t**  init_word_ugprob(mdef_t *_mdef, 
 				  lm_t *_lm, 
 				  dict_t *_dict
-				  );
+    );
 
 
 #endif /*WORD_UGPROB*/

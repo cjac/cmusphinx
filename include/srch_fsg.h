@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -77,7 +78,7 @@
 
 int srch_FSG_init(kb_t *kb, /**< The KB */
 		  void* srch_struct /**< The pointer to a search structure */
-		  );
+    );
 
 word_fsg_t* srch_FSG_read_fsgfile(void* srch_struct,const char* fsgname);
 

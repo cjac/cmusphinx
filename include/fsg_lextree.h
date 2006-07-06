@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -97,18 +98,18 @@
 
 
 typedef struct fsg_lextree_s {
-  word_fsg_t *fsg;	/* The fsg for which this lextree is built */
-  fsg_pnode_t **root;	/* root[s] = lextree representing all transitions
-			   out of state s.  Note that the "tree" for each
-			   state is actually a collection of trees, linked
-			   via fsg_pnode_t.sibling (root[s]->sibling) */
-  fsg_pnode_t **alloc_head;	/* alloc_head[s] = head of linear list of all
-				   pnodes allocated for state s */
-  int32 n_pnode;	/* #HMM nodes in search structure */
+    word_fsg_t *fsg;	/* The fsg for which this lextree is built */
+    fsg_pnode_t **root;	/* root[s] = lextree representing all transitions
+                           out of state s.  Note that the "tree" for each
+                           state is actually a collection of trees, linked
+                           via fsg_pnode_t.sibling (root[s]->sibling) */
+    fsg_pnode_t **alloc_head;	/* alloc_head[s] = head of linear list of all
+                                   pnodes allocated for state s */
+    int32 n_pnode;	/* #HMM nodes in search structure */
 
-  dict_t *dict;
-  mdef_t *mdef;
-  ctxt_table_t *ctxt;
+    dict_t *dict;
+    mdef_t *mdef;
+    ctxt_table_t *ctxt;
 } fsg_lextree_t;
 
 /* Access macros */
@@ -121,7 +122,7 @@ typedef struct fsg_lextree_s {
  */
 fsg_lextree_t *fsg_lextree_init (word_fsg_t *, 
 				 int32 n_state_hmm
-				 );
+    );
 
 
 void fsg_lextree_free (fsg_lextree_t *);

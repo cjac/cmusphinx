@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -80,97 +81,100 @@
 
 /** \file ascr.h
     \brief Wrapper to hold senone scores. 
- */
+*/
 #ifndef _S3_ASCR_H_
 #define _S3_ASCR_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * Structure to hold senone scores (ordinary and composite), in one frame.
-   */
+/**
+ * Structure to hold senone scores (ordinary and composite), in one frame.
+ */
 
 typedef struct {
-  int32 *senscr;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
-  int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
+    int32 *senscr;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
+    int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
 
-  int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
-  int32 *comssid_active;        /**< TEMPORARY VARIABLES:  Composite senone active */
-  int32 *sen_active;            /**< TEMPORARY VARIABLES: Structure that record whether the current state is active. */
-  int32 *rec_sen_active;        /**< TEMPORARY VARIABLES: Most recent senone active state */
-  int32 **cache_ci_senscr;      /**< TEMPORARY VARIABLES: Cache of ci senscr in the next pl_windows frames, include this frame.*/
-  int32 *cache_best_list;       /**< TEMPORARY VARIABLES: Cache of best the ci sensr the next pl_windows, include this frame*/
+    int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
+    int32 *comssid_active;        /**< TEMPORARY VARIABLES:  Composite senone active */
+    int32 *sen_active;            /**< TEMPORARY VARIABLES: Structure that record whether the current state is active. */
+    int32 *rec_sen_active;        /**< TEMPORARY VARIABLES: Most recent senone active state */
+    int32 **cache_ci_senscr;      /**< TEMPORARY VARIABLES: Cache of ci senscr in the next pl_windows frames, include this frame.*/
+    int32 *cache_best_list;       /**< TEMPORARY VARIABLES: Cache of best the ci sensr the next pl_windows, include this frame*/
 
-  int32 n_sen;    /**< No. of senone. */
-  int32 n_comsen; /**< No. of composite senone. */
-  int32 n_sseq;   /**< No. of senone sequence. */
-  int32 n_comsseq; /**< No. of composite senone sequence. */
-  int32 pl_win;    /**< Phoneme lookahead window. */
-  int32 n_cisen;    /**< No. of CI senone */
+    int32 n_sen;    /**< No. of senone. */
+    int32 n_comsen; /**< No. of composite senone. */
+    int32 n_sseq;   /**< No. of senone sequence. */
+    int32 n_comsseq; /**< No. of composite senone sequence. */
+    int32 pl_win;    /**< Phoneme lookahead window. */
+    int32 n_cisen;    /**< No. of CI senone */
 } ascr_t;
 
 
-  /**
-   * Create an ascr_t structure for the given number of senones (ordinary and composite).
-   * @return Pointer to created structure if successful, NULL otherwise.
-   */
-  ascr_t *ascr_init (int32 n_sen,		/**< Input: #Ordinary senones */
-		     int32 n_comsen,	/**< Input: #Composite senones */
-		     int32 n_sseq,        /**< Input: # of senone sequences */ 
-		     int32 n_comsseq,     /**< Input: # of composite senone sequences */ 
-		     int32 pl_win,        /**< Input: size of phoneme lookahead windows */
-		     int32 n_cisen        /**< Input: # of CI senones */
-		     );
+/**
+ * Create an ascr_t structure for the given number of senones (ordinary and composite).
+ * @return Pointer to created structure if successful, NULL otherwise.
+ */
+ascr_t *ascr_init (int32 n_sen,		/**< Input: #Ordinary senones */
+		   int32 n_comsen,	/**< Input: #Composite senones */
+		   int32 n_sseq,        /**< Input: # of senone sequences */ 
+		   int32 n_comsseq,     /**< Input: # of composite senone sequences */ 
+		   int32 pl_win,        /**< Input: size of phoneme lookahead windows */
+		   int32 n_cisen        /**< Input: # of CI senones */
+    );
 
-  /**
-   * Report the ascr parameters. 
-   */
+/**
+ * Report the ascr parameters. 
+ */
 
-  void ascr_report(ascr_t * a /**<Input : ascr data structure */
-		   ) ;
+void ascr_report(ascr_t * a /**<Input : ascr data structure */
+    ) ;
 
-   /**
-     Report the senone scores and comsen scores array. For debugging. 
-   */
-  void ascr_print_senscr(ascr_t *a /**<Input: ascr data structure */
-			 );
+/**
+   Report the senone scores and comsen scores array. For debugging. 
+*/
+void ascr_print_senscr(ascr_t *a /**<Input: ascr data structure */
+    );
 
-  /**
-   * Free ascr_t 
-   */ 
+/**
+ * Free ascr_t 
+ */ 
 
-  void ascr_free(ascr_t  *a /**<Input: an initialized ascr data structure */
-		 );
+void ascr_free(ascr_t  *a /**<Input: an initialized ascr data structure */
+    );
 
-  /**
-   * Shift one frame for the cache
-   */
-  void ascr_shift_one_cache_frame(ascr_t *a,  /**<Input: an initialized ascr data structure */
-				  int32 win_efv /**<Input: the effective size of cache windows */
-				  );
+/**
+ * Shift one frame for the cache
+ */
+void ascr_shift_one_cache_frame(ascr_t *a,  /**<Input: an initialized ascr data structure */
+				int32 win_efv /**<Input: the effective size of cache windows */
+    );
      
-  /**
-     Clear the senone active array
-   */
-  void ascr_clear_sen_active(ascr_t *a /**<Input, an initialized ascr
-					   data structure */
-			     );
+/**
+   Clear the senone active array
+*/
+void ascr_clear_sen_active(ascr_t *a /**<Input, an initialized ascr
+					data structure */
+    );
 
-  /** 
-      Clear senone sequence ID active array. 
-   */
-  void ascr_clear_ssid_active(ascr_t *a /**< Input, an initialized ascr
-					   data structure */
-			      );
+/** 
+    Clear senone sequence ID active array. 
+*/
+void ascr_clear_ssid_active(ascr_t *a /**< Input, an initialized ascr
+					 data structure */
+    );
 			    
-  /**
-     Clear the composite senone sequence ID active array
-   */
-  void ascr_clear_comssid_active(ascr_t *a /**< Input, an initialized ascr
-					   data structure */
-				 );
+/**
+   Clear the composite senone sequence ID active array
+*/
+void ascr_clear_comssid_active(ascr_t *a /**< Input, an initialized ascr
+					    data structure */
+    );
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 2005 Carnegie Mellon University.  All rights 
  * reserved.
@@ -51,22 +52,22 @@
 
 typedef struct kd_tree_node_s kd_tree_node_t;
 struct kd_tree_node_s {
-	uint8 *bbi; /* BBI list of intersecting Gaussians */
-	/* FIXME: Should be mfcc_t */
-	float32 split_plane;
-	uint16 n_bbi, split_comp;
-	uint16 left, right; /* Indices of left and right child nodes */
+    uint8 *bbi; /* BBI list of intersecting Gaussians */
+    /* FIXME: Should be mfcc_t */
+    float32 split_plane;
+    uint16 n_bbi, split_comp;
+    uint16 left, right; /* Indices of left and right child nodes */
 };
 typedef struct kd_tree_s kd_tree_t;
 struct kd_tree_s {
-	uint32 n_nodes, n_level, n_comp;
-	kd_tree_node_t *nodes;
+    uint32 n_nodes, n_level, n_comp;
+    kd_tree_node_t *nodes;
 };
 
 int32 read_kd_trees(const char *infile, kd_tree_t ***out_trees, uint32 *out_n_trees,
 		    uint32 maxdepth, int32 maxbbi);
 void free_kd_tree(kd_tree_t *tree);
-	/* FIXME: Should be mfcc_t */
+/* FIXME: Should be mfcc_t */
 kd_tree_node_t *eval_kd_tree(kd_tree_t *tree, float32 *feat, uint32 maxdepth);
 
 #endif /* __KDTREE_H__ */

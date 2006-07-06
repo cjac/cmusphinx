@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -123,24 +124,27 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 typedef uint32 senprob_t;	/**< Senone logs3-probs, truncated to 8 bits */
 
-  /**
-   * \struct senone_t
-   * \brief 8-bit senone PDF structure. 
-   * 
-   * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
-   * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
-   */
+/**
+ * \struct senone_t
+ * \brief 8-bit senone PDF structure. 
+ * 
+ * 8-bit senone PDF structure.  Senone pdf values are normalized, floored, converted to
+ * logs3 domain, and finally truncated to 8 bits precision to conserve memory space.
+ */
 typedef struct {
     senprob_t ***pdf;		/**< gaussian density mixture weights, organized two possible
-				   ways depending on n_gauden:
-				   if (n_gauden > 1): pdf[sen][feat][codeword].  Not an
-				       efficient representation--memory access-wise--but
-				       evaluating the many codebooks will be more costly.
-				   if (n_gauden == 1): pdf[feat][codeword][sen].  Optimized
-				       for the shared-distribution semi-continuous case. */
+                                   ways depending on n_gauden:
+                                   if (n_gauden > 1): pdf[sen][feat][codeword].  Not an
+                                   efficient representation--memory access-wise--but
+                                   evaluating the many codebooks will be more costly.
+                                   if (n_gauden == 1): pdf[feat][codeword][sen].  Optimized
+                                   for the shared-distribution semi-continuous case. */
     int32 n_sen;		/**< #senones in this set */
     int32 n_feat;		/**< #feature streams */ 
     int32 n_cw;			/**< #codewords per codebook,stream */
@@ -152,7 +156,7 @@ typedef struct {
 } senone_t;
 
 
-  /**
+/**
  * Load a set of senones (mixing weights and mixture gaussian codebook mappings) from
  * the given files.  Normalize weights for each codebook, apply the given floor, convert
  * PDF values to logs3 domain and quantize to 8-bits.
@@ -163,12 +167,12 @@ senone_t *senone_init (char *mixwfile,		/**< In: mixing weights file */
 						   senone to mixture gaussian codebook.
 						   If NULL all senones map to codebook 0 */
 		       float32 mixwfloor	/**< In: Floor value for senone weights */
-		       );
+    );
 
 /** Release memory allocated by senone_init. */
 void senone_free(senone_t *s); /**< In: The senone_t to free */
 
-  /**
+/**
  * Evaluate the score for the given senone wrt to the given top N gaussian codewords.
  * @return senone score (in logs3 domain).
  */
@@ -178,9 +182,9 @@ int32 senone_eval (senone_t *s, s3senid_t id,	/**< In: senone for which score de
 						   senone score.  IE, dist[f][i] = i-th
 						   best <codeword,density> for feaure f */
 		   int32 n_top		/**< In: Length of dist[f], for each f */
-		   );
+    );
 
-  /**
+/**
  * Like senone_eval, but compute all senone scores for the shared density case (ie,
  * #codebooks = 1).
  */
@@ -189,7 +193,7 @@ void senone_eval_all (senone_t *s,		/**< In: Senone structure */
 		      int32 n_top,		/**< In: as in senone_eval above */
 		      int32 *senscr		/**< Out: Upon return, senscr[i] will contain
 						   score for senone i */
-		      );
+    );
 
 #ifdef __cplusplus
 }

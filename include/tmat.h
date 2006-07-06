@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -97,66 +98,69 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * \struct tmat_t
-   * \brief Transition matrix data structure.  All phone HMMs are assumed to have the same
-   * topology.
-   */
-  typedef struct {
+/**
+ * \struct tmat_t
+ * \brief Transition matrix data structure.  All phone HMMs are assumed to have the same
+ * topology.
+ */
+typedef struct {
     int32 ***tp;	/**< The transition matrices; int32 since probs in logs3 domain:
-			    tp[tmatid][from-state][to-state] */
+			   tp[tmatid][from-state][to-state] */
     int32 n_tmat;	/**< #matrices */
     int32 n_state;	/**< #source states in matrix (only the emitting states);
-			    #destination states = n_state+1, it includes the exit state */
-  } tmat_t;
+			   #destination states = n_state+1, it includes the exit state */
+} tmat_t;
 
 
-  /** Initialize transition matrix */
+/** Initialize transition matrix */
 
-  tmat_t *tmat_init (char *tmatfile,	/**< In: input file */
-		     float64 tpfloor,	/**< In: floor value for each non-zero transition probability */
-		     int32 breport      /**< In: whether reporting the process of tmat_t  */
-		     );
+tmat_t *tmat_init (char *tmatfile,	/**< In: input file */
+		   float64 tpfloor,	/**< In: floor value for each non-zero transition probability */
+		   int32 breport      /**< In: whether reporting the process of tmat_t  */
+    );
 					    
 
 
-  /** Dumping the transition matrix for debugging */
+/** Dumping the transition matrix for debugging */
 
-  void tmat_dump (tmat_t *tmat,  /**< In: transition matrix */
-		  FILE *fp       /**< In: file pointer */
-		  );	
-
-
-  /**
-   * Checks that no transition matrix in the given object contains backward arcs.
-   * @returns 0 if successful, -1 if check failed.
-   */
-  int32 tmat_chk_uppertri (tmat_t *tmat /**< In: transition matrix */
-			   );
+void tmat_dump (tmat_t *tmat,  /**< In: transition matrix */
+		FILE *fp       /**< In: file pointer */
+    );	
 
 
-  /**
-   * Checks that transition matrix arcs in the given object skip over
-   * at most 1 state.  
-   * @returns 0 if successful, -1 if check failed.  
-   */
+/**
+ * Checks that no transition matrix in the given object contains backward arcs.
+ * @returns 0 if successful, -1 if check failed.
+ */
+int32 tmat_chk_uppertri (tmat_t *tmat /**< In: transition matrix */
+    );
 
-  int32 tmat_chk_1skip (tmat_t *tmat /**< In: transition matrix */
-			);
 
-  /**
-   * RAH, add code to remove memory allocated by tmat_init
-   */
+/**
+ * Checks that transition matrix arcs in the given object skip over
+ * at most 1 state.  
+ * @returns 0 if successful, -1 if check failed.  
+ */
 
-  void tmat_free (tmat_t *t /**< In: transition matrix */
-		  );
+int32 tmat_chk_1skip (tmat_t *tmat /**< In: transition matrix */
+    );
 
-  /**
-   * Report the detail of the transition matrix structure. 
-   */
-  void tmat_report(tmat_t *t /**< In: transition matrix*/
-		   );
+/**
+ * RAH, add code to remove memory allocated by tmat_init
+ */
+
+void tmat_free (tmat_t *t /**< In: transition matrix */
+    );
+
+/**
+ * Report the detail of the transition matrix structure. 
+ */
+void tmat_report(tmat_t *t /**< In: transition matrix*/
+    );
 
 #ifdef __cplusplus
 }

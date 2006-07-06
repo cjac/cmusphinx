@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -123,11 +124,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * \struct gauden_t
-   * \brief Multivariate gaussian mixture density parameters
-   */
+/**
+ * \struct gauden_t
+ * \brief Multivariate gaussian mixture density parameters
+ */
 typedef struct {
     vector_t ***mean;	/**< mean[codebook][feature][codeword] vector */
     vector_t ***var;	/**< like mean; diagonal covariance vector only */
@@ -139,19 +143,19 @@ typedef struct {
     int32 *featlen;	/**< feature length for each feature */
 } gauden_t;
 
-  /**
-   * \struct gauden_dist_t
-   * \brief Structure to store distance (density) values for a given input observation wrt density values in some given codebook.
-   */
+/**
+ * \struct gauden_dist_t
+ * \brief Structure to store distance (density) values for a given input observation wrt density values in some given codebook.
+ */
 typedef struct {
     int32 id;		/**< Index of codeword (gaussian density) */
     int32 dist;		/**< Density value for input observation wrt above codeword;
-			   NOTE: result in logs3 domain; hence int32 */
+                           NOTE: result in logs3 domain; hence int32 */
 
 } gauden_dist_t;
 
 
-  /**
+/**
  * Read mixture gaussian codebooks from the given files.  Allocate memory space needed
  * for them.  Apply the specified variance floor value.
  * Return value: ptr to the model created; NULL if error.
@@ -162,21 +166,21 @@ gauden_init (char *meanfile,	/**< Input: File containing means of mixture gaussi
 	     char *varfile,	/**< Input: File containing variances of mixture gaussians */
 	     float32 varfloor,	/**< Input: Floor value to be applied to variances */
 	     int32 precompute   /**< Input: Whether we should precompute */  
-	     );
+    );
 
 /** Release memory allocated by gauden_init. */
 void gauden_free(gauden_t *g); /**< In: The gauden_t to free */
 
-  /**
+/**
  * Reload mixture Gaussian means from the given file.  The means must have already
  * been loaded at least once (using gauden_init).
  * @return 0 if successful, -1 otherwise.
  */
 int32 gauden_mean_reload (gauden_t *g,		/**< In/Out: g->mean to be reloaded */
 			  char *meanfile	/**< In: File to reload means from */
-			  );
+    );
 
-  /**
+/**
  * Compute gaussian density values for the given input observation vector wrt the
  * specified mixture gaussian codebook (which may consist of several feature streams).
  * Density values are left UNnormalized.
@@ -189,14 +193,14 @@ gauden_dist (gauden_t *g,	/**< In: handle to entire ensemble of codebooks */
 	     int32 n_top,	/**< In: #top densities to be evaluated */
 	     vector_t *obs,	/**< In: Observation vector; obs[f] = for feature f */
 	     gauden_dist_t **out_dist
-				/**< Out: n_top best codewords and density values,
-				   in worsening order, for each feature stream.
-				   out_dist[f][i] = i-th best density for feature f.
-				   Caller must allocate memory for this output */
-	    );
+	     /**< Out: n_top best codewords and density values,
+		in worsening order, for each feature stream.
+		out_dist[f][i] = i-th best density for feature f.
+		Caller must allocate memory for this output */
+    );
 
 
-  /**
+/**
  * Normalize density values (previously computed by gauden_dist).
  * Two cases:  If (g->n_mgau == 1), normalize such that the sum of the n_top codeword
  * scores for each feature in dist sums to 1 (in prob domain).
@@ -211,22 +215,22 @@ gauden_dist_norm (gauden_t *g,		/**< In: handle to all collection of codebooks *
 					   each feature.  On return, density values are
 					   normalized. */
 		  uint8 *active	/**< In: active[gid] is non-0 iff codebook gid is
-					   active.  If NULL, all codebooks active */
-		  );
+				   active.  If NULL, all codebooks active */
+    );
 
 
-  /**
-    Dump the definitionn of Gaussian distribution. 
-   */
-  void gauden_dump (const gauden_t *g  /**< In: Gaussian distribution g*/
-		    );
+/**
+   Dump the definitionn of Gaussian distribution. 
+*/
+void gauden_dump (const gauden_t *g  /**< In: Gaussian distribution g*/
+    );
 
-  /**
-    Dump the definition of Gaussian distribution of a particular index to the standard output stream
-   */
-  void gauden_dump_ind (const gauden_t *g,  /**< In: Gaussian distribution g*/
-			int senidx          /**< In: The senone index of the Gaussian */
-			);
+/**
+   Dump the definition of Gaussian distribution of a particular index to the standard output stream
+*/
+void gauden_dump_ind (const gauden_t *g,  /**< In: Gaussian distribution g*/
+		      int senidx          /**< In: The senone index of the Gaussian */
+    );
 
 #ifdef __cplusplus
 }

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -90,22 +91,25 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * \struct interp_t
-   * \brief Wrapper structure of CD/CI interpolation
-   */
+/**
+ * \struct interp_t
+ * \brief Wrapper structure of CD/CI interpolation
+ */
 typedef struct {
     int32 n_sen;	/**< #senones */
 
-  /**
-   * \struct interp_wt_s
-   * \brief Quick and Dirty wrapper of the CD and CI weight 
-   */
+    /**
+     * \struct interp_wt_s
+     * \brief Quick and Dirty wrapper of the CD and CI weight 
+     */
 
     struct interp_wt_s {
-	int32 cd;	/**< logs3(CD senone weight) */
-	int32 ci;	/**< logs3(1 - cd) */
+        int32 cd;	/**< logs3(CD senone weight) */
+        int32 ci;	/**< logs3(1 - cd) */
     } *wt;		/**< wt[i] = interpolation weight for senone i */
 } interp_t;
 
@@ -117,7 +121,7 @@ typedef struct {
  * @return an initialized interp_t structure 
  */
 interp_t *interp_init (char *interpfile	/* In: interpolation weights file */
-		       );
+    );
 
 /**
  * Interpolate a single given CD senone with the given CI senone score.
@@ -127,7 +131,7 @@ int32 interp_cd_ci (interp_t *ip,	/**< In: Interpolation weights parameters */
 		    int32 *senscr,	/**< In/Out: senscr[cd] interpolated with senscr[ci] */
 		    int32 cd,		/**< In: see senscr above */
 		    int32 ci		/**< In: see senscr above */
-		    );
+    );
 
 /**
  * Interpolate each CD senone with its corresponding CI senone score.
@@ -138,7 +142,7 @@ int32 interp_all (interp_t *ip,		/**< In: Interpolation weights parameters */
 					   senscr[cimap[cd]], for cd >= n_ci_sen */
 		  s3senid_t *cimap,	/**< In: see senscr above */
 		  int32 n_ci_sen	/**< In: see senscr above */
-		  );
+    );
 
 #ifdef __cplusplus
 }

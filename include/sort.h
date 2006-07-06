@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
@@ -68,13 +69,13 @@
 #include <stdlib.h>
 
 typedef struct {
-  int32 key;
-  float32 val;
+    int32 key;
+    float32 val;
 } sort_t;
 
 typedef struct {
-  sort_t* s_array;
-  int32 size;
+    sort_t* s_array;
+    int32 size;
 } sort_array_t;
 
 void init_sort_array(int size, sort_array_t *s);
