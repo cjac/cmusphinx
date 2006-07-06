@@ -341,183 +341,200 @@
     \brief Implementation of forward search in a flat lexicon. 
  */
 
-static int32 exist_left_context(whmm_t **whmm, s3wid_t w,s3cipid_t lc)
+static int32
+exist_left_context(whmm_t ** whmm, s3wid_t w, s3cipid_t lc)
 {
-  whmm_t *h;
-  if (whmm[w]) {
-    for (h = whmm[w]; h; h = h->next){
-      /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w);*/
-      if(h->lc==lc)
-	return 1;
+    whmm_t *h;
+    if (whmm[w]) {
+        for (h = whmm[w]; h; h = h->next) {
+            /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w); */
+            if (h->lc == lc)
+                return 1;
+        }
+        return 0;
     }
-    return 0;
-  }else{
-    return 0;
-  }
+    else {
+        return 0;
+    }
 }
 
-static int32 exist_left_right_context(whmm_t **whmm, s3wid_t w,s3cipid_t lc, s3cipid_t rc)
+static int32
+exist_left_right_context(whmm_t ** whmm, s3wid_t w, s3cipid_t lc,
+                         s3cipid_t rc)
 {
-  whmm_t *h;
-  if (whmm[w]) {
-    for (h = whmm[w]; h; h = h->next){
-      /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w);*/
-      if(h->lc==lc && h->rc==rc)
-	return 1;
+    whmm_t *h;
+    if (whmm[w]) {
+        for (h = whmm[w]; h; h = h->next) {
+            /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w); */
+            if (h->lc == lc && h->rc == rc)
+                return 1;
+        }
+        return 0;
     }
-    return 0;
-  }else{
-    return 0;
-  }
+    else {
+        return 0;
+    }
 }
 
-void dump_all_whmm (srch_FLAT_FWD_graph_t *fwg, whmm_t **whmm, int32 n_frm, int32 n_state, int32 *senscr)
+void
+dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm,
+              int32 n_state, int32 * senscr)
 {
     s3wid_t w;
     whmm_t *h;
-    kbcore_t* kbc;
-    tmat_t* tmat;
-    dict_t* dict;
+    kbcore_t *kbc;
+    tmat_t *tmat;
+    dict_t *dict;
     mdef_t *mdef;
-    
-    kbc=fwg->kbcore;
-    tmat=kbcore_tmat(kbc);
-    dict=kbcore_dict(kbc);
-    mdef=kbcore_mdef(kbc);
+
+    kbc = fwg->kbcore;
+    tmat = kbcore_tmat(kbc);
+    dict = kbcore_dict(kbc);
+    mdef = kbcore_mdef(kbc);
 
     for (w = 0; w < dict->n_word; w++) {
-	if (whmm[w]) {
-	  for (h = whmm[w]; h; h = h->next){
+        if (whmm[w]) {
+            for (h = whmm[w]; h; h = h->next) {
 
-	    if(dict->word[w].pronlen == 1)
-	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,fwg->multiplex_singleph));
-	    else
-	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,fwg->multiplex));
+                if (dict->word[w].pronlen == 1)
+                    assert((h->type == MULTIPLEX_TYPE) ==
+                           IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
+                else
+                    assert((h->type == MULTIPLEX_TYPE) ==
+                           IS_MULTIPLEX(h->pos, fwg->multiplex));
 
-	    dump_whmm(w,h,senscr,tmat,n_frm,n_state,dict,mdef);
-	  }
-	}
+                dump_whmm(w, h, senscr, tmat, n_frm, n_state, dict, mdef);
+            }
+        }
     }
 }
 
-void dump_all_word (srch_FLAT_FWD_graph_t *fwg, whmm_t **whmm, int32 n_state)
+void
+dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state)
 {
     s3wid_t w;
     whmm_t *h;
     int32 last, bestlast;
-    kbcore_t* kbc;
-    tmat_t* tmat;
-    dict_t* dict;
-    
-    kbc=fwg->kbcore;
-    tmat=kbcore_tmat(kbc);
-    dict=kbcore_dict(kbc);
-    
+    kbcore_t *kbc;
+    tmat_t *tmat;
+    dict_t *dict;
+
+    kbc = fwg->kbcore;
+    tmat = kbcore_tmat(kbc);
+    dict = kbcore_dict(kbc);
+
     for (w = 0; w < dict->n_word; w++) {
-	if (whmm[w]) {
-	    printf ("[%4d] %-24s", fwg->n_frm, dict->word[w].word);
+        if (whmm[w]) {
+            printf("[%4d] %-24s", fwg->n_frm, dict->word[w].word);
 
-	    last = dict->word[w].pronlen - 1;
-	    bestlast = (int32) 0x80000000;
-	    
-	    for (h = whmm[w]; h; h = h->next) {
-		if (h->pos < last)
-		    printf (" %9d.%2d", -h->score[n_state-1], h->pos);
-		else if (bestlast < h->score[n_state-1])
-		    bestlast = h->score[n_state-1];
-	    }
+            last = dict->word[w].pronlen - 1;
+            bestlast = (int32) 0x80000000;
 
-	    if (bestlast > (int32) 0x80000000)
-		printf (" %9d.%2d", -bestlast, last);
+            for (h = whmm[w]; h; h = h->next) {
+                if (h->pos < last)
+                    printf(" %9d.%2d", -h->score[n_state - 1], h->pos);
+                else if (bestlast < h->score[n_state - 1])
+                    bestlast = h->score[n_state - 1];
+            }
 
-	    printf ("\n");
-	}
+            if (bestlast > (int32) 0x80000000)
+                printf(" %9d.%2d", -bestlast, last);
+
+            printf("\n");
+        }
     }
 }
 
 
-int32 whmm_eval (srch_FLAT_FWD_graph_t *fwg, int32 *senscr, int32 n_state) 
+int32
+whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr, int32 n_state)
 {
     int32 best, cf;
     s3wid_t w;
     whmm_t *h, *nexth, *prevh;
     int32 n_mpx, n_nonmpx;
-    kbcore_t* kbc;
-    tmat_t* tmat;
-    dict_t* dict;
+    kbcore_t *kbc;
+    tmat_t *tmat;
+    dict_t *dict;
     mdef_t *mdef;
     whmm_t **whmm;
-    
-    kbc=fwg->kbcore;
-    tmat=kbcore_tmat(kbc);
-    dict=kbcore_dict(kbc);
-    mdef=kbcore_mdef(kbc);
-    whmm=fwg->whmm;
-    
+
+    kbc = fwg->kbcore;
+    tmat = kbcore_tmat(kbc);
+    dict = kbcore_dict(kbc);
+    mdef = kbcore_mdef(kbc);
+    whmm = fwg->whmm;
+
     best = S3_LOGPROB_ZERO;
     n_mpx = n_nonmpx = 0;
     cf = fwg->n_frm;
-    
+
     for (w = 0; w < dict->n_word; w++) {
-	prevh = NULL;
-	/*	E_INFO("HIHI %d %d\n",w,n_state);*/
-	for (h = whmm[w]; h; h = nexth) {
-	  /*	  E_INFO("HIHI Inside\n");*/
-	    nexth = h->next;
+        prevh = NULL;
+        /*      E_INFO("HIHI %d %d\n",w,n_state); */
+        for (h = whmm[w]; h; h = nexth) {
+            /*      E_INFO("HIHI Inside\n"); */
+            nexth = h->next;
 
-	    if(dict->word[w].pronlen == 1)
-	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,fwg->multiplex_singleph));
-	    else
-	      assert((h->type==MULTIPLEX_TYPE)==IS_MULTIPLEX(h->pos,fwg->multiplex));
+            if (dict->word[w].pronlen == 1)
+                assert((h->type == MULTIPLEX_TYPE) ==
+                       IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
+            else
+                assert((h->type == MULTIPLEX_TYPE) ==
+                       IS_MULTIPLEX(h->pos, fwg->multiplex));
 
-	    /*E_INFO("%d %d\n",h->active,cf); */
-	    if (h->active == cf) {
+            /*E_INFO("%d %d\n",h->active,cf); */
+            if (h->active == cf) {
 
-	      if(h->type==MULTIPLEX_TYPE){
-		  eval_mpx_whmm(h,senscr,tmat,mdef,n_state);
-		  n_mpx++;
-	      }else{
-		  eval_nonmpx_whmm(h,senscr,tmat,mdef,n_state);
-		  n_nonmpx++;
-	      }
-		
-	      /*E_INFO("best %d h->bestscore %d\n",best,h->bestscore); */
-	      if (best < h->bestscore)
-		best = h->bestscore;
+                if (h->type == MULTIPLEX_TYPE) {
+                    eval_mpx_whmm(h, senscr, tmat, mdef, n_state);
+                    n_mpx++;
+                }
+                else {
+                    eval_nonmpx_whmm(h, senscr, tmat, mdef, n_state);
+                    n_nonmpx++;
+                }
 
-	      prevh = h;
+                /*E_INFO("best %d h->bestscore %d\n",best,h->bestscore); */
+                if (best < h->bestscore)
+                    best = h->bestscore;
 
-	    } else {
-		if (prevh)
-		    prevh->next = nexth;
-		else
-		    whmm[w] = nexth;
-		
-		whmm_free(h);
-	    }
-	}
+                prevh = h;
+
+            }
+            else {
+                if (prevh)
+                    prevh->next = nexth;
+                else
+                    whmm[w] = nexth;
+
+                whmm_free(h);
+            }
+        }
     }
 
-    pctr_increment (fwg->ctr_mpx_whmm, n_mpx);
-    pctr_increment (fwg->ctr_nonmpx_whmm, n_nonmpx);
-    
+    pctr_increment(fwg->ctr_mpx_whmm, n_mpx);
+    pctr_increment(fwg->ctr_nonmpx_whmm, n_nonmpx);
+
     return best;
 }
 
-void whmm_renorm (srch_FLAT_FWD_graph_t *fwg, whmm_t **whmm,int32 n_state, int32 bestscr)
+void
+whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
+            int32 bestscr)
 {
     s3wid_t w;
     whmm_t *h;
     int32 st;
     dict_t *dict;
-    
-    dict=fwg->kbcore->dict;
+
+    dict = fwg->kbcore->dict;
     fwg->renormalized = 1;
-    
+
     for (w = 0; w < dict->n_word; w++)
-	for (h = whmm[w]; h; h = h->next)
-	    for (st = n_state-2; st >= 0; --st)
-		h->score[st] -= bestscr;
+        for (h = whmm[w]; h; h = h->next)
+            for (st = n_state - 2; st >= 0; --st)
+                h->score[st] -= bestscr;
 }
 
 
@@ -528,87 +545,90 @@ void whmm_renorm (srch_FLAT_FWD_graph_t *fwg, whmm_t **whmm,int32 n_state, int32
  * multiple instances corresponding cross-word triphone modelling for all right context
  * ciphones.
  */
-void whmm_transition (srch_FLAT_FWD_graph_t *fwg, whmm_t** whmm, int32 w, whmm_t *h, int32 n_state, int32 final_state) 
+void
+whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
+                whmm_t * h, int32 n_state, int32 final_state)
 {
     int32 lastpos, npid, nf;
     whmm_t *nexth, *prevh;
     s3cipid_t rc;
     s3pid_t *pid;
-    ctxt_table_t* ct_table; 
+    ctxt_table_t *ct_table;
     dict_t *dict;
     kbcore_t *kbc;
     tmat_t *tmat;
-    
-    kbc=fwg->kbcore;
-    tmat=kbcore_tmat(kbc);
-    dict=kbcore_dict(kbc);
-    ct_table=fwg->ctxt;
+
+    kbc = fwg->kbcore;
+    tmat = kbcore_tmat(kbc);
+    dict = kbcore_dict(kbc);
+    ct_table = fwg->ctxt;
 
     lastpos = dict->word[w].pronlen - 1;
-    nf = fwg->n_frm+1;
-    
-    if (h->pos < lastpos-1) {
-	/*
-	 * Transition to word HMM that's not the final one in word.  First, allocate
-	 * the HMM if not already present.
-	 */
-	if ((! h->next) || (h->next->pos != h->pos+1)) {
-	    nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE,0);
+    nf = fwg->n_frm + 1;
 
-	    nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
-	    
-	    nexth->next = h->next;
-	    h->next = nexth;
-	}
+    if (h->pos < lastpos - 1) {
+        /*
+         * Transition to word HMM that's not the final one in word.  First, allocate
+         * the HMM if not already present.
+         */
+        if ((!h->next) || (h->next->pos != h->pos + 1)) {
+            nexth = whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
 
-	/* Transition to next HMM */
-	nexth = h->next;
-	if (h->score[final_state] > nexth->score[0]) {
-	    nexth->score[0] = h->score[final_state];
-	    nexth->history[0] = h->history[final_state];
-	    nexth->active = nf;		/* Ensure it doesn't get pruned */
-	}
-    } else {
-	/*
-	 * Transition to final HMMs in word, with full cross-word rc modelling.  Allocate
-	 * all final triphone HMM instances first.
-	 */
-	prevh = h;
-	get_rcpid (ct_table, w, &pid, &npid, dict);
-	
-	for (rc = 0; rc < npid; rc++) {
-	    if ((! prevh->next) || (prevh->next->rc != rc)) {
-		nexth = whmm_alloc (h->pos+1,n_state,WHMM_ALLOC_SIZE,0);
+            nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
 
-		nexth->rc = rc;
-		nexth->pid = &(pid[rc]);
-		
-		nexth->next = prevh->next;
-		prevh->next = nexth;
-	    }
-	    prevh = prevh->next;
-	}
+            nexth->next = h->next;
+            h->next = nexth;
+        }
 
-	/* Transition to next HMMs */
-	for (rc = 0, nexth = h->next; rc < npid; rc++, nexth = nexth->next) {
-	    if (h->score[final_state] > nexth->score[0]) {
-		nexth->score[0] = h->score[final_state];
-		nexth->history[0] = h->history[final_state];
-		nexth->active = nf;	/* Ensure it doesn't get pruned */
-	    }
-	}
+        /* Transition to next HMM */
+        nexth = h->next;
+        if (h->score[final_state] > nexth->score[0]) {
+            nexth->score[0] = h->score[final_state];
+            nexth->history[0] = h->history[final_state];
+            nexth->active = nf; /* Ensure it doesn't get pruned */
+        }
+    }
+    else {
+        /*
+         * Transition to final HMMs in word, with full cross-word rc modelling.  Allocate
+         * all final triphone HMM instances first.
+         */
+        prevh = h;
+        get_rcpid(ct_table, w, &pid, &npid, dict);
+
+        for (rc = 0; rc < npid; rc++) {
+            if ((!prevh->next) || (prevh->next->rc != rc)) {
+                nexth =
+                    whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
+
+                nexth->rc = rc;
+                nexth->pid = &(pid[rc]);
+
+                nexth->next = prevh->next;
+                prevh->next = nexth;
+            }
+            prevh = prevh->next;
+        }
+
+        /* Transition to next HMMs */
+        for (rc = 0, nexth = h->next; rc < npid; rc++, nexth = nexth->next) {
+            if (h->score[final_state] > nexth->score[0]) {
+                nexth->score[0] = h->score[final_state];
+                nexth->history[0] = h->history[final_state];
+                nexth->active = nf;     /* Ensure it doesn't get pruned */
+            }
+        }
     }
 }
 
 /* WARNING, be careful when plug in parameters into this guy*/
-void whmm_exit (srch_FLAT_FWD_graph_t *fwg,
-		whmm_t **whmm, 
-		latticehist_t *lathist, 
-		int32 n_state, 
-		int32 final_state, 
-		int32 thresh, 
-		int32 wordthresh, 
-		int32 phone_penalty)
+void
+whmm_exit(srch_FLAT_FWD_graph_t * fwg,
+          whmm_t ** whmm,
+          latticehist_t * lathist,
+          int32 n_state,
+          int32 final_state,
+          int32 thresh, int32 wordthresh, int32 phone_penalty)
 {
     s3wid_t w;
     whmm_t *h;
@@ -616,35 +636,35 @@ void whmm_exit (srch_FLAT_FWD_graph_t *fwg,
     dict_t *dict;
     kbcore_t *kbc;
     tmat_t *tmat;
-    
-    kbc=fwg->kbcore;
-    tmat=kbcore_tmat(kbc);
-    dict=kbcore_dict(kbc);
-    
-    nf = fwg->n_frm+1;
+
+    kbc = fwg->kbcore;
+    tmat = kbcore_tmat(kbc);
+    dict = kbcore_dict(kbc);
+
+    nf = fwg->n_frm + 1;
 
     for (w = 0; w < dict->n_word; w++) {
-	pronlen = dict->word[w].pronlen;
+        pronlen = dict->word[w].pronlen;
 
-	for (h = whmm[w]; h; h = h->next) {
-	    if (h->bestscore >= thresh) {
-		if (h->pos == pronlen-1) {
-		  if (h->score[final_state] >= wordthresh){
-		    lattice_entry (lathist, w, fwg->n_frm, 
-				   h->score[final_state],
-				   h->history[final_state],
-				   h->rc,
-				   fwg->ctxt,
-				   dict);
-		  }
-		} else {
-		    if (h->score[final_state]+phone_penalty >= thresh)
-			whmm_transition (fwg, whmm, w, h, n_state, final_state);
-		}
+        for (h = whmm[w]; h; h = h->next) {
+            if (h->bestscore >= thresh) {
+                if (h->pos == pronlen - 1) {
+                    if (h->score[final_state] >= wordthresh) {
+                        lattice_entry(lathist, w, fwg->n_frm,
+                                      h->score[final_state],
+                                      h->history[final_state],
+                                      h->rc, fwg->ctxt, dict);
+                    }
+                }
+                else {
+                    if (h->score[final_state] + phone_penalty >= thresh)
+                        whmm_transition(fwg, whmm, w, h, n_state,
+                                        final_state);
+                }
 
-		h->active = nf;
-	    }
-	}
+                h->active = nf;
+            }
+        }
     }
 }
 
@@ -671,164 +691,180 @@ void whmm_exit (srch_FLAT_FWD_graph_t *fwg,
  *
  */
 
-void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 score, s3latid_t l, s3cipid_t lc)
+void
+word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
+           int32 score, s3latid_t l, s3cipid_t lc)
 {
     whmm_t *h, *prevh;
     s3cipid_t b, rc;
     s3pid_t pid, *rpid;
     s3pid_t *pidp;
     int32 s, npid, nf;
-    kbcore_t* kbc;
-    tmat_t* tmat;
-    dict_t* dict;
-    ctxt_table_t* ct_table;
+    kbcore_t *kbc;
+    tmat_t *tmat;
+    dict_t *dict;
+    ctxt_table_t *ct_table;
     s3senid_t *lcmap;
 
     whmm_t **whmm;
 
-    kbc=fwg->kbcore;
-    dict=kbcore_dict(kbc);
-    tmat=kbcore_tmat(kbc);
-    ct_table=fwg->ctxt;
-    whmm=fwg->whmm;
+    kbc = fwg->kbcore;
+    dict = kbcore_dict(kbc);
+    tmat = kbcore_tmat(kbc);
+    ct_table = fwg->ctxt;
+    whmm = fwg->whmm;
 
     assert(whmm);
     assert(kbc);
     assert(dict);
     assert(tmat);
 
-    nf = fwg->n_frm+1;
-    
+    nf = fwg->n_frm + 1;
+
     b = dict->word[w].ciphone[0];
-    lcmap=get_lc_cimap(ct_table, w, dict);
+    lcmap = get_lc_cimap(ct_table, w, dict);
     /*
-      ARCHAN: Though the term rc and lc is used at here.  Be very
-      careful that, when they were used in CI-phone, the corresponding
-      SSID may not be unique.  While, using what one could find in the
-      context of lc_cimap. Things are always unique. The contents in
-      the hmm should always be stored using the compressed ID. This
-      will make computation be more efficient. 
+       ARCHAN: Though the term rc and lc is used at here.  Be very
+       careful that, when they were used in CI-phone, the corresponding
+       SSID may not be unique.  While, using what one could find in the
+       context of lc_cimap. Things are always unique. The contents in
+       the hmm should always be stored using the compressed ID. This
+       will make computation be more efficient. 
      */
 
-    /*    E_INFO("word enter\n");*/
-    if (dict->word[w].pronlen > 1) {	/* Multi-phone word; no right context problem */
+    /*    E_INFO("word enter\n"); */
+    if (dict->word[w].pronlen > 1) {    /* Multi-phone word; no right context problem */
 
-      rc = dict->word[w].ciphone[1];
+        rc = dict->word[w].ciphone[1];
 
-      pidp = &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]);
-      pid=*(pidp);
-      
-      if(fwg->multiplex){
-	if ((! whmm[w]) || (whmm[w]->pos != 0)) { /* If whmm is not allocated or it is not the first phone */
-	  h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,1);
-	  for (s = 0; s < n_state; s++)
-	    h->pid[s] = pid;
-	  
-	  h->next = whmm[w];
-	  whmm[w] = h;
-	}
-      }else{
-	if ((! whmm[w]) || (whmm[w]->pos != 0)|| !exist_left_context(whmm, w, lcmap[lc])) {
+        pidp =
+            &(ct_table->lcpid[b][rc].
+              pid[ct_table->lcpid[b][rc].cimap[lc]]);
+        pid = *(pidp);
 
-	  h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
-	  h->pid=pidp;
-	  h->next = whmm[w];
-	  whmm[w] = h;
-	}
-      }
-      
-      h = whmm[w];
-      
-      if (score > h->score[0]) {  
-	h->score[0] = score;
-	h->history[0] = l;
-	h->active = nf;
-	
-	if(fwg->multiplex){
-	  h->pid[0] = pid;
-	}else{
-	  h->lc=lcmap[lc];
-	  h->pid=pidp;
-	}
-      }
+        if (fwg->multiplex) {
+            if ((!whmm[w]) || (whmm[w]->pos != 0)) {    /* If whmm is not allocated or it is not the first phone */
+                h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
+                for (s = 0; s < n_state; s++)
+                    h->pid[s] = pid;
 
-    } else {
-	/* Do all right contexts; first make sure all are allocated */
-	prevh = NULL;
-	h = whmm[w];
-	npid = get_rc_npid (ct_table,w,dict);
-	rpid = ct_table->lrcpid[b][lc].pid;
-	
-	for (rc = 0; rc < npid; rc++) {
+                h->next = whmm[w];
+                whmm[w] = h;
+            }
+        }
+        else {
+            if ((!whmm[w]) || (whmm[w]->pos != 0)
+                || !exist_left_context(whmm, w, lcmap[lc])) {
 
-	  pidp=&(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]);
-	  pid=*(pidp);
+                h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
+                h->pid = pidp;
+                h->next = whmm[w];
+                whmm[w] = h;
+            }
+        }
 
-	  if(fwg->multiplex_singleph){
-	    if ((! h) || (h->rc != rc)) {
-	      h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,1);
-	      for (s = 0; s < n_state; s++){
-		h->pid[s] = rpid[rc];
-	      }
-	      
-	      h->rc = rc;
+        h = whmm[w];
 
-	      if (prevh) {
-		h->next = prevh->next;
-		prevh->next = h;
-	      } else {
-		h->next = whmm[w];
-		whmm[w] = h;
-	      }
-	    }
-	  }else {
-	    if ((! h) || !exist_left_right_context(whmm, w,lcmap[lc],rc)) {
-	      h = whmm_alloc (0,n_state,WHMM_ALLOC_SIZE,0);
-	      h->pid=pidp;
-	      
-	      h->rc = rc;
-	      
-	      if (prevh) {
-		h->next = prevh->next;
-		prevh->next = h;
-	      } else {
-		h->next = whmm[w];
-		whmm[w] = h;
-	      }
-	    }
-	  }
-	  prevh = h;
-	  h = h->next;
+        if (score > h->score[0]) {
+            h->score[0] = score;
+            h->history[0] = l;
+            h->active = nf;
 
-	}
+            if (fwg->multiplex) {
+                h->pid[0] = pid;
+            }
+            else {
+                h->lc = lcmap[lc];
+                h->pid = pidp;
+            }
+        }
 
-	if(fwg->multiplex_singleph)
-	  assert (! h);
-	
-	/* Transition to the allocated HMMs */
-	b = dict->word[w].ciphone[0];
-	for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
+    }
+    else {
+        /* Do all right contexts; first make sure all are allocated */
+        prevh = NULL;
+        h = whmm[w];
+        npid = get_rc_npid(ct_table, w, dict);
+        rpid = ct_table->lrcpid[b][lc].pid;
 
-	  pidp=&(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]);
-	  pid=*(pidp);
+        for (rc = 0; rc < npid; rc++) {
 
-	    if (score > h->score[0]) {
-		h->score[0] = score;
-		h->history[0] = l;
+            pidp =
+                &(ct_table->lrcpid[b][lc].
+                  pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+            pid = *(pidp);
 
-		if(fwg->multiplex_singleph)
-		  h->pid[0] = rpid[rc];
-		else{
-		  h->pid=pidp;
-		  h->lc = lcmap[lc];
-		}
+            if (fwg->multiplex_singleph) {
+                if ((!h) || (h->rc != rc)) {
+                    h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
+                    for (s = 0; s < n_state; s++) {
+                        h->pid[s] = rpid[rc];
+                    }
 
-		h->active = nf;
-	    }
-	}
+                    h->rc = rc;
+
+                    if (prevh) {
+                        h->next = prevh->next;
+                        prevh->next = h;
+                    }
+                    else {
+                        h->next = whmm[w];
+                        whmm[w] = h;
+                    }
+                }
+            }
+            else {
+                if ((!h)
+                    || !exist_left_right_context(whmm, w, lcmap[lc], rc)) {
+                    h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
+                    h->pid = pidp;
+
+                    h->rc = rc;
+
+                    if (prevh) {
+                        h->next = prevh->next;
+                        prevh->next = h;
+                    }
+                    else {
+                        h->next = whmm[w];
+                        whmm[w] = h;
+                    }
+                }
+            }
+            prevh = h;
+            h = h->next;
+
+        }
+
+        if (fwg->multiplex_singleph)
+            assert(!h);
+
+        /* Transition to the allocated HMMs */
+        b = dict->word[w].ciphone[0];
+        for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
+
+            pidp =
+                &(ct_table->lrcpid[b][lc].
+                  pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+            pid = *(pidp);
+
+            if (score > h->score[0]) {
+                h->score[0] = score;
+                h->history[0] = l;
+
+                if (fwg->multiplex_singleph)
+                    h->pid[0] = rpid[rc];
+                else {
+                    h->pid = pidp;
+                    h->lc = lcmap[lc];
+                }
+
+                h->active = nf;
+            }
+        }
     }
 
-    /*    dump_all_whmm(fwg,fwg->whmm,fwg->n_frm,fwg->n_state,NULL);*/
+    /*    dump_all_whmm(fwg,fwg->whmm,fwg->n_frm,fwg->n_state,NULL); */
 }
 
 
@@ -843,9 +879,11 @@ void word_enter (srch_FLAT_FWD_graph_t *fwg, s3wid_t w, int32 n_state, int32 sco
  * at them closely).
  *
  */
-void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latticehist_t* lathist, int32 thresh, int32 phone_penalty)
+void
+word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
+           latticehist_t * lathist, int32 thresh, int32 phone_penalty)
 {
-    s3latid_t l;	/* lattice entry index */
+    s3latid_t l;                /* lattice entry index */
     s3cipid_t *rcmap, rc, lc;
     s3wid_t w, bw0, bw1, nextwid;
     s3lmwid32_t lw0;
@@ -861,206 +899,234 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
     int32 n_tg, n_bg;
     int32 cand, lscr;
     int32 lat_start;
-    kbcore_t* kbc;
-    tmat_t* tmat;
-    dict_t* dict;
+    kbcore_t *kbc;
+    tmat_t *tmat;
+    dict_t *dict;
     mdef_t *mdef;
-    lm_t* lm;
+    lm_t *lm;
     ctxt_table_t *ct_table;
     fillpen_t *fpen;
     int32 is32bits;
 
-    kbc=fwg->kbcore;
-    dict=kbcore_dict(kbc);
-    tmat=kbcore_tmat(kbc);
-    mdef=kbcore_mdef(kbc);
-    lm=kbcore_lm(kbc);
-    fpen=kbcore_fillpen(kbc);
-    ct_table=fwg->ctxt;
+    kbc = fwg->kbcore;
+    dict = kbcore_dict(kbc);
+    tmat = kbcore_tmat(kbc);
+    mdef = kbcore_mdef(kbc);
+    lm = kbcore_lm(kbc);
+    fpen = kbcore_fillpen(kbc);
+    ct_table = fwg->ctxt;
 
-    is32bits=lm->is32bits;
-    tgptr=NULL;
-    bgptr=NULL;
-    tgptr32=NULL;
-    bgptr32=NULL;
+    is32bits = lm->is32bits;
+    tgptr = NULL;
+    bgptr = NULL;
+    tgptr32 = NULL;
+    bgptr32 = NULL;
 
     lat_start = lathist->frm_latstart[fwg->n_frm];
-    
-    for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	fwg->ug_backoff[rc].score = S3_LOGPROB_ZERO;
-	fwg->filler_backoff[rc].score = S3_LOGPROB_ZERO;
-    }
-    
-    if (fwg->n_word_cand > 0)
-	build_word_cand_cf (fwg->n_frm,dict,fwg->word_cand_cf,fwg->word_cand_win, fwg->word_cand);
-    
-    /* Trigram/Bigram word transitions from words just exited in whmm_exit*/
-    for (l = lat_start; l < lathist->n_lat_entry; l++) {
-	w = lathist->lattice[l].wid;
-	
-	if (w == dict->finishwid)
-	    continue;
-	
-	/* Cross-word left context for new words to which we may transition */
-	lc = dict->word[w].ciphone[dict->word[w].pronlen-1];
-	
-	/* Uncompact path scores for all right context ciphones for word just finished */
-	rcmap = get_rc_cimap (ct_table,w,dict );
-	for (rc = 0; rc < mdef->n_ciphone; rc++)
-	  fwg->rcscore[rc] = lathist->lattice[l].rcscore[rcmap[rc]];
 
-	/* Find the last real (non-filler, non-silence) two-word history */
+    for (rc = 0; rc < mdef->n_ciphone; rc++) {
+        fwg->ug_backoff[rc].score = S3_LOGPROB_ZERO;
+        fwg->filler_backoff[rc].score = S3_LOGPROB_ZERO;
+    }
+
+    if (fwg->n_word_cand > 0)
+        build_word_cand_cf(fwg->n_frm, dict, fwg->word_cand_cf,
+                           fwg->word_cand_win, fwg->word_cand);
+
+    /* Trigram/Bigram word transitions from words just exited in whmm_exit */
+    for (l = lat_start; l < lathist->n_lat_entry; l++) {
+        w = lathist->lattice[l].wid;
+
+        if (w == dict->finishwid)
+            continue;
+
+        /* Cross-word left context for new words to which we may transition */
+        lc = dict->word[w].ciphone[dict->word[w].pronlen - 1];
+
+        /* Uncompact path scores for all right context ciphones for word just finished */
+        rcmap = get_rc_cimap(ct_table, w, dict);
+        for (rc = 0; rc < mdef->n_ciphone; rc++)
+            fwg->rcscore[rc] = lathist->lattice[l].rcscore[rcmap[rc]];
+
+        /* Find the last real (non-filler, non-silence) two-word history */
 
 #if SINGLE_RC_HISTORY
-	two_word_history (lathist,l, &bw0, &bw1,dict);
+        two_word_history(lathist, l, &bw0, &bw1, dict);
 #else
-	two_word_history (lathist,l, &bw0, &bw1,BAD_S3WID,dict,ct_table);
+        two_word_history(lathist, l, &bw0, &bw1, BAD_S3WID, dict,
+                         ct_table);
 #endif
 
-	if (fwg->n_word_cand <= 0) {
-	    /* Transition to all words in vocab */
+        if (fwg->n_word_cand <= 0) {
+            /* Transition to all words in vocab */
 
-	    /* Clear trigram transition flag for each word for this history */
-	    memset (fwg->tg_trans_done, 0, dict->n_word*sizeof(uint8));
+            /* Clear trigram transition flag for each word for this history */
+            memset(fwg->tg_trans_done, 0, dict->n_word * sizeof(uint8));
 
-	    /* First, transition to trigram followers of bw0, bw1 */
-	    acc_bowt = 0;
-	    
-	    /*	    E_INFO("bw0 %d\n",bw0);*/
-	    if (IS_S3WID(bw0)){
+            /* First, transition to trigram followers of bw0, bw1 */
+            acc_bowt = 0;
 
-	      if(is32bits){
-		n_tg = lm_tg32list (lm,
-				    lm->dict2lmwid[dict_basewid(dict,bw0)], 
-				    lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr32, &bowt);
+            /*      E_INFO("bw0 %d\n",bw0); */
+            if (IS_S3WID(bw0)) {
 
-	      }else{
-		n_tg = lm_tglist (lm,
-				  lm->dict2lmwid[dict_basewid(dict,bw0)], 
-				  lm->dict2lmwid[dict_basewid(dict,bw1)], &tgptr, &bowt);
+                if (is32bits) {
+                    n_tg = lm_tg32list(lm,
+                                       lm->
+                                       dict2lmwid[dict_basewid(dict, bw0)],
+                                       lm->
+                                       dict2lmwid[dict_basewid(dict, bw1)],
+                                       &tgptr32, &bowt);
 
-	      }
+                }
+                else {
+                    n_tg = lm_tglist(lm,
+                                     lm->
+                                     dict2lmwid[dict_basewid(dict, bw0)],
+                                     lm->
+                                     dict2lmwid[dict_basewid(dict, bw1)],
+                                     &tgptr, &bowt);
 
-	      if( n_tg > 0){		
-		/* Transition to trigram followers of bw0, bw1, if any */
-		for (; n_tg > 0; --n_tg, is32bits?tgptr32++:tgptr++)
-		  {
+                }
 
-		  nextwid=is32bits?
-		    LM_DICTWID(lm, tgptr32->wid):
-		    LM_DICTWID(lm, tgptr->wid);
+                if (n_tg > 0) {
+                    /* Transition to trigram followers of bw0, bw1, if any */
+                    for (; n_tg > 0;
+                         --n_tg, is32bits ? tgptr32++ : tgptr++) {
+
+                        nextwid = is32bits ?
+                            LM_DICTWID(lm, tgptr32->wid) :
+                            LM_DICTWID(lm, tgptr->wid);
 
 
-		  /* Transition to all alternative pronunciations for trigram follower */
+                        /* Transition to all alternative pronunciations for trigram follower */
 
-		  
-		  if (IS_S3WID(nextwid) && (nextwid != dict->startwid)) {
-		    for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
 
-		      newscore = fwg->rcscore[dict->word[w].ciphone[0]]; /* right context scores with phone ciphone[0]*/
-		      newscore += is32bits?LM_TGPROB (lm, tgptr32): LM_TGPROB (lm, tgptr); /* The LM scores */
-		      newscore += phone_penalty;
-		      
-		      if (newscore >= thresh) {
-			word_enter (fwg, w, n_state, newscore, l, lc);
-			fwg->tg_trans_done[w] = 1;
-		      }
-		    }
-		  }
-		}
-		acc_bowt = bowt;
-	      }
-	    }
-	    
-	    /* Transition to bigram followers of bw1 */
-	    if(is32bits)
-	      n_bg = lm_bg32list (lm,
-				lm->dict2lmwid[dict_basewid(dict,bw1)], 
-				&bgptr32, 
-				&bowt);
-	    else
-	      n_bg = lm_bglist (lm,
-				  lm->dict2lmwid[dict_basewid(dict,bw1)], 
-				  &bgptr, 
-				  &bowt);
-	      
-	    if (n_bg > 0) {
-		/* Transition to bigram followers of bw1, if any */
-		for (; n_bg > 0; --n_bg) {
-		  if(is32bits)
-		    bgptr32++;
-		  else
-		    bgptr++;
-		    
-		    /* Transition to all alternative pronunciations for bigram follower */
-		  
-		  nextwid = is32bits?LM_DICTWID (lm, bgptr32->wid):LM_DICTWID (lm, bgptr->wid);
-		    
-		    if (IS_S3WID(nextwid) &&
-			(! fwg->tg_trans_done[nextwid]) &&	/* TG transition already done */
-			(nextwid != dict->startwid)) {	/* No transition to <s> */
-			for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+                        if (IS_S3WID(nextwid)
+                            && (nextwid != dict->startwid)) {
+                            for (w = nextwid; IS_S3WID(w);
+                                 w = dict->word[w].alt) {
 
-			  newscore = fwg->rcscore[dict->word[w].ciphone[0]];
-			  newscore += is32bits?LM_BGPROB (lm, bgptr32):LM_BGPROB (lm, bgptr);
-			  newscore += phone_penalty;
-			    
-			  if (newscore >= thresh)
-			    word_enter (fwg, w, n_state, newscore, l, lc);
-			}
-		    }
-		}
-		
-		acc_bowt += bowt;
-	    }
-	    
-	    /* Update unigram backoff node */
-	    for (rc = 0; rc < mdef->n_ciphone; rc++) {
-		if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
-		    continue;
+                                newscore = fwg->rcscore[dict->word[w].ciphone[0]];      /* right context scores with phone ciphone[0] */
+                                newscore += is32bits ? LM_TGPROB(lm, tgptr32) : LM_TGPROB(lm, tgptr);   /* The LM scores */
+                                newscore += phone_penalty;
 
-		if (fwg->rcscore[rc]+acc_bowt+phone_penalty > fwg->ug_backoff[rc].score) {
-		    fwg->ug_backoff[rc].score = fwg->rcscore[rc]+acc_bowt+phone_penalty;
-		    fwg->ug_backoff[rc].latid = l;
-		    fwg->ug_backoff[rc].lc = lc;
-		}
-	    }
-	} else {
-	    /* Transition to words in word_cand_cf */
-	  
-	    for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
-		nextwid = fwg->word_cand_cf[cand];
+                                if (newscore >= thresh) {
+                                    word_enter(fwg, w, n_state, newscore,
+                                               l, lc);
+                                    fwg->tg_trans_done[w] = 1;
+                                }
+                            }
+                        }
+                    }
+                    acc_bowt = bowt;
+                }
+            }
 
-		lw0 = IS_S3WID(bw0) ? lm->dict2lmwid[dict_basewid(dict,bw0)] : BAD_LMWID(lm);
-		  
-		lscr = lm_tg_score (lm,
-				    lw0,
-				    lm->dict2lmwid[dict_basewid(dict,bw1)],
-				    lm->dict2lmwid[nextwid],
-				    nextwid);
+            /* Transition to bigram followers of bw1 */
+            if (is32bits)
+                n_bg = lm_bg32list(lm,
+                                   lm->dict2lmwid[dict_basewid(dict, bw1)],
+                                   &bgptr32, &bowt);
+            else
+                n_bg = lm_bglist(lm,
+                                 lm->dict2lmwid[dict_basewid(dict, bw1)],
+                                 &bgptr, &bowt);
 
-		for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-		    newscore = fwg->rcscore[dict->word[w].ciphone[0]] + lscr + phone_penalty;
-		    
-		    if (newscore >= thresh)
-			word_enter (fwg, w, n_state, newscore, l, lc);
-		}
-	    }
-	}
-	
-	/* Update filler backoff node */
-	for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	    if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
-		continue;
+            if (n_bg > 0) {
+                /* Transition to bigram followers of bw1, if any */
+                for (; n_bg > 0; --n_bg) {
+                    if (is32bits)
+                        bgptr32++;
+                    else
+                        bgptr++;
 
-	    if (fwg->rcscore[rc]+phone_penalty > fwg->filler_backoff[rc].score) {
-		fwg->filler_backoff[rc].score = fwg->rcscore[rc]+phone_penalty;
-		fwg->filler_backoff[rc].latid = l;
-		fwg->filler_backoff[rc].lc = lc;
-	    }
-	}
+                    /* Transition to all alternative pronunciations for bigram follower */
+
+                    nextwid =
+                        is32bits ? LM_DICTWID(lm,
+                                              bgptr32->
+                                              wid) : LM_DICTWID(lm,
+                                                                bgptr->
+                                                                wid);
+
+                    if (IS_S3WID(nextwid) && (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
+                        (nextwid != dict->startwid)) {  /* No transition to <s> */
+                        for (w = nextwid; IS_S3WID(w);
+                             w = dict->word[w].alt) {
+
+                            newscore =
+                                fwg->rcscore[dict->word[w].ciphone[0]];
+                            newscore +=
+                                is32bits ? LM_BGPROB(lm,
+                                                     bgptr32) :
+                                LM_BGPROB(lm, bgptr);
+                            newscore += phone_penalty;
+
+                            if (newscore >= thresh)
+                                word_enter(fwg, w, n_state, newscore, l,
+                                           lc);
+                        }
+                    }
+                }
+
+                acc_bowt += bowt;
+            }
+
+            /* Update unigram backoff node */
+            for (rc = 0; rc < mdef->n_ciphone; rc++) {
+                if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
+                    continue;
+
+                if (fwg->rcscore[rc] + acc_bowt + phone_penalty >
+                    fwg->ug_backoff[rc].score) {
+                    fwg->ug_backoff[rc].score =
+                        fwg->rcscore[rc] + acc_bowt + phone_penalty;
+                    fwg->ug_backoff[rc].latid = l;
+                    fwg->ug_backoff[rc].lc = lc;
+                }
+            }
+        }
+        else {
+            /* Transition to words in word_cand_cf */
+
+            for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
+                nextwid = fwg->word_cand_cf[cand];
+
+                lw0 =
+                    IS_S3WID(bw0) ? lm->
+                    dict2lmwid[dict_basewid(dict, bw0)] : BAD_LMWID(lm);
+
+                lscr = lm_tg_score(lm,
+                                   lw0,
+                                   lm->dict2lmwid[dict_basewid(dict, bw1)],
+                                   lm->dict2lmwid[nextwid], nextwid);
+
+                for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+                    newscore =
+                        fwg->rcscore[dict->word[w].ciphone[0]] + lscr +
+                        phone_penalty;
+
+                    if (newscore >= thresh)
+                        word_enter(fwg, w, n_state, newscore, l, lc);
+                }
+            }
+        }
+
+        /* Update filler backoff node */
+        for (rc = 0; rc < mdef->n_ciphone; rc++) {
+            if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
+                continue;
+
+            if (fwg->rcscore[rc] + phone_penalty >
+                fwg->filler_backoff[rc].score) {
+                fwg->filler_backoff[rc].score =
+                    fwg->rcscore[rc] + phone_penalty;
+                fwg->filler_backoff[rc].latid = l;
+                fwg->filler_backoff[rc].lc = lc;
+            }
+        }
     }
-    
+
     /*
      * We have finished transitions to all tg/bg followers of all words just ended.
      * Or, if working from a lattice, transitioned to all words that may start at this
@@ -1070,36 +1136,37 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
     /* Transition to unigrams from backoff nodes (if not working from a lattice) */
     if (fwg->n_word_cand <= 0) {
 #if 0
-	n_ug = lm_uglist (&ugptr);
-	for (; n_ug > 0; --n_ug, ugptr++) {
-	    for (w = ugptr->dictwid; IS_S3WID(w); w = dict->word[w].alt) {
-		if (w == dict->startwid)
-		    continue;
-		
-		rc = dict->word[w].ciphone[0];
-		if (ug_backoff[rc].score >= thresh) {
-		    newscore = ug_backoff[rc].score + LM_UGPROB (lm, ugptr);
-		    if (newscore >= thresh)
-			word_enter (w, newscore, ug_backoff[rc].latid, ug_backoff[rc].lc);
-		}
-	    }
-	}
+        n_ug = lm_uglist(&ugptr);
+        for (; n_ug > 0; --n_ug, ugptr++) {
+            for (w = ugptr->dictwid; IS_S3WID(w); w = dict->word[w].alt) {
+                if (w == dict->startwid)
+                    continue;
+
+                rc = dict->word[w].ciphone[0];
+                if (ug_backoff[rc].score >= thresh) {
+                    newscore = ug_backoff[rc].score + LM_UGPROB(lm, ugptr);
+                    if (newscore >= thresh)
+                        word_enter(w, newscore, ug_backoff[rc].latid,
+                                   ug_backoff[rc].lc);
+                }
+            }
+        }
 #else
-	word_ugprob_t *wp;
-	int32 rcscr;
+        word_ugprob_t *wp;
+        int32 rcscr;
 
-	for (rc = 0; rc < mdef->n_ciphone; rc++) {
-	    rcscr = fwg->ug_backoff[rc].score;
-	    l = fwg->ug_backoff[rc].latid;
-	    lc = fwg->ug_backoff[rc].lc;
+        for (rc = 0; rc < mdef->n_ciphone; rc++) {
+            rcscr = fwg->ug_backoff[rc].score;
+            l = fwg->ug_backoff[rc].latid;
+            lc = fwg->ug_backoff[rc].lc;
 
-	    for (wp = fwg->word_ugprob[rc]; wp; wp = wp->next) {
-		newscore = rcscr + wp->ugprob;
-		if (newscore < thresh)
-		    break;
-		word_enter (fwg, wp->wid, n_state, newscore, l, lc);
-	    }
-	}
+            for (wp = fwg->word_ugprob[rc]; wp; wp = wp->next) {
+                newscore = rcscr + wp->ugprob;
+                if (newscore < thresh)
+                    break;
+                word_enter(fwg, wp->wid, n_state, newscore, l, lc);
+            }
+        }
 #endif
     }
 
@@ -1108,92 +1175,103 @@ void word_trans (srch_FLAT_FWD_graph_t* fwg, whmm_t **whmm, int32 n_state, latti
      * are all within filler_start..filler_end
      */
     for (w = dict->filler_start; w <= dict->filler_end; w++) {
-	if ((w == dict->startwid) || (w == dict->finishwid))
-	    continue;
-	
-	rc = dict->word[w].ciphone[0];
-	if (fwg->filler_backoff[rc].score > S3_LOGPROB_ZERO) {
-	    newscore = fwg->filler_backoff[rc].score + fillpen(fpen,dict_basewid(dict,w));
-	    if (newscore >= thresh)
-		word_enter (fwg, w, n_state, newscore, fwg->filler_backoff[rc].latid, fwg->filler_backoff[rc].lc);
-	}
+        if ((w == dict->startwid) || (w == dict->finishwid))
+            continue;
+
+        rc = dict->word[w].ciphone[0];
+        if (fwg->filler_backoff[rc].score > S3_LOGPROB_ZERO) {
+            newscore =
+                fwg->filler_backoff[rc].score + fillpen(fpen,
+                                                        dict_basewid(dict,
+                                                                     w));
+            if (newscore >= thresh)
+                word_enter(fwg, w, n_state, newscore,
+                           fwg->filler_backoff[rc].latid,
+                           fwg->filler_backoff[rc].lc);
+        }
     }
 
     /* Free rcscore here, if necessary to conserve memory space */
 }
 
 
-void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id, char* latfile_ext, latticehist_t *lathist, int32 n_frm, dag_t *dag, 
-			 lm_t *lm, dict_t *dict, ctxt_table_t *ctxt, fillpen_t *fpen
-			 )
+void
+s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id,
+                    char *latfile_ext, latticehist_t * lathist,
+                    int32 n_frm, dag_t * dag, lm_t * lm, dict_t * dict,
+                    ctxt_table_t * ctxt, fillpen_t * fpen)
 {
-  latticehist_dag_write(lathist,
-			dir,
-			onlynodes,
-			id,
-			latfile_ext,
-			n_frm,
-			dag,
-			lm,dict,ctxt,fpen);
+    latticehist_dag_write(lathist,
+                          dir,
+                          onlynodes,
+                          id,
+                          latfile_ext, n_frm, dag, lm, dict, ctxt, fpen);
 }
 
 
 
-void flat_fwd_dag_add_fudge_edges (srch_FLAT_FWD_graph_t* fwg, dag_t *dagp, int32 fudge, int32 min_ef_range, void *hist, dict_t *dict)
+void
+flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
+                             int32 fudge, int32 min_ef_range, void *hist,
+                             dict_t * dict)
 {
     dagnode_t *d, *pd;
     int32 l, ascr, lscr;
     latticehist_t *lathist;
-    
-    lathist=(latticehist_t*)hist;
-    assert (dagp);
 
-    if(fudge> 0 && !dagp->fudged){
-      /* Add "illegal" links that are near misses */
-      for (d = dagp->list; d; d = d->alloc_next) {
-	if (d->lef - d->fef < min_ef_range-1)
-	  continue;
-	
-	/* Links to d from nodes that first ended just when d started */
-	for (l = lathist->frm_latstart[d->sf]; l < lathist->frm_latstart[d->sf+1]; l++) {
-	    pd = lathist->lattice[l].dagnode;		/* Predecessor DAG node */
+    lathist = (latticehist_t *) hist;
+    assert(dagp);
 
-	    if ((pd->wid != dict->finishwid) &&
-		(pd->fef == d->sf) &&
-		(pd->lef - pd->fef >= min_ef_range-1)) {
+    if (fudge > 0 && !dagp->fudged) {
+        /* Add "illegal" links that are near misses */
+        for (d = dagp->list; d; d = d->alloc_next) {
+            if (d->lef - d->fef < min_ef_range - 1)
+                continue;
 
-	      lat_seg_ascr_lscr (lathist, l, BAD_S3WID, &ascr, &lscr, 
-				 kbcore_lm(fwg->kbcore),
-				 kbcore_dict(fwg->kbcore),
-				 fwg->ctxt,
-				 kbcore_fillpen(fwg->kbcore));
+            /* Links to d from nodes that first ended just when d started */
+            for (l = lathist->frm_latstart[d->sf];
+                 l < lathist->frm_latstart[d->sf + 1]; l++) {
+                pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
 
-	      dag_link_w_lscr (dagp, pd, d, ascr, lscr, d->sf-1, NULL);
-	    }
-	}
-	
-	if (fudge < 2)
-	    continue;
-	
-	/* Links to d from nodes that first ended just BEYOND when d started */
-	for (l = lathist->frm_latstart[d->sf+1]; l < lathist->frm_latstart[d->sf+2]; l++) {
-	    pd = lathist->lattice[l].dagnode;		/* Predecessor DAG node */
+                if ((pd->wid != dict->finishwid) &&
+                    (pd->fef == d->sf) &&
+                    (pd->lef - pd->fef >= min_ef_range - 1)) {
 
-	    if ((pd->wid != dict->finishwid) &&
-		(pd->fef == d->sf+1) &&
-		(pd->lef - pd->fef >= min_ef_range-1)) {
+                    lat_seg_ascr_lscr(lathist, l, BAD_S3WID, &ascr, &lscr,
+                                      kbcore_lm(fwg->kbcore),
+                                      kbcore_dict(fwg->kbcore),
+                                      fwg->ctxt,
+                                      kbcore_fillpen(fwg->kbcore));
 
-	      lat_seg_ascr_lscr (lathist, l, BAD_S3WID, &ascr, &lscr, 
-				 kbcore_lm(fwg->kbcore),
-				 kbcore_dict(fwg->kbcore),
-				 fwg->ctxt,
-				 kbcore_fillpen(fwg->kbcore));
+                    dag_link_w_lscr(dagp, pd, d, ascr, lscr, d->sf - 1,
+                                    NULL);
+                }
+            }
 
-	      dag_link_w_lscr (dagp, pd, d, ascr, lscr, d->sf-1, NULL);
-	    }
-	}
-      }
-      dagp->fudged=1;
+            if (fudge < 2)
+                continue;
+
+            /* Links to d from nodes that first ended just BEYOND when d started */
+            for (l = lathist->frm_latstart[d->sf + 1];
+                 l < lathist->frm_latstart[d->sf + 2]; l++) {
+                pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
+
+                if ((pd->wid != dict->finishwid) &&
+                    (pd->fef == d->sf + 1) &&
+                    (pd->lef - pd->fef >= min_ef_range - 1)) {
+
+                    lat_seg_ascr_lscr(lathist, l, BAD_S3WID, &ascr, &lscr,
+                                      kbcore_lm(fwg->kbcore),
+                                      kbcore_dict(fwg->kbcore),
+                                      fwg->ctxt,
+                                      kbcore_fillpen(fwg->kbcore));
+
+                    dag_link_w_lscr(dagp, pd, d, ascr, lscr, d->sf - 1,
+                                    NULL);
+                }
+            }
+        }
+        dagp->fudged = 1;
     }
 }
 
@@ -1210,7 +1288,9 @@ void flat_fwd_dag_add_fudge_edges (srch_FLAT_FWD_graph_t* fwg, dag_t *dagp, int3
  * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
  * absurdum.
  */
-dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen, int32 _nfrm)
+dag_t *
+dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
+          lm_t * lm, ctxt_table_t * ctxt, fillpen_t * fpen, int32 _nfrm)
 {
     int32 l;
     s3wid_t w;
@@ -1221,8 +1301,8 @@ dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *
     int32 min_ef_range;
     int32 k;
     dag_t *dag;
-    
-    dag=ckd_calloc(1,sizeof(dag_t));
+
+    dag = ckd_calloc(1, sizeof(dag_t));
 
     /* Note final lattice entry in DAG structure */
 
@@ -1230,91 +1310,96 @@ dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *
     dag->list = NULL;
 
     latfinal = dag->latfinal;
-    if (NOT_S3LATID(latfinal)){
-      E_INFO("The final lattice ID is not valid\n");
-      return NULL;
-   }
-    
+    if (NOT_S3LATID(latfinal)) {
+        E_INFO("The final lattice ID is not valid\n");
+        return NULL;
+    }
+
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = cmd_ln_int32 ("-min_endfr");
-    
+    min_ef_range = cmd_ln_int32("-min_endfr");
+
     /* Build DAG nodes list from the lattice */
     for (l = 0; l < lathist->n_lat_entry; l++) {
-	w = lathist->lattice[l].wid;
+        w = lathist->lattice[l].wid;
 
-	/* ARCHAN SLIGHT BUG: Even though right context has their
-	   separate histories now. It is not accounted at here. */
-	sf = LATID2SF(lathist, l);
-	
-	/* Check if node <w,sf> already created */
-	for (d = dag->list; d; d = d->alloc_next) {
-	    if ((d->wid == w) && (d->sf == sf))
-		break;
-	}
+        /* ARCHAN SLIGHT BUG: Even though right context has their
+           separate histories now. It is not accounted at here. */
+        sf = LATID2SF(lathist, l);
 
-	if (! d) {
-	    d = (dagnode_t *) listelem_alloc (sizeof(dagnode_t));
+        /* Check if node <w,sf> already created */
+        for (d = dag->list; d; d = d->alloc_next) {
+            if ((d->wid == w) && (d->sf == sf))
+                break;
+        }
 
-	    d->wid = w;
-	    d->sf = sf;
-	    d->fef = lathist->lattice[l].frm;
-	    d->succlist = NULL;
-	    d->predlist = NULL;
+        if (!d) {
+            d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
 
-	    d->alloc_next = dag->list;
-	    dag->list = d;
-	}
-	d->lef = lathist->lattice[l].frm;
+            d->wid = w;
+            d->sf = sf;
+            d->fef = lathist->lattice[l].frm;
+            d->succlist = NULL;
+            d->predlist = NULL;
 
-	lathist->lattice[l].dagnode = d;
+            d->alloc_next = dag->list;
+            dag->list = d;
+        }
+        d->lef = lathist->lattice[l].frm;
+
+        lathist->lattice[l].dagnode = d;
     }
-    
+
     /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
     for (d = dag->list; d; d = d->alloc_next) {
-	if ((dict_basewid(dict,d->wid) == dict->startwid) && (d->sf == 0))
-	    break;
+        if ((dict_basewid(dict, d->wid) == dict->startwid) && (d->sf == 0))
+            break;
     }
-    assert (d);
+    assert(d);
     dag->root = d;
 
     /* Build DAG edges: between nodes satisfying time adjacency */
     for (d = dag->list; d; d = d->alloc_next) {
-	/* Skip links to this node if too short lived */
-	if ((d != lathist->lattice[latfinal].dagnode) && (d->lef - d->fef < min_ef_range-1))
-	    continue;
-	
-	if (d->sf == 0) 
-	  {}
+        /* Skip links to this node if too short lived */
+        if ((d != lathist->lattice[latfinal].dagnode)
+            && (d->lef - d->fef < min_ef_range - 1))
+            continue;
+
+        if (d->sf == 0) {
+        }
 /*
-	    assert (d->wid == dict->startwid);	*/ /* No predecessors to this */
-	else {
-	    /* Link from all end points == d->sf-1 to d */
-	    for (l = lathist->frm_latstart[d->sf-1]; l < lathist->frm_latstart[d->sf]; l++) {
-		pd = lathist->lattice[l].dagnode;	/* Predecessor DAG node */
-		
-		/* Skip predecessor node under following conditions */
-		if (pd->wid == dict->finishwid)	/* BUG: alternative prons for </s>?? */
-		    continue;
-		if ((pd != dag->root) && (pd->lef - pd->fef < min_ef_range-1))
-		    continue;
-		
-		/*
- 		 * Find acoustic score for link from pd to d (for lattice entry l
-		 * with pd as right context).
-		 */
-		lat_seg_ascr_lscr (lathist, l, d->wid, &ascr, &lscr,lm,dict,ctxt,fpen);
-		lathist->lattice[l].ascr=ascr;
-		lathist->lattice[l].lscr=lscr;
-		if (ascr > S3_LOGPROB_ZERO)
-		  dag_link_w_lscr (dag, pd, d, ascr,lscr, d->sf-1, NULL);
-	    }
-	}
+        	    assert (d->wid == dict->startwid);	*//* No predecessors to this */
+        else {
+            /* Link from all end points == d->sf-1 to d */
+            for (l = lathist->frm_latstart[d->sf - 1];
+                 l < lathist->frm_latstart[d->sf]; l++) {
+                pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
+
+                /* Skip predecessor node under following conditions */
+                if (pd->wid == dict->finishwid) /* BUG: alternative prons for </s>?? */
+                    continue;
+                if ((pd != dag->root)
+                    && (pd->lef - pd->fef < min_ef_range - 1))
+                    continue;
+
+                /*
+                 * Find acoustic score for link from pd to d (for lattice entry l
+                 * with pd as right context).
+                 */
+                lat_seg_ascr_lscr(lathist, l, d->wid, &ascr, &lscr, lm,
+                                  dict, ctxt, fpen);
+                lathist->lattice[l].ascr = ascr;
+                lathist->lattice[l].lscr = lscr;
+                if (ascr > S3_LOGPROB_ZERO)
+                    dag_link_w_lscr(dag, pd, d, ascr, lscr, d->sf - 1,
+                                    NULL);
+            }
+        }
     }
-    
+
 
     dag->filler_removed = 0;
     dag->fudged = 0;
-    dag->nfrm=_nfrm;
+    dag->nfrm = _nfrm;
 
     dag->maxedge = cmd_ln_int32("-maxedge");
     /*
@@ -1322,11 +1407,11 @@ dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *
      * Limit is lesser of absolute max and per frame max.
      */
     dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32 ("-maxlpf");
+    k = cmd_ln_int32("-maxlpf");
 
     k *= dag->nfrm;
     if (dag->maxlmop > k)
-	dag->maxlmop = k;
+        dag->maxlmop = k;
     dag->lmop = 0;
 
     return dag;
@@ -1340,37 +1425,40 @@ dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *
  * to its successors.
  * lwf = language weight factor to be applied to LM scores.
  */
-void flat_fwd_dag_remove_filler_nodes (dag_t* dag, latticehist_t *lathist, float64 lwf, lm_t *lm, dict_t* dict, ctxt_table_t *ct_table, fillpen_t *fpen)
+void
+flat_fwd_dag_remove_filler_nodes(dag_t * dag, latticehist_t * lathist,
+                                 float64 lwf, lm_t * lm, dict_t * dict,
+                                 ctxt_table_t * ct_table, fillpen_t * fpen)
 {
     s3latid_t latfinal;
     daglink_t *plink;
     int32 lscr;
-    
-    latfinal = dag->latfinal;
-    
-    /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
-    if (dict_filler_word (dict,lathist->lattice[latfinal].wid))
-	lathist->lattice[latfinal].dagnode->wid = dict->finishwid;
 
-    if (dag_remove_filler_nodes (dag, lwf, dict, fpen) < 0) {
-	E_ERROR ("maxedge limit (%d) exceeded\n", dag->maxedge);
-    }else
-      dag->filler_removed=1;
+    latfinal = dag->latfinal;
+
+    /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
+    if (dict_filler_word(dict, lathist->lattice[latfinal].wid))
+        lathist->lattice[latfinal].dagnode->wid = dict->finishwid;
+
+    if (dag_remove_filler_nodes(dag, lwf, dict, fpen) < 0) {
+        E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+    }
+    else
+        dag->filler_removed = 1;
 
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link (dag,NULL, dag->root, 0, -1, NULL);
-    
+    dag_link(dag, NULL, dag->root, 0, -1, NULL);
+
     /* Attach a dummy predecessor link from nowhere into final DAG node */
     plink = &(dag->final);
     plink->node = lathist->lattice[latfinal].dagnode;
     plink->src = NULL;
-    lat_seg_ascr_lscr (lathist, latfinal, BAD_S3WID, &(plink->ascr), &lscr, lm,dict,ct_table,fpen);
-    plink->pscr = (int32)0x80000000;
+    lat_seg_ascr_lscr(lathist, latfinal, BAD_S3WID, &(plink->ascr), &lscr,
+                      lm, dict, ct_table, fpen);
+    plink->pscr = (int32) 0x80000000;
     plink->lscr = 0;
     plink->bypass = NULL;
     plink->history = NULL;
     plink->ef = lathist->lattice[latfinal].frm;
     plink->next = NULL;
 }
-
-

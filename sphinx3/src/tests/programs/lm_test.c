@@ -56,14 +56,16 @@
 #define MAX_NGRAMS 5100
 #define MAX_STRLEN 100
 
-int read_ngrams(char *ngrams_file, char **ngrams, 
-                s3lmwid32_t *wid[], int32 nwords[], int max_lines, lm_t *lm);
-int ngram2wid(char *word, int length, s3lmwid32_t *w, lm_t *lm);
-int score_ngram(s3lmwid32_t *wid, int nwd, lm_t *lm);
+int read_ngrams(char *ngrams_file, char **ngrams,
+                s3lmwid32_t * wid[], int32 nwords[], int max_lines,
+                lm_t * lm);
+int ngram2wid(char *word, int length, s3lmwid32_t * w, lm_t * lm);
+int score_ngram(s3lmwid32_t * wid, int nwd, lm_t * lm);
 
 
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     char *lm_file;
     char *args_file;
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
     float64 lw, wip, uw, logbase;
 
     int i, n;
-    
+
     int32 nwords[MAX_NGRAMS];
     int scores[MAX_NGRAMS];
 
@@ -86,7 +88,8 @@ int main(int argc, char *argv[])
 
 
     if (argc < 3) {
-        E_FATAL("USAGE: %s <lm_file> <args_file> <ngrams_file>\n", argv[0]);
+        E_FATAL("USAGE: %s <lm_file> <args_file> <ngrams_file>\n",
+                argv[0]);
     }
 
     args_file = argv[1];
@@ -100,13 +103,13 @@ int main(int argc, char *argv[])
     uw = cmd_ln_float32("-uw");
     logbase = cmd_ln_float32("-logbase");
 
-    logs3_init(logbase,1,1); /*Report progress and use log table*/
+    logs3_init(logbase, 1, 1);  /*Report progress and use log table */
 
     metricsStart(lmLoadTimer);
-    
+
     /* initialize the language model */
     /* HACK! This doesn't work for class-based LM */
-    lm = lm_read_advance(lm_file, "default",lw, wip, uw, 0, NULL,1);
+    lm = lm_read_advance(lm_file, "default", lw, wip, uw, 0, NULL, 1);
 
     metricsStop(lmLoadTimer);
 
@@ -145,17 +148,15 @@ int main(int argc, char *argv[])
  *
  * returns: the number of ngrams read
  */
-int read_ngrams(char *ngrams_file, 
-                char **ngrams, 
-                s3lmwid32_t *wid[], 
-                int32 nwords[],
-                int max_lines, 
-                lm_t *lm)
+int
+read_ngrams(char *ngrams_file,
+            char **ngrams,
+            s3lmwid32_t * wid[], int32 nwords[], int max_lines, lm_t * lm)
 {
     FILE *fp;
     char line_read[MAX_STRLEN];
     int n, length;
-    
+
     if ((fp = fopen(ngrams_file, "r")) == NULL) {
         E_FATAL("Unable to open N-gram file %s\n", ngrams_file);
     }
@@ -166,13 +167,14 @@ int read_ngrams(char *ngrams_file,
     while (fgets(line_read, MAX_STRLEN, fp) != NULL) {
         if (n < max_lines) {
             length = strlen(line_read);
-            line_read[length-1] = '\0';
+            line_read[length - 1] = '\0';
             ngrams[n] = (char *) ckd_calloc(length, sizeof(char));
-            strncpy(ngrams[n], line_read, length-1);
+            strncpy(ngrams[n], line_read, length - 1);
             wid[n] = (s3lmwid32_t *) ckd_calloc(3, sizeof(s3lmwid32_t));
             nwords[n] = ngram2wid(line_read, length, wid[n], lm);
             n++;
-        } else {
+        }
+        else {
             break;
         }
     }
@@ -195,21 +197,22 @@ int read_ngrams(char *ngrams_file,
  * the number of words in the ngram string, or 0 if the string contains an
  * unknown word
  */
-int ngram2wid(char *ngram, int length, s3lmwid32_t *w, lm_t *lm)
+int
+ngram2wid(char *ngram, int length, s3lmwid32_t * w, lm_t * lm)
 {
     char *word[1024];
     int nwd;
     int i;
-    
+
     if ((nwd = str2words(ngram, word, length)) < 0)
-	E_FATAL("Increase word[] and w[] arrays size\n");
-    
+        E_FATAL("Increase word[] and w[] arrays size\n");
+
     for (i = 0; i < nwd; i++) {
-	w[i] = lm_wid (lm, word[i]);
-	if (NOT_LMWID(lm,w[i])) {
-	    E_ERROR("Unknown word: %s\n", word[i]);
-	    return 0;
-	}
+        w[i] = lm_wid(lm, word[i]);
+        if (NOT_LMWID(lm, w[i])) {
+            E_ERROR("Unknown word: %s\n", word[i]);
+            return 0;
+        }
     }
 
     return nwd;
@@ -226,29 +229,33 @@ int ngram2wid(char *ngram, int length, s3lmwid32_t *w, lm_t *lm)
  *
  * return: the language model score of the given sequence of words
  */
-int score_ngram(s3lmwid32_t *wid, int nwd, lm_t *lm)
+int
+score_ngram(s3lmwid32_t * wid, int nwd, lm_t * lm)
 {
     int32 score;
-    
+
     score = 0;
     if (nwd == 3) {
-      /* The last argument is a hack: the information there - the dict
-       * ID - is never used if LM classes are not used, and classes
-       * are not used in this code. Therefore, the last argument here
-       * is a nop.
-       */
-      score = lm_tg_score(lm, wid[0], wid[1], wid[2], 0);
-    } else if (nwd == 2) {
-      /* Ditto.
-       */
-      score = lm_bg_score(lm, wid[0], wid[1], 0);
-    } else if (nwd == 1) {
-      /* Ditto.
-       */
-      score = lm_ug_score(lm, wid[0], 0);
-    } else {
+        /* The last argument is a hack: the information there - the dict
+         * ID - is never used if LM classes are not used, and classes
+         * are not used in this code. Therefore, the last argument here
+         * is a nop.
+         */
+        score = lm_tg_score(lm, wid[0], wid[1], wid[2], 0);
+    }
+    else if (nwd == 2) {
+        /* Ditto.
+         */
+        score = lm_bg_score(lm, wid[0], wid[1], 0);
+    }
+    else if (nwd == 1) {
+        /* Ditto.
+         */
+        score = lm_ug_score(lm, wid[0], 0);
+    }
+    else {
         printf("%d grams not supported\n", nwd);
     }
-    
+
     return score;
 }

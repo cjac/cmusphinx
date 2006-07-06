@@ -38,9 +38,9 @@
 #define _METRICS_H__
 
 typedef struct NamedDuration {
-    const char *name;		/* the name of the timer */
-    double duration;		/* the duration for this timer */
-    double start;		/* used to calc duration */
+    const char *name;           /* the name of the timer */
+    double duration;            /* the duration for this timer */
+    double start;               /* used to calc duration */
     int count;
 } NamedDuration;
 
@@ -51,4 +51,3 @@ void metricsReset(const char *name);
 void metricsPrint(void);
 
 #endif
-

@@ -49,20 +49,21 @@
 #define NBEST_STEP 50
 #include <corpus.h>
 
-typedef struct stats_s{
-  float32 total_hit;
-  float32 total_senone;
-  float32 total_lastidx_distortion;
-  float32 total_curidx_distortion;
-  float32 total_ci_distortion;
-  int32 total_fr;
-  char* description[1024];
+typedef struct stats_s {
+    float32 total_hit;
+    float32 total_senone;
+    float32 total_lastidx_distortion;
+    float32 total_curidx_distortion;
+    float32 total_ci_distortion;
+    int32 total_fr;
+    char *description[1024];
 
 } stats_t;
 
-void gmm_compute (void *data, utt_res_t* ur, int32 sf, int32 ef, char *uttid);
-void init_stat(stats_t *st, char* _desc);
-void add_stat(stats_t *a, stats_t *b);
-void print_stat(stats_t *st);
-void increment_stat(stats_t *a,int32 lst_idx_distort,int32 cur_idx_distort,int32 ci_distort, int32 hit);
-
+void gmm_compute(void *data, utt_res_t * ur, int32 sf, int32 ef,
+                 char *uttid);
+void init_stat(stats_t * st, char *_desc);
+void add_stat(stats_t * a, stats_t * b);
+void print_stat(stats_t * st);
+void increment_stat(stats_t * a, int32 lst_idx_distort,
+                    int32 cur_idx_distort, int32 ci_distort, int32 hit);

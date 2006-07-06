@@ -50,19 +50,19 @@ extern "C" {
                         (0xff0000 & (*(x))<<8) | (0xff000000 & (*(x))<<24))
 #define SWAPF(x)        SWAPL((int *) x)
 
-int32 needswap;
+    int32 needswap;
 
-typedef struct {
-    int32 ascr;
-    int32 lscr;
-    char  *word;
-    int32 sf;
-    int32 ef;
-} partialhyp_t;
+    typedef struct {
+        int32 ascr;
+        int32 lscr;
+        char *word;
+        int32 sf;
+        int32 ef;
+    } partialhyp_t;
 
-void live_initialize_decoder (char *argsfile);
+    void live_initialize_decoder(char *argsfile);
 
-int32 live_get_partialhyp(int32 endutt);
+    int32 live_get_partialhyp(int32 endutt);
 
 /* Routine to decode a block of incoming samples. A partial hypothesis
  * for the utterance upto the current block of samples is returned.
@@ -73,20 +73,19 @@ int32 live_get_partialhyp(int32 endutt);
  * of a new utterance
  */
 
-int32 live_utt_decode_block (int16 *samples,    /* Incoming samples */
-			     int32 nsamples,    /* No. of incoming samples */
-                      	     int32 live_endutt, /* End of utterance flag */
-			     partialhyp_t **ohyp);
+    int32 live_utt_decode_block(int16 * samples,        /* Incoming samples */
+                                int32 nsamples, /* No. of incoming samples */
+                                int32 live_endutt,      /* End of utterance flag */
+                                partialhyp_t ** ohyp);
 
-int32 live_fe_process_block (int16 *samples, int32 nsamples, 
-			     int32 live_endutt, partialhyp_t **ohyp);
+    int32 live_fe_process_block(int16 * samples, int32 nsamples,
+                                int32 live_endutt, partialhyp_t ** ohyp);
 
-int32 live_free_memory ();
+    int32 live_free_memory();
 
-void live_print_profiles(FILE *file);
-  
+    void live_print_profiles(FILE * file);
+
 #ifdef __cplusplus
 }
 #endif
-
 #endif

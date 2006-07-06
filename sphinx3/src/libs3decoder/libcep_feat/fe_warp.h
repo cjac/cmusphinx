@@ -47,42 +47,39 @@
 #define FE_WARP_ID_NONE	       0xffffffff
 
 typedef struct {
-    void (*set_parameters)(char *param_str, float sampling_rate);
-    const char * (*doc)(void);
-    uint32 (*id)(void);
-    uint32 (*n_param)(void);
-    float (*warped_to_unwarped)(float nonlinear);
-    float (*unwarped_to_warped)(float linear);
-    void (*print)(const char *label);
+    void (*set_parameters) (char *param_str, float sampling_rate);
+    const char *(*doc) (void);
+     uint32(*id) (void);
+     uint32(*n_param) (void);
+    float (*warped_to_unwarped) (float nonlinear);
+    float (*unwarped_to_warped) (float linear);
+    void (*print) (const char *label);
 } fe_warp_conf_t;
 
 int
-fe_warp_set(const char *id_name);
+ fe_warp_set(const char *id_name);
 
-uint32
-fe_warp_id(void);
+uint32 fe_warp_id(void);
 
-const char *
-fe_warp_doc(void);
+const char *fe_warp_doc(void);
 
 void
-fe_warp_set_parameters(char *param_str, float sampling_rate);
+ fe_warp_set_parameters(char *param_str, float sampling_rate);
 
-uint32
-fe_warp_n_param(void);
-
-float
-fe_warp_warped_to_unwarped(float nonlinear);
+uint32 fe_warp_n_param(void);
 
 float
-fe_warp_unwarped_to_warped(float linear);
+ fe_warp_warped_to_unwarped(float nonlinear);
+
+float
+ fe_warp_unwarped_to_warped(float linear);
 
 void
-fe_warp_print(const char *label);
+ fe_warp_print(const char *label);
 
 #define FE_WARP_NO_SIZE	0xffffffff
 
-#endif /* FE_WARP_H */ 
+#endif                          /* FE_WARP_H */
 
 /*
  * Log record.  Maintained by RCS.

@@ -53,116 +53,122 @@
 #define LISTENTIME	5.0
 #define MAX_RECORD      48000
 
-static int32 last_fr;		/* Last frame for which partial result was reported */
+static int32 last_fr;           /* Last frame for which partial result was reported */
 static ad_rec_t *ad;
 
 /* Determine if the user has indicated end of utterance (keyboard hit at end of utt) */
 
-static void ui_ready ( void ){
+static void
+ui_ready(void)
+{
 #if defined(WIN32)
-    printf ("\nSystem will listen for ~ %.1f sec of speech\n", LISTENTIME);
-    printf ("Hit <cr> before speaking: ");
+    printf("\nSystem will listen for ~ %.1f sec of speech\n", LISTENTIME);
+    printf("Hit <cr> before speaking: ");
 #else
-    printf ("\nHit <cr> BEFORE and AFTER speaking: ");
+    printf("\nHit <cr> BEFORE and AFTER speaking: ");
 #endif
-    fflush (stdout);
+    fflush(stdout);
 }
 
 
 /* Main utterance processing loop: decode each utt */
-static void utterance_loop()
+static void
+utterance_loop()
 {
     char line[1024];
     int16 adbuf[4096];
     int32 k;
-    int32 ns;		/* #Samples read from audio in this utterance */
-    int32 hwm;		/* High Water Mark: to know when to report partial result */
+    int32 ns;                   /* #Samples read from audio in this utterance */
+    int32 hwm;                  /* High Water Mark: to know when to report partial result */
     int32 recording;
 
-    int  j,nhypwds;
+    int j, nhypwds;
     partialhyp_t *parthyp;
-    
+
     /*    for (;;) */
-    {		/* Commented the loop */
-	ui_ready ();
+    {                           /* Commented the loop */
+        ui_ready();
 
-	fgets (line, sizeof(line), stdin);
-	if ((line[0] == 'q') || (line[0] == 'Q'))
-	    return;
-	
-	ad_start_rec(ad);	/* Start A/D recording for this utterance */
-	recording = 1;
+        fgets(line, sizeof(line), stdin);
+        if ((line[0] == 'q') || (line[0] == 'Q'))
+            return;
 
-	ns = 0;
-	hwm = 4000;	/* Next partial result reported after 4000 samples */
-	last_fr = -1;	/* Frame count at last partial result reported */
+        ad_start_rec(ad);       /* Start A/D recording for this utterance */
+        recording = 1;
 
-	
-	/* Send audio data to decoder until end of utterance */
-	for (;;) {
-	    /*
-	     * Read audio data (NON-BLOCKING).  Use your favourite substitute here.
-	     * NOTE: In our implementation, ad_read returns -1 upon end of utterance.
-	     */
-	    if ((k = ad_read (ad, adbuf, 4096)) < 0)
-		break;
+        ns = 0;
+        hwm = 4000;             /* Next partial result reported after 4000 samples */
+        last_fr = -1;           /* Frame count at last partial result reported */
 
-	    // For now, record until MAX_RECORD and then shut off
-	    if (ns + k > MAX_RECORD) {
-	      ad_close (ad);
-	      nhypwds = live_utt_decode_block(adbuf,k,1,&parthyp);
-	      E_INFO("\n\nFINAL HYP:");
-	      if (nhypwds > 0)
-		for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-	      printf("\n");
-	      break;
-	    }  else
-	      nhypwds = live_utt_decode_block(adbuf,k,0,&parthyp);
 
-	    /* Send whatever data was read above to decoder */
-	    ns += k;
+        /* Send audio data to decoder until end of utterance */
+        for (;;) {
+            /*
+             * Read audio data (NON-BLOCKING).  Use your favourite substitute here.
+             * NOTE: In our implementation, ad_read returns -1 upon end of utterance.
+             */
+            if ((k = ad_read(ad, adbuf, 4096)) < 0)
+                break;
 
-	    /* Time to report partial result? (every 4000 samples or 1/4 sec) */
-	    if (ns > hwm) {
-		hwm = ns+4000;
-		E_INFO("PARTIAL HYP:");
-		if (nhypwds > 0)
-		  for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-		printf("\n");
-	    }
-	}
+            // For now, record until MAX_RECORD and then shut off
+            if (ns + k > MAX_RECORD) {
+                ad_close(ad);
+                nhypwds = live_utt_decode_block(adbuf, k, 1, &parthyp);
+                E_INFO("\n\nFINAL HYP:");
+                if (nhypwds > 0)
+                    for (j = 0; j < nhypwds; j++)
+                        printf(" %s", parthyp[j].word);
+                printf("\n");
+                break;
+            }
+            else
+                nhypwds = live_utt_decode_block(adbuf, k, 0, &parthyp);
+
+            /* Send whatever data was read above to decoder */
+            ns += k;
+
+            /* Time to report partial result? (every 4000 samples or 1/4 sec) */
+            if (ns > hwm) {
+                hwm = ns + 4000;
+                E_INFO("PARTIAL HYP:");
+                if (nhypwds > 0)
+                    for (j = 0; j < nhypwds; j++)
+                        printf(" %s", parthyp[j].word);
+                printf("\n");
+            }
+        }
     }
 }
 
 
-int main (int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-  /*  short samps[MAXSAMPLES];
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
-    char   filename[512], cepfile[512],*ctlfile, *indir;
-    partialhyp_t *parthyp;
-    FILE *fp, *sfp;
-  */
-    char   *argsfile;
+    /*  short samps[MAXSAMPLES];
+       int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
+       char   filename[512], cepfile[512],*ctlfile, *indir;
+       partialhyp_t *parthyp;
+       FILE *fp, *sfp;
+     */
+    char *argsfile;
 
     if (argc != 2) {
-      argsfile = NULL;
-      parse_args_file(argsfile);
-      E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
+        argsfile = NULL;
+        parse_args_file(argsfile);
+        E_FATAL("\nUSAGE: %s <argsfile>\n", argv[0]);
     }
     argsfile = argv[1];
     live_initialize_decoder(argsfile);
     live_utt_set_uttid("null");
 
-    /*ARCHAN*/
-    {
-      int samprate = 8000;
+     /*ARCHAN*/ {
+        int samprate = 8000;
 
-      samprate = cmd_ln_int32 ("-samprate");
-      if ((ad = ad_open_sps(samprate)) == NULL)
-	E_FATAL("ad_open_sps failed\n");
+        samprate = cmd_ln_int32("-samprate");
+        if ((ad = ad_open_sps(samprate)) == NULL)
+            E_FATAL("ad_open_sps failed\n");
 
-      utterance_loop();
+        utterance_loop();
     }
 
     exit(0);
@@ -170,43 +176,48 @@ int main (int argc, char *argv[])
 
 /*ARCHAN: Comment the old code back in 2001 */
 #if 0
-    if (0) {
-      if (argc != 4)
-	E_FATAL("\nUSAGE: %s <ctlfile> <infeatdir> <argsfile>\n",argv[0]);
-      ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
-      
-      blksize = 2000;
-      
-      if ((fp = fopen(ctlfile,"r")) == NULL)
-	E_FATAL("Unable to read %s\n",ctlfile);
-      
-      while (fscanf(fp,"%s",filename) != EOF){
-	sprintf(cepfile,"%s/%s.raw",indir,filename);
-	if ((sfp = fopen(cepfile,"r")) == NULL)
-	  E_FATAL("Unable to read %s\n",cepfile);
-	nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
-        E_INFO("%d samples in file. Will be decoded in blocks of %d\n",nsamp,blksize);
+if (0) {
+    if (argc != 4)
+        E_FATAL("\nUSAGE: %s <ctlfile> <infeatdir> <argsfile>\n", argv[0]);
+    ctlfile = argv[1];
+    indir = argv[2];
+    argsfile = argv[3];
+
+    blksize = 2000;
+
+    if ((fp = fopen(ctlfile, "r")) == NULL)
+        E_FATAL("Unable to read %s\n", ctlfile);
+
+    while (fscanf(fp, "%s", filename) != EOF) {
+        sprintf(cepfile, "%s/%s.raw", indir, filename);
+        if ((sfp = fopen(cepfile, "r")) == NULL)
+            E_FATAL("Unable to read %s\n", cepfile);
+        nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
+        E_INFO("%d samples in file. Will be decoded in blocks of %d\n",
+               nsamp, blksize);
         fclose(sfp);
-	
-        for (i=0;i<nsamp;i+=blksize){
-	  buflen = i+blksize < nsamp ? blksize : nsamp-i;
-	  endutt = i+blksize <= nsamp-1 ? 0 : 1;
-	  nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
-	  
-	  /*	  E_INFO("PARTIAL HYP:");
-	  if (nhypwds > 0)
-	    for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
-	  printf("\n");
-	  */
+
+        for (i = 0; i < nsamp; i += blksize) {
+            buflen = i + blksize < nsamp ? blksize : nsamp - i;
+            endutt = i + blksize <= nsamp - 1 ? 0 : 1;
+            nhypwds =
+                live_utt_decode_block(samps + i, buflen, endutt, &parthyp);
+
+            /*      E_INFO("PARTIAL HYP:");
+               if (nhypwds > 0)
+               for (j=0; j < nhypwds; j++) printf(" %s",parthyp[j].word);
+               printf("\n");
+             */
         }
-      }
-    } else {    
-      int samprate = 8000;
-
-      samprate = cmd_ln_int32 ("-samprate");
-      if ((ad = ad_open_sps(samprate)) == NULL)
-	E_FATAL("ad_open_sps failed\n");
-
-      utterance_loop();
     }
+}
+else {
+    int samprate = 8000;
+
+    samprate = cmd_ln_int32("-samprate");
+    if ((ad = ad_open_sps(samprate)) == NULL)
+        E_FATAL("ad_open_sps failed\n");
+
+    utterance_loop();
+}
 #endif

@@ -72,232 +72,233 @@
 #include <cb2mllr_io.h>
 
 /* Wrong place to put it */
-int32 model_set_mllr(ms_mgau_model_t* msg, const char *mllrfile, const char *cb2mllrfile, feat_t* fcb, mdef_t *mdef)
+int32
+model_set_mllr(ms_mgau_model_t * msg, const char *mllrfile,
+               const char *cb2mllrfile, feat_t * fcb, mdef_t * mdef)
 {
     float32 ****A, ***B;
     int32 *cb2mllr;
     int32 gid, sid, nclass;
     uint8 *mgau_xform;
-		
-    gauden_mean_reload (msg->g, (char *) cmd_ln_access("-mean"));
-		
-    if (ms_mllr_read_regmat (mllrfile, &A, &B,
-			     fcb->stream_len, feat_n_stream(fcb),
-			     &nclass) < 0)
-	E_FATAL("ms_mllr_read_regmat failed\n");
+
+    gauden_mean_reload(msg->g, (char *) cmd_ln_access("-mean"));
+
+    if (ms_mllr_read_regmat(mllrfile, &A, &B,
+                            fcb->stream_len, feat_n_stream(fcb),
+                            &nclass) < 0)
+        E_FATAL("ms_mllr_read_regmat failed\n");
 
     if (cb2mllrfile && strcmp(cb2mllrfile, ".1cls.") != 0) {
-	int32 ncb, nmllr;
+        int32 ncb, nmllr;
 
-	cb2mllr_read(cb2mllrfile,
-		     &cb2mllr,
-		     &ncb, &nmllr);
-	if (nmllr != nclass)
-	    E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		    ncb, nclass);
-	if (ncb != msg->s->n_sen)
-	    E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		    ncb, msg->s->n_sen);
+        cb2mllr_read(cb2mllrfile, &cb2mllr, &ncb, &nmllr);
+        if (nmllr != nclass)
+            E_FATAL
+                ("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+                 ncb, nclass);
+        if (ncb != msg->s->n_sen)
+            E_FATAL
+                ("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+                 ncb, msg->s->n_sen);
     }
     else
-	cb2mllr = NULL;
+        cb2mllr = NULL;
 
-		
-    mgau_xform = (uint8 *) ckd_calloc (msg->g->n_mgau, sizeof(uint8));
+
+    mgau_xform = (uint8 *) ckd_calloc(msg->g->n_mgau, sizeof(uint8));
 
     /* Transform each non-CI mixture Gaussian */
     for (sid = 0; sid < msg->s->n_sen; sid++) {
-	int32 class = 0;
+        int32 class = 0;
 
-	if (cb2mllr)
-	    class = cb2mllr[sid];
-	if (class == -1)
-	    continue;
+        if (cb2mllr)
+            class = cb2mllr[sid];
+        if (class == -1)
+            continue;
 
-	if (mdef->cd2cisen[sid] != sid) {	/* Otherwise it's a CI senone */
-	    gid = msg->s->mgau[sid];
-	    if (! mgau_xform[gid]) {
-		ms_mllr_norm_mgau (msg->g->mean[gid], msg->g->n_density, A, B,
-				   fcb->stream_len, feat_n_stream(fcb),
-				   class);
-		mgau_xform[gid] = 1;
-	    }
-	}
+        if (mdef->cd2cisen[sid] != sid) {       /* Otherwise it's a CI senone */
+            gid = msg->s->mgau[sid];
+            if (!mgau_xform[gid]) {
+                ms_mllr_norm_mgau(msg->g->mean[gid], msg->g->n_density, A,
+                                  B, fcb->stream_len, feat_n_stream(fcb),
+                                  class);
+                mgau_xform[gid] = 1;
+            }
+        }
     }
 
-    ckd_free (mgau_xform);
-		
-    ms_mllr_free_regmat (A, B, feat_n_stream(fcb));
+    ckd_free(mgau_xform);
+
+    ms_mllr_free_regmat(A, B, feat_n_stream(fcb));
     ckd_free(cb2mllr);
 
     return S3_SUCCESS;
 }
 
-ms_mgau_model_t* ms_mgau_init (char* meanfile,
-			       char* varfile, float64 varfloor,
-			       char* mixwfile, float64 mixwfloor,
-			       int32 precomp,
-			       char *senmgau,
-			       char* lambdafile,
-			       int32 _topn
-			       )
+ms_mgau_model_t *
+ms_mgau_init(char *meanfile,
+             char *varfile, float64 varfloor,
+             char *mixwfile, float64 mixwfloor,
+             int32 precomp, char *senmgau, char *lambdafile, int32 _topn)
 {
     /* Codebooks */
-  int32 i;
-  ms_mgau_model_t* msg;
-  gauden_t *g;
-  senone_t *s;
-  mgau2sen_t *m2s;
-  
-  msg= (ms_mgau_model_t *) ckd_calloc(1,sizeof(ms_mgau_model_t));
+    int32 i;
+    ms_mgau_model_t *msg;
+    gauden_t *g;
+    senone_t *s;
+    mgau2sen_t *m2s;
+
+    msg = (ms_mgau_model_t *) ckd_calloc(1, sizeof(ms_mgau_model_t));
 
 
-  msg->g =NULL;
-  msg->s =NULL;
-  msg->i =NULL;
-
-  msg->g = gauden_init (meanfile,
-			varfile,
-			varfloor,
-			precomp);
-
-  msg->s = senone_init (mixwfile,
-			senmgau,
-			mixwfloor
-			);
-
-  g=ms_mgau_gauden(msg);
-  s=ms_mgau_senone(msg);
-
-  /* Verify senone parameters against gauden parameters */
-  if (s->n_feat != g->n_feat)
-    E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat, s->n_feat);
-  if (s->n_cw != g->n_density)
-    E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n", g->n_density, s->n_cw);
-  if (s->n_gauden > g->n_mgau)
-    E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
-	    s->n_gauden, g->n_mgau);
-  if (s->n_gauden < g->n_mgau)
-    E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
-	    s->n_gauden, g->n_mgau);
-  /* Initialize mapping from mixture Gaussian to senones */
-  msg->mgau2sen = (mgau2sen_t **) ckd_calloc (g->n_mgau, sizeof(mgau2sen_t *));
-  for (i = 0; i < s->n_sen; i++) {
-    m2s = (mgau2sen_t *) listelem_alloc (sizeof(mgau2sen_t));
-    m2s->sen = i;
-    m2s->next = msg->mgau2sen[s->mgau[i]];
-    msg->mgau2sen[s->mgau[i]] = m2s;
-  }
-
-  /* CD/CI senone interpolation weights file, if present */
-  if (lambdafile != NULL) {
-    msg->i = interp_init (lambdafile);
-    /* Verify interpolation weights size with senones */
-    if (msg->i->n_sen != s->n_sen)
-      E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
-	      msg->i->n_sen, s->n_sen);
-  } else
+    msg->g = NULL;
+    msg->s = NULL;
     msg->i = NULL;
 
+    msg->g = gauden_init(meanfile, varfile, varfloor, precomp);
 
-  msg->topn=_topn;
-  E_INFO("The value of topn: %d\n",msg->topn);
-  if (msg->topn == 0 || msg->topn > msg->g->n_density) {
-    E_WARN("-topn argument (%d) invalid or > #density codewords (%d); set to latter\n",
-	   msg->topn, msg->g->n_density);
-    msg->topn = msg->g->n_density;
-  }
+    msg->s = senone_init(mixwfile, senmgau, mixwfloor);
 
-  msg->dist = (gauden_dist_t ***)
-    ckd_calloc_3d(g->n_mgau, g->n_feat, msg->topn, sizeof(gauden_dist_t));
-  msg->mgau_active = ckd_calloc(g->n_mgau, sizeof(int8));
+    g = ms_mgau_gauden(msg);
+    s = ms_mgau_senone(msg);
 
-  return msg;
-}
-
-void ms_mgau_free(ms_mgau_model_t* msg)
-{
-  if (msg == NULL)
-    return;
-
-  gauden_free(msg->g);
-  senone_free(msg->s);
-  ckd_free_3d((void *)msg->dist);
-  ckd_free(msg->mgau_active);
-  ckd_free(msg);
-}
-
-int32 ms_cont_mgau_frame_eval (ascr_t *ascr,
-			       ms_mgau_model_t *msg,
-			       mdef_t *mdef,
-			       float32** feat
-			       )
-{
-  int32 gid;
-  int32 s;
-  int32 topn;
-  int32 best;
-  gauden_t *g;		
-  senone_t *sen;	
-  interp_t *interp;
-  
-  topn  = ms_mgau_topn(msg);
-  g=ms_mgau_gauden(msg);
-  sen=ms_mgau_senone(msg);
-  interp=ms_mgau_interp(msg);
-
-  /*
-   * Evaluate gaussian density codebooks and senone scores for input codeword.
-   * Evaluate only active codebooks and senones.
-   */
-
-  if (interp) {
-    for (s = 0; s < mdef->n_ci_sen; s++)
-      ascr->sen_active[s] = 1;
-  }
-	
-  /* Flag all active mixture-gaussian codebooks */
-
-  for (gid = 0; gid < g->n_mgau; gid++)
-    msg->mgau_active[gid] = 0;
-  
-  for (s = 0; s < ascr->n_sen; s++) {
-    if(ascr->sen_active[s]){
-      msg->mgau_active[sen->mgau[s]] = 1;
+    /* Verify senone parameters against gauden parameters */
+    if (s->n_feat != g->n_feat)
+        E_FATAL("#Feature mismatch: gauden= %d, senone= %d\n", g->n_feat,
+                s->n_feat);
+    if (s->n_cw != g->n_density)
+        E_FATAL("#Densities mismatch: gauden= %d, senone= %d\n",
+                g->n_density, s->n_cw);
+    if (s->n_gauden > g->n_mgau)
+        E_FATAL("Senones need more codebooks (%d) than present (%d)\n",
+                s->n_gauden, g->n_mgau);
+    if (s->n_gauden < g->n_mgau)
+        E_ERROR("Senones use fewer codebooks (%d) than present (%d)\n",
+                s->n_gauden, g->n_mgau);
+    /* Initialize mapping from mixture Gaussian to senones */
+    msg->mgau2sen =
+        (mgau2sen_t **) ckd_calloc(g->n_mgau, sizeof(mgau2sen_t *));
+    for (i = 0; i < s->n_sen; i++) {
+        m2s = (mgau2sen_t *) listelem_alloc(sizeof(mgau2sen_t));
+        m2s->sen = i;
+        m2s->next = msg->mgau2sen[s->mgau[i]];
+        msg->mgau2sen[s->mgau[i]] = m2s;
     }
-  }
-	
-  /* Compute topn gaussian density values (for active codebooks) */
-  for (gid = 0; gid < g->n_mgau; gid++){
-    if (msg->mgau_active[gid])
-      gauden_dist (g, gid, topn, feat, msg->dist[gid]);
-  }
 
-  if (interp) {
+    /* CD/CI senone interpolation weights file, if present */
+    if (lambdafile != NULL) {
+        msg->i = interp_init(lambdafile);
+        /* Verify interpolation weights size with senones */
+        if (msg->i->n_sen != s->n_sen)
+            E_FATAL("Interpolation file has %d weights; but #senone= %d\n",
+                    msg->i->n_sen, s->n_sen);
+    }
+    else
+        msg->i = NULL;
+
+
+    msg->topn = _topn;
+    E_INFO("The value of topn: %d\n", msg->topn);
+    if (msg->topn == 0 || msg->topn > msg->g->n_density) {
+        E_WARN
+            ("-topn argument (%d) invalid or > #density codewords (%d); set to latter\n",
+             msg->topn, msg->g->n_density);
+        msg->topn = msg->g->n_density;
+    }
+
+    msg->dist = (gauden_dist_t ***)
+        ckd_calloc_3d(g->n_mgau, g->n_feat, msg->topn,
+                      sizeof(gauden_dist_t));
+    msg->mgau_active = ckd_calloc(g->n_mgau, sizeof(int8));
+
+    return msg;
+}
+
+void
+ms_mgau_free(ms_mgau_model_t * msg)
+{
+    if (msg == NULL)
+        return;
+
+    gauden_free(msg->g);
+    senone_free(msg->s);
+    ckd_free_3d((void *) msg->dist);
+    ckd_free(msg->mgau_active);
+    ckd_free(msg);
+}
+
+int32
+ms_cont_mgau_frame_eval(ascr_t * ascr,
+                        ms_mgau_model_t * msg,
+                        mdef_t * mdef, float32 ** feat)
+{
+    int32 gid;
+    int32 s;
+    int32 topn;
+    int32 best;
+    gauden_t *g;
+    senone_t *sen;
+    interp_t *interp;
+
+    topn = ms_mgau_topn(msg);
+    g = ms_mgau_gauden(msg);
+    sen = ms_mgau_senone(msg);
+    interp = ms_mgau_interp(msg);
+
+    /*
+     * Evaluate gaussian density codebooks and senone scores for input codeword.
+     * Evaluate only active codebooks and senones.
+     */
+
+    if (interp) {
+        for (s = 0; s < mdef->n_ci_sen; s++)
+            ascr->sen_active[s] = 1;
+    }
+
+    /* Flag all active mixture-gaussian codebooks */
+
+    for (gid = 0; gid < g->n_mgau; gid++)
+        msg->mgau_active[gid] = 0;
+
     for (s = 0; s < ascr->n_sen; s++) {
-      if(ascr->sen_active[s]){
-	if(s >= mdef->n_ci_sen){
-	  interp_cd_ci (interp, ascr->senscr, s, mdef->cd2cisen[s]);
-	}
-      }
+        if (ascr->sen_active[s]) {
+            msg->mgau_active[sen->mgau[s]] = 1;
+        }
     }
-  }
 
-  best = (int32) 0x80000000;
-  for (s = 0; s < ascr->n_sen; s++) {
-    if(ascr->sen_active[s]){
-      ascr->senscr[s] = senone_eval (sen, s, msg->dist[sen->mgau[s]], topn);
-      if (best < ascr->senscr[s])
-	best = ascr->senscr[s];
+    /* Compute topn gaussian density values (for active codebooks) */
+    for (gid = 0; gid < g->n_mgau; gid++) {
+        if (msg->mgau_active[gid])
+            gauden_dist(g, gid, topn, feat, msg->dist[gid]);
     }
-  }
+
+    if (interp) {
+        for (s = 0; s < ascr->n_sen; s++) {
+            if (ascr->sen_active[s]) {
+                if (s >= mdef->n_ci_sen) {
+                    interp_cd_ci(interp, ascr->senscr, s,
+                                 mdef->cd2cisen[s]);
+                }
+            }
+        }
+    }
+
+    best = (int32) 0x80000000;
+    for (s = 0; s < ascr->n_sen; s++) {
+        if (ascr->sen_active[s]) {
+            ascr->senscr[s] =
+                senone_eval(sen, s, msg->dist[sen->mgau[s]], topn);
+            if (best < ascr->senscr[s])
+                best = ascr->senscr[s];
+        }
+    }
 
 
-	/* Normalize senone scores (interpolation above can only lower best score) */
-  for (s = 0; s < ascr->n_sen; s++) {
-    if(ascr->sen_active[s])
-      ascr->senscr[s] -= best;
-  }
+    /* Normalize senone scores (interpolation above can only lower best score) */
+    for (s = 0; s < ascr->n_sen; s++) {
+        if (ascr->sen_active[s])
+            ascr->senscr[s] -= best;
+    }
 
-  return best;
+    return best;
 }

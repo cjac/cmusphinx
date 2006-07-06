@@ -237,11 +237,11 @@
 #define EXACT 1
 #define NOTEXACT 0
 
-static mdef_t *mdef;		/* Model definition */
+static mdef_t *mdef;            /* Model definition */
 static dict_t *dict;            /* The dictionary */
 
 static fillpen_t *fpen;         /* The filler penalty structure */
-static dag_t* dag;
+static dag_t *dag;
 static lmset_t *lmset;          /* The lmset. Replace lm */
 
 static ptmr_t tm_utt;
@@ -254,35 +254,35 @@ static FILE *matchfp, *matchsegfp;
  */
 static arg_t defn[] = {
 
-  log_table_command_line_macro()
-  dictionary_command_line_macro()
-  language_model_command_line_macro()
-  common_filler_properties_command_line_macro()
-  common_application_properties_command_line_macro()
-  control_file_handling_command_line_macro()
-  hypothesis_file_handling_command_line_macro()
-  dag_handling_command_line_macro()
-  control_lm_file_command_line_macro()
+    log_table_command_line_macro()
+        dictionary_command_line_macro()
+        language_model_command_line_macro()
+        common_filler_properties_command_line_macro()
+        common_application_properties_command_line_macro()
+        control_file_handling_command_line_macro()
+        hypothesis_file_handling_command_line_macro()
+        dag_handling_command_line_macro()
+        control_lm_file_command_line_macro()
 
-  /* This all sounds like we can still factor them */
-    { "-mdef",
-      REQARG_STRING,
-      NULL,
-      "Model definition input file: triphone -> senones/tmat tying" },
-    { "-inlatdir",
-      ARG_STRING,
-      NULL,
-      "Input word-lattice directory with per-utt files for restricting words searched" },
-    { "-latext",
-      ARG_STRING,
-      "lat.gz",
-      "Word-lattice filename extension (.gz or .Z extension for compression)" },
-    { "-backtrace",
-      ARG_INT32,
-      "1",
-      "Whether detailed backtrace information (word segmentation/scores) shown in log" },
-    
-    { NULL, ARG_INT32,  NULL, NULL }
+        /* This all sounds like we can still factor them */
+    {"-mdef",
+     REQARG_STRING,
+     NULL,
+     "Model definition input file: triphone -> senones/tmat tying"},
+    {"-inlatdir",
+     ARG_STRING,
+     NULL,
+     "Input word-lattice directory with per-utt files for restricting words searched"},
+    {"-latext",
+     ARG_STRING,
+     "lat.gz",
+     "Word-lattice filename extension (.gz or .Z extension for compression)"},
+    {"-backtrace",
+     ARG_INT32,
+     "1",
+     "Whether detailed backtrace information (word segmentation/scores) shown in log"},
+
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 
@@ -291,37 +291,35 @@ static arg_t defn[] = {
 /*
  * Load and cross-check all models (acoustic/lexical/linguistic).
  */
-static void models_init ( void )
+static void
+models_init(void)
 {
     /* HMM model definition */
-    mdef = mdef_init ((char *) cmd_ln_access("-mdef"),1);
+    mdef = mdef_init((char *) cmd_ln_access("-mdef"), 1);
 
     /* Dictionary */
-    dict = dict_init (mdef,
-		      (char *) cmd_ln_access("-dict"),
-		      (char *) cmd_ln_access("-fdict"),
-		      0,
-		      cmd_ln_int32("-lts_mismatch"),
-		      1);
+    dict = dict_init(mdef,
+                     (char *) cmd_ln_access("-dict"),
+                     (char *) cmd_ln_access("-fdict"),
+                     0, cmd_ln_int32("-lts_mismatch"), 1);
 
     /* LM Set */
-    lmset=lmset_init(cmd_ln_str("-lm"),
-		     cmd_ln_str("-lmctlfn"),
-		     cmd_ln_str("-ctl_lm"),
-		     cmd_ln_str("-lmname"),
-		     cmd_ln_str("-lmdumpdir"),
-		     cmd_ln_float32("-lw"),
-		     cmd_ln_float32("-wip"),
-		     cmd_ln_float32("-uw"),
-		     dict);
+    lmset = lmset_init(cmd_ln_str("-lm"),
+                       cmd_ln_str("-lmctlfn"),
+                       cmd_ln_str("-ctl_lm"),
+                       cmd_ln_str("-lmname"),
+                       cmd_ln_str("-lmdumpdir"),
+                       cmd_ln_float32("-lw"),
+                       cmd_ln_float32("-wip"),
+                       cmd_ln_float32("-uw"), dict);
 
     /* Filler penalties */
-    fpen = fillpen_init (dict,(char *) cmd_ln_access("-fillpen"),
-			 *(float32 *)cmd_ln_access("-silprob"),
-			 *(float32 *)cmd_ln_access("-fillprob"),
-			 *(float32 *)cmd_ln_access("-lw"),
-			 *(float32 *)cmd_ln_access("-wip"));
-    
+    fpen = fillpen_init(dict, (char *) cmd_ln_access("-fillpen"),
+                        *(float32 *) cmd_ln_access("-silprob"),
+                        *(float32 *) cmd_ln_access("-fillprob"),
+                        *(float32 *) cmd_ln_access("-lw"),
+                        *(float32 *) cmd_ln_access("-wip"));
+
 }
 
 
@@ -337,43 +335,48 @@ static void models_init ( void )
  *   wlscr = LM score (without lw or wip) for word
  *   ef = end frame for utterance.
  */
-static void s3dag_log_hypseg (char *uttid,
-			FILE *fp,	/* Out: output file */
-			srch_hyp_t *hypptr,	/* In: Hypothesis */
-			int32 nfrm)	/* In: #frames in utterance */
-{
+static void
+s3dag_log_hypseg(char *uttid, FILE * fp,        /* Out: output file */
+                 srch_hyp_t * hypptr,   /* In: Hypothesis */
+                 int32 nfrm)
+{                               /* In: #frames in utterance */
     srch_hyp_t *h;
     int32 ascr, lscr, tscr;
-    
+
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
-	ascr += h->ascr;
-	if (dict_basewid(dict,h->id) != dict->startwid) {
-	    lscr += lm_rawscore (lmset->cur_lm,h->lscr);
-	} else {
-	    assert (h->lscr == 0);
-	}
-	tscr += h->ascr + h->lscr;
+        ascr += h->ascr;
+        if (dict_basewid(dict, h->id) != dict->startwid) {
+            lscr += lm_rawscore(lmset->cur_lm, h->lscr);
+        }
+        else {
+            assert(h->lscr == 0);
+        }
+        tscr += h->ascr + h->lscr;
     }
 
-    fprintf (fp, "%s T %d A %d L %d", uttid, tscr, ascr, lscr);
-    
-    if (! hypptr)	/* HACK!! */
-	fprintf (fp, " (null)\n");
+    fprintf(fp, "%s T %d A %d L %d", uttid, tscr, ascr, lscr);
+
+    if (!hypptr)                /* HACK!! */
+        fprintf(fp, " (null)\n");
     else {
-	for (h = hypptr; h; h = h->next) {
-	    lscr = (dict_basewid(dict,h->id) != dict->startwid) ? lm_rawscore (lmset->cur_lm,h->lscr) : 0;
-	    fprintf (fp, " %d %d %d %s", h->sf, h->ascr, lscr, dict_wordstr (dict,h->id));
-	}
-	fprintf (fp, " %d\n", nfrm);
+        for (h = hypptr; h; h = h->next) {
+            lscr =
+                (dict_basewid(dict, h->id) !=
+                 dict->startwid) ? lm_rawscore(lmset->cur_lm, h->lscr) : 0;
+            fprintf(fp, " %d %d %d %s", h->sf, h->ascr, lscr,
+                    dict_wordstr(dict, h->id));
+        }
+        fprintf(fp, " %d\n", nfrm);
     }
-    
-    fflush (fp);
+
+    fflush(fp);
 }
 
 
 /* Find the best path in the lattice file and write result to matchfp and matchsegfp */
-static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
+static void
+decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
 {
     char dagfile[1024];
     srch_hyp_t *h, *hyp;
@@ -381,161 +384,170 @@ static void decode_utt (char *uttid, FILE *_matchfp, FILE *_matchsegfp)
     int32 nfrm, ascr, lscr;
 
     hyp = NULL;
-    ptmr_reset (&tm_utt);
-    ptmr_start (&tm_utt);
+    ptmr_reset(&tm_utt);
+    ptmr_start(&tm_utt);
 
-    
-    latdir = cmd_ln_str ("-inlatdir");
-    latext = cmd_ln_str ("-latext");
+
+    latdir = cmd_ln_str("-inlatdir");
+    latext = cmd_ln_str("-latext");
 
     if (latdir)
-	sprintf (dagfile, "%s/%s.%s", latdir, uttid, latext);
+        sprintf(dagfile, "%s/%s.%s", latdir, uttid, latext);
     else
-	sprintf (dagfile, "%s.%s", uttid, latext);
+        sprintf(dagfile, "%s.%s", uttid, latext);
 
-    
-    if ((nfrm = s3dag_dag_load (&dag,cmd_ln_float32("-lw"),dagfile,dict,fpen)) >= 0) {
-	hyp = dag_search (dag,uttid, cmd_ln_float32("-lw"),
-			  dag->final.node,
-			  dict,lmset->cur_lm,fpen
-			  );
-	if(hyp!=NULL){
-	  if ( *((int32 *) cmd_ln_access("-backtrace")) )
-	    log_hyp_detailed (stdout, hyp, uttid, "BP", "bp",NULL);
 
-	  /* Total acoustic score and LM score */
-	  ascr = lscr = 0;
-	  for (h = hyp; h; h = h->next) {
-	    ascr += h->ascr;
-	    lscr += h->lscr;
-	  }
+    if ((nfrm =
+         s3dag_dag_load(&dag, cmd_ln_float32("-lw"), dagfile, dict,
+                        fpen)) >= 0) {
+        hyp =
+            dag_search(dag, uttid, cmd_ln_float32("-lw"), dag->final.node,
+                       dict, lmset->cur_lm, fpen);
+        if (hyp != NULL) {
+            if (*((int32 *) cmd_ln_access("-backtrace")))
+                log_hyp_detailed(stdout, hyp, uttid, "BP", "bp", NULL);
 
-	  printf("BSTPTH: ");
-	  log_hypstr(stdout, hyp, uttid, 0, ascr+lscr, dict);
-	  
-	  printf ("BSTXCT: ");
-	  s3dag_log_hypseg (uttid, stdout, hyp, nfrm);
-	  
-	  lm_cache_stats_dump (lmset->cur_lm);
-	  lm_cache_reset (lmset->cur_lm);
-	}else{
-	  E_ERROR("DAG search (%s) failed\n", uttid);
-	  hyp = NULL;
-	}
-    } else {
-	E_ERROR("DAG search (%s) failed\n", uttid);
-	hyp = NULL;
+            /* Total acoustic score and LM score */
+            ascr = lscr = 0;
+            for (h = hyp; h; h = h->next) {
+                ascr += h->ascr;
+                lscr += h->lscr;
+            }
+
+            printf("BSTPTH: ");
+            log_hypstr(stdout, hyp, uttid, 0, ascr + lscr, dict);
+
+            printf("BSTXCT: ");
+            s3dag_log_hypseg(uttid, stdout, hyp, nfrm);
+
+            lm_cache_stats_dump(lmset->cur_lm);
+            lm_cache_reset(lmset->cur_lm);
+        }
+        else {
+            E_ERROR("DAG search (%s) failed\n", uttid);
+            hyp = NULL;
+        }
+    }
+    else {
+        E_ERROR("DAG search (%s) failed\n", uttid);
+        hyp = NULL;
     }
 
-    
+
     /* Log recognition output to the standard match and matchseg files */
-    if (_matchfp){
-      log_hypstr(_matchfp, hyp, uttid, 0, 0 ,dict );
+    if (_matchfp) {
+        log_hypstr(_matchfp, hyp, uttid, 0, 0, dict);
     }
     if (_matchsegfp)
-      s3dag_log_hypseg (uttid, _matchsegfp, hyp, nfrm);
-    
-    dag_destroy (dag);
+        s3dag_log_hypseg(uttid, _matchsegfp, hyp, nfrm);
 
-    ptmr_stop (&tm_utt);
-    
-    printf ("%s: TMR: %5d Frm", uttid, nfrm);
+    dag_destroy(dag);
+
+    ptmr_stop(&tm_utt);
+
+    printf("%s: TMR: %5d Frm", uttid, nfrm);
     if (nfrm > 0) {
-	printf (" %6.2f xEl", tm_utt.t_elapsed * 100.0 / nfrm);
-	printf (" %6.2f xCPU", tm_utt.t_cpu * 100.0 / nfrm);
+        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / nfrm);
+        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / nfrm);
     }
-    printf ("\n");
-    fflush (stdout);
+    printf("\n");
+    fflush(stdout);
 
     tot_nfr += nfrm;
 
-    if(hyp != NULL)
-      hyp_free(hyp);
+    if (hyp != NULL)
+        hyp_free(hyp);
 }
 
-static void utt_dag(void *data, utt_res_t *ur, int32 sf, int32 ef, char *uttid)
+static void
+utt_dag(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
 
-  if(ur->lmname) lmset_set_curlm_wname(lmset,ur->lmname);
-  decode_utt(uttid,matchfp,matchsegfp);
+    if (ur->lmname)
+        lmset_set_curlm_wname(lmset, ur->lmname);
+    decode_utt(uttid, matchfp, matchsegfp);
 }
 
-int main (int32 argc, char *argv[])
+int
+main(int32 argc, char *argv[])
 {
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc,argv,"default.arg",defn);
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc, argv, "default.arg", defn);
 
-  unlimit ();
+    unlimit();
 
-  logs3_init ((float64) cmd_ln_float32("-logbase"),1,cmd_ln_int32("-log3table"));
-    
-  /* Read in input databases */
-  models_init ();
-  
-  /* Allocate timing object */
-  ptmr_init(&tm_utt);
-  tot_nfr = 0;
-    
-  printf ("\n");
+    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
+               cmd_ln_int32("-log3table"));
 
-  matchfile=NULL;
-  matchfile=cmd_ln_str("-hyp");
+    /* Read in input databases */
+    models_init();
 
-  if(matchfile==NULL){
-    E_WARN("No -hyp argument\n");
-    matchfp=NULL;
-  }else{
-    if ((matchfp = fopen (matchfile, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", matchfile);
-  }
-  
+    /* Allocate timing object */
+    ptmr_init(&tm_utt);
+    tot_nfr = 0;
 
-  matchsegfile=NULL;
-  matchsegfile=cmd_ln_str("-hypseg");
-  if(matchsegfile==NULL){
-    E_WARN("No -hypseg argument\n");
-    matchsegfp=NULL;
-  }else{
-    if ((matchsegfp = fopen (matchsegfile, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-  }
+    printf("\n");
 
-  if(cmd_ln_str("-ctl")){
-    ctl_process(cmd_ln_str("-ctl"),
-		cmd_ln_str("-ctl_lm"),
-		NULL,
-		cmd_ln_int32("-ctloffset"),
-		cmd_ln_int32("-ctlcount"),
-		utt_dag, 
-		NULL);
+    matchfile = NULL;
+    matchfile = cmd_ln_str("-hyp");
 
-  }else{
-    E_FATAL("-ctl is not specified\n");
-  }
-  
-  if(matchfp)
-    fclose(matchfp);
+    if (matchfile == NULL) {
+        E_WARN("No -hyp argument\n");
+        matchfp = NULL;
+    }
+    else {
+        if ((matchfp = fopen(matchfile, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", matchfile);
+    }
 
-  if(matchsegfp)
-    fclose(matchsegfp);
 
-  printf ("\n");
-  printf("TOTAL FRAMES:       %8d\n", tot_nfr);
-  if (tot_nfr > 0) {
-    printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
-	   tm_utt.t_tot_cpu, tm_utt.t_tot_cpu/(tot_nfr*0.01));
-    printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
-	   tm_utt.t_tot_elapsed, tm_utt.t_tot_elapsed/(tot_nfr*0.01));
-  }
-  fflush (stdout);
+    matchsegfile = NULL;
+    matchsegfile = cmd_ln_str("-hypseg");
+    if (matchsegfile == NULL) {
+        E_WARN("No -hypseg argument\n");
+        matchsegfp = NULL;
+    }
+    else {
+        if ((matchsegfp = fopen(matchsegfile, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", matchsegfile);
+    }
+
+    if (cmd_ln_str("-ctl")) {
+        ctl_process(cmd_ln_str("-ctl"),
+                    cmd_ln_str("-ctl_lm"),
+                    NULL,
+                    cmd_ln_int32("-ctloffset"),
+                    cmd_ln_int32("-ctlcount"), utt_dag, NULL);
+
+    }
+    else {
+        E_FATAL("-ctl is not specified\n");
+    }
+
+    if (matchfp)
+        fclose(matchfp);
+
+    if (matchsegfp)
+        fclose(matchsegfp);
+
+    printf("\n");
+    printf("TOTAL FRAMES:       %8d\n", tot_nfr);
+    if (tot_nfr > 0) {
+        printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
+               tm_utt.t_tot_cpu, tm_utt.t_tot_cpu / (tot_nfr * 0.01));
+        printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
+               tm_utt.t_tot_elapsed,
+               tm_utt.t_tot_elapsed / (tot_nfr * 0.01));
+    }
+    fflush(stdout);
 
 #if (! WIN32)
-  system ("ps auxwww | grep s3dag");
+    system("ps auxwww | grep s3dag");
 #endif
 
     /* Hack!! To avoid hanging problem under Linux */
-  
-  cmd_ln_appl_exit();
-    
-  return 0;
+
+    cmd_ln_appl_exit();
+
+    return 0;
 }

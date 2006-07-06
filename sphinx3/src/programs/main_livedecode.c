@@ -103,7 +103,7 @@ typedef HANDLE thread_t;
 #define create_thread(tt, proc) (*(tt) = CreateThread(NULL, 0, proc, NULL, 0, NULL))
 #define join_thread(t) WaitForSingleObject(t, INFINITE)
 
-#else /* !WIN32 */
+#else                           /* !WIN32 */
 
 #include <pthread.h>
 #include <sys/time.h>
@@ -111,8 +111,8 @@ typedef HANDLE thread_t;
 #define THREAD_START void *
 #define COND_TIMEDOUT ETIMEDOUT
 typedef struct {
-	pthread_cond_t cond;
-	pthread_mutex_t mtx;
+    pthread_cond_t cond;
+    pthread_mutex_t mtx;
 } condition_t;
 typedef pthread_t thread_t;
 #define cond_wait(c) {				\
@@ -120,24 +120,26 @@ typedef pthread_t thread_t;
 	pthread_cond_wait(&(c).cond, &(c).mtx);	\
 	pthread_mutex_unlock(&(c).mtx);		\
 }
-int cond_wait_timed(condition_t *c, int ticks)
+int
+cond_wait_timed(condition_t * c, int ticks)
 {
-	struct timeval now;
-	struct timespec timeout;
-	int rv;
+    struct timeval now;
+    struct timespec timeout;
+    int rv;
 
-	pthread_mutex_lock(&c->mtx);
-	gettimeofday(&now, NULL);
-	timeout.tv_sec = now.tv_sec + ((ticks) / 1000);
-	timeout.tv_nsec = now.tv_usec * 1000 + ((ticks) % 1000) * 1000000;
-	if (timeout.tv_nsec > 1000000000) {
-	  ++timeout.tv_sec;
-	  timeout.tv_nsec -= 1000000000;
-	}
-	rv = pthread_cond_timedwait(&c->cond, &c->mtx, &timeout);
-	pthread_mutex_unlock(&c->mtx);
-	return rv;
+    pthread_mutex_lock(&c->mtx);
+    gettimeofday(&now, NULL);
+    timeout.tv_sec = now.tv_sec + ((ticks) / 1000);
+    timeout.tv_nsec = now.tv_usec * 1000 + ((ticks) % 1000) * 1000000;
+    if (timeout.tv_nsec > 1000000000) {
+        ++timeout.tv_sec;
+        timeout.tv_nsec -= 1000000000;
+    }
+    rv = pthread_cond_timedwait(&c->cond, &c->mtx, &timeout);
+    pthread_mutex_unlock(&c->mtx);
+    return rv;
 }
+
 #define cond_signal(c) {			\
 	pthread_mutex_lock(&(c).mtx);		\
 	pthread_cond_signal(&(c).cond);		\
@@ -149,7 +151,7 @@ int cond_wait_timed(condition_t *c, int ticks)
 }
 #define create_thread(tt, proc) pthread_create(tt, NULL, proc, NULL)
 #define join_thread(t) pthread_join(t, NULL)
-#endif /* !WIN32 */
+#endif                          /* !WIN32 */
 
 condition_t startEvent;
 condition_t finishEvent;
@@ -158,114 +160,115 @@ live_decoder_t decoder;
 FILE *dump = 0;
 
 THREAD_START
-process_thread(void * aParam)
+process_thread(void *aParam)
 {
-  ad_rec_t *in_ad = 0;
-  int16 samples[BUFSIZE];
-  int32 num_samples;
+    ad_rec_t *in_ad = 0;
+    int16 samples[BUFSIZE];
+    int32 num_samples;
 
-  cond_wait(startEvent);
+    cond_wait(startEvent);
 
-  if ((in_ad = ad_open_sps((int)cmd_ln_float32("-samprate"))) == NULL) {
-    printf("Failed to open audio input device\n");
-    exit(1);
-  }
-  ad_start_rec(in_ad);
-
-  while (cond_wait_timed(&finishEvent, TIMEOUT) == COND_TIMEDOUT) {
-    num_samples = ad_read(in_ad, samples, BUFSIZE);
-    if (num_samples > 0) {
-      /** dump the recorded audio to disk */
-      if (fwrite(samples, sizeof(int16), num_samples, dump) < num_samples) {
-	printf("Error writing audio to dump file.\n");
-      }
-
-      ld_process_raw(&decoder, samples, num_samples);
+    if ((in_ad = ad_open_sps((int) cmd_ln_float32("-samprate"))) == NULL) {
+        printf("Failed to open audio input device\n");
+        exit(1);
     }
-  }
+    ad_start_rec(in_ad);
 
-  ad_stop_rec(in_ad);
-  ad_close(in_ad);
+    while (cond_wait_timed(&finishEvent, TIMEOUT) == COND_TIMEDOUT) {
+        num_samples = ad_read(in_ad, samples, BUFSIZE);
+        if (num_samples > 0) {
+      /** dump the recorded audio to disk */
+            if (fwrite(samples, sizeof(int16), num_samples, dump) <
+                num_samples) {
+                printf("Error writing audio to dump file.\n");
+            }
 
-  ld_end_utt(&decoder);
+            ld_process_raw(&decoder, samples, num_samples);
+        }
+    }
 
-  return 0;
+    ad_stop_rec(in_ad);
+    ad_close(in_ad);
+
+    ld_end_utt(&decoder);
+
+    return 0;
 }
 
 int
 main(int argc, char **argv)
 {
-  thread_t thread;
-  char buffer[1024];
-  char *hypstr;
+    thread_t thread;
+    char buffer[1024];
+    char *hypstr;
 
-  /*
-   * Initializing
-   */
-  if (argc != 2) {
-    printf("Usage:  livedecode config_file \n");
-    return -1;
-  }
+    /*
+     * Initializing
+     */
+    if (argc != 2) {
+        printf("Usage:  livedecode config_file \n");
+        return -1;
+    }
 
-  if (cmd_ln_parse_file(arg_def, argv[1])) {
-    printf("Bad arguments file (%s).\n", argv[1]);
-    return -1;
-  }
+    if (cmd_ln_parse_file(arg_def, argv[1])) {
+        printf("Bad arguments file (%s).\n", argv[1]);
+        return -1;
+    }
 
-  if (ld_init(&decoder)) {
-    printf("Initialization failed.\n");
-    return -1;
-  }
+    if (ld_init(&decoder)) {
+        printf("Initialization failed.\n");
+        return -1;
+    }
 
-  if (ld_begin_utt(&decoder, 0)) {
-    printf("Cannot start decoding\n");
-    return -1;
-  }
+    if (ld_begin_utt(&decoder, 0)) {
+        printf("Cannot start decoding\n");
+        return -1;
+    }
 
   /** initializing a file to dump the recorded audio */
-  if ((dump = fopen("out.raw", "wb")) == 0) {
-    printf("Cannot open dump file out.raw\n");
-    return -1;
-  }
+    if ((dump = fopen("out.raw", "wb")) == 0) {
+        printf("Cannot open dump file out.raw\n");
+        return -1;
+    }
 
-  create_cond(&startEvent);
-  create_cond(&finishEvent);
-  create_thread(&thread, &process_thread);
+    create_cond(&startEvent);
+    create_cond(&finishEvent);
+    create_thread(&thread, &process_thread);
 
-  /*
-   * Wait for some user input, then signal the processing thread to start
-   * recording/decoding
-   */
-  printf("press ENTER to start recording\n");
-  fgets(buffer, 1024, stdin);
-  cond_signal(startEvent);
+    /*
+     * Wait for some user input, then signal the processing thread to start
+     * recording/decoding
+     */
+    printf("press ENTER to start recording\n");
+    fgets(buffer, 1024, stdin);
+    cond_signal(startEvent);
 
-  /*
-   *  Wait for some user input again, then signal the processing thread to end
-   *  recording/decoding
-   */
-  printf("press ENTER to finish recording\n");
-  fgets(buffer, 1024, stdin);
-  cond_signal(finishEvent);
+    /*
+     *  Wait for some user input again, then signal the processing thread to end
+     *  recording/decoding
+     */
+    printf("press ENTER to finish recording\n");
+    fgets(buffer, 1024, stdin);
+    cond_signal(finishEvent);
 
-  /*
-   *  Wait for the working thread to join
-   */
-  join_thread(thread);
+    /*
+     *  Wait for the working thread to join
+     */
+    join_thread(thread);
 
-  /*
-   *  Print the decoding output
-   */
-  if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
-    printf("Cannot retrieve hypothesis.\n");
-  }
-  else {
-    printf("Hypothesis:\n%s\n", hypstr);
-  }
+    /*
+     *  Print the decoding output
+     */
+    if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
+        printf("Cannot retrieve hypothesis.\n");
+    }
+    else {
+        printf("Hypothesis:\n%s\n", hypstr);
+    }
 
-  ld_finish(&decoder);
-  
-  fclose(dump);
+    ld_finish(&decoder);
 
-  return 0;
+    fclose(dump);
+
+    return 0;
 }

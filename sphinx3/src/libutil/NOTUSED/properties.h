@@ -19,19 +19,19 @@
 
 typedef struct {
   /** name of the property */
-  char *name;
+    char *name;
   /** type of the property */
-  int type;
+    int type;
   /** value of the property in string representation */
-  char *val;
+    char *val;
   /** description of the property */
-  char *desc;
+    char *desc;
 } prop_t;
 
 typedef struct {
-  hash_table_t *indices;
-  prop_t *entries;
-  int num_entries;
+    hash_table_t *indices;
+    prop_t *entries;
+    int num_entries;
 } propset_t;
 
 int prop_new(propset_t **);

@@ -43,37 +43,38 @@ static int traceIndex = 0;
 static int traceBlock = 0;
 
 /*********************************************************************/
-void ResetTraceMessages()
+void
+ResetTraceMessages()
 {
     traceIndex = 0;
 }
 
 /*********************************************************************/
-void DumpTraceMessages()
+void
+DumpTraceMessages()
 {
     int i;
-    int numDump = (traceIndex < MAX_TRACE_RECORDS) ? traceIndex : MAX_TRACE_RECORDS;
+    int numDump =
+        (traceIndex < MAX_TRACE_RECORDS) ? traceIndex : MAX_TRACE_RECORDS;
 
-    printf("DumpTraceMessages: traceIndex = %d\n", traceIndex );
-    for( i=0; i<numDump; i++ )
-    {
+    printf("DumpTraceMessages: traceIndex = %d\n", traceIndex);
+    for (i = 0; i < numDump; i++) {
         printf("%3d: %s = 0x%08X\n",
-               i, traceTextArray[i], traceIntArray[i] );
+               i, traceTextArray[i], traceIntArray[i]);
     }
     ResetTraceMessages();
     fflush(stdout);
 }
 
 /*********************************************************************/
-void AddTraceMessage( char *msg, int data )
+void
+AddTraceMessage(char *msg, int data)
 {
-    if( (traceIndex == MAX_TRACE_RECORDS) && (traceBlock == 0) )
-    {
+    if ((traceIndex == MAX_TRACE_RECORDS) && (traceBlock == 0)) {
         traceBlock = 1;
         /*  DumpTraceMessages(); */
     }
-    else if( traceIndex < MAX_TRACE_RECORDS )
-    {
+    else if (traceIndex < MAX_TRACE_RECORDS) {
         traceTextArray[traceIndex] = msg;
         traceIntArray[traceIndex] = data;
         traceIndex++;

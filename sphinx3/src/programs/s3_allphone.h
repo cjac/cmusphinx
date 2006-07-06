@@ -90,20 +90,20 @@
 
 /* Phone level segmentation information */
 typedef struct phseg_s {
-    s3cipid_t ci;		/* CI-phone id */
-    s3frmid_t sf, ef;		/* Start and end frame for this phone occurrence */
-    int32 score;		/* Acoustic score for this segment of alignment */
-    int32 tscore;		/* Transition ("LM") score for this segment */
-    struct phseg_s *next;	/* Next entry in alignment */
+    s3cipid_t ci;               /* CI-phone id */
+    s3frmid_t sf, ef;           /* Start and end frame for this phone occurrence */
+    int32 score;                /* Acoustic score for this segment of alignment */
+    int32 tscore;               /* Transition ("LM") score for this segment */
+    struct phseg_s *next;       /* Next entry in alignment */
 } phseg_t;
 
-int32 allphone_init ( mdef_t *mdef, tmat_t *tmat );
+int32 allphone_init(mdef_t * mdef, tmat_t * tmat);
 
-int32 allphone_start_utt (char *uttid);
+int32 allphone_start_utt(char *uttid);
 
-int32 allphone_frame (int32 *senscr);
+int32 allphone_frame(int32 * senscr);
 
-phseg_t *allphone_end_utt (char *uttid);
+phseg_t *allphone_end_utt(char *uttid);
 
 
 #endif

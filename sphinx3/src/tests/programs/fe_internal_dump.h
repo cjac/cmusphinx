@@ -33,5 +33,4 @@
  * ====================================================================
  *
  */
-void fe_frame_to_fea_dump(fe_t *FE, double *in, double *fea);
-
+void fe_frame_to_fea_dump(fe_t * FE, double *in, double *fea);

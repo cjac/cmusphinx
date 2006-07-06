@@ -390,146 +390,149 @@ static char *outlatdir;
  * Command line arguments.
  */
 static arg_t defn[] = {
-  log_table_command_line_macro()
-  cepstral_to_feature_command_line_macro()
-  acoustic_model_command_line_macro()
-  speaker_adaptation_command_line_macro()
-  language_model_command_line_macro()
-  dictionary_command_line_macro()
+    log_table_command_line_macro()
+        cepstral_to_feature_command_line_macro()
+        acoustic_model_command_line_macro()
+        speaker_adaptation_command_line_macro()
+        language_model_command_line_macro()
+        dictionary_command_line_macro()
 
-  fast_GMM_computation_command_line_macro()
-  common_filler_properties_command_line_macro()
-  common_application_properties_command_line_macro()
-  control_file_handling_command_line_macro()
-  hypothesis_file_handling_command_line_macro()
-  score_handling_command_line_macro()
+        fast_GMM_computation_command_line_macro()
+        common_filler_properties_command_line_macro()
+        common_application_properties_command_line_macro()
+        control_file_handling_command_line_macro()
+        hypothesis_file_handling_command_line_macro()
+        score_handling_command_line_macro()
 
-  cepstral_input_handling_command_line_macro()
+        cepstral_input_handling_command_line_macro()
 
-  input_lattice_handling_command_line_macro() 
-  flat_fwd_multiplex_treatment_command_line_macro() 
-  flat_fwd_debugging_command_line_macro() 
-  output_lattice_handling_command_line_macro()
-  dag_handling_command_line_macro()
-  search_specific_command_line_macro()
-  control_lm_mllr_file_command_line_macro()
-  phone_insertion_penalty_command_line_macro()
-  second_stage_dag_handling_command_line_macro()
-  history_table_command_line_macro()
-  common_s3x_beam_properties_command_line_macro()
-  phoneme_lookahead_command_line_macro() 
+        input_lattice_handling_command_line_macro()
+        flat_fwd_multiplex_treatment_command_line_macro()
+        flat_fwd_debugging_command_line_macro()
+        output_lattice_handling_command_line_macro()
+        dag_handling_command_line_macro()
+        search_specific_command_line_macro()
+        control_lm_mllr_file_command_line_macro()
+        phone_insertion_penalty_command_line_macro()
+        second_stage_dag_handling_command_line_macro()
+        history_table_command_line_macro()
+        common_s3x_beam_properties_command_line_macro()
+        phoneme_lookahead_command_line_macro()
 
-  /* Things which are not yet synchronized with decode/dag/astar */
-  { "-op_mode",
-    ARG_INT32,
-    "3",
-    "decode_anytopo's operation mode.  It can only be set at 3 in this interface. Please use decode for a generic interface."},
-    { "-lambda",
-      ARG_STRING,
-      NULL,
-      "Interpolation weights (CD/CI senone) parameters input file" },
+        /* Things which are not yet synchronized with decode/dag/astar */
+    {"-op_mode",
+     ARG_INT32,
+     "3",
+     "decode_anytopo's operation mode.  It can only be set at 3 in this interface. Please use decode for a generic interface."},
+    {"-lambda",
+     ARG_STRING,
+     NULL,
+     "Interpolation weights (CD/CI senone) parameters input file"},
 /* ADDED BY BHIKSHA: 6 JAN 98 */
-    { "-ceplen",
-      ARG_INT32,
-      "13",
-      "Length of input feature vector" },
-    { "-bestscoredir",
-      ARG_STRING,
-      NULL,
-      "Directory for writing best score/frame (used to set beamwidth; one file/utterance)" },
-    { "-hmmdump", 
-      ARG_INT32, 
-      "0",
-      "Not used in this interface. " }, 
-    {"-composite", 
-      ARG_INT32, 
+    {"-ceplen",
+     ARG_INT32,
+     "13",
+     "Length of input feature vector"},
+    {"-bestscoredir",
+     ARG_STRING,
+     NULL,
+     "Directory for writing best score/frame (used to set beamwidth; one file/utterance)"},
+    {"-hmmdump",
+     ARG_INT32,
+     "0",
+     "Not used in this interface. "},
+    {"-composite",
+     ARG_INT32,
      "1",
      "Not used in this interface, exit if set to 0"},
-  {"-fsg",
-   ARG_STRING,
-   NULL,
-   "Not used in this interface"},
+    {"-fsg",
+     ARG_STRING,
+     NULL,
+     "Not used in this interface"},
 
-    { NULL, ARG_INT32,  NULL, NULL }
+    {NULL, ARG_INT32, NULL, NULL}
 
 
 };
 
-int main (int32 argc, char *argv[])
+int
+main(int32 argc, char *argv[])
 {
     kb_t kb;
-    stat_t* st;
+    stat_t *st;
 
     print_appl_info(argv[0]);
-    cmd_ln_appl_enter(argc,argv,"default.arg",defn);
-    unlimit ();
+    cmd_ln_appl_enter(argc, argv, "default.arg", defn);
+    unlimit();
 
-    if(cmd_ln_int32("-op_mode")!=OPERATION_FLATFWD){
-      E_FATAL("decode_anytopo only provides interface for flat lexicon decoding. Please use decode instead\n");
-      cmd_ln_appl_exit();
+    if (cmd_ln_int32("-op_mode") != OPERATION_FLATFWD) {
+        E_FATAL
+            ("decode_anytopo only provides interface for flat lexicon decoding. Please use decode instead\n");
+        cmd_ln_appl_exit();
     }
 
-    kb_init (&kb);
+    kb_init(&kb);
     st = kb.stat;
-    fprintf (stdout, "\n"); 
-   
-    inlatdir = (char *) cmd_ln_access ("-inlatdir");
-    outlatdir = (char *) cmd_ln_access ("-outlatdir");
+    fprintf(stdout, "\n");
+
+    inlatdir = (char *) cmd_ln_access("-inlatdir");
+    outlatdir = (char *) cmd_ln_access("-outlatdir");
     if (outlatdir) {
-	int32 k;
-	
-	k = strlen(outlatdir);
-	if ((k > 6) && (strcmp (outlatdir+(k-6), ",NODES") == 0)) {
-	    outlat_onlynodes = 1;
-	    outlatdir[k-6] = '\0';
-	} else
-	    outlat_onlynodes = 0;
+        int32 k;
+
+        k = strlen(outlatdir);
+        if ((k > 6) && (strcmp(outlatdir + (k - 6), ",NODES") == 0)) {
+            outlat_onlynodes = 1;
+            outlatdir[k - 6] = '\0';
+        }
+        else
+            outlat_onlynodes = 0;
     }
 
-    if (inlatdir && outlatdir && (strcmp (inlatdir, outlatdir) == 0))
-	E_FATAL("Input and output lattice directories are the same\n");
+    if (inlatdir && outlatdir && (strcmp(inlatdir, outlatdir) == 0))
+        E_FATAL("Input and output lattice directories are the same\n");
 
-    /*    tot_nfr = 0;*/
+    /*    tot_nfr = 0; */
 
 #if 0
     /* Decode_anytopo-specific, a search for suffix ",EXACT " and create exact log hypothesis */
     if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-	matchfp = NULL;
-    } else {
-	/* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
-	k = strlen (matchfile);
-	if ((k > 6) && (strcmp (matchfile+(k-6), ",EXACT") == 0)) {
-	    matchexact = 1;
-	    matchfile[k-6] = '\0';
-	} else
-	    matchexact = 0;
-
-	if ((matchfp = fopen (matchfile, "w")) == NULL)
-	    E_ERROR("fopen(%s,w) failed\n", matchfile);
+        matchfp = NULL;
     }
-    
+    else {
+        /* Look for ,EXACT suffix, for retaining fillers/pronunciation specs in output */
+        k = strlen(matchfile);
+        if ((k > 6) && (strcmp(matchfile + (k - 6), ",EXACT") == 0)) {
+            matchexact = 1;
+            matchfile[k - 6] = '\0';
+        }
+        else
+            matchexact = 0;
+
+        if ((matchfp = fopen(matchfile, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", matchfile);
+    }
+
 #endif
 
-    
-    if (cmd_ln_str ("-ctl")) {
-      /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
-	 the corresponding  MLLR for the utterance */
-      ctl_process (cmd_ln_str("-ctl"),
-		   NULL, /* -ctl_lm is set to zero, that is to say, we can't support it in decode_anytopo*/
-		   cmd_ln_str("-ctl_mllr"),
-		   cmd_ln_int32("-ctloffset"),
-		   cmd_ln_int32("-ctlcount"),
-		   utt_decode, 
-		   &kb);
-    } else {
-      /* Is error checking good enough?" */
-      E_FATAL(" -ctl are not specified.\n");
+
+    if (cmd_ln_str("-ctl")) {
+        /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
+           the corresponding  MLLR for the utterance */
+        ctl_process(cmd_ln_str("-ctl"), NULL,   /* -ctl_lm is set to zero, that is to say, we can't support it in decode_anytopo */
+                    cmd_ln_str("-ctl_mllr"),
+                    cmd_ln_int32("-ctloffset"),
+                    cmd_ln_int32("-ctlcount"), utt_decode, &kb);
+    }
+    else {
+        /* Is error checking good enough?" */
+        E_FATAL(" -ctl are not specified.\n");
     }
 
     if (kb.matchsegfp)
-	fclose (kb.matchsegfp);
-    if (kb.matchfp) 
-        fclose (kb.matchfp);
+        fclose(kb.matchsegfp);
+    if (kb.matchfp)
+        fclose(kb.matchfp);
 
     stat_report_corpus(kb.stat);
 
@@ -540,13 +543,12 @@ int main (int32 argc, char *argv[])
 #if defined(_SUN4)
     system("ps -el | grep decode_anytopo");
 #else
-    system ("ps aguxwww | grep decode_anytopo");
+    system("ps aguxwww | grep decode_anytopo");
 #endif
 #endif
 
 
     cmd_ln_appl_exit();
 
-    return 0 ;
+    return 0;
 }
-

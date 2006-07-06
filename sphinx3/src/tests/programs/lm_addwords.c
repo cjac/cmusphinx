@@ -62,95 +62,102 @@
 #include "encoding.h"
 
 static arg_t arg[] = {
-  common_application_properties_command_line_macro()
-  { "-input",
-    REQARG_STRING,
-    NULL,
-    "Input file"},
-  { "-output",
-    REQARG_STRING,
-    NULL,
-    "Output file, if not specified. the output format name will be used a suffix. "},
-  { "-inputfmt",
-    REQARG_STRING,
-    "TXT",
-    "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits)"},
-  { "-outputfmt",
-    ARG_STRING,
-    "DMP",
-    "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits), DMP32 (Sphinx 3 efficient LM format 32 bits) "}, 
-  /* Also FST for AT&T file format 
-     but the option is hidden because it is not well tested*/
-  { "-outputdir",
-    ARG_STRING,
-    ".",
-    "Output Directory."},
-  { "-wordlist",
-    ARG_STRING,
-    ".",
-    "A word list we will use in testing.\n"},
-  { "-lminmemory",
-    ARG_INT32,
-    "1",
-    "Whether lm is memory-based(1) or disk-based (0)"},
-  { NULL, ARG_INT32,  NULL, NULL }
+    common_application_properties_command_line_macro(){"-input",
+                                                       REQARG_STRING,
+                                                       NULL,
+                                                       "Input file"},
+    {"-output",
+     REQARG_STRING,
+     NULL,
+     "Output file, if not specified. the output format name will be used a suffix. "},
+    {"-inputfmt",
+     REQARG_STRING,
+     "TXT",
+     "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits)"},
+    {"-outputfmt",
+     ARG_STRING,
+     "DMP",
+     "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits), DMP32 (Sphinx 3 efficient LM format 32 bits) "},
+    /* Also FST for AT&T file format 
+       but the option is hidden because it is not well tested */
+    {"-outputdir",
+     ARG_STRING,
+     ".",
+     "Output Directory."},
+    {"-wordlist",
+     ARG_STRING,
+     ".",
+     "A word list we will use in testing.\n"},
+    {"-lminmemory",
+     ARG_INT32,
+     "1",
+     "Whether lm is memory-based(1) or disk-based (0)"},
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
-  char *inputfn, *outputfn;
-  char *inputfmt, *outputfmt;
-  char *outputdir;
-  char *outputpath;
+    char *inputfn, *outputfn;
+    char *inputfmt, *outputfmt;
+    char *outputdir;
+    char *outputpath;
 
-  lm_t* lm;
-  char separator[1];
+    lm_t *lm;
+    char separator[1];
 
-  print_appl_info(argv[0]);
-  cmd_ln_appl_enter(argc, argv, "default.arg", arg);
+    print_appl_info(argv[0]);
+    cmd_ln_appl_enter(argc, argv, "default.arg", arg);
 
-  inputfn=NULL;
-  outputfn=NULL;
-  inputfmt=NULL;
-  outputfmt=NULL;
-  outputdir=NULL;
+    inputfn = NULL;
+    outputfn = NULL;
+    inputfmt = NULL;
+    outputfmt = NULL;
+    outputdir = NULL;
 
-  inputfn=cmd_ln_str("-input");
-  outputfn=cmd_ln_str("-output");
+    inputfn = cmd_ln_str("-input");
+    outputfn = cmd_ln_str("-output");
 
-  inputfmt=cmd_ln_str("-inputfmt");
-  outputfmt=cmd_ln_str("-outputfmt");
+    inputfmt = cmd_ln_str("-inputfmt");
+    outputfmt = cmd_ln_str("-outputfmt");
 
-  outputdir=cmd_ln_str("-outputdir");
+    outputdir = cmd_ln_str("-outputdir");
 
-  if(!strcmp(inputfmt,outputfmt))
-    E_FATAL("Input and Output file formats and encodings are the same (%s). Do nothing\n",inputfmt);
+    if (!strcmp(inputfmt, outputfmt))
+        E_FATAL
+            ("Input and Output file formats and encodings are the same (%s). Do nothing\n",
+             inputfmt);
 
-  if(!strcmp(inputfmt,"TXT")&&!cmd_ln_int32("-lminmemory"))
-    E_FATAL("When plain-txt LM is used as an input, only in memory mode of LM reading can be used, please set -lminmemory to be 1");
-  
-  /* Read LM */
-  if((lm=lm_read_advance(inputfn,"default",1.0,0.1,1.0,0,inputfmt,0))==NULL)
-    E_FATAL("Fail to read inputfn %s in inputfmt %s\n",inputfn,inputfmt);
+    if (!strcmp(inputfmt, "TXT") && !cmd_ln_int32("-lminmemory"))
+        E_FATAL
+            ("When plain-txt LM is used as an input, only in memory mode of LM reading can be used, please set -lminmemory to be 1");
 
-  outputpath=(char*) ckd_calloc(1,strlen(outputdir)+strlen(outputfn)+6);
+    /* Read LM */
+    if ((lm =
+         lm_read_advance(inputfn, "default", 1.0, 0.1, 1.0, 0, inputfmt,
+                         0)) == NULL)
+        E_FATAL("Fail to read inputfn %s in inputfmt %s\n", inputfn,
+                inputfmt);
 
-  if(cmd_ln_str("-wordlist"))
-    lm_add_wordlist(lm,NULL, cmd_ln_str("-wordlist"));
+    outputpath =
+        (char *) ckd_calloc(1, strlen(outputdir) + strlen(outputfn) + 6);
+
+    if (cmd_ln_str("-wordlist"))
+        lm_add_wordlist(lm, NULL, cmd_ln_str("-wordlist"));
 
 
 #if WIN32
-  strcpy(separator,"\\");
+    strcpy(separator, "\\");
 #else
-  strcpy(separator,"/");
+    strcpy(separator, "/");
 #endif
 
-  sprintf(outputpath,"%s%s%s",outputdir,separator,outputfn);
-  lm_write(lm,outputpath,inputfn,outputfmt);
+    sprintf(outputpath, "%s%s%s", outputdir, separator, outputfn);
+    lm_write(lm, outputpath, inputfn, outputfmt);
 
-  
-  ckd_free(outputpath);
-  lm_free(lm);
-  cmd_ln_appl_exit();
-  return 0;
+
+    ckd_free(outputpath);
+    lm_free(lm);
+    cmd_ln_appl_exit();
+    return 0;
 }

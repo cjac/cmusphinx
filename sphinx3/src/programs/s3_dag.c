@@ -158,24 +158,25 @@
 
 dag_t dag;
 /* Global variables : Hack! */
-dict_t *dict;		/* The dictionary */
-fillpen_t *fpen;         /* The fillpenalty data structure */
+dict_t *dict;                   /* The dictionary */
+fillpen_t *fpen;                /* The fillpenalty data structure */
 
 #if 0
-lm_t *lm;                /* Global variables */
-s3lmwid_t *dict2lmwid;	/* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
+lm_t *lm;                       /* Global variables */
+s3lmwid_t *dict2lmwid;          /* Mapping from decoding dictionary wid's to lm ones.  They may not be the same! */
 #endif
 
 lmset_t *lmset;
 
 
 
-static srch_hyp_t *hyp = NULL;	/* The final recognition result */
+static srch_hyp_t *hyp = NULL;  /* The final recognition result */
 
-void s3_dag_init (dict_t* _dict )
+void
+s3_dag_init(dict_t * _dict)
 {
-  dict = _dict;
-  dag_init(&dag);
+    dict = _dict;
+    dag_init(&dag);
 }
 
 
@@ -186,39 +187,41 @@ void s3_dag_init (dict_t* _dict )
  * dag.list ensures that succeeding fillers have already been eliminated.
  * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
-static int32 s3_dag_remove_filler_nodes ( void )
+static int32
+s3_dag_remove_filler_nodes(void)
 {
     dagnode_t *d, *pnode, *snode;
     daglink_t *plink, *slink;
-    int32 ascr=0;
-    
+    int32 ascr = 0;
+
     assert(dag.list);
 
     for (d = dag.list; d; d = d->alloc_next) {
 
-	if (! dict_filler_word (dict, d->wid))
-	    continue;
-	
+        if (!dict_filler_word(dict, d->wid))
+            continue;
 
-	/* Replace each link TO d with links to d's successors */
-	for (plink = d->predlist; plink; plink = plink->next) {
-	    pnode = plink->node;
 
-	    ascr = plink->ascr; 
-	    ascr += fillpen(fpen,dict_basewid (dict,d->wid));
-	    
-	    /* Link this predecessor of d to successors of d */
-	    for (slink = d->succlist; slink; slink = slink->next) {
-		snode = slink->node;
-		/* Link only to non-filler successors; fillers have been eliminated */
-		if (! dict_filler_word (dict, snode->wid)) {
-		    /* Update because a link may already exist */
-		    if (dag_update_link (&dag,pnode, snode,
-					 ascr + slink->ascr, plink->ef, slink) < 0)
-			return -1;
-		}
-	    }
-	}
+        /* Replace each link TO d with links to d's successors */
+        for (plink = d->predlist; plink; plink = plink->next) {
+            pnode = plink->node;
+
+            ascr = plink->ascr;
+            ascr += fillpen(fpen, dict_basewid(dict, d->wid));
+
+            /* Link this predecessor of d to successors of d */
+            for (slink = d->succlist; slink; slink = slink->next) {
+                snode = slink->node;
+                /* Link only to non-filler successors; fillers have been eliminated */
+                if (!dict_filler_word(dict, snode->wid)) {
+                    /* Update because a link may already exist */
+                    if (dag_update_link(&dag, pnode, snode,
+                                        ascr + slink->ascr, plink->ef,
+                                        slink) < 0)
+                        return -1;
+                }
+            }
+        }
     }
     return 0;
 }
@@ -237,7 +240,8 @@ static int32 s3_dag_remove_filler_nodes ( void )
  * absurdum.
  * Return value: 0 if successful, -1 otherwise.
  */
-int32 s3_dag_dag_load (char *file)
+int32
+s3_dag_dag_load(char *file)
 {
     FILE *fp;
     char line[16384], wd[1024];
@@ -247,150 +251,155 @@ int32 s3_dag_dag_load (char *file)
     dagnode_t *d, *pd, *tail, **darray;
     s3wid_t w;
     struct lat_s {
-	dagnode_t *node;
-	int32 ef;
-	int32 ascr;
-    } *lat;		/* Lattice (bptable) entries in each frame */
-    int32 *frm2lat;	/* frm2lat[f] = first lattice entry for frame f */
+        dagnode_t *node;
+        int32 ef;
+        int32 ascr;
+    } *lat;                     /* Lattice (bptable) entries in each frame */
+    int32 *frm2lat;             /* frm2lat[f] = first lattice entry for frame f */
     float32 lb, f32arg;
     int32 ispipe;
 
     s3wid_t finishwid;
 
-    finishwid = dict_wordid (dict,S3_FINISH_WORD);
-    
+    finishwid = dict_wordid(dict, S3_FINISH_WORD);
+
     dag.list = NULL;
     dag.nlink = 0;
-    dag.nbypass =0;
-    
+    dag.nbypass = 0;
+
     tail = NULL;
     darray = NULL;
     lat = NULL;
     frm2lat = NULL;
     lineno = 0;
-    
+
     E_INFO("Reading DAG file: %s\n", file);
-    if ((fp = fopen_compchk (file, &ispipe)) == NULL) {
-	E_ERROR("fopen_compchk(%s) failed\n", file);
- 	return -1;
+    if ((fp = fopen_compchk(file, &ispipe)) == NULL) {
+        E_ERROR("fopen_compchk(%s) failed\n", file);
+        return -1;
     }
-    
+
     /* Read and verify logbase (ONE BIG HACK!!) */
-    if (fgets (line, sizeof(line), fp) == NULL) {
-	E_ERROR ("Premature EOF(%s)\n", file);
-	goto load_error;
+    if (fgets(line, sizeof(line), fp) == NULL) {
+        E_ERROR("Premature EOF(%s)\n", file);
+        goto load_error;
     }
-    if (strncmp (line, "# getcwd: ", 10) != 0) {
-	E_ERROR ("%s does not begin with '# getcwd: '\n", file);
-	goto load_error;
+    if (strncmp(line, "# getcwd: ", 10) != 0) {
+        E_ERROR("%s does not begin with '# getcwd: '\n", file);
+        goto load_error;
     }
-    if (fgets (line, sizeof(line), fp) == NULL) {
-	E_ERROR ("Premature EOF(%s)\n", file);
-	goto load_error;
+    if (fgets(line, sizeof(line), fp) == NULL) {
+        E_ERROR("Premature EOF(%s)\n", file);
+        goto load_error;
     }
-    if ((strncmp (line, "# -logbase ", 11) != 0) || (sscanf (line+11, "%f", &lb) != 1)) {
-	E_WARN ("%s: Cannot find -logbase in header\n", file);
-    } else {
-	f32arg = *((float32 *) cmd_ln_access ("-logbase"));
-	if ((lb <= 1.0) || (lb > 2.0) || (f32arg <= 1.0) || (f32arg > 2.0))
-	    E_ERROR ("%s: logbases out of range; cannot be verified\n", file);
-	else {
-	    int32 orig, this;
-	    float64 diff;
-	    
-	    orig = logs3 (lb - 1.0);
-	    this = logs3 (f32arg - 1.0);
-	    diff = ((orig - this) * 1000.0) / orig;
-	    if (diff < 0)
-		diff = -diff;
-	    
-	    if (diff > 1.0)		/* Hack!! Hardwired tolerance limits on logbase */
-		E_ERROR ("%s: logbase inconsistent: %e\n", file, lb);
-	}
+    if ((strncmp(line, "# -logbase ", 11) != 0)
+        || (sscanf(line + 11, "%f", &lb) != 1)) {
+        E_WARN("%s: Cannot find -logbase in header\n", file);
     }
-    
+    else {
+        f32arg = *((float32 *) cmd_ln_access("-logbase"));
+        if ((lb <= 1.0) || (lb > 2.0) || (f32arg <= 1.0) || (f32arg > 2.0))
+            E_ERROR("%s: logbases out of range; cannot be verified\n",
+                    file);
+        else {
+            int32 orig, this;
+            float64 diff;
+
+            orig = logs3(lb - 1.0);
+            this = logs3(f32arg - 1.0);
+            diff = ((orig - this) * 1000.0) / orig;
+            if (diff < 0)
+                diff = -diff;
+
+            if (diff > 1.0)     /* Hack!! Hardwired tolerance limits on logbase */
+                E_ERROR("%s: logbase inconsistent: %e\n", file, lb);
+        }
+    }
+
 
     /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = *((int32 *) cmd_ln_access ("-min_endfr"));
-    
+    min_ef_range = *((int32 *) cmd_ln_access("-min_endfr"));
+
     /* Read Frames parameter */
-    nfrm = dag_param_read (fp, "Frames", &lineno);
+    nfrm = dag_param_read(fp, "Frames", &lineno);
     if (nfrm <= 0) {
-	E_ERROR("Frames parameter missing or invalid\n");
-	goto load_error;
+        E_ERROR("Frames parameter missing or invalid\n");
+        goto load_error;
     }
     dag.nfrm = nfrm;
 
-    
+
     /* Read Nodes parameter */
     lineno = 0;
-    nnode = dag_param_read (fp, "Nodes", &lineno);
+    nnode = dag_param_read(fp, "Nodes", &lineno);
     if (nnode <= 0) {
-	E_ERROR("Nodes parameter missing or invalid\n");
-	goto load_error;
+        E_ERROR("Nodes parameter missing or invalid\n");
+        goto load_error;
     }
-    
-    /* Read nodes */
-    darray = (dagnode_t **) ckd_calloc (nnode, sizeof(dagnode_t *));
-    for (i = 0; i < nnode; i++) {
-	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR ("Premature EOF(%s)\n", file);
-	    goto load_error;
-	}
-	lineno++;
-	
-	if ((k = sscanf (line, "%d %s %d %d %d", &seqid, wd, &sf, &fef, &lef)) != 5) {
-	    E_ERROR("Bad line: %s\n", line);
-	    goto load_error;
-	}
 
-	w = dict_wordid (dict,wd);
-	if (NOT_S3WID(w)) {
-	    E_ERROR("Unknown word: %s\n", line);
-	    goto load_error;
-	}
-	
-	if (seqid != i) {
-	    E_ERROR("Seqno error: %s\n", line);
-	    goto load_error;
-	}
-	
-	d = (dagnode_t *) listelem_alloc (sizeof(dagnode_t));
-	darray[i] = d;
-	
-	d->wid = w;
-	d->seqid = seqid;
-	d->sf = sf;
-	d->fef = fef;
-	d->lef = lef;
-	d->reachable = 0;
-	d->succlist = NULL;
-	d->predlist = NULL;
-	d->alloc_next = NULL;
-	
-	if (! dag.list)
-	    dag.list = d;
-	else
-	    tail->alloc_next = d;
-	tail = d;
+    /* Read nodes */
+    darray = (dagnode_t **) ckd_calloc(nnode, sizeof(dagnode_t *));
+    for (i = 0; i < nnode; i++) {
+        if (fgets(line, 1024, fp) == NULL) {
+            E_ERROR("Premature EOF(%s)\n", file);
+            goto load_error;
+        }
+        lineno++;
+
+        if ((k =
+             sscanf(line, "%d %s %d %d %d", &seqid, wd, &sf, &fef,
+                    &lef)) != 5) {
+            E_ERROR("Bad line: %s\n", line);
+            goto load_error;
+        }
+
+        w = dict_wordid(dict, wd);
+        if (NOT_S3WID(w)) {
+            E_ERROR("Unknown word: %s\n", line);
+            goto load_error;
+        }
+
+        if (seqid != i) {
+            E_ERROR("Seqno error: %s\n", line);
+            goto load_error;
+        }
+
+        d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
+        darray[i] = d;
+
+        d->wid = w;
+        d->seqid = seqid;
+        d->sf = sf;
+        d->fef = fef;
+        d->lef = lef;
+        d->reachable = 0;
+        d->succlist = NULL;
+        d->predlist = NULL;
+        d->alloc_next = NULL;
+
+        if (!dag.list)
+            dag.list = d;
+        else
+            tail->alloc_next = d;
+        tail = d;
     }
 
     /* Read initial node ID */
-    k = dag_param_read (fp, "Initial", &lineno);
+    k = dag_param_read(fp, "Initial", &lineno);
     if ((k < 0) || (k >= nnode)) {
-	E_ERROR("Initial node parameter missing or invalid\n");
-	goto load_error;
+        E_ERROR("Initial node parameter missing or invalid\n");
+        goto load_error;
     }
     dag.entry.node = darray[k];
     dag.entry.ascr = 0;
     dag.entry.next = NULL;
     dag.entry.pscr_valid = 0;
-    
+
     /* Read final node ID */
-    k = dag_param_read (fp, "Final", &lineno);
+    k = dag_param_read(fp, "Final", &lineno);
     if ((k < 0) || (k >= nnode)) {
-	E_ERROR("Final node parameter missing or invalid\n");
-	goto load_error;
+        E_ERROR("Final node parameter missing or invalid\n");
+        goto load_error;
     }
     dag.final.node = darray[k];
     dag.final.ascr = 0;
@@ -400,175 +409,181 @@ int32 s3_dag_dag_load (char *file)
     final = k;
 
     /* Read bestsegscore entries */
-    if ((k = dag_param_read (fp, "BestSegAscr", &lineno)) < 0) {
-	E_ERROR("BestSegAscr parameter missing\n");
-	goto load_error;
+    if ((k = dag_param_read(fp, "BestSegAscr", &lineno)) < 0) {
+        E_ERROR("BestSegAscr parameter missing\n");
+        goto load_error;
     }
-    lat = (struct lat_s *) ckd_calloc (k, sizeof(struct lat_s));
-    frm2lat = (int32 *) ckd_calloc (nfrm+1, sizeof(int32));
-    
+    lat = (struct lat_s *) ckd_calloc(k, sizeof(struct lat_s));
+    frm2lat = (int32 *) ckd_calloc(nfrm + 1, sizeof(int32));
+
     j = -1;
     for (i = 0; i < k; i++) {
-	if (fgets (line, 1024, fp) == NULL) {
-	    E_ERROR("Premature EOF(%s)\n", line);
-	    goto load_error;
-	}
-	
-	lineno++;
+        if (fgets(line, 1024, fp) == NULL) {
+            E_ERROR("Premature EOF(%s)\n", line);
+            goto load_error;
+        }
 
-	if (sscanf (line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
-	    E_ERROR("Bad line: %s\n", line);
-	    goto load_error;
-	}
-	
-	if ((seqid < 0) || (seqid >= nnode)) {
-	    E_ERROR("Seqno error: %s\n", line);
-	    goto load_error;
-	}
-	
-	if (ef != j) {
-	    for (j++; j <= ef; j++)
-		frm2lat[j] = i;
-	    --j;
-	}
-	lat[i].node = darray[seqid];
-	lat[i].ef = ef;
-	lat[i].ascr = ascr;
-	
-	if ((seqid == final) && (ef == dag.final.node->lef))
-	    dag.final.ascr = ascr;
+        lineno++;
+
+        if (sscanf(line, "%d %d %d", &seqid, &ef, &ascr) != 3) {
+            E_ERROR("Bad line: %s\n", line);
+            goto load_error;
+        }
+
+        if ((seqid < 0) || (seqid >= nnode)) {
+            E_ERROR("Seqno error: %s\n", line);
+            goto load_error;
+        }
+
+        if (ef != j) {
+            for (j++; j <= ef; j++)
+                frm2lat[j] = i;
+            --j;
+        }
+        lat[i].node = darray[seqid];
+        lat[i].ef = ef;
+        lat[i].ascr = ascr;
+
+        if ((seqid == final) && (ef == dag.final.node->lef))
+            dag.final.ascr = ascr;
     }
     for (j++; j <= nfrm; j++)
-	frm2lat[j] = k;
-    
-    /* Read in edges */
-    while (fgets (line, 1024, fp) != NULL) {
-	lineno++;
+        frm2lat[j] = k;
 
-	if (line[0] == '#')
-	    continue;
-	if ((sscanf (line, "%s%d", wd,&k) == 1) && (strcmp (wd, "Edges") == 0))
-	    break;
+    /* Read in edges */
+    while (fgets(line, 1024, fp) != NULL) {
+        lineno++;
+
+        if (line[0] == '#')
+            continue;
+        if ((sscanf(line, "%s%d", wd, &k) == 1)
+            && (strcmp(wd, "Edges") == 0))
+            break;
     }
     k = 0;
-    while (fgets (line, 1024, fp) != NULL) {
-	lineno++;
-	if (sscanf (line, "%d %d %d", &from, &to, &ascr) != 3)
-	    break;
-	pd = darray[from];
-	if (pd->wid == finishwid)
-	    continue;
-	d = darray[to];
+    while (fgets(line, 1024, fp) != NULL) {
+        lineno++;
+        if (sscanf(line, "%d %d %d", &from, &to, &ascr) != 3)
+            break;
+        pd = darray[from];
+        if (pd->wid == finishwid)
+            continue;
+        d = darray[to];
 
-	/* Skip short-lived nodes */
-	if ((pd == dag.entry.node) || (d == dag.final.node) ||
-	    ((d->lef - d->fef >= min_ef_range-1) && (pd->lef - pd->fef >= min_ef_range-1))) {
-	    if (dag_link (&dag,pd, d, ascr, d->sf-1, NULL) < 0) {
-		E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag.maxedge);
-		goto load_error;
-	    }
-	    
-	    k++;
-	}
+        /* Skip short-lived nodes */
+        if ((pd == dag.entry.node) || (d == dag.final.node) ||
+            ((d->lef - d->fef >= min_ef_range - 1)
+             && (pd->lef - pd->fef >= min_ef_range - 1))) {
+            if (dag_link(&dag, pd, d, ascr, d->sf - 1, NULL) < 0) {
+                E_ERROR("%s: maxedge limit (%d) exceeded\n", file,
+                        dag.maxedge);
+                goto load_error;
+            }
+
+            k++;
+        }
     }
-    if (strcmp (line, "End\n") != 0) {
-	E_ERROR("Terminating 'End' missing\n");
-	goto load_error;
+    if (strcmp(line, "End\n") != 0) {
+        E_ERROR("Terminating 'End' missing\n");
+        goto load_error;
     }
-    
+
 #if 0
     /* Build edges from lattice end-frame scores if no edges input */
     if (k == 0) {
-	E_INFO("No edges in dagfile; using lattice scores\n");
-	for (d = dag.list; d; d = d->alloc_next) {
-	    if (d->sf == 0)
-		assert (d->wid == dict->startwid);
-	    else if ((d == dag.final.node) || (d->lef - d->fef >= min_ef_range-1)) {
-		/* Link from all end points == d->sf-1 to d */
-		for (l = frm2lat[d->sf-1]; l < frm2lat[d->sf]; l++) {
-		    pd = lat[l].node;		/* Predecessor DAG node */
-		    if (pd->wid == finishwid)
-			continue;
+        E_INFO("No edges in dagfile; using lattice scores\n");
+        for (d = dag.list; d; d = d->alloc_next) {
+            if (d->sf == 0)
+                assert(d->wid == dict->startwid);
+            else if ((d == dag.final.node)
+                     || (d->lef - d->fef >= min_ef_range - 1)) {
+                /* Link from all end points == d->sf-1 to d */
+                for (l = frm2lat[d->sf - 1]; l < frm2lat[d->sf]; l++) {
+                    pd = lat[l].node;   /* Predecessor DAG node */
+                    if (pd->wid == finishwid)
+                        continue;
 
-		    if ((pd == dag.entry.node) || (pd->lef - pd->fef >= min_ef_range-1)) {
-			dag_link (&dag,pd, d, lat[l].ascr, d->sf-1, NULL);
-			k++;
-		    }
-		}
-	    }
-	}
+                    if ((pd == dag.entry.node)
+                        || (pd->lef - pd->fef >= min_ef_range - 1)) {
+                        dag_link(&dag, pd, d, lat[l].ascr, d->sf - 1,
+                                 NULL);
+                        k++;
+                    }
+                }
+            }
+        }
     }
 #endif
 
 
-    fudge = *((int32 *) cmd_ln_access ("-dagfudge"));
+    fudge = *((int32 *) cmd_ln_access("-dagfudge"));
     if (fudge > 0) {
-	/* Add "illegal" links that are near misses */
-	for (d = dag.list; d; d = d->alloc_next) {
-	    if (d->lef - d->fef < min_ef_range-1)
-		continue;
-	    
-	    /* Links to d from nodes that first ended just when d started */
-	    for (l = frm2lat[d->sf]; l < frm2lat[d->sf+1]; l++) {
-		pd = lat[l].node;		/* Predecessor DAG node */
-		if ((pd->wid != finishwid) && (pd->fef == d->sf) &&
-		    (pd->lef - pd->fef >= min_ef_range-1)) {
-		    dag_link (&dag, pd, d, lat[l].ascr, d->sf-1, NULL);
-		    k++;
-		}
-	    }
-	    
-	    if (fudge < 2)
-		continue;
-	    
-	    /* Links to d from nodes that first ended just BEYOND when d started */
-	    for (l = frm2lat[d->sf+1]; l < frm2lat[d->sf+2]; l++) {
-		pd = lat[l].node;		/* Predecessor DAG node */
-		if ((pd->wid != finishwid) && (pd->fef == d->sf+1) &&
-		    (pd->lef - pd->fef >= min_ef_range-1)) {
-		    dag_link (&dag, pd, d, lat[l].ascr, d->sf-1, NULL);
-		    k++;
-		}
-	    }
-	}
+        /* Add "illegal" links that are near misses */
+        for (d = dag.list; d; d = d->alloc_next) {
+            if (d->lef - d->fef < min_ef_range - 1)
+                continue;
+
+            /* Links to d from nodes that first ended just when d started */
+            for (l = frm2lat[d->sf]; l < frm2lat[d->sf + 1]; l++) {
+                pd = lat[l].node;       /* Predecessor DAG node */
+                if ((pd->wid != finishwid) && (pd->fef == d->sf) &&
+                    (pd->lef - pd->fef >= min_ef_range - 1)) {
+                    dag_link(&dag, pd, d, lat[l].ascr, d->sf - 1, NULL);
+                    k++;
+                }
+            }
+
+            if (fudge < 2)
+                continue;
+
+            /* Links to d from nodes that first ended just BEYOND when d started */
+            for (l = frm2lat[d->sf + 1]; l < frm2lat[d->sf + 2]; l++) {
+                pd = lat[l].node;       /* Predecessor DAG node */
+                if ((pd->wid != finishwid) && (pd->fef == d->sf + 1) &&
+                    (pd->lef - pd->fef >= min_ef_range - 1)) {
+                    dag_link(&dag, pd, d, lat[l].ascr, d->sf - 1, NULL);
+                    k++;
+                }
+            }
+        }
     }
-    
-    fclose_comp (fp, ispipe);
-    ckd_free (darray);
-    ckd_free (lat);
-    ckd_free (frm2lat);
-    
+
+    fclose_comp(fp, ispipe);
+    ckd_free(darray);
+    ckd_free(lat);
+    ckd_free(frm2lat);
+
     /*
      * HACK!! Change dag.final.node wid to finishwid if some other filler word,
      * to avoid complications with LM scores at this point.
      */
     dag.orig_exitwid = dag.final.node->wid;
     if (dict_filler_word(dict, dag.final.node->wid))
-	dag.final.node->wid = finishwid;
-    
+        dag.final.node->wid = finishwid;
+
     /* Add links bypassing filler nodes */
-    if (s3_dag_remove_filler_nodes () < 0) {
-	E_ERROR ("%s: maxedge limit (%d) exceeded\n", file, dag.maxedge);
-	return -1;
+    if (s3_dag_remove_filler_nodes() < 0) {
+        E_ERROR("%s: maxedge limit (%d) exceeded\n", file, dag.maxedge);
+        return -1;
     }
-    
+
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link (&dag,NULL, dag.entry.node, 0, -1, NULL);
-    
+    dag_link(&dag, NULL, dag.entry.node, 0, -1, NULL);
+
     E_INFO("%5d frames, %6d nodes, %8d edges\n", nfrm, nnode, dag.nlink);
-    
+
     return dag.nfrm;
 
-load_error:
+  load_error:
     E_ERROR("Failed to load %s\n", file);
     if (fp)
-	fclose_comp (fp, ispipe);
+        fclose_comp(fp, ispipe);
     if (darray)
-	ckd_free (darray);
+        ckd_free(darray);
     if (lat)
-	ckd_free (lat);
+        ckd_free(lat);
     if (frm2lat)
-	ckd_free (frm2lat);
+        ckd_free(frm2lat);
     return -1;
 }
 
@@ -584,26 +599,27 @@ load_error:
  * depends on a similar best path for all links leaving the endpoint of L.  (This is
  * sufficient to handle trigram LMs.)
  */
-srch_hyp_t *s3dag_dag_search (char *utt)
+srch_hyp_t *
+s3dag_dag_search(char *utt)
 {
     daglink_t *l, *bestl;
     dagnode_t *d, *final;
     int32 bestscore;
     int32 k;
-    
+
     /* Free any old hypothesis */
-    hyp_free (hyp);
+    hyp_free(hyp);
     hyp = NULL;
-    
+
     /*
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag.maxlmop = *((int32 *) cmd_ln_access ("-maxlmop"));
-    k = *((int32 *) cmd_ln_access ("-maxlpf"));
+    dag.maxlmop = *((int32 *) cmd_ln_access("-maxlmop"));
+    k = *((int32 *) cmd_ln_access("-maxlpf"));
     k *= dag.nfrm;
     if (dag.maxlmop > k)
-	dag.maxlmop = k;
+        dag.maxlmop = k;
     dag.lmop = 0;
 
     /* Find the backward link from the final DAG node that has the best path to root */
@@ -612,34 +628,37 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     bestl = NULL;
 
     /* Check that all edge scores are -ve; error if not so. */
-    if (dag_chk_linkscr (&dag) < 0){
-      E_ERROR("Some edges are not negative\n");
-      return NULL;
+    if (dag_chk_linkscr(&dag) < 0) {
+        E_ERROR("Some edges are not negative\n");
+        return NULL;
     }
 
     for (l = final->predlist; l; l = l->next) {
 
-	d = l->node;
-	if (! dict_filler_word (dict,d->wid)) {	/* Ignore filler node */
-	    /* Best path to root beginning with l */
-	    if (dag_bestpath (&dag,l, final,1,dict,lmset->cur_lm,lmset->cur_lm->dict2lmwid) < 0) {
-		E_ERROR("%s: Max LM ops (%d) exceeded\n", utt, dag.maxlmop);
-		bestl = NULL;
-		break;
-	    }
+        d = l->node;
+        if (!dict_filler_word(dict, d->wid)) {  /* Ignore filler node */
+            /* Best path to root beginning with l */
+            if (dag_bestpath
+                (&dag, l, final, 1, dict, lmset->cur_lm,
+                 lmset->cur_lm->dict2lmwid) < 0) {
+                E_ERROR("%s: Max LM ops (%d) exceeded\n", utt,
+                        dag.maxlmop);
+                bestl = NULL;
+                break;
+            }
 
-	    if (l->pscr > bestscore) {
-		bestscore = l->pscr;
-		bestl = l;
-	    }
-	}
+            if (l->pscr > bestscore) {
+                bestscore = l->pscr;
+                bestl = l;
+            }
+        }
     }
 
-    if (! bestl) {
-	E_ERROR("Bestpath search failed for %s\n", utt);
-	return NULL;
+    if (!bestl) {
+        E_ERROR("Bestpath search failed for %s\n", utt);
+        return NULL;
     }
-    
+
     /*
      * At this point bestl is the best (reverse) link/path leaving the final node.  But
      * this does not include the acoustic score for the final node itself.  Add it.
@@ -648,14 +667,15 @@ srch_hyp_t *s3dag_dag_search (char *utt)
     l->history = bestl;
     l->pscr += bestl->pscr + l->ascr;
     l->ef = dag.nfrm - 1;
-    
+
     /* Backtrack through DAG for best path */
-    hyp = dag_backtrace (&hyp,l,1,dict,fpen);
+    hyp = dag_backtrace(&hyp, l, 1, dict, fpen);
     assert(hyp);
-    if(hyp==NULL){
-      E_INFO("At this point hyp is NULL\n");
-    }else{
-      E_INFO("At this point hyp it is not NULL\n");
+    if (hyp == NULL) {
+        E_INFO("At this point hyp is NULL\n");
+    }
+    else {
+        E_INFO("At this point hyp it is not NULL\n");
     }
     return (hyp);
 }

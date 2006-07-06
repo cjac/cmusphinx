@@ -75,194 +75,202 @@
 
 #include "srch.h"
 
-int32 s3_cd_gmm_compute_sen_comp(void *srch, float32 **feat, int32 wav_idx)
+int32
+s3_cd_gmm_compute_sen_comp(void *srch, float32 ** feat, int32 wav_idx)
 {
-  int32 flag;
-  srch_t* s;
-  ascr_t *ascr;
-  kbcore_t *kbcore;
+    int32 flag;
+    srch_t *s;
+    ascr_t *ascr;
+    kbcore_t *kbcore;
 
-  s=(srch_t*) srch;
-  kbcore = s->kbc;
-  ascr=s->ascr;
+    s = (srch_t *) srch;
+    kbcore = s->kbc;
+    ascr = s->ascr;
 
-  assert (kbcore->ms_mgau || kbcore->mgau || kbcore->s2_mgau);
-  assert (!(kbcore->ms_mgau && kbcore->mgau && kbcore->s2_mgau));
+    assert(kbcore->ms_mgau || kbcore->mgau || kbcore->s2_mgau);
+    assert(!(kbcore->ms_mgau && kbcore->mgau && kbcore->s2_mgau));
 
-  flag=s3_cd_gmm_compute_sen(srch, feat,wav_idx);
+    flag = s3_cd_gmm_compute_sen(srch, feat, wav_idx);
 
-  if(flag!=SRCH_SUCCESS){
-    E_INFO("Computation of senone failed\n");
-    return flag;
-  }
-  /* Evaluate composite senone scores from senone scores */
-  dict2pid_comsenscr (kbcore_dict2pid(kbcore), ascr->senscr, ascr->comsen);
-  return SRCH_SUCCESS;
+    if (flag != SRCH_SUCCESS) {
+        E_INFO("Computation of senone failed\n");
+        return flag;
+    }
+    /* Evaluate composite senone scores from senone scores */
+    dict2pid_comsenscr(kbcore_dict2pid(kbcore), ascr->senscr,
+                       ascr->comsen);
+    return SRCH_SUCCESS;
 
 }
 
-int32 s3_cd_gmm_compute_sen(void *srch, float32 **feat, int32 wav_idx)
+int32
+s3_cd_gmm_compute_sen(void *srch, float32 ** feat, int32 wav_idx)
 {
-  srch_t* s;
-  mdef_t *mdef;
-  ms_mgau_model_t *ms_mgau;
-  mgau_model_t *mgau;
-  ascr_t *ascr;
-  kbcore_t *kbcore;
-  fast_gmm_t *fgmm;
-  pl_t *pl;
-  stat_t *st;
-  float32 *fv;
+    srch_t *s;
+    mdef_t *mdef;
+    ms_mgau_model_t *ms_mgau;
+    mgau_model_t *mgau;
+    ascr_t *ascr;
+    kbcore_t *kbcore;
+    fast_gmm_t *fgmm;
+    pl_t *pl;
+    stat_t *st;
+    float32 *fv;
 
-  s=(srch_t*) srch;
-  kbcore = s->kbc;
+    s = (srch_t *) srch;
+    kbcore = s->kbc;
 
-  pl = s->pl;
-  fgmm = s->fastgmm;
-  st = s->stat;
+    pl = s->pl;
+    fgmm = s->fastgmm;
+    st = s->stat;
 
-  mdef = kbcore_mdef (kbcore);
-  ms_mgau = kbcore_ms_mgau (kbcore);
-  mgau = kbcore_mgau(kbcore);
-  ascr=s->ascr;
+    mdef = kbcore_mdef(kbcore);
+    ms_mgau = kbcore_ms_mgau(kbcore);
+    mgau = kbcore_mgau(kbcore);
+    ascr = s->ascr;
 
-  assert (kbcore->ms_mgau || kbcore->mgau || kbcore->s2_mgau);
-  assert (!(kbcore->ms_mgau && kbcore->mgau && kbcore->s2_mgau));
+    assert(kbcore->ms_mgau || kbcore->mgau || kbcore->s2_mgau);
+    assert(!(kbcore->ms_mgau && kbcore->mgau && kbcore->s2_mgau));
 
-  /* Always use the first buffer in the cache*/
-  if(kbcore->ms_mgau){
-    s->senscale=ms_cont_mgau_frame_eval(ascr,ms_mgau,mdef,feat);
-    /* FIXME: Statistics is not correctly updated */
-  }
-  else if (kbcore->s2_mgau) {
-    s->senscale = s2_semi_mgau_frame_eval(kbcore->s2_mgau, ascr, fgmm, feat, wav_idx);
-    /* FIXME: Statistics is not correctly updated */
-  }
-  else if(kbcore->mgau){
-    fv=feat[0];
-    s->senscale=approx_cont_mgau_frame_eval(kbcore,fgmm,ascr,fv,wav_idx,
-			      ascr->cache_ci_senscr[s->cache_win_strt],
-			      &(st->tm_ovrhd));
+    /* Always use the first buffer in the cache */
+    if (kbcore->ms_mgau) {
+        s->senscale = ms_cont_mgau_frame_eval(ascr, ms_mgau, mdef, feat);
+        /* FIXME: Statistics is not correctly updated */
+    }
+    else if (kbcore->s2_mgau) {
+        s->senscale =
+            s2_semi_mgau_frame_eval(kbcore->s2_mgau, ascr, fgmm, feat,
+                                    wav_idx);
+        /* FIXME: Statistics is not correctly updated */
+    }
+    else if (kbcore->mgau) {
+        fv = feat[0];
+        s->senscale =
+            approx_cont_mgau_frame_eval(kbcore, fgmm, ascr, fv, wav_idx,
+                                        ascr->cache_ci_senscr[s->
+                                                              cache_win_strt],
+                                        &(st->tm_ovrhd));
+        st->utt_sen_eval += mgau_frm_sen_eval(mgau);
+        st->utt_gau_eval += mgau_frm_gau_eval(mgau);
+    }
+    else
+        E_FATAL("Panic, someone delete the assertion before this block\n");
+
+
+    return SRCH_SUCCESS;
+}
+
+
+int32
+approx_ci_gmm_compute(void *srch, float32 * feat, int32 cache_idx,
+                      int32 wav_idx)
+{
+    srch_t *s;
+    stat_t *st;
+    fast_gmm_t *fgmm;
+    mdef_t *mdef;
+    mgau_model_t *mgau;
+    kbcore_t *kbcore;
+    ascr_t *ascr;
+
+
+    s = (srch_t *) srch;
+
+    kbcore = s->kbc;
+    mdef = kbcore_mdef(kbcore);
+    mgau = kbcore_mgau(kbcore);
+    fgmm = s->fastgmm;
+    st = s->stat;
+    ascr = s->ascr;
+
+    /* No CI-GMM done for multistream models (for now) */
+    if (mgau == NULL) {
+        assert(kbcore_ms_mgau(kbcore) || kbcore_s2_mgau(kbcore));
+        return SRCH_SUCCESS;
+    }
+
+    approx_cont_mgau_ci_eval(kbcore,
+                             fgmm,
+                             mdef,
+                             feat,
+                             ascr->cache_ci_senscr[cache_idx],
+                             &(ascr->cache_best_list[cache_idx]), wav_idx);
+
+    st->utt_cisen_eval += mgau_frm_cisen_eval(mgau);
+    st->utt_cigau_eval += mgau_frm_cigau_eval(mgau);
+    return SRCH_SUCCESS;
+}
+
+
+int32
+approx_cd_gmm_compute_sen_comp(void *srch, float32 ** feat, int32 wav_idx)
+{
+    int32 flag;
+    srch_t *s;
+    ascr_t *ascr;
+    kbcore_t *kbcore;
+
+    s = (srch_t *) srch;
+    kbcore = s->kbc;
+    ascr = s->ascr;
+
+    assert(kbcore->mgau);
+    assert(!kbcore->ms_mgau);
+
+    flag = approx_cd_gmm_compute_sen(srch, feat, wav_idx);
+
+    if (flag != SRCH_SUCCESS) {
+        E_INFO("Computation of senone failed\n");
+        return flag;
+    }
+    /* Evaluate composite senone scores from senone scores */
+    dict2pid_comsenscr(kbcore_dict2pid(kbcore), ascr->senscr,
+                       ascr->comsen);
+    return SRCH_SUCCESS;
+
+}
+
+
+
+int32
+approx_cd_gmm_compute_sen(void *srch, float32 ** feat, int32 wav_idx)
+{
+    srch_t *s;
+    mdef_t *mdef;
+    fast_gmm_t *fgmm;
+    pl_t *pl;
+    stat_t *st;
+    mgau_model_t *mgau;
+    ascr_t *ascr;
+    kbcore_t *kbcore;
+    float32 *fv;
+
+    fv = feat[0];               /*HACK ALERT. See! we are only using the first feature. So, this could 
+                                   only be used for CMU's CDHMM i.e stream=1 */
+
+    s = (srch_t *) srch;
+    kbcore = s->kbc;
+
+    mdef = kbcore_mdef(kbcore);
+    mgau = kbcore_mgau(kbcore);
+
+    pl = s->pl;
+    fgmm = s->fastgmm;
+    st = s->stat;
+    ascr = s->ascr;
+
+    assert(kbcore->mgau);
+    assert(!kbcore->ms_mgau);
+    /* Always use the first buffer in the cache */
+    s->senscale =
+        approx_cont_mgau_frame_eval(kbcore, fgmm, ascr, fv, wav_idx,
+                                    ascr->cache_ci_senscr[s->
+                                                          cache_win_strt],
+                                    &(st->tm_ovrhd));
+
     st->utt_sen_eval += mgau_frm_sen_eval(mgau);
     st->utt_gau_eval += mgau_frm_gau_eval(mgau);
-  }
-  else
-    E_FATAL("Panic, someone delete the assertion before this block\n");
-  
-
-  return SRCH_SUCCESS;
-}
 
 
-int32 approx_ci_gmm_compute(void *srch, float32 *feat, int32 cache_idx, int32 wav_idx)
-{
-  srch_t* s;
-  stat_t *st;
-  fast_gmm_t *fgmm;
-  mdef_t *mdef;
-  mgau_model_t *mgau;
-  kbcore_t *kbcore;
-  ascr_t *ascr;
-
-
-  s=(srch_t*) srch;
-
-  kbcore = s->kbc;
-  mdef = kbcore_mdef (kbcore);
-  mgau = kbcore_mgau (kbcore);
-  fgmm = s->fastgmm;
-  st = s->stat;
-  ascr=s->ascr;
-
-  /* No CI-GMM done for multistream models (for now) */
-  if (mgau == NULL) {
-    assert(kbcore_ms_mgau(kbcore) || kbcore_s2_mgau(kbcore));
     return SRCH_SUCCESS;
-  }
-
-  approx_cont_mgau_ci_eval(kbcore,
-			   fgmm,
-			   mdef,
-			   feat,
-			   ascr->cache_ci_senscr[cache_idx],
-			   &(ascr->cache_best_list[cache_idx]),
-			   wav_idx);
-  
-  st->utt_cisen_eval += mgau_frm_cisen_eval(mgau);
-  st->utt_cigau_eval += mgau_frm_cigau_eval(mgau);
-  return SRCH_SUCCESS;
 }
-
-
-int32 approx_cd_gmm_compute_sen_comp(void *srch, float32 **feat, int32 wav_idx)
-{
-  int32 flag;
-  srch_t* s;
-  ascr_t *ascr;
-  kbcore_t *kbcore;
-
-  s=(srch_t*) srch;
-  kbcore = s->kbc;
-  ascr=s->ascr;
-
-  assert(kbcore->mgau);
-  assert(!kbcore->ms_mgau);
-
-  flag=approx_cd_gmm_compute_sen(srch, feat,wav_idx);
-
-  if(flag!=SRCH_SUCCESS){
-    E_INFO("Computation of senone failed\n");
-    return flag;
-  }
-  /* Evaluate composite senone scores from senone scores */
-  dict2pid_comsenscr (kbcore_dict2pid(kbcore), ascr->senscr, ascr->comsen);
-  return SRCH_SUCCESS;
-
-}
-
-
-
-int32 approx_cd_gmm_compute_sen(void *srch, float32 **feat, int32 wav_idx)
-{
-  srch_t* s;
-  mdef_t *mdef;
-  fast_gmm_t *fgmm;
-  pl_t *pl;
-  stat_t *st;
-  mgau_model_t *mgau;
-  ascr_t *ascr;
-  kbcore_t *kbcore;
-  float32 *fv;
-
-  fv=feat[0]; /*HACK ALERT. See! we are only using the first feature. So, this could 
-		only be used for CMU's CDHMM i.e stream=1*/
-
-  s=(srch_t*) srch;
-  kbcore = s->kbc;
-
-  mdef = kbcore_mdef (kbcore);
-  mgau = kbcore_mgau (kbcore);
-
-  pl = s->pl;
-  fgmm = s->fastgmm;
-  st = s->stat;
-  ascr=s->ascr;
-
-  assert(kbcore->mgau);
-  assert(!kbcore->ms_mgau);
-  /* Always use the first buffer in the cache*/
-  s->senscale=approx_cont_mgau_frame_eval(kbcore,fgmm,ascr,fv,wav_idx,
-			      ascr->cache_ci_senscr[s->cache_win_strt],
-			      &(st->tm_ovrhd));
-  
-  st->utt_sen_eval += mgau_frm_sen_eval(mgau);
-  st->utt_gau_eval += mgau_frm_gau_eval(mgau);
-  
-
-  return SRCH_SUCCESS;
-}
-
-
-
-
-

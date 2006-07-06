@@ -64,13 +64,13 @@
  * for blocks of incoming data. Retains an internal buffer for computing
  * deltas etc */
 
-int32   feat_dump_s2mfc2feat_block(feat_t  *fcb,    /* Descriptor from feat_init() */
-                                   float32 **uttcep, /* Incoming cepstral buffer */
-                                   int32   nfr,      /* Size of incoming buffer */
-                                   int32 beginutt,   /* Begining of utterance flag */
-                                   int32 endutt,     /* End of utterance flag */
-                                   float32 ***ofeat  /* Output feature buffer */
-                                   );
+int32 feat_dump_s2mfc2feat_block(feat_t * fcb,  /* Descriptor from feat_init() */
+                                 float32 ** uttcep,     /* Incoming cepstral buffer */
+                                 int32 nfr,     /* Size of incoming buffer */
+                                 int32 beginutt,        /* Begining of utterance flag */
+                                 int32 endutt,  /* End of utterance flag */
+                                 float32 *** ofeat      /* Output feature buffer */
+    );
 
 
 #endif

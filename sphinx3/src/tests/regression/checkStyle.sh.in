@@ -15,7 +15,7 @@ pushd  `(cd @abs_top_srcdir@ && pwd)`  > /dev/null 2>&1
 # /bin/rm -rf $outfile
 # touch $outfile
 for file in `find include -name '*.[ch]' -print && find src -name '*.[ch]' -print`; do 
-    indent -i8 -kr -psl -nce -nut $file -o /tmp/tmpfile 2>&1; 
+    indent -i4 -kr -psl -nce -nut $file -o /tmp/tmpfile 2>&1; 
     if ! diff $file /tmp/tmpfile > /dev/null 2>&1; then 
 	echo "$file does not conform to style"; 
     fi; 

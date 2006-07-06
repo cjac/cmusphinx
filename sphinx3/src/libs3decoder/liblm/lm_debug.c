@@ -50,33 +50,25 @@
 
 #include "lm.h"
 
-void ug_write(FILE* fp, ug_t* ug)
+void
+ug_write(FILE * fp, ug_t * ug)
 {
-  fprintf(fp, "UG dictwid %d, prob %f, bowt %f, firstbg %d\n",
-	  ug->dictwid, 
-	  ug->prob,
-	  ug->bowt,
-	  ug->firstbg
-	  );
-  fflush(fp);
+    fprintf(fp, "UG dictwid %d, prob %f, bowt %f, firstbg %d\n",
+            ug->dictwid, ug->prob, ug->bowt, ug->firstbg);
+    fflush(fp);
 }
 
-void bg_write(FILE* fp, bg_t* bg)
+void
+bg_write(FILE * fp, bg_t * bg)
 {
-  fprintf(fp, "BG lmwid %d, prob ID %d, bowt ID %d, firsttg %d\n",
-	  bg->wid,
-	  bg->probid,
-	  bg->bowtid,
-	  bg->firsttg
-	  );
-  fflush(fp);
+    fprintf(fp, "BG lmwid %d, prob ID %d, bowt ID %d, firsttg %d\n",
+            bg->wid, bg->probid, bg->bowtid, bg->firsttg);
+    fflush(fp);
 }
 
-void tg_write(FILE* fp, tg_t* tg)
+void
+tg_write(FILE * fp, tg_t * tg)
 {
-  fprintf(fp, "TG lmwid %d, prob ID %d\n",
-	  tg->wid,
-	  tg->probid
-	  );
-  fflush(fp);
+    fprintf(fp, "TG lmwid %d, prob ID %d\n", tg->wid, tg->probid);
+    fflush(fp);
 }

@@ -52,67 +52,77 @@
 
 #define MAXSAMPLES 	1000000
 
-int main (int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     short *samps;
-    int  i, j, buflen, endutt, blksize, nhypwds, nsamp;
-    char   *argsfile, *ctlfile, *indir;
-    char   filename[512], cepfile[512];
+    int i, j, buflen, endutt, blksize, nhypwds, nsamp;
+    char *argsfile, *ctlfile, *indir;
+    char filename[512], cepfile[512];
     partialhyp_t *parthyp;
     FILE *fp, *sfp;
     int swap;
 
-  print_appl_info(argv[0]);
+    print_appl_info(argv[0]);
 
 
     if (argc != 4) {
-      argsfile = NULL;
-      parse_args_file(argsfile);
-      E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n",argv[0]);
+        argsfile = NULL;
+        parse_args_file(argsfile);
+        E_FATAL("\nUSAGE: %s <ctlfile> <inrawdir> <argsfile>\n", argv[0]);
     }
-    ctlfile = argv[1]; indir = argv[2]; argsfile = argv[3];
+    ctlfile = argv[1];
+    indir = argv[2];
+    argsfile = argv[3];
 
-    samps = (short *) calloc(MAXSAMPLES,sizeof(short));
+    samps = (short *) calloc(MAXSAMPLES, sizeof(short));
     blksize = 2000;
 
-    if ((fp = fopen(ctlfile,"r")) == NULL)
-	E_FATAL("Unable to read %s\n",ctlfile);
+    if ((fp = fopen(ctlfile, "r")) == NULL)
+        E_FATAL("Unable to read %s\n", ctlfile);
 
     live_initialize_decoder(argsfile);
 
     /* If machine endian and input endian are different, we need to swap */
-    swap = (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
+    swap =
+        (cmd_ln_int32("-machine_endian") != cmd_ln_int32("-input_endian"));
     if (swap) {
-      E_INFO("Input data WILL be byte swapped\n");
-    } else {
-      E_INFO("Input data will NOT be byte swapped\n");
+        E_INFO("Input data WILL be byte swapped\n");
     }
-    while (fscanf(fp,"%s",filename) != EOF){
-	sprintf(cepfile,"%s/%s.raw",indir,filename);
-	live_utt_set_uttid(filename);
-	if ((sfp = fopen(cepfile,"rb")) == NULL)
-	    E_FATAL("Unable to read %s\n",cepfile);
-	nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
-	if (swap) {
-	  for (i = 0; i < nsamp; i++) {
-	    SWAP_INT16(samps + i);
-	  }
-	}
-        fprintf(stdout,"%d samples in file %s.\nWill be decoded in blocks of %d\n",nsamp,cepfile,blksize);
-        fflush(stdout); fclose(sfp);
+    else {
+        E_INFO("Input data will NOT be byte swapped\n");
+    }
+    while (fscanf(fp, "%s", filename) != EOF) {
+        sprintf(cepfile, "%s/%s.raw", indir, filename);
+        live_utt_set_uttid(filename);
+        if ((sfp = fopen(cepfile, "rb")) == NULL)
+            E_FATAL("Unable to read %s\n", cepfile);
+        nsamp = fread(samps, sizeof(short), MAXSAMPLES, sfp);
+        if (swap) {
+            for (i = 0; i < nsamp; i++) {
+                SWAP_INT16(samps + i);
+            }
+        }
+        fprintf(stdout,
+                "%d samples in file %s.\nWill be decoded in blocks of %d\n",
+                nsamp, cepfile, blksize);
+        fflush(stdout);
+        fclose(sfp);
 
-        for (i=0;i<nsamp;i+=blksize){
-	    buflen = i+blksize < nsamp ? blksize : nsamp-i;
-	    endutt = i+blksize <= nsamp-1 ? 0 : 1;
-	    nhypwds = live_utt_decode_block(samps+i,buflen,endutt,&parthyp);
+        for (i = 0; i < nsamp; i += blksize) {
+            buflen = i + blksize < nsamp ? blksize : nsamp - i;
+            endutt = i + blksize <= nsamp - 1 ? 0 : 1;
+            nhypwds =
+                live_utt_decode_block(samps + i, buflen, endutt, &parthyp);
 
-	    E_INFO("PARTIAL HYP:");
-	    if (nhypwds > 0)
-                for (j=0; j < nhypwds; j++) fprintf(stderr," %s",parthyp[j].word);
-	    fprintf(stderr,"\n");
+            E_INFO("PARTIAL HYP:");
+            if (nhypwds > 0)
+                for (j = 0; j < nhypwds; j++)
+                    fprintf(stderr, " %s", parthyp[j].word);
+            fprintf(stderr, "\n");
         }
     }
-    
+
     live_utt_summary();
     return 0;
 }

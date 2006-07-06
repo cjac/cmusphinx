@@ -75,73 +75,76 @@
 
 #define ADAPT_FILE_NAME_LENGTH 1024
 
-adapt_am_t* adapt_am_init()
+adapt_am_t *
+adapt_am_init()
 {
-  adapt_am_t* ad=(adapt_am_t *) ckd_calloc (1, sizeof(adapt_am_t));
+    adapt_am_t *ad = (adapt_am_t *) ckd_calloc(1, sizeof(adapt_am_t));
 
-  ad->prevmllrfn=(char*)ckd_calloc(ADAPT_FILE_NAME_LENGTH,sizeof(char));
-  ad->prevmllrfn[0]='\0';
+    ad->prevmllrfn =
+        (char *) ckd_calloc(ADAPT_FILE_NAME_LENGTH, sizeof(char));
+    ad->prevmllrfn[0] = '\0';
 
-  return ad;
+    return ad;
 }
 
-void adapt_am_free(adapt_am_t* ad)
+void
+adapt_am_free(adapt_am_t * ad)
 {
-  if(ad){
-    if(ad->prevmllrfn){
-      ckd_free((void*)ad->prevmllrfn);
+    if (ad) {
+        if (ad->prevmllrfn) {
+            ckd_free((void *) ad->prevmllrfn);
+        }
+        ckd_free((void *) ad);
     }
-    ckd_free((void*)ad);
-  }
 }
 
-void adapt_set_mllr(adapt_am_t *ad, mgau_model_t *g, const char *mllrfile, const char* cb2mllrname, mdef_t *mdef)
+void
+adapt_set_mllr(adapt_am_t * ad, mgau_model_t * g, const char *mllrfile,
+               const char *cb2mllrname, mdef_t * mdef)
 {
-  int32 *cb2mllr;
+    int32 *cb2mllr;
 
     /* Reread the gaussian mean from the file again */
     E_INFO("Reloading mean\n");
 
     /* Read in the mllr matrix */
-    mgau_mean_reload(g,cmd_ln_str("-mean"));
+    mgau_mean_reload(g, cmd_ln_str("-mean"));
 
 #if MLLR_DEBUG
     /*This generates huge amount of information */
-    /*    mgau_dump(g,1);*/
+    /*    mgau_dump(g,1); */
 #endif
 
     mllr_read_regmat(mllrfile,
-		     &(ad->regA),
-		     &(ad->regB),
-		     &(ad->mllr_nclass),
-		     mgau_veclen(g));
+                     &(ad->regA),
+                     &(ad->regB), &(ad->mllr_nclass), mgau_veclen(g));
 
-    if (cb2mllrname  && strcmp(cb2mllrname, ".1cls.") != 0) {
-      int32 ncb, nmllr;
+    if (cb2mllrname && strcmp(cb2mllrname, ".1cls.") != 0) {
+        int32 ncb, nmllr;
 
-      cb2mllr_read(cb2mllrname,
-		   &cb2mllr,
-		   &ncb, &nmllr);
-      if (nmllr != ad->mllr_nclass)
-	E_FATAL("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
-		ncb, ad->mllr_nclass);
-      if (ncb != mdef->n_sen)
-	E_FATAL("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
-		ncb, mdef->n_sen);
+        cb2mllr_read(cb2mllrname, &cb2mllr, &ncb, &nmllr);
+        if (nmllr != ad->mllr_nclass)
+            E_FATAL
+                ("Number of classes in cb2mllr does not match mllr (%d != %d)\n",
+                 ncb, ad->mllr_nclass);
+        if (ncb != mdef->n_sen)
+            E_FATAL
+                ("Number of senones in cb2mllr does not match mdef (%d != %d)\n",
+                 ncb, mdef->n_sen);
     }
     else
-      cb2mllr = NULL;
+        cb2mllr = NULL;
 
     /* Transform all the mean vectors */
 
-    mllr_norm_mgau(g,ad->regA,ad->regB,ad->mllr_nclass,cb2mllr);
+    mllr_norm_mgau(g, ad->regA, ad->regB, ad->mllr_nclass, cb2mllr);
     ckd_free(cb2mllr);
 
 #if MLLR_DEBUG
-    /*#if 1*/
-    mllr_dump(ad->regA,ad->regB,mgau_veclen(g),g->mllr_class,cb2mllr);
+    /*#if 1 */
+    mllr_dump(ad->regA, ad->regB, mgau_veclen(g), g->mllr_class, cb2mllr);
     /*This generates huge amount of information */
-    /*mgau_dump(kbcore_mgau(kb->kbcore),1);*/
-#endif 
+    /*mgau_dump(kbcore_mgau(kb->kbcore),1); */
+#endif
 
 }

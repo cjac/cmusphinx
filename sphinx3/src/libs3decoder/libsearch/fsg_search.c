@@ -197,262 +197,276 @@
 #define __FSG_DBG_CHAN__	0
 
 
-extern int32* st_sen_scr; /* In whmm.c For temporary storage but global storage. */
+extern int32 *st_sen_scr;       /* In whmm.c For temporary storage but global storage. */
 
 
-fsg_search_t *fsg_search_init (word_fsg_t *fsg,void *srch)
+fsg_search_t *
+fsg_search_init(word_fsg_t * fsg, void *srch)
 {
-  fsg_search_t *search;
-  float32 lw;
-  int32 pip, wip;
-  srch_t *s ;
+    fsg_search_t *search;
+    float32 lw;
+    int32 pip, wip;
+    srch_t *s;
 
 
-  /* Now we do the dance for initializing search */
+    /* Now we do the dance for initializing search */
 
-  s=(srch_t *)srch;
-  
-  search = (fsg_search_t *) ckd_calloc (1, sizeof(fsg_search_t));
-  
-  search->fsg = fsg;
-  search->n_state_hmm=mdef_n_emit_state(s->kbc->mdef);
-  
-  if (fsg) {
-    search->fsglist = glist_add_ptr (NULL, (void *) fsg);
-    search->lextree = fsg_lextree_init (fsg,mdef_n_emit_state(s->kbc->mdef));
-  } else {
-    search->fsglist = NULL;
-    search->lextree = NULL;
-  }
+    s = (srch_t *) srch;
 
-  assert(s->kbc->mdef);
+    search = (fsg_search_t *) ckd_calloc(1, sizeof(fsg_search_t));
 
-  /* Transfer all member variables */
-  search->mdef=s->kbc->mdef;
-  search->dict=s->kbc->dict;
-  search->tmat=s->kbc->tmat;
-  search->am_score_pool=s->ascr;
+    search->fsg = fsg;
+    search->n_state_hmm = mdef_n_emit_state(s->kbc->mdef);
 
-  search->n_ci_phone=mdef_n_ciphone(s->kbc->mdef);
-
-  /* Intialize the search history object */
-  search->history = fsg_history_init (fsg,search->n_ci_phone);
-  
-  /* Initialize the active lists */
-  search->pnode_active = NULL;
-  search->pnode_active_next = NULL;
-  
-  search->frame = -1;
-  
-  search->hyp = NULL;
-  
-  search->state = FSG_SEARCH_IDLE;
-  
-  search->beam=s->beam->hmm;
-  search->pbeam=s->beam->ptrans;
-  search->wbeam=s->beam->word;
-  search->isUsealtpron=cmd_ln_int32("-fsgusealtpron");
-  search->isUseFiller=cmd_ln_int32("-fsgusefiller");
-  search->isBacktrace=cmd_ln_int32("-backtrace");
-  search->matchfp=s->matchfp;
-  search->matchsegfp=s->matchsegfp;
-  search->senscale=s->ascale;
-
-  E_INFO("Number of state %d\n",search->n_state_hmm);
-
-  lw= s->kbc->fillpen->lw;
-  pip = (int32)(logs3(cmd_ln_float32("-phonepen")) * lw); 
-  wip =  s->kbc->fillpen->wip;
-  
-  E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
-	 search->beam, search->pbeam, search->wbeam, wip, pip);
-
-  /* This initializes the temporarily array but global for whmm_t computation.  
-     It sounds like we put it too high up in the function call chain. 
-  */
-
-  st_sen_scr = (int32 *) ckd_calloc (search->n_state_hmm-1, sizeof(int32));
-
-
-  
-  return search;
-}
-
-
-word_fsg_t *fsg_search_fsgname_to_fsg (fsg_search_t *search, char *name)
-{
-  gnode_t *gn;
-  word_fsg_t *fsg;
-  
-  for (gn = search->fsglist; gn; gn = gnode_next(gn)) {
-    fsg = (word_fsg_t *) gnode_ptr(gn);
-    if (strcmp (name, word_fsg_name(fsg)) == 0)
-      return fsg;
-  }
-  
-  return NULL;
-}
-
-
-boolean fsg_search_add_fsg (fsg_search_t *search, word_fsg_t *fsg)
-{
-  word_fsg_t *oldfsg;
-  
-  /* Check to make sure search is in a quiescent state */
-  if (search->state != FSG_SEARCH_IDLE) {
-    E_ERROR("Attempt to switch FSG inside an utterance\n");
-    return FALSE;
-  }
-  
-  /* Make sure no existing FSG has the same name as the given one */
-  oldfsg = fsg_search_fsgname_to_fsg(search, word_fsg_name(fsg));
-  if (oldfsg) {
-    E_ERROR("FSG name '%s' already exists\n", word_fsg_name(fsg));
-    return FALSE;
-  }
-  
-  search->fsglist = glist_add_ptr (search->fsglist, (void *)fsg);
-  return TRUE;
-}
-
-
-boolean fsg_search_del_fsg (fsg_search_t *search, word_fsg_t *fsg)
-{
-  gnode_t *gn, *prev, *next;
-  word_fsg_t *oldfsg;
-  
-  /* Check to make sure search is in a quiescent state */
-  if (search->state != FSG_SEARCH_IDLE) {
-    E_ERROR("Attempt to switch FSG inside an utterance\n");
-    return FALSE;
-  }
-  
-  /* Search fsglist for the given fsg */
-  prev = NULL;
-  for (gn = search->fsglist; gn; gn = next) {
-    oldfsg = (word_fsg_t *) gnode_ptr(gn);
-    next = gnode_next(gn);
-    if (oldfsg == fsg) {
-      /* Found the FSG to be deleted; remove it from fsglist */
-      if (prev)
-	prev->next = next;
-      else
-	search->fsglist = next;
-      
-      myfree((char *)gn, sizeof(gnode_t));
-      
-      /* If this was the currently active FSG, also delete other stuff */
-      if (search->fsg == fsg) {
-	fsg_lextree_free (search->lextree);
-	search->lextree = NULL;
-	
-	fsg_history_set_fsg (search->history, NULL);
-	
-	search->fsg = NULL;
-      }
-      
-      E_INFO("Deleting FSG '%s'\n", word_fsg_name(fsg));
-
-      word_fsg_free (fsg);
-      
-      return TRUE;
-    } else
-      prev = gn;
-  }
-  
-  E_WARN("FSG '%s' to be deleted not found\n",
-	 word_fsg_name(fsg));
-  
-  return TRUE;
-}
-
-
-boolean fsg_search_del_fsg_byname (fsg_search_t *search, char *name)
-{
-  word_fsg_t *fsg;
-  
-  fsg = fsg_search_fsgname_to_fsg (search, name);
-  if (! fsg) {
-    E_WARN("FSG name '%s' to be deleted not found\n", name);
-    return TRUE;
-  } else
-    return fsg_search_del_fsg (search, fsg);
-}
-
-
-boolean fsg_search_set_current_fsg (fsg_search_t *search, char *name)
-{
-  word_fsg_t *fsg;
-  
-  /* Check to make sure search is in a quiescent state */
-  if (search->state != FSG_SEARCH_IDLE) {
-    E_ERROR("Attempt to switch FSG inside an utterance\n");
-    return FALSE;
-  }
-  
-  fsg = fsg_search_fsgname_to_fsg (search, name);
-  if (! fsg) {
-    E_ERROR("FSG '%s' not known; cannot make it current\n", name);
-    return FALSE;
-  }
-  
-  /* Free the old lextree */
-  if (search->lextree)
-    fsg_lextree_free (search->lextree);
-  
-  /* Allocate new lextree for the given FSG */
-  search->lextree = fsg_lextree_init (fsg,search->n_state_hmm);
-  
-  /* Inform the history module of the new fsg */
-  fsg_history_set_fsg (search->history, fsg);
-  
-  search->fsg = fsg;
-  return TRUE;
-}
-
-
-void fsg_search_free (fsg_search_t *search)
-{
-  free(st_sen_scr);
-
-  /*  E_FATAL("NOT IMPLEMENTED\n");*/
-}
-
-
-static void hmm_sen_active(whmm_t *hmm, ascr_t *a, int32 n_state_hmm,mdef_t *m)
-{
-  int32 i;
-  s3senid_t *senp;
-  s3ssid_t ssid;
-  senp=NULL;
-
-  if(hmm->active>0){
-    ssid=*(hmm->pid);
-    senp=m->phone[ssid].state;
-
-    for(i=0;i<n_state_hmm;i++){
-      /*Get the senone sequence id*/
-      a->sen_active[senp[i]]=1;
+    if (fsg) {
+        search->fsglist = glist_add_ptr(NULL, (void *) fsg);
+        search->lextree =
+            fsg_lextree_init(fsg, mdef_n_emit_state(s->kbc->mdef));
     }
-  }
+    else {
+        search->fsglist = NULL;
+        search->lextree = NULL;
+    }
+
+    assert(s->kbc->mdef);
+
+    /* Transfer all member variables */
+    search->mdef = s->kbc->mdef;
+    search->dict = s->kbc->dict;
+    search->tmat = s->kbc->tmat;
+    search->am_score_pool = s->ascr;
+
+    search->n_ci_phone = mdef_n_ciphone(s->kbc->mdef);
+
+    /* Intialize the search history object */
+    search->history = fsg_history_init(fsg, search->n_ci_phone);
+
+    /* Initialize the active lists */
+    search->pnode_active = NULL;
+    search->pnode_active_next = NULL;
+
+    search->frame = -1;
+
+    search->hyp = NULL;
+
+    search->state = FSG_SEARCH_IDLE;
+
+    search->beam = s->beam->hmm;
+    search->pbeam = s->beam->ptrans;
+    search->wbeam = s->beam->word;
+    search->isUsealtpron = cmd_ln_int32("-fsgusealtpron");
+    search->isUseFiller = cmd_ln_int32("-fsgusefiller");
+    search->isBacktrace = cmd_ln_int32("-backtrace");
+    search->matchfp = s->matchfp;
+    search->matchsegfp = s->matchsegfp;
+    search->senscale = s->ascale;
+
+    E_INFO("Number of state %d\n", search->n_state_hmm);
+
+    lw = s->kbc->fillpen->lw;
+    pip = (int32) (logs3(cmd_ln_float32("-phonepen")) * lw);
+    wip = s->kbc->fillpen->wip;
+
+    E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
+           search->beam, search->pbeam, search->wbeam, wip, pip);
+
+    /* This initializes the temporarily array but global for whmm_t computation.  
+       It sounds like we put it too high up in the function call chain. 
+     */
+
+    st_sen_scr =
+        (int32 *) ckd_calloc(search->n_state_hmm - 1, sizeof(int32));
+
+
+
+    return search;
 }
 
-void fsg_search_sen_active (fsg_search_t *search)
+
+word_fsg_t *
+fsg_search_fsgname_to_fsg(fsg_search_t * search, char *name)
 {
-  gnode_t *gn;
-  fsg_pnode_t *pnode;
-  whmm_t *hmm;
-  
-  assert(search->am_score_pool);
-  ascr_clear_sen_active(search->am_score_pool);
-  
-  for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    assert (hmm->active == search->frame);
-    
-    hmm_sen_active(hmm,search->am_score_pool,search->n_state_hmm,search->mdef); 
-  }
+    gnode_t *gn;
+    word_fsg_t *fsg;
+
+    for (gn = search->fsglist; gn; gn = gnode_next(gn)) {
+        fsg = (word_fsg_t *) gnode_ptr(gn);
+        if (strcmp(name, word_fsg_name(fsg)) == 0)
+            return fsg;
+    }
+
+    return NULL;
+}
+
+
+boolean
+fsg_search_add_fsg(fsg_search_t * search, word_fsg_t * fsg)
+{
+    word_fsg_t *oldfsg;
+
+    /* Check to make sure search is in a quiescent state */
+    if (search->state != FSG_SEARCH_IDLE) {
+        E_ERROR("Attempt to switch FSG inside an utterance\n");
+        return FALSE;
+    }
+
+    /* Make sure no existing FSG has the same name as the given one */
+    oldfsg = fsg_search_fsgname_to_fsg(search, word_fsg_name(fsg));
+    if (oldfsg) {
+        E_ERROR("FSG name '%s' already exists\n", word_fsg_name(fsg));
+        return FALSE;
+    }
+
+    search->fsglist = glist_add_ptr(search->fsglist, (void *) fsg);
+    return TRUE;
+}
+
+
+boolean
+fsg_search_del_fsg(fsg_search_t * search, word_fsg_t * fsg)
+{
+    gnode_t *gn, *prev, *next;
+    word_fsg_t *oldfsg;
+
+    /* Check to make sure search is in a quiescent state */
+    if (search->state != FSG_SEARCH_IDLE) {
+        E_ERROR("Attempt to switch FSG inside an utterance\n");
+        return FALSE;
+    }
+
+    /* Search fsglist for the given fsg */
+    prev = NULL;
+    for (gn = search->fsglist; gn; gn = next) {
+        oldfsg = (word_fsg_t *) gnode_ptr(gn);
+        next = gnode_next(gn);
+        if (oldfsg == fsg) {
+            /* Found the FSG to be deleted; remove it from fsglist */
+            if (prev)
+                prev->next = next;
+            else
+                search->fsglist = next;
+
+            myfree((char *) gn, sizeof(gnode_t));
+
+            /* If this was the currently active FSG, also delete other stuff */
+            if (search->fsg == fsg) {
+                fsg_lextree_free(search->lextree);
+                search->lextree = NULL;
+
+                fsg_history_set_fsg(search->history, NULL);
+
+                search->fsg = NULL;
+            }
+
+            E_INFO("Deleting FSG '%s'\n", word_fsg_name(fsg));
+
+            word_fsg_free(fsg);
+
+            return TRUE;
+        }
+        else
+            prev = gn;
+    }
+
+    E_WARN("FSG '%s' to be deleted not found\n", word_fsg_name(fsg));
+
+    return TRUE;
+}
+
+
+boolean
+fsg_search_del_fsg_byname(fsg_search_t * search, char *name)
+{
+    word_fsg_t *fsg;
+
+    fsg = fsg_search_fsgname_to_fsg(search, name);
+    if (!fsg) {
+        E_WARN("FSG name '%s' to be deleted not found\n", name);
+        return TRUE;
+    }
+    else
+        return fsg_search_del_fsg(search, fsg);
+}
+
+
+boolean
+fsg_search_set_current_fsg(fsg_search_t * search, char *name)
+{
+    word_fsg_t *fsg;
+
+    /* Check to make sure search is in a quiescent state */
+    if (search->state != FSG_SEARCH_IDLE) {
+        E_ERROR("Attempt to switch FSG inside an utterance\n");
+        return FALSE;
+    }
+
+    fsg = fsg_search_fsgname_to_fsg(search, name);
+    if (!fsg) {
+        E_ERROR("FSG '%s' not known; cannot make it current\n", name);
+        return FALSE;
+    }
+
+    /* Free the old lextree */
+    if (search->lextree)
+        fsg_lextree_free(search->lextree);
+
+    /* Allocate new lextree for the given FSG */
+    search->lextree = fsg_lextree_init(fsg, search->n_state_hmm);
+
+    /* Inform the history module of the new fsg */
+    fsg_history_set_fsg(search->history, fsg);
+
+    search->fsg = fsg;
+    return TRUE;
+}
+
+
+void
+fsg_search_free(fsg_search_t * search)
+{
+    free(st_sen_scr);
+
+    /*  E_FATAL("NOT IMPLEMENTED\n"); */
+}
+
+
+static void
+hmm_sen_active(whmm_t * hmm, ascr_t * a, int32 n_state_hmm, mdef_t * m)
+{
+    int32 i;
+    s3senid_t *senp;
+    s3ssid_t ssid;
+    senp = NULL;
+
+    if (hmm->active > 0) {
+        ssid = *(hmm->pid);
+        senp = m->phone[ssid].state;
+
+        for (i = 0; i < n_state_hmm; i++) {
+            /*Get the senone sequence id */
+            a->sen_active[senp[i]] = 1;
+        }
+    }
+}
+
+void
+fsg_search_sen_active(fsg_search_t * search)
+{
+    gnode_t *gn;
+    fsg_pnode_t *pnode;
+    whmm_t *hmm;
+
+    assert(search->am_score_pool);
+    ascr_clear_sen_active(search->am_score_pool);
+
+    for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+        assert(hmm->active == search->frame);
+
+        hmm_sen_active(hmm, search->am_score_pool, search->n_state_hmm,
+                       search->mdef);
+    }
 }
 
 
@@ -461,126 +475,127 @@ void fsg_search_sen_active (fsg_search_t *search)
  * Evaluate all the active HMMs.
  * (Executed once per frame.)
  */
-void fsg_search_hmm_eval (fsg_search_t *search)
+void
+fsg_search_hmm_eval(fsg_search_t * search)
 {
-  gnode_t *gn;
-  fsg_pnode_t *pnode;
-  whmm_t *hmm;
-  int32 bestscore;
-  int32 n;
-  
-  bestscore = (int32)0x80000000;
-  
-  if (! search->pnode_active) {
-    E_ERROR("Frame %d: No active HMM!!\n", search->frame);
-    return;
-  }
-  
-  for (n = 0, gn = search->pnode_active; gn; gn = gnode_next(gn), n++) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    assert (hmm->active == search->frame);
+    gnode_t *gn;
+    fsg_pnode_t *pnode;
+    whmm_t *hmm;
+    int32 bestscore;
+    int32 n;
 
-    eval_nonmpx_whmm (hmm, search->am_score_pool->senscr,search->tmat, search->mdef, search->n_state_hmm);
-    
-    if (bestscore < hmm->bestscore)
-      bestscore = hmm->bestscore;
-  }
-  
-#if __FSG_DBG__
-  E_INFO("[%5d] %6d HMM; bestscr: %11d\n", search->frame, n, bestscore);
-#endif
-  search->n_hmm_eval += n;
-  
-  if (n > fsg_lextree_n_pnode(search->lextree))
-    E_FATAL("PANIC! Frame %d: #HMM evaluated(%d) > #PNodes(%d)\n",
-	    search->frame, n, fsg_lextree_n_pnode(search->lextree));
-  
-  search->bestscore = bestscore;
-}
+    bestscore = (int32) 0x80000000;
 
-
-static void fsg_search_pnode_trans (fsg_search_t *search,
-				    fsg_pnode_t *pnode)
-{
-  fsg_pnode_t *child;
-  whmm_t *hmm;
-  
-  assert (pnode);
-  assert (! fsg_pnode_leaf(pnode));
-  hmm = fsg_pnode_hmmptr(pnode);
-  
-  for (child = fsg_pnode_succ(pnode);
-       child;
-       child = fsg_pnode_sibling(child)) {
-    if (fsg_psubtree_pnode_enter (child,
-				  hmm->score[search->n_state_hmm-1],
-				  search->frame + 1,
-				  hmm->history[search->n_state_hmm-1])) {
-      search->pnode_active_next = glist_add_ptr(search->pnode_active_next,
-						(void *) child);
+    if (!search->pnode_active) {
+        E_ERROR("Frame %d: No active HMM!!\n", search->frame);
+        return;
     }
-  }
+
+    for (n = 0, gn = search->pnode_active; gn; gn = gnode_next(gn), n++) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+        assert(hmm->active == search->frame);
+
+        eval_nonmpx_whmm(hmm, search->am_score_pool->senscr, search->tmat,
+                         search->mdef, search->n_state_hmm);
+
+        if (bestscore < hmm->bestscore)
+            bestscore = hmm->bestscore;
+    }
+
+#if __FSG_DBG__
+    E_INFO("[%5d] %6d HMM; bestscr: %11d\n", search->frame, n, bestscore);
+#endif
+    search->n_hmm_eval += n;
+
+    if (n > fsg_lextree_n_pnode(search->lextree))
+        E_FATAL("PANIC! Frame %d: #HMM evaluated(%d) > #PNodes(%d)\n",
+                search->frame, n, fsg_lextree_n_pnode(search->lextree));
+
+    search->bestscore = bestscore;
 }
 
 
-static void fsg_search_pnode_exit(fsg_search_t *search,
-				  fsg_pnode_t *pnode)
+static void
+fsg_search_pnode_trans(fsg_search_t * search, fsg_pnode_t * pnode)
 {
-  whmm_t *hmm;
-  word_fsglink_t *fl;
-  dict_t *dict;
-  int32 wid, endwid;
-  fsg_pnode_ctxt_t ctxt;
-  
-  assert (pnode);
-  assert (fsg_pnode_leaf(pnode));
+    fsg_pnode_t *child;
+    whmm_t *hmm;
 
-  hmm = fsg_pnode_hmmptr(pnode);
-  fl = fsg_pnode_fsglink(pnode);
-  assert (fl);
-  
-  dict = search->dict;
-  endwid = dict_basewid(dict, dict_finishwid(dict));
-  
-  wid = word_fsglink_wid(fl);
-  assert (wid >= 0);
-  
+    assert(pnode);
+    assert(!fsg_pnode_leaf(pnode));
+    hmm = fsg_pnode_hmmptr(pnode);
+
+    for (child = fsg_pnode_succ(pnode);
+         child; child = fsg_pnode_sibling(child)) {
+        if (fsg_psubtree_pnode_enter(child,
+                                     hmm->score[search->n_state_hmm - 1],
+                                     search->frame + 1,
+                                     hmm->history[search->n_state_hmm -
+                                                  1])) {
+            search->pnode_active_next =
+                glist_add_ptr(search->pnode_active_next, (void *) child);
+        }
+    }
+}
+
+
+static void
+fsg_search_pnode_exit(fsg_search_t * search, fsg_pnode_t * pnode)
+{
+    whmm_t *hmm;
+    word_fsglink_t *fl;
+    dict_t *dict;
+    int32 wid, endwid;
+    fsg_pnode_ctxt_t ctxt;
+
+    assert(pnode);
+    assert(fsg_pnode_leaf(pnode));
+
+    hmm = fsg_pnode_hmmptr(pnode);
+    fl = fsg_pnode_fsglink(pnode);
+    assert(fl);
+
+    dict = search->dict;
+    endwid = dict_basewid(dict, dict_finishwid(dict));
+
+    wid = word_fsglink_wid(fl);
+    assert(wid >= 0);
+
 #if __FSG_DBG__
-  E_INFO("[%5d] Exit(%08x) %10d(score) %5d(pred)\n",
-	 search->frame, (int32)pnode,
-	 hmm->score[search->n_state_hmm-1], hmm->history[search->n_state_hmm-1]);
+    E_INFO("[%5d] Exit(%08x) %10d(score) %5d(pred)\n",
+           search->frame, (int32) pnode,
+           hmm->score[search->n_state_hmm - 1],
+           hmm->history[search->n_state_hmm - 1]);
 #endif
-  
-  /*
-   * Check if this is filler or single phone word; these do not model right
-   * context (i.e., the exit score applies to all right contexts).
-   */
-  if (dict_filler_word (dict, wid) ||
-      (wid == endwid) ||
-      (dict_pronlen (dict, wid) == 1)) {
-    /* Create a dummy context structure that applies to all right contexts */
-    fsg_pnode_add_all_ctxt(&ctxt);
-    
-    /* Create history table entry for this word exit */
-    fsg_history_entry_add (search->history,
-			   fl,
-			   search->frame,
-			   hmm->score[search->n_state_hmm-1],
-			   hmm->history[search->n_state_hmm-1],
-			   pnode->ci_ext,
-			   ctxt);
-    
-  } else {
-    /* Create history table entry for this word exit */
-    fsg_history_entry_add (search->history,
-			   fl,
-			   search->frame,
-			   hmm->score[search->n_state_hmm-1],
-			   hmm->history[search->n_state_hmm-1],
-			   pnode->ci_ext,
-			   pnode->ctxt);
-  }
+
+    /*
+     * Check if this is filler or single phone word; these do not model right
+     * context (i.e., the exit score applies to all right contexts).
+     */
+    if (dict_filler_word(dict, wid) ||
+        (wid == endwid) || (dict_pronlen(dict, wid) == 1)) {
+        /* Create a dummy context structure that applies to all right contexts */
+        fsg_pnode_add_all_ctxt(&ctxt);
+
+        /* Create history table entry for this word exit */
+        fsg_history_entry_add(search->history,
+                              fl,
+                              search->frame,
+                              hmm->score[search->n_state_hmm - 1],
+                              hmm->history[search->n_state_hmm - 1],
+                              pnode->ci_ext, ctxt);
+
+    }
+    else {
+        /* Create history table entry for this word exit */
+        fsg_history_entry_add(search->history,
+                              fl,
+                              search->frame,
+                              hmm->score[search->n_state_hmm - 1],
+                              hmm->history[search->n_state_hmm - 1],
+                              pnode->ci_ext, pnode->ctxt);
+    }
 }
 
 
@@ -590,95 +605,102 @@ static void fsg_search_pnode_exit(fsg_search_t *search,
  * terminate in their respective destination FSM states.
  * (Executed once per frame.)
  */
-void fsg_search_hmm_prune_prop (fsg_search_t *search)
+void
+fsg_search_hmm_prune_prop(fsg_search_t * search)
 {
-  gnode_t *gn;
-  fsg_pnode_t *pnode;
-  whmm_t *hmm;
-  int32 thresh, word_thresh, phone_thresh;
-  
-  assert (search->pnode_active_next == NULL);
-  
-  thresh = search->bestscore + search->beam;
-  phone_thresh = search->bestscore + search->pbeam;
-  word_thresh = search->bestscore + search->wbeam;
-  
-  for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    
-    if (hmm->bestscore >= thresh) {
-      /* Keep this HMM active in the next frame */
-      if (hmm->active == search->frame) {
-	hmm->active = search->frame + 1;
-	search->pnode_active_next = glist_add_ptr(search->pnode_active_next,
-						  (void *)pnode);
-      } else {
-	assert (hmm->active == search->frame + 1);
-      }
-      
-      if (! fsg_pnode_leaf(pnode)) {
-	if (hmm->score[search->n_state_hmm-1] >= phone_thresh) {
-	  /* Transition out of this phone into its children */
-	  fsg_search_pnode_trans(search, pnode);
-	}
-      } else {
-	if (hmm->score[search->n_state_hmm-1] >= word_thresh) {
-	  /* Transition out of leaf node into destination FSG state */
-	  fsg_search_pnode_exit(search, pnode);
-	}
-      }
+    gnode_t *gn;
+    fsg_pnode_t *pnode;
+    whmm_t *hmm;
+    int32 thresh, word_thresh, phone_thresh;
+
+    assert(search->pnode_active_next == NULL);
+
+    thresh = search->bestscore + search->beam;
+    phone_thresh = search->bestscore + search->pbeam;
+    word_thresh = search->bestscore + search->wbeam;
+
+    for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+
+        if (hmm->bestscore >= thresh) {
+            /* Keep this HMM active in the next frame */
+            if (hmm->active == search->frame) {
+                hmm->active = search->frame + 1;
+                search->pnode_active_next =
+                    glist_add_ptr(search->pnode_active_next,
+                                  (void *) pnode);
+            }
+            else {
+                assert(hmm->active == search->frame + 1);
+            }
+
+            if (!fsg_pnode_leaf(pnode)) {
+                if (hmm->score[search->n_state_hmm - 1] >= phone_thresh) {
+                    /* Transition out of this phone into its children */
+                    fsg_search_pnode_trans(search, pnode);
+                }
+            }
+            else {
+                if (hmm->score[search->n_state_hmm - 1] >= word_thresh) {
+                    /* Transition out of leaf node into destination FSG state */
+                    fsg_search_pnode_exit(search, pnode);
+                }
+            }
+        }
     }
-  }
 }
 
 
 /*
  * Propagate newly created history entries through null transitions.
  */
-static void fsg_search_null_prop (fsg_search_t *search)
+static void
+fsg_search_null_prop(fsg_search_t * search)
 {
-  int32 bpidx, n_entries, thresh, newscore;
-  fsg_hist_entry_t *hist_entry;
-  word_fsglink_t *l;
-  int32 s, d;
-  word_fsg_t *fsg;
-  
-  fsg = search->fsg;
-  thresh = search->bestscore + search->wbeam;	/* Which beam really?? */
-  
-  n_entries = fsg_history_n_entries (search->history);
-  
-  for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
-    hist_entry = fsg_history_entry_get (search->history, bpidx);
-    
-    l = fsg_hist_entry_fsglink(hist_entry);
-    
-    /* Destination FSG state for history entry */
-    s = l ? word_fsglink_to_state(l) : word_fsg_start_state(fsg);
-    
-    /*
-     * Check null transitions from d to all other states.  (Only need to
-     * propagate one step, since FSG contains transitive closure of null
-     * transitions.)
-     */
-    for (d = 0; d < word_fsg_n_state(fsg); d++) {
-      l = word_fsg_null_trans(fsg, s, d);
-      
-      if (l) {	/* Propagate history entry through this null transition */
-	newscore = fsg_hist_entry_score(hist_entry) + word_fsglink_logs2prob(l);
-	
-	if (newscore >= thresh) {
-	  fsg_history_entry_add (search->history, l,
-				 fsg_hist_entry_frame(hist_entry),
-				 newscore,
-				 bpidx,
-				 fsg_hist_entry_lc(hist_entry),
-				 fsg_hist_entry_rc(hist_entry));
-	}
-      }
+    int32 bpidx, n_entries, thresh, newscore;
+    fsg_hist_entry_t *hist_entry;
+    word_fsglink_t *l;
+    int32 s, d;
+    word_fsg_t *fsg;
+
+    fsg = search->fsg;
+    thresh = search->bestscore + search->wbeam; /* Which beam really?? */
+
+    n_entries = fsg_history_n_entries(search->history);
+
+    for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
+        hist_entry = fsg_history_entry_get(search->history, bpidx);
+
+        l = fsg_hist_entry_fsglink(hist_entry);
+
+        /* Destination FSG state for history entry */
+        s = l ? word_fsglink_to_state(l) : word_fsg_start_state(fsg);
+
+        /*
+         * Check null transitions from d to all other states.  (Only need to
+         * propagate one step, since FSG contains transitive closure of null
+         * transitions.)
+         */
+        for (d = 0; d < word_fsg_n_state(fsg); d++) {
+            l = word_fsg_null_trans(fsg, s, d);
+
+            if (l) {            /* Propagate history entry through this null transition */
+                newscore =
+                    fsg_hist_entry_score(hist_entry) +
+                    word_fsglink_logs2prob(l);
+
+                if (newscore >= thresh) {
+                    fsg_history_entry_add(search->history, l,
+                                          fsg_hist_entry_frame(hist_entry),
+                                          newscore,
+                                          bpidx,
+                                          fsg_hist_entry_lc(hist_entry),
+                                          fsg_hist_entry_rc(hist_entry));
+                }
+            }
+        }
     }
-  }
 }
 
 
@@ -686,137 +708,145 @@ static void fsg_search_null_prop (fsg_search_t *search)
  * Perform cross-word transitions; propagate each history entry created in this
  * frame to lextree roots attached to the target FSG state for that entry.
  */
-static void fsg_search_word_trans (fsg_search_t *search)
+static void
+fsg_search_word_trans(fsg_search_t * search)
 {
-  int32 bpidx, n_entries;
-  fsg_hist_entry_t *hist_entry;
-  word_fsglink_t *l;
-  int32 score, d;
-  fsg_pnode_t *root;
-  int32 lc, rc;
-  
-  n_entries = fsg_history_n_entries (search->history);
-  
-  for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
-    hist_entry = fsg_history_entry_get (search->history, bpidx);
-    assert (hist_entry);
-    score = fsg_hist_entry_score(hist_entry);
-    assert (search->frame == fsg_hist_entry_frame(hist_entry));
-    
-    l = fsg_hist_entry_fsglink(hist_entry);
-    
-    /* Destination state for hist_entry */
-    d = l ? word_fsglink_to_state(l) : word_fsg_start_state (search->fsg);
-    
-    lc = fsg_hist_entry_lc(hist_entry);
-    
-    /* Transition to all root nodes attached to state d */
-    for (root = fsg_lextree_root (search->lextree, d);
-	 root;
-	 root = root->sibling) {
-      rc = root->ci_ext;
-      
-      if ((root->ctxt.bv[lc >> 5] & (1 << (lc & 0x001f))) &&
-	  (hist_entry->rc.bv[rc >> 5] & (1 << (rc & 0x001f)))) {
-	/*
-	 * Last CIphone of history entry is in left-context list supported by
-	 * target root node, and
-	 * first CIphone of target root node is in right context list supported
-	 * by history entry;
-	 * So the transition can go ahead.
-	 */
+    int32 bpidx, n_entries;
+    fsg_hist_entry_t *hist_entry;
+    word_fsglink_t *l;
+    int32 score, d;
+    fsg_pnode_t *root;
+    int32 lc, rc;
 
-	if (fsg_psubtree_pnode_enter(root, score, search->frame+1, bpidx)) {
-	  /* Newly activated node; add to active list */
-	  search->pnode_active_next = glist_add_ptr (search->pnode_active_next,
-						     (void *)root);
+    n_entries = fsg_history_n_entries(search->history);
+
+    for (bpidx = search->bpidx_start; bpidx < n_entries; bpidx++) {
+        hist_entry = fsg_history_entry_get(search->history, bpidx);
+        assert(hist_entry);
+        score = fsg_hist_entry_score(hist_entry);
+        assert(search->frame == fsg_hist_entry_frame(hist_entry));
+
+        l = fsg_hist_entry_fsglink(hist_entry);
+
+        /* Destination state for hist_entry */
+        d = l ? word_fsglink_to_state(l) : word_fsg_start_state(search->
+                                                                fsg);
+
+        lc = fsg_hist_entry_lc(hist_entry);
+
+        /* Transition to all root nodes attached to state d */
+        for (root = fsg_lextree_root(search->lextree, d);
+             root; root = root->sibling) {
+            rc = root->ci_ext;
+
+            if ((root->ctxt.bv[lc >> 5] & (1 << (lc & 0x001f))) &&
+                (hist_entry->rc.bv[rc >> 5] & (1 << (rc & 0x001f)))) {
+                /*
+                 * Last CIphone of history entry is in left-context list supported by
+                 * target root node, and
+                 * first CIphone of target root node is in right context list supported
+                 * by history entry;
+                 * So the transition can go ahead.
+                 */
+
+                if (fsg_psubtree_pnode_enter
+                    (root, score, search->frame + 1, bpidx)) {
+                    /* Newly activated node; add to active list */
+                    search->pnode_active_next =
+                        glist_add_ptr(search->pnode_active_next,
+                                      (void *) root);
 #if __FSG_DBG__
-	  E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x] (activated)\n",
-		 search->frame, bpidx, (int32)root);
+                    E_INFO
+                        ("[%5d] WordTrans bpidx[%d] -> pnode[%08x] (activated)\n",
+                         search->frame, bpidx, (int32) root);
 #endif
-	} else {
+                }
+                else {
 #if __FSG_DBG__
-	  E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x]\n",
-		 search->frame, bpidx, (int32)root);
+                    E_INFO("[%5d] WordTrans bpidx[%d] -> pnode[%08x]\n",
+                           search->frame, bpidx, (int32) root);
 #endif
-	}
-      }
+                }
+            }
+        }
     }
-  }
 }
 
 
-void fsg_search_frame_fwd (fsg_search_t *search)
+void
+fsg_search_frame_fwd(fsg_search_t * search)
 {
-  gnode_t *gn;
-  fsg_pnode_t *pnode;
-  whmm_t *hmm;
+    gnode_t *gn;
+    fsg_pnode_t *pnode;
+    whmm_t *hmm;
 
-  search->bpidx_start = fsg_history_n_entries(search->history);
-  
-  /* Evaluate all active pnodes (HMMs) */
-  fsg_search_hmm_eval (search);
-  
-  /*
-   * Prune and propagate the HMMs evaluated; create history entries for
-   * word exits.  The words exits are tentative, and may be pruned; make
-   * the survivors permanent via fsg_history_end_frame().
-   */
-  fsg_search_hmm_prune_prop (search);
-  fsg_history_end_frame(search->history);
-  
-  /*
-   * Propagate new history entries through any null transitions, creating
-   * new history entries, and then make the survivors permanent.
-   */
-  fsg_search_null_prop (search);
-  fsg_history_end_frame(search->history);
-  
-  /*
-   * Perform cross-word transitions; propagate each history entry across its
-   * terminating state to the root nodes of the lextree attached to the state.
-   */
-  fsg_search_word_trans (search);
-  
-  /*
-   * We've now come full circle, HMM and FSG states have been updated for
-   * the next frame.
-   * Update the active lists, deactivate any currently active HMMs that
-   * did not survive into the next frame
-   */
-  for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    
-    if (hmm->active == search->frame) {
-      /* This HMM NOT activated for the next frame; reset it */
-      fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
-    } else {
-      assert (hmm->active == (search->frame + 1));
+    search->bpidx_start = fsg_history_n_entries(search->history);
+
+    /* Evaluate all active pnodes (HMMs) */
+    fsg_search_hmm_eval(search);
+
+    /*
+     * Prune and propagate the HMMs evaluated; create history entries for
+     * word exits.  The words exits are tentative, and may be pruned; make
+     * the survivors permanent via fsg_history_end_frame().
+     */
+    fsg_search_hmm_prune_prop(search);
+    fsg_history_end_frame(search->history);
+
+    /*
+     * Propagate new history entries through any null transitions, creating
+     * new history entries, and then make the survivors permanent.
+     */
+    fsg_search_null_prop(search);
+    fsg_history_end_frame(search->history);
+
+    /*
+     * Perform cross-word transitions; propagate each history entry across its
+     * terminating state to the root nodes of the lextree attached to the state.
+     */
+    fsg_search_word_trans(search);
+
+    /*
+     * We've now come full circle, HMM and FSG states have been updated for
+     * the next frame.
+     * Update the active lists, deactivate any currently active HMMs that
+     * did not survive into the next frame
+     */
+    for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+
+        if (hmm->active == search->frame) {
+            /* This HMM NOT activated for the next frame; reset it */
+            fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+        }
+        else {
+            assert(hmm->active == (search->frame + 1));
+        }
     }
-  }
-  
-  /* Free the currently active list */
-  glist_free (search->pnode_active);
-  
-  /* Make the next-frame active list the current one */
-  search->pnode_active = search->pnode_active_next;
-  search->pnode_active_next = NULL;
-  
-  /* End of this frame; ready for the next */
-  (search->frame)++;
+
+    /* Free the currently active list */
+    glist_free(search->pnode_active);
+
+    /* Make the next-frame active list the current one */
+    search->pnode_active = search->pnode_active_next;
+    search->pnode_active_next = NULL;
+
+    /* End of this frame; ready for the next */
+    (search->frame)++;
 }
 
 
-static void fsg_search_hyp_free (fsg_search_t *search)
+static void
+fsg_search_hyp_free(fsg_search_t * search)
 {
-  srch_hyp_t *hyp, *nexthyp;
-  
-  for (hyp = search->hyp; hyp; hyp = nexthyp) {
-    nexthyp = hyp->next;
-    ckd_free (hyp);
-  }
-  search->hyp = NULL;
+    srch_hyp_t *hyp, *nexthyp;
+
+    for (hyp = search->hyp; hyp; hyp = nexthyp) {
+        nexthyp = hyp->next;
+        ckd_free(hyp);
+    }
+    search->hyp = NULL;
 }
 
 
@@ -825,364 +855,380 @@ static void fsg_search_hyp_free (fsg_search_t *search)
  * state to be the only active node.
  * (Executed at the start of each utterance.)
  */
-void fsg_search_utt_start (fsg_search_t *search)
+void
+fsg_search_utt_start(fsg_search_t * search)
 {
-  int32 silcipid;
-  fsg_pnode_ctxt_t ctxt;
+    int32 silcipid;
+    fsg_pnode_ctxt_t ctxt;
 
-  assert(search->mdef);
-  silcipid = mdef_silphone(search->mdef);
-  
-  /* Initialize EVERYTHING to be inactive */
-  assert (search->pnode_active == NULL);
-  assert (search->pnode_active_next == NULL);
-  
-  fsg_lextree_utt_start(search->lextree);
-  fsg_history_utt_start(search->history);
-  
-  /* Dummy context structure that allows all right contexts to use this entry */
-  fsg_pnode_add_all_ctxt(&ctxt);
-  
-  /* Create dummy history entry leading to start state */
-  search->frame = -1;
-  search->bestscore = 0;
-  fsg_history_entry_add (search->history,
-			 NULL,
-			 -1,
-			 0,
-			 -1,
-			 silcipid,
-			 ctxt);
-  search->bpidx_start = 0;
-  
-  /* Propagate dummy history entry through NULL transitions from start state */
-  fsg_search_null_prop (search);
-  
-  /* Perform word transitions from this dummy history entry */
-  fsg_search_word_trans (search);
-  
-  /* Make the next-frame active list the current one */
-  search->pnode_active = search->pnode_active_next;
-  search->pnode_active_next = NULL;
-  
-  (search->frame)++;
-  
-  fsg_search_hyp_free (search);
-  
-  search->n_hmm_eval = 0;
-  
-  search->state = FSG_SEARCH_BUSY;
+    assert(search->mdef);
+    silcipid = mdef_silphone(search->mdef);
+
+    /* Initialize EVERYTHING to be inactive */
+    assert(search->pnode_active == NULL);
+    assert(search->pnode_active_next == NULL);
+
+    fsg_lextree_utt_start(search->lextree);
+    fsg_history_utt_start(search->history);
+
+    /* Dummy context structure that allows all right contexts to use this entry */
+    fsg_pnode_add_all_ctxt(&ctxt);
+
+    /* Create dummy history entry leading to start state */
+    search->frame = -1;
+    search->bestscore = 0;
+    fsg_history_entry_add(search->history,
+                          NULL, -1, 0, -1, silcipid, ctxt);
+    search->bpidx_start = 0;
+
+    /* Propagate dummy history entry through NULL transitions from start state */
+    fsg_search_null_prop(search);
+
+    /* Perform word transitions from this dummy history entry */
+    fsg_search_word_trans(search);
+
+    /* Make the next-frame active list the current one */
+    search->pnode_active = search->pnode_active_next;
+    search->pnode_active_next = NULL;
+
+    (search->frame)++;
+
+    fsg_search_hyp_free(search);
+
+    search->n_hmm_eval = 0;
+
+    search->state = FSG_SEARCH_BUSY;
 }
 
 
-static void fsg_search_hyp_dump (fsg_search_t *search, FILE *fp)
+static void
+fsg_search_hyp_dump(fsg_search_t * search, FILE * fp)
 {
-  /* Print backtrace */
-  log_hyp_detailed(fp, search->hyp,search->uttid,"FSG","fsg",search->senscale);
+    /* Print backtrace */
+    log_hyp_detailed(fp, search->hyp, search->uttid, "FSG", "fsg",
+                     search->senscale);
 }
 
 
 #if 0
 /* Fill in hyp_str in search.c; filtering out fillers and null trans */
-static void fsg_search_hyp_filter(fsg_search_t *search)
+static void
+fsg_search_hyp_filter(fsg_search_t * search)
 {
-  srch_hyp_t *hyp, *filt_hyp, *head;
-  int32 i;
-  int32 startwid, finishwid;
-  int32 altpron;
-  dict_t *dict;
-  
+    srch_hyp_t *hyp, *filt_hyp, *head;
+    int32 i;
+    int32 startwid, finishwid;
+    int32 altpron;
+    dict_t *dict;
 
-  dict=search->dict;
-  filt_hyp = search->filt_hyp;
-  startwid = dict_basewid(dict, dict_startwid(dict));
-  finishwid = dict_basewid(dict, dict_finishwid(dict));
-  dict = search->dict;
-  altpron = search->isUsealtpron;
-  
-  i = 0;
-  head = 0;
-  for (hyp = search->hyp; hyp; hyp = hyp->next) {
-    if ((hyp->id < 0) ||
-	(hyp->id == startwid) ||
-	(hyp->id >= finishwid))
-      continue;
-    
-    /* Copy this hyp entry to filtered result */
-    filt_hyp = (srch_hyp_t*) ckd_calloc(1,sizeof(srch_hyp_t));
 
-    filt_hyp->word=hyp->word;
-    filt_hyp->id =hyp->id;
-    filt_hyp->type =hyp->type;
-    filt_hyp->sf =hyp->sf;
-    filt_hyp->ascr =hyp->ascr;
-    filt_hyp->lscr= hyp->lscr;
-    filt_hyp->pscr= hyp->pscr;
-    filt_hyp->cscr= hyp->cscr;
-    filt_hyp->fsg_state= hyp->fsg_state;
-    filt_hyp->next=head;
-    head = filt_hyp;
-    /*
-      filt_hyp[i] = *hyp;
-    */
-    
-    /* Replace specific word pronunciation ID with base ID */
-    if (! altpron){
-      filt_hyp->id = dict_basewid(dict, filt_hyp->id);
+    dict = search->dict;
+    filt_hyp = search->filt_hyp;
+    startwid = dict_basewid(dict, dict_startwid(dict));
+    finishwid = dict_basewid(dict, dict_finishwid(dict));
+    dict = search->dict;
+    altpron = search->isUsealtpron;
+
+    i = 0;
+    head = 0;
+    for (hyp = search->hyp; hyp; hyp = hyp->next) {
+        if ((hyp->id < 0) ||
+            (hyp->id == startwid) || (hyp->id >= finishwid))
+            continue;
+
+        /* Copy this hyp entry to filtered result */
+        filt_hyp = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
+
+        filt_hyp->word = hyp->word;
+        filt_hyp->id = hyp->id;
+        filt_hyp->type = hyp->type;
+        filt_hyp->sf = hyp->sf;
+        filt_hyp->ascr = hyp->ascr;
+        filt_hyp->lscr = hyp->lscr;
+        filt_hyp->pscr = hyp->pscr;
+        filt_hyp->cscr = hyp->cscr;
+        filt_hyp->fsg_state = hyp->fsg_state;
+        filt_hyp->next = head;
+        head = filt_hyp;
+        /*
+           filt_hyp[i] = *hyp;
+         */
+
+        /* Replace specific word pronunciation ID with base ID */
+        if (!altpron) {
+            filt_hyp->id = dict_basewid(dict, filt_hyp->id);
+        }
+
+        i++;
+        if ((i + 1) >= HYP_SZ)
+            E_FATAL
+                ("Hyp array overflow; increase HYP_SZ in fsg_search.h\n");
     }
-    
-    i++;
-    if ((i+1) >= HYP_SZ)
-      E_FATAL("Hyp array overflow; increase HYP_SZ in fsg_search.h\n");
-  }
-  
-  filt_hyp->id = -1;	/* Sentinel */
-  search->filt_hyp=filt_hyp;
+
+    filt_hyp->id = -1;          /* Sentinel */
+    search->filt_hyp = filt_hyp;
 }
 
 #endif
 
 
-void fsg_search_history_backtrace (fsg_search_t *search,
-				   boolean check_fsg_final_state)
+void
+fsg_search_history_backtrace(fsg_search_t * search,
+                             boolean check_fsg_final_state)
 {
-  word_fsg_t *fsg;
-  fsg_hist_entry_t *hist_entry;
-  word_fsglink_t *fl;
-  int32 bestscore, bestscore_finalstate, besthist_finalstate, besthist;
-  int32 bpidx, score, frm, last_frm;
-  srch_hyp_t *hyp, *head;
+    word_fsg_t *fsg;
+    fsg_hist_entry_t *hist_entry;
+    word_fsglink_t *fl;
+    int32 bestscore, bestscore_finalstate, besthist_finalstate, besthist;
+    int32 bpidx, score, frm, last_frm;
+    srch_hyp_t *hyp, *head;
 
-  /* Free any existing search hypothesis */
-  fsg_search_hyp_free (search);
-  search->ascr = 0;
-  search->lscr = 0;
-  
-  fsg = search->fsg;
-  
-  /* Find most recent bestscoring history entry */
-  bpidx = fsg_history_n_entries (search->history) - 1;
-  if (bpidx > 0) {
-    hist_entry = fsg_history_entry_get(search->history, bpidx);
-    last_frm = frm = fsg_hist_entry_frame(hist_entry);
-    assert (frm < search->frame);
-  } else {
-    hist_entry = NULL;
-    last_frm = frm = -1;
-  }
-  
-  if ((bpidx <= 0) || (last_frm < 0)) {
-    /* Only the dummy root entry, or null transitions from it, exist */
-    if (check_fsg_final_state)      {
-      E_WARN("Empty utterance: %s\n", search->uttid);
+    /* Free any existing search hypothesis */
+    fsg_search_hyp_free(search);
+    search->ascr = 0;
+    search->lscr = 0;
+
+    fsg = search->fsg;
+
+    /* Find most recent bestscoring history entry */
+    bpidx = fsg_history_n_entries(search->history) - 1;
+    if (bpidx > 0) {
+        hist_entry = fsg_history_entry_get(search->history, bpidx);
+        last_frm = frm = fsg_hist_entry_frame(hist_entry);
+        assert(frm < search->frame);
+    }
+    else {
+        hist_entry = NULL;
+        last_frm = frm = -1;
     }
 
-    return;
-  }
-  
-  if (check_fsg_final_state) {
-    if (frm < (search->frame-1)) {
-      E_WARN("No history entry in the final frame %d; using last entry at frame %d\n",
-	     search->frame-1, frm);
-    }
-  }
-  
-  /*
-   * Find best history entry, as well as best entry leading to FSG final state
-   * in final frame.
-   */
-  bestscore = bestscore_finalstate = (int32)0x80000000;
-  besthist = besthist_finalstate = -1;
-  
-  while (frm == last_frm) {
-    fl = fsg_hist_entry_fsglink(hist_entry);
-    score = fsg_hist_entry_score (hist_entry);
-    
-    if (word_fsglink_to_state(fl) == word_fsg_final_state(fsg)) {
-      if (score > bestscore_finalstate) {
-	bestscore_finalstate = score;
-	besthist_finalstate = bpidx;
-      }
-    }
-    
-    if (score > bestscore) {
-      bestscore = score;
-      besthist = bpidx;
-    }
-    
-    --bpidx;
-    if (bpidx < 0)
-      break;
-    
-    hist_entry = fsg_history_entry_get(search->history, bpidx);
-    frm = fsg_hist_entry_frame(hist_entry);
-  }
-   
-  if (check_fsg_final_state) {
-    if (besthist_finalstate > 0) {
-      /*
-       * Final state entry found; discard the plain best entry.
-       * (Policy decision!  Is this the right thing to do??)
-       */
-      if (bestscore > bestscore_finalstate)
-	E_INFO("Best score (%d) > best final state score (%d); but using latter\n",
-	       bestscore, bestscore_finalstate);
-      
-      bestscore = bestscore_finalstate;
-      besthist = besthist_finalstate;
-    } else
-      E_ERROR("Final state not reached; backtracing from best scoring entry\n");
-  }
-  
-  /* Backtrace through the search history, starting from besthist */
-  head = NULL;
-  for (bpidx = besthist; bpidx > 0; ) {
-    hist_entry = fsg_history_entry_get(search->history, bpidx);
-    
-    hyp = (srch_hyp_t *) ckd_calloc (1, sizeof(srch_hyp_t));
-    
-    if (fsg_history_entry_hyp_extract (search->history, bpidx, hyp,search->dict) <= 0)
-      E_FATAL("fsg_history_entry_hyp_extract() returned <= 0\n");
-    hyp->next = head;
-    head = hyp;
+    if ((bpidx <= 0) || (last_frm < 0)) {
+        /* Only the dummy root entry, or null transitions from it, exist */
+        if (check_fsg_final_state) {
+            E_WARN("Empty utterance: %s\n", search->uttid);
+        }
 
-    search->lscr += hyp->lscr;
-    search->ascr += hyp->ascr;
-    
-    bpidx = fsg_hist_entry_pred(hist_entry);
-  }
-  search->hyp = head;
-  
+        return;
+    }
+
+    if (check_fsg_final_state) {
+        if (frm < (search->frame - 1)) {
+            E_WARN
+                ("No history entry in the final frame %d; using last entry at frame %d\n",
+                 search->frame - 1, frm);
+        }
+    }
+
+    /*
+     * Find best history entry, as well as best entry leading to FSG final state
+     * in final frame.
+     */
+    bestscore = bestscore_finalstate = (int32) 0x80000000;
+    besthist = besthist_finalstate = -1;
+
+    while (frm == last_frm) {
+        fl = fsg_hist_entry_fsglink(hist_entry);
+        score = fsg_hist_entry_score(hist_entry);
+
+        if (word_fsglink_to_state(fl) == word_fsg_final_state(fsg)) {
+            if (score > bestscore_finalstate) {
+                bestscore_finalstate = score;
+                besthist_finalstate = bpidx;
+            }
+        }
+
+        if (score > bestscore) {
+            bestscore = score;
+            besthist = bpidx;
+        }
+
+        --bpidx;
+        if (bpidx < 0)
+            break;
+
+        hist_entry = fsg_history_entry_get(search->history, bpidx);
+        frm = fsg_hist_entry_frame(hist_entry);
+    }
+
+    if (check_fsg_final_state) {
+        if (besthist_finalstate > 0) {
+            /*
+             * Final state entry found; discard the plain best entry.
+             * (Policy decision!  Is this the right thing to do??)
+             */
+            if (bestscore > bestscore_finalstate)
+                E_INFO
+                    ("Best score (%d) > best final state score (%d); but using latter\n",
+                     bestscore, bestscore_finalstate);
+
+            bestscore = bestscore_finalstate;
+            besthist = besthist_finalstate;
+        }
+        else
+            E_ERROR
+                ("Final state not reached; backtracing from best scoring entry\n");
+    }
+
+    /* Backtrace through the search history, starting from besthist */
+    head = NULL;
+    for (bpidx = besthist; bpidx > 0;) {
+        hist_entry = fsg_history_entry_get(search->history, bpidx);
+
+        hyp = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
+
+        if (fsg_history_entry_hyp_extract
+            (search->history, bpidx, hyp, search->dict) <= 0)
+            E_FATAL("fsg_history_entry_hyp_extract() returned <= 0\n");
+        hyp->next = head;
+        head = hyp;
+
+        search->lscr += hyp->lscr;
+        search->ascr += hyp->ascr;
+
+        bpidx = fsg_hist_entry_pred(hist_entry);
+    }
+    search->hyp = head;
+
 }
 
 
 /*
  * Cleanup at the end of each utterance.
  */
-void fsg_search_utt_end (fsg_search_t *search)
+void
+fsg_search_utt_end(fsg_search_t * search)
 {
-  gnode_t *gn;
-  fsg_pnode_t *pnode;
-  whmm_t *hmm;
-  int32 n_hist;
-  FILE *latfp;
-  char file[4096];
-  
-  /* Write history table if needed */
+    gnode_t *gn;
+    fsg_pnode_t *pnode;
+    whmm_t *hmm;
+    int32 n_hist;
+    FILE *latfp;
+    char file[4096];
 
-  if (cmd_ln_str("-bptbldir")) {
-    sprintf (file, "%s/%s.hist", cmd_ln_str("-bptbldir"), search->uttid);
-    if ((latfp = fopen(file, "w")) == NULL)
-      E_ERROR("fopen(%s,w) failed\n", file);
-    else {
-      fsg_history_dump (search->history, search->uttid, latfp,search->dict);
-      fclose(latfp);
+    /* Write history table if needed */
+
+    if (cmd_ln_str("-bptbldir")) {
+        sprintf(file, "%s/%s.hist", cmd_ln_str("-bptbldir"),
+                search->uttid);
+        if ((latfp = fopen(file, "w")) == NULL)
+            E_ERROR("fopen(%s,w) failed\n", file);
+        else {
+            fsg_history_dump(search->history, search->uttid, latfp,
+                             search->dict);
+            fclose(latfp);
+        }
     }
-  }
-  
-  /*
-   * Backtrace through Viterbi history to get the best recognition.
-   * First check if the final state has been reached; otherwise just use
-   * the best scoring state.
-   */
-  fsg_search_history_backtrace (search, TRUE);
 
-  /*  fsg_search_hyp_filter(search);*/
+    /*
+     * Backtrace through Viterbi history to get the best recognition.
+     * First check if the final state has been reached; otherwise just use
+     * the best scoring state.
+     */
+    fsg_search_history_backtrace(search, TRUE);
 
-  if (search->isBacktrace)
-    fsg_search_hyp_dump (search, stdout);
+    /*  fsg_search_hyp_filter(search); */
 
-  printf("\nFSGSRCH: ");
-  log_hypstr(stdout, search->hyp,search->uttid,0,search->ascr+search->lscr,search->dict);
-  fflush (stdout);
+    if (search->isBacktrace)
+        fsg_search_hyp_dump(search, stdout);
 
-  if(search->matchfp)
-    log_hypstr(search->matchfp, search->hyp,search->uttid,0,search->ascr+search->lscr,search->dict);
+    printf("\nFSGSRCH: ");
+    log_hypstr(stdout, search->hyp, search->uttid, 0,
+               search->ascr + search->lscr, search->dict);
+    fflush(stdout);
 
-  if(search->matchsegfp)
-    E_WARN("Option -hypsegfp is not implemented in FSG mode yet.\n");    
-  
-  n_hist = fsg_history_n_entries(search->history);
-  fsg_history_reset (search->history);
-  
-  fsg_lextree_utt_end (search->lextree);
+    if (search->matchfp)
+        log_hypstr(search->matchfp, search->hyp, search->uttid, 0,
+                   search->ascr + search->lscr, search->dict);
 
-  /* Deactivate all nodes in the current and next-frame active lists */ 
-  for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    
-    fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
-  }
-  for (gn = search->pnode_active_next; gn; gn = gnode_next(gn)) {
-    pnode = (fsg_pnode_t *) gnode_ptr(gn);
-    hmm = fsg_pnode_hmmptr(pnode);
-    
-    fsg_psubtree_pnode_deactivate (pnode,search->n_state_hmm);
-  }
-  
-  glist_free (search->pnode_active);
-  search->pnode_active = NULL;
-  glist_free (search->pnode_active_next);
-  search->pnode_active_next = NULL;
-  
-  /* Do NOT reset search->frame, or search->hyp */
-  
-  search->state = FSG_SEARCH_IDLE;
-  
-  E_INFO("Utt %s: %d frames, %d HMMs evaluated, %d history entries\n\n",
-	 search->uttid, search->frame, search->n_hmm_eval, n_hist);
-  
-  /* Sanity check */
-  if (search->n_hmm_eval > fsg_lextree_n_pnode(search->lextree)*search->frame) {
-    E_ERROR("SANITY CHECK #HMMEval(%d) > %d (#HMMs(%d)*#frames(%d)) FAILED\n",
-	    search->n_hmm_eval,
-	    fsg_lextree_n_pnode(search->lextree) * search->frame,
-	    fsg_lextree_n_pnode(search->lextree),
-	    search->frame);
-  }
+    if (search->matchsegfp)
+        E_WARN("Option -hypsegfp is not implemented in FSG mode yet.\n");
+
+    n_hist = fsg_history_n_entries(search->history);
+    fsg_history_reset(search->history);
+
+    fsg_lextree_utt_end(search->lextree);
+
+    /* Deactivate all nodes in the current and next-frame active lists */
+    for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+
+        fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+    }
+    for (gn = search->pnode_active_next; gn; gn = gnode_next(gn)) {
+        pnode = (fsg_pnode_t *) gnode_ptr(gn);
+        hmm = fsg_pnode_hmmptr(pnode);
+
+        fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+    }
+
+    glist_free(search->pnode_active);
+    search->pnode_active = NULL;
+    glist_free(search->pnode_active_next);
+    search->pnode_active_next = NULL;
+
+    /* Do NOT reset search->frame, or search->hyp */
+
+    search->state = FSG_SEARCH_IDLE;
+
+    E_INFO("Utt %s: %d frames, %d HMMs evaluated, %d history entries\n\n",
+           search->uttid, search->frame, search->n_hmm_eval, n_hist);
+
+    /* Sanity check */
+    if (search->n_hmm_eval >
+        fsg_lextree_n_pnode(search->lextree) * search->frame) {
+        E_ERROR
+            ("SANITY CHECK #HMMEval(%d) > %d (#HMMs(%d)*#frames(%d)) FAILED\n",
+             search->n_hmm_eval,
+             fsg_lextree_n_pnode(search->lextree) * search->frame,
+             fsg_lextree_n_pnode(search->lextree), search->frame);
+    }
 }
 
 
-int32 fsg_search_get_start_state (fsg_search_t *search)
+int32
+fsg_search_get_start_state(fsg_search_t * search)
 {
-  if ((! search) || (! search->fsg))
-    return -1;
-  return word_fsg_start_state(search->fsg);
+    if ((!search) || (!search->fsg))
+        return -1;
+    return word_fsg_start_state(search->fsg);
 }
 
 
-int32 fsg_search_get_final_state (fsg_search_t *search)
+int32
+fsg_search_get_final_state(fsg_search_t * search)
 {
-  if ((! search) || (! search->fsg))
-    return -1;
-  return word_fsg_final_state(search->fsg);
+    if ((!search) || (!search->fsg))
+        return -1;
+    return word_fsg_final_state(search->fsg);
 }
 
 
-int32 fsg_search_set_start_state (fsg_search_t *search, int32 state)
+int32
+fsg_search_set_start_state(fsg_search_t * search, int32 state)
 {
-  if (! search)
-    return -1;
-  
-  if (search->state != FSG_SEARCH_IDLE) {
-    E_ERROR("Attempt to switch FSG start state inside an utterance\n");
-    return -1;
-  }
-  
-  return (word_fsg_set_start_state (search->fsg, state));
+    if (!search)
+        return -1;
+
+    if (search->state != FSG_SEARCH_IDLE) {
+        E_ERROR("Attempt to switch FSG start state inside an utterance\n");
+        return -1;
+    }
+
+    return (word_fsg_set_start_state(search->fsg, state));
 }
 
 
-int32 fsg_search_set_final_state (fsg_search_t *search, int32 state)
+int32
+fsg_search_set_final_state(fsg_search_t * search, int32 state)
 {
-  if (! search)
-    return -1;
-  
-  if (search->state != FSG_SEARCH_IDLE) {
-    E_ERROR("Attempt to switch FSG start state inside an utterance\n");
-    return -1;
-  }
-  
-  return (word_fsg_set_final_state (search->fsg, state));
+    if (!search)
+        return -1;
+
+    if (search->state != FSG_SEARCH_IDLE) {
+        E_ERROR("Attempt to switch FSG start state inside an utterance\n");
+        return -1;
+    }
+
+    return (word_fsg_set_final_state(search->fsg, state));
 }

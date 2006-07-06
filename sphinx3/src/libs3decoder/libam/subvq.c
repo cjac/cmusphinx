@@ -99,38 +99,42 @@
  * calculation.  Also, calculate 1/(det) for the original codebooks, based on the VQ vars.
  * (See comment in libmisc/vector.h.)
  */
-static void subvq_maha_precomp (subvq_t *svq, float64 floor)
+static void
+subvq_maha_precomp(subvq_t * svq, float64 floor)
 {
     int32 s;
     float32 *lrd;
     vector_gautbl_t *gautbl;
-    
-    E_INFO("Precomputing Mahalanobis distance invariants\n");
-    
-    lrd = (float32 *) ckd_calloc (svq->n_sv * svq->vqsize, sizeof(float32));
-    
-    for (s = 0; s < svq->n_sv; s++) {
-	gautbl = &(svq->gautbl[s]);
 
-	vector_gautbl_var_floor (gautbl, floor);
-	
-	gautbl->lrd = lrd;
-	lrd += svq->vqsize;
-	vector_gautbl_maha_precomp (gautbl);
+    E_INFO("Precomputing Mahalanobis distance invariants\n");
+
+    lrd = (float32 *) ckd_calloc(svq->n_sv * svq->vqsize, sizeof(float32));
+
+    for (s = 0; s < svq->n_sv; s++) {
+        gautbl = &(svq->gautbl[s]);
+
+        vector_gautbl_var_floor(gautbl, floor);
+
+        gautbl->lrd = lrd;
+        lrd += svq->vqsize;
+        vector_gautbl_maha_precomp(gautbl);
     }
 }
 
 
-static void subvq_map_compact (subvq_t *vq, mgau_model_t *g)
+static void
+subvq_map_compact(subvq_t * vq, mgau_model_t * g)
 {
     int32 r, c, c2, s;
-    
+
     if (g) {
-	if ((g->n_mgau != vq->origsize.r) || (g->max_comp != vq->origsize.c))
-	    E_FATAL("Model size conflict: %d x %d (SubVQ) vs %d x %d (Original)\n",
-		    vq->origsize.r, vq->origsize.c, g->n_mgau, g->max_comp);
+        if ((g->n_mgau != vq->origsize.r)
+            || (g->max_comp != vq->origsize.c))
+            E_FATAL
+                ("Model size conflict: %d x %d (SubVQ) vs %d x %d (Original)\n",
+                 vq->origsize.r, vq->origsize.c, g->n_mgau, g->max_comp);
     }
-    
+
     /*
      * Compress map entries by removing invalid ones.  NOTE: There's not much of a consistency
      * check to ensure that the entries remaining do map correctly on to the valid entries in
@@ -138,34 +142,37 @@ static void subvq_map_compact (subvq_t *vq, mgau_model_t *g)
      * the NUMBER of valid entries (components) in each mixture.
      */
     for (r = 0; r < vq->origsize.r; r++) {
-	for (c = 0, c2 = 0; c < vq->origsize.c; c++) {
-	    if (vq->map[r][c][0] < 0) {
-		/* All ought to be < 0 */
-		for (s = 1; s < vq->n_sv; s++) {
-		    if (vq->map[r][c][s] >= 0)
-			E_FATAL("Partially undefined map[%d][%d]\n", r, c);
-		}
-	    } else {
-		if (c2 != c) {
-		    for (s = 0; s < vq->n_sv; s++) {
-			if (vq->map[r][c][s] < 0)
-			    E_FATAL("Partially undefined map[%d][%d]\n", r, c);
-			vq->map[r][c2][s] = vq->map[r][c][s];
-		    }
-		}
-		c2++;
-	    }
-	}
-	
-	if (g && (c2 != mgau_n_comp (g, r)))
-	    E_FATAL("Mixture %d: #Valid components conflict: %d (SubVQ) vs %d (Original)\n",
-		    r, c2, mgau_n_comp(g,r));
-	
-	/* Invalidate the remaining map entries, for good measure */
-	for (; c2 < vq->origsize.c; c2++) {
-	    for (s = 0; s < vq->n_sv; s++)
-		vq->map[r][c2][s] = -1;
-	}
+        for (c = 0, c2 = 0; c < vq->origsize.c; c++) {
+            if (vq->map[r][c][0] < 0) {
+                /* All ought to be < 0 */
+                for (s = 1; s < vq->n_sv; s++) {
+                    if (vq->map[r][c][s] >= 0)
+                        E_FATAL("Partially undefined map[%d][%d]\n", r, c);
+                }
+            }
+            else {
+                if (c2 != c) {
+                    for (s = 0; s < vq->n_sv; s++) {
+                        if (vq->map[r][c][s] < 0)
+                            E_FATAL("Partially undefined map[%d][%d]\n", r,
+                                    c);
+                        vq->map[r][c2][s] = vq->map[r][c][s];
+                    }
+                }
+                c2++;
+            }
+        }
+
+        if (g && (c2 != mgau_n_comp(g, r)))
+            E_FATAL
+                ("Mixture %d: #Valid components conflict: %d (SubVQ) vs %d (Original)\n",
+                 r, c2, mgau_n_comp(g, r));
+
+        /* Invalidate the remaining map entries, for good measure */
+        for (; c2 < vq->origsize.c; c2++) {
+            for (s = 0; s < vq->n_sv; s++)
+                vq->map[r][c2][s] = -1;
+        }
     }
 }
 
@@ -177,166 +184,183 @@ static void subvq_map_compact (subvq_t *vq, mgau_model_t *g)
  * lookups, linearize the map entries by viewing the subvq scores as a linear array rather than
  * a 2-D array.
  */
-static void subvq_map_linearize (subvq_t *vq)
+static void
+subvq_map_linearize(subvq_t * vq)
 {
     int32 r, c, s;
-    
+
     for (r = 0; r < vq->origsize.r; r++) {
-	for (c = 0; (c < vq->origsize.c) && (vq->map[r][c][0] >= 0); c++) {
-	    for (s = 0; s < vq->n_sv; s++)
-		vq->map[r][c][s] = (s * vq->vqsize) + vq->map[r][c][s];
-	}
+        for (c = 0; (c < vq->origsize.c) && (vq->map[r][c][0] >= 0); c++) {
+            for (s = 0; s < vq->n_sv; s++)
+                vq->map[r][c][s] = (s * vq->vqsize) + vq->map[r][c][s];
+        }
     }
 }
 
 
-subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g)
+subvq_t *
+subvq_init(char *file, float64 varfloor, int32 max_sv, mgau_model_t * g)
 {
     FILE *fp;
     char line[16384];
-    int32 n_sv;		/* #Subvectors in file, as opposed to that used */
+    int32 n_sv;                 /* #Subvectors in file, as opposed to that used */
     int32 s, k, l, n, r, c;
     char *strp;
     subvq_t *vq;
-    
-    vq = (subvq_t *) ckd_calloc (1, sizeof(subvq_t));
 
-    vq->VQ_EVAL = cmd_ln_int32 ("-vqeval");	/*Arthur : It nows work for arbitrary size of sub-vector*/    
+    vq = (subvq_t *) ckd_calloc(1, sizeof(subvq_t));
+
+    vq->VQ_EVAL = cmd_ln_int32("-vqeval");      /*Arthur : It nows work for arbitrary size of sub-vector */
 
     fp = myfopen(file, "r");
 
-    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n", file,vq->VQ_EVAL);
-    
+    E_INFO("Loading Mixture Gaussian sub-VQ file '%s' (vq_eval: %d)\n",
+           file, vq->VQ_EVAL);
+
     /* Read until "Sub-vectors" */
     for (;;) {
-	if (fgets (line, sizeof(line), fp) == NULL)
-	    E_FATAL("Failed to read VQParam header\n");
-	if (sscanf (line, "VQParam %d %d -> %d %d",
-		    &(vq->origsize.r), &(vq->origsize.c), &(vq->n_sv), &(vq->vqsize)) == 4)
-	    break;
+        if (fgets(line, sizeof(line), fp) == NULL)
+            E_FATAL("Failed to read VQParam header\n");
+        if (sscanf(line, "VQParam %d %d -> %d %d",
+                   &(vq->origsize.r), &(vq->origsize.c), &(vq->n_sv),
+                   &(vq->vqsize)) == 4)
+            break;
     }
-    
+
     if (g) {
-	if ((g->n_mgau != vq->origsize.r) || (g->max_comp != vq->origsize.c))
-	    E_FATAL("Model size conflict: %d x %d (SubVQ) vs %d x %d (Original)\n",
-		    vq->origsize.r, vq->origsize.c, g->n_mgau, g->max_comp);
+        if ((g->n_mgau != vq->origsize.r)
+            || (g->max_comp != vq->origsize.c))
+            E_FATAL
+                ("Model size conflict: %d x %d (SubVQ) vs %d x %d (Original)\n",
+                 vq->origsize.r, vq->origsize.c, g->n_mgau, g->max_comp);
     }
-    
+
     if (max_sv < 0)
-      max_sv = vq->n_sv;
+        max_sv = vq->n_sv;
     if (max_sv < vq->n_sv)
-      E_INFO("Using %d subvectors out of %d\n", max_sv, vq->n_sv);
+        E_INFO("Using %d subvectors out of %d\n", max_sv, vq->n_sv);
     else if (max_sv > vq->n_sv) {
-      E_WARN("#Subvectors specified(%d) > available(%d); using latter\n", max_sv, vq->n_sv);
-      max_sv = vq->n_sv;
+        E_WARN("#Subvectors specified(%d) > available(%d); using latter\n",
+               max_sv, vq->n_sv);
+        max_sv = vq->n_sv;
     }
-    
+
     n_sv = vq->n_sv;
     vq->n_sv = max_sv;
-    if (vq->n_sv < vq->VQ_EVAL)	/* RAH, 5.9.01, sanity check to make sure VQ_EVAL isn't higher than the n_sv */
-      vq->VQ_EVAL = vq->n_sv;
-    vq->featdim = (int32 **) ckd_calloc (vq->n_sv, sizeof(int32 *));
-    vq->gautbl = (vector_gautbl_t *) ckd_calloc (vq->n_sv, sizeof(vector_gautbl_t));
-    vq->map = (int32 ***) ckd_calloc_3d (vq->origsize.r, vq->origsize.c, vq->n_sv,
-					 sizeof(int32));
-    
+    if (vq->n_sv < vq->VQ_EVAL) /* RAH, 5.9.01, sanity check to make sure VQ_EVAL isn't higher than the n_sv */
+        vq->VQ_EVAL = vq->n_sv;
+    vq->featdim = (int32 **) ckd_calloc(vq->n_sv, sizeof(int32 *));
+    vq->gautbl =
+        (vector_gautbl_t *) ckd_calloc(vq->n_sv, sizeof(vector_gautbl_t));
+    vq->map =
+        (int32 ***) ckd_calloc_3d(vq->origsize.r, vq->origsize.c, vq->n_sv,
+                                  sizeof(int32));
+
     /* Read subvector sizes and feature dimension maps */
     for (s = 0; s < n_sv; s++) {
-	if ((fgets (line, sizeof(line), fp) == NULL) ||
-	    (sscanf (line, "Subvector %d length %d%n", &k, &l, &n) != 2) || (k != s))
-	    E_FATAL("Error reading length(subvector %d)\n", s);
-	
-	if (s < vq->n_sv) {
-	    vq->gautbl[s].veclen = l;
-	    vq->featdim[s] = (int32 *) ckd_calloc (vq->gautbl[s].veclen, sizeof(int32));
-	
-	    for (strp = line+n, c = 0; c < vq->gautbl[s].veclen; c++) {
-		if (sscanf (strp, "%d%n", &(vq->featdim[s][c]), &n) != 1)
-		    E_FATAL("Error reading subvector(%d).featdim(%d)\n", s, c);
-		strp += n;
-	    }
-	    
-	    vector_gautbl_alloc (&(vq->gautbl[s]), vq->vqsize, vq->gautbl[s].veclen);
-	}
+        if ((fgets(line, sizeof(line), fp) == NULL) ||
+            (sscanf(line, "Subvector %d length %d%n", &k, &l, &n) != 2)
+            || (k != s))
+            E_FATAL("Error reading length(subvector %d)\n", s);
+
+        if (s < vq->n_sv) {
+            vq->gautbl[s].veclen = l;
+            vq->featdim[s] =
+                (int32 *) ckd_calloc(vq->gautbl[s].veclen, sizeof(int32));
+
+            for (strp = line + n, c = 0; c < vq->gautbl[s].veclen; c++) {
+                if (sscanf(strp, "%d%n", &(vq->featdim[s][c]), &n) != 1)
+                    E_FATAL("Error reading subvector(%d).featdim(%d)\n", s,
+                            c);
+                strp += n;
+            }
+
+            vector_gautbl_alloc(&(vq->gautbl[s]), vq->vqsize,
+                                vq->gautbl[s].veclen);
+        }
     }
-    
+
     /* Echo info for sanity check */
-    E_INFO("Original #codebooks(states)/codewords: %d x %d\n", vq->origsize.r, vq->origsize.c);
+    E_INFO("Original #codebooks(states)/codewords: %d x %d\n",
+           vq->origsize.r, vq->origsize.c);
     E_INFO("Subvectors: %d, VQsize: %d\n", vq->n_sv, vq->vqsize);
     for (s = 0; s < vq->n_sv; s++) {
-	E_INFO("SV %d feature dims(%d): ", s, vq->gautbl[s].veclen);
-	for (c = 0; c < vq->gautbl[s].veclen; c++)
-	    fprintf (stderr, " %2d", vq->featdim[s][c]);
-	fprintf (stderr, "\n");
+        E_INFO("SV %d feature dims(%d): ", s, vq->gautbl[s].veclen);
+        for (c = 0; c < vq->gautbl[s].veclen; c++)
+            fprintf(stderr, " %2d", vq->featdim[s][c]);
+        fprintf(stderr, "\n");
     }
-    fflush (stderr);
-    
+    fflush(stderr);
+
     /* Read VQ codebooks and maps for each subvector */
     for (s = 0; s < n_sv; s++) {
-	E_INFO("Reading subvq %d%s\n", s, (s < vq->n_sv) ? "" : " (not used)");
-	
-	E_INFO("Reading codebook\n");
-	if ((fgets (line, sizeof(line), fp) == NULL) ||
-	    (sscanf (line, "Codebook %d", &k) != 1) || (k != s))
-	    E_FATAL("Error reading codebook header\n", s);
-	
-	for (r = 0; r < vq->vqsize; r++) {
-	    if (fgets (line, sizeof(line), fp) == NULL)
-		E_FATAL("Error reading row(%d)\n", r);
-	    
-	    if (s >= vq->n_sv)
-		continue;
-	    
-	    for (strp = line, c = 0; c < vq->gautbl[s].veclen; c++) {
-		if (sscanf (strp, "%f %f%n",
-			    &(vq->gautbl[s].mean[r][c]), &(vq->gautbl[s].var[r][c]), &k) != 2)
-		    E_FATAL("Error reading row(%d) col(%d)\n", r, c);
-		strp += k;
-	    }
-	}
-	
-	E_INFO("Reading map\n");
-	if ((fgets (line, sizeof(line), fp) == NULL) ||
-	    (sscanf (line, "Map %d", &k) != 1) || (k != s))
-	    E_FATAL("Error reading map header\n", s);
-	
-	for (r = 0; r < vq->origsize.r; r++) {
-	    if (fgets (line, sizeof(line), fp) == NULL)
-		E_FATAL("Error reading row(%d)\n", r);
-	    
-	    if (s >= vq->n_sv)
-		continue;
-	    
-	    for (strp = line, c = 0; c < vq->origsize.c; c++) {
-		if (sscanf (strp, "%d%n", &(vq->map[r][c][s]), &k) != 1)
-		    E_FATAL("Error reading row(%d) col(%d)\n", r, c);
-		strp += k;
-	    }
-	}
-	
-	fflush (stdout);
+        E_INFO("Reading subvq %d%s\n", s,
+               (s < vq->n_sv) ? "" : " (not used)");
+
+        E_INFO("Reading codebook\n");
+        if ((fgets(line, sizeof(line), fp) == NULL) ||
+            (sscanf(line, "Codebook %d", &k) != 1) || (k != s))
+            E_FATAL("Error reading codebook header\n", s);
+
+        for (r = 0; r < vq->vqsize; r++) {
+            if (fgets(line, sizeof(line), fp) == NULL)
+                E_FATAL("Error reading row(%d)\n", r);
+
+            if (s >= vq->n_sv)
+                continue;
+
+            for (strp = line, c = 0; c < vq->gautbl[s].veclen; c++) {
+                if (sscanf(strp, "%f %f%n",
+                           &(vq->gautbl[s].mean[r][c]),
+                           &(vq->gautbl[s].var[r][c]), &k) != 2)
+                    E_FATAL("Error reading row(%d) col(%d)\n", r, c);
+                strp += k;
+            }
+        }
+
+        E_INFO("Reading map\n");
+        if ((fgets(line, sizeof(line), fp) == NULL) ||
+            (sscanf(line, "Map %d", &k) != 1) || (k != s))
+            E_FATAL("Error reading map header\n", s);
+
+        for (r = 0; r < vq->origsize.r; r++) {
+            if (fgets(line, sizeof(line), fp) == NULL)
+                E_FATAL("Error reading row(%d)\n", r);
+
+            if (s >= vq->n_sv)
+                continue;
+
+            for (strp = line, c = 0; c < vq->origsize.c; c++) {
+                if (sscanf(strp, "%d%n", &(vq->map[r][c][s]), &k) != 1)
+                    E_FATAL("Error reading row(%d) col(%d)\n", r, c);
+                strp += k;
+            }
+        }
+
+        fflush(stdout);
     }
-    
-    if ((fscanf (fp, "%s", line) != 1) || (strcmp (line, "End") != 0))
-	E_FATAL("Error reading 'End' token\n");
-    
-    fclose (fp);
-    
-    subvq_maha_precomp (vq, varfloor);
-    subvq_map_compact (vq, g);
-    subvq_map_linearize (vq);
-    
+
+    if ((fscanf(fp, "%s", line) != 1) || (strcmp(line, "End") != 0))
+        E_FATAL("Error reading 'End' token\n");
+
+    fclose(fp);
+
+    subvq_maha_precomp(vq, varfloor);
+    subvq_map_compact(vq, g);
+    subvq_map_linearize(vq);
+
     n = 0;
     for (s = 0; s < n_sv; s++) {
-	if (vq->gautbl[s].veclen > n)
-	    n = vq->gautbl[s].veclen;
+        if (vq->gautbl[s].veclen > n)
+            n = vq->gautbl[s].veclen;
     }
-    assert (n > 0);
-    vq->subvec = (float32 *) ckd_calloc (n, sizeof(float32));
-    vq->vqdist = (int32 **) ckd_calloc_2d (vq->n_sv, vq->vqsize, sizeof(int32));
-    vq->gauscore = (int32 *) ckd_calloc (vq->origsize.c, sizeof(int32));
-    vq->mgau_sl = (int32 *) ckd_calloc (vq->origsize.c + 1, sizeof(int32));
-    
+    assert(n > 0);
+    vq->subvec = (float32 *) ckd_calloc(n, sizeof(float32));
+    vq->vqdist =
+        (int32 **) ckd_calloc_2d(vq->n_sv, vq->vqsize, sizeof(int32));
+    vq->gauscore = (int32 *) ckd_calloc(vq->origsize.c, sizeof(int32));
+    vq->mgau_sl = (int32 *) ckd_calloc(vq->origsize.c + 1, sizeof(int32));
+
     return vq;
 }
 
@@ -348,182 +372,194 @@ subvq_t *subvq_init (char *file, float64 varfloor, int32 max_sv, mgau_model_t *g
  * components in the given mixture (using the vq->map).
  * Return value: #Candidates in the returned shortlist.
  */
-int32 subvq_mgau_shortlist (subvq_t *vq,
-				   int32 m,	/* In: Mixture index */
-				   int32 n,	/* In: #Components in specified mixture */
-				   int32 beam)	/* In: Threshold to select active components */
-{
+int32
+subvq_mgau_shortlist(subvq_t * vq, int32 m,     /* In: Mixture index */
+                     int32 n,   /* In: #Components in specified mixture */
+                     int32 beam)
+{                               /* In: Threshold to select active components */
     int32 *gauscore;
     int32 *map;
     int32 i, v, bv, th, nc;
     int32 *sl;
     int32 *vqdist;
     int32 sv_id;
-    
-    vqdist = vq->vqdist[0];	/* Since map is linearized for efficiency, must also
-				   look at vqdist[][] as vqdist[] */
+
+    vqdist = vq->vqdist[0];     /* Since map is linearized for efficiency, must also
+                                   look at vqdist[][] as vqdist[] */
     gauscore = vq->gauscore;
     sl = vq->mgau_sl;
     /* Special case when vq->n_sv == 3; for speed */
     map = vq->map[m][0];
     bv = MAX_NEG_INT32;
-    
+
     switch (vq->n_sv) {
     case 3:
-	for (i = 0; i < n; i++) {
-	  if (vq->VQ_EVAL == 1) {
-	    v = (int32) vqdist[*map];/* If we are not weighting the cep values, we need to adjust the subvqbeam */
-	    map += 3;
-	  } else {
-	    /* RAH, we are ignoring the delta-delta, scoring the delta twice, strangely this works better than weighting the scores  */
-	    /* I believe it has to do with the beam widths */
-	    if (vq->VQ_EVAL == 2) {
-	    v = vqdist[*(map++)];
-	      v += 2 * vqdist[*map]; /* RAH Count delta twice, we can keep the same subvqbeam as vq_eval = 3 if we double the delta*/
-	      map += 2;
-	    } else {
-	      v = vqdist[*(map++)];/* Standard way */
-	      v += vqdist[*(map++)]; /*  */
-	      v += vqdist[*(map++)]; /*  */
-	    }
-	  }
+        for (i = 0; i < n; i++) {
+            if (vq->VQ_EVAL == 1) {
+                v = (int32) vqdist[*map];       /* If we are not weighting the cep values, we need to adjust the subvqbeam */
+                map += 3;
+            }
+            else {
+                /* RAH, we are ignoring the delta-delta, scoring the delta twice, strangely this works better than weighting the scores  */
+                /* I believe it has to do with the beam widths */
+                if (vq->VQ_EVAL == 2) {
+                    v = vqdist[*(map++)];
+                    v += 2 * vqdist[*map];      /* RAH Count delta twice, we can keep the same subvqbeam as vq_eval = 3 if we double the delta */
+                    map += 2;
+                }
+                else {
+                    v = vqdist[*(map++)];       /* Standard way */
+                    v += vqdist[*(map++)];      /*  */
+                    v += vqdist[*(map++)];      /*  */
+                }
+            }
 
-	  gauscore[i] = v;
-	    
-	  if (bv < v)
-	    bv = v;
-	}
-	break;
+            gauscore[i] = v;
+
+            if (bv < v)
+                bv = v;
+        }
+        break;
     case 2:
-	for (i = 0; i < n; i++) {
-	    v = vqdist[*(map++)];
-	    v += vqdist[*(map++)];
-	    gauscore[i] = v;
-	   
-	    if (bv < v)
-		bv = v;
-	}
-	break;
+        for (i = 0; i < n; i++) {
+            v = vqdist[*(map++)];
+            v += vqdist[*(map++)];
+            gauscore[i] = v;
+
+            if (bv < v)
+                bv = v;
+        }
+        break;
     case 1:
-      for (i = 0; i < n; i++) {
-	v = vqdist[*(map++)];
-	gauscore[i] = v;
-	
-	if (bv < v)
-	  bv = v;
-      }
-      break;
+        for (i = 0; i < n; i++) {
+            v = vqdist[*(map++)];
+            gauscore[i] = v;
+
+            if (bv < v)
+                bv = v;
+        }
+        break;
     default:
-      for (i = 0; i < n; i++) {
-	v=0;
-	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
-	  v+=vqdist[*(map++)];
-	}
-	gauscore[i] = v;
-	
-	if (bv < v)
-	  bv = v;
-      }
+        for (i = 0; i < n; i++) {
+            v = 0;
+            for (sv_id = 0; sv_id < vq->n_sv; sv_id++) {
+                v += vqdist[*(map++)];
+            }
+            gauscore[i] = v;
+
+            if (bv < v)
+                bv = v;
+        }
     }
-    
+
     th = bv + beam;
     nc = 0;
     for (i = 0; i < n; i++) {
-      if (gauscore[i] >= th)
-	sl[nc++] = i;
+        if (gauscore[i] >= th)
+            sl[nc++] = i;
     }
     sl[nc] = -1;
-    
+
     return nc;
 }
 
 
-void subvq_subvec_eval_logs3 (subvq_t *vq, float32 *feat, int32 s)
+void
+subvq_subvec_eval_logs3(subvq_t * vq, float32 * feat, int32 s)
 {
     int32 i;
     int32 *featdim;
-    
+
     /* Extract subvector from feat */
     featdim = vq->featdim[s];
     for (i = 0; i < vq->gautbl[s].veclen; i++)
-	vq->subvec[i] = feat[featdim[i]];
-    
+        vq->subvec[i] = feat[featdim[i]];
+
     /* Evaluate distances between extracted subvector and corresponding codebook */
-    vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec, vq->vqdist[s]);
+    vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec,
+                             vq->vqdist[s]);
 }
 
 
-void subvq_gautbl_eval_logs3 (subvq_t *vq, float32 *feat)
+void
+subvq_gautbl_eval_logs3(subvq_t * vq, float32 * feat)
 {
     int32 s, i;
     int32 *featdim;
-    
+
     for (s = 0; s < vq->n_sv; s++) {
-	/* Extract subvector from feat */
-	featdim = vq->featdim[s];
-	for (i = 0; i < vq->gautbl[s].veclen; i++)
-	    vq->subvec[i] = feat[featdim[i]];
-	
-	/* Evaluate distances between extracted subvector and corresponding codebook */
-    /* RAH, only evaluate the first VQ_EVAL set of features */
-    if (s < vq->VQ_EVAL) 
-	vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize, vq->subvec, vq->vqdist[s]);
+        /* Extract subvector from feat */
+        featdim = vq->featdim[s];
+        for (i = 0; i < vq->gautbl[s].veclen; i++)
+            vq->subvec[i] = feat[featdim[i]];
+
+        /* Evaluate distances between extracted subvector and corresponding codebook */
+        /* RAH, only evaluate the first VQ_EVAL set of features */
+        if (s < vq->VQ_EVAL)
+            vector_gautbl_eval_logs3(&(vq->gautbl[s]), 0, vq->vqsize,
+                                     vq->subvec, vq->vqdist[s]);
     }
 }
 
 
 #if 0
-int32 subvq_frame_eval (subvq_t *vq, mgau_model_t *g, int32 beam, float32 *feat,
-			int32 *sen_active, int32 *senscr)
+int32
+subvq_frame_eval(subvq_t * vq, mgau_model_t * g, int32 beam,
+                 float32 * feat, int32 * sen_active, int32 * senscr)
 {
-  int32 s;
-  int32 best, ns, ng;
-  
-  best = MAX_NEG_INT32;
-  ns = 0;
-  ng = 0;
-  if (! vq) {
-    /* No subvq model, use the original (SLOW!!) */
-    for (s = 0; s < g->n_mgau; s++) {
-      if ((! sen_active) || sen_active[s]) {
-	senscr[s] = mgau_eval (g, s, NULL, feat);
-	if (best < senscr[s])
-	  best = senscr[s];
-	ns++;
-	ng += mgau_n_comp (g, s);
-      } else
-	senscr[s] = S3_LOGPROB_ZERO;
+    int32 s;
+    int32 best, ns, ng;
+
+    best = MAX_NEG_INT32;
+    ns = 0;
+    ng = 0;
+    if (!vq) {
+        /* No subvq model, use the original (SLOW!!) */
+        for (s = 0; s < g->n_mgau; s++) {
+            if ((!sen_active) || sen_active[s]) {
+                senscr[s] = mgau_eval(g, s, NULL, feat);
+                if (best < senscr[s])
+                    best = senscr[s];
+                ns++;
+                ng += mgau_n_comp(g, s);
+            }
+            else
+                senscr[s] = S3_LOGPROB_ZERO;
+        }
     }
-  } else {
-    /* Evaluate subvq model for given feature vector */
-    subvq_gautbl_eval_logs3 (vq, feat);
-    
-    /* Find mixture component shortlists using subvq scores, and evaluate senones */
-    for (s = 0; s < g->n_mgau; s++) {
-      if ((! sen_active) || sen_active[s]) {
-	ng += subvq_mgau_shortlist (vq, s, mgau_n_comp(g,s), beam);
-	
-	senscr[s] = mgau_eval (g, s, vq->mgau_sl, feat);
-	if (best < senscr[s])
-	  best = senscr[s];
-	
-	ns++;
-      } else
-	senscr[s] = S3_LOGPROB_ZERO;
+    else {
+        /* Evaluate subvq model for given feature vector */
+        subvq_gautbl_eval_logs3(vq, feat);
+
+        /* Find mixture component shortlists using subvq scores, and evaluate senones */
+        for (s = 0; s < g->n_mgau; s++) {
+            if ((!sen_active) || sen_active[s]) {
+                ng += subvq_mgau_shortlist(vq, s, mgau_n_comp(g, s), beam);
+
+                senscr[s] = mgau_eval(g, s, vq->mgau_sl, feat);
+                if (best < senscr[s])
+                    best = senscr[s];
+
+                ns++;
+            }
+            else
+                senscr[s] = S3_LOGPROB_ZERO;
+        }
     }
-  }
-    
+
     /* Normalize senone scores */
     for (s = 0; s < g->n_mgau; s++)
-	senscr[s] -= best;
-    
+        senscr[s] -= best;
+
     g->frm_sen_eval = ns;
     g->frm_gau_eval = ng;
-    
+
     return best;
 }
 #endif
-int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *active)
+int32
+subvq_mgau_eval(mgau_model_t * g, subvq_t * vq, int32 m, int32 n,
+                int32 * active)
 {
     mgau_t *mgau;
     int32 *map;
@@ -531,44 +567,45 @@ int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *ac
     int32 c;
     int32 *vqdist;
     int32 score;
-	int32 last_active;
+    int32 last_active;
 
     float64 f;
     f = log_to_logs3_factor();
 
-    vqdist = vq->vqdist[0];	
+    vqdist = vq->vqdist[0];
     score = S3_LOGPROB_ZERO;
     mgau = &(g->mgau[m]);
     map = vq->map[m][0];
 
-    if(!active){
-      for (i = 0; i < n; i++) {
-	v=0;
-	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
-	  v+=vqdist[*(map++)];
-	}
-	score = logs3_add (score, v + mgau->mixw[i]);
-      }
-    }else{
-      last_active=0;
-      for (i = 0; active[i] >=0; i++) {
-	c=active[i];
-      }
-      for (i = 0; active[i] >=0; i++) {
-	c=active[i];
-	map+=(c-last_active)*vq->n_sv;
-	v=0;
-	for(sv_id =0 ; sv_id<vq->n_sv; sv_id++){
-	  v+=vqdist[*(map++)];
-	}
+    if (!active) {
+        for (i = 0; i < n; i++) {
+            v = 0;
+            for (sv_id = 0; sv_id < vq->n_sv; sv_id++) {
+                v += vqdist[*(map++)];
+            }
+            score = logs3_add(score, v + mgau->mixw[i]);
+        }
+    }
+    else {
+        last_active = 0;
+        for (i = 0; active[i] >= 0; i++) {
+            c = active[i];
+        }
+        for (i = 0; active[i] >= 0; i++) {
+            c = active[i];
+            map += (c - last_active) * vq->n_sv;
+            v = 0;
+            for (sv_id = 0; sv_id < vq->n_sv; sv_id++) {
+                v += vqdist[*(map++)];
+            }
 
-	last_active=c+1;
-	score = logs3_add (score, v + mgau->mixw[i]);
-      }
+            last_active = c + 1;
+            score = logs3_add(score, v + mgau->mixw[i]);
+        }
     }
 
-    if(score == S3_LOGPROB_ZERO){
-      E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n");
+    if (score == S3_LOGPROB_ZERO) {
+        E_INFO("Warning!! Score is S3_LOGPROB_ZERO\n");
     }
 
     return score;
@@ -577,64 +614,66 @@ int32 subvq_mgau_eval (mgau_model_t *g, subvq_t *vq, int32 m, int32 n, int32 *ac
 
 
 /* RAH, free memory allocated by subvq_init() */
-void subvq_free (subvq_t *s)
+void
+subvq_free(subvq_t * s)
 {
-  int i;
+    int i;
 
 
 
-  if (s) {
-    
-    for (i=0;i<s->n_sv;i++) {
+    if (s) {
 
-      if(i <s->n_sv){
-	/*vector_gautbl_free(&(s->gautbl[i]));*/
+        for (i = 0; i < s->n_sv; i++) {
 
-	if (s->gautbl[i].mean!=NULL) 
-	  ckd_free_2d((void**)(s->gautbl[i].mean));
+            if (i < s->n_sv) {
+                /*vector_gautbl_free(&(s->gautbl[i])); */
 
-	if (s->gautbl[i].var!=NULL) 
-	  ckd_free_2d((void**)(s->gautbl[i].var));
+                if (s->gautbl[i].mean != NULL)
+                    ckd_free_2d((void **) (s->gautbl[i].mean));
+
+                if (s->gautbl[i].var != NULL)
+                    ckd_free_2d((void **) (s->gautbl[i].var));
 
 
-	if (s->featdim[i]) ckd_free ((void *) s->featdim[i]);
-      }
+                if (s->featdim[i])
+                    ckd_free((void *) s->featdim[i]);
+            }
+        }
+
+        /* This is tricky because this part of memory is actually allocated only once in .
+           subvq_maha_precomp.  So multiple free is actually wrong. */
+
+        if (s->gautbl[0].lrd != NULL)
+            ckd_free((void *) (s->gautbl[0].lrd));
+
+
+        if (s->featdim)
+            ckd_free((void *) s->featdim);
+
+        /* Free gaussian table */
+        if (s->gautbl)
+            ckd_free((void *) s->gautbl);
+
+
+        /* Free map */
+        if (s->map)
+            ckd_free_3d((void ***) s->map);
+
+        if (s->subvec)
+            ckd_free((void *) s->subvec);
+
+        if (s->vqdist)
+            ckd_free_2d((void **) s->vqdist);
+
+        if (s->gauscore)
+            ckd_free((void *) s->gauscore);
+
+        if (s->mgau_sl)
+            ckd_free((void *) s->mgau_sl);
+
+
+        ckd_free((void *) s);
+
+
     }
-
-    /* This is tricky because this part of memory is actually allocated only once in .
-       subvq_maha_precomp.  So multiple free is actually wrong.*/
-
-    if (s->gautbl[0].lrd!=NULL) 
-      ckd_free((void*)(s->gautbl[0].lrd));
-
-
-    if (s->featdim) 
-      ckd_free ((void *) s->featdim);
-
-    /* Free gaussian table */
-    if (s->gautbl) 
-      ckd_free ((void *)s->gautbl);      
-
-
-    /* Free map */
-    if (s->map)
-      ckd_free_3d ((void ***) s->map);
-
-    if (s->subvec) 
-      ckd_free ((void *) s->subvec);
-
-    if (s->vqdist) 
-      ckd_free_2d ((void **) s->vqdist);
-
-    if (s->gauscore) 
-      ckd_free ((void *) s->gauscore);
-
-    if (s->mgau_sl) 
-      ckd_free ((void *) s->mgau_sl);
-
-	
-    ckd_free ((void *)s);
-
-
-  }
 }
