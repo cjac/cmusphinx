@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* 
    A C-program for MT19937, with initialization improved 2002/1/26.
    Coded by Takuji Nishimura and Makoto Matsumoto.
@@ -12,16 +13,16 @@
    modification, are permitted provided that the following conditions
    are met:
 
-     1. Redistributions of source code must retain the above copyright
-        notice, this list of conditions and the following disclaimer.
+   1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
 
-     2. Redistributions in binary form must reproduce the above copyright
-`        notice, this list of conditions and the following disclaimer in the
-        documentation and/or other materials provided with the distribution.
+   2. Redistributions in binary form must reproduce the above copyright
+   `        notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote 
-        products derived from this software without specific prior written 
-        permission.
+   3. The names of its contributors may not be used to endorse or promote 
+   products derived from this software without specific prior written 
+   permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -131,35 +132,38 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * Macros to simplify calling of random generator function.
-   *
-   */
+/**
+ * Macros to simplify calling of random generator function.
+ *
+ */
 #define s3_rand_seed(s) genrand_seed(s);
 #define s3_rand_int31()  genrand_int31()
 #define s3_rand_real() genrand_real3()
 #define s3_rand_res53()  genrand_res53()
 
-  /**
-   *Initialize the seed of the random generator. 
-   */
-  void genrand_seed(unsigned long s);
+/**
+ *Initialize the seed of the random generator. 
+ */
+void genrand_seed(unsigned long s);
 
-  /**
-   *generates a random number on [0,0x7fffffff]-interval 
-   */
-  long genrand_int31(void);
+/**
+ *generates a random number on [0,0x7fffffff]-interval 
+ */
+long genrand_int31(void);
 
-  /**
-   *generates a random number on (0,1)-real-interval 
-   */
-  double genrand_real3(void);
+/**
+ *generates a random number on (0,1)-real-interval 
+ */
+double genrand_real3(void);
 
-  /**
-   *generates a random number on [0,1) with 53-bit resolution
-   */
-  double genrand_res53(void);
+/**
+ *generates a random number on [0,1) with 53-bit resolution
+ */
+double genrand_res53(void);
 
 #ifdef __cplusplus
 }

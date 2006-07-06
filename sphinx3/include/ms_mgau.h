@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -109,7 +110,7 @@
 /* Lists of senones sharing each mixture Gaussian codebook */
 /* \struct mgau2sen_t
    \brief a mapping from gaussian to senone
- */
+*/
 typedef struct mgau2sen_s {
     s3senid_t sen;		/**< Senone shared by this mixture Gaussian */
     struct mgau2sen_s *next;	/**< Next entry in list for this mixture Gaussian */
@@ -117,18 +118,18 @@ typedef struct mgau2sen_s {
 
 /** \struct ms_mgau_t
     \brief Multi-stream mixture gaussian. It is not necessary to be continr
- */
+*/
 
 typedef struct {
-  gauden_t* g;   /**< The codebook */
-  senone_t* s;   /**< The senone */
-  mgau2sen_t **mgau2sen; /**< Senones sharing mixture Gaussian codebooks */
-  interp_t* i;   /**< The interplotion weight file */
-  int32 topn;    /**< Top-n gaussian will be computed */
+    gauden_t* g;   /**< The codebook */
+    senone_t* s;   /**< The senone */
+    mgau2sen_t **mgau2sen; /**< Senones sharing mixture Gaussian codebooks */
+    interp_t* i;   /**< The interplotion weight file */
+    int32 topn;    /**< Top-n gaussian will be computed */
 
-  /**< Intermediate used in computation */
-  gauden_dist_t ***dist;  
-  int8 *mgau_active;
+    /**< Intermediate used in computation */
+    gauden_dist_t ***dist;  
+    int8 *mgau_active;
 
 } ms_mgau_model_t;  
 
@@ -148,17 +149,17 @@ ms_mgau_model_t* ms_mgau_init (char *meanfile,	/**< In: File containing means of
 						   me! This is confusing!*/
 			       char* lambdafile, /**< In: Interplation file */
 			       int32 topn        /**< In: Top-n gaussian will be computed */
-			       );
+    );
 
 /** Free memory allocated by ms_mgau_init */
 void ms_mgau_free(ms_mgau_model_t *g /**< In: A set of models to free */
-	);
+    );
 
 int32 ms_cont_mgau_frame_eval (ascr_t *ascr,   /**< In: An ascr object*/
 			       ms_mgau_model_t *msg, /**< In: A multi-stream mgau mode */
 			       mdef_t *mdef,   /**< In: A mdef */
 			       float32** feat
-			       );
+    );
 
 
 int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distribution model */
@@ -166,7 +167,7 @@ int32 model_set_mllr(ms_mgau_model_t* msg, /**< The model-stream Gaussian distri
 		     const char *cb2mllrfile, /**< The codebook to MLLR file name */
 		     feat_t* fcb,            /**< FCB object */
 		     mdef_t *mdef            /**< A model definition */
-		     );
+    );
 
 
 #endif /* _LIBFBS_MS_CONT_MGAU_H_*/

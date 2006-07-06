@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -87,12 +88,15 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** 
-      \struct stat_t
-      \brief Structure to hold all statistics in Sphinx 3.x 
-   */
-  typedef struct {
+/** 
+    \struct stat_t
+    \brief Structure to hold all statistics in Sphinx 3.x 
+*/
+typedef struct {
     /* All structure that measure the time and stuffs we computed */
     ptmr_t tm_sen;    /**< timer for senone computation */
     ptmr_t tm_srch;   /**< timer for search */
@@ -117,46 +121,46 @@ extern "C" {
 
 
     int32 tot_fr;                 /**< Temporary Variable: The total number of frames that the
-                                   recognizer has been
-                                   recognized. Mainly for bookeeping.  */
+                                     recognizer has been
+                                     recognized. Mainly for bookeeping.  */
 
-  } stat_t ;
+} stat_t ;
 
-  /** Initialized the statistics structure 
-      @return a statistics data structure
-   */
-  stat_t* stat_init(); 
+/** Initialized the statistics structure 
+    @return a statistics data structure
+*/
+stat_t* stat_init(); 
   
-  /** Delete the memory of stat_init
-   */
-  void stat_free(stat_t* st /**< A statistics data structure */
-		 );
+/** Delete the memory of stat_init
+ */
+void stat_free(stat_t* st /**< A statistics data structure */
+    );
 
-  /** Clear the utterance statistics */
-  void stat_clear_utt(
-		      stat_t* st /**< A statistics data structure */
-		      );
+/** Clear the utterance statistics */
+void stat_clear_utt(
+    stat_t* st /**< A statistics data structure */
+    );
   
-  /** Clear the corpus statistics */
-  void stat_clear_corpus(
-			 stat_t* st /**< A statistics data structure */
-			 );
+/** Clear the corpus statistics */
+void stat_clear_corpus(
+    stat_t* st /**< A statistics data structure */
+    );
 
-  /** Update the corpus statistics with the utterance statistics */
-  void stat_update_corpus(
-		       stat_t* st /**< A statistics data structure */ 
-		       );
+/** Update the corpus statistics with the utterance statistics */
+void stat_update_corpus(
+    stat_t* st /**< A statistics data structure */ 
+    );
   
-  /** Report the utterance statistics */
-  void stat_report_utt(
-		       stat_t* st, /**< A statistics data structure */ 
-		       char * uttid /**< The utterance ID */
-		       );
+/** Report the utterance statistics */
+void stat_report_utt(
+    stat_t* st, /**< A statistics data structure */ 
+    char * uttid /**< The utterance ID */
+    );
 
-  /** Report the total statistics */
-  void stat_report_corpus(
-			  stat_t * st /**< A statistics data structure */ 
-			  );
+/** Report the total statistics */
+void stat_report_corpus(
+    stat_t * st /**< A statistics data structure */ 
+    );
 
 
 #ifdef __cplusplus

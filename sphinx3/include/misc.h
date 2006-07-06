@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -69,12 +70,12 @@
 #include "search.h"
 
 /** \file misc.h
-   \brief (s3.0 specific ) Miscellaneus operation used by differerent sphinx 3.0 family of tools.
- */
+    \brief (s3.0 specific ) Miscellaneus operation used by differerent sphinx 3.0 family of tools.
+*/
 
 /** Return value: control file; E_FATAL if cannot open */
 FILE *ctlfile_open (char *file /**< The input file name*/
-		    );
+    );
 
 /**
  * Read next control file entry.
@@ -85,22 +86,22 @@ int32 ctlfile_next (FILE *fp,
 		    int32 *sf_out, 
 		    int32 *ef_out, 
 		    char *uttid /**< The utterance ID */
-		    );
+    );
 
 /**
  * Close the control file. 
  */
 
 void  ctlfile_close (FILE *fp /**< The input file pointer */
-		     );
+    );
 
 
 /** Loading arguments from a file 
     Note: This function should move to cmd_ln.c
- */
+*/
 int32 argfile_load (char *file, /**< The file name for input argument */
 		    char *pgm,  /**< The program name */
 		    char ***argvout /**< Output: The argument */
-		    );
+    );
 
 #endif

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -66,12 +67,12 @@
  */
 
 /*
-revision 1.1
-date: 2004/07/12 20:56:00;  author: yitao;  state: Exp;
+  revision 1.1
+  date: 2004/07/12 20:56:00;  author: yitao;  state: Exp;
 
-moved these files from src/programs to src/libs3decoder so they could be included in t
-he library.
-=============================================================================
+  moved these files from src/programs to src/libs3decoder so they could be included in t
+  he library.
+  =============================================================================
 */
 
 #ifndef __ARGS_H
@@ -81,9 +82,12 @@ he library.
 
 /** \file live_decode_args.h
     \brief The argument file for livedecode and livepretend.
- */
+*/
 #ifdef __cplusplus
 extern "C" {
+#endif
+#if 0
+} /* Fool Emacs into not indenting things. */
 #endif
 
 extern arg_t arg_def[];

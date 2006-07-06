@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -81,37 +82,40 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** 
-   * Return upper case form for c 
-   */
+/** 
+ * Return upper case form for c 
+ */
 #define UPPER_CASE(c)	((((c) >= 'a') && ((c) <= 'z')) ? (c-32) : c)
 
-  /**
-   * Return lower case form for c 
-   */
+/**
+ * Return lower case form for c 
+ */
 #define LOWER_CASE(c)	((((c) >= 'A') && ((c) <= 'Z')) ? (c+32) : c)
 
 
-  /** 
-   * Convert str to all upper case.
-   * @param str is a string.
-   */
+/** 
+ * Convert str to all upper case.
+ * @param str is a string.
+ */
 void ucase(char *str);
 
-  /** 
-   * Convert str to all lower case
-   * @param str is a string.
-   */
+/** 
+ * Convert str to all lower case
+ * @param str is a string.
+ */
 void lcase(char *str);
 
-  /**
-   * (FIXME! The implementation is incorrect!) 
-   * Case insensitive string compare.  Return the usual -1, 0, +1, depending on
-   * str1 <, =, > str2 (case insensitive, of course).
-   * @param str1 is the first string.
-   * @param str2 is the second string. 
-   */
+/**
+ * (FIXME! The implementation is incorrect!) 
+ * Case insensitive string compare.  Return the usual -1, 0, +1, depending on
+ * str1 <, =, > str2 (case insensitive, of course).
+ * @param str1 is the first string.
+ * @param str2 is the second string. 
+ */
 int32 strcmp_nocase (const char *str1, const char *str2);
 
 

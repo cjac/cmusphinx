@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -62,13 +63,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 
-  /**
-     This function prints the hostname, the directory, compile time
-     and date .  */
+/**
+   This function prints the hostname, the directory, compile time
+   and date .  */
 
-  void print_appl_info(char* appl_name);
+void print_appl_info(char* appl_name);
 
 #ifdef __cplusplus
 }

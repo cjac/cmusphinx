@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -80,7 +81,7 @@
 
 /** \file srch_word_switch_tree.h
     \brief Implementation of word-switching tree search. 
- */
+*/
 
 #include "s3types.h"
 #include "kb.h"
@@ -95,39 +96,39 @@
    the interplay between these 3 components to realize how a search
    actually really works.
    
- */
+*/
 
 typedef struct {
-  int32 n_static_lextree;	/**< Number of static lexical tree for word switching  */
+    int32 n_static_lextree;	/**< Number of static lexical tree for word switching  */
 
-  lextree_t *curroottree;        /**< The first unigram tree that used
-                                  in the search for this utterance. */
-  lextree_t **expandtree;         /**< The expanded trees */
-
-
-  lextree_t *curfillertree;         /**< The first filler tree */
-  lextree_t **expandfillertree;         /**< The expanded fillertrees 
-					 */
+    lextree_t *curroottree;        /**< The first unigram tree that used
+                                      in the search for this utterance. */
+    lextree_t **expandtree;         /**< The expanded trees */
 
 
+    lextree_t *curfillertree;         /**< The first filler tree */
+    lextree_t **expandfillertree;         /**< The expanded fillertrees 
+                                           */
 
-  lextree_t **roottree;           /**< The pool of trees that stores all
-                                   word trees. An array with dimension. #lm*/
 
-  hash_table_t *active_word;    /**< Hash table that map word end to the index of the expandtree. */
 
-  glist_t  empty_tree_idx_stack;      /**< Store a pool of indices which
-					  indicate a tree is empty. It acts like 
-					  a stack
-				       */
+    lextree_t **roottree;           /**< The pool of trees that stores all
+                                       word trees. An array with dimension. #lm*/
+
+    hash_table_t *active_word;    /**< Hash table that map word end to the index of the expandtree. */
+
+    glist_t  empty_tree_idx_stack;      /**< Store a pool of indices which
+                                           indicate a tree is empty. It acts like 
+                                           a stack
+                                        */
   
 
-  int32 no_active_word;         /**< No of active word */
+    int32 no_active_word;         /**< No of active word */
   
-  lmset_t* lmset;               /**< The LM set */
-  int32 isLMLA;  /**< Is LM lookahead used?*/
+    lmset_t* lmset;               /**< The LM set */
+    int32 isLMLA;  /**< Is LM lookahead used?*/
 
-  histprune_t *histprune; /**< Structure that wraps up parameters related to  */
+    histprune_t *histprune; /**< Structure that wraps up parameters related to  */
 
 
 } srch_WST_graph_t ;
@@ -139,7 +140,7 @@ typedef struct {
 
 int srch_WST_init(kb_t *kb, /**< The KB */
 		  void* srch_struct /**< The pointer to a search structure */
-		  );
+    );
 
 int srch_WST_uninit(void* srch_struct);
 int srch_WST_begin(void* srch_struct);
@@ -172,12 +173,12 @@ int srch_WST_shift_one_cache_frame(void *srch,int32 win_efv);
 int srch_WST_select_active_gmm(void *srch);
 
 glist_t srch_WST_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
-		     ); 
+    ); 
 
 int srch_WST_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
-		      );
+    );
 
 int srch_WST_bestpath_impl(void * srch_struct /**< A void pointer to a search structure */
-			   );
+    );
 
 

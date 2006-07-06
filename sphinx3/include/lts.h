@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*************************************************************************/
 /*                                                                       */
 /*                  Language Technologies Institute                      */
@@ -83,7 +84,7 @@ typedef struct lex_entry_str {
 } lex_entry_t;
 
 typedef struct cst_lts_rules_struct {
-  char *name; /**< The name of the rule */
+    char *name; /**< The name of the rule */
     const cst_lts_addr *letter_index;  /**< index into model first state */
     const cst_lts_model *models;
     const char * const * phone_table; 
@@ -96,7 +97,7 @@ typedef struct cst_lts_rules_struct lts_t;
 
 /* \struct cst_lts_rule
    
- */
+*/
 typedef struct cst_lts_rule_struct {
     cst_lts_feat   feat;
     cst_lts_letter val;
@@ -111,10 +112,10 @@ int lts_apply(const char *word,const char *feats,
 	      const cst_lts_rules *r, struct lex_entry_str *out_phones);
 
 /**
-  Print lexical entry 
- */
+   Print lexical entry 
+*/
 void lex_print(lex_entry_t *ent /**< A lexical entry */
-	       );
+    );
 
 extern const cst_lts_rules cmu6_lts_rules;
 

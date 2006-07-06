@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -106,15 +107,15 @@
  * A single Viterbi history entry
  */
 typedef struct fsg_hist_entry_s {
-  word_fsglink_t *fsglink;	/* Link taken result in this entry */
-  int32 frame;			/* Ending frame for this entry */
-  int32 score;			/* Total path score at the end of this
-				   transition */
-  int32 pred; 			/* Predecessor entry; -1 if none */
-  int32 lc;			/* Left context provided by this entry to
-				   succeeding words */
-  fsg_pnode_ctxt_t rc;		/* Possible right contexts to which this entry
-				   applies */
+    word_fsglink_t *fsglink;	/* Link taken result in this entry */
+    int32 frame;			/* Ending frame for this entry */
+    int32 score;			/* Total path score at the end of this
+					   transition */
+    int32 pred; 			/* Predecessor entry; -1 if none */
+    int32 lc;			/* Left context provided by this entry to
+                                   succeeding words */
+    fsg_pnode_ctxt_t rc;		/* Possible right contexts to which this entry
+					   applies */
 } fsg_hist_entry_t;
 
 /* Access macros */
@@ -154,13 +155,13 @@ typedef struct fsg_hist_entry_s {
  * non-null transitions, and the null transitions, separately.
  */
 typedef struct fsg_history_s {
-  word_fsg_t *fsg;		/* The FSG for which this object applies */
-  blkarray_list_t *entries;	/* A list of history table entries; the root
-				   entry is the first element of the list */
-  glist_t **frame_entries;
+    word_fsg_t *fsg;		/* The FSG for which this object applies */
+    blkarray_list_t *entries;	/* A list of history table entries; the root
+                                   entry is the first element of the list */
+    glist_t **frame_entries;
 
-  /*Added by Arthur at 20050627*/
-  int32 n_ciphone;
+    /*Added by Arthur at 20050627*/
+    int32 n_ciphone;
 } fsg_history_t;
 
 

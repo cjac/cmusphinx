@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -79,11 +80,14 @@
 #include <s3types.h>
 
 /** \file fillpen.h
-   \brief Filler penalties, penalties for words that do not show up in
- * the main LM.
- */
+    \brief Filler penalties, penalties for words that do not show up in
+    * the main LM.
+    */
 #ifdef __cplusplus
 extern "C" {
+#endif
+#if 0
+} /* Fool Emacs into not indenting things. */
 #endif
 
 #include "dict.h"
@@ -91,22 +95,22 @@ extern "C" {
 
 typedef struct {
     dict_t *dict;	/** Reference dictionary for which the filler word probabilities
-			   are maintained in this structure */
+			    are maintained in this structure */
     int32 *prob;	/** Filler word probability (in logs3 space, after
-			   langwt and inspen application) */
+			    langwt and inspen application) */
     float64 lw;		/** Language weight */
     float64 wip;	/** Word insertion penalty */
 
-  float64 silprob;      /** Probability of silence */
-  float64 fillerprob;      /** Probability of filler */
+    float64 silprob;      /** Probability of silence */
+    float64 fillerprob;      /** Probability of filler */
 
 #if 0
-  float64 pip;
+    float64 pip;
 #endif
 } fillpen_t;
 
 
-  /**
+/**
  * Initialize filler probabilities (penalties, whatever) module and return a pointer to the
  * structure created.  Filler word probabilities are simple unigram probabilities.  Here is an
  * example of such a file (one entry per line; a word and a probability):
@@ -125,26 +129,26 @@ fillpen_t *fillpen_init (dict_t *dict,		/**< In: Dictionary containing filler wo
 						   words */
 			 float64 lw,		/**< In: Language weight (see lm.h) */
 			 float64 wip		/**< In: Word insertion penalty (see lm.h) */
-			 );
+    );
 
-  /**
+/**
  * Return the filler word probability for the given dictionary word-ID.
  */
 int32 fillpen (fillpen_t *f,		/**< In: Filler word probabilities structure */
 	       s3wid_t w		/**< In: Dictionary word-ID of filler word */
-	       );
+    );
 
-  /**
-     Report the fillpen_t structure 
-   */
-  void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities structure */
-		      );
+/**
+   Report the fillpen_t structure 
+*/
+void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities structure */
+    );
 
 /* RAH 
    free memory allocated by fillpen_init
- */
-  void fillpen_free (fillpen_t *f /**< A filler penalty structure */
-		   );
+*/
+void fillpen_free (fillpen_t *f /**< A filler penalty structure */
+    );
 
 #ifdef __cplusplus
 }

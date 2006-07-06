@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1997-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -65,7 +66,7 @@ matrixmultiply(float32 **c, /* = */
 	       int32 m, /**< #rows of a. */
 	       int32 n, /**< #cols of b. */
 	       int32 k  /**< #cols of a, #rows of b. */
-	);
+    );
 
 void
 scalarmultiply(float32 **a, float32 x, int32 m, int32 n);

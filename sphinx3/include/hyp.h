@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -91,13 +92,16 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-  /*  typedef hyp_t srch_hyp_t;*/
 #if 0
-  /**
-   * Structure to store hypothesis. 
-   */
+} /* Fool Emacs into not indenting things. */
+#endif
+
+
+/*  typedef hyp_t srch_hyp_t;*/
+#if 0
+/**
+ * Structure to store hypothesis. 
+ */
 typedef struct {
     int32 id;		/* Token ID; could be s3wid_t, s3cipid_t...  Interpreted by client. */
     int32 vhid;		/* Viterbi history (lattice) ID from which this entry created */

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -77,7 +78,7 @@
    just want to test out a logic change in srch.c but do not want to
    waste the time in running actual decoding. 
 
- */
+*/
 
 
 int srch_debug_init(kb_t *kb,void* srch);
@@ -105,22 +106,22 @@ int srch_debug_select_active_gmm(void *srch);
 int srch_debug_rescoring(void* srch, int32 frmno);
 
 glist_t srch_debug_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
-		     ); 
+    ); 
 
 int srch_debug_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
-		      );
+    );
 
 dag_t* srch_debug_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
 			  glist_t hyp
-		     );
+    );
 
 glist_t srch_debug_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
 				 dag_t *dag 
-			   );
+    );
 
 int32 srch_debug_dag_dump(void *srch_struct,
 			  glist_t hyp
-			  );
+    );
 
 
 

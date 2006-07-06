@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
@@ -153,27 +154,30 @@
 #define _LIBFBS_SEARCH_H_
 
 /** \file search.h
-   \brief The temporary header file for sphinx 3 functions. 
- */
+    \brief The temporary header file for sphinx 3 functions. 
+*/
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \struct srch_hyp_t
-      \brief a hypothesis structure 
-   */
+/** \struct srch_hyp_t
+    \brief a hypothesis structure 
+*/
 typedef struct srch_hyp_s {
     char     *word;    /**< A pointer to the word string*/
 
     int32   id;        /**< Token ID; could be s3wid_t, s3cipid_t...
-			  Interpreted by client. */
+                          Interpreted by client. */
 
 
     int32 vhid;         /**< Viterbi history (lattice) ID from which
-			   this entry created Specific to Sphinx 3.x
-			   mode 4 and mode 5*/
+                           this entry created Specific to Sphinx 3.x
+                           mode 4 and mode 5*/
 
     int32 type;		/**< Uninterpreted data; see vithist_entry_t in vithist.h */
 
@@ -186,59 +190,59 @@ typedef struct srch_hyp_s {
 
     int32  fsg_state;     /**< At which this entry terminates (FSG mode only) */
 
-  struct srch_hyp_s *next;  /**< a pointer to next structure, a convenient device such 
-			       that a programmer could choose to use it instead of using
-			       a link list.  Of course one could also use glist
-			    */
+    struct srch_hyp_s *next;  /**< a pointer to next structure, a convenient device such 
+                                 that a programmer could choose to use it instead of using
+                                 a link list.  Of course one could also use glist
+                              */
 } srch_hyp_t;
 
-  /** \struct hyp_t
-      \brief an alias of srch_hyp_t;
-   */
+/** \struct hyp_t
+    \brief an alias of srch_hyp_t;
+*/
 
-  typedef srch_hyp_t hyp_t;
+typedef srch_hyp_t hyp_t;
 
-  /** \struct conf_srch_hyp_t
-      \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
-   */
+/** \struct conf_srch_hyp_t
+    \brief a hypothesis structure that stores the confidence scores. Mainly used in confidence.c
+*/
 
 typedef struct conf_srch_hyp {
-  srch_hyp_t sh; /**< a srch_hyp_t */
-  float32 lmtype; /**< Language model type */
-  float32 l1, l2, l3;  
-  int32 matchtype; /**< (Currently not used) Match type: INSERTION, SUBSTITUTION, CORRECT */
-  int compound; /**< (Currently not used) The compound type */
-  struct conf_srch_hyp *next; /**< a pointer to the next structure */
+    srch_hyp_t sh; /**< a srch_hyp_t */
+    float32 lmtype; /**< Language model type */
+    float32 l1, l2, l3;  
+    int32 matchtype; /**< (Currently not used) Match type: INSERTION, SUBSTITUTION, CORRECT */
+    int compound; /**< (Currently not used) The compound type */
+    struct conf_srch_hyp *next; /**< a pointer to the next structure */
 } conf_srch_hyp_t;
 
 
-  /** \struct seg_hyp_line_t
-      \brief a strurcture that stores one line of hypothesis. Mainly used in confidence.c
-   */
+/** \struct seg_hyp_line_t
+    \brief a strurcture that stores one line of hypothesis. Mainly used in confidence.c
+*/
 
 typedef struct seg_hyp_line {
-  char seq[1024]; /**< The file name */
-  int32 sent_end_cscore;  /**< The confidenece score at the end of the utterance */
-  int32 cscore ; /**< Confidence score */
-  float32 lmtype;   /**<  LM type, depends on the backoff_modes */
-  int32 wordno;     /**< The number of word in a sentence */
-  int32 nfr;        /**< The number of frame in a sentence */
-  int32 ascr;       /**< The sentence acoustic model score */
-  int32 lscr;       /**< The sentence language model score */
-  conf_srch_hyp_t *wordlist; /**< The list of words */
+    char seq[1024]; /**< The file name */
+    int32 sent_end_cscore;  /**< The confidenece score at the end of the utterance */
+    int32 cscore ; /**< Confidence score */
+    float32 lmtype;   /**<  LM type, depends on the backoff_modes */
+    int32 wordno;     /**< The number of word in a sentence */
+    int32 nfr;        /**< The number of frame in a sentence */
+    int32 ascr;       /**< The sentence acoustic model score */
+    int32 lscr;       /**< The sentence language model score */
+    conf_srch_hyp_t *wordlist; /**< The list of words */
 } seg_hyp_line_t;
 
 
 
 #if 0 /* Only in Sphinx 2 */
-    float conf;         /* Confidence measure (roughly prob(correct)) for this word;
-                           NOT FILLED IN BY THE RECOGNIZER at the moment!! */
-    int32 latden;       /* Average lattice density in segment.  Larger values imply
-                           more confusion and less certainty about the result.  To use
-                           it for rejection, cutoffs must be found independently */
-    double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
-                           more confusion and less certainty.  To use it for rejection,
-                           cutoffs must be found independently. */
+float conf;         /* Confidence measure (roughly prob(correct)) for this word;
+		       NOT FILLED IN BY THE RECOGNIZER at the moment!! */
+int32 latden;       /* Average lattice density in segment.  Larger values imply
+		       more confusion and less certainty about the result.  To use
+		       it for rejection, cutoffs must be found independently */
+double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
+		       more confusion and less certainty.  To use it for rejection,
+		       cutoffs must be found independently. */
 #endif
 
 

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #ifndef __SPHINX3_CLASSIFIER_H
 #define __SPHINX3_CLASSIFIER_H
@@ -7,6 +8,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+#if 0
+} /* Fool Emacs into not indenting things. */
 #endif
   
 #define CEP_LEN			13
@@ -19,50 +23,50 @@ extern "C" {
   
   
 enum {
-  CLASS_NOISE = 0,
-  CLASS_OWNER,
-  CLASS_SECONDARY,
-  CLASS_SILENCE,
-  NUM_CLASSES
+    CLASS_NOISE = 0,
+    CLASS_OWNER,
+    CLASS_SECONDARY,
+    CLASS_SILENCE,
+    NUM_CLASSES
 };
 
 enum {
-  EP_MAYBE = 0,
-  EP_SILENCE,
-  EP_SPEECH
+    EP_MAYBE = 0,
+    EP_SILENCE,
+    EP_SPEECH
 };
 
 typedef struct {
-  mgau_model_t *gmm;
-  s3cipid_t class_map[NUM_CLASSES];
-  int32 frame_prob[NUM_CLASSES];
-  int *cached_classes;
-  int num_frames;
-  int max_frames;
-  int voting_frames[VOTING_LEN];
-  int post_classify;
-  int32 prior_prob[NUM_CLASSES] ; 
+    mgau_model_t *gmm;
+    s3cipid_t class_map[NUM_CLASSES];
+    int32 frame_prob[NUM_CLASSES];
+    int *cached_classes;
+    int num_frames;
+    int max_frames;
+    int voting_frames[VOTING_LEN];
+    int post_classify;
+    int32 prior_prob[NUM_CLASSES] ; 
 
 } classifier_t;
 
 typedef struct {
-  int *endpts;
-  int num_endpts;
-  int max_endpts;
-  int state;
-  int start_counter;
-  int cancel_counter;
-  int end_counter;
-  int counter;
+    int *endpts;
+    int num_endpts;
+    int max_endpts;
+    int state;
+    int start_counter;
+    int cancel_counter;
+    int end_counter;
+    int counter;
 
-  int pad_cancel;
-  int pad_leader;
-  int pad_trailer;
+    int pad_cancel;
+    int pad_leader;
+    int pad_trailer;
 } endptr_t;
   
 int cl_init(classifier_t *_cl, char *_mdef_file, char *_means_file,  char *_vars_file,
-     float64 _var_floor,  char *_mix_weights_file,
-     float64 _mix_weight_floor,  char *_gm_type, int _post_classify);
+	    float64 _var_floor,  char *_mix_weights_file,
+	    float64 _mix_weight_floor,  char *_gm_type, int _post_classify);
 void cl_finish(classifier_t *_cl);
 void cl_calc_frame_prob(classifier_t *_cl, float32 *_frame);
 int cl_classify_frames(classifier_t *_cl, float32 **_frames, int _num_frames,

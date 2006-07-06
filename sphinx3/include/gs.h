@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
@@ -109,47 +110,50 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   *  \struct gs_t
-   *  Wrapper structure of the gaussian selection algorithm
-   */
+/**
+ *  \struct gs_t
+ *  Wrapper structure of the gaussian selection algorithm
+ */
 typedef struct gs_s {
-  int32 n_mgau;  /**< number of GMMs */
-  int32 n_feat;  /**< number of streams */
-  int32 n_code;  /**< number of code word */
-  int32 n_density; /**< number of density */
-  int32 n_featlen; /**< (This is not consistent to the Gaussian family of function */
-  int32 n_mbyte; /**< number of bytes to read each time */
-  float32 **codeword; /**< n_code * n_featlen */
-  uint32 ***codemap; /**< n_feat * n_mgau * n_code*/
-  FILE *fp;       /**< A file pointer to dump the gaussian selector */
-  int32* mgau_sl; /**< The short list for how many Gaussians will be computed */
+    int32 n_mgau;  /**< number of GMMs */
+    int32 n_feat;  /**< number of streams */
+    int32 n_code;  /**< number of code word */
+    int32 n_density; /**< number of density */
+    int32 n_featlen; /**< (This is not consistent to the Gaussian family of function */
+    int32 n_mbyte; /**< number of bytes to read each time */
+    float32 **codeword; /**< n_code * n_featlen */
+    uint32 ***codemap; /**< n_feat * n_mgau * n_code*/
+    FILE *fp;       /**< A file pointer to dump the gaussian selector */
+    int32* mgau_sl; /**< The short list for how many Gaussians will be computed */
 } gs_t;
 
 
-  /** display the Gaussian selector */
+/** display the Gaussian selector */
 
-  int32 gs_display(char *file, /**< file to display*/
-		   gs_t *gs    /**< The structure of the gaussian selector*/
-		 );
+int32 gs_display(char *file, /**< file to display*/
+		 gs_t *gs    /**< The structure of the gaussian selector*/
+    );
 
-  /** Read the Gaussian selector */
-  gs_t* gs_read(char *file /**< a file to display */
-	      );
+/** Read the Gaussian selector */
+gs_t* gs_read(char *file /**< a file to display */
+    );
 
-  /** Choose the closet Gaussian codebook to use */
+/** Choose the closet Gaussian codebook to use */
 int32 gc_compute_closest_cw ( gs_t *gs, /**< gaussain selector */
 			      float32 *feat /**< feature */
-			      );
+    );
 
-  /** Find the short list of the Gaussian selector */
+/** Find the short list of the Gaussian selector */
 int32 gs_mgau_shortlist(gs_t *gs,  /**< gaussain selector */
 			int32 m,   /**< mixture index */
 			int32 n,   /**< number of mixtures */
 			float32 *feat, /**< feature vector */
 			int32 bst_codeid /**< best code indx */
-			);
+    );
 
 #ifdef __cplusplus
 }

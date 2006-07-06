@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -135,9 +136,12 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 
-  /*
+/*
  * ARCHAN :20040229. Starting from s3.4, we accept users to specify mutliple LMs
  * using -lmctlfile. To avoid potential overhead caused by rebuilding the trees
  * at every sentence. We allocate all lexical trees in the intialization. If we
@@ -147,75 +151,75 @@ extern "C" {
  */
 
 
-  /* The wrapper structure of all operation in the Sphinx 3.X decoder. 
-   *
-   */
+/* The wrapper structure of all operation in the Sphinx 3.X decoder. 
+ *
+ */
 typedef struct {
-  /** Core models, defined as acoustic and language models, dictionary
-     (pronounciation models_, front-ends, filler-penalties approximate
-     acoustic models such as sub vector quantization map and Gaussian
-     selector */
+    /** Core models, defined as acoustic and language models, dictionary
+        (pronounciation models_, front-ends, filler-penalties approximate
+        acoustic models such as sub vector quantization map and Gaussian
+        selector */
 
-  kbcore_t *kbcore;       /**< Core model structures */
+    kbcore_t *kbcore;       /**< Core model structures */
 
-  /** Feature generation related variables*/
-  float32 ***feat;	  /**< Feature frames */
-  cmn_t *cmn;             /**< The structure for cepstral mean normalization. */
+    /** Feature generation related variables*/
+    float32 ***feat;	  /**< Feature frames */
+    cmn_t *cmn;             /**< The structure for cepstral mean normalization. */
 
-  /** Structures of storing parameters for different techniques. */
-  ascr_t *ascr;		  /**< Senone and composite senone scores for one frame. */
-  beam_t *beam;		  /**< Structure that wraps up parameters related to beam pruning. */
-  fast_gmm_t *fastgmm;    /**< Structure that wraps up parameters for fast GMM computation. */
-  pl_t *pl;               /**< Structure that wraps up parameters for phoneme look-ahead. */
+    /** Structures of storing parameters for different techniques. */
+    ascr_t *ascr;		  /**< Senone and composite senone scores for one frame. */
+    beam_t *beam;		  /**< Structure that wraps up parameters related to beam pruning. */
+    fast_gmm_t *fastgmm;    /**< Structure that wraps up parameters for fast GMM computation. */
+    pl_t *pl;               /**< Structure that wraps up parameters for phoneme look-ahead. */
 
-  /** Structure that wraps up adaptation variables. such as regression matrices in MLLR */
-  adapt_am_t * adapt_am;  /**< Structure that wraps up parameters for adaptation such as MLLR. */
+    /** Structure that wraps up adaptation variables. such as regression matrices in MLLR */
+    adapt_am_t * adapt_am;  /**< Structure that wraps up parameters for adaptation such as MLLR. */
 
-  /** Structure that records the search. */
-  vithist_t *vithist;	  /**< Structure that stores the viterbi
-			     history, built during search. Used only
-			     in mode 4 and 5 */
+    /** Structure that records the search. */
+    vithist_t *vithist;	  /**< Structure that stores the viterbi
+                             history, built during search. Used only
+                             in mode 4 and 5 */
 
-  latticehist_t *lathist;     /**< Structure that stores the viterbi
-			     history, appear here because of legacy,
-			     built during search. Used only in mode 3
-			  */
+    latticehist_t *lathist;     /**< Structure that stores the viterbi
+                                   history, appear here because of legacy,
+                                   built during search. Used only in mode 3
+                                */
 
-  stat_t *stat;           /**< Structure of statistics including timers and counters. */
+    stat_t *stat;           /**< Structure of statistics including timers and counters. */
 
-  /** FILE handle that handles output. */
-  FILE *matchfp;          /**< File handle for the match file */
-  FILE *matchsegfp;       /**< File handle for the match segmentation file */
-  FILE *hmmdumpfp;        /**< File handle for dumping hmms for debugging */
+    /** FILE handle that handles output. */
+    FILE *matchfp;          /**< File handle for the match file */
+    FILE *matchsegfp;       /**< File handle for the match segmentation file */
+    FILE *hmmdumpfp;        /**< File handle for dumping hmms for debugging */
 
-  /* The only variable I intend to make it be alone in the whole structure. It has its own uniqueness.  */
-  int32 op_mode; /** A mode for specifying operation */
-  char *uttid;   /**< Utterance ID. The one thing that should move to somewhere like srch */
+    /* The only variable I intend to make it be alone in the whole structure. It has its own uniqueness.  */
+    int32 op_mode; /** A mode for specifying operation */
+    char *uttid;   /**< Utterance ID. The one thing that should move to somewhere like srch */
 
   
-  void *srch;  /**< The search structure */
+    void *srch;  /**< The search structure */
 } kb_t;
 
 
-  /** Initialize the kb */
-  void kb_init (kb_t *kb /**< In/Out: A empty kb_t */
-		);
+/** Initialize the kb */
+void kb_init (kb_t *kb /**< In/Out: A empty kb_t */
+    );
 
   
-  /** Deallocate the kb structure */
-  void kb_free (kb_t *kb /**< In/Out: A empty kb_t */
-		);	/* RAH 4.16.01 */
+/** Deallocate the kb structure */
+void kb_free (kb_t *kb /**< In/Out: A empty kb_t */
+    );	/* RAH 4.16.01 */
   
-  /** Set MLLR */
+/** Set MLLR */
 void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
 		char* cb2mllrname, /**< In: The filename of the MLLR class map */
 		kb_t *kb /**< In/Out: A empty kb_t */
-		);    /* ARCHAN 20040724 */
+    );    /* ARCHAN 20040724 */
 
-  /** Set Utterance ID to uttid */
-  void kb_set_uttid(char *uttid, /**< In: the new utt id */
+/** Set Utterance ID to uttid */
+void kb_set_uttid(char *uttid, /**< In: the new utt id */
 		  kb_t *kb    /**< In/Out: A empty kb_t */
-		  );   /* ARCHAN 20041111 */
+    );   /* ARCHAN 20041111 */
 
 
 #ifdef __cplusplus

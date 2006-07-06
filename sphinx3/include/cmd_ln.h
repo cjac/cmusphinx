@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -70,25 +71,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
-   * Type of reguired argument. 
-   */
+/**
+ * Type of reguired argument. 
+ */
 #define ARG_REQUIRED	1
 
 /* Arguments of these types are OPTIONAL */
 
-  /** \def ARG_INT32
-   * Type of 32-bit integer
-   * \def ARG_FLOAT32
-   * Type of 32-bit floating-point number
-   * \def ARG_FLOAT64
-   * Type of 64-bit floating-point number
-   * \def ARG_STRING
-   * Type of String
-   * \def ARG_BOOLEAN
-   * Type of Boolean
-   */
+/** \def ARG_INT32
+ * Type of 32-bit integer
+ * \def ARG_FLOAT32
+ * Type of 32-bit floating-point number
+ * \def ARG_FLOAT64
+ * Type of 64-bit floating-point number
+ * \def ARG_STRING
+ * Type of String
+ * \def ARG_BOOLEAN
+ * Type of Boolean
+ */
   
 #define ARG_INT32	2
 #define ARG_FLOAT32	4
@@ -98,7 +102,7 @@ extern "C" {
 
 #define ARG_MAX_LENGTH 256
 
-  /** Arguments of these types are REQUIRED */
+/** Arguments of these types are REQUIRED */
 #define REQARG_INT32	(ARG_INT32 | ARG_REQUIRED)
 #define REQARG_FLOAT32	(ARG_FLOAT32 | ARG_REQUIRED)
 #define REQARG_FLOAT64	(ARG_FLOAT64 | ARG_REQUIRED)
@@ -107,20 +111,20 @@ extern "C" {
 typedef int32 argtype_t;
 
 
-  /** \struct arg_t
-      \brief A structure for storing one argument. 
-   */
+/** \struct arg_t
+    \brief A structure for storing one argument. 
+*/
 
 
 typedef struct {
     char *name;		/** Name of the command line switch (case-insensitive) */
-  argtype_t type;     /**<< Variable that could represent any arguments */
+    argtype_t type;     /**<< Variable that could represent any arguments */
     char *deflt;	/**< Default value (as a printed string) or NULL if none */
     char *doc;		/**< Documentation/description string */
 } arg_t;
 
 
-  /**
+/**
  * Parse the given list of arguments (name-value pairs) according to the given definitions.
  * Argument values can be retrieved in future using cmd_ln_access().  argv[0] is assumed to be
  * the program name and skipped.  Any unknown argument name causes a fatal error.  The routine
@@ -130,17 +134,17 @@ typedef struct {
 int32 cmd_ln_parse (arg_t *defn,	/**< In: Array of argument name definitions */
 		    int32 argc,		/**< In: #Actual arguments */
 		    char *argv[]	/**< In: Actual arguments */
-		    );
+    );
 
-  /**
-   * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
+/**
+ * Parse an arguments file by deliminating on " \r\t\n" and putting each tokens
  * into an argv[] for cmd_ln_parse().
  */
-  int32 cmd_ln_parse_file(arg_t *defn,  /**< In: Array of argument name definitions*/
-			  char *filename  /**< In: A file that contains all the arguments */ 
-			);
+int32 cmd_ln_parse_file(arg_t *defn,  /**< In: Array of argument name definitions*/
+			char *filename  /**< In: A file that contains all the arguments */ 
+    );
 
-  /**
+/**
  *Default entering routine application routine for command-line
  *initialization, this control the relationship between specified
  *argument file and argument list.
@@ -150,10 +154,10 @@ void cmd_ln_appl_enter(int argc,   /**< In: #Actual arguments */
 		       char *argv[], /**< In: Actual arguments */
 		       char* default_argfn, /**< In: default argument file name*/
 		       arg_t *defn /**< Command-line argument definition */
-		       );
+    );
 
 
-  /**
+/**
  *Default exit routine for application for command-line
  *uninitialization , this control the relationship between specified
  *argument file and argument list.  
@@ -175,13 +179,13 @@ const void *cmd_ln_access (char *name);	/* In: Argument name whose value is soug
 #define cmd_ln_boolean(name)	(*((boolean *)cmd_ln_access(name)))
 
 
-  /**
-   * Print a help message listing the valid argument names, and the associated
+/**
+ * Print a help message listing the valid argument names, and the associated
  * attributes as given in defn.
  */
 void  cmd_ln_print_help (FILE *fp,	/**< In: File to which to print */
 			 arg_t *defn	/**< In: Array of argument name definitions */
-			 );
+    );
 
 /* RAH, 4.17.01, call this to free memory allocated during cmd_ln_parse() */
 void cmd_ln_free ();

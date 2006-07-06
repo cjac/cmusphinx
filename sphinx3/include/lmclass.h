@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -69,22 +70,25 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file lmclass.h
-   * \brief Language model class modules. 
-   * This module maintains classes of words and associated probabilities (P(word | class)).
-   * Examples of such classes: days of week, months of year, digits, last names, etc.
-   * Restrictions:
-   *   - Classes cannot be nested; all classes are top-level classes.
-   *   - Contents of classes are individual words.  Use "compound words" for phrases.
-   * By convention, class names begin and end with [ and ], respectively.  Also, class
-   * names are CASE-SENSITIVE.
-   */
+/** \file lmclass.h
+ * \brief Language model class modules. 
+ * This module maintains classes of words and associated probabilities (P(word | class)).
+ * Examples of such classes: days of week, months of year, digits, last names, etc.
+ * Restrictions:
+ *   - Classes cannot be nested; all classes are top-level classes.
+ *   - Contents of classes are individual words.  Use "compound words" for phrases.
+ * By convention, class names begin and end with [ and ], respectively.  Also, class
+ * names are CASE-SENSITIVE.
+ */
 
 
-  /** \struct lmclass_word_t
-   * \brief A single word in an LM class.
-   */
+/** \struct lmclass_word_t
+ * \brief A single word in an LM class.
+ */
 typedef struct lmclass_word_s {
     char *word;		/**< The word string */
     int32 dictwid;	/**< Dictionary word id; NOT filled in by this module, but by
@@ -95,9 +99,9 @@ typedef struct lmclass_word_s {
 } *lmclass_word_t;
 
 
-  /** \struct lmclass_t
-   * \brief An LM class object.
-   */
+/** \struct lmclass_t
+ * \brief An LM class object.
+ */
 typedef struct lmclass_s {
     char *name;			/**< Name for this LM class */
     lmclass_word_t wordlist;	/**< Head of list of words in this class */
@@ -106,20 +110,20 @@ typedef struct lmclass_s {
 } *lmclass_t;
 
 
-  /** \struct lmclass_set_t
-   * \brief Collection of LM classes.  Most applications would use multiple classes.  This data
-   * type is provided as a convenience for maintaining several such classes.
-   */
+/** \struct lmclass_set_t
+ * \brief Collection of LM classes.  Most applications would use multiple classes.  This data
+ * type is provided as a convenience for maintaining several such classes.
+ */
 typedef struct lmclass_set_s {
     lmclass_t lmclass_list;	/**< Head of list of LM classes in this module */
 } *lmclass_set_t;
 
 
-  /** Initialize and return a new, empty LMclass set */
+/** Initialize and return a new, empty LMclass set */
 lmclass_set_t lmclass_newset ( void );
 
 
-  /**
+/**
  * Load LM classes defined in the given file into the given set, and return the new,
  * updated set.  Note that the input file can contain several class definitions.
  * File format:
@@ -143,28 +147,28 @@ lmclass_set_t lmclass_newset ( void );
  * 
  * Lines beginning with a # IN THE FIRST COLUMN are comments and are ignored.
  */
-  lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set,  /**< An lm class set */
-				  char *file /**< A class definition file */
-				);
+lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set,  /**< An lm class set */
+				char *file /**< A class definition file */
+    );
 
 
-  /**
+/**
  * Get the LMclass object for the given name from the given set.
  */
 lmclass_t lmclass_get_lmclass (lmclass_set_t set, char *name);
 
 
-  /**
+/**
  * Get the number of LMclass objects in the given set.
  */
 int32 lmclass_get_nclass (lmclass_set_t set);
 
 
-  /** Set the dictwid field of the given LMclass word entry to the given value */
+/** Set the dictwid field of the given LMclass word entry to the given value */
 void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
 
 
-  /** Various access functions (macros) */
+/** Various access functions (macros) */
 #define lmclass_getname(class)		((class)->name)
 #define lmclass_firstword(class)	((class)->wordlist)
 #define lmclass_nextword(class,w)	((w)->next)

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -124,7 +125,7 @@
 
 /** \file dag.h
     \brief data structure for dag. Adapted from s3_dag.h in s3.5
- */
+*/
 
 /**
  * \struct word_cand_t
@@ -148,11 +149,11 @@ void build_word_cand_cf (int32 cf, /**< Current frame */
 			 dict_t *dict, /**< The dictionary */
 			 s3wid_t* wcand_cf, /**< The array of word candidate */
 			 int32 word_cand_win, /**< In frame f, candidate words in input lattice from frames
-						[(f - word_cand_win) .. (f + word_cand_win)] will be
-						the actual candidates to be started(entered) */
+						 [(f - word_cand_win) .. (f + word_cand_win)] will be
+						 the actual candidates to be started(entered) */
 			 word_cand_t ** wcand
 
-			 );
+    );
 
 
 
@@ -163,14 +164,14 @@ int32 word_cand_load (FILE *fp,  /**< An initialized for inputfile poiner */
 		      word_cand_t** wcand, /**< list of word candidate */
 		      dict_t *dict, /**< The dictionary*/
 		      char* uttid   /**< The ID of an utterance */
-		      );
+    );
 
 
 /**
  * Free word candidate
  */
 void word_cand_free ( word_cand_t ** wcand  /**< list of word candidate to free */
-		      );
+    );
 
 /**
  * DAG structure representation of word lattice.  A unique <wordid,startframe> is a node.
@@ -185,14 +186,14 @@ typedef struct dagnode_s {
     struct daglink_s *succlist;		/**< List of successor nodes (adjacent in time) */
     struct daglink_s *predlist;		/**< List of preceding nodes (adjacent in time) */
 
-  uint8 reachable;                      /**< In astar: Whether final node reachable from here 
-					     In flat_fwd's dag_to_wordgraph: A marker for whether 
-					     a node is already marked. 
+    uint8 reachable;                      /**< In astar: Whether final node reachable from here 
+                                             In flat_fwd's dag_to_wordgraph: A marker for whether 
+                                             a node is already marked. 
 					     
-					 */
-  int32 node_ascr;                      /**< Node acoustic score */
-  int32 node_lscr;                      /**< Node langauge score */
-  void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
+                                          */
+    int32 node_ascr;                      /**< Node acoustic score */
+    int32 node_lscr;                      /**< Node langauge score */
+    void *hook;                           /**< A hook that could allow arbitrary data structure to use dagnode_t */
 
 } dagnode_t;
 
@@ -203,17 +204,17 @@ typedef struct dagnode_s {
 */
 typedef struct daglink_s {
     dagnode_t *node;		/**< Target of link (source determined by dagnode_t.succlist
-				   or dagnode_t.predlist) */
+                                   or dagnode_t.predlist) */
     dagnode_t *src;		/**< Source node of link */
     struct daglink_s *next;	/**< Next in same dagnode_t.succlist or dagnode_t.predlist */
     struct daglink_s *history;	/**< Previous link along best path (for traceback) */
     struct daglink_s *bypass;	/**< If this links A->B, bypassing A->fillnode->B, then
-				   bypass is ptr to fillnode->B */
+                                   bypass is ptr to fillnode->B */
 
 
     int32 ascr;			/**< Acoustic score for segment of source node ending just
-				   before the end point of this link.  (Actually this gets
-				   corrupted because of filler node deletion.) */
+                                   before the end point of this link.  (Actually this gets
+                                   corrupted because of filler node deletion.) */
     int32 lscr;			/**< LM score to the SUCCESSOR node */
     int32 pscr;			/**< Best path score to root beginning with this link */
 
@@ -223,10 +224,10 @@ typedef struct daglink_s {
 				   links), but gets corrupted because of filler deletion */
     uint8 pscr_valid;		/**< Flag to avoid evaluating the same path multiple times */
 
-  int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
-  int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
+    int32 hscr;			/**< Astar specific:Heuristic score from end of link to dag exit node */
+    int32 is_filler_bypass;       /**< Astar specific:Whether this is a filler bypass link */
 
-  void *hook;                           /**< A hook that could allow arbitrary data structure to use daglink_t */
+    void *hook;                           /**< A hook that could allow arbitrary data structure to use daglink_t */
 
 } daglink_t;
 
@@ -237,7 +238,7 @@ typedef struct daglink_s {
 
     FIXE, latfinal and exit are very very similar things, they just
     happend to be declared by Ravi different time. 
- */
+*/
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
     dagnode_t *root;            /**< Corresponding to the node of (<s>,0)  */
@@ -253,8 +254,8 @@ typedef struct {
     int32 nbypass;              /**< The number of linke which are by-passed */
 
     int32 maxedge;              /**< (New in S3.6) Used in dag/astar/decode_anytopo, this decides whether
-				     parts of the dag code will exceed the maximum no of edge 
-				 */
+                                   parts of the dag code will exceed the maximum no of edge 
+                                */
 
     int32 lmop;		        /**< (Temporary Variable): #LM ops actually made */
     int32 maxlmop;		/**< Max LM ops allowed before utterance aborted 
@@ -264,7 +265,7 @@ typedef struct {
     int32 fudged;               /**< Whether fudge edges have been added */
 
     s3latid_t latfinal;         /**< Lattice entry determined to be final end point */
-  void *hook;                   /**< A hook for general purpose */
+    void *hook;                   /**< A hook for general purpose */
 
 } dag_t;
 
@@ -289,7 +290,7 @@ int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
 		int32 ascr,     /**< The acoustic scores */
 		int32 ef,       /**< The ending frame */
 		daglink_t *byp  
-		);
+    );
 
 /** Link two DAG nodes with the given arguments
  * @return 0 if successful, -1 if maxedge limit exceeded.
@@ -301,7 +302,7 @@ int32 dag_link_w_lscr (dag_t * dagp,    /**< A pointer to a DAG */
 		       int32 lscr,     /**< The language scores */
 		       int32 ef,       /**< The ending frame */
 		       daglink_t *byp  
-		       );
+    );
 
 
 daglink_t *find_succlink (dagnode_t *src, dagnode_t *dst);
@@ -314,7 +315,7 @@ int32 dag_update_link (dag_t* dagp,  /**< A pointer to a DAG */
 		       int32 ascr,  /**< The acoustic scores */
 		       int32 ef,    /**< The ending frame */
 		       daglink_t *byp
-		       );
+    );
 
 /** Routine to read the dag header 
  */
@@ -322,7 +323,7 @@ int32 dag_update_link (dag_t* dagp,  /**< A pointer to a DAG */
 int32 dag_param_read (FILE *fp, /** file pointer */
 		      char *param, /** The parameter name */
 		      int32 *lineno /** IN/Out The pointer of line no */
-		      );
+    );
 
 
 /**
@@ -330,28 +331,28 @@ int32 dag_param_read (FILE *fp, /** file pointer */
  * @return 0 if successful, -1 otherwise.
  */
 int32 dag_bestpath (
-		    dag_t* dagp,  /**< A pointer to a DAG */
-		    daglink_t *l,	/**< Backward link! */
-		    dagnode_t *src,	/**< Source node for backward link l */
-		    float64 lwf,         /**< Language weight multiplication factor */ 
-		    dict_t *dict,        /**<  The dictionary */
-		    lm_t *lm,             /**< The LM */
-		    s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
-		    ); 
+    dag_t* dagp,  /**< A pointer to a DAG */
+    daglink_t *l,	/**< Backward link! */
+    dagnode_t *src,	/**< Source node for backward link l */
+    float64 lwf,         /**< Language weight multiplication factor */ 
+    dict_t *dict,        /**<  The dictionary */
+    lm_t *lm,             /**< The LM */
+    s3lmwid32_t *dict2lmwid /**< A map from dictionary id to lm id, should use wid2lm insteead*/
+    ); 
 
 
 /** Check whether the link score is larger than zero
  * @return 0 if not, return -1 otherwise. 
  */
 int32 dag_chk_linkscr (
-		       dag_t *dagp /**< A pointer to a DAG */
-		       );
+    dag_t *dagp /**< A pointer to a DAG */
+    );
 
 /** destroy a dag 
  */
 int32 dag_destroy ( 
-		   dag_t *dagp /**< A pointer to a DAG */
-		   );
+    dag_t *dagp /**< A pointer to a DAG */
+    );
 
 /**
  * Recursive backtrace through DAG (from final node to root) using daglink_t.history.
@@ -362,7 +363,7 @@ srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the 
 			   float64 lwf,    /**< The language weight factor */
 			   dict_t* dict,   /**< The dictionary*/
 			   fillpen_t* fpen /**< The filler penalty structure */
-			   );
+    );
 
 /**
  * writing the header of dag in Sphinx 3's format
@@ -374,7 +375,7 @@ void dag_write_header (FILE *fp, /**< A file pointer */
 					   sphinx 3.0 should use 1,
 					   sphinx 3.x should use 0*/
 		       
-		       );
+    );
 
 
 /**
@@ -395,7 +396,7 @@ srch_hyp_t *dag_search (dag_t *dagp, /**< The initalized directed acyclic graph 
 			dict_t *dict,  /**< Dict */
 			lm_t *lm,      /**< LM */
 			fillpen_t *fpen /**< Fillpen */
-			);
+    );
 
 /**
  * Add fudges into a DAG 
@@ -407,7 +408,7 @@ void dag_add_fudge_edges (dag_t* dagp,  /** An initialized DAG */
 			  void *lathist, /**< lattice history, compilation problem cause me to cast it as void. 
 					    It should be in latticehist_t */
 			  dict_t *dict  /**< Dictionary */
-			  );
+    );
 
 
 /**
@@ -423,7 +424,7 @@ int32 dag_remove_filler_nodes (dag_t* dagp,  /**< DAG */
 			       float64 lwf,  /**< language weight factor */
 			       dict_t *dict,  /**< Dictionary */
 			       fillpen_t *fpen /**< The filler penalty */
-			       );
+    );
 
 
 /**
@@ -441,23 +442,23 @@ int32 dag_remove_filler_nodes (dag_t* dagp,  /**< DAG */
  */
 
 dag_t* dag_load (  
-		char *file,   /**< Input: File to lod from */
-		int32 maxedge, /**< Maximum # of edges */
-		float32 logbase,  /**< Logbase in float */
-		int32 fudge,    /**< The number of fudges added */
-		dict_t *dict,       /**< Dictionary */
-		fillpen_t *fpen    /**< Filler penalty structure */
-		);
+    char *file,   /**< Input: File to lod from */
+    int32 maxedge, /**< Maximum # of edges */
+    float32 logbase,  /**< Logbase in float */
+    int32 fudge,    /**< The number of fudges added */
+    dict_t *dict,       /**< Dictionary */
+    fillpen_t *fpen    /**< Filler penalty structure */
+    );
 
 /**
    A version of dag load that is used in main_dag and srch.c 
    @return number of frame read
- */
+*/
 int32 s3dag_dag_load (dag_t **dagpp,  /**< Output: pointer of pointer of DAG */
 		      float32 lwf,     /**<Input, language weight */
 		      char *file,      /**< The file name */
 		      dict_t *dict, 
 		      fillpen_t *fpen
-		      );
+    );
 
 #endif

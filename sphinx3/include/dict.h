@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -115,11 +116,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** 
-      \struct dictword_t
-      \brief a structure for one dictionary word. 
-   */
+/** 
+    \struct dictword_t
+    \brief a structure for one dictionary word. 
+*/
 typedef struct {
     char *word;		/**< Ascii word string */
     s3cipid_t *ciphone;	/**< Pronunciation */
@@ -133,10 +137,10 @@ typedef struct {
     s3wid_t *comp;	/**< If n_comp > 0, its components */
 } dictword_t;
 
-  /** 
-      \struct dict_t
-      \brief a structure for a dictionary. 
-   */
+/** 
+    \struct dict_t
+    \brief a structure for a dictionary. 
+*/
 
 typedef struct {
     mdef_t *mdef;	/**< Model definition used for phone IDs; NULL if none used */
@@ -150,17 +154,17 @@ typedef struct {
     int32 filler_start;	/**< First filler word id (read from filler dict) */
     int32 filler_end;	/**< Last filler word id (read from filler dict) */
     s3wid_t *comp_head;	/**< comp_head[w] = wid of a compound word with 1st component = w;
-			   comp_head[comp_head[w]] = next such compound word, and so on,
-			   until we hit BAD_S3WID.  NULL if no compound word in dict. */
+                           comp_head[comp_head[w]] = next such compound word, and so on,
+                           until we hit BAD_S3WID.  NULL if no compound word in dict. */
     s3wid_t startwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t finishwid;	/**< FOR INTERNAL-USE ONLY */
     s3wid_t silwid;	/**< FOR INTERNAL-USE ONLY */
   
-  lts_t *lts_rules;     /**< The LTS rules */
+    lts_t *lts_rules;     /**< The LTS rules */
 } dict_t;
 
 
-  /**
+/**
  * Initialize with given main and filler dictionary files.  fillerfile can be NULL
  * (but external modules might impose their own requirements).
  * Return ptr to dict_t if successful, NULL otherwise.
@@ -173,47 +177,47 @@ dict_t *dict_init (mdef_t *mdef,	/**< For looking up CI phone IDs; NULL if none,
 					   no compound words */
 		   int useLTS,          /**< Whether to use letter-to-sound rules */
 		   int breport          /**< Whether we should report the progress */
-		   );
+    );
 
-  /** Return word id for given word string if present.  Otherwise return BAD_S3WID */
+/** Return word id for given word string if present.  Otherwise return BAD_S3WID */
 s3wid_t dict_wordid (dict_t *d, char *word);
 
-  /**
+/**
  * Return 1 if w is a filler word, 0 if not.  A filler word is one that was read in from the
  * filler dictionary; however, sentence START and FINISH words are not filler words.
  */
-  int32 dict_filler_word (dict_t *d,  /**< The dictionary structure */
+int32 dict_filler_word (dict_t *d,  /**< The dictionary structure */
 			s3wid_t w     /**< The The word */
-			);
+    );
 
-  /**
-   * Add a word with the given ciphone pronunciation list to the dictionary.
-   * Return value: Result word id if successful, BAD_S3WID otherwise
-   */
+/**
+ * Add a word with the given ciphone pronunciation list to the dictionary.
+ * Return value: Result word id if successful, BAD_S3WID otherwise
+ */
 s3wid_t dict_add_word (dict_t *d,  /**< The dictionary structure */
-			char *word, /**< The word */
-			s3cipid_t *p, 
-			int32 np
-			);
+		       char *word, /**< The word */
+		       s3cipid_t *p, 
+		       int32 np
+    );
 
-  /**
+/**
  * Look for a compound word that matches the given word-id sequence.
  * Return value: Base ID of compound word if found, else BAD_S3WID.
  */
 s3wid_t dict_wids2compwid (dict_t *d,		/**< In: Dictionary to look up */
 			   s3wid_t *wid,	/**< In: Component words to look for */
 			   int32 len		/**< In: No. of component words */
-			   );
+    );
 
-  /**
+/**
  * Return value: CI phone string for the given word, phone position.
  */
 const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 			      s3wid_t wid,	/**< In: Component word being looked up */
 			      int32 pos   	/**< In: Pronunciation phone position */
-			      );
+    );
 
-  /** Packaged macro access to dictionary members */
+/** Packaged macro access to dictionary members */
 #define dict_size(d)		((d)->n_word)
 #define dict_basewid(d,w)	((d)->word[w].basewid)
 #define dict_wordstr(d,w)	((d)->word[w].word)
@@ -232,23 +236,23 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 
 /* Function versions of some of the above macros; note the leading underscore. */
 
-  /**
+/**
  * Return base word id for given word id w (which may be itself).  w must be valid.
  */
 s3wid_t _dict_basewid (dict_t *d, s3wid_t w);
 
-  /**
+/**
  * Return word string for given word id, which must be valid.
  */
 char *_dict_wordstr (dict_t *d, s3wid_t wid);
 
-  /**
+/**
  * Return the next alternative word id for the given word id, which must be valid.
  * The returned id may be BAD_S3WID if there is none.
  */
 s3wid_t _dict_nextalt (dict_t *d, s3wid_t wid);
 
-  /**
+/**
  * If the given word contains a trailing "(....)" (i.e., a Sphinx-II style alternative
  * pronunciation specification), strip that trailing portion from it.  Note that the given
  * string is modified.
@@ -257,13 +261,13 @@ s3wid_t _dict_nextalt (dict_t *d, s3wid_t wid);
  */
 int32 dict_word2basestr (char *word);
 
-  /* RAH, free memory allocated for the dictionary */
-  /** Free memory allocated for the dictionary */
+/* RAH, free memory allocated for the dictionary */
+/** Free memory allocated for the dictionary */
 void dict_free (dict_t *d);
 
-  /** Report a diciontary structure */
-  void dict_report(dict_t *d /**< A dictionary structure */
-		   );
+/** Report a diciontary structure */
+void dict_report(dict_t *d /**< A dictionary structure */
+    );
 
 #ifdef __cplusplus
 }

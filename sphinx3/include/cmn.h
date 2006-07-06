@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -87,8 +88,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file cmn.h
+/** \file cmn.h
  * \brief Apply Cepstral Mean Normalization (CMN) to the set of input mfc frames.
  *
  * By subtractingthe mean of the input from each frame.  C0 is also included in this process.
@@ -96,25 +100,25 @@ extern "C" {
  * must be available beforehand (batchmode).
  */
 
-  /** \struct cmn_t
-   *  \brief wrapper of operation of the cepstral mean normalization. 
-   */
+/** \struct cmn_t
+ *  \brief wrapper of operation of the cepstral mean normalization. 
+ */
 
 typedef struct {
-  /*These two are used in cmn*/
-  float32 *cmn_mean;  /**< Temporary variables: stored the cmn mean */
-  float32 *cmn_var;    /**< Temporary variables: stored the cmn variance */
-  /*These three are used in cmn_prior*/
-  float32 *cur_mean;   /**< Temporary variable: current means */
-  float32 *sum;        /**< The sum of the cmn frames */
-  int32 nframe; /**< Number of frames*/
+    /*These two are used in cmn*/
+    float32 *cmn_mean;  /**< Temporary variables: stored the cmn mean */
+    float32 *cmn_var;    /**< Temporary variables: stored the cmn variance */
+    /*These three are used in cmn_prior*/
+    float32 *cur_mean;   /**< Temporary variable: current means */
+    float32 *sum;        /**< The sum of the cmn frames */
+    int32 nframe; /**< Number of frames*/
 }cmn_t;
 
 cmn_t* cmn_init();
 
-  /**
-     CMN for the whole sentence
-   */
+/**
+   CMN for the whole sentence
+*/
 void cmn (float32 **mfc,	/**< In/Out: mfc[f] = mfc vector in frame f */
 	  int32 varnorm,	/**< In: if not FALSE, variance normalize the input vectors
 				   to have unit variance (along each dimension independently);
@@ -122,17 +126,17 @@ void cmn (float32 **mfc,	/**< In/Out: mfc[f] = mfc vector in frame f */
 	  int32 n_frame,	/**< In: #frames of mfc vectors */
 	  int32 veclen,         /**< In: mfc vector length */
 	  cmn_t *cmn	        /**< In/Out: cmn normalization, which contains the cmn_mean and cmn_var) */
-	  );
+    );
 
 #define CMN_WIN_HWM     800     /* #frames after which window shifted */
 #define CMN_WIN         500
 
 #if 0
 void cmn_prior(float32 **incep,  /* In/Out: mfc[f] = mfc vector in frame f*/
-	      int32 varnorm,    /* This flag should always be 0 for live */
-	      int32 nfr,        /* Number of incoming frames */
-              int32 ceplen,     /* Length of the cepstral vector */
-	      int32 endutt,
+	       int32 varnorm,    /* This flag should always be 0 for live */
+	       int32 nfr,        /* Number of incoming frames */
+	       int32 ceplen,     /* Length of the cepstral vector */
+	       int32 endutt,
 	       cmn_t *cmn);    /* Flag indicating end of utterance */
 #endif
 

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -90,8 +91,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /**
+/**
  * Size definitions for more semantially meaningful units.
  * Illegal value definitions, limits, and tests for specific types.
  * NOTE: Types will be either int32 or smaller; only smaller ones may be unsigned (i.e.,
@@ -104,7 +108,7 @@ typedef int16		s3cipid_t;	/** Ci phone id */
 #define IS_S3CIPID(p)	((p)>=0)
 #define MAX_S3CIPID	32767
 
-  /*#define MAX_S3CIPID	127*/
+/*#define MAX_S3CIPID	127*/
 
 typedef int32		s3pid_t;	/** Phone id (triphone or ciphone) */
 #define BAD_S3PID	((s3pid_t) -1)
@@ -143,11 +147,11 @@ typedef uint32		s3lmwid32_t;	/** LM word id (uint32 for conserving space) */
 #define IS_S3LMWID32(w)	((w)!=BAD_S3LMWID32)
 #define MAX_S3LMWID32	((uint32)0xfffffffe)
 
-  /* Generic macro that is applicable to both uint16 and uint32
-     Careful with efficiency issue. 
+/* Generic macro that is applicable to both uint16 and uint32
+   Careful with efficiency issue. 
 
-     Also, please don't use BAD_S3LATID(l);
-   */
+   Also, please don't use BAD_S3LATID(l);
+*/
 
 #define BAD_LMWID(lm)      (lm->is32bits? BAD_S3LMWID32 : BAD_S3LMWID)
 #define NOT_LMWID(lm,w)    (lm->is32bits? NOT_S3LMWID32(w): NOT_S3LMWID(w))
@@ -198,10 +202,10 @@ typedef int16   	s3mgauid_t;	/** Mixture-gaussian codebook id */
 #define S3_ERROR        -1
 #define S3_WARNING      -2
 
-  /** The maximum # of states for any given acoustic model */
+/** The maximum # of states for any given acoustic model */
 #define MAX_N_STATE     20
 
-  /** The maximum # of attributes associated with any
+/** The maximum # of attributes associated with any
  * given acoustic model */
 #define MAX_N_ATTRIB    5
 

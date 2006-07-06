@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -114,7 +115,7 @@
 #include <whmm.h>
 #include <ctxt_table.h>
 /*
-#include <msd.h>
+  #include <msd.h>
 */
 
 
@@ -126,7 +127,7 @@
 #define FSG_PNODE_CTXT_BVSZ	2
 
 typedef struct {
-  uint32 bv[FSG_PNODE_CTXT_BVSZ];
+    uint32 bv[FSG_PNODE_CTXT_BVSZ];
 } fsg_pnode_ctxt_t;
 
 
@@ -147,61 +148,61 @@ typedef struct {
  * context.
  */
 typedef struct fsg_pnode_s {
-  /**
-   * If this is not a leaf node, the first successor (child) node.  Otherwise
-   * the parent FSG transition for which this is the leaf node (for figuring
-   * the FSG destination state, and word emitted by the transition).  A node
-   * may have several children.  The succ ptr gives just the first; the rest
-   * are linked via the sibling ptr below.
-   */
-  union {
-    struct fsg_pnode_s *succ;
-    word_fsglink_t *fsglink;
-  } next;
+    /**
+     * If this is not a leaf node, the first successor (child) node.  Otherwise
+     * the parent FSG transition for which this is the leaf node (for figuring
+     * the FSG destination state, and word emitted by the transition).  A node
+     * may have several children.  The succ ptr gives just the first; the rest
+     * are linked via the sibling ptr below.
+     */
+    union {
+        struct fsg_pnode_s *succ;
+        word_fsglink_t *fsglink;
+    } next;
   
-  /*
-   * For simplicity of memory management (i.e., freeing the pnodes), all
-   * pnodes allocated for all transitions out of a state are maintained in a
-   * linear linked list through the alloc_next pointer.
-   */
-  struct fsg_pnode_s *alloc_next;
+    /*
+     * For simplicity of memory management (i.e., freeing the pnodes), all
+     * pnodes allocated for all transitions out of a state are maintained in a
+     * linear linked list through the alloc_next pointer.
+     */
+    struct fsg_pnode_s *alloc_next;
   
-  /*
-   * The next node that is also a child of the parent of this node; NULL if
-   * none.
-   */
-  struct fsg_pnode_s *sibling;
+    /*
+     * The next node that is also a child of the parent of this node; NULL if
+     * none.
+     */
+    struct fsg_pnode_s *sibling;
 
-  /*
-   * The transition (log) probability to be incurred upon transitioning to
-   * this node.  (Transition probabilities are really associated with the
-   * transitions.  But a lextree node has exactly one incoming transition.
-   * Hence, the prob can be associated with the node.)
-   * This is a logs2(prob) value, and includes the language weight.
-   */
-  int32 logs2prob;
+    /*
+     * The transition (log) probability to be incurred upon transitioning to
+     * this node.  (Transition probabilities are really associated with the
+     * transitions.  But a lextree node has exactly one incoming transition.
+     * Hence, the prob can be associated with the node.)
+     * This is a logs2(prob) value, and includes the language weight.
+     */
+    int32 logs2prob;
   
-  /*
-   * The root and leaf positions associated with any transition have to deal
-   * with multiple phonetic contexts.  However, different contexts may result
-   * in the same SSID (senone-seq ID), and can share a single pnode with that
-   * SSID.  But the pnode should track the set of context CI phones that share
-   * it.  Hence the fsg_pnode_ctxt_t bit-vector set-representation.  (For
-   * simplicity of implementation, its size is a compile-time constant for
-   * now.)  Single phone words would need a 2-D array of context, but that's
-   * too expensive.  For now, they simply use SIL as right context, so only
-   * the left context is properly modelled.
-   * (For word-internal phones, this field is unused, of course.)
-   */
-  fsg_pnode_ctxt_t ctxt;
+    /*
+     * The root and leaf positions associated with any transition have to deal
+     * with multiple phonetic contexts.  However, different contexts may result
+     * in the same SSID (senone-seq ID), and can share a single pnode with that
+     * SSID.  But the pnode should track the set of context CI phones that share
+     * it.  Hence the fsg_pnode_ctxt_t bit-vector set-representation.  (For
+     * simplicity of implementation, its size is a compile-time constant for
+     * now.)  Single phone words would need a 2-D array of context, but that's
+     * too expensive.  For now, they simply use SIL as right context, so only
+     * the left context is properly modelled.
+     * (For word-internal phones, this field is unused, of course.)
+     */
+    fsg_pnode_ctxt_t ctxt;
   
-  uint8 ci_ext;		/* This node's CIphone as viewed externally (context) */
-  uint8 ppos;		/* Phoneme position in pronunciation */
-  boolean leaf;		/* Whether this is a leaf node */
+    uint8 ci_ext;		/* This node's CIphone as viewed externally (context) */
+    uint8 ppos;		/* Phoneme position in pronunciation */
+    boolean leaf;		/* Whether this is a leaf node */
   
-  /* HMM-state-level stuff here */
-  /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
-  whmm_t* hmm;
+    /* HMM-state-level stuff here */
+    /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
+    whmm_t* hmm;
 
 } fsg_pnode_t;
 
@@ -231,7 +232,7 @@ fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, /**< A word fsg */
 				fsg_pnode_t **alloc_head,
 				int32 n_state_hmm /**< Number of state of the hmm*/
 
-				);
+    );
 
 
 /**
@@ -247,7 +248,7 @@ void fsg_psubtree_free (fsg_pnode_t *alloc_head);
  */
 void fsg_psubtree_dump (fsg_pnode_t *alloc_head, FILE *fp,
 			dict_t *dict, mdef_t *mdef
-			);
+    );
 
 
 /*
@@ -270,7 +271,7 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
  */
 void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode,
 				    int32 n_state_hmm
-				    );
+    );
 
 
 /* Set all flags on in the given context bitvector */

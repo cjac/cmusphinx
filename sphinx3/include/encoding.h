@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -77,25 +78,25 @@
 /**
    Get encoding index from encoding scheme string. 
    @return the index of the encoding scheme
- */
+*/
 
 int encoding_str2ind(const char *enc /**< In: Input encoding */
-		     );
+    );
 
 /**
    Resolve whether encoding is legitimate 
    @return whether the two encoding could be resolved. 
- */
+*/
 int encoding_resolve(char* inputenc,  /**< In: Input encoding */
 		     char *outputenc  /**< In: Input encoding */
-		     );
+    );
 
 /**
    Convert hex to code. 
- */
+*/
 void hextocode(char* src /**< In/Out: Input and output string where
-			   in-place conversion took place */
-	      );
+			    in-place conversion took place */
+    );
 
 int ishex(char* str);
 #endif

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -132,56 +133,56 @@
 #include <srch_output.h>
 
 typedef struct fsg_search_s {
-  glist_t fsglist;		/* List of all FSGs loaded */
+    glist_t fsglist;		/* List of all FSGs loaded */
   
-  word_fsg_t *fsg;		/* Currently active FSG; NULL if none.  One
-				   must be made active before starting FSG
-				   decoding */
-  fsg_lextree_t *lextree;	/* Lextree structure for the currently
+    word_fsg_t *fsg;		/* Currently active FSG; NULL if none.  One
+                                   must be made active before starting FSG
+                                   decoding */
+    fsg_lextree_t *lextree;	/* Lextree structure for the currently
 				   active FSG */
-  fsg_history_t *history;	/* For storing the Viterbi search history */
+    fsg_history_t *history;	/* For storing the Viterbi search history */
   
-  glist_t pnode_active;		/* Those active in this frame */
-  glist_t pnode_active_next;	/* Those activated for the next frame */
+    glist_t pnode_active;		/* Those active in this frame */
+    glist_t pnode_active_next;	/* Those activated for the next frame */
   
-  int32 beam;			/* Global threshold */
-  int32 pbeam;			/* Threshold for phone transition */
-  int32 wbeam;			/* Threshold for word exit */
+    int32 beam;			/* Global threshold */
+    int32 pbeam;			/* Threshold for phone transition */
+    int32 wbeam;			/* Threshold for word exit */
   
-  int32 frame;			/* Current frame */
+    int32 frame;			/* Current frame */
 
-  int32 bestscore;		/* For beam pruning */
-  int32 bpidx_start;		/* First history entry index this frame */
+    int32 bestscore;		/* For beam pruning */
+    int32 bpidx_start;		/* First history entry index this frame */
   
-  srch_hyp_t *hyp;		/* Search hypothesis */
-  srch_hyp_t *filt_hyp;         /* Filtered hypothesis */
-  int32 ascr, lscr;		/* Total acoustic and lm score for utt */
+    srch_hyp_t *hyp;		/* Search hypothesis */
+    srch_hyp_t *filt_hyp;         /* Filtered hypothesis */
+    int32 ascr, lscr;		/* Total acoustic and lm score for utt */
   
-  int32 n_hmm_eval;		/* Total HMMs evaluated this utt */
+    int32 n_hmm_eval;		/* Total HMMs evaluated this utt */
   
-  int32 state;			/* Whether IDLE or BUSY */
+    int32 state;			/* Whether IDLE or BUSY */
 
 
-  int32 n_state_hmm;            /**< Number of state of HMM*/
+    int32 n_state_hmm;            /**< Number of state of HMM*/
 
-  /*Added by Arthur at 20050627*/
-  int32 isUsealtpron;
-  int32 isUseFiller;
-  int32 isBacktrace;
-  int32 isReportAltpron;
-  char* DumpLatdir;
-  int32 n_ci_phone;
+    /*Added by Arthur at 20050627*/
+    int32 isUsealtpron;
+    int32 isUseFiller;
+    int32 isBacktrace;
+    int32 isReportAltpron;
+    char* DumpLatdir;
+    int32 n_ci_phone;
   
-  dict_t *dict;
-  mdef_t *mdef;
-  tmat_t *tmat; 
-  ascr_t *am_score_pool;
-  int32 *senscr; /** The senone score */
-  char* uttid;  /**< Utterance ID */
-  int32 *senscale; /** The senone scale */
+    dict_t *dict;
+    mdef_t *mdef;
+    tmat_t *tmat; 
+    ascr_t *am_score_pool;
+    int32 *senscr; /** The senone score */
+    char* uttid;  /**< Utterance ID */
+    int32 *senscale; /** The senone scale */
 
-  FILE* matchfp; 
-  FILE* matchsegfp; 
+    FILE* matchfp; 
+    FILE* matchsegfp; 
 } fsg_search_t;
 
 

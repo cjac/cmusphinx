@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -85,20 +86,23 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file feat.h
-   * \brief compute the dynamic coefficients from the cepstral vector. 
-   */
+/** \file feat.h
+ * \brief compute the dynamic coefficients from the cepstral vector. 
+ */
 #define LIVEBUFBLOCKSIZE        256    /** Blocks of 256 vectors allocated 
-					  for livemode decoder */
+					   for livemode decoder */
 
 
-  /**
-   * \struct feat_t
-   * \brief Structure for describing a speech feature type
-   * Structure for describing a speech feature type (no. of streams and stream widths),
-   * as well as the computation for converting the input speech (e.g., Sphinx-II format
-   * MFC cepstra) into this type of feature vectors.
+/**
+ * \struct feat_t
+ * \brief Structure for describing a speech feature type
+ * Structure for describing a speech feature type (no. of streams and stream widths),
+ * as well as the computation for converting the input speech (e.g., Sphinx-II format
+ * MFC cepstra) into this type of feature vectors.
  */
 typedef struct feat_s {
     char *name;		/** Printable name for this feature type */
@@ -107,29 +111,29 @@ typedef struct feat_s {
     int32 n_stream;	/** #Feature streams; e.g., 4 in Sphinx-II */
     int32 *stream_len;	/** Vector length of each feature stream */
     int32 window_size;	/** #Extra frames around given input frame needed to compute
-			   corresponding output feature (so total = window_size*2 + 1) */
-  /*This should be removed to somewhere else */
+                            corresponding output feature (so total = window_size*2 + 1) */
+    /*This should be removed to somewhere else */
     int32 cmn;		/** Whether CMN is to be performed on each utterance */
   
     int32 varnorm;	/** Whether variance normalization is to be performed on each utt;
-			   Irrelevant if no CMN is performed */
+			    Irrelevant if no CMN is performed */
     int32 agc;		/** Whether AGC-Max is to be performed on each utterance */
     void (*compute_feat)(struct feat_s *fcb, float32 **input, float32 **feat);
-  /** Function for converting window of input speech vector
-			   (input[-window_size..window_size]) to output feature vector
-			   (feat[stream][]).  If NULL, no conversion available, the
-			   speech input must be feature vector itself.
-			   Return value: 0 if successful, -ve otherwise. */
-  cmn_t* cmn_struct;       /** Structure that stores the temporary variables for cepstral 
-			   means normalization*/
-  float32 **cepbuf;     /** TEMPORARY VARILABLE */
-  float32 **tmpcepbuf;  /** TEMPORARY VARILABLE */
-  int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
-  int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    /** Function for converting window of input speech vector
+        (input[-window_size..window_size]) to output feature vector
+        (feat[stream][]).  If NULL, no conversion available, the
+        speech input must be feature vector itself.
+        Return value: 0 if successful, -ve otherwise. */
+    cmn_t* cmn_struct;       /** Structure that stores the temporary variables for cepstral 
+                                 means normalization*/
+    float32 **cepbuf;     /** TEMPORARY VARILABLE */
+    float32 **tmpcepbuf;  /** TEMPORARY VARILABLE */
+    int32   bufpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
+    int32   curpos; /*  RAH 4.15.01 upgraded unsigned char variables to int32*/
 
 } feat_t;
 
-  /** Access macros */
+/** Access macros */
 #define feat_name(f)		((f)->name)
 #define feat_cepsize(f)		((f)->cepsize)
 #define feat_cepsize_used(f)	((f)->cepsize_used)
@@ -138,7 +142,7 @@ typedef struct feat_s {
 #define feat_window_size(f)	((f)->window_size)
 
 
-  /**
+/**
  * Read feature vectors from the given file.  Feature file format:
  *   Line containing the single word: s3
  *   File header including any argument value pairs/line and other text (e.g.,
@@ -156,40 +160,40 @@ typedef struct feat_s {
 int32 feat_readfile (feat_t *fcb,	/** In: Control block from feat_init() */
 		     char *file,	/** In: File to read */
 		     int32 sf,		/** In: Start/end frames (range) to be read from
-					   file; use 0, 0x7ffffff0 to read entire file */
+					    file; use 0, 0x7ffffff0 to read entire file */
 		     int32 ef,
 		     float32 ***feat,	/** Out: Data structure to be filled with read
-					   data; allocate using feat_array_alloc() */
+					    data; allocate using feat_array_alloc() */
 		     int32 maxfr	/** In: #Frames allocated for feat above; error if
-					   attempt to read more than this amount. */
-		     );
-  /**
+					    attempt to read more than this amount. */
+    );
+/**
  * Counterpart to feat_readfile.  Feature data is assumed to be in a contiguous block
  * starting from feat[0][0][0].  (NOTE: No checksum is written.)
  * Return value: # frames read if successful, -1 if error.
  */
 int32 feat_writefile (feat_t *fcb,	/** In: Control block from feat_init() */
-		     char *file,	/** In: File to write */
-		     float32 ***feat,	/** In: Feature data to be written */
+		      char *file,	/** In: File to write */
+		      float32 ***feat,	/** In: Feature data to be written */
 		      int32 nfr	/** In: #Frames to be written */
-		      );
+    );
 
-  /**
+/**
  * Read Sphinx-II format mfc file (s2mfc = Sphinx-II format MFC data).
  * Return value: #frames read if successful, -1 if error (e.g., mfc array too small).
  */
 int32
 feat_s2mfc_read (char *file,		/** In: Sphinx-II format MFC file to be read */
 		 int32 sf, int32 ef,	/** In: Start/end frames (range) to be read from file;
-					   Can use 0,-1 to read entire file */
+					    Can use 0,-1 to read entire file */
 		 float32 **mfc,		/** Out: 2-D array to be filled with read data;
-					   caller must have allocated this array */
+					    caller must have allocated this array */
 		 int32 maxfr,		/** In: #Frames of mfc array allocated; error if
-					   attempt to read more than this amount. */
+					    attempt to read more than this amount. */
 		 int32 cepsize		/** In: Length of each MFC vector. */
-		 );
+    );
 
-  /**
+/**
  * Allocate an array to hold several frames worth of feature vectors.  The returned value
  * is the float32 ***data array, organized as follows:
  *   data[0][0] = frame 0 stream 0 vector, data[0][1] = frame 0 stream 1 vector, ...
@@ -202,17 +206,17 @@ feat_s2mfc_read (char *file,		/** In: Sphinx-II format MFC file to be read */
 float32 ***feat_array_alloc (feat_t *fcb,	/**< In: Descriptor from feat_init(), used
 						   to obtain #streams and stream sizes */
 			     int32 nfr	        /**< In: #Frames for which to allocate */
-			     );
-  /**
+    );
+/**
  * Like feat_array_alloc except that only a single frame is allocated.  Hence, one
  * dimension less.
  */
 float32 **feat_vector_alloc (feat_t *fcb  /**< In: Descriptor from feat_init(),
-					       used to obtain #streams and 
-					       stream sizes */
-			     );
+					     used to obtain #streams and 
+					     stream sizes */
+    );
 
-  /**
+/**
  * Initialize feature module to use the selected type of feature stream.  
  * One-time only * initialization at the beginning of the program.  Input type 
  * is a string defining the  kind of input->feature conversion desired:
@@ -229,22 +233,22 @@ feat_t *feat_init (char *type,	/**< In: Type of feature stream */
 			           be done before feature computation; can be 
 		                   NULL (for none) */
 		   char *varnorm,  /**< In: ("yes" or "no") Whether variance 
-				   normalization done on each utt; only 
-				   applicable if CMN also done */
+				      normalization done on each utt; only 
+				      applicable if CMN also done */
 		   char *agc,	/**< In: Type of automatic gain control to be 
 				   done before feature computation; can be 
 				   NULL (for none) */
 		   int32 breport /**< In: Whether to show a report for feat_t */
-		   );
+    );
 
-  /**
+/**
  * Print the given block of feature vectors to the given FILE.
  */
 void feat_print (feat_t *fcb,		/**< In: Descriptor from feat_init() */
 		 float32 ***feat,	/**< In: Feature data to be printed */
 		 int32 nfr,		/**< In: #Frames of feature data above */
 		 FILE *fp		/**< In: Output file pointer */
-		 );
+    );
 
   
 /**
@@ -265,21 +269,21 @@ int32 feat_s2mfc2feat (feat_t *fcb,	/**< In: Descriptor from feat_init() */
 		       char *dir,	/**< In: Directory prefix for file, 
 					   if needed; can be NULL */
 		       char *cepext,	/**< In: Extension of the
-					    cepstrum file.It cannot be
-					    NULL */
+					   cepstrum file.It cannot be
+					   NULL */
 		       int32 sf, int32 ef,   /* Start/End frames
-					   within file to be read. Use
-					   0,-1 to process entire
-					   file */
+						within file to be read. Use
+						0,-1 to process entire
+						file */
 		       float32 ***feat,	/**< Out: Computed feature vectors; 
 					   caller must allocate this space */
 		       int32 maxfr	/**< In: Available space (#frames) in 
 					   above feat array; it must be 
 					   sufficient to hold the result */
-		       );
+    );
 
 
-  /** Feature computation routine for live mode decoder. Computes features
+/** Feature computation routine for live mode decoder. Computes features
  * for blocks of incoming data. Retains an internal buffer for computing
  * deltas etc */
 
@@ -289,7 +293,7 @@ int32   feat_s2mfc2feat_block(feat_t  *fcb,     /**< In: Descriptor from feat_in
                               int32 beginutt,   /**< In: Begining of utterance flag */
                               int32 endutt,     /**< In: End of utterance flag */
                               float32 ***ofeat  /**< In: Output feature buffer */
-			     );
+    );
 
 
 
@@ -297,17 +301,17 @@ int32   feat_s2mfc2feat_block(feat_t  *fcb,     /**< In: Descriptor from feat_in
  * RAH, remove memory allocated by feat_init
  */
 
-  /**
-     deallocate feat_t
-   */
-  void feat_free (feat_t *f /**< In: feat_t */
-		  );
+/**
+   deallocate feat_t
+*/
+void feat_free (feat_t *f /**< In: feat_t */
+    );
 
-  /**
-   * Report the feat_t data structure 
-   */
-  void feat_report(feat_t *f /**< In: feat_t */
-		   );
+/**
+ * Report the feat_t data structure 
+ */
+void feat_report(feat_t *f /**< In: feat_t */
+    );
 #ifdef __cplusplus
 }
 #endif

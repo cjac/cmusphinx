@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -138,7 +139,7 @@
     whether mode 5 (word copies searrch ) will work well in
     general. Last but not least, I preserved the search because of my
     respect to Ravi. :-)
-  */
+*/
 
 /**
    A note by ARCHAN at 20050703
@@ -150,33 +151,33 @@
    the interplay between these 3 components to realize how a search
    actually really works. 
    
- */
+*/
 
 typedef struct {
 
-  /**
-   * There can be several unigram lextrees.  If we're at the end of frame f, we can only
-   * transition into the roots of lextree[(f+1) % n_lextree]; same for fillertree[].  This
-   * alleviates the problem of excessive Viterbi pruning in lextrees.
-   */
+    /**
+     * There can be several unigram lextrees.  If we're at the end of frame f, we can only
+     * transition into the roots of lextree[(f+1) % n_lextree]; same for fillertree[].  This
+     * alleviates the problem of excessive Viterbi pruning in lextrees.
+     */
 
-  int32 n_lextree;		/**< Number of lexical tree for time switching: n_lextree */
-  lextree_t **curugtree;        /**< The current unigram tree that used in the search for this utterance. */
+    int32 n_lextree;		/**< Number of lexical tree for time switching: n_lextree */
+    lextree_t **curugtree;        /**< The current unigram tree that used in the search for this utterance. */
 
-  lextree_t **ugtree;           /**< The pool of trees that stores all word trees. */
-  lextree_t **fillertree;       /**< The pool of trees that stores all filler trees. */
-  int32 n_lextrans;		/**< #Transitions to lextree (root) made so far */
-  int32 epl ;                   /**< The number of entry per lexical tree */
+    lextree_t **ugtree;           /**< The pool of trees that stores all word trees. */
+    lextree_t **fillertree;       /**< The pool of trees that stores all filler trees. */
+    int32 n_lextrans;		/**< #Transitions to lextree (root) made so far */
+    int32 epl ;                   /**< The number of entry per lexical tree */
 
 #if 0
-  lextree_t **ugtreeMulti;  /** This data structure allocate all trees for all LMs specified by the users */
-  /** Because the name is confusing, in sphinx 3.6, ugtree and ugtreeMulti have changed their name to curugtree and ugtree. */
+    lextree_t **ugtreeMulti;  /** This data structure allocate all trees for all LMs specified by the users */
+    /** Because the name is confusing, in sphinx 3.6, ugtree and ugtreeMulti have changed their name to curugtree and ugtree. */
 #endif
   
-  lmset_t* lmset;               /**< The LM set */
-  int32 isLMLA;  /**< Is LM lookahead used?*/
+    lmset_t* lmset;               /**< The LM set */
+    int32 isLMLA;  /**< Is LM lookahead used?*/
 
-  histprune_t *histprune; /**< Structure that wraps up parameters related to  */
+    histprune_t *histprune; /**< Structure that wraps up parameters related to  */
   
 
 
@@ -187,19 +188,19 @@ typedef struct {
     tree(s) (both words and fillers) and histprune (it is necessary
     because histprune rely on the number of states of the data
     structure.
- */
+*/
 
 int srch_TST_init(kb_t *kb,  /**< The KB. */
 		  void* srch_struct /** The pointer to a search structure. */
-		  );
+    );
 
 /** Uninitialize search-specific data structure for time-switching
     tree search Currently, that is to say un-initialize lexical tree
     and histprune. Notice that lmset is assumed to be deallocate at kb
     which is the global copy boards of data structure. 
- */
+*/
 int srch_TST_uninit(void *srch  /**< A void pointer to a search structure */
-		    );
+    );
 
 
 /** Do the preparation for beginning a search for time-switching tree search.
@@ -212,8 +213,8 @@ int srch_TST_uninit(void *srch  /**< A void pointer to a search structure */
     (i.e. histprune_zero_histbin is called)
 
     3, a new viterbi istory will be created. A silence (usually <s> or <sil>)
-     will be inserted at the beginning of the history.
-     (vithist_utt_begin )
+    will be inserted at the beginning of the history.
+    (vithist_utt_begin )
 
     4, Enter the current word tree with index 0 (curugtree[0])
     assuming left context is silence and enter filler tree with a
@@ -223,61 +224,61 @@ int srch_TST_uninit(void *srch  /**< A void pointer to a search structure */
     
     @return SRCH_SUCCESS if succeed. 
     @see gmm_wrap, srch_TST_end
- */
+*/
 
 int srch_TST_begin(void *srch /**< A void pointer to a search structure */
-		   );
+    );
 
 int srch_TST_end(void * srch /**< A void pointer to a search structure */
-		 );
+    );
 
 glist_t srch_TST_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
-		     ); 
+    ); 
 
 int srch_TST_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
-		      );
+    );
 
 dag_t* srch_TST_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
-			 glist_t hyp
-		     );
+			glist_t hyp
+    );
 
 glist_t srch_TST_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
 			       dag_t *dag
-			   );
+    );
 
 int32 srch_TST_dag_dump(void *srch_struct,
 			glist_t hyp
-			);
+    );
 
 /* An empty function, specified for possibly future use of overloading the default
    search abstraction mechanism. 
- */
+*/
 
 int srch_TST_decode(void *srch /**< A void pointer to a search structure */
-		    );
+    );
 
 int srch_TST_set_lm(void* srch, /**< A void pointer to a search structure */
 		    const char* lmname /**< lm name which need to be deleted */
-		    );
+    );
 
 int srch_TST_add_lm(void* srch,  /**< A void pointer to a search structure */
 		    lm_t *lm, const char *lmname);
 
 int srch_TST_delete_lm(void* srch,  /**< A void pointer to a search structure */
 		       const char *lmname /**< lm name which need to be deleted */
-		       );
+    );
 
 int srch_TST_gmm_compute_lv2(void *srch,  /** A void pointer to a search structure */
 			     float32 *feat, int32 time);
 
 int srch_TST_hmm_compute_lv1(void *srch /** A void pointer to a search structure */
-			     );
+    );
 
 int srch_TST_hmm_compute_lv2(void *srch,  /** A void pointer to a search structure */
 			     int32 frmno);
 
 int srch_TST_eval_beams_lv1 (void* srch /** A void pointer to a search structure */
-			     );
+    );
 int srch_TST_eval_beams_lv2 (void* srch);
 int srch_TST_propagate_graph_ph_lv1(void *srch_struct);
 int srch_TST_propagate_graph_wd_lv1(void *srch_struct);

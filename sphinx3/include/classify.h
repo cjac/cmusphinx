@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -79,8 +80,11 @@
     \brief Frame-by-frame classifier written by Ziad. To be replaced by Yitao's version. 
 */
 #ifdef __cplusplus
- extern "C" {
- #endif 
+extern "C" {
+#endif 
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 #ifndef __FRAME_CLASSIFIER__
 #define __FRAME_CLASSIFIER__
@@ -90,7 +94,7 @@
 #define NUMCLASSES      4	/* Number of classes*/
 
 /*
-#define NUMMIXTURES     32 	// Number of gaussian mixtures used in classification
+  #define NUMMIXTURES     32 	// Number of gaussian mixtures used in classification
 */
 #define DIMENSIONS      13	/* Length of the feature vector*/
 #define MAXFRAMES       10000	
@@ -122,37 +126,37 @@
 				 */
 
 #define POSTPROCESS	1	/* Enabling/disabling post-processing
-			 */
+				 */
 /**************************************************/
 
 /**
    \struct class_t
    \brief class to store the classifier parameters 
- */ 
+*/ 
 
 typedef struct{
-  char *classname[NUMCLASSES];             /**< An array of class names */
-  int32 windowlen;                         /**< The window length */
-  mgau_model_t *g ;                        /**< The endpoint model */
-  s3cipid_t classmap[NUMCLASSES];
+    char *classname[NUMCLASSES];             /**< An array of class names */
+    int32 windowlen;                         /**< The window length */
+    mgau_model_t *g ;                        /**< The endpoint model */
+    s3cipid_t classmap[NUMCLASSES];
 
-  int32 priors[NUMCLASSES];
+    int32 priors[NUMCLASSES];
 
-  int32 window[VOTEWINDOWLEN];              /**< the voting window contains class numbers*/
-  int32 postprocess;
-  int32 classlatency;
+    int32 window[VOTEWINDOWLEN];              /**< the voting window contains class numbers*/
+    int32 postprocess;
+    int32 classlatency;
 }class_t;
 
 
 
 
 
-   /** Macro to byteswap an int variable.  x = ptr to variable */
+/** Macro to byteswap an int variable.  x = ptr to variable */
 #define SWAP_INT(x)   *(x) = ((0x000000ff & (*(x))>>24) | \
                                 (0x0000ff00 & (*(x))>>8) | \
                                 (0x00ff0000 & (*(x))<<8) | \
                                 (0xff000000 & (*(x))<<24))
-   /** Macro to byteswap a float variable.  x = ptr to variable */
+/** Macro to byteswap a float variable.  x = ptr to variable */
 #define SWAP_FLOAT(x) SWAP_INT((int *) x)
 
 void majority_class(class_t* CLASSW, int *classcount, int frame_count);
@@ -164,10 +168,10 @@ class_t * classw_initialize(char *mdeffile,  /**< The model def file */
 			    char* mixwfile,         /**< The mixture weight */
 			    float64 mixwfloor,       /**< mixture weight floor */
 			    int32 precomp,       /**< pre-computation of values,
-						     0 not to pre-compute, 
-						     1 to precompute */
+						    0 not to pre-compute, 
+						    1 to precompute */
 			    char *senmgau       /**< whether it is SCHMM, ".semi." or FCHMM ".cont." */
-			    );
+    );
 
 void classw_free(class_t *CLASSW);
 
@@ -175,17 +179,17 @@ int classify (float *frame,     /**< the frame */
 	      mgau_model_t *g,  /**< multiple mixture models */
 	      int32 priors[NUMCLASSES], /**< The prior of each classes */
 	      s3cipid_t *map  /**< Map between ci phones and classes */
-	      );
+    );
 
 int postclassify (int *window, int windowlen, int *wincap, int myclass);
 
-   int vote (int *window, /**< A window of input */
-	     int windowlen /**< The window length*/
-	  );
+int vote (int *window, /**< A window of input */
+	  int windowlen /**< The window length*/
+    );
 
 #endif /*__FRAME_CLASSIFIER__*/
 
 #ifdef __cplusplus
- }
+}
 #endif 
 

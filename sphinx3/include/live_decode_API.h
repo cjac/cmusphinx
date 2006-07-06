@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.	All rights
  * reserved.
@@ -33,7 +34,7 @@
  * ====================================================================
  *
  */
- /*************************************************
+/*************************************************
  * CMU ARPA Speech Project
  *
  * Copyright (c) 2000 Carnegie Mellon University.
@@ -53,59 +54,59 @@
  */
 
 /*
-revision 1.9
-date: 2004/09/03 21:45:26;  author: yitao;  state: Exp;  lines: +2 -2
+  revision 1.9
+  date: 2004/09/03 21:45:26;  author: yitao;  state: Exp;  lines: +2 -2
 
-cleaning up remote_decode API by moving list operations into a list API
-----------------------------
-revision 1.8
-date: 2004/09/03 16:50:56;  author: yitao;  state: Exp;  lines: +108 -37
-
-
-modified comments to suit the use of doc++-
-----------------------------
-revision 1.7
-date: 2004/08/27 05:22:43;  author: yitao;  state: Exp;  lines: +75 -105
+  cleaning up remote_decode API by moving list operations into a list API
+  ----------------------------
+  revision 1.8
+  date: 2004/09/03 16:50:56;  author: yitao;  state: Exp;  lines: +108 -37
 
 
-removed remote-decode API from the linux compile.  added doc++ comments for live_decod
-e.h-
-----------------------------
-revision 1.6
-date: 2004/08/25 20:44:31;  author: yitao;  state: Exp;  lines: +13 -15
+  modified comments to suit the use of doc++-
+  ----------------------------
+  revision 1.7
+  date: 2004/08/27 05:22:43;  author: yitao;  state: Exp;  lines: +75 -105
 
 
-1.  added code to record uttid in live-decode
-2.  added more code to flesh out remote-decode.  not compiling yet.
-----------------------------
-revision 1.5
-date: 2004/08/23 20:41:38;  author: yitao;  state: Exp;  lines: +1 -11
+  removed remote-decode API from the linux compile.  added doc++ comments for live_decod
+  e.h-
+  ----------------------------
+  revision 1.6
+  date: 2004/08/25 20:44:31;  author: yitao;  state: Exp;  lines: +13 -15
 
-basic implementation for remote-decode API.  not compiling yet.
-----------------------------
-revision 1.4
-date: 2004/08/19 19:12:50;  author: yitao;  state: Exp;  lines: +1 -1
 
-incompleted files remote-decode API.
-----------------------------
-revision 1.3
-date: 2004/08/09 21:40:36;  author: yitao;  state: Exp;  lines: +11 -20
+  1.  added code to record uttid in live-decode
+  2.  added more code to flesh out remote-decode.  not compiling yet.
+  ----------------------------
+  revision 1.5
+  date: 2004/08/23 20:41:38;  author: yitao;  state: Exp;  lines: +1 -11
 
-1.  fixed some bugs in Live-Decode API.  changed kb.c, kb.h, utt.c, live_decode.c, liv
-e_decode.h.
-2.  changed some filenames in src/programs/.  now there are 2 sets of livedecode and l
-ivepretend: one that uses the old API (livedecode and livepretend), and one that uses 
-the new API (livedecode2 and livepretend2).
-3.  modified Makefile.am to reflect the filename changes above.
-----------------------------
-revision 1.2
-date: 2004/08/08 23:34:50;  author: arthchan2003;  state: Exp;  lines: +1 -1
-temporary fixes of live_decode.c and live_decode.h
-----------------------------
-revision 1.1
-date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
-*** empty log message ***
-=============================================================================
+  basic implementation for remote-decode API.  not compiling yet.
+  ----------------------------
+  revision 1.4
+  date: 2004/08/19 19:12:50;  author: yitao;  state: Exp;  lines: +1 -1
+
+  incompleted files remote-decode API.
+  ----------------------------
+  revision 1.3
+  date: 2004/08/09 21:40:36;  author: yitao;  state: Exp;  lines: +11 -20
+
+  1.  fixed some bugs in Live-Decode API.  changed kb.c, kb.h, utt.c, live_decode.c, liv
+  e_decode.h.
+  2.  changed some filenames in src/programs/.  now there are 2 sets of livedecode and l
+  ivepretend: one that uses the old API (livedecode and livepretend), and one that uses 
+  the new API (livedecode2 and livepretend2).
+  3.  modified Makefile.am to reflect the filename changes above.
+  ----------------------------
+  revision 1.2
+  date: 2004/08/08 23:34:50;  author: arthchan2003;  state: Exp;  lines: +1 -1
+  temporary fixes of live_decode.c and live_decode.h
+  ----------------------------
+  revision 1.1
+  date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
+  *** empty log message ***
+  =============================================================================
 
 */
 
@@ -124,6 +125,9 @@ date: 2004/08/06 15:07:38;  author: yitao;  state: Exp;
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 #define MAX_CEP_LEN				64
 
@@ -137,93 +141,93 @@ extern "C" {
 #define LD_STATE_DECODING			1
 #define LD_STATE_FINISHED			2
 
-  /** Wrapper structure for live-mode recognition
-   */
+/** Wrapper structure for live-mode recognition
+ */
 typedef struct
 {
-  /**
-   * Knowledge base.
-   */
-  kb_t kb;
+    /**
+     * Knowledge base.
+     */
+    kb_t kb;
 
-  /**
-   * Pointer to the knowledge base core.
-   */
-  kbcore_t *kbcore;
+    /**
+     * Pointer to the knowledge base core.
+     */
+    kbcore_t *kbcore;
 
-  /**
-   * Pointer to the front-end.
-   */
-  fe_t *fe;
+    /**
+     * Pointer to the front-end.
+     */
+    fe_t *fe;
 
-  /**
-   * Parameter: intervals at which wbeam is used for phone transitions.
-   */
-  int32 phones_skip;
+    /**
+     * Parameter: intervals at which wbeam is used for phone transitions.
+     */
+    int32 phones_skip;
 
-  /**
-   * Number of frames decoded.
-   */
-  int32 num_frames_decoded;
+    /**
+     * Number of frames decoded.
+     */
+    int32 num_frames_decoded;
 
-  /**
-   * Number of frames entered.
-   */
-  int32 num_frames_entered;
+    /**
+     * Number of frames entered.
+     */
+    int32 num_frames_entered;
 
-  /**
-   * Current state of the live decoder.
-   */
-  int32 ld_state;
+    /**
+     * Current state of the live decoder.
+     */
+    int32 ld_state;
 
-  /**
-   * UTTID (obviously NOT) filled in by knowledge-base.
-   */
-  char *uttid;
+    /**
+     * UTTID (obviously NOT) filled in by knowledge-base.
+     */
+    char *uttid;
 
-  /**
-   * The frame number at which the hypothesis is recorded.
-   */
-  int32 hyp_frame_num;
+    /**
+     * The frame number at which the hypothesis is recorded.
+     */
+    int32 hyp_frame_num;
 
-  /**
-   * Hypothesis string.  Result (or partial result) of the recognition is
-   * stored as a complete string.
-   */
-  char *hyp_str;
+    /**
+     * Hypothesis string.  Result (or partial result) of the recognition is
+     * stored as a complete string.
+     */
+    char *hyp_str;
 
-  /**
-   * Hypothesis word segments.  Result (or partial result) of the recognition
-   * is stored as word segments.  Null-terminated array.
-   */
-  hyp_t **hyp_segs;
+    /**
+     * Hypothesis word segments.  Result (or partial result) of the recognition
+     * is stored as word segments.  Null-terminated array.
+     */
+    hyp_t **hyp_segs;
 
-  /**
-   * Boolean indicator whether we've internally allocated space for the
-   * command line arguments.
-   */
-  int32 internal_cmdln;
+    /**
+     * Boolean indicator whether we've internally allocated space for the
+     * command line arguments.
+     */
+    int32 internal_cmdln;
 
-  /**
-   * Boolean indicates whether we will internally swap the samples. 
-   */
-  int32 swap;
+    /**
+     * Boolean indicates whether we will internally swap the samples. 
+     */
+    int32 swap;
 
-  /**
-   * Boolean indicates whether a partial hypothesis will be dumped. 
-   */
-  int32 phypdump;
+    /**
+     * Boolean indicates whether a partial hypothesis will be dumped. 
+     */
+    int32 phypdump;
 
-  /**
-   * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
-   * we allocate once per live decoder.
-   */ 
-  float32 ***features;
+    /**
+     * Feature buffer.  Re-allocation of feature buffer is quite expensive.  So
+     * we allocate once per live decoder.
+     */ 
+    float32 ***features;
 
-  /**
-   * Extenstion for the raw director 
-   */
-  char* rawext;
+    /**
+     * Extenstion for the raw director 
+     */
+    char* rawext;
 
 } live_decoder_t;
 
@@ -368,7 +372,7 @@ void ld_process_ceps(live_decoder_t *_decoder,
     ld_retrieve_hyps(&d, &str, &segs);
     printf("Decoded string: %s\n", str);
     for (; *segs; segs++) {
-      printf("Word-segment id: %i\n", (*segs)->id);
+    printf("Word-segment id: %i\n", (*segs)->id);
     }
     </PRE>
     
@@ -398,7 +402,7 @@ void ld_abort_utt(live_decoder_t *_decoder);
     @param _decode Pointer to the decode
     @param lmname the language model name
     @see ld_read_lm ld_delete_lm
- */
+*/
 
 void ld_set_lm(live_decoder_t *_decoder,const char *lmname);
 
@@ -416,12 +420,12 @@ void ld_delete_lm(live_decoder_t *_decoder, const char *lmname);
     @param lmfile LM file name. 
     @param lmname LM name associated with this file. 
     @see ld_set_lm
- */
+*/
 
 void ld_read_lm(live_decoder_t *_decoder, 
 		const char *lmfile, 
 		const char *lmname
-		);
+    );
 
 #ifdef __cplusplus
 }

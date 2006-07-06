@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -83,9 +84,9 @@
  *              First started. 
  */
 
-  /** \file adaptor.h
-   * \brief Wrapper function of speaker adaptation.
-   */
+/** \file adaptor.h
+ * \brief Wrapper function of speaker adaptation.
+ */
 
 
 #ifndef _ADAPT_H_
@@ -108,6 +109,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 /** variables for acoustic model adaptation.  Currently, this really means MLLR */
 
@@ -115,30 +119,30 @@ extern "C" {
  * \brief A wrapper for all adaptation operations in Sphinx 3.X including MLLR and MAP. 
  */
 typedef struct {
-  char* prevmllrfn; /**< Last MLLR matrix files */
+    char* prevmllrfn; /**< Last MLLR matrix files */
 #if 0
-  float32** regA; /**< Regression matrix : the multiplcation term */
-  float32* regB; /**< Regression matrix : the bias term */
+    float32** regA; /**< Regression matrix : the multiplcation term */
+    float32* regB; /**< Regression matrix : the bias term */
 #endif
 
-  float32*** regA; /** Regression matrices : the multiplcation term */
-  float32** regB; /** Regression matrices : the bias term */
-  int32 mllr_nclass; /** Number of regression matrices */
+    float32*** regA; /** Regression matrices : the multiplcation term */
+    float32** regB; /** Regression matrices : the bias term */
+    int32 mllr_nclass; /** Number of regression matrices */
 
 } adapt_am_t ;
 
-  /** Initialize the adaptor structure */
-  adapt_am_t* adapt_am_init();
+/** Initialize the adaptor structure */
+adapt_am_t* adapt_am_init();
   
-  /** free adaptor structure */
-  void adapt_am_free(adapt_am_t *ad);
+/** free adaptor structure */
+void adapt_am_free(adapt_am_t *ad);
 
-  void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
-		      mgau_model_t *g,  /**< Gaussian model object */
-		      const char *mllrfile,  /**< MLLR file name */
-		      const char* cbs2mllr,  /**< CB2MLLR */
-		      mdef_t *mdef /**< MDEF */
-		      );
+void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
+		    mgau_model_t *g,  /**< Gaussian model object */
+		    const char *mllrfile,  /**< MLLR file name */
+		    const char* cbs2mllr,  /**< CB2MLLR */
+		    mdef_t *mdef /**< MDEF */
+    );
 #ifdef __cplusplus
 
 

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -300,9 +301,9 @@ typedef struct {
 #elif defined(AD_BACKEND_PORTAUDIO)
 #define DEFAULT_DEVICE NULL /* FIXME */
 typedef struct {
-  PABLIO_Stream *astream;
-  int32 sps;
-  int32 bps;
+    PABLIO_Stream *astream;
+    int32 sps;
+    int32 bps;
 } ad_rec_t;
 
 #else
@@ -329,13 +330,13 @@ typedef struct {
  * functions.
  */
 ad_rec_t *ad_open_dev (
-	const char *dev, /**< Device name (platform-specific) */
-	int32 samples_per_sec /**< Samples per second */
-	);
+    const char *dev, /**< Device name (platform-specific) */
+    int32 samples_per_sec /**< Samples per second */
+    );
 
 ad_rec_t *ad_open_sps (
-		       int32 samples_per_sec /**< Samples per second */
-		       );
+    int32 samples_per_sec /**< Samples per second */
+    );
 
 
 /* Like ad_open_sps but with default samples/sec and bufsize */

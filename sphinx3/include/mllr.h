@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -82,18 +83,21 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
 #include <s3types.h>
 #include "cont_mgau.h"
 #include "mdef.h"
 
 
-  /** Dump the regression matrix from a given file */
-  void mllr_dump(float32 ***A, /**< In: [nclass][streamlen][streamlen]*/
-		 float32 **B,    /**< In: [nclass][streamlen]*/
-		 int32 veclen,  /**< In: vector length*/
-		 int32 nclass   /**< In: Number of classes */
-		 );
+/** Dump the regression matrix from a given file */
+void mllr_dump(float32 ***A, /**< In: [nclass][streamlen][streamlen]*/
+	       float32 **B,    /**< In: [nclass][streamlen]*/
+	       int32 veclen,  /**< In: vector length*/
+	       int32 nclass   /**< In: Number of classes */
+    );
 /*
  * Load a regression matrix from the given file.  Space for the matrix is allocated
  * by this routine.  (The regression "matrix" is actually a matrix A and a vector B.)
@@ -105,16 +109,16 @@ int32 mllr_read_regmat (const char *regmatfile,	/**< In: File to be read */
 			int32 *nclass,		/**< Out: number of classes */
 			int32 ceplen);          /**< In: vector length */
 
-  /**
+/**
  * Free a regression matrix previously read in by mllr_read_regmat.
  * @return 0 if successful, -1 otherwise.
  */
 int32 mllr_free_regmat (float32 ***A,		/**< In: A[streamlen][streamlen] */
 			float32 **B		/**< In: B[streamlen] */
-			);
+    );
 
 
-  /**
+/**
  * Transform a mixture density mean matrix according to the given regression matrix.
  * @return 0 if successful, -1 otherwise.
  */
@@ -124,7 +128,7 @@ int32 mllr_norm_mgau (mgau_model_t *mgauset, /**< In/Out: The gaussian distribut
 		      float32 **B,	/**< In: "vector" portion of regression matrix */
 		      int32 nclass,	/**< In: number of classes */
 		      int32 *cb2mllr	/**< In: class to senone mapping */
-		      );
+    );
 
 #ifdef __cplusplus
 }

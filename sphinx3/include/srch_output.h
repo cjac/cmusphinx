@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -73,13 +74,13 @@ int32 compute_scale(int32 sf, int32 ef, int32* scalearray);
 
 /** write a match file 
 
-  NOTE: Current match_write has four features which is different with log_hypstr. 
-  1, match_write allows the use of hdr. 
-  2, log_hypstr allows matchexact in output. 
-  3, log_hypstr allows output the score after the match file name. 
-  4, log_hypstr will dump the pronounciation variation to the code. 
+NOTE: Current match_write has four features which is different with log_hypstr. 
+1, match_write allows the use of hdr. 
+2, log_hypstr allows matchexact in output. 
+3, log_hypstr allows output the score after the match file name. 
+4, log_hypstr will dump the pronounciation variation to the code. 
 
-  I don't think they are very important in processing so I removed them. 
+I don't think they are very important in processing so I removed them. 
 
 */
 void match_write (FILE *fp,  /**< The file pointer */
@@ -87,7 +88,7 @@ void match_write (FILE *fp,  /**< The file pointer */
 		  char* uttid, /**< Utterance id */
 		  dict_t* dict, /**< The dictionary */
 		  char *hdr    /**< The header */
-		  );
+    );
 
 /** write match segment */
 void matchseg_write (FILE *fp,  /**< The file pointer */
@@ -95,45 +96,45 @@ void matchseg_write (FILE *fp,  /**< The file pointer */
 		     char *uttid, /**< Utterance ID of the file */
 		     char *hdr, /**< The header */
 		     int32 fmt, /**< The format of segmentation file 
-				  SEG_FMT_SPHINX3 : Sphinx 3 segmentation format. 
-				  SEG_FMT_SPHINX2 : Sphinx 2 segmentation format. 
-				  CTM : CTM format used by NIST sctk rescoring kit. 
+				   SEG_FMT_SPHINX3 : Sphinx 3 segmentation format. 
+				   SEG_FMT_SPHINX2 : Sphinx 2 segmentation format. 
+				   CTM : CTM format used by NIST sctk rescoring kit. 
 				*/
 		     lm_t * lm, /**< Language model */
 		     dict_t * dict, /**< Dictionary */
 		     int32 num_frm, /**< Number of frames */
 		     int32 *scl,     /**< Scale of the decoding. Required, if inverse normalization 
-				     */
+				      */
 		     int32 unnorm   /**< Whether unscaled the score back */
-		     );
+    );
 
 
 
 /** 
     wrapping up the detail match display. Comparable with log_hyp_detailed . The only
     difference is match_detailed use a link list of srch_hyp_t 
- */
+*/
 void match_detailed(FILE* fp, /**< The file pointer */
 		    glist_t hyp,  /**< A link-list that containt the hypothesis */
 		    char* uttid,  /**< The utterance ID */
 		    char* LBL,    /**< A header in cap */
 		    char* lbl,    /**< A header in small */
 		    int32* senscale, /**< Senone scale vector, 
-				      if specified, normalized score would be displayed, 
-				      if not, the unormalized score would be displayed. 
-				   */
+					if specified, normalized score would be displayed, 
+					if not, the unormalized score would be displayed. 
+				     */
 		    dict_t *dict  /**< Dictionary */
-		    );
+    );
 
 
 /**
    A funtion that reads the s3 hypseg line. 
- */
+*/
 int read_s3hypseg_line(char *line,  /**< A line pointer */
 		       seg_hyp_line_t *seg_hyp_line,  /**< A hypseg line structure */
 		       lm_t* lm,  /**< A LM */
 		       dict_t *dict /**< A dictionary */
-		       );
+    );
 
 int free_seg_hyp_line(seg_hyp_line_t *seg_hyp_line);
 
@@ -141,14 +142,14 @@ int free_seg_hyp_line(seg_hyp_line_t *seg_hyp_line);
     When hyp_t, srch_hyp_t are united, we could tie it with match_write
     (20051109) ARCHAN: The only consumer of log_hypstr now is main_dag.c
 
- */
+*/
 void log_hypstr (FILE *fp,  /**< A file pointer */
 		 srch_hyp_t *hypptr,  /**< A srch_hyp_t */
 		 char *uttid,   /**< An utterance ID */
 		 int32 exact,   /**< Whether to dump an exact */
 		 int32 scr,      /**< The score */
 		 dict_t *dict    /**< A dictionary to look up wid */
-		 );
+    );
 
 
 void log_hyp_detailed (FILE *fp, /**< A file poointer */
@@ -159,13 +160,13 @@ void log_hyp_detailed (FILE *fp, /**< A file poointer */
 		       int32* senscale      /**< Senone scale vector, 
 					       if specified, normalized score would be displayed, 
 					       if not, the unormalized score would be displayed. 
-					     */
-		       );
+					    */
+    );
 
 /** CODE DUPLICATION!!! Sphinx 3.0 family of logging hyp and hyp segments 
     When hyp_t, srch_hyp_t are united, we could tie it with match_write
     (20051109) ARCHAN: The only consumer of log_hypseg now is main_dag.c
- */
+*/
 
 void log_hypseg (char *uttid,   /**< Input; uttid */
 		 FILE *fp,	/**< Out: output file */
@@ -176,7 +177,7 @@ void log_hypseg (char *uttid,   /**< Input; uttid */
 		 dict_t* dict,  /**< In: dictionary */
 		 lm_t *lm,       /**< In: LM */
 		 int32 unnorm   /**< Whether unscaled the score back */
-		 );
+    );
 
 
 

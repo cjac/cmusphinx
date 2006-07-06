@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -121,69 +122,72 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file kbcore.h
-   * \brief kb core structures, the structure that stores parameters for s3.X search
-   */
+/** \file kbcore.h
+ * \brief kb core structures, the structure that stores parameters for s3.X search
+ */
 
 typedef struct {
 
-  feat_t *fcb; /**< feature end structure */
-  mdef_t *mdef; /**< Model definition  */
-  dict_t *dict; /**< Dictionary structure */
-  dict2pid_t *dict2pid; /**< Conversion of dictionary to Phoneme ID */
+    feat_t *fcb; /**< feature end structure */
+    mdef_t *mdef; /**< Model definition  */
+    dict_t *dict; /**< Dictionary structure */
+    dict2pid_t *dict2pid; /**< Conversion of dictionary to Phoneme ID */
 
-  lmset_t *lmset; /**< LM Set. ARCHAN, since sphinx 3.6, it is used whenever an lm is allocated. 
-		      This unified the internal data structure. */
+    lmset_t *lmset; /**< LM Set. ARCHAN, since sphinx 3.6, it is used whenever an lm is allocated. 
+                       This unified the internal data structure. */
 
-  /*Specified either one of them when using kbcore.h.  It is not yet very nice now. */
-  mgau_model_t *mgau; /**< Acoustic Model for single stream */
-  ms_mgau_model_t *ms_mgau; /**< Acoustic Model for multipel stream */
-  s2_semi_mgau_t *s2_mgau; /**< Acoustic model for Sphinx2 semi-continuous */
+    /*Specified either one of them when using kbcore.h.  It is not yet very nice now. */
+    mgau_model_t *mgau; /**< Acoustic Model for single stream */
+    ms_mgau_model_t *ms_mgau; /**< Acoustic Model for multipel stream */
+    s2_semi_mgau_t *s2_mgau; /**< Acoustic model for Sphinx2 semi-continuous */
 
-  fillpen_t *fillpen; /**< Filler penalty */
-  subvq_t *svq; /**< SVQ */
-  gs_t *gs; /**< Gaussian Selector */
-  tmat_t *tmat; /**< Transition Matrix. */
+    fillpen_t *fillpen; /**< Filler penalty */
+    subvq_t *svq; /**< SVQ */
+    gs_t *gs; /**< Gaussian Selector */
+    tmat_t *tmat; /**< Transition Matrix. */
 
-  int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
-  int32 lastfrm; /**, Temporary variables, should be removed */
+    int32 maxNewHeurScore; /**< Temporary variables for phoneme lookahead. This stores the heuristic score */
+    int32 lastfrm; /**, Temporary variables, should be removed */
 
-  s3lmwid32_t startwid;
-  s3lmwid32_t finishwid;
+    s3lmwid32_t startwid;
+    s3lmwid32_t finishwid;
 } kbcore_t;
 
   
-  /**
-     Create a new kbcore 
-   */
-  kbcore_t *New_kbcore();
+/**
+   Create a new kbcore 
+*/
+kbcore_t *New_kbcore();
 
-  /**
-     Initialize just the acoustic model for kbcore
-   */
-  void s3_am_init(kbcore_t *kbc, /**< kbcore to be initialized*/
-		  char *s3hmmdir,  /**< an s3 hmmdir */
-		  char *mdeffile,  /**< a model definition file */
-		  char *meanfile,  /**< a mean file */
-		  char *varfile,   /**< a variance file */
-		  float64 varfloor, /**< variance floor */
-		  char *mixwfile,   /**< a mixture weight file */
-		  float64 mixwfloor, /**< mixture weight floor */
-		  char *tmatfile,   /**< transition matrices file*/
-		  float64 tmatfloor,  /**< transition floor */
-		  char *senmgau,     /**< .cont. for CDHMM, .semi. for SCHMM , due to the potential
-				       inconsistency between s3.0 and s3.x GMM computation routine, I also
-				       add .s3cont. to represent Gaussian computation using gauden and senone.
-				       It is hidden in command-line deliberately. 
-				     */
-		  char *lambdafile,  /**< (specific to 3.0 GMM computation) an interpolation file */
-		  int32 topn         /**< (specific to 3.0 GMM computation) number of Gaussian to compute */
-		  );
+/**
+   Initialize just the acoustic model for kbcore
+*/
+void s3_am_init(kbcore_t *kbc, /**< kbcore to be initialized*/
+		char *s3hmmdir,  /**< an s3 hmmdir */
+		char *mdeffile,  /**< a model definition file */
+		char *meanfile,  /**< a mean file */
+		char *varfile,   /**< a variance file */
+		float64 varfloor, /**< variance floor */
+		char *mixwfile,   /**< a mixture weight file */
+		float64 mixwfloor, /**< mixture weight floor */
+		char *tmatfile,   /**< transition matrices file*/
+		float64 tmatfloor,  /**< transition floor */
+		char *senmgau,     /**< .cont. for CDHMM, .semi. for SCHMM , due to the potential
+				      inconsistency between s3.0 and s3.x GMM computation routine, I also
+				      add .s3cont. to represent Gaussian computation using gauden and senone.
+				      It is hidden in command-line deliberately. 
+				   */
+		char *lambdafile,  /**< (specific to 3.0 GMM computation) an interpolation file */
+		int32 topn         /**< (specific to 3.0 GMM computation) number of Gaussian to compute */
+    );
 
 
 
-  /**
+/**
  * Initialize one or more of all the major models:  pronunciation dictionary, acoustic models,
  * language models.  Several arguments are optional (e.g., pointers may be NULL); however, they
  * may not all be independently so.  The logbase argument is required (i.e. must be valid).
@@ -231,24 +235,24 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 		       char *gsfile,		/**< Gaussian Selection Mapping*/
 		       char *tmatfile,          /**< Transition matrix */
 		       float64 tmatfloor	/**< Transition probability floors, must be valid if tmatfile specified */
-		       );
+    );
 
-  /** free the kbcore */
-  void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
-		    );
+/** free the kbcore */
+void kbcore_free (kbcore_t *kbcore  /**< The kbcore structure */
+    );
 
-  /**
-     Sphinx 3.x tree decoders assume silences are unlinked (set them
-     to BAD_S3WID) before used. Whereas the flat lexicon decoder
-     doesn't have such assumption.  These two functions change this
-     behavior.  Called in mode 3, 4 and 5 to make sure different code
-     works. 
-   */
-  void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
+/**
+   Sphinx 3.x tree decoders assume silences are unlinked (set them
+   to BAD_S3WID) before used. Whereas the flat lexicon decoder
+   doesn't have such assumption.  These two functions change this
+   behavior.  Called in mode 3, 4 and 5 to make sure different code
+   works. 
+*/
+void unlinksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
-  void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
+void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
-  /** Access macros; not meant for arbitrary use */
+/** Access macros; not meant for arbitrary use */
 #define kbcore_fcb(k)		((k)->fcb)
 #define kbcore_mdef(k)		((k)->mdef)
 #define kbcore_dict(k)		((k)->dict)
@@ -263,8 +267,8 @@ kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be 
 #define kbcore_gs(k)		((k)->gs)
 #define kbcore_tmat(k)		((k)->tmat)
 #define kbcore_lmset(k)		((k)->lmset)
-  /*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
-   */
+/*#define kbcore_n_mgau(k)	((k)->mgau ? mgau_n_mgau((k)->mgau) : (k)->ms_mgau->s->n_sen)
+ */
 #define kbcore_n_mgau(k)       ((k)->mgau ? mgau_n_mgau((k)->mgau) \
                                 : ((k)->s2_mgau ? (k)->s2_mgau->CdWdPDFMod \
                                    : (k)->ms_mgau->s->n_sen))

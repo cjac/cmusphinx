@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -79,12 +80,12 @@
  * coarse grain.  An entire block is allocated or freed, as appropriate.
  */
 typedef struct blkarray_list_s {
-  void ***ptr;		/* ptr[][] is the user-supplied ptr */
-  int32 maxblks;	/* size of ptr (#rows) */
-  int32 blksize;	/* size of ptr[] (#cols, ie, size of each row) */
-  int32 n_valid;	/* # entries actually stored in the list */
-  int32 cur_row;	/* The current row being that has empty entry */
-  int32 cur_row_free;	/* First entry valid within the current row */
+    void ***ptr;		/* ptr[][] is the user-supplied ptr */
+    int32 maxblks;	/* size of ptr (#rows) */
+    int32 blksize;	/* size of ptr[] (#cols, ie, size of each row) */
+    int32 n_valid;	/* # entries actually stored in the list */
+    int32 cur_row;	/* The current row being that has empty entry */
+    int32 cur_row_free;	/* First entry valid within the current row */
 } blkarray_list_t;
 
 /* Access macros */

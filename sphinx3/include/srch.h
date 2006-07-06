@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -242,381 +243,381 @@
 /* \struct grp_str_t 
  */
 typedef struct {
-  void *graph_struct; /**< The graph structure */
-  int32 graph_type;   /**< The graph type */
+    void *graph_struct; /**< The graph structure */
+    int32 graph_type;   /**< The graph type */
 }grp_str_t;
 
 
 
 /** 
-   \file srch.h 
-   \brief search abstraction. 
+    \file srch.h 
+    \brief search abstraction. 
 
-   Written at 20050510 by ARCHAN.
+    Written at 20050510 by ARCHAN.
 
-   Mechanism/implementation separation
+    Mechanism/implementation separation
 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Starting from Sphinx 3.6, the implementation of the search has
-   conceptually separated into two layers.  The top layer srch.c
-   defines the top level atomic function defintion (implemented as
-   function pointers) that every search-like operations will share. 
+    Starting from Sphinx 3.6, the implementation of the search has
+    conceptually separated into two layers.  The top layer srch.c
+    defines the top level atomic function defintion (implemented as
+    function pointers) that every search-like operations will share. 
 
-   To understand what it means, consider two seemingly different
-   search-like operations, alignment and decoding.  Both of them
-   required 1) initialization, 2) propropagte 1 frame. 3) termniation.
-   Each of these operation can well be defined as one single
-   interface. 
+    To understand what it means, consider two seemingly different
+    search-like operations, alignment and decoding.  Both of them
+    required 1) initialization, 2) propropagte 1 frame. 3) termniation.
+    Each of these operation can well be defined as one single
+    interface. 
 
-   Some people call this type of implementation as "C-class" which I
-   think is very appropiate.  Because in general, C++, Objective-C and
-   D actually used the same mechanism to implement the concept
-   "class".  Obviously, the actual implementation was hidden in the
-   compiler in those cases so that's why so many people are confused. 
+    Some people call this type of implementation as "C-class" which I
+    think is very appropiate.  Because in general, C++, Objective-C and
+    D actually used the same mechanism to implement the concept
+    "class".  Obviously, the actual implementation was hidden in the
+    compiler in those cases so that's why so many people are confused. 
    
-   Why polymorphism is important?
+    Why polymorphism is important?
 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Before sphinx 3.6, maintainers (that includes me) tend to think
-   that different operations would require different treatment.  The
-   consequence of that is different opertations tends to have
-   different implementations, styles.  Code tends to be duplicated if
-   programmers think in this way.  One big problem is the fact that we
-   had so called s3 slow and s3 fast and there were 3000 lines
-   duplication. 
+    Before sphinx 3.6, maintainers (that includes me) tend to think
+    that different operations would require different treatment.  The
+    consequence of that is different opertations tends to have
+    different implementations, styles.  Code tends to be duplicated if
+    programmers think in this way.  One big problem is the fact that we
+    had so called s3 slow and s3 fast and there were 3000 lines
+    duplication. 
 
-   Code duplication also tends compound. i.e. if code was duplicated
-   twice, it will be duplicated four times.  That reduces
-   productivitiy of the team. 
+    Code duplication also tends compound. i.e. if code was duplicated
+    twice, it will be duplicated four times.  That reduces
+    productivitiy of the team. 
 
-   Other reasons why srch.c is written
+    Other reasons why srch.c is written
 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   At the time when we implemented this routine, we actually didn't
-   know whether mode 5 (word tree copies) will work or not.
-   Therefore, letting the code of mode 4 (lucky wheel search) and mode
-   5 to coexist will be the best.
+    At the time when we implemented this routine, we actually didn't
+    know whether mode 5 (word tree copies) will work or not.
+    Therefore, letting the code of mode 4 (lucky wheel search) and mode
+    5 to coexist will be the best.
 
 
-   "Embedding" of multi-stage search into the dynamic programming
+    "Embedding" of multi-stage search into the dynamic programming
    
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Another interesting part (Interesting in the sense that I would
-   write a paper on this.) of the search is that we (I will say mainly
-   me because this is not new at all.) realize that approximiate
-   search (i.e. something like phoneme-lookahead), detail search
-   (i.e. something like hard-core tree and fsm search) and high level
-   rescoring using knowledge source (e.g. using LM to rescore N-best)
-   could all be incorporated into the first pass search and
-   potentially make the code more verstille.
+    Another interesting part (Interesting in the sense that I would
+    write a paper on this.) of the search is that we (I will say mainly
+    me because this is not new at all.) realize that approximiate
+    search (i.e. something like phoneme-lookahead), detail search
+    (i.e. something like hard-core tree and fsm search) and high level
+    rescoring using knowledge source (e.g. using LM to rescore N-best)
+    could all be incorporated into the first pass search and
+    potentially make the code more verstille.
 
-   They key concept on how to do this is here: at one frame, one can
-   carry out the above three operations and make the search faster
-   because of 1) heuristics value obtained in the approximate search
-   2) early incorporation of high-level knowledge in the rescoring stage. 
+    They key concept on how to do this is here: at one frame, one can
+    carry out the above three operations and make the search faster
+    because of 1) heuristics value obtained in the approximate search
+    2) early incorporation of high-level knowledge in the rescoring stage. 
 
-   The naming of function interfaces shows this tendency. lv1 means the
-   approximate first-stage search. lv2 means the detail second-stage
-   search. rescoring means the use of high-level information in
-   rescoring during the search.
+    The naming of function interfaces shows this tendency. lv1 means the
+    approximate first-stage search. lv2 means the detail second-stage
+    search. rescoring means the use of high-level information in
+    rescoring during the search.
 
-   The scope of what srch.c defines
+    The scope of what srch.c defines
 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Written at 20050510
+    Written at 20050510
 
-   At the time I wrote this, we only implement mode 4 (Ravi's
-   implementation in Sphinx 3.2, I usually call it "lucky wheel"
-   implementation.  (See my description in srch_time_switch_tree.h),
-   mode 5 (My implementation using tree copies.)  and mode 1369 (A
-   debug mode of the search mechanism where only a prompt will be
-   displayed and show that a function is called. Why 1369? coz I am a
-   nerd. :-))
+    At the time I wrote this, we only implement mode 4 (Ravi's
+    implementation in Sphinx 3.2, I usually call it "lucky wheel"
+    implementation.  (See my description in srch_time_switch_tree.h),
+    mode 5 (My implementation using tree copies.)  and mode 1369 (A
+    debug mode of the search mechanism where only a prompt will be
+    displayed and show that a function is called. Why 1369? coz I am a
+    nerd. :-))
 
-   Though only three modes of the search were written. I found it to
-   be utmost important to share my imagination of what we can actually
-   do using this interface of the search. In theory, the slow search
-   (pre-defined as mode 3) and the fast searches (pre-defined as mode
-   4 and mode 5) can be incorporated using this interface. s3align and
-   s3allphone (pre-defined as mode 0 and 1) in s3.0 family can also be
-   implemented in this way. 
+    Though only three modes of the search were written. I found it to
+    be utmost important to share my imagination of what we can actually
+    do using this interface of the search. In theory, the slow search
+    (pre-defined as mode 3) and the fast searches (pre-defined as mode
+    4 and mode 5) can be incorporated using this interface. s3align and
+    s3allphone (pre-defined as mode 0 and 1) in s3.0 family can also be
+    implemented in this way. 
 
-   Applications such as keyword spotting and speaker verifcation. They
-   are not defined at this point but they are possible using the
-   architecture
+    Applications such as keyword spotting and speaker verifcation. They
+    are not defined at this point but they are possible using the
+    architecture
 
-   What limits this architecture is that it might not be able to
-   implement a wide class of segmental models.  I will speculate if a
-   recursive formulat can be derived for a particular type of model
-   (segmental or non-segmental, HMM or non-HMM).  The current
-   interface could be overloaded and allow implementation of them.
-   There are definitely some types of segmental model are very hard to
-   implement using this structure; e.g. MIT segmental model (pre-1999)
-   where segmentation was generated by low-level information first and
-   search were performed on segments. 
+    What limits this architecture is that it might not be able to
+    implement a wide class of segmental models.  I will speculate if a
+    recursive formulat can be derived for a particular type of model
+    (segmental or non-segmental, HMM or non-HMM).  The current
+    interface could be overloaded and allow implementation of them.
+    There are definitely some types of segmental model are very hard to
+    implement using this structure; e.g. MIT segmental model (pre-1999)
+    where segmentation was generated by low-level information first and
+    search were performed on segments. 
 
 
-   A general guide-line on how to write a search implementation
+    A general guide-line on how to write a search implementation
 
-   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    
-   1, The batch mode search operation and the on-line mode operation
-   can always share code. If the implementation is duplicated, it
-   shows a bad omen.
+    1, The batch mode search operation and the on-line mode operation
+    can always share code. If the implementation is duplicated, it
+    shows a bad omen.
 
-   2, Knowledge source (such as LM and finite state grammer) always
-   change the graph structure. That is why srch_{set,add,delete}_lm
-   was defined, if we have multiple types of knowledge
-   sources. Interfaces should be added in srch.c and the search
-   operation (e.g. search/srch_time_switch_tree.c) provides the actualy
-   implemenation
+    2, Knowledge source (such as LM and finite state grammer) always
+    change the graph structure. That is why srch_{set,add,delete}_lm
+    was defined, if we have multiple types of knowledge
+    sources. Interfaces should be added in srch.c and the search
+    operation (e.g. search/srch_time_switch_tree.c) provides the actualy
+    implemenation
 
-   3, GMM computation and search can be easily separated into two
-   routines. Therefore, instead of wrap it up in individual searches,
-   a new set of function called gmmwrap.c is used which conform the
-   interface in srch.c. 
+    3, GMM computation and search can be easily separated into two
+    routines. Therefore, instead of wrap it up in individual searches,
+    a new set of function called gmmwrap.c is used which conform the
+    interface in srch.c. 
    
-   4, Mechanism such as phoneme lookahead and generally fast match are
-   all similar in the sense that. They look forward a couple of frames
-   and compute a heuristic score. The windows controlling mechanism
-   should be coded in srch.c . The actual heuristic should be coded
-   somewhere else. 
+    4, Mechanism such as phoneme lookahead and generally fast match are
+    all similar in the sense that. They look forward a couple of frames
+    and compute a heuristic score. The windows controlling mechanism
+    should be coded in srch.c . The actual heuristic should be coded
+    somewhere else. 
 
-   5, grh contains the actual data structure that stores the graph. We
-   didn't use WFST as a common structure because we found that it has
-   certain fact we don't know at the time we implemented.
+    5, grh contains the actual data structure that stores the graph. We
+    didn't use WFST as a common structure because we found that it has
+    certain fact we don't know at the time we implemented.
 
-   6, Always get back to the debug mode (mode 1369) if you want to
-   debug the search mechanism
+    6, Always get back to the debug mode (mode 1369) if you want to
+    debug the search mechanism
 
-   7, (V. Imp.) When in doubt, ask Arthur Chan. If he is not in CMU
-   any more, brainstorm how to get him back.  He is a nice guy and has
-   no problem in talking.
+    7, (V. Imp.) When in doubt, ask Arthur Chan. If he is not in CMU
+    any more, brainstorm how to get him back.  He is a nice guy and has
+    no problem in talking.
 
- */
+*/
 typedef struct srch_s {
-  grp_str_t* grh;     /**< Pointer to search specific structures */
-  int op_mode;        /**< The operation mode */
-  stat_t *stat;       /**< Pointer to the statistics structure */
-  char *uttid;        /**< Copy of UttID */
+    grp_str_t* grh;     /**< Pointer to search specific structures */
+    int op_mode;        /**< The operation mode */
+    stat_t *stat;       /**< Pointer to the statistics structure */
+    char *uttid;        /**< Copy of UttID */
 
-  /*
-    These variables control the logistic of a search operation.  The
-    are global to all different search modes. 
-   */
-  int32 cache_win;    /**< The windows lengths of the cache for approximate search */
-  int32 cache_win_strt;    /**< The start index of the window near the end of a block */
+    /*
+      These variables control the logistic of a search operation.  The
+      are global to all different search modes. 
+    */
+    int32 cache_win;    /**< The windows lengths of the cache for approximate search */
+    int32 cache_win_strt;    /**< The start index of the window near the end of a block */
 
-  int32 senscale;     /**< TEMPORARY VARIABLE: Senone scale */
+    int32 senscale;     /**< TEMPORARY VARIABLE: Senone scale */
 
-  int32 *ascale;   /**< Same as senscale but it records the senscale for the whole sentence. 
-			  The default size is 3000 frames. 
-		   */
-  int32 ascale_sz;       /**< Size of the ascr_scale*/
-  int32 num_frm;        /**< Number of frames processed */
+    int32 *ascale;   /**< Same as senscale but it records the senscale for the whole sentence. 
+                        The default size is 3000 frames. 
+                     */
+    int32 ascale_sz;       /**< Size of the ascr_scale*/
+    int32 num_frm;        /**< Number of frames processed */
 
-  int32 *segsz;   /**< Size of segments for each call */
-  int32 segsz_sz;      /**< Size of segments size*/
+    int32 *segsz;   /**< Size of segments for each call */
+    int32 segsz_sz;      /**< Size of segments size*/
 
-  int32 num_segs;     /**< In one search, (i.e. between one srch_utt_begin and one srch_utt_end)
-			 The number of segments the search has decoded. 
-			 That also means the number of times srch_utt_decode_blk is called. 
-			*/
-
-
-  /* 
-     Auxillary Structures for the search. 
-   */
-
-  vithist_t *vithist;     /**< Viterbi history, built during search */
-  latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
-
-  /* ARCHAN: Various pruning beams, put them together such that it looks more logical. */
-  ascr_t *ascr;		  /**< Pointer to Senone and composite senone scores for one frame */
-  beam_t *beam;		  /**< Pointer to Structure that wraps up parameters related to beam pruning */
-  fast_gmm_t *fastgmm;    /**< Pointer to Structure that wraps up parameters for fast GMM computation */
-  pl_t *pl;              /**< Pointer to Structure that wraps up parameter for phoneme look-ahead */
-  adapt_am_t * adapt_am; /** Pointer to AM adaptation structure */
-  kbcore_t *kbc;      /**< Pointer to the kbcore */
+    int32 num_segs;     /**< In one search, (i.e. between one srch_utt_begin and one srch_utt_end)
+                           The number of segments the search has decoded. 
+                           That also means the number of times srch_utt_decode_blk is called. 
+                        */
 
 
-  FILE *matchfp;          /**< Copy of File handle for the match file */
-  FILE *matchsegfp;       /**< Copy of File handle for the match segmentation file */
+    /* 
+       Auxillary Structures for the search. 
+    */
+
+    vithist_t *vithist;     /**< Viterbi history, built during search */
+    latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
+
+    /* ARCHAN: Various pruning beams, put them together such that it looks more logical. */
+    ascr_t *ascr;		  /**< Pointer to Senone and composite senone scores for one frame */
+    beam_t *beam;		  /**< Pointer to Structure that wraps up parameters related to beam pruning */
+    fast_gmm_t *fastgmm;    /**< Pointer to Structure that wraps up parameters for fast GMM computation */
+    pl_t *pl;              /**< Pointer to Structure that wraps up parameter for phoneme look-ahead */
+    adapt_am_t * adapt_am; /** Pointer to AM adaptation structure */
+    kbcore_t *kbc;      /**< Pointer to the kbcore */
+
+
+    FILE *matchfp;          /**< Copy of File handle for the match file */
+    FILE *matchsegfp;       /**< Copy of File handle for the match segmentation file */
   
-  FILE *hmmdumpfp;        /**< Copy of File handle for dumping hmms for debugging */
+    FILE *hmmdumpfp;        /**< Copy of File handle for dumping hmms for debugging */
 
-  /* FIXME, duplicated with fwd_dbg_t */
-  int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
-  int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
+    /* FIXME, duplicated with fwd_dbg_t */
+    int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
+    int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
 
 
-  /*
-    Function pointers that perform the operations.  Every mode will
-    set these pointers at the beginning of the search.
-   */
+    /*
+      Function pointers that perform the operations.  Every mode will
+      set these pointers at the beginning of the search.
+    */
 
-  /** Initialization of the search, coz the graph type can be different */
-  int (*srch_init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */
-		   void* srch_struct /**< a pointer of srch_t */
-		   );
+    /** Initialization of the search, coz the graph type can be different */
+    int (*srch_init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */
+                     void* srch_struct /**< a pointer of srch_t */
+        );
 
-  /**< Un-Initialize of the search. */
-  int (*srch_uninit)(
-		     void* srch_struct /**< a pointer of srch_t */
-		     );
-  /**< Begin search for one utterance */
-  int (*srch_utt_begin)(
-			void* srch_struct /**< a pointer of srch_t */
-			);
+    /**< Un-Initialize of the search. */
+    int (*srch_uninit)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+    /**< Begin search for one utterance */
+    int (*srch_utt_begin)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
 
-  /** End search for one utterance */
-  int (*srch_utt_end)(
-		      void* srch_struct /**< a pointer of srch_t */
-		      );
-  /** Actual decoding operation */
-  int (*srch_decode)(
-		     void* srch_struct /**< a pointer of srch_t */
-		     );
+    /** End search for one utterance */
+    int (*srch_utt_end)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+    /** Actual decoding operation */
+    int (*srch_decode)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
 
-  /** Set LM operation.  */
-  int (*srch_set_lm)(
-		     void* srch_struct, /**< a pointer of srch_t */
-		     const char *lmname /**< The LM name */
-		     );
+    /** Set LM operation.  */
+    int (*srch_set_lm)(
+        void* srch_struct, /**< a pointer of srch_t */
+        const char *lmname /**< The LM name */
+        );
 
-  /** Add LM operation */ 
-  int (*srch_add_lm)(void* srch_struct, /**< a pointer of srch_t */
-		     lm_t* lm,          /**< A new lm */
-		     const char *lmname /**< The LM name */
-		     );
+    /** Add LM operation */ 
+    int (*srch_add_lm)(void* srch_struct, /**< a pointer of srch_t */
+                       lm_t* lm,          /**< A new lm */
+                       const char *lmname /**< The LM name */
+        );
 
-  /** Delete LM operation */
-  int (*srch_delete_lm)(void* srch_struct,  /**< a pointer of srch_t */
-			const char *lmname  /**< The LM name */
-			);
+    /** Delete LM operation */
+    int (*srch_delete_lm)(void* srch_struct,  /**< a pointer of srch_t */
+                          const char *lmname  /**< The LM name */
+        );
 
-  /** Read FSG operation*/
+    /** Read FSG operation*/
 #if 0
-  word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
-			   const char* fsgname /** The fsg file name*/
+    word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
+                                     const char* fsgname /** The fsg file name*/
 
-			   );
+        );
 #endif
-  /* The 4 operations that require switching during the approximate search process */
-  /**< lv1 stands for approximate search. Currently not used. */
+    /* The 4 operations that require switching during the approximate search process */
+    /**< lv1 stands for approximate search. Currently not used. */
 
-  /** Compute Approximate GMM */
-  int (*srch_gmm_compute_lv1)(void* srch_struct,  /**< a pointer of srch_t */
-			      float32 *feat,      /**< The feature vector */
-			      int32 frmno_lp1,    /**< The frame for the cache */
-			      int32 frmno_lp2     /**< The frame for the windows */
-			      );
-
-
-  /* The level 1 search functions are not yet fully used. Not all of them are defined nowWhen fast
-     match is needed. We will need them more. 
-   */
-  int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
-				 );
-
-  int (*srch_hmm_compute_lv1)(void* srch_struct);
-  int (*srch_eval_beams_lv1)(void* srch_struct);
-  int (*srch_propagate_graph_ph_lv1)(void* srch_struct);
-  int (*srch_propagate_graph_wd_lv1)(void* srch_struct);
-
-  /* The 4 operations that require switching during the detail search process */
-  /** lv2 stands for detail search. */
+    /** Compute Approximate GMM */
+    int (*srch_gmm_compute_lv1)(void* srch_struct,  /**< a pointer of srch_t */
+                                float32 *feat,      /**< The feature vector */
+                                int32 frmno_lp1,    /**< The frame for the cache */
+                                int32 frmno_lp2     /**< The frame for the windows */
+        );
 
 
-  /** Compute detail (CD) GMM scores or lv2*/
-  int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-			      float32 **feat,      /**< A feature vector */
-			      int32 time          /**< The frame we want to compute detail score */
-			      );
+    /* The level 1 search functions are not yet fully used. Not all of them are defined nowWhen fast
+       match is needed. We will need them more. 
+    */
+    int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
+        );
+
+    int (*srch_hmm_compute_lv1)(void* srch_struct);
+    int (*srch_eval_beams_lv1)(void* srch_struct);
+    int (*srch_propagate_graph_ph_lv1)(void* srch_struct);
+    int (*srch_propagate_graph_wd_lv1)(void* srch_struct);
+
+    /* The 4 operations that require switching during the detail search process */
+    /** lv2 stands for detail search. */
 
 
-  /** A short-cut function that allows implementer could just
-      implement searching for one frame without implement the
-      following 4 fuctions.
-   */
-  int (*srch_one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
-				 );
+    /** Compute detail (CD) GMM scores or lv2*/
+    int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                                float32 **feat,      /**< A feature vector */
+                                int32 time          /**< The frame we want to compute detail score */
+        );
 
 
-  /** Compute detail (CD) HMM scores or lv2*/
-  int (*srch_hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-			      int32 frmno         /**< The frame we want to compute detail score */
-			      );
-
-  /** Compute the beams*/
-  int (*srch_eval_beams_lv2)(void* srch_struct     /**< a pointer of srch_t */
-			     );
-
-  /** Propagate the graph in phone level */
-  int (*srch_propagate_graph_ph_lv2)(void* srch_struct, /**< a pointer of srch_t */
-				     int32 frmno        /**< The frame no. */
-				     );
-
-  /** Propagate the graph in word level */
-  int (*srch_propagate_graph_wd_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-				     int32 frmno       /**< The frame no. */
-				     );
-
-  /** Rescoring srch */
-  int (*srch_rescoring) (void* srch_struct,  /**< a pointer of srch_t */
-			 int32 frmno         /**< The frame no. */
-			 );  
-
-  int (*srch_frame_windup) (void * srch_struct, int32 frmno);
-  int (*srch_compute_heuristic) (void * srch_struct, int32 win_efv);
-  int (*srch_shift_one_cache_frame) (void *srch_struct,int32 win_efv);
-  int (*srch_select_active_gmm) (void *srch_struct);
+    /** A short-cut function that allows implementer could just
+        implement searching for one frame without implement the
+        following 4 fuctions.
+    */
+    int (*srch_one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
+        );
 
 
-  /** 
-      Second stage functions. They provide a generalized interface for
-      different modes to generate output
-   */
-  /**
-     Generation of hypothesis (*.hyp). Notice, displaying hypothesis is taken care by srch.c itself. 
-   */
-  glist_t (*srch_gen_hyp) (void * srch_struct /**< a pointer of srch_t */
-		       );
+    /** Compute detail (CD) HMM scores or lv2*/
+    int (*srch_hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                                int32 frmno         /**< The frame we want to compute detail score */
+        );
 
-  /**
-    Generation of directed acyclic graph (*.lat.gz). Notice , dumping
-    the dag will be taken care by srch.c. There is mode specific
-    optimization.
-    @return a dag which represent the word graphs. 
-   */
-  dag_t* (*srch_gen_dag) (void* srch_struct, /**< a pointer of srch_t */
-			  glist_t hyp
-			  );
+    /** Compute the beams*/
+    int (*srch_eval_beams_lv2)(void* srch_struct     /**< a pointer of srch_t */
+        );
 
-  /**
-     Dump vithist 
-   */
-  int (*srch_dump_vithist)(void * srch_struct /**< a pointer of srch_t */
-		       );
+    /** Propagate the graph in phone level */
+    int (*srch_propagate_graph_ph_lv2)(void* srch_struct, /**< a pointer of srch_t */
+                                       int32 frmno        /**< The frame no. */
+        );
 
-  /**
-     Interface of best path search. 
-   */
-  glist_t (*srch_bestpath_impl)(void *srch_struct, /**< a pointer of srch_t */
-				dag_t *dag 
-				);
+    /** Propagate the graph in word level */
+    int (*srch_propagate_graph_wd_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                                       int32 frmno       /**< The frame no. */
+        );
 
-  /**
-     Interface for sphinx3 dag dumping function     
-   */
-  int (*srch_dag_dump) (void * srch_struct,
-			glist_t hyp
-			);
+    /** Rescoring srch */
+    int (*srch_rescoring) (void* srch_struct,  /**< a pointer of srch_t */
+                           int32 frmno         /**< The frame no. */
+        );  
+
+    int (*srch_frame_windup) (void * srch_struct, int32 frmno);
+    int (*srch_compute_heuristic) (void * srch_struct, int32 win_efv);
+    int (*srch_shift_one_cache_frame) (void *srch_struct,int32 win_efv);
+    int (*srch_select_active_gmm) (void *srch_struct);
+
+
+    /** 
+        Second stage functions. They provide a generalized interface for
+        different modes to generate output
+    */
+    /**
+       Generation of hypothesis (*.hyp). Notice, displaying hypothesis is taken care by srch.c itself. 
+    */
+    glist_t (*srch_gen_hyp) (void * srch_struct /**< a pointer of srch_t */
+        );
+
+    /**
+       Generation of directed acyclic graph (*.lat.gz). Notice , dumping
+       the dag will be taken care by srch.c. There is mode specific
+       optimization.
+       @return a dag which represent the word graphs. 
+    */
+    dag_t* (*srch_gen_dag) (void* srch_struct, /**< a pointer of srch_t */
+                            glist_t hyp
+        );
+
+    /**
+       Dump vithist 
+    */
+    int (*srch_dump_vithist)(void * srch_struct /**< a pointer of srch_t */
+        );
+
+    /**
+       Interface of best path search. 
+    */
+    glist_t (*srch_bestpath_impl)(void *srch_struct, /**< a pointer of srch_t */
+                                  dag_t *dag 
+        );
+
+    /**
+       Interface for sphinx3 dag dumping function     
+    */
+    int (*srch_dag_dump) (void * srch_struct,
+                          glist_t hyp
+        );
 }srch_t;
 
 
@@ -644,25 +645,25 @@ typedef struct srch_s {
 
     OP_DEBUG       OPERATION_WST_DECODE(1369) 
 
-     @return the mode index if it is valid, -1 if it is not.  
- */
+    @return the mode index if it is valid, -1 if it is not.  
+*/
 
 int32 srch_mode_str_to_index(const char* mode_str);
 
 /** Translate mode string to mode index. User need to supply an initialized 
     @return a mode string;
     @see srchmode_str_to_index
- */
+*/
 
 char* srch_mode_index_to_str(int32 index);
 
 
 /* The following are C-style method for srch structure.  In theory,
-users could used both C-style and function pointer style to access
-functionalities of the code. However, we recommend developers to use
-the C-style functions because 1) it won't scare people that match, 2)
-it is more consistent with other modules in sphinx 3. 
- */
+   users could used both C-style and function pointer style to access
+   functionalities of the code. However, we recommend developers to use
+   the C-style functions because 1) it won't scare people that match, 2)
+   it is more consistent with other modules in sphinx 3. 
+*/
 
 /** Initialize the search routine, this will specify the type of search
     drivers and initialized all resouces.  It will do the following things
@@ -683,7 +684,7 @@ it is more consistent with other modules in sphinx 3.
 
 srch_t* srch_init(kb_t *kb, /**< In: knowledge base */
 		  int32 op_mode /**< In: operation mode of the search */
-		  );
+    );
 
 /** Report the search routine */
 /** using file name of the model definition and directory name to initialize */
@@ -691,7 +692,7 @@ srch_t* srch_init(kb_t *kb, /**< In: knowledge base */
 /** Report the search structure
  */
 void srch_report(srch_t* srch /**< In: a search structure */
-		 );
+    );
 
 /**
  *  Begin decoding of speech for one utterance. 
@@ -701,46 +702,46 @@ void srch_report(srch_t* srch /**< In: a search structure */
  */
 
 int32 srch_utt_begin(srch_t* srch /**< In: a search structure */
-		     );
+    );
 
 /**
    Decode one block of speech and provide the implementation of the default search abstraction
- */
+*/
 int32 srch_utt_decode_blk(srch_t* srch, /**< In: a search structure */
 			  float ***block_feat,  /**< In: a pointer of a two dimensional array */
 			  int32 block_nfeatvec, /**< In: Number of feature vector */
 			  int32 *curfrm  /**< In/Out: a pointer of the current frame index*/
-			  );
+    );
 
 /**
    End decoding of speech for one utterance. 
- */
+*/
 int32 srch_utt_end(srch_t* srch /**< In: a search structure */
-		   );
+    );
 
 /** Wrap up the search routine*/
 int32 srch_uninit(srch_t* srch /**< In: a search structure */
-		  );
+    );
 
 
 
 /** Dump recognition result */
 void reg_result_dump (srch_t* s, /**< A search structure */
 		      int32 id  /**< Utterance ID */
-		      );
+    );
 /**
    Dump the best senone score for each frame
- */
+*/
 void write_bstsenscr(FILE *fp, /**< A file pointer */
-		      int32 numframe, /**< Number of frame in one recognition */
-		      int32* scale    /**< Scales */
-		      );
+		     int32 numframe, /**< Number of frame in one recognition */
+		     int32* scale    /**< Scales */
+    );
 
 
 /** using file name of the LM or defined lmctlfn mechanism */
 int32 srch_set_lm(srch_t* srch,  /**< A search structure */
 		  const char *lmname /**< LM fie name */
-		  );
+    );
 
 /** delete lm */
 int32 srch_delete_lm();

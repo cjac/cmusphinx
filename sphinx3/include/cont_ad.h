@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
  * reserved.
@@ -162,7 +163,7 @@ typedef struct {
     /* ************************************************************************ */
     
     int32 sps;		/**< Samples/sec; moved from ad->sps to break dependence on
-			   ad by N. Roy.*/
+                           ad by N. Roy.*/
 
     int32 eof;		/**< Whether the source ad device has encountered EOF */
   
@@ -190,17 +191,17 @@ typedef struct {
     int32 trailer;	/**< pad end of speech with this many extra frms */
 
     int32 thresh_speech;/**< Frame considered to be speech if power >= thresh_speech
-			   (for transitioning from SILENCE to SPEECH state) */
+                           (for transitioning from SILENCE to SPEECH state) */
     int32 thresh_sil;	/**< Frame considered to be silence if power <= thresh_sil
-			   (for transitioning from SPEECH to SILENCE state) */
+                           (for transitioning from SPEECH to SILENCE state) */
     int32 thresh_update;/**< #Frames before next update to pow_hist/thresholds */
     float32 adapt_rate;	/**< Linear interpolation constant for rate at which noise level adapted
-			   to each estimate;
-			   range: 0-1; 0=> no adaptation, 1=> instant adaptation */
+                           to each estimate;
+                           range: 0-1; 0=> no adaptation, 1=> instant adaptation */
     
     int32 tail_state;	/**< State at the end of its internal buffer (internal use):
-			   CONT_AD_STATE_SIL or CONT_AD_STATE_SPEECH.  Note: This is
-			   different from cont_ad_t.state. */
+                           CONT_AD_STATE_SIL or CONT_AD_STATE_SPEECH.  Note: This is
+                           different from cont_ad_t.state. */
     int32 win_startfrm;	/**< Where next analysis window begins */
     int32 win_validfrm;	/**< #Frames currently available from win_startfrm for analysis */
     int32 n_other;	/**< If in SILENCE state, #frames in analysis window considered to
@@ -227,9 +228,9 @@ typedef struct {
 cont_ad_t *cont_ad_init (ad_rec_t *ad,	/**< In: The A/D source object to be filtered */
 			 int32 (*adfunc)(ad_rec_t *ad, int16 *buf, int32 max)
 			 /**< In: adfunc = source function to be invoked
-					   to obtain raw A/D data.  See ad.h for the
-					   required prototype definition. */
-			 );
+			    to obtain raw A/D data.  See ad.h for the
+			    required prototype definition. */
+    );
 
 /*
  * Like cont_ad_init, but put the module in raw mode; i.e., all data is passed
@@ -262,7 +263,7 @@ int32 cont_ad_read (cont_ad_t *r,	/**< In: Object pointer returned by cont_ad_in
 		    int32 max		/**< In: Max #samples to be filled into buf.
 					   NOTE: max must be at least 256; otherwise
 					   the functions returns -1. */
-	);
+    );
 
 /*
  * Calibration to determine an initial silence threshold.  This function can be called
@@ -275,7 +276,7 @@ int32 cont_ad_read (cont_ad_t *r,	/**< In: Object pointer returned by cont_ad_in
  * Return value: 0 if successful, <0 otherwise.
  */
 int32 cont_ad_calib (cont_ad_t *cont	/**< In: object pointer returned by cont_ad_init */
-		     );
+    );
 
 /**
  * If the application has not passed an audio device into the silence filter
@@ -303,7 +304,7 @@ int32 cont_ad_calib_loop (cont_ad_t *r, int16 *buf, int32 max);
 int32 cont_ad_set_thresh (cont_ad_t *cont,	/**< In: Object ptr from cont_ad_init */
 			  int32 sil,	/**< In: silence threshold (default 2) */
 			  int32 sp	/**< In: speech threshold (default 2) */
-			  );
+    );
 
 
 /**

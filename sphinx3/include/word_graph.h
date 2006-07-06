@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -85,13 +86,13 @@
  * A link in the word_graph
  */
 typedef struct{
-  int32 srcidx; /**< Start Node Idx */
-  int32 tgtidx; /**< End Node Idx */
-  int32 wid;   /**< Word ID */
-  float64 ascr; /**< Acoustic Score */
-  float64 lscr; /**< Language Score */
-  float64 cscr; /**< Confidence Score */
-  int32 linkidx; /**< The index for this node */
+    int32 srcidx; /**< Start Node Idx */
+    int32 tgtidx; /**< End Node Idx */
+    int32 wid;   /**< Word ID */
+    float64 ascr; /**< Acoustic Score */
+    float64 lscr; /**< Language Score */
+    float64 cscr; /**< Confidence Score */
+    int32 linkidx; /**< The index for this node */
 } word_graph_link_t;
 
 /** 
@@ -101,9 +102,9 @@ typedef struct{
  */
 
 typedef struct{
-  int32 time;  /**< The time moment of this node */
-  int32 nodeidx; /**< The index for this node */
-  glist_t child_node_list; /**< The list of all children. */
+    int32 time;  /**< The time moment of this node */
+    int32 nodeidx; /**< The index for this node */
+    glist_t child_node_list; /**< The list of all children. */
 } word_graph_node_t;
 
 /**
@@ -112,10 +113,10 @@ typedef struct{
  * The word graph structure. (linked-based word graph)
  */
 typedef struct{
-  glist_t link; /**< List of link */
-  glist_t node; /**< List of node */
-  int32 n_link; /**< Number of node */
-  int32 n_node; /**< Number of node */
+    glist_t link; /**< List of link */
+    glist_t node; /**< List of node */
+    int32 n_link; /**< Number of node */
+    int32 n_node; /**< Number of node */
 
 } word_graph_t;
 
@@ -129,22 +130,22 @@ void print_wg(FILE *fp,  /**< File pointer */
 			    Format of the word graph 
 			    fmt=0: simple format
 			    fmt=1: IBM format. 
-			  */
-	      );
+			 */
+    );
 
 /**
    Convert a dag to wordgraph. 
- */
+*/
 word_graph_t* dag_to_wordgraph (dag_t* dag,  /**< a DAG structure */
 				int32 *senscale, /**< Scaling factor of the acoustic score */
 				lm_t* lm, /**< LM */
 				dict_t* dict /**< Dict */
-				);
+    );
 
 
 /**
    Dump the word graph. This is similar to s3flat_fwd_dag_dump interface. 
- */
+*/
 
 void word_graph_dump(char *dir, /**< Directory name*/
 		     char *id,  /**< Utteracne ID */
@@ -153,14 +154,14 @@ void word_graph_dump(char *dir, /**< Directory name*/
 		     dict_t *dict,  /**< Dictionary */
 		     lm_t *lm,     /**< LM */
 		     int32 *senscale /**< Senone scale */
-		     );
+    );
 
 
 /**
    Free wordgraph. 
- */
+*/
 void wordgraph_free(word_graph_t *wg /**< Word graph */
-		    );
+    );
 
 #endif  /*_WORD_GRAPH_H_*/
 

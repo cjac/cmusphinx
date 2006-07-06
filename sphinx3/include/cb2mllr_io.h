@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1996-2000 Carnegie Mellon University.  All rights 
  * reserved.
@@ -34,9 +35,9 @@
  *
  */
 
-  /** \file cb2mllr_io.h
-   * \brief Implementation of code book to mllr regression class map. 
-   */
+/** \file cb2mllr_io.h
+ * \brief Implementation of code book to mllr regression class map. 
+ */
 
 #ifndef S3CB2MLLR_IO_H
 #define S3CB2MLLR_IO_H
@@ -44,14 +45,14 @@
 #include "s3types.h"
 
 /**
-  Read codeword to MLLR class mapping file
- */
+   Read codeword to MLLR class mapping file
+*/
 int
 cb2mllr_read(const char *fn, /**< MLLR class mapping file.*/
 	     int32 **out_cb2mllr,  /**< Output CB 2 MLLR */
 	     int32 *out_n_cb,      /**< Number of codebook */
 	     int32 *out_n_mllr     /**< Number of MLLR class */
-	     );
+    );
 
 #endif /* S3CB2MLLR_IO_H */ 
 

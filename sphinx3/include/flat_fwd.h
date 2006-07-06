@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -33,7 +34,7 @@
  * ====================================================================
  *
 
- */
+*/
 /*
  * fwd.c -- Forward Viterbi beam search
  *
@@ -94,20 +95,20 @@
 #define _LIBFBS_FWD_H_
 
 /* Added by BHIKSHA; Fix for 3 state hmms? 
-#define ANYHMMTOPO	1
- End modification by BHIKSHA */
+   #define ANYHMMTOPO	1
+   End modification by BHIKSHA */
 #include "dag.h"
 #include "vithist.h"
 
 /** \file flat_fwd.h
-   \brief (Currently not opened to public) Header for forward search for flat lexicon
+    \brief (Currently not opened to public) Header for forward search for flat lexicon
 
- * SOME ASSUMPTIONS
- *   - All phones (ciphones and triphones) have same HMM topology with n_state states.
- *   - Initial state = state 0; final state = state n_state-1.
- *   - Final state is a non-emitting state with no arcs out of it.
- *   - Some form of Bakis topology (ie, no cycles, except for self-transitions).
- */
+    * SOME ASSUMPTIONS
+    *   - All phones (ciphones and triphones) have same HMM topology with n_state states.
+    *   - Initial state = state 0; final state = state n_state-1.
+    *   - Final state is a non-emitting state with no arcs out of it.
+    *   - Some form of Bakis topology (ie, no cycles, except for self-transitions).
+    */
 
 /**
  * The flat forward search version of DAG search. Very similar to what
@@ -115,7 +116,7 @@
  */
 
 srch_hyp_t *s3flat_fwd_dag_search (char *utt /**< utterance id */
-				   );
+    );
 
 /**
  * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with

@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -150,10 +151,10 @@
  * A single transition in the FSG.
  */
 typedef struct word_fsglink_s {
-  int32 from_state;
-  int32 to_state;
-  s3wid_t wid;		/* Word-ID; <0 if epsilon or null transition */
-  int32 logs2prob;	/* logs2(transition probability)*lw */
+    int32 from_state;
+    int32 to_state;
+    s3wid_t wid;		/* Word-ID; <0 if epsilon or null transition */
+    int32 logs2prob;	/* logs2(transition probability)*lw */
 } word_fsglink_t;
 
 
@@ -172,48 +173,48 @@ typedef struct word_fsglink_s {
  * word.
  */
 typedef struct word_fsg_s {
-  char *name;		/* A unique string identifier for this FSG */
-  int32 n_state;	/* #states in FSG */
-  int32 start_state;	/* Must be in the range [0..n_state-1] */
-  int32 final_state;	/* Must be in the range [0..n_state-1] */
-  boolean use_altpron;	/* Whether transitions for alternative pronunciations
-			   have been added to the FSG */
-  boolean use_filler;	/* Whether silence and noise filler-word transitions
-			   have been added at each state */
-  float32 lw;		/* Language weight that's been applied to transition
-			   logprobs */
-  glist_t **trans;	/* trans[i][j] = glist of non-epsilon transitions or
-			   links (word_fsglink_t *) from state i to state j,
-			   if any; NULL if none. */
-  word_fsglink_t ***null_trans;	/* null_trans[i][j] = epsilon or null link
-				   from state i to j, if any; NULL if none.
-				   (At most one null transition between two
-				   given states.) */
+    char *name;		/* A unique string identifier for this FSG */
+    int32 n_state;	/* #states in FSG */
+    int32 start_state;	/* Must be in the range [0..n_state-1] */
+    int32 final_state;	/* Must be in the range [0..n_state-1] */
+    boolean use_altpron;	/* Whether transitions for alternative pronunciations
+				   have been added to the FSG */
+    boolean use_filler;	/* Whether silence and noise filler-word transitions
+                           have been added at each state */
+    float32 lw;		/* Language weight that's been applied to transition
+                           logprobs */
+    glist_t **trans;	/* trans[i][j] = glist of non-epsilon transitions or
+                           links (word_fsglink_t *) from state i to state j,
+                           if any; NULL if none. */
+    word_fsglink_t ***null_trans;	/* null_trans[i][j] = epsilon or null link
+					   from state i to j, if any; NULL if none.
+					   (At most one null transition between two
+					   given states.) */
 
-  /*
-   * Left and right CIphone sets for each state.
-   * Left context CIphones for a state S: If word W transitions into S, W's
-   * final CIphone is in S's {lc}.  Words transitioning out of S must consider
-   * these left context CIphones.
-   * Similarly, right contexts for state S: If word W transitions out of S,
-   * W's first CIphone is in S's {rc}.  Words transitioning into S must consider
-   * these right contexts.
-   * 
-   * NOTE: Words may transition into and out of S INDIRECTLY, with intermediate
-   *   null transitions.
-   * NOTE: Single-phone words are difficult; only SILENCE right context is
-   *   modelled for them.
-   * NOTE: Non-silence filler phones aren't included in these sets.  Filler
-   *   words don't use context, and present the SILENCE phone as context to
-   *   adjacent words.
-   */
-  int8 **rc, **lc;
+    /*
+     * Left and right CIphone sets for each state.
+     * Left context CIphones for a state S: If word W transitions into S, W's
+     * final CIphone is in S's {lc}.  Words transitioning out of S must consider
+     * these left context CIphones.
+     * Similarly, right contexts for state S: If word W transitions out of S,
+     * W's first CIphone is in S's {rc}.  Words transitioning into S must consider
+     * these right contexts.
+     * 
+     * NOTE: Words may transition into and out of S INDIRECTLY, with intermediate
+     *   null transitions.
+     * NOTE: Single-phone words are difficult; only SILENCE right context is
+     *   modelled for them.
+     * NOTE: Non-silence filler phones aren't included in these sets.  Filler
+     *   words don't use context, and present the SILENCE phone as context to
+     *   adjacent words.
+     */
+    int8 **rc, **lc;
 
-  /**Added by Arthur at 20050627*/
-  int32 n_ciphone;
-  dict_t* dict;
-  mdef_t* mdef;
-  ctxt_table_t *ctxt;
+    /**Added by Arthur at 20050627*/
+    int32 n_ciphone;
+    dict_t* dict;
+    mdef_t* mdef;
+    ctxt_table_t *ctxt;
 } word_fsg_t;
 
 /* Access macros */

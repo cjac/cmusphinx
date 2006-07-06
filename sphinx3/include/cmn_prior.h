@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -71,25 +72,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \file cmn_prior.h
-   * \brief Block version of implementation of CMN
-   * Apply Cepstral Mean Normalization (CMN) to the set of input mfc frames, 
-   * by subtracting the mean of the input from each frame.  C0 is also included    * in this process.
-   */
+/** \file cmn_prior.h
+ * \brief Block version of implementation of CMN
+ * Apply Cepstral Mean Normalization (CMN) to the set of input mfc frames, 
+ * by subtracting the mean of the input from each frame.  C0 is also included    * in this process.
+ */
 
 #define CMN_WIN_HWM     800     /** #frames after which window shifted */
 #define CMN_WIN         500
 
-  /*
-   * Simple version of block version of CMN. 
-   */
+/*
+ * Simple version of block version of CMN. 
+ */
 void cmn_prior(float32 **incep, /**< In/Out: mfc[f] = mfc vector in frame f*/
-	      int32 varnorm,    /**< This flag should always be 0 for live */
-	      int32 nfr,        /**< Number of incoming frames */
-              int32 ceplen,     /**< Length of the cepstral vector */
-	      int32 endutt    /**< Flag indicating end of utterance */
-	       );
+	       int32 varnorm,    /**< This flag should always be 0 for live */
+	       int32 nfr,        /**< Number of incoming frames */
+	       int32 ceplen,     /**< Length of the cepstral vector */
+	       int32 endutt    /**< Flag indicating end of utterance */
+    );
 
 #ifdef __cplusplus
 }

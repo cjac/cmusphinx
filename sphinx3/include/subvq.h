@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -97,14 +98,17 @@
 
 /** \file subvq.h
     \brief Implementation of Sub-vector quantization.
- */
+*/
 #ifdef __cplusplus
 extern "C" {
 #endif
+#if 0
+} /* Fool Emacs into not indenting things. */
+#endif
 
-  /** \struct subvq_t
-   * \brief Wrapper structures of sub-vector quantization
-   */
+/** \struct subvq_t
+ * \brief Wrapper structures of sub-vector quantization
+ */
 typedef struct {
     arraysize_t origsize;	/**< origsize.r = #codebooks (or states) in original model;
 				   origsize.c = max #codewords/codebook in original model. */
@@ -117,26 +121,26 @@ typedef struct {
 				   so, each map[i][j] is of length n_sv.  Finally, map is
 				   LINEARIZED, so that it indexes into a 1-D array of scores
 				   rather than a 2-D array (for faster access). */ 
-  /* Working space used during evaluation. */
+    /* Working space used during evaluation. */
     float32 *subvec;		/**< Subvector extracted from feature vector */
     int32 **vqdist;		/**< vqdist[i][j] = score (distance) for i-th subvector compared
 				   to j-th subvector-codeword */
     int32 *gauscore;		/**< Subvq-based approx. Gaussian density scores for one mixture */
     int32 *mgau_sl;		/**< Shortlist for one mixture (based on gauscore[]) */
 
-  /* ARCHAN, 1111, 04, move the static global variables to the structure again. */
-  /* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
-   * compute the shortlist, for now this value is only relevant when n_sv =3.
-   * Setting it to 1 means that only the CEP values are estimated, 2 means that 
-   * CEP and delta values are estimated, 3 means all three are estimated.
-   * Note, we must adjust the beam widths as we muck around with these.
-   */
+    /* ARCHAN, 1111, 04, move the static global variables to the structure again. */
+    /* RAH, 5.8.01, VQ_EVAL determines how many vectors are used to
+     * compute the shortlist, for now this value is only relevant when n_sv =3.
+     * Setting it to 1 means that only the CEP values are estimated, 2 means that 
+     * CEP and delta values are estimated, 3 means all three are estimated.
+     * Note, we must adjust the beam widths as we muck around with these.
+     */
 
     int32 VQ_EVAL;              /** Number of sub-vector to be computed */
 } subvq_t;
 
 
-  /**
+/**
  * SubVQ file format:
  *   VQParam #Original-Codebooks #Original-Codewords/codebook(max) -> #Subvectors #VQ-codewords
  *   Subvector 0 length <length> <feature-dim> <feature-dim> <feature-dim> ...
@@ -166,16 +170,16 @@ subvq_t *subvq_init (char *file,	/**< In: Subvector model file */
 					   which this subvq model was
 					   built, for
 					   cross-validation; optional */
-		     );	
+    );	
 
 
 
-  /** Deallocate sub-vector quantization */
-  void subvq_free (subvq_t *vq /**< In: A sub-vector model */
-		 );
+/** Deallocate sub-vector quantization */
+void subvq_free (subvq_t *vq /**< In: A sub-vector model */
+    );
 
 
-  /**
+/**
  * Evaluate senone scores for one frame.  If subvq model is available, for each senone, first
  * get approximate Gaussian density scores using it; obtain a shortlist of Gaussians using
  * these scores, then evaluate the shortlist exactly.  If no subvq model, evaluate senones
@@ -190,9 +194,9 @@ int32 subvq_frame_eval (subvq_t *vq,	/**< In: A sub-vector model */
 			int32 *sen_active,	/**< In: Active flags for each senone (optional).
 						   If not NULL, only active ones evaluated */
 			int32 *senscr /**< Out: Normalized senone scores */
-			);	
+    );	
 
-  /**
+/**
  * Evaluate the Mahalanobis distances between the given feature vector and each entry in the
  * given subvq codebook.  Save results, as logs3 values, in vq->vqdist[][].
  */
@@ -200,9 +204,9 @@ void subvq_gautbl_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structur
 			      float32 *feat	/**< In: Subvectors
 						   extracted from this, and compared to
 						   relevant subvq codewords */
-			      );
+    );
 
-  /**
+/**
  * Evaluate the codewords for a single given subvector sv, wrt the input feature vector.
  * Save results, as logs3 values, in vq->vqdist[sv][].
  * (Basically, like subvq_gautbl_eval_logs3, but for a single given subvector instead of all.)
@@ -216,33 +220,33 @@ void subvq_subvec_eval_logs3 (subvq_t *vq,	/**< In/Out: Reference subvq structur
 						 ** codewords */
 
 			      int32 sv	        /**< In: ID of
-                                                    subvector being
-                                                    evaluated */
-			      );
+						   subvector being
+						   evaluated */
+    );
 
 /*
  * Based on previously computed subvq scores (Mahalanobis distances), determine the active
  * components in the given mixture (using the vq->map).
  * @return Number of candidates in the returned shortlist.
  */
-  int32 subvq_mgau_shortlist (subvq_t *vq,        /**< In subvq */
-				   int32 m,	/**< In: GMM index */
-				   int32 n,	/**< In: #Components in specified mixture */
-				   int32 beam	/**< In: Threshold to select active components */
-			    );
+int32 subvq_mgau_shortlist (subvq_t *vq,        /**< In subvq */
+			    int32 m,	/**< In: GMM index */
+			    int32 n,	/**< In: #Components in specified mixture */
+			    int32 beam	/**< In: Threshold to select active components */
+    );
 
 
-  /**
-   * Compute the scores of a gaussian using only sum of the sub-vector scores. 
-   * @return best senone score. 
-   */
+/**
+ * Compute the scores of a gaussian using only sum of the sub-vector scores. 
+ * @return best senone score. 
+ */
 
-  int32 subvq_mgau_eval (mgau_model_t *g, /**< In: Gaussian */
+int32 subvq_mgau_eval (mgau_model_t *g, /**< In: Gaussian */
 		       subvq_t *vq, /**< In: the SVQ */
 		       int32 m, /**< In: GMM Index */
 		       int32 n, /**< In :#Components in a specified mixture */
 		       int32 *active /**< In:Active list of mixture */
-		       );
+    );
 
 #ifdef __cplusplus
 }
