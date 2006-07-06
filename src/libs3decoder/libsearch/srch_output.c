@@ -78,9 +78,7 @@ void match_write (FILE *fp, glist_t hyp, char* uttid, dict_t* dict, char *hdr)
 
     fprintf (fp, "%s", (hdr ? hdr : ""));
 
-#if 0
-    for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-#endif
+/*     for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
     for (gn = hyp; gn ; gn = gnode_next(gn)) {
       h = (srch_hyp_t *) gnode_ptr (gn);
       if((!dict_filler_word(dict,h->id)) && (h->id!=dict_finishwid(dict)) && (h->id!=dict_startwid(dict)))
@@ -127,11 +125,8 @@ void matchseg_write (FILE *fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
       fprintf (fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), uttid,
 	       scl, ascr+lscr, ascr, lscr);
 
-#if 0      
-      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-#else
+/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
       for (gn = hyp; gn; gn = gnode_next(gn)) {
-#endif
 	h = (srch_hyp_t *) gnode_ptr (gn);
 	
 	  hypscale=0;
@@ -146,11 +141,8 @@ void matchseg_write (FILE *fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
     }else if(fmt==SEG_FMT_SPHINX2){
       fprintf (fp, "%s%s   ",(hdr ? hdr : ""),uttid);
 
-#if 0
-      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-#else
+/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
       for (gn = hyp; gn; gn = gnode_next(gn)) {
-#endif
 	h = (srch_hyp_t *) gnode_ptr (gn);
 
 	  hypscale=0;
@@ -164,11 +156,8 @@ void matchseg_write (FILE *fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
       fprintf (fp, "(S= %d (A= %d L= %d))\n", ascr+lscr, ascr, lscr);
     }else if(fmt==SEG_FMT_CTM){
 
-#if 0
-      for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) {
-#else
+/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
       for (gn = hyp; gn; gn = gnode_next(gn)) {
-#endif
 
 	h = (srch_hyp_t *) gnode_ptr (gn);
 	/*FIXME!, what is the second output of the matchseg file?*/
