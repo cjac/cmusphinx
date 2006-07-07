@@ -9,7 +9,13 @@ Help("""
 
       Type  'scons common' to build common.jar and its dependencies.
 
-      Type  'scons sphinx' to build sphinx.jar and its dependencies.
+      Type  'scons sphinx4' to build sphinx4.jar and its dependencies.
+             This produces a different sphinx4.jar than the one produced by build.xml.  This sphinx4.jar
+             only includes source from sphinx4/src/sphinx4.  It does not include any of the research code, jsapi,
+             demos, etc.   As a result it is 25% smaller.
+
+             Also, it's important to note that everything under src/sphinx4 builds.  There are no excludes.
+             Only with your help can we keep it this way.
 
       Type  'scons audoCollector' to build audioCollector.jar and its dependencies.
              This fails because I don't know where AudioRecorder lives.
