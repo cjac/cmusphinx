@@ -1,1 +1,0 @@
-java -Xmx256m -classpath WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar:batch.jar:common.jar:dictator.jar:dom4j-1.6.1.jar:forms_rt.jar:javolution.jar:sphinx4.jar edu.cmu.sphinx.tools.dictator.DictatorView
