@@ -20,11 +20,15 @@ Help("""
       on OS X, but never actually transcribes anything at this point.
       """)
 
-SConscript('common.py')
+SConscript('sphinx4.py')
+Import('sphinx4')
+Alias('sphinx4', sphinx4)
+
+SConscript('common.py', exports='sphinx4')
 Import('common')
 Alias('common', common)
 
-SConscript('dictator.py', exports='common')
+SConscript('dictator.py', exports=['common','sphinx4'])
 Import('dictator')
 Alias('dictator', dictator)
 
