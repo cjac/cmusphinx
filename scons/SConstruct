@@ -6,7 +6,9 @@ Help("""
 
       Type  'scons dictator' to build dictator.jar and its dependencies.
 
-      Type  'scons common' to build common.jar.
+      Type  'scons common' to build common.jar and its dependencies.
+
+      Type  'scons sphinx' to build sphinx.jar and its dependencies.
 
       Type  'scons audoCollector' to build audioCollector.jar and its dependencies.
              This fails because I don't know where AudioRecorder lives.
@@ -18,6 +20,13 @@ Help("""
 
       This scons script has only been tested on OS X. The dictator builds and runs
       on OS X, but never actually transcribes anything at this point.
+
+      Build outputs will be place in scons_build, which will be created two directories
+      below the scons directory
+
+      Ship outputs will be placed in scons_ship, which will also be created two directories
+      below the scons directory
+
       """)
 
 SConscript('sphinx4.py')

@@ -13,6 +13,7 @@ Install(dir, '../tools/common/lib/javolution.jar')
 Install(dir, '../tools/common/lib/sphinx4.jar')
 Install(dir, '../tools/common/data/WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar')
 Install(dir, '../tools/dictator/build/dictator.config.xml')
+Install(dir, '../tools/dictator/run/run.sh')
 Install(dir, str(dictator[0]))
 
 shipDictator = Alias('foo', dir)
