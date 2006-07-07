@@ -3,6 +3,7 @@ import platform
 
 Help("""
       Type: 'scons shipDictator' to to create and package all dictator related files.
+             You can run the dictator from the scons_ship/dictator directory with run.sh
 
       Type  'scons dictator' to build dictator.jar and its dependencies.
 
@@ -18,14 +19,13 @@ Help("""
       Ship output will be placed in the scons_ship directory adjacent to trunk.
       Build output will be placed in the scons_build directory adjacent to trunk.
 
-      This scons script has only been tested on OS X. The dictator builds and runs
-      on OS X, but never actually transcribes anything at this point.
-
       Build outputs will be place in scons_build, which will be created two directories
       below the scons directory
 
       Ship outputs will be placed in scons_ship, which will also be created two directories
       below the scons directory
+
+      These scripts have been tested on OS X 10.4.7 and Ubuntu Linux 6.06
 
       """)
 
