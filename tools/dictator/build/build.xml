@@ -207,6 +207,20 @@
     </target>
 
 
+    <!-- ********************************************************** -->
+    <!-- *                                                        * -->
+    <!-- * Run the dictator                                       * -->
+    <!-- *                                                        * -->
+    <!-- ********************************************************** -->
+    <target name="run"
+            description="Run the dictator"
+	    depends="all">
+        <java fork="yes" jar="${dictator_jar}">
+            <jvmarg value="-Xmx256m"/>
+	</java>
+    </target>
+
+
     <!-- ********************************************************** --> 
     <!-- *                                                        * -->
     <!-- * Deletes all build output and *~ file droppings         * -->
