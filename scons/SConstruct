@@ -2,8 +2,9 @@ import os
 import platform
 
 Help("""
-      Type: 'scons shipDictator' to to create and package all dictator related files.
-             You can run the dictator from the scons_ship/dictator directory with run.sh
+      Type: 'scons shipDictator' to create and package all dictator related files.
+
+      Type: 'scons runDictator' to run the dictator and build any necessary things.
 
       Type  'scons dictator' to build dictator.jar and its dependencies.
 
@@ -57,4 +58,6 @@ Alias('corpusBrowser', corpusBrowser)
 
 SConscript('shipDictator.py', exports='dictator')
 Import('shipDictator')
+Import('runDictator')
 Alias('shipDictator', shipDictator)
+Alias('runDictator', runDictator)
