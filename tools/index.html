@@ -1,0 +1,414 @@
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+
+<!--
+
+Copyright 1999-2006 Carnegie Mellon University.  
+Portions Copyright 2002-2004 Sun Microsystems, Inc.  
+Portions Copyright 2002-2004 Mitsubishi Electric Research Laboratories.
+All Rights Reserved.  Use is subject to license terms.
+
+See the file "license.terms" for information on usage and
+redistribution of this file, and for a DISCLAIMER OF ALL 
+WARRANTIES.
+
+-->
+
+<html>
+<head>
+  <title>EvalDictator - An audio data collection tool using Sphinx-4</title>
+<STYLE TYPE="text/css">
+     pre { font-size: medium; background: #f0f8ff; padding: 2mm; border-style: ridge ; color: teal}
+     code {font-size: medium; color: teal}
+     s4keyword { color: red; font-weight: bold }
+</STYLE></head>
+
+<body bgcolor="white">
+  <center>
+    <table bgcolor="#99CBFF" border="0" width="100%">
+      <tbody>
+        <tr>
+	  <td align="center" width="100%">
+          <h1><i>EvalDictator</i><br><font size="+1">An audio data
+          collection tool using Sphinx-4
+          </h1>
+	  </td>
+        </tr>
+      </tbody>
+    </table>
+  </center>
+  <font face="Arial" size="2">
+
+  <table border="0" width="100%">
+    <tbody>
+      <tr>
+        <td bgcolor="#F0F8FF" valign="top" width="20%">
+          <br>
+	  <b><font>EvalDictator Links</font></b>
+          <p>
+	  <font size="-1">
+	  <p>SourceForge</p>
+          <ul>
+	  <li><a href="http://sourceforge.net/projects/cmusphinx">Project Page</a>
+          <li><a href="https://sourceforge.net/forum/?group_id=1904">Forums</a>
+          <li><a href="http://sourceforge.net/svn/?group_id=1904">SVN Repository</a>
+          </ul>
+          <p><a href="http://cmusphinx.org/download/nightly/tools.tar.gz">Download tarball</a>
+          </p>
+          <p><a href="http://cmusphinx.org/download/nightly/tools.jar">Download JAR</a>
+          </p>
+	  <p>
+	  <a href="http://cmusphinx.org">CMU Sphinx</a>
+	  </p>
+	  <p>
+	  <a href="http://cmusphinx.sourceforge.net/tools/javadoc/index.html">Dictator Javadocs</a>
+      </p>
+          <p>
+          <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmusphinx/twiki/view/Sphinx4/WebHome">Sphinx-4 TWiki</a>
+          </p>
+      <hr>
+          <center><a href="http://www.sourceforge.net">
+          <img src="http://sourceforge.net/sflogo.php?group_id=1904&amp;type=1"
+          width="88" height="31" border="0" alt="SourceForge Logo"></a>
+          <br>Hosted by SourceForge.net</center>
+          </font></b></td>
+
+      <td width="5%"><br>
+      </td>
+
+      <td valign="top"><br>
+      <h3>General Information</h3>
+      <ul>
+        <li><a href="#what_is_dictator">Introduction</a></li>
+        <li><a href="#capabilities">Capabilities</a></li>
+      </ul>
+
+      <h3>Installation</h3>
+      <h4>Not Using an IDE</h4>
+      <ul>
+	<li><a href="#download_and_install">Required Software</a></li>
+	<li><a href="#source">Downloading the EvalDictator</a></li>
+	<li><a href="#how_build">Building the EvalDictator</a></li>
+	<li><a href="#create_javadocs">Creating Javadocs</a></li>
+	<li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+      <h4>Using an IDE</h4>
+      <ul>
+	<li><a href="doc/Eclipse.html">Eclipse</a></li>
+	<li><a href="doc/NetBeans.html">NetBeans</a></li>
+      </ul>
+
+      <h3>EvalDictator in Detail</h3>
+      <ul>
+      </ul>
+
+
+      <p>
+      <br>
+      <font size="-1">
+      <b>NOTE</b>: This page contains links to javadocs. If the links
+      are broken, you should either follow instructions in <a
+      href="#create_javadocs">Creating Javadocs</a>, or view this page
+      online at <a href="http://www.evaldictator.org/">
+      http://www.evaldictator.org/</a>.
+      </font>
+
+      <p>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>General Information about the EvalDictator</h2>
+<ul>
+  <li><a name="what_is_dictator"><b>Introduction</b></a>
+      <p>The EvalDictator .... uses Sphinx-4.
+      </p>
+      <p>Sphinx-4 is a state-of-the-art speech recognition system
+	 written entirely in the Java<sup><font size="-1">TM</font></sup>
+	 programming language.
+         It was created via a joint collaboration between the Sphinx group
+	 at Carnegie Mellon University, Sun Microsystems Laboratories,
+	 Mitsubishi Electric Research Labs (MERL), and Hewlett Packard (HP),
+	 with contributions from the University of California at Santa
+         Cruz (UCSC) and the Massachusetts Institute of Technology
+         (MIT).
+
+  </li>
+  <br>&nbsp;
+  <li><a name="capabilities"><b>Capabilities</b></a>
+
+      <p>List of capabilities under construction.
+
+
+      <p>
+      (<b>NOTE:</b> The links in this section point to local files created by
+      javadoc. If they are broken, please follow the instructions on 
+      <a href="#create_javadocs">Creating Javadocs</a> to create these links.)
+  </li>
+
+  <br>&nbsp;
+
+<hr>
+
+<h2>Installation</h2>
+
+<ul>
+
+<li><a name="download_and_install"><b>Required Software</b></a>
+
+      <p>EvalDictator has been built and tested on the Solaris<sup> <font
+      size="-1">TM</font></sup> Operating Environment, Mac OS X, Linux
+      and Win32 operating systems. Running, building, and testing 
+      EvalDictator requires additional software. Before you start, 
+      you will need the following software available on your machine.</p>
+
+<ul>
+  <li><b>Java 2 SDK, Standard Edition 5.0</b> or better. 
+      Go to <a href="http://java.sun.com">java.sun.com</a>,
+      and select "J2SE". At the time of writing, the latest release
+      version is 5.0 (also referred to as 1.5.0), which is the one we
+      recommend.
+      </li>
+
+  <br>
+
+  <li><b>Ant 1.6.0</b> or better, available at <a
+  href="http://ant.apache.org">ant.apache.org</a>. The site has a manual 
+  with instructions on how to download, install, and use ant.  You
+  will only need ant if you wish to build EvalDictator from the source
+  distribution.</li>
+
+  <br>
+  <li><b>Scons</b> alternatively, available at <a href="http://www.scons.org">scons.org</a>.</li>
+  <br>
+
+  <li> <b>Subversion (svn)</b>, but only if you want to interact directly
+  with the svn tree (which we recommend). The canonical places to get
+  it is <a
+  href="http://subversion.tigris.org/">subversion.tigris.org</a>. If
+  you are using Windows, your best choice is to install <a
+  href="http://cygwin.com">cygwin</a>, which will give you a
+  linux-like environment in a command prompt window. Make sure to
+  choose "svn" when you install cygwin.
+  </li>
+</ul>
+
+  </li>
+
+<br>&nbsp;
+
+  <li>
+  <a name="source"><b>Downloading EvalDictator</b></a>
+  <br>&nbsp;
+      <ul>
+      <li><a name="nightly"><b>Instructions for retrieving code from
+      the nightly build</b></a> <p>A tarball is built nightly, and it
+      is available at <a
+      href="http://cmusphinx.org/download/nightly/tools.tar.gz">cmusphinx.org</a>. Alternatively,
+      you can download the <a
+      href="http://cmusphinx.org/download/nightly/dictator.jar">JAR
+      file</a>.
+      </li>
+
+      <li><a name="cvs"><b>Instructions for retrieving code from the svn repository</b></a>
+
+      <p>If you want to be able to get the latest updates from the svn
+      repository, you should retrieve the code from the repository on
+      SourceForge. The EvalDictator code is located at <a
+      href="http://sourceforge.net/projects/cmusphinx">sourceforge.net
+      </a> as open source. Please follow the instructions below to
+      retrieve it.</p>
+
+          <ul>
+	  <li>Get the code from sourceforge.net:
+<pre>
+% svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/tools
+</pre>
+	  </li>
+    </ul>
+    </li>
+
+    </ul>
+    </li>
+<br>
+
+  <li><a name="how_build"><b>Building EvalDictator</b></a>
+      
+      The software required for building EvalDictator are 
+      listed in the <a href="#download_and_install">Required Software</a> 
+      section.
+      </p>
+      <p>
+      To build EvalDictator, at the command prompt change to 
+      the dictator build directory (usually, a simple 
+      "cd tools/dictator/build" will do). Set your <code>JAVA_HOME</code>,
+      <code>ANT_HOME</code> and <code>PATH</code> environment variables 
+      as described above. Then type the following:
+      </p>
+      <pre>ant</pre>
+    <p>
+    This executes the <a href="http://ant.apache.org/">Apache Ant</a>
+    command to build the EvalDictator classes under the <code>bld</code>
+    directory, the jar files under the <code>lib</code> directory,
+    and the demo jar files under the <code>bin</code> directory.
+    </p>
+    <p>
+    To delete all the output from the build to give you a fresh start:
+    <pre>ant clean</pre>
+   </li>
+
+  <br>
+
+<li><a name="create_javadocs"><b>Creating Javadocs</b></a>
+
+To build the 
+javadocs, go to the dictator build directory (tools/dictator/build), and type:
+</p>
+<pre>ant javadoc</pre>
+<p>This will build javadocs from public classes, displaying only the public methods and fields. In general, this is all the information you will need. If you need more details, such as private or protected classes, you can generate the corresponding javadoc by doing, for example:
+</p>
+<pre>ant -Daccess=private javadoc</pre>
+
+</li>
+
+<br>&nbsp;
+
+<li><a name="troubleshooting"><b>Troubleshooting</b></a><br>&nbsp;
+<ol>
+  <li>How can I specify the location of the Java JDK?
+    <ul>
+
+      <li>Using the JAVA_HOME environment variable. For the different
+      versions of OS, do:
+        <ul>
+          <li>
+            Unix (t)csh: <code>setenv JAVA_HOME /lab/speech/java/jdk1.5.0_06</code>
+          </li>
+          <li>
+            Unix (ba)sh: <code>export JAVA_HOME='/lab/speech/java/jdk1.5.0_06'</code>
+          </li>
+
+          <li>
+            Windows/cygwin: <code>export JAVA_HOME='c:/Progra~1/Java/jdk1.5.0_06'</code>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <br>  
+
+  <li>How can I update the code in my current working copy?
+    <ul>
+
+      <li>If you are using svn, you can do a "svn up".</li>
+    </ul>
+  </li>
+
+  <br>
+
+  <li>I get a "timeout" message when I try to download/update
+  the svn repository.
+    <ul>
+      <li>Sometimes the servers at SourceForge.net are very busy. There's no way around it: just try again. svn will take up where it left off in the previous attempt.
+      </li>
+    </ul>
+  </li>
+
+  <br>
+
+  <li><a name="cygwin">What are the limitations/hacks if I am using
+  cygwin?</a></li>
+  <ul>
+    <li>Make sure that you install "svn" when you install
+    cygwin. If you do not want to go through the list of packages
+    trying to decide what you need, installing everything is a good
+    solution.
+    </li>
+    <li>Cygwin does not define a home directory, which is used by
+    svn. You have to explicitly define it. You are better off creating
+    an environment variable HOME, which will be used by every cygwin
+    window that you open. Follow the instructions below to create this
+    variable on Windows 2000.
+    <ul>
+
+	<li>Assume your userid is "johndoe", and you created a
+	directory named "/home/johndoe" in the cygwin environment
+        </li>
+        <li>Right click on the "My Computer" icon
+	</li>
+	<li>On the menu, click on "Properties"
+	</li>
+	<li>Click the "Advanced" tab
+	</li>
+	<li>Select "Environment Variables"
+	</li>
+	<li>Click "New" on the "User variables for johndoe" box
+	</li>
+
+	<li>On "Variable Name", type "HOME"
+	</li>
+	<li>On "Variable Value", type "c:\cygwin\home\johndoe"
+	</li>
+    </ul>
+    When you start a new cygwin window, if you type "echo $HOME", you
+    should get "/home/johndoe".
+    </li>
+    <li>Handling absolute paths: Cygwin interprets directory paths in
+    a unix-like way, relative to its own "root" directory (which
+    cygwin sees as "/" but Windows sees as "c:\cygwin"). However, the
+    Java platform interprets directory paths via the operating
+    system. Therefore, absolute paths, such as "/lab/speech", will be
+    interpreted differently by cygwin and by the Java platform. One
+    workaround is to keep the absolute path in Windows (e.g.
+    "c:\lab\") and create a link, in cygwin, from that location (such
+    as "ln -s /cygdrive/c/lab /lab"). If you use absolute paths to
+    identify data location and the directories are not setup this way,
+    you may encounter error messages such as:
+    </li>
+    <pre>
+d:\work\sphinx4&gt;ant clean 
+/c: Can't open /c: No such file or directory 
+</pre>
+    <li>Handling DOS 8.3 filename format: Since cygwin deals with unix
+    and DOS filename formats at the same time, filenames in different
+    files (e.g., build.xml, .props file) have different
+    requirements. Paths interpreted directly by cygwin can be as long
+    as you want. Paths passed to the program, though, conform to the
+    8.3 convention of DOS filenames. Therefore you have to define the
+    path to, say, junit as something like
+    /lab/speech/ThirdP~1/junit3.7, since this string is passed from
+    the environment to the Java code to the OS. </li>
+  </ul>
+ </ol>
+</ul>
+
+<hr>
+
+
+<hr>
+
+
+<h2>EvalDictator in Detail</h2>
+  <ul>
+  <li>Under construction.
+  </li>
+
+<br>&nbsp;
+
+
+
+<hr>
+
+Copyright 1999-2006 Carnegie Mellon University.<br>
+Portions Copyright 2002-2004 Sun Microsystems, Inc.<br>
+Portions Copyright 2002-2004 Mitsubishi Electric Research Laboratories.<br>
+All Rights Reserved.  Usage is subject to 
+<a href="license.terms">license terms</a>.
+
+</font>
+</body>
+</html>
