@@ -151,7 +151,7 @@ extern "C" {
 /** Upper limit of the words of Sphinx 3.X */
 #define LM_LEGACY_CONSTANT      BAD_S3LMWID          /**< =65535 (~65k), this is introduced 
 							since 1996 when Ravi first wrote Sphinx 3.0. It
-							haunted us since. 
+							was with us since. 
 						     */
 
 #define LM_SPHINX_CONSTANT      BAD_S3LMWID32      /**< (4 billion), ARCHAN: this is introduced by in Sphinx 3.6
@@ -159,18 +159,94 @@ extern "C" {
 						      this constant is that it is much hard to detect byte-swapping problem.
 						      in general. Also, if the world has more than 10000 cities, each has 1 million
 						      roads name. We are stuck in this case. I assume this will happen in 
-						      3001. 
+						      year3001. 
 						   */
 
 
 #define LM_CLASSID_TO_CLASS(m,i)	((m)->lmclass[(i)-LM_CLASSID_BASE])
-#define MIN_PROB_F -99.0
-#define LM_ALLOC_BLOCK 16 
 
-#define LM_NOT_FOUND  -1 /** Constant which indicate an LM couldn't be found */
-#define LM_SUCCESS 1 /** Constant that indicates an operation succeed */
-#define LM_FAIL 0 /** Constant that define an operation failed.  */
+#define MIN_PROB_F       -99.0  /**< The minimum value of probabilities and
+                                   backoff weights. When changing, notice
+                                   that both s2 and s3 may transform this 
+                                   number to very small integer (say -2e-31)
+                                   This will easily cause integer wrap 
+                                   around.  -99 is chosen for that reason. 
+                                */
 
+#define LM_ALLOC_BLOCK      16  /** The number of LMs to allocate at a time.                                    
+                                 */
+
+/**
+   Sucess and error message. 
+ */
+#define LM_SUCCESS           1  /**< Constant that indicates an operation succeed 
+                                 */
+#define LM_FAIL              0  /**< Constant that define an operation failed.  */
+#define LM_NOT_FOUND        -1  /**< Constant which indicate an LM couldn't be 
+                                   found */
+#define LM_OFFSET_TOO_LARGE -2  /**< Constant where the 16 bit LM was
+                                   used, but th tgcount is larger than
+                                   LM_LEGACY_CONSTANT (65535). This
+                                   breaks addressing scheme in the
+                                   current LM.
+                                */
+#define LM_NO_DATA_MARK     -3  /**< When reading text-based LM,
+                                   return thisif we see no data
+                                   mark  */
+#define LM_UNKNOWN_NG       -4  /**< When reading the header of LM, if
+                                   there is unknown K for K-gram */
+#define LM_BAD_LM_COUNT     -5  /**< When reading LM, if count is bad,
+                                   return this msg */
+#define LM_UNKNOWN_WORDS    -6  /**< When an unknown word is found
+                                   during LM readin, return this
+                                   message */
+#define LM_BAD_BIGRAM       -7  /**< A bad bigram, it could be word
+                                   ids larger than # of unigram, it
+                                   could be word id smaller than 0.
+                                   It could also be bigram out of
+                                   bound.
+                                */
+#define LM_BAD_TRIGRAM      -8  /**< A bad trigram, it could be word
+                                   ids larger than # of unigram, it
+                                   could be word id smaller than 0.
+                                   It could also be bigram out of
+                                   bound.
+                                */
+#define LM_BAD_QUADGRAM     -9  /**< (RESERVED BUT NOT USED) A bad
+                                   quadgram (4-gram), it could be word
+                                   ids larger than # of unigram, it
+                                   could be word id smaller than 0.
+                                   It could also be bigram out of
+                                   bound.
+                                */
+#define LM_BAD_QUINGRAM     -10  /**< (RESERVED BUT NOT USED) A bad
+                                    quingram (5-gram), it could be
+                                    word ids larger than # of unigram,
+                                    it could be word id smaller than
+                                    0.  It could also be bigram out of
+                                    bound.  BTW, there is no need to
+                                    remind me the mixed use of
+                                    quadgram and quingram is stupid
+                                    English.  I read Manning and
+                                    Schultze.
+                                 */
+#define LM_BAD_NGRAM       -11  /**< (RESERVED BUT NOT USED) A bad
+                                   n-gram.  generalization of message
+                                   -7 to -10. In our case, we don't
+                                   make the message as specific as
+                                   possible.
+                                 */
+#define LM_TOO_MANY_NGRAM  -12  /**< When reading LM, if the number of
+                                   n-grams is more than the number
+                                   specified header.  return this
+                                   header */
+#define LM_NO_MINUS_1GRAM  -13  /**< When reading n-gram, if the
+                                   corresponding (n-1)-gram doesn't
+                                   exists, return this message. */
+#define LM_FILE_NOT_FOUND  -14  /**< When couldn't find the LM file,
+                                   return this message */
+#define LM_CANNOT_ALLOCATE -15  /**< When cannot allocate tables in LM 
+                                   return this message */
 
 /** Versioning of LM */
 #define LMDMP_VERSIONNULL 0   /**< VERSION 0 is oldest, in the past, we
@@ -192,8 +268,15 @@ extern "C" {
 				     represented by 32 bits data
 				     structure */
 
-#define LMTXT_VERSION 1000 /**< VERSION 1000 is the text-based LM */
-#define LMFST_VERSION 1001 /**< VERSION 1001 is the text-based LM */
+#define LMTXT_VERSION         1000 /**< VERSION 1000 is the text-based LM */
+#define LMFST_VERSION         1001 /**< VERSION 1001 is the FST-based LM */
+#define LMFORCED_TXT32VERSION 1002 /**< VERSION 1002 is the internal version of
+                                      text-based LM. The difference betwwen
+                                      1002 and 1000 is that 1002 will assume
+                                      LM is 32bits.  This fact is used in 
+                                      lm_is32bits(lm)
+                                   */
+
 
 #define NO_WORD	-1
 
@@ -295,7 +378,7 @@ typedef struct {
 } bg_t;
 
 
-/** \structu bg32_t 
+/** \struct bg32_t 
  * \brief A bigram structure which has 32 bits. 
  */
 typedef struct {
@@ -423,12 +506,14 @@ typedef struct {
  * At the same time, one will also have an array of lms (lmset[i]) for 
  * corresponding dict2lm[i]!
  *
- * Of course, having multiple arrays of things will somedays caused problems.  
+ * Of course, having multiple arrays of things will somedays caused
+ * problems.
  *
- * The resolution is that we observed that the dict2lm map mostly changed when the lm 
- * needs to change. Also, the fact that the dictionary pronounciation itself seldom
- * changes. That is partially caused by the fact we don't have too much research on 
- * So at the end, that is why it makes sense to let the lm to own a dict2lm. 
+ * The resolution is that we observed that the dict2lm map mostly
+ * changed when the lm needs to change. Also, the fact that the
+ * dictionary pronounciation itself seldom changes. That is partially
+ * caused by the fact we don't have too much research on So at the
+ * end, that is why it makes sense to let the lm to own a dict2lm.
  * 
  * What if we also allow the dictionary to change? That is a tough
  * question.  In that case perhaps, we should still inventory of sets
@@ -969,17 +1054,24 @@ lm_t * lm_read (
  * If applyweight is 1, then logs3_init must be called before lm_read. 
  * This is usually the case when kb_init is called before the code. 
  *
- * fmt now could be either "TXT", "DMP" or just NULL. If it is NULL,
- * the LM format will be automatically determined.  If it is
- * specified as "TXT" or "DMP", the corresponding lm reader will be
- * called. In such a case, it is important for the users to know
- * what he/she is doing.  (Unfortunately, this is mostly not true.)
+ * fmt now could be either "TXT", "DMP" and "TXT32" or just
+ * NULL. If it is NULL, the LM format will be automatically
+ * determined.  If it is specified as "TXT" or "DMP", the
+ * corresponding lm reader will be called. In such a case, it is
+ * important for the users to know what he/she is doing.
+ * (Unfortunately, this is mostly not true. ) 
+ * In the case of "TXT32", a text LM will be forced to 32bit mode. 
  *
  * ndict is the dictionary size of the application.  This is needed
  * because class-based LM are addressed in the dictionary wid-space
  * instead of lm wid-space. If class-based LM is not used, just set
  * this to zero.
  *
+ * Note: there are two defense mechanisms of lm_read_advance. 
+ * First of all, if no fmt is specified, it will start to read
+ * the lm in the order of DMP->TXT. Second, if txt format
+ * is specified but LM is found to hit the 16bit legacy segments
+ * limit, it will automatically switch to read TXT32 LM
  *
  * @return pointer to LM structure created.
  */

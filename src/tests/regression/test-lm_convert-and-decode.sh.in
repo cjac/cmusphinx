@@ -85,4 +85,19 @@ if(grep "FWDVIT" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
 then echo "TXT LM  -> DECODE test PASSED" ; else \
 echo "TXT LM -> DECODE test FAILED" ; fi
 
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/lm_convert \
+-input @abs_top_srcdir@/model/lm/an4/an4.ug.lm \
+-inputfmt TXT32 \
+-output $tmpdmp \
+> /dev/null 2>&1
+
+lmargs="-lm $tmpdmp"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_decode $margs $lmargs > $tmpout 2>&1
+grep "FWDVIT" $tmpout
+grep "FWDXCT" $tmpout
+
+if(grep "FWDVIT" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1); \
+then echo "LM_CONVERT FRO TXT32 -> DECODE test PASSED" ; else \
+echo "LM_CONVERT FRO TXT32 -> DECODE test FAILED" ; fi
 

@@ -97,11 +97,11 @@ static arg_t arg[] = {
     {"-inputfmt",
      REQARG_STRING,
      "TXT",
-     "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits)"},
+     "Input LM format. TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format bits), TXT32 (ARPA format but force the data structure to represent in 32 bits)."},
     {"-outputfmt",
      ARG_STRING,
      "DMP",
-     "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format 16 bits), DMP32 (Sphinx 3 efficient LM format 32 bits) "},
+     "Output LM format: TXT (ARPA LM Format), DMP (Sphinx 3 efficient LM format bits), DMP32 (Sphinx 3 efficient LM format forced 32 bits)."},
     /* Also FST for AT&T file format but the option is hidden because it
        is not well tested */
     /* Also DMP32 for LM which has 32 bits. This is yet another option I

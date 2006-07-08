@@ -170,8 +170,22 @@
 
 /*ARCHAN, 20041112: NOP, NO STATIC VARIABLES! */
 
-extern lm_t *lm_read_txt(const char *filename, const int lminmemory
-                                              /**< Whether using in memory LM */
+extern lm_t *lm_read_txt(const char *filename, /**< The file name */
+			 const int lminmemory,  /**< Whether using in memory LM */
+			 int *err_no, /**< Input/Output: Depends on the problem that LM
+					reading encounters, it could be errors
+					from -2 (LM_OFFSET_TOO_LARGE) to
+					-15 (LM_CANNOT_ALLOCATE).  Please checkout
+					lm.h for details. 
+				     */
+			 int32 isforced32bit /** Input: normally, we should let lm_read_txt
+						 to decide whether a file is 32 bit or not. 
+						 When the lm_read_txt couldn't decide that before
+						 reading or if more specificially when we hit
+						 the LM segment size problems. Then this bit
+						 will alter the reading behavior to 32 bit. 
+					     */
+
     );
 
 extern lm_t *lm_read_dump(const char *file,  /**< The file name*/
@@ -205,11 +219,18 @@ int32 lm_write_att_fsm(lm_t * lm, /**< the languauge model pointer */
     );
 
 
-
+/**
+   The function to return whether an LM should be 32bit or not.
+   It is decided by whether we are using 32bit mode DMP.  Or whether
+   it is LMTXT_VERSION but with more than 0xffff words.  The final
+   criterion is when LMFORCE_TXT32VERSION. 
+ */
 int32
 lm_is32bits(lm_t * lm)
 {
     if (lm->version == LMDMP_VERSION_TG_32BIT)
+        return 1;
+    if (lm->version == LMFORCED_TXT32VERSION)
         return 1;
     if (lm->version == LMTXT_VERSION && lm->n_ug > LM_LEGACY_CONSTANT)
         return 1;
@@ -556,6 +577,7 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
 {
     int32 i, u;
     lm_t *lm;
+    int32 err_no;
 
     if (!file)
         E_FATAL("No LM file\n");
@@ -579,7 +601,7 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
         lm = lm_read_dump(file, (int32) cmd_ln_int32("-lminmemory"));
         if (lm == NULL) {
             E_INFO
-                ("In lm_read, LM is not a DMP file. Trying reading it as a txt file\n");
+                ("In lm_read, LM is not a DMP file. Trying to read it as a txt file\n");
 
             /* HACK !!! */
             if (cmd_ln_int32("-lminmemory") == 0) {
@@ -587,20 +609,48 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
                     ("LM is not a dump file, so it is assumed to be a text file. However, disk-based LM is not working for -lminmemory=0 at this point (i.e. LM has to be loaded into the memory). \n");
                 return NULL;
             }
-            lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"));
+            lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"),&err_no,0 /* Not forcing 32bit LM */
+			     );
             if (lm == NULL) {
-                E_INFO("In lm_read, LM is also not in text format.\n");
-                return NULL;
-            }
+	        if(err_no==LM_OFFSET_TOO_LARGE) {
+		    E_INFO("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
+
+		    /* This only happens when both TXT & DMP format reading have problems */
+		    lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"),&err_no,1 /* Now force 32bit LM*/
+				 );
+		    if(lm == NULL){
+		        E_INFO("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
+			return NULL;
+		    }
+		}
+		else {
+		    E_INFO("Lm is both not DMP and TXT format\n");
+		    return NULL;
+		}
+            }	    
         }
     }
     else if (!strcmp(fmt, "TXT")) {
-        lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"));
+        lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"),&err_no,0 /* Not forcing 32bit LM */
+			 );
         if (lm == NULL) {
-            E_INFO
-                ("In lm_read, a text format reader is called, but lm cannot be read, Diagnosis: LM is in wrong format or not enough memory.\n");
-            return NULL;
+	    if(err_no==LM_OFFSET_TOO_LARGE) {
+	        E_INFO("In lm read, LM is not a DMP, it is likely to be a ARPA format file. But the LM hits the limit of legacy 16 bit format. Force LM reading to 32bit now\n");
+
+		/* This only happens when both TXT & DMP format reading have problems */
+		lm = lm_read_txt(file, cmd_ln_int32("-lminmemory"),&err_no,1 /* Now force 32bit LM*/
+				 );
+		if(lm == NULL){
+		    E_INFO("Panic: In lm_read, LM is not DMP format, it is likely to be ARPA format and hits legacy 16 bit format problem. But when forcing to 32bit LM, problem still couldn't be solved.\n");
+		    return NULL;
+		}
+	    }
+	    else {
+	      E_INFO("LM is not in TXT format\n");
+	        return NULL;
+	    }
         }
+
     }
     else if (!strcmp(fmt, "DMP")) {
         lm = lm_read_dump(file, cmd_ln_int32("-lminmemory"));
@@ -609,6 +659,14 @@ lm_read_advance(const char *file, const char *lmname, float64 lw,
                 ("In lm_read, a DMP format reader is called, but lm cannot be read, Diagnosis: LM is corrupted or not enough memory.\n");
             return NULL;
         }
+    }
+    else if (!strcmp(fmt, "TXT32")) {
+        lm = lm_read_txt(file,cmd_ln_int32("-lminmemory"),&err_no,1); 
+	if (lm == NULL) {
+            E_INFO
+                ("In lm_read, failed to read lm in txt format. .\n");
+	    return NULL;
+	}
     }
     else {
         E_INFO("Unknown format (%s) is specified\n", fmt);
@@ -723,7 +781,7 @@ lm_write_advance(lm_t * lmp, const char *outputfn, const char *filename,
 
         if (lm_is32bits(lmp)) {
             E_INFO
-                ("16 bit DMP format is specified but we there are more than %d words\n",
+                ("16 bit DMP format is specified but LM is decided to be 32 bit mode. (May be it has segment size which is large than 64k or programmer forced it).\n",
                  LM_LEGACY_CONSTANT);
             E_INFO("Now use 32 bits format.\n");
             return lm3g_dump(outputfn, lmp, filename, 0, 32);
