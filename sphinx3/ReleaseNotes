@@ -1,3 +1,33 @@
+2006-07-07  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+	Sphinx 3.6.2
+	^^^^^^^^^^^^
+	(Corresponds to Sourceforge SVN rev 5816.)
+	Sphinx 3.6.2 fixed another issue of when 32bit LM; It now allows
+	the use of LM with tg_seg size more than 0xffff.  It also included
+	a completed but un-tested version of full-covariance modeling. 
+
+	Several bug fixes:
+
+	(rev 5814) When decode,decode_anytopo or lm_convert were used
+	to read in LM with unigram less than 0xffff words, current
+	code will assume the LM is in 16 bit mode.  Now lm_convert
+	will back-off to use 32 bit mode to read in.  Users, except
+	those who happened to read this message, will have no idea this
+	happens. 
+	(rev 5794) Fixed a compile warning which also happened to be
+	a bug.  A 16 bit LM was used in the 32 bit LM.  This will cause
+	problem when users put <s> and </s> outside the range of 0xffff. 
+
+	Developing Features:
+	(rev 5757:5761,5763,5771,5774:5776) Incorporated full covariance
+	matrix as in acoustic modeling. 
+	(rev 5766) Fixed front-end issues, now sphinx 3.6 could accept
+	feature that was accepted in Sphinx 3.0 (or archive_s3)
+
+	For Developers:
+	(rev 5785, 5786, 5791 and 5792) sphinx3 is now indented using 
+	the scheme originally designed for PocketSphinx and sphinxbase. 	
+
 2006-07-02  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 
 	Sphinx 3.6.1
