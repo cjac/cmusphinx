@@ -2,20 +2,20 @@
 
 <!--
 
-Copyright 1999-2006 Carnegie Mellon University.  
-Portions Copyright 2002-2004 Sun Microsystems, Inc.  
+Copyright 1999-2006 Carnegie Mellon University.
+Portions Copyright 2002-2004 Sun Microsystems, Inc.
 Portions Copyright 2002-2004 Mitsubishi Electric Research Laboratories.
 All Rights Reserved.  Use is subject to license terms.
 
 See the file "license.terms" for information on usage and
-redistribution of this file, and for a DISCLAIMER OF ALL 
+redistribution of this file, and for a DISCLAIMER OF ALL
 WARRANTIES.
 
 -->
 
 <html>
 <head>
-  <title>EvalDictator - An audio data collection tool using Sphinx-4</title>
+  <title>EvalDictator - Open Source Dictation using Sphinx-4</title>
 <STYLE TYPE="text/css">
      pre { font-size: medium; background: #f0f8ff; padding: 2mm; border-style: ridge ; color: teal}
      code {font-size: medium; color: teal}
@@ -28,8 +28,7 @@ WARRANTIES.
       <tbody>
         <tr>
 	  <td align="center" width="100%">
-          <h1><i>EvalDictator</i><br><font size="+1">An audio data
-          collection tool using Sphinx-4
+          <h1><i>EvalDictator</i><br><font size="+1">Open Source Dictation using Sphinx-4
           </h1>
 	  </td>
         </tr>
@@ -93,6 +92,7 @@ WARRANTIES.
       </ul>
       <h4>Using an IDE</h4>
       <ul>
+    <li><a href="doc/Eclipse.html">IntelliJ</a></li>
 	<li><a href="doc/Eclipse.html">Eclipse</a></li>
 	<li><a href="doc/NetBeans.html">NetBeans</a></li>
       </ul>
@@ -124,28 +124,33 @@ WARRANTIES.
 <h2>General Information about the EvalDictator</h2>
 <ul>
   <li><a name="what_is_dictator"><b>Introduction</b></a>
-      <p>The EvalDictator .... uses Sphinx-4.
-      </p>
-      <p>Sphinx-4 is a state-of-the-art speech recognition system
-	 written entirely in the Java<sup><font size="-1">TM</font></sup>
-	 programming language.
-         It was created via a joint collaboration between the Sphinx group
-	 at Carnegie Mellon University, Sun Microsystems Laboratories,
-	 Mitsubishi Electric Research Labs (MERL), and Hewlett Packard (HP),
-	 with contributions from the University of California at Santa
-         Cruz (UCSC) and the Massachusetts Institute of Technology
-         (MIT).
-
+  <p>
+EvalDictor.org is an effort to build a very simple open source dictation tool. It is aimed at computer users who wish to enter text in their native language, where speech is preferred to the standard keyboard.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan, India) and countless smaller ethnic groups have this problem.
+<p>
+EvalDictator is free and open source with an "Apache" style licence.  The code may be used in proprietary products, even if the products are not open source.  The source code will be publicly available on SourceForge.net.  EvalDictator will contain no patented IP.
+<p>
+The acoustic and language models are also free, however, they need not be built from publicly available speech data, or be built by publicly available tools.  In this way companies and researchers can donate "eval" models to the project while keeping the data and tools proprietary.
+<p>
+The goal is to eventaully make a tool that is "useful enough" to be interesting, while also being trivial to install and use-- a Dictation system which many people will want to Evaluate.
   </li>
   <br>&nbsp;
   <li><a name="capabilities"><b>Capabilities</b></a>
-
-      <p>List of capabilities under construction.
-
-
-      <p>
-      (<b>NOTE:</b> The links in this section point to local files created by
-      javadoc. If they are broken, please follow the instructions on 
+<p>
+Current there is a complete working prototype code named "HumbleBeginnings".
+<p>
+HumbleBeginnings is written in 100% Java, and constists of two parts: the Dictator and the Collector.
+<p>
+The Dictator is a desktop application that performs Dictation via automatic speech recognition.  It is based on the Sphinx4 recognizer from Carnegie Mellon.  Sphinx4 is a state-of-the-art large vocabulary recognizer.  The accuracy is as good as anything, and the size and speed are sufficient for a modern PC.  It currently supports English, Arabic and Mandarin using the Wall Street Journal and GALE models.
+<p>
+The Dictator UI is very simple.  It is merely a text pane, where the user can insert text by speaking.  The user simply selects the insert position with the mouse, clicks and holds while talking, and the text is inserted.  The complete text is automatically placed on the clipboard.  The user then goes to his/her favorite application (e.g. Word, Excel, OpenOffice), pastes the text and completes editing.
+<p>
+The Collector is a server based web application.  Dictator users are encouraged to "dontate their voice" to the project in order to improve the models.
+The Collector is used to collect this speech data.  In the future, the Collector may reward "donators" with custom models adapted to their voice.
+<p>
+Currently, HumbleBeginnings is very early in its development.  Dictator has very poor performance-- it is big, slow, inaccurate, and also has no command and control, no editing, no adaptation, and no vocabulary editor.  The Collector infrastructure is not yet ready to collect a large amount of data.  The team is discussing what techniques and features need to be implemented.
+<p>
+(<b>NOTE:</b> The links in this section point to local files created by
+      javadoc. If they are broken, please follow the instructions on
       <a href="#create_javadocs">Creating Javadocs</a> to create these links.)
   </li>
 
@@ -161,12 +166,12 @@ WARRANTIES.
 
       <p>EvalDictator has been built and tested on the Solaris<sup> <font
       size="-1">TM</font></sup> Operating Environment, Mac OS X, Linux
-      and Win32 operating systems. Running, building, and testing 
-      EvalDictator requires additional software. Before you start, 
+      and Win32 operating systems. Running, building, and testing
+      EvalDictator requires additional software. Before you start,
       you will need the following software available on your machine.</p>
 
 <ul>
-  <li><b>Java 2 SDK, Standard Edition 5.0</b> or better. 
+  <li><b>Java 2 SDK, Standard Edition 5.0</b> or better.
       Go to <a href="http://java.sun.com">java.sun.com</a>,
       and select "J2SE". At the time of writing, the latest release
       version is 5.0 (also referred to as 1.5.0), which is the one we
@@ -176,7 +181,7 @@ WARRANTIES.
   <br>
 
   <li><b>Ant 1.6.0</b> or better, available at <a
-  href="http://ant.apache.org">ant.apache.org</a>. The site has a manual 
+  href="http://ant.apache.org">ant.apache.org</a>. The site has a manual
   with instructions on how to download, install, and use ant.  You
   will only need ant if you wish to build EvalDictator from the source
   distribution.</li>
@@ -236,16 +241,16 @@ WARRANTIES.
 <br>
 
   <li><a name="how_build"><b>Building EvalDictator</b></a>
-      
-      The software required for building EvalDictator are 
-      listed in the <a href="#download_and_install">Required Software</a> 
+
+      The software required for building EvalDictator are
+      listed in the <a href="#download_and_install">Required Software</a>
       section.
       </p>
       <p>
-      To build EvalDictator, at the command prompt change to 
-      the dictator build directory (usually, a simple 
+      To build EvalDictator, at the command prompt change to
+      the dictator build directory (usually, a simple
       "cd tools/dictator/build" will do). Set your <code>JAVA_HOME</code>,
-      <code>ANT_HOME</code> and <code>PATH</code> environment variables 
+      <code>ANT_HOME</code> and <code>PATH</code> environment variables
       as described above. Then type the following:
       </p>
       <pre>ant</pre>
@@ -264,7 +269,7 @@ WARRANTIES.
 
 <li><a name="create_javadocs"><b>Creating Javadocs</b></a>
 
-To build the 
+To build the
 javadocs, go to the dictator build directory (tools/dictator/build), and type:
 </p>
 <pre>ant javadoc</pre>
@@ -299,7 +304,7 @@ javadocs, go to the dictator build directory (tools/dictator/build), and type:
     </ul>
   </li>
 
-  <br>  
+  <br>
 
   <li>How can I update the code in my current working copy?
     <ul>
@@ -370,8 +375,8 @@ javadocs, go to the dictator build directory (tools/dictator/build), and type:
     you may encounter error messages such as:
     </li>
     <pre>
-d:\work\sphinx4&gt;ant clean 
-/c: Can't open /c: No such file or directory 
+d:\work\sphinx4&gt;ant clean
+/c: Can't open /c: No such file or directory
 </pre>
     <li>Handling DOS 8.3 filename format: Since cygwin deals with unix
     and DOS filename formats at the same time, filenames in different
@@ -406,7 +411,7 @@ d:\work\sphinx4&gt;ant clean
 Copyright 1999-2006 Carnegie Mellon University.<br>
 Portions Copyright 2002-2004 Sun Microsystems, Inc.<br>
 Portions Copyright 2002-2004 Mitsubishi Electric Research Laboratories.<br>
-All Rights Reserved.  Usage is subject to 
+All Rights Reserved.  Usage is subject to
 <a href="license.terms">license terms</a>.
 
 </font>
