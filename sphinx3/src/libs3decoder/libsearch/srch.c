@@ -261,6 +261,10 @@ srch_mode_str_to_index(const char *mode_str)
         return OPERATION_DEBUG;
     }
 
+    if (!strcmp(mode_str, "OP_DO_NOTHING")){
+        return OPERATION_DO_NOTHING;
+    }
+
     E_WARN("UNKNOWN MODE NAME %s\n", mode_str);
     return -1;
 
@@ -292,14 +296,21 @@ srch_mode_index_to_str(int32 index)
     else if (index == OPERATION_DEBUG) {
         str = ckd_salloc("OP_DEBUG");
     }
+    else if (index == OPERATION_DO_NOTHING) {
+        str = ckd_salloc("OP_DO_NOTHING");
+    }
     return str;
 }
 
 void
 srch_assert_funcptrs(srch_t * s)
 {
+    assert(s->srch_init != NULL);
+    assert(s->srch_uninit != NULL);
+    assert(s->srch_utt_begin != NULL);
+    assert(s->srch_utt_end != NULL);
 
-    if (s->srch_decode != NULL) {       /* Provide that the implementation does
+    if (s->srch_decode == NULL) {       /* Provide that the implementation does
                                            not override the search abstraction
                                            assert every implementation pointers
                                          */
@@ -310,7 +321,6 @@ srch_assert_funcptrs(srch_t * s)
         assert(s->srch_set_lm != NULL);
         assert(s->srch_add_lm != NULL);
         assert(s->srch_delete_lm != NULL);
-        assert(s->srch_compute_heuristic != NULL);
 
         assert(s->srch_gmm_compute_lv1 != NULL);
 
@@ -365,20 +375,23 @@ srch_assert_funcptrs(srch_t * s)
 
         }
         assert(s->srch_frame_windup != NULL);
+#if 0 /* compute_heuristic is marginal so don't take care of it now */
         assert(s->srch_compute_heuristic != NULL);
+#endif
         assert(s->srch_shift_one_cache_frame != NULL);
         assert(s->srch_select_active_gmm != NULL);
 
         assert(s->srch_utt_end != NULL);
+#if 0
         assert(s->srch_gen_hyp != NULL);
         assert(s->srch_dump_vithist != NULL);
-
-#if 0                           /* Not asserts for everything now, mainly because the FST mode
-                                   is not generating dag at this point */
+	/* Not asserts for everything now, mainly because the FST mode
+	   is not generating dag at this point */
         assert(s->srch_gen_dag != NULL);
 
 #endif
     }
+      
 }
 
 void
@@ -520,9 +533,6 @@ srch_init(kb_t * kb, int32 op_mode)
         s->srch_propagate_graph_wd_lv1 =
             &srch_debug_propagate_graph_wd_lv1;
 
-        s->srch_eval_beams_lv2 = &srch_debug_eval_beams_lv2;
-
-
         s->srch_one_srch_frame_lv2 = &srch_FLAT_FWD_srch_one_frame_lv2;
         s->srch_frame_windup = &srch_FLAT_FWD_frame_windup;
         s->srch_shift_one_cache_frame =
@@ -642,6 +652,8 @@ srch_init(kb_t * kb, int32 op_mode)
         s->srch_utt_begin = &srch_debug_begin;
         s->srch_utt_end = &srch_debug_end;
         s->srch_set_lm = &srch_debug_set_lm;
+        s->srch_add_lm = &srch_debug_add_lm;
+        s->srch_delete_lm = &srch_debug_delete_lm;
 
         s->srch_select_active_gmm = &srch_debug_select_active_gmm;
         s->srch_gmm_compute_lv1 = &srch_debug_gmm_compute_lv1;
@@ -669,6 +681,13 @@ srch_init(kb_t * kb, int32 op_mode)
         s->srch_gen_dag = &srch_debug_gen_dag;
         s->srch_bestpath_impl = &srch_debug_bestpath_impl;
         s->srch_dag_dump = &srch_debug_dag_dump;
+    }
+    else if (op_mode == OPERATION_DO_NOTHING) {
+        s->srch_init   = &srch_do_nothing_init;
+        s->srch_uninit   = &srch_do_nothing_uninit;
+        s->srch_utt_begin   = &srch_do_nothing_begin;
+        s->srch_utt_end   = &srch_do_nothing_end;
+        s->srch_decode = &srch_do_nothing_decode;
     }
     else {
         E_ERROR("Unknown mode %d, failed to initialized srch_t\n",

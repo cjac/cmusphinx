@@ -199,12 +199,17 @@
 /* Mode 5 */
 #include "srch_word_switch_tree.h"
 
+/* Mode 1368*/
+#include "srch_do_nothing.h"
+
+/* Mode 1369*/
+#include "srch_debug.h"
+
 
 #include "dag.h"
 
 
 #include "gmm_wrap.h"
-#include "srch_debug.h"
 #include "srch_output.h"
 
 #ifndef _SRCH_H_
@@ -213,14 +218,124 @@
 #define SRCH_SUCCESS 0
 #define SRCH_FAILURE 1
 
-#define OPERATION_ALIGN 0
-#define OPERATION_ALLPHONE 1
-#define OPERATION_GRAPH 2
-#define OPERATION_FLATFWD 3
-#define OPERATION_TST_DECODE 4
-#define OPERATION_WST_DECODE 5
-#define OPERATION_DEBUG 1369  /** ARCHAN 20050329: 1369 has no meaning
-                                  at all, I just love to use it. */
+/**
+   The many operation modes of srch.c. 
+   A note at 20060708
+
+   Mode 0-5 are working modes.  Not all of them are functioning as at
+   but we have plans to migrate to that.
+
+   Just for the sake of it. mode 6-10 are assigned to 5 working
+   programmers of CMU Sphinx. We don't expect too much from them. So
+   let's see how it goes.
+
+   Mode 88 is also assigned but this is just for the sake of it. 
+ */
+
+#define OPERATION_ALIGN         0 /**< (Reserved but not used) force
+				     alignment mode. It was assigned
+				     long time ago to Yitao Sun but we
+				     all sorta forgot it.
+				     sphinx3_align seems to work fine
+				     so no one wants to touch it for
+				     the moment.
+				  */
+#define OPERATION_ALLPHONE      1 /**< (Reserved but not used) phoneme
+				     recognition. It was assigned long
+				     time ago to Dave Huggins-Daines
+				     but we sorta forget it. 
+				    */
+#define OPERATION_GRAPH         2 /**< FSG mode, adapated from sphinx 2 
+				     specify -fsg in the current decode
+				     interface should work. 
+				   */
+#define OPERATION_FLATFWD       3 /**< Flat-lexicon decoding mode 
+				     In CMU, it is well-used as a
+				     research tool for acoustic and 
+				     language modeling research. Its
+				     shell, decode_anytopo is still
+				     one of the standard executables. 				     
+				   */
+#define OPERATION_TST_DECODE    4 /**< Tree-lexicon decoding with
+				     time-switching tree copies
+				     the current default.  Or what I 
+				     called the "magic wheel" search. 
+				     It is a practical and useful	
+				     search techniques. 				    
+				   */
+#define OPERATION_WST_DECODE    5 /**< (Reserved but not used)
+				     Tree-lexicon decoding with
+				     word-switching tree copies.  Work
+				     for bigram with trigram
+				     rescoring.  Not well developed
+				     enough to be deployed.				     
+				   */
+#define OPERATION_EVANDRO_MODE  6 /**< (Reserved but not used) Dr. 
+				     Evandro Gouvea is a very defensive
+				     programmer. He is very clever and
+				     has strong mathematical
+				     background.  I would guess his
+				     search code would be very solid.
+				   */
+#define OPERATION_DAVID_MODE    7 /**< (Reserved but not used) It is
+				     not an illusion that David
+				     Huggins-Daines is productive. 
+				     The reason he hasn't touched 
+				     the search part yet is because
+				     he hasn't read Richard Bellman's
+				     "Dynamic Programming" and Arthur
+				     Chan's C++ implementation of 
+				     arec.  He will definitely show
+				     his super-fast speed in search 
+				     implementation as well. 
+				   */
+#define OPERATION_ARTHUR_MODE   8 /**< (Reserved but not used) Arthur
+				     Chan is the guy who think of this
+				     search mode thing. He wrote mode
+				     5. Just like plan 9.  It is quite
+				     a failure.  Though, this guy is
+				     not that easy-going, he must have
+				     think of something this time.
+				   */
+#define OPERATION_YITAO_MODE    9 /**< (Reserved but not used) Yitao Sun
+				     works mainly on grammar, CFG, FSG
+				     and stuffs.  Likely his search will
+				     also reflect his research direction. 
+				   */
+#define OPERATION_RAVI_MODE    10 /**< (Reserved but not used) Mosur
+				     Ravishankar works out both s2 and
+				     s3 He is also the original author
+				     of mode 2, 3 and 4. (In practice,
+				     Arthur Chan's mode 5 really
+				     couldn't match mode 4 at all.) 
+				     He always has a lot of
+				     interesting ideas in his mind. Likely
+				     it might think of interesting search
+				     similar to mode 4. 
+				   */
+#define OPERATION_STEVE_MODE   88 /**< (Reserved but not used) Steven
+				     Lee is the guy who work out the
+				     a-star search for the MIT
+				     segmental recognizer.  He yielded
+				     to Arthur Chan and become one of
+				     the developers of CMU Sphinx.
+				     But his heart is still with MIT,
+				     MIT SLS.  Likely he will still 
+				     be happy that 88 is a very lucky
+				     number in Chinese. 
+				  */
+#define OPERATION_DO_NOTHING 1368 /**< Do nothing mode. as it means
+				     it does nothing. It is used as
+				     one of the function test of the
+				     search operator. 
+				  */
+
+#define OPERATION_DEBUG      1369 /**< Debug mode, it dumps the
+				     internal function call in srch.c
+				     layer.  ARCHAN 20050329: 1369 has
+				     no meaning at all, I just love to
+				     call it in that way.
+				  */
 
 #define GRAPH_STRUCT_FLAT 0
 #define GRAPH_STRUCT_TST 1

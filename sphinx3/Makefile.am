@@ -100,6 +100,8 @@ test-full : \
 	test-decode-mode3-mulmpx \
 	test-decode-mode3-mpx \
 	test-decode-2ndstage \
+	test-decode-mode1368 \
+	test-decode-mode1369 \
 	test-lm_convert-and-decode \
 	test-dp \
 	test-align \
@@ -138,6 +140,8 @@ test-decode_anytopo \
 test-decode_anytopo-mllr \
 test-decode-2ndstage \
 test-decode \
+test-decode-mode1368 \
+test-decode-mode1369 \
 test-decode-simple \
 test-decode-noncomp \
 test-decode-lts \
