@@ -76,6 +76,7 @@ pkginclude_HEADERS = adaptor.h			\
     s3types.h					\
     search.h					\
     sort.h					\
+    srch_do_nothing.h				\
     srch_debug.h				\
     srch_flat_fwd.h				\
     srch_fsg.h					\

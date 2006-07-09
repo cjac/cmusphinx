@@ -86,6 +86,20 @@ srch_debug_set_lm(void *srch, const char *lmname)
 }
 
 int
+srch_debug_add_lm(void *srch, lm_t *lm, const char *lmname)
+{
+    E_INFOCONT("SEARCH DEBUG: MODE ADD LM\n");
+    return SRCH_SUCCESS;
+}
+
+int
+srch_debug_delete_lm(void *srch, const char *lmname)
+{
+    E_INFOCONT("SEARCH DEBUG: MODE DELETE LM\n");
+    return SRCH_SUCCESS;
+}
+
+int
 srch_debug_gmm_compute_lv1(void *srch, float32 * feat, int32 cache_idx,
                            int32 wav_idx)
 {

@@ -21,6 +21,7 @@ libsearch_la_SOURCES = \
 	srch_align.c \
 	srch_allphone.c \
 	srch_debug.c \
+	srch_do_nothing.c \
 	srch_flat_fwd.c \
 	srch_fsg.c \
 	srch_output.c \
