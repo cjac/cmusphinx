@@ -54,7 +54,7 @@ void
 ug_write(FILE * fp, ug_t * ug)
 {
     fprintf(fp, "UG dictwid %d, prob %f, bowt %f, firstbg %d\n",
-            ug->dictwid, ug->prob, ug->bowt, ug->firstbg);
+            ug->dictwid, ug->prob.f, ug->bowt.f, ug->firstbg);
     fflush(fp);
 }
 
