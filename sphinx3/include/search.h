@@ -246,6 +246,9 @@ double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
 #endif
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

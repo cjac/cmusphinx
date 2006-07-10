@@ -357,6 +357,9 @@ int32 mgau_mean_reload(mgau_model_t *g,  /**< In/Out : The mean which will be re
 		       char* mean_file_name /**< In: The mean files */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

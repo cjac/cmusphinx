@@ -91,6 +91,9 @@ int32 str2words (char *line,	/**< In: line to be parsed */
 				   The array must be allocated by the caller */
 		 int32 n_wptr	/**< In: Size of wptr array */
     );
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

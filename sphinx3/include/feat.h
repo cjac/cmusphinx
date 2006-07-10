@@ -312,6 +312,9 @@ void feat_free (feat_t *f /**< In: feat_t */
  */
 void feat_report(feat_t *f /**< In: feat_t */
     );
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

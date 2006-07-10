@@ -95,6 +95,9 @@ void cmn_prior(float32 **incep, /**< In/Out: mfc[f] = mfc vector in frame f*/
 	       int32 endutt    /**< Flag indicating end of utterance */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

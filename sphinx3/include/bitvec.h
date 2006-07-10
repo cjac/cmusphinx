@@ -157,6 +157,9 @@ typedef uint32 *bitvec_t;
 int32 bitvec_count_set (bitvec_t vec,	/* In: Bit vector to search */
 			int32 len);	/* In: Lenght of above bit vector */
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

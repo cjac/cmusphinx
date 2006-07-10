@@ -247,6 +247,9 @@ void __myfree__ (char *elem, int32 elemsize, char *file, int32 line);
 #endif
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

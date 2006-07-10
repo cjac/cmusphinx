@@ -376,6 +376,9 @@ void pl_computePhnHeur(mdef_t* md, /**< Input: a model definition file*/
 		       int32 win_efv   /**< Input: The effective window size*/
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

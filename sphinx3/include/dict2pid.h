@@ -296,6 +296,9 @@ s3cipid_t* dict2pid_get_rcmap(dict2pid_t *d2p,  /**< In: a dict2pid */
 			      dict_t *dict      /**< In: a dictionary */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

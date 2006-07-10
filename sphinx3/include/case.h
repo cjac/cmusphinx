@@ -119,6 +119,9 @@ void lcase(char *str);
 int32 strcmp_nocase (const char *str1, const char *str2);
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

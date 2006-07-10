@@ -78,6 +78,9 @@ extern "C" {
 /* To remove resource (memory) usage restrictions */
 void unlimit ( void );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

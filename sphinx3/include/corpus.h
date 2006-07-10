@@ -321,6 +321,9 @@ void ctl_outfile (char *file,	/**< Out: Generated filename (allocated by caller)
 		  char *uttid	/**< In: Utterance ID (derived from the control file */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

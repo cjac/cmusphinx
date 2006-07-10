@@ -340,6 +340,9 @@ vector_gautbl_eval_logs3 (vector_gautbl_t *gau,	/**< In: Table of Gaussians */
 					   score[offset..offset+count-1] are updated. */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

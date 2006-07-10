@@ -189,6 +189,9 @@ int vote (int *window, /**< A window of input */
 
 #endif /*__FRAME_CLASSIFIER__*/
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif 

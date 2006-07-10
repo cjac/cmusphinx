@@ -144,6 +144,9 @@ int32 interp_all (interp_t *ip,		/**< In: Interpolation weights parameters */
 		  int32 n_ci_sen	/**< In: see senscr above */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -232,6 +232,9 @@ void gauden_dump_ind (const gauden_t *g,  /**< In: Gaussian distribution g*/
 		      int senidx          /**< In: The senone index of the Gaussian */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -155,6 +155,9 @@ int32 gs_mgau_shortlist(gs_t *gs,  /**< gaussain selector */
 			int32 bst_codeid /**< best code indx */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

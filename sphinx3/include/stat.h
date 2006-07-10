@@ -163,6 +163,9 @@ void stat_report_corpus(
     );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

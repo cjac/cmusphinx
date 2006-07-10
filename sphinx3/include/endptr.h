@@ -155,6 +155,9 @@ float endptr_frame2secs_end (fe_t *FE, /**<A FE structure */
 
 #endif /*__END_POINTER__*/
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif 

@@ -90,6 +90,9 @@ void path2basename (char *path, char *base);
  */
 void strip_fileext (char *file, char *root);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

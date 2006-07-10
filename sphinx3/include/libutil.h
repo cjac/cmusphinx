@@ -132,6 +132,9 @@ extern "C" {
 #endif
 #define PI		M_PI
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

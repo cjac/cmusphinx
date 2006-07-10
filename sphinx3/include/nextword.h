@@ -95,6 +95,9 @@ nextword (char *line,		/**< Input: String being searched for next word */
 				   delimiter, preserving the original string.) */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -215,6 +215,9 @@ int32 host_pclk (int32 dummy);
  */
 int32 host_endian ( void );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -248,6 +248,9 @@ int32 subvq_mgau_eval (mgau_model_t *g, /**< In: Gaussian */
 		       int32 *active /**< In:Active list of mixture */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

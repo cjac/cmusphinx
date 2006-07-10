@@ -195,6 +195,9 @@ void senone_eval_all (senone_t *s,		/**< In: Senone structure */
 						   score for senone i */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

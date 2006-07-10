@@ -92,6 +92,9 @@ extern "C" {
 
 extern arg_t arg_def[];
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -246,6 +246,9 @@ gnode_t *gnode_free(gnode_t *gn,
  */
 gnode_t *glist_tail (glist_t g);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

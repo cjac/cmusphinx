@@ -427,6 +427,9 @@ void ld_read_lm(live_decoder_t *_decoder,
 		const char *lmname
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

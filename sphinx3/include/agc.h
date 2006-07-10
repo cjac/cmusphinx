@@ -94,6 +94,9 @@ void agc_max (float32 **mfc,	/**< In/Out: mfc[f] = cepstrum vector in frame f */
 	      int32 n_frame	/**< In: #frames of cepstrum vectors supplied */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -224,6 +224,9 @@ void bio_verify_chksum (FILE *fp,	/**< In: File to read */
 			uint32 chksum	/**< In: Value to compare with checksum in file */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

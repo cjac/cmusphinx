@@ -184,6 +184,9 @@ void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
 void lmclass_dump (lmclass_t cl, FILE *fp);
 void lmclass_set_dump (lmclass_set_t set, FILE *fp);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

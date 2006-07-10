@@ -172,6 +172,9 @@ typedef union anytype_s {
 
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

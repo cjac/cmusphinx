@@ -163,6 +163,9 @@ int32 stat_retry (char *file, struct stat *statbuf);
 
 int32 stat_mtime (char *file);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

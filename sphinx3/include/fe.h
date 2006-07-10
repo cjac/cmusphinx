@@ -439,6 +439,9 @@ int32 fe_readblock_spch(param_t *P, /**< In: a parameter structure */
 int32 fe_writeblock_feat(param_t *P, fe_t *FE, int32 fp, int32 nframes, float32 **feat);
 int32 fe_closefiles(int32 fp_in, int32 fp_out);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

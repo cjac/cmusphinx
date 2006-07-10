@@ -275,6 +275,9 @@ void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

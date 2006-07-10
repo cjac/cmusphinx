@@ -143,6 +143,9 @@ void adapt_set_mllr(adapt_am_t *ad, /**< The adaptor object */
 		    const char* cbs2mllr,  /**< CB2MLLR */
 		    mdef_t *mdef /**< MDEF */
     );
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 
 

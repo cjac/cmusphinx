@@ -685,6 +685,9 @@ int32 latticehist_dag_write (latticehist_t *lathist,  /**< A table off lattice e
 			     fillpen_t *fillpen
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

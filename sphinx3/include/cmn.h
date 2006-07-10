@@ -143,6 +143,9 @@ void cmn_prior(float32 **incep,  /* In/Out: mfc[f] = mfc vector in frame f*/
 /* RAH, free previously allocated memory */
 void cmn_free ();
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif
