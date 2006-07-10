@@ -916,7 +916,7 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
     int32 f, i, b, l;
     int32 sv, nsv, scr, bestscore, bestvh, vhid;
     vithist_entry_t *ve, *bestve = 0;
-    s3lmwid32_t endwid;
+    s3lmwid32_t endwid = BAD_S3LMWID32;
     lm_t *lm;
     dict_t *dict;
 
@@ -1977,7 +1977,7 @@ lat_final_entry(latticehist_t * lathist, dict_t * dict, int32 curfrm,
     s3latid_t l, bestl;
     int32 f, bestscore;
 
-    bestl = BAD_S3LATID;
+    l = bestl = BAD_S3LATID;
 
     if (cmd_ln_int32("-bt_wsil")) {
 

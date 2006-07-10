@@ -191,7 +191,7 @@ static int32
 dp(int32 * ref, int32 nref, int32 * hyp, int32 * hyp_sf, int32 nhyp)
 {
     int32 i, j, jj, k;
-    int32 err, minerr, best, succ, pred, del, sub, nextcorr;
+    int32 err, minerr, best = 0, succ, pred, del, sub, nextcorr;
     int32 map[MAX_HYP_LEN + 1];
     int8 corr[MAX_HYP_LEN];
     char wd[256];
