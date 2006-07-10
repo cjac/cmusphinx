@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2002 Carnegie Mellon University.  All rights
  * reserved.
@@ -990,9 +991,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
 
                 if (n_tg > 0) {
                     /* Transition to trigram followers of bw0, bw1, if any */
-                    for (; n_tg > 0;
-                         --n_tg, is32bits ? tgptr32++ : tgptr++) {
-
+		    while (n_tg > 0) {
                         nextwid = is32bits ?
                             LM_DICTWID(lm, tgptr32->wid) :
                             LM_DICTWID(lm, tgptr->wid);
@@ -1017,6 +1016,11 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                                 }
                             }
                         }
+			--n_tg;
+			if (is32bits)
+			    ++tgptr32;
+			else
+			    ++tgptr;
                     }
                     acc_bowt = bowt;
                 }
