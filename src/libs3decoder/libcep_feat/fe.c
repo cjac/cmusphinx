@@ -321,7 +321,7 @@ fe_convert_files_to_spdata(param_t * P, fe_t * FE, int32 * splenp,
                            int32 * nframesp)
 {
     char *infile, fileroot[MAXCHARS];
-    int32 splen, total_samps, frames_proc, nframes, nblocks;
+    int32 splen = 0, total_samps, frames_proc, nframes, nblocks;
     int32 fp_in, last_blocksize = 0, curr_block, total_frames;
     int16 *spdata;
 
