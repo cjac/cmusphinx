@@ -229,6 +229,9 @@ typedef int16   	s3mgauid_t;	/** Mixture-gaussian codebook id */
 
 #define MEG *1024*1024
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

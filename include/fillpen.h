@@ -150,6 +150,9 @@ void fillpen_report(fillpen_t *f        /**< In: Filler word probabilities struc
 void fillpen_free (fillpen_t *f /**< A filler penalty structure */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

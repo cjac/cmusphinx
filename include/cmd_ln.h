@@ -190,6 +190,9 @@ void  cmd_ln_print_help (FILE *fp,	/**< In: File to which to print */
 /* RAH, 4.17.01, call this to free memory allocated during cmd_ln_parse() */
 void cmd_ln_free ();
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

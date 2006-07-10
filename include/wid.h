@@ -106,6 +106,9 @@ int32 wid_wordprob2alt (dict_t *dict,	/**< In: Dictionary */
 			int32 n	/**< In: #Input entries in the wordprob array */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

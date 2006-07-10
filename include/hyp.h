@@ -114,6 +114,9 @@ typedef struct {
 } hyp_t;
 #endif
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

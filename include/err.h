@@ -150,6 +150,9 @@ void _E__fatal_sys_error( char const *fmt, ... );
 #define E_ERROR	  _E__pr_header(__FILE__, __LINE__, "ERROR"),_E__pr_warn
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

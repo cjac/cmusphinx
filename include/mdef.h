@@ -355,6 +355,9 @@ void mdef_free (mdef_t *mdef /**< In : The model definition*/
     );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -250,6 +250,9 @@ void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
     );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

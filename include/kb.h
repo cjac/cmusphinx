@@ -222,6 +222,9 @@ void kb_set_uttid(char *uttid, /**< In: the new utt id */
     );   /* ARCHAN 20041111 */
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

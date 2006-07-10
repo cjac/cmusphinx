@@ -176,6 +176,9 @@ void ascr_clear_comssid_active(ascr_t *a /**< Input, an initialized ascr
 					    data structure */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

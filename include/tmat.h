@@ -162,6 +162,9 @@ void tmat_free (tmat_t *t /**< In: transition matrix */
 void tmat_report(tmat_t *t /**< In: transition matrix*/
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

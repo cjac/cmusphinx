@@ -272,6 +272,9 @@ void  hash_display(hash_table_t *h, /**< In: Hash table to display */
 				       used. */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

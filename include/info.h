@@ -74,6 +74,9 @@ extern "C" {
 
 void print_appl_info(char* appl_name);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

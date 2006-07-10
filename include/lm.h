@@ -1324,6 +1324,9 @@ ug_t *NewUnigramTable (int32 n_ug /**< Number of unigram */
     );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -129,6 +129,9 @@ int32 heap_pop (heap_t heap, void **data, int32 *val);
 
 int32 heap_destroy (heap_t heap);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

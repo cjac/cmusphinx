@@ -165,6 +165,9 @@ double genrand_real3(void);
  */
 double genrand_res53(void);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

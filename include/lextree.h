@@ -452,6 +452,9 @@ void lextree_dump (lextree_t *lextree,  /**< In: A lexical tree*/
 /** Utility function that count the number of links */
 int32 num_lextree_links(lextree_t *ltree /**< In: A lexical tree */
     );
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

@@ -91,6 +91,9 @@ void utt_decode_block (float ***block_feat,   /* Incoming block of featurevecs *
     );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

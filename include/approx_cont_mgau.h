@@ -253,6 +253,9 @@ void approx_cont_mgau_ci_eval (
     int32 fr /** In : The frame number */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

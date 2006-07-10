@@ -124,6 +124,9 @@ int32 ms_mllr_norm_mgau (float32 ***mean,	/**<< In/Out: Set of vectors to be tra
 			 int32 class	/**< In: number of classes */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

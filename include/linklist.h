@@ -97,6 +97,9 @@ void listelem_free (char *elem, int32 elemsize);
 void linklist_stats ( void );
 
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

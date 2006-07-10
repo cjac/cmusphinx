@@ -165,6 +165,9 @@ void logs_free();
 /** Report the parameters for s3 log table */
 void logs3_report();
   
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

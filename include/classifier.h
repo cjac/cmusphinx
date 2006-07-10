@@ -78,6 +78,9 @@ void ep_finish(endptr_t *_ep);
 int ep_endpoint(endptr_t *_ep, int *_classes, int _num_frames,
 		int **_endpts);
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif

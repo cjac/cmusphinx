@@ -130,6 +130,9 @@ int32 mllr_norm_mgau (mgau_model_t *mgauset, /**< In/Out: The gaussian distribut
 		      int32 *cb2mllr	/**< In: class to senone mapping */
     );
 
+#if 0
+{ /* Stop indent from complaining */
+#endif
 #ifdef __cplusplus
 }
 #endif
