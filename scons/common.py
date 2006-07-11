@@ -1,7 +1,7 @@
 import platform
 import os
 import fnmatch
-
+Import('javapath')
 Import('sphinx4')
 
 srcDir = os.path.normpath('../tools/common/src/java:../../')
@@ -13,9 +13,9 @@ classpath += libpath + 'dom4j-1.6.1.jar' + os.pathsep
 classpath += libpath + 'forms_rt_license.jar' + os.pathsep
 classpath += libpath + 'forms_rt.jar' + os.pathsep
 classpath += libpath + 'javolution.jar' + os.pathsep
-classpath += str(sphinx4[0]).replace('/',os.sep).replace(':',os.pathsep)
+classpath += str(sphinx4[0])
 
-env = Environment(ENV=os.environ, JAVACFLAGS='-source 1.5 -classpath ' + classpath, JARCHDIR=classDir)
+env = Environment(ENV = {'PATH' : javapath }, JAVACFLAGS = '-source 1.5 -classpath "' + classpath + '"', JARCHDIR = classDir)
 classes = env.Java(target = classDir, source = srcDir)
 Depends(classes, sphinx4)
 

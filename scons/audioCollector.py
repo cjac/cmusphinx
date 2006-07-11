@@ -2,6 +2,7 @@ import platform
 import os
 import fnmatch
 
+Import('javapath')
 Import('common')
 
 srcDir = '../tools/audioCollector/src/java'
@@ -15,10 +16,10 @@ classpath += libpath + 'forms_rt_license.jar' + os.pathsep
 classpath += libpath + 'forms_rt.jar' + os.pathsep
 classpath += libpath + 'javolution.jar' + os.pathsep
 classpath += libpath + 'sphinx4.jar' + os.pathsep
-classpath += javaHome + os.sep + 'lib' + os.sep + 'plugin.jar' + os.pathsep
+classpath += javaHome + os.sep + 'jre' + os.sep + 'lib' + os.sep + 'plugin.jar' + os.pathsep
 classpath += str(common[0])
 
-env = Environment(ENV=os.environ, JAVACFLAGS='-source 1.5 -classpath ' + classpath, JARCHDIR=classDir)
+env = Environment(ENV = {'PATH' : javapath }, JAVACFLAGS = '-source 1.5 -classpath "' + classpath + '"', JARCHDIR = classDir)
 classes =  env.Java(target = classDir, source = srcDir )
 Depends(classes, common)
 jarFile = os.path.normpath('../../scons_build/jars/audioCollector.jar')

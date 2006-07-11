@@ -1,8 +1,13 @@
+import subprocess
 import platform
 import os
+import sys
+import string
+
+Import('javapath')
+Import('dictator')
 
 dir = '../../scons_ship/dictator'
-Import('dictator')
 
 Install(dir, '../../scons_build/jars/common.jar')
 Install(dir, '../tools/common/lib/batch.jar')
@@ -18,24 +23,26 @@ Install(dir, str(dictator[0]))
 shipDictator = Alias('foo', dir)
 
 
-classpath =  'WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar:batch.jar:'
-classpath += 'common.jar:'
-classpath += 'dictator.jar:'
-classpath += 'dom4j-1.6.1.jar:'
-classpath += 'forms_rt.jar:'
-classpath += 'javolution.jar:'
+classpath =  'WSJ_8gau_13dCep_16k_40mel_130Hz_6800Hz.jar' + os.pathsep
+classpath += 'batch.jar' + os.pathsep
+classpath += 'common.jar' + os.pathsep
+classpath += 'dictator.jar' + os.pathsep
+classpath += 'dom4j-1.6.1.jar' + os.pathsep
+classpath += 'forms_rt.jar' + os.pathsep
+classpath += 'javolution.jar' + os.pathsep
 classpath += 'sphinx4.jar'
-classpath = classpath.replace('/',os.sep).replace(':',os.pathsep)
 
 def build(target, source, env):
-    os.chdir(dir)
-    os.system('java -Xmx256m -classpath ' + classpath + ' edu.cmu.sphinx.tools.dictator.DictatorView')
-    return None
+    execenv = Environment(ENV = os.environ)
+    execenv['ENV']['PATH'] = javapath
+    subprocessenv = execenv['ENV']
+    cmd = 'java -Xmx256m -classpath "' + classpath + '" edu.cmu.sphinx.tools.dictator.DictatorView'
+    P = subprocess.Popen(cmd, cwd = dir, env = subprocessenv, shell = True)
+    return P.wait()
 
-env = Environment(BUILDERS = {'RunDictator' : Builder(action = build)})
+env = Environment(ENV = {'PATH' : javapath }, BUILDERS = {'RunDictator' : Builder(action = build)})
 runDictator = env.RunDictator('bar', shipDictator)
 Depends(runDictator, shipDictator)
-
 
 Export('shipDictator')
 Export('runDictator')

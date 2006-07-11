@@ -1,5 +1,6 @@
 import os
 import platform
+import sys
 
 Help("""
       Type: 'scons shipDictator' to create and package all dictator related files.
@@ -18,7 +19,7 @@ Help("""
              Also, it's important to note that everything under src/sphinx4 builds.  There are no excludes.
              Only with your help can we keep it this way.
 
-      Type  'scons audoCollector' to build audioCollector.jar and its dependencies.
+      Type  'scons audioCollector' to build audioCollector.jar and its dependencies.
              This fails because I don't know where AudioRecorder lives.
 
       Other sphinx projects are not yet supported.
@@ -27,36 +28,44 @@ Help("""
       Build output will be placed in the scons_build directory adjacent to trunk.
 
       Build outputs will be place in scons_build, which will be created two directories
-      below the scons directory
+      above the scons directory
 
       Ship outputs will be placed in scons_ship, which will also be created two directories
-      below the scons directory
+      aboce the scons directory
 
-      These scripts have been tested on OS X 10.4.7 and Ubuntu Linux 6.06
+      These scripts have been tested on OS X 10.4.7, Ubuntu Linux 6.06, Windows XP, and Red Hat Linux 9.0
 
       """)
 
-SConscript('sphinx4.py')
+try:
+    javapath = os.path.normpath(os.environ['JAVA_HOME']) + os.sep + 'bin' + os.pathsep
+    javapath += os.environ['PATH']
+    env = Environment(ENV = {'PATH' : javapath })
+except:
+    print "Please define the environmental variable JAVA_HOME"
+    sys.exit(1)
+
+SConscript('sphinx4.py', exports = 'javapath')
 Import('sphinx4')
 Alias('sphinx4', sphinx4)
 
-SConscript('common.py', exports='sphinx4')
+SConscript('common.py', exports=['javapath', 'sphinx4'])
 Import('common')
 Alias('common', common)
 
-SConscript('dictator.py', exports=['common','sphinx4'])
+SConscript('dictator.py', exports=['javapath', 'common', 'sphinx4'])
 Import('dictator')
 Alias('dictator', dictator)
 
-SConscript('audioCollector.py', exports='common')
+SConscript('audioCollector.py', exports=['javapath', 'common'])
 Import('audioCollector')
 Alias('audioCollector', audioCollector)
 
-SConscript('corpusBrowser.py')
+SConscript('corpusBrowser.py', exports='javapath')
 Import('corpusBrowser')
 Alias('corpusBrowser', corpusBrowser)
 
-SConscript('shipDictator.py', exports='dictator')
+SConscript('shipDictator.py', exports=['javapath', 'dictator'])
 Import('shipDictator')
 Import('runDictator')
 Alias('shipDictator', shipDictator)

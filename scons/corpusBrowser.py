@@ -2,6 +2,7 @@ import platform
 import os
 import fnmatch
 
+Import('javapath')
 Import('common')
 
 srcDir = os.path.normpath('../tools/corpusBrowser/src/java')
@@ -16,9 +17,8 @@ classpath += libpath + 'javolution.jar' + os.pathsep
 classpath += libpath + 'sphinx4.jar' + os.pathsep
 classpath += str(common[0])
 
-classpath = classpath.replace('/',os.sep).replace(':',os.pathsep)
+env = Environment(ENV = {'PATH' : javapath }, JAVACFLAGS = '-source 1.5 -classpath "' + classpath + '"', JARCHDIR = classDir)
 
-env = Environment(ENV=os.environ, JAVACFLAGS='-source 1.5 -classpath ' + classpath, JARCHDIR=classDir)
 classes =  env.Java(target = classDir, source = srcDir )
 Depends(classes, common)
 jarFile = os.path.normpath('../../scons_build/jars/corpusBrowser.jar')
