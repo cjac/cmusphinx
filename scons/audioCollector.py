@@ -12,18 +12,7 @@ clientClassDir = os.path.normpath('../../scons_build/classes/audioCollector/clie
 serverClassDir = os.path.normpath('../../scons_build/classes/audioCollector/server')
 sphinx_store = os.path.normpath('../tools/audioCollector/build/sphinx_store')
 
-
 javaHome = os.path.normpath(os.environ['JAVA_HOME'])
-print javaHome
-print 'hello'
-print 'hello'
-print 'hello'
-print 'hello'
-print 'hello'
-print 'hello'
-print 'hello'
-print 'hello'
-
 
 libpath = '..' + os.sep + 'tools' + os.sep + 'common' + os.sep + 'lib' + os.sep
 classpath =  libpath + 'batch.jar' + os.pathsep
