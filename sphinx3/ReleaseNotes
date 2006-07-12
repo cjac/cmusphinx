@@ -17,7 +17,7 @@
 	(rev 5794) Fixed a compile warning which also happened to be
 	a bug.  A 16 bit LM was used in the 32 bit LM.  This will cause
 	problem when users put <s> and </s> outside the range of 0xffff. 
-
+	
 	Developing Features:
 	(rev 5757:5761,5763,5771,5774:5776) Incorporated full covariance
 	matrix as in acoustic modeling. 
@@ -26,7 +26,9 @@
 
 	For Developers:
 	(rev 5785, 5786, 5791 and 5792) sphinx3 is now indented using 
-	the scheme originally designed for PocketSphinx and sphinxbase. 	
+	the scheme originally designed for PocketSphinx and sphinxbase. 
+	(rev 5819) Several tests are added to support the fixes. 
+	Now PASSes count in make check is 97. 
 
 2006-07-02  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 

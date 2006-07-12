@@ -36,7 +36,7 @@ echo "PBS environment $PBS_ENVIRONMENT"
 echo "This script is running on `hostname`"
 fi
 
-S3REGTESTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu yitao@cs.cmu.edu dhuggins@cs.cmu.edu'
+S3REGTESTLIST='archan@cs.cmu.edu egouvea@cs.cmu.edu yitao@cs.cmu.edu dhuggins@cs.cmu.edu sclee@scanscout.com ricky.houghton@gmail.com'
 
 #Run test, assume we're at the top level (sphinx3 directory). 
 
