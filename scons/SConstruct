@@ -59,7 +59,9 @@ Alias('dictator', dictator)
 
 SConscript('audioCollector.py', exports=['javapath', 'common'])
 Import('audioCollector')
+Import('shipAudioCollector')
 Alias('audioCollector', audioCollector)
+Alias('shipAudioCollector', shipAudioCollector)
 
 SConscript('corpusBrowser.py', exports='javapath')
 Import('corpusBrowser')
