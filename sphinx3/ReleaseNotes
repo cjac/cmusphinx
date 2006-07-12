@@ -1,7 +1,7 @@
 2006-07-07  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	Sphinx 3.6.2
 	^^^^^^^^^^^^
-	(Corresponds to Sourceforge SVN rev 5816.)
+	(Corresponds to Sourceforge SVN rev 5842.)
 	Sphinx 3.6.2 fixed another issue of when 32bit LM; It now allows
 	the use of LM with tg_seg size more than 0xffff.  It also included
 	a completed but un-tested version of full-covariance modeling. 
