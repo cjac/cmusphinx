@@ -7,26 +7,18 @@ export PATH="/usr/local/bin:/bin:/usr/bin:/usr/ccs/bin"
 # Default to sendmail
 MAILX=sendmail
 
-# Hack. 'which' on Solaris (at least the SCS facilitized ones) sends
-# output to standard output *no matter what*, instead of sending it to
-# stderr when an error occurs. Therefore, we can't just redirect
-# stderr to /dev/null when doing, say, 'which mhmail'. Therefore, we
-# have to do this: try to find the executable using 'which'. Count the
-# number of items in the output. If it's only one, 'which' returned the
-# executable location. If it's more than one, it is an error
-# message. The bash test returns false if it has zero arguments, and
-# true if it has one true argument. Therefore, when we test the number
-# of items using awk, we output 1 (true) if the incoming string has
-# more than 1 item, and nothing otherwise.
+# Since we're running under bash, don't bother using "which", which
+# doesn't work on Solaris anyway.  Use "command" instead which is a
+# handy builtin.
 
 # Try to find mhmail
-TMPMAIL=`which mhmail`
-if test `echo ${TMPMAIL} | awk '{if (NF > 1) print 1}'`; then
+TMPMAIL=`command -v mhmail`
+if test z"$TMPMAIL" = z; then
 # If we failed, try mailx
-    TMPMAIL=`which mailx`
-    if test `echo ${TMPMAIL} | awk '{if (NF > 1) print 1}'`; then
+    TMPMAIL=`command -v mailx`
+    if test z"$TMPMAIL" = z; then
 # If we failed again, try mail
-	TMPMAIL=`which mail`
+	TMPMAIL=`command -v mail`
     fi
 fi
 
@@ -35,6 +27,8 @@ if test z${TMPMAIL} != z; then MAILX=${TMPMAIL};fi
 
 # Define the variables for compilation root, mailing lists
 root=/tmp/sphinxCompilation.$$
+SBLIST='archan egouvea yitao dhuggins'
+PSLIST='archan egouvea yitao dhuggins'
 S2LIST='archan egouvea yitao dhuggins'
 S3LIST='archan egouvea yitao dhuggins'
 S4LIST='cmusphinx-commits@lists.sourceforge.net'
@@ -44,11 +38,11 @@ STLIST='archan egouvea yitao dhuggins'
 # for our own good though: it defines MAKE internally in the Makefile,
 # so beware of how you name this variable
 
-GMAKE=`which gmake`
-if test `echo ${GMAKE} | awk '{if (NF > 1) print 1}'`; then
+GMAKE=`command -v gmake`
+if test z"$GMAKE" = z; then
 # If we failed, try make
-    GMAKE=`which make`
-    if test `echo ${GMAKE} | awk '{if (NF > 1) print 1}'`; then
+    GMAKE=`command -v make`
+    if test z"$GMAKE" = z; then
 # If we failed again, bail out: we cannot make the project!
     ${MAILX} -s "Make not found in system `hostname`" ${S3LIST} < /dev/null
 # Exit with non zero value
@@ -74,14 +68,13 @@ pushd sphinxbase >> $outfile 2>&1
 
 # Compile and run test, and verify if both were successful
 if ! ${GMAKE} distcheck >> $outfile 2>&1 ;
- then ${MAILX} -s "sphinxbase compilation failed" ${S2LIST} < $outfile
- else ${MAILX} -s "sphinxbase compilation and test succeeded" ${S2LIST} < $outfile
+ then ${MAILX} -s "sphinxbase compilation failed" ${SBLIST} < $outfile
+ else ${MAILX} -s "sphinxbase compilation and test succeeded" ${SBLIST} < $outfile
 fi
 
 # sphinxbase is needed for everything else, so build it in-place, and don't remove it
 if ! ${GMAKE}  >> $outfile 2>&1 ;
- then ${MAILX} -s "sphinxbase compilation failed" ${S2LIST} < $outfile
- else ${MAILX} -s "sphinxbase compilation" ${S2LIST} < $outfile
+ then ${MAILX} -s "sphinxbase compilation failed" ${SBLIST} < $outfile
 fi
 popd >> $outfile 2>&1
 
@@ -95,11 +88,13 @@ pushd pocketsphinx >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify if both were successful
-if ! ${GMAKE} distcheck >> $outfile 2>&1 ;
- then ${MAILX} -s "pocketsphinx compilation failed" ${S2LIST} < $outfile
+# Note that distcheck builds in a subdirectory so we need to give it
+# an (absolute) path to sphinxbase.
+if ! ${GMAKE} distcheck DISTCHECK_CONFIGURE_FLAGS=--with-sphinxbase=`pwd`/../sphinxbase >> $outfile 2>&1 ;
+ then ${MAILX} -s "pocketsphinx compilation failed" ${PSLIST} < $outfile
  elif ! (grep BESTPATH $outfile | grep 'GO FORWARD TEN METERS' > /dev/null);
- then ${MAILX} -s "pocketsphinx test failed" ${S2LIST} < $outfile;
- else ${MAILX} -s "pocketsphinx compilation and test succeeded" ${S2LIST} < $outfile
+ then ${MAILX} -s "pocketsphinx test failed" ${PSLIST} < $outfile;
+ else ${MAILX} -s "pocketsphinx compilation and test succeeded" ${PSLIST} < $outfile
 fi
 
 popd >> $outfile 2>&1
