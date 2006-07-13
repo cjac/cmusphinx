@@ -63,6 +63,50 @@ cd $root
 # Output file that will get sent in case of failure
 outfile=$root/test.out
 
+# Fresh download of sphinxbase
+svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinxbase > $outfile 2>&1
+
+# Configure it
+pushd sphinxbase >> $outfile 2>&1
+
+./autogen.sh >> $outfile 2>&1 
+./autogen.sh >> $outfile 2>&1 
+
+# Compile and run test, and verify if both were successful
+if ! ${GMAKE} distcheck >> $outfile 2>&1 ;
+ then ${MAILX} -s "sphinxbase compilation failed" ${S2LIST} < $outfile
+ else ${MAILX} -s "sphinxbase compilation and test succeeded" ${S2LIST} < $outfile
+fi
+
+# sphinxbase is needed for everything else, so build it in-place, and don't remove it
+if ! ${GMAKE}  >> $outfile 2>&1 ;
+ then ${MAILX} -s "sphinxbase compilation failed" ${S2LIST} < $outfile
+ else ${MAILX} -s "sphinxbase compilation" ${S2LIST} < $outfile
+fi
+popd >> $outfile 2>&1
+
+# Fresh download of pocketsphinx
+svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/pocketsphinx > $outfile 2>&1
+
+# Configure it
+pushd pocketsphinx >> $outfile 2>&1
+
+./autogen.sh >> $outfile 2>&1 
+./autogen.sh >> $outfile 2>&1 
+
+# Compile and run test, and verify if both were successful
+if ! ${GMAKE} distcheck >> $outfile 2>&1 ;
+ then ${MAILX} -s "pocketsphinx compilation failed" ${S2LIST} < $outfile
+ elif ! (grep BESTPATH $outfile | grep 'GO FORWARD TEN METERS' > /dev/null);
+ then ${MAILX} -s "pocketsphinx test failed" ${S2LIST} < $outfile;
+ else ${MAILX} -s "pocketsphinx compilation and test succeeded" ${S2LIST} < $outfile
+fi
+
+popd >> $outfile 2>&1
+
+chmod -R 755 pocketsphinx
+/bin/rm -rf pocketsphinx
+
 # Fresh download of sphinx2
 svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx2 > $outfile 2>&1
 
