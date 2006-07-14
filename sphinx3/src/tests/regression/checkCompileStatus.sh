@@ -76,6 +76,8 @@ fi
 if ! ${GMAKE}  >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinxbase compilation failed" ${SBLIST} < $outfile
 fi
+# Make everything writable so it can be deleted later
+chmod -R +w .
 popd >> $outfile 2>&1
 
 # Fresh download of pocketsphinx
