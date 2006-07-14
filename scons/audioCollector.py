@@ -21,7 +21,7 @@ classpath += libpath + 'forms_rt_license.jar' + os.pathsep
 classpath += libpath + 'forms_rt.jar' + os.pathsep
 classpath += libpath + 'javolution.jar' + os.pathsep
 classpath += libpath + 'sphinx4.jar' + os.pathsep
-classpath += javaHome + os.sep + 'lib' + os.sep + 'plugin.jar' + os.pathsep
+classpath += libpath + 'plugin.jar' + os.pathsep
 classpath += str(common[0])
 
 print classpath
