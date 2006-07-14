@@ -25,9 +25,8 @@
     <property name="version"            value="0.1"/>
 
     <path id="libs">
-        <fileset dir="../../common/lib" includes="**/sphinx4.jar,**/batch.jar,**/javolution.jar,**/forms_rt.jar"/>
+        <fileset dir="../../common/lib" includes="**/sphinx4.jar,**/batch.jar,**/javolution.jar,**/forms_rt.jar,**/plugin.jar"/>
         <fileset file="${env.JAVA_HOME}/jre/lib/javaws.jar"/>
-        <fileset file="${env.JAVA_HOME}/jre/lib/plugin.jar"/>
     </path>
     <property name="exploded_dir"	value="./exploded"/>
     <property name="common_lib_dir"	value="../../common/lib"/>
