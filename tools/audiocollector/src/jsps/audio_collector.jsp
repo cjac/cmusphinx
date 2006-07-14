@@ -109,7 +109,7 @@
                 name="audiocontroller"
                 jreversion="1.5"
                 codebase=".."
-                archive="datacollection-client.jar"
+                archive="datacollection-client.jar,sphinx4.jar,corpus.jar,javolution.jar,batch.jar"
                 code="edu.cmu.sphinx.tools.datacollection.client.AudioCollectorPresentationApplet"
                 width="400"
                 height="36">
