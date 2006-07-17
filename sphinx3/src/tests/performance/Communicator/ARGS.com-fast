@@ -4,9 +4,9 @@
 -mixw /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/mixture_weights 
 -tmat /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/transition_matrices 
 -subvq /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/svq.13.64 
--dict /net/scylla/usr3/sphinx/Communicator/lists/communicator.dict.reduced 
--fdict /net/scylla/usr3/sphinx/Communicator/lists/noise.dict.reduced.cmu.1 
--lm /net/scylla/usr3/sphinx/Communicator/lists/training.trans.proc.arpa.DMP 
+-dict /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator/lists/communicator.dict.reduced 
+-fdict /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator/lists/noise.dict.reduced.cmu.1 
+-lm /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator/lists/training.trans.proc.arpa.DMP 
 -lw 7.5 
 -feat s3_1x39 
 -wend_beam 1e-5

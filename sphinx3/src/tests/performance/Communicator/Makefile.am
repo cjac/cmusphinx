@@ -56,7 +56,7 @@ DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 ALIGNBIN = sclite -i wsj -o rsum -f 0 
 CTLFILE = ./nist.ctl.no_comment.no_id
 TRANSFILE = ./nist.trans.no_comment.no_id
-COMPATH = /net/scylla/usr3/sphinx/Communicator
+COMPATH = /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator
 
 #all : base fast
 base : com-base-lp com-base-decode com-base-decany
