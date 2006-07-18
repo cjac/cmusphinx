@@ -23,7 +23,8 @@ libs3util_la_SOURCES = \
 	sort.c \
 	nextword.c \
         str2words.c \
-        unlimit.c
+        unlimit.c \
+	s3u_arraylist.c
 
 INCLUDES = -I$(top_srcdir)/include \
            -I$(top_builddir)/include 

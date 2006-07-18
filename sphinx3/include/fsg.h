@@ -37,6 +37,11 @@
 #define __S2_FSG_H__
 
 #include <search.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * Structures through which an application may load an FSG into the decoder.
  * There's essentially a 1-to-1 correspondence between the FSG file format
@@ -91,4 +96,7 @@ double phone_perp;  /* Average phone perplexity in segment.  Larger values imply
 #endif
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif
