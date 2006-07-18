@@ -133,6 +133,10 @@ SOURCE=..\..\..\src\libutil\linklist.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libutil\matrix.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libutil\nextword.c
 # End Source File
 # Begin Source File
