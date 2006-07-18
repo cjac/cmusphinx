@@ -73,7 +73,9 @@ pkginclude_HEADERS = adaptor.h			\
     prim_type.h					\
     profile.h					\
     s2_semi_mgau.h				\
+    s3_cfg.h                                    \
     s3types.h					\
+    s3u_arraylist.h                             \
     search.h					\
     sort.h					\
     srch_do_nothing.h				\
