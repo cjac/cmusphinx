@@ -149,6 +149,10 @@ SOURCE=..\..\..\src\libs3decoder\libsearch\srch_debug.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\libsearch\srch_do_nothing.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\libsearch\srch_flat_fwd.c
 # End Source File
 # Begin Source File
