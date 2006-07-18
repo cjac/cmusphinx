@@ -157,6 +157,7 @@
     \brief The temporary header file for sphinx 3 functions. 
 */
 
+#include "s3types.h"
 
 #ifdef __cplusplus
 extern "C" {

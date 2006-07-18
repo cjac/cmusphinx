@@ -178,6 +178,7 @@ src/libs3decoder/libdict/Makefile
 src/libs3decoder/libep/Makefile
 src/libs3decoder/liblm/Makefile
 src/libs3decoder/libsearch/Makefile
+src/libs3decoder/libcfg/Makefile
 src/libutil/Makefile
 src/programs/Makefile
 src/tests/Makefile
