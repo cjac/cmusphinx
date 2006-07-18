@@ -3,7 +3,7 @@
 -var /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/variances 
 -mixw /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/mixture_weights 
 -tmat /net/elroy/usr1/archan/experiment.training/Communicator/cont.all/model_parameters/CFS3.cd_continuous_64gau/transition_matrices 
--dict /net/wilma/usr1/archan/Communicator/lists/communicator.dict.reduced 
+-dict /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator/lists/communicator.dict.reduced 
 -fdict /afs/cs.cmu.edu/user/sphinx/data/CMU_Communicator/lists/noise.dict.reduced.cmu.1 
 -lw 7.5 
 -feat s3_1x39 
