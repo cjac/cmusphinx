@@ -163,8 +163,7 @@ extern "C" {
   /** Fast Fourier Transform (FFT) using real numbers */
     int32 fe_fft_real(float64 * x,
                                 /**< Input/Output: The input vector in real numbers */
-                      int n,         /**< Input: The FFT size */
-                      int m         /**< Input: The order (log2(size)) of the FFT */
+                      int n         /**< Input: The FFT size */
         );
 
   /** Convert short to double. Audio is normally quantized as 2-byte

@@ -291,7 +291,7 @@ fe_convert_files(param_t * P)
     FILE *ctlfile;
 
     if ((FE = fe_init(P)) == NULL) {
-        E_ERROR("memory alloc failed...exiting\n");
+        E_ERROR("Initialization failed...exiting\n");
         return (FE_MEM_ALLOC_ERROR);
     }
 
