@@ -58,6 +58,8 @@ CLEANFILES = chan3.mfc \
 	test-*.out \
 	test-*.seg \
 	test-*.tar \
+	test-*.hypseg \
+	test-*.confhypseg \
 	tmp.out \
 	pittsburgh.* \
 	tmp \
@@ -119,6 +121,7 @@ test-full : \
 	test-gausubvq \
 	test-ep \
 	test-cepview \
+	test-conf \
 	test-decode_anytopo \
 	test-decode_anytopo-mllr \
 	test-decode_anytopo-2ndstage \
@@ -163,6 +166,7 @@ test-allphone-mllr \
 test-astar \
 test-astar-clm \
 test-cepview \
+test-conf \
 test-dag \
 test-dag-clm \
 test-lm_convert \
