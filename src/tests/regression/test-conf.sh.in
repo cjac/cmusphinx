@@ -1,0 +1,59 @@
+#!/bin/sh
+
+tmpout="test-conf.out"
+tmphypseg="test-conf.hypseg"
+tmpconfhypseg="test-conf.confhypseg"
+
+echo "DECODE -> CONFIDENCE TEST"
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-mean @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means \
+-var @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances \
+-mixw @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights \
+-tmat @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
+-cepdir @abs_top_srcdir@/model/lm/an4/ \
+-agc none \
+-varnorm no \
+-cmn current \
+-subvqbeam 1e-02 \
+-epl 4 \
+-fillprob 0.02 \
+-feat 1s_c_d_dd \
+-lw 9.5 \
+-maxwpf 1 \
+-beam 1e-40 \
+-pbeam 1e-30 \
+-wbeam 1e-20 \
+-maxhmmpf 1500 \
+-wend_beam 1e-1 \
+-ci_pbeam 1e-5 \
+-ds 2 \
+-tighten_factor 0.4 \
+-outlatdir . \
+-hypseg $tmphypseg \
+"
+
+lmargs="-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_decode $margs $lmargs > $tmpout 2>&1
+
+margs="-mdef @abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef \
+-fdict @abs_top_srcdir@/model/lm/an4/filler.dict \
+-dict @abs_top_srcdir@/model/lm/an4/an4.dict \
+-inlatdir ./ \
+-logbase 1.003 \
+-ctl @abs_top_srcdir@/model/lm/an4/an4.ctl \
+-inhypseg $tmphypseg \
+-output $tmpconfhypseg \
+-lm @abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP \
+"
+
+sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_conf $margs >> $tmpout 2>&1 
+
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpconfhypseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test-conf.confhypseg | grep SUCCESS > /dev/null 2>&1); \
+then echo "DECODE -> CONF test PASSED"; else \
+echo "DECODE -> CONF test FAILED"; fi 
+

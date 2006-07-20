@@ -207,6 +207,7 @@ src/tests/regression/test-allphone-mllr.sh
 src/tests/regression/test-astar.sh
 src/tests/regression/test-astar-clm.sh
 src/tests/regression/test-cepview.sh
+src/tests/regression/test-conf.sh
 src/tests/regression/test-dag.sh
 src/tests/regression/test-dag-clm.sh
 src/tests/regression/test-decode_anytopo.sh
