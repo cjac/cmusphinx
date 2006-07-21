@@ -45,25 +45,31 @@ WARRANTIES.
 	  <b><font>EvalDictator Links</font></b>
           <p>
 	  <font size="-1">
+          <p>
+          <a href="http://evaldictator.org">EvalDictator</a>
+          </p>
+	  <p>
+	  <a href="http://evaldictator.org/javadoc/index.html">Dictator Javadocs</a>
+          </p>
+          <p>
+          <a href="http://cmusphinx.org/twiki/bin/view/EvalDictator/WebHome">EvalDictator TWiki</a>
+          </p>
+          <p><a href="http://cmusphinx.org/download/nightly/tools.tar.gz">Download tarball</a>
+          </p>
+          <p><a href="http://cmusphinx.org/download/nightly/tools.jar">Download JAR</a>
+          </p>
+          <p>
+          <a href="http://cmusphinx.org/sphinx4">Sphinx-4</a>
+          </p>
+	  <p>
+	  <a href="http://cmusphinx.org">CMU Sphinx</a>
+	  </p>
 	  <p>SourceForge</p>
           <ul>
 	  <li><a href="http://sourceforge.net/projects/cmusphinx">Project Page</a>
           <li><a href="https://sourceforge.net/forum/?group_id=1904">Forums</a>
           <li><a href="http://sourceforge.net/svn/?group_id=1904">SVN Repository</a>
           </ul>
-          <p><a href="http://cmusphinx.org/download/nightly/tools.tar.gz">Download tarball</a>
-          </p>
-          <p><a href="http://cmusphinx.org/download/nightly/tools.jar">Download JAR</a>
-          </p>
-	  <p>
-	  <a href="http://cmusphinx.org">CMU Sphinx</a>
-	  </p>
-	  <p>
-	  <a href="http://cmusphinx.sourceforge.net/tools/javadoc/index.html">Dictator Javadocs</a>
-      </p>
-          <p>
-          <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmusphinx/twiki/view/Sphinx4/WebHome">Sphinx-4 TWiki</a>
-          </p>
       <hr>
           <center><a href="http://www.sourceforge.net">
           <img src="http://sourceforge.net/sflogo.php?group_id=1904&amp;type=1"
@@ -90,11 +96,11 @@ WARRANTIES.
 	<li><a href="#create_javadocs">Creating Javadocs</a></li>
 	<li><a href="#troubleshooting">Troubleshooting</a></li>
       </ul>
-      <h4>Using an IDE</h4>
+      <h4>Using an IDE (forthcoming)</h4>
       <ul>
-    <li><a href="doc/Eclipse.html">IntelliJ</a></li>
-	<li><a href="doc/Eclipse.html">Eclipse</a></li>
-	<li><a href="doc/NetBeans.html">NetBeans</a></li>
+    <li><!a href="doc/Eclipse.html">IntelliJ</a></li>
+	<li><!a href="doc/Eclipse.html">Eclipse</a></li>
+	<li><!a href="doc/NetBeans.html">NetBeans</a></li>
       </ul>
 
       <h3>EvalDictator in Detail</h3>
@@ -125,7 +131,7 @@ WARRANTIES.
 <ul>
   <li><a name="what_is_dictator"><b>Introduction</b></a>
   <p>
-EvalDictor.org is an effort to build a very simple open source dictation tool. It is aimed at computer users who wish to enter text in their native language, where speech is preferred to the standard keyboard.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan, India) and countless smaller ethnic groups have this problem.
+EvalDictator.org is an effort to build a very simple open source dictation tool. It is aimed at computer users who wish to enter text in their native language, where speech is preferred to the standard keyboard.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan, India) and countless smaller ethnic groups have this problem.
 <p>
 EvalDictator is free and open source with an "Apache" style licence.  The code may be used in proprietary products, even if the products are not open source.  The source code will be publicly available on SourceForge.net.  EvalDictator will contain no patented IP.
 <p>
@@ -182,12 +188,20 @@ Currently, HumbleBeginnings is very early in its development.  Dictator has very
 
   <li><b>Ant 1.6.0</b> or better, available at <a
   href="http://ant.apache.org">ant.apache.org</a>. The site has a manual
-  with instructions on how to download, install, and use ant.  You
+  with instructions on how to download, install, and use <code>ant</code>.  You
   will only need ant if you wish to build EvalDictator from the source
-  distribution.</li>
+  distribution and prefer it to <code>scons</code>.</li>
 
   <br>
-  <li><b>Scons</b> alternatively, available at <a href="http://www.scons.org">scons.org</a>.</li>
+  <li><b>Scons</b> alternatively, available at <a
+  href="http://www.scons.org">scons.org</a>. The site has a manual
+  with instructions on how to download, install, and use
+  <code>scons</code>. You will need it if you wish to build
+  EvalDictator from the source distribution and prefer it to
+  <code>ant</code>. <code>scons</code> requires you to also install
+  <code>Python</code>, available at <a
+  href="http://python.org">python.org</a>, if you do not already have
+  it. </li>
   <br>
 
   <li> <b>Subversion (svn)</b>, but only if you want to interact directly
@@ -233,6 +247,11 @@ Currently, HumbleBeginnings is very early in its development.  Dictator has very
 % svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/tools
 </pre>
 	  </li>
+          <li>If you want to compile code using <code>scons</code>, you will also need to download the scons folder:
+<pre>
+% svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/scons
+</pre>
+          </li>
     </ul>
     </li>
 
@@ -242,16 +261,20 @@ Currently, HumbleBeginnings is very early in its development.  Dictator has very
 
   <li><a name="how_build"><b>Building EvalDictator</b></a>
 
-      The software required for building EvalDictator are
-      listed in the <a href="#download_and_install">Required Software</a>
-      section.
+      The software required for building EvalDictator are listed in
+      the <a href="#download_and_install">Required Software</a>
+      section. Set your <code>JAVA_HOME</code> and <code>PATH</code>
+      environment variables as described in the <a
+      href="#troubleshooting">troubleshooting</a> section.
       </p>
+      <ul>
+         <li>If you are using <code>ant</code>, also set
+         <code>ANT_HOME</code> according to their site's
+         instructions.
       <p>
-      To build EvalDictator, at the command prompt change to
-      the dictator build directory (usually, a simple
-      "cd tools/dictator/build" will do). Set your <code>JAVA_HOME</code>,
-      <code>ANT_HOME</code> and <code>PATH</code> environment variables
-      as described above. Then type the following:
+      To build EvalDictator, at the command prompt change to the
+      dictator build directory (usually, a simple "cd
+      tools/dictator/build" will do). Then type the following:
       </p>
       <pre>ant</pre>
     <p>
@@ -263,13 +286,36 @@ Currently, HumbleBeginnings is very early in its development.  Dictator has very
     <p>
     To delete all the output from the build to give you a fresh start:
     <pre>ant clean</pre>
+    </li>
+    <li>If you are using <code>scons</code>, at the command prompt change to the
+      scons build directory (usually, a simple "cd
+      scons" will do). Then type the following:
+      </p>
+      <p>In Linux, Mac OS X, etc:
+      <pre>scons.py</pre>
+      </p>
+      <p>In Windows:
+      <pre>scons.bat</pre>
+      </p>
+    <p>
+    This executes the <a href="http://scons.org/">Scons</a>
+    command to build the EvalDictator classes under the <code>../../scons_build/classes</code>
+    directory, the jar files under the <code>../../scons_build/jars</code> directory,
+    and the demo jar files under the <code>../../scons_ship</code> directory.
+    </p>
+    <p>
+    To delete all the output from the build to give you a fresh start:
+    <pre>scons -c</pre>
+
+    </li>
+</ul>
    </li>
 
   <br>
 
 <li><a name="create_javadocs"><b>Creating Javadocs</b></a>
 
-To build the
+<p>To build the
 javadocs, go to the dictator build directory (tools/dictator/build), and type:
 </p>
 <pre>ant javadoc</pre>
@@ -322,46 +368,41 @@ javadocs, go to the dictator build directory (tools/dictator/build), and type:
       </li>
     </ul>
   </li>
+  <br>
+  <li>I get the message "AttributeError: SConsEnvironment instance has no attribute 'Java'" when I use Scons. What's the problem?</li>
+  <ul>
+    <li>The java compiler javac is not in your <code>PATH</code>
+    variable. If you are not familiar with this environmental
+    variable, <code>PATH</code> contains the set of folders that the
+    operating system uses to find the executables. You have to add the
+    path containing javac to your <code>PATH</code> variable. In
+    Windows, you can do this by following the <a
+    href="#winenv">instructions</a> to change the variable <code>PATH</code>
 
+    </li>
+  </ul>
+</li>
   <br>
 
   <li><a name="cygwin">What are the limitations/hacks if I am using
-  cygwin?</a></li>
+  cygwin?</a>
   <ul>
     <li>Make sure that you install "svn" when you install
     cygwin. If you do not want to go through the list of packages
     trying to decide what you need, installing everything is a good
     solution.
     </li>
+    <br>
     <li>Cygwin does not define a home directory, which is used by
     svn. You have to explicitly define it. You are better off creating
     an environment variable HOME, which will be used by every cygwin
-    window that you open. Follow the instructions below to create this
-    variable on Windows 2000.
-    <ul>
-
-	<li>Assume your userid is "johndoe", and you created a
-	directory named "/home/johndoe" in the cygwin environment
-        </li>
-        <li>Right click on the "My Computer" icon
-	</li>
-	<li>On the menu, click on "Properties"
-	</li>
-	<li>Click the "Advanced" tab
-	</li>
-	<li>Select "Environment Variables"
-	</li>
-	<li>Click "New" on the "User variables for johndoe" box
-	</li>
-
-	<li>On "Variable Name", type "HOME"
-	</li>
-	<li>On "Variable Value", type "c:\cygwin\home\johndoe"
-	</li>
-    </ul>
-    When you start a new cygwin window, if you type "echo $HOME", you
-    should get "/home/johndoe".
+    window that you open. Follow the <a
+    href="#winenv">instructions</a> to create this variable on
+    Windows. After creating the environmental variable, when you start
+    a new cygwin window, if you type "echo $HOME", you should get your
+    home directory, e.g. "/home/johndoe".
     </li>
+    <br>
     <li>Handling absolute paths: Cygwin interprets directory paths in
     a unix-like way, relative to its own "root" directory (which
     cygwin sees as "/" but Windows sees as "c:\cygwin"). However, the
@@ -388,6 +429,76 @@ d:\work\sphinx4&gt;ant clean
     /lab/speech/ThirdP~1/junit3.7, since this string is passed from
     the environment to the Java code to the OS. </li>
   </ul>
+</li>
+<br>
+  <li><a name="winenv">How do I create or change an environmental variable in Windows?
+
+    <ul>
+      <li>Creating a variable
+        <ul>
+            <li>Assume you want to create the environmental variable
+            <code>HOME</code>, your userid is "johndoe", and you want
+            to set this variable to "/home/johndoe"
+            </li>
+            <li>Right click on the "My Computer" icon. If you do not
+            have a "My Computer" icon, click on the "Start" menu, then
+            on "Control Panel", "Performance and Maintenaince", and
+            finallty "System"
+            </li>
+            <li>On the menu, click on "Properties"
+            </li>
+            <li>Click the "Advanced" tab
+            </li>
+            <li>Select "Environment Variables"
+            </li>
+            <li>Click "New" on the "User variables for johndoe" box
+            </li>
+
+            <li>On "Variable Name", type <code>HOME</code>
+            </li>
+            <li>On "Variable Value", type <code>c:\cygwin\home\johndoe</code>
+            </li>
+            <li>Click on "Ok" in all windows you just opened to
+            confirm the change
+            </li>
+        </ul>
+      </li>
+      <li>Changing a variable
+        <ul>
+            <li>Assume you want to modify the environmental
+            variable <code>PATH</code>
+            </li>
+            <li>Right click on the "My Computer" icon. If you do not
+            have a "My Computer" icon, click on the "Start" menu, then
+            on "Control Panel", "Performance and Maintenaince", and
+            finally "System"
+            </li>
+            <li>On the menu, click on "Properties"
+            </li>
+            <li>Click the "Advanced" tab
+            </li>
+            <li>Select "Environment Variables"
+            </li>
+            <li>Look for the variable in either the "User variables
+            for johndoe" box or the "System variables"
+            box. Particularly, <code>PATH</code> will be in the
+            "System variables" box.
+            </li>
+            <li>Click and the property name, and hit "Edit" on the
+            corresponding box
+            </li>
+            <li>On "Variable Value", make the change, e.g. adding
+            <code>;c:\python24\bin</code> to the end of the string
+            </li>
+            <li>Click on "Ok" in all windows you just opened to
+            confirm the change
+            </li>
+        </ul>
+    </li>
+    </ul>
+  </li>
+  <br>
+
  </ol>
 </ul>
 
