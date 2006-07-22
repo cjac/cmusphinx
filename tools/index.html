@@ -98,9 +98,9 @@ WARRANTIES.
       </ul>
       <h4>Using an IDE (forthcoming)</h4>
       <ul>
-    <li><!a href="doc/Eclipse.html">IntelliJ</a></li>
-	<li><!a href="doc/Eclipse.html">Eclipse</a></li>
-	<li><!a href="doc/NetBeans.html">NetBeans</a></li>
+    <li><a href="doc/IntelliJ.html">IntelliJ</a></li>
+	<li><a href="doc/Eclipse.html">Eclipse</a></li>
+	<li><a href="doc/NetBeans.html">NetBeans</a></li>
       </ul>
 
       <h3>EvalDictator in Detail</h3>
@@ -131,29 +131,28 @@ WARRANTIES.
 <ul>
   <li><a name="what_is_dictator"><b>Introduction</b></a>
   <p>
-EvalDictator.org is an effort to build a very simple open source dictation tool. It is aimed at computer users who wish to enter text in their native language, where speech is preferred to the standard keyboard.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan, India) and countless smaller ethnic groups have this problem.
+EvalDictor.org is an effort to build open source dictation tools. It is aimed at computer users who wish to enter text in their native language, and prefer speech to the standard keyboard.  These users may be professionals who require hands free text entry, or it may be difficult to type text in their native language.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan...) and countless smaller ethnic groups have this problem.
 <p>
-EvalDictator is free and open source with an "Apache" style license.  The code may be used in proprietary products, even if the products are not open source.  The source code will be publicly available on SourceForge.net.  EvalDictator will contain no patented IP.
+EvalDictator is free and open source with an "Apache" style licence.  The code may be used in proprietary products, even if the products are not open source.  The source code will be publicly available on SourceForge.net.  EvalDictator will contain no patented IP.
 <p>
 The acoustic and language models are also free, however, they need not be built from publicly available speech data, or be built by publicly available tools.  In this way companies and researchers can donate "eval" models to the project while keeping the data and tools proprietary.
 <p>
-The goal is to eventually make a tool that is "useful enough" to be interesting, while also being trivial to install and use-- a Dictation system which many people will want to Evaluate.
+The goal is to eventaully make a tools that are useful while also being trivial to install and use-- Dictation systems which many people will want to Evaluate.
   </li>
   <br>&nbsp;
   <li><a name="capabilities"><b>Capabilities</b></a>
 <p>
-Current there is a complete working prototype code named "HumbleBeginnings".
+Currently, there is a complete working prototype code named "HumbleBeginnings".
 <p>
-HumbleBeginnings is written in 100% Java, and consists of two parts: the Dictator and the Collector.
+HumbleBeginnings is written in 100% Java, and constists of two parts: the Dictator and the Collector.
 <p>
 The Dictator is a desktop application that performs Dictation via automatic speech recognition.  It is based on the Sphinx4 recognizer from Carnegie Mellon.  Sphinx4 is a state-of-the-art large vocabulary recognizer.  The accuracy is as good as anything, and the size and speed are sufficient for a modern PC.  It currently supports English, Arabic and Mandarin using the Wall Street Journal and GALE models.
 <p>
 The Dictator UI is very simple.  It is merely a text pane, where the user can insert text by speaking.  The user simply selects the insert position with the mouse, clicks and holds while talking, and the text is inserted.  The complete text is automatically placed on the clipboard.  The user then goes to his/her favorite application (e.g. Word, Excel, OpenOffice), pastes the text and completes editing.
 <p>
-The Collector is a server based web application.  Dictator users are encouraged to "donate their voice" to the project in order to improve the models.
-The Collector is used to collect this speech data.  In the future, the Collector may reward "donators" with custom models adapted to their voice.
+The Collector is a server based web application that creates custom dictionaries, language models and acoustic models.  Users upload a collection of their own documents to the server.  They are then asked to read a selection of their own text out load.  The Collector then automatically creates a version of Dictator customized to their voice, language and vocabulary.  Users may offer to donate this data to the project in order to improve future versions, otherwise it is deleted.
 <p>
-Currently, HumbleBeginnings is very early in its development.  Dictator has very poor performance-- it is big, slow, inaccurate, and also has no command and control, no editing, no adaptation, and no vocabulary editor.  The Collector infrastructure is not yet ready to collect a large amount of data.  The team is discussing what techniques and features need to be implemented.
+HumbleBeginnings is very early in its development.  Dictator has very poor performance-- it is big, slow, inaccurate, and also has no command and control, no editing, no adaptation, and no vocabulary editor.  The Collector is in development and not yet ready to process data.  The team is discussing what techniques and features need to be implemented.
 <p>
 (<b>NOTE:</b> The links in this section point to local files created by
       javadoc. If they are broken, please follow the instructions on
