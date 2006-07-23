@@ -130,9 +130,9 @@ const int32 prime[] = {
     101, 211, 307, 401, 503, 601, 701, 809, 907,
     1009, 1201, 1601, 2003, 2411, 3001, 4001, 5003, 6007, 7001, 8009, 9001,
     10007, 12007, 16001, 20011, 24001, 30011, 40009, 50021, 60013, 70001,
-        80021, 90001,
+    80021, 90001,
     100003, 120011, 160001, 200003, 240007, 300007, 400009, 500009, 600011,
-        700001, 800011, 900001,
+    700001, 800011, 900001,
     -1
 };
 
@@ -293,9 +293,8 @@ lookup(hash_table_t * h, uint32 hash, const char *key, int32 len,
         return -1;
 
     if (h->nocase) {
-        while (entry
-               && ((entry->len != len)
-                   || (keycmp_nocase(entry, key) != 0)))
+        while (entry && ((entry->len != len)
+                         || (keycmp_nocase(entry, key) != 0)))
             entry = entry->next;
     }
     else {
@@ -387,17 +386,15 @@ delete(hash_table_t * h, uint32 hash, const char *key, int32 len)
         return HASH_OP_FAILURE;
 
     if (h->nocase) {
-        while (entry
-               && ((entry->len != len)
-                   || (keycmp_nocase(entry, key) != 0))) {
+        while (entry && ((entry->len != len)
+                         || (keycmp_nocase(entry, key) != 0))) {
             prev = entry;
             entry = entry->next;
         }
     }
     else {
-        while (entry
-               && ((entry->len != len)
-                   || (keycmp_case(entry, key) != 0))) {
+        while (entry && ((entry->len != len)
+                         || (keycmp_case(entry, key) != 0))) {
             prev = entry;
             entry = entry->next;
         }

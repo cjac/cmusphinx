@@ -101,16 +101,15 @@
 
 static arg_t defn[] = {
     log_table_command_line_macro()
-    language_model_command_line_macro()
-    control_file_handling_command_line_macro()
-    common_filler_properties_command_line_macro()
-    common_application_properties_command_line_macro()
-    control_lm_file_command_line_macro()
-    dictionary_command_line_macro()
-    {"-mdef",
-     REQARG_STRING,
-     NULL,
-     "Model definition input file: triphone -> senones/tmat tying"},
+        language_model_command_line_macro()
+        control_file_handling_command_line_macro()
+        common_filler_properties_command_line_macro()
+        common_application_properties_command_line_macro()
+        control_lm_file_command_line_macro()
+        dictionary_command_line_macro(){"-mdef",
+                                        REQARG_STRING,
+                                        NULL,
+                                        "Model definition input file: triphone -> senones/tmat tying"},
     {"-inlatdir",
      REQARG_STRING,
      NULL,
@@ -154,12 +153,10 @@ models_init(void)
 
     mdef = mdef_init((char *) cmd_ln_access("-mdef"), 1);
 
-    dict = dict_init(mdef, 
-		     (char *) cmd_ln_access("-dict"), 
-		     (char *) cmd_ln_access("-fdict"), 
-		     0, 
-		     cmd_ln_int32("-lts_mismatch"),
-                     1);
+    dict = dict_init(mdef,
+                     (char *) cmd_ln_access("-dict"),
+                     (char *) cmd_ln_access("-fdict"),
+                     0, cmd_ln_int32("-lts_mismatch"), 1);
 
     lmset = lmset_init(cmd_ln_str("-lm"),
                        cmd_ln_str("-lmctlfn"),

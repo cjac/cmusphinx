@@ -85,11 +85,10 @@
 #include "encoding.h"
 
 static arg_t arg[] = {
-    common_application_properties_command_line_macro()
-    {"-input",
-     REQARG_STRING,
-     NULL,
-     "Input file"},
+    common_application_properties_command_line_macro(){"-input",
+                                                       REQARG_STRING,
+                                                       NULL,
+                                                       "Input file"},
     {"-output",
      REQARG_STRING,
      NULL,

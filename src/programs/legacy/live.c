@@ -252,7 +252,7 @@ live_utt_decode_block(int16 * samples, int32 nsamples,
 
     return_value =
         fe_process_utt(fe, samples, nsamples, &mfcbuf, &live_nfr);
-    /**/ if (live_endutt) {     /* RAH, It seems that we shouldn't throw out this data */
+     /**/ if (live_endutt) {    /* RAH, It seems that we shouldn't throw out this data */
         /* fe_end_utt assumes someone put in vector which is preallocated. */
         /* We need to do it because no matter whether it is end of the utterance,
            we need to put mfcbug into feat_s2mfc2feat_block

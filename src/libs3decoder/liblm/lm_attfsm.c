@@ -147,56 +147,46 @@ lm_write_att_fsm(lm_t * lm, const char *filename)
 
             for (j = 0; j < nb_bg; j++) {
 
-	         wid32_bg = is32bits ?  bgptr32[j].wid: bgptr[j].wid;
+                wid32_bg = is32bits ? bgptr32[j].wid : bgptr[j].wid;
                 if (wid32_bg != lm->finishlwid) {
 
                     /*32/16 bits code */
-                    id_hist1 =
-                        is32bits 
-		      ? idx_tg32_hist(lm, 
-				      bgptr32, i,
-				      j) 
-		      : idx_tg_hist(lm,
-				    bgptr, i,
-				    j);
+                    id_hist1 = is32bits ? idx_tg32_hist(lm, bgptr32, i, j)
+                        : idx_tg_hist(lm, bgptr, i, j);
 
                     nb_tg =
-                        is32bits 
-		      ? lm_tg32list(lm, i, 
-				    bgptr32[j].wid,
-				    &tgptr32,
-				    &bowt) 
-		      : lm_tglist(lm, i,
-				  bgptr[j].wid,
-				  &tgptr,
-				  &bowt);
+                        is32bits
+                        ? lm_tg32list(lm, i,
+                                      bgptr32[j].wid, &tgptr32, &bowt)
+                        : lm_tglist(lm, i, bgptr[j].wid, &tgptr, &bowt);
 
                     if (nb_tg > 0) {
-		      if(is32bits)
-                        fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr32[j].wid + 1, -lm->bgprob[bgptr32[j].probid].f);       /* 2g->3g */
-		      else
-                        fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f);       /* 2g->3g */
+                        if (is32bits)
+                            fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr32[j].wid + 1, -lm->bgprob[bgptr32[j].probid].f);       /* 2g->3g */
+                        else
+                            fprintf(file, "%d\t%d\t%d\t%f\n", i, id_hist1 + nbwtg, bgptr[j].wid + 1, -lm->bgprob[bgptr[j].probid].f);   /* 2g->3g */
                     }
-		    if(is32bits)
-		      fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr32[j].wid, -lm->tgbowt[bgptr32[j].bowtid].f);   /* 3g->2g */
-		    else
-		      fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr[j].wid, -lm->tgbowt[bgptr[j].bowtid].f);   /* 3g->2g */
+                    if (is32bits)
+                        fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr32[j].wid, -lm->tgbowt[bgptr32[j].bowtid].f);   /* 3g->2g */
+                    else
+                        fprintf(file, "%d\t%d\t0\t%f\n", id_hist1 + nbwtg, bgptr[j].wid, -lm->tgbowt[bgptr[j].bowtid].f);       /* 3g->2g */
 
                     for (k = 0; k < nb_tg; k++) {       /* 3g->3g */
-		      
-		        wid32_tg= is32bits ?  tgptr32[k].wid : tgptr[k].wid;
+
+                        wid32_tg =
+                            is32bits ? tgptr32[k].wid : tgptr[k].wid;
 
                         if (wid32_tg == lm->finishlwid) {
-			    if(is32bits)
-			      fprintf(file, "%d\t%d\t%d\t%f\n",
-				      id_hist1 + nbwtg, st_end,
-				      tgptr32[k].wid + 1,
-				      -lm->tgprob[tgptr32[k].probid].f);
-			    else
-			      fprintf(file, "%d\t%d\t%d\t%f\n",
-				      id_hist1 + nbwtg, st_end,
-				      tgptr[k].wid + 1,
-				      -lm->tgprob[tgptr[k].probid].f);
+                            if (is32bits)
+                                fprintf(file, "%d\t%d\t%d\t%f\n",
+                                        id_hist1 + nbwtg, st_end,
+                                        tgptr32[k].wid + 1,
+                                        -lm->tgprob[tgptr32[k].probid].f);
+                            else
+                                fprintf(file, "%d\t%d\t%d\t%f\n",
+                                        id_hist1 + nbwtg, st_end,
+                                        tgptr[k].wid + 1,
+                                        -lm->tgprob[tgptr[k].probid].f);
                         }
                         else {
                             /* bowt not used ... */

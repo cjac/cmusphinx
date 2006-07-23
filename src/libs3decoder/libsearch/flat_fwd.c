@@ -991,7 +991,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
 
                 if (n_tg > 0) {
                     /* Transition to trigram followers of bw0, bw1, if any */
-		    while (n_tg > 0) {
+                    while (n_tg > 0) {
                         nextwid = is32bits ?
                             LM_DICTWID(lm, tgptr32->wid) :
                             LM_DICTWID(lm, tgptr->wid);
@@ -1016,11 +1016,11 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                                 }
                             }
                         }
-			--n_tg;
-			if (is32bits)
-			    ++tgptr32;
-			else
-			    ++tgptr;
+                        --n_tg;
+                        if (is32bits)
+                            ++tgptr32;
+                        else
+                            ++tgptr;
                     }
                     acc_bowt = bowt;
                 }
@@ -1371,7 +1371,7 @@ dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
         if (d->sf == 0) {
         }
 /*
-        	    assert (d->wid == dict->startwid);	*//* No predecessors to this */
+                                	    assert (d->wid == dict->startwid);	*//* No predecessors to this */
         else {
             /* Link from all end points == d->sf-1 to d */
             for (l = lathist->frm_latstart[d->sf - 1];

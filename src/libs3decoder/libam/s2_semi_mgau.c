@@ -218,9 +218,9 @@ cepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * z)
     if (frame % fgmm->downs->ds_ratio)
         return;
     if (node) {
-        uint32 maxbbi =
-            s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                   s->kd_maxbbi);
+        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
+                                                               s->
+                                                               kd_maxbbi);
         for (i = 0; i < maxbbi; ++i) {
             cw = node->bbi[i];
             mean = s->means[(int32) CEP_FEAT] + cw * CEP_VECLEN + 1;
@@ -361,9 +361,9 @@ dcepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * dzs,
     if (frame % fgmm->downs->ds_ratio)
         return;
     if (node) {
-        uint32 maxbbi =
-            s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                   s->kd_maxbbi);
+        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
+                                                               s->
+                                                               kd_maxbbi);
         for (i = 0; i < maxbbi; ++i) {
             cw = node->bbi[i];
             mean = s->means[(int32) DCEP_FEAT] + cw * DCEP_VECLEN + 1;
@@ -510,9 +510,9 @@ ddcepDist0(s2_semi_mgau_t * s, fast_gmm_t * fgmm, int32 frame, mfcc_t * z)
     if (frame % fgmm->downs->ds_ratio)
         return;
     if (node) {
-        uint32 maxbbi =
-            s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
-                                                   s->kd_maxbbi);
+        uint32 maxbbi = s->kd_maxbbi == -1 ? node->n_bbi : MIN(node->n_bbi,
+                                                               s->
+                                                               kd_maxbbi);
         for (i = 0; i < maxbbi; ++i) {
             cw = node->bbi[i];
             mean = s->means[(int32) DDCEP_FEAT] + cw * CEP_VECLEN + 1;

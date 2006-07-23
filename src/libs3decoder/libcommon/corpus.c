@@ -226,16 +226,14 @@ sep_tailid(char *line, char *uttid)
     uttid[0] = '\0';
 
     /* Find last close-paren */
-    for (i = l - 1;
-         (i >= 0) && ((line[i] == '\n') || (line[i] == ' ')
-                      || (line[i] == '\t')); --i);
+    for (i = l - 1; (i >= 0) && ((line[i] == '\n') || (line[i] == ' ')
+                                 || (line[i] == '\t')); --i);
     if ((i < 0) || (line[i] != ')'))    /* Missing uttid */
         return -1;
     k = i;
 
     /* Find closest open-paren; no spaces allowed in uttid */
-    for (--i;
-         (i >= 0) && (line[i] != ' ') && (line[i] != '\t')
+    for (--i; (i >= 0) && (line[i] != ' ') && (line[i] != '\t')
          && (line[i] != '('); --i);
     if ((i < 0) || (k - i < 2) || (line[i] != '('))     /* Empty or missing uttid */
         return -1;

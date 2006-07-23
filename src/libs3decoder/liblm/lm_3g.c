@@ -220,10 +220,10 @@ ReadNgramCounts(FILE * fp, int32 * n_ug,   /**< Out: number of unigram read */
     } while ((strcmp(string, "\\data\\\n") != 0) && (!feof(fp)));
 
 
-    if (strcmp(string, "\\data\\\n") != 0){
+    if (strcmp(string, "\\data\\\n") != 0) {
 
         E_WARN("No \\data\\ mark in LM file\n");
-	return LM_NO_DATA_MARK;
+        return LM_NO_DATA_MARK;
     }
 
 
@@ -244,7 +244,7 @@ ReadNgramCounts(FILE * fp, int32 * n_ug,   /**< Out: number of unigram read */
             break;
         default:
             E_WARN("Unknown ngram (%d)\n", ngram);
-	    return LM_UNKNOWN_NG;
+            return LM_UNKNOWN_NG;
             break;
         }
     }
@@ -254,9 +254,9 @@ ReadNgramCounts(FILE * fp, int32 * n_ug,   /**< Out: number of unigram read */
         fgets(string, sizeof(string), fp);
 
     /* Check counts;  NOTE: #trigrams *CAN* be 0 */
-    if ((*n_ug <= 0) || (*n_bg <= 0) || (*n_tg < 0)){
+    if ((*n_ug <= 0) || (*n_bg <= 0) || (*n_tg < 0)) {
         E_WARN("Bad or missing ngram count\n");
-	return LM_BAD_LM_COUNT;
+        return LM_BAD_LM_COUNT;
     }
     return LM_SUCCESS;
 }
@@ -276,9 +276,9 @@ NewUnigramTable(int32 n_ug)
     table = NULL;
 
     table = (ug_t *) ckd_calloc(n_ug, sizeof(ug_t));
-    if(table == NULL) {
-      E_WARN("Fail to allocate the unigram table\n");
-      return NULL;
+    if (table == NULL) {
+        E_WARN("Fail to allocate the unigram table\n");
+        return NULL;
     }
     for (i = 0; i < n_ug; i++) {
         table[i].dictwid = NO_WORD;
@@ -308,11 +308,11 @@ NewModel(int32 n_ug, int32 n_bg, int32 n_tg, int32 version)
      */
     model->ug = NewUnigramTable(n_ug + 1);
 
-    model->version=version;
-    if(model->version==LMTXT_VERSION)
-       model->is32bits = n_ug > LM_LEGACY_CONSTANT;
-    else if(model->version==LMFORCED_TXT32VERSION)
-      model->is32bits = 1;
+    model->version = version;
+    if (model->version == LMTXT_VERSION)
+        model->is32bits = n_ug > LM_LEGACY_CONSTANT;
+    else if (model->version == LMFORCED_TXT32VERSION)
+        model->is32bits = 1;
 
     if (model->is32bits) {
         model->bg32 = (bg32_t *) ckd_calloc(n_bg + 1, sizeof(bg32_t));
@@ -376,10 +376,10 @@ ReadUnigrams(FILE * fp, lm_t * model  /**< An LM where unigram will be filled in
             continue;
         }
 
-        if (wcnt >= model->n_ug){
+        if (wcnt >= model->n_ug) {
             E_WARN("Too many unigrams\n");
-	    return LM_BAD_LM_COUNT;
-	}
+            return LM_BAD_LM_COUNT;
+        }
 
         /* Associate name with word id */
         /* This is again not local */
@@ -463,21 +463,21 @@ ReadBigrams(FILE * fp, lm_t * model, int32 idfmt)
         }
 
         if (!idfmt) {
-   	    if ((w1 = wstr2wid(model, word1)) == NO_WORD){
+            if ((w1 = wstr2wid(model, word1)) == NO_WORD) {
                 E_WARN("Unknown word: %s\n", word1);
-		return LM_UNKNOWN_WORDS;
-	    }
-            if ((w2 = wstr2wid(model, word2)) == NO_WORD){
+                return LM_UNKNOWN_WORDS;
+            }
+            if ((w2 = wstr2wid(model, word2)) == NO_WORD) {
                 E_WARN("Unknown word: %s\n", word2);
-		return LM_UNKNOWN_WORDS;
-	    }
+                return LM_UNKNOWN_WORDS;
+            }
         }
         else {
             if ((w1 >= model->n_ug) || (w2 >= model->n_ug) || (w1 < 0)
-                || (w2 < 0)){
-	        E_WARN("Bad bigram: %s", string);
-		return LM_BAD_BIGRAM;
-	    }
+                || (w2 < 0)) {
+                E_WARN("Bad bigram: %s", string);
+                return LM_BAD_BIGRAM;
+            }
         }
 
         /* HACK!! to quantize probs to 4 decimal digits */
@@ -486,10 +486,10 @@ ReadBigrams(FILE * fp, lm_t * model, int32 idfmt)
         p = bo_wt * QUANTIZATION_MULTIPLIER;
         bo_wt = p * QUANTIZATION_DIVISOR;
 
-        if (bgcount >= model->n_bg){
+        if (bgcount >= model->n_bg) {
             E_WARN("Too many bigrams\n");
-	    return LM_TOO_MANY_NGRAM;
-	}
+            return LM_TOO_MANY_NGRAM;
+        }
 
         if (is32bits) {
             bgptr32->wid = w2;
@@ -527,9 +527,9 @@ ReadBigrams(FILE * fp, lm_t * model, int32 idfmt)
         }
     }
     if ((strcmp(string, "\\end\\\n") != 0)
-        && (strcmp(string, "\\3-grams:\n") != 0)){     
+        && (strcmp(string, "\\3-grams:\n") != 0)) {
         E_WARN("Bad bigram: %s\n", string);
-	return LM_BAD_BIGRAM;
+        return LM_BAD_BIGRAM;
     }
 
     for (prev_w1++; prev_w1 <= model->n_ug; prev_w1++)
@@ -551,7 +551,7 @@ ReadBigrams(FILE * fp, lm_t * model, int32 idfmt)
  * of a segment is too huge. LM_BAD_TRIGRAM when a bad trigram is
  * found.  LM_SUCCESS when the whole reading is ok. 
  */
-static int 
+static int
 ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
 {
     char string[1024], word1[256], word2[256], word3[256];
@@ -588,35 +588,35 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
         }
 
         if (!idfmt) {
-	    if ((w1 = wstr2wid(model, word1)) == NO_WORD){
+            if ((w1 = wstr2wid(model, word1)) == NO_WORD) {
                 E_WARN("Unknown word: %s\n", word1);
-		return LM_UNKNOWN_WORDS;
-	    }
-            if ((w2 = wstr2wid(model, word2)) == NO_WORD){
+                return LM_UNKNOWN_WORDS;
+            }
+            if ((w2 = wstr2wid(model, word2)) == NO_WORD) {
                 E_WARN("Unknown word: %s\n", word2);
-		return LM_UNKNOWN_WORDS;
-	    }
-            if ((w3 = wstr2wid(model, word3)) == NO_WORD){
+                return LM_UNKNOWN_WORDS;
+            }
+            if ((w3 = wstr2wid(model, word3)) == NO_WORD) {
                 E_WARN("Unknown word: %s\n", word3);
-		return LM_UNKNOWN_WORDS;
-	    }
+                return LM_UNKNOWN_WORDS;
+            }
         }
         else {
             if ((w1 >= model->n_ug) || (w2 >= model->n_ug)
-                || (w3 >= model->n_ug) || (w1 < 0) || (w2 < 0) || (w3 < 0)){	      
+                || (w3 >= model->n_ug) || (w1 < 0) || (w2 < 0) || (w3 < 0)) {
                 E_WARN("Bad trigram: %s\n", string);
-		return LM_BAD_TRIGRAM;
-	    }
+                return LM_BAD_TRIGRAM;
+            }
         }
 
         /* HACK!! to quantize probs to 4 decimal digits */
         p = p3 * QUANTIZATION_MULTIPLIER;
         p3 = p * QUANTIZATION_DIVISOR;
 
-        if (tgcount >= model->n_tg){
+        if (tgcount >= model->n_tg) {
             E_WARN("Too many trigrams\n");
-	    return LM_TOO_MANY_NGRAM;
-	}
+            return LM_TOO_MANY_NGRAM;
+        }
 
         if (is32bits) {
             tgptr32->wid = w3;
@@ -647,17 +647,17 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
                 for (; (bg < endbg) && (bgptr->wid != w2); bg++, bgptr++);
             }
 
-            if (bg >= endbg){
+            if (bg >= endbg) {
                 E_WARN("Missing bigram for trigram: %s", string);
-		return LM_NO_MINUS_1GRAM;
-	    }
+                return LM_NO_MINUS_1GRAM;
+            }
 
             /* bg = bigram entry index for <w1,w2>.  Update tseg_base */
             seg = bg >> LOG2_BG_SEG_SZ;
             for (i = prev_seg + 1; i <= seg; i++)
                 model->tg_segbase[i] = tgcount;
 
-	    /*	    E_INFO("bg %d, seg %d, prev_seg %d, tgcount %d, tg_segbase[prev_seg] %d, tgoff %d\n",bg,seg,prev_seg,tgcount,model->tg_segbase[prev_seg],tgcount - model->tg_segbase[prev_seg]);*/
+            /*      E_INFO("bg %d, seg %d, prev_seg %d, tgcount %d, tg_segbase[prev_seg] %d, tgoff %d\n",bg,seg,prev_seg,tgcount,model->tg_segbase[prev_seg],tgcount - model->tg_segbase[prev_seg]); */
             /* Update trigrams pointers for all bigrams until bg */
             if (prev_seg < seg) {
                 int32 tgoff = 0;
@@ -665,15 +665,18 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
                 if (prev_seg >= 0) {
                     tgoff = tgcount - model->tg_segbase[prev_seg];
 
-		    /*		    E_INFO("Offset %d tgcount %d, seg_base %d from tseg_base > %d, prev_seg %d seg %d\n",
-		      tgoff, tgcount, model->tg_segbase[prev_seg],LM_LEGACY_CONSTANT,prev_seg,seg);*/
+                    /*              E_INFO("Offset %d tgcount %d, seg_base %d from tseg_base > %d, prev_seg %d seg %d\n",
+                       tgoff, tgcount, model->tg_segbase[prev_seg],LM_LEGACY_CONSTANT,prev_seg,seg); */
 
                     if (!is32bits) {
-		         if (tgoff > LM_LEGACY_CONSTANT){
-			      E_WARN("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
-				     tgoff, tgcount, model->tg_segbase[prev_seg],LM_LEGACY_CONSTANT);
-			      return LM_OFFSET_TOO_LARGE;
-			 }
+                        if (tgoff > LM_LEGACY_CONSTANT) {
+                            E_WARN
+                                ("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
+                                 tgoff, tgcount,
+                                 model->tg_segbase[prev_seg],
+                                 LM_LEGACY_CONSTANT);
+                            return LM_OFFSET_TOO_LARGE;
+                        }
                     }
                 }
 
@@ -703,11 +706,13 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
                 tgoff = tgcount - model->tg_segbase[prev_seg];
 
                 if (!is32bits) {
-		  if (tgoff > LM_LEGACY_CONSTANT){
-		      E_WARN("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
-			      tgoff, tgcount, model->tg_segbase[prev_seg],LM_LEGACY_CONSTANT);
-		      return LM_OFFSET_TOO_LARGE;
-		  }
+                    if (tgoff > LM_LEGACY_CONSTANT) {
+                        E_WARN
+                            ("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
+                             tgoff, tgcount, model->tg_segbase[prev_seg],
+                             LM_LEGACY_CONSTANT);
+                        return LM_OFFSET_TOO_LARGE;
+                    }
                 }
 
                 if (is32bits) {
@@ -731,12 +736,12 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
         }
 
         tgcount++;
-	/*	E_INFO("\ntg_count %d: This line: %s, w1 %d, prev_w1 %d, w2 %d, prev_2 %d, w3 %d\n\n",
-	       tgcount,string,
-	       w1,prev_w1,
-	       w2,prev_w2,
-	       w3
-	       );*/
+        /*      E_INFO("\ntg_count %d: This line: %s, w1 %d, prev_w1 %d, w2 %d, prev_2 %d, w3 %d\n\n",
+           tgcount,string,
+           w1,prev_w1,
+           w2,prev_w2,
+           w3
+           ); */
 
         if (is32bits) {
             tgptr32++;
@@ -748,9 +753,9 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
             E_INFO_NOFN("Processing trigram .\n");
         }
     }
-    if (strcmp(string, "\\end\\\n") != 0){
+    if (strcmp(string, "\\end\\\n") != 0) {
         E_WARN("Bad trigram: %s\n", string);
-	return LM_BAD_TRIGRAM;
+        return LM_BAD_TRIGRAM;
     }
 
     for (prev_bg++; prev_bg <= model->n_bg; prev_bg++) {
@@ -759,11 +764,15 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
 
         if (!is32bits) {
             if ((tgcount - model->tg_segbase[prev_bg >> LOG2_BG_SEG_SZ]) >
-                LM_LEGACY_CONSTANT){
-	         E_WARN("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
-			model->tg_segbase[prev_seg>>LOG2_BG_SEG_SZ], tgcount, model->tg_segbase[prev_seg>>LOG2_BG_SEG_SZ],LM_LEGACY_CONSTANT);
-		 return LM_OFFSET_TOO_LARGE;
-	    }
+                LM_LEGACY_CONSTANT) {
+                E_WARN
+                    ("Offset %d tgcount %d, seg_base %d from tseg_base > %d\n",
+                     model->tg_segbase[prev_seg >> LOG2_BG_SEG_SZ],
+                     tgcount,
+                     model->tg_segbase[prev_seg >> LOG2_BG_SEG_SZ],
+                     LM_LEGACY_CONSTANT);
+                return LM_OFFSET_TOO_LARGE;
+            }
         }
 
         if (is32bits) {
@@ -790,21 +799,21 @@ ReadTrigrams(FILE * fp, lm_t * model, int32 idfmt)
  */
 lm_t *
 lm_read_txt(const char *filename,        /**< Input: The file name*/
-            int32 lminmemory, /**< Input: Whether lm is in memory */	    
-	    int32 *err_no,    /**< Input/Output: Depends on the problem that LM
+            int32 lminmemory, /**< Input: Whether lm is in memory */
+            int32 * err_no,   /**< Input/Output: Depends on the problem that LM
 				 reading encounters, it could be errors
 				 from -2 (LM_OFFSET_TOO_LARGE) to
 				 -15 (LM_CANNOT_ALLOCATE).  Please checkout
 				 lm.h for details. 
 			      */
-	    int32 isforced32bit /** Input: normally, we should let lm_read_txt
+            int32 isforced32bit /** Input: normally, we should let lm_read_txt
 				    to decide whether a file is 32 bit or not. 
 				    When the lm_read_txt couldn't decide that before
 				    reading or if more specificially when we hit
 				    the LM segment size problems. Then this bit
 				    will alter the reading behavior to 32 bit. 				    
 				*/
-	    )
+    )
 {
     lm_t *model;
     FILE *fp = NULL;
@@ -820,66 +829,70 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     fp = fopen_comp(filename, "r", &usingPipe);
     if (fp == NULL) {
         E_WARN("failed to read filename for LM\n");
-	*err_no = LM_FILE_NOT_FOUND;
-	return NULL;
+        *err_no = LM_FILE_NOT_FOUND;
+        return NULL;
     }
-    
-    _errmsg=ReadNgramCounts(fp, &n_unigram, &n_bigram, &n_trigram);
-    if(_errmsg!=LM_SUCCESS) {
-      E_WARN("Couldnt' read the ngram count\n");
-      *err_no=_errmsg;
-      return NULL;
+
+    _errmsg = ReadNgramCounts(fp, &n_unigram, &n_bigram, &n_trigram);
+    if (_errmsg != LM_SUCCESS) {
+        E_WARN("Couldnt' read the ngram count\n");
+        *err_no = _errmsg;
+        return NULL;
     }
 
     E_INFO("ngrams 1=%d, 2=%d, 3=%d\n", n_unigram, n_bigram, n_trigram);
     /* HACK! This should be something provided by the dictionary What is dict_size? */
 
-    model = NewModel(n_unigram, n_bigram, n_trigram, 
-		     isforced32bit?
-		     LMFORCED_TXT32VERSION:		   
-		     LMTXT_VERSION
-		     );
-    if(model==NULL) {
-      E_WARN("Cannot allocate tables for new lm with ug %d, bg %d, tg %d\n",n_unigram,n_bigram,n_trigram);
-      *err_no = LM_CANNOT_ALLOCATE;
-      return NULL;
+    model = NewModel(n_unigram, n_bigram, n_trigram,
+                     isforced32bit ?
+                     LMFORCED_TXT32VERSION : LMTXT_VERSION);
+    if (model == NULL) {
+        E_WARN
+            ("Cannot allocate tables for new lm with ug %d, bg %d, tg %d\n",
+             n_unigram, n_bigram, n_trigram);
+        *err_no = LM_CANNOT_ALLOCATE;
+        return NULL;
     }
 
     model->n_ng = 1;
 
     model->isLM_IN_MEMORY = lminmemory;
 
-    model->is32bits  = lm_is32bits(model);
-    if(model->is32bits)
-      E_INFO("Is 32 bits %d, lm->version %d\n",model->is32bits,model->version);
+    model->is32bits = lm_is32bits(model);
+    if (model->is32bits)
+        E_INFO("Is 32 bits %d, lm->version %d\n", model->is32bits,
+               model->version);
 
     /* ARCHAN. Should do checking as well. I was lazy.
      */
 
     if (model->n_bg > 0) {
         model->n_ng = 2;
-	if(model->is32bits){
-	  model->membg32 =
-            (membg32_t *) ckd_calloc(model->n_ug, sizeof(membg32_t));
+        if (model->is32bits) {
+            model->membg32 =
+                (membg32_t *) ckd_calloc(model->n_ug, sizeof(membg32_t));
 
-	}else{
-	  model->membg =
-            (membg_t *) ckd_calloc(model->n_ug, sizeof(membg_t));
+        }
+        else {
+            model->membg =
+                (membg_t *) ckd_calloc(model->n_ug, sizeof(membg_t));
 
-	}
+        }
     }
 
     if (model->n_tg > 0) {
         model->n_ng = 3;
-	
-	if(model->is32bits){
-	  model->tginfo32 =
-            (tginfo32_t **) ckd_calloc(model->n_ug, sizeof(tginfo32_t *));
 
-	}else{
-	  model->tginfo =
-            (tginfo_t **) ckd_calloc(model->n_ug, sizeof(tginfo_t *));
-	}
+        if (model->is32bits) {
+            model->tginfo32 =
+                (tginfo32_t **) ckd_calloc(model->n_ug,
+                                           sizeof(tginfo32_t *));
+
+        }
+        else {
+            model->tginfo =
+                (tginfo_t **) ckd_calloc(model->n_ug, sizeof(tginfo_t *));
+        }
     }
 
 
@@ -888,10 +901,10 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
 
     /* control the lm dumping mechanism */
 
-    _errmsg=ReadUnigrams(fp, model);
-    if(_errmsg!=LM_SUCCESS){
-      *err_no = _errmsg;
-      return NULL;
+    _errmsg = ReadUnigrams(fp, model);
+    if (_errmsg != LM_SUCCESS) {
+        *err_no = _errmsg;
+        return NULL;
     }
 
     E_INFO("%8d = #unigrams created\n", model->n_ug);
@@ -900,10 +913,10 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
     if (model->n_tg > 0)
         init_sorted_list(&(model->sorted_bowt2));
 
-    _errmsg=ReadBigrams(fp, model, idfmt);
-    if(_errmsg!=LM_SUCCESS){
-      *err_no = _errmsg;
-      return NULL;
+    _errmsg = ReadBigrams(fp, model, idfmt);
+    if (_errmsg != LM_SUCCESS) {
+        *err_no = _errmsg;
+        return NULL;
     }
 
     model->n_bg = FIRST_BG(model, model->n_ug);
@@ -923,16 +936,17 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
 
         init_sorted_list(&(model->sorted_prob3));
 
-	_errmsg=ReadTrigrams(fp, model, idfmt);
-        if(_errmsg!=LM_SUCCESS){
-	  *err_no =_errmsg;
-	  return NULL;
-	}
+        _errmsg = ReadTrigrams(fp, model, idfmt);
+        if (_errmsg != LM_SUCCESS) {
+            *err_no = _errmsg;
+            return NULL;
+        }
 
         model->n_tg =
-            model->is32bits ? FIRST_TG32(model, model->n_bg) : FIRST_TG(model,
-                                                                model->
-                                                                n_bg);
+            model->is32bits ? FIRST_TG32(model,
+                                         model->n_bg) : FIRST_TG(model,
+                                                                 model->
+                                                                 n_bg);
         model->n_tgprob = model->sorted_prob3.free;
         model->tgprob = vals_in_sorted_list(&(model->sorted_prob3));
         E_INFO("%8d = #trigrams created\n", model->n_tg);
@@ -941,7 +955,7 @@ lm_read_txt(const char *filename,        /**< Input: The file name*/
         free_sorted_list(&model->sorted_prob3);
     }
 
-    *err_no=LM_SUCCESS;
+    *err_no = LM_SUCCESS;
     return model;
 }
 
