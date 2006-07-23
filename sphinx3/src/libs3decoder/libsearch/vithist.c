@@ -1674,6 +1674,21 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
             lathist->lattice =
                 ckd_realloc(lathist->lattice,
                             lathist->lat_alloc * sizeof(lattice_t));
+
+	    /* From exchange with Prof. Yannick LIUM 
+	       In some platforms, realloc doesn't automatically
+	       set the memory to NULL.  That causes some of the
+	       working code to have problems.  This piece has
+	       been tested in Solaris10/AMD64. 	     
+	     */
+	    {
+              int32 idebug;
+              for (idebug=lathist->n_lat_entry; 
+		   idebug<lathist->n_lat_entry + LAT_ALLOC_INCR ; idebug++) {
+                lathist->lattice[idebug].rcscore = NULL;
+                lathist->lattice[idebug].rchistory = NULL;
+              }
+            }
         }
 
         lathist->lattice[lathist->n_lat_entry].wid = w;
