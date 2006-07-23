@@ -112,7 +112,7 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
     lscr = 0;
     scl = 0;
     hypscale = 0;
-    global_hypscale=0;
+    global_hypscale = 0;
 
     for (gn = hyp; gn; gn = gnode_next(gn)) {
         h = (srch_hyp_t *) gnode_ptr(gn);
@@ -120,8 +120,8 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
         ascr += h->ascr;
         lscr += lm_rawscore(lm, lscr);
 
-	if (unnorm)
-  	    global_hypscale += compute_scale(h->sf, h->ef, ascale);
+        if (unnorm)
+            global_hypscale += compute_scale(h->sf, h->ef, ascale);
 
     }
 
@@ -136,8 +136,9 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
     if (fmt == SEG_FMT_SPHINX3) {
 
         fprintf(fp, "%s%s S %d T %d A %d L %d", (hdr ? hdr : ""), uttid,
-		scl, ascr + lscr + global_hypscale, ascr + global_hypscale, lscr);
-	
+                scl, ascr + lscr + global_hypscale, ascr + global_hypscale,
+                lscr);
+
 
 /*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
         for (gn = hyp; gn; gn = gnode_next(gn)) {
@@ -170,7 +171,9 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
 
         }
 
-	fprintf(fp, "(S= %d (A= %d L= %d))\n", ascr + lscr + global_hypscale, ascr + global_hypscale, lscr);
+        fprintf(fp, "(S= %d (A= %d L= %d))\n",
+                ascr + lscr + global_hypscale, ascr + global_hypscale,
+                lscr);
     }
     else if (fmt == SEG_FMT_CTM) {
 
@@ -575,14 +578,15 @@ read_s3hypseg_line(char *line, seg_hyp_line_t * seg_hyp_line, lm_t * lm,
         g->sh.ef = h->sh.sf - 1;
         g = h;
     }
-    g->sh.ef = seg_hyp_line->nfr ;
+    g->sh.ef = seg_hyp_line->nfr;
 
     sum = 0;
     for (h = seg_hyp_line->wordlist; h; h = h->next)
         sum += h->sh.ascr;
-    if (sum != seg_hyp_line->ascr){
-        E_FATAL("the ascr of words is not equal to the ascr of utt: %s (sum %d != tot %d). \n",
-                line,sum,seg_hyp_line->ascr);
+    if (sum != seg_hyp_line->ascr) {
+        E_FATAL
+            ("the ascr of words is not equal to the ascr of utt: %s (sum %d != tot %d). \n",
+             line, sum, seg_hyp_line->ascr);
     }
 
     sum = 0;
@@ -596,8 +600,8 @@ read_s3hypseg_line(char *line, seg_hyp_line_t * seg_hyp_line, lm_t * lm,
 
     for (h = seg_hyp_line->wordlist; h; h = h->next) {
         if (h->sh.ef < h->sh.sf) {
-	    E_FATAL("word %s ef (%d) <= sf (%d)in the line: %s\n", h->sh.word,h->sh.ef,h->sh.sf,
-                    line);
+            E_FATAL("word %s ef (%d) <= sf (%d)in the line: %s\n",
+                    h->sh.word, h->sh.ef, h->sh.sf, line);
         }
     }
 

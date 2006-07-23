@@ -443,15 +443,17 @@ build_succ_ci(s3wid_t w, int32 append_filler, s3cipid_t * succ_ci)
  * Return value: list of end phone nodes for w.  (NOTE: these are not yet linked into
  * the global node list.)
  */
-static pnode_t *append_transcript_word(s3wid_t w,
+static pnode_t *
+append_transcript_word(s3wid_t w,
                                 /** Transcript word to be appended */
-                                       pnode_t * prev_end,
+                       pnode_t * prev_end,
                                 /** Previous end points to be attached to w */
-                                       s3wid_t nextw,
+                       s3wid_t nextw,
                                 /** Next word to follow w (ignoring optional fillers) */
-                                       int32 prefix_filler,
+                       int32 prefix_filler,
                                 /** Whether optional filler words to precede w */
-                                       int32 append_filler) {
+                       int32 append_filler)
+{
 /** Whether optional filler words to follow w */
     int32 i;
     pnode_t *new_end, *tmp_end, *node;

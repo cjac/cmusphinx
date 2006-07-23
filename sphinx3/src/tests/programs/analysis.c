@@ -388,16 +388,14 @@ main(int32 argc, char *argv[])
     sen_st = ckd_calloc(kb.kbcore->mdef->n_ci_sen, sizeof(stats_t));
     cur_sen_st = ckd_calloc(kb.kbcore->mdef->n_ci_sen, sizeof(stats_t));
 
-    sen_Nbest_st =
-        ckd_calloc((int32)
-                   (kb.kbcore->mdef->n_sen -
-                    kb.kbcore->mdef->n_ci_sen) / NBEST_STEP,
-                   sizeof(stats_t));
-    cur_sen_Nbest_st =
-        ckd_calloc((int32)
-                   (kb.kbcore->mdef->n_sen -
-                    kb.kbcore->mdef->n_ci_sen) / NBEST_STEP,
-                   sizeof(stats_t));
+    sen_Nbest_st = ckd_calloc((int32)
+                              (kb.kbcore->mdef->n_sen -
+                               kb.kbcore->mdef->n_ci_sen) / NBEST_STEP,
+                              sizeof(stats_t));
+    cur_sen_Nbest_st = ckd_calloc((int32)
+                                  (kb.kbcore->mdef->n_sen -
+                                   kb.kbcore->mdef->n_ci_sen) / NBEST_STEP,
+                                  sizeof(stats_t));
 
     for (i = 0; i < kb.kbcore->mdef->n_ci_sen; i++) {
         sprintf(str, "Senone %d", i);
@@ -406,11 +404,10 @@ main(int32 argc, char *argv[])
         init_stat(&cur_sen_st[i], str);
     }
 
-    for (i = 0;
-         i <
-         (int32) ((float)
-                  (kb.kbcore->mdef->n_sen -
-                   kb.kbcore->mdef->n_ci_sen) / (float) NBEST_STEP); i++) {
+    for (i = 0; i < (int32) ((float)
+                             (kb.kbcore->mdef->n_sen -
+                              kb.kbcore->mdef->n_ci_sen) /
+                             (float) NBEST_STEP); i++) {
         sprintf(str, " %d -Best Senone", i * NBEST_STEP);
         init_stat(&sen_Nbest_st[i], str);
         sprintf(str, " %d -Cur Best Senone", i * NBEST_STEP);
@@ -434,11 +431,10 @@ main(int32 argc, char *argv[])
     print_stat(&cd_st);
     print_stat(&ci_st);
 
-    for (i = 0;
-         i <
-         (int32) ((float)
-                  (kb.kbcore->mdef->n_sen -
-                   kb.kbcore->mdef->n_ci_sen) / (float) NBEST_STEP); i++) {
+    for (i = 0; i < (int32) ((float)
+                             (kb.kbcore->mdef->n_sen -
+                              kb.kbcore->mdef->n_ci_sen) /
+                             (float) NBEST_STEP); i++) {
         print_stat(&sen_Nbest_st[i]);
     }
 

@@ -151,12 +151,11 @@ arg_t arg_def[] = {
         finite_state_grammar_command_line_macro()
         phone_insertion_penalty_command_line_macro()
 
-        partial_hypothesis_command_line_macro()
-
-    {"-bestscoredir",
-     ARG_STRING,
-     NULL,
-     "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)"},
+        partial_hypothesis_command_line_macro(){"-bestscoredir",
+                                                ARG_STRING,
+                                                NULL,
+                                                "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)"}
+    ,
 
     {"-machine_endian",
      ARG_STRING,
@@ -165,12 +164,14 @@ arg_t arg_def[] = {
 #else
      "little",
 #endif
-     "Endianness of machine, big or little"},
+     "Endianness of machine, big or little"}
+    ,
 
     {"-rawext",
      ARG_STRING,
      ".raw",
-     "Input raw files extension"},
+     "Input raw files extension"}
+    ,
 
     {NULL, ARG_INT32, NULL, NULL}
 };
@@ -179,12 +180,15 @@ arg_t arg_def[] = {
     /* Commented out; not supported */
 {
     "-compsep", ARG_STRING, "", /* Default: No compound word (NULL separator char) */
-"Separator character between components of a compound word (NULL if none)"},
+"Separator character between components of a compound word (NULL if none)"}
+
+,
 #endif
 #if 0                           /*ARCHAN: As mentioned by Evandro, the fact that there is both -cepdir and rawdir is very confusing. Removed */
 {
 "-cepdir",
         ARG_STRING,
         NULL,
-        "Input cepstrum files directory (prefixed to filespecs in control file)"},
+        "Input cepstrum files directory (prefixed to filespecs in control file)"}
+,
 #endif

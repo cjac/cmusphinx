@@ -113,7 +113,8 @@ dump_xwdpidmap(xwdpid_t ** x, mdef_t * mdef)
  * to unique ones.
  */
 int32
-xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx, int32 n, mdef_t * mdef
+xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx,
+                int32 n, mdef_t * mdef
                                     /**<The model definition */
     )
 {

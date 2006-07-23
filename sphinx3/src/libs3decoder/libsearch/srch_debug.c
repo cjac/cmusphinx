@@ -86,7 +86,7 @@ srch_debug_set_lm(void *srch, const char *lmname)
 }
 
 int
-srch_debug_add_lm(void *srch, lm_t *lm, const char *lmname)
+srch_debug_add_lm(void *srch, lm_t * lm, const char *lmname)
 {
     E_INFOCONT("SEARCH DEBUG: MODE ADD LM\n");
     return SRCH_SUCCESS;

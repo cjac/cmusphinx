@@ -1675,19 +1675,20 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
                 ckd_realloc(lathist->lattice,
                             lathist->lat_alloc * sizeof(lattice_t));
 
-	    /* From exchange with Prof. Yannick LIUM 
-	       In some platforms, realloc doesn't automatically
-	       set the memory to NULL.  That causes some of the
-	       working code to have problems.  This piece has
-	       been tested in Solaris10/AMD64. 	     
-	     */
-	    {
-              int32 idebug;
-              for (idebug=lathist->n_lat_entry; 
-		   idebug<lathist->n_lat_entry + LAT_ALLOC_INCR ; idebug++) {
-                lathist->lattice[idebug].rcscore = NULL;
-                lathist->lattice[idebug].rchistory = NULL;
-              }
+            /* From exchange with Prof. Yannick LIUM 
+               In some platforms, realloc doesn't automatically
+               set the memory to NULL.  That causes some of the
+               working code to have problems.  This piece has
+               been tested in Solaris10/AMD64.       
+             */
+            {
+                int32 idebug;
+                for (idebug = lathist->n_lat_entry;
+                     idebug < lathist->n_lat_entry + LAT_ALLOC_INCR;
+                     idebug++) {
+                    lathist->lattice[idebug].rcscore = NULL;
+                    lathist->lattice[idebug].rchistory = NULL;
+                }
             }
         }
 
@@ -1797,8 +1798,7 @@ two_word_history(latticehist_t * lathist, s3latid_t l, s3wid_t * w0,
 
     /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
     if (l1 != -1)
-        for (l0 = lathist->lattice[l1].history;
-             (IS_S3LATID(l0))
+        for (l0 = lathist->lattice[l1].history; (IS_S3LATID(l0))
              && (dict_filler_word(dict, lathist->lattice[l0].wid));
              l0 = lathist->lattice[l0].history);
 #else

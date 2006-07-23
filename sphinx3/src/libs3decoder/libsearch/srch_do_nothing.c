@@ -74,4 +74,3 @@ srch_do_nothing_decode()
 {
     return SRCH_SUCCESS;
 }
-

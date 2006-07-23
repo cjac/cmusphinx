@@ -248,11 +248,10 @@ static arg_t defn[] = {
         control_file_handling_command_line_macro()
         hypothesis_file_handling_command_line_macro()
         control_mllr_file_command_line_macro()
-        cepstral_input_handling_command_line_macro()
-    {"-lambda",
-     ARG_STRING,
-     NULL,
-     "Interpolation weights (CD/CI senone) parameters input file"},
+        cepstral_input_handling_command_line_macro(){"-lambda",
+                                                     ARG_STRING,
+                                                     NULL,
+                                                     "Interpolation weights (CD/CI senone) parameters input file"},
     {"-compwd",
      ARG_INT32,
      "0",

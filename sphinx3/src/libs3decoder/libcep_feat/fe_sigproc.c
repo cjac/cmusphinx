@@ -122,27 +122,23 @@ fe_build_melfilters(melfb_t * MEL_FB)
             leftfr =
                 (float32) ((int32) ((filt_edge[whichfilt] / dfreq) + 0.5))
                 * dfreq;
-            centerfr =
-                (float32) ((int32)
-                           ((filt_edge[whichfilt + 2] / dfreq) +
-                            0.5)) * dfreq;
-            rightfr =
-                (float32) ((int32)
-                           ((filt_edge[whichfilt + 4] / dfreq) +
-                            0.5)) * dfreq;
+            centerfr = (float32) ((int32)
+                                  ((filt_edge[whichfilt + 2] / dfreq) +
+                                   0.5)) * dfreq;
+            rightfr = (float32) ((int32)
+                                 ((filt_edge[whichfilt + 4] / dfreq) +
+                                  0.5)) * dfreq;
         }
         else {
             leftfr =
                 (float32) ((int32) ((filt_edge[whichfilt] / dfreq) + 0.5))
                 * dfreq;
-            centerfr =
-                (float32) ((int32)
-                           ((filt_edge[whichfilt + 1] / dfreq) +
-                            0.5)) * dfreq;
-            rightfr =
-                (float32) ((int32)
-                           ((filt_edge[whichfilt + 2] / dfreq) +
-                            0.5)) * dfreq;
+            centerfr = (float32) ((int32)
+                                  ((filt_edge[whichfilt + 1] / dfreq) +
+                                   0.5)) * dfreq;
+            rightfr = (float32) ((int32)
+                                 ((filt_edge[whichfilt + 2] / dfreq) +
+                                  0.5)) * dfreq;
         }
         MEL_FB->left_apex[whichfilt] = leftfr;
         fwidth = rightfr - leftfr;
@@ -431,20 +427,20 @@ int32
 fe_fft(complex const *in, complex * out, int32 N, int32 invert)
 {
     int32 s, k,                 /* as above                             */
-        lgN;                    /* log2(N)                              */
+     lgN;                       /* log2(N)                              */
 
-    complex * f1, *f2,          /* pointers into from array             */
-        *t1, *t2,               /* pointers into to array               */
-        *ww;                    /* pointer into w array                 */
+    complex *f1, *f2,           /* pointers into from array             */
+    *t1, *t2,                   /* pointers into to array               */
+    *ww;                        /* pointer into w array                 */
 
-    complex * w, *from, *to,    /* as above                             */
-        wwf2,                   /* temporary for ww*f2                  */
-        *buffer,                /* from and to flipflop btw out and buffer */
-        *exch,                  /* temporary for exchanging from and to */
-        *wEnd;                  /* to keep ww from going off end        */
+    complex *w, *from, *to,     /* as above                             */
+     wwf2,                      /* temporary for ww*f2                  */
+    *buffer,                    /* from and to flipflop btw out and buffer */
+    *exch,                      /* temporary for exchanging from and to */
+    *wEnd;                      /* to keep ww from going off end        */
 
     float64 div,                /* amount to divide result by: N or 1   */
-        x;                      /* misc.                                */
+     x;                         /* misc.                                */
 
 
     /* check N, compute lgN                                               */
@@ -535,22 +531,22 @@ fe_fft(complex const *in, complex * out, int32 N, int32 invert)
  * Transactions on Acoustics, Speech, and Signal Processing, vol. 35,
  * no.6.  Optimized to use a static array of sine/cosines.
  */
-int32 fe_fft_real(float64 *x, int n)
+int32
+fe_fft_real(float64 * x, int n)
 {
     int32 i, j, k, n1, n2, n4, i1, i2, i3, i4;
     float64 t1, t2, xt, cc, ss;
     static float64 *ccc = NULL, *sss = NULL;
     static int32 lastn = 0;
-	int m;
+    int m;
 
-	/* check fft size, compute fft order (log_2(n)) */
-	for (k = n, m = 0; k > 1; k >>= 1, m++)
-	  {
-	    if (((k % 2) != 0) || (n <= 0))
-	      {
-		E_FATAL("fft: number of points must be a power of 2 (is %d)\n", n);
-	      }
-	  }
+    /* check fft size, compute fft order (log_2(n)) */
+    for (k = n, m = 0; k > 1; k >>= 1, m++) {
+        if (((k % 2) != 0) || (n <= 0)) {
+            E_FATAL("fft: number of points must be a power of 2 (is %d)\n",
+                    n);
+        }
+    }
     if (ccc == NULL || n != lastn) {
         if (ccc != NULL) {
             free(ccc);

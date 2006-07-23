@@ -103,9 +103,8 @@ fopen_comp(const char *file, char *mode, int32 * ispipe)
     k = strlen(file);
 
 #if (WIN32)
-    *ispipe = (k > 3) &&
-        ((strcmp(file + k - 3, ".gz") == 0)
-         || (strcmp(file + k - 3, ".GZ") == 0));
+    *ispipe = (k > 3) && ((strcmp(file + k - 3, ".gz") == 0)
+                          || (strcmp(file + k - 3, ".GZ") == 0));
     isgz = *ispipe;
 #else
     *ispipe = 0;
@@ -116,9 +115,8 @@ fopen_comp(const char *file, char *mode, int32 * ispipe)
         *ispipe = 1;
     }
     else {
-        if ((k > 3) &&
-            ((strcmp(file + k - 3, ".gz") == 0)
-             || (strcmp(file + k - 3, ".GZ") == 0))) {
+        if ((k > 3) && ((strcmp(file + k - 3, ".gz") == 0)
+                        || (strcmp(file + k - 3, ".GZ") == 0))) {
             *ispipe = 1;
             isgz = 1;
         }
@@ -208,9 +206,8 @@ fopen_compchk(char *file, int32 * ispipe)
     k = strlen(file);
 
 #if (WIN32)
-    *ispipe = (k > 3) &&
-        ((strcmp(file + k - 3, ".gz") == 0)
-         || (strcmp(file + k - 3, ".GZ") == 0));
+    *ispipe = (k > 3) && ((strcmp(file + k - 3, ".gz") == 0)
+                          || (strcmp(file + k - 3, ".GZ") == 0));
     isgz = *ispipe;
 #else
     *ispipe = 0;
@@ -221,9 +218,8 @@ fopen_compchk(char *file, int32 * ispipe)
         *ispipe = 1;
     }
     else {
-        if ((k > 3) &&
-            ((strcmp(file + k - 3, ".gz") == 0)
-             || (strcmp(file + k - 3, ".GZ") == 0))) {
+        if ((k > 3) && ((strcmp(file + k - 3, ".gz") == 0)
+                        || (strcmp(file + k - 3, ".GZ") == 0))) {
             *ispipe = 1;
             isgz = 1;
         }

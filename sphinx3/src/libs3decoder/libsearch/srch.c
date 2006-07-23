@@ -261,7 +261,7 @@ srch_mode_str_to_index(const char *mode_str)
         return OPERATION_DEBUG;
     }
 
-    if (!strcmp(mode_str, "OP_DO_NOTHING")){
+    if (!strcmp(mode_str, "OP_DO_NOTHING")) {
         return OPERATION_DO_NOTHING;
     }
 
@@ -375,7 +375,7 @@ srch_assert_funcptrs(srch_t * s)
 
         }
         assert(s->srch_frame_windup != NULL);
-#if 0 /* compute_heuristic is marginal so don't take care of it now */
+#if 0                           /* compute_heuristic is marginal so don't take care of it now */
         assert(s->srch_compute_heuristic != NULL);
 #endif
         assert(s->srch_shift_one_cache_frame != NULL);
@@ -385,13 +385,13 @@ srch_assert_funcptrs(srch_t * s)
 #if 0
         assert(s->srch_gen_hyp != NULL);
         assert(s->srch_dump_vithist != NULL);
-	/* Not asserts for everything now, mainly because the FST mode
-	   is not generating dag at this point */
+        /* Not asserts for everything now, mainly because the FST mode
+           is not generating dag at this point */
         assert(s->srch_gen_dag != NULL);
 
 #endif
     }
-      
+
 }
 
 void
@@ -683,10 +683,10 @@ srch_init(kb_t * kb, int32 op_mode)
         s->srch_dag_dump = &srch_debug_dag_dump;
     }
     else if (op_mode == OPERATION_DO_NOTHING) {
-        s->srch_init   = &srch_do_nothing_init;
-        s->srch_uninit   = &srch_do_nothing_uninit;
-        s->srch_utt_begin   = &srch_do_nothing_begin;
-        s->srch_utt_end   = &srch_do_nothing_end;
+        s->srch_init = &srch_do_nothing_init;
+        s->srch_uninit = &srch_do_nothing_uninit;
+        s->srch_utt_begin = &srch_do_nothing_begin;
+        s->srch_utt_end = &srch_do_nothing_end;
         s->srch_decode = &srch_do_nothing_decode;
     }
     else {
@@ -1324,9 +1324,11 @@ reg_result_dump(srch_t * s, int32 id)
 
             /* If IBM format is required to dumped */
             if (cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM) {
-                dag = dag_load(str, cmd_ln_int32("-maxedge"), cmd_ln_float32("-logbase"), 0,
+                dag =
+                    dag_load(str, cmd_ln_int32("-maxedge"),
+                             cmd_ln_float32("-logbase"), 0,
                          /** No fudge added */
-                               dict, kbcore_fillpen(s->kbc));
+                             dict, kbcore_fillpen(s->kbc));
 
                 if (dag != NULL) {
 

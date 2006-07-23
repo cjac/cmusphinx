@@ -113,14 +113,14 @@ static arg_t defn[] = {
 
     waveform_to_cepstral_command_line_macro()
         common_application_properties_command_line_macro()
-    {"-machine_endian",
-     ARG_STRING,
+        {"-machine_endian",
+         ARG_STRING,
 #ifdef WORDS_BIGENDIAN
-     "big",
+         "big",
 #else
-     "little",
+         "little",
 #endif
-     "Endianness of machine, big or little"},
+         "Endianness of machine, big or little"},
 
 
     {"-i",
