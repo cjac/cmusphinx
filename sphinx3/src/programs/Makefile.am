@@ -11,7 +11,6 @@ bin_PROGRAMS = sphinx3_decode \
 	sphinx3_dp \
 	sphinx3_ep \
 	gausubvq \
-	wave2feat \
 	cepview \
 	lm_convert
 
@@ -37,7 +36,7 @@ lm_convert_SOURCES = main_lm_convert.c
 
 
 
-#noinst_PROGRAMS = 
+noinst_PROGRAMS = wave2feat
 
 noinst_HEADERS = \
 	main_ep.h \
