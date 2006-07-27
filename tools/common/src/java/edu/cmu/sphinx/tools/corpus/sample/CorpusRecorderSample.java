@@ -124,8 +124,7 @@ public class CorpusRecorderSample {
      * Given a text file of transcripts, create a Corpus with Utterances that only contain transcripts.
      *
      * @param transcriptFile
-
-     * @return
+     * @return the corpus
      * @throws IOException
      */
     private static Corpus makeCorpusWithOnlyTrascripts(String transcriptFile) throws IOException {
