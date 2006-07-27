@@ -131,20 +131,24 @@ WARRANTIES.
 <ul>
   <li><a name="what_is_dictator"><b>Introduction</b></a>
   <p>
-EvalDictor.org is an effort to build open source dictation tools. It is aimed at computer users who wish to enter text in their native language, and prefer speech to the standard keyboard.  These users may be professionals who require hands free text entry, or it may be difficult to type text in their native language.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan...) and countless smaller ethnic groups have this problem.
+EvalDictor.org is an effort to build open source dictation tools, and thereby get speech and language data to further improve our technology..  Our team consists of many senior people from CMU, MERL, NIH and ex-Dragon.
+<p>
+We are currently building general tools, but looking for vertical domains.  We want to release focused applications that solve a problem for some set of users.  We hope those users will be then motivated to get custom models by using our Collector.  Since the Collector is a server based application it can store the data from each user.  That data will be used to improve the models for everyone.  The Dictator application will automatically update itself as new models become available.  Therefore, the accuracy of EvalDictator applications will improve as more people use them.
+<p>
+EvalDictator is aimed at computer users who wish to enter text in their native language, and prefer speech to the standard keyboard.  These users may be professionals who require hands free text entry.  For example, many Doctors prefer to enter reports via dictation.  Users may also find it difficult to type text in their native language.  For example, in many countries users must memorize many complicated key combination to enter basic text.  Large countries (e.g. China, Japan...) and countless smaller ethnic groups have this problem.
 <p>
 EvalDictator is free and open source with an "Apache" style licence.  The code may be used in proprietary products, even if the products are not open source.  The source code will be publicly available on SourceForge.net.  EvalDictator will contain no patented IP.
 <p>
 The acoustic and language models are also free, however, they need not be built from publicly available speech data, or be built by publicly available tools.  In this way companies and researchers can donate "eval" models to the project while keeping the data and tools proprietary.
 <p>
-The goal is to eventaully make a tools that are useful while also being trivial to install and use-- Dictation systems which many people will want to Evaluate.
+The goal is to eventually make a tools that are useful while also being trivial to install and use-- Dictation systems which many people will want to Evaluate.
   </li>
   <br>&nbsp;
   <li><a name="capabilities"><b>Capabilities</b></a>
 <p>
 Currently, there is a complete working prototype code named "HumbleBeginnings".
 <p>
-HumbleBeginnings is written in 100% Java, and constists of two parts: the Dictator and the Collector.
+HumbleBeginnings is written in 100% Java, and consists of two parts: the Dictator and the Collector.
 <p>
 The Dictator is a desktop application that performs Dictation via automatic speech recognition.  It is based on the Sphinx4 recognizer from Carnegie Mellon.  Sphinx4 is a state-of-the-art large vocabulary recognizer.  The accuracy is as good as anything, and the size and speed are sufficient for a modern PC.  It currently supports English, Arabic and Mandarin using the Wall Street Journal and GALE models.
 <p>
