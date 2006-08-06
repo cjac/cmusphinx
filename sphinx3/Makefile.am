@@ -21,17 +21,14 @@ EXTRA_DIST = autogen.sh \
 	win32/batch/sphinx3-test.livepretend.bat \
 	win32/batch/sphinx3-test.simple.bat \
 	win32/mrcp.nsi \
-	win32/msdev/libs3audio/libs3audio.dsp \
 	win32/msdev/libs3decoder/libam.dsp \
 	win32/msdev/libs3decoder/libAPI.dsp \
-	win32/msdev/libs3decoder/libcep_feat.dsp \
 	win32/msdev/libs3decoder/libcommon.dsp \
 	win32/msdev/libs3decoder/libconfidence.dsp \
 	win32/msdev/libs3decoder/libdict.dsp \
 	win32/msdev/libs3decoder/libep.dsp \
 	win32/msdev/libs3decoder/liblm.dsp \
 	win32/msdev/libs3decoder/libsearch.dsp \
-	win32/msdev/libutil/libutil.dsp \
 	win32/msdev/programs/align/sphinx3_align.dsp \
 	win32/msdev/programs/allphone/sphinx3_allphone.dsp \
 	win32/msdev/programs/astar/sphinx3_astar.dsp \
