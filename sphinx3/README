@@ -1,4 +1,4 @@
-This is Sphinx 3.6 (s3.6), one of Carnegie Mellon University's open
+This is Sphinx 3.7 (s3.7), one of Carnegie Mellon University's open
 source large vocabulary, speaker-independent continuous speech
 recognition engine. Please see the LICENSE file for terms of use.
 
@@ -19,6 +19,9 @@ merge the two branches together.  This merging is stabilized in Sphinx
 sphinx3_decode_anytopo (s3-slow) and sphinx3_decode (s3-fast) exist as
 two separate interface of the decoding engine.  This will allow
 backward compatibility to the past. 
+
+In 3.7, we did a site-wide change that allow sphinx3 and pocketsphinx 
+(and perhaps later SphinxTrain) to share the same codebase. 
 
 THIS IS A RESEARCH SYSTEM. After several extensions and upgrade, we 
  still find that Sphinx is better regarded as an early release of a
@@ -71,6 +74,17 @@ This sections contain installation guide for various platforms.
 
 Linux/Unix Installation:
 ^^^^^^^^^^^^^^^^^^^^^^^^
+Starting from Sphinx 3.7, you need to compile sphinxbase before 
+compilation of sphinx3.  The layout of the directory should look
+like this:
+    sphinx3/
+    sphinxbase/
+
+By default, sphinx3 will search for ../sphinxbase/ as the path of the
+include files and libraries.  You need to compile sphinxbase FIRST
+before compiling sphinx3. Please read the README in the sphinxbase
+package for details.
+
 This distribution now uses GNU autoconf to find out basic information
 about your system, and should compile on most Unix and Unix-like
 systems, and certainly on Linux.  
@@ -78,7 +92,10 @@ systems, and certainly on Linux.
 If you downloaded directly from the Subversion repository, you need to
 create the "configure" file
 
-    ./autogen.sh
+    >./autogen.sh
+    >./autogen.sh
+
+(Make sure you do this twice.) 
 
 If you downloaded a release version, or if you have already run
 "autogen.sh", you can build simply by running
@@ -90,7 +107,7 @@ If you downloaded a release version, or if you have already run
 automatically. After a successful compilation, you may test the system
 by running
 
-    make test
+    make check
 
 and then install it with
 
@@ -106,11 +123,16 @@ g2c, blas and lapack.
 
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
-To compile the sphinx 3.6 in Visual C++ 6.0, 
+Starting from sphinx 3.7, you need to install sphinxbase before
+installation of sphinx.  The general layout looks like this
+
+   sphinx3/
+   sphinxbase/ 
+
+To compile the sphinx 3.7 in Visual C++ 6.0, 
 1, unzip the file.
 2, click programs.dsw 
 3, build the application projects by clicking "Build" at the tool bar.
-
 
 Steps 4 can be done easily in VC6.0 by clicking the "Build" menu at
 the top bar, and selecting "Batch Build...". Make sure all projects

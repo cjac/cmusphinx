@@ -1,2 +1,2 @@
-SUBDIRS=test_case test_hash test_logs3
+SUBDIRS=test_logs3
 
