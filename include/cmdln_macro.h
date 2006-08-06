@@ -384,7 +384,16 @@ us a better architecture.
     { "-agc", \
       ARG_STRING, \
       "none", \
-      "Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))" }, 
+      "Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))" }, \
+    { "-lda", \
+      ARG_STRING, \
+      NULL, \
+      "File containing LDA transformation matrix to be applied to features" }, \
+    { "-ldadim", \
+      ARG_INT32, \
+      "29", \
+      "Dimensionality of LDA output features" },
+
 
 #define waveform_to_cepstral_command_line_macro() \
     { "-maxcepvecs", \

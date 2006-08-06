@@ -31,10 +31,6 @@ lm_convert_SOURCES = main_lm_convert.c
 #gauvq_read_SOURCES = main_gauvq_read.c 
 #gauvq_SOURCES = main_gauvq.c 
 
-
-
-noinst_PROGRAMS = wave2feat
-
 noinst_HEADERS = \
 	main_ep.h \
 	s3_align.h \
