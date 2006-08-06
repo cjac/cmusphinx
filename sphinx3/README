@@ -100,23 +100,23 @@ create the "configure" file
 If you downloaded a release version, or if you have already run
 "autogen.sh", you can build simply by running
 
-    ./configure
-    make
+    >./configure
+    >make
 
 (Or whatever you call GNU Make). This should configure everything
 automatically. After a successful compilation, you may test the system
 by running
 
-    make check
+    >make check
 
 and then install it with
 
-    make install
+    >make install
 
 This defaults to installing Sphinx-3 under /usr/local. You may
 customize it by running ./configure with an argument, as in
 
-    ./configure --prefix=/my/own/installation/directory
+    >./configure --prefix=/my/own/installation/directory
 
 If your system doesn't have LAPACK, BLAS, please install package
 g2c, blas and lapack.
@@ -134,7 +134,7 @@ To compile the sphinx 3.7 in Visual C++ 6.0,
 2, click programs.dsw 
 3, build the application projects by clicking "Build" at the tool bar.
 
-Steps 4 can be done easily in VC6.0 by clicking the "Build" menu at
+Step 3 can be done easily in VC6.0 by clicking the "Build" menu at
 the top bar, and selecting "Batch Build...". Make sure all projects
 are selected, preferably the "Release" version of each. You can also
 run with the "Debug" version, but this version is usually slower. To
