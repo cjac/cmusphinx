@@ -359,7 +359,7 @@ live_fe_process_block(int16 * samples, int32 nsamples,
     /* E_INFO ("live_nfeatvec: %ld\n",live_nfeatvec); */
     if (fe_dump) {
         fe_dump2d_float_frame(fe_dumpfile, live_feat, live_nfeatvec,
-                              feat_stream_len(kbcore_fcb(kbcore), 0),
+                              feat_dimension(kbcore_fcb(kbcore)),
                               "FEATURE_FRAME", "FEATURE");
     }
 

@@ -513,6 +513,12 @@ kbcore_init(float64 logbase,
         feat_report(kb->fcb);
     }
 
+    if (cmd_ln_str("-lda")) {
+	if (feat_read_lda(kb->fcb, cmd_ln_str("-lda"),
+			  cmd_ln_int32("-ldadim")) < 0)
+	    E_FATAL("LDA initialization failed.\n");
+    }
+
     /* Initialize sphinx 3 hmm */
     s3_am_init(kb, s3hmmdir, mdeffile, meanfile, varfile, varfloor, mixwfile, mixwfloor, tmatfile, tmatfloor, senmgau, NULL, cmd_ln_int32("-topn")      /* ARRRGH!! */
         );
@@ -646,9 +652,9 @@ kbcore_init(float64 logbase,
 
     if (kb->fcb && kb->mgau) {
         /* Verify feature streams against gauden codebooks */
-        if (feat_stream_len(kb->fcb, 0) != mgau_veclen(kb->mgau))
+        if (feat_dimension(kb->fcb) != mgau_veclen(kb->mgau))
             E_FATAL("Feature streamlen(%d) != mgau streamlen(%d)\n",
-                    feat_stream_len(kb->fcb, 0), mgau_veclen(kb->mgau));
+                    feat_dimension(kb->fcb), mgau_veclen(kb->mgau));
     }
 
 
