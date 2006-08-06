@@ -48,6 +48,8 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/lm_convert/lm_convert.dsp \
 	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.dsp
 
+AUTOMAKE_OPTIONS = dist-bzip2 dist-zip dist-shar dist-tarZ
+
 # Add an item for each and every test target to the CLEANFILES variable
 CLEANFILES = chan3.mfc \
 	test.out \
