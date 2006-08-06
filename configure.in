@@ -2,7 +2,7 @@ dnl Welcome to the Sphinx-3 automated build system.
 dnl try not to hurt yourself ;)
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(sphinx3,0.6)
+AM_INIT_AUTOMAKE(sphinx3,0.7)
 
 CFLAGS=${CFLAGS:--g -O2 -Wall -ansi}
 #CFLAGS=${CFLAGS:--g -O2 -Wall  -DDMALLOC}
@@ -169,8 +169,6 @@ src/tests/regression/test-dp.sh
 src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
 src/tests/unit_tests/Makefile
-src/tests/unit_tests/test_case/Makefile
-src/tests/unit_tests/test_hash/Makefile
 src/tests/unit_tests/test_logs3/Makefile
 scripts/Makefile
 scripts/sphinx3-simple

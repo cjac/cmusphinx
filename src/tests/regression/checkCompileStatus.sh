@@ -136,7 +136,7 @@ pushd sphinx3 >> $outfile 2>&1
 ./autogen.sh >> $outfile 2>&1 
 
 # Compile and run test, and verify that all tests ran successfully
-if ! ${GMAKE} distcheck >> $outfile 2>&1 ;
+if ! ${GMAKE} distcheck DISTCHECK_CONFIGURE_FLAGS=--with-sphinxbase=`pwd`/../sphinxbase >> $outfile 2>&1 ;
  then ${MAILX} -s "sphinx3 compilation failed" ${S3LIST} < $outfile;
  elif grep FAILED $outfile > /dev/null;
  then ${MAILX} -s "Sphinx3 test failed" ${S3LIST} < $outfile;
