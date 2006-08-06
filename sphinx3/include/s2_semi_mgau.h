@@ -43,6 +43,7 @@
 #define __S2_SEMI_MGAU_H__
 
 #include "s3types.h"
+#include "fe.h"
 #include "ascr.h"
 #include "fast_algo_struct.h"
 #include "kdtree.h"
@@ -60,14 +61,10 @@ typedef struct {
 } vqFeature_t;
 typedef vqFeature_t *vqFrame_t;
 
-typedef float32 mfcc_t;
 typedef float32 mean_t;
 typedef float32 var_t;
 #define GMMSUB(a,b) ((a)-(b))
 #define GMMADD(a,b) ((a)+(b))
-#define MFCCMUL(a,b) ((a)*(b))
-#define VARMUL(a,b) FIXMUL(a,b)
-#define FLOAT2MFCC(x) (x)
 
 typedef struct s2_semi_mgau_s s2_semi_mgau_t;
 struct s2_semi_mgau_s {

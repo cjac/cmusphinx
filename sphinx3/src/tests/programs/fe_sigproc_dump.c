@@ -37,7 +37,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include "fe.h"
-#include "fe_internal.h"
 #include "fe_internal_dump.h"
 #include "fe_dump.h"
 

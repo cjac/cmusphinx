@@ -5,7 +5,6 @@ noinst_LTLIBRARIES = libcommon.la
 libcommon_la_LDFLAGS = -version-info 0:6:0
 
 libcommon_la_SOURCES = \
-	bio.c \
 	corpus.c \
 	encoding.c \
 	logs3.c \

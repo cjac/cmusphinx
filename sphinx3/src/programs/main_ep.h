@@ -65,7 +65,6 @@
  */
 
 #include "fe.h"
-#include "fe_internal.h"
 #include "classify.h"
 #include "endptr.h"
 
@@ -74,7 +73,90 @@
 extern "C" {
 #endif
 
+/* The following only use in the application level */
 
+#define NULL_CHAR '\0'
+#define MAXCHARS 2048
+
+#define WAV 1
+#define RAW 2
+#define NIST 3
+#define MSWAV 4
+
+#define LITTLE 1
+#define BIG 2
+
+#define HEADER_BYTES 1024
+
+#define COUNT_PARTIAL 1
+#define COUNT_WHOLE 0
+
+/** 
+    \struct MSWAV_hdr
+    \brief A MS Wavefile header. 
+    Some defines for MS Wav Files 
+    The MS Wav file is a RIFF file, and has the following 44 byte header 
+*/
+typedef struct RIFFHeader{
+    char rifftag[4];      /**< "RIFF" string */
+    int32 TotalLength;      /**< Total length */
+    char wavefmttag[8];   /**< "WAVEfmt " string (note space after 't') */
+    int32 RemainingLength;  /**< Remaining length */
+    int16 data_format;    /**< data format tag, 1 = PCM */
+    int16 numchannels;    /**< Number of channels in file */
+    int32 SamplingFreq;     /**< Sampling frequency */
+    int32 BytesPerSec;      /**< Average bytes/sec */
+    int16 BlockAlign;     /**< Block align */
+    int16 BitsPerSample;  /**< 8 or 16 bit */
+    char datatag[4];      /**< "data" string */
+    int32 datalength;       /**< Raw data length */
+} MSWAV_hdr;
+
+/**
+ * \struct fewrap_t
+ * \brief Wrapper structure to hold the front-end parameters  
+ */
+typedef struct{
+    param_t *P;
+    fe_t *FE;
+    int16 *fr_data;
+    float32 *fr_cep;
+
+    char *wavfile;
+    char *cepfile;
+    char *ctlfile;
+    int32 nskip;
+    int32 runlen;
+    char *wavdir;
+    char *cepdir;
+    char *wavext;
+    char *cepext;
+    int32 input_format;
+    int32 is_batch;
+    int32 is_single;
+    int32 blocksize;
+    int32 verbose;
+    int32 machine_endian;
+    int32 input_endian;
+    int32 output_endian;
+    int32 nchans;
+    int32 whichchan;
+    int32 splen;
+    int32 nframes;
+    int16* spdata;
+} fewrap_t;
+
+/** 
+    Functions that wrap up the front-end operations on the front-end
+    wrapper operations.  
+*/
+fewrap_t * few_initialize();
+
+/**
+ *  Free the FEW structure
+ */
+void few_free(fewrap_t *FEW /**< the FEW structure one wants to free*/
+    );
 
 #ifdef __cplusplus
 }

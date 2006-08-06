@@ -53,6 +53,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include <utt.h>
 #include <profile.h>
 #include <kb.h>
@@ -108,8 +109,6 @@ live_initialize_decoder(char *live_args)
     fe_param->FFT_SIZE = cmd_ln_int32("-nfft");
     fe_param->WINDOW_LENGTH = cmd_ln_float32("-wlen");
     fe_param->doublebw = cmd_ln_int32("-doublebw");
-    fe_param->machine_endian = cmd_ln_int32("-machine_endian");
-    fe_param->input_endian = cmd_ln_int32("-input_endian");
 
     fe = fe_init(fe_param);
     if (!fe)

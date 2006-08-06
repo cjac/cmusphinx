@@ -45,7 +45,6 @@
 #include "s3types.h"
 
 #include "fe.h"
-#include "fe_internal.h"
 #include "fe_internal_dump.h"
 #include "fe_dump.h"
 #include "metrics.h"
@@ -131,7 +130,7 @@ fe_dump_process_utt(fe_t * FE, int16 * spch, int32 nsamps,
                             FE->PRE_EMPHASIS_ALPHA, FE->PRIOR);
         }
         else {
-            fe_short_to_double(tmp_spch, spbuf, spbuf_len);
+            fe_short_to_frame(tmp_spch, spbuf, spbuf_len);
         }
 
         metricsStop("preemphasis");
@@ -265,7 +264,7 @@ fe_dump_end_utt(fe_t * FE, float32 * cepvector)
                             FE->PRIOR);
         }
         else {
-            fe_short_to_double(FE->OVERFLOW_SAMPS, spbuf, FE->FRAME_SIZE);
+            fe_short_to_frame(FE->OVERFLOW_SAMPS, spbuf, FE->FRAME_SIZE);
         }
 
         metricsStop("preemphasis");

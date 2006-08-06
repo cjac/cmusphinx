@@ -35,118 +35,57 @@ docdata=`echo $docdata`
 AC_CANONICAL_HOST
 
 dnl
-dnl Look for math libraries
+dnl Get SphinxBase source from command line if given
 dnl
-AC_CHECK_LIB(m,log)
-AC_CHECK_LIB(g2c,r_log)
-AC_CHECK_LIB(blas,sgemm_)
-AC_CHECK_LIB(lapack,sgesv_)
+AC_ARG_WITH(sphinxbase,
+	AS_HELP_STRING([--with-sphinxbase=DIRECTORY],
+			[look for SphinxBase source files in DIRECTORY]),
+			sphinxbase=$withval)
 
 dnl
-dnl determine audio type or use none if none supported on this platform
+dnl Get SphinxBase build directory from command line if given
 dnl
+AC_ARG_WITH(sphinxbase-build,
+	AS_HELP_STRING([--with-sphinxbase-build=DIRECTORY],
+			[look for SphinxBase object files in DIRECTORY]),
+	sphinxbasebuild=$withval)
 
-ad_files=""
-ad_libs=""
-audio_test_file="pittsburgh.littleendian"
+dnl
+dnl Check for installed SphinxBase
+dnl FIXME: How do we find the installed headers robustly?
+dnl
+AC_CHECK_HEADER(sphinxbase/sphinx_config.h,
+CPPFLAGS="-I/usr/include/sphinxbase -I/usr/local/include/sphinxbase",[
+: ${sphinxbase=$PWD/../sphinxbase}
+])
 
-dnl Added from suggestion by 
-dnl Jasper van Veghel <jvveghel@vanboxtelsoftware.nl>, 02/03/2003:
-AC_ARG_WITH(alsa,
-           AC_HELP_STRING([--with-alsa], [Use ALSA library for sound I/O]),
-           [ad_files="ad_alsa.lo"
-            ad_backend="AD_BACKEND_ALSA"
-            ad_libs="-lasound"
-	    # We must remove -ansi because ALSA headers don't like it (is it really worth it?)
-            CFLAGS="`echo $CFLAGS -DAD_BACKEND_ALSA | sed -e s,-ansi,,`"
-            AC_CHECK_HEADER(sys/asoundlib.h,,
-                    AC_ERROR(ALSA header file <sys/asoundlib.h> not found!))]
-)
-dnl This may also be useful
-AC_ARG_WITH(esd,
-           AC_HELP_STRING([--with-esd], [Use ESound daemon for sound I/O]),
-           [ad_files="ad_esd.lo"
-            ad_backend="AD_BACKEND_ESD"
-            ad_libs="-lesd"
-            CFLAGS="$CFLAGS -DAD_BACKEND_ESD"
-            AC_CHECK_HEADER(esd.h,,
-                    AC_ERROR(ESD header file <esd.h> not found!))]
-)
 
-dnl soundcard.h defaults to <soundcard.h>. If <sys/soundcard.h> is
-dnl found instead, then use the latter.
-AC_CHECK_HEADER(sys/soundcard.h,
-	CFLAGS="$CFLAGS -DSYS_SOUNDCARD_H")
-
-if test "x$ad_files" = "x"; then
-        case $host in
-                *-*-linux*)
-                        ad_files="ad_oss.lo"
-                        ad_backend="AD_BACKEND_OSS"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSS"
-                        ;;
-                # FIXME: isn't this the same OSS as on Linux?
-                *-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
-                        ad_files="ad_oss_bsd.lo mulaw_base.lo"
-                        ad_backend="AD_BACKEND_OSS_BSD"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSS_BSD"
-dnl soundcard.h defaults to <soundcard.h>. If <sys/soundcard.h> is
-dnl found instead, then use the latter.
-			AC_CHECK_HEADER(sys/soundcard.h,
-				CFLAGS="$CFLAGS -DSYS_SOUNDCARD_H")
-			AC_CHECK_LIB(ossaudio, _oss_ioctl, 
-				LIBS="$LIBS -lossaudio")
-			;;
-                *-*-osf*)
-                        ad_files="ad_osf.lo mulaw_base.lo"
-                        ad_backend="AD_BACKEND_OSF"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_OSF"
-                        ;;
-                *-*-irix*)
-                        ad_files="ad_irix.lo mulaw_base.lo"
-                        ad_libs="-laudio"
-                        ad_backend="AD_BACKEND_IRIX"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_IRIX"
-                        ;;
-                *-*-sunos4*)
-                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
-                        ad_libs="-lm -lnsl -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -DSUN4 -DAD_BACKEND_SUNOS"
-                        ;;
-                *86*-*-solaris*)
-                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
-                        ad_libs="-lm -lnsl -lsocket -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_SUNOS"
-                        ;;
-                *-*-solaris*)
-                        ad_files="ad_sunos.lo audio_utils_sunos.lo"
-                        ad_libs="-lm -lnsl -lsocket -ldl"
-                        ad_backend="AD_BACKEND_SUNOS"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_SUNOS"
-                        ;;
-                *-*-*cygwin*)
-                        ad_files="play_win32.lo rec_win32.lo"
-                        ad_libs="-lwinmm"
-                        ad_backend="AD_BACKEND_WIN32"
-                        CFLAGS="$CFLAGS -DAD_BACKEND_WIN32"
-                        ;;
-                *-*apple*-*)
-                        ad_files="ad_portaudio.lo pa_convert.lo pa_lib.lo \
-				  pa_mac_core.lo pa_trace.lo pablio.lo ringbuffer.lo"
-                        ad_backend="AD_BACKEND_PORTAUDIO"
-			ad_libs="-framework AudioToolbox -framework CoreAudio"
-			# We must remove -ansi because OS X headers don't like it
-                        CFLAGS="`echo $CFLAGS -DAD_BACKEND_PORTAUDIO | sed -e s,-ansi,,`"
-                        ;;
-                *)
-                        ad_files="ad_base.lo"
-                        ad_backend="AD_BACKEND_NONE"
-                        AC_MSG_RESULT([No audio interface for host type $host.])
-                        CFLAGS="$CFLAGS -DAD_BACKEND_NONE"
-                        ;;
-        esac
+dnl
+dnl Now verify SphinxBase if defined
+dnl Sadly, this doesn't work when cross-compiling (for some dumb reason...)
+dnl
+: ${sphinxbasebuild=$sphinxbase}
+if test x$sphinxbase != x && test x$cross_compiling = xyes; then
+   CPPFLAGS="-I$sphinxbase/include -I$sphinxbasebuild/include $CPPFLAGS"
+   LDFLAGS="$LDFLAGS -L$sphinxbasebuild/src/libsphinxfe -L$sphinxbasebuild/src/libsphinxfeat \
+		     -L$sphinxbasebuild/src/libsphinxutil -L$sphinxbasebuild/src/libsphinxad"
+fi
+if test x$sphinxbase != x && test x$cross_compiling != xyes; then
+   AC_CHECK_FILE($sphinxbase/include/prim_type.h,CPPFLAGS="-I$sphinxbase/include $CPPFLAGS",
+   AC_ERROR(
+[SphinxBase headers not found in $sphinxbase.  Please use the
+--with-sphinxbase option to `configure' to specify the location of
+SphinxBase.  Run $0 --help for more information.]))
+fi
+if test x$sphinxbasebuild != x && test x$cross_compiling != xyes; then
+   AC_CHECK_FILE($sphinxbasebuild/src/libsphinxutil/libsphinxutil.la,
+[CPPFLAGS="-I$sphinxbasebuild/include $CPPFLAGS"
+LDFLAGS="$LDFLAGS -L$sphinxbasebuild/src/libsphinxfe -L$sphinxbasebuild/src/libsphinxfeat \
+		  -L$sphinxbasebuild/src/libsphinxutil -L$sphinxbasebuild/src/libsphinxad"],
+		   AC_ERROR(
+[SphinxBase libraries were not found in $sphinxbasebuild.
+Use the --with-sphinxbase-build option to `configure' to specify
+the build directory for SphinxBase.  Run $0 --help for more information.]))
 fi
 
 AC_PATH_PROG(PERL,perl)
@@ -166,12 +105,9 @@ AM_PROG_LIBTOOL
 AC_OUTPUT([
 Makefile
 src/Makefile
-src/libs3audio/Makefile
-src/libs3audio/ad_conf.h
 src/libs3decoder/Makefile
 src/libs3decoder/libAPI/Makefile
 src/libs3decoder/libam/Makefile
-src/libs3decoder/libcep_feat/Makefile
 src/libs3decoder/libconfidence/Makefile
 src/libs3decoder/libcommon/Makefile
 src/libs3decoder/libdict/Makefile
@@ -179,7 +115,6 @@ src/libs3decoder/libep/Makefile
 src/libs3decoder/liblm/Makefile
 src/libs3decoder/libsearch/Makefile
 src/libs3decoder/libcfg/Makefile
-src/libutil/Makefile
 src/programs/Makefile
 src/tests/Makefile
 src/tests/performance/Makefile
@@ -206,7 +141,6 @@ src/tests/regression/test-allphone.sh
 src/tests/regression/test-allphone-mllr.sh
 src/tests/regression/test-astar.sh
 src/tests/regression/test-astar-clm.sh
-src/tests/regression/test-cepview.sh
 src/tests/regression/test-conf.sh
 src/tests/regression/test-dag.sh
 src/tests/regression/test-dag-clm.sh
@@ -234,10 +168,6 @@ src/tests/regression/test-lm_convert-and-decode.sh
 src/tests/regression/test-dp.sh
 src/tests/regression/test-ep.sh
 src/tests/regression/test-gausubvq.sh
-src/tests/regression/test-wave2feat.sh
-src/tests/regression/test-wave2feat-dither-seed.sh
-src/tests/regression/test-wave2feat-dither-rand.sh
-src/tests/regression/test-wave2feat-logspec.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_case/Makefile
 src/tests/unit_tests/test_hash/Makefile
