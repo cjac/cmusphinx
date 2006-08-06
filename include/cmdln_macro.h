@@ -393,35 +393,35 @@ us a better architecture.
       "Maximum number of cepstral vectors that can be obtained from a single sample buffer" }, \
     { "-samprate", \
       ARG_FLOAT32, \
-      DEFAULT_SAMPLING_RATE, \
+      ARG_STRINGIFY(DEFAULT_SAMPLING_RATE), \
       "Sampling rate (only 8K and 16K currently supported)" }, \
     { "-nfilt", \
       ARG_INT32, \
-      DEFAULT_NUM_FILTERS, \
+      ARG_STRINGIFY(DEFAULT_NUM_FILTERS), \
       "Number of mel filters" }, \
     { "-lowerf", \
       ARG_FLOAT32, \
-      DEFAULT_LOWER_FILT_FREQ, \
+      ARG_STRINGIFY(DEFAULT_LOWER_FILT_FREQ), \
       "Lower edge of filters" }, \
     { "-upperf", \
       ARG_FLOAT32, \
-      DEFAULT_UPPER_FILT_FREQ, \
+      ARG_STRINGIFY(DEFAULT_UPPER_FILT_FREQ), \
       "Upper edge of filters" }, \
     { "-alpha", \
       ARG_FLOAT32, \
-      DEFAULT_PRE_EMPHASIS_ALPHA, \
+      ARG_STRINGIFY(DEFAULT_PRE_EMPHASIS_ALPHA), \
       "alpha for pre-emphasis window"}, \
     { "-frate", \
       ARG_INT32, \
-      DEFAULT_FRAME_RATE, \
+      ARG_STRINGIFY(DEFAULT_FRAME_RATE), \
       "frame rate"}, \
     { "-nfft", \
       ARG_INT32, \
-      DEFAULT_FFT_SIZE, \
+      ARG_STRINGIFY(DEFAULT_FFT_SIZE), \
       "no. pts for FFT" }, \
     { "-wlen", \
       ARG_FLOAT32, \
-      DEFAULT_WINDOW_LENGTH, \
+      ARG_STRINGIFY(DEFAULT_WINDOW_LENGTH), \
       "window length"}, \
     { "-doublebw", \
       ARG_INT32, \
@@ -441,7 +441,7 @@ us a better architecture.
       "the input data byte order, big or little"}, \
     { "-ncep", \
       ARG_INT32, \
-      DEFAULT_NUM_CEPSTRA, \
+      ARG_STRINGIFY(DEFAULT_NUM_CEPSTRA), \
       "Number of cepstrums" }, \
     { "-fbtype", \
       ARG_STRING, \
@@ -457,7 +457,7 @@ us a better architecture.
       "The seed for the random generator"}, \
     { "-blocksize", \
       ARG_INT32, \
-      DEFAULT_BLOCKSIZE, \
+      ARG_STRINGIFY(DEFAULT_BLOCKSIZE), \
       "Block size, used to limit the number of samples used at a time when reading very large audio files" }, 
 
 #define speaker_adaptation_command_line_macro() \

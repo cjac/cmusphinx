@@ -292,7 +292,7 @@ static arg_t defn[] = {
      "Output directory for xlabel style phone labels; optionally end with ,CTL"},
     {"-frate",
      ARG_INT32,
-     DEFAULT_FRAME_RATE,
+     ARG_STRINGIFY(DEFAULT_FRAME_RATE),
      "Frame rate (only requred for xlabel style phone labels)"},
     {"-insert_sil",
      ARG_INT32,

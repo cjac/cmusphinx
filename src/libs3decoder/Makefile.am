@@ -1,4 +1,4 @@
-SUBDIRS = libam libcep_feat libconfidence libcommon  libdict libep liblm libsearch libAPI libcfg
+SUBDIRS = libam libconfidence libcommon  libdict libep liblm libsearch libAPI libcfg
 
 lib_LTLIBRARIES = libs3decoder.la
 
@@ -11,7 +11,6 @@ libs3decoder_la_SOURCES =
 
 libs3decoder_la_LIBADD = \
 	libam/libam.la \
-	libcep_feat/libcep_feat.la \
 	libconfidence/libconfidence.la \
 	libcommon/libcommon.la \
 	libdict/libdict.la \
@@ -20,6 +19,8 @@ libs3decoder_la_LIBADD = \
 	libsearch/libsearch.la \
 	libAPI/libAPI.la \
 	libcfg/libcfg.la
+
+#	libcep_feat/libcep_feat.la
 
 #lib_LTLIBRARIES = libs3decoder.la
 #

@@ -1,5 +1,3 @@
-SUBDIRS = libs3audio\
-	libs3decoder \
-	libutil \
+SUBDIRS =libs3decoder \
 	programs \
 	tests

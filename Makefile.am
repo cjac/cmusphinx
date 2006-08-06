@@ -120,15 +120,10 @@ test-full : \
 	test-dag-clm \
 	test-gausubvq \
 	test-ep \
-	test-cepview \
 	test-conf \
 	test-decode_anytopo \
 	test-decode_anytopo-mllr \
-	test-decode_anytopo-2ndstage \
-	test-wave2feat \
-	test-wave2feat-dither-seed \
-	test-wave2feat-dither-rand \
-	test-wave2feat-logspec
+	test-decode_anytopo-2ndstage
 
 #	test-decode-noncomp \
 #	test-decode-mode5 \
@@ -165,7 +160,6 @@ test-allphone \
 test-allphone-mllr \
 test-astar \
 test-astar-clm \
-test-cepview \
 test-conf \
 test-dag \
 test-dag-clm \
@@ -174,11 +168,7 @@ test-livepretend \
 test-livepretend-clm \
 test-livepretend-mllr \
 test-gausubvq \
-test-ep \
-test-wave2feat \
-test-wave2feat-dither-seed \
-test-wave2feat-dither-rand \
-test-wave2feat-logspec:
+test-ep:
 	sh $(top_builddir)/src/tests/regression/$@.sh
 
 
