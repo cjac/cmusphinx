@@ -32,7 +32,6 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/align/sphinx3_align.dsp \
 	win32/msdev/programs/allphone/sphinx3_allphone.dsp \
 	win32/msdev/programs/astar/sphinx3_astar.dsp \
-	win32/msdev/programs/cepview/cepview.dsp \
 	win32/msdev/programs/conf/sphinx3_conf.dsp \
 	win32/msdev/programs/dag/sphinx3_dag.dsp \
 	win32/msdev/programs/decode/sphinx3_decode.dsp \
