@@ -1,3 +1,41 @@
+2006-08-06  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
+	Sphinx 3.7.0 Release Candidate I
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	(Corresponds to Sourceforge SVN rev 5995.)
+
+	Sphinx 3.7 starts to assume the applications/library
+	architecture.  Most of the utility function will be physically
+	migrated to sphinxbase 0.2.  sphinxbase 0.2 will then be shared
+	by both pocketsphinx and sphinx3.  
+
+	In the case of Sphinx 3.7, the way it searches for sphinxbase 
+	will simply by 
+	1, see whether it appears system-wide. 
+	2, see whether it appears in the parent directory (../sphinxbase)
+
+	This is an important change, that means we start to
+	consciously avoid code duplication in the module level.  In future,
+	this effort will be continued on SphinxTrain or may be
+	sphinx2.
+
+	Sphinx 3.7.0 RCI is only a release candidate, for a stable single
+	executably release, they are advised to use sphinx 3.6.3.  We
+	expect that there will be a fairly long release candidate
+	period before 3.7 could be officially released. 
+
+	From Sphinx 3.6.3:
+	-(rev 5979, 5983, 5985, 5990, 5992, 5993) Sphinx 3.7.0 Release
+	Candidate I offloaded most of the utility function to
+	sphinxbase 0.2.
+	-(rev 5981) Added LDA into sphinx3.  Currently it supports only
+	1-stream features. 
+
+	For developers:
+	-Many wholistic tests are now relocated in sphinxbase. Now
+	make distcheck will generate 79 PASSes.  
+	-make distcheck need to be run with
+	DISTCHECK_CONFIGURE_FLAGS=--with-sphinxbase=`pwd`/../sphinxbase
+
 2006-07-20  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	Sphinx 3.6.3
 	^^^^^^^^^^^^
