@@ -1145,6 +1145,7 @@ build_stseg(history_t * rooth)
         stseg->next = NULL;
 
         stseg->pid = h->snode->pnode->pid;
+        stseg->sen = h->snode->sen;
         stseg->state = h->snode->state;
         stseg->start = ((!prevh)
                         || (prevh->snode->pnode->id !=

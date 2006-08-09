@@ -113,6 +113,7 @@
 /** State level segmentation/alignment; one entry per frame */
 typedef struct align_stseg_s {
     s3pid_t pid;                /**< Phone id */
+    s3senid_t sen;              /**< Senone id */
     int8 state;                 /**< State id within phone */
     int8 start;                 /**< Whether this is an entry into phone start state */
     int32 score;                /**< Acoustic score for transition to this state from the

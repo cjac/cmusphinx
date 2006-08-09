@@ -286,6 +286,10 @@ static arg_t defn[] = {
      ARG_STRING,
      NULL,
      "Output directory for Sphinx-II format state segmentation files; optionally end with ,CTL"},
+    {"-s2cdsen",
+     ARG_BOOLEAN,
+     "no",
+     "Output context-dependent senone indices in Sphinx-II state segmentations"},
     {"-phlabdir",
      ARG_STRING,
      NULL,
@@ -451,11 +455,20 @@ write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec)
     int16 s2_info;
     char buf[8];
     static int32 byterev = -1;  /* Whether to byte reverse output data */
+    int32 cdsen;
 
     build_output_uttfile(filename, dir, uttid, ctlspec);
     strcat(filename, ".v8_seg");        /* .v8_seg for compatibility */
     E_INFO("Writing Sphinx-II format state segmentation to: %s\n",
            filename);
+    cdsen = cmd_ln_boolean("-s2cdsen");
+    if (cdsen) {
+	E_INFO("Writing context-dependent state indices in segmentation file\n");
+	if (mdef_n_sen(kbc->mdef) > 0xffff) {
+	    E_ERROR("Number of senones exceeds 65535, cannot write them to segmentation file\n");
+	    return;
+	}
+    }
     if ((fp = fopen(filename, "wb")) == NULL) {
         E_ERROR("fopen(%s,wb) failed\n", filename);
         return;
@@ -496,12 +509,16 @@ write_s2stseg(char *dir, align_stseg_t * stseg, char *uttid, char *ctlspec)
 
     /* Write state info for each frame */
     for (; stseg; stseg = stseg->next) {
-        mdef_phone_components(kbc->mdef, stseg->pid, ci, &(ci[1]),
-                              &(ci[2]), &wpos);
-
-        s2_info = ci[0] * kbc->mdef->n_emit_state + stseg->state;
-        if (stseg->start)
-            s2_info |= 0x8000;
+	if (cdsen) {
+	    s2_info = stseg->sen;
+	}
+	else {
+	    mdef_phone_components(kbc->mdef, stseg->pid, ci, &(ci[1]),
+				  &(ci[2]), &wpos);
+	    s2_info = ci[0] * kbc->mdef->n_emit_state + stseg->state;
+	    if (stseg->start)
+		s2_info |= 0x8000;
+	}
         if (byterev)
             SWAP_INT16(&s2_info);
 
