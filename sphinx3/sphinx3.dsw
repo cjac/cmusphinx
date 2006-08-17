@@ -12,16 +12,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -40,9 +34,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -57,16 +48,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -85,9 +70,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -102,16 +84,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -130,9 +106,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -147,16 +120,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -175,54 +142,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "cepview"=.\win32\msdev\programs\cepview\cepview.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libAPI
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcommon
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libconfidence
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libdict
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libep
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name liblm
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -237,16 +156,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -265,9 +178,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -282,16 +192,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -310,9 +214,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -327,16 +228,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -355,9 +250,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -372,16 +264,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -400,9 +286,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -417,16 +300,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -445,9 +322,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -462,16 +336,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -490,9 +358,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -507,16 +372,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -536,21 +395,6 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name libsearch
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "libs3audio"=.\win32\msdev\libs3audio\libs3audio.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
 }}}
 
 ###############################################################################
@@ -568,18 +412,6 @@ Package=<4>
 ###############################################################################
 
 Project: "libam"=.\win32\msdev\libs3decoder\libam.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "libcep_feat"=.\win32\msdev\libs3decoder\libcep_feat.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -663,18 +495,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "libutil"=.\win32\msdev\libutil\libutil.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "sphinx3_livepretend"=.\win32\msdev\programs\livepretend\sphinx3_livepretend.dsp - Package Owner=<4>
 
 Package=<5>
@@ -684,16 +504,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -712,9 +526,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
@@ -729,16 +540,10 @@ Package=<5>
 Package=<4>
 {{{
     Begin Project Dependency
-    Project_Dep_Name libs3audio
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name libAPI
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libam
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libcep_feat
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libcommon
@@ -757,9 +562,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name libsearch
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name libutil
     End Project Dependency
 }}}
 
