@@ -131,7 +131,7 @@ installation of sphinx.  The general layout looks like this
 
 To compile the sphinx 3.7 in Visual C++ 6.0, 
 1, unzip the file.
-2, click programs.dsw 
+2, click sphinx3.dsw 
 3, build the application projects by clicking "Build" at the tool bar.
 
 Step 3 can be done easily in VC6.0 by clicking the "Build" menu at
