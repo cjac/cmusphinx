@@ -118,9 +118,6 @@ customize it by running ./configure with an argument, as in
 
     >./configure --prefix=/my/own/installation/directory
 
-If your system doesn't have LAPACK, BLAS, please install package
-g2c, blas and lapack.
-
 Windows Installation:
 ^^^^^^^^^^^^^^^^^^^^^
 Starting from sphinx 3.7, you need to install sphinxbase before
