@@ -80,7 +80,7 @@ sub process_transcript {
 	    $_=uc$_;
 	    push @newwords, $_;
 	}
-	$self->output_sentence(\@words, $uttid, $fileid, $start, $end);
+	$self->output_sentence(\@newwords, $uttid, $fileid, $start, $end);
     }
 }
 
