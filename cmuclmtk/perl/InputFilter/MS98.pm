@@ -78,6 +78,7 @@ sub process_transcript {
 	    tr/{}//d;
 	    # Uppercase
 	    $_=uc$_;
+	    push @newwords, $_;
 	}
 	$self->output_sentence(\@words, $uttid, $fileid, $start, $end);
     }
