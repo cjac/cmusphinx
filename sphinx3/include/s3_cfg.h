@@ -41,7 +41,7 @@
  *
  * The legal rules are in the form
  *
- *     0.33 $rule1 -> product1 product2 ... productN
+ *     0.33 $rule1 N product1 product2 ... productN
  *
  * 0.33 is a float32 indicating the score (or probability) of this rule being
  * applied.  $rule1 is the name of a non-terminal to be expanded.  And
@@ -57,7 +57,7 @@
 #include <stdio.h>
 #include "prim_type.h"
 #include "hash.h"
-#include "s3u_arraylist.h"
+#include "s3_arraylist.h"
 #include "fsg.h"
 
 #ifdef __cplusplus
@@ -101,8 +101,6 @@ extern "C" {
 #define S3_CFG_AUTO_PRUNE_SCORE		0x00000001
 #define S3_CFG_AUTO_PRUNE_RANK		0x00000002
 
-#define S3_CFG_MAX_FSG_EXPANSION	10
-
 #define s3_cfg_is_null_parse(x) (x->entries.count == 0)
 
 #define s3_cfg_is_terminal(x) (x & S3_CFG_TERM_BIT)
@@ -128,7 +126,7 @@ typedef struct s3_cfg_rule_s {
 typedef struct {
   s3_cfg_id_t id;
   char *name;
-  s3u_arraylist_t rules;
+  s3_arraylist_t rules;
   s3_cfg_rule_t *nil_rule;
 } s3_cfg_item_t;
 
@@ -145,8 +143,8 @@ typedef struct s3_cfg_entry_s {
 
 typedef struct s3_cfg_state_s {
   s3_cfg_id_t input;
-  s3u_arraylist_t entries;
-  s3u_arraylist_t expansions;
+  s3_arraylist_t entries;
+  s3_arraylist_t expansions;
   struct s3_cfg_state_s *back;
 
   s3_cfg_entry_t *best_completed_entry;
@@ -158,8 +156,8 @@ typedef struct s3_cfg_state_s {
 } s3_cfg_state_t;
 
 typedef struct {
-  s3u_arraylist_t rules;
-  s3u_arraylist_t item_info;
+  s3_arraylist_t rules;
+  s3_arraylist_t item_info;
   hash_table_t *name2id;
 
   int8 *predictions;
@@ -226,7 +224,7 @@ s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn);
    @return A FSG.
  */
 s2_fsg_t *
-s3_cfg_convert_to_fsg(s3_cfg_t *_cfg);
+s3_cfg_convert_to_fsg(s3_cfg_t *_cfg, int _max_expansion);
 
 
 /*

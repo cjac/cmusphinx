@@ -11,7 +11,8 @@ bin_PROGRAMS = sphinx3_decode \
 	sphinx3_dp \
 	sphinx3_ep \
 	gausubvq \
-	lm_convert
+	lm_convert \
+	sphinx3_cfg2fsg
 
 sphinx3_livepretend_SOURCES = main_livepretend.c 
 sphinx3_continuous_SOURCES = main_continuous.c 
@@ -27,12 +28,12 @@ sphinx3_allphone_SOURCES = main_allphone.c s3_allphone.c
 sphinx3_ep_SOURCES = main_ep.c
 gausubvq_SOURCES = gausubvq.c
 lm_convert_SOURCES = main_lm_convert.c
+sphinx3_cfg2fsg_SOURCES = main_cfg2fsg.c
 
 #gauvq_read_SOURCES = main_gauvq_read.c 
 #gauvq_SOURCES = main_gauvq.c 
 
 noinst_HEADERS = \
-	main_ep.h \
 	s3_align.h \
 	s3_allphone.h 
 

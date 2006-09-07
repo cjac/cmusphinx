@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "s3_cfg.h"
-#include "s3u_arraylist.h"
+#include "s3_arraylist.h"
 #include "logs3.h"
 
 #define FREE_VARIABLE(v) if (v != NULL) free(v);
@@ -68,8 +68,8 @@ s3_cfg_init(s3_cfg_t *_cfg)
    * Create a new CFG
    */
 
-  s3u_arraylist_init(&_cfg->rules);
-  s3u_arraylist_init(&_cfg->item_info);
+  s3_arraylist_init(&_cfg->rules);
+  s3_arraylist_init(&_cfg->item_info);
 
   name2id = hash_new(S3_CFG_NAME_HASH_SIZE, HASH_CASE_YES);
 
@@ -113,7 +113,12 @@ s3_cfg_read_simple(const char *_fn)
   FILE *file = NULL;
   s3_cfg_id_t src;
   s3_cfg_id_t products[S3_CFG_MAX_ITEM_COUNT + 1];
+  s3_cfg_id_t item;
+  char name[S3_CFG_MAX_ITEM_STR_LEN + 1];
+  char format[1024];
   float32 score;
+  int len;
+  int i;
 
   assert(_fn != NULL);
 
@@ -123,8 +128,42 @@ s3_cfg_read_simple(const char *_fn)
   if ((file = fopen(_fn, "r")) == NULL)
     E_FATAL("Cannot open input plain cfg file");
 
-  while (feof(file) == 0) {
-    read_1rule(cfg, file, &score, &src, products);
+  sprintf(format, "%%%ds", S3_CFG_MAX_ITEM_STR_LEN);
+
+  while (!feof(file)) {
+    /* read the prior */
+    if (fscanf(file, "%f", &score) != 1 || score < 0)
+      break;
+
+    /* read the source */
+    if (fscanf(file, format, name) != 1)
+      E_FATAL("Bad CFG production rule\n");
+
+    src = s3_cfg_str2id(cfg, name);
+    if (src == S3_CFG_INVALID_ID)
+      E_FATAL("Bad CFG production rule\n");
+
+    if (s3_cfg_is_terminal(src))
+      E_FATAL("Bad CFG production rule\n");
+    
+    if (fscanf(file, "%d", &len) != 1)
+      E_FATAL("Bad CFG production rule\n");
+    
+    if (len > S3_CFG_MAX_ITEM_COUNT)
+      E_FATAL("CFG Production rule too long\n");
+
+    /* read the products */
+    for (i = 0; i < len; i++) {
+      if (fscanf(file, format, name) != 1)
+	E_FATAL("Bad CFG production rule\n");
+
+      item = s3_cfg_str2id(cfg, name);
+      if (item == S3_CFG_INVALID_ID)
+	E_FATAL("Bad CFG production term\n");
+      products[i] = item;
+    }
+    products[len] = S3_CFG_EOR_ITEM;
+
     s3_cfg_add_rule(cfg, src, score, products);
   }
 
@@ -141,7 +180,7 @@ void
 s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn)
 {
   FILE *file = NULL;
-  s3u_arraylist_t *rules = NULL;
+  s3_arraylist_t *rules = NULL;
   s3_cfg_rule_t *rule = NULL;
   int i, j, count;
 
@@ -152,9 +191,9 @@ s3_cfg_write_simple(s3_cfg_t *_cfg, const char *_fn)
     E_FATAL("Failed to open output file for writing");
 
   rules = &_cfg->rules;
-  count = s3u_arraylist_count(rules);
+  count = s3_arraylist_count(rules);
   for (i = 1; i < count; i++) {
-    rule = (s3_cfg_rule_t *)s3u_arraylist_get(rules, i);
+    rule = (s3_cfg_rule_t *)s3_arraylist_get(rules, i);
     fprintf(file, "%f %s %d",
 	    rule->score, s3_cfg_id2str(_cfg, rule->src), rule->len);
     for (j = 0; j < rule->len; j++)
@@ -173,14 +212,14 @@ void
 s3_cfg_rescore(s3_cfg_t *_cfg)
 {
   int i;
-  s3u_arraylist_t *rules = NULL;
+  s3_arraylist_t *rules = NULL;
   s3_cfg_rule_t *rule = NULL;
 
   assert(_cfg != NULL);
 
   rules = &_cfg->rules;
-  for (i = s3u_arraylist_count(rules) - 1; i >= 0; i--) {
-    rule = (s3_cfg_rule_t *)s3u_arraylist_get(rules, i);
+  for (i = s3_arraylist_count(rules) - 1; i >= 0; i--) {
+    rule = (s3_cfg_rule_t *)s3_arraylist_get(rules, i);
     rule->log_score = logs3(rule->prob_score);
   }
 }
@@ -204,7 +243,7 @@ s3_cfg_create_parse(s3_cfg_t *_cfg)
    *
    *   0.0 $PSTART -> $START #EOR#
    */
-  rule = s3u_arraylist_get(&_cfg->rules, 0);
+  rule = s3_arraylist_get(&_cfg->rules, 0);
   add_entry(state, rule, 0, 0, rule->log_score, NULL, NULL);
   
   eval_state(_cfg, state);
@@ -225,7 +264,7 @@ s3_cfg_input_term(s3_cfg_t *_cfg, s3_cfg_state_t *_cur, s3_cfg_id_t _term)
   assert(_cfg != NULL);
 
   index = s3_cfg_id2index(_term);
-  state = (s3_cfg_state_t *)s3u_arraylist_get(&_cur->expansions, index);
+  state = (s3_cfg_state_t *)s3_arraylist_get(&_cur->expansions, index);
 
   if (state == NULL)
     return NULL;
@@ -248,13 +287,13 @@ s3_cfg_close(s3_cfg_t *_cfg)
   s3_cfg_item_t *item = NULL;
 
   for (i = _cfg->rules.count - 1; i >= 0; i--) {
-    rule = (s3_cfg_rule_t *)s3u_arraylist_get(&_cfg->rules, i);
+    rule = (s3_cfg_rule_t *)s3_arraylist_get(&_cfg->rules, i);
     free(rule->products);
     free(rule);
   }
 
   for (i = _cfg->item_info.count - 1; i >= 0; i--) { 
-    item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, i);
+    item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, i);
     free(item->name);
     free(item); 
   } 
@@ -275,20 +314,20 @@ free_state(s3_cfg_state_t *_state)
   s3_cfg_state_t *parent = NULL;
 
   for (i = _state->entries.count - 1; i >= 0; i--) {
-    entry = (s3_cfg_entry_t *)s3u_arraylist_get(&_state->entries, i);
+    entry = (s3_cfg_entry_t *)s3_arraylist_get(&_state->entries, i);
     free(entry);
   }
 
   parent = _state->back;
   i = s3_cfg_id2index(_state->input);
 
-  s3u_arraylist_close(&_state->entries);
-  s3u_arraylist_close(&_state->expansions);
+  s3_arraylist_close(&_state->entries);
+  s3_arraylist_close(&_state->expansions);
   free(_state);
 
   if (parent != NULL) {
     parent->num_expanded--;
-    s3u_arraylist_set(&parent->expansions, i, NULL);
+    s3_arraylist_set(&parent->expansions, i, NULL);
   }
 }
 
@@ -303,8 +342,8 @@ free_parse(s3_cfg_state_t *_parse)
   s3_cfg_state_t *scan = NULL;
 
   if (_parse->num_expanded > 0) {
-    for (i = s3u_arraylist_count(&_parse->expansions) - 1; i >= 0; i--) {
-      scan = (s3_cfg_state_t *)s3u_arraylist_get(&_parse->expansions, i);
+    for (i = s3_arraylist_count(&_parse->expansions) - 1; i >= 0; i--) {
+      scan = (s3_cfg_state_t *)s3_arraylist_get(&_parse->expansions, i);
       free_parse(scan);
     }
   }
@@ -372,7 +411,7 @@ s3_cfg_id2str(s3_cfg_t *_cfg, s3_cfg_id_t _id)
 {
   assert(_cfg != NULL);
 
-  return ((s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info,
+  return ((s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info,
 					     s3_cfg_id2index(_id)))->name;
 }
 
@@ -402,7 +441,7 @@ add_entry(s3_cfg_state_t *_state,
   entry->back = _back;
   entry->complete = _complete;
 
-  s3u_arraylist_append(&_state->entries, entry);
+  s3_arraylist_append(&_state->entries, entry);
 
   return entry;
 }
@@ -419,8 +458,8 @@ add_state(s3_cfg_t *_cfg, s3_cfg_state_t *_back, s3_cfg_id_t _term)
   assert(_cfg != NULL);
 
   state = (s3_cfg_state_t *)ckd_calloc(1, sizeof(s3_cfg_state_t));
-  s3u_arraylist_init(&state->entries);
-  s3u_arraylist_init(&state->expansions);
+  s3_arraylist_init(&state->entries);
+  s3_arraylist_init(&state->expansions);
   state->input = _term;
   state->back = _back;
   state->best_completed_entry = NULL;
@@ -429,7 +468,7 @@ add_state(s3_cfg_t *_cfg, s3_cfg_state_t *_back, s3_cfg_id_t _term)
   state->best_overall_parse = NULL;
   state->num_expanded = -1;
   if (_back != NULL)
-    s3u_arraylist_set(&_back->expansions, s3_cfg_id2index(_term), state);
+    s3_arraylist_set(&_back->expansions, s3_cfg_id2index(_term), state);
 
   return state;
 }
@@ -448,7 +487,7 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
   s3_cfg_state_t *origin_state = NULL;
   s3_cfg_item_t *item = NULL;
   s3_cfg_id_t scan;
-  s3u_arraylist_t *arraylist = NULL;
+  s3_arraylist_t *arraylist = NULL;
   int8 *predictions = NULL;
   int32 score;
   int index;
@@ -469,7 +508,7 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
   /* iterate thru the entries in the state and perform prediction, scan,
    * and completion steps */
   for (i = 0; i < _state->entries.count; i++) {
-    entry = (s3_cfg_entry_t *)s3u_arraylist_get(&_state->entries, i);
+    entry = (s3_cfg_entry_t *)s3_arraylist_get(&_state->entries, i);
     rule = entry->rule;
     dot = entry->dot;
     origin_state = entry->origin;
@@ -480,7 +519,7 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
 
     DEBUG_ENTRY(entry);
 
-    item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+    item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
 
     /* saving some scores */
     if (_state->best_overall_entry == NULL ||
@@ -521,8 +560,8 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
 	scan = entry->rule->src;
 	arraylist = &entry->origin->entries;
 
-	for (j = s3u_arraylist_count(arraylist) - 1; j >= 0; j--) {
-	  cmplt_entry = (s3_cfg_entry_t *)s3u_arraylist_get(arraylist, j);
+	for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
+	  cmplt_entry = (s3_cfg_entry_t *)s3_arraylist_get(arraylist, j);
 
 	  if (cmplt_entry->rule->products[cmplt_entry->dot] == scan)
 	    add_entry(_state,
@@ -570,7 +609,7 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
       else {
 	index = s3_cfg_id2index(scan);
 	arraylist = &_state->expansions;
-	target_state = (s3_cfg_state_t *)s3u_arraylist_get(arraylist, index);
+	target_state = (s3_cfg_state_t *)s3_arraylist_get(arraylist, index);
 	if (target_state == NULL)
 	  target_state = add_state(_cfg, _state, scan);
 	add_entry(target_state, rule, dot + 1, origin_state, score,
@@ -618,8 +657,8 @@ eval_state(s3_cfg_t *_cfg, s3_cfg_state_t *_state)
       if (!predictions[index]) {
 	predictions[index] = 1;
 	arraylist = &item->rules;
-	for (j = s3u_arraylist_count(arraylist) - 1; j >= 0; j--) {
-	  rule = (s3_cfg_rule_t *)s3u_arraylist_get(arraylist, j);
+	for (j = s3_arraylist_count(arraylist) - 1; j >= 0; j--) {
+	  rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, j);
 	  if (rule->products[0] != S3_CFG_EOR_ITEM)
 	    add_entry(_state, rule, 0, _state, rule->log_score, NULL, NULL);
 	}
@@ -642,12 +681,12 @@ add_item(s3_cfg_t *_cfg, char *_name)
   assert(_cfg != NULL);
   assert(_name != NULL);
 
-  index = s3u_arraylist_count(&_cfg->item_info);
+  index = s3_arraylist_count(&_cfg->item_info);
 
   item = (s3_cfg_item_t *)ckd_calloc(1, sizeof(s3_cfg_item_t));
   name = (char *)ckd_salloc(_name);
   
-  s3u_arraylist_init(&item->rules);
+  s3_arraylist_init(&item->rules);
   
   /* create item's new id */
   item->id = (name[0] == S3_CFG_NONTERM_PREFIX ? 0 : S3_CFG_TERM_BIT) | index;
@@ -656,7 +695,7 @@ add_item(s3_cfg_t *_cfg, char *_name)
   
   hash_enter(_cfg->name2id, name, item->id);
 
-  s3u_arraylist_set(&_cfg->item_info, index, item);
+  s3_arraylist_set(&_cfg->item_info, index, item);
   
   return item;
 }
@@ -701,12 +740,12 @@ s3_cfg_add_rule(s3_cfg_t *_cfg, s3_cfg_id_t _src, float32 _score,
    * Add the new rule to the CFG
    */
 
-  s3u_arraylist_append(&_cfg->rules, rule);
+  s3_arraylist_append(&_cfg->rules, rule);
 
-  item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+  item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
 
   if (len > 0)
-    s3u_arraylist_append(&item->rules, rule);
+    s3_arraylist_append(&item->rules, rule);
   else if (item->nil_rule == NULL || item->nil_rule->score < _score)
     item->nil_rule = rule;
 
@@ -738,33 +777,33 @@ read_1rule(s3_cfg_t *_cfg, FILE *_file, float32 *_score,
 
   /* read the prior */
   if (fscanf(_file, "%f", &score) != 1 || score < 0)
-    E_FATAL("Bad CFG production rule");
+    E_FATAL("Bad CFG production rule\n");
 
   /* read the source */
   if (fscanf(_file, format, name) != 1)
-    E_FATAL("Bad CFG production rule");
+    E_FATAL("Bad CFG production rule\n");
 
   src = s3_cfg_str2id(_cfg, name);
   if (src == S3_CFG_INVALID_ID)
-    E_FATAL("Bad CFG production rule");
+    E_FATAL("Bad CFG production rule\n");
 
   if (s3_cfg_is_terminal(src))
-    E_FATAL("Bad CFG production rule");
+    E_FATAL("Bad CFG production rule\n");
 
   if (fscanf(_file, "%d", &len) != 1)
-    E_FATAL("Bad CFG production rule");
+    E_FATAL("Bad CFG production rule\n");
 
   if (len > S3_CFG_MAX_ITEM_COUNT)
-    E_FATAL("CFG Production rule too long");
+    E_FATAL("CFG Production rule too long\n");
 
   /* read the products */
   for (i = 0; i < len; i++) {
     if (fscanf(_file, format, name) != 1)
-      E_FATAL("Bad CFG production rule");
+      E_FATAL("Bad CFG production rule\n");
 
     item = s3_cfg_str2id(_cfg, name);
     if (item == S3_CFG_INVALID_ID)
-      E_FATAL("Bad CFG production term");
+      E_FATAL("Bad CFG production term\n");
     products[i] = item;
   }
   products[len] = S3_CFG_EOR_ITEM;
@@ -791,13 +830,13 @@ s3_cfg_print_rule(s3_cfg_t *_cfg, s3_cfg_rule_t *_rule, FILE *_out)
   assert(_rule != NULL);
 
   index = s3_cfg_id2index(_rule->src);
-  item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+  item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
   
   fprintf(_out, "(%s -> ", item->name);
 
   for (i = 0, len = _rule->len; i < len; i++) {
     index = s3_cfg_id2index(_rule->products[i]);
-    item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+    item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
 
     fprintf(_out, item->name);
     if (i != len - 1)
@@ -829,7 +868,7 @@ s3_cfg_print_entry(s3_cfg_t *_cfg, s3_cfg_entry_t *_entry, FILE *_out)
   dot = _entry->dot;
 
   index = s3_cfg_id2index(rule->src);
-  item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+  item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
 
   fprintf(_out, "(%s -> ", item->name);
 
@@ -838,7 +877,7 @@ s3_cfg_print_entry(s3_cfg_t *_cfg, s3_cfg_entry_t *_entry, FILE *_out)
       fprintf(_out, "* ");
     
     index = s3_cfg_id2index(rule->products[i]);
-    item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
+    item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
 
     fprintf(_out, item->name);
     fprintf(_out, " ");
@@ -899,15 +938,15 @@ void
 s3_cfg_compile_rules(s3_cfg_t *_cfg)
 {
   s3_cfg_item_t *item = NULL;
-  s3u_arraylist_t *arraylist = NULL;
+  s3_arraylist_t *arraylist = NULL;
   int i, n;
 
   assert(_cfg != NULL);
 
   arraylist = &_cfg->item_info;
-  n = s3u_arraylist_count(arraylist);
+  n = s3_arraylist_count(arraylist);
   for (i = n - 1; i >= 0; i--) {
-    item = s3u_arraylist_get(arraylist, i);
+    item = s3_arraylist_get(arraylist, i);
     if (!s3_cfg_is_terminal(item->id))
       compile_nonterm(_cfg, item);
   }
@@ -925,7 +964,7 @@ static void
 compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item)
 {
   int i, n;
-  s3u_arraylist_t *arraylist;
+  s3_arraylist_t *arraylist;
   float32 sum = 0;
   s3_cfg_rule_t *rule;
 
@@ -934,20 +973,28 @@ compile_nonterm(s3_cfg_t *_cfg, s3_cfg_item_t *_item)
 
   /* calculate fake score sum */
   arraylist = &_item->rules;
-  n = s3u_arraylist_count(arraylist);
+  n = s3_arraylist_count(arraylist);
   for (i = n - 1; i >= 0; i--) {
-    rule = (s3_cfg_rule_t *)s3u_arraylist_get(arraylist, i);
+    rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, i);
     sum += rule->score;
   }
 
+  if (_item->nil_rule != NULL)
+    sum += _item->nil_rule->score;
+
   if (sum == 0)
-    E_FATAL("CFG production rule scores cannot sum to 0");
+    E_FATAL("CFG production rule scores cannot sum to 0\n");
 
   /* calculate probability and log score */
   for (i = n - 1; i >= 0; i--) {
-    rule = (s3_cfg_rule_t *)s3u_arraylist_get(arraylist, i);
+    rule = (s3_cfg_rule_t *)s3_arraylist_get(arraylist, i);
     rule->prob_score = rule->score / sum;
     rule->log_score = logs3(rule->prob_score);
+  }
+
+  if (_item->nil_rule != NULL) {
+    _item->nil_rule->prob_score = _item->nil_rule->score / sum;
+    _item->nil_rule->log_score = logs3(_item->nil_rule->prob_score);
   }
 }
 

@@ -82,8 +82,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <live_decode_API.h>
-#include <live_decode_args.h>
+#include <s3_decode.h>
 #include <ad.h>
 #include <stdio.h>
 
@@ -155,7 +154,8 @@ cond_wait_timed(condition_t * c, int ticks)
 
 condition_t startEvent;
 condition_t finishEvent;
-live_decoder_t decoder;
+fe_t *fe;
+s3_decode_t decoder;
 
 FILE *dump = 0;
 
@@ -165,6 +165,8 @@ process_thread(void *aParam)
     ad_rec_t *in_ad = 0;
     int16 samples[BUFSIZE];
     int32 num_samples;
+    float32 **frames;
+    int32 num_frames;
 
     cond_wait(startEvent);
 
@@ -177,20 +179,24 @@ process_thread(void *aParam)
     while (cond_wait_timed(&finishEvent, TIMEOUT) == COND_TIMEDOUT) {
         num_samples = ad_read(in_ad, samples, BUFSIZE);
         if (num_samples > 0) {
-      /** dump the recorded audio to disk */
+	    /** dump the recorded audio to disk */
             if (fwrite(samples, sizeof(int16), num_samples, dump) <
-                num_samples) {
+		num_samples) {
                 printf("Error writing audio to dump file.\n");
             }
 
-            ld_process_raw(&decoder, samples, num_samples);
+	    fe_process_utt(fe, samples, num_samples, &frames, &num_frames);
+	    if (frames != NULL) {
+		s3_decode_process(&decoder, frames, num_frames);
+		ckd_free_2d((void **)frames);
+	    }
         }
     }
 
     ad_stop_rec(in_ad);
     ad_close(in_ad);
 
-    ld_end_utt(&decoder);
+    s3_decode_end_utt(&decoder);
 
     return 0;
 }
@@ -201,6 +207,7 @@ main(int argc, char **argv)
     thread_t thread;
     char buffer[1024];
     char *hypstr;
+    param_t *fe_params;
 
     /*
      * Initializing
@@ -210,17 +217,21 @@ main(int argc, char **argv)
         return -1;
     }
 
-    if (cmd_ln_parse_file(arg_def, argv[1])) {
+    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, argv[1])) {
         printf("Bad arguments file (%s).\n", argv[1]);
         return -1;
     }
 
-    if (ld_init(&decoder)) {
+    fe_params = fe_parse_options();
+    fe = fe_init(fe_params); 
+    ckd_free(fe_params);
+
+    if (s3_decode_init(&decoder)) {
         printf("Initialization failed.\n");
         return -1;
     }
 
-    if (ld_begin_utt(&decoder, 0)) {
+    if (s3_decode_begin_utt(&decoder, 0)) {
         printf("Cannot start decoding\n");
         return -1;
     }
@@ -259,14 +270,14 @@ main(int argc, char **argv)
     /*
      *  Print the decoding output
      */
-    if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL)) {
+    if (s3_decode_hypothesis(&decoder, NULL, &hypstr, NULL)) {
         printf("Cannot retrieve hypothesis.\n");
     }
     else {
         printf("Hypothesis:\n%s\n", hypstr);
     }
 
-    ld_finish(&decoder);
+    s3_decode_close(&decoder);
 
     fclose(dump);
 

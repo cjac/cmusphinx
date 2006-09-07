@@ -66,54 +66,57 @@
 
 static arg_t arg[] = {
     log_table_command_line_macro()
-        cepstral_to_feature_command_line_macro()
-        acoustic_model_command_line_macro()
-        speaker_adaptation_command_line_macro()
-        language_model_command_line_macro()
-        dictionary_command_line_macro()
-        phoneme_lookahead_command_line_macro()
-        histogram_pruning_command_line_macro()
-        fast_GMM_computation_command_line_macro()
-        common_filler_properties_command_line_macro()
-        common_s3x_beam_properties_command_line_macro()
-        common_application_properties_command_line_macro()
-        control_file_handling_command_line_macro()
-        hypothesis_file_handling_command_line_macro()
-        score_handling_command_line_macro()
-        output_lattice_handling_command_line_macro()
-        dag_handling_command_line_macro()
-        second_stage_dag_handling_command_line_macro()
-        input_lattice_handling_command_line_macro()
-        flat_fwd_multiplex_treatment_command_line_macro()
-        flat_fwd_debugging_command_line_macro()
-        history_table_command_line_macro()
+    cepstral_to_feature_command_line_macro()
+    acoustic_model_command_line_macro()
+    speaker_adaptation_command_line_macro()
+    language_model_command_line_macro()
+    dictionary_command_line_macro()
+    phoneme_lookahead_command_line_macro()
+    histogram_pruning_command_line_macro()
+    fast_GMM_computation_command_line_macro()
+    common_filler_properties_command_line_macro()
+    common_s3x_beam_properties_command_line_macro()
+    common_application_properties_command_line_macro()
+    control_file_handling_command_line_macro()
+    hypothesis_file_handling_command_line_macro()
+    score_handling_command_line_macro()
+    output_lattice_handling_command_line_macro()
+    dag_handling_command_line_macro()
+    second_stage_dag_handling_command_line_macro()
+    input_lattice_handling_command_line_macro()
+    flat_fwd_multiplex_treatment_command_line_macro()
+    flat_fwd_debugging_command_line_macro()
+    history_table_command_line_macro()
 
-        cepstral_input_handling_command_line_macro()
-        decode_specific_command_line_macro()
-        search_specific_command_line_macro()
-        search_modeTST_specific_command_line_macro()
-        search_modeWST_specific_command_line_macro()
-        control_lm_mllr_file_command_line_macro()
-        finite_state_grammar_command_line_macro()
-        phone_insertion_penalty_command_line_macro()
+    cepstral_input_handling_command_line_macro()
+    decode_specific_command_line_macro()
+    search_specific_command_line_macro()
+    search_modeTST_specific_command_line_macro()
+    search_modeWST_specific_command_line_macro()
+    control_lm_mllr_file_command_line_macro()
+    finite_state_grammar_command_line_macro()
+    phone_insertion_penalty_command_line_macro()
 
-        /* Things are yet to refactored */
+    /* Things are yet to refactored */
 #if 0
-        /* Commented out; not supported */
+    /* Commented out; not supported */
     {"-compsep",
      ARG_STRING,
-     "",                        /* Default: No compound word (NULL separator char) */
-     "Separator character between components of a compound word (NULL if none)"},
+     /* Default: No compound word (NULL separator char) */
+     "",
+     "Separator character between components of a compound word (NULL if "
+     "none)"},
 #endif
 
-  /** ARCHAN 20050717: The only argument which I didn't refactor,
-      reason is it makes sense to make every s3.0 family of tool to
-      accept -utt */
+    /** ARCHAN 20050717: The only argument which I didn't refactor,
+	reason is it makes sense to make every s3.0 family of tool to
+	accept -utt */
 
     {"-bestscoredir",
      ARG_STRING,
      NULL,
-     "(Mode 3) Directory for writing best score/frame (used to set beamwidth; one file/utterance)"},
+     "(Mode 3) Directory for writing best score/frame (used to set beamwidth; "
+     "one file/utterance)"},
 
     {"-utt",
      ARG_STRING,
@@ -140,8 +143,8 @@ main(int32 argc, char *argv[])
     fprintf(stdout, "\n");
 
     if (cmd_ln_str("-ctl")) {
-        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and -ctl_mllr to get
-           the corresponding LM and MLLR for the utterance */
+        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
+	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
         st->tm = ctl_process(cmd_ln_str("-ctl"),
                              cmd_ln_str("-ctl_lm"),
                              cmd_ln_str("-ctl_mllr"),
@@ -149,7 +152,8 @@ main(int32 argc, char *argv[])
                              cmd_ln_int32("-ctlcount"), utt_decode, &kb);
     }
     else if (cmd_ln_str("-utt")) {
-        /* When -utt is specified, corpus.c will wait for the utterance to change */
+        /* When -utt is specified, corpus.c will wait for the utterance to
+	   change */
         st->tm = ctl_process_utt(cmd_ln_str("-utt"),
                                  cmd_ln_int32("-ctlcount"),
                                  utt_decode, &kb);

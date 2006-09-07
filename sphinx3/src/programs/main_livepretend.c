@@ -75,9 +75,8 @@
  * \brief Driver for live-mode simulation.
  */
 #include <stdio.h>
-#include <live_decode_API.h>
-#include <live_decode_args.h>
 
+#include "s3_decode.h"
 #include "kb.h"
 #include "s3types.h"
 #include "corpus.h"
@@ -85,7 +84,8 @@
 #define SAMPLE_BUFFER_LENGTH	4096
 #define FILENAME_LENGTH		512
 
-static live_decoder_t decoder;
+static s3_decode_t decoder;
+static fe_t *fe;
 static char *rawdirfn;
 static stat_t *st;
 
@@ -97,12 +97,14 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
                 char *uttid)
 {
     char fullrawfn[FILENAME_LENGTH];
+    char waveheader[44];
     char *hypstr;
 
     short samples[SAMPLE_BUFFER_LENGTH];
+    float32 **frames;
     kb_t *kb;
     FILE *rawfd;
-    int len;
+    int len, n_frames;
 
     kb = (kb_t *) data;
 
@@ -112,30 +114,36 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
         E_FATAL("Cannnot open raw file %s.\n", fullrawfn);
     }
 
+    /* temporary hack */
+    fread(waveheader, 1, 44, rawfd);
+
     if (ur->lmname != NULL)
         srch_set_lm((srch_t *) kb->srch, ur->lmname);
     if (ur->regmatname != NULL)
         kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
 
-    if (ld_begin_utt(&decoder, ur->uttfile) != LD_SUCCESS) {
+    if (s3_decode_begin_utt(&decoder, ur->uttfile) != S3_DECODE_SUCCESS)
         E_FATAL("Cannot begin utterance decoding.\n");
-    }
     len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
 
     while (len > 0) {
         ptmr_start(&(st->tm));
-        ld_process_raw(&decoder, samples, len);
+
+	fe_process_utt(fe, samples, len, &frames, &n_frames);
+	if (frames != NULL) {
+	    s3_decode_process(&decoder, frames, n_frames);
+	    ckd_free_2d((void **)frames);
+	}
         ptmr_stop(&(st->tm));
 
-        if (ld_retrieve_hyps(&decoder, NULL, &hypstr, NULL) == LD_SUCCESS) {
-            if (decoder.phypdump) {
+        if (S3_DECODE_SUCCESS ==
+	    s3_decode_hypothesis(&decoder, NULL, &hypstr, NULL))
+            if (decoder.phypdump)
                 E_INFO("PARTIAL_HYP: %s\n", hypstr);
-            }
-        }
         len = fread(samples, sizeof(short), SAMPLE_BUFFER_LENGTH, rawfd);
     }
     fclose(rawfd);
-    ld_end_utt(&decoder);
+    s3_decode_end_utt(&decoder);
 
 }
 
@@ -144,6 +152,7 @@ main(int _argc, char **_argv)
 {
     char *ctrlfn;
     char *cfgfn;
+    param_t *fe_params;
 
     print_appl_info(_argv[0]);
 
@@ -156,21 +165,23 @@ main(int _argc, char **_argv)
     rawdirfn = _argv[2];
     cfgfn = _argv[3];
 
-    if (cmd_ln_parse_file(arg_def, cfgfn)) {
+    if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn))
         E_FATAL("Bad configuration file %s.\n", cfgfn);
-    }
 
-    if (ld_init(&decoder) != LD_SUCCESS) {
+    fe_params = fe_parse_options();
+    fe = fe_init(fe_params); 
+    ckd_free(fe_params);
+
+    if (s3_decode_init(&decoder) != S3_DECODE_SUCCESS)
         E_FATAL("Failed to initialize live-decoder.\n");
-    }
 
     st = decoder.kb.stat;
     ptmr_init(&(st->tm));
 
 
     if (ctrlfn) {
-        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and -ctl_mllr to get
-           the corresponding LM and MLLR for the utterance */
+        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
+	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
         st->tm = ctl_process(ctrlfn,
                              cmd_ln_str("-ctl_lm"),
                              cmd_ln_str("-ctl_mllr"),
@@ -184,7 +195,8 @@ main(int _argc, char **_argv)
 
     stat_report_corpus(decoder.kb.stat);
 
-    ld_finish(&decoder);
+    s3_decode_close(&decoder);
+    fe_close(fe);
 
     return 0;
 }

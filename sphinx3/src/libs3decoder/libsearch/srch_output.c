@@ -188,7 +188,8 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
                     uttid,
                     CTM_CHANNEL_MARKER,
                     (float32) (h->sf) / 100.0,
-                    (float32) (h->ef) / 100.0, dict_wordstr(dict, h->id));
+                    (float32) (h->ef) / 100.0,
+		    dict_wordstr(dict, h->id));
 
 
             if (h->cscr <= 0) { /*This is a bad way to decide whether to dump the score */

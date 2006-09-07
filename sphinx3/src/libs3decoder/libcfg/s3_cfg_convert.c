@@ -2,14 +2,11 @@
 #include "s3_cfg.h"
 #include "fsg.h"
 
-typedef struct param_s {
-} param_t;
+static void
+prune_states(s2_fsg_t *_fsg);
 
 static void
-remove_dead_states(s2_fsg_t *_fsg);
-
-static void
-mark_dead_states(s2_fsg_t *_fsg, int _state, int *_marks);
+mark_dead_state(s2_fsg_t *_fsg, int _state, int *_marks, glist_t *_adj);
 
 static void
 convert_cfg_rule(s3_cfg_t *_cfg,
@@ -18,11 +15,10 @@ convert_cfg_rule(s3_cfg_t *_cfg,
 		 int _src,
 		 int _dest,
 		 int *_expansions,
-		 param_t *_params);
-
+		 int _max_expansion);
 
 s2_fsg_t *
-s3_cfg_convert_to_fsg(s3_cfg_t *_cfg)
+s3_cfg_convert_to_fsg(s3_cfg_t *_cfg, int _max_expansion)
 {
   s3_cfg_rule_t *rule;
   s2_fsg_t *fsg;
@@ -31,8 +27,8 @@ s3_cfg_convert_to_fsg(s3_cfg_t *_cfg)
 
   assert(_cfg != NULL);
 
-  n = s3u_arraylist_count(&_cfg->item_info);
-  rule = s3u_arraylist_get(&_cfg->rules, 0);
+  n = s3_arraylist_count(&_cfg->item_info);
+  rule = s3_arraylist_get(&_cfg->rules, 0);
 
   expansions = (int *)ckd_calloc(n, sizeof(int));
   fsg = (s2_fsg_t *)ckd_calloc(1, sizeof(s2_fsg_t));
@@ -44,8 +40,9 @@ s3_cfg_convert_to_fsg(s3_cfg_t *_cfg)
 
   for (i = 0; i < n; i++)
     expansions[i] = 0;
-  convert_cfg_rule(_cfg, fsg, rule, 0, 1, expansions, NULL);
-  remove_dead_states(fsg);
+  convert_cfg_rule(_cfg, fsg, rule, 0, 1, expansions, _max_expansion);
+
+  prune_states(fsg);
 
   return fsg;
 }
@@ -57,7 +54,7 @@ convert_cfg_rule(s3_cfg_t *_cfg,
 		 int _src,
 		 int _dest,
 		 int *_expansions,
-		 param_t *_params)
+		 int _max_expansion)
 {
   int index;
   int i, j, n;
@@ -74,7 +71,7 @@ convert_cfg_rule(s3_cfg_t *_cfg,
    */
   for (i = 0; i < _rule->len; i++) {
     id = _rule->products[i];
-    if (_expansions[s3_cfg_id2index(id)] > S3_CFG_MAX_FSG_EXPANSION)
+    if (_expansions[s3_cfg_id2index(id)] > _max_expansion)
       return;
   }
 
@@ -89,25 +86,27 @@ convert_cfg_rule(s3_cfg_t *_cfg,
      *   3.  Use the new state as the current state.
      */
     if (s3_cfg_is_terminal(id)) {
-      trans = (s2_fsg_trans_t*)ckd_calloc(1, sizeof(s2_fsg_trans_t));
-      trans->from_state = cur;
-      trans->to_state = _fsg->n_state++;
-      trans->prob = 1.0;
-      trans->word = (char *)ckd_salloc(s3_cfg_id2str(_cfg, id));
-      trans->next = _fsg->trans_list;
-      _fsg->trans_list = trans;
-
-      cur = _fsg->n_state;
+      if (id != S3_CFG_EOI_ITEM) {
+	trans = (s2_fsg_trans_t*)ckd_calloc(1, sizeof(s2_fsg_trans_t));
+	trans->from_state = cur;
+	trans->to_state = _fsg->n_state;
+	trans->prob = 1.0;
+	trans->word = (char *)ckd_salloc(s3_cfg_id2str(_cfg, id));
+	trans->next = _fsg->trans_list;
+	_fsg->trans_list = trans;
+	
+	cur = _fsg->n_state++;
+      }
     }
 
     /* For each non-terminal X:
      *   1.  Create a new destination state, v.
      *   2.  Increment expansion count for X.
-     *   3.  For each cfg rule with X as source:
-     *      a.  Create a new source state, u.
+     *   3.  For each (non-epsilon) expansion rule with X as source:
+     *      a.  Create a new source state u
      *      b.  Convert the rule with u as src and v as dest.
-     *      d.  Create a new epsilon transition from the current state to u 
-     *          with the rule's expansion probability.
+     *      c.  Create a new epsilong transition from cur to u with the rule's
+     *          expansion probability.
      *   4.  Set the current state to v.
      *   5.  Decrement expansion count for X.
      */
@@ -115,17 +114,26 @@ convert_cfg_rule(s3_cfg_t *_cfg,
       index = s3_cfg_id2index(id);
       v = _fsg->n_state++;
       _expansions[index]++;
-      item = (s3_cfg_item_t *)s3u_arraylist_get(&_cfg->item_info, index);
-      n = s3u_arraylist_count(&item->rules);
+      item = (s3_cfg_item_t *)s3_arraylist_get(&_cfg->item_info, index);
+      n = s3_arraylist_count(&item->rules);
       for (j = 0; j < n; j++) {
-	rule = (s3_cfg_rule_t *)s3u_arraylist_get(&item->rules, j);
+	rule = (s3_cfg_rule_t *)s3_arraylist_get(&item->rules, j);
 	u = _fsg->n_state++;
-	convert_cfg_rule(_cfg, _fsg, rule, u, v, _expansions, _params);
-	
-	trans = (s2_fsg_trans_t*)ckd_calloc(1, sizeof(s2_fsg_trans_t));
+	convert_cfg_rule(_cfg, _fsg, rule, u, v, _expansions, _max_expansion);
+	trans = (s2_fsg_trans_t *)ckd_calloc(1, sizeof(s2_fsg_trans_t));
 	trans->from_state = cur;
 	trans->to_state = u;
 	trans->prob = rule->prob_score;
+	trans->word = NULL;
+	trans->next = _fsg->trans_list;
+	_fsg->trans_list = trans;
+      }
+
+      if (item->nil_rule != NULL) {
+	trans = (s2_fsg_trans_t *)ckd_calloc(1, sizeof(s2_fsg_trans_t));
+	trans->from_state = cur;
+	trans->to_state = v;
+	trans->prob = item->nil_rule->prob_score;
 	trans->word = NULL;
 	trans->next = _fsg->trans_list;
 	_fsg->trans_list = trans;
@@ -135,32 +143,69 @@ convert_cfg_rule(s3_cfg_t *_cfg,
       _expansions[index]--;
     }
   }
+
+  /* Make one final transition from our last state to the destination state. */
+  trans = (s2_fsg_trans_t*)ckd_calloc(1, sizeof(s2_fsg_trans_t));
+  trans->from_state = cur;
+  trans->to_state = _dest;
+  trans->prob = 1;
+  trans->word = NULL;
+  trans->next = _fsg->trans_list;
+  _fsg->trans_list = trans;
 }
 
 static void
-remove_dead_states(s2_fsg_t *_fsg)
+prune_states(s2_fsg_t *_fsg)
 {
-  int *mapping;
-  int i, count;
+  s2_fsg_trans_t **edges;
   s2_fsg_trans_t *trans, *prev;
+  glist_t *adj;
+  int *states;
+  int i, j, count;
 
   assert(_fsg != NULL);
 
-  mapping = (int *)ckd_calloc(_fsg->n_state, sizeof(int));
-  for (i = _fsg->n_state - 1; i >= 0; i--)
-    mapping[i] = 0;
-  mark_dead_states(_fsg, _fsg->final_state, mapping);
-  
   count = 0;
-  for (i = 0; i < _fsg->n_state; i++)
-    if (mapping[i])
-      mapping[i] = count++;
+  for (trans = _fsg->trans_list; trans; trans = trans->next, count++);
+
+  states = (int *)ckd_calloc(_fsg->n_state, sizeof(int));
+  edges = (s2_fsg_trans_t **)ckd_calloc(_fsg->n_state,
+					sizeof(s2_fsg_trans_t *));
+
+  /* Check and remove passable states (states with only one out-going epsilon
+   * edge).  The array states[i] keeps track of out-degree and the array
+   * edges[i] keeps track of the last out-going edge from state i.
+   */
+
+  for (i = _fsg->n_state - 1; i >= 0; i--) {
+    edges[i] = NULL;
+    states[i] = 0;
+  }
+  
+  for (trans = _fsg->trans_list; trans != NULL; trans = trans->next) {
+    edges[trans->from_state] = trans;
+    states[trans->from_state]++;
+  }
+
+  count = 0;
+  for (i = _fsg->n_state - 1; i >= 0; i--) {
+    if (states[i] == 1 && edges[i]->word == NULL) {
+      j = i;
+      while (states[j] == 1 && edges[j]->word == NULL)
+	j = edges[j]->to_state;
+      states[i] = j;
+      count++;
+    }
+    else
+      states[i] = -1;
+  }
 
   trans = _fsg->trans_list;
   prev = NULL;
   while (trans) {
-    if (!mapping[trans->from_state] || !mapping[trans->to_state]) {
+    if (states[trans->from_state] != -1) {
       if (prev == NULL) {
+	trans = _fsg->trans_list;
 	_fsg->trans_list = trans->next;
 	ckd_free(trans->word);
 	ckd_free(trans);
@@ -174,29 +219,82 @@ remove_dead_states(s2_fsg_t *_fsg)
       }
     }
     else {
-      trans->from_state = mapping[trans->from_state];
-      trans->to_state = mapping[trans->to_state];
+      if (states[trans->to_state] != -1)
+	trans->to_state = states[trans->to_state];
       prev = trans;
       trans = trans->next;
     }
   }
+
+  /* Check and remove dead states (states that cannot reach the final state */
+
+  adj = (glist_t *)ckd_calloc(_fsg->n_state, sizeof(glist_t));
+  for (i = _fsg->n_state - 1; i >= 0; i--) {
+    adj[i] = NULL;
+    states[i] = -1;
+  }
+
+  for (trans = _fsg->trans_list; trans; trans = trans->next)
+    adj[trans->to_state] = glist_add_ptr(adj[trans->to_state], trans);
+  
+  mark_dead_state(_fsg, _fsg->final_state, states, adj);
+
+  count = 0;
+  for (i = 0; i < _fsg->n_state; i++) {
+    glist_free(adj[i]);
+    if (states[i] != -1)
+      states[i] = count++;
+  }
+  
+
+  _fsg->n_state = count;
+
+  trans = _fsg->trans_list;
+  prev = NULL;
+  while (trans) {
+    if (states[trans->from_state] == -1 || states[trans->to_state] == -1) {
+      if (prev == NULL) {
+	trans = _fsg->trans_list;
+	_fsg->trans_list = trans->next;
+	ckd_free(trans->word);
+	ckd_free(trans);
+	trans = _fsg->trans_list;
+      }
+      else {
+	prev->next = trans->next;
+	ckd_free(trans->word);
+	ckd_free(trans);
+	trans = prev->next;
+      }
+    }
+    else {
+      trans->from_state = states[trans->from_state];
+      trans->to_state = states[trans->to_state];
+      prev = trans;
+      trans = trans->next;
+    }
+  }
+
+  ckd_free(states);
+  ckd_free(edges);
+
 }
 
 static void
-mark_dead_states(s2_fsg_t *_fsg, int _state, int *_marks)
+mark_dead_state(s2_fsg_t *_fsg, int _state, int *_marks, glist_t *_adj)
 {
   s2_fsg_trans_t *trans;
+  glist_t itr;
 
   assert(_fsg != NULL);
   
-  if (_marks[_state])
-    return;
-  else 
-    _marks[_state] = 1;
-  
-  for (trans = _fsg->trans_list; trans; trans = trans->next)
-    if (trans->to_state == _state)
-      mark_dead_states(_fsg, trans->from_state, _marks);
+  _marks[_state] = 1;
+
+  for (itr = _adj[_state]; itr; itr = gnode_next(itr)) {
+    trans = (s2_fsg_trans_t *)gnode_ptr(itr);
+    if (trans->to_state == _state && _marks[trans->from_state] == -1)
+      mark_dead_state(_fsg, trans->from_state, _marks, _adj);
+  }
 }
 
 #if 0
