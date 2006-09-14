@@ -207,7 +207,6 @@ main(int argc, char **argv)
     thread_t thread;
     char buffer[1024];
     char *hypstr;
-    param_t *fe_params;
 
     /*
      * Initializing
@@ -222,9 +221,7 @@ main(int argc, char **argv)
         return -1;
     }
 
-    fe_params = fe_parse_options();
-    fe = fe_init(fe_params); 
-    ckd_free(fe_params);
+    fe = fe_init_auto(); 
 
     if (s3_decode_init(&decoder)) {
         printf("Initialization failed.\n");

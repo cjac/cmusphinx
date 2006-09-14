@@ -162,7 +162,6 @@ main(int _argc, char **_argv)
 {
     char *ctrlfn;
     char *cfgfn;
-    param_t *fe_params;
 
     print_appl_info(_argv[0]);
 
@@ -178,9 +177,7 @@ main(int _argc, char **_argv)
     if (cmd_ln_parse_file(S3_DECODE_ARG_DEFS, cfgfn))
         E_FATAL("Bad configuration file %s.\n", cfgfn);
 
-    fe_params = fe_parse_options();
-    fe = fe_init(fe_params); 
-    ckd_free(fe_params);
+    fe = fe_init_auto(); 
 
     if (s3_decode_init(&decoder) != S3_DECODE_SUCCESS)
         E_FATAL("Failed to initialize live-decoder.\n");
