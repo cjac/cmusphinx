@@ -12,7 +12,7 @@ extern "C" {
  * sequences.  It also implements fast queue and stack operations.
  */
 
-typedef struct {
+typedef struct s3_arraylist_s {
   void **array;
   int head;
   int count;
