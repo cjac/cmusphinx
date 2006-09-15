@@ -34,6 +34,7 @@ sphinx3_cfg2fsg_SOURCES = main_cfg2fsg.c
 #gauvq_SOURCES = main_gauvq.c 
 
 noinst_HEADERS = \
+        main_ep.h \
 	s3_align.h \
 	s3_allphone.h 
 
