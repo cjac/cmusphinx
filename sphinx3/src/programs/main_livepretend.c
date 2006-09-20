@@ -115,7 +115,7 @@ utt_livepretend(void *data, utt_res_t * ur, int32 sf, int32 ef,
     }
 
     /* temporary hack */
-    fread(waveheader, 1, 44, rawfd);
+    /* fread(waveheader, 1, 44, rawfd); */
 
     if (ur->lmname != NULL)
         srch_set_lm((srch_t *) kb->srch, ur->lmname);

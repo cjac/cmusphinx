@@ -264,7 +264,7 @@ s3_decode_init(s3_decode_t * _decode)
     }
 
     _decode->swap =
-        !strcmp(cmd_ln_str("-machine_endian"), cmd_ln_str("-input_endian"));
+        strcmp(cmd_ln_str("-machine_endian"), cmd_ln_str("-input_endian"));
 
     if (_decode->swap)
         E_INFO("Input data WILL be byte swapped\n");

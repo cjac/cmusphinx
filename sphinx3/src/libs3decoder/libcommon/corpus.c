@@ -561,7 +561,6 @@ ctl_process(char *ctlfile, char *ctllmfile, char *ctlmllrfile, int32 nskip,
 
     ptmr_init(&tm);
 
-
     if (nskip > 0) {
         E_INFO("Skipping %d entries at the beginning of %s\n", nskip,
                ctlfile);
@@ -597,7 +596,6 @@ ctl_process(char *ctlfile, char *ctllmfile, char *ctlmllrfile, int32 nskip,
 
         }
     }
-
 
     for (; count > 0; --count) {
         int32 tmp1, tmp2;
