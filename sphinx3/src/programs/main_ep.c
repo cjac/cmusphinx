@@ -75,7 +75,7 @@ static arg_t defn[] = {
       "Frame rate for frame-to-time conversion"},
     { "-ncep", 
       ARG_INT32, 
-      DEFAULT_NUM_CEPSTRA, 
+      ARG_STRINGIFY(DEFAULT_NUM_CEPSTRA),
       "Number of cepstrums" }, 
     { "-postclassify",
       ARG_INT32,
@@ -227,7 +227,7 @@ get_filename_base(char *_fn, char *_base)
     int len = strlen(_fn);
     int i, j;
 
-    for (j = len; j >= 0; j--)
+    for (j = len - 1; j >= 0; j--)
 	if (_fn[j] == '.')
 	    break;
     
@@ -241,6 +241,6 @@ get_filename_base(char *_fn, char *_base)
     if (i < 0)
 	i = 0;
 
-    strncpy(_base, _fn + i, j - i);
+    strncpy(_base, _fn + i + 1, j - i - 1);
     _base[j - i] = '\0';
 }

@@ -249,7 +249,7 @@ init_frame_stats(s3_endpointer_t *_ep)
 	if (_ep->classes[i] == CLASS_OWNER)
 	    _ep->begin_count++;
 
-    for (i = 0; i < _ep->end_window - 1; i++)
+    for (i = 0; i < _ep->end_window; i++)
 	if (_ep->classes[i] == CLASS_OWNER)
 	    _ep->end_count++;
 
