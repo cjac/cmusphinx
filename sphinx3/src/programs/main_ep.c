@@ -45,75 +45,79 @@
 #define NFR		100
 
 static arg_t defn[] = {
-    { "-mean",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian means input file" },
-    { "-var",
-      ARG_STRING,
-      NULL,
-      "Mixture gaussian variances input file" },
-    { "-varfloor",
-      ARG_FLOAT32,
-      "0.0001",
-      "Mixture gaussian variance floor (applied to data from -var file)" },
-    { "-mixw",
-      ARG_STRING,
-      NULL,
-      "Senone mixture weights input file" },
-    { "-mixwfloor",
-      ARG_FLOAT32,
-      "0.0000001",
-      "Senone mixture weights floor (applied to data from -mixw file)" },
-    { "-senmgau",
-      ARG_STRING,
-      ".cont.",
-      "Senone to mixture-gaussian mapping file (or .semi. or .cont.)" }, 
-    { "-frate",
-      ARG_INT32,
-      "100",
-      "Frame rate for frame-to-time conversion"},
-    { "-ncep", 
-      ARG_INT32, 
-      ARG_STRINGIFY(DEFAULT_NUM_CEPSTRA),
-      "Number of cepstrums" }, 
-    { "-postclassify",
-      ARG_INT32,
-      "1",
-      "Use voting windows to update the frame classes"},
-    { "-begin_window",
-      ARG_INT32,
-      "6",
-      "Size of the window to examine for start of utterance"},
-    { "-begin_threshold",
-      ARG_INT32,
-      "2",
-      "Threshold to mark for start of utterance"},
-    { "-begin_pad",
-      ARG_INT32,
-      "50",
-      "Padded frames before the start of utterance"},
-    { "-end_window",
-      ARG_INT32,
-      "80",
-      "Size of the window to examine for end of utterance"},
-    { "-end_threshold",
-      ARG_INT32,
-      "2",
-      "Threshold to mark for end of utterance"},
-    { "-end_pad",
-      ARG_INT32,
-      "80",
-      "Padded frames after the end of utterance"},
-    { "-logbase",
-      ARG_FLOAT32,
-      "1.0003",
-      "Base in which all log-likelihoods calculated" },
-    { NULL, ARG_INT32, NULL, NULL}
+    {"-mean",
+     ARG_STRING,
+     NULL,
+     "Mixture gaussian means input file"},
+    {"-var",
+     ARG_STRING,
+     NULL,
+     "Mixture gaussian variances input file"},
+    {"-varfloor",
+     ARG_FLOAT32,
+     "0.0001",
+     "Mixture gaussian variance floor (applied to data from -var file)"},
+    {"-mixw",
+     ARG_STRING,
+     NULL,
+     "Senone mixture weights input file"},
+    {"-mixwfloor",
+     ARG_FLOAT32,
+     "0.0000001",
+     "Senone mixture weights floor (applied to data from -mixw file)"},
+    {"-senmgau",
+     ARG_STRING,
+     ".cont.",
+     "Senone to mixture-gaussian mapping file (or .semi. or .cont.)"},
+    {"-frate",
+     ARG_INT32,
+     "100",
+     "Frame rate for frame-to-time conversion"},
+    {"-input",
+     ARG_STRING,
+     NULL,
+     "Input cepstra file"},
+    {"-ncep",
+     ARG_INT32,
+     ARG_STRINGIFY(DEFAULT_NUM_CEPSTRA),
+     "Dimension of cepstral vector"},
+    {"-postclassify",
+     ARG_INT32,
+     "1",
+     "Use voting windows to update the frame classes"},
+    {"-begin_window",
+     ARG_INT32,
+     "6",
+     "Size of the window to examine for start of utterance"},
+    {"-begin_threshold",
+     ARG_INT32,
+     "2",
+     "Threshold to mark for start of utterance"},
+    {"-begin_pad",
+     ARG_INT32,
+     "50",
+     "Padded frames before the start of utterance"},
+    {"-end_window",
+     ARG_INT32,
+     "80",
+     "Size of the window to examine for end of utterance"},
+    {"-end_threshold",
+     ARG_INT32,
+     "2",
+     "Threshold to mark for end of utterance"},
+    {"-end_pad",
+     ARG_INT32,
+     "80",
+     "Padded frames after the end of utterance"},
+    {"-logbase",
+     ARG_FLOAT32,
+     "1.0003",
+     "Base in which all log-likelihoods calculated"},
+    {NULL, ARG_INT32, NULL, NULL}
 };
 
 void
-get_filename_base(char *_fn, char *_base);
+ get_filename_base(char *_fn, char *_base);
 
 int
 main(int _argc, char **_argv)
@@ -127,93 +131,90 @@ main(int _argc, char **_argv)
     int n_frames, n_floats, n_ceps, i, swap, frate, begin_frame, end_frame;
     struct stat statbuf;
 
-    cfg_fn = _argv[1];
-    mfcc_fn = _argv[2];
+    if ((_argc == 3) && (_argv[1][0] != '-')) {
+        cfg_fn = _argv[1];
+        mfcc_fn = _argv[2];
 
-    cmd_ln_parse_file(defn, cfg_fn);
+        cmd_ln_parse_file(defn, cfg_fn);
+    }
+    else {
+        cmd_ln_parse(defn, _argc, _argv);
+        mfcc_fn = cmd_ln_str("-input");
+    }
 
     if (stat(mfcc_fn, &statbuf) < 0)
-	E_FATAL("Cannot stat input file %s\n", mfcc_fn);
+        E_FATAL("Cannot stat input file %s\n", mfcc_fn);
 
     if ((in = fopen(mfcc_fn, "rb")) == NULL)
-	E_FATAL("Cannot open input file %s\n", mfcc_fn);
+        E_FATAL("Cannot open input file %s\n", mfcc_fn);
 
     get_filename_base(mfcc_fn, base_fn);
 
     if (fread(&n_floats, sizeof(int32), 1, in) != 1) {
-	fclose(in);
-	E_FATAL("MFCC file must start with total vector size\n");
+        fclose(in);
+        E_FATAL("MFCC file must start with total vector size\n");
     }
 
-    if ((int)(n_floats * sizeof(float32) + 4) != statbuf.st_size) {
-	SWAP_INT32(&n_floats);
-	if ((int)(n_floats * sizeof(float32) + 4) != statbuf.st_size)
-	    E_FATAL("MFCC indicated size (%d) and actual (%d) size are"
-		    "different\n",
-		    n_floats * sizeof(float32) + 4,
-		    statbuf.st_size);
-	swap = 1;
+    if ((int) (n_floats * sizeof(float32) + 4) != statbuf.st_size) {
+        SWAP_INT32(&n_floats);
+        if ((int) (n_floats * sizeof(float32) + 4) != statbuf.st_size)
+            E_FATAL("MFCC indicated size (%d) and actual (%d) size are"
+                    "different\n",
+                    n_floats * sizeof(float32) + 4, statbuf.st_size);
+        swap = 1;
     }
 
     n_ceps = cmd_ln_int32("-ncep");
     frate = cmd_ln_int32("-frate");
     logs3_init(cmd_ln_float32("-logbase"), 0, 0);
 
-    s3_endpointer_init(&ep,
-		       cmd_ln_str("-mean"),
-		       cmd_ln_str("-var"),
-		       cmd_ln_float32("-varfloor"),
-		       cmd_ln_str("-mixw"),
-		       cmd_ln_float32("-mixwfloor"),
-		       cmd_ln_str("-senmgau"),
-		       1, /* post classify.  fixed at TRUE for now */
-		       cmd_ln_int32("-begin_window"),
-		       cmd_ln_int32("-begin_threshold"),
-		       cmd_ln_int32("-begin_pad"),
-		       cmd_ln_int32("-end_window"),
-		       cmd_ln_int32("-end_threshold"),
-		       cmd_ln_int32("-end_pad")
-		       );
+    s3_endpointer_init(&ep, cmd_ln_str("-mean"), cmd_ln_str("-var"), cmd_ln_float32("-varfloor"), cmd_ln_str("-mixw"), cmd_ln_float32("-mixwfloor"), cmd_ln_str("-senmgau"), 1, /* post classify.  fixed at TRUE for now */
+                       cmd_ln_int32("-begin_window"),
+                       cmd_ln_int32("-begin_threshold"),
+                       cmd_ln_int32("-begin_pad"),
+                       cmd_ln_int32("-end_window"),
+                       cmd_ln_int32("-end_threshold"),
+                       cmd_ln_int32("-end_pad")
+        );
 
-    frames = (float32 **)ckd_calloc_2d(NFR, n_ceps, sizeof(float32));
+    frames = (float32 **) ckd_calloc_2d(NFR, n_ceps, sizeof(float32));
 
     while (!feof(in)) {
-	n_floats = fread(frames[0], sizeof(float32), NFR * n_ceps, in);
-	if (swap)
-	    for (i = 0; i < n_floats; i++)
-		SWAP_FLOAT32(&frames[0][i]);
-	n_frames = n_floats / n_ceps;
-	
-	if (n_frames > 0)
-	    s3_endpointer_feed_frames(&ep, frames, n_frames, feof(in));
+        n_floats = fread(frames[0], sizeof(float32), NFR * n_ceps, in);
+        if (swap)
+            for (i = 0; i < n_floats; i++)
+                SWAP_FLOAT32(&frames[0][i]);
+        n_frames = n_floats / n_ceps;
+
+        if (n_frames > 0)
+            s3_endpointer_feed_frames(&ep, frames, n_frames, feof(in));
 
 
-	if (!s3_endpointer_next_utt(&ep))
-	    continue;
+        if (!s3_endpointer_next_utt(&ep))
+            continue;
 
-	begin_frame = s3_endpointer_frame_count(&ep);
-	
-	while (0 <= (n_frames = s3_endpointer_read_utt(&ep, frames, NFR))) {
-	    if (n_frames > 0)
-		continue;
-	    
-	    n_floats = fread(frames[0], sizeof(float32), NFR * n_ceps, in);
-	    if (swap)
-		for (i = 0; i < n_floats; i++)
-		    SWAP_FLOAT32(&frames[0][i]);
-	    n_frames = n_floats / n_ceps;
-	    
-	    if (n_frames > 0)
-		s3_endpointer_feed_frames(&ep, frames, n_frames, feof(in));
-	}
+        begin_frame = s3_endpointer_frame_count(&ep);
 
-	end_frame = s3_endpointer_frame_count(&ep);
-	
-	printf("%s 1 local %0.3f %0.3f BLAH\n",
-	       base_fn,
-	       (float)begin_frame / frate,
-	       (float)end_frame / frate);
-	
+        while (0 <= (n_frames = s3_endpointer_read_utt(&ep, frames, NFR))) {
+            if (n_frames > 0)
+                continue;
+
+            n_floats = fread(frames[0], sizeof(float32), NFR * n_ceps, in);
+            if (swap)
+                for (i = 0; i < n_floats; i++)
+                    SWAP_FLOAT32(&frames[0][i]);
+            n_frames = n_floats / n_ceps;
+
+            if (n_frames > 0)
+                s3_endpointer_feed_frames(&ep, frames, n_frames, feof(in));
+        }
+
+        end_frame = s3_endpointer_frame_count(&ep);
+
+        printf("%s 1 local %0.3f %0.3f BLAH\n",
+               base_fn,
+               (float) begin_frame / frate, (float) end_frame / frate);
+
     }
 
     s3_endpointer_close(&ep);
@@ -228,18 +229,18 @@ get_filename_base(char *_fn, char *_base)
     int i, j;
 
     for (j = len - 1; j >= 0; j--)
-	if (_fn[j] == '.')
-	    break;
-    
+        if (_fn[j] == '.')
+            break;
+
     if (j < 0)
-	j = len;
+        j = len;
 
     for (i = j; i >= 0; i--)
-	if (_fn[i] == '/')
-	    break;
+        if (_fn[i] == '/')
+            break;
 
     if (i < 0)
-	i = 0;
+        i = 0;
 
     strncpy(_base, _fn + i + 1, j - i - 1);
     _base[j - i] = '\0';

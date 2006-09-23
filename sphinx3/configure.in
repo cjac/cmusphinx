@@ -20,6 +20,9 @@ AC_CHECK_FUNCS(memmove bcopy)
 AC_TYPE_SIGNAL
 
 
+epdata=`ls -1 $srcdir/model/ep | egrep -v '(Makefile|CVS)'`
+epdata=`echo $epdata`
+
 hmmdata=`ls -1 $srcdir/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd | egrep -v '(Makefile|CVS)'`
 hmmdata=`echo $hmmdata`
 
@@ -56,7 +59,18 @@ dnl FIXME: How do we find the installed headers robustly?
 dnl
 AC_CHECK_HEADER(sphinxbase/sphinx_config.h,
 CPPFLAGS="-I/usr/include/sphinxbase -I/usr/local/include/sphinxbase",[
-: ${sphinxbase=$PWD/../sphinxbase}
+if test x$sphinxbase = x; then
+   # Look for sphinxbase in the parent directory
+   for sb in ../sphinxbase*; do
+       AC_MSG_CHECKING([for sphinxbase in $sb])
+       if test -f "$sb/include/prim_type.h"; then
+          sphinxbase="`pwd`/$sb"
+	  AC_MSG_RESULT(yes)
+       else
+	  AC_MSG_RESULT(no)
+       fi
+   done
+fi
 ])
 
 
@@ -91,6 +105,7 @@ fi
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
 AC_SUBST(docdata)
+AC_SUBST(epdata)
 AC_SUBST(hmmdata)
 AC_SUBST(lmdata)
 AC_SUBST(tidigitsdata)

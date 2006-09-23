@@ -5,9 +5,14 @@ tmplog="test-ep.log"
 tmpout="test-ep.out"
 
 sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sphinx3_ep \
-@abs_top_srcdir@/model/ep/ep.arg \
-@abs_top_srcdir@/model/ep/chan3.mfc \
-> $tmpout 2>&1
+-frate 105 \
+-mean @abs_top_srcdir@/model/ep/means \
+-var @abs_top_srcdir@/model/ep/variances \
+-mixw @abs_top_srcdir@/model/ep/mixture_weights \
+-input @abs_top_srcdir@/model/ep/chan3.mfc \
+> $tmplog 2>&1
+
+grep BLAH $tmplog > $tmpout
 
 if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout @abs_top_srcdir@/model/ep/ep.result | grep SUCCESS > /dev/null 2>&1); \
 then echo "EP test PASSED"; else \

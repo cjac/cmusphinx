@@ -1,4 +1,0 @@
--frate 105
--mean src/tests/regression/../../../model/ep/means
--var src/tests/regression/../../../model/ep/variances
--mixw src/tests/regression/../../../model/ep/mixture_weights
