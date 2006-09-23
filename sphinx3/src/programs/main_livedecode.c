@@ -94,7 +94,7 @@
 #define THREAD_START DWORD WINAPI
 #define COND_TIMEDOUT WAIT_TIMEOUT
 typedef HANDLE condition_t;
-typedef HANDLE thread_t;
+typedef HANDLE mythread_t;
 #define cond_wait(c) WaitForSingleObject(c, INFINITE)
 #define cond_wait_timed(cc,ticks)  WaitForSingleObject(*(cc),ticks)
 #define cond_signal(c) SetEvent(c)
@@ -113,7 +113,7 @@ typedef struct {
     pthread_cond_t cond;
     pthread_mutex_t mtx;
 } condition_t;
-typedef pthread_t thread_t;
+typedef pthread_t mythread_t;
 #define cond_wait(c) {				\
 	pthread_mutex_lock(&(c).mtx);		\
 	pthread_cond_wait(&(c).cond, &(c).mtx);	\
@@ -204,7 +204,7 @@ process_thread(void *aParam)
 int
 main(int argc, char **argv)
 {
-    thread_t thread;
+    mythread_t thread;
     char buffer[1024];
     char *hypstr;
 
