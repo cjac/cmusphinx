@@ -281,7 +281,7 @@ srch_WST_init(kb_t * kb, void *srch)
 
 
 
-    wstg->active_word = hash_new(wstg->n_static_lextree, 1);
+    wstg->active_word = hash_table_new(wstg->n_static_lextree, 1);
 
     /* Glue the graph structure */
     s->grh->graph_struct = wstg;
@@ -304,7 +304,7 @@ srch_WST_uninit(void *srch)
     wstg = (srch_WST_graph_t *) s->grh->graph_struct;
 
     if (wstg->active_word) {
-        hash_free(wstg->active_word);
+        hash_table_free(wstg->active_word);
     }
 
     if (wstg->histprune != NULL) {
@@ -389,7 +389,7 @@ srch_WST_begin(void *srch)
     lextree_active_swap(wstg->curfillertree);
 
 
-    keylist = hash_tolist(wstg->active_word, &(wstg->no_active_word));
+    keylist = hash_table_tolist(wstg->active_word, &(wstg->no_active_word));
     assert(glist_count(keylist) == 0);
 
     /*  assert(glist_count(wstg->empty_tree_idx_stack)==0); */
@@ -420,11 +420,6 @@ srch_WST_end(void *srch)
     dict_t *dict;
     char *uttid;
     int32 i;
-    glist_t keylist;
-    gnode_t *key;
-    hash_entry_t *he;
-    int32 val;
-
 
     s = (srch_t *) srch;
     assert(s);
@@ -481,17 +476,7 @@ srch_WST_end(void *srch)
     /* Wrap up the utterance reset */
 
     /* Also empty the active_word list */
-    keylist = hash_tolist(wstg->active_word, &(wstg->no_active_word));
-
-    for (key = keylist; key; key = gnode_next(key)) {
-        he = (hash_entry_t *) gnode_ptr(key);
-        hash_lookup(wstg->active_word, (char *) hash_entry_key(he), &val);
-
-        /*    printf("From hash table %s From expandtree %s\n", (char* )hash_entry_key(he), wstg->expandtree[val]->prev_word ); */
-        assert(hash_delete(wstg->active_word, (char *) hash_entry_key(he))
-               == HASH_OP_SUCCESS);
-    }
-
+    hash_table_empty(wstg->active_word);
 
     if (id >= 0)
         return SRCH_SUCCESS;
@@ -919,7 +904,6 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
     hmm_t *hmm;
     mdef_t *mdef;
     int32 i;
-    int32 id;
     srch_WST_graph_t *wstg;
     vithist_entry_t *tve;
     int32 p;
@@ -935,6 +919,9 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
         hmm = &(ln->hmm);
 
         if (!NOT_S3WID(ln->wid)) {      /* Leaf node; word exit */
+	    void *val;
+	    int32 id;
+
             if (hmm->out.score < wth)
                 continue;       /* Word exit score not good enough */
 
@@ -951,11 +938,14 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
                3, And indicate the trees are now available in the hash table 
              */
 
-            if (hash_lookup(wstg->active_word,
-                            dict_wordstr(s->kbc->dict,
-                                         dict_basewid(s->kbc->dict,
-                                                      ln->wid)),
-                            &id) < 0) {
+            if (hash_table_lookup(wstg->active_word,
+				  dict_wordstr(s->kbc->dict,
+					       dict_basewid(s->kbc->dict,
+							    ln->wid)),
+                            &val) == 0) {
+		id = (int32)val;
+	    }
+	    else {
                 /* If it doesn't, start to use another copy */
                 /* This is also the part one should apply bigram lookahead */
 
@@ -1031,11 +1021,11 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
 
                 }
 
-                if (hash_enter
+                if (id != (int32) hash_table_enter
                     (wstg->active_word,
                      dict_wordstr(s->kbc->dict,
                                   dict_basewid(s->kbc->dict, ln->wid)),
-                     id) != id) {
+                     (void *)id)) {
                     E_FATAL("hash_enter(local-phonetable, %s) failed\n",
                             dict_wordstr(s->kbc->dict,
                                          dict_basewid(s->kbc->dict,
@@ -1138,10 +1128,6 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     /*  hash_table_t *word_phone_hash; */
     glist_t keylist;
     gnode_t *key;
-    hash_entry_t *he;
-    int32 id;
-    int32 succ;
-    int32 val;
 
     /* Call the rescoring at all word end */
 
@@ -1191,37 +1177,32 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
   /** This is slow.*/
 
     /* At here, just delete the tree with no active entries */
-    keylist = hash_tolist(wstg->active_word, &(wstg->no_active_word));
+    keylist = hash_table_tolist(wstg->active_word, &(wstg->no_active_word));
 
     /*  hash_display(wstg->active_word,1); */
     for (key = keylist; key; key = gnode_next(key)) {
+	hash_entry_t *he;
+	void *val;
+
         he = (hash_entry_t *) gnode_ptr(key);
         assert(glist_count(keylist) > 0);
 
-        hash_lookup(wstg->active_word, (char *) hash_entry_key(he), &val);
+        hash_table_lookup(wstg->active_word, (char *) hash_entry_key(he), &val);
         /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he)); */
         /*E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active); */
 
-        if (wstg->expandtree[val]->n_active == 0) {
+        if (wstg->expandtree[(int32)val]->n_active == 0) {
             /* insert this tree back to the list */
             wstg->empty_tree_idx_stack =
-                glist_add_int32(wstg->empty_tree_idx_stack, val);
+                glist_add_int32(wstg->empty_tree_idx_stack, (int32)val);
             /* delete this entry from the hash */
             /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word); */
-            succ =
-                hash_delete(wstg->active_word,
-                            wstg->expandtree[val]->prev_word);
-            if (succ == HASH_OP_FAILURE) {
-                E_WARN("Internal error occur in hash deallocation. \n");
-            }
-            else if (succ == HASH_OP_SUCCESS) {
-                /*      E_INFO("DELETE EMPTY TREE. \n"); */
-                /*assert(succ==HASH_OP_SUCCESS); */
-                /* set the number of active word */
-                wstg->no_active_word--;
-            }
+	    hash_table_delete(wstg->active_word,
+			      wstg->expandtree[(int32)val]->prev_word);
+	    wstg->no_active_word--;
+
             /* set the word of a lextree to be none */
-            strcpy(wstg->expandtree[val]->prev_word, "");
+            strcpy(wstg->expandtree[(int32)val]->prev_word, "");
         }
     }
 
@@ -1233,6 +1214,8 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     le = vithist_n_entry(vh) - 1;
 
     for (; vhid <= le; vhid++) {
+	void *val;
+	int32 id;
         ve = vithist_id2entry(vh, vhid);
 
         /*    vithist_entry_display(ve,NULL); */
@@ -1249,10 +1232,13 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
         /* Look up whether this word is there in the word_end hash */
 
-        if (hash_lookup(wstg->active_word,
-                        dict_wordstr(s->kbc->dict,
-                                     dict_basewid(s->kbc->dict, wid)),
-                        &id) < 0) {
+        if (hash_table_lookup(wstg->active_word,
+			      dict_wordstr(s->kbc->dict,
+					   dict_basewid(s->kbc->dict, wid)),
+			      &val) == 0) {
+	    id = (int32) val;
+	}
+	else {
             /* If it doesn't, start to use another copy */
             /* This is also the part one should apply bigram lookahead */
 
@@ -1324,11 +1310,11 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
             }
 
-            if (hash_enter
+            if (id != (int32) hash_table_enter
                 (wstg->active_word,
                  dict_wordstr(s->kbc->dict,
                               dict_basewid(s->kbc->dict, wid)),
-                 id) != id) {
+                 (void *)id)) {
                 E_FATAL("hash_enter(local-phonetable, %s) failed\n",
                         dict_wordstr(s->kbc->dict,
                                      dict_basewid(s->kbc->dict, wid)));
@@ -1337,8 +1323,6 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
             /*E_INFO("A new tree is started for wid %d, word str %s\n", wid, 
                dict_wordstr(s->kbc->dict,dict_basewid(s->kbc->dict,wid))); */
 
-        }
-        else {
         }
 
         lextree_enter(wstg->expandtree[id], (s3cipid_t) p, frmno, score,

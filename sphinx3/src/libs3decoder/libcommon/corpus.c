@@ -156,7 +156,7 @@ corpus_load_headid(char *file,
     }
     rewind(fp);
 
-    corp->ht = hash_new(n, HASH_CASE_YES);
+    corp->ht = hash_table_new(n, HASH_CASE_YES);
     corp->n = 0;
     corp->str = (char **) ckd_calloc(n, sizeof(char *));
 
@@ -178,7 +178,7 @@ corpus_load_headid(char *file,
         }
 
         id = ckd_salloc(wd);
-        if ((m = hash_enter(corp->ht, id, n)) != n) {
+        if ((m = (int32) hash_table_enter(corp->ht, id, (void *)n)) != n) {
             /* Duplicate entry */
             if (!dup_resolve)
                 E_FATAL
@@ -274,7 +274,7 @@ corpus_load_tailid(char *file,
     }
     rewind(fp);
 
-    corp->ht = hash_new(n, 0 /* Not no-case */ );
+    corp->ht = hash_table_new(n, 0 /* Not no-case */ );
     corp->n = 0;
     corp->str = (char **) ckd_calloc(n, sizeof(char *));
 
@@ -296,7 +296,7 @@ corpus_load_tailid(char *file,
         }
 
         id = ckd_salloc(uttid);
-        if ((m = hash_enter(corp->ht, id, n)) != n) {
+        if ((m = (int32) hash_table_enter(corp->ht, id, (void *)n)) != n) {
             /* Duplicate entry */
             if (!dup_resolve)
                 E_FATAL
@@ -338,10 +338,12 @@ corpus_load_tailid(char *file,
 char *
 corpus_lookup(corpus_t * corp, char *id)
 {
+    void *val;
     int32 n;
 
-    if (hash_lookup(corp->ht, id, &n) < 0)
+    if (hash_table_lookup(corp->ht, id, &val) < 0)
         return NULL;
+    n = (int32)val;
 
     assert((n >= 0) && (n < corp->n));
     return (corp->str[n]);

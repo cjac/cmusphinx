@@ -26,7 +26,6 @@ pkginclude_HEADERS =				\
 	fsg_search.h				\
 	gmm_wrap.h				\
 	gs.h					\
-	hash.h					\
 	hmm.h					\
 	hyp.h					\
 	interp.h				\

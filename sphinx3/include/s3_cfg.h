@@ -56,7 +56,7 @@
 
 #include <stdio.h>
 #include "prim_type.h"
-#include "hash.h"
+#include "hash_table.h"
 #include "s3_arraylist.h"
 #include "fsg.h"
 

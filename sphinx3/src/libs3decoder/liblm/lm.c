@@ -434,7 +434,7 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 {
     s3wid_t w;
     s3lmwid_t lwid;
-    int32 id;
+    void *id;
     int32 classid = BAD_LMCLASSID;
 
   /** ARCHAN 20060320
@@ -449,7 +449,7 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
       Update the value lm->n_ug, lm->max_ug;
    */
 
-    if (hash_lookup(lm->HT, newword, &id) == 0) {
+    if (hash_table_lookup(lm->HT, newword, &id) == 0) {
         E_WARN("The word %s already exists in the language model \n",
                newword);
         return LM_FAIL;
@@ -511,7 +511,7 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 
     lm->wordstr[lm->n_ug - 1] = (char *) ckd_salloc(newword);
 
-    hash_enter(lm->HT, lm->wordstr[lm->n_ug - 1], lm->n_ug - 1);
+    hash_table_enter(lm->HT, lm->wordstr[lm->n_ug - 1], (void *)(lm->n_ug - 1));
 
     if (dict != NULL) {
                   /** If dictionary is initialized and used in this context */
@@ -1988,7 +1988,7 @@ lm_free(lm_t * lm)
         }
 
         if (lm->HT) {
-            hash_free(lm->HT);
+            hash_table_free(lm->HT);
         }
     }
 

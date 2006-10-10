@@ -71,7 +71,7 @@ s3_cfg_init(s3_cfg_t *_cfg)
   s3_arraylist_init(&_cfg->rules);
   s3_arraylist_init(&_cfg->item_info);
 
-  name2id = hash_new(S3_CFG_NAME_HASH_SIZE, HASH_CASE_YES);
+  name2id = hash_table_new(S3_CFG_NAME_HASH_SIZE, HASH_CASE_YES);
 
   _cfg->name2id = name2id;
   _cfg->predictions = NULL;
@@ -299,7 +299,7 @@ s3_cfg_close(s3_cfg_t *_cfg)
   } 
 
   if (_cfg->name2id != NULL)
-    hash_free(_cfg->name2id); 
+    hash_table_free(_cfg->name2id); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -376,7 +376,7 @@ s3_cfg_free_parse(s3_cfg_t *_cfg, s3_cfg_state_t *_parse)
 s3_cfg_id_t
 s3_cfg_str2id(s3_cfg_t *_cfg, char *_name)
 {
-  s3_cfg_id_t id;
+  void *id;
   char term[S3_CFG_MAX_ITEM_STR_LEN + 1];
   int start, end;
 
@@ -396,8 +396,8 @@ s3_cfg_str2id(s3_cfg_t *_cfg, char *_name)
 
   /* if hash lookup for item name succeeded, we return the id associated with
    * the name */
-  if (hash_lookup(_cfg->name2id, term, &id) == 0)
-    return id;
+  if (hash_table_lookup(_cfg->name2id, term, &id) == 0)
+    return (s3_cfg_id_t)id;
   else
     return add_item(_cfg, term)->id;
 }
@@ -693,7 +693,7 @@ add_item(s3_cfg_t *_cfg, char *_name)
   item->name = name;
   item->nil_rule = NULL;
   
-  hash_enter(_cfg->name2id, name, item->id);
+  hash_table_enter(_cfg->name2id, name, (void *)item->id);
 
   s3_arraylist_set(&_cfg->item_info, index, item);
   

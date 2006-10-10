@@ -165,8 +165,8 @@ ciphone_add(mdef_t * m, char *ci, s3pid_t p)
     assert(p < m->n_ciphone);
 
     m->ciphone[p].name = (char *) ckd_salloc(ci);       /* freed in mdef_free */
-    if (hash_enter(m->ciphone_ht, m->ciphone[p].name, p) != p)
-        E_FATAL("hash_enter(%s) failed; duplicate CIphone?\n",
+    if (hash_table_enter(m->ciphone_ht, m->ciphone[p].name, (void *)p) != (void *)p)
+        E_FATAL("hash_table_enter(%s) failed; duplicate CIphone?\n",
                 m->ciphone[p].name);
 }
 
@@ -235,12 +235,12 @@ triphone_add(mdef_t * m,
 s3cipid_t
 mdef_ciphone_id(mdef_t * m, char *ci)
 {
-    int32 id;
+    void *id;
 
     assert(m);
     assert(ci);
 
-    if (hash_lookup(m->ciphone_ht, ci, &id) < 0)
+    if (hash_table_lookup(m->ciphone_ht, ci, &id) < 0)
         return (BAD_S3CIPID);
     return ((s3cipid_t) id);
 }
@@ -602,15 +602,15 @@ sseq_compress(mdef_t * m)
 
     k = m->n_emit_state * sizeof(s3senid_t);
 
-    h = hash_new(m->n_phone, HASH_CASE_YES);
+    h = hash_table_new(m->n_phone, HASH_CASE_YES);
     n_sseq = 0;
 
     /* Identify unique senone-sequence IDs.  BUG: tmat-id not being considered!! */
     for (p = 0; p < m->n_phone; p++) {
         /* Add senone sequence to hash table */
-        if ((j =
-             hash_enter_bkey(h, (char *) (m->sseq[p]), k,
-                             n_sseq)) == n_sseq)
+	if ((j = (int32)
+             hash_table_enter_bkey(h, (char *) (m->sseq[p]), k,
+				   (void *)n_sseq)) == n_sseq)
             n_sseq++;
 
         m->phone[p].ssid = j;
@@ -619,12 +619,12 @@ sseq_compress(mdef_t * m)
     /* Generate compacted sseq table */
     sseq = (s3senid_t **) ckd_calloc_2d(n_sseq, m->n_emit_state, sizeof(s3senid_t));    /* freed in mdef_free() */
 
-    g = hash_tolist(h, &j);
+    g = hash_table_tolist(h, &j);
     assert(j == n_sseq);
 
     for (gn = g; gn; gn = gnode_next(gn)) {
         he = (hash_entry_t *) gnode_ptr(gn);
-        j = hash_entry_val(he);
+        j = (int32)hash_entry_val(he);
         memcpy(sseq[j], hash_entry_key(he), k);
     }
     glist_free(g);
@@ -634,7 +634,7 @@ sseq_compress(mdef_t * m)
     m->sseq = sseq;
     m->n_sseq = n_sseq;
 
-    hash_free(h);
+    hash_table_free(h);
 }
 
 
@@ -740,7 +740,7 @@ mdef_init(char *mdeffile, int32 breport)
 
     /* Initialize ciphone info */
     m->n_ciphone = n_ci;
-    m->ciphone_ht = hash_new(n_ci, 1);  /* With case-insensitive string names *//* freed in mdef_free */
+    m->ciphone_ht = hash_table_new(n_ci, 1);  /* With case-insensitive string names *//* freed in mdef_free */
     m->ciphone = (ciphone_t *) ckd_calloc(n_ci, sizeof(ciphone_t));     /* freed in mdef_free */
     /* RAH, let's null the pointers so that we can reliably deallocate them */
     /*    for (i=0;i<m->n_ciphone;i++) { *//*  */
@@ -994,7 +994,7 @@ mdef_free(mdef_t * m)
         if (m->phone)
             ckd_free((void *) m->phone);
         if (m->ciphone_ht)
-            hash_free(m->ciphone_ht);
+            hash_table_free(m->ciphone_ht);
 
         for (i = 0; i < m->n_ciphone; i++) {
             if (m->ciphone[i].name)

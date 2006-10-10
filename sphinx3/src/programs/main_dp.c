@@ -139,17 +139,17 @@ filler2phnMap fillpause[] = { {"++UH++", "UH"},
 static int32
 word2id(char *w)
 {
-    int32 wid;
+    void *val;
 
-    if (hash_lookup(dict_ht, w, &wid) < 0) {
+    if (hash_table_lookup(dict_ht, w, &val) < 0) {
         if (n_word >= n_word_alloc)
             E_FATAL("Increase dictionary size\n");
         word[n_word] = ckd_salloc(w);
-        hash_enter(dict_ht, word[n_word], n_word);
-        wid = n_word++;
+        hash_table_enter(dict_ht, word[n_word], (void *)n_word);
+	return n_word++;
     }
-
-    return wid;
+    else
+	return (int32)val;
 }
 
 
@@ -160,7 +160,7 @@ dp_init(void)
         (node_t *) ckd_calloc(((MAX_HYP_LEN << 1) + 1) * MAX_HYP_LEN,
                               sizeof(node_t));
 
-    dict_ht = hash_new(DP_HASH_SIZE, HASH_CASE_YES);
+    dict_ht = hash_table_new(DP_HASH_SIZE, HASH_CASE_YES);
     n_word_alloc = DP_HASH_SIZE;
     word = (char **) ckd_calloc(n_word_alloc, sizeof(char *));
     n_word = 0;

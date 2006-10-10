@@ -1033,7 +1033,7 @@ lm_read_dump_wordstr(lm_t * lm, const char *file, int32 is32bits)
 
         lm->wordstr[i] = (char *) ckd_salloc(tmp_word_str + j);
 
-        hash_enter(lm->HT, lm->wordstr[i], i);
+        hash_table_enter(lm->HT, lm->wordstr[i], (void *)i);
 
         j += strlen(tmp_word_str + j) + 1;
     }
@@ -1278,7 +1278,7 @@ lm_read_dump(const char *file,        /**< The file name*/
         return NULL;
     }
 
-    lm->HT = hash_new(lm->n_ug, HASH_CASE_YES);
+    lm->HT = hash_table_new(lm->n_ug, HASH_CASE_YES);
 
 
     /** Reading the ngrams, the meat of the code. Also decide how

@@ -110,12 +110,14 @@ extern const char *const cmu6_lts_phone_table[];
 static s3cipid_t
 dict_ciphone_id(dict_t * d, char *str)
 {
-    int32 id;
-
     if (d->mdef)
         return mdef_ciphone_id(d->mdef, str);
     else {
-        if (hash_lookup(d->pht, str, &id) < 0) {
+	void *val;
+
+        if (hash_table_lookup(d->pht, str, &val) < 0) {
+	    s3cipid_t id;
+
             id = (d->n_ciphone)++;
 
             if (id >= MAX_S3CIPID)
@@ -123,10 +125,12 @@ dict_ciphone_id(dict_t * d, char *str)
                     ("Too many CIphones in dictionary; increase MAX_S3CIPID\n");
             d->ciphone_str[id] = (char *) ckd_salloc(str);      /* Freed in dict_free() */
 
-            if (hash_enter(d->pht, d->ciphone_str[id], id) != id)
-                E_FATAL("hash_enter(local-phonetable, %s) failed\n", str);
+            if (hash_table_enter(d->pht, d->ciphone_str[id], (void *)id) != (void *)id)
+                E_FATAL("hash_table_enter(local-phonetable, %s) failed\n", str);
+	    return id;
         }
-        return id;
+	else
+	    return (s3cipid_t)val;
     }
 }
 
@@ -148,7 +152,7 @@ dict_ciphone_str(dict_t * d, s3wid_t wid, int32 pos)
 s3wid_t
 dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
 {
-    int32 w, len;
+    int32 len;
     dictword_t *wordp;
     s3wid_t newwid;
 
@@ -169,7 +173,7 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
     wordp->word = (char *) ckd_salloc(word);    /* Freed in dict_free */
 
     /* Associate word string with d->n_word in hash table */
-    if (hash_enter(d->ht, wordp->word, d->n_word) != d->n_word) {
+    if (hash_table_enter(d->ht, wordp->word, (void *)d->n_word) != (void *)d->n_word) {
         ckd_free(wordp->word);
         return (BAD_S3WID);
     }
@@ -191,8 +195,11 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
 
     /* Determine base/alt wids */
     if ((len = dict_word2basestr(word)) > 0) {
+	void *val;
+	s3wid_t w;
+
         /* Truncated to a baseword string; find its ID */
-        if (hash_lookup(d->ht, word, &w) < 0) {
+        if (hash_table_lookup(d->ht, word, &val) < 0) {
             word[len] = '(';    /* Get back the original word */
             E_FATAL("Missing base word for: %s\n", word);
         }
@@ -200,6 +207,7 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
             word[len] = '(';    /* Get back the original word */
 
         /* Link into alt list */
+	w = (s3wid_t) val;
         wordp->basewid = w;
         wordp->alt = d->word[w].alt;
         d->word[w].alt = d->n_word;
@@ -443,13 +451,13 @@ dict_init(mdef_t * mdef, char *dictfile, char *fillerfile, char comp_sep,
         d->ciphone_str = NULL;
     }
     else {
-        d->pht = hash_new(DEFAULT_NUM_PHONE, 1 /* No case */ );
+        d->pht = hash_table_new(DEFAULT_NUM_PHONE, 1 /* No case */ );
         d->ciphone_str = (char **) ckd_calloc(DEFAULT_NUM_PHONE, sizeof(char *));       /* freed in dict_free() */
     }
     d->n_ciphone = 0;
 
     /* Create new hash table for word strings; case-insensitive word strings */
-    d->ht = hash_new(d->max_words, 1 /* no-case */ );
+    d->ht = hash_table_new(d->max_words, 1 /* no-case */ );
 
     /* Initialize with no compound words */
     d->comp_head = NULL;
@@ -519,12 +527,12 @@ dict_init(mdef_t * mdef, char *dictfile, char *fillerfile, char comp_sep,
 s3wid_t
 dict_wordid(dict_t * d, char *word)
 {
-    int32 w;
+    void *w;
 
     assert(d);
     assert(word);
 
-    if (hash_lookup(d->ht, word, &w) < 0)
+    if (hash_table_lookup(d->ht, word, &w) < 0)
         return (BAD_S3WID);
     return ((s3wid_t) w);
 }
@@ -654,9 +662,9 @@ dict_free(dict_t * d)
         if (d->ciphone_str)
             ckd_free((void *) d->ciphone_str);
         if (d->pht)
-            hash_free(d->pht);
+            hash_table_free(d->pht);
         if (d->ht)
-            hash_free(d->ht);
+            hash_table_free(d->ht);
         ckd_free((void *) d);
     }
 }

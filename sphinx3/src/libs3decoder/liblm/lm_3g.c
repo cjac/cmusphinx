@@ -106,9 +106,9 @@ wstr2wid(lm_t * model,              /**< an LM */
          char *w                    /**< a pre-allocated word string */
     )
 {
-    int32 val;
+    void *val;
 
-    if (hash_lookup(model->HT, w, &val) != 0)
+    if (hash_table_lookup(model->HT, w, &val) != 0)
         return NO_WORD;
     return ((int32) val);
 }
@@ -341,7 +341,7 @@ NewModel(int32 n_ug, int32 n_bg, int32 n_tg, int32 version)
     model->n_bg = n_bg;
     model->n_tg = n_tg;
 
-    model->HT = hash_new(model->n_ug, HASH_CASE_YES);
+    model->HT = hash_table_new(model->n_ug, HASH_CASE_YES);
     model->log_bg_seg_sz = LOG2_BG_SEG_SZ;      /* Default */
 
     return model;
@@ -384,7 +384,7 @@ ReadUnigrams(FILE * fp, lm_t * model  /**< An LM where unigram will be filled in
         /* Associate name with word id */
         /* This is again not local */
         model->wordstr[wcnt] = (char *) ckd_salloc(name);
-        hash_enter(model->HT, model->wordstr[wcnt], wcnt);
+        hash_table_enter(model->HT, model->wordstr[wcnt], (void *)wcnt);
         model->ug[wcnt].prob.f = p1;
         model->ug[wcnt].bowt.f = bo_wt;
         model->ug[wcnt].dictwid = wcnt;
