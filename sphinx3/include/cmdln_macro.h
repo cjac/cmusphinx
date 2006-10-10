@@ -376,15 +376,15 @@ us a better architecture.
     { "-cmn", \
       ARG_STRING, \
       "current", \
-      "Cepstral mean normalization scheme (default: Cep -= mean-over-current-sentence(Cep))" }, \
+      "Cepstral mean normalization scheme ('current', 'prior', or 'none'); (current: Cep -= mean-over-current-sentence(Cep), prior: estimate mean based on prior data)" }, \
     { "-varnorm", \
-      ARG_STRING, \
+      ARG_BOOLEAN, \
       "no", \
       "Variance normalize each utterance (yes/no; only applicable if CMN is also performed)" }, \
     { "-agc", \
       ARG_STRING, \
       "none", \
-      "Automatic gain control for c0 ('max' or 'none'); (max: c0 -= max-over-current-sentence(c0))" }, \
+      "Automatic gain control for c0 ('max', 'emax', 'noise', or 'none'); (max: c0 -= max-over-current-sentence(c0), emax: estimated max based on prior data, noise: use noise threshold)" }, \
     { "-lda", \
       ARG_STRING, \
       NULL, \

@@ -215,8 +215,15 @@ kb_init(kb_t * kb)
     /* STRUCTURE: Initialize the kb structure to zero, just in case */
     memset(kb, 0, sizeof(*kb));
     kb->kbcore = NULL;
-    kb->kbcore = kbcore_init(cmd_ln_float32("-logbase"), cmd_ln_str("-feat"), cmd_ln_str("-cmn"), cmd_ln_str("-varnorm"), cmd_ln_str("-agc"), cmd_ln_str("-mdef"), cmd_ln_str("-dict"), cmd_ln_str("-fdict"), "",       /* Hack!! Hardwired constant 
-                                                                                                                                                                                                                           for -compsep argument */
+    kb->kbcore = kbcore_init(cmd_ln_float32("-logbase"),
+			     cmd_ln_str("-feat"),
+			     cmd_ln_str("-cmn"),
+			     cmd_ln_boolean("-varnorm"),
+			     cmd_ln_str("-agc"),
+			     cmd_ln_str("-mdef"),
+			     cmd_ln_str("-dict"),
+			     cmd_ln_str("-fdict"),
+			     "",       /* Hack!! Hardwired constant for -compsep argument */
                              cmd_ln_str("-lm"),
                              cmd_ln_str("-lmctlfn"),
                              cmd_ln_str("-lmdumpdir"), cmd_ln_str("-fsg"),

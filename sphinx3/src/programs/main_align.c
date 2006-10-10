@@ -356,9 +356,9 @@ models_init(void)
 
     /* Initialize feaure stream type */
     fcb = feat_init((char *) cmd_ln_access("-feat"),
-                    (char *) cmd_ln_access("-cmn"),
-                    (char *) cmd_ln_access("-varnorm"),
-                    (char *) cmd_ln_access("-agc"), 1);
+                    cmn_type_from_str(cmd_ln_access("-cmn")),
+                    cmd_ln_boolean("-varnorm"),
+                    agc_type_from_str(cmd_ln_str("-agc")), 1);
 
     kbc = New_kbcore();
 

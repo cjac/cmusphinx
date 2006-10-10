@@ -422,7 +422,7 @@ kbcore_t *
 kbcore_init(float64 logbase,
             char *feattype,
             char *cmn,
-            char *varnorm,
+	    int32 varnorm,
             char *agc,
             char *mdeffile,
             char *dictfile,
@@ -475,11 +475,12 @@ kbcore_init(float64 logbase,
     }
 
     if (!feattype)
-        E_FATAL("Please specified the feature type\n");
+        E_FATAL("Please specify the feature type using -feat\n");
 
     if (feattype) {
         if ((kb->fcb =
-             feat_init(feattype, cmn, varnorm, agc,
+             feat_init(feattype, cmn_type_from_str(cmn),
+		       varnorm, agc_type_from_str(agc),
                        REPORT_KBCORE)) == NULL)
             E_FATAL("feat_init(%s) failed\n", feattype);
 

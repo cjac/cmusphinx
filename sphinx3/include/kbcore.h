@@ -199,7 +199,7 @@ void s3_am_init(kbcore_t *kbc, /**< kbcore to be initialized*/
 kbcore_t *kbcore_init (float64 logbase,		/**< log bases used in logs3.c Must be specified */
 		       char *feattype,          /**< feature type*/
 		       char *cmn,               /**< Type of CMN */
-		       char *varnorm,           /**< Type of variance normalization */
+		       int32 varnorm,           /**< Type of variance normalization */
 		       char *agc,               /**< Type of AGC */
 		       char *mdeffile,          /**< Model definition file */
 		       char *dictfile,          /**< Dictionary file */
