@@ -98,7 +98,6 @@
 #include <feat.h>
 #include <bio.h>
 #include <cmn.h>
-#include <cmn_prior.h>
 #include <agc.h>
 
 #include "feat_dump.h"
@@ -165,7 +164,7 @@ feat_dump_s2mfc2feat_block(feat_t * fcb, float32 ** uttcep, int32 nfr,
 
     if (fcb->cmn) {
         /* Only cmn_prior in block computation mode */
-        cmn_prior(uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt);
+        cmn_prior(uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt, fcb->cmn);
     }
 
     metricsStop("cmn");
