@@ -164,7 +164,9 @@ feat_dump_s2mfc2feat_block(feat_t * fcb, float32 ** uttcep, int32 nfr,
 
     if (fcb->cmn) {
         /* Only cmn_prior in block computation mode */
-        cmn_prior(uttcep, fcb->varnorm, nfr, fcb->cepsize, endutt, fcb->cmn);
+        cmn_prior(fcb->cmn_struct, uttcep, fcb->varnorm, nfr);
+	if (endutt)
+		cmn_prior_update(fcb->cmn_struct);
     }
 
     metricsStop("cmn");

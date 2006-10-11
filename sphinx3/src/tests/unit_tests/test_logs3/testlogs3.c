@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <hash.h>
 #include <err.h>
 #include <logs3.h>
 
