@@ -53,7 +53,7 @@ DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine
-ALIGNBIN = sclite -i wsj -o rsum -f 0 
+ALIGNBIN = sclite -i wsj -o sum rsum -f 0 
 CTLFILE = ./CALO.test.ctl
 TRANSFILE = ./CALO.test.wosil.trans
 ICSIPATH = /net/scylla/usr0/archan/ICSI_feat/

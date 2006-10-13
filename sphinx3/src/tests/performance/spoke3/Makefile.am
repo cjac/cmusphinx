@@ -52,7 +52,7 @@ DECANYBIN = $(PROGRAMDIR)/sphinx3_decode_anytopo
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine
-ALIGNBIN = sclite -i wsj -o rsum -f 0 
+ALIGNBIN = sclite -i wsj -o sum rsum -f 0 
 
 decode := all-decode all_baseline-decode 4u0-decode 4u0_14cd_ci-decode 4u0_baseline-decode
 decany := all-decany all_baseline-decany 4u0-decany 4u0_14cd_ci-decany 4u0_baseline-decany

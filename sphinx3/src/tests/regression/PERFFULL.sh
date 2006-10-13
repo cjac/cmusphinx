@@ -52,7 +52,7 @@ if ! make perf-full > perf-full.log 2>&1 ;
 # queue, it will be stored in a file, and it's up to the caller to
 # save it.
 
-cat ./perf-full.log ./src/tests/performance/*/*.raw
+cat ./perf-full.log ./src/tests/performance/*/*.sys ./src/tests/performance/*/*.raw
 
 # Send analysis results. 
-cat ./src/tests/performance/*/*.raw | ${MAILX} -s "Results of S3 FULL Regression Test on date:$testdate, machine:`hostname`, dir:`pwd` " ${S3REGTESTLIST}
+cat ./src/tests/performance/*/*.sys | ${MAILX} -s "Results of S3 FULL Regression Test on date:$testdate, machine:`hostname`, dir:`pwd` " ${S3REGTESTLIST}

@@ -58,7 +58,7 @@ AN4LIVE="ARGS.an4_base.live"
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine
-ALIGNBIN = sclite -i wsj -o rsum -f 0 
+ALIGNBIN = sclite -i wsj -o sum rsum -f 0 
 
 #	echo $(wordlist 2,3,$(subst _, ,$@))
 #	echo $(word 3,$(subst _, ,$@))

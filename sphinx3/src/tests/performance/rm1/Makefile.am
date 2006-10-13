@@ -54,7 +54,7 @@ LVRMARG="ARGS.rm1.live"
 # Add 
 # "/afs/cs.cmu.edu/user/robust/archive/third_party_packages/NIST_scoring_tools/sctk-1.2c/linux/bin" 
 # to your path if you have alinux machine
-ALIGNBIN = sclite -i rm -o rsum -f 0 
+ALIGNBIN = sclite -i rm -o sum rsum -f 0 
 
 #all : lp decode lp_quick decode_quick
 slow : lp decode
