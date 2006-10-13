@@ -128,7 +128,7 @@ main(int _argc, char **_argv)
     char base_fn[1024];
     FILE *in;
     float32 **frames;
-    int n_frames, n_floats, n_ceps, i, swap, frate, begin_frame, end_frame;
+    int n_frames, n_floats, n_ceps, i, swap = 0, frate, begin_frame, end_frame;
     struct stat statbuf;
 
     if ((_argc == 3) && (_argv[1][0] != '-')) {

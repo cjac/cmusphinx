@@ -355,7 +355,6 @@ us a better architecture.
       "-1",\
       "Maximum number of Gaussians per leaf node in kd-Trees" }, \
 
-
 #if 0
 { "-feat",
       ARG_STRING,
@@ -395,75 +394,11 @@ us a better architecture.
       "Dimensionality of LDA output features" },
 
 
-#define waveform_to_cepstral_command_line_macro() \
+#define waveform_command_line_macro() \
     { "-maxcepvecs", \
       ARG_INT32, \
       "256", \
       "Maximum number of cepstral vectors that can be obtained from a single sample buffer" }, \
-    { "-samprate", \
-      ARG_FLOAT32, \
-      ARG_STRINGIFY(DEFAULT_SAMPLING_RATE), \
-      "Sampling rate (only 8K and 16K currently supported)" }, \
-    { "-nfilt", \
-      ARG_INT32, \
-      ARG_STRINGIFY(DEFAULT_NUM_FILTERS), \
-      "Number of mel filters" }, \
-    { "-lowerf", \
-      ARG_FLOAT32, \
-      ARG_STRINGIFY(DEFAULT_LOWER_FILT_FREQ), \
-      "Lower edge of filters" }, \
-    { "-upperf", \
-      ARG_FLOAT32, \
-      ARG_STRINGIFY(DEFAULT_UPPER_FILT_FREQ), \
-      "Upper edge of filters" }, \
-    { "-alpha", \
-      ARG_FLOAT32, \
-      ARG_STRINGIFY(DEFAULT_PRE_EMPHASIS_ALPHA), \
-      "alpha for pre-emphasis window"}, \
-    { "-frate", \
-      ARG_INT32, \
-      ARG_STRINGIFY(DEFAULT_FRAME_RATE), \
-      "frame rate"}, \
-    { "-nfft", \
-      ARG_INT32, \
-      ARG_STRINGIFY(DEFAULT_FFT_SIZE), \
-      "no. pts for FFT" }, \
-    { "-wlen", \
-      ARG_FLOAT32, \
-      ARG_STRINGIFY(DEFAULT_WINDOW_LENGTH), \
-      "window length"}, \
-    { "-doublebw", \
-      ARG_INT32, \
-      "0", \
-      "whether mel filter triangle will have double the bandwidth, 0 is false"}, \
-    { "-warp_type", \
-      ARG_STRING, \
-      DEFAULT_WARP_TYPE, \
-      "Warping function type (or shape)"}, \
-    { "-warp_params", \
-      ARG_STRING, \
-      "1.0", \
-      "Parameters defining the warping function"}, \
-    { "-input_endian", \
-      ARG_STRING, \
-      "little", \
-      "the input data byte order, big or little"}, \
-    { "-ncep", \
-      ARG_INT32, \
-      ARG_STRINGIFY(DEFAULT_NUM_CEPSTRA), \
-      "Number of cepstrums" }, \
-    { "-fbtype", \
-      ARG_STRING, \
-      "mel_scale", \
-      "FB Type of mel_scale or log_linear" }, \
-    { "-dither", \
-      ARG_STRING, \
-      "no", \
-      "Whether to add 1/2-bit noise" }, \
-    { "-seed", \
-      ARG_INT32, \
-      "-1", \
-      "The seed for the random generator"}, \
     { "-blocksize", \
       ARG_INT32, \
       ARG_STRINGIFY(DEFAULT_BLOCKSIZE), \
