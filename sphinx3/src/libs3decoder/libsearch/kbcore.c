@@ -481,7 +481,7 @@ kbcore_init(float64 logbase,
         if ((kb->fcb =
              feat_init(feattype, cmn_type_from_str(cmn),
 		       varnorm, agc_type_from_str(agc),
-                       REPORT_KBCORE)) == NULL)
+                       REPORT_KBCORE, cmd_ln_int32("-ceplen"))) == NULL)
             E_FATAL("feat_init(%s) failed\n", feattype);
 
         E_INFO("%s\n", senmgau);

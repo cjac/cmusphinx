@@ -328,8 +328,8 @@ models_init(void)
     fcb = feat_init((char *) cmd_ln_access("-feat"),
                     cmn_type_from_str(cmd_ln_access("-cmn")),
                     cmd_ln_boolean("-varnorm"),
-                    agc_type_from_str(cmd_ln_str("-agc")), 1);
-
+                    agc_type_from_str(cmd_ln_str("-agc")), 1,
+		    cmd_ln_int32("-ceplen"));
     kbc = New_kbcore();
 
     /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 

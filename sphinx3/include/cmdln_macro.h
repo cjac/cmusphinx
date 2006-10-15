@@ -372,6 +372,10 @@ us a better architecture.
       ARG_STRING, \
       "1s_c_d_dd", \
       "Feature type: Must be s3_1x39 / 1s_c_d_dd/ s2_4x ."}, \
+   { "-ceplen", \
+      ARG_INT32, \
+      "13", \
+     "Number of components in the input feature vector" }, \
     { "-cmn", \
       ARG_STRING, \
       "current", \
