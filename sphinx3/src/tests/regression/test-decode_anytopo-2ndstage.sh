@@ -1,5 +1,5 @@
 #!/bin/sh
-thisdir=`dirname $0`
+thisdir=`pwd`
 . $thisdir/testfuncs.sh
 
 echo "DECODE_ANYTOPO 2ND STAGE TEST"

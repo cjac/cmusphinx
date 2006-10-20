@@ -1,5 +1,5 @@
 #!/bin/sh
-thisdir=`dirname $0`
+thisdir=`pwd`
 . $thisdir/testfuncs.sh
 
 tmpout="test-decode-mode2.out"
