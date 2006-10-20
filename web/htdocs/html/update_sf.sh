@@ -1,31 +1,40 @@
 #!/bin/sh
 
+# Make the user id configurable by the use of an environmental
+# variable SF_USER. Set it to current user, if not defined.
+if test x$SF_USER == x; then SF_USER=`whoami`; fi
+
 TMP=build$$
 
 mkdir $TMP
 
-pushd $TMP > /dev/null 2>&1
+pushd $TMP > /dev/null
 
-svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/web/htdocs/html  > /dev/null 2>&1
+svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/web/htdocs/html  > /dev/null
 
-pushd html > /dev/null 2>&1
-make
-rsync -e ssh -auv --progress --delete . shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html
-rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx
+pushd html > /dev/null
+make > /dev/null
+rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
+rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
 
-popd > /dev/null 2>&1
+popd > /dev/null
 
 for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
-    svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module  > /dev/null 2>&1
-    cd $module
-    rsync -e ssh -auv --progress --delete . shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module
+    svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
+    cd $module > /dev/null
+    rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module > /dev/null
 )
 done
 
-popd > /dev/null 2>&1
+popd > /dev/null
 
 /bin/rm -rf $TMP
+
+# Just in case, change group ownership and permissions
+
+ssh $SF_USER@shell.sf.net chgrp -R cmusphinx /home/groups/c/cm/cmusphinx/htdocs > /dev/null 2>&1
+ssh $SF_USER@shell.sf.net chmod g+w -R cmusphinx /home/groups/c/cm/cmusphinx/htdocs > /dev/null 2>&1
 
 # revision 1.7 2006/08/02 15:30:54 egouvea
 # Disabled section about sphinx-4.
