@@ -225,23 +225,12 @@ main(int _argc, char **_argv)
 void
 get_filename_base(char *_fn, char *_base)
 {
-    int len = strlen(_fn);
-    int i, j;
+    char *dot, *slash;
 
-    for (j = len - 1; j >= 0; j--)
-        if (_fn[j] == '.')
-            break;
-
-    if (j < 0)
-        j = len;
-
-    for (i = j; i >= 0; i--)
-        if (_fn[i] == '/')
-            break;
-
-    if (i < 0)
-        i = 0;
-
-    strncpy(_base, _fn + i + 1, j - i - 1);
-    _base[j - i] = '\0';
+    if ((slash = strrchr(_fn, '/')) != NULL)
+        strcpy(_base, slash+1);
+    else
+        strcpy(_base, _fn);
+    if ((dot = strrchr(_base, '.')) != NULL)
+        *dot = '\0';
 }
