@@ -1,5 +1,3 @@
-EXTRA_DIST = compare_table.pl
-
 TESTS = \
 	test-decode-simple.sh \
 	test-decode.sh \
@@ -36,6 +34,11 @@ TESTS = \
 	test-decode_anytopo-mllr.sh \
 	test-decode_anytopo-2ndstage.sh
 
-#	test-decode-noncomp.sh \
-#	test-decode-mode5.sh \
-#	test-decode-mode5-noncomp.sh 
+DISABLED_TESTS = \
+	test-decode-noncomp.sh \
+	test-decode-mode5.sh \
+	test-decode-mode5-noncomp.sh 
+
+EXTRA_DIST = compare_table.pl \
+	$(TESTS) \
+	$(DISABLED_TESTS)
