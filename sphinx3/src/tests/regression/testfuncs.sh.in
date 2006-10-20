@@ -4,7 +4,7 @@
 builddir="@abs_top_builddir@"
 sourcedir="@abs_top_srcdir@"
 tests="$sourcedir/src/tests/regression"
-programs="$sourcedir/src/programs"
+programs="$builddir/src/programs"
 hmmdir="$sourcedir/model/hmm"
 lmdir="$sourcedir/model/lm"
 hub4am="$hmmdir/hub4_cd_continuous_8gau_1s_c_d_dd"
