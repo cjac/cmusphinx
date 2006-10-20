@@ -32,10 +32,10 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sph
 if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN simple output test PASSED"; else \
 echo "ALIGN simple output test FAILED"; fi 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg 0 0,1 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN simple wdseg test PASSED"; else \
 echo "ALIGN simple wdseg test FAILED"; fi 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg | grep SUCCESS > /dev/null 2>&1 ); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg 0 0,1 | grep SUCCESS > /dev/null 2>&1 ); \
 then echo "ALIGN simple phseg test PASSED"; else \
 echo "ALIGN simple phseg test FAILED"; fi 
 
@@ -76,10 +76,10 @@ sh @abs_top_builddir@/libtool --mode=execute @abs_top_builddir@/src/programs/sph
 if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl $tmpout  @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.out | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN cepext output test PASSED"; else \
 echo "ALIGN cepext output test FAILED"; fi 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg | grep SUCCESS > /dev/null 2>&1); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.wdseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.wdseg 0 0,1 | grep SUCCESS > /dev/null 2>&1); \
 then echo "ALIGN cepext wdseg test PASSED"; else \
 echo "ALIGN cepext wdseg test FAILED"; fi 
-if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg | grep SUCCESS > /dev/null 2>&1 ); \
+if (perl @abs_top_srcdir@/src/tests/regression/compare_table.pl `head -1 @abs_top_srcdir@/model/lm/an4/an4.ctl`.phseg @abs_top_srcdir@/model/hmm//hub4_cd_continuous_8gau_1s_c_d_dd/test.align.phseg 0 0,1 | grep SUCCESS > /dev/null 2>&1 ); \
 then echo "ALIGN cepext phseg test PASSED"; else \
 echo "ALIGN cepext phseg test FAILED"; fi 
 
