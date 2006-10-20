@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 tmpout="test-lm_convert-and-decode.out"
 

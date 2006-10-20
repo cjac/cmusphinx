@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 tmpout="test-decode-mode1369.out"
 

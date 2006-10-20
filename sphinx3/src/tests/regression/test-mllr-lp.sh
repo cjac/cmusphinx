@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 echo "LIVEPRETEND+MLLR TEST"
 echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"

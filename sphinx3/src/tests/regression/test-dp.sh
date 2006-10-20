@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 echo "DP TEST"
 tmpout="test-dp.out"

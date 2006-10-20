@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 tmpout="test-align-mllr.out"
 tmplog="test-align-mllr.log"

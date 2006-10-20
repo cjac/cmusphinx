@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 echo "GAUSUBVQ TEST"
 tmplog="test-gausubvq.log"

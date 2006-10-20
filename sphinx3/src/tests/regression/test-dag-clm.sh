@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 echo "DAG CLASS-BASED LM TEST"
 tmpout="test-dag-clm.out"

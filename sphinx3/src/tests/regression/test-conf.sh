@@ -1,6 +1,5 @@
 #!/bin/sh
-thisdir=`pwd`
-. $thisdir/testfuncs.sh
+. testfuncs.sh
 
 tmpout="test-conf.out"
 tmphypseg="test-conf.hypseg"
