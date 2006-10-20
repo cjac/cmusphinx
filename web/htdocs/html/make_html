@@ -1,0 +1,64 @@
+#!/bin/sh
+###########################################################################
+##                                                                       ##
+##                     Carnegie Mellon University                        ##
+##                         Copyright (c) 2001                            ##
+##                        All Rights Reserved.                           ##
+##                                                                       ##
+##  Permission is hereby granted, free of charge, to use and distribute  ##
+##  this software and its documentation without restriction, including   ##
+##  without limitation the rights to use, copy, modify, merge, publish,  ##
+##  distribute, sublicense, and/or sell copies of this work, and to      ##
+##  permit persons to whom this work is furnished to do so, subject to   ##
+##  the following conditions:                                            ##
+##   1. The code must retain the above copyright notice, this list of    ##
+##      conditions and the following disclaimer.                         ##
+##   2. Any modifications must be clearly marked as such.                ##
+##   3. Original authors' names are not deleted.                         ##
+##   4. The authors' names are not used to endorse or promote products   ##
+##      derived from this software without specific prior written        ##
+##      permission.                                                      ##
+##                                                                       ##
+##  CARNEGIE MELLON UNIVERSITY AND THE CONTRIBUTORS TO THIS WORK         ##
+##  DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING      ##
+##  ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT   ##
+##  SHALL CARNEGIE MELLON UNIVERSITY NOR THE CONTRIBUTORS BE LIABLE      ##
+##  FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    ##
+##  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN   ##
+##  AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,          ##
+##  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF       ##
+##  THIS SOFTWARE.                                                       ##
+##                                                                       ##
+###########################################################################
+##                                                                       ##
+##  Build html pages from the bits                                       ##
+##                                                                       ##
+##  usage: ./make_html MUMBLE_body.html TOPDIR header.html \             ##
+##                   footer.html sidebar.html >MUMBLE.html               ##
+##                                                                       ##
+###########################################################################
+
+TOP=$2
+HEADER=$3
+FOOTER=$4
+SIDEBAR=$5
+
+fname=`basename $1 _body.html`
+
+ftitle=`cat $5 | awk '{ bb=sprintf("href=\"'$fname'.php\">"); if (index($0,bb) != 0) print $0 }' |  sed 's/<.b>.*$//' | sed 's/^.*>//'`
+
+cat $HEADER | sed 's/__title__/'$fname'/' >header.tmp.html
+
+cat $SIDEBAR |
+awk '{ bb=sprintf("href=\"'$fname'.php\">");
+       if (index($0,bb) != 0)
+       {
+          printf("<TABLE BORDER=0 WIDTH=100% CELLPADDING=2 CELLSPACING=0>\n");
+          printf("<TR><td bgcolor=\"#F8EEF8\">\n");
+          print $0
+          printf("</TD></tr></TABLE>\n");
+       }
+       else
+          print $0}' >sidebar.tmp.html
+
+cat header.tmp.html sidebar.tmp.html $1 $FOOTER | sed 's+__TOP__+'$TOP'+g'

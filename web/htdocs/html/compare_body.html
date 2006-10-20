@@ -1,0 +1,124 @@
+<!-- start of page body -->
+<td width="80%" valign="TOP">
+  <table width="100%" border="0" cellspacing="2" cellpadding="5">
+    <tr><td>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0> <TR> <TD BGCOLOR=#000000 HEIGHT=1><TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0><TR><TD></TD></TR></TABLE></TD> </TR> </TABLE>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=2 CELLSPACING=0>
+      <TR><td bgcolor="#EEEED4">
+      <b>Current uses of the several versions of Sphinx</b>
+      </TD></tr>
+    </TABLE>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0> <TR> <TD BGCOLOR=#000000 HEIGHT=1><TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0><TR><TD></TD></TR></TABLE></TD> </TR> </TABLE>
+    <table width="100%" border="0" cellpadding="10"><tr><td>
+
+<p>The information presented here provides information about current
+uses of the severla versions of Sphinx. These may be used as
+guidelines, but keep in mind that there is no definite answer.
+</p>
+
+<a name=sphinx2>
+<h3>Sphinx-2</h3>
+
+<p>
+Sphinx-2 is CMU's fastest speech recognition system. It uses Hidden
+Markov Models (HMM) with semi-continuous output probability density
+functions (PDF). Even though it is not as accurate as Sphinx-3 or
+Sphinx-4, it runs at real time, and therefore it is a good choice for
+live applications. You can find further documentation about Sphinx-2
+in the release documentation, or at the <a
+href="http://cmusphinx.org/sphinx2">online documentation</a>.
+</p>
+
+<a name=sphinx3>
+<h3>Sphinx-3</h3>
+
+<p>Sphinx-3 is CMU's state-of-the-art large vocabulary speech
+recognition system. It uses Hidden Markov Models (HMM) with continuous
+output probability density functions (PDF). Sphinx-3 has two versions
+available. 
+</p>
+
+<p>Historically, Sphinx-3 was first developed for batch processing. As
+such, accuracy was much more of an issue than speed. This initial
+version is often referred to as <em>s3</em>, <em>s3 slow</em>, or
+<em>s3 flat</em>. This version is kept in the CVS repository in a
+module named <code>s3flat</code>.
+</p>
+
+<p>
+A live, fast version was then developed, and released. This version,
+capable of handling live audio input, was referred to as
+<em>s3.3</em>, <em>s3 fast</em>, <em>s3 lex tree</em>.
+</p>
+
+<p>
+This live version underwent several improvements in the last 2
+years. This version is referred to as <em>s3.X</em>, and, since it
+replaces s3.3, it inherited the monikers <em>s3 fast</em> and <em>s3
+lex tree</em>. This is the version kept in the CVS repository as the
+module named <code>sphinx3</code>.
+</p>
+
+<p>Further documentation can be found in the release documentation, or
+at the <a href="http://cmusphinx.org/sphinx3">online
+documentation</a>.
+</p>
+
+<a name=sphinx4>
+<h3>Sphinx-4</h3>
+
+<p>
+Sphinx-4 is a state-of-the-art speech recognition system written
+entirely in the Java(tm) programming language. It uses Hidden Markov
+Models (HMM) with continuous output probability density functions
+(PDF).
+</p>
+<p>
+For further detail, please check the <a
+href="http://cmusphinx.sourceforge.net/sphinx4/">Sphinx-4</a> page.
+</p>
+
+<a name=SphinxTrain>
+<h3>SphinxTrain</h3>
+
+<p>
+SphinxTrain is CMU Sphinx's training package. It trains models in
+Sphinx-3 format, which can also be converted to Sphinx-2 format under
+some conditions related to Sphinx-2's limitations. At this point,
+Sphinx-4 uses Sphinx-3 models. 
+</p>
+
+<a name=comparison>
+<h3>Comparison</h3>
+
+<p>We have some <a
+href="http://www.speech.cs.cmu.edu/cgi-bin/cmusphinx/twiki/view/Sphinx4/WebHome#Regression_Tests">
+regression tests</a> comparing sphinx4 to s3 (flat decoder) and to
+s3.3 (fast decoder) in several different tasks, ranging from digits
+only to medium-large vocab. s3 (flat decoder) is often the most
+accurate, but Sphinx4 is faster and more accurate than sphinx3.3 in
+some of these tests.
+</p>
+<p>If you're familiar with ARPA evaluations (using databases available
+via the <a href="http://ldc.upenn.edu">Linguistic Data Consortium
+(LDC)</a> at U.Penn), you can find WSJ 5k and RM1 results in the
+"Medium vocab" table, and WSJ 20k in the "Large vocab" table.
+</p>
+<p>The decision about which version to use depends on how familiar you
+are with C (sphinx3) or Java (sphinx4), and how easy it is to
+integrate these into your system.
+</p>
+
+    </td></tr></table>
+    </td></tr>
+  </table>
+</td>
+</tr></table>
+
+<!-- end of page body -->
+
+<!-- revision 1.2 2005/11/07 19:24:23 egouvea -->
+<!-- Added tutorial link to sidebar -->
+
+<!-- revision 1.1 2004/07/30 05:20:24 egouvea -->
+<!-- Merged cmusphinx and sf, simplified the download info into a table, and added a 'comparison' -->

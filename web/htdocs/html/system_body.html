@@ -1,0 +1,156 @@
+<!-- start of page body -->
+<td width="80%" valign="TOP">
+  <table width="100%" border="0" cellspacing="2" cellpadding="5">
+    <tr><td>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0> <TR> <TD BGCOLOR=#000000 HEIGHT=1><TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0><TR><TD></TD></TR></TABLE></TD> </TR> </TABLE>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=2 CELLSPACING=0>
+      <TR><td bgcolor="#EEEED4">
+      <b>Resources to build a complete system</b>
+      </TD></tr>
+    </TABLE>
+    <TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0> <TR> <TD BGCOLOR=#000000 HEIGHT=1><TABLE BORDER=0 WIDTH=100% CELLPADDING=0 CELLSPACING=0><TR><TD></TD></TR></TABLE></TD> </TR> </TABLE>
+    <table width="100%" border="0" cellpadding="10"><tr><td>
+
+<h3>Introduction</h3>
+
+<p>
+A complete speech recognition system will include data prepared using
+tools from outside sources, as well as programs available from this
+site.
+</p>
+
+<p>
+Minimally, such a system will have an acoustic model trainer and a
+decoder, using audio data, a dictionary, and a language model possibly
+created outside. This page gives you pointers to tools and data that
+will allow you to create a full speech recognition system. Keep in
+mind, though, that building a working system requires knowledge in
+speech processing that this site cannot provide.
+</p>
+
+<ul>
+<li><a href="#data">Audio Data</a></li>
+<li><a href="#models">Open Source Models</a></li>
+<li><a href="#dict">Dictionary</a></li>
+<li><a href="#lm">Language Model</a></li>
+<li><a href="#trainer">Acoustic Model Trainer</a></li>
+<li><a href="#decoder">Decoder</a></li>
+</ul>
+
+<a name=data>
+<h3>Audio data</h3>
+
+<p>
+Most of the reported results in speech recognition use data made
+available via the <a href="http://ldc.upenn.edu">Linguistic Data
+Consortium (LDC)</a>. There you will find audio/text data in several
+levels of complexity, but most of it is licensed, and you will need to
+pay for it.
+</p>
+
+<p>
+CMU has made available the <a
+href="http://www.speech.cs.cmu.edu/databases">AN4 database</a>, both
+in its original format and rerecorded through a microphone array. The
+database is publicly available. Note that it is a small database,
+which can be used to build a toy or test system, but which does not
+yield a system with high accuracy.
+</p>
+
+<a name=models>
+<h3>Open Source Models</h3>
+
+<p>
+If you prefer to skip the data preparation tools, you may retrieve
+acoustic models, language models, and dictionaries directly from the
+<a href="http://www.speech.cs.cmu.edu/sphinx/models/">Open Source
+Models</a> page. These models were trained from large databases, and
+may just work for your needs.
+</p>
+
+<p>
+You will also find packages containing acoustic models in the Sphinx-4
+<a
+href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=117949">release</a>
+page.
+</p>
+
+<p>
+Finally, you can find models for the Spanish language at <a
+href="http://speech.mty.itesm.mx/~jnolazco/proyectos.htm">ITESM</a>,
+in Mexico, with a mirror at <a
+href="http://www.speech.cs.cmu.edu/sphinx/models/hub4spanish_itesm/">CMU</a>.
+</p>
+
+<a name=dict>
+<h3>Dictionary</h3>
+
+<p>
+A dictionary is a file containing a mapping between words to be
+recognizer and its phonetic transcription. The phonetic transcription
+uses the phonetic unit used by the system. Most commonly, the system
+is designed to use phonemes as the phonetic unit, but it is also
+common that the system is designed to use a word or even a whole
+phrase as the phonetic unit.
+</p>
+
+<p>
+CMU has made available the <a
+href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">cmudict</a>, which
+maps a large dictionary (100k+ words) to their phonemes.
+</p>
+
+<a name=lm>
+<h3>Language Model</h3>
+
+<p>
+Language is commonly modeled through a statistical language models
+(SLM) or through the use of a finite state grammar (FSG). Sphinx-2,
+Sphinx3, and Sphinx-4 can handle both SLM and FSG. CMU provides tools
+for building statistical language models. FSGs have to be built by
+hand, or using tools not provided here.
+</p>
+
+<p>
+To build a language model, you can use an online <a
+href="http://www.speech.cs.cmu.edu/tools/lmtool.html">LM tool</a>, or
+you can download and compile the <a
+href="./download.php/#cmulclmtk">CMU Statistical
+Language Model toolkit</a>.
+</p>
+
+<a name=trainer>
+<h3>Acoustic Model Trainer</h3>
+
+<p>
+CMU provides an acoustic model trainer that can be used to produce
+continuous or semi-continuous HMMs. It produces models compatible with
+Sphinx-2, Sphinx-3, and Sphinx-4. You have several options to retrieve
+<a href="./download.php/#SphinxTrain">SphinxTrain</a>.
+</p>
+
+<a name=decoder>
+<h3>Decoder</h3>
+
+<p>
+CMU offers several versions of the Sphinx decoder. You can check a quick <a href="./compare.php">comparison</a> between the versions. You can check the download instructions for <a href="./download.php/#sphinx2">sphinx2</a>, <a href="./download.php/#sphinx3">sphinx3</a>, and <a href="./download.php/#sphinx4">sphinx4</a>.
+</p>
+
+    </td></tr></table>
+    </td></tr>
+  </table>
+</td>
+</tr></table>
+<!-- end of page body -->
+
+<!-- revision 1.4 2006/06/30 23:10:03 egouvea -->
+<!-- Fixed documentation regarding LM and added pointers to models from the -->
+
+<!-- revision 1.3 2004/08/31 19:18:42 egouvea -->
+<!-- Fixed typo -->
+
+<!-- revision 1.2 2004/08/26 15:19:55 egouvea -->
+<!-- Completed the page about speech recognition system resources -->
+
+<!-- revision 1.1 2004/07/30 05:20:24 egouvea -->
+<!-- Merged cmusphinx and sf, simplified the download info into a table, and added a 'comparison' -->

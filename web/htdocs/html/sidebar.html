@@ -1,0 +1,127 @@
+<table width="100%" border="0" cellspacing="2" cellpadding="5">
+  <tr>
+    <!-- start of Sidebar -->
+    <td width="25%" valign="TOP" bgcolor="#f4c6f4"> 
+      <table width=100%><tr><td>
+        <HR>
+        <a href="cmusphinx.php"> <b>Introduction</b></a><br>
+        <hr>
+        <b>General Documentation</b>
+          <ul>
+            <li><a href="http://cmusphinx.org/tutorial.html"><b>Sphinx tutorial</b></a></li>
+            <li><a href="compare.php"><b>Sphinx version comparison</b></a></li>
+            <li><a href="system.php"><b>Resources to build a system</b></a></li>
+              <ul>
+                <li><a href="system.php#data">Audio Data</a></li>
+                <li><a href="system.php#models">Models</a></li>
+                <li><a href="#software">Software</a></li>
+              </ul>
+            <li><a href="http://www.speech.cs.cmu.edu/sphinxman"><b>Sphinx manual</b></a></li>
+            <li><a href="#external">See also some external links</a></li>
+          </ul>
+          <HR>
+          <p><b><a name="software"></a>CMUSphinx components</b></p>
+          <p>Common library</p>
+          <ul>
+            <li><b>SphinxBase</b> (<a href="download.php#sphinxbase">download</a>)</li>
+          </ul>
+          <p>Decoders</p>
+          <ul>
+            <li><b>PocketSphinx</b> (<a href="http://www.pocketsphinx.org">doc</a>) (<a href="download.php#pocketsphinx">download</a>)</li>
+            <li><b>Sphinx-2</b> (<a href="http://cmusphinx.sourceforge.net/sphinx2">doc</a>) (<a href="download.php#sphinx2">download</a>)</li>
+            <li><b>Sphinx-3</b> (<a href="http://cmusphinx.sourceforge.net/sphinx3">doc</a>) (<a href="download.php#sphinx3">download</a>)</li>
+            <li><b>Sphinx-4</b> (<a href="http://cmusphinx.sourceforge.net/sphinx4">doc</a>) (<a href="download.php#sphinx4">download</a>)</li>
+          </ul>
+          <p>Acoustic Model Training</p>
+          <ul>
+            <li><b>SphinxTrain</b> (<a href="download.php#SphinxTrain">download</a>)</li>
+          </ul>
+          <p>Language Model Training</p>
+          <ul>
+            <li><b>cmuclmtk</b> (<a href="http://www.speech.cs.cmu.edu/SLM/toolkit_documentation.html">doc</a>) (<a href="download.php#cmuclmtk">download</a>)</li>
+            <li><b>SimpleLM</b> (<a href="download.php#SimpleLM">download</a>)</li>
+          </ul>
+          <p>Utilities</p>
+          <ul>
+            <li><b>cepview</b> (<a href="download.php#cepview">download</a>)</li>
+            <li><b>lm3g2dmp</b> (<a href="download.php#lm3g2dmp">download</a>)</li>
+          </ul>
+          <HR>
+          <b>Developers' Notes</b>
+          <ul>
+            <li><a href="http://cmusphinx.org/twiki/bin/view/Sphinx/WebHome"> <b>Sphinx-3 TWiki</b></a></li>
+            <li><a href="http://cmusphinx.org/twiki/bin/view/Sphinx4/WebHome"> <b>Sphinx-4 TWiki</b></a></li>
+          </ul>
+          <HR>
+          <b>Latest News </b> <br><br>
+          <?php 
+          // Turn off all error reporting
+          error_reporting(0);
+          include('http://sourceforge.net/export/projnews.php?group_id=1904&limit=3&flat=0&show_summaries=0'); ?>
+          <!--#exec cgi="http://sourceforge.net/export/projnews.php?group_id=1904&limit=3&flat=0&show_summaries=0" -->
+          <HR>
+          <b><a name="external"></a>External links</b><br><br>
+              Notice: if you have comments about the links below, please
+              contact the authors directly.
+          <br>
+          <ul>
+            <li><a href="http://project.uet.itgo.com/speech.htm"><b>How to use a SR system (and other related material)</b></a></li>
+            <li><a href="http://multicom3.uwaterloo.ca/~deng/tutorials/SPEECHUI.HTM"><b>Speech aware applications</b></a></li>
+          </ul>
+          <HR>
+        </td></tr></table> 
+      </td> <!-- end of Sidebar -->
+
+<!-- revision 1.18 2006/10/09 20:04:38 egouvea -->
+<!-- Changed pocketsphinx links in sidebar -->
+
+<!-- revision 1.17 2006/09/29 17:53:38 egouvea -->
+<!-- Added sphinxbase -->
+
+<!-- revision 1.16 2006/07/14 21:03:21 egouvea -->
+<!-- Fixed path to twiki -->
+
+<!-- revision 1.15 2006/06/30 23:10:03 egouvea -->
+<!-- Fixed documentation regarding LM and added pointers to models from the -->
+
+<!-- revision 1.14 2006/06/21 23:16:08 egouvea -->
+<!-- Changed the name cmuclmtk3 to cmuclmtk -->
+
+<!-- revision 1.13 2006/06/20 21:51:33 egouvea -->
+<!-- Updated download info with cmu lm toolkit. -->
+
+<!-- revision 1.12 2005/11/07 19:24:23 egouvea -->
+<!-- Added tutorial link to sidebar -->
+
+<!-- revision 1.11 2005/09/19 16:15:24 egouvea -->
+<!-- Sidebar now uses <ul> added notice saying people should contact the authors directly for external links script deletes files that are different -->
+
+<!-- revision 1.10 2005/06/20 22:20:10 egouvea -->
+<!-- Moved the external links down in the column -->
+
+<!-- revision 1.9 2005/06/17 18:23:27 egouvea -->
+<!-- Changed side bar to include pointers to other documents -->
+
+<!-- revision 1.8 2005/01/12 14:35:31 egouvea -->
+<!-- Added links to the twiki pages -->
+
+<!-- revision 1.7 2004/08/26 15:19:55 egouvea -->
+<!-- Completed the page about speech recognition system resources -->
+
+<!-- revision 1.6 2004/07/30 05:34:20 egouvea -->
+<!-- Minor edit -->
+
+<!-- revision 1.5 2004/07/30 05:31:35 egouvea -->
+<!-- Made order of sphinx2, 3, 4 consistent -->
+
+<!-- revision 1.4 2004/07/30 05:30:39 egouvea -->
+<!-- Minor typo -->
+
+<!-- revision 1.3 2004/07/30 05:28:09 egouvea -->
+<!-- Added links to other docs -->
+
+<!-- revision 1.2 2004/07/30 05:20:24 egouvea -->
+<!-- Merged cmusphinx and sf, simplified the download info into a table, and added a 'comparison' -->
+
+<!-- revision 1.1 2004/07/29 03:18:11 egouvea -->
+<!-- Initial import. -->
