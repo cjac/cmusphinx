@@ -428,11 +428,6 @@ static arg_t defn[] = {
      ARG_STRING,
      NULL,
      "Interpolation weights (CD/CI senone) parameters input file"},
-/* ADDED BY BHIKSHA: 6 JAN 98 */
-    {"-ceplen",
-     ARG_INT32,
-     "13",
-     "Length of input feature vector"},
     {"-bestscoredir",
      ARG_STRING,
      NULL,
