@@ -32,12 +32,12 @@
 
 use strict;
 
-die "$0 <file1> <file2> (tolerance)\n" unless (($#ARGV == 1) or ($#ARGV == 2));
+die "$0 <file1> <file2> (tolerance) (fields)\n" unless @ARGV >= 2;
 
-my $fn1 = $ARGV[0];
-my $fn2 = $ARGV[1];
-my $tolerance = 0.002;
-$tolerance = $ARGV[2] if ($#ARGV == 2);
+my ($fn1, $fn2, $tolerance, $fields) = @ARGV;
+$tolerance = 0.002 unless defined($tolerance);
+my @fields;
+@fields = split /,/, $fields if defined($fields);
 
 my $comparison = 0;
 
@@ -57,7 +57,8 @@ if ((open (FN1, "<$fn1")) and (open (FN2, "<$fn2"))) {
       $comparison = 0;
       last;
     }
-    for (my $i = 0; $i <= $#field1; $i++) {
+    @fields = (0..$#field1) unless @fields;
+    foreach my $i (@fields) {
       if (($field1[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/) or
 	  ($field2[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/)) {
 	# Check if any of the tokens in the line is a string rather
