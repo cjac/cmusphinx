@@ -16,6 +16,6 @@ run_program sphinx3_ep \
 
 grep BLAH $tmplog > $tmpout
 
-compare_table "EP test" $tmpout $sourcedir/model/ep/ep.result 
+compare_table "EP test" $tmpout $sourcedir/model/ep/ep.result 0.1
 
  
