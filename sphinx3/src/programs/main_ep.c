@@ -222,12 +222,20 @@ main(int _argc, char **_argv)
     return 0;
 }
 
+#ifndef PATHSEP
+#ifdef _WIN32
+#define PATHSEP '\\'
+#else
+#define PATHSEP '/'
+#endif /* _WIN32 */
+#endif /* PATHSEP */
+
 void
 get_filename_base(char *_fn, char *_base)
 {
     char *dot, *slash;
 
-    if ((slash = strrchr(_fn, '/')) != NULL)
+    if ((slash = strrchr(_fn, PATHSEP)) != NULL)
         strcpy(_base, slash+1);
     else
         strcpy(_base, _fn);
