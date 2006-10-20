@@ -1,8 +1,31 @@
 #!/bin/sh
 
+TMP=build$$
+
+mkdir $TMP
+
+pushd $TMP > /dev/null 2>&1
+
+svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/web/htdocs/html  > /dev/null 2>&1
+
+pushd html > /dev/null 2>&1
 make
-rsync -auv --progress --delete . shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html
-rsync -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx
+rsync -e ssh -auv --progress --delete . shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html
+rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx
+
+popd > /dev/null 2>&1
+
+for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
+    (
+    svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module  > /dev/null 2>&1
+    cd $module
+    rsync -e ssh -auv --progress --delete . shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module
+)
+done
+
+popd > /dev/null 2>&1
+
+/bin/rm -rf $TMP
 
 # revision 1.7 2006/08/02 15:30:54 egouvea
 # Disabled section about sphinx-4.

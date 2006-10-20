@@ -42,7 +42,7 @@ HTMLBITS=header.html sidebar.html footer.html
 SCRIPTS=make_html
 FINALHTML= $(HTMLBODIES:_body.html=.php) $(SCRIPTS)
 FILES = Makefile $(HTMLBODIES) $(HTMLBITS)
-LOCAL_CLEAN = $(HTMLBODIES:_body.html=.php)
+LOCAL_CLEAN = $(HTMLBODIES:_body.html=.php) *.tmp.html
 
 INSTALLDIR=shell.cmusphinx.net:/home/groups/c/cm/cmusphinx/htdocs/
 
