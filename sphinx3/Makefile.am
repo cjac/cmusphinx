@@ -47,28 +47,6 @@ EXTRA_DIST = autogen.sh \
 # NO!  Don't make .tar.Z or .shar distributions
 AUTOMAKE_OPTIONS = dist-bzip2 dist-zip #dist-shar dist-tarZ
 
-# Add an item for each and every test target to the CLEANFILES variable
-CLEANFILES = chan3.mfc \
-	test.out \
-	test-*.cepview \
-	test-*.log \
-	test-*.mfc \
-	test-*.log \
-	test-*.out \
-	test-*.seg \
-	test-*.tar \
-	test-*.hypseg \
-	test-*.confhypseg \
-	tmp.out \
-	pittsburgh.* \
-	tmp \
-	test-align-mllr.log \
-	allphone.match \
-	allphone.matchseg \
-	test-decode-mode2.match \
-	test-lm_convert.* \
-	test-lm_convert-and-decode.*
-
 etags:
 	etags `find . -name "*.[ch]"`
 

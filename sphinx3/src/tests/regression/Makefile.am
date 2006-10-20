@@ -42,3 +42,30 @@ DISABLED_TESTS = \
 EXTRA_DIST = compare_table.pl \
 	$(TESTS) \
 	$(DISABLED_TESTS)
+
+# Add an item for each and every test target to the CLEANFILES variable
+CLEANFILES = chan3.mfc \
+	test.out \
+	test-*.cepview \
+	test-*.log \
+	test-*.mfc \
+	test-*.log \
+	test-*.out \
+	test-*.seg \
+	test-*.tar \
+	test-*.hypseg \
+	test-*.confhypseg \
+	tmp.out \
+	pittsburgh.* \
+	tmp \
+	test-align-mllr.log \
+	allphone.match \
+	allphone.matchseg \
+	test-decode-mode2.match \
+	test-lm_convert.DMP \
+	test-lm_convert.FST.sym \
+	test-lm_convert.FST \
+	test-lm_convert.TXT \
+	test-lm_convert-and-decode.DMP \
+	test-lm_convert-and-decode.DMP32
+
