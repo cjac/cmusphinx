@@ -59,19 +59,21 @@ if ((open (FN1, "<$fn1")) and (open (FN2, "<$fn2"))) {
     }
     @fields = (0..$#field1) unless @fields;
     foreach my $i (@fields) {
-      if (($field1[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/) or
-	  ($field2[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/)) {
+      if (($field1[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?\)?$/) or
+	  ($field2[$i] !~ m/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?\)?$/)) {
 	# Check if any of the tokens in the line is a string rather
 	# than a number, and compare the strings
 	if ($field1[$i] ne $field2[$i]) {
 	  $comparison = 0;
 	  last;
 	}
-      } elsif (abs($field1[$i] - $field2[$i]) > $tolerance) {
-	# If the tokens are both numbers, check if they match within
-	# a tolerance
-	$comparison = 0;
-	last;
+      } else {
+	  # If the tokens are both numbers, check if they match within
+	  # a tolerance
+	  if (abs($field1[$i] - $field2[$i]) > $tolerance) {
+	      $comparison = 0;
+	      last;
+	  }
       }
     }
     # If there was a mismatch, we can skip to the end of the loop
