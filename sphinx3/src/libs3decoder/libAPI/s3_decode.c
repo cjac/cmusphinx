@@ -232,10 +232,6 @@ s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt);
 static void
 s3_decode_free_hyps(s3_decode_t * _decode);
 
-static void
-s3_decode_process_raw_impl(s3_decode_t * _decode,
-                     int16 * _samples, int32 _num_samples, int32 _end_utt);
-
 int
 s3_decode_init(s3_decode_t * _decode)
 {
@@ -339,12 +335,23 @@ s3_decode_begin_utt(s3_decode_t * _decode, char *_uttid)
 void
 s3_decode_end_utt(s3_decode_t * _decode)
 {
+    int32 num_features;
     assert(_decode != NULL);
 
     if (_decode->state != S3_DECODE_STATE_DECODING) {
         E_WARN("Cannot end utterance in current decoder state.\n");
         return;
     }
+
+    /* Call this with no frames, to update CMN and AGC statistics. */
+    num_features = feat_s2mfc2feat_block(kbcore_fcb(_decode->kbcore),
+					 NULL, 0, FALSE,
+					 TRUE, _decode->features);
+    if (num_features > 0)
+        utt_decode_block(_decode->features,
+                         num_features,
+                         &_decode->num_frames_decoded,
+			 &_decode->kb);
 
     _decode->kb.stat->tot_fr += _decode->kb.stat->nfr;
     s3_decode_record_hyps(_decode, TRUE);
