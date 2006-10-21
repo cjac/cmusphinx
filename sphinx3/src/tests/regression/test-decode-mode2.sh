@@ -29,8 +29,7 @@ fsgargs=" \
 "
 
 run_program sphinx3_decode $margs $fsgargs > $tmpout 2>&1
-compare_table "DECODE FSG ARBITRARY LENGTH DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.arb.result
-
+compare_table "DECODE FSG ARBITRARY LENGTH DIGIT STRING test" $tmpmatch $hmmdir/tidigits/tidigits.length.arb.result 10
 
 fsgargs=" \
 -fsg $hmmdir/tidigits/test.iso.digits.fsg \
