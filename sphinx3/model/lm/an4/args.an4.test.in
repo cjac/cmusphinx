@@ -1,10 +1,10 @@
--mdef	@abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
--fdict	@abs_top_srcdir@/model/lm/an4/filler.dict
--dict	@abs_top_srcdir@/model/lm/an4/an4.dict
--mean	@abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means
--var	@abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
--mixw	@abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
--tmat	@abs_top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices
+-mdef	@top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/hub4opensrc.6000.mdef
+-fdict	@top_srcdir@/model/lm/an4/filler.dict
+-dict	@top_srcdir@/model/lm/an4/an4.dict
+-mean	@top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/means
+-var	@top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/variances
+-mixw	@top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/mixture_weights 
+-tmat	@top_srcdir@/model/hmm/hub4_cd_continuous_8gau_1s_c_d_dd/transition_matrices
 -upperf	6855.49756
 -lowerf	133.33334
 -nfilt	40
@@ -28,7 +28,7 @@
 -ci_pbeam 1e-3
 -ds 4
 -tighten_factor 0.30
--lm 	@abs_top_srcdir@/model/lm/an4/an4.ug.lm.DMP
+-lm 	@top_srcdir@/model/lm/an4/an4.ug.lm.DMP
 -phypdump 0
 
 
