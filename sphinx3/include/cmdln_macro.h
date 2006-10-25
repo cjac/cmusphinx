@@ -341,7 +341,7 @@ us a better architecture.
     { "-vqeval", \
       ARG_INT32, \
       "3", \
-      "A value added which  used only part of the cepstral vector to do the estimation"}, \
+      "Number of subvectors to use for SubVQ-based frame evaluation (3 for all)"}, \
     { "-kdtree",\
       ARG_STRING,\
       NULL,\
