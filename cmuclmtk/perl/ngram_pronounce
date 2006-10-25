@@ -134,6 +134,17 @@ if (defined($opts{indict})) {
     }
 }
 
+# Expand all COMPOUND_WORDS in %unigram, because sphinx3_align wants
+# the constituent parts to exist for some reason
+foreach (sort keys %unigram) {
+    my @parts = split /_/;
+    foreach my $part (@parts) {
+	unless (exists($unigram{$part})) {
+	    $unigram{$part} = undef;
+	}
+    }
+}
+
 # Try to find things that are in the input dictionary
 # Update %unigram with these pronunciations
 my @unknown;
@@ -148,6 +159,7 @@ foreach (sort keys %unigram) {
 
     # Sometimes these are in the input, sometimes not
     next if /^<.*>$/; # Skip <UNK>, <s>, etc
+    next if /^\+\+.*\+\+$/; # Skip filler words
 
     # Skip class tags
     next if /^\[.*\]$/;
@@ -188,7 +200,7 @@ foreach (sort keys %unigram) {
     }
     # Some parts left, so they weren't found
     if (@parts) {
-	# Not found
+	# Not found (compound as a whole)
 	push @unknown, [$orig => $_];
     }
     else {
