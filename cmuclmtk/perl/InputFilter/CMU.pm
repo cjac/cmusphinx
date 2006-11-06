@@ -183,7 +183,7 @@ sub normalize_utt {
     return unless @outwords;
 
     # Output an utterance
-    $self->output_sentence(\@outwords, $uttid);
+    $self->output_sentence(\@outwords, $uttid, $self->{utt_file}, $start, $end);
 }
 
 1;

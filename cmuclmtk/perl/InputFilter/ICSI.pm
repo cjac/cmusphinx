@@ -115,7 +115,6 @@ sub StartSegment {
     my ($self, $expat, $elem, %attr) = @_;
     my($sid, $chan);
     my ($st, $et);
-    my ($sf, $ef);
 
     my $micid = "none";
     # Figure out which channel to use.
@@ -151,17 +150,9 @@ sub StartSegment {
     $st=$attr{StartTime};
     $et=$attr{EndTime};
     $self->{Header} = "$self->{MeetingID}_${chan}_${sid}_${micid}_${st}_${et}";
-
-    # HACK! using ziad's algorithm to compute start and end frames.
-    # HACK! using ziad's algorithm to compute the ending frame of the last sentence.
-    $sf=int($st * $self->{fps});
-    $ef=int($et * $self->{fps})+1;
-    if ($sf == 0) {
-	$sf=1;
-    }
-    if ($ef > $self->{endTime}) {
-	$ef=$self->{endTime};
-    }
+    $self->{StartTime} = $st;
+    $self->{EndTime} = $et;
+    $self->{ChannelID} = $chan;
 
     # Start collecting up text
     $self->{InSegment} = 1;
@@ -235,7 +226,9 @@ sub EndSegment {
 	# Do text normalization now.
 	my @words = $self->text_norm($self->{TextSoFar});
 	# And output an utterance
-	$self->output_sentence(\@words, $self->{Header})
+	$self->output_sentence(\@words, $self->{Header},
+			       "$self->{MeetingID}_$self->{ChannelID}",
+			       $self->{StartTime}, $self->{EndTime})
 	    if @words;
     }
     $self->{InSegment} = 0;
