@@ -118,9 +118,9 @@ public class Recorder {
         if (isRecording) {
             if (data instanceof DoubleData) {
                 for (double sample : ((DoubleData) data).getValues()) {
-                    short s = (short)sample;
+                    short s = (short) sample;
                     int l = s & 0xff;
-                    int h = (s & 0xff00)>>8;
+                    int h = (s & 0xff00) >> 8;
                     pcmOut.writeByte(l);
                     pcmOut.writeByte(h);
                 }
@@ -135,16 +135,14 @@ public class Recorder {
                 // feed the VU meter
                 // if recording, store in pcm file
                 while (isOpen) {
-                    if( microphone.hasMoreData() ) {
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                    }
+                    if (microphone.hasMoreData()) {
                         Data data = microphone.getData();
                         vuMeter.calculateVULevels(data);
                         writeData(data);
-                    }
-                    else {
-                        try {
-                            Thread.sleep(10);
-                        } catch (InterruptedException e) {
-                        }
                     }
                 }
             }
