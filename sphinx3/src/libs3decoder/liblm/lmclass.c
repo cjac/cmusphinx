@@ -66,9 +66,9 @@
 #define LMCLASS_UNDEFINED_PROB		32001   /* Some large +ve non-logprob value */
 
 void
-lmclass_dump(lmclass_t cl, FILE * fp)
+lmclass_dump(lmclass_t *cl, FILE * fp)
 {
-    lmclass_word_t w;
+    lmclass_word_t *w;
 
     assert(cl != NULL);
 
@@ -81,9 +81,9 @@ lmclass_dump(lmclass_t cl, FILE * fp)
 }
 
 void
-lmclass_set_dump(lmclass_set_t set, FILE * fp)
+lmclass_set_dump(lmclass_set_t *set, FILE * fp)
 {
-    lmclass_t cl;
+    lmclass_t *cl;
 
     assert(set != NULL);
 
@@ -91,20 +91,20 @@ lmclass_set_dump(lmclass_set_t set, FILE * fp)
         lmclass_dump(cl, fp);
 }
 
-lmclass_set_t
+lmclass_set_t *
 lmclass_newset(void)
 {
-    lmclass_set_t set;
+    lmclass_set_t *set;
 
-    set = (lmclass_set_t) ckd_calloc(1, sizeof(struct lmclass_set_s));
+    set = (lmclass_set_t *) ckd_calloc(1, sizeof(struct lmclass_set_s));
     set->lmclass_list = NULL;
     return set;
 }
 
-static lmclass_set_t
-lmclass_add(lmclass_set_t set, lmclass_t new)
+static lmclass_set_t *
+lmclass_add(lmclass_set_t *set, lmclass_t *new)
 {
-    lmclass_t cl, prev;
+    lmclass_t *cl, *prev;
 
     assert(set != NULL);
     assert(new != NULL);
@@ -126,10 +126,10 @@ lmclass_add(lmclass_set_t set, lmclass_t new)
     return set;
 }
 
-static lmclass_t
-lmclass_addword(lmclass_t class, lmclass_word_t new)
+static lmclass_t *
+lmclass_addword(lmclass_t *class, lmclass_word_t *new)
 {
-    lmclass_word_t w, prev;
+    lmclass_word_t *w, *prev;
 
     assert(class != NULL);
     assert(new != NULL);
@@ -150,14 +150,14 @@ lmclass_addword(lmclass_t class, lmclass_word_t new)
     return class;
 }
 
-lmclass_set_t
-lmclass_loadfile(lmclass_set_t lmclass_set, char *file)
+lmclass_set_t *
+lmclass_loadfile(lmclass_set_t *lmclass_set, char *file)
 {
     FILE *fp;
     char line[16384], *word[4096], *_eof;
     int32 lineno, nwd;
-    lmclass_t lmclass;
-    lmclass_word_t lmclass_word;
+    lmclass_t *lmclass;
+    lmclass_word_t *lmclass_word;
     float SUMp, p;
     int32 n_implicit_prob, n_word;
 
@@ -191,7 +191,7 @@ lmclass_loadfile(lmclass_set_t lmclass_set, char *file)
 
         /* Initialize a new LM class object */
 
-        lmclass = (lmclass_t) ckd_calloc(1, sizeof(struct lmclass_s));
+        lmclass = (lmclass_t *) ckd_calloc(1, sizeof(struct lmclass_s));
         lmclass->name = ckd_salloc(word[1]);
 
         lmclass->wordlist = NULL;
@@ -244,8 +244,8 @@ lmclass_loadfile(lmclass_set_t lmclass_set, char *file)
 
             /* Create a new word object */
             lmclass_word =
-                (lmclass_word_t) ckd_calloc(1,
-                                            sizeof(struct lmclass_word_s));
+                (lmclass_word_t *) ckd_calloc(1,
+					      sizeof(struct lmclass_word_s));
             lmclass_word->word = ckd_salloc(word[0]);
             lmclass_word->dictwid = -1; /* To be filled in by application */
             lmclass_word->LOGprob = LOGp;
@@ -290,16 +290,16 @@ lmclass_loadfile(lmclass_set_t lmclass_set, char *file)
 }
 
 void
-lmclass_set_dictwid(lmclass_word_t w, int32 dictwid)
+lmclass_set_dictwid(lmclass_word_t *w, int32 dictwid)
 {
     assert(w != NULL);
     w->dictwid = dictwid;
 }
 
-lmclass_t
-lmclass_get_lmclass(lmclass_set_t set, char *name)
+lmclass_t *
+lmclass_get_lmclass(lmclass_set_t *set, char *name)
 {
-    lmclass_t cl;
+    lmclass_t *cl;
 
     for (cl = set->lmclass_list;
          cl && (strcmp(cl->name, name) != 0); cl = cl->next);
@@ -308,9 +308,9 @@ lmclass_get_lmclass(lmclass_set_t set, char *name)
 }
 
 int32
-lmclass_get_nclass(lmclass_set_t set)
+lmclass_get_nclass(lmclass_set_t *set)
 {
-    lmclass_t cl;
+    lmclass_t *cl;
     int32 n;
 
     for (n = 0, cl = set->lmclass_list; cl; cl = cl->next, n++);

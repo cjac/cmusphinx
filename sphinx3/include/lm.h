@@ -643,7 +643,7 @@ typedef struct lm_s {
 
   
     /* Data structure that maintains the class information */
-    lmclass_t *lmclass;   /**< LM class for this LM */
+    lmclass_t **lmclass;   /**< LM class for this LM */
     int32 n_lmclass;      /**< # LM class */
     int32 *inclass_ugscore; /**< An array of inter-class unigram probability */
 

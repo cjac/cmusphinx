@@ -997,8 +997,8 @@ lm_ug_wordprob(lm_t * lm, dict_t * dict, int32 th, wordprob_t * wp)
 {
     int32 i, j, n, p;
     s3wid_t w, dictid;
-    lmclass_t lmclass;
-    lmclass_word_t lm_cw;
+    lmclass_t *lmclass;
+    lmclass_word_t *lm_cw;
     n = lm->n_ug;
 
     for (i = 0, j = 0; i < n; i++) {

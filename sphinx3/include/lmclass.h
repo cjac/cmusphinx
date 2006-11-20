@@ -96,7 +96,7 @@ typedef struct lmclass_word_s {
     int32 LOGprob;	/**< Conditional (LOG)probability of this word, given the class */
     struct lmclass_word_s *next;	/**< For linking together words in this LM class,
 					   in no particular order. */
-} *lmclass_word_t;
+} lmclass_word_t;
 
 
 /** \struct lmclass_t
@@ -104,10 +104,10 @@ typedef struct lmclass_word_s {
  */
 typedef struct lmclass_s {
     char *name;			/**< Name for this LM class */
-    lmclass_word_t wordlist;	/**< Head of list of words in this class */
+    lmclass_word_t *wordlist;	/**< Head of list of words in this class */
     struct lmclass_s *next;	/**< For linking together multiple LM classes in the
 				   application, in no particular order. */
-} *lmclass_t;
+} lmclass_t;
 
 
 /** \struct lmclass_set_t
@@ -115,12 +115,12 @@ typedef struct lmclass_s {
  * type is provided as a convenience for maintaining several such classes.
  */
 typedef struct lmclass_set_s {
-    lmclass_t lmclass_list;	/**< Head of list of LM classes in this module */
-} *lmclass_set_t;
+    lmclass_t *lmclass_list;	/**< Head of list of LM classes in this module */
+} lmclass_set_t;
 
 
 /** Initialize and return a new, empty LMclass set */
-lmclass_set_t lmclass_newset ( void );
+lmclass_set_t *lmclass_newset ( void );
 
 
 /**
@@ -147,25 +147,25 @@ lmclass_set_t lmclass_newset ( void );
  * 
  * Lines beginning with a # IN THE FIRST COLUMN are comments and are ignored.
  */
-lmclass_set_t lmclass_loadfile (lmclass_set_t lmclass_set,  /**< An lm class set */
-				char *file /**< A class definition file */
+lmclass_set_t *lmclass_loadfile (lmclass_set_t *lmclass_set,  /**< An lm class set */
+                                 char *file /**< A class definition file */
     );
 
 
 /**
  * Get the LMclass object for the given name from the given set.
  */
-lmclass_t lmclass_get_lmclass (lmclass_set_t set, char *name);
+lmclass_t *lmclass_get_lmclass (lmclass_set_t *set, char *name);
 
 
 /**
  * Get the number of LMclass objects in the given set.
  */
-int32 lmclass_get_nclass (lmclass_set_t set);
+int32 lmclass_get_nclass (lmclass_set_t *set);
 
 
 /** Set the dictwid field of the given LMclass word entry to the given value */
-void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
+void lmclass_set_dictwid (lmclass_word_t *w, int32 dictwid);
 
 
 /** Various access functions (macros) */
@@ -181,8 +181,8 @@ void lmclass_set_dictwid (lmclass_word_t w, int32 dictwid);
 #define lmclass_nextclass(set,cl)	((cl)->next)
 
 
-void lmclass_dump (lmclass_t cl, FILE *fp);
-void lmclass_set_dump (lmclass_set_t set, FILE *fp);
+void lmclass_dump (lmclass_t *cl, FILE *fp);
+void lmclass_set_dump (lmclass_set_t *set, FILE *fp);
 
 #if 0
 { /* Stop indent from complaining */

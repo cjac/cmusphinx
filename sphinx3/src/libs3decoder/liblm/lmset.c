@@ -73,12 +73,12 @@
 
 static int32
 lm_build_lmclass_info(lm_t * lm, float64 lw, float64 uw, float64 wip,
-                      int32 n_lmclass_used, lmclass_t * lmclass)
+                      int32 n_lmclass_used, lmclass_t **lmclass)
 {
     int i;
     if (n_lmclass_used > 0) {
         lm->lmclass =
-            (lmclass_t *) ckd_calloc(n_lmclass_used, sizeof(lmclass_t));
+            (lmclass_t **) ckd_calloc(n_lmclass_used, sizeof(lmclass_t *));
         for (i = 0; i < n_lmclass_used; i++)
             lm->lmclass[i] = lmclass[i];
     }
@@ -343,8 +343,8 @@ lmset_read_ctl(const char *ctlfile,
     FILE *tmp;
     char lmfile[4096], lmname[4096], str[4096];
 
-    lmclass_set_t lmclass_set;
-    lmclass_t *lmclass, cl;
+    lmclass_set_t *lmclass_set;
+    lmclass_t **lmclass, *cl;
     int32 n_lmclass, n_lmclass_used;
     int32 i;
     lm_t *lm;
@@ -398,7 +398,7 @@ lmset_read_ctl(const char *ctlfile,
            wid_dict_lm_map in wid.c.
          */
 
-        lmclass_word_t w;
+        lmclass_word_t *w;
         int32 wid;
         for (w = lmclass_firstword(cl); lmclass_isword(w);
              w = lmclass_nextword(cl, w)) {
@@ -414,7 +414,7 @@ lmset_read_ctl(const char *ctlfile,
     /* At this point if str[0] != '\0', we have an LM filename */
 
     n_lmclass = lmclass_get_nclass(lmclass_set);
-    lmclass = (lmclass_t *) ckd_calloc(n_lmclass, sizeof(lmclass_t));
+    lmclass = (lmclass_t **) ckd_calloc(n_lmclass, sizeof(lmclass_t *));
 
     E_INFO("Number of LM class specified %d in file %s\n", n_lmclass,
            ctlfile);

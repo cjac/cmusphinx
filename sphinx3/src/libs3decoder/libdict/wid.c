@@ -91,7 +91,7 @@ wid_dict_lm_map(dict_t * dict, lm_t * lm, int32 lw)
     int32 classid = BAD_LMCLASSID;
     s3lmwid32_t *map;
     int32 maperr;
-    lmclass_word_t lmclass_word;
+    lmclass_word_t *lmclass_word;
     lex_entry_t lexent;
     s3cipid_t p[1024], ci, cid;
 
