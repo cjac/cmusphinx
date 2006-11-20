@@ -114,8 +114,8 @@ extern "C" {
 #endif
 
 
-#define LOGS3_SUCCESS 1;
-#define LOGS3_FAILURE 0;
+#define LOGS3_SUCCESS 1
+#define LOGS3_FAILURE 0
 
 /** Initialize module with a new base (> 1.0).  Returns 0 if successful, -1 otherwise. */
 int32 logs3_init (float64 base, /**< The log base of the module */

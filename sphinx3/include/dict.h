@@ -233,6 +233,11 @@ const char *dict_ciphone_str (dict_t *d,	/**< In: Dictionary to look up */
 #define dict_second_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 2])
 #define dict_last_phone(d,w)	((d)->word[w].ciphone[(d)->word[w].pronlen - 1])
 
+/* Hard-coded special words */
+#define S3_START_WORD		"<s>"
+#define S3_FINISH_WORD		"</s>"
+#define S3_SILENCE_WORD		"<sil>"
+#define S3_UNKNOWN_WORD		"<UNK>"
 
 /* Function versions of some of the above macros; note the leading underscore. */
 

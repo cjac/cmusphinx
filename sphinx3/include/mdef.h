@@ -123,7 +123,7 @@ typedef enum {
 } word_posn_t;
 #define N_WORD_POSN	4	/**< total # of word positions (excluding undefined) */
 #define WPOS_NAME	"ibesu"	/**< Printable code for each word position above */
-
+#define S3_SILENCE_CIPHONE "SIL" /**< Hard-coded silence CI phone name */
 
 /**
    \struct ciphone_t

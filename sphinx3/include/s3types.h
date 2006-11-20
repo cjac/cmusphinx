@@ -183,12 +183,6 @@ typedef int16   	s3mgauid_t;	/** Mixture-gaussian codebook id */
 #define MAX_S3MGAUID	((int32)0x00007ffe)
 
 
-#define S3_START_WORD		"<s>"
-#define S3_FINISH_WORD		"</s>"
-#define S3_SILENCE_WORD		"<sil>"
-#define S3_UNKNOWN_WORD		"<UNK>"
-#define S3_SILENCE_CIPHONE	"SIL"
-
 #define S3_LOGPROB_ZERO		((int32) 0xc8000000)	/** Integer version of log of zero Approx -infinity!! */
 #define S3_LOGPROB_ZERO_F	((float32) -1e30)	/** Float version of log of zero Approx -infinity!! */
 
