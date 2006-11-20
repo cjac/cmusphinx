@@ -7,7 +7,9 @@ libsearch_la_LDFLAGS = -version-info 0:6:0
 libsearch_la_SOURCES = \
 	ascr.c \
 	blkarray_list.c \
+	ctxt_table.c \
 	dag.c \
+	dict2pid.c \
 	flat_fwd.c \
 	fsg_history.c \
 	fsg_lextree.c \

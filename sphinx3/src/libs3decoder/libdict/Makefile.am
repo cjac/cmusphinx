@@ -6,9 +6,7 @@ libdict_la_LDFLAGS = -version-info 0:6:0
 
 libdict_la_SOURCES = \
 	cmu6_lts_rules.c \
-	ctxt_table.c \
 	dict.c \
-	dict2pid.c \
 	lts.c \
 	wid.c
 
