@@ -492,17 +492,16 @@ kbcore_init(float64 logbase,
                      feat_n_stream(kb->fcb));
         }
         else if (strcmp(senmgau, ".semi.") == 0) {
-            if (feat_n_stream(kb->fcb) != 4)
-                E_FATAL
-                    ("#Feature streams(%d) in the feature for semi-continuous HMM!= 4\n",
-                     feat_n_stream(kb->fcb));
         }
         else if (strcmp(senmgau, ".s3cont.") == 0) {
 
             E_WARN("Secret Mode .s3cont. is used!!\n");
         }
         else if (strcmp(senmgau, ".s2semi.") == 0) {
-
+            if (feat_n_stream(kb->fcb) != 4)
+                E_FATAL
+                    ("#Feature streams(%d) in the feature for semi-continuous HMM!= 4\n",
+                     feat_n_stream(kb->fcb));
             E_WARN("Secret Mode .s2semi. is used!!\n");
         }
         else {
