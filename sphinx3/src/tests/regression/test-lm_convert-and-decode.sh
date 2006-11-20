@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 tmpout="test-lm_convert-and-decode.out"
 

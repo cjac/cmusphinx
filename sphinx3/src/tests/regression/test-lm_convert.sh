@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "LM_CONVERT TEST"
 tmpout="test-lm_convert.out"

@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 tmpout="test-align-mllr.out"
 tmplog="test-align-mllr.log"

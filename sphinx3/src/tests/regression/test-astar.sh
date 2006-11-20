@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "ASTAR TEST"
 tmpout="test-astar.out"

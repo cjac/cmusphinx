@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 tmpout="test-conf.out"
 tmphypseg="test-conf.hypseg"

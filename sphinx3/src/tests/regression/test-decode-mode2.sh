@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 tmpout="test-decode-mode2.out"
 tmpmatch="test-decode-mode2.match"

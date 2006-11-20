@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "DP TEST"
 tmpout="test-dp.out"

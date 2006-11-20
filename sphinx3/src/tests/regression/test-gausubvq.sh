@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "GAUSUBVQ TEST"
 tmplog="test-gausubvq.log"

@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "DAG CLASS-BASED LM TEST"
 tmpout="test-dag-clm.out"

@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 # (README BEFORE YOU CHANGE THIS TEST) ARCHAN: 
 # This is perhaps the most important test for the decoder because the argument specified

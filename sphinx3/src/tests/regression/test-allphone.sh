@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "ALLPHONE+MLLR PHONE TG TEST"
 

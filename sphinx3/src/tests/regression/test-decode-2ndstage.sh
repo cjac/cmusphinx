@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 tmpout="test-decode-2ndstage.out"
 tmpconfmatchseg="test-decode-2ndstage.confmatchseg"

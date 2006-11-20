@@ -1,5 +1,5 @@
 #!/bin/sh
-. testfuncs.sh
+. ./testfuncs.sh
 
 echo "ASTAR CLASS-BASED LM TEST"
 tmpout="test-astar-clm.out"
