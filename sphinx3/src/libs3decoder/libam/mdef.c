@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -33,6 +34,7 @@
  * ====================================================================
  *
  */
+
 /*
  * mdef.c -- HMM model definition: base (CI) phones and triphones
  *
@@ -104,11 +106,16 @@
  */
 
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <assert.h>
 #include "mdef.h"
+#include "ckd_alloc.h"
+#include "err.h"
 
 
 #define MODEL_DEF_VERSION	"0.3"
-
 
 void
 mdef_dump(FILE * fp, mdef_t * m)
@@ -664,7 +671,6 @@ mdef_init(char *mdeffile, int32 breport)
     s3pid_t p;
     int32 s, ci, cd;
     mdef_t *m;
-    int32 *cdsen_start, *cdsen_end;
 
     if (!mdeffile)
         E_FATAL("No mdef-file\n");
@@ -742,17 +748,12 @@ mdef_init(char *mdeffile, int32 breport)
     m->n_ciphone = n_ci;
     m->ciphone_ht = hash_table_new(n_ci, 1);  /* With case-insensitive string names *//* freed in mdef_free */
     m->ciphone = (ciphone_t *) ckd_calloc(n_ci, sizeof(ciphone_t));     /* freed in mdef_free */
-    /* RAH, let's null the pointers so that we can reliably deallocate them */
-    /*    for (i=0;i<m->n_ciphone;i++) { *//*  */
-    /*m->ciphone[i].name = NULL; *//*  */
-    /*} *//*  */
 
     /* Initialize phones info (ciphones + triphones) */
     m->n_phone = n_ci + n_tri;
     m->phone = (phone_t *) ckd_calloc(m->n_phone, sizeof(phone_t));     /* freed in mdef_free */
 
     /* Allocate space for state->senone map for each phone */
-    /* Fast decoder-specific */
     senmap = (s3senid_t **) ckd_calloc_2d(m->n_phone, m->n_emit_state, sizeof(s3senid_t));      /* freed in mdef_free */
     m->sseq = senmap;           /* TEMPORARY; until it is compressed into just the unique ones */
 
@@ -830,59 +831,7 @@ mdef_init(char *mdeffile, int32 breport)
         }
     }
 
-    /*
-     * Count #senones (CI+CD) for each CI phone.
-     * HACK!!  For handling holes in senone-CIphone mappings.  Does not work if holes
-     * are present at the beginning or end of senones for a given CIphone.
-     */
-    cdsen_start = (int32 *) ckd_calloc(m->n_ciphone, sizeof(int32));    /* freed locally */
-
-    cdsen_end = (int32 *) ckd_calloc(m->n_ciphone, sizeof(int32));      /* freed locally */
-
-    for (s = m->n_ci_sen; s < m->n_sen; s++) {
-        if (NOT_S3CIPID(m->sen2cimap[s]))
-            continue;
-
-        if (!cdsen_start[(int) m->sen2cimap[s]])
-            cdsen_start[(int) m->sen2cimap[s]] = s;
-        cdsen_end[(int) m->sen2cimap[s]] = s;
-    }
-
-    /* Fill up holes */
-    for (s = m->n_ci_sen; s < m->n_sen; s++) {
-        if (IS_S3CIPID(m->sen2cimap[s]))
-            continue;
-
-        /* Check if properly inside the observed ranges above */
-        for (p = 0; p < m->n_ciphone; p++) {
-            if ((s > cdsen_start[p]) && (s < cdsen_end[p]))
-                break;
-        }
-        if (p >= m->n_ciphone)
-            E_FATAL
-                ("Unreferenced senone %d; cannot determine parent CIphone\n",
-                 s);
-        m->sen2cimap[s] = p;
-    }
-
-    /* Build #CD-senones for each CIphone */
-    m->ciphone2n_cd_sen = (int32 *) ckd_calloc(m->n_ciphone, sizeof(int32));    /* freed mdef_free */
-    n = 0;
-    for (p = 0; p < m->n_ciphone; p++) {
-        if (cdsen_start[p] > 0) {
-            m->ciphone2n_cd_sen[p] = cdsen_end[p] - cdsen_start[p] + 1;
-            n += m->ciphone2n_cd_sen[p];
-        }
-    }
-    n += m->n_ci_sen;
-    assert(n == m->n_sen);
-
-    ckd_free(cdsen_start);
-    ckd_free(cdsen_end);
-
     sseq_compress(m);
-
-
     fclose(fp);
 
     return m;
@@ -964,8 +913,6 @@ mdef_free(mdef_t * m)
     int i, j;
 
     if (m) {
-        if (m->ciphone2n_cd_sen)
-            ckd_free((void *) m->ciphone2n_cd_sen);
         if (m->sen2cimap)
             ckd_free((void *) m->sen2cimap);
         if (m->cd2cisen)

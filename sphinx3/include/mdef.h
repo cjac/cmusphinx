@@ -115,14 +115,14 @@ extern "C" {
  */
 
 typedef enum {
-    WORD_POSN_BEGIN = 0,	/**< Beginning phone of word */
-    WORD_POSN_END = 1,		/**< Ending phone of word */
-    WORD_POSN_SINGLE = 2,	/**< Single phone word (i.e. begin & end) */
-    WORD_POSN_INTERNAL = 3,	/**< Internal phone of word */
+    WORD_POSN_INTERNAL = 0,	/**< Internal phone of word */
+    WORD_POSN_BEGIN = 1,	/**< Beginning phone of word */
+    WORD_POSN_END = 2,		/**< Ending phone of word */
+    WORD_POSN_SINGLE = 3,	/**< Single phone word (i.e. begin & end) */
     WORD_POSN_UNDEFINED = 4	/**< Undefined value, used for initial conditions, etc */
 } word_posn_t;
 #define N_WORD_POSN	4	/**< total # of word positions (excluding undefined) */
-#define WPOS_NAME	"besiu"	/**< Printable code for each word position above */
+#define WPOS_NAME	"ibesu"	/**< Printable code for each word position above */
 
 
 /**
@@ -197,7 +197,6 @@ typedef struct {
 				   n_ci_sen are identity mappings; the CD-senones are
 				   contiguous for each parent CI-phone */
     s3cipid_t *sen2cimap;	/**< Parent CI-phone for each senone (CI or CD) */
-    int32 *ciphone2n_cd_sen;	/**< #CD-senones for each parent CI-phone */
     
     s3cipid_t sil;		/**< SILENCE_CIPHONE id */
     
@@ -226,6 +225,8 @@ typedef struct {
 #define mdef_pid2tmatid(m,p)		((m)->phone[p].tmat)
 #define mdef_silphone(m)		((m)->sil)
 #define mdef_sen2cimap(m)		((m)->sen2cimap)
+#define mdef_sseq2sen(m,ss,pos)		((m)->sseq[ss][pos])
+#define mdef_pid2ci(m,p)		((m)->phone[p].ci)
 #define mdef_cd2cisen(m)		((m)->cd2cisen)
 
 /**
