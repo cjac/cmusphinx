@@ -25,7 +25,7 @@ CFG=libdict - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libdict - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -70,7 +70,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -89,15 +89,7 @@ SOURCE=..\..\..\src\libs3decoder\libdict\cmu6_lts_rules.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\src\libs3decoder\libdict\ctxt_table.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\src\libs3decoder\libdict\dict.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\src\libs3decoder\libdict\dict2pid.c
 # End Source File
 # Begin Source File
 

@@ -25,7 +25,7 @@ CFG=libsearch - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "libsearch - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -70,7 +70,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
@@ -93,7 +93,15 @@ SOURCE=..\..\..\src\libs3decoder\libsearch\blkarray_list.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\src\libs3decoder\libsearch\ctxt_table.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\src\libs3decoder\libsearch\dag.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\src\libs3decoder\libsearch\dict2pid.c
 # End Source File
 # Begin Source File
 
