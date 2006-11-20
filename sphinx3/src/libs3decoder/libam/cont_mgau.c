@@ -564,7 +564,7 @@ mgau_mixw_read(mgau_model_t * g, char *file_name, float64 mixwfloor)
     if (n_mgau != g->n_mgau) {
         E_FATAL
             ("%s: #Mixture Gaussians(%d) doesn't match mean/var parameters(%d)\n",
-             n_mgau, g->n_mgau);
+             file_name, n_mgau, g->n_mgau);
     }
 
     if (g->comp_type == MIX_INT_FLOAT_COMP) {
