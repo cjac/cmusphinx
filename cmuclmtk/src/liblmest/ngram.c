@@ -55,6 +55,7 @@
  *
  */
 
+#include "idngram2lm.h"
 #include "ngram.h"
 
 void ngram_copy(ngram *tgt, ngram *src,int N)
@@ -210,31 +211,31 @@ void ng_arpa_lm_alloc_struct (arpa_lm_t *arpa_lm  /**< arpa_lm_t */
 
 }
 
-double ng_double_alpha(ng_t *ng, int N, wordid_t i)
+double ng_double_alpha(ng_t *ng, int N, int i)
 {
   if(ng->four_byte_alphas)
     return ng->bo_weight4[N][i];
   else{
     return double_alpha(ng->bo_weight[N][i],
-			 ng->alpha_array,
-			 ng->size_of_alpha_array,
-			 65535 - ng->out_of_range_alphas,
-			 ng->min_alpha,
-			 ng->max_alpha);
+			ng->alpha_array,
+			ng->size_of_alpha_array,
+			65535 - ng->out_of_range_alphas,
+			ng->min_alpha,
+			ng->max_alpha);
   }
 }
 
-void ng_short_alpha(ng_t *ng, double alpha, int N, wordid_t i )
+void ng_short_alpha(ng_t *ng, double alpha, int N, int i)
 {
   if (ng->four_byte_alphas) 
     ng->bo_weight4[N][i] = alpha;
-  else 
+  else {
     ng->bo_weight[N][i] = short_alpha(alpha,
 				      ng->alpha_array,
 				      &(ng->size_of_alpha_array),
 				      65535 - ng->out_of_range_alphas,
 				      ng->min_alpha,
 				      ng->max_alpha);
-
+  }
 }
 

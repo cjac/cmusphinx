@@ -201,10 +201,3 @@ void compute_back_off(ng_t *ng,int n, int verbosity) {
   free(sought_ngram);
   
 }
-
-
-
-
-
-
-

@@ -216,10 +216,9 @@ void write_arpa_lm(ng_t *ng,int verbosity) {
     alpha=ng_double_alpha(ng,0,i);
     
     if(alpha > 0.0)
-      log10_alpha = log10(ng->bo_weight4[0][i]);
+      log10_alpha = log10(alpha);
     else
       log10_alpha = BAD_LOG_PROB;
-
 
     fprintf(ng->arpa_fp,"%.4f %s",log10_uniprob,ng->vocab[i]);
     if (ng->n>1)

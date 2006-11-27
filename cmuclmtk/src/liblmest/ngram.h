@@ -365,20 +365,20 @@ void ng_allocate_vocab_ht(ng_t *ng, /**< ng_t  with binary format stuffs */
 			  );
 
 /**
-   return alpha-scaled backed-off values of wordid i in N-gram   
+   return back-off weight for an N-gram
  */
 double ng_double_alpha(ng_t *ng, /**< ng */
 		       int N,    /**< The N in N-gram */
-		       wordid_t i  /**< The word id */
+		       int i     /**< index in ng */
 		       );
 
 /*
-  set alpha-scale backed off values for wordid i in N-gram
+  set back-off weight for an N-gram
  */
 void ng_short_alpha(ng_t *ng, /**< ng */
 		    double alpha, /**< The value used */
 		    int N,     /**< The N in N-gram */
-		    wordid_t i /**< The word id */
+		    int i      /**< The N-gram id */
 		    );
 
 /**
