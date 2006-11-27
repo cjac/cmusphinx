@@ -47,7 +47,7 @@ sub process_transcript {
     my ($fileid) = fileparse($transfile,'\..*');
     while (<RAWTRANS>) {
 	# Blank lines
-	next if /^$/;
+	next if /^\s*$/;
 	# Comments
 	next if /^#/;
 
