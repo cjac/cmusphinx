@@ -347,8 +347,13 @@ sub add_files {
 			       sprintf ("%03d_%s",
 					++$self->{transcount},
 					basename($_)));
-	print STDERR "Filtering $_ to $tempfile\n" if $self->{opts}{verbose};
-	$self->normalize_transcript($_, $tempfile);
+	if ($self->{opts}{reusefiles} and -r $tempfile) {
+	    print STDERR "Reusing existing $tempfile\n" if $self->{opts}{verbose};
+	}
+	else {
+	    print STDERR "Filtering $_ to $tempfile\n" if $self->{opts}{verbose};
+	    $self->normalize_transcript($_, $tempfile);
+	}
 	push @{$self->{files}}, $tempfile;
     }
 }

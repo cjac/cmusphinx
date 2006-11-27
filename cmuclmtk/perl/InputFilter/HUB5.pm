@@ -168,6 +168,7 @@ sub process_transcript {
 		}
 		# SWB Cellular has these acronyms (argh)
 		elsif (/^~/) {
+		    $_ = uc $_;
 		    # Letters pronounced individually
 		    push @words, join '_', split //;
 		}
