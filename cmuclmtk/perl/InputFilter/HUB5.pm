@@ -70,8 +70,16 @@ sub process_transcript {
 	    @sentences = $_;
 	}
 	foreach (@sentences) {
-	    # Remove punctuation
-	    tr/,.?!;:"//d;
+	    # Remove most punctuation
+	    tr/,?!;:"//d;
+
+	    # Oh, this sucks.  There are at least two different "HUB5"
+	    # conventions.  Fisher uses periods to mark letter names
+	    # (like "c. n. n.") and nowhere else.  Other stuff marks
+	    # sentence breaks with periods.  Hope this works!
+
+	    # Remove obvious end-of-sentence periods
+	    s/([A-Za-z'][A-Za-z'])\.(\s|$)/$1$2/g;
 
 	    # Remove single-quoted quotations (argh!)
 	    s/(?:\s|^)'(.*?)'(\s|$)/$1/g;
@@ -148,16 +156,29 @@ sub process_transcript {
 	    # Keep non-lexemes
 	    tr/%//d;
 
-	    # Collapse sequences of letters to A_B_C
-	    s{((?:[&~][A-Z](?:\s|\b))+)} {
+	    # Collapse sequences of letters like &A &B &C to A_B_C
+	    s{((?:[&~][A-Z](?:\s|\b)){2,})} {
 		my $s = $1;
 		$s =~ tr/&//d;
 		$s =~ s/\s+/_/g;
 		$s =~ s/_$//;
+		"$s ";
+	    }ge;
+
+	    # Collapse sequences of letters like a. b. c. to A_B_C
+	    s{((?:[A-Za-z]\.(?:'?[Ss])?(?:\s|$)){2,})} {
+		my $s = $1;
+		$s =~ tr/.//d;
+		$s =~ s/\s+/_/g;
+		$s =~ s/_$//;
+		"$s ";
 	    }ge;
 
 	    # Remove interrupted term markings
 	    s/\s+--\s+/ /g;
+
+	    # Remove any stray periods
+	    s/(\s|^)\.(\s|$)/$1$2/g;
 
 	    # Now split it up
 	    my @words;
@@ -171,6 +192,12 @@ sub process_transcript {
 		    $_ = uc $_;
 		    # Letters pronounced individually
 		    push @words, join '_', split //;
+		}
+		# Fisher sometimes has acronyms like d._v._d. (will it never end)
+		elsif (/.+\._.+/) {
+		    $_ = uc $_;
+		    $_ =~ tr/.//d;
+		    push @words, $_;
 		}
 		else {
 		    # Deal with proper/place name/acronym/neologism markings
