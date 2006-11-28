@@ -158,7 +158,7 @@ sub instantiate {
 		    unless defined($attr->{name});
 		if (defined($self->{builddir})) {
 		    my $cleantag = $tag;
-		    $cleantag =~ tr/-A-Za-z_//cd;
+		    $cleantag =~ tr/-A-Za-z0-9_//cd;
 		    $attr->{tempdir} = catdir($self->{builddir}, $cleantag, $attr->{name});
 		    mkpath($attr->{tempdir});
 		}
