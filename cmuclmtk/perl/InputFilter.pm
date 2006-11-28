@@ -433,22 +433,7 @@ sub output_sentence {
 	if ($self->{opts}{split}) {
 	    @parts = split(/[-_ ]/, $word);
 
-	    # Do some monkey business to make acronyms correct
-	    # (add a . to the end of any single-letter
-	    # components of a compound word)
-	    if (@parts > 1) {
-		foreach (@parts) {
-		    # Add dots to single letters
-		    if (length == 1) {
-			$_ = "$_.";
-		    }
-		    # FIXME: I think this actually does nothing
-		    # Also fix up bogus A_ B_ C_ things
-		    s/^(.)_$/$1./;
-		}
-	    }
-
-	    # Do further monkey business to fix stray 'S after
+	    # Do some monkey business to fix stray 'S after
 	    # acronyms (a problem with ICSI mostly)
 	    if (@parts > 1 and $parts[-1] =~ /^'/) {
 		my $apos = pop @parts;
@@ -461,6 +446,14 @@ sub output_sentence {
 		$parts[-1] .= "-";
 	    }
 	}
+
+	foreach (@parts) {
+	    # We now remove all ending dots (and underscores) from
+	    # acronym letters, because they are never used
+	    # consistently in the input.
+	    s/^(.)[._]$/$1/;
+	}
+
 	push @words, @parts;
     }
 
