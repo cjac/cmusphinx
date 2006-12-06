@@ -965,7 +965,7 @@ respect. Now you can begin to train the system.
 <p>
 In the scripts directory (<code>./scripts_pl</code>), there are
 several directories numbered sequentially from <code>00*</code>
-through <code>09*</code>. Each directory either has a directory named
+through <code>99*</code>. Each directory either has a directory named
 <code>slave*.pl</code> or it has a single file with extension
 <code>.pl</code>. Sequentially go through the directories and execute
 either the  the
@@ -976,15 +976,13 @@ the <code>/</code> character with <code>\</code>.
 
 <pre>
 perl scripts_pl/00.verify/verify_all.pl
-perl scripts_pl/01.vector_quantize/slave.VQ.pl
-perl scripts_pl/02.ci_schmm/slave_convg.pl
-perl scripts_pl/03.makeuntiedmdef/make_untied_mdef.pl
-perl scripts_pl/04.cd_schmm_untied/slave_convg.pl
-perl scripts_pl/05.buildtrees/slave.treebuilder.pl
-perl scripts_pl/06.prunetree/slave.state-tie-er.pl
-perl scripts_pl/07.cd-schmm/slave_convg.pl
-perl scripts_pl/08.deleted-interpolation/deleted_interpolation.pl
-perl scripts_pl/09.make_s2_models/make_s2_models.pl
+perl scripts_pl/10.vector_quantize/slave.VQ.pl
+perl scripts_pl/20.ci_hmm/slave_convg.pl
+perl scripts_pl/30.cd_hmm_untied/slave_convg.pl
+perl scripts_pl/40.buildtrees/slave.treebuilder.pl
+perl scripts_pl/50.cd_hmm_tied/slave_convg.pl
+perl scripts_pl/90.deleted_interpolation/deleted_interpolation.pl
+perl scripts_pl/99.make_s2_models/make_s2_models.pl
 </pre>
 
 <p>Alternatively, you can simply run the RunAll.pl script provided.
@@ -1021,31 +1019,31 @@ directories.
 
 <p>
 Note that in the process of going through the scripts in
-<code>00*</code> through <code>09*</code>, you will have generated
+<code>00*</code> through <code>99*</code>, you will have generated
 several sets of acoustic models, each of which could be used for
 recognition. Notice also that some of the steps are required only for
 the creation of semi-continuous models, such as those used by SPHINX-2. If
 you execute these steps while creating continuous models, the scripts
 will benignly do nothing. Once the jobs launched from
-<code>02.ci_schmm</code> have run to completion, you will have trained
+<code>20.ci_hmm</code> have run to completion, you will have trained
 the Context-Independent (CI) models for the sub-word units in your
 dictionary.  When the jobs launched from the
-<code>04.cd_schmm_untied</code> directory run to completion, you will
+<code>30.cd_hmm_untied</code> directory run to completion, you will
 have trained the models for Context-Dependent sub-word units
 (triphones) with untied states. These are called CD-untied models and
 are necessary for building decision trees in order to tie states. The
-jobs in <code>05.buildtrees</code> will build decision trees for each
-state of each sub-word unit. The jobs in <code>06.prunetree</code>
-will prune the decision trees and tie the states. Following this, the
-jobs in <code>07.cd-schmm</code> will train the final models for the
+jobs in <code>40.buildtrees</code> will build decision trees for each
+state of each sub-word unit<!--. The jobs in <code>06.prunetree</code>
+will --> prune the decision trees and tie the states. Following this, the
+jobs in <code>50.cd-hmm_tied</code> will train the final models for the
 triphones in your training corpus. These are called CD-tied
 models. The CD-tied models are trained in many stages. We begin with 1
 Gaussian per state HMMs, following which we train 2 Gaussian per state
 HMMs and so on till the desired number of Gaussians per State have
-been trained. The jobs in <code>07.cd-schmm</code> will automatically
+been trained. The jobs in <code>50.cd-hmm_tied</code> will automatically
 train all these intermediate CD-tied models. Stages
-<code>08.deleted-interpolation</code> and
-<code>09.make_s2_models</code> are meaningful only if you are training
+<code>90.deleted-interpolation</code> and
+<code>99.make_s2_models</code> are meaningful only if you are training
 models for SPHINX-2. Deleted interpolation smooths the HMMs, which are
 then converted to the format used by SPHINX-2. At the end of
 <i>any</i> stage you may use the models for recognition. Remember that
@@ -2590,7 +2588,7 @@ Gouv&ecirc;a</a>, adapted from a page created by Rita Singh</a>. For
 comments, suggestions, or questions, contact the author.<br>
 <i>
 <!-- hhmts start -->
-Last modified: Wed Aug 02 11:33:14 Eastern Daylight Time 2006
+Last modified: Wed Dec  6 12:25:08 EST 2006
 <!-- hhmts end -->
 </i>
 <br>
