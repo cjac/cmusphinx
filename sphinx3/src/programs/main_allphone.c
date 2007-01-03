@@ -182,6 +182,10 @@ static arg_t defn[] = {
      ARG_FLOAT64,
      "1e-64",
      "Main pruning beam applied during search"},
+    {"-pbeam",
+     ARG_FLOAT64,
+     "1e-30",
+     "Phone transition beam applied during search"},
 
     /* allphone-specific arguments */
     {"-phonetp",

@@ -174,7 +174,7 @@ static tmat_t *tmat;            /** Transition probability matrices */
 
 static int32 lrc_size = 0;
 static int32 curfrm;            /* Current frame */
-static int32 beam;
+static int32 beam, pbeam;
 static int32 *score_scale;      /* Score by which state scores scaled in each frame */
 static phseg_t *phseg;
 static int32 **tp;              /* Phone transition probabilities */
@@ -569,7 +569,7 @@ phmm_exit(int32 best)
     int32 th, nf, nst, s;
     history_t *h;
 
-    th = best + beam;
+    th = best + pbeam;
 
     frm_hist[curfrm] = NULL;
     nf = curfrm + 1;
@@ -585,7 +585,7 @@ phmm_exit(int32 best)
                             p->score[s] -= best;
 
                     /* Create lattice entry if exiting */
-                    if (p->score[nst] >= beam) {        /* beam, not th because scores scaled */
+                    if (p->score[nst] >= pbeam) {        /* beam, not th because scores scaled */
                         h = (history_t *)
                             listelem_alloc(sizeof(history_t));
                         h->score = p->score[nst];
@@ -948,6 +948,8 @@ allphone_init(mdef_t * _mdef, tmat_t * _tmat)
     }
     beam = logs3(cmd_ln_float64("-beam"));
     E_INFO("logs3(beam)= %d\n", beam);
+    pbeam = logs3(cmd_ln_float64("-pbeam"));
+    E_INFO("logs3(pbeam)= %d\n", pbeam);
 
     frm_hist =
         (history_t **) ckd_calloc(S3_MAX_FRAMES, sizeof(history_t *));
