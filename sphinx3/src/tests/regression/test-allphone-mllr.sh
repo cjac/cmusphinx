@@ -13,6 +13,7 @@ margs="-logbase 1.0003 \
 -feat 1s_c_d_dd \
 -topn 1000 \
 -beam 1e-80 \
+-pbeam 1e-80 \
 -senmgau .s3cont. \
 -ctl $an4lm/an4.ctl \
 -ctlcount 1 \
