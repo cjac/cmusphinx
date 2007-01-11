@@ -188,7 +188,7 @@ public class DictatorView {
     }
 
     private void loadRecognizer(String configFile) throws IOException, PropertyException, InstantiationException {
-        URL url = new File(configFile).toURL();
+        URL url = new File(configFile).toURI().toURL();
         ConfigurationManager cm = new ConfigurationManager(url);
         recognizer = (Recognizer) cm.lookup("wordRecognizer");
         recognizer.allocate();
