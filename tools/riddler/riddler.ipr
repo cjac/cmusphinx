@@ -297,6 +297,18 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="tools-common-lib">
+      <CLASSES>
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/sphinx4.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/plugin.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/dom4j-1.6.1.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/javolution.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/forms_rt.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/batch.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />

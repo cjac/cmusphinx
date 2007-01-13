@@ -33,6 +33,9 @@
     <property name="alienDir" value="${basedir}/aliens"/>
     <property name="jboss.home" value="${env.JBOSS_HOME}"/>
     <property name="jboss.deploy" value="${jboss.home}/server/default/deploy"/>
+    <fileset id="common.libs" dir="${basedir}/../common/lib">
+        <include name="*.jar"/>
+    </fileset>
 
     <target name="genStubs" depends="deploy,genStubs.win,genStubs.other"
             description="container target for WSDL generation tasks"/>
@@ -87,8 +90,14 @@
     </target>
 
     <target name="compile" depends="init">
+        <path id="compile.cp">
+            <path refid="jbossWS.cp"/>
+            <fileset refid="common.libs"/>
+        </path>
+
         <javac srcdir="${srcDir.java}" destdir="${buildDir}">
-            <classpath refid="jbossWS.cp"/>
+            <classpath refid="compile.cp"/>
+            <sourcepath location="${basedir}/../common/src/java"/>
         </javac>
     </target>
 
