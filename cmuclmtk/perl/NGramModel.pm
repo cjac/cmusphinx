@@ -505,8 +505,8 @@ sub evaluate {
     my $pid = open3($wfh, $rfh, undef, $evallm, -arpa => $lmfile, -context => $contextfile)
 	or die "Failed to open2: $! $?";
     my $cmd = defined($outprobs)
-	? "perplexity -text $testfile -probs $outprobs"
-	    : "perplexity -text $testfile";
+	? "perplexity -include_unks -text $testfile -probs $outprobs"
+	    : "perplexity -include_unks -text $testfile";
     $self->log_message("evallm: $cmd");
     print $wfh $cmd, "\n";
     close $wfh;
