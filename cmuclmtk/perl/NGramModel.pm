@@ -442,7 +442,7 @@ sub estimate {
 }
 
 sub evaluate {
-    my ($self, $testset, $outprobs) = @_;
+    my ($self, $testset, $outprobs, $include_unks) = @_;
 
     # Do stuff with evallm
     my $lmfile = $self->tempfile("arpabo");
@@ -504,9 +504,13 @@ sub evaluate {
     $self->log_message("Running $evallm -arpa $lmfile -context $contextfile");
     my $pid = open3($wfh, $rfh, undef, $evallm, -arpa => $lmfile, -context => $contextfile)
 	or die "Failed to open2: $! $?";
-    my $cmd = defined($outprobs)
-	? "perplexity -include_unks -text $testfile -probs $outprobs"
-	    : "perplexity -include_unks -text $testfile";
+    my $cmd = "perplexity -text $testfile";
+    if (defined($outprobs)) {
+	$cmd .= " -probs $outprobs";
+    }
+    if ($include_unks) {
+	$cmd .= " -include_unks";
+    }
     $self->log_message("evallm: $cmd");
     print $wfh $cmd, "\n";
     close $wfh;
@@ -543,8 +547,8 @@ sub interpolate {
     my $lm2probs = $self->tempfile("lm2.fprobs");
 
     # Evaluate heldout with both LMs
-    $lm1->evaluate($heldout, $lm1probs);
-    $lm2->evaluate($heldout, $lm2probs);
+    $lm1->evaluate($heldout, $lm1probs, 1); # include unks
+    $lm2->evaluate($heldout, $lm2probs, 1); # include unks
 
     # Run interpolate to find weights
     my $lambdas = $self->tempfile("lambdas");
