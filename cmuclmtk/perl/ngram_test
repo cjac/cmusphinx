@@ -107,7 +107,7 @@ sub test_interpolated {
     foreach my $lm (@lms) {
 	my $ngram = NGramModel->new(%opts);
 	$ngram->load($lm);
-	my $results = $ngram->evaluate(\@files, $ngram->tempfile("fprobs"));
+	my $results = $ngram->evaluate(\@files, $ngram->tempfile("fprobs"), 1);
 	printf "%s: Perplexity %.2f OOV rate %s\n",
 	    $lm, $results->perplexity(), $results->oov();
 	# Keep track of the NGramModel object
