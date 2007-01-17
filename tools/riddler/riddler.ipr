@@ -309,6 +309,17 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="jboss">
+      <CLASSES>
+        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/resolver.jar!/" />
+        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/serializer.jar!/" />
+        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xalan.jar!/" />
+        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xercesImpl.jar!/" />
+        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xml-apis.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES />
+    </library>
   </component>
   <component name="uidesigner-configuration">
     <option name="INSTRUMENT_CLASSES" value="true" />
