@@ -9,19 +9,19 @@
  * <p/>
  * <p/>
  * User: Garrett Weinberg
- * Date: Jan 13, 2007
- * Time: 8:32:49 PM
+ * Date: Jan 20, 2007
+ * Time: 10:42:32 AM
  */
 
 package edu.cmu.sphinx.tools.riddler.types;
 
 /**
- * wrapper around an utterance's unique identifier
+ * wrapper around a word's unique identifier
  */
-public class UtteranceID {
+public class WordID {
     int id;
 
-    public UtteranceID(int id) {
+    public WordID(int id) {
         this.id = id;
     }
 

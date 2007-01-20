@@ -55,6 +55,10 @@ public interface Riddler extends Remote {
      */
     public void assignDocumentToUtterance(DocumentID docID, UtteranceID uttID);
 
+    public void addDocumentToCorpus(DocumentID docID, CorpusID corpusID);
+
+    public void addDocumentsToCorpus(DocumentID[] docID, CorpusID corpusID);
+
     /**
      * describe some time-based region of audio
      * @param desc
@@ -65,4 +69,10 @@ public interface Riddler extends Remote {
     public void addAudioRegionToUtterance(AudioRegionID regionID, UtteranceID uttID);
 
     public void addAudioRegionsToUtterance(AudioRegionID[] regionID, UtteranceID uttID);
+
+    public WordID createWord(String word);
+
+    public void addPronunciation(WordID wordID, String prons);
+
+    public void addPronunciations(WordID wordID, String[] prons);
 }

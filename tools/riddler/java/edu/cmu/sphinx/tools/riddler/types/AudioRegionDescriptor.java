@@ -27,9 +27,39 @@ public class AudioRegionDescriptor {
     int endTime;
     String words;
 
+    /**
+     *
+     * @param beginTime millisecond timestamp at which this region of audio begins
+     * @param endTime millisecond timestamp at which this region of audio begins
+     * @param words words contained within this region of audio 
+     */
     public AudioRegionDescriptor(int beginTime, int endTime, String words) {
         this.beginTime = beginTime;
         this.endTime = endTime;
+        this.words = words;
+    }
+
+    public int getBeginTime() {
+        return beginTime;
+    }
+
+    public void setBeginTime(int beginTime) {
+        this.beginTime = beginTime;
+    }
+
+    public int getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(int endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getWords() {
+        return words;
+    }
+
+    public void setWords(String words) {
         this.words = words;
     }
 }

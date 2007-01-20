@@ -3,8 +3,16 @@
 xsi:schemaLocation = "http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
 version="2.4">
 <servlet>
-<servlet-name>riddler</servlet-name>
+<servlet-name>echo</servlet-name>
 <servlet-class>edu.cmu.sphinx.tools.riddler.JSEBean01</servlet-class>
+</servlet>
+<servlet-mapping>
+<servlet-name>echo</servlet-name>
+<url-pattern>/echo</url-pattern>
+</servlet-mapping>
+<servlet>
+<servlet-name>riddler</servlet-name>
+<servlet-class>edu.cmu.sphinx.tools.riddler.RiddlerImpl</servlet-class>
 </servlet>
 <servlet-mapping>
 <servlet-name>riddler</servlet-name>

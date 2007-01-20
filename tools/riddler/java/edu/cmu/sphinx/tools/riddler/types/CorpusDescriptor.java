@@ -15,7 +15,7 @@
 
 package edu.cmu.sphinx.tools.riddler.types;
 
-import java.util.Date;
+import java.util.Calendar;
 
 /**
  * information about a given corpus
@@ -24,11 +24,38 @@ public class CorpusDescriptor {
 
     String name;
     String desc;
-    Date collectDate;
+    /**
+     * java.util.Date is not currently supported (by JAX-RPC 1.1) as an over-the-wire datatype
+     */
+    Calendar collectDate;
 
-    public CorpusDescriptor(String name, String desc, Date collectDate) {
+    public CorpusDescriptor(String name, String desc, Calendar collectDate) {
         this.name = name;
         this.desc = desc;
+        this.collectDate = collectDate;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
+    }
+
+    public Calendar getCollectDate() {
+        return collectDate;
+    }
+
+    public void setCollectDate(Calendar collectDate) {
         this.collectDate = collectDate;
     }
 }

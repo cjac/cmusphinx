@@ -28,4 +28,28 @@ public class UtteranceDescriptor {
         this.samplesPerSecond = samplesPerSecond;
         this.channelCount = channelCount;
     }
+
+    public int getBitsPerSample() {
+        return bitsPerSample;
+    }
+
+    public void setBitsPerSample(int bitsPerSample) {
+        this.bitsPerSample = bitsPerSample;
+    }
+
+    public int getSamplesPerSecond() {
+        return samplesPerSecond;
+    }
+
+    public void setSamplesPerSecond(int samplesPerSecond) {
+        this.samplesPerSecond = samplesPerSecond;
+    }
+
+    public int getChannelCount() {
+        return channelCount;
+    }
+
+    public void setChannelCount(int channelCount) {
+        this.channelCount = channelCount;
+    }
 }

@@ -15,14 +15,14 @@
 
 package edu.cmu.sphinx.tools.riddler;
 
-import javax.jws.WebService;
 import javax.jws.WebMethod;
+import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
 
 @WebService(
-        name = "EndpointInterface",
+        name = "EchoInterface",
         targetNamespace = "http://edu.cmu.sphinx/riddler",
-        serviceName = "Riddler")
+        serviceName = "Echo")
 @SOAPBinding(style = SOAPBinding.Style.RPC)
 public class JSEBean01 implements EchoInterface
 {
