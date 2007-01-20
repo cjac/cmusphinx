@@ -20,6 +20,7 @@ import edu.cmu.sphinx.tools.riddler.types.*;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
+import java.net.URI;
 
 /**
  * document me!
@@ -33,32 +34,30 @@ public class RiddlerImpl implements Riddler {
 
     @WebMethod
     public CorpusID createCorpus() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public void describeCorpus(CorpusID id, CorpusDescriptor desc) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public CorpusDescriptor getCorpusDescriptor(CorpusID id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public UtteranceID createUtterance(byte[] data) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public void describeUtterance(UtteranceID id, UtteranceDescriptor desc) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public UtteranceDescriptor getUtteranceDescriptor(UtteranceID id) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
@@ -68,61 +67,62 @@ public class RiddlerImpl implements Riddler {
 
     @WebMethod
     public void addUtteranceToCorpus(CorpusID corpusID, UtteranceID utteranceID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public void addUtterancesToCorpus(CorpusID corpusID, UtteranceID[] utteranceIDs) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public DocumentID createDocument(String document) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public void assignDocumentToUtterance(DocumentID docID, UtteranceID uttID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public void addDocumentToCorpus(DocumentID docID, CorpusID corpusID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public void addDocumentsToCorpus(DocumentID[] docID, CorpusID corpusID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public AudioRegionID createAudioRegion(AudioRegionDescriptor desc) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public void addAudioRegionToUtterance(AudioRegionID regionID, UtteranceID uttID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public void addAudioRegionsToUtterance(AudioRegionID[] regionID, UtteranceID uttID) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public WordID createWord(String word) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return null;
     }
 
     @WebMethod
     public void addPronunciation(WordID wordID, String prons) {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @WebMethod
     public void addPronunciations(WordID wordID, String[] prons) {
-        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @WebMethod
+    public URI trainModelsFromCorpus(CorpusID id) {
+        return null;
+    }
+
+    @WebMethod
+    public URI trainModelsFromCorpora(CorpusID[] id) {
+        return null;
     }
 }

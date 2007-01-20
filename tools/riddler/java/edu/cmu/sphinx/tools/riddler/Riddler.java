@@ -17,6 +17,7 @@ package edu.cmu.sphinx.tools.riddler;
 
 import edu.cmu.sphinx.tools.riddler.types.*;
 
+import java.net.URI;
 import java.rmi.Remote;
 
 /**
@@ -75,4 +76,18 @@ public interface Riddler extends Remote {
     public void addPronunciation(WordID wordID, String prons);
 
     public void addPronunciations(WordID wordID, String[] prons);
+
+    /**
+     *
+     * @param id
+     * @return a URI pointing to an RSS feed that will contain the models matching this request
+     */
+    public URI trainModelsFromCorpus(CorpusID id);
+
+    /**
+     *
+     * @param ids
+     * @return a URI pointing to an RSS feed that will contain the models matching this request
+     */
+    public URI trainModelsFromCorpora(CorpusID[] ids);
 }
