@@ -1,0 +1,132 @@
+#!/usr/bin/perl
+# This script collects the set of CVS changes for a particular date 
+# and builds a web page for them. This script was originally going to
+# be a CGI script which is why it is written in perl, but there were
+# problems accessesing CVS anonymously from the web server, so it is
+# now only run at build time.
+#
+# usage: whatsNew YYYY-MM-DD
+#
+#
+
+use strict;
+use CGI qw(:standard);
+
+my @currentTime = localtime;
+my $currentDate = sprintf("%04d", $currentTime[5] + 1900) . "-" .
+  sprintf("%02d", $currentTime[4] + 1) . "-" .
+  sprintf("%02d", $currentTime[3]);
+
+my $queryDate = param("date");
+# For debugging purposes, running from command line
+$queryDate = $ARGV[0] if $queryDate eq "";
+$queryDate = $currentDate if $queryDate !~ m/\d{4}(-\d{2}(-\d{2})?)?/;
+my $module = param("module");
+$module = "" if $module eq "";
+$module = "trunk/$module" if $module !~ m,/,;
+
+my $viewSVN = "http://cmusphinx.svn.sourceforge.net/viewvc/cmusphinx";
+
+print header();
+print start_html("CMU Sphinx Source Changes on $queryDate") . "\n";
+
+print table({cellpadding=>'0',
+	     cellspacing=>'0',
+	     border=>'0',
+	     width=>'100%',
+	     align=>'center',
+	     bgcolor=>'#ccccff'},
+	    Tr({valign=>'top',
+		align=>'center'},
+	       td(br,
+		  big(big(b("\u$module", "Source Changes for", $queryDate))),
+		  br,
+		  br)
+	      ),
+	   ) . "\n";
+
+print br, br, br . "\n";
+
+# my $svn_log = "/usr/bin/svn log -r {\"$queryDate 00:00\"}:{\"$queryDate 23:59\"} -v https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/$module";
+
+my $svn_history_file = "svn_history.gz";
+my $svn_history = "gunzip -c $svn_history_file";
+
+open(HIST, "$svn_history | ") or print "<p>Can't get svn history.</p>";
+
+my @rows = th({align=>'CENTER',
+	    valign=>'TOP', 
+	    bgcolor=>'#ccccff'},
+	   ["Path", "File", "Version", "Who", "When"]
+	  );
+
+my $who = "";
+my $version = "";
+my $when = "";
+
+while (<HIST>) {
+    if (m/^-+$/) {
+        $who = "";
+        $version = "";
+    }
+    if (/^r.*\|\s$queryDate/) {
+        m/^r(\d+)\s\|\s(\S+)\s\|\s(\S+)\s/;
+        $version = $1;
+        $who = $2;
+	$when = $3;
+    }
+    next if (($who eq "") or ($version eq ""));
+    next unless /$module/;
+    my ($dummy, $op, $fullPath) = split /\s+/;
+    $fullPath =~ m/^(\S*)\/([^\/]+)$/;
+    my $path = $1;
+    my $file = $2;
+
+# e.g.: http://cmusphinx.svn.sourceforge.net/viewvc/cmusphinx/trunk/sphinxbase/ChangeLog?revision=5584&view=markup
+    my $versionURL = $viewSVN . $path . "/" . $file . "?revision=" . $version . 
+	 "&view=markup";
+
+# e.g.: http://cmusphinx.svn.sourceforge.net/viewvc/cmusphinx/trunk/sphinxbase/test/compare_table.pl?view=diff&r1=6208&r2=6207&diff_format=h
+
+    my $diffURL = $viewSVN . $path . "/" . $file . "?view=diff&r1=" . $version
+        . "&r2=" . ($version - 1) . "&diff_format=h";
+
+    if (($file ne "regression.log") or ($path !~ m/sphinx4/)) {
+      push(@rows, 
+	   td({align=>'LEFT',
+	       valign=>'TOP'},
+	      [$path,
+	       a({href=>"$versionURL"}, $file),
+	       a({href=>"$diffURL"},$version),
+	       $who,
+	       $when])
+	  );
+    }
+}
+
+close(HIST);
+
+print table({align=>'center',
+	     cellpadding=>'2',
+	     cellspacing=>'2',
+	     border=>'1',
+	     width=>'80%'},
+	    Tr((\@rows))
+	   ) . "\n";
+
+my $date_string = (stat($svn_history_file))[9];
+my $timeZone;
+if ((localtime($date_string))[8]) {
+   $timeZone = localtime($date_string) . " PDT";
+} else {
+   $timeZone = localtime($date_string) . " PST";
+}
+
+print ul(
+	 li(" Includes checkins up to", $timeZone),
+	 li(" Click File to show source code"),
+	 li(" Click Version to show changes made since last version")
+	) . "\n";
+
+
+print end_html();

@@ -10,20 +10,25 @@ mkdir $TMP
 
 pushd $TMP > /dev/null
 
-svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/web/htdocs/html  > /dev/null
+svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/web  > /dev/null
 
-pushd html > /dev/null
+pushd web/cgi-bin > /dev/null
+svn log -q https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx > svn_history
+gzip -9fq svn_history
+rsync -e ssh -auv --progress . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/cgi-bin > /dev/null
+popd > /dev/null
+
+pushd web/htdocs/html > /dev/null
 make > /dev/null
 rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/html > /dev/null
 rsync -e ssh -lptgoDuv --progress * fife.speech.cs.cmu.edu:/usr1/httpd/html/sphinx > /dev/null
-
 popd > /dev/null
 
 for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
     svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
     cd $module > /dev/null
-    rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module > /dev/null
+    rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
 )
 done
 
