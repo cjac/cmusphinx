@@ -9,19 +9,20 @@
  * <p/>
  * <p/>
  * User: Garrett Weinberg
- * Date: Jan 13, 2007
- * Time: 8:49:25 PM
+ * Date: Jan 28, 2007
+ * Time: 10:30:54 PM
  */
 
 package edu.cmu.sphinx.tools.riddler.types;
 
 /**
- * wrapper around a transcript's unique identifier
+ * Unique identifier for a text region.  Text records consist of one or more RegionOfText records.
+ * @see TextID
  */
-public class DocumentID {
+public class RegionOfTextID {
     int id;
 
-    public DocumentID(int id) {
+    public RegionOfTextID(int id) {
         this.id = id;
     }
 

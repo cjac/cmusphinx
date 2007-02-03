@@ -15,14 +15,24 @@
 
 package edu.cmu.sphinx.tools.riddler.types;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
- * wrapper around a corpus' unique identifier
+ * A Corpus' unique identifier.  A Corpus consists of Items and has an associated Dictionary
+ * mapping Words to pronunciations.
+ * @see ItemID
+ * @see PronunciationID
  */
 public class CorpusID {
     int id;
+    List<ItemID> itemIDs;
+    DictionaryID dictionaryID;
 
-    public CorpusID(int id) {
+    public CorpusID(int id, List<ItemID> itemIDs, DictionaryID dictionaryID) {
         this.id = id;
+        this.itemIDs = itemIDs;
+        this.dictionaryID = dictionaryID;
     }
 
     public int getId() {
@@ -31,5 +41,21 @@ public class CorpusID {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public ItemID[] getItemIDs() {
+        return itemIDs.toArray(new ItemID[]{});
+    }
+
+    public void setItemIDs(ItemID[] itemIDs) {
+        this.itemIDs = Arrays.asList(itemIDs);
+    }
+
+    public DictionaryID getDictionaryID() {
+        return dictionaryID;
+    }
+
+    public void setDictionaryID(DictionaryID dictionaryID) {
+        this.dictionaryID = dictionaryID;
     }
 }

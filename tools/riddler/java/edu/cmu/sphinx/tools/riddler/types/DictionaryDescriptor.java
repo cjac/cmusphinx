@@ -9,30 +9,23 @@
  * <p/>
  * <p/>
  * User: Garrett Weinberg
- * Date: Jan 13, 2007
- * Time: 9:16:28 PM
+ * Date: Jan 20, 2007
+ * Time: 12:25:06 PM
  */
 
 package edu.cmu.sphinx.tools.riddler.types;
 
-import java.util.Calendar;
-
 /**
- * Describes a given corpus
+ * Contains metadata about a Dictionary, in two matched arrays.
  */
-public class CorpusDescriptor {
+public class DictionaryDescriptor {
 
     String[] metadataKeys;
     String[] metadataValues;
-    /**
-     * java.util.Date is not currently supported (by JAX-RPC 1.1) as an over-the-wire datatype
-     */
-    Calendar collectDate;
 
-    public CorpusDescriptor(Calendar collectDate, String[] metadataKeys, String[] metadataValues) {
+    public DictionaryDescriptor(String[] metadataKeys, String[] metadataValues) {
         this.metadataKeys = metadataKeys;
         this.metadataValues = metadataValues;
-        this.collectDate = collectDate;
     }
 
     public String[] getMetadataKeys() {
@@ -51,11 +44,4 @@ public class CorpusDescriptor {
         this.metadataValues = metadataValues;
     }
 
-    public Calendar getCollectDate() {
-        return collectDate;
-    }
-
-    public void setCollectDate(Calendar collectDate) {
-        this.collectDate = collectDate;
-    }
 }

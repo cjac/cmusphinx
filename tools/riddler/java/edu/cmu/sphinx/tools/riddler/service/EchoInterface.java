@@ -9,27 +9,17 @@
  * <p/>
  * <p/>
  * User: Garrett Weinberg
- * Date: Jan 13, 2007
- * Time: 8:32:49 PM
+ * Date: Dec 28, 2006
+ * Time: 8:14:30 PM
  */
 
-package edu.cmu.sphinx.tools.riddler.types;
+package edu.cmu.sphinx.tools.riddler.service;
+
+import java.rmi.Remote;
 
 /**
- * wrapper around an utterance's unique identifier
+ * document me!
  */
-public class UtteranceID {
-    int id;
-
-    public UtteranceID(int id) {
-        this.id = id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+public interface EchoInterface extends Remote {
+    public String echo(String input);
 }

@@ -16,27 +16,20 @@
 package edu.cmu.sphinx.tools.riddler.types;
 
 /**
- * represents one or more words with a known beginning and end time within a region of audio;
- * meaningless until associated with an utterance
- *
- * @see edu.cmu.sphinx.tools.riddler.Riddler#createAudioRegion(AudioRegionDescriptor)
- * @see edu.cmu.sphinx.tools.riddler.Riddler#addAudioRegionToUtterance(AudioRegionID, UtteranceID)
+ * Descriptor for a RegionOfAudio record.  Has start and end time (millisecond) markers.
  */
-public class AudioRegionDescriptor {
+public class RegionOfAudioDescriptor {
     int beginTime;
     int endTime;
-    String words;
 
     /**
      *
      * @param beginTime millisecond timestamp at which this region of audio begins
      * @param endTime millisecond timestamp at which this region of audio begins
-     * @param words words contained within this region of audio 
      */
-    public AudioRegionDescriptor(int beginTime, int endTime, String words) {
+    public RegionOfAudioDescriptor(int beginTime, int endTime) {
         this.beginTime = beginTime;
         this.endTime = endTime;
-        this.words = words;
     }
 
     public int getBeginTime() {
@@ -53,13 +46,5 @@ public class AudioRegionDescriptor {
 
     public void setEndTime(int endTime) {
         this.endTime = endTime;
-    }
-
-    public String getWords() {
-        return words;
-    }
-
-    public void setWords(String words) {
-        this.words = words;
     }
 }

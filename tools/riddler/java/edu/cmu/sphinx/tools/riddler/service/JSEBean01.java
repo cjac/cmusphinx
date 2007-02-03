@@ -13,7 +13,7 @@
  * Time: 11:23:17 PM
  */
 
-package edu.cmu.sphinx.tools.riddler;
+package edu.cmu.sphinx.tools.riddler.service;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;

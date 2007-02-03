@@ -9,19 +9,19 @@
  * <p/>
  * <p/>
  * User: Garrett Weinberg
- * Date: Jan 13, 2007
- * Time: 8:49:37 PM
+ * Date: Jan 20, 2007
+ * Time: 10:42:32 AM
  */
 
 package edu.cmu.sphinx.tools.riddler.types;
 
 /**
- * wrapper around a word's unique identifier
+ * A Pronunciation record's unique identifier
  */
-public class AudioRegionID {
+public class PronunciationID {
     int id;
 
-    public AudioRegionID(int id) {
+    public PronunciationID(int id) {
         this.id = id;
     }
 

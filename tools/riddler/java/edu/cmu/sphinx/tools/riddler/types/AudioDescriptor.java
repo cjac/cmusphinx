@@ -16,17 +16,20 @@
 package edu.cmu.sphinx.tools.riddler.types;
 
 /**
- * information about a given utterance
+ * Describes an Audio record and holds its data.
+ * @see CorpusID
  */
-public class UtteranceDescriptor {
+public class AudioDescriptor {
     int bitsPerSample;
     int samplesPerSecond;
     int channelCount;
+    byte[] audioData;
 
-    public UtteranceDescriptor(int bitsPerSample, int samplesPerSecond, int channelCount) {
+    public AudioDescriptor(int bitsPerSample, int samplesPerSecond, int channelCount, byte[] audioData) {
         this.bitsPerSample = bitsPerSample;
         this.samplesPerSecond = samplesPerSecond;
         this.channelCount = channelCount;
+        this.audioData = audioData;
     }
 
     public int getBitsPerSample() {
@@ -51,5 +54,13 @@ public class UtteranceDescriptor {
 
     public void setChannelCount(int channelCount) {
         this.channelCount = channelCount;
+    }
+
+    public byte[] getAudioData() {
+        return audioData;
+    }
+
+    public void setAudioData(byte[] audioData) {
+        this.audioData = audioData;
     }
 }

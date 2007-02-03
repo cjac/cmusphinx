@@ -10,19 +10,25 @@
  * <p/>
  * User: Garrett Weinberg
  * Date: Jan 20, 2007
- * Time: 10:42:32 AM
+ * Time: 12:23:53 PM
  */
 
 package edu.cmu.sphinx.tools.riddler.types;
 
-/**
- * wrapper around a word's unique identifier
- */
-public class WordID {
-    int id;
+import java.util.Arrays;
+import java.util.List;
 
-    public WordID(int id) {
+/**
+ * A Dictionary's unique identifier.  A Dictionary consists of Pronunciation records.
+ * @see PronunciationID
+ */
+public class DictionaryID {
+    int id;
+    List<PronunciationID> pronIDs;
+
+    public DictionaryID(int id, List<PronunciationID> pronIDs) {
         this.id = id;
+        this.pronIDs = pronIDs;
     }
 
     public int getId() {
@@ -31,5 +37,13 @@ public class WordID {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public PronunciationID[] getPronIDs() {
+        return pronIDs.toArray(new PronunciationID[]{});
+    }
+
+    public void setPronIDs(PronunciationID[] pronIDs) {
+        this.pronIDs = Arrays.asList(pronIDs);
     }
 }
