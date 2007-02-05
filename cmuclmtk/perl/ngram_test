@@ -34,6 +34,8 @@
 use strict;
 use File::Basename qw(dirname);
 use File::Temp qw(tempdir);
+use File::Spec::Functions;
+use File::Path;
 use lib dirname($0);
 use LMTraining;
 use Getopt::Long;
@@ -100,12 +102,19 @@ sub test_interpolated {
     my ($ngramfile, @files) = @_;
     my @lms = split /:/, $ngramfile;
 
-    # Force each LM to use a separate tempdir
-    $opts{tempdir} = undef;
-
     # Get probability stream and report individual perplexity
+    my $i = 0;
     foreach my $lm (@lms) {
-	my $ngram = NGramModel->new(%opts);
+	my $ngram;
+	# Force each LM to use a separate tempdir
+	if (defined($opts{tempdir})) {
+	    my $subdir = catdir($opts{tempdir}, $i++);
+	    mkpath($subdir);
+	    $ngram = NGramModel->new(%opts, tempdir => $subdir);
+	}
+	else {
+	    $ngram = NGramModel->new(%opts);
+	}
 	$ngram->load($lm);
 	my $results = $ngram->evaluate(\@files, $ngram->tempfile("fprobs"), 1);
 	printf "%s: Perplexity %.2f OOV rate %s\n",
