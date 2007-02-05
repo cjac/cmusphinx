@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # History
 #     4/14/2005 Modify by Moss: replace chop() with $line=~s/[\n\r\f]//g; when move to cygwin 
