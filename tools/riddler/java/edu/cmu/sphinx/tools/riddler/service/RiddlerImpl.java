@@ -16,6 +16,7 @@
 package edu.cmu.sphinx.tools.riddler.service;
 
 import edu.cmu.sphinx.tools.riddler.types.*;
+import edu.cmu.sphinx.tools.riddler.types.audio.*;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -84,7 +85,27 @@ public class RiddlerImpl implements Riddler {
     }
 
     @WebMethod
-    public ItemID createItemWithAudio(CorpusID corpusId, AudioDescriptor desc) {
+    public ItemID createItemWithByteAudio(CorpusID corpusId, ByteAudioDescriptor desc) {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithShortAudio(CorpusID corpusId, ShortAudioDescriptor desc) {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithIntAudio(CorpusID corpusId, IntAudioDescriptor desc) {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithLongAudio(CorpusID corpusId, LongAudioDescriptor desc) {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithFloatAudio(CorpusID corpusId, FloatAudioDescriptor desc) {
         return null;
     }
 
@@ -94,7 +115,27 @@ public class RiddlerImpl implements Riddler {
     }
 
     @WebMethod
-    public ItemID createItemWithAudioAndText(CorpusID corpusId, AudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
+    public ItemID createItemWithShortAudioAndText(CorpusID corpusId, ShortAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithByteAudioAndText(CorpusID corpusId, ByteAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithIntAudioAndText(CorpusID corpusId, IntAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithLongAudioAndText(CorpusID corpusId, LongAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
+        return null;
+    }
+
+    @WebMethod
+    public ItemID createItemWithFloatAudioAndText(CorpusID corpusId, FloatAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException {
         return null;
     }
 

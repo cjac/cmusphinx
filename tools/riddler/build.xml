@@ -36,7 +36,7 @@
         <include name="*.jar"/>
     </fileset>
 
-    <target name="genStubs" depends="deploy,genStubs.win,genStubs.other"
+    <target name="genStubs" depends="genStubs.win,genStubs.other"
             description="container target for WSDL generation tasks"/>
     <target name="genStubs.win" if="onWindows">
         <property name="MSDEV.home" value="C:/tool/MSVS8"/>

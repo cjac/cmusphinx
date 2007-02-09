@@ -13,31 +13,19 @@
  * Time: 9:37:06 PM
  */
 
-package edu.cmu.sphinx.tools.riddler.types;
+package edu.cmu.sphinx.tools.riddler.types.audio;
 
 /**
  * Describes an Audio record and holds its data.
- * @see CorpusID
+ * @see edu.cmu.sphinx.tools.riddler.types.CorpusID
  */
-public class AudioDescriptor {
-    int bitsPerSample;
+public abstract class AudioDescriptor {
     int samplesPerSecond;
     int channelCount;
-    byte[] audioData;
 
-    public AudioDescriptor(int bitsPerSample, int samplesPerSecond, int channelCount, byte[] audioData) {
-        this.bitsPerSample = bitsPerSample;
+    public AudioDescriptor(int samplesPerSecond, int channelCount) {
         this.samplesPerSecond = samplesPerSecond;
         this.channelCount = channelCount;
-        this.audioData = audioData;
-    }
-
-    public int getBitsPerSample() {
-        return bitsPerSample;
-    }
-
-    public void setBitsPerSample(int bitsPerSample) {
-        this.bitsPerSample = bitsPerSample;
     }
 
     public int getSamplesPerSecond() {
@@ -54,13 +42,5 @@ public class AudioDescriptor {
 
     public void setChannelCount(int channelCount) {
         this.channelCount = channelCount;
-    }
-
-    public byte[] getAudioData() {
-        return audioData;
-    }
-
-    public void setAudioData(byte[] audioData) {
-        this.audioData = audioData;
     }
 }

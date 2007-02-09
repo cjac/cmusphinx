@@ -16,6 +16,7 @@
 package edu.cmu.sphinx.tools.riddler.service;
 
 import edu.cmu.sphinx.tools.riddler.types.*;
+import edu.cmu.sphinx.tools.riddler.types.audio.*;
 
 import java.net.URI;
 import java.rmi.Remote;
@@ -106,12 +107,44 @@ public interface Riddler extends Remote {
     public ItemID createItem(CorpusID corpusId);
 
     /**
+     * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.     
+     * @param corpusId Corpus to which the Item should be added
+     * @param desc descriptor for the Audio record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     */
+    public ItemID createItemWithByteAudio(CorpusID corpusId, ByteAudioDescriptor desc);
+
+    /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
      * @param corpusId Corpus to which the Item should be added
      * @param desc descriptor for the Audio record
      * @return an ItemID with valid deep linkages to its newly-created component records
      */
-    public ItemID createItemWithAudio(CorpusID corpusId, AudioDescriptor desc);
+    public ItemID createItemWithShortAudio(CorpusID corpusId, ShortAudioDescriptor desc);
+
+    /**
+     * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param desc descriptor for the Audio record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     */
+    public ItemID createItemWithIntAudio(CorpusID corpusId, IntAudioDescriptor desc);
+
+    /**
+     * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param desc descriptor for the Audio record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     */
+    public ItemID createItemWithLongAudio(CorpusID corpusId, LongAudioDescriptor desc);
+
+    /**
+     * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param desc descriptor for the Audio record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     */
+    public ItemID createItemWithFloatAudio(CorpusID corpusId, FloatAudioDescriptor desc);
 
     /**
      * Deeply create a new Item record with exactly one Text record containing one RegionOfText.
@@ -134,7 +167,59 @@ public interface Riddler extends Remote {
      * @throws java.rmi.RemoteException if the descriptor contains a word not found in the
      * provided Corpus' Dictionary
      */
-    public ItemID createItemWithAudioAndText(CorpusID corpusId, AudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
+    public ItemID createItemWithShortAudioAndText(CorpusID corpusId, ShortAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
+
+/**
+     * Deeply create a new Item record with one Audio record and one Text record.  The Audio
+     * record contains one RegionOfAudio that points to the Text record's single RegionOfText.<p/>
+     * This method should be used to indicate that the Text is a transcript of the Audio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param audioDesc descriptor for the Audio record
+     * @param textDesc descriptor for the Text record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     * @throws java.rmi.RemoteException if the descriptor contains a word not found in the
+     * provided Corpus' Dictionary
+     */
+    public ItemID createItemWithByteAudioAndText(CorpusID corpusId, ByteAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
+
+/**
+     * Deeply create a new Item record with one Audio record and one Text record.  The Audio
+     * record contains one RegionOfAudio that points to the Text record's single RegionOfText.<p/>
+     * This method should be used to indicate that the Text is a transcript of the Audio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param audioDesc descriptor for the Audio record
+     * @param textDesc descriptor for the Text record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     * @throws java.rmi.RemoteException if the descriptor contains a word not found in the
+     * provided Corpus' Dictionary
+     */
+    public ItemID createItemWithIntAudioAndText(CorpusID corpusId, IntAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
+
+/**
+     * Deeply create a new Item record with one Audio record and one Text record.  The Audio
+     * record contains one RegionOfAudio that points to the Text record's single RegionOfText.<p/>
+     * This method should be used to indicate that the Text is a transcript of the Audio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param audioDesc descriptor for the Audio record
+     * @param textDesc descriptor for the Text record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     * @throws java.rmi.RemoteException if the descriptor contains a word not found in the
+     * provided Corpus' Dictionary
+     */
+    public ItemID createItemWithLongAudioAndText(CorpusID corpusId, LongAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
+
+/**
+     * Deeply create a new Item record with one Audio record and one Text record.  The Audio
+     * record contains one RegionOfAudio that points to the Text record's single RegionOfText.<p/>
+     * This method should be used to indicate that the Text is a transcript of the Audio.
+     * @param corpusId Corpus to which the Item should be added
+     * @param audioDesc descriptor for the Audio record
+     * @param textDesc descriptor for the Text record
+     * @return an ItemID with valid deep linkages to its newly-created component records
+     * @throws java.rmi.RemoteException if the descriptor contains a word not found in the
+     * provided Corpus' Dictionary
+     */
+    public ItemID createItemWithFloatAudioAndText(CorpusID corpusId, FloatAudioDescriptor audioDesc, TextDescriptor textDesc) throws RemoteException;
 
     /**
      * Add a RegionOfText to the given Item
