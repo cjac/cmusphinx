@@ -22,7 +22,7 @@ package edu.cmu.sphinx.tools.riddler.types;
  * @see RegionOfTextID
  */
 public class RegionOfAudioID {
-    int id;
+    long id;
     RegionOfTextID textRegion;
 
     /**
@@ -30,16 +30,16 @@ public class RegionOfAudioID {
      * @param id
      * @param textRegion identifier of a text region corresponding to this audio region
      */
-    public RegionOfAudioID(int id, RegionOfTextID textRegion) {
+    public RegionOfAudioID(long id, RegionOfTextID textRegion) {
         this.id = id;
         this.textRegion = textRegion;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

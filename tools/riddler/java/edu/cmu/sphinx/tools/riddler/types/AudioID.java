@@ -25,19 +25,19 @@ import java.util.List;
  * @see RegionOfAudioID
  */
 public class AudioID {
-    int id;
+    long id;
     List<RegionOfAudioID> audioRegionIDs;
 
-    public AudioID(int id, List<RegionOfAudioID> audioRegionIDs) {
+    public AudioID(long id, List<RegionOfAudioID> audioRegionIDs) {
         this.id = id;
         this.audioRegionIDs = audioRegionIDs;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

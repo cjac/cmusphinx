@@ -75,7 +75,7 @@
         <fileset dir="${jboss.deploy}/jbossws.sar" includes="*.jar"/>
     </path>
 
-    <target name="clean">
+    <target name="clean" depends="init">
         <delete>
             <fileset dir="${buildDir}" includes="**"/>
         </delete>

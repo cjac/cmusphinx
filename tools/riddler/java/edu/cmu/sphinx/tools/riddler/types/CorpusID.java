@@ -25,21 +25,21 @@ import java.util.List;
  * @see PronunciationID
  */
 public class CorpusID {
-    int id;
+    long id;
     List<ItemID> itemIDs;
     DictionaryID dictionaryID;
 
-    public CorpusID(int id, List<ItemID> itemIDs, DictionaryID dictionaryID) {
+    public CorpusID(long id, List<ItemID> itemIDs, DictionaryID dictionaryID) {
         this.id = id;
         this.itemIDs = itemIDs;
         this.dictionaryID = dictionaryID;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

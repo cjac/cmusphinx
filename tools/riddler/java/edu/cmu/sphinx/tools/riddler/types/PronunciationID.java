@@ -19,17 +19,17 @@ package edu.cmu.sphinx.tools.riddler.types;
  * A Pronunciation record's unique identifier
  */
 public class PronunciationID {
-    int id;
+    long id;
 
-    public PronunciationID(int id) {
+    public PronunciationID(long id) {
         this.id = id;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 }

@@ -24,19 +24,19 @@ package edu.cmu.sphinx.tools.riddler.types;
  * @see AudioID
  */
 public class ItemID {
-    int id;
+    long id;
     AudioID audioID;
     TextID textID;
 
-    public ItemID(int id) {
+    public ItemID(long id) {
         this.id = id;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

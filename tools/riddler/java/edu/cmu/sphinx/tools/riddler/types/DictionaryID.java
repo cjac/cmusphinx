@@ -23,19 +23,19 @@ import java.util.List;
  * @see PronunciationID
  */
 public class DictionaryID {
-    int id;
+    long id;
     List<PronunciationID> pronIDs;
 
-    public DictionaryID(int id, List<PronunciationID> pronIDs) {
+    public DictionaryID(long id, List<PronunciationID> pronIDs) {
         this.id = id;
         this.pronIDs = pronIDs;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

@@ -25,19 +25,19 @@ import java.util.List;
  * @see RegionOfTextID
  */
 public class TextID {
-    int id;
+    long id;
     List<RegionOfTextID> textRegionIDs;
 
-    public TextID(int id, List<RegionOfTextID> textRegionIDs) {
+    public TextID(long id, List<RegionOfTextID> textRegionIDs) {
         this.id = id;
         this.textRegionIDs = textRegionIDs;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
     

@@ -20,17 +20,17 @@ package edu.cmu.sphinx.tools.riddler.types;
  * @see TextID
  */
 public class RegionOfTextID {
-    int id;
+    long id;
 
-    public RegionOfTextID(int id) {
+    public RegionOfTextID(long id) {
         this.id = id;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 }
