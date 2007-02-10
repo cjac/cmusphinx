@@ -143,7 +143,7 @@ if (open PIPE, "\"$DECODER\" " .
     "-cepdir \"$DEC_CFG_FEATFILES_DIR\" " .
     "-cepext $DEC_CFG_FEATFILE_EXTENSION " .
 #    "-hypseg $matchfile " .
-    "-hyp $matchfile " .
+    "-hyp \"$matchfile\" " .
 #    "-outlatdir $outlatdir " .
     "-agc $DEC_CFG_AGC " .
     "-varnorm $DEC_CFG_VARNORM " .
