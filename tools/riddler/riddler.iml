@@ -2,13 +2,22 @@
 <module version="4" relativePaths="true" type="JAVA_MODULE">
   <component name="ModuleRootManager" />
   <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
     <content url="file://$MODULE_DIR$/..">
       <sourceFolder url="file://$MODULE_DIR$/../audiocollector/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../common/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../corpusBrowser/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../dictator/src/java" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/riddler-app-client/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/riddler-ejb/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/riddler-war/src/java" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-app-client/build" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-app-client/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-ejb/build" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-ejb/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-war/build" />
+      <excludeFolder url="file://$MODULE_DIR$/riddler-war/dist" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

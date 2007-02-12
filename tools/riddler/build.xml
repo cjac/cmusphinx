@@ -1,10 +1,58 @@
-<project name="riddler" default="deploy" basedir=".">
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<project name="riddler" default="default" basedir="." xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/2">
+    <description>Builds, tests, and runs the project riddler.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
 
-    <taskdef resource="org/apache/ant/dotnet/antlib.xml">
-        <classpath>
-            <pathelement location="${ant.home}/lib/ant-dotnet.jar"/>
-        </classpath>
-    </taskdef>
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      pre-init:                 called before initialization of project properties 
+      post-init:                called after initialization of project properties 
+      pre-compile:              called before javac compilation 
+      post-compile:             called after javac compilation 
+      pre-dist:                 called before jar building 
+      post-dist:                called after jar building 
+      post-clean:               called after cleaning build products 
+      pre-run-deploy:           called before deploying
+      post-run-deploy:          called after deploying
+
+    Example of pluging an obfuscator after the compilation could look like 
+
+        <target name="post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Other way how to customize the build is by overriding existing main targets.
+    The target of interest are: 
+
+      do-dist:                jar archive building
+      run:                    execution of project 
+
+    Example of overriding the target for project execution could look like 
+
+        <target name="run" depends="<PROJNAME>-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that overridden target depends on jar target and not only on 
+    compile target as regular run target does. Again, for list of available 
+    properties which you can use check the target you are overriding in 
+    nbproject/build-impl.xml file. 
+
+    -->
 
     <property environment="env"/>
     <condition property="onOSX">
@@ -24,17 +72,20 @@
             </not>
         </and>
     </condition>
-    <property name="srcDir.java" value="${basedir}/java"/>
-    <property name="srcDir.xml" value="${basedir}/metadata"/>
+
     <property name="srcDir.dotNet" value="${basedir}/dotNet"/>
-    <property name="webDir" value="${basedir}/web"/>
-    <property name="buildDir" value="${basedir}/classes"/>
-    <property name="libDir" value="${basedir}/lib"/>
-    <property name="jboss.home" value="${env.JBOSS_HOME}"/>
-    <property name="jboss.deploy" value="${jboss.home}/server/default/deploy"/>
+    <!-- where in the NetBeans-generated stuff is this defined as a property? -->
+    <property name="distDir" value="${basedir}/dist"/>
+
     <fileset id="common.libs" dir="${basedir}/../common/lib">
         <include name="*.jar"/>
     </fileset>
+
+    <taskdef resource="org/apache/ant/dotnet/antlib.xml">
+        <classpath>
+            <pathelement location="${basedir}/../common/lib/ant-dotnet.jar"/>
+        </classpath>
+    </taskdef>
 
     <target name="genStubs" depends="genStubs.win,genStubs.other"
             description="container target for WSDL generation tasks"/>
@@ -43,11 +94,12 @@
         <exec command="${MSDEV.home}/SDK/v2.0/Bin/wsdl.exe">
             <arg value="/out:${srcDir.dotNet}\RiddlerStubs.cs"/>
             <arg value="/namespace:edu.cmu.sphinx.riddler"/>
-            <arg value="http://localhost:8080/${ant.project.name}/${ant.project.name}?wsdl"/>
+            <!--<arg value="http://localhost:8080/${ant.project.name}/${ant.project.name}?wsdl"/>-->
+            <arg value="http://localhost:8080/RiddlerBeanService/RiddlerBean?wsdl"/>
         </exec>
     </target>
     <target name="genStubs.other" unless="onWindows">
-       <!-- TODO garrett 1/6/07: invoke Mono's WSDL-to-C# tool -->
+        <!-- TODO garrett 1/6/07: invoke Mono's WSDL-to-C# tool -->
     </target>
 
     <target name="test" depends="genStubs">
@@ -55,7 +107,7 @@
             <target name="build"/>
             <build>
                 <target name="build">
-                    <csc target="library" output="${libDir}/riddler-tests.dll">
+                    <csc target="library" output="${distDir}/riddler-tests.dll">
                         <sources basedir="${srcDir.dotNet}">
                             <include name="**/*.cs" />
                         </sources>
@@ -67,51 +119,8 @@
             </build>
         </nant>
         <nunit>
-            <testassembly name="${libDir}/riddler-tests.dll"/>
+            <testassembly name="${distDir}/riddler-tests.dll"/>
         </nunit>
     </target>
-    
-    <path id="jbossWS.cp">
-        <fileset dir="${jboss.deploy}/jbossws.sar" includes="*.jar"/>
-    </path>
 
-    <target name="clean" depends="init">
-        <delete>
-            <fileset dir="${buildDir}" includes="**"/>
-        </delete>
-        <delete dir="${libDir}"/>
-        <delete file="${jboss.deploy}/${ant.project.name}.war"/>
-    </target>
-
-    <target name="init">
-        <mkdir dir="${buildDir}"/>
-        <mkdir dir="${libDir}"/>
-    </target>
-
-    <target name="compile" depends="init">
-        <path id="compile.cp">
-            <path refid="jbossWS.cp"/>
-            <fileset refid="common.libs"/>
-        </path>
-
-        <javac srcdir="${srcDir.java}" destdir="${buildDir}">
-            <classpath refid="compile.cp"/>
-            <sourcepath location="${basedir}/../common/src/java"/>
-        </javac>
-    </target>
-
-    <target name="package" depends="compile">
-        <war destfile="${libDir}/${ant.project.name}.war" webxml="${srcDir.xml}/web.xml">
-            <!-- compiled web service / Seam classes -->
-            <classes dir="${buildDir}"/>
-            <!-- web resources (JSP, images, etc.) -->
-            <fileset dir="${webDir}"/>
-            <!-- third-party dependencies not included in JBoss -->
-            <fileset refid="common.libs"/>
-        </war>
-    </target>
-
-    <target name="deploy" depends="package">
-        <copy file="${libDir}/${ant.project.name}.war" todir="${jboss.deploy}"/>
-    </target>
 </project>

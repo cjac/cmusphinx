@@ -284,20 +284,6 @@
     </option>
   </component>
   <component name="libraryTable">
-    <library name="jbossWS">
-      <CLASSES>
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/jboss-jaxws.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/jbossws-context.war!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/jbossws-core.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/jbossws-jboss-integration.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/policy-1.0.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/stax-api-1.0.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/wsdl4j.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/server/default/deploy/jbossws.sar/xmlsec.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="tools-common-lib">
       <CLASSES>
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/sphinx4.jar!/" />
@@ -306,17 +292,6 @@
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/javolution.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/forms_rt.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/batch.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="jboss">
-      <CLASSES>
-        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/resolver.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/serializer.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xalan.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xercesImpl.jar!/" />
-        <root url="jar://C:/tool/jboss-4.0.5.GA/lib/endorsed/xml-apis.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

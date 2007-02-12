@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application version="5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_5.xsd">
+  <display-name>riddler</display-name>
+  <module>
+    <web>
+      <web-uri>riddler-war.war</web-uri>
+      <context-root>/riddler-war</context-root>
+    </web>
+  </module>
+  <module>
+    <java>riddler-app-client.jar</java>
+  </module>
+  <module>
+    <ejb>riddler-ejb.jar</ejb>
+  </module>
+</application>
