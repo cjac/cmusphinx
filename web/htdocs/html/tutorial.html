@@ -133,6 +133,7 @@ You will be given instructions on how to download, compile, and run
 the components needed to build a complete speech recognition
 system. Namely, you will be given instructions on how to use <a
 href="#SphinxTrain">SphinxTrain</a> and you will have to choose one of
+<a href="#pocketsphinx">PocketSphinx</a>, 
 <a href="#sphinx2">SPHINX-2</a>, <a href="#sphinx3">SPHINX-3</a>, <a
 href="#sphinx3flat">SPHINX-3 Flat</a>, or <a
 href="#sphinx4">SPHINX-4</a>. Please check a <a
@@ -152,10 +153,10 @@ several important issues involved in using a real HMM-based ASR
 system.
 </p>
 
-<p><b>Important note for members of the Sphinx group</b>: since this
-tutorial does not support the PBS queue, you may want to use the
-internal, csh-based <a
-href="http://www.cs.cmu.edu/~robust/Tutorial">Robust tutorial</a>.
+<p><b>Important note for members of the Sphinx group</b>: This
+tutorial <a href="#pbs">now supports the PBS queue</a>.  The internal,
+csh-based <a href="http://www.cs.cmu.edu/~robust/Tutorial">Robust
+tutorial</a> is still available, though its use is discouraged.
 </p>
 
 <h3><a name="traincomponent"></a>Components provided for training</h3>
@@ -515,6 +516,7 @@ guide you in choosing the best one for your application. Roughly,
 these can be described as follows.</p>
 
 <ul>
+
 <li><a href="#sphinx2">SPHINX-2</a>: Uses semi-continuous HMMs. It is
 the fastest decoder we have, but since it employs an older technology,
 its accuracy is usually less than the other decoders. However, since
@@ -522,9 +524,15 @@ it has been around for longer, it has features the others still lack,
 such as dynamic language model change. Models and incoming features
 are very rigidly defined.</li>
 
+<li><a href="#pocketsphinx">PocketSphinx</a>: This is a modernized
+version of Sphinx-2, specially optimized for embedded and handheld
+systems.  It also consumes on average 20% less memory and 5-20% less
+CPU time than SPHINX-2.  However, it is under active development, so
+the interface and feature set may be unstable.</li>
+
 <li><a href="#sphinx3">SPHINX-3</a>: Uses continuous HMMs. It can
-handle both live and batch decoding. Currently, it is the decoder more
-actively changing.</li>
+handle both live and batch decoding.  Currently, it is the decoder most
+actively developed.</li>
 
 <li><a href="#sphinx3flat">SPHINX-3 Flat Decoder</a>: Uses continuous
 HMMs. <i>It has support for linux/unix only</i>. It is the most
@@ -625,6 +633,121 @@ data. Assuming your current working directory is
 <code>tutorial</code>, you will need to do the following.</p>
 <pre>
 cd sphinx2
+# If you installed AN4
+perl scripts/setup_tutorial.pl an4
+# If you installed RM1
+perl scripts/setup_tutorial.pl rm1
+</pre>
+
+<p><b><a name="pocketsphinx">PocketSphinx</b></p>
+
+<h4>Code retrieval</h4> 
+
+<p>PocketSphinx can be retrieved using <a href="#pocketsphinxsvn">subversion</a> (svn) or by
+downloading a <a href="#pocketsphinxtarball">tarball</a>. svn makes it
+easier to update the code as new changes are added to the repository,
+but requires you to install svn. The tarball is more readily
+available. PocketSphinx is also available as a <a
+href="http://sourceforge.net/project/showfiles.php?group_id=1904&package_id=1908">release</a>
+from <a href="http://sourceforge.net">SourceForge.net</a>. Since the
+release is a tarball, we will not provide separate instructions for
+installation of the release.</p>
+
+<p>You can find more information about svn at the <a
+href="http://subversion.tigris.org/">SVN Home</a>.</p>
+
+<ul>
+<li><a name="pocketsphinxsvn">Using svn
+<pre>
+svn co https://svn.sourceforge.net:/svnroot/cmusphinx/trunk/sphinxbase
+svn co https://svn.sourceforge.net:/svnroot/cmusphinx/trunk/pocketsphinx
+</pre>
+</li>
+<li><a name="pocketsphinxtarball">Using the tarball, download the <a
+href="http://cmusphinx.org/download/nightly/pocketsphinx.nightly.tar.gz">pocketsphinx</a>
+and <a
+href="http://cmusphinx.org/download/nightly/sphinxbase.nightly.tar.gz">sphinxbase</a>
+tarballs by clicking on the link and choosing "Save" when the
+dialog window appears. Save it to the same <code>tutorial</code>
+directory. Extract the contents as follows.
+<ul>
+<li>
+In Windows, using the Windows Explorer, go to the
+<code>tutorial</code> directory, right-click the sphinxbase and pocketsphinx tarballs, and
+choose "Extract to here" in the WinZip menu.
+</li>
+<li>
+In Linux/Unix:
+<pre>
+gunzip -c sphinxbase.nightly.tar.gz | tar xf -
+gunzip -c pocketsphinx.nightly.tar.gz | tar xf -
+</pre>
+</li>
+</ul>
+</li>
+</ul>
+
+<p>Further details about download options are available in the <a
+href="http://cmusphinx.org/">cmusphinx.org</a> page, under the header
+<i>Download instructions</i>
+</p>
+
+<p>By the time you finish this, you will have a <code>tutorial</code>
+directory with the following contents</p>
+<pre>
+<ul><li>tutorial<ul><li>an4</li><li>an4_sphere.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>pocketsphinx</li><li>pocketsphinx.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
+<p>Or</p>
+<pre>
+<ul><li>tutorial<ul><li>rm1</li><li>rm1_cepstra.tar.gz</li><li>SphinxTrain</li><li>SphinxTrain.nightly.tar.gz</li><li>pocketsphinx</li><li>pocketsphinx.nightly.tar.gz</li><li>sphinxbase</li><li>sphinxbase.nightly.tar.gz</li></ul></li></ul></pre>
+<h4>Compilation</h4>
+<p>In Linux/Unix:</p>
+<pre>
+cd sphinxbase
+# If you used svn, you will need to run autogen.sh, commented out
+# here. If you downloaded the tarball, you do not need to run it.
+#
+# ./autogen.sh
+./configure --enable-fixed --disable-shared
+make
+cd pocketsphinx
+# If you used svn, you will need to run autogen.sh, commented out
+# here. If you downloaded the tarball, you do not need to run it.
+#
+# ./autogen.sh
+./configure --prefix=`pwd`/build --with-sphinxbase=`pwd`/../sphinxbase --disable-shared
+make
+make install
+</pre>
+<p>In Windows:
+</p>
+<ol>
+<li>Double click the file
+<code>tutorial/sphinxbase/sphinxbase.dsw</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all libraries in the SphinxBase package.
+</li>
+<li>Double click the file
+<code>tutorial/pocketsphinx/pocketsphinx.dsw</code>. This will open MS
+Visual C++, if you have it installed. If you do not, please contact <a
+href="http://www.microsoft.com">Microsoft</a>.
+</li>
+<li>In the Menu <code>Build</code> choose <code>Batch Build</code>,
+and select all items. Click on <code>Rebuild All</code> This will
+build all executables in the PocketSphinx package.
+</li>
+</ol>
+<h4>Tutorial Setup</h4>
+
+<p>After compiling the code, you will have to setup the tutorial by
+copying all relevant executables and scripts to the same area as the
+data. Assuming your current working directory is
+<code>tutorial</code>, you will need to do the following.</p>
+<pre>
+cd pocketsphinx
 # If you installed AN4
 perl scripts/setup_tutorial.pl an4
 # If you installed RM1
@@ -909,15 +1032,42 @@ cd ..\rm1
 
 <p>
 The scripts should work "out of the box", unless you are training
-models for SPHINX-2. In this case, you have to edit the file
-<code>etc/sphinx_train.cfg</code>, uncommenting the line defining the
-variable <code>$CFG_HMM_TYPE</code> so that it looks like the box
-below.
+models for PocketSphinx or SPHINX-2. In this case, you have to edit
+the file <code>etc/sphinx_train.cfg</code>, uncommenting the line
+defining the variable <code>$CFG_HMM_TYPE</code> so that it looks like
+the box below.
 </p>
 
 <pre>
 #$CFG_HMM_TYPE = '.cont.'; # Sphinx III
 $CFG_HMM_TYPE  = '.semi.'; # Sphinx II
+</pre>
+
+<p><a name="npart"></a>
+On Linux machines, you can set up the scripts to take advantage of
+multiple CPUs.  To do this, edit <code>etc/sphinx_train.cfg</code>,
+change the line defining the variable <code>$CFG_NPART</code> to match
+the number of CPUs in your system, and edit the line defining
+<code>$CFG_QUEUE_TYPE</code> to the following:
+</p>
+
+<pre>
+# Queue::POSIX for multiple CPUs on a local machine
+# Queue::PBS to use a PBS/TORQUE queue
+$CFG_QUEUE_TYPE = "Queue::POSIX";
+</pre>
+
+<p><a name="pbs"></a>If you have a grid of computers running the <a
+href="http://www.clusterresources.com/pages/products/torque-resource-manager.php">TORQUE</a>
+or <a href="http://www.openpbs.org">PBS</a> batch system, you can
+schedule training jobs to be run on the grid by defining
+<code>$CFG_NPART</code> as noted <a href="#npart">above</a> and
+editing <code>$CFG_QUEUE_TYPE</code> like the following:
+
+<pre>
+# Queue::POSIX for multiple CPUs on a local machine
+# Queue::PBS to use a PBS/TORQUE queue
+$CFG_QUEUE_TYPE = "Queue::PBS";
 </pre>
 
 <p>
@@ -2588,7 +2738,7 @@ Gouv&ecirc;a</a>, adapted from a page created by Rita Singh</a>. For
 comments, suggestions, or questions, contact the author.<br>
 <i>
 <!-- hhmts start -->
-Last modified: Wed Dec  6 12:25:08 EST 2006
+Last modified: Mon Feb 19 22:09:07 EST 2007
 <!-- hhmts end -->
 </i>
 <br>
