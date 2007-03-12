@@ -15,9 +15,13 @@
 
 package edu.cmu.sphinx.tools.riddler.types.audio;
 
+import javax.persistence.Entity;
+
 /**
  * document me!
+ * @author Garrett Weinberg
  */
+@Entity
 public class IntAudioDescriptor extends AudioDescriptor {
 
     int[] data;
@@ -25,8 +29,8 @@ public class IntAudioDescriptor extends AudioDescriptor {
     public IntAudioDescriptor() {
     }
 
-    public IntAudioDescriptor(int samplesPerSecond, int channelCount, int[] data) {
-        super(samplesPerSecond, channelCount);
+    public IntAudioDescriptor(int samplesPerSecond, int channelCount, int[] data, String filename) {
+        super(samplesPerSecond, channelCount, filename);
         this.data = data;
     }
 

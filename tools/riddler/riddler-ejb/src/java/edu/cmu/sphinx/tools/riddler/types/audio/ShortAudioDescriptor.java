@@ -15,15 +15,19 @@
 
 package edu.cmu.sphinx.tools.riddler.types.audio;
 
+import javax.persistence.Entity;
+
 /**
  * document me!
+ * @author Garrett Weinberg
  */
+@Entity
 public class ShortAudioDescriptor extends AudioDescriptor {
 
     short[] data;
 
-    public ShortAudioDescriptor(int samplesPerSecond, int channelCount, short[] data) {
-        super(samplesPerSecond, channelCount);
+    public ShortAudioDescriptor(int samplesPerSecond, int channelCount, short[] data, String filename) {
+        super(samplesPerSecond, channelCount, filename);
         this.data = data;
     }
 

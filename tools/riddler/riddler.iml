@@ -21,9 +21,17 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="jbossWS" level="project" />
     <orderEntry type="library" name="tools-common-lib" level="project" />
-    <orderEntry type="library" name="jboss" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../common/lib/sphinx4.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="Glassfish 9.1" level="application_server_libraries" />
     <orderEntryProperties />
   </component>
 </module>

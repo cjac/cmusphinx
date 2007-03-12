@@ -15,9 +15,13 @@
 
 package edu.cmu.sphinx.tools.riddler.types.audio;
 
+import javax.persistence.Entity;
+
 /**
  * document me!
+ * @author Garrett Weinberg
  */
+@Entity
 public class FloatAudioDescriptor extends AudioDescriptor {
 
     float[] data;
@@ -25,8 +29,8 @@ public class FloatAudioDescriptor extends AudioDescriptor {
     public FloatAudioDescriptor() {
     }
 
-    public FloatAudioDescriptor(int samplesPerSecond, int channelCount, float[] data) {
-        super(samplesPerSecond, channelCount);
+    public FloatAudioDescriptor(int samplesPerSecond, int channelCount, float[] data, String filename) {
+        super(samplesPerSecond, channelCount, filename);
         this.data = data;
     }
 

@@ -262,7 +262,7 @@
       <module fileurl="file://$PROJECT_DIR$/riddler.iml" filepath="$PROJECT_DIR$/riddler.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.5" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/classes" />
   </component>
   <component name="ProjectRunConfigurationManager" />
@@ -288,10 +288,10 @@
       <CLASSES>
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/sphinx4.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/plugin.jar!/" />
-        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/dom4j-1.6.1.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/javolution.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/forms_rt.jar!/" />
         <root url="jar://C:/work/sphinx_trunk/tools/common/lib/batch.jar!/" />
+        <root url="jar://C:/work/sphinx_trunk/tools/common/lib/dom4j-1.6.1.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />

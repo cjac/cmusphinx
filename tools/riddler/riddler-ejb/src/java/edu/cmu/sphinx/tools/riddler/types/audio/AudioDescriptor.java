@@ -17,18 +17,21 @@ package edu.cmu.sphinx.tools.riddler.types.audio;
 
 /**
  * Describes an Audio record and holds its data.
- * @see edu.cmu.sphinx.tools.riddler.types.CorpusID
+ * @see edu.cmu.sphinx.tools.riddler.types.Corpus
+ * @author Garrett Weinberg
  */
 public abstract class AudioDescriptor {
     int samplesPerSecond;
     int channelCount;
+    String filename;
 
     protected AudioDescriptor() {
     }
 
-    public AudioDescriptor(int samplesPerSecond, int channelCount) {
+    public AudioDescriptor(int samplesPerSecond, int channelCount, String filename) {
         this.samplesPerSecond = samplesPerSecond;
         this.channelCount = channelCount;
+        this.filename = filename;
     }
 
     public int getSamplesPerSecond() {
@@ -45,5 +48,13 @@ public abstract class AudioDescriptor {
 
     public void setChannelCount(int channelCount) {
         this.channelCount = channelCount;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }

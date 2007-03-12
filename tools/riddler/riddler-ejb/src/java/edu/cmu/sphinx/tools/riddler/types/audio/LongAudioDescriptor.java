@@ -15,15 +15,19 @@
 
 package edu.cmu.sphinx.tools.riddler.types.audio;
 
+import javax.persistence.Entity;
+
 /**
  * document me!
+ * @author Garrett Weinberg
  */
+@Entity
 public class LongAudioDescriptor extends AudioDescriptor {
 
     long[] data;
 
-    public LongAudioDescriptor(int samplesPerSecond, int channelCount, long[] data) {
-        super(samplesPerSecond, channelCount);
+    public LongAudioDescriptor(int samplesPerSecond, int channelCount, long[] data, String filename) {
+        super(samplesPerSecond, channelCount, filename);
         this.data = data;
     }
 

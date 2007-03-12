@@ -12,156 +12,142 @@
 
 package edu.cmu.sphinx.tools.riddler.ejb;
 
-import edu.cmu.sphinx.tools.riddler.types.CorpusDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.CorpusID;
-import edu.cmu.sphinx.tools.riddler.types.DictionaryDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.DictionaryID;
-import edu.cmu.sphinx.tools.riddler.types.ItemID;
-import edu.cmu.sphinx.tools.riddler.types.PronunciationDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.PronunciationID;
-import edu.cmu.sphinx.tools.riddler.types.RegionOfAudioDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.RegionOfAudioID;
-import edu.cmu.sphinx.tools.riddler.types.RegionOfTextDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.RegionOfTextID;
-import edu.cmu.sphinx.tools.riddler.types.TextDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.audio.ByteAudioDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.audio.FloatAudioDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.audio.IntAudioDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.audio.LongAudioDescriptor;
-import edu.cmu.sphinx.tools.riddler.types.audio.ShortAudioDescriptor;
 import java.net.URI;
+import java.util.*;
 import javax.ejb.Stateless;
+import javax.ejb.Remote;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 /**
- *
+ * Stateless session bean / web service implementation of Riddler
+ * @author Garrett Weinberg
  */
 @Stateless
+@Remote(RiddlerRemote.class)
 @WebService
 public class RiddlerBean implements RiddlerRemote {
-    
-    /** Creates a new instance of RiddlerBean */
+
     public RiddlerBean() {
     }
-    
+
     @WebMethod
-    public URI trainModelsFromCorpus(CorpusID id) {
+    public URI trainModelsFromCorpus(int id) {
         return null;
     }
-    
+
     @WebMethod
-    public URI trainModelsFromCorpora(CorpusID[] IDs) {
+    public URI trainModelsFromCorpora(ArrayList<Integer> IDs) {
         return null;
     }
-    
+
     @WebMethod
-    public DictionaryID createDictionary(DictionaryDescriptor desc) {
+    public int createDictionary(MetadataWrapper metadata) {
+        return 0;
+    }
+
+    @WebMethod
+    public int getDictionary(MetadataWrapper metadata) {
+        return 0;
+    }
+
+    @WebMethod
+    public MetadataWrapper getDictionaryMetadata(int id) {
         return null;
     }
-    
+
     @WebMethod
-    public DictionaryID getDictionary(DictionaryDescriptor desc) {
-        return null;
+    public int createPronuncation(int id, String word, ArrayList<String> pronunciations) {
+        return 0;
     }
-    
+
     @WebMethod
-    public DictionaryDescriptor getDictionaryDescriptor(DictionaryID id) {
-        return null;
+    public boolean hasPronuncation(int id, String word) {
+        return false;
     }
-    
+
     @WebMethod
-    public PronunciationID createPronuncation(DictionaryID id, PronunciationDescriptor desc) {
-        return null; 
+    public int createCorpus(int dictId, MetadataWrapper metadata, Date collectDate) {
+        return 0;
     }
-    
+
     @WebMethod
-    public boolean hasPronuncation(DictionaryID id, String word) {
-        return false; 
+    public int createItem(int corpusId) {
+        return 0;
     }
-    
+
     @WebMethod
-    public CorpusID createCorpus(DictionaryID dictId, CorpusDescriptor desc) {
-        return null; 
+    public int createItemWithShortAudio(int corpusId, int samplesPerSecond, int channelCount, short[] data) {
+        return 0;
     }
-    
+
     @WebMethod
-    public CorpusDescriptor getCorpusDescriptor(CorpusID id) {
-        return null;
+    public int createItemWithByteAudio(int corpusId, int samplesPerSecond, int channelCount, byte[] data) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItem(CorpusID corpusId) {
-        return null; 
+    public int createItemWithIntAudio(int corpusId, int samplesPerSecond, int channelCount, int[] data) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithByteAudio(CorpusID corpusId, ByteAudioDescriptor desc) {
-        return null; 
+    public int createItemWithLongAudio(int corpusId, int samplesPerSecond, int channelCount, long[] data) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithShortAudio(CorpusID corpusId, ShortAudioDescriptor desc) {
-        return null; 
+    public int createItemWithFloatAudio(int corpusId, int samplesPerSecond, int channelCount, float[] data) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithIntAudio(CorpusID corpusId, IntAudioDescriptor desc) {
-        return null; 
+    public int createItemWithText(int corpusId, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithLongAudio(CorpusID corpusId, LongAudioDescriptor desc) {
-        return null; 
+    public int createItemWithShortAudioAndText(int corpusId, int samplesPerSecond, int channelCount, short[] data, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithFloatAudio(CorpusID corpusId, FloatAudioDescriptor desc) {
-        return null; 
+    public int createItemWithByteAudioAndText(int corpusId, int samplesPerSecond, int channelCount, byte[] data, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithText(CorpusID corpusId, TextDescriptor desc) {
-        return null; 
+    public int createItemWithIntAudioAndText(int corpusId, int samplesPerSecond, int channelCount, int[] data, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithShortAudioAndText(CorpusID corpusId, ShortAudioDescriptor audioDesc, TextDescriptor textDesc) {
-        return null; 
+    public int createItemWithLongAudioAndText(int corpusId, int samplesPerSecond, int channelCount, long[] data, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithByteAudioAndText(CorpusID corpusId, ByteAudioDescriptor audioDesc, TextDescriptor textDesc) {
-        return null; 
+    public int createItemWithFloatAudioAndText(int corpusId, int samplesPerSecond, int channelCount, float[] data, ArrayList<String> words) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithIntAudioAndText(CorpusID corpusId, IntAudioDescriptor audioDesc, TextDescriptor textDesc) {
-        return null; 
+    public int createTextRegion(int id, int startIndex, int endIndex) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithLongAudioAndText(CorpusID corpusId, LongAudioDescriptor audioDesc, TextDescriptor textDesc) {
-        return null; 
+    public int createAudioRegion(int id, int beginTime, int endTime) {
+        return 0;
     }
-    
+
     @WebMethod
-    public ItemID createItemWithFloatAudioAndText(CorpusID corpusId, FloatAudioDescriptor audioDesc, TextDescriptor textDesc) {
-        return null; 
+    public int createAudioRegionWithText(int itemID, int beginTime, int endTime, int startIndex, int endIndex) {
+        return 0;
     }
-    
+
     @WebMethod
-    public RegionOfTextID createTextRegion(ItemID id, RegionOfTextDescriptor desc) {
-        return null; 
+    public void associateAudioRegionWithText(int audioID, int textID) {
+
     }
-    
-    @WebMethod
-    public RegionOfAudioID createAudioRegion(ItemID id, RegionOfAudioDescriptor desc) {
-        return null; 
-    }
-    
-    @WebMethod
-    public RegionOfAudioID createAudioRegionWithText(ItemID id, RegionOfTextID textRegionID, RegionOfAudioDescriptor audioDesc) {
-        return null; 
-    }    
 }

@@ -22,29 +22,17 @@ namespace edu.cmu.sphinx.riddler
 		/// 
 		/// </summary>
 		///
-		[Test] public void CreateDictionaryAndCorpus() 
+		[Test] public void CreateDictionary() 
 		{
-            dictionaryDescriptor did = new dictionaryDescriptor();
-            dictionaryDescriptorEntry dictMetadatum = new dictionaryDescriptorEntry();
-            dictMetadatum.key = "SomeKey";
-            dictMetadatum.value = "SomeValue";
-            did.metadata = new dictionaryDescriptorEntry[] { dictMetadatum };
-            dictionaryID dictID = riddler.createDictionary(did);
-            
-            Assert.AreEqual(dictID, riddler.getDictionary(did));
+            metadataWrapper mdw = new metadataWrapper();
+            metadataWrapperEntry datum = new metadataWrapperEntry();
+            datum.key = "SomeKey";
+            datum.value = "SomeValue";
+            mdw.contents = new metadataWrapperEntry[] { datum };
 
-            corpusDescriptor cod = new corpusDescriptor();
-            cod.collectDate = DateTime.Today;
-            corpusDescriptorEntry corpMetadatum = new corpusDescriptorEntry();
-            corpMetadatum.key = "SomeKey";
-            corpMetadatum.value = "SomeValue";
-            cod.metadata = new corpusDescriptorEntry[] { corpMetadatum };
-            corpusID corpID = riddler.createCorpus(dictID, cod);
-
-            corpusDescriptor fetched = riddler.getCorpusDescriptor(corpID);
-            Assert.AreEqual(cod, fetched);
-            Assert.AreEqual(cod.metadata, fetched.metadata);
-            Assert.AreEqual(cod.collectDate, fetched.collectDate);
+            int dictId = riddler.createDictionary(mdw);
+            int retrieved = riddler.getDictionary(mdw);
+            Assert.AreEqual(dictId, retrieved);
 		}
 
 		[Test]
