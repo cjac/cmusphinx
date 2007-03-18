@@ -29,13 +29,21 @@ import java.util.Map;
  */
 @Entity
 public class Corpus {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
+    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER, mappedBy = "corpus")
     private List<Item> items;
+
+    @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     private Dictionary dictionary;
+
     private Date collectDate;
     private Map<String, String> metadata;
 
-    public Corpus(int id, List<Item> items, Dictionary dictionary, Date collectDate, Map<String, String> metadata) {
+    public Corpus(long id, List<Item> items, Dictionary dictionary, Date collectDate, Map<String, String> metadata) {
         this.id = id;
         this.items = items;
         this.dictionary = dictionary;
@@ -46,17 +54,14 @@ public class Corpus {
     public Corpus() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER, mappedBy = "corpus")
     public List<Item> getItems() {
         return items;
     }
@@ -65,7 +70,6 @@ public class Corpus {
         this.items = items;
     }
 
-    @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     public Dictionary getDictionary() {
         return dictionary;
     }

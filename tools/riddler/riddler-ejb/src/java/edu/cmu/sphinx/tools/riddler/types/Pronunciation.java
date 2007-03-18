@@ -27,11 +27,15 @@ import java.util.List;
  */
 @Entity
 public class Pronunciation {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
     private String word;
     private List<String> variants;
 
-    public Pronunciation(int id, String word, List<String> variants) {
+    public Pronunciation(long id, String word, List<String> variants) {
         this.id = id;
         this.word = word;
         this.variants = variants;
@@ -40,13 +44,11 @@ public class Pronunciation {
     public Pronunciation() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

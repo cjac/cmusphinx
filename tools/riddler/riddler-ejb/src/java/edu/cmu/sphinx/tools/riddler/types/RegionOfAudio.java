@@ -24,36 +24,40 @@ import javax.persistence.*;
 @Entity
 public class RegionOfAudio {
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
     private int beginTime;
     private int endTime;
+
+    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private RegionOfText textRegion;
+
     /**
      * parent reference, for bi-directional fetching
      */
+    @ManyToOne
     private Audio audio;
 
     protected RegionOfAudio() {
     }
 
-    public RegionOfAudio(int id, int beginTime, int endTime, RegionOfText textRegion) {
+    public RegionOfAudio(long id, int beginTime, int endTime, RegionOfText textRegion) {
         this.id = id;
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.textRegion = textRegion;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    @ManyToOne
     public Audio getAudio() {
         return audio;
     }
@@ -78,7 +82,6 @@ public class RegionOfAudio {
         this.endTime = endTime;
     }
 
-    @OneToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     public RegionOfText getTextRegion() {
         return textRegion;
     }

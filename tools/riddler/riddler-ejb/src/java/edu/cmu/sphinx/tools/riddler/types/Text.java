@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Entity
 public class Text {
-    private int id;
+    private long id;
     private List<RegionOfText> textRegions;
     private List<String> words;
     /**
@@ -35,7 +35,7 @@ public class Text {
      */
     private Item item;
 
-    public Text(int id, List<RegionOfText> textRegions, List<String> words) {
+    public Text(long id, List<RegionOfText> textRegions, List<String> words) {
         this.id = id;
         this.textRegions = textRegions;
         this.words = words;
@@ -45,12 +45,12 @@ public class Text {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

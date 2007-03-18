@@ -26,11 +26,17 @@ import java.util.Map;
  */
 @Entity
 public class Dictionary {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Pronunciation> prons;
+
     private Map<String, String> metadata;
 
-    public Dictionary(int id, List<Pronunciation> prons, Map<String, String> metadata) {
+    public Dictionary(long id, List<Pronunciation> prons, Map<String, String> metadata) {
         this.id = id;
         this.prons = prons;
         this.metadata = metadata;
@@ -39,17 +45,14 @@ public class Dictionary {
     public Dictionary() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public List<Pronunciation> getProns() {
         return prons;
     }

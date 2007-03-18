@@ -24,15 +24,20 @@ import javax.persistence.*;
 @Entity
 public class RegionOfText {
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
     private int startIndex;
     private int endIndex;
+
     /**
      * parent reference, for bi-directional fetching
      */
+    @ManyToOne
     private Text text;
 
-    public RegionOfText(int id, int startIndex, int endIndex) {
+    public RegionOfText(long id, int startIndex, int endIndex) {
         this.id = id;
         this.startIndex = startIndex;
         this.endIndex = endIndex;
@@ -41,13 +46,11 @@ public class RegionOfText {
     protected RegionOfText() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

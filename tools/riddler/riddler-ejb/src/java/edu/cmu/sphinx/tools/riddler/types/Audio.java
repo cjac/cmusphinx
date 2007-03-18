@@ -27,15 +27,23 @@ import java.util.List;
  */
 @Entity
 public class Audio {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private AudioDescriptor audioDescriptor;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="audio")
     private List<RegionOfAudio> audioRegions;
+
     /**
      * parent reference, for bi-directional fetching
      */
+    @OneToOne
     private Item item;
 
-    public Audio(int id, AudioDescriptor audioDescriptor, List<RegionOfAudio> audioRegions) {
+    public Audio(long id, AudioDescriptor audioDescriptor, List<RegionOfAudio> audioRegions) {
         this.id = id;
         this.audioDescriptor = audioDescriptor;
         this.audioRegions = audioRegions;
@@ -44,17 +52,14 @@ public class Audio {
     public Audio() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="audio")
     public List<RegionOfAudio> getAudioRegions() {
         return audioRegions;
     }
@@ -63,7 +68,6 @@ public class Audio {
         this.audioRegions = audioRegions;
     }
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     public AudioDescriptor getAudioDescriptor() {
         return audioDescriptor;
     }
@@ -72,7 +76,6 @@ public class Audio {
         this.audioDescriptor = audioDescriptor;
     }
 
-    @OneToOne
     public Item getItem() {
         return item;
     }

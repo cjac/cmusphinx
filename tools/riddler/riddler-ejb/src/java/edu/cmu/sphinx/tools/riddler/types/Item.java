@@ -28,15 +28,24 @@ import javax.persistence.*;
  */
 @Entity
 public class Item {
-    private int id;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "item")
     private Audio audio;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "item")
     private Text text;
+
     /**
      * parent reference, for bi-directional fetching
      */
+    @ManyToOne
     private Corpus corpus;
 
-    public Item(int id, Audio audio, Text text) {
+    public Item(long id, Audio audio, Text text) {
         this.id = id;
         this.audio = audio;
         this.text = text;
@@ -45,17 +54,14 @@ public class Item {
     public Item() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "item")
     public Audio getAudio() {
         return audio;
     }
@@ -64,7 +70,6 @@ public class Item {
         this.audio = audio;
     }
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "item")
     public Text getText() {
         return text;
     }
@@ -73,7 +78,6 @@ public class Item {
         this.text = text;
     }
 
-    @ManyToOne
     public Corpus getCorpus() {
         return corpus;
     }
