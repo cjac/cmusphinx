@@ -122,40 +122,4 @@
             <testassembly name="${distDir}/riddler-tests.dll"/>
         </nunit>
     </target>
-
-    <target name="start-domain" depends="start-domain.win,start-domain.other"
-            description="container target to start Glassfish"/>
-
-    <target name="start-domain.win" if="onWindows">
-        <exec executable="cmd.exe">
-            <arg value="/C"/>
-            <arg value="asadmin.bat"/>
-            <arg value="start-domain"/>
-            <arg value="domain1"/>
-        </exec>
-    </target>
-
-    <target name="start-domain.other" unless="onWindows">
-        <exec executable="asadmin.sh">
-            <arg value="start-domain"/>
-            <arg value="domain1"/>
-        </exec>
-    </target>
-
-    <target name="stop-domain" depends="stop-domain.win,stop-domain.other"
-            description="container target to stop Glassfish"/>
-
-    <target name="stop-domain.win" if="onWindows">
-        <exec executable="cmd.exe">
-            <arg value="/C"/>
-            <arg value="asadmin.bat"/>
-            <arg value="stop-domain"/>
-        </exec>
-    </target>
-
-    <target name="stop-domain.other" unless="onWindows">
-        <exec executable="asadmin.sh">
-            <arg value="stop-domain"/>
-        </exec>
-    </target>
 </project>
