@@ -17,6 +17,7 @@ package edu.cmu.sphinx.tools.riddler.types;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A text record's unique identifier. Text records belong to an Item and consist of one or more
@@ -27,16 +28,22 @@ import java.util.List;
  */
 @Entity
 public class Text {
-    private long id;
-    private List<RegionOfText> textRegions;
-    private List<String> words;
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private String id;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="text")
+    private List<RegionOfText> textRegions = new ArrayList<RegionOfText>();
+
+    @Lob @Basic
+    private List<String> words = new ArrayList<String>();
     /**
      * parent reference, for bi-directional fetching
      */
+    @OneToOne
     private Item item;
 
-    public Text(long id, List<RegionOfText> textRegions, List<String> words) {
-        this.id = id;
+    public Text(List<RegionOfText> textRegions, List<String> words) {
         this.textRegions = textRegions;
         this.words = words;
     }
@@ -44,17 +51,14 @@ public class Text {
     public Text() {
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="text")
     public List<RegionOfText> getTextRegions() {
         return textRegions;
     }
@@ -63,7 +67,6 @@ public class Text {
         this.textRegions = textRegions;
     }
 
-    @OneToOne
     public Item getItem() {
         return item;
     }

@@ -18,6 +18,9 @@ package edu.cmu.sphinx.tools.riddler.types;
 import javax.persistence.*;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.awt.*;
 
 /**
  * A Dictionary's unique identifier.  A Dictionary consists of Pronunciation records.
@@ -25,31 +28,32 @@ import java.util.Map;
  * @author Garrett Weinberg
  */
 @Entity
+@NamedQuery(name = "findDictionaryByMetadata", query = "SELECT DISTINCT d FROM Dictionary d WHERE d.metadata = :metadata")
 public class Dictionary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Pronunciation> prons;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "dictionary")
+    private List<Pronunciation> prons = new ArrayList<Pronunciation>();
 
-    private Map<String, String> metadata;
+    @Lob @Basic
+    private Map<String, String> metadata = new HashMap<String, String>();
 
-    public Dictionary(long id, List<Pronunciation> prons, Map<String, String> metadata) {
-        this.id = id;
+    public Dictionary(List<Pronunciation> prons, Map<String, String> metadata) {
         this.prons = prons;
-        this.metadata = metadata;
+        this.metadata = metadata;        
     }
 
     public Dictionary() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -67,5 +71,9 @@ public class Dictionary {
 
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
+    }
+
+    public String toString() {
+        return "Dictionary " + super.toString() + " with ID " + id + " and metadata " + metadata;
     }
 }

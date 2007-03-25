@@ -41,4 +41,8 @@ public class MetadataWrapper {
     public void setContents(Map<String, String> contents) {
         this.contents = contents;
     }
+
+    public String toString() {
+        return contents.toString();
+    }
 }

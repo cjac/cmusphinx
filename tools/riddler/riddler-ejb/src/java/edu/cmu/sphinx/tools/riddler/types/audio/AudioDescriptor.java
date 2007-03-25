@@ -15,17 +15,14 @@
 
 package edu.cmu.sphinx.tools.riddler.types.audio;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.Id;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 
 /**
  * Describes an Audio record and holds its data.
  * @see edu.cmu.sphinx.tools.riddler.types.Corpus
  * @author Garrett Weinberg
  */
-@MappedSuperclass
+@Entity
 public abstract class AudioDescriptor {
     protected int samplesPerSecond;
     protected int channelCount;
@@ -33,7 +30,7 @@ public abstract class AudioDescriptor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    protected long id;
+    protected String id;
 
     protected AudioDescriptor() {
     }
@@ -44,11 +41,11 @@ public abstract class AudioDescriptor {
         this.filename = filename;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

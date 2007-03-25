@@ -26,48 +26,46 @@ public interface RiddlerRemote {
      * @param corpusID Corpus from which the models should be trained
      * @return a URI pointing to an RSS feed that will contain the models matching this request
      */
-    public URI trainModelsFromCorpus(long corpusID);
+    public URI trainModelsFromCorpus(String corpusID);
 
     /**
      * Kick off a model training operation that uses multiple Corpora
      * @param corpusIDs Corpora from which the models should be trained
      * @return a URI pointing to an RSS feed that will contain the models matching this request
      */
-    public URI trainModelsFromCorpora(ArrayList<Integer> corpusIDs);
+    public URI trainModelsFromCorpora(ArrayList<String> corpusIDs);
 
     /**
      * Get a valid identifier for a new Dictionary
      * @return the new Dictionary's identifier
-     * @throws RemoteException if a Dictionary with the given metadata already exists
-     * @param metadata a map of metadata about the Dictionary
+     * @throws RemoteException if a Dictionary with the given metadata already exists @param metadata a map of metadata about the Dictionary
      */
-    public long createDictionary(MetadataWrapper metadata);
+    public String createDictionary(MetadataWrapper metadata) throws RemoteException;
 
     /**
      * Get a Dictionary matching the provided descriptor
      * @return the existing Dictionary's identifier
-     * @throws RemoteException if no Dictionary matching the metadata exists
-     * @param metadata metadata for the Dictionary you're trying to retrieve
+     * @throws RemoteException if no Dictionary matching the metadata exists @param metadata metadata for the Dictionary you're trying to retrieve
      */
-    public long getDictionary(MetadataWrapper metadata);
+    public String getDictionary(MetadataWrapper metadata) throws RemoteException;
 
     /**
      * Fetch the DictionaryDescriptor matching the provided ID
      * @param dictionaryID an existing Dictionary identifier
      * @return the metadata provided when the given Dictionary was created
+     * @throws java.rmi.RemoteException if the provided ID is invalid
      */
-    public MetadataWrapper getDictionaryMetadata(long dictionaryID);
+    public MetadataWrapper getDictionaryMetadata(String dictionaryID) throws RemoteException;
 
     /**
      * Create a Pronunciation record (case insensitive).
      * @return the new Pronunciation's identifier
      * @throws RemoteException if the word contained in the given PronunciationDescriptor already
-     * has an entry in the given dictionary
-     * @param dictionaryID Dictionary in which the entry should be created
+     * has an entry in the given dictionary @param dictionaryID Dictionary in which the entry should be created
      * @param word the word to be added to the specified dictionary
      * @param pronunciations main and any variant pronunciations of the word
      */
-    public long createPronuncation(long dictionaryID, String word, ArrayList<String> pronunciations);
+    public String addPronuncations(String dictionaryID, String word, ArrayList<String> pronunciations) throws RemoteException;
 
     /**
      * Check whether a Pronunciation record exists for the given word (case insensitive)
@@ -75,7 +73,7 @@ public interface RiddlerRemote {
      * @param word word that should be queried
      * @return true if the word has at least one pronunciation
      */
-    public boolean hasPronuncation(long dictionaryID, String word);
+    public boolean hasPronuncation(String dictionaryID, String word) throws RemoteException;
 
     /**
      * Get a valid identifier for a new Corpus
@@ -85,7 +83,7 @@ public interface RiddlerRemote {
      * @param collectDate date with which this corpus should be associated (e.g. date when data collection
      * began or ended)
      */
-    public long createCorpus(long dictionaryID, MetadataWrapper metadata, Date collectDate);
+    public String createCorpus(String dictionaryID, MetadataWrapper metadata, Date collectDate);
 
     /**
      * Deeply create a new, empty Item record associated with the given Corpus.
@@ -94,7 +92,7 @@ public interface RiddlerRemote {
      * @param corpusId Corpus to which the Item should be added
      * @return the ID of an Item with valid deep linkages to its newly-created component records
      */
-    public long createItem(long corpusId);
+    public String createItem(String corpusId);
 
     /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
@@ -104,7 +102,7 @@ public interface RiddlerRemote {
      * @param channelCount number of audio channels
      * @param data audio data itself
      */
-    public long createItemWithShortAudio(long corpusId, int samplesPerSecond, int channelCount, short[] data);
+    public String createItemWithShortAudio(String corpusId, int samplesPerSecond, int channelCount, short[] data);
 
     /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.     
@@ -114,7 +112,7 @@ public interface RiddlerRemote {
      * @param channelCount number of audio channels
      * @param data audio data itself
      */
-    public long createItemWithByteAudio(long corpusId, int samplesPerSecond, int channelCount, byte[] data);
+    public String createItemWithByteAudio(String corpusId, int samplesPerSecond, int channelCount, byte[] data);
 
     /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
@@ -124,7 +122,7 @@ public interface RiddlerRemote {
      * @param channelCount number of audio channels
      * @param data audio data itself
      */
-    public long createItemWithIntAudio(long corpusId, int samplesPerSecond, int channelCount, int[] data);
+    public String createItemWithIntAudio(String corpusId, int samplesPerSecond, int channelCount, int[] data);
 
     /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
@@ -134,7 +132,7 @@ public interface RiddlerRemote {
      * @param channelCount number of audio channels
      * @param data audio data itself
      */
-    public long createItemWithLongAudio(long corpusId, int samplesPerSecond, int channelCount, long[] data);
+    public String createItemWithLongAudio(String corpusId, int samplesPerSecond, int channelCount, long[] data);
 
     /**
      * Deeply create a new Item record with exactly one Audio record containing one RegionOfAudio.
@@ -144,7 +142,7 @@ public interface RiddlerRemote {
      * @param channelCount number of audio channels
      * @param data audio data itself
      */
-    public long createItemWithFloatAudio(long corpusId, int samplesPerSecond, int channelCount, float[] data);
+    public String createItemWithFloatAudio(String corpusId, int samplesPerSecond, int channelCount, float[] data);
 
     /**
      * Deeply create a new Item record with exactly one Text record containing one RegionOfText.
@@ -155,7 +153,7 @@ public interface RiddlerRemote {
      * @param words text with which the Item should be created; note that a List is used
      * because not all languages use spaces consistently as word delimiters
      */
-    public long createItemWithText(long corpusId, ArrayList<String> words);
+    public String createItemWithText(String corpusId, ArrayList<String> words);
 
     /**
      * Deeply create a new Item record with one Audio record and one Text record.  The Audio
@@ -170,7 +168,7 @@ public interface RiddlerRemote {
      * @param data audio data itself
      * @param words transcript of the audio being sent
      */
-    public long createItemWithShortAudioAndText(long corpusId, int samplesPerSecond, int channelCount, short[] data, ArrayList<String> words);
+    public String createItemWithShortAudioAndText(String corpusId, int samplesPerSecond, int channelCount, short[] data, ArrayList<String> words);
 
     /**
      * Deeply create a new Item record with one Audio record and one Text record.  The Audio
@@ -185,7 +183,7 @@ public interface RiddlerRemote {
      * @param data audio data itself
      * @param words transcript of the audio being sent
      */
-    public long createItemWithByteAudioAndText(long corpusId,  int samplesPerSecond, int channelCount, byte[] data, ArrayList<String> words);
+    public String createItemWithByteAudioAndText(String corpusId,  int samplesPerSecond, int channelCount, byte[] data, ArrayList<String> words);
 
     /**
      * Deeply create a new Item record with one Audio record and one Text record.  The Audio
@@ -200,7 +198,7 @@ public interface RiddlerRemote {
      * @param data audio data itself
      * @param words transcript of the audio being sent
      */
-    public long createItemWithIntAudioAndText(long corpusId,  int samplesPerSecond, int channelCount, int[] data, ArrayList<String> words);
+    public String createItemWithIntAudioAndText(String corpusId,  int samplesPerSecond, int channelCount, int[] data, ArrayList<String> words);
 
     /**
      * Deeply create a new Item record with one Audio record and one Text record.  The Audio
@@ -215,7 +213,7 @@ public interface RiddlerRemote {
      * @param data audio data itself
      * @param words transcript of the audio being sent
      */
-    public long createItemWithLongAudioAndText(long corpusId,  int samplesPerSecond, int channelCount, long[] data, ArrayList<String> words);
+    public String createItemWithLongAudioAndText(String corpusId,  int samplesPerSecond, int channelCount, long[] data, ArrayList<String> words);
 
     /**
      * Deeply create a new Item record with one Audio record and one Text record.  The Audio
@@ -230,7 +228,7 @@ public interface RiddlerRemote {
      * @param data audio data itself
      * @param words transcript of the audio being sent
      */
-    public long createItemWithFloatAudioAndText(long corpusId,  int samplesPerSecond, int channelCount, float[] data, ArrayList<String> words);
+    public String createItemWithFloatAudioAndText(String corpusId,  int samplesPerSecond, int channelCount, float[] data, ArrayList<String> words);
 
     /**
      * Add a RegionOfText to the given Item
@@ -238,9 +236,9 @@ public interface RiddlerRemote {
      * @param itemID Item record to which the new RegionOfText should be added
      * @param startIndex index of the word at which this text region begins
      * @param endIndex index of the word at which this text region ends
-     * @see RiddlerRemote#createItemWithText(long, java.util.ArrayList)
+     * @see RiddlerRemote#createItemWithText(String, java.util.ArrayList)
      */
-    public long createTextRegion(long itemID, int startIndex, int endIndex);
+    public String createTextRegion(String itemID, int startIndex, int endIndex);
 
     /**
      * Add a RegionOfAudio to the given Item
@@ -249,7 +247,7 @@ public interface RiddlerRemote {
      * @param beginTime time (in milliseconds) within the parent Audio record when this region begins
      * @param endTime time (in milliseconds) within the parent Audio record when this region ends
      */
-    public long createAudioRegion(long itemID, int beginTime, int endTime);
+    public String createAudioRegion(String itemID, int beginTime, int endTime);
 
     /**
      * Add a RegionOfAudio to the given Item, associating it with the given RegionOfText
@@ -260,7 +258,7 @@ public interface RiddlerRemote {
      * @param startIndex index of the word at which this text region begins
      * @param endIndex index of the word at which this text region ends
      */
-    public long createAudioRegionWithText(long itemID, int beginTime, int endTime, int startIndex, int endIndex);
+    public String createAudioRegionWithText(String itemID, int beginTime, int endTime, int startIndex, int endIndex);
 
     /**
      * Link a pre-existing audio region to a pre-existing text region
@@ -268,5 +266,5 @@ public interface RiddlerRemote {
      * @param textID ID of a Text record
      * @throws RemoteException if either the audio or text ID's are invalid
      */
-    public void associateAudioRegionWithText(long audioID, long textID);
+    public void associateAudioRegionWithText(String audioID, String textID);
 }

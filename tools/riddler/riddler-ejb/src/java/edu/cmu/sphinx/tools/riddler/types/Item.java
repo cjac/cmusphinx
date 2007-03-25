@@ -31,7 +31,7 @@ public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "item")
     private Audio audio;
@@ -45,8 +45,7 @@ public class Item {
     @ManyToOne
     private Corpus corpus;
 
-    public Item(long id, Audio audio, Text text) {
-        this.id = id;
+    public Item(Audio audio, Text text) {
         this.audio = audio;
         this.text = text;
     }
@@ -54,11 +53,11 @@ public class Item {
     public Item() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

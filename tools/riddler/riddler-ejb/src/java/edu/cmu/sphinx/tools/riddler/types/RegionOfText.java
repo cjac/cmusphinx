@@ -26,7 +26,7 @@ public class RegionOfText {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     private int startIndex;
     private int endIndex;
@@ -37,8 +37,7 @@ public class RegionOfText {
     @ManyToOne
     private Text text;
 
-    public RegionOfText(long id, int startIndex, int endIndex) {
-        this.id = id;
+    public RegionOfText(int startIndex, int endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
     }
@@ -46,11 +45,11 @@ public class RegionOfText {
     protected RegionOfText() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

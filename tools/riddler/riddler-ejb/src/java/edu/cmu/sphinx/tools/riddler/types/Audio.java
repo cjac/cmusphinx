@@ -19,6 +19,7 @@ import edu.cmu.sphinx.tools.riddler.types.audio.AudioDescriptor;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Unique identifier for a piece of audio data.  Audio data belongs to an Item and consists of one or more
@@ -29,13 +30,13 @@ import java.util.List;
 public class Audio {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private AudioDescriptor audioDescriptor;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="audio")
-    private List<RegionOfAudio> audioRegions;
+    private List<RegionOfAudio> audioRegions = new ArrayList<RegionOfAudio>();
 
     /**
      * parent reference, for bi-directional fetching
@@ -43,8 +44,7 @@ public class Audio {
     @OneToOne
     private Item item;
 
-    public Audio(long id, AudioDescriptor audioDescriptor, List<RegionOfAudio> audioRegions) {
-        this.id = id;
+    public Audio(AudioDescriptor audioDescriptor, ArrayList<RegionOfAudio> audioRegions) {
         this.audioDescriptor = audioDescriptor;
         this.audioRegions = audioRegions;
     }
@@ -52,11 +52,11 @@ public class Audio {
     public Audio() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -64,7 +64,7 @@ public class Audio {
         return audioRegions;
     }
 
-    public void setAudioRegions(List<RegionOfAudio> audioRegions) {
+    public void setAudioRegions(ArrayList<RegionOfAudio> audioRegions) {
         this.audioRegions = audioRegions;
     }
 

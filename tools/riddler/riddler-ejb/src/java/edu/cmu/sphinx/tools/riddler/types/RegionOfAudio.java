@@ -26,7 +26,7 @@ public class RegionOfAudio {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     private int beginTime;
     private int endTime;
@@ -43,18 +43,17 @@ public class RegionOfAudio {
     protected RegionOfAudio() {
     }
 
-    public RegionOfAudio(long id, int beginTime, int endTime, RegionOfText textRegion) {
-        this.id = id;
+    public RegionOfAudio(int beginTime, int endTime, RegionOfText textRegion) {
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.textRegion = textRegion;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

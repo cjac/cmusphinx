@@ -16,9 +16,7 @@
 package edu.cmu.sphinx.tools.riddler.types;
 
 import javax.persistence.*;
-import java.util.List;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A Corpus' unique identifier.  A Corpus consists of Items and has an associated Dictionary
@@ -32,19 +30,21 @@ public class Corpus {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER, mappedBy = "corpus")
-    private List<Item> items;
+    private List<Item> items = new ArrayList<Item>();
 
     @OneToOne(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
     private Dictionary dictionary;
 
+    @Temporal(value = TemporalType.DATE)
     private Date collectDate;
-    private Map<String, String> metadata;
 
-    public Corpus(long id, List<Item> items, Dictionary dictionary, Date collectDate, Map<String, String> metadata) {
-        this.id = id;
+    @Lob @Basic
+    private Map<String, String> metadata = new HashMap<String, String>();
+
+    public Corpus(List<Item> items, Dictionary dictionary, Date collectDate, Map<String, String> metadata) {
         this.items = items;
         this.dictionary = dictionary;
         this.collectDate = collectDate;
@@ -54,11 +54,11 @@ public class Corpus {
     public Corpus() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

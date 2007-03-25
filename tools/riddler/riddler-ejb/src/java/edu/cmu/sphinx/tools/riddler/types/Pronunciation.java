@@ -15,28 +15,31 @@
 
 package edu.cmu.sphinx.tools.riddler.types;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A pronunciation record, containing a word and its one or more variant pronunciations.
  * @author Garrett Weinberg
  */
 @Entity
+@NamedQuery(name = "findPronunciationByWord",
+        query = "SELECT DISTINCT p FROM Pronunciation p WHERE p.word = :word AND p.dictionary = :dictionary")
 public class Pronunciation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
-    private long id;
+    private String id;
 
     private String word;
-    private List<String> variants;
+    @Lob @Basic
+    private Set<String> variants = new HashSet<String>();
+    @ManyToOne
+    private Dictionary dictionary;
 
-    public Pronunciation(long id, String word, List<String> variants) {
-        this.id = id;
+    public Pronunciation(String word, Set<String> variants) {
         this.word = word;
         this.variants = variants;
     }
@@ -44,11 +47,11 @@ public class Pronunciation {
     public Pronunciation() {
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -60,11 +63,19 @@ public class Pronunciation {
         this.word = word;
     }
 
-    public List<String> getVariants() {
+    public Set<String> getVariants() {
         return variants;
     }
 
-    public void setVariants(List<String> variants) {
+    public void setVariants(Set<String> variants) {
         this.variants = variants;
+    }
+
+    public Dictionary getDictionary() {
+        return dictionary;
+    }
+
+    public void setDictionary(Dictionary dictionary) {
+        this.dictionary = dictionary;
     }
 }
