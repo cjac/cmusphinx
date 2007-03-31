@@ -1,7 +1,7 @@
 package edu.cmu.sphinx.tools.datacollection.client;
 
+import edu.cmu.sphinx.frontend.util.VUMeter;
 import edu.cmu.sphinx.tools.audio.Player;
-import edu.cmu.sphinx.tools.audio.VUMeter;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 import netscape.javascript.JSObject;
@@ -10,8 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;

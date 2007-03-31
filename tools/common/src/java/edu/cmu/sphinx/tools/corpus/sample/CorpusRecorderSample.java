@@ -1,13 +1,13 @@
 package edu.cmu.sphinx.tools.corpus.sample;
 
-import edu.cmu.sphinx.tools.audio.Recorder;
+import edu.cmu.sphinx.frontend.util.VUMeter;
 import edu.cmu.sphinx.tools.audio.Player;
-import edu.cmu.sphinx.tools.audio.VUMeter;
+import edu.cmu.sphinx.tools.audio.Recorder;
 import edu.cmu.sphinx.tools.corpus.Corpus;
-import edu.cmu.sphinx.tools.corpus.Utterance;
 import edu.cmu.sphinx.tools.corpus.RegionOfAudioData;
-import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLWriter;
+import edu.cmu.sphinx.tools.corpus.Utterance;
 import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLReader;
+import edu.cmu.sphinx.tools.corpus.xml.CorpusXMLWriter;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 

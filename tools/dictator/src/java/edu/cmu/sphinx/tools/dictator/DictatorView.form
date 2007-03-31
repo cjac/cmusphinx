@@ -43,7 +43,7 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="818db" class="edu.cmu.sphinx.tools.dictator.VUMeterPanel" binding="vu">
+              <component id="818db" class="edu.cmu.sphinx.frontend.util.VUMeterPanel" binding="vu">
                 <constraints>
                   <xy x="0" y="0" width="20" height="300"/>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0">

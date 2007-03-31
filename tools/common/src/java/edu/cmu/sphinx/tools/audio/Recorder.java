@@ -4,6 +4,7 @@ import edu.cmu.sphinx.frontend.Data;
 import edu.cmu.sphinx.frontend.DataProcessingException;
 import edu.cmu.sphinx.frontend.DoubleData;
 import edu.cmu.sphinx.frontend.util.Microphone;
+import edu.cmu.sphinx.frontend.util.VUMeter;
 import edu.cmu.sphinx.tools.corpus.AudioDatabase;
 import edu.cmu.sphinx.tools.corpus.PCMAudioFile;
 import edu.cmu.sphinx.tools.corpus.RegionOfAudioData;

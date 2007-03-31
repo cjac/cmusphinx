@@ -3,6 +3,7 @@ package edu.cmu.sphinx.tools.dictator;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import edu.cmu.sphinx.frontend.util.StreamDataSource;
+import edu.cmu.sphinx.frontend.util.VUMeterPanel;
 import edu.cmu.sphinx.recognizer.Recognizer;
 import edu.cmu.sphinx.result.Result;
 import edu.cmu.sphinx.tools.audio.Recorder;

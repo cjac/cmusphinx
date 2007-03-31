@@ -1,6 +1,6 @@
 package edu.cmu.sphinx.tools.audio;
 
-import edu.cmu.sphinx.tools.audio.Utils;
+import edu.cmu.sphinx.frontend.util.VUMeter;
 import edu.cmu.sphinx.tools.corpus.RegionOfAudioData;
 
 import javax.sound.sampled.*;
