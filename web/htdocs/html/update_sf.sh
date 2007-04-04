@@ -13,9 +13,9 @@ pushd $TMP > /dev/null
 svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/web  > /dev/null
 
 pushd web/cgi-bin > /dev/null
-svn log -q https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx > svn_history
-gzip -9fq svn_history
-rsync -e ssh -auv --progress . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/cgi-bin > /dev/null
+svn log -v https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx > svn_history
+gzip -9f svn_history
+rsync -e ssh -auv --progress * $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/cgi-bin/ > /dev/null
 popd > /dev/null
 
 pushd web/htdocs/html > /dev/null
@@ -38,8 +38,8 @@ popd > /dev/null
 
 # Just in case, change group ownership and permissions
 
-ssh $SF_USER@shell.sf.net chgrp -R cmusphinx /home/groups/c/cm/cmusphinx/htdocs > /dev/null 2>&1
-ssh $SF_USER@shell.sf.net chmod g+w -R cmusphinx /home/groups/c/cm/cmusphinx/htdocs > /dev/null 2>&1
+ssh $SF_USER@shell.sf.net chgrp -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
+ssh $SF_USER@shell.sf.net chmod g+w -R cmusphinx /home/groups/c/cm/cmusphinx/ > /dev/null 2>&1
 
 # revision 1.7 2006/08/02 15:30:54 egouvea
 # Disabled section about sphinx-4.
