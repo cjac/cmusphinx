@@ -14,18 +14,20 @@ package edu.cmu.sphinx.tools.riddler.ejb;
 
 import edu.cmu.sphinx.tools.riddler.types.Dictionary;
 import edu.cmu.sphinx.tools.riddler.types.Pronunciation;
+import edu.cmu.sphinx.tools.riddler.types.StringIdentified;
+import edu.cmu.sphinx.tools.riddler.types.Metadatum;
 
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
+import javax.ejb.EJBException;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import javax.persistence.*;
 import java.net.URI;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * Stateless session bean / web service implementation of Riddler
@@ -38,7 +40,8 @@ public class RiddlerBean implements RiddlerRemote {
 
     @PersistenceContext
     private EntityManager em;
-    
+    private Logger logger = Logger.getLogger(getClass().getName());
+
     public RiddlerBean() {
     }
 
@@ -52,46 +55,72 @@ public class RiddlerBean implements RiddlerRemote {
         return null;
     }
 
+    /**
+     *
+     * @param metadata
+     * @param queryName
+     * @return the first object (e.g. Corpus, Dictionary) having the provided metadata,
+     * or null if none exist; <p/>
+     * note that there should be only one object of a given entity type having exactly
+     * the same set of both keys and values in its metadata. <p/>
+     * this is why we invoke this method before creating such objects to see if duplicate
+     * objects already exist.
+     */
+    private StringIdentified findByMetadata(MetadataWrapper metadata, String queryName, Class<? extends StringIdentified> queriedClass) {
+        // maps a given Dictionary or Corpus to a counter for the number of matching metadata fields.
+        // if all match, that is the sought object
+        final Map<String, Integer> occurrences = new HashMap<String, Integer>();
+
+        for (Map.Entry<String, String> metadatum : metadata.getContents().entrySet()) {
+            final Query q = em.createNamedQuery(queryName);
+            q.setParameter("key", metadatum.getKey());
+            q.setParameter("value", metadatum.getValue());
+            List<StringIdentified> results = q.getResultList();
+            for (StringIdentified result : results) {
+                if (occurrences.containsKey(result.getId())) {
+                    // increment the occurence count for this particular key/value pair
+                    occurrences.put(result.getId(), occurrences.get(result.getId())+1);
+                }
+                else
+                    occurrences.put(result.getId(), 1); // start the occurrence counter at one
+            }
+        }
+
+        for (Map.Entry<String, Integer> occurrence : occurrences.entrySet()) {
+            // return the first one with a full occurrence count
+            if (occurrence.getValue() == metadata.getContents().size())
+                return em.find(queriedClass, occurrence.getKey());
+        }
+        return null;
+    }
+
     @WebMethod
     public String createDictionary(MetadataWrapper metadata) throws RemoteException {
-        try {
-            final Query q = em.createNamedQuery("findDictionaryByMetadata");
-            q.setParameter("metadata", metadata.getContents());
-            q.getSingleResult();
-            throw new RemoteException("a Dictionary having metadata '" + metadata + "' already exists");
+        final Dictionary existing = (Dictionary) findByMetadata(metadata, "findDictionariesByMetadatum", Dictionary.class);
+        if (existing != null) {
+            throw new EJBException("A dictionary with the provided metadata '" +
+                    metadata + "' already exists. Its ID is " + existing.getId());
         }
-        catch (NoResultException nre) {
-            // expected exception; there is not yet a dictionary with that metadata
-            Dictionary d;
-            d = new Dictionary();
-            d.setMetadata(metadata.getContents());
-            em.persist(d);
-            d = em.merge(d);
-            return d.getId();
-        }
+        Dictionary d;
+        d = new Dictionary();
+        d.setMetadata(Metadatum.listFromWrapper(metadata));
+        em.persist(d);
+        d = em.merge(d);
+        return d.getId();
     }
 
     @WebMethod
     public String getDictionary(MetadataWrapper metadata) throws RemoteException {
-        Dictionary d;
-        try {
-            final Query q = em.createNamedQuery("findDictionaryByMetadata");
-            q.setParameter("metadata", metadata.getContents());
-            d = (Dictionary) q.getSingleResult();
-        }
-        catch (NoResultException nre) {
-            throw new RemoteException("no Dictionary having the provided metadata '" + metadata + "' exists");
-        }
-        catch (NonUniqueResultException nure) {
-            throw new IllegalStateException("multiple Dictionaries have the same metadata '" + metadata);
-        }
-        return d.getId();
+        final Dictionary existing = (Dictionary) findByMetadata(metadata, "findDictionariesByMetadatum", Dictionary.class);
+        if (existing == null)
+            throw new EJBException("No dictionary with the provided metadata '" + metadata + "' exists.");
+        return existing.getId();
     }
 
     @WebMethod
     public MetadataWrapper getDictionaryMetadata(String dictionaryID) throws RemoteException {
         Dictionary d = fetchDictionary(dictionaryID);
-        return new MetadataWrapper(d.getMetadata());
+        return Metadatum.wrapperFromList(d.getMetadata());
     }
 
     @WebMethod
@@ -105,7 +134,7 @@ public class RiddlerBean implements RiddlerRemote {
             p = (Pronunciation) q.getSingleResult();
 
             // Pronounciation found: add all the words in the input parameter
-            Set<String> variants = p.getVariants();
+            HashSet<String> variants = p.getVariants();
             variants.addAll(pronunciations);
             p.setVariants(variants);
             p = em.merge(p);

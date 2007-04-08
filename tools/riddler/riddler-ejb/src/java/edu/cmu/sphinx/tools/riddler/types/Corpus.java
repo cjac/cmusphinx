@@ -26,7 +26,9 @@ import java.util.*;
  * @author Garrett Weinberg
  */
 @Entity
-public class Corpus {
+@NamedQuery(name = "findCorporaByMetadatum", query = "SELECT c FROM Corpus c, " +
+        "IN (c.metadata) m " + "WHERE m.theKey = :key AND m.theValue = :value")
+public class Corpus implements StringIdentified {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
@@ -41,10 +43,10 @@ public class Corpus {
     @Temporal(value = TemporalType.DATE)
     private Date collectDate;
 
-    @Lob @Basic
-    private Map<String, String> metadata = new HashMap<String, String>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Metadatum> metadata = new ArrayList<Metadatum>();
 
-    public Corpus(List<Item> items, Dictionary dictionary, Date collectDate, Map<String, String> metadata) {
+    public Corpus(List<Item> items, Dictionary dictionary, Date collectDate, List<Metadatum> metadata) {
         this.items = items;
         this.dictionary = dictionary;
         this.collectDate = collectDate;
@@ -66,7 +68,7 @@ public class Corpus {
         return items;
     }
 
-    public void setItemIDs(List<Item> items) {
+    public void setItems(List<Item> items) {
         this.items = items;
     }
 
@@ -86,11 +88,11 @@ public class Corpus {
         this.collectDate = collectDate;
     }
 
-    public Map<String, String> getMetadata() {
+    public List<Metadatum> getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(Map<String, String> metadata) {
+    public void setMetadata(List<Metadatum> metadata) {
         this.metadata = metadata;
     }
 }

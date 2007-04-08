@@ -35,11 +35,11 @@ public class Pronunciation {
 
     private String word;
     @Lob @Basic
-    private Set<String> variants = new HashSet<String>();
+    private HashSet<String> variants = new HashSet<String>();
     @ManyToOne
     private Dictionary dictionary;
 
-    public Pronunciation(String word, Set<String> variants) {
+    public Pronunciation(String word, HashSet<String> variants) {
         this.word = word;
         this.variants = variants;
     }
@@ -63,11 +63,11 @@ public class Pronunciation {
         this.word = word;
     }
 
-    public Set<String> getVariants() {
+    public HashSet<String> getVariants() {
         return variants;
     }
 
-    public void setVariants(Set<String> variants) {
+    public void setVariants(HashSet<String> variants) {
         this.variants = variants;
     }
 

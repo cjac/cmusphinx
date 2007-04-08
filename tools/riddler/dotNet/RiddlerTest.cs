@@ -30,8 +30,8 @@ namespace edu.cmu.sphinx.riddler
             datum.value = "SomeValue";
             mdw.contents = new metadataWrapperEntry[] { datum };
 
-            int dictId = riddler.createDictionary(mdw);
-            int retrieved = riddler.getDictionary(mdw);
+            string dictId = riddler.createDictionary(mdw);
+            string retrieved = riddler.getDictionary(mdw);
             Assert.AreEqual(dictId, retrieved);
 		}
 

@@ -35,15 +35,18 @@ public class Text {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy="text")
     private List<RegionOfText> textRegions = new ArrayList<RegionOfText>();
 
+    /**
+     * has to be an array list (Serializable type) since it's a Blob
+     */
     @Lob @Basic
-    private List<String> words = new ArrayList<String>();
+    private ArrayList<String> words = new ArrayList<String>();
     /**
      * parent reference, for bi-directional fetching
      */
     @OneToOne
     private Item item;
 
-    public Text(List<RegionOfText> textRegions, List<String> words) {
+    public Text(List<RegionOfText> textRegions, ArrayList<String> words) {
         this.textRegions = textRegions;
         this.words = words;
     }
@@ -76,7 +79,7 @@ public class Text {
     }
 
     /**
-     * Fetch the words that this object contains. A List is returned because not all languages use
+     * Fetch the words that this object contains. A list is returned because not all languages use
      * consistent space-delimitation.  
      * @return a list of tokens that comprise all the words in this Text
      */
@@ -84,7 +87,7 @@ public class Text {
         return words;
     }
 
-    public void setWords(List<String> words) {
+    public void setWords(ArrayList<String> words) {
         this.words = words;
     }
 }

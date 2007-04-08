@@ -8,6 +8,8 @@
       <customJdkName value="" />
       <maximumHeapSize value="128" />
       <properties />
+      <executeOn event="beforeRun" target="run" runConfigurationType="Remote" runConfigurationName="Unnamed" />
+      <executeOn event="beforeRun" target="run" runConfigurationType="GlassfishConfiguration" runConfigurationName="Unnamed" />
     </buildFile>
   </component>
   <component name="BuildJarProjectSettings">

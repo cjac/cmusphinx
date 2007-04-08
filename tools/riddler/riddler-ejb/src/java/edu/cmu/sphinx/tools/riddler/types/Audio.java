@@ -44,7 +44,7 @@ public class Audio {
     @OneToOne
     private Item item;
 
-    public Audio(AudioDescriptor audioDescriptor, ArrayList<RegionOfAudio> audioRegions) {
+    public Audio(AudioDescriptor audioDescriptor, List<RegionOfAudio> audioRegions) {
         this.audioDescriptor = audioDescriptor;
         this.audioRegions = audioRegions;
     }
@@ -64,7 +64,7 @@ public class Audio {
         return audioRegions;
     }
 
-    public void setAudioRegions(ArrayList<RegionOfAudio> audioRegions) {
+    public void setAudioRegions(List<RegionOfAudio> audioRegions) {
         this.audioRegions = audioRegions;
     }
 
