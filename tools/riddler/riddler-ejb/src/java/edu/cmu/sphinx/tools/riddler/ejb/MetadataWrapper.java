@@ -17,12 +17,13 @@ package edu.cmu.sphinx.tools.riddler.ejb;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.io.Serializable;
 
 /**
  * HashMap wrapper class to work around the JAX-WS issue mentioned here: http://forums.java.net/jive/message.jspa?messageID=185244 
  * @author Garrett Weinberg
  */
-public class MetadataWrapper {
+public class MetadataWrapper implements Serializable {
 
     private Map<String, String> contents;
 

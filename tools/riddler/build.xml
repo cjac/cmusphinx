@@ -53,8 +53,11 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="init-private">
+        <property environment="env"/>
+        <property file="${basedir}/properties/${env.COMPUTERNAME}.properties"/>    
+    </target>
 
-    <property environment="env"/>
     <condition property="onOSX">
         <and>
             <os family="mac"/>
@@ -121,5 +124,11 @@
         <nunit>
             <testassembly name="${distDir}/riddler-tests.dll"/>
         </nunit>
+    </target>
+
+    <target name="run-client" depends="run">
+        <exec command="javaws">
+            <arg value="http://localhost:8080/riddler/riddler-app-client"/>
+        </exec>
     </target>
 </project>
