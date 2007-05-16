@@ -160,10 +160,10 @@ float64 logs3_base(void);
 
 /* RAH, free the add_tbl if still allocated */
 /** Free the add_tbl if still allocated */
-void logs_free();
+void logs_free(void);
 
 /** Report the parameters for s3 log table */
-void logs3_report();
+void logs3_report(void);
   
 #if 0
 { /* Stop indent from complaining */

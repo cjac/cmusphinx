@@ -132,7 +132,7 @@ typedef struct {
 } adapt_am_t ;
 
 /** Initialize the adaptor structure */
-adapt_am_t* adapt_am_init();
+adapt_am_t* adapt_am_init(void);
   
 /** free adaptor structure */
 void adapt_am_free(adapt_am_t *ad);

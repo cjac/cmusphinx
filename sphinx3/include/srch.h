@@ -859,41 +859,43 @@ int32 srch_set_lm(srch_t* srch,  /**< A search structure */
     );
 
 /** delete lm */
-int32 srch_delete_lm();
+int32 srch_delete_lm(srch_t* srch,  /**< A search structure */
+		  const char *lmname /**< LM fie name */
+    );
 
 #if 0 /*Tentative: but not yet implemented */
-int32 srch_set_am();
+int32 srch_set_am(void);
 
 /** add new am */
-int32 srch_add_am();
+int32 srch_add_am(void);
 
 /** delete am */
-int32 srch_delete_am();
+int32 srch_delete_am(void);
 
 /** add new lm */
-int32 srch_add_lm();
+int32 srch_add_lm(void);
 
 
 /** using file name of the regression class mapping or a directory name to initialize  */
-int32 srch_set_mllr();
+int32 srch_set_mllr(void);
 
 /** add new mllr */
-int32 srch_add_mllr();
+int32 srch_add_mllr(void);
 
 /** delete mllr */
-int32 srch_delete_mllr();
+int32 srch_delete_mllr(void);
 
 /** using file name of interpolation file to initialize it */
-int32 srch_set_lamdafn();
+int32 srch_set_lamdafn(void);
 
 /** add new mllr */
-int32 srch_add_lamdafn();
+int32 srch_add_lamdafn(void);
 
 /** delete mllr */
-int32 srch_delete_lamdafn();
+int32 srch_delete_lamdafn(void);
 
 /** add new words into the dictionary */
-int32 srch_add_words_to_dict();
+int32 srch_add_words_to_dict(void);
 
 #endif /* End not implemented */
 

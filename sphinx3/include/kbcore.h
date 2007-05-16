@@ -161,7 +161,7 @@ typedef struct {
 /**
    Create a new kbcore 
 */
-kbcore_t *New_kbcore();
+kbcore_t *New_kbcore(void);
 
 /**
    Initialize just the acoustic model for kbcore

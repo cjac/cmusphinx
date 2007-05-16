@@ -129,7 +129,7 @@ typedef struct {
 /** Initialized the statistics structure 
     @return a statistics data structure
 */
-stat_t* stat_init(); 
+stat_t* stat_init(void); 
   
 /** Delete the memory of stat_init
  */

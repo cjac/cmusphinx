@@ -141,7 +141,7 @@ typedef struct
 #define utt_res_set_cb2mllrname(ur,name) ur->cb2mllrname=name
 
 /** This just return a new utter_res_t */
-utt_res_t* new_utt_res();
+utt_res_t* new_utt_res(void);
 
 /** Free utt_res_t */
 void free_utt_res(
