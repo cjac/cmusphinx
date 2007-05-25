@@ -1,3 +1,23 @@
+2007-05-25  David Huggins-Daines (dhuggins@cs.cmu.edu)
+	(Nothing released yet!!!  These are under construction)
+
+	This version requires sphinxbase 0.3.
+
+	The testing framework has been improved to use the built-in
+	facilities provided by automake.  Failed tests will be
+	reported at the end of a 'make check' run.
+
+	(Rev 6650) The allphone decoder has been cleaned up and better
+	integrated with the rest of the system.  The ad-hoc phoneme
+	lattice and phone transition probability file formats are no
+	longer supported.  Also, a dictionary file is now required,
+	though it need not contain anything.
+
+	(NOT DONE YET) A simple Python interface for live and batch
+	decoding is included in the python/ directory.  It is not
+	compiled by default.  To install it, install sphinx3, then run
+	'python setup.py install'.
+
 2006-08-06  Arthur Chan (archan@cs.cmu.edu) at Carnegie Mellon University
 	Sphinx 3.7.0 Release Candidate I
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
