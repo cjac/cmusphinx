@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -167,17 +168,21 @@
  */
 static arg_t defn[] = {
     cepstral_to_feature_command_line_macro()
-        log_table_command_line_macro()
-        acoustic_model_command_line_macro()
-        speaker_adaptation_command_line_macro()
-        common_application_properties_command_line_macro()
-        control_file_handling_command_line_macro()
-        hypothesis_file_handling_command_line_macro()
-        control_mllr_file_command_line_macro()
-        cepstral_input_handling_command_line_macro(){"-lambda",
-                                                     ARG_STRING,
-                                                     NULL,
-                                                     "Interpolation weights (CD/CI senone) parameters input file"},
+    log_table_command_line_macro()
+    acoustic_model_command_line_macro()
+    fast_GMM_computation_command_line_macro()
+    speaker_adaptation_command_line_macro()
+    common_application_properties_command_line_macro()
+    control_file_handling_command_line_macro()
+    hypothesis_file_handling_command_line_macro()
+    control_mllr_file_command_line_macro()
+    cepstral_input_handling_command_line_macro()
+    language_model_command_line_macro()
+    control_lm_file_command_line_macro()
+    dictionary_command_line_macro()
+    finite_state_grammar_command_line_macro()
+    common_filler_properties_command_line_macro()
+
     {"-beam",
      ARG_FLOAT64,
      "1e-64",
@@ -186,93 +191,30 @@ static arg_t defn[] = {
      ARG_FLOAT64,
      "1e-30",
      "Phone transition beam applied during search"},
-
-    /* allphone-specific arguments */
-    {"-phonetp",
-     ARG_STRING,
-     NULL,
-     "Phone transition probabilities inputfile (default: flat probs)"},
-    {"-phonetpfloor",
-     ARG_FLOAT32,
-     "0.00001",
-     "Floor for phone transition probabilities"},
-    {"-phonetpwt",
-     ARG_FLOAT32,
-     "3.0",
-     "Weight (exponent) applied to phone transition probabilities"},
     {"-phsegdir",
      ARG_STRING,
      NULL,
      "Output directory for phone segmentation files; optionally end with ,CTL"},
-    {"-phlatbeam",
-     ARG_FLOAT64,
-     "1e-20",
-     "Pruning beam for writing phone lattice"},
-    {"-phlatdir",
+    {"-utt",
      ARG_STRING,
      NULL,
-     "Output directory for phone lattice files"},
-
-    /*This should be replaced by language_model_command_line_macro(), 
-       but we just merged so let us do it later. */
-    {"-lm",
-     ARG_STRING,
-     NULL,
-     "Word trigram language model input file"},
-    {"-lminmemory",
-     ARG_INT32,
-     "0",
-     "Load language model into memory (default: use disk cache for lm"},
-
-
-    /*This should be replaced by common_filler_properties_command_line_macro()     
-     */
-    {"-wip",
-     ARG_FLOAT32,
-     "0.05",
-     "Word insertion penalty"},
-    {"-uw",
-     ARG_FLOAT32,
-     "0.7",
-     "Unigram weight"},
+     "Utterance file to be processed (-ctlcount argument times)"},
 
     {NULL, ARG_INT32, NULL, NULL}
 };
 
 
-/*  The definition of mdef and tmat can be found in s3_allphone.c
-*/
-
-static kbcore_t *kbc;           /* a kbcore */
-static ascr_t *ascr;            /* An acoustic score structure.  */
-
-lm_t *lm;
-
-static feat_t *fcb;             /* Feature type descriptor (Feature Control Block) */
-static float32 ***feat = NULL;  /* Speech feature data */
-
-static int32 *senscale;         /* ALL senone scores scaled by senscale[i] in frame i */
-
-/* For profiling/timing */
-static int32 tot_nfr;
-static ptmr_t tm_utt;
-static ptmr_t tm_gausen;
-static ptmr_t tm_allphone;
-
-static char *matchfile, *matchsegfile;
-
-/* File handles for match and hypseg files */
-static FILE *matchfp, *matchsegfp;
-
-
 static void
-allphone_log_hypseg(char *uttid, FILE * fp,     /* Out: output file */
+allphone_log_hypseg(kb_t *kb,
                     phseg_t * hypptr,   /* In: Hypothesis */
+		    char *uttid,
                     int32 nfrm, /* In: #frames in utterance */
                     int32 scl)
 {                               /* In: Acoustic scaling for entire utt */
     phseg_t *h;
     int32 ascr, lscr, tscr;
+    kbcore_t *kbcore = kb->kbcore;
+    FILE *fp = kb->matchsegfp;
 
     ascr = lscr = tscr = 0;
     for (h = hypptr; h; h = h->next) {
@@ -288,7 +230,7 @@ allphone_log_hypseg(char *uttid, FILE * fp,     /* Out: output file */
     else {
         for (h = hypptr; h; h = h->next) {
             fprintf(fp, " %d %d %d %s", h->sf, h->score, h->tscore,
-                    mdef_ciphone_str(kbc->mdef, h->ci));
+                    mdef_ciphone_str(kbcore_mdef(kbcore), h->ci));
         }
         fprintf(fp, " %d\n", nfrm);
     }
@@ -298,131 +240,31 @@ allphone_log_hypseg(char *uttid, FILE * fp,     /* Out: output file */
 
 /* Write hypothesis in old (pre-Nov95) NIST format */
 static void
-allphone_log_hypstr(FILE * fp, phseg_t * hypptr, char *uttid)
+allphone_log_hypstr(kb_t *kb, phseg_t * hypptr, char *uttid)
 {
+    kbcore_t *kbcore = kb->kbcore;
+    FILE *fp = kb->matchfp;
     phseg_t *h;
 
     if (!hypptr)                /* HACK!! */
         fprintf(fp, "(null)");
 
     for (h = hypptr; h; h = h->next) {
-        fprintf(fp, "%s ", mdef_ciphone_str(kbc->mdef, h->ci));
+        fprintf(fp, "%s ", mdef_ciphone_str(kbcore_mdef(kbcore), h->ci));
     }
     fprintf(fp, " (%s)\n", uttid);
     fflush(fp);
 }
 
-/*
- * Load and cross-check all models (acoustic/lexical/linguistic).
- */
-static void
-models_init(void)
-{
-    int32 i;
-    gauden_t *g;
-    senone_t *sen;
-    ms_mgau_model_t *msg;
-    char str[10];
-    int32 cisencnt;
-
-    logs3_init((float64) cmd_ln_float32("-logbase"), 1,
-               cmd_ln_int32("-log3table"));
-
-    /* Initialize feature stream type */
-    fcb = feat_init((char *) cmd_ln_access("-feat"),
-                    cmn_type_from_str(cmd_ln_access("-cmn")),
-                    cmd_ln_boolean("-varnorm"),
-                    agc_type_from_str(cmd_ln_str("-agc")), 1,
-		    cmd_ln_int32("-ceplen"));
-    kbc = New_kbcore();
-
-    /** Temporarily used .s3cont. instead of .cont. when in s3.0 family of tool. 
-	Then no need for changing the default command-line. 
-     */
-
-    if (strcmp(cmd_ln_str("-senmgau"), ".cont.") == 0) {
-        strcpy(str, ".s3cont.");
-    }
-    else if (strcmp(cmd_ln_str("-senmgau"), ".semi.") == 0) {
-        strcpy(str, ".semi.");
-    }
-    else if (strcmp(cmd_ln_str("-senmgau"), ".s3cont.") == 0) {
-        strcpy(str, ".s3cont.");
-    }
-
-    s3_am_init(kbc,
-               cmd_ln_str("-hmm"),
-               cmd_ln_str("-mdef"),
-               cmd_ln_str("-mean"),
-               cmd_ln_str("-var"),
-               cmd_ln_float32("-varfloor"),
-               cmd_ln_str("-mixw"),
-               cmd_ln_float32("-mixwfloor"),
-               cmd_ln_str("-tmat"),
-               cmd_ln_float32("-tmatfloor"),
-               str, cmd_ln_str("-lambda"), cmd_ln_int32("-topn")
-        );
-
-
-    msg = kbcore_ms_mgau(kbc);
-    assert(msg);
-    assert(msg->g);
-    assert(msg->s);
-
-    g = ms_mgau_gauden(msg);
-    sen = ms_mgau_senone(msg);
-
-    /* Verify codebook feature dimensions against libfeat */
-    if (feat_n_stream(fcb) != g->n_feat) {
-        E_FATAL("#feature mismatch: feat= %d, mean/var= %d\n",
-                feat_n_stream(fcb), g->n_feat);
-    }
-    for (i = 0; i < feat_n_stream(fcb); i++) {
-        if (feat_stream_len(fcb, i) != g->featlen[i]) {
-            E_FATAL("featlen[%d] mismatch: feat= %d, mean/var= %d\n", i,
-                    feat_stream_len(fcb, i), g->featlen[i]);
-        }
-    }
-
-    for (cisencnt = 0; cisencnt == kbc->mdef->cd2cisen[cisencnt];
-         cisencnt++);
-
-
-    /* Language model, if any. */
-    if (cmd_ln_access("-lm")) {
-        /*
-           ARCHAN 20060224 
-           Hack! Currently the LM read will have a fixed name, "Phoneme LM"
-           We also assume no class-based LM will be used. 
-
-         */
-        if ((lm = lm_read_advance(cmd_ln_str("-lm"),
-                                  "Phoneme LM",
-                                  cmd_ln_float32("-phonetpwt"),
-                                  cmd_ln_float32("-wip"),
-                                  cmd_ln_float32("-uw"), 0, NULL, 1)
-
-
-
-            ) == NULL)
-            E_FATAL("Failed to read language model from %s\n",
-                    cmd_ln_str("-lm"));
-    }
-
-    ascr = ascr_init(kbc->mdef->n_sen, 0,       /* No composite senone */
-                     mdef_n_sseq(kbc->mdef), 0, /* No composite senone sequence */
-                     1,         /* Phoneme lookahead window =1. Not enabled phoneme lookahead and CIGMMS at this moment */
-                     cisencnt);
-}
-
 
 /* Write phone segmentation output file */
 static void
-write_phseg(char *dir, char *uttid, phseg_t * phseg)
+write_phseg(kb_t *kb, char *dir, char *uttid, phseg_t * phseg)
 {
     char str[1024];
     FILE *fp = (FILE *) 0;
-    int32 uttscr, f, scale;
+    int32 uttscr;
+    kbcore_t *kbcore = kb->kbcore;
 
     /* Attempt to write segmentation for this utt to a separate file */
     if (dir) {
@@ -446,20 +288,15 @@ write_phseg(char *dir, char *uttid, phseg_t * phseg)
 
     uttscr = 0;
     for (; phseg; phseg = phseg->next) {
-        /* Account for senone score scaling in each frame */
-        scale = 0;
-        for (f = phseg->sf; f <= phseg->ef; f++)
-            scale += senscale[f];
-
         if (!dir) {
             fprintf(fp, "ph:%s>", uttid);
             fflush(fp);
         }
         fprintf(fp, "\t%5d %5d %9d %s\n",
-                phseg->sf, phseg->ef, phseg->score + scale,
-                mdef_ciphone_str(kbc->mdef, phseg->ci));
+                phseg->sf, phseg->ef, phseg->score,
+                mdef_ciphone_str(kbcore_mdef(kbcore), phseg->ci));
         fflush(fp);
-        uttscr += (phseg->score + scale);
+        uttscr += (phseg->score);
     }
 
     if (!dir) {
@@ -476,236 +313,180 @@ write_phseg(char *dir, char *uttid, phseg_t * phseg)
     }
 }
 
-/* FIX ME! Should only consider active senone from every frame in the search */
-static void
-allphone_sen_active(int32 * senlist, int32 n_sen)
-{
-    int32 sen;
-
-    for (sen = 0; sen < n_sen; sen++)
-        senlist[sen] = 1;
-}
-
 /*
  * Find Viterbi allphone decoding.
  */
-static void
-allphone_utt(int32 nfr, char *uttid)
+static int32
+allphone_utt(kb_t *kb, int32 nfr, char *uttid)
 {
     int32 i;
-    int32 topn;
     int32 w;
-    ms_mgau_model_t *msg;       /* Multi-stream multi mixture Gaussian */
     phseg_t *phseg;
     int32 scl;
+    kbcore_t *kbcore;
+    stat_t *st;
 
-    msg = kbcore_ms_mgau(kbc);
-    topn = ms_mgau_topn(msg);
-    w = feat_window_size(fcb);  /* #MFC vectors needed on either side of current
-                                   frame to compute one feature vector */
+    kbcore = kb->kbcore;
+    st = kb->stat;
+    stat_clear_utt(st);
+    st->nfr = nfr;
 
-    ptmr_reset(&tm_utt);
-    ptmr_reset(&tm_gausen);
-    ptmr_reset(&tm_allphone);
-
-    if (nfr <= (w << 1)) {
+    w = feat_window_size(kbcore_fcb(kbcore));
+    if (nfr < w * 2 + 1) {
         E_ERROR("Utterance %s < %d frames (%d); ignored\n", uttid,
-                (w << 1) + 1, nfr);
-        return;
+                w * 2 + 1, nfr);
+        return -1;
     }
-    ptmr_start(&tm_utt);
 
     allphone_start_utt(uttid);
 
-#if 1
     scl = 0;
     for (i = 0; i < nfr; i++) {
-        ptmr_start(&tm_gausen);
-        allphone_sen_active(ascr->sen_active, ascr->n_sen);
-        senscale[i] = ms_cont_mgau_frame_eval(ascr,
-                                              msg, kbc->mdef, feat[i]);
-        scl += senscale[i];
-        ptmr_stop(&tm_gausen);
+	/* Compute GMM scores "manually" for the time being. */
+	/* First the CI senones, which are always computed. */
+	ptmr_start(&(st->tm_sen));
+	ptmr_start(&(st->tm_ovrhd));
+	approx_cont_mgau_ci_eval(kbcore,
+				 kb->fastgmm,
+				 kbcore_mdef(kbcore),
+				 kb->feat[i][0],
+				 kb->ascr->cache_ci_senscr[0],
+				 &(kb->ascr->cache_best_list[0]), i);
+	st->utt_cisen_eval += mgau_frm_cisen_eval(kbcore_mgau(kbcore));
+	st->utt_cigau_eval += mgau_frm_cigau_eval(kbcore_mgau(kbcore));
+	ptmr_stop(&(st->tm_ovrhd));
+	ptmr_stop(&(st->tm_sen));
 
-        ptmr_start(&tm_allphone);
-        allphone_frame(ascr->senscr);
+	/* Now all the active CD senones. */
+        ptmr_start(&(st->tm_sen));
+	allphone_sen_active(kb->ascr);
+	scl +=
+	    approx_cont_mgau_frame_eval(kbcore, kb->fastgmm,
+					kb->ascr, kb->feat[i][0], i,
+					kb->ascr->cache_ci_senscr[0],
+					&(st->tm_ovrhd));
+	st->utt_sen_eval += mgau_frm_sen_eval(kbcore_mgau(kbcore));
+	st->utt_gau_eval += mgau_frm_gau_eval(kbcore_mgau(kbcore));
+        ptmr_stop(&(st->tm_sen));
+
+        ptmr_start(&(st->tm_srch));
+        allphone_frame(kb->ascr, st);
         if ((i % 10) == 9) {
             printf(".");
             fflush(stdout);
         }
-        ptmr_stop(&tm_allphone);
-
+        ptmr_stop(&(st->tm_srch));
     }
-
+    st->tot_fr += nfr;
     printf("\n");
-#endif
-
 
     phseg = allphone_end_utt(uttid);
-    write_phseg((char *) cmd_ln_access("-phsegdir"), uttid, phseg);
+    write_phseg(kb, (char *) cmd_ln_access("-phsegdir"), uttid, phseg);
     /* Log recognition output to the standard match and matchseg files */
-    if (matchfp)
-        allphone_log_hypstr(matchfp, phseg, uttid);
+    if (kb->matchfp)
+        allphone_log_hypstr(kb, phseg, uttid);
 
-#if 0
-    for (h = phseg; h; h = h->next) {
-        ascr += h->score;
-        lscr += h->tscore;
-    }
-#endif
-    if (matchsegfp)
-        allphone_log_hypseg(uttid, matchsegfp, phseg, nfr, scl);
+    if (kb->matchsegfp)
+        allphone_log_hypseg(kb, phseg, uttid, nfr, scl);
 
-    ptmr_stop(&tm_utt);
+    stat_report_utt(st, uttid);
+    stat_update_corpus(st);
 
-    printf("%s: TMR:[frm %5d]", uttid, nfr);
-    printf("[el %6.2fx]", tm_utt.t_elapsed * 100.0 / nfr);
-    printf("[cpu %6.2fx]", tm_utt.t_cpu * 100.0 / nfr);
-    if (tm_utt.t_cpu > 0.0) {
-        printf("[gau+sen %6.2fx %2d%%]", tm_gausen.t_cpu * 100.0 / nfr,
-               (int32) ((tm_gausen.t_cpu * 100.0) / tm_utt.t_cpu));
-        printf("[srch %6.2fx %2d%%]", tm_allphone.t_cpu * 100.0 / nfr,
-               (int32) ((tm_allphone.t_cpu * 100.0) / tm_utt.t_cpu));
-    }
+    ptmr_reset(&(st->tm_sen));
+    ptmr_reset(&(st->tm_srch));
+    ptmr_reset(&(st->tm_ovrhd));
+
     printf("\n");
     fflush(stdout);
+
+    return 0;
 }
 
 static void
 utt_allphone(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
+    kb_t *kb;
+    kbcore_t *kbcore;
     int32 nfr;
     char *cepdir, *cepext;
+    stat_t *st;
+
+    E_INFO("Processing: %s\n", uttid);
+
+    kb = (kb_t *) data;
+    kbcore = kb->kbcore;
+    kb->uttid = uttid;
+    st = kb->stat;
 
     cepdir = cmd_ln_str("-cepdir");
     cepext = cmd_ln_str("-cepext");
 
-    nfr =
-        feat_s2mfc2feat(fcb, ur->uttfile, cepdir, cepext, sf, ef, feat,
-                        S3_MAX_FRAMES);
-
-    assert(kbc->ms_mgau);
-    if (ur->regmatname)
-        model_set_mllr(kbc->ms_mgau, ur->regmatname, ur->cb2mllrname, fcb,
-                       kbc->mdef);
-
-    if (nfr <= 0) {
-        if (cepdir != NULL) {
-            E_ERROR
-                ("Utt %s: Input file read (%s) with dir (%s) and extension (%s) failed \n",
-                 uttid, ur->uttfile, cepdir, cepext);
-        }
-        else {
-            E_ERROR
-                ("Utt %s: Input file read (%s) with extension (%s) failed \n",
-                 uttid, ur->uttfile, cepext);
-        }
-    }
-    else {
-        E_INFO("%s: %d input frames\n", uttid, nfr);
-        allphone_utt(nfr, uttid);
+    if ((nfr =
+	 feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile,
+			 cepdir, cepext, sf, ef, kb->feat,
+			 S3_MAX_FRAMES)) < 0) {
+        E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
     }
 
+    if (ur->lmname != NULL)
+        srch_set_lm((srch_t *) kb->srch, ur->lmname);
+    if (ur->regmatname != NULL)
+        kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
+
+    allphone_utt(kb, nfr, uttid);
 }
-
-/*
- * Write exact hypothesis.  Format
- *   <id> S <scl> T <scr> A <ascr> L <lscr> {<sf> <wascr> <wlscr> <word>}... <ef>
- * where:
- *   scl = acoustic score scaling for entire utterance
- *   scr = ascr + (lscr*lw+N*wip), where N = #words excluding <s>
- *   ascr = scaled acoustic score for entire utterance
- *   lscr = LM score (without lw or wip) for entire utterance
- *   sf = start frame for word
- *   wascr = scaled acoustic score for word
- *   wlscr = LM score (without lw or wip) for word
- *   ef = end frame for utterance.
- */
 
 int
 main(int32 argc, char *argv[])
 {
+    kb_t kb;
+    stat_t *st;
+
     print_appl_info(argv[0]);
     cmd_ln_appl_enter(argc, argv, "default.arg", defn);
     unlimit();
 
-    /* Read in input databases */
-    models_init();
-
-    /* Senone scaling factor in each frame */
-    senscale = (int32 *) ckd_calloc(S3_MAX_FRAMES, sizeof(int32));
-    feat = feat_array_alloc(fcb, S3_MAX_FRAMES);
-
-    /* Initialize allphone decoder module */
-    allphone_init(kbc->mdef, kbc->tmat);
-    printf("\n");
-
-    assert(kbc->ms_mgau);
-
-    tot_nfr = 0;
-
-
-    if ((matchfile = (char *) cmd_ln_access("-hyp")) == NULL) {
-        matchfp = NULL;
-    }
-    else {
-        if ((matchfp = fopen(matchfile, "w")) == NULL)
-            E_ERROR("fopen(%s,w) failed\n", matchfile);
-    }
-    if ((matchsegfile = (char *) cmd_ln_access("-hypseg")) == NULL) {
-        matchsegfp = NULL;
-    }
-    else {
-        if ((matchsegfp = fopen(matchsegfile, "w")) == NULL)
-            E_ERROR("fopen(%s,w) failed\n", matchsegfile);
-    }
-
-
-    if (cmd_ln_access("-mllr") != NULL)
-        model_set_mllr(kbc->ms_mgau, cmd_ln_access("-mllr"),
-                       cmd_ln_access("-cb2mllr"), fcb, kbc->mdef);
+    kb_init(&kb);
+    st = kb.stat;
+    fprintf(stdout, "\n");
+    allphone_init(&kb);
 
     if (cmd_ln_str("-ctl")) {
-        /* When -ctlfile is speicified, corpus.c will look at -ctl_mllr to get
-           the corresponding  MLLR for the utterance */
-        ctl_process(cmd_ln_str("-ctl"),
-                    NULL,
-                    cmd_ln_str("-ctl_mllr"),
-                    cmd_ln_int32("-ctloffset"),
-                    cmd_ln_int32("-ctlcount"), utt_allphone, NULL);
+        /* When -ctlfile is speicified, corpus.c will look at -ctl_lm and
+	   -ctl_mllr to get the corresponding LM and MLLR for the utterance */
+        st->tm = ctl_process(cmd_ln_str("-ctl"),
+                             cmd_ln_str("-ctl_lm"),
+                             cmd_ln_str("-ctl_mllr"),
+                             cmd_ln_int32("-ctloffset"),
+                             cmd_ln_int32("-ctlcount"), utt_allphone, &kb);
+    }
+    else if (cmd_ln_str("-utt")) {
+        /* When -utt is specified, corpus.c will wait for the utterance to
+	   change */
+        st->tm = ctl_process_utt(cmd_ln_str("-utt"),
+                                 cmd_ln_int32("-ctlcount"),
+                                 utt_allphone, &kb);
+
     }
     else {
         /* Is error checking good enough?" */
-        E_FATAL(" -ctl are not specified.\n");
+        E_FATAL("Both -utt and -ctl are not specified.\n");
 
     }
 
+    if (kb.matchsegfp)
+        fclose(kb.matchsegfp);
+    if (kb.matchfp)
+        fclose(kb.matchfp);
 
-    if (tot_nfr > 0) {
-        printf("\n");
-        printf("TOTAL FRAMES:       %8d\n", tot_nfr);
-        printf("TOTAL CPU TIME:     %11.2f sec, %7.2f xRT\n",
-               tm_utt.t_tot_cpu, tm_utt.t_tot_cpu / (tot_nfr * 0.01));
-        printf("TOTAL ELAPSED TIME: %11.2f sec, %7.2f xRT\n",
-               tm_utt.t_tot_elapsed,
-               tm_utt.t_tot_elapsed / (tot_nfr * 0.01));
-    }
+    stat_report_corpus(kb.stat);
 
-    if (ascr) {
-        ascr_free(ascr);
-    }
-
-    if (matchfp != NULL)
-        fclose(matchfp);
-
-    if (matchsegfp != NULL)
-        fclose(matchsegfp);
+    kb_free(&kb);
 
 #if (! WIN32)
     system("ps aguxwww | grep s3allphone");
 #endif
 
     cmd_ln_appl_exit();
-
     return 0;
 }

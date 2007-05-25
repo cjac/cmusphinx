@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -106,6 +107,8 @@
 #include "tmat.h"
 #include "lm.h"
 #include "logs3.h"
+#include "ascr.h"
+#include "stat.h"
 #include "s3_allphone.h"
 
 /**
@@ -165,7 +168,7 @@ typedef struct history_s {
 } history_t;
 static history_t **frm_hist;    /** List of history nodes allocated in each frame */
 
-extern lm_t *lm;                /** Language model */
+static lm_t *lm;                /** Language model */
 
 static s3lmwid32_t *ci2lmwid;   /** Mapping from CI-phone-id to LM-word-id */
 
@@ -177,9 +180,9 @@ static int32 curfrm;            /* Current frame */
 static int32 beam, pbeam;
 static int32 *score_scale;      /* Score by which state scores scaled in each frame */
 static phseg_t *phseg;
-static int32 **tp;              /* Phone transition probabilities */
 static int32 n_histnode;        /* No. of history entries */
 
+static int32 inspen;            /* Insertion penalty - used for phone-loop decoding */
 
 /**
  * Find PHMM node with same senone sequence and tmat id as the given triphone.
@@ -539,7 +542,7 @@ phmm_eval(phmm_t * p, int32 * senscr)
 
 /** Evaluate active PHMMs */
 static int32
-phmm_eval_all(int32 * senscr)
+phmm_eval_all(int32 * senscr, stat_t *st)
 {
     s3cipid_t ci;
     phmm_t *p;
@@ -550,6 +553,7 @@ phmm_eval_all(int32 * senscr)
     for (ci = 0; ci < mdef->n_ciphone; ci++) {
         for (p = ci_phmm[(unsigned) ci]; p; p = p->next) {
             if (p->active == curfrm) {
+		++st->utt_hmm_eval;
                 phmm_eval(p, senscr);
                 if (p->bestscore > best)
                     best = p->bestscore;
@@ -560,6 +564,26 @@ phmm_eval_all(int32 * senscr)
     return best;
 }
 
+int32
+allphone_sen_active(ascr_t *ascr)
+{
+    s3cipid_t ci;
+    phmm_t *p;
+    int s;
+
+    ascr_clear_sen_active(ascr);
+
+    for (ci = 0; ci < mdef->n_ciphone; ci++) {
+	for (p = ci_phmm[(unsigned) ci]; p; p = p->next) {
+	    if (p->active == curfrm) {
+		for (s = 0; s < mdef->n_emit_state; s++) {
+		    ascr->sen_active[p->sen[s]] = 1;
+		}
+	    }
+	}
+    }
+    return 0;
+}
 
 static void
 phmm_exit(int32 best)
@@ -640,29 +664,27 @@ phmm_trans(void)
             int32 tscore;
             to = l->phmm;
 
-            if (lm) {
-
-                /* If they are not in the LM, kill this
-                 * transition. */
-                if (ci2lmwid[to->ci] == BAD_LMWID(lm))
-                    tscore = S3_LOGPROB_ZERO;
-                else {
-                    if (h->hist && h->hist->phmm) {
-                        tscore = lm_tg_score(lm,
-                                             ci2lmwid[h->hist->phmm->ci],
-                                             ci2lmwid[from->ci],
-                                             ci2lmwid[to->ci],
-                                             ci2lmwid[to->ci]);
-                    }
-                    else
-                        tscore = lm_bg_score(lm,
-                                             ci2lmwid[from->ci],
-                                             ci2lmwid[to->ci],
-                                             ci2lmwid[to->ci]);
-                }
-            }
-            else
-                tscore = tp[(unsigned) from->ci][(unsigned) to->ci];
+	    /* No LM, just use uniform (insertion penalty). */
+	    if (lm == NULL)
+		tscore = inspen;
+	    /* If they are not in the LM, kill this
+	     * transition. */
+	    else if (ci2lmwid[to->ci] == BAD_LMWID(lm))
+		tscore = S3_LOGPROB_ZERO;
+	    else {
+		if (h->hist && h->hist->phmm) {
+		    tscore = lm_tg_score(lm,
+					 ci2lmwid[h->hist->phmm->ci],
+					 ci2lmwid[from->ci],
+					 ci2lmwid[to->ci],
+					 ci2lmwid[to->ci]);
+		}
+		else
+		    tscore = lm_bg_score(lm,
+					 ci2lmwid[from->ci],
+					 ci2lmwid[to->ci],
+					 ci2lmwid[to->ci]);
+	    }
 
             newscore = h->score + tscore;
             if ((newscore > beam) && (newscore > to->inscore)) {
@@ -677,11 +699,11 @@ phmm_trans(void)
 
 
 int32
-allphone_frame(int32 * senscr)
+allphone_frame(ascr_t *ascr, stat_t *st)
 {
     int32 bestscr;
 
-    bestscr = phmm_eval_all(senscr);
+    bestscr = phmm_eval_all(ascr->senscr, st);
     score_scale[curfrm] = bestscr;
 
     phmm_exit(bestscr);
@@ -704,108 +726,12 @@ seg_score_scale(int32 sf, int32 ef)
 }
 
 
-/* Phone lattice node */
-typedef struct phlatnode_s {
-    s3cipid_t ci;
-    uint16 fef, lef;            /* First and last end frame for this node */
-    struct phlatnode_s *next;
-} phlatnode_t;
-
-
-static void
-allphone_latdump(char *uttid, char *latdir)
-{
-    int32 f, sf, latbeam, best, thresh, nnode;
-    history_t *h;
-    char filename[4096];
-    FILE *fp;
-    float64 *f64arg;
-    phlatnode_t **phlatnode, *p;
-
-    f64arg = (float64 *) cmd_ln_access("-phlatbeam");
-    latbeam = logs3(*f64arg);
-
-    sprintf(filename, "%s/%s.phlat", latdir, uttid);
-    if ((fp = fopen(filename, "w")) == NULL) {
-        E_ERROR("fopen(%s,w) failed\n", filename);
-        return;
-    }
-
-    phlatnode =
-        (phlatnode_t **) ckd_calloc(curfrm + 1, sizeof(phlatnode_t));
-
-    for (f = 0; f < curfrm; f++) {
-        /* Find best score for this frame and set pruning threshold */
-        best = (int32) 0x80000000;
-        for (h = frm_hist[f]; h; h = h->next)
-            if (h->score > best)
-                best = h->score;
-        thresh = best + latbeam;
-
-        for (h = frm_hist[f]; h; h = h->next) {
-            /* Skip this node if below threshold */
-            if (h->score < thresh)
-                continue;
-
-            sf = h->hist ? h->hist->ef + 1 : 0;
-            assert(h->ef == f);
-
-            /* Find phlatnode for this <ci,sf> pair */
-            for (p = phlatnode[sf]; p && (p->ci != h->phmm->ci);
-                 p = p->next);
-            if (!p) {
-                p = (phlatnode_t *) listelem_alloc(sizeof(phlatnode_t));
-                p->next = phlatnode[sf];
-                phlatnode[sf] = p;
-                p->ci = h->phmm->ci;
-                p->fef = p->lef = h->ef;
-            }
-            assert(p->lef <= h->ef);
-            p->lef = h->ef;
-#if 0
-            score = h->score;
-            if (h->hist)
-                score -= h->hist->score;
-            score += seg_score_scale(sf, h->ef);
-            fprintf(fp, "%4d %3d %12d %s\n",    /* startfrm endfrm ciphone */
-                    sf, h->ef - sf + 1, score, mdef_ciphone_str(mdef,
-                                                                h->phmm->
-                                                                ci));
-#endif
-        }
-    }
-
-    /* Write phone lattice; startframe, first end frame, last end frame, ciphone */
-    nnode = 0;
-    for (f = 0; f <= curfrm; f++) {
-        for (p = phlatnode[f]; p; p = p->next) {
-            fprintf(fp, "%4d %4d %4d %s\n", f, p->fef, p->lef,
-                    mdef_ciphone_str(mdef, p->ci));
-            nnode++;
-        }
-    }
-    E_INFO("%d phone lattice nodes written to %s\n", nnode, filename);
-
-    /* Free phone lattice */
-    for (f = 0; f <= curfrm; f++) {
-        for (p = phlatnode[f]; p; p = phlatnode[f]) {
-            phlatnode[f] = p->next;
-            listelem_free((char *) p, sizeof(phlatnode_t));
-        }
-    }
-    ckd_free(phlatnode);
-
-    fclose(fp);
-}
-
-
 phseg_t *
 allphone_end_utt(char *uttid)
 {
     history_t *h, *nexth, *besth = (history_t *) 0;
     int32 f, best;
     phseg_t *s, *nexts;
-    char *phlatdir;
 
     /* Free old phseg, if any */
     for (s = phseg; s; s = nexts) {
@@ -813,10 +739,6 @@ allphone_end_utt(char *uttid)
         listelem_free((char *) s, sizeof(phseg_t));
     }
     phseg = NULL;
-
-    /* Write phone lattice if specified */
-    if ((phlatdir = (char *) cmd_ln_access("-phlatdir")) != NULL)
-        allphone_latdump(uttid, phlatdir);
 
     /* Find most recent history nodes list */
     for (f = curfrm - 1; (f >= 0) && (frm_hist[f] == NULL); --f);
@@ -864,88 +786,31 @@ allphone_end_utt(char *uttid)
 }
 
 
-static void
-phone_tp_init(char *file, float64 floor, float64 wt, float64 ip)
-{
-    int32 i, j, ct, tot, inspen;
-    FILE *fp;
-    char p1[128], p2[128];
-    s3cipid_t pid1, pid2;
-    float64 p;
-
-    tp = (int32 **) ckd_calloc_2d(mdef->n_ciphone, mdef->n_ciphone,
-                                  sizeof(int32));
-    inspen = logs3(ip);
-
-    if (!file) {
-        for (i = 0; i < mdef->n_ciphone; i++)
-            for (j = 0; j < mdef->n_ciphone; j++)
-                tp[i][j] = inspen;
-        return;
-    }
-
-    for (i = 0; i < mdef->n_ciphone; i++)
-        for (j = 0; j < mdef->n_ciphone; j++)
-            tp[i][j] = S3_LOGPROB_ZERO;
-
-    if ((fp = fopen(file, "r")) == NULL)
-        E_FATAL("fopen(%s,r) failed\n", file);
-    while (fscanf(fp, "%s %s %d %d", p1, p2, &ct, &tot) == 4) {
-        pid1 = mdef_ciphone_id(mdef, p1);
-        if (NOT_S3CIPID(pid1))
-            E_FATAL("Bad phone: %s\n", p1);
-        pid2 = mdef_ciphone_id(mdef, p2);
-        if (NOT_S3CIPID(pid2))
-            E_FATAL("Bad phone: %s\n", p2);
-
-        if (tot > 0)
-            p = ((float64) ct) / ((float64) tot);
-        else
-            p = 0.0;
-        if (p < floor)
-            p = floor;
-
-        tp[(unsigned) pid1][(unsigned) pid2] =
-            (int32) (logs3(p) * wt) + inspen;
-    }
-
-    fclose(fp);
-}
-
-
 int32
-allphone_init(mdef_t * _mdef, tmat_t * _tmat)
+allphone_init(kb_t *kb)
 {
-    char *file;
-    float64 tpfloor, ip, wt;
+    kbcore_t *kbcore = kb->kbcore;
+    s3cipid_t i;
 
-    mdef = _mdef;
-    tmat = _tmat;
+    mdef = kbcore_mdef(kbcore);
+    tmat = kbcore_tmat(kbcore);
+    lm = kbcore_lm(kbcore);
 
     tmat_chk_uppertri(tmat);
 
     phmm_build();
 
-    /* Old -phonetp file format still supported. */
-    file = (char *) cmd_ln_access("-phonetp");
-
+    /* Build mapping of CI phones to LM word IDs. */
     if (lm) {
-        s3cipid_t i;
-
-        /* Build mapping of CI phones to LM word IDs. */
-        ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid32_t));
-        for (i = 0; i < mdef->n_ciphone; i++)
-            ci2lmwid[i] = lm_wid(lm, (char *) mdef_ciphone_str(mdef, i));
+	ci2lmwid = ckd_calloc(mdef->n_ciphone, sizeof(s3lmwid32_t));
+	for (i = 0; i < mdef->n_ciphone; i++)
+	    ci2lmwid[i] = lm_wid(lm, (char *) mdef_ciphone_str(mdef, i));
     }
     else {
-        if (!file)
-            E_ERROR
-                ("-phonetpfn argument missing; assuming uniform transition probs\n");
-        tpfloor = *((float32 *) cmd_ln_access("-phonetpfloor"));
-        ip = *((float32 *) cmd_ln_access("-wip"));
-        wt = *((float32 *) cmd_ln_access("-phonetpwt"));
-        phone_tp_init(file, tpfloor, wt, ip);
+	E_WARN("-lm argument missing; doing unconstrained phone-loop decoding\n");
+        inspen = logs3(cmd_ln_float32("-wip"));
     }
+
     beam = logs3(cmd_ln_float64("-beam"));
     E_INFO("logs3(beam)= %d\n", beam);
     pbeam = logs3(cmd_ln_float64("-pbeam"));

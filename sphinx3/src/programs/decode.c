@@ -108,15 +108,15 @@ static arg_t arg[] = {
      "none)"},
 #endif
 
-    /** ARCHAN 20050717: The only argument which I didn't refactor,
-	reason is it makes sense to make every s3.0 family of tool to
-	accept -utt */
-
     {"-bestscoredir",
      ARG_STRING,
      NULL,
      "(Mode 3) Directory for writing best score/frame (used to set beamwidth; "
      "one file/utterance)"},
+
+    /** ARCHAN 20050717: The only argument which I didn't refactor,
+	reason is it makes sense to make every s3.0 family of tool to
+	accept -utt.  DHD 20070525: I have no idea what that means. */
 
     {"-utt",
      ARG_STRING,
@@ -176,9 +176,9 @@ main(int32 argc, char *argv[])
 
 #if (! WIN32)
 #if defined(_SUN4)
-    system("ps -el | grep decode_anytopo");
+    system("ps -el | grep sphinx3_decode");
 #else
-    system("ps aguxwww | grep decode_anytopo");
+    system("ps aguxwww | grep sphinx3_decode");
 #endif
 #endif
 

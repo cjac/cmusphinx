@@ -257,7 +257,7 @@ void linksilences(lm_t* l,kbcore_t *kbc, dict_t *d);
 #define kbcore_mdef(k)		((k)->mdef)
 #define kbcore_dict(k)		((k)->dict)
 #define kbcore_dict2pid(k)	((k)->dict2pid)
-#define kbcore_lm(k)		((k)->lmset->cur_lm)
+#define kbcore_lm(k)		((k)->lmset ? (k)->lmset->cur_lm : NULL)
 #define kbcore_fillpen(k)	((k)->fillpen)
 #define kbcore_dict2lmwid(k,w)	((k)->dict2lmwid[w])
 #define kbcore_mgau(k)		((k)->mgau)

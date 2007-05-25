@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -166,10 +167,10 @@ file_open(char *filepath)
 #ifdef WIN32
         if ((fp = fopen(filepath, "wt")) == NULL)
 #else
-        if ((fp = fopen(filepath, "w")) == NULL)
+	    if ((fp = fopen(filepath, "w")) == NULL)
 #endif
-            E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n",
-                    filepath);
+		E_ERROR("fopen(%s,w) failed; use FWDXCT: from std logfile\n",
+			filepath);
     }
     return fp;
 }
@@ -258,54 +259,66 @@ kb_init(kb_t * kb)
     d2p = kbcore_dict2pid(kbcore);
 
     /* STRUCTURE INITIALIZATION: Initialize the beam data structure */
-    kb->beam = beam_init(cmd_ln_float64("-beam"),
-                         cmd_ln_float64("-pbeam"),
-                         cmd_ln_float64("-wbeam"),
-                         cmd_ln_float64("-wend_beam"),
-                         cmd_ln_int32("-ptranskip"), mdef_n_ciphone(mdef)
-        );
+    if (cmd_ln_exists("-ptranskip")) {
+	kb->beam = beam_init(cmd_ln_float64("-beam"),
+			     cmd_ln_float64("-pbeam"),
+			     cmd_ln_float64("-wbeam"),
+			     cmd_ln_float64("-wend_beam"),
+			     cmd_ln_int32("-ptranskip"), mdef_n_ciphone(mdef)
+	    );
 
-    /* REPORT : Report the parameters in the beam data structure */
-    if (REPORT_KB)
-        beam_report(kb->beam);
+	/* REPORT : Report the parameters in the beam data structure */
+	if (REPORT_KB)
+		beam_report(kb->beam);
+    }
 
 
     /* STRUCTURE INITIALIZATION: Initialize the fast GMM computation data structure */
-    kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
-                                cmd_ln_int32("-cond_ds"),
-                                cmd_ln_int32("-dist_ds"),
-                                cmd_ln_int32("-gs4gs"),
-                                cmd_ln_int32("-svq4svq"),
-                                cmd_ln_float64("-subvqbeam"),
-                                cmd_ln_float64("-ci_pbeam"),
-                                cmd_ln_float64("-tighten_factor"),
-                                cmd_ln_int32("-maxcdsenpf"),
-                                mdef->n_ci_sen);
+    if (cmd_ln_exists("-ci_pbeam")) {
+	kb->fastgmm = fast_gmm_init(cmd_ln_int32("-ds"),
+				    cmd_ln_int32("-cond_ds"),
+				    cmd_ln_int32("-dist_ds"),
+				    cmd_ln_int32("-gs4gs"),
+				    cmd_ln_int32("-svq4svq"),
+				    cmd_ln_float64("-subvqbeam"),
+				    cmd_ln_float64("-ci_pbeam"),
+				    cmd_ln_float64("-tighten_factor"),
+				    cmd_ln_int32("-maxcdsenpf"),
+				    mdef->n_ci_sen);
 
-    /* REPORT : Report the parameters in the fast_gmm_t data struture */
-    if (REPORT_KB)
-        fast_gmm_report(kb->fastgmm);
+	/* REPORT : Report the parameters in the fast_gmm_t data struture */
+	if (REPORT_KB)
+	    fast_gmm_report(kb->fastgmm);
+    }
 
     /* STRUCTURE INITIALIZATION: Initialize the phoneme lookahead data structure */
-    kb->pl = pl_init(cmd_ln_int32("-pheurtype"),
-                     cmd_ln_int32("-pl_beam"), mdef_n_ciphone(mdef)
-        );
+    if (cmd_ln_exists("-pl_beam")) {
+	kb->pl = pl_init(cmd_ln_int32("-pheurtype"),
+			 cmd_ln_int32("-pl_beam"), mdef_n_ciphone(mdef)
+	    );
 
-    /* REPORT : Report the parameters in the pl_t data struture */
-    if (REPORT_KB)
-        pl_report(kb->pl);
-
+	/* REPORT : Report the parameters in the pl_t data struture */
+	if (REPORT_KB)
+	    pl_report(kb->pl);
+    }
 
     /* STRUCTURE INITIALIZATION: Initialize the acoustic score data structure */
-    for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++);
-    kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
-                         kb->kbcore->dict2pid->n_comstate,
-                         mdef_n_sseq(mdef),
-                         dict2pid_n_comsseq(d2p),
-                         cmd_ln_int32("-pl_window"), cisencnt);
+    {
+	int32 pl_window = 1;
 
-    if (REPORT_KB)
-        ascr_report(kb->ascr);
+	if (cmd_ln_exists("-pl_window"))
+	    pl_window = cmd_ln_int32("-pl_window");
+
+	for (cisencnt = 0; cisencnt == mdef->cd2cisen[cisencnt]; cisencnt++);
+	kb->ascr = ascr_init(kbcore_n_mgau(kbcore),
+			     kb->kbcore->dict2pid->n_comstate,
+			     mdef_n_sseq(mdef),
+			     dict2pid_n_comsseq(d2p),
+			     pl_window, cisencnt);
+
+	if (REPORT_KB)
+	    ascr_report(kb->ascr);
+    }
 
     if (kbcore->lmset && (cmd_ln_str("-lm") || cmd_ln_str("-lmctlfn"))) {
         /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
@@ -320,7 +333,8 @@ kb_init(kb_t * kb)
             vithist_report(kb->vithist);
 #endif
         /* HACK! */
-        temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
+	if (cmd_ln_exists("-op_mode"))
+		temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
     }
 
     /* STRUCTURE INITIALIZATION : The feature vector */
@@ -349,18 +363,22 @@ kb_init(kb_t * kb)
     kb->matchsegfp = file_open(cmd_ln_str("-hypseg"));
     kb->matchfp = file_open(cmd_ln_str("-hyp"));
 
-    kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
+    if (cmd_ln_exists("-hmmdump"))
+	kb->hmmdumpfp = cmd_ln_int32("-hmmdump") ? stderr : NULL;
 
     /* STRUCTURE INITIALIZATION : The search data structure, done only
        after kb is initialized kb is acted as a clipboard. */
 
-    kb->op_mode = cmd_ln_int32("-op_mode");
-    if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
-        E_FATAL("Search initialization failed. Forced exit\n");
-    }
+    /* No op_mode means we are not using the search crap. */
+    if (cmd_ln_exists("-op_mode")) {
+	    kb->op_mode = cmd_ln_int32("-op_mode");
+	    if ((kb->srch = (srch_t *) srch_init(kb, kb->op_mode)) == NULL) {
+		    E_FATAL("Search initialization failed. Forced exit\n");
+	    }
 
-    if (REPORT_KB) {
-        srch_report(kb->srch);
+	    if (REPORT_KB) {
+		    srch_report(kb->srch);
+	    }
     }
 }
 

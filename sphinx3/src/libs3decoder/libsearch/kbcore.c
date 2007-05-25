@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -575,20 +576,6 @@ kbcore_init(float64 logbase,
             ("Slow GMM computation is used, SVQ and GS will not be used\n");
     }
 
-    /* Two sore points here 
-       1, lmset initialization should be handed to the search itself. This will make it 
-       parrallel to the FSG code
-     */
-    if ((lmfile || lmctlfile) && (fsgfile || fsgctlfile)) {
-        E_FATAL
-            ("Only one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile) could be specified\n");
-    }
-
-    if (!(lmfile || lmctlfile) && !(fsgfile || fsgctlfile)) {
-        E_FATAL
-            ("Please specify one of the group (-lm|-lmctfile)  or (-fsg|-fsgctlfile)\n");
-    }
-
     assert(kb->dict);
     if (lmfile || lmctlfile) {
         kb->lmset = lmset_init(lmfile, lmctlfile, cmd_ln_str("-ctl_lm"),        /* This two are ugly. */
@@ -602,10 +589,12 @@ kbcore_init(float64 logbase,
                              lmset_idx_to_name(kb->lmset, i));
 
             /*HACK! Only thing that is op_mode-specific. (Hopefully),
-               op-mode name is also hard-wired. Evandro will kill me.  */
+               op-mode name is also hard-wired. Evandro will kill me.
+	    */
 
-            if (cmd_ln_int32("-op_mode") == 4
-                || cmd_ln_int32("-op_mode") == 5)
+	    if (cmd_ln_exists("-op_mode")
+		&& (cmd_ln_int32("-op_mode") == 4
+		    || cmd_ln_int32("-op_mode") == 5))
                 unlinksilences(kb->lmset->lmarray[i], kb, kb->dict);
         }
 
@@ -638,9 +627,13 @@ kbcore_init(float64 logbase,
             ("Transition matrices contain arcs skipping more than 1 state, not supported in s3.x's decode\n");
 
     /* This should be removed and put into the search */
+    /* NO KIDDING! */
     if (kb->mdef && kb->dict) { /* Initialize dict2pid */
-        kb->dict2pid =
-            dict2pid_build(kb->mdef, kb->dict, cmd_ln_int32("-composite"));
+	int32 composite = 1;
+
+	if (cmd_ln_exists("-composite"))
+	    composite = cmd_ln_int32("-composite");
+        kb->dict2pid = dict2pid_build(kb->mdef, kb->dict, composite);
     }
 
     if (REPORT_KBCORE) {

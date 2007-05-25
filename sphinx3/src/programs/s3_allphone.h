@@ -86,7 +86,8 @@
 /** \file s3_allphone.h
     \brief data structure of s3.0 allphone. 
  */
-#include <s3types.h>
+#include "s3types.h"
+#include "kb.h"
 
 /* Phone level segmentation information */
 typedef struct phseg_s {
@@ -97,11 +98,13 @@ typedef struct phseg_s {
     struct phseg_s *next;       /* Next entry in alignment */
 } phseg_t;
 
-int32 allphone_init(mdef_t * mdef, tmat_t * tmat);
+int32 allphone_init(kb_t *kb);
 
 int32 allphone_start_utt(char *uttid);
 
-int32 allphone_frame(int32 * senscr);
+int32 allphone_frame(ascr_t *ascr, stat_t *st);
+
+int32 allphone_sen_active(ascr_t *ascr);
 
 phseg_t *allphone_end_utt(char *uttid);
 
