@@ -70,7 +70,46 @@ srch_do_nothing_end(void *srch)
 }
 
 int
-srch_do_nothing_decode()
+srch_do_nothing_decode(void *srch_struct)
 {
     return SRCH_SUCCESS;
 }
+
+/* Pointers to all functions */
+srch_funcs_t srch_do_nothing_funcs = {
+	/* init */			srch_do_nothing_init,
+	/* uninit */			srch_do_nothing_uninit,
+	/* utt_begin */ 		srch_do_nothing_begin,
+	/* utt_end */   		srch_do_nothing_end,
+	/* decode */			srch_do_nothing_decode,
+	/* set_lm */			NULL,
+	/* add_lm */			NULL,
+	/* delete_lm */ 		NULL,
+
+	/* gmm_compute_lv1 */		NULL,
+	/* one_srch_frame_lv1 */	NULL,
+	/* hmm_compute_lv1 */		NULL,
+	/* eval_beams_lv1 */		NULL,
+	/* propagate_graph_ph_lv1 */	NULL,
+	/* propagate_graph_wd_lv1 */	NULL,
+
+	/* gmm_compute_lv2 */		NULL,
+	/* one_srch_frame_lv2 */	NULL,
+	/* hmm_compute_lv2 */		NULL,
+	/* eval_beams_lv2 */		NULL,
+	/* propagate_graph_ph_lv2 */	NULL,
+	/* propagate_graph_wd_lv2 */	NULL,
+
+	/* rescoring */			NULL,
+	/* frame_windup */		NULL,
+	/* compute_heuristic */		NULL,
+	/* shift_one_cache_frame */	NULL,
+	/* select_active_gmm */		NULL,
+
+	/* gen_hyp */			NULL,
+	/* gen_dag */			NULL,
+	/* dump_vithist */		NULL,
+	/* bestpath_impl */		NULL,
+	/* dag_dump */			NULL,
+	NULL
+};

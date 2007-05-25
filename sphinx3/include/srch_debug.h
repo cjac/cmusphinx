@@ -80,6 +80,7 @@
 
 */
 
+extern struct srch_funcs_s srch_debug_funcs;
 
 int srch_debug_init(kb_t *kb,void* srch);
 int srch_debug_uninit(void* srch);

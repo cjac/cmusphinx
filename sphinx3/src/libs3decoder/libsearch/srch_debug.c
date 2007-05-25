@@ -241,3 +241,42 @@ srch_debug_dag_dump(void *srch, glist_t hyp)
 {
     return SRCH_SUCCESS;
 }
+
+/* Pointers to all functions */
+srch_funcs_t srch_debug_funcs = {
+	/* init */			srch_debug_init,
+	/* uninit */			srch_debug_uninit,
+	/* utt_begin */ 		srch_debug_begin,
+	/* utt_end */   		srch_debug_end,
+	/* decode */			NULL,
+	/* set_lm */			srch_debug_set_lm,
+	/* add_lm */			srch_debug_add_lm,
+	/* delete_lm */ 		srch_debug_delete_lm,
+
+	/* gmm_compute_lv1 */		srch_debug_gmm_compute_lv1,
+	/* one_srch_frame_lv1 */	NULL,
+	/* hmm_compute_lv1 */		srch_debug_hmm_compute_lv1,
+	/* eval_beams_lv1 */		srch_debug_eval_beams_lv1,
+	/* propagate_graph_ph_lv1 */	srch_debug_propagate_graph_ph_lv1,
+	/* propagate_graph_wd_lv1 */	srch_debug_propagate_graph_wd_lv1,
+
+	/* gmm_compute_lv2 */		srch_debug_gmm_compute_lv2,
+	/* one_srch_frame_lv2 */	NULL,
+	/* hmm_compute_lv2 */		srch_debug_hmm_compute_lv2,
+	/* eval_beams_lv2 */		srch_debug_eval_beams_lv2,
+	/* propagate_graph_ph_lv2 */	srch_debug_propagate_graph_ph_lv2,
+	/* propagate_graph_wd_lv2 */	srch_debug_propagate_graph_wd_lv2,
+
+	/* rescoring */			NULL,
+	/* frame_windup */		srch_debug_frame_windup,
+	/* compute_heuristic */		srch_debug_compute_heuristic,
+	/* shift_one_cache_frame */	srch_debug_shift_one_cache_frame,
+	/* select_active_gmm */		srch_debug_select_active_gmm,
+
+	/* gen_hyp */			srch_debug_gen_hyp,
+	/* gen_dag */			srch_debug_gen_dag,
+	/* dump_vithist */		srch_debug_dump_vithist,
+	/* bestpath_impl */		srch_debug_bestpath_impl,
+	/* dag_dump */			srch_debug_dag_dump,
+	NULL
+};

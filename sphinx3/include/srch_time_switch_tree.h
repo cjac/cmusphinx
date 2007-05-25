@@ -183,6 +183,8 @@ typedef struct {
 
 } srch_TST_graph_t ;
 
+extern struct srch_funcs_s srch_TST_funcs;
+
 /** Initializing search-specific data structure for time-switching
     tree search Currently, that is to say to initialize lexical
     tree(s) (both words and fillers) and histprune (it is necessary

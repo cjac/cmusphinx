@@ -300,3 +300,42 @@ srch_FSG_gen_hyp(void *srch           /**< a pointer of srch_t */
 
     return rhyp;
 }
+
+/* Pointers to all functions */
+srch_funcs_t srch_FSG_funcs = {
+	/* init */			srch_FSG_init,
+	/* uninit */			srch_FSG_uninit,
+	/* utt_begin */ 		srch_FSG_begin,
+	/* utt_end */   		srch_FSG_end,
+	/* decode */			NULL,
+	/* set_lm */			srch_FSG_set_lm,
+	/* add_lm */			srch_FSG_add_lm,
+	/* delete_lm */ 		srch_FSG_delete_lm,
+
+	/* gmm_compute_lv1 */		approx_ci_gmm_compute,
+	/* one_srch_frame_lv1 */	NULL,
+	/* hmm_compute_lv1 */		srch_debug_hmm_compute_lv1,
+	/* eval_beams_lv1 */		srch_debug_eval_beams_lv1,
+	/* propagate_graph_ph_lv1 */	srch_debug_propagate_graph_ph_lv1,
+	/* propagate_graph_wd_lv1 */	srch_debug_propagate_graph_wd_lv1,
+
+	/* gmm_compute_lv2 */		s3_cd_gmm_compute_sen,
+	/* one_srch_frame_lv2 */	srch_FSG_srch_one_frame_lv2,
+	/* hmm_compute_lv2 */		NULL,
+	/* eval_beams_lv2 */		NULL,
+	/* propagate_graph_ph_lv2 */	NULL,
+	/* propagate_graph_wd_lv2 */	NULL,
+
+	/* rescoring */			NULL,
+	/* frame_windup */		srch_FSG_windup,
+	/* compute_heuristic */		NULL,
+	/* shift_one_cache_frame */	srch_FSG_shift_one_cache_frame,
+	/* select_active_gmm */		srch_FSG_select_active_gmm,
+
+	/* gen_hyp */			NULL,
+	/* gen_dag */			NULL,
+	/* dump_vithist */		NULL,
+	/* bestpath_impl */		NULL,
+	/* dag_dump */			NULL,
+	NULL
+};

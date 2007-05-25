@@ -85,6 +85,8 @@
 #ifndef SRCH_FLT_FWD
 #define SRCH_FLT_FWD
 
+extern struct srch_funcs_s srch_FLAT_FWD_funcs;
+
 /**
  * \struct fwd_dbg_t 
  *

@@ -1412,3 +1412,43 @@ srch_TST_dag_dump(void *srch, glist_t hyp)
 
 
 #endif
+
+
+/* Pointers to all functions */
+srch_funcs_t srch_TST_funcs = {
+	/* init */			srch_TST_init,
+	/* uninit */			srch_TST_uninit,
+	/* utt_begin */ 		srch_TST_begin,
+	/* utt_end */   		srch_TST_end,
+	/* decode */			NULL,
+	/* set_lm */			srch_TST_set_lm,
+	/* add_lm */			srch_TST_add_lm,
+	/* delete_lm */ 		srch_TST_delete_lm,
+
+	/* gmm_compute_lv1 */		approx_ci_gmm_compute,
+	/* one_srch_frame_lv1 */	NULL,
+	/* hmm_compute_lv1 */		srch_debug_hmm_compute_lv1,
+	/* eval_beams_lv1 */		srch_debug_eval_beams_lv1,
+	/* propagate_graph_ph_lv1 */	srch_debug_propagate_graph_ph_lv1,
+	/* propagate_graph_wd_lv1 */	srch_debug_propagate_graph_wd_lv1,
+
+	/* gmm_compute_lv2 */		s3_cd_gmm_compute_sen_comp,
+	/* one_srch_frame_lv2 */	NULL,
+	/* hmm_compute_lv2 */		srch_TST_hmm_compute_lv2,
+	/* eval_beams_lv2 */		srch_debug_eval_beams_lv2,
+	/* propagate_graph_ph_lv2 */	srch_TST_propagate_graph_ph_lv2,
+	/* propagate_graph_wd_lv2 */	srch_TST_propagate_graph_wd_lv2,
+
+	/* rescoring */			NULL,
+	/* frame_windup */		srch_TST_frame_windup,
+	/* compute_heuristic */		srch_TST_compute_heuristic,
+	/* shift_one_cache_frame */	srch_TST_shift_one_cache_frame,
+	/* select_active_gmm */		srch_TST_select_active_gmm,
+
+	/* gen_hyp */			NULL,
+	/* gen_dag */			NULL,
+	/* dump_vithist */		NULL,
+	/* bestpath_impl */		NULL,
+	/* dag_dump */			NULL,
+	NULL
+};

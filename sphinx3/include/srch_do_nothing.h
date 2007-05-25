@@ -51,10 +51,12 @@
    debugging.  
 */
 
+extern struct srch_funcs_s srch_do_nothing_funcs;
+
 int srch_do_nothing_init(kb_t *kb,void* srch);
 int srch_do_nothing_uninit(void* srch);
 int srch_do_nothing_begin(void* srch);
 int srch_do_nothing_end(void* srch);
-int srch_do_nothing_decode(void);
+int srch_do_nothing_decode(void *srch);
 
 

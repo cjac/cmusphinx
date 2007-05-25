@@ -427,7 +427,7 @@ s3_decode_read_lm(s3_decode_t * _decode,
     lm = lm_read_advance(lmpath, lmname, cmd_ln_float32("-lw"), cmd_ln_float32("-wip"), cmd_ln_float32("-uw"), ndict, NULL, 1   /* Weight apply */
         );
 
-    s->srch_add_lm(s, lm, lmname);
+    s->funcs->add_lm(s, lm, lmname);
 }
 
 void
@@ -435,7 +435,7 @@ s3_decode_set_lm(s3_decode_t * _decode, const char *lmname)
 {
     srch_t *s;
     s = (srch_t *) _decode->kb.srch;
-    s->srch_set_lm(s, lmname);
+    s->funcs->set_lm(s, lmname);
 }
 
 void
@@ -443,7 +443,7 @@ s3_decode_delete_lm(s3_decode_t * _decode, const char *lmname)
 {
     srch_t *s;
     s = (srch_t *) _decode->kb.srch;
-    s->srch_delete_lm(s, lmname);
+    s->funcs->delete_lm(s, lmname);
 }
 
 /***************************************************************************/

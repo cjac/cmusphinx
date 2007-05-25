@@ -515,7 +515,180 @@ typedef struct {
     no problem in talking.
 
 */
+typedef struct srch_funcs_s {
+    /*
+      Function pointers that perform the operations.  Every mode will
+      set these pointers at the beginning of the search.
+    */
+
+    /** Initialization of the search, coz the graph type can be different */
+    int (*init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */
+                void* srch_struct /**< a pointer of srch_t */
+        );
+
+    /**< Un-Initialize of the search. */
+    int (*uninit)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+    /**< Begin search for one utterance */
+    int (*utt_begin)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+
+    /** End search for one utterance */
+    int (*utt_end)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+    /** Actual decoding operation */
+    int (*decode)(
+        void* srch_struct /**< a pointer of srch_t */
+        );
+
+    /** Set LM operation.  */
+    int (*set_lm)(
+        void* srch_struct, /**< a pointer of srch_t */
+        const char *lmname /**< The LM name */
+        );
+
+    /** Add LM operation */ 
+    int (*add_lm)(void* srch_struct, /**< a pointer of srch_t */
+                  lm_t* lm,          /**< A new lm */
+                  const char *lmname /**< The LM name */
+        );
+
+    /** Delete LM operation */
+    int (*delete_lm)(void* srch_struct,  /**< a pointer of srch_t */
+                     const char *lmname  /**< The LM name */
+        );
+
+    /** Read FSG operation*/
+#if 0
+    word_fsg_t* (*read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
+                                const char* fsgname /** The fsg file name*/
+
+        );
+#endif
+    /* The 4 operations that require switching during the approximate search process */
+    /**< lv1 stands for approximate search. Currently not used. */
+
+    /** Compute Approximate GMM */
+    int (*gmm_compute_lv1)(void* srch_struct,  /**< a pointer of srch_t */
+                           float32 *feat,      /**< The feature vector */
+                           int32 frmno_lp1,    /**< The frame for the cache */
+                           int32 frmno_lp2     /**< The frame for the windows */
+        );
+
+
+    /* The level 1 search functions are not yet fully used. Not all of them are defined nowWhen fast
+       match is needed. We will need them more. 
+    */
+    int (*one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
+        );
+
+    int (*hmm_compute_lv1)(void* srch_struct);
+    int (*eval_beams_lv1)(void* srch_struct);
+    int (*propagate_graph_ph_lv1)(void* srch_struct);
+    int (*propagate_graph_wd_lv1)(void* srch_struct);
+
+    /* The 4 operations that require switching during the detail search process */
+    /** lv2 stands for detail search. */
+
+
+    /** Compute detail (CD) GMM scores or lv2*/
+    int (*gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                           float32 **feat,      /**< A feature vector */
+                           int32 time          /**< The frame we want to compute detail score */
+        );
+
+
+    /** A short-cut function that allows implementer could just
+        implement searching for one frame without implement the
+        following 4 fuctions.
+    */
+    int (*one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
+        );
+
+
+    /** Compute detail (CD) HMM scores or lv2*/
+    int (*hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                           int32 frmno         /**< The frame we want to compute detail score */
+        );
+
+    /** Compute the beams*/
+    int (*eval_beams_lv2)(void* srch_struct     /**< a pointer of srch_t */
+        );
+
+    /** Propagate the graph in phone level */
+    int (*propagate_graph_ph_lv2)(void* srch_struct, /**< a pointer of srch_t */
+                                  int32 frmno        /**< The frame no. */
+        );
+
+    /** Propagate the graph in word level */
+    int (*propagate_graph_wd_lv2)(void* srch_struct,  /**< a pointer of srch_t */
+                                  int32 frmno       /**< The frame no. */
+        );
+
+    /** Rescoring srch */
+    int (*rescoring) (void* srch_struct,  /**< a pointer of srch_t */
+                      int32 frmno         /**< The frame no. */
+        );  
+
+    int (*frame_windup) (void * srch_struct, int32 frmno);
+    int (*compute_heuristic) (void * srch_struct, int32 win_efv);
+    int (*shift_one_cache_frame) (void *srch_struct,int32 win_efv);
+    int (*select_active_gmm) (void *srch_struct);
+
+
+    /** 
+        Second stage functions. They provide a generalized interface for
+        different modes to generate output
+    */
+    /**
+       Generation of hypothesis (*.hyp). Notice, displaying hypothesis is taken care by srch.c itself. 
+    */
+    glist_t (*gen_hyp) (void * srch_struct /**< a pointer of srch_t */
+        );
+
+    /**
+       Generation of directed acyclic graph (*.lat.gz). Notice , dumping
+       the dag will be taken care by srch.c. There is mode specific
+       optimization.
+       @return a dag which represent the word graphs. 
+    */
+    dag_t* (*gen_dag) (void* srch_struct, /**< a pointer of srch_t */
+                       glist_t hyp
+        );
+
+    /**
+       Dump vithist 
+    */
+    int (*dump_vithist)(void * srch_struct /**< a pointer of srch_t */
+        );
+
+    /**
+       Interface of best path search. 
+    */
+    glist_t (*bestpath_impl)(void *srch_struct, /**< a pointer of srch_t */
+                             dag_t *dag 
+        );
+
+    /**
+       Interface for sphinx3 dag dumping function     
+    */
+    int (*dag_dump) (void * srch_struct,
+                     glist_t hyp
+        );
+
+    /** Empty "guard" element which does nothing. */
+    void *nothing;
+} srch_funcs_t;
+
 typedef struct srch_s {
+    /**
+     * Methods specific to a particular search mode.
+     **/
+    srch_funcs_t *funcs;
+
     grp_str_t* grh;     /**< Pointer to search specific structures */
     int op_mode;        /**< The operation mode */
     stat_t *stat;       /**< Pointer to the statistics structure */
@@ -569,172 +742,7 @@ typedef struct srch_s {
     /* FIXME, duplicated with fwd_dbg_t */
     int32 hmm_dump_sf;	/**< Start frame for HMMs to be dumped for debugging */
     int32 hmm_dump_ef;	/**< End frame for HMMs to be dumped for debugging */
-
-
-    /*
-      Function pointers that perform the operations.  Every mode will
-      set these pointers at the beginning of the search.
-    */
-
-    /** Initialization of the search, coz the graph type can be different */
-    int (*srch_init)(kb_t *kb, /**< Pointer of kb_t which srch_init wants to copy from */
-                     void* srch_struct /**< a pointer of srch_t */
-        );
-
-    /**< Un-Initialize of the search. */
-    int (*srch_uninit)(
-        void* srch_struct /**< a pointer of srch_t */
-        );
-    /**< Begin search for one utterance */
-    int (*srch_utt_begin)(
-        void* srch_struct /**< a pointer of srch_t */
-        );
-
-    /** End search for one utterance */
-    int (*srch_utt_end)(
-        void* srch_struct /**< a pointer of srch_t */
-        );
-    /** Actual decoding operation */
-    int (*srch_decode)(
-        void* srch_struct /**< a pointer of srch_t */
-        );
-
-    /** Set LM operation.  */
-    int (*srch_set_lm)(
-        void* srch_struct, /**< a pointer of srch_t */
-        const char *lmname /**< The LM name */
-        );
-
-    /** Add LM operation */ 
-    int (*srch_add_lm)(void* srch_struct, /**< a pointer of srch_t */
-                       lm_t* lm,          /**< A new lm */
-                       const char *lmname /**< The LM name */
-        );
-
-    /** Delete LM operation */
-    int (*srch_delete_lm)(void* srch_struct,  /**< a pointer of srch_t */
-                          const char *lmname  /**< The LM name */
-        );
-
-    /** Read FSG operation*/
-#if 0
-    word_fsg_t* (*srch_read_fsgfile)(void* srch_struct, /**< a pointer of srch_t */
-                                     const char* fsgname /** The fsg file name*/
-
-        );
-#endif
-    /* The 4 operations that require switching during the approximate search process */
-    /**< lv1 stands for approximate search. Currently not used. */
-
-    /** Compute Approximate GMM */
-    int (*srch_gmm_compute_lv1)(void* srch_struct,  /**< a pointer of srch_t */
-                                float32 *feat,      /**< The feature vector */
-                                int32 frmno_lp1,    /**< The frame for the cache */
-                                int32 frmno_lp2     /**< The frame for the windows */
-        );
-
-
-    /* The level 1 search functions are not yet fully used. Not all of them are defined nowWhen fast
-       match is needed. We will need them more. 
-    */
-    int (*srch_one_srch_frame_lv1)(void* srch_struct /**< a pointer of srch_t */
-        );
-
-    int (*srch_hmm_compute_lv1)(void* srch_struct);
-    int (*srch_eval_beams_lv1)(void* srch_struct);
-    int (*srch_propagate_graph_ph_lv1)(void* srch_struct);
-    int (*srch_propagate_graph_wd_lv1)(void* srch_struct);
-
-    /* The 4 operations that require switching during the detail search process */
-    /** lv2 stands for detail search. */
-
-
-    /** Compute detail (CD) GMM scores or lv2*/
-    int (*srch_gmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-                                float32 **feat,      /**< A feature vector */
-                                int32 time          /**< The frame we want to compute detail score */
-        );
-
-
-    /** A short-cut function that allows implementer could just
-        implement searching for one frame without implement the
-        following 4 fuctions.
-    */
-    int (*srch_one_srch_frame_lv2)(void* srch_struct /**< a pointer of srch_t */
-        );
-
-
-    /** Compute detail (CD) HMM scores or lv2*/
-    int (*srch_hmm_compute_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-                                int32 frmno         /**< The frame we want to compute detail score */
-        );
-
-    /** Compute the beams*/
-    int (*srch_eval_beams_lv2)(void* srch_struct     /**< a pointer of srch_t */
-        );
-
-    /** Propagate the graph in phone level */
-    int (*srch_propagate_graph_ph_lv2)(void* srch_struct, /**< a pointer of srch_t */
-                                       int32 frmno        /**< The frame no. */
-        );
-
-    /** Propagate the graph in word level */
-    int (*srch_propagate_graph_wd_lv2)(void* srch_struct,  /**< a pointer of srch_t */
-                                       int32 frmno       /**< The frame no. */
-        );
-
-    /** Rescoring srch */
-    int (*srch_rescoring) (void* srch_struct,  /**< a pointer of srch_t */
-                           int32 frmno         /**< The frame no. */
-        );  
-
-    int (*srch_frame_windup) (void * srch_struct, int32 frmno);
-    int (*srch_compute_heuristic) (void * srch_struct, int32 win_efv);
-    int (*srch_shift_one_cache_frame) (void *srch_struct,int32 win_efv);
-    int (*srch_select_active_gmm) (void *srch_struct);
-
-
-    /** 
-        Second stage functions. They provide a generalized interface for
-        different modes to generate output
-    */
-    /**
-       Generation of hypothesis (*.hyp). Notice, displaying hypothesis is taken care by srch.c itself. 
-    */
-    glist_t (*srch_gen_hyp) (void * srch_struct /**< a pointer of srch_t */
-        );
-
-    /**
-       Generation of directed acyclic graph (*.lat.gz). Notice , dumping
-       the dag will be taken care by srch.c. There is mode specific
-       optimization.
-       @return a dag which represent the word graphs. 
-    */
-    dag_t* (*srch_gen_dag) (void* srch_struct, /**< a pointer of srch_t */
-                            glist_t hyp
-        );
-
-    /**
-       Dump vithist 
-    */
-    int (*srch_dump_vithist)(void * srch_struct /**< a pointer of srch_t */
-        );
-
-    /**
-       Interface of best path search. 
-    */
-    glist_t (*srch_bestpath_impl)(void *srch_struct, /**< a pointer of srch_t */
-                                  dag_t *dag 
-        );
-
-    /**
-       Interface for sphinx3 dag dumping function     
-    */
-    int (*srch_dag_dump) (void * srch_struct,
-                          glist_t hyp
-        );
 }srch_t;
-
 
 /** 
     Translate search mode string to mode number 

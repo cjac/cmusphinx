@@ -75,6 +75,7 @@
 #include "fsg_search.h"
 #include "cmd_ln.h"
 
+extern struct srch_funcs_s srch_FSG_funcs;
 
 int srch_FSG_init(kb_t *kb, /**< The KB */
 		  void* srch_struct /**< The pointer to a search structure */

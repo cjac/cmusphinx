@@ -134,8 +134,7 @@ typedef struct {
 } srch_WST_graph_t ;
 
 
-
-
+extern struct srch_funcs_s srch_WST_funcs;
 
 
 int srch_WST_init(kb_t *kb, /**< The KB */
