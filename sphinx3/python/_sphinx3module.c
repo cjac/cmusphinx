@@ -373,7 +373,7 @@ sphinx3_decode_cep_file(PyObject *self, PyObject *args)
 	decoder.num_frames_entered
 		= feat_s2mfc2feat(kbcore_fcb(decoder.kbcore),
 				  filename,
-				  NULL, NULL,
+				  NULL, "",
 				  sf, ef,
 				  decoder.kb.feat, S3_MAX_FRAMES);
 	if (decoder.num_frames_entered < 0) {
@@ -430,7 +430,7 @@ static PyMethodDef sphinx3methods[] = {
 };
 
 PyMODINIT_FUNC
-initsphinx3(void)
+init_sphinx3(void)
 {
-	(void) Py_InitModule("sphinx3", sphinx3methods);
+	(void) Py_InitModule("_sphinx3", sphinx3methods);
 }

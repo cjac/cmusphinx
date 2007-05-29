@@ -1,6 +1,6 @@
 from distutils.core import setup, Extension
 
-module = Extension('sphinx3',
+module = Extension('_sphinx3',
                    include_dirs = ['../../../sphinxbase/include',
                                    '../include',
                                    '/usr/local/include/sphinxbase/',
