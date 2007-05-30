@@ -19,7 +19,6 @@ libsearch_la_SOURCES = \
 	kb.c \
 	kbcore.c \
 	lextree.c \
-	s3_allphone.c \
 	srch.c \
 	srch_align.c \
 	srch_allphone.c \

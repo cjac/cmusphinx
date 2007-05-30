@@ -4,6 +4,7 @@ TESTS = \
 	test-decode-clm.sh \
 	test-decode-mllr.sh \
 	test-decode-s3cont.sh \
+	test-decode-mode1.sh \
 	test-decode-mode2.sh \
 	test-decode-s2semi.sh \
 	test-decode-lts.sh \
@@ -61,6 +62,7 @@ CLEANFILES = chan3.mfc \
 	test-align-mllr.log \
 	allphone.match \
 	allphone.matchseg \
+	test-decode-mode1*.match \
 	test-decode-mode2.match \
 	test-lm_convert.DMP \
 	test-lm_convert.FST.sym \

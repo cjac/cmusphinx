@@ -35,9 +35,7 @@
  *
  */
 
-#include "s3_allphone.h"
-
-/* \file s3_allphone.h
+/* \file srch_allphone.h
  */
 
 #include "s3types.h"

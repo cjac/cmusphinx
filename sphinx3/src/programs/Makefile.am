@@ -24,7 +24,7 @@ sphinx3_astar_SOURCES = main_astar.c s3_astar.c
 sphinx3_conf_SOURCES = main_conf.c 
 sphinx3_dag_SOURCES = main_dag.c 
 sphinx3_dp_SOURCES = main_dp.c
-sphinx3_allphone_SOURCES = main_allphone.c
+sphinx3_allphone_SOURCES = main_allphone.c s3_allphone.c
 sphinx3_ep_SOURCES = main_ep.c
 gausubvq_SOURCES = gausubvq.c
 lm_convert_SOURCES = main_lm_convert.c
@@ -35,7 +35,8 @@ sphinx3_cfg2fsg_SOURCES = main_cfg2fsg.c
 
 noinst_HEADERS = \
         main_ep.h \
-	s3_align.h
+	s3_align.h \
+	s3_allphone.h
 
 LDADD = $(top_builddir)/src/libs3decoder/libs3decoder.la \
 	-lsphinxutil -lsphinxfe -lsphinxfeat -lsphinxad -lm

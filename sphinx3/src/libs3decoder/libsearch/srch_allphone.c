@@ -94,6 +94,18 @@ typedef struct history_s {
 } history_t;
 
 /**
+ * Phone level segmentation information
+ */
+typedef struct phseg_s {
+    s3cipid_t ci;               /* CI-phone id */
+    s3frmid_t sf, ef;           /* Start and end frame for this phone occurrence */
+    int32 score;                /* Acoustic score for this segment of alignment */
+    int32 tscore;               /* Transition ("LM") score for this segment */
+    struct phseg_s *next;       /* Next entry in alignment */
+} phseg_t;
+
+
+/**
  * Allphone search structure.
  */
 
