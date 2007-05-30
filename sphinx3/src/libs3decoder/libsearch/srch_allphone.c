@@ -873,7 +873,7 @@ srch_allphone_init(kb_t *kb, void *srch)
     }
     else {
 	E_WARN("-lm argument missing; doing unconstrained phone-loop decoding\n");
-	allp->inspen = allp->lm->wip;
+	allp->inspen = logs3(cmd_ln_float32("-wip"));
     }
 
     allp->beam = logs3(cmd_ln_float64("-beam"));
