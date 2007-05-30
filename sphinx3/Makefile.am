@@ -42,7 +42,11 @@ EXTRA_DIST = autogen.sh \
 	win32/msdev/programs/livedecode/sphinx3_livedecode.dsp \
 	win32/msdev/programs/livepretend/sphinx3_livepretend.dsp \
 	win32/msdev/programs/lm_convert/lm_convert.dsp \
-	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.dsp
+	win32/msdev/programs/sphinx3_continuous/sphinx3_continuous.dsp \
+	python/setup.py \
+	python/_sphinx3module.c \
+	python/_sphinx3_test.py
+
 
 # NO!  Don't make .tar.Z or .shar distributions
 AUTOMAKE_OPTIONS = dist-bzip2 dist-zip #dist-shar dist-tarZ
