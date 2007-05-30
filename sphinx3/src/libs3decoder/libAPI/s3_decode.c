@@ -494,13 +494,13 @@ s3_decode_set_uttid(s3_decode_t * _decode, char *_uttid)
 int
 s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt)
 {
-    int32 id;
     int32 i = 0;
     glist_t hyp_list;
     gnode_t *node;
     srch_hyp_t *hyp;
     char *hyp_strptr = 0;
     char *hyp_str = 0;
+    srch_t *srch;
     srch_hyp_t **hyp_segs = 0;
     int hyp_seglen = 0;
     int hyp_strlen = 0;
@@ -515,16 +515,14 @@ s3_decode_record_hyps(s3_decode_t * _decode, int _end_utt)
 
     kb = &_decode->kb;
     dict = kbcore_dict(_decode->kbcore);
-    id = _end_utt ?
-        vithist_utt_end(kb->vithist, _decode->kbcore) :
-        vithist_partialutt_end(kb->vithist, _decode->kbcore);
-    if (id < 0) {
+    srch = (srch_t *) _decode->kb.srch;
+    hyp_list = srch_get_hyp(srch);
+    if (hyp_list == NULL) {
         E_WARN("Failed to retrieve viterbi history.\n");
         return S3_DECODE_ERROR_INTERNAL;
     }
 
-  /** record the segment length and the overall string length */
-    hyp_list = vithist_backtrace(kb->vithist, id, dict);
+    /** record the segment length and the overall string length */
     finish_wid = dict_finishwid(dict);
     for (node = hyp_list; node != NULL; node = gnode_next(node)) {
         hyp = (srch_hyp_t *) gnode_ptr(node);

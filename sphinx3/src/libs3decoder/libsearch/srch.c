@@ -470,6 +470,7 @@ srch_init(kb_t * kb, int32 op_mode)
     s->ascr = kb->ascr;
     s->vithist = kb->vithist;
     s->lathist = kb->lathist;
+    s->exit_id = -1;
     s->beam = kb->beam;
     s->fastgmm = kb->fastgmm;
     s->pl = kb->pl;
@@ -548,6 +549,7 @@ srch_utt_begin(srch_t * srch)
 
     for (i = 0; i < srch->segsz_sz; i++)
         srch->segsz[i] = 0;
+    srch->exit_id = -1;
 
     srch->funcs->utt_begin(srch);
 
@@ -817,6 +819,17 @@ srch_report(srch_t * srch)
     ckd_free(op_str);
 }
 
+/** Get a current recognition hypothesis. */
+glist_t
+srch_get_hyp(srch_t *srch)
+{
+    if (srch->funcs->gen_hyp == NULL) {
+        E_ERROR
+            ("srch->funcs->get_hyp is NULL. Please make sure it is set.\n");
+        return NULL;
+    }
+    return srch->funcs->gen_hyp(srch);
+}
 
 /** using file name of the LM or defined lmctlfn mechanism */
 int32

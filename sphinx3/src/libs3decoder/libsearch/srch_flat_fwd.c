@@ -511,7 +511,6 @@ srch_FLAT_FWD_end(void *srch)
     whmm_t *h, *nexth;
     s3wid_t w;
     lm_t *lm;
-    s3latid_t l;
     FILE *bptfp;
 
 
@@ -567,14 +566,14 @@ srch_FLAT_FWD_end(void *srch)
 
     /* Backtrack through lattice for Viterbi result */
 
-    l = lat_final_entry(s->lathist, dict, fwg->n_frm, s->uttid);
-    if (NOT_S3LATID(l)) {
-        E_INFO("lattice ID: %d\n", l);
+    s->exit_id = lat_final_entry(s->lathist, dict, fwg->n_frm, s->uttid);
+    if (NOT_S3LATID(s->exit_id)) {
+        E_INFO("lattice ID: %d\n", s->exit_id);
         E_ERROR("%s: NO RECOGNITION\n", s->uttid);
     }
     else {
         /* BAD_S3WID => Any right context */
-        lattice_backtrace(s->lathist, l, BAD_S3WID, &hyp, lm, dict,
+        lattice_backtrace(s->lathist, s->exit_id, BAD_S3WID, &hyp, lm, dict,
                           fwg->ctxt, s->kbc->fillpen);
     }
 
@@ -635,7 +634,7 @@ srch_FLAT_FWD_end(void *srch)
     if (cmd_ln_str("-outlatdir") || cmd_ln_int32("-bestpath")) {
 
         dag =
-            dag_build(l, s->lathist, dict, lm, fwg->ctxt, s->kbc->fillpen,
+            dag_build(s->exit_id, s->lathist, dict, lm, fwg->ctxt, s->kbc->fillpen,
                       fwg->n_frm);
 
 
@@ -917,6 +916,45 @@ srch_FLAT_FWD_frame_windup(void *srch_struct, int32 frmno)
     return SRCH_SUCCESS;
 }
 
+glist_t
+srch_FLAT_FWD_gen_hyp(void *srch           /**< a pointer of srch_t */
+    )
+{
+    srch_t *s;
+    srch_FLAT_FWD_graph_t *fwg;
+    s3latid_t l;
+    srch_hyp_t *tmph, *hyp;
+    glist_t ghyp, rhyp;
+
+    s = (srch_t *) srch;
+    fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
+
+    if (s->exit_id != -1)
+	    l = s->exit_id;
+    else
+	    l = lat_final_entry(s->lathist, kbcore_dict(s->kbc), fwg->n_frm,
+				s->uttid);
+    if (NOT_S3LATID(l)) {
+        E_INFO("lattice ID: %d\n", l);
+        E_ERROR("%s: NO RECOGNITION\n", s->uttid);
+        return NULL;
+    }
+    else {
+        /* BAD_S3WID => Any right context */
+        lattice_backtrace(s->lathist, l, BAD_S3WID, &hyp,
+                          s->kbc->lmset->cur_lm, kbcore_dict(s->kbc),
+                          fwg->ctxt, s->kbc->fillpen);
+        ghyp = NULL;
+        for (tmph = hyp; tmph; tmph = tmph->next) {
+            ghyp = glist_add_ptr(ghyp, (void *) tmph);
+        }
+
+        rhyp = glist_reverse(ghyp);
+        return rhyp;
+    }
+
+}
+
 #if 0
 int
 srch_FLAT_FWD_dump_vithist(void *srch)
@@ -947,43 +985,6 @@ srch_FLAT_FWD_dump_vithist(void *srch)
 }
 
 
-glist_t
-srch_FLAT_FWD_gen_hyp(void *srch           /**< a pointer of srch_t */
-    )
-{
-    srch_t *s;
-    srch_FLAT_FWD_graph_t *fwg;
-    s3latid_t l;
-    srch_hyp_t *tmph, *hyp;
-    glist_t ghyp, rhyp;
-
-    s = (srch_t *) srch;
-    fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
-
-
-
-    l = lat_final_entry(s->lathist, kbcore_dict(s->kbc), fwg->n_frm,
-                        s->uttid);
-    if (NOT_S3LATID(l)) {
-        E_INFO("lattice ID: %d\n", l);
-        E_ERROR("%s: NO RECOGNITION\n", s->uttid);
-        return NULL;
-    }
-    else {
-        /* BAD_S3WID => Any right context */
-        lattice_backtrace(s->lathist, l, BAD_S3WID, &hyp,
-                          s->kbc->lmset->cur_lm, kbcore_dict(s->kbc),
-                          fwg->ctxt, s->kbc->fillpen);
-        ghyp = NULL;
-        for (tmph = hyp; tmph; tmph = tmph->next) {
-            ghyp = glist_add_ptr(ghyp, (void *) tmph);
-        }
-
-        rhyp = glist_reverse(ghyp);
-        return rhyp;
-    }
-
-}
 
 dag_t *
 srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
@@ -1121,7 +1122,7 @@ srch_funcs_t srch_FLAT_FWD_funcs = {
 	/* shift_one_cache_frame */	srch_FLAT_FWD_shift_one_cache_frame,
 	/* select_active_gmm */		srch_FLAT_FWD_select_active_gmm,
 
-	/* gen_hyp */			NULL,
+	/* gen_hyp */			srch_FLAT_FWD_gen_hyp,
 	/* gen_dag */			NULL,
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		NULL,

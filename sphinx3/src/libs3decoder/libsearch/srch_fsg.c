@@ -332,7 +332,7 @@ srch_funcs_t srch_FSG_funcs = {
 	/* shift_one_cache_frame */	srch_FSG_shift_one_cache_frame,
 	/* select_active_gmm */		srch_FSG_select_active_gmm,
 
-	/* gen_hyp */			NULL,
+	/* gen_hyp */			srch_FSG_gen_hyp,
 	/* gen_dag */			NULL,
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		NULL,

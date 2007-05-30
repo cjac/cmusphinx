@@ -406,7 +406,6 @@ srch_WST_begin(void *srch)
 int32
 srch_WST_end(void *srch)
 {
-    int32 id;
     /*  int32 ascr, lscr; */
     /*  glist_t hyp; */
     /*gnode_t *gn; */
@@ -438,8 +437,8 @@ srch_WST_end(void *srch)
     /* This part is duplicated with TST_end */
 
 #if 1
-    if ((id = vithist_utt_end(s->vithist, s->kbc)) >= 0) {
-        reg_result_dump(s, id);
+    if ((s->exit_id = vithist_utt_end(s->vithist, s->kbc)) >= 0) {
+        reg_result_dump(s, s->exit_id);
     }
     else
         E_ERROR("%s: No recognition\n\n", uttid);
@@ -478,7 +477,7 @@ srch_WST_end(void *srch)
     /* Also empty the active_word list */
     hash_table_empty(wstg->active_word);
 
-    if (id >= 0)
+    if (s->exit_id >= 0)
         return SRCH_SUCCESS;
     else
         return SRCH_FAILURE;
@@ -1513,6 +1512,29 @@ srch_WST_select_active_gmm(void *srch)
     return SRCH_SUCCESS;
 }
 
+/* NOTE: This is a duplicate of the one in srch_TST */
+glist_t
+srch_WST_gen_hyp(void *srch)
+{
+    srch_t *s;
+    int32 id;
+
+    s = (srch_t *) srch;
+    assert(s->vithist);
+
+    if (s->exit_id == -1) /* Search not finished */
+	id = vithist_partialutt_end(s->vithist, s->kbc);
+    else
+        id = s->exit_id;
+
+    if (id < 0) {
+        E_WARN("Failed to retrieve viterbi history.\n");
+        return NULL;
+    }
+
+    return vithist_backtrace(s->vithist, id, kbcore_dict(s->kbc));
+}
+
 #if 0
 int
 srch_WST_dump_vithist(void *srch)
@@ -1539,27 +1561,6 @@ srch_WST_dump_vithist(void *srch)
     return SRCH_SUCCESS;
 }
 
-
-glist_t
-srch_WST_gen_hyp(void *srch           /**< a pointer of srch_t */
-    )
-{
-    srch_t *s;
-    s = (srch_t *) srch;
-    int32 id;
-    glist_t hyp;
-
-    assert(s->vithist);
-    if ((id = vithist_utt_end(s->vithist, s->kbc)) >= 0) {
-        assert(id >= 0);
-        hyp = vithist_backtrace(s->vithist, id, kbcore_dict(s->kbc));
-
-    }
-    else {
-        E_ERROR("%s: No recognition\n\n", s->uttid);
-        return NULL;
-    }
-}
 #endif
 
 /* Pointers to all functions */
@@ -1593,7 +1594,7 @@ srch_funcs_t srch_WST_funcs = {
 	/* shift_one_cache_frame */	srch_WST_shift_one_cache_frame,
 	/* select_active_gmm */		srch_WST_select_active_gmm,
 
-	/* gen_hyp */			NULL,
+	/* gen_hyp */			srch_WST_gen_hyp,
 	/* gen_dag */			NULL,
 	/* dump_vithist */		NULL,
 	/* bestpath_impl */		NULL,

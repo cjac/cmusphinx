@@ -341,6 +341,7 @@
 #define GRAPH_STRUCT_TST 1
 #define GRAPH_STRUCT_WST 2
 #define GRAPH_STRUCT_GENGRAPH 3
+#define GRAPH_STRUCT_PHMM 4
 
 #define GMM_STRUCT_CDHMM 0
 #define GMM_STRUCT_SCHMM 1
@@ -724,6 +725,8 @@ typedef struct srch_s {
 
     vithist_t *vithist;     /**< Viterbi history, built during search */
     latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
+    int32 exit_id;		/**< Lattice ID for exit word (-1 if
+                                 * utterance is not complete) */
 
     /* ARCHAN: Various pruning beams, put them together such that it looks more logical. */
     ascr_t *ascr;		  /**< Pointer to Senone and composite senone scores for one frame */
@@ -846,6 +849,11 @@ int32 srch_utt_end(srch_t* srch /**< In: a search structure */
 int32 srch_uninit(srch_t* srch /**< In: a search structure */
     );
 
+/**
+ * Get a recognition backtrace, as a list of srch_hyp_t structures.
+ * You must free this with glist_free() after using it. */
+glist_t srch_get_hyp(srch_t *srch /**< In: a search structure */
+    );
 
 
 /** Dump recognition result */
