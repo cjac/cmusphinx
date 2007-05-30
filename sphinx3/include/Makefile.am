@@ -48,11 +48,13 @@ pkginclude_HEADERS =				\
 	s2_semi_mgau.h				\
 	s3_arraylist.h				\
 	s3_cfg.h				\
+	s3_allphone.h				\
 	s3_decode.h				\
 	s3_endpointer.h				\
 	s3types.h				\
 	search.h				\
 	sort.h					\
+	srch_allphone.h				\
 	srch_debug.h				\
 	srch_do_nothing.h			\
 	srch_flat_fwd.h				\
