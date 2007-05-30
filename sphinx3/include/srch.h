@@ -187,6 +187,9 @@
 #include "kb.h"
 
 
+/* Mode 1 */
+#include "srch_allphone.h"
+
 /* Mode 2 */
 #include "srch_fsg.h"
 

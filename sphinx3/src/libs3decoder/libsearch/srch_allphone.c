@@ -237,7 +237,6 @@ phmm_build(allphone_t *allp)
     uint32 *lc, *rc;
     int32 i, s;
     s3cipid_t *filler;
-    phmm_t **ci_phmm;
     int32 lrc_size;
     mdef_t *mdef;
     tmat_t *tmat;
@@ -247,7 +246,7 @@ phmm_build(allphone_t *allp)
     mdef = allp->mdef;
     tmat = allp->tmat;
 
-    ci_phmm = (phmm_t **) ckd_calloc(mdef->n_ciphone, sizeof(phmm_t *));
+    allp->ci_phmm = (phmm_t **) ckd_calloc(mdef->n_ciphone, sizeof(phmm_t *));
     pid2phmm = (phmm_t **) ckd_calloc(mdef->n_phone, sizeof(phmm_t *));
 
     for (lrc_size = 32; lrc_size < mdef->n_ciphone; lrc_size += 32);
@@ -265,8 +264,8 @@ phmm_build(allphone_t *allp)
             p->ci = mdef->phone[pid].ci;
             p->succlist = NULL;
 
-            p->next = ci_phmm[(unsigned) p->ci];
-            ci_phmm[(unsigned) p->ci] = p;
+            p->next = allp->ci_phmm[(unsigned) p->ci];
+            allp->ci_phmm[(unsigned) p->ci] = p;
 
             n_phmm++;
         }
@@ -287,7 +286,7 @@ phmm_build(allphone_t *allp)
     lc = (uint32 *) ckd_calloc(n_phmm * lrc_size * 2, sizeof(uint32));
     rc = lc + (n_phmm * lrc_size);
     for (ci = 0; ci < mdef->n_ciphone; ci++) {
-        for (p = ci_phmm[(unsigned) ci]; p; p = p->next) {
+        for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
             p->sen = sen;
             for (s = 0; s < mdef->n_emit_state; s++)
                 p->sen[s] = mdef->sseq[mdef->phone[p->pid].ssid][s];
@@ -342,8 +341,6 @@ phmm_build(allphone_t *allp)
     n_link = phmm_link(allp);
 
     E_INFO("%d nodes, %d links\n", n_phmm, n_link);
-
-    allp->ci_phmm = ci_phmm;
 
     return 0;
 }
@@ -944,7 +941,10 @@ srch_allphone_end(void *srch)
     s->exit_id = _allphone_end_utt(allp);
 
     /* Write and/or log phoneme segmentation */
-    write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
+    if (cmd_ln_exists("-phsegdir"))
+	write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
+    else
+	write_phseg(s, NULL, s->uttid, allp->phseg);
     if (s->matchfp)
         allphone_log_hypstr(s, allp->phseg, s->uttid);
     if (s->matchsegfp) {
@@ -1010,7 +1010,7 @@ srch_allphone_select_active_gmm(void *srch)
     for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
 	for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
 	    if (p->active == allp->curfrm) {
-		for (ss = 0; ss < allp->mdef->n_emit_state; s++) {
+		for (ss = 0; ss < allp->mdef->n_emit_state; ss++) {
 		    ascr->sen_active[p->sen[ss]] = 1;
 		}
 	    }
@@ -1064,6 +1064,35 @@ srch_allphone_gen_hyp(void *srch)
     return hyp;
 }
 
+int
+srch_allphone_set_lm(void *srch_struct, const char *lmname)
+{
+    E_INFO("In mode 1, currently the function set LM is not supported\n");
+    return SRCH_FAILURE;
+}
+
+int
+srch_allphone_add_lm(void *srch, lm_t * lm, const char *lmname)
+{
+    E_INFO("In mode 1, currently the function add LM is not supported\n");
+    return SRCH_FAILURE;
+
+}
+
+int
+srch_allphone_delete_lm(void *srch, const char *lmname)
+{
+    E_INFO
+        ("In mode 1, currently the function delete LM is not supported\n");
+    return SRCH_FAILURE;
+}
+
+int
+srch_allphone_frame_windup(void *srch_struct, int32 frmno)
+{
+    return SRCH_SUCCESS;
+}
+
 /* Pointers to all functions */
 srch_funcs_t srch_allphone_funcs = {
 	/* init */			srch_allphone_init,
@@ -1071,16 +1100,16 @@ srch_funcs_t srch_allphone_funcs = {
 	/* utt_begin */ 		srch_allphone_begin,
 	/* utt_end */   		srch_allphone_end,
 	/* decode */			NULL,
-	/* set_lm */			NULL,
-	/* add_lm */			NULL,
-	/* delete_lm */ 		NULL,
+	/* set_lm */			srch_allphone_set_lm,
+	/* add_lm */			srch_allphone_add_lm,
+	/* delete_lm */ 		srch_allphone_delete_lm,
 
 	/* gmm_compute_lv1 */		approx_ci_gmm_compute,
 	/* one_srch_frame_lv1 */	NULL,
-	/* hmm_compute_lv1 */		NULL,
-	/* eval_beams_lv1 */		NULL,
-	/* propagate_graph_ph_lv1 */	NULL,
-	/* propagate_graph_wd_lv1 */	NULL,
+	/* hmm_compute_lv1 */		srch_debug_hmm_compute_lv1,
+	/* eval_beams_lv1 */		srch_debug_eval_beams_lv1,
+	/* propagate_graph_ph_lv1 */	srch_debug_propagate_graph_ph_lv1,
+	/* propagate_graph_wd_lv1 */	srch_debug_propagate_graph_wd_lv1,
 
 	/* gmm_compute_lv2 */		s3_cd_gmm_compute_sen,
 	/* one_srch_frame_lv2 */	srch_allphone_srch_one_frame_lv2,
@@ -1090,7 +1119,7 @@ srch_funcs_t srch_allphone_funcs = {
 	/* propagate_graph_wd_lv2 */	NULL,
 
 	/* rescoring */			NULL,
-	/* frame_windup */		NULL,
+	/* frame_windup */		srch_allphone_frame_windup,
 	/* compute_heuristic */		NULL,
 	/* shift_one_cache_frame */	srch_allphone_shift_one_cache_frame,
 	/* select_active_gmm */		srch_allphone_select_active_gmm,

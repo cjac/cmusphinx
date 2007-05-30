@@ -424,8 +424,7 @@ srch_init(kb_t * kb, int32 op_mode)
 
     }
     else if (op_mode == OPERATION_ALLPHONE) {
-        E_FATAL("Allphone mode is not supported yet");
-
+	s->funcs = &srch_allphone_funcs;
     }
     else if (op_mode == OPERATION_GRAPH) {
         E_WARN
