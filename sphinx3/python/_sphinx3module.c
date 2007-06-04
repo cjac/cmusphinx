@@ -193,12 +193,14 @@ sphinx3_get_hypothesis(PyObject *self, PyObject *args)
 	PyObject *hypstr_obj, *hypseg_obj;
 	hyp_t **hypsegs, **h;
 	char *hypstr, *uttid;
-	int nhyps, i;
+	int nhyps, i, allphone;
 
 	s3_decode_hypothesis(&decoder, &uttid, &hypstr, &hypsegs);
 	nhyps = 0;
 	for (h = hypsegs; *h; ++h)
 		++nhyps;
+
+	allphone = (cmd_ln_int32("-op_mode") == 1);
 
 	hypstr_obj = PyString_FromString(hypstr);
 	hypseg_obj = PyTuple_New(nhyps);
@@ -206,8 +208,17 @@ sphinx3_get_hypothesis(PyObject *self, PyObject *args)
 		PyObject *seg_obj;
 		const char *wordstr;
 
-		wordstr = dict_wordstr(kbcore_dict(decoder.kbcore),
-				       hypsegs[i]->id);
+		/* hyp_t is BOGUS, it should have a string, then we
+		 * wouldn't have to screw around like this for
+		 * allphones. */
+		if (allphone) {
+			wordstr = mdef_ciphone_str(kbcore_mdef(decoder.kbcore),
+						   hypsegs[i]->id);
+		}
+		else {
+			wordstr = dict_wordstr(kbcore_dict(decoder.kbcore),
+					       hypsegs[i]->id);
+		}
 		seg_obj = Py_BuildValue("(siiii)",
 					wordstr,
 					hypsegs[i]->sf,
