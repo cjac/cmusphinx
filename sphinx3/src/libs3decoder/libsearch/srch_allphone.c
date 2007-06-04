@@ -1073,7 +1073,7 @@ srch_allphone_gen_hyp(void *srch)
         hyp = glist_add_ptr(hyp, h);
     }
 
-    return hyp;
+    return glist_reverse(hyp);
 }
 
 int
