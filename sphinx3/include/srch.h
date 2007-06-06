@@ -696,7 +696,8 @@ typedef struct srch_s {
     grp_str_t* grh;     /**< Pointer to search specific structures */
     int op_mode;        /**< The operation mode */
     stat_t *stat;       /**< Pointer to the statistics structure */
-    char *uttid;        /**< Copy of UttID */
+    char *uttid;        /**< Reference to UttID */
+    char *uttfile;      /**< Reference to Utterance filename (or NULL) */
 
     /*
       These variables control the logistic of a search operation.  The

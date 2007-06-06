@@ -192,9 +192,12 @@ typedef struct {
     FILE *matchsegfp;       /**< File handle for the match segmentation file */
     FILE *hmmdumpfp;        /**< File handle for dumping hmms for debugging */
 
-    /* The only variable I intend to make it be alone in the whole structure. It has its own uniqueness.  */
+    /* The only variable I intend to make it be alone in the whole
+       structure. It has its own uniqueness. (dhuggins: I have no idea
+       what that means)  */
     int32 op_mode; /** A mode for specifying operation */
     char *uttid;   /**< Utterance ID. The one thing that should move to somewhere like srch */
+    char *uttfile;   /**< Utterance Filename. The other thing that should move somewhere else. */
 
   
     void *srch;  /**< The search structure */
@@ -218,6 +221,7 @@ void kb_setmllr(char* mllrname, /**< In: The name of the mllr model */
 
 /** Set Utterance ID to uttid */
 void kb_set_uttid(char *uttid, /**< In: the new utt id */
+                  char *uttfile, /**< In: the new utt filename */
 		  kb_t *kb    /**< In/Out: A empty kb_t */
     );   /* ARCHAN 20041111 */
 

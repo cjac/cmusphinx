@@ -228,7 +228,7 @@ live_utt_decode_block(int16 * samples, int32 nsamples,
         live_feat = feat_array_alloc(kbcore_fcb(kbcore), LIVEBUFBLOCKSIZE);
 
     if (live_begin_new_utt) {
-        kb->uttid = "bogus ID";
+	kb_set_uttid("bogus ID", NULL, kb);
         fe_start_utt(fe);
         utt_begin(kb);
         frmno = 0;

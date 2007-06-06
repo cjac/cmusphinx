@@ -415,7 +415,7 @@ utt_allphone(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
     kb = (kb_t *) data;
     kbcore = kb->kbcore;
-    kb->uttid = uttid;
+    kb_set_uttid(uttid, ur->uttfile, kb);
     st = kb->stat;
 
     cepdir = cmd_ln_str("-cepdir");

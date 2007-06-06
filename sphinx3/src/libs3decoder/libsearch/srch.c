@@ -215,6 +215,8 @@
 
 
 #include "srch.h"
+#include "corpus.h"
+
 #define COMPUTE_HEURISTIC 1
 #define SHOW_SENONE_SCORE_FOR_FRAME 0
 
@@ -1001,12 +1003,11 @@ reg_result_dump(srch_t * s, int32 id)
     }
 
     if (cmd_ln_str("-outlatdir")) {
-
         int32 ispipe;
         char str[2048];
-        sprintf(str, "%s/%s.%s",
-                cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
 
+	ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+		    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
         E_INFO("Writing lattice file: %s\n", str);
 
         if ((latfp = fopen_comp(str, "w", &ispipe)) == NULL)
@@ -1112,7 +1113,9 @@ reg_result_dump(srch_t * s, int32 id)
 
                 if (dag != NULL) {
 
-                    word_graph_dump(cmd_ln_str("-outlatdir"), s->uttid,
+                    word_graph_dump(cmd_ln_str("-outlatdir"),
+				    (s->uttfile ? s->uttfile : s->uttid),
+				    s->uttid,
                                     cmd_ln_str("-latext"), dag, dict,
                                     kbcore_lm(s->kbc), s->ascale);
 
@@ -1362,7 +1365,9 @@ if (cmd_ln_int32("-outlatdir")) {
         }
         else {
             if (dag != NULL)
-                word_graph_dump(cmd_ln_str("-outlatdir"), srch->uttid,
+                word_graph_dump(cmd_ln_str("-outlatdir"),
+				(srch->uttfile ? srch->uttfile : srch->uttid)
+				srch->uttid,
                                 cmd_ln_str("-latext"), dag,
                                 kbcore_dict(srch->kbc),
                                 kbcore_lm(srch->kbc), srch->ascale);

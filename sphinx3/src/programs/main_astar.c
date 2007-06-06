@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4 -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -334,19 +335,55 @@ models_init(void)
 }
 
 
+/*
+ * Build a filename int buf as follows (without file extension):
+ *     if dir ends with ,CTLand ctlspec does not begin with /, filename is dir/ctlspec
+ *     if dir ends with ,CTL and ctlspec DOES begin with /, filename is ctlspec
+ *     if dir does not end with ,CTL, filename is dir/uttid,
+ * where ctlspec is the complete utterance spec in the input control file, and
+ * uttid is the last component of ctlspec.
+ */
+static void
+build_output_uttfile(char *buf, char *dir, char *uttid, char *ctlspec)
+{
+    int32 k;
+
+    k = strlen(dir);
+    if ((k > 4) && (strcmp(dir + k - 4, ",CTL") == 0)) {        /* HACK!! Hardwired ,CTL */
+        if (ctlspec[0] != '/') {
+            strcpy(buf, dir);
+            buf[k - 4] = '/';
+            strcpy(buf + k - 3, ctlspec);
+        }
+        else
+            strcpy(buf, ctlspec);
+    }
+    else {
+        strcpy(buf, dir);
+        buf[k] = '/';
+        strcpy(buf + k + 1, uttid);
+    }
+}
+
 /* Decode the given mfc file and write result to given directory */
 static void
-decode_utt(char *uttid, char *nbestdir)
+utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
     char dagfile[1024], nbestfile[1024];
     char *latdir, *latext, *nbestext;
     int32 nfrm;
 
+    if (ur->lmname)
+        lmset_set_curlm_wname(lmset, ur->lmname);
+
     latdir = (char *) cmd_ln_access("-inlatdir");
     latext = (char *) cmd_ln_access("-latext");
     nbestext = (char *) cmd_ln_access("-nbestext");
-    if (latdir)
-        sprintf(dagfile, "%s/%s.%s", latdir, uttid, latext);
+    if (latdir) {
+	build_output_uttfile(dagfile, latdir, uttid, ur->uttfile);
+	strcat(dagfile, ".");
+	strcat(dagfile, latext);
+    }
     else
         sprintf(dagfile, "%s.%s", uttid, latext);
 
@@ -354,7 +391,9 @@ decode_utt(char *uttid, char *nbestdir)
     ptmr_start(&tm_utt);
 
     if ((nfrm = s3astar_dag_load(dagfile)) > 0) {
-        sprintf(nbestfile, "%s/%s.%s", nbestdir, uttid, nbestext);
+	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
+	strcat(nbestfile, ".");
+	strcat(nbestfile, nbestext);
         nbest_search(nbestfile, uttid);
 
         lm_cache_stats_dump(lmset->cur_lm);
@@ -373,14 +412,6 @@ decode_utt(char *uttid, char *nbestdir)
     }
     printf("\n");
     fflush(stdout);
-}
-
-static void
-utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
-{
-    if (ur->lmname)
-        lmset_set_curlm_wname(lmset, ur->lmname);
-    decode_utt(uttid, nbestdir);
 }
 
 int

@@ -69,10 +69,10 @@
 #include <s3types.h>
 #include "word_graph.h"
 #include "srch_output.h"
-
+#include "corpus.h"
 
 void
-word_graph_dump(char *dir, char *id, char *latfile_ext, dag_t * dag,
+word_graph_dump(char *dir, char *uttfile, char *id, char *latfile_ext, dag_t * dag,
                 dict_t * dict, lm_t * lm, int32 * senscale)
 {
     word_graph_t *wg;
@@ -82,7 +82,7 @@ word_graph_dump(char *dir, char *id, char *latfile_ext, dag_t * dag,
 
     wg = dag_to_wordgraph(dag, senscale, lm, dict);
 
-    sprintf(filename, "%s/%s.%s", dir, id, latfile_ext);
+    ctl_outfile(filename, dir, latfile_ext, uttfile, id);
 
     E_INFO("Writing lattice file for IBM format: %s\n", filename);
 

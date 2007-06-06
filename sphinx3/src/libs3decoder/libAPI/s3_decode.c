@@ -486,7 +486,7 @@ s3_decode_set_uttid(s3_decode_t * _decode, char *_uttid)
     }
     _decode->uttid = local_uttid;
     /* Also set the kb internal uttid. This sets the uttid in the results. */
-    kb_set_uttid(_decode->uttid, &(_decode->kb));
+    kb_set_uttid(_decode->uttid, NULL, &(_decode->kb));
 
     return S3_DECODE_SUCCESS;
 }

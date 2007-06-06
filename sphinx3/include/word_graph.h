@@ -148,7 +148,8 @@ word_graph_t* dag_to_wordgraph (dag_t* dag,  /**< a DAG structure */
 */
 
 void word_graph_dump(char *dir, /**< Directory name*/
-		     char *id,  /**< Utteracne ID */
+		     char *uttfile,  /**< Utterance Filename */
+		     char *id,  /**< Utterance ID */
 		     char *latfile_ext,  /**< Lattice file Extension */
 		     dag_t *dag,   /**< DAG */
 		     dict_t *dict,  /**< Dictionary */

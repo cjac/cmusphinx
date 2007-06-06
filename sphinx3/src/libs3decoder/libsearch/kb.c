@@ -383,19 +383,19 @@ kb_init(kb_t * kb)
 }
 
 void
-kb_set_uttid(char *_uttid, kb_t * _kb)
+kb_set_uttid(char *_uttid, char *_uttfile, kb_t * _kb)
 {
     assert(_kb != NULL);
     assert(_uttid != NULL);
 
-    if (_kb->uttid != NULL) {
-        ckd_free(_kb->uttid);
-        _kb->uttid = NULL;
-    }
-    if ((_kb->uttid = ckd_malloc(strlen(_uttid) + 1)) == NULL) {
-        E_FATAL("Failed to allocate space for utterance id.\n");
-    }
-    strcpy(_kb->uttid, _uttid);
+    ckd_free(_kb->uttid);
+    _kb->uttid = NULL;
+    _kb->uttid = ckd_salloc(_uttid);
+
+    ckd_free(_kb->uttfile);
+    _kb->uttfile = NULL;
+    if (_uttfile)
+	_kb->uttfile = ckd_salloc(_uttfile);
 }
 
 void

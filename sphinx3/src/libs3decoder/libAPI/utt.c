@@ -137,7 +137,7 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 
     kb = (kb_t *) data;
     kbcore = kb->kbcore;
-    kb->uttid = uttid;
+    kb_set_uttid(uttid, ur->uttfile, kb);
     st = kb->stat;
 
 
@@ -186,6 +186,7 @@ utt_decode_block(float ***block_feat,   /* Incoming block of featurevecs */
     srch_t *s;
     s = (srch_t *) kb->srch;
     s->uttid = kb->uttid;
+    s->uttfile = kb->uttfile;
 
     if (srch_utt_decode_blk(s, block_feat, no_frm, curfrm) == SRCH_FAILURE) {
         E_ERROR("srch_utt_decode_blk failed. \n");

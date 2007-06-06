@@ -118,7 +118,7 @@ gmm_compute(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     mgau = kbcore_mgau(kbcore);
     svq = kbcore_svq(kbcore);
     gs = kbcore_gs(kbcore);
-    kb->uttid = uttid;
+    kb_set_uttid(uttid, NULL, kb);
 
     ptranskip = kb->beam->ptranskip;
 
