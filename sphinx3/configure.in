@@ -118,6 +118,7 @@ AC_SUBST(CSH)
 AM_PROG_LIBTOOL
 
 AC_OUTPUT([
+sphinx3.pc
 Makefile
 src/Makefile
 src/libs3decoder/Makefile

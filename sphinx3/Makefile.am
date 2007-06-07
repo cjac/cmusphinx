@@ -5,6 +5,7 @@ SUBDIRS = src \
 	include
 
 EXTRA_DIST = autogen.sh \
+	sphinx3.pc.in \
 	sphinx3.dsw \
 	src/programs/main_livedecode.c \
 	win32/batch/an4.ctl \
@@ -47,6 +48,9 @@ EXTRA_DIST = autogen.sh \
 	python/_sphinx3module.c \
 	python/_sphinx3_test.py
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = sphinx3.pc
+CLEANFILES = sphinx3.pc
 
 # NO!  Don't make .tar.Z or .shar distributions
 AUTOMAKE_OPTIONS = dist-bzip2 dist-zip #dist-shar dist-tarZ
