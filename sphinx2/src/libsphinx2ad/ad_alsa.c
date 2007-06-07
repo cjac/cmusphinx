@@ -305,7 +305,11 @@ ad_start_rec(ad_rec_t * handle)
     if (handle->recording)
         return AD_ERR_GEN;
 
-    /* This is actually not necessary. */
+    err = snd_pcm_prepare(handle->dspH);
+    if (err < 0) {
+        fprintf(stderr, "snd_pcm_prepare failed: %s\n", snd_strerror(err));
+        return AD_ERR_GEN;
+    }
     err = snd_pcm_start(handle->dspH);
     if (err < 0) {
         fprintf(stderr, "snd_pcm_start failed: %s\n", snd_strerror(err));
@@ -333,12 +337,6 @@ ad_stop_rec(ad_rec_t * handle)
         fprintf(stderr, "snd_pcm_drop failed: %s\n", snd_strerror(err));
         return AD_ERR_GEN;
     }
-    err = snd_pcm_prepare(handle->dspH);
-    if (err < 0) {
-        fprintf(stderr, "snd_pcm_prepare failed: %s\n", snd_strerror(err));
-        return AD_ERR_GEN;
-    }
-
     handle->recording = 0;
 
     return (0);
