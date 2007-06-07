@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+libs="@LIBS@ @ad_libs@ -lm"
+
+Name: Sphinx2
+Description: Speech recognition system
+Version: @VERSION@
+URL: http://www.cmusphinx.org/
+Libs: -L${libdir} -lsphinx2 -lsphinx2fe -lsphinx2ad
+Libs.private: ${libs}
+Cflags: -I${includedir}/sphinx2

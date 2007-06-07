@@ -135,6 +135,7 @@ AC_SUBST(CSH)
 AM_PROG_LIBTOOL
 
 AC_OUTPUT([
+sphinx2.pc
 Makefile
 include/Makefile
 include/ad_conf.h
