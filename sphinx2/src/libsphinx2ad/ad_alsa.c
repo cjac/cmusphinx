@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
  * reserved.
@@ -46,6 +47,9 @@
  * 
  * REVISION HISTORY
  *
+ * 18-Mar-2006  David Huggins-Daines <dhuggins@cs.cmu.edu>
+ *		Update this to the ALSA 1.0 API.
+ *
  * 12-Dec-2000  David Huggins-Daines <dhd@cepstral.com> at Cepstral LLC
  *		Make this at least compile with the new ALSA API.
  *
@@ -64,214 +68,323 @@
  * 18-May-1999	Kevin Lenzo (lenzo@cs.cmu.edu) added <errno.h>.
  */
 
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/asoundlib.h>
+#include <alsa/asoundlib.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "s2types.h"
 #include "ad.h"
 
-#define AUDIO_FORMAT SND_PCM_SFMT_S16_LE /* 16-bit signed, little endian */
-#define INPUT_GAIN   (80)
+
+#define AUDIO_FORMAT SND_PCM_SFMT_S16_LE        /* 16-bit signed, little endian */
+#define INPUT_GAIN   (85)
 #define SPS_EPSILON   200
 
 static int
-setparams(int32 sps, snd_pcm_t *handle)
+setparams(int32 sps, snd_pcm_t * handle)
 {
+    snd_pcm_hw_params_t *hwparams;
+    unsigned int out_sps, buffer_time, period_time;
     int err;
-    struct snd_pcm_channel_params params;
 
-    memset(&params, 0, sizeof(params));
-    params.mode = SND_PCM_MODE_BLOCK;
-    params.channel = SND_PCM_CHANNEL_PLAYBACK;
-    params.format.format = SND_PCM_SFMT_MU_LAW;
-    params.format.voices = 1;
-    params.format.rate = 8000;
-    if ((err = snd_pcm_plugin_params(handle, &params)) < 0) {
-	fprintf(stderr, "Playback parameters error: %s\n", snd_strerror(err));
-	return -1;
+    snd_pcm_hw_params_alloca(&hwparams);
+    err = snd_pcm_hw_params_any(handle, hwparams);
+    if (err < 0) {
+        fprintf(stderr, "Can not configure this PCM device: %s\n",
+                snd_strerror(err));
+        return -1;
     }
-    memset(&params, 0, sizeof(params));
-    params.mode = SND_PCM_MODE_BLOCK;
-    params.channel = SND_PCM_CHANNEL_CAPTURE;
-    params.format.format = SND_PCM_SFMT_S16_LE;
-    params.format.voices = 1;
-    params.format.rate = sps;
-    if ((err = snd_pcm_plugin_params(handle, &params)) < 0) {
-	fprintf(stderr, "Record parameters error: %s\n", snd_strerror(err));
-	return -1;
+
+    err =
+        snd_pcm_hw_params_set_access(handle, hwparams,
+                                     SND_PCM_ACCESS_RW_INTERLEAVED);
+    if (err < 0) {
+        fprintf(stderr,
+                "Failed to set PCM device to interleaved: %s\n",
+                snd_strerror(err));
+        return -1;
+    }
+
+    err =
+        snd_pcm_hw_params_set_format(handle, hwparams, SND_PCM_FORMAT_S16);
+    if (err < 0) {
+        fprintf(stderr,
+                "Failed to set PCM device to 16-bit signed PCM: %s\n",
+                snd_strerror(err));
+        return -1;
+    }
+
+    err = snd_pcm_hw_params_set_channels(handle, hwparams, 1);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set PCM device to mono: %s\n",
+                snd_strerror(err));
+        return -1;
+    }
+
+    out_sps = sps;
+    err =
+        snd_pcm_hw_params_set_rate_near(handle, hwparams, &out_sps, NULL);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set sampling rate: %s\n",
+                snd_strerror(err));
+        return -1;
+    }
+    if (abs(out_sps - sps) > SPS_EPSILON) {
+        fprintf(stderr,
+                "Available samping rate %d is too far from requested %d\n",
+                out_sps, sps);
+        return -1;
+    }
+
+    /* Set buffer time to the maximum. */
+    err = snd_pcm_hw_params_get_buffer_time_max(hwparams, &buffer_time, 0);
+    period_time = buffer_time / 4;
+    err = snd_pcm_hw_params_set_period_time_near(handle, hwparams,
+                                                 &period_time, 0);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set period time to %u: %s\n",
+                period_time, snd_strerror(err));
+        return -1;
+    }
+    err = snd_pcm_hw_params_set_buffer_time_near(handle, hwparams,
+                                                 &buffer_time, 0);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set buffer time to %u: %s\n",
+                buffer_time, snd_strerror(err));
+        return -1;
+    }
+
+    err = snd_pcm_hw_params(handle, hwparams);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set hwparams: %s\n", snd_strerror(err));
+        return -1;
+    }
+
+    err = snd_pcm_nonblock(handle, 1);
+    if (err < 0) {
+        fprintf(stderr, "Failed to set non-blocking mode: %s\n",
+                snd_strerror(err));
+        return -1;
     }
     return 0;
 }
 
 static int
-setlevels(int card, int device)
+setlevels(const char *dev)
 {
     snd_mixer_t *handle;
-    snd_mixer_element_t element;
-    int idx;
+    snd_mixer_selem_id_t *sid;
+    snd_mixer_elem_t *elem;
     int err;
+    char *mixer_dev, *c;
 
-    if ((err = snd_mixer_open(&handle, card, device)) < 0) { 
-	fprintf(stderr, "open failed: %s\n", snd_strerror(err)); 
-	return -1;
-    } 
-    memset((void *)&element, '\0', sizeof(element));
-    strcpy(element.eid.name, "MIC Input Switch");
-    element.eid.index = 0;
-    element.eid.type = SND_MIXER_ETYPE_SWITCH1;
-    err = snd_mixer_element_build(handle, &element);
-    if (err < 0) {
-	fprintf(stderr, "error building input switch element: %s\n",snd_strerror(err));
-	snd_mixer_close(handle); 
-	return -1;
+    /* Basically we just want to turn on Mic capture. */
+    if ((err = snd_mixer_open(&handle, 0)) < 0) {
+        fprintf(stderr, "Mixer open failed: %s\n", snd_strerror(err));
+        return -1;
     }
-    /* This is a bit ugly and hardcoded, should be fixed when the ad layer
-       API is a bit richer. SNL */
-    for (idx = 0; idx < element.data.switch1.sw; idx++)
-	snd_mixer_set_bit(element.data.switch1.psw, idx, 1);
-    err = snd_mixer_element_write(handle, &element);
-    if (err < 0) {
-	fprintf(stderr, "error writing switch element: %s\n",snd_strerror(err));
-	snd_mixer_close(handle);
-	return -1;
+
+    mixer_dev = strdup(dev);
+    if (strncmp(mixer_dev, "plug", 4) == 0)
+        memmove(mixer_dev, mixer_dev + 4, strlen(mixer_dev) - 4 + 1);
+    if ((c = strchr(mixer_dev, ',')))
+        *c = '\0';
+    if ((err = snd_mixer_attach(handle, mixer_dev)) < 0) {
+        fprintf(stderr, "Mixer attach to %s failed: %s\n",
+                mixer_dev, snd_strerror(err));
+        free(mixer_dev);
+        snd_mixer_close(handle);
+        return -1;
     }
-    snd_mixer_element_free(&element);
-    snd_mixer_close(handle); 
+    free(mixer_dev);
+    if ((err = snd_mixer_selem_register(handle, NULL, NULL)) < 0) {
+        fprintf(stderr, "Mixer register failed: %s\n", snd_strerror(err));
+        snd_mixer_close(handle);
+        return -1;
+    }
+    if ((err = snd_mixer_load(handle)) < 0) {
+        fprintf(stderr, "Mixer load failed: %s\n", snd_strerror(err));
+        snd_mixer_close(handle);
+        return -1;
+    }
+    snd_mixer_selem_id_alloca(&sid);
+    snd_mixer_selem_id_set_name(sid, "Mic");
+    if ((elem = snd_mixer_find_selem(handle, sid)) == NULL) {
+        fprintf(stderr, "Could not find Mic element\n");
+        snd_mixer_close(handle);
+        return -1;
+    }
+    if ((err = snd_mixer_selem_set_capture_switch_all(elem, 1)) < 0) {
+        fprintf(stderr,
+                "Failed to enable microfphone capture: %s\n",
+                snd_strerror(err));
+        snd_mixer_close(handle);
+        return -1;
+    }
     return 0;
 }
 
-ad_rec_t *ad_open_sps (int32 sps)
+ad_rec_t *
+ad_open_dev(const char *dev, int32 sps)
 {
     ad_rec_t *handle;
-    struct snd_pcm_channel_info info;
     snd_pcm_t *dspH;
 
     int err;
-    int card;
-    int dev;
 
-    card = 0;
-    dev = 0;
-    
-    err = snd_pcm_open(&dspH, card, dev, SND_PCM_OPEN_DUPLEX); /* XXX */
+    err = snd_pcm_open(&dspH, dev, SND_PCM_STREAM_CAPTURE, 0);
     if (err < 0) {
-	fprintf(stderr, "Error opening audio device %d,%din full-duplex: %s\n",
-		card, dev, snd_strerror(err));
-	return NULL;
-    }
-    err = snd_pcm_plugin_info(dspH, &info);
-    if (err < 0) {
-	fprintf(stderr, "Error getting PCM plugin info: %s\n", snd_strerror(err));
-	return NULL;
+        fprintf(stderr,
+                "Error opening audio device %s for caputre: %s\n",
+                dev, snd_strerror(err));
+        return NULL;
     }
 
     if (setparams(sps, dspH) < 0) {
-	return NULL;
+        return NULL;
     }
-    if (setlevels(0, 0) < 0) {
-	return NULL;
+    if (setlevels(dev) < 0) {
+        return NULL;
+    }
+    if ((handle = (ad_rec_t *) calloc(1, sizeof(ad_rec_t))) == NULL) {
+        fprintf(stderr, "calloc(%d) failed\n", (int)sizeof(ad_rec_t));
+        abort();
     }
 
-    if ((handle = (ad_rec_t *) calloc (1, sizeof(ad_rec_t))) == NULL) {
-	fprintf(stderr, "calloc(%d) failed\n", sizeof(ad_rec_t));
-	abort();
-    }
-    
     handle->dspH = dspH;
     handle->recording = 0;
     handle->sps = sps;
     handle->bps = sizeof(int16);
 
-    return(handle);
+    return (handle);
 }
 
-ad_rec_t *ad_open ( void )
+ad_rec_t *
+ad_open_sps(int32 sps)
 {
-    return ad_open_sps (DEFAULT_SAMPLES_PER_SEC);
+    return ad_open_dev(DEFAULT_DEVICE, sps);
 }
 
-int32 ad_close (ad_rec_t *handle)
+ad_rec_t *
+ad_open(void)
+{
+    return ad_open_sps(DEFAULT_SAMPLES_PER_SEC);
+}
+
+
+int32
+ad_close(ad_rec_t * handle)
 {
     if (handle->dspH == NULL)
-	return AD_ERR_NOT_OPEN;
-    
+        return AD_ERR_NOT_OPEN;
+
     if (handle->recording) {
-	if (ad_stop_rec (handle) < 0)
-	    return AD_ERR_GEN;
+        if (ad_stop_rec(handle) < 0)
+            return AD_ERR_GEN;
     }
     snd_pcm_close(handle->dspH);
     free(handle);
-    
-    return(0);
+
+    return (0);
 }
 
-int32 ad_start_rec (ad_rec_t *handle)
-{
-    if (handle->dspH == NULL)
-	return AD_ERR_NOT_OPEN;
-    
-    if (handle->recording)
-	return AD_ERR_GEN;
-    
-    /* Sample rate, format, input mix settings, &c. are configured
-     * with ioctl(2) calls under Linux. It makes more sense to handle
-     * these at device open time and consider the state of the device
-     * to be fixed until closed.
-     */
-    
-    handle->recording = 1;
 
-    /* rkm@cs: This doesn't actually do anything.  How do we turn recording on/off? */
-
-    return(0);
-}
-
-int32 ad_stop_rec (ad_rec_t *handle)
+int32
+ad_start_rec(ad_rec_t * handle)
 {
     int err;
 
     if (handle->dspH == NULL)
-	return AD_ERR_NOT_OPEN;
-    
-    if (! handle->recording)
-	return AD_ERR_GEN;
+        return AD_ERR_NOT_OPEN;
 
-    err = snd_pcm_plugin_flush(handle->dspH, SND_PCM_CHANNEL_CAPTURE);
+    if (handle->recording)
+        return AD_ERR_GEN;
+
+    /* This is actually not necessary. */
+    err = snd_pcm_start(handle->dspH);
     if (err < 0) {
-	fprintf(stderr, "Audio capture sync failed: %s\n", snd_strerror(err));
-	return AD_ERR_GEN;
+        fprintf(stderr, "snd_pcm_start failed: %s\n", snd_strerror(err));
+        return AD_ERR_GEN;
     }
-    
-    handle->recording = 0;
-    
+    handle->recording = 1;
+
     return (0);
 }
 
-int32 ad_read (ad_rec_t *handle, int16 *buf, int32 max)
-{
-    int32 length;
-    static int infoz = 0;
 
-    length = max * handle->bps;		/* #samples -> #bytes */
-    length = snd_pcm_read(handle->dspH, buf, length);
-    if (length > 0) {
-	if (length % 2) {
-	    fprintf(stderr, "snd_pcm_read returned an odd number: %d\n", length);
-	    abort();
-	}
-	length /= handle->bps;
-    } else if (length < 0) {
-	fprintf(stderr, "Audio read error\n");
-	return AD_ERR_GEN;
-    } else if (!handle->recording)
+int32
+ad_stop_rec(ad_rec_t * handle)
+{
+    int err;
+
+    if (handle->dspH == NULL)
+        return AD_ERR_NOT_OPEN;
+
+    if (!handle->recording)
+        return AD_ERR_GEN;
+
+    err = snd_pcm_drop(handle->dspH);
+    if (err < 0) {
+        fprintf(stderr, "snd_pcm_drop failed: %s\n", snd_strerror(err));
+        return AD_ERR_GEN;
+    }
+    err = snd_pcm_prepare(handle->dspH);
+    if (err < 0) {
+        fprintf(stderr, "snd_pcm_prepare failed: %s\n", snd_strerror(err));
+        return AD_ERR_GEN;
+    }
+
+    handle->recording = 0;
+
+    return (0);
+}
+
+
+int32
+ad_read(ad_rec_t * handle, int16 * buf, int32 max)
+{
+    int32 length, err;
+
+    if (!handle->recording)
 	return AD_EOF;
-#if 0					/* only do this if you're stumped */
-    if ((length != 0) && (++infoz < 200))
-	fprintf(stderr, "ad_read(0x%08lx,0x%08lx,%d) => %d\n", handle, buf, max,length);
-#endif
+
+    length = snd_pcm_readi(handle->dspH, buf, max);
+    if (length == -EAGAIN) {
+        length = 0;
+    }
+    else if (length == -EPIPE) {
+        fprintf(stderr, "Input overrrun (non-fatal)\n");
+        err = snd_pcm_prepare(handle->dspH);
+	if (err < 0) {
+		fprintf(stderr, "Can't recover from underrun: %s\n",
+			snd_strerror(err));
+		return AD_ERR_GEN;
+	}
+        length = 0;
+    }
+    else if (length == -ESTRPIPE) {
+        fprintf(stderr, "Resuming sound driver (non-fatal)\n");
+	while ((err = snd_pcm_resume(handle->dspH)) == -EAGAIN)
+		usleep(10000); /* Wait for the driver to wake up */
+	if (err < 0) {
+		err = snd_pcm_prepare(handle->dspH);
+		if (err < 0) {
+			fprintf(stderr, "Can't recover from underrun: %s\n",
+				snd_strerror(err));
+			return AD_ERR_GEN;
+		}
+	}
+	length = 0;
+    }
+    else if (length < 0) {
+	fprintf(stderr, "Audio read error: %s\n",
+		snd_strerror(length));
+	return AD_ERR_GEN;
+    }
     return length;
 }
