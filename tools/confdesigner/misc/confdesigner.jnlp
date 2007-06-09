@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp spec="1.0"
+        codebase="http://www.techfak.uni-bielefeld.de/~hbrandl/confdesigner/" href="confdesigner.jnlp">
+      <!--codebase="file:///Z:/projects/s4designer/dist/lib" href="confdesigner.jnlp">-->
+    <information>
+        <title>ConfDesigner</title>
+        <vendor>Holger Brandl</vendor>
+        <homepage href="http://techfak.uni-bielefeld.de/~hbrandl"/>
+        <icon href="confdesigner.jpg"/>
+        <description>A webstart demonstration of the new visual configuration designer for the Sphinx4 speech recognition system</description>
+        <description kind="short">Webified ConfDesigner</description>
+        <offline-allowed/>
+    </information>
+
+    <resources>
+        <j2se href="http://java.sun.com/products/autodl/j2se" version="1.5+" max-heap-size="200m"/>
+
+        <jar href="confdesigner.jar" main="true"/>
+        <jar href="sphinx4.jar" main="false"/>
+        <jar href="jsapi.jar" main="false"/>
+        <jar href="l2fprod-common-sheet.jar" main="false"/>
+        <jar href="org-netbeans-modules-visual-examples.jar" main="false"/>
+        <jar href="org-netbeans-api-visual.jar" main="false"/>
+        <jar href="org-openide-util.jar" main="false"/>
+        <jar href="xstream-1.2.jar" main="false"/>
+    </resources>
+
+    <security>
+        <all-permissions/>
+    </security>
+    
+    <application-desc main-class="edu.cmu.sphinx.tools.confdesigner.ConfDesigner"/>
+</jnlp>

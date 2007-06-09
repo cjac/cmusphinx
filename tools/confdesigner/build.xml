@@ -1,0 +1,109 @@
+<project name="confdesinger" default="makejar" basedir=".">
+
+
+    <property name="prj.name" value="confdesigner"/>
+    <property name="version" value="1.0b1"/>
+
+    <property name="src.dir" location="${basedir}/src"/>
+    <property name="classes.dir" location="${basedir}/classes"/>
+    <property name="lib.dir" value="${basedir}/lib"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+    <property name="bin.dir" value="${basedir}/bin"/>
+
+    <property name="key-alias" value="http://techfak.uni-bielefeld.de/~hbrandl"/>
+    <property name="keystore.location" value="${prj.name}.keys"/>
+
+    <!-- this should be avoided ASAP :-) -->
+    <property name="keystore.password" value="test47"/>
+
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+
+    <target name="compile" description="compile all sources">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" source="1.5">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+
+    <target name="makejar" depends="compile" description="packages the ${prj.name}.jar">
+        <jar basedir="${classes.dir}" destfile="${basedir}/${prj.name}.jar"/>
+        <!--<jar basedir="${bin.dir}" includes="config.sxl,config.props" update="true" destfile="${prj.name}.jar"/>-->
+    </target>
+
+
+    <target name="deploy" depends="cleanall, makejar, createKeyfile" description="deploys the app to the dist-dir">
+        <!-- clean old distribution -->
+        <delete dir="${dist.dir}" failonerror="true"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/lib"/>
+
+        <!--  pack classes into jarfile      -->
+        <copy file="${basedir}/${prj.name}.jar" todir="${dist.dir}/lib"/>
+        <copy file="${basedir}/misc/${prj.name}.jnlp" todir="${dist.dir}/lib"/>
+
+        <!--  copy all needed jars to the deploy directory   -->
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </copy>
+
+        <!-- sign all jar to make browsers to ease webstart deployment -->
+        <signjar alias="${key-alias}" keystore="${keystore.location}" storepass="${keystore.password}" lazy="true">
+            <path>
+                <fileset dir="${dist.dir}/lib" includes="**/*.jar"/>
+            </path>
+        </signjar>
+
+        <!-- zip sources and buildfile and copy them to the dist-dir  -->
+        <fileset dir="." id="allsrc">
+            <include name="src/**"/>
+        </fileset>
+
+        <zip destfile="${prj.name}-src_${version}.zip" basedir=".">
+            <include name="build.xml"/>
+            <include name="license.terms.xml"/>
+            <include name="README"/>
+
+            <fileset refid="allsrc"/>
+        </zip>
+
+        <!--<copy todir="${dist.dir}">-->
+        <!--<fileset dir="${basedir}">-->
+        <!--<include name="bin/*"/>-->
+        <!--</fileset>-->
+        <!--</copy>-->
+
+        <!-- restore executable flags -->
+        <!--<chmod file="${dist.dir}/bin/*.sh" perm="ugo+x"/>-->
+
+        <!--now put all into a binary distribution -->
+        <zip destfile="${prj.name}-bin_${version}.zip" basedir=".">
+            <include name="build.xml"/>
+            <include name="license.terms.xml"/>
+            <include name="README"/>
+
+            <include name="${dist.dir}/**"/>
+        </zip>
+    </target>
+
+
+    <target name="createKeyfile">
+        <genkey alias="${key-alias}" keystore="${keystore.location}" storepass="${keystore.password}" validity="3650"
+                dname="CN=Holger Brandl, OU=Applied Computer Science Group, O=Uni Bielefeld, C=DE"/>
+    </target>
+
+
+    <target name="cleanall" description="remove all generated files">
+        <delete failonerror="false" dir="${dist.dir}"/>
+        <delete file="${basedir}/${prj.name}.jar"/>
+        <delete dir="${classes.dir}" failonerror="false"/>
+    </target>
+</project>
