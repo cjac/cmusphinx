@@ -29,14 +29,14 @@ import org.netbeans.api.visual.graph.GraphPinScene;
 import org.netbeans.api.visual.graph.layout.GridGraphLayout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.SceneLayout;
+import org.netbeans.api.visual.model.ObjectSceneEvent;
+import org.netbeans.api.visual.model.ObjectSceneEventType;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.model.ObjectSceneEventType;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectState;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -63,7 +63,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
     private WidgetAction acceptAction = ActionFactory.createAcceptAction(acceptProvider);
 
     public static final Image NODE_IMAGE = Utilities.loadImage("test/resources/custom_displayable_32.png");
-//    private Router router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer, interractionLayer);
+    //    private Router router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer, interractionLayer);
     private Router router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
 
     private SceneLayout sceneLayout;
@@ -142,36 +142,37 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 
 
     protected Widget attachEdgeWidget(ConfEdge edge) {
-        ConnectionWidget connection = new ConnectionWidget(this);
-        connection.setRouter(router);
+        ConnectionWidget c = new ConnectionWidget(this);
+        c.setRouter(router);
 
-        connection.setToolTipText("Double-click for Add/Remove Control Point");
-        connection.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
-        connection.setControlPointShape(PointShape.SQUARE_FILLED_BIG);
-        connection.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
-        connectionLayer.addChild(connection);
+        c.setToolTipText("Double-click for Add/Remove Control Point");
+        c.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
+        c.setControlPointShape(PointShape.SQUARE_FILLED_BIG);
+        c.setEndPointShape(PointShape.SQUARE_FILLED_BIG);
+        connectionLayer.addChild(c);
 
-        connection.getActions().addAction(reconnectAction);
-        connection.getActions().addAction(createSelectAction());
-        connection.getActions().addAction(ActionFactory.createAddRemoveControlPointAction());
-        connection.getActions().addAction(moveControlPointAction);
-//        connection.getActions().addAction(ActionFactory.createPopupMenuAction(edgeMenu));
+        c.getActions().addAction(reconnectAction);
+        c.getActions().addAction(createSelectAction());
+        c.getActions().addAction(ActionFactory.createAddRemoveControlPointAction());
+        c.getActions().addAction(moveControlPointAction);
+//        c.getActions().addAction(ActionFactory.createPopupMenuAction(edgeMenu));
 
-        return connection;
+        return c;
     }
 
 
     protected void attachEdgeSourceAnchor(ConfEdge edge, ConfPin oldSourcePin, ConfPin sourcePin) {
         ConnectionWidget widget = (ConnectionWidget) findWidget(edge);
         Widget sourceNodeWidget = findWidget(sourcePin);
-        widget.setSourceAnchor(sourceNodeWidget != null ? AnchorFactory.createRectangularAnchor(sourceNodeWidget) : null);
+        widget.setSourceAnchor(sourceNodeWidget != null ? AnchorFactory.createDirectionalAnchor(sourceNodeWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL) : null);
     }
 
 
     protected void attachEdgeTargetAnchor(ConfEdge edge, ConfPin oldTargetPin, ConfPin targetPin) {
         ConnectionWidget widget = (ConnectionWidget) findWidget(edge);
         Widget targetNodeWidget = findWidget(targetPin);
-        widget.setTargetAnchor(targetNodeWidget != null ? AnchorFactory.createRectangularAnchor(targetNodeWidget) : null);
+//        widget.setTargetAnchor(targetNodeWidget != null ? AnchorFactory.createRectangularAnchor(targetNodeWidget) : null);
+        widget.setTargetAnchor(targetNodeWidget != null ? AnchorFactory.createDirectionalAnchor(targetNodeWidget, AnchorFactory.DirectionalAnchorKind.HORIZONTAL) : null);
     }
 
 
