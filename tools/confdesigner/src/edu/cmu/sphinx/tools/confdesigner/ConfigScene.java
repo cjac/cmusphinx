@@ -124,8 +124,10 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 
         ConfNodeWidget nodeWidget = ((ConfNodeWidget) findWidget(node));
 
-        if (pin.getPropName().equals("this")) {
+        if (pin.getPropName().equals(ConfPin.THIS_NAME)) {
             nodeWidget.addThisPin(portWidget);
+            portWidget.getActions().addAction(createObjectHoverAction());
+
         } else {
             nodeWidget.addChild(portWidget); // todo distinguish between properties and the this port here
         }
@@ -134,7 +136,6 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 //        portWidget.getActions().addAction(selectAction);
         portWidget.getActions().addAction(connectAction);
 
-        portWidget.getImageWidget().getActions().addAction(createObjectHoverAction());
         portWidget.getImageWidget().getActions().addAction(selectAction);
         portWidget.getImageWidget().getActions().addAction(connectAction);
         return portWidget;
