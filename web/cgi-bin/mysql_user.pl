@@ -40,7 +40,7 @@ sub getUserPwd {
 #
 # e.g.: server:mysql4-c:c1904_regression
 
-getServer {
+sub getServer {
     my ($server, $db) = getUserPwd('server');
 
     $server = "mysql4-c" if ($server =~ m/^\s*$/);
