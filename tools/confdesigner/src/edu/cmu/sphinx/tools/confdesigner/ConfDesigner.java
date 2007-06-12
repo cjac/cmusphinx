@@ -80,7 +80,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         }, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
 //        cmLocation = new File("lala.sxl");
-        cmLocation = new File("../../sphinx4/src/demo/sphinx/hellongram/hellongram.config.xml");
+//        cmLocation = new File("../../sphinx4/src/demo/sphinx/hellongram/hellongram.config.xml");
         sceneController.setCm(cmLocation);
         propSheetPanel.setConfigurationManager(sceneController.getCm());
 
@@ -134,7 +134,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         if (curSceneExecutors.isEmpty()) {
             runMenu.setEnabled(false);
             runMenu.setToolTipText("Can not find any exectutables within the current scene");
-        }else{
+        } else {
             runMenu.setEnabled(true);
             runMenu.setToolTipText(null);
         }

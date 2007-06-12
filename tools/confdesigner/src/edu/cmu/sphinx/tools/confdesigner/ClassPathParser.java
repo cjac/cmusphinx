@@ -9,12 +9,11 @@ import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 /**
  * Some static utility methods which ease to find all configurables within the class-path of the virtual machine.
@@ -30,7 +29,7 @@ public class ClassPathParser {
         ClassLoader loader = ClassPathParser.class.getClassLoader();
         System.out.println("the loader is " + loader);
 
-        String[] classPathEntries = new String[0];
+
         if (System.getProperty("jnlpx.jvm") != null) {
             URL[] urls = ((URLClassLoader) loader).getURLs();
 
@@ -45,16 +44,28 @@ public class ClassPathParser {
                     continue;
 
                 System.out.println("url is " + url);
-                URL jarURL = new URL("jar:"+url.toString()+"!/");
+                URL jarURL = new URL("jar:" + url.toString() + "!/");
 
-                JarURLConnection conn = (JarURLConnection)jarURL.openConnection();
+                JarURLConnection conn = (JarURLConnection) jarURL.openConnection();
                 configs.addAll(extractConfigsFromJar(conn.getJarFile()));
             }
 
         } else {
             System.out.println("the class path is " + System.getProperty("java.class.path"));
-            classPathEntries = System.getProperty("java.class.path").split(File.pathSeparator);
+            List<String> classPathEntries = new ArrayList<String>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
 
+            // add all classpath from nested jars within the confdesigner manifest if ConDesigner is running from a jar
+            java.net.URL codeBase = ClassPathParser.class.getProtectionDomain().getCodeSource().getLocation();
+            if (codeBase.getPath().endsWith(".jar")) {
+                System.out.println("*** running from jar!");
+
+                JarInputStream jin = new JarInputStream(codeBase.openStream());
+
+                Manifest mf = jin.getManifest();
+                classPathEntries.addAll(Arrays.asList(mf.getMainAttributes().getValue("Class-Path").split(" ")));
+            }
+
+            // try to find all configurables within the classpath
             for (String classPathEntry : classPathEntries) {
                 if (classPathEntry.contains("Java" + File.separator + "jdk") ||
                         classPathEntry.contains("Java" + File.separator + "jre") ||
@@ -68,15 +79,22 @@ public class ClassPathParser {
                     continue;
 
                 System.err.println("parsing '" + classPathEntry + "' ...");
-                if (classPathEntry.endsWith(".jar")){
+                if (classPathEntry.endsWith(".jar")) {
                     configs.addAll(extractConfigsFromJar(new JarFile(classPathEntry)));
-                }
-                else
+                } else
                     configs.addAll(extractConfigsFromFileSystem(classPathEntry));
             }
         }
 
         return configs;
+    }
+
+
+    private static boolean isRunningFromJar() {
+        String className = ClassPathParser.class.getName().replace('.', '/');
+        String classJar = ClassPathParser.class.getClass().getResource("/" + className + ".class").toString();
+
+        return classJar.startsWith("jar:");
     }
 
 
@@ -128,7 +146,7 @@ public class ClassPathParser {
                         configs.add((Class<? extends Configurable>) aClass);
                 } catch (ClassNotFoundException e1) {
                     e1.printStackTrace();
-                }catch (Throwable t){
+                } catch (Throwable t) {
                     t.printStackTrace();
                 }
             }

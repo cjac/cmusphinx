@@ -33,7 +33,9 @@
 
 
     <target name="makejar" depends="compile" description="packages the ${prj.name}.jar">
-        <jar basedir="${classes.dir}" destfile="${basedir}/${prj.name}.jar"/>
+        <jar basedir="${classes.dir}"
+             manifest="${basedir}/misc/confdesigner.Manifest"
+             destfile="${basedir}/${prj.name}.jar"/>
         <!--<jar basedir="${bin.dir}" includes="config.sxl,config.props" update="true" destfile="${prj.name}.jar"/>-->
     </target>
 

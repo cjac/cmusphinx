@@ -1,0 +1,2 @@
+Main-Class: edu.cmu.sphinx.tools.confdesigner.ConfDesigner
+Class-Path: lib/jsapi.jar lib/l2fprod-common-sheet.jar lib/org-netbeans-api-visual.jar lib/org-netbeans-modules-visual-examples.jar lib/org-openide-util.jar lib/sphinx4.jar lib/xstream-1.2.jar
