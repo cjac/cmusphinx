@@ -721,6 +721,56 @@
           </void> 
          </object> 
         </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>com.jformdesigner.designer.wrapper.HSpacer</string> 
+          <void property="name"> 
+           <string>hSpacer1</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JLabel</string> 
+          <void method="setProperty"> 
+           <string>text</string> 
+           <string> find : </string> 
+          </void> 
+          <void property="name"> 
+           <string>label2</string> 
+          </void> 
+         </object> 
+        </void> 
+        <void method="add"> 
+         <object class="com.jformdesigner.model.FormComponent"> 
+          <string>javax.swing.JTextField</string> 
+          <void method="setProperty"> 
+           <string>maximumSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>100</int> 
+            <int>100</int> 
+           </object> 
+          </void> 
+          <void method="setProperty"> 
+           <string>preferredSize</string> 
+           <object class="java.awt.Dimension"> 
+            <int>80</int> 
+            <int>20</int> 
+           </object> 
+          </void> 
+          <void property="name"> 
+           <string>sceneFinder</string> 
+          </void> 
+          <void method="addEvent"> 
+           <object class="com.jformdesigner.model.FormEvent"> 
+            <string>java.awt.event.ActionListener</string> 
+            <string>actionPerformed</string> 
+            <string>sceneFinderActionPerformed</string> 
+            <boolean>false</boolean> 
+           </object> 
+          </void> 
+         </object> 
+        </void> 
        </object> 
       </void> 
       <void property="name"> 
@@ -739,7 +789,7 @@
       <void method="setProperty"> 
        <string>size</string> 
        <object class="java.awt.Dimension"> 
-        <int>740</int> 
+        <int>520</int> 
         <int>555</int> 
        </object> 
       </void> 

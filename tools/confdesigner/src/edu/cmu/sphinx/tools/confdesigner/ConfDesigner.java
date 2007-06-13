@@ -10,6 +10,7 @@ import edu.cmu.sphinx.decoder.search.SimpleBreadthFirstSearchManager;
 import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform;
 import edu.cmu.sphinx.frontend.util.WavWriter;
+import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
 import edu.cmu.sphinx.tools.executor.ExecutorListener;
 import edu.cmu.sphinx.util.props.Configurable;
@@ -88,6 +89,17 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
             public void windowClosed(WindowEvent e) {
                 System.exit(0);
+            }
+        });
+
+        setFocusable(true);
+        addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_F && e.isControlDown())
+                    sceneFinder.requestFocus();
+
+//                if (e.getKeyCode() == KeyEvent.VK_S && e.isControlDown())
+//                    saveImage2File(null);
             }
         });
 
@@ -271,9 +283,17 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     }
 
 
+    private void sceneFinderActionPerformed() {
+        boolean searchSucessful = new SceneFinder(this, sceneController).process(sceneFinder.getText());
+
+        if (searchSucessful)
+            sceneFinder.setText("");
+    }
+
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-        // Generated using JFormDesigner Evaluation license - no spam
+        // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
         menuBar1 = new JMenuBar();
         menu1 = new JMenu();
         newItem = new JMenuItem();
@@ -289,6 +309,9 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         menu4 = new JMenu();
         helpItem = new JMenuItem();
         aboutItem = new JMenuItem();
+        hSpacer1 = new JPanel(null);
+        label2 = new JLabel();
+        sceneFinder = new JTextField();
         splitPane1 = new JSplitPane();
         splitPane2 = new JSplitPane();
         panel4 = new JPanel();
@@ -427,6 +450,21 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 menu4.add(aboutItem);
             }
             menuBar1.add(menu4);
+            menuBar1.add(hSpacer1);
+
+            //---- label2 ----
+            label2.setText(" find : ");
+            menuBar1.add(label2);
+
+            //---- sceneFinder ----
+            sceneFinder.setMaximumSize(new Dimension(100, 100));
+            sceneFinder.setPreferredSize(new Dimension(80, 20));
+            sceneFinder.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    sceneFinderActionPerformed();
+                }
+            });
+            menuBar1.add(sceneFinder);
         }
         setJMenuBar(menuBar1);
 
@@ -449,19 +487,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                     panel4.setPreferredSize(new Dimension(200, 400));
                     panel4.setMinimumSize(null);
                     panel4.setMaximumSize(null);
-
-                    // JFormDesigner evaluation mark
-                    panel4.setBorder(new javax.swing.border.CompoundBorder(
-                            new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0),
-                                    "JFormDesigner Evaluation", javax.swing.border.TitledBorder.CENTER,
-                                    javax.swing.border.TitledBorder.BOTTOM, new java.awt.Font("Dialog", java.awt.Font.BOLD, 12),
-                                    java.awt.Color.red), panel4.getBorder()));
-                    panel4.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-                        public void propertyChange(java.beans.PropertyChangeEvent e) {
-                            if ("border".equals(e.getPropertyName())) throw new RuntimeException();
-                        }
-                    });
-
                     panel4.setLayout(new BorderLayout());
 
                     //======== filterPanel ========
@@ -547,7 +572,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables
-    // Generated using JFormDesigner Evaluation license - no spam
+    // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
     private JMenuBar menuBar1;
     private JMenu menu1;
     private JMenuItem newItem;
@@ -563,6 +588,9 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenu menu4;
     private JMenuItem helpItem;
     private JMenuItem aboutItem;
+    private JPanel hSpacer1;
+    private JLabel label2;
+    private JTextField sceneFinder;
     private JSplitPane splitPane1;
     private JSplitPane splitPane2;
     private JPanel panel4;
@@ -601,7 +629,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
         gui.addConfigurables(ClassPathParser.getConfigurableClasses(addtionalClasses));
 
-        gui.setBounds(200, 100, 900, 700);
+        gui.setBounds(100, 100, 900, 700);
         gui.setVisible(true);
     }
 }

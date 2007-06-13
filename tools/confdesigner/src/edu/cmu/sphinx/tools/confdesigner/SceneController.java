@@ -2,6 +2,7 @@ package edu.cmu.sphinx.tools.confdesigner;
 
 import edu.cmu.sphinx.tools.executor.ExecutorListener;
 import edu.cmu.sphinx.tools.executor.Executable;
+import edu.cmu.sphinx.tools.confdesigner.util.SceneSerializer;
 import edu.cmu.sphinx.util.props.*;
 import org.netbeans.api.visual.widget.EventProcessingType;
 
