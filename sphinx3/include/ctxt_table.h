@@ -106,13 +106,10 @@ typedef struct {
 } xwdpid_t;
 
 
-#define ctxt_table_left_ctxt_ssid(ct,l,b,r)  ct->lcpid[b][r].pid[ct->lcpid[b][r].cimap[l]]
-#define ctxt_table_word_int_ssid(ct,wid,loc)  ct->wwpid[wid][loc]
-
-/* HACK! are these two correct? */
-
-#define ctxt_table_right_ctxt_ssid(ct,l,b,r)  ct->rcpid[b][l].pid[ct->rcpid[b][l].cimap[r]]
-#define ctxt_table_single_phone_ssid(ct,l,b,r)  ct->lrcpid[b][l].pid[ct->lrcpid[b][l].cimap[r]]
+#define ctxt_table_left_ctxt_ssid(ct,l,b,r)  ((ct)->lcpid[b][r].pid[ct->lcpid[b][r].cimap[l]])
+#define ctxt_table_word_int_ssid(ct,wid,wpos)  ((ct)->wwpid[wid][wpos])
+#define ctxt_table_right_ctxt_ssid(ct,l,b,r)  ((ct)->rcpid[b][l].pid[ct->rcpid[b][l].cimap[r]])
+#define ctxt_table_single_phone_ssid(ct,l,b,r)  ((ct)->lrcpid[b][l].pid[ct->lrcpid[b][l].cimap[r]])
 
 /**
  * \struct ctxt_table_t 

@@ -575,7 +575,7 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
         if ((!h->next) || (h->next->pos != h->pos + 1)) {
             nexth = whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
 
-            nexth->pid = &(ct_table->wwpid[w][nexth->pos]);
+            nexth->pid = &ctxt_table_word_int_ssid(ct_table, w, nexth->pos);
 
             nexth->next = h->next;
             h->next = nexth;
@@ -738,9 +738,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         rc = dict->word[w].ciphone[1];
 
-        pidp =
-            &(ct_table->lcpid[b][rc].
-              pid[ct_table->lcpid[b][rc].cimap[lc]]);
+        pidp = &ctxt_table_left_ctxt_ssid(ct_table, lc, b, rc);
+        /* &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]); */
         pid = *(pidp);
 
         if (fwg->multiplex) {
@@ -790,9 +789,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         for (rc = 0; rc < npid; rc++) {
 
-            pidp =
-                &(ct_table->lrcpid[b][lc].
-                  pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+            pidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
+            /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             pid = *(pidp);
 
             if (fwg->multiplex_singleph) {
@@ -844,9 +842,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         b = dict->word[w].ciphone[0];
         for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
 
-            pidp =
-                &(ct_table->lrcpid[b][lc].
-                  pid[ct_table->lrcpid[b][lc].cimap[rc]]);
+            pidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
+            /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             pid = *(pidp);
 
             if (score > h->score[0]) {
