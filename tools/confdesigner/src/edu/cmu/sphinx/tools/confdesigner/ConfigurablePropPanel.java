@@ -14,6 +14,8 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -105,7 +107,8 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
 //                        System.err.println("non-defaulting booleans are not supported");
 
                         p.setType(Boolean.class);
-                        p.setValue(currentPS.getBoolean(propName));
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getBoolean(propName));
                         p.setEditable(true);
                         break;
                     case DOUBLE:
@@ -115,7 +118,8 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                         p.setDisplayName(propName);
 
                         p.setType(Double.class);
-                        p.setValue(currentPS.getDouble(propName));
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getDouble(propName));
                         p.setEditable(true);
                         break;
                     case INT:
@@ -125,7 +129,8 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                         p.setDisplayName(propName);
 
                         p.setType(Integer.class);
-                        p.setValue(currentPS.getInt(propName));
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getInt(propName));
                         p.setEditable(true);
 
                         // todo check whether the property is in range
@@ -137,7 +142,8 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                         p.setDisplayName(propName);
 
                         p.setType(String.class);
-                        p.setValue(currentPS.getString(propName));
+                        if (currentPS.getRaw(propName) != null)
+                            p.setValue(currentPS.getString(propName));
                         p.setEditable(true);
                 }
 
@@ -163,12 +169,36 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                     Class propType = p.getType();
                     if (propType.equals(Boolean.class)) {
                         currentPS.setBoolean(propName, (Boolean) p.getValue());
+
                     } else if (propType.equals(Integer.class)) {
-                        currentPS.setInt(propName, (Integer) p.getValue());
+                        Integer newValue = (Integer) p.getValue();
+
+                        int[] range = ((S4Integer) currentPS.getProperty(propName, S4Integer.class).getAnnotation()).range();
+                        if (newValue < range[0] || newValue > range[1]) {
+                            JOptionPane.showConfirmDialog(null, "Property '" + propName + "' is not in range: (" + range[0] + ", " + range[1] + ")");
+                            clear(p);
+                        } else
+                            currentPS.setInt(propName, newValue);
+
                     } else if (propType.equals(Double.class)) {
-                        currentPS.setDouble(propName, (Double) p.getValue());
+                        Double newValue = (Double) p.getValue();
+
+                        double[] range = ((S4Double) currentPS.getProperty(propName, S4Double.class).getAnnotation()).range();
+                        if (newValue < range[0] || newValue > range[1]) {
+                            JOptionPane.showConfirmDialog(null, "Property '" + propName + "' is not in range (" + range[0] + ", " + range[1] + ")");
+                            clear(p);
+                        } else
+                            currentPS.setDouble(propName, newValue);
+
                     } else if (propType.equals(String.class)) {
-                        currentPS.setString(propName, (String) p.getValue());
+                        String newValue = (String) p.getValue();
+
+                        List<String> range = Arrays.asList(((S4String) currentPS.getProperty(propName, S4String.class).getAnnotation()).range());
+                        if (!range.isEmpty() && range.contains(newValue)) {
+                            JOptionPane.showConfirmDialog(null, "Property '" + propName + "' is not in range: " + range);
+                            clear(p);
+                        } else
+                            currentPS.setString(propName, newValue);
                     }
 
                 } catch (PropertyException pe) {
@@ -176,6 +206,14 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                 }
             }
         };
+    }
+
+
+    private void clear(DefaultProperty p) {
+        try {
+            p.setValue(null);
+        } catch (Exception e) {
+        }
     }
 
 

@@ -14,7 +14,10 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -238,11 +241,10 @@ class ConfigTransferHandler extends TransferHandler {
     }
 
 
-
     protected Transferable createTransferable(JComponent c) {
         if (c instanceof ConfigurableTree) {
             JTree source = (JTree) c;
-            if (source.getSelectionPath().getLastPathComponent() instanceof ConfigurableNode) {
+            if (source != null && source.getSelectionPath() != null && source.getSelectionPath().getLastPathComponent() instanceof ConfigurableNode) {
                 ConfigurableNode selectedValue = (ConfigurableNode) source.getSelectionPath().getLastPathComponent();
 
                 return new TransferableConfigurable(selectedValue.getConfigurableClass());
