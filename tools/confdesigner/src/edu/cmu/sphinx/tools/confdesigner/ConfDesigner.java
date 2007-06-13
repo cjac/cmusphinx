@@ -25,16 +25,16 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 
 /** @author Holger Brandl */
 public class ConfDesigner extends JFrame implements ExecutorListener {
 
     private SceneController sceneController;
+
+    public static final String CONF_DESIGNER = "ConDesigner";
 
     public final String LAYOUT_SUFFIX = ".layout";
     public final String FORMAT_SUFFIX = ".sxl";
@@ -95,7 +95,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     }
 
 
-    private void addConfigurables(Collection<Class<? extends Configurable>> configClasses) {
+    public void addConfigurables(Collection<Class<? extends Configurable>> configClasses) {
         configurableTree.addConfigurables(configClasses);
     }
 
@@ -580,10 +580,26 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     public static void main(String[] args) throws IOException, PropertyException {
+        if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-h") || args[0].startsWith("--h"))) {
+            System.out.println(CONF_DESIGNER + " [-l <semicolon-separated list of jars or class-directories which " +
+                    "contain configurables>] " +
+                    "\n\n Note: The -l defines only which jars/locations to parse in order to find configurables. " +
+                    "Nevertheless all these jars/directories need to be contained in the class-path of " + CONF_DESIGNER + ".");
+
+            System.exit(0);
+        }
+
+        List<String> addtionalClasses = new ArrayList<String>();
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-l")) {
+                assert args.length > i;
+                addtionalClasses.addAll(Arrays.asList(args[i + 1].split(",")));
+            }
+        }
+
         ConfDesigner gui = new ConfDesigner();
 
-        Collection<Class<? extends Configurable>> configClasses = ClassPathParser.getAllConfigsFromClassPath();
-        gui.addConfigurables(configClasses);
+        gui.addConfigurables(ClassPathParser.getConfigurableClasses(addtionalClasses));
 
         gui.setBounds(200, 100, 900, 700);
         gui.setVisible(true);

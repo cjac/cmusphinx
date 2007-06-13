@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <jnlp spec="1.0"
-        codebase="http://www.techfak.uni-bielefeld.de/~hbrandl/confdesigner/" href="confdesigner.jnlp">
-      <!--codebase="file:///Z:/projects/s4designer/dist/lib" href="confdesigner.jnlp">-->
+      codebase="http://www.techfak.uni-bielefeld.de/~hbrandl/confdesigner/" href="confdesigner.jnlp">
+    <!--codebase="file:///Z:/projects/s4designer/dist/lib" href="confdesigner.jnlp">-->
     <information>
         <title>ConfDesigner</title>
         <vendor>Holger Brandl</vendor>
         <homepage href="http://techfak.uni-bielefeld.de/~hbrandl"/>
         <icon href="confdesigner.jpg"/>
-        <description>A webstart demonstration of the new visual configuration designer for the Sphinx4 speech recognition system</description>
+        <description>A webstart demonstration of the new visual configuration designer for the Sphinx4 speech
+            recognition system
+        </description>
         <description kind="short">Webified ConfDesigner</description>
         <offline-allowed/>
     </information>
@@ -29,6 +31,6 @@
     <security>
         <all-permissions/>
     </security>
-    
-    <application-desc main-class="edu.cmu.sphinx.tools.confdesigner.ConfDesigner"/>
+
+    <application-desc main-class="edu.cmu.sphinx.tools.confdesigner.util.JNLPDemoStarter"/>
 </jnlp>

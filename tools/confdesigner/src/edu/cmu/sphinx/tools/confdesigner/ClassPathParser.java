@@ -23,7 +23,44 @@ import java.util.jar.Manifest;
 public class ClassPathParser {
 
     /** Extracts all <code>Configurable</code>s from the current classpath. */
-    public static List<Class<? extends Configurable>> getAllConfigsFromClassPath() throws IOException {
+    public static List<Class<? extends Configurable>> getAllConfigsFromClassPath(List<String> ignoreList) throws IOException {
+        List<Class<? extends Configurable>> configs = new ArrayList<Class<? extends Configurable>>();
+
+        ClassLoader loader = ClassPathParser.class.getClassLoader();
+        System.out.println("the loader is " + loader);
+
+
+        System.out.println("the class path is " + System.getProperty("java.class.path"));
+        List<String> classPathEntries = new ArrayList<String>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
+
+        // add all classpath from nested jars within the confdesigner manifest if ConDesigner is running from a jar
+        java.net.URL codeBase = ClassPathParser.class.getProtectionDomain().getCodeSource().getLocation();
+        if (codeBase.getPath().endsWith(".jar")) {
+            System.out.println("*** running from jar!");
+
+            JarInputStream jin = new JarInputStream(codeBase.openStream());
+
+            Manifest mf = jin.getManifest();
+            classPathEntries.addAll(Arrays.asList(mf.getMainAttributes().getValue("Class-Path").split(" ")));
+        }
+
+        // try to find all configurables within the classpath
+        for (String classPathEntry : classPathEntries) {
+            if (ignoreList.contains(classPathEntry))
+                continue;
+
+            System.err.println("parsing '" + classPathEntry + "' ...");
+            if (classPathEntry.endsWith(".jar")) {
+                configs.addAll(extractConfigsFromJar(new JarFile(classPathEntry)));
+            } else
+                configs.addAll(extractConfigsFromFileSystem(classPathEntry));
+        }
+
+        return configs;
+    }
+
+
+    public static List<Class<? extends Configurable>> getConfigurablesWhileWebstarting(List<String> ignoreList) {
         List<Class<? extends Configurable>> configs = new ArrayList<Class<? extends Configurable>>();
 
         ClassLoader loader = ClassPathParser.class.getClassLoader();
@@ -35,54 +72,65 @@ public class ClassPathParser {
 
             for (URL url : urls) {
                 String urlName = url.toString();
-                if (urlName.contains("jsapi.jar") ||
-                        urlName.contains("org-netbeans-modules-visual-examples.jar") ||
-                        urlName.contains("l2fprod-common-sheet.jar") ||
-                        urlName.contains("org-openide-util.jar") ||
-                        urlName.contains("org-netbeans-api-visual.jar") ||
-                        urlName.contains("xstream-1.2.jar"))
+                if (ignoreList.contains(urlName))
                     continue;
 
                 System.out.println("url is " + url);
-                URL jarURL = new URL("jar:" + url.toString() + "!/");
 
-                JarURLConnection conn = (JarURLConnection) jarURL.openConnection();
-                configs.addAll(extractConfigsFromJar(conn.getJarFile()));
+                try {
+                    URL jarURL = new URL("jar:" + url.toString() + "!/");
+
+                    JarURLConnection conn = (JarURLConnection) jarURL.openConnection();
+                    configs.addAll(extractConfigsFromJar(conn.getJarFile()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
-        } else {
-            System.out.println("the class path is " + System.getProperty("java.class.path"));
-            List<String> classPathEntries = new ArrayList<String>(Arrays.asList(System.getProperty("java.class.path").split(File.pathSeparator)));
+        }
 
-            // add all classpath from nested jars within the confdesigner manifest if ConDesigner is running from a jar
-            java.net.URL codeBase = ClassPathParser.class.getProtectionDomain().getCodeSource().getLocation();
-            if (codeBase.getPath().endsWith(".jar")) {
-                System.out.println("*** running from jar!");
+        return configs;
+    }
 
-                JarInputStream jin = new JarInputStream(codeBase.openStream());
 
-                Manifest mf = jin.getManifest();
-                classPathEntries.addAll(Arrays.asList(mf.getMainAttributes().getValue("Class-Path").split(" ")));
-            }
+    public static List<Class<? extends Configurable>> getConfigurableClasses(List<String> classLocations) {
+        List<Class<? extends Configurable>> configs = new ArrayList<Class<? extends Configurable>>();
 
-            // try to find all configurables within the classpath
-            for (String classPathEntry : classPathEntries) {
-                if (classPathEntry.contains("Java" + File.separator + "jdk") ||
-                        classPathEntry.contains("Java" + File.separator + "jre") ||
-                        classPathEntry.contains("jsapi.jar") ||
-                        classPathEntry.contains("JetBrains" + File.separator + "IntelliJ") ||
-                        classPathEntry.contains("org-netbeans-modules-visual-examples.jar") ||
-                        classPathEntry.contains("l2fprod-common-sheet.jar") ||
-                        classPathEntry.contains("org-openide-util.jar") ||
-                        classPathEntry.contains("org-netbeans-api-visual.jar") ||
-                        classPathEntry.contains("xstream-1.2.jar"))
-                    continue;
+        for (String location : classLocations) {
+            if (location.endsWith(".jar")) {
+                try {
+                    configs.addAll(extractConfigsFromJar(new JarFile(location)));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else
+                configs.addAll(extractConfigsFromFileSystem(location));
+        }
 
-                System.err.println("parsing '" + classPathEntry + "' ...");
-                if (classPathEntry.endsWith(".jar")) {
-                    configs.addAll(extractConfigsFromJar(new JarFile(classPathEntry)));
-                } else
-                    configs.addAll(extractConfigsFromFileSystem(classPathEntry));
+        return configs;
+    }
+
+
+    public static Collection<Class<? extends Configurable>> extractConfigsFromJar(JarFile jarFile) {
+        List<Class<? extends Configurable>> configs = new ArrayList<Class<? extends Configurable>>();
+
+        Enumeration e = jarFile.entries();
+        while (e.hasMoreElements()) {
+            JarEntry o = (JarEntry) e.nextElement();
+            String entryName = o.getName();
+
+            if (entryName.endsWith(".class")) {
+                try {
+                    entryName = entryName.replace("/", ".").replace(".class", "");
+                    System.err.println(entryName);
+                    Class aClass = Class.forName(entryName);
+                    if (ConfigurationManagerUtils.isImplementingInterface(aClass, Configurable.class) && !Modifier.isAbstract(aClass.getModifiers()))
+                        configs.add((Class<? extends Configurable>) aClass);
+                } catch (ClassNotFoundException e1) {
+                    e1.printStackTrace();
+                } catch (Throwable t) {
+                    t.printStackTrace();
+                }
             }
         }
 
@@ -124,33 +172,6 @@ public class ClassPathParser {
             }
         }
 
-
-        return configs;
-    }
-
-
-    private static Collection<Class<? extends Configurable>> extractConfigsFromJar(JarFile jarFile) throws IOException {
-        List<Class<? extends Configurable>> configs = new ArrayList<Class<? extends Configurable>>();
-
-        Enumeration e = jarFile.entries();
-        while (e.hasMoreElements()) {
-            JarEntry o = (JarEntry) e.nextElement();
-            String entryName = o.getName();
-
-            if (entryName.endsWith(".class")) {
-                try {
-                    entryName = entryName.replace("/", ".").replace(".class", "");
-                    System.err.println(entryName);
-                    Class aClass = Class.forName(entryName);
-                    if (ConfigurationManagerUtils.isImplementingInterface(aClass, Configurable.class) && !Modifier.isAbstract(aClass.getModifiers()))
-                        configs.add((Class<? extends Configurable>) aClass);
-                } catch (ClassNotFoundException e1) {
-                    e1.printStackTrace();
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                }
-            }
-        }
 
         return configs;
     }
