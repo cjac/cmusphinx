@@ -80,6 +80,10 @@
         <property environment="env"/>
         <property file="${basedir}/properties/${env.USER}.properties"/>    
     </target>
+    <!-- overriding these to do nothing; have moved the important properties they loaded
+     into the <USERNAME>.properties file -->
+    <target name="init-userdir" depends="pre-init,init-private"/>
+    <target name="init-user" depends="pre-init,init-private,init-userdir"/>
 
     <property name="srcDir.dotNet" value="${basedir}/dotNet"/>
     <!-- where in the NetBeans-generated stuff is this defined as a property? -->
