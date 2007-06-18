@@ -103,7 +103,9 @@
 #ifndef _S3_HMM_H_
 #define _S3_HMM_H_
 
-#include <s3types.h>
+#include <stdio.h>
+
+#include "s3types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -116,15 +118,12 @@ extern "C" {
 /** \file hmm.h
  * \brief HMM data structure and operation
  *
- * Arthur : This is Sphinx 3.X specific implementation of HMM
- * computation.  It is optimized for 3-state and 5-state
- * left-to-right HMM.  The following is the origianl description 
- * written by Ravi.
- *
- * NOTE: For efficiency, this version is hardwired for two possible HMM topologies:
+ * For efficiency, this version is hardwired for two possible HMM
+ * topologies, but will fall back to others:
  * 
- * 5-state left-to-right HMMs:  (0 is the entry state and E is a non-emitting exit state;
- * the x's indicate allowed transitions between source and destination states):
+ * 5-state left-to-right HMMs: (0 is the *emitting* entry state and E
+ * is a non-emitting exit state; the x's indicate allowed transitions
+ * between source and destination states):
  * 
  *               0   1   2   3   4   E (destination-states)
  *           0   x   x   x
@@ -144,7 +143,6 @@ extern "C" {
  *    (source-states)
  * 3-state topologies that contain a subset of the above transitions should work as well.  */
 
-
 /**  \struct hmm_state_t
  * \brief A single state in the HMM 
  */
@@ -153,33 +151,104 @@ typedef struct {
     int32 history;	/**< History index */
 } hmm_state_t;
 
-
 /** \struct hmm_t
  * \brief An individual HMM among the HMM search space.
  *
- * An individual HMM among the HMM search space.  An HMM with N emitting states consists
- * of N+2 internal states including the non-emitting entry (in) and exit (out) states.
+ * An individual HMM among the HMM search space.  An HMM with N
+ * emitting states consists of N+2 internal states including the
+ * non-emitting entry (in) and exit (out) states.
+ */
+
+typedef struct hmm_s {
+    hmm_state_t *state;	/**< Per-state data for emitting states */
+    hmm_state_t in;	/**< Non-emitting entry state */
+    hmm_state_t out;	/**< Non-emitting exit state */
+    union {
+        int32 *mpx_ssid;    /**< Senone sequence IDs for each state (for multiplex HMMs). */
+        int32 ssid;         /**< Senone sequence ID. */
+    } s;
+    int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning). */
+    s3tmatid_t tmatid;  /**< Transition matrix ID (see hmm_context_t). */
+} hmm_t;
+
+/** \struct hmm_context_t
+ * \brief Shared information between a set of HMMs.
+ *
  * For compatibility with Sphinx-II, we assume that the initial or entry state can only
  * transition to state 0, and the transition matrix is n_emit_state x (n_emit_state+1),
  * where the extra destination dimension correponds to the final or exit state.
  */
+typedef struct hmm_context_s {
+    int32 n_emit_state;    /**< Number of emitting states in this set of HMMs. */
+    const int32 ***tp;	   /**< State transition scores tp[id][from][to] (logs3 values). */
+    const int32 *senscore; /**< State emission scores senscore[senid] (logs3 values). */
+    const s3senid_t **sseq;/**< Senone sequence mapping. */
+    int32 *st_sen_scr;     /**< Temporary array of senone scores (for some topologies). */
+    int32 mpx;		   /**< Are senones multiplexed? */
+    void *udata;           /**< Whatever you feel like, gosh. */
+} hmm_context_t;
 
-typedef struct {
-    hmm_state_t *state;	/**< Per-state data for emitting states */
-    hmm_state_t in;	/**< Non-emitting entry state */
-    hmm_state_t out;	/**< Non-emitting exit state */
-    int32 **tp;		/**< State transition scores tp[from][to] (logs3 values) */
-    int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning) */
-} hmm_t;
+/** Access macros. */
+#define hmm_in_score(ctx,h) (h)->in.score
+#define hmm_score(ctx,h,st) (h)->state[st].score
+#define hmm_out_score(ctx,h) (h)->out.score
 
+#define hmm_in_history(ctx,h) (h)->in.history
+#define hmm_history(ctx,h,st) (h)->state[st].history
+#define hmm_out_history(ctx,h) (h)->out.history
+
+#define hmm_bestscore(ctx,h) (h)->bestscore
+#define hmm_ssid(ctx,h,st) ((ctx)->mpx ? (h)->s.mpx_ssid[st] : (h)->s.ssid)
+#define hmm_senid(ctx,h,st) ((ctx)->sseq[hmm_ssid(ctx,h,st)][st])
+#define hmm_senscr(ctx,h,st) ((ctx)->senscore[hmm_senid(ctx,h,st)])
+#define hmm_tprob(ctx,h,i,j) ((ctx)->tp[(h)->tmatid][i][j])
+#define hmm_n_emit_state(ctx) ((ctx)->n_emit_state)
+#define hmm_n_state(ctx) ((ctx)->n_emit_state + 2)
+
+/**
+ * Create an HMM context.
+ **/
+hmm_context_t *hmm_context_init(int32 n_emit_state, int32 mpx,
+                                int32 ***tp,
+                                int32 *senscore,
+                                s3senid_t **sseq);
+
+/**
+ * Change the senone score array for a context.
+ **/
+#define hmm_context_set_senscore(ctx, senscr) ((ctx)->senscore = (senscr))
+
+/**
+ * Free an HMM context.
+ *
+ * \note The transition matrices, senone scores, and senone sequence
+ * mapping are all assumed to be allocated externally, and will NOT be
+ * freed by this function.
+ **/
+void hmm_context_free(hmm_context_t *ctx);
+
+/**
+ * Populate a previously-allocated HMM structure, allocating internal data.
+ **/
+void hmm_init(hmm_context_t *ctx, hmm_t *hmm);
+
+/**
+ * Free an HMM structure, releasing internal data (but not the HMM structure itself).
+ */
+void hmm_deinit(hmm_context_t *ctx, hmm_t *hmm);
 
 /**
  * Reset the states of the HMM to the invalid or inactive condition; i.e., scores to
  * LOGPROB_ZERO and hist to undefined.
  */
-void hmm_clear (hmm_t *h, /**<In/Out HMM being updated */
-		int32 n_emit_state /**<Number of emitting state of a HMM */
+void hmm_clear(const hmm_context_t *ctx, /**<In: Context for this HMM */
+               hmm_t *h 	         /**<In/Out: HMM being updated */
     );
+
+/**
+ * Enter an HMM with the given path score and history ID.
+ **/
+void hmm_enter(const hmm_context_t *ctx, hmm_t *h, int32 score, int32 histid);
 
 
 /**
@@ -189,64 +258,28 @@ void hmm_clear (hmm_t *h, /**<In/Out HMM being updated */
  * are vertical transitions.  Hence they should be made only after the history has been logged
  * for the emitting states.  But we're not bothered with state segmentations, for now.  So, we
  * update the exit state as well.)
- * Hardwired for 5-state HMMs with topology shown above.
- * @return Best state score after evaluation.
- */
-int32 hmm_vit_eval_5st (hmm_t *hmm,		/**< In/Out: HMM being updated */
-			s3senid_t *senid,	/**< In: Senone ID for each HMM state */
-			int32 *senscore	/**< In: Senone scores, for all senones */
-    );
-
-/**
- * Like hmm_vit_eval_5st, but hardwired for 3-state HMMs with topology shown above.
- * @return Best state score after evaluation.
- */
-int32 hmm_vit_eval_3st (hmm_t *hmm,		/**< In/Out: HMM being updated */
-			s3senid_t *senid,	/**< In: Senone ID for each HMM state */
-			int32 *senscore	/**< In: Senone scores, for all senones */
-    );
-
-
-/**
-   A wrapper of both hmm_vit_eval_5st and hmm_vit_eval_3st.  Only carry out evaluation but assume
-   writing be the job of hmm_dump
-   @see hmm_vit_eval_3st
-   @see hmm_vit_eval_5st
-   @see hmm_dump_vit_eval
-   @see hmm_dump
 */
-int32 hmm_vit_eval (hmm_t *hmm, /**< In/Out: HMM being updated */
-		    int32 n_state, /**< In number of state */
-		    s3senid_t *senid, /**< an array of senone ID */
-		    int32 *senscr     /**< an array of senone score */
+int32 hmm_vit_eval(const hmm_context_t *ctx, /**<In: Context for this HMM */
+                   hmm_t *hmm /**< In/Out: HMM being updated */
     );
 
   
 
-/** Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging 
-    @see hmm_vit_eval_3st
-    @see hmm_vit_eval_5st
-    @see hmm_dump
-*/
-int32 hmm_dump_vit_eval (hmm_t *hmm,  /**< In/Out: HMM being updated */
-			 int32 n_emit_state, /**< In: Number of emitting state */
-			 s3senid_t *senid, /**< An array of senone ID */
-			 int32 *senscr,  /**< An array of senone scores*/
-			 FILE *fp /**< An output file pointer */
+/**
+ * Like hmm_vit_eval, but dump HMM state and relevant senscr to fp first, for debugging;.
+ */
+int32 hmm_dump_vit_eval(const hmm_context_t *ctx, /**<In: Context for this HMM */
+                        hmm_t *hmm,  /**< In/Out: HMM being updated */
+                        FILE *fp /**< An output file pointer */
     );
 
 /** 
-    For debugging, dump the whole hmm out.
-    It also provide debugging information for the hmm. 
-    Say, whether there are abnormal scores enter into the hmm. 
-      
-*/
+ * For debugging, dump the whole HMM out.
+ */
 
-void hmm_dump (hmm_t *h,  /**< In/Out: HMM being updated */
-	       int32 n_emit_state, /**< In: Number of emitting state */
-	       s3senid_t *senid, /**< An array of senone ID */
-	       int32 *senscr, /**< An array of senone scores*/
-	       FILE *fp /**< An output file pointer */
+void hmm_dump(const hmm_context_t *ctx, /**<In: Context for this HMM */
+              hmm_t *h,  /**< In/Out: HMM being updated */
+              FILE *fp /**< An output file pointer */
     );
 
 

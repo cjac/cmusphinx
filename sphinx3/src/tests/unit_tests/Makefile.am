@@ -1,2 +1,2 @@
-SUBDIRS=test_logs3
+SUBDIRS=test_logs3 test_hmm
 

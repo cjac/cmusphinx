@@ -921,13 +921,13 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
 	    void *val;
 	    int32 id;
 
-            if (hmm->out.score < wth)
+            if (hmm_out_score(ln->ctx, hmm) < wth)
                 continue;       /* Word exit score not good enough */
 
-            if (hmm->out.history == -1)
+            if (hmm_out_history(ln->ctx, hmm) == -1)
                 E_ERROR
-                    ("Hmm->out.history equals to -1 with score %d and active idx %d, lextree->type\n",
-                     hmm->out.score, i, lextree->type);
+                    ("hmm_out_history(ln->ctx, hmm) equals to -1 with score %d and active idx %d, lextree->type\n",
+                     hmm_out_score(ln->ctx, hmm), i, lextree->type);
 
             /* From now on, we are taking care of all active word ends. */
 
@@ -942,7 +942,7 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
 					       dict_basewid(s->kbc->dict,
 							    ln->wid)),
                             &val) == 0) {
-		id = (int32)val;
+		id = (long)val;
 	    }
 	    else {
                 /* If it doesn't, start to use another copy */
@@ -1020,11 +1020,11 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
 
                 }
 
-                if (id != (int32) hash_table_enter
+                if (id != (long) hash_table_enter
                     (wstg->active_word,
                      dict_wordstr(s->kbc->dict,
                                   dict_basewid(s->kbc->dict, ln->wid)),
-                     (void *)id)) {
+                     (void *)(long)id)) {
                     E_FATAL("hash_enter(local-phonetable, %s) failed\n",
                             dict_wordstr(s->kbc->dict,
                                          dict_basewid(s->kbc->dict,
@@ -1040,8 +1040,8 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
             entry = vithist_n_entry(vh) - 1;
 
             vithist_rescore(vh, s->kbc, ln->wid, cur_frm,
-                            hmm->out.score - ln->prob,
-                            hmm->out.history, lextree->type, ln->rc);
+                            hmm_out_score(ln->ctx, hmm) - ln->prob,
+                            hmm_out_history(ln->ctx, hmm), lextree->type, ln->rc);
 
             /* At this point a score is recorded in the viterbi history 
                That consist of the trigram score
@@ -1190,18 +1190,18 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
         /*    E_INFO("Entry %d, word %s\n",i,(char *) hash_entry_key(he)); */
         /*E_INFO("Entry %d, word %s, treeid %d. No of active word %d in the tree\n",i,(char *) hash_entry_key(he),val, wstg->expandtree[val]->n_active); */
 
-        if (wstg->expandtree[(int32)val]->n_active == 0) {
+        if (wstg->expandtree[(long)val]->n_active == 0) {
             /* insert this tree back to the list */
             wstg->empty_tree_idx_stack =
-                glist_add_int32(wstg->empty_tree_idx_stack, (int32)val);
+                glist_add_int32(wstg->empty_tree_idx_stack, (long)val);
             /* delete this entry from the hash */
             /*E_INFO("val %d, expandtree[val]->prev_word %s\n",val,wstg->expandtree[val]->prev_word); */
 	    hash_table_delete(wstg->active_word,
-			      wstg->expandtree[(int32)val]->prev_word);
+			      wstg->expandtree[(long)val]->prev_word);
 	    wstg->no_active_word--;
 
             /* set the word of a lextree to be none */
-            strcpy(wstg->expandtree[(int32)val]->prev_word, "");
+            strcpy(wstg->expandtree[(long)val]->prev_word, "");
         }
     }
 
@@ -1235,7 +1235,7 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 			      dict_wordstr(s->kbc->dict,
 					   dict_basewid(s->kbc->dict, wid)),
 			      &val) == 0) {
-	    id = (int32) val;
+	    id = (long) val;
 	}
 	else {
             /* If it doesn't, start to use another copy */
@@ -1309,11 +1309,11 @@ srch_WST_propagate_graph_wd_lv2(void *srch, int32 frmno)
 
             }
 
-            if (id != (int32) hash_table_enter
+            if (id != (long) hash_table_enter
                 (wstg->active_word,
                  dict_wordstr(s->kbc->dict,
                               dict_basewid(s->kbc->dict, wid)),
-                 (void *)id)) {
+                 (void *)(long)id)) {
                 E_FATAL("hash_enter(local-phonetable, %s) failed\n",
                         dict_wordstr(s->kbc->dict,
                                      dict_basewid(s->kbc->dict, wid)));

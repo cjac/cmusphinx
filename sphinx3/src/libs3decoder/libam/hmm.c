@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -87,78 +88,133 @@
  * 		Started, based on an earlier version.
  */
 
+#include <assert.h>
+#include <stdlib.h>
 
 #include "hmm.h"
+#include "ckd_alloc.h"
+
+#define HMM_BLOCK_SIZE 1000
 
 static int32 NO_UFLOW_ADD(int32 a, int32 b);
 
+hmm_context_t *
+hmm_context_init(int32 n_emit_state, int32 mpx,
+		 int32 ***tp,
+		 int32 *senscore,
+		 s3senid_t **sseq)
+{
+    hmm_context_t *ctx;
+
+    assert(n_emit_state > 0);
+    assert(tp != NULL);
+    /* Multiplex HMMs all have their own senone sequences */
+    assert(mpx || (sseq != NULL));
+
+    ctx = ckd_calloc(1, sizeof(*ctx));
+    ctx->n_emit_state = n_emit_state;
+    ctx->mpx = mpx;
+    ctx->tp = (const int32 ***)tp;
+    ctx->senscore = senscore;
+    ctx->sseq = (const s3senid_t **)sseq;
+
+    return ctx;
+}
+
 void
-hmm_dump(hmm_t * hmm, int32 n_state, s3senid_t * senid, int32 * senscr,
+hmm_context_free(hmm_context_t *ctx)
+{
+    ckd_free(ctx);
+}
+
+void
+hmm_init(hmm_context_t *ctx, hmm_t *hmm)
+{
+    hmm->state = ckd_calloc(hmm_n_emit_state(ctx), sizeof(hmm_state_t));
+    if (ctx->mpx)
+        hmm->s.mpx_ssid = ckd_calloc(hmm_n_emit_state(ctx), sizeof(int32));
+    hmm_clear(ctx, hmm);
+}
+
+void
+hmm_deinit(hmm_context_t *ctx, hmm_t *hmm)
+{
+    ckd_free(hmm->state);
+    if (ctx->mpx)
+        ckd_free(hmm->s.mpx_ssid);
+}
+
+void
+hmm_dump(const hmm_context_t *ctx,
+	 hmm_t * hmm,
          FILE * fp)
 {
     int32 i;
 
-    fprintf(fp, " %11d    ", hmm->in.score);
-    for (i = 0; i < n_state; i++)
-        fprintf(fp, " %11d", hmm->state[i].score);
-    fprintf(fp, "     %11d\n", hmm->out.score);
+    fprintf(fp, " %11d    ", hmm_in_score(ctx, hmm));
+    for (i = 1; i < hmm_n_state(ctx); i++)
+        fprintf(fp, " %11d", hmm_score(ctx, hmm, i));
+    fprintf(fp, "\n");
 
-    fprintf(fp, " %11d    ", hmm->in.history);
-    for (i = 0; i < n_state; i++)
-        fprintf(fp, " %11d", hmm->state[i].history);
-    fprintf(fp, "     %11d\n", hmm->out.history);
+    fprintf(fp, " %11d    ", hmm_history(ctx, hmm, 0));
+    for (i = 1; i < hmm_n_state(ctx); i++)
+        fprintf(fp, " %11d", hmm_history(ctx, hmm, i));
+    fprintf(fp, "\n");
 
-    if (senid) {
-        fprintf(fp, " %-11s    ", "senid");
-        for (i = 0; i < n_state; i++)
-            fprintf(fp, " %11d", senid[i]);
+    fprintf(fp, " %-11s    ", "senid");
+    for (i = 0; i < hmm_n_emit_state(ctx); i++)
+        fprintf(fp, " %11d", hmm_senid(ctx, hmm, i));
+    fprintf(fp, "\n");
+
+    if (ctx->senscore) {
+        fprintf(fp, " %-11s    ", "senscr");
+        for (i = 0; i < hmm_n_emit_state(ctx); i++)
+            fprintf(fp, " %11d", hmm_senscr(ctx, hmm, i));
         fprintf(fp, "\n");
-
-        if (senscr) {
-            fprintf(fp, " %-11s    ", "senscr");
-            for (i = 0; i < n_state; i++)
-                fprintf(fp, " %11d", senscr[senid[i]]);
-            fprintf(fp, "\n");
-        }
     }
 
 
-    if (hmm->in.score > 0)
+    if (hmm_in_score(ctx, hmm) > 0)
         fprintf(fp,
                 "ALERT!! The input score %d is large than 0. Probably wrap around.\n",
-                hmm->in.score);
-    if (hmm->out.score > 0)
+                hmm_in_score(ctx, hmm));
+    if (hmm_out_score(ctx, hmm) > 0)
         fprintf(fp,
                 "ALERT!! The output score %d is large than 0. Probably wrap around\n.",
-                hmm->out.score);
+                hmm_out_score(ctx, hmm));
 
     fflush(fp);
 }
 
 
 void
-hmm_clear(hmm_t * h, int32 n_state)
+hmm_clear(const hmm_context_t *ctx, hmm_t * h)
 {
     int32 i;
 
-    h->in.score = S3_LOGPROB_ZERO;
-    h->in.history = -1;
-    for (i = 0; i < n_state; i++) {
-        h->state[i].score = S3_LOGPROB_ZERO;
-        h->state[i].history = -1;
+    for (i = 0; i < hmm_n_emit_state(ctx); i++) {
+        hmm_score(ctx, h, i) = S3_LOGPROB_ZERO;
+        hmm_history(ctx, h, i) = -1;
     }
-    h->out.score = S3_LOGPROB_ZERO;
-    h->out.history = -1;
+    hmm_in_score(ctx, h) = S3_LOGPROB_ZERO;
+    hmm_in_history(ctx, h) = -1;
+    hmm_out_score(ctx, h) = S3_LOGPROB_ZERO;
+    hmm_out_history(ctx, h) = -1;
 
     h->bestscore = S3_LOGPROB_ZERO;
 }
 
-/* Added by ARCHAN at 20040127 , always check for underflow, it's proved to be crucial */
+void
+hmm_enter(const hmm_context_t *ctx, hmm_t *h, int32 score, int32 histid)
+{
+    hmm_in_score(ctx, h) = score;
+    hmm_in_history(ctx, h) = histid;
+}
 
+/* Added by ARCHAN at 20040127 , always check for underflow, it's proved to be crucial. */
 #define _CHECKUNDERFLOW_ 1
 
-
-
+/* The compiler will inline this for us, probably. */
 static int32
 NO_UFLOW_ADD(int32 a, int32 b)
 {
@@ -173,321 +229,327 @@ NO_UFLOW_ADD(int32 a, int32 b)
 
 }
 
+#define hmm_tprob_5st(tp, i, j) (tp[(i)*6+(j)])
+#define nonmpx_senscr(ctx, sseq, i) ((ctx)->senscore[(sseq)[i]])
 
-int32
-hmm_vit_eval_5st(hmm_t * hmm, s3senid_t * senid, int32 * senscr)
+static int32
+hmm_vit_eval_5st(const hmm_context_t *ctx, hmm_t * hmm)
 {
-    int32 s0, s1, s2, s3, s4, best, *tp;
+    int32 s0, s1, s2, s3, s4, best;
+    const int32 *tp;
+    const s3senid_t *sseq;
 
-    tp = hmm->tp[0];            /* Hack!!, use the knowledge that the 2-D tp is a contiguous block */
+    tp = ctx->tp[hmm->tmatid][0];
+    sseq = ctx->sseq[hmm_ssid(ctx, hmm, 0)];
 
     /* 4 = max(2,3,4); */
-    /*    s4 = hmm->state[4].score + tp[28];
-       s3 = hmm->state[3].score + tp[22];
-       s2 = hmm->state[2].score + tp[16]; */
-
-    s4 = NO_UFLOW_ADD(hmm->state[4].score, tp[28]);
-    s3 = NO_UFLOW_ADD(hmm->state[3].score, tp[22]);
-    s2 = NO_UFLOW_ADD(hmm->state[2].score, tp[16]);
+    s4 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 4), hmm_tprob_5st(tp, 4, 4));
+    s3 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 3), hmm_tprob_5st(tp, 3, 4));
+    s2 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 2), hmm_tprob_5st(tp, 2, 4));
 
     if (s4 < s3) {
         if (s3 >= s2) {
             s4 = s3;
-            hmm->state[4].history = hmm->state[3].history;
+            hmm_history(ctx, hmm, 4) = hmm_history(ctx, hmm, 3);
         }
         else {
             s4 = s2;
-            hmm->state[4].history = hmm->state[2].history;
+            hmm_history(ctx, hmm, 4) = hmm_history(ctx, hmm, 2);
         }
     }
     else if (s4 < s2) {
         s4 = s2;
-        hmm->state[4].history = hmm->state[2].history;
+        hmm_history(ctx, hmm, 4) = hmm_history(ctx, hmm, 2);
     }
-    /*s4 += senscr[senid[4]]; */
-    s4 = NO_UFLOW_ADD(s4, senscr[senid[4]]);
-    hmm->state[4].score = s4;
+    s4 = NO_UFLOW_ADD(s4, nonmpx_senscr(ctx, sseq, 4));
+    hmm_score(ctx, hmm, 4) = s4;
 
     /* 3 = max(1,2,3); */
-    /*s3 = hmm->state[3].score + tp[21];
-       s2 = hmm->state[2].score + tp[15];
-       s1 = hmm->state[1].score + tp[ 9]; */
-    s3 = NO_UFLOW_ADD(hmm->state[3].score, tp[21]);
-    s2 = NO_UFLOW_ADD(hmm->state[2].score, tp[15]);
-    s1 = NO_UFLOW_ADD(hmm->state[1].score, tp[9]);
+    s3 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 3), hmm_tprob_5st(tp, 3, 3));
+    s2 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 2), hmm_tprob_5st(tp, 2, 3));
+    s1 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 1), hmm_tprob_5st(tp, 1, 3));
     if (s3 < s2) {
         if (s2 >= s1) {
             s3 = s2;
-            hmm->state[3].history = hmm->state[2].history;
+            hmm_history(ctx, hmm, 3) = hmm_history(ctx, hmm, 2);
         }
         else {
             s3 = s1;
-            hmm->state[3].history = hmm->state[1].history;
+            hmm_history(ctx, hmm, 3) = hmm_history(ctx, hmm, 1);
         }
     }
     else if (s3 < s1) {
         s3 = s1;
-        hmm->state[3].history = hmm->state[1].history;
+        hmm_history(ctx, hmm, 3) = hmm_history(ctx, hmm, 1);
     }
-    /*s3 += senscr[senid[3]]; */
 
-    s3 = NO_UFLOW_ADD(s3, senscr[senid[3]]);
-    hmm->state[3].score = s3;
+    s3 = NO_UFLOW_ADD(s3, nonmpx_senscr(ctx, sseq, 3));
+    hmm_score(ctx, hmm, 3) = s3;
 
     best = (s4 > s3) ? s4 : s3;
 
     /* Exit state score */
-    /*s4 += tp[29];
-       s3 += tp[23]; */
-
-    s4 = NO_UFLOW_ADD(s4, tp[29]);
-    s3 = NO_UFLOW_ADD(s3, tp[23]);
+    s4 = NO_UFLOW_ADD(s4, hmm_tprob_5st(tp, 4, 5));
+    s3 = NO_UFLOW_ADD(s3, hmm_tprob_5st(tp, 3, 5));
 
     if (s4 < s3) {
-        hmm->out.score = s3;
-        hmm->out.history = hmm->state[3].history;
+        hmm_out_score(ctx, hmm) = s3;
+        hmm_out_history(ctx, hmm) = hmm_history(ctx, hmm, 3);
     }
     else {
-        hmm->out.score = s4;
-        hmm->out.history = hmm->state[4].history;
+        hmm_out_score(ctx, hmm) = s4;
+        hmm_out_history(ctx, hmm) = hmm_history(ctx, hmm, 4);
     }
 
     /* 2 = max(0,1,2); */
-    /* s2 = hmm->state[2].score + tp[14];
-       s1 = hmm->state[1].score + tp[ 8];
-       s0 = hmm->state[0].score + tp[ 2]; */
-    s2 = NO_UFLOW_ADD(hmm->state[2].score, tp[14]);
-    s1 = NO_UFLOW_ADD(hmm->state[1].score, tp[8]);
-    s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[2]);
+    s2 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 2), hmm_tprob_5st(tp, 2, 2));
+    s1 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 1), hmm_tprob_5st(tp, 1, 2));
+    s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_5st(tp, 0, 2));
     if (s2 < s1) {
         if (s1 >= s0) {
             s2 = s1;
-            hmm->state[2].history = hmm->state[1].history;
+            hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 1);
         }
         else {
             s2 = s0;
-            hmm->state[2].history = hmm->state[0].history;
+            hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 0);
         }
     }
     else if (s2 < s0) {
         s2 = s0;
-        hmm->state[2].history = hmm->state[0].history;
+        hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 0);
     }
-    /*s2 += senscr[senid[2]]; */
 
-    s2 = NO_UFLOW_ADD(s2, senscr[senid[2]]);
+    s2 = NO_UFLOW_ADD(s2, nonmpx_senscr(ctx, sseq, 2));
 
-    hmm->state[2].score = s2;
+    hmm_score(ctx, hmm, 2) = s2;
     if (best < s2)
         best = s2;
 
     /* 1 = max(0,1); */
-    /*s1 = hmm->state[1].score + tp[ 7];
-       s0 = hmm->state[0].score + tp[ 1]; */
-    s1 = NO_UFLOW_ADD(hmm->state[1].score, tp[7]);
-    s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[1]);
+    s1 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 1), hmm_tprob_5st(tp, 1, 1));
+    s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_5st(tp, 0, 1));
 
     if (s1 < s0) {
         s1 = s0;
-        hmm->state[1].history = hmm->state[0].history;
+        hmm_history(ctx, hmm, 1) = hmm_history(ctx, hmm, 0);
     }
-    /*s1 += senscr[senid[1]]; */
-    s1 = NO_UFLOW_ADD(s1, senscr[senid[1]]);
-    hmm->state[1].score = s1;
+    s1 = NO_UFLOW_ADD(s1, nonmpx_senscr(ctx, sseq, 1));
+    hmm_score(ctx, hmm, 1) = s1;
     if (best < s1)
         best = s1;
 
     /* 0 = max(0,in); */
-    /*s0 = hmm->state[0].score + tp[ 0]; */
-    s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[0]);
+    s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_5st(tp, 0, 0));
 
-    if (s0 < hmm->in.score) {
-        s0 = hmm->in.score;
-        hmm->state[0].history = hmm->in.history;
+    if (s0 < hmm_in_score(ctx, hmm)) {
+        s0 = hmm_in_score(ctx, hmm);
+        hmm_history(ctx, hmm, 0) = hmm_in_history(ctx, hmm);
     }
-    /*s0 += senscr[senid[0]]; */
-    s0 = NO_UFLOW_ADD(s0, senscr[senid[0]]);
+    s0 = NO_UFLOW_ADD(s0, nonmpx_senscr(ctx, sseq, 0));
 
-    hmm->state[0].score = s0;
+    hmm_score(ctx, hmm, 0) = s0;
     if (best < s0)
         best = s0;
 
-    hmm->in.score = S3_LOGPROB_ZERO;    /* Consumed */
-    hmm->bestscore = best;
+    hmm_in_score(ctx, hmm) = S3_LOGPROB_ZERO;    /* Consumed */
+    hmm_bestscore(ctx, hmm) = best;
 
     return best;
 }
 
+#define hmm_tprob_3st(tp, i, j) (tp[(i)*4+(j)])
 
-int32
-hmm_vit_eval_3st(hmm_t * hmm, s3senid_t * senid, int32 * senscr)
+static int32
+hmm_vit_eval_3st(const hmm_context_t *ctx, hmm_t * hmm)
 {
-    int32 s0, s1, s2, best, *tp;
+    int32 s0, s1, s2, best;
+    const int32 *tp;
+    const s3senid_t *sseq;
 
-#ifdef _CHECKUNDERFLOW_
-    /*    int32 st0, st1, st2, sen0, sen1, sen2; */
-#endif
-
-    tp = hmm->tp[0];            /* Hack!! We know the 2-D tp is a contiguous block */
+    tp = ctx->tp[hmm->tmatid][0];
+    sseq = ctx->sseq[hmm_ssid(ctx, hmm, 0)];
 
     /* 2 = max(0,1,2); */
-    /*s2 = hmm->state[2].score + tp[10]; */
-    s2 = NO_UFLOW_ADD(hmm->state[2].score, tp[10]);
+    s2 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 2), hmm_tprob_3st(tp, 2, 2));
+    s1 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 1), hmm_tprob_3st(tp, 1, 2));
 
-    /*s1 = hmm->state[1].score + tp[ 6]; */
-    s1 = NO_UFLOW_ADD(hmm->state[1].score, tp[6]);
-
-    if (tp[2] > S3_LOGPROB_ZERO) {      /* Only if skip(0->2) is allowed */
-        /*s0 = hmm->state[0].score + tp[ 2]; */
-        s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[2]);
+    if (hmm_tprob_3st(tp, 0, 2) > S3_LOGPROB_ZERO) {      /* Only if skip(0->2) is allowed */
+        s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_3st(tp, 0, 2));
 
         if (s2 < s1) {
             if (s1 >= s0) {
                 s2 = s1;
-                hmm->state[2].history = hmm->state[1].history;
+                hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 1);
             }
             else {
                 s2 = s0;
-                hmm->state[2].history = hmm->state[0].history;
+                hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 0);
             }
         }
         else if (s2 < s0) {
             s2 = s0;
-            hmm->state[2].history = hmm->state[0].history;
+            hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 0);
         }
     }
     else {
         if (s2 < s1) {
             s2 = s1;
-            hmm->state[2].history = hmm->state[1].history;
+            hmm_history(ctx, hmm, 2) = hmm_history(ctx, hmm, 1);
         }
     }
 
-/* #ifdef _CHECKUNDERFLOW_ */
-/*     sen2 = senscr[senid[2]]; */
-/*     st2 = s2 + sen2; */
-/*     s2 = (st2 > 0 && s2 < 0 && sen2 < 0) ? MAX_NEG_INT32 : st2; */
-/* #else */
-/*     s2 += senscr[senid[2]]; */
-/* #endif  */
-    s2 = NO_UFLOW_ADD(s2, senscr[senid[2]]);
-
-    hmm->state[2].score = s2;
+    s2 = NO_UFLOW_ADD(s2, nonmpx_senscr(ctx, sseq, 2));
+    hmm_score(ctx, hmm, 2) = s2;
 
     /* 1 = max(0,1); */
-    /*    s1 = hmm->state[1].score + tp[ 5]; */
-    /*s0 = hmm->state[0].score + tp[ 1]; */
-    s1 = NO_UFLOW_ADD(hmm->state[1].score, tp[5]);
-    s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[1]);
+    s1 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 1), hmm_tprob_3st(tp, 1, 1));
+    s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_3st(tp, 0, 1));
 
     if (s1 < s0) {
         s1 = s0;
-        hmm->state[1].history = hmm->state[0].history;
+        hmm_history(ctx, hmm, 1) = hmm_history(ctx, hmm, 0);
     }
 
-/* #ifdef _CHECKUNDERFLOW_ */
-/*     sen1 = senscr[senid[1]]; */
-/*     st1 = s1 + sen1; */
-/*     s1 = (st1 > 0 && s1 < 0 && sen1 < 0) ? MAX_NEG_INT32 : st1; */
-/* #else */
-/*     s1 += senscr[senid[1]]; */
-/* #endif  */
-    s1 = NO_UFLOW_ADD(s1, senscr[senid[1]]);
-    hmm->state[1].score = s1;
+    s1 = NO_UFLOW_ADD(s1, nonmpx_senscr(ctx, sseq, 1));
+    hmm_score(ctx, hmm, 1) = s1;
 
     best = (s2 > s1) ? s2 : s1;
 
     /* Exit state score */
+    s2 = NO_UFLOW_ADD(s2, hmm_tprob_3st(tp, 2, 3));
 
-/* #ifdef _CHECKUNDERFLOW_ */
-/*     st2 = s2 + tp[11]; */
-/*     s2 = (st2 > 0 && s2 < 0) ? MAX_NEG_INT32 : st2; */
-/* #else */
-/*     s2 += tp[11]; */
-/* #endif */
-
-    s2 = NO_UFLOW_ADD(s2, tp[11]);
-
-    if (tp[7] > S3_LOGPROB_ZERO) {      /* Only if skip(1->4) is allowed */
-        /*  s1 += tp[ 7]; */
-        s1 = NO_UFLOW_ADD(s1, tp[7]);
+    if (hmm_tprob_3st(tp, 1, 3) > S3_LOGPROB_ZERO) {      /* Only if skip(1->3) is allowed */
+        s1 = NO_UFLOW_ADD(s1, hmm_tprob_3st(tp, 1, 3));
 
         if (s2 < s1) {
-            hmm->out.score = s1;
-            hmm->out.history = hmm->state[1].history;
+            hmm_out_score(ctx, hmm) = s1;
+            hmm_out_history(ctx, hmm) = hmm_history(ctx, hmm, 1);
         }
         else {
-            hmm->out.score = s2;
-            hmm->out.history = hmm->state[2].history;
+            hmm_out_score(ctx, hmm) = s2;
+            hmm_out_history(ctx, hmm) = hmm_history(ctx, hmm, 2);
         }
     }
     else {
-        hmm->out.score = s2;
-        hmm->out.history = hmm->state[2].history;
+        hmm_out_score(ctx, hmm) = s2;
+        hmm_out_history(ctx, hmm) = hmm_history(ctx, hmm, 2);
     }
     /* 0 = max(0,in); */
-    /*s0 = hmm->state[0].score + tp[ 0]; */
+    s0 = NO_UFLOW_ADD(hmm_score(ctx, hmm, 0), hmm_tprob_3st(tp, 0, 0));
 
-    s0 = NO_UFLOW_ADD(hmm->state[0].score, tp[0]);
-
-    if (s0 < hmm->in.score) {
-        s0 = hmm->in.score;
-        hmm->state[0].history = hmm->in.history;
+    if (s0 < hmm_in_score(ctx, hmm)) {
+        s0 = hmm_in_score(ctx, hmm);
+        hmm_history(ctx, hmm, 0) = hmm_in_history(ctx, hmm);
     }
 
-/* #ifdef _CHECKUNDERFLOW_ */
-/*     sen0 = senscr[senid[0]]; */
-/*     st0 = s0 + sen0; */
-/*     s0 = (st0 > 0 && s0 < 0 && sen0 < 0) ? MAX_NEG_INT32 : st0; */
-/* #else */
-/*     s0 += senscr[senid[0]]; */
-/* #endif  */
-    s0 = NO_UFLOW_ADD(s0, senscr[senid[0]]);
-
-    hmm->state[0].score = s0;
+    s0 = NO_UFLOW_ADD(s0, nonmpx_senscr(ctx, sseq, 0));
+    hmm_score(ctx, hmm, 0) = s0;
 
     if (best < s0)
         best = s0;
 
-    hmm->in.score = S3_LOGPROB_ZERO;    /* Consumed */
-    hmm->bestscore = best;
+    hmm_in_score(ctx, hmm) = S3_LOGPROB_ZERO;    /* Consumed */
+    hmm_bestscore(ctx, hmm) = best;
 
     return best;
 }
 
+static int32
+hmm_vit_eval_anytopo(const hmm_context_t *ctx, hmm_t * h)
+{
+    int32 to, from, bestfrom;
+    int32 newscr, scr, bestscr;
+    int final_state;
+
+    /* Compute previous state-score + observation output prob for each emitting state */
+    for (from = 0; from < hmm_n_emit_state(ctx); ++from) {
+        if ((ctx->st_sen_scr[from] =
+             hmm_score(ctx, h, from) + hmm_senscr(ctx, h, from)) < S3_LOGPROB_ZERO)
+            ctx->st_sen_scr[from] = S3_LOGPROB_ZERO;
+    }
+
+    /* FIXME/TODO: Use the BLAS for all this. */
+    /* Evaluate final-state first, which does not have a self-transition */
+    final_state = hmm_n_emit_state(ctx);
+    to = final_state;
+    scr = S3_LOGPROB_ZERO;
+    bestfrom = -1;
+    for (from = to - 1; from >= 0; --from) {
+        if ((hmm_tprob(ctx, h, from, to) > S3_LOGPROB_ZERO) &&
+            ((newscr = ctx->st_sen_scr[from]
+              + hmm_tprob(ctx, h, from, to)) > scr)) {
+            scr = newscr;
+            bestfrom = from;
+        }
+    }
+    hmm_out_score(ctx, h) = scr;
+    if (bestfrom >= 0)
+        hmm_out_history(ctx, h) = hmm_history(ctx, h, bestfrom);
+    bestscr = scr;
+
+    /* Evaluate all other states, which might have self-transitions */
+    for (to = final_state - 1; to >= 0; --to) {
+        /* Score from self-transition, if any */
+        scr =
+            (hmm_tprob(ctx, h, to, to) > S3_LOGPROB_ZERO)
+            ? ctx->st_sen_scr[to] + hmm_tprob(ctx, h, to, to)
+            : S3_LOGPROB_ZERO;
+
+        /* Scores from transitions from other states */
+        bestfrom = -1;
+        for (from = to - 1; from >= 0; --from) {
+            if ((hmm_tprob(ctx, h, from, to) > S3_LOGPROB_ZERO) &&
+                ((newscr = ctx->st_sen_scr[from]
+                  + hmm_tprob(ctx, h, from, to)) > scr)) {
+                scr = newscr;
+                bestfrom = from;
+            }
+        }
+
+        /* Update new result for state to */
+        hmm_score(ctx, h, to) = scr;
+        if (bestfrom >= 0) {
+            hmm_history(ctx, h, to) = hmm_history(ctx, h, bestfrom);
+            if (ctx->mpx)
+                h->s.mpx_ssid[to] = h->s.mpx_ssid[bestfrom];
+        }
+
+        if (bestscr < scr)
+            bestscr = scr;
+    }
+
+    h->bestscore = bestscr;
+    return bestscr;
+}
+
 int32
-hmm_vit_eval(hmm_t * hmm, int32 n_state, s3senid_t * senid, int32 * senscr)
+hmm_vit_eval(const hmm_context_t *ctx, hmm_t * hmm)
 {
     int32 bs = 0;
-    if (n_state == 5)
-        bs = hmm_vit_eval_5st(hmm, senid, senscr);
-    else if (n_state == 3)
-        bs = hmm_vit_eval_3st(hmm, senid, senscr);
-    else
-        E_FATAL("#States= %d unsupported\n", n_state);
+    if (ctx->mpx) {
+        bs = hmm_vit_eval_anytopo(ctx, hmm);
+    }
+    else {
+        if (hmm_n_emit_state(ctx) == 5)
+            bs = hmm_vit_eval_5st(ctx, hmm);
+        else if (hmm_n_emit_state(ctx) == 3)
+            bs = hmm_vit_eval_3st(ctx, hmm);
+        else
+            bs = hmm_vit_eval_anytopo(ctx, hmm);
+    }
     return bs;
 }
 
 int32
-hmm_dump_vit_eval(hmm_t * hmm, int32 n_state, s3senid_t * senid,
-                  int32 * senscr, FILE * fp)
+hmm_dump_vit_eval(const hmm_context_t *ctx, 
+                  hmm_t * hmm, FILE * fp)
 {
     int32 bs = 0;
 
     if (fp)
-        hmm_dump(hmm, n_state, senid, senscr, fp);
-
-    if (n_state == 5)
-        bs = hmm_vit_eval_5st(hmm, senid, senscr);
-    else if (n_state == 3)
-        bs = hmm_vit_eval_3st(hmm, senid, senscr);
-    else
-        E_FATAL("#States= %d unsupported\n", n_state);
-
-    /*    
-       if (fp)
-       hmm_dump (hmm, n_state, senid, senscr, fp);
-     */
+        hmm_dump(ctx, hmm, fp);
+    bs = hmm_vit_eval(ctx, hmm);
 
     return bs;
 }

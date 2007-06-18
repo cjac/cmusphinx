@@ -150,6 +150,7 @@ src/tests/regression/checkStyle.sh
 src/tests/regression/testfuncs.sh
 src/tests/unit_tests/Makefile
 src/tests/unit_tests/test_logs3/Makefile
+src/tests/unit_tests/test_hmm/Makefile
 scripts/Makefile
 scripts/sphinx3-simple
 model/Makefile

@@ -174,6 +174,7 @@ extern "C" {
  */
 typedef struct {
     hmm_t hmm;		/**< HMM states */
+    hmm_context_t *ctx; /**< HMM context pointer (not owned by this structure) */
 
     glist_t children;	/**< Its data.ptr are children (lextree_node_t *)
 
@@ -194,10 +195,6 @@ typedef struct {
     int32 ssid;		/**< Senone-sequence ID (or composite state-seq ID if composite) */
     s3cipid_t rc;        /**< The (compressed) right context for this node. Preferably compressed.
                           */
-#if 0
-    s3ssid_t *ssid_lc;	/**< Array of ssid's (composite or not) for each left context CIphone;
-                           READ-ONLY structure */
-#endif
     s3cipid_t ci;	/**< CIphone id for this node */
     int8 composite;	/**< Whether it is a composite model (merging many left/right contexts) 
 			   
@@ -238,6 +235,9 @@ typedef struct {
     int32 n_node;	/**< Total No. of nodes in this lextree which is allocated in the initialization time */
     int32 n_alloc_node;   /**< Total No. of nodes in this lextree which is allocated dynamically */
     int32 n_alloc_blk_sz;   /**< Block size of each allocation */
+
+    hmm_context_t *ctx;     /**< HMM context for non-composite triphones. */
+    hmm_context_t *comctx; /**< HMM context for composite triphones. */
 
     lextree_node_t **active;		/**< Nodes active in any frame */
     lextree_node_t **next_active;	/**< Like active, but temporary space for constructing the
@@ -299,8 +299,9 @@ lextree_t *
 lextree_build (kbcore_t *kbc,		/**< In: All the necessary knowledge bases */
 	       wordprob_t *wordprob,	/**< In: Words in the tree and their (LM) probabilities */
 	       int32 n_word,		/**< In: Size of the wordprob[] array */
-	       s3cipid_t *lc		/**< In: BAD_S3CIPID terminated array of left context
+	       s3cipid_t *lc,		/**< In: BAD_S3CIPID terminated array of left context
 					   CIphones, or NULL if no specific left context */
+               int32 type              /**< In: Type of lextree */
     );
 
 /* Free a lextree that was created by lextree_build */
@@ -341,9 +342,9 @@ void lextree_active_swap (lextree_t *lextree /**< The lexical tree*/
  * and comssid[].  Caller also responsible for clearing them before calling this function.
  */
 void lextree_ssid_active (lextree_t *lextree,	/**< In: lextree->active is scanned */
-			  int32 *ssid,		/**< In/Out: ssid[s] is set to non-0 if senone
+			  uint8 *ssid,		/**< In/Out: ssid[s] is set to non-0 if senone
 						   sequence ID s is active */
-			  int32 *comssid	/**< In/Out: comssid[s] is set to non-0 if
+			  uint8 *comssid	/**< In/Out: comssid[s] is set to non-0 if
 						   composite senone sequence ID s is active */
     );
 
