@@ -304,8 +304,8 @@ ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid, hash_table_t *
         for (j = 0; IS_S3SENID(sen[i][j]); j++);
         assert(j > 0);
 
-        j = (int32) hash_table_enter_bkey(hs, (char *) (sen[i]), j * sizeof(s3senid_t),
-					  (void *)dict2pid->n_comstate);
+        j = (long)hash_table_enter_bkey(hs, (char *) (sen[i]), j * sizeof(s3senid_t),
+					(void *)(long)dict2pid->n_comstate);
         if (j == dict2pid->n_comstate)
             dict2pid->n_comstate++;     /* New composite state */
         else
@@ -316,9 +316,9 @@ ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid, hash_table_t *
     ckd_free(sen);
 
     /* Convert sequence of composite senids to composite sseq ID */
-    j = (int32) hash_table_enter_bkey(hp, (char *) comsenid,
-				      mdef->n_emit_state * sizeof(s3senid_t),
-				      (void *)dict2pid->n_comsseq);
+    j = (long) hash_table_enter_bkey(hp, (char *) comsenid,
+				     mdef->n_emit_state * sizeof(s3senid_t),
+				     (void *)(long)dict2pid->n_comsseq);
     if (j == dict2pid->n_comsseq) {
         dict2pid->n_comsseq++;
         if (dict2pid->n_comsseq >= MAX_S3SENID)
@@ -806,7 +806,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
             sen = (s3senid_t *) hash_entry_key(he);
             for (i = 0; IS_S3SENID(sen[i]); i++);
 
-            cslen[(int32)hash_entry_val(he)] = i + 1;  /* +1 for terminating sentinel */
+            cslen[(long)hash_entry_val(he)] = i + 1;  /* +1 for terminating sentinel */
 
             n += (i + 1);
         }
@@ -823,7 +823,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
         for (gn = g; gn; gn = gnode_next(gn)) {
             he = (hash_entry_t *) gnode_ptr(gn);
             sen = (s3senid_t *) hash_entry_key(he);
-            i = (int32)hash_entry_val(he);
+            i = (long)hash_entry_val(he);
 
             for (j = 0; j < cslen[i]; j++)
                 dict2pid->comstate[i][j] = sen[j];
@@ -850,7 +850,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
         /* Build composite sseq table */
         for (gn = g; gn; gn = gnode_next(gn)) {
             he = (hash_entry_t *) gnode_ptr(gn);
-            i = (int32)hash_entry_val(he);
+            i = (long)hash_entry_val(he);
             dict2pid->comsseq[i] = (s3senid_t *) hash_entry_key(he);
         }
         glist_free(g);
@@ -996,7 +996,7 @@ dict2pid_comsenscr(dict2pid_t * d2p, int32 * senscr, int32 * comsenscr)
 
 void
 dict2pid_comsseq2sen_active(dict2pid_t * d2p, mdef_t * mdef,
-                            int32 * comssid, int32 * sen)
+                            uint8 * comssid, uint8 * sen)
 {
     int32 ss, cs, i, j;
     s3senid_t *csp, *sp;        /* Composite state pointer */

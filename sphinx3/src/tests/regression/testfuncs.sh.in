@@ -21,6 +21,12 @@ run_program() {
     $builddir/libtool --mode=execute "$programs/$program" $@
 }
 
+debug_program() {
+    program="$1"
+    shift
+    $builddir/libtool --mode=execute gdb --args "$programs/$program" $@
+}
+
 pass() {
     title="$1"
     echo "$title PASSED"

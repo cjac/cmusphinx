@@ -1033,7 +1033,7 @@ lm_read_dump_wordstr(lm_t * lm, const char *file, int32 is32bits)
 
         lm->wordstr[i] = (char *) ckd_salloc(tmp_word_str + j);
 
-        hash_table_enter(lm->HT, lm->wordstr[i], (void *)i);
+        hash_table_enter(lm->HT, lm->wordstr[i], (void *)(long)i);
 
         j += strlen(tmp_word_str + j) + 1;
     }

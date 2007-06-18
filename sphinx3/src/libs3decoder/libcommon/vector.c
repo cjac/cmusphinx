@@ -193,6 +193,7 @@ vector_is_nan(float32 * vec, int32 len)
         return isnan(vec[i]);
 #endif
     }
+    return 0;
 }
 
 

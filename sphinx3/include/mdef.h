@@ -330,9 +330,9 @@ int32 mdef_hmm_cmp (mdef_t *m,			/**< In: Model being queried */
  * are active.  Caller responsible for allocating sen[], and for clearing it, if necessary.
  */
 void mdef_sseq2sen_active (mdef_t *mdef,        /**< In: The model definition */
-			   int32 *sseq,		/**< In: sseq[ss] is != 0 iff senone-sequence ID
+			   uint8 *sseq,		/**< In: sseq[ss] is != 0 iff senone-sequence ID
 						   ss is active */
-			   int32 *sen		/**< In/Out: Set sen[s] to non-0 if so indicated
+			   uint8 *sen		/**< In/Out: Set sen[s] to non-0 if so indicated
 						   by any active senone sequence */
     );
 

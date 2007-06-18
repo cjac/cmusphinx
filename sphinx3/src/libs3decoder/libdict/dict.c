@@ -125,12 +125,12 @@ dict_ciphone_id(dict_t * d, char *str)
                     ("Too many CIphones in dictionary; increase MAX_S3CIPID\n");
             d->ciphone_str[id] = (char *) ckd_salloc(str);      /* Freed in dict_free() */
 
-            if (hash_table_enter(d->pht, d->ciphone_str[id], (void *)id) != (void *)id)
+            if (hash_table_enter(d->pht, d->ciphone_str[id], (void *)(long)id) != (void *)(long)id)
                 E_FATAL("hash_table_enter(local-phonetable, %s) failed\n", str);
 	    return id;
         }
 	else
-	    return (s3cipid_t)val;
+	    return (s3cipid_t)(long)val;
     }
 }
 
@@ -173,7 +173,7 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
     wordp->word = (char *) ckd_salloc(word);    /* Freed in dict_free */
 
     /* Associate word string with d->n_word in hash table */
-    if (hash_table_enter(d->ht, wordp->word, (void *)d->n_word) != (void *)d->n_word) {
+    if (hash_table_enter(d->ht, wordp->word, (void *)(long)d->n_word) != (void *)(long)d->n_word) {
         ckd_free(wordp->word);
         return (BAD_S3WID);
     }
@@ -207,7 +207,7 @@ dict_add_word(dict_t * d, char *word, s3cipid_t * p, int32 np)
             word[len] = '(';    /* Get back the original word */
 
         /* Link into alt list */
-	w = (s3wid_t) val;
+	w = (s3wid_t)(long)val;
         wordp->basewid = w;
         wordp->alt = d->word[w].alt;
         d->word[w].alt = d->n_word;
@@ -534,7 +534,7 @@ dict_wordid(dict_t * d, char *word)
 
     if (hash_table_lookup(d->ht, word, &w) < 0)
         return (BAD_S3WID);
-    return ((s3wid_t) w);
+    return ((s3wid_t)(long)w);
 }
 
 

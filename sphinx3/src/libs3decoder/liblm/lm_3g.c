@@ -110,7 +110,7 @@ wstr2wid(lm_t * model,              /**< an LM */
 
     if (hash_table_lookup(model->HT, w, &val) != 0)
         return NO_WORD;
-    return ((int32) val);
+    return ((int32)(long)val);
 }
 
 /*
@@ -384,7 +384,7 @@ ReadUnigrams(FILE * fp, lm_t * model  /**< An LM where unigram will be filled in
         /* Associate name with word id */
         /* This is again not local */
         model->wordstr[wcnt] = (char *) ckd_salloc(name);
-        hash_table_enter(model->HT, model->wordstr[wcnt], (void *)wcnt);
+        hash_table_enter(model->HT, model->wordstr[wcnt], (void *)(long)wcnt);
         model->ug[wcnt].prob.f = p1;
         model->ug[wcnt].bowt.f = bo_wt;
         model->ug[wcnt].dictwid = wcnt;

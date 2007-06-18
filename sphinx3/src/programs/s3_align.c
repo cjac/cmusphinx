@@ -1000,7 +1000,7 @@ activate(snode_t * s, int32 frm)
  * Flag the active senones. 
  */
 void
-align_sen_active(int32 * senlist, int32 n_sen)
+align_sen_active(uint8 * senlist, int32 n_sen)
 {
     int32 i, sen;
 

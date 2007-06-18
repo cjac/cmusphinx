@@ -511,7 +511,7 @@ lm_add_word_to_ug(lm_t * lm,      /**<In/Out: a modified LM structure */
 
     lm->wordstr[lm->n_ug - 1] = (char *) ckd_salloc(newword);
 
-    hash_table_enter(lm->HT, lm->wordstr[lm->n_ug - 1], (void *)(lm->n_ug - 1));
+    hash_table_enter(lm->HT, lm->wordstr[lm->n_ug - 1], (void *)(long)(lm->n_ug - 1));
 
     if (dict != NULL) {
                   /** If dictionary is initialized and used in this context */

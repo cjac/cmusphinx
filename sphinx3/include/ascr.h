@@ -100,10 +100,10 @@ typedef struct {
     int32 *senscr;		        /**< TEMPORARY VARIABLES: Senone scores in current frame */
     int32 *comsen;	        /**< TEMPORARY VARIABLES:  Composite senone scores in current frame */
 
-    int32 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
-    int32 *comssid_active;        /**< TEMPORARY VARIABLES:  Composite senone active */
-    int32 *sen_active;            /**< TEMPORARY VARIABLES: Structure that record whether the current state is active. */
-    int32 *rec_sen_active;        /**< TEMPORARY VARIABLES: Most recent senone active state */
+    uint8 *ssid_active;		/**< TEMPORARY VARIABLES:  For determining the active senones in any frame */
+    uint8 *comssid_active;        /**< TEMPORARY VARIABLES:  Composite senone active */
+    uint8 *sen_active;            /**< TEMPORARY VARIABLES: Structure that record whether the current state is active. */
+    uint8 *rec_sen_active;        /**< TEMPORARY VARIABLES: Most recent senone active state */
     int32 **cache_ci_senscr;      /**< TEMPORARY VARIABLES: Cache of ci senscr in the next pl_windows frames, include this frame.*/
     int32 *cache_best_list;       /**< TEMPORARY VARIABLES: Cache of best the ci sensr the next pl_windows, include this frame*/
 

@@ -253,16 +253,15 @@ psubtree_add_trans(fsg_pnode_t * root,
 
 #endif
 
-                /* HACK! Is this correct? */
-                ssid =
-                    &(ctxt_tab->lrcpid[bid][lc].
-                      pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]]);
-
                 /* Always use silence as the right context 
 
                    "lc <- bid -> sil"
 
                  */
+
+                /* HACK! Is this correct? */
+                ssid = &ctxt_table_single_phone_ssid(ctxt_tab, lc, bid, silcipid);
+		/* &(ctxt_tab->lrcpid[bid][lc].pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]]); */
 
                 /* Check if this ssid already allocated for some other context */
                 for (gn = lc_pnodelist; gn; gn = gnode_next(gn)) {
@@ -618,10 +617,10 @@ fsg_psubtree_dump(fsg_pnode_t * head, FILE * fp, dict_t * dict,
         for (i = 0; i <= head->ppos; i++)
             fprintf(fp, "  ");
 
-        fprintf(fp, "%08x.@", (int32) head);    /* Pointer used as node ID */
+        fprintf(fp, "%p.@", head);    /* Pointer used as node ID */
         fprintf(fp, " %5d.SS", *(head->hmm->pid));
         fprintf(fp, " %10d.LP", head->logs2prob);
-        fprintf(fp, " %08x.SIB", (int32) head->sibling);
+        fprintf(fp, " %p.SIB", head->sibling);
         fprintf(fp, " %s.%d", mdef_ciphone_str(mdef, (head->ci_ext)),
                 head->ppos);
         if ((head->ppos == 0) || head->leaf) {
@@ -637,7 +636,7 @@ fsg_psubtree_dump(fsg_pnode_t * head, FILE * fp, dict_t * dict,
                     tl->from_state, tl->to_state, tl->logs2prob);
         }
         else {
-            fprintf(fp, " %08x.NXT", (int32) head->next.succ);
+            fprintf(fp, " %p.NXT", head->next.succ);
         }
         fprintf(fp, "\n");
     }

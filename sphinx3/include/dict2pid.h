@@ -265,8 +265,8 @@ void dict2pid_comsenscr (dict2pid_t *d2p,        /**< In: a dict2pid_t structure
  */
 void dict2pid_comsseq2sen_active (dict2pid_t *d2p,      /**< In: a dict2pid_t structure */
 				  mdef_t *mdef,         /**< In: a mdef_t structure */
-				  int32 *comssid,	/**< In: Active flag for each comssid */
-				  int32 *sen		/**< In/Out: Active flags set for senones
+				  uint8 *comssid,	/**< In: Active flag for each comssid */
+				  uint8 *sen		/**< In/Out: Active flags set for senones
 							   indicated by the active comssid */
     );
 /** For debugging */

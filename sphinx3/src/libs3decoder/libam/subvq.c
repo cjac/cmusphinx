@@ -505,7 +505,7 @@ subvq_gautbl_eval_logs3(subvq_t * vq, float32 * feat)
 #if 0
 int32
 subvq_frame_eval(subvq_t * vq, mgau_model_t * g, int32 beam,
-                 float32 * feat, int32 * sen_active, int32 * senscr)
+                 float32 * feat, uint8 * sen_active, int32 * senscr)
 {
     int32 s;
     int32 best, ns, ng;

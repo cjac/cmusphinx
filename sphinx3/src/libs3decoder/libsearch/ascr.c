@@ -98,12 +98,12 @@ ascr_init(int32 n_sen, int32 n_comsen, int32 n_sseq, int32 n_comsseq,
 
 
     /* MEMORY ALLOCATION : Active senones */
-    ascr->sen_active = (int32 *) ckd_calloc(n_sen, sizeof(int32));
-    ascr->rec_sen_active = (int32 *) ckd_calloc(n_sen, sizeof(int32));
-    ascr->ssid_active = (int32 *) ckd_calloc(n_sseq, sizeof(int32));
+    ascr->sen_active = (uint8 *) ckd_calloc(n_sen, sizeof(uint8));
+    ascr->rec_sen_active = (uint8 *) ckd_calloc(n_sen, sizeof(uint8));
+    ascr->ssid_active = (uint8 *) ckd_calloc(n_sseq, sizeof(uint8));
     if (n_comsseq > 0)
         ascr->comssid_active =
-            (int32 *) ckd_calloc(n_comsseq, sizeof(int32));
+            (uint8 *) ckd_calloc(n_comsseq, sizeof(uint8));
 
     /* MEMORY ALLOCATION : CI senones */
     ascr->cache_ci_senscr =
@@ -207,7 +207,7 @@ ascr_clear_sen_active(ascr_t * a)
 {
     assert(a);
     assert(a->sen_active);
-    memset(a->sen_active, 0, a->n_sen * sizeof(int32));
+    memset(a->sen_active, 0, a->n_sen * sizeof(uint8));
 }
 
 
@@ -216,7 +216,7 @@ ascr_clear_ssid_active(ascr_t * a)
 {
     assert(a);
     assert(a->ssid_active);
-    memset(a->ssid_active, 0, a->n_sseq * sizeof(int32));
+    memset(a->ssid_active, 0, a->n_sseq * sizeof(uint8));
 }
 
 void
@@ -225,6 +225,6 @@ ascr_clear_comssid_active(ascr_t * a)
     assert(a);
     if (a->n_comsseq > 0) {
         assert(a->comssid_active);
-        memset(a->comssid_active, 0, a->n_comsseq * sizeof(int32));
+        memset(a->comssid_active, 0, a->n_comsseq * sizeof(uint8));
     }
 }

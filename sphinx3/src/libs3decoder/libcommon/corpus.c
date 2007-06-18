@@ -178,7 +178,7 @@ corpus_load_headid(char *file,
         }
 
         id = ckd_salloc(wd);
-        if ((m = (int32) hash_table_enter(corp->ht, id, (void *)n)) != n) {
+        if ((m = (long) hash_table_enter(corp->ht, id, (void *)(long)n)) != n) {
             /* Duplicate entry */
             if (!dup_resolve)
                 E_FATAL
@@ -296,7 +296,7 @@ corpus_load_tailid(char *file,
         }
 
         id = ckd_salloc(uttid);
-        if ((m = (int32) hash_table_enter(corp->ht, id, (void *)n)) != n) {
+        if ((m = (long) hash_table_enter(corp->ht, id, (void *)(long)n)) != n) {
             /* Duplicate entry */
             if (!dup_resolve)
                 E_FATAL
@@ -343,7 +343,7 @@ corpus_lookup(corpus_t * corp, char *id)
 
     if (hash_table_lookup(corp->ht, id, &val) < 0)
         return NULL;
-    n = (int32)val;
+    n = (int32)(long)val;
 
     assert((n >= 0) && (n < corp->n));
     return (corp->str[n]);

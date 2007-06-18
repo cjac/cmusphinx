@@ -159,7 +159,7 @@ int32 align_start_utt(char *uttid);
  * Called at the beginning of a frame to flag the active senones (any senone used
  * by active HMMs) in that frame.
  */
-void align_sen_active(int32 * senlist,  /**< Out: senlist[s] TRUE iff active in frame */
+void align_sen_active(uint8 * senlist,  /**< Out: senlist[s] TRUE iff active in frame */
                       int32 n_sen               /**< In: Size of senlist[] array */
     );
 
