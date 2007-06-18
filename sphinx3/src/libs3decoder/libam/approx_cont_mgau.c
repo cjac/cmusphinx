@@ -125,7 +125,7 @@ approx_isskip(int32 frame,       /**< In: The frame index */
     if (cond_ds > 0) {
         if (isSameBestIdx) {
             if (*skip_count < ds_ratio - 1) {
-                *skip_count++;
+                ++*skip_count;
                 return 1;
             }
             else {
@@ -310,7 +310,7 @@ approx_compute_dyn_ci_pbeam(mdef_t * mdef,      /**< In: model definition */
                             fast_gmm_t * fastgmm,       /**< In: fast gmm computasion structure. */
                             mgau_model_t * g,      /**< In: Gaussian distribution */
                             int32 * ci_occ,       /**< In/Out: An array of occupancies of ci senones*/
-                            int32 * sen_active,      /**< In: An array of activeness of senones */
+                            uint8 * sen_active,      /**< In: An array of activeness of senones */
                             int32 * cache_ci_senscr,     /**< In: CD senone score, the user should precompute it using approx_cong_mgau_ci_eval*/
                             s3senid_t * cd2cisen      /** In: a mapping from CD senone to CI senone */
     )
@@ -468,8 +468,8 @@ approx_cont_mgau_frame_eval(kbcore_t * kbc,
     float32 tighten_factor;
 
     int32 single_el_list[2];
-    int32 *sen_active;
-    int32 *rec_sen_active;
+    uint8 *sen_active;
+    uint8 *rec_sen_active;
     int32 *senscr;
 
     best = MAX_NEG_INT32;
