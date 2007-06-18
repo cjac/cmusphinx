@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -259,9 +260,10 @@ single_rc_comsseq(mdef_t * mdef, int32 b, int32 r)
  * Convert the glist of ssids to a composite sseq id.  Return the composite ID.
  */
 static s3ssid_t
-ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid, hash_table_t * hs,    /* For composite states */
-                 hash_table_t * hp)
-{                               /* For composite senone seq */
+ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid,
+                 hash_table_t * hs, /* For composite states */
+                 hash_table_t * hp) /* For composite senone seq */
+{                
     int32 i, j, n, s, ssid;
     s3senid_t **sen;
     s3senid_t *comsenid;
@@ -669,17 +671,21 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
 	      internal[0] and ldiph[b][r][l]
 	    */
 
+            /* Find or create a composite senone sequence for b(?,r) */
             b = dict_pron(dict, w, 0);
             r = dict_pron(dict, w, 1);
             if (NOT_S3SSID(ldiph[b][r])) {
 
                 if (dict2pid->is_composite) {
+                    /* Get all ssids for b(?,r) */
                     g = ldiph_comsseq(mdef, b, r);
+                    /* Build a composite sseq from those ssids */
                     ldiph[b][r] =
                         ssidlist2comsseq(g, mdef, dict2pid, hs, hp);
                     glist_free(g);
                 }
 
+                /* Record all possible ssids for b(?,r) */
                 for (l = 0; l < mdef_n_ciphone(mdef); l++) {
                     p = mdef_phone_id_nearest(mdef, (s3cipid_t) b,
                                               (s3cipid_t) l, (s3cipid_t) r,
@@ -688,15 +694,14 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
                 }
             }
 
+            /* And ... only use it if we are not doing full triphones. (?!) */
             if (dict2pid->is_composite)
                 internal[0] = ldiph[b][r];
             else
                 internal[0] = BAD_S3SSID;
 
-            /** This segments of code take care of the intialization of 
-		internal[i] when 0 < i <= pronlen-1 
-	    */
-
+            /* Now find ssids for all the word internal triphones and
+             * place them in internal[i].  */
             for (i = 1; i < pronlen - 1; i++) {
                 l = b;
                 b = r;
@@ -744,6 +749,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
             if (dict2pid->is_composite) {
                 assert(dict2pid->single_lc);
 
+                /* Find or build composite senone sequence for b(?,?) */
                 if (NOT_S3SSID(single[b])) {
 
                     g = single_comsseq(mdef, b);
@@ -751,6 +757,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
                         ssidlist2comsseq(g, mdef, dict2pid, hs, hp);
                     glist_free(g);
 
+                    /* Record all possible *composite* ssids for b(?,?) */
                     for (l = 0; l < mdef_n_ciphone(mdef); l++) {
                         g = single_lc_comsseq(mdef, b, l);
                         dict2pid->single_lc[b][l] =
