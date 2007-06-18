@@ -207,7 +207,7 @@ ascr_clear_sen_active(ascr_t * a)
 {
     assert(a);
     assert(a->sen_active);
-    memset(a->sen_active, 0, a->n_sen * sizeof(uint8));
+    memset(a->sen_active, 0, a->n_sen * sizeof(*a->sen_active));
 }
 
 
@@ -216,7 +216,7 @@ ascr_clear_ssid_active(ascr_t * a)
 {
     assert(a);
     assert(a->ssid_active);
-    memset(a->ssid_active, 0, a->n_sseq * sizeof(uint8));
+    memset(a->ssid_active, 0, a->n_sseq * sizeof(*a->ssid_active));
 }
 
 void
@@ -225,6 +225,6 @@ ascr_clear_comssid_active(ascr_t * a)
     assert(a);
     if (a->n_comsseq > 0) {
         assert(a->comssid_active);
-        memset(a->comssid_active, 0, a->n_comsseq * sizeof(uint8));
+        memset(a->comssid_active, 0, a->n_comsseq * sizeof(*a->comssid_active));
     }
 }

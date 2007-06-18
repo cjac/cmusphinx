@@ -959,7 +959,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
             /* Transition to all words in vocab */
 
             /* Clear trigram transition flag for each word for this history */
-            memset(fwg->tg_trans_done, 0, dict->n_word * sizeof(uint8));
+            memset(fwg->tg_trans_done, 0, dict->n_word * sizeof(*fwg->tg_trans_done));
 
             /* First, transition to trigram followers of bw0, bw1 */
             acc_bowt = 0;

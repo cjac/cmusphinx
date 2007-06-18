@@ -1462,9 +1462,9 @@ srch_WST_select_active_gmm(void *srch)
         ascr_clear_ssid_active(ascr);
         ascr_clear_comssid_active(ascr);
 #if 0
-        memset(ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(int32));
+        memset(ascr->ssid_active, 0, mdef_n_sseq(mdef) * sizeof(*ascr->ssid_active));
         memset(ascr->comssid_active, 0,
-               dict2pid_n_comsseq(d2p) * sizeof(int32));
+               dict2pid_n_comsseq(d2p) * sizeof(*ascr->comssid_active));
 #endif
 
         /*The root tree */
@@ -1500,7 +1500,7 @@ srch_WST_select_active_gmm(void *srch)
 
         ascr_clear_sen_active(ascr);
 #if 0
-        memset(ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(int32));
+        memset(ascr->sen_active, 0, mdef_n_sen(mdef) * sizeof(*ascr->sen_active));
 #endif
         mdef_sseq2sen_active(mdef, ascr->ssid_active, ascr->sen_active);
 
