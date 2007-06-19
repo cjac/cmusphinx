@@ -155,6 +155,7 @@ build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
     s3pid_t p;
     int32 n;
 
+    /* Maps left CI phone to index in "compressed" phone ID table */
     map = (s3cipid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3cipid_t));
 
     n = 0;
@@ -170,6 +171,7 @@ build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
     /* Copy/Move to lcpid */
     ct->lcpid[b][rc].cimap = map;
     ct->lcpid[b][rc].n_pid = n;
+    /* Array of phone IDs with unique senone sequences, pointed to by cimap. */
     ct->lcpid[b][rc].pid = (s3pid_t *) ckd_calloc(n, sizeof(s3pid_t));
     memcpy(ct->lcpid[b][rc].pid, tmp_xwdpid, n * sizeof(s3pid_t));
 }
@@ -178,6 +180,8 @@ build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
 /**
  * Given base b, and left context lc, build right context cross-word triphones map
  * for all right context ciphones.  Compress map to unique list.
+ *
+ * \note This is identical to build_lcpid except for right contexts.
  */
 void
 build_rcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef)
@@ -186,6 +190,7 @@ build_rcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef)
     s3pid_t p;
     int32 n;
 
+    /* Maps right CI phone to index in "compressed" phone ID table */
     map = (s3cipid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3cipid_t));
 
     n = 0;
@@ -201,6 +206,7 @@ build_rcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef)
     /* Copy/Move to rcpid */
     ct->rcpid[b][lc].cimap = map;
     ct->rcpid[b][lc].n_pid = n;
+    /* Array of phone IDs with unique senone sequences, pointed to by cimap. */
     ct->rcpid[b][lc].pid = (s3pid_t *) ckd_calloc(n, sizeof(s3pid_t));
     memcpy(ct->rcpid[b][lc].pid, tmp_xwdpid, n * sizeof(s3pid_t));
 }

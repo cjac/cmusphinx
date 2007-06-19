@@ -575,7 +575,7 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
         if ((!h->next) || (h->next->pos != h->pos + 1)) {
             nexth = whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
 
-            nexth->pid = &ctxt_table_word_int_ssid(ct_table, w, nexth->pos);
+            nexth->pid = &ctxt_table_word_int_pid(ct_table, w, nexth->pos);
 
             nexth->next = h->next;
             h->next = nexth;
@@ -724,24 +724,22 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
     b = dict->word[w].ciphone[0];
     lcmap = get_lc_cimap(ct_table, w, dict);
-    /*
-       ARCHAN: Though the term rc and lc is used at here.  Be very
-       careful that, when they were used in CI-phone, the corresponding
-       SSID may not be unique.  While, using what one could find in the
-       context of lc_cimap. Things are always unique. The contents in
-       the hmm should always be stored using the compressed ID. This
-       will make computation be more efficient. 
-     */
 
-    /*    E_INFO("word enter\n"); */
     if (dict->word[w].pronlen > 1) {    /* Multi-phone word; no right context problem */
 
         rc = dict->word[w].ciphone[1];
 
-        pidp = &ctxt_table_left_ctxt_ssid(ct_table, lc, b, rc);
+        /* Get a pointer to the "compressed" phone ID for the triphone
+         * b(lc,rc) where b,rc are the first two phones of the next
+         * word and lc is the last phone of the last word. */
+        /* Note that b, lc, and rc are all fully known, so the
+         * ctxt_table is really not doing much of anything the model
+         * definition couldn't already do. */
+        pidp = &ctxt_table_left_ctxt_pid(ct_table, lc, b, rc);
         /* &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]); */
         pid = *(pidp);
 
+        /* Allocate and initialize an HMM for the next phone if necessary. */
         if (fwg->multiplex) {
             if ((!whmm[w]) || (whmm[w]->pos != 0)) {    /* If whmm is not allocated or it is not the first phone */
                 h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
@@ -765,6 +763,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         h = whmm[w];
 
+        /* And now enter the next HMM in the usual Viterbi fashion. */
         if (score > h->score[0]) {
             h->score[0] = score;
             h->history[0] = l;
@@ -774,6 +773,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
                 h->pid[0] = pid;
             }
             else {
+                /* TODO: figure out what this next line does */
                 h->lc = lcmap[lc];
                 h->pid = pidp;
             }
@@ -789,7 +789,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         for (rc = 0; rc < npid; rc++) {
 
-            pidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
+            pidp = &ctxt_table_single_phone_pid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             pid = *(pidp);
 
@@ -842,7 +842,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         b = dict->word[w].ciphone[0];
         for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
 
-            pidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
+            pidp = &ctxt_table_single_phone_pid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             pid = *(pidp);
 
