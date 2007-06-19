@@ -286,6 +286,8 @@ ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid,
         (s3senid_t *) ckd_calloc(mdef_n_emit_state(mdef),
                                  sizeof(s3senid_t));
 
+    /* Expand g into an array of arrays of unique senone IDs, one for
+     * each state in the model. */
     for (gn = g; gn; gn = gnode_next(gn)) {
         ssid = gnode_int32(gn);
 
@@ -303,25 +305,31 @@ ssidlist2comsseq(glist_t g, mdef_t * mdef, dict2pid_t * dict2pid,
 
     /* Convert senones list for each state position into composite state */
     for (i = 0; i < mdef_n_emit_state(mdef); i++) {
+        /* Count number of unique senones for this state. */
         for (j = 0; IS_S3SENID(sen[i][j]); j++);
         assert(j > 0);
 
+        /* Map set of senones to composite senone ID. */
         j = (long)hash_table_enter_bkey(hs, (char *) (sen[i]), j * sizeof(s3senid_t),
 					(void *)(long)dict2pid->n_comstate);
+        /* Did this set of senones already exist? */
         if (j == dict2pid->n_comstate)
-            dict2pid->n_comstate++;     /* New composite state */
+            dict2pid->n_comstate++;     /* if not, it's a new composite senone */
         else
             ckd_free((void *) sen[i]);
 
+        /* Composite senone ID for this state. */
         comsenid[i] = j;
     }
     ckd_free(sen);
 
-    /* Convert sequence of composite senids to composite sseq ID */
+    /* Map sequence of composite senids (one per state) to composite sseq ID */
     j = (long) hash_table_enter_bkey(hp, (char *) comsenid,
 				     mdef->n_emit_state * sizeof(s3senid_t),
 				     (void *)(long)dict2pid->n_comsseq);
+    /* Did it already exist? */
     if (j == dict2pid->n_comsseq) {
+        /* if not, it's a new composite senone sequence. */
         dict2pid->n_comsseq++;
         if (dict2pid->n_comsseq >= MAX_S3SENID)
             E_FATAL
@@ -803,20 +811,27 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
     ckd_free((void *) single);
 
     if (dict2pid->is_composite) {
-        /* Allocate space for composite state table */
+        /* Count the length of each composite state (i.e. how many
+         * actual senones it maps to). */
+        /* n_comstate will have been set through calls to ssidlist2comsseq(). */
         cslen = (int32 *) ckd_calloc(dict2pid->n_comstate, sizeof(int32));
+        /* as will the entries of hs. */
         g = hash_table_tolist(hs, &n);
         assert(n == dict2pid->n_comstate);
         n = 0;
+        /* Iterate over entries of hs to figure out how much to allocate. */
         for (gn = g; gn; gn = gnode_next(gn)) {
             he = (hash_entry_t *) gnode_ptr(gn);
+            /* Key is a set of actual senone IDs. */
             sen = (s3senid_t *) hash_entry_key(he);
             for (i = 0; IS_S3SENID(sen[i]); i++);
 
+            /* Value is the composite state ID. */
             cslen[(long)hash_entry_val(he)] = i + 1;  /* +1 for terminating sentinel */
 
             n += (i + 1);
         }
+        /* Allocate the composite state to senone list table. */
         dict2pid->comstate =
             (s3senid_t **) ckd_calloc(dict2pid->n_comstate,
                                       sizeof(s3senid_t *));
@@ -826,7 +841,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
             sen += cslen[i];
         }
 
-        /* Build composite state table from hash table hs */
+        /* Build the composite state to senone list table from hs. */
         for (gn = g; gn; gn = gnode_next(gn)) {
             he = (hash_entry_t *) gnode_ptr(gn);
             sen = (s3senid_t *) hash_entry_key(he);
@@ -843,6 +858,7 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
         glist_free(g);
 
         /* Allocate space for composite sseq table */
+        /* n_comsseq will have been set through calls to ssidlist2comsseq(). */
         dict2pid->comsseq =
             (s3senid_t **) ckd_calloc(dict2pid->n_comsseq,
                                       sizeof(s3senid_t *));
@@ -851,18 +867,26 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
             dict2pid->comsseq[i] = NULL;
         }
 
+        /* as will the entries of hp. */
         g = hash_table_tolist(hp, &n);
         assert(n == dict2pid->n_comsseq);
 
-        /* Build composite sseq table */
+        /* Build composite sseq table by iterating over hp. */
         for (gn = g; gn; gn = gnode_next(gn)) {
             he = (hash_entry_t *) gnode_ptr(gn);
+            /* Value: composite ssid */
             i = (long)hash_entry_val(he);
+            /* Key: array of composite state IDs. */
             dict2pid->comsseq[i] = (s3senid_t *) hash_entry_key(he);
         }
         glist_free(g);
 
-        /* Weight for each composite state */
+        /* Weight for each composite state. */
+        /* These are weighted inversely to the number of normal
+         * senones which make them up.  I'm guessing that the
+         * reasoning behind this is that the more different senones
+         * combined into a single composite score, the less relevant
+         * that score will be. */
         dict2pid->comwt =
             (int32 *) ckd_calloc(dict2pid->n_comstate, sizeof(int32));
         for (i = 0; i < dict2pid->n_comstate; i++) {
@@ -977,6 +1001,12 @@ dict2pid_report(dict2pid_t * d2p)
 
 }
 
+/**
+ * Populate composite senone score array.
+ *
+ * The composite senone score is the maximum of its component senones'
+ * scores, scaled down by the number of component senones.
+ */
 void
 dict2pid_comsenscr(dict2pid_t * d2p, int32 * senscr, int32 * comsenscr)
 {
@@ -1000,7 +1030,9 @@ dict2pid_comsenscr(dict2pid_t * d2p, int32 * senscr, int32 * comsenscr)
     }
 }
 
-
+/**
+ * Mark senones active based on a set of active composite senones.
+ */
 void
 dict2pid_comsseq2sen_active(dict2pid_t * d2p, mdef_t * mdef,
                             uint8 * comssid, uint8 * sen)
