@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -114,28 +115,20 @@ dump_xwdpidmap(xwdpid_t ** x, mdef_t * mdef)
  */
 int32
 xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx,
-                int32 n, mdef_t * mdef
-                                    /**<The model definition */
-    )
+                int32 n, mdef_t * mdef)
 {
-    s3senid_t *senmap, *prevsenmap;
-    int32 s;
     s3cipid_t i;
-    int32 n_state;
-    n_state = mdef->n_emit_state + 1;
+    s3tmatid_t tmatid;
+    int32 ssid;
 
-    senmap = mdef->phone[p].state;
+    ssid = mdef_pid2ssid(mdef, p);
+    tmatid = mdef_pid2tmatid(mdef, p);
 
     for (i = 0; i < n; i++) {
-        if (mdef->phone[p].tmat != mdef->phone[pid[i]].tmat)
+        if (mdef_pid2tmatid(mdef, i) != tmatid)
             continue;
 
-        prevsenmap = mdef->phone[pid[i]].state;
-        for (s = 0; (s < n_state - 1) && (senmap[s] == prevsenmap[s]);
-             s++);
-
-
-        if (s == n_state - 1) {
+        if (mdef_pid2ssid(mdef, i) == ssid) {
             /* This state sequence same as a previous ones; just map to it */
             map[ctx] = i;
             return n;
@@ -284,7 +277,7 @@ build_wwpid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
 #if 0
         printf("%-25s ", dict->word[w].word);
         for (l = 1; l < pronlen - 1; l++)
-            printf(" %5d", wwpid[w][l]);
+            printf(" %5d", ct->wwpid[w][l]);
         printf("\n");
 #endif
     }
@@ -328,7 +321,7 @@ build_xwdpid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
         pronlen = dict->word[w].pronlen;
         if (pronlen > 1) {
             /* Multi-phone word; build rcmap and lcmap if not already present */
-
+	    /* Right edge of word: rcmap */
             b = dict->word[w].ciphone[pronlen - 1];
             lc = dict->word[w].ciphone[pronlen - 2];
             if (!ct->rcpid[b])
@@ -337,6 +330,8 @@ build_xwdpid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
                                             sizeof(xwdpid_t));
             if (!ct->rcpid[b][lc].cimap)
                 build_rcpid(ct, b, lc, mdef);
+
+            /* Left edge of word: lcmap */
             b = dict->word[w].ciphone[0];
             rc = dict->word[w].ciphone[1];
             if (!ct->lcpid[b])
