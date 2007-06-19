@@ -260,7 +260,7 @@ psubtree_add_trans(fsg_pnode_t * root,
                  */
 
                 /* HACK! Is this correct? */
-                ssid = &ctxt_table_single_phone_ssid(ctxt_tab, lc, bid, silcipid);
+                ssid = &ctxt_table_single_phone_pid(ctxt_tab, lc, bid, silcipid);
 		/* &(ctxt_tab->lrcpid[bid][lc].pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]]); */
 
                 /* Check if this ssid already allocated for some other context */
@@ -376,7 +376,7 @@ psubtree_add_trans(fsg_pnode_t * root,
                     lc = lclist[i];
                     rc = dict_pron(dict, wid, p + 1);
                     ssid =
-                        &(ctxt_table_left_ctxt_ssid
+                        &(ctxt_table_left_ctxt_pid
                           (ctxt_tab, lc, bid, rc));
 
                     pnode = ssid_pnode_map[lc];
@@ -427,7 +427,7 @@ psubtree_add_trans(fsg_pnode_t * root,
 
                                                    lc <- b -> rc
                                                  */
-                ssid = &(ctxt_table_word_int_ssid(ctxt_tab, wid, p));
+                ssid = &(ctxt_table_word_int_pid(ctxt_tab, wid, p));
 
                 pnode = (fsg_pnode_t *) ckd_calloc(1, sizeof(fsg_pnode_t));
                 pnode->hmm = whmm_alloc_light(n_state_hmm);
