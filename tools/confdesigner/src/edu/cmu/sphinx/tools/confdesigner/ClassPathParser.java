@@ -101,6 +101,7 @@ public class ClassPathParser {
                 try {
                     configs.addAll(extractConfigsFromJar(new JarFile(location)));
                 } catch (IOException e) {
+                    System.err.println("Can not find " + location);
                     e.printStackTrace();
                 }
             } else

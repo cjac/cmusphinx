@@ -26,7 +26,7 @@ import java.util.Map;
  */
 public class ConfigurableTree extends JTree {
 
-    public SceneController confController;
+    public SceneController sceneController;
 
     private Map<String, DefaultMutableTreeNode> categories = new HashMap<String, DefaultMutableTreeNode>();
     private Collection<Class<? extends Configurable>> filteredConfigClasses = new HashSet<Class<? extends Configurable>>();
@@ -60,13 +60,13 @@ public class ConfigurableTree extends JTree {
                     Class<? extends Configurable> confClass = configurableNode.getConfigurableClass();
                     setSelectionPath(pathForLocation);
 
-                    if (confController != null) {
-                        String confName = confController.addNode(confClass, null);
+                    if (sceneController != null) {
+                        String confName = sceneController.addNode(confClass, null);
 
-                        Rectangle visRect = confController.getScene().getView().getVisibleRect();
-                        Widget w = confController.getScene().findWidgetByName(confName);
+                        Rectangle visRect = sceneController.getScene().getView().getVisibleRect();
+                        Widget w = sceneController.getScene().findWidgetByName(confName);
                         w.setPreferredLocation(new Point((int) visRect.getCenterX(), (int) visRect.getCenterY()));
-                        confController.getScene().validate();
+                        sceneController.getScene().validate();
 
                     }
                 }
@@ -160,6 +160,11 @@ public class ConfigurableTree extends JTree {
     }
 
 
+    public void setController(SceneController sceneController) {
+        this.sceneController = sceneController;
+
+        rebuildTree();
+    }
 }
 
 class TransferableConfigurable implements Transferable {

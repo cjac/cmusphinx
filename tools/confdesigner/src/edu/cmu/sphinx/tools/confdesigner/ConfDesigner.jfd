@@ -349,9 +349,9 @@
         </void> 
         <void method="add"> 
          <object class="com.jformdesigner.model.FormContainer"> 
-          <string>javax.swing.JScrollPane</string> 
+          <string>javax.swing.JPanel</string> 
           <object class="com.jformdesigner.model.FormLayoutManager"> 
-           <class>javax.swing.JScrollPane</class> 
+           <class>java.awt.BorderLayout</class> 
           </object> 
           <void method="setProperty"> 
            <string>preferredSize</string> 
@@ -412,7 +412,7 @@
             <string>javax.swing.JMenuItem</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>New</string> 
+             <string>New Tab</string> 
             </void> 
             <void method="setProperty"> 
              <string>accelerator</string> 
@@ -423,69 +423,13 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>newItem</string> 
+             <string>newTabItem</string> 
             </void> 
             <void method="addEvent"> 
              <object class="com.jformdesigner.model.FormEvent"> 
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
               <string>newItemActionPerformed</string> 
-              <boolean>false</boolean> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JMenuItem</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Save</string> 
-            </void> 
-            <void method="setProperty"> 
-             <string>accelerator</string> 
-             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
-              <int>83</int> 
-              <int>4226</int> 
-              <boolean>false</boolean> 
-             </object> 
-            </void> 
-            <void property="name"> 
-             <string>saveItem</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>saveItemActionPerformed</string> 
-              <boolean>false</boolean> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JMenuItem</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Save As...</string> 
-            </void> 
-            <void method="setProperty"> 
-             <string>accelerator</string> 
-             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
-              <int>83</int> 
-              <int>4291</int> 
-              <boolean>false</boolean> 
-             </object> 
-            </void> 
-            <void property="name"> 
-             <string>saveAsItem</string> 
-            </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>saveAsItemActionPerformed</string> 
               <boolean>false</boolean> 
              </object> 
             </void> 
@@ -521,9 +465,244 @@
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Save Tab</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>83</int> 
+              <int>4226</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>saveTabItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>saveItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Save Tab As...</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>83</int> 
+              <int>650</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>saveTabAsItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>saveAsItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator2</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Load Project ...</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>76</int> 
+              <int>195</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>loadPrjItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>loadPrjItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Save Project</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>83</int> 
+              <int>195</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>savePrjItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>savePrjItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Save Project As ...</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>83</int> 
+              <int>715</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>savePrjAsItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>savePrjAsItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator3</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormContainer"> 
+            <string>javax.swing.JMenu</string> 
+            <object class="com.jformdesigner.model.FormLayoutManager"> 
+             <class>javax.swing.JMenu</class> 
+            </object> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Open Recent</string> 
+            </void> 
+            <void property="name"> 
+             <string>recentMenu</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JPopupMenu$Separator</string> 
             <void property="name"> 
              <string>separator1</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Close Tab</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>87</int> 
+              <int>130</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>closeTabItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>closeTabItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Close Project</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>87</int> 
+              <int>195</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>closePrjItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>closePrjItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator4</string> 
             </void> 
            </object> 
           </void> 
@@ -543,7 +722,15 @@
              </object> 
             </void> 
             <void property="name"> 
-             <string>menuItem3</string> 
+             <string>exitItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>exitItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
             </void> 
            </object> 
           </void> 
@@ -628,7 +815,7 @@
               <string>java.awt.event.ActionListener</string> 
               <string>actionPerformed</string> 
               <string>showBirdViewItemActionPerformed</string> 
-              <boolean>true</boolean> 
+              <boolean>false</boolean> 
              </object> 
             </void> 
            </object> 

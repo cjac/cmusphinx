@@ -1,8 +1,8 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
-import edu.cmu.sphinx.tools.executor.ExecutorListener;
-import edu.cmu.sphinx.tools.executor.Executable;
 import edu.cmu.sphinx.tools.confdesigner.util.SceneSerializer;
+import edu.cmu.sphinx.tools.executor.Executable;
+import edu.cmu.sphinx.tools.executor.ExecutorListener;
 import edu.cmu.sphinx.util.props.*;
 import org.netbeans.api.visual.widget.EventProcessingType;
 
@@ -21,17 +21,17 @@ import java.util.List;
  *
  * @author Holger Brandl
  */
-public class SceneController implements ConfigurationChangeListener {
+public class SceneController {
 
     private ConfigurationManager cm;
     private ConfigScene scene;
 
 
-    public final String LAYOUT_SUFFIX = ".layout";
+    public static final String LAYOUT_SUFFIX = ".layout";
 
     private List<ExecutorListener> executorListeners = new ArrayList<ExecutorListener>();
 
-    private boolean isChanged, doActiveFeedback = true;
+    private boolean isChanged;
 
 
     public SceneController(ConfigScene scene) {
@@ -76,9 +76,7 @@ public class SceneController implements ConfigurationChangeListener {
         this.cm = cm;
 
         // remove all content from the graph and build up a new one
-        doActiveFeedback = false;
         new GraphLoader(this, scene).loadScene(cm, executorListeners);
-        doActiveFeedback = true;
 
         isChanged = false;
 
@@ -171,17 +169,13 @@ public class SceneController implements ConfigurationChangeListener {
             }
 
 
-            public void componentAdded(PropertySheet propertySheet, ConfigurationManager cm) {
-
-            }
-
-
             public void componentRemoved(ConfigurationManager configurationManager, PropertySheet ps) {
                 scene.removeNode((ConfNode) scene.findObject(scene.findWidgetByName(ps.getInstanceName())));
                 scene.validate();
 
-                for (ExecutorListener executorListener : executorListeners) {
-                    executorListener.removedExecutor(ps);
+                if (ConfigurationManagerUtils.isImplementingInterface(ps.getConfigurableClass(), Executable.class)) {
+                    for (ExecutorListener executorListener : executorListeners)
+                        executorListener.removedExecutor(ps);
                 }
             }
         });
@@ -363,26 +357,6 @@ public class SceneController implements ConfigurationChangeListener {
         } catch (PropertyException e) {
             e.printStackTrace();
         }
-    }
-
-
-    public boolean hasUnsavedChanges() {
-        return isChanged;
-    }
-
-
-    public void configurationChanged(String configurableName, String propertyName, ConfigurationManager cm) {
-        isChanged = true;
-    }
-
-
-    public void componentAdded(ConfigurationManager configurationManager, PropertySheet propertySheet) {
-        isChanged = true;
-
-    }
-
-
-    public void componentRemoved(ConfigurationManager configurationManager, PropertySheet propertySheet) {
     }
 
 

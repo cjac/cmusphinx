@@ -14,14 +14,12 @@ import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
 import edu.cmu.sphinx.tools.executor.ExecutorListener;
 import edu.cmu.sphinx.util.props.Configurable;
-import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.PropertyException;
 import edu.cmu.sphinx.util.props.PropertySheet;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneEventType;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -33,62 +31,28 @@ import java.util.List;
 /** @author Holger Brandl */
 public class ConfDesigner extends JFrame implements ExecutorListener {
 
-    private SceneController sceneController;
+    public static final String CONF_DESIGNER = "ConfDesigner";
 
-    public static final String CONF_DESIGNER = "ConDesigner";
-
-    public final String LAYOUT_SUFFIX = ".layout";
-    public final String FORMAT_SUFFIX = ".sxl";
-
-    private File cmLocation = null;
     private JDialog sateliteDialog;
+    JTabbedPane tabPane;
 
-    Map<PropertySheet, JMenuItem> curSceneExecutors = new HashMap<PropertySheet, JMenuItem>();
+    private SessionManager sesMan;
+    private Map<PropertySheet, JMenuItem> curSceneExecutors = new HashMap<PropertySheet, JMenuItem>();
+    Map<SceneContext, JComponent> projectsTabs = new HashMap<SceneContext, JComponent>();
 
 
-    public ConfDesigner() throws IOException, PropertyException {
+    public ConfDesigner() {
         initComponents();
 
-        ConfigScene scene = new ConfigScene();
-        sceneController = new SceneController(scene);
-        sceneController.addExecutorListener(this);
-
-        configurableTree.confController = sceneController;
-
-        scenePane.setViewportView(sceneController.getView());
-        sceneController.getView().requestFocusInWindow();
-
-        birdViewPanel.removeAll();
-        birdViewPanel.add(scene.createSatelliteView());
-
-        sceneController.setCm(cmLocation);
-        propSheetPanel.setConfigurationManager(sceneController.getCm());
-
-        scene.addObjectSceneListener(new ObjectSceneListenerAdapter() {
-
-            public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
-                if (newSelection.size() != 1 && isVisible()) {
-                    propSheetPanel.rebuildPanel(null);
-                } else if (!newSelection.isEmpty()) {
-                    Object o = newSelection.iterator().next();
-                    if (o instanceof ConfNode) {
-                        propSheetPanel.rebuildPanel(((ConfNode) o).getPropSheet());
-                    }
-
-                    sceneController.getView().requestFocusInWindow();
-                }
-            }
-        }, ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
+        sesMan = new SessionManager(this);
 
 //        cmLocation = new File("lala.sxl");
 //        cmLocation = new File("../../sphinx4/src/demo/sphinx/hellongram/hellongram.config.xml");
-        sceneController.setCm(cmLocation);
-        propSheetPanel.setConfigurationManager(sceneController.getCm());
 
         addWindowListener(new WindowAdapter() {
 
             public void windowClosed(WindowEvent e) {
-                System.exit(0);
+                exitItemActionPerformed();
             }
         });
 
@@ -104,6 +68,126 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         });
 
 //        addDummyNodes(scene);
+        tabPane = new JTabbedPane();
+        tabPane.addMouseListener(new MouseAdapter() {
+
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON2)
+                    closeTabItemActionPerformed();
+            }
+        });
+        tabPane.addChangeListener(new ChangeListener() {
+
+            public void stateChanged(ChangeEvent e) {
+                Component selectedTab = tabPane.getSelectedComponent();
+                SceneContext newActiveScene = null;
+                for (SceneContext sc : projectsTabs.keySet()) {
+                    if (projectsTabs.get(sc).equals(selectedTab))
+                        newActiveScene = sc;
+                }
+
+                if (newActiveScene != null) {
+                    sesMan.setActiveScene(newActiveScene);
+                    ConfDesigner.this.setTitle(CONF_DESIGNER + " - " + newActiveScene.getLocation().getName());
+                }
+            }
+        });
+
+        sesMan.addSesManListener(new SesManListener() {
+
+            public void newActiveScene(SceneContext sc) {
+//                if (sesMan.numConfigs() > 1)
+//                    tabPane.getModel().setSelectedIndex(tabPane.indexOfComponent(projectsTabs.get(sc)));
+
+                SceneController sceneController = sc.getSceneController();
+                ConfigScene scene = sceneController.getScene();
+
+                sceneController.getView().requestFocusInWindow();
+
+                birdViewPanel.removeAll();
+                birdViewPanel.add(scene.createSatelliteView());
+                birdViewPanel.validate();
+
+                configurableTree.setController(sceneController);
+
+                for (PropertySheet ps : curSceneExecutors.keySet())
+                    removedExecutor(ps);
+                for (PropertySheet ps : sc.getCurSceneExecutors())
+                    addedExecutor(ps);
+
+                propSheetPanel.setConfigurationManager(sceneController.getCm());
+
+                // if there is a single selected object reselect it in order to show it wihtin the props-panel
+                Set<?> selectedObjects = sc.getScene().getSelectedObjects();
+                if (selectedObjects.size() == 1) {
+                    Object selObject = selectedObjects.iterator().next();
+                    if (selObject instanceof ConfNode)
+                        propSheetPanel.rebuildPanel(((ConfNode) selObject).getPropSheet());
+                }
+            }
+
+
+            public void addedScene(SceneContext sc) {
+                JScrollPane scrollPane = new JScrollPane();
+                scrollPane.setViewportView(sc.getSceneController().getView());
+
+                projectsTabs.put(sc, scrollPane);
+
+                if (sesMan.numConfigs() == 1) {
+                    if (!(scenePane.getComponents().length > 0 && scenePane.getComponent(0) instanceof JScrollPane)) {
+                        scenePane.removeAll();
+                        scenePane.add(scrollPane);
+                        ConfDesigner.this.setTitle(CONF_DESIGNER + " - " + sc.getLocation().getName());
+                    }
+
+                } else {
+                    if (scenePane.getComponents().length == 0) {
+                        scenePane.add(tabPane);
+                    } else if (scenePane.getComponent(0) instanceof JScrollPane) {
+                        JScrollPane scrollPaneOld = (JScrollPane) scenePane.getComponent(0);
+
+                        scenePane.removeAll();
+                        scenePane.add(tabPane);
+
+                        tabPane.addTab(sesMan.getSceneContexts().get(0).getLocation().getName(), scrollPaneOld);
+                    }
+
+                    tabPane.addTab(sc.getLocation().getName(), scrollPane);
+                    tabPane.validate();
+                    tabPane.getModel().setSelectedIndex(tabPane.indexOfComponent(scrollPane));
+                }
+
+                sc.getSceneController().addExecutorListener(ConfDesigner.this);
+
+                scenePane.validate();
+                sesMan.setActiveScene(sc);
+            }
+
+
+            public void removedScene(SceneContext sc) {
+                sc.getSceneController().removeExecutorListener(ConfDesigner.this);
+
+                if (sesMan.numConfigs() > 0) {
+                    tabPane.remove(projectsTabs.get(sc));
+
+                } else {
+                    scenePane.removeAll();
+                    tabPane.removeAll();
+
+                    SceneContext initalSceneContext = new SceneContext(null);
+                    sesMan.registerSceneContext(initalSceneContext);
+                    sesMan.setActiveScene(initalSceneContext);
+                }
+
+                tabPane.validate();
+                scenePane.validate();
+            }
+        });
+
+        // intit the view
+        SceneContext initalSceneContext = new SceneContext(null);
+        sesMan.registerSceneContext(initalSceneContext);
+        sesMan.setActiveScene(initalSceneContext);
     }
 
 
@@ -115,14 +199,19 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private void addDummyNodes(ConfigScene scene) throws IOException, PropertyException {
 //        ConfigurationManager cm = new ConfigurationManager(Utils.getURL(Azubi.DEFAULT_CONFIG_XML));
 
-        sceneController.addNode(ThreadedAcousticScorer.class, null);
-        sceneController.addNode(FrontEnd.class, null);
-        sceneController.addNode(SimpleBreadthFirstSearchManager.class, null);
-        sceneController.addNode(Decoder.class, null);
-        sceneController.addNode(WavWriter.class, null);
-        sceneController.addNode(DiscreteCosineTransform.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(ThreadedAcousticScorer.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(FrontEnd.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(SimpleBreadthFirstSearchManager.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(Decoder.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(WavWriter.class, null);
+        sesMan.getActiveScene().getSceneController().addNode(DiscreteCosineTransform.class, null);
 
         scene.validate();
+    }
+
+
+    public SessionManager getSesMan() {
+        return sesMan;
     }
 
 
@@ -140,6 +229,9 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
     public void removedExecutor(PropertySheet ps) {
         JMenuItem item = curSceneExecutors.remove(ps);
+        if (item == null)
+            return;
+
         runMenu.remove(item);
         runMenu.validate();
 
@@ -149,67 +241,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         } else {
             runMenu.setEnabled(true);
             runMenu.setToolTipText(null);
-        }
-    }
-
-
-    private void saveItemActionPerformed() {
-        if (cmLocation == null) {
-            saveAsItemActionPerformed();
-        } else {
-            if (!cmLocation.getName().endsWith(FORMAT_SUFFIX))
-                cmLocation = new File(cmLocation.getAbsolutePath() + FORMAT_SUFFIX);
-
-            sceneController.save(cmLocation);
-        }
-    }
-
-
-    private void saveAsItemActionPerformed() {
-        JFileChooser jfc = new JFileChooser(new File("."));
-        jfc.setMultiSelectionEnabled(false);
-        jfc.setFileFilter(new FileFilter() {
-
-            public boolean accept(File f) {
-                return (f.getName().endsWith(FORMAT_SUFFIX) && f.isFile()) || f.isDirectory();
-            }
-
-
-            public String getDescription() {
-                return "s4 configuration files (*" + FORMAT_SUFFIX + ")";
-            }
-        });
-
-        int status = jfc.showSaveDialog(this);
-        if (status == JFileChooser.APPROVE_OPTION) {
-            cmLocation = jfc.getSelectedFile();
-            saveItemActionPerformed();
-        }
-    }
-
-
-    private void loadItemActionPerformed() {
-        JFileChooser jfc = new JFileChooser(new File("."));
-        jfc.setMultiSelectionEnabled(false);
-        jfc.setFileFilter(new FileFilter() {
-
-            public boolean accept(File f) {
-                return (f.getName().endsWith(FORMAT_SUFFIX) && f.isFile()) || f.isDirectory();
-            }
-
-
-            public String getDescription() {
-                return "s4 configuration files (*" + FORMAT_SUFFIX + ")";
-            }
-        });
-
-        int status = jfc.showOpenDialog(this);
-        if (status == JFileChooser.APPROVE_OPTION) {
-            cmLocation = jfc.getSelectedFile();
-            sceneController.setCm(cmLocation);
-
-
-            propSheetPanel.setConfigurationManager(sceneController.getCm());
         }
     }
 
@@ -234,31 +265,21 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     private void newItemActionPerformed() {
-        if (sceneController.hasUnsavedChanges()) {
-            int status = JOptionPane.showConfirmDialog(this, "There were unsaved changes. Do you want to save them ?", "Current configuration changed", JOptionPane.QUESTION_MESSAGE);
-            switch (status) {
-                case JOptionPane.YES_OPTION:
-                    saveItemActionPerformed();
-                    break;
-                case JOptionPane.NO_OPTION:
-                    // do nothing
-                    break;
-                case JOptionPane.CANCEL_OPTION:
-                    return;
-            }
-        }
 
-        sceneController.setCm(new ConfigurationManager());
-        propSheetPanel.setConfigurationManager(sceneController.getCm());
+        SceneContext newSC = new SceneContext(null);
+        sesMan.registerSceneContext(newSC);
+        sesMan.setActiveScene(newSC);
+//        sceneController.setCm(new ConfigurationManager());
+//        propSheetPanel.setConfigurationManager(sceneController.getCm());
     }
 
 
-    private void showBirdViewItemActionPerformed(ActionEvent e) {
+    private void showBirdViewItemActionPerformed() {
         if (sateliteDialog == null) {
             sateliteDialog = new JDialog(this);
             sateliteDialog.setBounds(50, 500, 200, 150);
             JPanel panel = new JPanel(new BorderLayout());
-            panel.add(sceneController.getScene().createSatelliteView());
+            panel.add(sesMan.getActiveScene().getScene().createSatelliteView());
 
             sateliteDialog.getContentPane().add(panel);
         }
@@ -270,12 +291,12 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     private void layoutGraphItemActionPerformed() {
-        sceneController.getScene().layoutScene();
+        sesMan.getActiveScene().getScene().layoutScene();
     }
 
 
     private void aboutItemActionPerformed() {
-        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 1", "About", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 1+", "About", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -284,10 +305,66 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     private void sceneFinderActionPerformed() {
-        boolean searchSucessful = new SceneFinder(this, sceneController).process(sceneFinder.getText());
+        boolean searchSucessful = new SceneFinder(this, sesMan.getActiveScene().getSceneController()).process(sceneFinder.getText());
 
         if (searchSucessful)
             sceneFinder.setText("");
+    }
+
+
+    public ConfigurablePropPanel getPropSheetPanel() {
+        return propSheetPanel;
+    }
+
+
+    void saveItemActionPerformed() {
+        SceneContext tab = sesMan.getActiveScene();
+        sesMan.saveScene(tab);
+    }
+
+
+    void saveAsItemActionPerformed() {
+        SceneContext activeScene = sesMan.getActiveScene();
+
+        sesMan.saveSceneAs(activeScene);
+    }
+
+
+    private void loadItemActionPerformed() {
+        sesMan.loadScene();
+    }
+
+
+    private void loadPrjItemActionPerformed() {
+        sesMan.loadProject();
+        // TODO add your code here
+    }
+
+
+    private void closeTabItemActionPerformed() {
+        sesMan.processUnsavedChanges(Arrays.asList(sesMan.getActiveScene()));
+        sesMan.unRegisterSceneContext(sesMan.getActiveScene());
+    }
+
+
+    private void closePrjItemActionPerformed() {
+        sesMan.closeAll();
+    }
+
+
+    private void exitItemActionPerformed() {
+        closePrjItemActionPerformed();
+        System.exit(0);
+    }
+
+
+    private void savePrjItemActionPerformed() {
+        sesMan.saveProject();
+    }
+
+
+    private void savePrjAsItemActionPerformed() {
+        sesMan.saveProjectAs();
     }
 
 
@@ -296,11 +373,17 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
         menuBar1 = new JMenuBar();
         menu1 = new JMenu();
-        newItem = new JMenuItem();
-        saveItem = new JMenuItem();
-        saveAsItem = new JMenuItem();
+        newTabItem = new JMenuItem();
         loadItem = new JMenuItem();
-        menuItem3 = new JMenuItem();
+        saveTabItem = new JMenuItem();
+        saveTabAsItem = new JMenuItem();
+        loadPrjItem = new JMenuItem();
+        savePrjItem = new JMenuItem();
+        savePrjAsItem = new JMenuItem();
+        recentMenu = new JMenu();
+        closeTabItem = new JMenuItem();
+        closePrjItem = new JMenuItem();
+        exitItem = new JMenuItem();
         menu2 = new JMenu();
         layoutGraphItem = new JMenuItem();
         menu3 = new JMenu();
@@ -324,7 +407,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         splitPane3 = new JSplitPane();
         propSheetPanel = new ConfigurablePropPanel();
         birdViewPanel = new JPanel();
-        scenePane = new JScrollPane();
+        scenePane = new JPanel();
 
         //======== this ========
         setTitle("ConfDesigner");
@@ -338,35 +421,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             {
                 menu1.setText("File");
 
-                //---- newItem ----
-                newItem.setText("New");
-                newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                newItem.addActionListener(new ActionListener() {
+                //---- newTabItem ----
+                newTabItem.setText("New Tab");
+                newTabItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                newTabItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         newItemActionPerformed();
                     }
                 });
-                menu1.add(newItem);
-
-                //---- saveItem ----
-                saveItem.setText("Save");
-                saveItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                saveItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        saveItemActionPerformed();
-                    }
-                });
-                menu1.add(saveItem);
-
-                //---- saveAsItem ----
-                saveAsItem.setText("Save As...");
-                saveAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | KeyEvent.SHIFT_MASK));
-                saveAsItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        saveAsItemActionPerformed();
-                    }
-                });
-                menu1.add(saveAsItem);
+                menu1.add(newTabItem);
 
                 //---- loadItem ----
                 loadItem.setText("Load...");
@@ -377,12 +440,96 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                     }
                 });
                 menu1.add(loadItem);
+
+                //---- saveTabItem ----
+                saveTabItem.setText("Save Tab");
+                saveTabItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                saveTabItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        saveItemActionPerformed();
+                    }
+                });
+                menu1.add(saveTabItem);
+
+                //---- saveTabAsItem ----
+                saveTabAsItem.setText("Save Tab As...");
+                saveTabAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK));
+                saveTabAsItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        saveAsItemActionPerformed();
+                    }
+                });
+                menu1.add(saveTabAsItem);
                 menu1.addSeparator();
 
-                //---- menuItem3 ----
-                menuItem3.setText("Exit");
-                menuItem3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-                menu1.add(menuItem3);
+                //---- loadPrjItem ----
+                loadPrjItem.setText("Load Project ...");
+                loadPrjItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
+                loadPrjItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        loadPrjItemActionPerformed();
+                    }
+                });
+                menu1.add(loadPrjItem);
+
+                //---- savePrjItem ----
+                savePrjItem.setText("Save Project");
+                savePrjItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
+                savePrjItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        savePrjItemActionPerformed();
+                    }
+                });
+                menu1.add(savePrjItem);
+
+                //---- savePrjAsItem ----
+                savePrjAsItem.setText("Save Project As ...");
+                savePrjAsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_MASK | KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK));
+                savePrjAsItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        savePrjAsItemActionPerformed();
+                    }
+                });
+                menu1.add(savePrjAsItem);
+                menu1.addSeparator();
+
+                //======== recentMenu ========
+                {
+                    recentMenu.setText("Open Recent");
+                }
+                menu1.add(recentMenu);
+                menu1.addSeparator();
+
+                //---- closeTabItem ----
+                closeTabItem.setText("Close Tab");
+                closeTabItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_MASK));
+                closeTabItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        closeTabItemActionPerformed();
+                    }
+                });
+                menu1.add(closeTabItem);
+
+                //---- closePrjItem ----
+                closePrjItem.setText("Close Project");
+                closePrjItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK));
+                closePrjItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        closePrjItemActionPerformed();
+                    }
+                });
+                menu1.add(closePrjItem);
+                menu1.addSeparator();
+
+                //---- exitItem ----
+                exitItem.setText("Exit");
+                exitItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                exitItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        exitItemActionPerformed();
+                    }
+                });
+                menu1.add(exitItem);
             }
             menuBar1.add(menu1);
 
@@ -411,7 +558,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 showBirdViewItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK));
                 showBirdViewItem.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        showBirdViewItemActionPerformed(e);
+                        showBirdViewItemActionPerformed();
                     }
                 });
                 menu3.add(showBirdViewItem);
@@ -561,6 +708,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             {
                 scenePane.setPreferredSize(new Dimension(200, 200));
                 scenePane.setFocusTraversalPolicyProvider(true);
+                scenePane.setLayout(new BorderLayout());
             }
             splitPane1.setRightComponent(scenePane);
         }
@@ -575,11 +723,17 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
     private JMenuBar menuBar1;
     private JMenu menu1;
-    private JMenuItem newItem;
-    private JMenuItem saveItem;
-    private JMenuItem saveAsItem;
+    private JMenuItem newTabItem;
     private JMenuItem loadItem;
-    private JMenuItem menuItem3;
+    private JMenuItem saveTabItem;
+    private JMenuItem saveTabAsItem;
+    private JMenuItem loadPrjItem;
+    private JMenuItem savePrjItem;
+    private JMenuItem savePrjAsItem;
+    private JMenu recentMenu;
+    private JMenuItem closeTabItem;
+    private JMenuItem closePrjItem;
+    private JMenuItem exitItem;
     private JMenu menu2;
     private JMenuItem layoutGraphItem;
     private JMenu menu3;
@@ -603,14 +757,14 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JSplitPane splitPane3;
     private ConfigurablePropPanel propSheetPanel;
     private JPanel birdViewPanel;
-    private JScrollPane scenePane;
+    private JPanel scenePane;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 
     public static void main(String[] args) throws IOException, PropertyException {
         if (args.length == 1 && (args[0].equals("-help") || args[0].equals("-h") || args[0].startsWith("--h"))) {
             System.out.println(CONF_DESIGNER + " [-l <semicolon-separated list of jars or class-directories which " +
-                    "contain configurables>] " +
+                    "contain configurables>] [-f <config-xml or config-project-files>]" +
                     "\n\n Note: The -l defines only which jars/locations to parse in order to find configurables. " +
                     "Nevertheless all these jars/directories need to be contained in the class-path of " + CONF_DESIGNER + ".");
 
@@ -621,15 +775,36 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-l")) {
                 assert args.length > i;
-                addtionalClasses.addAll(Arrays.asList(args[i + 1].split(",")));
+                addtionalClasses.addAll(Arrays.asList(args[i + 1].split(";")));
             }
         }
 
+        // find the intial file to be loaded
+        File preLoadFile = null;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-f")) {
+                assert args.length > i : "-f requires a file-argument";
+                preLoadFile = new File(args[i + 1]);
+                assert preLoadFile.isFile() && args[i + 1].contains(SessionManager.FORMAT_SUFFIX) : args[i + 1] + " is not a valid file";
+            }
+
+        }
+
         ConfDesigner gui = new ConfDesigner();
+
+        if (preLoadFile != null) {
+            if (preLoadFile.getName().endsWith(SessionManager.FORMAT_SUFFIX))
+                gui.getSesMan().loadScene(preLoadFile);
+            else {
+                assert preLoadFile.getName().endsWith(SessionManager.PROJECT_FORMAT_SUFFIX);
+                gui.getSesMan().loadProject(preLoadFile);
+            }
+        }
 
         gui.addConfigurables(ClassPathParser.getConfigurableClasses(addtionalClasses));
 
         gui.setBounds(100, 100, 900, 700);
         gui.setVisible(true);
     }
+
 }

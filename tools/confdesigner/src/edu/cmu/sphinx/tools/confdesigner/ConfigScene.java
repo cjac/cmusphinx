@@ -102,7 +102,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         widget.setImage(NODE_IMAGE);
         widget.setLabel(node.getInstanceName());
 
-        widget.setToolTipText("Hold 'Ctrl'+'Mouse Right Button' to create Edge");
+        widget.setToolTipText("Class: " + node.getPropSheet().getConfigurableClass().getName());
 
         widget.getLabelWidget().getActions().addAction(inplaceEditAction);
 
