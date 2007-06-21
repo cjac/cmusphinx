@@ -153,6 +153,7 @@ public class SessionManager {
                 cmLocation = new File(cmLocation.getAbsolutePath() + FORMAT_SUFFIX);
 
             scene.setLocation(cmLocation);
+            confDesigner.setSceneName(scene, cmLocation.getName());
             saveScene(scene);
             return true;
         }
@@ -181,6 +182,7 @@ public class SessionManager {
         if (status == JFileChooser.APPROVE_OPTION) {
             File cmLocation = jfc.getSelectedFile();
             loadScene(cmLocation);
+            confDesigner.updateRecentFiles(cmLocation);
         }
     }
 
@@ -194,9 +196,7 @@ public class SessionManager {
 
             activeScene.getSceneController().getCm().addConfigurationChangeListener(activeScene);
             activeScene.setLocation(cmLocation);
-            confDesigner.setTitle(ConfDesigner.CONF_DESIGNER + " - " + cmLocation.getName());
-            if (confDesigner.tabPane.getComponentCount() > 0)
-                confDesigner.tabPane.setTitleAt(confDesigner.tabPane.indexOfComponent(confDesigner.projectsTabs.get(activeScene)), cmLocation.getName());
+            confDesigner.setSceneName(activeScene, cmLocation.getName());
 
             setActiveScene(activeScene);
 
@@ -257,6 +257,7 @@ public class SessionManager {
             File prjLocation = jfc.getSelectedFile();
 
             loadProject(prjLocation);
+            confDesigner.updateRecentFiles(prjLocation);
         }
     }
 
@@ -319,6 +320,8 @@ public class SessionManager {
                 e.printStackTrace();
             }
         }
+
+        confDesigner.updateRecentFiles(prjLocation);
     }
 
 

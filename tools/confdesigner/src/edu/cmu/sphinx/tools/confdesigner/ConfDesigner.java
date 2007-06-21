@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 
 /** @author Holger Brandl */
@@ -35,6 +36,11 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
     private JDialog sateliteDialog;
     JTabbedPane tabPane;
+    private List<File> recentFiles = new ArrayList<File>();
+    private ActionListener recentFileListener;
+
+
+    private static Preferences prefs = Preferences.userNodeForPackage(ConfDesigner.class);
 
     private SessionManager sesMan;
     private Map<PropertySheet, JMenuItem> curSceneExecutors = new HashMap<PropertySheet, JMenuItem>();
@@ -55,6 +61,33 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 exitItemActionPerformed();
             }
         });
+
+        addComponentListener(new ComponentAdapter() {
+
+            public void componentResized(ComponentEvent e) {
+                getPrefs().putInt("mainwin.width", getWidth());
+                getPrefs().putInt("mainwin.height", getHeight());
+                getPrefs().putInt("mainwin.xpos", (int) getLocation().getX());
+                getPrefs().putInt("mainwin.ypos", (int) getLocation().getY());
+            }
+        });
+
+        recentFileListener = new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                for (int i = 0; i < recentMenu.getItemCount(); i++) {
+                    if (recentMenu.getItem(i).equals(e.getSource())) {
+                        File recentFile = recentFiles.get(i);
+                        if (recentFile.getName().endsWith(SessionManager.FORMAT_SUFFIX))
+                            sesMan.loadScene(recentFile);
+                        else if (recentFile.getName().endsWith(SessionManager.PROJECT_FORMAT_SUFFIX))
+                            sesMan.loadProject(recentFile);
+                        else
+                            assert false : "invaled recent file " + recentFile.getAbsolutePath();
+                    }
+                }
+            }
+        };
 
         setFocusable(true);
         addKeyListener(new KeyAdapter() {
@@ -365,6 +398,54 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
     private void savePrjAsItemActionPerformed() {
         sesMan.saveProjectAs();
+    }
+
+
+    public void setSceneName(SceneContext scene, String newSceneName) {
+        if (sesMan.getActiveScene().equals(scene))
+            setTitle(ConfDesigner.CONF_DESIGNER + " - " + newSceneName);
+
+        if (tabPane.getComponentCount() > 0)
+            tabPane.setTitleAt(tabPane.indexOfComponent(projectsTabs.get(scene)), newSceneName);
+    }
+
+
+    public static Preferences getPrefs() {
+        return prefs;
+    }
+
+
+    /** Updates the recent file dialog. */
+    public void updateRecentFiles(File fileLocation) {
+        // get the list
+        Preferences p = getPrefs();
+
+        for (int i = 0; i < 0; i++) {
+            String path = p.get("recent" + i, null);
+            if (path != null && new File(path).isFile()) {
+                recentFiles.add(new File(path));
+            }
+        }
+
+        //update it
+        if (fileLocation != null)
+            if (recentFiles.isEmpty() || !recentFiles.get(0).equals(fileLocation))
+                recentFiles.add(0, fileLocation);
+
+
+        for (int i = 0; i < recentFiles.size(); i++) {
+            File file = recentFiles.get(i);
+            p.put("recent" + i, file.getAbsolutePath());
+        }
+
+        //update the menu
+        recentMenu.removeAll();
+        for (File prefFile : recentFiles) {
+            JMenuItem menuItem = new JMenuItem(prefFile.getName());
+            menuItem.addActionListener(recentFileListener);
+
+            recentMenu.add(menuItem);
+        }
     }
 
 
@@ -803,8 +884,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
         gui.addConfigurables(ClassPathParser.getConfigurableClasses(addtionalClasses));
 
-        gui.setBounds(100, 100, 900, 700);
+        gui.setBounds(getPrefs().getInt("mainwin.xpos", 100), getPrefs().getInt("mainwin.ypos", 100), getPrefs().getInt("mainwin.width", 900), getPrefs().getInt("mainwin.height", 700));
+
         gui.setVisible(true);
     }
-
 }
