@@ -57,7 +57,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
         addWindowListener(new WindowAdapter() {
 
-            public void windowClosed(WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
+                super.windowClosing(e);
                 exitItemActionPerformed();
             }
         });
