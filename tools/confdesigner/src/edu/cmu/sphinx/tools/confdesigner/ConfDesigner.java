@@ -221,6 +221,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         SceneContext initalSceneContext = new SceneContext(null);
         sesMan.registerSceneContext(initalSceneContext);
         sesMan.setActiveScene(initalSceneContext);
+
+        updateRecentFiles(null);
     }
 
 
@@ -419,8 +421,9 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     public void updateRecentFiles(File fileLocation) {
         // get the list
         Preferences p = getPrefs();
+        recentFiles.clear();
 
-        for (int i = 0; i < 0; i++) {
+        for (int i = 0; i < 5; i++) {
             String path = p.get("recent" + i, null);
             if (path != null && new File(path).isFile()) {
                 recentFiles.add(new File(path));
