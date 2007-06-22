@@ -196,7 +196,7 @@
               </void> 
               <void method="add"> 
                <object class="com.jformdesigner.model.FormComponent"> 
-                <string>edu.cmu.sphinx.tools.confdesigner.ConfigurableTree</string> 
+                <string>edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector</string> 
                 <void method="setProperty"> 
                  <string>maximumSize</string> 
                  <object class="java.awt.Dimension"> 
