@@ -143,7 +143,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 birdViewPanel.add(scene.createSatelliteView());
                 birdViewPanel.validate();
 
-                confSelectionTree.setController(sceneController);
+                configurableTree.setController(sceneController);
 
                 for (PropertySheet ps : curSceneExecutors.keySet())
                     removedExecutor(ps);
@@ -229,7 +229,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     public void addConfigurables(Collection<Class<? extends Configurable>> configClasses) {
-        confSelectionTree.addConfigurables(configClasses);
+        configurableTree.addConfigurables(configClasses);
     }
 
 
@@ -286,14 +286,14 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         // getSomeInput
         String filterText = classFilterField.getText();
 
-        confSelectionTree.setFilter(filterText);
+        configurableTree.setFilter(filterText);
     }
 
 
     private void filterResetButtonActionPerformed() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                confSelectionTree.setFilter(null);
+                configurableTree.setFilter(null);
                 classFilterField.setText("");
                 classFilterField.requestFocus();
             }
@@ -488,8 +488,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         label1 = new JLabel();
         classFilterField = new JTextField();
         filterResetButton = new JButton();
-        scrollPane2 = new JScrollPane();
-        confSelectionTree = new ConfigSelector();
+        configurableTree = new ConfigSelector();
         splitPane3 = new JSplitPane();
         propSheetPanel = new ConfigurablePropPanel();
         birdViewPanel = new JPanel();
@@ -749,18 +748,11 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                     }
                     panel4.add(filterPanel, BorderLayout.SOUTH);
 
-                    //======== scrollPane2 ========
-                    {
-                        scrollPane2.setMinimumSize(null);
-                        scrollPane2.setMaximumSize(null);
-
-                        //---- confSelectionTree ----
-                        confSelectionTree.setMaximumSize(new Dimension(2111, 2111));
-                        confSelectionTree.setMinimumSize(new Dimension(100, 200));
-                        confSelectionTree.setPreferredSize(null);
-                        scrollPane2.setViewportView(confSelectionTree);
-                    }
-                    panel4.add(scrollPane2, BorderLayout.CENTER);
+                    //---- configurableTree ----
+                    configurableTree.setMaximumSize(new Dimension(2111, 2111));
+                    configurableTree.setMinimumSize(new Dimension(100, 200));
+                    configurableTree.setPreferredSize(null);
+                    panel4.add(configurableTree, BorderLayout.CENTER);
                 }
                 splitPane2.setTopComponent(panel4);
 
@@ -838,8 +830,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JLabel label1;
     private JTextField classFilterField;
     private JButton filterResetButton;
-    private JScrollPane scrollPane2;
-    private ConfigSelector confSelectionTree;
+    private ConfigSelector configurableTree;
     private JSplitPane splitPane3;
     private ConfigurablePropPanel propSheetPanel;
     private JPanel birdViewPanel;

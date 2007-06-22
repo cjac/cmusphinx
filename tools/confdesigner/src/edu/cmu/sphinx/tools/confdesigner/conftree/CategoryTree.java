@@ -46,14 +46,16 @@ public class CategoryTree extends ConfigurableTree {
             }
         }
 
-        for (int i = 0; i < getRowCount(); i++)
-            expandRow(i);
-
         // add all untagged classes
+
         DefaultMutableTreeNode untagNode = new DefaultMutableTreeNode("untagged");
         rootNode.add(untagNode);
         for (Class<? extends Configurable> untaggedClass : untaggedClasses)
             untagNode.add(new ConfigurableNode(untaggedClass));
+
+
+        for (int i = 0; i < getRowCount(); i++)
+            expandRow(i);
     }
 
 

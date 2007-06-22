@@ -31,9 +31,18 @@ public class ConfigSelector extends JPanel {
         treeList.add(categoryTree);
         treeList.add(virtModuleTree);
 
-        tabPane.addTab("package", packageTree);
-        tabPane.addTab("category", categoryTree);
-        tabPane.addTab("virtual", virtModuleTree);
+        JScrollPane scrollPane;
+        scrollPane = new JScrollPane();
+        scrollPane.setViewportView(packageTree);
+        tabPane.addTab("package", scrollPane);
+
+        scrollPane = new JScrollPane();
+        scrollPane.setViewportView(categoryTree);
+        tabPane.addTab("category", scrollPane);
+
+        scrollPane = new JScrollPane();
+        scrollPane.setViewportView(virtModuleTree);
+        tabPane.addTab("virtual", scrollPane);
 
         add(tabPane);
     }

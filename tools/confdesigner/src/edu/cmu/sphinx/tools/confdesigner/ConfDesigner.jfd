@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?> 
-<java version="1.5.0_11" class="java.beans.XMLDecoder"> 
+<java version="1.6.0_01" class="java.beans.XMLDecoder"> 
  <object class="com.jformdesigner.model.FormModel"> 
   <void property="contentType"> 
    <string>form/swing</string> 
@@ -178,47 +178,28 @@
              </object> 
             </void> 
             <void method="add"> 
-             <object class="com.jformdesigner.model.FormContainer"> 
-              <string>javax.swing.JScrollPane</string> 
-              <object class="com.jformdesigner.model.FormLayoutManager"> 
-               <class>javax.swing.JScrollPane</class> 
-              </object> 
-              <void method="setProperty"> 
-               <string>minimumSize</string> 
-               <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-              </void> 
+             <object class="com.jformdesigner.model.FormComponent"> 
+              <string>edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector</string> 
               <void method="setProperty"> 
                <string>maximumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>2111</int> 
+                <int>2111</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>minimumSize</string> 
+               <object class="java.awt.Dimension"> 
+                <int>100</int> 
+                <int>200</int> 
+               </object> 
+              </void> 
+              <void method="setProperty"> 
+               <string>preferredSize</string> 
                <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
               </void> 
               <void property="name"> 
-               <string>scrollPane2</string> 
-              </void> 
-              <void method="add"> 
-               <object class="com.jformdesigner.model.FormComponent"> 
-                <string>edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector</string> 
-                <void method="setProperty"> 
-                 <string>maximumSize</string> 
-                 <object class="java.awt.Dimension"> 
-                  <int>2111</int> 
-                  <int>2111</int> 
-                 </object> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>minimumSize</string> 
-                 <object class="java.awt.Dimension"> 
-                  <int>100</int> 
-                  <int>200</int> 
-                 </object> 
-                </void> 
-                <void method="setProperty"> 
-                 <string>preferredSize</string> 
-                 <object class="com.jformdesigner.model.FormObject" field="NULL_VALUE"/> 
-                </void> 
-                <void property="name"> 
-                 <string>configurableTree</string> 
-                </void> 
-               </object> 
+               <string>configurableTree</string> 
               </void> 
              </object> 
              <object class="com.jformdesigner.model.FormLayoutConstraints"> 
@@ -969,7 +950,7 @@
       <void method="setProperty"> 
        <string>location</string> 
        <object class="java.awt.Point"> 
-        <int>15</int> 
+        <int>145</int> 
         <int>15</int> 
        </object> 
       </void> 
