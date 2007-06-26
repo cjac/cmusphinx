@@ -76,6 +76,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         addChild(connectionLayer);
         addChild(interractionLayer);
 
+        inplaceProvider.setScene(this);
 
         getActions().addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
         getActions().addAction(ActionFactory.createPanAction());

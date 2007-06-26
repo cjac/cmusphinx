@@ -69,6 +69,11 @@ public class ConfNode {
     }
 
 
+    public void setInstanceName(String newName) {
+        instanceName = newName;
+    }
+
+
     public List<ConfPin> getListPins(String propListName) {
         return listPins.get(propListName);
     }

@@ -1,6 +1,6 @@
 package edu.cmu.sphinx.tools.confdesigner.conftree;
 
-import edu.cmu.sphinx.tools.confdesigner.ConfCategory;
+import edu.cmu.sphinx.util.props.*;
 import edu.cmu.sphinx.util.props.Configurable;
 
 import javax.swing.tree.DefaultMutableTreeNode;

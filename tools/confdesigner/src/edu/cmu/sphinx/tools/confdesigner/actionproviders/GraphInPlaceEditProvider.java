@@ -5,6 +5,8 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import edu.cmu.sphinx.util.props.ConfigurationManager;
 import edu.cmu.sphinx.util.props.ConfigurationManagerUtils;
+import edu.cmu.sphinx.tools.confdesigner.ConfigScene;
+import edu.cmu.sphinx.tools.confdesigner.ConfNode;
 
 /**
  * DOCUMENT ME !
@@ -14,6 +16,7 @@ import edu.cmu.sphinx.util.props.ConfigurationManagerUtils;
 public class GraphInPlaceEditProvider implements TextFieldInplaceEditor {
 
     private ConfigurationManager cm;
+    private ConfigScene scene;
 
 
     public boolean isEnabled(Widget widget) {
@@ -32,6 +35,8 @@ public class GraphInPlaceEditProvider implements TextFieldInplaceEditor {
             ((LabelWidget) widget).setLabel(newName);
 
             cm.renameConfigurable(oldName, newName);
+            ConfNode node = (ConfNode) scene.findObject(widget.getParentWidget());
+            node.setInstanceName(newName);
         }
     }
 
@@ -39,5 +44,10 @@ public class GraphInPlaceEditProvider implements TextFieldInplaceEditor {
     public void setCM(ConfigurationManager cm) {
         assert cm != null;
         this.cm = cm;
+    }
+
+
+    public void setScene(ConfigScene configScene) {
+        scene = configScene;
     }
 }
