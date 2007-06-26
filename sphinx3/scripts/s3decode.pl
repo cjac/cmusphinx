@@ -45,22 +45,12 @@
 
 use File::Path;
 use File::Copy;
+use File::Basename;
+use File::Spec::Functions;
 
-my $index = 0;
-if (lc($ARGV[0]) eq '-cfg') {
-    $cfg_file = $ARGV[1];
-    $index = 2;
-} else {
-    $cfg_file = "etc/sphinx_decode.cfg";
-}
-
-if (! -s "$cfg_file") {
-    print ("unable to find default configuration file, use -cfg file.cfg or create etc/sphinx_decode.cfg for default\n");
-    exit -3;
-}
-
-require $cfg_file;
-
+use lib catdir(dirname($0), updir(), 'lib');
+use SphinxTrain::Config cfg => 'etc/sphinx_decode.cfg';
+use SphinxTrain::Util;
 
 #************************************************************************
 # this script performs decoding.
@@ -80,22 +70,22 @@ if ($#ARGV == ($index + 1)) {
   $npart = 1;
 }
 
-$mdefname = $DEC_CFG_MDEF;
-$modelname = $DEC_CFG_MODEL_NAME;
+$mdefname = $ST::DEC_CFG_MDEF;
+$modelname = $ST::DEC_CFG_MODEL_NAME;
 $processname = "decode";
 
-$log_dir = "$DEC_CFG_LOG_DIR/$processname";
+$log_dir = "$ST::DEC_CFG_LOG_DIR/$processname";
 mkdir ($log_dir,0777) unless -d $log_dir;
-$result_dir = "$DEC_CFG_BASE_DIR/result";
+$result_dir = "$ST::DEC_CFG_BASE_DIR/result";
 mkdir ($result_dir,0777) unless -d $result_dir;
 
-$logfile = "$log_dir/${DEC_CFG_EXPTNAME}-${part}-${npart}.log";
-$matchfile = "$result_dir/${DEC_CFG_EXPTNAME}-${part}-${npart}.match";
+$logfile = "$log_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.log";
+$matchfile = "$result_dir/${ST::DEC_CFG_EXPTNAME}-${part}-${npart}.match";
 
-$moddeffn = "$DEC_CFG_BASE_DIR/model_architecture/$mdefname";
-$statepdeffn = $DEC_CFG_HMM_TYPE; # indicates the type of HMMs
+$moddeffn = "$ST::DEC_CFG_BASE_DIR/model_architecture/$mdefname";
+$statepdeffn = $ST::DEC_CFG_HMM_TYPE; # indicates the type of HMMs
 
-$hmm_dir = "$DEC_CFG_BASE_DIR/model_parameters/$modelname";
+$hmm_dir = "$ST::DEC_CFG_BASE_DIR/model_parameters/$modelname";
 
 $mixwfn = "$hmm_dir/mixture_weights";
 $tmatfn = "$hmm_dir/transition_matrices";
@@ -103,7 +93,7 @@ $meanfn = "$hmm_dir/means";
 $varfn = "$hmm_dir/variances";
 
 $nlines = 0;
-open INPUT, "${DEC_CFG_LISTOFFILES}";
+open INPUT, "${ST::DEC_CFG_LISTOFFILES}";
 while (<INPUT>) {
     $nlines++;
 }
@@ -112,75 +102,33 @@ close INPUT;
 $ctloffset = int ( ( $nlines * ( $part - 1 ) ) / $npart );
 $ctlcount = int ( ( $nlines * $part ) / $npart ) - $ctloffset;
 
-copy "$DEC_CFG_GIF_DIR/green-ball.gif", "$DEC_CFG_BASE_DIR/.decode.$part.state.gif";
-&DEC_HTML_Print ("\t" . &DEC_ImgSrc("$DEC_CFG_BASE_DIR/.decode.$part.state.gif") . " ");   
-&DEC_Log ("    Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ");
-&DEC_HTML_Print (&DEC_FormatURL("$logfile", "Log File") . "\n");
+Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
+my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
+		 -mdef => $moddeffn,
+		 -senmgau => $statepdeffn,
+		 -mean => $meanfn,
+		 -var => $varfn,
+		 -mixw => $mixwfn,
+		 -tmat => $tmatfn,
+		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
+		 -feat => $ST::DEC_CFG_FEATURE,
+		 -beam => $ST::DEC_CFG_BEAMWIDTH,
+		 -wbeam => $ST::DEC_CFG_WORDBEAM,
+		 -dict => $ST::DEC_CFG_DICTIONARY,
+		 -fdict => $ST::DEC_CFG_FILLERDICT,
+		 -lm => $ST::DEC_CFG_LANGUAGEMODEL,
+		 -wip => 0.2,
+		 -ctl => $ST::DEC_CFG_LISTOFFILES,
+		 -ctloffset => $ctloffset,
+		 -ctlcount => $ctlcount,
+		 -cepdir => $ST::DEC_CFG_FEATFILES_DIR,
+		 -cepext => $ST::DEC_CFG_FEATFILE_EXTENSION,
+		 -hyp => $matchfile,
+		 -agc => $ST::DEC_CFG_AGC,
+		 -varnorm => $ST::DEC_CFG_VARNORM,
+		 -cmn => $ST::DEC_CFG_CMN);
 
-open LOG,">$logfile";
-
-### now actually start  (this will clobber the previous logfile)
-$DECODER = "$DEC_CFG_BIN_DIR/sphinx3_decode";
-
-if (open PIPE, "\"$DECODER\" " .
-    "-mdef \"$moddeffn\" " .
-    "-senmgau $statepdeffn " .
-    "-mean \"$meanfn\" " .
-    "-var \"$varfn\" " .
-    "-mixw \"$mixwfn\" " .
-    "-tmat \"$tmatfn\" " .
-    "-lw $DEC_CFG_LANGUAGEWEIGHT  " .
-    "-feat $DEC_CFG_FEATURE " .
-    "-beam $DEC_CFG_BEAMWIDTH " .
-    "-wbeam $DEC_CFG_WORDBEAM " .
-    "-dict \"$DEC_CFG_DICTIONARY\" " .
-    "-fdict \"$DEC_CFG_FILLERDICT\" " .
-    "-lm \"$DEC_CFG_LANGUAGEMODEL\" " .
-    "-wip 0.2 " .
-    "-ctl \"$DEC_CFG_LISTOFFILES\" " .
-    "-ctloffset $ctloffset " .
-    "-ctlcount $ctlcount " .
-    "-cepdir \"$DEC_CFG_FEATFILES_DIR\" " .
-    "-cepext $DEC_CFG_FEATFILE_EXTENSION " .
-#    "-hypseg $matchfile " .
-    "-hyp \"$matchfile\" " .
-#    "-outlatdir $outlatdir " .
-    "-agc $DEC_CFG_AGC " .
-    "-varnorm $DEC_CFG_VARNORM " .
-    " -cmn $DEC_CFG_CMN 2>&1 |") {
-
-
-    $processed_counter = 0;
-    &DEC_Log ("\n        Using $ctl_counter files: ");
-    $| = 1;				# Turn on autoflushing
-    while (<PIPE>) {
-	if (/(ERROR).*/) {
-	    &DEC_LogError ($_ . "\n");
-	}
-	if (/(FATAL).*/) {
-	    &DEC_LogError ($_ . "\n");
-	    die "Received a fatal error";
-	}
-	print LOG "$_";
-	# Keep track of progress being made.
-	$processed_counter++  if (/.*\(total\)\s*$/i);
-	$percentage = int (($processed_counter / $ctlcount) * 100);
-	if (!($percentage % 10)) {
-	    &DEC_Log ("${percentage}% ") unless $printed;
-	    $printed = 1;
-	} else {
-	    $printed = 0;
-	}
-    }
-    close PIPE;
-    $| = 0;
-    $date = localtime;
-    print LOG "$date\n";
-    close LOG;
-    &DEC_Log ("Finished\n");
-    exit (0);
+if ($rv) {
+  LogError("Failed to start bw");
 }
-
-copy "$DEC_CFG_GIF_DIR/red-ball.gif", "$DEC_CFG_BASE_DIR/.decode.$part.state.gif";
-&DEC_LogError ("\tFailed to start $DECODER \n");
-exit (-1);
+exit ($rv);
