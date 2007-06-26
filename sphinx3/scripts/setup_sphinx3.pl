@@ -140,6 +140,7 @@ if (open (SYSDESC, "< $SPHINX_DECODER_DIR/config.status")) {
 # any existing bin.platform
 
 my @dir_candidates = ();
+push @dir_candidates, "$SPHINX_DECODER_DIR/src/programs";
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Release";
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin/Debug";
 push @dir_candidates, "$SPHINX_DECODER_DIR/bin";
