@@ -100,4 +100,9 @@ public class SceneContext implements ExecutorListener, ConfigurationChangeListen
     public void componentRemoved(ConfigurationManager configurationManager, PropertySheet propertySheet) {
         isChanged = true;
     }
+
+
+    public void componentRenamed(ConfigurationManager configurationManager, PropertySheet propertySheet, String oldName) {
+        isChanged = true;
+    }
 }

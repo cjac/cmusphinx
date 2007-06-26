@@ -178,9 +178,17 @@ public class SceneController {
                         executorListener.removedExecutor(ps);
                 }
             }
+
+
+            public void componentRenamed(ConfigurationManager configurationManager, PropertySheet propertySheet, String oldName) {
+                scene.validate();
+
+                // todo what could be done here?
+            }
         });
 
         scene.connectProvider.setCM(cm);
+        scene.inplaceProvider.setCM(cm);
     }
 
 

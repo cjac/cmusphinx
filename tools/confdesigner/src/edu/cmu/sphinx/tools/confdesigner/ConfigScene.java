@@ -52,6 +52,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 
     GraphConnectProvider connectProvider = new GraphConnectProvider(this);
     GraphAcceptProvider acceptProvider = new GraphAcceptProvider(this);
+    GraphInPlaceEditProvider inplaceProvider = new GraphInPlaceEditProvider();
 
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
@@ -59,7 +60,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
     private WidgetAction reconnectAction = ActionFactory.createReconnectAction(new GraphReconnectProvider(this));
     private WidgetAction moveControlPointAction = ActionFactory.createFreeMoveControlPointAction();
     private WidgetAction selectAction = ActionFactory.createSelectAction(new GraphWidgetSelector(this));
-    private WidgetAction inplaceEditAction = ActionFactory.createInplaceEditorAction(new GraphInPlaceEditProvider());
+    private WidgetAction inplaceEditAction = ActionFactory.createInplaceEditorAction(inplaceProvider);
     private WidgetAction acceptAction = ActionFactory.createAcceptAction(acceptProvider);
 
     public static final Image NODE_IMAGE = Utilities.loadImage("test/resources/custom_displayable_32.png");
