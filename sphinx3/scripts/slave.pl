@@ -186,43 +186,29 @@ sub align_hyp {
     close(OUT);
   } elsif ($align =~ m/sclite/i) {
     my $outfile = "$ST::DEC_CFG_BASE_DIR/result/${ST::DEC_CFG_EXPTNAME}.align";
-    my ($word_total, $word_err, $sent_total, $sent_err);
+    my ($wer, $ser, $word_total, $sent_total);
     open (OUT, "> $outfile") or die "Can't open $outfile for writing\n";
     if (open (PIPE, "\"$align\" " .
 	  "-i rm " .
-	  "-o rsum pralign dtl stdout " .
+	  "-o sum pralign dtl stdout " .
 	  "-f 0 " .
 	  "-r \"$ref\" " .
 	  "-h \"$hyp\" 2>&1 |")) {
       while (<PIPE>) {
 	print OUT "$_";
-	if (m/\|\s*Sum\s*\|/) {
-	  my @fields = split /\|/;
-	  ($sent_total, $word_total) = ($fields[2] =~ m/(\S+)/g);
-	  my @detail = split /\s+/, $fields[3];
-	  $word_err = $detail[$#detail - 1];
-	  $sent_err = $detail[$#detail];
+	if (m/\|\s*Sum\/Avg\s*\|\s*(\d+)\s*(\d+).*(\d+\.\d+)\s+(\d+\.\d+)\s*\|/) {
+	    $sent_total = $1;
+	    $word_total = $2;
+	    $wer = $3;
+	    $ser = $4;
 	}
       }
     }
     close(OUT);
     close(PIPE);
-    my $ser;
-    if ($sent_total > 0) {
-      $ser = ($sent_err/$sent_total * 100);
-    } else {
-      $ser = 0;
-    }
-    my $wer;
-    if ($word_total > 0) {
-      $wer = ($word_err/$word_total * 100);
-    } else {
-      $wer = 0;
-    }
-    Log("SENTENCE ERROR: " . (sprintf "%.3f%", $ser) .
-	(sprintf " (%d/%d)", $sent_err, $sent_total) .
-	"   WORD ERROR RATE: " . (sprintf "%.3f%", $wer) .
-	(sprintf " (%d/%d) ", $word_err, $word_total), 'result');
+    Log(sprintf("SENTENCE ERROR: %.3f%% (%d/%d)   WORD ERROR RATE: %.3f%% (%d/%d)",
+		$ser, $sent_total * $ser / 100, $sent_total,
+		$wer, $word_total * $wer / 100, $word_total), 'result');
     HTML_Print("<p class='result'>", FormatURL("$outfile", "Log File"), "</p>");
   } else {
     Log("Accuracy not computed, please visually compare the decoder output with the reference file");
