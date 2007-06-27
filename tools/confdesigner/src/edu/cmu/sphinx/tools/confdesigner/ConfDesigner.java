@@ -901,8 +901,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         private TestAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
-            putValue(NAME, "text");
-            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_MASK));
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 
@@ -917,8 +915,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         private ExtViewAction() {
             // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
             // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
-            putValue(NAME, "Export View Image");
-            putValue(SHORT_DESCRIPTION, "Export");
             // JFormDesigner - End of action initialization  //GEN-END:initComponents
         }
 

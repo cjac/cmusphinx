@@ -277,7 +277,7 @@ public class SceneController {
         if (scene.getView() != null)
             return scene.getView();
 
-        JComponent sceneView = scene.createView();
+        JComponent sceneView = scene.getView();
 
         sceneView.setFocusable(true);
         sceneView.setEnabled(true);

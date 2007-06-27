@@ -35,6 +35,7 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.openide.util.Utilities;
@@ -75,6 +76,8 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         addChild(mainLayer);
         addChild(connectionLayer);
         addChild(interractionLayer);
+
+        createView();
 
         inplaceProvider.setScene(this);
 
@@ -207,6 +210,13 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         }
 
         return null;
+    }
+
+
+    public void createLabel(String labelText, Point location) {
+        LabelWidget labelWidget = new LabelWidget(this, labelText);
+        backgroundLayer.addChild(labelWidget);
+        validate();
     }
 
 
