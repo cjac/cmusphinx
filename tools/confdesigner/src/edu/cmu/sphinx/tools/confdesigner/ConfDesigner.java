@@ -474,6 +474,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         layoutGraphItem = new JMenuItem();
         menu3 = new JMenu();
         showBirdViewItem = new JCheckBoxMenuItem();
+        menuItem1 = new JMenuItem();
+        menuItem2 = new JMenuItem();
         runMenu = new JMenu();
         menu4 = new JMenu();
         helpItem = new JMenuItem();
@@ -647,6 +649,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                     }
                 });
                 menu3.add(showBirdViewItem);
+                menu3.addSeparator();
+
+                //---- menuItem1 ----
+                menuItem1.setText("Export View Image");
+                menu3.add(menuItem1);
+
+                //---- menuItem2 ----
+                menuItem2.setText("Export Scene Image");
+                menu3.add(menuItem2);
             }
             menuBar1.add(menu3);
 
@@ -816,6 +827,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenuItem layoutGraphItem;
     private JMenu menu3;
     private JCheckBoxMenuItem showBirdViewItem;
+    private JMenuItem menuItem1;
+    private JMenuItem menuItem2;
     private JMenu runMenu;
     private JMenu menu4;
     private JMenuItem helpItem;
