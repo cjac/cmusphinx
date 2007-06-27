@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * exports a given scene or just the current viewport of a scene into an image file.
+ * Exports a given scene or just the current viewport of a scene into an image file.
  *
  * @author Holger Brandl
  */

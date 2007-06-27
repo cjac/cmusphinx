@@ -11,6 +11,7 @@ import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform;
 import edu.cmu.sphinx.frontend.util.WavWriter;
 import edu.cmu.sphinx.tools.confdesigner.actions.ExportImageAction;
+import edu.cmu.sphinx.tools.confdesigner.actions.FitViewAction;
 import edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector;
 import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
@@ -225,6 +226,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         sesMan.setActiveScene(initalSceneContext);
 
         expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
+        fitViewItem.setAction(new FitViewAction(sesMan));
 
         updateRecentFiles(null);
     }
@@ -475,6 +477,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         menu2 = new JMenu();
         layoutGraphItem = new JMenuItem();
         menu3 = new JMenu();
+        fitViewItem = new JMenuItem();
         showBirdViewItem = new JCheckBoxMenuItem();
         expSceneImgItem = new JMenuItem();
         runMenu = new JMenu();
@@ -640,6 +643,10 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             //======== menu3 ========
             {
                 menu3.setText("View");
+
+                //---- fitViewItem ----
+                fitViewItem.setText("Fit View");
+                menu3.add(fitViewItem);
 
                 //---- showBirdViewItem ----
                 showBirdViewItem.setText("Show Birdview");
@@ -823,6 +830,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenu menu2;
     private JMenuItem layoutGraphItem;
     private JMenu menu3;
+    private JMenuItem fitViewItem;
     private JCheckBoxMenuItem showBirdViewItem;
     private JMenuItem expSceneImgItem;
     private JMenu runMenu;
@@ -894,6 +902,22 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         gui.setVisible(true);
     }
 
+
+    private class TestAction extends AbstractAction {
+
+        private TestAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
+            putValue(NAME, "text");
+            putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_MASK));
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            // TODO add your code here
+        }
+    }
 
     private class ExtViewAction extends AbstractAction {
 
