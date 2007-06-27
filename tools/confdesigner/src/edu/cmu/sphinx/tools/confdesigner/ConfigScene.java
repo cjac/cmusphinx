@@ -42,6 +42,8 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /** @author David Kaspar */
 public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
@@ -213,10 +215,43 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
     }
 
 
-    public void createLabel(String labelText, Point location) {
-        LabelWidget labelWidget = new LabelWidget(this, labelText);
-        backgroundLayer.addChild(labelWidget);
+    public void addBckndLabel(String labelText, Point location, Dimension d) {
+        LabelWidget label = new LabelWidget(this, "Drag border to resize me. \nDrag inner area to move me. \nDouble click inner areato rename me");
+        label.setOpaque(true);
+        label.setBackground(new Color(255, 250, 210));
+        label.setCheckClipping(true);
+        label.setAlignment(LabelWidget.Alignment.LEFT);
+        label.setVerticalAlignment(LabelWidget.VerticalAlignment.TOP);
+        label.setPreferredLocation(location);
+        label.setPreferredSize(d);
+        label.getActions().addAction(ActionFactory.createResizeAction());
+        label.getActions().addAction(moveAction);
+        label.getActions().addAction(inplaceEditAction);
+        label.setBorder(org.netbeans.api.visual.border.BorderFactory.createImageBorder(new Insets(5, 5, 5, 5), Utilities.loadImage("test/resources/shadow_normal.png"))); // NOI18N
+        label.getActions().addAction(ActionFactory.createPopupMenuAction(new BackLabelPopUpProvider(label)));
+
+        backgroundLayer.addChild(label);
+
         validate();
+    }
+
+
+    public void removeBckndLabel(Widget bcndLabelWidget) {
+        assert bcndLabelWidget != null && backgroundLayer.getChildren().contains(bcndLabelWidget);
+
+        backgroundLayer.removeChild(bcndLabelWidget);
+        validate();
+    }
+
+
+    public List<LabelWidget> getBckndLabels() {
+        List<LabelWidget> bckndLabels = new ArrayList<LabelWidget>();
+        for (Widget widget : backgroundLayer.getChildren()) {
+            if (widget instanceof LabelWidget)
+                bckndLabels.add((LabelWidget) widget);
+        }
+
+        return bckndLabels;
     }
 
 

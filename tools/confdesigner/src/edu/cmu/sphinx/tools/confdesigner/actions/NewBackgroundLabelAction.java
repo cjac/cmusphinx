@@ -9,7 +9,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 
 /**
- * DOCUMENT ME!
+ * Creates a new resizable background label area within the current screen.
  *
  * @author Holger Brandl
  */
@@ -40,12 +40,7 @@ public class NewBackgroundLabelAction extends AbstractAction {
     public void actionPerformed(ActionEvent e) {
         // create a new background node
 
-        System.out.println("" + e);
-
         assert lastLocation != null;
-
-        scene.createLabel("Unnamed", lastLocation);
-
-//        scene.createBackgroundNode()
+        scene.addBckndLabel("Unnamed", lastLocation, null);
     }
 }
