@@ -12,6 +12,7 @@ import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform;
 import edu.cmu.sphinx.frontend.util.WavWriter;
 import edu.cmu.sphinx.tools.confdesigner.actions.ExportImageAction;
 import edu.cmu.sphinx.tools.confdesigner.actions.FitViewAction;
+import edu.cmu.sphinx.tools.confdesigner.actions.UrlAction;
 import edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector;
 import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
@@ -227,6 +228,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
         expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
         fitViewItem.setAction(new FitViewAction(sesMan));
+        helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
 
         updateRecentFiles(null);
     }
@@ -338,10 +340,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
     private void aboutItemActionPerformed() {
         JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 1+", "About", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-
-    private void helpItemActionPerformed() {
     }
 
 
@@ -680,11 +678,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 //---- helpItem ----
                 helpItem.setText("Help");
                 helpItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
-                helpItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        helpItemActionPerformed();
-                    }
-                });
                 menu4.add(helpItem);
 
                 //---- aboutItem ----
