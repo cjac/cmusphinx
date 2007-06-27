@@ -16,6 +16,10 @@
        <string>title</string> 
        <string>ConfDesigner</string> 
       </void> 
+      <void method="setProperty"> 
+       <string>$locationPolicy</string> 
+       <int>0</int> 
+      </void> 
       <void method="add"> 
        <object class="com.jformdesigner.model.FormContainer"> 
         <string>javax.swing.JSplitPane</string> 
@@ -814,22 +818,10 @@
             <string>javax.swing.JMenuItem</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Export View Image</string> 
-            </void> 
-            <void property="name"> 
-             <string>menuItem1</string> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JMenuItem</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
              <string>Export Scene Image</string> 
             </void> 
             <void property="name"> 
-             <string>menuItem2</string> 
+             <string>expSceneImgItem</string> 
             </void> 
            </object> 
           </void> 
@@ -991,6 +983,38 @@
        <object class="java.awt.Dimension"> 
         <int>520</int> 
         <int>555</int> 
+       </object> 
+      </void> 
+     </object> 
+    </void> 
+    <void method="add"> 
+     <object class="com.jformdesigner.model.FormNonVisual"> 
+      <string>javax.swing.AbstractAction</string> 
+      <void method="setProperty"> 
+       <string>$action.Name</string> 
+       <string>Export View Image</string> 
+      </void> 
+      <void method="setProperty"> 
+       <string>$action.ShortDescription</string> 
+       <string>Export</string> 
+      </void> 
+      <void method="auxiliary"> 
+       <void method="setProperty"> 
+        <string>JavaCodeGenerator.className</string> 
+        <string>ExtViewAction</string> 
+       </void> 
+      </void> 
+      <void property="name"> 
+       <string>expViewAction</string> 
+      </void> 
+     </object> 
+     <object class="com.jformdesigner.model.FormLayoutConstraints"> 
+      <null/> 
+      <void method="setProperty"> 
+       <string>location</string> 
+       <object class="java.awt.Point"> 
+        <int>0</int> 
+        <int>580</int> 
        </object> 
       </void> 
      </object> 

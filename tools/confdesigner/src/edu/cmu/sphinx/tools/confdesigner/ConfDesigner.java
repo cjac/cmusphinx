@@ -10,6 +10,7 @@ import edu.cmu.sphinx.decoder.search.SimpleBreadthFirstSearchManager;
 import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform;
 import edu.cmu.sphinx.frontend.util.WavWriter;
+import edu.cmu.sphinx.tools.confdesigner.actions.ExportImageAction;
 import edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector;
 import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
@@ -39,7 +40,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     JTabbedPane tabPane;
     private List<File> recentFiles = new ArrayList<File>();
     private ActionListener recentFileListener;
-
 
     private static Preferences prefs = Preferences.userNodeForPackage(ConfDesigner.class);
 
@@ -223,6 +223,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         SceneContext initalSceneContext = new SceneContext(null);
         sesMan.registerSceneContext(initalSceneContext);
         sesMan.setActiveScene(initalSceneContext);
+
+        expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
 
         updateRecentFiles(null);
     }
@@ -474,8 +476,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         layoutGraphItem = new JMenuItem();
         menu3 = new JMenu();
         showBirdViewItem = new JCheckBoxMenuItem();
-        menuItem1 = new JMenuItem();
-        menuItem2 = new JMenuItem();
+        expSceneImgItem = new JMenuItem();
         runMenu = new JMenu();
         menu4 = new JMenu();
         helpItem = new JMenuItem();
@@ -651,13 +652,9 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 menu3.add(showBirdViewItem);
                 menu3.addSeparator();
 
-                //---- menuItem1 ----
-                menuItem1.setText("Export View Image");
-                menu3.add(menuItem1);
-
-                //---- menuItem2 ----
-                menuItem2.setText("Export Scene Image");
-                menu3.add(menuItem2);
+                //---- expSceneImgItem ----
+                expSceneImgItem.setText("Export Scene Image");
+                menu3.add(expSceneImgItem);
             }
             menuBar1.add(menu3);
 
@@ -827,8 +824,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenuItem layoutGraphItem;
     private JMenu menu3;
     private JCheckBoxMenuItem showBirdViewItem;
-    private JMenuItem menuItem1;
-    private JMenuItem menuItem2;
+    private JMenuItem expSceneImgItem;
     private JMenu runMenu;
     private JMenu menu4;
     private JMenuItem helpItem;
@@ -896,5 +892,22 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         gui.setBounds(getPrefs().getInt("mainwin.xpos", 100), getPrefs().getInt("mainwin.ypos", 100), getPrefs().getInt("mainwin.width", 900), getPrefs().getInt("mainwin.height", 700));
 
         gui.setVisible(true);
+    }
+
+
+    private class ExtViewAction extends AbstractAction {
+
+        private ExtViewAction() {
+            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
+            // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
+            putValue(NAME, "Export View Image");
+            putValue(SHORT_DESCRIPTION, "Export");
+            // JFormDesigner - End of action initialization  //GEN-END:initComponents
+        }
+
+
+        public void actionPerformed(ActionEvent e) {
+            // TODO add your code here
+        }
     }
 }
