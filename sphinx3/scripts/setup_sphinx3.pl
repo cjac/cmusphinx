@@ -65,7 +65,7 @@ $SPHINX_DECODER_DIR = $0;
 $SPHINX_DECODER_DIR =~ s/^(.*)[\/\\]scripts[\\\/].*$/$1/i;
 
 # Default location for sphinx_train.cfg
-$SPHINX_TRAIN_CFG = "./etc/sphinx_train.cfg";
+$SPHINX_TRAIN_CFG = '$DEC_CFG_BASE_DIR/etc/sphinx_train.cfg';
 
 # Set some defaults
 my $language_model;
