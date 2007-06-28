@@ -26,7 +26,7 @@ public class ConnectUtils {
         ConfPin sourcePin = (ConfPin) scene.findObject(sourceWidget);
         ConfPin targetPin = (ConfPin) scene.findObject(targetWidget);
 
-        if (!sourcePin.getPropName().equals(ConfPin.THIS_NAME))
+        if (!sourcePin.getPropName().equals(ConfPin.THIS_NAME) && targetPin.getPropName().equals(ConfPin.THIS_NAME))
             return ConnectorState.REJECT;
 
         Class<? extends Configurable> sourceType = sourcePin.getType();
@@ -35,7 +35,7 @@ public class ConnectUtils {
         if (ConfigurationManagerUtils.isDerivedClass(sourceType, targetType)) {
             Collection<ConfEdge> allEdges = scene.getEdges();
             for (ConfEdge edge : allEdges) {
-                if (scene.getEdgeTarget(edge).equals(targetPin)) {
+                if (scene.getEdgeTarget(edge).equals(targetPin) && scene.getEdgeTarget(edge) != targetPin) {
                     System.out.println("edge " + edge);
                     return ConnectorState.REJECT;
                 }

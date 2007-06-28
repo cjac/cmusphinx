@@ -11,6 +11,8 @@ import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
+import java.util.List;
+
 
 /**
  * DOCUMENT ME!
@@ -69,7 +71,7 @@ public class GraphReconnectProvider implements ReconnectProvider {
         if (sourceWidget == targetWidget)
             return ConnectorState.ACCEPT;
 //
-        if (replacementWidget instanceof ConfNodeWidget || replacementWidget instanceof ConfigScene || replacementWidget instanceof LabelWidget)
+        if (replacementWidget instanceof ConfNodeWidget || replacementWidget instanceof ConfigScene || replacementWidget instanceof ConnectionWidget || replacementWidget instanceof LabelWidget)
             return ConnectorState.REJECT;
 
         Object object = scene.findObject(replacementWidget);
@@ -92,32 +94,45 @@ public class GraphReconnectProvider implements ReconnectProvider {
 
 
     public void reconnect(ConnectionWidget connectionWidget, Widget replacementWidget, boolean reconnectingSource) {
+
+        PortWidget targetPort = (PortWidget) connectionWidget.getTargetAnchor().getRelatedWidget();
+        PortWidget sourcePort = (PortWidget) connectionWidget.getSourceAnchor().getRelatedWidget();
+
+        ConfNodeWidget targetNodeWidget = (ConfNodeWidget) targetPort.getParentWidget();
+        ConfNodeWidget sourceNodeWidget = (ConfNodeWidget) sourcePort.getParentWidget();
+
+        ConfNode targetNode = (ConfNode) scene.findObject(targetNodeWidget);
+        ConfNode sourceNode = (ConfNode) scene.findObject(sourceNodeWidget);
+
+
         if (replacementWidget == null)
             scene.removeEdge(edge);
         else if (reconnectingSource) {
-            System.out.println("replacing source widget; THIS IS NOT REFLECTED IN THE CM-MODEL YET");
             scene.setEdgeSource(edge, replacementNode);
+            PropertySheet targetPS = targetNode.getPropSheet();
+            String newSourceName = ((ConfNode) scene.findObject(replacementWidget.getParentWidget())).getInstanceName();
 
+            ConfPin targetPin = (ConfPin) scene.findObject(targetPort);
+            if (targetPin.isListPin()) {
+                List<String> compList = (List<String>) targetPS.getRawNoReplacement(targetPin.getPropName());
+
+                compList.set(targetPin.getListPosition() - 1, newSourceName);
+            } else {
+                try {
+                    targetPS.setComponent(targetPin.getPropName(), newSourceName, null);
+                } catch (PropertyException e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             ConfPin listPin = edge.getTarget();
             if (listPin.isListPin())
                 return;
 
-            // remove the old property
-            PortWidget targetPort = (PortWidget) connectionWidget.getTargetAnchor().getRelatedWidget();
-            PortWidget sourcePort = (PortWidget) connectionWidget.getSourceAnchor().getRelatedWidget();
-
-            ConfNodeWidget targetNodeWidget = (ConfNodeWidget) targetPort.getParentWidget();
-            ConfNodeWidget sourceNodeWidget = (ConfNodeWidget) sourcePort.getParentWidget();
-
-            ConfNode targetNode = (ConfNode) scene.findObject(targetNodeWidget);
-            ConfNode sourceNode = (ConfNode) scene.findObject(sourceNodeWidget);
-
             scene.setEdgeTarget(edge, replacementNode);
             ConfNode newTargetNode = (ConfNode) scene.findObject(replacementWidget.getParentWidget());
             String newPropName = ((ConfPin) scene.findObject((PortWidget) replacementWidget)).getPropName();
             PropertySheet newTargetPS = newTargetNode.getPropSheet();
-
 
             PropertySheet ps = targetNode.getPropSheet();
 
