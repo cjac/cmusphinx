@@ -1,17 +1,20 @@
 package edu.cmu.sphinx.tools.confdesigner.actionproviders;
 
 import edu.cmu.sphinx.tools.confdesigner.ConfEdge;
+import edu.cmu.sphinx.tools.confdesigner.ConfNode;
 import edu.cmu.sphinx.tools.confdesigner.ConfPin;
 import edu.cmu.sphinx.tools.confdesigner.ConfigScene;
-import edu.cmu.sphinx.tools.confdesigner.ConfNode;
-import edu.cmu.sphinx.util.props.*;
+import edu.cmu.sphinx.util.props.ConfigurationManager;
+import edu.cmu.sphinx.util.props.PropertyException;
+import edu.cmu.sphinx.util.props.PropertySheet;
 import org.netbeans.api.visual.action.ConnectProvider;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * DOCUMENT ME !
@@ -43,33 +46,7 @@ public class GraphConnectProvider implements ConnectProvider {
 
 
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget) {
-        Object object = scene.findObject(targetWidget);
-
-        if (!(object instanceof ConfPin))
-            return ConnectorState.REJECT_AND_STOP;
-
-        ConfPin sourcePin = (ConfPin) scene.findObject(sourceWidget);
-        ConfPin targetPin = (ConfPin) scene.findObject(targetWidget);
-
-        if (!sourcePin.getPropName().equals(ConfPin.THIS_NAME))
-            return ConnectorState.REJECT;
-
-        Class<? extends Configurable> sourceType = sourcePin.getType();
-        Class<? extends Configurable> targetType = targetPin.getType();
-
-        if (ConfigurationManagerUtils.isDerivedClass(sourceType, targetType)) {
-            Collection<ConfEdge> allEdges = scene.getEdges();
-            for (ConfEdge edge : allEdges) {
-                if (scene.getEdgeTarget(edge).equals(targetPin))
-                    return ConnectorState.REJECT;
-            }
-
-            return ConnectorState.ACCEPT;
-        }
-
-//        System.out.println("sourcet " + sourceType + " targett " + targetType);
-
-        return ConnectorState.REJECT;
+        return ConnectUtils.isTargetWidget(scene, sourceWidget, targetWidget);
     }
 
 
@@ -101,7 +78,7 @@ public class GraphConnectProvider implements ConnectProvider {
                 java.util.List<String> compList = new ArrayList<String>();
                 for (ConfPin pin : targetNode.getListPins(listPin.getPropName())) {
                     Collection<ConfEdge> confEdges = scene.findPinEdges(pin, false, true);
-                    if (!confEdges.isEmpty()){
+                    if (!confEdges.isEmpty()) {
                         compList.add(scene.getPinNode(confEdges.iterator().next().getSource()).getInstanceName());
                     }
                 }
