@@ -196,7 +196,7 @@ sub align_hyp {
 	  "-h \"$hyp\" 2>&1 |")) {
       while (<PIPE>) {
 	print OUT "$_";
-	if (m/\|\s*Sum\/Avg\s*\|\s*(\d+)\s*(\d+).*(\d+\.\d+)\s+(\d+\.\d+)\s*\|/) {
+	if (m/\|\s*Sum\/Avg\s*\|\s*(\d+)\s*(\d+).*\s+(\d+\.\d+)\s+(\d+\.\d+)\s*\|/) {
 	    $sent_total = $1;
 	    $word_total = $2;
 	    $wer = $3;
