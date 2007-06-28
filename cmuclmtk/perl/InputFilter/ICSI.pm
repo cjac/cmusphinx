@@ -149,7 +149,7 @@ sub StartSegment {
 
     $st=$attr{StartTime};
     $et=$attr{EndTime};
-    $self->{Header} = "$self->{MeetingID}_${chan}_${sid}_${micid}_${st}_${et}";
+    $self->{Header} = "$self->{MeetingID}/${chan}_${sid}_${micid}_${st}_${et}";
     $self->{StartTime} = $st;
     $self->{EndTime} = $et;
     $self->{ChannelID} = $chan;
@@ -227,7 +227,7 @@ sub EndSegment {
 	my @words = $self->text_norm($self->{TextSoFar});
 	# And output an utterance
 	$self->output_sentence(\@words, $self->{Header},
-			       "$self->{MeetingID}_$self->{ChannelID}",
+			       "$self->{MeetingID}/$self->{ChannelID}",
 			       $self->{StartTime}, $self->{EndTime})
 	    if @words;
     }
@@ -301,10 +301,12 @@ sub NormalizeWord{
     my ($self, $word) =@_;
     my $opts = $self->{opts};
     if($word eq "<sil>" || $word =~ /\+\+/){
-	return "" unless $self->{fillers};
+	return "" unless $opts->{fillers};
     }
-    #Capitalize letter.
-    $word = uc $word;
+    else {
+	#Capitalize letter.
+	$word = uc $word;
+    }
     #Get rid of comma, footstop, question mark and exclamation point.
     #Also '{' and '}'
     $word =~ s/,//g;

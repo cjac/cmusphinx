@@ -50,6 +50,7 @@ GetOptions(\%opts,
 	   "help|h",
 	   "inputfilter|i=s",
 	   "fillermap|f=s",
+	   "fillers",
 	   "replacelist|r=s",
 	   "filesfrom=s",
 	   "sentencebreaks=s",
@@ -176,6 +177,10 @@ Specify the frame rate to be used for the acoustic model control file.
 The sensible default is 100, which is okay for 8kHz and 16kHz data,
 but you should make sure this matches your feature extraction
 parameters.
+
+=item B<--fillers>
+
+Include noise words in the output transcription (for acoustic modeling).
 
 =item B<--fillermap> | B<-f> I<FILLERMAP>
 

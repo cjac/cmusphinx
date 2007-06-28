@@ -430,7 +430,8 @@ sub output_sentence {
 	}
 
 	# Split compound words if requested
-	if ($self->{opts}{split}) {
+	# Don't split filler words!!!
+	if ($self->{opts}{split} and $word !~ /^\+\+.*\+\+$/) {
 	    @parts = split(/[-_ ]/, $word);
 
 	    # Do some monkey business to fix stray 'S after

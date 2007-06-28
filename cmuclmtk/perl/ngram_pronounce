@@ -137,6 +137,7 @@ if (defined($opts{indict})) {
 # Expand all COMPOUND_WORDS in %unigram, because sphinx3_align wants
 # the constituent parts to exist for some reason
 foreach (sort keys %unigram) {
+    next if /^\+\+.*\+\+$/; # Don't do this with filler words!
     my @parts = split /_/;
     foreach my $part (@parts) {
 	unless (exists($unigram{$part})) {
