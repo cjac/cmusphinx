@@ -87,7 +87,7 @@ LINK32=xilink6.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=..\..\..\..\src\programs\main_sphinx3_livedecode.c
+SOURCE=..\..\..\..\src\programs\main_livedecode.c
 # End Source File
 # End Group
 # Begin Group "Header Files"

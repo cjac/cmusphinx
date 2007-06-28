@@ -531,6 +531,42 @@ Package=<4>
 
 ###############################################################################
 
+Project: "sphinx3_livedecode"=.\win32\msdev\programs\livedecode\sphinx3_livedecode.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name libAPI
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libam
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libcommon
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libconfidence
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libdict
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libep
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name liblm
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name libsearch
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "lm_convert"=.\win32\msdev\programs\lm_convert\lm_convert.dsp - Package Owner=<4>
 
 Package=<5>
