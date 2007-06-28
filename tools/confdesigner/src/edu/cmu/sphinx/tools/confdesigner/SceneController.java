@@ -7,13 +7,13 @@ import edu.cmu.sphinx.util.props.*;
 import org.netbeans.api.visual.widget.EventProcessingType;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,6 +44,35 @@ public class SceneController {
     public void setScene(final ConfigScene scene) {
         assert scene != null;
         this.scene = scene;
+
+        JComponent sceneView = scene.getView();
+
+        sceneView.setFocusable(true);
+        sceneView.setEnabled(true);
+        scene.setKeyEventProcessingType(EventProcessingType.ALL_WIDGETS);
+
+        sceneView.addKeyListener(new KeyAdapter() {
+
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
+                    scene.removeSelectedObjects();
+                }
+            }
+        });
+
+//        scene.addObjectSceneListener(new ObjectSceneListenerAdapter() {
+//
+//            public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
+//
+//                Set<?> selectedObjects = scene.getSelectedObjects();
+//                // remove all selected nodes
+//                for (Object selectedObject : selectedObjects.toArray()) {
+//                    if (selectedObject instanceof ConfNode) {
+//                        cm.removeConfigurable(((ConfNode) selectedObject).getInstanceName());
+//                    }
+//                }
+//            }
+//        }, ObjectSceneEventType.OBJECT_REMOVED);
     }
 
 
@@ -270,82 +299,6 @@ public class SceneController {
             return;
 
         executorListeners.remove(l);
-    }
-
-
-    public Component getView() {
-        if (scene.getView() != null)
-            return scene.getView();
-
-        JComponent sceneView = scene.getView();
-
-        sceneView.setFocusable(true);
-        sceneView.setEnabled(true);
-        scene.setKeyEventProcessingType(EventProcessingType.ALL_WIDGETS);
-
-        sceneView.addKeyListener(new KeyAdapter() {
-
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_DELETE) {
-                    List selObjectList = new ArrayList(scene.getSelectedObjects());
-                    Set selectedObjects = scene.getSelectedObjects();
-                    List selEdges = new ArrayList();
-
-                    // select all edges of selected nodes
-                    for (Object selectedObject : selObjectList) {
-
-                        if (selectedObject instanceof ConfNode) {
-                            ConfNode remNode = (ConfNode) selectedObject;
-                            for (ConfPin pin : scene.getNodePins(remNode)) {
-                                Collection<ConfEdge> pinEdges = scene.findPinEdges(pin, true, true);
-
-                                for (ConfEdge pinEdge : pinEdges) {
-                                    selEdges.add(pinEdge);
-                                }
-                            }
-                        }
-                    }
-
-                    selObjectList.addAll(selEdges);
-                    scene.setSelectedObjects(new HashSet<Object>(selObjectList));
-
-                    // remove all selected edges
-                    selectedObjects = scene.getSelectedObjects();
-                    for (Object selectedObject : selectedObjects.toArray()) {
-                        if (selectedObject instanceof ConfEdge) {
-                            ConfEdge edge = (ConfEdge) selectedObject;
-
-                            ConfPin pin = edge.getTarget();
-                            PropertySheet ps = scene.getPinNode(pin).getPropSheet();
-                            String propName = pin.getPropName();
-                            try {
-
-                                if (!pin.isListPin()) {
-                                    ps.setComponent(propName, null, null);
-
-                                } else {
-                                    List<String> compList = (List<String>) ps.getRaw(pin.getPropName());
-                                    compList.remove(scene.getPinNode(edge.getSource()).getInstanceName());
-
-                                    ps.setComponentList(propName, compList, null);
-                                }
-                            } catch (PropertyException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
-
-                    // remove all selected nodes
-                    for (Object selectedObject : selectedObjects.toArray()) {
-                        if (selectedObject instanceof ConfNode) {
-                            cm.removeConfigurable(((ConfNode) selectedObject).getInstanceName());
-                        }
-                    }
-                }
-            }
-        });
-
-        return sceneView;
     }
 
 

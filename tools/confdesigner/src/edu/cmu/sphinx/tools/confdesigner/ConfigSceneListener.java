@@ -31,7 +31,7 @@ class ConfigSceneListener extends ObjectSceneListenerAdapter {
                 propPanel.rebuildPanel(((ConfNode) o).getPropSheet());
             }
 
-            sceneController.getView().requestFocusInWindow();
+            sceneController.getScene().getView().requestFocusInWindow();
         }
     }
 

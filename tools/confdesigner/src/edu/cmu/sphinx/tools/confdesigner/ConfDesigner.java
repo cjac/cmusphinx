@@ -139,7 +139,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 SceneController sceneController = sc.getSceneController();
                 ConfigScene scene = sceneController.getScene();
 
-                sceneController.getView().requestFocusInWindow();
+                sceneController.getScene().getView().requestFocusInWindow();
 
                 birdViewPanel.removeAll();
                 birdViewPanel.add(scene.createSatelliteView());
@@ -166,7 +166,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
             public void addedScene(SceneContext sc) {
                 JScrollPane scrollPane = new JScrollPane();
-                scrollPane.setViewportView(sc.getSceneController().getView());
+                scrollPane.setViewportView(sc.getSceneController().getScene().getView());
 
                 projectsTabs.put(sc, scrollPane);
 

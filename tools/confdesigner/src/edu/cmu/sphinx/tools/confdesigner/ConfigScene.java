@@ -19,6 +19,10 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
 import edu.cmu.sphinx.tools.confdesigner.actionproviders.*;
+import edu.cmu.sphinx.util.props.ConfigurationManager;
+import edu.cmu.sphinx.util.props.ConfigurationManagerUtils;
+import edu.cmu.sphinx.util.props.PropertyException;
+import edu.cmu.sphinx.util.props.PropertySheet;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -42,7 +46,7 @@ import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 
 /** @author David Kaspar */
@@ -59,6 +63,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 
     private WidgetAction moveAction = ActionFactory.createMoveAction();
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
+    private WidgetAction nodePopUpAction = ActionFactory.createPopupMenuAction(new NodePopUpProvider());
     private WidgetAction connectAction = ActionFactory.createExtendedConnectAction(interractionLayer, connectProvider);
     private WidgetAction reconnectAction = ActionFactory.createReconnectAction(new GraphReconnectProvider(this));
     private WidgetAction moveControlPointAction = ActionFactory.createFreeMoveControlPointAction();
@@ -116,7 +121,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         widget.getActions().addAction(selectAction);
         widget.getActions().addAction(moveAction);
         widget.getActions().addAction(createObjectHoverAction());
-        widget.getActions().addAction(popupMenuAction);
+        widget.getActions().addAction(nodePopUpAction);
 //        widget.getActions().addAction(connectAction);
 
 
@@ -215,10 +220,11 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
     }
 
 
-    public void addBckndLabel(String labelText, Point location, Dimension d) {
+    public void addBckndLabel(String labelText, Point location, Dimension d, Color c) {
         LabelWidget label = new LabelWidget(this, "Drag border to resize me. \nDrag inner area to move me. \nDouble click inner areato rename me");
         label.setOpaque(true);
-        label.setBackground(new Color(255, 250, 210));
+        Color labelColor = c == null ? new Color(255, 250, 210) : c;
+        label.setBackground(c);
         label.setCheckClipping(true);
         label.setAlignment(LabelWidget.Alignment.LEFT);
         label.setVerticalAlignment(LabelWidget.VerticalAlignment.TOP);
@@ -252,6 +258,70 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
         }
 
         return bckndLabels;
+    }
+
+
+    public void removeSelectedObjects() {
+        List selObjectList = new ArrayList(getSelectedObjects());
+        Set selectedObjects = getSelectedObjects();
+        List selEdges = new ArrayList();
+
+        // select all edges of selected nodes
+        for (Object selectedObject : selObjectList) {
+
+            if (selectedObject instanceof ConfNode) {
+                ConfNode remNode = (ConfNode) selectedObject;
+                for (ConfPin pin : getNodePins(remNode)) {
+                    Collection<ConfEdge> pinEdges = findPinEdges(pin, true, true);
+
+                    for (ConfEdge pinEdge : pinEdges) {
+                        selEdges.add(pinEdge);
+                    }
+                }
+            }
+        }
+
+        selObjectList.addAll(selEdges);
+        setSelectedObjects(new HashSet<Object>(selObjectList));
+
+        // remove all selected edges
+        selectedObjects = getSelectedObjects();
+        for (Object selectedObject : selectedObjects.toArray()) {
+            if (selectedObject instanceof ConfEdge) {
+                ConfEdge edge = (ConfEdge) selectedObject;
+
+                ConfPin pin = edge.getTarget();
+                PropertySheet ps = getPinNode(pin).getPropSheet();
+                String propName = pin.getPropName();
+                try {
+
+                    if (!pin.isListPin()) {
+                        ps.setComponent(propName, null, null);
+
+                    } else {
+                        List<String> compList = (List<String>) ps.getRaw(pin.getPropName());
+                        compList.remove(getPinNode(edge.getSource()).getInstanceName());
+
+                        ps.setComponentList(propName, compList, null);
+                    }
+                } catch (PropertyException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+
+        }
+        // remove all selected nodes
+        for (Object selectedObject : selectedObjects.toArray()) {
+            if (selectedObject instanceof ConfNode) {
+                ConfNode confNode = (ConfNode) selectedObject;
+                ConfigurationManager cm = ConfigurationManagerUtils.getPropertyManager(confNode.getPropSheet());
+                cm.removeConfigurable(((ConfNode) selectedObject).getInstanceName());
+
+//                removeNode((ConfNode) selectedObject);
+//                        cm.removeConfigurable(((ConfNode) selectedObject).getInstanceName());
+            }
+        }
     }
 
 

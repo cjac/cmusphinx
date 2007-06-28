@@ -6,6 +6,8 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,6 +34,8 @@ public class BackLabelPopUpProvider implements PopupMenuProvider {
         JPopupMenu menu = new JPopupMenu("test");
 
         ActionListener al = new ActionListener() {
+            JColorChooser colorChooser;
+
 
             public void actionPerformed(ActionEvent e) {
                 JMenuItem sourceItem = (JMenuItem) e.getSource();
@@ -39,7 +43,18 @@ public class BackLabelPopUpProvider implements PopupMenuProvider {
                 if (sourceItem.getText().equals(REMOVE_LABEL)) {
                     ((ConfigScene) parent.getScene()).removeBckndLabel(parent);
                 } else if (sourceItem.getText().equals(SET_COLOR_LABEL)) {
-                    //todo implement me
+                    colorChooser = new JColorChooser();
+                    colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
+
+                        public void stateChanged(ChangeEvent e) {
+                            Color newLabelColor = colorChooser.getColor();
+                            widget.setBackground(newLabelColor);
+                        }
+                    });
+
+                    JDialog dialog = new JDialog(new Frame());
+                    dialog.getContentPane().add(colorChooser);
+                    dialog.setVisible(true);
                 }
             }
         };
@@ -48,13 +63,11 @@ public class BackLabelPopUpProvider implements PopupMenuProvider {
         menu.add(item);
 
         item = new JMenuItem(SET_COLOR_LABEL);
-        item.setEnabled(false);
         item.addActionListener(al);
         menu.add(item);
 
         return menu;
     }
-
 }
 
 

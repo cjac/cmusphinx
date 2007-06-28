@@ -25,6 +25,7 @@ public class SceneSerializer {
 
     private static final String NODE_LOCATIONS = "nodeLocations";
     private static final String BACK_LABELS = "backLabels";
+    private static final String BACK_LABELS_COLORS = "backLabelsColors";
 
 
     public static void saveLayout(ConfigScene scene, File file) {
@@ -42,6 +43,7 @@ public class SceneSerializer {
         sceneProps.put(NODE_LOCATIONS, nodeLocations);
 
         HashMap<String, Rectangle> bckndLabels = new HashMap<String, Rectangle>();
+        HashMap<String, Color> bckndLabelColors = new HashMap<String, Color>();
         for (LabelWidget labelWidget : scene.getBckndLabels()) {
             String labelText = labelWidget.getLabel();
 
@@ -51,9 +53,11 @@ public class SceneSerializer {
             Rectangle bounds = labelWidget.getBounds();
             Point location = labelWidget.getPreferredLocation();
             bckndLabels.put(labelText, new Rectangle(location, new Dimension((int) bounds.getWidth(), (int) bounds.getHeight())));
+            bckndLabelColors.put(labelText, (Color) labelWidget.getBackground());
         }
 
         sceneProps.put(BACK_LABELS, bckndLabels);
+        sceneProps.put(BACK_LABELS_COLORS, bckndLabelColors);
 
         XStream xStream = new XStream(new DomDriver());
         try {
@@ -81,14 +85,15 @@ public class SceneSerializer {
             }
 
             HashMap<String, Rectangle> bckndLabels = (HashMap<String, Rectangle>) sceneProps.get(BACK_LABELS);
-            for (String backLabel : bckndLabels.keySet()) {
-                Rectangle bounds = bckndLabels.get(backLabel);
-                scene.addBckndLabel(backLabel, bounds.getLocation(), new Dimension((int) bounds.getWidth(), (int) bounds.getHeight()));
+            HashMap<String, Color> bckndLabelColors = (HashMap<String, Color>) sceneProps.get(BACK_LABELS_COLORS);
+            if (bckndLabels != null) {
+                for (String backLabel : bckndLabels.keySet()) {
+                    Rectangle bounds = bckndLabels.get(backLabel);
+                    Color color = bckndLabelColors.get(backLabel);
+                    scene.addBckndLabel(backLabel, bounds.getLocation(), new Dimension((int) bounds.getWidth(), (int) bounds.getHeight()), color);
+                }
             }
 
-
-            scene.revalidate();
-            scene.validate();
             scene.revalidate();
             scene.validate();
         } catch (FileNotFoundException e) {

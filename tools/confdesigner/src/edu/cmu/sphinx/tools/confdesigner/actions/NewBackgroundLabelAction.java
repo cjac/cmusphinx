@@ -41,6 +41,6 @@ public class NewBackgroundLabelAction extends AbstractAction {
         // create a new background node
 
         assert lastLocation != null;
-        scene.addBckndLabel("Unnamed", lastLocation, null);
+        scene.addBckndLabel("Unnamed", lastLocation, null, null);
     }
 }

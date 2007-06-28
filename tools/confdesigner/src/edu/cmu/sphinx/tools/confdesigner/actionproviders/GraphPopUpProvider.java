@@ -33,6 +33,7 @@ public class GraphPopUpProvider implements PopupMenuProvider {
 
             }
         };
+
         JMenuItem item = new JMenuItem("expand defaults");
         item.addActionListener(al);
         menu.add(item);
