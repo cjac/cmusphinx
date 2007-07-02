@@ -339,7 +339,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     private void aboutItemActionPerformed() {
-        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 1+", "About", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 2", "About", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
