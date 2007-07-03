@@ -88,7 +88,7 @@ my $result = GetOptions('help|h' => \$help,
 			'wbeam=f' => \$word_beam,
 			'align=s' => \$align);
 
-if (($result == 0) or (defined($help)) or (!defined($DBNAME)) or (!defined $language_model)) {
+if (($result == 0) or (defined($help)) or (!defined($DBNAME))) {
   pod2usage( -verbose => 1 );
   exit(-1);
 }
@@ -196,11 +196,15 @@ chmod 0755, @dirlist;
 
 # Finally, we generate the config file for this specific task
 print "Generating sphinx3 specific scripts and config file\n";
-open (CFGIN, "$script_in_dir/sphinx3.cfg") or 
-  die "Can't open $script_in_dir/sphinx3.cfg\n";
+# Look for a template in the target directory
+unless(open (CFGIN, "<etc/sphinx3.template")) {
+    open (CFGIN, "<$script_in_dir/sphinx3.cfg") or
+	die "Can't open etc/sphinx3.template or $script_in_dir/sphinx3.cfg\n";
+}
 open (CFGOUT, ">etc/sphinx_decode.cfg") or die "Can't open etc/sphinx_decode.cfg\n";
 
 $align = 'builtin' unless (-e $align);
+$language_model = "$DBNAME.lm.DMP" unless defined($language_model);
 
 while (<CFGIN>) {
   chomp;
