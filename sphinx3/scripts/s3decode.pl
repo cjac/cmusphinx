@@ -96,6 +96,8 @@ close INPUT;
 $ctloffset = int ( ( $nlines * ( $part - 1 ) ) / $npart );
 $ctlcount = int ( ( $nlines * $part ) / $npart ) - $ctloffset;
 
+$ST::DEC_CFG_WORDPENALTY = 0.2 unless defined($ST::DEC_CFG_WORDPENALTY);
+
 Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) ", 'result');
 my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -mdef => $moddeffn,
@@ -111,7 +113,7 @@ my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -dict => $ST::DEC_CFG_DICTIONARY,
 		 -fdict => $ST::DEC_CFG_FILLERDICT,
 		 -lm => $ST::DEC_CFG_LANGUAGEMODEL,
-		 -wip => 0.2,
+		 -wip => $ST::DEC_CFG_WORDPENALTY,
 		 -ctl => $ST::DEC_CFG_LISTOFFILES,
 		 -ctloffset => $ctloffset,
 		 -ctlcount => $ctlcount,
