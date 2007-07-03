@@ -206,7 +206,7 @@ sub align_hyp {
     }
     close(OUT);
     close(PIPE);
-    Log(sprintf("SENTENCE ERROR: %.3f%% (%d/%d)   WORD ERROR RATE: %.3f%% (%d/%d)",
+    Log(sprintf("SENTENCE ERROR: %.1f%% (%d/%d)   WORD ERROR RATE: %.1f%% (%d/%d)",
 		$ser, $sent_total * $ser / 100, $sent_total,
 		$wer, $word_total * $wer / 100, $word_total), 'result');
     HTML_Print("<p class='result'>", FormatURL("$outfile", "Log File"), "</p>");
