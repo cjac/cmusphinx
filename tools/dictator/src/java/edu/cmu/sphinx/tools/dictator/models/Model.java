@@ -28,17 +28,20 @@ public class Model implements AcousticModel, Configurable {
     /**
      * The property that defines the component used to load the acoustic models
      */
+    @S4Component(type = Loader.class)
     public final static String PROP_LOADER = "loader";
 
     /**
      * The property that defines the unit manager
      */
+    @S4Component(type = UnitManager.class)
     public final static String PROP_UNIT_MANAGER = "unitManager";
 
     /**
      * Controls whether we generate composites or CI units when no
      * context is given during a lookup.
      */
+    @S4Boolean(defaultValue = true)
     public final static String PROP_USE_COMPOSITES = "useComposites";
 
     /**
@@ -72,25 +75,12 @@ public class Model implements AcousticModel, Configurable {
 
 
     /* (non-Javadoc)
-     * @see edu.cmu.sphinx.util.props.Configurable#register(java.lang.String, edu.cmu.sphinx.util.props.Registry)
-     */
-    public void register(String name, Registry registry)
-            throws PropertyException {
-        this.name = name;
-        registry.register(PROP_LOADER, PropertyType.COMPONENT);
-        registry.register(PROP_UNIT_MANAGER, PropertyType.COMPONENT);
-        registry.register(PROP_USE_COMPOSITES, PropertyType.BOOLEAN);
-    }
-
-    /* (non-Javadoc)
      * @see edu.cmu.sphinx.util.props.Configurable#newProperties(edu.cmu.sphinx.util.props.PropertySheet)
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
-        loader = (Loader) ps.getComponent(PROP_LOADER, Loader.class);
-        unitManager = (UnitManager) ps.getComponent(PROP_UNIT_MANAGER,
-                UnitManager.class);
-        useComposites =
-                ps.getBoolean(PROP_USE_COMPOSITES, PROP_USE_COMPOSITES_DEFAULT);
+        loader = (Loader) ps.getComponent(PROP_LOADER);
+        unitManager = (UnitManager) ps.getComponent(PROP_UNIT_MANAGER);
+        useComposites = ps.getBoolean(PROP_USE_COMPOSITES);
         logger = ps.getLogger();
     }
 

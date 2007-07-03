@@ -3,10 +3,7 @@ package edu.cmu.sphinx.tools.dictator.models;
 import edu.cmu.sphinx.linguist.acoustic.*;
 import edu.cmu.sphinx.linguist.acoustic.tiedstate.*;
 import edu.cmu.sphinx.util.*;
-import edu.cmu.sphinx.util.props.PropertyException;
-import edu.cmu.sphinx.util.props.PropertySheet;
-import edu.cmu.sphinx.util.props.PropertyType;
-import edu.cmu.sphinx.util.props.Registry;
+import edu.cmu.sphinx.util.props.*;
 
 import java.io.*;
 import java.net.URL;
@@ -31,14 +28,17 @@ import java.util.zip.ZipException;
  * Time: 10:00:47 AM
  */
 public class ModelLoader implements Loader {
+
     /**
      * The log math component for the system.
      */
+    @S4Component(type = LogMath.class)
     public final static String PROP_LOG_MATH = "logMath";
 
     /**
      * The unit manager
      */
+    @S4Component(type = UnitManager.class)
     public final static String PROP_UNIT_MANAGER = "unitManager";
 
     /**
@@ -54,6 +54,7 @@ public class ModelLoader implements Loader {
     /**
      * The name of the models definition file (contains the HMM data)
      */
+    @S4String(mandatory = false)
     public final static String PROP_MODEL = "modelDefinition";
 
     /**
@@ -64,6 +65,7 @@ public class ModelLoader implements Loader {
     /**
      * Subdirectory where the acoustic models can be found
      */
+    @S4String(mandatory = false)
     public final static String PROP_DATA_LOCATION = "dataLocation";
 
     /**
@@ -74,6 +76,7 @@ public class ModelLoader implements Loader {
     /**
      * The SphinxProperty for the name of the acoustic properties file.
      */
+    @S4String(mandatory = false)
     public final static String PROP_PROPERTIES_FILE = "propertiesFile";
 
     /**
@@ -84,6 +87,7 @@ public class ModelLoader implements Loader {
     /**
      * The SphinxProperty for the length of feature vectors.
      */
+    @S4Integer(defaultValue = -1)
     public final static String PROP_VECTOR_LENGTH = "vectorLength";
 
     /**
@@ -96,6 +100,7 @@ public class ModelLoader implements Loader {
      * acoustic models is in sparse form, i.e., omitting the zeros of the
      * non-transitioning states.
      */
+    @S4Boolean(defaultValue = true, isNotDefined = true)
     public final static String PROP_SPARSE_FORM = "sparseForm";
 
     /**
@@ -107,6 +112,7 @@ public class ModelLoader implements Loader {
      * The SphinxProperty specifying whether context-dependent units should be
      * used.
      */
+    @S4Boolean(defaultValue = true)
     public final static String PROP_USE_CD_UNITS = "useCDUnits";
 
     /**
@@ -117,6 +123,7 @@ public class ModelLoader implements Loader {
     /**
      * Mixture component score floor.
      */
+    @S4Double(defaultValue = 0.0)
     public final static String PROP_MC_FLOOR = "MixtureComponentScoreFloor";
 
     /**
@@ -127,6 +134,7 @@ public class ModelLoader implements Loader {
     /**
      * Variance floor.
      */
+    @S4Double(defaultValue = 0.0001f)
     public final static String PROP_VARIANCE_FLOOR = "varianceFloor";
 
     /**
@@ -137,6 +145,7 @@ public class ModelLoader implements Loader {
     /**
      * Mixture weight floor.
      */
+    @S4Double(defaultValue = 1e-7f)
     public final static String PROP_MW_FLOOR = "mixtureWeightFloor";
 
     /**
@@ -191,30 +200,6 @@ public class ModelLoader implements Loader {
     private float varianceFloor;
     private boolean useCDUnits;
 
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see edu.cmu.sphinx.util.props.Configurable#register(java.lang.String,
-     *      edu.cmu.sphinx.util.props.Registry)
-     */
-    public void register(String name, Registry registry)
-            throws PropertyException {
-        this.name = name;
-        registry.register(PROP_LOG_MATH, PropertyType.COMPONENT);
-        registry.register(PROP_UNIT_MANAGER, PropertyType.COMPONENT);
-        registry.register(PROP_IS_BINARY, PropertyType.BOOLEAN);
-        registry.register(PROP_SPARSE_FORM, PropertyType.BOOLEAN);
-        registry.register(PROP_VECTOR_LENGTH, PropertyType.INT);
-        registry.register(PROP_MODEL, PropertyType.STRING);
-        registry.register(PROP_DATA_LOCATION, PropertyType.STRING);
-        registry.register(PROP_PROPERTIES_FILE, PropertyType.STRING);
-        registry.register(PROP_MC_FLOOR, PropertyType.FLOAT);
-        registry.register(PROP_MW_FLOOR, PropertyType.FLOAT);
-        registry.register(PROP_VARIANCE_FLOOR, PropertyType.FLOAT);
-        registry.register(PROP_USE_CD_UNITS, PropertyType.BOOLEAN);
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -222,31 +207,35 @@ public class ModelLoader implements Loader {
      */
     public void newProperties(PropertySheet ps) throws PropertyException {
         logger = ps.getLogger();
-        propsFile =
-                ps.getString(PROP_PROPERTIES_FILE, PROP_PROPERTIES_FILE_DEFAULT);
-        logMath =
-                (LogMath) ps.getComponent(PROP_LOG_MATH, LogMath.class);
-        unitManager =
-                (UnitManager) ps.getComponent(PROP_UNIT_MANAGER,
-                        UnitManager.class);
-        binary =
-                ps.getBoolean(PROP_IS_BINARY, getIsBinaryDefault());
-        sparseForm =
-                ps.getBoolean(PROP_SPARSE_FORM, getSparseFormDefault());
-        vectorLength =
-                ps.getInt(PROP_VECTOR_LENGTH, getVectorLengthDefault());
-        model =
-                ps.getString(PROP_MODEL, getModelDefault());
-        dataDir =
-                ps.getString(PROP_DATA_LOCATION, getDataLocationDefault()) + "/";
-        distFloor =
-                ps.getFloat(PROP_MC_FLOOR, PROP_MC_FLOOR_DEFAULT);
-        mixtureWeightFloor =
-                ps.getFloat(PROP_MW_FLOOR, PROP_MW_FLOOR_DEFAULT);
-        varianceFloor =
-                ps.getFloat(PROP_VARIANCE_FLOOR, PROP_VARIANCE_FLOOR_DEFAULT);
-        useCDUnits =
-                ps.getBoolean(PROP_USE_CD_UNITS, PROP_USE_CD_UNITS_DEFAULT);
+        propsFile = ps.getString(PROP_PROPERTIES_FILE);
+	if (propsFile == null) {
+	    propsFile = getPropertiesFileDefault();
+	}
+        logMath = (LogMath) ps.getComponent(PROP_LOG_MATH);
+        unitManager = (UnitManager) ps.getComponent(PROP_UNIT_MANAGER);
+
+	Boolean isBinary = ps.getBoolean(PROP_IS_BINARY);
+	binary = (isBinary == null ? getIsBinaryDefault() : isBinary);
+
+        Boolean isSparse = ps.getBoolean(PROP_SPARSE_FORM);
+	sparseForm = (isSparse == null ? getSparseFormDefault() : isSparse);
+
+        vectorLength = ps.getInt(PROP_VECTOR_LENGTH);
+	if (vectorLength < 0) {
+	    vectorLength = getVectorLengthDefault();
+	}
+        model = ps.getString(PROP_MODEL);
+	if (model == null) {
+	    model = getModelDefault();
+	}
+        dataDir = ps.getString(PROP_DATA_LOCATION);
+	if (dataDir == null) {
+	    dataDir = getDataLocationDefault() + "/";
+	}
+        distFloor = ps.getFloat(PROP_MC_FLOOR);
+        mixtureWeightFloor = ps.getFloat(PROP_MW_FLOOR);
+        varianceFloor = ps.getFloat(PROP_VARIANCE_FLOOR);
+        useCDUnits = ps.getBoolean(PROP_USE_CD_UNITS);
     }
 
     private void loadProperties() {
@@ -333,6 +322,21 @@ public class ModelLoader implements Loader {
             return location;
         } else {
             return PROP_DATA_LOCATION_DEFAULT;
+        }
+    }
+
+    /**
+     * Returns the default properties file.
+     *
+     * @return the default properties file
+     */
+    private String getPropertiesFileDefault() {
+        loadProperties();
+        String propFile = (String) properties.get(PROP_PROPERTIES_FILE);
+        if (propFile != null) {
+            return propFile;
+        } else {
+            return PROP_PROPERTIES_FILE_DEFAULT;
         }
     }
 
