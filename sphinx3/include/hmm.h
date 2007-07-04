@@ -167,8 +167,11 @@ typedef struct hmm_s {
         int32 *mpx_ssid;    /**< Senone sequence IDs for each state (for multiplex HMMs). */
         int32 ssid;         /**< Senone sequence ID. */
     } s;
+    union {
+        s3tmatid_t *mpx_tmatid;  /**< Transition matrix ID for each state (for multiplex HMMs). */
+        s3tmatid_t tmatid;       /**< Transition matrix ID (see hmm_context_t). */
+    } t;
     int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning). */
-    s3tmatid_t tmatid;  /**< Transition matrix ID (see hmm_context_t). */
 } hmm_t;
 
 /** \struct hmm_context_t
@@ -201,7 +204,8 @@ typedef struct hmm_context_s {
 #define hmm_ssid(ctx,h,st) ((ctx)->mpx ? (h)->s.mpx_ssid[st] : (h)->s.ssid)
 #define hmm_senid(ctx,h,st) ((ctx)->sseq[hmm_ssid(ctx,h,st)][st])
 #define hmm_senscr(ctx,h,st) ((ctx)->senscore[hmm_senid(ctx,h,st)])
-#define hmm_tprob(ctx,h,i,j) ((ctx)->tp[(h)->tmatid][i][j])
+#define hmm_tmat(ctx,h,i) ((ctx)->mpx ? (ctx)->tp[(h)->t.mpx_tmatid[i]] : (ctx)->tp[(h)->t.tmatid])
+#define hmm_tprob(ctx,h,i,j) (hmm_tmat(ctx,h,i)[i][j])
 #define hmm_n_emit_state(ctx) ((ctx)->n_emit_state)
 #define hmm_n_state(ctx) ((ctx)->n_emit_state + 2)
 

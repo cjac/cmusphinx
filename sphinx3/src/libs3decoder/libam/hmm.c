@@ -239,7 +239,7 @@ hmm_vit_eval_5st(const hmm_context_t *ctx, hmm_t * hmm)
     const int32 *tp;
     const s3senid_t *sseq;
 
-    tp = ctx->tp[hmm->tmatid][0];
+    tp = ctx->tp[hmm->t.tmatid][0];
     sseq = ctx->sseq[hmm_ssid(ctx, hmm, 0)];
 
     /* 4 = max(2,3,4); */
@@ -367,7 +367,7 @@ hmm_vit_eval_3st(const hmm_context_t *ctx, hmm_t * hmm)
     const int32 *tp;
     const s3senid_t *sseq;
 
-    tp = ctx->tp[hmm->tmatid][0];
+    tp = ctx->tp[hmm->t.tmatid][0];
     sseq = ctx->sseq[hmm_ssid(ctx, hmm, 0)];
 
     /* 2 = max(0,1,2); */

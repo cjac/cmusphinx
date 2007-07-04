@@ -162,7 +162,7 @@ lextree_node_alloc(lextree_t *lextree, int32 wid, int32 prob,
     ln->composite = comp;
     ln->frame = -1;
     hmm_init(ln->ctx, &ln->hmm);
-    ln->hmm.tmatid = tmat;
+    ln->hmm.t.tmatid = tmat;
     ln->hmm.s.ssid = ssid;
 
     return ln;
