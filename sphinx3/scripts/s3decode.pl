@@ -81,11 +81,6 @@ $statepdeffn = $ST::DEC_CFG_HMM_TYPE; # indicates the type of HMMs
 
 $hmm_dir = "$ST::DEC_CFG_BASE_DIR/model_parameters/$modelname";
 
-$mixwfn = "$hmm_dir/mixture_weights";
-$tmatfn = "$hmm_dir/transition_matrices";
-$meanfn = "$hmm_dir/means";
-$varfn = "$hmm_dir/variances";
-
 $nlines = 0;
 open INPUT, "${ST::DEC_CFG_LISTOFFILES}";
 while (<INPUT>) {
@@ -102,10 +97,7 @@ Log("Decoding $ctlcount segments starting at $ctloffset (part $part of $npart) "
 my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -mdef => $moddeffn,
 		 -senmgau => $statepdeffn,
-		 -mean => $meanfn,
-		 -var => $varfn,
-		 -mixw => $mixwfn,
-		 -tmat => $tmatfn,
+		 -hmm => $hmm_dir,
 		 -lw => $ST::DEC_CFG_LANGUAGEWEIGHT ,
 		 -feat => $ST::DEC_CFG_FEATURE,
 		 -beam => $ST::DEC_CFG_BEAMWIDTH,
@@ -122,7 +114,8 @@ my $rv = RunTool('sphinx3_decode', $logfile, $ctlcount,
 		 -hyp => $matchfile,
 		 -agc => $ST::DEC_CFG_AGC,
 		 -varnorm => $ST::DEC_CFG_VARNORM,
-		 -cmn => $ST::DEC_CFG_CMN);
+		 -cmn => $ST::DEC_CFG_CMN,
+		 @ST::DEC_CFG_EXTRA_ARGS);
 
 if ($rv) {
   LogError("Failed to start bw");
