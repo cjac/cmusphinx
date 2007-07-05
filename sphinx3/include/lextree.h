@@ -196,10 +196,7 @@ typedef struct {
     s3cipid_t rc;        /**< The (compressed) right context for this node. Preferably compressed.
                           */
     s3cipid_t ci;	/**< CIphone id for this node */
-    int8 composite;	/**< Whether it is a composite model (merging many left/right contexts) 
-			   
-			*/
-    s3frmid_t frame;	/**< Frame in which this node was last active; <0 if inactive */
+    int8 composite;	/**< Whether it is a composite model (merging many left/right contexts) */
 } lextree_node_t;
 
 /* Access macros; not meant for arbitrary use */

@@ -172,6 +172,7 @@ typedef struct hmm_s {
         s3tmatid_t tmatid;       /**< Transition matrix ID (see hmm_context_t). */
     } t;
     int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning). */
+    s3frmid_t frame;	/**< Frame in which this HMM was last active; <0 if inactive */
 } hmm_t;
 
 /** \struct hmm_context_t

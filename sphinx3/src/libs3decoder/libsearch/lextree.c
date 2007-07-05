@@ -160,7 +160,6 @@ lextree_node_alloc(lextree_t *lextree, int32 wid, int32 prob,
     ln->ci = (s3cipid_t) ci;
     ln->rc = rc;
     ln->composite = comp;
-    ln->frame = -1;
     hmm_init(ln->ctx, &ln->hmm);
     ln->hmm.t.tmatid = tmat;
     ln->hmm.s.ssid = ssid;
@@ -931,8 +930,6 @@ lextree_utt_end(lextree_t * l, kbcore_t * kbc)
 
     for (i = 0; i < l->n_active; i++) { /* The inactive ones should already be reset */
         ln = l->active[i];
-
-        ln->frame = -1;
         hmm_clear(ln->ctx, &ln->hmm);
     }
 
@@ -1130,8 +1127,8 @@ lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,
                 hmm_in_score(ln->ctx, &ln->hmm) = scr;
                 hmm_in_history(ln->ctx, &ln->hmm) = inhist;
 
-                if (ln->frame != nf) {
-                    ln->frame = nf;
+                if (ln->hmm.frame != nf) {
+                    ln->hmm.frame = nf;
                     lextree->next_active[n++] = ln;
                 }
             }                   /* else it is activated separately */
@@ -1210,8 +1207,8 @@ lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,
                     hmm_in_score(cwln->ctx, &cwln->hmm) = scr;
                     hmm_in_history(cwln->ctx, &cwln->hmm) = inhist;
 
-                    if (cwln->frame != nf) {
-                        cwln->frame = nf;
+                    if (cwln->hmm.frame != nf) {
+                        cwln->hmm.frame = nf;
                         lextree->next_active[n++] = cwln;
                     }
                 }
@@ -1264,7 +1261,7 @@ lextree_hmm_eval(lextree_t * lextree, kbcore_t * kbc, ascr_t * ascr,
             /*      E_INFO("Frm %d, Is WID %d, wdstr %s, ln->ssid %d\n",frm, ln->wid,dict_wordstr(kbc->dict,ln->wid), ln->ssid); */
         }
 
-        assert(ln->frame == frm);
+        assert(ln->hmm.frame == frm);
         assert(ln->ssid >= 0);
 
         if (fp) {
@@ -1406,13 +1403,12 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
 
 
         /* This if will activate nodes */
-        if (ln->frame < nf) {
+        if (ln->hmm.frame < nf) {
             if (ln->hmm.bestscore >= th) { /* Active in next frm */
-                ln->frame = nf;
+                ln->hmm.frame = nf;
                 lextree->next_active[n++] = ln;
             }
             else {              /* Deactivate */
-                ln->frame = -1;
                 hmm_clear(ln->ctx, &ln->hmm);
             }
         }
@@ -1470,8 +1466,8 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                         hmm_in_score(ln2->ctx, &ln2->hmm) = newscore;
                         hmm_in_history(ln2->ctx, &ln2->hmm) = hmm_out_history(ln->ctx, &ln->hmm);
 
-                        if (ln2->frame != nf) {
-                            ln2->frame = nf;
+                        if (ln2->hmm.frame != nf) {
+                            ln2->hmm.frame = nf;
                             /*                  lextree_realloc_active_list(lextree,n+1); */
                             lextree->next_active[n++] = ln2;
                         }
@@ -1549,8 +1545,8 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                             hmm_in_score(cwln->ctx, &cwln->hmm) = newscore;
                             hmm_in_history(cwln->ctx, &cwln->hmm) = hmm_out_history(ln->ctx, &ln->hmm);
 
-                            if (cwln->frame != nf) {
-                                cwln->frame = nf;
+                            if (cwln->hmm.frame != nf) {
+                                cwln->hmm.frame = nf;
                                 /*                        lextree_realloc_active_list(lextree,n+1); */
                                 lextree->next_active[n++] = cwln;
                             }

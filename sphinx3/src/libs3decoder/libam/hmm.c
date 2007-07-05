@@ -202,6 +202,7 @@ hmm_clear(const hmm_context_t *ctx, hmm_t * h)
     hmm_out_history(ctx, h) = -1;
 
     h->bestscore = S3_LOGPROB_ZERO;
+    h->frame = -1;
 }
 
 void
