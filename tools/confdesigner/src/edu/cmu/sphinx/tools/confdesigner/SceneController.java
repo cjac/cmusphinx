@@ -105,7 +105,7 @@ public class SceneController {
         this.cm = cm;
 
         // remove all content from the graph and build up a new one
-        new GraphLoader(this, scene).loadScene(cm, executorListeners);
+        new GraphLoader(this).loadScene(cm, executorListeners);
 
         isChanged = false;
 

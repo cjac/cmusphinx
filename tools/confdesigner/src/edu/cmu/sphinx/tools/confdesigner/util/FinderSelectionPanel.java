@@ -39,12 +39,12 @@ public class FinderSelectionPanel extends JDialog {
 
         setFocusable(true);
         matchList.setSelectedIndex(0);
-        matchList.requestFocus();        
+        matchList.requestFocus();
 
         matchList.addMouseListener(new MouseAdapter() {
 
             public void mouseClicked(MouseEvent e) {
-                if(e.getClickCount() == 2){
+                if (e.getClickCount() == 2) {
                     selectEntry();
                 }
             }
@@ -87,7 +87,7 @@ public class FinderSelectionPanel extends JDialog {
 
 
     private void selectEntry() {
-        selectedNode = inverseMap.get((String) matchList.getSelectedValue());
+        selectedNode = inverseMap.get(matchList.getSelectedValue());
         dispose();
     }
 
@@ -114,46 +114,46 @@ public class FinderSelectionPanel extends JDialog {
 
         //======== dialogPane ========
         {
-        	dialogPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
-        	dialogPane.setLayout(new BorderLayout());
+            dialogPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.black));
+            dialogPane.setLayout(new BorderLayout());
 
-        	//======== contentPanel ========
-        	{
-        		contentPanel.setLayout(new BorderLayout());
+            //======== contentPanel ========
+            {
+                contentPanel.setLayout(new BorderLayout());
 
-        		//======== scrollPane1 ========
-        		{
+                //======== scrollPane1 ========
+                {
 
-        			//---- matchList ----
-        			matchList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        			scrollPane1.setViewportView(matchList);
-        		}
-        		contentPanel.add(scrollPane1, BorderLayout.CENTER);
+                    //---- matchList ----
+                    matchList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                    scrollPane1.setViewportView(matchList);
+                }
+                contentPanel.add(scrollPane1, BorderLayout.CENTER);
 
-        		//======== buttonBar ========
-        		{
-        			buttonBar.setBorder(null);
-        			buttonBar.setLayout(new GridBagLayout());
-        			((GridBagLayout)buttonBar.getLayout()).columnWidths = new int[] {0, 85, 80, 0};
-        			((GridBagLayout)buttonBar.getLayout()).rowHeights = new int[] {0, 0};
-        			((GridBagLayout)buttonBar.getLayout()).columnWeights = new double[] {1.0, 0.0, 0.0, 1.0E-4};
-        			((GridBagLayout)buttonBar.getLayout()).rowWeights = new double[] {0.0, 1.0E-4};
+                //======== buttonBar ========
+                {
+                    buttonBar.setBorder(null);
+                    buttonBar.setLayout(new GridBagLayout());
+                    ((GridBagLayout) buttonBar.getLayout()).columnWidths = new int[]{0, 85, 80, 0};
+                    ((GridBagLayout) buttonBar.getLayout()).rowHeights = new int[]{0, 0};
+                    ((GridBagLayout) buttonBar.getLayout()).columnWeights = new double[]{1.0, 0.0, 0.0, 1.0E-4};
+                    ((GridBagLayout) buttonBar.getLayout()).rowWeights = new double[]{0.0, 1.0E-4};
 
-        			//---- okButton ----
-        			okButton.setText("OK");
-        			buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
-        				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-        				new Insets(0, 0, 0, 5), 0, 0));
+                    //---- okButton ----
+                    okButton.setText("OK");
+                    buttonBar.add(okButton, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 5), 0, 0));
 
-        			//---- cancelButton ----
-        			cancelButton.setText("Cancel");
-        			buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
-        				GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-        				new Insets(0, 0, 0, 0), 0, 0));
-        		}
-        		contentPanel.add(buttonBar, BorderLayout.SOUTH);
-        	}
-        	dialogPane.add(contentPanel, BorderLayout.CENTER);
+                    //---- cancelButton ----
+                    cancelButton.setText("Cancel");
+                    buttonBar.add(cancelButton, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0,
+                            GridBagConstraints.CENTER, GridBagConstraints.BOTH,
+                            new Insets(0, 0, 0, 0), 0, 0));
+                }
+                contentPanel.add(buttonBar, BorderLayout.SOUTH);
+            }
+            dialogPane.add(contentPanel, BorderLayout.CENTER);
         }
         contentPane.add(dialogPane, BorderLayout.CENTER);
         pack();

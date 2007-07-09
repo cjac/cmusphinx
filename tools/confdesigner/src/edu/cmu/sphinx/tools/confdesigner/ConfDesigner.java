@@ -23,6 +23,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +47,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private SessionManager sesMan;
     private Map<PropertySheet, JMenuItem> curSceneExecutors = new HashMap<PropertySheet, JMenuItem>();
     Map<SceneContext, JComponent> projectsTabs = new HashMap<SceneContext, JComponent>();
+
+    private static Clipboard clipboard;
 
 
     public ConfDesigner() {
@@ -221,19 +224,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             }
         });
 
-        // intit the view
-        SceneContext initalSceneContext = new SceneContext(null);
-        sesMan.registerSceneContext(initalSceneContext);
-        sesMan.setActiveScene(initalSceneContext);
 
         expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
         fitViewItem.setAction(new FitViewAction(sesMan));
         helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
 
-        pasteItem.setAction(new PasteSubGraphAction());
-        cutItem.setAction(new CutSubGraphAction());
-        copyItem.setAction(new CopySubGraphAction());
-        deleteItem.setAction(new DeleteSubGraphAction());
+        pasteItem.setAction(new PasteSubGraphAction(sesMan, getClipBoard()));
+        cutItem.setAction(new CutSubGraphAction(sesMan, getClipBoard()));
+        copyItem.setAction(new CopySubGraphAction(sesMan, getClipBoard()));
+        deleteItem.setAction(new DeleteSubGraphAction(sesMan));
 
         snap2GridItem.setSelected(ConfDesigner.getPrefs().getBoolean("snap2Grid", true));
         snap2GridItem.addActionListener(new ActionListener() {
@@ -243,6 +242,10 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             }
         });
 
+        // intit the view
+        SceneContext initalSceneContext = new SceneContext(null);
+        sesMan.registerSceneContext(initalSceneContext);
+        sesMan.setActiveScene(initalSceneContext);
 
         updateRecentFiles(null);
     }
@@ -353,7 +356,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
 
     private void aboutItemActionPerformed() {
-        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 2", "About", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "ConfDesigner 1.0 beta 2+", "About", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -943,5 +946,14 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         gui.setBounds(getPrefs().getInt("mainwin.xpos", 100), getPrefs().getInt("mainwin.ypos", 100), getPrefs().getInt("mainwin.width", 900), getPrefs().getInt("mainwin.height", 700));
 
         gui.setVisible(true);
+    }
+
+
+    public synchronized static Clipboard getClipBoard() {
+        if (clipboard == null) {
+            clipboard = new Clipboard("myClip");
+        }
+
+        return clipboard;
     }
 }

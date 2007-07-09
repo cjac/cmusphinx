@@ -1,9 +1,12 @@
 package edu.cmu.sphinx.tools.confdesigner;
 
-import edu.cmu.sphinx.util.props.*;
 import edu.cmu.sphinx.tools.executor.ExecutorListener;
+import edu.cmu.sphinx.util.props.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DOCUMENT ME!
@@ -16,14 +19,17 @@ public class GraphLoader {
     private ConfigScene scene;
 
 
-    public GraphLoader(ConfigScene scene) {
-        this.scene = scene;
+    public GraphLoader(SceneController sceneController) {
+        confController = sceneController;
+        this.scene = confController.getScene();
     }
 
 
-    public GraphLoader(SceneController sceneController, ConfigScene scene) {
-        confController = sceneController;
-        this.scene = scene;
+    public boolean mergeIntoScene(ConfigurationManager cm) {
+        confController.getCm().addSubConfiguration(cm);
+        loadScene(cm, null);
+
+        return true;
     }
 
 
@@ -32,7 +38,7 @@ public class GraphLoader {
 
 
         for (String compName : cm.getComponentNames()) {
-            assert !nodes.keySet().contains(compName);
+            assert !nodes.keySet().contains(compName) : "scene already contains node named '" + compName + "'";
 
             nodes.put(compName, confController.addNode(cm.getPropertySheet(compName), compName));
         }
@@ -97,7 +103,7 @@ public class GraphLoader {
                     ConfPin sourcePort = sourceNode.getPin(ConfNode.PARENT_PIN);
 
                     if (getUnusedListPins(targetNode, propName, scene).size() <= 1) {
-                        targetNode.addInputPin(scene, propName, i+1, listType);
+                        targetNode.addInputPin(scene, propName, i + 1, listType);
                     }
 
 
