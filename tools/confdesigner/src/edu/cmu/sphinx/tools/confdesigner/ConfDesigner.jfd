@@ -779,6 +779,18 @@
           </void> 
           <void method="add"> 
            <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JCheckBoxMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Snap to Grid</string> 
+            </void> 
+            <void property="name"> 
+             <string>snap2GridItem</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
             <string>javax.swing.JMenuItem</string> 
             <void method="setProperty"> 
              <string>text</string> 

@@ -43,7 +43,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private List<File> recentFiles = new ArrayList<File>();
     private ActionListener recentFileListener;
 
-    private static Preferences prefs = Preferences.userNodeForPackage(ConfDesigner.class);
+    private static Preferences prefs;
 
     private SessionManager sesMan;
     private Map<PropertySheet, JMenuItem> curSceneExecutors = new HashMap<PropertySheet, JMenuItem>();
@@ -145,6 +145,8 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 birdViewPanel.add(scene.createSatelliteView());
                 birdViewPanel.validate();
 
+                scene.setSnap2Grid(snap2GridItem.isSelected());
+
                 configurableTree.setController(sceneController);
 
                 for (PropertySheet ps : curSceneExecutors.keySet())
@@ -229,6 +231,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
         fitViewItem.setAction(new FitViewAction(sesMan));
         helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
+
+        snap2GridItem.setSelected(ConfDesigner.getPrefs().getBoolean("snap2Grid", true));
+        snap2GridItem.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                sesMan.getActiveScene().getScene().setSnap2Grid(snap2GridItem.isSelected());
+            }
+        });
+
 
         updateRecentFiles(null);
     }
@@ -416,7 +427,11 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     }
 
 
-    public static Preferences getPrefs() {
+    public synchronized static Preferences getPrefs() {
+        if (prefs == null) {
+            prefs = Preferences.userNodeForPackage(ConfDesigner.class);
+        }
+
         return prefs;
     }
 
@@ -475,6 +490,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         menu2 = new JMenu();
         layoutGraphItem = new JMenuItem();
         menu3 = new JMenu();
+        snap2GridItem = new JCheckBoxMenuItem();
         fitViewItem = new JMenuItem();
         showBirdViewItem = new JCheckBoxMenuItem();
         expSceneImgItem = new JMenuItem();
@@ -641,6 +657,10 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             //======== menu3 ========
             {
                 menu3.setText("View");
+
+                //---- snap2GridItem ----
+                snap2GridItem.setText("Snap to Grid");
+                menu3.add(snap2GridItem);
 
                 //---- fitViewItem ----
                 fitViewItem.setText("Fit View");
@@ -823,6 +843,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenu menu2;
     private JMenuItem layoutGraphItem;
     private JMenu menu3;
+    private JCheckBoxMenuItem snap2GridItem;
     private JMenuItem fitViewItem;
     private JCheckBoxMenuItem showBirdViewItem;
     private JMenuItem expSceneImgItem;
@@ -893,34 +914,5 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         gui.setBounds(getPrefs().getInt("mainwin.xpos", 100), getPrefs().getInt("mainwin.ypos", 100), getPrefs().getInt("mainwin.width", 900), getPrefs().getInt("mainwin.height", 700));
 
         gui.setVisible(true);
-    }
-
-
-    private class TestAction extends AbstractAction {
-
-        private TestAction() {
-            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
-            // JFormDesigner - End of action initialization  //GEN-END:initComponents
-        }
-
-
-        public void actionPerformed(ActionEvent e) {
-            // TODO add your code here
-        }
-    }
-
-    private class ExtViewAction extends AbstractAction {
-
-        private ExtViewAction() {
-            // JFormDesigner - Action initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
-            // Generated using JFormDesigner Open Source Project license - Sphinx-4 (cmusphinx.sourceforge.net/sphinx4/)
-            // JFormDesigner - End of action initialization  //GEN-END:initComponents
-        }
-
-
-        public void actionPerformed(ActionEvent e) {
-            // TODO add your code here
-        }
     }
 }
