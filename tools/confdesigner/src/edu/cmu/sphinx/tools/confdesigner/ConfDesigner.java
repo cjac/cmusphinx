@@ -10,9 +10,7 @@ import edu.cmu.sphinx.decoder.search.SimpleBreadthFirstSearchManager;
 import edu.cmu.sphinx.frontend.FrontEnd;
 import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform;
 import edu.cmu.sphinx.frontend.util.WavWriter;
-import edu.cmu.sphinx.tools.confdesigner.actions.ExportImageAction;
-import edu.cmu.sphinx.tools.confdesigner.actions.FitViewAction;
-import edu.cmu.sphinx.tools.confdesigner.actions.UrlAction;
+import edu.cmu.sphinx.tools.confdesigner.actions.*;
 import edu.cmu.sphinx.tools.confdesigner.conftree.ConfigSelector;
 import edu.cmu.sphinx.tools.confdesigner.util.SceneFinder;
 import edu.cmu.sphinx.tools.executor.ExecutableExecutor;
@@ -231,6 +229,11 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         expSceneImgItem.setAction(new ExportImageAction(sesMan, false));
         fitViewItem.setAction(new FitViewAction(sesMan));
         helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
+
+        pasteItem.setAction(new PasteSubGraphAction());
+        cutItem.setAction(new CutSubGraphAction());
+        copyItem.setAction(new CopySubGraphAction());
+        deleteItem.setAction(new DeleteSubGraphAction());
 
         snap2GridItem.setSelected(ConfDesigner.getPrefs().getBoolean("snap2Grid", true));
         snap2GridItem.addActionListener(new ActionListener() {
@@ -488,11 +491,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         closePrjItem = new JMenuItem();
         exitItem = new JMenuItem();
         menu2 = new JMenu();
-        layoutGraphItem = new JMenuItem();
+        cutItem = new JMenuItem();
+        copyItem = new JMenuItem();
+        pasteItem = new JMenuItem();
+        deleteItem = new JMenuItem();
         menu3 = new JMenu();
         snap2GridItem = new JCheckBoxMenuItem();
-        fitViewItem = new JMenuItem();
         showBirdViewItem = new JCheckBoxMenuItem();
+        fitViewItem = new JMenuItem();
+        layoutGraphItem = new JMenuItem();
         expSceneImgItem = new JMenuItem();
         runMenu = new JMenu();
         menu4 = new JMenu();
@@ -642,15 +649,21 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
             {
                 menu2.setText("Edit");
 
-                //---- layoutGraphItem ----
-                layoutGraphItem.setText("Relayout Graph");
-                layoutGraphItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_MASK));
-                layoutGraphItem.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        layoutGraphItemActionPerformed();
-                    }
-                });
-                menu2.add(layoutGraphItem);
+                //---- cutItem ----
+                cutItem.setText("Cut");
+                menu2.add(cutItem);
+
+                //---- copyItem ----
+                copyItem.setText("Copy");
+                menu2.add(copyItem);
+
+                //---- pasteItem ----
+                pasteItem.setText("Paste");
+                menu2.add(pasteItem);
+
+                //---- deleteItem ----
+                deleteItem.setText("Delete");
+                menu2.add(deleteItem);
             }
             menuBar1.add(menu2);
 
@@ -662,10 +675,6 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                 snap2GridItem.setText("Snap to Grid");
                 menu3.add(snap2GridItem);
 
-                //---- fitViewItem ----
-                fitViewItem.setText("Fit View");
-                menu3.add(fitViewItem);
-
                 //---- showBirdViewItem ----
                 showBirdViewItem.setText("Show Birdview");
                 showBirdViewItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, KeyEvent.CTRL_MASK));
@@ -675,6 +684,22 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
                     }
                 });
                 menu3.add(showBirdViewItem);
+                menu3.addSeparator();
+
+                //---- fitViewItem ----
+                fitViewItem.setText("Fit View");
+                fitViewItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.ALT_MASK));
+                menu3.add(fitViewItem);
+
+                //---- layoutGraphItem ----
+                layoutGraphItem.setText("Relayout Graph");
+                layoutGraphItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.ALT_MASK));
+                layoutGraphItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        layoutGraphItemActionPerformed();
+                    }
+                });
+                menu3.add(layoutGraphItem);
                 menu3.addSeparator();
 
                 //---- expSceneImgItem ----
@@ -841,11 +866,15 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JMenuItem closePrjItem;
     private JMenuItem exitItem;
     private JMenu menu2;
-    private JMenuItem layoutGraphItem;
+    private JMenuItem cutItem;
+    private JMenuItem copyItem;
+    private JMenuItem pasteItem;
+    private JMenuItem deleteItem;
     private JMenu menu3;
     private JCheckBoxMenuItem snap2GridItem;
-    private JMenuItem fitViewItem;
     private JCheckBoxMenuItem showBirdViewItem;
+    private JMenuItem fitViewItem;
+    private JMenuItem layoutGraphItem;
     private JMenuItem expSceneImgItem;
     private JMenu runMenu;
     private JMenu menu4;

@@ -739,26 +739,46 @@
             <string>javax.swing.JMenuItem</string> 
             <void method="setProperty"> 
              <string>text</string> 
-             <string>Relayout Graph</string> 
-            </void> 
-            <void method="setProperty"> 
-             <string>accelerator</string> 
-             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
-              <int>76</int> 
-              <int>520</int> 
-              <boolean>false</boolean> 
-             </object> 
+             <string>Cut</string> 
             </void> 
             <void property="name"> 
-             <string>layoutGraphItem</string> 
+             <string>cutItem</string> 
             </void> 
-            <void method="addEvent"> 
-             <object class="com.jformdesigner.model.FormEvent"> 
-              <string>java.awt.event.ActionListener</string> 
-              <string>actionPerformed</string> 
-              <string>layoutGraphItemActionPerformed</string> 
-              <boolean>false</boolean> 
-             </object> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Copy</string> 
+            </void> 
+            <void property="name"> 
+             <string>copyItem</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Paste</string> 
+            </void> 
+            <void property="name"> 
+             <string>pasteItem</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Delete</string> 
+            </void> 
+            <void property="name"> 
+             <string>deleteItem</string> 
             </void> 
            </object> 
           </void> 
@@ -786,18 +806,6 @@
             </void> 
             <void property="name"> 
              <string>snap2GridItem</string> 
-            </void> 
-           </object> 
-          </void> 
-          <void method="add"> 
-           <object class="com.jformdesigner.model.FormComponent"> 
-            <string>javax.swing.JMenuItem</string> 
-            <void method="setProperty"> 
-             <string>text</string> 
-             <string>Fit View</string> 
-            </void> 
-            <void property="name"> 
-             <string>fitViewItem</string> 
             </void> 
            </object> 
           </void> 
@@ -834,6 +842,62 @@
             <string>javax.swing.JPopupMenu$Separator</string> 
             <void property="name"> 
              <string>separator5</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Fit View</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>70</int> 
+              <int>520</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>fitViewItem</string> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JMenuItem</string> 
+            <void method="setProperty"> 
+             <string>text</string> 
+             <string>Relayout Graph</string> 
+            </void> 
+            <void method="setProperty"> 
+             <string>accelerator</string> 
+             <object class="javax.swing.KeyStroke" method="getKeyStroke"> 
+              <int>76</int> 
+              <int>520</int> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+            <void property="name"> 
+             <string>layoutGraphItem</string> 
+            </void> 
+            <void method="addEvent"> 
+             <object class="com.jformdesigner.model.FormEvent"> 
+              <string>java.awt.event.ActionListener</string> 
+              <string>actionPerformed</string> 
+              <string>layoutGraphItemActionPerformed</string> 
+              <boolean>false</boolean> 
+             </object> 
+            </void> 
+           </object> 
+          </void> 
+          <void method="add"> 
+           <object class="com.jformdesigner.model.FormComponent"> 
+            <string>javax.swing.JPopupMenu$Separator</string> 
+            <void property="name"> 
+             <string>separator6</string> 
             </void> 
            </object> 
           </void> 
