@@ -61,7 +61,9 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
     GraphAcceptProvider acceptProvider = new GraphAcceptProvider(this);
     GraphInPlaceEditProvider inplaceProvider = new GraphInPlaceEditProvider();
 
-    private WidgetAction moveAction = ActionFactory.createMoveAction(ActionFactory.createSnapToGridMoveStrategy(16, 16), null);
+    private SwitchableMoveStratgy switchableMoveStratgy = new SwitchableMoveStratgy();
+
+    private WidgetAction moveAction = ActionFactory.createMoveAction(switchableMoveStratgy, null);
     private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
     private WidgetAction nodePopUpAction = ActionFactory.createPopupMenuAction(new NodePopUpProvider());
     private WidgetAction connectAction = ActionFactory.createExtendedConnectAction(interractionLayer, connectProvider);
@@ -327,9 +329,7 @@ public class ConfigScene extends GraphPinScene<ConfNode, ConfEdge, ConfPin> {
 
     public void setSnap2Grid(boolean useGrid) {
         // change only if different to current state
-
-        System.out.println("toggle snap to grid " + useGrid);
-
+        switchableMoveStratgy.setUseGridStrategy(useGrid);
     }
 
 

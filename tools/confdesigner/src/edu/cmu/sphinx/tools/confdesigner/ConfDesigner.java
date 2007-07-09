@@ -242,6 +242,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
 
             public void actionPerformed(ActionEvent e) {
                 sesMan.getActiveScene().getScene().setSnap2Grid(snap2GridItem.isSelected());
+                ConfDesigner.getPrefs().getBoolean("snap2Grid", snap2GridItem.isSelected());
             }
         });
 
