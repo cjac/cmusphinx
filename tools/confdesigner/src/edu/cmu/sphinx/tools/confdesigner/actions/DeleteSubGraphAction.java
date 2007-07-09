@@ -26,6 +26,6 @@ public class DeleteSubGraphAction extends AbstractAction {
 
 
     public void actionPerformed(ActionEvent e) {
-
+        sesMan.getActiveScene().getScene().removeSelectedObjects();
     }
 }

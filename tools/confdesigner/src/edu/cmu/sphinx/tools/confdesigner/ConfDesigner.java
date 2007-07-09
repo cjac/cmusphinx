@@ -230,9 +230,12 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         helpItem.setAction(new UrlAction("Help", "http://en.wikipedia.org/wiki/ConfDesigner", this));
 
         pasteItem.setAction(new PasteSubGraphAction(sesMan, getClipBoard()));
-        cutItem.setAction(new CutSubGraphAction(sesMan, getClipBoard()));
         copyItem.setAction(new CopySubGraphAction(sesMan, getClipBoard()));
-        deleteItem.setAction(new DeleteSubGraphAction(sesMan));
+
+        DeleteSubGraphAction deleteAction = new DeleteSubGraphAction(sesMan);
+        deleteItem.setAction(deleteAction);
+        cutItem.setAction(new CutSubGraphAction(sesMan, getClipBoard(), deleteAction));
+
 
         snap2GridItem.setSelected(ConfDesigner.getPrefs().getBoolean("snap2Grid", true));
         snap2GridItem.addActionListener(new ActionListener() {

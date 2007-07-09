@@ -41,7 +41,6 @@ public class PasteSubGraphAction extends AbstractAction implements FlavorListene
 
 
     public void actionPerformed(ActionEvent e) {
-        System.err.println("paste cilpboard content now");
 
         Transferable contents = clipBoard.getContents(null);
         if (!(contents instanceof GraphSelection))
@@ -114,8 +113,6 @@ public class PasteSubGraphAction extends AbstractAction implements FlavorListene
 
 
     public void flavorsChanged(FlavorEvent e) {
-        System.err.println("clipboard changed");
-
         setEnabled(clipBoard.getContents(null) != null);
     }
 }

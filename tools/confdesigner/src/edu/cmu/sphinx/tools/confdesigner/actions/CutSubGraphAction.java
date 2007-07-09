@@ -12,13 +12,16 @@ import java.awt.event.KeyEvent;
  *
  * @author Holger Brandl
  */
-public class CutSubGraphAction extends AbstractAction {
+public class CutSubGraphAction extends CopySubGraphAction {
 
     private SessionManager sesMan;
+    private DeleteSubGraphAction delAction;
 
 
-    public CutSubGraphAction(SessionManager sesMan, Clipboard clipBoard) {
+    public CutSubGraphAction(SessionManager sesMan, Clipboard clipBoard, DeleteSubGraphAction delAction) {
+        super(sesMan, clipBoard);
         this.sesMan = sesMan;
+        this.delAction = delAction;
 
         putValue(NAME, "Cut");
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_MASK));
@@ -27,6 +30,9 @@ public class CutSubGraphAction extends AbstractAction {
 
 
     public void actionPerformed(ActionEvent e) {
+        super.actionPerformed(e);
 
+        // delete all selected actions
+        delAction.actionPerformed(e);
     }
 }
