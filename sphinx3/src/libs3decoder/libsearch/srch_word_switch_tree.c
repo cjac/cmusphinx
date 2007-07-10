@@ -921,13 +921,13 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
 	    void *val;
 	    int32 id;
 
-            if (hmm_out_score(ln->ctx, hmm) < wth)
+            if (hmm_out_score(hmm) < wth)
                 continue;       /* Word exit score not good enough */
 
-            if (hmm_out_history(ln->ctx, hmm) == -1)
+            if (hmm_out_history(hmm) == -1)
                 E_ERROR
-                    ("hmm_out_history(ln->ctx, hmm) equals to -1 with score %d and active idx %d, lextree->type\n",
-                     hmm_out_score(ln->ctx, hmm), i, lextree->type);
+                    ("hmm_out_history(hmm) equals to -1 with score %d and active idx %d, lextree->type\n",
+                     hmm_out_score(hmm), i, lextree->type);
 
             /* From now on, we are taking care of all active word ends. */
 
@@ -1040,8 +1040,8 @@ srch_WST_hmm_propagate_leaves(srch_t * s, lextree_t * lextree,
             entry = vithist_n_entry(vh) - 1;
 
             vithist_rescore(vh, s->kbc, ln->wid, cur_frm,
-                            hmm_out_score(ln->ctx, hmm) - ln->prob,
-                            hmm_out_history(ln->ctx, hmm), lextree->type, ln->rc);
+                            hmm_out_score(hmm) - ln->prob,
+                            hmm_out_history(hmm), lextree->type, ln->rc);
 
             /* At this point a score is recorded in the viterbi history 
                That consist of the trigram score
