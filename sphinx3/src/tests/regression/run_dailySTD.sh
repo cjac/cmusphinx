@@ -6,9 +6,9 @@ TMPDIR=${HOME}/project/SourceForge/regression/daily$$
 mkdir ${TMPDIR}
 cd ${TMPDIR}
 
-if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinxbase > /dev/null ; then
+if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinxbase > /dev/null ; then
 
-if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 > /dev/null ; then
+if ${HOME}/script/loopUntilSuccess.sh /usr/local/bin/svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/sphinx3 > /dev/null ; then
 
 cat > ${TMPSCRIPT} <<EOF &&
 #!/bin/sh
