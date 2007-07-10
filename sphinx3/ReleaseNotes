@@ -180,7 +180,7 @@
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	The corresponding SphinxTrain's tag is SPHINX3_6_CMU_INTERNAL_RELEASE
 	One can check out the matching SphinxTrain of the sphinx3.6 release by command,
-	svn co https://svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
+	svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
 
 	A Summary of Sphinx 3.6 RC I
 	----------------------------
@@ -315,7 +315,7 @@
 	Corresponding changes in SphinxTrain
 	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	Please note that SphinxTrain is distributed as a separate package and you can get it by:
-	svn co https://svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
+	svn co https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/tags/SPHINX3_6_CMU_INTERNAL_RELEASE/SphinxTrain
 	
 	-Support for generation of MAP, multiple-class MLLR. 
 	-Support for BBI tree generation

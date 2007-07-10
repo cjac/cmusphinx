@@ -26,7 +26,7 @@ popd > /dev/null
 
 for module in cmuclmtk sphinx2 sphinx3 sphinxbase SphinxTrain; do
     (
-    svn export https://svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
+    svn export https://cmusphinx.svn.sourceforge.net/svnroot/cmusphinx/trunk/$module/doc $module > /dev/null
     cd $module > /dev/null
     rsync -e ssh -auv --progress --delete . $SF_USER@shell.sf.net:/home/groups/c/cm/cmusphinx/htdocs/$module/doc > /dev/null
 )
