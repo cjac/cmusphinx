@@ -102,7 +102,6 @@
 
 #ifndef _S3_HMM_H_
 #define _S3_HMM_H_
-
 #include <stdio.h>
 
 #include "s3types.h"
@@ -114,6 +113,8 @@ extern "C" {
 } /* Fool Emacs into not indenting things. */
 #endif
 
+/** Hardcoded limit on the number of states (temporary) */
+#define MAX_HMM_NSTATE 5
 
 /** \file hmm.h
  * \brief HMM data structure and operation
@@ -156,7 +157,6 @@ typedef struct hmm_context_s {
     const int32 *senscore; /**< State emission scores senscore[senid] (logs3 values). */
     const s3senid_t **sseq;/**< Senone sequence mapping. */
     int32 *st_sen_scr;     /**< Temporary array of senone scores (for some topologies). */
-    int32 mpx;		   /**< Are senones multiplexed? */
     void *udata;           /**< Whatever you feel like, gosh. */
 } hmm_context_t;
 
@@ -177,55 +177,52 @@ typedef struct {
  */
 
 typedef struct hmm_s {
-    hmm_context_t *ctx; /**< Shared context data for this HMM. */
-    hmm_state_t *state;	/**< Per-state data for emitting states */
-    hmm_state_t out;	/**< Non-emitting exit state */
+    hmm_context_t *ctx;                /**< Shared context data for this HMM. */
+    hmm_state_t state[MAX_HMM_NSTATE]; /**< Per-state data for emitting states */
+    hmm_state_t out;                   /**< Non-emitting exit state */
     union {
-        int32 *mpx_ssid;    /**< Senone sequence IDs for each state (for multiplex HMMs). */
-        int32 ssid;         /**< Senone sequence ID. */
+        int32 *mpx_ssid; /**< Senone sequence IDs for each state (for multiplex HMMs). */
+        int32 ssid;      /**< Senone sequence ID. */
     } s;
-    union {
-        s3tmatid_t *mpx_tmatid;  /**< Transition matrix ID for each state (for multiplex HMMs). */
-        s3tmatid_t tmatid;       /**< Transition matrix ID (see hmm_context_t). */
-    } t;
     int32 bestscore;	/**< Best [emitting] state score in current frame (for pruning). */
+    s3tmatid_t tmatid;  /**< Transition matrix ID (see hmm_context_t). */
     s3frmid_t frame;	/**< Frame in which this HMM was last active; <0 if inactive */
+    uint8 mpx;          /**< Is this HMM multiplex? (hoisted for speed) */
+    uint8 n_emit_state; /**< Number of emitting states (hoisted for speed) */
 } hmm_t;
 
 /** Access macros. */
 #define hmm_context(h) (h)->ctx
-#define hmm_is_mpx(h) (h)->ctx->mpx
+#define hmm_is_mpx(h) (h)->mpx
+#define hmm_state(h,st) (h)->state[st]
 
-#define hmm_in_score(h) (h)->state[0].score
-#define hmm_score(h,st) (h)->state[st].score
+#define hmm_in_score(h) hmm_state(h,0).score
+#define hmm_score(h,st) hmm_state(h,st).score
 #define hmm_out_score(h) (h)->out.score
 
-#define hmm_in_history(h) (h)->state[0].history
-#define hmm_history(h,st) (h)->state[st].history
+#define hmm_in_history(h) hmm_state(h,0).history
+#define hmm_history(h,st) hmm_state(h,st).history
 #define hmm_out_history(h) (h)->out.history
 
 #define hmm_bestscore(h) (h)->bestscore
 #define hmm_frame(h) (h)->frame
-#define hmm_ssid(h,st) ((h)->ctx->mpx                           \
-                        ? (h)->s.mpx_ssid[st] : (h)->s.ssid)
+#define hmm_mpx_ssid(h,st) (h)->s.mpx_ssid[st]
+#define hmm_ssid(h,st) (hmm_is_mpx(h)                           \
+                        ? hmm_mpx_ssid(h,st) : (h)->s.ssid)
 #define hmm_senid(h,st) (hmm_ssid(h,st) == -1                           \
                          ? -1 : (h)->ctx->sseq[hmm_ssid(h,st)][st])
 #define hmm_senscr(h,st) (hmm_ssid(h,st) == -1                          \
                           ? WORST_SCORE                                 \
                           : (h)->ctx->senscore[hmm_senid(h,st)])
-#define hmm_tmatid(h,i) ((h)->ctx->mpx          \
-                       ? (h)->t.mpx_tmatid[i]    \
-                       : (h)->t.tmatid)
-#define hmm_tprob(h,i,j) (hmm_tmatid(h,i) == -1                         \
-                          ? WORST_SCORE                                 \
-                          : (h)->ctx->tp[hmm_tmatid(h,i)][i][j])
-#define hmm_n_emit_state(h) ((h)->ctx->n_emit_state)
-#define hmm_n_state(h) ((h)->ctx->n_emit_state + 1)
+#define hmm_tmatid(h) (h)->tmatid
+#define hmm_tprob(h,i,j) (h)->ctx->tp[hmm_tmatid(h)][i][j]
+#define hmm_n_emit_state(h) ((h)->n_emit_state)
+#define hmm_n_state(h) ((h)->n_emit_state + 1)
 
 /**
  * Create an HMM context.
  **/
-hmm_context_t *hmm_context_init(int32 n_emit_state, int32 mpx,
+hmm_context_t *hmm_context_init(int32 n_emit_state,
                                 int32 ***tp,
                                 int32 *senscore,
                                 s3senid_t **sseq);
@@ -247,7 +244,8 @@ void hmm_context_free(hmm_context_t *ctx);
 /**
  * Populate a previously-allocated HMM structure, allocating internal data.
  **/
-void hmm_init(hmm_context_t *ctx, hmm_t *hmm, int32 ssid, s3tmatid_t tmatid);
+void hmm_init(hmm_context_t *ctx, hmm_t *hmm, int mpx,
+              int32 ssid, s3tmatid_t tmatid);
 
 /**
  * Free an HMM structure, releasing internal data (but not the HMM structure itself).
@@ -273,8 +271,8 @@ void hmm_normalize(hmm_t *h, int32 bestscr);
 /**
  * Enter an HMM with the given path score and history ID.
  **/
-void hmm_enter(hmm_t *h, int32 score, int32 histid, int32 frame);
-
+void hmm_enter(hmm_t *h, int32 score,
+               int32 histid, int32 frame);
 
 /**
  * Viterbi evaluation of given HMM.  (NOTE that if this module were being used for tracking

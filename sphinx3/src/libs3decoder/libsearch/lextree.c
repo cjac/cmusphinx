@@ -160,7 +160,7 @@ lextree_node_alloc(lextree_t *lextree, int32 wid, int32 prob,
     ln->ci = (s3cipid_t) ci;
     ln->rc = rc;
     ln->composite = comp;
-    hmm_init(ln->ctx, &ln->hmm, ssid, tmat);
+    hmm_init(ln->ctx, &ln->hmm, FALSE, ssid, tmat);
 
     return ln;
 }
@@ -382,10 +382,10 @@ lextree_build(kbcore_t * kbc, wordprob_t * wordprob, int32 n_word,
     lextree_type(lextree) = type;
 
     /* HMM contexts for regular and composite triphones */
-    lextree->ctx = hmm_context_init(n_st, FALSE,
+    lextree->ctx = hmm_context_init(n_st,
 				    tmat->tp, NULL,
 				    mdef->sseq);
-    lextree->comctx = hmm_context_init(n_st, FALSE,
+    lextree->comctx = hmm_context_init(n_st,
                                        tmat->tp, NULL,
                                        d2p->comsseq);
 
