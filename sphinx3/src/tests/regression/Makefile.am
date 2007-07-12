@@ -40,7 +40,7 @@ DISABLED_TESTS = \
 	test-decode-mode5.sh \
 	test-decode-mode5-noncomp.sh 
 
-EXTRA_DIST = compare_table.pl \
+EXTRA_DIST = \
 	$(TESTS) \
 	$(DISABLED_TESTS)
 

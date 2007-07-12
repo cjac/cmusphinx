@@ -104,6 +104,7 @@ fi
 
 AC_PATH_PROG(PERL,perl)
 AC_PATH_PROG(CSH,csh)
+AC_SUBST(sphinxbase)
 AC_SUBST(docdata)
 AC_SUBST(epdata)
 AC_SUBST(hmmdata)
