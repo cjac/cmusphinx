@@ -78,6 +78,10 @@ struct _GstPocketSphinx
 struct _GstPocketSphinxClass 
 {
 	GstBaseSinkClass parent_class;
+
+	/* signals */
+	void (*partial_result) (GstElement *element, const gchar *hyp_str);
+	void (*result) (GstElement *element, const gchar *hyp_str);
 };
 
 GType gst_pocketsphinx_get_type (void);

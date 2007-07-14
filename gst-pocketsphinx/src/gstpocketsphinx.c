@@ -97,6 +97,7 @@
 #endif
 
 #include <gst/gst.h>
+#include <gst/gstmarshal.h>
 #include <sphinx_config.h>
 #include <ad.h>
 #include <string.h>
@@ -109,12 +110,17 @@ GST_DEBUG_CATEGORY_STATIC (gst_pocketsphinx_debug);
 /* Filter signals and args */
 enum
 {
+	SIGNAL_PARTIAL_RESULT,
+	SIGNAL_RESULT,
 	LAST_SIGNAL
 };
 
 enum
 {
-	ARG_0
+	PROP_0,
+	PROP_HMM_DIR,
+	PROP_LM_FILE,
+	PROP_DICT_FILE
 };
 
 static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink",
@@ -135,6 +141,8 @@ static void gst_pocketsphinx_get_property (GObject * object, guint prop_id,
 static gboolean gst_pocketsphinx_event (GstBaseSink *basesink, GstEvent *event);
 static GstFlowReturn gst_pocketsphinx_render (GstBaseSink * basesink, GstBuffer * buf);
 static void gst_pocketsphinx_do_init (GType type);
+
+static guint gst_pocketsphinx_signals[LAST_SIGNAL];
 
 GST_BOILERPLATE_FULL (GstPocketSphinx, gst_pocketsphinx, GstBaseSink,
 		      GST_TYPE_BASE_SINK, gst_pocketsphinx_do_init);
@@ -176,7 +184,49 @@ gst_pocketsphinx_class_init (GstPocketSphinxClass * klass)
 	gobject_class->get_property = gst_pocketsphinx_get_property;
 	basesink_class->event = gst_pocketsphinx_event;
 	basesink_class->render = gst_pocketsphinx_render;
-	/* TODO: We will bridge cmd_ln.h properties to GObject properties here */
+
+	/* TODO: We will bridge cmd_ln.h properties to GObject
+	 * properties here somehow eventually. */
+	g_object_class_install_property
+		(gobject_class, PROP_HMM_DIR,
+		 g_param_spec_string ("hmm_dir", "HMM Directory",
+				      "Directory containing acoustic model parameters",
+				      "/usr/local/share/pocketsphinx/model/hmm/wsj0",
+				      G_PARAM_READWRITE));
+	g_object_class_install_property
+		(gobject_class, PROP_LM_FILE,
+		 g_param_spec_string ("lm_file", "LM File",
+				      "Language model file",
+				      "/usr/local/share/pocketsphinx/model/lm/swb/swb.lm.DMP",
+				      G_PARAM_READWRITE));
+	g_object_class_install_property
+		(gobject_class, PROP_DICT_FILE,
+		 g_param_spec_string ("dict_file", "Dictionary File",
+				      "Dictionary File",
+				      "/usr/local/share/pocketsphinx/model/lm/swb/swb.dic",
+				      G_PARAM_READWRITE));
+
+	gst_pocketsphinx_signals[SIGNAL_PARTIAL_RESULT] = 
+		g_signal_new ("partial_result",
+			      G_TYPE_FROM_CLASS (klass),
+			      G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GstPocketSphinxClass, partial_result),
+			      NULL, NULL,
+			      gst_marshal_VOID__STRING,
+			      G_TYPE_NONE,
+			      1, G_TYPE_STRING
+			);
+
+	gst_pocketsphinx_signals[SIGNAL_RESULT] = 
+		g_signal_new ("result",
+			      G_TYPE_FROM_CLASS (klass),
+			      G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GstPocketSphinxClass, result),
+			      NULL, NULL,
+			      gst_marshal_VOID__STRING,
+			      G_TYPE_NONE,
+			      1, G_TYPE_STRING
+			);
 }
 
 static void
@@ -269,6 +319,9 @@ gst_pocketsphinx_render (GstBaseSink * basesink, GstBuffer * buf)
 			cont_ad_reset(rec->cad);
 			uttproc_end_utt();
 			uttproc_result(&fr, &hyp, 1);
+			g_signal_emit (G_OBJECT(rec),
+				       gst_pocketsphinx_signals[SIGNAL_RESULT],
+				       0, hyp);
 		}
 		return GST_FLOW_OK;
 	}
