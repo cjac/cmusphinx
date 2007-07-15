@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../common/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../corpusBrowser/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../dictator/src/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/riddler-app-client/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/riddler-ejb/src/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/riddler-war/src/java" isTestSource="false" />

@@ -2,96 +2,158 @@
 <!-- You may freely edit this file. See commented blocks below for -->
 <!-- some examples of how to customize the build. -->
 <!-- (If you delete it and reopen the project it will be recreated.) -->
-<project name="riddler" default="default" basedir="." xmlns:ear="http://www.netbeans.org/ns/j2ee-earproject/2">
+<project name="riddler" default="all" basedir=".">
     <description>Builds, tests, and runs the project riddler.</description>
-    <import file="nbproject/build-impl.xml"/>
-    <!--
-
-    There exist several targets which are by default empty and which can be 
-    used for execution of your tasks. These targets are usually executed 
-    before and after some main targets. They are: 
-
-      pre-init:                 called before initialization of project properties 
-      post-init:                called after initialization of project properties 
-      pre-compile:              called before javac compilation 
-      post-compile:             called after javac compilation 
-      pre-dist:                 called before jar building 
-      post-dist:                called after jar building 
-      post-clean:               called after cleaning build products 
-      pre-run-deploy:           called before deploying
-      post-run-deploy:          called after deploying
-
-    Example of pluging an obfuscator after the compilation could look like 
-
-        <target name="post-compile">
-            <obfuscate>
-                <fileset dir="${build.classes.dir}"/>
-            </obfuscate>
-        </target>
-
-    For list of available properties check the imported 
-    nbproject/build-impl.xml file. 
-
-
-    Other way how to customize the build is by overriding existing main targets.
-    The target of interest are: 
-
-      do-dist:                jar archive building
-      run:                    execution of project 
-
-    Example of overriding the target for project execution could look like 
-
-        <target name="run" depends="<PROJNAME>-impl.jar">
-            <exec dir="bin" executable="launcher.exe">
-                <arg file="${dist.jar}"/>
-            </exec>
-        </target>
-
-    Notice that overridden target depends on jar target and not only on 
-    compile target as regular run target does. Again, for list of available 
-    properties which you can use check the target you are overriding in 
-    nbproject/build-impl.xml file. 
-
-    -->
-    <condition property="onOSX">
-        <and>
-            <os family="mac"/>
-            <os family="unix"/>
-        </and>
-    </condition>
-    <condition property="onWindows">
-        <os family="windows"/>
-    </condition>
-    <condition property="onLinux">
-        <and>
-            <os family="unix"/>
-            <not>
-                <os family="mac"/>
-            </not>
-        </and>
-    </condition>
-
-    <target name="init-private" depends="init-private.win,init-private.other"/>
-    <target name="init-private.win">
-        <property environment="env"/>
-        <property file="${basedir}/properties/${env.USERNAME}.properties"/>    
-    </target>
-    <target name="init-private.other">
-        <property environment="env"/>
-        <property file="${basedir}/properties/${env.USER}.properties"/>    
-    </target>
-    <!-- overriding these to do nothing; have moved the important properties they loaded
-     into the <USERNAME>.properties file -->
-    <target name="init-userdir" depends="pre-init,init-private"/>
-    <target name="init-user" depends="pre-init,init-private,init-userdir"/>
 
     <property name="srcDir.dotNet" value="${basedir}/dotNet"/>
-    <!-- where in the NetBeans-generated stuff is this defined as a property? -->
-    <property name="distDir" value="${basedir}/dist"/>
+    <property environment="env"/>
 
-    <fileset id="common.libs" dir="${basedir}/../common/lib">
-        <include name="*.jar"/>
-    </fileset>
+    <target name="init-machine-properties" depends="setOSConditions,init-properties.win,init-properties.other"/>
+    <target name="init-properties.win">
+        <property file="${basedir}/properties/${env.USERNAME}.properties"/>
+    </target>
+    <target name="init-properties.other">
+        <property file="${basedir}/properties/${env.USER}.properties"/>
+    </target>
+
+    <!--<target name="all" depends="deploy, run, undeploy"/>-->
+    <target name="all" depends="deploy, run"/>
+
+    <target name="clean" depends="init-common">
+        <delete dir="${build.base.dir}"/>
+    </target>
+
+    <target name="assemble" depends="init-common, compile, pkg-server"/>
+
+    <target name="init-common" depends="setToolProperty,init-machine-properties,setGlassfishClassPath">
+        <mkdir dir="${build.classes.dir}"/>
+        <mkdir dir="${build.generated.dir}"/>
+        <mkdir dir="${assemble.dir}"/>
+    </target>
+
+    <target name="setToolProperty"
+            depends="setOSConditions,setToolWin,setToolUnix">
+    </target>
+
+    <target name="setOSConditions">
+        <condition property="isUnix">
+            <os family="unix"/>
+        </condition>
+        <condition property="isWindows">
+            <os family="windows" />
+        </condition>
+    </target>
+
+    <target name="setToolWin" if="isWindows">
+        <property name="APPCLIENT" value="${env.GLASSFISH_HOME}/bin/appclient.bat"/>
+        <property name="ASADMIN" value="${env.GLASSFISH_HOME}/bin/asadmin.bat"/>
+        <property name="WSIMPORT" value="${env.GLASSFISH_HOME}/bin/wsimport.bat"/>
+        <property name="WSGEN" value="${env.GLASSFISH_HOME}/bin/wsgen.bat"/>
+    </target>
+    <target name="setToolUnix" if="isUnix">
+        <property name="APPCLIENT" value="${env.GLASSFISH_HOME}/bin/appclient"/>
+        <property name="ASADMIN" value="${env.GLASSFISH_HOME}/bin/asadmin"/>
+        <property name="WSIMPORT" value="${env.GLASSFISH_HOME}/bin/wsimport"/>
+        <property name="WSGEN" value="${env.GLASSFISH_HOME}/bin/wsgen"/>
+    </target>
+    <target name="setGlassfishClassPath" unless="glassfish.classpath">
+        <path id="glassfish_classpath_jars">
+            <fileset dir="${env.GLASSFISH_HOME}/lib" includes="*.jar"/>
+        </path>
+        <pathconvert pathsep=":"
+                     property="glassfish.classpath"
+                     refid="glassfish_classpath_jars"/>
+    </target>
+
+    <target name="compile" depends="init-common">
+        <javac srcdir="java"
+               destdir="${build.classes.dir}"
+               classpath="${glassfish.classpath}"
+               debug="on"
+               failonerror="true"/>
+    </target>
+
+    <target name="pkg-server" depends="init-common">
+        <echo message="my build classes dir is:${build.classes.dir}" level="verbose"/>
+        <mkdir dir="${build.classes.dir}/tmp"/>
+        <mkdir dir="${build.classes.dir}/tmp/META-INF"/>
+        <mkdir dir="${build.classes.dir}/tmp/META-INF/wsdl"/>
+        <copy todir="${build.classes.dir}/tmp">
+            <fileset dir="${build.classes.dir}">
+                <include name="edu/cmu/sphinx/tools/riddler/ejb/**/*.class"/>
+                <include name="edu/cmu/sphinx/tools/riddler/shared/**/*.class"/>
+                <include name="edu/cmu/sphinx/tools/riddler/persist/**/*.class"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.classes.dir}/tmp/META-INF/wsdl">
+            <fileset dir="${build.generated.dir}">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+        <echo message="Creating archive file ${assemble.dir}/${appname}.jar" level="verbose"/>
+        <jar jarfile="${assemble.dir}/${appname}.jar" update="true">
+            <fileset dir="${build.classes.dir}/tmp" casesensitive="yes">
+                <include name="**/*class*"/>
+            </fileset>
+            <fileset dir="${build.classes.dir}/tmp" casesensitive="yes">
+                <include name="META-INF/wsdl/*.*"/>
+            </fileset>
+            <metainf dir="${basedir}/conf" includes="persistence.xml"/>
+        </jar>
+        <echo message="created jar file ${assemble.dir}/${appname}.jar" level="verbose"/>
+    </target>
+
+    <target name="pkg-client" depends="init-common">
+        <jar jarfile="${assemble.dir}/${appname}-client.jar" update="true">
+            <fileset dir="${build.classes.dir}">
+                <include name="edu/cmu/sphinx/tools/riddler/client/**/*.class"/>
+                <include name="edu/cmu/sphinx/tools/riddler/shared/**/*.class"/>
+                <include name="edu/cmu/sphinx/tools/riddler/persist/**/*.class"/>
+            </fileset>
+        </jar>
+        <echo message="created jar file ${assemble.dir}/${appname}-client.jar" level="verbose"/>
+    </target>
+
+    <target name="deploy" depends="init-common, assemble">
+        <echo message="Deploying ${assemble.dir}/${appname}.jar from ${basedir}." level="verbose"/>
+        <echo message="asadmin deploy --user ${admin.user} --passwordfile ${admin.password.file} --host ${admin.host} --port ${admin.port} --contextroot ${appname} --upload=true --target ${appserver.instance.name}"/>
+        <exec executable="${ASADMIN}" failonerror="false">
+            <arg line="deploy"/>
+            <arg line="--user ${admin.user}"/>
+            <arg line="--passwordfile ${admin.password.file}"/>
+            <arg line="--host ${admin.host}"/>
+            <arg line="--port ${admin.port}"/>
+            <arg line="--contextroot ${appname}"/>
+            <arg line="--upload=true"/>
+            <arg line="--target ${appserver.instance.name}"/>
+            <arg line="${assemble.dir}/${appname}.jar"/>
+        </exec>
+    </target>
+
+    <target name="run" depends="deploy,pkg-client">
+        <echo message="Executing standalone client."/>
+        <java fork="true" classname="edu.cmu.sphinx.tools.riddler.client.Main">
+            <classpath>
+                <pathelement location="${env.GLASSFISH_HOME}/lib/javaee.jar"/>
+                <pathelement location="${env.GLASSFISH_HOME}/lib/appserv-rt.jar"/>
+                <pathelement location="${assemble.dir}/${appname}-client.jar"/>
+            </classpath>
+            <jvmarg value="-Dorg.omg.CORBA.ORBInitialHost=localhost"/>
+        </java>
+    </target>
+
+    <target name="undeploy" depends="init-common">
+        <echo message="Undeploying {appname}" level="verbose"/>
+        <echo message="asadmin undeploy --user ${admin.user} --passwordfile ${admin.password.file} --host ${admin.host} --port ${admin.port} ${appname}"/>
+        <exec executable="${ASADMIN}" failonerror="false">
+            <arg line="undeploy"/>
+            <arg line="--user ${admin.user}"/>
+            <arg line="--passwordfile ${admin.password.file}"/>
+            <arg line="--host ${admin.host}"/>
+            <arg line="--port ${admin.port}"/>
+            <arg line="${appname}"/>
+        </exec>
+    </target>
 
     <taskdef resource="org/apache/ant/dotnet/antlib.xml">
         <classpath>
@@ -99,9 +161,9 @@
         </classpath>
     </taskdef>
 
-    <target name="genStubs" depends="run,genStubs.win,genStubs.other"
+    <target name="genStubs" depends="deploy,genStubs.win,genStubs.other"
             description="container target for WSDL generation tasks"/>
-    <target name="genStubs.win" if="onWindows">
+    <target name="genStubs.win" if="isWindows">
         <property name="MSDEV.home" value="C:/tool/MSVS8"/>
         <exec command="${MSDEV.home}/SDK/v2.0/Bin/wsdl.exe">
             <arg value="/out:${srcDir.dotNet}\RiddlerStubs.cs"/>
@@ -110,16 +172,19 @@
             <arg value="http://localhost:8080/RiddlerBeanService/RiddlerBean?wsdl"/>
         </exec>
     </target>
-    <target name="genStubs.other" unless="onWindows">
+    <target name="genStubs.other" unless="isWindows">
         <!-- TODO garrett 1/6/07: invoke Mono's WSDL-to-C# tool -->
     </target>
 
     <target name="test" depends="genStubs">
+        <mkdir dir="${build.base.dir}"/>
+        
         <nant>
             <target name="build"/>
             <build>
                 <target name="build">
-                    <csc target="library" output="${distDir}/riddler-tests.dll">
+                    <!--<csc target="library" output="${build.base.dir}/riddler-tests.dll">-->
+                    <csc target="library" output="${build.base.dir}/riddler-tests.dll">
                         <sources basedir="${srcDir.dotNet}">
                             <include name="**/*.cs" />
                         </sources>
@@ -131,13 +196,7 @@
             </build>
         </nant>
         <nunit>
-            <testassembly name="${distDir}/riddler-tests.dll"/>
+            <testassembly name="${build.base.dir}/riddler-tests.dll"/>
         </nunit>
-    </target>
-
-    <target name="run-client" depends="run">
-        <exec command="javaws">
-            <arg value="http://localhost:8080/riddler/riddler-app-client"/>
-        </exec>
     </target>
 </project>
