@@ -19,7 +19,7 @@
     <!--<target name="all" depends="deploy, run, undeploy"/>-->
     <target name="all" depends="deploy, run"/>
 
-    <target name="clean" depends="init-common">
+    <target name="clean" depends="init-common,undeploy">
         <delete dir="${build.base.dir}"/>
     </target>
 
