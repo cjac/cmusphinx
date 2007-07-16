@@ -1,7 +1,7 @@
 # Utility functions and parameters for regression tests
 
 # Predefined directories you may need
-# Stupid RedHat's stupid autoconf doesn't do @abs_top_builddir@
+# Stupid CMU Facilities autoconf doesn't do @abs_top_builddir@
 builddir="@top_builddir@"
 sourcedir="@top_srcdir@"
 sbtests="@sphinxbase@/test"
