@@ -159,23 +159,23 @@ typedef struct whmm_s {
 
     s3latid_t *history;		/**< Per state predecessor lattice entry index */
 
-    s3pid_t   *pid;		/**< Triphone id: 1 per state if 1st
+    s3ssid_t  *ssid;		/**< Senone sequence id: 1 per state if 1st
 				   phone in word, (When it is
-				   multiplexed) otherwise single pid
+				   multiplexed) otherwise single ssid
 				   for entire phone 
 				   
-				   When use as one senone,  do pid=*(h->pid)
-				   When use as multiple phone, do pid=h->pid[0] for state 0
+				   When use as one senone,  do ssid=*(h->ssid)
+				   When use as multiple phone, do ssid=h->ssid[0] for state 0
 				*/
 
-    
+    s3cipid_t  ci;		/**< Context-independent phone ID (and tmat ID) */
     int16      pos;		/**< Word pronunciation position index */
 
     s3cipid_t  rc;		/**< Right context position (only for last phone in word);
-				   index into rcpid[][].pid or lrcpid[][].pid */
+				   index into rcssid[][].ssid or lrcssid[][].ssid */
 
     s3cipid_t  lc;		/**< Left context position (only for first phone in word);
-				   index into lcpid[][].pid or lrcpid[][].pid */
+				   index into lcssid[][].ssid or lrcssid[][].ssid */
 
     int32      active;		/**< Whether active in current frame */
 
@@ -184,7 +184,7 @@ typedef struct whmm_s {
 } whmm_t;
 
 
-#define whmm_hmmpid(hmm,pid)  *(hmm->pid)
+#define whmm_hmmssid(hmm,ssid)  *(hmm->ssid)
 
 /* Macro for multiplex list or value, notice that, legacy causes the
    answer of IS_MULTIPLEX and the type to be different. 

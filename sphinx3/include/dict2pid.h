@@ -103,15 +103,6 @@
 #include "dict.h"
 #include "ctxt_table.h"
 
-/* \struct xwdssid_t
-   Something similar to xwdpid_t in ctxt_table but it stores ssid directly. 
-*/
-typedef struct {
-    s3ssid_t   *ssid;	/**< ssid list for all context ciphones; compressed, unique */
-    s3cipid_t *cimap;	/**< Index into ssid[] above for each ci phone */
-    int32    n_ssid;	/**< #Unique ssid in above*/
-} xwdssid_t;
-
 /** \file dict2pid.h
  * \brief Building triphones for a dictionary. 
  *

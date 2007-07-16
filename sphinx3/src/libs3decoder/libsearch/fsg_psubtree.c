@@ -260,7 +260,7 @@ psubtree_add_trans(fsg_pnode_t * root,
                  */
 
                 /* HACK! Is this correct? */
-                ssid = &ctxt_table_single_phone_pid(ctxt_tab, lc, bid, silcipid);
+                ssid = &ctxt_table_single_phone_ssid(ctxt_tab, lc, bid, silcipid);
 		/* &(ctxt_tab->lrcpid[bid][lc].pid[ctxt_tab->lrcpid[bid][lc].cimap[silcipid]]); */
 
                 /* Check if this ssid already allocated for some other context */
@@ -268,7 +268,7 @@ psubtree_add_trans(fsg_pnode_t * root,
                     pnode = (fsg_pnode_t *) gnode_ptr(gn);
                     /*      pnode->hmm = whmm_alloc_light(n_state_hmm); */
 
-                    if (*(pnode->hmm->pid) == *(ssid)) {
+                    if (*(pnode->hmm->ssid) == *(ssid)) {
                         /* already allocated; share it for this context phone */
                         fsg_pnode_add_ctxt(pnode, lc);
                         break;
@@ -279,7 +279,8 @@ psubtree_add_trans(fsg_pnode_t * root,
                     pnode =
                         (fsg_pnode_t *) ckd_calloc(1, sizeof(fsg_pnode_t));
                     pnode->hmm = whmm_alloc_light(n_state_hmm);
-                    pnode->hmm->pid = ssid;
+                    pnode->hmm->ssid = ssid;
+                    pnode->hmm->ci = bid;
 
                     /*E_INFO("%d\n",*(pnode->hmm->pid)); */
                     pnode->next.fsglink = fsglink;
@@ -312,8 +313,8 @@ psubtree_add_trans(fsg_pnode_t * root,
 
             pnode = (fsg_pnode_t *) ckd_calloc(1, sizeof(fsg_pnode_t));
             pnode->hmm = whmm_alloc_light(n_state_hmm);
-            pnode->hmm->pid = ssid;
-                              /** What is the senone sequence ID for a silence word ?*/
+            pnode->hmm->ssid = ssid;
+            pnode->hmm->ci = silcipid;
 
             /*E_INFO("%d\n",*(pnode->hmm->pid)); */
 
@@ -376,7 +377,7 @@ psubtree_add_trans(fsg_pnode_t * root,
                     lc = lclist[i];
                     rc = dict_pron(dict, wid, p + 1);
                     ssid =
-                        &(ctxt_table_left_ctxt_pid
+                        &(ctxt_table_left_ctxt_ssid
                           (ctxt_tab, lc, bid, rc));
 
                     pnode = ssid_pnode_map[lc];
@@ -388,7 +389,8 @@ psubtree_add_trans(fsg_pnode_t * root,
                                                        sizeof
                                                        (fsg_pnode_t));
                         pnode->hmm = whmm_alloc_light(n_state_hmm);
-                        pnode->hmm->pid = ssid;
+                        pnode->hmm->ssid = ssid;
+                        pnode->hmm->ci = bid;
 
                         /*E_INFO("%d\n",*(pnode->hmm->pid));            */
                         /* Also add word insertion penalty and phone insertion penalty */
@@ -410,9 +412,9 @@ psubtree_add_trans(fsg_pnode_t * root,
                         ssid_pnode_map[lc] = pnode;
                     }
                     else {
-                        E_INFO("*(pnode->hmm->pid) %d *ssid %d\n",
-                               *(pnode->hmm->pid), *ssid);
-                        assert(*(pnode->hmm->pid) == *(ssid));
+                        E_INFO("*(pnode->hmm->ssid) %d *ssid %d\n",
+                               *(pnode->hmm->ssid), *ssid);
+                        assert(*(pnode->hmm->ssid) == *(ssid));
                     }
                     fsg_pnode_add_ctxt(pnode, lc);
                 }
@@ -427,11 +429,12 @@ psubtree_add_trans(fsg_pnode_t * root,
 
                                                    lc <- b -> rc
                                                  */
-                ssid = &(ctxt_table_word_int_pid(ctxt_tab, wid, p));
+                ssid = &(ctxt_table_word_int_ssid(ctxt_tab, wid, p));
 
                 pnode = (fsg_pnode_t *) ckd_calloc(1, sizeof(fsg_pnode_t));
                 pnode->hmm = whmm_alloc_light(n_state_hmm);
-                pnode->hmm->pid = ssid;
+                pnode->hmm->ssid = ssid;
+                pnode->hmm->ci = bid;
 
                 /*      E_INFO("%d\n",*(pnode->hmm->pid));          */
                 pnode->logs2prob = pip;
@@ -479,10 +482,8 @@ psubtree_add_trans(fsg_pnode_t * root,
                        Am I correct?
                      */
                     lc = dict_pron(dict, wid, p - 1);
-                    ssid =
-                        &(ctxt_tab->rcpid[bid][lc].
-                          pid[ctxt_tab->rcpid[bid][lc].cimap[rc]]);
-
+                    ssid = &(ctxt_table_right_ctxt_ssid(ctxt_tab, lc, bid, rc));
+		    /* &(ctxt_tab->rcpid[bid][lc].pid[ctxt_tab->rcpid[bid][lc].cimap[rc]]); */
                     pnode = ssid_pnode_map[rc];
 
                     /*E_INFO("wstr %s lc %d %s, bid %d %s rc %d %s ssid %d\n",dict_wordstr(dict,wid),lc,mdef_ciphone_str(mdef,lc),bid, mdef_ciphone_str(mdef,bid), rc,mdef_ciphone_str(mdef,rc), *ssid);            */
@@ -492,7 +493,8 @@ psubtree_add_trans(fsg_pnode_t * root,
                                                        sizeof
                                                        (fsg_pnode_t));
                         pnode->hmm = whmm_alloc_light(n_state_hmm);
-                        pnode->hmm->pid = ssid;
+                        pnode->hmm->ssid = ssid;
+                        pnode->hmm->ci = bid;
 
                         /*E_INFO("%d\n",*(pnode->hmm->pid));            */
                         pnode->logs2prob = pip;
@@ -512,9 +514,9 @@ psubtree_add_trans(fsg_pnode_t * root,
                         ssid_pnode_map[rc] = pnode;
                     }
                     else {
-                        E_INFO("*(pnode->hmm->pid) %d *ssid %d\n",
-                               *(pnode->hmm->pid), *ssid);
-                        assert(*(pnode->hmm->pid) == *ssid);
+                        E_INFO("*(pnode->hmm->ssid) %d *ssid %d\n",
+                               *(pnode->hmm->ssid), *ssid);
+                        assert(*(pnode->hmm->ssid) == *ssid);
                     }
                     fsg_pnode_add_ctxt(pnode, rc);
                 }
@@ -618,7 +620,7 @@ fsg_psubtree_dump(fsg_pnode_t * head, FILE * fp, dict_t * dict,
             fprintf(fp, "  ");
 
         fprintf(fp, "%p.@", head);    /* Pointer used as node ID */
-        fprintf(fp, " %5d.SS", *(head->hmm->pid));
+        fprintf(fp, " %5d.SS", *(head->hmm->ssid));
         fprintf(fp, " %10d.LP", head->logs2prob);
         fprintf(fp, " %p.SIB", head->sibling);
         fprintf(fp, " %s.%d", mdef_ciphone_str(mdef, (head->ci_ext)),

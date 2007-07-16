@@ -550,10 +550,10 @@ void
 whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
                 whmm_t * h, int32 n_state, int32 final_state)
 {
-    int32 lastpos, npid, nf;
+    int32 lastpos, nssid, nf;
     whmm_t *nexth, *prevh;
     s3cipid_t rc;
-    s3pid_t *pid;
+    s3pid_t *ssid;
     ctxt_table_t *ct_table;
     dict_t *dict;
     kbcore_t *kbc;
@@ -575,8 +575,8 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
         if ((!h->next) || (h->next->pos != h->pos + 1)) {
             nexth = whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
 
-            nexth->pid = &ctxt_table_word_int_pid(ct_table, w, nexth->pos);
-
+            nexth->ssid = &ctxt_table_word_int_ssid(ct_table, w, nexth->pos);
+            nexth->ci = dict->word[w].ciphone[h->pos + 1];
             nexth->next = h->next;
             h->next = nexth;
         }
@@ -595,16 +595,16 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
          * all final triphone HMM instances first.
          */
         prevh = h;
-        get_rcpid(ct_table, w, &pid, &npid, dict);
+        get_rcssid(ct_table, w, &ssid, &nssid, dict);
 
-        for (rc = 0; rc < npid; rc++) {
+        for (rc = 0; rc < nssid; rc++) {
             if ((!prevh->next) || (prevh->next->rc != rc)) {
                 nexth =
                     whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
 
                 nexth->rc = rc;
-                nexth->pid = &(pid[rc]);
-
+                nexth->ssid = &(ssid[rc]);
+                nexth->ci = dict->word[w].ciphone[h->pos + 1];
                 nexth->next = prevh->next;
                 prevh->next = nexth;
             }
@@ -612,7 +612,7 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
         }
 
         /* Transition to next HMMs */
-        for (rc = 0, nexth = h->next; rc < npid; rc++, nexth = nexth->next) {
+        for (rc = 0, nexth = h->next; rc < nssid; rc++, nexth = nexth->next) {
             if (h->score[final_state] > nexth->score[0]) {
                 nexth->score[0] = h->score[final_state];
                 nexth->history[0] = h->history[final_state];
@@ -673,11 +673,11 @@ whmm_exit(srch_FLAT_FWD_graph_t * fwg,
 /* ARCHAN: Ah. this is the part where the magical multiplex-triphone
    is implemented.  This how it works.  When a word is being entered,
    the first phone will be entered, if the score is high enough, then
-   pid[0] will be replaced by the best PID.  Now, when we go back
+   ssid[0] will be replaced by the best SSID.  Now, when we go back
    whmm_eval, the first phone will always be computed as multiplexed.
-   Then, the pid will then start to propagate just like the score.
+   Then, the ssid will then start to propagate just like the score.
    
-   You could just treat pid as something like backtracing
+   You could just treat ssid as something like backtracing
    pointer. Then it should be pretty to understand. 
 */
 
@@ -698,9 +698,9 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 {
     whmm_t *h, *prevh;
     s3cipid_t b, rc;
-    s3pid_t pid, *rpid;
-    s3pid_t *pidp;
-    int32 s, npid, nf;
+    s3ssid_t ssid, *rssid;
+    s3ssid_t *ssidp;
+    int32 s, nssid, nf;
     kbcore_t *kbc;
     tmat_t *tmat;
     dict_t *dict;
@@ -735,16 +735,18 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         /* Note that b, lc, and rc are all fully known, so the
          * ctxt_table is really not doing much of anything the model
          * definition couldn't already do. */
-        pidp = &ctxt_table_left_ctxt_pid(ct_table, lc, b, rc);
+        ssidp = &ctxt_table_left_ctxt_ssid(ct_table, lc, b, rc);
         /* &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]); */
-        pid = *(pidp);
+        ssid = *(ssidp);
 
         /* Allocate and initialize an HMM for the next phone if necessary. */
         if (fwg->multiplex) {
             if ((!whmm[w]) || (whmm[w]->pos != 0)) {    /* If whmm is not allocated or it is not the first phone */
                 h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
-                for (s = 0; s < n_state; s++)
-                    h->pid[s] = pid;
+                h->ci = b;
+                for (s = 0; s < n_state; s++) {
+                    h->ssid[s] = ssid;
+                }
 
                 h->next = whmm[w];
                 whmm[w] = h;
@@ -755,7 +757,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
                 || !exist_left_context(whmm, w, lcmap[lc])) {
 
                 h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
-                h->pid = pidp;
+                h->ci = b;
+                h->ssid = ssidp;
                 h->next = whmm[w];
                 whmm[w] = h;
             }
@@ -770,12 +773,12 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
             h->active = nf;
 
             if (fwg->multiplex) {
-                h->pid[0] = pid;
+                h->ssid[0] = ssid;
             }
             else {
                 /* TODO: figure out what this next line does */
                 h->lc = lcmap[lc];
-                h->pid = pidp;
+                h->ssid = ssidp;
             }
         }
 
@@ -784,22 +787,22 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         /* Do all right contexts; first make sure all are allocated */
         prevh = NULL;
         h = whmm[w];
-        npid = get_rc_npid(ct_table, w, dict);
-        rpid = ct_table->lrcpid[b][lc].pid;
+        nssid = ct_get_rc_nssid(ct_table, w, dict);
+        rssid = ct_table->lrcssid[b][lc].ssid;
 
-        for (rc = 0; rc < npid; rc++) {
+        for (rc = 0; rc < nssid; rc++) {
 
-            pidp = &ctxt_table_single_phone_pid(ct_table, lc, b, rc);
+            ssidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
-            pid = *(pidp);
+            ssid = *(ssidp);
 
             if (fwg->multiplex_singleph) {
                 if ((!h) || (h->rc != rc)) {
                     h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
                     for (s = 0; s < n_state; s++) {
-                        h->pid[s] = rpid[rc];
+                        h->ssid[s] = rssid[rc];
                     }
-
+                    h->ci = b;
                     h->rc = rc;
 
                     if (prevh) {
@@ -816,8 +819,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
                 if ((!h)
                     || !exist_left_right_context(whmm, w, lcmap[lc], rc)) {
                     h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
-                    h->pid = pidp;
-
+                    h->ssid = ssidp;
+                    h->ci = b;
                     h->rc = rc;
 
                     if (prevh) {
@@ -840,20 +843,20 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         /* Transition to the allocated HMMs */
         b = dict->word[w].ciphone[0];
-        for (rc = 0, h = whmm[w]; rc < npid; rc++, h = h->next) {
+        for (rc = 0, h = whmm[w]; rc < nssid; rc++, h = h->next) {
 
-            pidp = &ctxt_table_single_phone_pid(ct_table, lc, b, rc);
+            ssidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
-            pid = *(pidp);
+            ssid = *(ssidp);
 
             if (score > h->score[0]) {
                 h->score[0] = score;
                 h->history[0] = l;
 
                 if (fwg->multiplex_singleph)
-                    h->pid[0] = rpid[rc];
+                    h->ssid[0] = rssid[rc];
                 else {
-                    h->pid = pidp;
+                    h->ssid = ssidp;
                     h->lc = lcmap[lc];
                 }
 

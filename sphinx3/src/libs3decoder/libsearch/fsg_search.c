@@ -439,8 +439,8 @@ hmm_sen_active(whmm_t * hmm, ascr_t * a, int32 n_state_hmm, mdef_t * m)
     senp = NULL;
 
     if (hmm->active > 0) {
-        ssid = *(hmm->pid);
-        senp = m->phone[ssid].state;
+        ssid = *(hmm->ssid);
+        senp = m->sseq[ssid];
 
         for (i = 0; i < n_state_hmm; i++) {
             /*Get the senone sequence id */

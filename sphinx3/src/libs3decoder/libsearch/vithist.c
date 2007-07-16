@@ -127,7 +127,6 @@
 #include "vithist.h"
 #include "lextree.h"
 
-
 void
 vh_lmstate_display(vh_lmstate_t * vhl, dict_t * dict)
 {
@@ -1613,6 +1612,7 @@ latticehist_free(latticehist_t * lathist)
     }
 }
 
+
 void
 latticehist_dump(latticehist_t * lathist, FILE * fp, dict_t * dict,
                  ctxt_table_t * ct, int32 dumpRC)
@@ -1633,7 +1633,7 @@ latticehist_dump(latticehist_t * lathist, FILE * fp, dict_t * dict,
 
 
         if (lat[i].rcscore && dumpRC) {
-            npid = get_rc_npid(ct, lat[i].wid, dict);
+            npid = ct_get_rc_nssid(ct, lat[i].wid, dict);
             for (rc = 0; rc < npid; rc++) {
                 fprintf(fp,
                         "rc(Compacted) %d, rcscore %5d rchistory %6d\n",
@@ -1698,7 +1698,7 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
         lathist->lattice[lathist->n_lat_entry].history = history;
 
         /* Allocate space for different right context scores */
-        npid = get_rc_npid(ct, w, dict);
+        npid = ct_get_rc_nssid(ct, w, dict);
         assert(npid > 0);
 
         lathist->lattice[lathist->n_lat_entry].rcscore =

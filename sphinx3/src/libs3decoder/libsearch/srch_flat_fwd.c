@@ -892,14 +892,14 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
 
             if (h->type == MULTIPLEX_TYPE) {
                 for (st = fwg->n_state - 2; st >= 0; --st) {
-                    p = h->pid[st];
-                    senp = mdef->phone[p].state;
+                    p = h->ssid[st];
+                    senp = mdef->sseq[p];
                     ascr->sen_active[senp[st]] = 1;
                 }
             }
             else {
-                p = *(h->pid);
-                senp = mdef->phone[p].state;
+                p = *(h->ssid);
+                senp = mdef->sseq[p];
                 for (st = fwg->n_state - 2; st >= 0; --st)
                     ascr->sen_active[senp[st]] = 1;
 

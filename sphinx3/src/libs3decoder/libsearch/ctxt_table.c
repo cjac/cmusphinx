@@ -77,15 +77,11 @@
 #include <ctxt_table.h>
 #include <ckd_alloc.h>
 
-static s3pid_t *tmp_xwdpid;   /**< Temporary array used during the creation of lexical triphones lists */
-static uint8 *word_start_ci;
-static uint8 *word_end_ci;
-
 void
-dump_xwdpidmap(xwdpid_t ** x, mdef_t * mdef)
+dump_xwdssidmap(xwdssid_t ** x, mdef_t * mdef)
 {
     s3cipid_t b, c1, c2;
-    s3pid_t p;
+    s3ssid_t p;
 
     for (b = 0; b < mdef->n_ciphone; b++) {
         if (!x[b])
@@ -95,12 +91,12 @@ dump_xwdpidmap(xwdpid_t ** x, mdef_t * mdef)
             if (!x[b][c1].cimap)
                 continue;
 
-            printf("n_pid(%s, %s) = %d\n",
+            printf("n_ssid(%s, %s) = %d\n",
                    mdef_ciphone_str(mdef, b), mdef_ciphone_str(mdef, c1),
-                   x[b][c1].n_pid);
+                   x[b][c1].n_ssid);
 
             for (c2 = 0; c2 < mdef->n_ciphone; c2++) {
-                p = x[b][c1].pid[x[b][c1].cimap[c2]];
+                p = x[b][c1].ssid[x[b][c1].cimap[c2]];
                 printf("  %10s %5d\n", mdef_ciphone_str(mdef, c2), p);
             }
         }
@@ -108,14 +104,13 @@ dump_xwdpidmap(xwdpid_t ** x, mdef_t * mdef)
     fflush(stdout);
 }
 
-
 /**
- * Utility function for building cross-word pid maps.  Compresses cross-word pid list
- * to unique ones.
+ * Utility function for building cross-word ssid maps.  Looks up
+ * senone sequence IDs.
  */
 int32
-xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx,
-                int32 n, mdef_t * mdef)
+xwdssid_compress(s3pid_t p, s3ssid_t * out_ssid, s3cipid_t * map, s3cipid_t ctx,
+                 int32 n, mdef_t * mdef)
 {
     s3cipid_t i;
     s3tmatid_t tmatid;
@@ -137,11 +132,10 @@ xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx,
 
     /* This state sequence different from all previous ones; allocate new entry */
     map[ctx] = n;
-    pid[n] = p;
+    out_ssid[n] = ssid;
 
     return (n + 1);
 }
-
 
 
 /**
@@ -149,10 +143,12 @@ xwdpid_compress(s3pid_t p, s3pid_t * pid, s3cipid_t * map, s3cipid_t ctx,
  * for all left context ciphones.  Compress map to unique list.
  */
 void
-build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
+build_lcssid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef,
+             uint8 *word_end_ci, s3pid_t *tmp_xwdssid)
+
 {
     s3cipid_t lc, *map;
-    s3pid_t p;
+    s3ssid_t p;
     int32 n;
 
     /* Maps left CI phone to index in "compressed" phone ID table */
@@ -165,15 +161,15 @@ build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
             mdef_is_ciphone(mdef, p))
             ct->n_backoff_ci++;
 
-        n = xwdpid_compress(p, tmp_xwdpid, map, lc, n, mdef);
+        n = xwdssid_compress(p, tmp_xwdssid, map, lc, n, mdef);
     }
 
-    /* Copy/Move to lcpid */
-    ct->lcpid[b][rc].cimap = map;
-    ct->lcpid[b][rc].n_pid = n;
+    /* Copy/Move to lcssid */
+    ct->lcssid[b][rc].cimap = map;
+    ct->lcssid[b][rc].n_ssid = n;
     /* Array of phone IDs with unique senone sequences, pointed to by cimap. */
-    ct->lcpid[b][rc].pid = (s3pid_t *) ckd_calloc(n, sizeof(s3pid_t));
-    memcpy(ct->lcpid[b][rc].pid, tmp_xwdpid, n * sizeof(s3pid_t));
+    ct->lcssid[b][rc].ssid = (s3ssid_t *) ckd_calloc(n, sizeof(s3ssid_t));
+    memcpy(ct->lcssid[b][rc].ssid, tmp_xwdssid, n * sizeof(s3ssid_t));
 }
 
 
@@ -181,13 +177,14 @@ build_lcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t rc, mdef_t * mdef)
  * Given base b, and left context lc, build right context cross-word triphones map
  * for all right context ciphones.  Compress map to unique list.
  *
- * \note This is identical to build_lcpid except for right contexts.
+ * \note This is identical to build_lcssid except for right contexts.
  */
 void
-build_rcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef)
+build_rcssid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef,
+             uint8 *word_start_ci, s3pid_t *tmp_xwdssid)
 {
     s3cipid_t rc, *map;
-    s3pid_t p;
+    s3ssid_t p;
     int32 n;
 
     /* Maps right CI phone to index in "compressed" phone ID table */
@@ -200,43 +197,46 @@ build_rcpid(ctxt_table_t * ct, s3cipid_t b, s3cipid_t lc, mdef_t * mdef)
             mdef_is_ciphone(mdef, p))
             ct->n_backoff_ci++;
 
-        n = xwdpid_compress(p, tmp_xwdpid, map, rc, n, mdef);
+        n = xwdssid_compress(p, tmp_xwdssid, map, rc, n, mdef);
     }
 
-    /* Copy/Move to rcpid */
-    ct->rcpid[b][lc].cimap = map;
-    ct->rcpid[b][lc].n_pid = n;
+    /* Copy/Move to rcssid */
+    ct->rcssid[b][lc].cimap = map;
+    ct->rcssid[b][lc].n_ssid = n;
     /* Array of phone IDs with unique senone sequences, pointed to by cimap. */
-    ct->rcpid[b][lc].pid = (s3pid_t *) ckd_calloc(n, sizeof(s3pid_t));
-    memcpy(ct->rcpid[b][lc].pid, tmp_xwdpid, n * sizeof(s3pid_t));
+    ct->rcssid[b][lc].ssid = (s3ssid_t *) ckd_calloc(n, sizeof(s3ssid_t));
+    memcpy(ct->rcssid[b][lc].ssid, tmp_xwdssid, n * sizeof(s3ssid_t));
 }
 
 /**
  * Given base b for a single-phone word, build context cross-word triphones map
  * for all left and right context ciphones.
+ *
+ * These are uncompressed for some reason.
  */
 void
-build_lrcpid(ctxt_table_t * ct, s3cipid_t b, mdef_t * mdef)
+build_lrcssid(ctxt_table_t * ct, s3cipid_t b, mdef_t * mdef,
+              uint8 *word_start_ci, uint8 *word_end_ci)
 {
     s3cipid_t rc, lc;
 
     for (lc = 0; lc < mdef->n_ciphone; lc++) {
-        ct->lrcpid[b][lc].pid =
-            (s3pid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3pid_t));
-        ct->lrcpid[b][lc].cimap =
+        s3ssid_t p;
+
+        ct->lrcssid[b][lc].ssid =
+            (s3ssid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3ssid_t));
+        ct->lrcssid[b][lc].cimap =
             (s3cipid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3cipid_t));
 
-
         for (rc = 0; rc < mdef->n_ciphone; rc++) {
-            ct->lrcpid[b][lc].cimap[rc] = rc;
-            ct->lrcpid[b][lc].pid[rc] =
-                mdef_phone_id_nearest(mdef, b, lc, rc, WORD_POSN_SINGLE);
+            p = mdef_phone_id_nearest(mdef, b, lc, rc, WORD_POSN_SINGLE);
+            ct->lrcssid[b][lc].cimap[rc] = rc;
+            ct->lrcssid[b][lc].ssid[rc] = mdef_pid2ssid(mdef, p);
             if ((!mdef->ciphone[b].filler) && word_start_ci[rc]
-                && word_end_ci[lc]
-                && mdef_is_ciphone(mdef, ct->lrcpid[b][lc].pid[rc]))
+                && word_end_ci[lc] && mdef_is_ciphone(mdef, p))
                 ct->n_backoff_ci++;
         }
-        ct->lrcpid[b][lc].n_pid = mdef->n_ciphone;
+        ct->lrcssid[b][lc].n_ssid = mdef->n_ciphone;
     }
 }
 
@@ -245,25 +245,26 @@ build_lrcpid(ctxt_table_t * ct, s3cipid_t b, mdef_t * mdef)
 
 /**
  * Build within-word triphones sequence for each word.  The extreme ends are not needed
- * since cross-word modelling is used for those.  (See lcpid, rcpid, lrcpid.)
+ * since cross-word modelling is used for those.  (See lcssid, rcssid, lrcssid.)
  */
 
 void
-build_wwpid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
+build_wwssid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
 {
     s3wid_t w;
+    s3ssid_t p;
     int32 pronlen, l;
     s3cipid_t b, lc, rc;
 
     E_INFO("Building within-word triphones\n");
     ct->n_backoff_ci = 0;
 
-    ct->wwpid = (s3pid_t **) ckd_calloc(dict->n_word, sizeof(s3pid_t *));
+    ct->wwssid = (s3ssid_t **) ckd_calloc(dict->n_word, sizeof(s3ssid_t *));
     for (w = 0; w < dict->n_word; w++) {
         pronlen = dict->word[w].pronlen;
         if (pronlen >= 3)
-            ct->wwpid[w] =
-                (s3pid_t *) ckd_calloc(pronlen - 1, sizeof(s3pid_t));
+            ct->wwssid[w] =
+                (s3ssid_t *) ckd_calloc(pronlen - 1, sizeof(s3ssid_t));
         else
             continue;
 
@@ -271,10 +272,9 @@ build_wwpid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
         b = dict->word[w].ciphone[1];
         for (l = 1; l < pronlen - 1; l++) {
             rc = dict->word[w].ciphone[l + 1];
-            ct->wwpid[w][l] =
-                mdef_phone_id_nearest(mdef, b, lc, rc, WORD_POSN_INTERNAL);
-            if ((!mdef->ciphone[b].filler)
-                && mdef_is_ciphone(mdef, ct->wwpid[w][l]))
+            p = mdef_phone_id_nearest(mdef, b, lc, rc, WORD_POSN_INTERNAL);
+            ct->wwssid[w][l] = mdef_pid2ssid(mdef, p);
+            if ((!mdef->ciphone[b].filler) && mdef_is_ciphone(mdef, p))
                 ct->n_backoff_ci++;
 
             lc = b;
@@ -283,7 +283,7 @@ build_wwpid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
 #if 0
         printf("%-25s ", dict->word[w].word);
         for (l = 1; l < pronlen - 1; l++)
-            printf(" %5d", ct->wwpid[w][l]);
+            printf(" %5d", ct->wwssid[w][l]);
         printf("\n");
 #endif
     }
@@ -297,11 +297,15 @@ build_wwpid(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
  * Build cross-word triphones map for the entire dictionary.
  */
 void
-build_xwdpid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
+build_xwdssid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
 {
     s3wid_t w;
     int32 pronlen;
     s3cipid_t b, lc, rc;
+    s3ssid_t *tmp_xwdssid;
+    uint8 *word_start_ci;
+    uint8 *word_end_ci;
+
 
     ct->n_backoff_ci = 0;
 
@@ -316,12 +320,13 @@ build_xwdpid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
         word_start_ci[dict->word[w].ciphone[0]] = 1;
         word_end_ci[dict->word[w].ciphone[dict->word[w].pronlen - 1]] = 1;
     }
-    ct->lcpid =
-        (xwdpid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdpid_t *));
-    ct->rcpid =
-        (xwdpid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdpid_t *));
-    ct->lrcpid =
-        (xwdpid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdpid_t *));
+    ct->lcssid =
+        (xwdssid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdssid_t *));
+    ct->rcssid =
+        (xwdssid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdssid_t *));
+    ct->lrcssid =
+        (xwdssid_t **) ckd_calloc(mdef->n_ciphone, sizeof(xwdssid_t *));
+    tmp_xwdssid = (s3ssid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3ssid_t));
 
     for (w = 0; w < dict->n_word; w++) {
         pronlen = dict->word[w].pronlen;
@@ -330,50 +335,54 @@ build_xwdpid_map(ctxt_table_t * ct, dict_t * dict, mdef_t * mdef)
 	    /* Right edge of word: rcmap */
             b = dict->word[w].ciphone[pronlen - 1];
             lc = dict->word[w].ciphone[pronlen - 2];
-            if (!ct->rcpid[b])
-                ct->rcpid[b] =
-                    (xwdpid_t *) ckd_calloc(mdef->n_ciphone,
-                                            sizeof(xwdpid_t));
-            if (!ct->rcpid[b][lc].cimap)
-                build_rcpid(ct, b, lc, mdef);
+            if (!ct->rcssid[b])
+                ct->rcssid[b] =
+                    (xwdssid_t *) ckd_calloc(mdef->n_ciphone,
+                                             sizeof(xwdssid_t));
+            if (!ct->rcssid[b][lc].cimap)
+                build_rcssid(ct, b, lc, mdef,
+                             word_start_ci, tmp_xwdssid);
 
             /* Left edge of word: lcmap */
             b = dict->word[w].ciphone[0];
             rc = dict->word[w].ciphone[1];
-            if (!ct->lcpid[b])
-                ct->lcpid[b] =
-                    (xwdpid_t *) ckd_calloc(mdef->n_ciphone,
-                                            sizeof(xwdpid_t));
-            if (!ct->lcpid[b][rc].cimap)
-                build_lcpid(ct, b, rc, mdef);
+            if (!ct->lcssid[b])
+                ct->lcssid[b] =
+                    (xwdssid_t *) ckd_calloc(mdef->n_ciphone,
+                                            sizeof(xwdssid_t));
+            if (!ct->lcssid[b][rc].cimap)
+                build_lcssid(ct, b, rc, mdef,
+                             word_end_ci, tmp_xwdssid);
 
         }
         else {
             /* Single-phone word; build lrcmap if not already present */
             b = dict->word[w].ciphone[0];
-            if (!ct->lrcpid[b]) {
-                ct->lrcpid[b] =
-                    (xwdpid_t *) ckd_calloc(mdef->n_ciphone,
-                                            sizeof(xwdpid_t));
-                build_lrcpid(ct, b, mdef);
+            if (!ct->lrcssid[b]) {
+                ct->lrcssid[b] =
+                    (xwdssid_t *) ckd_calloc(mdef->n_ciphone,
+                                            sizeof(xwdssid_t));
+                build_lrcssid(ct, b, mdef,
+                              word_start_ci, word_end_ci);
             }
         }
     }
 
     ckd_free(word_start_ci);
     ckd_free(word_end_ci);
+    ckd_free(tmp_xwdssid);
     E_INFO("%d cross-word triphones mapped to CI-phones\n",
            ct->n_backoff_ci);
 
 #if 0
-    E_INFO("LCXWDPID\n");
-    dump_xwdpidmap(ct->lcpid, mdef);
+    E_INFO("LCXWDSSID\n");
+    dump_xwdssidmap(ct->lcssid, mdef);
 
-    E_INFO("RCXWDPID\n");
-    dump_xwdpidmap(ct->rcpid, mdef);
+    E_INFO("RCXWDSSID\n");
+    dump_xwdssidmap(ct->rcssid, mdef);
 
-    E_INFO("LRCXWDPID\n");
-    dump_xwdpidmap(ct->lrcpid, mdef);
+    E_INFO("LRCXWDSSID\n");
+    dump_xwdssidmap(ct->lrcssid, mdef);
 #endif
 }
 
@@ -383,29 +392,26 @@ ctxt_table_init(dict_t * dict, mdef_t * mdef)
     ctxt_table_t *ct;
     ct = (ctxt_table_t *) ckd_calloc(1, sizeof(ctxt_table_t));
 
-    tmp_xwdpid = (s3pid_t *) ckd_calloc(mdef->n_ciphone, sizeof(s3pid_t));
+    build_wwssid(ct, dict, mdef);
+    build_xwdssid_map(ct, dict, mdef);
 
-    build_wwpid(ct, dict, mdef);
-    build_xwdpid_map(ct, dict, mdef);
-
-    ckd_free(tmp_xwdpid);
     return ct;
 }
 
 void
 ctxt_table_free(ctxt_table_t * ct)
 {
-    if (ct->lcpid)
-        ckd_free(ct->lcpid);
+    if (ct->lcssid)
+        ckd_free(ct->lcssid);
 
-    if (ct->rcpid)
-        ckd_free(ct->rcpid);
+    if (ct->rcssid)
+        ckd_free(ct->rcssid);
 
-    if (ct->lrcpid)
-        ckd_free(ct->lrcpid);
+    if (ct->lrcssid)
+        ckd_free(ct->lrcssid);
 
-    if (ct->wwpid)
-        ckd_free(ct->wwpid);
+    if (ct->wwssid)
+        ckd_free(ct->wwssid);
 
 }
 
@@ -419,11 +425,11 @@ get_rc_cimap(ctxt_table_t * ct, s3wid_t w, dict_t * dict)
     b = dict->word[w].ciphone[pronlen - 1];
     if (pronlen == 1) {
         /* No known left context.  But all cimaps (for any l) are identical; pick one */
-        return (ct->lrcpid[b][0].cimap);
+        return (ct->lrcssid[b][0].cimap);
     }
     else {
         lc = dict->word[w].ciphone[pronlen - 2];
-        return (ct->rcpid[b][lc].cimap);
+        return (ct->rcssid[b][lc].cimap);
     }
 }
 
@@ -437,18 +443,18 @@ get_lc_cimap(ctxt_table_t * ct, s3wid_t w, dict_t * dict)
     b = dict->word[w].ciphone[0];
     if (pronlen == 1) {
         /* No known right context.  But all cimaps (for any l) are identical; pick one */
-        return (ct->lrcpid[b][0].cimap);
+        return (ct->lrcssid[b][0].cimap);
     }
     else {
         rc = dict->word[w].ciphone[1];
-        return (ct->lcpid[b][rc].cimap);
+        return (ct->lcssid[b][rc].cimap);
     }
 }
 
 
 void
-get_rcpid(ctxt_table_t * ct, s3wid_t w, s3pid_t ** pid, int32 * npid,
-          dict_t * dict)
+get_rcssid(ctxt_table_t * ct, s3wid_t w, s3ssid_t ** ssid, int32 * nssid,
+           dict_t * dict)
 {
     int32 pronlen;
     s3cipid_t b, lc;
@@ -459,13 +465,13 @@ get_rcpid(ctxt_table_t * ct, s3wid_t w, s3pid_t ** pid, int32 * npid,
     b = dict->word[w].ciphone[pronlen - 1];
     lc = dict->word[w].ciphone[pronlen - 2];
 
-    *pid = ct->rcpid[b][lc].pid;
-    *npid = ct->rcpid[b][lc].n_pid;
+    *ssid = ct->rcssid[b][lc].ssid;
+    *nssid = ct->rcssid[b][lc].n_ssid;
 }
 
 void
-get_lcpid(ctxt_table_t * ct, s3wid_t w, s3pid_t ** pid, int32 * npid,
-          dict_t * dict)
+get_lcssid(ctxt_table_t * ct, s3wid_t w, s3ssid_t ** ssid, int32 * nssid,
+           dict_t * dict)
 {
     int32 pronlen;
     s3cipid_t b, rc;
@@ -476,13 +482,12 @@ get_lcpid(ctxt_table_t * ct, s3wid_t w, s3pid_t ** pid, int32 * npid,
     b = dict->word[w].ciphone[0];
     rc = dict->word[w].ciphone[1];
 
-    *pid = ct->lcpid[b][rc].pid;
-    *npid = ct->lcpid[b][rc].n_pid;
+    *ssid = ct->lcssid[b][rc].ssid;
+    *nssid = ct->lcssid[b][rc].n_ssid;
 }
 
-
 int32
-get_rc_npid(ctxt_table_t * ct, s3wid_t w, dict_t * dict)
+ct_get_rc_nssid(ctxt_table_t * ct, s3wid_t w, dict_t * dict)
 {
     int32 pronlen;
     s3cipid_t b, lc;
@@ -490,13 +495,13 @@ get_rc_npid(ctxt_table_t * ct, s3wid_t w, dict_t * dict)
     pronlen = dict->word[w].pronlen;
     b = dict->word[w].ciphone[pronlen - 1];
     assert(ct);
-    assert(ct->lrcpid);
+    assert(ct->lrcssid);
     if (pronlen == 1) {
         /* No known left context.  But all cimaps (for any l) are identical; pick one */
-        return (ct->lrcpid[b][0].n_pid);
+        return (ct->lrcssid[b][0].n_ssid);
     }
     else {
         lc = dict->word[w].ciphone[pronlen - 2];
-        return (ct->rcpid[b][lc].n_pid);
+        return (ct->rcssid[b][lc].n_ssid);
     }
 }

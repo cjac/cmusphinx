@@ -95,49 +95,45 @@
  */
 
 /**
- * \struct xwdpid_t
+ * \struct xwdssid_t
  * \brief cross word triphone model structure 
  */
 
 typedef struct {
-    s3pid_t   *pid;	/**< Pid list for all context ciphones; compressed, unique */
-    s3cipid_t *cimap;	/**< Index into pid[] above for each ci phone */
-    int32    n_pid;	/**< #Unique pid in above, compressed pid list */
-} xwdpid_t;
+    s3ssid_t  *ssid;	/**< Senone Sequence ID list for all context ciphones */
+    s3cipid_t *cimap;	/**< Index into ssid[] above for each ci phone */
+    int32     n_ssid;	/**< #Unique ssid in above, compressed ssid list */
+} xwdssid_t;
 
 
-#define ctxt_table_left_ctxt_pid(ct,l,b,r)  ((ct)->lcpid[b][r].pid[ct->lcpid[b][r].cimap[l]])
-#define ctxt_table_word_int_pid(ct,wid,wpos)  ((ct)->wwpid[wid][wpos])
-#define ctxt_table_right_ctxt_pid(ct,l,b,r)  ((ct)->rcpid[b][l].pid[ct->rcpid[b][l].cimap[r]])
-#define ctxt_table_single_phone_pid(ct,l,b,r)  ((ct)->lrcpid[b][l].pid[ct->lrcpid[b][l].cimap[r]])
+#define ctxt_table_left_ctxt_ssid(ct,l,b,r)  ((ct)->lcssid[b][r].ssid[ct->lcssid[b][r].cimap[l]])
+#define ctxt_table_word_int_ssid(ct,wid,wpos)  ((ct)->wwssid[wid][wpos])
+#define ctxt_table_right_ctxt_ssid(ct,l,b,r)  ((ct)->rcssid[b][l].ssid[ct->rcssid[b][l].cimap[r]])
+#define ctxt_table_single_phone_ssid(ct,l,b,r)  ((ct)->lrcssid[b][l].ssid[ct->lrcssid[b][l].cimap[r]])
 
 /**
  * \struct ctxt_table_t 
  *
  * Ravi's Comment
- * First, the within word triphone models.  wwpid[w] = list of
- * triphone pronunciations for word w.  Since left and right extremes
- * require cross-word modelling (see below), wwpid[w][0] and
- * wwpid[w][pronlen-1] contain no information and shouldn't be
+ * First, the within word triphone models.  wwssid[w] = list of
+ * senone sequences for word w.  Since left and right extremes
+ * require cross-word modelling (see below), wwssid[w][0] and
+ * wwssid[w][pronlen-1] contain no information and shouldn't be
  * touched.
  *
  * Left context mapping (for multiphone words): given the 1st base phone, b, of a word
- * and its right context, r, the triphone for any left context l =
- *     lcpid[b][r].pid[lcpid[b][r].cimap[l]].
+ * and its right context, r, the senone sequence for any left context l =
+ *     lcssid[b][r].ssid[lcssid[b][r].cimap[l]].
  * 
  * Similarly, right context mapping (for multiphone words): given b and left context l,
- * the triphone for any right context r =
- *     rcpid[b][l].pid[lcpid[b][l].cimap[r]].
+ * the senone sequence for any right context r =
+ *     rcssid[b][l].ssid[lcssid[b][l].cimap[r]].
  * 
  * A single phone word is a combination of the above, where both l and r are unknown.
- * Triphone, given any l and r context ciphones:
- *     lrcpid[b][l].pid[lcpid[b][l].cimap[r]].
+ * Senone sequence, given any l and r context ciphones:
+ *     lrcssid[b][l].ssid[lcssid[b][l].cimap[r]].
  * For simplicity, all cimap[] vectors (for all l) must be identical.  For now, this is
  * attained by avoiding any compression and letting cimap be the identity map.
- * 
- * Reason for compressing pid[] and indirect access: senone sequences for triphones not
- * distinct.  Hence, cross-word modelling fanout at word exits can be limited by fanning
- * out to only distinct ones and sharing the results among all ciphones.
  *
  *
  * Note by ARCHAN at 20050715
@@ -346,23 +342,23 @@ typedef struct {
  */
 
 typedef struct {
-    xwdpid_t **lcpid; /**< Left context phone id table 
+    xwdssid_t **lcssid; /**< Left context phone id table 
                          First dimension: basephone, 
                          Second dimension: right context
                       */
   
-    xwdpid_t **rcpid; /**< right context phone id table 
+    xwdssid_t **rcssid; /**< right context phone id table 
                          First dimension: basephone, 
                          Second dimension: left context
 
                       */
-    xwdpid_t **lrcpid; /**< left-right ntext phone id table 
+    xwdssid_t **lrcssid; /**< left-right ntext phone id table 
                           First dimension: basephone
                           Second dimension: left context. 
                        */
 
 
-    s3pid_t **wwpid;  /**< Within word triphone models 
+    s3ssid_t **wwssid;  /**< Within word triphone models 
                          First dimension: the word id
                          Second dimension: the phone position. 
                       */
@@ -385,23 +381,23 @@ void ctxt_table_free(ctxt_table_t *ct /**< Context Table */
     );
 
 /**
- * Get the array of right context phone ID for the last phone. 
+ * Get the array of right context senone sequence ID for the last phone. 
  */
-void get_rcpid (ctxt_table_t *ct,  /**< A context table */
-		s3wid_t w,         /**< A word for query */
-		s3pid_t **pid,     /**< Out: An array of right context phone ID */
-		int32 *npid,        /**< Out: Number of phone ID */
-		dict_t *dict        /**< In: a dictionary */
+void get_rcssid (ctxt_table_t *ct,   /**< A context table */
+                 s3wid_t w,          /**< A word for query */
+                 s3ssid_t **ssid,    /**< Out: An array of right context phone ID */
+                 int32 *nssid,       /**< Out: Number of SSID */
+                 dict_t *dict        /**< In: a dictionary */
     );
 
 /**
- * Get the array of left context phone ID for the first phone.
+ * Get the array of left context senone sequence ID for the first phone.
  */
-void get_lcpid (ctxt_table_t *ct,  /**< A context table */
-		s3wid_t w,         /**< A word for query */
-		s3pid_t **pid,     /**< Out: An array of right context phone ID */
-		int32 *npid,        /**< Out: Number of phone ID */
-		dict_t *dict        /**< In: a dictionary */
+void get_lcssid (ctxt_table_t *ct,  /**< A context table */
+                 s3wid_t w,         /**< A word for query */
+                 s3ssid_t **ssid,    /**< Out: An array of right context SSID */
+                 int32 *nssid,      /**< Out: Number of SSID */
+                 dict_t *dict       /**< In: a dictionary */
     );
 
 
@@ -411,8 +407,8 @@ void get_lcpid (ctxt_table_t *ct,  /**< A context table */
  * @return an array of ciphone ID. 
  */
 s3cipid_t *get_rc_cimap (ctxt_table_t *ct, /**< A context table */
-			 s3wid_t w, /**< A word for query*/
-			 dict_t *dict /**< A dictionary */
+                         s3wid_t w, /**< A word for query*/
+                         dict_t *dict /**< A dictionary */
     );
 
 /**
@@ -421,8 +417,8 @@ s3cipid_t *get_rc_cimap (ctxt_table_t *ct, /**< A context table */
  * @return an array of ciphone ID. 
  */
 s3cipid_t *get_lc_cimap (ctxt_table_t *ct, /**< A context table */
-			 s3wid_t w, /**< A word for query*/
-			 dict_t *dict /**< A dictionary */
+                         s3wid_t w, /**< A word for query*/
+                         dict_t *dict /**< A dictionary */
     );
 
 /**
@@ -430,9 +426,9 @@ s3cipid_t *get_lc_cimap (ctxt_table_t *ct, /**< A context table */
  * @return number of right context 
  *
  */
-int32 get_rc_npid (ctxt_table_t *ct,  /**< A context table */
-		   s3wid_t w,          /**< Word for query. */
-		   dict_t *dict        /**< A dictionary */
+int32 ct_get_rc_nssid (ctxt_table_t *ct,  /**< A context table */
+                       s3wid_t w,          /**< Word for query. */
+                       dict_t *dict        /**< A dictionary */
     );
 
 #endif /*_CTX_TAB_*/

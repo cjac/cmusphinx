@@ -121,8 +121,8 @@ whmm_alloc(int32 pos, int32 n_state, int32 alloc_size, int32 multiplex)
     int32 k, i, n, s;
     int32 *tmp_scr;
     s3latid_t *tmp_latid;
-    s3pid_t *tmp_pid;
-    tmp_pid = NULL;
+    s3ssid_t *tmp_ssid;
+    tmp_ssid = NULL;
 
     k = (IS_MULTIPLEX(pos, multiplex)) ? MULTIPLEX_TYPE :
         NONMULTIPLEX_TYPE;
@@ -140,7 +140,7 @@ whmm_alloc(int32 pos, int32 n_state, int32 alloc_size, int32 multiplex)
             (s3latid_t *) ckd_calloc(n_state * n, sizeof(s3latid_t));
 
         if (IS_MULTIPLEX(pos, multiplex))
-            tmp_pid = (s3pid_t *) ckd_calloc(n_state * n, sizeof(s3pid_t));
+            tmp_ssid = (s3ssid_t *) ckd_calloc(n_state * n, sizeof(s3ssid_t));
 
         for (i = 0; i < n; i++) {
             h[i].next = &(h[i + 1]);
@@ -151,10 +151,10 @@ whmm_alloc(int32 pos, int32 n_state, int32 alloc_size, int32 multiplex)
             h[i].history = tmp_latid;
             tmp_latid += n_state;
 
-            /* Allocate pid iff first phone position (for multiplexed left contexts) */
+            /* Allocate ssid iff first phone position (for multiplexed left contexts) */
             if (IS_MULTIPLEX(pos, multiplex)) {
-                h[i].pid = tmp_pid;
-                tmp_pid += n_state;
+                h[i].ssid = tmp_ssid;
+                tmp_ssid += n_state;
             }
         }
         h[n - 1].next = NULL;
@@ -179,13 +179,14 @@ dump_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
           int32 n_frame, int32 n_state, dict_t * dict, mdef_t * mdef)
 {
     int32 s;
-    s3pid_t p;
+    s3ssid_t p;
 
     printf("[%4d]", n_frame);
     printf(" [%s]", dict->word[w].word);
 
-    printf(" pos= %d, lc=%d, rc= %d, bestscore= %d multiplex %s\n",
-           h->pos, h->lc, h->rc, h->bestscore,
+    printf(" ci= %s, pos= %d, lc=%d, rc= %d, bestscore= %d multiplex %s\n",
+           mdef_ciphone_str(mdef, h->ci),
+	   h->pos, h->lc, h->rc, h->bestscore,
            h->type == MULTIPLEX_TYPE ? "yes" : "no");
 
     printf("\tscore: ");
@@ -202,50 +203,38 @@ dump_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
     if (senscr) {
         printf("\tsenscr:");
         for (s = 0; s < n_state - 1; s++) {
-            p = (h->type == MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid);
-            if (NOT_S3PID(p))
+            p = (h->type == MULTIPLEX_TYPE) ? h->ssid[s] : *(h->ssid);
+            if (NOT_S3SSID(p))
                 printf(" %12s", "--");
             else
-                printf(" %12d", senscr[mdef->phone[p].state[s]]);
+                printf(" %12d", senscr[h->ssid[s]]);
         }
         printf("\n");
     }
 
     printf("\ttpself:");
     for (s = 0; s < n_state - 1; s++) {
-        p = (h->type == MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid);
-        if (NOT_S3PID(p))
-            printf(" %12s", "--");
-        else
-            printf(" %12d", tmat->tp[mdef->phone[p].tmat][s][s]);
+	printf(" %12d", tmat->tp[h->ci][s][s]);
     }
     printf("\n");
 
     printf("\ttpnext:");
     for (s = 0; s < n_state - 1; s++) {
-        p = (h->type == MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid);
-        if (NOT_S3PID(p))
-            printf(" %12s", "--");
-        else
-            printf(" %12d", tmat->tp[mdef->phone[p].tmat][s][s + 1]);
+	printf(" %12d", tmat->tp[h->ci][s][s + 1]);
     }
     printf("\n");
 
     printf("\ttpskip:");
     for (s = 0; s < n_state - 2; s++) {
-        p = (h->type == MULTIPLEX_TYPE) ? h->pid[s] : *(h->pid);
-        if (NOT_S3PID(p))
-            printf(" %12s", "--");
-        else
-            printf(" %12d", tmat->tp[mdef->phone[p].tmat][s][s + 2]);
+	printf(" %12d", tmat->tp[h->ci][s][s + 2]);
     }
     printf("\n");
 
 
     if (h->type == MULTIPLEX_TYPE) {
-        printf("\tpid:   ");
+        printf("\tssid:   ");
         for (s = 0; s < n_state - 1; s++)
-            printf(" %12d", h->pid[s]);
+            printf(" %12d", h->ssid[s]);
         printf("\n");
     }
 }
@@ -265,13 +254,13 @@ eval_nonmpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
     register int32 s0, s1, s2, s3, s4;
     register int32 scr, newscr1, newscr2, bestscr;
     register int32 *tp;
-    s3pid_t p;
+    s3ssid_t p;
     s3senid_t *senp;
 
-    p = *(h->pid);
-    senp = mdef->phone[p].state;
-    tp = tmat->tp[mdef->phone[p].tmat][0];      /* HACK!! Assumes tp 2-D data allocated
-                                                   contiguously */
+    p = *(h->ssid);
+    senp = mdef->sseq[p];
+    tp = tmat->tp[h->ci][0];      /* HACK!! Assumes tp 2-D data allocated
+				     contiguously */
 
     if ((s0 = h->score[0] + senscr[senp[0]]) < S3_LOGPROB_ZERO)
         s0 = S3_LOGPROB_ZERO;
@@ -388,22 +377,22 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
     register int32 *tp0, *tp1, *tp2, *tp3, *tp4;
     register int32 scr, newscr1, newscr2, bestscr;
     s3senid_t *senp;
-    s3pid_t p0, p1, p2, p3, p4;
+    s3ssid_t p0, p1, p2, p3, p4;
 
-    p0 = h->pid[0];
-    p1 = h->pid[1];
-    p2 = h->pid[2];
-    p3 = h->pid[3];
-    p4 = h->pid[4];
+    p0 = h->ssid[0];
+    p1 = h->ssid[1];
+    p2 = h->ssid[2];
+    p3 = h->ssid[3];
+    p4 = h->ssid[4];
 
-    senp = mdef->phone[p0].state;
+    senp = mdef->sseq[p0];
     if ((s0 = h->score[0] + senscr[senp[0]]) < S3_LOGPROB_ZERO)
         s0 = S3_LOGPROB_ZERO;
-    tp0 = tmat->tp[mdef->phone[p0].tmat][0];    /* HACK!! See eval_nonmpx_whmm */
+    tp0 = tmat->tp[h->ci][0];    /* HACK!! See eval_nonmpx_whmm */
 
     if (p1 != p0) {
-        senp = mdef->phone[p1].state;
-        tp1 = tmat->tp[mdef->phone[p1].tmat][0];        /* HACK!! See eval_nonmpx_whmm */
+        senp = mdef->sseq[p1];
+        tp1 = tmat->tp[h->ci][0];        /* HACK!! See eval_nonmpx_whmm */
     }
     else
         tp1 = tp0;
@@ -411,8 +400,8 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         s1 = S3_LOGPROB_ZERO;
 
     if (p2 != p1) {
-        senp = mdef->phone[p2].state;
-        tp2 = tmat->tp[mdef->phone[p2].tmat][0];        /* HACK!! See eval_nonmpx_whmm */
+        senp = mdef->sseq[p2];
+        tp2 = tmat->tp[h->ci][0];        /* HACK!! See eval_nonmpx_whmm */
     }
     else
         tp2 = tp1;
@@ -420,8 +409,8 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         s2 = S3_LOGPROB_ZERO;
 
     if (p3 != p2) {
-        senp = mdef->phone[p3].state;
-        tp3 = tmat->tp[mdef->phone[p3].tmat][0];        /* HACK!! See eval_nonmpx_whmm */
+        senp = mdef->sseq[p3];
+        tp3 = tmat->tp[h->ci][0];        /* HACK!! See eval_nonmpx_whmm */
     }
     else
         tp3 = tp2;
@@ -429,8 +418,8 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         s3 = S3_LOGPROB_ZERO;
 
     if (p4 != p3) {
-        senp = mdef->phone[p4].state;
-        tp4 = tmat->tp[mdef->phone[p4].tmat][0];        /* HACK!! See eval_nonmpx_whmm */
+        senp = mdef->sseq[p4];
+        tp4 = tmat->tp[h->ci][0];        /* HACK!! See eval_nonmpx_whmm */
     }
     else
         tp4 = tp3;
@@ -455,7 +444,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr2 > scr) {
             h->score[4] = newscr2;
             h->history[4] = h->history[2];
-            h->pid[4] = h->pid[2];
+            h->ssid[4] = h->ssid[2];
         }
         else
             h->score[4] = scr;
@@ -464,7 +453,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr1 > scr) {
             h->score[4] = newscr1;
             h->history[4] = h->history[3];
-            h->pid[4] = h->pid[3];
+            h->ssid[4] = h->ssid[3];
         }
         else
             h->score[4] = scr;
@@ -479,7 +468,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr2 > scr) {
             h->score[3] = newscr2;
             h->history[3] = h->history[1];
-            h->pid[3] = h->pid[1];
+            h->ssid[3] = h->ssid[1];
         }
         else
             h->score[3] = scr;
@@ -488,7 +477,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr1 > scr) {
             h->score[3] = newscr1;
             h->history[3] = h->history[2];
-            h->pid[3] = h->pid[2];
+            h->ssid[3] = h->ssid[2];
         }
         else
             h->score[3] = scr;
@@ -503,7 +492,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr2 > scr) {
             h->score[2] = newscr2;
             h->history[2] = h->history[0];
-            h->pid[2] = h->pid[0];
+            h->ssid[2] = h->ssid[0];
         }
         else
             h->score[2] = scr;
@@ -512,7 +501,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
         if (newscr1 > scr) {
             h->score[2] = newscr1;
             h->history[2] = h->history[1];
-            h->pid[2] = h->pid[1];
+            h->ssid[2] = h->ssid[1];
         }
         else
             h->score[2] = scr;
@@ -525,7 +514,7 @@ eval_mpx_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
     if (newscr1 > scr) {
         h->score[1] = newscr1;
         h->history[1] = h->history[0];
-        h->pid[1] = h->pid[0];
+        h->ssid[1] = h->ssid[0];
     }
     else
         h->score[1] = scr;
@@ -549,7 +538,7 @@ void
 eval_nonmpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
                  int32 n_state)
 {
-    s3pid_t pid;
+    s3ssid_t ssid;
     s3senid_t *sen;
     int32 **tp;
     int32 to, from, bestfrom;
@@ -559,10 +548,10 @@ eval_nonmpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
 
     final_state = n_state - 1;
 
-    pid = *(h->pid);
+    ssid = *(h->ssid);
 
-    sen = mdef->phone[pid].state;       /*This gives a state-to-senone mapping */
-    tp = tmat->tp[mdef->phone[pid].tmat];
+    sen = mdef->sseq[ssid];       /*This gives a state-to-senone mapping */
+    tp = tmat->tp[h->ci];
 
     /* Compute previous state-score + observation output prob for each state */
     for (from = n_state - 2; from >= 0; --from) {
@@ -619,12 +608,12 @@ eval_nonmpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
 }
 
 
-/** Like eval_nonmpx_whmm, except there's a different pid associated with each state */
+/** Like eval_nonmpx_whmm, except there's a different ssid associated with each state */
 void
 eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
               int32 n_state)
 {
-    s3pid_t pid, prevpid;
+    s3ssid_t ssid, prevssid;
     s3senid_t *senp;
     int32 **tp;
     int32 to, from, bestfrom;
@@ -634,13 +623,14 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
     final_state = n_state - 1;
 
     senp = NULL;
-    tp = NULL;
+    tp = tmat->tp[h->ci];
+
     /* Compute previous state-score + observation output prob for each state */
-    prevpid = BAD_S3PID;
+    prevssid = BAD_S3SSID;
     for (from = n_state - 2; from >= 0; --from) {
-        if ((pid = h->pid[from]) != prevpid) {
-            senp = mdef->phone[pid].state;      /*This gives a state-to-senone mapping */
-            prevpid = pid;
+        if ((ssid = h->ssid[from]) != prevssid) {
+            senp = mdef->sseq[ssid];      /*This gives a state-to-senone mapping */
+            prevssid = ssid;
         }
 
         if ((st_sen_scr[from] =
@@ -652,11 +642,10 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
     to = final_state;
     scr = S3_LOGPROB_ZERO;
     bestfrom = -1;
-    prevpid = BAD_S3PID;
+    prevssid = BAD_S3SSID;
     for (from = to - 1; from >= 0; --from) {
-        if ((pid = h->pid[from]) != prevpid) {
-            tp = tmat->tp[mdef->phone[pid].tmat];
-            prevpid = pid;
+        if ((ssid = h->ssid[from]) != prevssid) {
+            prevssid = ssid;
         }
 
         if ((tp[from][to] > S3_LOGPROB_ZERO) &&
@@ -668,7 +657,7 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
     h->score[to] = scr;
     if (bestfrom >= 0) {
         h->history[to] = h->history[bestfrom];
-        h->pid[to] = h->pid[bestfrom];
+        h->ssid[to] = h->ssid[bestfrom];
     }
 
     bestscr = scr;
@@ -676,9 +665,8 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
     /* Evaluate all other states, which might have self-transitions */
     for (to = final_state - 1; to >= 0; --to) {
         /* Score from self-transition, if any */
-        if ((pid = h->pid[to]) != prevpid) {
-            tp = tmat->tp[mdef->phone[pid].tmat];
-            prevpid = pid;
+        if ((ssid = h->ssid[to]) != prevssid) {
+            prevssid = ssid;
         }
         scr =
             (tp[to][to] >
@@ -688,9 +676,8 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
         /* Scores from transitions from other states */
         bestfrom = -1;
         for (from = to - 1; from >= 0; --from) {
-            if ((pid = h->pid[from]) != prevpid) {
-                tp = tmat->tp[mdef->phone[pid].tmat];
-                prevpid = pid;
+            if ((ssid = h->ssid[from]) != prevssid) {
+                prevssid = ssid;
             }
 
             if ((tp[from][to] > S3_LOGPROB_ZERO) &&
@@ -704,7 +691,7 @@ eval_mpx_whmm(whmm_t * h, int32 * senscr, tmat_t * tmat, mdef_t * mdef,
         h->score[to] = scr;
         if (bestfrom >= 0) {
             h->history[to] = h->history[bestfrom];
-            h->pid[to] = h->pid[bestfrom];
+            h->ssid[to] = h->ssid[bestfrom];
         }
 
         if (bestscr < scr)
