@@ -342,41 +342,6 @@
     \brief Implementation of forward search in a flat lexicon. 
  */
 
-static int32
-exist_left_context(whmm_t ** whmm, s3wid_t w, s3cipid_t lc)
-{
-    whmm_t *h;
-    if (whmm[w]) {
-        for (h = whmm[w]; h; h = h->next) {
-            /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w); */
-            if (h->lc == lc)
-                return 1;
-        }
-        return 0;
-    }
-    else {
-        return 0;
-    }
-}
-
-static int32
-exist_left_right_context(whmm_t ** whmm, s3wid_t w, s3cipid_t lc,
-                         s3cipid_t rc)
-{
-    whmm_t *h;
-    if (whmm[w]) {
-        for (h = whmm[w]; h; h = h->next) {
-            /*      E_INFO("h->lc %d, lc %d w %d\n", h->lc,lc, w); */
-            if (h->lc == lc && h->rc == rc)
-                return 1;
-        }
-        return 0;
-    }
-    else {
-        return 0;
-    }
-}
-
 void
 dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm, int32 * senscr)
 {
@@ -699,24 +664,13 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
         /* &(ct_table->lcpid[b][rc].pid[ct_table->lcpid[b][rc].cimap[lc]]); */
         ssid = *(ssidp);
 
-        /* Allocate and initialize an HMM for the next phone if necessary. */
-        if (fwg->multiplex) {
-            if ((!whmm[w]) || (whmm[w]->pos != 0)) {
-                /* If whmm is not allocated or it is not the first phone */
-                h = whmm_alloc(fwg->hmmctx, 0, TRUE, ssid, b);
-                h->next = whmm[w];
-                whmm[w] = h;
-            }
+        /* Allocate and initialize a multiplex HMM for the next phone if necessary. */
+        if ((!whmm[w]) || (whmm[w]->pos != 0)) {
+            /* If whmm is not allocated or it is not the first phone */
+            h = whmm_alloc(fwg->hmmctx, 0, TRUE, ssid, b);
+            h->next = whmm[w];
+            whmm[w] = h;
         }
-        else {
-            if ((!whmm[w]) || (whmm[w]->pos != 0)
-                || !exist_left_context(whmm, w, lcmap[lc])) {
-                h = whmm_alloc(fwg->hmmctx, 0, FALSE, ssid, b);
-                h->next = whmm[w];
-                whmm[w] = h;
-            }
-        }
-
         h = whmm[w];
 
         /* And now enter the next HMM in the usual Viterbi fashion. */
@@ -726,8 +680,8 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
                 hmm_mpx_ssid(&h->hmm, 0) = ssid;
             }
             else {
-                hmm_nonmpx_ssid(&h->hmm) = ssid;
                 h->lc = lcmap[lc];
+                hmm_nonmpx_ssid(&h->hmm) = ssid;
             }
         }
 
@@ -745,44 +699,23 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             ssid = *(ssidp);
 
-            if (fwg->multiplex_singleph) {
-                if ((!h) || (h->rc != rc)) {
-                    h = whmm_alloc(fwg->hmmctx, 0, TRUE, rssid[rc], b);
-                    h->rc = rc;
+            if ((!h) || (h->rc != rc)) {
+                h = whmm_alloc(fwg->hmmctx, 0, TRUE, rssid[rc], b);
+                h->rc = rc;
 
-                    if (prevh) {
-                        h->next = prevh->next;
-                        prevh->next = h;
-                    }
-                    else {
-                        h->next = whmm[w];
-                        whmm[w] = h;
-                    }
+                if (prevh) {
+                    h->next = prevh->next;
+                    prevh->next = h;
                 }
-            }
-            else {
-                if ((!h)
-                    || !exist_left_right_context(whmm, w, lcmap[lc], rc)) {
-                    h = whmm_alloc(fwg->hmmctx, 0, FALSE, ssid, b);
-                    h->rc = rc;
-
-                    if (prevh) {
-                        h->next = prevh->next;
-                        prevh->next = h;
-                    }
-                    else {
-                        h->next = whmm[w];
-                        whmm[w] = h;
-                    }
+                else {
+                    h->next = whmm[w];
+                    whmm[w] = h;
                 }
             }
             prevh = h;
             h = h->next;
 
         }
-
-        if (fwg->multiplex_singleph)
-            assert(!h);
 
         /* Transition to the allocated HMMs */
         b = dict->word[w].ciphone[0];

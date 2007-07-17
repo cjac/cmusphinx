@@ -407,7 +407,6 @@ static arg_t defn[] = {
         cepstral_input_handling_command_line_macro()
 
         input_lattice_handling_command_line_macro()
-        flat_fwd_multiplex_treatment_command_line_macro()
         flat_fwd_debugging_command_line_macro()
         output_lattice_handling_command_line_macro()
         dag_handling_command_line_macro()

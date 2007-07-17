@@ -636,16 +636,6 @@ us a better architecture.
       "50", \
       "Input word-lattice words starting within +/- <this argument> of current frame considered during search" },
 
-#define flat_fwd_multiplex_treatment_command_line_macro() \
-    { "-multiplex_multi", \
-      ARG_INT32, \
-      "1", \
-      "(Mode 3 only) Whether multiplexed triphones for multi-phone word. If not, full triphone expansion will be carried out in the word begin." }, \
-    { "-multiplex_single", \
-      ARG_INT32, \
-      "1", \
-      "(Mode 3 only) Whether to multiplexed triphones for single-phone. If not, full triphone expansion will be carried out in the word begin. Notice that this will consume large amount of memory space." },
-
 #define flat_fwd_debugging_command_line_macro() \
     { "-tracewhmm", \
       ARG_STRING, \

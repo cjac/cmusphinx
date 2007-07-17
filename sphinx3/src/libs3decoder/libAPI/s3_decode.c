@@ -179,7 +179,6 @@ arg_t S3_DECODE_ARG_DEFS[] = {
     dag_handling_command_line_macro()
     second_stage_dag_handling_command_line_macro()
     input_lattice_handling_command_line_macro()
-    flat_fwd_multiplex_treatment_command_line_macro()
     flat_fwd_debugging_command_line_macro()
     history_table_command_line_macro()
     

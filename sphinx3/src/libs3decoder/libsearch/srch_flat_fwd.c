@@ -285,18 +285,6 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
 
     E_INFO("Initialization\n");
 
-    /* Search control information */
-    fwg->multiplex = cmd_ln_int32("-multiplex_multi");
-    fwg->multiplex_singleph = cmd_ln_int32("-multiplex_single");
-
-    /* ARCHAN : MINOR BUG, though allowing both options of
-       multiple_multi and multiplex_single, currently !multiplex &&
-       multiplex_singleph is not taken care correctly. */
-
-    if (fwg->multiplex && !(fwg->multiplex_singleph))
-        E_FATAL
-            ("Forced exit: Disallow de-multiplex a single phone word without de-multiplexing multi phone word");
-
     /* Allocate whmm structure */
     fwg->hmmctx = hmm_context_init(mdef_n_emit_state(mdef),
 				   kbcore_tmat(kbc)->tp, NULL,

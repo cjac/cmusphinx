@@ -9,8 +9,6 @@ TESTS = \
 	test-decode-s2semi.sh \
 	test-decode-lts.sh \
 	test-decode-mode3.sh \
-	test-decode-mode3-mulmpx.sh \
-	test-decode-mode3-mpx.sh \
 	test-decode-2ndstage.sh \
 	test-decode-mode1368.sh \
 	test-decode-mode1369.sh \
