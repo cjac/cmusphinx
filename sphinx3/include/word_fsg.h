@@ -140,7 +140,7 @@
 #include <s3types.h>
 #include <glist.h>
 #include <fsg.h>
-#include <dict.h>
+#include <kbcore.h>
 #include <ctxt_table.h>
 
 #if 0 
@@ -214,6 +214,7 @@ typedef struct word_fsg_s {
     int32 n_ciphone;
     dict_t* dict;
     mdef_t* mdef;
+    tmat_t* tmat;
     ctxt_table_t *ctxt;
 } word_fsg_t;
 
@@ -282,8 +283,7 @@ typedef struct word_fsg_s {
  */
 word_fsg_t *word_fsg_readfile (const char *file,
 			       boolean use_altpron, boolean use_filler,
-			       float32 silprob, float32 fillprob,
-			       float32 lw, dict_t *dict, mdef_t * mdef);
+                               kbcore_t *kbc);
 
 
 /*
@@ -291,8 +291,7 @@ word_fsg_t *word_fsg_readfile (const char *file,
  */
 word_fsg_t *word_fsg_read (FILE *fp,
 			   boolean use_altpron, boolean use_filler,
-			   float32 silprob, float32 fillprob,
-			   float32 lw,  dict_t *dict, mdef_t * mdef);
+                           kbcore_t *kbc);
 
 
 /*
@@ -300,8 +299,7 @@ word_fsg_t *word_fsg_read (FILE *fp,
  */
 word_fsg_t *word_fsg_load (s2_fsg_t *s2_fsg,
 			   boolean use_altpron, boolean use_filler,
-			   float32 silprob, float32 fillprob,
-			   float32 lw,dict_t *dict, mdef_t * mdef);
+                           kbcore_t *kbc);
 
 
 /*

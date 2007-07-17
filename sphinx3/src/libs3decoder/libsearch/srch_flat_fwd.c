@@ -79,38 +79,30 @@
 #include "srch.h"
 #include "whmm.h"
 
-extern int32 *st_sen_scr;
-
 
 void dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
-                   int32 n_frm, int32 n_state, int32 * senscr);
+                   int32 n_frm, int32 * senscr);
 
-void dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
-                   int32 n_state);
+void dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm);
 
-void whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
-                 int32 n_state, int32 bestscr);
+void whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 bestscr);
 
 void whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
-                     whmm_t * h, int32 n_state, int32 final_state);
+		     whmm_t * h);
 
-void word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
+void word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
                 int32 score, s3latid_t l, s3cipid_t lc);
 
-int32 whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr,
-                int32 n_state);
+int32 whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr);
 
 void whmm_exit(srch_FLAT_FWD_graph_t * fwg,
                whmm_t ** whmm,
                latticehist_t * lathist,
-               int32 n_state,
-               int32 final_state,
                int32 thresh, int32 wordthresh, int32 phone_penalty);
 
 
 void word_trans(srch_FLAT_FWD_graph_t * fwg,
                 whmm_t ** whmm,
-                int32 n_state,
                 latticehist_t * lathist,
                 int32 thresh, int32 phone_penalty);
 
@@ -188,14 +180,12 @@ dump_fwd_dbg_info(srch_FLAT_FWD_graph_t * fwg, fwd_dbg_t * fd,
 {
     whmm_t *h;
     int32 n_frm;
-    int32 n_state;
     kbcore_t *kbc;
     tmat_t *tmat;
     dict_t *dict;
     mdef_t *mdef;
 
     n_frm = fwg->n_frm;
-    n_state = fwg->n_state;
     kbc = fwg->kbcore;
     dict = kbcore_dict(kbc);
     tmat = kbcore_tmat(kbc);
@@ -212,14 +202,14 @@ dump_fwd_dbg_info(srch_FLAT_FWD_graph_t * fwg, fwd_dbg_t * fd,
 
     /* Dump all active HMMs or words, if indicated */
     if (fd->hmm_dump_sf < n_frm && n_frm < fd->hmm_dump_ef)
-        dump_all_whmm(fwg, fwg->whmm, n_frm, n_state, ascr->senscr);
+        dump_all_whmm(fwg, fwg->whmm, n_frm, ascr->senscr);
     else if (fd->word_dump_sf < n_frm && n_frm < fd->word_dump_ef)
-        dump_all_word(fwg, fwg->whmm, n_state);
+        dump_all_word(fwg, fwg->whmm);
 
     /* Trace active HMMs for specified word, if any */
     if (IS_S3WID(fd->trace_wid)) {
         for (h = fwg->whmm[fd->trace_wid]; h; h = h->next)
-            dump_whmm(fd->trace_wid, h, senscr, tmat, n_frm, n_state, dict,
+            dump_whmm(fd->trace_wid, h, senscr, tmat, n_frm, dict,
                       mdef);
     }
 
@@ -294,9 +284,6 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     fwg = ckd_calloc(1, sizeof(srch_FLAT_FWD_graph_t));
 
     E_INFO("Initialization\n");
-    /* HMM states information */
-    fwg->n_state = mdef->n_emit_state + 1;
-    fwg->final_state = fwg->n_state - 1;
 
     /* Search control information */
     fwg->multiplex = cmd_ln_int32("-multiplex_multi");
@@ -311,6 +298,9 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
             ("Forced exit: Disallow de-multiplex a single phone word without de-multiplexing multi phone word");
 
     /* Allocate whmm structure */
+    fwg->hmmctx = hmm_context_init(mdef_n_emit_state(mdef),
+				   kbcore_tmat(kbc)->tp, NULL,
+				   mdef->sseq);
     fwg->whmm = (whmm_t **) ckd_calloc(dict->n_word, sizeof(whmm_t *));
 
     /* Data structures needed during word transition */
@@ -355,9 +345,6 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     /** Initialize the context table */
     fwg->ctxt = ctxt_table_init(kbcore_dict(kbc), kbcore_mdef(kbc));
 
-    /* Variables for speeding up whmm evaluation */
-    st_sen_scr = (int32 *) ckd_calloc(fwg->n_state - 1, sizeof(int32));
-
   /** For convenience */
     fwg->kbcore = s->kbc;
 
@@ -380,9 +367,6 @@ srch_FLAT_FWD_uninit(void *srch)
 
     s = (srch_t *) srch;
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
-
-    if (st_sen_scr)
-        ckd_free(st_sen_scr);
 
     if (fwg->rcscore)
         ckd_free(fwg->rcscore);
@@ -473,7 +457,7 @@ srch_FLAT_FWD_begin(void *srch)
 
     fwg->n_frm = -1;
     for (w = dict->startwid; IS_S3WID(w); w = dict->word[w].alt)
-        word_enter(fwg, w, fwg->n_state, 0, BAD_S3LATID,
+        word_enter(fwg, w, 0, BAD_S3LATID,
                    dict->word[dict->silwid].ciphone[dict->
                                                     word[dict->silwid].
                                                     pronlen - 1]);
@@ -530,14 +514,6 @@ srch_FLAT_FWD_end(void *srch)
     for (w = 0; w < dict->n_word; w++) {
         for (h = fwg->whmm[w]; h; h = nexth) {
             nexth = h->next;
-
-            if (dict->word[w].pronlen == 1)
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
-            else
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex));
-
             whmm_free(h);
         }
         fwg->whmm[w] = NULL;
@@ -796,7 +772,7 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     ptmr_start(&(fwg->tm_hmmeval));
-    bestscr = whmm_eval(fwg, s->ascr->senscr, fwg->n_state);
+    bestscr = whmm_eval(fwg, s->ascr->senscr);
     /*  E_INFO("bestscr %d RENORM_THRESH %d\n",bestscr, RENORM_THRESH); */
     ptmr_stop(&(fwg->tm_hmmeval));
 
@@ -812,8 +788,8 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
     {
         ptmr_start(&(fwg->tm_hmmtrans));
         s->lathist->frm_latstart[fwg->n_frm] = s->lathist->n_lat_entry;
-        whmm_exit(fwg, fwg->whmm, s->lathist, fwg->n_state,
-                  fwg->final_state, whmm_thresh, word_thresh,
+        whmm_exit(fwg, fwg->whmm, s->lathist,
+		  whmm_thresh, word_thresh,
                   phone_penalty);
         ptmr_stop(&(fwg->tm_hmmtrans));
 
@@ -824,15 +800,14 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
 
         ptmr_start(&(fwg->tm_wdtrans));
         if (s->lathist->frm_latstart[fwg->n_frm] < s->lathist->n_lat_entry)
-            word_trans(fwg, fwg->whmm, fwg->n_state, s->lathist,
-                       whmm_thresh, phone_penalty);
+            word_trans(fwg, fwg->whmm, s->lathist, whmm_thresh, phone_penalty);
         ptmr_stop(&(fwg->tm_wdtrans));
     }
 
     if (bestscr < RENORM_THRESH) {
         E_INFO("Frame %d: bestscore= %d; renormalizing\n", fwg->n_frm,
                bestscr);
-        whmm_renorm(fwg, fwg->whmm, fwg->n_state, bestscr);
+        whmm_renorm(fwg, fwg->whmm, bestscr);
     }
 
     fwg->n_frm++;
@@ -882,25 +857,19 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
     /* Flag active senones */
     for (w = 0; w < dict->n_word; w++) {
         for (h = fwg->whmm[w]; h; h = h->next) {
-
-            if (dict->word[w].pronlen == 1)
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
-            else
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex));
-
-            if (h->type == MULTIPLEX_TYPE) {
-                for (st = fwg->n_state - 2; st >= 0; --st) {
-                    p = h->ssid[st];
+            if (hmm_is_mpx(&h->hmm)) {
+                for (st = hmm_n_emit_state(&h->hmm) - 1; st >= 0; --st) {
+		    p = hmm_mpx_ssid(&h->hmm, st);
+		    if (p == -1)
+			continue;
                     senp = mdef->sseq[p];
                     ascr->sen_active[senp[st]] = 1;
                 }
             }
             else {
-                p = *(h->ssid);
+                p = hmm_nonmpx_ssid(&h->hmm);
                 senp = mdef->sseq[p];
-                for (st = fwg->n_state - 2; st >= 0; --st)
+                for (st = hmm_n_emit_state(&h->hmm) - 1; st >= 0; --st)
                     ascr->sen_active[senp[st]] = 1;
 
             }

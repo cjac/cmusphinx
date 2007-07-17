@@ -122,10 +122,7 @@ srch_FSG_read_fsgfile(void *srch, const char *fsgfilename)
     fsg = word_fsg_readfile(fsgfilename,
                             cmd_ln_int32("-fsgusealtpron"),
                             cmd_ln_int32("-fsgusefiller"),
-                            s->kbc->fillpen->silprob,
-                            s->kbc->fillpen->fillerprob,
-                            s->kbc->fillpen->lw,
-                            s->kbc->dict, s->kbc->mdef);
+			    s->kbc);
 
     if (!fsg) {
         E_INFO("Fail to read fsg from file name %s\n", fsgfilename);
@@ -175,7 +172,7 @@ srch_FSG_end(void *srch)
     s = (srch_t *) srch;
     fsgsrch = (fsg_search_t *) s->grh->graph_struct;
 
-    fsgsrch->senscr = s->ascale;
+    fsgsrch->senscale = s->ascale;
     fsg_search_utt_end(fsgsrch);
 
     return SRCH_SUCCESS;

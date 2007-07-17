@@ -91,6 +91,7 @@
 #include <ckd_alloc.h>
 #include <err.h>
 #include <fsg_lextree.h>
+#include <fsg_search.h>
 
 
 #define __FSG_DBG__		0
@@ -100,7 +101,7 @@
  * For now, allocate the entire lextree statically.
  */
 fsg_lextree_t *
-fsg_lextree_init(word_fsg_t * fsg, int32 n_state_hmm)
+fsg_lextree_init(word_fsg_t * fsg, hmm_context_t *ctx)
 {
     int32 s;
     fsg_lextree_t *lextree;
@@ -122,8 +123,7 @@ fsg_lextree_init(word_fsg_t * fsg, int32 n_state_hmm)
     lextree->n_pnode = 0;
     for (s = 0; s < word_fsg_n_state(fsg); s++) {
         lextree->root[s] =
-            fsg_psubtree_init(fsg, s, &(lextree->alloc_head[s]),
-                              n_state_hmm);
+	    fsg_psubtree_init(ctx, fsg, s, &(lextree->alloc_head[s]));
 
         for (pn = lextree->alloc_head[s]; pn; pn = pn->alloc_next)
             lextree->n_pnode++;

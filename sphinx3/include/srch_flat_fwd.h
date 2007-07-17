@@ -120,7 +120,7 @@ typedef struct {
   \struct srch_FLAT_FWD_graph_t;
   
 */
-typedef struct {
+typedef struct srch_FLAT_FWD_graph_s {
 
     /**
      * Structures for decoding utterances subject to given input word lattices; ie, restricting
@@ -159,7 +159,8 @@ typedef struct {
     /**
      * Structures for flat lexicon decoding search 
      */
-    whmm_t **whmm;        /**< The word hmms list.  For actual search traverse */
+    hmm_context_t *hmmctx; /**< The HMM context. */
+    whmm_t **whmm;         /**< The word hmms list.  For actual search traverse */
 
     word_ugprob_t **word_ugprob; /**< word unigram probability */
     backoff_t *ug_backoff;       /**< Unigram backoff probability */
@@ -184,7 +185,6 @@ typedef struct {
     /*
       states for the search 
     */ 
-    int32 n_state;      /**< For convenience, we store the number of state in the code */
     int32 n_frm;        /**< Number of frame of this utternance */
     int32 final_state;      /**< Final state is supposed to be the last state, so it is usually equal to n_state-1*/
     int32 renormalized;	/**< Whether scores had to be renormalized in current utt */

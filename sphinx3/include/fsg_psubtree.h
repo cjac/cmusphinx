@@ -109,14 +109,13 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <s3types.h>
-#include <word_fsg.h>
-#include <fsg.h>
-#include <whmm.h>
-#include <ctxt_table.h>
-/*
-  #include <msd.h>
-*/
+
+#include "s3types.h"
+#include "word_fsg.h"
+#include "fsg.h"
+#include "hmm.h"
+#include "ctxt_table.h"
+
 
 
 /*
@@ -201,9 +200,7 @@ typedef struct fsg_pnode_s {
     boolean leaf;		/* Whether this is a leaf node */
   
     /* HMM-state-level stuff here */
-    /* Change in Sphinx 3, use hmm_t instead of CHAN_T */
-    whmm_t* hmm;
-
+    hmm_t hmm;
 } fsg_pnode_t;
 
 /* Access macros */
@@ -212,7 +209,7 @@ typedef struct fsg_pnode_s {
 #define fsg_pnode_succ(p)	((p)->next.succ)
 #define fsg_pnode_fsglink(p)	((p)->next.fsglink)
 #define fsg_pnode_sibling(p)	((p)->sibling)
-#define fsg_pnode_hmmptr(p)	((p)->hmm)
+#define fsg_pnode_hmmptr(p)	(&((p)->hmm))
 #define fsg_pnode_ci_ext(p)	((p)->ci_ext)
 #define fsg_pnode_ppos(p)	((p)->ppos)
 #define fsg_pnode_leaf(p)	((p)->leaf)
@@ -227,10 +224,10 @@ typedef struct fsg_pnode_s {
  * Also, return a linear linked list of all allocated fsg_pnode_t nodes in
  * *alloc_head (for memory management purposes).
  */
-fsg_pnode_t *fsg_psubtree_init (word_fsg_t *fsg, /**< A word fsg */
+fsg_pnode_t *fsg_psubtree_init (hmm_context_t *ctx,
+                                word_fsg_t *fsg, /**< A word fsg */
 				int32 from_state, /**< from which state to initalize*/ 
-				fsg_pnode_t **alloc_head,
-				int32 n_state_hmm /**< Number of state of the hmm*/
+				fsg_pnode_t **alloc_head
 
     );
 
@@ -269,9 +266,7 @@ boolean fsg_psubtree_pnode_enter (fsg_pnode_t *pnode,
 /*
  * Mark the given pnode as inactive (for search).
  */
-void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode,
-				    int32 n_state_hmm
-    );
+void fsg_psubtree_pnode_deactivate (fsg_pnode_t *pnode);
 
 
 /* Set all flags on in the given context bitvector */

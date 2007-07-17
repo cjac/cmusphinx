@@ -93,8 +93,9 @@
 #define __S2_FSG_LEXTREE_H__
 
 
-#include <word_fsg.h>
-#include <fsg_psubtree.h>
+#include "word_fsg.h"
+#include "fsg_psubtree.h"
+#include "hmm.h"
 
 
 typedef struct fsg_lextree_s {
@@ -120,9 +121,8 @@ typedef struct fsg_lextree_s {
 /*
  * Create, initialize, and return a new phonetic lextree for the given FSM.
  */
-fsg_lextree_t *fsg_lextree_init (word_fsg_t *, 
-				 int32 n_state_hmm
-    );
+fsg_lextree_t *fsg_lextree_init (word_fsg_t *fsg,
+                                 hmm_context_t *ctx);
 
 
 void fsg_lextree_free (fsg_lextree_t *);

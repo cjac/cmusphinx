@@ -545,9 +545,11 @@ word_fsg_lc_rc(word_fsg_t * fsg)
 word_fsg_t *
 word_fsg_load(s2_fsg_t * fsg,
               boolean use_altpron, boolean use_filler,
-              float32 silprob, float32 fillprob,
-              float32 lw, dict_t * dict, mdef_t * mdef)
+	      kbcore_t *kbc)
 {
+    float32 silprob = kbc->fillpen->silprob;
+    float32 fillprob = kbc->fillpen->fillerprob;
+    float32 lw = kbc->fillpen->lw;
     word_fsg_t *word_fsg;
     s2_fsg_trans_t *trans;
     int32 n_trans, n_null_trans, n_alt_trans, n_filler_trans, n_unk;
@@ -557,9 +559,6 @@ word_fsg_load(s2_fsg_t * fsg,
     int32 i, j;
 
     assert(fsg);
-    assert(dict);
-    assert(mdef);
-
 
     /* Some error checking */
     if (lw <= 0.0)
@@ -596,9 +595,10 @@ word_fsg_load(s2_fsg_t * fsg,
     word_fsg->lw = lw;
     word_fsg->lc = NULL;
     word_fsg->rc = NULL;
-    word_fsg->dict = dict;
-    word_fsg->mdef = mdef;
-    word_fsg->n_ciphone = mdef_n_ciphone(mdef);
+    word_fsg->dict = kbc->dict;
+    word_fsg->mdef = kbc->mdef;
+    word_fsg->tmat = kbc->tmat;
+    word_fsg->n_ciphone = mdef_n_ciphone(kbc->mdef);
 
 
     /* Allocate non-epsilon transition matrix array */
@@ -624,13 +624,13 @@ word_fsg_load(s2_fsg_t * fsg,
 
         /* Check if word is in dictionary */
         if (trans->word) {
-            wid = dict_wordid(dict, trans->word);
+            wid = dict_wordid(kbc->dict, trans->word);
             if (wid < 0) {
                 E_ERROR("Unknown word '%s'; ignored\n", trans->word);
                 n_unk++;
             }
             else if (use_altpron) {
-                wid = dict_basewid(dict, wid);
+                wid = dict_basewid(kbc->dict, wid);
                 assert(wid >= 0);
             }
         }
@@ -653,8 +653,8 @@ word_fsg_load(s2_fsg_t * fsg,
 
             /* Add transitions for alternative pronunciations, if any */
             if (use_altpron) {
-                for (wid = dict_nextalt(dict, wid);
-                     wid >= 0; wid = dict_nextalt(dict, wid)) {
+                for (wid = dict_nextalt(kbc->dict, wid);
+                     wid >= 0; wid = dict_nextalt(kbc->dict, wid)) {
                     word_fsg_trans_add(word_fsg, i, j, logp, wid);
                     n_alt_trans++;
                     n_trans++;
@@ -723,8 +723,7 @@ s2_fsg_free(s2_fsg_t * fsg)
 word_fsg_t *
 word_fsg_read(FILE * fp,
               boolean use_altpron, boolean use_filler,
-              float32 silprob, float32 fillprob,
-              float32 lw, dict_t * dict, mdef_t * mdef)
+	      kbcore_t *kbc)
 {
     s2_fsg_t *fsg;              /* "External" FSG structure */
     s2_fsg_trans_t *trans;
@@ -859,9 +858,7 @@ word_fsg_read(FILE * fp,
         fsg->trans_list = trans;
     }
 
-    cfsg =
-        word_fsg_load(fsg, use_altpron, use_filler, silprob, fillprob, lw,
-                      dict, mdef);
+    cfsg = word_fsg_load(fsg, use_altpron, use_filler, kbc);
 
     s2_fsg_free(fsg);
 
@@ -876,11 +873,13 @@ word_fsg_read(FILE * fp,
 word_fsg_t *
 word_fsg_readfile(const char *file,
                   boolean use_altpron, boolean use_filler,
-                  float32 silprob, float32 fillprob,
-                  float32 lw, dict_t * dict, mdef_t * mdef)
+		  kbcore_t *kbc)
 {
     FILE *fp;
     word_fsg_t *fsg;
+    float32 silprob = kbc->fillpen->silprob;
+    float32 fillprob = kbc->fillpen->fillerprob;
+    float32 lw = kbc->fillpen->lw;
 
     E_INFO
         ("Reading FSG file '%s' (altpron=%d, filler=%d, lw=%.2f, silprob=%.2e, fillprob=%.2e)\n",
@@ -891,9 +890,7 @@ word_fsg_readfile(const char *file,
         return NULL;
     }
 
-    fsg = word_fsg_read(fp,
-                        use_altpron, use_filler,
-                        silprob, fillprob, lw, dict, mdef);
+    fsg = word_fsg_read(fp, use_altpron, use_filler, kbc);
     if (fsg == NULL) {
         return NULL;
     }

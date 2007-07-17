@@ -197,9 +197,6 @@
 #define __FSG_DBG_CHAN__	0
 
 
-extern int32 *st_sen_scr;       /* In whmm.c For temporary storage but global storage. */
-
-
 fsg_search_t *
 fsg_search_init(word_fsg_t * fsg, void *srch)
 {
@@ -214,14 +211,11 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
     s = (srch_t *) srch;
 
     search = (fsg_search_t *) ckd_calloc(1, sizeof(fsg_search_t));
-
     search->fsg = fsg;
-    search->n_state_hmm = mdef_n_emit_state(s->kbc->mdef);
 
     if (fsg) {
         search->fsglist = glist_add_ptr(NULL, (void *) fsg);
-        search->lextree =
-            fsg_lextree_init(fsg, mdef_n_emit_state(s->kbc->mdef));
+        search->lextree = fsg_lextree_init(fsg, search->hmmctx);
     }
     else {
         search->fsglist = NULL;
@@ -235,6 +229,10 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
     search->dict = s->kbc->dict;
     search->tmat = s->kbc->tmat;
     search->am_score_pool = s->ascr;
+
+    search->hmmctx = hmm_context_init(mdef_n_emit_state(search->mdef),
+				      search->tmat->tp, NULL,
+				      search->mdef->sseq);
 
     search->n_ci_phone = mdef_n_ciphone(s->kbc->mdef);
 
@@ -261,24 +259,12 @@ fsg_search_init(word_fsg_t * fsg, void *srch)
     search->matchsegfp = s->matchsegfp;
     search->senscale = s->ascale;
 
-    E_INFO("Number of state %d\n", search->n_state_hmm);
-
     lw = s->kbc->fillpen->lw;
     pip = (int32) (logs3(cmd_ln_float32("-phonepen")) * lw);
     wip = s->kbc->fillpen->wip;
 
     E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
            search->beam, search->pbeam, search->wbeam, wip, pip);
-
-    /* This initializes the temporarily array but global for whmm_t computation.  
-       It sounds like we put it too high up in the function call chain. 
-     */
-
-    st_sen_scr =
-        (int32 *) ckd_calloc(search->n_state_hmm - 1, sizeof(int32));
-
-
-
     return search;
 }
 
@@ -411,7 +397,7 @@ fsg_search_set_current_fsg(fsg_search_t * search, char *name)
         fsg_lextree_free(search->lextree);
 
     /* Allocate new lextree for the given FSG */
-    search->lextree = fsg_lextree_init(fsg, search->n_state_hmm);
+    search->lextree = fsg_lextree_init(fsg, search->hmmctx);
 
     /* Inform the history module of the new fsg */
     fsg_history_set_fsg(search->history, fsg);
@@ -424,26 +410,26 @@ fsg_search_set_current_fsg(fsg_search_t * search, char *name)
 void
 fsg_search_free(fsg_search_t * search)
 {
-    free(st_sen_scr);
-
-    /*  E_FATAL("NOT IMPLEMENTED\n"); */
+    hmm_context_free(search->hmmctx);
 }
 
 
 static void
-hmm_sen_active(whmm_t * hmm, ascr_t * a, int32 n_state_hmm, mdef_t * m)
+hmm_sen_active(hmm_t * hmm, ascr_t * a, mdef_t * m)
 {
     int32 i;
     s3senid_t *senp;
     s3ssid_t ssid;
     senp = NULL;
 
-    if (hmm->active > 0) {
-        ssid = *(hmm->ssid);
+    if (hmm_frame(hmm) > 0) {
+	ssid = hmm_nonmpx_ssid(hmm);
         senp = m->sseq[ssid];
 
-        for (i = 0; i < n_state_hmm; i++) {
+        for (i = 0; i < hmm_n_emit_state(hmm); i++) {
             /*Get the senone sequence id */
+	    if (senp[i] == -1)
+		continue;
             a->sen_active[senp[i]] = 1;
         }
     }
@@ -454,7 +440,7 @@ fsg_search_sen_active(fsg_search_t * search)
 {
     gnode_t *gn;
     fsg_pnode_t *pnode;
-    whmm_t *hmm;
+    hmm_t *hmm;
 
     assert(search->am_score_pool);
     ascr_clear_sen_active(search->am_score_pool);
@@ -462,10 +448,9 @@ fsg_search_sen_active(fsg_search_t * search)
     for (gn = search->pnode_active; gn; gn = gnode_next(gn)) {
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
-        assert(hmm->active == search->frame);
+        assert(hmm_frame(hmm) == search->frame);
 
-        hmm_sen_active(hmm, search->am_score_pool, search->n_state_hmm,
-                       search->mdef);
+        hmm_sen_active(hmm, search->am_score_pool, search->mdef);
     }
 }
 
@@ -480,7 +465,7 @@ fsg_search_hmm_eval(fsg_search_t * search)
 {
     gnode_t *gn;
     fsg_pnode_t *pnode;
-    whmm_t *hmm;
+    hmm_t *hmm;
     int32 bestscore;
     int32 n;
 
@@ -491,16 +476,16 @@ fsg_search_hmm_eval(fsg_search_t * search)
         return;
     }
 
+    hmm_context_set_senscore(search->hmmctx, search->am_score_pool->senscr);
     for (n = 0, gn = search->pnode_active; gn; gn = gnode_next(gn), n++) {
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
-        assert(hmm->active == search->frame);
+        assert(hmm_frame(hmm) == search->frame);
 
-        eval_nonmpx_whmm(hmm, search->am_score_pool->senscr, search->tmat,
-                         search->mdef, search->n_state_hmm);
+	hmm_vit_eval(hmm);
 
-        if (bestscore < hmm->bestscore)
-            bestscore = hmm->bestscore;
+        if (bestscore < hmm_bestscore(hmm))
+            bestscore = hmm_bestscore(hmm);
     }
 
 #if __FSG_DBG__
@@ -520,7 +505,7 @@ static void
 fsg_search_pnode_trans(fsg_search_t * search, fsg_pnode_t * pnode)
 {
     fsg_pnode_t *child;
-    whmm_t *hmm;
+    hmm_t *hmm;
 
     assert(pnode);
     assert(!fsg_pnode_leaf(pnode));
@@ -529,10 +514,9 @@ fsg_search_pnode_trans(fsg_search_t * search, fsg_pnode_t * pnode)
     for (child = fsg_pnode_succ(pnode);
          child; child = fsg_pnode_sibling(child)) {
         if (fsg_psubtree_pnode_enter(child,
-                                     hmm->score[search->n_state_hmm - 1],
+                                     hmm_out_score(hmm),
                                      search->frame + 1,
-                                     hmm->history[search->n_state_hmm -
-                                                  1])) {
+				     hmm_out_history(hmm))) {
             search->pnode_active_next =
                 glist_add_ptr(search->pnode_active_next, (void *) child);
         }
@@ -543,7 +527,7 @@ fsg_search_pnode_trans(fsg_search_t * search, fsg_pnode_t * pnode)
 static void
 fsg_search_pnode_exit(fsg_search_t * search, fsg_pnode_t * pnode)
 {
-    whmm_t *hmm;
+    hmm_t *hmm;
     word_fsglink_t *fl;
     dict_t *dict;
     int32 wid, endwid;
@@ -582,8 +566,8 @@ fsg_search_pnode_exit(fsg_search_t * search, fsg_pnode_t * pnode)
         fsg_history_entry_add(search->history,
                               fl,
                               search->frame,
-                              hmm->score[search->n_state_hmm - 1],
-                              hmm->history[search->n_state_hmm - 1],
+			      hmm_out_score(hmm),
+			      hmm_out_history(hmm),
                               pnode->ci_ext, ctxt);
 
     }
@@ -592,8 +576,8 @@ fsg_search_pnode_exit(fsg_search_t * search, fsg_pnode_t * pnode)
         fsg_history_entry_add(search->history,
                               fl,
                               search->frame,
-                              hmm->score[search->n_state_hmm - 1],
-                              hmm->history[search->n_state_hmm - 1],
+			      hmm_out_score(hmm),
+			      hmm_out_history(hmm),
                               pnode->ci_ext, pnode->ctxt);
     }
 }
@@ -610,7 +594,7 @@ fsg_search_hmm_prune_prop(fsg_search_t * search)
 {
     gnode_t *gn;
     fsg_pnode_t *pnode;
-    whmm_t *hmm;
+    hmm_t *hmm;
     int32 thresh, word_thresh, phone_thresh;
 
     assert(search->pnode_active_next == NULL);
@@ -623,26 +607,26 @@ fsg_search_hmm_prune_prop(fsg_search_t * search)
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
 
-        if (hmm->bestscore >= thresh) {
+        if (hmm_bestscore(hmm) >= thresh) {
             /* Keep this HMM active in the next frame */
-            if (hmm->active == search->frame) {
-                hmm->active = search->frame + 1;
+            if (hmm_frame(hmm) == search->frame) {
+                hmm_frame(hmm) = search->frame + 1;
                 search->pnode_active_next =
                     glist_add_ptr(search->pnode_active_next,
                                   (void *) pnode);
             }
             else {
-                assert(hmm->active == search->frame + 1);
+                assert(hmm_frame(hmm) == search->frame + 1);
             }
 
             if (!fsg_pnode_leaf(pnode)) {
-                if (hmm->score[search->n_state_hmm - 1] >= phone_thresh) {
+                if (hmm_out_score(hmm) >= phone_thresh) {
                     /* Transition out of this phone into its children */
                     fsg_search_pnode_trans(search, pnode);
                 }
             }
             else {
-                if (hmm->score[search->n_state_hmm - 1] >= word_thresh) {
+                if (hmm_out_score(hmm) >= word_thresh) {
                     /* Transition out of leaf node into destination FSG state */
                     fsg_search_pnode_exit(search, pnode);
                 }
@@ -778,7 +762,7 @@ fsg_search_frame_fwd(fsg_search_t * search)
 {
     gnode_t *gn;
     fsg_pnode_t *pnode;
-    whmm_t *hmm;
+    hmm_t *hmm;
 
     search->bpidx_start = fsg_history_n_entries(search->history);
 
@@ -816,12 +800,12 @@ fsg_search_frame_fwd(fsg_search_t * search)
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
 
-        if (hmm->active == search->frame) {
+        if (hmm_frame(hmm) == search->frame) {
             /* This HMM NOT activated for the next frame; reset it */
-            fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+            fsg_psubtree_pnode_deactivate(pnode);
         }
         else {
-            assert(hmm->active == (search->frame + 1));
+            assert(hmm_frame(hmm) == (search->frame + 1));
         }
     }
 
@@ -1100,7 +1084,7 @@ fsg_search_utt_end(fsg_search_t * search)
 {
     gnode_t *gn;
     fsg_pnode_t *pnode;
-    whmm_t *hmm;
+    hmm_t *hmm;
     int32 n_hist;
     FILE *latfp;
     char file[4096];
@@ -1153,13 +1137,13 @@ fsg_search_utt_end(fsg_search_t * search)
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
 
-        fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+        fsg_psubtree_pnode_deactivate(pnode);
     }
     for (gn = search->pnode_active_next; gn; gn = gnode_next(gn)) {
         pnode = (fsg_pnode_t *) gnode_ptr(gn);
         hmm = fsg_pnode_hmmptr(pnode);
 
-        fsg_psubtree_pnode_deactivate(pnode, search->n_state_hmm);
+        fsg_psubtree_pnode_deactivate(pnode);
     }
 
     glist_free(search->pnode_active);

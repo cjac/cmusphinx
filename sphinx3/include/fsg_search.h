@@ -162,8 +162,7 @@ typedef struct fsg_search_s {
   
     int32 state;			/* Whether IDLE or BUSY */
 
-
-    int32 n_state_hmm;            /**< Number of state of HMM*/
+    hmm_context_t *hmmctx;
 
     /*Added by Arthur at 20050627*/
     int32 isUsealtpron;
@@ -177,7 +176,6 @@ typedef struct fsg_search_s {
     mdef_t *mdef;
     tmat_t *tmat; 
     ascr_t *am_score_pool;
-    int32 *senscr; /** The senone score */
     char* uttid;  /**< Utterance ID */
     int32 *senscale; /** The senone scale */
 

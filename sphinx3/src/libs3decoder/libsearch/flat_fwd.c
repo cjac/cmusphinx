@@ -378,8 +378,7 @@ exist_left_right_context(whmm_t ** whmm, s3wid_t w, s3cipid_t lc,
 }
 
 void
-dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm,
-              int32 n_state, int32 * senscr)
+dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm, int32 * senscr)
 {
     s3wid_t w;
     whmm_t *h;
@@ -396,22 +395,14 @@ dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_frm,
     for (w = 0; w < dict->n_word; w++) {
         if (whmm[w]) {
             for (h = whmm[w]; h; h = h->next) {
-
-                if (dict->word[w].pronlen == 1)
-                    assert((h->type == MULTIPLEX_TYPE) ==
-                           IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
-                else
-                    assert((h->type == MULTIPLEX_TYPE) ==
-                           IS_MULTIPLEX(h->pos, fwg->multiplex));
-
-                dump_whmm(w, h, senscr, tmat, n_frm, n_state, dict, mdef);
+                dump_whmm(w, h, senscr, tmat, n_frm, dict, mdef);
             }
         }
     }
 }
 
 void
-dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state)
+dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm)
 {
     s3wid_t w;
     whmm_t *h;
@@ -433,9 +424,9 @@ dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state)
 
             for (h = whmm[w]; h; h = h->next) {
                 if (h->pos < last)
-                    printf(" %9d.%2d", -h->score[n_state - 1], h->pos);
-                else if (bestlast < h->score[n_state - 1])
-                    bestlast = h->score[n_state - 1];
+                    printf(" %9d.%2d", -hmm_out_score(&h->hmm), h->pos);
+                else if (bestlast < hmm_out_score(&h->hmm))
+                    bestlast = hmm_out_score(&h->hmm);
             }
 
             if (bestlast > (int32) 0x80000000)
@@ -448,7 +439,7 @@ dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state)
 
 
 int32
-whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr, int32 n_state)
+whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr)
 {
     int32 best, cf;
     s3wid_t w;
@@ -470,35 +461,20 @@ whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr, int32 n_state)
     n_mpx = n_nonmpx = 0;
     cf = fwg->n_frm;
 
+    hmm_context_set_senscore(fwg->hmmctx, senscr);
     for (w = 0; w < dict->n_word; w++) {
         prevh = NULL;
-        /*      E_INFO("HIHI %d %d\n",w,n_state); */
         for (h = whmm[w]; h; h = nexth) {
-            /*      E_INFO("HIHI Inside\n"); */
             nexth = h->next;
-
-            if (dict->word[w].pronlen == 1)
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex_singleph));
-            else
-                assert((h->type == MULTIPLEX_TYPE) ==
-                       IS_MULTIPLEX(h->pos, fwg->multiplex));
-
-            /*E_INFO("%d %d\n",h->active,cf); */
-            if (h->active == cf) {
-
-                if (h->type == MULTIPLEX_TYPE) {
-                    eval_mpx_whmm(h, senscr, tmat, mdef, n_state);
+            if (hmm_frame(&h->hmm) == cf) {
+                hmm_vit_eval(&h->hmm);
+                if (hmm_is_mpx(&h->hmm))
                     n_mpx++;
-                }
-                else {
-                    eval_nonmpx_whmm(h, senscr, tmat, mdef, n_state);
+                else
                     n_nonmpx++;
-                }
 
-                /*E_INFO("best %d h->bestscore %d\n",best,h->bestscore); */
-                if (best < h->bestscore)
-                    best = h->bestscore;
+                if (best < hmm_bestscore(&h->hmm))
+                    best = hmm_bestscore(&h->hmm);
 
                 prevh = h;
 
@@ -521,12 +497,10 @@ whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr, int32 n_state)
 }
 
 void
-whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
-            int32 bestscr)
+whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 bestscr)
 {
     s3wid_t w;
     whmm_t *h;
-    int32 st;
     dict_t *dict;
 
     dict = fwg->kbcore->dict;
@@ -534,8 +508,7 @@ whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
 
     for (w = 0; w < dict->n_word; w++)
         for (h = whmm[w]; h; h = h->next)
-            for (st = n_state - 2; st >= 0; --st)
-                h->score[st] -= bestscr;
+            hmm_normalize(&h->hmm, bestscr);
 }
 
 
@@ -547,8 +520,7 @@ whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
  * ciphones.
  */
 void
-whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
-                whmm_t * h, int32 n_state, int32 final_state)
+whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w, whmm_t * h)
 {
     int32 lastpos, nssid, nf;
     whmm_t *nexth, *prevh;
@@ -573,21 +545,17 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
          * the HMM if not already present.
          */
         if ((!h->next) || (h->next->pos != h->pos + 1)) {
-            nexth = whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
-
-            nexth->ssid = &ctxt_table_word_int_ssid(ct_table, w, nexth->pos);
-            nexth->ci = dict->word[w].ciphone[h->pos + 1];
+            nexth = whmm_alloc(fwg->hmmctx, h->pos + 1, FALSE,
+                               ctxt_table_word_int_ssid(ct_table, w, h->pos + 1),
+                               dict->word[w].ciphone[h->pos + 1]);
             nexth->next = h->next;
             h->next = nexth;
         }
 
         /* Transition to next HMM */
         nexth = h->next;
-        if (h->score[final_state] > nexth->score[0]) {
-            nexth->score[0] = h->score[final_state];
-            nexth->history[0] = h->history[final_state];
-            nexth->active = nf; /* Ensure it doesn't get pruned */
-        }
+        if (hmm_out_score(&h->hmm) > hmm_in_score(&nexth->hmm))
+            hmm_enter(&nexth->hmm, hmm_out_score(&h->hmm), hmm_out_history(&h->hmm), nf);
     }
     else {
         /*
@@ -599,12 +567,11 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
 
         for (rc = 0; rc < nssid; rc++) {
             if ((!prevh->next) || (prevh->next->rc != rc)) {
-                nexth =
-                    whmm_alloc(h->pos + 1, n_state, WHMM_ALLOC_SIZE, 0);
+                nexth = whmm_alloc(fwg->hmmctx, h->pos + 1, FALSE,
+                                   ssid[rc],
+                                   dict->word[w].ciphone[h->pos + 1]);
 
                 nexth->rc = rc;
-                nexth->ssid = &(ssid[rc]);
-                nexth->ci = dict->word[w].ciphone[h->pos + 1];
                 nexth->next = prevh->next;
                 prevh->next = nexth;
             }
@@ -613,22 +580,16 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
 
         /* Transition to next HMMs */
         for (rc = 0, nexth = h->next; rc < nssid; rc++, nexth = nexth->next) {
-            if (h->score[final_state] > nexth->score[0]) {
-                nexth->score[0] = h->score[final_state];
-                nexth->history[0] = h->history[final_state];
-                nexth->active = nf;     /* Ensure it doesn't get pruned */
-            }
+            if (hmm_out_score(&h->hmm) > hmm_in_score(&nexth->hmm))
+                hmm_enter(&nexth->hmm, hmm_out_score(&h->hmm), hmm_out_history(&h->hmm), nf);
         }
     }
 }
 
-/* WARNING, be careful when plug in parameters into this guy*/
 void
 whmm_exit(srch_FLAT_FWD_graph_t * fwg,
           whmm_t ** whmm,
           latticehist_t * lathist,
-          int32 n_state,
-          int32 final_state,
           int32 thresh, int32 wordthresh, int32 phone_penalty)
 {
     s3wid_t w;
@@ -648,22 +609,21 @@ whmm_exit(srch_FLAT_FWD_graph_t * fwg,
         pronlen = dict->word[w].pronlen;
 
         for (h = whmm[w]; h; h = h->next) {
-            if (h->bestscore >= thresh) {
+            if (hmm_bestscore(&h->hmm) >= thresh) {
                 if (h->pos == pronlen - 1) {
-                    if (h->score[final_state] >= wordthresh) {
+                    if (hmm_out_score(&h->hmm) >= wordthresh) {
                         lattice_entry(lathist, w, fwg->n_frm,
-                                      h->score[final_state],
-                                      h->history[final_state],
+                                      hmm_out_score(&h->hmm),
+                                      hmm_out_history(&h->hmm),
                                       h->rc, fwg->ctxt, dict);
                     }
                 }
                 else {
-                    if (h->score[final_state] + phone_penalty >= thresh)
-                        whmm_transition(fwg, whmm, w, h, n_state,
-                                        final_state);
+                    if (hmm_out_score(&h->hmm) + phone_penalty >= thresh)
+                        whmm_transition(fwg, whmm, w, h);
                 }
 
-                h->active = nf;
+                hmm_frame(&h->hmm) = nf;
             }
         }
     }
@@ -693,14 +653,14 @@ whmm_exit(srch_FLAT_FWD_graph_t * fwg,
  */
 
 void
-word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
+word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
            int32 score, s3latid_t l, s3cipid_t lc)
 {
     whmm_t *h, *prevh;
     s3cipid_t b, rc;
     s3ssid_t ssid, *rssid;
     s3ssid_t *ssidp;
-    int32 s, nssid, nf;
+    int32 nssid, nf;
     kbcore_t *kbc;
     tmat_t *tmat;
     dict_t *dict;
@@ -729,7 +689,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         rc = dict->word[w].ciphone[1];
 
-        /* Get a pointer to the "compressed" phone ID for the triphone
+        /* Get a pointer to the senone sequence ID for the triphone
          * b(lc,rc) where b,rc are the first two phones of the next
          * word and lc is the last phone of the last word. */
         /* Note that b, lc, and rc are all fully known, so the
@@ -741,13 +701,9 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
 
         /* Allocate and initialize an HMM for the next phone if necessary. */
         if (fwg->multiplex) {
-            if ((!whmm[w]) || (whmm[w]->pos != 0)) {    /* If whmm is not allocated or it is not the first phone */
-                h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
-                h->ci = b;
-                for (s = 0; s < n_state; s++) {
-                    h->ssid[s] = ssid;
-                }
-
+            if ((!whmm[w]) || (whmm[w]->pos != 0)) {
+                /* If whmm is not allocated or it is not the first phone */
+                h = whmm_alloc(fwg->hmmctx, 0, TRUE, ssid, b);
                 h->next = whmm[w];
                 whmm[w] = h;
             }
@@ -755,10 +711,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         else {
             if ((!whmm[w]) || (whmm[w]->pos != 0)
                 || !exist_left_context(whmm, w, lcmap[lc])) {
-
-                h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
-                h->ci = b;
-                h->ssid = ssidp;
+                h = whmm_alloc(fwg->hmmctx, 0, FALSE, ssid, b);
                 h->next = whmm[w];
                 whmm[w] = h;
             }
@@ -767,18 +720,14 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         h = whmm[w];
 
         /* And now enter the next HMM in the usual Viterbi fashion. */
-        if (score > h->score[0]) {
-            h->score[0] = score;
-            h->history[0] = l;
-            h->active = nf;
-
+        if (score > hmm_in_score(&h->hmm)) {
+            hmm_enter(&h->hmm, score, l, nf);
             if (fwg->multiplex) {
-                h->ssid[0] = ssid;
+                hmm_mpx_ssid(&h->hmm, 0) = ssid;
             }
             else {
-                /* TODO: figure out what this next line does */
+                hmm_nonmpx_ssid(&h->hmm) = ssid;
                 h->lc = lcmap[lc];
-                h->ssid = ssidp;
             }
         }
 
@@ -791,18 +740,13 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
         rssid = ct_table->lrcssid[b][lc].ssid;
 
         for (rc = 0; rc < nssid; rc++) {
-
             ssidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             ssid = *(ssidp);
 
             if (fwg->multiplex_singleph) {
                 if ((!h) || (h->rc != rc)) {
-                    h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 1);
-                    for (s = 0; s < n_state; s++) {
-                        h->ssid[s] = rssid[rc];
-                    }
-                    h->ci = b;
+                    h = whmm_alloc(fwg->hmmctx, 0, TRUE, rssid[rc], b);
                     h->rc = rc;
 
                     if (prevh) {
@@ -818,9 +762,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
             else {
                 if ((!h)
                     || !exist_left_right_context(whmm, w, lcmap[lc], rc)) {
-                    h = whmm_alloc(0, n_state, WHMM_ALLOC_SIZE, 0);
-                    h->ssid = ssidp;
-                    h->ci = b;
+                    h = whmm_alloc(fwg->hmmctx, 0, FALSE, ssid, b);
                     h->rc = rc;
 
                     if (prevh) {
@@ -849,18 +791,15 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             ssid = *(ssidp);
 
-            if (score > h->score[0]) {
-                h->score[0] = score;
-                h->history[0] = l;
-
-                if (fwg->multiplex_singleph)
-                    h->ssid[0] = rssid[rc];
+            if (score > hmm_in_score(&h->hmm)) {
+                hmm_enter(&h->hmm, score, l, nf);
+                if (fwg->multiplex_singleph) {
+                    hmm_mpx_ssid(&h->hmm, 0) = rssid[rc];
+                }
                 else {
-                    h->ssid = ssidp;
+                    hmm_nonmpx_ssid(&h->hmm) = ssid;
                     h->lc = lcmap[lc];
                 }
-
-                h->active = nf;
             }
         }
     }
@@ -881,7 +820,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w, int32 n_state,
  *
  */
 void
-word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
+word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
            latticehist_t * lathist, int32 thresh, int32 phone_penalty)
 {
     s3latid_t l;                /* lattice entry index */
@@ -1010,8 +949,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                                 newscore += phone_penalty;
 
                                 if (newscore >= thresh) {
-                                    word_enter(fwg, w, n_state, newscore,
-                                               l, lc);
+                                    word_enter(fwg, w, newscore, l, lc);
                                     fwg->tg_trans_done[w] = 1;
                                 }
                             }
@@ -1067,8 +1005,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                             newscore += phone_penalty;
 
                             if (newscore >= thresh)
-                                word_enter(fwg, w, n_state, newscore, l,
-                                           lc);
+                                word_enter(fwg, w, newscore, l, lc);
                         }
                     }
                 }
@@ -1111,7 +1048,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                         phone_penalty;
 
                     if (newscore >= thresh)
-                        word_enter(fwg, w, n_state, newscore, l, lc);
+                        word_enter(fwg, w, newscore, l, lc);
                 }
             }
         }
@@ -1168,7 +1105,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                 newscore = rcscr + wp->ugprob;
                 if (newscore < thresh)
                     break;
-                word_enter(fwg, wp->wid, n_state, newscore, l, lc);
+                word_enter(fwg, wp->wid, newscore, l, lc);
             }
         }
 #endif
@@ -1189,7 +1126,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 n_state,
                                                         dict_basewid(dict,
                                                                      w));
             if (newscore >= thresh)
-                word_enter(fwg, w, n_state, newscore,
+                word_enter(fwg, w, newscore,
                            fwg->filler_backoff[rc].latid,
                            fwg->filler_backoff[rc].lc);
         }
