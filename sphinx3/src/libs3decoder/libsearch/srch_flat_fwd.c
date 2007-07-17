@@ -858,10 +858,10 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
     for (w = 0; w < dict->n_word; w++) {
         for (h = fwg->whmm[w]; h; h = h->next) {
             if (hmm_is_mpx(&h->hmm)) {
-                for (st = hmm_n_emit_state(&h->hmm) - 1; st >= 0; --st) {
+		for (st = 0; st < hmm_n_emit_state(&h->hmm); ++st) {
 		    p = hmm_mpx_ssid(&h->hmm, st);
 		    if (p == -1)
-			continue;
+			break; /* All subsequent ones are also inactive */
                     senp = mdef->sseq[p];
                     ascr->sen_active[senp[st]] = 1;
                 }
@@ -869,7 +869,7 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
             else {
                 p = hmm_nonmpx_ssid(&h->hmm);
                 senp = mdef->sseq[p];
-                for (st = hmm_n_emit_state(&h->hmm) - 1; st >= 0; --st)
+                for (st = 0; st < hmm_n_emit_state(&h->hmm); ++st)
                     ascr->sen_active[senp[st]] = 1;
 
             }

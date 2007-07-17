@@ -467,14 +467,14 @@ whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr)
         for (h = whmm[w]; h; h = nexth) {
             nexth = h->next;
             if (hmm_frame(&h->hmm) == cf) {
-                hmm_vit_eval(&h->hmm);
+                int32 score = hmm_vit_eval(&h->hmm);
                 if (hmm_is_mpx(&h->hmm))
                     n_mpx++;
                 else
                     n_nonmpx++;
 
-                if (best < hmm_bestscore(&h->hmm))
-                    best = hmm_bestscore(&h->hmm);
+                if (best < score)
+                    best = score;
 
                 prevh = h;
 
@@ -722,7 +722,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
         /* And now enter the next HMM in the usual Viterbi fashion. */
         if (score > hmm_in_score(&h->hmm)) {
             hmm_enter(&h->hmm, score, l, nf);
-            if (fwg->multiplex) {
+            if (hmm_is_mpx(&h->hmm)) {
                 hmm_mpx_ssid(&h->hmm, 0) = ssid;
             }
             else {
@@ -740,6 +740,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
         rssid = ct_table->lrcssid[b][lc].ssid;
 
         for (rc = 0; rc < nssid; rc++) {
+
             ssidp = &ctxt_table_single_phone_ssid(ct_table, lc, b, rc);
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             ssid = *(ssidp);
@@ -793,7 +794,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
 
             if (score > hmm_in_score(&h->hmm)) {
                 hmm_enter(&h->hmm, score, l, nf);
-                if (fwg->multiplex_singleph) {
+                if (hmm_is_mpx(&h->hmm)) {
                     hmm_mpx_ssid(&h->hmm, 0) = rssid[rc];
                 }
                 else {
