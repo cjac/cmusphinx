@@ -66,6 +66,7 @@
 
 static arg_t arg[] = {
     log_table_command_line_macro()
+    waveform_to_cepstral_command_line_macro(),
     cepstral_to_feature_command_line_macro()
     acoustic_model_command_line_macro()
     speaker_adaptation_command_line_macro()

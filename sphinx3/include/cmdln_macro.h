@@ -514,7 +514,15 @@ us a better architecture.
     { "-cepext", \
       ARG_STRING, \
       ".mfc", \
-      "Input cepstrum files extension (prefixed to filespecs in control file)" }, 
+      "Input cepstrum files extension (prefixed to filespecs in control file)" },  \
+    { "-adcin", \
+      ARG_BOOLEAN, \
+      "no", \
+      "Input is waveform data rather than cepstra (-cepdir and -cepext are still used)" }, \
+    { "-adchdr", \
+      ARG_INT32, \
+      "0", \
+      "Number of bytes to skip at the beginning of a waveform file (44 for WAV, 1024 for Sphere)" }, 
 
 #define output_lattice_handling_command_line_macro() \
     { "-outlatdir", \

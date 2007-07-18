@@ -163,8 +163,9 @@ typedef struct {
     kbcore_t *kbcore;       /**< Core model structures */
 
     /** Feature generation related variables*/
-    float32 ***feat;	  /**< Feature frames */
-    cmn_t *cmn;             /**< The structure for cepstral mean normalization. */
+    fe_t *fe;		  /**< Front-end processing object */
+    mfcc_t **mfcc;        /**< Input feature frames (may be NULL) */
+    float32 ***feat;	  /**< Dynamic feature frames */
 
     /** Structures of storing parameters for different techniques. */
     ascr_t *ascr;		  /**< Senone and composite senone scores for one frame. */

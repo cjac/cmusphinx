@@ -1,5 +1,6 @@
 TESTS = \
 	test-decode-simple.sh \
+	test-decode-raw.sh \
 	test-decode.sh \
 	test-decode-clm.sh \
 	test-decode-mllr.sh \

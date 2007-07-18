@@ -337,6 +337,12 @@ kb_init(kb_t * kb)
 		temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
     }
 
+    /* Initialize the front end if -adcin is specified */
+    if (cmd_ln_boolean("-adcin")) {
+	if ((kb->fe = fe_init_auto()) == NULL) {
+	    E_FATAL("fe_init_auto() failed\n");
+	}
+    }
     /* STRUCTURE INITIALIZATION : The feature vector */
     if ((kb->feat =
          feat_array_alloc(kbcore_fcb(kbcore), S3_MAX_FRAMES)) == NULL)

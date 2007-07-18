@@ -123,6 +123,65 @@ utt_end(kb_t * kb)
     srch_utt_end((srch_t *) kb->srch);
 }
 
+/* FIXME FIXME FIXME: This needs to go in SphinxBase!!! */
+static int16 *
+wavfile_read(char const *filename, int32 *nsamps)
+{
+    const char *adc_ext, *data_directory;
+    FILE *uttfp;
+    char *inputfile;
+    int32 n, l, adc_hdr, adc_endian;
+    int16 *data;
+
+    adc_ext = cmd_ln_str("-cepext");
+    adc_hdr = cmd_ln_int32("-adchdr");
+    adc_endian = strcmp(cmd_ln_str("-input_endian"), "big");
+    data_directory = cmd_ln_str("-cepdir");
+
+    /* Build input filename */
+    n = strlen(adc_ext);
+    l = strlen(filename);
+    if ((n <= l) && (0 == strcmp(filename + l - n, adc_ext)))
+        adc_ext = "";          /* Extension already exists */
+    inputfile = ckd_calloc(strlen(data_directory) + l + n + 2, 1);
+    if (data_directory) {
+        sprintf(inputfile, "%s/%s%s", data_directory, filename, adc_ext);
+    }
+    else {
+        sprintf(inputfile, "%s%s", filename, adc_ext);
+    }
+
+    if ((uttfp = fopen(inputfile, "rb")) == NULL) {
+        E_FATAL("fopen(%s,rb) failed\n", inputfile);
+    }
+    fseek(uttfp, 0, SEEK_END);
+    n = ftell(uttfp);
+    fseek(uttfp, 0, SEEK_SET);
+    if (adc_hdr > 0) {
+        if (fseek(uttfp, adc_hdr, SEEK_SET) < 0) {
+            E_ERROR("fseek(%s,%d) failed\n", inputfile, adc_hdr);
+            fclose(uttfp);
+            ckd_free(inputfile);
+            return NULL;
+        }
+        n -= adc_hdr;
+    }
+    n /= sizeof(int16);
+    data = ckd_calloc(n, sizeof(*data));
+    if ((l = fread(data, sizeof(int16), n, uttfp)) < n) {
+        E_ERROR_SYSTEM("Failed to read %d samples from %s: %d", n, inputfile, l);
+        ckd_free(data);
+        ckd_free(inputfile);
+        fclose(uttfp);
+        return NULL;
+    }
+    ckd_free(inputfile);
+    fclose(uttfp);
+    if (nsamps) *nsamps = n;
+
+    return data;
+}
+
 void
 utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
@@ -140,18 +199,46 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     kb_set_uttid(uttid, ur->uttfile, kb);
     st = kb->stat;
 
+    /* Convert input file to cepstra if waveform input is selected */
+    if (cmd_ln_boolean("-adcin")) {
+        int16 *adcdata;
+        int32 nsamps = 0;
 
-    /* Read mfc file and build feature vectors for entire utterance */
-    if ((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile,
-                                       cmd_ln_str("-cepdir"),
-                                       cmd_ln_str("-cepext"), sf, ef,
-                                       kb->feat, S3_MAX_FRAMES)) < 0) {
-        E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
+        /* FIXME: We should have a proper interface for reading waveform files */
+        if ((adcdata = wavfile_read(ur->uttfile, &nsamps)) == NULL) {
+            E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
+        }
+        if (kb->mfcc) {
+            ckd_free_2d((void **)kb->mfcc);
+        }
+        if (fe_process_utt(kb->fe, adcdata, nsamps, &kb->mfcc, &total_frame) < 0) {
+            E_FATAL("MFCC calculation failed\n", ur->uttfile);
+        }
+        ckd_free(adcdata);
+        if (total_frame > S3_MAX_FRAMES) {
+            E_FATAL("Maximum number of frames (%d) exceeded\n", S3_MAX_FRAMES);
+        }
+        if ((total_frame = feat_s2mfc2feat_block(kbcore_fcb(kbcore),
+                                                 kb->mfcc,
+                                                 total_frame,
+                                                 TRUE, TRUE,
+                                                 kb->feat)) < 0) {
+            E_FATAL("Feature computation failed\n");
+        }
+    }
+    else {
+        /* Read mfc file and build feature vectors for entire utterance */
+        if ((total_frame = feat_s2mfc2feat(kbcore_fcb(kbcore), ur->uttfile,
+                                           cmd_ln_str("-cepdir"),
+                                           cmd_ln_str("-cepext"), sf, ef,
+                                           kb->feat, S3_MAX_FRAMES)) < 0) {
+            E_FATAL("Cannot read file %s. Forced exit\n", ur->uttfile);
+        }
     }
 
     /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
        could be provided inside the following function. 
-     */
+    */
     if (ur->lmname != NULL)
         srch_set_lm((srch_t *) kb->srch, ur->lmname);
     if (ur->regmatname != NULL)

@@ -131,7 +131,6 @@ extern "C" {
  */
 
 typedef struct {
-
     feat_t *fcb; /**< feature end structure */
     mdef_t *mdef; /**< Model definition  */
     dict_t *dict; /**< Dictionary structure */
