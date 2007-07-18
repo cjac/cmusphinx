@@ -398,16 +398,6 @@ us a better architecture.
       "Dimensionality of LDA output features" },
 
 
-#define waveform_command_line_macro() \
-    { "-maxcepvecs", \
-      ARG_INT32, \
-      "256", \
-      "Maximum number of cepstral vectors that can be obtained from a single sample buffer" }, \
-    { "-blocksize", \
-      ARG_INT32, \
-      ARG_STRINGIFY(DEFAULT_BLOCKSIZE), \
-      "Block size, used to limit the number of samples used at a time when reading very large audio files" }, 
-
 #define speaker_adaptation_command_line_macro() \
     { "-mllr", \
       ARG_STRING, \
