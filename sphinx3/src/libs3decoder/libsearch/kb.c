@@ -338,7 +338,7 @@ kb_init(kb_t * kb)
     }
 
     /* Initialize the front end if -adcin is specified */
-    if (cmd_ln_boolean("-adcin")) {
+    if (cmd_ln_exists("-adcin") && cmd_ln_boolean("-adcin")) {
 	if ((kb->fe = fe_init_auto()) == NULL) {
 	    E_FATAL("fe_init_auto() failed\n");
 	}
