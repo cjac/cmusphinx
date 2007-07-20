@@ -127,8 +127,8 @@ us a better architecture.
 
 #define vq_cluster_command_line_macro() \
     { "-stdev", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Use std.dev. (rather than var) in computing vector distances during clustering" }, \
     { "-eps", \
       ARG_FLOAT64, \
@@ -190,8 +190,8 @@ us a better architecture.
 
 #define language_model_command_line_macro() \
     { "-lminmemory", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Load language model into memory (default: use disk cache for lm"}, \
     { "-lm", \
       ARG_STRING, \
@@ -224,12 +224,12 @@ us a better architecture.
       NULL, \
       "(FSG Mode (Mode 2) only) Finite state grammar"}, \
     { "-fsgusealtpron", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "(FSG Mode (Mode 2) only) Use alternative pronunciations for FSG"}, \
     { "-fsgusefiller", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "(FSG Mode (Mode 2) only) Insert filler words at each state."}, 
 
 
@@ -239,8 +239,8 @@ us a better architecture.
       "1.0003", \
       "Base in which all log-likelihoods calculated" }, \
     { "-log3table", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "Determines whether to use the logs3 table or to compute the values at run time."}, 
 
 #define phoneme_lookahead_command_line_macro() \
@@ -285,8 +285,8 @@ us a better architecture.
       NULL, \
       "Silence and filler (noise) word pronunciation dictionary input file" }, \
     { "-lts_mismatch", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Use CMUDict letter-to-sound rules to generate pronunciations for LM words doesn't appear in the dictionary . Use it with care. It assumes that the phone set in the mdef and dict are the same as the LTS rule. "},
 
 #define gaussian_selection_command_line_macro() \
@@ -310,20 +310,20 @@ us a better architecture.
       "1", \
       "Ratio of Down-sampling the frame computation." }, \
     { "-cond_ds", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Conditional Down-sampling, override normal down sampling. require specify a gaussian selection map" }, \
     { "-dist_ds", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Distance-based Down-sampling, override normal down sampling." }, \
     { "-gs4gs", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "A flag that specified whether the input GS map will be used for Gaussian Selection. If it is disabled, the map will only provide information to other modules." }, \
     { "-svq4svq", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "A flag that specified whether the input SVQ will be used as approximate scores of the Gaussians" }, \
     { "-ci_pbeam", \
       ARG_FLOAT64, \
@@ -502,8 +502,8 @@ us a better architecture.
 
 #define score_handling_command_line_macro() \
     { "-hypsegscore_unscale", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "When displaying the results, whether to unscale back the acoustic score with the best score in a frame"}, 
 
 #define cepstral_input_handling_command_line_macro() \
@@ -530,8 +530,8 @@ us a better architecture.
       NULL, \
       "Directory in which to dump word lattices" }, \
     { "-outlatoldfmt", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "Whether to dump lattices in old format when Sphinx file format is used. " }, \
     { "-outlatfmt", \
       ARG_INT32, \
@@ -563,29 +563,29 @@ us a better architecture.
       "4", \
       "Operation Mode. Mode 4: TST search, Mode 5: WST search, Mode 1369: Debug "}, \
     { "-hmmdump", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Whether to dump active HMM details to stderr (for debugging)" }, \
     { "-lextreedump", \
       ARG_INT32, \
       "0", \
       "Whether to dump the lextree structure to stderr (for debugging), 1 for Ravi's format, 2 for Dot format, Larger than 2 will be treated as Ravi's format" }, \
     { "-bghist", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Bigram-mode: If TRUE only one BP entry/frame; else one per LM state" }, \
     { "-lmrescore", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "}, \
     { "-treeugprob", \
-      ARG_INT32, \
-      "1", \
-      "If TRUE (non-0), Use unigram probs in lextree" }, \
+      ARG_BOOLEAN, \
+      "yes", \
+      "If true, Use unigram probs in lextree" }, \
     { "-composite", \
-      ARG_INT32, \
-      "1", \
-      "If TRUE (non-0), then composite triphone approximation is used." }, \
+      ARG_BOOLEAN, \
+      "yes", \
+      "If true, then composite triphone approximation is used." }, \
 
 #define dag_handling_command_line_macro() \
     { "-min_endfr", \
@@ -609,15 +609,15 @@ us a better architecture.
       "40000", \
       "Max LMops/frame after which utterance aborted; controls CPU use (see maxlmop)" }, \
     {"-latcompress", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "Whether lattice is compressed."},
 
 
 #define second_stage_dag_handling_command_line_macro() \
     { "-bestpath", \
-      ARG_INT32, \
-      "0", \
+      ARG_BOOLEAN, \
+      "no", \
       "Whether to run bestpath DAG search after forward Viterbi pass" }, \
     { "-bestpathlw", \
       ARG_FLOAT32, \
@@ -659,12 +659,12 @@ us a better architecture.
 
 #define search_specific_command_line_macro() \
     {"-bt_wsil", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
      "Specified whether silence will be used to be the last word for backtracking. "}, \
     {"-backtrace", \
-     ARG_INT32, \
-      "1", \
+     ARG_BOOLEAN, \
+      "yes", \
       "Whether detailed backtrace information (word segmentation/scores) shown in log" }, \
     { "-bestsenscrdir", \
       ARG_STRING, \
@@ -696,8 +696,8 @@ us a better architecture.
       "1000", \
       "(Live-decoder only) Maximum number of words in a partial hypothesis (for block decoding)" }, \
     { "-phypdump", \
-      ARG_INT32, \
-      "1", \
+      ARG_BOOLEAN, \
+      "yes", \
       "(Live-decoder only) dump parital hypothesis on the screen"},
 
 #define control_lm_file_command_line_macro() \
