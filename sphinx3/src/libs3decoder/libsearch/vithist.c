@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -438,16 +439,6 @@ vithist_lmstate_enter(vithist_t * vh, int32 vhid, vithist_entry_t * ve)
     lms2vh->children = glist_add_ptr(lms2vh->children, (void *) child);
 }
 
-
-vithist_entry_t *
-vithist_id2entry(vithist_t * vh, int32 id)
-{
-    vithist_entry_t *ve;
-
-    ve = vh->entry[VITHIST_ID2BLK(id)] + VITHIST_ID2BLKOFFSET(id);
-    return ve;
-}
-
 static int32
 vithist_entry_maxscr(vithist_entry_t * ve, int32 isFullExpand)
 {
@@ -472,8 +463,8 @@ vithist_entry_maxscr(vithist_entry_t * ve, int32 isFullExpand)
 static void
 vithist_enter(vithist_t * vh,              /**< The history table */
               kbcore_t * kbc,              /**< a KB core */
-              vithist_entry_t * tve,              /**< an input vithist element */
-              int32 comp_rc                     /**< a compressed rc. If it is the actual rc, it won't work. */
+              vithist_entry_t * tve,       /**< an input vithist element */
+              int32 comp_rc                /**< a compressed rc. If it is the actual rc, it won't work. */
     )
 {
     vithist_entry_t *ve;
@@ -526,7 +517,7 @@ vithist_enter(vithist_t * vh,              /**< The history table */
 
     }
     else {
-        ve = vh->entry[VITHIST_ID2BLK(vhid)] + VITHIST_ID2BLKOFFSET(vhid);
+        ve = vithist_id2entry(vh, vhid);
 
         /*      E_INFO("Replace the old entry\n"); */
         /*              E_INFO("Old entry wid %d, New entry wid %d\n",ve->wid, tve->wid); */
@@ -592,7 +583,7 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
     /* pve is the previous entry before word with wid or, se an fe is the
        first to the last entry before pve. So pve is w_{n-1} */
 
-    pve = vh->entry[VITHIST_ID2BLK(pred)] + VITHIST_ID2BLKOFFSET(pred);
+    pve = vithist_id2entry(vh, pred);
 
     /* Create a temporary entry with all the info currently available */
     tve.wid = wid;
@@ -660,7 +651,7 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
         tve.lmstate.lm3g.lwid[0] = lwid;
 
         for (i = se; i < fe; i++) {
-            pve = vh->entry[VITHIST_ID2BLK(i)] + VITHIST_ID2BLKOFFSET(i);
+            pve = vithist_id2entry(vh, i);
 
             if (pve->valid) {
 
@@ -729,12 +720,10 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
     bs = MAX_NEG_INT32;
     bv = -1;
     for (i = se; i <= fe; i++) {
-        ve = vh->entry[VITHIST_ID2BLK(i)] + VITHIST_ID2BLKOFFSET(i);
+        ve = vithist_id2entry(vh, i);
         if (ve->valid) {
             if (i != te) {      /* Move i to te */
-                tve =
-                    vh->entry[VITHIST_ID2BLK(te)] +
-                    VITHIST_ID2BLKOFFSET(te);
+		tve = vithist_id2entry(vh, te);
                 /**tve = *ve;*/
                 vithist_entry_cp(tve, ve);
             }
@@ -815,7 +804,7 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
     wid[0] = BAD_S3WID;
 
     for (i = se; i <= fe; i++) {
-        ve = vh->entry[VITHIST_ID2BLK(i)] + VITHIST_ID2BLKOFFSET(i);
+	ve = vithist_id2entry(vh, i);
         heap_insert(h, (void *) ve, -(ve->score));
         ve->valid = 0;
         /*      E_INFO("Vhid %d, For frame %d, I have word ID %d with max score %d\n", i, frm, ve->wid, vithist_entry_maxscr(ve,vh->bFullExpand)); */
@@ -912,7 +901,7 @@ vithist_frame_windup(vithist_t * vh, int32 frm, FILE * fp, kbcore_t * kbc)
 int32
 vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
 {
-    int32 f, i, b, l;
+    int32 f, i;
     int32 sv, nsv, scr, bestscore, bestvh, vhid;
     vithist_entry_t *ve, *bestve = 0;
     s3lmwid32_t endwid = BAD_S3LMWID32;
@@ -947,10 +936,7 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
         endwid = lm_finishwid(lm);
 
         for (i = sv; i < nsv; i++) {
-            b = VITHIST_ID2BLK(i);
-            l = VITHIST_ID2BLKOFFSET(i);
-            ve = vh->entry[b] + l;
-
+	    ve = vithist_id2entry(vh, i);
             scr = ve->score;
             scr +=
                 lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
@@ -1015,7 +1001,7 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
 int32
 vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
 {
-    int32 f, i, b, l;
+    int32 f, i;
     int32 sv, nsv, scr, bestscore, bestvh;
     vithist_entry_t *ve, *bestve;
     s3lmwid32_t endwid;
@@ -1048,9 +1034,7 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
     bestvh = -1;
 
     for (i = sv; i < nsv; i++) {
-        b = VITHIST_ID2BLK(i);
-        l = VITHIST_ID2BLKOFFSET(i);
-        ve = vh->entry[b] + l;
+	ve = vithist_id2entry(vh, i);
 
         scr = ve->score;
         scr +=
@@ -1173,7 +1157,7 @@ vithist_lmstate_dump(vithist_t * vh, kbcore_t * kbc, FILE * fp)
 void
 vithist_dump(vithist_t * vh, int32 frm, kbcore_t * kbc, FILE * fp)
 {
-    int32 b, l, i, j;
+    int32 i, j;
     dict_t *dict;
     lm_t *lm;
     vithist_entry_t *ve;
@@ -1206,10 +1190,7 @@ vithist_dump(vithist_t * vh, int32 frm, kbcore_t * kbc, FILE * fp)
                 vh->bestvh[i]);
 
         for (j = vh->frame_start[i]; j < vh->frame_start[i + 1]; j++) {
-            /* This entry */
-            b = VITHIST_ID2BLK(j);
-            l = VITHIST_ID2BLKOFFSET(j);
-            ve = vh->entry[b] + l;
+	    ve = vithist_id2entry(vh, j);
 
             fprintf(fp, "\t%c%6d %5d %5d %11d %9d %8d %7d %4d %s",
                     (ve->valid ? ' ' : '*'), j,
@@ -1240,7 +1221,6 @@ glist_t
 vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
 {
     vithist_entry_t *ve;
-    int32 b, l;
     glist_t hyp;
     srch_hyp_t *h;
     s3cipid_t ci;
@@ -1250,12 +1230,7 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
     while (id > 0) {
 
         /*      E_INFO("id %d\n",id); */
-
-        b = VITHIST_ID2BLK(id);
-        l = VITHIST_ID2BLKOFFSET(id);
-
-        ve = vh->entry[b] + l;
-
+	ve = vithist_id2entry(vh, id);
         assert(ve);
 #if 1
         if (vh->bFullExpand) {
@@ -1330,7 +1305,7 @@ vithist_dag_write(vithist_t * vh, glist_t hyp, dict_t * dict, int32 oldfmt,
 
     n_node = 0;
     for (i = 0; i < vh->n_entry; i++) { /* This range includes the dummy <s> and </s> entries */
-        ve = vh->entry[VITHIST_ID2BLK(i)] + VITHIST_ID2BLKOFFSET(i);
+	ve = vithist_id2entry(vh, i);
         if (!ve->valid)
             continue;
 

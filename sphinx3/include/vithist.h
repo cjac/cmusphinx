@@ -270,6 +270,9 @@ typedef struct {
 
 /** Access macros; not meant for arbitrary use */
 
+/** Return a pointer to the entry with the given ID. */
+#define vithist_id2entry(vh,id) ((vh)->entry[VITHIST_ID2BLK(id)] + VITHIST_ID2BLKOFFSET(id))
+
 /** Return the number of entry in the Viterbi history */
 #define vithist_n_entry(vh)		((vh)->n_entry)
 
@@ -347,13 +350,6 @@ void vithist_utt_reset (vithist_t *vh  /**< In: a Viterbi history data structure
 glist_t vithist_backtrace (vithist_t *vh,       /**< In: a Viterbi history data structure*/
 			   int32 id,		/**< ID from which to begin backtrace */
 			   dict_t *dict         /**< a dictionary for look up the ci phone of a word*/
-    );
-
-/**
- * Return ptr to entry corresponding to the given vithist ID.
- */
-vithist_entry_t *vithist_id2entry (vithist_t *vh,  /**< In: a Viterbi history data structure*/
-				   int32 id        /**< In: ID */
     );
 
 
