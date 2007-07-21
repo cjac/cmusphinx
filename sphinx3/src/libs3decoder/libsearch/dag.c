@@ -531,7 +531,7 @@ dag_backtrace(srch_hyp_t ** hyp, daglink_t * l, float64 lwf, dict_t * dict,
 
         if (!l->bypass) {
             /* Link did not bypass any filler node */
-            h = (srch_hyp_t *) listelem_alloc(sizeof(srch_hyp_t));
+            h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
             h->id = l->node->wid;
             h->word = dict_wordstr(dict, h->id);
             h->sf = l->node->sf;
@@ -547,7 +547,7 @@ dag_backtrace(srch_hyp_t ** hyp, daglink_t * l, float64 lwf, dict_t * dict,
 
             src = l->node;      /* Note that l is a PREDECESSOR link */
             for (; l; l = l->bypass) {
-                h = (srch_hyp_t *) listelem_alloc(sizeof(srch_hyp_t));
+                h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
                 h->id = src->wid;
                 h->word = dict_wordstr(dict, h->id);
                 h->sf = src->sf;

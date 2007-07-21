@@ -28,7 +28,6 @@ libsearch_la_SOURCES = \
 	srch_fsg.c \
 	srch_output.c \
 	srch_time_switch_tree.c \
-	srch_word_switch_tree.c \
 	vithist.c \
 	whmm.c \
 	word_fsg.c \

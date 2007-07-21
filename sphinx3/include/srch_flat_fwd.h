@@ -203,45 +203,5 @@ typedef struct srch_FLAT_FWD_graph_s {
     kbcore_t* kbcore;     /**< A pointer for convenience */
 } srch_FLAT_FWD_graph_t ;
 
-int srch_FLAT_FWD_init(kb_t *kb, /**< The KB */
-		       void* srch_struct /**< The pointer to a search structure */
-    );
-
-int srch_FLAT_FWD_uninit(void* srch_struct);
-int srch_FLAT_FWD_begin(void* srch_struct);
-int srch_FLAT_FWD_end(void* srch_struct);
-
-int srch_FLAT_FWD_set_lm(void* srch_struct, const char* lmname);
-int srch_FLAT_FWD_add_lm(void* srch, lm_t *lm, const char *lmname);
-int srch_FLAT_FWD_delete_lm(void* srch, const char *lmname);
-
-int srch_FLAT_FWD_srch_one_frame_lv2(void* srch_struct);
-
-int srch_FLAT_FWD_shift_one_cache_frame(void *srch,int32 win_efv);
-
-int srch_FLAT_FWD_frame_windup(void* srch_struct, int32 frmno);
-
-int srch_FLAT_FWD_select_active_gmm(void *srch_struct);
-
-
-glist_t srch_FLAT_FWD_gen_hyp(void* srch_struct /**< A void pointer to a search structure */
-    ); 
-
-int srch_FLAT_FWD_dump_vithist(void* srch_struct /**< A void pointer to a search structure */
-    );
-
-dag_t* srch_FLAT_FWD_gen_dag(void * srch_struct, /**< A void pointer to a search structure */
-			     glist_t hyp
-    );
-
-glist_t srch_FLAT_FWD_bestpath_impl(void * srch_struct, /**< A void pointer to a search structure */
-				    dag_t *dag
-    );
-
-
-int32 srch_FLAT_FWD_dag_dump(void *srch_struct,
-			     glist_t hyp
-    );
-
 
 #endif /* SRCH_FLT_FWD*/

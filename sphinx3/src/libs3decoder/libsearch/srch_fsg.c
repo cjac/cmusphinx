@@ -78,6 +78,8 @@
 #include "kb.h"
 #include "kbcore.h"
 
+static word_fsg_t *srch_FSG_read_fsgfile(void *srch, const char *fsgfilename);
+
 
 int
 srch_FSG_init(kb_t * kb,    /**< The KB */
@@ -110,7 +112,7 @@ srch_FSG_init(kb_t * kb,    /**< The KB */
     return SRCH_SUCCESS;
 }
 
-word_fsg_t *
+static word_fsg_t *
 srch_FSG_read_fsgfile(void *srch, const char *fsgfilename)
 {
     word_fsg_t *fsg;

@@ -141,6 +141,7 @@
 #include "srch.h"
 #include "dict.h"
 #include "cmd_ln.h"
+#include "corpus.h"
 #include "approx_cont_mgau.h"
 
 #define REPORT_SRCH_TST 1
@@ -349,6 +350,8 @@ srch_TST_begin(void *srch)
     kbc = s->kbc;
     g = kbc->mgau;
 
+    /* Clean up any previous viterbi history */
+    vithist_utt_reset(s->vithist);
     stat_clear_utt(s->stat);
     histprune_zero_histbin(tstg->histprune);
 
@@ -391,15 +394,9 @@ int
 srch_TST_end(void *srch)
 {
     int32 i;
-    FILE *fp;
-  /**latfp, *bptfp;*/
     srch_t *s;
     srch_TST_graph_t *tstg;
     stat_t *st;
-    histprune_t *hp;
-    dict_t *dict;
-    char *uttid;
-
 
     s = (srch_t *) srch;
     assert(s);
@@ -409,49 +406,31 @@ srch_TST_end(void *srch)
     assert(tstg);
 
     st = s->stat;
-    hp = tstg->histprune;
 
-    fp = stderr;
-    dict = kbcore_dict(s->kbc);
-    uttid = s->uttid;
-
-    if ((s->exit_id = vithist_utt_end(s->vithist, s->kbc)) >= 0) {
-        /*    E_INFO("ID %d\n",id); */
-        reg_result_dump(s, s->exit_id);
-    }
-    else
-        E_ERROR("%s: No recognition\n\n", uttid);
+    /* Find the exit word and wrap up Viterbi history (but don't reset
+     * it yet!) */
+    s->exit_id = vithist_utt_end(s->vithist, s->kbc);
 
     /* Statistics update/report */
     st->utt_wd_exit = vithist_n_entry(s->vithist);
-    stat_report_utt(st, uttid);
-    histprune_showhistbin(tstg->histprune, st->nfr, uttid);
+    stat_report_utt(st, s->uttid);
+    histprune_showhistbin(tstg->histprune, st->nfr, s->uttid);
     stat_update_corpus(st);
 
     ptmr_reset(&(st->tm_sen));
     ptmr_reset(&(st->tm_srch));
     ptmr_reset(&(st->tm_ovrhd));
 
-#if (!defined(WIN32))
-    if (!system("ps auxgw > /dev/null 2>&1")) {
-        system("ps aguxwww | grep /live | grep -v grep");
-        system("ps aguxwww | grep /dec | grep -v grep");
-    }
-#endif
-
     for (i = 0; i < tstg->n_lextree; i++) {
         lextree_utt_end(tstg->curugtree[i], s->kbc);
         lextree_utt_end(tstg->fillertree[i], s->kbc);
     }
 
-    vithist_utt_reset(s->vithist);
-
     lm_cache_stats_dump(kbcore_lm(s->kbc));
     lm_cache_reset(kbcore_lm(s->kbc));
 
-    if (s->exit_id >= 0) {
+    if (s->exit_id >= 0)
         return SRCH_SUCCESS;
-    }
     else
         return SRCH_FAILURE;
 }
@@ -1251,24 +1230,25 @@ srch_TST_gen_hyp(void *srch)
     return vithist_backtrace(s->vithist, id, kbcore_dict(s->kbc));
 }
 
-#if 0
 int
 srch_TST_dump_vithist(void *srch)
 {
     srch_t *s;
     FILE *bptfp;
-    char file[8192];
+    char *file;
 
     s = (srch_t *) srch;
 
     assert(s->vithist);
 
+    file = ckd_calloc(strlen(cmd_ln_str("-bptbldir")) + strlen(s->uttid) + 5, 1);
     sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
 
     if ((bptfp = fopen(file, "w")) == NULL) {
         E_ERROR("fopen(%s,w) failed; using stdout\n", file);
         bptfp = stdout;
     }
+    ckd_free(file);
 
     vithist_dump(s->vithist, -1, s->kbc, bptfp);
 
@@ -1278,17 +1258,6 @@ srch_TST_dump_vithist(void *srch)
     return SRCH_SUCCESS;
 }
 
-
-/* FIXME! Temporary measure, The code now actually temporarily
-   write the dag file onto harddisc and all subsequent operation
-   will need to require reading the dag back.  Currently that
-   includes the -bestpath, -outlatfmt and -confidence operation.
-   They are now separated with different ifs. 
-   
-   A good way to solve is to work on the dag structure which
-   unfortunately was not supported by vithist.c from 3.x (x<6).
-   We will change this later on. 
-*/
 
 dag_t *
 srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
@@ -1361,6 +1330,7 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
                      kbcore_lm(s->kbc), kbcore_fillpen(s->kbc)
         );
 
+
     if (bph != NULL) {
         ghyp = NULL;
         for (tmph = bph; tmph; tmph = tmph->next)
@@ -1376,28 +1346,27 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
 }
 
 int32
-srch_TST_dag_dump(void *srch, glist_t hyp)
+srch_TST_dag_dump(void *srch, dag_t *dag)
 {
     int32 ispipe;
     char str[2048];
     FILE *latfp;
-    float32 *f32arg;
-    dag_t *dag;
     srch_t *s;
+    glist_t hyp;
 
     s = (srch_t *) srch;
     dag = NULL;
 
-    sprintf(str, "%s/%s.%s",
-            cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
-
+    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
     E_INFO("Writing lattice file: %s\n", str);
 
     if ((latfp = fopen_comp(str, "w", &ispipe)) == NULL) {
         E_ERROR("fopen_comp (%s,w) failed\n", str);
-        return NULL;
+        return SRCH_FAILURE;
     }
     else {
+        hyp = srch_TST_gen_hyp(srch);
         dag_write_header(latfp, s->stat->nfr, 0);       /* Very fragile, if 1 is specifed, 
                                                            the code will just be stopped */
 
@@ -1408,11 +1377,8 @@ srch_TST_dag_dump(void *srch, glist_t hyp)
         fclose_comp(latfp, ispipe);
     }
 
+    return SRCH_SUCCESS;
 }
-
-
-#endif
-
 
 /* Pointers to all functions */
 srch_funcs_t srch_TST_funcs = {
@@ -1446,9 +1412,9 @@ srch_funcs_t srch_TST_funcs = {
 	/* select_active_gmm */		srch_TST_select_active_gmm,
 
 	/* gen_hyp */			srch_TST_gen_hyp,
-	/* gen_dag */			NULL,
-	/* dump_vithist */		NULL,
-	/* bestpath_impl */		NULL,
-	/* dag_dump */			NULL,
+	/* gen_dag */			srch_TST_gen_dag,
+	/* dump_vithist */		srch_TST_dump_vithist,
+	/* bestpath_impl */		srch_TST_bestpath_impl,
+	/* dag_dump */			srch_TST_dag_dump,
 	NULL
 };

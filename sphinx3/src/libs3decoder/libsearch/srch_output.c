@@ -118,7 +118,7 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
         h = (srch_hyp_t *) gnode_ptr(gn);
 
         ascr += h->ascr;
-        lscr += lm_rawscore(lm, lscr);
+	lscr += lm ? lm_rawscore(lm, h->lscr) : h->lscr;
 
         if (unnorm)
             global_hypscale += compute_scale(h->sf, h->ef, ascale);
@@ -140,7 +140,6 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
                 lscr);
 
 
-/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
         for (gn = hyp; gn; gn = gnode_next(gn)) {
             h = (srch_hyp_t *) gnode_ptr(gn);
 
@@ -150,14 +149,14 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
 
 
             fprintf(fp, " %d %d %d %s", h->sf, h->ascr + hypscale,
-                    lm_rawscore(lm, h->lscr), dict_wordstr(dict, h->id));
+                    lm ? lm_rawscore(lm, h->lscr) : h->lscr,
+		    dict_wordstr(dict, h->id));
         }
         fprintf(fp, " %d\n", num_frm);
     }
     else if (fmt == SEG_FMT_SPHINX2) {
         fprintf(fp, "%s%s   ", (hdr ? hdr : ""), uttid);
 
-/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
         for (gn = hyp; gn; gn = gnode_next(gn)) {
             h = (srch_hyp_t *) gnode_ptr(gn);
 
@@ -167,7 +166,8 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
 
             /*FIXME!, what is the second output of the matchseg file? */
             fprintf(fp, "%s 0 %d %d %d %d ", dict_wordstr(dict, h->id),
-                    h->sf, h->ef, h->ascr, lm_rawscore(lm, h->lscr));
+                    h->sf, h->ef, h->ascr,
+		    lm ? lm_rawscore(lm, h->lscr) : h->lscr);
 
         }
 
@@ -177,7 +177,6 @@ matchseg_write(FILE * fp, glist_t hyp, char *uttid, char *hdr, int32 fmt,
     }
     else if (fmt == SEG_FMT_CTM) {
 
-/*       for (gn = hyp; gn && (gnode_next(gn)); gn = gnode_next(gn)) { */
         for (gn = hyp; gn; gn = gnode_next(gn)) {
 
             h = (srch_hyp_t *) gnode_ptr(gn);

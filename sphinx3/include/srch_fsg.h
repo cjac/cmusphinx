@@ -76,28 +76,3 @@
 #include "cmd_ln.h"
 
 extern struct srch_funcs_s srch_FSG_funcs;
-
-int srch_FSG_init(kb_t *kb, /**< The KB */
-		  void* srch_struct /**< The pointer to a search structure */
-    );
-
-word_fsg_t* srch_FSG_read_fsgfile(void* srch_struct,const char* fsgname);
-
-int srch_FSG_uninit(void* srch_struct);
-int srch_FSG_begin(void* srch_struct);
-int srch_FSG_end(void* srch_struct);
-
-glist_t srch_FSG_gen_hyp(void* srch_struct);
-int srch_FSG_dump_vithist(void* srch_struct);
-
-int srch_FSG_set_lm(void* srch_struct, const char* lmname);
-int srch_FSG_add_lm(void* srch, lm_t *lm, const char *lmname);
-int srch_FSG_delete_lm(void* srch, const char *lmname);
-
-int srch_FSG_srch_one_frame_lv2(void* srch_struct);
-
-int srch_FSG_shift_one_cache_frame(void *srch_struct,int32 win_efv);
-int srch_FSG_select_active_gmm(void *srch_struct);
-
-int srch_FSG_windup(void* srch_struct, int32 frmno);
-

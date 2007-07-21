@@ -436,7 +436,7 @@ srch_WST_end(void *srch)
 
     /* This part is duplicated with TST_end */
 
-#if 1
+#if 0
     if ((s->exit_id = vithist_utt_end(s->vithist, s->kbc)) >= 0) {
         reg_result_dump(s, s->exit_id);
     }

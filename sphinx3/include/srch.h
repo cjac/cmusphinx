@@ -680,7 +680,7 @@ typedef struct srch_funcs_s {
        Interface for sphinx3 dag dumping function     
     */
     int (*dag_dump) (void * srch_struct,
-                     glist_t hyp
+                     dag_t *dag
         );
 
     /** Empty "guard" element which does nothing. */

@@ -220,15 +220,6 @@
 #define COMPUTE_HEURISTIC 1
 #define SHOW_SENONE_SCORE_FOR_FRAME 0
 
-static void write_bestsenscore(srch_t * s);
-
-static void display_dump_hypothesis(srch_t * s,
-                                    glist_t hyp,
-                                    char *hyptag,
-                                    char *hypsegtag,
-                                    char *shortformCap,
-                                    char *shortformSmall);
-
 int32
 srch_mode_str_to_index(const char *mode_str)
 {
@@ -423,34 +414,23 @@ srch_init(kb_t * kb, int32 op_mode)
     /* A switch here to decide all function pointers */
     if (op_mode == OPERATION_ALIGN) {
         E_FATAL("Alignment mode is not supported yet");
-
     }
     else if (op_mode == OPERATION_ALLPHONE) {
 	s->funcs = &srch_allphone_funcs;
     }
     else if (op_mode == OPERATION_GRAPH) {
-        E_WARN
-            ("In Sphinx 3.6.0 official release, Graph search is still recommended for internal use only. ");
-
 	s->funcs = &srch_FSG_funcs;
     }
     else if (op_mode == OPERATION_FLATFWD) {
 	s->funcs = &srch_FLAT_FWD_funcs;
     }
     else if (op_mode == OPERATION_TST_DECODE) {
-        if (!cmd_ln_int32("-composite")) {
-            E_ERROR
-                ("Full triphone expansion is not supported at this point.\n");
-            return NULL;
-        }
+        if (!cmd_ln_int32("-composite"))
+            E_FATAL("Full triphone expansion is not supported at this point.\n");
 	s->funcs = &srch_TST_funcs;
     }
     else if (op_mode == OPERATION_WST_DECODE) {
-        E_INFO
-            ("You have used a function which is still under development\n");
-        E_FATAL
-            ("Word Conditioned Tree Search is still under development. It is now fended off from the users.");
-	s->funcs = &srch_WST_funcs;
+        E_FATAL("Word Conditioned Tree Search is currently unmaintained.");
     }
     else if (op_mode == OPERATION_DEBUG) {
 	s->funcs = &srch_debug_funcs;
@@ -558,43 +538,140 @@ srch_utt_begin(srch_t * srch)
     return SRCH_SUCCESS;
 }
 
-  /* Several things we want to take care in srch_utt_end 
-     1, (Optionally) Generate the history table. 
-     2, (Optionally) Generate the best senone score. 
-     3, Generate hypothesis.
-     4, Display the hypothesis.
-     5, (Optionally) If enerate the DAG. 
-     6, (Optionally) Do best path search  <- Given 5 is done
-     7, (Optionally) Confidence estimation based on Lattice <- Given 5 is done. 
-     Result could come from either 1 or 6.  
-     8, Then, finally of course you want to clean up. 
-     The following essentially follows the above procedure. 
-
-     The first 1-7 will be mainly taken by function pointers supplied
-     by different modes.
-
-     The first 8 will be taken care by s->funcs->utt_end. That is very
-     different from the past because s->funcs->utt_end takes of
-     everything.  
-   */
-
 int32
-srch_utt_end(srch_t * srch)
+srch_utt_end(srch_t * s)
 {
+    int32 rv;
+    glist_t hyp;
+    gnode_t *gn;
+    dag_t *dag = NULL;
 
-    glist_t hyp, bphyp;
-    dag_t *dag;
-
-    hyp = bphyp = NULL;
-    dag = NULL;
-
-    if (srch->funcs->utt_end == NULL) {
+    if (s->funcs->utt_end == NULL) {
         E_ERROR
-            ("srch->funcs->utt_end is NULL. Please make sure it is set.\n");
+            ("s->funcs->utt_end is NULL. Please make sure it is set.\n");
         return SRCH_FAILURE;
     }
 
-    return srch->funcs->utt_end(srch);
+    if ((rv = s->funcs->utt_end(s)) != SRCH_SUCCESS) {
+	E_ERROR("s->funcs->utt_end failed\n");
+	return rv;
+    }
+
+    if (s->funcs->dump_vithist && cmd_ln_str("-bptbldir")) {
+	if ((rv = s->funcs->dump_vithist(s)) != SRCH_SUCCESS) {
+	    E_ERROR("s->funcs->dump_vithist failed\n");
+	    return rv;
+	}
+    }
+
+    /* Get the final 1-best hypothesis */
+    if (s->funcs->gen_hyp == NULL) {
+	/* Or don't... some modes don't implement this yet. */
+        E_WARN("srch->funcs->gen_hyp is NULL.  Please make sure it is set.\n");
+	return SRCH_SUCCESS;
+    }
+    if ((hyp = s->funcs->gen_hyp(s)) == NULL) {
+	E_ERROR("s->funcs->gen_hyp failed\n");
+	return SRCH_FAILURE;
+    }
+
+    /* Generate a DAG if needed */
+    if (s->funcs->gen_dag &&
+	(cmd_ln_str("-outlatdir")
+	 || cmd_ln_boolean("-bestpath"))) {
+	if ((dag = s->funcs->gen_dag(s, hyp)) == NULL) {
+	    E_ERROR("Failed to generate DAG.\n");
+	}
+    }
+
+    /* Write backtrace info */
+    if (cmd_ln_boolean("-backtrace")) {
+        fprintf(stderr, "\nBacktrace(%s)\n", s->uttid);
+        match_detailed(stderr, hyp, s->uttid, "FV", "fv", s->ascale,
+                       kbcore_dict(s->kbc));
+    }
+
+    /* Write hypothesis strings */
+    if (!(dag && cmd_ln_boolean("-bestpath"))) {
+	if (s->matchfp)
+	    match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
+	if (s->matchsegfp)
+	    matchseg_write(s->matchsegfp, hyp, s->uttid, NULL,
+			   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+			   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+			   cmd_ln_int32("-hypsegscore_unscale"));
+    }
+    match_write(stderr, hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
+    matchseg_write(stderr, hyp, s->uttid, "FWDXCT: ",
+                   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+                   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+                   cmd_ln_int32("-hypsegscore_unscale"));
+    fprintf(stderr, "\n");
+
+    /* Write best senone scores */
+    if (cmd_ln_str("-bestsenscrdir")) {
+        int32 ispipe;
+        char str[2048];
+        FILE *bsfp;
+        sprintf(str, "%s/%s.bsenscr",
+                cmd_ln_str("-bestsenscrdir"), s->uttid);
+        E_INFO("Dumping the Best senone scores.\n");
+        if ((bsfp = fopen_comp(str, "w", &ispipe)) == NULL)
+            E_ERROR("fopen_comp (%s,w) failed\n", str); 
+	else {
+	    write_bstsenscr(bsfp, s->stat->nfr, s->ascale);
+            fclose_comp(bsfp, ispipe);
+        }
+    }
+
+    /* Write lattices */
+    if (dag && cmd_ln_str("-outlatdir")) {
+	if ((s->funcs->dag_dump(s, dag)) != SRCH_SUCCESS) {
+	    E_ERROR("Failed to write DAG file.\n");
+	}
+    }
+
+    /* Do second stage search */
+    if (dag && cmd_ln_boolean("-bestpath")) {
+	glist_t rhyp;
+
+	if ((rhyp = s->funcs->bestpath_impl(s, dag)) == NULL) {
+	    E_ERROR("Bestpath search failed.\n");
+	}
+	else {
+	    if (cmd_ln_int32("-backtrace"))
+		match_detailed(stdout, rhyp, s->uttid, "BP",
+			       "bp", s->ascale,
+			       kbcore_dict(s->kbc));
+	    if (s->matchfp)
+		match_write(s->matchfp, rhyp, s->uttid, kbcore_dict(s->kbc), NULL);
+	    if (s->matchsegfp)
+		matchseg_write(s->matchsegfp, rhyp, s->uttid, NULL,
+			       cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
+			       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
+			       cmd_ln_int32("-hypsegscore_unscale"));
+	    match_write(stderr, rhyp, s->uttid,
+			kbcore_dict(s->kbc), "BSTPTH: ");
+	    matchseg_write(stderr, rhyp, s->uttid, "BSTXCT: ",
+			   cmd_ln_int32("-hypsegfmt"),
+			   kbcore_lm(s->kbc), kbcore_dict(s->kbc),
+			   s->stat->nfr, s->ascale,
+			   cmd_ln_int32("-hypsegscore_unscale"));
+	    for (gn = rhyp; gn; gn = gnode_next(gn)) {
+		ckd_free(gnode_ptr(gn));
+	    }
+	    glist_free(rhyp);
+	}
+    }
+
+    if (dag)
+	dag_destroy(dag);
+    for (gn = hyp; gn; gn = gnode_next(gn)) {
+        ckd_free(gnode_ptr(gn));
+    }
+    glist_free(hyp);
+
+    return SRCH_SUCCESS;
 }
 
 int32
@@ -826,7 +903,7 @@ srch_get_hyp(srch_t *srch)
 {
     if (srch->funcs->gen_hyp == NULL) {
         E_ERROR
-            ("srch->funcs->get_hyp is NULL. Please make sure it is set.\n");
+            ("srch->funcs->gen_hyp is NULL. Please make sure it is set.\n");
         return NULL;
     }
     return srch->funcs->gen_hyp(srch);
@@ -873,274 +950,6 @@ srch_delete_lm(srch_t * srch, const char *lmname)
     return SRCH_SUCCESS;
 }
 
-
-#if 0 /** fend off*/
-/** using file name of the model definition and directory name to initialize */
-int32
-srch_set_am(srch_t * srch)
-{
-    if (srch->funcs->set_am == NULL) {
-        E_INFO("srch->funcs->set_am is NULL. Please make sure it is set.\n");
-        return SRCH_FAILURE;
-    }
-
-    return SRCH_SUCCESS;
-}
-
-/** using file name of the regression class mapping or a directory name to initialize  */
-int32
-srch_set_mllr(srch_t * srch)
-{
-    if (srch->funcs->set_mllr == NULL) {
-        E_INFO
-            ("srch->funcs->set_mllr is NULL. Please make sure it is set.\n");
-        return SRCH_FAILURE;
-    }
-
-    return SRCH_SUCCESS;
-}
-
-/** using file name of interpolation file to initialize it */
-int32
-srch_set_lamdafn(srch_t * srch)
-{
-    if (srch->funcs->set_lamdafn == NULL) {
-        E_INFO
-            ("srch->funcs->set_lamdafn is NULL. Please make sure it is set.\n");
-        return SRCH_FAILURE;
-    }
-
-    return SRCH_SUCCESS;
-}
-#endif
-
-#if 1                           /* Currently only used by tree searches */
-void
-reg_result_dump(srch_t * s, int32 id)
-{
-    FILE *fp, *latfp, *bptfp;
-    glist_t hyp;
-    glist_t ghyp, rhyp;
-    stat_t *st;
-    gnode_t *gn;
-    srch_hyp_t *bph, *tmph;
-    int32 bp;
-    float32 *f32arg;
-    float64 lwf;
-    dag_t *dag;
-    int32 nfrm;
-    dict_t *dict;
-
-    st = s->stat;
-    fp = stderr;
-    dag = NULL;
-
-    dict = s->kbc->dict;
-
-    hyp = ghyp = rhyp = NULL;
-
-    if (cmd_ln_str("-bptbldir")) {
-        char file[8192];
-        sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
-        if ((bptfp = fopen(file, "w")) == NULL) {
-            E_ERROR("fopen(%s,w) failed; using stdout\n", file);
-            bptfp = stdout;
-        }
-
-        if (s->vithist)
-            vithist_dump(s->vithist, -1, s->kbc, bptfp);
-
-        if (bptfp != stdout)
-            fclose(bptfp);
-    }
-
-    if (s->vithist) {
-        assert(id >= 0);
-        hyp = vithist_backtrace(s->vithist, id, dict);
-    }
-
-
-    /* Detailed backtrace */
-    if (cmd_ln_int32("-backtrace")) {
-        fprintf(fp, "\nBacktrace(%s)\n", s->uttid);
-        match_detailed(fp, hyp, s->uttid, "FV", "fv", s->ascale,
-                       kbcore_dict(s->kbc));
-    }
-
-    /* Match */
-    if (s->matchfp)
-        match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
-    match_write(fp, hyp, s->uttid, kbcore_dict(s->kbc), "\nFWDVIT: ");
-
-    /* Matchseg */
-    if (s->matchsegfp)
-        matchseg_write(s->matchsegfp, hyp, s->uttid, NULL,
-                       cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
-                       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-                       cmd_ln_int32("-hypsegscore_unscale")
-            );
-    matchseg_write(fp, hyp, s->uttid, "FWDXCT: ",
-                   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
-                   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-                   cmd_ln_int32("-hypsegscore_unscale")
-
-        );
-    fprintf(fp, "\n");
-
-    if (cmd_ln_str("-bestsenscrdir")) {
-        int32 ispipe;
-        char str[2048];
-        FILE *bsfp;
-        sprintf(str, "%s/%s.bsenscr",
-                cmd_ln_str("-bestsenscrdir"), s->uttid);
-        E_INFO("Dumping the Best senone scores.\n");
-        if ((bsfp = fopen_comp(str, "w", &ispipe)) == NULL)
-            E_ERROR("fopen_comp (%s,w) failed\n", str);
-        else {
-            write_bestsenscore(s);
-            fclose_comp(bsfp, ispipe);
-        }
-    }
-
-    if (cmd_ln_str("-outlatdir")) {
-        int32 ispipe;
-        char str[2048];
-
-	ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
-		    (s->uttfile ? s->uttfile : s->uttid), s->uttid);
-        E_INFO("Writing lattice file: %s\n", str);
-
-        if ((latfp = fopen_comp(str, "w", &ispipe)) == NULL)
-            E_ERROR("fopen_comp (%s,w) failed\n", str);
-        else {
-
-
-            /* Write header info */
-            /* Do link and unlink silences at here */
-            dag_write_header(latfp, st->nfr, 0);        /* Very fragile, if 1 is specifed, 
-                                                           the code will just be stopped */
-
-            vithist_dag_write(s->vithist, hyp, dict,
-                              cmd_ln_int32("-outlatoldfmt"), latfp,
-                              cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
-            fclose_comp(latfp, ispipe);
-
-            /* This should be moved out from the functions and allow polymorphism */
-            /* Reread the lattice and create rescore it */
-            bp = cmd_ln_int32("-bestpath");
-
-            if (bp) {
-                f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-                lwf =
-                    f32arg ? ((*f32arg) /
-                              *((float32 *) cmd_ln_access("-lw"))) : 1.0;
-
-
-                if ((nfrm = s3dag_dag_load(&dag, lwf,
-                                           str,
-                                           dict, kbcore_fillpen(s->kbc)))
-                    >= 0) {
-
-
-          /** Link back silences */
-                    linksilences(kbcore_lm(s->kbc), s->kbc,
-                                 kbcore_dict(s->kbc));
-
-                    bph = dag_search(dag, s->uttid,
-                                     lwf,
-                                     dag->final.node,
-                                     dict,
-                                     kbcore_lm(s->kbc),
-                                     kbcore_fillpen(s->kbc)
-                        );
-
-                    if (bph != NULL) {
-                        ghyp = NULL;
-                        for (tmph = bph; tmph; tmph = tmph->next)
-                            ghyp = glist_add_ptr(ghyp, (void *) tmph);
-
-                        rhyp = glist_reverse(ghyp);
-                        if (cmd_ln_int32("-backtrace"))
-                            match_detailed(stdout, rhyp, s->uttid, "BP",
-                                           "bp", s->ascale,
-                                           kbcore_dict(s->kbc));
-
-                    }
-                    else {
-                        E_ERROR
-                            ("%s: Bestpath search failed; using Viterbi result\n",
-                             s->uttid);
-                        rhyp = hyp;
-                    }
-
-                    match_write(stdout, rhyp, s->uttid,
-                                kbcore_dict(s->kbc), "BSTPTH: ");
-                    matchseg_write(stdout, rhyp, s->uttid, "BSTXCT: ",
-                                   cmd_ln_int32("-hypsegfmt"),
-                                   kbcore_lm(s->kbc), kbcore_dict(s->kbc),
-                                   s->stat->nfr, s->ascale,
-                                   cmd_ln_int32("-hypsegscore_unscale")
-                        );
-
-                    if (ghyp)
-                        glist_free(ghyp);
-
-          /** unlink silences again */
-                    unlinksilences(kbcore_lm(s->kbc), s->kbc,
-                                   kbcore_dict(s->kbc));
-
-                }
-                else {
-                    E_ERROR("DAG search (%s) failed\n", s->uttid);
-                    bph = NULL;
-                }
-
-                if (dag)
-                    dag_destroy(dag);
-
-                lm_cache_stats_dump(kbcore_lm(s->kbc));
-                lm_cache_reset(kbcore_lm(s->kbc));
-
-            }
-
-            /* If IBM format is required to dumped */
-            if (cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM) {
-                dag =
-                    dag_load(str, cmd_ln_int32("-maxedge"),
-                             cmd_ln_float32("-logbase"), 0,
-                         /** No fudge added */
-                             dict, kbcore_fillpen(s->kbc));
-
-                if (dag != NULL) {
-
-                    word_graph_dump(cmd_ln_str("-outlatdir"),
-				    (s->uttfile ? s->uttfile : s->uttid),
-				    s->uttid,
-                                    cmd_ln_str("-latext"), dag, dict,
-                                    kbcore_lm(s->kbc), s->ascale);
-
-                }
-                else {
-                    E_ERROR("DAG conversion (%s) failed\n", s->uttid);
-                }
-
-                if (dag) {
-                    dag_destroy(dag);
-                }
-            }
-        }
-    }
-
-
-  /** free the list containing hyps */
-    for (gn = hyp; gn; gn = gnode_next(gn)) {
-        ckd_free(gnode_ptr(gn));
-    }
-    glist_free(hyp);
-
-}
-#endif
-
 void
 write_bstsenscr(FILE * fp, int32 numframe, int32 * scale)
 {
@@ -1150,267 +959,3 @@ write_bstsenscr(FILE * fp, int32 numframe, int32 * scale)
     for (i = 0; i < numframe; i++)
         fprintf(fp, "%d %d\n", i, scale[i]);
 }
-
-static void
-write_bestsenscore(srch_t * s)
-{
-    int32 ispipe;
-    char str[2048];
-    FILE *bsfp;
-
-    E_INFO("Dumping the Best senone scores.\n");
-    sprintf(str, "%s/%s.bsenscr", cmd_ln_str("-bestsenscrdir"), s->uttid);
-
-    if ((bsfp = fopen_comp(str, "w", &ispipe)) == NULL)
-        E_ERROR("fopen_comp (%s,w) failed\n", str);
-    else {
-        write_bstsenscr(bsfp, s->stat->nfr, s->ascale);
-        fclose_comp(bsfp, ispipe);
-    }
-}
-
-static void
-display_dump_hypothesis(srch_t * s, glist_t hyp, char *hyptag,
-                        char *hypsegtag, char *shortformCap,
-                        char *shortformSmall)
-{
-    FILE *fp;
-
-    fp = stderr;
-
-    if (cmd_ln_int32("-backtrace")) {
-        fprintf(fp, "\nBacktrace(%s)\n", s->uttid);
-        match_detailed(fp, hyp, s->uttid, shortformCap, shortformSmall,
-                       s->ascale, kbcore_dict(s->kbc));
-    }
-
-    /* Match */
-    if (s->matchfp)
-        match_write(s->matchfp, hyp, s->uttid, kbcore_dict(s->kbc), NULL);
-    fprintf(fp, "\n");
-    match_write(fp, hyp, s->uttid, kbcore_dict(s->kbc), hyptag);
-
-    /* Matchseg */
-    if (s->matchsegfp)
-        matchseg_write(s->matchsegfp, hyp, s->uttid, NULL,
-                       cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
-                       kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-                       cmd_ln_int32("-hypsegscore_unscale")
-            );
-    matchseg_write(fp, hyp, s->uttid, hypsegtag,
-                   cmd_ln_int32("-hypsegfmt"), kbcore_lm(s->kbc),
-                   kbcore_dict(s->kbc), s->stat->nfr, s->ascale,
-                   cmd_ln_int32("-hypsegscore_unscale")
-
-        );
-    fprintf(fp, "\n");
-}
-
-#if 0
-int32
-srch_bestpath_srch(srch_t * srch, dag_t * dag)
-{
-    float32 *f32arg;
-    float64 lwf;
-
-    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
-
-    bph = dag_search(dag, srch->uttid,
-                     lwf,
-                     dag->final.node,
-                     dict, kbcore_lm(srch->kbc), kbcore_fillpen(srch->kbc)
-        );
-
-    if (bph != NULL) {
-        ghyp = NULL;
-        for (tmph = bph; tmph; tmph = tmph->next)
-            ghyp = glist_add_ptr(ghyp, (void *) tmph);
-
-        rhyp = glist_reverse(ghyp);
-        return rhyp;
-    }
-    else {
-        return NULL;
-    }
-}
-
-#endif
-
-
-
-#if 0                           /* Insert this part of the code when score is needed to be dumped */
-    /* This should be written as a small function */
-int32 ind;
-
-if (t == 0) {
-    ms_mgau_model_t *mg;
-    gauden_t *g;
-    mg = kbcore_ms_mgau(s->kbc);
-    g = mg->g;
-    E_INFO("Time %d, Accum. Time %d, Segments %d Senscale %d. \n", t,
-           s->num_frm + t, s->num_segs - 1, s->senscale);
-    for (ind = 0; ind < g->n_mgau; ind++) {
-
-        if (s->ascr->sen_active[ind]) {
-#if 0
-            int32 i, j;
-            gauden_dump_ind(g, ind);
-
-            printf("Feature vector:\n");
-            for (i = 0; i < g->n_feat; i++) {
-                for (j = 0; j < g->featlen[i]; j++) {
-                    printf("%f ", block_feat[t][i][j]);
-                }
-            }
-            printf("\n");
-            fflush(stderr);
-#endif
-            E_INFO
-                ("Time %d Ind %d Active %d Senscr %d %f actual %f (Unnorm) %d %f actual %f \n",
-                 t, ind, s->ascr->sen_active[ind], s->ascr->senscr[ind],
-                 logs3_to_log(s->ascr->senscr[ind]),
-                 exp(logs3_to_log(s->ascr->senscr[ind])),
-                 s->ascr->senscr[ind] + s->senscale,
-                 logs3_to_log(s->ascr->senscr[ind] + s->senscale),
-                 exp(logs3_to_log(s->ascr->senscr[ind] + s->senscale))
-                );
-        }
-    }
-}
-#endif
-
-
-/* Some draft code for 2nd stage: Disabled at this point. */
-
-#if 0 /** Refactor code that should be used, but I just don't have time to test them */
-  /*  1, (Optionally) Generate the history table. */
-if (cmd_ln_str("-bptbldir"))
-    srch->funcs->dump_vithist(srch);
-
-  /* 2, (Optionally) Generate the best senone score. */
-if (cmd_ln_str("-bestsenscrdir"))
-    write_bestsenscore(srch);
-
-  /* 3, Generate hypothesis. */
-hyp = srch->funcs->gen_hyp(srch);
-
-  /* 4, Display the hypthesis */
-if (hyp == NULL)
-    E_WARN("No recognition result\n");
-
-display_dump_hypothesis(srch, hyp, "FWDVIT: ", "FWDXCT: ", "FV", "fv");
-
-if (srch->op_mode == OPERATION_GRAPH) {
-    E_WARN
-        ("Currently mode 2 (FSG decoding) doesn't support DAG generation.\n");
-    return srch->funcs->utt_end(srch);
-}
-
-  /*5, (Optionally) Generate the DAG. */
-if (cmd_ln_int32("-bestpath") ||        /* Generate lattice for best path search */
-    cmd_ln_int32("-confidence") ||      /* Generate lattice for confidence scoring. */
-    cmd_ln_str("-outlatdir")    /* Generate lattice for the sake of generating lattice */
-    ) {
-
-#if 1
-    /* Hack! */
-    /* Take care of the situation where mode 4 and 5 requires lattice
-       write back to the harddiscs . That is if the users need to use bestpath
-     */
-    if ((cmd_ln_int32("-bestpath") || cmd_ln_int32("-confidence")) &&
-        cmd_ln_str("-outlatdir") == NULL &&
-        (srch->op_mode == OPERATION_TST_DECODE
-         || srch->op_mode == OPERATION_WST_DECODE)
-        )
-        E_FATAL
-            ("In TST and WST search (Mode 4 or 5), specifying -bestpath and -confidence also require -outlatdir");
-#endif
-
-    dag = srch->funcs->gen_dag(srch, hyp);
-}
-
-
-
-  /* 6, (Optionally) Do best path search  <- Given 5 is done */
-if (cmd_ln_int32("-bestpath")) {
-
-    bphyp = srch->funcs->bestpath_impl(srch, dag);
-
-    if (bphyp == NULL) {
-        E_ERROR("%s: Bestpath search failed; using Viterbi result\n",
-                srch->uttid);
-        bphyp = hyp;
-    }
-
-    display_dump_hypothesis(srch, bphyp, "BSTPTH: ", "BSTXCT: ", "BP",
-                            "bp");
-
-    E_INFO("LM Cache After bestpath search\n");
-    lm_cache_stats_dump(kbcore_lm(srch->kbc));
-    lm_cache_reset(kbcore_lm(srch->kbc));
-
-}
-
-  /*7, (Optionally) Confidence estimation based on Lattice <- Given 5 is done. */
-if (cmd_ln_int32("-confidence")) {
-}
-
-
-if (cmd_ln_int32("-outlatdir")) {
-    if (cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM) {
-
-        if (srch->op_mode == OPERATION_FLATFWD) {
-            E_WARN("Not dumping IBM lattice file format at this point\n");
-        }
-        else {
-            if (dag != NULL)
-                word_graph_dump(cmd_ln_str("-outlatdir"),
-				(srch->uttfile ? srch->uttfile : srch->uttid)
-				srch->uttid,
-                                cmd_ln_str("-latext"), dag,
-                                kbcore_dict(srch->kbc),
-                                kbcore_lm(srch->kbc), srch->ascale);
-            else
-                E_ERROR("DAG conversion (%s) failed\n", srch->uttid);
-        }
-    }
-    else if (cmd_ln_int32("-outlatfmt") == OUTLATFMT_SPHINX3) {
-
-        if ((cmd_ln_int32("-bestpath") || cmd_ln_int32("-confidence")) &&
-            cmd_ln_str("-outlatdir") == NULL &&
-            (srch->op_mode == OPERATION_TST_DECODE
-             || srch->op_mode == OPERATION_WST_DECODE)
-            ) {
-
-            /* Do nothing, because the code has already dumped the lattice
-               as intermediates. 
-             */
-        }
-        else {
-            srch->funcs->dag_dump(srch, hyp);
-        }
-
-    }
-    else {
-        E_ERROR("Unknown format ,do nothing in dumping files out\n");
-    }
-}
-
-
-if (hyp != NULL) {
-    /** free the list containing hyps */
-    for (gn = hyp; gn; gn = gnode_next(gn))
-        ckd_free(gnode_ptr(gn));
-    glist_free(hyp);
-}
-if (bphyp != NULL) {
-    for (gn = bphyp; gn; gn = gnode_next(gn))
-        ckd_free(gnode_ptr(gn));
-    glist_free(bphyp);
-}
-if (dag != NULL)
-    dag_destroy(dag);
-
-return srch->funcs->utt_end(srch);
-#endif

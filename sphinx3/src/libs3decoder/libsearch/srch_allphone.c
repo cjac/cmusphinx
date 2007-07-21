@@ -672,58 +672,6 @@ _allphone_start_utt(allphone_t *allp)
 }
 
 static void
-allphone_log_hypseg(srch_t *s,
-                    phseg_t * hypptr,   /* In: Hypothesis */
-		    char *uttid,
-                    int32 nfrm, /* In: #frames in utterance */
-                    int32 scl)
-{                               /* In: Acoustic scaling for entire utt */
-    phseg_t *h;
-    int32 ascr, lscr, tscr;
-    kbcore_t *kbcore = s->kbc;
-    FILE *fp = s->matchsegfp;
-
-    ascr = lscr = tscr = 0;
-    for (h = hypptr; h; h = h->next) {
-        ascr += h->score;
-        lscr += h->tscore;      /* FIXME: unscaled score? */
-        tscr += h->score + h->tscore;
-    }
-
-    fprintf(fp, "%s S %d T %d A %d L %d", uttid, scl, tscr, ascr, lscr);
-
-    if (!hypptr)                /* HACK!! */
-        fprintf(fp, " (null)\n");
-    else {
-        for (h = hypptr; h; h = h->next) {
-            fprintf(fp, " %d %d %d %s", h->sf, h->score, h->tscore,
-                    mdef_ciphone_str(kbcore_mdef(kbcore), h->ci));
-        }
-        fprintf(fp, " %d\n", nfrm);
-    }
-
-    fflush(fp);
-}
-
-static void
-allphone_log_hypstr(srch_t *s, phseg_t * hypptr, char *uttid)
-{
-    kbcore_t *kbcore = s->kbc;
-    FILE *fp = s->matchfp;
-    phseg_t *h;
-
-    if (!hypptr)                /* HACK!! */
-        fprintf(fp, "(null)");
-
-    for (h = hypptr; h; h = h->next) {
-        fprintf(fp, "%s ", mdef_ciphone_str(kbcore_mdef(kbcore), h->ci));
-    }
-    fprintf(fp, " (%s)\n", uttid);
-    fflush(fp);
-}
-
-
-static void
 write_phseg(srch_t *s, char *dir, char *uttid, phseg_t * phseg)
 {
     char str[1024];
@@ -944,7 +892,6 @@ srch_allphone_end(void *srch)
     srch_t *s;
     allphone_t *allp;
     stat_t *st;
-    int32 scl, i;
 
     s = (srch_t *) srch;
     allp = (allphone_t *) s->grh->graph_struct;
@@ -955,16 +902,6 @@ srch_allphone_end(void *srch)
     /* Write and/or log phoneme segmentation */
     if (cmd_ln_exists("-phsegdir"))
 	write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
-    else
-	write_phseg(s, NULL, s->uttid, allp->phseg);
-    if (s->matchfp)
-        allphone_log_hypstr(s, allp->phseg, s->uttid);
-    if (s->matchsegfp) {
-	scl = 0;
-	for (i = 0; i < allp->curfrm; ++i)
-	    scl += allp->score_scale[i];
-        allphone_log_hypseg(s, allp->phseg, s->uttid, allp->curfrm, scl);
-    }
 
     return SRCH_SUCCESS;
 }
@@ -1063,7 +1000,7 @@ srch_allphone_gen_hyp(void *srch)
 	srch_hyp_t *h;
 
         h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
-	h->id = p->ci;
+	h->id = dict_wordid(s->kbc->dict, (char *)mdef_ciphone_str(allp->mdef, p->ci));
 	h->sf = p->sf;
 	h->ef = p->ef;
 	h->ascr = p->score;

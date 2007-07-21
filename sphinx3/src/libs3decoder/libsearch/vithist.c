@@ -2062,7 +2062,7 @@ lattice_backtrace(latticehist_t * lathist,
                               fillpen);
 #endif
 
-        h = (srch_hyp_t *) listelem_alloc(sizeof(srch_hyp_t));
+        h = ckd_calloc(1, sizeof(srch_hyp_t));
         if (!prevh)
             *hyp = h;
         else
