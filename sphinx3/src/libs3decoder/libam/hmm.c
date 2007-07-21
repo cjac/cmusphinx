@@ -286,6 +286,7 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
             s5 = t2;
             hmm_out_history(hmm)  = hmm_history(hmm, 3);
         }
+        if (s5 < WORST_SCORE) s5 = WORST_SCORE;
         hmm_out_score(hmm) = s5;
         bestScore = s5;
     }
@@ -311,6 +312,7 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
                 hmm_history(hmm, 4)  = hmm_history(hmm, 3);
             }
         }
+        if (s4 < WORST_SCORE) s4 = WORST_SCORE;
         if (s4 > bestScore) bestScore = s4;
         hmm_score(hmm, 4) = s4;
     }
@@ -336,6 +338,7 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
                 hmm_history(hmm, 3)  = hmm_history(hmm, 2);
             }
         }
+        if (s3 < WORST_SCORE) s3 = WORST_SCORE;
         if (s3 > bestScore) bestScore = s3;
         hmm_score(hmm, 3) = s3;
     }
@@ -360,6 +363,7 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
             hmm_history(hmm, 2)  = hmm_history(hmm, 1);
         }
     }
+    if (s2 < WORST_SCORE) s2 = WORST_SCORE;
     if (s2 > bestScore) bestScore = s2;
     hmm_score(hmm, 2) = s2;
 
@@ -373,11 +377,13 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
         s1 = t1;
         hmm_history(hmm, 1)  = hmm_in_history(hmm);
     }
+    if (s1 < WORST_SCORE) s1 = WORST_SCORE;
     if (s1 > bestScore) bestScore = s1;
     hmm_score(hmm, 1) = s1;
 
     /* All transitions into state 0 */
     s0 = s0 + hmm_tprob_5st(0, 0);
+    if (s0 < WORST_SCORE) s0 = WORST_SCORE;
     if (s0 > bestScore) bestScore = s0;
     hmm_in_score(hmm) = s0;
 
@@ -419,6 +425,7 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
         s5 = t2;
         hmm_out_history(hmm) = hmm_history(hmm, 3);
     }
+    if (s5 < WORST_SCORE) s5 = WORST_SCORE;
     hmm_out_score(hmm) = s5;
     bestScore = s5;
 
@@ -456,6 +463,7 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
             ssid[4] = ssid[3];
         }
     }
+    if (s4 < WORST_SCORE) s4 = WORST_SCORE;
     if (s4 > bestScore)
         bestScore = s4;
     hmm_score(hmm, 4) = s4;
@@ -493,8 +501,8 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
             ssid[3] = ssid[2];
         }
     }
-    if (s3 > bestScore)
-        bestScore = s3;
+    if (s3 < WORST_SCORE) s3 = WORST_SCORE;
+    if (s3 > bestScore) bestScore = s3;
     hmm_score(hmm, 3) = s3;
 
     /* State 0 is always active */
@@ -528,8 +536,8 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
             ssid[2] = ssid[1];
         }
     }
-    if (s2 > bestScore)
-        bestScore = s2;
+    if (s2 < WORST_SCORE) s2 = WORST_SCORE;
+    if (s2 > bestScore) bestScore = s2;
     hmm_score(hmm, 2) = s2;
 
     /* Don't propagate WORST_SCORE */
@@ -545,13 +553,13 @@ hmm_vit_eval_5st_lr_mpx(hmm_t * hmm)
         hmm_history(hmm, 1) = hmm_in_history(hmm);
         ssid[1] = ssid[0];
     }
-    if (s1 > bestScore)
-        bestScore = s1;
+    if (s1 < WORST_SCORE) s1 = WORST_SCORE;
+    if (s1 > bestScore) bestScore = s1;
     hmm_score(hmm, 1) = s1;
 
     s0 += hmm_tprob_5st(0, 0);
-    if (s0 > bestScore)
-        bestScore = s0;
+    if (s0 < WORST_SCORE) s0 = WORST_SCORE;
+    if (s0 > bestScore) bestScore = s0;
     hmm_in_score(hmm) = s0;
 
     hmm_bestscore(hmm) = bestScore;
@@ -588,6 +596,7 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
             s3 = t2;
             hmm_out_history(hmm)  = hmm_history(hmm, 1);
         }
+        if (s3 < WORST_SCORE) s3 = WORST_SCORE;
         hmm_out_score(hmm) = s3;
         bestScore = s3;
     }
@@ -612,6 +621,7 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
             hmm_history(hmm, 2)  = hmm_history(hmm, 1);
         }
     }
+    if (s2 < WORST_SCORE) s2 = WORST_SCORE;
     if (s2 > bestScore) bestScore = s2;
     hmm_score(hmm, 2) = s2;
 
@@ -624,11 +634,13 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
         s1 = t1;
         hmm_history(hmm, 1)  = hmm_in_history(hmm);
     }
+    if (s1 < WORST_SCORE) s1 = WORST_SCORE;
     if (s1 > bestScore) bestScore = s1;
     hmm_score(hmm, 1) = s1;
 
     /* All transitions into state 0 */
     s0 = s0 + hmm_tprob_3st(0, 0);
+    if (s0 < WORST_SCORE) s0 = WORST_SCORE;
     if (s0 > bestScore) bestScore = s0;
     hmm_in_score(hmm) = s0;
 
@@ -668,6 +680,7 @@ hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
         s3 = t2;
         hmm_out_history(hmm) = hmm_history(hmm, 1);
     }
+    if (s3 < WORST_SCORE) s3 = WORST_SCORE;
     hmm_out_score(hmm) = s3;
     bestScore = s3;
 
@@ -703,8 +716,8 @@ hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
             ssid[2] = ssid[1];
         }
     }
-    if (s2 > bestScore)
-        bestScore = s2;
+    if (s2 < WORST_SCORE) s2 = WORST_SCORE;
+    if (s2 > bestScore) bestScore = s2;
     hmm_score(hmm, 2) = s2;
 
     /* Don't propagate WORST_SCORE */
@@ -720,14 +733,14 @@ hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
         hmm_history(hmm, 1) = hmm_in_history(hmm);
         ssid[1] = ssid[0];
     }
-    if (s1 > bestScore)
-        bestScore = s1;
+    if (s1 < WORST_SCORE) s1 = WORST_SCORE;
+    if (s1 > bestScore) bestScore = s1;
     hmm_score(hmm, 1) = s1;
 
     /* State 0 is always active */
     s0 += hmm_tprob_3st(0, 0);
-    if (s0 > bestScore)
-        bestScore = s0;
+    if (s0 < WORST_SCORE) s0 = WORST_SCORE;
+    if (s0 > bestScore) bestScore = s0;
     hmm_in_score(hmm) = s0;
 
     hmm_bestscore(hmm) = bestScore;
