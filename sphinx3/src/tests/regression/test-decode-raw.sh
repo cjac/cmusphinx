@@ -17,6 +17,7 @@ margs="-mdef $hub4am/hub4opensrc.6000.mdef \
 -cepdir $an4lm/ \
 -cepext .raw \
 -adcin yes \
+-input_endian little \
 -agc none \
 -varnorm no \
 -cmn current \
