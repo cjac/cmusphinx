@@ -324,6 +324,9 @@ srch_TST_uninit(void *srch)
     ckd_free(tstg->curugtree);
     ckd_free(tstg->fillertree);
 
+    if (tstg->vithist)
+	vithist_free(tstg->vithist);
+
     if (tstg->histprune != NULL) {
         histprune_free((void *) tstg->histprune);
     }

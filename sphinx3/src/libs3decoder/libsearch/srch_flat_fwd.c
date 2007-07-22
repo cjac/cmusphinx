@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -338,6 +339,9 @@ srch_FLAT_FWD_uninit(void *srch)
 
     if (fwg->ctxt)
         ctxt_table_free(fwg->ctxt);
+
+    if (fwg->lathist)
+	latticehist_free(fwg->lathist);
 
     pctr_free(fwg->ctr_mpx_whmm);
     pctr_free(fwg->ctr_nonmpx_whmm);
