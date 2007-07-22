@@ -425,8 +425,6 @@ srch_init(kb_t * kb, int32 op_mode)
 	s->funcs = &srch_FLAT_FWD_funcs;
     }
     else if (op_mode == OPERATION_TST_DECODE) {
-        if (!cmd_ln_int32("-composite"))
-            E_FATAL("Full triphone expansion is not supported at this point.\n");
 	s->funcs = &srch_TST_funcs;
     }
     else if (op_mode == OPERATION_WST_DECODE) {

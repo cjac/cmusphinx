@@ -144,7 +144,7 @@ vithist_entry_display(vithist_entry_t * ve, dict_t * dict)
     E_INFO("Word ID %d \n", ve->wid);
     E_INFO("Sf %d Ef %d \n", ve->sf, ve->ef);
     E_INFO("Ascr %d Lscr %d \n", ve->ascr, ve->lscr);
-    E_INFO("Score %d \n", ve->score);
+    E_INFO("Score %d \n", ve->path.score);
     E_INFO("Type %d\n", ve->type);
     E_INFO("Valid for LM rescoring? %d\n", ve->valid);
     vh_lmstate_display(&(ve->lmstate), dict);
@@ -152,8 +152,7 @@ vithist_entry_display(vithist_entry_t * ve, dict_t * dict)
 
 
 vithist_t *
-vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 isRescore,
-             int32 isbtwsil, int32 isFullExpand, int32 isreport)
+vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 report)
 {
     vithist_t *vh;
     lmset_t *lmset;
@@ -163,7 +162,7 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 isRescore,
 
     int max = -1;
 
-    if (isreport)
+    if (report)
         E_INFO("Initializing Viterbi-history module\n");
 
     vh = (vithist_t *) ckd_calloc(1, sizeof(vithist_t));
@@ -181,10 +180,7 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 isRescore,
     vh->bestvh = (int32 *) ckd_calloc(S3_MAX_FRAMES + 1, sizeof(int32));
 
     vh->wbeam = wbeam;
-    vh->bLMRescore = isRescore;
-    vh->bBtwSil = isbtwsil;
     vh->bghist = bghist;
-    vh->bFullExpand = isFullExpand;
 
     lmset = kbcore_lmset(kbc);
     dict = kbcore_dict(kbc);
@@ -212,7 +208,7 @@ vithist_init(kbcore_t * kbc, int32 wbeam, int32 bghist, int32 isRescore,
    This function cleans up rc_info
  */
 static void
-clean_up_rc_info(scr_hist_pair * rc_info, int32 n_rc_info)
+clean_up_rc_info(backpointer_t * rc_info, int32 n_rc_info)
 {
     int32 i;
     for (i = 0; i < n_rc_info; i++) {
@@ -230,29 +226,14 @@ static void
 vithist_entry_dirty_cp(vithist_entry_t * va, vithist_entry_t * vb,
                        int32 n_rc_info)
 {
-    scr_hist_pair *tmpshp;
-    assert(vb->rc_info == NULL);
+    backpointer_t *tmpshp;
+    assert(vb->rc == NULL);
 
-    tmpshp = va->rc_info;
+    tmpshp = va->rc;
     /* Do a direct copy */
     *va = *vb;
-    va->rc_info = tmpshp;
-    va->n_rc_info = n_rc_info;
-
-#if 0
-    va->wid = vb->wid;
-    va->sf = vb->sf;
-    va->ef = vb->ef;
-    va->ascr = vb->ascr;
-    va->lscr = vb->lscr;
-    va->score = vb->score;
-    va->pred = vb->pred;
-    va->type = vb->type;
-    va->valid = vb->valid;
-    va->lmstate.lm3g.lwid[0] = vb->lmstate.lm3g.lwid[0];
-    va->lmstate.lm3g.lwid[1] = vb->lmstate.lm3g.lwid[1];
-#endif
-
+    va->rc = tmpshp;
+    va->n_rc = n_rc_info;
 }
 
 /**
@@ -269,17 +250,17 @@ vithist_entry_cp(vithist_entry_t * va, vithist_entry_t * vb)
     va->ef = vb->ef;
     va->ascr = vb->ascr;
     va->lscr = vb->lscr;
-    va->score = vb->score;
-    va->pred = vb->pred;
+    va->path.score = vb->path.score;
+    va->path.pred = vb->path.pred;
     va->type = vb->type;
     va->valid = vb->valid;
     va->lmstate.lm3g.lwid[0] = vb->lmstate.lm3g.lwid[0];
     va->lmstate.lm3g.lwid[1] = vb->lmstate.lm3g.lwid[1];
-    va->n_rc_info = vb->n_rc_info;
+    va->n_rc = vb->n_rc;
 
-    if (va->rc_info) {
-        for (i = 0; i < vb->n_rc_info; i++)
-            va->rc_info[i] = vb->rc_info[i];
+    if (va->rc) {
+        for (i = 0; i < vb->n_rc; i++)
+            va->rc[i] = vb->rc[i];
     }
 }
 
@@ -290,9 +271,8 @@ vithist_entry_cp(vithist_entry_t * va, vithist_entry_t * vb)
 static vithist_entry_t *
 vithist_entry_alloc(vithist_t * vh)
 {
-    int32 b, l, i;
+    int32 b, l;
     vithist_entry_t *ve;
-    vithist_entry_t *tmpve;
 
     b = VITHIST_ID2BLK(vh->n_entry);
     l = VITHIST_ID2BLKOFFSET(vh->n_entry);
@@ -306,23 +286,10 @@ vithist_entry_alloc(vithist_t * vh)
 
         ve = (vithist_entry_t *) ckd_calloc(VITHIST_BLKSIZE,
                                             sizeof(vithist_entry_t));
-
         vh->entry[b] = ve;
-
-        if (vh->bFullExpand) {
-            for (i = 0; i < VITHIST_BLKSIZE; i++) {
-                tmpve = vh->entry[b] + i;
-                tmpve->rc_info = NULL;
-            }
-        }
-
     }
     else
         ve = vh->entry[b] + l;
-
-
-    if (vh->bFullExpand && ve->rc_info != NULL)
-        clean_up_rc_info(ve->rc_info, ve->n_rc_info);
 
     vh->n_entry++;
     return ve;
@@ -335,7 +302,6 @@ vithist_utt_begin(vithist_t * vh, kbcore_t * kbc)
     vithist_entry_t *ve;
     lm_t *lm;
     dict_t *dict;
-    int32 i;
 
     lm = kbcore_lm(kbc);
     dict = kbcore_dict(kbc);
@@ -352,27 +318,12 @@ vithist_utt_begin(vithist_t * vh, kbcore_t * kbc)
     ve->ef = -1;
     ve->ascr = 0;
     ve->lscr = 0;
-    ve->score = 0;
-    ve->pred = -1;
+    ve->path.score = 0;
+    ve->path.pred = -1;
     ve->type = 0;
     ve->valid = 1;
     ve->lmstate.lm3g.lwid[0] = lm_startwid(lm);
     ve->lmstate.lm3g.lwid[1] = BAD_LMWID(lm);
-
-    if (vh->bFullExpand) {
-        if (ve->rc_info == NULL) {
-            ve->n_rc_info =
-                get_rc_nssid(kbc->dict2pid, dict_startwid(dict),
-                             kbc->dict);
-            ve->rc_info = ckd_calloc(vh->n_ci, sizeof(scr_hist_pair));
-            /* Always used n_ci phone to be the allocation size */
-        }
-        for (i = 0; i < ve->n_rc_info; i++) {
-            ve->rc_info[i].score = S3_LOGPROB_ZERO;
-            ve->rc_info[i].pred = -1;
-        }
-    }
-
     vh->n_frm = 0;
     vh->frame_start[0] = 1;
     vh->bestscore[0] = MAX_NEG_INT32;
@@ -439,25 +390,6 @@ vithist_lmstate_enter(vithist_t * vh, int32 vhid, vithist_entry_t * ve)
     lms2vh->children = glist_add_ptr(lms2vh->children, (void *) child);
 }
 
-static int32
-vithist_entry_maxscr(vithist_entry_t * ve, int32 isFullExpand)
-{
-    int32 i;
-    int32 max = S3_LOGPROB_ZERO;
-    if (ve->rc_info == NULL) {
-        return ve->score;
-    }
-    else {
-        assert(isFullExpand);
-        for (i = 0; i < ve->n_rc_info; i++) {
-            if (max < ve->rc_info[i].score) {
-                max = ve->rc_info[i].score;
-            }
-        }
-        return max;
-    }
-}
-
 /* Rclist is separate from tve because C structure copying is used in *ve = *tve 
  */
 void
@@ -478,11 +410,7 @@ vithist_enter(vithist_t * vh,              /**< The history table */
     n_ci = vh->n_ci;
     /* Check if an entry with this LM state already exists in current frame */
     vhid = vh_lmstate_find(vh, &(tve->lmstate));
-
-    if (vh->bFullExpand)
-        n_rc_info = get_rc_nssid(kbc->dict2pid, tve->wid, kbc->dict);
-    else
-        n_rc_info = 0;          /* Just fill in something if not using crossword triphon */
+    n_rc_info = 0;          /* Just fill in something if not using crossword triphon */
 
 
     assert(comp_rc < n_rc_info);
@@ -495,22 +423,22 @@ vithist_enter(vithist_t * vh,              /**< The history table */
         vithist_lmstate_enter(vh, vhid, ve);    /* Enter new vithist info into LM state tree */
 
         /*      E_INFO("Start a new entry wid %d\n",ve->wid); */
-        if (ve->rc_info != NULL)
-            clean_up_rc_info(ve->rc_info, ve->n_rc_info);
+        if (ve->rc != NULL)
+            clean_up_rc_info(ve->rc, ve->n_rc);
 
         if (comp_rc != -1) {
-            if (ve->rc_info == NULL) {
-                ve->n_rc_info =
+            if (ve->rc == NULL) {
+                ve->n_rc =
                     get_rc_nssid(kbc->dict2pid, ve->wid, kbc->dict);
                 /* Always allocate n_ci for rc_info */
-                ve->rc_info = ckd_calloc(vh->n_ci, sizeof(scr_hist_pair));
-                clean_up_rc_info(ve->rc_info, ve->n_rc_info);
+                ve->rc = ckd_calloc(vh->n_ci, sizeof(*ve->rc));
+                clean_up_rc_info(ve->rc, ve->n_rc);
             }
 
-            assert(comp_rc < ve->n_rc_info);
-            if (ve->rc_info[comp_rc].score < tve->score) {
-                ve->rc_info[comp_rc].score = tve->score;
-                ve->rc_info[comp_rc].pred = tve->pred;
+            assert(comp_rc < ve->n_rc);
+            if (ve->rc[comp_rc].score < tve->path.score) {
+                ve->rc[comp_rc].score = tve->path.score;
+                ve->rc[comp_rc].pred = tve->path.pred;
             }
         }
 
@@ -523,11 +451,11 @@ vithist_enter(vithist_t * vh,              /**< The history table */
         /*              E_INFO("Old entry wid %d, New entry wid %d\n",ve->wid, tve->wid); */
 
         if (comp_rc == -1) {
-            if (ve->score < tve->score) {
+            if (ve->path.score < tve->path.score) {
                 vithist_entry_dirty_cp(ve, tve, n_rc_info);
                 assert(comp_rc < n_rc_info);
-                if (ve->rc_info != NULL)
-                    clean_up_rc_info(ve->rc_info, ve->n_rc_info);
+                if (ve->rc != NULL)
+                    clean_up_rc_info(ve->rc, ve->n_rc);
             }
 
         }
@@ -536,25 +464,25 @@ vithist_enter(vithist_t * vh,              /**< The history table */
             /* This is wrong, the score 
                Alright, how vhid was searched in the first place? 
              */
-            if (vithist_entry_maxscr(ve, vh->bFullExpand) < tve->score) {
-                old_n_rc_info = ve->n_rc_info;
+            if (ve->path.score < tve->path.score) {
+                old_n_rc_info = ve->n_rc;
                 vithist_entry_dirty_cp(ve, tve, n_rc_info);
                 assert(comp_rc < n_rc_info);
 
-                assert(ve->rc_info);
-                clean_up_rc_info(ve->rc_info, ve->n_rc_info);
-                ve->rc_info[comp_rc].score = tve->score;
-                ve->rc_info[comp_rc].pred = tve->pred;
+                assert(ve->rc);
+                clean_up_rc_info(ve->rc, ve->n_rc);
+                ve->rc[comp_rc].score = tve->path.score;
+                ve->rc[comp_rc].pred = tve->path.pred;
             }
 
         }
 
     }
 
-    /*    E_INFO("vhid %d, vh->n_frm %d, ve->wid %d, ve->rc_info[comp_rc].score  %d, tve->score %d, comp_rc %d, ve->n_rc_info %d, vh->bestscore[vh->nfrm] %d\n",vhid, vh->n_frm, ve->wid, ve->rc_info[comp_rc].score, tve->score, comp_rc, ve->n_rc_info, vh->bestscore[vh->n_frm]); */
+    /*    E_INFO("vhid %d, vh->n_frm %d, ve->wid %d, ve->rc_info[comp_rc].score  %d, tve->path.score %d, comp_rc %d, ve->n_rc %d, vh->bestscore[vh->nfrm] %d\n",vhid, vh->n_frm, ve->wid, ve->rc[comp_rc].score, tve->path.score, comp_rc, ve->n_rc, vh->bestscore[vh->n_frm]); */
     /* Update best exit score in this frame */
-    if (vh->bestscore[vh->n_frm] < tve->score) {
-        vh->bestscore[vh->n_frm] = tve->score;
+    if (vh->bestscore[vh->n_frm] < tve->path.score) {
+        vh->bestscore[vh->n_frm] = tve->path.score;
         vh->bestvh[vh->n_frm] = vhid;
     }
 }
@@ -569,8 +497,6 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
     s3lmwid32_t lwid;
     int32 se, fe;
     int32 i;
-    int32 ci;
-    s3cipid_t *rcmap;
 
     assert(vh->n_frm == ef);
     if (pred == -1) {
@@ -591,32 +517,10 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
     tve.ef = ef;
     tve.type = type;
     tve.valid = 1;
-
-    /* || dict_filler_word(kbcore_dict(kbc),wid)) */
-
-    if (!vh->bFullExpand)
-        tve.ascr = score - pve->score;
-    else {
-        ci = dict_first_phone(kbc->dict, tve.wid);
-        rcmap =
-            (s3cipid_t *) dict2pid_get_rcmap(kbc->dict2pid, pve->wid,
-                                             kbc->dict);
-
-
-        tve.ascr = score - pve->score;
-        /*      tve.ascr = score - pve->rc_info[ci].score; */
-
-#if 0                           /*FIX ME, should use the context-specific score instead. */
-        if (pve->rc_info[ci].score > S3_LOGPROB_ZERO)
-            tve.ascr = score - pve->rc_info[ci].score;
-        else
-            tve.ascr = score - pve->score;
-#endif
-    }
-
+    tve.ascr = score - pve->path.score;
     tve.lscr = 0;
-    tve.rc_info = NULL;
-    tve.n_rc_info = 0;
+    tve.rc = NULL;
+    tve.n_rc = 0;
 
     if (pred == 0) {            /* Special case for the initial <s> entry */
         se = 0;
@@ -629,14 +533,11 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
 
     if (dict_filler_word(kbcore_dict(kbc), wid)) {
 
-        tve.score = score;
+        tve.path.score = score;
+	tve.lscr = fillpen(kbcore_fillpen(kbc), wid);
+	tve.path.score += tve.lscr;
 
-        if (vh->bLMRescore) {
-            tve.lscr = fillpen(kbcore_fillpen(kbc), wid);
-            tve.score += tve.lscr;
-        }
-
-        tve.pred = pred;
+        tve.path.pred = pred;
         tve.lmstate.lm3g = pve->lmstate.lm3g;
         vithist_enter(vh, kbc, &tve, rc);
     }
@@ -654,42 +555,14 @@ vithist_rescore(vithist_t * vh, kbcore_t * kbc,
             pve = vithist_id2entry(vh, i);
 
             if (pve->valid) {
-
-                if (!vh->bFullExpand)
-                    tve.score = pve->score;
-                else {
-                    /* Remember to use context as well */
-                    ci = dict_first_phone(kbc->dict, tve.wid);
-                    rcmap =
-                        (s3cipid_t *) dict2pid_get_rcmap(kbc->dict2pid,
-                                                         pve->wid,
-                                                         kbc->dict);
-
-                    tve.score = pve->score;
-                    /*              tve.score = pve->rc_info[rcmap[ci]].score; */
-
-#if 0
-                    if (pve->rc_info[ci].score > S3_LOGPROB_ZERO)
-                        tve.score = pve->rc_info[ci].score;
-                    else
-                        tve.score = pve->score;
-#endif
-
-
-                }
-
-                tve.score += tve.ascr;
-
-                if (vh->bLMRescore) {
-
-                    tve.lscr = lm_tg_score(kbcore_lm(kbc),
-                                           pve->lmstate.lm3g.lwid[1],
-                                           pve->lmstate.lm3g.lwid[0],
-                                           lwid, wid);
-                    tve.score += tve.lscr;
-                }
-                if ((tve.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
-                    tve.pred = i;
+		tve.path.score = pve->path.score + tve.ascr;
+		tve.lscr = lm_tg_score(kbcore_lm(kbc),
+				       pve->lmstate.lm3g.lwid[1],
+				       pve->lmstate.lm3g.lwid[0],
+				       lwid, wid);
+		tve.path.score += tve.lscr;
+                if ((tve.path.score - vh->wbeam) >= vh->bestscore[vh->n_frm]) {
+                    tve.path.pred = i;
                     tve.lmstate.lm3g.lwid[1] = pve->lmstate.lm3g.lwid[0];
 
                     vithist_enter(vh, kbc, &tve, rc);
@@ -708,7 +581,7 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
 {
     vithist_entry_t *ve, *tve;
     int32 se, fe, te, bs, bv;
-    int32 i, j, k;
+    int32 i, j;
     int32 l;
     int32 n_rc_info;
 
@@ -728,23 +601,11 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
                 vithist_entry_cp(tve, ve);
             }
 
-            if (ve->score > bs) {
-                bs = ve->score;
+            if (ve->path.score > bs) {
+                bs = ve->path.score;
                 bv = te;
             }
 
-#if 1
-            if (ve->rc_info != NULL) {
-                assert(vh->bFullExpand);
-
-                for (k = 0; k < ve->n_rc_info; k++) {
-                    if (ve->rc_info[k].score > bs) {
-                        bs = ve->rc_info[k].score;
-                        bv = te;
-                    }
-                }
-            }
-#endif
             te++;
         }
     }
@@ -768,9 +629,9 @@ vithist_frame_gc(vithist_t * vh, int32 frm)
 
         for (l = 0; l < VITHIST_BLKSIZE; l++) {
             ve = vh->entry[i] + l;
-            if (ve->rc_info != NULL) {
-                ckd_free(ve->rc_info);
-                ve->rc_info = NULL;
+            if (ve->rc != NULL) {
+                ckd_free(ve->rc);
+                ve->rc = NULL;
             }
         }
 
@@ -805,18 +666,16 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
 
     for (i = se; i <= fe; i++) {
 	ve = vithist_id2entry(vh, i);
-        heap_insert(h, (void *) ve, -(ve->score));
+        heap_insert(h, (void *) ve, -(ve->path.score));
         ve->valid = 0;
-        /*      E_INFO("Vhid %d, For frame %d, I have word ID %d with max score %d\n", i, frm, ve->wid, vithist_entry_maxscr(ve,vh->bFullExpand)); */
     }
 
     /* Mark invalid entries: beyond maxwpf words and below threshold */
     filler_done = 0;
-    while ((heap_pop(h, (void **) (&ve), &i) > 0) && (vithist_entry_maxscr(ve, vh->bFullExpand) >= th) &&       /* the score (or the cw scores) is above threshold */
-           (maxhist > 0)        /* Number of history is larger than 0 */
-        ) {
-
-#if 1
+    while ((heap_pop(h, (void **) (&ve), &i) > 0)
+	   && ve->path.score >= th /* the score (or the cw scores) is above threshold */
+           && maxhist > 0)        /* Number of history is larger than 0 */
+    {
         if (dict_filler_word(dict, ve->wid)) {
             /* Major HACK!!  Keep only one best filler word entry per frame */
             if (filler_done)
@@ -824,7 +683,6 @@ vithist_prune(vithist_t * vh, dict_t * dict, int32 frm,
             filler_done = 1;
         }
 
-#endif
         /*      E_INFO("ve->wid survived, maxwpf %d, maxhistpf %d\n",maxwpf,maxhist); */
         /* Check if this word already valid (e.g., under a different history) */
         for (i = 0; IS_S3WID(wid[i]) && (wid[i] != ve->wid); i++);
@@ -932,25 +790,23 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
     lm = kbcore_lm(kbc);
     dict = kbcore_dict(kbc);
 
-    if (vh->bBtwSil) {
-        endwid = lm_finishwid(lm);
+    endwid = lm_finishwid(lm);
 
-        for (i = sv; i < nsv; i++) {
-	    ve = vithist_id2entry(vh, i);
-            scr = ve->score;
-            scr +=
-                lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
-                            ve->lmstate.lm3g.lwid[0], endwid,
-                            dict_finishwid(dict));
+    for (i = sv; i < nsv; i++) {
+	ve = vithist_id2entry(vh, i);
+	scr = ve->path.score;
+	scr +=
+	    lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
+			ve->lmstate.lm3g.lwid[0], endwid,
+			dict_finishwid(dict));
 
-            if (bestscore < scr) {
-                bestscore = scr;
-                bestvh = i;
-                bestve = ve;
-            }
-        }
-        assert(bestvh >= 0);
+	if (bestscore < scr) {
+	    bestscore = scr;
+	    bestvh = i;
+	    bestve = ve;
+	}
     }
+    assert(bestvh >= 0);
 
 
     if (f != vh->n_frm - 1) {
@@ -962,7 +818,7 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
                vh->frame_start[vh->n_frm]);
         vh->n_frm -= 1;
         vithist_rescore(vh, kbc, dict_silwid(dict), vh->n_frm,
-                        bestve->score, bestvh, -1, -1);
+                        bestve->path.score, bestvh, -1, -1);
         vh->n_frm += 1;
         vh->frame_start[vh->n_frm] = vh->n_entry;
 
@@ -971,22 +827,19 @@ vithist_utt_end(vithist_t * vh, kbcore_t * kbc)
 
     /*    vithist_dump(vh,-1,kbc,stdout); */
     /* Create an </s> entry */
+    ve = vithist_entry_alloc(vh);
 
-    if (vh->bBtwSil) {
-        ve = vithist_entry_alloc(vh);
-
-        ve->wid = dict_finishwid(dict);
-        ve->sf = (bestve->ef == BAD_S3FRMID) ? 0 : bestve->ef + 1;
-        ve->ef = vh->n_frm;
-        ve->ascr = 0;
-        ve->lscr = bestscore - bestve->score;
-        ve->score = bestscore;
-        ve->pred = bestvh;
-        ve->type = 0;
-        ve->valid = 1;
-        ve->lmstate.lm3g.lwid[0] = endwid;
-        ve->lmstate.lm3g.lwid[1] = ve->lmstate.lm3g.lwid[0];
-    }
+    ve->wid = dict_finishwid(dict);
+    ve->sf = (bestve->ef == BAD_S3FRMID) ? 0 : bestve->ef + 1;
+    ve->ef = vh->n_frm;
+    ve->ascr = 0;
+    ve->lscr = bestscore - bestve->path.score;
+    ve->path.score = bestscore;
+    ve->path.pred = bestvh;
+    ve->type = 0;
+    ve->valid = 1;
+    ve->lmstate.lm3g.lwid[0] = endwid;
+    ve->lmstate.lm3g.lwid[1] = ve->lmstate.lm3g.lwid[0];
 
     vhid = vh->n_entry - 1;
 
@@ -1036,7 +889,7 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
     for (i = sv; i < nsv; i++) {
 	ve = vithist_id2entry(vh, i);
 
-        scr = ve->score;
+        scr = ve->path.score;
         scr +=
             lm_tg_score(lm, ve->lmstate.lm3g.lwid[1],
                         ve->lmstate.lm3g.lwid[0], endwid,
@@ -1056,9 +909,8 @@ vithist_partialutt_end(vithist_t * vh, kbcore_t * kbc)
 void
 vithist_utt_reset(vithist_t * vh)
 {
-    int32 b, l;
+    int32 b;
     int32 ent;
-    vithist_entry_t *ve;
 
     vithist_lmstate_reset(vh);
 
@@ -1069,19 +921,6 @@ vithist_utt_reset(vithist_t * vh)
             ent = VITHIST_BLKSIZE - 1;
         else
             ent = vh->n_entry - 1;
-
-        if (vh->bFullExpand) {
-            /* This is bad, could it be just a kind of clean up? */
-            for (l = 0; l < VITHIST_BLKSIZE; l++) {
-                ve = vh->entry[b] + l;
-                /*      E_INFO("Freeing, entry %d, b %d\n",l,b); */
-                if (ve->rc_info != NULL) {
-                    ckd_free(ve->rc_info);
-                    ve->rc_info = NULL;
-                }
-            }
-        }
-
         ckd_free((void *) vh->entry[b]);
         vh->entry[b] = NULL;
     }
@@ -1194,8 +1033,8 @@ vithist_dump(vithist_t * vh, int32 frm, kbcore_t * kbc, FILE * fp)
 
             fprintf(fp, "\t%c%6d %5d %5d %11d %9d %8d %7d %4d %s",
                     (ve->valid ? ' ' : '*'), j,
-                    ve->sf, ve->ef, ve->score, ve->ascr, ve->lscr,
-                    ve->pred, ve->type, dict_wordstr(dict, ve->wid));
+                    ve->sf, ve->ef, ve->path.score, ve->ascr, ve->lscr,
+                    ve->path.pred, ve->type, dict_wordstr(dict, ve->wid));
 
             fprintf(fp, " (%s", lm_wordstr(lm, ve->lmstate.lm3g.lwid[0]));
             lwid = ve->lmstate.lm3g.lwid[1];
@@ -1228,19 +1067,9 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
     hyp = NULL;
     ci = BAD_S3CIPID;
     while (id > 0) {
-
         /*      E_INFO("id %d\n",id); */
 	ve = vithist_id2entry(vh, id);
         assert(ve);
-#if 1
-        if (vh->bFullExpand) {
-            ci = dict_pron(dict, h->id, 0);     /* In this case, one will need to know the right context of 
-                                                   the previous word . I also need to first word ID in this case
-                                                   and that could determine the first phone id. 
-                                                 */
-        }
-#endif
-
         h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
         h->id = ve->wid;
         h->sf = ve->sf;
@@ -1256,15 +1085,7 @@ vithist_backtrace(vithist_t * vh, int32 id, dict_t * dict)
 
         hyp = glist_add_ptr(hyp, h);
 
-        id = ve->pred;
-#if 0
-        if (vh->bFullExpand)    /* No right context information, Just get it from pred */
-            id = ve->rc_info[ci].pred;
-        else
-            id = ve->pred;
-#endif
-
-
+        id = ve->path.pred;
     }
 
     return hyp;
@@ -1366,7 +1187,7 @@ vithist_dag_write(vithist_t * vh, glist_t hyp, dict_t * dict, int32 oldfmt,
                 break;
         }
         if (gn) {
-            if (ve->score > ve2->score)
+            if (ve->path.score > ve2->path.score)
                 gnode_ptr(gn) = (void *) ve;
         }
         else
@@ -1526,8 +1347,6 @@ vithist_report(vithist_t * vh)
     if (vh) {
         E_INFO_NOFN("Word beam = %d\n", vh->wbeam);
         E_INFO_NOFN("Bigram Mode =%d\n", vh->bghist);
-        E_INFO_NOFN("Rescore Mode =%d\n", vh->bLMRescore);
-        E_INFO_NOFN("Trace sil Mode =%d\n", vh->bBtwSil);
         E_INFO_NOFN("\n");
     }
     else {
@@ -1969,31 +1788,26 @@ lat_final_entry(latticehist_t * lathist, dict_t * dict, int32 curfrm,
 
     l = bestl = BAD_S3LATID;
 
-    if (cmd_ln_int32("-bt_wsil")) {
 
-        /* Find lattice entry in last frame for FINISH_WORD */
-        for (l = lathist->frm_latstart[curfrm - 1];
-             l < lathist->n_lat_entry; l++) {
-            if (dict_basewid(dict, lathist->lattice[l].wid) ==
-                dict->finishwid)
-                break;
-        }
-
-        if (l < lathist->n_lat_entry) {
-            /* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
-            return (l);
-        }
-
-        /* Find last available lattice entry with best ending score */
-        E_WARN
-            ("When %s is used as final word, %s: Search didn't end in %s\n",
-             dict_wordstr(dict, dict->finishwid), uttid, dict_wordstr(dict,
-                                                                      dict->
-                                                                      finishwid));
-    }
-    else {
+    /* Find lattice entry in last frame for FINISH_WORD */
+    for (l = lathist->frm_latstart[curfrm - 1];
+	 l < lathist->n_lat_entry; l++) {
+	if (dict_basewid(dict, lathist->lattice[l].wid) ==
+	    dict->finishwid)
+	    break;
     }
 
+    if (l < lathist->n_lat_entry) {
+	/* FINISH_WORD entry found; backtrack to obtain best Viterbi path */
+	return (l);
+    }
+
+    /* Find last available lattice entry with best ending score */
+    E_WARN
+	("When %s is used as final word, %s: Search didn't end in %s\n",
+	 dict_wordstr(dict, dict->finishwid), uttid, dict_wordstr(dict,
+								  dict->
+								  finishwid));
 
     bestscore = S3_LOGPROB_ZERO;
     for (f = curfrm - 1; (f >= 0) && (bestscore <= S3_LOGPROB_ZERO); --f) {

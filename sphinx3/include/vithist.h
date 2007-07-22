@@ -154,41 +154,32 @@ extern "C" {
  * of LM state will vary.  Accommodate them with a union.  For now, only trigram LM in it.
  * (Not completely thought out; some of this might have to change later.)
  */
-typedef union {
+typedef union vh_lmstate_u {
     struct {
         s3lmwid32_t lwid[2];	/**< 2-word history; [0] is most recent */
     } lm3g;
 } vh_lmstate_t;
 
 
-typedef struct {
+typedef struct backpointer_s {
     int32 score;
     int32 pred;
-} scr_hist_pair;
+} backpointer_t;
 
 /**
  * Viterbi history entry.
  */
 typedef struct {
+    backpointer_t path;         /**< Predecessor word and best path score including it */
+    vh_lmstate_t lmstate;	/**< LM state */
     s3wid_t wid;		/**< Dictionary word ID; exact word that just exited */
     s3frmid_t sf, ef;		/**< Start and end frames for this entry */
     int32 ascr;			/**< Acoustic score for this node */
     int32 lscr;			/**< LM score for this node, given its Viterbi history */
-
-    int32 score;		/**< Total path score ending here */
-    int32 pred;			/**< Immediate predecessor */
-    int32 type;			/**< >=0: regular n-gram word; <0: filler word entry */
-    int32 valid;		/**< Whether it should be a valid history for LM rescoring */
-    vh_lmstate_t lmstate;	/**< LM state */
-
-    scr_hist_pair *rc_info;             /**< Right context information pair (score, pred), I don't want to look up, so I used*/ 
-    int32 n_rc_info;            /**< Number of rc_info */
-
-#if 0
-    int32 *rcpred;              /**< Correspond to predecesoor of each right contexts */
-    int32 *rcscore;             /**< Correspond to the score for each right contexts */
-#endif
-
+    int16 type;			/**< >=0: regular n-gram word; <0: filler word entry */
+    int16 valid;		/**< Whether it should be a valid history for LM rescoring */
+    backpointer_t *rc;          /**< Individual score/history for different right contexts */
+    int32 n_rc;                 /**< Number of rc_info */
 } vithist_entry_t;
 
 /** Return the word ID of an entry */
@@ -207,8 +198,8 @@ typedef struct {
 #define vithist_entry_lscr(ve)	((ve)->lscr)
 
 /** Return the total score of an entry */
-#define vithist_entry_score(ve)	((ve)->score)
-#define vithist_entry_pred(ve)	((ve)->pred)
+#define vithist_entry_score(ve)	((ve)->path.score)
+#define vithist_entry_pred(ve)	((ve)->path.pred)
 #define vithist_entry_valid(ve)	((ve)->valid)
 
 
@@ -245,7 +236,7 @@ typedef struct {
                                    last is just before the first of the next frame) */
     int32 n_entry;		/**< Total #entries used (generates global seq no. or ID) */
     int32 n_frm;		/**< No. of frames processed so far in this utterance */
-    int32 n_ci;                   /**< No. of CI phones */
+    int32 n_ci;                 /**< No. of CI phones */
     int32 bghist;		/**< If TRUE (bigram-mode) only one entry/word/frame; otherwise
 				   multiple entries allowed, one per distinct LM state */
     
@@ -256,11 +247,6 @@ typedef struct {
     
     vh_lms2vh_t **lms2vh_root;	/**< lms2vh[w]= Root of LM states ending in w in current frame */
     glist_t lwidlist;		/**< List of LM word IDs with entries in lms2vh_root */
-    /* FIXME: KILL UGLY MICROSOFT NOTATION #$@!$@#$ */
-    int32 bLMRescore;           /**< Whether LM should be used to rescore */
-    int32 bBtwSil;              /**< Whether backtracking should be done using silence as the final word*/
-    int32 bFullExpand;          /**< Whether full expansion is done */
-
 } vithist_t;
 
 
@@ -300,21 +286,12 @@ typedef struct {
  * One-time intialization: Allocate and return an initially empty
  * vithist module 
  * @return An initialized vithist_t
- *
- * FIXME: This function has too many parameters.  Full expansion
- * doesn't work, and rescoring should be a "subclass" of Viterbi
- * history.  This is *way* too tightly coupled to a particular search
- * implementation.  The core vithist_t should be essentially the same
- * as latticehist_t.
 */
 
-vithist_t *vithist_init (kbcore_t *kbc,  /**< A KBcore */
-			 int32 wbeam,    /**< Word beam */
-			 int32 bghist,    /**< If only bigram history is used */
-			 int32 isRescore, /**< Whether LM is used to rescore Viterbi history */
-			 int32 isbtwsil,  /**< Whether silence should be used as the final word of backtracking. */
-			 int32 isFullExpand, /**<Whether we are using full cross word triphone expansion */
-			 int32 isreport   /**< Whether to report the progress  */
+vithist_t *vithist_init (kbcore_t *kbc,  /**< Core search data structure */
+			 int32 wbeam,    /**< Word exit beam width */
+			 int32 bghist,   /**< If only bigram history is used */
+			 int32 report    /**< Whether to report the progress  */
     );
 
 

@@ -592,11 +592,6 @@ dict2pid_build(mdef_t * mdef, dict_t * dict, int32 is_composite)
                                      mdef->n_ciphone, sizeof(s3ssid_t));
     dict2pid->is_composite = is_composite;
 
-    if (!dict2pid->is_composite) {
-        E_FATAL
-            ("You have turned on an un-released feature: Full triphone expansion of tree search is still under tested. Please turn on the flag -composite. \n");
-    }
-
     dict2pid->n_ci = mdef->n_ciphone;
     if (dict2pid->is_composite) {
         dict2pid->single_lc = (s3ssid_t **) ckd_calloc_2d(mdef->n_ciphone,
