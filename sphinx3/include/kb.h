@@ -176,16 +176,6 @@ typedef struct {
     /** Structure that wraps up adaptation variables. such as regression matrices in MLLR */
     adapt_am_t * adapt_am;  /**< Structure that wraps up parameters for adaptation such as MLLR. */
 
-    /** Structure that records the search. */
-    vithist_t *vithist;	  /**< Structure that stores the viterbi
-                             history, built during search. Used only
-                             in mode 4 and 5 */
-
-    latticehist_t *lathist;     /**< Structure that stores the viterbi
-                                   history, appear here because of legacy,
-                                   built during search. Used only in mode 3
-                                */
-
     stat_t *stat;           /**< Structure of statistics including timers and counters. */
 
     /** FILE handle that handles output. */

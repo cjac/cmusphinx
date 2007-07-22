@@ -396,7 +396,6 @@ srch_init(kb_t * kb, int32 op_mode)
 {
 
     srch_t *s;
-    char *str;
     s = (srch_t *) ckd_calloc(1, sizeof(srch_t));
 
     E_INFO("Search Initialization. \n");
@@ -447,8 +446,6 @@ srch_init(kb_t * kb, int32 op_mode)
     /* Do general search initialization here. */
     s->stat = kb->stat;
     s->ascr = kb->ascr;
-    s->vithist = kb->vithist;
-    s->lathist = kb->lathist;
     s->exit_id = -1;
     s->beam = kb->beam;
     s->fastgmm = kb->fastgmm;
@@ -460,54 +457,13 @@ srch_init(kb_t * kb, int32 op_mode)
     s->matchsegfp = kb->matchsegfp;
     s->hmmdumpfp = kb->hmmdumpfp;
 
-
-
-    str = srch_mode_index_to_str(op_mode);
-
-    /* FIXME! Do search-specific checking here. In a true OO
-       programming, this should not happen. This happens because we have
-       duplicated code. */
-    if (op_mode == OPERATION_TST_DECODE || op_mode == OPERATION_WST_DECODE) {
-        if (s->kbc->lmset == NULL || s->vithist == NULL) {
-            E_INFO
-                ("lmset is NULL and vithist is NULL in op_mode %s, wrong operation mode?\n",
-                 str);
-            goto check_error;
-        }
-    }
-
-    if (op_mode == OPERATION_FLATFWD) {
-        if (s->kbc->lmset == NULL || s->lathist == NULL) {
-            E_INFO
-                ("lmset is NULL and lathist is NULL in op_mode %s, wrong operation mode?\n",
-                 str);
-            goto check_error;
-        }
-    }
-
-    if (op_mode == OPERATION_GRAPH) {
-        if (!cmd_ln_str("-fsg") && !cmd_ln_str("-fsgfile")) {
-            E_INFO
-                ("-fsg and -fsgfile are not specified in op_mode %s, wrong operation mode?\n",
-                 str);
-            goto check_error;
-        }
-
-    }
     /* Do search-specific initialization here. */
-
     if (s->funcs->init(kb, s) == SRCH_FAILURE) {
         E_INFO("search initialization failed for op-mode %d\n", op_mode);
-        goto check_error;
+	return NULL;
     }
 
-    ckd_free(str);
     return s;
-
-  check_error:
-    ckd_free(str);
-    return NULL;
-
 }
 
 int32

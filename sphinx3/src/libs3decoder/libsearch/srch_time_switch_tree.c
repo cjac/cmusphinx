@@ -237,7 +237,6 @@ srch_TST_init(kb_t * kb, void *srch)
 
 
 
-
     /* By default, curugtree will be pointed to the first sets of tree */
     for (j = 0; j < n_ltree; j++)
         tstg->curugtree[j] = tstg->ugtree[j];
@@ -284,6 +283,10 @@ srch_TST_init(kb_t * kb, void *srch)
                                      (tstg->curugtree[0]->n_node +
                                       tstg->fillertree[0]->n_node) *
                                      tstg->n_lextree);
+
+    /* Viterbi history structure */
+    tstg->vithist = vithist_init(kb->kbcore, kb->beam->word,
+                                 cmd_ln_int32("-bghist"), TRUE);
 
 
     /* Glue the graph structure */
@@ -351,12 +354,12 @@ srch_TST_begin(void *srch)
     g = kbc->mgau;
 
     /* Clean up any previous viterbi history */
-    vithist_utt_reset(s->vithist);
+    vithist_utt_reset(tstg->vithist);
     stat_clear_utt(s->stat);
     histprune_zero_histbin(tstg->histprune);
 
     /* Insert initial <s> into vithist structure */
-    pred = vithist_utt_begin(s->vithist, kbc);
+    pred = vithist_utt_begin(tstg->vithist, kbc);
     assert(pred == 0);          /* Vithist entry ID for <s> */
 
     /* This reinitialize the cont_mgau routine in a GMM.  */
@@ -409,10 +412,10 @@ srch_TST_end(void *srch)
 
     /* Find the exit word and wrap up Viterbi history (but don't reset
      * it yet!) */
-    s->exit_id = vithist_utt_end(s->vithist, s->kbc);
+    s->exit_id = vithist_utt_end(tstg->vithist, s->kbc);
 
     /* Statistics update/report */
-    st->utt_wd_exit = vithist_n_entry(s->vithist);
+    st->utt_wd_exit = vithist_n_entry(tstg->vithist);
     stat_report_utt(st, s->uttid);
     histprune_showhistbin(tstg->histprune, st->nfr, s->uttid);
     stat_update_corpus(st);
@@ -583,13 +586,13 @@ srch_TST_set_lm(void *srch, const char *lmname)
 
     lm = kbc->lmset->cur_lm;
 
-    if ((s->vithist->lms2vh_root =
-         (vh_lms2vh_t **) ckd_realloc(s->vithist->lms2vh_root,
+    if ((tstg->vithist->lms2vh_root =
+         (vh_lms2vh_t **) ckd_realloc(tstg->vithist->lms2vh_root,
                                       lm_n_ug(lm) * sizeof(vh_lms2vh_t *)
          )) == NULL) {
         E_FATAL("failed to allocate memory for vithist\n");
     }
-    memset(s->vithist->lms2vh_root, 0,
+    memset(tstg->vithist->lms2vh_root, 0,
            lm_n_ug(lm) * sizeof(vh_lms2vh_t *));
 
     histprune_update_histbinsize(tstg->histprune,
@@ -822,7 +825,7 @@ srch_TST_propagate_graph_ph_lv2(void *srch, int32 frmno)
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbcore = s->kbc;
-    vh = s->vithist;
+    vh = tstg->vithist;
     pl = s->pl;
     pheurtype = pl->pheurtype;
 
@@ -907,7 +910,7 @@ srch_TST_rescoring(void *srch, int32 frmno)
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbcore = s->kbc;
-    vh = s->vithist;
+    vh = tstg->vithist;
 
     n_ltree = tstg->n_lextree;
     ptranskip = s->beam->ptranskip;
@@ -996,7 +999,7 @@ srch_utt_word_trans(srch_t * s, int32 cf)
 
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
 
-    vh = s->vithist;
+    vh = tstg->vithist;
     th = bm->bestscore + bm->hmm;       /* Pruning threshold */
 
     if (vh->bestvh[cf] < 0)
@@ -1083,7 +1086,7 @@ srch_TST_propagate_graph_wd_lv2(void *srch, int32 frmno)
     kbcore = s->kbc;
 
     hp = tstg->histprune;
-    vh = s->vithist;
+    vh = tstg->vithist;
     dict = kbcore_dict(kbcore);
 
     maxwpf = hp->maxwpf;
@@ -1117,7 +1120,7 @@ srch_TST_frame_windup(void *srch, int32 frmno)
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     kbcore = s->kbc;
 
-    vh = s->vithist;
+    vh = tstg->vithist;
 
     /* Wind up this frame */
     vithist_frame_windup(vh, frmno, NULL, kbcore);
@@ -1212,13 +1215,15 @@ glist_t
 srch_TST_gen_hyp(void *srch)
 {
     srch_t *s;
+    srch_TST_graph_t *tstg;
     int32 id;
 
     s = (srch_t *) srch;
-    assert(s->vithist);
+    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
+    assert(tstg->vithist);
 
     if (s->exit_id == -1) /* Search not finished */
-	id = vithist_partialutt_end(s->vithist, s->kbc);
+	id = vithist_partialutt_end(tstg->vithist, s->kbc);
     else
         id = s->exit_id;
 
@@ -1227,19 +1232,20 @@ srch_TST_gen_hyp(void *srch)
         return NULL;
     }
 
-    return vithist_backtrace(s->vithist, id, kbcore_dict(s->kbc));
+    return vithist_backtrace(tstg->vithist, id, kbcore_dict(s->kbc));
 }
 
 int
 srch_TST_dump_vithist(void *srch)
 {
     srch_t *s;
+    srch_TST_graph_t *tstg;
     FILE *bptfp;
     char *file;
 
     s = (srch_t *) srch;
-
-    assert(s->vithist);
+    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
+    assert(tstg->vithist);
 
     file = ckd_calloc(strlen(cmd_ln_str("-bptbldir")) + strlen(s->uttid) + 5, 1);
     sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
@@ -1250,7 +1256,7 @@ srch_TST_dump_vithist(void *srch)
     }
     ckd_free(file);
 
-    vithist_dump(s->vithist, -1, s->kbc, bptfp);
+    vithist_dump(tstg->vithist, -1, s->kbc, bptfp);
 
     if (bptfp != stdout)
         fclose(bptfp);
@@ -1270,10 +1276,12 @@ srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
     FILE *latfp;
     dag_t *dag;
     srch_t *s;
+    srch_TST_graph_t *tstg;
     float32 *f32arg;
     float64 lwf;
 
     s = (srch_t *) srch;
+    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     dag = NULL;
 
     sprintf(str, "%s/%s.%s",
@@ -1289,7 +1297,7 @@ srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
         dag_write_header(latfp, s->stat->nfr, 0);       /* Very fragile, if 1 is specifed, 
                                                            the code will just be stopped */
 
-        vithist_dag_write(s->vithist, hyp, kbcore_dict(s->kbc),
+        vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
                           cmd_ln_int32("-outlatoldfmt"), latfp,
                           cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
 
@@ -1352,9 +1360,11 @@ srch_TST_dag_dump(void *srch, dag_t *dag)
     char str[2048];
     FILE *latfp;
     srch_t *s;
+    srch_TST_graph_t *tstg;
     glist_t hyp;
 
     s = (srch_t *) srch;
+    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
     dag = NULL;
 
     ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
@@ -1370,7 +1380,7 @@ srch_TST_dag_dump(void *srch, dag_t *dag)
         dag_write_header(latfp, s->stat->nfr, 0);       /* Very fragile, if 1 is specifed, 
                                                            the code will just be stopped */
 
-        vithist_dag_write(s->vithist, hyp, kbcore_dict(s->kbc),
+        vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
                           cmd_ln_int32("-outlatoldfmt"), latfp,
                           cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
 

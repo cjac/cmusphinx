@@ -182,6 +182,8 @@ typedef struct srch_FLAT_FWD_graph_s {
 
     fwd_dbg_t *fwdDBG;            /**< Debug object of srch_flat_fwd.c */
 
+    latticehist_t *lathist;       /**< Viterbi history (backpointer) table */
+
     /*
       states for the search 
     */ 

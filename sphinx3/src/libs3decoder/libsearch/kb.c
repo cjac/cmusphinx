@@ -175,30 +175,6 @@ file_open(char *filepath)
     return fp;
 }
 
-/*
- * EW! This is search mode and in general it shouldn't. I do it because
- * I expect vithist_t and lattice_hist_t will soon be merged 
- */
-void
-temp_init_vithistory(kb_t * kb, int32 op_mode)
-{
-    kb->vithist = NULL;
-    kb->lathist = NULL;
-    if (op_mode == OPERATION_TST_DECODE || op_mode == OPERATION_WST_DECODE) {
-        kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
-                                   cmd_ln_int32("-bghist"), REPORT_KB);
-
-        if (REPORT_KB)
-            vithist_report(kb->vithist);
-    }
-
-    if (op_mode == OPERATION_FLATFWD) {
-        kb->lathist = latticehist_init(cmd_ln_int32("-bptblsize"),
-                                       S3_MAX_FRAMES + 1);
-    }
-}
-
-
 /*ARCHAN, to allow backward compatibility -lm, -lmctlfn coexists. This makes the current implmentation more complicated than necessary. */
 void
 kb_init(kb_t * kb)
@@ -317,13 +293,6 @@ kb_init(kb_t * kb)
 	    ascr_report(kb->ascr);
     }
 
-    if (kbcore->lmset && (cmd_ln_str("-lm") || cmd_ln_str("-lmctlfn"))) {
-        /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
-        /* HACK! */
-	if (cmd_ln_exists("-op_mode"))
-		temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
-    }
-
     /* Initialize the front end if -adcin is specified */
     if (cmd_ln_exists("-adcin") && cmd_ln_boolean("-adcin")) {
 	if ((kb->fe = fe_init_auto()) == NULL) {
@@ -440,9 +409,6 @@ kb_free(kb_t * kb)
     if (kb->stat) {
         stat_free((void *) kb->stat);
     }
-    /* vithist */
-    if (kb->vithist)
-        vithist_free((void *) kb->vithist);
 
     if (kb->ascr)
         ascr_free((void *) kb->ascr);

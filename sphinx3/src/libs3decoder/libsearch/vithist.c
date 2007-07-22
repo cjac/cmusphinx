@@ -479,7 +479,6 @@ vithist_enter(vithist_t * vh,              /**< The history table */
 
     }
 
-    /*    E_INFO("vhid %d, vh->n_frm %d, ve->wid %d, ve->rc_info[comp_rc].score  %d, tve->path.score %d, comp_rc %d, ve->n_rc %d, vh->bestscore[vh->nfrm] %d\n",vhid, vh->n_frm, ve->wid, ve->rc[comp_rc].score, tve->path.score, comp_rc, ve->n_rc, vh->bestscore[vh->n_frm]); */
     /* Update best exit score in this frame */
     if (vh->bestscore[vh->n_frm] < tve->path.score) {
         vh->bestscore[vh->n_frm] = tve->path.score;
@@ -1383,10 +1382,6 @@ latticehist_reset(latticehist_t * lathist)
             ckd_free(lathist->lattice[l].rcscore);
             lathist->lattice[l].rcscore = NULL;
         }
-        if (lathist->lattice[l].rchistory) {
-            ckd_free(lathist->lattice[l].rchistory);
-            lathist->lattice[l].rchistory = NULL;
-        }
     }
     lathist->n_lat_entry = 0;
 
@@ -1430,8 +1425,8 @@ latticehist_dump(latticehist_t * lathist, FILE * fp, dict_t * dict,
             npid = ct_get_rc_nssid(ct, lat[i].wid, dict);
             for (rc = 0; rc < npid; rc++) {
                 fprintf(fp,
-                        "rc(Compacted) %d, rcscore %5d rchistory %6d\n",
-                        rc, lat[i].rcscore[rc], lat[i].rchistory[rc]);
+                        "rc(Compacted) %d, rcscore %5d\n",
+                        rc, lat[i].rcscore[rc]);
             }
         }
     }
@@ -1513,27 +1508,6 @@ lat_pscr_rc(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc,
     rc = dict->word[w_rc].ciphone[0];
     return (lathist->lattice[l].rcscore[rcmap[rc]]);
 }
-
-/**
- * Find the path history for lattice entry l for the given right
- * context word.  If context word is BAD_S3WID it's a wild card;
- * return the history. 
- */
-
-s3latid_t
-lat_pscr_rc_history(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc,
-                    ctxt_table_t * ct, dict_t * dict)
-{
-    s3cipid_t *rcmap, rc;
-
-    if ((NOT_S3WID(w_rc)) || (!lathist->lattice[l].rchistory))
-        return lathist->lattice[l].history;
-
-    rcmap = get_rc_cimap(ct, lathist->lattice[l].wid, dict);
-    rc = dict->word[w_rc].ciphone[0];
-    return (lathist->lattice[l].rchistory[rcmap[rc]]);
-}
-
 
 /**
  * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),

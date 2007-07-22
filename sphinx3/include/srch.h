@@ -726,9 +726,6 @@ typedef struct srch_s {
     /* 
        Auxillary Structures for the search. 
     */
-
-    vithist_t *vithist;     /**< Viterbi history, built during search */
-    latticehist_t *lathist;     /**< Lattice history, used when flat lexicon decoder is used */
     int32 exit_id;		/**< Lattice ID for exit word (-1 if
                                  * utterance is not complete) */
 

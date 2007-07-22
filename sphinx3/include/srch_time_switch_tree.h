@@ -169,17 +169,12 @@ typedef struct {
     int32 n_lextrans;		/**< #Transitions to lextree (root) made so far */
     int32 epl ;                   /**< The number of entry per lexical tree */
 
-#if 0
-    lextree_t **ugtreeMulti;  /** This data structure allocate all trees for all LMs specified by the users */
-    /** Because the name is confusing, in sphinx 3.6, ugtree and ugtreeMulti have changed their name to curugtree and ugtree. */
-#endif
-  
     lmset_t* lmset;               /**< The LM set */
     int32 isLMLA;  /**< Is LM lookahead used?*/
 
     histprune_t *histprune; /**< Structure that wraps up parameters related to  */
   
-
+    vithist_t *vithist;     /**< Viterbi history (backpointer) table */
 
 } srch_TST_graph_t ;
 

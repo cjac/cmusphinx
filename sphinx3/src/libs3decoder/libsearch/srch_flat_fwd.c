@@ -287,7 +287,11 @@ srch_FLAT_FWD_init(kb_t * kb,    /**< The KB */
     /** Initialize the context table */
     fwg->ctxt = ctxt_table_init(kbcore_dict(kbc), kbcore_mdef(kbc));
 
-  /** For convenience */
+    /* Viterbi history structure */
+    fwg->lathist = latticehist_init(cmd_ln_int32("-bptblsize"),
+				   S3_MAX_FRAMES + 1);
+
+    /** For convenience */
     fwg->kbcore = s->kbc;
 
     /* Glue the graph structure */
@@ -365,7 +369,7 @@ srch_FLAT_FWD_begin(void *srch)
     ptmr_reset(&(fwg->tm_hmmtrans));
     ptmr_reset(&(fwg->tm_wdtrans));
 
-    latticehist_reset(s->lathist);
+    latticehist_reset(fwg->lathist);
 
     /* If input lattice file containing word candidates to be searched specified; use it */
     if (fwg->word_cand_dir) {
@@ -392,7 +396,7 @@ srch_FLAT_FWD_begin(void *srch)
     }
 
     if (fwg->n_word_cand > 0)
-        latticehist_n_cand(s->lathist) = fwg->n_word_cand;
+        latticehist_n_cand(fwg->lathist) = fwg->n_word_cand;
 
     /* Enter all pronunciations of startwid (begin silence) */
 
@@ -439,8 +443,8 @@ srch_FLAT_FWD_end(void *srch)
 
     lm = s->kbc->lmset->cur_lm;
 
-    s->lathist->frm_latstart[fwg->n_frm] = s->lathist->n_lat_entry;     /* Add sentinel */
-    pctr_increment(fwg->ctr_latentry, s->lathist->n_lat_entry);
+    fwg->lathist->frm_latstart[fwg->n_frm] = fwg->lathist->n_lat_entry;     /* Add sentinel */
+    pctr_increment(fwg->ctr_latentry, fwg->lathist->n_lat_entry);
 
     /* Free whmm search structures */
     for (w = 0; w < dict->n_word; w++) {
@@ -523,8 +527,8 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
 
     {
         ptmr_start(&(fwg->tm_hmmtrans));
-        s->lathist->frm_latstart[fwg->n_frm] = s->lathist->n_lat_entry;
-        whmm_exit(fwg, fwg->whmm, s->lathist,
+        fwg->lathist->frm_latstart[fwg->n_frm] = fwg->lathist->n_lat_entry;
+        whmm_exit(fwg, fwg->whmm, fwg->lathist,
 		  whmm_thresh, word_thresh,
                   phone_penalty);
         ptmr_stop(&(fwg->tm_hmmtrans));
@@ -535,8 +539,8 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
          */
 
         ptmr_start(&(fwg->tm_wdtrans));
-        if (s->lathist->frm_latstart[fwg->n_frm] < s->lathist->n_lat_entry)
-            word_trans(fwg, fwg->whmm, s->lathist, whmm_thresh, phone_penalty);
+        if (fwg->lathist->frm_latstart[fwg->n_frm] < fwg->lathist->n_lat_entry)
+            word_trans(fwg, fwg->whmm, fwg->lathist, whmm_thresh, phone_penalty);
         ptmr_stop(&(fwg->tm_wdtrans));
     }
 
@@ -634,7 +638,7 @@ srch_FLAT_FWD_gen_hyp(void *srch           /**< a pointer of srch_t */
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     if (s->exit_id == -1)
-	    s->exit_id = lat_final_entry(s->lathist, kbcore_dict(s->kbc), fwg->n_frm,
+	    s->exit_id = lat_final_entry(fwg->lathist, kbcore_dict(s->kbc), fwg->n_frm,
 					 s->uttid);
     if (NOT_S3LATID(s->exit_id)) {
         E_INFO("lattice ID: %d\n", s->exit_id);
@@ -643,7 +647,7 @@ srch_FLAT_FWD_gen_hyp(void *srch           /**< a pointer of srch_t */
     }
     else {
         /* BAD_S3WID => Any right context */
-        lattice_backtrace(s->lathist, s->exit_id, BAD_S3WID, &hyp,
+        lattice_backtrace(fwg->lathist, s->exit_id, BAD_S3WID, &hyp,
                           s->kbc->lmset->cur_lm, kbcore_dict(s->kbc),
                           fwg->ctxt, s->kbc->fillpen);
         ghyp = NULL;
@@ -670,7 +674,7 @@ srch_FLAT_FWD_dump_vithist(void *srch)
     s = (srch_t *) srch;
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
-    assert(s->lathist);
+    assert(fwg->lathist);
 
     sprintf(file, "%s/%s.bpt", cmd_ln_str("-bptbldir"), s->uttid);
     if ((bptfp = fopen(file, "w")) == NULL) {
@@ -678,7 +682,7 @@ srch_FLAT_FWD_dump_vithist(void *srch)
         bptfp = stdout;
     }
 
-    latticehist_dump(s->lathist, bptfp, kbcore_dict(s->kbc), fwg->ctxt, 0);
+    latticehist_dump(fwg->lathist, bptfp, kbcore_dict(s->kbc), fwg->ctxt, 0);
 
     if (bptfp != stdout)
         fclose(bptfp);
@@ -699,7 +703,7 @@ srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     dag =
-        dag_build(s->exit_id, s->lathist, kbcore_dict(s->kbc),
+        dag_build(s->exit_id, fwg->lathist, kbcore_dict(s->kbc),
                   s->kbc->lmset->cur_lm, fwg->ctxt, s->kbc->fillpen,
                   fwg->n_frm);
 
@@ -723,7 +727,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
     s = (srch_t *) srch;
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
-    assert(s->lathist);
+    assert(fwg->lathist);
 
     f32arg = (float32 *) cmd_ln_access("-bestpathlw");
     lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
@@ -732,12 +736,12 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 				 dag,
 				 cmd_ln_int32("-dagfudge"),
 				 cmd_ln_int32("-min_endfr"),
-				 (void *) s->lathist, s->kbc->dict);
+				 (void *) fwg->lathist, s->kbc->dict);
 
 
     /* Bypass filler nodes */
     if (!dag->filler_removed) {
-        flat_fwd_dag_remove_filler_nodes(dag, s->lathist, lwf,
+        flat_fwd_dag_remove_filler_nodes(dag, fwg->lathist, lwf,
                                          s->kbc->lmset->cur_lm,
                                          s->kbc->dict, fwg->ctxt,
                                          s->kbc->fillpen);
@@ -746,7 +750,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
     bph =
         dag_search(dag, s->uttid, lwf,
-                   s->lathist->lattice[dag->latfinal].dagnode,
+                   fwg->lathist->lattice[dag->latfinal].dagnode,
                    s->kbc->dict, s->kbc->lmset->cur_lm, s->kbc->fillpen);
 
     if (bph != NULL) {
@@ -771,10 +775,10 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
 
     s = (srch_t *) srch;
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
-    assert(s->lathist);
+    assert(fwg->lathist);
 
     s3flat_fwd_dag_dump(cmd_ln_str("-outlatdir"), 0, s->uttid,
-                        cmd_ln_str("-latext"), s->lathist, fwg->n_frm, dag,
+                        cmd_ln_str("-latext"), fwg->lathist, fwg->n_frm, dag,
                         kbcore_lm(s->kbc), kbcore_dict(s->kbc), fwg->ctxt,
                         s->kbc->fillpen);
 

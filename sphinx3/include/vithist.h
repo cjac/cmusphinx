@@ -467,7 +467,6 @@ typedef struct lattice_s {
     int32 lscr;         /**< Language score for this node */
     int32 ef;           /**< Ending frame */
 
-    s3latid_t *rchistory; /**< Individual path history for different right context ciphones */
     int32     score;	/**< Best path score upto the end of this entry */
     int32    *rcscore;	/**< Individual path scores for different right context ciphones */
     dagnode_t *dagnode;	/**< DAG node representing this entry */
