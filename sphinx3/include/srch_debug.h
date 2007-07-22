@@ -122,11 +122,4 @@ glist_t srch_debug_bestpath_impl(void * srch_struct, /**< A void pointer to a se
 				 dag_t *dag 
     );
 
-int32 srch_debug_dag_dump(void *srch_struct,
-			  glist_t hyp
-    );
-
-
-
-
-
+int32 srch_debug_dag_dump(void *srch_struct, dag_t *dag);
