@@ -1170,6 +1170,7 @@ dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
     int32 min_ef_range;
     int32 k;
     dag_t *dag;
+    int32 seqid;
 
     dag = ckd_calloc(1, sizeof(dag_t));
 
@@ -1188,6 +1189,7 @@ dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
     min_ef_range = cmd_ln_int32("-min_endfr");
 
     /* Build DAG nodes list from the lattice */
+    seqid = 0;
     for (l = 0; l < lathist->n_lat_entry; l++) {
         w = lathist->lattice[l].wid;
 
@@ -1209,7 +1211,7 @@ dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
             d->fef = lathist->lattice[l].frm;
             d->succlist = NULL;
             d->predlist = NULL;
-
+            d->seqid = seqid++;
             d->alloc_next = dag->list;
             dag->list = d;
         }
