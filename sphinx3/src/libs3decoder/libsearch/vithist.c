@@ -460,7 +460,7 @@ vithist_entry_maxscr(vithist_entry_t * ve, int32 isFullExpand)
 
 /* Rclist is separate from tve because C structure copying is used in *ve = *tve 
  */
-static void
+void
 vithist_enter(vithist_t * vh,              /**< The history table */
               kbcore_t * kbc,              /**< a KB core */
               vithist_entry_t * tve,       /**< an input vithist element */

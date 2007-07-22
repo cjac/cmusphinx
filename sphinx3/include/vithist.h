@@ -256,6 +256,7 @@ typedef struct {
     
     vh_lms2vh_t **lms2vh_root;	/**< lms2vh[w]= Root of LM states ending in w in current frame */
     glist_t lwidlist;		/**< List of LM word IDs with entries in lms2vh_root */
+    /* FIXME: KILL UGLY MICROSOFT NOTATION #$@!$@#$ */
     int32 bLMRescore;           /**< Whether LM should be used to rescore */
     int32 bBtwSil;              /**< Whether backtracking should be done using silence as the final word*/
     int32 bFullExpand;          /**< Whether full expansion is done */
@@ -296,9 +297,15 @@ typedef struct {
 
 
 /** 
-    One-time intialization: Allocate and return an initially empty
-    vithist module 
-    @return An initialized vithist_t
+ * One-time intialization: Allocate and return an initially empty
+ * vithist module 
+ * @return An initialized vithist_t
+ *
+ * FIXME: This function has too many parameters.  Full expansion
+ * doesn't work, and rescoring should be a "subclass" of Viterbi
+ * history.  This is *way* too tightly coupled to a particular search
+ * implementation.  The core vithist_t should be essentially the same
+ * as latticehist_t.
 */
 
 vithist_t *vithist_init (kbcore_t *kbc,  /**< A KBcore */
@@ -352,6 +359,16 @@ glist_t vithist_backtrace (vithist_t *vh,       /**< In: a Viterbi history data 
 			   dict_t *dict         /**< a dictionary for look up the ci phone of a word*/
     );
 
+
+/**
+ * Add an entry to the Viterbi history table without rescoring.  Any
+ * entry having the same LM state will be replaced with the one given.
+ */
+void vithist_enter(vithist_t * vh,              /**< The history table */
+                   kbcore_t * kbc,              /**< a KB core */
+                   vithist_entry_t * tve,       /**< an input vithist element */
+                   int32 comp_rc                /**< a compressed rc. If it is the actual rc, it won't work. FIXME: WHAT DOES THIS MEAN?!!?!? */
+    );
 
 /**
  * Like vithist_enter, but LM-rescore this word exit wrt all histories that ended at the
