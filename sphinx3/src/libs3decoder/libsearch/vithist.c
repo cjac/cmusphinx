@@ -1467,23 +1467,9 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
             lathist->lat_alloc += LAT_ALLOC_INCR;
             lathist->lattice =
                 ckd_realloc(lathist->lattice,
-                            lathist->lat_alloc * sizeof(lattice_t));
-
-            /* From exchange with Prof. Yannick LIUM 
-               In some platforms, realloc doesn't automatically
-               set the memory to NULL.  That causes some of the
-               working code to have problems.  This piece has
-               been tested in Solaris10/AMD64.       
-             */
-            {
-                int32 idebug;
-                for (idebug = lathist->n_lat_entry;
-                     idebug < lathist->n_lat_entry + LAT_ALLOC_INCR;
-                     idebug++) {
-                    lathist->lattice[idebug].rcscore = NULL;
-                    lathist->lattice[idebug].rchistory = NULL;
-                }
-            }
+                            lathist->lat_alloc * sizeof(*lathist->lattice));
+	    memset(lathist->lattice + lathist->n_lat_entry,
+		   0, LAT_ALLOC_INCR * sizeof(*lathist->lattice));
         }
 
         lathist->lattice[lathist->n_lat_entry].wid = w;
@@ -1503,34 +1489,15 @@ lattice_entry(latticehist_t * lathist, s3wid_t w, int32 f, int32 score,
                 S3_LOGPROB_ZERO;
 
         lathist->n_lat_entry++;
-
-#if !SINGLE_RC_HISTORY
-        /* ARCHAN: set up individual history for each right context */
-        lathist->lattice[lathist->n_lat_entry].rchistory =
-            (s3latid_t *) ckd_calloc(npid, sizeof(s3latid_t));
-        for (rc_ind = 0; rc_ind < npid; rc_ind++)
-            lathist->lattice[lathist->n_lat_entry].rchistory[rc_ind] =
-                BAD_S3LATID;
-#endif
-
     }
 
+    /* Slight BUG here: each rc can have its own history, but only the best retained!! */
     if (lathist->lattice[lathist->n_lat_entry - 1].score < score) {
         lathist->lattice[lathist->n_lat_entry - 1].score = score;
         lathist->lattice[lathist->n_lat_entry - 1].history = history;
     }
 
-#if SINGLE_RC_HISTORY
     lathist->lattice[lathist->n_lat_entry - 1].rcscore[rc] = score;
-#else
-
-    /* ARCHAN, fix the bug where right context doesn't maintain its own history */
-    if (lathist->lattice[lathist->n_lat_entry - 1].rcscore[rc] < score) {
-        lathist->lattice[lathist->n_lat_entry - 1].rcscore[rc] = score;
-        lathist->lattice[lathist->n_lat_entry - 1].rchistory[rc] = history;
-    }
-#endif
-
 }
 
 int32
@@ -1572,21 +1539,13 @@ lat_pscr_rc_history(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc,
  * Get the last two non-filler, non-silence lattice words w0 and w1 (base word-ids),
  * starting from l.  w1 is later than w0.  At least w1 must exist; w0 may not.
  */
-#if SINGLE_RC_HISTORY
 void
 two_word_history(latticehist_t * lathist, s3latid_t l, s3wid_t * w0,
                  s3wid_t * w1, dict_t * dict)
-#else
-void
-two_word_history(latticehist_t * lathist, s3latid_t l, s3wid_t * w0,
-                 s3wid_t * w1, s3wid_t w_rc, dict_t * dict,
-                 ctxt_table_t * ct)
-#endif
 {
     s3latid_t l0, l1;
     l0 = 0;
 
-#if SINGLE_RC_HISTORY
     for (l1 = l; dict_filler_word(dict, lathist->lattice[l1].wid);
          l1 = lathist->lattice[l1].history);
 
@@ -1595,18 +1554,6 @@ two_word_history(latticehist_t * lathist, s3latid_t l, s3wid_t * w0,
         for (l0 = lathist->lattice[l1].history; (IS_S3LATID(l0))
              && (dict_filler_word(dict, lathist->lattice[l0].wid));
              l0 = lathist->lattice[l0].history);
-#else
-    for (l1 = l; dict_filler_word(dict, lathist->lattice[l1].wid);
-         l1 = lat_pscr_rc_history(lathist, l1, w_rc, ct, dict));
-
-    if (l1 != -1)
-        for (l0 = lat_pscr_rc_history(lathist, l1, w_rc, ct, dict);
-             (IS_S3LATID(l0))
-             && (dict_filler_word(dict, lathist->lattice[l0].wid));
-             l0 =
-             lat_pscr_rc_history(lathist, l0, lathist->lattice[l1].wid, ct,
-                                 dict));
-#endif
 
     /* BHIKSHA HACK - PERMIT MULTIPLE PRONS FOR <s> */
     if (l1 == -1)
@@ -1626,17 +1573,10 @@ two_word_history(latticehist_t * lathist, s3latid_t l, s3wid_t * w0,
 /**
  * Find LM score for transition into lattice entry l.
  */
-#if SINGLE_RC_HISTORY
 int32
 lat_seg_lscr(latticehist_t * lathist, s3latid_t l, lm_t * lm,
              dict_t * dict, ctxt_table_t * ct, fillpen_t * fpen,
              int32 isCand)
-#else
-int32
-lat_seg_lscr(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc, lm_t * lm,
-             dict_t * dict, ctxt_table_t * ct, fillpen_t * fpen,
-             int32 isCand)
-#endif
 {
     s3wid_t bw0, bw1, bw2;
     s3lmwid32_t lw0;
@@ -1654,7 +1594,6 @@ lat_seg_lscr(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc, lm_t * lm,
     if (dict_filler_word(dict, bw2))
         return (fillpen(fpen, bw2));
 
-#if SINGLE_RC_HISTORY
     if (NOT_S3LATID(lathist->lattice[l].history)) {
         assert(bw2 == dict->startwid);
         return 0;
@@ -1662,16 +1601,6 @@ lat_seg_lscr(latticehist_t * lathist, s3latid_t l, s3wid_t w_rc, lm_t * lm,
 
     two_word_history(lathist, lathist->lattice[l].history, &bw0, &bw1,
                      dict);
-#else
-    if (NOT_S3LATID(lat_pscr_rc_history(lathist, l, w_rc, ct, dict))) {
-        assert(bw2 == dict->startwid);
-        return 0;
-    }
-
-    two_word_history(lathist,
-                     lat_pscr_rc_history(lathist, l, w_rc, ct, dict),
-                     &bw0, &bw1, w_rc, dict, ct);
-#endif
 
     /*    E_INFO("lathist->lattice[l].history %d , bw0 %d, bw1 %d. bw2 %d\n",lathist->lattice[l].history,bw0,bw1,bw2); */
     lw0 =
@@ -1750,7 +1679,6 @@ lat_seg_ascr_lscr(latticehist_t * lathist,
     }
 
     /* Score with which l was begun */
-#if SINGLE_RC_HISTORY
     start_score = IS_S3LATID(lathist->lattice[l].history) ?
         lat_pscr_rc(lathist, lathist->lattice[l].history,
                     lathist->lattice[l].wid, ct, dict) : 0;
@@ -1760,22 +1688,6 @@ lat_seg_ascr_lscr(latticehist_t * lathist,
         lat_seg_lscr(lathist, l, lm, dict, ct, fillpen,
                      (lathist->n_cand > 0));
     *ascr = end_score - start_score - *lscr;
-#else
-    start_score =
-        IS_S3LATID(lat_pscr_rc_history(lathist, l, w_rc, ct, dict)) ?
-        lat_pscr_rc(lathist,
-                    lat_pscr_rc_history(lathist, l, w_rc, ct, dict),
-                    lathist->lattice[l].wid, ct, dict) : 0;
-
-    /* LM score for the transition into l */
-    *lscr =
-        lat_seg_lscr(lathist, l, w_rc, lm, dict, ct, fillpen,
-                     (lathist->n_cand > 0));
-    *ascr = end_score - start_score - *lscr;
-
-#endif
-
-
 }
 
 
@@ -1837,19 +1749,10 @@ lattice_backtrace(latticehist_t * lathist,
     srch_hyp_t *h, *prevh;
 
     if (IS_S3LATID(l)) {
-#if SINGLE_RC_HISTORY
         prevh =
             lattice_backtrace(lathist, lathist->lattice[l].history,
                               lathist->lattice[l].wid, hyp, lm, dict, ct,
                               fillpen);
-#else
-        prevh =
-            lattice_backtrace(lathist,
-                              lat_pscr_rc_history(lathist, l, w_rc, ct,
-                                                  dict),
-                              lathist->lattice[l].wid, hyp, lm, dict, ct,
-                              fillpen);
-#endif
 
         h = ckd_calloc(1, sizeof(srch_hyp_t));
         if (!prevh)

@@ -479,12 +479,6 @@ typedef struct lattice_s {
 #define LATID2SF(hist,l)	(IS_S3LATID(hist->lattice[l].history) ? \
 			 hist->lattice[hist->lattice[l].history].frm + 1 : 0)
 
-#define SINGLE_RC_HISTORY 1  /* The logic of using multiple RC history
-				is actually available. However,
-				testing show that it doesn't work very
-				well. Therefore I disabled it at this
-				point */
-
 /** 
  * \struct latticehist_t 
  *
@@ -568,14 +562,8 @@ void lattice_entry (latticehist_t *lathist, /**< A table of lattice entries */
     );
 
 
-#if SINGLE_RC_HISTORY
 void two_word_history (latticehist_t *lathist, 
 		       s3latid_t l, s3wid_t *w0, s3wid_t *w1, dict_t *dict);
-#else
-void two_word_history (latticehist_t *lathist, s3latid_t l, s3wid_t *w0, s3wid_t *w1, s3wid_t w_rc, dict_t *dict, ctxt_table_t *ct);
-#endif
-
-
 
 /**
  * Find path score for lattice entry l for the given right context word.
@@ -600,7 +588,6 @@ s3latid_t lat_pscr_rc_history (latticehist_t *lathist, /**< A table of lattice e
 			       dict_t *dict     /** The dictionary */
     );
 
-#if SINGLE_RC_HISTORY
 int32 lat_seg_lscr (latticehist_t *lathist, 
 		    s3latid_t l, 
 		    lm_t *lm, 
@@ -608,16 +595,6 @@ int32 lat_seg_lscr (latticehist_t *lathist,
 		    ctxt_table_t *ct, 
 		    fillpen_t *fillpen, 
 		    int32 isCand);
-#else
-int32 lat_seg_lscr (latticehist_t *lathist, 
-		    s3latid_t l, 
-		    s3wid_t w_rc, 
-		    lm_t *lm, 
-		    dict_t *dict, 
-		    ctxt_table_t *ct, 
-		    fillpen_t *fillpen, 
-		    int32 isCand);
-#endif
 
 
 /**

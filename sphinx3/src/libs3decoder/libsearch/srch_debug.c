@@ -237,7 +237,7 @@ srch_debug_bestpath_impl(void *srch,          /**< A void pointer to a search st
 }
 
 int32
-srch_debug_dag_dump(void *srch, glist_t hyp)
+srch_debug_dag_dump(void *srch, dag_t *dag)
 {
     return SRCH_SUCCESS;
 }

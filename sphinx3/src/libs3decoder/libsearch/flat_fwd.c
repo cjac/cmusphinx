@@ -823,13 +823,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
             fwg->rcscore[rc] = lathist->lattice[l].rcscore[rcmap[rc]];
 
         /* Find the last real (non-filler, non-silence) two-word history */
-
-#if SINGLE_RC_HISTORY
         two_word_history(lathist, l, &bw0, &bw1, dict);
-#else
-        two_word_history(lathist, l, &bw0, &bw1, BAD_S3WID, dict,
-                         ct_table);
-#endif
 
         if (fwg->n_word_cand <= 0) {
             /* Transition to all words in vocab */
