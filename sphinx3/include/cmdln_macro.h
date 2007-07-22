@@ -561,7 +561,7 @@ us a better architecture.
     { "-op_mode", \
       ARG_INT32, \
       "4", \
-      "Operation Mode. Mode 4: TST search, Mode 5: WST search, Mode 1369: Debug "}, \
+      "Operation Mode.  1: allphone, 2: FSG, 3: flat lexicon, 4: multi-tree lexicon."}, \
     { "-hmmdump", \
       ARG_BOOLEAN, \
       "no", \
@@ -574,18 +574,10 @@ us a better architecture.
       ARG_BOOLEAN, \
       "no", \
       "Bigram-mode: If TRUE only one BP entry/frame; else one per LM state" }, \
-    { "-lmrescore", \
-      ARG_BOOLEAN, \
-      "yes", \
-      "Whether LM is used to rescore the history at every frame. If 0, only acoustic score will be considered as path score. "}, \
     { "-treeugprob", \
       ARG_BOOLEAN, \
       "yes", \
       "If true, Use unigram probs in lextree" }, \
-    { "-composite", \
-      ARG_BOOLEAN, \
-      "yes", \
-      "If true, then composite triphone approximation is used." }, \
 
 #define dag_handling_command_line_macro() \
     { "-min_endfr", \
@@ -658,10 +650,6 @@ us a better architecture.
 
 
 #define search_specific_command_line_macro() \
-    {"-bt_wsil", \
-      ARG_BOOLEAN, \
-      "yes", \
-     "Specified whether silence will be used to be the last word for backtracking. "}, \
     {"-backtrace", \
      ARG_BOOLEAN, \
       "yes", \

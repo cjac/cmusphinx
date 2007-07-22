@@ -630,9 +630,6 @@ kbcore_init(float64 logbase,
     /* NO KIDDING! */
     if (kb->mdef && kb->dict) { /* Initialize dict2pid */
 	int32 composite = 1;
-
-	if (cmd_ln_exists("-composite"))
-	    composite = cmd_ln_int32("-composite");
         kb->dict2pid = dict2pid_build(kb->mdef, kb->dict, composite);
     }
 

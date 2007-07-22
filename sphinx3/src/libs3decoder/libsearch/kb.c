@@ -186,10 +186,7 @@ temp_init_vithistory(kb_t * kb, int32 op_mode)
     kb->lathist = NULL;
     if (op_mode == OPERATION_TST_DECODE || op_mode == OPERATION_WST_DECODE) {
         kb->vithist = vithist_init(kb->kbcore, kb->beam->word,
-                                   cmd_ln_int32("-bghist"),
-                                   cmd_ln_int32("-lmrescore"),
-                                   cmd_ln_int32("-bt_wsil"),
-                                   !cmd_ln_int32("-composite"), REPORT_KB);
+                                   cmd_ln_int32("-bghist"), REPORT_KB);
 
         if (REPORT_KB)
             vithist_report(kb->vithist);
@@ -322,16 +319,6 @@ kb_init(kb_t * kb)
 
     if (kbcore->lmset && (cmd_ln_str("-lm") || cmd_ln_str("-lmctlfn"))) {
         /* STRUCTURE INITIALIZATION: Initialize the Viterbi history data structure */
-
-#if 0
-        kb->vithist = vithist_init(kbcore, kb->beam->word,
-                                   cmd_ln_int32("-bghist"),
-                                   cmd_ln_int32("-lmrescore"),
-                                   cmd_ln_int32("-bt_wsil"), REPORT_KB);
-
-        if (REPORT_KB)
-            vithist_report(kb->vithist);
-#endif
         /* HACK! */
 	if (cmd_ln_exists("-op_mode"))
 		temp_init_vithistory(kb, cmd_ln_int32("-op_mode"));
