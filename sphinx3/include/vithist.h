@@ -179,7 +179,7 @@ typedef struct {
     int16 type;			/**< >=0: regular n-gram word; <0: filler word entry */
     int16 valid;		/**< Whether it should be a valid history for LM rescoring */
     backpointer_t *rc;          /**< Individual score/history for different right contexts */
-    int32 n_rc;                 /**< Number of rc_info */
+    int32 n_rc;                 /**< Number of right contexts */
 } vithist_entry_t;
 
 /** Return the word ID of an entry */
@@ -397,15 +397,7 @@ void vithist_dump (vithist_t *vh,     /**< In: a Viterbi history data structure 
     );
 
 /**
-   Write a word lattice file's header. 
-*/
-void vithist_dag_write_header(FILE *fp,  /**< Out: File to be written */
-			      int32 nfr, /**< In: Number of frames of an utterance */
-			      char* str  /**< In: A string which becomes the header of the daga */
-    );
-/**
  * Write a word lattice file (that can be input as -inlatdir argument to old s3 decoder).
- * Note: The header must be written before this function is called. (That is vithist_dag_write_header must be called)
  */
 void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are to be dumped */
 			glist_t hyp,	/**< In: Some word segments can be pruned; however, but
@@ -634,10 +626,24 @@ srch_hyp_t *lattice_backtrace (latticehist_t *lathist, /**< A table of lattice e
 			       fillpen_t *fillpen /**< filler penalty struct */
     );
 
+/**
+ * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
+ * a single start time but it can represent several end times.  Links are created
+ * whenever nodes are adjacent in time.
+ * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
+ * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
+ * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
+ * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
+ * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
+ * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
+ * absurdum.
+ */
+dag_t *latticehist_dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
+                             lm_t * lm, ctxt_table_t * ctxt, fillpen_t * fpen, int32 _nfrm);
 
 /** 
-    Write a dag from latticehist_t
-*/
+ * Write a dag from latticehist_t
+ */
 int32 latticehist_dag_write (latticehist_t *lathist,  /**< A table off lattice entries */
 			     char *dir,  /**< The directory node */
 			     int32 onlynodes,  /**< Whether only nodes are printed */

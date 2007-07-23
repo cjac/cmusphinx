@@ -1297,9 +1297,6 @@ srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
         return NULL;
     }
     else {
-        dag_write_header(latfp, s->stat->nfr, 0);       /* Very fragile, if 1 is specifed, 
-                                                           the code will just be stopped */
-
         vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
                           cmd_ln_int32("-outlatoldfmt"), latfp,
                           cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
@@ -1380,9 +1377,6 @@ srch_TST_dag_dump(void *srch, dag_t *dag)
     }
     else {
         hyp = srch_TST_gen_hyp(srch);
-        dag_write_header(latfp, s->stat->nfr, 0);       /* Very fragile, if 1 is specifed, 
-                                                           the code will just be stopped */
-
         vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
                           cmd_ln_int32("-outlatoldfmt"), latfp,
                           cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);

@@ -205,5 +205,43 @@ typedef struct srch_FLAT_FWD_graph_s {
     kbcore_t* kbcore;     /**< A pointer for convenience */
 } srch_FLAT_FWD_graph_t ;
 
+/** Evaluate one frame in a whmm (mostly a wrapper around hmm_vit_eval()) */
+int32 whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr);
 
+void dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
+                   int32 n_frm, int32 * senscr);
+
+void dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm);
+
+void whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 bestscr);
+
+void whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
+		     whmm_t * h);
+
+void word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
+                int32 score, s3latid_t l, s3cipid_t lc);
+
+void whmm_exit(srch_FLAT_FWD_graph_t * fwg,
+               whmm_t ** whmm,
+               latticehist_t * lathist,
+               int32 thresh, int32 wordthresh, int32 phone_penalty);
+
+
+void word_trans(srch_FLAT_FWD_graph_t * fwg,
+                whmm_t ** whmm,
+                latticehist_t * lathist,
+                int32 thresh, int32 phone_penalty);
+
+void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id,
+                         char *latfile_ext, latticehist_t * lathist,
+                         int32 n_frm, dag_t * dag, lm_t * lm,
+                         dict_t * dict, ctxt_table_t * ctxt,
+                         fillpen_t * fpen);
+
+
+void flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg,
+                                  dag_t * dagp,
+                                  int32 fudge,
+                                  int32 min_ef_range,
+                                  void *hist, dict_t * dict);
 #endif /* SRCH_FLT_FWD*/

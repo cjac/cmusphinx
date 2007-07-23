@@ -118,22 +118,6 @@
 srch_hyp_t *s3flat_fwd_dag_search (char *utt /**< utterance id */
     );
 
-/**
- * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
- * a single start time but it can represent several end times.  Links are created
- * whenever nodes are adjacent in time.
- * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
- * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
- * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
- * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
- * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
- * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
- * absurdum.
- */
-
-dag_t* dag_build (s3latid_t endid, latticehist_t * lathist, dict_t *dict, lm_t *lm, ctxt_table_t* ctxt, fillpen_t* fpen, int32 n_frm);
-
-
 
 void flat_fwd_dag_remove_filler_nodes (dag_t* dag, 
 				       latticehist_t *lathist, 

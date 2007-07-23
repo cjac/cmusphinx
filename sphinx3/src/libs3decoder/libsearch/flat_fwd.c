@@ -742,6 +742,213 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
 }
 
 
+/**
+ * Enter successor words from language model.
+ */
+void
+enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
+               s3latid_t l, s3cipid_t lc, int32 thresh, int32 phone_penalty)
+{
+    kbcore_t *kbc = fwg->kbcore;
+    lm_t *lm = kbcore_lm(kbc);
+    dict_t *dict = kbcore_dict(kbc);
+    mdef_t *mdef = kbcore_mdef(kbc);
+    s3wid_t bw0, bw1;
+    int is32bits = lm->is32bits;
+    int32 acc_bowt, bowt;
+    int32 n_bg;
+    bg_t *bgptr;
+    bg32_t *bgptr32;
+    s3cipid_t rc;
+
+    /* Find the last real (non-filler, non-silence) two-word history */
+    two_word_history(lathist, l, &bw0, &bw1, dict);
+
+    /* Clear trigram transition flag for each word for this history */
+    memset(fwg->tg_trans_done, 0, dict->n_word * sizeof(*fwg->tg_trans_done));
+
+    /* First, transition to trigram followers of bw0, bw1 */
+    acc_bowt = 0;
+    if (IS_S3WID(bw0)) {
+        int32 n_tg;
+        tg_t *tgptr;
+        tg32_t *tgptr32;
+
+        /* FIXME: THIS SUCKS */
+        if (is32bits) {
+            n_tg = lm_tg32list(lm,
+                               lm->
+                               dict2lmwid[dict_basewid(dict, bw0)],
+                               lm->
+                               dict2lmwid[dict_basewid(dict, bw1)],
+                               &tgptr32, &bowt);
+
+        }
+        else {
+            n_tg = lm_tglist(lm,
+                             lm->
+                             dict2lmwid[dict_basewid(dict, bw0)],
+                             lm->
+                             dict2lmwid[dict_basewid(dict, bw1)],
+                             &tgptr, &bowt);
+
+        }
+
+        if (n_tg > 0) {
+            /* Transition to trigram followers of bw0, bw1, if any */
+            while (n_tg > 0) {
+                s3wid_t nextwid;
+
+                nextwid = is32bits ?
+                    LM_DICTWID(lm, tgptr32->wid) :
+                    LM_DICTWID(lm, tgptr->wid);
+
+
+                /* Transition to all alternative pronunciations for trigram follower */
+
+
+                if (IS_S3WID(nextwid)
+                    && (nextwid != dict->startwid)) {
+                    s3wid_t w;
+
+                    for (w = nextwid; IS_S3WID(w);
+                         w = dict->word[w].alt) {
+                        int32 newscore;
+
+                        newscore = fwg->rcscore[dict->word[w].ciphone[0]];      /* right context scores with phone ciphone[0] */
+                        newscore += is32bits ? LM_TGPROB(lm, tgptr32) : LM_TGPROB(lm, tgptr);   /* The LM scores */
+                        newscore += phone_penalty;
+
+                        if (newscore >= thresh) {
+                            word_enter(fwg, w, newscore, l, lc);
+                            fwg->tg_trans_done[w] = 1;
+                        }
+                    }
+                }
+                --n_tg;
+                if (is32bits)
+                    ++tgptr32;
+                else
+                    ++tgptr;
+            }
+            acc_bowt = bowt;
+        }
+    }
+
+    /* Transition to bigram followers of bw1 */
+    if (is32bits)
+        n_bg = lm_bg32list(lm,
+                           lm->dict2lmwid[dict_basewid(dict, bw1)],
+                           &bgptr32, &bowt);
+    else
+        n_bg = lm_bglist(lm,
+                         lm->dict2lmwid[dict_basewid(dict, bw1)],
+                         &bgptr, &bowt);
+
+    if (n_bg > 0) {
+        /* Transition to bigram followers of bw1, if any */
+        for (; n_bg > 0; --n_bg) {
+            s3wid_t nextwid;
+
+            if (is32bits)
+                bgptr32++;
+            else
+                bgptr++;
+
+            /* Transition to all alternative pronunciations for bigram follower */
+
+            nextwid =
+                is32bits ? LM_DICTWID(lm,
+                                      bgptr32->
+                                      wid) : LM_DICTWID(lm,
+                                                        bgptr->
+                                                        wid);
+
+            if (IS_S3WID(nextwid) && (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
+                (nextwid != dict->startwid)) {  /* No transition to <s> */
+                s3wid_t w;
+
+                for (w = nextwid; IS_S3WID(w);
+                     w = dict->word[w].alt) {
+                    int32 newscore;
+
+                    newscore =
+                        fwg->rcscore[dict->word[w].ciphone[0]];
+                    newscore +=
+                        is32bits ? LM_BGPROB(lm,
+                                             bgptr32) :
+                        LM_BGPROB(lm, bgptr);
+                    newscore += phone_penalty;
+
+                    if (newscore >= thresh)
+                        word_enter(fwg, w, newscore, l, lc);
+                }
+            }
+        }
+
+        acc_bowt += bowt;
+    }
+
+    /* Update unigram backoff node */
+    for (rc = 0; rc < mdef->n_ciphone; rc++) {
+        if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
+            continue;
+
+        if (fwg->rcscore[rc] + acc_bowt + phone_penalty >
+            fwg->ug_backoff[rc].score) {
+            fwg->ug_backoff[rc].score =
+                fwg->rcscore[rc] + acc_bowt + phone_penalty;
+            fwg->ug_backoff[rc].latid = l;
+            fwg->ug_backoff[rc].lc = lc;
+        }
+    }
+}
+
+/**
+ * Enter words from list of candidates (i.e. lattice rescoring as in Sphinx2)
+ **/
+static void
+enter_cand_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
+                 s3latid_t l, s3cipid_t lc, int32 thresh, int32 phone_penalty)
+{
+    int32 cand;
+    kbcore_t *kbc = fwg->kbcore;
+    lm_t *lm = kbcore_lm(kbc);
+    dict_t *dict = kbcore_dict(kbc);
+    s3wid_t bw0, bw1;
+
+    /* Find the last real (non-filler, non-silence) two-word history */
+    two_word_history(lathist, l, &bw0, &bw1, dict);
+
+    /* Transition to words in word_cand_cf */
+    for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
+        s3wid_t w, nextwid;
+        s3lmwid32_t lw0;
+        int32 lscr;
+
+        nextwid = fwg->word_cand_cf[cand];
+        lw0 =
+            IS_S3WID(bw0) ? lm->
+            dict2lmwid[dict_basewid(dict, bw0)] : BAD_LMWID(lm);
+        lscr = lm_tg_score(lm,
+                           lw0,
+                           lm->dict2lmwid[dict_basewid(dict, bw1)],
+                           lm->dict2lmwid[nextwid], nextwid);
+
+        for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
+            int32 newscore;
+
+            newscore =
+                fwg->rcscore[dict->word[w].ciphone[0]] + lscr +
+                phone_penalty;
+
+            if (newscore >= thresh)
+                word_enter(fwg, w, newscore, l, lc);
+        }
+    }
+}
+
+
 /** 
  * Transition for one word. 
  *
@@ -757,44 +964,16 @@ void
 word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
            latticehist_t * lathist, int32 thresh, int32 phone_penalty)
 {
+    kbcore_t *kbc = fwg->kbcore;
+    dict_t *dict = kbcore_dict(kbc);
+    mdef_t *mdef = kbcore_mdef(kbc);
+    ctxt_table_t *ct_table = fwg->ctxt;
+    fillpen_t *fpen = kbcore_fillpen(kbc);
+
     s3latid_t l;                /* lattice entry index */
+    s3wid_t w;
     s3cipid_t *rcmap, rc, lc;
-    s3wid_t w, bw0, bw1, nextwid;
-    s3lmwid32_t lw0;
-
-
-    tg_t *tgptr;
-    bg_t *bgptr;
-
-    tg32_t *tgptr32;
-    bg32_t *bgptr32;
-
-    int32 bowt, acc_bowt, newscore;
-    int32 n_tg, n_bg;
-    int32 cand, lscr;
     int32 lat_start;
-    kbcore_t *kbc;
-    tmat_t *tmat;
-    dict_t *dict;
-    mdef_t *mdef;
-    lm_t *lm;
-    ctxt_table_t *ct_table;
-    fillpen_t *fpen;
-    int32 is32bits;
-
-    kbc = fwg->kbcore;
-    dict = kbcore_dict(kbc);
-    tmat = kbcore_tmat(kbc);
-    mdef = kbcore_mdef(kbc);
-    lm = kbcore_lm(kbc);
-    fpen = kbcore_fillpen(kbc);
-    ct_table = fwg->ctxt;
-
-    is32bits = lm->is32bits;
-    tgptr = NULL;
-    bgptr = NULL;
-    tgptr32 = NULL;
-    bgptr32 = NULL;
 
     lat_start = lathist->frm_latstart[fwg->n_frm];
 
@@ -822,163 +1001,11 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
         for (rc = 0; rc < mdef->n_ciphone; rc++)
             fwg->rcscore[rc] = lathist->lattice[l].rcscore[rcmap[rc]];
 
-        /* Find the last real (non-filler, non-silence) two-word history */
-        two_word_history(lathist, l, &bw0, &bw1, dict);
-
         if (fwg->n_word_cand <= 0) {
-            /* Transition to all words in vocab */
-
-            /* Clear trigram transition flag for each word for this history */
-            memset(fwg->tg_trans_done, 0, dict->n_word * sizeof(*fwg->tg_trans_done));
-
-            /* First, transition to trigram followers of bw0, bw1 */
-            acc_bowt = 0;
-
-            /*      E_INFO("bw0 %d\n",bw0); */
-            if (IS_S3WID(bw0)) {
-
-                if (is32bits) {
-                    n_tg = lm_tg32list(lm,
-                                       lm->
-                                       dict2lmwid[dict_basewid(dict, bw0)],
-                                       lm->
-                                       dict2lmwid[dict_basewid(dict, bw1)],
-                                       &tgptr32, &bowt);
-
-                }
-                else {
-                    n_tg = lm_tglist(lm,
-                                     lm->
-                                     dict2lmwid[dict_basewid(dict, bw0)],
-                                     lm->
-                                     dict2lmwid[dict_basewid(dict, bw1)],
-                                     &tgptr, &bowt);
-
-                }
-
-                if (n_tg > 0) {
-                    /* Transition to trigram followers of bw0, bw1, if any */
-                    while (n_tg > 0) {
-                        nextwid = is32bits ?
-                            LM_DICTWID(lm, tgptr32->wid) :
-                            LM_DICTWID(lm, tgptr->wid);
-
-
-                        /* Transition to all alternative pronunciations for trigram follower */
-
-
-                        if (IS_S3WID(nextwid)
-                            && (nextwid != dict->startwid)) {
-                            for (w = nextwid; IS_S3WID(w);
-                                 w = dict->word[w].alt) {
-
-                                newscore = fwg->rcscore[dict->word[w].ciphone[0]];      /* right context scores with phone ciphone[0] */
-                                newscore += is32bits ? LM_TGPROB(lm, tgptr32) : LM_TGPROB(lm, tgptr);   /* The LM scores */
-                                newscore += phone_penalty;
-
-                                if (newscore >= thresh) {
-                                    word_enter(fwg, w, newscore, l, lc);
-                                    fwg->tg_trans_done[w] = 1;
-                                }
-                            }
-                        }
-                        --n_tg;
-                        if (is32bits)
-                            ++tgptr32;
-                        else
-                            ++tgptr;
-                    }
-                    acc_bowt = bowt;
-                }
-            }
-
-            /* Transition to bigram followers of bw1 */
-            if (is32bits)
-                n_bg = lm_bg32list(lm,
-                                   lm->dict2lmwid[dict_basewid(dict, bw1)],
-                                   &bgptr32, &bowt);
-            else
-                n_bg = lm_bglist(lm,
-                                 lm->dict2lmwid[dict_basewid(dict, bw1)],
-                                 &bgptr, &bowt);
-
-            if (n_bg > 0) {
-                /* Transition to bigram followers of bw1, if any */
-                for (; n_bg > 0; --n_bg) {
-                    if (is32bits)
-                        bgptr32++;
-                    else
-                        bgptr++;
-
-                    /* Transition to all alternative pronunciations for bigram follower */
-
-                    nextwid =
-                        is32bits ? LM_DICTWID(lm,
-                                              bgptr32->
-                                              wid) : LM_DICTWID(lm,
-                                                                bgptr->
-                                                                wid);
-
-                    if (IS_S3WID(nextwid) && (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
-                        (nextwid != dict->startwid)) {  /* No transition to <s> */
-                        for (w = nextwid; IS_S3WID(w);
-                             w = dict->word[w].alt) {
-
-                            newscore =
-                                fwg->rcscore[dict->word[w].ciphone[0]];
-                            newscore +=
-                                is32bits ? LM_BGPROB(lm,
-                                                     bgptr32) :
-                                LM_BGPROB(lm, bgptr);
-                            newscore += phone_penalty;
-
-                            if (newscore >= thresh)
-                                word_enter(fwg, w, newscore, l, lc);
-                        }
-                    }
-                }
-
-                acc_bowt += bowt;
-            }
-
-            /* Update unigram backoff node */
-            for (rc = 0; rc < mdef->n_ciphone; rc++) {
-                if (fwg->rcscore[rc] <= S3_LOGPROB_ZERO)
-                    continue;
-
-                if (fwg->rcscore[rc] + acc_bowt + phone_penalty >
-                    fwg->ug_backoff[rc].score) {
-                    fwg->ug_backoff[rc].score =
-                        fwg->rcscore[rc] + acc_bowt + phone_penalty;
-                    fwg->ug_backoff[rc].latid = l;
-                    fwg->ug_backoff[rc].lc = lc;
-                }
-            }
+            enter_lm_words(fwg, lathist, l, lc, thresh, phone_penalty);
         }
         else {
-            /* Transition to words in word_cand_cf */
-
-            for (cand = 0; IS_S3WID(fwg->word_cand_cf[cand]); cand++) {
-                nextwid = fwg->word_cand_cf[cand];
-
-                lw0 =
-                    IS_S3WID(bw0) ? lm->
-                    dict2lmwid[dict_basewid(dict, bw0)] : BAD_LMWID(lm);
-
-                lscr = lm_tg_score(lm,
-                                   lw0,
-                                   lm->dict2lmwid[dict_basewid(dict, bw1)],
-                                   lm->dict2lmwid[nextwid], nextwid);
-
-                for (w = nextwid; IS_S3WID(w); w = dict->word[w].alt) {
-                    newscore =
-                        fwg->rcscore[dict->word[w].ciphone[0]] + lscr +
-                        phone_penalty;
-
-                    if (newscore >= thresh)
-                        word_enter(fwg, w, newscore, l, lc);
-                }
-            }
+            enter_cand_words(fwg, lathist, l, lc, thresh, phone_penalty);
         }
 
         /* Update filler backoff node */
@@ -1004,7 +1031,7 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
 
     /* Transition to unigrams from backoff nodes (if not working from a lattice) */
     if (fwg->n_word_cand <= 0) {
-#if 0
+#if 0 /* FIXME: WHAT IS THE DIFFERENCE BETWEEN THESE TWO VERSIONS?  #@!$!@# */
         n_ug = lm_uglist(&ugptr);
         for (; n_ug > 0; --n_ug, ugptr++) {
             for (w = ugptr->dictwid; IS_S3WID(w); w = dict->word[w].alt) {
@@ -1030,6 +1057,8 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
             lc = fwg->ug_backoff[rc].lc;
 
             for (wp = fwg->word_ugprob[rc]; wp; wp = wp->next) {
+                int32 newscore;
+
                 newscore = rcscr + wp->ugprob;
                 if (newscore < thresh)
                     break;
@@ -1044,11 +1073,14 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
      * are all within filler_start..filler_end
      */
     for (w = dict->filler_start; w <= dict->filler_end; w++) {
+
         if ((w == dict->startwid) || (w == dict->finishwid))
             continue;
 
         rc = dict->word[w].ciphone[0];
         if (fwg->filler_backoff[rc].score > S3_LOGPROB_ZERO) {
+            int32 newscore;
+
             newscore =
                 fwg->filler_backoff[rc].score + fillpen(fpen,
                                                         dict_basewid(dict,
@@ -1143,152 +1175,6 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
         dagp->fudged = 1;
     }
 }
-
-
-/**
- * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
- * a single start time but it can represent several end times.  Links are created
- * whenever nodes are adjacent in time.
- * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
- * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
- * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
- * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
- * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
- * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
- * absurdum.
- */
-dag_t *
-dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
-          lm_t * lm, ctxt_table_t * ctxt, fillpen_t * fpen, int32 _nfrm)
-{
-    int32 l;
-    s3wid_t w;
-    int32 sf;
-    dagnode_t *d, *pd;
-    int32 ascr, lscr;
-    s3latid_t latfinal;
-    int32 min_ef_range;
-    int32 k;
-    dag_t *dag;
-    int32 seqid;
-
-    dag = ckd_calloc(1, sizeof(dag_t));
-
-    /* Note final lattice entry in DAG structure */
-
-    dag->latfinal = endid;
-    dag->list = NULL;
-
-    latfinal = dag->latfinal;
-    if (NOT_S3LATID(latfinal)) {
-        E_INFO("The final lattice ID is not valid\n");
-        return NULL;
-    }
-
-    /* Min. endframes value that a node must persist for it to be not ignored */
-    min_ef_range = cmd_ln_int32("-min_endfr");
-
-    /* Build DAG nodes list from the lattice */
-    seqid = 0;
-    for (l = 0; l < lathist->n_lat_entry; l++) {
-        w = lathist->lattice[l].wid;
-
-        /* ARCHAN SLIGHT BUG: Even though right context has their
-           separate histories now. It is not accounted at here. */
-        sf = LATID2SF(lathist, l);
-
-        /* Check if node <w,sf> already created */
-        for (d = dag->list; d; d = d->alloc_next) {
-            if ((d->wid == w) && (d->sf == sf))
-                break;
-        }
-
-        if (!d) {
-            d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
-
-            d->wid = w;
-            d->sf = sf;
-            d->fef = lathist->lattice[l].frm;
-            d->succlist = NULL;
-            d->predlist = NULL;
-            d->seqid = seqid++;
-            d->alloc_next = dag->list;
-            dag->list = d;
-        }
-        d->lef = lathist->lattice[l].frm;
-
-        lathist->lattice[l].dagnode = d;
-    }
-
-    /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
-    for (d = dag->list; d; d = d->alloc_next) {
-        if ((dict_basewid(dict, d->wid) == dict->startwid) && (d->sf == 0))
-            break;
-    }
-    assert(d);
-    dag->root = d;
-
-    /* Build DAG edges: between nodes satisfying time adjacency */
-    for (d = dag->list; d; d = d->alloc_next) {
-        /* Skip links to this node if too short lived */
-        if ((d != lathist->lattice[latfinal].dagnode)
-            && (d->lef - d->fef < min_ef_range - 1))
-            continue;
-
-        if (d->sf == 0) {
-        }
-/*
-                                	    assert (d->wid == dict->startwid);	*//* No predecessors to this */
-        else {
-            /* Link from all end points == d->sf-1 to d */
-            for (l = lathist->frm_latstart[d->sf - 1];
-                 l < lathist->frm_latstart[d->sf]; l++) {
-                pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
-
-                /* Skip predecessor node under following conditions */
-                if (pd->wid == dict->finishwid) /* BUG: alternative prons for </s>?? */
-                    continue;
-                if ((pd != dag->root)
-                    && (pd->lef - pd->fef < min_ef_range - 1))
-                    continue;
-
-                /*
-                 * Find acoustic score for link from pd to d (for lattice entry l
-                 * with pd as right context).
-                 */
-                lat_seg_ascr_lscr(lathist, l, d->wid, &ascr, &lscr, lm,
-                                  dict, ctxt, fpen);
-                lathist->lattice[l].ascr = ascr;
-                lathist->lattice[l].lscr = lscr;
-                if (ascr > S3_LOGPROB_ZERO)
-                    dag_link_w_lscr(dag, pd, d, ascr, lscr, d->sf - 1,
-                                    NULL);
-            }
-        }
-    }
-
-
-    dag->filler_removed = 0;
-    dag->fudged = 0;
-    dag->nfrm = _nfrm;
-
-    dag->maxedge = cmd_ln_int32("-maxedge");
-    /*
-     * Set limit on max LM ops allowed after which utterance is aborted.
-     * Limit is lesser of absolute max and per frame max.
-     */
-    dag->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
-
-    k *= dag->nfrm;
-    if (dag->maxlmop > k)
-        dag->maxlmop = k;
-    dag->lmop = 0;
-
-    return dag;
-}
-
-
 
 
 /**

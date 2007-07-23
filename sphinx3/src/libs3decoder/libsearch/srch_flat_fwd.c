@@ -80,50 +80,6 @@
 #include "srch.h"
 #include "whmm.h"
 
-
-void dump_all_whmm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
-                   int32 n_frm, int32 * senscr);
-
-void dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm);
-
-void whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 bestscr);
-
-void whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w,
-		     whmm_t * h);
-
-void word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
-                int32 score, s3latid_t l, s3cipid_t lc);
-
-int32 whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr);
-
-void whmm_exit(srch_FLAT_FWD_graph_t * fwg,
-               whmm_t ** whmm,
-               latticehist_t * lathist,
-               int32 thresh, int32 wordthresh, int32 phone_penalty);
-
-
-void word_trans(srch_FLAT_FWD_graph_t * fwg,
-                whmm_t ** whmm,
-                latticehist_t * lathist,
-                int32 thresh, int32 phone_penalty);
-
-
-
-
-
-void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id,
-                         char *latfile_ext, latticehist_t * lathist,
-                         int32 n_frm, dag_t * dag, lm_t * lm,
-                         dict_t * dict, ctxt_table_t * ctxt,
-                         fillpen_t * fpen);
-
-
-void flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg,
-                                  dag_t * dagp,
-                                  int32 fudge,
-                                  int32 min_ef_range,
-                                  void *hist, dict_t * dict);
-
 static void
 fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
 {
@@ -707,9 +663,9 @@ srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     dag =
-        dag_build(s->exit_id, fwg->lathist, kbcore_dict(s->kbc),
-                  s->kbc->lmset->cur_lm, fwg->ctxt, s->kbc->fillpen,
-                  fwg->n_frm);
+        latticehist_dag_build(s->exit_id, fwg->lathist, kbcore_dict(s->kbc),
+                              s->kbc->lmset->cur_lm, fwg->ctxt, s->kbc->fillpen,
+                              fwg->n_frm);
 
     return dag;
 }

@@ -390,6 +390,7 @@ vithist_lmstate_enter(vithist_t * vh, int32 vhid, vithist_entry_t * ve)
     lms2vh->children = glist_add_ptr(lms2vh->children, (void *) child);
 }
 
+
 /* Rclist is separate from tve because C structure copying is used in *ve = *tve 
  */
 void
@@ -1095,11 +1096,8 @@ typedef struct {
     s3wid_t wid;
     int32 fef, lef;
     int32 seqid;                /* Node sequence no. */
-
-#if 1                           /* augmented in 3.6 to store the acoustic score */
     int32 ascr;
     int32 lscr;
-#endif
     glist_t velist;             /* Vithist entries for this dagnode */
 } vithist_dagnode_t;
 
@@ -1111,7 +1109,6 @@ void
 vithist_dag_write(vithist_t * vh, glist_t hyp, dict_t * dict, int32 oldfmt,
                   FILE * fp, int32 dump_nodescr)
 {
-
     /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
     glist_t *sfwid;             /* To maintain <start-frame, word-id> pair dagnodes */
     vithist_entry_t *ve, *ve2;
@@ -1226,6 +1223,8 @@ vithist_dag_write(vithist_t * vh, glist_t hyp, dict_t * dict, int32 oldfmt,
         }
     }
     n_node = i;
+
+    dag_write_header(fp, vh->n_frm, 0);
 
     /* Write nodes info; the header should have been written before this function is called */
     fprintf(fp,
@@ -1750,6 +1749,148 @@ lattice_backtrace(latticehist_t * lathist,
     }
 }
 
+/**
+ * Build a DAG from the lattice: each unique <word-id,start-frame> is a node, i.e. with
+ * a single start time but it can represent several end times.  Links are created
+ * whenever nodes are adjacent in time.
+ * dagnodes_list = linear list of DAG nodes allocated, ordered such that nodes earlier
+ * in the list can follow nodes later in the list, but not vice versa:  Let two DAG
+ * nodes d1 and d2 have start times sf1 and sf2, and end time ranges [fef1..lef1] and
+ * [fef2..lef2] respectively.  If d1 appears later than d2 in dag.list, then
+ * fef2 >= fef1, because d2 showed up later in the word lattice.  If there is a DAG
+ * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
+ * absurdum.
+ */
+dag_t *
+latticehist_dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
+                      lm_t * lm, ctxt_table_t * ctxt, fillpen_t * fpen, int32 _nfrm)
+{
+    int32 l;
+    s3wid_t w;
+    int32 sf;
+    dagnode_t *d, *pd;
+    int32 ascr, lscr;
+    s3latid_t latfinal;
+    int32 min_ef_range;
+    int32 k;
+    dag_t *dag;
+    int32 seqid;
+
+    dag = ckd_calloc(1, sizeof(dag_t));
+
+    /* Note final lattice entry in DAG structure */
+
+    dag->latfinal = endid;
+    dag->list = NULL;
+
+    latfinal = dag->latfinal;
+    if (NOT_S3LATID(latfinal)) {
+        E_INFO("The final lattice ID is not valid\n");
+        return NULL;
+    }
+
+    /* Min. endframes value that a node must persist for it to be not ignored */
+    min_ef_range = cmd_ln_int32("-min_endfr");
+
+    /* Build DAG nodes list from the lattice */
+    seqid = 0;
+    for (l = 0; l < lathist->n_lat_entry; l++) {
+        w = lathist->lattice[l].wid;
+
+        /* ARCHAN SLIGHT BUG: Even though right context has their
+           separate histories now. It is not accounted at here. */
+        sf = LATID2SF(lathist, l);
+
+        /* Check if node <w,sf> already created */
+        for (d = dag->list; d; d = d->alloc_next) {
+            if ((d->wid == w) && (d->sf == sf))
+                break;
+        }
+
+        if (!d) {
+            d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
+
+            d->wid = w;
+            d->sf = sf;
+            d->fef = lathist->lattice[l].frm;
+            d->succlist = NULL;
+            d->predlist = NULL;
+            d->seqid = seqid++;
+            d->alloc_next = dag->list;
+            dag->list = d;
+        }
+        d->lef = lathist->lattice[l].frm;
+
+        lathist->lattice[l].dagnode = d;
+    }
+
+    /* Find initial node.  (BUG HERE: There may be > 1 initial node for multiple <s>) */
+    for (d = dag->list; d; d = d->alloc_next) {
+        if ((dict_basewid(dict, d->wid) == dict->startwid) && (d->sf == 0))
+            break;
+    }
+    assert(d);
+    dag->root = d;
+
+    /* Build DAG edges: between nodes satisfying time adjacency */
+    for (d = dag->list; d; d = d->alloc_next) {
+        /* Skip links to this node if too short lived */
+        if ((d != lathist->lattice[latfinal].dagnode)
+            && (d->lef - d->fef < min_ef_range - 1))
+            continue;
+
+        if (d->sf == 0) {
+        }
+/*
+                                	    assert (d->wid == dict->startwid);	*//* No predecessors to this */
+        else {
+            /* Link from all end points == d->sf-1 to d */
+            for (l = lathist->frm_latstart[d->sf - 1];
+                 l < lathist->frm_latstart[d->sf]; l++) {
+                pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
+
+                /* Skip predecessor node under following conditions */
+                if (pd->wid == dict->finishwid) /* BUG: alternative prons for </s>?? */
+                    continue;
+                if ((pd != dag->root)
+                    && (pd->lef - pd->fef < min_ef_range - 1))
+                    continue;
+
+                /*
+                 * Find acoustic score for link from pd to d (for lattice entry l
+                 * with d as right context).
+                 */
+                lat_seg_ascr_lscr(lathist, l, d->wid, &ascr, &lscr, lm,
+                                  dict, ctxt, fpen);
+                lathist->lattice[l].ascr = ascr;
+                lathist->lattice[l].lscr = lscr;
+                if (ascr > S3_LOGPROB_ZERO)
+                    dag_link_w_lscr(dag, pd, d, ascr, lscr, d->sf - 1,
+                                    NULL);
+            }
+        }
+    }
+
+
+    dag->filler_removed = 0;
+    dag->fudged = 0;
+    dag->nfrm = _nfrm;
+
+    dag->maxedge = cmd_ln_int32("-maxedge");
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    dag->maxlmop = cmd_ln_int32("-maxlmop");
+    k = cmd_ln_int32("-maxlpf");
+
+    k *= dag->nfrm;
+    if (dag->maxlmop > k)
+        dag->maxlmop = k;
+    dag->lmop = 0;
+
+    return dag;
+}
 
 
 int32
