@@ -28,6 +28,12 @@ debug_program() {
     $builddir/libtool --mode=execute gdb --args "$programs/$program" $@
 }
 
+memcheck_program() {
+    program="$1"
+    shift
+    $builddir/libtool --mode=execute valgrind "$programs/$program" $@
+}
+
 pass() {
     title="$1"
     echo "$title PASSED"
