@@ -188,10 +188,10 @@ hmm_dump(hmm_t * hmm,
     fprintf(fp, " %11d", hmm_out_score(hmm));
     fprintf(fp, "\n");
 
-    fprintf(fp, "HISTID %11d", hmm_in_history(hmm));
+    fprintf(fp, "HISTID %11ld", hmm_in_history(hmm));
     for (i = 1; i < hmm_n_emit_state(hmm); i++)
-        fprintf(fp, " %11d", hmm_history(hmm, i));
-    fprintf(fp, " %11d", hmm_out_history(hmm));
+        fprintf(fp, " %11ld", hmm_history(hmm, i));
+    fprintf(fp, " %11ld", hmm_out_history(hmm));
     fprintf(fp, "\n");
 
     if (hmm_in_score(hmm) > 0)
@@ -243,6 +243,14 @@ hmm_enter(hmm_t *h, int32 score, int32 histid, int32 frame)
 {
     hmm_in_score(h) = score;
     hmm_in_history(h) = histid;
+    hmm_frame(h) = frame;
+}
+
+void
+hmm_enter_obj(hmm_t *h, int32 score, void *histobj, int32 frame)
+{
+    hmm_in_score(h) = score;
+    hmm_in_histobj(h) = histobj;
     hmm_frame(h) = frame;
 }
 

@@ -166,7 +166,10 @@ typedef struct hmm_context_s {
  */
 typedef struct {
     int32 score;	/**< State score (path log-likelihood) */
-    int32 history;	/**< History index */
+    union {
+        long id;	/**< History index */
+        void *ptr;      /**< History object */
+    } history;
 } hmm_state_t;
 
 /** \struct hmm_t
@@ -201,9 +204,13 @@ typedef struct hmm_s {
 #define hmm_score(h,st) hmm_state(h,st).score
 #define hmm_out_score(h) (h)->out.score
 
-#define hmm_in_history(h) hmm_state(h,0).history
-#define hmm_history(h,st) hmm_state(h,st).history
-#define hmm_out_history(h) (h)->out.history
+#define hmm_in_history(h) hmm_state(h,0).history.id
+#define hmm_history(h,st) hmm_state(h,st).history.id
+#define hmm_out_history(h) (h)->out.history.id
+
+#define hmm_in_histobj(h) hmm_state(h,0).history.ptr
+#define hmm_histobj(h,st) hmm_state(h,st).history.ptr
+#define hmm_out_histobj(h) (h)->out.history.ptr
 
 #define hmm_bestscore(h) (h)->bestscore
 #define hmm_frame(h) (h)->frame
@@ -275,6 +282,12 @@ void hmm_normalize(hmm_t *h, int32 bestscr);
  **/
 void hmm_enter(hmm_t *h, int32 score,
                int32 histid, int32 frame);
+
+/**
+ * Enter an HMM with the given path score and history object.
+ **/
+void hmm_enter_obj(hmm_t *h, int32 score,
+                   void *histobj, int32 frame);
 
 /**
  * Viterbi evaluation of given HMM.  (NOTE that if this module were being used for tracking
