@@ -270,6 +270,15 @@ hmm_normalize(hmm_t *h, int32 bestscr)
 #define hmm_tprob_5st(i, j) (tp[(i)*6+(j)])
 #define nonmpx_senscr(i) (senscore[sseq[i]])
 
+/* Redefine these for the purposes of HMM evaluation so that they copy
+ * the entire union and not just the ID field. */
+#undef hmm_in_history
+#undef hmm_history
+#undef hmm_out_history
+#define hmm_in_history(h) hmm_state(h,0).history
+#define hmm_history(h,st) hmm_state(h,st).history
+#define hmm_out_history(h) (h)->out.history
+
 static int32
 hmm_vit_eval_5st_lr(hmm_t * hmm)
 {
