@@ -218,7 +218,7 @@ phmm_link(allphone_t *allp)
                 for (p2 = ci_phmm[rclist[i]]; p2; p2 = p2->next) {
                     if (lrc_is_set(p2->lc, ci)) {
                         /* transition from p to p2 */
-                        l = (plink_t *) listelem_alloc(sizeof(plink_t));
+                        l = (plink_t *) ckd_calloc(1, sizeof(plink_t));
                         l->phmm = p2;
                         l->next = p->succlist;
                         p->succlist = l;
@@ -269,7 +269,7 @@ phmm_build(allphone_t *allp)
     for (pid = 0; pid < mdef->n_phone; pid++) {
         if ((p = phmm_lookup(allp, pid)) == NULL) {
             /* No previous entry; create a new one */
-            p = (phmm_t *) listelem_alloc(sizeof(phmm_t));
+            p = (phmm_t *) ckd_calloc(1, sizeof(phmm_t));
 
             p->pid = pid;
             p->tmat = mdef->phone[pid].tmat;
@@ -531,7 +531,7 @@ phmm_exit(allphone_t *allp, int32 best)
                     /* Create lattice entry if exiting */
                     if (p->score[nst] >= allp->pbeam) { /* pbeam, not th because scores scaled */
                         h = (history_t *)
-                            listelem_alloc(sizeof(history_t));
+                            ckd_calloc(1, sizeof(history_t));
                         h->score = p->score[nst];
                         /* FIXME: This isn't going to be the correct
                          * transition score, for reasons I don't
@@ -661,7 +661,7 @@ _allphone_start_utt(allphone_t *allp)
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            listelem_free((char *) h, sizeof(history_t));
+            ckd_free((char *) h);
         }
 
         allp->frm_hist[f] = NULL;
@@ -757,7 +757,7 @@ allphone_backtrace(allphone_t *allp, int32 f)
 
         /* Backtrace */
         for (h = besth; h; h = h->hist) {
-            s = (phseg_t *) listelem_alloc(sizeof(phseg_t));
+            s = (phseg_t *) ckd_calloc(1, sizeof(phseg_t));
             s->ci = h->phmm->ci;
             s->sf = (h->hist) ? h->hist->ef + 1 : 0;
             s->ef = h->ef;
@@ -782,7 +782,7 @@ allphone_clear_phseg(allphone_t *allp)
     phseg_t *s, *nexts;
     for (s = allp->phseg; s; s = nexts) {
         nexts = s->next;
-        listelem_free((char *) s, sizeof(phseg_t));
+        ckd_free((char *) s);
     }
     allp->phseg = NULL;
 }

@@ -267,7 +267,7 @@ phmm_link(void)
                 for (p2 = ci_phmm[rclist[i]]; p2; p2 = p2->next) {
                     if (lrc_is_set(p2->lc, ci)) {
                         /* transition from p to p2 */
-                        l = (plink_t *) listelem_alloc(sizeof(plink_t));
+                        l = (plink_t *) ckd_calloc(1, sizeof(*l));
                         l->phmm = p2;
                         l->next = p->succlist;
                         p->succlist = l;
@@ -312,7 +312,7 @@ phmm_build(void)
     for (pid = 0; pid < mdef->n_phone; pid++) {
         if ((p = phmm_lookup(pid)) == NULL) {
             /* No previous entry; create a new one */
-            p = (phmm_t *) listelem_alloc(sizeof(phmm_t));
+            p = (phmm_t *) ckd_calloc(1, sizeof(*p));
 
             p->pid = pid;
             p->tmat = mdef->phone[pid].tmat;
@@ -611,7 +611,7 @@ phmm_exit(int32 best)
                     /* Create lattice entry if exiting */
                     if (p->score[nst] >= pbeam) {        /* beam, not th because scores scaled */
                         h = (history_t *)
-                            listelem_alloc(sizeof(history_t));
+                            ckd_calloc(1, sizeof(*h));
                         h->score = p->score[nst];
                         /* FIXME: This isn't going to be the correct
                          * transition score, for reasons I don't
@@ -755,7 +755,7 @@ allphone_end_utt(char *uttid)
 
         /* Backtrace */
         for (h = besth; h; h = h->hist) {
-            s = (phseg_t *) listelem_alloc(sizeof(phseg_t));
+            s = (phseg_t *) ckd_calloc(1, sizeof(*s));
             s->ci = h->phmm->ci;
             s->sf = (h->hist) ? h->hist->ef + 1 : 0;
             s->ef = h->ef;
@@ -776,7 +776,7 @@ allphone_end_utt(char *uttid)
     for (f = 0; f < curfrm; f++) {
         for (h = frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            listelem_free((char *) h, sizeof(history_t));
+            ckd_free((char *) h);
         }
 
         frm_hist[f] = NULL;

@@ -188,7 +188,7 @@ astar_dag_link_bypass(dagnode_t * pd, dagnode_t * d, int32 ascr)
 
     if (!l) {
         /* No existing bypass link; create one from pd to d */
-        l = (daglink_t *) listelem_alloc(sizeof(daglink_t));
+        l = (daglink_t *) ckd_calloc(1, sizeof(*l));
         l->node = d;
         l->ascr = ascr;
         l->is_filler_bypass = 1;
@@ -233,14 +233,14 @@ dag_remove_unreachable(void)
             /* Remove successor node links */
             for (l = d->succlist; l; l = nl) {
                 nl = l->next;
-                listelem_free((char *) l, sizeof(daglink_t));
+                ckd_free((char *) l);
             }
             d->succlist = NULL;
 
             /* Remove predecessor links */
             for (l = d->predlist; l; l = nl) {
                 nl = l->next;
-                listelem_free((char *) l, sizeof(daglink_t));
+                ckd_free((char *) l);
             }
             d->predlist = NULL;
         }
@@ -254,7 +254,7 @@ dag_remove_unreachable(void)
                         d->succlist = nl;
                     else
                         pl->next = nl;
-                    listelem_free((char *) l, sizeof(daglink_t));
+                    ckd_free((char *) l);
                 }
                 else
                     pl = l;
@@ -400,7 +400,7 @@ dag_remove_bypass_links(void)
                     d->succlist = nl;
                 else
                     pl->next = nl;
-                listelem_free((char *) l, sizeof(daglink_t));
+                ckd_free((char *) l);
             }
             else
                 pl = l;
@@ -518,7 +518,7 @@ aheap_insert(aheap_t * root, ppath_t * new)
     ppath_t *pp;
 
     if (!root) {
-        h = (aheap_t *) listelem_alloc(sizeof(aheap_t));
+        h = (aheap_t *) ckd_calloc(1, sizeof(*h));
         h->ppath = new;
         h->left = h->right = NULL;
         h->nl = h->nr = 0;
@@ -560,7 +560,7 @@ aheap_pop(aheap_t * root)
     r = root->right;
     if (!l) {
         if (!r) {
-            listelem_free((char *) root, sizeof(aheap_t));
+	    ckd_free((char *) root);
             return NULL;
         }
         else {
@@ -665,7 +665,7 @@ ppath_insert(ppath_t * top, daglink_t * l, int32 pscr, int32 tscr,
     tscr = pscr + l->hscr;
 
     /* Initialize new partial path node */
-    pp = (ppath_t *) listelem_alloc(sizeof(ppath_t));
+    pp = (ppath_t *) ckd_calloc(1, sizeof(*pp));
 
     pp->dagnode = l->node;
     pp->hist = top;
@@ -696,7 +696,7 @@ ppath_free(void)
     n = 0;
     while (ppath_list) {
         pp = ppath_list->next;
-        listelem_free((char *) ppath_list, sizeof(ppath_t));
+        ckd_free((char *) ppath_list);
         ppath_list = pp;
         n++;
     }
@@ -810,7 +810,7 @@ nbest_search(char *filename, char *uttid)
         hash_list[i] = NULL;
 
     /* Insert start node into heap and into list of nodes-by-frame */
-    pp = (ppath_t *) listelem_alloc(sizeof(ppath_t));
+    pp = (ppath_t *) ckd_calloc(1, sizeof(*pp));
 
     pp->dagnode = dag->entry.node;
     pp->hist = NULL;

@@ -179,7 +179,7 @@ ms_mgau_init(char *meanfile,
     msg->mgau2sen =
         (mgau2sen_t **) ckd_calloc(g->n_mgau, sizeof(mgau2sen_t *));
     for (i = 0; i < s->n_sen; i++) {
-        m2s = (mgau2sen_t *) listelem_alloc(sizeof(mgau2sen_t));
+        m2s = (mgau2sen_t *) ckd_calloc(1, sizeof(mgau2sen_t));
         m2s->sen = i;
         m2s->next = msg->mgau2sen[s->mgau[i]];
         msg->mgau2sen[s->mgau[i]] = m2s;

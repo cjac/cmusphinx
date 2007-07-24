@@ -270,7 +270,7 @@ nbestfile_parseline(char *sent)
     while ((k = sscanf(lp, "%d%s%n", &sf, word, &len)) == 2) {
         lp += len;
 
-        hyp = (srch_hyp_t *) listelem_alloc(sizeof(srch_hyp_t));
+        hyp = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
         hyp->word = (char *) ckd_salloc(word);
         hyp->sf = sf;
         hyp->lscr = lscr;       /* HACK!! Every entry has the TOTAL LM score */

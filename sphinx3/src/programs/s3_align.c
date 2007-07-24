@@ -215,7 +215,7 @@ pnodes_free(void)
 
     while (pnode_list) {
         p = pnode_list->alloc_next;
-        listelem_free((char *) pnode_list, sizeof(pnode_t));
+        ckd_free((char *) pnode_list);
         pnode_list = p;
     }
 }
@@ -229,7 +229,7 @@ plinks_free(plink_t * l)
 
     while (l) {
         tmp = l->next;
-        listelem_free((char *) l, sizeof(plink_t));
+        ckd_free((char *) l);
         l = tmp;
     }
 }
@@ -243,7 +243,7 @@ append_pnode(plink_t * list, pnode_t * node)
 {
     plink_t *l;
 
-    l = (plink_t *) listelem_alloc(sizeof(plink_t));
+    l = (plink_t *) ckd_calloc(1, sizeof(*l));
     l->node = node;
     l->next = list;
     return l;
@@ -260,7 +260,7 @@ alloc_pnode(s3wid_t w, int32 pos,
 {
     pnode_t *p;
 
-    p = (pnode_t *) listelem_alloc(sizeof(pnode_t));
+    p = (pnode_t *) ckd_calloc(1, sizeof(*p));
     p->wid = w;
     p->ci = ci;
     p->lc = lc;
@@ -589,7 +589,7 @@ append_snode(slink_t * list, snode_t * node, int32 prob)
 {
     slink_t *l;
 
-    l = (slink_t *) listelem_alloc(sizeof(slink_t));
+    l = (slink_t *) ckd_calloc(1, sizeof(*l));
     l->node = node;
     l->next = list;
     l->prob = prob;
@@ -630,7 +630,7 @@ un_slink_succ(snode_t * src, snode_t * dst)
         prevl->next = l->next;
 
     prob = l->prob;
-    listelem_free((char *) l, sizeof(slink_t));
+    ckd_free((char *) l);
 
     return prob;
 }
@@ -643,7 +643,7 @@ slinks_free(slink_t * l)
 
     while (l) {
         tmp = l->next;
-        listelem_free((char *) l, sizeof(slink_t));
+        ckd_free((char *) l);
         l = tmp;
     }
 }
@@ -972,7 +972,7 @@ lat_entry(snode_t * s)
 {
     history_t *h;
 
-    h = (history_t *) listelem_alloc(sizeof(history_t));
+    h = (history_t *) ckd_calloc(1, sizeof(*h));
     h->snode = s;
     h->score = s->newscore;
     h->pred = s->newhist;
@@ -1136,7 +1136,7 @@ build_stseg(history_t * rooth)
     prevscr = 0;
     prevh = NULL;
     for (f = 0, h = rooth; h; h = h->pred, f++) {
-        stseg = (align_stseg_t *) listelem_alloc(sizeof(align_stseg_t));
+	stseg = (align_stseg_t *) ckd_calloc(1, sizeof(*stseg));
         if (!align_stseg)
             align_stseg = stseg;
         else
@@ -1180,7 +1180,7 @@ build_phseg(history_t * rooth)
         nh = h->pred;
         if ((!nh) || (nh->snode->pnode->id != h->snode->pnode->id)) {
             phseg =
-                (align_phseg_t *) listelem_alloc(sizeof(align_phseg_t));
+                (align_phseg_t *) ckd_calloc(1, sizeof(*phseg));
             if (!align_phseg)
                 align_phseg = phseg;
             else
@@ -1225,7 +1225,7 @@ build_wdseg(history_t * rooth)
         if ((!nh) || ((nh->snode->pnode->id != h->snode->pnode->id) && (nh->snode->pnode->pos == 0))) { /* End of current word */
 
             wdseg =
-                (align_wdseg_t *) listelem_alloc(sizeof(align_wdseg_t));
+                (align_wdseg_t *) ckd_calloc(1, sizeof(*wdseg));
             if (!align_wdseg)
                 align_wdseg = wdseg;
             else
@@ -1265,17 +1265,17 @@ align_end_utt(align_stseg_t ** stseg_out,
     /* Free up previous result, if any */
     while (align_stseg) {
         stseg = align_stseg->next;
-        listelem_free((char *) align_stseg, sizeof(align_stseg_t));
+        ckd_free((char *) align_stseg);
         align_stseg = stseg;
     }
     while (align_phseg) {
         phseg = align_phseg->next;
-        listelem_free((char *) align_phseg, sizeof(align_phseg_t));
+        ckd_free((char *) align_phseg);
         align_phseg = phseg;
     }
     while (align_wdseg) {
         wdseg = align_wdseg->next;
-        listelem_free((char *) align_wdseg, sizeof(align_wdseg_t));
+        ckd_free((char *) align_wdseg);
         align_wdseg = wdseg;
     }
 
@@ -1313,7 +1313,7 @@ align_end_utt(align_stseg_t ** stseg_out,
     /* delete history list */
     while (hist_head) {
         h = hist_head->alloc_next;
-        listelem_free((char *) hist_head, sizeof(history_t));
+        ckd_free((char *) hist_head);
         hist_head = h;
     }
 

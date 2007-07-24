@@ -101,7 +101,6 @@
 #include <interp.h>
 #include <s3types.h>
 #include <prim_type.h>
-#include <linklist.h>
 #include <feat.h>
 #include <mdef.h>
 #include <ascr.h>

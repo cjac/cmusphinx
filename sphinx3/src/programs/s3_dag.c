@@ -364,7 +364,7 @@ s3_dag_dag_load(char *file)
             goto load_error;
         }
 
-        d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
+        d = (dagnode_t *) ckd_calloc(1, sizeof(*d));
         darray[i] = d;
 
         d->wid = w;

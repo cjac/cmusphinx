@@ -75,7 +75,7 @@ init_word_ugprob(mdef_t * _mdef, lm_t * _lm, dict_t * _dict)
             for (wp = wugp[ci]; wp && (wp->ugprob >= ugprob);
                  wp = wp->next)
                 prevwp = wp;
-            wp = (word_ugprob_t *) listelem_alloc(sizeof(word_ugprob_t));
+            wp = (word_ugprob_t *) ckd_calloc(1, sizeof(word_ugprob_t));
             wp->wid = w;
             wp->ugprob = ugprob;
             if (prevwp) {
