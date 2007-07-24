@@ -164,7 +164,7 @@ hyp_free(srch_hyp_t * list)
 
     while (list) {
         h = list->next;
-        listelem_free((char *) list, sizeof(srch_hyp_t));
+        ckd_free((char *) list);
         list = h;
     }
 }
@@ -187,7 +187,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
 
     /* Link d into successor list for pd */
     if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) listelem_alloc(sizeof(daglink_t));
+        l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
         l->node = d;
         l->src = pd;
         l->ascr = ascr;
@@ -206,7 +206,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
     }
 
     /* Link pd into predecessor list for d */
-    l = (daglink_t *) listelem_alloc(sizeof(daglink_t));
+    l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
     l->node = pd;
     l->src = d;
     l->ascr = ascr;
@@ -240,7 +240,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
 
     /* Link d into successor list for pd */
     if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) listelem_alloc(sizeof(daglink_t));
+        l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
         l->node = d;
         l->src = pd;
         l->ascr = ascr;
@@ -260,7 +260,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     }
 
     /* Link pd into predecessor list for d */
-    l = (daglink_t *) listelem_alloc(sizeof(daglink_t));
+    l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
     l->node = pd;
     l->src = d;
     l->ascr = ascr;
@@ -489,17 +489,17 @@ dag_destroy(dag_t * dagp)
 
         for (l = d->succlist; l; l = nl) {
             nl = l->next;
-            listelem_free((char *) l, sizeof(daglink_t));
+            ckd_free((char *) l);
         }
         for (l = d->predlist; l; l = nl) {
             nl = l->next;
-            listelem_free((char *) l, sizeof(daglink_t));
+            ckd_free((char *) l);
         }
 
-        listelem_free((char *) d, sizeof(dagnode_t));
+        ckd_free((char *) d);
     }
 
-    dagp->list = NULL;
+    ckd_free(dagp);
 
     return 0;
 }
@@ -961,7 +961,7 @@ dag_load(char *file,          /**< Input: File to lod from */
             goto load_error;
         }
 
-        d = (dagnode_t *) listelem_alloc(sizeof(dagnode_t));
+        d = (dagnode_t *) ckd_calloc(1, sizeof(dagnode_t));
         darray[i] = d;
 
         d->wid = w;
@@ -1314,7 +1314,7 @@ word_cand_load(FILE * fp, word_cand_t ** wcand, dict_t * dict, char *uttid)
         if (candp)
             continue;
 
-        candp = (word_cand_t *) listelem_alloc(sizeof(word_cand_t));
+        candp = (word_cand_t *) ckd_calloc(1, sizeof(word_cand_t));
         candp->wid = w;
         candp->next = wcand[sf];
         wcand[sf] = candp;
@@ -1334,7 +1334,7 @@ word_cand_free(word_cand_t ** wcand)
     for (f = 0; f < S3_MAX_FRAMES; f++) {
         for (candp = wcand[f]; candp; candp = next) {
             next = candp->next;
-            listelem_free((char *) candp, sizeof(word_cand_t));
+            ckd_free((char *) candp);
         }
 
         wcand[f] = NULL;

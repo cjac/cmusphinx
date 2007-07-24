@@ -397,17 +397,18 @@ void vithist_dump (vithist_t *vh,     /**< In: a Viterbi history data structure 
     );
 
 /**
- * Write a word lattice file (that can be input as -inlatdir argument to old s3 decoder).
+ * Build a word graph (DAG) from Viterbi history.
  */
-void vithist_dag_write (vithist_t *vh,	/**<In: From which word segmentations are to be dumped */
-			glist_t hyp,	/**< In: Some word segments can be pruned; however, but
-					 * those in hyp always retained */
-			dict_t *dict,	/**< In: Dictionary; for generating word string names */
-			int32 oldfmt,	/**< In: If TRUE, old format, edges: srcnode dstnode ascr;
-					 * else new format, edges: srcnode endframe ascr */
-			FILE *fp,	/**< Out: File to be written */
-			int32 dump_nodescr /** In: If True, dump the acoustic and language score for the node */
-    );
+dag_t *vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid);
+
+/**
+ * Write a word graph (DAG) built from Viterbi history (temporary function)
+ */
+int32 vithist_dag_write(vithist_t *vithist,
+                        const char *filename,
+                        dag_t * dag,
+                        lm_t * lm,
+                        dict_t * dict);
 
 /** 
  * Free a Viterbi history data structure 

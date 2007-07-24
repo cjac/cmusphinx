@@ -1272,48 +1272,10 @@ dag_t *
 srch_TST_gen_dag(void *srch,         /**< a pointer of srch_t */
                  glist_t hyp)
 {
-    /* This is ugly and write back is required */
+    srch_t *s = (srch_t *)srch;
+    srch_TST_graph_t *tstg = (srch_TST_graph_t *) s->grh->graph_struct;
 
-    int32 ispipe;
-    char str[2048];
-    FILE *latfp;
-    dag_t *dag;
-    srch_t *s;
-    srch_TST_graph_t *tstg;
-    float32 *f32arg;
-    float64 lwf;
-
-    s = (srch_t *) srch;
-    tstg = (srch_TST_graph_t *) s->grh->graph_struct;
-    dag = NULL;
-
-    sprintf(str, "%s/%s.%s",
-            cmd_ln_str("-outlatdir"), s->uttid, cmd_ln_str("-latext"));
-
-    E_INFO("Writing lattice file: %s\n", str);
-
-    if ((latfp = fopen_comp(str, "w", &ispipe)) == NULL) {
-        E_ERROR("fopen_comp (%s,w) failed\n", str);
-        return NULL;
-    }
-    else {
-        vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
-                          cmd_ln_int32("-outlatoldfmt"), latfp,
-                          cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
-
-        fclose_comp(latfp, ispipe);
-
-        f32arg = (float32 *) cmd_ln_access("-bestpathlw");
-        lwf =
-            f32arg ? ((*f32arg) /
-                      *((float32 *) cmd_ln_access("-lw"))) : 1.0;
-
-        s3dag_dag_load(&dag, lwf,
-                       str, kbcore_dict(s->kbc), kbcore_fillpen(s->kbc));
-        return dag;
-    }
-
-
+    return vithist_dag_build(tstg->vithist, hyp, kbcore_dict(s->kbc), s->exit_id);
 }
 
 glist_t
@@ -1356,33 +1318,20 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
 int32
 srch_TST_dag_dump(void *srch, dag_t *dag)
 {
-    int32 ispipe;
     char str[2048];
-    FILE *latfp;
     srch_t *s;
     srch_TST_graph_t *tstg;
     glist_t hyp;
 
     s = (srch_t *) srch;
     tstg = (srch_TST_graph_t *) s->grh->graph_struct;
-    dag = NULL;
 
     ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
                 (s->uttfile ? s->uttfile : s->uttid), s->uttid);
     E_INFO("Writing lattice file: %s\n", str);
 
-    if ((latfp = fopen_comp(str, "w", &ispipe)) == NULL) {
-        E_ERROR("fopen_comp (%s,w) failed\n", str);
-        return SRCH_FAILURE;
-    }
-    else {
-        hyp = srch_TST_gen_hyp(srch);
-        vithist_dag_write(tstg->vithist, hyp, kbcore_dict(s->kbc),
-                          cmd_ln_int32("-outlatoldfmt"), latfp,
-                          cmd_ln_int32("-outlatfmt") == OUTLATFMT_IBM);
-
-        fclose_comp(latfp, ispipe);
-    }
+    hyp = srch_TST_gen_hyp(srch);
+    vithist_dag_write(tstg->vithist, str, dag, kbcore_lm(s->kbc), kbcore_dict(s->kbc));
 
     return SRCH_SUCCESS;
 }

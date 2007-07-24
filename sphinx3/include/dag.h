@@ -242,6 +242,7 @@ typedef struct daglink_s {
 typedef struct {
     dagnode_t *list;		/**< Linear list of nodes allocated */
     dagnode_t *root;            /**< Corresponding to the node of (<s>,0)  */
+    dagnode_t *end;             /**< Final node (</s>,nfrm) */
 
     daglink_t entry;		/**< Entering (<s>,0) */
     daglink_t final;            /**< Exit link from final DAG node */
@@ -264,7 +265,6 @@ typedef struct {
     int32 filler_removed;       /**< Whether filler nodes removed from DAG to help search */
     int32 fudged;               /**< Whether fudge edges have been added */
 
-    s3latid_t latfinal;         /**< Lattice entry determined to be final end point */
     void *hook;                   /**< A hook for general purpose */
 
 } dag_t;
@@ -289,7 +289,7 @@ int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
 		dagnode_t *d,   
 		int32 ascr,     /**< The acoustic scores */
 		int32 ef,       /**< The ending frame */
-		daglink_t *byp  
+		daglink_t *byp  /**< FIXME: What does this do??! */
     );
 
 /** Link two DAG nodes with the given arguments

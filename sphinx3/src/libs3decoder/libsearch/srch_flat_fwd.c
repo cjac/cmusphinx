@@ -709,8 +709,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
     }
 
     bph =
-        dag_search(dag, s->uttid, lwf,
-                   fwg->lathist->lattice[dag->latfinal].dagnode,
+        dag_search(dag, s->uttid, lwf, dag->end,
                    s->kbc->dict, s->kbc->lmset->cur_lm, s->kbc->fillpen);
 
     if (bph != NULL) {

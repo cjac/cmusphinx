@@ -745,7 +745,7 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
 /**
  * Enter successor words from language model.
  */
-void
+static void
 enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                s3latid_t l, s3cipid_t lc, int32 thresh, int32 phone_penalty)
 {
@@ -1187,15 +1187,11 @@ flat_fwd_dag_remove_filler_nodes(dag_t * dag, latticehist_t * lathist,
                                  float64 lwf, lm_t * lm, dict_t * dict,
                                  ctxt_table_t * ct_table, fillpen_t * fpen)
 {
-    s3latid_t latfinal;
     daglink_t *plink;
-    int32 lscr;
-
-    latfinal = dag->latfinal;
 
     /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
-    if (dict_filler_word(dict, lathist->lattice[latfinal].wid))
-        lathist->lattice[latfinal].dagnode->wid = dict->finishwid;
+    if (dict_filler_word(dict, dag->end->wid))
+        dag->end->wid = dict->finishwid;
 
     if (dag_remove_filler_nodes(dag, lwf, dict, fpen) < 0) {
         E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
@@ -1208,14 +1204,13 @@ flat_fwd_dag_remove_filler_nodes(dag_t * dag, latticehist_t * lathist,
 
     /* Attach a dummy predecessor link from nowhere into final DAG node */
     plink = &(dag->final);
-    plink->node = lathist->lattice[latfinal].dagnode;
+    plink->node = dag->end;
     plink->src = NULL;
-    lat_seg_ascr_lscr(lathist, latfinal, BAD_S3WID, &(plink->ascr), &lscr,
-                      lm, dict, ct_table, fpen);
+    plink->ascr = dag->end->node_ascr; /* FIXME: does this matter or not? */
     plink->pscr = (int32) 0x80000000;
     plink->lscr = 0;
     plink->bypass = NULL;
     plink->history = NULL;
-    plink->ef = lathist->lattice[latfinal].frm;
+    plink->ef = dag->end->sf;
     plink->next = NULL;
 }
