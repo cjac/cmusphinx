@@ -1148,6 +1148,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
             dn->node_ascr = ve->ascr;
             dn->node_lscr = ve->lscr;
 
+            dn->sf = sf;
             dn->fef = ef;
             dn->lef = ef;
             dn->seqid = -1;     /* Initially all invalid, selected ones validated below */
@@ -1211,7 +1212,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
 
     /* Now prune dagnodes with <min_endfr end frames if not validated above */
     i = 0;
-    for (f = vh->n_frm; f >= 0; --f) {
+    for (f = 0; f <= vh->n_frm; ++f) {
         for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
             dn = (dagnode_t *) gnode_ptr(gn);
             if ((dn->lef - dn->fef > min_ef_range) || (dn->seqid >= 0)) {
@@ -1224,7 +1225,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
         }
     }
 
-    for (f = vh->n_frm - 1; f >= 0; --f) {
+    for (f = 0; f < vh->n_frm; ++f) {
         for (gn = sfwid[f]; gn; gn = gnode_next(gn)) {
             dn = (dagnode_t *) gnode_ptr(gn);
             /* Look for transitions from this dagnode to later ones, if not discarded */
