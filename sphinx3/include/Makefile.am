@@ -18,7 +18,6 @@ pkginclude_HEADERS =				\
 	endptr.h				\
 	fast_algo_struct.h			\
 	fillpen.h				\
-	flat_fwd.h				\
 	fsg.h					\
 	fsg_history.h				\
 	fsg_lextree.h				\

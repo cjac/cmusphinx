@@ -63,8 +63,6 @@
  *
  */
 
-#include "flat_fwd.h"
-
 /* \file srch_flat_fwd.h
  * 
  * SOME ASSUMPTIONS
@@ -231,13 +229,6 @@ void word_trans(srch_FLAT_FWD_graph_t * fwg,
                 whmm_t ** whmm,
                 latticehist_t * lathist,
                 int32 thresh, int32 phone_penalty);
-
-void s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id,
-                         char *latfile_ext, latticehist_t * lathist,
-                         int32 n_frm, dag_t * dag, lm_t * lm,
-                         dict_t * dict, ctxt_table_t * ctxt,
-                         fillpen_t * fpen);
-
 
 void flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg,
                                   dag_t * dagp,
