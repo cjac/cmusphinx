@@ -1285,21 +1285,40 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
     glist_t ghyp, rhyp;
     float32 *f32arg;
     float64 lwf;
-    srch_t *s;
     srch_hyp_t *tmph, *bph;
-
-    s = (srch_t *) srch;
+    srch_t *s = (srch_t *) srch;
 
     f32arg = (float32 *) cmd_ln_access("-bestpathlw");
     lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
 
+    /* Bypass filler nodes */
+    if (!dag->filler_removed) {
+        /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
+        if (dict_filler_word(s->kbc->dict, dag->end->wid))
+            dag->end->wid = s->kbc->dict->finishwid;
+
+        if (dag_remove_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
+            E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+        else
+            dag->filler_removed = 1;
+
+        /* For some reason these bogus links are necessary */
+        dag_link(dag, NULL, dag->root, 0, -1, NULL);
+        dag->final.node = dag->end;
+    }
+
+    /* FIXME: This is some bogus crap to do with the different
+     * treatment of <s> and </s> in the flat vs. the tree decoder.  If
+     * we don't do this then bestpath search will fail because
+     * trigrams ending in </s> can't be scored. */
+    linksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
     bph = dag_search(dag, s->uttid,
                      lwf,
-                     dag->final.node,
+                     dag->end,
                      kbcore_dict(s->kbc),
                      kbcore_lm(s->kbc), kbcore_fillpen(s->kbc)
         );
-
+    unlinksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
 
     if (bph != NULL) {
         ghyp = NULL;

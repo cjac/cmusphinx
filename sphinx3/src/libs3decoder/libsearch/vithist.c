@@ -1101,7 +1101,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
     dagnode_t *dn, *dn2;
     int32 min_ef_range;
     int32 sf, ef, n_node;
-    int32 f, i;
+    int32 f, i, k;
     srch_hyp_t *h;
     dag_t *dag;
 
@@ -1257,6 +1257,22 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
         glist_free(sfwid[f]);
     }
     ckd_free((void *) sfwid);
+
+    dag->filler_removed = 0;
+    dag->fudged = 0;
+    dag->nfrm = vh->n_frm;
+
+    dag->maxedge = cmd_ln_int32("-maxedge");
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    dag->maxlmop = cmd_ln_int32("-maxlmop");
+    k = cmd_ln_int32("-maxlpf");
+    k *= dag->nfrm;
+    if (dag->maxlmop > k)
+        dag->maxlmop = k;
+    dag->lmop = 0;
 
     return dag;
 }
