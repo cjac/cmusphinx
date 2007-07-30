@@ -17,8 +17,6 @@ TESTS = \
 	test-dp.sh \
 	test-align.sh \
 	test-align-mllr.sh \
-	test-allphone.sh \
-	test-allphone-mllr.sh \
 	test-livepretend.sh \
 	test-livepretend-clm.sh \
 	test-livepretend-mllr.sh \
@@ -29,10 +27,7 @@ TESTS = \
 	test-dag-clm.sh \
 	test-gausubvq.sh \
 	test-ep.sh \
-	test-conf.sh \
-	test-decode_anytopo.sh \
-	test-decode_anytopo-mllr.sh \
-	test-decode_anytopo-2ndstage.sh
+	test-conf.sh
 
 DISABLED_TESTS = \
 	test-decode-noncomp.sh \
