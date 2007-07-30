@@ -1097,21 +1097,6 @@ word_trans(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm,
 
 
 void
-s3flat_fwd_dag_dump(char *dir, int32 onlynodes, char *id,
-                    char *latfile_ext, latticehist_t * lathist,
-                    int32 n_frm, dag_t * dag, lm_t * lm, dict_t * dict,
-                    ctxt_table_t * ctxt, fillpen_t * fpen)
-{
-    latticehist_dag_write(lathist,
-                          dir,
-                          onlynodes,
-                          id,
-                          latfile_ext, n_frm, dag, lm, dict, ctxt, fpen);
-}
-
-
-
-void
 flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
                              int32 fudge, int32 min_ef_range, void *hist,
                              dict_t * dict)
@@ -1174,43 +1159,4 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
         }
         dagp->fudged = 1;
     }
-}
-
-
-/**
- * Remove filler nodes from DAG by replacing each link TO a filler with links
- * to its successors.
- * lwf = language weight factor to be applied to LM scores.
- */
-void
-flat_fwd_dag_remove_filler_nodes(dag_t * dag, latticehist_t * lathist,
-                                 float64 lwf, lm_t * lm, dict_t * dict,
-                                 ctxt_table_t * ct_table, fillpen_t * fpen)
-{
-    daglink_t *plink;
-
-    /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
-    if (dict_filler_word(dict, dag->end->wid))
-        dag->end->wid = dict->finishwid;
-
-    if (dag_remove_filler_nodes(dag, lwf, dict, fpen) < 0) {
-        E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
-    }
-    else
-        dag->filler_removed = 1;
-
-    /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link(dag, NULL, dag->root, 0, -1, NULL);
-
-    /* Attach a dummy predecessor link from nowhere into final DAG node */
-    plink = &(dag->final);
-    plink->node = dag->end;
-    plink->src = NULL;
-    plink->ascr = dag->end->node_ascr; /* FIXME: does this matter or not? */
-    plink->pscr = (int32) 0x80000000;
-    plink->lscr = 0;
-    plink->bypass = NULL;
-    plink->history = NULL;
-    plink->ef = dag->end->sf;
-    plink->next = NULL;
 }
