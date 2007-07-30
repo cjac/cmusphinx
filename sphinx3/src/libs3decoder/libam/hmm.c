@@ -292,6 +292,7 @@ hmm_vit_eval_5st_lr(hmm_t * hmm)
 
     s4 = hmm_score(hmm, 4) + nonmpx_senscr(4);
     s3 = hmm_score(hmm, 3) + nonmpx_senscr(3);
+
     /* Transitions into non-emitting state 5 */
     if (s3 > WORST_SCORE) {
         t1 = s4 + hmm_tprob_5st(4, 5);
@@ -598,29 +599,30 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
     s0 = hmm_in_score(hmm) + nonmpx_senscr(0);
 
     /* It was the best of scores, it was the worst of scores. */
-    bestScore = WORST_SCORE;
+    t0 = t1 = bestScore = WORST_SCORE;
     t2 = INT_MIN; /* Not used unless skipstate is true */
 
     /* Transitions into non-emitting state 3 */
-    if (s1 > WORST_SCORE) {
+    if (s2 > WORST_SCORE) {
         t1 = s2 + hmm_tprob_3st(2, 3);
-        if (hmm_tprob_3st(1,3) > WORST_SCORE)
-            t2 = s1 + hmm_tprob_3st(1, 3);
-        if (t1 > t2) {
-            s3 = t1;
-            hmm_out_history(hmm)  = hmm_history(hmm, 2);
-        } else {
-            s3 = t2;
-            hmm_out_history(hmm)  = hmm_history(hmm, 1);
-        }
-        if (s3 < WORST_SCORE) s3 = WORST_SCORE;
-        hmm_out_score(hmm) = s3;
-        bestScore = s3;
+        t0 = s2 + hmm_tprob_3st(2, 2);
     }
+    if (s1 > WORST_SCORE && hmm_tprob_3st(1,3) > WORST_SCORE)
+        t2 = s1 + hmm_tprob_3st(1, 3);
+    if (t1 > t2) {
+        s3 = t1;
+        hmm_out_history(hmm)  = hmm_history(hmm, 2);
+    } else {
+        s3 = t2;
+        hmm_out_history(hmm)  = hmm_history(hmm, 1);
+    }
+    if (s3 < WORST_SCORE) s3 = WORST_SCORE;
+    hmm_out_score(hmm) = s3;
+    bestScore = s3;
 
     /* All transitions into state 2 (state 0 is always active) */
-    t0 = s2 + hmm_tprob_3st(2, 2);
-    t1 = s1 + hmm_tprob_3st(1, 2);
+    if (s1 > WORST_SCORE) /* s2 active implies s1 active */
+        t1 = s1 + hmm_tprob_3st(1, 2);
     if (hmm_tprob_3st(0, 2) > WORST_SCORE)
         t2 = s0 + hmm_tprob_3st(0, 2);
     if (t0 > t1) {
@@ -643,8 +645,10 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
     hmm_score(hmm, 2) = s2;
 
     /* All transitions into state 1 */
-    t0 = s1 + hmm_tprob_3st(1, 1);
-    t1 = s0 + hmm_tprob_3st(0, 1);
+    if (s1 > WORST_SCORE)
+        t0 = s1 + hmm_tprob_3st(1, 1);
+    if (s0 > WORST_SCORE)
+        t1 = s0 + hmm_tprob_3st(0, 1);
     if (t0 > t1) {
         s1 = t0;
     } else {
