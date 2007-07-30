@@ -683,7 +683,6 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
     srch_hyp_t *tmph, *bph;
     glist_t ghyp, rhyp;
 
-
     s = (srch_t *) srch;
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
@@ -701,11 +700,18 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 
     /* Bypass filler nodes */
     if (!dag->filler_removed) {
-        flat_fwd_dag_remove_filler_nodes(dag, fwg->lathist, lwf,
-                                         s->kbc->lmset->cur_lm,
-                                         s->kbc->dict, fwg->ctxt,
-                                         s->kbc->fillpen);
-        dag->filler_removed = 1;
+        /* If Viterbi search terminated in filler word coerce final DAG node to FINISH_WORD */
+        if (dict_filler_word(s->kbc->dict, dag->end->wid))
+            dag->end->wid = s->kbc->dict->finishwid;
+
+        if (dag_remove_filler_nodes(dag, lwf, s->kbc->dict, s->kbc->fillpen) < 0)
+            E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+        else
+            dag->filler_removed = 1;
+
+        /* For some reason these bogus links are necessary */
+        dag_link(dag, NULL, dag->root, 0, -1, NULL);
+        dag->final.node = dag->end;
     }
 
     bph =
@@ -736,10 +742,14 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
-    s3flat_fwd_dag_dump(cmd_ln_str("-outlatdir"), 0, s->uttid,
-                        cmd_ln_str("-latext"), fwg->lathist, fwg->n_frm, dag,
-                        kbcore_lm(s->kbc), kbcore_dict(s->kbc), fwg->ctxt,
-                        s->kbc->fillpen);
+    latticehist_dag_write(fwg->lathist,
+                          cmd_ln_str("-outlatdir"),
+                          FALSE,
+                          s->uttid,
+                          cmd_ln_str("-latext"),
+                          fwg->n_frm, dag, kbcore_lm(s->kbc),
+                          kbcore_dict(s->kbc), fwg->ctxt,
+                          s->kbc->fillpen);
 
     return SRCH_SUCCESS;
 }
