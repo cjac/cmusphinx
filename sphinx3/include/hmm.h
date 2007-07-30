@@ -196,37 +196,37 @@ typedef struct hmm_s {
 } hmm_t;
 
 /** Access macros. */
-#define hmm_context(h) (h)->ctx
-#define hmm_is_mpx(h) (h)->mpx
-#define hmm_state(h,st) (h)->state[st]
+#define hmm_context(h) ((hmm_t *)(h))->ctx
+#define hmm_is_mpx(h) ((hmm_t *)(h))->mpx
+#define hmm_state(h,st) ((hmm_t *)(h))->state[st]
 
 #define hmm_in_score(h) hmm_state(h,0).score
 #define hmm_score(h,st) hmm_state(h,st).score
-#define hmm_out_score(h) (h)->out.score
+#define hmm_out_score(h) ((hmm_t *)(h))->out.score
 
 #define hmm_in_history(h) hmm_state(h,0).history.id
 #define hmm_history(h,st) hmm_state(h,st).history.id
-#define hmm_out_history(h) (h)->out.history.id
+#define hmm_out_history(h) ((hmm_t *)(h))->out.history.id
 
 #define hmm_in_histobj(h) hmm_state(h,0).history.ptr
 #define hmm_histobj(h,st) hmm_state(h,st).history.ptr
-#define hmm_out_histobj(h) (h)->out.history.ptr
+#define hmm_out_histobj(h) ((hmm_t *)(h))->out.history.ptr
 
-#define hmm_bestscore(h) (h)->bestscore
-#define hmm_frame(h) (h)->frame
-#define hmm_mpx_ssid(h,st) (h)->s.mpx_ssid[st]
-#define hmm_nonmpx_ssid(h) (h)->s.ssid
-#define hmm_ssid(h,st) (hmm_is_mpx(h)                           \
-                        ? hmm_mpx_ssid(h,st) : (h)->s.ssid)
+#define hmm_bestscore(h) ((hmm_t *)(h))->bestscore
+#define hmm_frame(h) ((hmm_t *)(h))->frame
+#define hmm_mpx_ssid(h,st) ((hmm_t *)(h))->s.mpx_ssid[st]
+#define hmm_nonmpx_ssid(h) ((hmm_t *)(h))->s.ssid
+#define hmm_ssid(h,st) (hmm_is_mpx((hmm_t *)(h))                        \
+                        ? hmm_mpx_ssid(h,st) : ((hmm_t *)(h))->s.ssid)
 #define hmm_senid(h,st) (hmm_ssid(h,st) == -1                           \
-                         ? -1 : (h)->ctx->sseq[hmm_ssid(h,st)][st])
+                         ? -1 : ((hmm_t *)(h))->ctx->sseq[hmm_ssid(h,st)][st])
 #define hmm_senscr(h,st) (hmm_ssid(h,st) == -1                          \
-                          ? WORST_SCORE                                 \
-                          : (h)->ctx->senscore[hmm_senid(h,st)])
-#define hmm_tmatid(h) (h)->tmatid
-#define hmm_tprob(h,i,j) (h)->ctx->tp[hmm_tmatid(h)][i][j]
-#define hmm_n_emit_state(h) ((h)->n_emit_state)
-#define hmm_n_state(h) ((h)->n_emit_state + 1)
+                          ? S3_LOGPROB_ZERO                             \
+                          : ((hmm_t *)(h))->ctx->senscore[hmm_senid(h,st)])
+#define hmm_tmatid(h) ((hmm_t *)(h))->tmatid
+#define hmm_tprob(h,i,j) ((hmm_t *)(h))->ctx->tp[hmm_tmatid(h)][i][j]
+#define hmm_n_emit_state(h) (((hmm_t *)(h))->n_emit_state)
+#define hmm_n_state(h) (((hmm_t *)(h))->n_emit_state + 1)
 
 /**
  * Create an HMM context.
