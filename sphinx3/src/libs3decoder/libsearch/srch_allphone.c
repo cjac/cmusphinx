@@ -45,6 +45,7 @@
 
 #include "srch.h"
 #include "srch_allphone.h"
+#include "hmm.h"
 #include "s3types.h"
 
 /**
@@ -56,19 +57,12 @@
  * (NOTE: Word-position attribute of triphone is ignored.)
  */
 typedef struct phmm_s {
+    hmm_t hmm;          /**< Base HMM structure */
     s3pid_t pid;        /**< Phone id (temp. during init.) */
-    s3tmatid_t tmat;    /**< Transition matrix id for this PHMM */
     s3cipid_t ci;       /**< Parent basephone for this PHMM */
-    s3frmid_t active;   /**< Latest frame in which this PHMM is/was active */
     uint32 *lc;         /**< Set (bit-vector) of left context phones seen for this PHMM */
     uint32 *rc;         /**< Set (bit-vector) of right context phones seen for this PHMM */
-    s3senid_t *sen;     /**< Senone-id sequence underlying this PHMM */
-    int32 *score;       /**< Total path score during Viterbi decoding */
-    struct history_s **hist;    /**< Viterbi history (for backtrace) */
-    int32 bestscore;    /**< Best state score in any frame */
-    int32 inscore;      /**< Incoming score from predecessor PHMMs */
     int32 in_tscore;    /**< Incoming transition score from predecessor PHMMs */
-    struct history_s *inhist;   /**< History corresponding to inscore */
     struct phmm_s *next;        /**< Next unique PHMM for same parent basephone */
     struct plink_s *succlist;   /**< List of predecessor PHMM nodes */
 } phmm_t;
@@ -110,12 +104,12 @@ typedef struct phseg_s {
  */
 
 typedef struct allphone_s {
-    phmm_t **ci_phmm; /**< PHMM lists (for each CI phone) */
+    hmm_context_t *ctx;      /**< HMM context */
+    phmm_t **ci_phmm;        /**< PHMM lists (for each CI phone) */
     history_t **frm_hist;    /**< List of history nodes allocated in each frame */
     s3lmwid32_t *ci2lmwid;   /**< Mapping from CI-phone-id to LM-word-id */
 
     mdef_t *mdef;	     /**< Model definition (linked from kbcore) */
-    tmat_t *tmat;	     /**< Transition matrices (linked from kbcore) */
     lm_t *lm;   	     /**< Language model (linked from kbcore) */
 
     int32 curfrm;            /**< Current frame */
@@ -144,8 +138,8 @@ phmm_lookup(allphone_t *allp, s3pid_t pid)
 
     for (p = ci_phmm[(unsigned) mdef->phone[pid].ci]; p; p = p->next) {
         old = &(mdef->phone[p->pid]);
-        if (old->tmat == new->tmat) {
-            if (old->ssid == new->ssid)
+        if (hmm_tmatid(old) == hmm_tmatid(new)) {
+            if (hmm_nonmpx_ssid(old) == hmm_nonmpx_ssid(new))
                 return p;
         }
     }
@@ -243,21 +237,15 @@ phmm_build(allphone_t *allp)
     phmm_t *p, **pid2phmm;
     s3cipid_t ci;
     int32 n_phmm, n_link;
-    s3senid_t *sen;
-    int32 *score;
-    history_t **hist;
     uint32 *lc, *rc;
-    int32 i, s;
+    int32 i;
     s3cipid_t *filler;
     int32 lrc_size;
     mdef_t *mdef;
-    tmat_t *tmat;
 
     E_INFO("Building PHMM net\n");
 
     mdef = allp->mdef;
-    tmat = allp->tmat;
-
     allp->ci_phmm = (phmm_t **) ckd_calloc(mdef->n_ciphone, sizeof(phmm_t *));
     pid2phmm = (phmm_t **) ckd_calloc(mdef->n_phone, sizeof(phmm_t *));
 
@@ -270,9 +258,10 @@ phmm_build(allphone_t *allp)
         if ((p = phmm_lookup(allp, pid)) == NULL) {
             /* No previous entry; create a new one */
             p = (phmm_t *) ckd_calloc(1, sizeof(phmm_t));
-
+	    hmm_init(allp->ctx, (hmm_t *)p, FALSE,
+		     mdef_pid2ssid(mdef, pid),
+		     mdef->phone[pid].tmat);
             p->pid = pid;
-            p->tmat = mdef->phone[pid].tmat;
             p->ci = mdef->phone[pid].ci;
             p->succlist = NULL;
 
@@ -286,30 +275,10 @@ phmm_build(allphone_t *allp)
     }
 
     /* Fill out rest of each PHMM node */
-    sen =
-        (s3senid_t *) ckd_calloc(n_phmm * mdef->n_emit_state,
-                                 sizeof(s3senid_t));
-    score =
-        (int32 *) ckd_calloc(n_phmm * (mdef->n_emit_state + 1),
-                             sizeof(int32));
-    hist =
-        (history_t **) ckd_calloc(n_phmm * (mdef->n_emit_state + 1),
-                                  sizeof(history_t *));
     lc = (uint32 *) ckd_calloc(n_phmm * lrc_size * 2, sizeof(uint32));
     rc = lc + (n_phmm * lrc_size);
     for (ci = 0; ci < mdef->n_ciphone; ci++) {
         for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
-            p->sen = sen;
-            for (s = 0; s < mdef->n_emit_state; s++)
-                p->sen[s] = mdef->sseq[mdef->phone[p->pid].ssid][s];
-            sen += mdef->n_emit_state;
-
-            p->score = score;
-            score += (mdef->n_emit_state + 1);
-
-            p->hist = hist;
-            hist += (mdef->n_emit_state + 1);
-
             p->lc = lc;
             lc += lrc_size;
 
@@ -357,6 +326,23 @@ phmm_build(allphone_t *allp)
     return 0;
 }
 
+static void
+phmm_free(allphone_t *allp)
+{
+    s3cipid_t ci;
+
+    ckd_free(allp->ci_phmm[0]->lc);
+    for (ci = 0; ci < mdef_n_ciphone(allp->mdef); ++ci) {
+	phmm_t *p, *next;
+
+	for (p = allp->ci_phmm[ci]; p; p = next) {
+	    next = p->next;
+	    hmm_deinit((hmm_t *)p);
+	    ckd_free(p);
+	}
+    }
+    ckd_free(allp->ci_phmm);
+}
 
 #if 0
 static void
@@ -393,76 +379,6 @@ phmm_dump(void)
 }
 #endif
 
-static void
-phmm_eval(allphone_t *allp, phmm_t * p, int32 * senscr)
-{
-    int32 **tp;
-    int32 nst, from, to, bestfrom, newscr, bestscr;
-    history_t *besthist = (history_t *) 0;
-    mdef_t *mdef;
-    tmat_t *tmat;
-
-    mdef = allp->mdef;
-    tmat = allp->tmat;
-
-    nst = mdef->n_emit_state;
-    tp = tmat->tp[p->tmat];
-
-    bestscr = S3_LOGPROB_ZERO;
-
-    /* Update state scores from last to first (assuming no backward transitions) */
-    for (to = nst - 1; to >= 0; --to) {
-        /* Find best incoming score to the "to" state from predecessor states */
-        bestfrom = S3_LOGPROB_ZERO;
-        for (from = to; from >= 0; from--) {
-            if ((tp[from][to] > S3_LOGPROB_ZERO)
-                && (p->score[from] > S3_LOGPROB_ZERO)) {
-                newscr = p->score[from] + tp[from][to];
-                if (newscr > bestfrom) {
-                    bestfrom = newscr;
-                    besthist = p->hist[from];
-                }
-            }
-        }
-
-        /* If looking at initial state, also consider incoming score */
-        if ((to == 0) && (p->inscore > bestfrom)) {
-            bestfrom = p->inscore;
-            besthist = p->inhist;
-        }
-
-        /* Update state score */
-        if (bestfrom > S3_LOGPROB_ZERO) {
-            p->score[to] = bestfrom + senscr[p->sen[to]];
-            p->hist[to] = besthist;
-
-            if (p->score[to] > bestscr)
-                bestscr = p->score[to];
-        }
-    }
-
-    /* Update non-emitting exit state score */
-    bestfrom = S3_LOGPROB_ZERO;
-    to = nst;
-    for (from = nst - 1; from >= 0; from--) {
-        if ((tp[from][to] > S3_LOGPROB_ZERO)
-            && (p->score[from] > S3_LOGPROB_ZERO)) {
-            newscr = p->score[from] + tp[from][to];
-            if (newscr > bestfrom) {
-                bestfrom = newscr;
-                besthist = p->hist[from];
-            }
-        }
-    }
-    p->score[to] = bestfrom;
-    p->hist[to] = besthist;
-    if (p->score[to] > bestscr)
-        bestscr = p->score[to];
-
-    p->bestscore = bestscr;
-}
-
-
 /** Evaluate active PHMMs */
 static int32
 phmm_eval_all(allphone_t *allp, int32 *senscr, stat_t *st)
@@ -480,13 +396,15 @@ phmm_eval_all(allphone_t *allp, int32 *senscr, stat_t *st)
 
     best = S3_LOGPROB_ZERO;
 
+    hmm_context_set_senscore(allp->ctx, senscr);
     for (ci = 0; ci < mdef->n_ciphone; ci++) {
         for (p = ci_phmm[(unsigned) ci]; p; p = p->next) {
-            if (p->active == curfrm) {
+            if (hmm_frame(p) == curfrm) {
+		int32 score;
 		++st->utt_hmm_eval;
-                phmm_eval(allp, p, senscr);
-                if (p->bestscore > best)
-                    best = p->bestscore;
+		score = hmm_vit_eval((hmm_t *)p);
+                if (score > best)
+                    best = score;
             }
         }
     }
@@ -500,7 +418,7 @@ phmm_exit(allphone_t *allp, int32 best)
 {
     s3cipid_t ci;
     phmm_t *p;
-    int32 th, nf, nst, s;
+    int32 th, nf;
     history_t *h;
     history_t **frm_hist;
     mdef_t *mdef;
@@ -517,22 +435,20 @@ phmm_exit(allphone_t *allp, int32 best)
 
     frm_hist[curfrm] = NULL;
     nf = curfrm + 1;
-    nst = mdef->n_emit_state;
 
     for (ci = 0; ci < mdef->n_ciphone; ci++) {
         for (p = ci_phmm[(unsigned) ci]; p; p = p->next) {
-            if (p->active == curfrm) {
-                if (p->bestscore >= th) {
+            if (hmm_frame(p) == curfrm) {
+                if (hmm_bestscore(p) >= th) {
                     /* Scale state scores to prevent underflow */
-                    for (s = 0; s <= nst; s++)
-                        if (p->score[s] > S3_LOGPROB_ZERO)
-                            p->score[s] -= best;
+		    hmm_normalize((hmm_t *)p, best);
 
                     /* Create lattice entry if exiting */
-                    if (p->score[nst] >= allp->pbeam) { /* pbeam, not th because scores scaled */
+                    if (hmm_out_score(p) >= allp->pbeam) { /* pbeam, not th
+							      because scores scaled */
                         h = (history_t *)
                             ckd_calloc(1, sizeof(history_t));
-                        h->score = p->score[nst];
+                        h->score = hmm_out_score(p);
                         /* FIXME: This isn't going to be the correct
                          * transition score, for reasons I don't
                          * totally understand (dhuggins@cs,
@@ -540,28 +456,20 @@ phmm_exit(allphone_t *allp, int32 best)
                         h->tscore = p->in_tscore;
                         h->ef = curfrm;
                         h->phmm = p;
-                        h->hist = p->hist[nst];
+                        h->hist = hmm_out_histobj(p);
                         h->next = frm_hist[curfrm];
                         frm_hist[curfrm] = h;
-
                         n_histnode++;
                     }
 
                     /* Mark PHMM active in next frame */
-                    p->active = nf;
+		    hmm_frame(p) = nf;
                 }
                 else {
                     /* Reset state scores */
-                    for (s = 0; s <= nst; s++) {
-                        p->score[s] = S3_LOGPROB_ZERO;
-                        p->hist[s] = NULL;
-                    }
+		    hmm_clear((hmm_t *)p);
                 }
             }
-
-            /* Reset incoming score in preparation for cross-PHMM transition */
-            p->inscore = S3_LOGPROB_ZERO;
-            p->in_tscore = S3_LOGPROB_ZERO;
         }
     }
 }
@@ -612,11 +520,9 @@ phmm_trans(allphone_t *allp)
 	    }
 
             newscore = h->score + tscore;
-            if ((newscore > allp->beam) && (newscore > to->inscore)) {
-                to->inscore = newscore;
+            if ((newscore > allp->beam) && (newscore > hmm_in_score(to))) {
+		hmm_enter_obj((hmm_t *)to, newscore, h, nf);
                 to->in_tscore = tscore;
-                to->inhist = h;
-                to->active = nf;
             }
         }
     }
@@ -628,19 +534,12 @@ _allphone_start_utt(allphone_t *allp)
     s3cipid_t ci;
     phmm_t *p;
     history_t *h, *nexth;
-    int32 s, f;
+    int32 f;
 
     /* Reset all HMMs. */
     for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
         for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
-            p->active = -1;
-            p->inscore = S3_LOGPROB_ZERO;
-            p->bestscore = S3_LOGPROB_ZERO;
-
-            for (s = 0; s <= allp->mdef->n_emit_state; s++) {
-                p->score[s] = S3_LOGPROB_ZERO;
-                p->hist[s] = NULL;
-            }
+	    hmm_clear((hmm_t *)p);
         }
     }
 
@@ -653,9 +552,7 @@ _allphone_start_utt(allphone_t *allp)
     for (p = allp->ci_phmm[(unsigned) ci]; p && (p->pid != ci); p = p->next);
     if (!p)
         E_FATAL("Cannot find HMM for %s\n", S3_SILENCE_CIPHONE);
-    p->inscore = 0;
-    p->inhist = NULL;
-    p->active = allp->curfrm;
+    hmm_enter_obj((hmm_t *)p, 0, NULL, allp->curfrm);
 
     /* Free history nodes, if any */
     for (f = 0; f < allp->curfrm; f++) {
@@ -810,30 +707,46 @@ srch_allphone_init(kb_t *kb, void *srch)
 {
     allphone_t *allp;
     kbcore_t *kbc;
+    dict_t *dict;
     srch_t *s;
+    s3cipid_t i;
 
     kbc = kb->kbcore;
     s = (srch_t *) srch;
     allp = ckd_calloc(1, sizeof(*allp));
 
     allp->mdef = kbcore_mdef(kbc);
-    allp->tmat = kbcore_tmat(kbc);
     allp->lm = kbcore_lm(kbc);
-
+    allp->ctx = hmm_context_init(mdef_n_emit_state(allp->mdef),
+				 kbcore_tmat(kbc)->tp, NULL,
+				 allp->mdef->sseq);
     phmm_build(allp);
 
-    /* Build mapping of CI phones to LM word IDs. */
+    /* Build mapping of CI phones to LM and dictionary word IDs. */
+    dict = kbcore_dict(kbc);
     if (allp->lm) {
-	int32 i;
-
 	allp->ci2lmwid = ckd_calloc(allp->mdef->n_ciphone, sizeof(s3lmwid32_t));
-	for (i = 0; i < allp->mdef->n_ciphone; i++)
+	for (i = 0; i < allp->mdef->n_ciphone; i++) {
 	    allp->ci2lmwid[i] = lm_wid(allp->lm,
 				       (char *) mdef_ciphone_str(allp->mdef, i));
+	    /* Map filler phones to silence if not found */
+	    if (allp->ci2lmwid[i] == -1 && mdef_is_fillerphone(allp->mdef, i))
+		allp->ci2lmwid[i] = lm_wid(allp->lm,
+				       (char *) mdef_ciphone_str(allp->mdef,
+								 mdef_silphone(allp->mdef)));
+	}
     }
     else {
 	E_WARN("-lm argument missing; doing unconstrained phone-loop decoding\n");
 	allp->inspen = logs3(cmd_ln_float32("-wip"));
+    }
+
+    /* Make sure all phones are in the dictionary */
+    for (i = 0; i < allp->mdef->n_ciphone; i++) {
+	if (dict_wordid(dict, (char *)mdef_ciphone_str(allp->mdef, i)) == BAD_S3WID)
+	    dict_add_word(dict,
+			  (char *)mdef_ciphone_str(allp->mdef, i),
+			  &i, 1);
     }
 
     allp->beam = logs3(cmd_ln_float64("-beam"));
@@ -863,6 +776,8 @@ srch_allphone_uninit(void *srch)
     allp = (allphone_t *) s->grh->graph_struct;
 
     allphone_clear_phseg(allp);
+    phmm_free(allp);
+    hmm_context_free(allp->ctx);
     ckd_free(allp->ci2lmwid);
     ckd_free(allp->frm_hist);
     ckd_free(allp->score_scale);
@@ -958,9 +873,9 @@ srch_allphone_select_active_gmm(void *srch)
 
     for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
 	for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
-	    if (p->active == allp->curfrm) {
-		for (ss = 0; ss < allp->mdef->n_emit_state; ss++) {
-		    ascr->sen_active[p->sen[ss]] = 1;
+	    if (hmm_frame(p) == allp->curfrm) {
+		for (ss = 0; ss < hmm_n_emit_state(p); ss++) {
+		    ascr->sen_active[hmm_senid(p, ss)] = 1;
 		}
 	    }
 	}
@@ -1000,7 +915,8 @@ srch_allphone_gen_hyp(void *srch)
 	srch_hyp_t *h;
 
         h = (srch_hyp_t *) ckd_calloc(1, sizeof(srch_hyp_t));
-	h->id = dict_wordid(s->kbc->dict, (char *)mdef_ciphone_str(allp->mdef, p->ci));
+	h->id = dict_wordid(kbcore_dict(s->kbc),
+			    (char *)mdef_ciphone_str(allp->mdef, p->ci));
 	h->sf = p->sf;
 	h->ef = p->ef;
 	h->ascr = p->score;
