@@ -8,7 +8,7 @@ echo "YOU SHOULD SEE THE RECOGNITION RESULT 'P I T T S B U R G H'"
 
 tmpdmp="test-lm_convert-and-decode.DMP"
 
-run_program lm_convert \
+run_program sphinx3_lm_convert \
 -input $an4lm/an4.ug.lm \
 -output $tmpdmp \
 -outputfmt DMP \
