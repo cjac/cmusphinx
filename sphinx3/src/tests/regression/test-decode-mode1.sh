@@ -17,21 +17,13 @@ lmargs="-lm $an4lm/an4.tg.phone.arpa.DMP "
 
 run_program sphinx3_decode -op_mode 1 $margs -hyp test-decode-mode1.match \
     > test-decode-mode1.out 2>&1
-run_program sphinx3_allphone $margs -hyp test-decode-mode1-allp.match \
-    >> test-decode-mode1.out 2>&1
 
 filebase=`head -1 $an4lm/an4.ctl`
 compare_table "MODE1 LOOP match test" test-decode-mode1.match \
     $hub4am/test.allphone.match 
-compare_table "MODE1 LOOP ALLPHONE match test" test-decode-mode1.match \
-    test-decode-mode1-allp.match
 
 run_program sphinx3_decode -op_mode 1 $margs $lmargs -hyp test-decode-mode1-tg.match \
-    >> test-decode-mode1.out 2>&1
-run_program sphinx3_allphone $margs $lmargs -hyp test-decode-mode1-allp-tg.match \
     >> test-decode-mode1.out 2>&1
 
 compare_table "MODE1 TG match test" test-decode-mode1-tg.match \
     $hub4am/test.allphone.phone_tg.match 
-compare_table "MODE1 TG ALLPHONE match test" test-decode-mode1-tg.match \
-    test-decode-mode1-allp-tg.match
