@@ -33,6 +33,7 @@ margs="-mdef $hub4am/hub4opensrc.6000.mdef \
 -ci_pbeam 1e-5 \
 -ds 2 \
 -tighten_factor 0.4 \
+-bestpath yes \
 -outlatdir ./ "
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
