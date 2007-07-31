@@ -499,6 +499,7 @@ srch_utt_end(srch_t * s)
     glist_t hyp;
     gnode_t *gn;
     dag_t *dag = NULL;
+    stat_t *st = s->stat;
 
     if (s->funcs->utt_end == NULL) {
         E_ERROR
@@ -624,6 +625,13 @@ srch_utt_end(srch_t * s)
         ckd_free(gnode_ptr(gn));
     }
     glist_free(hyp);
+
+    stat_report_utt(st, s->uttid);
+    stat_update_corpus(st);
+
+    ptmr_reset(&(st->tm_sen));
+    ptmr_reset(&(st->tm_srch));
+    ptmr_reset(&(st->tm_ovrhd));
 
     return SRCH_SUCCESS;
 }

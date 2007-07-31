@@ -419,13 +419,7 @@ srch_TST_end(void *srch)
 
     /* Statistics update/report */
     st->utt_wd_exit = vithist_n_entry(tstg->vithist);
-    stat_report_utt(st, s->uttid);
     histprune_showhistbin(tstg->histprune, st->nfr, s->uttid);
-    stat_update_corpus(st);
-
-    ptmr_reset(&(st->tm_sen));
-    ptmr_reset(&(st->tm_srch));
-    ptmr_reset(&(st->tm_ovrhd));
 
     for (i = 0; i < tstg->n_lextree; i++) {
         lextree_utt_end(tstg->curugtree[i], s->kbc);

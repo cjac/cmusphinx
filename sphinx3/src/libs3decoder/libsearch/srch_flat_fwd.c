@@ -424,12 +424,6 @@ srch_FLAT_FWD_end(void *srch)
     lm_cache_reset(lm);
 
     fwd_timing_dump(fwg);
-    stat_report_utt(st, s->uttid);
-    stat_update_corpus(st);
-
-    ptmr_reset(&(st->tm_sen));
-    ptmr_reset(&(st->tm_srch));
-    ptmr_reset(&(st->tm_ovrhd));
 
     return SRCH_SUCCESS;
 }
