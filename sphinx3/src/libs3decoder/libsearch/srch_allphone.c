@@ -127,21 +127,16 @@ static phmm_t *
 phmm_lookup(allphone_t *allp, s3pid_t pid)
 {
     phmm_t *p;
-    phone_t *old, *new;
     mdef_t *mdef;
     phmm_t **ci_phmm;
 
     mdef = allp->mdef;
     ci_phmm = allp->ci_phmm;
 
-    new = &(mdef->phone[pid]);
-
     for (p = ci_phmm[(unsigned) mdef->phone[pid].ci]; p; p = p->next) {
-        old = &(mdef->phone[p->pid]);
-        if (hmm_tmatid(old) == hmm_tmatid(new)) {
-            if (hmm_nonmpx_ssid(old) == hmm_nonmpx_ssid(new))
+        if (mdef_pid2tmatid(mdef, p->pid) == mdef_pid2tmatid(mdef, pid))
+            if (mdef_pid2ssid(mdef, p->pid) == mdef_pid2ssid(mdef, pid))
                 return p;
-        }
     }
 
     return NULL;
