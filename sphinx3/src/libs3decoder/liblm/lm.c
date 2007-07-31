@@ -852,7 +852,7 @@ lm_cache_reset(lm_t * lm)
                     lm->n_bg_inmem -=
                         lm->ug[i + 1].firstbg - lm->ug[i].firstbg;
 
-                    free(lm->membg32[i].bg32);
+                    ckd_free(lm->membg32[i].bg32);
                     lm->membg32[i].bg32 = NULL;
                     n_bgfree++;
                 }
@@ -866,7 +866,7 @@ lm_cache_reset(lm_t * lm)
                     lm->n_bg_inmem -=
                         lm->ug[i + 1].firstbg - lm->ug[i].firstbg;
 
-                    free(lm->membg[i].bg);
+                    ckd_free(lm->membg[i].bg);
                     lm->membg[i].bg = NULL;
                     n_bgfree++;
                 }
@@ -887,11 +887,11 @@ lm_cache_reset(lm_t * lm)
                     if (!tginfo32->used) {
                         if ((!lm->tg32) && tginfo32->tg32) {
                             lm->n_tg_inmem -= tginfo32->n_tg;
-                            free(tginfo32->tg32);
+                            ckd_free(tginfo32->tg32);
                             n_tgfree++;
                         }
 
-                        free(tginfo32);
+                        ckd_free(tginfo32);
                         if (prev_tginfo32)
                             prev_tginfo32->next = next_tginfo32;
                         else
@@ -913,7 +913,7 @@ lm_cache_reset(lm_t * lm)
                     if (!tginfo->used) {
                         if ((!lm->tg) && tginfo->tg) {
                             lm->n_tg_inmem -= tginfo->n_tg;
-                            free(tginfo->tg);
+                            ckd_free(tginfo->tg);
                             n_tgfree++;
                         }
 
