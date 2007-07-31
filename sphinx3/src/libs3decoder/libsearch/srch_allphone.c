@@ -813,8 +813,10 @@ srch_allphone_end(void *srch)
 	write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
 
     /* Reset language model stuff */
-    lm_cache_stats_dump(kbcore_lm(s->kbc));
-    lm_cache_reset(kbcore_lm(s->kbc));
+    if (kbcore_lm(s->kbc)) {
+	lm_cache_stats_dump(kbcore_lm(s->kbc));
+	lm_cache_reset(kbcore_lm(s->kbc));
+    }
 
     return SRCH_SUCCESS;
 }
