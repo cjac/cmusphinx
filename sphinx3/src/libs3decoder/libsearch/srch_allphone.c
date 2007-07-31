@@ -528,45 +528,6 @@ phmm_trans(allphone_t *allp)
     }
 }
 
-static int32
-_allphone_start_utt(allphone_t *allp)
-{
-    s3cipid_t ci;
-    phmm_t *p;
-    history_t *h, *nexth;
-    int32 f;
-
-    /* Reset all HMMs. */
-    for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
-        for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
-	    hmm_clear((hmm_t *)p);
-        }
-    }
-
-    /* Free history nodes, if any */
-    for (f = 0; f < allp->curfrm; f++) {
-        for (h = allp->frm_hist[f]; h; h = nexth) {
-            nexth = h->next;
-            ckd_free((char *) h);
-        }
-
-        allp->frm_hist[f] = NULL;
-    }
-    allp->n_histnode = 0;
-
-    /* Initialize start state of the SILENCE PHMM */
-    allp->curfrm = 0;
-    ci = mdef_ciphone_id(allp->mdef, S3_SILENCE_CIPHONE);
-    if (NOT_S3CIPID(ci))
-        E_FATAL("Cannot find CI-phone %s\n", S3_SILENCE_CIPHONE);
-    for (p = allp->ci_phmm[(unsigned) ci]; p && (p->pid != ci); p = p->next);
-    if (!p)
-        E_FATAL("Cannot find HMM for %s\n", S3_SILENCE_CIPHONE);
-    hmm_enter_obj((hmm_t *)p, 0, NULL, allp->curfrm);
-
-    return 0;
-}
-
 static void
 write_phseg(srch_t *s, char *dir, char *uttid, phseg_t * phseg)
 {
@@ -683,24 +644,6 @@ allphone_clear_phseg(allphone_t *allp)
     allp->phseg = NULL;
 }
 
-static int32
-_allphone_end_utt(allphone_t *allp)
-{
-    int32 f;
-
-    /* Free old phseg, if any */
-    allphone_clear_phseg(allp);
-
-    /* Find most recent history nodes list */
-    for (f = allp->curfrm - 1;
-	 (f >= 0) && (allp->frm_hist[f] == NULL); --f) ;
-
-    /* Now backtrace. */
-    allp->phseg = allphone_backtrace(allp, f);
-
-    return f;
-}
-
 static int
 srch_allphone_init(kb_t *kb, void *srch)
 {
@@ -801,12 +744,43 @@ srch_allphone_begin(void *srch)
 {
     srch_t *s;
     allphone_t *allp;
+    s3cipid_t ci;
+    phmm_t *p;
+    history_t *h, *nexth;
+    int32 f;
 
     s = (srch_t *) srch;
     allp = (allphone_t *) s->grh->graph_struct;
 
     stat_clear_utt(s->stat);
-    _allphone_start_utt(allp);
+
+    /* Reset all HMMs. */
+    for (ci = 0; ci < allp->mdef->n_ciphone; ci++) {
+        for (p = allp->ci_phmm[(unsigned) ci]; p; p = p->next) {
+	    hmm_clear((hmm_t *)p);
+        }
+    }
+
+    /* Free history nodes, if any */
+    for (f = 0; f < allp->curfrm; f++) {
+        for (h = allp->frm_hist[f]; h; h = nexth) {
+            nexth = h->next;
+            ckd_free((char *) h);
+        }
+
+        allp->frm_hist[f] = NULL;
+    }
+    allp->n_histnode = 0;
+
+    /* Initialize start state of the SILENCE PHMM */
+    allp->curfrm = 0;
+    ci = mdef_ciphone_id(allp->mdef, S3_SILENCE_CIPHONE);
+    if (NOT_S3CIPID(ci))
+        E_FATAL("Cannot find CI-phone %s\n", S3_SILENCE_CIPHONE);
+    for (p = allp->ci_phmm[(unsigned) ci]; p && (p->pid != ci); p = p->next);
+    if (!p)
+        E_FATAL("Cannot find HMM for %s\n", S3_SILENCE_CIPHONE);
+    hmm_enter_obj((hmm_t *)p, 0, NULL, allp->curfrm);
 
     return SRCH_SUCCESS;
 }
@@ -817,16 +791,30 @@ srch_allphone_end(void *srch)
     srch_t *s;
     allphone_t *allp;
     stat_t *st;
+    int32 f;
 
     s = (srch_t *) srch;
     allp = (allphone_t *) s->grh->graph_struct;
     st = s->stat;
 
-    s->exit_id = _allphone_end_utt(allp);
+    /* Free old phseg, if any */
+    allphone_clear_phseg(allp);
 
-    /* Write and/or log phoneme segmentation */
+    /* Find most recent history nodes list */
+    for (f = allp->curfrm - 1;
+	 (f >= 0) && (allp->frm_hist[f] == NULL); --f) ;
+
+    /* Now backtrace. */
+    allp->phseg = allphone_backtrace(allp, f);
+    s->exit_id = f;
+
+    /* Log phoneme segmentation */
     if (cmd_ln_exists("-phsegdir"))
 	write_phseg(s, (char *) cmd_ln_access("-phsegdir"), s->uttid, allp->phseg);
+
+    /* Reset language model stuff */
+    lm_cache_stats_dump(kbcore_lm(s->kbc));
+    lm_cache_reset(kbcore_lm(s->kbc));
 
     return SRCH_SUCCESS;
 }
