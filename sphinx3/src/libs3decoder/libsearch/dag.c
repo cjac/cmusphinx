@@ -156,6 +156,7 @@
 #endif
 #include "dag.h"
 #include "vithist.h"
+#include "linklist.h"
 
 void
 hyp_free(srch_hyp_t * list)
@@ -187,7 +188,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
 
     /* Link d into successor list for pd */
     if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
+        l = (daglink_t *) listelem_alloc(sizeof(*l));
         l->node = d;
         l->src = pd;
         l->ascr = ascr;
@@ -206,7 +207,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
     }
 
     /* Link pd into predecessor list for d */
-    l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
+    l = (daglink_t *) listelem_alloc(sizeof(*l));
     l->node = pd;
     l->src = d;
     l->ascr = ascr;
@@ -240,7 +241,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
 
     /* Link d into successor list for pd */
     if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
+        l = (daglink_t *) listelem_alloc(sizeof(*l));
         l->node = d;
         l->src = pd;
         l->ascr = ascr;
@@ -260,7 +261,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     }
 
     /* Link pd into predecessor list for d */
-    l = (daglink_t *) ckd_calloc(1, sizeof(daglink_t));
+    l = (daglink_t *) listelem_alloc(sizeof(*l));
     l->node = pd;
     l->src = d;
     l->ascr = ascr;
@@ -489,14 +490,14 @@ dag_destroy(dag_t * dagp)
 
         for (l = d->succlist; l; l = nl) {
             nl = l->next;
-            ckd_free((char *) l);
+            listelem_free(l, sizeof(*l));
         }
         for (l = d->predlist; l; l = nl) {
             nl = l->next;
-            ckd_free((char *) l);
+            listelem_free(l, sizeof(*l));
         }
 
-        ckd_free((char *) d);
+        listelem_free(d, sizeof(*d));
     }
 
     ckd_free(dagp);

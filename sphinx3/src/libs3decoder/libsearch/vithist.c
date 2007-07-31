@@ -127,6 +127,7 @@
 
 #include "vithist.h"
 #include "lextree.h"
+#include "linklist.h"
 
 void
 vh_lmstate_display(vh_lmstate_t * vhl, dict_t * dict)
@@ -1829,7 +1830,7 @@ latticehist_dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
         }
 
         if (!d) {
-            d = (dagnode_t *) ckd_calloc(1, sizeof(*d));
+            d = (dagnode_t *) listelem_alloc(sizeof(*d));
 
             d->wid = w;
             d->sf = sf;
