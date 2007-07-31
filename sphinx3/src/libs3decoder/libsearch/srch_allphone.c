@@ -331,7 +331,13 @@ phmm_free(allphone_t *allp)
 	phmm_t *p, *next;
 
 	for (p = allp->ci_phmm[ci]; p; p = next) {
+	    plink_t *l, *lnext;
+
 	    next = p->next;
+	    for (l = p->succlist; l; l = lnext) {
+		lnext = l->next;
+		ckd_free(l);
+	    }
 	    hmm_deinit((hmm_t *)p);
 	    ckd_free(p);
 	}
@@ -417,7 +423,7 @@ phmm_exit(allphone_t *allp, int32 best)
     history_t *h;
     history_t **frm_hist;
     mdef_t *mdef;
-    int32 curfrm, n_histnode;
+    int32 curfrm;
     phmm_t **ci_phmm;
 
     th = best + allp->pbeam;
@@ -425,7 +431,6 @@ phmm_exit(allphone_t *allp, int32 best)
     frm_hist = allp->frm_hist;
     mdef = allp->mdef;
     curfrm = allp->curfrm;
-    n_histnode = allp->n_histnode;
     ci_phmm = allp->ci_phmm;
 
     frm_hist[curfrm] = NULL;
@@ -454,7 +459,7 @@ phmm_exit(allphone_t *allp, int32 best)
                         h->hist = hmm_out_histobj(p);
                         h->next = frm_hist[curfrm];
                         frm_hist[curfrm] = h;
-                        n_histnode++;
+                        allp->n_histnode++;
                     }
 
                     /* Mark PHMM active in next frame */
@@ -538,17 +543,6 @@ _allphone_start_utt(allphone_t *allp)
         }
     }
 
-    allp->curfrm = 0;
-
-    /* Initialize start state of the SILENCE PHMM */
-    ci = mdef_ciphone_id(allp->mdef, S3_SILENCE_CIPHONE);
-    if (NOT_S3CIPID(ci))
-        E_FATAL("Cannot find CI-phone %s\n", S3_SILENCE_CIPHONE);
-    for (p = allp->ci_phmm[(unsigned) ci]; p && (p->pid != ci); p = p->next);
-    if (!p)
-        E_FATAL("Cannot find HMM for %s\n", S3_SILENCE_CIPHONE);
-    hmm_enter_obj((hmm_t *)p, 0, NULL, allp->curfrm);
-
     /* Free history nodes, if any */
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
@@ -559,6 +553,16 @@ _allphone_start_utt(allphone_t *allp)
         allp->frm_hist[f] = NULL;
     }
     allp->n_histnode = 0;
+
+    /* Initialize start state of the SILENCE PHMM */
+    allp->curfrm = 0;
+    ci = mdef_ciphone_id(allp->mdef, S3_SILENCE_CIPHONE);
+    if (NOT_S3CIPID(ci))
+        E_FATAL("Cannot find CI-phone %s\n", S3_SILENCE_CIPHONE);
+    for (p = allp->ci_phmm[(unsigned) ci]; p && (p->pid != ci); p = p->next);
+    if (!p)
+        E_FATAL("Cannot find HMM for %s\n", S3_SILENCE_CIPHONE);
+    hmm_enter_obj((hmm_t *)p, 0, NULL, allp->curfrm);
 
     return 0;
 }
@@ -766,10 +770,21 @@ srch_allphone_uninit(void *srch)
 {
     srch_t *s;
     allphone_t *allp;
+    history_t *h, *nexth;
+    int32 f;
 
     s = (srch_t *) srch;
     allp = (allphone_t *) s->grh->graph_struct;
 
+    /* Free history nodes, if any */
+    for (f = 0; f < allp->curfrm; f++) {
+        for (h = allp->frm_hist[f]; h; h = nexth) {
+            nexth = h->next;
+            ckd_free((char *) h);
+        }
+
+        allp->frm_hist[f] = NULL;
+    }
     allphone_clear_phseg(allp);
     phmm_free(allp);
     hmm_context_free(allp->ctx);
@@ -916,8 +931,6 @@ srch_allphone_gen_hyp(void *srch)
 	h->ef = p->ef;
 	h->ascr = p->score;
 	h->lscr = p->tscore;
-
-	/* FIXME: Will this leak memory from h? */
         hyp = glist_add_ptr(hyp, h);
     }
 
