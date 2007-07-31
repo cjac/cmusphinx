@@ -188,7 +188,7 @@ astar_dag_link_bypass(dagnode_t * pd, dagnode_t * d, int32 ascr)
 
     if (!l) {
         /* No existing bypass link; create one from pd to d */
-        l = (daglink_t *) ckd_calloc(1, sizeof(*l));
+        l = (daglink_t *) listelem_alloc(sizeof(*l));
         l->node = d;
         l->ascr = ascr;
         l->is_filler_bypass = 1;
@@ -233,14 +233,14 @@ dag_remove_unreachable(void)
             /* Remove successor node links */
             for (l = d->succlist; l; l = nl) {
                 nl = l->next;
-                ckd_free((char *) l);
+                listelem_free(l, sizeof(*l));
             }
             d->succlist = NULL;
 
             /* Remove predecessor links */
             for (l = d->predlist; l; l = nl) {
                 nl = l->next;
-                ckd_free((char *) l);
+                listelem_free(l, sizeof(*l));
             }
             d->predlist = NULL;
         }
@@ -254,7 +254,7 @@ dag_remove_unreachable(void)
                         d->succlist = nl;
                     else
                         pl->next = nl;
-                    ckd_free((char *) l);
+                    listelem_free(l, sizeof(*l));
                 }
                 else
                     pl = l;
@@ -400,7 +400,7 @@ dag_remove_bypass_links(void)
                     d->succlist = nl;
                 else
                     pl->next = nl;
-                ckd_free((char *) l);
+                listelem_free(l, sizeof(*l));
             }
             else
                 pl = l;

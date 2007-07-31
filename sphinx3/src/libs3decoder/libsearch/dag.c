@@ -962,7 +962,7 @@ dag_load(char *file,          /**< Input: File to lod from */
             goto load_error;
         }
 
-        d = (dagnode_t *) ckd_calloc(1, sizeof(dagnode_t));
+        d = (dagnode_t *) listelem_alloc(sizeof(*d));
         darray[i] = d;
 
         d->wid = w;

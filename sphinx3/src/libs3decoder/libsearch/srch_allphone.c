@@ -47,6 +47,7 @@
 #include "srch_allphone.h"
 #include "hmm.h"
 #include "s3types.h"
+#include "linklist.h"
 
 /**
  * \struct phmm_t
@@ -207,7 +208,7 @@ phmm_link(allphone_t *allp)
                 for (p2 = ci_phmm[rclist[i]]; p2; p2 = p2->next) {
                     if (lrc_is_set(p2->lc, ci)) {
                         /* transition from p to p2 */
-                        l = (plink_t *) ckd_calloc(1, sizeof(plink_t));
+                        l = (plink_t *) listelem_alloc(sizeof(*l));
                         l->phmm = p2;
                         l->next = p->succlist;
                         p->succlist = l;
@@ -252,7 +253,7 @@ phmm_build(allphone_t *allp)
     for (pid = 0; pid < mdef->n_phone; pid++) {
         if ((p = phmm_lookup(allp, pid)) == NULL) {
             /* No previous entry; create a new one */
-            p = (phmm_t *) ckd_calloc(1, sizeof(phmm_t));
+            p = (phmm_t *) listelem_alloc(sizeof(*p));
 	    hmm_init(allp->ctx, (hmm_t *)p, FALSE,
 		     mdef_pid2ssid(mdef, pid),
 		     mdef->phone[pid].tmat);
@@ -336,10 +337,10 @@ phmm_free(allphone_t *allp)
 	    next = p->next;
 	    for (l = p->succlist; l; l = lnext) {
 		lnext = l->next;
-		ckd_free(l);
+		listelem_free(l, sizeof(*l));
 	    }
 	    hmm_deinit((hmm_t *)p);
-	    ckd_free(p);
+	    listelem_free(p, sizeof(*p));
 	}
     }
     ckd_free(allp->ci_phmm);
@@ -446,8 +447,7 @@ phmm_exit(allphone_t *allp, int32 best)
                     /* Create lattice entry if exiting */
                     if (hmm_out_score(p) >= allp->pbeam) { /* pbeam, not th
 							      because scores scaled */
-                        h = (history_t *)
-                            ckd_calloc(1, sizeof(history_t));
+                        h = (history_t *) listelem_alloc(sizeof(*h));
                         h->score = hmm_out_score(p);
                         /* FIXME: This isn't going to be the correct
                          * transition score, for reasons I don't
@@ -723,7 +723,7 @@ srch_allphone_uninit(void *srch)
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            ckd_free((char *) h);
+            listelem_free(h, sizeof(*h));
         }
 
         allp->frm_hist[f] = NULL;
@@ -765,7 +765,7 @@ srch_allphone_begin(void *srch)
     for (f = 0; f < allp->curfrm; f++) {
         for (h = allp->frm_hist[f]; h; h = nexth) {
             nexth = h->next;
-            ckd_free((char *) h);
+            listelem_free(h, sizeof(*h));
         }
 
         allp->frm_hist[f] = NULL;
