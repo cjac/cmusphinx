@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1999-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -1930,11 +1931,16 @@ lm_free(lm_t * lm)
                 ckd_free(lm->membg32);
         }
         else {                  /* Disk-based; free in-memory bg */
-
-            if (lm->membg)
+            if (lm->membg) {
+                for (i = 0; i < lm->n_ug; ++i)
+                    ckd_free(lm->membg[i].bg);
                 ckd_free(lm->membg);
-            if (lm->membg32)
+            }
+            if (lm->membg32) {
+                for (i = 0; i < lm->n_ug; ++i)
+                    ckd_free(lm->membg32[i].bg32);
                 ckd_free(lm->membg32);
+            }
         }
 
         ckd_free(lm->bgprob);
