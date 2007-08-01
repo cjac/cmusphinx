@@ -622,7 +622,8 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
     bestScore = s3;
 
     /* All transitions into state 2 (state 0 is always active) */
-    if (s1 > WORST_SCORE) /* s2 active implies s1 active */
+    t1 = t2 = WORST_SCORE;
+    if (s1 > WORST_SCORE)
         t1 = s1 + hmm_tprob_3st(1, 2);
     if (hmm_tprob_3st(0, 2) > WORST_SCORE)
         t2 = s0 + hmm_tprob_3st(0, 2);
@@ -646,6 +647,7 @@ hmm_vit_eval_3st_lr(hmm_t * hmm)
     hmm_score(hmm, 2) = s2;
 
     /* All transitions into state 1 */
+    t0 = t1 = WORST_SCORE;
     if (s1 > WORST_SCORE)
         t0 = s1 + hmm_tprob_3st(1, 1);
     if (s0 > WORST_SCORE)
@@ -686,12 +688,14 @@ hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
         s2 = t1 = WORST_SCORE;
     else {
         s2 = hmm_score(hmm, 2) + mpx_senscr(2);
+        if (s2 < WORST_SCORE) s2 = WORST_SCORE;
         t1 = s2 + hmm_tprob_3st(2, 3);
     }
     if (ssid[1] == -1)
         s1 = WORST_SCORE;
     else {
         s1 = hmm_score(hmm, 1) + mpx_senscr(1);
+        if (s1 < WORST_SCORE) s1 = WORST_SCORE;
         t2 = s1 + hmm_tprob_3st(1, 3);
     }
     if (t1 > t2) {
@@ -708,6 +712,7 @@ hmm_vit_eval_3st_lr_mpx(hmm_t * hmm)
 
     /* State 0 is always active */
     s0 = hmm_in_score(hmm) + mpx_senscr(0);
+    if (s0 < WORST_SCORE) s0 = WORST_SCORE;
 
     /* Don't propagate WORST_SCORE */
     t0 = t1 = WORST_SCORE;
