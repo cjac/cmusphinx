@@ -1143,7 +1143,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
                 break;
         }
         if (!gn) {
-            dn = (dagnode_t *) ckd_calloc(1, sizeof(*dn));
+            dn = (dagnode_t *) listelem_alloc(sizeof(*dn));
             dn->wid = ve->wid;
 
             dn->node_ascr = ve->ascr;
@@ -1154,6 +1154,8 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
             dn->lef = ef;
             dn->seqid = -1;     /* Initially all invalid, selected ones validated below */
             dn->hook = NULL;
+            dn->predlist = NULL;
+            dn->succlist = NULL;
             n_node++;
 
             sfwid[sf] = glist_add_ptr(sfwid[sf], (void *) dn);
@@ -1253,7 +1255,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
             glist_free((glist_t) dn->hook);
             dn->hook = NULL;
             if (dn->seqid == -1) /* If pruned, free the node too */
-                ckd_free((void *) dn);
+                listelem_free(dn, sizeof(*dn));
         }
         glist_free(sfwid[f]);
     }

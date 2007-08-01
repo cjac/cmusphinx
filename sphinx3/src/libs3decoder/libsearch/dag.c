@@ -197,6 +197,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
         l->history = NULL;
         l->ef = ef;
         l->next = pd->succlist;
+	assert(pd->succlist != l);
 
         /* Effect caused by aggregating different stuctures */
         l->bypass = byp;        /* DAG-specific: This is a FORWARD link!! */
