@@ -1115,6 +1115,8 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
             for (l = lathist->frm_latstart[d->sf];
                  l < lathist->frm_latstart[d->sf + 1]; l++) {
                 pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
+                if (pd == NULL)
+                    continue;
 
                 if ((pd->wid != dict->finishwid) &&
                     (pd->fef == d->sf) &&
@@ -1126,8 +1128,7 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
                                       fwg->ctxt,
                                       kbcore_fillpen(fwg->kbcore));
 
-                    dag_link_w_lscr(dagp, pd, d, ascr, lscr, d->sf - 1,
-                                    NULL);
+                    dag_link(dagp, pd, d, ascr, lscr, d->sf - 1, NULL);
                 }
             }
 
@@ -1138,6 +1139,8 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
             for (l = lathist->frm_latstart[d->sf + 1];
                  l < lathist->frm_latstart[d->sf + 2]; l++) {
                 pd = lathist->lattice[l].dagnode;       /* Predecessor DAG node */
+                if (pd == NULL)
+                    continue;
 
                 if ((pd->wid != dict->finishwid) &&
                     (pd->fef == d->sf + 1) &&
@@ -1149,8 +1152,7 @@ flat_fwd_dag_add_fudge_edges(srch_FLAT_FWD_graph_t * fwg, dag_t * dagp,
                                       fwg->ctxt,
                                       kbcore_fillpen(fwg->kbcore));
 
-                    dag_link_w_lscr(dagp, pd, d, ascr, lscr, d->sf - 1,
-                                    NULL);
+                    dag_link(dagp, pd, d, ascr, lscr, d->sf - 1, NULL);
                 }
             }
         }

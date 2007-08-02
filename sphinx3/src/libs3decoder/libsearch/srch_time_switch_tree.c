@@ -1297,7 +1297,7 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
             dag->filler_removed = 1;
 
         /* For some reason these bogus links are necessary */
-        dag_link(dag, NULL, dag->root, 0, -1, NULL);
+        dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
         dag->final.node = dag->end;
     }
 

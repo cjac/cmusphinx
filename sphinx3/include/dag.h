@@ -285,23 +285,12 @@ void dag_init(dag_t* dagp);
  * @return 0 if successful, -1 if maxedge limit exceeded.
  */
 int32 dag_link (dag_t * dagp,    /**< A pointer to a DAG */
-		dagnode_t *pd,  
-		dagnode_t *d,   
-		int32 ascr,     /**< The acoustic scores */
-		int32 ef,       /**< The ending frame */
-		daglink_t *byp  /**< FIXME: What does this do??! */
-    );
-
-/** Link two DAG nodes with the given arguments
- * @return 0 if successful, -1 if maxedge limit exceeded.
- */
-int32 dag_link_w_lscr (dag_t * dagp,    /**< A pointer to a DAG */
-		       dagnode_t *pd,  
-		       dagnode_t *d,   
-		       int32 ascr,     /**< The acoustic scores */
-		       int32 lscr,     /**< The language scores */
-		       int32 ef,       /**< The ending frame */
-		       daglink_t *byp  
+                dagnode_t *pd,  
+                dagnode_t *d,   
+                int32 ascr,     /**< The acoustic score */
+                int32 lscr,     /**< The language score (0 if none) */
+                int32 ef,       /**< The ending frame */
+                daglink_t *byp  
     );
 
 

@@ -181,64 +181,14 @@ hyp_free(srch_hyp_t * list)
  * only one of them need to be there.
  */
 int32
-dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr, int32 ef,
-         daglink_t * byp)
+dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
+	 int32 lscr, int32 ef, daglink_t * byp)
 {
     daglink_t *l;
 
-    /* Link d into successor list for pd */
-    if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
-        l = (daglink_t *) listelem_alloc(sizeof(*l));
-        l->node = d;
-        l->src = pd;
-        l->ascr = ascr;
-        l->pscr = (int32) 0x80000000;
-        l->pscr_valid = 0;
-        l->history = NULL;
-        l->ef = ef;
-        l->next = pd->succlist;
-	assert(pd->succlist != l);
-
-        /* Effect caused by aggregating different stuctures */
-        l->bypass = byp;        /* DAG-specific: This is a FORWARD link!! */
-        l->is_filler_bypass = 0;        /* Astar-specific */
-        l->hook = NULL;         /* Hopefully, this is the last argument we put into the dag_link structure */
-
-        pd->succlist = l;
-    }
-
-    /* Link pd into predecessor list for d */
-    l = (daglink_t *) listelem_alloc(sizeof(*l));
-    l->node = pd;
-    l->src = d;
-    l->ascr = ascr;
-    l->pscr = (int32) 0x80000000;
-    l->pscr_valid = 0;
-    l->history = NULL;
-    l->ef = ef;
-
-    l->bypass = byp;            /* DAG-specific: This is a FORWARD link!! */
-    l->is_filler_bypass = 0;    /* Astar-specific */
-
-    l->hook = NULL;             /* Hopefully, this is the last argument we put into the dag_link structure */
-
-    l->next = d->predlist;
-    d->predlist = l;
-
-    dagp->nlink++;
-
-    return (dagp->nlink > dagp->maxedge) ? -1 : 0;
-}
-
-
-/*
-  Badly duplicate with dag_link; It also update the language score. 
- */
-int32
-dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
-                int32 lscr, int32 ef, daglink_t * byp)
-{
-    daglink_t *l;
+    /* HACK: silently refuse to create positive edges, since we won't accept them. */
+    if (ascr > 0)
+	    return 0;
 
     /* Link d into successor list for pd */
     if (pd) {                   /* Special condition for root node which doesn't have a predecessor */
@@ -252,6 +202,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
         l->history = NULL;
         l->ef = ef;
         l->next = pd->succlist;
+	assert(pd->succlist != l);
 
         /* Effect caused by aggregating different stuctures */
         l->bypass = byp;        /* DAG-specific: This is a FORWARD link!! */
@@ -278,6 +229,7 @@ dag_link_w_lscr(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     l->hook = NULL;             /* Hopefully, this is the last argument we put into the dag_link structure */
 
     l->next = d->predlist;
+    assert(d->predlist != l);
     d->predlist = l;
 
     dagp->nlink++;
@@ -330,7 +282,7 @@ dag_update_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     l = find_succlink(pd, d);
 
     if (!l)
-        return (dag_link(dagp, pd, d, ascr, ef, byp));
+        return (dag_link(dagp, pd, d, ascr, 0, ef, byp));
 
     if (l->ascr < ascr) {
         r = find_predlink(d, pd);
@@ -738,7 +690,7 @@ dag_add_fudge_edges(dag_t * dagp, int32 fudge, int32 min_ef_range,
             /* As this part of the code will actually access 2 frames beyond. 
                This checking make sure spurious link will be removed. */
 
-            if (d->sf >= lathist->n_frms - 3)
+            if (d->sf >= lathist->n_frm - 3)
                 continue;
 
             /* Links to d from nodes that first ended just when d started */
@@ -749,9 +701,9 @@ dag_add_fudge_edges(dag_t * dagp, int32 fudge, int32 min_ef_range,
                 if ((pd->wid != dict->finishwid) &&
                     (pd->fef == d->sf) &&
                     (pd->lef - pd->fef >= min_ef_range - 1)) {
-                    dag_link_w_lscr(dagp, pd, d, lathist->lattice[l].ascr,
-                                    lathist->lattice[l].lscr, d->sf - 1,
-                                    NULL);
+                    dag_link(dagp, pd, d, lathist->lattice[l].ascr,
+			     lathist->lattice[l].lscr, d->sf - 1,
+			     NULL);
                 }
             }
 
@@ -766,9 +718,9 @@ dag_add_fudge_edges(dag_t * dagp, int32 fudge, int32 min_ef_range,
                 if ((pd->wid != dict->finishwid) &&
                     (pd->fef == d->sf + 1) &&
                     (pd->lef - pd->fef >= min_ef_range - 1)) {
-                    dag_link_w_lscr(dagp, pd, d, lathist->lattice[l].ascr,
-                                    lathist->lattice[l].lscr, d->sf - 1,
-                                    NULL);
+                    dag_link(dagp, pd, d, lathist->lattice[l].ascr,
+			     lathist->lattice[l].lscr, d->sf - 1,
+			     NULL);
                 }
             }
         }
@@ -1054,7 +1006,7 @@ dag_load(char *file,          /**< Input: File to lod from */
             --j;
         }
         lathist->lattice[i].dagnode = darray[seqid];
-        lathist->lattice[i].ef = ef;
+        lathist->lattice[i].frm = ef;
         lathist->lattice[i].ascr = ascr;
 
         if ((seqid == final) && (ef == dag->final.node->lef))
@@ -1087,7 +1039,7 @@ dag_load(char *file,          /**< Input: File to lod from */
         if ((pd == dag->entry.node) || (d == dag->final.node) ||
             ((d->lef - d->fef >= min_ef_range - 1)
              && (pd->lef - pd->fef >= min_ef_range - 1))) {
-            if (dag_link(dag, pd, d, ascr, d->sf - 1, NULL) < 0) {
+            if (dag_link(dag, pd, d, ascr, 0, d->sf - 1, NULL) < 0) {
                 E_ERROR("%s: maxedge limit (%d) exceeded\n", file,
                         dag->maxedge);
                 goto load_error;
@@ -1193,7 +1145,7 @@ s3dag_dag_load(dag_t ** dagpp, float32 lwf, char *file, dict_t * dict,
         (*dagpp)->filler_removed = 1;
 
     /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link((*dagpp), NULL, (*dagpp)->entry.node, 0, -1, NULL);
+    dag_link((*dagpp), NULL, (*dagpp)->entry.node, 0, 0, -1, NULL);
 
     E_INFO("%5d frames, %6d nodes, %8d edges\n", (*dagpp)->nfrm,
            (*dagpp)->nnode, (*dagpp)->nlink);

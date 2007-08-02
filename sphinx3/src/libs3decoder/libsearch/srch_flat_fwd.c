@@ -505,6 +505,7 @@ srch_FLAT_FWD_srch_one_frame_lv2(void *srch)
         whmm_renorm(fwg, fwg->whmm, bestscr);
     }
 
+    fwg->lathist->n_frm++;
     fwg->n_frm++;
     return SRCH_SUCCESS;
 }
@@ -658,9 +659,9 @@ srch_FLAT_FWD_gen_dag(void *srch,         /**< a pointer of srch_t */
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
 
     dag =
-        latticehist_dag_build(s->exit_id, fwg->lathist, kbcore_dict(s->kbc),
-                              s->kbc->lmset->cur_lm, fwg->ctxt, s->kbc->fillpen,
-                              fwg->n_frm);
+        latticehist_dag_build(fwg->lathist, hyp, kbcore_dict(s->kbc),
+                              kbcore_lm(s->kbc), fwg->ctxt, s->kbc->fillpen,
+                              s->exit_id);
 
     return dag;
 }
@@ -705,7 +706,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
             dag->filler_removed = 1;
 
         /* For some reason these bogus links are necessary */
-        dag_link(dag, NULL, dag->root, 0, -1, NULL);
+        dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
         dag->final.node = dag->end;
     }
 
