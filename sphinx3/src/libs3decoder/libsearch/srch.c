@@ -534,9 +534,11 @@ srch_utt_end(srch_t * s)
     if (s->funcs->gen_dag &&
 	(cmd_ln_str("-outlatdir")
 	 || cmd_ln_boolean("-bestpath"))) {
+        ptmr_start(&(st->tm_srch));
 	if ((dag = s->funcs->gen_dag(s, hyp)) == NULL) {
 	    E_ERROR("Failed to generate DAG.\n");
 	}
+        ptmr_stop(&(st->tm_srch));
     }
 
     /* Write backtrace info */
@@ -590,7 +592,10 @@ srch_utt_end(srch_t * s)
     if (dag && cmd_ln_boolean("-bestpath")) {
 	glist_t rhyp;
 
-	if ((rhyp = s->funcs->bestpath_impl(s, dag)) == NULL) {
+        ptmr_start(&(st->tm_srch));
+	rhyp = s->funcs->bestpath_impl(s, dag);
+        ptmr_stop(&(st->tm_srch));
+	if (rhyp == NULL) {
 	    E_ERROR("Bestpath search failed.\n");
 	}
 	else {
