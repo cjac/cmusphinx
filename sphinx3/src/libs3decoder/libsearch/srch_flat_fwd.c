@@ -87,6 +87,7 @@ fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
     E_INFOCONT("[XH %6.2fx]", fwg->tm_hmmtrans.t_cpu * 100.0 / fwg->n_frm);
     E_INFOCONT("[XW %6.2fx]\n",
                fwg->tm_wdtrans.t_cpu * 100.0 / fwg->n_frm);
+    E_INFOCONT("[mpx %d][~mpx %d]", fwg->ctr_mpx_whmm->count, fwg->ctr_nonmpx_whmm->count);
 }
 
 

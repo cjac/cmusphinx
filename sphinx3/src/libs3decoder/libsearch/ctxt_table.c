@@ -113,17 +113,11 @@ xwdssid_compress(s3pid_t p, s3ssid_t * out_ssid, s3cipid_t * map, s3cipid_t ctx,
                  int32 n, mdef_t * mdef)
 {
     s3cipid_t i;
-    s3tmatid_t tmatid;
     int32 ssid;
 
     ssid = mdef_pid2ssid(mdef, p);
-    tmatid = mdef_pid2tmatid(mdef, p);
-
     for (i = 0; i < n; i++) {
-        if (mdef_pid2tmatid(mdef, i) != tmatid)
-            continue;
-
-        if (mdef_pid2ssid(mdef, i) == ssid) {
+        if (out_ssid[i] == ssid) {
             /* This state sequence same as a previous ones; just map to it */
             map[ctx] = i;
             return n;

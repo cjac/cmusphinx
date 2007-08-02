@@ -336,8 +336,6 @@
 
 #include "srch_flat_fwd.h"
 
-#define WHMM_ALLOC_SIZE 32000
-
 /** \file flat_fwd.c 
     \brief Implementation of forward search in a flat lexicon. 
  */
@@ -529,7 +527,6 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w, whmm_t * h
          */
         prevh = h;
         get_rcssid(ct_table, w, &ssid, &nssid, dict);
-
         for (rc = 0; rc < nssid; rc++) {
             if ((!prevh->next) || (prevh->next->rc != rc)) {
                 nexth = whmm_alloc(fwg->hmmctx, h->pos + 1, FALSE,
