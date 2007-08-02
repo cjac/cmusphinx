@@ -1959,7 +1959,8 @@ lm_free(lm_t * lm)
                     while (lm->tginfo[i]) {
                         tginfo = lm->tginfo[i];
                         lm->tginfo[i] = tginfo->next;
-                        ckd_free(tginfo->tg);
+                        if (!lm->isLM_IN_MEMORY)
+                            ckd_free(tginfo->tg);
                         ckd_free((void *) tginfo);
                     }
                 }
@@ -1972,7 +1973,8 @@ lm_free(lm_t * lm)
                     while (lm->tginfo32[i]) {
                         tginfo32 = lm->tginfo32[i];
                         lm->tginfo32[i] = tginfo32->next;
-                        ckd_free(tginfo32->tg32);
+                        if (!lm->isLM_IN_MEMORY)
+                            ckd_free(tginfo32->tg32);
                         ckd_free((void *) tginfo32);
                     }
                 }
