@@ -455,10 +455,8 @@ typedef struct lattice_s {
     s3frmid_t frm;	/**< End frame for this entry */
     s3latid_t history;	/**< Index of predecessor lattice_t entry */
 
-    /*Augmented in 3.6 */
     int32 ascr;         /**< Acoustic score for this node */
     int32 lscr;         /**< Language score for this node */
-    int32 ef;           /**< Ending frame */
 
     int32     score;	/**< Best path score upto the end of this entry */
     int32    *rcscore;	/**< Individual path scores for different right context ciphones */
@@ -498,13 +496,13 @@ typedef struct {
                             "lattice-mode", which means using the
                             candidate in the lattice to constrain the
                             search? */
-    int32 n_frms;       /**< Number of frame which is allocated in frm_latstart*/
+    int32 n_frms_alloc;  /**< Number of frames allocated in frm_latstart */
+    int32 n_frm;         /**< Number of frames searched */
 
 } latticehist_t;
 
 
 #define latticehist_n_cand(hist)		((hist)->n_cand)
-#define latticehist_n_frms(hist)		((hist)->n_frms)
 #define latticehist_lat_alloc(hist)		((hist)->lat_alloc)
 #define latticehist_n_lat_entry(hist)		((hist)->n_lat_entry)
 
@@ -639,8 +637,9 @@ srch_hyp_t *lattice_backtrace (latticehist_t *lathist, /**< A table of lattice e
  * edge from d1 to d2, then sf1 > fef2.  But fef2 >= fef1, so sf1 > fef1.  Reductio ad
  * absurdum.
  */
-dag_t *latticehist_dag_build(s3latid_t endid, latticehist_t * lathist, dict_t * dict,
-                             lm_t * lm, ctxt_table_t * ctxt, fillpen_t * fpen, int32 _nfrm);
+dag_t * latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
+                              lm_t *lm, ctxt_table_t *ctxt, fillpen_t *fpen,
+                              int32 endid);
 
 /** 
  * Write a dag from latticehist_t
