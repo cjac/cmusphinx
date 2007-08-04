@@ -875,6 +875,7 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                         is32bits ? LM_BGPROB(lm,
                                              bgptr32) :
                         LM_BGPROB(lm, bgptr);
+                    newscore += acc_bowt;
                     newscore += phone_penalty;
 
                     if (newscore >= thresh)
