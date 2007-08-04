@@ -84,7 +84,7 @@
 void
 whmm_free(whmm_t * h)
 {
-    hmm_deinit(&h->hmm);
+    hmm_deinit((hmm_t *)h);
     ckd_free(h);
 }
 
@@ -95,7 +95,7 @@ whmm_alloc(hmm_context_t *ctx, int32 pos, int mpx, s3ssid_t ssid, s3tmatid_t tma
     whmm_t *h;
 
     h = ckd_calloc(1, sizeof(*h));
-    hmm_init(ctx, &h->hmm, mpx, ssid, tmatid);
+    hmm_init(ctx, (hmm_t *)h, mpx, ssid, tmatid);
     h->pos = pos;
     return h;
 }
@@ -108,8 +108,8 @@ dump_whmm(s3wid_t w, whmm_t * h, int32 * senscr, tmat_t * tmat,
     printf(" [%s]", dict->word[w].word);
 
     printf(" ci= %s, pos= %d, lc=%d, rc= %d, bestscore= %d multiplex %s\n",
-           mdef_ciphone_str(mdef, hmm_tmatid(&h->hmm)),
-	   h->pos, h->lc, h->rc, hmm_bestscore(&h->hmm),
-	   hmm_is_mpx(&h->hmm) ? "yes" : "no");
-    hmm_dump(&h->hmm, stdout);
+           mdef_ciphone_str(mdef, hmm_tmatid(h)),
+	   h->pos, h->lc, h->rc, hmm_bestscore(h),
+	   hmm_is_mpx(h) ? "yes" : "no");
+    hmm_dump((hmm_t *)h, stdout);
 }

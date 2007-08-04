@@ -160,7 +160,7 @@ lextree_node_alloc(lextree_t *lextree, int32 wid, int32 prob,
     ln->ci = (s3cipid_t) ci;
     ln->rc = rc;
     ln->composite = comp;
-    hmm_init(ln->ctx, &ln->hmm, FALSE, ssid, tmat);
+    hmm_init(ln->ctx, (hmm_t *)ln, FALSE, ssid, tmat);
 
     return ln;
 }
@@ -169,7 +169,7 @@ static void
 lextree_node_free(lextree_node_t * ln)
 {
     if (ln) {
-        hmm_deinit(&ln->hmm);
+        hmm_deinit((hmm_t *)ln);
         ckd_free(ln);
     }
 }
@@ -928,7 +928,7 @@ lextree_utt_end(lextree_t * l, kbcore_t * kbc)
 
     for (i = 0; i < l->n_active; i++) { /* The inactive ones should already be reset */
         ln = l->active[i];
-        hmm_clear(&ln->hmm);
+        hmm_clear((hmm_t *)ln);
     }
 
     l->n_active = 0;
@@ -1121,12 +1121,12 @@ lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,
             (IS_S3WID(ln->wid) && dict2pid_is_composite(kbc->dict2pid)) /* Or it is a leave but we are using composite triphone */
             ) {
             scr = inscore + ln->prob;
-            if ((scr >= thresh) && (hmm_in_score(&ln->hmm) < scr)) {
-                hmm_in_score(&ln->hmm) = scr;
-                hmm_in_history(&ln->hmm) = inhist;
+            if ((scr >= thresh) && (hmm_in_score(ln) < scr)) {
+                hmm_in_score(ln) = scr;
+                hmm_in_history(ln) = inhist;
 
-                if (ln->hmm.frame != nf) {
-                    ln->hmm.frame = nf;
+                if (hmm_frame(ln) != nf) {
+                    hmm_frame(ln) = nf;
                     lextree->next_active[n++] = ln;
                 }
             }                   /* else it is activated separately */
@@ -1201,12 +1201,12 @@ lextree_enter(lextree_t * lextree, s3cipid_t lc, int32 cf,
             for (cwgn = ln->children; cwgn; cwgn = gnode_next(cwgn)) {
                 cwln = (lextree_node_t *) gnode_ptr(cwgn);
                 scr = inscore + cwln->prob;
-                if ((scr >= thresh) && (hmm_in_score(&cwln->hmm) < scr)) {
-                    hmm_in_score(&cwln->hmm) = scr;
-                    hmm_in_history(&cwln->hmm) = inhist;
+                if ((scr >= thresh) && (hmm_in_score(cwln) < scr)) {
+                    hmm_in_score(cwln) = scr;
+                    hmm_in_history(cwln) = inhist;
 
-                    if (cwln->hmm.frame != nf) {
-                        cwln->hmm.frame = nf;
+                    if (hmm_frame(cwln) != nf) {
+                        hmm_frame(cwln) = nf;
                         lextree->next_active[n++] = cwln;
                     }
                 }
@@ -1259,15 +1259,15 @@ lextree_hmm_eval(lextree_t * lextree, kbcore_t * kbc, ascr_t * ascr,
             /*      E_INFO("Frm %d, Is WID %d, wdstr %s, ln->ssid %d\n",frm, ln->wid,dict_wordstr(kbc->dict,ln->wid), ln->ssid); */
         }
 
-        assert(ln->hmm.frame == frm);
+        assert(hmm_frame(ln) == frm);
         assert(ln->ssid >= 0);
 
         if (fp) {
             /*      lextree_node_print (ln, kbc->dict, fp); */
-            hmm_dump(&ln->hmm, fp);
+            hmm_dump((hmm_t *)ln, fp);
         }
 
-        k = hmm_vit_eval(&ln->hmm);
+        k = hmm_vit_eval((hmm_t *)ln);
 
         if (best < k)
             best = k;
@@ -1316,7 +1316,7 @@ lextree_hmm_histbin(lextree_t * lextree, int32 bestscr, int32 * bin,
            E_INFO("Is WID\n");
            } */
 
-        k = (bestscr - ln->hmm.bestscore) / bw;
+        k = (bestscr - hmm_bestscore(ln)) / bw;
         if (k >= nbin)
             k = nbin - 1;
         assert(k >= 0);
@@ -1401,18 +1401,18 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
 
 
         /* This if will activate nodes */
-        if (ln->hmm.frame < nf) {
-            if (ln->hmm.bestscore >= th) { /* Active in next frm */
-                ln->hmm.frame = nf;
+        if (hmm_frame(ln) < nf) {
+            if (hmm_bestscore(ln) >= th) { /* Active in next frm */
+                hmm_frame(ln) = nf;
                 lextree->next_active[n++] = ln;
             }
             else {              /* Deactivate */
-                hmm_clear(&ln->hmm);
+                hmm_clear((hmm_t *)ln);
             }
         }
 
         if (NOT_S3WID(ln->wid)) {       /* Not a leaf node */
-            if (hmm_out_score(&ln->hmm) < pth)
+            if (hmm_out_score(ln) < pth)
                 continue;       /* HMM exit score not good enough */
 
             if (heur_type > 0) {        /* In full expansion, this part is not
@@ -1426,7 +1426,7 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                     ln2 = gnode_ptr(gn);
 
                     newHeurScore =
-                        hmm_out_score(&ln->hmm) + (ln2->prob - ln->prob) +
+                        hmm_out_score(ln) + (ln2->prob - ln->prob) +
                         phn_heur_list[(int32) ln2->ci];
                     if (kbc->maxNewHeurScore < newHeurScore)
                         kbc->maxNewHeurScore = newHeurScore;
@@ -1448,7 +1448,7 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                                    is not a leave node .
                                    Just enter like it is a simple triphone. 
                                  */
-                    newscore = hmm_out_score(&ln->hmm) + (ln2->prob - ln->prob);
+                    newscore = hmm_out_score(ln) + (ln2->prob - ln->prob);
                     newHeurScore =
                         newscore + phn_heur_list[(int32) ln2->ci];
 
@@ -1458,14 +1458,14 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                                                                            and if the heur score is within threshold */
                         (newscore >= th) &&     /*If the score is smaller than the
                                                    phone score, prune away */
-                        (hmm_in_score(&ln2->hmm) < newscore)
+                        (hmm_in_score(ln2) < newscore)
                         /*Just the Viterbi Update */
                         ) {
-                        hmm_in_score(&ln2->hmm) = newscore;
-                        hmm_in_history(&ln2->hmm) = hmm_out_history(&ln->hmm);
+                        hmm_in_score(ln2) = newscore;
+                        hmm_in_history(ln2) = hmm_out_history(ln);
 
-                        if (ln2->hmm.frame != nf) {
-                            ln2->hmm.frame = nf;
+                        if (hmm_frame(ln2) != nf) {
+                            hmm_frame(ln2) = nf;
                             /*                  lextree_realloc_active_list(lextree,n+1); */
                             lextree->next_active[n++] = ln2;
                         }
@@ -1524,7 +1524,7 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                            that one might want to use different lookahead probability for different
                            cw triphone */
 
-                        newscore = hmm_out_score(&ln->hmm)
+                        newscore = hmm_out_score(ln)
                             + (cwln->prob - ln->prob);    /*< This is correct! because ln->prob
                                                             is directly
                                                             feed into the cross word */
@@ -1537,14 +1537,14 @@ lextree_hmm_propagate_non_leaves(lextree_t * lextree, kbcore_t * kbc,
                                                                            and if the heur score is within threshold */
                             (newscore >= th) && /*If the score is smaller than the
                                                    phone score, prune away */
-                            (hmm_in_score(&cwln->hmm) < newscore)
+                            (hmm_in_score(cwln) < newscore)
                             /*Just the Viterbi Update */
                             ) {
-                            hmm_in_score(&cwln->hmm) = newscore;
-                            hmm_in_history(&cwln->hmm) = hmm_out_history(&ln->hmm);
+                            hmm_in_score(cwln) = newscore;
+                            hmm_in_history(cwln) = hmm_out_history(ln);
 
-                            if (cwln->hmm.frame != nf) {
-                                cwln->hmm.frame = nf;
+                            if (hmm_frame(cwln) != nf) {
+                                hmm_frame(cwln) = nf;
                                 /*                        lextree_realloc_active_list(lextree,n+1); */
                                 lextree->next_active[n++] = cwln;
                             }
@@ -1590,10 +1590,10 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
 
         if (IS_S3WID(ln->wid)) {        /* Leaf node; word exit */
 
-            if (hmm_out_score(&ln->hmm) < wth)
+            if (hmm_out_score(ln) < wth)
                 continue;       /* Word exit score not good enough */
 
-            if (hmm_out_history(&ln->hmm) == -1) { /* This is a case where continue
+            if (hmm_out_history(ln) == -1) { /* This is a case where continue
                                                              subsituting out.history into
                                                              vithist_rescore will cause
                                                              core-dump */
@@ -1606,8 +1606,8 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
 
             if (dict2pid_is_composite(kbc->dict2pid)) {
                 vithist_rescore(vh, kbc, ln->wid, cf,
-                                hmm_out_score(&ln->hmm) - ln->prob,
-                                hmm_out_history(&ln->hmm), lextree->type, -1);
+                                hmm_out_score(ln) - ln->prob,
+                                hmm_out_history(ln), lextree->type, -1);
             }
             else {
                 /*              lextree_node_print(ln,kbc->dict,stdout); */
@@ -1615,8 +1615,8 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
                 assert(ln->rc != BAD_S3CIPID);
 
                 vithist_rescore(vh, kbc, ln->wid, cf,
-                                hmm_out_score(&ln->hmm) - ln->prob,
-                                hmm_out_history(&ln->hmm), lextree->type, ln->rc);
+                                hmm_out_score(ln) - ln->prob,
+                                hmm_out_history(ln), lextree->type, ln->rc);
 
             }
 
@@ -1624,7 +1624,7 @@ lextree_hmm_propagate_leaves(lextree_t * lextree, kbcore_t * kbc,
 #if 0
             active_word_end++;
 
-            /*      E_INFO("What is the hmm_out_score(&ln->hmm) %d wth %d\n", hmm_out_score(&ln->hmm),wth);
+            /*      E_INFO("What is the hmm_out_score(ln) %d wth %d\n", hmm_out_score(ln),wth);
                E_INFO("\nActive word end id %d, word end %s\n", ln->wid, dict_wordstr(kbc->dict,dict_basewid(kbc->dict,ln->wid))); */
 #endif
         }

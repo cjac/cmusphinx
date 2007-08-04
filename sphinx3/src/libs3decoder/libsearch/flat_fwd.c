@@ -387,9 +387,9 @@ dump_all_word(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm)
 
             for (h = whmm[w]; h; h = h->next) {
                 if (h->pos < last)
-                    printf(" %9d.%2d", -hmm_out_score(&h->hmm), h->pos);
-                else if (bestlast < hmm_out_score(&h->hmm))
-                    bestlast = hmm_out_score(&h->hmm);
+                    printf(" %9d.%2d", -hmm_out_score(h), h->pos);
+                else if (bestlast < hmm_out_score(h))
+                    bestlast = hmm_out_score(h);
             }
 
             if (bestlast > (int32) 0x80000000)
@@ -429,9 +429,9 @@ whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr)
         prevh = NULL;
         for (h = whmm[w]; h; h = nexth) {
             nexth = h->next;
-            if (hmm_frame(&h->hmm) == cf) {
-                int32 score = hmm_vit_eval(&h->hmm);
-                if (hmm_is_mpx(&h->hmm))
+            if (hmm_frame(h) == cf) {
+                int32 score = hmm_vit_eval((hmm_t *)h);
+                if (hmm_is_mpx(h))
                     n_mpx++;
                 else
                     n_nonmpx++;
@@ -471,7 +471,7 @@ whmm_renorm(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 bestscr)
 
     for (w = 0; w < dict->n_word; w++)
         for (h = whmm[w]; h; h = h->next)
-            hmm_normalize(&h->hmm, bestscr);
+            hmm_normalize((hmm_t *)h, bestscr);
 }
 
 
@@ -517,8 +517,8 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w, whmm_t * h
 
         /* Transition to next HMM */
         nexth = h->next;
-        if (hmm_out_score(&h->hmm) > hmm_in_score(&nexth->hmm))
-            hmm_enter(&nexth->hmm, hmm_out_score(&h->hmm), hmm_out_history(&h->hmm), nf);
+        if (hmm_out_score(h) > hmm_in_score(nexth))
+            hmm_enter((hmm_t *)nexth, hmm_out_score(h), hmm_out_history(h), nf);
     }
     else {
         /*
@@ -542,8 +542,8 @@ whmm_transition(srch_FLAT_FWD_graph_t * fwg, whmm_t ** whmm, int32 w, whmm_t * h
 
         /* Transition to next HMMs */
         for (rc = 0, nexth = h->next; rc < nssid; rc++, nexth = nexth->next) {
-            if (hmm_out_score(&h->hmm) > hmm_in_score(&nexth->hmm))
-                hmm_enter(&nexth->hmm, hmm_out_score(&h->hmm), hmm_out_history(&h->hmm), nf);
+            if (hmm_out_score(h) > hmm_in_score(nexth))
+                hmm_enter((hmm_t *)nexth, hmm_out_score(h), hmm_out_history(h), nf);
         }
     }
 }
@@ -571,21 +571,21 @@ whmm_exit(srch_FLAT_FWD_graph_t * fwg,
         pronlen = dict->word[w].pronlen;
 
         for (h = whmm[w]; h; h = h->next) {
-            if (hmm_bestscore(&h->hmm) >= thresh) {
+            if (hmm_bestscore(h) >= thresh) {
                 if (h->pos == pronlen - 1) {
-                    if (hmm_out_score(&h->hmm) >= wordthresh) {
+                    if (hmm_out_score(h) >= wordthresh) {
                         lattice_entry(lathist, w, fwg->n_frm,
-                                      hmm_out_score(&h->hmm),
-                                      hmm_out_history(&h->hmm),
+                                      hmm_out_score(h),
+                                      hmm_out_history(h),
                                       h->rc, fwg->ctxt, dict);
                     }
                 }
                 else {
-                    if (hmm_out_score(&h->hmm) + phone_penalty >= thresh)
+                    if (hmm_out_score(h) + phone_penalty >= thresh)
                         whmm_transition(fwg, whmm, w, h);
                 }
 
-                hmm_frame(&h->hmm) = nf;
+                hmm_frame(h) = nf;
             }
         }
     }
@@ -671,14 +671,14 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
         h = whmm[w];
 
         /* And now enter the next HMM in the usual Viterbi fashion. */
-        if (score > hmm_in_score(&h->hmm)) {
-            hmm_enter(&h->hmm, score, l, nf);
-            if (hmm_is_mpx(&h->hmm)) {
-                hmm_mpx_ssid(&h->hmm, 0) = ssid;
+        if (score > hmm_in_score(h)) {
+            hmm_enter((hmm_t *)h, score, l, nf);
+            if (hmm_is_mpx(h)) {
+                hmm_mpx_ssid(h, 0) = ssid;
             }
             else {
                 h->lc = lcmap[lc];
-                hmm_nonmpx_ssid(&h->hmm) = ssid;
+                hmm_nonmpx_ssid(h) = ssid;
             }
         }
 
@@ -722,13 +722,13 @@ word_enter(srch_FLAT_FWD_graph_t * fwg, s3wid_t w,
             /* &(ct_table->lrcpid[b][lc].pid[ct_table->lrcpid[b][lc].cimap[rc]]); */
             ssid = *(ssidp);
 
-            if (score > hmm_in_score(&h->hmm)) {
-                hmm_enter(&h->hmm, score, l, nf);
-                if (hmm_is_mpx(&h->hmm)) {
-                    hmm_mpx_ssid(&h->hmm, 0) = rssid[rc];
+            if (score > hmm_in_score(h)) {
+                hmm_enter((hmm_t *)h, score, l, nf);
+                if (hmm_is_mpx(h)) {
+                    hmm_mpx_ssid(h, 0) = rssid[rc];
                 }
                 else {
-                    hmm_nonmpx_ssid(&h->hmm) = ssid;
+                    hmm_nonmpx_ssid(h) = ssid;
                     h->lc = lcmap[lc];
                 }
             }

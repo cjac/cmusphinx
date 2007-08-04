@@ -553,9 +553,9 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
     /* Flag active senones */
     for (w = 0; w < dict->n_word; w++) {
         for (h = fwg->whmm[w]; h; h = h->next) {
-            if (hmm_is_mpx(&h->hmm)) {
-		for (st = 0; st < hmm_n_emit_state(&h->hmm); ++st) {
-		    p = hmm_mpx_ssid(&h->hmm, st);
+            if (hmm_is_mpx(h)) {
+		for (st = 0; st < hmm_n_emit_state(h); ++st) {
+		    p = hmm_mpx_ssid(h, st);
 		    if (p == -1)
 			break; /* All subsequent ones are also inactive */
                     senp = mdef->sseq[p];
@@ -563,9 +563,9 @@ srch_FLAT_FWD_select_active_gmm(void *srch)
                 }
             }
             else {
-                p = hmm_nonmpx_ssid(&h->hmm);
+                p = hmm_nonmpx_ssid(h);
                 senp = mdef->sseq[p];
-                for (st = 0; st < hmm_n_emit_state(&h->hmm); ++st)
+                for (st = 0; st < hmm_n_emit_state(h); ++st)
                     ascr->sen_active[senp[st]] = 1;
 
             }
