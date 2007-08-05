@@ -977,7 +977,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
 	    if (!gn) {
 		dn = (dagnode_t *) listelem_alloc(sizeof(*dn));
 		dn->wid = wid;
-		dn->node_ascr = ve->score - ve->tscore;
+		dn->node_ascr = ve->score;
 		dn->node_lscr = ve->tscore;
 		dn->sf = sf;
 		dn->fef = ef;
@@ -1061,7 +1061,7 @@ srch_allphone_gen_dag(void *srch,         /**< a pointer of srch_t */
                 for (gn3 = sfwid[sf]; gn3; gn3 = gnode_next(gn3)) {
                     dn2 = (dagnode_t *) gnode_ptr(gn3);
                     if (dn2->seqid >= 0) {
-			dag_link(dag, dn, dn2, ve->score - ve->tscore,
+			dag_link(dag, dn, dn2, ve->score,
 				 ve->tscore, sf, NULL);
                     }
                 }
