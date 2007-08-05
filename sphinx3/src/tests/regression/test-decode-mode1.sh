@@ -15,9 +15,10 @@ margs="-logbase 1.0003 \
 -cepdir $an4lm/"
 
 lmargs="-lm $an4lm/an4.tg.phone.arpa.DMP "
+rm -f test-decode-mode1.out
 
 run_program sphinx3_decode -op_mode 1 $margs -hyp test-decode-mode1.match \
-    > test-decode-mode1.out 2>&1
+    >> test-decode-mode1.out 2>&1
 
 filebase=`head -1 $an4lm/an4.ctl`
 compare_table "MODE1 LOOP match test" test-decode-mode1.match \
@@ -28,3 +29,8 @@ run_program sphinx3_decode -op_mode 1 $margs $lmargs -hyp test-decode-mode1-tg.m
 
 compare_table "MODE1 TG match test" test-decode-mode1-tg.match \
     $hub4am/test.allphone.phone_tg.match 
+
+echo "MODE1 BESTPATH TG match test"
+run_program sphinx3_decode -op_mode 1 $margs $lmargs -bestpath yes \
+    >> test-decode-mode1.out 2>&1
+

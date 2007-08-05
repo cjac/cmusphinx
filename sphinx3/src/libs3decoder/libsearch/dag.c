@@ -338,8 +338,8 @@ dag_bestpath(dag_t * dagp,      /* A pointer of the dag */
 
     if ((d = l->node) == NULL) {
         /* If no destination at end of l, src is root node.  Recursion termination */
-        assert(dict_basewid(dict, src->wid) ==
-               dict_wordid(dict, S3_START_WORD));
+        /* This doesn't necessarily have to be <s>. But it should be the root of the DAG. */
+        assert(src == dagp->root);
         l->lscr = 0;
         l->pscr = 0;
         l->pscr_valid = 1;

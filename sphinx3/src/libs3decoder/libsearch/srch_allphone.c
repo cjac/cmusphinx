@@ -1176,6 +1176,46 @@ srch_allphone_dag_dump(void *srch, dag_t *dag)
     return SRCH_SUCCESS;
 }
 
+glist_t
+srch_allphone_bestpath_impl(void *srch,          /**< A void pointer to a search structure */
+			    dag_t * dag)
+{
+    glist_t ghyp, rhyp;
+    float32 *f32arg;
+    float64 lwf;
+    srch_hyp_t *tmph, *bph;
+    srch_t *s = (srch_t *) srch;
+
+    f32arg = (float32 *) cmd_ln_access("-bestpathlw");
+    lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
+
+    if (kbcore_lm(s->kbc) == NULL)
+	E_FATAL("Bestpath search requires a language model\n");
+
+    /* For some reason these bogus links are necessary */
+    dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
+    dag->final.node = dag->end;
+
+    bph = dag_search(dag, s->uttid,
+                     lwf,
+                     dag->end,
+                     kbcore_dict(s->kbc),
+                     kbcore_lm(s->kbc), kbcore_fillpen(s->kbc));
+
+    if (bph != NULL) {
+        ghyp = NULL;
+        for (tmph = bph; tmph; tmph = tmph->next)
+            ghyp = glist_add_ptr(ghyp, (void *) tmph);
+
+        rhyp = glist_reverse(ghyp);
+        return rhyp;
+    }
+    else {
+        return NULL;
+    }
+
+}
+
 int
 srch_allphone_set_lm(void *srch_struct, const char *lmname)
 {
@@ -1239,7 +1279,7 @@ srch_funcs_t srch_allphone_funcs = {
 	/* gen_hyp */			srch_allphone_gen_hyp,
 	/* gen_dag */			srch_allphone_gen_dag,
 	/* dump_vithist */		NULL,
-	/* bestpath_impl */		NULL,
+	/* bestpath_impl */		srch_allphone_bestpath_impl,
 	/* dag_dump */			srch_allphone_dag_dump,
 	NULL
 };
