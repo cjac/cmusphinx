@@ -11,6 +11,7 @@ margs="-logbase 1.0003 \
 -fdict $an4lm/filler.dict \
 -ctl $an4lm/an4.ctl \
 -ctlcount 1 \
+-outlatdir . \
 -cepdir $an4lm/"
 
 lmargs="-lm $an4lm/an4.tg.phone.arpa.DMP "
