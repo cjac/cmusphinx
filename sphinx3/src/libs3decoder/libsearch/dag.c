@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -572,19 +573,27 @@ dag_write_header(FILE * fp, int32 nfr, int32 printminfr)
 
     /* Print logbase first!!  Other programs look for it early in the
      * DAG */
-
     fprintf(fp, "# -logbase %e\n", cmd_ln_float32("-logbase"));
-
     fprintf(fp, "# -dict %s\n", cmd_ln_str("-dict"));
     if (cmd_ln_str("-fdict"))
         fprintf(fp, "# -fdict %s\n", cmd_ln_str("-fdict"));
-    fprintf(fp, "# -lm %s\n", cmd_ln_str("-lm"));
-    fprintf(fp, "# -mdef %s\n", cmd_ln_str("-mdef"));
+    /* Allphone mode doesn't always have a LM. */
+    if (cmd_ln_str("-lm"))
+	fprintf(fp, "# -lm %s\n", cmd_ln_str("-lm"));
+    /* We might have one or many of these arguments */
+    if (cmd_ln_str("-hmm")) 
+        fprintf(fp, "# -hmm %s\n", cmd_ln_str("-hmm"));
+    if (cmd_ln_str("-mdef")) 
+        fprintf(fp, "# -mdef %s\n", cmd_ln_str("-mdef"));
+    if (cmd_ln_str("-mean")) 
+        fprintf(fp, "# -mean %s\n", cmd_ln_str("-mean"));
+    if (cmd_ln_str("-var")) 
+        fprintf(fp, "# -var %s\n", cmd_ln_str("-var"));
+    if (cmd_ln_str("-mixw")) 
+        fprintf(fp, "# -mixw %s\n", cmd_ln_str("-mixw"));
+    if (cmd_ln_str("-tmat")) 
+        fprintf(fp, "# -tmat %s\n", cmd_ln_str("-tmat"));
     fprintf(fp, "# -senmgau %s\n", cmd_ln_str("-senmgau"));
-    fprintf(fp, "# -mean %s\n", cmd_ln_str("-mean"));
-    fprintf(fp, "# -var %s\n", cmd_ln_str("-var"));
-    fprintf(fp, "# -mixw %s\n", cmd_ln_str("-mixw"));
-    fprintf(fp, "# -tmat %s\n", cmd_ln_str("-tmat"));
     if (printminfr) {
         fprintf(fp, "# -min_endfr %d\n", cmd_ln_int32("-min_endfr"));
     }
