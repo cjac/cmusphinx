@@ -128,52 +128,6 @@
 */
 
 /**
- * \struct word_cand_t
- *
- * Word cand structure used in word lattice structure search. For now, it is derived from dag, 
- * so it is now put inside dag.h. 
- */
-typedef struct word_cand_s {
-    s3wid_t wid;		/**< A particular candidate word starting in a given frame */
-    struct word_cand_s *next;	/**< Next candidate starting in same frame; NULL if none */
-} word_cand_t;
-
-
-/**
- * Build array of candidate words that start around the current frame (cf).
- * Note: filler words are not in this list since they are always searched (see
- * word_trans).
- */
-
-void build_word_cand_cf (int32 cf, /**< Current frame */
-			 dict_t *dict, /**< The dictionary */
-			 s3wid_t* wcand_cf, /**< The array of word candidate */
-			 int32 word_cand_win, /**< In frame f, candidate words in input lattice from frames
-						 [(f - word_cand_win) .. (f + word_cand_win)] will be
-						 the actual candidates to be started(entered) */
-			 word_cand_t ** wcand
-
-    );
-
-
-
-/**
- * Load word candidate into a list 
- */
-int32 word_cand_load (FILE *fp,  /**< An initialized for inputfile poiner */
-		      word_cand_t** wcand, /**< list of word candidate */
-		      dict_t *dict, /**< The dictionary*/
-		      char* uttid   /**< The ID of an utterance */
-    );
-
-
-/**
- * Free word candidate
- */
-void word_cand_free ( word_cand_t ** wcand  /**< list of word candidate to free */
-    );
-
-/**
  * DAG structure representation of word lattice.  A unique <wordid,startframe> is a node.
  * Edges are formed if permitted by time adjacency.  (See comment before dag_build.)
  */
