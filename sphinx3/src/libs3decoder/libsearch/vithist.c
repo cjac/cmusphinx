@@ -1421,6 +1421,8 @@ void
 latticehist_free(latticehist_t * lathist)
 {
     if (lathist) {
+        latticehist_reset(lathist);
+
         if (lathist->lattice)
             ckd_free(lathist->lattice);
 
