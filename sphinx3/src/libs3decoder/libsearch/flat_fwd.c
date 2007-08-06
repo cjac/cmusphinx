@@ -430,7 +430,9 @@ whmm_eval(srch_FLAT_FWD_graph_t * fwg, int32 * senscr)
         for (h = whmm[w]; h; h = nexth) {
             nexth = h->next;
             if (hmm_frame(h) == cf) {
-                int32 score = hmm_vit_eval((hmm_t *)h);
+                int32 score;
+
+                score = hmm_vit_eval((hmm_t *)h);
                 if (hmm_is_mpx(h))
                     n_mpx++;
                 else
@@ -847,13 +849,7 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
         for (; n_bg > 0; --n_bg) {
             s3wid_t nextwid;
 
-            if (is32bits)
-                bgptr32++;
-            else
-                bgptr++;
-
             /* Transition to all alternative pronunciations for bigram follower */
-
             nextwid =
                 is32bits ? LM_DICTWID(lm,
                                       bgptr32->
@@ -861,7 +857,8 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                                                         bgptr->
                                                         wid);
 
-            if (IS_S3WID(nextwid) && (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
+            if (IS_S3WID(nextwid) &&
+                (!fwg->tg_trans_done[nextwid]) &&  /* TG transition already done */
                 (nextwid != dict->startwid)) {  /* No transition to <s> */
                 s3wid_t w;
 
@@ -882,6 +879,10 @@ enter_lm_words(srch_FLAT_FWD_graph_t * fwg, latticehist_t *lathist,
                         word_enter(fwg, w, newscore, l, lc);
                 }
             }
+            if (is32bits)
+                ++bgptr32;
+            else
+                ++bgptr;
         }
 
         acc_bowt += bowt;
