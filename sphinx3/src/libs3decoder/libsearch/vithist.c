@@ -1156,6 +1156,7 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
             dn->hook = NULL;
             dn->predlist = NULL;
             dn->succlist = NULL;
+            dn->reachable = 0;
             n_node++;
 
             sfwid[sf] = glist_add_ptr(sfwid[sf], (void *) dn);
@@ -1802,6 +1803,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
             dn->hook = NULL;
             dn->predlist = NULL;
             dn->succlist = NULL;
+            dn->reachable = 0;
             n_node++;
 
             sfwid[sf] = glist_add_ptr(sfwid[sf], (void *) dn);

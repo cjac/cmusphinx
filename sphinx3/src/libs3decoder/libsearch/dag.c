@@ -193,6 +193,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
         l->src = pd;
         l->ascr = ascr;
         l->lscr = lscr;
+        l->hscr = 0;
         l->pscr = (int32) 0x80000000;
         l->pscr_valid = 0;
         l->history = NULL;
@@ -211,6 +212,7 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     l->src = d;
     l->ascr = ascr;
     l->lscr = lscr;
+    l->hscr = 0;
     l->pscr = (int32) 0x80000000;
     l->pscr_valid = 0;
     l->history = NULL;
