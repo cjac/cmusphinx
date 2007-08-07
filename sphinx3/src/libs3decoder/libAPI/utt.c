@@ -190,6 +190,7 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     int32 num_decode_frame;
     int32 total_frame;
     stat_t *st;
+    srch_t *s;
 
     num_decode_frame = 0;
     E_INFO("Processing: %s\n", uttid);
@@ -239,10 +240,15 @@ utt_decode(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     /* Also need to make sure we don't set resource if it is the same. Well, this mechanism
        could be provided inside the following function. 
     */
+    s = kb->srch;
     if (ur->lmname != NULL)
-        srch_set_lm((srch_t *) kb->srch, ur->lmname);
+        srch_set_lm(s, ur->lmname);
     if (ur->regmatname != NULL)
         kb_setmllr(ur->regmatname, ur->cb2mllrname, kb);
+
+    /* These are necessary! */
+    s->uttid = kb->uttid;
+    s->uttfile = kb->uttfile;
 
     utt_begin(kb);
     utt_decode_block(kb->feat, total_frame, &num_decode_frame, kb);
@@ -272,8 +278,6 @@ utt_decode_block(float ***block_feat,   /* Incoming block of featurevecs */
 
     srch_t *s;
     s = (srch_t *) kb->srch;
-    s->uttid = kb->uttid;
-    s->uttfile = kb->uttfile;
 
     if (srch_utt_decode_blk(s, block_feat, no_frm, curfrm) == SRCH_FAILURE) {
         E_ERROR("srch_utt_decode_blk failed. \n");
