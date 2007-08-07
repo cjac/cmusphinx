@@ -33,10 +33,7 @@ margs="-mdef $hub4am/hub4opensrc.6000.mdef \
 
 lmargs="-lm $an4lm/an4.ug.lm.DMP"
 
-clsargs="-lmctlfn $an4lm/an4.ug.cls.lmctl \
--ctl_lm  $an4lm/an4.ctl_lm" 
-
-run_program sphinx3_decode $margs $lmargs > $tmpout 2>&1
+run_program sphinx3_decode $margs $lmargs -outlatdir . > $tmpout 2>&1
 grep "FWDVIT" $tmpout
 grep "FWDXCT" $tmpout
 
@@ -46,5 +43,13 @@ else
     fail "DECODE MODE 3 test"
 fi
 
+run_program sphinx3_decode $margs $lmargs -inlatdir . > $tmpout 2>&1
+grep "FWDVIT" $tmpout
+grep "FWDXCT" $tmpout
 
+if grep "FWDVIT" $tmpout |grep "P I T T S B U R G H" > /dev/null 2>&1; then
+    pass "RESCORE MODE 3 test" 
+else
+    fail "RESCORE MODE 3 test"
+fi
 
