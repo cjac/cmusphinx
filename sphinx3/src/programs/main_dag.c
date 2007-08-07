@@ -1,3 +1,4 @@
+/* -*- c-basic-offset:4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -381,12 +382,11 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     char dagfile[1024];
     srch_hyp_t *h, *hyp;
     char *latdir, *latext;
-    int32 nfrm, ascr, lscr;
+    int32 ascr, lscr;
 
     hyp = NULL;
     ptmr_reset(&tm_utt);
     ptmr_start(&tm_utt);
-
 
     latdir = cmd_ln_str("-inlatdir");
     latext = cmd_ln_str("-latext");
@@ -396,41 +396,49 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
     else
         sprintf(dagfile, "%s.%s", uttid, latext);
 
+    dag = dag_load(dagfile,
+		   cmd_ln_int32("-maxedge"),
+		   cmd_ln_float32("-logbase"),
+		   cmd_ln_int32("-dagfudge"), dict, fpen);
+    if (dag == NULL) {
+        ptmr_stop(&tm_utt);
+        E_ERROR("Failed to load dag from %s\n", dagfile);
+        return;
+    }
+    if (dict_filler_word(dict, dag->end->wid))
+        dag->end->wid = dict->finishwid;
+    if (dag_remove_filler_nodes(dag, 1.0, dict, fpen) < 0)
+        E_ERROR("maxedge limit (%d) exceeded\n", dag->maxedge);
+    else
+        dag->filler_removed = 1;
+    /* For some reason these bogus links are necessary */
+    dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
+    dag->final.node = dag->end;
 
-    if ((nfrm =
-         s3dag_dag_load(&dag, cmd_ln_float32("-lw"), dagfile, dict,
-                        fpen)) >= 0) {
-        hyp =
-            dag_search(dag, uttid, cmd_ln_float32("-lw"), dag->final.node,
-                       dict, lmset->cur_lm, fpen);
-        if (hyp != NULL) {
-            if (*((int32 *) cmd_ln_access("-backtrace")))
-                log_hyp_detailed(stdout, hyp, uttid, "BP", "bp", NULL);
+    hyp = dag_search(dag, uttid, 1.0, dag->final.node,
+                     dict, lmset->cur_lm, fpen);
+    if (hyp != NULL) {
+        if (cmd_ln_boolean("-backtrace"))
+            log_hyp_detailed(stdout, hyp, uttid, "BP", "bp", NULL);
 
-            /* Total acoustic score and LM score */
-            ascr = lscr = 0;
-            for (h = hyp; h; h = h->next) {
-                ascr += h->ascr;
-                lscr += h->lscr;
-            }
-
-            printf("BSTPTH: ");
-            log_hypstr(stdout, hyp, uttid, 0, ascr + lscr, dict);
-
-            printf("BSTXCT: ");
-            s3dag_log_hypseg(uttid, stdout, hyp, nfrm);
-
-            lm_cache_stats_dump(lmset->cur_lm);
-            lm_cache_reset(lmset->cur_lm);
+        /* Total acoustic score and LM score */
+        ascr = lscr = 0;
+        for (h = hyp; h; h = h->next) {
+            ascr += h->ascr;
+            lscr += h->lscr;
         }
-        else {
-            E_ERROR("DAG search (%s) failed\n", uttid);
-            hyp = NULL;
-        }
+
+        printf("BSTPTH: ");
+        log_hypstr(stdout, hyp, uttid, 0, ascr + lscr, dict);
+
+        printf("BSTXCT: ");
+        s3dag_log_hypseg(uttid, stdout, hyp, dag->nfrm);
+
+        lm_cache_stats_dump(lmset->cur_lm);
+        lm_cache_reset(lmset->cur_lm);
     }
     else {
         E_ERROR("DAG search (%s) failed\n", uttid);
-        hyp = NULL;
     }
 
 
@@ -439,21 +447,21 @@ decode_utt(char *uttid, FILE * _matchfp, FILE * _matchsegfp)
         log_hypstr(_matchfp, hyp, uttid, 0, 0, dict);
     }
     if (_matchsegfp)
-        s3dag_log_hypseg(uttid, _matchsegfp, hyp, nfrm);
+        s3dag_log_hypseg(uttid, _matchsegfp, hyp, dag->nfrm);
 
     dag_destroy(dag);
 
     ptmr_stop(&tm_utt);
 
-    printf("%s: TMR: %5d Frm", uttid, nfrm);
-    if (nfrm > 0) {
-        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / nfrm);
-        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / nfrm);
+    printf("%s: TMR: %5d Frm", uttid, dag->nfrm);
+    if (dag->nfrm > 0) {
+        printf(" %6.2f xEl", tm_utt.t_elapsed * 100.0 / dag->nfrm);
+        printf(" %6.2f xCPU", tm_utt.t_cpu * 100.0 / dag->nfrm);
     }
     printf("\n");
     fflush(stdout);
 
-    tot_nfr += nfrm;
+    tot_nfr += dag->nfrm;
 
     if (hyp != NULL)
         hyp_free(hyp);

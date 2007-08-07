@@ -948,6 +948,9 @@ dag_load(char *file,          /**< Input: File to lod from */
             d->node_lscr = node_lscr;
             report = 0;
         }
+        else {
+            d->node_ascr = d->node_lscr = 0;
+        }
 
         if (!dag->list)
             dag->list = d;
@@ -973,6 +976,7 @@ dag_load(char *file,          /**< Input: File to lod from */
         E_ERROR("Final node parameter missing or invalid\n");
         goto load_error;
     }
+    dag->end = darray[k];
     dag->final.node = darray[k];
     dag->final.ascr = 0;
     dag->final.next = NULL;
@@ -1099,6 +1103,16 @@ dag_load(char *file,          /**< Input: File to lod from */
     assert(d);
     dag->root = d;
 
+    /*
+     * Set limit on max LM ops allowed after which utterance is aborted.
+     * Limit is lesser of absolute max and per frame max.
+     */
+    dag->maxlmop = cmd_ln_int32("-maxlmop");
+    k = cmd_ln_int32("-maxlpf");
+    k *= dag->nfrm;
+    if (k > 0 && dag->maxlmop > k)
+        dag->maxlmop = k;
+    dag->lmop = 0;
 
     dag_add_fudge_edges(dag, fudge, min_ef_range, (void *) lathist, dict);
 
@@ -1120,56 +1134,4 @@ dag_load(char *file,          /**< Input: File to lod from */
         latticehist_free(lathist);
     return NULL;
 
-}
-
-int32
-s3dag_dag_load(dag_t ** dagpp, float32 lwf, char *file, dict_t * dict,
-               fillpen_t * fpen)
-{
-
-    int32 k;
-
-    *dagpp = dag_load(file,
-                      cmd_ln_int32("-maxedge"),
-                      cmd_ln_float32("-logbase"),
-                      cmd_ln_int32("-dagfudge"), dict, fpen);
-
-    assert(*dagpp);
-    /*
-     * HACK!! Change dag.final.node wid to finishwid if some other filler word,
-     * to avoid complications with LM scores at this point.
-     */
-    (*dagpp)->orig_exitwid = (*dagpp)->final.node->wid;
-    if (dict_filler_word(dict, (*dagpp)->final.node->wid))
-        (*dagpp)->final.node->wid = dict->finishwid;
-
-
-    /* Add links bypassing filler nodes */
-    if (dag_remove_filler_nodes((*dagpp), lwf, dict, fpen) < 0) {
-        E_ERROR("%s: maxedge limit (%d) exceeded\n", file,
-                (*dagpp)->maxedge);
-        return -1;
-    }
-    else
-        (*dagpp)->filler_removed = 1;
-
-    /* Attach a dummy predecessor link from <<s>,0> to nowhere */
-    dag_link((*dagpp), NULL, (*dagpp)->entry.node, 0, 0, -1, NULL);
-
-    E_INFO("%5d frames, %6d nodes, %8d edges\n", (*dagpp)->nfrm,
-           (*dagpp)->nnode, (*dagpp)->nlink);
-
-    /*
-     * Set limit on max LM ops allowed after which utterance is aborted.
-     * Limit is lesser of absolute max and per frame max.
-     */
-    (*dagpp)->maxlmop = cmd_ln_int32("-maxlmop");
-    k = cmd_ln_int32("-maxlpf");
-
-    k *= (*dagpp)->nfrm;
-    if ((*dagpp)->maxlmop > k)
-        (*dagpp)->maxlmop = k;
-    (*dagpp)->lmop = 0;
-
-    return (*dagpp)->nfrm;
 }
