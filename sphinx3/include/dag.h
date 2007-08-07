@@ -397,15 +397,4 @@ dag_t* dag_load (
     fillpen_t *fpen    /**< Filler penalty structure */
     );
 
-/**
-   A version of dag load that is used in main_dag and srch.c 
-   @return number of frame read
-*/
-int32 s3dag_dag_load (dag_t **dagpp,  /**< Output: pointer of pointer of DAG */
-		      float32 lwf,     /**<Input, language weight */
-		      char *file,      /**< The file name */
-		      dict_t *dict, 
-		      fillpen_t *fpen
-    );
-
 #endif
