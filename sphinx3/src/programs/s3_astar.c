@@ -449,10 +449,10 @@ s3astar_dag_load(char *file)
      * Set limit on max LM ops allowed after which utterance is aborted.
      * Limit is lesser of absolute max and per frame max.
      */
-    dag->maxlmop = *((int32 *) cmd_ln_access("-maxlmop"));
-    k = *((int32 *) cmd_ln_access("-maxlpf"));
+    dag->maxlmop = cmd_ln_int32("-maxlmop");
+    k = cmd_ln_int32("-maxlpf");
     k *= dag->nfrm;
-    if (dag->maxlmop > k)
+    if (k > 0 && dag->maxlmop > k)
         dag->maxlmop = k;
     dag->lmop = 0;
 
@@ -788,22 +788,22 @@ nbest_search(char *filename, char *uttid)
     }
     fprintf(fp, "# %s\n", uttid);
     fprintf(fp, "# frames %d\n", dag->nfrm);
-    f32arg = *((float32 *) cmd_ln_access("-logbase"));
-    fprintf(fp, "# logbase %e\n", f32arg);
-    f32arg = *((float32 *) cmd_ln_access("-lw"));
-    fprintf(fp, "# langwt %e\n", f32arg);
-    f32arg = *((float32 *) cmd_ln_access("-wip"));
-    fprintf(fp, "# inspen %e\n", f32arg);
-    f64arg = *((float64 *) cmd_ln_access("-beam"));
-    fprintf(fp, "# beam %e\n", f64arg);
-    ppathdebug = *((int32 *) cmd_ln_access("-ppathdebug"));
+    f32arg = cmd_ln_float32("-logbase");
+    fprintf(fp, "# -logbase %e\n", f32arg);
+    f32arg = cmd_ln_float32("-lw");
+    fprintf(fp, "# -lw %e\n", f32arg);
+    f32arg = cmd_ln_float32("-wip");
+    fprintf(fp, "# -wip %e\n", f32arg);
+    f64arg = cmd_ln_float64("-beam");
+    fprintf(fp, "# -beam %e\n", f64arg);
+    ppathdebug = cmd_ln_boolean("-ppathdebug");
 
     assert(heap_root == NULL);
     assert(ppath_list == NULL);
 
 
     /* Set limit on max #ppaths allocated before aborting utterance */
-    maxppath = *((int32 *) cmd_ln_access("-maxppath"));
+    maxppath = cmd_ln_int32("-maxppath");
     n_ppath = 0;
 
     for (i = 0; i < HISTHASH_MOD; i++)
@@ -833,7 +833,7 @@ nbest_search(char *filename, char *uttid)
 
     /* Astar-search */
     n_hyp = n_pop = n_exp = n_pp = 0;
-    nbest_max = *((int32 *) cmd_ln_access("-nbest"));
+    nbest_max = cmd_ln_int32("-nbest");
     besthyp = besttscr = (int32) 0x80000000;
     worsthyp = (int32) 0x7fffffff;
 
@@ -948,20 +948,20 @@ nbest_search(char *filename, char *uttid)
 void
 nbest_init(void)
 {
-    float64 *f64arg;
+    float64 f64arg;
     float32 lw, wip;
     int32 fudge;
 
-    fudge = *((int32 *) cmd_ln_access("-dagfudge"));
+    fudge = cmd_ln_int32("-dagfudge");
     if ((fudge < 0) || (fudge > 2))
         E_FATAL("Bad -dagfudge argument: %d, must be in range 0..2\n",
                 fudge);
 
-    lw = *((float32 *) cmd_ln_access("-lw"));
-    wip = *((float32 *) cmd_ln_access("-wip"));
+    lw = cmd_ln_float32("-lw");
+    wip = cmd_ln_float32("-wip");
 
-    f64arg = (float64 *) cmd_ln_access("-beam");
-    beam = logs3(*f64arg);
+    f64arg = cmd_ln_float64("-beam");
+    beam = logs3(f64arg);
     E_INFO("beam= %d\n", beam);
 
 

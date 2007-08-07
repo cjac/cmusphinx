@@ -261,10 +261,6 @@ static arg_t defn[] = {
                                           ARG_STRING,
                                           NULL,
                                           "Model definition input file: triphone -> senones/tmat tying"},
-    {"-compwd",
-     ARG_INT32,
-     "0",
-     "Whether compound words should be broken up internally into component words"},
     {"-beam",
      ARG_FLOAT64,
      "1e-64",
@@ -294,8 +290,8 @@ static arg_t defn[] = {
      "200",
      "Max. n-best hypotheses to generate per utterance"},
     {"-ppathdebug",
-     ARG_INT32,
-     "0",
+     ARG_BOOLEAN,
+     "no",
      "Generate debugging information for the search. "},
 
     {NULL, ARG_INT32, NULL, NULL}
@@ -326,11 +322,11 @@ models_init(void)
                        cmd_ln_float32("-uw"), dict);
 
 
-    fpen = fillpen_init(dict, (char *) cmd_ln_access("-fillpen"),
-                        *(float32 *) cmd_ln_access("-silprob"),
-                        *(float32 *) cmd_ln_access("-fillprob"),
-                        *(float32 *) cmd_ln_access("-lw"),
-                        *(float32 *) cmd_ln_access("-wip"));
+    fpen = fillpen_init(dict, cmd_ln_str("-fillpen"),
+                        cmd_ln_float32("-silprob"),
+                        cmd_ln_float32("-fillprob"),
+                        cmd_ln_float32("-lw"),
+                        cmd_ln_float32("-wip"));
 
 }
 
@@ -376,9 +372,9 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     if (ur->lmname)
         lmset_set_curlm_wname(lmset, ur->lmname);
 
-    latdir = (char *) cmd_ln_access("-inlatdir");
-    latext = (char *) cmd_ln_access("-latext");
-    nbestext = (char *) cmd_ln_access("-nbestext");
+    latdir = cmd_ln_str("-inlatdir");
+    latext = cmd_ln_str("-latext");
+    nbestext = cmd_ln_str("-nbestext");
     if (latdir) {
 	build_output_uttfile(dagfile, latdir, uttid, ur->uttfile);
 	strcat(dagfile, ".");

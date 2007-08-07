@@ -252,10 +252,6 @@ static arg_t defn[] = {
                                                      ARG_STRING,
                                                      NULL,
                                                      "Interpolation weights (CD/CI senone) parameters input file"},
-    {"-compwd",
-     ARG_INT32,
-     "0",
-     "Compound words in dictionary (not supported yet)"},
 
     /* align-specific argument */
     {"-beam",
