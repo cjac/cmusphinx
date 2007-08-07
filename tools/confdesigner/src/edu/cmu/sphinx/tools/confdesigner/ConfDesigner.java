@@ -372,7 +372,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     }
 
 
-    public ConfigurablePropPanel getPropSheetPanel() {
+    public PropertyEditorPanel getPropSheetPanel() {
         return propSheetPanel;
     }
 
@@ -524,7 +524,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
         filterResetButton = new JButton();
         configurableTree = new ConfigSelector();
         splitPane3 = new JSplitPane();
-        propSheetPanel = new ConfigurablePropPanel();
+        propSheetPanel = new PropertyEditorPanel();
         birdViewPanel = new JPanel();
         scenePane = new JPanel();
 
@@ -899,7 +899,7 @@ public class ConfDesigner extends JFrame implements ExecutorListener {
     private JButton filterResetButton;
     private ConfigSelector configurableTree;
     private JSplitPane splitPane3;
-    private ConfigurablePropPanel propSheetPanel;
+    private PropertyEditorPanel propSheetPanel;
     private JPanel birdViewPanel;
     private JPanel scenePane;
     // JFormDesigner - End of variables declaration  //GEN-END:variables

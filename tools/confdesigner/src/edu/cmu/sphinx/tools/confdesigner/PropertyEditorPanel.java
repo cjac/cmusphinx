@@ -2,11 +2,8 @@ package edu.cmu.sphinx.tools.confdesigner;
 
 import com.l2fprod.common.propertysheet.DefaultProperty;
 import com.l2fprod.common.propertysheet.Property;
-import com.l2fprod.common.propertysheet.PropertySheetPanel;
+import edu.cmu.sphinx.tools.confdesigner.propedit.ConfDoubleProperty;
 import edu.cmu.sphinx.util.props.*;
-import org.netbeans.api.visual.model.ObjectSceneEvent;
-import org.netbeans.api.visual.model.ObjectSceneListener;
-import org.netbeans.api.visual.model.ObjectState;
 
 import javax.swing.*;
 import java.awt.event.KeyAdapter;
@@ -17,14 +14,13 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * A self-rebuilding gui which allows to edit simple property-types (int, double, booelean, String).
  *
  * @author Holger Brandl
  */
-public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectSceneListener {
+public class PropertyEditorPanel {
 
     ConfigurationManager cm;
     PropertySheet currentPS;
@@ -33,7 +29,7 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
     boolean isShowingGlobalProps = true;
 
 
-    public ConfigurablePropPanel() {
+    public PropertyEditorPanel() {
         addKeyListener(new KeyAdapter() {
 
             public void keyPressed(KeyEvent e) {
@@ -114,7 +110,7 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
                     case DOUBLE:
                         S4Double s4Double = ((S4Double) wrapper);
 
-                        p = new DefaultProperty();
+                        p = new ConfDoubleProperty(propName, s4Double);
                         p.setDisplayName(propName);
 
                         p.setType(Double.class);
@@ -288,45 +284,8 @@ public class ConfigurablePropPanel extends PropertySheetPanel implements ObjectS
 
     public void setConfigurationManager(ConfigurationManager cm) {
         assert cm != null;
-
         this.cm = cm;
-//        if (currentPS == null)
+
         rebuildPanel(null);
-    }
-
-
-    public void objectAdded(ObjectSceneEvent event, Object addedObject) {
-        System.err.println("object added(" + addedObject + ")");
-    }
-
-
-    public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-        System.err.println("object removed (" + removedObject + ")");
-    }
-
-
-    public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
-        System.err.println("object state added (" + newState + ")\"");
-
-    }
-
-
-    public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
-        System.err.println("selection changed (" + newSelection + ")");
-    }
-
-
-    public void highlightingChanged(ObjectSceneEvent event, Set<Object> previousHighlighting, Set<Object> newHighlighting) {
-
-    }
-
-
-    public void hoverChanged(ObjectSceneEvent event, Object previousHoveredObject, Object newHoveredObject) {
-        System.err.println("hover changed (new hover object =" + newHoveredObject + ")");
-    }
-
-
-    public void focusChanged(ObjectSceneEvent event, Object previousFocusedObject, Object newFocusedObject) {
-
     }
 }

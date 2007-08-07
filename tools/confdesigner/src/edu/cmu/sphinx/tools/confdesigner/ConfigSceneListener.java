@@ -21,7 +21,7 @@ class ConfigSceneListener extends ObjectSceneListenerAdapter {
 
 
     public void selectionChanged(ObjectSceneEvent event, Set<Object> previousSelection, Set<Object> newSelection) {
-        ConfigurablePropPanel propPanel = designer.getPropSheetPanel();
+        PropertyEditorPanel propPanel = designer.getPropSheetPanel();
 
         if (newSelection.size() != 1) {
             propPanel.rebuildPanel(null);
