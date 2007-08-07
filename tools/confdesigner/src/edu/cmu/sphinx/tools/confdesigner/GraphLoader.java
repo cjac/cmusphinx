@@ -3,10 +3,7 @@ package edu.cmu.sphinx.tools.confdesigner;
 import edu.cmu.sphinx.tools.executor.ExecutorListener;
 import edu.cmu.sphinx.util.props.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DOCUMENT ME!
@@ -27,17 +24,17 @@ public class GraphLoader {
 
     public boolean mergeIntoScene(ConfigurationManager cm) {
         confController.getCm().addSubConfiguration(cm);
-        loadScene(cm, null);
+        loadScene(confController.getCm(), null, cm.getComponentNames());
 
         return true;
     }
 
 
-    public boolean loadScene(ConfigurationManager cm, List<ExecutorListener> executorListeners) {
+    public boolean loadScene(ConfigurationManager cm, List<ExecutorListener> executorListeners, Collection<String> addCompNames) {
         Map<String, ConfNode> nodes = new HashMap<String, ConfNode>();
 
 
-        for (String compName : cm.getComponentNames()) {
+        for (String compName : addCompNames) {
             assert !nodes.keySet().contains(compName) : "scene already contains node named '" + compName + "'";
 
             nodes.put(compName, confController.addNode(cm.getPropertySheet(compName), compName));
@@ -46,7 +43,7 @@ public class GraphLoader {
         scene.validate();
 
         // connect all components
-        for (String compName : cm.getComponentNames()) {
+        for (String compName : addCompNames) {
             connect2Graph(cm, compName, nodes);
         }
 
