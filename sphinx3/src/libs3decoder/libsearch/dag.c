@@ -204,8 +204,6 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
         l->ef = ef;
         l->next = pd->succlist;
 	assert(pd->succlist != l);
-
-        /* Effect caused by aggregating different stuctures */
         l->bypass = byp;        /* DAG-specific: This is a FORWARD link!! */
         l->is_filler_bypass = 0;        /* Astar-specific */
         l->hook = NULL;         /* Hopefully, this is the last argument we put into the dag_link structure */
@@ -223,16 +221,16 @@ dag_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     l->pscr_valid = 0;
     l->history = NULL;
     l->ef = ef;
-
     l->bypass = byp;            /* DAG-specific: This is a FORWARD link!! */
     l->is_filler_bypass = 0;    /* Astar-specific */
-
     l->hook = NULL;             /* Hopefully, this is the last argument we put into the dag_link structure */
 
     l->next = d->predlist;
     assert(d->predlist != l);
     d->predlist = l;
 
+    if (byp)
+        dagp->nbypass++;
     dagp->nlink++;
 
     return (dagp->nlink > dagp->maxedge) ? -1 : 0;
@@ -295,6 +293,63 @@ dag_update_link(dag_t * dagp, dagnode_t * pd, dagnode_t * d, int32 ascr,
     }
 
     return 0;
+}
+
+/**
+ * Mark every node that has a path to the argument dagnode as "reachable".
+ */
+static void
+dag_mark_reachable(dagnode_t * d)
+{
+    daglink_t *l;
+
+    d->reachable = 1;
+    for (l = d->predlist; l; l = l->next)
+        if (!l->node->reachable)
+            dag_mark_reachable(l->node);
+}
+
+
+void
+dag_remove_unreachable(dag_t *dag)
+{
+    dagnode_t *d;
+    daglink_t *l, *pl, *nl;
+
+    dag_mark_reachable(dag->end);
+    for (d = dag->list; d; d = d->alloc_next) {
+        if (!d->reachable) {
+            /* Remove successor node links */
+            for (l = d->succlist; l; l = nl) {
+                nl = l->next;
+                listelem_free(l, sizeof(*l));
+            }
+            d->succlist = NULL;
+
+            /* Remove predecessor links */
+            for (l = d->predlist; l; l = nl) {
+                nl = l->next;
+                listelem_free(l, sizeof(*l));
+            }
+            d->predlist = NULL;
+        }
+        else {
+            /* Remove successor links to unreachable nodes; predecessors are reachable */
+            pl = NULL;
+            for (l = d->succlist; l; l = nl) {
+                nl = l->next;
+                if (!l->node->reachable) {
+                    if (!pl)
+                        d->succlist = nl;
+                    else
+                        pl->next = nl;
+                    listelem_free(l, sizeof(*l));
+                }
+                else
+                    pl = l;
+            }
+        }
+    }
 }
 
 /* Read parameter from a lattice file*/

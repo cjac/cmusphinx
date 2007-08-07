@@ -373,6 +373,11 @@ int32 dag_remove_filler_nodes (dag_t* dagp,  /**< DAG */
 			       fillpen_t *fpen /**< The filler penalty */
     );
 
+/**
+ * Remove nodes from which the final exit node is not reachable.
+ */
+void dag_remove_unreachable(dag_t *dag);
+
 
 /**
  * Load a DAG from a file: each unique <word-id,start-frame> is a node, i.e. with
@@ -396,5 +401,15 @@ dag_t* dag_load (
     dict_t *dict,       /**< Dictionary */
     fillpen_t *fpen    /**< Filler penalty structure */
     );
+
+/**
+ * Temporary functions for A* search (will be removed) 
+ */
+
+dag_t *s3astar_dag_load(char *file, dict_t *dict, lm_t *lm, fillpen_t *fpen);
+void nbest_search(dag_t *dag, char *filename, char *uttid,
+                  dict_t *dict, lm_t *lm, fillpen_t *fpen);
+void nbest_init(void);
+
 
 #endif

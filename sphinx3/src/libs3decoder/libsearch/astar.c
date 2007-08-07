@@ -1,3 +1,4 @@
+/* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
  * Copyright (c) 1995-2004 Carnegie Mellon University.  All rights
  * reserved.
@@ -142,8 +143,8 @@
  * 		Started, copying from nbest.c.
  */
 
-/** \file s3_astar.c
- * \brief engine for s3.0 astar
+/** \file astar.c
+ * \brief Library for A* search
  */
 
 #include <stdio.h>
@@ -151,26 +152,16 @@
 #include <string.h>
 #include <assert.h>
 
-#include <s3types.h>
-/*#include "s3_dag.h" */
-#include <mdef.h>
-#include <tmat.h>
-#include <dict.h>
-#include <lm.h>
-#include <fillpen.h>
-#include <search.h>
-#include <logs3.h>
-#include <dag.h>
-#include <vithist.h>
-
-lmset_t *lmset;                 /* The language model set */
-fillpen_t *fpen;                /* The filler penalty structure. */
-dag_t *dag;                     /* The dag used by main_astar.c */
-dict_t *dict;                   /* The dictionary */
-latticehist_t *lathist;         /* A lattice history table (s3.0 vithist_t) */
-
-static int32 beam;
-
+#include "s3types.h"
+#include "mdef.h"
+#include "tmat.h"
+#include "dict.h"
+#include "lm.h"
+#include "fillpen.h"
+#include "search.h"
+#include "logs3.h"
+#include "dag.h"
+#include "vithist.h"
 
 /**
  * Add a filler-bypass link between the two nodes or update an existing bypass link if
@@ -178,7 +169,7 @@ static int32 beam;
  * Return value: 0 if successful, -1 if maxedge limit exceeded.
  */
 static int32
-astar_dag_link_bypass(dagnode_t * pd, dagnode_t * d, int32 ascr)
+astar_dag_link_bypass(dag_t *dag, dagnode_t * pd, dagnode_t * d, int32 ascr)
 {
     daglink_t *l;
 
@@ -208,63 +199,6 @@ astar_dag_link_bypass(dagnode_t * pd, dagnode_t * d, int32 ascr)
 
 
 /**
- * Mark every node that has a path to the argument dagnode as "reachable".
- */
-static void
-dag_mark_reachable(dagnode_t * d)
-{
-    daglink_t *l;
-
-    d->reachable = 1;
-    for (l = d->predlist; l; l = l->next)
-        if (!l->node->reachable)
-            dag_mark_reachable(l->node);
-}
-
-
-static void
-dag_remove_unreachable(void)
-{
-    dagnode_t *d;
-    daglink_t *l, *pl, *nl;
-
-    for (d = dag->list; d; d = d->alloc_next) {
-        if (!d->reachable) {
-            /* Remove successor node links */
-            for (l = d->succlist; l; l = nl) {
-                nl = l->next;
-                listelem_free(l, sizeof(*l));
-            }
-            d->succlist = NULL;
-
-            /* Remove predecessor links */
-            for (l = d->predlist; l; l = nl) {
-                nl = l->next;
-                listelem_free(l, sizeof(*l));
-            }
-            d->predlist = NULL;
-        }
-        else {
-            /* Remove successor links to unreachable nodes; predecessors are reachable */
-            pl = NULL;
-            for (l = d->succlist; l; l = nl) {
-                nl = l->next;
-                if (!l->node->reachable) {
-                    if (!pl)
-                        d->succlist = nl;
-                    else
-                        pl->next = nl;
-                    listelem_free(l, sizeof(*l));
-                }
-                else
-                    pl = l;
-            }
-        }
-    }
-}
-
-
-/**
  * Add auxiliary links bypassing filler nodes in DAG.  In principle, a new such
  * auxiliary link can end up at ANOTHER filler node, and the process must be repeated
  * for complete transitive closure.  But removing fillers in the order in which they
@@ -273,7 +207,7 @@ dag_remove_unreachable(void)
  * Return value: 0 if successful; -1 if DAG maxedge limit exceeded.
  */
 static int32
-dag_bypass_filler_nodes(void)
+dag_bypass_filler_nodes(dag_t *dag, float64 lwf, dict_t *dict, fillpen_t *fpen)
 {
     dagnode_t *d, *pnode, *snode;
     daglink_t *plink, *slink;
@@ -287,7 +221,10 @@ dag_bypass_filler_nodes(void)
         /* For each link TO d add a link to d's successors */
         for (plink = d->predlist; plink; plink = plink->next) {
             pnode = plink->node;
-            scr = plink->ascr + fillpen(fpen, dict_basewid(dict, d->wid));
+            scr = plink->ascr;
+            scr += ((fillpen(fpen, dict_basewid(dict, d->wid))
+                     - logs3(fpen->wip)) * lwf
+                    + logs3(fpen->wip));
 
             /* Link this predecessor of d to successors of d */
             for (slink = d->succlist; slink; slink = slink->next) {
@@ -296,7 +233,7 @@ dag_bypass_filler_nodes(void)
                 /* Link only to non-filler successors; fillers have been bypassed */
                 if (!dict_filler_word(dict, snode->wid))
                     if (astar_dag_link_bypass
-                        (pnode, snode, scr + slink->ascr) < 0)
+                        (dag, pnode, snode, scr + slink->ascr) < 0)
                         return -1;
             }
         }
@@ -312,15 +249,12 @@ dag_bypass_filler_nodes(void)
  * exit node.
  */
 static void
-dag_compute_hscr(void)
+dag_compute_hscr(dag_t *dag, dict_t *dict, lm_t *lm)
 {
     dagnode_t *d, *d1, *d2;
     daglink_t *l1, *l2;
     s3wid_t bw0, bw1, bw2;
     int32 hscr, best_hscr;
-    lm_t *lm;
-
-    lm = lmset->cur_lm;
 
     for (d = dag->list; d; d = d->alloc_next) {
         bw0 =
@@ -386,7 +320,7 @@ dag_compute_hscr(void)
 
 
 static void
-dag_remove_bypass_links(void)
+dag_remove_bypass_links(dag_t *dag)
 {
     dagnode_t *d;
     daglink_t *l, *pl, *nl;
@@ -409,9 +343,10 @@ dag_remove_bypass_links(void)
 }
 
 
-int32
-s3astar_dag_load(char *file)
+dag_t *
+s3astar_dag_load(char *file, dict_t *dict, lm_t *lm, fillpen_t *fpen)
 {
+    dag_t *dag;
     int32 k;
 
     dag = dag_load(file,
@@ -432,15 +367,14 @@ s3astar_dag_load(char *file)
      * Mark nodes from which final exit node is reachable.  Add links bypassing filler
      * nodes, and compute heuristic score (hscr) from each node to end of utterance.
      */
-    dag_mark_reachable(dag->final.node);
-    dag_remove_unreachable();
-    if (dag_bypass_filler_nodes() < 0) {
+    dag_remove_unreachable(dag);
+    if (dag_bypass_filler_nodes(dag, 1.0, dict, fpen) < 0) {
         E_ERROR("%s: maxedge limit (%d) exceeded\n", file, dag->maxedge);
-        return -1;
+        dag_destroy(dag);
+        return NULL;
     }
-
-    dag_compute_hscr();
-    dag_remove_bypass_links();
+    dag_compute_hscr(dag, dict, lm);
+    dag_remove_bypass_links(dag);
 
     E_INFO("%5d frames, %6d nodes, %8d edges, %8d bypass\n",
            dag->nfrm, dag->nnode, dag->nlink, dag->nbypass);
@@ -456,7 +390,7 @@ s3astar_dag_load(char *file)
         dag->maxlmop = k;
     dag->lmop = 0;
 
-    return dag->nfrm;
+    return dag;
 }
 
 
@@ -592,8 +526,8 @@ aheap_pop(aheap_t * root)
  * an inferior path did exist, mark it as pruned.
  */
 static int32
-ppath_dup(ppath_t * hlist, ppath_t * lmhist, dagnode_t * node,
-          uint32 hval, int32 pscr)
+ppath_dup(ppath_t * hlist, ppath_t * lmhist, dict_t *dict,
+          dagnode_t * node, uint32 hval, int32 pscr)
 {
     ppath_t *h1, *h2;
 
@@ -636,8 +570,8 @@ ppath_dup(ppath_t * hlist, ppath_t * lmhist, dagnode_t * node,
  * inferior score, in which case do not insert.
  */
 static void
-ppath_insert(ppath_t * top, daglink_t * l, int32 pscr, int32 tscr,
-             int32 lscr)
+ppath_insert(ppath_t * top, dict_t *dict,
+             daglink_t * l, int32 pscr, int32 tscr, int32 lscr)
 {
     ppath_t *pp, *lmhist;
     uint32 h, hmod;
@@ -658,7 +592,7 @@ ppath_insert(ppath_t * top, daglink_t * l, int32 pscr, int32 tscr,
     hmod = h % HISTHASH_MOD;
 
     /* If new node would be an inferior duplicate, skip creating it */
-    if (ppath_dup(hash_list[hmod], lmhist, l->node, h, pscr))
+    if (ppath_dup(hash_list[hmod], lmhist, dict, l->node, h, pscr))
         return;
 
     /* Add heuristic score from END OF l until end of utterance */
@@ -706,15 +640,15 @@ ppath_free(void)
 
 
 static void
-ppath_seg_write(FILE * fp, ppath_t * pp, int32 ascr)
+ppath_seg_write(FILE * fp, ppath_t * pp, dict_t *dict, lm_t *lm, int32 ascr)
 {
     int32 lscr_base;
 
     if (pp->hist)
-        ppath_seg_write(fp, pp->hist,
+        ppath_seg_write(fp, pp->hist, dict, lm,
                         pp->pscr - pp->hist->pscr - pp->lscr);
 
-    lscr_base = pp->hist ? lm_rawscore(lmset->cur_lm, pp->lscr) : 0;
+    lscr_base = pp->hist ? lm_rawscore(lm, pp->lscr) : 0;
 
     fprintf(fp, " %d %d %d %s",
             pp->dagnode->sf, ascr, lscr_base, dict_wordstr(dict,
@@ -724,7 +658,7 @@ ppath_seg_write(FILE * fp, ppath_t * pp, int32 ascr)
 
 
 static void
-nbest_hyp_write(FILE * fp, ppath_t * top, int32 pscr, int32 nfr)
+nbest_hyp_write(FILE * fp, ppath_t * top, dict_t *dict, lm_t *lm, int32 pscr, int32 nfr)
 {
     int32 lscr, lscr_base;
     ppath_t *pp;
@@ -732,36 +666,22 @@ nbest_hyp_write(FILE * fp, ppath_t * top, int32 pscr, int32 nfr)
     lscr_base = 0;
     for (lscr = 0, pp = top; pp; lscr += pp->lscr, pp = pp->hist) {
         if (pp->hist)
-            lscr_base += lm_rawscore(lmset->cur_lm, pp->lscr);
+            lscr_base += lm_rawscore(lm, pp->lscr);
         else
             assert(pp->lscr == 0);
     }
 
     fprintf(fp, "T %d A %d L %d", pscr, pscr - lscr, lscr_base);
 
-    ppath_seg_write(fp, top, pscr - top->pscr);
+    ppath_seg_write(fp, top, dict, lm, pscr - top->pscr);
 
     fprintf(fp, " %d\n", nfr);
     fflush(fp);
 }
 
 
-#if 0
-static
-ppath_dump(ppath_t * p)
-{
-    printf("PPATH:\n");
-    for (; p; p = p->hist) {
-        printf
-            ("pscr= %11d, lscr= %9d, tscr= %11d, hash= %11u, pruned= %d, sf= %5d, %s\n",
-             p->pscr, p->lscr, p->tscr, p->histhash, p->pruned,
-             p->dagnode->sf, dict_wordstr(dict, p->dagnode->wid));
-    }
-}
-#endif
-
 void
-nbest_search(char *filename, char *uttid)
+nbest_search(dag_t *dag, char *filename, char *uttid, dict_t *dict, lm_t *lm, fillpen_t *fpen)
 {
     FILE *fp;
     float32 f32arg;
@@ -776,10 +696,7 @@ nbest_search(char *filename, char *uttid)
     int32 i;
     int32 ispipe;
     int32 ppathdebug;
-    lm_t *lm;
-
-    lm = lmset->cur_lm;
-
+    int32 beam;
 
     /* Create Nbest file and write header comments */
     if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
@@ -797,6 +714,8 @@ nbest_search(char *filename, char *uttid)
     f64arg = cmd_ln_float64("-beam");
     fprintf(fp, "# beam %e\n", f64arg);
     ppathdebug = cmd_ln_boolean("-ppathdebug");
+
+    beam = logs3(f64arg);
 
     assert(heap_root == NULL);
     assert(ppath_list == NULL);
@@ -848,7 +767,8 @@ nbest_search(char *filename, char *uttid)
             continue;
 
         if (top->dagnode == dag->final.node) {  /* Complete hypotheses; output */
-            nbest_hyp_write(fp, top, top->pscr + dag->final.ascr,
+            nbest_hyp_write(fp, top, dict, lm,
+                            top->pscr + dag->final.ascr,
                             dag->nfrm);
             n_hyp++;
             if (besthyp < top->pscr)
@@ -909,7 +829,7 @@ nbest_search(char *filename, char *uttid)
 
             /* Insert extended path if within beam of best so far */
             if (tscr - beam >= besttscr) {
-                ppath_insert(top, l, pscr, tscr, lscr);
+                ppath_insert(top, dict, l, pscr, tscr, lscr);
                 if (n_ppath > maxppath) {
                     E_ERROR("%s: Max PPATH limit (%d) exceeded\n", uttid,
                             maxppath);
@@ -948,23 +868,6 @@ nbest_search(char *filename, char *uttid)
 void
 nbest_init(void)
 {
-    float64 f64arg;
-    float32 lw, wip;
-    int32 fudge;
-
-    fudge = cmd_ln_int32("-dagfudge");
-    if ((fudge < 0) || (fudge > 2))
-        E_FATAL("Bad -dagfudge argument: %d, must be in range 0..2\n",
-                fudge);
-
-    lw = cmd_ln_float32("-lw");
-    wip = cmd_ln_float32("-wip");
-
-    f64arg = cmd_ln_float64("-beam");
-    beam = logs3(f64arg);
-    E_INFO("beam= %d\n", beam);
-
-
     heap_root = NULL;
     ppath_list = NULL;
     hash_list = (ppath_t **) ckd_calloc(HISTHASH_MOD, sizeof(ppath_t *));

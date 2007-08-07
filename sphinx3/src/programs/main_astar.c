@@ -234,17 +234,11 @@ static mdef_t *mdef;            /* Model definition */
 
 static ptmr_t tm_utt;           /* Entire utterance */
 
-extern dict_t *dict;            /* The dictionary       */
-extern fillpen_t *fpen;         /* The filler penalty structure. */
-
-extern dag_t *dag;
-extern lmset_t *lmset;          /* The lmset.           */
+static dict_t *dict;            /* The dictionary       */
+static fillpen_t *fpen;         /* The filler penalty structure. */
+static lmset_t *lmset;          /* The lmset.           */
 
 char *nbestdir;
-
-void nbest_search(char *filename, char *uttid);
-int32 s3astar_dag_load(char *file);
-void nbest_init(void);
 
 /*
  * Command line arguments.
@@ -368,6 +362,7 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
 {
     char dagfile[1024], nbestfile[1024];
     char *latdir, *latext, *nbestext;
+    dag_t *dag;
     int32 nfrm;
 
     if (ur->lmname)
@@ -387,11 +382,13 @@ utt_astar(void *data, utt_res_t * ur, int32 sf, int32 ef, char *uttid)
     ptmr_reset(&tm_utt);
     ptmr_start(&tm_utt);
 
-    if ((nfrm = s3astar_dag_load(dagfile)) > 0) {
+    nfrm = 0;
+    if ((dag = s3astar_dag_load(dagfile, dict, lmset->cur_lm, fpen)) != NULL) {
+	nfrm = dag->nfrm;
 	build_output_uttfile(nbestfile, nbestdir, uttid, ur->uttfile);
 	strcat(nbestfile, ".");
 	strcat(nbestfile, nbestext);
-        nbest_search(nbestfile, uttid);
+        nbest_search(dag, nbestfile, uttid, dict, lmset->cur_lm, fpen);
 
         lm_cache_stats_dump(lmset->cur_lm);
         lm_cache_reset(lmset->cur_lm);
@@ -427,7 +424,7 @@ main(int32 argc, char *argv[])
     /* Read in input databases */
     models_init();
 
-    /* Initialize forward Viterbi search module */
+    /* Initialize search module */
     nbest_init();
     printf("\n");
 
