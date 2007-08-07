@@ -789,13 +789,13 @@ nbest_search(char *filename, char *uttid)
     fprintf(fp, "# %s\n", uttid);
     fprintf(fp, "# frames %d\n", dag->nfrm);
     f32arg = cmd_ln_float32("-logbase");
-    fprintf(fp, "# -logbase %e\n", f32arg);
+    fprintf(fp, "# logbase %e\n", f32arg);
     f32arg = cmd_ln_float32("-lw");
-    fprintf(fp, "# -lw %e\n", f32arg);
+    fprintf(fp, "# langwt %e\n", f32arg);
     f32arg = cmd_ln_float32("-wip");
-    fprintf(fp, "# -wip %e\n", f32arg);
+    fprintf(fp, "# inspen %e\n", f32arg);
     f64arg = cmd_ln_float64("-beam");
-    fprintf(fp, "# -beam %e\n", f64arg);
+    fprintf(fp, "# beam %e\n", f64arg);
     ppathdebug = cmd_ln_boolean("-ppathdebug");
 
     assert(heap_root == NULL);

@@ -257,10 +257,11 @@ static arg_t defn[] = {
         common_application_properties_command_line_macro()
         control_file_handling_command_line_macro()
         control_lm_file_command_line_macro()
-        dag_handling_command_line_macro(){"-mdef",
-                                          ARG_STRING,
-                                          NULL,
-                                          "Model definition input file: triphone -> senones/tmat tying"},
+        dag_handling_command_line_macro()
+    {"-mdef",
+     ARG_STRING,
+     NULL,
+     "Model definition input file: triphone -> senones/tmat tying"},
     {"-beam",
      ARG_FLOAT64,
      "1e-64",
