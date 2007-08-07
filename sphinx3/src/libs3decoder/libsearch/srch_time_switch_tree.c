@@ -1282,13 +1282,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
     srch_hyp_t *tmph, *bph;
     srch_t *s = (srch_t *) srch;
 
-    dag_write(dag, "foo.lat.gz", kbcore_lm(s->kbc), kbcore_dict(s->kbc));
-    dag = dag_load("foo.lat.gz",
-                   cmd_ln_int32("-maxedge"),
-                   cmd_ln_float32("-logbase"),
-                   cmd_ln_int32("-dagfudge"),
-                   kbcore_dict(s->kbc),
-                   s->kbc->fillpen);
     f32arg = (float32 *) cmd_ln_access("-bestpathlw");
     lwf = f32arg ? ((*f32arg) / *((float32 *) cmd_ln_access("-lw"))) : 1.0;
 
@@ -1307,7 +1300,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
         dag_link(dag, NULL, dag->root, 0, 0, -1, NULL);
         dag->final.node = dag->end;
     }
-    dag_write(dag, "foo.lat.gz", kbcore_lm(s->kbc), kbcore_dict(s->kbc));
 
     /* FIXME: This is some bogus crap to do with the different
      * treatment of <s> and </s> in the flat vs. the tree decoder.  If
@@ -1322,7 +1314,6 @@ srch_TST_bestpath_impl(void *srch,          /**< A void pointer to a search stru
         );
     unlinksilences(kbcore_lm(s->kbc), s->kbc, kbcore_dict(s->kbc));
 
-    dag_destroy(dag);
     if (bph != NULL) {
         ghyp = NULL;
         for (tmph = bph; tmph; tmph = tmph->next)
