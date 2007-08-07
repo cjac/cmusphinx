@@ -288,12 +288,8 @@ srch_FLAT_FWD_uninit(void *srch)
     if (fwg->word_cand_cf)
         ckd_free(fwg->word_cand_cf);
 
-    if (fwg->word_cand_dir) {
-        if (fwg->word_cand)
-            ckd_free(fwg->word_cand);
-        if (fwg->word_cand_cf)
-            ckd_free(fwg->word_cand_cf);
-    }
+    if (fwg->word_cand)
+        ckd_free(fwg->word_cand);
 
     if (fwg->ctxt)
         ctxt_table_free(fwg->ctxt);
