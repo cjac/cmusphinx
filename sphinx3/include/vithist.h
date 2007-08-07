@@ -645,11 +645,7 @@ dag_t * latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
  * Write a dag from latticehist_t
  */
 int32 latticehist_dag_write (latticehist_t *lathist,  /**< A table off lattice entries */
-			     char *dir,  /**< The directory node */
-			     int32 onlynodes,  /**< Whether only nodes are printed */
-			     char *id,  
-			     char* latfile_ext, 
-			     int32 totfrm, 
+                             const char *filename,
 			     dag_t *dag,
 			     lm_t *lm, 
 			     dict_t *dict, 

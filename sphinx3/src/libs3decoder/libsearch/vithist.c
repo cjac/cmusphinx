@@ -1280,64 +1280,6 @@ vithist_dag_build(vithist_t * vh, glist_t hyp, dict_t * dict, int32 endid)
 }
 
 
-int32
-vithist_dag_write(vithist_t *vithist,
-                  const char *filename,
-                  dag_t * dag,
-                  lm_t * lm,
-                  dict_t * dict)
-{
-
-    /* WARNING!!!! DO NOT INSERT a # in the format arbitrarily because the dag_reader is not very robust */
-    int32 i;
-    dagnode_t *d, *initial, *final;
-    daglink_t *l;
-    FILE *fp;
-    int32 ispipe;
-
-    initial = dag->root;
-    final = dag->end;
-
-    E_INFO("Writing lattice file in Sphinx III format: %s\n", filename);
-    if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
-        E_ERROR("fopen_comp (%s,w) failed\n", filename);
-        return -1;
-    }
-
-    dag_write_header(fp, vithist->n_frm, 1);
-
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
-    fprintf(fp,
-            "Nodes %d (NODEID WORD STARTFRAME FIRST-ENDFRAME LAST-ENDFRAME)\n",
-            i);
-    for (i = 0, d = dag->list; d; d = d->alloc_next, i++) {
-        d->seqid = i;
-        fprintf(fp, "%d %s %d %d %d\n", i, dict_wordstr(dict, d->wid),
-                d->sf, d->fef, d->lef);
-    }
-
-
-    fprintf(fp, "#\n");
-
-    fprintf(fp, "Initial %d\nFinal %d\n", initial->seqid, final->seqid);
-
-    /* Best score (i.e., regardless of Right Context) for word segments in word lattice */
-    fprintf(fp, "BestSegAscr 0 (NODEID ENDFRAME ASCORE)\n");
-    fprintf(fp, "#\n");
-
-    fprintf(fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
-    for (d = dag->list; d; d = d->alloc_next) {
-        for (l = d->succlist; l; l = l->next)
-            fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid,
-                    l->ascr);
-    }
-    fprintf(fp, "End\n");
-
-    fclose_comp(fp, ispipe);
-
-    return 0;
-}
-
 /* 
  * RAH, free memory allocated in vithist_free 
  */
@@ -1985,11 +1927,7 @@ latticehist_dag_build(latticehist_t * vh, glist_t hyp, dict_t * dict,
 
 int32
 latticehist_dag_write(latticehist_t * lathist,
-                      char *dir,
-                      int32 onlynodes,
-                      char *id,
-                      char *latfile_ext,
-                      int32 totfrm,
+                      const char *filename,
                       dag_t * dag,
                       lm_t * lm,
                       dict_t * dict,
@@ -2000,7 +1938,6 @@ latticehist_dag_write(latticehist_t * lathist,
     int32 i, n_valid_node;
     dagnode_t *d, *initial, *final;
     daglink_t *l;
-    char filename[2048];
     FILE *fp;
     int32 ascr, lscr;
     int32 ispipe;
@@ -2008,14 +1945,13 @@ latticehist_dag_write(latticehist_t * lathist,
     initial = dag->root;
     final = dag->end;
 
-    sprintf(filename, "%s/%s.%s", dir, id, latfile_ext);
     E_INFO("Writing lattice file in Sphinx III format: %s\n", filename);
     if ((fp = fopen_comp(filename, "w", &ispipe)) == NULL) {
         E_ERROR("fopen_comp (%s,w) failed\n", filename);
         return -1;
     }
 
-    dag_write_header(fp, totfrm, 1);
+    dag_write_header(fp, dag->nfrm);
 
     for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
     fprintf(fp,
@@ -2039,25 +1975,20 @@ latticehist_dag_write(latticehist_t * lathist,
             n_valid_node++;
     }
     fprintf(fp, "BestSegAscr %d (NODEID ENDFRAME ASCORE)\n", n_valid_node);
-
-    if (!onlynodes) {
-        for (i = 0; i < lathist->n_lat_entry; i++) {
-            lat_seg_ascr_lscr(lathist, i, BAD_S3WID, &ascr, &lscr, lm,
-                              dict, ct, fillpen);
-            if (lathist->lattice[i].dagnode)
-                fprintf(fp, "%d %d %d\n", (lathist->lattice[i].dagnode)->seqid,
-                        lathist->lattice[i].frm, ascr);
-        }
+    for (i = 0; i < lathist->n_lat_entry; i++) {
+        lat_seg_ascr_lscr(lathist, i, BAD_S3WID, &ascr, &lscr, lm,
+                          dict, ct, fillpen);
+        if (lathist->lattice[i].dagnode)
+            fprintf(fp, "%d %d %d\n", (lathist->lattice[i].dagnode)->seqid,
+                    lathist->lattice[i].frm, ascr);
     }
     fprintf(fp, "#\n");
 
     fprintf(fp, "Edges (FROM-NODEID TO-NODEID ASCORE)\n");
-    if (!onlynodes) {
-        for (d = dag->list; d; d = d->alloc_next) {
-            for (l = d->succlist; l; l = l->next)
-                fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid,
-                        l->ascr);
-        }
+    for (d = dag->list; d; d = d->alloc_next) {
+        for (l = d->succlist; l; l = l->next)
+            fprintf(fp, "%d %d %d\n", d->seqid, l->node->seqid,
+                    l->ascr);
     }
     fprintf(fp, "End\n");
 

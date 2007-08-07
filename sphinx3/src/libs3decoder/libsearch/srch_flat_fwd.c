@@ -79,6 +79,7 @@
 #include "srch_flat_fwd.h"
 #include "srch.h"
 #include "whmm.h"
+#include "corpus.h"
 
 static void
 fwd_timing_dump(srch_FLAT_FWD_graph_t * fwg)
@@ -731,6 +732,7 @@ srch_FLAT_FWD_bestpath_impl(void *srch,           /**< A void pointer to a searc
 int32
 srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
 {
+    char str[2048];
     srch_t *s;
     srch_FLAT_FWD_graph_t *fwg;
 
@@ -738,12 +740,12 @@ srch_FLAT_FWD_dag_dump(void *srch, dag_t *dag)
     fwg = (srch_FLAT_FWD_graph_t *) s->grh->graph_struct;
     assert(fwg->lathist);
 
+    ctl_outfile(str, cmd_ln_str("-outlatdir"), cmd_ln_str("-latext"),
+                (s->uttfile ? s->uttfile : s->uttid), s->uttid);
+    E_INFO("Writing lattice file: %s\n", str);
     latticehist_dag_write(fwg->lathist,
-                          cmd_ln_str("-outlatdir"),
-                          FALSE,
-                          s->uttid,
-                          cmd_ln_str("-latext"),
-                          fwg->n_frm, dag, kbcore_lm(s->kbc),
+                          str,
+                          dag, kbcore_lm(s->kbc),
                           kbcore_dict(s->kbc), fwg->ctxt,
                           s->kbc->fillpen);
 

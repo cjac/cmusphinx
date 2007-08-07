@@ -313,12 +313,16 @@ srch_hyp_t *dag_backtrace (srch_hyp_t **hyp, /**< A pointer of a pointer to the 
  */
 
 void dag_write_header (FILE *fp, /**< A file pointer */
-		       int32 nfr, /**< number of frame */
-		       int32 printminfr /**< Print minfr information,
-					   sphinx 3.0 should use 1,
-					   sphinx 3.x should use 0*/
-		       
+		       int32 nfr /**< number of frame */
     );
+
+/**
+ * Write a DAG (without segment scores) in Sphinx3 format
+ **/
+int32 dag_write(dag_t * dag,
+                const char *filename,
+                lm_t * lm,
+                dict_t * dict);
 
 
 /**

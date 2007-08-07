@@ -1127,7 +1127,7 @@ allphone_dag_write(allphone_t *allp,
         return -1;
     }
 
-    dag_write_header(fp, allp->curfrm, 1);
+    dag_write_header(fp, allp->curfrm);
 
     for (i = 0, d = dag->list; d; d = d->alloc_next, i++);
     fprintf(fp,
